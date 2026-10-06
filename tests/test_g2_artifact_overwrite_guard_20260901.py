@@ -11,7 +11,6 @@ HƠN template → TỪ CHỐI (mã 2), nội dung nguyên vẹn, vẫn .bak-*; (
 hơn → đè như cũ nhưng có .bak-*.
 """
 
-import json
 import shutil
 import subprocess
 import sys
@@ -21,6 +20,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TOOLS_DIR = REPO_ROOT / "tools"
 PYTHON = sys.executable
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 STUDY = "PYTEST-G2-ARTIFACT-GUARD"
 
 
@@ -47,11 +47,10 @@ def test_toan_chu_trinh_rao_de_ho_so_dao_duc():
     _rmtree_retry(d)
     try:
         d.mkdir(parents=True)
-        (d / "G1_checkpoint.json").write_text(json.dumps({
-            "gate": "G1",
-            "design": {"internal_code": "rct", "primary": "RCT song song",
-                       "reporting_standard": "CONSORT 2025", "ambiguous": False},
-        }), encoding="utf-8", newline="\n")
+        # 04/10/2026 (soát từng cổng): G2 CHẤM SỐNG G1 — một G1_checkpoint chỉ có «design» (không artifact, không
+        # G0) là G1 BỊ CHẶN và G2 dừng đúng luật (mã 3). Fixture dựng chuỗi G0→G1 thật (tests/_chuoi_da_chot.py).
+        from _chuoi_da_chot import dung_g0_g1_da_chot  # noqa: PLC0415
+        dung_g0_g1_da_chot(d, STUDY)
         # (1) chưa có hồ sơ → sinh bình thường
         r1 = _run_g2()
         assert r1.returncode == 0, r1.stdout[-1500:] + r1.stderr[-800:]

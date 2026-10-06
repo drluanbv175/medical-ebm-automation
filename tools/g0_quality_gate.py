@@ -49,6 +49,7 @@ import sys
 
 # Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
 import sys as _sys_r4
+import unicodedata
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Mapping, Optional, Sequence
@@ -61,7 +62,9 @@ for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import cong_song as CS  # noqa: E402
 import gate_contract as GC  # noqa: E402
+import pii_van_ban as PII  # noqa: E402
 import pipeline_freshness as PF  # noqa: E402
 import placeholder_contract as PC  # noqa: E402
 import skill_standards as S  # noqa: E402
@@ -98,14 +101,27 @@ REQUIRED_PUBMED_KEYS: Sequence[str] = (
     "n_guideline", "n_observational", "n_recent", "counts_are_real",
 )
 
-_QUESTION_TYPES = {
-    "therapy", "diagnosis", "prognosis", "harm", "descriptive",
-    "điều trị", "chẩn đoán", "tiên lượng", "tác hại", "mô tả",
-}
+# VÁ 04/10/2026 (soát từng cổng, G0-05): bảng loại câu hỏi RIÊNG của G0 («therapy») lệch bảng của G1 («treatment»)
+# và thiếu «qualitative»/«prediction» ⇒ đề tài định tính/dự báo kẹt REVIEW mãi. Nay chuẩn hoá qua bảng DÙNG CHUNG
+# skill_standards.chuan_hoa_question_type (therapy ≡ treatment…). «sr» là THIẾT KẾ, không phải loại câu hỏi.
+_QUESTION_TYPES_CHAP_NHAN = frozenset({"treatment", "diagnosis", "prognosis", "harm", "descriptive", "qualitative",
+                                       "prediction_model"})
+# Loại câu hỏi có so sánh/hiệu ứng: test_type «descriptive» với các loại này phải có lý do (G0-06).
+_QUESTION_TYPES_CO_GIA_THUYET = frozenset({"treatment", "diagnosis", "prognosis", "harm"})
 _TEST_TYPES = {
     "superiority", "non_inferiority", "non-inferiority", "equivalence",
     "descriptive", "mô tả",
 }
+# Kết luận FINER PHỦ ĐỊNH (G0-03): chỉ cụm phủ định MẠNH, nói thẳng tiêu chí không đạt. KHÔNG bắt «chưa/không» đứng đầu
+# câu nói chung — «Chưa có dữ liệu Việt Nam» chính là lý do tính MỚI (đã thử: bắt nhầm). Chiều mơ hồ để bác sĩ đọc.
+_FINER_AM = re.compile(
+    r"\bkhông\s+(?:khả\s+thi|đạt|phù\s+hợp|đảm\s+bảo\s+đạo\s+đức)\b|\bvi\s+phạm\s+đạo\s+đức\b"
+    r"|\bnot\s+(?:feasible|ethical|novel|relevant|interesting)\b|\binfeasible\b|\bunethical\b",
+    re.IGNORECASE,
+)
+# Khoá của gate_params.G0 KHÔNG đưa vào dấu vân tay chốt (là chính phần xác nhận, không phải nội dung được xác nhận).
+_KHOA_XAC_NHAN_G0 = frozenset({"pico_confirmed", "evidence_reviewed_confirmed", "reviewed_by_role", "reviewed_at",
+                               "dau_van_tay_chot"})
 # Vai trò được phép chốt câu hỏi nghiên cứu ở G0. Cố ý KHÁC danh sách của G2
 # (IRB) — G0 là quyết định khoa học của chủ nhiệm/nhà phương pháp, không phải
 # quyết định đạo đức.
@@ -232,13 +248,46 @@ def _g0_meta(meta: Mapping[str, Any]) -> Mapping[str, Any]:
 
 
 def _valid_iso_time(value: Any) -> bool:
+    """ISO-8601 thật và KHÔNG ở tương lai (VÁ 04/10/2026, G0-07 + bỏ sót: bản cũ nhận cả «2099-12-31»)."""
     if not _present(value):
         return False
-    try:
-        datetime.fromisoformat(str(value).replace("Z", "+00:00"))
-    except ValueError:
-        return False
-    return True
+    return CS.iso_khong_tuong_lai(value)
+
+
+def _finer_ket_luan(value: Any) -> str:
+    """Kết luận của MỘT tiêu chí FINER: «dat» · «khong_dat» · «can_ly_do» · «thieu» (VÁ 04/10/2026, G0-03).
+
+    Bản cũ chỉ hỏi «có chữ không»: «KHÔNG KHẢ THI», số 0 hay False đều được tính là «có kết luận» ⇒ PASS. Bool True
+    / số trơn không kèm lý do cũng PASS — trong khi F và E là hai tiêu chí máy KHÔNG thể tự đánh giá."""
+    if isinstance(value, bool):
+        return "can_ly_do" if value else "khong_dat"
+    if isinstance(value, (int, float)):
+        return "khong_dat" if value == 0 else "can_ly_do"
+    if not _present(value):
+        return "thieu"
+    if _FINER_AM.search(unicodedata.normalize("NFC", str(value))):
+        return "khong_dat"
+    return "dat"
+
+
+def dau_van_tay_g0(checkpoint: Mapping[str, Any], meta: Mapping[str, Any]) -> str:
+    """Dấu vân tay của NỘI DUNG mà bác sĩ chốt ở G0: chủ đề + tập PMID đã đọc + mọi quyết định trong gate_params.G0
+    (trừ chính các khoá xác nhận). Đổi chủ đề, chạy lại PubMed ra PMID khác, hay sửa PICO sau khi chốt ⇒ dấu đổi ⇒
+    xác nhận cũ hết hiệu lực (VÁ 04/10/2026, G0-07)."""
+    pubmed = checkpoint.get("pubmed_results") if isinstance(checkpoint.get("pubmed_results"), Mapping) else {}
+    pmids = sorted(str(x) for x in (pubmed.get("all_pmids") or []))
+    g0 = {k: v for k, v in _g0_meta(meta).items() if k not in _KHOA_XAC_NHAN_G0}
+    return CS.dau_van_tay(str(checkpoint.get("topic") or ""), pmids, g0)
+
+
+def _thiet_ke_ghim(meta: Mapping[str, Any]) -> Optional[str]:
+    """Mã thiết kế chuỗi bác sĩ ghim (study_meta.design_code hoặc gate_params.G1.design).
+
+    None nếu chưa ghim hoặc ngoài 8 mã chuỗi hỗ trợ."""
+    gp = meta.get("gate_params") if isinstance(meta.get("gate_params"), Mapping) else {}
+    g1 = gp.get("G1") if isinstance(gp.get("G1"), Mapping) else {}
+    raw = meta.get("design_code") or g1.get("design")
+    return S.ma_thiet_ke_chuoi(raw) if isinstance(raw, str) else None
 
 
 def _criterion(criterion_id: str, label: str, status: str,
@@ -308,9 +357,30 @@ def infer_design_code_from_hint(design_hint: Optional[str]) -> Optional[str]:
     return None
 
 
-def expected_reporting_standard(design_hint: Optional[str]) -> Dict[str, str]:
-    """Gói chuẩn báo cáo DỰ KIẾN cho gợi ý thiết kế của G0."""
-    code = infer_design_code_from_hint(design_hint)
+# Loại câu hỏi ⇒ thiết kế CHẮC CHẮN (chỉ những cặp không mơ hồ; «treatment» có thể là RCT hoặc thuần tập ⇒ không suy).
+_THIET_KE_THEO_LOAI_CAU_HOI = {
+    "descriptive": "cross_sectional", "diagnosis": "diagnostic", "qualitative": "qualitative",
+    "prediction_model": "prediction",
+}
+
+
+def expected_reporting_standard(design_hint: Optional[str], meta: Optional[Mapping[str, Any]] = None) -> Dict[str, str]:
+    """Gói chuẩn báo cáo DỰ KIẾN cho G0.
+
+    VÁ 04/10/2026 (soát từng cổng, G0-08): bản cũ chỉ suy từ CÂU GỢI Ý của G0 — câu đó gần như luôn là «RCT … HOẶC
+    Cohort …», nên đề tài cắt ngang C1a bị ghi chuẩn dự kiến CONSORT 2025/SPIRIT 2025. Thứ tự ưu tiên nay: thiết kế
+    bác sĩ ĐÃ GHIM → loại câu hỏi bác sĩ đã khai (chỉ cặp chắc chắn) → câu gợi ý; gợi ý mơ hồ («HOẶC», khớp nhiều
+    mã) ⇒ «[CẦN XÁC ĐỊNH Ở G1]», không đoán."""
+    meta = meta if isinstance(meta, Mapping) else {}
+    code = _thiet_ke_ghim(meta)
+    if not code:
+        qt = S.chuan_hoa_question_type(_g0_meta(meta).get("question_type"))
+        code = _THIET_KE_THEO_LOAI_CAU_HOI.get(qt or "")
+    if not code:
+        hint = str(design_hint or "")
+        so_ma = {c for pattern, c in _DESIGN_HINT_PATTERNS if re.search(pattern, hint.lower())}
+        mo_ho = bool(re.search(r"\bHOẶC\b|\bhoặc\b|\bOR\b", hint)) and len(so_ma) > 1
+        code = None if mo_ho else infer_design_code_from_hint(design_hint)
     if not code:
         return {
             "design_code": "",
@@ -442,16 +512,21 @@ def evaluate_g0_quality(
     # Trùng lặp nghiên cứu: PubMed trả lời "đã CÔNG BỐ gì", không trả lời "đang có
     # ai LÀM chưa". Thiếu vế sau, bác sĩ có thể khởi động một đề tài trùng hoàn
     # toàn với thử nghiệm đang tuyển bệnh.
+    # VÁ 04/10/2026 (soát từng cổng, G0-02): bộ sinh (trial_registry) ghi `n_active`, bộ chấm từng đọc `n_recruiting`
+    # ⇒ báo cáo luôn nói «0 đang tuyển» — một số 0 BỊA. Đọc n_active (n_recruiting là bí danh cũ); không phải số
+    # nguyên ⇒ «không rõ», KHÔNG ép thành 0.
+    n_active: Optional[int] = None
     if isinstance(registry_check, Mapping) and registry_check:
         checked = registry_check.get("checked") is True
         n_trials = registry_check.get("n_trials")
-        n_trials = int(n_trials) if isinstance(n_trials, int) else 0
-        n_recruiting = registry_check.get("n_recruiting")
-        n_recruiting = int(n_recruiting) if isinstance(n_recruiting, int) else 0
+        n_trials_txt = str(n_trials) if isinstance(n_trials, int) and not isinstance(n_trials, bool) else "không rõ số"
+        raw_active = registry_check.get("n_active", registry_check.get("n_recruiting"))
+        if isinstance(raw_active, int) and not isinstance(raw_active, bool):
+            n_active = raw_active
         reg_status = "PASS" if checked else "REVIEW"
         reg_evidence = (
-            f"ClinicalTrials.gov: {n_trials} hồ sơ khớp, "
-            f"{n_recruiting} đang tuyển"
+            f"ClinicalTrials.gov: {n_trials_txt} hồ sơ khớp, "
+            + (f"{n_active} đang tuyển" if n_active is not None else "không rõ số đang tuyển")
             if checked else
             f"chưa tra được ({registry_check.get('error') or 'không rõ lý do'})"
         )
@@ -459,14 +534,37 @@ def evaluate_g0_quality(
         reg_status = "REVIEW"
         reg_evidence = "chưa tra đăng ký nghiên cứu"
     automatic.append(_criterion(
-        "G0-AUTO-06", "Đã tra đăng ký nghiên cứu đang tiến hành (trùng lặp)",
+        "G0-AUTO-06", "Đã tra ClinicalTrials.gov (chủ yếu phủ thử nghiệm can thiệp; ICTRP/PROSPERO ở G0-HUMAN-08)",
         reg_status, reg_evidence,
         "Chạy lại G0 khi có mạng, hoặc tự tra ClinicalTrials.gov/WHO ICTRP "
         "trước khi khẳng định đề tài là mới.",
     ))
 
+    # VÁ 04/10/2026 (soát từng cổng, G0-09 / CHUNG-G): không cổng nào quét PII trên chính các trường bác sĩ GÕ TAY ở
+    # gate_params.G0 — số điện thoại hay CCCD dán vào population vẫn PASS. Quét bằng bộ dò dùng chung (chế độ «chat»),
+    # bỏ mẫu «ngày tháng cụ thể» (thời gian nghiên cứu là hợp lệ ở đây) nhưng giữ «ngày sinh» + một ngày (chế độ
+    # «ho_so»). Bằng chứng chỉ nêu TÊN KHOÁ, không in giá trị.
+    khoa_pii: List[str] = []
+    g0_quet = {k: v for k, v in _g0_meta(meta).items() if k not in _KHOA_XAC_NHAN_G0}
+    g0_quet["topic (checkpoint)"] = checkpoint.get("topic")
+    for khoa, gia_tri in g0_quet.items():
+        if isinstance(gia_tri, bool) or gia_tri is None:
+            continue
+        thay = [x for x in PII.quet_pii_van_ban(gia_tri, che_do=PII.CHAT) if x.loai != "ngày tháng cụ thể"]
+        thay += [x for x in PII.quet_pii_van_ban(gia_tri, che_do=PII.HO_SO) if x.loai == "ngày sinh cụ thể"]
+        if thay:
+            khoa_pii.append(f"{khoa} ({', '.join(sorted({x.loai for x in thay}))})")
+    automatic.append(_criterion(
+        "G0-AUTO-07", "Trường bác sĩ điền ở gate_params.G0 không chứa thông tin định danh",
+        "BLOCK" if khoa_pii else "PASS",
+        ("nghi PII ở: " + "; ".join(khoa_pii)) if khoa_pii else "không thấy mẫu PII trong gate_params.G0 + chủ đề",
+        "Xoá thông tin định danh khỏi các khoá đã nêu (tên, SĐT, CCCD, BHYT, ngày sinh, email) — chỉ mô tả quần thể ở "
+        "mức nhóm.",
+    ))
+
     # ── Tầng HUMAN — đọc study_meta.json → gate_params.G0 ─────────────────────
     g0 = _g0_meta(meta)
+    dau_hien_tai = dau_van_tay_g0(checkpoint, meta)
 
     pico_fields = {
         "population": g0.get("population"),
@@ -528,7 +626,12 @@ def evaluate_g0_quality(
     # Nghiên cứu mô tả không cần H0/H1 — ép có giả thuyết ở đây sẽ đẩy bác sĩ
     # đến chỗ bịa một giả thuyết cho một đề tài mô tả thuần.
     descriptive = test_type in {"descriptive", "mô tả"}
-    hypo_ok = test_ok and (descriptive or (h0_ok and h1_ok and dir_ok))
+    # VÁ 04/10/2026 (soát từng cổng, G0-06): loại câu hỏi có so sánh/hiệu ứng (điều trị, chẩn đoán, tiên lượng, tác
+    # hại) mà khai test_type «descriptive» thì bỏ qua được giả thuyết mà vẫn PASS — nay phải có lý do bằng chữ.
+    qtype_canon = S.chuan_hoa_question_type(g0.get("question_type"))
+    can_ly_do_mo_ta = descriptive and qtype_canon in _QUESTION_TYPES_CO_GIA_THUYET
+    ly_do_mo_ta_ok = _present(g0.get("descriptive_justification"))
+    hypo_ok = test_ok and (descriptive or (h0_ok and h1_ok and dir_ok)) and (not can_ly_do_mo_ta or ly_do_mo_ta_ok)
     hypo_residue = not descriptive and any(
         _con_o_trong(g0.get(k)) for k in ("hypothesis_h0", "hypothesis_h1", "expected_direction")
     )
@@ -536,36 +639,51 @@ def evaluate_g0_quality(
         "G0-HUMAN-03", "Giả thuyết H0/H1 + chiều kỳ vọng + loại kiểm định",
         "PASS" if hypo_ok else "REVIEW",
         f"test_type={test_type or 'thiếu'}; H0={_mo_ta(g0.get('hypothesis_h0'))}; "
-        f"H1={_mo_ta(g0.get('hypothesis_h1'))}; chiều={_mo_ta(g0.get('expected_direction'))}",
+        f"H1={_mo_ta(g0.get('hypothesis_h1'))}; chiều={_mo_ta(g0.get('expected_direction'))}"
+        + (f"; loại câu hỏi «{qtype_canon}» + kiểm định mô tả ⇒ lý do={_mo_ta(g0.get('descriptive_justification'))}"
+           if can_ly_do_mo_ta else ""),
         "Điền test_type (superiority/non_inferiority/equivalence/descriptive); "
         "nếu không phải nghiên cứu mô tả thì điền cả hypothesis_h0/h1 và "
-        "expected_direction." + (_HANH_DONG_GO_O_TRONG if hypo_residue and not hypo_ok else ""),
+        "expected_direction." + (_HANH_DONG_GO_O_TRONG if hypo_residue and not hypo_ok else "")
+        + (" Câu hỏi điều trị/chẩn đoán/tiên lượng/tác hại mà chỉ mô tả: viết descriptive_justification."
+           if can_ly_do_mo_ta and not ly_do_mo_ta_ok else ""),
     ))
 
-    qtype = str(g0.get("question_type") or "").strip().lower()
+    qtype = str(g0.get("question_type") or "").strip()
+    qtype_ok = qtype_canon in _QUESTION_TYPES_CHAP_NHAN
     human.append(_criterion(
         "G0-HUMAN-04", "Loại câu hỏi đã xác định",
-        "PASS" if qtype in _QUESTION_TYPES else "REVIEW",
-        f"question_type={qtype or 'thiếu'}",
-        "Điền question_type: therapy/diagnosis/prognosis/harm/descriptive.",
+        "PASS" if qtype_ok else "REVIEW",
+        f"question_type={qtype or 'thiếu'}" + (f" (chuẩn hoá: {qtype_canon})" if qtype_canon else "")
+        + (" — «sr» là THIẾT KẾ, không phải loại câu hỏi" if qtype_canon == "sr" else ""),
+        "Điền question_type: treatment (≡ therapy)/diagnosis/prognosis/harm/descriptive/qualitative/prediction_model.",
     ))
 
     finer_keys = ("finer_feasible", "finer_interesting", "finer_novel",
                   "finer_ethical", "finer_relevant")
-    finer_missing = [k for k in finer_keys if not _present(g0.get(k))]
+    finer_kl = {k: _finer_ket_luan(g0.get(k)) for k in finer_keys}
+    finer_missing = [k for k, kl in finer_kl.items() if kl == "thieu"]
     finer_residue = [k for k in finer_missing if _con_o_trong(g0.get(k))]
+    finer_am = [k for k, kl in finer_kl.items() if kl == "khong_dat"]
+    finer_tron = [k for k, kl in finer_kl.items() if kl == "can_ly_do"]
+
+    def _ten(ds: List[str]) -> str:
+        return ", ".join(k.replace("finer_", "") for k in ds)
+
+    phan_finer = []
+    if finer_am:
+        phan_finer.append(f"kết luận KHÔNG ĐẠT/phủ định ở: {_ten(finer_am)}")
+    if finer_missing:
+        phan_finer.append(f"thiếu: {_ten(finer_missing)}"
+                          + (f" (còn ô trống/nhãn nháp: {_ten(finer_residue)})" if finer_residue else ""))
+    if finer_tron:
+        phan_finer.append(f"chỉ có cờ đúng/số, chưa có lý do: {_ten(finer_tron)}")
     human.append(_criterion(
-        "G0-HUMAN-05", "FINER đánh giá đủ từng tiêu chí (5/5)",
-        "PASS" if not finer_missing else "REVIEW",
-        (
-            f"thiếu: {', '.join(k.replace('finer_', '') for k in finer_missing)}"
-            + (
-                f" (còn ô trống/nhãn nháp: {', '.join(k.replace('finer_', '') for k in finer_residue)})"
-                if finer_residue else ""
-            )
-        ) if finer_missing else "5/5 tiêu chí có kết luận",
-        "Điền 5 khóa finer_* — F và E là hai tiêu chí máy KHÔNG thể tự đánh giá."
-        + (_HANH_DONG_GO_O_TRONG if finer_residue else ""),
+        "G0-HUMAN-05", "FINER đánh giá đủ từng tiêu chí (5/5), kết luận ĐẠT và có lý do",
+        "PASS" if not phan_finer else "REVIEW",
+        "; ".join(phan_finer) if phan_finer else "5/5 tiêu chí có kết luận đạt kèm lý do",
+        "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ "
+        "đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận." + (_HANH_DONG_GO_O_TRONG if finer_residue else ""),
     ))
 
     evidence_reviewed = g0.get("evidence_reviewed_confirmed") is True
@@ -582,14 +700,43 @@ def evaluate_g0_quality(
 
     role = str(g0.get("reviewed_by_role") or "").strip().casefold()
     pico_confirmed = g0.get("pico_confirmed") is True
-    sign_ok = pico_confirmed and role in _REVIEW_ROLES and _valid_iso_time(g0.get("reviewed_at"))
+    # VÁ 04/10/2026 (soát từng cổng, G0-07 / CHUNG-C): xác nhận phải GẮN với nội dung được xác nhận — đổi chủ đề,
+    # chạy lại PubMed hay sửa PICO sau khi chốt mà vẫn PASS là lỗi; reviewed_at ở tương lai cũng không nhận.
+    xn_ok, xn_ly_do = CS.xac_nhan_gan_noi_dung(
+        {"reviewed_at": g0.get("reviewed_at"), "dau_van_tay": g0.get("dau_van_tay_chot")}, dau_hien_tai)
+    sign_ok = pico_confirmed and role in _REVIEW_ROLES and _valid_iso_time(g0.get("reviewed_at")) and xn_ok
     human.append(_criterion(
-        "G0-HUMAN-07", "Chủ nhiệm/nhà phương pháp chốt PICO (vai trò + thời điểm)",
+        "G0-HUMAN-07", "Chủ nhiệm/nhà phương pháp chốt PICO (vai trò + thời điểm + gắn đúng nội dung)",
         "PASS" if sign_ok else "REVIEW",
         f"pico_confirmed={pico_confirmed}; vai trò={role or 'thiếu'}; "
-        f"reviewed_at={g0.get('reviewed_at') or 'thiếu'}",
-        "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist) "
-        "và reviewed_at dạng ISO-8601. Không cần lưu danh tính.",
+        f"reviewed_at={g0.get('reviewed_at') or 'thiếu'}; {xn_ly_do}",
+        "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở "
+        f"tương lai) và dau_van_tay_chot=\"{dau_hien_tai}\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+    ))
+
+    # VÁ 04/10/2026 (soát từng cổng, G0-04 / QĐ-17 — mặc định an toàn chờ bác sĩ duyệt qua PR): G0 chỉ tự tra
+    # ClinicalTrials.gov (chủ yếu thử nghiệm can thiệp). WHO ICTRP (gồm đăng ký quan sát, các registry quốc gia) và
+    # PROSPERO (tổng quan hệ thống) phải do PI tự tra rồi ghi ngày; có thử nghiệm ĐANG TUYỂN khớp ⇒ PI viết đánh giá
+    # chồng lấn. Máy KHÔNG gọi thêm mạng ở đây.
+    tra_tay = g0.get("registry_manual_checked") if isinstance(g0.get("registry_manual_checked"), Mapping) else {}
+    can_prospero = _thiet_ke_ghim(meta) == "sr_ma"
+    thieu_tra = []
+    if not _valid_iso_time(tra_tay.get("ictrp")):
+        thieu_tra.append("ictrp")
+    if can_prospero and not _valid_iso_time(tra_tay.get("prospero")):
+        thieu_tra.append("prospero")
+    can_chong_lan = isinstance(n_active, int) and n_active > 0
+    chong_lan_ok = (not can_chong_lan) or _present(g0.get("registry_overlap_assessment"))
+    human.append(_criterion(
+        "G0-HUMAN-08", "PI đã tự tra WHO ICTRP (và PROSPERO cho tổng quan) + đánh giá chồng lấn khi có thử nghiệm "
+        "đang tuyển",
+        "PASS" if not thieu_tra and chong_lan_ok else "REVIEW",
+        ("thiếu ngày tra (ISO, không ở tương lai): " + ", ".join(thieu_tra) if thieu_tra else "đã ghi ngày tra")
+        + ("" if chong_lan_ok else f"; ClinicalTrials.gov có {n_active} thử nghiệm đang tuyển khớp — thiếu "
+           "registry_overlap_assessment"),
+        "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi "
+        "gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử "
+        "nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn).",
     ))
 
     # ── Kết luận ─────────────────────────────────────────────────────────────
@@ -630,8 +777,9 @@ def evaluate_g0_quality(
         "artifact_manifest": manifest,
         "standards_basis": list(_STANDARDS_BASIS),
         "expected_reporting_standard": expected_reporting_standard(
-            checkpoint.get("design_suggestion")
+            checkpoint.get("design_suggestion"), meta
         ),
+        "dau_van_tay_hien_tai": dau_hien_tai,
         "scope_statement": (
             "PASS_G0_CONFIRMED chỉ xác nhận rằng câu hỏi nghiên cứu ĐÃ ĐƯỢC MỘT "
             "NGƯỜI THẬT VIẾT RA VÀ CHỐT, và nền bằng chứng máy dựng là thật. "
@@ -789,6 +937,8 @@ def refresh_checkpoint(*, study: str, out_dir: Path,
         "automated_checks_passed": report.get("automated_checks_passed"),
         "human_confirmation_complete": report.get("human_confirmation_complete"),
         "pending_actions": report.get("pending_actions", []),
+        # VÁ 04/10/2026 (G0-01): dấu nội dung lúc chấm — cổng sau so với dấu hiện tại để biết bản lưu đã cũ.
+        "dau_van_tay_luc_cham": report.get("dau_van_tay_hien_tai"),
     }
     # Không để needs_input (PICO chưa chốt) ghi đè needs_input NẶNG HƠN đã có
     # (0 PMID) — mirror đúng guard `if not blocked and ...` của run_g0_auto.py.

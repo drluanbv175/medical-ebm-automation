@@ -15,6 +15,7 @@ import pseudonymize_research_dataset as PSN  # noqa: E402
 import run_g10_assemble as G10  # noqa: E402
 from secure_permissions import is_owner_exclusive  # noqa: E402
 
+from tests._chuoi_da_chot import danh_dau_de_tai_thu  # noqa: E402
 from tests.test_g10_assemble import _write_cross_sectional_fixture  # noqa: E402
 
 
@@ -38,6 +39,8 @@ record_id,Họ tên,phone,email,age,notes,primary_outcome
 """,
     )
     mapping_root = tmp_path / "protected_mapping"
+    # 04/10/2026 (G5-02): test CƠ CHẾ nạp — đề tài thử nghiệm tổng hợp (đề tài thật cần SAP G4 đã khoá).
+    danh_dau_de_tai_thu(tmp_path / "exports", "PSN-OK")
 
     report = PSN.pseudonymize_dataset(
         "PSN-OK",

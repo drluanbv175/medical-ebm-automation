@@ -27,9 +27,12 @@ from pathlib import Path
 from typing import Any, Mapping, Optional
 
 import annex2_quality_gate as A2X
+import cong_song as CS
 import gate_contract as GC
+import pii_van_ban as PII
 import pipeline_freshness as PF
 import placeholder_contract as PC
+import skill_standards as S
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
@@ -142,6 +145,203 @@ _RECRUITMENT_MODES = {
     "RETROSPECTIVE_SECONDARY_DATA",
     "NOT_APPLICABLE",
 }
+
+# ── WHO TRDS mục 15 — MỘT bảng duy nhất (soát từng cổng G2-07, 04/10/2026) ────────────────────────────────────────
+# Trước đây bản đọc trong hồ sơ .md (run_g2_auto) và bản JSON cổng chấm (build_registration_draft) giữ HAI bảng khác
+# nhau (cohort «Observational» ở .md nhưng «Epidemiology» ở JSON) và .md in cứng «Blinded» cho mọi RCT. Nay cả hai đọc
+# bảng này; các mục khoa học của bản .md dựng từ CHÍNH giá trị của bản JSON (who_trds_values) nên không thể lệch.
+WHO_DESIGN_TYPE: dict[str, str] = {
+    "rct": "Interventional",
+    "cohort": "Observational",
+    "case_control": "Observational",
+    "cross_sectional": "Observational",
+    "diagnostic": "Observational",
+    "prediction": "Observational",
+    "qualitative": "Observational",
+    "sr_ma": "Not applicable - systematic review protocol",
+}
+WHO_PRIMARY_PURPOSE: dict[str, str] = {
+    "rct": "Treatment",
+    "diagnostic": "Diagnostic",
+    "prediction": "Prognosis",
+    "cohort": "Epidemiology",
+    "case_control": "Epidemiology",
+    "cross_sectional": "Epidemiology",
+    "qualitative": "Health services research",
+    "sr_ma": "Evidence synthesis",
+}
+MASKING_CAN_KHAI = "[CẦN — Open label / Single blind / Double blind: khai gate_params.G1.blinding]"
+MASKING_KHONG_AP_DUNG = "Not applicable - no assigned intervention"
+
+# ── ICF: nhãn mục bắt buộc theo thiết kế (G2-04, G2-10, G2-11) ──────────────────────────────────────────────────────
+# Khớp NHÃN MỤC ở ĐẦU DÒNG («2b. PHÂN NHÓM NGẪU NHIÊN»), không khớp chuỗi trên cả tệp. Chung mọi thiết kế: 7 mục gốc +
+# 1b/4b/4c/6c (Helsinki §26). RCT thêm 6b/6d và các yếu tố đồng thuận của thử nghiệm can thiệp theo ICH E6(R3) mục
+# 2.8.10: phân nhóm ngẫu nhiên + xác suất (2b), quyền truy cập hồ sơ gốc của giám sát/kiểm tra/Hội đồng/cơ quan quản lý
+# (5b), thông tin mới (6f), theo dõi khi ngừng/rút (6g), các trường hợp chấm dứt (6h) — đối chiếu nguyên văn ICH trước
+# khi nộp. 6e (mẫu sinh học) là mục «XÓA nếu không áp dụng» nên không bắt buộc; hai bản Việt/Anh phải CÙNG tập mục.
+NHAN_ICF_CHUNG = frozenset({"1", "1b", "2", "3", "4", "4b", "4c", "5", "6", "6c", "7"})
+NHAN_ICF_RCT = frozenset({"2b", "5b", "6b", "6d", "6f", "6g", "6h"})
+_NHAN_MUC_ICF_RE = re.compile(r"^\s*(\d{1,2}[a-h]?)\.\s+\S", re.MULTILINE)
+_TIEU_DE_TAI_LIEU_RE = re.compile(r"^##\s+TÀI LIỆU\s+(\d+)\b", re.MULTILINE)
+_TIEU_DE_CAP2_RE = re.compile(r"^##\s", re.MULTILINE)
+
+
+def _thu_tu_nhan(nhan: str) -> tuple[int, str]:
+    m = re.match(r"(\d+)([a-h]?)$", nhan)
+    return (int(m.group(1)), m.group(2)) if m else (999, nhan)
+
+
+def khoi_tai_lieu(package_text: str, so: int) -> str:
+    """Nội dung của «## TÀI LIỆU <so>» tới tiêu đề «## » kế tiếp; rỗng nếu hồ sơ không có tài liệu đó."""
+    for m in _TIEU_DE_TAI_LIEU_RE.finditer(package_text or ""):
+        if int(m.group(1)) == so:
+            ke = _TIEU_DE_CAP2_RE.search(package_text, m.end())
+            return package_text[m.end(): ke.start() if ke else len(package_text)]
+    return ""
+
+
+def nhan_muc_icf(khoi: str) -> set[str]:
+    """Tập nhãn mục của một phiếu đồng thuận («1», «1b», «6c»…) — chỉ dòng BẮT ĐẦU bằng nhãn."""
+    return {m.group(1).lower() for m in _NHAN_MUC_ICF_RE.finditer(unicodedata.normalize("NFC", khoi or ""))}
+
+
+def kiem_icf(package_text: str, design_code: str) -> tuple[list[str], list[str]]:
+    """(mục bắt buộc thiếu ở ICF tiếng Việt, mục lệch giữa ICF tiếng Việt và tiếng Anh)."""
+    vi = nhan_muc_icf(khoi_tai_lieu(package_text, 4))
+    en = nhan_muc_icf(khoi_tai_lieu(package_text, 5))
+    can = set(NHAN_ICF_CHUNG) | (set(NHAN_ICF_RCT) if design_code == "rct" else set())
+    thieu = sorted(can - vi, key=_thu_tu_nhan)
+    lech = sorted(vi ^ en, key=_thu_tu_nhan) if vi and en else []
+    return thieu, lech
+
+
+# ── Kế hoạch an toàn cho thử nghiệm can thiệp (G2-03, QĐ-4) ───────────────────────────────────────────────────────
+# Trước đây G2-AUTO-07 dò ba cụm «AE/SAE», «DSMB», «quy tắc dừng» trên CẢ hồ sơ — chính khuôn sinh in sẵn ba cụm đó cho
+# mọi RCT nên tiêu chí luôn đúng. Nay thử nghiệm can thiệp (RCT, hoặc PI khai safety_plan_required=true) phải có tệp
+# kế hoạch an toàn riêng đủ 5 mục có nội dung thật VÀ PI ghi safety_plan_confirmed=true. Nội dung an toàn là quyết định
+# của chủ nhiệm/nhà tài trợ/Hội đồng — máy chỉ dựng khung (khung_ke_hoach_an_toan), không điền.
+MUC_KE_HOACH_AN_TOAN: tuple[tuple[str, str], ...] = (
+    ("1", "1. Định nghĩa biến cố bất lợi (AE/SAE/SUSAR) và cách phân độ"),
+    ("2", "2. Mốc và quy trình báo cáo an toàn"),
+    ("3", "3. Quy tắc dừng (từng người tham gia và toàn nghiên cứu)"),
+    ("4", "4. Hội đồng giám sát dữ liệu và an toàn (DSMB/DMC) hoặc lý do không lập"),
+    ("5", "5. Biểu mẫu ghi nhận biến cố bất lợi"),
+)
+
+
+def ten_ke_hoach_an_toan(study: str) -> str:
+    return f"G2_SAFETY_PLAN_{study}.md"
+
+
+def can_ke_hoach_an_toan(design_code: str, meta: Optional[Mapping[str, Any]]) -> bool:
+    return design_code == "rct" or _g2_meta(meta or {}).get("safety_plan_required") is True
+
+
+def khung_ke_hoach_an_toan(study: str) -> str:
+    """Khung tệp kế hoạch an toàn (chỉ tiêu đề + ô [CẦN]); run_g2_auto chỉ ghi khi tệp CHƯA có."""
+    dong = [
+        f"# KẾ HOẠCH AN TOÀN NGƯỜI THAM GIA — {study}",
+        "",
+        "> Khung do máy dựng (soát từng cổng G2-03). Nội dung an toàn do chủ nhiệm/nhà tài trợ/Hội đồng quyết định —",
+        "> máy KHÔNG điền. Điền đủ 5 mục rồi PI ghi study_meta.gate_params.G2.safety_plan_confirmed=true.",
+        "",
+    ]
+    for _so, tieu_de in MUC_KE_HOACH_AN_TOAN:
+        dong += [f"## {tieu_de}", "", "[CẦN — chủ nhiệm điền]", ""]
+    dong.append("> Cần bác sĩ kiểm chứng.")
+    return "\n".join(dong) + "\n"
+
+
+def kiem_ke_hoach_an_toan(out_dir: Path, study: str, design_code: str,
+                          meta: Optional[Mapping[str, Any]]) -> tuple[str, str]:
+    """(PASS|REVIEW, bằng chứng) cho G2-AUTO-07."""
+    if not can_ke_hoach_an_toan(design_code, meta):
+        return "PASS", "không phải RCT và PI không khai safety_plan_required=true — kế hoạch an toàn theo nguy cơ"
+    ten = ten_ke_hoach_an_toan(study)
+    try:
+        text = unicodedata.normalize("NFC", (Path(out_dir) / ten).read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError):
+        return "REVIEW", f"thiếu {ten} — thử nghiệm can thiệp phải có kế hoạch an toàn riêng (run_g2_auto dựng khung)"
+    phan: dict[str, str] = {}
+    hien: Optional[str] = None
+    for dong in text.splitlines():
+        m = re.match(r"^##\s+(\d)\.", dong)
+        if m:
+            hien = m.group(1)
+            phan.setdefault(hien, "")
+        elif re.match(r"^#{1,2}\s", dong):
+            hien = None
+        elif hien is not None:
+            phan[hien] += dong + "\n"
+    van_de = []
+    for so, tieu_de in MUC_KE_HOACH_AN_TOAN:
+        if so not in phan:
+            van_de.append(f"thiếu mục «{tieu_de}»")
+        elif not phan[so].strip() or PC.co_o_trong(phan[so]):
+            van_de.append(f"mục {so} còn trống/ô [CẦN]")
+    if _g2_meta(meta or {}).get("safety_plan_confirmed") is not True:
+        van_de.append("PI chưa ghi gate_params.G2.safety_plan_confirmed=true")
+    return ("REVIEW", f"{ten}: " + "; ".join(van_de)) if van_de else ("PASS", f"{ten} đủ 5 mục; PI đã xác nhận")
+
+
+# ── Liêm chính NỘI DUNG HIỆN HÀNH của hồ sơ (G2-02, CHUNG-G) ────────────────────────────────────────────────────────
+# G2-AUTO-01 từng đọc checkpoint['guardrail'] — kết quả tính trên BẢN KHUÔN lúc sinh (C1a: sinh 31/07, biên tập tới
+# 03/10). PII hay số IRB tự gán chèn vào SAU đó không bao giờ bị bắt. Nay chạy R1/R2/R3/R7 trên văn bản đang có.
+# R4 (đủ ≥5 nhãn DRAFT) và R5 (≥10 ô [CẦN]) bị bỏ khỏi G2-AUTO-01: chúng phạt chính việc hoàn thiện hồ sơ (CHUNG-H).
+_R2_SO_TU_GAN_RE = re.compile(r"(?:Mã nghiên cứu|[Ss]ố IRB)[:\s]+(?!.*\[CẦN)([A-Z0-9][A-Z0-9\-/\.]{3,})")
+_R3_LOCKED_RE = re.compile(r"Trạng\s*thái\s*hiện\s*tại:\s*LOCKED", re.IGNORECASE)
+
+
+def kiem_liem_chinh_noi_dung(package_text: str, attestation: Optional[Mapping[str, Any]] = None) -> list[str]:
+    """Lỗi liêm chính trên nội dung HIỆN HÀNH (bỏ khối attestation). Số IRB/mã đăng ký trùng attestation được miễn."""
+    att = attestation if isinstance(attestation, Mapping) else {}
+    dang_ky = att.get("registration") if isinstance(att.get("registration"), Mapping) else {}
+    mien = [str(x).strip() for x in (att.get("approval_number"), dang_ky.get("registration_id"))
+            if str(x or "").strip()]
+    base = unicodedata.normalize("NFC", strip_attestation(package_text or ""))
+    loi: list[str] = []
+    pii = PII.quet_pii_van_ban(base, che_do=PII.HO_SO, mien=mien)
+    if pii:
+        loi.append(f"R1 nghi PII trong hồ sơ hiện hành: {PII.tom_tat(pii)}")
+    for m in _R2_SO_TU_GAN_RE.finditer(base):
+        so = m.group(1)
+        if not any(so in x or x in so for x in mien):
+            loi.append(f"R2 số phê duyệt/mã nghiên cứu «{so}» không khớp quyết định IRB đã ghi (attestation) — "
+                       "nếu là số thật đã cấp, ghi quyết định bằng approve_gate.py; nếu chưa có, để [CẦN]")
+            break
+    if "APPROVED_EXTERNALLY" in base:
+        loi.append("R3 hồ sơ ghi APPROVED_EXTERNALLY — phê duyệt chỉ được ghi qua approve_gate (attestation + sổ cái)")
+    elif _R3_LOCKED_RE.search(base):
+        loi.append("R3 hồ sơ tự ghi «Trạng thái hiện tại: LOCKED» — khoá G2 chỉ qua approve_gate")
+    thuong = base.lower()
+    if "cần bác sĩ" not in thuong or "kiểm chứng" not in thuong:
+        loi.append("R7 thiếu câu «Cần bác sĩ kiểm chứng»")
+    return loi
+
+
+# ── Dấu đầu vào mà Hội đồng Đạo đức đã duyệt (G2-08) ───────────────────────────────────────────────────────────────
+# Sửa đề cương hay cỡ mẫu SAU khi Hội đồng duyệt từng không làm mất hiệu lực G2 (phiên bản «hiện hành» là giá trị
+# khuôn «1.0» không ai cập nhật). approve_gate ghi dấu này vào attestation lúc ký; validate_attestation so lại — lệch ⇒
+# cần sửa đổi đề cương (amendment) được Hội đồng duyệt rồi ký lại. Chỉ gồm quyết định khoa học/vận hành mà Hội đồng
+# duyệt (không gồm risk register/kinh phí vốn cập nhật trong lúc làm).
+_KHOA_DAU_VAO_G1 = ("population", "inclusion_criteria", "exclusion_criteria", "intervention_or_exposure", "comparator",
+                    "objectives", "primary_outcome", "secondary_outcomes", "follow_up_schedule", "setting",
+                    "recruitment_strategy", "estimand", "randomisation", "allocation_concealment", "blinding")
+
+
+def dau_dau_vao_g2(out_dir: Path, meta: Optional[Mapping[str, Any]] = None) -> tuple[str, dict[str, Any]]:
+    """(dấu 16 hex, thành phần) của thiết kế + quyết định G1 + cỡ mẫu G3 mà hồ sơ G2 trình Hội đồng."""
+    out_dir = Path(out_dir)
+    if not isinstance(meta, Mapping):
+        meta = _read_json(out_dir / "study_meta.json")
+    g1_cp = _read_json(out_dir / "G1_checkpoint.json")
+    g3_cp = _read_json(out_dir / "G3_checkpoint.json")
+    thiet_ke = (S.ma_thiet_ke_chuoi(str((g1_cp.get("design") or {}).get("internal_code") or ""))
+                or S.ma_thiet_ke_chuoi(str(meta.get("design_code") or "")))
+    n = g3_cp.get("confirmed_n") if g3_cp.get("confirmed_n") not in (None, "") else g3_cp.get("n_adjusted")
+    g1_meta = _gate_meta(meta, "G1")
+    thanh_phan = {"design_code": thiet_ke, "g1": {k: g1_meta.get(k) for k in _KHOA_DAU_VAO_G1}, "g3_n": n}
+    return CS.dau_van_tay(thanh_phan), thanh_phan
 
 
 def _criterion(
@@ -280,42 +480,23 @@ def extract_attestation(package_text: str) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
-def build_registration_draft(
+def who_trds_values(
     *,
-    study: str,
     topic: str,
     design_code: str,
     design_primary: str,
-    risk: Mapping[str, Any],
     n_target: Optional[int],
-    out_dir: Path,
-    generated_at: str,
     meta: Optional[Mapping[str, Any]] = None,
-) -> Path:
-    """Sinh WHO TRDS 1.3.1 từ dữ kiện PI đã pin; thiếu thì giữ trống."""
-    design_type = {
-        "rct": "Interventional",
-        "cohort": "Observational",
-        "case_control": "Observational",
-        "cross_sectional": "Observational",
-        "diagnostic": "Observational",
-        "prediction": "Observational",
-        "qualitative": "Observational",
-        "sr_ma": "Not applicable - systematic review protocol",
-    }.get(design_code, "Other")
-    primary_purpose = {
-        "rct": "Treatment",
-        "diagnostic": "Diagnostic",
-        "prediction": "Prognosis",
-        "cohort": "Epidemiology",
-        "case_control": "Epidemiology",
-        "cross_sectional": "Epidemiology",
-        "qualitative": "Health services research",
-        "sr_ma": "Evidence synthesis",
-    }.get(design_code, "Other")
+) -> dict[int, Any]:
+    """Giá trị 24 mục WHO TRDS 1.3.1 từ dữ kiện PI đã pin; thiếu thì để trống/[CẦN] — KHÔNG suy diễn.
 
+    Dùng chung cho bản JSON (build_registration_draft — cổng chấm đọc) và bản đọc trong hồ sơ .md (run_g2_auto,
+    render_who_trds_khoa_hoc) để hai bản không bao giờ lệch nhau (G2-07)."""
+    design_type = WHO_DESIGN_TYPE.get(design_code, "Other")
     g0 = _gate_meta(meta, "G0")
     g1 = _gate_meta(meta, "G1")
+    g2 = _gate_meta(meta, "G2")
+    primary_purpose = _real_text(g2.get("primary_purpose")) or WHO_PRIMARY_PURPOSE.get(design_code, "Other")
     intervention = (
         _real_text(g1.get("intervention_or_exposure"))
         or _real_text(g0.get("intervention"))
@@ -343,18 +524,24 @@ def build_registration_draft(
             "intervention": intervention,
             "comparator": comparator,
         }
+        # VÁ 04/10/2026 (G2-07): masking lấy từ quyết định G1 (blinding/masking — cùng nguồn với dac_ta_thiet_ke);
+        # chưa khai thì để ô [CẦN], KHÔNG in cứng «Blinded».
+        masking = _real_text(g1.get("blinding")) or _real_text(g1.get("masking")) or MASKING_CAN_KHAI
+        allocation = "Randomized"
     else:
         intervention_value = {
             "assigned_intervention": "Not applicable - no prospectively assigned intervention",
             "exposure_or_index_test": intervention,
         }
+        masking = MASKING_KHONG_AP_DUNG
+        allocation = "Non-randomized"
     primary_outcome_value = {
         "name": primary_outcome,
         "measure": primary_measure,
         "timepoint": primary_timepoint,
     }
 
-    values = {
+    return {
         1: None,
         2: None,
         3: None,
@@ -363,21 +550,13 @@ def build_registration_draft(
         6: None,
         7: "[ĐIỀN LIÊN HỆ CÔNG KHAI TRỰC TIẾP TRÊN REGISTRY]",
         8: "[ĐIỀN LIÊN HỆ KHOA HỌC TRỰC TIẾP TRÊN REGISTRY]",
-        # SỬA 2026-07-30 (audit toàn diện G0-G10, G2-F1 — HIGH): mục 9 (Public
-        # Title) trước đây hardcode None dù `topic` (chuỗi THẬT của đề tài,
-        # đã được item 10 dùng ngay dưới) luôn có sẵn — không có lý do kỹ
-        # thuật nào để bỏ trống. Dùng lại NGUYÊN topic (không rút gọn thêm để
-        # tránh diễn giải sai) làm placeholder khởi điểm; bác sĩ vẫn có thể
-        # sửa cho "đại chúng" hơn trước khi đăng ký thật.
-        9: topic,
+        # VÁ 04/10/2026 (G2-07): mục 9 (Public title — ngôn ngữ đại chúng) và 12 (Health condition) từng CHÉP tên đề
+        # tài khoa học. Nay ưu tiên gate_params.G2.public_title/health_condition do PI khai; chưa khai thì vẫn dùng tên
+        # đề tài làm điểm khởi đầu NHƯNG G2-AUTO-08b giữ REVIEW (registration_pi_confirmation_gaps).
+        9: _real_text(g2.get("public_title")) or topic,
         10: topic,
         11: "Vietnam",
-        # Mục 12 (Health Condition) trước đây cũng hardcode None — topic của
-        # một đề tài y khoa THƯỜNG NGAY LÀ mô tả vấn đề sức khỏe đang nghiên
-        # cứu (vd "Hiệu quả điều trị X ở bệnh nhân Y"); dùng làm giá trị khởi
-        # điểm AN TOÀN (không bịa nội dung mới — cùng một chuỗi đã tin cậy ở
-        # mục 9/10), bác sĩ xác nhận/chỉnh sửa trước khi đăng ký.
-        12: topic,
+        12: _real_text(g2.get("health_condition")) or topic,
         13: intervention_value,
         14: {
             "inclusion": inclusion or None,
@@ -386,6 +565,8 @@ def build_registration_draft(
         15: {
             "design": design_type,
             "primary_purpose": primary_purpose,
+            "allocation": allocation,
+            "masking": masking,
             "description": design_primary,
         },
         16: None,
@@ -405,6 +586,84 @@ def build_registration_draft(
             "what_when_how_with_whom": None,
         },
     }
+
+
+def render_who_trds_khoa_hoc(values: Mapping[int, Any]) -> dict[int, str]:
+    """Dòng chữ cho các mục 9/12/13/14/15/19/20 của khối WHO TRDS trong hồ sơ .md — dựng từ who_trds_values()."""
+    def _o(v: Any, trong: str) -> str:
+        t = _real_text(v)
+        return t if t else trong
+
+    v13 = values.get(13) if isinstance(values.get(13), Mapping) else {}
+    if "intervention" in v13:
+        d13 = (f"{_o(v13.get('intervention'), '[CẦN — từ PICO I]')}\n"
+               f"            Comparator: {_o(v13.get('comparator'), '[CẦN — từ PICO C]')}")
+    else:
+        d13 = (f"{v13.get('assigned_intervention') or 'Not applicable'}\n"
+               f"            Exposure/index test: {_o(v13.get('exposure_or_index_test'), '[CẦN — từ PICO I/E]')}")
+    v14 = values.get(14) if isinstance(values.get(14), Mapping) else {}
+    nhan = "; ".join(_real_text_list(v14.get("inclusion"))) or "[CẦN BỔ SUNG — từ protocol/PICO P]"
+    loai = "; ".join(_real_text_list(v14.get("exclusion"))) or "[CẦN BỔ SUNG — từ protocol]"
+    v15 = values.get(15) if isinstance(values.get(15), Mapping) else {}
+    v19 = values.get(19) if isinstance(values.get(19), Mapping) else {}
+    d19 = " — ".join(x for x in (_real_text(v19.get("name")), _real_text(v19.get("measure")),
+                                 _real_text(v19.get("timepoint"))) if x)
+    if not (_real_text(v19.get("name")) and _real_text(v19.get("measure")) and _real_text(v19.get("timepoint"))):
+        d19 = (d19 + " " if d19 else "") + "[CẦN — tên kết cục + thước đo + thời điểm từ G0/G1]"
+    v10 = _real_text(values.get(10))
+    v9, v12 = _real_text(values.get(9)), _real_text(values.get(12))
+    return {
+        9: (v9 if v9 and v9 != v10 else
+            (f"{v9 or ''} [CẦN PI KHAI — tiêu đề công khai bằng ngôn ngữ đại chúng: "
+             "gate_params.G2.public_title]").strip()),
+        12: (v12 if v12 and v12 != v10 else
+             "[CẦN PI KHAI — tình trạng sức khỏe nghiên cứu: gate_params.G2.health_condition]"),
+        13: d13,
+        14: f"Inclusion: {nhan}\n            Exclusion: {loai}",
+        15: (f"{v15.get('design') or 'Other'} · {v15.get('primary_purpose') or 'Other'} · "
+             f"{v15.get('allocation') or 'Non-randomized'} · {v15.get('masking') or MASKING_CAN_KHAI}"),
+        19: d19,
+        20: "; ".join(_real_text_list(values.get(20))) or "[CẦN — tên kết cục + thước đo + thời điểm từ SAP]",
+    }
+
+
+def registration_pi_confirmation_gaps(document: Mapping[str, Any], design_code: str) -> list[str]:
+    """Mục WHO TRDS máy TỰ ĐIỀN mà PI chưa khai (G2-07): 9 Public title và 12 Health condition còn chép tên đề tài
+    khoa học (mục 10); RCT chưa khai masking ở mục 15."""
+    items = document.get("items")
+    by_number = {
+        item.get("number"): item.get("value")
+        for item in (items if isinstance(items, list) else [])
+        if isinstance(item, Mapping)
+    }
+    tieu_de_kh = _real_text(by_number.get(10))
+    gaps: list[str] = []
+    for so, nhan, khoa in ((9, "Public Title", "public_title"), (12, "Health Condition(s)", "health_condition")):
+        gia_tri = _real_text(by_number.get(so))
+        if not gia_tri or (tieu_de_kh and gia_tri.casefold() == tieu_de_kh.casefold()):
+            gaps.append(f"#{so} {nhan} (đang chép tên đề tài — PI khai gate_params.G2.{khoa})")
+    if design_code == "rct":
+        v15 = by_number.get(15) if isinstance(by_number.get(15), Mapping) else {}
+        if not _real_text(v15.get("masking")):
+            gaps.append("#15 Study Type — masking chưa khai (gate_params.G1.blinding)")
+    return gaps
+
+
+def build_registration_draft(
+    *,
+    study: str,
+    topic: str,
+    design_code: str,
+    design_primary: str,
+    risk: Mapping[str, Any],
+    n_target: Optional[int],
+    out_dir: Path,
+    generated_at: str,
+    meta: Optional[Mapping[str, Any]] = None,
+) -> Path:
+    """Sinh WHO TRDS 1.3.1 từ dữ kiện PI đã pin; thiếu thì giữ trống."""
+    values = who_trds_values(topic=topic, design_code=design_code, design_primary=design_primary,
+                             n_target=n_target, meta=meta)
     document = {
         "schema_version": "who-trds-draft-v1",
         "who_trds_version": WHO_TRDS_VERSION,
@@ -625,11 +884,15 @@ _SAU_PHE_DUYET = (
         None,
         re.compile(
             r"sau quyết định IRB|sẽ có sau khi đăng ký|ngày đăng ký thành công|chỉ tuyển sau phê duyệt"
-            r"|ngày hoàn tất dự kiến|cập nhật sau nghiên cứu|sẽ có số IRB|^\[\s*sẽ bổ sung sau\s*\]$",
+            r"|ngày hoàn tất dự kiến|sẽ có số IRB|^\[\s*sẽ bổ sung sau\s*\]$",
             re.IGNORECASE,
         ),
     ),
 )
+# VÁ 04/10/2026 (soát từng cổng, G2-13): ô CHỈ ĐIỀN ĐƯỢC SAU KHI KẾT THÚC NGHIÊN CỨU (WHO TRDS mục 23 — kết quả tóm
+# tắt, ngày công bố, URL protocol) từng nằm trong nhóm «sau phê duyệt» ⇒ approve_gate từ chối KÝ G2 cho tới khi có kết
+# quả nghiên cứu — dữ kiện không thể có ở G2. Nhóm riêng: không chặn nộp, không chặn ký; chỉ hiện trong báo cáo.
+_SAU_NGHIEN_CUU_RE = re.compile(r"cập nhật sau nghiên cứu|chỉ điền sau khi kết thúc nghiên cứu", re.IGNORECASE)
 # Dòng chân bản nháp WHO TRDS «DRAFT — Điền trường còn [CẦN] trước khi gửi đăng ký.» là CHỈ DẪN (chuỗi «[CẦN]» theo
 # nghĩa đen), xếp cùng nhóm sau phê duyệt: không chặn nộp IRB, vẫn phải sửa trước khi khoá G2.
 _CHAN_TRANG_DANG_KY_RE = re.compile(r"Điền trường còn \[CẦN\] trước khi gửi đăng ký", re.IGNORECASE)
@@ -737,9 +1000,10 @@ def _o_trong_cua_dong(tho: str, dong: str, *, quet_ho_moi: bool) -> list[tuple[s
     return con
 
 
-def _dong_con_o_trong(package_text: str) -> list[tuple[str, bool]]:
+def _dong_con_o_trong(package_text: str) -> list[tuple[str, str]]:
     """Mọi DÒNG còn ô trống không được miễn (sau strip_attestation), theo thứ tự, không lặp:
-    [(dòng rút gọn ≤ 240 ký tự, mọi_ô_còn_lại_đều_chỉ_điền_được_sau_phê_duyệt), …]."""
+    [(dòng rút gọn ≤ 240 ký tự, mốc), …] — mốc ∈ {"truoc_nop", "sau_phe_duyet", "sau_nghien_cuu"} (mốc của ô
+    MUỘN NHẤT còn lại mà mọi ô trên dòng đều thuộc; một ô trước-nộp kéo cả dòng về "truoc_nop")."""
     base = strip_attestation(package_text)
     ra: list[tuple[str, bool]] = []
     da_co: set[str] = set()
@@ -755,7 +1019,13 @@ def _dong_con_o_trong(package_text: str) -> list[tuple[str, bool]]:
         if not compact or compact in da_co:
             continue
         da_co.add(compact)
-        ra.append((compact, all(_la_o_sau_phe_duyet(dong, nhan, o) for nhan, o in con)))
+        if all(_SAU_NGHIEN_CUU_RE.search(o) for _nhan, o in con):
+            moc = "sau_nghien_cuu"
+        elif all(_la_o_sau_phe_duyet(dong, nhan, o) or _SAU_NGHIEN_CUU_RE.search(o) for nhan, o in con):
+            moc = "sau_phe_duyet"
+        else:
+            moc = "truoc_nop"
+        ra.append((compact, moc))
     return ra
 
 
@@ -765,12 +1035,14 @@ def classify_placeholders(package_text: str) -> dict[str, list[str]]:
     - ``pre_submission``: phải điền TRƯỚC khi nộp IRB — lái G2-AUTO-05 ở mốc READY_FOR_IRB_SUBMISSION;
     - ``post_approval``: dòng mà mọi ô còn lại đều chỉ điền được SAU nộp/phê duyệt/đăng ký (số IRB, ngày phê duyệt,
       mã/ngày đăng ký, ngày tuyển đầu tiên, ngày hoàn tất, kết quả tóm tắt, số IRB trên ICF) — thông tin ở mốc READY,
-      BẮT BUỘC ở mốc PASS_G2_APPROVED (G2-AUTO-05 khi đã có attestation; approve_gate từ chối ký khi còn).
+      BẮT BUỘC ở mốc PASS_G2_APPROVED (G2-AUTO-05 khi đã có attestation; approve_gate từ chối ký khi còn);
+    - ``post_study``: chỉ điền được sau khi KẾT THÚC nghiên cứu (WHO TRDS mục 23) — không chặn nộp, không chặn ký.
     Bỏ ô chỉ chứa PII và chỗ ký/ngày điền tay."""
     dong = _dong_con_o_trong(package_text)
     return {
-        "pre_submission": [noi_dung for noi_dung, sau in dong if not sau],
-        "post_approval": [noi_dung for noi_dung, sau in dong if sau],
+        "pre_submission": [noi_dung for noi_dung, moc in dong if moc == "truoc_nop"],
+        "post_approval": [noi_dung for noi_dung, moc in dong if moc == "sau_phe_duyet"],
+        "post_study": [noi_dung for noi_dung, moc in dong if moc == "sau_nghien_cuu"],
     }
 
 
@@ -778,9 +1050,10 @@ def unresolved_critical_placeholders(package_text: str) -> list[str]:
     """Liệt kê MỌI dòng còn placeholder khoa học/vận hành (nhãn [CẦN…], ô mẫu chung của khuôn sinh, ô trống «___»
     gắn giá trị, thẻ biên tập [BÁC SĨ …]) — gồm cả ô chỉ điền được sau phê duyệt — bỏ qua ô chỉ chứa PII và chỗ ký/ngày.
 
-    approve_gate.py dùng danh sách ĐẦY ĐỦ này để từ chối ghi attestation/ledger ⇒ ô sau phê duyệt vẫn bắt buộc ở
-    PASS_G2_APPROVED. Mốc READY_FOR_IRB_SUBMISSION chỉ xét phần ``pre_submission`` của classify_placeholders()."""
-    return [noi_dung for noi_dung, _sau in _dong_con_o_trong(package_text)]
+    approve_gate.py dùng danh sách này để từ chối ghi attestation/ledger ⇒ ô sau phê duyệt vẫn bắt buộc ở
+    PASS_G2_APPROVED. Mốc READY_FOR_IRB_SUBMISSION chỉ xét phần ``pre_submission`` của classify_placeholders().
+    KHÔNG gồm ô chỉ điền được sau khi kết thúc nghiên cứu (G2-13)."""
+    return [noi_dung for noi_dung, moc in _dong_con_o_trong(package_text) if moc != "sau_nghien_cuu"]
 
 
 def placeholder_total(text: str) -> int:
@@ -801,8 +1074,12 @@ def validate_attestation(
     design_code: str,
     meta: Mapping[str, Any],
     today: Optional[date] = None,
+    out_dir: Optional[Path] = None,
 ) -> list[str]:
-    """Kiểm metadata phê duyệt; không thay kiểm chữ ký trong approval ledger."""
+    """Kiểm metadata phê duyệt; không thay kiểm chữ ký trong approval ledger.
+
+    out_dir (thư mục đề tài) bật phép so DẤU ĐẦU VÀO (G2-08): thiết kế + quyết định G1 + cỡ mẫu G3 lúc ký phải trùng
+    hiện tại. Mọi nơi gọi trong chuỗi (G2-HUMAN-01, gate_contract._g2_signed_attestation_state) đều truyền out_dir."""
     errors: list[str] = []
     today = today or date.today()
     if attestation.get("schema_version") != ATTESTATION_SCHEMA:
@@ -899,6 +1176,15 @@ def validate_attestation(
     base_hash = _sha256_text(strip_attestation(package_text))
     if attestation.get("package_sha256_before_attestation") != base_hash:
         errors.append("Hash hồ sơ nền không khớp attestation")
+    if out_dir is not None:
+        dau_ky = str(attestation.get("dau_dau_vao") or "").strip().lower()
+        dau_nay, _ = dau_dau_vao_g2(out_dir, meta)
+        if not dau_ky:
+            errors.append("Attestation kiểu cũ chưa gắn dấu đầu vào (thiết kế/đề cương/cỡ mẫu Hội đồng đã duyệt) — "
+                          f"ký lại G2 bằng approve_gate.py (dấu hiện tại {dau_nay})")
+        elif dau_ky != dau_nay:
+            errors.append(f"Đề cương/cỡ mẫu đã đổi SAU khi Hội đồng duyệt (dấu lúc ký {dau_ky} ≠ hiện tại {dau_nay}) — "
+                          "cần sửa đổi đề cương (amendment) được Hội đồng duyệt rồi ký lại G2")
     return errors
 
 
@@ -914,8 +1200,14 @@ def evaluate_g2_quality(
     ledger_approved: bool,
     design_ambiguous: bool = False,
     today: Optional[date] = None,
+    g1_song: Optional[Mapping[str, Any]] = None,
+    g1_design_code: Optional[str] = None,
 ) -> dict[str, Any]:
-    """Đánh giá G2 theo lớp tự động và lớp quyết định người thật."""
+    """Đánh giá G2 theo lớp tự động và lớp quyết định người thật.
+
+    g1_song: kết quả cong_song.trang_thai_song("G1") — G1 CHẤM SỐNG (evaluate_study truyền vào); vắng thì dùng trạng
+    thái G1 lưu trong checkpoint (đường tương thích cho nơi gọi cũ). g1_design_code: thiết kế G1 hiện hành để đối chiếu
+    với thiết kế mà hồ sơ G2 được sinh (G2-AUTO-06b)."""
     package_path = Path(package_path)
     registration_path = Path(registration_path)
     package_text = (
@@ -926,13 +1218,18 @@ def evaluate_g2_quality(
     registration = _read_json(registration_path)
     automatic: list[dict[str, str]] = []
     approval: list[dict[str, str]] = []
+    attestation = extract_attestation(package_text)
 
+    # VÁ 04/10/2026 (soát từng cổng, G2-02): chấm liêm chính trên NỘI DUNG HIỆN HÀNH — guardrail lưu trong checkpoint
+    # là kết quả của BẢN KHUÔN lúc sinh, có thể cũ hai tháng. guardrail_passed (bản lưu) chỉ còn là thông tin.
+    loi_liem_chinh = kiem_liem_chinh_noi_dung(package_text, attestation) if package_text else ["chưa có hồ sơ G2"]
     automatic.append(_criterion(
         "G2-AUTO-01",
-        "Guardrail liêm chính G2 sạch",
-        "PASS" if guardrail_passed else "BLOCK",
-        f"guardrail_passed={guardrail_passed}",
-        "Sửa PII, nguồn, disclaimer hoặc tuyên bố vượt cổng trước khi nộp.",
+        "Liêm chính nội dung hồ sơ HIỆN HÀNH (PII, số phê duyệt tự gán, tự xưng phê duyệt/khoá, disclaimer)",
+        "BLOCK" if loi_liem_chinh else "PASS",
+        ("; ".join(loi_liem_chinh) if loi_liem_chinh else "R1/R2/R3/R7 sạch trên nội dung hiện hành")
+        + f" (guardrail lúc sinh: passed={guardrail_passed})",
+        "Sửa PII, số phê duyệt tự gán, tuyên bố vượt cổng hoặc disclaimer trong hồ sơ trước khi nộp.",
     ))
 
     g1_status = (
@@ -940,11 +1237,32 @@ def evaluate_g2_quality(
         if isinstance(g1_checkpoint.get("quality_gate"), Mapping)
         else None
     )
+    # VÁ 04/10/2026 (soát từng cổng, G1-10 phía tiêu thụ): G1 được CHẤM SỐNG — bản lưu PASS mà chấm lại chưa đạt (sửa
+    # đề cương sau khi xác nhận) không còn mở cửa G2; G1 sống BLOCKED ⇒ hồ sơ G2 dựng trên thiết kế đang bị chặn.
+    if isinstance(g1_song, Mapping) and g1_song.get("nguon") in (CS.NGUON_SONG, CS.NGUON_LOI):
+        muc_g1 = g1_song.get("muc")
+        luu_g1 = g1_song.get("trang_thai_luu")
+        luu_khac = f"; bản LƯU={luu_g1}" if luu_g1 and luu_g1 != g1_song.get("status") else ""
+        if muc_g1 == "PASS":
+            g1_trang, g1_bang = "PASS", f"G1 chấm sống={g1_song.get('status')}"
+        elif muc_g1 == "BLOCKED":
+            g1_trang = "BLOCK"
+            g1_bang = f"G1 chấm sống=BLOCKED{luu_khac} — hồ sơ G2 đang dựng trên thiết kế/đề cương bị chặn"
+        elif muc_g1 == CS.KHONG_DO_DUOC:
+            g1_trang = "REVIEW"
+            g1_bang = f"G1 KHÔNG ĐO ĐƯỢC ({g1_song.get('ly_do')}) — không phải «đạt»{luu_khac}"
+        else:
+            g1_trang, g1_bang = "REVIEW", f"G1 chấm sống={g1_song.get('status')}{luu_khac}"
+        g1_da_chot = muc_g1 == "PASS"
+    else:
+        g1_trang = "PASS" if g1_status == "PASS_G1_CONFIRMED" else "REVIEW"
+        g1_bang = f"G1 quality status={g1_status or 'thiếu'} (bản lưu — nơi gọi chưa chấm sống)"
+        g1_da_chot = g1_status == "PASS_G1_CONFIRMED"
     automatic.append(_criterion(
         "G2-AUTO-02",
-        "G1 đã được PI/methodologist xác nhận",
-        "PASS" if g1_status == "PASS_G1_CONFIRMED" else "REVIEW",
-        f"G1 quality status={g1_status or 'thiếu'}",
+        "G1 đã được PI/methodologist xác nhận (chấm sống)",
+        g1_trang,
+        g1_bang,
         "Hoàn tất xác nhận phương pháp G1; có thể soạn G2 song song nhưng chưa khóa.",
     ))
 
@@ -953,11 +1271,14 @@ def evaluate_g2_quality(
     automatic.append(_criterion(
         "G2-AUTO-02b",
         f"{A2X.VERSION}: IRB/consent/privacy/data governance đủ cho phương pháp mới",
-        "BLOCK" if annex2["status"] == "BLOCK" else "PASS",
+        # VÁ 04/10/2026 (G1-11 / QĐ-15): RCT chưa khai annex2.applicable ⇒ REVIEW (không suy «không áp dụng»).
+        {"BLOCK": "BLOCK", "NEEDS_DECLARATION": "REVIEW"}.get(annex2["status"], "PASS"),
         (
             "; ".join(annex2_issues)
             if annex2_issues
-            else f"status={annex2['status']}; methods={','.join(annex2['methods']) or 'không áp dụng'}"
+            else ("RCT chưa khai gate_params.G1.annex2.applicable (true/false)"
+                  if annex2["status"] == "NEEDS_DECLARATION"
+                  else f"status={annex2['status']}; methods={','.join(annex2['methods']) or 'không áp dụng'}")
         ),
         "Hoàn thiện khối annex2 trong study_meta trước khi nộp/khóa G2.",
     ))
@@ -975,16 +1296,27 @@ def evaluate_g2_quality(
         marker for marker in _PACKAGE_MARKERS
         if marker.casefold() not in package_text.casefold()
     ]
+    # VÁ 04/10/2026 (G2-04/G2-10): ICF tiếng Việt phải có đủ nhãn mục bắt buộc THEO THIẾT KẾ, khớp ở đầu dòng.
+    icf_thieu, icf_lech = kiem_icf(package_text, design_code)
     automatic.append(_criterion(
         "G2-AUTO-03",
-        "Bộ hồ sơ IRB/ICF/DMP có đủ cấu trúc bắt buộc",
-        "BLOCK" if missing_markers or not package_text else "PASS",
-        (
-            f"thiếu: {', '.join(missing_markers)}"
-            if missing_markers
-            else "đủ marker tài liệu 1-8, ICF, DMP, rủi ro/bồi thường/COI"
-        ),
-        "Sinh lại hoặc bổ sung phần hồ sơ bị thiếu.",
+        "Bộ hồ sơ IRB/ICF/DMP có đủ cấu trúc bắt buộc (ICF đủ mục theo thiết kế)",
+        "BLOCK" if missing_markers or icf_thieu or not package_text else "PASS",
+        "; ".join(
+            ([f"thiếu: {', '.join(missing_markers)}"] if missing_markers else [])
+            + ([f"ICF tiếng Việt thiếu mục {', '.join(icf_thieu)}"] if icf_thieu else [])
+        ) or "đủ marker tài liệu 1-8, ICF, DMP, rủi ro/bồi thường/COI; ICF đủ mục theo thiết kế",
+        "Sinh lại hoặc bổ sung phần hồ sơ bị thiếu (RCT: 2b phân nhóm ngẫu nhiên, 5b truy cập hồ sơ gốc, 6b, 6d, "
+        "6f thông tin mới, 6g theo dõi khi ngừng/rút, 6h chấm dứt tham gia).",
+    ))
+    # VÁ 04/10/2026 (G2-11): ICF tiếng Anh từng là khung 7 mục rút gọn — thiếu 1b/4b/4c/6b–6e so với bản tiếng Việt.
+    automatic.append(_criterion(
+        "G2-AUTO-03b",
+        "ICF tiếng Anh tương ứng ICF tiếng Việt (cùng tập mục)",
+        "REVIEW" if icf_lech else "PASS",
+        (f"lệch mục giữa hai bản: {', '.join(icf_lech)}" if icf_lech
+         else "hai bản ICF có cùng tập mục (hoặc chưa có bản tiếng Anh/tiếng Việt để đối chiếu)"),
+        "Bổ sung/xoá mục ở ICF tiếng Anh (Tài liệu 5) cho khớp ICF tiếng Việt (Tài liệu 4), hoặc sinh lại G2.",
     ))
 
     registration_errors = _registration_draft_errors(registration)
@@ -1001,10 +1333,10 @@ def evaluate_g2_quality(
     # READY_FOR_IRB_SUBMISSION không bao giờ đạt (đo trên C1a). Trước khi có attestation: chỉ ô TRƯỚC NỘP lái
     # G2-AUTO-05,
     # ô sau phê duyệt là danh sách thông tin. Khi đã có attestation (mốc PASS_G2_APPROVED): MỌI ô đều bắt buộc — như cũ.
-    attestation = extract_attestation(package_text)
     phan_loai = classify_placeholders(package_text)
     truoc_nop = phan_loai["pre_submission"]
     sau_phe_duyet = phan_loai["post_approval"]
+    sau_nghien_cuu = phan_loai["post_study"]
     unresolved = unresolved_critical_placeholders(package_text)
     lai_trang_thai = unresolved if attestation else truoc_nop
     automatic.append(_criterion(
@@ -1025,46 +1357,42 @@ def evaluate_g2_quality(
         "G2-AUTO-06",
         "Thiết kế và lộ trình đạo đức không còn mơ hồ",
         "REVIEW" if design_ambiguous else "PASS",
-        f"design_code={design_code}; ambiguous={design_ambiguous}",
+        f"design_code={design_code or 'không xác định'}; ambiguous={design_ambiguous}",
         "PI/methodologist xác nhận thiết kế rồi tính lại lộ trình IRB.",
     ))
 
-    # LƯU Ý PHẠM VI (audit toàn diện G0-G10, 2026-07-30, G2-F1): RISK_PROFILES
-    # ['rct']['risks'][0] ở run_g2_auto.py luôn chứa cả 3 cụm dưới VÔ ĐIỀU
-    # KIỆN mỗi khi design_code=="rct" — nên trên đường đi BÌNH THƯỜNG (package
-    # sinh khớp đúng design_code hiện tại), tiêu chí này không thể tự phát
-    # hiện nội dung an toàn "yếu" hay "chưa đủ" cho đề tài cụ thể. Nó CHỈ có
-    # ý nghĩa thật khi design_code đã ĐỔI (vd cohort→rct) sau khi package đã
-    # sinh mà chưa chạy lại — phát hiện package LỖI THỜI so với thiết kế hiện
-    # tại, không phải phát hiện "kế hoạch an toàn có đủ chi tiết hay không".
-    if design_code == "rct":
-        safety_requirements = {
-            "AE/SAE": ("AE/SAE",),
-            "DSMB/DMC": ("DSMB", "DMC"),
-            "quy tắc dừng": ("quy tắc dừng", "dừng nghiên cứu", "stopping rule"),
-        }
-        missing_safety = [
-            label
-            for label, alternatives in safety_requirements.items()
-            if not any(
-                token.casefold() in package_text.casefold()
-                for token in alternatives
-            )
-        ]
-        safety_status = "BLOCK" if missing_safety else "PASS"
-        safety_evidence = (
-            f"thiếu: {', '.join(missing_safety)}"
-            if missing_safety else "có AE/SAE, DSMB/DMC và quy tắc dừng"
-        )
+    # VÁ 04/10/2026 (soát từng cổng, G2-05): G1 đổi thiết kế SAU khi sinh hồ sơ G2 từng không bị phát hiện — G2 vẫn chấm
+    # (và ký) hồ sơ của thiết kế cũ. Lệch với G1 ĐÃ xác nhận ⇒ BLOCK; G1 chưa xác nhận ⇒ REVIEW.
+    ma_g2 = S.ma_thiet_ke_chuoi(design_code) if design_code else None
+    ma_g1 = S.ma_thiet_ke_chuoi(g1_design_code) if g1_design_code else None
+    if not ma_g2:
+        tk_trang, tk_bang = "BLOCK", (f"không xác định được thiết kế của hồ sơ G2 (design_code={design_code!r}) — "
+                                       "không mặc định «cohort»")
+    elif ma_g1 and ma_g1 != ma_g2:
+        tk_trang = "BLOCK" if g1_da_chot else "REVIEW"
+        tk_bang = (f"hồ sơ G2 sinh cho «{ma_g2}» nhưng G1 hiện là «{ma_g1}»"
+                   + (" (G1 đã xác nhận)" if g1_da_chot else " (G1 chưa xác nhận)"))
     else:
-        safety_status = "PASS"
-        safety_evidence = "không phải RCT; kế hoạch an toàn điều chỉnh theo nguy cơ"
+        tk_trang, tk_bang = "PASS", f"hồ sơ G2 và G1 cùng thiết kế «{ma_g2}»" if ma_g1 else f"thiết kế «{ma_g2}»"
+    automatic.append(_criterion(
+        "G2-AUTO-06b",
+        "Hồ sơ G2 sinh đúng thiết kế G1 hiện hành",
+        tk_trang,
+        tk_bang,
+        "Chạy lại run_g2_auto.py với thiết kế G1 đã xác nhận (hồ sơ cũ được sao lưu).",
+    ))
+
+    # VÁ 04/10/2026 (soát từng cổng, G2-03 / QĐ-4 — mặc định an toàn chờ bác sĩ duyệt): bản cũ dò ba cụm «AE/SAE»,
+    # «DSMB», «quy tắc dừng» trên cả hồ sơ mà khuôn sinh luôn in sẵn cho RCT ⇒ luôn đúng. Nay đòi tệp kế hoạch an toàn
+    # riêng đủ 5 mục có nội dung + PI xác nhận (kiem_ke_hoach_an_toan).
+    safety_status, safety_evidence = kiem_ke_hoach_an_toan(package_path.parent, study, design_code, meta)
     automatic.append(_criterion(
         "G2-AUTO-07",
         "Kế hoạch an toàn tương xứng thiết kế",
         safety_status,
         safety_evidence,
-        "Bổ sung giám sát AE/SAE, DSMB/DMC và stopping rules cho thử nghiệm.",
+        f"Điền {ten_ke_hoach_an_toan(study)} (5 mục: định nghĩa AE/SAE/SUSAR, mốc báo cáo, quy tắc dừng, DSMB/DMC hoặc "
+        "lý do không lập, biểu mẫu AE) rồi PI ghi gate_params.G2.safety_plan_confirmed=true.",
     ))
 
     # WHO TRDS 13/14/19/20 chỉ được điền từ StudyMeta do PI xác nhận. Thiếu
@@ -1085,6 +1413,31 @@ def evaluate_g2_quality(
         "Điền Intervention(s)/Inclusion-Exclusion/Primary-Secondary Outcome "
         "từ PICO thật của đề tài (checkpoint G1) trước khi đăng ký thật.",
     ))
+    # VÁ 04/10/2026 (G2-07): mục máy TỰ ĐIỀN (9 Public title, 12 Health condition chép tên đề tài; masking của RCT).
+    chua_khai = registration_pi_confirmation_gaps(registration, design_code)
+    automatic.append(_criterion(
+        "G2-AUTO-08b",
+        "Mục WHO TRDS tự điền đã được PI khai (9 tiêu đề công khai, 12 tình trạng sức khỏe, 15 masking của RCT)",
+        "REVIEW" if chua_khai else "PASS",
+        ("chưa khai: " + "; ".join(chua_khai)) if chua_khai else "mục 9/12 (và masking RCT) đã do PI khai",
+        "Khai gate_params.G2.public_title (ngôn ngữ đại chúng), gate_params.G2.health_condition và — với RCT — "
+        "gate_params.G1.blinding, rồi chạy lại run_g2_auto.py để làm mới bản đăng ký.",
+    ))
+    # VÁ 04/10/2026 (G2-08 / QĐ-6 — mặc định an toàn chờ bác sĩ duyệt): phiên bản đề cương/ICF «hiện hành» là KHAI BÁO
+    # của PI (khuôn không còn gieo «1.0»). «1.0» trên đề tài cũ có thể là giá trị khuôn gieo trước 04/10/2026.
+    g2m = _g2_meta(meta)
+    thieu_pb = [k for k in ("protocol_version", "icf_version")
+                if not _real_text(g2m.get(k)) and not (k == "icf_version" and g2m.get("icf_waiver_requested") is True)]
+    automatic.append(_criterion(
+        "G2-AUTO-10",
+        "Phiên bản đề cương/ICF hiện hành do PI khai",
+        "REVIEW" if thieu_pb else "PASS",
+        (f"chưa khai: {', '.join(thieu_pb)}" if thieu_pb else
+         f"protocol_version={g2m.get('protocol_version')}; icf_version={g2m.get('icf_version') or 'miễn ICF'}"
+         + ("; «1.0» có thể là giá trị khuôn gieo trước 04/10/2026 — PI xác nhận"
+            if "1.0" in (str(g2m.get("protocol_version")), str(g2m.get("icf_version"))) else "")),
+        "PI khai gate_params.G2.protocol_version và icf_version (đúng phiên bản trình Hội đồng).",
+    ))
 
     attestation_errors = validate_attestation(
         attestation=attestation,
@@ -1093,6 +1446,7 @@ def evaluate_g2_quality(
         design_code=design_code,
         meta=meta,
         today=today,
+        out_dir=package_path.parent,
     ) if attestation else ["Chưa có phụ lục quyết định IRB có cấu trúc"]
     approval.append(_criterion(
         "G2-HUMAN-01",
@@ -1109,17 +1463,11 @@ def evaluate_g2_quality(
         "Người có thẩm quyền IRB tự ký; agent không được chạy lệnh phê duyệt.",
     ))
 
-    # SỬA 2026-07-30 (audit toàn diện G0-G10, G2-F5 — REVIEW-only, KHÔNG
-    # BLOCK): tools/approve_gate.py::--reviewer-ref dùng CHUNG cho MỌI gate/
-    # vai trò (định danh người duyệt), không phải mã Hội đồng Đạo đức riêng —
-    # trước đây ethics_committee_ref LUÔN = reviewer_ref nên validate_
-    # attestation() (kiểm "không rỗng") vacuously PASS với bất kỳ giá trị
-    # reviewer_ref nào. Cờ mới --g2-ethics-committee-ref (tùy chọn) tách biệt
-    # ngữ nghĩa; khi thiếu, approve_gate.py fallback về reviewer_ref và ghi
-    # "ethics_committee_ref_source": "reviewer_ref_fallback" vào attestation —
-    # tiêu chí này chỉ NHẮC (REVIEW), loại khỏi auto_blocked/auto_review
-    # (cùng G2-AUTO-08 ngay dưới) để không phá vỡ luồng ký hiện có cho các
-    # đề tài đã ký TRƯỚC khi có cờ mới này.
+    # G2-F5 (30/07/2026): --reviewer-ref dùng CHUNG cho mọi cổng/vai trò, không phải mã Hội đồng Đạo đức — trước đây
+    # ethics_committee_ref luôn = reviewer_ref nên validate_attestation (chỉ kiểm «không rỗng») luôn đạt. Cờ
+    # --g2-ethics-committee-ref tách ngữ nghĩa; thiếu cờ thì approve_gate ghi nguồn «reviewer_ref_fallback».
+    # (Sửa chú thích 04/10/2026, G2-12: tiêu chí này THAM GIA quyết định trạng thái như mọi tiêu chí tự động — chú
+    # thích cũ nói «loại khỏi auto_blocked/auto_review» là sai từ khi danh sách loại trừ bị làm rỗng.)
     ethics_ref_source = attestation.get("ethics_committee_ref_source") if attestation else None
     # KHÔNG so == "reviewer_ref_fallback": attestation KÝ TRƯỚC khi cờ
     # --g2-ethics-committee-ref tồn tại không có field này (None), và None
@@ -1135,18 +1483,10 @@ def evaluate_g2_quality(
         "để tách mã hội đồng khỏi --reviewer-ref dùng chung.",
     ))
 
-    # G2-AUTO-08 CỐ Ý loại khỏi auto_blocked/auto_review (cùng khuôn
-    # G9-HUMAN-09/10 ở g9_quality_gate.py): build_registration_draft() trong
-    # ĐƯỜNG SẢN XUẤT THẬT (tools/run_g2_auto.py) không có cách nhận PICO thật
-    # để điền mục 13/14/19/20 — nếu tiêu chí này tham gia auto_review như mọi
-    # tiêu chí khác, MỌI đề tài thật sẽ kẹt vĩnh viễn ở STATUS_DRAFT (không
-    # bao giờ tới APPROVED/LOCKED), trái với ý định gốc "REVIEW-only, KHÔNG
-    # BLOCK cổng" của phát hiện G2-F4 (xác nhận bằng thực nghiệm: test tích
-    # hợp CLI thật test_human_cli_valid_g2_flow_updates_checkpoint_to_pass đỏ
-    # trước khi thêm loại trừ này). Tiêu chí vẫn xuất hiện trong report để bác
-    # sĩ thấy và điền — chỉ không gate tiến trình cổng.
-    _NON_BLOCKING_CRITERIA: tuple[str, ...] = ()
-    _status_driving = [row for row in automatic if row["id"] not in _NON_BLOCKING_CRITERIA]
+    # Mọi tiêu chí tự động đều lái trạng thái (G2-12, 04/10/2026: bỏ danh sách loại trừ rỗng và chú thích cũ nói
+    # G2-AUTO-08 «cố ý loại khỏi auto_review» — sai từ khi danh sách đó rỗng; nay mục 13/14/19/20 điền được từ
+    # study_meta nên không còn lý do loại).
+    _status_driving = list(automatic)
     auto_blocked = any(row["status"] == "BLOCK" for row in _status_driving)
     auto_review = any(row["status"] == "REVIEW" for row in _status_driving)
     approval_complete = all(row["status"] == "PASS" for row in approval)
@@ -1178,6 +1518,7 @@ def evaluate_g2_quality(
         "unresolved_critical_placeholders": unresolved,
         "pre_submission_placeholders": truoc_nop,
         "post_approval_placeholders": sau_phe_duyet,
+        "post_study_placeholders": sau_nghien_cuu,
         "pending_actions": list(dict.fromkeys(pending)),
         "attestation": attestation,
         "standards_basis": list(STANDARDS_BASIS),
@@ -1287,6 +1628,12 @@ def refresh_checkpoint(
     else:
         checkpoint["gate_status"] = f"{report.get('status')} — G2 CHƯA ĐƯỢC KHÓA"
         checkpoint["g2_status"] = "PENDING"
+        # VÁ 04/10/2026 (soát từng cổng, G7-03 phía G2): trạng thái TỤT khỏi PASS_G2_APPROVED (hết hạn, đề cương đổi sau
+        # khi duyệt, ledger hỏng…) từng giữ nguyên số IRB/ngày duyệt/phiên bản cũ trong checkpoint — cổng sau (G7 viết
+        # Đạo đức, G10) đọc chúng như còn hiệu lực. Xoá các trường khoá khi không còn APPROVED.
+        for khoa in ("g2_irb_number", "g2_approval_date", "g2_approval_valid_until", "g2_no_expiry_confirmed",
+                     "g2_protocol_version", "g2_icf_version", "g2_icf_waiver_approved", "g2_registration"):
+            checkpoint.pop(khoa, None)
     checkpoint["disclaimer"] = "Cần bác sĩ kiểm chứng."
     PF.ghi_checkpoint_giu_moc_sinh(checkpoint_path, json.dumps(checkpoint, ensure_ascii=False, indent=2))
     return checkpoint_path
@@ -1308,11 +1655,10 @@ def evaluate_study(
     meta = _read_json(out_dir / "study_meta.json")
     package_path = out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
     registration_path = out_dir / f"G2_REGISTRATION_DRAFT_{study}.json"
-    design_code = str(
-        checkpoint.get("design_code")
-        or (g1.get("design") or {}).get("internal_code")
-        or "cohort"
-    )
+    # VÁ 04/10/2026 (soát từng cổng, G2-05/CHUNG-F): không còn mặc định im lặng «cohort» khi thiếu thiết kế — thiếu thì
+    # G2-AUTO-06b CHẶN. Thiết kế của HỒ SƠ (checkpoint G2) được đối chiếu với thiết kế G1 HIỆN HÀNH.
+    g1_design_code = str((g1.get("design") or {}).get("internal_code") or "") or None
+    design_code = str(checkpoint.get("design_code") or g1_design_code or "")
     guardrail = checkpoint.get("guardrail") or {}
     guardrail_passed = bool(
         isinstance(guardrail, Mapping) and guardrail.get("passed") is True
@@ -1334,6 +1680,8 @@ def evaluate_study(
         ledger_approved=ledger_ok,
         design_ambiguous=bool(checkpoint.get("design_ambiguous")),
         today=today,
+        g1_song=CS.trang_thai_song("G1", study, out_dir) if g1 else None,
+        g1_design_code=g1_design_code,
     )
     if write:
         report_path = write_quality_report(study, out_dir, report)

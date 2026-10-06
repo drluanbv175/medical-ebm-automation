@@ -96,16 +96,12 @@ def study_dir(request):
 
 
 def _mk_upstream(study_dir: Path):
-    study_dir.mkdir(parents=True, exist_ok=True)
-    (study_dir / "G0_checkpoint.json").write_text(json.dumps({
-        "study": study_dir.name, "gate": "G0",
-        "topic": "Tìm hiểu rào cản tuân thủ thuốc ở bệnh nhân mạn tính",
-    }, ensure_ascii=False), encoding="utf-8", newline="\n")
-    (study_dir / "G1_checkpoint.json").write_text(json.dumps({
-        "study": study_dir.name, "gate": "G1",
-        "design": {"internal_code": "qualitative", "primary": "Nghiên cứu Định tính (Qualitative Research)",
-                   "reporting_standard": "COREQ (phỏng vấn/nhóm tiêu điểm) / SRQR (định tính nói chung)"},
-    }, ensure_ascii=False), encoding="utf-8", newline="\n")
+    # 04/10/2026 (soát từng cổng): các cổng sau CHẤM SỐNG G1 — dựng chuỗi G0→G1 đã chốt thật cho thiết kế định tính
+    # (tests/_chuoi_da_chot.py) thay vì G1_checkpoint chỉ có «design» (G1 bị chặn khi chấm sống).
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from _chuoi_da_chot import dung_g0_g1_da_chot
+    dung_g0_g1_da_chot(study_dir, study_dir.name, thiet_ke="qualitative", mau_hieu_qua=[])
 
 
 # ── G1: infer_study_design() — paradigm marker phải thắng domain marker ──────────

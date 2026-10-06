@@ -14,7 +14,8 @@ LÀM GÌ (CHỈ ĐỌC exports/<study>/, không sửa artifact nào, không ch�
   • Gom giá trị của từng thông số từ MỌI nơi nó xuất hiện (cổng · nơi đọc · giá trị).
   • Xếp mức:
     - LỆCH CỨNG (G10 CHẶN — phải sửa trước khi phát hành): cỡ mẫu kế hoạch · alpha · power · mã thiết kế · loại
-      nghiên cứu khai ở đăng ký (Interventional/Observational) trái với thiết kế.
+      nghiên cứu khai ở đăng ký (Interventional/Observational) trái với thiết kế · loại giả thuyết (G0 ↔ G3 ↔ SAP §12) ·
+      sai số cho phép d của thiết kế theo độ chính xác (G3 ↔ SAP §12) — hai trục cuối thêm 06/10/2026.
     - LỆCH MỀM (G10 giữ ở DRAFT — chủ nhiệm xác nhận/giải trình): kết cục chính khác nhau giữa các cổng (so theo mã
       biến/định danh trước, rồi theo độ trùng từ). Đổi kết cục chính là lỗi liêm chính kinh điển (outcome switching).
       Phép so từ CỐ Ý CHẶT («tử vong» ≠ «tử vong do tim mạch»): bỏ sót đổi kết cục nguy hơn một lần chủ nhiệm giải
@@ -461,6 +462,45 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
         else:
             ket.append(_ket("co_mau_cho_ket_cuc", "Cỡ mẫu được tính cho kết cục nào", nguon_pw, MUC_KHOP,
                             "kết cục mà N phục vụ khớp kết cục chính hơn các kết cục thứ cấp"))
+
+    # 7) Loại giả thuyết (ưu thế / không kém hơn / tương đương / mô tả theo độ chính xác) — THÊM 06/10/2026 (G0-06):
+    # G0 chốt loại kiểm định, G3 tính N theo nó, SAP §12 ký nó (SAP chỉ in dòng này cho không-kém-hơn/tương đương). Lệch
+    # (vd G0 «không kém hơn» mà G3 tính N ưu thế) là N và phép kiểm sai cho câu hỏi đã chốt ⇒ LỆCH CỨNG. G3 chỉ là
+    # nguồn khi N THẬT SỰ tính theo giả thuyết (khung §12 «power»); tính theo độ chính xác ⇒ «mô tả»; định tính /
+    # tổng quan / mô hình dự báo (N theo phương pháp riêng) ⇒ hypothesis_type chỉ là mặc định của bộ tính, KHÔNG đem so.
+    try:
+        import skill_standards as SK2  # noqa: PLC0415
+        chuan_gt = SK2.chuan_hoa_hypothesis_type
+    except Exception:  # noqa: BLE001
+        def chuan_gt(x):  # type: ignore[no-redef]
+            return str(x).strip().lower() if x else None
+    try:
+        import g4_quality_gate as G4Q2  # noqa: PLC0415
+        loai12 = G4Q2.loai_muc_12(next(iter(ma_tk)) if len(ma_tk) == 1 else g3.get("design_code"), g3)
+    except Exception:  # noqa: BLE001 — thiếu bộ đọc ⇒ không đem G3 ra so (vẫn so G0 ↔ SAP)
+        loai12 = None
+    g3_gt = {"chinh_xac": "descriptive_precision", "power": g3.get("hypothesis_type")}.get(loai12)
+    nguon_gt = [
+        {"cong": "G0", "noi": "study_meta.gate_params.G0.test_type", "gia_tri": _gp(meta, "G0").get("test_type")},
+        {"cong": "G3", "noi": "G3_checkpoint.hypothesis_type" + (" (N theo độ chính xác ⇒ mô tả)"
+                                                                  if loai12 == "chinh_xac" else ""),
+         "gia_tri": g3_gt},
+        {"cong": "G4", "noi": "SAP §12 «Loại giả thuyết»", "gia_tri": sap12.get("hypothesis_type")},
+    ]
+    nguon_gt = [n for n in nguon_gt if isinstance(n["gia_tri"], str) and chuan_gt(n["gia_tri"])]
+    if nguon_gt:
+        ket.append(_so_bang_nhau("loai_gia_thuyet", "Loại giả thuyết", nguon_gt,
+                                 lambda v: chuan_gt(v) if isinstance(v, str) else None))
+
+    # 8) Sai số cho phép d của thiết kế tính theo độ chính xác — THÊM 06/10/2026 (G4 → G10): N do d quyết định; G3 tính
+    # và SAP §12 ký phải cùng một d.
+    if loai12 == "chinh_xac" or sap12.get("precision") is not None:
+        nguon_d = [{"cong": "G3", "noi": "G3_checkpoint.precision", "gia_tri": g3.get("precision")},
+                   {"cong": "G3", "noi": "study_meta.gate_params.G3.precision",
+                    "gia_tri": _gp(meta, "G3").get("precision")},
+                   {"cong": "G4", "noi": "SAP §12 «Sai số tuyệt đối cho phép (d)»", "gia_tri": sap12.get("precision")}]
+        ket.append(_so_bang_nhau("sai_so_d", "Sai số cho phép d", [n for n in nguon_d if _co_that(n["gia_tri"])],
+                                 _ty_le))
 
     tong = {m: sum(1 for k in ket if k["muc"] == m) for m in _THU_TU_MUC}
     thiet_ke = next(iter(ma_tk)) if len(ma_tk) == 1 else None

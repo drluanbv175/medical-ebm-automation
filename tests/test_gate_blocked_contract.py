@@ -38,19 +38,14 @@ EXIT_BLOCKED = GC.EXIT_BLOCKED
 
 
 def _mk_upstream(study_dir: Path, effect_samples):
-    """Tạo G0 + G1 checkpoint tối thiểu để G3/G4 đọc được (không cần mạng)."""
-    study_dir.mkdir(parents=True, exist_ok=True)
-    (study_dir / "G0_checkpoint.json").write_text(json.dumps({
-        "study": study_dir.name, "gate": "G0",
-        "topic": "Tác dụng can thiệp X lên kết cục Y ở bệnh nhân ngoại trú",
-        "base_query": "intervention X outcome Y",
-    }, ensure_ascii=False), encoding="utf-8", newline="\n")
-    (study_dir / "G1_checkpoint.json").write_text(json.dumps({
-        "study": study_dir.name, "gate": "G1",
-        "design": {"internal_code": "cohort", "primary": "Cohort tiến cứu",
-                   "reporting_standard": "STROBE 2007"},
-        "effect_size_samples": effect_samples,
-    }, ensure_ascii=False), encoding="utf-8", newline="\n")
+    """G0 + G1 THẬT đã chốt (cohort) để G3/G4 đọc được (không cần mạng).
+
+    04/10/2026 (soát từng cổng): các cổng sau CHẤM SỐNG G1 — G1_checkpoint chỉ có «design» là G1 BỊ CHẶN và G3 dừng
+    đúng luật. Dựng chuỗi thật (tests/_chuoi_da_chot.py), giữ đúng mẫu effect size test yêu cầu."""
+    import sys as _sys
+    _sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from _chuoi_da_chot import dung_g0_g1_da_chot
+    dung_g0_g1_da_chot(study_dir, study_dir.name, thiet_ke="cohort", mau_hieu_qua=list(effect_samples))
 
 
 def _run(script: str, study: str, extra=None):

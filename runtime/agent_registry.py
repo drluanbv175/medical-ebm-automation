@@ -68,8 +68,13 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # Tái khóa 2026-10-04: `dieu-phoi-nghien-cuu` (điều phối thống nhất xuyên cổng · G10-AUTO-11 · G1-AUTO-02c · SAP
 # §4/§9) + `thiet-ke-nghien-cuu` (khoá SAP đòi §4/§9) + README/_BAN-DO-KET-NOI/_SO-DO-PIPELINE-HOP-NHAT (G0–G10) — bản
 # cặp y hệt gốc; vẫn 50.
+# Tái khóa 2026-10-06 (soát từng cổng — doctrine CHUNG-I): 11 agent nghiên cứu (dieu-phoi-nghien-cuu,
+# cau-hoi-nghien-cuu, thiet-ke-nghien-cuu, ke-hoach-trien-khai, dao-duc-dang-ky, co-mau-nghien-cuu, quan-ly-du-lieu,
+# phan-tich-thong-ke,
+# viet-ban-thao, binh-duyet, nop-bai-phan-hoi) bỏ chỉ dẫn «agent ghi Gx_STATUS=LOCKED», tiền đề chấm sống, hợp đồng
+# hiện hành từng cổng — bản cặp y hệt gốc; vẫn 50.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "9c00979e35626448a4dba38e31fd88aa253d71cb37eb3889e010cc51ce5b4fc3"
+    "28f4df29c4e778deac8a5e0b08eae8b17eb6d82507c856980b4ced4920c2703d"
 )
 
 MINIMUM_AGENT_COUNT = 50

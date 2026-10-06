@@ -45,6 +45,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
 import g2_quality_gate as G2Q  # noqa: E402  (hợp đồng chất lượng riêng G2)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
+import pii_van_ban as PII  # noqa: E402  (bộ dò PII dùng chung — CHUNG-G)
 import trial_registry as TR  # noqa: E402  (tra ClinicalTrials.gov — dùng chung với G0)
 import vn_prose_style as _VNSTYLE  # noqa: E402  (chuẩn hoá văn phong artifact)
 
@@ -483,7 +484,25 @@ def generate_g2_full_package(
     # trả hồ sơ về. Chỉ hiện các dòng này cho thiết kế THẬT SỰ có thể có lấy
     # mẫu sinh học/theo dõi nhiều lần (rct, cohort) — designs khác (khảo sát/
     # hồi cứu một lần) dùng mẫu 2 bước đơn giản.
-    if design_code in ("rct", "cohort"):
+    # VÁ 04/10/2026 (soát từng cổng, G2-10 / QĐ-5): nghiên cứu CHẨN ĐOÁN (và mô hình tiên lượng TUYỂN MỚI tiến cứu)
+    # thường có thủ thuật/mẫu sinh học cho xét nghiệm đang đánh giá hoặc tiêu chuẩn tham chiếu — trước đây ICF của chúng
+    # dùng mẫu 2 bước «không có thủ thuật thêm», ngụ ý sai bản chất nghiên cứu. Máy chỉ chèn khung [CẦN … XÓA nếu
+    # không áp dụng]; lời cuối do chủ nhiệm và Hội đồng quyết định.
+    _g2_meta_icf = ((meta or {}).get("gate_params") or {}).get("G2") or {} if isinstance(meta, dict) else {}
+    _tuyen_moi = str((_g2_meta_icf or {}).get("recruitment_mode") or "").upper() == "PROSPECTIVE_NEW_PARTICIPANTS"
+    co_thu_thuat = design_code in ("rct", "cohort", "diagnostic") or (design_code == "prediction" and _tuyen_moi)
+    if design_code == "diagnostic":
+        icf_extra_steps = (
+            "   ☐ Bước 3: [CẦN — xét nghiệm/kỹ thuật chẩn đoán đang đánh giá (index test): mô tả cách làm, "
+            "thời gian, có lấy mẫu máu/mô hay không]\n"
+            "   ☐ Bước 4: [CẦN — tiêu chuẩn tham chiếu (reference standard), vd sinh thiết/chụp chuẩn/theo dõi "
+            "lâm sàng — XÓA dòng này nếu chỉ dùng kết quả thường quy có sẵn]\n"
+        )
+        icf_benefit_direct = (
+            "[CẦN — ví dụ: được làm thêm xét nghiệm chẩn đoán và được báo kết quả theo quy trình của đơn vị; "
+            "KHÔNG hứa lợi ích chẩn đoán khi xét nghiệm đang đánh giá chưa được kiểm định]"
+        )
+    elif co_thu_thuat:
         icf_extra_steps = (
             "   ☐ Bước 3: [CẦN — ví dụ: lấy 5 mL máu tĩnh mạch/khám lâm sàng bổ sung "
             "— XÓA dòng này nếu nghiên cứu không lấy mẫu sinh học]\n"
@@ -557,7 +576,7 @@ def generate_g2_full_package(
    thành xác nhận không phát sinh thủ thuật/can thiệp ngoài thực hành
    thường quy — nhưng KHÔNG được bỏ hẳn."""
 
-    if design_code in ("rct", "cohort"):
+    if co_thu_thuat:
         icf_6e = """
 6e. ĐỒNG THUẬN THU THẬP/SỬ DỤNG MẪU SINH HỌC (chỉ áp dụng nếu có lấy mẫu
     máu/mô/dịch cơ thể — XÓA mục này nếu không áp dụng)
@@ -569,6 +588,106 @@ def generate_g2_full_package(
      không gộp chung vào đồng thuận tham gia nghiên cứu hiện tại."""
     else:
         icf_6e = ""
+
+    # VÁ 04/10/2026 (soát từng cổng, G2-04 / QĐ-5): ICF của RCT thiếu các yếu tố đồng thuận bắt buộc của thử nghiệm can
+    # thiệp theo ICH E6(R3) mục 2.8.10 — phân nhóm ngẫu nhiên + xác suất, truy cập hồ sơ gốc của giám sát/kiểm tra/Hội
+    # đồng/cơ quan quản lý, thông tin mới, theo dõi khi ngừng/rút, các trường hợp chấm dứt — và mục 5 còn câu «Chỉ nhóm
+    # nghiên cứu được phép truy cập» trái với yếu tố truy cập hồ sơ gốc. Máy chỉ chèn khung [CẦN]; đối chiếu nguyên văn
+    # ICH và lời cuối do chủ nhiệm/Hội đồng quyết định. Nhãn mục khớp g2_quality_gate.NHAN_ICF_RCT.
+    if design_code == "rct":
+        icf_2b = """
+2b. PHÂN NHÓM NGẪU NHIÊN
+   Anh/chị sẽ được phân vào một trong các nhóm: [CẦN — tên các nhóm can
+   thiệp/đối chứng] một cách NGẪU NHIÊN (như rút thăm), không do anh/chị
+   hay bác sĩ chọn. Khả năng vào mỗi nhóm: [CẦN — vd 1/2 (50%) mỗi nhóm].
+   Anh/chị và bác sĩ điều trị [CẦN — có/không] biết anh/chị ở nhóm nào."""
+        icf_truy_cap = (
+            "   ✅ Chỉ nhóm nghiên cứu được phép truy cập dữ liệu danh tính — NGOẠI LỆ ở mục 5b\n"
+            "      (giám sát viên, kiểm tra viên, Hội đồng Đạo đức, cơ quan quản lý)"
+        )
+        icf_5b = """
+5b. QUYỀN TRUY CẬP HỒ SƠ GỐC
+   Để kiểm tra nghiên cứu được làm đúng và dữ liệu chính xác, giám sát
+   viên, kiểm tra viên của [CẦN — nhà tài trợ/đơn vị], Hội đồng Đạo đức và
+   cơ quan quản lý có thể được xem trực tiếp hồ sơ y tế gốc của anh/chị,
+   với cam kết giữ bí mật. Ký phiếu này là anh/chị đồng ý cho việc truy cập
+   đó. [CẦN CHỦ NHIỆM XÁC NHẬN phạm vi truy cập]"""
+        icf_6fgh = """
+6f. THÔNG TIN MỚI TRONG QUÁ TRÌNH NGHIÊN CỨU
+   Nếu có thông tin mới có thể ảnh hưởng đến quyết định tiếp tục tham gia
+   của anh/chị (vd tác dụng không mong muốn mới phát hiện), chúng tôi sẽ
+   thông báo kịp thời [CẦN — cách thông báo, vd gọi điện/tái khám].
+
+6g. THEO DÕI KHI NGỪNG CAN THIỆP HOẶC RÚT KHỎI NGHIÊN CỨU
+   [CẦN CHỦ NHIỆM XÁC NHẬN]: Nếu anh/chị ngừng can thiệp hoặc rút khỏi
+   nghiên cứu, chúng tôi [CẦN — sẽ/sẽ không] liên hệ theo dõi tình trạng
+   sức khỏe vì an toàn của anh/chị, và dữ liệu đã thu thập sẽ được [CẦN —
+   xử lý thế nào].
+
+6h. CÁC TRƯỜNG HỢP CHẤM DỨT SỰ THAM GIA
+   Sự tham gia của anh/chị có thể bị dừng mà không cần anh/chị đồng ý khi:
+   [CẦN — vd vì lý do an toàn, không còn đủ tiêu chuẩn, nghiên cứu bị dừng
+   theo quyết định của Hội đồng/nhà tài trợ/cơ quan quản lý]."""
+    else:
+        icf_2b = ""
+        icf_truy_cap = "   ✅ Chỉ nhóm nghiên cứu được phép truy cập dữ liệu danh tính"
+        icf_5b = ""
+        icf_6fgh = ""
+
+    # ICF TIẾNG ANH (G2-11): cùng tập mục với ICF tiếng Việt (1b/4b/4c/6c mọi thiết kế; 6e khi có thủ thuật; các mục RCT).
+    # Trước 04/10/2026 bản tiếng Anh là khung 7 mục rút gọn — không phải bản dịch trung thành.
+    en_steps = ""
+    if design_code == "diagnostic":
+        en_steps = ("   ☐ Step 3: [TO BE COMPLETED — index test being evaluated]\n"
+                    "   ☐ Step 4: [TO BE COMPLETED — reference standard; DELETE if only routine results are used]\n")
+    elif co_thu_thuat:
+        en_steps = ("   ☐ Step 3: [TO BE COMPLETED — e.g. blood sample/extra examination; DELETE if none]\n"
+                    "   ☐ Step 4: [TO BE COMPLETED — e.g. follow-up visits; DELETE if single contact]\n")
+    en_1b = """
+1b. INVESTIGATORS
+   The study is led by [TO BE COMPLETED — principal investigator, qualifications, institution]."""
+    en_4bc = """
+4b. FUNDING AND CONFLICTS OF INTEREST
+   Funding: [TO BE COMPLETED — funder or "no external funding"]. Conflicts of interest of the study team:
+   [TO BE COMPLETED — yes/no, matching Document 8].
+
+4c. PAYMENT OR REIMBURSEMENT
+   [TO BE COMPLETED — none beyond routine care / description of reasonable, non-coercive reimbursement]."""
+    en_6c = """
+6c. COMPENSATION FOR INJURY
+   [TO BE COMPLETED — treatment/compensation policy for study-related injury and its funding source]."""
+    if design_code == "rct":
+        en_2b = """
+2b. RANDOM ASSIGNMENT
+   You will be assigned by chance (randomly) to one of: [TO BE COMPLETED — study arms]. Probability of each
+   group: [TO BE COMPLETED — e.g. 1 in 2]. You and your doctor [TO BE COMPLETED — will/will not] know your group."""
+        en_5b = """
+5b. ACCESS TO SOURCE RECORDS
+   Monitors, auditors, the Ethics Committee and regulatory authorities may directly access your original medical
+   records to verify the study, under confidentiality. [TO BE COMPLETED — scope confirmed by the investigator]"""
+        en_6b = """
+6b. ALTERNATIVES
+   If you do not take part, standard care remains available: [TO BE COMPLETED — available alternatives]."""
+        en_6d = """
+6d. CARE DURING AND AFTER THE STUDY
+   [TO BE COMPLETED — post-trial access to the intervention and care for problems arising outside the study]."""
+        en_6fgh = """
+6f. NEW INFORMATION
+   You will be told in a timely manner about new information that may affect your willingness to continue:
+   [TO BE COMPLETED — how].
+
+6g. FOLLOW-UP AFTER STOPPING THE INTERVENTION OR WITHDRAWAL
+   [TO BE COMPLETED — whether follow-up contact for safety will occur and how collected data are handled].
+
+6h. TERMINATION OF PARTICIPATION
+   Your participation may be ended without your consent when: [TO BE COMPLETED — e.g. safety reasons, no longer
+   eligible, study stopped by the Ethics Committee/sponsor/regulator]."""
+    else:
+        en_2b = en_5b = en_6b = en_6d = en_6fgh = ""
+    en_6e = """
+6e. BIOLOGICAL SAMPLES (DELETE this section if no samples are collected)
+   [TO BE COMPLETED — purpose of samples; destroyed after analysis or stored for future research with SEPARATE
+   consent]""" if co_thu_thuat else ""
 
     # ICF waiver flag
     # SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 2, phát hiện MEDIUM):
@@ -641,34 +760,13 @@ Chữ ký chủ nhiệm: [CẦN KÝ]   |   Ngày: ___/___/{year}
             data_type_line=data_type_line,
         )
 
-    # WHO Trial Registration Data Set 1.3.1 hiện có 24 mục. Bản 18 trường cũ
-    # đã lỗi thời và thiếu ethics review, completion/results và IPD sharing.
-    # Vá 2026-07-17 (round audit gate — tiếp nối vòng 5): "prediction" (mô hình
-    # tiên lượng/TRIPOD+AI) trước đây KHÔNG có trong 2 bản đồ này -> .get()
-    # fallback im lặng về "Observational"/"Other" (Trường 15 dưới). "Observational"
-    # tình cờ đúng (mô hình tiên lượng không có can thiệp phân bổ), nhưng "Other"
-    # cho Primary Purpose là mơ hồ -- WHO ICTRP có hạng mục "Prognosis" riêng,
-    # đúng hơn cho đa số đề tài "prediction" (khác "diagnostic" đã có nhãn riêng
-    # "Diagnostic" -- 2 mã thiết kế này KHÔNG cùng ý nghĩa WHO Primary Purpose).
-    # SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 6, phát hiện LOW):
-    # "qualitative" lặp lại ĐÚNG lỗ hổng vừa vá cho "prediction" ở trên (thêm
-    # 2026-07-17) — thiếu khỏi 2 bảng này khiến .get() fallback về "Observational"/
-    # "Other" mơ hồ. "Health Services Research" là bucket WHO ICTRP hợp lý nhất
-    # cho đa số đề tài định tính của hệ thống này (thường về trải nghiệm/hài
-    # lòng bệnh nhân, quy trình chăm sóc — khớp ví dụ định tính thật đang chạy,
-    # xem exports/hai-long-benh-nhan-C1a-BVQY175/); đề tài định tính khác chủ đề
-    # (vd giáo dục y khoa) cần bác sĩ tự điều chỉnh Trường 15, không tự động
-    # đoán đúng mọi chủ đề định tính được.
-    who_design_type_map = {
-        "rct": "Interventional", "cohort": "Observational", "case_control": "Observational",
-        "cross_sectional": "Observational", "diagnostic": "Observational", "sr_ma": "Not Applicable",
-        "prediction": "Observational", "qualitative": "Observational",
-    }
-    who_primary_purpose_map = {
-        "rct": "Treatment", "cohort": "Observational", "case_control": "Epidemiology",
-        "cross_sectional": "Epidemiology", "diagnostic": "Diagnostic", "sr_ma": "Health Services Research",
-        "prediction": "Prognosis", "qualitative": "Health Services Research",
-    }
+    # WHO Trial Registration Data Set 1.3.1 hiện có 24 mục. VÁ 04/10/2026 (soát từng cổng, G2-07): hai bảng
+    # design type/primary purpose riêng của tệp này (lệch bảng của bản JSON: cohort «Observational» ≠ «Epidemiology»;
+    # «Blinded» in cứng cho mọi RCT) đã bị bỏ — các mục khoa học 9/12/13/14/15/19/20 của khối .md dựng từ CHÍNH giá trị
+    # của bản JSON (g2_quality_gate.who_trds_values + render_who_trds_khoa_hoc). Lịch sử bảng cũ: git log tệp này.
+    _trds = G2Q.render_who_trds_khoa_hoc(G2Q.who_trds_values(
+        topic=topic, design_code=design_code, design_primary=design_primary,
+        n_target=n_adjusted or None, meta=meta))
 
     # VÁ 2026-07-28: chuỗi cũ "[Không tìm được thử nghiệm tương tự]" in ra Y HỆT
     # nhau cho "đã tra, 0 hồ sơ" và "không tra được" — nay tách hẳn 2 câu.
@@ -896,6 +994,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 
    Chúng tôi sẽ cố gắng lên lịch hẹn trùng với lần tái khám
    thường quy để giảm bất tiện cho anh/chị.
+{icf_2b}
 
 3. RỦI RO VÀ BẤT TIỆN CÓ THỂ XẢY RA
    {chr(10).join('   • ' + r[0] + ': ' + r[2] + ' → ' + r[3][:80] for r in risk["risks"])}
@@ -918,7 +1017,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 
    ✅ Dữ liệu được mã hóa và lưu tại [CẦN — máy chủ bảo mật/
       ổ cứng mã hóa tại đơn vị]
-   ✅ Chỉ nhóm nghiên cứu được phép truy cập dữ liệu danh tính
+{icf_truy_cap}
    ✅ Kết quả công bố dùng dữ liệu TỔNG HỢP — KHÔNG tiết lộ danh tính
    ✅ Dữ liệu nhận dạng được xóa/ẩn danh hóa trong vòng [CẦN] năm
       sau khi kết thúc nghiên cứu theo quy định lưu trữ y tế
@@ -928,6 +1027,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 
    Anh/chị có quyền yêu cầu xem, sửa hoặc xóa dữ liệu của mình
    (trước khi chúng tôi tiến hành phân tích).
+{icf_5b}
 
 6. QUYỀN TỰ NGUYỆN VÀ RÚT LUI
    ✅ Tham gia là HOÀN TOÀN TỰ NGUYỆN
@@ -940,6 +1040,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 {icf_6c}
 {icf_6d}
 {icf_6e}
+{icf_6fgh}
 
 7. THÔNG TIN LIÊN HỆ
    ┌─────────────────────────────────────────────────────────┐
@@ -993,25 +1094,34 @@ Principal Investigator: [TO BE COMPLETED]
    Estimated participants: [TO BE COMPLETED — from G3]
    Location: [TO BE COMPLETED]
    PARTICIPATION IS ENTIRELY VOLUNTARY.
+{en_1b}
 
 2. PROCEDURES
    ☐ Step 1: [TO BE COMPLETED]
    ☐ Step 2: [TO BE COMPLETED]
-   Estimated time commitment: [TO BE COMPLETED]
+{en_steps}   Estimated time commitment: [TO BE COMPLETED]
+{en_2b}
 
 3. RISKS AND DISCOMFORTS
    {chr(10).join('   • ' + r[0] + ' (' + r[1] + ' probability / ' + r[2] + ' severity): ' + r[3][:80] for r in risk["risks"])}
 
 4. POTENTIAL BENEFITS
    [TO BE COMPLETED — include both direct and community benefits]
+{en_4bc}
 
 5. CONFIDENTIALITY
    Data encrypted per Vietnamese Personal Data Protection Law
    No. 91/2025/QH15. Results published in aggregate form only.
+{en_5b}
 
 6. VOLUNTARY PARTICIPATION AND WITHDRAWAL
    Participation is voluntary. You may withdraw at any time
    without affecting your medical care.
+{en_6b}
+{en_6c}
+{en_6d}
+{en_6e}
+{en_6fgh}
 
 7. CONTACTS
    Investigator: [TO BE COMPLETED] | Email: [TO BE COMPLETED]
@@ -1226,7 +1336,7 @@ Trường 8  — Contact for scientific queries:
             [ĐIỀN TRỰC TIẾP TRÊN REGISTRY — không lưu PII trong hệ thống]
 
 Trường 9  — Public title (tiêu đề công khai, dễ hiểu):
-            [CẦN BỔ SUNG — ngôn ngữ không chuyên]
+            {_trds[9]}
 
 Trường 10 — Scientific title (tiêu đề khoa học):
             {topic}
@@ -1235,21 +1345,16 @@ Trường 11 — Countries of recruitment:
             Vietnam (VN) [CẦN BỔ SUNG tỉnh/tỉnh thành]
 
 Trường 12 — Health condition(s) studied:
-            [CẦN — từ PICO P: ví dụ Heart failure with preserved EF / HFpEF]
+            {_trds[12]}
 
 Trường 13 — Intervention(s):
-            [CẦN — từ PICO I: ví dụ SGLT2 inhibitor (empagliflozin 10mg OD)]
-            Comparator: [CẦN — từ PICO C]
+            {_trds[13]}
 
 Trường 14 — Key inclusion and exclusion criteria:
-            Inclusion: [CẦN BỔ SUNG — từ protocol/PICO P]
-            Exclusion: [CẦN BỔ SUNG — từ protocol]
+            {_trds[14]}
 
 Trường 15 — Study type:
-            {who_design_type_map.get(design_code, "Observational")} ·
-            {who_primary_purpose_map.get(design_code, "Other")} ·
-            {"Randomized" if design_code == "rct" else "Non-randomized"} ·
-            {"Blinded" if design_code == "rct" else "Open label"}
+            {_trds[15]}
 
 Trường 16 — Date of first enrolment:
             [CẦN — chỉ tuyển sau phê duyệt và đăng ký: ___/___/{_YEAR}]
@@ -1261,10 +1366,10 @@ Trường 18 — Recruitment status:
             Not yet recruiting
 
 Trường 19 — Primary outcome(s):
-            [CẦN — tên kết cục + thước đo + thời điểm từ G0/G1]
+            {_trds[19]}
 
 Trường 20 — Key secondary outcomes:
-            [CẦN — tên kết cục + thước đo + thời điểm từ SAP]
+            {_trds[20]}
 
 Trường 21 — Ethics review:
             Status: Not approved
@@ -1275,8 +1380,8 @@ Trường 22 — Completion date:
             [CẦN — ngày hoàn tất dự kiến; cập nhật ngày thật khi kết thúc]
 
 Trường 23 — Summary results:
-            [CẦN CẬP NHẬT sau nghiên cứu — ngày đăng kết quả/tác phẩm,
-             protocol URL + phiên bản, participant flow, AE, outcomes]
+            Chưa có — cập nhật khi có kết quả (chỉ điền sau khi kết thúc nghiên cứu:
+            ngày đăng kết quả/tác phẩm, protocol URL + phiên bản, participant flow, AE, outcomes)
 
 Trường 24 — IPD sharing statement:
             Plan to share de-identified IPD: [CẦN — Yes/No]
@@ -1367,17 +1472,12 @@ tiêu đề — kết quả kiểm THẬT của lần chạy này nằm ở G2_Q
 def guardrail_check_g2(artifact: str) -> dict:
     errors, warnings = [], []
 
-    # R1 — Không PII
-    pii_patterns = [r'\b\d{9,12}\b',  # CMND/CCCD
-                    r'\b\d{2}/\d{2}/\d{4}\b(?=\s+sinh)',  # ngày sinh rõ
-                    r'họ tên:\s+[A-ZÀ-Ỹ][a-zà-ỹ]+']
-    pii_found = False
-    for pat in pii_patterns:
-        if re.search(pat, artifact):
-            pii_found = True
-            break
+    # R1 — Không PII. VÁ 04/10/2026 (CHUNG-G): dùng bộ dò PII DÙNG CHUNG ở chế độ hồ sơ (số căn cước, thẻ BHYT, «ngày
+    # sinh» + ngày cụ thể, nhãn tên người bệnh + tên) — cùng bộ mà g2_quality_gate chấm lại trên nội dung hiện hành.
+    # Mẫu cũ «\d{9,12}» báo nhầm số điện thoại liên hệ HỢP LỆ của nghiên cứu viên/Hội đồng.
+    pii_found = PII.quet_pii_van_ban(artifact, che_do=PII.HO_SO)
     if pii_found:
-        errors.append("R1 🔴 Phát hiện PII tiềm năng — kiểm tra và xóa")
+        errors.append(f"R1 🔴 Phát hiện PII tiềm năng — kiểm tra và xóa: {PII.tom_tat(pii_found)}")
     else:
         warnings.append("R1 ✅ Không phát hiện PII")
 
@@ -1718,6 +1818,11 @@ def main():
         print(f"  → G1: design_code={design_code}, design='{design_primary[:50]}'")
     else:
         print(f"  → Không tìm thấy G1 checkpoint; dùng design_code={design_code}")
+        if not args.design:
+            # VÁ 04/10/2026 (CHUNG-F): «cohort» là mặc định MÁY, không phải quyết định — đánh dấu mơ hồ để G2-AUTO-06
+            # giữ REVIEW thay vì chấm hồ sơ như thể thiết kế đã chốt.
+            design_ambiguous = True
+            print("  ⚠️  Không có G1 và không có --design — «cohort» chỉ là mặc định máy; thiết kế bị đánh dấu MƠ HỒ.")
 
     # SỬA (tự động hóa thêm): G2 và G3 chạy song song theo thiết kế, nhưng
     # nếu bác sĩ đã chạy G3 TRƯỚC (thứ tự hoàn toàn hợp lệ), N thật đã có
@@ -1852,6 +1957,15 @@ def main():
             raise SystemExit(GC.EXIT_BLOCKED)
     md_path.write_text(artifact_md, encoding="utf-8", newline="\n")
     print(f"  → Lưu: {md_path} ({len(artifact_md)//1000}KB)")
+    # VÁ 04/10/2026 (soát từng cổng, G2-03 / QĐ-4): thử nghiệm can thiệp cần kế hoạch an toàn RIÊNG. Máy chỉ dựng KHUNG
+    # (tiêu đề + ô [CẦN]) khi tệp chưa có — KHÔNG BAO GIỜ ghi đè bản chủ nhiệm đã điền.
+    if G2Q.can_ke_hoach_an_toan(design_code, _study_meta_for_g2):
+        ke_hoach = out_dir / G2Q.ten_ke_hoach_an_toan(study)
+        if not ke_hoach.exists():
+            ke_hoach.write_text(G2Q.khung_ke_hoach_an_toan(study), encoding="utf-8", newline="\n")
+            print(f"  → Dựng khung kế hoạch an toàn (chủ nhiệm điền): {ke_hoach}")
+        else:
+            print(f"  → Giữ nguyên kế hoạch an toàn đã có: {ke_hoach.name}")
 
     # ── Bước 5: Guardrail ──
     print("\n🛡️  Bước 5/7: Kiểm guardrail R1-R7...")

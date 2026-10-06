@@ -11,6 +11,7 @@ import deidentify_research_dataset as DEID  # noqa: E402
 import import_real_dataset as RDI  # noqa: E402
 import run_g10_assemble as G10  # noqa: E402
 
+from tests._chuoi_da_chot import danh_dau_de_tai_thu  # noqa: E402
 from tests.test_g10_assemble import _write_cross_sectional_fixture  # noqa: E402
 
 
@@ -47,6 +48,8 @@ record_id,Họ tên,phone,email,age,notes,primary_outcome
     assert "Nguyen Van A" not in text
     assert DEID.REDACTION_TOKEN in text
 
+    # 04/10/2026 (G5-02): test CƠ CHẾ nạp — đề tài thử nghiệm tổng hợp (đề tài thật cần SAP G4 đã khoá).
+    danh_dau_de_tai_thu(tmp_path / "exports", "DEID-OK")
     intake = RDI.import_dataset("DEID-OK", deid_path, exports_root=tmp_path / "exports")
     assert intake["status"] == RDI.READY_STATUS
 
@@ -104,6 +107,8 @@ record_id,ten_benh_nhan,cccd,age,notes
 """,
     )
 
+    # 04/10/2026 (G5-02): test CƠ CHẾ nạp — đề tài thử nghiệm tổng hợp (đề tài thật cần SAP G4 đã khoá).
+    danh_dau_de_tai_thu(tmp_path / "exports", "DEID-IMPORT")
     report = DEID.deidentify_dataset(
         "DEID-IMPORT",
         raw,

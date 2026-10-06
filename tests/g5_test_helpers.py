@@ -6,9 +6,11 @@ import csv
 import hashlib
 import json
 import os
+import stat
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
 
 TOOLS_DIR = Path(__file__).resolve().parent.parent / "tools"
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -20,7 +22,6 @@ import g5_quality_gate as G5Q  # noqa: E402
 import gate_contract as GC  # noqa: E402
 import import_real_dataset as RDI  # noqa: E402
 import lock_analysis_dataset as LAD  # noqa: E402
-import run_g4_auto as G4  # noqa: E402
 
 from runtime.approval_ledger import ApprovalLedger  # noqa: E402
 from runtime.schemas import ApprovalDecisionEnum  # noqa: E402
@@ -96,6 +97,7 @@ def write_g5_toolkit(
     *,
     id_field: str = "record_id",
     extra_date_columns: frozenset[str] = frozenset(),
+    extra_text_columns: frozenset[str] = frozenset(),
 ) -> Path:
     """Tạo bộ DMP/dictionary/script tối thiểu nhưng hợp lệ cho fixture.
 
@@ -204,6 +206,9 @@ def write_g5_toolkit(
         # validation "date_ymd" -> _normalise_rule() trong clean_research_dataset.py
         # đọc thành type="date" (bắt đầu bằng "date_"); đúng khuôn REDCap thật.
         rows.append((extra_name, "text", "", "date_ymd", "", ""))
+    # 04/10/2026 (G5-03): cột văn bản khai thêm (vd transcript_id của đề tài định tính) — cột không khai là truy vấn mở.
+    for extra_name in sorted(extra_text_columns - declared_names - set(extra_date_columns)):
+        rows.append((extra_name, "text", "", "", "", ""))
     with dictionary_path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=headers)
         writer.writeheader()
@@ -233,7 +238,8 @@ def write_g5_toolkit(
     )
     today = datetime.now().date().isoformat()
     operational = {
-        "schema_version": "G5-OPS-2026.1",
+        # G5-OPS-2026.2 (04/10/2026, G5-07): thêm rà audit trail + đối chiếu dữ liệu nguồn (SDV).
+        "schema_version": G5Q.OPERATIONAL_SCHEMA_VERSION,
         "status": "VERIFIED",
         "access_control_review": {
             "completed": True,
@@ -256,6 +262,17 @@ def write_g5_toolkit(
             "reconciled": True,
             "open_count": 0,
             "log_ref": "PYTEST-DEVIATION-001",
+        },
+        "audit_trail_review": {
+            "completed": True,
+            "reviewed_at": today,
+            "evidence_ref": "PYTEST-AUDIT-TRAIL-001",
+        },
+        "source_data_verification": {
+            "method": "Kiểm ngẫu nhiên 10% hồ sơ so với hồ sơ nguồn",
+            "fraction_or_n": "10%",
+            "completed": True,
+            "evidence_ref": "PYTEST-SDV-001",
         },
         "reviewer_role": "DATA_GOVERNANCE_QA_REVIEWER",
         "reviewer_ref": "PYTEST-G5-DATA-REVIEWER",
@@ -280,29 +297,12 @@ def write_g5_toolkit(
     return dictionary_path
 
 
-_G4_SAP_FILLS = [
-    ("- **Tiêu chí nhận:** [CẦN BÁC SĨ ĐIỀN — từ đề cương]  ", "- **Tiêu chí nhận:** Tuổi 18-75  "),
-    ("- **Tiêu chí loại:** [CẦN BÁC SĨ ĐIỀN]  ", "- **Tiêu chí loại:** Chống chỉ định  "),
-    ("- **Kết cục chính:** [CẦN BÁC SĨ ĐIỀN — ví dụ: tỷ lệ nhập viện tim mạch trong 12 tháng]  ",
-     "- **Kết cục chính:** Tỷ lệ nhập viện tim mạch trong 12 tháng  "),
-    ("- **Đơn vị / ngưỡng:** [CẦN]  ", "- **Đơn vị / ngưỡng:** %  "),
-    ("- **Kết cục phụ 1:** [CẦN]  ", "- **Kết cục phụ 1:** Tử vong toàn bộ  "),
-    ("- **Kết cục phụ 2:** [CẦN]  ", "- **Kết cục phụ 2:** Đột quỵ  "),
-    ("- **Kết cục an toàn:** [CẦN — đặc biệt với RCT]  ", "- **Kết cục an toàn:** Tiêu cơ vân  "),
-    ("- **Biến độc lập đưa vào:** [CẦN BÁC SĨ LIỆT KÊ — kèm lý do lâm sàng / DAG]  ",
-     "- **Biến độc lập đưa vào:** Tuổi, HbA1c — EPV=15 cho 8 biến, VIF<5  "),
-    ("- **Giả định:** [CẦN kiểm tra PH / normality theo thiết kế]  ", "- **Giả định:** Kiểm PH bằng cox.zph  "),
-    ("- **Biến đưa vào mô hình imputation:** [CẦN BÁC SĨ ĐIỀN]  ",
-     "- **Biến đưa vào mô hình imputation:** Tuổi, giới, HbA1c nền  "),
-    ("- **Nhóm nhỏ tiền định:** [CẦN BÁC SĨ — phải ghi TRƯỚC khi xem dữ liệu]  ",
-     "- **Nhóm nhỏ tiền định:** Theo tuổi <65/≥65 — TIỀN ĐỊNH  "),
-    ("- **Điều chỉnh:** [CẦN — Bonferroni / FDR nếu >3 kết cục chính]  ",
-     "- **Điều chỉnh:** Chỉ 1 kết cục chính nên không cần hiệu chỉnh  "),
-    ("- [CẦN BÁC SĨ thêm kịch bản cụ thể]  ", "- Kịch bản: loại trừ bỏ thuốc >30% thời gian theo dõi  "),
-    ("- **Phần mềm:** [CẦN — R v4.x / Stata v18 / SPSS v29]  ", "- **Phần mềm:** R v4.3.1  "),
-    ("- **Packages:** [CẦN — survival, lme4, mice, gtsummary...]  ", "- **Packages:** survival, mice  "),
-    ("- **Random seed:** [CẦN BÁC SĨ ẤN ĐỊNH — ví dụ: set.seed(2026)]  ", "- **Random seed:** set.seed(20260730)  "),
-]
+def _doc_json(path: Path) -> dict:
+    try:
+        value = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return {}
+    return value if isinstance(value, dict) else {}
 
 
 def prepare_upstream_approvals(
@@ -313,19 +313,54 @@ def prepare_upstream_approvals(
 ) -> None:
     """Tạo checkpoint và approval G2/G4 hợp lệ cho fixture tổng hợp.
 
-    SỬA 2026-07-30 (audit toàn diện G0-G10, G10-01 — CRITICAL): trước đây G4
-    chỉ ghi tay ``{"g4_status": "LOCKED"}`` vào checkpoint — một chuỗi mà
-    KHÔNG pipeline thật nào từng tạo ra (xem run_g4_auto.py), và
-    ``g10_quality_gate.py``/``g9_quality_gate.py`` đọc ĐÚNG field text đó
-    (``_status_locked``) nên "PASS" của các test này chưa từng chứng minh
-    được pipeline thật có thể đạt LOCKED hay không. Nay g10/g9 đã chuyển
-    sang chấm trực tiếp qua ``gate_contract.g4_quality_contract_satisfied()``
-    (như g5_ok/g9_ok đã làm đúng từ đầu) — fixture này phải dựng một G4 THẬT
-    SỰ đạt ``PASS_G4_SAP_LOCKED``: SAP sinh từ ``run_g4_auto.generate()`` rồi
-    điền đủ placeholder, G1/G3 checkpoint nhất quán, xác nhận
-    ``gate_params.G4``, và ký bằng khóa RIÊNG nhóm STATISTICIAN (không phải
-    khóa chung — G4-HUMAN-02 chỉ PASS với khóa vai trò, giống hệt G8-HUMAN-03).
+    SỬA 2026-07-30 (audit toàn diện G0-G10, G10-01 — CRITICAL): trước đây G4 chỉ ghi tay ``{"g4_status": "LOCKED"}`` —
+    fixture phải dựng một G4 THẬT SỰ đạt ``PASS_G4_SAP_LOCKED``.
+
+    SỬA 04/10/2026 (soát từng cổng G4): G4 nay CHẤM SỐNG G3 (G4-AUTO-12), đòi chứng chỉ khoá đã điền, estimand/§13–§15
+    cho RCT và xác nhận gắn DẤU nội dung SAP (G4-HUMAN-08) — «G1/G3 checkpoint trơn + SAP generate() điền chuỗi cố
+    định» không còn khoá được G4 (đúng luật). Fixture dựng chuỗi G0→G1→G3 ĐÃ CHỐT THẬT theo THIẾT KẾ của đề tài
+    (tests/_chuoi_da_chot.py — thiết kế lấy từ G1 test tự ghi trước: design.internal_code hoặc design_code, mặc định
+    cohort), giữ nguyên khoá riêng test đã ghi (G1_checkpoint, gate_params cổng khác), sinh SAP bằng run_g4_auto THẬT,
+    điền như người thật, xác nhận G4 gắn dấu, ký bằng khoá RIÊNG nhóm STATISTICIAN — rồi TỰ KIỂM G4 chấm sống LOCKED
+    (fixture hỏng thì lộ ngay ở đây, không lộ ở test G5–G10 phía sau).
     """
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import cong_song as CS  # noqa: PLC0415
+    import g4_quality_gate as G4Q  # noqa: PLC0415
+    import skill_standards as SK  # noqa: PLC0415
+    from _chuoi_da_chot import (  # noqa: PLC0415
+        dien_sap_g4,
+        dung_g0_g3_da_chot,
+        sinh_sap_g4_that,
+        xac_nhan_g4,
+    )
+
+    g1_path = out_dir / "G1_checkpoint.json"
+    g1_cu = _doc_json(g1_path)
+    meta_cu = _doc_json(out_dir / "study_meta.json")
+    tho = ((g1_cu.get("design") or {}).get("internal_code") if isinstance(g1_cu.get("design"), dict) else None) \
+        or g1_cu.get("design_code") or "cohort"
+    design_code = SK.ma_thiet_ke_chuoi(tho) or "cohort"
+    dung_g0_g3_da_chot(out_dir, study, thiet_ke=design_code)
+    # Giữ khoá riêng mà test đã ghi (vd specialist_modules ở G1, gate_params của cổng khác) — chuỗi chỉ làm chủ
+    # G0/G1/G3.
+    if g1_cu:
+        g1_moi = _doc_json(g1_path)
+        for khoa, gia_tri in g1_cu.items():
+            if khoa != "design" and khoa not in g1_moi:
+                g1_moi[khoa] = gia_tri
+        g1_path.write_text(json.dumps(g1_moi, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+    if meta_cu:
+        meta_moi = _doc_json(out_dir / "study_meta.json")
+        for khoa, gia_tri in meta_cu.items():
+            if khoa == "gate_params" and isinstance(gia_tri, dict):
+                for cong, khoi in gia_tri.items():
+                    meta_moi.setdefault("gate_params", {}).setdefault(cong, khoi)
+            else:
+                meta_moi.setdefault(khoa, gia_tri)
+        (out_dir / "study_meta.json").write_text(json.dumps(meta_moi, ensure_ascii=False, indent=2),
+                                                 encoding="utf-8", newline="\n")
+
     (out_dir / "G2_checkpoint.json").write_text(
         json.dumps({"g2_status": "LOCKED"}, ensure_ascii=False),
         encoding="utf-8", newline="\n"
@@ -343,67 +378,13 @@ def prepare_upstream_approvals(
         repo_root=repo_root,
     )
 
-    # Design nhất quán với G1 nếu fixture khác đã tạo checkpoint đó trước;
-    # mặc định "cohort" khi chưa có (đa số test G9/G10 không cần G1 riêng).
-    g1_path = out_dir / "G1_checkpoint.json"
-    if g1_path.exists():
-        try:
-            existing_g1 = json.loads(g1_path.read_text(encoding="utf-8"))
-        except (json.JSONDecodeError, OSError, UnicodeDecodeError):
-            existing_g1 = {}
-        design_code = ((existing_g1.get("design") or {}).get("internal_code")) or "cohort"
-    else:
-        design_code = "cohort"
-        g1_path.write_text(
-            json.dumps(
-                {"gate": "G1", "design": {"internal_code": design_code,
-                                          "primary": "Cohort tiến cứu", "ambiguous": False}},
-                ensure_ascii=False,
-            ),
-            encoding="utf-8", newline="\n"
-        )
-
-    g3_fields = {
-        "gate": "G3", "design_code": design_code, "alpha": 0.05, "power": 0.8,
-        "n_adjusted": 200, "confirmed_n": None, "effect_val": 0.7, "effect_type": "RR",
-        "hypothesis_type": "superiority", "margin": None, "sd": None, "guardrail": "✅ PASS",
-    }
-    (out_dir / "G3_checkpoint.json").write_text(
-        json.dumps(g3_fields, ensure_ascii=False), encoding="utf-8", newline="\n")
-
-    sap_text = G4.generate(
-        study, f"Đề tài fixture tổng hợp {study}", design_code, "Cohort tiến cứu",
-        "STROBE 2007", g3_fields["n_adjusted"], g3_fields["alpha"], g3_fields["power"],
-        g3_fields["effect_val"], g3_fields["effect_type"], "2026-07-30",
-    )
-    for old, new in _G4_SAP_FILLS:
-        sap_text = sap_text.replace(old, new)
-    g4_artifact = out_dir / f"G4_A5_SAP_FINAL_{study}.md"
+    g4_artifact = sinh_sap_g4_that(out_dir, study)
+    sap_text = dien_sap_g4(g4_artifact.read_text(encoding="utf-8"))
     g4_artifact.write_text(sap_text, encoding="utf-8", newline="\n")
+    xac_nhan_g4(out_dir, sap_text)
 
-    (out_dir / "G4_checkpoint.json").write_text(
-        json.dumps(
-            {"gate": "G4", "study": study, "g4_status": "PENDING — CHỜ BÁC SĨ KÝ SAP",
-             "g4_sap_version": "1.0", "design_code": design_code, "guardrail": "✅ PASS"},
-            ensure_ascii=False,
-        ),
-        encoding="utf-8", newline="\n"
-    )
-
-    meta = GC.ensure_study_meta(out_dir)
-    meta["gate_params"]["G4"].update({
-        "epv_vif_reviewed": True,
-        "missing_data_mechanism_confirmed": True,
-        "subgroup_multiplicity_predefined_confirmed": True,
-        "reviewed_by_role": "STATISTICIAN",
-        "reviewed_at": "2026-07-30T08:00:00+00:00",
-    })
-    (out_dir / "study_meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
-
-    # Khóa RIÊNG nhóm STATISTICIAN — bắt buộc để G4-HUMAN-02 (mức bảo đảm khóa
-    # ký) đạt PASS; ký bằng khóa CHUNG chỉ đạt REVIEW nên KHÔNG BAO GIỜ tới
-    # được PASS_G4_SAP_LOCKED (đúng thiết kế, mirror G8-HUMAN-03).
+    # Khóa RIÊNG nhóm STATISTICIAN — bắt buộc để G4-HUMAN-02 (mức bảo đảm khóa ký) đạt PASS; ký bằng khóa CHUNG chỉ
+    # đạt REVIEW nên KHÔNG BAO GIỜ tới được PASS_G4_SAP_LOCKED (đúng thiết kế, mirror G8-HUMAN-03).
     base_key = os.environ.get("EBM_GATE_KEY_PATH")
     if base_key:
         role_key_path = Path(base_key).with_name(Path(base_key).name + "_STATISTICIAN")
@@ -417,27 +398,48 @@ def prepare_upstream_approvals(
         "METHODS_STATISTICS_REVIEWER",
         repo_root=repo_root,
     )
+    CS.xoa_dem()
+    bao_cao = G4Q.evaluate_study(study, out_dir, repo_root=repo_root, write=False)
+    chua_dat = [(c["id"], c["evidence"][:120]) for c in bao_cao["automatic_criteria"] + bao_cao["approval_criteria"]
+                if c["status"] != "PASS"]
+    assert bao_cao["status"] == G4Q.STATUS_LOCKED, f"fixture G4 ({design_code}) chưa khoá: {chua_dat}"
+    CS.xoa_dem()
 
 
-def prepare_locked_g5_study(
+def ghi_ban_go_bang_tong_hop(out_dir: Path, transcript_ids) -> Path:
+    """Bản gỡ băng TỔNG HỢP đã khử định danh + TRANSCRIPT_manifest.json hợp lệ (G5-08) cho đề tài định tính trong test:
+    tệp chỉ đọc, băm sha256 đúng, deidentified=true, reviewer_ref là mã (không PII), nội dung không mang mẫu PII."""
+    thu_muc = Path(out_dir) / "06_ban_go_bang"
+    thu_muc.mkdir(parents=True, exist_ok=True)
+    muc = []
+    for tid in transcript_ids:
+        tep = thu_muc / f"{tid}.txt"
+        if tep.exists():
+            os.chmod(tep, stat.S_IRUSR | stat.S_IWUSR)
+        tep.write_text(f"Người tham gia {tid} kể về trải nghiệm chờ khám và lời giải thích của nhân viên "
+                       "(dữ liệu tổng hợp cho kiểm thử, không có thông tin định danh).", encoding="utf-8", newline="\n")
+        os.chmod(tep, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+        muc.append({"transcript_id": tid, "file": f"06_ban_go_bang/{tid}.txt",
+                    "sha256": hashlib.sha256(tep.read_bytes()).hexdigest(), "deidentified": True,
+                    "reviewer_ref": "PYTEST-QR-01"})
+    path = Path(out_dir) / G5Q.TRANSCRIPT_MANIFEST_JSON
+    path.write_text(json.dumps({"schema_version": "G5-TRANSCRIPT-2026.1", "transcripts": muc}, ensure_ascii=False,
+                               indent=2), encoding="utf-8", newline="\n")
+    return path
+
+
+def prepare_clean_g5_study(
     study: str,
     source_data: Path,
     *,
     exports_root: Path,
     repo_root: Path,
-    approve_g5: bool = True,
     extra_date_columns: frozenset[str] = frozenset(),
-) -> tuple[Path, dict]:
-    """Chạy intake -> cleaning -> lock -> approval G5 cho dữ liệu tổng hợp.
-
-    `extra_date_columns`: tên cột NGHIÊN CỨU trong `source_data` đã khai
-    tường minh kiểu "date" ở nơi khác (vd data_dictionary.json của pipeline
-    pseudonymize) — được ghi vào CHÍNH dictionary REDCap canonical mà
-    `write_g5_toolkit()` sinh ra, để cả bước quét PII (intake/clean/lock)
-    LẪN `g5_quality_gate.evaluate_study()` (vốn đọc dictionary ở đường dẫn
-    canonical để chấm G5-AUTO-02..09) đều thấy ĐÚNG MỘT dictionary — tránh
-    lệch hash nếu dùng hai file dictionary khác nhau cho hai việc.
-    """
+    extra_text_columns: frozenset[str] = frozenset(),
+    query_resolutions_path: Optional[Path] = None,
+) -> dict:
+    """Bộ công cụ G5 + chuỗi G0→G4 đã chốt + nạp + làm sạch (chưa khoá). Trả {out_dir, clean_path, query_log,
+    dictionary_path, cleaning} để test khoá bằng lock_g5_fixture — kể cả các ca khoá bị từ chối (04/10/2026)."""
     out_dir = exports_root / study
     with Path(source_data).open("r", encoding="utf-8-sig", newline="") as handle:
         source_fields = set(csv.DictReader(handle).fieldnames or [])
@@ -453,6 +455,7 @@ def prepare_locked_g5_study(
         out_dir,
         id_field=id_field,
         extra_date_columns=extra_date_columns,
+        extra_text_columns=extra_text_columns,
     )
     prepare_upstream_approvals(study, out_dir, repo_root=repo_root)
 
@@ -476,20 +479,28 @@ def prepare_locked_g5_study(
         raw_path,
         dictionary_path=dictionary_path,
         exports_root=exports_root,
+        query_resolutions_path=query_resolutions_path,
     )
     assert cleaning["status"] == CLEAN.CLEAN_READY_STATUS, cleaning
-    clean_path = out_dir / cleaning["clean_dataset_path"]
-    query_log = out_dir / cleaning["query_log"]
-    manifest = LAD.lock_dataset(
-        study,
-        clean_path,
+    return {
+        "out_dir": out_dir,
+        "clean_path": out_dir / cleaning["clean_dataset_path"],
+        "query_log": out_dir / cleaning["query_log"],
+        "dictionary_path": dictionary_path,
+        "cleaning": cleaning,
+    }
+
+
+def lock_g5_fixture(study: str, ctx: dict, *, exports_root: Path, repo_root: Path, **ghi_de) -> dict:
+    """lock_dataset với đủ mười xác nhận của người (G5-07 thêm audit trail); `ghi_de` thay từng tham số."""
+    kwargs = dict(
         lock_date=datetime.now().date().isoformat(),
         reviewer_role="DATA_GOVERNANCE_QA_REVIEWER",
         reviewer_ref="PYTEST-G5-DATA-REVIEWER",
         sap_version="1.0",
-        query_log=query_log,
-        dictionary_path=dictionary_path,
-        cleaning_report_path=out_dir / CLEAN.REPORT_NAME,
+        query_log=ctx["query_log"],
+        dictionary_path=ctx["dictionary_path"],
+        cleaning_report_path=ctx["out_dir"] / CLEAN.REPORT_NAME,
         exports_root=exports_root,
         repo_root=repo_root,
         confirm_deidentified=True,
@@ -501,7 +512,52 @@ def prepare_locked_g5_study(
         confirm_backup_restore_tested=True,
         confirm_retention_plan=True,
         confirm_protocol_deviations_reconciled=True,
+        confirm_audit_trail_reviewed=True,
     )
+    kwargs.update(ghi_de)
+    return LAD.lock_dataset(study, ctx["clean_path"], **kwargs)
+
+
+def prepare_locked_g5_study(
+    study: str,
+    source_data: Path,
+    *,
+    exports_root: Path,
+    repo_root: Path,
+    approve_g5: bool = True,
+    extra_date_columns: frozenset[str] = frozenset(),
+    extra_text_columns: frozenset[str] = frozenset(),
+    truoc_khi_khoa=None,
+    ky_vong: Optional[str] = None,
+    query_resolutions_path: Optional[Path] = None,
+) -> tuple[Path, dict]:
+    """Chạy intake -> cleaning -> lock -> approval G5 cho dữ liệu tổng hợp.
+
+    `extra_date_columns`: tên cột NGHIÊN CỨU trong `source_data` đã khai
+    tường minh kiểu "date" ở nơi khác (vd data_dictionary.json của pipeline
+    pseudonymize) — được ghi vào CHÍNH dictionary REDCap canonical mà
+    `write_g5_toolkit()` sinh ra, để cả bước quét PII (intake/clean/lock)
+    LẪN `g5_quality_gate.evaluate_study()` (vốn đọc dictionary ở đường dẫn
+    canonical để chấm G5-AUTO-02..09) đều thấy ĐÚNG MỘT dictionary — tránh
+    lệch hash nếu dùng hai file dictionary khác nhau cho hai việc.
+
+    04/10/2026 (soát từng cổng G5): `extra_text_columns` khai thêm cột văn bản; `truoc_khi_khoa(out_dir)` chạy ngay
+    trước lock_dataset (sửa DMP/hồ sơ vận hành/bản gỡ băng như người thật); `ky_vong` = trạng thái G5 mong đợi sau khoá
+    (mặc định READY_FOR_G5_APPROVAL) — khác READY thì không ký G5.
+    """
+    ctx = prepare_clean_g5_study(
+        study,
+        source_data,
+        exports_root=exports_root,
+        repo_root=repo_root,
+        extra_date_columns=extra_date_columns,
+        extra_text_columns=extra_text_columns,
+        query_resolutions_path=query_resolutions_path,
+    )
+    out_dir = ctx["out_dir"]
+    if truoc_khi_khoa is not None:
+        truoc_khi_khoa(out_dir)
+    manifest = lock_g5_fixture(study, ctx, exports_root=exports_root, repo_root=repo_root)
     assert manifest["status"] == LAD.LOCKED_STATUS, manifest.get("blockers")
     report = G5Q.evaluate_study(
         study,
@@ -509,8 +565,10 @@ def prepare_locked_g5_study(
         repo_root=repo_root,
         write=True,
     )
-    assert report["status"] == G5Q.STATUS_READY, report
-    if approve_g5:
+    ky_vong = ky_vong or G5Q.STATUS_READY
+    assert report["status"] == ky_vong, [(c["id"], c["evidence"][:160]) for c in report["automatic_criteria"]
+                                         if c["status"] != "PASS"]
+    if approve_g5 and ky_vong == G5Q.STATUS_READY:
         append_signed_approval(
             study,
             out_dir / "G5_checkpoint.json",

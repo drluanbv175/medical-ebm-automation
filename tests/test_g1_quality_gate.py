@@ -40,6 +40,8 @@ def _design(**overrides):
 
 
 def _g0():
+    # 04/10/2026 (soát từng cổng, G1-04): G0 «đã chốt» phải mang hợp đồng chất lượng — fixture cũ là checkpoint G0
+    # KIỂU CŨ (không quality_gate) nên test xác nhận chỉ PASS nhờ nhánh legacy fail-open mà nay đã đóng.
     return {
         "study": "TEST-G1",
         "gate": "G0",
@@ -48,7 +50,15 @@ def _g0():
         "pubmed_results": {"pmids": ["12345678"], "n_rct": 1, "n_sr": 0},
         "research_gaps": ["Thiếu nghiên cứu tại bối cảnh đích."],
         "guardrail": {"passed": True, "errors": []},
+        "quality_contract_version": "G0-2026.1",
+        "quality_gate": {"status": "PASS_G0_CONFIRMED"},
     }
+
+
+def _chot_g1(meta, design):
+    """Mô phỏng PI chốt G1: dấu vân tay tính trên ĐÚNG quyết định + thiết kế hiện tại (G1-09, 04/10/2026)."""
+    meta["gate_params"]["G1"]["dau_van_tay_chot"] = G1Q.dau_van_tay_g1(meta, design)
+    return meta
 
 
 def _confirmed_meta():
@@ -87,6 +97,8 @@ def _confirmed_meta():
                 "evidence_review_confirmed": True,
                 "reviewed_by_role": "methodologist",
                 "reviewed_at": "2026-07-27T10:00:00+07:00",
+                # 04/10/2026 (G1-11/QĐ-15): RCT khai tường minh Annex 2 không áp dụng.
+                "annex2": {"applicable": False, "methodologies": []},
             }
         },
     }
@@ -175,7 +187,7 @@ def test_automatic_layer_never_claims_pass_without_human_confirmation(tmp_path):
 
 
 def test_full_methodology_confirmation_can_pass_g1(tmp_path):
-    report = _evaluate(_build_case(tmp_path, meta=_confirmed_meta()))
+    report = _evaluate(_build_case(tmp_path, meta=_chot_g1(_confirmed_meta(), _design())))
 
     assert report["automated_checks_passed"] is True
     assert report["human_confirmation_complete"] is True
@@ -244,6 +256,7 @@ def test_qualitative_g1_uses_qualitative_confirmation_not_numeric_outcome(tmp_pa
         "saturation_criterion": "Dừng khi không còn mã/chủ đề mới có ý nghĩa",
     })
     del g1["primary_outcome"]
+    _chot_g1(meta, design)
 
     report = _evaluate(
         _build_case(tmp_path, meta=meta, design_value=design)
@@ -276,6 +289,7 @@ def test_systematic_review_g1_requires_search_and_selection_plan(tmp_path):
     g1.pop("study_period")
     g1.pop("recruitment_strategy")
     g1.pop("follow_up_schedule")
+    _chot_g1(meta, design)
 
     report = _evaluate(
         _build_case(tmp_path, meta=meta, design_value=design)
@@ -335,6 +349,8 @@ def test_ambiguous_design_creates_reviewable_draft_not_technical_failure(tmp_pat
 def test_existing_failed_g0_blocks_g1(tmp_path):
     failed_g0 = _g0()
     failed_g0["guardrail"]["passed"] = False
+    # 04/10/2026: G0 có guardrail hỏng thì chính hợp đồng G0 ra BLOCKED (G0-AUTO-00) — fixture phải nhất quán.
+    failed_g0["quality_gate"] = {"status": "BLOCKED"}
     report = _evaluate(
         _build_case(tmp_path, meta=_confirmed_meta(), g0=failed_g0)
     )
@@ -522,12 +538,18 @@ def test_main_checkpoint_reports_draft_instead_of_false_pass(tmp_path, monkeypat
     study = "INTEGRATION-G1"
     study_dir = tmp_path / "exports" / study
     study_dir.mkdir(parents=True)
-    g0 = _g0()
-    g0["study"] = study
+    # 04/10/2026 (G0-01/G1-04): G1 nay CHẤM SỐNG G0 — một checkpoint G0 thiếu trường hợp đồng và thiếu A1 bị G0 tự
+    # chặn (BLOCKED) nên G1 cũng chặn. Dựng G0 HỢP LỆ chưa chốt (đủ khoá + A1 thật) ⇒ G0 DRAFT ⇒ G1 DRAFT như kỳ vọng.
+    if str(TOOLS_DIR.parent / "tests") not in sys.path:
+        sys.path.insert(0, str(TOOLS_DIR.parent / "tests"))
+    from test_g0_quality_gate_20260728 import _artifact_text as _g0_a1
+    from test_g0_quality_gate_20260728 import _checkpoint as _g0_cp_day_du
+    g0 = _g0_cp_day_du(study=study)
     (study_dir / "G0_checkpoint.json").write_text(
         json.dumps(g0, ensure_ascii=False),
         encoding="utf-8", newline="\n"
     )
+    (study_dir / f"G0_A1_PICO_FINER_{study}.md").write_text(_g0_a1(), encoding="utf-8", newline="\n")
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(sys, "argv", ["run_g1_auto.py", "--study", study])
     effects = [{
@@ -559,7 +581,12 @@ def test_main_checkpoint_reports_draft_instead_of_false_pass(tmp_path, monkeypat
     assert "## PHẦN 0 — ĐỀ CƯƠNG LÕI" in a2_text
 
 
-def test_system_audit_respects_g1_quality_status(tmp_path):
+def test_system_audit_respects_g1_quality_status(tmp_path, monkeypatch):
+    # 06/10/2026 (NGANG): đài kiểm soát phân loại theo CHẤM SỐNG — giả lập kết quả chấm sống = trạng thái checkpoint giả
+    # để kiểm LOGIC phân loại (tests/_gia_lap_cham_song.py).
+    from tests._gia_lap_cham_song import gia_lap_cham_song
+
+    gia_lap_cham_song(monkeypatch)
     (tmp_path / "G1_checkpoint.json").write_text(
         json.dumps({
             "gate": "G1",

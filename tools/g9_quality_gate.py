@@ -31,8 +31,10 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
 
+import cong_song as CS
 import gate_contract as GC
 import pipeline_freshness as PF
+import placeholder_contract as PC
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
@@ -44,7 +46,7 @@ STATUS_BLOCKED = "BLOCKED"
 STATUS_DRAFT = "DRAFT_READY_NEEDS_REAL_ATTESTATIONS"
 STATUS_READY = "READY_FOR_G9_PI_APPROVAL"
 STATUS_LOCKED = "PASS_G9_PUBLICATION_INTEGRITY_LOCKED"
-QUALITY_CONTRACT_VERSION = "G9-2026.2"
+QUALITY_CONTRACT_VERSION = "G9-2026.2"  # schema readiness giữ nguyên (05/10/2026: vá luật chấm, không đổi khuôn)
 
 READINESS_JSON = "G9_PUBLICATION_READINESS.json"
 REPORT_JSON = "G9_QUALITY_REPORT.json"
@@ -140,9 +142,11 @@ STANDARDS_BASIS = (
     },
 )
 
+# SỬA 05/10/2026 (soát từng cổng G9 — phát hiện bổ sung): bản cũ IGNORECASE không ranh giới ⇒ «[Todorov 2020]»,
+# «[Canadian Task Force…]», «[can thiệp giáo dục]» bị coi là ô trống (chặn sai bản thảo đã xong). Nay: «CẦN» mọi hoa/
+# thường; «CAN» (bản bỏ dấu) chỉ CHỮ HOA như placeholder_contract; TBD/TODO/PENDING không được dính chữ cái phía sau.
 _PLACEHOLDER_RE = re.compile(
-    r"\[(?:CẦN|CAN|TBD|TODO|PENDING)[^\]]*\]|<[^>\n]*(?:điền|fill|name|date)[^>\n]*>",
-    re.IGNORECASE,
+    r"\[(?:(?i:CẦN)|CAN|(?i:TBD|TODO|PENDING))(?![^\W\d_])[^\]]*\]|(?i:<[^>\n]*(?:điền|fill|name|date)[^>\n]*>)"
 )
 _INTERNAL_TRACE_RE = re.compile(
     r"\b(?:chain[- ]of[- ]thought|internal reasoning|system prompt|agent scratchpad)\b",
@@ -190,12 +194,18 @@ def _sha256(path: Optional[Path]) -> Optional[str]:
 
 
 def _real_text(value: Any) -> bool:
+    """Giá trị trường có NỘI DUNG THẬT không.
+
+    SỬA 05/10/2026 (soát từng cổng G9-01): giữ chốt cũ rồi AND thêm vị từ dùng chung placeholder_contract.
+    co_noi_dung_that — trước đây «___», «-», «[TO BE COMPLETED]», «[BÁC SĨ ĐIỀN]», «[đơn vị]», «TBD» trần đều là «đã
+    điền» (đo trực tiếp _real_text('___') == True)."""
     text = str(value or "").strip()
     return bool(
         text
         and not _PLACEHOLDER_RE.search(text)
         and text.casefold()
         not in {"none", "null", "unknown", "undecided", "not decided", "chưa quyết định"}
+        and PC.co_noi_dung_that(text)
     )
 
 
@@ -375,7 +385,10 @@ def build_readiness_template(
         },
         "final_package": {
             "manuscript_path": f"G7_A8_MANUSCRIPT_{study}.md",
-            "reporting_checklist_path": f"G8_A9_PRESUBMISSION_{study}.md",
+            # 05/10/2026 (soát từng cổng G9-02): KHÔNG mặc định trỏ vào A9 (bản tự kiểm G8 đã ký — không phải checklist
+            # chuẩn báo cáo, luôn còn «[CAN …]» ⇒ G9-AUTO-05 bế tắc). PI trỏ tới checklist CONSORT/STROBE/… đã điền số
+            # trang (tệp nộp kèm bản thảo); để trống ⇒ G9-AUTO-05 báo thiếu.
+            "reporting_checklist_path": None,
             "cover_letter_path": f"G9_COVER_LETTER_{study}.md",
             "supplements_paths": [],
             "manuscript_version": None,
@@ -397,57 +410,70 @@ def write_readiness_template(
     n_authors: int,
     target_journal: str = "",
 ) -> Path:
-    """Ghi hoặc nâng schema template mà không đè xác nhận đời thực đã có."""
+    """Ghi hoặc nâng schema template mà không đè xác nhận đời thực đã có.
+
+    SỬA 05/10/2026 (soát từng cổng G9-06): số tác giả đổi ⇒ chỉ dựng lại MẢNG `authors` (giữ nguyên tác giả đã có theo
+    thứ tự, thêm khuôn cho tác giả mới) và GIỮ mọi khối khác (venue, AI, dữ liệu, thể chế, COI/tài trợ…) — bản cũ ghi
+    đè TOÀN BỘ hồ sơ bằng khuôn trắng khi chưa có evidence_ref tác giả, không cảnh báo. Bớt tác giả mà tác giả bị bớt đã
+    có xác nhận thật ⇒ KHÔNG tự bỏ (giữ nguyên tệp, in cảnh báo — như bản cũ). Tệp cũ luôn được sao lưu trước khi
+    ghi."""
     path = out_dir / READINESS_JSON
     existing = _read_json(path)
     authors = existing.get("authors")
-    has_real_attestation = bool(
-        isinstance(authors, list)
-        and any(
-            isinstance(author, Mapping)
-            and (
-                _real_text(author.get("attestation_evidence_ref"))
-                or _real_text(author.get("coi_evidence_ref"))
-            )
-            for author in authors
-        )
-    )
+    n = max(1, int(n_authors))
     author_count_changed = bool(
         existing
         and (
-            existing.get("n_authors") != max(1, int(n_authors))
+            existing.get("n_authors") != n
             or not isinstance(authors, list)
-            or len(authors) != max(1, int(n_authors))
+            or len(authors) != n
         )
     )
     template = build_readiness_template(study, n_authors, target_journal)
-    if not existing or (author_count_changed and not has_real_attestation):
-        path.write_text(
-            json.dumps(
-                template,
-                ensure_ascii=False,
-                indent=2,
-            ),
-            encoding="utf-8", newline="\n"
-        )
-    elif not author_count_changed:
-        migrated = deepcopy(existing)
 
-        def fill_missing(target: Dict[str, Any], defaults: Mapping[str, Any]) -> None:
-            for key, default in defaults.items():
-                if key not in target:
-                    target[key] = deepcopy(default)
-                elif isinstance(target[key], dict) and isinstance(default, Mapping):
-                    fill_missing(target[key], default)
+    def _co_xac_nhan_that(author: Any) -> bool:
+        return isinstance(author, Mapping) and (
+            _real_text(author.get("attestation_evidence_ref")) or _real_text(author.get("coi_evidence_ref")))
 
-        fill_missing(migrated, template)
-        migrated["schema_version"] = QUALITY_CONTRACT_VERSION
-        if migrated != existing:
-            path.write_text(
-                json.dumps(migrated, ensure_ascii=False, indent=2),
-                encoding="utf-8", newline="\n"
-            )
+    def fill_missing(target: Dict[str, Any], defaults: Mapping[str, Any]) -> None:
+        for key, default in defaults.items():
+            if key not in target:
+                target[key] = deepcopy(default)
+            elif isinstance(target[key], dict) and isinstance(default, Mapping):
+                fill_missing(target[key], default)
+
+    if not existing:
+        path.write_text(json.dumps(template, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+        return path
+    migrated = deepcopy(existing)
+    if author_count_changed:
+        cu = list(authors) if isinstance(authors, list) else []
+        bi_bot = [a for a in cu[n:] if _co_xac_nhan_that(a)]
+        if bi_bot:
+            print(f"  ⚠ {READINESS_JSON}: giảm còn {n} tác giả sẽ BỎ {len(bi_bot)} tác giả ĐÃ có xác nhận thật — KHÔNG "
+                  "tự sửa; PI chỉnh mảng authors bằng tay (G9-AUTO-01 sẽ báo lệch số tác giả tới khi khớp).")
+            return path
+        migrated["authors"] = [deepcopy(cu[i]) if i < len(cu) else deepcopy(template["authors"][i]) for i in range(n)]
+        migrated["n_authors"] = n
+        print(f"  ↻ {READINESS_JSON}: số tác giả {len(cu)} → {n} — chỉ dựng lại mảng authors, giữ các khối khác.")
+    fill_missing(migrated, template)
+    migrated["schema_version"] = QUALITY_CONTRACT_VERSION
+    if migrated != existing:
+        bak = path.with_name(f"{path.stem}.bak-{datetime.now().strftime('%Y%m%d-%H%M%S')}{path.suffix}")
+        try:
+            bak.write_text(path.read_text(encoding="utf-8"), encoding="utf-8", newline="\n")
+        except (OSError, UnicodeDecodeError):
+            pass
+        path.write_text(json.dumps(migrated, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return path
+
+
+def _chuan_vai_tro(role: Any) -> str:
+    """Tên vai trò CRediT chuẩn hoá để so: gạch U+2010–U+2015 → «-», gọn khoảng trắng, không phân biệt hoa/thường."""
+    return re.sub(r"\s+", " ", re.sub(r"[\u2010-\u2015]", "-", str(role or ""))).strip().casefold()
+
+
+_CREDIT_CHUAN = {_chuan_vai_tro(r) for r in CREDIT_ROLES}
 
 
 def _authors_ok(payload: Mapping[str, Any], expected: int) -> tuple[bool, str]:
@@ -473,11 +499,11 @@ def _authors_ok(payload: Mapping[str, Any], expected: int) -> tuple[bool, str]:
             )
         )
         roles = author.get("credit_roles")
-        roles_ok = bool(
-            isinstance(roles, list)
-            and roles
-            and all(str(role) in CREDIT_ROLES for role in roles)
-        )
+        # SỬA 05/10/2026 (G9-07): chuẩn hoá gạch (U+2010–U+2015 → «-») và khoảng trắng — A10/doctrine in tên NISO
+        # «Writing – original draft» (gạch ngang dài), CREDIT_ROLES dùng «-»; chép nguyên tên từng bị loại không lý do.
+        sai_vai = ([str(r) for r in roles if _chuan_vai_tro(r) not in _CREDIT_CHUAN] if isinstance(roles, list)
+                   else ["<không phải danh sách>"])
+        roles_ok = bool(isinstance(roles, list) and roles and not sai_vai)
         row_ok = all(
             (
                 _real_text(ref),
@@ -491,7 +517,7 @@ def _authors_ok(payload: Mapping[str, Any], expected: int) -> tuple[bool, str]:
             )
         )
         if not row_ok:
-            issues.append(f"author_{index}:incomplete")
+            issues.append(f"author_{index}:incomplete" + (f"(credit_role_khong_hop_le={sai_vai})" if sai_vai else ""))
     if len(set(refs)) != len(refs):
         issues.append("duplicate_author_ref")
     return not issues, ", ".join(issues) or f"{expected} author attestations complete"
@@ -766,6 +792,14 @@ def _manifest_matches(expected: Any, current: Mapping[str, Any]) -> bool:
 
 
 def _documents_clean(files: Mapping[str, Optional[Path]]) -> tuple[bool, str, bool]:
+    """(sạch?, bằng chứng, có vệt nội bộ?) của gói cuối.
+
+    SỬA 05/10/2026 (soát từng cổng G9-01/G9-02, điều phối G7↔G8↔G9): (1) bản thảo quét bằng CHÍNH hai bộ quét của G8
+    (manuscript_residues + scan_internal_traces) — G7 PASS ⇒ G8-AUTO-04 ⇒ G9 cùng nói một chuyện «bản thảo sạch»;
+    (2) A10/checklist/cover letter quét bằng placeholder_contract (họ NHAN + MAU_CHUNG; cover letter thêm TRONG — dòng
+    ký «___»); bản cũ chỉ bắt [CẦN/CAN/TBD…] nên ô mẫu không nhãn của khuôn và «___» lọt; (3) reporting_checklist trỏ
+    vào A9 (bản tự kiểm G8 đã KÝ — không phải checklist chuẩn báo cáo, và luôn còn «[CAN …]» ⇒ bế tắc vì sửa A9 phá chữ
+    ký G8) ⇒ REVIEW yêu cầu trỏ đúng checklist, không quét A9."""
     required = (
         "integrity_package",
         "manuscript",
@@ -780,6 +814,15 @@ def _documents_clean(files: Mapping[str, Optional[Path]]) -> tuple[bool, str, bo
     missing = [key for key in required if not files.get(key) or not files[key].is_file()]
     if missing:
         return False, "missing=" + ",".join(missing), False
+    try:
+        trung_a9 = files["reporting_checklist"].resolve() == files["presubmission_review"].resolve()
+    except OSError:
+        trung_a9 = False
+    if trung_a9:
+        return False, ("reporting_checklist trỏ vào A9 (G8_A9_PRESUBMISSION — bản tự kiểm G8 đã ký, không phải "
+                       "checklist chuẩn báo cáo): trỏ final_package.reporting_checklist_path tới checklist "
+                       "CONSORT/STROBE/… thật"), False
+    import g8_quality_gate as G8Q  # noqa: PLC0415 — import lười
     placeholder_hits: list[str] = []
     trace_hits: list[str] = []
     for key in ("integrity_package", "manuscript", "reporting_checklist", "cover_letter"):
@@ -788,7 +831,13 @@ def _documents_clean(files: Mapping[str, Optional[Path]]) -> tuple[bool, str, bo
             text = path.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
             return False, f"unreadable={key}", True
-        if _PLACEHOLDER_RE.search(text):
+        if key == "manuscript":
+            if G8Q.manuscript_residues(text):
+                placeholder_hits.append(key)
+            if G8Q.scan_internal_traces(text):
+                trace_hits.append(key)
+        elif _PLACEHOLDER_RE.search(text) or PC.co_o_trong(
+                text, ho=PC.HO_MAC_DINH + ((PC.TRONG,) if key == "cover_letter" else ())):
             placeholder_hits.append(key)
         if _INTERNAL_TRACE_RE.search(text):
             trace_hits.append(key)
@@ -917,6 +966,9 @@ def evaluate_study(
     checkpoint = _read_json(checkpoint_path)
     readiness = _read_json(readiness_path)
     meta = GC.load_study_meta(out_dir)
+    # Khai báo đã dùng ở G8 (bản thảo/cover letter đã được G8 đối chiếu) — G9 phải KHỚP (điều phối G8↔G9, 05/10/2026).
+    g8_gp = (meta.get("gate_params") or {}).get("G8") if isinstance(meta.get("gate_params"), Mapping) else None
+    g8_gp = g8_gp if isinstance(g8_gp, Mapping) else {}
     rows: list[Dict[str, str]] = []
 
     structure_ok = bool(
@@ -951,7 +1003,9 @@ def evaluate_study(
         import run_g9_auto as G9run  # noqa: PLC0415
         a10_path = out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md"
         a10_text = a10_path.read_text(encoding="utf-8") if a10_path.exists() else ""
-        fresh_guardrail = G9run.guardrail_check_g9(a10_text)
+        # 05/10/2026 (G9-03): chấm lại gói người đã điền — R2 (DOI thật của Data Availability) và R4 (gỡ nhãn DRAFT/CHỜ
+        # khi đã chốt) chỉ còn là cảnh báo; R1/R3/R6/R7 giữ nguyên.
+        fresh_guardrail = G9run.guardrail_check_g9(a10_text, cham_lai=True)
         guardrail_ok = bool(fresh_guardrail.get("passed")) if a10_text else False
         guardrail_evidence = f"guardrail_passed={guardrail_ok} (chấm lại trên A10 hiện tại, không tin cache)"
     except ImportError:  # pragma: no cover - lưới an toàn nếu import thất bại
@@ -967,7 +1021,6 @@ def evaluate_study(
         )
     )
 
-    g2_cp = _read_json(out_dir / "G2_checkpoint.json")
     g8_artifact = out_dir / f"G8_A9_PRESUBMISSION_{study}.md"
     # SỬA 2026-07-30 (audit toàn diện G0-G10, G10-01 — CRITICAL, cùng lỗi cũng thấy ở
     # g10_quality_gate.py::G10-AUTO-04): _status_locked(g2/g4.get("g*_status")) kiểm
@@ -975,42 +1028,52 @@ def evaluate_study(
     # chỉ ghi "PENDING"/"BLOCKED — ...". g4_ok vì vậy vĩnh viễn False cho MỌI đề tài
     # thật, dù chữ ký ledger G4 hợp lệ. Vá theo đúng khuôn g5_ok bên dưới đã dùng đúng
     # (chấm trực tiếp qua hàm hợp đồng chất lượng, không đọc field text đã lỗi thời).
-    g2_ok = bool(
-        GC.ledger_approved(
-            "G2", study, out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md", repo_root=root
-        )
-        and GC.g2_quality_contract_satisfied(g2_cp, meta, study=study, out_dir=out_dir)
-    )
+    # 05/10/2026 (điều phối G7↔G9): «G2 đã duyệt» = g7_quality_gate.g2_da_duyet — MỘT định nghĩa cho G5/G6/G7/G8/G9/G10
+    # (cùng sổ cái + g2_quality_contract_satisfied như bản cũ viết tay ở đây, nay kèm bằng chứng).
+    import g7_quality_gate as G7Q  # noqa: PLC0415 — import lười
+    g2_ok, g2_ly_do = G7Q.g2_da_duyet(study, out_dir, repo_root=root)
     g4_ok = GC.g4_quality_contract_satisfied(study, repo_root=root)
     g5_ok = GC.g5_quality_contract_satisfied(study, repo_root=root)
-    g8_ok = bool(
-        g8_artifact.exists()
-        and GC.ledger_approved("G8", study, g8_artifact, repo_root=root)
-    )
+    # SỬA 05/10/2026 (soát từng cổng G9-04): G8 phải được CHẤM SỐNG là PASS_G8_REVIEW_RECORDED — bao gồm G8-AUTO-12/
+    # 12b (bản thảo và bản nhận xét còn đúng bản đã ràng buộc vào A9), G8-AUTO-13 (G7 sống PASS) và kết luận phản biện
+    # (G8-HUMAN-06). Bản cũ chỉ hỏi sổ cái G8 trên A9 ⇒ bản thảo sửa SAU bình duyệt vẫn READY và được PI khoá.
+    g8_ledger = bool(g8_artifact.exists() and GC.ledger_approved("G8", study, g8_artifact, repo_root=root))
+    g8_song = CS.trang_thai_song("G8", study, out_dir, repo_root=root) if g8_ledger else {"status": "chưa ký G8"}
+    g8_ok = g8_ledger and g8_song.get("muc") == "PASS"
     upstream_ok = g2_ok and g4_ok and g5_ok and g8_ok
     rows.append(
         _criterion(
             "G9-AUTO-03",
             "G2, G4, G5 và G8 còn khóa hợp lệ",
             "PASS" if upstream_ok else "REVIEW",
-            f"G2={g2_ok}; G4={g4_ok}; G5={g5_ok}; G8={g8_ok}",
+            f"G2={g2_ok} ({g2_ly_do}); G4={g4_ok}; G5={g5_ok}; G8={g8_ok} ({g8_song.get('status')})",
             "Hoàn tất các cổng tiền đề bằng đúng vai trò và artifact trước G9.",
         )
     )
 
+    g9_approved = bool(
+        checkpoint_path.exists()
+        and GC.ledger_approved("G9", study, checkpoint_path, repo_root=root)
+    )
+    het_han = None
     try:
         import run_g10_assemble as G10  # noqa: PLC0415
 
-        citation_ok, citation_reason = G10.citation_verification_ok(study, out_dir)
+        citation_ok, citation_reason = G10.citation_verification_ok(study, out_dir, kiem_ban_g10=False)
+        # 05/10/2026 (G10-05, dùng chung G9): G9 khoá gói NỘP TẠP CHÍ — trạng thái rút bài phải còn hạn 30 ngày lúc ký;
+        # sau khi đã khoá thì chỉ cảnh báo (chạy lại A12 làm đổi manifest ⇒ phải ký lại có chủ ý), không tự huỷ khoá.
+        if citation_ok:
+            het_han, _tuoi = G10.han_bien_nhan_rut_bai(out_dir)
     except (ImportError, OSError, RuntimeError, ValueError) as exc:
         citation_ok, citation_reason = False, str(exc)
     rows.append(
         _criterion(
             "G9-AUTO-04",
-            "A12 xác minh trích dẫn, rút bài và metadata",
-            "PASS" if citation_ok else "REVIEW",
-            citation_reason or "A12 current receipts valid",
-            "Chạy lại A12 trên toàn bộ trích dẫn và xử lý mọi cảnh báo trước G9.",
+            "A12 xác minh trích dẫn, rút bài và metadata (rút bài còn hạn 30 ngày lúc ký)",
+            "PASS" if citation_ok and (not het_han or g9_approved) else "REVIEW",
+            citation_reason or (f"⚠ {het_han} (đã khoá — chỉ cảnh báo, không huỷ khoá)" if het_han and g9_approved
+                                else het_han or "A12 current receipts valid"),
+            "Chạy lại A12 (check_citations.py) trên toàn bộ trích dẫn và xử lý mọi cảnh báo trước khi ký G9.",
         )
     )
 
@@ -1053,6 +1116,14 @@ def evaluate_study(
     )
 
     ai_ok, ai_evidence, unsafe_ai = _ai_ok(readiness)
+    # 05/10/2026 (điều phối G8↔G9): bản cũ để hai nơi độc lập — G8 khai CÓ dùng AI (bản thảo có câu khai), G9 khai
+    # KHÔNG vẫn READY và PI khoá một gói tự mâu thuẫn.
+    ai_block = readiness.get("ai_disclosure")
+    g9_ai = ai_block.get("ai_used") if isinstance(ai_block, Mapping) else None
+    g8_ai = g8_gp.get("ai_use_declared")
+    if isinstance(g8_ai, bool) and isinstance(g9_ai, bool) and g8_ai != g9_ai:
+        ai_ok = False
+        ai_evidence = f"LỆCH khai báo AI: G8 ai_use_declared={g8_ai} ≠ G9 ai_disclosure.ai_used={g9_ai} — {ai_evidence}"
     rows.append(
         _criterion(
             "G9-HUMAN-04",
@@ -1067,6 +1138,24 @@ def evaluate_study(
     )
 
     data_ok, data_evidence = _data_availability_ok(readiness)
+    # SỬA 05/10/2026 (soát từng cổng G9-05): data_availability.clinical_trial là bool tự khai — RCT khai False từng bỏ
+    # qua toàn bộ yêu cầu chia sẻ dữ liệu thử nghiệm của ICMJE. Đối chiếu thiết kế dùng chung (resolve_design_code).
+    try:
+        thiet_ke_song, _canh_bao_tk = GC.resolve_design_code(out_dir, default="")
+    except Exception:  # noqa: BLE001 — không xác định thì không ép
+        thiet_ke_song = ""
+    da_block = readiness.get("data_availability")
+    if thiet_ke_song == "rct" and not (isinstance(da_block, Mapping) and da_block.get("clinical_trial") is True):
+        data_ok = False
+        data_evidence = f"thiết kế rct nhưng data_availability.clinical_trial ≠ true — {data_evidence}"
+    # Điều phối G8↔G9 (05/10/2026): G8 đã khai TƯỜNG MINH có/không chia sẻ dữ liệu cá nhân (gate_params.G8.ipd_sharing,
+    # G8-13) ⇒ quyết định của G9 phải cùng chiều.
+    quyet_dinh = str(da_block.get("decision") or "").strip().upper() if isinstance(da_block, Mapping) else ""
+    g8_ipd = g8_gp.get("ipd_sharing")
+    if (g8_ipd is False and quyet_dinh in {"OPEN", "CONTROLLED_ACCESS"}) or (
+            g8_ipd is True and quyet_dinh == "NOT_SHARED_WITH_JUSTIFICATION"):
+        data_ok = False
+        data_evidence = f"LỆCH chia sẻ dữ liệu: G8 ipd_sharing={g8_ipd} ≠ G9 decision={quyet_dinh} — {data_evidence}"
     rows.append(
         _criterion(
             "G9-HUMAN-05",
@@ -1169,27 +1258,31 @@ def evaluate_study(
             "Gói cuối đủ file, không placeholder và không lộ dấu vết nội bộ",
             "BLOCK" if internal_trace else ("PASS" if docs_ok and package_meta_ok else "REVIEW"),
             f"{docs_evidence}; package_metadata={package_meta_ok}",
-            "Hoàn thiện manuscript/checklist/cover letter/supplement và xóa mọi placeholder.",
+            "Hoàn thiện manuscript/checklist/cover letter/supplement và xóa mọi placeholder; "
+            "final_package.reporting_checklist_path trỏ tới checklist chuẩn báo cáo (CONSORT/STROBE/… có số trang) — "
+            "không phải A9 của G8.",
         )
     )
 
     contact_pii = _readiness_has_contact_pii(readiness_path)
+    # SỬA 05/10/2026 (soát từng cổng G9-09): A10 (được manifest băm, lưu trong exports/) cũng không được chứa email/điện
+    # thoại — Phần 1 của khuôn cũ còn dạy ghi «HỌ TÊN + ĐƠN VỊ + EMAIL». Cover letter là tài liệu nộp tạp chí (được
+    # phép có email tác giả liên lạc) nên KHÔNG quét ở đây.
+    a10_pii = _readiness_has_contact_pii(out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md") if (
+        out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").exists() else False
     rows.append(
         _criterion(
             "G9-AUTO-06",
-            "Hồ sơ readiness chỉ dùng mã tham chiếu, không lưu email/điện thoại",
-            "BLOCK" if contact_pii else "PASS",
-            f"contact_pii_detected={contact_pii}",
-            "Xóa PII khỏi JSON; lưu form nhận diện/chữ ký ở hệ thống được kiểm soát.",
+            "Hồ sơ readiness và A10 chỉ dùng mã tham chiếu, không lưu email/điện thoại",
+            "BLOCK" if (contact_pii or a10_pii) else "PASS",
+            f"contact_pii_readiness={contact_pii}; contact_pii_a10={a10_pii}",
+            "Xóa email/điện thoại khỏi JSON và A10 (dùng AUTHOR-NN); lưu form nhận diện/chữ ký ở hệ thống được "
+            "kiểm soát.",
         )
     )
 
     current_manifest = _manifest(out_dir, files)
     saved_manifest = checkpoint.get("publication_manifest")
-    g9_approved = bool(
-        checkpoint_path.exists()
-        and GC.ledger_approved("G9", study, checkpoint_path, repo_root=root)
-    )
     manifest_ok = _manifest_matches(saved_manifest, current_manifest)
     # Trước chữ ký, evaluator được phép tạo/cập nhật manifest. Sau chữ ký, mọi
     # thay đổi phải chặn thay vì âm thầm "hợp thức hóa" hash mới.
@@ -1243,7 +1336,7 @@ def evaluate_study(
         g9_ref = cross_refs.get("G9", "")
         clashes = [
             gate for gate, ref in cross_refs.items()
-            if gate != "G9" and ref and g9_ref and ref == g9_ref
+            if gate != "G9" and ref and g9_ref and G8Q.norm_ref(ref) == G8Q.norm_ref(g9_ref)
         ]
         if not g9_ref:
             ref_status, ref_evidence = "REVIEW", "chưa có bản ghi phê duyệt G9 để đối chiếu"
@@ -1363,8 +1456,9 @@ def evaluate_study(
             encoding="utf-8", newline="\n"
         )
         _write_markdown(out_dir / REPORT_MD, report)
-        meta_for_write = GC.ensure_study_meta(out_dir)
-        meta_for_write["g9_quality_status"] = status
+        # SỬA 05/10/2026 (soát từng cổng G9-10): bỏ dòng gán `meta["g9_quality_status"]` không bao giờ được lưu (mã
+        # chết)
+        # — skill_standards đọc trạng thái G9 bằng chấm sống; không có nhánh dự phòng nào cần trường này.
         # Không sửa checkpoint sau chữ ký vì sẽ làm mất hiệu lực ledger.
         if checkpoint and not g9_approved:
             checkpoint["quality_contract_version"] = QUALITY_CONTRACT_VERSION

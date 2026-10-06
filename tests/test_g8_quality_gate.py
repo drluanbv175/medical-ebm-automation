@@ -15,6 +15,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 TOOLS_DIR = REPO_ROOT / "tools"
 sys.path.insert(0, str(TOOLS_DIR))
 
+import hashlib  # noqa: E402
+
+import cong_song as CS  # noqa: E402
 import g8_quality_gate as G8Q  # noqa: E402
 import run_g8_auto as G8  # noqa: E402
 
@@ -28,7 +31,7 @@ Kết cục chính là tử vong do mọi nguyên nhân trong 12 tháng.
 Nhóm nghiên cứu có sử dụng công cụ trí tuệ nhân tạo để hiệu đính ngôn ngữ.
 
 ## Kết quả
-Kết quả sẽ được điền sau khi khóa dữ liệu.
+Tổng cộng 120 người tham gia được phân tích; tỷ lệ tử vong 12 tháng là 8%.
 
 ## TÀI LIỆU THAM KHẢO
 1. Cook JA và cs. BMJ 2018;363:k3750.
@@ -42,11 +45,10 @@ REVIEW_REPORT = """# NHẬN XÉT PHẢN BIỆN
 
 ## KHUYẾN NGHỊ
 SỬA NHỎ
+Lý do: phương pháp phù hợp thiết kế, kết cục chính khớp SAP; chỉ còn góp ý trình bày nhỏ.
 
 ## LỖI NGHIÊM TRỌNG (phải sửa trước khi nộp)
-| Vị trí | Vấn đề |
-|---|---|
-| Mục 3.2 | Thiếu khoảng tin cậy |
+Không có.
 
 ## GÓP Ý NHỎ
 - Rút gọn phần mở đầu.
@@ -54,16 +56,39 @@ SỬA NHỎ
 ## CÂU HỎI CHO TÁC GIẢ
 1. Vì sao chọn ngưỡng này?
 
+## KHAI BÁO CỦA NGƯỜI PHẢN BIỆN
+Xung đột lợi ích với nhóm nghiên cứu: ☑ Không có ☐ Có (ghi rõ):
+Có phải đồng tác giả/cấp trên/cấp dưới trực tiếp của tác giả không: ☑ Không ☐ Có
+Có dùng AI khi phản biện không: ☑ Không ☐ Có (tên công cụ + mục đích):
+Cam kết không tải bản thảo lên công cụ AI thiếu bảo mật khi chưa được cho phép: ☑ Xác nhận
+
 ## KẾT LUẬN TỔNG THỂ
-Cần sửa thêm trước khi nộp.
+Sẵn sàng nộp.
 """
+
+# 05/10/2026: G7 chấm sống PASS — tiền đề G8-AUTO-13 (G8-06).
+G7_PASS = {"status": "PASS", "evidence": "G7=PASS_G7_CONFIRMED"}
+
+
+def _a9(manuscript_text: str, review_report_text: str) -> str:
+    """A9 đúng khuôn run_g8_auto: nhúng băm bản thảo + bản nhận xét (hợp đồng CHUNG-E) của CHÍNH các văn bản chấm."""
+    dong = ["# A9 — GÓI TIỀN NỘP BÀI", "Nội dung tự kiểm toàn bộ pipeline G0-G7."]
+    if manuscript_text.strip():
+        dong.append(CS.dong_bam_a9(CS.NHAN_BAM_BAN_THAO, "G7_A8_MANUSCRIPT_TEST-G8.md",
+                                   hashlib.sha256(manuscript_text.encode("utf-8")).hexdigest()))
+    if review_report_text.strip():
+        dong.append(CS.dong_bam_a9(CS.NHAN_BAM_BAO_CAO_PHAN_BIEN, "G8_PEER_REVIEW_REPORT_TEST-G8.md",
+                                   hashlib.sha256(review_report_text.encode("utf-8")).hexdigest()))
+    dong += ["[CAN] Vài mục hành chính (CRediT/COI) còn chờ bác sĩ điền.", "Cần bác sĩ kiểm chứng."]
+    return "\n".join(dong) + "\n"
 
 
 def _checkpoint(**overrides) -> dict:
     value = {
         "gate": "G8",
         "study": "TEST-G8",
-        "design_code": "rct",
+        # 05/10/2026 (G8-10/G8-17): bỏ "design_code" — trước ngày này run_g8_auto KHÔNG ghi khoá đó nên fixture đi một
+        # đường sản xuất không có; thiết kế nay truyền qua tham số `design_code` (evaluate_study tính sống).
         "guardrail": {"passed": True},
         # SỬA 2026-07-31 (audit tautology vòng 2 — CRITICAL): khóa THẬT mà
         # run_g8_auto.py::write_g8_checkpoint() ghi là "reporting_score_pct",
@@ -128,12 +153,8 @@ def _evaluate(**overrides):
         # pipeline["rows"] có checkpoint_exists — xem _checkpoint() ở trên;
         # R7 cần disclaimer) nên fixture phải là văn bản THỰC SỰ qua được
         # guardrail, không chỉ là placeholder rỗng.
-        presubmission_text=(
-            "# A9 — GÓI TIỀN NỘP BÀI\n"
-            "Nội dung tự kiểm toàn bộ pipeline G0-G7.\n"
-            "[CAN] Vài mục hành chính (CRediT/COI) còn chờ bác sĩ điền.\n"
-            "Cần bác sĩ kiểm chứng.\n"
-        ),
+        # 05/10/2026: A9 dựng từ CHÍNH bản thảo/bản nhận xét đang chấm (nhúng băm như run_g8_auto thật) — test muốn
+        # A9 lệch/thiếu băm thì truyền presubmission_text tường minh.
         manuscript_text=CLEAN_MANUSCRIPT,
         sap_text=SAP_TEXT,
         review_report_text=REVIEW_REPORT,
@@ -146,8 +167,11 @@ def _evaluate(**overrides):
         signature_scope="role",
         role_key_available=True,
         cross_gate_refs={"G2": "IRB-01", "G4": "STAT-01", "G8": "REV-77", "G9": "PI-01"},
+        design_code="rct",
+        tien_de_g7=G7_PASS,
     )
     kwargs.update(overrides)
+    kwargs.setdefault("presubmission_text", _a9(kwargs["manuscript_text"], kwargs["review_report_text"]))
     return G8Q.evaluate_g8_quality(**kwargs)
 
 
@@ -654,7 +678,8 @@ def test_ghi_bao_cao_ra_ca_json_va_markdown(tmp_path):
 
 
 def test_cap_nhat_checkpoint_giu_nguyen_khoa_downstream(tmp_path):
-    original = _checkpoint(pipeline_pass_count=7, reporting_standard="CONSORT 2025")
+    # design_code: run_g8_auto ghi khoá này từ 05/10/2026 (G8-10) — phải được giữ khi bộ chấm làm mới checkpoint.
+    original = _checkpoint(pipeline_pass_count=7, reporting_standard="CONSORT 2025", design_code="rct")
     (tmp_path / "G8_checkpoint.json").write_text(
         json.dumps(original, ensure_ascii=False), encoding="utf-8", newline="\n"
     )

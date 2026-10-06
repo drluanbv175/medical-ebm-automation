@@ -10,6 +10,8 @@ sys.path.insert(0, str(TOOLS_DIR))
 import audit_research_gates as ARG  # noqa: E402
 import gate_contract as GC  # noqa: E402
 
+from tests._gia_lap_cham_song import gia_lap_cham_song  # noqa: E402
+
 
 def _write_json(path: Path, payload: dict) -> Path:
     path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8", newline="\n")
@@ -79,7 +81,10 @@ def test_gate_requirement_manifest_detects_artifact_and_metadata(tmp_path):
     assert "topic_or_title" in g0["metadata_readiness"]["present"]
 
 
-def test_ready_checkpoint_missing_required_artifact_is_actionable(tmp_path):
+def test_ready_checkpoint_missing_required_artifact_is_actionable(tmp_path, monkeypatch):
+    # 06/10/2026 (NGANG): đài kiểm soát phân loại theo CHẤM SỐNG — checkpoint giả ở đây chỉ để kiểm LOGIC phân loại,
+    # nên giả lập kết quả chấm sống (tests/_gia_lap_cham_song.py); chấm sống thật: test_ngang_cham_song_20261006.
+    gia_lap_cham_song(monkeypatch, G0="PASS_G0_CONFIRMED")
     _cp(tmp_path, "G0", {})
     _write_json(tmp_path / "study_meta.json", {"title": "Đề tài X"})
 
@@ -92,7 +97,10 @@ def test_ready_checkpoint_missing_required_artifact_is_actionable(tmp_path):
     assert "Thiếu artifact bắt buộc" in g0["next_action"]
 
 
-def test_dependency_readiness_surfaces_missing_analysis_locks(tmp_path):
+def test_dependency_readiness_surfaces_missing_analysis_locks(tmp_path, monkeypatch):
+    # 06/10/2026 (NGANG): đài kiểm soát phân loại theo CHẤM SỐNG — checkpoint giả ở đây chỉ để kiểm LOGIC phân loại,
+    # nên giả lập kết quả chấm sống (tests/_gia_lap_cham_song.py); chấm sống thật: test_ngang_cham_song_20261006.
+    gia_lap_cham_song(monkeypatch)
     _cp(tmp_path, "G6", {})
     (tmp_path / "G6_A7_ANALYSIS_SCRIPTS_AUTO.md").write_text(
         "analysis syntax", encoding="utf-8", newline="\n"
@@ -179,7 +187,10 @@ def test_action_queue_includes_blocked_data_steps_until_irb(tmp_path):
     assert "phê duyệt IRB/EC thật" in intake_item["blocked_by"]
 
 
-def test_next_agent_action_does_not_skip_human_gate_blocker(tmp_path):
+def test_next_agent_action_does_not_skip_human_gate_blocker(tmp_path, monkeypatch):
+    # 06/10/2026 (NGANG): đài kiểm soát phân loại theo CHẤM SỐNG — checkpoint giả ở đây chỉ để kiểm LOGIC phân loại,
+    # nên giả lập kết quả chấm sống (tests/_gia_lap_cham_song.py); chấm sống thật: test_ngang_cham_song_20261006.
+    gia_lap_cham_song(monkeypatch, G0="PASS_G0_CONFIRMED")
     _cp(tmp_path, "G0", {})
     _cp(tmp_path, "G1", {
         "quality_gate": {
@@ -284,7 +295,7 @@ def test_data_pipeline_reads_cleaning_and_lock_status(tmp_path):
     assert lock["blockers"] == ["open_query_log"]
 
 
-def test_g0_draft_quality_gate_is_visible_not_silently_ready(tmp_path):
+def test_g0_draft_quality_gate_is_visible_not_silently_ready(tmp_path, monkeypatch):
     """Hồi quy G0-01 (audit toàn diện G0-G10, HIGH): trước đây đài kiểm soát
     không đọc quality_gate của G0 — một checkpoint với PICO/kết cục chính CHƯA
     được bác sĩ chốt (DRAFT_READY_NEEDS_HUMAN_REVIEW) vẫn báo STATUS_READY/
@@ -297,6 +308,9 @@ def test_g0_draft_quality_gate_is_visible_not_silently_ready(tmp_path):
     })
     _write_json(tmp_path / "study_meta.json", {"title": "Đề tài X"})
     (tmp_path / "G0_A1_PICO_FINER_AUTO-G0-DRAFT.md").write_text("PICO", encoding="utf-8", newline="\n")
+    # 06/10/2026 (NGANG): đài kiểm soát phân loại theo CHẤM SỐNG — checkpoint giả ở đây chỉ để kiểm LOGIC phân loại,
+    # nên giả lập kết quả chấm sống (tests/_gia_lap_cham_song.py); chấm sống thật: test_ngang_cham_song_20261006.
+    gia_lap_cham_song(monkeypatch)
 
     report = ARG.audit_gates("AUTO-G0-DRAFT", out_dir=tmp_path, write=False)
     g0 = next(row for row in report["pipeline_gates"] if row["gate"] == "G0")
@@ -316,9 +330,11 @@ def test_g0_blocked_quality_gate_is_visible(tmp_path):
     assert "g0_quality_gate.py" in g0["next_action"]
 
 
-def test_g0_checkpoint_truoc_2026_khong_bi_hoi_to(tmp_path):
-    """Checkpoint CŨ (trước 2026-07-28, không có khối quality_gate) phải giữ
-    nguyên hành vi cũ — không bị nhánh mới hồi tố phán BLOCK/NEEDS_REAL oan."""
+def test_g0_checkpoint_cu_khong_lop_chat_luong_van_cham_song_khong_im_lang_ready(tmp_path):
+    """ĐỔI LUẬT 06/10/2026 (soát từng cổng — NGANG, CHUNG-A): bản cũ giữ «không hồi tố» — checkpoint G0 CŨ (không có
+    khối quality_gate) báo READY/«không cần hành động» chỉ vì checkpoint tồn tại. Nay mọi cổng có checkpoint được CHẤM
+    SỐNG theo luật hiện hành (cùng định nghĩa G7–G10 dùng): một G0 chỉ có checkpoint trơn + PICO một chữ không còn
+    được báo «sẵn sàng» — đề tài cũ chạy lại cổng để đạt hợp đồng hiện hành."""
     _cp(tmp_path, "G0", {})
     _write_json(tmp_path / "study_meta.json", {"title": "Đề tài X"})
     (tmp_path / "G0_A1_PICO_FINER_AUTO-G0-LEGACY.md").write_text("PICO", encoding="utf-8", newline="\n")
@@ -326,7 +342,8 @@ def test_g0_checkpoint_truoc_2026_khong_bi_hoi_to(tmp_path):
     report = ARG.audit_gates("AUTO-G0-LEGACY", out_dir=tmp_path, write=False)
     g0 = next(row for row in report["pipeline_gates"] if row["gate"] == "G0")
 
-    assert g0["status"] == ARG.STATUS_READY, g0
+    assert g0["status"] != ARG.STATUS_READY, g0
+    assert g0["trang_thai_song"]["muc"] != "PASS", g0
 
 
 def test_g7_blocked_quality_gate_is_visible_not_silently_passed(tmp_path):
@@ -348,7 +365,10 @@ def test_g7_blocked_quality_gate_is_visible_not_silently_passed(tmp_path):
     assert "g7_quality_gate.py" in g7["next_action"]
 
 
-def test_g7_needs_real_quality_gate_is_visible(tmp_path):
+def test_g7_needs_real_quality_gate_is_visible(tmp_path, monkeypatch):
+    # 06/10/2026 (NGANG): đài kiểm soát phân loại theo CHẤM SỐNG — checkpoint giả ở đây chỉ để kiểm LOGIC phân loại,
+    # nên giả lập kết quả chấm sống (tests/_gia_lap_cham_song.py); chấm sống thật: test_ngang_cham_song_20261006.
+    gia_lap_cham_song(monkeypatch)
     _cp(tmp_path, "G7", {
         "quality_contract_version": "G7-2026.1",
         "quality_gate": {

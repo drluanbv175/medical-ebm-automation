@@ -210,6 +210,18 @@ def phong_van_g8() -> dict:
     return tl
 
 
+def cac_tieu_chi(bao_cao: dict) -> list:
+    """Mọi tiêu chí (máy + người) của báo cáo cổng, không lặp.
+
+    VÁ 04/10/2026 (soát từng cổng, G8-16 + bỏ sót G2): G2 ghi tiêu chí người ở «human_approval_criteria», G8 ở
+    «human_criteria»/«approval_criteria» — bản cũ chỉ đọc «human_criteria» nên phần việc của NGƯỜI ở G2 không bao giờ
+    được liệt kê khi trợ lý trình-ký từ chối."""
+    ra = list(bao_cao.get("automatic_criteria") or [])
+    for khoa in ("human_criteria", "human_approval_criteria", "approval_criteria"):
+        ra += [m for m in (bao_cao.get(khoa) or []) if m not in ra]
+    return ra
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description="Trợ lý trình-ký G2 (IRB) / G8 (phản biện)")
     ap.add_argument("--study", required=True, help="Mã đề tài (thư mục trong exports/)")
@@ -248,7 +260,7 @@ def main() -> int:
     print(f"\n📋 Lớp chất lượng {args.gate}: {trang_thai}")
     if not KY_DUOC[args.gate](trang_thai):
         print("⛔ CHƯA TỚI LÚC KÝ. Các mục còn thiếu (đây là nội dung cần hoàn tất trước):")
-        for muc in bao_cao.get("automatic_criteria", []) + bao_cao.get("human_criteria", []):
+        for muc in cac_tieu_chi(bao_cao):
             if muc.get("status") in {"BLOCK", "REVIEW", "FAIL"}:
                 print(f"   • [{muc.get('id')}] {muc.get('label')} — {muc.get('evidence', '')[:120]}")
         return 2

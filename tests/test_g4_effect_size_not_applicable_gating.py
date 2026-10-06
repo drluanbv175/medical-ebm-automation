@@ -67,7 +67,9 @@ class TestEffectSizeAlwaysNAForDesignsThatNeverUseIt:
 class TestEffectSizeStillPopulatedForQuantitativeDesigns:
     def test_cohort_effect_size_shows_real_value(self):
         text = _sap_text("cohort", n_adjusted=200, effect_val=1.8, effect_type="HR")
-        assert "HR = 1.80" in text
+        # 04/10/2026 (soát từng cổng G4-06/G4-08): SAP ký ghi ĐÚNG giá trị G3 dùng để tính N (định dạng :g) — bản cũ
+        # làm tròn 2 chữ số (0,855 ⇒ «0.85»), văn bản ký lệch tham số thật. Ý của test giữ nguyên: in số thật.
+        assert "HR = 1.8  " in text
 
     def test_cohort_effect_size_shows_todo_when_missing(self):
         text = _sap_text("cohort", n_adjusted=200)

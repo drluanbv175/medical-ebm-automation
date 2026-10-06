@@ -77,6 +77,11 @@ sys.path.insert(0, str(TOOLS))
 import research_study_spec as RS  # noqa: E402
 import skill_standards as S  # noqa: E402
 
+try:  # cùng tinh thần rào của R18: thiếu module ⇒ luật dùng nó báo N/A, không sập cả bộ kiểm
+    import protocol_checklist_items as PCI  # noqa: E402
+except ImportError:  # pragma: no cover
+    PCI = None
+
 # Nhãn "trông giống marker": mở ngoặc vuông + bắt đầu bằng các từ khoá này.
 _MARKER_WORD_RE = re.compile(r"\[\s*(CẦN|ĐÃ|DỰ THẢO|CHƯA)\b[^\]]*\]")
 # THÊM 2026-07-06: "[CẦN — giải thích tự do]" (CẦN + em-dash + văn bản) là quy
@@ -244,6 +249,24 @@ def _receipt_pmids(out_dir: Path):
     return valid, expired, invalid
 
 
+def _a12_pmids(out_dir: Path) -> Set[str]:
+    """PMID đã PHÂN GIẢI metadata gốc qua cổng A12 — `check_citation_metadata.py` tra PubMed EFetch và ghi
+    A12_METADATA_RECEIPT.json (có chữ ký; G7/G8/G9/G10 kiểm chữ ký + độ phủ qua citation_verification_ok).
+
+    THÊM 05/10/2026 (soát từng cổng G10 — lộ khi chạy chuỗi THẬT tới G10): nguồn THẬT ngang raw G0 (cùng PubMed, máy
+    tra). R4 cũ chỉ biết raw G0 + seed checkpoint + biên nhận tự khai ⇒ PMID chủ nhiệm thêm vào đề cương và ĐÃ được
+    A12 xác minh vẫn bị gắn «nghi bịa» — đề cương đúng không bao giờ qua guardrail."""
+    try:
+        data = json.loads((out_dir / "A12_METADATA_RECEIPT.json").read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return set()
+    md = data.get("metadata") if isinstance(data, dict) else None
+    if not isinstance(md, dict):
+        return set()
+    return {str(k) for k, v in md.items()
+            if isinstance(v, dict) and v.get("status") == "resolved" and re.fullmatch(r"\d{5,9}", str(k))}
+
+
 def _harvest_pmids_from_obj(obj) -> Set[str]:
     """Đệ quy gom mọi chuỗi số 5-9 chữ số nằm ở key/giá trị liên quan 'pmid'."""
     out: Set[str] = set()
@@ -334,10 +357,15 @@ def validate(md_path, out_dir) -> Dict:
     # trích dẫn phương pháp luận đã xác minh sống qua kênh MCP vẫn bị gắn
     # "nghi bịa" chỉ vì kênh đó không để lại dấu vết mà R4 đọc được).
     raw = _raw_pmids(out_dir)          # nguồn THẬT (đã truy hồi PubMed)
+    # 05/10/2026: PMID đã phân giải metadata qua A12 (máy tra PubMed, có chữ ký) cũng là nguồn THẬT.
+    raw = raw | _a12_pmids(out_dir)
     seed = _seed_pmids(out_dir)        # chỉ có trong checkpoint (chưa chắc đối chiếu raw)
     receipt, receipt_expired, receipt_invalid = _receipt_pmids(out_dir)
     doc_pmids = {m.group(1) for m in _PMID_RE.finditer(text)}
-    fabricated = sorted(doc_pmids - raw - seed - receipt)  # không ở đâu cả → bịa
+    # 06/10/2026 (CHUNG-H): bài chuẩn đề cương do HỆ chèn (SPIRIT 2025/PRISMA-P 2015) có nguồn — không phải «nghi bịa».
+    chuan_he_thong = PCI.pmid_tai_lieu_chuan() if PCI is not None else frozenset()
+    he_thong = sorted((doc_pmids & chuan_he_thong) - raw - seed - receipt)
+    fabricated = sorted(doc_pmids - raw - seed - receipt - set(he_thong))  # không ở đâu cả → bịa
     seed_only = sorted((doc_pmids & seed) - raw)  # ở seed nhưng KHÔNG ở raw
     receipt_only = sorted((doc_pmids & receipt) - raw - seed)  # chỉ biên nhận
     expired_hit = sorted((doc_pmids & receipt_expired) - raw - seed - receipt)
@@ -355,7 +383,12 @@ def validate(md_path, out_dir) -> Dict:
             f"R4 PMID KHÔNG TRUY ĐƯỢC VỀ BẤT KỲ NGUỒN NÀO (nghi bịa): "
             f"{', '.join(fabricated[:10])}.{_exp_note}")
         checks["R4_pmid_traceable"] = f"FAIL ({len(fabricated)} PMID không nguồn)"
-    elif seed_only or receipt_only:
+    elif seed_only or receipt_only or he_thong:
+        if he_thong:
+            warnings.append(
+                f"R4 GHI CHÚ: {len(he_thong)} PMID là bài chuẩn đề cương do hệ thống chèn (SPIRIT 2025/PRISMA-P 2015 "
+                f"— nguồn đã xác minh trong protocol_checklist_items): {', '.join(he_thong)}. Vẫn phải chạy A12 (kiểm "
+                "rút bài + metadata) trên các PMID này trước khi phát hành (G10-AUTO-05).")
         # KHÔNG fail, nhưng PHẢI cảnh báo rõ từng mức bảo đảm — không được báo
         # 'đều truy được' như cũ (bug tự-chứng-nhận).
         if seed_only:
@@ -374,7 +407,7 @@ def validate(md_path, out_dir) -> Dict:
                 f"{', '.join(receipt_only[:10])}.")
         checks["R4_pmid_traceable"] = (
             f"WARN ({len(raw_verified)} đối chiếu raw, {len(seed_only)} chỉ-seed, "
-            f"{len(receipt_only)} biên-nhận cần bác sĩ kiểm)")
+            f"{len(receipt_only)} biên-nhận cần bác sĩ kiểm, {len(he_thong)} chuẩn đề cương của hệ thống)")
     else:
         checks["R4_pmid_traceable"] = (
             f"PASS ({len(raw_verified)}/{len(doc_pmids)} PMID đối chiếu PubMed raw)")
@@ -495,7 +528,7 @@ def validate(md_path, out_dir) -> Dict:
     completion_claims = [m.group(0).strip() for m in _COMPLETION_CLAIM_RE.finditer(text)]
     cps = _load_checkpoints(out_dir)
     meta = _load_json(out_dir / "study_meta.json")
-    signals = S.real_world_signals(cps, meta)
+    signals = S.real_world_signals(cps, meta, out_dir=out_dir)  # 06/10/2026: chấm đúng thư mục đề tài đang kiểm
     missing_signals = [s for s in _COMPLETION_REQUIRED_SIGNALS if not signals.get(s)]
     if completion_claims and missing_signals:
         errors.append(
@@ -708,7 +741,8 @@ def validate(md_path, out_dir) -> Dict:
     # 06/09/2026 chưa có bảng này, và thiếu bảng không làm nội dung khoa học sai —
     # nó chỉ làm hội đồng khó tick. Dùng cùng nguồn item với G10 (một sự thật).
     try:
-        import protocol_checklist_items as PCI
+        if PCI is None:
+            raise ImportError("protocol_checklist_items")
         design_code = (spec.get("design") or {}).get("code")
         found = PCI.items_for_design(design_code)
         if found:

@@ -129,8 +129,37 @@ class InvalidEffectSizeError(ValueError):
     """Effect size/tham số nằm ngoài miền công thức có thể tính hợp lệ."""
 
 
-def n_two_proportion_ni(p_test, p_control, margin, alpha=0.05, power=0.80):
+CHIEU_KET_CUC = ("higher_better", "lower_better")
+_BI_DANH_CHIEU = {
+    "higher_better": "higher_better", "higher": "higher_better", "cao_la_tot": "higher_better",
+    "cao_tot": "higher_better", "response": "higher_better",
+    "lower_better": "lower_better", "lower": "lower_better", "thap_la_tot": "lower_better",
+    "thap_tot": "lower_better", "failure": "lower_better",
+}
+
+
+def chuan_hoa_chieu_ket_cuc(raw):
+    """«higher_better»/«lower_better» (hoặc None nếu không nhận ra — KHÔNG mặc định).
+
+    VÁ 04/10/2026 (soát từng cổng, G3-01): chiều của kết cục (tỷ lệ CAO là tốt — đáp ứng; hay THẤP là tốt — biến cố
+    bất lợi) đổi hẳn mẫu số của công thức non-inferiority. Bỏ dấu tiếng Việt: «cao là tốt» ≡ cao_la_tot."""
+    if raw is None:
+        return None
+    import unicodedata as _ud
+    khong_dau = "".join(c for c in _ud.normalize("NFD", str(raw)) if not _ud.combining(c)).replace("đ", "d")
+    key = re.sub(r"[\s\-]+", "_", khong_dau.strip().lower())
+    return _BI_DANH_CHIEU.get(key)
+
+
+def n_two_proportion_ni(p_test, p_control, margin, alpha=0.05, power=0.80, outcome_direction="higher_better"):
     """Cỡ mẫu MỖI NHÓM cho kiểm định NON-INFERIORITY hai tỷ lệ (one-sided).
+
+    VÁ 04/10/2026 (soát từng cổng, G3-01): công thức cũ chỉ đúng khi tỷ lệ CAO là tốt (tỷ lệ đáp ứng) trong khi CLI,
+    needs_input và doctrine gọi tham số là «tỷ lệ biến cố» — với biến cố bất lợi N bị ước lượng thấp ~5 lần
+    (p_test=0,10, p_control=0,08, Δ=0,05: 207/nhóm thay vì 1124/nhóm). Nay bắt buộc khai chiều:
+      • higher_better (đáp ứng): H0 p_test − p_control ≤ −Δ  → mẫu số (p_test − p_control + Δ)²
+      • lower_better (biến cố bất lợi): H0 p_test − p_control ≥ Δ → mẫu số (Δ − (p_test − p_control))²
+    Tham chiếu: Chow SC, Shao J, Wang H. Sample Size Calculations in Clinical Research, 2008 (NI hai tỷ lệ).
 
     SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, phát hiện HIGH):
     trước đây run_g3_auto.py KHÔNG có bất kỳ nhánh nào cho non-inferiority/
@@ -151,15 +180,24 @@ def n_two_proportion_ni(p_test, p_control, margin, alpha=0.05, power=0.80):
             f"p_test, p_control phải trong (0,1), nhận được p_test={p_test}, p_control={p_control}")
     if margin is None or margin <= 0:
         raise InvalidEffectSizeError(f"Biên (margin) phải dương, nhận được margin={margin}")
+    if outcome_direction not in CHIEU_KET_CUC:
+        raise InvalidEffectSizeError(
+            f"Non-inferiority cần khai CHIỀU kết cục (--outcome-direction higher_better | lower_better), nhận được "
+            f"{outcome_direction!r} — chiều sai làm N lệch nhiều lần; hệ KHÔNG đoán.")
     za = z(alpha)  # MỘT PHÍA — khác n_two_proportion() (alpha/2, hai phía)
     zb = z(1 - power)
-    denom = (p_test - p_control) + margin
+    if outcome_direction == "higher_better":
+        denom = (p_test - p_control) + margin
+        bieu_thuc = "p_test−p_control+Δ"
+    else:
+        denom = margin - (p_test - p_control)
+        bieu_thuc = "Δ−(p_test−p_control)"
     if denom <= 0:
         raise InvalidEffectSizeError(
-            f"p_test-p_control+margin = {denom:.4f} ≤ 0 — với p_test={p_test}, "
-            f"p_control={p_control}, margin={margin}, KHÔNG thể chứng minh non-inferiority "
-            "về mặt toán học (biên đã bị vi phạm ngay ở giá trị kỳ vọng). Kiểm tra lại "
-            "chiều margin/p_test hoặc chọn margin khác có biện minh lâm sàng."
+            f"{bieu_thuc} = {denom:.4f} ≤ 0 — với p_test={p_test}, p_control={p_control}, margin={margin}, "
+            f"chiều {outcome_direction}, KHÔNG thể chứng minh non-inferiority về mặt toán học (biên đã bị vi phạm "
+            "ngay ở giá trị kỳ vọng). Kiểm tra lại chiều kết cục/margin/p_test hoặc chọn margin khác có biện minh "
+            "lâm sàng."
         )
     variance_term = p_test * (1 - p_test) + p_control * (1 - p_control)
     return math.ceil((za + zb) ** 2 * variance_term / denom ** 2)
@@ -249,31 +287,54 @@ def n_prevalence(p, e=0.05, alpha=0.05):
     za = z(alpha / 2)
     return math.ceil(za ** 2 * p * (1 - p) / e ** 2)
 
-def n_auc(auc, alpha=0.05, power=0.80):
-    """
-    Cỡ mẫu kiểm định MỘT AUC so với hằng số null 0.5 (một mẫu, không phải
-    so sánh hai AUC độc lập).
-    SỬA: công thức cũ nhân thêm hệ số 2 ở tử số — hệ số 2 chỉ đúng khi so
-    sánh HAI AUC ước lượng từ hai mẫu độc lập riêng biệt (mỗi mẫu có
-    phương sai σ² riêng, Var(AUC1-AUC2)=2σ²/n). Ở đây chỉ có MỘT mẫu/MỘT
-    AUC kiểm định so với hằng số 0.5 (không phải biến ngẫu nhiên có
-    phương sai riêng), nên không có phép trừ hai đại lượng ngẫu nhiên độc
-    lập — hệ số 2 không áp dụng. Suy ra từ power của kiểm định 1 mẫu:
-    n = σ²(zα/2+zβ)²/(AUC-0.5)² (không hệ số 2).
-    """
+def _phuong_sai_auc_hanley_mcneil(auc, n_benh, n_khong_benh):
+    """Phương sai AUC theo Hanley & McNeil 1982 (Radiology 143(1):29-36, PMID 7063747,
+    doi:10.1148/radiology.143.1.7063747): Var = [A(1−A) + (nA−1)(Q1−A²) + (nN−1)(Q2−A²)] / (nA·nN),
+    Q1 = A/(2−A), Q2 = 2A²/(1+A)."""
+    q1 = auc / (2 - auc)
+    q2 = 2 * auc * auc / (1 + auc)
+    return (auc * (1 - auc) + (n_benh - 1) * (q1 - auc * auc) + (n_khong_benh - 1) * (q2 - auc * auc)) / (
+        n_benh * n_khong_benh)
+
+
+def n_auc_hanley_mcneil(auc, alpha=0.05, power=0.80, kappa=1.0, n_toi_da=200000):
+    """(số ca BỆNH, số ca KHÔNG BỆNH) tối thiểu để kiểm định AUC so với 0,5 (hai phía).
+
+    VÁ 04/10/2026 (soát từng cổng, G3-04): công thức cũ dùng σ²=A(1−A)+(A−0,5)²/3 («xấp xỉ Hanley-McNeil» — KHÔNG phải
+    phương sai Hanley–McNeil) và không dùng tỷ lệ hiện mắc: AUC=0,75 cho 27 tổng (lực thật ≈ 0,64). Nay tìm số ca bệnh
+    nhỏ nhất thoả  z(α/2)·√V0 + z(β)·√V1 ≤ |A − 0,5|  với V0 = phương sai Hanley–McNeil tại A=0,5 và V1 tại A giả
+    định, số ca không bệnh = ⌈κ × số ca bệnh⌉ (κ = (1−p)/p khi tuyển liên tiếp với tỷ lệ hiện mắc p). Kiểm tay:
+    AUC=0,75, α=0,05, lực 80%, κ=1 ⇒ 19 ca/nhóm chưa đủ (0,2533 > 0,25), 20 ca/nhóm đủ (0,2467 ≤ 0,25).
+    Phần mềm khác (PASS/MedCalc/pROC — Obuchowski) có thể cho N hơi khác do giả định phương sai khác."""
     if not (0 < auc < 1):
         raise InvalidEffectSizeError(f"AUC phải trong (0,1), nhận được AUC={auc}")
-    if 0.49 <= auc <= 0.51:
+    if auc <= 0.51:
         raise InvalidEffectSizeError(
-            f"AUC={auc} quá gần 0.5 (test không phân biệt được bệnh/không bệnh) — "
-            "cần AUC thực tế khác 0.5."
-        )
+            f"AUC={auc} ≤ 0.51 — test không phân biệt được bệnh/không bệnh (hoặc đảo chiều); cần AUC giả định > 0.5 "
+            "có nguồn.")
+    if kappa is None or kappa <= 0:
+        raise InvalidEffectSizeError(f"Tỷ số không bệnh/bệnh κ phải dương, nhận được {kappa}")
     za = z(alpha / 2)
     zb = z(1 - power)
-    sigma2 = auc * (1 - auc) + (auc - 0.5) ** 2 / 3  # xấp xỉ Hanley-McNeil
-    if sigma2 <= 0:
-        sigma2 = 0.05
-    return math.ceil((za + zb) ** 2 * sigma2 / (auc - 0.5) ** 2)
+    hieu = abs(auc - 0.5)
+    for n_benh in range(2, n_toi_da + 1):
+        n_khong = max(2, math.ceil(kappa * n_benh))
+        v0 = _phuong_sai_auc_hanley_mcneil(0.5, n_benh, n_khong)
+        v1 = _phuong_sai_auc_hanley_mcneil(auc, n_benh, n_khong)
+        if za * math.sqrt(v0) + zb * math.sqrt(max(v1, 0.0)) <= hieu:
+            return n_benh, n_khong
+    raise InvalidEffectSizeError(f"Không tìm được cỡ mẫu ≤ {n_toi_da} ca bệnh cho AUC={auc}")
+
+
+def n_auc(auc, alpha=0.05, power=0.80, prevalence=0.5):
+    """TỔNG cỡ mẫu nghiên cứu chẩn đoán (một nhóm tuyển liên tiếp) để kiểm định AUC so với 0,5.
+
+    prevalence = tỷ lệ hiện mắc trong quần thể tuyển (BẮT BUỘC có nguồn — nơi gọi không được mặc định im lặng);
+    tổng N = số ca bệnh + số ca không bệnh theo n_auc_hanley_mcneil với κ = (1−p)/p."""
+    if prevalence is None or not (0 < prevalence < 1):
+        raise InvalidEffectSizeError(f"Tỷ lệ hiện mắc phải trong (0,1), nhận được {prevalence}")
+    n_benh, n_khong = n_auc_hanley_mcneil(auc, alpha, power, kappa=(1 - prevalence) / prevalence)
+    return n_benh + n_khong
 
 def n_continuous_md(md, sd, alpha=0.05, power=0.80):
     """
@@ -331,81 +392,200 @@ def extract_best_effect(effect_samples):
                     return float(val), "ARR%", want_quality
     return None, None, None
 
-def sensitivity_table(design_code, base_n, effect_val, effect_type, alpha, p_event=0.30, p0=0.30, sd=None):
-    """Bảng phân tích độ nhạy: power × effect_size → N.
+ONE_GROUP_DESIGNS = frozenset({"cross_sectional", "diagnostic", "prediction", "qualitative", "sr_ma"})
 
-    SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 6): viết lại để LUÔN
-    khớp đúng logic thật trong main() cho MỌI thiết kế main() hỗ trợ (6/6,
-    trước đây thiếu cross_sectional/diagnostic — bảng "PHẦN 3 — PHÂN TÍCH ĐỘ
-    NHẠY" trả về 100% "N/A" cho 2 thiết kế này dù N chính đã tính được bình
-    thường, và nhánh cohort+OR/RR dùng SAI công thức Schoenfeld log-rank cho
-    effect size không phải HR — cùng lỗi đã sửa ở main(), xem elif phía
-    trên). Ô bị KẸP p2≤0 (nhánh ARR%) nay đánh dấu "*" thay vì im lặng, khớp
-    tinh thần clamp_note của main() (không lặp lại nguyên văn ghi chú dài
-    trong một ô bảng hẹp)."""
-    powers = [0.70, 0.80, 0.90]
-    mults = [0.80, 1.00, 1.20]  # -20%, cơ sở, +20%
+
+def tinh_n_loi(design_code, effect_type, effect_val, alpha, power, *, p0=0.30, p_event=0.30, sd=None,
+               precision=0.05, prevalence=None, hypothesis_type="superiority", margin=None,
+               outcome_direction=None):
+    """MỘT nơi tính cỡ mẫu LÕI (trước FPC/cụm/dropout) cho mọi nhánh — main() và bảng độ nhạy cùng gọi.
+
+    VÁ 04/10/2026 (soát từng cổng, G3-06): trước đây bảng độ nhạy tự tính lại theo cách riêng (không Fleiss, không làm
+    tròn theo nhóm, d cố định 0,05, không FPC/cụm, NI không có bảng) nên ô cơ sở lệch N đã kết luận và G3-AUTO-09 REVIEW
+    vĩnh viễn ở nhiều đường hợp lệ. Trả dict: n_per_group, n_total, formula, missing_sd, n_benh, n_khong_benh.
+    Ném InvalidEffectSizeError khi tham số ngoài miền (không kẹp im lặng)."""
+    kq = {"n_per_group": 0, "n_total": 0, "formula": "", "missing_sd": False, "n_benh": None, "n_khong_benh": None}
+    if hypothesis_type in ("non_inferiority", "equivalence"):
+        if margin is None or margin <= 0:
+            raise InvalidEffectSizeError(
+                f"--hypothesis-type={hypothesis_type} BẮT BUỘC có --margin dương "
+                "(biên Δ có biện minh lâm sàng + nguồn) — KHÔNG bịa margin.")
+        if effect_val is None or not (0 < effect_val < 1):
+            raise InvalidEffectSizeError(
+                f"--hypothesis-type={hypothesis_type} cần --effect-size là TỶ LỆ kết cục nhóm thử nghiệm "
+                f"(p_test) trong (0,1), nhận được {effect_val} — KHÔNG phải OR/RR/HR như superiority.")
+        if hypothesis_type == "equivalence":
+            kq["formula"] = (
+                "[CẦN — Equivalence (TOST — Two One-Sided Tests) CHƯA được tự động hóa ở "
+                "đây vì công thức closed-form chưa được xác minh bằng ví dụ số cụ thể từ "
+                "nguồn công khai tại thời điểm này (khác non_inferiority — đã xác minh). "
+                "Dùng phần mềm chuyên dụng (PASS 'Equivalence Tests', R TOSTER/PowerTOST) "
+                "theo Chow SC, Shao J, Wang H. Sample Size Calculations in Clinical "
+                "Research, 2nd ed., 2008, Chương 3 (tr.86) — cần bác sĩ/thống kê viên tính "
+                "TRỰC TIẾP bằng phần mềm đó. KHÔNG bịa N ở đây.]"
+            )
+            return kq
+        n = n_two_proportion_ni(effect_val, p0, margin, alpha, power, outcome_direction)
+        kq.update(n_per_group=n, n_total=n * 2)
+        _chieu = ("tỷ lệ CAO là tốt — đáp ứng" if outcome_direction == "higher_better"
+                  else "tỷ lệ THẤP là tốt — biến cố bất lợi")
+        kq["formula"] = (
+            f"Non-inferiority two-proportion (one-sided, Wald): p_test={effect_val:.2f}, "
+            f"p_control={p0:.2f}, margin={margin:.2f}, chiều kết cục={outcome_direction} ({_chieu}), "
+            f"zα(một phía)={z(alpha):.3f}. [CẦN — --margin PHẢI có biện minh lâm sàng "
+            "(không phải giá trị thống kê thuận tiện) và được Hội đồng/thống kê viên "
+            "xác nhận TRƯỚC khi khóa SAP.]"
+        )
+        return kq
+    if effect_val is None:
+        return kq
+    if design_code in ("cohort", "rct") and effect_type == "HR":
+        ev = effect_val if effect_val < 1.0 else 1 / effect_val
+        n_total_raw, n_events = n_log_rank(ev, alpha, power, p_event)
+        n = math.ceil(n_total_raw / 2)
+        kq.update(n_per_group=n, n_total=n * 2)
+        kq["formula"] = (f"Schoenfeld log-rank: d = (zα/2+zβ)²/ln(HR)² = {n_events} biến cố → N={n * 2}"
+                         if design_code == "cohort" else f"Schoenfeld log-rank: d={n_events} biến cố")
+    elif design_code in ("cohort", "rct") and effect_type in ("OR", "RR"):
+        if effect_type == "OR":
+            odds1 = effect_val * (p0 / (1 - p0))
+            p1 = odds1 / (1 + odds1)
+        else:
+            p1 = p0 * effect_val
+            # VÁ 04/10/2026 (G3-10): RR×p0 ≥ 1 là bất khả (tỷ lệ > 100%) — trước đây bị kẹp im lặng về ≈1.
+            if not (0 < p1 < 1):
+                raise InvalidEffectSizeError(
+                    f"RR={effect_val} × p0={p0} = {p1:.3f} — tỷ lệ nhóm {'phơi nhiễm' if design_code == 'cohort' else 'can thiệp'} "
+                    "ngoài (0,1). Kiểm lại RR/p0, hoặc dùng OR.")
+        n, fleiss = n_two_proportion_auto(p1, p0, alpha, power)
+        kq.update(n_per_group=n, n_total=n * 2)
+        _g = "phơi nhiễm" if design_code == "cohort" else "can thiệp"
+        _g0 = "không phơi nhiễm" if design_code == "cohort" else "chứng/không can thiệp"
+        kq["formula"] = (f"Two-proportion ({design_code}, {effect_type}={effect_val:.2f} → "
+                         f"tỷ lệ biến cố {_g}≈{p1:.2f} vs {_g0}={p0:.2f})."
+                         + (" Đã áp hiệu chỉnh liên tục Fleiss (cỡ mẫu nhỏ/tỷ lệ gần biên)." if fleiss else "")
+                         + f" [CẦN — --p0 ở đây là TỶ LỆ BIẾN CỐ NỀN của nhóm {_g0}; nếu đề tài "
+                         "thật sự có dữ liệu thời gian-đến-biến-cố và effect size là HR "
+                         "thật (không phải OR/RR), dùng --effect-type HR để tính bằng "
+                         "Schoenfeld log-rank thay vì công thức này.]")
+    elif design_code == "case_control" and effect_type in ("OR", "RR", "HR"):
+        odds1 = effect_val * (p0 / (1 - p0))
+        p1 = odds1 / (1 + odds1)
+        n, fleiss = n_two_proportion_auto(p1, p0, alpha, power)
+        kq.update(n_per_group=n, n_total=n * 2)
+        kq["formula"] = (f"Two-proportion (case-control, {effect_type}={effect_val:.2f} → "
+                         f"tỷ lệ phơi nhiễm ca≈{p1:.2f} vs chứng={p0:.2f})."
+                         + (" Đã áp hiệu chỉnh liên tục Fleiss (cỡ mẫu nhỏ/tỷ lệ gần biên)." if fleiss else "")
+                         + " [CẦN — --p0 ở đây được diễn giải là TỶ LỆ PHƠI NHIỄM NỀN của "
+                         "nhóm chứng (không phải tỷ lệ biến cố như ở cohort/RCT); bác sĩ "
+                         "xác nhận con số này đúng với đề tài, mặc định 0.30 chỉ là khởi tạo.]")
+    elif design_code in ("rct", "cohort") and effect_type == "MD":
+        if sd is None or sd <= 0:
+            kq["missing_sd"] = True
+            kq["formula"] = (f"[CẦN — có MD={effect_val:.2f} (kết cục liên tục) nhưng THIẾU SD "
+                             "(độ lệch chuẩn) để tính cỡ mẫu. Bác sĩ/thống kê viên cấp qua "
+                             "--sd <giá_trị> (lấy từ pilot/y văn cùng kết cục, ghi rõ nguồn "
+                             "PMID/DOI) — hệ KHÔNG bịa SD.]")
+            return kq
+        n = n_continuous_md(effect_val, sd, alpha, power)
+        kq.update(n_per_group=n, n_total=n * 2)
+        kq["formula"] = (f"Two-sample continuous (Machin/Campbell/Fayers): "
+                         f"n=2×(SD/MD)²×(zα/2+zβ)² với MD={effect_val:.2f}, SD={sd:.2f}")
+    elif design_code in ("rct", "cohort", "case_control") and effect_type == "ARR%":
+        p1, p2 = p0, p0 - effect_val / 100
+        # VÁ 04/10/2026 (G3-10): ARR% làm p2 ≤ 0 từng bị kẹp im lặng về 0,05 (ARR hiệu dụng khác hẳn yêu cầu).
+        if not (0 < p2 < 1):
+            raise InvalidEffectSizeError(
+                f"ARR%={effect_val} với p0={p0:.2f} cho p2={p2:.3f} ngoài (0,1) — kiểm lại ARR%/p0.")
+        n, fleiss = n_two_proportion_auto(p1, p2, alpha, power)
+        kq.update(n_per_group=n, n_total=n * 2)
+        kq["formula"] = (f"Two-proportion z-test: p1={p1:.2f}, p2={p2:.2f}"
+                         + (" Đã áp hiệu chỉnh liên tục Fleiss (cỡ mẫu nhỏ/tỷ lệ gần biên)." if fleiss else ""))
+    elif design_code == "cross_sectional":
+        if not (0 < effect_val < 1):
+            raise InvalidEffectSizeError(
+                f"Thiết kế cắt ngang cần TỶ LỆ ước lượng p trong (0,1), nhận được {effect_val}.")
+        n = n_prevalence(effect_val, precision, alpha)
+        kq.update(n_per_group=n, n_total=n)
+        _p_label = "tỷ lệ hiện mắc ước lượng" if effect_type == "PREVALENCE" else "tỷ lệ"
+        kq["formula"] = (f"Cỡ mẫu ước lượng một tỷ lệ theo độ chính xác "
+                         f"(Lwanga & Lemeshow/Cochran, xấp xỉ chuẩn): {_p_label} p={effect_val:.2f}, "
+                         f"sai số cho phép d={precision}, alpha={alpha}")
+    elif design_code == "diagnostic":
+        if effect_type != "AUC":
+            raise InvalidEffectSizeError(
+                f"Thiết kế chẩn đoán cần --effect-type AUC (nhận được {effect_type}) — hệ KHÔNG thay bằng AUC mặc định.")
+        if prevalence is None or not (0 < prevalence < 1):
+            raise InvalidEffectSizeError(
+                "Thiết kế chẩn đoán cần TỶ LỆ HIỆN MẮC p của quần thể tuyển (--prevalence, có nguồn) để quy số ca "
+                "bệnh ra tổng N — hệ KHÔNG mặc định.")
+        n_benh, n_khong = n_auc_hanley_mcneil(effect_val, alpha, power, kappa=(1 - prevalence) / prevalence)
+        kq.update(n_per_group=n_benh + n_khong, n_total=n_benh + n_khong, n_benh=n_benh, n_khong_benh=n_khong)
+        kq["formula"] = (f"Hanley–McNeil 1982 (PMID 7063747): kiểm định AUC={effect_val:.2f} so với 0,5 (hai phía) — "
+                         f"{n_benh} ca bệnh + {n_khong} ca không bệnh (tỷ lệ hiện mắc p={prevalence:.2f}, "
+                         f"κ=(1−p)/p={(1 - prevalence) / prevalence:.2f}). [CẦN — phần mềm khác (PASS/MedCalc/pROC) có "
+                         "thể cho N hơi khác do giả định phương sai khác; nếu cỡ mẫu phụ thuộc chủ yếu vào con số này, "
+                         "nhờ thống kê viên đối chiếu.]")
+    else:
+        kq["formula"] = (f"[CẦN CÔNG THỨC CỤ THỂ — tổ hợp design_code={design_code} + "
+                         f"effect_type={effect_type} chưa có công thức tự động. "
+                         "Bác sĩ/thống kê viên cần chọn công thức phù hợp thủ công.]")
+    return kq
+
+
+def ap_fpc_cum(n_total, design_code, population_n=None, icc=None, cluster_size=None):
+    """(n_total sau FPC/cụm, n_per_group tương ứng, ghi chú, design_effect hoặc None, số cụm hoặc None,
+    N NGAY TRƯỚC khi nhân DE — tức sau FPC nếu có)."""
+    if not n_total or not (population_n or (icc is not None and cluster_size)):
+        return n_total, (n_total if design_code in ONE_GROUP_DESIGNS else math.ceil(n_total / 2)), "", None, None, \
+            n_total
+    n2, note = apply_fpc_and_cluster_de(n_total, population_n, icc, cluster_size)
+    de = (1 + (cluster_size - 1) * icc) if (icc is not None and cluster_size) else None
+    so_cum = math.ceil(n2 / cluster_size) if de is not None else None
+    n_truoc_de = math.ceil(n_total / (1 + n_total / population_n)) if population_n else n_total
+    # VÁ 04/10/2026 (G3-06): thiết kế MỘT nhóm giữ n_per_group = n_total sau FPC/cụm (trước đây bị chia đôi).
+    n_nhom = n2 if design_code in ONE_GROUP_DESIGNS else math.ceil(n2 / 2)
+    return n2, n_nhom, note, de, so_cum, n_truoc_de
+
+
+def sensitivity_table(design_code, base_n, effect_val, effect_type, alpha, p_event=0.30, p0=0.30, sd=None, *,
+                      power=0.80, precision=0.05, prevalence=None, hypothesis_type="superiority", margin=None,
+                      outcome_direction=None, population_n=None, icc=None, cluster_size=None):
+    """Bảng độ nhạy N tổng (TRƯỚC dropout, SAU FPC/cụm như N chính): hàng = power, cột = biến thiên tham số chính.
+
+    Superiority: ES × 0,8/1,0/1,2 (AUC: biến thiên phần vượt 0,5). Non-inferiority: biên Δ × 0,8/1,0/1,2. Mọi ô gọi
+    CHÍNH tinh_n_loi + ap_fpc_cum như main() ⇒ ô (power đang dùng, ×1,0) BẰNG N chính theo cấu trúc (G3-06).
+    base_n giữ chỗ cho chữ ký cũ (không dùng)."""
+    powers = sorted({0.70, 0.80, 0.90, round(float(power), 4)})
+    mults = [0.80, 1.00, 1.20]
     rows = []
+    ni = hypothesis_type in ("non_inferiority", "equivalence")
     for pwr in powers:
         row = []
         for m in mults:
-            ev = effect_val * m
+            ev, mg = effect_val, margin
+            if ni:
+                mg = (margin or 0) * m
+            elif effect_type == "AUC" and effect_val is not None:
+                ev = 0.5 + (effect_val - 0.5) * m
+            elif effect_val is not None:
+                ev = effect_val * m
             try:
-                if effect_type == "MD" and design_code in ("rct", "cohort") and sd:
-                    n = n_continuous_md(ev, sd, alpha, pwr) * 2
-                # SỬA: nhánh cũ "elif design_code in ('cohort',):" không kiểm
-                # effect_type nên bắt luôn cả ARR% của cohort, đẩy giá trị %
-                # (vd 11.2) vào n_log_rank() như thể là HR — ra N vô nghĩa
-                # (N=4) mà không có cờ [CẦN] hay lỗi nào. Sửa: kiểm effect_type
-                # TRƯỚC design_code, đồng bộ với logic thật trong main().
-                elif effect_type == "ARR%" and design_code in ("rct", "cohort", "case_control"):
-                    p1, p2 = p0, p0 - ev / 100
-                    clamped = p2 <= 0
-                    if clamped:
-                        p2 = 0.05
-                    n = n_two_proportion(p1, p2, alpha, pwr) * 2
-                    if clamped:
-                        n = f"{n}*"
-                elif design_code == "case_control" and effect_type in ("OR", "RR", "HR"):
-                    # SỬA: đồng bộ với main() — case-control dùng two-proportion
-                    # trên tỷ lệ phơi nhiễm suy từ OR, KHÔNG dùng log-rank
-                    # (không có trục thời gian-đến-biến cố hợp lệ).
-                    odds0 = p0 / (1 - p0)
-                    odds1 = ev * odds0
-                    p1_exposed = odds1 / (1 + odds1)
-                    n = n_two_proportion(p1_exposed, p0, alpha, pwr) * 2
-                elif design_code == "cohort" and effect_type == "HR":
-                    ev_hr = ev if ev < 1.0 else 1 / ev
-                    n, _ = n_log_rank(ev_hr, alpha, pwr, p_event)
-                elif design_code in ("cohort", "rct") and effect_type in ("OR", "RR"):
-                    # SỬA (cùng finding với main(), mở rộng "rct" vòng 15): OR/RR
-                    # của cohort/rct là so sánh tỷ lệ TÍCH LŨY, không phải HR —
-                    # dùng two-proportion, KHÔNG dùng Schoenfeld log-rank.
-                    if effect_type == "OR":
-                        odds0 = p0 / (1 - p0)
-                        odds1 = ev * odds0
-                        p1_exposed = odds1 / (1 + odds1)
-                    else:
-                        p1_exposed = min(max(p0 * ev, 1e-6), 1 - 1e-6)
-                    n = n_two_proportion(p1_exposed, p0, alpha, pwr) * 2
-                elif design_code == "rct" and effect_type == "HR":
-                    ev_hr = ev if ev < 1.0 else 1 / ev
-                    n, _ = n_log_rank(ev_hr, alpha, pwr, p_event)
-                elif design_code == "cross_sectional":
-                    p = ev if 0 < ev < 1.0 else 0.30
-                    n = n_prevalence(p, 0.05, alpha)
-                elif design_code == "diagnostic":
-                    auc = ev if effect_type == "AUC" else 0.75
-                    n = n_auc(auc, alpha, pwr)
-                else:
+                kq = tinh_n_loi(design_code, effect_type, ev, alpha, pwr, p0=p0, p_event=p_event, sd=sd,
+                                precision=precision, prevalence=prevalence, hypothesis_type=hypothesis_type,
+                                margin=mg, outcome_direction=outcome_direction)
+                n = kq["n_total"]
+                if not n:
                     row.append("N/A")
                     continue
-            except Exception:
+                n = ap_fpc_cum(n, design_code, population_n, icc, cluster_size)[0]
+            except (InvalidEffectSizeError, ValueError, ZeroDivisionError, OverflowError):
                 row.append("N/A")
                 continue
             row.append(n)
         rows.append((pwr, row))
     return rows, mults
+
 
 def load_checkpoint(path):
     """Đọc checkpoint JSON nếu tồn tại."""
@@ -500,14 +680,39 @@ def guardrail_check(artifact, n_adjusted, effect_val, missing_sd=False):
 def generate_artifact(study, topic, design_code, design_primary, alpha, power, effect_val, effect_type,
                       n_per_group, n_total, n_adjusted, dropout, formula_used, sens_rows, sens_mults,
                       p_event, run_date, sd=None, design_ambiguous=False, confirmed_n=None,
-                      hypothesis_type="superiority"):
-    """Sinh A4 — Kế hoạch cỡ mẫu."""
+                      hypothesis_type="superiority", nguon_tham_so=None, nguon_hieu_qua=None,
+                      outcome_direction=None, margin=None, precision=0.05, prevalence=None, n_benh=None,
+                      n_khong_benh=None, population_n=None, icc=None, cluster_size=None, nguon_mo_ta=None):
+    """Sinh A4 — Kế hoạch cỡ mẫu.
+
+    VÁ 04/10/2026 (soát từng cổng, G3-08): cột «Nguồn» in theo XUẤT XỨ THẬT của từng tham số (CLI / study_meta / đặc
+    tả G1 / trích từ G1-G0 / mặc định máy) — trước đây in cứng «Trích từ y văn G0» cho mọi giá trị, kể cả p=0,5 mặc
+    định. Thiết kế một nhóm/mô tả không có câu lực thống kê và chữ «mỗi nhóm»."""
+    nguon_tham_so = nguon_tham_so or {}
+    nguon_mo_ta = {k: v for k, v in (nguon_mo_ta or {}).items() if v}
+    mo_ta_chinh_xac = effect_type == "PREVALENCE" or hypothesis_type == "descriptive_precision"
+    mot_nhom = design_code in ONE_GROUP_DESIGNS
+
+    def _nguon(ten, mac_dinh="[CẦN XÁC NHẬN — mặc định máy]"):
+        goc = nguon_tham_so.get(ten)
+        if not goc or str(goc).startswith("mặc định"):
+            return f"{goc} — [CẦN XÁC NHẬN]" if goc else mac_dinh
+        return {"CLI": "do bác sĩ/thống kê viên cấp (dòng lệnh)", "study_meta": "ghim trong study_meta"}.get(goc, goc)
     study_safe = study.replace(" ", "-")
     # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15): non_inferiority
     # dùng z MỘT PHÍA (xem n_two_proportion_ni()) — nhãn "two-sided" cứng cho
     # MỌI thiết kế trước đây sẽ sai/gây nhầm lẫn cho hypothesis_type khác
     # superiority.
     _alpha_sidedness = "one-sided" if hypothesis_type == "non_inferiority" else "two-sided"
+    if mo_ta_chinh_xac:
+        _hang_gia_thuyet = ("| Khung cỡ mẫu | Ước lượng theo ĐỘ CHÍNH XÁC (không kiểm định giả thuyết) | "
+                            f"{_nguon('hypothesis_type')} |")
+        _hang_alpha = f"| Độ tin cậy | {int(round((1 - alpha) * 100))}% (α = {alpha}, hai phía) | Quy ước |"
+        _hang_luc = []
+    else:
+        _hang_gia_thuyet = f"| Loại giả thuyết | {hypothesis_type} | {_nguon('hypothesis_type')} |"
+        _hang_alpha = f"| Mức ý nghĩa (α) | {alpha} ({_alpha_sidedness}) | Quy ước |"
+        _hang_luc = [f"| Lực thống kê (1−β) | {int(power*100)}% | Quy ước |"]
     lines = [
         "# A4 — KẾ HOẠCH CỠ MẪU (DRAFT)",
         f"**Đề tài:** {topic}  ",
@@ -519,16 +724,42 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
         "",
         "| Thông số | Giá trị | Nguồn |",
         "|---|---|---|",
-        f"| Loại giả thuyết | {hypothesis_type} | {'Quy ước (mặc định)' if hypothesis_type == 'superiority' else '[CẦN BÁC SĨ/THỐNG KÊ VIÊN XÁC NHẬN]'} |",
-        f"| Mức ý nghĩa (α) | {alpha} ({_alpha_sidedness}) | Quy ước |",
-        f"| Lực thống kê (1−β) | {int(power*100)}% | Quy ước |",
-        f"| Tỷ lệ bỏ cuộc dự kiến | {int(dropout*100)}% | [CẦN BÁC SĨ XÁC NHẬN] |",
+        _hang_gia_thuyet,
+        _hang_alpha,
+        *_hang_luc,
+        f"| Tỷ lệ {'không trả lời' if mo_ta_chinh_xac else 'bỏ cuộc'} dự kiến | {int(dropout*100)}% | "
+        "[CẦN BÁC SĨ XÁC NHẬN] |",
     ]
     if effect_val:
-        lines += [
-            f"| Effect size ước lượng | {effect_type} = {effect_val:.2f} | Trích từ y văn G0 |",
-            f"| Loại hiệu quả | {effect_type} | G1 checkpoint |",
-        ]
+        if effect_type == "PREVALENCE":
+            _ng = ("mặc định quy ước p=0,5 (thận trọng nhất) — [CẦN XÁC NHẬN]"
+                   if str(nguon_hieu_qua or "").startswith("mặc định") else
+                   (_nguon("prevalence") + (f"; nguồn: {nguon_mo_ta['prevalence_source']}"
+                                            if nguon_mo_ta.get("prevalence_source") else "")))
+            lines += [
+                f"| Tỷ lệ ước lượng p | {effect_val:.2f} | {_ng} |",
+                f"| Sai số tuyệt đối cho phép d | ±{precision * 100:g}% | {_nguon('precision')} |",
+            ]
+        else:
+            if str(nguon_hieu_qua or "").startswith("trích từ"):
+                _ng = f"{nguon_hieu_qua} — [CẦN đọc toàn văn xác nhận]"
+            else:
+                _ng = _nguon("effect_size", "[CẦN NGUỒN]")
+            if nguon_mo_ta.get("effect_source"):
+                _ng += f"; nguồn: {nguon_mo_ta['effect_source']}"
+            _ten_hq = "Tỷ lệ kết cục nhóm thử nghiệm (p_test)" if effect_type == "NI_PROPORTION" else "Effect size ước lượng"
+            lines += [
+                f"| {_ten_hq} | {effect_type} = {effect_val:.2f} | {_ng} |",
+            ]
+        if hypothesis_type in ("non_inferiority", "equivalence"):
+            lines += [
+                f"| Biên Δ | {margin} | {_nguon('margin', '[CẦN NGUỒN]')}"
+                + (f"; nguồn: {nguon_mo_ta['margin_source']}" if nguon_mo_ta.get("margin_source") else "") + " |",
+                f"| Chiều kết cục | {outcome_direction or '[CẦN — higher_better/lower_better]'} | "
+                f"{_nguon('outcome_direction', '[CẦN KHAI]')} |",
+            ]
+        if design_code == "diagnostic" and prevalence is not None:
+            lines.append(f"| Tỷ lệ hiện mắc trong quần thể tuyển | {prevalence:.2f} | {_nguon('prevalence', '[CẦN NGUỒN]')} |")
         if design_code in ("cohort", "rct") and effect_type == "HR":
             lines.append(f"| Tỷ lệ biến cố nền | {p_event*100:.0f}% | [CẦN XÁC NHẬN — từ y văn/pilot] |")
         if design_code in ("cohort", "rct") and effect_type == "MD":
@@ -551,7 +782,18 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
         "## PHẦN 2 — KẾT QUẢ TÍNH TOÁN",
         "",
     ]
-    if effect_val:
+    if effect_val and n_total and mot_nhom:
+        lines += [
+            "| Chỉ số | Kết quả |",
+            "|---|---|",
+            *([f"| Số ca bệnh | **{n_benh}** |", f"| Số ca không bệnh | **{n_khong_benh}** |"]
+              if n_benh is not None else []),
+            f"| N cần (chưa bù {'không trả lời' if mo_ta_chinh_xac else 'bỏ cuộc'}) | **{n_total}** |",
+            f"| N điều chỉnh ({int(dropout*100)}%) | **{n_adjusted}** |",
+            "",
+            f"**KẾT LUẬN:** Nghiên cứu cần tuyển **{n_adjusted} người tham gia**.",
+        ]
+    elif effect_val and n_total:
         lines += [
             "| Chỉ số | Kết quả |",
             "|---|---|",
@@ -589,7 +831,8 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
         ]
     else:
         lines += [
-            "**⚠ Chưa tính được** — bác sĩ cần cung cấp effect size.",
+            ("**⚠ Chưa tính được** — " + (formula_used if formula_used.startswith(("[LỖI", "[CẦN"))
+                                         else "bác sĩ cần cung cấp effect size.")),
             "",
             "| Chỉ số | Kết quả |",
             "|---|---|",
@@ -651,17 +894,19 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
     # cũng phải có. Tiêu đề cũ còn tự khai "điều chỉnh N% dropout" trong khi các ô
     # là N TRƯỚC dropout (chính G3-AUTO-09 bắt được mâu thuẫn này).
     if effect_type == "PREVALENCE":
-        _d_list = [0.03, 0.05, 0.10]
-        _p_list = [0.10, 0.30, 0.50]
+        _d_list = [round(precision / 2, 4), precision, round(precision * 2, 4)]
+        _p_list = sorted({0.10, 0.30, 0.50, round(float(effect_val), 4)})
         lines += [
             f"Bảng: tỷ lệ ước lượng p × sai số cho phép d → N tối thiểu "
-            f"(TRƯỚC khi bù {int(dropout*100)}% không trả lời)",
+            f"(TRƯỚC khi bù {int(dropout*100)}% không trả lời"
+            + (f"; đã hiệu chỉnh quần thể hữu hạn N={population_n}" if population_n else "") + ")",
             "",
-            "| p ước lượng | " + " | ".join(f"d = ±{int(d*100)}%" for d in _d_list) + " |",
+            "| p ước lượng | " + " | ".join(f"d = ±{d * 100:g}%" for d in _d_list) + " |",
             "|---|" + "---|" * len(_d_list),
         ]
         for _p in _p_list:
-            _cells = " | ".join(str(n_prevalence(_p, _d, alpha)) for _d in _d_list)
+            _cells = " | ".join(
+                str(ap_fpc_cum(n_prevalence(_p, _d, alpha), design_code, population_n)[0]) for _d in _d_list)
             _mark = " (cơ sở)" if abs(_p - float(effect_val)) < 1e-9 else ""
             lines.append(f"| {_p:.2f}{_mark} | {_cells} |")
         lines += [
@@ -671,10 +916,14 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
             "",
         ]
     else:
+        _tham = "Δ" if hypothesis_type in ("non_inferiority", "equivalence") else (
+            "(AUC − 0,5)" if effect_type == "AUC" else "ES")
         lines += [
-            f"Bảng: Power × Effect size → N tổng (TRƯỚC khi bù {int(dropout*100)}% dropout)",
+            f"Bảng: Power × {_tham} → N tổng (TRƯỚC khi bù {int(dropout*100)}% dropout"
+            + ("; đã áp FPC/hệ số thiết kế cụm như N chính" if (population_n or icc is not None) else "") + ")",
             "",
-            f"| Power | ES × {sens_mults[0]} ({int(sens_mults[0]*100)}%) | ES × {sens_mults[1]} (cơ sở) | ES × {sens_mults[2]} ({int(sens_mults[2]*100)}%) |",
+            f"| Power | {_tham} × {sens_mults[0]} ({int(sens_mults[0]*100)}%) | {_tham} × {sens_mults[1]} (cơ sở) | "
+            f"{_tham} × {sens_mults[2]} ({int(sens_mults[2]*100)}%) |",
             "|---|---|---|---|",
         ]
         for pwr, row in sens_rows:
@@ -703,12 +952,15 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
     # chứa ngôn ngữ power") KHÔNG BAO GIỜ đạt được — khóa cứng mọi đề tài định
     # tính ở DRAFT_NEEDS_HUMAN_PARAMETERS vĩnh viễn. Chỉ in câu alpha/power khi
     # thiết kế thật sự dùng công thức power.
-    if design_code not in N_NOT_APPLICABLE_DESIGNS:
+    if mo_ta_chinh_xac:
+        lines.append(f"Với độ tin cậy {int(round((1 - alpha) * 100))}% (α = {alpha}) và sai số tuyệt đối cho phép "
+                     f"d = ±{precision * 100:g}%,")
+    elif design_code not in N_NOT_APPLICABLE_DESIGNS:
         lines.append(
             f"Với mức ý nghĩa {_alpha_sidedness} α = {alpha}, lực thống kê "
             f"1−β = {int(power*100)}%,"
         )
-    if effect_val:
+    if effect_val and n_total:
         # SỬA: dòng "{effect_type} = {effect_val} (lấy từ y văn [CẦN PMID/DOI])"
         # đúng cho cohort/case_control/RCT (effect_val THẬT LÀ effect size
         # trích từ 1 bài báo cụ thể) nhưng SAI ngữ cảnh cho cross_sectional
@@ -716,21 +968,23 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
         # không phải effect size từ 1 bài báo — ghi "lấy từ y văn [CẦN PMID]"
         # khiến bác sĩ tưởng cần trích dẫn nguồn cho con số quy ước thống kê).
         if design_code == "cross_sectional":
-            p_used = effect_val if effect_val < 1.0 else 0.30
-            lines.append(
-                f"với tỷ lệ hiện mắc giả định p = {p_used:.2f} "
-                "([CẦN bác sĩ xác nhận — dùng p=0.50 theo quy ước thận trọng nếu "
-                "chưa có ước tính từ khảo sát tương tự tại cơ sở/khu vực; nếu có "
-                "số liệu sơ bộ/y văn gần đây, thay p bằng ước tính đó để cỡ mẫu "
-                "sát thực tế hơn]),"
-            )
+            _ng_p = (nguon_mo_ta.get("prevalence_source") or
+                     ("quy ước thận trọng khi chưa có ước tính" if str(nguon_hieu_qua or "").startswith("mặc định")
+                      else "[CẦN NGUỒN — khảo sát tương tự/y văn]"))
+            lines.append(f"với tỷ lệ ước lượng p = {effect_val:.2f} ({_ng_p}),")
+            lines.append(f"cần {n_total} người.")
+            lines.append(f"Tính thêm {int(dropout*100)}% không trả lời dự kiến, cỡ mẫu cuối = {n_adjusted} người.")
         elif design_code == "diagnostic":
-            lines.append(f"với AUC giả định = {effect_val:.2f} ([CẦN — lấy từ nghiên cứu "
-                          "chẩn đoán tương tự, ghi PMID/DOI]),")
+            lines.append(f"với AUC giả định = {effect_val:.2f} (nguồn: "
+                         f"{nguon_mo_ta.get('effect_source') or '[CẦN — nghiên cứu chẩn đoán tương tự, PMID/DOI]'}) "
+                         f"và tỷ lệ hiện mắc p = {prevalence:.2f},")
+            lines.append(f"cần {n_benh} người bệnh và {n_khong_benh} người không bệnh (N = {n_total}).")
+            lines.append(f"Tính thêm {int(dropout*100)}% bỏ cuộc dự kiến, cỡ mẫu cuối = {n_adjusted} người.")
         else:
-            lines.append(f"và {effect_type} = {effect_val:.2f} (lấy từ y văn [CẦN PMID/DOI]),")
-        lines.append(f"cần {n_per_group} người mỗi nhóm (N tổng = {n_total}).")
-        lines.append(f"Tính thêm {int(dropout*100)}% bỏ cuộc dự kiến, cỡ mẫu cuối = {n_adjusted} người.")
+            lines.append(f"và {effect_type} = {effect_val:.2f} (nguồn: "
+                         f"{nguon_mo_ta.get('effect_source') or '[CẦN PMID/DOI/MCID]'}),")
+            lines.append(f"cần {n_per_group} người mỗi nhóm (N tổng = {n_total}).")
+            lines.append(f"Tính thêm {int(dropout*100)}% bỏ cuộc dự kiến, cỡ mẫu cuối = {n_adjusted} người.")
     else:
         lines.append("cỡ mẫu = [CẦN EFFECT SIZE từ bác sĩ].")
     if confirmed_n is not None:
@@ -852,23 +1106,27 @@ def _coerce_pinned_float(raw, field_name):
 def main():
     parser = argparse.ArgumentParser(description="G3 — Tính cỡ mẫu tự động")
     parser.add_argument("--study", required=True, help="Mã đề tài")
-    parser.add_argument("--alpha", type=float, default=0.05)
-    parser.add_argument("--power", type=float, default=0.80)
+    # VÁ 04/10/2026 (soát từng cổng, đo trên C1a): mặc định None để phân biệt «không truyền» — chạy lại chỉ với --study
+    # từng LẶNG LẼ đưa α/lực/p0/tỷ lệ biến cố/tỷ lệ bỏ cuộc về mặc định máy (C1a: bỏ cuộc 15% → 20%). Thứ tự lấy giá trị:
+    # dòng lệnh → study_meta (ghim) → checkpoint lượt trước → mặc định (ghi rõ nguồn).
+    parser.add_argument("--alpha", type=float, default=None)
+    parser.add_argument("--power", type=float, default=None)
     parser.add_argument("--effect-size", type=float, default=None)
-    parser.add_argument("--effect-type", default=None, choices=["HR", "OR", "RR", "ARR%", "AUC", "MD"])
-    parser.add_argument("--p0", type=float, default=0.30, help="Tỷ lệ biến cố nhóm chứng")
+    # VÁ 04/10/2026 (G3-09): nhận cả PREVALENCE (run_pipeline chạy lại đề tài mô tả truyền đúng loại đã ghim).
+    parser.add_argument("--effect-type", default=None, choices=["HR", "OR", "RR", "ARR%", "AUC", "MD", "PREVALENCE"])
+    parser.add_argument("--p0", type=float, default=None, help="Tỷ lệ biến cố nhóm chứng (mặc định 0.30)")
     # Hai tham số của cỡ mẫu theo ĐỘ CHÍNH XÁC (thiết kế mô tả). Cố ý TÁCH khỏi
     # --p0: p0 là "tỷ lệ nhóm chứng" trong so sánh hai nhóm, còn --prevalence là
     # "tỷ lệ hiện mắc ước lượng" của quần thể — hai đại lượng khác nhau, gộp lại
     # sẽ khiến artifact ghi sai tên tham số trong phần công thức.
     parser.add_argument("--prevalence", type=float, default=None,
-                        help="Tỷ lệ hiện mắc ƯỚC LƯỢNG của quần thể (thiết kế mô tả cắt ngang). "
-                             "Không truyền thì dùng 0.5 — giá trị thận trọng nhất, cho N lớn nhất.")
-    parser.add_argument("--precision", type=float, default=0.05,
+                        help="Tỷ lệ hiện mắc ƯỚC LƯỢNG của quần thể. Cắt ngang: không truyền thì dùng 0.5 (thận "
+                             "trọng nhất). Chẩn đoán: BẮT BUỘC (quy số ca bệnh ra tổng N) — không mặc định.")
+    parser.add_argument("--precision", type=float, default=None,
                         help="Sai số cho phép d (nửa rộng khoảng tin cậy mong muốn) của cỡ mẫu "
-                             "theo độ chính xác. Mặc định 0.05 (±5%%).")
-    parser.add_argument("--dropout", type=float, default=0.20)
-    parser.add_argument("--p-event", type=float, default=0.30, help="Tỷ lệ biến cố tổng thể (log-rank)")
+                             "theo độ chính xác. Không truyền: lấy gate_params.G3.precision, rồi 0.05 (±5%%).")
+    parser.add_argument("--dropout", type=float, default=None, help="Tỷ lệ bỏ cuộc dự kiến (mặc định 0.20)")
+    parser.add_argument("--p-event", type=float, default=None, help="Tỷ lệ biến cố tổng thể (log-rank, mặc định 0.30)")
     parser.add_argument("--sd", type=float, default=None,
                          help="Độ lệch chuẩn kết cục liên tục (bắt buộc khi --effect-type MD)")
     # THÊM 2026-07-17: trước đây G3 CHỈ tính N từ effect size — không có chỗ
@@ -884,10 +1142,16 @@ def main():
     # co-mau-nghien-cuu.md yêu cầu phân biệt superiority vs non-inferiority/
     # equivalence TRƯỚC khi tính (chọn nhầm là sai toàn bộ) — trước đây G3
     # không có tham số nào cho việc này, mọi thiết kế đều tính như superiority.
-    parser.add_argument("--hypothesis-type", default="superiority",
-                         choices=["superiority", "non_inferiority", "equivalence"],
-                         help="Loại giả thuyết — quyết định công thức + z một phía/hai phía "
-                              "(mặc định superiority, không đổi hành vi cũ)")
+    # VÁ 04/10/2026 (G3-03, CHUNG-F): mặc định None — lấy giả thuyết đã GHIM (study_meta) hoặc khối đặc tả thiết kế
+    # của G1 trước khi rơi về «superiority»; chạy lại chỉ với --study từng LẶNG LẼ đổi NI đã ghim thành superiority.
+    parser.add_argument("--hypothesis-type", default=None,
+                         choices=["superiority", "non_inferiority", "equivalence", "descriptive_precision"],
+                         help="Loại giả thuyết — quyết định công thức + z một phía/hai phía. Không truyền: "
+                              "gate_params.G3.hypothesis_type → đặc tả thiết kế G1 → superiority (đánh dấu mặc định)")
+    parser.add_argument("--outcome-direction", default=None,
+                         help="Chiều kết cục cho non-inferiority: higher_better (tỷ lệ CAO là tốt — đáp ứng) | "
+                              "lower_better (tỷ lệ THẤP là tốt — biến cố bất lợi). BẮT BUỘC khi không phải "
+                              "superiority (G3-01).")
     parser.add_argument("--margin", type=float, default=None,
                          help="Biên Δ (BẮT BUỘC nếu --hypothesis-type khác superiority) — mức "
                               "'kém hơn tối đa chấp nhận được' (đơn vị TỶ LỆ, vd 0.1 = 10 điểm %%), "
@@ -905,6 +1169,7 @@ def main():
                          help="Cỡ cụm trung bình (m) — bắt buộc cùng --icc để tính design effect")
     args = parser.parse_args()
     GC.ensure_utf8_stdout()
+    _cli_da_truyen = {k for k in ("effect_size", "effect_type", "sd", "confirmed_n") if getattr(args, k) is not None}
 
     # Audit 2026-07-11: G0/G1/G2 đều làm sạch --study (chặn '/', '..' ghi ra ngoài
     # exports/) — G3 trước đây dùng thẳng args.study, lệch chuẩn với 3 cổng anh em.
@@ -933,8 +1198,76 @@ def main():
         if args.sd is not None:
             print(f"  → Khôi phục sd={args.sd} từ study_meta.json")
     if args.confirmed_n is None and _g3_pinned.get("confirmed_n") is not None:
-        args.confirmed_n = _g3_pinned["confirmed_n"]
-        print(f"  → Khôi phục confirmed_n={args.confirmed_n} từ study_meta.json (chạy lại không mất)")
+        # VÁ 04/10/2026 (G3-11): ép kiểu — chuỗi «300» từng làm so sánh confirmed_n >= n_adjusted crash TypeError.
+        _cn = _coerce_pinned_float(_g3_pinned["confirmed_n"], "confirmed_n")
+        args.confirmed_n = int(_cn) if _cn is not None and float(_cn).is_integer() and _cn > 0 else None
+        if args.confirmed_n is not None:
+            print(f"  → Khôi phục confirmed_n={args.confirmed_n} từ study_meta.json (chạy lại không mất)")
+        else:
+            print(f"  ⚠️  confirmed_n ghim trong study_meta ({_g3_pinned['confirmed_n']!r}) không phải số nguyên dương "
+                  "— bỏ qua, cần bác sĩ sửa.")
+    # VÁ 04/10/2026 (soát từng cổng, G3-02/G3-03/CHUNG-F): khôi phục MỌI tham số quyết định N từ study_meta khi CLI
+    # vắng (trước đây chỉ effect_size/effect_type/sd/confirmed_n) — giả thuyết, biên, chiều kết cục, cụm (ICC/cỡ cụm),
+    # quần thể hữu hạn, tỷ lệ hiện mắc, độ chính xác. Khối đặc tả thiết kế của G1 là nguồn kế tiếp cho giả thuyết/biên/
+    # chiều. Ghi lại NGUỒN của từng tham số để artifact và cổng thấy giá trị nào là mặc định máy.
+    nguon_tham_so = {}
+    for _ten in ("effect_size", "effect_type", "sd", "confirmed_n"):
+        nguon_tham_so[_ten] = "CLI" if _ten in _cli_da_truyen else ("study_meta" if _g3_pinned.get(_ten) is not None
+                                                                     else None)
+    _dac_ta = S.dac_ta_thiet_ke(out_dir)
+    for _ten, _kieu in (("hypothesis_type", "str"), ("margin", "float"), ("outcome_direction", "str"),
+                        ("icc", "float"), ("cluster_size", "int"), ("population_n", "int"),
+                        ("prevalence", "float"), ("precision", "float")):
+        _attr = _ten
+        if getattr(args, _attr) is not None:
+            nguon_tham_so[_ten] = "CLI"
+            continue
+        _gia_tri = _g3_pinned.get(_ten)
+        _nguon = "study_meta"
+        if _gia_tri is None and _ten in ("hypothesis_type", "margin", "outcome_direction"):
+            _gia_tri = _dac_ta.get(_ten)
+            _nguon = f"đặc tả thiết kế G1 ({_dac_ta.get('nguon')})"
+        if _gia_tri is None:
+            continue
+        if _kieu == "float":
+            _gia_tri = _coerce_pinned_float(_gia_tri, _ten)
+        elif _kieu == "int":
+            _f = _coerce_pinned_float(_gia_tri, _ten)
+            _gia_tri = int(_f) if _f is not None and float(_f).is_integer() else None
+        elif _ten == "hypothesis_type":
+            _gia_tri = S.chuan_hoa_hypothesis_type(_gia_tri)
+        if _gia_tri is not None:
+            setattr(args, _attr, _gia_tri)
+            nguon_tham_so[_ten] = _nguon
+            print(f"  → Khôi phục {_ten}={_gia_tri} từ {_nguon}")
+    _cp_cu = load_checkpoint(out_dir / "G3_checkpoint.json")
+    for _ten, _mac_dinh in (("alpha", 0.05), ("power", 0.80), ("p0", 0.30), ("dropout", 0.20), ("p_event", 0.30)):
+        if getattr(args, _ten) is not None:
+            nguon_tham_so[_ten] = "CLI"
+            continue
+        _gia_tri, _nguon = _coerce_pinned_float(_g3_pinned.get(_ten), _ten) if _g3_pinned.get(_ten) is not None \
+            else None, "study_meta"
+        if _gia_tri is None and isinstance(_cp_cu.get(_ten), (int, float)) and not isinstance(_cp_cu.get(_ten), bool):
+            _gia_tri, _nguon = float(_cp_cu[_ten]), "checkpoint lượt trước"
+        if _gia_tri is None:
+            _gia_tri, _nguon = _mac_dinh, f"mặc định {_mac_dinh}"
+        setattr(args, _ten, _gia_tri)
+        nguon_tham_so[_ten] = _nguon
+        if _nguon != f"mặc định {_mac_dinh}":
+            print(f"  → Khôi phục {_ten}={_gia_tri} từ {_nguon}")
+    if args.outcome_direction is not None:
+        _chieu = chuan_hoa_chieu_ket_cuc(args.outcome_direction)
+        if _chieu is None:
+            print(f"❌ LỖI: --outcome-direction={args.outcome_direction!r} không nhận ra — dùng higher_better "
+                  "(tỷ lệ CAO là tốt) hoặc lower_better (tỷ lệ THẤP là tốt).")
+            sys.exit(1)
+        args.outcome_direction = _chieu
+    if args.effect_type == "PREVALENCE":
+        # VÁ 04/10/2026 (G3-09): PREVALENCE là tham số của cỡ mẫu theo độ chính xác, không phải effect size.
+        if args.prevalence is None and args.effect_size is not None:
+            args.prevalence = args.effect_size
+            nguon_tham_so["prevalence"] = nguon_tham_so.get("effect_size") or "CLI"
+        args.effect_size, args.effect_type = None, None
 
     print(f"🔢 G3 — Tính cỡ mẫu: {study}")
     print("📂 Bước 1/6: Đọc checkpoints...")
@@ -971,6 +1304,13 @@ def main():
 
     print("⚙️  Bước 2/6: Xác định tham số...")
     effect_quality = None
+    if args.hypothesis_type is None:
+        # Mặc định MÁY (không phải quyết định): thiết kế cắt ngang tính theo độ chính xác ⇒ không kiểm định giả thuyết.
+        args.hypothesis_type = "descriptive_precision" if design_code == "cross_sectional" else "superiority"
+        nguon_tham_so["hypothesis_type"] = "mặc định máy"
+    elif design_code == "cross_sectional" and args.hypothesis_type == "superiority":
+        args.hypothesis_type = "descriptive_precision"
+    nguon_hieu_qua = nguon_tham_so.get("effect_size")
     # SỬA: "if args.effect_size and ..." coi 0.0 là falsy (Python) — nếu bác
     # sĩ cố tình/nhầm truyền --effect-size 0.0, điều kiện này bị bỏ qua âm
     # thầm, hệ thống tự chuyển sang dùng effect size khác từ G1 mà KHÔNG báo
@@ -981,14 +1321,21 @@ def main():
         # equivalence dùng --effect-size làm p_test TRỰC TIẾP (tỷ lệ, không
         # phải OR/RR/HR/ARR%/AUC/MD) — KHÔNG cần --effect-type đi kèm, khác
         # nhánh superiority ngay dưới.
-        effect_val, effect_type = args.effect_size, "p_test"
+        # VÁ 04/10/2026 (G3-07): mã loại hiệu quả tường minh «NI_PROPORTION» (thay «p_test» — không thuộc tập hợp lệ
+        # của rct/cohort nên G3-AUTO-03 REVIEW mãi).
+        effect_val, effect_type = args.effect_size, "NI_PROPORTION"
         print(f"  → p_test (từ tham số, {args.hypothesis_type}) = {effect_val}")
     elif args.effect_size is not None and args.effect_type:
         effect_val, effect_type = args.effect_size, args.effect_type
         print(f"  → Effect size (từ tham số): {effect_type} = {effect_val}")
+    elif design_code not in ("rct", "cohort", "case_control"):
+        # VÁ 04/10/2026 (soát từng cổng, G3-08): cắt ngang/chẩn đoán/thiết kế không dùng power KHÔNG được mượn thước đo
+        # liên hệ (HR/OR/RR/ARR%) trích từ G1 làm tham số — một RR 0,80 từng thành «tỷ lệ hiện mắc 80%».
+        effect_val, effect_type = None, None
     else:
         effect_val, effect_type, effect_quality = extract_best_effect(effect_samples)
         if effect_val:
+            nguon_hieu_qua = f"trích từ y văn G1/G0 (chất lượng {effect_quality})"
             print(f"  → Effect size (từ G1/G0): {effect_type} = {effect_val:.3f} (quality={effect_quality})")
             if effect_quality == "crude":
                 print("  ⚠️  Effect size này là loại THÔ (không có 95%CI đi kèm khi trích "
@@ -1013,7 +1360,7 @@ def main():
             print(f"❌ LỖI: --prevalence={args.prevalence} phải trong khoảng (0,1) — đây là tỷ lệ "
                   "hiện mắc ước lượng của quần thể, dùng cho công thức cỡ mẫu theo độ chính xác.")
             sys.exit(1)
-        if not (0 < args.precision < 1):
+        if args.precision is not None and not (0 < args.precision < 1):
             print(f"❌ LỖI: --precision={args.precision} phải trong khoảng (0,1).")
             sys.exit(1)
         # Tên "PREVALENCE" là tên mà g3_quality_gate.EFFECT_TYPES_BY_DESIGN đã
@@ -1022,10 +1369,13 @@ def main():
         # nào đạt được với thiết kế mô tả — hai module đã viết cho nhau nhưng
         # chưa từng nối, vì chưa có đề tài mô tả thật nào chạy qua G3.
         effect_val, effect_type = _p_est, "PREVALENCE"
+        nguon_hieu_qua = (nguon_tham_so.get("prevalence") or "CLI") if args.prevalence is not None else (
+            "mặc định quy ước p=0,5")
         _src = ("tham số --prevalence" if args.prevalence is not None
                 else "mặc định 0.5 — thận trọng nhất, cho N lớn nhất")
         print(f"  → Thiết kế mô tả: cỡ mẫu theo ĐỘ CHÍNH XÁC, tỷ lệ ước lượng p = {effect_val} ({_src})")
-        print(f"     Sai số cho phép d = {args.precision}. Thiết kế này không cần effect size.")
+        print(f"     Sai số cho phép d = {args.precision if args.precision is not None else 0.05}. "
+              "Thiết kế này không cần effect size.")
 
     alpha = args.alpha
     power = args.power
@@ -1049,6 +1399,11 @@ def main():
     formula_used = ""
     sens_rows, sens_mults = [], [0.80, 1.00, 1.20]
     missing_sd = False  # THÊM: cờ riêng cho ca "có MD nhưng thiếu SD" — khác "chưa có công thức"
+    n_benh = n_khong_benh = None
+    design_effect = n_clusters = n_total_truoc_de = None
+    precision = args.precision if args.precision is not None else 0.05
+    if args.precision is None:
+        nguon_tham_so["precision"] = "mặc định 0.05"
 
     # SỬA 2026-07-17 (round audit gate): "sr_ma"/"prediction" KHÔNG dùng cỡ mẫu
     # kiểu so-sánh-2-nhóm (HR/OR/RR/MD/AUC) nên KHÔNG được đặt trong nhánh
@@ -1129,260 +1484,56 @@ def main():
         )
         print("  ℹ️  design=qualitative → cỡ mẫu theo BÃO HÒA DỮ LIỆU (không phải "
               "power/effect size) — N=0 có chủ đích, xem artifact A4/nghien-cuu-dinh-tinh")
-    elif args.hypothesis_type != "superiority":
-        # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, phát hiện
-        # HIGH): co-mau-nghien-cuu.md dòng 45/49/65/76 yêu cầu phân biệt
-        # superiority vs non-inferiority/equivalence TRƯỚC khi chọn công
-        # thức — trước đây KHÔNG có nhánh nào, mọi thiết kế tính như
-        # superiority mặc định (SAI toàn bộ nếu đề tài thật là NI/equivalence
-        # — dùng za hai phía thay vì một phía sẽ cho N SAI, và không trừ
-        # margin thì không kiểm định đúng giả thuyết NI/equivalence).
-        # Diễn giải tham số: --effect-size = tỷ lệ biến cố NHÓM THỬ NGHIỆM
-        # (p_test, KHÔNG phải OR/RR/HR), --p0 = tỷ lệ biến cố NHÓM CHỨNG
-        # (p_control, tái dùng flag có sẵn), --margin = biên Δ (BẮT BUỘC).
+    else:
+        # VÁ 04/10/2026 (soát từng cổng, G3-06): MỌI nhánh công thức nằm ở tinh_n_loi() — cùng hàm mà bảng độ nhạy gọi.
         try:
-            if args.margin is None or args.margin <= 0:
-                raise InvalidEffectSizeError(
-                    f"--hypothesis-type={args.hypothesis_type} BẮT BUỘC có --margin dương "
-                    "(biên Δ có biện minh lâm sàng + nguồn) — KHÔNG bịa margin.")
-            if effect_val is None or not (0 < effect_val < 1):
-                raise InvalidEffectSizeError(
-                    f"--hypothesis-type={args.hypothesis_type} cần --effect-size là TỶ LỆ "
-                    f"biến cố nhóm thử nghiệm (p_test) trong (0,1), nhận được {effect_val} "
-                    "— KHÔNG phải OR/RR/HR như superiority.")
-            if args.hypothesis_type == "non_inferiority":
-                n_per_group = n_two_proportion_ni(effect_val, args.p0, args.margin, alpha, power)
-                n_total = n_per_group * 2
-                n_adjusted = math.ceil(n_total / (1 - dropout))
-                formula_used = (
-                    f"Non-inferiority two-proportion (one-sided, Wald): p_test={effect_val:.2f}, "
-                    f"p_control={args.p0:.2f}, margin={args.margin:.2f}, "
-                    f"zα(một phía)={z(alpha):.3f}. [CẦN — --margin PHẢI có biện minh lâm sàng "
-                    "(không phải giá trị thống kê thuận tiện) và được Hội đồng/thống kê viên "
-                    "xác nhận TRƯỚC khi khóa SAP.]"
-                )
-            else:  # equivalence
-                # KHÔNG tự tính — công thức TOST (Two One-Sided Tests) cho
-                # equivalence cần z_{beta/2} thay vì z_beta trong một số biến
-                # thể (Chow/Shao/Wang 2008, tr.86) mà chưa thể xác minh bằng
-                # ví dụ số cụ thể từ nguồn có thể truy cập công khai tại thời
-                # điểm vá này — KHÔNG bịa công thức chưa xác minh chắc chắn
-                # (nguyên tắc cứng của dự án), khác hẳn non_inferiority ở
-                # trên (đã xác minh khớp ví dụ số n=25 từ HyLown/Chow-Shao-Wang).
-                n_per_group = n_total = n_adjusted = 0
-                formula_used = (
-                    "[CẦN — Equivalence (TOST — Two One-Sided Tests) CHƯA được tự động hóa ở "
-                    "đây vì công thức closed-form chưa được xác minh bằng ví dụ số cụ thể từ "
-                    "nguồn công khai tại thời điểm này (khác non_inferiority — đã xác minh). "
-                    "Dùng phần mềm chuyên dụng (PASS 'Equivalence Tests', R TOSTER/PowerTOST) "
-                    "theo Chow SC, Shao J, Wang H. Sample Size Calculations in Clinical "
-                    "Research, 2nd ed., 2008, Chương 3 (tr.86) — cần bác sĩ/thống kê viên tính "
-                    "TRỰC TIẾP bằng phần mềm đó. KHÔNG bịa N ở đây.]"
-                )
+            kq = tinh_n_loi(design_code, effect_type, effect_val, alpha, power, p0=args.p0, p_event=p_event,
+                            sd=args.sd, precision=precision, prevalence=args.prevalence,
+                            hypothesis_type=args.hypothesis_type, margin=args.margin,
+                            outcome_direction=args.outcome_direction)
+            n_per_group, n_total = kq["n_per_group"], kq["n_total"]
+            formula_used, missing_sd = kq["formula"], kq["missing_sd"]
+            n_benh, n_khong_benh = kq["n_benh"], kq["n_khong_benh"]
+            if args.hypothesis_type == "equivalence":
                 print("  ⚠️  hypothesis_type=equivalence → CHƯA tự động hóa (công thức TOST "
                       "chưa xác minh đủ chắc chắn) — dùng PASS/TOSTER, xem artifact A4")
-        except InvalidEffectSizeError as e:
-            print(f"❌ LỖI: {e}")
-            n_per_group = n_total = n_adjusted = 0
-            formula_used = f"[LỖI — {e}]"
-    elif effect_val:
-        try:
-            if design_code == "cohort" and effect_type == "HR":
-                ev = effect_val if effect_val < 1.0 else 1 / effect_val
-                n_total_raw, n_events = n_log_rank(ev, alpha, power, p_event)
-                n_per_group = math.ceil(n_total_raw / 2)
-                n_total = n_per_group * 2
-                n_adjusted = math.ceil(n_total / (1 - dropout))
-                formula_used = f"Schoenfeld log-rank: d = (zα/2+zβ)²/ln(HR)² = {n_events} biến cố → N={n_total}"
-            elif design_code in ("cohort", "rct") and effect_type in ("OR", "RR"):
-                # SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 6, phát hiện
-                # HIGH): nhánh cũ đưa THẲNG giá trị OR/RR vào n_log_rank() như
-                # thể là HR — công thức Schoenfeld log-rank chỉ đúng cho hazard
-                # ratio (dữ liệu thời gian-đến-biến-cố có kiểm duyệt), KHÔNG
-                # tương đương OR/RR khi biến cố không hiếm (kiểm chứng tay:
-                # OR=0.5 với p0=0.30 cho RR thật≈0.588, dùng OR trực tiếp làm
-                # N thấp hơn ~41% so với dùng RR quy đổi đúng → nguy cơ nghiên
-                # cứu THIẾU LỰC THỐNG KÊ). Khi effect size là OR/RR (không phải
-                # HR thật), đây là so sánh TỶ LỆ TÍCH LŨY (cumulative incidence)
-                # giữa 2 nhóm phơi nhiễm — dùng two-proportion (cùng kỹ thuật
-                # đã áp cho case_control), KHÔNG dùng Schoenfeld (vốn cần cấu
-                # trúc thời gian-đến-biến-cố mà một OR/RR đơn thuần không có).
-                # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, phát hiện
-                # MEDIUM): mở rộng thêm "rct" — chính thiet-ke-nghien-cuu.md
-                # dòng 291 (template RCT song song) ghi kết cục nhị phân dùng
-                # "logistic/Poisson + robust SE → RR (95%CI)" là thước đo CHUẨN
-                # cho RCT, nhưng nhánh này trước chỉ nhận "cohort" — RCT + OR/RR
-                # rơi vào else "[CẦN CÔNG THỨC]" dù công thức two-proportion
-                # suy từ OR/RR không phụ thuộc cohort vs rct (chỉ khác Ý NGHĨA
-                # của p0: tỷ lệ biến cố nền nhóm chứng/không can thiệp).
-                p0_baseline = args.p0  # tỷ lệ biến cố nền (nhóm chứng/không phơi nhiễm)
-                if effect_type == "OR":
-                    odds0 = p0_baseline / (1 - p0_baseline)
-                    odds1 = effect_val * odds0
-                    p1_exposed = odds1 / (1 + odds1)
-                else:  # RR
-                    p1_exposed = min(max(p0_baseline * effect_val, 1e-6), 1 - 1e-6)
-                n_per_group, _fleiss_applied = n_two_proportion_auto(p1_exposed, p0_baseline, alpha, power)
-                n_total = n_per_group * 2
-                n_adjusted = math.ceil(n_total / (1 - dropout))
-                _group_label = "phơi nhiễm" if design_code == "cohort" else "can thiệp"
-                _p0_label = "không phơi nhiễm" if design_code == "cohort" else "chứng/không can thiệp"
-                _fleiss_note = (" Đã áp hiệu chỉnh liên tục Fleiss (cỡ mẫu nhỏ/tỷ lệ gần biên)."
-                                 if _fleiss_applied else "")
-                formula_used = (f"Two-proportion ({design_code}, {effect_type}={effect_val:.2f} → "
-                                 f"tỷ lệ biến cố {_group_label}≈{p1_exposed:.2f} vs "
-                                 f"{_p0_label}={p0_baseline:.2f}).{_fleiss_note} [CẦN — --p0 ở đây là TỶ "
-                                 f"LỆ BIẾN CỐ NỀN của nhóm {_p0_label}; nếu đề tài "
-                                 "thật sự có dữ liệu thời gian-đến-biến-cố và effect size là HR "
-                                 "thật (không phải OR/RR), dùng --effect-type HR để tính bằng "
-                                 "Schoenfeld log-rank thay vì công thức này.]")
-            elif design_code == "case_control" and effect_type in ("OR", "RR", "HR"):
-                # SỬA: case-control (hồi cứu, chọn mẫu theo tình trạng bệnh)
-                # không có trục "thời gian đến biến cố" hợp lệ để dùng
-                # log-rank/Schoenfeld (vốn cho cohort/RCT có theo dõi dọc).
-                # Đúng chuẩn: two-proportion trên TỶ LỆ PHƠI NHIỄM giữa ca và
-                # chứng, suy ra từ OR (xấp xỉ Cornfield nếu effect size là
-                # HR/RR thay vì OR thật).
-                p0_exposed = args.p0  # tái dùng --p0 làm tỷ lệ phơi nhiễm NỀN ở nhóm chứng
-                OR = effect_val
-                odds0 = p0_exposed / (1 - p0_exposed)
-                odds1 = OR * odds0
-                p1_exposed = odds1 / (1 + odds1)
-                n_per_group, _fleiss_applied = n_two_proportion_auto(p1_exposed, p0_exposed, alpha, power)
-                n_total = n_per_group * 2
-                n_adjusted = math.ceil(n_total / (1 - dropout))
-                _fleiss_note = (" Đã áp hiệu chỉnh liên tục Fleiss (cỡ mẫu nhỏ/tỷ lệ gần biên)."
-                                 if _fleiss_applied else "")
-                formula_used = (f"Two-proportion (case-control, {effect_type}={effect_val:.2f} → "
-                                 f"tỷ lệ phơi nhiễm ca≈{p1_exposed:.2f} vs chứng={p0_exposed:.2f}).{_fleiss_note} "
-                                 f"[CẦN — --p0 ở đây được diễn giải là TỶ LỆ PHƠI NHIỄM NỀN của "
-                                 "nhóm chứng (không phải tỷ lệ biến cố như ở cohort/RCT); bác sĩ "
-                                 "xác nhận con số này đúng với đề tài, mặc định 0.30 chỉ là khởi tạo.]")
-            elif design_code == "rct" and effect_type in ("HR",):
-                ev = effect_val if effect_val < 1.0 else 1 / effect_val
-                n_total_raw, n_events = n_log_rank(ev, alpha, power, p_event)
-                n_per_group = math.ceil(n_total_raw / 2)
-                n_total = n_per_group * 2
-                n_adjusted = math.ceil(n_total / (1 - dropout))
-                formula_used = f"Schoenfeld log-rank: d={n_events} biến cố"
-            elif design_code in ("rct", "cohort") and effect_type == "MD":
-                # THÊM 2026-07-06: kết cục LIÊN TỤC (đau/chức năng/chất lượng
-                # sống) — loại kết cục PHỔ BIẾN NHẤT cho RCT triệu chứng,
-                # trước đây KHÔNG có công thức nào (rơi vào nhánh else, N=0
-                # với thông báo chung chung "chưa có công thức"). MD cần thêm
-                # SD (độ lệch chuẩn) mà HR/OR/RR/ARR% không cần — SD KHÔNG có
-                # sẵn trong G0/G1 (không trích được từ abstract một cách đáng
-                # tin), nên PHẢI do bác sĩ/thống kê viên cấp qua --sd, hệ
-                # KHÔNG bịa SD để "cho ra số".
-                if args.sd is None or args.sd <= 0:
-                    missing_sd = True
-                    n_per_group = n_total = n_adjusted = 0
-                    formula_used = (f"[CẦN — có MD={effect_val:.2f} (kết cục liên tục) nhưng THIẾU SD "
-                                     "(độ lệch chuẩn) để tính cỡ mẫu. Bác sĩ/thống kê viên cấp qua "
-                                     "--sd <giá_trị> (lấy từ pilot/y văn cùng kết cục, ghi rõ nguồn "
-                                     "PMID/DOI) — hệ KHÔNG bịa SD.]")
-                    print(f"  ⚠️  Có MD={effect_val} nhưng THIẾU --sd — KHÔNG bịa SD, cần bác sĩ cấp")
-                else:
-                    n_per_group = n_continuous_md(effect_val, args.sd, alpha, power)
-                    n_total = n_per_group * 2
-                    n_adjusted = math.ceil(n_total / (1 - dropout))
-                    formula_used = (f"Two-sample continuous (Machin/Campbell/Fayers): "
-                                     f"n=2×(SD/MD)²×(zα/2+zβ)² với MD={effect_val:.2f}, SD={args.sd:.2f}")
-            elif design_code in ("rct", "cohort", "case_control") and effect_type == "ARR%":
-                # SỬA: trước đây "cohort + ARR%" (tổ hợp THỰC TẾ THƯỜNG GẶP —
-                # đã xảy ra đúng với ca SGLT2-HFpEF trong phiên này) rơi vào
-                # nhánh else fabricate N=100/200 không qua công thức nào.
-                p1 = args.p0
-                p2 = p1 - effect_val / 100
-                clamp_note = ""
-                if p2 <= 0:
-                    p2 = 0.05
-                    clamp_note = (f" [CẦN LƯU Ý — ARR%={effect_val} với p0={p1:.2f} cho p2≤0 → "
-                                   f"đã kẹp p2=0.05 (ARR hiệu dụng = {(p1-0.05)*100:.1f}%, "
-                                   f"KHÔNG phải {effect_val}% như yêu cầu ban đầu)]")
-                    print(f"  ⚠️  ARR%={effect_val} với p0={p1:.2f} cho p2≤0 → đã kẹp p2=0.05 "
-                          f"(ARR hiệu dụng = {(p1-0.05)*100:.1f}%, KHÔNG phải {effect_val}% như yêu cầu)")
-                n_per_group, _fleiss_applied = n_two_proportion_auto(p1, p2, alpha, power)
-                n_total = n_per_group * 2
-                n_adjusted = math.ceil(n_total / (1 - dropout))
-                _fleiss_note = (" Đã áp hiệu chỉnh liên tục Fleiss (cỡ mẫu nhỏ/tỷ lệ gần biên)."
-                                 if _fleiss_applied else "")
-                formula_used = f"Two-proportion z-test: p1={p1:.2f}, p2={p2:.2f}{clamp_note}{_fleiss_note}"
-            elif design_code == "cross_sectional":
-                p = effect_val if effect_val < 1.0 else 0.30
-                # Sai số d lấy từ --precision (trước đây cố định 0.05, không cho
-                # chỉnh — nhưng d là lựa chọn thiết kế của chủ nhiệm, và bảng độ
-                # nhạy theo nhiều mức d là nội dung chuẩn của đề cương mô tả).
-                _d = args.precision
-                n_total = n_prevalence(p, _d, alpha)
-                n_per_group = n_total
-                n_adjusted = math.ceil(n_total / (1 - dropout))
-                _p_label = ("tỷ lệ hiện mắc ước lượng" if effect_type == "PREVALENCE"
-                            else "tỷ lệ")
-                formula_used = (f"Cỡ mẫu ước lượng một tỷ lệ theo độ chính xác "
-                                f"(Lwanga & Lemeshow/Cochran, xấp xỉ chuẩn): {_p_label} p={p:.2f}, "
-                                f"sai số cho phép d={_d}, alpha={alpha}")
-            elif design_code == "diagnostic":
-                auc = effect_val if effect_type == "AUC" else 0.75
-                n_total = n_auc(auc, alpha, power)
-                n_per_group = math.ceil(n_total / 2)
-                n_adjusted = math.ceil(n_total / (1 - dropout))
-                formula_used = (f"Hanley-McNeil AUC (một mẫu so với 0.5): AUC={auc:.2f}. "
-                                 "[CẦN — các phần mềm khác nhau (PASS/MedCalc/nQuery) có thể "
-                                 "cho N hơi khác do giả định phương sai khác nhau; nếu cỡ mẫu "
-                                 "của nghiên cứu phụ thuộc chủ yếu vào con số này, nên nhờ "
-                                 "thống kê viên đối chiếu lại bằng phần mềm chuyên dụng.]")
-            else:
-                # SỬA: KHÔNG còn fabricate N=100/200 giả khi không khớp công
-                # thức nào — để trống + gắn nhãn [CẦN] thay vì số bịa mà
-                # guardrail vẫn báo PASS như trước.
-                n_per_group = n_total = n_adjusted = 0
-                formula_used = (f"[CẦN CÔNG THỨC CỤ THỂ — tổ hợp design_code={design_code} + "
-                                f"effect_type={effect_type} chưa có công thức tự động. "
-                                "Bác sĩ/thống kê viên cần chọn công thức phù hợp thủ công.]")
+            elif missing_sd:
+                print(f"  ⚠️  Có MD={effect_val} nhưng THIẾU --sd — KHÔNG bịa SD, cần bác sĩ cấp")
+            elif formula_used.startswith("[CẦN CÔNG THỨC"):
                 print(f"  ⚠️  Không có công thức tự động cho design={design_code} + "
                       f"effect_type={effect_type} — KHÔNG bịa số, cần bác sĩ tính thủ công")
-            if n_total:
-                sens_rows, sens_mults = sensitivity_table(design_code, n_total, effect_val, effect_type, alpha, p_event, args.p0, args.sd)
-                print(f"  → N mỗi nhóm: {n_per_group}, N tổng: {n_total}, N điều chỉnh: {n_adjusted}")
+            elif effect_val is None:
+                formula_used = "[CẦN EFFECT SIZE từ bác sĩ để tính]"
+                print("  → N: [CẦN BÁC SĨ ẤN ĐỊNH EFFECT SIZE]")
         except InvalidEffectSizeError as e:
-            print(f"❌ LỖI EFFECT SIZE: {e}")
-            print("   → KHÔNG tính được cỡ mẫu với effect size này. Kiểm tra lại "
-                  "--effect-size/--effect-type hoặc effect size trích từ G1.")
+            print(f"❌ LỖI EFFECT SIZE/THAM SỐ: {e}")
+            print("   → KHÔNG tính được cỡ mẫu với tham số này. Kiểm tra lại "
+                  "--effect-size/--effect-type/--p0/--prevalence/--margin/--outcome-direction.")
             n_per_group = n_total = n_adjusted = 0
             formula_used = f"[LỖI — {e}]"
         except (TypeError, ValueError) as e:
-            # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 5, phát hiện MEDIUM):
-            # lưới an toàn bổ sung — _coerce_pinned_float() ở trên đã chặn trường hợp
-            # thường gặp nhất (placeholder chưa thay), nhưng effect_val/args.sd vẫn có
-            # thể mang kiểu bất ngờ từ nguồn khác (extract_best_effect() từ G1/G0).
-            # Trước đây TypeError/ValueError ở đây làm crash TOÀN BỘ script với
-            # traceback thô — nay báo lỗi tiếng Việt rõ ràng, nhất quán với nhánh
-            # InvalidEffectSizeError ở trên.
             print(f"❌ LỖI DỮ LIỆU EFFECT SIZE: {e}")
             print("   → effect_size/sd có kiểu dữ liệu không hợp lệ (có thể còn sót "
                   "placeholder chưa thay). KHÔNG tính được cỡ mẫu — cần bác sĩ kiểm tra lại.")
             n_per_group = n_total = n_adjusted = 0
             formula_used = f"[LỖI DỮ LIỆU — {e}]"
-    else:
-        formula_used = "[CẦN EFFECT SIZE từ bác sĩ để tính]"
-        print("  → N: [CẦN BÁC SĨ ẤN ĐỊNH EFFECT SIZE]")
 
-    # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, phát hiện MEDIUM):
-    # FPC/cluster DE áp UNIVERSAL sau khi n_total đã tính (bất kể nhánh nào ở
-    # trên ra n_total — superiority hay non_inferiority), TRƯỚC dropout đã áp
-    # ở từng nhánh — nghĩa là ở đây ta áp lên n_total GỐC rồi tính lại
-    # n_adjusted từ N đã hiệu chỉnh, đúng thứ tự "FPC → cluster DE → dropout"
-    # của co-mau-nghien-cuu.md dòng 34. N=0 có chủ đích (sr_ma/prediction/
-    # qualitative/equivalence chưa tính) không bị đụng tới.
-    if n_total and (args.population_n or (args.icc is not None and args.cluster_size)):
-        n_total, _fpc_cluster_note = apply_fpc_and_cluster_de(
-            n_total, args.population_n, args.icc, args.cluster_size)
-        n_per_group = math.ceil(n_total / 2)
-        n_adjusted = math.ceil(n_total / (1 - dropout))
+    # FPC → cụm → dropout (đúng thứ tự doctrine). VÁ 04/10/2026 (G3-02): tham số cụm/quần thể hữu hạn lấy cả từ
+    # study_meta (không chỉ CLI) và được GHI vào checkpoint (design_effect, N trước DE, số cụm) để cổng kiểm số học.
+    if n_total:
+        n_total, n_per_group, _fpc_cluster_note, design_effect, n_clusters, n_total_truoc_de = ap_fpc_cum(
+            n_total, design_code, args.population_n, args.icc, args.cluster_size)
         formula_used += _fpc_cluster_note
-        print(f"  → Sau FPC/cluster DE: N mỗi nhóm={n_per_group}, N tổng={n_total}, "
-              f"N điều chỉnh dropout={n_adjusted}")
+        n_adjusted = math.ceil(n_total / (1 - dropout))
+        if _fpc_cluster_note:
+            print(f"  → Sau FPC/cluster DE: N mỗi nhóm={n_per_group}, N tổng={n_total}, "
+                  f"N điều chỉnh dropout={n_adjusted}")
+        sens_rows, sens_mults = sensitivity_table(
+            design_code, n_total, effect_val, effect_type, alpha, p_event, args.p0, args.sd, power=power,
+            precision=precision, prevalence=args.prevalence, hypothesis_type=args.hypothesis_type,
+            margin=args.margin, outcome_direction=args.outcome_direction, population_n=args.population_n,
+            icc=args.icc, cluster_size=args.cluster_size)
+        print(f"  → N mỗi nhóm: {n_per_group}, N tổng: {n_total}, N điều chỉnh: {n_adjusted}")
 
     print("📝 Bước 4/6: Sinh artifact A4...")
     artifact = generate_artifact(
@@ -1391,6 +1542,10 @@ def main():
         dropout, formula_used, sens_rows, sens_mults, p_event, run_date, args.sd,
         design_ambiguous=design_ambiguous, confirmed_n=args.confirmed_n,
         hypothesis_type=args.hypothesis_type,
+        nguon_tham_so=nguon_tham_so, nguon_hieu_qua=nguon_hieu_qua, outcome_direction=args.outcome_direction,
+        margin=args.margin, precision=precision, prevalence=args.prevalence, n_benh=n_benh,
+        n_khong_benh=n_khong_benh, population_n=args.population_n, icc=args.icc, cluster_size=args.cluster_size,
+        nguon_mo_ta={k: _g3_pinned.get(k) for k in ("effect_source", "prevalence_source", "margin_source")},
     )
     md_path = out_dir / f"G3_A4_SAMPLE_SIZE_{study}.md"
     md_path.write_text(artifact, encoding="utf-8", newline="\n")
@@ -1510,8 +1665,22 @@ def main():
                 '--hypothesis-type non_inferiority --margin <Δ dương> --p0 <p_control 0-1>',
                 must_not_fabricate=["effect_size", "margin"],
                 study_meta_patch={"gate_params": {"G3": {
-                    "effect_size": "<CẦN BÁC SĨ CẤP — p_test, tỷ lệ biến cố nhóm thử nghiệm>",
-                    "margin": "<CẦN BÁC SĨ/HỘI ĐỒNG CẤP — biên Δ có biện minh lâm sàng>"}}},
+                    "effect_size": "<CẦN BÁC SĨ CẤP — p_test, tỷ lệ kết cục nhóm thử nghiệm>",
+                    "margin": "<CẦN BÁC SĨ/HỘI ĐỒNG CẤP — biên Δ có biện minh lâm sàng>",
+                    "outcome_direction": "<CẦN — higher_better (tỷ lệ cao là tốt) | lower_better (biến cố bất lợi)>"}}},
+            )
+        elif design_code == "diagnostic" and not (args.prevalence is not None and 0 < args.prevalence < 1):
+            # VÁ 04/10/2026 (G3-04): chẩn đoán cần tỷ lệ hiện mắc để quy số ca bệnh ra tổng N — không mặc định.
+            need = GC.needs_input(
+                GC.REASON_MISSING_EFFECT_SIZE,
+                "G3 (chẩn đoán) chưa tính được N vì THIẾU tỷ lệ hiện mắc trong quần thể tuyển — cần để quy số ca "
+                "bệnh (Hanley–McNeil) ra tổng N. Hệ KHÔNG mặc định.",
+                f'python tools/run_g3_auto.py --study {study} --effect-size <AUC> --effect-type AUC '
+                '--prevalence <p 0-1>',
+                must_not_fabricate=["prevalence"],
+                study_meta_patch={"gate_params": {"G3": {
+                    "prevalence": "<CẦN BÁC SĨ CẤP — tỷ lệ hiện mắc kèm nguồn>",
+                    "prevalence_source": "<CẦN PMID/DOI hoặc số liệu cơ sở>"}}},
             )
         elif missing_sd:
             # THÊM 2026-07-06: phân biệt "có MD nhưng thiếu SD" (CÓ công thức,
@@ -1555,18 +1724,29 @@ def main():
 
     # PIN durable: nếu bác sĩ cấp effect size qua CLI → ghi vào study_meta.json để
     # CHẠY LẠI (chỉ với --study) KHÔNG mất input (đóng vòng param-loss ở re-run).
+    seed_g3 = {}
     if args.effect_size is not None and args.effect_type:
-        seed_g3 = {"effect_size": args.effect_size, "effect_type": args.effect_type,
-                   "dropout": dropout, "p_event": p_event}
+        seed_g3.update({"effect_size": args.effect_size, "effect_type": args.effect_type,
+                        "dropout": dropout, "p_event": p_event})
         if args.sd is not None:
             seed_g3["sd"] = args.sd
-        if args.confirmed_n is not None:
-            seed_g3["confirmed_n"] = args.confirmed_n
-        GC.ensure_study_meta(out_dir, seed={"gate_params": {"G3": seed_g3}})
-    elif args.confirmed_n is not None:
+    elif args.effect_size is not None and effect_type == "NI_PROPORTION":
+        # VÁ 04/10/2026 (soát từng cổng — lộ khi dựng chuỗi tổng hợp): nhánh không-kém-hơn/tương đương dùng --effect-size
+        # làm p_test KHÔNG cần --effect-type ⇒ bản cũ không ghim gì ⇒ G3-AUTO-14 («tham số đã ghim») REVIEW mãi.
+        seed_g3.update({"effect_size": args.effect_size, "effect_type": "NI_PROPORTION",
+                        "dropout": dropout, "p_event": p_event})
+    if args.confirmed_n is not None:
         # Bác sĩ có thể chốt N thực tế TRƯỚC khi effect size sẵn sàng — vẫn ghim
         # riêng để không mất khi chạy lại.
-        GC.ensure_study_meta(out_dir, seed={"gate_params": {"G3": {"confirmed_n": args.confirmed_n}}})
+        seed_g3["confirmed_n"] = args.confirmed_n
+    # VÁ 04/10/2026 (G3-02/03/09): ghim cả các tham số quyết định khác khi CHÍNH dòng lệnh này cấp (ensure_study_meta chỉ
+    # điền khoá còn thiếu — không bao giờ đè bản bác sĩ đã ghim).
+    for _ten in ("hypothesis_type", "margin", "outcome_direction", "precision", "prevalence", "icc", "cluster_size",
+                 "population_n", "alpha", "power", "p0", "dropout", "p_event"):
+        if nguon_tham_so.get(_ten) == "CLI" and getattr(args, _ten) is not None:
+            seed_g3[_ten] = getattr(args, _ten)
+    if seed_g3:
+        GC.ensure_study_meta(out_dir, seed={"gate_params": {"G3": seed_g3}})
 
     cp = {
         "gate": "G3", "study": study, "run_date": run_date,
@@ -1591,6 +1771,20 @@ def main():
         # p-value kiểu superiority). Ghi vào checkpoint để G6 đọc lại được.
         "hypothesis_type": args.hypothesis_type,
         "margin": args.margin,
+        # VÁ 04/10/2026 (soát từng cổng G3-01/02/04/08): đủ tham số để cổng kiểm số học và tầng sau đọc lại.
+        "outcome_direction": args.outcome_direction,
+        "precision": precision if effect_type == "PREVALENCE" else None,
+        "prevalence": args.prevalence,
+        "n_benh": n_benh,
+        "n_khong_benh": n_khong_benh,
+        "icc": args.icc,
+        "cluster_size": args.cluster_size,
+        "design_effect": round(design_effect, 6) if design_effect is not None else None,
+        "n_total_truoc_de": n_total_truoc_de,
+        "n_clusters": n_clusters,
+        "population_n": args.population_n,
+        "nguon_tham_so": nguon_tham_so,
+        "nguon_hieu_qua": nguon_hieu_qua,
         "guardrail": status,
         "core_value": core,
         "pending_doctor_actions": [

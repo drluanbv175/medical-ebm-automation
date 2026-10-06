@@ -40,26 +40,17 @@ import run_g3_auto as G3  # noqa: E402
 
 
 def _mk_upstream_rct(study_dir):
-    """G0+G1 tối thiểu (thiết kế RCT THẬT, không mặc-định-im-lặng).
+    """G0+G1 THẬT đã chốt (thiết kế RCT, không mặc-định-im-lặng).
 
-    THÊM 2026-08-30 (G3 nâng thành chặn cứng theo quyết định bác sĩ): các
-    test CLI ở đây từng chạy G3 KHÔNG có G0/G1 thượng nguồn — G3-AUTO-01
-    chấm BLOCKED đúng luật, và dưới chế độ tư vấn thì exit 0 che mất điều
-    đó. Ý đồ test (kiểm CÔNG THỨC qua CLI) giữ nguyên; fixture phải hợp lệ.
+    04/10/2026 (soát từng cổng): G3 CHẤM SỐNG G1 — G1_checkpoint chỉ có «design» là G1 BỊ CHẶN (thiếu artifact) và G3
+    dừng đúng luật. Ý đồ test (kiểm CÔNG THỨC qua CLI) giữ nguyên; fixture dựng chuỗi thật (tests/_chuoi_da_chot.py),
+    không mẫu effect size ở G1 để tham số chỉ đến từ dòng lệnh.
     """
-    import json as _json
-    study_dir.mkdir(parents=True, exist_ok=True)
-    (study_dir / "G0_checkpoint.json").write_text(_json.dumps({
-        "study": study_dir.name, "gate": "G0",
-        "topic": "Can thiệp X so với chứng trên kết cục nhị phân Y",
-        "base_query": "intervention X outcome Y trial",
-    }, ensure_ascii=False), encoding="utf-8", newline="\n")
-    (study_dir / "G1_checkpoint.json").write_text(_json.dumps({
-        "study": study_dir.name, "gate": "G1",
-        "design": {"internal_code": "rct", "primary": "RCT song song",
-                   "reporting_standard": "CONSORT 2025"},
-        "effect_size_samples": [],
-    }, ensure_ascii=False), encoding="utf-8", newline="\n")
+    import sys as _sys
+    from pathlib import Path as _Path
+    _sys.path.insert(0, str(_Path(__file__).resolve().parent))
+    from _chuoi_da_chot import dung_g0_g1_da_chot
+    dung_g0_g1_da_chot(study_dir, study_dir.name, thiet_ke="rct", mau_hieu_qua=[])
 
 
 
@@ -109,7 +100,9 @@ class TestNonInferiority:
             result = subprocess.run(
                 [PYTHON, str(TOOLS_DIR / "run_g3_auto.py"),
                  "--study", study, "--effect-size", "0.85",
-                 "--hypothesis-type", "non_inferiority", "--margin", "0.10", "--p0", "0.65"],
+                 "--hypothesis-type", "non_inferiority", "--margin", "0.10", "--p0", "0.65",
+                 # 04/10/2026 (G3-01): ví dụ HyLown là tỷ lệ ĐÁP ỨNG (cao là tốt) — chiều nay phải khai tường minh.
+                 "--outcome-direction", "higher_better"],
                 cwd=REPO_ROOT, capture_output=True, text=True, timeout=60,
             )
             assert "N mỗi nhóm: 25" in result.stdout, result.stdout
@@ -166,10 +159,8 @@ class TestRctOrRrBranch:
         study_dir = REPO_ROOT / "exports" / study
         _rmtree_retry(study_dir)
         try:
-            study_dir.mkdir(parents=True)
-            (study_dir / "G1_checkpoint.json").write_text(
-                '{"design": {"internal_code": "rct", "primary": "RCT song song"}}',
-                encoding="utf-8", newline="\n")
+            # 04/10/2026 (soát từng cổng): G1 chỉ có «design» là G1 BỊ CHẶN khi chấm sống — dùng chuỗi G0→G1 thật.
+            _mk_upstream_rct(study_dir)
             result = subprocess.run(
                 [PYTHON, str(TOOLS_DIR / "run_g3_auto.py"),
                  "--study", study, "--effect-size", "0.7", "--effect-type", "RR", "--p0", "0.30"],
@@ -230,18 +221,39 @@ class TestFpcAndClusterDesignEffect:
         assert note == ""
 
     def test_cli_population_n_and_icc_end_to_end(self):
-        study = "TEST-VONG15-FPC-CLUSTER-CLI"
-        study_dir = REPO_ROOT / "exports" / study
-        _rmtree_retry(study_dir)
-        _mk_upstream_rct(study_dir)
-        try:
-            result = subprocess.run(
-                [PYTHON, str(TOOLS_DIR / "run_g3_auto.py"),
-                 "--study", study, "--effect-size", "1.5", "--effect-type", "RR",
-                 "--p0", "0.20", "--population-n", "800", "--icc", "0.02", "--cluster-size", "15"],
-                cwd=REPO_ROOT, capture_output=True, text=True, timeout=60,
-            )
-            assert "FPC/cluster DE" in result.stdout
-            assert result.returncode == 0, result.stdout
-        finally:
+        """04/10/2026 (soát từng cổng G3-02/G3-13): bản cũ chạy FPC cho RCT rồi khẳng định exit 0 — CHỐT ĐÚNG
+        HÀNH VI SAI
+        (FPC chỉ đúng cho khảo sát quần thể hữu hạn; với RCT/thiết kế cụm nó làm N nhỏ đi sai lầm).
+        Nay: RCT + FPC + cụm
+        ⇒ G3-AUTO-16 CHẶN (mã 3); cohort + FPC ⇒ áp FPC, chờ nguồn quần thể (mã 0); cohort + cụm ⇒ N nhân DE (mã 0)."""
+        import json as _json
+        import sys as _sys
+        _sys.path.insert(0, str(Path(__file__).resolve().parent))
+        from _chuoi_da_chot import dung_g0_g1_da_chot
+        ca = (
+            ("TEST-VONG15-FPC-CLUSTER-CLI", "rct", ["--population-n", "800", "--icc", "0.02", "--cluster-size", "15"],
+             3, ("G3-AUTO-16", "BLOCK")),
+            ("TEST-VONG15-FPC-COHORT", "cohort", ["--population-n", "800"], 0, ("G3-AUTO-16", "REVIEW")),
+            ("TEST-VONG15-CLUSTER-COHORT", "cohort", ["--icc", "0.02", "--cluster-size", "15"], 0,
+             ("G3-AUTO-12", "REVIEW")),
+        )
+        for study, thiet_ke, them, ma_ky_vong, (tieu_chi, muc) in ca:
+            study_dir = REPO_ROOT / "exports" / study
             _rmtree_retry(study_dir)
+            dung_g0_g1_da_chot(study_dir, study, thiet_ke=thiet_ke, mau_hieu_qua=[])
+            try:
+                result = subprocess.run(
+                    [PYTHON, str(TOOLS_DIR / "run_g3_auto.py"),
+                     "--study", study, "--effect-size", "1.5", "--effect-type", "RR", "--p0", "0.20", *them],
+                    cwd=REPO_ROOT, capture_output=True, text=True, timeout=60,
+                )
+                assert "FPC/cluster DE" in result.stdout
+                assert result.returncode == ma_ky_vong, (study, result.stdout[-1500:])
+                rep = _json.loads((study_dir / "G3_QUALITY_REPORT.json").read_text(encoding="utf-8"))
+                dong = next(r for r in rep["automatic_criteria"] if r["id"] == tieu_chi)
+                assert dong["status"] == muc, (study, dong)
+                if "--icc" in them:
+                    cp = _json.loads((study_dir / "G3_checkpoint.json").read_text(encoding="utf-8"))
+                    assert cp["design_effect"] and cp["n_total"] >= cp["n_total_truoc_de"] * cp["design_effect"] - 1
+            finally:
+                _rmtree_retry(study_dir)

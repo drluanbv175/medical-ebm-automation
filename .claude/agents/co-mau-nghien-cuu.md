@@ -14,10 +14,30 @@ python medical-ebm-automation/tools/run_g3_auto.py \
     --study "MA-DE-TAI" \
     --alpha 0.05 --power 0.8 \
     --effect-size <so_that_co_nguon> --effect-type {HR,OR,RR,ARR%,AUC,MD} \
-    [--p0 <ty_le_bien_co_nhom_chung>] [--dropout <ty_le_bo_cuoc>] [--p-event <ty_le_bien_co_tong_the>]
-# Tự động: đọc thiết kế từ G1 checkpoint → chọn công thức → tính cỡ mẫu
-#           → bảng độ nhạy → khối CONSORT 2025/STROBE → A5 .md + .docx
+    [--p0 <ty_le_bien_co_nhom_chung>] [--sd <do_lech_chuan>] [--dropout <ty_le_bo_cuoc>] \
+    [--p-event <ty_le_bien_co_tong_the>] [--hypothesis-type superiority|non_inferiority|equivalence] \
+    [--margin <bien_duong>] [--outcome-direction higher_better|lower_better] \
+    [--prevalence <p>] [--precision <d>] [--population-n <N_huu_han>] \
+    [--icc <ICC>] [--cluster-size <m>] [--confirmed-n <N_chot>]
+# Tự động: đọc thiết kế từ G1 checkpoint (cả study_meta) → chọn công thức → tính cỡ mẫu
+#           → bảng độ nhạy → khối CONSORT 2025/STROBE → A4 (G3_A4_SAMPLE_SIZE_<mã>) .md + .docx
 ```
+
+**Hợp đồng G3 hiện hành (soát từng cổng 04/10/2026 — `g3_quality_gate.py`):**
+- Thiết kế MÔ TẢ/ước lượng tỷ lệ: GHIM `--prevalence` + `--precision` (KHÔNG nhét p vào `--effect-size`); SAP §12 in
+  «Sai số tuyệt đối cho phép (d)» — G10 đối chiếu d giữa G3 và SAP (06/10/2026).
+- Không kém hơn/tương đương: `--hypothesis-type` + `--margin` dương + `--outcome-direction` BẮT BUỘC; loại giả thuyết
+  phải khớp `gate_params.G0.test_type` (G10 đối chiếu — lệch là LỆCH CỨNG).
+- Thiết kế cụm: tự động (đọc cả study_meta) — truyền `--icc`, `--cluster-size`.
+- Chẩn đoán: AUC theo Hanley–McNeil 1982 (PMID 7063747, doi:10.1148/radiology.143.1.7063747) + tỷ lệ hiện mắc BẮT BUỘC;
+  CHƯA có nhánh Se/Sp (Buderer) — ghi rõ giới hạn khi dùng.
+- Định tính / tổng quan hệ thống / mô hình dự báo: `--confirmed-n` + phương pháp chốt N (bão hoà, RIS/TSA, pmsampsize).
+- Xác nhận của thống kê viên ở `gate_params.G3` theo thiết kế: `effect_source` / `prevalence_source` / `p0_source` /
+  `sd_source` / `margin_source` + `ni_regulatory_framework` + `margin_justification`, `confirmed_n_method`,
+  `dropout_source`, các cờ `*_confirmed`, `powered_for_outcome`, `software`, `reviewed_by_role`, `reviewed_at` (ISO, không ở
+  tương lai) và `dau_van_tay_chot` = dấu vân tay bộ giá trị G3 HIỆN TẠI mà `g3_quality_gate.py` in ra (đổi tham số sau
+  xác nhận ⇒ hết hiệu lực). N chốt < N tối thiểu ⇒ `gate_params.G3.underpowered_acceptance_justification` do NGƯỜI viết.
+- G3 không phải cổng ký nhưng CHẶN CỨNG; G4 chấm sống G3 (G4-AUTO-12) — G3 phải `PASS_G3_CONFIRMED` trước khi ký SAP.
 **Sau khi chạy**, đối chiếu tham số + kết quả với MODULE bên dưới; nếu effect size/tỷ lệ chưa có nguồn → giữ `[CẦN CHỦ NHIỆM ẤN ĐỊNH]`, không tự điền số đẹp.
 
 > **Fallback khi `run_g3_auto.py` báo "chưa có công thức tự động" (2026-07-04):** công thức đóng của tool hiện chỉ phủ two-proportion, log-rank (HR), prevalence, AUC, ARR%/OR/RR (cohort/rct/case-control) — **cluster-randomized, mixed-effects model, hồi quy logistic/Poisson, thiết kế có tương tác/crossover phức tạp CHƯA có công thức tự động** (tool tự in cảnh báo, không bịa số). Với các tổ hợp này, dùng skill `statistical-power` (`scripts/simulate_power.py` — mô phỏng Monte Carlo, chạy offline, đã kiểm chứng chạy thật) thay vì dừng lại yêu cầu bác sĩ tính tay.

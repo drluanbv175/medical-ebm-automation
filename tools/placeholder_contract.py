@@ -103,7 +103,10 @@ _MAU: dict[str, tuple[re.Pattern[str], ...]] = {
 }
 
 # Ký hiệu đứng MỘT MÌNH thay cho giá trị (chỉ áp cho vị từ trường).
-_KY_HIEU_TRONG = {"?", "??", "-", "--", "—", "–", "…", "...", "x", "xx", "xxx"}
+_KY_HIEU_TRONG = {"?", "??", "-", "--", "—", "–", "…", "...", "x", "xx", "xxx",
+                  # 04/10/2026 (soát từng cổng, CHUNG-B): token TRẦN đứng thay giá trị — bản cũ coi «TBD» là có
+                  # nội dung.
+                  "tbd", "todo", "tba", "pending", "điền sau", "chưa điền", "chưa có", "chua co", "chua dien"}
 _O_TICK_TRONG, _O_TICK_DA_CHON = "☐", ("☑", "☒", "✔", "✓", "■", "[x]", "[X]")
 
 

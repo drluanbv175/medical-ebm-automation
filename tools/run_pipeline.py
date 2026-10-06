@@ -126,9 +126,12 @@ def _recover_params(gate: str, out_dir: Path, meta: dict) -> List[str]:
         sd = mp.get("sd", cp.get("sd"))   # SD kết cục liên tục (effect_type=MD, chạy lại không mất)
         al = mp.get("alpha", cp.get("alpha"))
         pw = mp.get("power", cp.get("power"))
+        # VÁ 04/10/2026 (soát từng cổng, G3-09): loại hiệu quả của NI («p_test»/«NI_PROPORTION») không phải lựa chọn
+        # của --effect-type — giả thuyết quyết định công thức; truyền nó làm argparse thoát mã 2 và bị đọc nhầm thành
+        # «chờ input». PREVALENCE nay được run_g3_auto nhận.
         if ev is not None:
             args += ["--effect-size", str(ev)]
-        if et:
+        if et and str(et) not in ("p_test", "NI_PROPORTION"):
             args += ["--effect-type", str(et)]
         if dr is not None:
             args += ["--dropout", str(dr)]
@@ -142,6 +145,15 @@ def _recover_params(gate: str, out_dir: Path, meta: dict) -> List[str]:
             args += ["--alpha", str(al)]
         if pw is not None:
             args += ["--power", str(pw)]
+        # Các tham số quyết định N khác — trước đây mất khi chạy lại (run_g3_auto nay cũng tự đọc study_meta; truyền
+        # thêm ở đây để giá trị trong checkpoint CŨ không bị bỏ khi study_meta chưa ghim).
+        for khoa, co in (("precision", "--precision"), ("prevalence", "--prevalence"),
+                         ("hypothesis_type", "--hypothesis-type"), ("margin", "--margin"),
+                         ("outcome_direction", "--outcome-direction"), ("population_n", "--population-n"),
+                         ("icc", "--icc"), ("cluster_size", "--cluster-size"), ("confirmed_n", "--confirmed-n")):
+            gia_tri = mp.get(khoa, cp.get(khoa))
+            if gia_tri is not None and str(gia_tri).strip() and not str(gia_tri).strip().startswith(("<", "[")):
+                args += [co, str(gia_tri)]
     elif gate == "G8":
         cp = _load_cp(out_dir, "G8")
         tj = mp.get("target_journal", cp.get("target_journal"))
@@ -281,6 +293,12 @@ def run_gate_with_healing(gate: str, study: str, out_dir: Path,
         # 2 = BLOCKED (chờ input đời thực): DỪNG graceful, KHÔNG retry (thử lại
         #     vô ích — thiếu input là xác định, không phải lỗi tạm thời).
         if exit_code == GC.EXIT_BLOCKED:
+            # VÁ 04/10/2026 (G3-09): mã 2 cũng là mã của argparse khi ĐỐI SỐ SAI («usage:»/«error: argument» ở stderr)
+            # — đó là lỗi lệnh của pipeline, không phải «chờ input đời thực»; checkpoint cũ không được sinh lại.
+            loi_doi_so = str(last.get("stderr_tail") or "")
+            if "usage:" in loi_doi_so or "error: argument" in loi_doi_so:
+                return {"gate": gate, "status": "failed", "attempts": attempt, "guardrail": None,
+                        "detail": "Lệnh gọi cổng có ĐỐI SỐ SAI (argparse) — " + loi_doi_so}
             return {"gate": gate, "status": "blocked_missing_input",
                     "attempts": attempt, "guardrail": None,
                     "detail": _diagnose_blocked(gate, out_dir) or last["stdout_tail"]}

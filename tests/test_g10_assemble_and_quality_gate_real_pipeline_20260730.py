@@ -46,13 +46,17 @@ def _row(report, criterion_id):
 class TestRealAssembleFeedsRealEvaluateStudy:
     def test_incomplete_package_reaches_draft_not_ready_or_locked(self, tmp_path):
         """Fixture cố ý CHƯA ký G2/G4/G5/G8/G9 — kết quả THẬT phải là DRAFT,
-        không phải READY/LOCKED giả do mock/fixture tay che giấu."""
+        không phải READY/LOCKED giả do mock/fixture tay che giấu.
+
+        05/10/2026 (soát từng cổng G10-01): G10-AUTO-02B CHẤM SỐNG mọi cổng tiền đề — checkpoint tối thiểu của fixture
+        bị chính bộ chấm từng cổng xếp BLOCKED ⇒ G10 BLOCKED (cùng quy tắc G7/G8: tiền đề bị chặn thì cổng sau chặn);
+        bản cũ đọc trạng thái lưu nên chỉ ra DRAFT."""
         _write_cross_sectional_fixture(tmp_path, specialty="cardiology")
         G10.assemble("FIXT", tmp_path)
 
         report = G10Q.evaluate_study("FIXT", tmp_path, repo_root=tmp_path.parent, write=False)
 
-        assert report["status"] == G10Q.STATUS_DRAFT
+        assert report["status"] == G10Q.STATUS_BLOCKED and _row(report, "G10-AUTO-02B")["status"] == "BLOCK"
         assert report["status"] not in (G10Q.STATUS_READY, G10Q.STATUS_LOCKED)
 
     def test_no_criterion_crashes_or_returns_unknown_status(self, tmp_path):

@@ -42,6 +42,8 @@ if str(TOOLS_DIR) not in sys.path:
 
 import audit_research_gates as ARG  # noqa: E402
 
+from tests._gia_lap_cham_song import gia_lap_cham_song  # noqa: E402
+
 
 def _write_json(path: Path, payload: dict) -> Path:
     path.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8", newline="\n")
@@ -109,9 +111,12 @@ class TestDoiChungNhatQuanVoiG0BlockedTuongTu:
 
         assert g0["can_auto_run"] == g1["can_auto_run"] is False
 
-    def test_g1_needs_real_van_giu_can_auto_run_false_nhu_cu(self, tmp_path):
+    def test_g1_needs_real_van_giu_can_auto_run_false_nhu_cu(self, tmp_path, monkeypatch):
         """Nhánh NEEDS_REAL của CHÍNH G1 (quality_status khác BLOCKED/
         PASS_G1_CONFIRMED) không bị ảnh hưởng bởi bản vá — vẫn False như cũ."""
+        # 06/10/2026 (NGANG): đài kiểm soát phân loại theo CHẤM SỐNG — giả lập kết quả chấm sống = trạng thái checkpoint
+        # giả để kiểm LOGIC phân loại (tests/_gia_lap_cham_song.py).
+        gia_lap_cham_song(monkeypatch)
         _cp(tmp_path, "G1", {
             "quality_gate": {
                 "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",

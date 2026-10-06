@@ -255,7 +255,17 @@ def _g2_signed_attestation_state(
     current_icf = str(g2.get("icf_version") or "").strip()
     if current_icf and not waiver and current_icf != approved_icf:
         return False
-    return True
+    # VÁ 04/10/2026 (soát từng cổng, CHUNG-D): các phép kiểm trên chỉ là MỘT PHẦN của validate_attestation — gói đã
+    # ký mà phụ lục quyết định IRB thiếu schema/mã hội đồng/số phê duyệt, ngày phê duyệt ở tương lai, RCT ghi hồi cứu…
+    # vẫn qua đây. Gọi đúng bộ kiểm đầy đủ của G2 (cùng hàm G2-HUMAN-01 dùng); lỗi ⇒ False (fail-closed).
+    try:
+        design_code, _ = resolve_design_code(Path(out_dir), default="")
+        loi = g2_quality.validate_attestation(attestation=attestation, package_text=text, study=study,
+                                              design_code=design_code, meta=meta if isinstance(meta, dict) else {},
+                                              today=today, out_dir=Path(out_dir))
+    except Exception:  # noqa: BLE001 — bộ kiểm hỏng ⇒ không xác nhận được ⇒ False
+        return False
+    return not loi
 
 
 def g2_quality_contract_satisfied(
@@ -386,7 +396,10 @@ def g9_quality_contract_satisfied(
     """True khi G9 được chấm trực tiếp là đã khóa liêm chính công bố.
 
     Không tin ``submission_package_ready`` hoặc report JSON lưu sẵn. Việc chấm
-    trực tiếp bắt lại thay đổi ở manuscript/readiness/A12/G8 sau chữ ký PI.
+    trực tiếp bắt lại thay đổi ở manuscript/readiness/A12/G8 sau chữ ký PI
+    (manifest G9-AUTO-07); từ 05/10/2026 (G9-04) G9-AUTO-03 còn chấm SỐNG G8 —
+    bản thảo/bản nhận xét sửa SAU bình duyệt G8 (kể cả trước khi PI ký G9) cũng
+    làm G9 mất READY/LOCKED.
     """
     try:
         import g9_quality_gate as g9_quality  # noqa: PLC0415
@@ -466,7 +479,9 @@ _GATE_PARAMS_SKELETON: Dict[str, Any] = {
         "hypothesis_h1": None,
         "expected_direction": None,
         "test_type": None,           # superiority/non_inferiority/equivalence/descriptive
-        "question_type": None,       # therapy/diagnosis/prognosis/harm/descriptive
+        "question_type": None,       # treatment(≡therapy)/diagnosis/prognosis/harm/descriptive/qualitative/…
+        # 04/10/2026 (G0-06): câu hỏi điều trị/chẩn đoán/tiên lượng/tác hại mà chỉ mô tả ⇒ phải có lý do bằng chữ.
+        "descriptive_justification": None,
         # FINER — 5 tiêu chí, bác sĩ đánh giá từng cái (không phải 1 cờ gộp).
         "finer_feasible": None,
         "finer_interesting": None,
@@ -476,14 +491,23 @@ _GATE_PARAMS_SKELETON: Dict[str, Any] = {
         # Đã ĐỌC LẠI bằng chứng G0 tìm được, và biện minh tính mới bằng chữ.
         "evidence_reviewed_confirmed": False,
         "novelty_justification": None,
+        # 04/10/2026 (G0-04/QĐ-17): PI tự tra WHO ICTRP (+ PROSPERO cho tổng quan) rồi ghi NGÀY tra (ISO);
+        # có thử nghiệm đang tuyển khớp ⇒ viết đánh giá chồng lấn.
+        "registry_manual_checked": {"ictrp": None, "prospero": None},
+        "registry_overlap_assessment": None,
         "pico_confirmed": False,
         "reviewed_by_role": None,
         "reviewed_at": None,
+        # 04/10/2026 (G0-07/CHUNG-C): dấu vân tay nội dung đang chốt — chép từ báo cáo G0 (dau_van_tay_hien_tai).
+        "dau_van_tay_chot": None,
     },
     # G1 — quyết định phương pháp do PI/methodologist xác nhận. Hệ chỉ sinh
     # dự thảo và kiểm nhất quán; không tự bật các cờ xác nhận người thật.
     "G1": {
-        "protocol_version": "1.0",
+        # VÁ 04/10/2026 (soát từng cổng, QĐ-6 — phát hiện khi làm G3): khuôn KHÔNG gieo «1.0» — phiên bản đề cương là
+        # KHAI BÁO của PI. Giá trị gieo sẵn còn làm ĐỔI dấu vân tay G1 mỗi lần một cổng sau gọi ensure_study_meta
+        # (khoá vắng ⇒ được điền «1.0») và vô hiệu xác nhận của PI.
+        "protocol_version": None,
         "design": None,
         "design_confirmed": False,
         "design_rationale": None,
@@ -515,19 +539,57 @@ _GATE_PARAMS_SKELETON: Dict[str, Any] = {
             "intercurrent_events_strategy": None,
             "population_summary_measure": None,
         },
+        # 04/10/2026 (G1-02): mọi dòng THUỘC PHẠM VI G1 của đề cương lõi (PHẦN 0 của A2) có một khoá để PI điền —
+        # trước đó in cứng «[CẦN BỔ SUNG]» không có chỗ điền. «N/A — <lý do>» là câu trả lời hợp lệ.
+        "team_roles": None,                  # chủ nhiệm, nhà phương pháp, thống kê viên, quản lý dữ liệu
+        "background_problem": None,          # vấn đề nghiên cứu và gánh nặng
+        "evidence_summary": None,            # bằng chứng hiện có và giới hạn (tổng hợp từ A2b)
+        "knowledge_gap": None,               # khoảng trống/tính mới (vắng thì dùng G0.novelty_justification)
+        "benefit_risk_rationale": None,
+        "study_schema_timeline": None,       # sơ đồ + lịch tuyển–can thiệp–đánh giá
+        "intervention_dose_adherence": None, # liều/cường độ/thời lượng/tuân thủ hoặc cách đo phơi nhiễm
+        "stopping_rescue_rules": None,       # tiêu chí dừng/chuyển/điều trị cứu hộ (N/A nếu quan sát)
+        "critical_to_quality": None,         # ICH E6(R3): CTQ factors + quality tolerance limits
+        "monitoring_plan": None,
+        # Khoá theo thiết kế (chỉ dòng của thiết kế đang dùng xuất hiện trong đề cương lõi).
+        "randomisation": None, "allocation_concealment": None, "blinding": None,       # rct
+        "target_condition": None, "reference_standard": None,                          # diagnostic
+        "case_definition": None, "control_source": None,                               # case_control
+        "candidate_predictors": None, "prediction_horizon": None,                      # prediction
+        # 04/10/2026 (G1-03): risk register và kinh phí THẬT ghi ở đây (A13/A13b sinh lại từ đó; sửa tay .md bị
+        # ghi đè). Mỗi dòng risk: id/loai/rui_ro/xac_suat/tac_dong/giam_thieu/capa/chu_nhan/trang_thai/ngay_ra;
+        # mỗi dòng budget: nhom/so_luong/don_gia/thanh_tien/trang_thai.
+        "risk_register": [],
+        "budget": [],
+        # 04/10/2026 (G1-11/QĐ-15): RCT phải khai applicable true/false tường minh (None = chưa khai ⇒ REVIEW).
+        "annex2": {"applicable": None, "methodologies": []},
         "bias_controls_confirmed": False,
         "protocol_core_confirmed": False,
         "feasibility_confirmed": False,
         "evidence_review_confirmed": False,
         "reviewed_by_role": None,
         "reviewed_at": None,
+        # 04/10/2026 (G1-09/CHUNG-C): dấu vân tay quyết định đang chốt — chép từ báo cáo G1 (dau_van_tay_hien_tai).
+        "dau_van_tay_chot": None,
     },
     # G2 — metadata phiên bản và đường đi đạo đức/đăng ký. Các trường này chỉ
     # mô tả hồ sơ hiện hành; KHÔNG phải phê duyệt. G2 chỉ khóa khi ledger có
     # chữ ký đúng vai trò IRB và phụ lục approval attestation hợp lệ.
     "G2": {
-        "protocol_version": "1.0",
-        "icf_version": "1.0",
+        # VÁ 04/10/2026 (soát từng cổng, G2-08 / QĐ-6): bỏ giá trị gieo «1.0» — phiên bản đề cương/ICF hiện
+        # hành là KHAI BÁO của PI (G2-AUTO-10 giữ REVIEW khi chưa khai). Đề tài cũ mang «1.0» do khuôn gieo:
+        # PI xác nhận lại.
+        "protocol_version": None,
+        "icf_version": None,
+        # G2-07: mục WHO TRDS 9 (tiêu đề công khai, ngôn ngữ đại chúng) và 12 (tình trạng sức khỏe) do PI khai —
+        # không chép tên đề tài khoa học. primary_purpose: ghi đè bảng mặc định khi RCT không phải điều trị
+        # (dự phòng, tầm soát…).
+        "public_title": None,
+        "health_condition": None,
+        "primary_purpose": None,
+        # G2-03 / QĐ-4: thử nghiệm can thiệp (RCT, hoặc safety_plan_required=true) cần G2_SAFETY_PLAN_<study>.md
+        # đủ 5 mục và PI xác nhận — máy chỉ dựng khung.
+        "safety_plan_confirmed": False,
         "recruitment_mode": None,
         "registration_required": None,
         "registration_registry": None,
@@ -563,6 +625,9 @@ _GATE_PARAMS_SKELETON: Dict[str, Any] = {
         "dropout": None,              # vd 0.15
         "p_event": None,              # tỷ lệ biến cố nền (log-rank)
         "sd": None,                   # độ lệch chuẩn kết cục liên tục (bắt buộc khi effect_type=MD)
+        # 04/10/2026 (G4-05): N chốt < N tối thiểu ⇒ thống kê viên/PI giải trình vì sao chấp nhận giảm lực (G3-AUTO-13,
+        # G4-AUTO-14 đọc; SAP in nguyên văn).
+        "underpowered_acceptance_justification": None,
     },
     # G4 — khóa SAP. Thêm 2026-07-29 (audit toàn diện G0-G10): trước đây G4
     # KHÔNG có khối gate_params riêng — 3 xác nhận người thật mà
@@ -574,6 +639,8 @@ _GATE_PARAMS_SKELETON: Dict[str, Any] = {
         "subgroup_multiplicity_predefined_confirmed": False,
         "reviewed_by_role": None,
         "reviewed_at": None,
+        # 04/10/2026 (CHUNG-C/QĐ-7): dấu nội dung SAP (PHẦN 3) mà xác nhận trên chứng cho — bộ chấm G4 in dấu hiện tại.
+        "dau_van_tay_chot": None,
     },
 }
 
@@ -706,6 +773,13 @@ def resolve_design_code(out_dir: Path, default: str = "cohort") -> Tuple[str, Op
 
     g1 = _read("G1_checkpoint.json", "design", "internal_code")
     g2 = _read("G2_checkpoint.json", "design_code")
+    # VÁ 04/10/2026 (soát từng cổng, G1-05): G1 đã CHẶN vì thiết kế bác sĩ ghim bị từ chối thì thiết kế G1 đang ghi
+    # chỉ là SUY LUẬN — cổng sau không được lặng lẽ dùng nó như thiết kế đã chốt.
+    pin_tu_choi = _read("G1_checkpoint.json", "design", "pin_bi_tu_choi")
+    if pin_tu_choi:
+        return (g2 or g1 or default), (
+            f"⛔ G1 ĐANG CHẶN: thiết kế bác sĩ ghim «{pin_tu_choi}» ngoài 8 mã chuỗi hỗ trợ; "
+            f"mã «{g1}» chỉ là suy luận — PI ghim lại thiết kế có chủ ý rồi chạy lại G1 trước khi đi tiếp.")
     if g1 and g2 and g1 != g2:
         return g2, (f"⚠️  THIẾT KẾ LỆCH GIỮA CÁC CỔNG: G1 suy luận '{g1}' nhưng G2 ghi "
                     f"'{g2}' (thường do bác sĩ truyền --design {g2} ở G2). Đang dùng '{g2}'. "

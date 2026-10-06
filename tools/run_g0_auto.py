@@ -696,7 +696,7 @@ def _section_heading(label: str, n_hits: int, articles: list,
 
 def generate_a1_artifact(topic: str, study_name: str, queries: dict,
                           results: dict, gaps: dict, run_date: str,
-                          registry: Optional[dict] = None) -> str:
+                          registry: Optional[dict] = None, meta: Optional[dict] = None) -> str:
     """Sinh artifact A1 hoàn chỉnh với kết quả PubMed thật."""
 
     sr_list = _format_article_list(results["sr_ma"])
@@ -706,7 +706,9 @@ def generate_a1_artifact(topic: str, study_name: str, queries: dict,
     registry = registry or {}
     trial_list = _format_trial_list(registry.get("trials") or [])
     _real = bool(gaps.get("counts_are_real"))
-    _std = G0Q.expected_reporting_standard(gaps.get("design_hint"))
+    # VÁ 04/10/2026 (soát từng cổng, G0-08): chuẩn dự kiến ưu tiên thiết kế bác sĩ đã ghim / loại câu hỏi đã khai,
+    # không chỉ câu gợi ý «RCT … HOẶC Cohort …» (đề tài cắt ngang từng bị ghi CONSORT).
+    _std = G0Q.expected_reporting_standard(gaps.get("design_hint"), meta)
     # VÁ 2026-07-27 (kiểm định độc lập, mức NẶNG NHẤT): nhánh quan sát ĐƯỢC ĐẾM
     # nhưng KHÔNG BAO GIỜ được ghi ra artifact/raw JSON. Hệ quả: cổng chuyển từ
     # CHẶN (exit 2, "0 PMID") sang QUA (exit 0, "13 PMIDs thật") nhờ 13 bài mà
@@ -1492,7 +1494,7 @@ def main():
     # 4. Sinh artifact A1
     print("\n✍️  Bước 5/8: Sinh artifact A1 (PICO + Giả thuyết + FINER + Evidence + Gap)...")
     artifact_md = generate_a1_artifact(args.topic, study, queries, results, gaps, run_date,
-                                       registry=registry)
+                                       registry=registry, meta=GC.load_study_meta(Path("exports") / study))
 
     # 5. Lưu artifact
     out_dir = Path("exports") / study
@@ -1616,6 +1618,8 @@ def main():
         "automated_checks_passed": quality.get("automated_checks_passed"),
         "human_confirmation_complete": quality.get("human_confirmation_complete"),
         "pending_actions": quality.get("pending_actions", []),
+        # VÁ 04/10/2026 (G0-01): dấu nội dung lúc chấm — cổng sau so với dấu hiện tại để biết bản lưu đã cũ.
+        "dau_van_tay_luc_cham": quality.get("dau_van_tay_hien_tai"),
     }
     # needs_input do quality gate sinh (REASON_MISSING_PICO) chỉ ghi khi cổng CHƯA
     # bị chặn vì lý do nặng hơn (0 PMID) — không đè lý do dừng gốc.

@@ -73,11 +73,22 @@ def test_g0_c1a_nhan_nhap_o_tinh_moi_khong_con_pass(tmp_path):
 
 @pytest.mark.skipif(not C1A.is_dir(), reason="thư mục C1a không có trong checkout này")
 def test_g0_c1a_dien_that_van_toi_pass(tmp_path):
-    """Không tạo báo nhầm vĩnh viễn: bỏ nhãn nháp (giữ nội dung) thì G0 của C1a lại PASS."""
+    """Không tạo báo nhầm vĩnh viễn: bác sĩ làm ĐÚNG các việc cổng đòi thì G0 của C1a lại PASS.
+
+    04/10/2026 (soát từng cổng): ngoài bỏ nhãn nháp ở tính mới, một lần chốt hợp lệ nay cần lý do cho từng tiêu chí
+    FINER (C1a đang để True trơn — G0-03), ngày PI tự tra WHO ICTRP (G0-HUMAN-08, QĐ-17) và dấu vân tay của nội dung
+    đang chốt (G0-07). Dấu tính SAU cùng, trên đúng nội dung đã sửa (mọi giá trị ở đây là của test, không ghi C1a)."""
+    import g0_quality_gate as G0Q
+
     d = _ban_sao_c1a(tmp_path)
     meta = json.loads((d / "study_meta.json").read_text(encoding="utf-8"))
-    nv = meta["gate_params"]["G0"]["novelty_justification"]
-    meta["gate_params"]["G0"]["novelty_justification"] = nv.split("]", 1)[1].strip()
+    g0 = meta["gate_params"]["G0"]
+    g0["novelty_justification"] = g0["novelty_justification"].split("]", 1)[1].strip()
+    for k in ("finer_feasible", "finer_interesting", "finer_novel", "finer_ethical", "finer_relevant"):
+        g0[k] = "Đạt — lý do do bác sĩ viết (giá trị của test)"
+    g0["registry_manual_checked"] = {"ictrp": "2026-08-15", "prospero": None}
+    cp = json.loads((d / "G0_checkpoint.json").read_text(encoding="utf-8"))
+    g0["dau_van_tay_chot"] = G0Q.dau_van_tay_g0(cp, meta)
     (d / "study_meta.json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8", newline="\n")
     r = G0.evaluate_study(STUDY, d, write=False)
     assert r["status"] == "PASS_G0_CONFIRMED", [c for c in r["human_criteria"] if c["status"] != "PASS"]

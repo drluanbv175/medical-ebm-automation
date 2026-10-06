@@ -167,9 +167,15 @@ class TestDoiChungCheckpointCuThatSuThieuKhoaVanBiXepLegacy:
     """Đối chứng — một checkpoint G0 THẬT SỰ cũ (trước bản vá này, không có
     quality_contract_version cấp cao dù có quality_gate.status đúng) vẫn phải
     bị xếp vào legacy_quality như thiết kế ban đầu — bản vá không được làm
-    mất khả năng phát hiện checkpoint lịch sử thật."""
+    mất khả năng phát hiện checkpoint lịch sử thật.
+
+    05/10/2026 (soát từng cổng G10-01): G10-AUTO-02B không còn đọc trạng thái LƯU (quality_gate.status/khoá cấp cao) mà
+    CHẤM SỐNG G0 bằng chính g0_quality_gate.evaluate_study — checkpoint lịch sử mang «PASS_G0_CONFIRMED» lưu sẵn nhưng
+    không có artifact/xác nhận thật phải KHÔNG qua (bộ chấm sống trả DRAFT/BLOCKED, tiêu chí không PASS và nêu G0)."""
 
     def test_checkpoint_g0_thieu_khoa_van_bi_xep_legacy(self, tmp_path, monkeypatch):
+        import cong_song as CS  # noqa: PLC0415
+
         study = "VONG33-G0-LEGACY"
         _write_ready_fixture(tmp_path, study)
 
@@ -179,11 +185,17 @@ class TestDoiChungCheckpointCuThatSuThieuKhoaVanBiXepLegacy:
         cp["quality_gate"] = {"status": "PASS_G0_CONFIRMED"}
         cp_path.write_text(json.dumps(cp, ensure_ascii=False), encoding="utf-8", newline="\n")
 
+        cham_that = CS.trang_thai_song
         approval_state = {"g10": False}
         _patch_upstream(monkeypatch, approval_state)
+        gia_lap = CS.trang_thai_song
+        # G0 chấm bằng bộ chấm THẬT (không giả lập) — các cổng khác giữ giả lập của đồ gá.
+        monkeypatch.setattr(CS, "trang_thai_song",
+                            lambda gate, *a, **k: cham_that(gate, *a, **k) if gate == "G0" else gia_lap(gate, *a, **k))
+        CS.xoa_dem()
 
         result = G10Q.evaluate_study(study, tmp_path, write=False)
         row = _criterion(result, "G10-AUTO-02B")
 
-        assert row["status"] == "REVIEW"
+        assert row["status"] != "PASS", "bản lưu PASS_G0_CONFIRMED không còn được tin"
         assert "G0" in row["evidence"]

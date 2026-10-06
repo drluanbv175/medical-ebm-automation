@@ -30,6 +30,18 @@ def _write_json(path: Path, value: dict) -> None:
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
 
+def ghi_checklist_bao_cao(out_dir: Path, study: str) -> Path:
+    """Checklist chuẩn báo cáo THẬT nộp kèm bản thảo (05/10/2026, G9-02: final_package.reporting_checklist_path không
+    còn mặc định trỏ vào A9 của G8 — bản tự kiểm đã ký, không phải checklist)."""
+    path = out_dir / f"REPORTING_CHECKLIST_{study}.md"
+    path.write_text(
+        "# Checklist chuẩn báo cáo\n\n| Mục | Nội dung | Trang |\n|---|---|---|\n"
+        "| 1 | Tiêu đề và tóm tắt | 1 |\n| 2 | Bối cảnh và lý do | 2 |\n| 3 | Phương pháp | 3 |\n"
+        "\nCần bác sĩ kiểm chứng.\n",
+        encoding="utf-8", newline="\n")
+    return path
+
+
 def _complete_readiness(study: str, n_authors: int = 2) -> dict:
     value = G9Q.build_readiness_template(study, n_authors, "Journal of Test Medicine")
     now = datetime.now(timezone.utc).isoformat()
@@ -146,6 +158,7 @@ def _complete_readiness(study: str, n_authors: int = 2) -> dict:
     )
     value["final_package"].update(
         {
+            "reporting_checklist_path": f"REPORTING_CHECKLIST_{study}.md",
             "manuscript_version": "1.0-final",
             "package_version": "1.0-final",
             "finalized_at": now,
@@ -204,8 +217,11 @@ def _prepare_study(out_dir: Path, study: str, n_authors: int = 2) -> None:
         "Cần bác sĩ kiểm chứng.\n",
         encoding="utf-8", newline="\n"
     )
-    _write_json(out_dir / "A12_RETRACTION_RECEIPT.json", {"all_clean": True})
+    # 05/10/2026 (G10-05, dùng chung G9): biên nhận rút bài thật luôn có checked_at_utc — G9 đòi còn hạn 30 ngày lúc ký.
+    _write_json(out_dir / "A12_RETRACTION_RECEIPT.json",
+                {"all_clean": True, "checked_at_utc": datetime.now(timezone.utc).isoformat()})
     _write_json(out_dir / "A12_METADATA_RECEIPT.json", {"all_resolved": True})
+    ghi_checklist_bao_cao(out_dir, study)
     _write_json(out_dir / G9Q.READINESS_JSON, _complete_readiness(study, n_authors))
     _write_json(
         out_dir / G9Q.CHECKPOINT_JSON,
@@ -225,6 +241,18 @@ def _patch_upstream(monkeypatch, approvals: dict[str, bool] | None = None) -> di
     state = {"G2": True, "G4": True, "G8": True, "G9": False}
     if approvals:
         state.update(approvals)
+    # 05/10/2026 (G9-04): G9-AUTO-03 đòi G8 CHẤM SỐNG PASS_G8_REVIEW_RECORDED (không chỉ sổ cái G8 trên A9) — A9 của đồ
+    # gá này là văn bản tổng hợp nên giả lập kết quả chấm sống theo cùng `state`; chuỗi G8 THẬT đi đủ ở
+    # tests/test_g9_hoan_thien_20261005.py.
+    _song_that = G9Q.CS.trang_thai_song
+    monkeypatch.setattr(
+        G9Q.CS,
+        "trang_thai_song",
+        lambda gate, *a, **k: (
+            {"muc": "PASS" if state.get("G8") else "DRAFT", "status": "PASS_G8_REVIEW_RECORDED (giả lập)"}
+            if gate == "G8" else _song_that(gate, *a, **k)
+        ),
+    )
     monkeypatch.setattr(
         G9Q.GC,
         "ledger_approved",
@@ -572,7 +600,9 @@ def test_run_g9_never_announces_completion_for_draft(tmp_path, monkeypatch, caps
 
 
 def test_full_signed_chain_reaches_locked_with_real_g5_evaluator(tmp_path, monkeypatch):
-    """Tích hợp G2/G4/G5/G8/G9 thật; chỉ stub A12 để không gọi mạng."""
+    """Tích hợp G2/G4/G5/G9 thật; chỉ stub A12 để không gọi mạng. G8 ở đây là A9 tổng hợp đã ký sổ cái — từ 05/10/2026
+    (G9-04) G9 đòi G8 CHẤM SỐNG PASS nên giả lập kết quả chấm sống G8; chuỗi G0→G8 THẬT tới G9 LOCKED ở
+    tests/test_g9_hoan_thien_20261005.py."""
     study = "PYTEST-G9Q-FULL-CHAIN"
     exports_root = tmp_path / "exports"
     source = tmp_path / "synthetic.csv"
@@ -673,8 +703,10 @@ def test_full_signed_chain_reaches_locked_with_real_g5_evaluator(tmp_path, monke
         "Cần bác sĩ kiểm chứng.\n",
         encoding="utf-8", newline="\n"
     )
-    _write_json(study_dir / "A12_RETRACTION_RECEIPT.json", {"all_clean": True})
+    _write_json(study_dir / "A12_RETRACTION_RECEIPT.json",
+                {"all_clean": True, "checked_at_utc": datetime.now(timezone.utc).isoformat()})
     _write_json(study_dir / "A12_METADATA_RECEIPT.json", {"all_resolved": True})
+    ghi_checklist_bao_cao(study_dir, study)
     _write_json(study_dir / G9Q.READINESS_JSON, _complete_readiness(study))
     _write_json(
         study_dir / G9Q.CHECKPOINT_JSON,
@@ -689,6 +721,9 @@ def test_full_signed_chain_reaches_locked_with_real_g5_evaluator(tmp_path, monke
         },
     )
     monkeypatch.setattr(G10, "citation_verification_ok", lambda *_a, **_k: (True, ""))
+    _song_that = G9Q.CS.trang_thai_song
+    monkeypatch.setattr(G9Q.CS, "trang_thai_song", lambda gate, *a, **k: (
+        {"muc": "PASS", "status": "PASS_G8_REVIEW_RECORDED (giả lập)"} if gate == "G8" else _song_that(gate, *a, **k)))
     ready = G9Q.evaluate_study(
         study,
         study_dir,

@@ -107,14 +107,29 @@ class TestNAuc:
     """
 
     def test_known_case(self):
-        assert n_auc(0.75, alpha=0.05, power=0.80) == 27
+        """04/10/2026 (soát từng cổng G3-04): giá trị khoá cũ (27) đến từ phương sai KHÔNG phải Hanley–McNeil (lực thật
+        ≈ 0,64). Nay theo Hanley & McNeil 1982 (Radiology 143(1):29-36, PMID 7063747,
+        doi:10.1148/radiology.143.1.7063747):
+        AUC=0,75 so với 0,5, α=0,05 hai phía, lực 80%, tỷ lệ hiện mắc 0,5 (κ=1) ⇒ 20 ca bệnh + 20 ca không bệnh.
+        Kiểm tay: n=19/nhóm cho 1,96·√V0 + 0,8416·√V1 = 0,2533 > 0,25 (thiếu lực); n=20/nhóm cho 0,2467 ≤ 0,25."""
+        assert n_auc(0.75, alpha=0.05, power=0.80, prevalence=0.5) == 40
+        from run_g3_auto import n_auc_hanley_mcneil
+        assert n_auc_hanley_mcneil(0.75, 0.05, 0.80, kappa=1.0) == (20, 20)
+        assert n_auc_hanley_mcneil(0.70, 0.05, 0.80, kappa=1.0) == (32, 32)  # kiểm tay: 31 thiếu (0,2009 > 0,2)
 
     def test_no_factor_2_regression(self):
-        """
-        Nếu bug hệ số-2 quay lại, n_auc(0.75) sẽ ≈ 2x giá trị đúng (~54 thay vì 27).
-        """
-        n = n_auc(0.75, 0.05, 0.80)
-        assert n < 40, f"n_auc(0.75)={n} — nghi ngờ hệ số 2 sai đã quay lại (kỳ vọng ~27)"
+        """Nếu bug hệ số-2 quay lại, N sẽ ≈ 2× giá trị đúng (~80 thay vì 40)."""
+        n = n_auc(0.75, 0.05, 0.80, prevalence=0.5)
+        assert n < 60, f"n_auc(0.75)={n} — nghi ngờ hệ số 2 sai đã quay lại (kỳ vọng 40)"
+
+    def test_ty_le_hien_mac_quy_ra_tong_n(self):
+        """Tỷ lệ hiện mắc thấp ⇒ cần nhiều người hơn để đủ ca bệnh; tổng N = số ca bệnh + ⌈κ × số ca bệnh⌉."""
+        from run_g3_auto import n_auc_hanley_mcneil
+        n_benh, n_khong = n_auc_hanley_mcneil(0.75, 0.05, 0.80, kappa=4.0)
+        assert n_auc(0.75, 0.05, 0.80, prevalence=0.2) == n_benh + n_khong
+        assert n_khong == 4 * n_benh
+        with pytest.raises(InvalidEffectSizeError):
+            n_auc(0.75, 0.05, 0.80, prevalence=None)
 
     def test_rejects_auc_near_half(self):
         with pytest.raises(InvalidEffectSizeError):

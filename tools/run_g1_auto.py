@@ -436,8 +436,10 @@ def _canonicalize_pinned_design_code(raw: str) -> str:
     """
     # «case-control», «Cross sectional» ⇒ case_control / cross_sectional (gạch nối, khoảng trắng ⇒ gạch dưới) —
     # trước 04/10/2026 các cách viết này bị từ chối như mã lạ.
+    # VÁ 04/10/2026 (soát từng cổng, G1-12): bảng bí danh DUY NHẤT ở skill_standards (g1_quality_gate dùng cùng
+    # bảng) — hai bảng riêng từng lệch nhau. _PIN_DESIGN_ALIASES giữ làm bí danh bổ sung tương thích.
     key = re.sub(r"[\s\-]+", "_", raw.strip().lower())
-    canonical = _PIN_DESIGN_ALIASES.get(key, key)
+    canonical = S.ma_thiet_ke_chuoi(key) or _PIN_DESIGN_ALIASES.get(key, key)
     if canonical not in _CANONICAL_DESIGN_CODES:
         print(f"  ⚠️  design_code pin '{raw}' không khớp bất kỳ mã canon nào "
               f"({sorted(_CANONICAL_DESIGN_CODES)}) — BỎ QUA pin, dùng suy luận "
@@ -479,9 +481,14 @@ def _raw_pinned_design(out_dir) -> str:
     return str(pin).strip() if pin else ""
 
 
-def _apply_design_pin(design: dict, pinned: str) -> dict:
-    """Ghi đè thiết kế bằng giá trị bác sĩ pin; giữ nguyên các trường khác."""
+def _apply_design_pin(design: dict, pinned: str, meta: Optional[dict] = None) -> dict:
+    """Ghi đè thiết kế bằng giá trị bác sĩ pin; giữ nguyên các trường khác.
+
+    VÁ 04/10/2026 (soát từng cổng, G1-07): ghim SAU một lượt suy luận mơ hồ từng giữ nguyên cờ `ambiguous` và phần
+    lý do suy luận cũ còn «[CẦN …]» ⇒ G1 không bao giờ PASS dù PI đã chốt. Ghim là quyết định TƯỜNG MINH: gỡ cờ mơ hồ,
+    lý do lấy từ gate_params.G1.design_rationale của PI (không có thì chỉ ghi câu «do BÁC SĨ pin»)."""
     d = dict(design)
+    d["ambiguous"] = False
     d["internal_code"] = pinned
     d["primary"] = _DESIGN_LABEL.get(pinned, f"Thiết kế: {pinned}")
     try:
@@ -508,8 +515,11 @@ def _apply_design_pin(design: dict, pinned: str) -> dict:
     d["bias_controls"] = BIAS_CONTROLS.get(pinned, BIAS_CONTROLS["cohort"])
     d["alternative_1"] = "[Đã pin bởi bác sĩ — không áp dụng bảng thiết kế thay thế tự động]"
     d["alternative_2"] = "[Đã pin bởi bác sĩ — không áp dụng bảng thiết kế thay thế tự động]"
-    d["rationale"] = ("Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định "
-                      "thật, ưu tiên hơn suy luận tự động). " + str(design.get("rationale", "")))
+    g1_meta = ((meta or {}).get("gate_params") or {}).get("G1") or {} if isinstance(meta, dict) else {}
+    ly_do_pi = g1_meta.get("design_rationale") if isinstance(g1_meta, dict) else None
+    d["rationale"] = ("Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định thật, ưu tiên hơn suy luận tự "
+                      "động)." + (f" Lý do của PI: {str(ly_do_pi).strip()}" if ly_do_pi and str(ly_do_pi).strip()
+                                   else ""))
     return d
 
 
@@ -1018,9 +1028,22 @@ def generate_g1_artifact(
         "☐ Chưa có effect size truy nguyên [CHỜ BỔ SUNG PMID/DOI hoặc pilot/MCID]"
     )
 
+    # VÁ 04/10/2026 (soát từng cổng, G1-08): SAP §4 của RCT từng in CỨNG «ITT (treatment-policy estimand)» kể cả khi
+    # PI đã khai estimand khác (vd Hypothetical) — mâu thuẫn ngay trong A2 mà vẫn PASS. Nay dựng từ
+    # gate_params.G1.estimand; chưa khai thì để [CẦN], KHÔNG mặc định.
+    _est = (((meta or {}).get("gate_params") or {}).get("G1") or {}).get("estimand") if isinstance(meta, dict) else None
+    _est = _est if isinstance(_est, dict) else {}
+    _chien_luoc = str(_est.get("intercurrent_events_strategy") or "").strip()
+    if _chien_luoc and "[CẦN" not in _chien_luoc.upper():
+        _dong_phan_tich_chinh = (f"Phân tích chính: theo estimand PI đã khai — chiến lược biến cố xen ngang: "
+                                 f"{_chien_luoc}; thước đo: {_est.get('population_summary_measure') or '[CẦN]'}\n")
+    else:
+        _dong_phan_tich_chinh = ("Phân tích chính: [CẦN — theo estimand ICH E9(R1) ở gate_params.G1.estimand; "
+                                 "KHÔNG mặc định treatment-policy]\n")
+
     # Chọn SAP template theo thiết kế
     if internal == "rct":
-        sap_analysis_note = ("Phân tích chính: ITT (treatment-policy estimand)\n"
+        sap_analysis_note = (_dong_phan_tich_chinh +
                              "Kết cục liên tục: ANCOVA (post - baseline; covariates: baseline + stratification)\n"
                              "Kết cục nhị phân: logistic / Poisson + robust SE → RR (95%CI)\n"
                              "Thời gian đến sự kiện: log-rank + Cox → HR (95%CI)")
@@ -1443,7 +1466,23 @@ Không yêu cầu random seed trừ khi có bước lấy mẫu/ngẫu nhiên b�
     # thiết kế không còn trỏ "xem §Estimand bên trên" khi mục đó không được sinh —
     # tham chiếu treo cũ ảnh hưởng 7/8 thiết kế.
     estimand_block = ""
-    if G1D.has_estimand_block(internal):
+    if G1D.has_estimand_block(internal) and any(str(v or "").strip() for v in _est.values()):
+        # VÁ 04/10/2026 (G1-08): PI đã khai estimand ⇒ in ĐÚNG giá trị đã khai thay cho khuôn ô tick trống.
+        def _gt(k: str) -> str:
+            v = str(_est.get(k) or "").strip()
+            return v if v else "[CẦN]"
+        estimand_block = f"""
+## PHẦN 2b — ESTIMAND ICH E9(R1) (bắt buộc cho thiết kế can thiệp)
+
+```
+Dân số: {_gt("population")}
+Điều kiện điều trị được so sánh: {_gt("treatment_condition")}
+Biến kết cục: {_gt("variable")}
+Biến cố xen ngang + chiến lược: {_gt("intercurrent_events_strategy")}
+Thước đo tổng hợp: {_gt("population_summary_measure")}
+```
+"""
+    elif G1D.has_estimand_block(internal):
         estimand_block = """
 ## PHẦN 2b — ESTIMAND ICH E9(R1) (bắt buộc cho thiết kế can thiệp)
 
@@ -1845,7 +1884,8 @@ def write_g1_checkpoint(study_name: str, out_dir: Path, question_type: str,
                          specialist_modules: Optional[list[str]] = None,
                          supporting_artifacts: Optional[dict[str, Path]] = None,
                          quality_gate: Optional[dict] = None,
-                         quality_report_path: Optional[Path] = None) -> Path:
+                         quality_report_path: Optional[Path] = None,
+                         meta: Optional[dict] = None) -> Path:
     supporting_artifacts = supporting_artifacts or {}
     quality_gate = quality_gate or {
         "status": G1Q.STATUS_BLOCKED,
@@ -1924,9 +1964,41 @@ def write_g1_checkpoint(study_name: str, out_dir: Path, question_type: str,
         "g4_status": "PENDING — SAP chưa khóa (khóa sau G3 sau khi bác sĩ ký)",
         "disclaimer": "Cần bác sĩ kiểm chứng.",
     }
+    cp["dac_ta_thiet_ke"] = dac_ta_thiet_ke_g1(design, question_type, meta or {})
+    # VÁ 04/10/2026 (G1-10): dấu nội dung gate_params.G1 lúc chạy — cổng sau so với dấu hiện tại để biết G1 đã cũ.
+    cp["dau_gate_params_g1"] = G1Q.dau_van_tay_g1(meta or {}, design)
     cp_path = out_dir / "G1_checkpoint.json"
     cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return cp_path
+
+
+def dac_ta_thiet_ke_g1(design: dict, question_type: str, meta: dict) -> dict:
+    """Khối ĐẶC TẢ THIẾT KẾ mà các cổng sau ĐỌC (CHUNG-F, soát từng cổng 04/10/2026).
+
+    Mỗi tầng từng tự suy lại đặc tả với mặc định im lặng («treatment», «superiority», «Power 80%»…). G1 ghi MỘT khối
+    với đúng các khoá skill_standards.DAC_TA_KHOA lấy từ quyết định đã có (G0/G1/G3 trong study_meta); giá trị chưa
+    khai là None — KHÔNG mặc định. Đọc qua skill_standards.dac_ta_thiet_ke(out_dir)."""
+    gp = meta.get("gate_params") if isinstance(meta.get("gate_params"), dict) else {}
+    g0 = gp.get("G0") if isinstance(gp.get("G0"), dict) else {}
+    g1 = gp.get("G1") if isinstance(gp.get("G1"), dict) else {}
+    g3 = gp.get("G3") if isinstance(gp.get("G3"), dict) else {}
+    test_type = str(g0.get("test_type") or "").strip().lower() or None
+    khoi = {
+        "design_code": S.ma_thiet_ke_chuoi(design.get("internal_code")),
+        "question_type": S.chuan_hoa_question_type(question_type),
+        "test_type": test_type,
+        "hypothesis_type": S.chuan_hoa_hypothesis_type(g3.get("hypothesis_type") or test_type),
+        "margin": g3.get("margin"),
+        "outcome_direction": g3.get("outcome_direction") or g1.get("outcome_direction") or None,
+        "estimand": g1.get("estimand") if isinstance(g1.get("estimand"), dict) and any(
+            str(v or "").strip() for v in g1["estimand"].values()) else None,
+        "masking": g1.get("blinding") or g1.get("masking") or None,
+        "alpha_sidedness": g3.get("alpha_sidedness") or None,
+    }
+    khoi = {k: khoi.get(k) for k in S.DAC_TA_KHOA}
+    khoi["dau_van_tay"] = G1Q.CS.dau_van_tay(khoi)
+    khoi["ghi_luc"] = datetime.now().isoformat(timespec="seconds")
+    return khoi
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -1941,9 +2013,10 @@ def main():
                         help="Mã/tên đề tài (cùng với --study đã dùng ở G0)")
     parser.add_argument("--topic", default=None,
                         help="Chủ đề nghiên cứu (tuỳ chọn — nếu không có G0_checkpoint.json)")
-    parser.add_argument("--question-type", default="treatment",
+    parser.add_argument("--question-type", default=None,
                         choices=list(QUESTION_TYPES.keys()),
-                        help="Loại câu hỏi (mặc định: treatment)")
+                        help="Loại câu hỏi (mặc định: lấy gate_params.G0.question_type đã chốt; không có mới dùng "
+                             "treatment và đánh dấu thiết kế mơ hồ)")
     parser.add_argument("--email", default=None)
     args = parser.parse_args()
 
@@ -1968,7 +2041,7 @@ def main():
 
     g0_gaps = {}
     topic = args.topic or study
-    question_type = args.question_type
+    question_type = args.question_type or "treatment"
 
     if g0_cp_path.exists():
         print("📂 Bước 1/7: Đọc G0 checkpoint...")
@@ -2001,8 +2074,26 @@ def main():
         seed={"title": topic, "topic": topic},
     )
 
+    # VÁ 04/10/2026 (soát từng cổng, G0-06/G1-06): loại câu hỏi bác sĩ đã chốt ở G0 từng bị bỏ qua — mặc định
+    # «treatment» dựng đề tài phân tích yếu tố liên quan thành RCT. Không truyền --question-type ⇒ lấy G0 (therapy ≡
+    # treatment…); G0 cũng chưa khai ⇒ «treatment» NHƯNG đánh dấu thiết kế mơ hồ để G1/G3 giữ REVIEW.
+    question_type_mac_dinh = False
+    if args.question_type is None:
+        _qt_g0 = S.chuan_hoa_question_type(((meta.get("gate_params") or {}).get("G0") or {}).get("question_type"))
+        _qt_g0 = {"prediction_model": "prediction_model" if "prediction_model" in QUESTION_TYPES else "prognosis"}.get(
+            _qt_g0, _qt_g0)
+        if _qt_g0 in QUESTION_TYPES:
+            question_type = _qt_g0
+            print(f"  → Loại câu hỏi lấy từ G0 đã chốt: {question_type}")
+        else:
+            question_type_mac_dinh = True
+            print("  → ⚠️  G0 chưa chốt loại câu hỏi — tạm dùng «treatment», thiết kế bị đánh dấu MƠ HỒ (REVIEW).")
+
     # Suy loại thiết kế
     design = infer_study_design(question_type, g0_gaps, topic)
+    if question_type_mac_dinh:
+        design = dict(design)
+        design["ambiguous"] = True
     # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 21, phát hiện HIGH):
     # question_type bị GÁN LẠI CỤC BỘ bên trong infer_study_design() theo từ
     # khóa trong topic (vd topic có "trải nghiệm/rào cản" → đổi cục bộ thành
@@ -2019,7 +2110,7 @@ def main():
     # THẬT của bác sĩ, hệ tôn trọng — không tự đổi.
     pinned = _read_pinned_design(out_dir)
     if pinned:
-        design = _apply_design_pin(design, pinned)
+        design = _apply_design_pin(design, pinned, meta)
         print(f"  → 📌 Dùng THIẾT KẾ PIN từ study_meta.json: {pinned}")
     else:
         raw_pin = _raw_pinned_design(out_dir)
@@ -2055,6 +2146,8 @@ def main():
         meta=meta,
     )
     md_path = out_dir / f"G1_A2_PROTOCOL_DESIGN_{study}.md"
+    # VÁ 04/10/2026 (G1-03): A2 đã bị sửa tay sau lượt trước ⇒ sao lưu trước khi ghi đè.
+    G1Q.sao_luu_neu_sua_tay(md_path, G1Q._manifest_luot_truoc(out_dir).get("A2"), artifact_md)
     md_path.write_text(artifact_md, encoding="utf-8", newline="\n")
     print(f"  → Lưu: {md_path}")
     detected_modules = detect_specialist_modules(topic)
@@ -2106,7 +2199,10 @@ def main():
         meta=meta,
         evidence_identifiers=evidence_identifiers,
         guardrail_passed=guardrail["passed"],
+        # VÁ 04/10/2026 (G0-01/G1-04): tiền đề G0 CHẤM SỐNG, không tin trạng thái lưu.
+        g0_song=G1Q.CS.trang_thai_song("G0", study, out_dir),
     )
+    quality_gate["artifact_manifest_luc_sinh"] = quality_gate.get("artifact_manifest") or {}
     quality_report_path = G1Q.write_quality_report(study, out_dir, quality_gate)
     print(f"  → G1 quality status: {quality_gate['status']}")
     print(f"  → Báo cáo: {quality_report_path}")
@@ -2126,6 +2222,7 @@ def main():
         supporting_artifacts=supporting_paths,
         quality_gate=quality_gate,
         quality_report_path=quality_report_path,
+        meta=meta,
     )
     print(f"  → Lưu: {cp_path}")
 

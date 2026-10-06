@@ -31,15 +31,25 @@ def _meta(protocol: str = "2.0", icf: str = "1.1") -> dict:
 
 
 def _goi(out_dir: Path, **attest) -> Path:
+    # 04/10/2026 (CHUNG-D): hợp đồng nay gọi validate_attestation ĐẦY ĐỦ, nên attestation «hợp lệ» phải mang đủ các
+    # trường mà approve_gate._prepare_g2_attestation luôn ghi (mã hội đồng, ngày phê duyệt, chế độ tuyển, đăng ký,
+    # băm hồ sơ nền) — bản cũ chỉ có các trường hạn/phiên bản nên là một attestation KHÔNG thể sinh ra từ lệnh ký thật.
+    import hashlib
+
+    nen = "# Hồ sơ đạo đức\n"
     base = {
         "schema_version": G2Q.ATTESTATION_SCHEMA, "study": _STUDY,
-        "ethics_decision": "APPROVED", "approval_number": "IRB-01",
-        "approved_protocol_version": "2.0", "approved_icf_version": "1.1",
-        "valid_until": "2099-12-31",
+        "ethics_decision": "APPROVED", "ethics_committee_ref": "HDDD-01", "approval_number": "IRB-01",
+        "approval_date": "2026-01-15", "approved_protocol_version": "2.0", "approved_icf_version": "1.1",
+        "valid_until": "2099-12-31", "recruitment_mode": "RETROSPECTIVE_SECONDARY_DATA",
+        "registration": {"required": False, "status": "NOT_REQUIRED"},
+        "package_sha256_before_attestation": hashlib.sha256(G2Q.strip_attestation(nen).encode("utf-8")).hexdigest(),
+        # 04/10/2026 (G2-08): lệnh ký thật ghi DẤU ĐẦU VÀO (thiết kế + quyết định G1 + cỡ mẫu G3) mà Hội đồng duyệt.
+        "dau_dau_vao": G2Q.dau_dau_vao_g2(out_dir, _meta())[0],
     }
     base.update(attest)
     p = out_dir / f"G2_A3_ETHICS_PACKAGE_{_STUDY}.md"
-    p.write_text(G2Q.append_attestation("# Hồ sơ đạo đức\n", base), encoding="utf-8", newline="\n")
+    p.write_text(G2Q.append_attestation(nen, base), encoding="utf-8", newline="\n")
     return p
 
 
@@ -148,3 +158,15 @@ def test_khoi_attestation_hong_khong_roi_ve_nhanh_tuong_thich(tmp_path, khoi):
         f"# Hồ sơ\n{G2Q.ATTESTATION_BEGIN}\n{khoi}\n{G2Q.ATTESTATION_END}\n",
         encoding="utf-8", newline="\n")
     assert _ok({"g2_status": "LOCKED"}, tmp_path) is False
+
+
+def test_attestation_thieu_truong_bat_buoc_khong_mo_cong(tmp_path):
+    """04/10/2026 (CHUNG-D): gói đã ký mà phụ lục quyết định IRB thiếu mã hội đồng / ngày phê duyệt ở tương lai /
+    RCT ghi hồi cứu ⇒ hợp đồng KHÔNG mở cổng (trước: chỉ kiểm hạn + phiên bản nên lọt)."""
+    _goi(tmp_path, ethics_committee_ref="")
+    assert _ok(_cp_hop_le(), tmp_path) is False
+    _goi(tmp_path, approval_date="2099-01-01")
+    assert _ok(_cp_hop_le(), tmp_path) is False
+    _goi(tmp_path)
+    (tmp_path / "G2_checkpoint.json").write_text('{"design_code": "rct"}', encoding="utf-8", newline="\n")
+    assert _ok(_cp_hop_le(), tmp_path) is False, "RCT mà recruitment_mode hồi cứu"

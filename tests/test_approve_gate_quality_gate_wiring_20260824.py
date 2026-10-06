@@ -53,7 +53,16 @@ def _run_main(monkeypatch, *args) -> int:
 
 
 def _fake_report(status: str, criteria=None) -> dict:
-    return {"status": status, "automatic_criteria": criteria or [], "approval_criteria": []}
+    # 04/10/2026 (CHUNG-D): báo cáo thật của G2/G8 luôn mang các tiêu chí người kiểm được TRƯỚC khi ký; approve_gate
+    # nay đòi chúng PASS (vắng ⇒ fail-closed). Báo cáo giả mô phỏng một hồ sơ đã đủ các tiêu chí đó.
+    nguoi = [{"id": tid, "label": tid, "status": "PASS", "evidence": "giả lập"}
+             for tid in ("G2-HUMAN-01", "G8-HUMAN-01", "G8-HUMAN-05",
+                         # 05/10/2026 (soát từng cổng G8-01): kết luận phản biện cho phép nộp.
+                         "G8-HUMAN-06",
+                         # 04/10/2026 (soát từng cổng G4): xác nhận EPV/VIF, dữ liệu thiếu, nhóm nhỏ, vai trò, dấu SAP.
+                         "G4-HUMAN-04", "G4-HUMAN-05", "G4-HUMAN-06", "G4-HUMAN-07", "G4-HUMAN-08")]
+    return {"status": status, "automatic_criteria": criteria or [], "approval_criteria": nguoi,
+            "human_approval_criteria": nguoi}
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -172,9 +181,13 @@ def test_g4_cho_phep_ky_khi_g4q_bao_ready(monkeypatch, study_dir):
         "# SAP đã khóa\n"
         "## §1 Tiêu chí nhận/loại (Quần thể phân tích)\nNgười lớn ≥18 tuổi.\n"
         "## §2 Kết cục chính\nTỷ lệ đáp ứng tại tuần 12.\n"
+        # 04/10/2026 (soát từng cổng G4-01): §4/§9 bắt buộc và mục bắt buộc VẮNG cũng bị chặn — fixture phải đủ 6 mục
+        # (sửa fixture cho hợp lệ, không nới assertion).
+        "## §4 Phân tích chính\nHồi quy logistic, quần thể phân tích đầy đủ.\n"
         "## §5 Covariates/Phân tích đa biến\nTuổi, giới, mức độ nặng nền.\n"
+        "## §9 Phân tích độ nhạy\nComplete case so với MI.\n"
         "## §10 Phần mềm + seed\nPython 3.12, seed=42.\n"
-        "Không còn placeholder ở 4 mục chính (đủ cả 4, không 'vắng sạch' — BH97).",
+        "Không còn placeholder ở 6 mục bắt buộc (đủ cả 6, không 'vắng sạch' — BH97).",
         encoding="utf-8", newline="\n")
     monkeypatch.setattr(G4Q, "evaluate_study", lambda *a, **k: _fake_report(G4Q.STATUS_READY))
     rc = _run_main(

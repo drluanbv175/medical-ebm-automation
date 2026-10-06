@@ -57,7 +57,8 @@ class TestG3SensitivityTableMissingBranches:
         assert not all_na
 
     def test_diagnostic_no_longer_all_na(self):
-        rows, _ = G3.sensitivity_table("diagnostic", 27, 0.75, "AUC", 0.05, 0.30, 0.30, None)
+        # 04/10/2026 (soát từng cổng G3-04): chẩn đoán cần tỷ lệ hiện mắc (không mặc định) — truyền như main() truyền.
+        rows, _ = G3.sensitivity_table("diagnostic", 40, 0.75, "AUC", 0.05, 0.30, 0.30, None, prevalence=0.5)
         all_na = all(cell == "N/A" for _, row in rows for cell in row)
         assert not all_na
 
@@ -103,14 +104,16 @@ class TestG3PrevalenceLabelAccurate:
 
 
 class TestG3SensitivityTableArrClampFlagged:
-    """Hồi quy cho phát hiện LOW (tái xác minh vòng 6): sensitivity_table()
-    kẹp p2≤0→0.05 ở nhánh ARR% mà không báo hiệu — nay đánh dấu "*"."""
+    """Hồi quy cho phát hiện LOW (tái xác minh vòng 6): sensitivity_table() kẹp p2≤0→0.05 ở nhánh ARR% mà không báo
+    hiệu. 04/10/2026 (soát từng cổng G3-10): KHÔNG kẹp nữa — ô có tham số ngoài miền là «N/A» (không bịa một N cho
+    ARR hiệu dụng khác hẳn yêu cầu), các ô hợp lệ vẫn tính."""
 
     def test_clamped_cell_is_flagged_with_asterisk(self):
-        # p0=0.10, ev=15 (x1.2 = 18) -> p2 = 0.10 - 0.18 < 0 -> phải kẹp.
-        rows, _ = G3.sensitivity_table("rct", 100, 15, "ARR%", 0.05, 0.30, 0.10, None)
-        flagged_cells = [cell for _, row in rows for cell in row if isinstance(cell, str) and cell.endswith("*")]
-        assert flagged_cells, "không có ô nào bị kẹp p2<=0 được đánh dấu trong kịch bản này"
+        # p0=0.10, ev=15 (x1.2 = 18) -> p2 = 0.10 - 0.18 < 0 -> ngoài miền.
+        rows, mults = G3.sensitivity_table("rct", 100, 15, "ARR%", 0.05, 0.30, 0.10, None)
+        cot_120 = [row[mults.index(1.20)] for _, row in rows]
+        assert all(cell == "N/A" for cell in cot_120), "ô p2≤0 phải là N/A, không phải N của giá trị bị kẹp"
+        assert not any(isinstance(cell, str) and cell.endswith("*") for _, row in rows for cell in row)
 
 
 class TestG1SapDoesNotMisapplySrMaToPrediction:

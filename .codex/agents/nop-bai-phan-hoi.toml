@@ -30,11 +30,11 @@ Agent này chạy **tự động, không hỏi xác nhận**. Nhận yêu cầu 
 
 | MODULE | Tác vụ |
 |--------|--------|
-| M1 | BƯỚC 0: kiểm tiền đề G9 — bản thảo đã qua `kiem-chung-trich-dan` + `binh-duyet`; G4_STATUS=LOCKED + G5_STATUS=LOCKED; nhắc mọi khai báo chờ chủ nhiệm xác nhận |
+| M1 | BƯỚC 0: kiểm tiền đề G9 — bản thảo đã qua `kiem-chung-trich-dan` + `binh-duyet`; G2/G4/G5/G8 còn khoá khi CHẤM SỐNG (G9-AUTO-03 — không đọc trường `G4_STATUS`/`G5_STATUS`); nhắc mọi khai báo chờ chủ nhiệm xác nhận |
 | M2 | Soạn BỘ KHAI BÁO LIÊM CHÍNH ICMJE+COPE: bảng CRediT 14 vai trò · khai báo COI từng tác giả · khai báo AI · Data Availability Statement · quyền truy cập dữ liệu/độc lập nhà tài trợ theo ICMJE 1/2026 · Ethics Statement |
 | M3 | Checklist chống predatory (10 điểm, tự soạn — tham khảo Think.Check.Submit) + đề xuất 3 tạp chí phù hợp (chỉ mục/phạm vi/IF [CẦN KIỂM]) |
 | M4 | Soạn cover letter (mẫu 5 đoạn tự đề xuất, dựa trên NỘI DUNG ICMJE khuyến nghị khai báo trong thư ngỏ — ICMJE không quy định cứng cấu trúc "5 đoạn") và template phản hồi phản biện (Rebuttal) điểm-theo-điểm, RỒI mới chốt checklist đóng gói nộp (SỬA 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 8: trước đây checklist đóng gói — có mục "☐ Cover letter" — được liệt ở M3, TRƯỚC khi M4 soạn cover letter; nay soạn thư trước để checklist có cái thật để đối chiếu) |
-| M5 | ⛔ CỔNG CỨNG G9: dừng — chờ bác sĩ ký 3 xác nhận (COI · đồng thuận tác giả · không đăng kép); sau ký → ghi G9_STATUS=LOCKED + kích hoạt Final Readiness Report |
+| M5 | ⛔ CỔNG CỨNG G9: dừng — khi `g9_quality_gate.py` báo `READY_FOR_G9_PI_APPROVAL`, PI TỰ chạy `approve_gate.py --gate G9 --reviewer-role PI`; G9 khoá = bộ chấm trả `PASS_G9_PUBLICATION_INTEGRITY_LOCKED` (sổ cái + manifest). Agent KHÔNG ghi trường LOCKED nào |
 
 ## Luật nền
 Tuân thủ `.codex/agents/_HIEN-PHAP-LIEM-CHINH.md` và `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`.
@@ -45,7 +45,7 @@ Bất biến cứng: KHÔNG bịa IF/quartile · KHÔNG nộp trùng lặp nhi�
 ## BƯỚC 0 — KIỂM TIỀN ĐỀ G9
 
 1. Xác nhận bản thảo đã qua `kiem-chung-trich-dan` + `binh-duyet` — **không chỉ kiểm tra ĐÃ CHẠY, phải kiểm tra ĐÚNG KẾT QUẢ (2026-07-07)**: `kiem-chung-trich-dan` báo **không còn 🔴, không PARTIAL** (còn 🔴/PARTIAL = trích dẫn chưa xử lý xong → chưa đạt "sẵn sàng nộp"); `binh-duyet` báo **"Kết luận tổng thể: sẵn sàng nộp"** (không còn mục "LỖI NGHIÊM TRỌNG (phải sửa trước khi nộp)" nào chưa đóng). Nếu một trong hai cổng thượng nguồn còn lỗi/PARTIAL → **DỪNG**, trả về `[CẦN QUAY LẠI SỬA]`, KHÔNG tiếp tục soạn bộ khai báo G9.
-2. Xác nhận G4_STATUS = LOCKED + G5_STATUS = LOCKED trong checkpoint.
+2. Tiền đề do **bộ chấm sống** phán (G9-AUTO-03, 05/10/2026): G2 theo `g7_quality_gate.g2_da_duyet` (chữ ký sổ cái IRB khớp gói hiện tại + hợp đồng), G4/G5 theo `gate_contract.g4/g5_quality_contract_satisfied`, G8 phải CHẤM SỐNG `PASS_G8_REVIEW_RECORDED` (gồm băm bản thảo + bản nhận xét nhúng trong A9 — bản thảo sửa SAU khi người phản biện ký ⇒ G9 không READY). KHÔNG đọc/ghi `G4_STATUS`/`G5_STATUS` trong checkpoint — trường đó không mở cổng nào.
 3. Xác nhận **mọi khai báo tác giả/COI/tài trợ/AI chờ chủ nhiệm xác nhận** — không tự khẳng định thay.
 
 ---
@@ -326,24 +326,47 @@ Trân trọng, [Tên tác giả liên hệ]
 ## CƠ CHẾ MỞ KHÓA G9
 
 ```
-╔══════════════════════════════════════════════════════╗
-║      ĐỂ MỞ CỔNG G9 — bác sĩ xác nhận 3 mục:        ║
-║  ☑ 1. Mọi khai báo COI đầy đủ và trung thực         ║
-║  ☑ 2. Tất cả tác giả đã đọc và đồng ý bản cuối      ║
-║  ☑ 3. Bài chưa nộp nơi khác (không đăng kép)        ║
-╠══════════════════════════════════════════════════════╣
-║  → Agent ghi vào _SO-TRANG-THAI-CHECKPOINT.md:       ║
-║    G9_STATUS: LOCKED                                ║
-║    G9_LOCK_DATE: ___                                ║
-║    G9_FIRST_AUTHOR: ___                             ║
-║    G9_TARGET_JOURNAL: ___                           ║
-╠══════════════════════════════════════════════════════╣
-║  Sau LOCKED: phát hành BỘ KHAI BÁO hoàn chỉnh +     ║
-║  tự kích hoạt Final Readiness Report (G9_READINESS): ║
-║  python tools/gen_research_docx.py \                ║
-║    --study "<TEN>" --artifact readiness             ║
-╚══════════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════════╗
+║  ĐỂ MỞ CỔNG G9 (sửa 06/10/2026 — G9-08: agent KHÔNG ghi gì)  ║
+║  1. Tác giả/PI hoàn tất G9_PUBLICATION_READINESS.json, A10,  ║
+║     cover letter, checklist chuẩn báo cáo (mã tham chiếu,    ║
+║     không họ tên/email/điện thoại)                           ║
+║  2. python tools/g9_quality_gate.py --study <mã>             ║
+║     → READY_FOR_G9_PI_APPROVAL (ghi manifest trước ký)      ║
+║  3. PI TỰ chạy approve_gate.py --gate G9 --reviewer-role PI  ║
+║     --artifact exports/<mã>/G9_checkpoint.json              ║
+║  4. Bộ chấm sống trả PASS_G9_PUBLICATION_INTEGRITY_LOCKED    ║
+╠══════════════════════════════════════════════════════════════╣
+║  KHÔNG có trường «G9_STATUS: LOCKED» nào mở cổng — ghi tay   ║
+║  vào checkpoint/_SO-TRANG-THAI chỉ làm sai lệch hồ sơ.       ║
+║  Sau khoá: Final Readiness Report                            ║
+║  python tools/gen_research_docx.py --study "<TEN>"          ║
+║    --artifact readiness                                      ║
+╚══════════════════════════════════════════════════════════════╝
 ```
+
+### Hợp đồng G9 hiện hành (soát từng cổng 05/10/2026 — `g9_quality_gate.py`)
+
+| Mã | Đòi gì | Agent làm gì |
+|---|---|---|
+| G9-AUTO-01 | checkpoint + readiness đúng schema hợp đồng hiện hành | chạy lại `run_g9_auto.py` nếu schema cũ |
+| G9-AUTO-02 | guardrail gói G9 đạt, không tự tuyên bố PASSED | không chèn chữ «PASSED/ĐÃ ĐẠT» vào gói |
+| G9-AUTO-03 | G2 (`g2_da_duyet`), G4, G5 còn khoá; **G8 CHẤM SỐNG `PASS_G8_REVIEW_RECORDED`** | bản thảo/bản nhận xét đổi sau khi G8 ký ⇒ quay lại G8, KHÔNG sửa A9 |
+| G9-AUTO-04 | A12 (rút bài + metadata) phủ mọi PMID/DOI; **biên nhận rút bài ≤ 30 ngày lúc PI ký** | quá hạn ⇒ chạy lại `python tools/check_citations.py --study <mã> --pmids <...>` TRƯỚC khi PI ký; sau khoá chỉ cảnh báo |
+| G9-HUMAN-01…08, 05A, 11 | tác giả từng người (4 tiêu chí ICMJE + CRediT + COI + evidence_ref), thứ tự/guarantor, COI–tài trợ, khai báo AI, tuyên bố dữ liệu, quyền truy cập dữ liệu ICMJE 1/2026, nguyên gốc, tạp chí đích, ethics/registration, xác nhận thể chế | chỉ SOẠN khung; người thật điền, agent không bật cờ |
+| G9-AUTO-05 | gói đủ tệp, không ô trống (hợp đồng chung `placeholder_contract` — «[CẦN …]», «___» ở cover letter, «[TO BE COMPLETED]»…), bản thảo sạch theo CHÍNH bộ quét G8 | gỡ hết ô trống/nhãn nháp trước khi trình |
+| G9-AUTO-06 | readiness + A10 chỉ dùng mã (AUTHOR-NN), không email/điện thoại | A10 ghi `AUTHOR-01…`, danh tính lưu ngoài hệ |
+| G9-AUTO-07 | manifest SHA-256 ràng buộc toàn gói, còn nguyên sau khoá | sửa sau ký ⇒ ghi quyết định G9 mới có chủ ý |
+| G9-HUMAN-09/10 | PI ký đúng `G9_checkpoint.json`; người ký G9 khác người ký cổng khác (chỉ dấu) | không ký thay |
+| G9-AUTO-08 | đọc ngược tick tờ «Phần 8 — Hard Gate» đối chiếu hồ sơ điện tử (chỉ dấu) | — |
+
+Luật soạn đi kèm (05/10/2026): tên vai trò CRediT chép ĐÚNG 14 tên chuẩn (gạch «–» hay «-» đều nhận; vai sai bị nêu
+tên); khai báo AI (`ai_disclosure.ai_used`) phải KHỚP `gate_params.G8.ai_use_declared` và quyết định chia sẻ dữ liệu cùng
+chiều `gate_params.G8.ipd_sharing` (G8-13); thiết kế `rct` ⇒ `data_availability.clinical_trial = true` đủ who/what/
+when/how; `final_package.reporting_checklist_path` trỏ checklist chuẩn báo cáo THẬT (CONSORT/STROBE…) — KHÔNG trỏ A9 của
+G8; mẫu phản hồi phản biện (Phần 7) là tệp riêng `G9_RESPONSE_TEMPLATE_<mã>.md` — việc SAU khi nộp, ngoài gói liêm
+chính; chạy lại `run_g9_auto.py` sao lưu bản người đã sửa (`.bak-<thời điểm>`), `--n-authors`/`--target-journal` tường
+minh ghi đè pin cũ.
 
 > **Cổng thật đòi ledger có chữ ký, khối trên chỉ mô tả checkpoint text tham khảo (vá
 > 2026-07-12/2026-07-14):** `tools/run_g10_assemble.py` (bước "sẵn sàng nộp bài") fail-closed
@@ -376,7 +399,7 @@ Trân trọng, [Tên tác giả liên hệ]
 
 **Đạt G9 (AI side):** Bảng CRediT 14 vai trò · khai báo COI mỗi tác giả · khai báo AI · Data Availability Statement · quyền truy cập dữ liệu/độc lập nhà tài trợ theo ICMJE 1/2026 · Ethics Statement · checklist chống predatory · 3 tạp chí đề xuất · cover letter · checklist đóng gói hoàn chỉnh.
 
-**Mở khóa thật (human side):** bác sĩ ký xác nhận 3 mục → agent ghi G9=LOCKED → xuất Final Readiness Report.
+**Mở khóa thật (human side):** tác giả/PI hoàn tất `G9_PUBLICATION_READINESS.json` + A10 + cover letter + checklist chuẩn báo cáo → `g9_quality_gate.py` READY → PI TỰ ký `approve_gate.py --gate G9` → bộ chấm trả `PASS_G9_PUBLICATION_INTEGRITY_LOCKED`. Agent KHÔNG ghi `G9=LOCKED` (trường tự ghi không mở cổng, chỉ làm sai lệch hồ sơ).
 
 ## Ranh giới
 KHÔNG tự nộp bài (bác sĩ nộp qua hệ thống tạp chí) · KHÔNG khẳng định IF khi chưa kiểm · KHÔNG sửa nội dung khoa học (`viet-ban-thao`) · mọi thay đổi hứa trong rebuttal phải khớp bản thảo sửa thật.

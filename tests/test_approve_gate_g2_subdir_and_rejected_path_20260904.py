@@ -87,9 +87,13 @@ def study_dir():
 def _quality_gates_report_ready(monkeypatch):
     """Cô lập chốt artifact-path khỏi mọi tiêu chí NỘI DUNG khác của từng GxQ —
     cùng lý do đã ghi ở test_approve_gate_g4_artifact_path_check_20260903.py."""
+    # 04/10/2026 (CHUNG-D): báo cáo thật luôn mang tiêu chí người kiểm được TRƯỚC khi ký — giả lập đã PASS.
+    nguoi = [{"id": tid, "label": tid, "status": "PASS", "evidence": "giả lập"}
+             for tid in ("G2-HUMAN-01", "G8-HUMAN-01", "G8-HUMAN-05")]
     monkeypatch.setattr(
         G2Q, "evaluate_study",
-        lambda *a, **k: {"status": G2Q.STATUS_APPROVED, "automatic_criteria": []},
+        lambda *a, **k: {"status": G2Q.STATUS_APPROVED, "automatic_criteria": [],
+                         "human_approval_criteria": nguoi},
     )
     monkeypatch.setattr(
         G5Q, "evaluate_study",
@@ -97,7 +101,7 @@ def _quality_gates_report_ready(monkeypatch):
     )
     monkeypatch.setattr(
         G8Q, "evaluate_study",
-        lambda *a, **k: {"status": G8Q.STATUS_PENDING, "automatic_criteria": []},
+        lambda *a, **k: {"status": G8Q.STATUS_PENDING, "automatic_criteria": [], "approval_criteria": nguoi},
     )
     monkeypatch.setattr(
         G9Q, "evaluate_study",

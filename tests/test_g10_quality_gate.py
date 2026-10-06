@@ -10,6 +10,7 @@ import json
 import shutil
 import sys
 import zipfile
+from datetime import datetime, timezone
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -18,6 +19,7 @@ if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
 import approve_gate as APPROVE  # noqa: E402
+import cong_song as CS  # noqa: E402
 import g10_quality_gate as G10Q  # noqa: E402
 import gate_contract as GC  # noqa: E402
 import run_g10_assemble as G10  # noqa: E402
@@ -129,8 +131,15 @@ def _write_ready_fixture(out_dir: Path, study: str) -> None:
         "G9_PUBLICATION_READINESS.json": "{}\n",
         "G9_QUALITY_REPORT.json": "{}\n",
         f"A12_CITATION_VERIFICATION_{study}.md": "Citation verification final.\n",
-        "A12_RETRACTION_RECEIPT.json": "{}\n",
+        # 05/10/2026 (G10-05): biên nhận rút bài thật luôn có checked_at_utc — G10 đòi còn hạn 30 ngày lúc ký.
+        "A12_RETRACTION_RECEIPT.json": json.dumps({"checked_at_utc": datetime.now(timezone.utc).isoformat()}) + "\n",
         "A12_METADATA_RECEIPT.json": "{}\n",
+        # 05/10/2026 (G10-04): manifest ràng buộc artifact HỢP ĐỒNG của cổng tiền đề (gói đạo đức, SAP, bản thảo, bản
+        # nhận xét phản biện) — gói đầy đủ phải có các tệp này.
+        f"G2_A3_ETHICS_PACKAGE_{study}.md": "Ethics package final.\n",
+        f"G4_A5_SAP_FINAL_{study}.md": "SAP final.\n",
+        f"G7_A8_MANUSCRIPT_{study}.md": "Manuscript final.\n",
+        f"G8_PEER_REVIEW_REPORT_{study}.md": "Peer review report final.\n",
     }
     for name, content in text_files.items():
         (out_dir / name).write_text(content, encoding="utf-8", newline="\n")
@@ -144,9 +153,28 @@ def _write_ready_fixture(out_dir: Path, study: str) -> None:
     (out_dir / f"STUDY_SPEC_{study}.json").write_text(
         json.dumps({"complete": True}), encoding="utf-8", newline="\n"
     )
+    # 05/10/2026 (G10-02): run_g10_assemble ghi dấu SHA-256 của .md/.docx vừa lắp vào checkpoint.
+    cp_path = out_dir / G10Q.CHECKPOINT_JSON
+    cp = json.loads(cp_path.read_text(encoding="utf-8"))
+    cp["artifacts"] = {
+        "de_cuong_md_sha256": G10Q._sha256(out_dir / f"DE_CUONG_THONG_NHAT_{study}.md"),
+        "de_cuong_docx_sha256": G10Q._sha256(out_dir / f"DE_CUONG_THONG_NHAT_{study}.docx"),
+    }
+    cp_path.write_text(json.dumps(cp, ensure_ascii=False), encoding="utf-8", newline="\n")
 
 
 def _patch_upstream(monkeypatch, approval_state: dict[str, bool]) -> None:
+    # 05/10/2026 (soát từng cổng G10-01/02/03): G10 CHẤM SỐNG cổng tiền đề (cong_song), chạy lại check_de_cuong trên
+    # đề cương và tính lại StudySpec — đồ gá này là văn bản tổng hợp nên giả lập ba tầng đó (mặc định đạt; ghi đè từng
+    # cổng qua approval_state["song"] = {cổng: mức}); chuỗi THẬT G0→G10 ở tests/test_g10_hoan_thien_20261005.py.
+    song = approval_state.setdefault("song", {})
+    monkeypatch.setattr(CS, "trang_thai_song", lambda gate, *_a, **_k: {
+        "gate": gate, "muc": song.get(gate, "PASS"), "status": f"{song.get(gate, 'PASS')}_{gate}_GIA_LAP",
+        "dat": song.get(gate, "PASS") == "PASS"})
+    monkeypatch.setattr(G10Q, "_guardrail_de_cuong_song", lambda *_a, **_k: (True, "check_de_cuong (giả lập)"))
+    monkeypatch.setattr(G10Q, "_study_spec_song", lambda *_a, **_k: (
+        {"scientific_content_complete": True, "protocol_content_complete": True,
+         "missing_requirements": [], "semantic_issues": []}, None))
     monkeypatch.setattr(GC, "g2_quality_contract_satisfied", lambda *_a, **_k: True)
     # SỬA 2026-07-30 (G10-01): g10_quality_gate.py nay chấm G4 qua
     # g4_quality_contract_satisfied() thay vì đọc g4_status text (đã lỗi thời) —
@@ -253,15 +281,12 @@ def test_g2_schema_without_irb_ledger_cannot_pass_g10(tmp_path, monkeypatch):
 def test_legacy_g1_quality_contract_cannot_be_silently_grandfathered(
     tmp_path, monkeypatch
 ):
+    """05/10/2026: «hợp đồng lịch sử» nay là G1 CHẤM SỐNG chưa xác nhận (bộ chấm G1 trả DRAFT) — bản lưu không còn
+    được đọc, nên cả checkpoint lưu PASS lẫn checkpoint lịch sử đều không qua được nếu G1 sống chưa đạt."""
     study = "SYNTH-G10-LEGACY-G1"
     _write_ready_fixture(tmp_path, study)
-    approval = {"g10": False}
+    approval = {"g10": False, "song": {"G1": "DRAFT"}}
     _patch_upstream(monkeypatch, approval)
-    g1_path = tmp_path / "G1_checkpoint.json"
-    g1 = json.loads(g1_path.read_text(encoding="utf-8"))
-    g1.pop("quality_contract_version", None)
-    g1.pop("quality_gate", None)
-    g1_path.write_text(json.dumps(g1, ensure_ascii=False), encoding="utf-8", newline="\n")
 
     report = G10Q.evaluate_study(study, tmp_path, repo_root=tmp_path, write=True)
     assert report["status"] == G10Q.STATUS_DRAFT
