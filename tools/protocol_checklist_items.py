@@ -173,6 +173,21 @@ def pmid_tai_lieu_chuan() -> frozenset:
     return frozenset(tap)
 
 
+def cap_doi_pmid_tai_lieu_chuan() -> dict:
+    """{DOI (chữ thường) → PMID} của bài CHUẨN ĐỀ CƯƠNG mà hệ thống chèn — cặp ĐÃ XÁC MINH ghi ở *_PROVENANCE
+    («doi:… (PMID …)»). 06/10/2026: A12 (run_g10_assemble) dùng để nhận ra DOI in KÈM PMID đã kiểm rút bài, không bắt
+    bác sĩ tra Retraction Watch tay cho chính tài liệu chuẩn của hệ."""
+    import re
+
+    cap = {}
+    for nguon in (SPIRIT_2025_PROVENANCE, PRISMA_P_2015_PROVENANCE):
+        for gia_tri in nguon.values():
+            if isinstance(gia_tri, str):
+                for doi, pmid in re.findall(r"doi:(\S+?)\s*\(PMID (\d{6,9})", gia_tri):
+                    cap[doi.rstrip(".,;").lower()] = pmid
+    return cap
+
+
 def items_for_design(design_code: Optional[str]):
     """(tên chuẩn, tuple item, provenance) cho thiết kế có checklist protocol theo mục; None nếu không.
 

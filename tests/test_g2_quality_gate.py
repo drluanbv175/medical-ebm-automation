@@ -659,6 +659,7 @@ def test_run_g2_main_writes_quality_contract_and_never_false_pass(
 ):
     study = "INTEGRATION-G2"
     monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(G2, "_REPO_ROOT", tmp_path)  # 06/10/2026: G0–G2 neo exports theo _REPO_ROOT, không theo cwd
     monkeypatch.setattr(
         sys,
         "argv",

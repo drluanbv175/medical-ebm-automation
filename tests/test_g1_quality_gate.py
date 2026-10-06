@@ -551,6 +551,7 @@ def test_main_checkpoint_reports_draft_instead_of_false_pass(tmp_path, monkeypat
     )
     (study_dir / f"G0_A1_PICO_FINER_{study}.md").write_text(_g0_a1(), encoding="utf-8", newline="\n")
     monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(G1, "_REPO_ROOT", tmp_path)  # 06/10/2026: G0–G2 neo exports theo _REPO_ROOT, không theo cwd
     monkeypatch.setattr(sys, "argv", ["run_g1_auto.py", "--study", study])
     effects = [{
         "pmid": "12345678",

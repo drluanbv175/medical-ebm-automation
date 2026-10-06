@@ -73,6 +73,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import g5_quality_gate as G5Q  # noqa: E402
 import gate_contract as GC  # noqa: E402
 
+# Gốc repo y khoa — MỐC DUY NHẤT cho exports/<study>/ (checkpoint, artifact, sổ cái, dữ liệu khoá, đầu ra).
+# 06/10/2026: bản cũ đọc/ghi exports theo THƯ MỤC ĐANG ĐỨNG nhưng sổ cái/dữ liệu khoá lại theo gốc repo (gate_contract)
+# ⇒ chạy từ thư mục khác thì hai nửa lệch nhau. Test cô lập bằng cách vá BASE.
+BASE = Path(__file__).resolve().parents[1]
+
+
+def _thu_muc_de_tai(study: str) -> Path:
+    """exports/<study>/ dưới gốc repo (BASE), không theo thư mục làm việc."""
+    return BASE / "exports" / study
+
 warnings.filterwarnings("ignore")
 
 # ── Kiểm tra thư viện tuỳ chọn ──────────────────────────────────────────────
@@ -2011,7 +2021,7 @@ def _is_locked(status) -> bool:
 
 
 def _load_checkpoint(study: str, gate: str) -> dict:
-    p = Path("exports") / study / f"{gate}_checkpoint.json"
+    p = _thu_muc_de_tai(study) / f"{gate}_checkpoint.json"
     if p.exists():
         try:
             with open(p, encoding="utf-8") as f:
@@ -2033,7 +2043,7 @@ def _ledger_approved(study: str, gate_id: str, artifact_path: Path) -> bool:
     thêm xác minh CHỮ KÝ actor thật (HMAC, xem gate_contract.py) nếu máy đã thiết
     lập khóa ký — script này chạy TRỰC TIẾP trên dữ liệu thật nên đây là nơi
     QUAN TRỌNG NHẤT để có chữ ký thật, không chỉ hash+cờ tự khai."""
-    return GC.ledger_approved(gate_id, study, artifact_path)
+    return GC.ledger_approved(gate_id, study, artifact_path, repo_root=BASE)
 
 
 def _sha256_file(path: Path) -> str:
@@ -2056,7 +2066,7 @@ def _load_json(path: Path) -> dict:
 
 
 def _data_lock_manifest_path(study: str) -> Path:
-    study_dir = Path("exports") / study
+    study_dir = _thu_muc_de_tai(study)
     meta = _load_json(study_dir / "study_meta.json")
     rel = ((meta.get("real_data_lock") or {}).get("manifest"))
     if rel:
@@ -2072,9 +2082,9 @@ def _require_locked_analysis_dataset(study: str, data_arg: str) -> dict:
     CLI mà ``run_g6_auto.py`` sinh ra (trước đây hoàn toàn không kiểm việc này). Hàm
     này chỉ còn giữ phần in/thoát theo văn phong đã có, không tính lại blocker.
     """
-    study_dir = Path("exports") / study
+    study_dir = _thu_muc_de_tai(study)
     manifest_path = _data_lock_manifest_path(study)
-    blockers, manifest = GC.locked_analysis_dataset_blockers(study, data_arg)
+    blockers, manifest = GC.locked_analysis_dataset_blockers(study, data_arg, repo_root=BASE)
     locked_rel = manifest.get("locked_dataset_path") if manifest else None
     locked_path = study_dir / locked_rel if locked_rel else None
 
@@ -2171,12 +2181,12 @@ def main():
     g2_cp = _load_checkpoint(args.study, "G2")
     g2_checkpoint_locked = _is_locked(g2_cp.get("g2_status", g2_cp.get("G2_STATUS")))
     g2_ledger_ok = _ledger_approved(
-        args.study, "G2", Path("exports") / args.study / f"G2_A3_ETHICS_PACKAGE_{args.study}.md")
+        args.study, "G2", _thu_muc_de_tai(args.study) / f"G2_A3_ETHICS_PACKAGE_{args.study}.md")
     g2_quality_ok = GC.g2_quality_contract_satisfied(
         g2_cp,
-        GC.load_study_meta(Path("exports") / args.study),
+        GC.load_study_meta(_thu_muc_de_tai(args.study)),
         study=args.study,
-        out_dir=Path("exports") / args.study,
+        out_dir=_thu_muc_de_tai(args.study),
     )
     g2_locked = (
         (g2_checkpoint_locked or args.i_confirm_irb_approved)
@@ -2198,7 +2208,7 @@ def main():
         # mà bác sĩ không có manh mối nào để gỡ. Đúng mẫu "sửa 1 chỗ quên chỗ anh em".
         _why = GC.gate_block_reason(
             "G2", args.study,
-            Path("exports") / args.study / f"G2_A3_ETHICS_PACKAGE_{args.study}.md")
+            _thu_muc_de_tai(args.study) / f"G2_A3_ETHICS_PACKAGE_{args.study}.md", repo_root=BASE)
         if _why:
             print(f"   ⚠️  LÝ DO: {_why}")
         print("   KHÔNG chạy phân tích trên dữ liệu bệnh nhân THẬT khi chưa có phê duyệt đạo đức thật.")
@@ -2243,7 +2253,7 @@ def main():
     # trên dữ liệu thật, và cảnh báo _WRONG_PRIMARY_MEASURE_HINT cũng không bắn vì
     # "cohort" không nằm trong đó. Kết quả sai phương pháp đi thẳng vào bản thảo.
     design_code, _design_warn = GC.resolve_design_code(
-        Path("exports") / args.study,
+        _thu_muc_de_tai(args.study),
         default=(
             g1_cp.get("design_code")
             or (g1_cp.get("design") or {}).get("internal_code")
@@ -2287,13 +2297,13 @@ def main():
     g4_checkpoint_locked = _is_locked(g4_cp.get("g4_status", g4_cp.get("G4_STATUS")))
     g5_checkpoint_locked = _is_locked(g5_cp.get("g5_status", g5_cp.get("G5_STATUS")))
     g4_ledger_ok = _ledger_approved(
-        args.study, "G4", Path("exports") / args.study / f"G4_A5_SAP_FINAL_{args.study}.md")
+        args.study, "G4", _thu_muc_de_tai(args.study) / f"G4_A5_SAP_FINAL_{args.study}.md")
     g5_ledger_ok = _ledger_approved(
-        args.study, "G5", Path("exports") / args.study / "G5_checkpoint.json")
+        args.study, "G5", _thu_muc_de_tai(args.study) / "G5_checkpoint.json")
     g5_quality = G5Q.evaluate_study(
         args.study,
-        Path("exports") / args.study,
-        repo_root=Path(__file__).resolve().parents[1],
+        _thu_muc_de_tai(args.study),
+        repo_root=BASE,
         write=False,
     )
     g5_quality_ok = g5_quality["status"] == G5Q.STATUS_LOCKED
@@ -2312,7 +2322,7 @@ def main():
               f"  |  quality: {g5_quality['status']}")
         for _g, _art in (("G4", f"G4_A5_SAP_FINAL_{args.study}.md"),
                          ("G5", "G5_checkpoint.json")):
-            _why = GC.gate_block_reason(_g, args.study, Path("exports") / args.study / _art)
+            _why = GC.gate_block_reason(_g, args.study, _thu_muc_de_tai(args.study) / _art, repo_root=BASE)
             if _why:
                 print(f"   ⚠️  LÝ DO {_g}: {_why}")
         print("   Không thể chạy phân tích xác nhận trên dữ liệu chưa khóa (chống p-hacking/HARKing).")
@@ -2332,7 +2342,7 @@ def main():
                    or [c for c in df.columns if c not in [args.group, args.outcome]])
 
     # 2. Output dir
-    out_dir = Path("exports") / args.study
+    out_dir = _thu_muc_de_tai(args.study)
     out_dir.mkdir(parents=True, exist_ok=True)
     prefix = out_dir / f"{args.gate}"
 

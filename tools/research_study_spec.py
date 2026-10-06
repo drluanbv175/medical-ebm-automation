@@ -108,6 +108,25 @@ def _as_dict(value: Any, *, text_key: str = "description") -> dict:
     return {}
 
 
+def _kinh_phi_g1(rows: Any) -> Optional[str]:
+    """Tóm tắt kinh phí từ gate_params.G1.budget — CÙNG nguồn với bảng KINH PHÍ của A13; None khi chưa khai dòng nào
+    HOẶC còn dòng thiếu ô (nhom/so_luong/don_gia/thanh_tien/trang_thai).
+
+    06/10/2026: mục «Dự trù kinh phí» của đề cương G10 in «[CẦN]» dù PI đã khai kinh phí ở G1 (doctrine
+    ke-hoach-trien-khai: kinh phí THẬT ghi ở gate_params.G1.budget, A13 sinh lại từ đó). Bảng còn ô trống thì đề cương
+    giữ «[CẦN]» (ô nào thiếu xem A13) — không in một dự trù dở dang, máy KHÔNG bịa đơn giá/thành tiền."""
+    dong = []
+    for r in rows if isinstance(rows, list) else []:
+        if not isinstance(r, dict):
+            continue
+        if not all(is_present(r.get(k)) for k in ("nhom", "so_luong", "don_gia", "thanh_tien", "trang_thai")):
+            return None
+        nguon = f" (nguồn đơn giá: {r['nguon']})" if is_present(r.get("nguon")) else ""
+        dong.append(f"{r['nhom']}: số lượng {r['so_luong']} × đơn giá {r['don_gia']}{nguon} = {r['thanh_tien']} "
+                    f"— {r['trang_thai']}")
+    return ("; ".join(dong) + " (bảng KINH PHÍ của A13)") if dong else None
+
+
 def _outcome(value: Any) -> dict:
     if isinstance(value, dict):
         out = dict(value)
@@ -651,7 +670,8 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
                            raw.get("personnel"),
                            g1_quyet.get("team_roles")),
             "budget": _first(resources_meta.get("budget"),
-                             raw.get("budget")),
+                             raw.get("budget"),
+                             _kinh_phi_g1(g1_quyet.get("budget"))),
         },
         "references": {
             "pmids": pmids,
@@ -1193,6 +1213,13 @@ def meta_for_render(meta: Optional[dict], spec: dict) -> dict:
         value = defaults.get(key)
         if isinstance(value, dict) and is_present(value) and not isinstance(out.get(key), dict):
             out[key] = value
+    # 06/10/2026: khối resources thô LÀ dict nhưng thiếu khoá (vd chỉ có team) ⇒ bổ sung khoá còn trống từ StudySpec
+    # (G1.team_roles, G1.budget) — dựng dict MỚI, không sửa bản thô của study_meta.
+    res_spec = defaults.get("resources")
+    if isinstance(out.get("resources"), dict) and isinstance(res_spec, dict):
+        bo_sung = {k: v for k, v in res_spec.items() if is_present(v) and not is_present(out["resources"].get(k))}
+        if bo_sung:
+            out["resources"] = {**out["resources"], **bo_sung}
     return out
 
 

@@ -85,6 +85,7 @@ def _install_http(monkeypatch, **kwargs) -> list[dict]:
 
 def _run_g2(monkeypatch, tmp_path, study: str, extra_argv: list[str] | None = None) -> Path:
     monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(G2, "_REPO_ROOT", tmp_path)  # 06/10/2026: G0–G2 neo exports theo _REPO_ROOT, không theo cwd
     monkeypatch.setattr(G2, "export_docx_g2", lambda *_a, **_k: None)
     monkeypatch.setattr(sys, "argv", [
         "run_g2_auto.py", "--study", study, "--design", "cross_sectional",

@@ -1003,12 +1003,16 @@ def main() -> int:
         description="Chấm lại cổng G0 từ artifact + study_meta đã có (không gọi PubMed)."
     )
     parser.add_argument("--study", required=True, help="Mã đề tài (tên thư mục exports/<study>)")
-    parser.add_argument("--exports-dir", default="exports", help="Thư mục gốc exports")
+    parser.add_argument("--exports-dir", default=None,
+                        help="Thư mục gốc exports (mặc định: exports/ của repo y khoa chứa công cụ này — KHÔNG theo "
+                             "thư mục đang đứng, giống bộ chấm G1–G10)")
     parser.add_argument("--no-write", action="store_true", help="Chỉ in, không ghi báo cáo")
     args = parser.parse_args()
     GC.ensure_utf8_stdout()
 
-    out_dir = Path(args.exports_dir) / args.study
+    # 06/10/2026: mặc định cũ «exports» theo thư mục đang đứng ⇒ chạy từ repo gốc đọc/ghi nhầm exports/ ở đó.
+    goc_exports = Path(args.exports_dir) if args.exports_dir else Path(__file__).resolve().parents[1] / "exports"
+    out_dir = goc_exports / args.study
     if not out_dir.exists():
         print(f"🚧 Không thấy thư mục đề tài: {out_dir}")
         return GC.EXIT_BLOCKED

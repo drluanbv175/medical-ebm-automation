@@ -113,6 +113,7 @@ def _gia_lap_cong(monkeypatch):
 def test_main_nhanh_ordinal_ghi_du_bang_va_json(tmp_path, monkeypatch):
     _gia_lap_cong(monkeypatch)
     monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(RSA, "BASE", tmp_path)  # 06/10/2026: exports neo BASE, không theo cwd
     duong = tmp_path / "d.csv"
     _du_lieu(n=600, n_cum=12, sd_cum=0.5).to_csv(duong, index=False)
     monkeypatch.setattr(sys, "argv", [
@@ -135,6 +136,7 @@ def test_main_nhanh_ordinal_ghi_du_bang_va_json(tmp_path, monkeypatch):
 def test_main_cot_cum_la_bi_chan(tmp_path, monkeypatch):
     _gia_lap_cong(monkeypatch)
     monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(RSA, "BASE", tmp_path)  # 06/10/2026: exports neo BASE, không theo cwd
     duong = tmp_path / "d.csv"
     _du_lieu(n=200).to_csv(duong, index=False)
     monkeypatch.setattr(sys, "argv", [

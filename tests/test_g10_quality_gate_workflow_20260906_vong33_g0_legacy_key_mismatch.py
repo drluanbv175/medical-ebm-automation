@@ -139,7 +139,7 @@ class TestG0ThatKhongBiXepLegacySauKhiVa:
         r = subprocess.run(
             [PYTHON, str(TOOLS_DIR / "run_g0_auto.py"),
              "--study", study, "--topic", "test topic diabetes vong33",
-             "--skip-registry"],
+             "--skip-registry", "--repo-root", str(tmp_path)],  # 06/10/2026: exports neo gốc repo, không theo cwd
             cwd=tmp_path, capture_output=True, text=True, timeout=120, env=env,
         )
         # Mã thoát chỉ cần nằm trong nhóm "đã chạy xong tới bước ghi checkpoint"

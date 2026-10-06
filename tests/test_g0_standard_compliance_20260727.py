@@ -99,7 +99,7 @@ def test_empty_topic_is_blocked_not_completed(tmp_path):
     for topic in ("", "   "):
         r = subprocess.run(
             [PYTHON, str(TOOLS_DIR / "run_g0_auto.py"), "--study", "PYTEST-G0-EMPTY",
-             "--topic", topic],
+             "--topic", topic, "--repo-root", str(tmp_path)],  # 06/10/2026: exports neo gốc repo, không theo cwd
             cwd=tmp_path, capture_output=True, text=True, timeout=120, env=env)
         assert r.returncode == 2, f"topic={topic!r} phải DỪNG (exit 2), nhận {r.returncode}"
         assert "DỪNG" in r.stdout
