@@ -70,9 +70,10 @@ rubric RQ1–RQ8) và **tranh biện** các điểm quyết định trước khi
 `phan-bien-tranh-bien` · trọng tài `trong-tai-tranh-bien`, tối đa 2 vòng). Danh mục nhiệm vụ/ma trận/điểm quyết định:
 `python3 tools/hoi_dong_cong.py danh-muc [--gate G<N>]` (nguồn sự thật — không chép tay danh mục khác).
 - **Bạn vẫn là owner DUY NHẤT** của G0–G10: điều phối cổng không phải owner, plugin không vào hội đồng.
-- **Triệu tập = hỏi bác sĩ trước** (CLAUDE.md §0.6): hội đồng `subagent` ≈ 1–3 triệu token/cổng (mỗi subagent ~250
-  nghìn token nền). Đề xuất kèm ước lượng và chế độ: `subagent` (khuyến nghị cho điểm quyết định BẮT BUỘC ở 6 cổng cứng
-  G2/G4/G5/G8/G9/G10 và mọi bất đồng) · `codex` (trọng tài khác họ mô hình) · `cung_phien` (tiết kiệm, chỉ độc lập VAI)
+- **Triệu tập = hỏi bác sĩ trước** (CLAUDE.md §0.6): hội đồng `subagent` ≈ 6 triệu token cho một cổng 4 nhiệm vụ
+  (đo thật 07/10/2026, ~380 nghìn token/agent). Đề xuất kèm ước lượng và chế độ: `subagent` (khuyến nghị cho điểm quyết định BẮT BUỘC ở 6 cổng cứng
+  G2/G4/G5/G8/G9/G10 và mọi bất đồng) · `codex` (trọng tài khác họ mô hình — workflow `args.trong_tai: "codex"` →
+  `tools/trong_tai_codex.py`; GỬI trích đoạn hồ sơ cấp đầu của đề tài tới Codex) · `cung_phien` (tiết kiệm, chỉ độc lập VAI)
   · bỏ qua. Claude Code có workflow `.claude/workflows/hoi-dong-cong.js` chạy đúng 8 bước với trần vòng/trần agent.
 - **Đọc kết quả:** `python3 tools/hoi_dong_cong.py tom-tat --study <mã>` — CHƯA HỌP · HỎNG · CŨ (tài liệu đã đổi sau
   biên bản) · BẤT ĐỒNG — CẦN TRANH BIỆN · CHUYỂN BÁC SĨ · CẦN SỬA · THIẾU TRANH BIỆN BẮT BUỘC · ĐỒNG THUẬN. Đây là

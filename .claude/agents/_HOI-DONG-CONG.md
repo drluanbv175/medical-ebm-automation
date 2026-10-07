@@ -90,7 +90,10 @@ lệnh + đoạn `ket_qua`). Lời nói không kèm căn cứ KHÔNG phải căn
 ## 5. Chính sách chi phí — hỏi bác sĩ trước khi triệu tập
 
 Đo 06/10/2026: mỗi subagent mới mang ~250 nghìn token nền (danh sách skill, công cụ, CLAUDE.md) TRƯỚC khi đọc tài
-liệu đề tài; một hội đồng đủ vai (2 người chấm + phản biện + trọng tài, 1–2 DP) ≈ **1–3 triệu token / cổng**. Vì vậy
+liệu đề tài. **Đo thật 07/10/2026** (họp thí điểm G0 của C1a: 4 nhiệm vụ, 2 DP, 2 bất đồng, 16 agent): ≈ **6,1 triệu
+token** (~380 nghìn/agent — agent đọc hồ sơ, chạy chấm sống, tra PubMed); cổng nhiều nhiệm vụ hay nhiều bất đồng có thể
+vượt mức này. Ước lượng cũ «1–3 triệu/cổng» là THẤP. Tiếp tục (resume) một lượt workflow chỉ dùng lại ĐOẠN ĐẦU không đổi
+của chuỗi lời gọi — lượt song song gần như chạy lại hết (07/10: thêm ~3,6 triệu) ⇒ đừng resume để «vá» một bước. Vì vậy
 (đúng `CLAUDE.md` §0.6 — không tự mở nhiều agent):
 
 | Chế độ | Khi nào | Độc lập | Chi phí |
@@ -98,6 +101,14 @@ liệu đề tài; một hội đồng đủ vai (2 người chấm + phản bi�
 | **Hội đồng đầy đủ** (`subagent`) | bác sĩ đồng ý; khuyến nghị cho DP **bắt buộc** ở 6 cổng cứng và mọi bất đồng | ngữ cảnh mới từng vai | cao |
 | **Trọng tài Codex** (`codex`) | máy có Codex CLI; muốn trọng tài khác họ mô hình | khác họ mô hình | Codex chịu phần trọng tài |
 | **Cùng phiên** (`cung_phien`) | bác sĩ chọn tiết kiệm / phiên không có subagent / Codex | chỉ độc lập VAI (ghi rõ trên biên bản) | thấp |
+
+**Chạy chế độ `codex` (07/10/2026):** workflow `hoi-dong-cong.js` với `args.trong_tai: "codex"` — vai trọng tài KHÔNG tự
+phán mà chạy `python3 tools/trong_tai_codex.py --study <mã> --gate G<N> --tep <nháp.json> --json` rồi trả nguyên văn
+phán quyết; chạy tay thêm `--chay-thu` (xem prompt, không gọi Codex) hoặc `--ghi`. Trình chạy gọi Codex CLI ở sandbox
+CHỈ-ĐỌC, phiên tạm, môi trường đã lọc, đầu ra ép schema, rồi kiểm bằng CHÍNH luật biên bản (vi phạm ⇒ mã 3, không ghi).
+Chế độ này GỬI tới dịch vụ Codex (OpenAI): doctrine trọng tài, bản nháp tranh biện, trạng thái cổng và trích đoạn tệp căn
+cứ CẤP ĐẦU thư mục đề tài — không tệp ẩn/khoá/`.env`, không dữ liệu hay bản gỡ băng ở thư mục con. Bác sĩ chọn chế độ khi
+triệu tập.
 
 Điều phối tổng/cổng LUÔN hỏi bác sĩ (kèm ước lượng) trước khi mở hội đồng `subagent`; mặc định gom MỘT giám khảo cho
 nhiều đầu ra cùng cổng khi được. Workflow Claude Code (`.claude/workflows/hoi-dong-cong.js`) chạy đúng 8 bước với trần

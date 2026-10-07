@@ -78,8 +78,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # thiet-ke-nghien-cuu, nghien-cuu-dinh-tinh) — bản cặp y hệt gốc; vẫn 64.
 # 07/10/2026 (thu hẹp nhánh tương thích G2 kiểu cũ): 2 agent (dao-duc-dang-ky, dieu-phoi-g2) dạy luật mới — bản cặp
 # y hệt gốc; vẫn 64.
+# 07/10/2026 (trọng tài Codex — tools/trong_tai_codex.py): _HOI-DONG-CONG, dieu-phoi-nghien-cuu, trong-tai-tranh-bien
+# dạy cách chạy chế độ codex — bản cặp y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "7fdf0492d028c46ed384c0eb462e6020bd9db49a780915edf867b8f2bc744cd0"
+    "44777a8300497961121a6c97416cd75d78b70543f9ec0a2323a752924f1523fb"
 )
 
 MINIMUM_AGENT_COUNT = 64
