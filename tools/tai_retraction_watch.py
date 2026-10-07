@@ -85,6 +85,9 @@ def _email() -> str:
     for ten in ("OPENALEX_EMAIL", "NCBI_EMAIL", "UNPAYWALL_EMAIL"):
         if os.getenv(ten):
             return os.environ[ten]
+    # 07/10/2026: dưới pytest KHÔNG đọc kho secrets thật (cùng tín hiệu app.config.dang_chay_kiem_thu).
+    if "pytest" in sys.modules or "PYTEST_CURRENT_TEST" in os.environ:
+        return ""
     kho = Path.home() / ".ebm-secrets" / "medical-ebm-automation.env"
     if kho.exists():
         for dong in kho.read_text(encoding="utf-8", errors="replace").splitlines():

@@ -497,20 +497,48 @@ def test_sr_ma_registration_after_first_search_fails_closed(tmp_path):
     assert any("ngày bắt đầu tìm kiếm" in error for error in errors)
 
 
-def test_new_contract_checkpoint_requires_quality_pass():
-    assert GC.g2_quality_contract_satisfied({
+def _de_tai_g2_ky_truoc_moc(tmp_path: Path) -> Path:
+    """Đề tài tạm: gói G2 KHÔNG attestation, phê duyệt ký TRƯỚC mốc hợp đồng G2-2026.1 — sau khi thu hẹp 07/10/2026 đây
+    là đường DUY NHẤT còn được xét theo checkpoint (gate_contract.g2_ky_truoc_moc_hop_dong)."""
+    from tests.g5_test_helpers import append_signed_approval  # noqa: PLC0415
+
+    out = tmp_path / "exports" / "TEST-G2"
+    out.mkdir(parents=True)
+    goi = out / "G2_A3_ETHICS_PACKAGE_TEST-G2.md"
+    goi.write_text("# Hồ sơ đạo đức kiểu cũ (chưa có attestation)\n", encoding="utf-8", newline="\n")
+    append_signed_approval("TEST-G2", goi, "G2", "IRB_ETHICS_COMMITTEE", repo_root=tmp_path,
+                           timestamp_utc="2026-07-20T08:00:00+00:00")
+    return out
+
+
+def test_new_contract_checkpoint_requires_quality_pass(tmp_path):
+    out = _de_tai_g2_ky_truoc_moc(tmp_path)
+
+    def ok(cp):
+        return GC.g2_quality_contract_satisfied(cp, study="TEST-G2", out_dir=out)
+
+    assert ok({
         "quality_contract_version": G2Q.QUALITY_CONTRACT_VERSION,
         "quality_gate": {"status": G2Q.STATUS_PENDING},
     }) is False
-    assert GC.g2_quality_contract_satisfied({
+    da_duyet = {
         "quality_contract_version": G2Q.QUALITY_CONTRACT_VERSION,
         "quality_gate": {"status": G2Q.STATUS_APPROVED},
         "g2_approval_valid_until": "2099-12-31",
-    }) is True
-    assert GC.g2_quality_contract_satisfied({"g2_status": "LOCKED"}) is True
+    }
+    assert ok(da_duyet) is True
+    assert ok({"g2_status": "LOCKED"}) is True
+    # 07/10/2026: không truyền đề tài ⇒ không đọc được attestation lẫn mốc ký ⇒ checkpoint (không ký) không đủ mở cổng
+    assert GC.g2_quality_contract_satisfied(da_duyet) is False
+    assert GC.g2_quality_contract_satisfied({"g2_status": "LOCKED"}) is False
 
 
-def test_runtime_rechecks_expiry_and_current_versions():
+def test_runtime_rechecks_expiry_and_current_versions(tmp_path):
+    out = _de_tai_g2_ky_truoc_moc(tmp_path)
+
+    def ok(cp, meta):
+        return GC.g2_quality_contract_satisfied(cp, meta, study="TEST-G2", out_dir=out)
+
     checkpoint = {
         "quality_contract_version": G2Q.QUALITY_CONTRACT_VERSION,
         "quality_gate": {"status": G2Q.STATUS_APPROVED},
@@ -518,14 +546,14 @@ def test_runtime_rechecks_expiry_and_current_versions():
         "g2_protocol_version": "2.1",
         "g2_icf_version": "2.0",
     }
-    assert GC.g2_quality_contract_satisfied(checkpoint, _meta()) is True
+    assert ok(checkpoint, _meta()) is True
 
     expired = dict(checkpoint, g2_approval_valid_until="2020-01-01")
-    assert GC.g2_quality_contract_satisfied(expired, _meta()) is False
+    assert ok(expired, _meta()) is False
 
     changed_meta = _meta()
     changed_meta["gate_params"]["G2"]["protocol_version"] = "2.2"
-    assert GC.g2_quality_contract_satisfied(checkpoint, changed_meta) is False
+    assert ok(checkpoint, changed_meta) is False
 
 
 def test_meta_boolean_cannot_override_new_g2_quality_contract():

@@ -76,8 +76,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 06/10/2026 (sửa đổi kết cục chính G10-07 · SAP định tính · hội đồng đưa ra giải pháp tốt nhất): 8 agent cập nhật
 # doctrine (trong-tai-tranh-bien, _HOI-DONG-CONG, dieu-phoi-nghien-cuu, dieu-phoi-g10, viet-ban-thao, dao-duc-dang-ky,
 # thiet-ke-nghien-cuu, nghien-cuu-dinh-tinh) — bản cặp y hệt gốc; vẫn 64.
+# 07/10/2026 (thu hẹp nhánh tương thích G2 kiểu cũ): 2 agent (dao-duc-dang-ky, dieu-phoi-g2) dạy luật mới — bản cặp
+# y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "fb4385585351ee85638c0d0352c691551d51f478df6029751db9178a6024bbc6"
+    "7fdf0492d028c46ed384c0eb462e6020bd9db49a780915edf867b8f2bc744cd0"
 )
 
 MINIMUM_AGENT_COUNT = 64

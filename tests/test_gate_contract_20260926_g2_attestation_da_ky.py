@@ -114,11 +114,14 @@ def test_doi_chung_attestation_khong_ghi_han_da_xac_nhan(tmp_path):
     assert _ok(_cp_hop_le(), tmp_path) is True
 
 
-def test_goi_khong_attestation_giu_nhanh_tuong_thich(tmp_path):
-    """Gói KHÔNG có attestation (fixture tổng hợp): giữ đúng hành vi cũ, không nới thêm."""
+def test_goi_khong_attestation_khong_co_phe_duyet_ky_truoc_moc_thi_chan(tmp_path):
+    """Gói KHÔNG có attestation: nhánh tương thích cũ (xét theo checkpoint) đã THU HẸP 07/10/2026 (bác sĩ yêu cầu) —
+    chỉ còn cho phê duyệt G2 KÝ TRƯỚC mốc hợp đồng G2-2026.1. Ở đây không có sổ cái ⇒ không chứng minh được mốc ký ⇒
+    chặn, kể cả checkpoint kiểu cũ «LOCKED». Ca ký trước/sau mốc: tests/test_thu_hep_g2_va_khoa_that_20261007.py."""
     (tmp_path / f"G2_A3_ETHICS_PACKAGE_{_STUDY}.md").write_text(
         "# Hồ sơ\n", encoding="utf-8", newline="\n")
-    assert _ok({"g2_status": "LOCKED"}, tmp_path) is True
+    assert _ok({"g2_status": "LOCKED"}, tmp_path) is False
+    assert _ok(_cp_hop_le(), tmp_path) is False
     assert _ok(_cp_hop_le("2020-01-01"), tmp_path) is False
 
 

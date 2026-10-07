@@ -199,8 +199,9 @@ def _g2_signed_attestation_state(
 ) -> Optional[bool]:
     """Kiểm HIỆU LỰC + PHIÊN BẢN từ attestation nằm trong gói G2 đã ký.
 
-    Trả None khi gói không có attestation (fixture tổng hợp / hồ sơ trước khi có
-    attestation) — caller giữ nhánh tương thích cũ. Trả False khi attestation hết
+    Trả None khi gói không có attestation (hồ sơ trước khi có attestation) — caller chỉ giữ
+    nhánh tương thích cũ cho phê duyệt KÝ TRƯỚC mốc hợp đồng (g2_ky_truoc_moc_hop_dong,
+    thu hẹp 07/10/2026). Trả False khi attestation hết
     hạn, thiếu hạn mà không xác nhận «không ghi hạn», lệch phiên bản protocol/ICF
     so với meta.gate_params.G2, hoặc không đọc/chấm được (fail-closed). True khi đạt.
 
@@ -268,6 +269,35 @@ def _g2_signed_attestation_state(
     return not loi
 
 
+# Mốc hợp đồng G2 CÓ PHIÊN BẢN (G2-2026.1) + attestation trong gói G2 đã ký: commit 64b278f, 2026-07-28 17:47:50
+# +07:00. Từ mốc này g2_quality_gate chỉ cho PASS_G2_APPROVED khi gói CÓ attestation (không attestation ⇒ tối đa
+# READY_FOR_IRB_SUBMISSION) — nên một G2 KÝ SAU mốc mà gói không có attestation không bao giờ là phê duyệt hợp lệ.
+G2_MOC_HOP_DONG_PHIEN_BAN = datetime(2026, 7, 28, 10, 47, 50, tzinfo=timezone.utc)
+
+
+def g2_ky_truoc_moc_hop_dong(study: str, out_dir: Path) -> bool:
+    """True khi bản ghi G2 CÓ THẨM QUYỀN được KÝ TRƯỚC ``G2_MOC_HOP_DONG_PHIEN_BAN``.
+
+    Bản ghi được chọn và XÁC MINH bằng CÙNG hàm với ledger_approved (_latest_authoritative_record: chữ ký đúng vai,
+    niêm phong, thu hồi, bất thường ⇒ None). ``timestamp_utc`` nằm trong nội dung được ký (_signature_payload) nên
+    không lùi ngày được mà không phá chữ ký — khác checkpoint G2 (không ký, sửa tay được). Không đọc được sổ cái,
+    không có bản ghi hợp lệ hoặc mốc không phân giải được ⇒ False (fail-closed)."""
+    out = Path(out_dir)
+    try:
+        records = json.loads((out / "approval_ledger.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError, UnicodeDecodeError):
+        return False
+    try:
+        root = out.resolve().parents[1]  # out_dir = <gốc repo>/exports/<đề tài>
+    except (OSError, IndexError):
+        return False
+    latest = _latest_authoritative_record(records, "G2", str(study), root)
+    if latest is None:
+        return False
+    ky_luc = _parse_iso_utc(latest.get("timestamp_utc"))
+    return ky_luc is not None and ky_luc < G2_MOC_HOP_DONG_PHIEN_BAN
+
+
 def g2_quality_contract_satisfied(
     checkpoint: Dict[str, Any],
     meta: Optional[Dict[str, Any]] = None,
@@ -287,13 +317,23 @@ def g2_quality_contract_satisfied(
     để khoá dữ liệu thật dưới một phê duyệt IRB đã hết hạn). Có attestation thì
     nhánh tương thích «checkpoint thiếu version ⇒ True» KHÔNG được áp dụng. Nhánh đó
     chỉ còn cho gói KHÔNG có attestation. Mọi nơi gọi PHẢI truyền study/out_dir.
+
+    THU HẸP 07/10/2026 (bác sĩ yêu cầu «thu hẹp nhánh tương thích G2 kiểu cũ»): gói
+    KHÔNG có attestation — mọi cách xét theo checkpoint (thiếu version ⇒ True, hoặc
+    version + trạng thái ghi trong checkpoint) — CHỈ còn cho phê duyệt G2 có thẩm quyền
+    KÝ TRƯỚC ``G2_MOC_HOP_DONG_PHIEN_BAN`` (g2_ky_truoc_moc_hop_dong — mốc lấy từ bản
+    ghi sổ cái ĐÃ KÝ, không từ checkpoint). Ký sau mốc mà gói không có attestation,
+    hoặc không truyền study/out_dir (không xác định được mốc ký) ⇒ False.
     """
     has_attestation = False
-    if study and out_dir is not None:
-        state = _g2_signed_attestation_state(str(study), Path(out_dir), meta)
-        if state is False:
-            return False
-        has_attestation = state is True
+    if not (study and out_dir is not None):
+        return False
+    state = _g2_signed_attestation_state(str(study), Path(out_dir), meta)
+    if state is False:
+        return False
+    has_attestation = state is True
+    if state is None and not g2_ky_truoc_moc_hop_dong(str(study), Path(out_dir)):
+        return False
     if not isinstance(checkpoint, dict):
         return False
     if not checkpoint.get("quality_contract_version") and not has_attestation:
@@ -1223,9 +1263,38 @@ def role_group_for(reviewer_role: str) -> Optional[str]:
     return None
 
 
+# Thư mục bí mật THẬT của máy — chốt lúc import (test đổi HOME hay vá _DEFAULT_KEY_PATH/_ED_PRIVATE_DIR về sau không
+# kéo chốt này đi chỗ khác).
+_THU_MUC_BI_MAT_THAT = Path.home() / ".ebm-secrets"
+
+
+class KhoaThatKhiKiemThuError(RuntimeError):
+    """Đang chạy kiểm thử mà đường dẫn khoá ký trỏ vào thư mục bí mật THẬT — từ chối TRƯỚC khi mở bất kỳ tệp nào."""
+
+
+def _nam_trong(con: Path, cha: Path) -> bool:
+    a = os.path.normcase(os.path.abspath(con))
+    b = os.path.normcase(os.path.abspath(cha)).rstrip("\\/")
+    return a == b or a.startswith(b + os.sep)
+
+
+def _chan_khoa_that_khi_kiem_thu(p: Path) -> Path:
+    """VÁ 07/10/2026 (bác sĩ duyệt, việc treo của đợt khoá giả 05/10): dưới pytest, thiếu EBM_GATE_KEY_PATH từng làm
+    _base_key_path()/_ed_private_dir() LẶNG LẼ rơi về ~/.ebm-secrets — khoá ký riêng THẬT của bác sĩ. Nay đường dẫn
+    khoá nằm trong thư mục bí mật thật khi đang kiểm thử ⇒ ném KhoaThatKhiKiemThuError (báo lỗi to, không đọc khoá).
+    Che cả TIẾN TRÌNH CON kế thừa PYTEST_CURRENT_TEST mà mất EBM_GATE_KEY_PATH — nơi móc audit của tests/conftest.py
+    không thấy. Giả lập «vận hành thật» bằng cách vá _test_context_active() thì chốt nhường (test chỉ so đường dẫn)."""
+    if _test_context_active() and _nam_trong(p, _THU_MUC_BI_MAT_THAT):
+        raise KhoaThatKhiKiemThuError(
+            f"Đang chạy kiểm thử mà khoá ký trỏ vào thư mục bí mật THẬT ({_THU_MUC_BI_MAT_THAT}) — "
+            f"{_SIGNING_KEY_ENV} vắng hoặc trỏ sai. Từ chối để không đọc khoá riêng của bác sĩ; test phải dùng khoá "
+            "GIẢ (tests/conftest.py đặt sẵn cho mọi test và tiến trình con kế thừa os.environ).")
+    return p
+
+
 def _base_key_path() -> Path:
     override = os.environ.get(_SIGNING_KEY_ENV) if _test_context_active() else None
-    return Path(override) if override else _DEFAULT_KEY_PATH
+    return _chan_khoa_that_khi_kiem_thu(Path(override) if override else _DEFAULT_KEY_PATH)
 
 
 def signing_key_path(role_group: Optional[str] = None) -> Path:
@@ -1420,7 +1489,7 @@ def _ed_private_dir() -> Path:
     cho các kiểm thử Ed25519 chuyên biệt.
     """
     override = os.environ.get(_SIGNING_KEY_ENV) if _test_context_active() else None
-    return Path(override).parent if override else _ED_PRIVATE_DIR
+    return _chan_khoa_that_khi_kiem_thu(Path(override).parent if override else _ED_PRIVATE_DIR)
 
 
 def _ed_private_path(group: str) -> Path:
@@ -1448,7 +1517,9 @@ def _fail_closed_on_crypto_error(exc: BaseException) -> None:
     không phải lá chắn nuốt tín hiệu ngắt của người dùng khi chạy tương tác
     (vd nút "Phat Khoa Ed25519.command").
     """
-    if isinstance(exc, (KeyboardInterrupt, SystemExit)):
+    # 07/10/2026: chốt «khoá THẬT khi kiểm thử» không phải lỗi thư viện — rào này không được nuốt nó thành «không ký
+    # được» (vẫn an toàn vì ném TRƯỚC khi mở tệp, nhưng im lặng thì test không biết mình đã đi vòng khoá giả).
+    if isinstance(exc, (KeyboardInterrupt, SystemExit, KhoaThatKhiKiemThuError)):
         raise exc
 
 

@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+import argparse
 import csv
 import hashlib
 import json
 import os
 import stat
 import sys
-from datetime import datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
@@ -47,8 +48,12 @@ def append_signed_approval(
     reviewer_role: str,
     *,
     repo_root: Path,
+    timestamp_utc: Optional[str] = None,
 ) -> None:
-    """Thêm một approval test có chữ ký, chuỗi băm và con dấu hợp lệ."""
+    """Thêm một approval test có chữ ký, chuỗi băm và con dấu hợp lệ.
+
+    ``timestamp_utc`` (07/10/2026): mốc KÝ tuỳ chọn — test nhánh tương thích G2 kiểu cũ cần một phê duyệt ký TRƯỚC mốc
+    hợp đồng G2-2026.1 (gate_contract.G2_MOC_HOP_DONG_PHIEN_BAN). Mốc nằm trong nội dung ký nên vẫn là chữ ký thật."""
     ledger_path = artifact.parent / "approval_ledger.json"
     try:
         existing = json.loads(ledger_path.read_text(encoding="utf-8"))
@@ -58,7 +63,7 @@ def append_signed_approval(
     prev_hash = GC.chain_prev_hash(previous if isinstance(previous, dict) else None)
     content = artifact.read_text(encoding="utf-8")
     evidence_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
-    timestamp = datetime.now(timezone.utc).isoformat()
+    timestamp = timestamp_utc or datetime.now(timezone.utc).isoformat()
     reviewer_ref = f"PYTEST-{gate_id}-REVIEWER"
     signature = GC.sign_approval(
         gate_id,
@@ -305,6 +310,81 @@ def _doc_json(path: Path) -> dict:
     return value if isinstance(value, dict) else {}
 
 
+# Đăng ký thử nghiệm DÙNG CHUNG cho chuỗi tổng hợp (07/10/2026): G2 của RCT ký kèm ĐÚNG thông tin này và chuỗi G8
+# khai lại đúng nó — G8-AUTO-07 đối chiếu khai báo G8 với attestation G2 đã ký (mã, ngày đăng ký, đăng ký trước ca
+# tuyển đầu). Giá trị giữ nguyên khai báo G8 sẵn có của chuỗi (tests/test_g8_hoan_thien_20261004.py::_khai_g8).
+DANG_KY_THU_RCT = {"registry": "ClinicalTrials.gov", "registration_id": "NCT01234567",
+                   "registration_date": "2026-01-10", "first_enrolment_date": "2026-02-01"}
+# Hội đồng duyệt TRƯỚC khi đăng ký và tuyển ca đầu (thứ tự như ngoài đời).
+NGAY_DUYET_G2_RCT = "2026-01-05"
+
+
+def ky_g2_hien_dai(study: str, out_dir: Path, *, repo_root: Path) -> Path:
+    """G2 ĐÃ DUYỆT theo hợp đồng HIỆN HÀNH (G2-2026.1) cho fixture tổng hợp — thay G2 kiểu cũ (checkpoint
+    ``{"g2_status": "LOCKED"}`` + gói không attestation).
+
+    VÌ SAO (07/10/2026, bác sĩ yêu cầu thu hẹp nhánh tương thích G2 kiểu cũ): gate_contract chỉ còn nhận gói G2 KHÔNG
+    attestation khi phê duyệt được KÝ TRƯỚC mốc hợp đồng — fixture ký «bây giờ» phải dựng đúng như lệnh ký thật:
+      • attestation sinh bằng CHÍNH ``approve_gate._prepare_g2_attestation`` (hàm lệnh ký G2 thật dùng — không tự
+        chế khối), hợp lệ theo THIẾT KẾ đã chốt: RCT tuyển tiến cứu + đăng ký; SR/MA đăng ký + ngày bắt đầu tìm kiếm;
+        thiết kế khác dữ liệu hồi cứu, không cần đăng ký. Dấu đầu vào (thiết kế + G1 + cỡ mẫu G3) tính trên trạng
+        thái HIỆN TẠI của đề tài ⇒ gọi SAU khi đã dựng G0–G3;
+      • checkpoint G2 ghi đúng các trường g2_quality_gate ghi khi đạt PASS_G2_APPROVED (bộ chấm G2 không được chấm
+        lại trong test G5–G10; nguồn sự thật là attestation trong gói ĐÃ KÝ);
+      • ký gói ĐÃ gắn attestation bằng vai IRB.
+    Mã hội đồng/phê duyệt là mã GIẢ rõ ràng (PYTEST-…). Đăng ký của RCT dùng ``DANG_KY_THU_RCT`` (khớp khai báo G8 của
+    chuỗi); SR/MA dùng mã giả PYTEST. Trả đường dẫn gói G2."""
+    import approve_gate as AG  # noqa: PLC0415 — import lười (approve_gate kéo nhiều module)
+    import g2_quality_gate as G2Q  # noqa: PLC0415
+
+    goi = out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
+    goi.write_text("Hồ sơ đạo đức fixture tổng hợp. Cần bác sĩ kiểm chứng.\n", encoding="utf-8", newline="\n")
+    thiet_ke, loi_thiet_ke = AG._thiet_ke_cho_g2(out_dir)
+    assert not loi_thiet_ke, f"fixture G2: thiết kế chưa thống nhất: {loi_thiet_ke}"
+    g2_meta = (GC.load_study_meta(out_dir).get("gate_params") or {}).get("G2") or {}
+    hom_nay = date.today()
+    tien_cuu = thiet_ke == "rct"
+    can_dang_ky = tien_cuu or thiet_ke == "sr_ma"
+    args = argparse.Namespace(
+        study=study, reviewer_ref="PYTEST-G2-REVIEWER", scope="Kiểm thử hợp đồng G2 bằng dữ liệu tổng hợp",
+        g2_ethics_decision="APPROVED", g2_ethics_committee_ref="PYTEST-HDDD-01", g2_approval_scope=None,
+        g2_approval_number="PYTEST-IRB-0001",
+        g2_approval_date=NGAY_DUYET_G2_RCT if tien_cuu else (hom_nay - timedelta(days=30)).isoformat(),
+        g2_valid_until=(hom_nay + timedelta(days=365)).isoformat(), g2_no_expiry_confirmed=False,
+        g2_protocol_version=str(g2_meta.get("protocol_version") or "1.0"),
+        g2_icf_version=str(g2_meta.get("icf_version") or "1.0"), g2_icf_waiver_approved=False,
+        g2_recruitment_mode="PROSPECTIVE_NEW_PARTICIPANTS" if tien_cuu else "RETROSPECTIVE_SECONDARY_DATA",
+        g2_registration_status="REGISTERED" if can_dang_ky else "NOT_REQUIRED",
+        g2_registry=(DANG_KY_THU_RCT["registry"] if tien_cuu else "Đăng ký thử (fixture)") if can_dang_ky else None,
+        g2_registration_id=(DANG_KY_THU_RCT["registration_id"] if tien_cuu else "PYTEST-REG-0001")
+        if can_dang_ky else None,
+        g2_registration_date=(DANG_KY_THU_RCT["registration_date"] if tien_cuu
+                              else (hom_nay - timedelta(days=60)).isoformat()) if can_dang_ky else None,
+        g2_first_enrolment_date=DANG_KY_THU_RCT["first_enrolment_date"] if tien_cuu else None,
+        g2_first_search_date=(hom_nay - timedelta(days=20)).isoformat() if thiet_ke == "sr_ma" else None,
+    )
+    noi_dung, loi = AG._prepare_g2_attestation(args, goi, goi.read_text(encoding="utf-8"), out_dir)
+    assert noi_dung and not loi, f"fixture G2 ({thiet_ke}): attestation bị từ chối: {loi}"
+    goi.write_text(noi_dung, encoding="utf-8", newline="\n")
+    att = G2Q.extract_attestation(noi_dung) or {}
+    dang_ky = att.get("registration") or {}
+    (out_dir / "G2_checkpoint.json").write_text(json.dumps({
+        "quality_contract_version": G2Q.QUALITY_CONTRACT_VERSION,
+        "quality_gate": {"status": G2Q.STATUS_APPROVED},
+        "gate_status": "PASS — G2 ĐÃ CÓ PHÊ DUYỆT IRB/IEC THẬT VÀ ĐĂNG KÝ HỢP LỆ (fixture tổng hợp)",
+        "g2_status": "LOCKED",
+        "g2_irb_number": att.get("approval_number"), "g2_approval_date": att.get("approval_date"),
+        "g2_approval_valid_until": att.get("valid_until"),
+        "g2_no_expiry_confirmed": att.get("no_expiry_confirmed") is True,
+        "g2_protocol_version": att.get("approved_protocol_version"), "g2_icf_version": att.get("approved_icf_version"),
+        "g2_icf_waiver_approved": att.get("icf_waiver_approved") is True,
+        "g2_registration": dang_ky.get("registration_id"),
+        "disclaimer": "Cần bác sĩ kiểm chứng.",
+    }, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+    append_signed_approval(study, goi, "G2", "IRB_ETHICS_COMMITTEE", repo_root=repo_root)
+    return goi
+
+
 def prepare_upstream_approvals(
     study: str,
     out_dir: Path,
@@ -323,6 +403,9 @@ def prepare_upstream_approvals(
     cohort), giữ nguyên khoá riêng test đã ghi (G1_checkpoint, gate_params cổng khác), sinh SAP bằng run_g4_auto THẬT,
     điền như người thật, xác nhận G4 gắn dấu, ký bằng khoá RIÊNG nhóm STATISTICIAN — rồi TỰ KIỂM G4 chấm sống LOCKED
     (fixture hỏng thì lộ ngay ở đây, không lộ ở test G5–G10 phía sau).
+
+    SỬA 07/10/2026 (thu hẹp nhánh tương thích G2 kiểu cũ): G2 dựng bằng ``ky_g2_hien_dai`` — attestation từ lệnh ký
+    thật + checkpoint hiện đại, thay checkpoint ``{"g2_status": "LOCKED"}`` + gói không attestation.
     """
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     import cong_song as CS  # noqa: PLC0415
@@ -361,22 +444,9 @@ def prepare_upstream_approvals(
         (out_dir / "study_meta.json").write_text(json.dumps(meta_moi, ensure_ascii=False, indent=2),
                                                  encoding="utf-8", newline="\n")
 
-    (out_dir / "G2_checkpoint.json").write_text(
-        json.dumps({"g2_status": "LOCKED"}, ensure_ascii=False),
-        encoding="utf-8", newline="\n"
-    )
-    g2_artifact = out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
-    g2_artifact.write_text(
-        "Hồ sơ đạo đức fixture tổng hợp. Cần bác sĩ kiểm chứng.",
-        encoding="utf-8", newline="\n"
-    )
-    append_signed_approval(
-        study,
-        g2_artifact,
-        "G2",
-        "IRB_ETHICS_COMMITTEE",
-        repo_root=repo_root,
-    )
+    # 07/10/2026: G2 theo hợp đồng HIỆN HÀNH (attestation từ lệnh ký thật) — G2 kiểu cũ ký «bây giờ» không còn được
+    # gate_contract nhận (nhánh tương thích chỉ còn cho phê duyệt ký trước mốc G2-2026.1).
+    ky_g2_hien_dai(study, out_dir, repo_root=repo_root)
 
     g4_artifact = sinh_sap_g4_that(out_dir, study)
     sap_text = dien_sap_g4(g4_artifact.read_text(encoding="utf-8"))

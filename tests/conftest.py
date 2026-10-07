@@ -28,11 +28,11 @@ os.environ["DATABASE_URL"] = f"sqlite:///{_tmp.name}"
 # Đặt ở đây — TRƯỚC `from app.config import settings` và trước khi thu thập test — để chốt thấy cả lúc import.
 from tests import canh_bi_mat_that as CBM  # noqa: E402
 
-# Miễn trừ ĐỌC (lỗ ĐÃ BIẾT, không thêm để «cho hết đỏ»): app/config.py nạp tệp biến môi trường này lúc import ở mọi
-# tiến trình, kể cả trước conftest — phải khớp `app.config._SECRETS_ENV.name` (test canh gác đối chiếu). Ghi/xoá/đổi
-# tên tệp đó vẫn bị chặn.
-TEP_ENV_APP_CONFIG = "medical-ebm-automation.env"
-_CANH_BI_MAT_THAT = CBM.dang_ky(CBM.CanhBiMat(CBM.THU_MUC_BI_MAT_THAT, mien_tru_doc=(TEP_ENV_APP_CONFIG,)))
+# KHÔNG còn miễn trừ (07/10/2026, bác sĩ duyệt): app/config.py — và hai công cụ tự đọc kho (gom_toan_van_oa,
+# tai_retraction_watch) — không nạp tệp biến môi trường của kho secrets khi đang chạy kiểm thử
+# (app.config.dang_chay_kiem_thu). Trước đó tệp `medical-ebm-automation.env` phải miễn trừ ĐỌC vì app/config nạp nó
+# lúc import ở mọi tiến trình. Nay chạm tệp đó (cả ĐỌC) là vi phạm như mọi tệp khác trong kho.
+_CANH_BI_MAT_THAT = CBM.dang_ky(CBM.CanhBiMat(CBM.THU_MUC_BI_MAT_THAT))
 
 # Khoá ký GIẢ mặc định cho CẢ PHIÊN. ÉP (không setdefault): một EBM_GATE_KEY_PATH sót lại trong shell không được lọt
 # vào test. Đặt lúc import nên che cả lúc thu thập, fixture phạm vi rộng và tiến trình con (kế thừa os.environ, còn

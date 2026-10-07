@@ -52,6 +52,10 @@ Mở `exports/<MA-DE-TAI>/G2_A3_ETHICS_PACKAGE_<MA-DE-TAI>.docx`:
 - Ký TL1 (Đơn IRB) + Trưởng đơn vị → nộp Hội đồng
 - Nhận quyết định IRB thật → người có thẩm quyền TỰ ghi bằng `approve_gate.py --gate G2` (kèm phụ lục quyết định có
   cấu trúc/attestation) → bộ chấm sống trả `PASS_G2_APPROVED`. Agent KHÔNG ghi `G2_STATUS: LOCKED` (không mở cổng nào)
+- **Thu hẹp 07/10/2026 (bác sĩ quyết):** cổng sau (G5–G10) chỉ nhận G2 khi gói `G2_A3_ETHICS_PACKAGE` ĐÃ KÝ có
+  attestation hợp lệ. Gói KHÔNG attestation chỉ còn được xét theo checkpoint nếu phê duyệt G2 được KÝ TRƯỚC 28/07/2026
+  (mốc hợp đồng G2-2026.1, `gate_contract.G2_MOC_HOP_DONG_PHIEN_BAN`; mốc lấy từ sổ cái đã ký). Ký sau mốc mà thiếu
+  attestation ⇒ CHẶN — không sửa checkpoint để «qua»; người có thẩm quyền ký lại bằng `approve_gate.py --gate G2`.
 
 ## BƯỚC 0 — KIỂM TIỀN ĐỀ (bắt buộc trước mọi soạn thảo)
 

@@ -97,6 +97,7 @@ def test_ten_va_thu_muc_khop_gate_contract():
     """Chốt canh nhìn đúng thư mục mà gate_contract rơi về khi thiếu biến — lệch là canh sai chỗ, im lặng."""
     assert GC._DEFAULT_KEY_PATH == CBM.THU_MUC_BI_MAT_THAT / CBM.TEN_KHOA_GIA
     assert GC._ED_PRIVATE_DIR == CBM.THU_MUC_BI_MAT_THAT
+    assert GC._THU_MUC_BI_MAT_THAT == CBM.THU_MUC_BI_MAT_THAT  # chốt «khoá THẬT khi kiểm thử» (07/10)
     assert C._CANH_BI_MAT_THAT.goc == CBM.THU_MUC_BI_MAT_THAT
     # chỉ tính đường dẫn (thuần chuỗi) — không mở, không liệt kê gì
     assert C._CANH_BI_MAT_THAT.xet("open", (str(GC._DEFAULT_KEY_PATH), "r", os.O_RDONLY)) == [CBM.TEN_KHOA_GIA]
@@ -106,14 +107,19 @@ def test_ten_va_thu_muc_khop_gate_contract():
     assert C._CANH_BI_MAT_THAT.xet("open", (ed, "rb", os.O_RDONLY)) == [os.path.normcase("gate_ed25519_IRB.key")]
 
 
-def test_mien_tru_khop_app_config_va_chi_cho_doc():
-    from app.config import _SECRETS_ENV
+def test_khong_con_mien_tru_app_config_chan_ca_doc():
+    """07/10/2026 (bác sĩ duyệt): app/config KHÔNG nạp kho secrets khi đang kiểm thử ⇒ chốt canh BỎ miễn trừ — ĐỌC tệp
+    biến môi trường của kho cũng là vi phạm như mọi tệp khác trong thư mục bí mật."""
+    import app.config as CFG
 
-    assert _SECRETS_ENV.parent == CBM.THU_MUC_BI_MAT_THAT
-    assert _SECRETS_ENV.name == C.TEP_ENV_APP_CONFIG
-    assert C._CANH_BI_MAT_THAT.xet("open", (str(_SECRETS_ENV), "r", os.O_RDONLY)) == []
-    assert C._CANH_BI_MAT_THAT.xet("open", (str(_SECRETS_ENV), "w", GHI)) == [C.TEP_ENV_APP_CONFIG]
-    assert C._CANH_BI_MAT_THAT.xet("os.remove", (str(_SECRETS_ENV), None)) == [C.TEP_ENV_APP_CONFIG]
+    assert CFG._SECRETS_ENV.parent == CBM.THU_MUC_BI_MAT_THAT
+    assert CFG.dang_chay_kiem_thu() is True
+    assert CFG.NAP_TEP_MOI_TRUONG is False and CFG.TEP_DA_NAP == []
+    assert C._CANH_BI_MAT_THAT._mien_doc == frozenset()
+    ten = os.path.normcase(CFG._SECRETS_ENV.name)
+    assert C._CANH_BI_MAT_THAT.xet("open", (str(CFG._SECRETS_ENV), "r", os.O_RDONLY)) == [ten]
+    assert C._CANH_BI_MAT_THAT.xet("open", (str(CFG._SECRETS_ENV), "w", GHI)) == [ten]
+    assert C._CANH_BI_MAT_THAT.xet("os.remove", (str(CFG._SECRETS_ENV), None)) == [ten]
 
 
 def test_chot_that_dang_ky_dung_mot_lan():

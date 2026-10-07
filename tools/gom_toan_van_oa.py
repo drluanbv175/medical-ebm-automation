@@ -50,6 +50,10 @@ def _email_lien_he() -> str:
     """
     if os.environ.get("NCBI_EMAIL"):
         return os.environ["NCBI_EMAIL"].strip()
+    # 07/10/2026: dưới pytest KHÔNG đọc kho secrets thật (cùng tín hiệu app.config.dang_chay_kiem_thu) — hàm chạy lúc
+    # import (MAILTO) nên trước đây mọi test import công cụ này đều có thể chạm kho.
+    if "pytest" in sys.modules or "PYTEST_CURRENT_TEST" in os.environ:
+        return ""
     kho = Path.home() / ".ebm-secrets" / "medical-ebm-automation.env"
     if kho.exists():
         for dong in kho.read_text(encoding="utf-8", errors="replace").splitlines():
