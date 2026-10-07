@@ -90,7 +90,10 @@ lệnh + đoạn `ket_qua`). Lời nói không kèm căn cứ KHÔNG phải căn
 ## 5. Chính sách chi phí — hỏi bác sĩ trước khi triệu tập
 
 Đo 06/10/2026: mỗi subagent mới mang ~250 nghìn token nền (danh sách skill, công cụ, CLAUDE.md) TRƯỚC khi đọc tài
-liệu đề tài; một hội đồng đủ vai (2 người chấm + phản biện + trọng tài, 1–2 DP) ≈ **1–3 triệu token / cổng**. Vì vậy
+liệu đề tài. **Đo thật 07/10/2026** (họp thí điểm G0 của C1a: 4 nhiệm vụ, 2 DP, 2 bất đồng, 16 agent): ≈ **6,1 triệu
+token** (~380 nghìn/agent — agent đọc hồ sơ, chạy chấm sống, tra PubMed); cổng nhiều nhiệm vụ hay nhiều bất đồng có thể
+vượt mức này. Ước lượng cũ «1–3 triệu/cổng» là THẤP. Tiếp tục (resume) một lượt workflow chỉ dùng lại ĐOẠN ĐẦU không đổi
+của chuỗi lời gọi — lượt song song gần như chạy lại hết (07/10: thêm ~3,6 triệu) ⇒ đừng resume để «vá» một bước. Vì vậy
 (đúng `CLAUDE.md` §0.6 — không tự mở nhiều agent):
 
 | Chế độ | Khi nào | Độc lập | Chi phí |

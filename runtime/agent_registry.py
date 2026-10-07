@@ -81,7 +81,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 07/10/2026 (trọng tài Codex — tools/trong_tai_codex.py): _HOI-DONG-CONG, dieu-phoi-nghien-cuu, trong-tai-tranh-bien
 # dạy cách chạy chế độ codex — bản cặp y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "ae5ca2c3911a851bdc492ab024c6741ea4abc803f0c5b6261463e79c95bdf7db"
+    "44777a8300497961121a6c97416cd75d78b70543f9ec0a2323a752924f1523fb"
 )
 
 MINIMUM_AGENT_COUNT = 64
