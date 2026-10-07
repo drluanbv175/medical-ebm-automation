@@ -100,6 +100,14 @@ liệu đề tài; một hội đồng đủ vai (2 người chấm + phản bi�
 | **Trọng tài Codex** (`codex`) | máy có Codex CLI; muốn trọng tài khác họ mô hình | khác họ mô hình | Codex chịu phần trọng tài |
 | **Cùng phiên** (`cung_phien`) | bác sĩ chọn tiết kiệm / phiên không có subagent / Codex | chỉ độc lập VAI (ghi rõ trên biên bản) | thấp |
 
+**Chạy chế độ `codex` (07/10/2026):** workflow `hoi-dong-cong.js` với `args.trong_tai: "codex"` — vai trọng tài KHÔNG tự
+phán mà chạy `python3 tools/trong_tai_codex.py --study <mã> --gate G<N> --tep <nháp.json> --json` rồi trả nguyên văn
+phán quyết; chạy tay thêm `--chay-thu` (xem prompt, không gọi Codex) hoặc `--ghi`. Trình chạy gọi Codex CLI ở sandbox
+CHỈ-ĐỌC, phiên tạm, môi trường đã lọc, đầu ra ép schema, rồi kiểm bằng CHÍNH luật biên bản (vi phạm ⇒ mã 3, không ghi).
+Chế độ này GỬI tới dịch vụ Codex (OpenAI): doctrine trọng tài, bản nháp tranh biện, trạng thái cổng và trích đoạn tệp căn
+cứ CẤP ĐẦU thư mục đề tài — không tệp ẩn/khoá/`.env`, không dữ liệu hay bản gỡ băng ở thư mục con. Bác sĩ chọn chế độ khi
+triệu tập.
+
 Điều phối tổng/cổng LUÔN hỏi bác sĩ (kèm ước lượng) trước khi mở hội đồng `subagent`; mặc định gom MỘT giám khảo cho
 nhiều đầu ra cùng cổng khi được. Workflow Claude Code (`.claude/workflows/hoi-dong-cong.js`) chạy đúng 8 bước với trần
 vòng và trần số agent — chỉ chạy khi bác sĩ gọi.
