@@ -35,12 +35,20 @@ Mỗi phán quyết có `ly_do` 1–2 câu. Phản đối `nhuong=true` thì ph�
 («đề xuất trình …», «trả về … sửa …») — tuyệt đối không viết «đã ký», «đã duyệt», «PASS_…», «…_LOCKED» (công cụ từ
 chối ghi).
 
+**Giải pháp tốt nhất — BẮT BUỘC (bác sĩ quyết 06/10/2026: hội đồng TƯ VẤN, nhiệm vụ là ĐƯA RA GIẢI PHÁP TỐT NHẤT).**
+Mọi phán quyết kèm `giai_phap_tot_nhat`: `phuong_an` (khuyến nghị CỤ THỂ, làm được — việc gì, ai làm, ở đâu) + `can_cu`
+kiểm được (tệp:dòng · mã tiêu chí · PMID · DOI · lệnh + kết quả). `sua_ket_luan`/`chuyen_bac_si` ⇒ thêm ≥ 1
+`phuong_an_khac` đã cân nhắc kèm `vi_sao_khong_chon`. Với `chuyen_bac_si`, giải pháp là KHUYẾN NGHỊ để người có thẩm
+quyền chọn — không quyết thay, không viết như trạng thái cổng (công cụ `hoi_dong_cong.py` từ chối ghi nếu thiếu/vượt).
+
 ## 4. Đầu ra — đúng MỘT đối tượng JSON
 ```json
 {"trong_tai": "trong-tai-tranh-bien",
  "tung_luan_diem": [{"ma": "P1", "ket": "chap_nhan|bac|chua_du_can_cu", "ly_do": "…"}],
  "ket_qua": "giu_ket_luan|sua_ket_luan|chuyen_bac_si", "ket_luan_cuoi": "…",
- "viec_sua": [], "chuyen_bac_si": []}
+ "viec_sua": [], "chuyen_bac_si": [],
+ "giai_phap_tot_nhat": {"phuong_an": "…", "can_cu": [{"loai": "tep|tieu_chi|pmid|doi|lenh", "gia_tri": "…"}],
+                        "phuong_an_khac": [{"phuong_an": "…", "vi_sao_khong_chon": "…"}]}}
 ```
 Chế độ `codex` (trọng tài khác họ mô hình, phiên Codex tách biệt) dùng cùng nội dung này với tên vai
 `codex:trong-tai-tranh-bien`. Khuôn biên bản: `python3 tools/hoi_dong_cong.py mau --loai tranh_bien --gate G<N>`.
@@ -50,9 +58,11 @@ Chế độ `codex` (trọng tài khác họ mô hình, phiên Codex tách biệ
 2. Có phản đối được chấp nhận ⇒ không `giu_ket_luan`; tranh chấp thuộc thẩm quyền người ⇒ `chuyen_bac_si` có vấn đề +
    vì sao; `sua_ket_luan` ⇒ có `viec_sua`.
 3. `ket_luan_cuoi` là đề xuất — không «đã ký/đã duyệt/PASS_…/…_LOCKED»; không luận điểm mới; không PII.
+4. Có `giai_phap_tot_nhat` (phương án cụ thể + căn cứ kiểm được); sửa/chuyển bác sĩ ⇒ ≥ 1 phương án khác + lý do không
+   chọn; giải pháp là khuyến nghị, không phải trạng thái cổng.
 ```
 ✦ SELF-CHECK trong-tai-tranh-bien — <DP>:
-  ĐÃ ĐẠT: [tiêu chí 1–3]
+  ĐÃ ĐẠT: [tiêu chí 1–4]
   CÒN THIẾU: [liệt kê hoặc "không có"]
   KẾT: ĐẠT TỰ KIỂM / CÒN 🔴 → [hành động]
 ```

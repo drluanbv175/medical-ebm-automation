@@ -78,6 +78,10 @@ lệnh + đoạn `ket_qua`). Lời nói không kèm căn cứ KHÔNG phải căn
 - **Phán quyết:** từng phản đối `chap_nhan` · `bac` · `chua_du_can_cu` (kèm lý do); kết quả `giu_ket_luan` ·
   `sua_ket_luan` (kèm `viec_sua`) · `chuyen_bac_si` (kèm vấn đề + vì sao thuộc thẩm quyền người). Đã chấp nhận một
   phản đối thì KHÔNG được giữ nguyên kết luận.
+- **Giải pháp tốt nhất — BẮT BUỘC (bác sĩ quyết 06/10/2026: hội đồng giữ vai TƯ VẤN và ĐƯA RA GIẢI PHÁP TỐT NHẤT,
+  không chặn cổng):** mọi phán quyết kèm `giai_phap_tot_nhat` = phương án khuyến nghị CỤ THỂ + căn cứ kiểm được;
+  `sua_ket_luan`/`chuyen_bac_si` thêm ≥ 1 phương án khác đã cân nhắc + lý do không chọn. Công cụ (`hoi_dong_cong.py`,
+  biên bản v2) từ chối ghi khi thiếu, thiếu căn cứ, có PII hoặc viết như trạng thái cổng. Người có thẩm quyền chọn và ký.
 - **Thẩm quyền:** trọng tài phân xử LẬP LUẬN, không phân xử thay người có thẩm quyền. Tranh chấp về phán đoán lâm
   sàng/đạo đức/thống kê thuộc vai ký của cổng (`tham_quyen` của DP: PI · IRB · STATISTICIAN · DATA_MANAGER ·
   INDEPENDENT_PEER_REVIEWER) ⇒ `chuyen_bac_si`. Kết luận tranh biện KHÔNG BAO GIỜ được viết như trạng thái cổng
@@ -107,6 +111,7 @@ KẾT LUẬN HỘI ĐỒNG CỔNG G<N> — <mã đề tài> (TƯ VẤN — khôn
 - Nhiệm vụ: <mã: agent → artifact · đánh giá chéo: đồng thuận/bất đồng>
 - Tranh biện: <DP: giữ/sửa/chuyển bác sĩ — id biên bản>
 - Kết luận dự kiến: DE_XUAT_TRINH_NGUOI_CO_THAM_QUYEN | TRA_VE_SUA | CHO_DU_LIEU_THAT | CHUYEN_BAC_SI_QUYET
+- Giải pháp tốt nhất: <từng điểm quyết định: phương án khuyến nghị — căn cứ; phương án khác đã cân nhắc — vì sao không chọn>
 - Việc của người có thẩm quyền: <ai — làm gì — lệnh/khoá nào>
 - tham-dinh-dau-ra: ĐẠT | TRẢ-VỀ-SỬA
 - Tóm tắt hội đồng: python3 tools/hoi_dong_cong.py tom-tat --study <mã>

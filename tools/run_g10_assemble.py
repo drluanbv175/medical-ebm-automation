@@ -1998,6 +1998,24 @@ def build_document_control(study: str, cps, meta, generated: str | None = None) 
                 f"| {row_version} | {row_date} | {row_source} | {row_change} | {row_approver} |"
             )
 
+    # 06/10/2026 (G10-07): sửa đổi kết cục chính có kiểm chứng (gate_params.G10.sua_doi_ket_cuc_chinh) hiện thành bảng
+    # riêng — đề cương sửa đổi phải liệt kê thay đổi (SPIRIT 2025 mục 31; CONSORT 2025 mục 10 cho bài báo kết quả).
+    # Chỉ TRÌNH BÀY; tính hợp lệ do nhat_quan_xuyen_cong (G10-AUTO-11) chấm.
+    sua_doi = ((meta.get("gate_params") or {}).get("G10") or {}).get("sua_doi_ket_cuc_chinh")
+    sua_doi = [sua_doi] if isinstance(sua_doi, dict) else (sua_doi if isinstance(sua_doi, list) else [])
+    sua_doi = [sd for sd in sua_doi if isinstance(sd, dict)]
+    if sua_doi:
+        lines += [
+            "",
+            "## Sửa đổi kết cục chính",
+            "| Lần | Ngày | Mã sửa đổi | Kết cục cũ → mới | Lý do | Hội đồng đạo đức | Cập nhật đăng ký |",
+            "|---|---|---|---|---|---|---|",
+        ]
+        for i, sd in enumerate(sua_doi, 1):
+            o = [str(sd.get(k) or TAG_BS).replace("|", "/").replace("\n", " ") for k in (
+                "ngay_sua_doi", "ma_sua_doi", "ket_cuc_cu", "ket_cuc_moi", "ly_do", "irb_chap_thuan",
+                "dang_ky_cap_nhat")]
+            lines.append(f"| {i} | {o[0]} | {o[1]} | {o[2]} → {o[3]} | {o[4]} | {o[5]} | {o[6]} |")
     lines.append(
         "\n> Nếu không có nhật ký thay đổi, mọi đầu ra chỉ là bản nháp có kiểm soát; "
         "không được coi là bản đã phê duyệt hoặc đã khóa.\n"

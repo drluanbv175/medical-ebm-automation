@@ -22,6 +22,13 @@ LÀM GÌ (CHỈ ĐỌC exports/<study>/, không sửa artifact nào, không ch�
       trình. Khi các mô tả thật ra là MỘT kết cục, chủ nhiệm ghi `gate_params.G10.xac_nhan_ket_cuc_chinh` gồm
       `giai_trinh` + `reviewed_at` (ISO, không ở tương lai) + `dau_van_tay` (CLI in ra) — xác nhận GẮN với đúng tập mô
       tả lúc xác nhận; mô tả đổi sau đó ⇒ xác nhận hết hiệu lực. Có xác nhận hợp lệ ⇒ hạ xuống CẦN XEM (vẫn hiện ra).
+      Khi kết cục chính ĐÃ ĐỔI THẬT (06/10/2026, G10-07): chủ nhiệm khai `gate_params.G10.sua_doi_ket_cuc_chinh` (danh
+      sách theo thời gian; mỗi lần: ket_cuc_cu · ket_cuc_moi · ly_do ≥ 30 ký tự · ma_sua_doi · ngay_sua_doi ·
+      irb_chap_thuan · dang_ky_cap_nhat · ngay_cap_nhat_dang_ky · reviewed_by_role=PI · reviewed_at; lần cuối gắn
+      dau_van_tay; tới bản thảo thì thêm cong_bo_trong_ban_thao). Hợp lệ khi: chuỗi nối tiếp, mọi nơi ghi thuộc chuỗi,
+      SAP §2 và khai báo G8 là kết cục MỚI nhất (G0/G1/bản nháp đăng ký được giữ kết cục cũ — không sửa ngược hồ sơ
+      cổng), sửa TRƯỚC ngày khoá dữ liệu, bản thảo có câu báo cáo thay đổi (CONSORT 2025 mục 10; SPIRIT 2025 mục 31)
+      ⇒ CẦN XEM; thiếu bất kỳ điều nào ⇒ LỆCH MỀM kèm lý do.
     - CẦN XEM (chỉ báo, không đổi trạng thái cổng): quần thể diễn đạt khác xa nhau; cỡ mẫu được tính cho một kết cục
       mà G1 xếp là THỨ CẤP; thiết kế chẩn đoán khai «Interventional» ở đăng ký (cơ quan đăng ký xếp khác nhau).
   • Thông số có ở < 2 nơi ⇒ «chưa đủ để so» — KHÔNG phải «khớp». Ở G10, thông số BẮT BUỘC theo thiết kế (mã thiết kế ·
@@ -40,7 +47,7 @@ import json
 import re
 import sys
 import unicodedata
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
@@ -317,6 +324,136 @@ def _xac_nhan_ket_cuc(meta: Dict[str, Any], dau: str) -> Tuple[bool, str]:
     return True, gt
 
 
+# ── SỬA ĐỔI kết cục chính có kiểm chứng (06/10/2026 — bác sĩ yêu cầu giải quyết G10-07 «triệt để») ──────────────────
+# Trước đây lệch kết cục chính chỉ có MỘT lối ra: chủ nhiệm xác nhận «cùng một kết cục, khác diễn đạt». Đổi kết cục THẬT
+# (có lý do chính đáng) thì không có đường đi — hoặc nói dối «cùng kết cục», hoặc kẹt REVIEW mãi. Đổi kết cục chỉ chính
+# đáng khi đủ: sửa đổi đề cương có MÃ + LÝ DO, Hội đồng đạo đức chấp thuận, bản đăng ký được cập nhật, bản thảo BÁO CÁO
+# thay đổi — CONSORT 2025 mục 10 «Important changes to the trial after it commenced including any outcomes or analyses
+# that were not prespecified, with reason» (PMID 40228477) · SPIRIT 2025 mục 31 (kế hoạch truyền đạt sửa đổi đề cương
+# quan trọng; PMID 40294593) — và sửa TRƯỚC khi khoá dữ liệu (đã thấy dữ liệu ⇒ kết cục mới là HẬU KIỂM, không được
+# trình bày như kết cục tiền định). Hồ sơ cổng cũ KHÔNG sửa ngược: G0/G1 và bản nháp đăng ký G2 được giữ kết cục cũ; kế
+# hoạch HIỆN HÀNH — SAP §2 (G4) và khai báo bản thảo (G8) — phải là kết cục MỚI nhất của chuỗi sửa đổi.
+TRUONG_SUA_DOI_KET_CUC = ("ket_cuc_cu", "ket_cuc_moi", "ly_do", "ma_sua_doi", "ngay_sua_doi", "irb_chap_thuan",
+                          "dang_ky_cap_nhat", "ngay_cap_nhat_dang_ky", "reviewed_by_role", "reviewed_at")
+_CONG_KE_HOACH_HIEN_HANH = frozenset({"G4", "G8"})
+_LY_DO_SUA_DOI_TOI_THIEU = 30
+_TU_THAY_DOI = re.compile(r"thay\s*đổi|sửa\s*đổi|điều\s*chỉnh|chang(?:e|ed|es)|amend|modif", re.IGNORECASE)
+
+
+def _ngay(v: Any) -> Optional[date]:
+    """Ngày từ chuỗi ISO «YYYY-MM-DD[...]»; None nếu không phải."""
+    text = str(v or "").strip()
+    if not re.match(r"^\d{4}-\d{2}-\d{2}", text):
+        return None
+    try:
+        return datetime.fromisoformat(text.replace("Z", "+00:00")).date()
+    except ValueError:
+        return None
+
+
+def ngay_khoa_du_lieu(out_dir: Path, meta: Dict[str, Any]) -> Optional[date]:
+    """Ngày khoá dữ liệu SỚM NHẤT đã ghi (study_meta.data_lock_date · manifest khoá dữ liệu `lock_date`); None nếu
+    chưa khoá."""
+    rdl = meta.get("real_data_lock") if isinstance(meta.get("real_data_lock"), dict) else {}
+    man = _doc_json(Path(out_dir) / (rdl.get("manifest") or "DATA_LOCK_manifest.json"))
+    ung = [d for d in (_ngay(meta.get("data_lock_date")), _ngay(man.get("lock_date"))) if d]
+    return min(ung) if ung else None
+
+
+def danh_sach_sua_doi_ket_cuc(meta: Dict[str, Any]) -> Optional[List[Any]]:
+    """Khối `gate_params.G10.sua_doi_ket_cuc_chinh` dạng danh sách (một lần sửa đổi ghi dạng dict cũng nhận); None
+    nếu vắng."""
+    ds = _gp(meta, "G10").get("sua_doi_ket_cuc_chinh")
+    if ds is None:
+        return None
+    return [ds] if isinstance(ds, dict) else (ds if isinstance(ds, list) else [ds])
+
+
+def _ban_thao_bao_cao_thay_doi(ban_thao: str, ket_cuc_cu: Any) -> bool:
+    """Bản thảo có MỘT dòng vừa nói «thay đổi/sửa đổi/changed…» vừa nêu kết cục cũ (≥ nửa số từ) — CONSORT 2025
+    mục 10."""
+    return any(_TU_THAY_DOI.search(d) and _bao_ham(ket_cuc_cu, d) >= 0.5 for d in ban_thao.splitlines())
+
+
+def kiem_sua_doi_ket_cuc(meta: Dict[str, Any], out_dir: Path, study: str, nguon_kc: List[Dict[str, Any]],
+                         dau: str) -> Tuple[Optional[str], str]:
+    """(mức, ghi chú) của chuỗi sửa đổi kết cục chính khai ở G10; (None, "") nếu không khai. CHỈ ĐỌC.
+
+    Hợp lệ ⇒ CẦN XEM (vẫn hiện ra để Hội đồng/tạp chí thấy, không chặn). Thiếu trường / chuỗi đứt / kế hoạch hiện hành
+    còn kết cục cũ / sửa SAU khi khoá dữ liệu / bản thảo không báo cáo / dấu vân tay cũ ⇒ LỆCH MỀM kèm lý do."""
+    ds = danh_sach_sua_doi_ket_cuc(meta)
+    if ds is None:
+        return None, ""
+    if not ds or not all(isinstance(x, dict) for x in ds):
+        return MUC_LECH_MEM, "khối sua_doi_ket_cuc_chinh không đúng dạng (danh sách các lần sửa đổi, mỗi lần một dict)"
+    loi: List[str] = []
+    ngay_truoc: Optional[date] = None
+    for i, sd in enumerate(ds, 1):
+        thieu = [k for k in TRUONG_SUA_DOI_KET_CUC if not _co_that(sd.get(k))]
+        if thieu:
+            loi.append(f"lần {i} thiếu {', '.join(thieu)}")
+            continue
+        if len(str(sd["ly_do"]).strip()) < _LY_DO_SUA_DOI_TOI_THIEU:
+            loi.append(f"lần {i}: lý do quá ngắn — CONSORT 2025 mục 10 đòi nêu lý do")
+        if str(sd["reviewed_by_role"]).strip().upper() != "PI":
+            loi.append(f"lần {i}: reviewed_by_role phải là PI (chủ nhiệm chịu trách nhiệm sửa đổi)")
+        if not _iso_khong_tuong_lai(sd["reviewed_at"]):
+            loi.append(f"lần {i}: reviewed_at không phải ISO hợp lệ hoặc ở tương lai")
+        ngay_sd, ngay_dk = _ngay(sd["ngay_sua_doi"]), _ngay(sd["ngay_cap_nhat_dang_ky"])
+        if ngay_sd is None or ngay_sd > date.today():
+            loi.append(f"lần {i}: ngay_sua_doi không phải ngày ISO hợp lệ hoặc ở tương lai")
+        if ngay_dk is None or ngay_dk > date.today():
+            loi.append(f"lần {i}: ngay_cap_nhat_dang_ky không phải ngày ISO hợp lệ hoặc ở tương lai")
+        if ngay_sd and ngay_truoc and ngay_sd < ngay_truoc:
+            loi.append(f"lần {i}: ngày sửa đổi sớm hơn lần trước — chuỗi phải theo thời gian")
+        ngay_truoc = ngay_sd or ngay_truoc
+        if cung_ket_cuc(sd["ket_cuc_cu"], sd["ket_cuc_moi"]):
+            loi.append(f"lần {i}: kết cục cũ và mới là MỘT kết cục — khác diễn đạt thì dùng xac_nhan_ket_cuc_chinh")
+        if i > 1 and _co_that(ds[i - 2].get("ket_cuc_moi")) and not cung_ket_cuc(ds[i - 2]["ket_cuc_moi"],
+                                                                                  sd["ket_cuc_cu"]):
+            loi.append(f"lần {i}: ket_cuc_cu không nối tiếp ket_cuc_moi của lần {i - 1}")
+    if str(ds[-1].get("dau_van_tay") or "").strip().lower() != dau:
+        loi.append(f"lần sửa đổi cuối chưa gắn dấu vân tay hiện tại {dau} — mô tả kết cục đã đổi sau khi khai")
+    if loi:
+        return MUC_LECH_MEM, "khối sửa đổi kết cục chính CHƯA hợp lệ: " + "; ".join(loi)
+
+    phien_ban = [ds[0]["ket_cuc_cu"], *[sd["ket_cuc_moi"] for sd in ds]]
+    moi_nhat = phien_ban[-1]
+    ngoai_chuoi = [n for n in nguon_kc if not any(cung_ket_cuc(n["gia_tri"], v) for v in phien_ban)]
+    if ngoai_chuoi:
+        return MUC_LECH_MEM, ("nơi ghi kết cục KHÔNG thuộc chuỗi sửa đổi: "
+                              + ", ".join(f"{n['cong']} ({n['noi']})" for n in ngoai_chuoi))
+    cu_hien_hanh = [n for n in nguon_kc if n["cong"] in _CONG_KE_HOACH_HIEN_HANH
+                    and not cung_ket_cuc(n["gia_tri"], moi_nhat)]
+    if cu_hien_hanh:
+        return MUC_LECH_MEM, ("kế hoạch HIỆN HÀNH vẫn ghi kết cục cũ ("
+                              + ", ".join(f"{n['cong']} {n['noi']}" for n in cu_hien_hanh)
+                              + f") — sửa đổi phải đưa «{str(moi_nhat)[:60]}» vào SAP (SAP AMENDMENT) và khai báo "
+                              "bản thảo")
+    khoa = ngay_khoa_du_lieu(out_dir, meta)
+    sau_khoa = [i for i, sd in enumerate(ds, 1) if khoa and _ngay(sd["ngay_sua_doi"]) >= khoa]
+    if sau_khoa:
+        return MUC_LECH_MEM, (f"sửa đổi lần {sau_khoa} vào/sau ngày khoá dữ liệu {khoa.isoformat()} — kết cục mới là "
+                              "HẬU KIỂM: giữ kết cục tiền định làm kết cục chính, báo cáo kết cục mới như phân tích "
+                              "không tiền định (CONSORT 2025 mục 10)")
+    ban_thao = _doc_text(Path(out_dir) / f"G7_A8_MANUSCRIPT_{study}.md")
+    if any(n["cong"] == "G8" for n in nguon_kc) or ban_thao.strip():
+        thieu_cb = [i for i, sd in enumerate(ds, 1) if not _co_that(sd.get("cong_bo_trong_ban_thao"))]
+        if thieu_cb:
+            return MUC_LECH_MEM, (f"đã tới bản thảo nhưng lần {thieu_cb} thiếu cong_bo_trong_ban_thao (vị trí báo cáo "
+                                  "thay đổi trong bài — CONSORT 2025 mục 10)")
+        if ban_thao.strip():
+            chua_bao = [i for i, sd in enumerate(ds, 1) if not _ban_thao_bao_cao_thay_doi(ban_thao, sd["ket_cuc_cu"])]
+            if chua_bao:
+                return MUC_LECH_MEM, (f"bản thảo G7 không có câu nào báo cáo thay đổi kết cục ở lần {chua_bao} (cần "
+                                      "một câu nêu kết cục cũ kèm «thay đổi/sửa đổi» — CONSORT 2025 mục 10)")
+    tom = "; ".join(f"«{str(sd['ket_cuc_cu'])[:50]}» → «{str(sd['ket_cuc_moi'])[:50]}» ({sd['ma_sua_doi']}, "
+                    f"{sd['ngay_sua_doi']}; HĐĐĐ: {str(sd['irb_chap_thuan'])[:40]}; đăng ký: "
+                    f"{str(sd['dang_ky_cap_nhat'])[:40]})" for sd in ds)
+    return MUC_CAN_XEM, (f"kết cục chính ĐÃ SỬA ĐỔI có kiểm chứng: {tom} — báo cáo thay đổi kèm lý do (CONSORT 2025 "
+                         "mục 10 · SPIRIT 2025 mục 31)")
+
+
 def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
     """Đối chiếu các thông số then chốt xuyên cổng của MỘT đề tài. CHỈ ĐỌC."""
     out_dir = Path(out_dir)
@@ -405,8 +542,12 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
     else:
         goc = nguon_kc[0]
         lech = [n for n in nguon_kc[1:] if not cung_ket_cuc(goc["gia_tri"], n["gia_tri"])]
-        if lech:
-            dau = dau_van_tay_ket_cuc(nguon_kc)
+        dau = dau_van_tay_ket_cuc(nguon_kc)
+        muc_sd, ghi_sd = kiem_sua_doi_ket_cuc(meta, out_dir, study, nguon_kc, dau)
+        if muc_sd == MUC_CAN_XEM:
+            # Sửa đổi THẬT có kiểm chứng (06/10/2026, G10-07) — hiện ra cả khi mọi nơi đã thống nhất về kết cục mới.
+            ket.append(_ket("ket_cuc_chinh", "Kết cục chính", nguon_kc, MUC_CAN_XEM, ghi_sd))
+        elif lech:
             ok, ly_do = _xac_nhan_ket_cuc(meta, dau)
             noi_lech = ", ".join(n["cong"] + " (" + n["noi"] + ")" for n in lech)
             if ok:
@@ -416,12 +557,14 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
             else:
                 ket.append(_ket("ket_cuc_chinh", "Kết cục chính", nguon_kc, MUC_LECH_MEM,
                                 f"{noi_lech} khác «{goc['cong']}» — đổi kết cục chính phải có chủ nhiệm giải trình "
-                                "công khai (outcome switching); thống nhất về MỘT kết cục, hoặc nếu chỉ khác cách "
-                                f"diễn đạt thì ghi gate_params.G10.xac_nhan_ket_cuc_chinh với dau_van_tay={dau} "
-                                f"({ly_do})"))
+                                "công khai (outcome switching); thống nhất về MỘT kết cục; nếu chỉ khác cách diễn đạt "
+                                f"thì ghi gate_params.G10.xac_nhan_ket_cuc_chinh với dau_van_tay={dau} ({ly_do}); nếu "
+                                "ĐÃ ĐỔI kết cục thật (sửa đổi đề cương có lý do, Hội đồng đạo đức chấp thuận, đăng ký "
+                                "cập nhật) thì khai gate_params.G10.sua_doi_ket_cuc_chinh với dau_van_tay="
+                                f"{dau}" + (f" — {ghi_sd}" if ghi_sd else "")))
         else:
-            ket.append(_ket("ket_cuc_chinh", "Kết cục chính", nguon_kc, MUC_KHOP,
-                            f"{len(nguon_kc)} nơi cùng chỉ một kết cục"))
+            ket.append(_ket("ket_cuc_chinh", "Kết cục chính", nguon_kc, MUC_KHOP if muc_sd is None else MUC_CAN_XEM,
+                            f"{len(nguon_kc)} nơi cùng chỉ một kết cục" + (f" — {ghi_sd}" if ghi_sd else "")))
 
     # 5) Quần thể (chỉ báo — văn bản tiêu chí dài ngắn khác nhau tự nhiên).
     tc = _mo_repr(trds.get("14"))

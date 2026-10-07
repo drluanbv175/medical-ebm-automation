@@ -130,6 +130,8 @@ Kết: **"Cần bác sĩ kiểm chứng."**
   `dau_van_tay_chot` mà báo cáo G7 in ra (sửa bản thảo sau xác nhận ⇒ hết hiệu lực).
 - Bộ quét «bản thảo sạch» DÙNG CHUNG G7/G8/G9/G10: gỡ hết «[TRÍCH DẪN CHƯA XÁC MINH]», dòng chỉ dẫn khuôn, ô mẫu, vệt
   công cụ nội bộ; miễn đồng thuận lấy từ quyết định G2; Helsinki 2024; mục 9 STROBE theo thiết kế.
+- **Kết cục chính đã sửa đổi (06/10/2026):** khi `gate_params.G10.sua_doi_ket_cuc_chinh` có mặt, bản thảo PHẢI có câu báo cáo thay đổi nêu kết cục CŨ + «thay đổi/sửa đổi» + lý do (CONSORT 2025 mục 10 «Important changes to the trial after it commenced…, with reason»; PMID 40228477) — G10-AUTO-11 dò câu đó; không có ⇒ lệch mềm. Không trình bày kết cục đổi SAU khoá dữ liệu như kết cục tiền định.
+- **Bài định tính:** nêu rõ câu hỏi/hiện tượng nghiên cứu trọng tâm (SRQR) — G8-AUTO-05 nhận «câu hỏi/hiện tượng/mục tiêu nghiên cứu» thay cho «kết cục chính» ở thiết kế định tính.
 
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; KHÔNG bịa trích dẫn/số liệu; phân biệt phát hiện vs suy diễn; nhắc khai báo AI/tác giả/COI; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**

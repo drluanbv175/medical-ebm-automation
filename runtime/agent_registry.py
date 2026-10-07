@@ -73,8 +73,11 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # phan-tich-thong-ke,
 # viet-ban-thao, binh-duyet, nop-bai-phan-hoi) bỏ chỉ dẫn «agent ghi Gx_STATUS=LOCKED», tiền đề chấm sống, hợp đồng
 # hiện hành từng cổng — bản cặp y hệt gốc; vẫn 50.
+# 06/10/2026 (sửa đổi kết cục chính G10-07 · SAP định tính · hội đồng đưa ra giải pháp tốt nhất): 8 agent cập nhật
+# doctrine (trong-tai-tranh-bien, _HOI-DONG-CONG, dieu-phoi-nghien-cuu, dieu-phoi-g10, viet-ban-thao, dao-duc-dang-ky,
+# thiet-ke-nghien-cuu, nghien-cuu-dinh-tinh) — bản cặp y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "24b4325182789181c8a4a69013ad00ac087aec70b4ba044dcd6a693d5a64f4ff"
+    "fb4385585351ee85638c0d0352c691551d51f478df6029751db9178a6024bbc6"
 )
 
 MINIMUM_AGENT_COUNT = 64

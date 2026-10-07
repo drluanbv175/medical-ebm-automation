@@ -285,15 +285,30 @@ def _co_dong_thi_hanh(text: str, mau: str) -> bool:
 def ket_cuc_chinh_sap(sap2: str) -> str | None:
     """Tên biến kết cục CHÍNH trong SAP §2 (chữ thường) — None nếu không rút được (VÁ 04/10/2026, G6-08).
 
-    Đọc dòng «Kết cục chính»/«Primary outcome» (không phải «phụ»/«secondary») và hai dòng kế: ưu tiên tên trong
-    backtick,
-    rồi tên trong ngoặc đơn (vd «(biến SHLNBChung_TrucTiep)»), rồi định danh dạng snake_case/CamelCase."""
+    Đọc dòng «Kết cục chính»/«Primary outcome» (không phải «phụ»/«secondary») và tối đa hai dòng NỐI TIẾP của chính
+    nó: ưu tiên tên trong backtick, rồi tên trong ngoặc đơn (vd «(biến SHLNBChung_TrucTiep)»), rồi định danh dạng
+    snake_case/CamelCase.
+
+    06/10/2026: «dòng nối tiếp» dừng ở dòng trống, tiêu đề, hoặc gạch đầu dòng KHÁC cùng/nông hơn — bản cũ đọc thẳng hai
+    dòng kế nên dòng kết cục chính thiếu tên biến thì lấy NHẦM biến của «Kết cục phụ 1» (gạch đầu dòng kế tiếp) làm biến
+    chính, và dòng diễn giải SAP định tính «(SRQR, …)» thành biến `srqr`."""
     dong = sap2.splitlines()
     for i, d in enumerate(dong):
         bd = _bo_dau(d)
-        if not re.search(r"ket\s*cuc\s*chinh|primary\s*outcome", bd) or re.search(r"\bphu\b|secondary", bd):
+        # Chỉ dòng có NHÃN «Kết cục chính»/«Primary outcome» ĐỨNG ĐẦU (sau gạch đầu dòng/chữ đậm/ô bảng) — cùng luật
+        # dòng khai của G8 (_DONG_KHAI_KET_CUC_RE). Câu chỉ NHẮC tới «kết cục chính» (dòng diễn giải) không phải
+        # dòng khai.
+        if not re.match(r"\s*(?:\|\s*)?(?:[-*•]\s*)?(?:\*\*)?\s*(?:ket\s*cuc\s*chinh|primary\s*outcome)", bd) or \
+                re.search(r"\bphu\b|secondary", bd):
             continue
-        for khoi in (d, *dong[i + 1:i + 3]):
+        thut = len(d) - len(d.lstrip())
+        tiep = []
+        for k in dong[i + 1:i + 3]:
+            if not k.strip() or k.lstrip().startswith("#") or (
+                    re.match(r"\s*(?:[-*•]|\d+[.)])\s", k) and len(k) - len(k.lstrip()) <= thut):
+                break
+            tiep.append(k)
+        for khoi in (d, *tiep):
             for mau in (r"`([A-Za-z][A-Za-z0-9_]{2,})`",
                         r"\(\s*(?:biến|bien|variable)?\s*:?\s*([A-Za-z][A-Za-z0-9_]{2,})\s*[,)]",
                         r"\b([a-z][a-z0-9]*_[a-z0-9_]+)\b",
@@ -302,6 +317,19 @@ def ket_cuc_chinh_sap(sap2: str) -> str | None:
                 if m:
                     return m.group(1).lower()
     return None
+
+
+def _la_dinh_tinh(thu_muc: Path, sap: str) -> bool:
+    """Đề tài ĐỊNH TÍNH? — bộ giải thiết kế dùng chung (G2 > G1); không giải được thì theo họ phương pháp SAP §4."""
+    try:
+        import gate_contract as gc  # noqa: PLC0415 — import lười, tránh vòng import lúc nạp
+
+        ma, _ = gc.resolve_design_code(thu_muc, default="")
+        if ma:
+            return str(ma).strip().lower() == "qualitative"
+    except Exception:  # noqa: BLE001 — không giải được thì dùng tín hiệu SAP
+        pass
+    return "qualitative" in _ho_mo_hinh_sap(_sec(sap, 4))
 
 
 def _nhom_con_trong_script(noi_dung: str) -> list[tuple[str, bool]]:
@@ -526,6 +554,11 @@ def evaluate_study(study: str, out_dir: Path | None = None, write: bool = True,
     elif kc_chinh and bien_kc and _bo_dau(bien_kc) != _bo_dau(kc_chinh):
         add("G6-AUTO-04", False,
             f"kết cục CHÍNH của SAP §2 là `{kc_chinh}` nhưng script phân tích `{bien_kc}` — lệch kết cục chính", True)
+    elif not kc_chinh and _la_dinh_tinh(thu_muc, sap):
+        # 06/10/2026: nghiên cứu ĐỊNH TÍNH không có BIẾN kết cục — «kết cục chính» SAP §2 là hiện tượng/câu hỏi nghiên
+        # cứu, phân tích là mã hoá chủ đề. Đòi tên biến trong backtick là ép người làm bịa một biến.
+        add("G6-AUTO-04", True, "định tính — «kết cục chính» SAP §2 là hiện tượng/câu hỏi nghiên cứu (không có biến "
+                                "kết cục để đối chiếu với script); phân tích là mã hoá chủ đề")
     elif not kc_chinh:
         add("G6-AUTO-04", None, "SAP §2 không rút được kết cục CHÍNH máy-đọc-được (ghi tên biến trong backtick ở dòng "
                                 "«Kết cục chính») — thống kê viên đối chiếu tay; chưa được PASS")

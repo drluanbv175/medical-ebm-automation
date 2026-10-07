@@ -72,7 +72,12 @@ def _tranh_bien(dp: str = "DP-G4-1", ket_qua: str = "giu_ket_luan", ket: str = "
             "phan_quyet": {"trong_tai": HD.TRONG_TAI,
                            "tung_luan_diem": [{"ma": "P1", "ket": ket, "ly_do": "§9 có nêu ở dòng 4"}],
                            "ket_qua": ket_qua, "ket_luan_cuoi": "Giữ đề xuất trình người có thẩm quyền xét.",
-                           "viec_sua": [], "chuyen_bac_si": []}}
+                           "viec_sua": [], "chuyen_bac_si": [],
+                           "giai_phap_tot_nhat": {
+                               "phuong_an": "Giữ mô hình chính theo estimand; ghi rõ cách xử lý dữ liệu thiếu ở §9",
+                               "can_cu": CAN_CU,
+                               "phuong_an_khac": [{"phuong_an": "Đổi sang phân tích người hoàn thành",
+                                                   "vi_sao_khong_chon": "lệch estimand đã chốt ở G1"}]}}}
 
 
 def _ghi(de_tai: Path, bb: dict, gate: str = "G4"):
@@ -478,3 +483,95 @@ def test_bien_ban_danh_gia_cu_co_can_cu_dong_la_cu_khong_phai_hong(de_tai):
     assert _ghi(de_tai, bb)[0] is not None
     (de_tai / SAP).write_text("SAP rút gọn còn 1 dòng\n", encoding="utf-8", newline="\n")
     assert _tt(de_tai)["trang_thai"] == "CŨ"
+
+
+
+# ── 06/10/2026: bác sĩ quyết hội đồng TƯ VẤN, ĐƯA RA GIẢI PHÁP TỐT NHẤT (phán quyết bắt buộc giai_phap_tot_nhat) ──────
+def test_phan_quyet_bat_buoc_giai_phap_tot_nhat(de_tai):
+    bb = _tranh_bien()
+    del bb["phan_quyet"]["giai_phap_tot_nhat"]
+    assert any("GIẢI PHÁP TỐT NHẤT" in x for x in _loi(de_tai, bb))
+    bb = _tranh_bien()
+    bb["phan_quyet"]["giai_phap_tot_nhat"]["phuong_an"] = ""
+    assert any("thiếu phuong_an" in x for x in _loi(de_tai, bb))
+
+
+def test_giai_phap_phai_co_can_cu_kiem_duoc_va_khong_vuot_tham_quyen(de_tai):
+    bb = _tranh_bien()
+    bb["phan_quyet"]["giai_phap_tot_nhat"]["can_cu"] = []
+    assert any("giai_phap_tot_nhat" in x for x in _loi(de_tai, bb))
+    bb = _tranh_bien()
+    bb["phan_quyet"]["giai_phap_tot_nhat"]["phuong_an"] = "SAP đã ký, coi như PASS_G4_SAP_LOCKED"
+    assert any("KHUYẾN NGHỊ" in x for x in _loi(de_tai, bb))
+    bb = _tranh_bien()
+    bb["phan_quyet"]["giai_phap_tot_nhat"]["phuong_an"] = (
+        "Gọi người bệnh số 0912345678 để hỏi lại")  # bimat-mien: số giả trong test
+    assert any("giai_phap_tot_nhat" in x for x in _loi(de_tai, bb))
+
+
+def test_sua_hoac_chuyen_bac_si_phai_can_nhac_phuong_an_khac(de_tai):
+    bb = _tranh_bien(ket_qua="sua_ket_luan", ket="chap_nhan")
+    bb["phan_quyet"]["viec_sua"] = ["Bổ sung §9 cách xử lý dữ liệu thiếu"]
+    bb["phan_quyet"]["giai_phap_tot_nhat"]["phuong_an_khac"] = []
+    assert any("phuong_an_khac" in x for x in _loi(de_tai, bb))
+    bb["phan_quyet"]["giai_phap_tot_nhat"]["phuong_an_khac"] = [{"phuong_an": "Bỏ §9"}]
+    assert any("vi_sao_khong_chon" in x for x in _loi(de_tai, bb))
+    giu = _tranh_bien()
+    giu["phan_quyet"]["giai_phap_tot_nhat"]["phuong_an_khac"] = []
+    p, kq = _ghi(de_tai, giu)
+    assert p is not None, kq.get("loi")
+
+
+def test_tom_tat_hien_giai_phap_tot_nhat(de_tai):
+    p, kq = _ghi(de_tai, _tranh_bien())
+    assert p is not None, kq.get("loi")
+    md = p.with_suffix(".md").read_text(encoding="utf-8")
+    assert "Giải pháp tốt nhất (khuyến nghị):" in md and "không chọn vì lệch estimand" in md
+    assert HD.SCHEMA == "hoi_dong_cong/v2" and '"hoi_dong_cong/v2"' in p.read_text(encoding="utf-8")
+
+
+def test_thoi_diem_giu_micro_giay_hai_bien_ban_cung_giay_van_xep_dung(de_tai):
+    """Bản cũ cắt về giây: hai tranh biện cùng điểm quyết định ghi trong MỘT giây ⇒ «mới nhất» chọn theo đuôi băm."""
+    from datetime import datetime as _dt
+    p, _kq = _ghi(de_tai, _danh_gia(kl_giam_khao="tra_ve_sua"))
+    goc = _dt(2026, 10, 6, 10, 0, 0, 100).astimezone()
+    bb = _tranh_bien("DP-G4-1")
+    p1, kq1 = HD.ghi_bien_ban(STUDY, "G4", bb, de_tai, de_tai.parent.parent, bay_gio=goc)
+    assert p1 is not None, kq1.get("loi")
+    assert json.loads(p1.read_text(encoding="utf-8"))["thoi_diem"].endswith(".000100" + goc.strftime("%z")[:3] + ":"
+                                                                             + goc.strftime("%z")[3:])
+    bb2 = dict(bb, nguon_bat_dong=json.loads(p.read_text(encoding="utf-8"))["id"])
+    HD.ghi_bien_ban(STUDY, "G4", bb2, de_tai, de_tai.parent.parent, bay_gio=goc.replace(microsecond=200))
+    assert _tt(de_tai)["trang_thai"] == "THIẾU TRANH BIỆN BẮT BUỘC", "biên bản sau (cùng giây) phải là bản mới nhất"
+
+
+def test_dong_ho_tho_bien_ban_ghi_lien_nhau_van_xep_dung_thu_tu_ghi(de_tai, monkeypatch):
+    """Windows + Python < 3.13: đồng hồ nhảy ~15,6 ms một nấc ⇒ hai biên bản ghi liền nhau TRÙNG micro giây. Ghi bằng
+    đồng hồ thật thì mốc mới phải LỚN HƠN HẲN mốc đã có (thứ tự ghi = thứ tự thời gian), không phó mặc đuôi băm."""
+    from datetime import datetime as _dt
+    co_dinh = _dt(2026, 10, 7, 9, 0, 0, 500).astimezone()
+
+    class _DongHoTho(_dt):
+        @classmethod
+        def now(cls, tz=None):
+            return co_dinh
+
+    monkeypatch.setattr(HD, "datetime", _DongHoTho)
+    p, _kq = _ghi(de_tai, _danh_gia(kl_giam_khao="tra_ve_sua"))
+    bb = _tranh_bien("DP-G4-1")
+    p2, _kq2 = _ghi(de_tai, bb)  # tranh biện chưa trỏ nguồn bất đồng
+    bb["nguon_bat_dong"] = json.loads(p.read_text(encoding="utf-8"))["id"]
+    p3, _kq3 = _ghi(de_tai, bb)
+    moc = [_dt.fromisoformat(json.loads(x.read_text(encoding="utf-8"))["thoi_diem"]) for x in (p, p2, p3)]
+    assert moc[0] == co_dinh and moc[0] < moc[1] < moc[2], moc
+    assert _tt(de_tai)["trang_thai"] == "THIẾU TRANH BIỆN BẮT BUỘC", "biên bản ghi SAU phải là bản mới nhất"
+
+
+def test_moc_truyen_tay_giu_nguyen_khong_ep_thu_tu(de_tai):
+    """Mốc truyền tay (bay_gio) là ý định của người gọi — kể cả mốc cũ hơn biên bản đã có — không bị đẩy lên."""
+    from datetime import datetime as _dt
+    p, _kq = _ghi(de_tai, _danh_gia(kl_giam_khao="tra_ve_sua"))
+    cu_hon = _dt(2020, 1, 2, 3, 4, 5, 6).astimezone()
+    p2, kq2 = HD.ghi_bien_ban(STUDY, "G4", _tranh_bien("DP-G4-1"), de_tai, de_tai.parent.parent, bay_gio=cu_hon)
+    assert p2 is not None, kq2.get("loi")
+    assert _dt.fromisoformat(json.loads(p2.read_text(encoding="utf-8"))["thoi_diem"]) == cu_hon

@@ -68,6 +68,8 @@ Disclaimer: **"Cần bác sĩ kiểm chứng."**
 ## 6. Tiêu chí qua cổng (G0–G7 nhánh định tính)
 **Đạt khi:** paradigm khớp câu hỏi; kế hoạch lấy mẫu + quy tắc bão hòa; hướng dẫn phỏng vấn; khung mã hóa; bảng trustworthiness 4 tiêu chí; (mixed) điểm tích hợp + joint display; checklist COREQ/SRQR. KHÔNG báo "có chủ đề" khi chưa có dữ liệu thật.
 
+**SAP (G4) của đề tài định tính (06/10/2026):** dòng «Kết cục chính:» ở §2 = HIỆN TƯỢNG / CÂU HỎI NGHIÊN CỨU TRỌNG TÂM đã chốt ở G1 (run_g4_auto điền sẵn, kèm diễn giải SRQR — không kiểm định giả thuyết, không p-value/alpha); đơn vị/ngưỡng, kết cục an toàn KHÔNG ÁP DỤNG. G6 không đòi tên biến kết cục; G8 nhận bản thảo nêu «câu hỏi/hiện tượng nghiên cứu». Đổi hiện tượng trọng tâm sau khi đã thu thập dữ liệu là SỬA ĐỔI phải giải trình (`gate_params.G10.sua_doi_ket_cuc_chinh`).
+
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột: không bịa quote/chủ đề; KHÔNG PII (cảnh báo nguy cơ nhận dạng); phương pháp khớp câu hỏi. Kết: **"Cần bác sĩ kiểm chứng."**
 
