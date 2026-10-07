@@ -41,9 +41,11 @@ def _configure_test_signing_key(tmp_path: Path, monkeypatch) -> None:
     monkeypatch.setenv("EBM_GATE_KEY_PATH", str(key_path))
 
 
-def _write_real_approval(study: str, gate_id: str, artifact_rel: str, content: str) -> None:
+def _write_real_approval(study: str, gate_id: str, artifact_rel: str, content: str,
+                         timestamp_utc: str = "") -> None:
     """Tạo phê duyệt THẬT trong exports/<study>/approval_ledger.json — giống hệt những
-    gì tools/approve_gate.py làm (không đi qua subprocess để test nhanh/gọn hơn)."""
+    gì tools/approve_gate.py làm (không đi qua subprocess để test nhanh/gọn hơn).
+    ``timestamp_utc`` (07/10/2026): mốc KÝ tuỳ chọn (nằm trong nội dung ký)."""
     study_dir = _REPO_ROOT / "exports" / study
     study_dir.mkdir(parents=True, exist_ok=True)
     artifact = study_dir / artifact_rel
@@ -51,7 +53,7 @@ def _write_real_approval(study: str, gate_id: str, artifact_rel: str, content: s
     artifact.write_text(content, encoding="utf-8", newline="\n")
     ledger_path = study_dir / "approval_ledger.json"
     ledger = ApprovalLedger.from_file(ledger_path)
-    timestamp_utc = datetime.now(timezone.utc).isoformat()
+    timestamp_utc = timestamp_utc or datetime.now(timezone.utc).isoformat()
     evidence_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
     role_by_gate = {
         "G2": "IRB_ETHICS_COMMITTEE",
@@ -98,8 +100,29 @@ class TestRunStatsG2Gate:
     def test_passes_g2_gate_with_real_ledger_approval(self, tmp_path, monkeypatch):
         """Phê duyệt G2 THẬT (ledger) + cờ IRB thay checkpoint-file bị mất → phải VƯỢT
         cổng G2, rồi mới thất bại ở bước khác (dữ liệu không tồn tại), không phải bị
-        chặn ở G2."""
+        chặn ở G2.
+
+        07/10/2026 (thu hẹp nhánh tương thích G2 kiểu cũ): gói không attestation + checkpoint
+        mất chỉ còn hợp lệ khi phê duyệt KÝ TRƯỚC mốc hợp đồng G2-2026.1 — phê duyệt ở đây ký
+        trước mốc; ca ký SAU mốc: test kế tiếp."""
         study = "__g2gate_pytest_real_approval__"
+        study_dir = _REPO_ROOT / "exports" / study
+        shutil.rmtree(study_dir, ignore_errors=True)
+        try:
+            _configure_test_signing_key(tmp_path, monkeypatch)
+            _write_real_approval(
+                study, "G2", f"G2_A3_ETHICS_PACKAGE_{study}.md", "Ethics package test content",
+                timestamp_utc="2026-07-20T08:00:00+00:00")
+            res = _run("--i-confirm-sap-locked", "--i-confirm-irb-approved", study=study)
+            combined = res.stdout + res.stderr
+            assert "DỪNG: G2" not in combined  # không còn bị chặn ở cổng G2
+        finally:
+            shutil.rmtree(study_dir, ignore_errors=True)
+
+    def test_g2_ky_sau_moc_khong_attestation_van_bi_chan_du_co_co_irb(self, tmp_path, monkeypatch):
+        """07/10/2026: phê duyệt ký SAU mốc hợp đồng G2-2026.1 trên gói KHÔNG attestation, checkpoint
+        mất + cờ IRB ⇒ vẫn DỪNG ở G2 (hợp đồng chất lượng G2 không đạt) — trước đây nhánh kiểu cũ cho qua."""
+        study = "__g2gate_pytest_sau_moc__"
         study_dir = _REPO_ROOT / "exports" / study
         shutil.rmtree(study_dir, ignore_errors=True)
         try:
@@ -107,8 +130,8 @@ class TestRunStatsG2Gate:
             _write_real_approval(
                 study, "G2", f"G2_A3_ETHICS_PACKAGE_{study}.md", "Ethics package test content")
             res = _run("--i-confirm-sap-locked", "--i-confirm-irb-approved", study=study)
-            combined = res.stdout + res.stderr
-            assert "DỪNG: G2" not in combined  # không còn bị chặn ở cổng G2
+            assert res.returncode != 0
+            assert "DỪNG: G2" in res.stdout and "G2 quality" in res.stdout, res.stdout
         finally:
             shutil.rmtree(study_dir, ignore_errors=True)
 

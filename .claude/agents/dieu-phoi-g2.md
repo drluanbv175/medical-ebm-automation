@@ -35,6 +35,8 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 - Chấm (CLI có GHI báo cáo/checkpoint — chạy sau khi nhiệm vụ xong): `python3 tools/g2_quality_gate.py --study <mã>`;
   trạng thái: `DRAFT_NEEDS_HUMAN_COMPLETION` → `READY_FOR_IRB_SUBMISSION` → `PASS_G2_APPROVED`.
 - **Người ký (CỔNG CỨNG):** IRB TỰ chạy `python3 tools/approve_gate.py --study <mã> --gate G2 --artifact exports/<mã>/G2_A3_ETHICS_PACKAGE_<mã>.md --reviewer-role <vai>` (kèm `--g2-approval-number/--g2-approval-date/--g2-protocol-version/--g2-icf-version`… do Hội đồng cấp). Agent KHÔNG ký, KHÔNG gọi lệnh này.
+- Từ 07/10/2026 (bác sĩ quyết): G2 ký SAU 28/07/2026 mà gói không có attestation KHÔNG được G5–G10 nhận
+  (`gate_contract.g2_ky_truoc_moc_hop_dong`) — luôn ký kèm phụ lục quyết định có cấu trúc, không dựa checkpoint.
 
 ## 5. Điểm quyết định phải tranh biện
 | Mã | Câu hỏi phải tranh biện | Thẩm quyền quyết | Bắt buộc trước khi đề xuất trình ký |

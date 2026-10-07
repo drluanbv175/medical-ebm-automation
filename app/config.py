@@ -5,6 +5,7 @@ Mọi API key và tham số vận hành đều nạp từ môi trường, KHÔNG
 from __future__ import annotations
 
 import os
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List
@@ -59,11 +60,37 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # file dễ bị OneDrive làm hỏng nhất. `load_dotenv` mặc định không ghi đè biến đã
 # có, nên chỉ cần nạp theo đúng thứ tự này.
 _SECRETS_ENV = Path.home() / ".ebm-secrets" / "medical-ebm-automation.env"
-if _SECRETS_ENV.exists():
-    load_dotenv(_SECRETS_ENV)
 
-# Nạp .env trong repo nếu có (không lỗi nếu thiếu; không ghi đè thứ đã nạp ở trên)
-load_dotenv(BASE_DIR / ".env")
+
+def dang_chay_kiem_thu() -> bool:
+    """True khi tiến trình đang chạy dưới pytest — CÙNG tín hiệu với tools/gate_contract._test_context_active (pytest
+    trong tiến trình, hoặc tiến trình con kế thừa PYTEST_CURRENT_TEST). Mã vận hành không import pytest (đo 07/10/2026),
+    nên tín hiệu này không làm một lần chạy THẬT bỏ kho secrets rồi rơi về dữ liệu MOCK."""
+    return "pytest" in sys.modules or "PYTEST_CURRENT_TEST" in os.environ
+
+
+# VÁ 07/10/2026 (bác sĩ duyệt, việc treo của đợt khoá giả 05/10): dưới pytest KHÔNG nạp tệp biến môi trường nào — cả
+# kho secrets THẬT lẫn `.env` của repo (trên Mac `.env` từng là symlink trỏ vào kho, mà chốt canh so đường dẫn không
+# theo symlink). Trước đây mỗi lượt pytest đọc kho secrets ~36 lần (1 trong tiến trình — phải khai miễn trừ ở chốt
+# canh tests/conftest.py — và các tiến trình con). Test chỉ dùng biến do conftest/monkeypatch đặt; CI vốn chạy không có
+# kho secrets mà vẫn xanh nên không test nào cần nó.
+def _nap_tep_moi_truong(dang_kiem_thu: bool, nap=load_dotenv) -> List[Path]:
+    """Nạp kho secrets rồi `.env` của repo (đúng thứ tự ở trên); trả danh sách tệp ĐÃ đưa cho `nap`. Đang kiểm thử ⇒
+    không nạp gì. Tách thành hàm để test kiểm thứ tự nạp của lần chạy THẬT bằng bộ nạp giả — không mở tệp thật nào."""
+    if dang_kiem_thu:
+        return []
+    da_nap: List[Path] = []
+    if _SECRETS_ENV.exists():
+        nap(_SECRETS_ENV)
+        da_nap.append(_SECRETS_ENV)
+    # Nạp .env trong repo nếu có (không lỗi nếu thiếu; không ghi đè thứ đã nạp ở trên)
+    nap(BASE_DIR / ".env")
+    da_nap.append(BASE_DIR / ".env")
+    return da_nap
+
+
+NAP_TEP_MOI_TRUONG = not dang_chay_kiem_thu()
+TEP_DA_NAP = _nap_tep_moi_truong(not NAP_TEP_MOI_TRUONG)
 
 
 def _get_bool(key: str, default: bool = False) -> bool:

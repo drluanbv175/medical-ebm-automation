@@ -43,7 +43,7 @@ import g8_quality_gate as G8Q  # noqa: E402
 import gate_contract as GC  # noqa: E402
 import run_g8_auto as G8A  # noqa: E402
 
-from tests.g5_test_helpers import append_signed_approval  # noqa: E402
+from tests.g5_test_helpers import DANG_KY_THU_RCT, append_signed_approval  # noqa: E402
 from tests.test_g7_hoan_thien_20261004 import (  # noqa: E402
     THIET_KE,
     _cham,
@@ -91,7 +91,10 @@ def _khai_g8(out: Path, ket_cuc: str) -> None:
     meta["gate_params"]["G8"] = {
         "primary_outcome": ket_cuc, "ai_use_declared": True, "ai_tools": "Claude (Anthropic)",
         "ai_purpose": "hỗ trợ soạn khung bản thảo", "ai_declared_in_cover_letter": True,
-        "registration_id": "NCT01234567", "registration_date": "2026-01-10", "first_enrolment_date": "2026-02-01",
+        # 07/10/2026: CÙNG đăng ký mà G2 (RCT) của đồ gá đã ký — G8-AUTO-07 đối chiếu với attestation G2.
+        "registration_id": DANG_KY_THU_RCT["registration_id"],
+        "registration_date": DANG_KY_THU_RCT["registration_date"],
+        "first_enrolment_date": DANG_KY_THU_RCT["first_enrolment_date"],
         "data_sharing_statement": _DATA_SHARING,
         "cover_letter_no_duplicate_submission": True, "cover_letter_coi_declared": True,
         "cover_letter_all_authors_approved": True, "cover_letter_corresponding_contact": True,
