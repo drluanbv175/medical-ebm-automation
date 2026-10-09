@@ -821,6 +821,11 @@ def _gate_pending_actions(cp: dict, gate_key: str) -> str:
     pending = cp.get("pending_doctor_actions", [])
     if pending:
         return "; ".join(str(p) for p in pending[:2])
+    # VÁ 09/10/2026 (hội đồng BD-G0-T1 P2): với G0, khoá CÓ MẶT mà rỗng = bộ chấm G0 đã đồng bộ
+    # (g0_quality_gate.dong_bo_trang_thai_checkpoint) và không còn việc — trước đây rơi xuống câu mặc định «Xac nhan
+    # PICO + ket cuc chinh» cả khi G0 đã PASS_G0_CONFIRMED. Cổng khác chưa có bảo đảm đồng bộ đó ⇒ giữ câu mặc định.
+    if gate_key == "G0" and isinstance(pending, list) and "pending_doctor_actions" in cp:
+        return "Khong con viec cua bac si theo checkpoint"
     defaults = {
         "G0": "Xac nhan PICO + ket cuc chinh",
         "G1": "Bac si chon thiet ke cuoi",

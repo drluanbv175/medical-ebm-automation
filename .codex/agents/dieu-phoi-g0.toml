@@ -35,6 +35,7 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 - `python3 tools/run_g0_auto.py --study <mã> --topic "<chủ đề>" [--query-en "…"]` — PubMed thật + ClinicalTrials.gov tự động (`--skip-registry` chỉ khi mất mạng, phải ghi lý do)
 - Chấm (CLI có GHI báo cáo/checkpoint — chạy sau khi nhiệm vụ xong): `python3 tools/g0_quality_gate.py --study <mã>`;
   trạng thái: `DRAFT_READY_NEEDS_HUMAN_REVIEW` → `PASS_G0_CONFIRMED`.
+- **Chấm lại ≠ dựng lại (09/10/2026):** G0 dừng vì chờ bác sĩ/PI (`MISSING_PICO`) trên nền bằng chứng đã có ⇒ `run_pipeline.py` chỉ CHẤM LẠI bằng `g0_quality_gate.py` (không tra lại PubMed, không sinh lại A1); muốn dựng lại nền bằng chứng (vd PI đổi `query_en`) thì `--from G0`. `gate_status` + `pending_doctor_actions` của `G0_checkpoint.json` do bộ chấm đồng bộ từ kết quả chấm — đọc chúng, không chép danh sách việc cũ. `G0_pubmed_raw.json → search_provenance` giữ CSDL, ngày tra, chuỗi hiệu lực, bộ lọc, trần từng nhánh (PRISMA-S) cho gói tìm bổ sung.
 - **Xác nhận người (cổng mềm):** PI xác nhận ở `study_meta.gate_params.G0` (`pico_confirmed`, FINER có kết luận + lý do, `registry_manual_checked`, `dau_van_tay_chot` chép từ báo cáo G0). Agent CHÉP dấu cho người xác nhận nhìn — KHÔNG tự ghi.
 
 ## 5. Điểm quyết định phải tranh biện

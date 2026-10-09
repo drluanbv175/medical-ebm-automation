@@ -341,7 +341,11 @@ def run_pubmed_searches(queries: dict[str, str], max_per_query: int = 15) -> dic
     results = {"sr_ma": [], "rct": [], "guideline": [], "observational": [],
                "recent": [], "all_pmids": set(),
                "true_counts": {},   # khởi tạo sẵn: nhánh ném exception vẫn đọc được
-               "query_errors": {}}
+               "query_errors": {},
+               # VÁ 09/10/2026 (hội đồng BD-G0-T2): chiến lược tìm THEO TỪNG NHÁNH — trước đây G0_pubmed_raw.json
+               # chỉ có danh sách bài, không ai tái lập/thẩm định được lượt tìm (PRISMA-S: CSDL, chuỗi, bộ lọc,
+               # ngày tra, giới hạn số bài).
+               "provenance": {}}
     total_found = 0
 
     # Map query type → (result_key, max_n, dedup?)
@@ -356,11 +360,20 @@ def run_pubmed_searches(queries: dict[str, str], max_per_query: int = 15) -> dic
     for qtype, (result_key, n, dedup) in query_map.items():
         q = queries.get(qtype, queries["broad"])
         print(f"  🔍 Tìm {qtype} [{n} kết quả]: {q[:80]}...")
+        # Nhánh quan sát PHẢI dùng bộ lọc MeSH riêng — PubMed không có
+        # [Publication Type] cho cohort/case-control/cắt ngang.
+        _filt = (PM_OBSERVATIONAL_FILTER if qtype == "observational"
+                 else PM_PUBTYPE_FILTER)
+        results["provenance"][qtype] = {
+            "nhom_ket_qua": result_key,
+            "truy_van": q,
+            "bo_loc": _filt,
+            # Cùng cách PubMedClient.search/count_hits ghép term gửi esearch.
+            "chuoi_hieu_luc": f"({q}) AND {_filt}" if _filt else f"({q})",
+            "tran_so_bai": n,
+            "loai_trung_pmid": dedup,
+        }
         try:
-            # Nhánh quan sát PHẢI dùng bộ lọc MeSH riêng — PubMed không có
-            # [Publication Type] cho cohort/case-control/cắt ngang.
-            _filt = (PM_OBSERVATIONAL_FILTER if qtype == "observational"
-                     else PM_PUBTYPE_FILTER)
             records = client.search(q, max_results=n, pubtype_filter=_filt)
             # SỐ HIT THẬT (esearch Count) — KHÁC số bài lấy về (bị chặn bởi
             # --max-results). Xem count_hits() và analyze_evidence_gaps().
@@ -382,6 +395,9 @@ def run_pubmed_searches(queries: dict[str, str], max_per_query: int = 15) -> dic
                         total_found += 1
                     new_count += 1
             print(f"     → Tìm thấy {len(records)} bài ({new_count} thêm vào)")
+            results["provenance"][qtype].update(
+                so_hit_that=results["true_counts"].get(result_key), so_bai_lay_ve=len(records),
+                pmid_lay_ve=[r.pmid for r in records if r.pmid])
             # ★ VÁ 2026-07-28 (vòng soi độc lập thứ hai): khối `except` bên dưới là MÃ
             # CHẾT trên đường lỗi mạng — PubMedClient.search() tự bắt mọi exception rồi
             # trả [] ("BỎ QUA nguồn này, KHÔNG bịa mock"), nên guardrail R1B in
@@ -1607,6 +1623,17 @@ def main():
                            "journal": r.journal_or_organization, "url": r.url}
                           for r in results.get("observational", [])],
         "true_counts": results.get("true_counts", {}),
+        # VÁ 09/10/2026 (hội đồng BD-G0-T2): chiến lược tìm tái lập được — CSDL, giao diện, ngày tra, truy vấn gốc,
+        # từng nhánh (chuỗi hiệu lực, bộ lọc, trần, số hit thật, PMID lấy về) và lỗi nhánh nếu có.
+        "search_provenance": {
+            "co_so_du_lieu": "PubMed (MEDLINE và phần còn lại của PubMed)",
+            "giao_dien": "NCBI E-utilities (esearch/efetch) qua app.sources.pubmed.PubMedClient",
+            "ngay_tra": datetime.now().isoformat(timespec="seconds"),
+            "truy_van_goc": queries.get("base", ""),
+            "query_en_do_nguoi_cung_cap": bool(args.query_en),
+            "nhanh": results.get("provenance", {}),
+            "loi_nhanh": results.get("query_errors") or {},
+        },
     }
     raw_path.write_text(json.dumps(raw_results, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
@@ -1641,6 +1668,9 @@ def main():
     # bị chặn vì lý do nặng hơn (0 PMID) — không đè lý do dừng gốc.
     if not blocked and quality.get("needs_input"):
         cp["needs_input"] = quality["needs_input"]
+    # VÁ 09/10/2026 (hội đồng BD-G0-T1 P2): gate_status + pending_doctor_actions lấy từ KẾT QUẢ CHẤM, không giữ hằng số
+    # in cứng ở write_checkpoint — cùng một hàm với lượt chấm lại độc lập (g0_quality_gate.refresh_checkpoint).
+    G0Q.dong_bo_trang_thai_checkpoint(cp, quality, study)
     cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
 
     # Tóm tắt cuối — banner NÓI ĐÚNG trạng thái, không còn "HOÀN THÀNH" vô điều kiện.

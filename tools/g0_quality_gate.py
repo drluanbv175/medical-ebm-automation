@@ -290,6 +290,38 @@ def _thiet_ke_ghim(meta: Mapping[str, Any]) -> Optional[str]:
     return S.ma_thiet_ke_chuoi(raw) if isinstance(raw, str) else None
 
 
+# Bốn tiêu chí NGƯỜI định nghĩa CÂU HỎI (PICO · kết cục chính · giả thuyết · loại câu hỏi); 05..08 là xác nhận của PI.
+_G0_HUMAN_CAU_HOI = ("G0-HUMAN-01", "G0-HUMAN-02", "G0-HUMAN-03", "G0-HUMAN-04")
+
+
+def dong_bo_trang_thai_checkpoint(checkpoint: Dict[str, Any], report: Mapping[str, Any], study: str) -> None:
+    """Ghi `gate_status` + `pending_doctor_actions` của checkpoint G0 TỪ KẾT QUẢ CHẤM (09/10/2026, hội đồng BD-G0-T1).
+
+    Trước đây hai khoá này do `run_g0_auto.write_checkpoint` IN CỨNG («DRAFT — CHỜ BÁC SĨ CHỐT PICO…» + 6 việc cố định)
+    và `refresh_checkpoint` không bao giờ đụng tới ⇒ PI chốt xong PICO, chấm lại PASS_G0_CONFIRMED, checkpoint vẫn kể
+    «điền PICO 4 thành phần…»; run_g8_auto in nguyên văn danh sách đó vào bảng tồn đọng. Cùng mẫu G1 (run_g1_auto) và G2
+    (g2_quality_gate). Lý do dừng NẶNG HƠN (0 PMID, guardrail bẩn) giữ ưu tiên."""
+    ni = checkpoint.get("needs_input") if isinstance(checkpoint.get("needs_input"), dict) else {}
+    gr = checkpoint.get("guardrail") if isinstance(checkpoint.get("guardrail"), dict) else {}
+    st = report.get("status")
+    con_cho = [row["id"] for row in report.get("human_criteria") or [] if row.get("status") != "PASS"]
+    if ni.get("blocked") and ni.get("reason_code") == GC.REASON_MISSING_PUBMED:
+        checkpoint["gate_status"] = "BLOCKED — thiếu bằng chứng thật (xem needs_input)"
+    elif gr.get("passed") is False:
+        checkpoint["gate_status"] = "BLOCKED — guardrail liêm chính chưa sạch"
+    elif st == STATUS_BLOCKED:
+        checkpoint["gate_status"] = "BLOCKED — kiểm tự động G0 chưa sạch (xem G0_QUALITY_REPORT)"
+    elif st == STATUS_CONFIRMED:
+        checkpoint["gate_status"] = f"{STATUS_CONFIRMED} — câu hỏi nghiên cứu đã được bác sĩ chốt"
+    else:
+        checkpoint["gate_status"] = (f"DRAFT — CHỜ BÁC SĨ: {', '.join(con_cho)}" if con_cho
+                                     else "DRAFT — còn mục kiểm tự động cần bác sĩ xem (xem G0_QUALITY_REPORT)")
+    viec = list(report.get("pending_actions") or [])
+    if viec:
+        viec.append(f"Chạy: python tools/g0_quality_gate.py --study {study}")
+    checkpoint["pending_doctor_actions"] = viec
+
+
 def _criterion(criterion_id: str, label: str, status: str,
                evidence: str, action: str = "") -> Dict[str, str]:
     return {
@@ -792,11 +824,17 @@ def evaluate_g0_quality(
     # needs_input máy-đọc-được cho pipeline: chỉ khi phần máy đã sạch mà người
     # thật chưa chốt — đây là lần đầu REASON_MISSING_PICO được dùng thật.
     if status == STATUS_DRAFT_READY and not human_complete:
+        # VÁ 09/10/2026 (hội đồng BD-G0-T1, P1): thông điệp cũ luôn nói «PICO/kết cục chính/FINER còn trống» kể cả khi
+        # HUMAN-01..04 (câu hỏi) đã đạt và chỉ còn việc xác nhận của PI (05..08) — đọc như phải viết lại câu hỏi.
+        con_cho = [row["id"] for row in human if row["status"] != "PASS"]
+        cau_hoi_xong = not any(i in con_cho for i in _G0_HUMAN_CAU_HOI)
         report["needs_input"] = GC.needs_input(
             GC.REASON_MISSING_PICO,
-            "G0 đã dựng xong NỀN BẰNG CHỨNG nhưng CÂU HỎI NGHIÊN CỨU chưa được "
-            "bác sĩ chốt (PICO/kết cục chính/FINER còn trống). Hệ KHÔNG tự viết "
-            "PICO thay bác sĩ.",
+            ("G0 đã dựng xong NỀN BẰNG CHỨNG; câu hỏi nghiên cứu (PICO, kết cục chính, giả thuyết, loại câu hỏi) ĐÃ "
+             f"đạt — còn chờ bác sĩ/PI: {', '.join(con_cho)}. Không cần tra lại PubMed; điền xong thì chấm lại."
+             if cau_hoi_xong else
+             "G0 đã dựng xong NỀN BẰNG CHỨNG nhưng CÂU HỎI NGHIÊN CỨU chưa được "
+             f"bác sĩ chốt (còn chờ: {', '.join(con_cho)}). Hệ KHÔNG tự viết PICO thay bác sĩ."),
             "sửa exports/<study>/study_meta.json → gate_params.G0 rồi chạy: "
             "python tools/g0_quality_gate.py --study <study>",
             must_not_fabricate=["PICO", "primary_outcome", "FINER", "hypothesis"],
@@ -962,6 +1000,7 @@ def refresh_checkpoint(*, study: str, out_dir: Path,
             "resolved_by": "g0_quality_gate.refresh_checkpoint",
             "resolved_at": datetime.now().isoformat(timespec="seconds"),
         }
+    dong_bo_trang_thai_checkpoint(checkpoint, report, study)
     PF.ghi_checkpoint_giu_moc_sinh(checkpoint_path, json.dumps(checkpoint, ensure_ascii=False, indent=2))
     return checkpoint_path
 
