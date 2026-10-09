@@ -21,9 +21,9 @@
       "primary_outcome": "G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep)",
       "primary_outcome_measure": "Thang thứ hạng Likert 5 mức (1 = Rất không hài lòng ... 5 = Rất hài lòng); phân tích chính bằng hồi quy logistic thứ tự proportional odds, báo tỷ số chênh chung hiệu chỉnh kèm KTC 95%",
       "primary_outcome_timepoint": "Đo một lần, ngay sau khi người bệnh cơ bản hoàn thành quy trình khám trong cùng lần khám",
-      "hypothesis_h0": null,
-      "hypothesis_h1": null,
-      "expected_direction": null,
+      "hypothesis_h0": "Ở người bệnh ngoại trú Khoa C1a, sau hiệu chỉnh các biến gây nhiễu đã khoá theo DAG (SAP §5), thời gian chờ khám theo mốc HIS (mỗi 15 phút) không liên quan với mức hài lòng chung G1: OR chung = 1.",
+      "hypothesis_h1": "OR chung khác 1 (kiểm định hai phía, alpha = 0,05).",
+      "expected_direction": "Chờ lâu hơn liên quan với G1 thấp hơn: OR chung cho mức G1 cao hơn, mỗi 15 phút chờ thêm, < 1 (Quyen 2021, PMID 34017606 — ngoại trú Việt Nam, bằng chứng gián tiếp).",
       "test_type": "descriptive",
       "question_type": "descriptive",
       "finer_feasible": true,
@@ -35,7 +35,14 @@
       "novelty_justification": "[DỰ THẢO — CHỜ BÁC SĨ ĐỌC 12 PMID Ở §3 CỦA A1 RỒI CHỐT] Tính mới ở mức mở rộng/nhân rộng vào bối cảnh mới (replication), không phải mới về chủ đề hay phương pháp: chưa tìm thấy nghiên cứu công bố, được kiểm chứng, đặc thù cho một khoa khám theo yêu cầu trong bệnh viện quân y tuyến cuối. Kèm đóng góp về công cụ: bộ phiếu chung của Bộ Y tế không có lĩnh vực riêng cho chi phí dịch vụ theo yêu cầu (mục 3.4, 3.5 đề cương)",
       "pico_confirmed": true,
       "reviewed_by_role": "PI",
-      "reviewed_at": "2026-08-15"
+      "reviewed_at": "2026-08-15",
+      "descriptive_justification": null,
+      "registry_manual_checked": {
+        "ictrp": null,
+        "prospero": null
+      },
+      "registry_overlap_assessment": null,
+      "dau_van_tay_chot": null
     },
     "G1": {
       "protocol_version": "1.0",
@@ -98,7 +105,33 @@
       "feasibility_confirmed": false,
       "evidence_review_confirmed": false,
       "reviewed_by_role": null,
-      "reviewed_at": null
+      "reviewed_at": null,
+      "team_roles": null,
+      "background_problem": null,
+      "evidence_summary": null,
+      "knowledge_gap": null,
+      "benefit_risk_rationale": null,
+      "study_schema_timeline": null,
+      "intervention_dose_adherence": null,
+      "stopping_rescue_rules": null,
+      "critical_to_quality": null,
+      "monitoring_plan": null,
+      "randomisation": null,
+      "allocation_concealment": null,
+      "blinding": null,
+      "target_condition": null,
+      "reference_standard": null,
+      "case_definition": null,
+      "control_source": null,
+      "candidate_predictors": null,
+      "prediction_horizon": null,
+      "risk_register": [],
+      "budget": [],
+      "annex2": {
+        "applicable": null,
+        "methodologies": []
+      },
+      "dau_van_tay_chot": null
     },
     "G2": {
       "protocol_version": "1.0",
@@ -110,7 +143,11 @@
       "registration_date": null,
       "first_enrolment_date": null,
       "icf_waiver_requested": false,
-      "safety_plan_required": null
+      "safety_plan_required": null,
+      "public_title": null,
+      "health_condition": null,
+      "primary_purpose": null,
+      "safety_plan_confirmed": false
     },
     "G7": {
       "title": null,
@@ -126,6 +163,12 @@
       "reviewed_at": null
     },
     "G3": {
+      "small_sample_correction": "Mô hình chính dùng sai số chuẩn robust theo chùm ma_ban_kham (cluster-robust SE); mô hình thứ tự hệ số chặn ngẫu nhiên theo bàn khám là phân tích nhạy cảm; nếu số bàn khám thực tế < 15 thì mô hình hệ số chặn ngẫu nhiên thành phân tích chính (đề cương §4.10, SAP §4 — ấn định trước). Thực tế C1a có 50 bàn khám (lời bác sĩ 07/10/2026); số chùm 27 của G3 là số chùm suy từ N tối thiểu 532 với m = 20.",
+      "prevalence": 0.5,
+      "precision": 0.05,
+      "icc": 0.02,
+      "icc_source": "Giá trị lập kế hoạch thận trọng cho gom cụm theo bàn khám: Adams 2004, PMID 15485730 (31 nghiên cứu cụm chăm sóc ban đầu, trung vị ICC 0,010; IQR 0–0,032); Campbell 2005, PMID 16279131 (ICC ở chăm sóc tuyến hai cao hơn). ICC thật ước lượng từ dữ liệu theo ma_ban_kham (SAP §4).",
+      "cluster_size": 20,
       "effect_size": 0.5,
       "effect_type": "PREVALENCE",
       "dropout": 0.15,
@@ -134,7 +177,7 @@
       "confirmed_n": 1000,
       "prevalence_source": "Quy ước thận trọng p = 0,50 — giá trị làm phương sai p(1-p) lớn nhất nên cho cỡ mẫu lớn nhất; dùng khi chưa có ước lượng tỷ lệ hài lòng tại chính Khoa C1a. Nguồn công thức: Lwanga SK, Lemeshow S. Sample size determination in health studies: a practical manual. WHO, 1991 (mục 4.4.1 đề cương)",
       "dropout_source": "Dự phòng 15% cho phiếu không trả lời hoặc phiếu lỗi, do nhóm nghiên cứu ấn định theo kinh nghiệm vận hành khảo sát tại phòng khám (mục 4.4.1 đề cương). Con số này sẽ được đối chiếu lại bằng tỷ lệ không trả lời quan sát được ở pilot n≈50-100 trước khi khóa SAP; cờ assumptions_confirmed giữ ở False cho tới khi đối chiếu xong.",
-      "powered_for_outcome": "Cỡ mẫu tính cho KẾT CỤC MT1: tỷ lệ hài lòng chung (G1 >= 4/5), ước lượng theo độ chính xác với nửa rộng KTC 95% là ±5%. MT2 (hồi quy logistic thứ tự trên G1) KHÔNG dùng công thức này; ràng buộc của MT2 là số quan sát ở mức ít gặp nhất của G1 theo quy tắc EPV, cần rà lại bằng Bảng 5.2 khi có dữ liệu thật (mục 4.4.1)",
+      "powered_for_outcome": "G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep, Phần 3 phiếu)",
       "software": "Python 3.14 (scipy.stats, statsmodels 0.14); đối chiếu chéo bằng nửa rộng KTC 95%",
       "hypothesis_type": "descriptive_precision",
       "effect_source_confirmed": false,
@@ -143,14 +186,16 @@
       "recruitment_feasibility_confirmed": false,
       "reviewed_by_role": null,
       "reviewed_at": null,
-      "effect_source": "Không áp dụng theo thiết kế: đây là nghiên cứu MÔ TẢ, cỡ mẫu tính theo ĐỘ CHÍNH XÁC của ước lượng một tỷ lệ (Lwanga & Lemeshow, WHO 1991), không theo hiệu quả can thiệp. Tham số thay thế effect size là tỷ lệ hiện mắc ước lượng p = 0,50 — xem prevalence_source."
+      "effect_source": "Không áp dụng theo thiết kế: đây là nghiên cứu MÔ TẢ, cỡ mẫu tính theo ĐỘ CHÍNH XÁC của ước lượng một tỷ lệ (Lwanga & Lemeshow, WHO 1991), không theo hiệu quả can thiệp. Tham số thay thế effect size là tỷ lệ hiện mắc ước lượng p = 0,50 — xem prevalence_source.",
+      "underpowered_acceptance_justification": null
     },
     "G4": {
       "epv_vif_reviewed": false,
       "missing_data_mechanism_confirmed": false,
       "subgroup_multiplicity_predefined_confirmed": false,
       "reviewed_by_role": null,
-      "reviewed_at": null
+      "reviewed_at": null,
+      "dau_van_tay_chot": null
     }
   },
   "design_code": "cross_sectional",

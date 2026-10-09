@@ -3,9 +3,9 @@
   "contract_version": "G3-2026.1",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
   "gate": "G3",
-  "status": "DRAFT_READY_NEEDS_STATISTICIAN_REVIEW",
+  "status": "DRAFT_NEEDS_HUMAN_PARAMETERS",
   "automated_checks_passed": true,
-  "parameters_ready_for_review": true,
+  "parameters_ready_for_review": false,
   "human_confirmation_complete": false,
   "automatic_criteria": [
     {
@@ -18,8 +18,8 @@
     {
       "id": "G3-AUTO-01",
       "label": "Tiền đề G0/G1 có thật (thiết kế không do mặc định im lặng)",
-      "status": "PASS",
-      "evidence": "có G1_checkpoint làm nguồn thiết kế",
+      "status": "REVIEW",
+      "evidence": "G1 chấm sống=DRAFT_READY_NEEDS_HUMAN_REVIEW — thiết kế chưa được PI/methodologist chốt",
       "action": "Chạy G0/G1 trước; không tính cỡ mẫu trên thiết kế mặc định."
     },
     {
@@ -40,7 +40,7 @@
       "id": "G3-AUTO-04",
       "label": "Có giá trị cỡ mẫu dùng được (hoặc N thay thế hợp lệ)",
       "status": "PASS",
-      "evidence": "n_adjusted=453",
+      "evidence": "n_adjusted=626",
       "action": "Cấp effect size có nguồn, hoặc N tính bằng phương pháp thay thế của thiết kế."
     },
     {
@@ -74,8 +74,8 @@
     {
       "id": "G3-AUTO-09",
       "label": "Các con số trong artifact nhất quán với nhau",
-      "status": "PASS",
-      "evidence": "N, bảng độ nhạy và dropout khớp nhau",
+      "status": "REVIEW",
+      "evidence": "ô cơ sở bảng độ nhạy=385 không khớp n_total=532 hay n_adjusted=626",
       "action": "Sinh lại artifact sau khi sửa; bảng độ nhạy phải neo vào chính N đã kết luận."
     },
     {
@@ -89,14 +89,14 @@
       "id": "G3-AUTO-11",
       "label": "Non-inferiority/equivalence: biên Δ có khung quy định, biện minh và nguồn",
       "status": "PASS",
-      "evidence": "giả thuyết superiority",
+      "evidence": "giả thuyết descriptive_precision (không phải NI/equivalence)",
       "action": "Khai ni_regulatory_framework (FDA/EMA) + margin_justification +\nmargin_source; biên Δ quá rộng làm kết luận 'không kém hơn' quá dễ đạt."
     },
     {
       "id": "G3-AUTO-12",
       "label": "Thiết kế theo chùm: ICC có nguồn, design effect đúng số học, đủ số chùm",
-      "status": "PASS",
-      "evidence": "không khai thiết kế theo chùm",
+      "status": "REVIEW",
+      "evidence": "cỡ chùm không khẳng định là đều nhưng thiếu hệ số biến thiên CV",
       "action": "Khai icc/icc_source/cluster_size/n_clusters; số chùm nhỏ phải khai hiệu chỉnh mẫu nhỏ."
     },
     {
@@ -114,10 +114,17 @@
       "action": "Định tính: quy tắc dừng bão hòa/information power. SR-MA: RIS + TSA\ncó hiệu chỉnh dị biệt. Tiên lượng: pmsampsize theo Riley."
     },
     {
+      "id": "G3-AUTO-18",
+      "label": "Tham số đã ghim trong study_meta khớp giá trị thật sự đem vào phép tính",
+      "status": "PASS",
+      "evidence": "các tham số đã ghim khớp checkpoint",
+      "action": "Chạy lại run_g3_auto chỉ với --study (dùng bản ghim), hoặc sửa bản ghim trong study_meta nếu giá trị mới mới là quyết định thật — rồi xác nhận lại."
+    },
+    {
       "id": "G3-AUTO-13",
       "label": "N thực tế đã chốt đủ lực và có phương pháp",
       "status": "PASS",
-      "evidence": "N chốt=1000 ≥ N tối thiểu=453",
+      "evidence": "N chốt=1000 ≥ N tối thiểu=626",
       "action": "Nâng N, hoặc ghi rõ chấp nhận giảm lực kèm hệ quả; ghi confirmed_n_method cho thiết kế không dùng power."
     },
     {
@@ -125,7 +132,7 @@
       "label": "Tham số đã ghim đủ để chạy lại ra cùng một N",
       "status": "PASS",
       "evidence": "tham số quyết định đã ghim trong study_meta",
-      "action": "Ghim gate_params.G3 (effect_size, effect_type) để chạy lại không trôi giá trị."
+      "action": "Ghim gate_params.G3 (effect_size, effect_type — thiết kế theo độ chính xác: prevalence, precision) để chạy lại không trôi giá trị."
     },
     {
       "id": "G3-AUTO-15",
@@ -138,9 +145,9 @@
   "human_criteria": [
     {
       "id": "G3-HUMAN-01",
-      "label": "Chủ nhiệm/thống kê viên xác nhận effect size và nguồn của nó",
+      "label": "Chủ nhiệm/thống kê viên xác nhận tham số chính của phép tính và nguồn của nó",
       "status": "REVIEW",
-      "evidence": "effect_source_confirmed=False; nguồn=thiếu",
+      "evidence": "effect_source_confirmed=False; nguồn tỷ lệ ước lượng=có (prevalence_source)",
       "action": "Đọc toàn văn nguồn rồi đặt gate_params.G3.effect_source_confirmed=true."
     },
     {
@@ -154,14 +161,14 @@
       "id": "G3-HUMAN-03",
       "label": "Đã xác nhận loại giả thuyết (superiority / không thua kém / tương đương)",
       "status": "REVIEW",
-      "evidence": "hypothesis_type=superiority (mặc định của hệ là superiority); confirmed=False",
+      "evidence": "hypothesis_type=descriptive_precision (mặc định của hệ là superiority); confirmed=False",
       "action": "Chọn nhầm loại giả thuyết là sai toàn bộ phép tính — xác nhận rồi đặt hypothesis_confirmed=true."
     },
     {
       "id": "G3-HUMAN-04",
       "label": "Cỡ mẫu được tính cho ĐÚNG kết cục chính đã chốt ở G1",
-      "status": "REVIEW",
-      "evidence": "powered_for_outcome='Cỡ mẫu tính cho KẾT CỤC MT1: tỷ lệ hài lòng chung (G1 >= 4/5' khác kết cục chính của G1 ('G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_Truc')",
+      "status": "PASS",
+      "evidence": "N tính cho kết cục: G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep, Phần 3 phiếu)",
       "action": "Ghi gate_params.G3.powered_for_outcome khớp\ngate_params.G1.primary_outcome; nếu tính cho kết cục khác thì phải nói\nrõ và biện minh."
     },
     {
@@ -173,10 +180,10 @@
     },
     {
       "id": "G3-HUMAN-06",
-      "label": "Có vai trò (thống kê viên/chủ nhiệm) và thời điểm rà soát",
+      "label": "Có vai trò (thống kê viên/chủ nhiệm), thời điểm rà soát và xác nhận gắn đúng các giá trị đã tính",
       "status": "REVIEW",
-      "evidence": "reviewed_by_role=thiếu (nhóm=không nhận diện); reviewed_at=thiếu",
-      "action": "Ghi reviewed_by_role (STATISTICIAN hoặc PI) và reviewed_at dạng ISO-8601; không lưu danh tính."
+      "evidence": "reviewed_by_role=thiếu (nhóm=không nhận diện); reviewed_at=thiếu; `reviewed_at` không phải ISO-8601 hợp lệ hoặc ở tương lai",
+      "action": "Ghi reviewed_by_role (STATISTICIAN hoặc PI), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"b892b172aa2ef41a\" (dấu của các giá trị quyết định N hiện tại); không lưu danh tính."
     },
     {
       "id": "G3-HUMAN-07",
@@ -187,17 +194,20 @@
     }
   ],
   "pending_actions": [
+    "Chạy G0/G1 trước; không tính cỡ mẫu trên thiết kế mặc định.",
+    "Sinh lại artifact sau khi sửa; bảng độ nhạy phải neo vào chính N đã kết luận.",
+    "Khai icc/icc_source/cluster_size/n_clusters; số chùm nhỏ phải khai hiệu chỉnh mẫu nhỏ.",
     "Đọc toàn văn nguồn rồi đặt gate_params.G3.effect_source_confirmed=true.",
     "Rà từng dòng bảng tham số của artifact A4 rồi đặt assumptions_confirmed=true.",
     "Chọn nhầm loại giả thuyết là sai toàn bộ phép tính — xác nhận rồi đặt hypothesis_confirmed=true.",
-    "Ghi gate_params.G3.powered_for_outcome khớp\ngate_params.G1.primary_outcome; nếu tính cho kết cục khác thì phải nói\nrõ và biện minh.",
     "Đối chiếu N với lưu lượng bệnh nhân thật và thời gian thu thập, rồi xác nhận.",
-    "Ghi reviewed_by_role (STATISTICIAN hoặc PI) và reviewed_at dạng ISO-8601; không lưu danh tính."
+    "Ghi reviewed_by_role (STATISTICIAN hoặc PI), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"b892b172aa2ef41a\" (dấu của các giá trị quyết định N hiện tại); không lưu danh tính."
   ],
+  "dau_van_tay_hien_tai": "b892b172aa2ef41a",
   "artifact_manifest": {
     "A4_SAMPLE_SIZE": {
       "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "62f5e875dd9c6a2b6b7e2052505417c3edf6f7aec63f81d78c970ece1c7d48ed"
+      "sha256": "beb04b185d88e26241c23e89e234a691256585bfd20e768d9e21f73803d9247e"
     }
   },
   "sensitivity_table": {
