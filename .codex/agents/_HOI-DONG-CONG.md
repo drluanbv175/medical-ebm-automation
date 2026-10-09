@@ -12,7 +12,7 @@
 
 ```
 dieu-phoi-nghien-cuu  (ĐIỀU PHỐI TỔNG — owner DUY NHẤT của G0–G10, giữ hợp đồng plugin MỘT OWNER)
-   ├── dieu-phoi-g0 … dieu-phoi-g10   (ĐIỀU PHỐI CỔNG — đại diện của owner cho đúng MỘT cổng; không phải owner)
+   ├── dieu-phoi-g0 … dieu-phoi-g10   (ĐIỀU PHỐI CỔNG — CHỊU TRÁCH NHIỆM kết quả nhiệm vụ của đúng MỘT cổng, §1b)
    │      ├── agent nhiệm vụ chuyên trách (cau-hoi-nghien-cuu, thiet-ke-nghien-cuu, co-mau-nghien-cuu, …)
    │      ├── giam-khao-cong            (GIÁM KHẢO độc lập — chấm đầu ra theo rubric RQ1–RQ8)
    │      ├── phan-bien-tranh-bien      (PHẢN BIỆN trong tranh biện — cố bác kết luận dự kiến bằng căn cứ)
@@ -22,11 +22,30 @@ dieu-phoi-nghien-cuu  (ĐIỀU PHỐI TỔNG — owner DUY NHẤT của G0–G10
 
 - **Điều phối tổng** quyết định cổng nào làm tiếp (chấm sống), triệu tập hội đồng cổng nào (theo §5 chi phí — hỏi
   bác sĩ trước), gom kết luận các cổng, bàn giao bác sĩ. Không ký, không bật cờ, không ghi xác nhận người.
-- **Điều phối cổng** chạy 8 bước của §2 cho đúng cổng của mình; là bên ĐỀ XUẤT trong tranh biện; KHÔNG chấm đầu ra
-  của chính nhiệm vụ mình làm (G10-T1).
+- **Điều phối cổng** chịu trách nhiệm kết quả thực hiện mọi nhiệm vụ của cổng mình (§1b); chạy 8 bước của §2; là bên
+  ĐỀ XUẤT trong tranh biện; KHÔNG chấm đầu ra của chính nhiệm vụ mình làm (G10-T1).
 - **Agent nhiệm vụ** làm đúng nhiệm vụ trong danh mục; đầu ra là artifact/khoá thật của cổng (tên artifact là HỢP
   ĐỒNG — không đổi). Agent nhiệm vụ cũng là **người chấm chuyên môn** cho nhiệm vụ KHÁC theo ma trận (§3).
 - Plugin vẫn chỉ là worker theo `_PLUGIN-ROUTING-CONTRACT.md`; không làm giám khảo/phản biện/trọng tài, không mở cổng.
+
+## 1b. Trách nhiệm hoàn chỉnh của điều phối cổng (09/10/2026)
+
+Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối của
+cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó».
+
+1. **Mọi vấn đề của cổng có chủ:** từng tiêu chí AUTO/HUMAN của `g<N>_quality_gate.py` (203 tiêu chí, 11 cổng) gán ĐÚNG
+   MỘT bên ở `hoi_dong_cong.PHAN_CONG`: nhiệm vụ agent (`G3-T1`) · vai NGƯỜI quyết/ký kèm nhiệm vụ agent phải chuẩn bị hồ
+   sơ + lệnh (`STATISTICIAN@G3-T1`) · cổng tiền đề (`^G0,G1`). Test đối chiếu bảng với tập mã bộ chấm phát ra (cây cú
+   pháp) và với mục 4b của từng `dieu-phoi-gN.md` — thêm tiêu chí mà quên gán ⇒ đỏ.
+2. **Chuỗi trách nhiệm:** agent nhiệm vụ → điều phối cổng → điều phối tổng. Điều phối cổng giao việc, đòi làm lại tới khi
+   tiêu chí của agent đạt, bảo đảm người có thẩm quyền nhận đủ hồ sơ + lệnh, báo cổng tiền đề khi bị chặn từ trước.
+3. **Thước đo duy nhất (chỉ đọc, không tốn agent):** `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate
+   G<N> [--ghi]` — kết luận `DAT_TIEU_CHI` · `AGENT_XONG_CHO_NGUOI` (mã 0 = phần agent HOÀN CHỈNH) · `AGENT_CON_VIEC` ·
+   `CHO_CONG_TRUOC` · `CHUA_PHAN_CONG` (mã 1) · `KHONG_DO_DUOC` (mã 2). Không tự khai «hoàn chỉnh». `--ghi` lưu bảng lúc
+   bàn giao ở `hoi_dong/G<N>/trach_nhiem/TN-<mốc>.json` kèm SHA-256 hồ sơ `G<N>_*`.
+4. **Không đổi ranh giới:** trách nhiệm hoàn chỉnh KHÔNG cho phép ký, bật cờ, ghi xác nhận/dấu vân tay thay người, hay sửa
+   artifact của cổng khác để «xanh» tiêu chí tiền đề; cũng KHÔNG đòi triệu tập hội đồng nhiều agent (§5).
+5. Điều phối tổng chỉ nhận «phần agent của cổng hoàn chỉnh» khi bảng ra mã 0; mã 1 ⇒ trả về đúng điều phối cổng đó.
 
 ## 2. Tám bước của một hội đồng cổng (`dieu-phoi-gN`)
 
@@ -126,6 +145,7 @@ KẾT LUẬN HỘI ĐỒNG CỔNG G<N> — <mã đề tài> (TƯ VẤN — khôn
 - Giải pháp tốt nhất: <từng điểm quyết định: phương án khuyến nghị — căn cứ; phương án khác đã cân nhắc — vì sao không chọn>
 - Việc của người có thẩm quyền: <ai — làm gì — lệnh/khoá nào>
 - tham-dinh-dau-ra: ĐẠT | TRẢ-VỀ-SỬA
+- Trách nhiệm cổng (§1b): <ket_luan của `trach-nhiem --ghi`> — agent còn việc <n> · chờ người <n> · chờ cổng trước <n> — <tệp TN-…json>
 - Tóm tắt hội đồng: python3 tools/hoi_dong_cong.py tom-tat --study <mã>
 Cần bác sĩ kiểm chứng.
 ```
