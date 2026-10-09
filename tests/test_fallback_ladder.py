@@ -36,6 +36,7 @@ GIẢ RÕ RÀNG
 from __future__ import annotations
 
 import copy
+import hashlib
 import importlib
 import json
 import socket
@@ -1044,7 +1045,11 @@ class MoiTruongIngest:
                     self_moi.su_kien.append(("du_phong", ten, query))
                     if loi.get(ten, {}).get(so_lan["n"]):
                         raise LoiGia(loi[ten][so_lan["n"]])
-                    return [RawRecord(source=ten, title=f"Fallback {ten} {query} {i}", doi=f"10.5555/fake.in.{ten}.{abs(hash(query)) % 9999}.{i}",
+                    # VÁ 09/10/2026: hậu tố DOI cũ `abs(hash(query)) % 9999` — hash() chuỗi bị NGẪU NHIÊN HOÁ theo tiến
+                    # trình (PYTHONHASHSEED) nên hai truy vấn trùng số dư với xác suất ~1/9999 ⇒ 2 DOI gộp làm một,
+                    # «xac_minh_duoc» 3 thay vì 5 (CI Windows #99 09/10). SHA-256 của truy vấn: tất định, khác nhau.
+                    _hau_to = hashlib.sha256(query.encode("utf-8")).hexdigest()[:12]
+                    return [RawRecord(source=ten, title=f"Fallback {ten} {query} {i}", doi=f"10.5555/fake.in.{ten}.{_hau_to}.{i}",
                                       ingest_query=query, clinical_area=KHU_I)
                             for i in range(hits.get(ten, {}).get(query, 0))]
                 return search
