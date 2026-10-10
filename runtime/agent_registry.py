@@ -95,8 +95,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # _HOI-DONG-CONG §1b mục 9 — bản cặp y hệt gốc; vẫn 64.
 # 10/10/2026 (kiểm máy G1-T5 — hai dòng an toàn đề cương lõi RCT): an-toan-nghien-cuu, dieu-phoi-g1, _HOI-DONG-CONG §1b
 # mục 7 — bản cặp y hệt gốc; vẫn 64.
+# 10/10/2026 (G6-AUTO-09 có chủ theo thiết kế «G6-T2|G6-T1»): meta-phan-tich, phan-tich-thong-ke, dieu-phoi-g6,
+# _HOI-DONG-CONG §1b — bản cặp y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "cc6b548321e0710d10cab1edbf389dcbc9e6320868daba9ac1d66aa8384d989b"
+    "d1436dcad227623bb830cab61ade7f1d32cc6f3ea2592c3afc34529f420ec315"
 )
 
 MINIMUM_AGENT_COUNT = 64

@@ -50,11 +50,12 @@ của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm v
 
 | Bên chịu trách nhiệm | Tiêu chí |
 |---|---|
-| `G6-T1` — agent `phan-tich-thong-ke` | G6-AUTO-00, G6-AUTO-02, G6-AUTO-03, G6-AUTO-04, G6-AUTO-05, G6-AUTO-06, G6-AUTO-07, G6-AUTO-08, G6-AUTO-09, G6-AUTO-10 |
+| `G6-T1` — agent `phan-tich-thong-ke` | G6-AUTO-00, G6-AUTO-02, G6-AUTO-03, G6-AUTO-04, G6-AUTO-05, G6-AUTO-06, G6-AUTO-07, G6-AUTO-08, G6-AUTO-10 |
+| `G6-T2\|G6-T1` — agent `meta-phan-tich` (tổng quan hệ thống có gộp định lượng), ngược lại `phan-tich-thong-ke` | G6-AUTO-09 |
 | `STATISTICIAN@G6-T1` — NGƯỜI STATISTICIAN quyết/ký; agent chuẩn bị hồ sơ + lệnh: `phan-tich-thong-ke` | G6-HUMAN-01 |
 | `^G4` — cổng tiền đề G4 (điều phối cổng đó chịu trách nhiệm) | G6-AUTO-01 |
 
-Nhiệm vụ KHÔNG có tiêu chí máy (chất lượng CHỈ bảo đảm bằng đánh giá chéo): G6-T2 `meta-phan-tich`, G6-T3 `dien-giai-ket-qua` — chưa có biên bản
+Nhiệm vụ KHÔNG có tiêu chí máy (chất lượng CHỈ bảo đảm bằng đánh giá chéo): G6-T3 `dien-giai-ket-qua` — chưa có biên bản
 đánh giá chéo «qua» còn hiệu lực ⇒ khối bàn giao ghi «chất lượng chưa được bảo đảm» (lệnh đo liệt kê).
 
 1. **Thước đo duy nhất:** `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G6` — chỉ đọc; chấm sống,

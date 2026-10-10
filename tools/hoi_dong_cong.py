@@ -309,10 +309,12 @@ PHAN_CONG: Dict[str, Dict[str, str]] = {
         "G5-AUTO-08": "G5-T1", "G5-AUTO-09": "G5-T1", "G5-AUTO-10": "G5-T1",
         "G5-HUMAN-01": "DATA_MANAGER@G5-T1",
     },
+    # 10/10/2026: G6-AUTO-09 (mô hình phân tích chính ↔ SAP §4) — tổng quan hệ thống có gộp ⇒ script gộp
+    # (metabin/metagen/rma) là đầu ra của G6-T2 `meta-phan-tich`; thiết kế khác ⇒ G6-T1 `phan-tich-thong-ke`.
     "G6": {
         "G6-AUTO-00": "G6-T1", "G6-AUTO-01": "^G4", "G6-AUTO-02": "G6-T1", "G6-AUTO-03": "G6-T1",
         "G6-AUTO-04": "G6-T1", "G6-AUTO-05": "G6-T1", "G6-AUTO-06": "G6-T1", "G6-AUTO-07": "G6-T1",
-        "G6-AUTO-08": "G6-T1", "G6-AUTO-09": "G6-T1", "G6-AUTO-10": "G6-T1",
+        "G6-AUTO-08": "G6-T1", "G6-AUTO-09": "G6-T2|G6-T1", "G6-AUTO-10": "G6-T1",
         "G6-HUMAN-01": "STATISTICIAN@G6-T1",
     },
     "G7": {
