@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0",
   "contract_version": "G0-2026.1",
-  "status": "PASS_G0_CONFIRMED",
+  "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
   "automated_checks_passed": true,
-  "human_confirmation_complete": true,
+  "human_confirmation_complete": false,
   "automatic_criteria": [
     {
       "id": "G0-AUTO-00",
@@ -49,10 +49,17 @@
     },
     {
       "id": "G0-AUTO-06",
-      "label": "Đã tra đăng ký nghiên cứu đang tiến hành (trùng lặp)",
+      "label": "Đã tra ClinicalTrials.gov (chủ yếu phủ thử nghiệm can thiệp; ICTRP/PROSPERO ở G0-HUMAN-08)",
       "status": "PASS",
       "evidence": "ClinicalTrials.gov: 0 hồ sơ khớp, 0 đang tuyển",
       "action": "Chạy lại G0 khi có mạng, hoặc tự tra ClinicalTrials.gov/WHO ICTRP trước khi khẳng định đề tài là mới."
+    },
+    {
+      "id": "G0-AUTO-07",
+      "label": "Trường bác sĩ điền ở gate_params.G0 không chứa thông tin định danh",
+      "status": "PASS",
+      "evidence": "không thấy mẫu PII trong gate_params.G0 + chủ đề",
+      "action": "Xoá thông tin định danh khỏi các khoá đã nêu (tên, SĐT, CCCD, BHYT, ngày sinh, email) — chỉ mô tả quần thể ở mức nhóm."
     }
   ],
   "human_criteria": [
@@ -74,43 +81,55 @@
       "id": "G0-HUMAN-03",
       "label": "Giả thuyết H0/H1 + chiều kỳ vọng + loại kiểm định",
       "status": "PASS",
-      "evidence": "test_type=descriptive; H0=thiếu; H1=thiếu; chiều=thiếu",
+      "evidence": "test_type=descriptive; H0=có; H1=có; chiều=có",
       "action": "Điền test_type (superiority/non_inferiority/equivalence/descriptive); nếu không phải nghiên cứu mô tả thì điền cả hypothesis_h0/h1 và expected_direction."
     },
     {
       "id": "G0-HUMAN-04",
       "label": "Loại câu hỏi đã xác định",
       "status": "PASS",
-      "evidence": "question_type=descriptive",
-      "action": "Điền question_type: therapy/diagnosis/prognosis/harm/descriptive."
+      "evidence": "question_type=descriptive (chuẩn hoá: descriptive)",
+      "action": "Điền question_type: treatment (≡ therapy)/diagnosis/prognosis/harm/descriptive/qualitative/prediction_model."
     },
     {
       "id": "G0-HUMAN-05",
-      "label": "FINER đánh giá đủ từng tiêu chí (5/5)",
-      "status": "PASS",
-      "evidence": "5/5 tiêu chí có kết luận",
-      "action": "Điền 5 khóa finer_* — F và E là hai tiêu chí máy KHÔNG thể tự đánh giá."
+      "label": "FINER đánh giá đủ từng tiêu chí (5/5), kết luận ĐẠT và có lý do",
+      "status": "REVIEW",
+      "evidence": "chỉ có cờ đúng/số, chưa có lý do: feasible, interesting, novel, ethical, relevant",
+      "action": "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận."
     },
     {
       "id": "G0-HUMAN-06",
       "label": "Đã đọc lại bằng chứng G0 và biện minh tính mới",
-      "status": "PASS",
-      "evidence": "evidence_reviewed_confirmed=True; novelty_justification=có",
-      "action": "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification."
+      "status": "REVIEW",
+      "evidence": "evidence_reviewed_confirmed=True; novelty_justification=còn ô trống/nhãn nháp",
+      "action": "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification. Gỡ hết nhãn nháp/ô mẫu còn sót trong trường (vd «[DỰ THẢO…]», «[… — điền]», «___», «☐ … ☐ …») — hệ KHÔNG tự viết thay."
     },
     {
       "id": "G0-HUMAN-07",
-      "label": "Chủ nhiệm/nhà phương pháp chốt PICO (vai trò + thời điểm)",
-      "status": "PASS",
-      "evidence": "pico_confirmed=True; vai trò=pi; reviewed_at=2026-08-15",
-      "action": "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist) và reviewed_at dạng ISO-8601. Không cần lưu danh tính."
+      "label": "Chủ nhiệm/nhà phương pháp chốt PICO (vai trò + thời điểm + gắn đúng nội dung)",
+      "status": "REVIEW",
+      "evidence": "pico_confirmed=True; vai trò=pi; reviewed_at=2026-08-15; xác nhận chưa gắn `dau_van_tay` (xác nhận kiểu cũ) — chủ nhiệm xác nhận lại với dau_van_tay=df575f9916659dd5 (dấu nội dung hiện tại)",
+      "action": "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"df575f9916659dd5\" (dấu của nội dung đang chốt). Không cần lưu danh tính."
+    },
+    {
+      "id": "G0-HUMAN-08",
+      "label": "PI đã tự tra WHO ICTRP (và PROSPERO cho tổng quan) + đánh giá chồng lấn khi có thử nghiệm đang tuyển",
+      "status": "REVIEW",
+      "evidence": "thiếu ngày tra (ISO, không ở tương lai): ictrp",
+      "action": "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn)."
     }
   ],
-  "pending_actions": [],
+  "pending_actions": [
+    "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận.",
+    "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification. Gỡ hết nhãn nháp/ô mẫu còn sót trong trường (vd «[DỰ THẢO…]», «[… — điền]», «___», «☐ … ☐ …») — hệ KHÔNG tự viết thay.",
+    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"df575f9916659dd5\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+    "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn)."
+  ],
   "artifact_manifest": {
     "A1": {
-      "path": "exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "5a0c0940832ad678080716cb6c49ad149af57d78715883d234ec94c9650c3180"
+      "path": "/Users/nguyenluan/.ebm-worktrees/yk-g0-a1-bien-ban-20261010/exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.md",
+      "sha256": "fc2a2f1bdfa76a4549a9bd2f9484d01f2efddb683470cf4da948d5b90f8b559d"
     }
   },
   "standards_basis": [
@@ -136,9 +155,33 @@
     }
   ],
   "expected_reporting_standard": {
-    "design_code": "rct",
-    "primary": "CONSORT 2025",
-    "protocol": "SPIRIT 2025; đăng ký trial TRƯỚC tuyển mẫu; ICH-GCP nếu áp dụng"
+    "design_code": "cross_sectional",
+    "primary": "STROBE",
+    "protocol": "Protocol định trước; đăng ký nếu cần minh bạch"
   },
-  "scope_statement": "PASS_G0_CONFIRMED chỉ xác nhận rằng câu hỏi nghiên cứu ĐÃ ĐƯỢC MỘT NGƯỜI THẬT VIẾT RA VÀ CHỐT, và nền bằng chứng máy dựng là thật. KHÔNG thẩm định chất lượng khoa học của câu hỏi, không thay tổng quan y văn có hệ thống, không thay Hội đồng Đạo đức. Một PICO đầy đủ vẫn có thể là một PICO tồi."
+  "dau_van_tay_hien_tai": "df575f9916659dd5",
+  "scope_statement": "PASS_G0_CONFIRMED chỉ xác nhận rằng câu hỏi nghiên cứu ĐÃ ĐƯỢC MỘT NGƯỜI THẬT VIẾT RA VÀ CHỐT, và nền bằng chứng máy dựng là thật. KHÔNG thẩm định chất lượng khoa học của câu hỏi, không thay tổng quan y văn có hệ thống, không thay Hội đồng Đạo đức. Một PICO đầy đủ vẫn có thể là một PICO tồi.",
+  "needs_input": {
+    "blocked": true,
+    "reason_code": "MISSING_PICO",
+    "human_message": "G0 đã dựng xong NỀN BẰNG CHỨNG; câu hỏi nghiên cứu (PICO, kết cục chính, giả thuyết, loại câu hỏi) ĐÃ đạt — còn chờ bác sĩ/PI: G0-HUMAN-05, G0-HUMAN-06, G0-HUMAN-07, G0-HUMAN-08. Không cần tra lại PubMed; điền xong thì chấm lại.",
+    "remediation": {
+      "action": "rerun_with_real_input",
+      "command": "sửa exports/<study>/study_meta.json → gate_params.G0 rồi chạy: python tools/g0_quality_gate.py --study <study>",
+      "study_meta_patch": {
+        "gate_params": {
+          "G0": {
+            "pico_confirmed": true
+          }
+        }
+      },
+      "must_not_fabricate": [
+        "PICO",
+        "primary_outcome",
+        "FINER",
+        "hypothesis"
+      ]
+    },
+    "supplied_by": "doctor"
+  }
 }

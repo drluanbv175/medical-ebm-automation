@@ -1,0 +1,158 @@
+{
+  "schema": "g0/tong_hop_bang_chung/v1",
+  "nguoi_soan": "tong-quan-y-van (agent, theo biên bản G0-DG-20261007T182841-0b213597)",
+  "ngay_soan": "2026-10-10",
+  "cach_doc": "đọc tiêu đề + tóm tắt PubMed (connector PubMed, 2026-10-10) — chưa đọc toàn văn",
+  "sang_loc": [
+    {
+      "pmid": "34445940",
+      "thiet_ke_that": "Cắt ngang, 3 bệnh viện Hà Nội (n=108), hồi quy tuyến tính đa biến",
+      "lien_quan": "truc_tiep",
+      "tom_tat": "23,2% hoàn toàn hài lòng chung; người bệnh ngoại trú, ở tỉnh khác, dùng dịch vụ theo yêu cầu, không đủ khả năng chi trả có mức hài lòng thấp hơn; tỷ lệ hài lòng thấp nhất là với giá dịch vụ (13,0%)."
+    },
+    {
+      "pmid": "36439278",
+      "thiet_ke_that": "Cắt ngang, một phòng khám đa khoa Hà Nội (n=301), kiểm định thang đo (EFA, Cronbach)",
+      "lien_quan": "truc_tiep",
+      "tom_tat": "Hài lòng chung 53,5%; 5 nhân tố (cơ sở vật chất, kết quả dịch vụ, minh bạch thông tin–thủ tục, tiếp cận, giao tiếp nhân viên y tế), Cronbach's α > 0,9; người có BHYT hài lòng cao gấp 3,5 lần (KTC 95% 1,9–6,2)."
+    },
+    {
+      "pmid": "32584904",
+      "thiet_ke_that": "Cắt ngang, Bệnh viện Tim Hà Nội (n=600, nội trú + ngoại trú), hồi quy Tobit",
+      "lien_quan": "truc_tiep",
+      "tom_tat": "Ở ngoại trú, lĩnh vực «thời gian chờ» có điểm thấp nhất (76,6 ± 8,2); người không có BHYT có điểm hài lòng cao hơn người có BHYT."
+    },
+    {
+      "pmid": "31703089",
+      "thiet_ke_that": "Cắt ngang, 8 phòng khám ngoại trú HIV ở Hà Nội và Nam Định (n=1133), hồi quy Tobit + mô hình hỗn hợp",
+      "lien_quan": "truc_tiep",
+      "tom_tat": "Lĩnh vực «chất lượng và thuận tiện dịch vụ» (thời gian chờ, thủ tục hành chính) có tỷ lệ hoàn toàn hài lòng thấp nhất; phòng khám tuyến tỉnh liên quan nghịch với hài lòng chung so với tuyến trung ương."
+    },
+    {
+      "pmid": "41162961",
+      "thiet_ke_that": "Nghiên cứu triển khai CÓ CAN THIỆP, tiến cứu, một trung tâm (đánh giá trước–sau) — bộ lọc PubMed xếp nhầm vào nhánh quan sát",
+      "lien_quan": "gian_tiep",
+      "tom_tat": "210 người bệnh ĐTĐ type 2 cao tuổi ngoại trú; hài lòng với dịch vụ dược lâm sàng 95,2% — đo hài lòng với MỘT dịch vụ can thiệp, không phải hài lòng với khám ngoại trú."
+    },
+    {
+      "pmid": "40726017",
+      "thiet_ke_that": "Phân tích lặp 8 vòng khảo sát hộ gia đình (VHLSS 2006–2020), mô hình logit đa mức",
+      "lien_quan": "gian_tiep",
+      "tom_tat": "Người có BHYT ở nông thôn dịch chuyển dần từ trạm y tế xã sang bệnh viện công tuyến trên và cơ sở tư nhân — bối cảnh áp lực lên khoa khám bệnh viện; không đo hài lòng."
+    },
+    {
+      "pmid": "40623792",
+      "thiet_ke_that": "Cắt ngang đa quốc gia, 10 bệnh viện công ở 7 nước châu Á thu nhập thấp–trung bình, có Việt Nam (n=1933)",
+      "lien_quan": "gian_tiep",
+      "tom_tat": "Người bệnh ung thư tiến triển: giao tiếp của bác sĩ ảnh hưởng nhiều nhất tới trải nghiệm chung; chăm sóc ngoại trú gắn với điểm giao tiếp cao hơn."
+    },
+    {
+      "pmid": "40771771",
+      "thiet_ke_that": "Cắt ngang mô tả (n=460), hồi quy logistic đa danh",
+      "lien_quan": "khong",
+      "tom_tat": "Chủ đề tư vấn ưa thích của người bệnh ĐTĐ type 2 ngoại trú (dinh dưỡng–lối sống 49%).",
+      "ly_do": "Đo sở thích nội dung tư vấn, không đo hài lòng với dịch vụ khám."
+    },
+    {
+      "pmid": "38753416",
+      "thiet_ke_that": "Cắt ngang đa trung tâm, kiểm định tâm trắc (IRT, CAT), n=498",
+      "lien_quan": "khong",
+      "tom_tat": "Ngân hàng câu hỏi trải nghiệm môi trường chăm sóc cho người bệnh tâm thần nặng tại Pháp.",
+      "ly_do": "Khác quần thể và bối cảnh; phương pháp IRT/CAT không thuộc kế hoạch đo của đề tài."
+    },
+    {
+      "pmid": "39132755",
+      "thiet_ke_that": "Quan sát tiến cứu đa quốc gia 4 tuần (n=3505)",
+      "lien_quan": "khong",
+      "tom_tat": "Hiệu quả điều trị bảo tồn bệnh trĩ cấp.",
+      "ly_do": "Khác chủ đề — hài lòng với điều trị một bệnh, không phải với dịch vụ khám."
+    },
+    {
+      "pmid": "29051978",
+      "thiet_ke_that": "Khảo sát cắt ngang đa quốc gia, chọn mẫu thuận tiện (n=1535)",
+      "lien_quan": "khong",
+      "tom_tat": "Triệu chứng đường tiểu dưới ở nam giới Đông Nam Á và hài lòng với điều trị.",
+      "ly_do": "Khác chủ đề — hài lòng với điều trị triệu chứng tiết niệu."
+    },
+    {
+      "pmid": "16148334",
+      "thiet_ke_that": "Khảo sát qua điện thoại (n=89), Hoa Kỳ",
+      "lien_quan": "khong",
+      "tom_tat": "Nhu cầu sức khoẻ tâm thần của bạn đời cựu binh chiến tranh Việt Nam mắc PTSD.",
+      "ly_do": "Khớp chữ «Vietnam» trong truy vấn, khác hẳn chủ đề."
+    }
+  ],
+  "nguon_bo_sung": [
+    {
+      "pmid": "42625778",
+      "tieu_de": "Outpatient satisfaction assessed using a nationally standardized questionnaire: a survey of five health care facilities in Vietnam",
+      "thiet_ke_that": "Cắt ngang đa trung tâm (5 cơ sở, n=2500), CFA/SEM",
+      "lien_quan": "truc_tiep",
+      "tom_tat": "Bộ phiếu chuẩn quốc gia 2024 (31 mục, 5 lĩnh vực) hợp lệ và tin cậy; nhân viên y tế (β = 0,43) và tiếp cận (β = 0,30) gắn mạnh nhất với hài lòng; có BHYT, cư trú nông thôn, tái khám nhiều lần hài lòng cao hơn.",
+      "cach_tim": "PubMed, truy vấn «patient satisfaction outpatient Vietnam» (đề cương §3.5, tra 2026-08-30); metadata đối chiếu qua PubMed 2026-10-10"
+    },
+    {
+      "pmid": "34017606",
+      "tieu_de": "Outpatient satisfaction with primary health care services in Vietnam: Multilevel analysis results from The Vietnam Health Facilities Assessment 2015",
+      "thiet_ke_that": "Phân tích thứ cấp khảo sát cơ sở y tế quốc gia 2015 (n=4372), logistic ba mức",
+      "lien_quan": "truc_tiep",
+      "tom_tat": "Hài lòng 85% ở trạm y tế xã và 73% ở bệnh viện huyện; khi hiệu chỉnh đặc điểm cá nhân, người chờ lâu hơn ít có khả năng hài lòng hơn.",
+      "cach_tim": "Danh mục tham khảo đề cương [2] (tra PubMed 2026-08-30); metadata đối chiếu qua PubMed 2026-10-10"
+    },
+    {
+      "pmid": "28690831",
+      "tieu_de": "Patient waiting time in the outpatient clinic at a central surgical hospital of Vietnam: Implications for resource allocation",
+      "thiet_ke_that": "Cắt ngang hồi cứu dữ liệu phần mềm quản lý bệnh viện (n=137881 lượt)",
+      "lien_quan": "truc_tiep",
+      "tom_tat": "Thời gian chờ trung bình từ đăng ký tới chẩn đoán sơ bộ 50,41 phút (2014) và 42,05 phút (2015), dài hơn buổi sáng và ở người có BHYT — tiền lệ đo phơi nhiễm MT2 bằng mốc phần mềm bệnh viện; không đo hài lòng.",
+      "cach_tim": "Hội đồng G0 (biên bản G0-DG-20261007T182841-0b213597, 2026-10-07): truy vấn gốc G0 chạy KHÔNG bộ lọc loại xuất bản; metadata đối chiếu qua PubMed 2026-10-10"
+    },
+    {
+      "pmid": "36292392",
+      "tieu_de": "An Assessment of Outpatient Satisfaction with Hospital Pharmacy Quality and Influential Factors in the Context of the COVID-19 Pandemic",
+      "thiet_ke_that": "Cắt ngang (n=210), SERVQUAL hiệu chỉnh, EFA",
+      "lien_quan": "gian_tiep",
+      "tom_tat": "Hài lòng của người bệnh ngoại trú với khâu cấp phát thuốc BHYT tại một bệnh viện trung ương: điểm chung 3,42 (SD 0,79); năm nhân tố SERVQUAL đều liên quan hài lòng.",
+      "cach_tim": "Hội đồng G0 (biên bản G0-DG-20261007T182841-0b213597, 2026-10-07): truy vấn gốc G0 không bộ lọc loại xuất bản; metadata đối chiếu qua PubMed 2026-10-10"
+    },
+    {
+      "pmid": "32992600",
+      "tieu_de": "Factors Associated with Outpatient Satisfaction in Tertiary Hospitals in China: A Systematic Review",
+      "thiet_ke_that": "Tổng quan hệ thống (35 nghiên cứu, 185 bệnh viện), không gộp định lượng",
+      "lien_quan": "gian_tiep",
+      "tom_tat": "Hài lòng cao nhất với bác sĩ/điều dưỡng, thấp nhất với vệ sinh và quy trình khám, đặc biệt thời gian chờ dài; phần lớn nghiên cứu dùng bộ câu hỏi tự xây, thiếu công cụ chuẩn hoá — bối cảnh Trung Quốc.",
+      "cach_tim": "Hội đồng G0 (biên bản G0-DG-20261007T182841-0b213597): truy vấn PubMed MeSH «Patient Satisfaction» × ngoại trú/bệnh viện; metadata đối chiếu qua PubMed 2026-10-10"
+    },
+    {
+      "pmid": "40995744",
+      "tieu_de": "Patient Satisfaction With Outpatient Department Health Service and Associated Factors at Public Hospitals in Ethiopia",
+      "thiet_ke_that": "Tổng quan hệ thống + phân tích gộp (mô hình hiệu ứng ngẫu nhiên)",
+      "lien_quan": "gian_tiep",
+      "tom_tat": "Tỷ lệ hài lòng gộp với khoa khám ngoại trú 61,95% (KTC 95% 53,00–70,90), không đồng nhất rất cao; tôn trọng riêng tư, sẵn thuốc, được dặn phòng tái phát liên quan hài lòng — bối cảnh Ethiopia.",
+      "cach_tim": "Hội đồng G0 (biên bản G0-DG-20261007T182841-0b213597): truy vấn PubMed MeSH «Patient Satisfaction» × ngoại trú; metadata đối chiếu qua PubMed 2026-10-10"
+    },
+    {
+      "pmid": "40295132",
+      "tieu_de": "Patient satisfaction and its associated factors in selected primary healthcare facilities in Kono District, Sierra Leone: a cross-sectional study",
+      "thiet_ke_that": "Cắt ngang tại 5 cơ sở chăm sóc ban đầu (n=290), logistic nhị phân đa biến",
+      "lien_quan": "gian_tiep",
+      "tom_tat": "Hài lòng tốt 63,8%; học vấn (AOR 0,53; KTC 95% 0,28–0,98), khoảng cách (AOR 0,40) và thời gian chờ (AOR 0,41; KTC 95% 0,22–0,76) liên quan nghịch với hài lòng — tham chiếu danh mục biến, bối cảnh khác.",
+      "cach_tim": "Danh mục tham khảo đề cương [10]; metadata đối chiếu qua PubMed 2026-10-10"
+    },
+    {
+      "pmid": "39944421",
+      "tieu_de": "Exploring Patient Satisfaction and Determinants in Outpatient Services: A Cross-Sectional Study",
+      "thiet_ke_that": "Cắt ngang tại một bệnh viện tuyến ba (n=1298), kiểm định chi bình phương",
+      "lien_quan": "gian_tiep",
+      "tom_tat": "Hài lòng chung cao nhưng thời gian chờ và giao tiếp là điểm cần cải thiện — bối cảnh quần đảo Andaman và Nicobar (Ấn Độ).",
+      "cach_tim": "Danh mục tham khảo đề cương [9]; metadata đối chiếu qua PubMed 2026-10-10"
+    }
+  ],
+  "tong_hop": "Trong phạm vi một truy vấn PubMed G0 (2026-07-31) cộng các nguồn bổ sung ở bảng trên — KHÔNG phải tổng quan hệ thống: bằng chứng tại Việt Nam là các khảo sát cắt ngang về hài lòng người bệnh ngoại trú (PMID 34445940; PMID 36439278; PMID 32584904; PMID 31703089; PMID 34017606; PMID 42625778). Thời gian chờ và thủ tục lặp lại là lĩnh vực hài lòng thấp nhất (PMID 32584904; PMID 31703089) và người chờ lâu hơn ít có khả năng hài lòng hơn (PMID 34017606); nhóm dùng dịch vụ theo yêu cầu và ở tỉnh khác hài lòng thấp hơn trong một mẫu nhỏ 108 người (PMID 34445940). Chiều liên quan của BHYT không nhất quán giữa các nghiên cứu (PMID 36439278 và PMID 42625778 ngược với PMID 32584904). Thời gian chờ đã được đo từ phần mềm quản lý bệnh viện ở quy mô lớn (PMID 28690831). Hai tổng quan hệ thống tìm được đều ở bối cảnh khác (Trung Quốc PMID 32992600; Ethiopia PMID 40995744); trong phạm vi đã tra chưa thấy tổng quan riêng cho Việt Nam, cũng chưa thấy nghiên cứu công bố tại một khoa khám theo yêu cầu của bệnh viện quân y. Năm trong mười hai bài của nền G0 lạc đề (khớp chữ, khác chủ đề). Y văn tiếng Việt không lập chỉ mục PubMed chưa được rà.",
+  "rut_bai": {
+    "ngay": "2026-10-10",
+    "cong_cu": "tools/check_citation_retraction.py (PubMed: PublicationType + CommentsCorrections RetractionIn)",
+    "ket_qua": "20/20 PMID (12 nền + 8 bổ sung) không phát hiện rút bài/expression of concern theo PubMed ngày 2026-10-10"
+  },
+  "disclaimer": "Cần bác sĩ kiểm chứng. ĐỀ XUẤT của agent — PI đọc và tự chốt novelty_justification ở gate_params.G0."
+}

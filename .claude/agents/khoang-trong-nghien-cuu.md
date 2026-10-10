@@ -61,6 +61,20 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 6. Tiêu chí hoàn thành (qua cổng G0/G1)
 **Hoàn thành khi:** có bảng guideline liên quan (khuyến cáo·mức·năm·nguồn); trạng thái câu hỏi + bằng chứng then chốt; phát biểu research gap 1–2 câu + loại gap; mức novelty + ý nghĩa; trạng thái connector. **Bàn giao:** thiết kế → `thiet-ke-nghien-cuu`; tra cứu sâu → `tong-quan-y-van`/`thu-thu-tai-lieu`.
 
+**Hợp đồng đầu ra G0-T4 (10/10/2026 — hội đồng G0 trả về sửa vì A1 thiếu đúng các thành phần trên):** ở cổng G0, công
+đọc của bạn nằm trong `exports/<mã>/G0_KHOANG_TRONG_<mã>.json` (schema `g0/khoang_trong/v1`; khuôn + bộ kiểm
+`tools/g0_tong_hop.py`) — KHÔNG viết thẳng vào A1 (chạy lại G0 xoá sạch). Khoá: `guideline_lien_quan` (≥ 1 dòng
+{ten, nam, nguon, noi_dung, muc} — kể cả văn bản quy phạm Bộ Y tế không lập chỉ mục PubMed; `muc` ghi đúng phân hạng
+nguồn, không có thì để trống) · `phat_bieu_khoang_trong` (1–2 câu, ĐÚNG phạm vi đã tra — cấm «chưa từng/lần đầu/chưa có
+nghiên cứu nào») · `loai_khoang_trong` ⊆ {bang_chung, quan_the, boi_canh, phuong_phap, cong_cu_do, ket_cuc, cap_nhat}
+· `muc_novelty` {muc ∈ moi_hoan_toan/mo_rong_boi_canh/nhan_rong_co_kiem_chung/cap_nhat/trung_lap, y_nghia} ·
+`trang_thai_nguon` {pubmed, clinicaltrials_gov, who_ictrp ∈ day_du/partial/chua_tra/khong_ap_dung} — WHO ICTRP
+không có API: «chua_tra» để PI tự tra · `nhap_finer` đủ 5 khoá finer_* là CÂU có lý do; `finer_feasible` và
+`finer_ethical` BẮT BUỘC mở đầu «CẦN PI QUYẾT —» rồi nêu rủi ro cụ thể (bạn không tự đánh giá khả thi/đạo đức). Ngày viết ISO YYYY-MM-DD (dd/mm/yyyy làm guardrail R2 của
+G0 chặn A1). Đây là
+ĐỀ XUẤT: không ghi `gate_params.G0`. Xong thì `python3 tools/run_g0_auto.py --study <mã> --dung-lai-a1` (dựng lại A1,
+không tra lại PubMed) rồi đo `hoi_dong_cong.py trach-nhiem --gate G0`.
+
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; KHÔNG bịa guideline; mỗi khẳng định có nguồn; KHÔNG phóng đại novelty; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
@@ -82,7 +96,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 
 | Nhiệm vụ | Bạn LÀM — đầu ra (tên là HỢP ĐỒNG) | Tiêu chí bạn phải đưa tới ĐẠT | Hồ sơ + lệnh bạn chuẩn bị cho NGƯỜI |
 |---|---|---|---|
-| `G0-T4` — Khoảng trống nghiên cứu, đối chiếu guideline, trùng lặp đăng ký (FINER) | `G0_A1_PICO_FINER_<mã>.md`, `G0_checkpoint.json` | G0-AUTO-06 | PI: G0-HUMAN-05, G0-HUMAN-08 |
+| `G0-T4` — Khoảng trống nghiên cứu, đối chiếu guideline, trùng lặp đăng ký (FINER) | `G0_A1_PICO_FINER_<mã>.md`, `G0_checkpoint.json`, `G0_KHOANG_TRONG_<mã>.json` | G0-AUTO-06 + kiểm máy cấp nhiệm vụ: khoảng trống: bảng guideline/văn bản quy phạm · phát biểu 1–2 câu không tuyệt đối hoá · loại + mức tính mới · trạng thái nguồn · nháp FINER (F/E để PI quyết) | PI: G0-HUMAN-05, G0-HUMAN-08 |
 
 Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G0-T1` (cau-hoi-nghien-cuu). Không bao giờ chấm đầu ra do chính bạn làm.
 

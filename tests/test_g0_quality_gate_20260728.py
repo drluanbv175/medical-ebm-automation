@@ -343,7 +343,8 @@ def test_tieu_de_muc_tach_so_hit_khoi_so_bai_hien_thi():
                                 "observational": 40, "recent": 12})
     gaps = G0.analyze_evidence_gaps(res, "x")
     art = G0.generate_a1_artifact("x", "S", {"base": "x"}, res, gaps, "2026-07-28 09:00")
-    assert "~203 hit" in art and "hiển thị" in art
+    # 10/10/2026: liệt kê ĐỦ bài đã tải (hội đồng G0, DG G0-T3) — vẫn tách «~số hit» khỏi «số bài đã tải».
+    assert "~203 hit" in art and "liệt kê đủ" in art
 
 
 # ════════════════════════════════════════════════════════════════════════════

@@ -197,10 +197,16 @@ def khoi_agent(agent: str) -> str:
             dk = nv.get("dieu_kien") or ""
             nhan = f"`{nv['ma']}` — {nv['viec']}" + (f" (chỉ khi {dk.removeprefix('khi ')})" if dk else "")
             kiem = HD.KIEM_NHIEM_VU.get(nv["ma"])
-            o_chiu = ", ".join(chiu) if chiu else (
-                (f"— (không có tiêu chí cổng; kiểm máy cấp nhiệm vụ: {kiem[0]}; nội dung bảo đảm bằng đánh giá chéo)"
-                 if kiem else "— (không có tiêu chí máy: chất lượng chỉ bảo đảm bằng đánh giá chéo)")
-                if not chuan_bi else "—")
+            # 10/10/2026 (hội đồng G0, DG G0-T3/T4): kiểm máy cấp nhiệm vụ LUÔN hiện — bản cũ chỉ in khi nhiệm vụ không
+            # có tiêu chí cổng nào, nên agent G0-T3/T4 không thấy hợp đồng tệp tổng hợp mà bảng trách nhiệm đang kiểm.
+            if chiu:
+                o_chiu = ", ".join(chiu) + (f" + kiểm máy cấp nhiệm vụ: {kiem[0]}" if kiem else "")
+            elif chuan_bi:
+                o_chiu = f"— (kiểm máy cấp nhiệm vụ: {kiem[0]})" if kiem else "—"
+            else:
+                o_chiu = (f"— (không có tiêu chí cổng; kiểm máy cấp nhiệm vụ: {kiem[0]}; nội dung bảo đảm bằng "
+                          "đánh giá chéo)" if kiem else
+                          "— (không có tiêu chí máy: chất lượng chỉ bảo đảm bằng đánh giá chéo)")
             o_nguoi = "; ".join(f"{vai}: {', '.join(ds)}" for vai, ds in sorted(chuan_bi.items())) or "—"
             dong.append(f"| {nhan} | {', '.join('`' + d + '`' for d in nv['dau_ra'])} | {o_chiu} | {o_nguoi} |")
         dong.append("")

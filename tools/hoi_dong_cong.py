@@ -115,10 +115,11 @@ NHIEM_VU: Dict[str, List[Dict[str, Any]]] = {
             ("G0_A1_PICO_FINER_<mã>.md", "G0_checkpoint.json"), ("khoang-trong-nghien-cuu", "thiet-ke-nghien-cuu")),
         _nv("G0-T2", "Chiến lược tìm và danh mục y văn nền", "thu-thu-tai-lieu",
             ("G0_pubmed_raw.json",), ("kiem-chung-trich-dan",)),
-        _nv("G0-T3", "Tổng hợp bằng chứng hiện có", "tong-quan-y-van", ("G0_A1_PICO_FINER_<mã>.md",),
-            ("tham-dinh-phe-binh",)),
+        _nv("G0-T3", "Tổng hợp bằng chứng hiện có", "tong-quan-y-van",
+            ("G0_A1_PICO_FINER_<mã>.md", "G0_TONG_HOP_BANG_CHUNG_<mã>.json"), ("tham-dinh-phe-binh",)),
         _nv("G0-T4", "Khoảng trống nghiên cứu, đối chiếu guideline, trùng lặp đăng ký (FINER)",
-            "khoang-trong-nghien-cuu", ("G0_A1_PICO_FINER_<mã>.md", "G0_checkpoint.json"),
+            "khoang-trong-nghien-cuu", ("G0_A1_PICO_FINER_<mã>.md", "G0_checkpoint.json",
+                                        "G0_KHOANG_TRONG_<mã>.json"),
             ("cau-hoi-nghien-cuu",)),
     ],
     "G1": [
@@ -1457,10 +1458,45 @@ def _kiem_sap_rct(out_dir: Path, study: str) -> List[str]:
     return [f"SAP {m}" for m in con if m.startswith(("§13", "§14", "§15"))]
 
 
+def _kiem_tong_hop_g0(out_dir: Path, study: str) -> List[str]:
+    """G0-T3 — `G0_TONG_HOP_BANG_CHUNG_<mã>.json` theo ĐÚNG `tools/g0_tong_hop.kiem_tong_hop` mà bộ sinh A1 dùng: sàng
+    lọc ĐỦ mọi PMID nền của checkpoint, nguồn bổ sung có PMID/DOI + cách tìm, tóm lược dẫn PMID liên quan trực tiếp,
+    đã kiểm rút bài, không PII (10/10/2026 — biên bản DG G0-T3 của C1a)."""
+    import g0_tong_hop as GT  # noqa: PLC0415
+
+    du_lieu, loi_doc = GT.doc(out_dir, GT.TEP_TONG_HOP, study)
+    if loi_doc:
+        return [loi_doc]
+    if du_lieu is None:
+        return []
+    try:
+        cp = json.loads((Path(out_dir) / "G0_checkpoint.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return ["không đọc được G0_checkpoint.json để đối chiếu tập PMID nền"]
+    pr = cp.get("pubmed_results") if isinstance(cp.get("pubmed_results"), dict) else {}
+    return GT.kiem_tong_hop(du_lieu, pr.get("all_pmids") or cp.get("pmids_verified") or [])
+
+
+def _kiem_khoang_trong_g0(out_dir: Path, study: str) -> List[str]:
+    """G0-T4 — `G0_KHOANG_TRONG_<mã>.json` theo ĐÚNG `tools/g0_tong_hop.kiem_khoang_trong`: bảng guideline/văn bản quy
+    phạm ≥ 1 dòng, phát biểu khoảng trống 1–2 câu không tuyệt đối hoá, loại + mức tính mới, trạng thái từng nguồn, nháp
+    FINER đủ 5 khoá với F/E để PI quyết (10/10/2026 — biên bản DG G0-T4 của C1a)."""
+    import g0_tong_hop as GT  # noqa: PLC0415
+
+    du_lieu, loi_doc = GT.doc(out_dir, GT.TEP_KHOANG_TRONG, study)
+    if loi_doc:
+        return [loi_doc]
+    return [] if du_lieu is None else GT.kiem_khoang_trong(du_lieu)
+
+
 # Kiểm máy CẤP NHIỆM VỤ (10/10/2026) cho nhiệm vụ mà bộ chấm cổng không có tiêu chí: KHÔNG phải tiêu chí cổng, không đổi
 # trạng thái cổng; lỗi ⇒ việc của agent nhiệm vụ trong bảng trách nhiệm. Chỉ kiểm CẤU TRÚC — chất lượng nội dung (đủ
 # biến cho câu hỏi/DAG…) vẫn do đánh giá chéo bảo đảm.
 KIEM_NHIEM_VU: Dict[str, Tuple[str, Any]] = {
+    "G0-T3": ("tổng hợp bằng chứng: sàng lọc đủ mọi PMID nền · nguồn bổ sung có cách tìm · tóm lược dẫn PMID liên quan "
+              "trực tiếp · đã kiểm rút bài", _kiem_tong_hop_g0),
+    "G0-T4": ("khoảng trống: bảng guideline/văn bản quy phạm · phát biểu 1–2 câu không tuyệt đối hoá · loại + mức tính "
+              "mới · trạng thái nguồn · nháp FINER (F/E để PI quyết)", _kiem_khoang_trong_g0),
     "G1-T4": ("pha phát triển bộ câu hỏi: phiếu CVI đúng cấu trúc, ≥ 3 chuyên gia; nhật ký phỏng vấn nhận thức đủ cột",
               _kiem_pha_cong_cu),
     "G1-T5": ("đề cương lõi RCT: dòng cân bằng lợi ích–nguy cơ + tiêu chí dừng/chuyển/cứu hộ có mặt và đã điền",
