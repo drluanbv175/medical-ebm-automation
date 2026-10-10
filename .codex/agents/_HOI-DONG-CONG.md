@@ -46,6 +46,15 @@ cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ c�
 4. **Không đổi ranh giới:** trách nhiệm hoàn chỉnh KHÔNG cho phép ký, bật cờ, ghi xác nhận/dấu vân tay thay người, hay sửa
    artifact của cổng khác để «xanh» tiêu chí tiền đề; cũng KHÔNG đòi triệu tập hội đồng nhiều agent (§5).
 5. Điều phối tổng chỉ nhận «phần agent của cổng hoàn chỉnh» khi bảng ra mã 0; mã 1 ⇒ trả về đúng điều phối cổng đó.
+6. **Từng agent (10/10/2026, bác sĩ giao «hoàn thiện từng cổng, từng Agent, từng điều phối»):** mỗi agent làm/chấm chéo
+   nhiệm vụ cổng có khối «Trách nhiệm trong hội đồng cổng» (nhiệm vụ nó làm · đầu ra · tiêu chí nó phải đưa tới ĐẠT · hồ
+   sơ nó chuẩn bị cho người · đầu ra nó chấm chéo); mục 4b của điều phối và khối này SINH từ `hoi_dong_cong` bằng
+   `python3 tools/sinh_tai_lieu_trach_nhiem.py --ghi --agents-dir <gốc>/.codex/agents` (không sửa tay; test báo lệch).
+7. **Đánh giá chéo nằm trong trách nhiệm:** biên bản «trả về sửa» còn hiệu lực ⇒ `AGENT_CON_VIEC`; nhiệm vụ KHÔNG có tiêu
+   chí máy (vd G3-T2 biến số, G3-T3 CRF, G6-T3 diễn giải) chỉ được bảo đảm bằng đánh giá chéo — chưa đánh giá ⇒ bảng ghi
+   «chất lượng chưa được bảo đảm» và khối bàn giao phải nói thật (không đổi kết luận máy; triệu tập vẫn hỏi bác sĩ §5).
+8. **Lệnh trong tài liệu agent phải chạy được:** test `tests/test_lenh_trong_tai_lieu_agent_20261010.py` (repo y khoa)
+   đối chiếu mọi cờ của lệnh `python3 tools/…` trong `.codex/agents/*.md` với argparse của công cụ.
 
 ## 2. Tám bước của một hội đồng cổng (`dieu-phoi-gN`)
 

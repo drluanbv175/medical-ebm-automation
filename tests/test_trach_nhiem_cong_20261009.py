@@ -81,7 +81,8 @@ def test_muc_4b_cua_dieu_phoi_cong_chep_dung_phan_cong(gate):
     assert m, f"{HD.dieu_phoi_cong(gate)}.md thiếu mục 4b"
     dung_lai = {}
     for dong in m.group(0).splitlines():
-        o = [x.strip() for x in dong.strip().strip("|").split("|")]
+        # «\\|» là «|» đã thoát trong ô bảng (ô có điều kiện «G2-T2|G2-T1» — 10/10/2026).
+        o = [x.strip().replace("\\|", "|") for x in re.split(r"(?<!\\)\|", dong.strip().strip("|"))]
         if len(o) == 2 and o[0].startswith("`"):
             spec = o[0].split("`")[1]
             for ma in (x.strip() for x in o[1].split(",")):
