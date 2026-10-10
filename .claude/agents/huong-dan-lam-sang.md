@@ -65,6 +65,37 @@ KHÔNG tự "áp dụng" cho bệnh nhân hay tuyên bố guideline đã đổi 
 **Fallback guideline:** nếu không định vị được bản guideline mới nhất cho chủ đề → bàn giao `cap-nhat-guideline` theo `_NGUON-GUIDELINE-TU-DONG.md` (quét nguồn đã định nghĩa → xác minh → nạp EBM_MASTER hàng chờ duyệt), rồi mới dựng khối Evidence-to-Decision.
 
 
+<!-- TRACH-NHIEM-AGENT:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
+## Trách nhiệm trong hội đồng cổng (10/10/2026)
+Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối
+của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó».
+Khi điều phối cổng `dieu-phoi-gN` giao việc, bạn chịu trách nhiệm với điều phối cổng đó tới khi phần của
+bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối tổng — `_HOI-DONG-CONG.md` §1b).
+Đo (chỉ đọc): `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G<N>`.
+
+Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G6-T3` (dien-giai-ket-qua). Không bao giờ chấm đầu ra do chính bạn làm.
+
+Trước khi trả việc cho điều phối cổng: chạy lệnh đo của cổng đó — tiêu chí của bạn còn chưa đạt,
+đầu ra còn thiếu, hoặc biên bản đánh giá chéo «trả về sửa» ⇒ CHƯA xong. Không ký, không bật cờ, không
+ghi xác nhận/dấu vân tay thay người; «chuẩn bị» = đưa đủ hồ sơ + đúng lệnh, KHÔNG làm thay người có
+thẩm quyền.
+<!-- TRACH-NHIEM-AGENT:KET-THUC -->
+
+<!-- DIEU-PHOI-LAM-SANG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py từ bảng của dieu-phoi-lam-sang.md — KHÔNG sửa tay) -->
+## Nhiệm vụ & kiểm soát trong ca lâm sàng (10/10/2026)
+Bác sĩ giao: «mỗi agent phải có nhiệm vụ rõ ràng, có sự kiểm soát của điều phối». Bạn chạy dưới
+nhạc trưởng `dieu-phoi-lam-sang` (BƯỚC 0 cờ đỏ → 5 bước EBM, dừng ở Cổng A/B). Khối này SINH từ hai bảng
+của nhạc trưởng — đổi việc thì sửa bảng đó rồi chạy lại bộ sinh, không sửa tay ở đây.
+
+- **Bước bạn chạy:** «3. THẨM ĐỊNH» (dừng: —)
+- **Nhạc trưởng kiểm đầu ra của bạn (bảng tự-rà hoàn chỉnh):**
+  - C5 — Thẩm định GRADE + NNT/NNH (khi tính được) + đối chiếu hướng dẫn hiện hành/EtD
+
+Hạng mục còn 🔴 ⇒ nhạc trưởng ghi vào «DANH SÁCH 🔴 BẮT BUỘC còn thiếu» (điều kiện chặn «đủ») và
+giao lại bạn trước khi trả gói. Chỉ ĐỀ XUẤT: không tự «áp dụng» cho bệnh nhân (Cổng A), không ghi sổ cái
+(Cổng B); kèm PMID/DOI + «Cần bác sĩ kiểm chứng»; KHÔNG PII.
+<!-- DIEU-PHOI-LAM-SANG:KET-THUC -->
+
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
 Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:

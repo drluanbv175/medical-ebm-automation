@@ -97,8 +97,11 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # mục 7 — bản cặp y hệt gốc; vẫn 64.
 # 10/10/2026 (G6-AUTO-09 có chủ theo thiết kế «G6-T2|G6-T1»): meta-phan-tich, phan-tich-thong-ke, dieu-phoi-g6,
 # _HOI-DONG-CONG §1b — bản cặp y hệt gốc; vẫn 64.
+# 10/10/2026 (mỗi agent có nhiệm vụ + điều phối kiểm soát): 4 agent mồ côi vào nhiệm vụ cổng (G1-T6/T7/T8, G5-T2,
+# G6-T4/T5), 21 agent lâm sàng thêm khối «Nhiệm vụ & kiểm soát trong ca lâm sàng» sinh từ bảng dieu-phoi-lam-sang
+# (thêm C8c) — bản cặp y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "d1436dcad227623bb830cab61ade7f1d32cc6f3ea2592c3afc34529f420ec315"
+    "7e73af1cbe8476d970d3bde5a0a063af3ba688c3678c15de923f6b078b2068cc"
 )
 
 MINIMUM_AGENT_COUNT = 64

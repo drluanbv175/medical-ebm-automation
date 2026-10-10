@@ -74,6 +74,13 @@ cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ c�
    `tools/pha_phat_trien_cong_cu.py mau` (phiếu CVI đúng cấu trúc, ≥ 3 chuyên gia, điểm 1–4; nhật ký đủ cột — ô chưa
    chấm/I-CVI thấp là việc của hội đồng chuyên gia, không phải lỗi agent). Khai không phải xác nhận của người: PI bác
    được bằng cách yêu cầu khai lại.
+10. **Mỗi agent có nhiệm vụ rõ ràng và có điều phối kiểm soát** (10/10/2026, bác sĩ giao): đo 10/10 có 4 agent nghiên cứu
+    không thuộc nhiệm vụ cổng nào (`mo-hinh-tien-luong`, `nghien-cuu-dinh-tinh`, `kinh-te-y-te`, `trich-xuat-y-van`) ⇒ nay
+    G1-T6/G6-T4 (prediction), G1-T7/G6-T5 (qualitative), G1-T8 (khai: có cấu phần kinh tế), G5-T2 (SR/MA — bảng
+    `06_phan_tich_R/study_level_extraction.csv` mà script gộp đọc); `huong-dan-lam-sang` chấm chéo G6-T3; G6-AUTO-09
+    «G6-T2|G6-T4|G6-T5|G6-T1». Bên lâm sàng: hai bảng của `dieu-phoi-lam-sang` sinh khối «Nhiệm vụ & kiểm soát trong
+    ca lâm sàng» cho từng agent; thêm C8c (`ket-qua-hoc-tap` + `cap-nhat-guideline` trước đó không có hạng mục
+    tự-rà). Test `tests/test_agent_co_dieu_phoi_20261010.py` (repo y khoa) chặn agent mồ côi.
 
 ## 2. Tám bước của một hội đồng cổng (`dieu-phoi-gN`)
 

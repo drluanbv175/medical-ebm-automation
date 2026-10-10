@@ -105,6 +105,25 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact prediction-model
 - Điều phối qua `dieu-phoi-nghien-cuu` (G1/G3/G6/G7). Mô hình đã kiểm định ngoại + cầu thực hành → `huong-dan-lam-sang` đưa vào EBM_MASTER (hàng chờ duyệt).
 
 
+<!-- TRACH-NHIEM-AGENT:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
+## Trách nhiệm trong hội đồng cổng (10/10/2026)
+Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối
+của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó».
+Khi điều phối cổng `dieu-phoi-gN` giao việc, bạn chịu trách nhiệm với điều phối cổng đó tới khi phần của
+bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối tổng — `_HOI-DONG-CONG.md` §1b).
+Đo (chỉ đọc): `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G<N>`.
+
+| Nhiệm vụ | Bạn LÀM — đầu ra (tên là HỢP ĐỒNG) | Tiêu chí bạn phải đưa tới ĐẠT | Hồ sơ + lệnh bạn chuẩn bị cho NGƯỜI |
+|---|---|---|---|
+| `G1-T6` — Đặc tả mô hình dự báo (TRIPOD+AI): yếu tố dự báo ứng viên, khung thời gian dự báo (chỉ khi thiết kế mô hình dự báo (prediction)) | `G1_A2_PROTOCOL_DESIGN_<mã>.md` | — (không có tiêu chí cổng; kiểm máy cấp nhiệm vụ: đề cương lõi: dòng yếu tố dự báo ứng viên + khung thời gian dự báo có mặt và đã điền; nội dung bảo đảm bằng đánh giá chéo) | — |
+| `G6-T4` — Phát triển và kiểm định mô hình dự báo (TRIPOD+AI) (chỉ khi thiết kế mô hình dự báo (prediction)) | `G6_A7_ANALYSIS_SCRIPTS_<mã>.md` | G6-AUTO-09 (nếu áp dụng) | — |
+
+Trước khi trả việc cho điều phối cổng: chạy lệnh đo của cổng đó — tiêu chí của bạn còn chưa đạt,
+đầu ra còn thiếu, hoặc biên bản đánh giá chéo «trả về sửa» ⇒ CHƯA xong. Không ký, không bật cờ, không
+ghi xác nhận/dấu vân tay thay người; «chuẩn bị» = đưa đủ hồ sơ + đúng lệnh, KHÔNG làm thay người có
+thẩm quyền.
+<!-- TRACH-NHIEM-AGENT:KET-THUC -->
+
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
 Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:

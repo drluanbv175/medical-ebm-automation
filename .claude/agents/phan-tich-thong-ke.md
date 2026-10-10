@@ -349,7 +349,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 |---|---|---|---|
 | `G6-T1` — Phân tích theo SAP đã khoá trên dữ liệu đã khoá | `G6_A7_ANALYSIS_SCRIPTS_<mã>.md`, `G6_checkpoint.json` | G6-AUTO-00, G6-AUTO-02, G6-AUTO-03, G6-AUTO-04, G6-AUTO-05, G6-AUTO-06, G6-AUTO-07, G6-AUTO-08, G6-AUTO-09 (khi G6-T2 không áp dụng), G6-AUTO-10 | STATISTICIAN: G6-HUMAN-01 |
 
-Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G1-T1` (thiet-ke-nghien-cuu), `G3-T1` (co-mau-nghien-cuu), `G4-T1` (thiet-ke-nghien-cuu), `G4-T2` (an-toan-nghien-cuu), `G5-T1` (quan-ly-du-lieu), `G6-T2` (meta-phan-tich), `G6-T3` (dien-giai-ket-qua), `G8-T1` (binh-duyet). Không bao giờ chấm đầu ra do chính bạn làm.
+Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G1-T1` (thiet-ke-nghien-cuu), `G3-T1` (co-mau-nghien-cuu), `G4-T1` (thiet-ke-nghien-cuu), `G4-T2` (an-toan-nghien-cuu), `G5-T1` (quan-ly-du-lieu), `G6-T2` (meta-phan-tich), `G6-T3` (dien-giai-ket-qua), `G6-T4` (mo-hinh-tien-luong), `G8-T1` (binh-duyet). Không bao giờ chấm đầu ra do chính bạn làm.
 
 Trước khi trả việc cho điều phối cổng: chạy lệnh đo của cổng đó — tiêu chí của bạn còn chưa đạt,
 đầu ra còn thiếu, hoặc biên bản đánh giá chéo «trả về sửa» ⇒ CHƯA xong. Không ký, không bật cờ, không

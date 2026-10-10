@@ -77,6 +77,21 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact guideline-update
 KHÔNG tự đổi thực hành/khuyến cáo; chỉ cảnh báo + đẩy hàng chờ duyệt (CỔNG B). Thẩm định sâu → `tham-dinh-grade-nnt`; định vị khuyến cáo → `huong-dan-lam-sang`. **Phân vai:** GIÁM SÁT ĐỊNH KỲ toàn nhóm nội tổng quát (quét lịch tuần/tháng) → giao thức `_GIAM-SAT-CHUNG-CU-NOI-CHUNG.md` / skill `quan-ly-cap-nhat-ebm`; agent này chỉ xử lý cảnh báo lỗi-thời theo MỘT chủ đề bác sĩ hỏi.
 
 
+<!-- DIEU-PHOI-LAM-SANG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py từ bảng của dieu-phoi-lam-sang.md — KHÔNG sửa tay) -->
+## Nhiệm vụ & kiểm soát trong ca lâm sàng (10/10/2026)
+Bác sĩ giao: «mỗi agent phải có nhiệm vụ rõ ràng, có sự kiểm soát của điều phối». Bạn chạy dưới
+nhạc trưởng `dieu-phoi-lam-sang` (BƯỚC 0 cờ đỏ → 5 bước EBM, dừng ở Cổng A/B). Khối này SINH từ hai bảng
+của nhạc trưởng — đổi việc thì sửa bảng đó rồi chạy lại bộ sinh, không sửa tay ở đây.
+
+- **Bước bạn chạy:** «5. THEO DÕI» (dừng: CỔNG B: ghi EBM_MASTER → hàng chờ duyệt)
+- **Nhạc trưởng kiểm đầu ra của bạn (bảng tự-rà hoàn chỉnh):**
+  - C8c — Học tập & độ mới chứng cứ (bước 5, sau Cổng A): kết cục/biến cố ghi ẨN DANH chỉ là tín hiệu GIẢ THUYẾT (không tự đổi khuyến cáo) + nguồn đã dùng còn hiện hành (có guideline/tổng quan mới hơn thay thế? — nêu, không tự đổi `decision`)
+
+Hạng mục còn 🔴 ⇒ nhạc trưởng ghi vào «DANH SÁCH 🔴 BẮT BUỘC còn thiếu» (điều kiện chặn «đủ») và
+giao lại bạn trước khi trả gói. Chỉ ĐỀ XUẤT: không tự «áp dụng» cho bệnh nhân (Cổng A), không ghi sổ cái
+(Cổng B); kèm PMID/DOI + «Cần bác sĩ kiểm chứng»; KHÔNG PII.
+<!-- DIEU-PHOI-LAM-SANG:KET-THUC -->
+
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
 Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:

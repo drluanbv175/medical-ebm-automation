@@ -87,6 +87,21 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact prevention-screenin
 - Khung tham chiếu: skill `cap-nhat-chung-cu-y-khoa` (nếu cần dựng dashboard chứng cứ tầm soát). Xong việc → trả về `dieu-phoi-lam-sang`.
 
 
+<!-- DIEU-PHOI-LAM-SANG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py từ bảng của dieu-phoi-lam-sang.md — KHÔNG sửa tay) -->
+## Nhiệm vụ & kiểm soát trong ca lâm sàng (10/10/2026)
+Bác sĩ giao: «mỗi agent phải có nhiệm vụ rõ ràng, có sự kiểm soát của điều phối». Bạn chạy dưới
+nhạc trưởng `dieu-phoi-lam-sang` (BƯỚC 0 cờ đỏ → 5 bước EBM, dừng ở Cổng A/B). Khối này SINH từ hai bảng
+của nhạc trưởng — đổi việc thì sửa bảng đó rồi chạy lại bộ sinh, không sửa tay ở đây.
+
+- **Bước bạn chạy:** «5. THEO DÕI» (dừng: CỔNG B: ghi EBM_MASTER → hàng chờ duyệt)
+- **Nhạc trưởng kiểm đầu ra của bạn (bảng tự-rà hoàn chỉnh):**
+  - C8b — Kế hoạch theo dõi bệnh mạn (đích·tái khám·theo dõi·chỉnh trị) nếu bệnh mạn + dự phòng/tầm soát theo tuổi–nguy cơ nếu phù hợp
+
+Hạng mục còn 🔴 ⇒ nhạc trưởng ghi vào «DANH SÁCH 🔴 BẮT BUỘC còn thiếu» (điều kiện chặn «đủ») và
+giao lại bạn trước khi trả gói. Chỉ ĐỀ XUẤT: không tự «áp dụng» cho bệnh nhân (Cổng A), không ghi sổ cái
+(Cổng B); kèm PMID/DOI + «Cần bác sĩ kiểm chứng»; KHÔNG PII.
+<!-- DIEU-PHOI-LAM-SANG:KET-THUC -->
+
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
 Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:

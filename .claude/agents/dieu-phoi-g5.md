@@ -30,6 +30,7 @@ Dữ liệu thật được nạp/làm sạch/khử định danh, truy vấn đ�
 | Mã | Nhiệm vụ | Agent chuyên trách | Đầu ra (artifact/khoá — tên là HỢP ĐỒNG) | Chấm chéo chuyên môn + giám khảo |
 |---|---|---|---|---|
 | G5-T1 | Nạp, làm sạch, đóng truy vấn, khử định danh, khoá dữ liệu, gói tái lặp | `quan-ly-du-lieu` | `G5_A6_DATA_MGMT_<mã>.md`, `DATA_LOCK_manifest.json`, `G5_REDCap_dictionary_<mã>.csv`, `G5_checkpoint.json` | `phan-tich-thong-ke`, `dao-duc-dang-ky` + `giam-khao-cong` |
+| G5-T2 | Trích xuất dữ liệu cấp nghiên cứu cho tổng quan hệ thống (bảng cho phân tích gộp) *(khi tổng quan hệ thống có gộp định lượng)* | `trich-xuat-y-van` | `06_phan_tich_R/study_level_extraction.csv` (bảng script gộp G6 đọc: `study`, `year` + (`TE`, `seTE`) hoặc (`event.e`, `n.e`, `event.c`, `n.c`)) | `meta-phan-tich` + `giam-khao-cong` |
 
 Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý do ở khối bàn giao, không giao việc.
 
@@ -52,6 +53,9 @@ của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm v
 | `G5-T1` — agent `quan-ly-du-lieu` | G5-AUTO-00, G5-AUTO-01, G5-AUTO-02, G5-AUTO-03, G5-AUTO-06, G5-AUTO-07, G5-AUTO-07b, G5-AUTO-08, G5-AUTO-09, G5-AUTO-10 |
 | `DATA_MANAGER@G5-T1` — NGƯỜI DATA_MANAGER quyết/ký; agent chuẩn bị hồ sơ + lệnh: `quan-ly-du-lieu` | G5-AUTO-04, G5-AUTO-04b, G5-HUMAN-01 |
 | `^G2,G4` — cổng tiền đề G2, G4 (điều phối cổng đó chịu trách nhiệm) | G5-AUTO-05, G5-AUTO-05b |
+
+Nhiệm vụ KHÔNG có tiêu chí máy (chất lượng CHỈ bảo đảm bằng đánh giá chéo): G5-T2 `trich-xuat-y-van` (kiểm máy cấp nhiệm vụ: bảng trích xuất SR/MA: cột study/year + (TE, seTE) hoặc 2x2; ≥ 2 nghiên cứu; số hợp lệ) — chưa có biên bản
+đánh giá chéo «qua» còn hiệu lực ⇒ khối bàn giao ghi «chất lượng chưa được bảo đảm» (lệnh đo liệt kê).
 
 1. **Thước đo duy nhất:** `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G5` — chỉ đọc; chấm sống,
    gán từng tiêu chí chưa đạt cho đúng bên, kiểm đầu ra từng nhiệm vụ áp dụng, đọc biên bản đánh giá chéo. CHỈ mã 0
