@@ -61,6 +61,17 @@ cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ c�
    tiền đề SINH từ `PHAN_CONG` (không còn văn xuôi lệch mã).
 8. **Lệnh trong tài liệu agent phải chạy được:** test `tests/test_lenh_trong_tai_lieu_agent_20261010.py` (repo y khoa)
    đối chiếu mọi cờ của lệnh `python3 tools/…` trong `.codex/agents/*.md` với argparse của công cụ.
+9. **Nhiệm vụ có điều kiện máy không suy được — điều phối KHAI bằng máy** (10/10/2026): điều kiện RCT/SR suy từ thiết
+   kế đã chốt do máy quyết; điều kiện khác (G1-T4 công cụ đo lường «khi đề tài phát triển, sửa đổi hoặc dịch–thích nghi
+   bộ câu hỏi/thang đo»; G7-T2 hiệu đính song ngữ «nộp tạp chí tiếng Anh») trước chỉ được dặn «khai trong khối bàn
+   giao» — không máy nào đọc lại nên nhiệm vụ mãi «chưa xác định» và đầu ra không bao giờ bị đòi. Nay:
+   `python3 tools/hoi_dong_cong.py khai-ap-dung --study <mã> --gate G<N> --nhiem-vu <NV> --ap-dung co|khong --ly-do "…"`
+   ghi `hoi_dong/G<N>/ap_dung_nhiem_vu.json` (lý do ≥ 10 ký tự, không PII; từ chối nhiệm vụ không điều kiện hoặc điều
+   kiện thiết kế). Khai «co» ⇒ bảng trách nhiệm đòi đầu ra + kiểm máy của nhiệm vụ: G1-T4 đòi
+   `pha_cong_cu/phieu_cvi.csv` + `pha_cong_cu/nhat_ky_phong_van_nhan_thuc.csv` dựng bằng
+   `tools/pha_phat_trien_cong_cu.py mau` (phiếu CVI đúng cấu trúc, ≥ 3 chuyên gia, điểm 1–4; nhật ký đủ cột — ô chưa
+   chấm/I-CVI thấp là việc của hội đồng chuyên gia, không phải lỗi agent). Khai không phải xác nhận của người: PI bác
+   được bằng cách yêu cầu khai lại.
 
 ## 2. Tám bước của một hội đồng cổng (`dieu-phoi-gN`)
 

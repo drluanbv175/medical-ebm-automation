@@ -88,6 +88,12 @@ def muc_cong(gate: str) -> str:
                     " — chưa có biên bản\nđánh giá chéo «qua» còn hiệu lực ⇒ khối bàn giao ghi «chất lượng chưa"
                     " được bảo đảm» (lệnh đo liệt kê).\n")
     n = len(HD.PHAN_CONG[gate])
+    can_khai = [nv for nv in HD.NHIEM_VU[gate]
+                if nv.get("dieu_kien") and nv["dieu_kien"] not in HD._DIEU_KIEN_THIET_KE]
+    o_cong = ("; ".join(f"{nv['ma']} `{nv['agent']}` ({nv['dieu_kien']})" for nv in can_khai)
+              if can_khai else "không có nhiệm vụ như vậy")
+    lenh_khai = (f"python3 tools/hoi_dong_cong.py khai-ap-dung --study <mã> --gate {gate} --nhiem-vu <NV> "
+                 '--ap-dung co --ly-do "…"')
     return f"""{DAU_CONG[0]}
 ## 4b. Trách nhiệm hoàn chỉnh của cổng {gate} (09/10/2026)
 Bác sĩ giao: {_YEU_CAU}. Mọi tiêu chí ({n}) của
@@ -107,7 +113,11 @@ Bác sĩ giao: {_YEU_CAU}. Mọi tiêu chí ({n}) của
    KHÔNG làm thay người, không bật cờ, không ký.
 4. **Chờ cổng trước** (`CHO_CONG_TRUOC`) ⇒ báo điều phối tổng và điều phối cổng đó; KHÔNG sửa artifact của cổng khác
    cho «xanh» tiêu chí tiền đề.
-5. Nhiệm vụ có điều kiện máy không suy được (`nhiem_vu_chua_xac_dinh`) ⇒ khai áp dụng/không kèm lý do ở khối bàn giao.
+5. Nhiệm vụ có điều kiện máy không suy được (`nhiem_vu_chua_xac_dinh`) ⇒ KHAI BẰNG MÁY (không chỉ ghi ở khối bàn giao):
+   `{lenh_khai}`
+   (`--ap-dung khong` khi không áp dụng) — lưu `hoi_dong/{gate}/ap_dung_nhiem_vu.json`; khai «co» ⇒ bảng trách nhiệm
+   đòi đầu ra + kiểm máy của nhiệm vụ; điều kiện RCT/SR suy từ thiết kế do máy quyết, không khai tay.
+   Ở {gate}: {o_cong}.
 6. Bàn giao: chạy lại với `--ghi` (lưu `hoi_dong/{gate}/trach_nhiem/TN-<mốc>.json`, kèm SHA-256 hồ sơ {gate}_*) và chép
    kết luận vào khối bàn giao. Trách nhiệm KHÔNG đòi triệu tập hội đồng nhiều agent (chi phí `_HOI-DONG-CONG.md` §5).
 {DAU_CONG[1]}
@@ -173,7 +183,8 @@ def khoi_agent(agent: str) -> str:
                  "|---|---|---|---|"]
         for g, nv in v["lam"]:
             chiu, chuan_bi = _tieu_chi_cua_nhiem_vu(g, nv["ma"])
-            nhan = f"`{nv['ma']}` — {nv['viec']}" + (f" (chỉ khi {nv['dieu_kien']})" if nv.get("dieu_kien") else "")
+            dk = nv.get("dieu_kien") or ""
+            nhan = f"`{nv['ma']}` — {nv['viec']}" + (f" (chỉ khi {dk.removeprefix('khi ')})" if dk else "")
             kiem = HD.KIEM_NHIEM_VU.get(nv["ma"])
             o_chiu = ", ".join(chiu) if chiu else (
                 (f"— (không có tiêu chí cổng; kiểm máy cấp nhiệm vụ: {kiem[0]}; nội dung bảo đảm bằng đánh giá chéo)"
