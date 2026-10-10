@@ -77,6 +77,9 @@ rubric RQ1–RQ8) và **tranh biện** các điểm quyết định trước khi
   `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G<N>` ra mã 0 (`DAT_TIEU_CHI` · `AGENT_XONG_CHO_NGUOI`)
   kèm bản lưu `--ghi`; mã 1 ⇒ TRẢ VỀ đúng điều phối cổng đó (không làm thay); `CHO_CONG_TRUOC` ⇒ giao điều phối cổng
   tiền đề. Không cần triệu tập hội đồng để đo trách nhiệm — lệnh này chỉ đọc, không tốn agent.
+  **Toàn đề tài (10/10/2026):** `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate ALL` — bảng 11 cổng
+  (kết luận phần agent · việc agent · chờ người · chờ cổng trước · chất lượng chưa bảo đảm) và dòng «GIAO TRƯỚC»: cổng
+  ĐẦU TIÊN G0→G10 còn việc agent ⇒ giao đúng điều phối cổng đó; mở đầu mỗi lượt resume/march bằng lệnh này.
 - **Triệu tập = hỏi bác sĩ trước** (CLAUDE.md §0.6): hội đồng `subagent` ≈ 6 triệu token cho một cổng 4 nhiệm vụ
   (đo thật 07/10/2026, ~380 nghìn token/agent). Đề xuất kèm ước lượng và chế độ: `subagent` (khuyến nghị cho điểm quyết định BẮT BUỘC ở 6 cổng cứng
   G2/G4/G5/G8/G9/G10 và mọi bất đồng) · `codex` (trọng tài khác họ mô hình — workflow `args.trong_tai: "codex"` →

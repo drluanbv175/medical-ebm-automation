@@ -27,8 +27,8 @@ Cỡ mẫu/lực mẫu đúng công thức cho thiết kế, tham số có ngu�
 | Mã | Nhiệm vụ | Agent chuyên trách | Đầu ra (artifact/khoá — tên là HỢP ĐỒNG) | Chấm chéo chuyên môn + giám khảo |
 |---|---|---|---|---|
 | G3-T1 | Tính cỡ mẫu/lực mẫu theo thiết kế, nguồn tham số | `co-mau-nghien-cuu` | `G3_A4_SAMPLE_SIZE_<mã>.md`, `G3_checkpoint.json` | `phan-tich-thong-ke`, `thiet-ke-nghien-cuu` + `giam-khao-cong` |
-| G3-T2 | Đặc tả bộ biến số | `bien-so-nghien-cuu` | `G3_A4_SAMPLE_SIZE_<mã>.md` | `quan-ly-du-lieu` + `giam-khao-cong` |
-| G3-T3 | CRF kỹ thuật, từ điển dữ liệu dự kiến, luật kiểm tra | `quan-ly-du-lieu` | `G3_A4_SAMPLE_SIZE_<mã>.md` | `bien-so-nghien-cuu` + `giam-khao-cong` |
+| G3-T2 | Đặc tả bộ biến số | `bien-so-nghien-cuu` | `_bo-bien-rieng.csv` | `quan-ly-du-lieu` + `giam-khao-cong` |
+| G3-T3 | CRF kỹ thuật, từ điển dữ liệu dự kiến, luật kiểm tra | `quan-ly-du-lieu` | `_bo-bien-rieng.csv` | `bien-so-nghien-cuu` + `giam-khao-cong` |
 
 Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý do ở khối bàn giao, không giao việc.
 
@@ -52,7 +52,7 @@ của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm v
 | `STATISTICIAN@G3-T1` — NGƯỜI STATISTICIAN quyết/ký; agent chuẩn bị hồ sơ + lệnh: `co-mau-nghien-cuu` | G3-HUMAN-01, G3-HUMAN-02, G3-HUMAN-03, G3-HUMAN-04, G3-HUMAN-06, G3-HUMAN-07 |
 | `^G0,G1` — cổng tiền đề G0, G1 (điều phối cổng đó chịu trách nhiệm) | G3-AUTO-01 |
 
-Nhiệm vụ KHÔNG có tiêu chí máy (chất lượng CHỈ bảo đảm bằng đánh giá chéo): G3-T2 `bien-so-nghien-cuu`, G3-T3 `quan-ly-du-lieu` — chưa có biên bản
+Nhiệm vụ KHÔNG có tiêu chí máy (chất lượng CHỈ bảo đảm bằng đánh giá chéo): G3-T2 `bien-so-nghien-cuu` (kiểm máy cấp nhiệm vụ: bộ biến G5 nạp được + không biến định danh trực tiếp), G3-T3 `quan-ly-du-lieu` (kiểm máy cấp nhiệm vụ: luật kiểm tra CRF: lựa chọn · công thức calc · khoảng hợp lệ · trường bắt buộc) — chưa có biên bản
 đánh giá chéo «qua» còn hiệu lực ⇒ khối bàn giao ghi «chất lượng chưa được bảo đảm» (lệnh đo liệt kê).
 
 1. **Thước đo duy nhất:** `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G3` — chỉ đọc; chấm sống,

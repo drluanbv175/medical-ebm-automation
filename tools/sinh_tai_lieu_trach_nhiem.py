@@ -79,7 +79,9 @@ def muc_cong(gate: str) -> str:
     khong_tc = HD.nhiem_vu_khong_tieu_chi(gate)
     dong_ktc = ""
     if khong_tc:
-        ds = ", ".join(f"{m} `{_agent_cua(gate, m)}`" for m in khong_tc)
+        ds = ", ".join(f"{m} `{_agent_cua(gate, m)}`"
+                       + (f" (kiểm máy cấp nhiệm vụ: {HD.KIEM_NHIEM_VU[m][0]})" if m in HD.KIEM_NHIEM_VU else "")
+                       for m in khong_tc)
         dong_ktc = (f"\nNhiệm vụ KHÔNG có tiêu chí máy (chất lượng CHỈ bảo đảm bằng đánh giá chéo): {ds}"
                     " — chưa có biên bản\nđánh giá chéo «qua» còn hiệu lực ⇒ khối bàn giao ghi «chất lượng chưa"
                     " được bảo đảm» (lệnh đo liệt kê).\n")
@@ -155,8 +157,11 @@ def khoi_agent(agent: str) -> str:
         for g, nv in v["lam"]:
             chiu, chuan_bi = _tieu_chi_cua_nhiem_vu(g, nv["ma"])
             nhan = f"`{nv['ma']}` — {nv['viec']}" + (f" (chỉ khi {nv['dieu_kien']})" if nv.get("dieu_kien") else "")
+            kiem = HD.KIEM_NHIEM_VU.get(nv["ma"])
             o_chiu = ", ".join(chiu) if chiu else (
-                "— (không có tiêu chí máy: chất lượng chỉ bảo đảm bằng đánh giá chéo)" if not chuan_bi else "—")
+                (f"— (không có tiêu chí cổng; kiểm máy cấp nhiệm vụ: {kiem[0]}; nội dung bảo đảm bằng đánh giá chéo)"
+                 if kiem else "— (không có tiêu chí máy: chất lượng chỉ bảo đảm bằng đánh giá chéo)")
+                if not chuan_bi else "—")
             o_nguoi = "; ".join(f"{vai}: {', '.join(ds)}" for vai, ds in sorted(chuan_bi.items())) or "—"
             dong.append(f"| {nhan} | {', '.join('`' + d + '`' for d in nv['dau_ra'])} | {o_chiu} | {o_nguoi} |")
         dong.append("")

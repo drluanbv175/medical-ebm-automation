@@ -87,8 +87,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 10/10/2026 (trách nhiệm TỪNG agent — tools/sinh_tai_lieu_trach_nhiem.py): 23 agent làm/chấm chéo nhiệm vụ cổng thêm
 # khối «Trách nhiệm trong hội đồng cổng», 11 dieu-phoi-gN mục 4b sinh lại, quan-ly-du-lieu sửa lệnh khoá dữ liệu —
 # bản cặp y hệt gốc; vẫn 64.
+# 10/10/2026 (hợp đồng bộ biến G3 — _bo-bien-rieng.csv): bien-so-nghien-cuu, quan-ly-du-lieu, dieu-phoi-g3 dạy tệp hợp
+# đồng + kiểm máy cấp nhiệm vụ; dieu-phoi-nghien-cuu dạy `trach-nhiem --gate ALL` — bản cặp y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "af5222713ee2142ac022cb4f360943dad00761b70f7ef1b8375f06cc01c80465"
+    "006849af289efbb23fe43a1f2caebffc8aeb0dbde8ab404f07ff87795a5055fd"
 )
 
 MINIMUM_AGENT_COUNT = 64

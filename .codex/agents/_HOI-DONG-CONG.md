@@ -42,7 +42,8 @@ cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ c�
 3. **Thước đo duy nhất (chỉ đọc, không tốn agent):** `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate
    G<N> [--ghi]` — kết luận `DAT_TIEU_CHI` · `AGENT_XONG_CHO_NGUOI` (mã 0 = phần agent HOÀN CHỈNH) · `AGENT_CON_VIEC` ·
    `CHO_CONG_TRUOC` · `CHUA_PHAN_CONG` (mã 1) · `KHONG_DO_DUOC` (mã 2). Không tự khai «hoàn chỉnh». `--ghi` lưu bảng lúc
-   bàn giao ở `hoi_dong/G<N>/trach_nhiem/TN-<mốc>.json` kèm SHA-256 hồ sơ `G<N>_*`.
+   bàn giao ở `hoi_dong/G<N>/trach_nhiem/TN-<mốc>.json` kèm SHA-256 hồ sơ `G<N>_*`. Toàn đề tài cho điều phối
+   tổng: `--gate ALL` (bảng 11 cổng + cổng GIAO TRƯỚC; mã 1 nếu còn cổng có việc agent).
 4. **Không đổi ranh giới:** trách nhiệm hoàn chỉnh KHÔNG cho phép ký, bật cờ, ghi xác nhận/dấu vân tay thay người, hay sửa
    artifact của cổng khác để «xanh» tiêu chí tiền đề; cũng KHÔNG đòi triệu tập hội đồng nhiều agent (§5).
 5. Điều phối tổng chỉ nhận «phần agent của cổng hoàn chỉnh» khi bảng ra mã 0; mã 1 ⇒ trả về đúng điều phối cổng đó.
@@ -53,6 +54,9 @@ cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ c�
 7. **Đánh giá chéo nằm trong trách nhiệm:** biên bản «trả về sửa» còn hiệu lực ⇒ `AGENT_CON_VIEC`; nhiệm vụ KHÔNG có tiêu
    chí máy (vd G3-T2 biến số, G3-T3 CRF, G6-T3 diễn giải) chỉ được bảo đảm bằng đánh giá chéo — chưa đánh giá ⇒ bảng ghi
    «chất lượng chưa được bảo đảm» và khối bàn giao phải nói thật (không đổi kết luận máy; triệu tập vẫn hỏi bác sĩ §5).
+   Nhiệm vụ có tệp hợp đồng thì được thêm **kiểm máy cấp nhiệm vụ** (`hoi_dong_cong.KIEM_NHIEM_VU`, chỉ CẤU TRÚC, không
+   phải tiêu chí cổng): G3-T2/G3-T3 — `_bo-bien-rieng.csv` nạp được bằng đúng hàm G5 dùng, không biến định danh, CRF có
+   luật kiểm tra; lỗi ⇒ `AGENT_CON_VIEC` của đúng agent.
 8. **Lệnh trong tài liệu agent phải chạy được:** test `tests/test_lenh_trong_tai_lieu_agent_20261010.py` (repo y khoa)
    đối chiếu mọi cờ của lệnh `python3 tools/…` trong `.codex/agents/*.md` với argparse của công cụ.
 
