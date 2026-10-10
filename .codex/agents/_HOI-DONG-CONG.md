@@ -93,6 +93,13 @@ cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ c�
     nhiệm vụ có kiểm máy · A5 lệnh chạy được · A6 bản Codex; điều phối cổng D1 bảng §3 khớp · D2 phủ đủ tiêu chí
     bộ chấm · D3 mọi nhiệm vụ có kiểm máy; nhạc trưởng lâm sàng L1; điều phối tổng N1/N2. Mã 0 = mọi agent + điều
     phối ĐẠT; test chốt không cho lùi. Làm việc theo danh sách công cụ in ra — không rà mở lại từ đầu.
+13. **Ô trống gửi đích danh người ⇒ «CHỜ NGƯỜI», không phải «agent còn việc»** (10/10/2026, đo trên C1a): tiêu chí giao
+    agent mà phần còn lại CHỈ là ô của người có thẩm quyền (dòng quyết định PI của đề cương lõi G1 — G1-HUMAN-01/03;
+    thẻ «[CẦN CHỦ NHIỆM …]», «[CẦN PI …]», «[CẦN THỐNG KÊ VIÊN …]», «[CẦN CNTT …]», «[CẦN HỘI ĐỒNG …]» trong mục bắt
+    buộc SAP) thì bộ chấm mở đầu bằng chứng «CHỜ NGƯỜI (vai)» và bảng trách nhiệm xếp vào «chờ người» (trạng thái tiêu
+    chí KHÔNG đổi). Điều phối KHÔNG đòi agent điền thay — chuẩn bị câu hỏi + nguồn cho người đó. Ô chung «[CẦN BỔ SUNG]»,
+    «___» hoặc mục VẮNG vẫn là việc agent. Kiểm chi tiết (`kiem_chi_tiet_he_nghien_cuu.py`) tô VÀNG checkpoint bị chặn vì
+    chính cổng chờ dữ kiện đời thực (PI chốt, IRB, chữ ký, dữ liệu thật…), không tô đỏ «máy sửa được».
 
 ## 2. Tám bước của một hội đồng cổng (`dieu-phoi-gN`)
 

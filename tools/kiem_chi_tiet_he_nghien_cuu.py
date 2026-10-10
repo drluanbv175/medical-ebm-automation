@@ -436,6 +436,15 @@ def mau_ly_do_ky(ly_do: str | None) -> str:
 # ① Chuỗi cổng — cổng chưa chạy là «chờ người» hay «máy chạy được mà chưa chạy»?
 # ─────────────────────────────────────────────────────────────────────────────
 
+# Mã lý do chặn mà chỉ NGƯỜI/đời thực gỡ được (gate_contract.REASON_*). Thiếu cỡ mẫu ở G4, biên nhận trích dẫn và độ
+# sẵn sàng phát hành vẫn là việc máy làm được khi tiền đề đủ ⇒ giữ đỏ.
+LY_DO_CHO_NGUOI = frozenset({
+    GC.REASON_MISSING_PICO, GC.REASON_MISSING_PUBMED, GC.REASON_MISSING_EFFECT_SIZE, GC.REASON_MISSING_IRB,
+    GC.REASON_MISSING_SAP_LOCK, GC.REASON_MISSING_DATA, GC.REASON_MISSING_INTEGRITY, GC.REASON_MISSING_PEER_REVIEW,
+    GC.REASON_MISSING_RELEASE_APPROVAL, GC.REASON_MANUSCRIPT_CHANGED_AFTER_PEER_REVIEW,
+})
+
+
 def trang_thai_chuoi(gate: str, cps: dict[str, dict[str, Any]], ky: dict[str, bool]) -> tuple[str, str]:
     """→ (màu, lý do) cho cổng CHƯA có checkpoint."""
     for dk in TIEN_DE[gate]:
@@ -595,6 +604,11 @@ def kiem_cong(gate: str, study: str, out_dir: Path, cps: dict[str, dict[str, Any
             elif mau_b == VANG:
                 m.append(Muc(gate, "①", VANG, "Checkpoint BLOCKED = từ chối fail-closed ĐÚNG",
                              f"{_rut_gon(chi_tiet, 90)} · {ly_b}"))
+            elif str(((cp.get("needs_input") or {}).get("reason_code")) or "") in LY_DO_CHO_NGUOI:
+                # 10/10/2026: chặn vì CHÍNH cổng này chờ dữ kiện đời thực của người (PI chốt, IRB, chữ ký, dữ liệu…) —
+                # chạy lại cổng không gỡ được. Bản cũ chỉ xét tiền đề ⇒ G0 C1a chờ PI bị tô đỏ «máy sửa được».
+                m.append(Muc(gate, "①", VANG, "Checkpoint BLOCKED = chờ người thật",
+                             _rut_gon(chi_tiet, 100)))
             else:
                 m.append(Muc(gate, "①", DO, "Checkpoint BLOCKED dù tiền đề đã đủ", _rut_gon(chi_tiet, 100),
                              f"python3 tools/{SCRIPT_CONG[gate]} --study {study}", True))

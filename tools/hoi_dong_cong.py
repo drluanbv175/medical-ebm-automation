@@ -1582,6 +1582,14 @@ def trach_nhiem(study: str, gate: str, out_dir: Path) -> Dict[str, Any]:
             dat.append(r["id"])
             continue
         muc = {"id": r["id"], "status": r["status"], "label": r["label"], "viec": r["action"] or r["evidence"]}
+        # 10/10/2026: tiêu chí giao agent mà bộ chấm báo phần còn lại chỉ là ô GỬI ĐÍCH DANH người («CHỜ NGƯỜI (vai)»)
+        # ⇒ chờ người — agent đã làm hết phần của mình, đòi thêm là giao việc không làm được
+        # (C1a G1-AUTO-07, G4-AUTO-10).
+        m_nguoi = _CHO_NGUOI.match(str(r.get("evidence") or ""))
+        if m_nguoi and pc is not None and pc["loai"] == "agent":
+            cho_nguoi.append({**muc, "viec": r["evidence"], "vai": m_nguoi.group(1).strip(),
+                              "chuan_bi": pc["nhiem_vu"], "agent_chuan_bi": pc["agent"]})
+            continue
         if pc is None:
             chua_gan.append(muc)
         elif pc["loai"] == "agent":
@@ -1664,6 +1672,9 @@ def trach_nhiem(study: str, gate: str, out_dir: Path) -> Dict[str, Any]:
             "chi_dam_bao_bang_danh_gia_cheo": chi_danh_gia,
             "chat_luong_chua_bao_dam": [m["ma"] for m in chi_danh_gia if m["danh_gia_cheo"] != "qua"],
             "nhiem_vu_chua_xac_dinh": [n["ma"] for n in nhiem_vu if n["ap_dung"] is None]}
+
+
+_CHO_NGUOI = re.compile(r"^CHỜ NGƯỜI \(([^)—]+?)(?:\s+—[^)]*)?\):")
 
 
 def tong_trach_nhiem(study: str, out_dir: Path) -> Dict[str, Any]:
@@ -1751,8 +1762,11 @@ def in_trach_nhiem(kq: Dict[str, Any]) -> str:
         dong.append(f"- Tiêu chí bộ chấm CHƯA chấm tới lượt này (dừng sớm hoặc không áp dụng thiết kế): "
                     f"{len(cc)} — {', '.join(cc[:8])}{'…' if len(cc) > 8 else ''}")
     if kq["chi_dam_bao_bang_danh_gia_cheo"]:
-        dong.append("- Nhiệm vụ KHÔNG có tiêu chí máy — chất lượng chỉ bảo đảm bằng đánh giá chéo: " + ", ".join(
-            f"{m['ma']} `{m['agent']}` [{m['danh_gia_cheo']}]" for m in kq["chi_dam_bao_bang_danh_gia_cheo"]))
+        dong.append("- Nhiệm vụ KHÔNG có tiêu chí CỔNG — nội dung chỉ bảo đảm bằng đánh giá chéo (cấu trúc: kiểm "
+                    "máy cấp nhiệm vụ nếu có): " + ", ".join(
+            f"{m['ma']} `{m['agent']}` "
+            f"[{m['danh_gia_cheo']}{'; có kiểm máy' if m['ma'] in KIEM_NHIEM_VU else ''}]"
+            for m in kq["chi_dam_bao_bang_danh_gia_cheo"]))
         if kq["chat_luong_chua_bao_dam"]:
             dong.append("  ⚠ CHẤT LƯỢNG CHƯA ĐƯỢC BẢO ĐẢM: " + ", ".join(kq["chat_luong_chua_bao_dam"])
                         + " — khối bàn giao phải nói thật điều này (đánh giá chéo tốn agent: hỏi bác sĩ trước, §5)")
