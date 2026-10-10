@@ -40,8 +40,8 @@
 ### §1 QUẦN THỂ PHÂN TÍCH
 
 - **Quần thể chính:** Toàn bộ mẫu đủ tiêu chí  
-- **Cỡ mẫu cuối:** N = 1000 (alpha=0.05, power=80%)  
-- **N tối thiểu theo thống kê (từ G3):** 453. N ở trên là cỡ mẫu KẾ HOẠCH do chủ nhiệm/Hội đồng chốt, lớn hơn mức tối thiểu.  
+- **Cỡ mẫu cuối:** N = 1000 (độ tin cậy 95%, sai số tuyệt đối d = ±0.05)  
+- **N tối thiểu theo thống kê (từ G3):** 626. N ở trên là cỡ mẫu KẾ HOẠCH do chủ nhiệm/Hội đồng chốt, lớn hơn mức tối thiểu.  
 - **Tiêu chí nhận (mục 4.3.1 đề cương):** người bệnh ngoại trú từ đủ 18 tuổi (gồm phụ nữ mang thai); đủ sức khỏe, tỉnh táo và đủ năng lực nhận thức/ngôn ngữ để trả lời; đã cơ bản hoàn thành quy trình khám tại Khoa C1a (đang chờ thanh toán/nhận thuốc/nhận lại thẻ BHYT); đồng ý tham gia tự nguyện sau khi được giải thích (ICF là tài liệu giấy riêng, Phụ lục B).  
 - **Tiêu chí loại (mục 4.3.2 đề cương):** từ chối tham gia; không đủ năng lực trả lời (cấp cứu, suy giảm nhận thức, rào cản ngôn ngữ không khắc phục được); nhân viên y tế của chính khoa/bệnh viện đi khám; đã tham gia nghiên cứu ở lượt khám trước trong cùng kỳ (chống trùng); phiếu khuyết dữ liệu vượt ngưỡng theo **ba ngưỡng đã khóa**: (1) thiếu G1; (2) bỏ trống ≥ 7/30 mục Likert Phần 2 (> 20%); (3) bỏ trống trọn một lĩnh vực A–F. Số phiếu loại theo TỪNG ngưỡng báo riêng ở sơ đồ luồng STROBE (Bảng 5.6). KHÔNG loại phiếu chỉ vì thiếu biến nền hoặc thiếu mốc HIS — các trường hợp đó đi theo kế hoạch dữ liệu thiếu (§6).  
 
@@ -141,12 +141,17 @@ Ba nhóm biến đã KHÓA theo lập luận nhân quả trên DAG (Phụ lục 
 | Tỷ lệ hài lòng chung (G1 ≥ 4/5), % | ___ | ___–___ (Wilson) |
 | cOR thời gian chờ mỗi 15 phút (mô hình chính, hiệu chỉnh đủ tập forced-in) | ___ | ___–___ |
 
-### §12 ALPHA + POWER
+### §12 ALPHA + ĐỘ CHÍNH XÁC (cỡ mẫu theo sai số cho phép)
 
-- **Alpha (two-sided):** 0.05  
-- **Power:** 80%  
+- **Alpha (two-sided):** 0.05 — độ tin cậy 95%  
+- **Tỷ lệ ước lượng (p):** 0.5  
+- **Sai số tuyệt đối cho phép (d):** ±0.05  
 - **Cỡ mẫu:** N = 1000  
-- **Effect size dự kiến:** PREVALENCE = 0.50  
+- **Power:** không dùng — cỡ mẫu theo độ chính xác của ước lượng, không kiểm định giả thuyết  
+- **Tỷ lệ bỏ cuộc dự kiến:** 0.15  
+- **Hiệu ứng thiết kế (DE):** 1.38  
+- **ICC:** 0.02  
+- **Cỡ cụm trung bình (m):** 20  
 
 ---
 
@@ -170,8 +175,8 @@ Ba nhóm biến đã KHÓA theo lập luận nhân quả trên DAG (Phụ lục 
 ║ Đề tài : hai-long-benh-nhan-C1a-BVQY175 ║
 ║ Ngày soạn : 2026-07-31 ║
 ║ Cỡ mẫu : N = 1000 ║
-║ Alpha : 0.05 (two-sided) ║
-║ Power : 80% ║
+║ Alpha : 0.05 (độ tin cậy 95%) ║
+║ Sai số d : ±0.05 (p = 0.5) ║
 ║ KQ chính : G1 hài lòng chung (thứ hạng 1-5), logistic thứ tự ║
 ║ Phân tích : phiếu hợp lệ (3 ngưỡng loại), cụm ma_ban_kham ║
 ╠══════════════════════════════════════════════════════════════╣
