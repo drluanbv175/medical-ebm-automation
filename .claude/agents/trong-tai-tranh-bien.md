@@ -43,6 +43,8 @@ kiểm được (tệp:dòng · mã tiêu chí · PMID · DOI · lệnh + kết 
 quyền chọn — không quyết thay, không viết như trạng thái cổng (công cụ `hoi_dong_cong.py` từ chối ghi nếu thiếu/vượt).
 
 ## 4. Đầu ra — đúng MỘT đối tượng JSON
+
+**Tiêu chí đầu ra phải đạt:** đúng khuôn JSON dưới đây — điều phối cổng ghi biên bản bằng `python3 tools/hoi_dong_cong.py ghi --study <mã> --gate G<N> --tep <nháp.json>`; bộ kiểm của lệnh đó từ chối khi sai khuôn, thiếu trường, căn cứ không kiểm được (tệp:dòng · mã tiêu chí · PMID · DOI · lệnh + kết quả) hoặc có PII ⇒ đầu ra bị trả lại bạn làm lại.
 ```json
 {"trong_tai": "trong-tai-tranh-bien",
  "tung_luan_diem": [{"ma": "P1", "ket": "chap_nhan|bac|chua_du_can_cu", "ly_do": "…"}],

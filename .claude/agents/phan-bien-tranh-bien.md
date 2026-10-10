@@ -37,6 +37,8 @@ danh sách tài liệu được xét (tương đối `exports/<mã>/`). Tự đ�
 - Không đề xuất kết luận cuối, không viết trạng thái cổng («đã ký», «PASS_…», «…_LOCKED»).
 
 ## 4. Đầu ra — đúng MỘT đối tượng JSON cho vòng của bạn
+
+**Tiêu chí đầu ra phải đạt:** đúng khuôn JSON dưới đây — điều phối cổng ghi biên bản bằng `python3 tools/hoi_dong_cong.py ghi --study <mã> --gate G<N> --tep <nháp.json>`; bộ kiểm của lệnh đó từ chối khi sai khuôn, thiếu trường, căn cứ không kiểm được (tệp:dòng · mã tiêu chí · PMID · DOI · lệnh + kết quả) hoặc có PII ⇒ đầu ra bị trả lại bạn làm lại.
 ```json
 {"so": 1, "ben": "phan_bien",
  "luan_diem": [{"ma": "P1", "phan_doi": "L1", "noi_dung": "…", "can_cu": [{"loai": "tieu_chi", "gia_tri": "G4-AUTO-09"}],

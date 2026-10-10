@@ -90,7 +90,8 @@ cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ c�
 12. **Tiêu chuẩn hoàn thiện từng agent và từng điều phối** (10/10/2026, bác sĩ giao «xây dựng từng Agent một cho tới
     khi hoàn thiện để khỏi tốn thời gian và Token»): `python3 tools/tieu_chuan_hoan_thien.py [--agent <tên>]` (repo y
     khoa) đo MỘT bộ hạng mục — agent A1 khung doctrine · A2 có điều phối giao việc · A3 khối sinh khớp · A4 mọi
-    nhiệm vụ có kiểm máy · A5 lệnh chạy được · A6 bản Codex; điều phối cổng D1 bảng §3 khớp · D2 phủ đủ tiêu chí
+    nhiệm vụ có kiểm máy · A5 lệnh chạy được · A6 bản Codex · A7 giao nhiệm vụ + tiêu chí kết quả + người
+    kiểm (mọi vai, `--json` → «giao_viec»); điều phối cổng D1 bảng §3 khớp · D2 phủ đủ tiêu chí
     bộ chấm · D3 mọi nhiệm vụ có kiểm máy; nhạc trưởng lâm sàng L1; điều phối tổng N1/N2. Mã 0 = mọi agent + điều
     phối ĐẠT; test chốt không cho lùi. Làm việc theo danh sách công cụ in ra — không rà mở lại từ đầu.
 13. **Ô trống gửi đích danh người ⇒ «CHỜ NGƯỜI», không phải «agent còn việc»** (10/10/2026, đo trên C1a): tiêu chí giao

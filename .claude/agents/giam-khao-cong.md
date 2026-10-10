@@ -43,6 +43,8 @@ Kết luận: `dat` (không còn gì) · `dat_co_luu_y` (chỉ còn `can_sua` nh
 tầng 0 RQ3/RQ6/RQ7 — bắt buộc). Có `can_sua`/`loi_do` thì KHÔNG được `dat`.
 
 ## 3. Đầu ra — đúng MỘT đối tượng JSON (điều phối cổng gộp vào biên bản)
+
+**Tiêu chí đầu ra phải đạt:** đúng khuôn JSON dưới đây — điều phối cổng ghi biên bản bằng `python3 tools/hoi_dong_cong.py ghi --study <mã> --gate G<N> --tep <nháp.json>`; bộ kiểm của lệnh đó từ chối khi sai khuôn, thiếu trường, căn cứ không kiểm được (tệp:dòng · mã tiêu chí · PMID · DOI · lệnh + kết quả) hoặc có PII ⇒ đầu ra bị trả lại bạn làm lại.
 ```json
 {"nguoi_cham": "giam-khao-cong", "vai": "giam_khao",
  "tieu_chi": [{"ma": "RQ1", "muc": "dat", "nhan_xet": "", "can_cu": []}, "… đủ RQ1–RQ8 …"],

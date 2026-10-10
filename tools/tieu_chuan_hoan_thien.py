@@ -15,6 +15,12 @@ AGENT (mọi tệp `.claude/agents/<tên>.md`):
      vụ) hoặc kiểm máy cấp nhiệm vụ (`KIEM_NHIEM_VU`). Nhiệm vụ chỉ dựa đánh giá chéo = CHƯA.
   A5 Lệnh `python3 tools/…` trong tài liệu chỉ dùng cờ có thật của công cụ.
   A6 Có bản Codex `.codex/agents/<tên>.toml`.
+  A7 GIAO NHIỆM VỤ + TIÊU CHÍ KẾT QUẢ (10/10/2026, bác sĩ: «mỗi Agent và điều phối đã giao nhiệm vụ và tiêu chí kết quả
+     phải đạt được») — áp dụng cho MỌI vai, không có «—»: agent nhiệm vụ cổng ⇒ mỗi nhiệm vụ có tiêu chí máy; người chấm
+     chéo ⇒ rubric RQ1–RQ8 + JSON kiểm bằng `hoi_dong_cong.py ghi`; agent lâm sàng ⇒ bước + mã tự-rà của nhạc trưởng;
+     giám khảo/phản biện/trọng tài ⇒ khuôn JSON + tài liệu nói rõ bị kiểm bằng `hoi_dong_cong.py ghi`; thẩm định đầu ra
+     ⇒ R1–R7 + Q1–Q7 + TRẢ-VỀ-SỬA; điều phối cổng ⇒ danh mục nhiệm vụ + bảng phân công + dạy `trach-nhiem … --gate GN`;
+     nhạc trưởng lâm sàng ⇒ bảng bước/tự-rà + Cổng A/B; điều phối tổng ⇒ N1/N2. `--json` trả thêm «giao_viec» từng vai.
 ĐIỀU PHỐI CỔNG `dieu-phoi-gN` (thêm):
   D1 Bảng §3 nêu đúng mọi nhiệm vụ + agent + người chấm của danh mục, và mọi mã điểm quyết định.
   D2 Bảng phân công phủ ĐÚNG tập tiêu chí của `tools/gN_quality_gate.py` (đọc AST — không đọc chú thích).
@@ -59,6 +65,7 @@ VAI_HOI_DONG = frozenset({HD.GIAM_KHAO, HD.PHAN_BIEN, HD.TRONG_TAI, "dieu-phoi-n
 TEN_HANG_MUC = {
     "A1": "khung doctrine", "A2": "có điều phối giao việc", "A3": "khối nhiệm vụ sinh tự động khớp",
     "A4": "mọi nhiệm vụ có kiểm máy", "A5": "lệnh trong tài liệu chạy được", "A6": "có bản Codex",
+    "A7": "giao nhiệm vụ + tiêu chí kết quả",
     "D1": "bảng §3 khớp danh mục", "D2": "phân công phủ đủ tiêu chí bộ chấm", "D3": "mọi nhiệm vụ của cổng có kiểm máy",
     "L1": "mọi agent lâm sàng có bước + tự-rà", "N1": "dạy bảng trách nhiệm toàn đề tài",
     "N2": "dạy sổ trạng thái riêng",
@@ -141,6 +148,82 @@ def _vai_nghien_cuu() -> Dict[str, Dict[str, list]]:
     return ra
 
 
+_DAU_RA_JSON = re.compile(r"^##\s+[\d.]*\s*Đầu ra — đúng MỘT đối tượng JSON", re.M)
+_LENH_GHI = "hoi_dong_cong.py ghi"
+
+
+def giao_viec(ten: str, van: str, vai_nc: Dict[str, Dict[str, list]], vai_ls: Dict[str, dict]) -> Dict[str, object]:
+    """A7 — vai này được giao NHIỆM VỤ gì, TIÊU CHÍ KẾT QUẢ nào phải đạt, AI kiểm (đo từ đúng nguồn máy đọc)."""
+    g = next((c for c in HD.CONG if HD.dieu_phoi_cong(c) == ten), None)
+    if g:
+        nv = [n["ma"] for n in HD.NHIEM_VU[g]]
+        tc = [f"{len(HD.PHAN_CONG[g])} tiêu chí bộ chấm {g} gán đúng một bên (agent · người · cổng tiền đề)",
+              f"`trach-nhiem --study <mã> --gate {g}` mã 0 = phần agent của cổng hoàn chỉnh",
+              "đầu ra mỗi nhiệm vụ qua đánh giá chéo RQ1–RQ8; điểm quyết định qua tranh biện"]
+        thieu = ([] if nv else ["danh mục nhiệm vụ rỗng"]) + ([] if HD.PHAN_CONG[g] else ["bảng phân công rỗng"]) + (
+            [] if f"trach-nhiem --study <mã> --gate {g}" in van else [f"chưa dạy `trach-nhiem … --gate {g}`"])
+        return {"loai_vai": "điều phối cổng", "nhiem_vu": nv, "tieu_chi": tc, "nguoi_kiem": "dieu-phoi-nghien-cuu",
+                "dat": not thieu, "ly_do": "; ".join(thieu)}
+    if ten == "dieu-phoi-nghien-cuu":
+        thieu = [x for x, s in (("N1", "trach-nhiem --study <mã> --gate ALL"), ("N2", "SO_TRANG_THAI_<mã>.md"))
+                 if s not in van]
+        return {"loai_vai": "điều phối tổng", "nhiem_vu": [HD.dieu_phoi_cong(c) for c in HD.CONG],
+                "tieu_chi": ["`trach-nhiem --gate ALL`: giao trước cổng đầu tiên còn việc agent",
+                             "sổ trạng thái riêng mỗi đề tài (G10-T3)"], "nguoi_kiem": "bác sĩ (PI)",
+                "dat": not thieu, "ly_do": ("thiếu " + ", ".join(thieu)) if thieu else ""}
+    if ten == SG.NHAC_TRUONG_LS:
+        buoc = sorted({b for v in vai_ls.values() for b, _ in v.get("buoc", [])})
+        ma_tu_ra = sorted({m for v in vai_ls.values() for m, _ in v.get("tu_ra", [])})
+        thieu = (([] if buoc and ma_tu_ra else ["bảng bước/tự-rà rỗng"])
+                 + ([] if "Cổng A" in van else ["chưa nêu Cổng A"]))
+        return {"loai_vai": "nhạc trưởng lâm sàng", "nhiem_vu": buoc,
+                "tieu_chi": [f"{len(ma_tu_ra)} mã tự-rà ({', '.join(ma_tu_ra[:6])}…) — thiếu ⇒ DANH SÁCH 🔴 chặn «đủ»",
+                             "dừng ở Cổng A (áp dụng cho bệnh nhân) + Cổng B (sổ cái)"],
+                "nguoi_kiem": "tham-dinh-dau-ra + bác sĩ", "dat": not thieu, "ly_do": "; ".join(thieu)}
+    if ten in (HD.GIAM_KHAO, HD.PHAN_BIEN, HD.TRONG_TAI):
+        thieu = ([] if _DAU_RA_JSON.search(van) else ["thiếu mục «Đầu ra — đúng MỘT đối tượng JSON»"]) + (
+            [] if _LENH_GHI in van else [f"chưa nói đầu ra bị kiểm bằng `{_LENH_GHI}`"])
+        viec = {HD.GIAM_KHAO: "chấm độc lập đầu ra nhiệm vụ theo RQ1–RQ8",
+                HD.PHAN_BIEN: "phản đối mạnh nhất có căn cứ cho điểm quyết định (≤ 2 vòng)",
+                HD.TRONG_TAI: "phán từng phản đối, ra giữ/sửa kết luận hoặc chuyển bác sĩ"}[ten]
+        return {"loai_vai": "vai hội đồng", "nhiem_vu": [viec],
+                "tieu_chi": ["đúng MỘT đối tượng JSON theo khuôn",
+                             f"`{_LENH_GHI}` kiểm khuôn · căn cứ kiểm được · PII"],
+                "nguoi_kiem": "điều phối cổng", "dat": not thieu, "ly_do": "; ".join(thieu)}
+    if ten == "tham-dinh-dau-ra":
+        thieu = [m for m in [f"R{i}" for i in range(1, 8)] + [f"Q{i}" for i in range(1, 8)] + ["TRẢ-VỀ-SỬA"]
+                 if m not in van]
+        return {"loai_vai": "chốt kiểm đầu ra", "nhiem_vu": ["thẩm định gói của nhạc trưởng trước khi trả bác sĩ"],
+                "tieu_chi": ["Lớp 1 liêm chính R1–R7", "Lớp 2 chất lượng Med-PaLM Q1–Q7 (gói lâm sàng)",
+                             "lỗi đỏ ⇒ TRẢ-VỀ-SỬA, cấm phát hành"], "nguoi_kiem": "bác sĩ",
+                "dat": not thieu, "ly_do": ("thiếu " + ", ".join(thieu)) if thieu else ""}
+    x, ls = vai_nc.get(ten) or {}, vai_ls.get(ten) or {}
+    nv: List[str] = []
+    tc: List[str] = []
+    thieu = []
+    for c, ma in x.get("lam", []):
+        k = kiem_may_cua(c, ma)
+        nv.append(ma)
+        tc.append(f"{ma}: " + (", ".join(k[:4]) + ("…" if len(k) > 4 else "") if k else "CHƯA CÓ"))
+        if not k:
+            thieu.append(f"{ma} chưa có tiêu chí máy")
+    for c, ma in x.get("cham", []):
+        nv.append(f"chấm chéo {ma}")
+        tc.append(f"chấm chéo {ma}: rubric RQ1–RQ8, JSON kiểm bằng `{_LENH_GHI}`")
+    if ls:
+        nv += [b for b, _ in ls.get("buoc", [])]
+        tc += [f"{m}: {mo[:70]}" for m, mo in ls.get("tu_ra", [])]
+        if not (ls.get("buoc") and ls.get("tu_ra")):
+            thieu.append("thiếu bước/tự-rà lâm sàng")
+    if not nv:
+        thieu.append("chưa được giao nhiệm vụ nào")
+    nguoi = sorted({HD.dieu_phoi_cong(c) for c, _ in x.get("lam", []) + x.get("cham", [])}
+                   | ({SG.NHAC_TRUONG_LS} if ls else set()))
+    loai = ("nghiên cứu + lâm sàng" if x and ls else "nghiên cứu" if x else "lâm sàng" if ls else "chưa giao")
+    return {"loai_vai": loai, "nhiem_vu": nv, "tieu_chi": tc, "nguoi_kiem": ", ".join(nguoi) or "—",
+            "dat": not thieu, "ly_do": "; ".join(thieu)}
+
+
 def do(thu_muc: Path = AGENTS, codex: Path = CODEX) -> Dict[str, object]:
     """{"agent": {tên: {"dat": bool, "hang_muc": {mã: "✅"|"—"|lý do}}}, "dieu_phoi": {...}, "tong": {...}}.
     `thu_muc` phải nằm dạng <gốc>/.claude/agents (bộ kiểm A1 đọc theo bố cục đó); công cụ/bộ chấm đọc từ repo này."""
@@ -181,7 +264,9 @@ def do(thu_muc: Path = AGENTS, codex: Path = CODEX) -> Dict[str, object]:
         sai = lenh_sai(van[ten], BASE)
         hm["A5"] = "✅" if not sai else "; ".join(sai[:3])
         hm["A6"] = "✅" if (codex / f"{ten}.toml").is_file() else "thiếu bản Codex"
-        agent[ten] = {"dat": all(v in ("✅", "—") for v in hm.values()), "hang_muc": hm}
+        gv = giao_viec(ten, van[ten], vai_nc, vai_ls)
+        hm["A7"] = "✅" if gv["dat"] else str(gv["ly_do"])
+        agent[ten] = {"dat": all(v in ("✅", "—") for v in hm.values()), "hang_muc": hm, "giao_viec": gv}
     dieu_phoi: Dict[str, dict] = {}
     for g in HD.CONG:
         ten = HD.dieu_phoi_cong(g)
