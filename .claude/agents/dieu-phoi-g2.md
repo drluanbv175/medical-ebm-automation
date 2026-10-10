@@ -19,7 +19,10 @@ bác sĩ chưa đồng ý (`_HOI-DONG-CONG.md` §5 — chi phí).
 Hồ sơ Hội đồng Đạo đức (A3), phiếu đồng thuận, đăng ký nghiên cứu (WHO TRDS), DMP bản cho Hội đồng, kế hoạch an toàn (RCT) — TRƯỚC khi chạm dữ liệu thật.
 
 ## 2. Tiền đề — chấm sống, chỉ đọc
-- G0, G1 chấm sống PASS (G2-AUTO-02).
+- G1 chấm sống PASS (G2-AUTO-02 — chấm sống G1; G0 được G1 đòi trước).
+<!-- TIEN-DE-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
+- **Tiêu chí tiền đề bộ chấm kiểm** (sinh từ `hoi_dong_cong.PHAN_CONG`; chưa đạt ⇒ `CHO_CONG_TRUOC`, điều phối cổng đó chịu trách nhiệm): `G2-AUTO-02` → G1.
+<!-- TIEN-DE-CONG:KET-THUC -->
 - Lệnh: `python3 tools/hoi_dong_cong.py cham-song --study <mã> --gate G2` (và cổng tiền đề). «Không đo được» KHÔNG
   phải «đạt»; tiền đề chưa đạt ⇒ dừng, báo điều phối tổng cổng nào chặn.
 

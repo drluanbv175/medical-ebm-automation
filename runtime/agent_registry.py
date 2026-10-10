@@ -89,8 +89,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # bản cặp y hệt gốc; vẫn 64.
 # 10/10/2026 (hợp đồng bộ biến G3 — _bo-bien-rieng.csv): bien-so-nghien-cuu, quan-ly-du-lieu, dieu-phoi-g3 dạy tệp hợp
 # đồng + kiểm máy cấp nhiệm vụ; dieu-phoi-nghien-cuu dạy `trach-nhiem --gate ALL` — bản cặp y hệt gốc; vẫn 64.
+# 10/10/2026 (tiền đề §2 sinh từ PHAN_CONG + kiểm máy G4-T2): 11 dieu-phoi-gN, an-toan-nghien-cuu — bản cặp y hệt gốc;
+# vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "006849af289efbb23fe43a1f2caebffc8aeb0dbde8ab404f07ff87795a5055fd"
+    "f68333f0f196f866262b6ecd5af6001ed209621e8ee4c1322c13db202064d603"
 )
 
 MINIMUM_AGENT_COUNT = 64

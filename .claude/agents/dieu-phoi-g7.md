@@ -20,6 +20,9 @@ Bản thảo IMRAD theo chuẩn báo cáo của thiết kế, N và kết quả 
 
 ## 2. Tiền đề — chấm sống, chỉ đọc
 - G0–G6 chấm sống PASS (`g7_quality_gate.tien_de_song`) + G2 đã duyệt.
+<!-- TIEN-DE-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
+- **Tiêu chí tiền đề bộ chấm kiểm** (sinh từ `hoi_dong_cong.PHAN_CONG`; chưa đạt ⇒ `CHO_CONG_TRUOC`, điều phối cổng đó chịu trách nhiệm): `G7-AUTO-01` → G1 · `G7-AUTO-01b` → G2 · `G7-AUTO-02` → G0, G2, G3, G4 · `G7-AUTO-03` → G5, G6.
+<!-- TIEN-DE-CONG:KET-THUC -->
 - Lệnh: `python3 tools/hoi_dong_cong.py cham-song --study <mã> --gate G7` (và cổng tiền đề). «Không đo được» KHÔNG
   phải «đạt»; tiền đề chưa đạt ⇒ dừng, báo điều phối tổng cổng nào chặn.
 

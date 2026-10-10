@@ -18,7 +18,10 @@ bác sĩ chưa đồng ý (`_HOI-DONG-CONG.md` §5 — chi phí).
 Bảng rà trước nộp A9 đối kháng + bản nhận xét do NGƯỜI PHẢN BIỆN THẬT viết; lỗi nghiêm trọng xử lý trước khi cho phép nộp.
 
 ## 2. Tiền đề — chấm sống, chỉ đọc
-- G7 chấm sống `PASS_G7_CONFIRMED`.
+- G7 chấm sống `PASS_G7_CONFIRMED` (G8-AUTO-13); mã thiết kế G1 ↔ G2 không lệch (G8-AUTO-11).
+<!-- TIEN-DE-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
+- **Tiêu chí tiền đề bộ chấm kiểm** (sinh từ `hoi_dong_cong.PHAN_CONG`; chưa đạt ⇒ `CHO_CONG_TRUOC`, điều phối cổng đó chịu trách nhiệm): `G8-AUTO-02` → G7 · `G8-AUTO-03` → G7 · `G8-AUTO-04` → G7 · `G8-AUTO-05` → G7 · `G8-AUTO-11` → G2 · `G8-AUTO-13` → G7.
+<!-- TIEN-DE-CONG:KET-THUC -->
 - Lệnh: `python3 tools/hoi_dong_cong.py cham-song --study <mã> --gate G8` (và cổng tiền đề). «Không đo được» KHÔNG
   phải «đạt»; tiền đề chưa đạt ⇒ dừng, báo điều phối tổng cổng nào chặn.
 

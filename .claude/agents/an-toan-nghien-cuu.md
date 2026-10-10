@@ -283,7 +283,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 |---|---|---|---|
 | `G1-T5` — An toàn người tham gia trong thiết kế can thiệp (chỉ khi thiết kế can thiệp (RCT)) | `G1_A2_PROTOCOL_DESIGN_<mã>.md` | — (không có tiêu chí máy: chất lượng chỉ bảo đảm bằng đánh giá chéo) | — |
 | `G2-T2` — Kế hoạch an toàn (định nghĩa/phân độ biến cố, báo cáo, hội đồng theo dõi) (chỉ khi thiết kế can thiệp (RCT)) | `G2_SAFETY_PLAN_<mã>.md` | G2-AUTO-07 (nếu áp dụng) | — |
-| `G4-T2` — Phân tích giữa kỳ, quy tắc dừng, hội đồng theo dõi (SAP §13–§15) (chỉ khi thiết kế can thiệp (RCT)) | `G4_A5_SAP_FINAL_<mã>.md` | — (không có tiêu chí máy: chất lượng chỉ bảo đảm bằng đánh giá chéo) | — |
+| `G4-T2` — Phân tích giữa kỳ, quy tắc dừng, hội đồng theo dõi (SAP §13–§15) (chỉ khi thiết kế can thiệp (RCT)) | `G4_A5_SAP_FINAL_<mã>.md` | — (không có tiêu chí cổng; kiểm máy cấp nhiệm vụ: SAP RCT §13 giữa kỳ/dừng · §14 DMC · §15 tổn hại có mặt và đã điền; nội dung bảo đảm bằng đánh giá chéo) | — |
 
 Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G2-T1` (dao-duc-dang-ky). Không bao giờ chấm đầu ra do chính bạn làm.
 

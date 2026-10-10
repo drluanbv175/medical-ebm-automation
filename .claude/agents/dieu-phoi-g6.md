@@ -20,6 +20,9 @@ Chạy đúng SAP đã khoá trên dữ liệu đã khoá, mô hình đúng họ
 
 ## 2. Tiền đề — chấm sống, chỉ đọc
 - G4 khoá + G5 `PASS_G5_DATA_LOCKED` (chữ ký đúng vai + checksum DATA_LOCK).
+<!-- TIEN-DE-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
+- **Tiêu chí tiền đề bộ chấm kiểm** (sinh từ `hoi_dong_cong.PHAN_CONG`; chưa đạt ⇒ `CHO_CONG_TRUOC`, điều phối cổng đó chịu trách nhiệm): `G6-AUTO-01` → G4.
+<!-- TIEN-DE-CONG:KET-THUC -->
 - Lệnh: `python3 tools/hoi_dong_cong.py cham-song --study <mã> --gate G6` (và cổng tiền đề). «Không đo được» KHÔNG
   phải «đạt»; tiền đề chưa đạt ⇒ dừng, báo điều phối tổng cổng nào chặn.
 

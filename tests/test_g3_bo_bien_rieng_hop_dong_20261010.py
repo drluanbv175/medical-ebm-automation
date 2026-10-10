@@ -42,7 +42,7 @@ def _them(*dong: str) -> str:
 def test_ten_hop_dong_trung_hang_cua_g5():
     for ma in ("G3-T2", "G3-T3"):
         assert HD._nhiem_vu("G3", ma)["dau_ra"] == [RG5.BO_BIEN_RIENG_TEN_FILE] == ["_bo-bien-rieng.csv"]
-    assert set(HD.KIEM_NHIEM_VU) == {"G3-T2", "G3-T3"}
+    assert {"G3-T2", "G3-T3"} <= set(HD.KIEM_NHIEM_VU), "G3-T2/T3 phải có kiểm máy cấp nhiệm vụ"
 
 
 def test_bo_bien_hop_le_qua_ca_hai_kiem(tmp_path):
