@@ -137,6 +137,25 @@ def mau(ho: str) -> tuple[re.Pattern[str], ...]:
     return _MAU[_chuan_ho((ho,))[0]]
 
 
+# Ô trống GỬI ĐÍCH DANH người có thẩm quyền (10/10/2026): agent KHÔNG điền thay được — bảng trách nhiệm hội đồng cổng
+# xếp «chờ người», không phải «agent còn việc». Nhãn chung «[CẦN BỔ SUNG]» không thuộc nhóm này.
+_O_CUA_NGUOI = (
+    (re.compile(r"\[\s*CẦN\s+(?:CHỦ\s+NHIỆM|PI\b|NGHIÊN\s+CỨU\s+VIÊN\s+CHÍNH)", re.I), "PI"),
+    (re.compile(r"\[\s*CẦN\s+THỐNG\s+KÊ\s+VIÊN", re.I), "STATISTICIAN"),
+    (re.compile(r"\[\s*CẦN\s+(?:PHÒNG\s+)?CNTT", re.I), "CNTT bệnh viện"),
+    (re.compile(r"\[\s*CẦN\s+HỘI\s+ĐỒNG", re.I), "IRB"),
+)
+
+
+def vai_cua_o_trong(khop: Any) -> str | None:
+    """Vai người có thẩm quyền mà một ô trống gửi đích danh («[CẦN CHỦ NHIỆM XÁC NHẬN]» ⇒ «PI»), hoặc None."""
+    s = _nfc(khop)
+    for mau, vai in _O_CUA_NGUOI:
+        if mau.search(s):
+            return vai
+    return None
+
+
 def tim(van_ban: Any, ho: Iterable[str] | None = None, them: Iterable[str] = ()) -> list[PhatHien]:
     """Mọi ô còn trống theo các họ `ho` (mặc định NHAN + MAU_CHUNG), theo thứ tự dòng rồi vị trí.
 

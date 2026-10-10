@@ -276,6 +276,26 @@ def _as_int(value: Any) -> Optional[int]:
         return None
 
 
+def _vai_o_trong_cua_nguoi(text: str, still_draft: Sequence[str]) -> list:
+    """Vai người có thẩm quyền khi MỌI ô trống còn lại của các mục bắt buộc đều gửi đích danh người
+    («[CẦN CHỦ NHIỆM XÁC NHẬN]» …) — agent không điền thay được (10/10/2026, C1a §5: biến `chuyenkhoa`). Mục VẮNG,
+    ô trống chung («[CẦN BỔ SUNG]») hoặc không dò được ô nào ⇒ [] (vẫn là việc của agent)."""
+    vai: set = set()
+    for muc in still_draft:
+        than = unicodedata.normalize("NFC", _section_body(text, muc.split()[0]))
+        tim_thay = PC.tim(than, ho=PC.TAT_CA_HO) if than.strip() else []  # mọi họ: «___» cũng là ô của agent
+        the_can = re.findall(r"\[\s*CẦN[^\]]*\]", than)
+        # PC.tim chỉ trả đoạn khớp «[CẦN» ⇒ đọc NGUYÊN thẻ để biết gửi ai; còn ô trống họ khác («___», «…») ⇒ agent.
+        if not the_can or any(not f.khop.strip().upper().startswith("[CẦN") for f in tim_thay):
+            return []
+        for the in the_can:
+            v = PC.vai_cua_o_trong(the)
+            if not v:
+                return []
+            vai.add(v)
+    return sorted(vai)
+
+
 def _section_body(text: str, section_num: str) -> str:
     """Thân nội dung của mục §N — giữa header §N và header §-kế-tiếp/"## PHẦN".
 
@@ -930,7 +950,9 @@ def evaluate_g4_quality(
         )
     elif still_draft:
         placeholder_status = "REVIEW"
-        placeholder_evidence = f"còn ô trống hoặc VẮNG ở mục bắt buộc: {', '.join(still_draft)}"
+        vai_con = _vai_o_trong_cua_nguoi(artifact_text, still_draft)
+        placeholder_evidence = ((f"CHỜ NGƯỜI ({'/'.join(vai_con)}): " if vai_con else "")
+                                + f"còn ô trống hoặc VẮNG ở mục bắt buộc: {', '.join(still_draft)}")
     else:
         placeholder_status = "PASS"
         placeholder_evidence = "không còn ô trống ở " + "/".join(muc_bat_buoc)

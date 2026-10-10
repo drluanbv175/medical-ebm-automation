@@ -288,6 +288,18 @@ def dau_van_tay_g1(meta: Mapping[str, Any], design: Mapping[str, Any]) -> str:
     return CS.dau_van_tay(g1, str(design.get("internal_code") or ""), meta.get("design_code"))
 
 
+# Dòng PHẦN 0 lấy từ quyết định của PI (G1-HUMAN-01 thiết kế · G1-HUMAN-03 quần thể/tiêu chí/tuyển/bối cảnh/thời gian):
+# còn trống thì agent KHÔNG điền thay được (10/10/2026 — C1a: chỉ còn «Thời gian nghiên cứu» mà bảng trách nhiệm vẫn
+# giao agent G1-T1).
+_NHAN_DONG_CUA_PI_G1 = ("Thiết kế đã chọn:", "Địa điểm/bối cảnh:", "Thời gian nghiên cứu:", "Quần thể đích/nguồn:",
+                        "Tiêu chí chọn vào:", "Tiêu chí loại trừ:", "Chiến lược tuyển/chọn mẫu")
+
+
+def dong_cua_pi_g1(dong: str) -> bool:
+    """Dòng (của o_trong_pham_vi_g1) thuộc quyết định PI — G1-HUMAN-01/03 chấm riêng."""
+    return dong.lstrip("- ").startswith(_NHAN_DONG_CUA_PI_G1)
+
+
 def o_trong_pham_vi_g1(a2_text: str) -> List[str]:
     """Các dòng của PHẦN 0 (đề cương lõi) còn ô trống THUỘC PHẠM VI G1 — bỏ qua dòng hoãn cho cổng sau.
 
@@ -1311,11 +1323,15 @@ def evaluate_g1_quality(
 
     # VÁ 04/10/2026 (soát từng cổng, G1-02): đếm ô trống THUỘC PHẠM VI G1 trong đề cương lõi (PHẦN 0 của A2).
     o_g1 = o_trong_pham_vi_g1(artifact_texts.get("A2", ""))
+    # 10/10/2026: chỉ còn dòng thuộc quyết định PI ⇒ bằng chứng mở đầu «CHỜ NGƯỜI (…)» để bảng trách nhiệm hội đồng xếp
+    # «chờ người» (trạng thái tiêu chí KHÔNG đổi — vẫn REVIEW).
+    chi_cua_pi = bool(o_g1) and all(dong_cua_pi_g1(x) for x in o_g1)
     automatic.append(_criterion(
         "G1-AUTO-07",
         "Đề cương lõi không còn ô trống thuộc phạm vi G1 (dòng hoãn cho cổng sau được bỏ qua)",
         "REVIEW" if o_g1 else "PASS",
-        (f"{len(o_g1)} dòng còn trống: " + " | ".join(x.replace("|", "/") for x in o_g1[:4])
+        (("CHỜ NGƯỜI (PI — G1-HUMAN-01/03): " if chi_cua_pi else "")
+         + f"{len(o_g1)} dòng còn trống: " + " | ".join(x.replace("|", "/") for x in o_g1[:4])
          + (" …" if len(o_g1) > 4 else "")) if o_g1 else "mọi dòng thuộc G1 của PHẦN 0 đã có nội dung",
         "Điền các khoá tương ứng ở study_meta.gate_params.G1 (team_roles, background_problem, evidence_summary, "
         "knowledge_gap, benefit_risk_rationale, study_schema_timeline, intervention_dose_adherence, "
