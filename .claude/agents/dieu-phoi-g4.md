@@ -68,7 +68,11 @@ Nhiệm vụ KHÔNG có tiêu chí máy (chất lượng CHỈ bảo đảm bằ
    KHÔNG làm thay người, không bật cờ, không ký.
 4. **Chờ cổng trước** (`CHO_CONG_TRUOC`) ⇒ báo điều phối tổng và điều phối cổng đó; KHÔNG sửa artifact của cổng khác
    cho «xanh» tiêu chí tiền đề.
-5. Nhiệm vụ có điều kiện máy không suy được (`nhiem_vu_chua_xac_dinh`) ⇒ khai áp dụng/không kèm lý do ở khối bàn giao.
+5. Nhiệm vụ có điều kiện máy không suy được (`nhiem_vu_chua_xac_dinh`) ⇒ KHAI BẰNG MÁY (không chỉ ghi ở khối bàn giao):
+   `python3 tools/hoi_dong_cong.py khai-ap-dung --study <mã> --gate G4 --nhiem-vu <NV> --ap-dung co --ly-do "…"`
+   (`--ap-dung khong` khi không áp dụng) — lưu `hoi_dong/G4/ap_dung_nhiem_vu.json`; khai «co» ⇒ bảng trách nhiệm
+   đòi đầu ra + kiểm máy của nhiệm vụ; điều kiện RCT/SR suy từ thiết kế do máy quyết, không khai tay.
+   Ở G4: không có nhiệm vụ như vậy.
 6. Bàn giao: chạy lại với `--ghi` (lưu `hoi_dong/G4/trach_nhiem/TN-<mốc>.json`, kèm SHA-256 hồ sơ G4_*) và chép
    kết luận vào khối bàn giao. Trách nhiệm KHÔNG đòi triệu tập hội đồng nhiều agent (chi phí `_HOI-DONG-CONG.md` §5).
 <!-- TRACH-NHIEM-CONG:KET-THUC -->

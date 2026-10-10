@@ -24,6 +24,7 @@ Lệnh:
   python3 tools/hoi_dong_cong.py tom-tat --study <mã> [--json]
   python3 tools/hoi_dong_cong.py cham-song --study <mã> --gate G4 [--json]   (CHỈ ĐỌC — không ghi báo cáo/checkpoint)
   python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G4|ALL [--json] [--ghi]
+  python3 tools/hoi_dong_cong.py khai-ap-dung --study <mã> --gate G1 --nhiem-vu G1-T4 --ap-dung co|khong --ly-do "…"
       (09/10/2026 — bảng trách nhiệm của điều phối cổng: mọi tiêu chí chưa đạt gán cho agent/người/cổng trước;
        --ghi lưu bản lúc bàn giao vào hoi_dong/G4/trach_nhiem/)
 Mã thoát: 0 hợp lệ (trach-nhiem: phần agent của cổng HOÀN CHỈNH) · 1 trach-nhiem: còn việc · 2 thiếu dữ kiện/không
@@ -127,8 +128,16 @@ NHIEM_VU: Dict[str, List[Dict[str, Any]]] = {
             ("tham-dinh-phe-binh",)),
         _nv("G1-T3", "Kế hoạch triển khai, sổ rủi ro, kinh phí", "ke-hoach-trien-khai",
             ("G1_A13_IMPLEMENTATION_PLAN_<mã>.md", "G1_A13b_RISK_REGISTER_<mã>.md"), ("quan-ly-du-lieu",)),
-        _nv("G1-T4", "Chọn/kiểm định công cụ đo lường", "cong-cu-do-luong", ("G1_A2_PROTOCOL_DESIGN_<mã>.md",),
-            ("bien-so-nghien-cuu",), "khi đề tài dùng thang đo/bộ câu hỏi"),
+        # VÁ 10/10/2026: thêm đầu ra hợp đồng của PHA PHÁT TRIỂN bộ câu hỏi — `tools/pha_phat_trien_cong_cu.py mau`
+        # dựng `pha_cong_cu/` (phiếu chấm CVI của hội đồng chuyên gia + nhật ký phỏng vấn nhận thức); danh mục cũ chỉ
+        # khai A2 nên nhiệm vụ «có đầu ra» chỉ vì đề cương tồn tại (đo C1a: bộ câu hỏi tự xây, đề cương khoá pha I-CVI,
+        # thư mục chưa có). Điều kiện thu hẹp đúng nhánh «phát triển/sửa đổi/dịch» của `cong-cu-do-luong` (§Phạm vi áp
+        # dụng): thang chuẩn dùng NGUYÊN TRẠNG không có pha CVI ⇒ điều phối khai «khong» kèm tên thang + nguồn; mô tả
+        # đặc tính trong mẫu (α trong mẫu, floor/ceiling) là việc phân tích G6.
+        _nv("G1-T4", "Phát triển/thích nghi & kiểm định công cụ đo lường (COSMIN)", "cong-cu-do-luong",
+            ("G1_A2_PROTOCOL_DESIGN_<mã>.md", "pha_cong_cu/phieu_cvi.csv",
+             "pha_cong_cu/nhat_ky_phong_van_nhan_thuc.csv"),
+            ("bien-so-nghien-cuu",), "khi đề tài phát triển, sửa đổi hoặc dịch–thích nghi bộ câu hỏi/thang đo"),
         _nv("G1-T5", "An toàn người tham gia trong thiết kế can thiệp", "an-toan-nghien-cuu",
             ("G1_A2_PROTOCOL_DESIGN_<mã>.md",), ("thiet-ke-nghien-cuu",), "thiết kế can thiệp (RCT)"),
     ],
@@ -991,14 +1000,63 @@ def cham_song(study: str, gate: str, out_dir: Path) -> Dict[str, Any]:
             "chua_dat": chua_dat, "_bao_cao": kq.get("bao_cao")}
 
 
-def _ap_dung(nv: Dict[str, Any], ma_thiet_ke: Optional[str]) -> Optional[bool]:
-    """Nhiệm vụ có áp dụng cho đề tài không: True/False, hoặc None = điều kiện máy không suy được ⇒ điều phối khai."""
+def _ap_dung(nv: Dict[str, Any], ma_thiet_ke: Optional[str],
+             khai: Optional[Dict[str, Any]] = None) -> Optional[bool]:
+    """Nhiệm vụ có áp dụng cho đề tài không: True/False, hoặc None = chưa xác định. Điều kiện suy từ thiết kế đã chốt
+    (RCT/SR) do MÁY quyết; điều kiện khác dùng KHAI BÁO của điều phối cổng (`khai_ap_dung`, 10/10/2026)."""
     dk = nv.get("dieu_kien")
     if not dk:
         return True
     if dk in _DIEU_KIEN_THIET_KE:
         return None if not ma_thiet_ke else ma_thiet_ke in _DIEU_KIEN_THIET_KE[dk]
-    return None
+    k = (khai or {}).get(nv["ma"])
+    return bool(k["ap_dung"]) if isinstance(k, dict) and isinstance(k.get("ap_dung"), bool) else None
+
+
+TEP_KHAI_AP_DUNG = "ap_dung_nhiem_vu.json"
+
+
+def doc_ap_dung(gate: str, out_dir: Path) -> Dict[str, Any]:
+    """Khai báo áp dụng nhiệm vụ có điều kiện của điều phối cổng — `hoi_dong/<GN>/ap_dung_nhiem_vu.json` ({} nếu
+    chưa có)."""
+    p = thu_muc_bien_ban(out_dir, gate) / TEP_KHAI_AP_DUNG
+    try:
+        v = json.loads(p.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return v if isinstance(v, dict) else {}
+
+
+def khai_ap_dung(gate: str, ma: str, ap_dung: bool, ly_do: str, out_dir: Path) -> Tuple[Optional[Path], List[str]]:
+    """Điều phối cổng KHAI nhiệm vụ có điều kiện (máy không suy được từ thiết kế) áp dụng hay không, kèm lý do
+    (10/10/2026).
+
+    Trước đây quy tắc 5 của mục 4b chỉ dặn «khai trong khối bàn giao»: không máy nào đọc lại, nên nhiệm vụ như G1-T4
+    (đề tài dùng bộ câu hỏi) mãi «chưa xác định» và đầu ra của nó không bao giờ bị đòi. Ghi
+    `hoi_dong/<GN>/ap_dung_nhiem_vu.json`; bảng trách nhiệm dùng khai báo này. KHÔNG cho khai điều kiện suy từ thiết
+    kế (RCT/SR — máy quyết); lý do bắt buộc, không PII. Không phải xác nhận của người: PI vẫn bác được bằng cách
+    yêu cầu khai lại."""
+    loi: List[str] = []
+    nv = _nhiem_vu(gate, ma)
+    if nv is None:
+        return None, [f"{ma}: không phải nhiệm vụ của cổng {gate}"]
+    if not nv.get("dieu_kien"):
+        loi.append(f"{ma}: nhiệm vụ không có điều kiện — luôn áp dụng, không cần khai")
+    elif nv["dieu_kien"] in _DIEU_KIEN_THIET_KE:
+        loi.append(f"{ma}: điều kiện «{nv['dieu_kien']}» suy từ thiết kế đã chốt (G1) — không khai tay")
+    if len(str(ly_do or "").strip()) < 10:
+        loi.append("lý do phải nêu cụ thể (≥ 10 ký tự): vì sao áp dụng/không áp dụng cho đề tài này")
+    _quet_pii("lý do", ly_do, loi)
+    if loi:
+        return None, loi
+    bang = doc_ap_dung(gate, out_dir)
+    bang[ma] = {"ap_dung": bool(ap_dung), "ly_do": str(ly_do).strip(), "khai_boi": dieu_phoi_cong(gate),
+                "dieu_kien": nv["dieu_kien"], "thoi_diem": datetime.now().astimezone().isoformat(timespec="seconds")}
+    d = thu_muc_bien_ban(out_dir, gate)
+    d.mkdir(parents=True, exist_ok=True)
+    p = d / TEP_KHAI_AP_DUNG
+    p.write_text(json.dumps(bang, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+    return p, []
 
 
 def _nap_bo_bien(out_dir: Path, study: str) -> Tuple[Optional[list], List[str]]:
@@ -1049,6 +1107,33 @@ def _kiem_crf(out_dir: Path, study: str) -> List[str]:
     return ra
 
 
+def _kiem_pha_cong_cu(out_dir: Path, study: str) -> List[str]:
+    """G1-T4 — pha phát triển bộ câu hỏi dựng bằng ĐÚNG `pha_phat_trien_cong_cu.py`: phiếu CVI đúng cấu trúc (cột
+    «muc» + cột chuyên gia, mục không trùng, điểm thuộc thang 1–4) với ≥ 3 chuyên gia (ngưỡng I-CVI 0,78 của Polit,
+    Beck & Owen 2007, PMID 17654487 cần ≥ 3); nhật ký phỏng vấn nhận thức đủ cột. Ô CHƯA CHẤM và I-CVI thấp là việc
+    của hội đồng chuyên gia/chủ nhiệm — KHÔNG tính là lỗi của agent."""
+    try:
+        import pha_phat_trien_cong_cu as PCC  # noqa: PLC0415
+    except Exception as exc:  # noqa: BLE001
+        return [f"không nạp được pha_phat_trien_cong_cu: {type(exc).__name__}"]
+    thu, ra = Path(out_dir) / "pha_cong_cu", []
+    try:
+        kq = PCC.tinh_cvi(*PCC._doc_csv(thu / "phieu_cvi.csv"))
+        if kq["so_chuyen_gia"] < 3:
+            ra.append(f"phiếu CVI có {kq['so_chuyen_gia']} chuyên gia < 3 — ngưỡng I-CVI 0,78 "
+                      f"({PCC.NGUON_POLIT_2007}) không áp được")
+    except PCC.LoiDauVao as exc:
+        ra.append(f"phiếu CVI: {exc}")
+    try:
+        cot, _dong = PCC._doc_csv(thu / "nhat_ky_phong_van_nhan_thuc.csv")
+        thieu = [c for c in PCC.COT_NHAT_KY if c not in cot]
+        if thieu:
+            ra.append(f"nhật ký phỏng vấn nhận thức thiếu cột: {', '.join(thieu)}")
+    except PCC.LoiDauVao as exc:
+        ra.append(f"nhật ký phỏng vấn nhận thức: {exc}")
+    return ra
+
+
 def _kiem_sap_rct(out_dir: Path, study: str) -> List[str]:
     """G4-T2 (RCT) — SAP §13 giữa kỳ/quy tắc dừng · §14 DMC · §15 tổn hại/ngừng/tuân thủ có mặt và không còn ô trống,
     theo ĐÚNG hàm `approve_gate._g4_sections_still_draft` mà bước ký G4 dùng (chỉ lấy §13–§15 — §1–§12 là của G4-T1)."""
@@ -1068,6 +1153,8 @@ def _kiem_sap_rct(out_dir: Path, study: str) -> List[str]:
 # trạng thái cổng; lỗi ⇒ việc của agent nhiệm vụ trong bảng trách nhiệm. Chỉ kiểm CẤU TRÚC — chất lượng nội dung (đủ
 # biến cho câu hỏi/DAG…) vẫn do đánh giá chéo bảo đảm.
 KIEM_NHIEM_VU: Dict[str, Tuple[str, Any]] = {
+    "G1-T4": ("pha phát triển bộ câu hỏi: phiếu CVI đúng cấu trúc, ≥ 3 chuyên gia; nhật ký phỏng vấn nhận thức đủ cột",
+              _kiem_pha_cong_cu),
     "G3-T2": ("bộ biến G5 nạp được + không biến định danh trực tiếp", _kiem_bo_bien_so),
     "G3-T3": ("luật kiểm tra CRF: lựa chọn · công thức calc · khoảng hợp lệ · trường bắt buộc", _kiem_crf),
     "G4-T2": ("SAP RCT §13 giữa kỳ/dừng · §14 DMC · §15 tổn hại có mặt và đã điền", _kiem_sap_rct),
@@ -1143,11 +1230,12 @@ def trach_nhiem(study: str, gate: str, out_dir: Path) -> Dict[str, Any]:
         else:
             cho_truoc.append({**muc, "cong": pc["cong"]})
     nhiem_vu = []
+    khai = doc_ap_dung(gate, out_dir)
     for nv in NHIEM_VU.get(gate, []):
-        ap = _ap_dung(nv, ma_tk)
+        ap = _ap_dung(nv, ma_tk, khai)
         thieu = [d for d in nv["dau_ra"] if not (out_dir / d.replace("<mã>", study)).is_file()] if ap else []
         nhiem_vu.append({"ma": nv["ma"], "agent": nv["agent"], "ap_dung": ap, "dieu_kien": nv.get("dieu_kien"),
-                         "dau_ra_thieu": thieu})
+                         "dau_ra_thieu": thieu, "khai_ap_dung": khai.get(nv["ma"])})
         for d in thieu:
             agent_con.append({"id": f"{nv['ma']}:dau-ra", "status": "BLOCK", "label": f"đầu ra {d}",
                               "viec": f"{nv['agent']} sinh {d.replace('<mã>', study)} bằng công cụ thật của cổng",
@@ -1307,9 +1395,16 @@ def in_trach_nhiem(kq: Dict[str, Any]) -> str:
         if kq["chat_luong_chua_bao_dam"]:
             dong.append("  ⚠ CHẤT LƯỢNG CHƯA ĐƯỢC BẢO ĐẢM: " + ", ".join(kq["chat_luong_chua_bao_dam"])
                         + " — khối bàn giao phải nói thật điều này (đánh giá chéo tốn agent: hỏi bác sĩ trước, §5)")
+    da_khai = [n for n in kq["nhiem_vu"] if n.get("khai_ap_dung")]
+    if da_khai:
+        dong.append("- Điều phối đã khai áp dụng: " + "; ".join(
+            "{} {} — {}".format(n["ma"], "ÁP DỤNG" if n["khai_ap_dung"]["ap_dung"] else "KHÔNG áp dụng",
+                                n["khai_ap_dung"]["ly_do"][:90])
+            for n in da_khai))
     if kq["nhiem_vu_chua_xac_dinh"]:
-        dong.append("- Nhiệm vụ có điều kiện máy không suy được — điều phối khai áp dụng/không kèm lý do: "
-                    + ", ".join(kq["nhiem_vu_chua_xac_dinh"]))
+        dong.append("- Nhiệm vụ có điều kiện máy không suy được — điều phối khai: `python3 tools/hoi_dong_cong.py "
+                    f"khai-ap-dung --study {kq['study']} --gate {kq['gate']} --nhiem-vu <mã> --ap-dung co|khong "
+                    "--ly-do \"…\"`: " + ", ".join(kq["nhiem_vu_chua_xac_dinh"]))
     dong.append("TƯ VẤN — không mở, không chặn cổng. Cần bác sĩ kiểm chứng.")
     return "\n".join(dong)
 
@@ -1324,6 +1419,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     a = sub.add_parser("danh-muc")
     a.add_argument("--gate", choices=CONG)
     a.add_argument("--json", action="store_true")
+    a = sub.add_parser("khai-ap-dung", help="điều phối cổng khai nhiệm vụ có điều kiện áp dụng hay không (kèm lý do)")
+    a.add_argument("--study", required=True)
+    a.add_argument("--gate", choices=CONG, required=True)
+    a.add_argument("--nhiem-vu", required=True)
+    a.add_argument("--ap-dung", choices=("co", "khong"), required=True)
+    a.add_argument("--ly-do", required=True)
     a = sub.add_parser("mau")
     a.add_argument("--loai", choices=("danh_gia_cheo", "tranh_bien"), required=True)
     a.add_argument("--gate", choices=CONG, required=True)
@@ -1378,6 +1479,15 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(f"{args.gate} {args.study}: {kq['status']} (nguồn {kq['nguon']}) — chỉ đọc, không ghi gì")
             for r in kq["chua_dat"]:
                 print(f"  {r['id']} {r['status']}: {r['evidence']}")
+        return 0
+    if args.lenh == "khai-ap-dung":
+        p, loi = khai_ap_dung(args.gate, args.nhiem_vu, args.ap_dung == "co", args.ly_do, out_dir)
+        if p is None:
+            print("❌ Khai báo không hợp lệ — KHÔNG ghi:")
+            for dong in loi:
+                print(f"  - {dong}")
+            return 3
+        print(f"✅ Đã ghi {p.relative_to(out_dir)} — {args.nhiem_vu}: {'ÁP DỤNG' if args.ap_dung == 'co' else 'KHÔNG'}")
         return 0
     if args.lenh == "trach-nhiem" and args.gate == "ALL":
         kq = tong_trach_nhiem(args.study, out_dir)

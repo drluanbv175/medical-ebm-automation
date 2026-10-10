@@ -90,6 +90,8 @@ def test_muc_4b_cua_dieu_phoi_cong_chep_dung_phan_cong(gate):
     assert m, f"{HD.dieu_phoi_cong(gate)}.md thiếu mục 4b"
     dung_lai = {}
     for dong in m.group(0).splitlines():
+        if not dong.lstrip().startswith("|"):
+            continue  # chỉ đọc HÀNG BẢNG — dòng văn xuôi có «|» trong mã lệnh không phải phân công (10/10/2026)
         # «\\|» là «|» đã thoát trong ô bảng (ô có điều kiện «G2-T2|G2-T1» — 10/10/2026).
         o = [x.strip().replace("\\|", "|") for x in re.split(r"(?<!\\)\|", dong.strip().strip("|"))]
         if len(o) == 2 and o[0].startswith("`"):
