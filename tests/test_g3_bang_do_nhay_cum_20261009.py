@@ -37,11 +37,12 @@ BANG_TRUOC_DE = {"0.10": [554, 139, 35], "0.30": [1291, 323, 81], "0.50": [1537,
 BANG_SAU_DE = {"0.10": [765, 192, 49], "0.30": [1782, 446, 112], "0.50": [2122, 532, 134]}
 
 
-def _chay(tmp_path, monkeypatch, study, thiet_ke, argv):
+def _chay(tmp_path, monkeypatch, study, thiet_ke, argv, *, meta_g3=None):
     """Dựng G0→G1 chốt thật rồi chạy run_g3_auto.main() thật; trả (thư mục, checkpoint, mã thoát, stdout)."""
     monkeypatch.setattr(R, "BASE", tmp_path)
     d = tmp_path / "exports" / study
-    dung_g0_g1_da_chot(d, study, thiet_ke=thiet_ke, mau_hieu_qua=[], chot_g1=True)
+    dung_g0_g1_da_chot(d, study, thiet_ke=thiet_ke, mau_hieu_qua=[], chot_g1=True,
+                       them_meta={"G3": meta_g3} if meta_g3 else None)
     CS.xoa_dem()
     monkeypatch.setattr(sys, "argv", ["run_g3_auto.py", "--study", study, *argv])
     buf = io.StringIO()
@@ -121,3 +122,19 @@ def test_cat_ngang_fpc_va_cum_o_co_so_khop_n_chinh(tmp_path, monkeypatch):
     assert G3Q.sensitivity_base_cell(bang, cp["power"]) == 494
     tieu_de = _tieu_de_bang(a4)
     assert "quần thể hữu hạn N=5000" in tieu_de and "hiệu ứng thiết kế" in tieu_de
+
+
+def test_ca_c1a_dau_cuoi_khai_50_chum_co_dinh_khong_con_bi_bao_lech(tmp_path, monkeypatch):
+    """Đầu–cuối trên cấu hình C1a (50 bàn khám cố định, m = 20, N kế hoạch 1000): bảng độ nhạy neo vào N chính 532 và
+    G3-AUTO-12 chấp nhận số chùm khai 50. Khóa đường nối thật: bộ sinh phải ghi confirmed_n vào checkpoint thì bộ chấm
+    mới đối chiếu được; checkpoint["n_clusters"] vẫn là số chùm TỐI THIỂU (27) để SAP/G4 không bị đổi nghĩa."""
+    meta = {"icc_source": "Adams 2004, PMID 15485730 (ICC chăm sóc ban đầu)", "n_clusters": 50,
+            "equal_cluster_sizes": True}
+    d, cp, _rc, _out = _chay(tmp_path, monkeypatch, "S-C1A-DIEM", "cross_sectional",
+                             [*ARGV_CUM, "--confirmed-n", "1000"], meta_g3=meta)
+    assert (cp["n_total"], cp["n_clusters"], cp["confirmed_n"]) == (532, 27, 1000)
+    a12 = _row(cp, "G3-AUTO-12")
+    assert a12["status"] == "PASS", a12
+    assert "số chùm=50" in a12["evidence"] and "tối thiểu cần 27" in a12["evidence"]
+    assert "khác số chùm suy từ N" not in a12["evidence"] and "hiệu chỉnh mẫu nhỏ" not in a12["evidence"]
+    assert _row(cp, "G3-AUTO-09")["status"] == "PASS"
