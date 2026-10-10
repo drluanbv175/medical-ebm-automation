@@ -270,6 +270,28 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact safety-monitoring
 KHÔNG thay DSMB/hội đồng thật · KHÔNG quyết định dừng nghiên cứu (chỉ nêu tiêu chí + cờ) · thử nghiệm pivotal → cần chuyên gia an toàn/DSMB độc lập. Phân tích giữa kỳ → `phan-tich-thong-ke`.
 
 
+<!-- TRACH-NHIEM-AGENT:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
+## Trách nhiệm trong hội đồng cổng (10/10/2026)
+Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối
+của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó».
+Khi điều phối cổng `dieu-phoi-gN` giao việc, bạn chịu trách nhiệm với điều phối cổng đó tới khi phần của
+bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối tổng — `_HOI-DONG-CONG.md` §1b).
+Đo (chỉ đọc): `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G<N>`.
+
+| Nhiệm vụ | Bạn LÀM — đầu ra (tên là HỢP ĐỒNG) | Tiêu chí bạn phải đưa tới ĐẠT | Hồ sơ + lệnh bạn chuẩn bị cho NGƯỜI |
+|---|---|---|---|
+| `G1-T5` — An toàn người tham gia trong thiết kế can thiệp (chỉ khi thiết kế can thiệp (RCT)) | `G1_A2_PROTOCOL_DESIGN_<mã>.md` | — (không có tiêu chí máy: chất lượng chỉ bảo đảm bằng đánh giá chéo) | — |
+| `G2-T2` — Kế hoạch an toàn (định nghĩa/phân độ biến cố, báo cáo, hội đồng theo dõi) (chỉ khi thiết kế can thiệp (RCT)) | `G2_SAFETY_PLAN_<mã>.md` | G2-AUTO-07 (nếu áp dụng) | — |
+| `G4-T2` — Phân tích giữa kỳ, quy tắc dừng, hội đồng theo dõi (SAP §13–§15) (chỉ khi thiết kế can thiệp (RCT)) | `G4_A5_SAP_FINAL_<mã>.md` | — (không có tiêu chí máy: chất lượng chỉ bảo đảm bằng đánh giá chéo) | — |
+
+Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G2-T1` (dao-duc-dang-ky). Không bao giờ chấm đầu ra do chính bạn làm.
+
+Trước khi trả việc cho điều phối cổng: chạy lệnh đo của cổng đó — tiêu chí của bạn còn chưa đạt,
+đầu ra còn thiếu, hoặc biên bản đánh giá chéo «trả về sửa» ⇒ CHƯA xong. Không ký, không bật cờ, không
+ghi xác nhận/dấu vân tay thay người; «chuẩn bị» = đưa đủ hồ sơ + đúng lệnh, KHÔNG làm thay người có
+thẩm quyền.
+<!-- TRACH-NHIEM-AGENT:KET-THUC -->
+
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
 Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:

@@ -406,6 +406,24 @@ minh ghi đè pin cũ.
 KHÔNG tự nộp bài (bác sĩ nộp qua hệ thống tạp chí) · KHÔNG khẳng định IF khi chưa kiểm · KHÔNG sửa nội dung khoa học (`viet-ban-thao`) · mọi thay đổi hứa trong rebuttal phải khớp bản thảo sửa thật.
 
 
+<!-- TRACH-NHIEM-AGENT:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
+## Trách nhiệm trong hội đồng cổng (10/10/2026)
+Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối
+của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó».
+Khi điều phối cổng `dieu-phoi-gN` giao việc, bạn chịu trách nhiệm với điều phối cổng đó tới khi phần của
+bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối tổng — `_HOI-DONG-CONG.md` §1b).
+Đo (chỉ đọc): `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G<N>`.
+
+| Nhiệm vụ | Bạn LÀM — đầu ra (tên là HỢP ĐỒNG) | Tiêu chí bạn phải đưa tới ĐẠT | Hồ sơ + lệnh bạn chuẩn bị cho NGƯỜI |
+|---|---|---|---|
+| `G9-T1` — Liêm chính tác giả: ICMJE/CRediT, xung đột lợi ích, khai AI, chia sẻ dữ liệu, thư gửi tạp chí | `G9_A10_AUTHOR_INTEGRITY_<mã>.md`, `G9_COVER_LETTER_<mã>.md`, `G9_PUBLICATION_READINESS.json`, `REPORTING_CHECKLIST_<mã>.md` | G9-AUTO-01, G9-AUTO-02, G9-AUTO-05, G9-AUTO-06, G9-AUTO-07 | PI: G9-AUTO-08, G9-HUMAN-01, G9-HUMAN-02, G9-HUMAN-03, G9-HUMAN-04, G9-HUMAN-05, G9-HUMAN-05A, G9-HUMAN-06, G9-HUMAN-07, G9-HUMAN-08, G9-HUMAN-09, G9-HUMAN-10, G9-HUMAN-11 |
+
+Trước khi trả việc cho điều phối cổng: chạy lệnh đo của cổng đó — tiêu chí của bạn còn chưa đạt,
+đầu ra còn thiếu, hoặc biên bản đánh giá chéo «trả về sửa» ⇒ CHƯA xong. Không ký, không bật cờ, không
+ghi xác nhận/dấu vân tay thay người; «chuẩn bị» = đưa đủ hồ sơ + đúng lệnh, KHÔNG làm thay người có
+thẩm quyền.
+<!-- TRACH-NHIEM-AGENT:KET-THUC -->
+
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
 Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:

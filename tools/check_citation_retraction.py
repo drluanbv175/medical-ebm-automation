@@ -174,7 +174,12 @@ def write_retraction_receipt(study_raw: str, pmids: List[str], results: Dict[str
 def main() -> int:
     configure_utf8_stdio()
     ap = argparse.ArgumentParser(description=__doc__.split("Dùng:")[0])
-    ap.add_argument("--pmids", required=True, help="Danh sách PMID, phân cách bằng dấu phẩy")
+    # VÁ 10/10/2026: guardrail bắt buộc của MỌI agent (enforce_agent_guardrails.NEW_RUT_BAI) và skill
+    # cap-nhat-chung-cu-y-khoa dạy `--pmid <PMID…>`; bản cũ chỉ nhận MỘT chuỗi nối phẩy ⇒ `--pmid 1 2` chết với
+    # «unrecognized arguments» (mã 2) đúng ở bước tra rút bài bắt buộc. Nay nhận cả `--pmid`/`--pmids`, nhiều giá trị
+    # cách trắng và/hoặc nối phẩy.
+    ap.add_argument("--pmids", "--pmid", dest="pmids", nargs="+", required=True,
+                    help="PMID — cách nhau bằng khoảng trắng và/hoặc dấu phẩy")
     ap.add_argument("--json", action="store_true", help="Xuất JSON thay vì bảng văn bản")
     ap.add_argument("--study", default="",
                     help="Mã đề tài (khớp exports/<mã>) — có thì ghi thêm receipt máy-kiểm "
@@ -182,7 +187,7 @@ def main() -> int:
                          "run_g10_assemble.py::citation_verification_ok để làm cứng cổng A12")
     args = ap.parse_args()
 
-    pmids = [p.strip() for p in args.pmids.split(",") if p.strip()]
+    pmids = list(dict.fromkeys(p.strip() for gia_tri in args.pmids for p in gia_tri.split(",") if p.strip()))
     if not pmids:
         print("✗ --pmids rỗng — không có gì để kiểm.")
         return 1

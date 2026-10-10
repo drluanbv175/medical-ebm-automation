@@ -84,8 +84,11 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # y hệt gốc; vẫn 64.
 # 09/10/2026 (trách nhiệm cổng — bác sĩ giao điều phối cổng chịu trách nhiệm kết quả cổng): 11 dieu-phoi-gN thêm mục 4b
 # + _HOI-DONG-CONG §1b + dieu-phoi-nghien-cuu «giao cổng — nhận cổng» — bản cặp y hệt gốc; vẫn 64.
+# 10/10/2026 (trách nhiệm TỪNG agent — tools/sinh_tai_lieu_trach_nhiem.py): 23 agent làm/chấm chéo nhiệm vụ cổng thêm
+# khối «Trách nhiệm trong hội đồng cổng», 11 dieu-phoi-gN mục 4b sinh lại, quan-ly-du-lieu sửa lệnh khoá dữ liệu —
+# bản cặp y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "98d45c90f255515a81a8b36854d738d8c35e2baa3937c93e9638882bcba4a8d8"
+    "af5222713ee2142ac022cb4f360943dad00761b70f7ef1b8375f06cc01c80465"
 )
 
 MINIMUM_AGENT_COUNT = 64

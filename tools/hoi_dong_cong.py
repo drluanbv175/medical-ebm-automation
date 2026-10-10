@@ -246,6 +246,8 @@ DIEM_QUYET_DINH: Dict[str, List[Dict[str, Any]]] = {
 #   «STATISTICIAN@G3-T1»  — vai NGƯỜI quyết/ký; nhiệm vụ sau «@» phải chuẩn bị đủ hồ sơ + lệnh cho người đó;
 #   «^G1» / «^G2,G4»      — tiêu chí đạt nhờ cổng TIỀN ĐỀ (điều phối cổng đó chịu trách nhiệm); «^*» = các cổng tiền
 #                           đề theo mục đích phát hành (G10).
+#   «G2-T2|G2-T1»         — (10/10/2026) chủ CÓ ĐIỀU KIỆN: nhiệm vụ ĐẦU TIÊN áp dụng cho thiết kế đã chốt (vd kế
+#                           hoạch an toàn: RCT ⇒ an-toan-nghien-cuu, còn lại ⇒ dao-duc-dang-ky); không suy được ⇒ cuối.
 # Bảng phủ ĐÚNG tập mã mà bộ chấm phát ra (test đối chiếu AST từng gN_quality_gate.py — thêm tiêu chí mà quên gán ⇒ đỏ).
 PHAN_CONG: Dict[str, Dict[str, str]] = {
     "G0": {
@@ -265,7 +267,7 @@ PHAN_CONG: Dict[str, Dict[str, str]] = {
     "G2": {
         "G2-AUTO-01": "G2-T1", "G2-AUTO-02": "^G1", "G2-AUTO-02b": "G2-T1", "G2-AUTO-03": "G2-T1",
         "G2-AUTO-03b": "G2-T1", "G2-AUTO-04": "G2-T1", "G2-AUTO-05": "PI@G2-T1", "G2-AUTO-06": "G2-T1",
-        "G2-AUTO-06b": "G2-T1", "G2-AUTO-07": "G2-T1", "G2-AUTO-08": "G2-T1", "G2-AUTO-08b": "PI@G2-T1",
+        "G2-AUTO-06b": "G2-T1", "G2-AUTO-07": "G2-T2|G2-T1", "G2-AUTO-08": "G2-T1", "G2-AUTO-08b": "PI@G2-T1",
         "G2-AUTO-09": "IRB@G2-T1", "G2-AUTO-10": "PI@G2-T1",
         "G2-HUMAN-01": "IRB@G2-T1", "G2-HUMAN-02": "IRB@G2-T1",
     },
@@ -340,11 +342,18 @@ KET_LUAN_TRACH_NHIEM = ("DAT_TIEU_CHI", "AGENT_XONG_CHO_NGUOI", "AGENT_CON_VIEC"
                         "CHUA_PHAN_CONG", "KHONG_DO_DUOC")
 
 
-def phan_cong(gate: str, ma: str) -> Optional[Dict[str, Any]]:
-    """Giải mã một ô của PHAN_CONG thành {loai: agent|nguoi|tien_de, …}; None nếu tiêu chí chưa được gán."""
+def phan_cong(gate: str, ma: str, ma_thiet_ke: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """Giải mã một ô của PHAN_CONG thành {loai: agent|nguoi|tien_de, …}; None nếu tiêu chí chưa được gán.
+    Ô có điều kiện «A|B» chọn nhiệm vụ đầu tiên áp dụng cho `ma_thiet_ke` (không suy được ⇒ nhiệm vụ cuối)."""
     spec = PHAN_CONG.get(gate, {}).get(ma)
     if not spec:
         return None
+    if "|" in spec:
+        lua_chon = spec.split("|")
+        chon = next((m for m in lua_chon if _nhiem_vu(gate, m) and _ap_dung(_nhiem_vu(gate, m), ma_thiet_ke)),
+                    lua_chon[-1])
+        nv = _nhiem_vu(gate, chon)
+        return {"loai": "agent", "nhiem_vu": chon, "agent": nv["agent"] if nv else None, "lua_chon": lua_chon}
     if spec.startswith("^"):
         return {"loai": "tien_de", "cong": [g.strip() for g in spec[1:].split(",") if g.strip()]}
     if "@" in spec:
@@ -989,6 +998,42 @@ def _ap_dung(nv: Dict[str, Any], ma_thiet_ke: Optional[str]) -> Optional[bool]:
     return None
 
 
+def nhiem_vu_khong_tieu_chi(gate: str) -> List[str]:
+    """Nhiệm vụ của cổng KHÔNG gắn tiêu chí máy nào (không chịu, không chuẩn bị, không là lựa chọn của ô có điều kiện)
+    — chất lượng đầu ra của chúng CHỈ được bảo đảm bằng đánh giá chéo của hội đồng (10/10/2026)."""
+    co = set()
+    for spec in PHAN_CONG.get(gate, {}).values():
+        if spec.startswith("^"):
+            continue
+        co.update([spec.partition("@")[2]] if "@" in spec else spec.split("|"))
+    return [nv["ma"] for nv in NHIEM_VU.get(gate, []) if nv["ma"] not in co]
+
+
+def danh_gia_cheo_moi_nhat(gate: str, out_dir: Path) -> Dict[str, Dict[str, Any]]:
+    """Biên bản đánh giá chéo HỢP LỆ mới nhất của từng nhiệm vụ — {mã: {trang_thai: qua|tra_ve_sua|bat_dong|cu, id}}.
+    Biên bản còn hiệu lực được ưu tiên; chỉ có biên bản CŨ (tài liệu đã đổi) ⇒ «cu»."""
+    hieu_luc: Dict[str, Tuple[Dict[str, Any], Dict[str, Any]]] = {}
+    cu: Dict[str, Tuple[Dict[str, Any], Dict[str, Any]]] = {}
+    for bb in doc_bien_ban(out_dir, gate):
+        if bb.get("_hong") or bb.get("loai") != "danh_gia_cheo":
+            continue
+        kq = kiem_bien_ban(bb, out_dir)
+        if not kq["hop_le"]:
+            continue
+        ma = str((bb.get("dau_ra") or {}).get("ma_nhiem_vu"))
+        dich = cu if kq["cu"] else hieu_luc
+        truoc = dich.get(ma)
+        if truoc is None or _moc_thoi_gian(bb.get("thoi_diem")) >= _moc_thoi_gian(truoc[0].get("thoi_diem")):
+            dich[ma] = (bb, kq["tom_tat"])
+    ra: Dict[str, Dict[str, Any]] = {}
+    for ma, (bb, tom) in hieu_luc.items():
+        kl = tom.get("ket_luan_chung")
+        ra[ma] = {"trang_thai": kl if kl in ("qua", "tra_ve_sua") else "bat_dong", "id": bb.get("id")}
+    for ma, (bb, _tom) in cu.items():
+        ra.setdefault(ma, {"trang_thai": "cu", "id": bb.get("id")})
+    return ra
+
+
 def trach_nhiem(study: str, gate: str, out_dir: Path) -> Dict[str, Any]:
     """BẢNG TRÁCH NHIỆM của điều phối cổng `gate` (chỉ đọc) — 09/10/2026.
 
@@ -1008,7 +1053,7 @@ def trach_nhiem(study: str, gate: str, out_dir: Path) -> Dict[str, Any]:
         ma_tk = None
     dat, agent_con, cho_nguoi, cho_truoc, chua_gan = [], [], [], [], []
     for r in rows:
-        pc = phan_cong(gate, r["id"])
+        pc = phan_cong(gate, r["id"], ma_tk)
         if r["status"] == "PASS":
             dat.append(r["id"])
             continue
@@ -1031,6 +1076,23 @@ def trach_nhiem(study: str, gate: str, out_dir: Path) -> Dict[str, Any]:
             agent_con.append({"id": f"{nv['ma']}:dau-ra", "status": "BLOCK", "label": f"đầu ra {d}",
                               "viec": f"{nv['agent']} sinh {d.replace('<mã>', study)} bằng công cụ thật của cổng",
                               "nhiem_vu": nv["ma"], "agent": nv["agent"]})
+    # 10/10/2026: kết quả đánh giá chéo của hội đồng là một phần trách nhiệm — đầu ra bị TRẢ VỀ SỬA là việc agent còn
+    # nợ; nhiệm vụ không có tiêu chí máy chỉ được bảo đảm chất lượng bằng đánh giá chéo (chưa đánh giá ⇒ nói thật).
+    danh_gia = danh_gia_cheo_moi_nhat(gate, out_dir)
+    khong_tc = set(nhiem_vu_khong_tieu_chi(gate))
+    chi_danh_gia = []
+    for n in nhiem_vu:
+        dg = danh_gia.get(n["ma"], {"trang_thai": "chua_danh_gia", "id": None})
+        n["danh_gia_cheo"] = dg
+        if n["ap_dung"] is False:
+            continue
+        if dg["trang_thai"] == "tra_ve_sua":
+            agent_con.append({"id": f"{n['ma']}:danh-gia-cheo", "status": "REVIEW", "label": "hội đồng trả về sửa",
+                              "viec": f"sửa theo biên bản {dg['id']} rồi đánh giá chéo lại", "nhiem_vu": n["ma"],
+                              "agent": n["agent"]})
+        if n["ma"] in khong_tc:
+            chi_danh_gia.append({"ma": n["ma"], "agent": n["agent"], "ap_dung": n["ap_dung"],
+                                 "danh_gia_cheo": dg["trang_thai"]})
     import cong_song as CS  # noqa: PLC0415
 
     bi_chan = CS.muc_cua_trang_thai(song.get("status")) == "BLOCKED"
@@ -1066,6 +1128,8 @@ def trach_nhiem(study: str, gate: str, out_dir: Path) -> Dict[str, Any]:
             "thiet_ke": ma_tk, "ket_luan": ket, "so_tieu_chi": len(rows), "so_dat": len(dat),
             "agent_con_viec": agent_con, "cho_nguoi": cho_nguoi, "cho_cong_truoc": cho_truoc,
             "chua_phan_cong": chua_gan, "nhiem_vu": nhiem_vu, "chua_cham": chua_cham,
+            "chi_dam_bao_bang_danh_gia_cheo": chi_danh_gia,
+            "chat_luong_chua_bao_dam": [m["ma"] for m in chi_danh_gia if m["danh_gia_cheo"] != "qua"],
             "nhiem_vu_chua_xac_dinh": [n["ma"] for n in nhiem_vu if n["ap_dung"] is None]}
 
 
@@ -1114,6 +1178,12 @@ def in_trach_nhiem(kq: Dict[str, Any]) -> str:
         cc = kq["chua_cham"]
         dong.append(f"- Tiêu chí bộ chấm CHƯA chấm tới lượt này (dừng sớm hoặc không áp dụng thiết kế): "
                     f"{len(cc)} — {', '.join(cc[:8])}{'…' if len(cc) > 8 else ''}")
+    if kq["chi_dam_bao_bang_danh_gia_cheo"]:
+        dong.append("- Nhiệm vụ KHÔNG có tiêu chí máy — chất lượng chỉ bảo đảm bằng đánh giá chéo: " + ", ".join(
+            f"{m['ma']} `{m['agent']}` [{m['danh_gia_cheo']}]" for m in kq["chi_dam_bao_bang_danh_gia_cheo"]))
+        if kq["chat_luong_chua_bao_dam"]:
+            dong.append("  ⚠ CHẤT LƯỢNG CHƯA ĐƯỢC BẢO ĐẢM: " + ", ".join(kq["chat_luong_chua_bao_dam"])
+                        + " — khối bàn giao phải nói thật điều này (đánh giá chéo tốn agent: hỏi bác sĩ trước, §5)")
     if kq["nhiem_vu_chua_xac_dinh"]:
         dong.append("- Nhiệm vụ có điều kiện máy không suy được — điều phối khai áp dụng/không kèm lý do: "
                     + ", ".join(kq["nhiem_vu_chua_xac_dinh"]))

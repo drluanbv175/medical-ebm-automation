@@ -40,10 +40,12 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 - **Chấm lại ≠ dựng lại (09/10/2026):** G0 dừng vì chờ bác sĩ/PI (`MISSING_PICO`) trên nền bằng chứng đã có ⇒ `run_pipeline.py` chỉ CHẤM LẠI bằng `g0_quality_gate.py` (không tra lại PubMed, không sinh lại A1); muốn dựng lại nền bằng chứng (vd PI đổi `query_en`) thì `--from G0`. `gate_status` + `pending_doctor_actions` của `G0_checkpoint.json` do bộ chấm đồng bộ từ kết quả chấm — đọc chúng, không chép danh sách việc cũ. `G0_pubmed_raw.json → search_provenance` giữ CSDL, ngày tra, chuỗi hiệu lực, bộ lọc, trần từng nhánh (PRISMA-S) cho gói tìm bổ sung.
 - **Xác nhận người (cổng mềm):** PI xác nhận ở `study_meta.gate_params.G0` (`pico_confirmed`, FINER có kết luận + lý do, `registry_manual_checked`, `dau_van_tay_chot` chép từ báo cáo G0). Agent CHÉP dấu cho người xác nhận nhìn — KHÔNG tự ghi.
 
+<!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G0 (09/10/2026)
 Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối
 của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Mọi tiêu chí (16) của
-`tools/g0_quality_gate.py` đã gán ĐÚNG MỘT bên ở `hoi_dong_cong.PHAN_CONG` (bảng dưới chép lại; test đối chiếu):
+`tools/g0_quality_gate.py` đã gán ĐÚNG MỘT bên ở `hoi_dong_cong.PHAN_CONG`
+(bảng dưới chép lại; test đối chiếu):
 
 | Bên chịu trách nhiệm | Tiêu chí |
 |---|---|
@@ -55,10 +57,12 @@ của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm v
 | `PI@G0-T4` — NGƯỜI PI quyết/ký; agent chuẩn bị hồ sơ + lệnh: `khoang-trong-nghien-cuu` | G0-HUMAN-05, G0-HUMAN-08 |
 
 1. **Thước đo duy nhất:** `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G0` — chỉ đọc; chấm sống,
-   gán từng tiêu chí chưa đạt cho đúng bên, kiểm đầu ra từng nhiệm vụ áp dụng. CHỈ mã 0 (`DAT_TIEU_CHI` ·
-   `AGENT_XONG_CHO_NGUOI`) mới được báo «phần việc agent của cổng G0 hoàn chỉnh» — không tự khai.
-2. **Agent còn việc** (`AGENT_CON_VIEC`) ⇒ giao lại ĐÚNG agent của nhiệm vụ, đòi làm bằng công cụ thật tới khi tiêu
-   chí đạt rồi đo lại; agent nhiệm vụ chịu trách nhiệm với bạn, bạn chịu trách nhiệm với điều phối tổng.
+   gán từng tiêu chí chưa đạt cho đúng bên, kiểm đầu ra từng nhiệm vụ áp dụng, đọc biên bản đánh giá chéo. CHỈ mã 0
+   (`DAT_TIEU_CHI` · `AGENT_XONG_CHO_NGUOI`) mới được báo «phần việc agent của cổng G0 hoàn chỉnh» — không tự khai.
+2. **Agent còn việc** (`AGENT_CON_VIEC` — tiêu chí của agent chưa đạt, thiếu đầu ra, hoặc hội đồng TRẢ VỀ SỬA)
+   ⇒ giao lại ĐÚNG agent của nhiệm vụ, đòi làm bằng công cụ thật tới khi đạt rồi đo lại; agent nhiệm vụ chịu trách
+   nhiệm với bạn (khối «Trách nhiệm trong hội đồng cổng» trong tài liệu của nó), bạn chịu trách nhiệm với điều phối
+   tổng.
 3. **Chờ người** ⇒ bảo đảm agent chuẩn bị đã đưa người có thẩm quyền đủ hồ sơ + đúng lệnh/khoá (cột «việc» của bảng);
    KHÔNG làm thay người, không bật cờ, không ký.
 4. **Chờ cổng trước** (`CHO_CONG_TRUOC`) ⇒ báo điều phối tổng và điều phối cổng đó; KHÔNG sửa artifact của cổng khác
@@ -66,6 +70,7 @@ của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm v
 5. Nhiệm vụ có điều kiện máy không suy được (`nhiem_vu_chua_xac_dinh`) ⇒ khai áp dụng/không kèm lý do ở khối bàn giao.
 6. Bàn giao: chạy lại với `--ghi` (lưu `hoi_dong/G0/trach_nhiem/TN-<mốc>.json`, kèm SHA-256 hồ sơ G0_*) và chép
    kết luận vào khối bàn giao. Trách nhiệm KHÔNG đòi triệu tập hội đồng nhiều agent (chi phí `_HOI-DONG-CONG.md` §5).
+<!-- TRACH-NHIEM-CONG:KET-THUC -->
 
 ## 5. Điểm quyết định phải tranh biện
 | Mã | Câu hỏi phải tranh biện | Thẩm quyền quyết | Bắt buộc trước khi đề xuất trình ký |
