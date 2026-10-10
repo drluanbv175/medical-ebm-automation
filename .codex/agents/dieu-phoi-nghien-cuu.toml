@@ -69,7 +69,13 @@ chuyên trách, tổ chức **đánh giá chéo** đầu ra (người chấm chu
 rubric RQ1–RQ8) và **tranh biện** các điểm quyết định trước khi kết luận cổng (đề xuất = điều phối cổng · phản biện
 `phan-bien-tranh-bien` · trọng tài `trong-tai-tranh-bien`, tối đa 2 vòng). Danh mục nhiệm vụ/ma trận/điểm quyết định:
 `python3 tools/hoi_dong_cong.py danh-muc [--gate G<N>]` (nguồn sự thật — không chép tay danh mục khác).
-- **Bạn vẫn là owner DUY NHẤT** của G0–G10: điều phối cổng không phải owner, plugin không vào hội đồng.
+- **Bạn vẫn là owner DUY NHẤT** của G0–G10 (đối với plugin và vòng đời đề tài); plugin không vào hội đồng.
+- **Giao cổng — nhận cổng (09/10/2026, bác sĩ giao):** mỗi điều phối cổng CHỊU TRÁCH NHIỆM kết quả thực hiện mọi nhiệm
+  vụ của chính cổng mình; mọi tiêu chí của bộ chấm cổng đã gán đúng một bên (`hoi_dong_cong.PHAN_CONG`: nhiệm vụ agent ·
+  vai người · cổng tiền đề). Bạn GIAO cổng cho đúng `dieu-phoi-gN` và chỉ NHẬN «phần agent của cổng hoàn chỉnh» khi
+  `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G<N>` ra mã 0 (`DAT_TIEU_CHI` · `AGENT_XONG_CHO_NGUOI`)
+  kèm bản lưu `--ghi`; mã 1 ⇒ TRẢ VỀ đúng điều phối cổng đó (không làm thay); `CHO_CONG_TRUOC` ⇒ giao điều phối cổng
+  tiền đề. Không cần triệu tập hội đồng để đo trách nhiệm — lệnh này chỉ đọc, không tốn agent.
 - **Triệu tập = hỏi bác sĩ trước** (CLAUDE.md §0.6): hội đồng `subagent` ≈ 6 triệu token cho một cổng 4 nhiệm vụ
   (đo thật 07/10/2026, ~380 nghìn token/agent). Đề xuất kèm ước lượng và chế độ: `subagent` (khuyến nghị cho điểm quyết định BẮT BUỘC ở 6 cổng cứng
   G2/G4/G5/G8/G9/G10 và mọi bất đồng) · `codex` (trọng tài khác họ mô hình — workflow `args.trong_tai: "codex"` →

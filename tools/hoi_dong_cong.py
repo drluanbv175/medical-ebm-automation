@@ -23,7 +23,11 @@ Lệnh:
   python3 tools/hoi_dong_cong.py kiem --study <mã> [--gate G4]
   python3 tools/hoi_dong_cong.py tom-tat --study <mã> [--json]
   python3 tools/hoi_dong_cong.py cham-song --study <mã> --gate G4 [--json]   (CHỈ ĐỌC — không ghi báo cáo/checkpoint)
-Mã thoát: 0 hợp lệ · 2 thiếu dữ kiện/không tìm thấy · 3 biên bản vi phạm luật.
+  python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G4 [--json] [--ghi]
+      (09/10/2026 — bảng trách nhiệm của điều phối cổng: mọi tiêu chí chưa đạt gán cho agent/người/cổng trước;
+       --ghi lưu bản lúc bàn giao vào hoi_dong/G4/trach_nhiem/)
+Mã thoát: 0 hợp lệ (trach-nhiem: phần agent của cổng HOÀN CHỈNH) · 1 trach-nhiem: còn việc · 2 thiếu dữ kiện/không
+tìm thấy/không đo được · 3 biên bản vi phạm luật.
 """
 from __future__ import annotations
 
@@ -231,6 +235,124 @@ DIEM_QUYET_DINH: Dict[str, List[Dict[str, Any]]] = {
     "G10": [_dp("DP-G10-1", "Gói phát hành nhất quán xuyên cổng, đúng mục đích phát hành và không còn ô trống?", "PI",
                 True)],
 }
+
+
+# ── PHÂN CÔNG TRÁCH NHIỆM từng tiêu chí của bộ chấm cổng (09/10/2026) ───────────────────────────────────────────────
+# Bác sĩ yêu cầu: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều
+# phối của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Trước đây danh mục chỉ có 2–5
+# nhiệm vụ thô mỗi cổng, còn 203 tiêu chí AUTO/HUMAN của 11 bộ chấm KHÔNG gán cho ai ⇒ không ai trả lời được «vấn đề nào
+# của cổng còn hở, việc của agent nào hay của người nào». Mỗi tiêu chí nay có ĐÚNG MỘT bên chịu trách nhiệm:
+#   «G3-T1»               — nhiệm vụ agent (agent chuyên trách làm; điều phối cổng chịu trách nhiệm tới khi đạt);
+#   «STATISTICIAN@G3-T1»  — vai NGƯỜI quyết/ký; nhiệm vụ sau «@» phải chuẩn bị đủ hồ sơ + lệnh cho người đó;
+#   «^G1» / «^G2,G4»      — tiêu chí đạt nhờ cổng TIỀN ĐỀ (điều phối cổng đó chịu trách nhiệm); «^*» = các cổng tiền
+#                           đề theo mục đích phát hành (G10).
+# Bảng phủ ĐÚNG tập mã mà bộ chấm phát ra (test đối chiếu AST từng gN_quality_gate.py — thêm tiêu chí mà quên gán ⇒ đỏ).
+PHAN_CONG: Dict[str, Dict[str, str]] = {
+    "G0": {
+        "G0-AUTO-00": "G0-T1", "G0-AUTO-01": "G0-T1", "G0-AUTO-02": "G0-T2", "G0-AUTO-03": "G0-T2",
+        "G0-AUTO-04": "G0-T1", "G0-AUTO-05": "G0-T1", "G0-AUTO-06": "G0-T4", "G0-AUTO-07": "PI@G0-T1",
+        "G0-HUMAN-01": "PI@G0-T1", "G0-HUMAN-02": "PI@G0-T1", "G0-HUMAN-03": "PI@G0-T1", "G0-HUMAN-04": "PI@G0-T1",
+        "G0-HUMAN-05": "PI@G0-T4", "G0-HUMAN-06": "PI@G0-T3", "G0-HUMAN-07": "PI@G0-T1", "G0-HUMAN-08": "PI@G0-T4",
+    },
+    "G1": {
+        "G1-AUTO-00": "G1-T1", "G1-AUTO-01": "^G0", "G1-AUTO-02": "G1-T1", "G1-AUTO-02b": "G1-T1",
+        "G1-AUTO-02c": "G1-T1", "G1-AUTO-02d": "G1-T1", "G1-AUTO-03": "G1-T1", "G1-AUTO-03b": "G1-T1",
+        "G1-AUTO-04": "G1-T1", "G1-AUTO-04b": "G1-T1", "G1-AUTO-04c": "G1-T1", "G1-AUTO-05": "G1-T1",
+        "G1-AUTO-06": "G1-T2", "G1-AUTO-07": "G1-T1",
+        "G1-HUMAN-01": "PI@G1-T1", "G1-HUMAN-02": "PI@G1-T1", "G1-HUMAN-03": "PI@G1-T1", "G1-HUMAN-04": "PI@G1-T1",
+        "G1-HUMAN-05": "PI@G1-T1", "G1-HUMAN-06": "PI@G1-T3", "G1-HUMAN-07": "PI@G1-T2", "G1-HUMAN-08": "PI@G1-T1",
+    },
+    "G2": {
+        "G2-AUTO-01": "G2-T1", "G2-AUTO-02": "^G1", "G2-AUTO-02b": "G2-T1", "G2-AUTO-03": "G2-T1",
+        "G2-AUTO-03b": "G2-T1", "G2-AUTO-04": "G2-T1", "G2-AUTO-05": "PI@G2-T1", "G2-AUTO-06": "G2-T1",
+        "G2-AUTO-06b": "G2-T1", "G2-AUTO-07": "G2-T1", "G2-AUTO-08": "G2-T1", "G2-AUTO-08b": "PI@G2-T1",
+        "G2-AUTO-09": "IRB@G2-T1", "G2-AUTO-10": "PI@G2-T1",
+        "G2-HUMAN-01": "IRB@G2-T1", "G2-HUMAN-02": "IRB@G2-T1",
+    },
+    "G3": {
+        "G3-AUTO-00": "G3-T1", "G3-AUTO-01": "^G0,G1", "G3-AUTO-02": "G3-T1", "G3-AUTO-03": "G3-T1",
+        "G3-AUTO-04": "G3-T1", "G3-AUTO-05": "G3-T1", "G3-AUTO-06": "G3-T1", "G3-AUTO-07": "G3-T1",
+        "G3-AUTO-08": "G3-T1", "G3-AUTO-09": "G3-T1", "G3-AUTO-10": "G3-T1", "G3-AUTO-11": "G3-T1",
+        "G3-AUTO-12": "G3-T1", "G3-AUTO-13": "PI@G3-T1", "G3-AUTO-14": "G3-T1", "G3-AUTO-15": "G3-T1",
+        "G3-AUTO-16": "G3-T1", "G3-AUTO-17": "G3-T1", "G3-AUTO-18": "G3-T1",
+        "G3-HUMAN-01": "STATISTICIAN@G3-T1", "G3-HUMAN-02": "STATISTICIAN@G3-T1", "G3-HUMAN-03": "STATISTICIAN@G3-T1",
+        "G3-HUMAN-04": "STATISTICIAN@G3-T1", "G3-HUMAN-05": "PI@G3-T1", "G3-HUMAN-06": "STATISTICIAN@G3-T1",
+        "G3-HUMAN-07": "STATISTICIAN@G3-T1",
+    },
+    "G4": {
+        "G4-AUTO-00": "G4-T1", "G4-AUTO-01": "^G3", "G4-AUTO-02": "G4-T1", "G4-AUTO-03": "G4-T1",
+        "G4-AUTO-04": "G4-T1", "G4-AUTO-05": "G4-T1", "G4-AUTO-06": "G4-T1", "G4-AUTO-07": "G4-T1",
+        "G4-AUTO-08": "G4-T1", "G4-AUTO-09": "G4-T1", "G4-AUTO-10": "G4-T1", "G4-AUTO-11": "G4-T1",
+        "G4-AUTO-12": "^G3", "G4-AUTO-13": "STATISTICIAN@G4-T1", "G4-AUTO-14": "PI@G4-T1", "G4-AUTO-15": "G4-T1",
+        "G4-HUMAN-01": "STATISTICIAN@G4-T1", "G4-HUMAN-02": "STATISTICIAN@G4-T1", "G4-HUMAN-03": "STATISTICIAN@G4-T1",
+        "G4-HUMAN-04": "STATISTICIAN@G4-T1", "G4-HUMAN-05": "STATISTICIAN@G4-T1", "G4-HUMAN-06": "STATISTICIAN@G4-T1",
+        "G4-HUMAN-07": "STATISTICIAN@G4-T1", "G4-HUMAN-08": "STATISTICIAN@G4-T1",
+    },
+    "G5": {
+        "G5-AUTO-00": "G5-T1", "G5-AUTO-01": "G5-T1", "G5-AUTO-02": "G5-T1", "G5-AUTO-03": "G5-T1",
+        "G5-AUTO-04": "DATA_MANAGER@G5-T1", "G5-AUTO-04b": "DATA_MANAGER@G5-T1", "G5-AUTO-05": "^G2,G4",
+        "G5-AUTO-05b": "^G2,G4", "G5-AUTO-06": "G5-T1", "G5-AUTO-07": "G5-T1", "G5-AUTO-07b": "G5-T1",
+        "G5-AUTO-08": "G5-T1", "G5-AUTO-09": "G5-T1", "G5-AUTO-10": "G5-T1",
+        "G5-HUMAN-01": "DATA_MANAGER@G5-T1",
+    },
+    "G6": {
+        "G6-AUTO-00": "G6-T1", "G6-AUTO-01": "^G4", "G6-AUTO-02": "G6-T1", "G6-AUTO-03": "G6-T1",
+        "G6-AUTO-04": "G6-T1", "G6-AUTO-05": "G6-T1", "G6-AUTO-06": "G6-T1", "G6-AUTO-07": "G6-T1",
+        "G6-AUTO-08": "G6-T1", "G6-AUTO-09": "G6-T1", "G6-AUTO-10": "G6-T1",
+        "G6-HUMAN-01": "STATISTICIAN@G6-T1",
+    },
+    "G7": {
+        "G7-AUTO-00": "G7-T1", "G7-AUTO-01": "^G1", "G7-AUTO-01b": "^G2", "G7-AUTO-02": "^G0,G2,G3,G4",
+        "G7-AUTO-03": "^G5,G6", "G7-AUTO-04": "G7-T1", "G7-AUTO-05": "G7-T1", "G7-AUTO-06": "G7-T1",
+        "G7-AUTO-07": "G7-T3",
+        "G7-HUMAN-01": "PI@G7-T1", "G7-HUMAN-02": "PI@G7-T1", "G7-HUMAN-03": "PI@G7-T1", "G7-HUMAN-04": "PI@G7-T1",
+        "G7-HUMAN-05": "PI@G7-T1",
+    },
+    "G8": {
+        "G8-AUTO-00": "G8-T1", "G8-AUTO-01": "G8-T1", "G8-AUTO-02": "^G7", "G8-AUTO-03": "^G7", "G8-AUTO-04": "^G7",
+        "G8-AUTO-05": "^G7", "G8-AUTO-06": "PI@G8-T1", "G8-AUTO-07": "PI@G8-T1", "G8-AUTO-08": "PI@G8-T1",
+        "G8-AUTO-09": "G8-T1", "G8-AUTO-10": "G8-T1", "G8-AUTO-11": "^G2",
+        "G8-AUTO-12": "INDEPENDENT_PEER_REVIEWER@G8-T1", "G8-AUTO-12b": "INDEPENDENT_PEER_REVIEWER@G8-T1",
+        "G8-AUTO-13": "^G7",
+        "G8-HUMAN-01": "INDEPENDENT_PEER_REVIEWER@G8-T1", "G8-HUMAN-02": "INDEPENDENT_PEER_REVIEWER@G8-T1",
+        "G8-HUMAN-03": "INDEPENDENT_PEER_REVIEWER@G8-T1", "G8-HUMAN-04": "INDEPENDENT_PEER_REVIEWER@G8-T1",
+        "G8-HUMAN-05": "INDEPENDENT_PEER_REVIEWER@G8-T1", "G8-HUMAN-06": "INDEPENDENT_PEER_REVIEWER@G8-T1",
+    },
+    "G9": {
+        "G9-AUTO-01": "G9-T1", "G9-AUTO-02": "G9-T1", "G9-AUTO-03": "^G2,G4,G5,G8", "G9-AUTO-04": "G9-T2",
+        "G9-AUTO-05": "G9-T1", "G9-AUTO-06": "G9-T1", "G9-AUTO-07": "G9-T1", "G9-AUTO-08": "PI@G9-T1",
+        "G9-HUMAN-01": "PI@G9-T1", "G9-HUMAN-02": "PI@G9-T1", "G9-HUMAN-03": "PI@G9-T1", "G9-HUMAN-04": "PI@G9-T1",
+        "G9-HUMAN-05": "PI@G9-T1", "G9-HUMAN-05A": "PI@G9-T1", "G9-HUMAN-06": "PI@G9-T1", "G9-HUMAN-07": "PI@G9-T1",
+        "G9-HUMAN-08": "PI@G9-T1", "G9-HUMAN-09": "PI@G9-T1", "G9-HUMAN-10": "PI@G9-T1", "G9-HUMAN-11": "PI@G9-T1",
+    },
+    "G10": {
+        "G10-AUTO-01": "G10-T1", "G10-AUTO-02": "^*", "G10-AUTO-02B": "^*", "G10-AUTO-03": "G10-T1",
+        "G10-AUTO-04": "^*", "G10-AUTO-05": "G10-T2", "G10-AUTO-06": "G10-T1", "G10-AUTO-07": "G10-T1",
+        "G10-AUTO-08": "G10-T1", "G10-AUTO-09": "G10-T1", "G10-AUTO-10": "G10-T1", "G10-AUTO-11": "G10-T1",
+        "G10-HUMAN-01": "PI@G10-T1", "G10-HUMAN-02": "PI@G10-T1", "G10-HUMAN-03": "PI@G10-T1",
+        "G10-HUMAN-04": "PI@G10-T1", "G10-HUMAN-05": "PI@G10-T1",
+    },
+}
+# Nhiệm vụ có điều kiện mà ĐIỀU KIỆN suy được từ mã thiết kế đã chốt (skill_standards.dac_ta_thiet_ke); điều kiện
+# khác (thang đo, tạp chí tiếng Anh) ⇒ điều phối cổng tự khai áp dụng hay không kèm lý do.
+_DIEU_KIEN_THIET_KE = {"thiết kế can thiệp (RCT)": ("rct",), "tổng quan hệ thống có gộp định lượng": ("sr_ma",)}
+KET_LUAN_TRACH_NHIEM = ("DAT_TIEU_CHI", "AGENT_XONG_CHO_NGUOI", "AGENT_CON_VIEC", "CHO_CONG_TRUOC",
+                        "CHUA_PHAN_CONG", "KHONG_DO_DUOC")
+
+
+def phan_cong(gate: str, ma: str) -> Optional[Dict[str, Any]]:
+    """Giải mã một ô của PHAN_CONG thành {loai: agent|nguoi|tien_de, …}; None nếu tiêu chí chưa được gán."""
+    spec = PHAN_CONG.get(gate, {}).get(ma)
+    if not spec:
+        return None
+    if spec.startswith("^"):
+        return {"loai": "tien_de", "cong": [g.strip() for g in spec[1:].split(",") if g.strip()]}
+    if "@" in spec:
+        vai, _, chuan_bi = spec.partition("@")
+        nv = _nhiem_vu(gate, chuan_bi)
+        return {"loai": "nguoi", "vai": vai, "chuan_bi": chuan_bi, "agent": nv["agent"] if nv else None}
+    nv = _nhiem_vu(gate, spec)
+    return {"loai": "agent", "nhiem_vu": spec, "agent": nv["agent"] if nv else None}
 
 
 def dieu_phoi_cong(gate: str) -> str:
@@ -809,18 +931,194 @@ def _in_danh_muc(gate: Optional[str]) -> None:
                   f"{dp['cau_hoi']}")
 
 
+_MA_TIEU_CHI_RE = re.compile(r"^G(?:10|[0-9])-(?:AUTO|HUMAN)-\d{2}[A-Za-z]?$")
+
+
+def hang_tieu_chi(bao: Any) -> List[Dict[str, Any]]:
+    """Mọi dòng tiêu chí của MỘT báo cáo bộ chấm, chuẩn hoá {id, status PASS|REVIEW|BLOCK, label, action, evidence}.
+
+    VÁ 09/10/2026: báo cáo 11 cổng KHÔNG cùng khuôn (đo động trên 34 đề tài): G0/G1/G3/G7 `automatic_criteria` +
+    `human_criteria`; G2 `human_approval_criteria`; G4/G8 `approval_criteria`; G5/G9/G10 gộp cả HUMAN vào
+    `automatic_criteria`; G6 `checks` với pass True/None/False. `cham_song` cũ chỉ đọc hai khoá đầu ⇒ bỏ sót tiêu chí
+    phê duyệt G2/G4/G8 và TOÀN BỘ G6 — điều phối cổng thấy «không còn tiêu chí chưa đạt» khi thực tế còn."""
+    if not isinstance(bao, dict):
+        return []
+    ra: List[Dict[str, Any]] = []
+    da_co = set()
+    for khoa, ds in bao.items():
+        if not isinstance(ds, list):
+            continue
+        for r in ds:
+            if not isinstance(r, dict) or not _MA_TIEU_CHI_RE.match(str(r.get("id") or "")):
+                continue
+            if "status" in r:
+                st = str(r.get("status") or "").upper()
+            else:  # G6: pass True/None/False (+ blocking)
+                st = {True: "PASS", None: "REVIEW"}.get(r.get("pass"), "BLOCK" if r.get("blocking") else "REVIEW")
+            if st not in ("PASS", "REVIEW", "BLOCK"):
+                st = "REVIEW"  # trạng thái lạ KHÔNG BAO GIỜ được đọc thành «đạt»
+            khoa_dong = (str(r["id"]), khoa)
+            if khoa_dong in da_co:
+                continue
+            da_co.add(khoa_dong)
+            ra.append({"id": str(r["id"]), "status": st, "label": str(r.get("label") or ""),
+                       "action": str(r.get("action") or ""),
+                       "evidence": str(r.get("evidence") or r.get("detail") or "")[:300]})
+    return ra
+
+
 def cham_song(study: str, gate: str, out_dir: Path) -> Dict[str, Any]:
     """Trạng thái SỐNG của cổng + tiêu chí chưa đạt cho các vai hội đồng — qua `cong_song` (write=False): không ghi
     báo cáo, không đổi checkpoint (CLI `g<N>_quality_gate.py` thì có ghi)."""
     import cong_song as CS  # noqa: PLC0415
 
     kq = CS.trang_thai_song(gate, study, Path(out_dir), repo_root=Path(out_dir).parent.parent)
-    bao = kq.get("bao_cao") or {}
-    chua_dat = [{"id": r.get("id"), "status": r.get("status"), "evidence": str(r.get("evidence") or "")[:300]}
-                for nhom in ("automatic_criteria", "human_criteria") for r in (bao.get(nhom) or [])
-                if isinstance(r, dict) and r.get("status") != "PASS"]
+    chua_dat = [{"id": r["id"], "status": r["status"], "evidence": r["evidence"]}
+                for r in hang_tieu_chi(kq.get("bao_cao")) if r["status"] != "PASS"]
     return {"gate": gate, "status": kq.get("status"), "nguon": kq.get("nguon"), "ly_do": kq.get("ly_do"),
-            "chua_dat": chua_dat}
+            "chua_dat": chua_dat, "_bao_cao": kq.get("bao_cao")}
+
+
+def _ap_dung(nv: Dict[str, Any], ma_thiet_ke: Optional[str]) -> Optional[bool]:
+    """Nhiệm vụ có áp dụng cho đề tài không: True/False, hoặc None = điều kiện máy không suy được ⇒ điều phối khai."""
+    dk = nv.get("dieu_kien")
+    if not dk:
+        return True
+    if dk in _DIEU_KIEN_THIET_KE:
+        return None if not ma_thiet_ke else ma_thiet_ke in _DIEU_KIEN_THIET_KE[dk]
+    return None
+
+
+def trach_nhiem(study: str, gate: str, out_dir: Path) -> Dict[str, Any]:
+    """BẢNG TRÁCH NHIỆM của điều phối cổng `gate` (chỉ đọc) — 09/10/2026.
+
+    Chấm SỐNG cổng, gán mỗi tiêu chí chưa đạt cho bên chịu trách nhiệm theo PHAN_CONG, kiểm đầu ra của từng nhiệm vụ áp
+    dụng, rồi kết luận PHẦN VIỆC CỦA AGENT của cổng: DAT_TIEU_CHI (mọi tiêu chí đạt) · AGENT_XONG_CHO_NGUOI (phần agent
+    xong, chỉ còn việc của người có thẩm quyền — đã có hồ sơ + lệnh) · AGENT_CON_VIEC · CHO_CONG_TRUOC (tiêu chí tiền đề
+    chưa đạt — điều phối cổng trước chịu trách nhiệm) · CHUA_PHAN_CONG (bộ chấm phát mã chưa gán — lỗi hệ, sửa bảng) ·
+    KHONG_DO_DUOC. Không mở/chặn cổng: cổng vẫn do bộ chấm + chữ ký người."""
+    out_dir = Path(out_dir)
+    song = cham_song(study, gate, out_dir)
+    rows = hang_tieu_chi(song.pop("_bao_cao", None))
+    try:
+        import skill_standards as SK  # noqa: PLC0415
+
+        ma_tk = SK.dac_ta_thiet_ke(out_dir).get("design_code")
+    except Exception:  # noqa: BLE001 — không suy được thiết kế ⇒ điều kiện thiết kế = chưa xác định
+        ma_tk = None
+    dat, agent_con, cho_nguoi, cho_truoc, chua_gan = [], [], [], [], []
+    for r in rows:
+        pc = phan_cong(gate, r["id"])
+        if r["status"] == "PASS":
+            dat.append(r["id"])
+            continue
+        muc = {"id": r["id"], "status": r["status"], "label": r["label"], "viec": r["action"] or r["evidence"]}
+        if pc is None:
+            chua_gan.append(muc)
+        elif pc["loai"] == "agent":
+            agent_con.append({**muc, "nhiem_vu": pc["nhiem_vu"], "agent": pc["agent"]})
+        elif pc["loai"] == "nguoi":
+            cho_nguoi.append({**muc, "vai": pc["vai"], "chuan_bi": pc["chuan_bi"], "agent_chuan_bi": pc["agent"]})
+        else:
+            cho_truoc.append({**muc, "cong": pc["cong"]})
+    nhiem_vu = []
+    for nv in NHIEM_VU.get(gate, []):
+        ap = _ap_dung(nv, ma_tk)
+        thieu = [d for d in nv["dau_ra"] if not (out_dir / d.replace("<mã>", study)).is_file()] if ap else []
+        nhiem_vu.append({"ma": nv["ma"], "agent": nv["agent"], "ap_dung": ap, "dieu_kien": nv.get("dieu_kien"),
+                         "dau_ra_thieu": thieu})
+        for d in thieu:
+            agent_con.append({"id": f"{nv['ma']}:dau-ra", "status": "BLOCK", "label": f"đầu ra {d}",
+                              "viec": f"{nv['agent']} sinh {d.replace('<mã>', study)} bằng công cụ thật của cổng",
+                              "nhiem_vu": nv["ma"], "agent": nv["agent"]})
+    import cong_song as CS  # noqa: PLC0415
+
+    bi_chan = CS.muc_cua_trang_thai(song.get("status")) == "BLOCKED"
+    phat_ra = {r["id"] for r in rows}
+    chua_cham = sorted(set(PHAN_CONG.get(gate, {})) - phat_ra)
+    if bi_chan:
+        # Bộ chấm DỪNG SỚM (vd G6 thiếu tệp đầu vào) không phát các tiêu chí tiền đề ⇒ tự chấm sống cổng tiền đề theo
+        # bảng phân công; cổng tiền đề chưa PASS ⇒ cổng này chờ cổng trước, không quy là «agent còn việc».
+        da_neu = {g for m in cho_truoc for g in m["cong"]}
+        tien_de = sorted({g for s in PHAN_CONG.get(gate, {}).values() if s.startswith("^")
+                          for g in s[1:].split(",") if g and g != "*"} - da_neu, key=lambda g: int(g[1:]))
+        for g in tien_de:
+            st = CS.trang_thai_song(g, study, out_dir, repo_root=out_dir.parent.parent).get("status")
+            if CS.muc_cua_trang_thai(st) != "PASS":
+                cho_truoc.append({"id": f"{gate}:tien-de-{g}", "status": "BLOCK", "label": f"cổng tiền đề {g}",
+                                  "viec": f"{g} chấm sống: {st or 'không đo được'}", "cong": [g]})
+    if song.get("status") is None or not rows:
+        ket = "KHONG_DO_DUOC"  # «không đo được» KHÔNG BAO GIỜ là «đạt» lẫn «agent còn việc»
+    elif chua_gan:
+        ket = "CHUA_PHAN_CONG"
+    elif bi_chan and cho_truoc:
+        ket = "CHO_CONG_TRUOC"
+    elif agent_con:
+        ket = "AGENT_CON_VIEC"
+    elif cho_truoc:
+        ket = "CHO_CONG_TRUOC"
+    elif cho_nguoi:
+        ket = "AGENT_XONG_CHO_NGUOI"
+    else:
+        ket = "DAT_TIEU_CHI"
+    return {"schema": "hoi_dong_cong/trach_nhiem/v1", "study": study, "gate": gate, "dieu_phoi": dieu_phoi_cong(gate),
+            "trang_thai_song": song.get("status"), "nguon": song.get("nguon"), "ly_do_khong_do": song.get("ly_do"),
+            "thiet_ke": ma_tk, "ket_luan": ket, "so_tieu_chi": len(rows), "so_dat": len(dat),
+            "agent_con_viec": agent_con, "cho_nguoi": cho_nguoi, "cho_cong_truoc": cho_truoc,
+            "chua_phan_cong": chua_gan, "nhiem_vu": nhiem_vu, "chua_cham": chua_cham,
+            "nhiem_vu_chua_xac_dinh": [n["ma"] for n in nhiem_vu if n["ap_dung"] is None]}
+
+
+def ma_thoat_trach_nhiem(ket_luan: str) -> int:
+    """0 = phần agent của cổng HOÀN CHỈNH (DAT_TIEU_CHI · AGENT_XONG_CHO_NGUOI); 1 = còn việc; 2 = không đo được."""
+    if ket_luan in ("DAT_TIEU_CHI", "AGENT_XONG_CHO_NGUOI"):
+        return 0
+    return 2 if ket_luan == "KHONG_DO_DUOC" else 1
+
+
+def ghi_trach_nhiem(kq: Dict[str, Any], out_dir: Path) -> Path:
+    """Lưu bảng trách nhiệm lúc điều phối cổng BÀN GIAO — `hoi_dong/<GN>/trach_nhiem/TN-<mốc>.json` (thư mục con riêng:
+    `doc_bien_ban` chỉ đọc *.json ngay trong `hoi_dong/<GN>/`, không đọc nhầm thành biên bản hỏng). Kèm SHA-256 các tệp
+    G<N>_* của đề tài lúc ghi ⇒ ai đọc sau biết hồ sơ đã đổi chưa."""
+    gate = kq["gate"]
+    d = thu_muc_bien_ban(out_dir, gate) / "trach_nhiem"
+    d.mkdir(parents=True, exist_ok=True)
+    moc = datetime.now().astimezone()
+    tai_lieu = {p.name: sha256_tep(p) for p in sorted(Path(out_dir).glob(f"{gate}_*")) if p.is_file()}
+    ban = {**kq, "thoi_diem": moc.isoformat(timespec="seconds"), "tai_lieu_luc_ghi": tai_lieu,
+           "cam_ket": (f"{dieu_phoi_cong(gate)} chịu trách nhiệm kết quả thực hiện nhiệm vụ của cổng {gate}: bảng này "
+                       "do công cụ tính từ chấm sống, không do điều phối tự khai. TƯ VẤN — không mở/không chặn cổng.")}
+    p = d / f"TN-{moc.strftime('%Y%m%dT%H%M%S')}.json"
+    p.write_text(json.dumps(ban, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+    return p
+
+
+def in_trach_nhiem(kq: Dict[str, Any]) -> str:
+    """Bản đọc cho bác sĩ/điều phối tổng."""
+    dong = [f"TRÁCH NHIỆM CỔNG {kq['gate']} — {kq['study']} · điều phối chịu trách nhiệm: {kq['dieu_phoi']}",
+            f"- Chấm sống: {kq['trang_thai_song']} (nguồn {kq['nguon']}) · thiết kế: "
+            f"{kq['thiet_ke'] or 'chưa xác định'} · {kq['so_dat']}/{kq['so_tieu_chi']} tiêu chí đạt",
+            f"- KẾT LUẬN PHẦN AGENT: {kq['ket_luan']}"]
+    for tieu_de, khoa, mo_ta in (
+            ("AGENT CÒN VIỆC (điều phối giao/đòi tới khi đạt)", "agent_con_viec",
+             lambda m: f"{m['nhiem_vu']} `{m['agent']}`"),
+            ("CHỜ NGƯỜI CÓ THẨM QUYỀN (agent chuẩn bị đủ hồ sơ + lệnh)", "cho_nguoi",
+             lambda m: f"{m['vai']} — chuẩn bị: {m['chuan_bi']} `{m['agent_chuan_bi']}`"),
+            ("CHỜ CỔNG TRƯỚC (điều phối cổng đó chịu trách nhiệm)", "cho_cong_truoc",
+             lambda m: "cổng " + ", ".join(m["cong"])),
+            ("CHƯA PHÂN CÔNG (lỗi hệ — sửa PHAN_CONG)", "chua_phan_cong", lambda m: "?")):
+        if kq[khoa]:
+            dong.append(f"- {tieu_de}: {len(kq[khoa])}")
+            dong += [f"    {m['id']} [{m['status']}] {mo_ta(m)} — {str(m['viec'])[:160]}" for m in kq[khoa]]
+    if kq["chua_cham"]:
+        cc = kq["chua_cham"]
+        dong.append(f"- Tiêu chí bộ chấm CHƯA chấm tới lượt này (dừng sớm hoặc không áp dụng thiết kế): "
+                    f"{len(cc)} — {', '.join(cc[:8])}{'…' if len(cc) > 8 else ''}")
+    if kq["nhiem_vu_chua_xac_dinh"]:
+        dong.append("- Nhiệm vụ có điều kiện máy không suy được — điều phối khai áp dụng/không kèm lý do: "
+                    + ", ".join(kq["nhiem_vu_chua_xac_dinh"]))
+    dong.append("TƯ VẤN — không mở, không chặn cổng. Cần bác sĩ kiểm chứng.")
+    return "\n".join(dong)
 
 
 def _thu_muc_de_tai(study: str, repo_root: Path) -> Path:
@@ -836,13 +1134,16 @@ def main(argv: Optional[List[str]] = None) -> int:
     a = sub.add_parser("mau")
     a.add_argument("--loai", choices=("danh_gia_cheo", "tranh_bien"), required=True)
     a.add_argument("--gate", choices=CONG, required=True)
-    for ten in ("ghi", "kiem", "tom-tat", "cham-song"):
+    for ten in ("ghi", "kiem", "tom-tat", "cham-song", "trach-nhiem"):
         a = sub.add_parser(ten)
         a.add_argument("--study", required=True)
-        a.add_argument("--gate", choices=CONG, required=(ten in ("ghi", "cham-song")))
+        a.add_argument("--gate", choices=CONG, required=(ten in ("ghi", "cham-song", "trach-nhiem")))
         a.add_argument("--json", action="store_true")
         if ten == "ghi":
             a.add_argument("--tep", required=True, help="biên bản nháp JSON (theo `mau`); «-» = đọc từ stdin")
+        if ten == "trach-nhiem":
+            a.add_argument("--ghi", action="store_true",
+                           help="lưu bảng lúc bàn giao vào hoi_dong/<GN>/trach_nhiem/ (không đụng báo cáo/checkpoint)")
     args = ap.parse_args(argv)
 
     if args.lenh == "danh-muc":
@@ -884,6 +1185,13 @@ def main(argv: Optional[List[str]] = None) -> int:
             for r in kq["chua_dat"]:
                 print(f"  {r['id']} {r['status']}: {r['evidence']}")
         return 0
+    if args.lenh == "trach-nhiem":
+        kq = trach_nhiem(args.study, args.gate, out_dir)
+        if args.ghi:
+            kq["tep_luu"] = str(ghi_trach_nhiem(kq, out_dir).relative_to(out_dir))
+        print(json.dumps(kq, ensure_ascii=False, indent=2) if args.json else in_trach_nhiem(kq)
+              + (f"\n(đã lưu: {kq['tep_luu']})" if args.ghi else ""))
+        return ma_thoat_trach_nhiem(kq["ket_luan"])
     if args.lenh == "kiem":
         ma = 0
         for bb in doc_bien_ban(out_dir, args.gate):

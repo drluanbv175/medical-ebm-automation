@@ -82,8 +82,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # dạy cách chạy chế độ codex — bản cặp y hệt gốc; vẫn 64.
 # 09/10/2026 (G0 chấm lại ≠ dựng lại — hội đồng BD-G0-T1/T2): dieu-phoi-g0 dạy hành vi mới của run_pipeline — bản cặp
 # y hệt gốc; vẫn 64.
+# 09/10/2026 (trách nhiệm cổng — bác sĩ giao điều phối cổng chịu trách nhiệm kết quả cổng): 11 dieu-phoi-gN thêm mục 4b
+# + _HOI-DONG-CONG §1b + dieu-phoi-nghien-cuu «giao cổng — nhận cổng» — bản cặp y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "dc70ee22d34cfba76a0c8c51e30176b9bd57688693989b2a7d35a34a15ba5f8b"
+    "98d45c90f255515a81a8b36854d738d8c35e2baa3937c93e9638882bcba4a8d8"
 )
 
 MINIMUM_AGENT_COUNT = 64
