@@ -1469,7 +1469,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             for dong in kq["loi"]:
                 print(f"  - {dong}")
             return 3
-        print(f"✅ Đã ghi {p.relative_to(out_dir)} — {json.dumps(kq['tom_tat'], ensure_ascii=False)}")
+        # .as_posix(): cùng một thông điệp trên Mac và Windows (CI Windows từng đỏ vì «\\» — 10/10/2026).
+        print(f"✅ Đã ghi {p.relative_to(out_dir).as_posix()} — {json.dumps(kq['tom_tat'], ensure_ascii=False)}")
         return 0
     if args.lenh == "cham-song":
         kq = cham_song(args.study, args.gate, out_dir)
@@ -1487,7 +1488,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             for dong in loi:
                 print(f"  - {dong}")
             return 3
-        print(f"✅ Đã ghi {p.relative_to(out_dir)} — {args.nhiem_vu}: {'ÁP DỤNG' if args.ap_dung == 'co' else 'KHÔNG'}")
+        print(f"✅ Đã ghi {p.relative_to(out_dir).as_posix()} — {args.nhiem_vu}: "
+              f"{'ÁP DỤNG' if args.ap_dung == 'co' else 'KHÔNG'}")
         return 0
     if args.lenh == "trach-nhiem" and args.gate == "ALL":
         kq = tong_trach_nhiem(args.study, out_dir)
