@@ -173,6 +173,28 @@ def _recover_params(gate: str, out_dir: Path, meta: dict) -> List[str]:
     return args
 
 
+def _g0_chi_cho_nguoi(out_dir: Path) -> bool:
+    """G0 đang DỪNG chỉ vì chờ bác sĩ/PI (MISSING_PICO) trên một nền bằng chứng ĐÃ CÓ — 09/10/2026 (hội đồng BD-G0-T1).
+
+    Khi đó chạy lại `run_g0_auto.py` là SAI: tra lại PubMed (tập PMID và dấu vân tay có thể đổi, sinh lại A1), trong khi
+    việc còn lại là của người và lệnh khắc phục ghi trong needs_input chính là chấm lại bằng `g0_quality_gate.py`.
+    Đo trên C1a 07/10: mọi lượt run_pipeline sau khi bộ chấm G0 ghi trạng thái DRAFT đều kéo G0 chạy lại từ đầu.
+    Điều kiện đủ: reason_code MISSING_PICO đang chặn + checkpoint có n_pmids > 0 + `G0_pubmed_raw.json` tồn tại."""
+    cp = _load_cp(out_dir, "G0")
+    ni = cp.get("needs_input") if isinstance(cp.get("needs_input"), dict) else {}
+    try:
+        co_bang_chung = int(cp.get("n_pmids") or 0) > 0
+    except (TypeError, ValueError):
+        co_bang_chung = False
+    return (bool(ni.get("blocked")) and ni.get("reason_code") == GC.REASON_MISSING_PICO
+            and co_bang_chung and (out_dir / "G0_pubmed_raw.json").is_file())
+
+
+def _lenh_cham_lai_g0(study: str, out_dir: Path) -> List[str]:
+    """Chấm lại G0 từ tệp đã có — KHÔNG gọi PubMed (g0_quality_gate.evaluate_study)."""
+    return [sys.executable, str(TOOLS / "g0_quality_gate.py"), "--study", study, "--exports-dir", str(out_dir.parent)]
+
+
 def _build_cmd(gate: str, study: str, out_dir: Path,
                topic: Optional[str], meta: dict) -> Optional[List[str]]:
     """Dựng lệnh chạy 1 cổng. None nếu thiếu điều kiện tối thiểu (vd G0 thiếu topic)."""
@@ -270,13 +292,14 @@ def _checkpoint_blocked(out_dir: Path, gate: str) -> bool:
 
 def run_gate_with_healing(gate: str, study: str, out_dir: Path,
                           topic: Optional[str], meta: dict,
-                          max_attempts: int) -> Dict[str, object]:
+                          max_attempts: int, cmd: Optional[List[str]] = None) -> Dict[str, object]:
     """Chạy 1 cổng với vòng lặp retry CÓ TRẦN cho lỗi tạm thời.
 
     Trả dict{gate, status, attempts, guardrail, detail}. status ∈
     {'ok', 'ok_no_guardrail', 'blocked_missing_input', 'failed'}.
+    `cmd` (09/10/2026): lệnh thay cho lệnh mặc định — dùng cho G0 chỉ-chấm-lại (`_lenh_cham_lai_g0`).
     """
-    cmd = _build_cmd(gate, study, out_dir, topic, meta)
+    cmd = cmd or _build_cmd(gate, study, out_dir, topic, meta)
     if cmd is None:
         return {
             "gate": gate, "status": "blocked_missing_input", "attempts": 0,
@@ -476,7 +499,14 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
                                  "detail": "Đạt trần MAX_TOTAL_RUNS — dừng an toàn."})
             break
 
-        res = run_gate_with_healing(gate, study, out_dir, topic, meta, max_attempts)
+        # G0 chặn CHỈ vì chờ người (và không bị ép/không cũ) ⇒ chấm lại, không dựng lại nền bằng chứng.
+        # `--from G0` hoặc G0 cũ (stale) vẫn chạy trọn run_g0_auto.py như trước.
+        cham_lai = (gate == "G0" and blocked_cp and not forced_start and not dirty
+                    and gate not in stale_set and _g0_chi_cho_nguoi(out_dir))
+        res = run_gate_with_healing(gate, study, out_dir, topic, meta, max_attempts,
+                                    cmd=_lenh_cham_lai_g0(study, out_dir) if cham_lai else None)
+        if cham_lai:
+            res["detail"] = ("chỉ CHẤM LẠI G0 (không tra lại PubMed) — " + str(res.get("detail") or "")).rstrip(" —")
         total_runs += 1
         gate_results.append(res)
 
