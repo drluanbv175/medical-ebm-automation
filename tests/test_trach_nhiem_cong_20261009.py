@@ -30,6 +30,15 @@ import hoi_dong_cong as HD  # noqa: E402
 import skill_standards as SK  # noqa: E402
 
 STUDY = "TN-THU"
+_COT = ["Variable / Field Name", "Form Name", "Section Header", "Field Type", "Field Label",
+        "Choices, Calculations, OR Slider Labels", "Field Note", "Text Validation Type OR Show Slider Number",
+        "Text Validation Min", "Text Validation Max", "Identifier?", "Required Field?"]
+BO_BIEN_HOP_LE = "\n".join([
+    ",".join(f'"{c}"' for c in _COT),
+    'record_id,f,,text,Mã phiếu,,,,,,,y',
+    'tuoi,f,,text,Tuổi,,,integer,18,120,,y',
+    'gioi,f,,radio,Giới,"1, Nam | 2, Nữ",,,,,,y',
+]) + "\n"
 
 
 def _ma_bo_cham(gate: str) -> set:
@@ -134,6 +143,8 @@ def _de_tai(tmp_path: Path, du_dau_ra: bool = True) -> Path:
     if du_dau_ra:
         for ten in (f"G3_A4_SAMPLE_SIZE_{STUDY}.md", "G3_checkpoint.json"):
             (out / ten).write_text("{}\n", encoding="utf-8", newline="\n")
+        # 10/10/2026: G3-T2/T3 có tệp hợp đồng `_bo-bien-rieng.csv` (+ kiểm máy cấp nhiệm vụ) — bộ biến hợp lệ.
+        (out / "_bo-bien-rieng.csv").write_text(BO_BIEN_HOP_LE, encoding="utf-8", newline="\n")
     return out
 
 
