@@ -216,8 +216,8 @@ nhất»).** Ba khoản tốn mà máy làm thay được, KHÔNG đổi rubric,
 Code (`.claude/workflows/hoi-dong-cong.js`) chạy đúng 8 bước với trần vòng và trần số agent — chỉ chạy khi bác sĩ gọi.
 
 **Nhịp hằng ngày + vòng hoàn thiện sau họp (10/10/2026; bác sĩ: «mỗi ngày họp một cổng và với lần họp này sẽ đảm
-bảo hệ thống được hoàn thiện tự động tốt nhất từ vấn đề hệ thống, Agent và các điều phối»).** Bác sĩ đã đồng ý
-nhịp này cho đề tài được giao (tác vụ lịch `hoi-dong-<đề tài>-hang-ngay`, nguồn `sync/scheduled-tasks/` repo gốc):
+bảo hệ thống được hoàn thiện tự động tốt nhất từ vấn đề hệ thống, Agent và các điều phối»).** Cùng ngày bác sĩ HUỶ
+lịch tự chạy (tốn token, chưa bảo đảm hoàn thiện) ⇒ KHÔNG có tác vụ lịch nào; 5 bước dưới chỉ chạy khi bác sĩ gọi:
 
 1. **Chọn cổng — 0 agent:** `python3 tools/hoi_dong_cong.py lich-hop --study <mã>` → cổng ĐẦU TIÊN G0→G10 còn phần
    cần họp theo hồ sơ máy (không có ⇒ không mở agent, chỉ làm bước 3–4). Cổng mang `nen_cho_cong_truoc` vẫn họp khi
