@@ -143,6 +143,13 @@ Mức mỗi trục: `dat` · `can_sua` · `loi_do` · `khong_ap_dung` (phải n�
 repo, có thể `:dòng` hoặc `:dòng-dòng`) · `tieu_chi` (`G4-AUTO-09`, `G4-HUMAN-04`…) · `pmid` · `doi` · `lenh` (câu
 lệnh + đoạn `ket_qua`). Lời nói không kèm căn cứ KHÔNG phải căn cứ.
 
+**Bài học HỆ THỐNG** (10/10/2026, `bai_hoc_he_thong` — không bắt buộc, mỗi người chấm và trọng tài đều ghi được):
+rubric và việc sửa nói về ĐẦU RA của một đề tài; lỗi nằm ở HỆ thì ghi riêng, mỗi mục `pham_vi` ∈ `cong_cu` (công
+cụ/bộ chấm sai) · `agent` (tài liệu agent thiếu/sai chỉ dẫn) · `dieu_phoi` (điều phối giao sai/thiếu) · `doctrine`
+(doctrine mâu thuẫn mã sống) · `quy_trinh_hoi_dong`, kèm `doi_tuong` (tệp/agent cụ thể), `van_de`, `de_xuat` và
+căn cứ kiểm được như trên. `hoi_dong_cong.py ghi` kiểm luật này (thiếu căn cứ/PII ⇒ không ghi). Không có lỗi hệ
+thì không bịa bài học cho có.
+
 ## 4. Tranh biện — trước mọi kết luận của cổng
 
 - **Vai (ba agent khác nhau):** ĐỀ XUẤT = `dieu-phoi-gN` (trình kết luận dự kiến + căn cứ) · PHẢN BIỆN =
@@ -207,6 +214,27 @@ nhất»).** Ba khoản tốn mà máy làm thay được, KHÔNG đổi rubric,
 
 Điều phối tổng/cổng LUÔN hỏi bác sĩ (kèm ước lượng của `uoc-tinh`) trước khi mở hội đồng `subagent`. Workflow Claude
 Code (`.claude/workflows/hoi-dong-cong.js`) chạy đúng 8 bước với trần vòng và trần số agent — chỉ chạy khi bác sĩ gọi.
+
+**Nhịp hằng ngày + vòng hoàn thiện sau họp (10/10/2026; bác sĩ: «mỗi ngày họp một cổng và với lần họp này sẽ đảm
+bảo hệ thống được hoàn thiện tự động tốt nhất từ vấn đề hệ thống, Agent và các điều phối»).** Cùng ngày bác sĩ HUỶ
+lịch tự chạy (tốn token, chưa bảo đảm hoàn thiện) ⇒ KHÔNG có tác vụ lịch nào; 5 bước dưới chỉ chạy khi bác sĩ gọi:
+
+1. **Chọn cổng — 0 agent:** `python3 tools/hoi_dong_cong.py lich-hop --study <mã>` → cổng ĐẦU TIÊN G0→G10 còn phần
+   cần họp theo hồ sơ máy (không có ⇒ không mở agent, chỉ làm bước 3–4). Cổng mang `nen_cho_cong_truoc` vẫn họp khi
+   tới lượt (nhịp bác sĩ chọn) nhưng báo cáo phải ghi biên bản có thể CŨ khi cổng trước chốt.
+2. **Họp MỘT cổng:** `ho-so … --json` → workflow `hoi-dong-cong` với `args.ho_so` (trần 16 agent, một vòng tranh
+   biện). Lỗi/dừng giữa chừng ⇒ không resume, không chạy lại; đọc journal, báo đã ghi được gì.
+3. **Hoàn thiện đầu ra đề tài:** mục «agent còn việc» của `trach-nhiem --gate G<N>` (gồm đầu ra bị trả về sửa) ⇒
+   sửa bằng CÔNG CỤ THẬT của cổng theo biên bản, trong worktree `~/.ebm-worktrees`, xuất Word, commit + push + PR.
+   Ô thuộc người (PI/IRB/thống kê viên…) và mọi cờ xác nhận: KHÔNG điền — ghi vào báo cáo là việc của bác sĩ.
+4. **Hoàn thiện HỆ:** `bai-hoc --study <mã> --chua-xu-ly` ⇒ mỗi bài học: kiểm lại trên mã sống (đúng mới sửa), sửa
+   công cụ/tài liệu agent/điều phối/doctrine trong worktree, test + kiểm đột biến cho chốt mới, commit + push + PR;
+   rồi `bai-hoc --xu-ly <mã> --ket da_sua --pr <URL> --ly-do …` (hoặc `khong_sua`/`trung` kèm lý do). Trước khi
+   sửa, xem PR đang mở của hai repo — đã có PR cho cùng vấn đề thì ghi `trung`/bỏ qua, không mở PR trùng.
+5. **Báo cáo ngày** `hoi_dong/BAO_CAO_NGAY_<YYYY-MM-DD>.md` (dấu vết cho `kiem_lich_nen.py`): cổng đã họp, số agent,
+   biên bản đã ghi, kết luận từng nhiệm vụ/DP, PR đã mở, bài học đã/chưa xử lý, việc của bác sĩ còn lại.
+
+Vòng này KHÔNG gộp PR, không ký, không ghi cờ/`gate_params`, không đụng sổ cái — mọi PR chờ bác sĩ gộp.
 
 ## 6. Khối bàn giao (bắt buộc ở cuối mỗi hội đồng cổng)
 
