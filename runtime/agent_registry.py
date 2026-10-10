@@ -102,8 +102,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # (thêm C8c) — bản cặp y hệt gốc; vẫn 64.
 # 10/10/2026 (bác sĩ quyết G6-T3 + G10-T3): dien-giai-ket-qua dạy G6_DIEN_GIAI_<mã>.md, so-cai-ghi-nho/
 # dieu-phoi-nghien-cuu dạy sổ trạng thái RIÊNG mỗi đề tài — bản cặp y hệt gốc; vẫn 64.
+# 10/10/2026 (tiêu chuẩn hoàn thiện agent/điều phối): kinh-te-y-te (G1_KINH_TE_Y_TE), hieu-dinh-song-ngu
+# (G7_A8_MANUSCRIPT_EN), dieu-phoi-g1/g7 §3, _HOI-DONG-CONG §1b mục 12 — bản cặp y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "e43c8a11f8437d1432aa9cf84b154bf8624793d298eeae6e2a2c1e9b106e9aaf"
+    "fc75fa5cadd8790a9e62cdfa72f0b665b50cb35fc92eb428ed75d67c5de4a9e3"
 )
 
 MINIMUM_AGENT_COUNT = 64

@@ -150,8 +150,10 @@ NHIEM_VU: Dict[str, List[Dict[str, Any]]] = {
         _nv("G1-T7", "Thiết kế định tính (COREQ/SRQR): hiện tượng trung tâm, cách tiếp cận, cách thu thập dữ liệu",
             "nghien-cuu-dinh-tinh", ("G1_A2_PROTOCOL_DESIGN_<mã>.md",), ("thiet-ke-nghien-cuu",),
             "thiết kế định tính (qualitative)"),
+        # 10/10/2026 (tiêu chuẩn hoàn thiện): đầu ra là kế hoạch markdown trường cố định (kiểm máy được) thay docx
+        # dựng từ JSON tự do; docx `gen_research_docx --artifact health-economics` vẫn xuất được để nộp.
         _nv("G1-T8", "Kế hoạch đánh giá kinh tế y tế (CEA/CUA/CBA/BIA — CHEERS 2022, ISPOR BIA GPP II)",
-            "kinh-te-y-te", ("G7c_HEALTH-ECONOMICS_<mã>.docx",), ("thiet-ke-nghien-cuu",),
+            "kinh-te-y-te", ("G1_KINH_TE_Y_TE_<mã>.md",), ("thiet-ke-nghien-cuu",),
             "đề tài có cấu phần kinh tế y tế"),
     ],
     "G2": [
@@ -208,7 +210,9 @@ NHIEM_VU: Dict[str, List[Dict[str, Any]]] = {
     "G7": [
         _nv("G7-T1", "Bản thảo theo chuẩn báo cáo của thiết kế", "viet-ban-thao",
             ("G7_A8_MANUSCRIPT_<mã>.md", "G7_checkpoint.json"), ("dien-giai-ket-qua", "kiem-chung-trich-dan")),
-        _nv("G7-T2", "Hiệu đính song ngữ cho tạp chí quốc tế", "hieu-dinh-song-ngu", ("G7_A8_MANUSCRIPT_<mã>.md",),
+        # 10/10/2026 (tiêu chuẩn hoàn thiện — nhiệm vụ phải có kiểm máy): đầu ra riêng bản tiếng Anh đã hiệu đính,
+        # đối chiếu bảo toàn số liệu/PMID/DOI với bản gốc `G7_A8_MANUSCRIPT_<mã>.md` của G7-T1.
+        _nv("G7-T2", "Hiệu đính song ngữ cho tạp chí quốc tế", "hieu-dinh-song-ngu", ("G7_A8_MANUSCRIPT_EN_<mã>.md",),
             ("viet-ban-thao",), "nộp tạp chí tiếng Anh"),
         _nv("G7-T3", "Kiểm chứng trích dẫn A12", "kiem-chung-trich-dan",
             ("A12_CITATION_VERIFICATION_<mã>.md", "A12_RETRACTION_RECEIPT.json"), ("thu-thu-tai-lieu",)),
@@ -1346,6 +1350,98 @@ def _kiem_so_trang_thai(out_dir: Path, study: str) -> List[str]:
     return ra
 
 
+
+# Kế hoạch đánh giá kinh tế y tế (G1-T8) — trường cố định «- **<Trường>:** <giá trị>» (10/10/2026). Tên trường là
+# HỢP ĐỒNG (tài liệu `kinh-te-y-te` chép đúng khuôn này; test đối chiếu).
+TEP_KINH_TE = "G1_KINH_TE_Y_TE_{study}.md"
+TRUONG_KINH_TE = ("Loại đánh giá", "Quan điểm phân tích", "Can thiệp và so sánh", "Khung thời gian", "Tỷ lệ chiết khấu",
+                  "Kết cục sức khoẻ và đơn vị", "Nguồn chi phí, năm giá, đơn vị tiền tệ",
+                  "Ngưỡng sẵn lòng chi trả (WTP)",
+                  "Phân tích độ nhạy", "Chuẩn báo cáo")
+_NGUON = re.compile(r"PMID[:\s]*\d{6,9}|\b10\.\d{4,9}/\S+|https?://\S+|chủ nhiệm ấn định", re.I)
+
+
+def _kiem_kinh_te(out_dir: Path, study: str) -> List[str]:
+    """G1-T8 — `G1_KINH_TE_Y_TE_<mã>.md`: đủ 10 trường đã điền (không «[CẦN»); loại ∈ CEA/CUA/CBA/BIA; chuẩn báo cáo
+    khớp loại (BIA ⇒ ISPOR BIA GPP II; CEA/CUA/CBA ⇒ CHEERS 2022); CEA/CUA ⇒ ngưỡng WTP có nguồn (PMID/DOI/URL hoặc
+    «chủ nhiệm ấn định»); nguồn chi phí có nguồn — KHÔNG bịa đơn giá/ngưỡng; tỷ lệ chiết khấu là % hoặc «N/A — lý do»;
+    không PII; có «Cần bác sĩ kiểm chứng». Chỉ CẤU TRÚC — đúng/sai phương pháp do người chấm chéo."""
+    p = Path(out_dir) / TEP_KINH_TE.format(study=study)
+    if not p.is_file():
+        return []
+    van = p.read_text(encoding="utf-8")
+    gia_tri: Dict[str, str] = {}
+    for t in TRUONG_KINH_TE:
+        m = re.search(rf"^-\s*\*\*{re.escape(t)}:\*\*\s*(.*)$", van, re.M)
+        gia_tri[t] = m.group(1).strip() if m else ""
+    ra = [f"thiếu/trống trường «{t}»" for t, v in gia_tri.items() if not v or "[CẦN" in v]
+    loai = set(re.findall(r"\b(CEA|CUA|CBA|BIA)\b", gia_tri["Loại đánh giá"]))
+    if gia_tri["Loại đánh giá"] and not loai:
+        ra.append("«Loại đánh giá» phải nêu CEA, CUA, CBA hoặc BIA")
+    chuan = gia_tri["Chuẩn báo cáo"]
+    if "BIA" in loai and "ISPOR" not in chuan:
+        ra.append("BIA ⇒ «Chuẩn báo cáo» phải là ISPOR BIA GPP II")
+    if loai & {"CEA", "CUA", "CBA"} and "CHEERS 2022" not in chuan:
+        ra.append("CEA/CUA/CBA ⇒ «Chuẩn báo cáo» phải là CHEERS 2022")
+    if loai & {"CEA", "CUA"} and gia_tri["Ngưỡng sẵn lòng chi trả (WTP)"] and not _NGUON.search(
+            gia_tri["Ngưỡng sẵn lòng chi trả (WTP)"]):
+        ra.append("ngưỡng WTP phải kèm nguồn (PMID/DOI/URL) hoặc «chủ nhiệm ấn định» — không tự đặt")
+    if gia_tri["Nguồn chi phí, năm giá, đơn vị tiền tệ"] and not _NGUON.search(
+            gia_tri["Nguồn chi phí, năm giá, đơn vị tiền tệ"]):
+        ra.append("nguồn chi phí phải kèm nguồn (PMID/DOI/URL) hoặc «chủ nhiệm ấn định» — không bịa đơn giá")
+    ck = gia_tri["Tỷ lệ chiết khấu"]
+    if ck and not (re.search(r"\d+(?:[.,]\d+)?\s*%", ck) or re.match(r"N/A\s*—\s*\S", ck)):
+        ra.append("«Tỷ lệ chiết khấu» ghi % (vd 3%/năm) hoặc «N/A — <lý do>»")
+    if "cần bác sĩ kiểm chứng" not in van.casefold():
+        ra.append("thiếu dòng «Cần bác sĩ kiểm chứng»")
+    _quet_pii("kế hoạch kinh tế y tế", van, ra)
+    return ra
+
+
+# Hiệu đính song ngữ (G7-T2): bản tiếng Anh `G7_A8_MANUSCRIPT_EN_<mã>.md` phải BẢO TOÀN TUYỆT ĐỐI số liệu và trích
+# dẫn của bản thảo gốc `G7_A8_MANUSCRIPT_<mã>.md` (10/10/2026).
+TEP_BAN_THAO_EN = "G7_A8_MANUSCRIPT_EN_{study}.md"
+_NGAY_THANG = re.compile(r"\b\d{1,2}/\d{1,2}/\d{4}\b|\b\d{1,2}/\d{4}\b")
+_SO_TOKEN = re.compile(r"\d+(?:[.,]\d+)*")
+_PMID = re.compile(r"PMID[:\s]*(\d{6,9})", re.I)
+_DOI = re.compile(r"\b(10\.\d{4,9}/[^\s)\]>,;]+)")
+_CHU_VIET = re.compile(r"[ăđơưạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹ]", re.I)
+
+
+def _kiem_hieu_dinh(out_dir: Path, study: str) -> List[str]:
+    """G7-T2 — bản tiếng Anh giữ ĐỦ mọi con số (so theo chuỗi chữ số, bỏ dấu phân cách — «0,85» = «0.85», «1.000» =
+    «1,000»; bỏ ngày dạng dd/mm/yyyy, mm/yyyy vì tiếng Anh viết chữ), mọi PMID, mọi DOI của bản gốc; ≤ 5% dòng còn
+    chữ tiếng Việt (chưa dịch). Thừa số ở bản tiếng Anh không tính lỗi. Chỉ CẤU TRÚC — văn phong do người chấm chéo."""
+    from collections import Counter  # noqa: PLC0415
+
+    dich = Path(out_dir) / TEP_BAN_THAO_EN.format(study=study)
+    if not dich.is_file():
+        return []
+    goc = Path(out_dir) / f"G7_A8_MANUSCRIPT_{study}.md"
+    if not goc.is_file():
+        return [f"thiếu bản gốc {goc.name} để đối chiếu số liệu và trích dẫn"]
+    vg, vd = goc.read_text(encoding="utf-8"), dich.read_text(encoding="utf-8")
+
+    def so(v: str) -> Counter:
+        return Counter(re.sub(r"[.,]", "", t) for t in _SO_TOKEN.findall(_NGAY_THANG.sub(" ", v)))
+
+    ra = []
+    mat = so(vg) - so(vd)
+    if mat:
+        ra.append(f"bản tiếng Anh mất {sum(mat.values())} con số của bản gốc (vd {', '.join(sorted(mat)[:6])}) — "
+                  "số liệu phải bảo toàn tuyệt đối")
+    for ten, bt in (("PMID", _PMID), ("DOI", _DOI)):
+        thieu = sorted(set(bt.findall(vg)) - set(bt.findall(vd)))
+        if thieu:
+            ra.append(f"bản tiếng Anh thiếu {ten}: {', '.join(thieu[:5])}")
+    dong = [d for d in vd.splitlines() if d.strip()]
+    viet = [i for i, d in enumerate(vd.splitlines(), 1) if d.strip() and _CHU_VIET.search(d)]
+    if dong and len(viet) > 0.05 * len(dong):
+        ra.append(f"{len(viet)}/{len(dong)} dòng còn chữ tiếng Việt (vd dòng {', '.join(map(str, viet[:5]))}) — "
+                  "chưa dịch xong")
+    return ra
+
+
 def _kiem_sap_rct(out_dir: Path, study: str) -> List[str]:
     """G4-T2 (RCT) — SAP §13 giữa kỳ/quy tắc dừng · §14 DMC · §15 tổn hại/ngừng/tuân thủ có mặt và không còn ô trống,
     theo ĐÚNG hàm `approve_gate._g4_sections_still_draft` mà bước ký G4 dùng (chỉ lấy §13–§15 — §1–§12 là của G4-T1)."""
@@ -1382,6 +1478,11 @@ KIEM_NHIEM_VU: Dict[str, Tuple[str, Any]] = {
               _kiem_dien_giai),
     "G10-T3": ("sổ trạng thái riêng của đề tài: đúng schema, mọi khối thuộc đề tài, ngày không lùi, đủ mốc cổng đã ký",
                _kiem_so_trang_thai),
+    "G1-T8": ("kế hoạch kinh tế y tế: đủ 10 trường, loại CEA/CUA/CBA/BIA, chuẩn báo cáo khớp loại, WTP/chi phí có "
+              "nguồn",
+              _kiem_kinh_te),
+    "G7-T2": ("bản tiếng Anh bảo toàn tuyệt đối số liệu + PMID + DOI của bản gốc; không còn đoạn chưa dịch",
+              _kiem_hieu_dinh),
 }
 
 

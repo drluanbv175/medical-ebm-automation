@@ -10,58 +10,28 @@ Cờ sinh động (f-string) ⇒ không phán công cụ đó.
 """
 from __future__ import annotations
 
-import ast
-import re
 import sys
-from functools import lru_cache
 from pathlib import Path
 
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
+for _p in (str(ROOT / "tools"), str(ROOT)):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
+
+import tieu_chuan_hoan_thien as TC  # noqa: E402
+
 AGENTS = ROOT / ".claude" / "agents"
-_LENH_RE = re.compile(r"python3?\s+(?:medical-ebm-automation/)?((?:tools|scripts)/[\w./-]+\.py)([^\n`]*)")
-_CO_RE = re.compile(r"(?<![\w-])(--[a-z][\w-]*)")
-
-
-@lru_cache(maxsize=None)
-def _co_cua(rel: str):
-    """(tập cờ, có cờ sinh động?) của công cụ, hoặc None nếu công cụ không có trong repo này."""
-    p = ROOT / rel
-    if not p.is_file():
-        return None
-    co, dong = set(), False
-    for n in ast.walk(ast.parse(p.read_text(encoding="utf-8"))):
-        if isinstance(n, ast.Call) and getattr(n.func, "attr", "") == "add_argument":
-            for a in n.args:
-                if isinstance(a, ast.Constant) and isinstance(a.value, str) and a.value.startswith("-"):
-                    co.add(a.value)
-                elif not isinstance(a, ast.Constant):
-                    dong = True
-    return frozenset(co), dong
-
-
-def _doan_ma(van_ban: str):
-    """Các đoạn mã (khối ``` và `…`) — bỏ dấu trích dẫn «> », nối dòng tiếp «\\»."""
-    van_ban = re.sub(r"(?m)^[ \t]*>[ \t]?", "", van_ban)
-    for khoi in re.findall(r"```[^\n]*\n(.*?)```", van_ban, re.S):
-        yield re.sub(r"\\\n\s*", " ", khoi)
-    khong_khoi = re.sub(r"```.*?```", "", van_ban, flags=re.S)
-    for doan in re.findall(r"`([^`\n]+(?:\n[^`\n]+){0,3})`", khong_khoi):
-        yield re.sub(r"\s*\n\s*", " ", doan)
+# 10/10/2026: logic quét lệnh dời về MỘT nguồn `tools/tieu_chuan_hoan_thien.py` (hạng mục A5 của tiêu chuẩn hoàn
+# thiện) — test này dùng lại đúng hàm đó, không giữ bản sao.
+_co_cua = TC.co_cua
 
 
 def _lech():
     ra = []
     for f in sorted(AGENTS.glob("*.md")):
-        for doan in _doan_ma(f.read_text(encoding="utf-8")):
-            for m in _LENH_RE.finditer(doan):
-                kq = _co_cua(m.group(1))
-                if kq is None or kq[1]:
-                    continue
-                for co in _CO_RE.findall(m.group(2)):
-                    if co not in kq[0]:
-                        ra.append(f"{f.name}: {m.group(1)} không có cờ {co}")
+        ra += [f"{f.name}: {x}" for x in TC.lenh_sai(f.read_text(encoding="utf-8"))]
     return sorted(set(ra))
 
 

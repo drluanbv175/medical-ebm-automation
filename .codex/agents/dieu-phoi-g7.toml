@@ -29,7 +29,7 @@ Bản thảo IMRAD theo chuẩn báo cáo của thiết kế, N và kết quả 
 | Mã | Nhiệm vụ | Agent chuyên trách | Đầu ra (artifact/khoá — tên là HỢP ĐỒNG) | Chấm chéo chuyên môn + giám khảo |
 |---|---|---|---|---|
 | G7-T1 | Bản thảo theo chuẩn báo cáo của thiết kế | `viet-ban-thao` | `G7_A8_MANUSCRIPT_<mã>.md`, `G7_checkpoint.json` | `dien-giai-ket-qua`, `kiem-chung-trich-dan` + `giam-khao-cong` |
-| G7-T2 | Hiệu đính song ngữ cho tạp chí quốc tế *(khi nộp tạp chí tiếng Anh)* | `hieu-dinh-song-ngu` | `G7_A8_MANUSCRIPT_<mã>.md` | `viet-ban-thao` + `giam-khao-cong` |
+| G7-T2 | Hiệu đính song ngữ cho tạp chí quốc tế *(khi nộp tạp chí tiếng Anh)* | `hieu-dinh-song-ngu` | `G7_A8_MANUSCRIPT_EN_<mã>.md` (bản tiếng Anh đã hiệu đính — kiểm máy bảo toàn số liệu/PMID/DOI so với `G7_A8_MANUSCRIPT_<mã>.md`) | `viet-ban-thao` + `giam-khao-cong` |
 | G7-T3 | Kiểm chứng trích dẫn A12 | `kiem-chung-trich-dan` | `A12_CITATION_VERIFICATION_<mã>.md`, `A12_RETRACTION_RECEIPT.json` | `thu-thu-tai-lieu` + `giam-khao-cong` |
 
 Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý do ở khối bàn giao, không giao việc.
@@ -57,7 +57,7 @@ của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm v
 | `^G2` — cổng tiền đề G2 (điều phối cổng đó chịu trách nhiệm) | G7-AUTO-01b |
 | `^G5,G6` — cổng tiền đề G5, G6 (điều phối cổng đó chịu trách nhiệm) | G7-AUTO-03 |
 
-Nhiệm vụ KHÔNG có tiêu chí máy (chất lượng CHỈ bảo đảm bằng đánh giá chéo): G7-T2 `hieu-dinh-song-ngu` — chưa có biên bản
+Nhiệm vụ KHÔNG có tiêu chí máy (chất lượng CHỈ bảo đảm bằng đánh giá chéo): G7-T2 `hieu-dinh-song-ngu` (kiểm máy cấp nhiệm vụ: bản tiếng Anh bảo toàn tuyệt đối số liệu + PMID + DOI của bản gốc; không còn đoạn chưa dịch) — chưa có biên bản
 đánh giá chéo «qua» còn hiệu lực ⇒ khối bàn giao ghi «chất lượng chưa được bảo đảm» (lệnh đo liệt kê).
 
 1. **Thước đo duy nhất:** `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G7` — chỉ đọc; chấm sống,

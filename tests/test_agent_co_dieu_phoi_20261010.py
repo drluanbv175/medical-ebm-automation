@@ -154,13 +154,17 @@ def test_g1t8_kinh_te_chi_ap_dung_khi_dieu_phoi_khai(tmp_path):
     assert nv["dieu_kien"] not in HD._DIEU_KIEN_THIET_KE and HD._ap_dung(nv, "rct") is None
     p, loi = HD.khai_ap_dung("G1", "G1-T8", True, "đề tài có phân tích chi phí–hiệu quả theo đề cương", out)
     assert loi == [] and HD._ap_dung(nv, "rct", HD.doc_ap_dung("G1", out)) is True
-    assert nv["dau_ra"] == ["G7c_HEALTH-ECONOMICS_<mã>.docx"]
+    # 10/10/2026 (tiêu chuẩn hoàn thiện): hợp đồng là kế hoạch markdown trường cố định (kiểm máy được) thay docx.
+    assert nv["dau_ra"] == ["G1_KINH_TE_Y_TE_<mã>.md"]
 
 
-def test_dau_ra_g1t8_khop_ten_tep_cong_cu_that():
+def test_g1t8_van_day_xuat_docx_dung_ten_artifact_cong_cu_that():
+    """Docx để nộp vẫn xuất bằng `gen_research_docx --artifact health-economics` — khoá artifact phải có thật."""
     import gen_research_docx as GRD  # noqa: PLC0415
-    ma = GRD.ARTIFACT_MAP["health-economics"][0]
-    assert f"{ma}_{'health-economics'.upper()}_<mã>.docx" == HD._nhiem_vu("G1", "G1-T8")["dau_ra"][0]
+    assert "health-economics" in GRD.ARTIFACT_MAP
+    dong = next(d for d in (ROOT / ".claude" / "agents" / "dieu-phoi-g1.md").read_text(encoding="utf-8").splitlines()
+                if d.startswith("| G1-T8 |"))
+    assert "G1_KINH_TE_Y_TE_<mã>.md" in dong and "--artifact health-economics" in dong
 
 
 # ── Kiểm máy G1-T6/G1-T7 ────────────────────────────────────────────────────────────────────────────────────────────
