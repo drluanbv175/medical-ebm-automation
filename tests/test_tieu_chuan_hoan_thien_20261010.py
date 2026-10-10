@@ -258,3 +258,69 @@ def test_hieu_dinh_con_tieng_viet_va_thieu_ban_goc(tmp_path):
     assert any("còn chữ tiếng Việt" in x for x in loi), loi
     (tmp_path / "exports" / STUDY / f"G7_A8_MANUSCRIPT_{STUDY}.md").unlink()
     assert any("thiếu bản gốc" in x for x in HD._kiem_hieu_dinh(tmp_path / "exports" / STUDY, STUDY))
+
+
+# ── A7 giao nhiệm vụ + tiêu chí kết quả — MỌI vai (10/10/2026, bác sĩ: «mỗi Agent và điều phối đã giao nhiệm vụ và
+#    tiêu chí kết quả phải đạt được») ────────────────────────────────────────────────────────────────────────────────
+def test_a7_moi_vai_co_nhiem_vu_va_tieu_chi():
+    kq = TC.do()
+    for ten, x in kq["agent"].items():
+        gv = x["giao_viec"]
+        assert x["hang_muc"]["A7"] == "✅", (ten, gv["ly_do"])
+        assert gv["nhiem_vu"] and gv["tieu_chi"] and gv["nguoi_kiem"] not in ("", "—"), ten
+    loai = {x["giao_viec"]["loai_vai"] for x in kq["agent"].values()}
+    assert {"điều phối cổng", "điều phối tổng", "nhạc trưởng lâm sàng", "vai hội đồng", "chốt kiểm đầu ra",
+            "nghiên cứu", "lâm sàng"} <= loai and "chưa giao" not in loai
+
+
+def test_a7_vai_hoi_dong_phai_noi_ro_bo_kiem(ban_sao):
+    agents, codex = ban_sao
+    _sua(agents / "trong-tai-tranh-bien.md", "hoi_dong_cong.py ghi", "hoi_dong_cong.py GHI-TAY")
+    kq = TC.do(agents, codex)
+    assert "hoi_dong_cong.py ghi" in kq["agent"]["trong-tai-tranh-bien"]["hang_muc"]["A7"]
+
+
+def test_a7_agent_khong_ai_giao_viec(ban_sao):
+    agents, codex = ban_sao
+    van = (agents / "kinh-te-y-te.md").read_text(encoding="utf-8").replace("name: kinh-te-y-te", "name: agent-moi-thu")
+    (agents / "agent-moi-thu.md").write_text(van, encoding="utf-8", newline="\n")
+    kq = TC.do(agents, codex)
+    gv = kq["agent"]["agent-moi-thu"]["giao_viec"]
+    assert gv["loai_vai"] == "chưa giao" and "chưa được giao" in kq["agent"]["agent-moi-thu"]["hang_muc"]["A7"]
+
+
+def test_a7_dieu_phoi_cong_phai_day_lenh_trach_nhiem(ban_sao):
+    agents, codex = ban_sao
+    p = agents / "dieu-phoi-g5.md"
+    moi = p.read_text(encoding="utf-8").replace("trach-nhiem --study <mã> --gate G5", "trach-nhiem --study <mã>")
+    p.write_text(moi, encoding="utf-8", newline="\n")
+    kq = TC.do(agents, codex)
+    assert "--gate G5" in kq["agent"]["dieu-phoi-g5"]["hang_muc"]["A7"]
+
+
+def test_a7_tham_dinh_dau_ra_du_r1_r7_q1_q7(ban_sao):
+    agents, codex = ban_sao
+    p = agents / "tham-dinh-dau-ra.md"
+    p.write_text(p.read_text(encoding="utf-8").replace("Q7", "Q-bảy"), encoding="utf-8", newline="\n")
+    kq = TC.do(agents, codex)
+    assert "Q7" in kq["agent"]["tham-dinh-dau-ra"]["hang_muc"]["A7"]
+
+
+def test_a7_nhiem_vu_thieu_tieu_chi_may(monkeypatch):
+    goc = TC.kiem_may_cua
+    monkeypatch.setattr(TC, "kiem_may_cua", lambda g, ma: [] if ma == "G1-T8" else goc(g, ma))
+    kq = TC.do()
+    assert "G1-T8 chưa có tiêu chí máy" in kq["agent"]["kinh-te-y-te"]["hang_muc"]["A7"]
+
+
+def test_a7_buoc_lam_sang_thieu_tu_ra(monkeypatch):
+    goc = TC.SG.vai_lam_sang
+
+    def gia(van):
+        v = goc(van)
+        v["sang-loc-co-do"] = {**v["sang-loc-co-do"], "tu_ra": []}
+        return v
+
+    monkeypatch.setattr(TC.SG, "vai_lam_sang", gia)
+    kq = TC.do()
+    assert "thiếu bước/tự-rà lâm sàng" in kq["agent"]["sang-loc-co-do"]["hang_muc"]["A7"]

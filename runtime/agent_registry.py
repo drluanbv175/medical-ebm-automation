@@ -107,8 +107,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 10/10/2026 (hội đồng G0, DG G0-T3/T4): tong-quan-y-van (G0_TONG_HOP_BANG_CHUNG), khoang-trong-nghien-cuu
 # (G0_KHOANG_TRONG), dieu-phoi-g0 (--dung-lai-a1) — hợp đồng đầu ra + khối trách nhiệm hiện kiểm máy cấp nhiệm vụ;
 # bản cặp y hệt gốc; vẫn 64.
+# 10/10/2026 (A7 giao nhiệm vụ + tiêu chí kết quả): giam-khao-cong, phan-bien-tranh-bien, trong-tai-tranh-bien nói rõ
+# đầu ra bị kiểm bằng `hoi_dong_cong.py ghi`; bản cặp y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "a9f66107e21050501267753e55084b2d394a4e8d53978b782a93cbb7c77077b8"
+    "13ff392a704e6638afc90560c7717b6b9688211ee7a79f91b66533fce732fe25"
 )
 
 MINIMUM_AGENT_COUNT = 64
