@@ -1784,6 +1784,223 @@ def in_trach_nhiem(kq: Dict[str, Any]) -> str:
     return "\n".join(dong)
 
 
+# ── Họp TIẾT KIỆM: hồ sơ do MÁY lập + ước tính chi phí trước khi triệu tập (10/10/2026) ──────────────────────────────
+# Bác sĩ: «Việc họp hãy bàn sau vì rất tốn token, hãy hoàn thiện theo cách thông minh nhất». Đo thật 07/10/2026 (họp thí
+# điểm G0 của C1a): ~380 nghìn token mỗi agent. Hai khoản tốn mà MÁY làm thay được, không đổi luật chấm:
+#  ① agent điều phối LẬP HỒ SƠ (chấm sống, liệt kê tệp, chọn người chấm) — việc tất định;
+#  ② CHẤM LẠI đầu ra đã có biên bản còn hiệu lực — biên bản gắn SHA-256 tài liệu, tài liệu chưa đổi thì chấm lại cho
+#     cùng kết quả (đầu ra «trả về sửa» mà chưa sửa cũng vậy).
+# `ho_so_cong` chỉ đưa vào hội đồng phần CẦN họp; `uoc_tinh` báo số agent + token để bác sĩ quyết TRƯỚC khi triệu tập.
+
+TOKEN_MOI_AGENT = 380_000  # đo thật 07/10/2026 — _HOI-DONG-CONG.md §5
+SCHEMA_HO_SO = "hoi_dong_cong/ho_so/v1"
+TINH_TRANG_NHIEM_VU = ("can_cham", "khong_ap_dung", "chua_xac_dinh", "thieu_dau_ra", "da_qua", "cho_sua", "bat_dong")
+KHUYEN_NGHI = ("khong_can_hop", "nen_cho_cong_truoc", "hop_duoc")
+# Một `giam-khao-cong` chấm tối đa chừng này đầu ra CÙNG cổng trong một lượt (§5 «gom MỘT giám khảo cho nhiều đầu ra
+# cùng cổng khi được») — workflow `args.gom_giam_khao` cùng mặc định; 1 = mỗi đầu ra một giám khảo như trước.
+GOM_GIAM_KHAO = 4
+
+
+def _ma_thiet_ke(out_dir: Path) -> Optional[str]:
+    try:
+        import skill_standards as SK  # noqa: PLC0415
+
+        return SK.dac_ta_thiet_ke(out_dir).get("design_code")
+    except Exception:  # noqa: BLE001 — không suy được thiết kế ⇒ điều kiện thiết kế = chưa xác định
+        return None
+
+
+def _tranh_bien_hieu_luc(gate: str, out_dir: Path) -> Dict[str, Dict[str, Any]]:
+    """Biên bản tranh biện HỢP LỆ, CÒN HIỆU LỰC (tài liệu chưa đổi), mới nhất của từng DP —
+    {dp: {id, ket_qua, nguon_bat_dong}}."""
+    moi: Dict[str, Tuple[Dict[str, Any], Dict[str, Any]]] = {}
+    for bb in doc_bien_ban(out_dir, gate):
+        if bb.get("_hong") or bb.get("loai") != "tranh_bien":
+            continue
+        kq = kiem_bien_ban(bb, out_dir)
+        if not kq["hop_le"] or kq["cu"]:
+            continue
+        dp = str(kq["tom_tat"].get("dp"))
+        truoc = moi.get(dp)
+        if truoc is None or _moc_thoi_gian(bb.get("thoi_diem")) >= _moc_thoi_gian(truoc[0].get("thoi_diem")):
+            moi[dp] = (bb, kq["tom_tat"])
+    return {dp: {"id": bb.get("id"), "ket_qua": tom.get("ket_qua"), "nguon_bat_dong": tom.get("nguon_bat_dong")}
+            for dp, (bb, tom) in moi.items()}
+
+
+def ho_so_cong(study: str, gate: str, out_dir: Path, dp: Optional[List[str]] = None,
+               tat_ca: bool = False, song_cache: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """HỒ SƠ CỔNG do máy lập (0 agent, chỉ đọc) — đầu vào `args.ho_so` của workflow `hoi-dong-cong.js`.
+
+    Mỗi nhiệm vụ được xếp đúng MỘT tình trạng (`TINH_TRANG_NHIEM_VU`); chỉ «can_cham» (áp dụng, đủ đầu ra, chưa có biên
+    bản còn hiệu lực hoặc biên bản đã cũ) được đem chấm. Đầu ra bị trả về sửa mà tài liệu chưa đổi KHÔNG chấm lại; người
+    chấm bất đồng mà chưa tranh biện ⇒ vào `bat_dong_treo` (tranh biện BD-…, không chấm lại). DP: `dp` nếu truyền, không
+    thì DP bắt buộc (cổng cứng) hoặc mọi DP (cổng mềm); DP đã có tranh biện còn hiệu lực thì không tranh biện lại.
+    `tat_ca=True` ⇒ bỏ qua mọi biên bản cũ (họp lại từ đầu, chi phí như chế độ cũ). Không ghi tệp nào.
+
+    Hai luật «đừng họp phí»: (1) cổng còn nhiệm vụ thiếu đầu ra/chưa xác định áp dụng ⇒ CHƯA tranh biện DP (kết luận
+    cổng phải dựa trên hồ sơ đủ); (2) cổng tiền đề (ô «^…» của PHAN_CONG; «*» = mọi cổng trước) chưa PASS sống ⇒
+    `khuyen_nghi = nen_cho_cong_truoc`: đầu ra cổng này còn đổi khi cổng trước chốt, biên bản sẽ CŨ và phải họp lại.
+    Chỉ là khuyến nghị — triệu tập vẫn do bác sĩ quyết. `song_cache` dùng chung giữa các cổng (uoc-tinh ALL)."""
+    out_dir = Path(out_dir)
+    ds_dp = DIEM_QUYET_DINH.get(gate, [])
+    if dp:
+        la = [m for m in dp if not any(d["ma"] == m for d in ds_dp)]
+        if la:
+            raise ValueError(f"DP không thuộc danh mục {gate}: {', '.join(la)}")
+    song = cham_song(study, gate, out_dir)
+    cache = song_cache if song_cache is not None else {}
+    cache[gate] = song.get("status")
+    ma_tk = _ma_thiet_ke(out_dir)
+    khai = doc_ap_dung(gate, out_dir)
+    danh_gia = {} if tat_ca else danh_gia_cheo_moi_nhat(gate, out_dir)
+    tranh = {} if tat_ca else _tranh_bien_hieu_luc(gate, out_dir)
+    bien_ban = {bb.get("id"): bb for bb in doc_bien_ban(out_dir, gate) if not bb.get("_hong")}
+    da_tranh_bd = {str(t["nguon_bat_dong"]) for t in tranh.values() if t.get("nguon_bat_dong")}
+    nhiem_vu: List[Dict[str, Any]] = []
+    bat_dong: List[Dict[str, Any]] = []
+    tai_lieu_cong: List[str] = []
+    for nv in NHIEM_VU.get(gate, []):
+        ap = _ap_dung(nv, ma_tk, khai)
+        tep = [d.replace("<mã>", study) for d in nv["dau_ra"]]
+        co = [t for t in tep if (out_dir / t).is_file()]
+        if ap is not False:
+            tai_lieu_cong += [t for t in co if t not in tai_lieu_cong]
+        dg = danh_gia.get(nv["ma"], {"trang_thai": "chua_danh_gia", "id": None})
+        if ap is False:
+            k = khai.get(nv["ma"]) if isinstance(khai.get(nv["ma"]), dict) else {}
+            tt, ly_do = "khong_ap_dung", f"không áp dụng ({k.get('ly_do') or nv.get('dieu_kien')})"
+        elif ap is None:
+            tt, ly_do = "chua_xac_dinh", (f"chưa xác định áp dụng (điều kiện «{nv.get('dieu_kien')}») — điều phối cổng "
+                                          "khai bằng `khai-ap-dung` trước khi họp")
+        elif len(co) < len(tep):
+            thieu = ", ".join(t for t in tep if t not in co)
+            tt, ly_do = "thieu_dau_ra", (f"thiếu đầu ra {thieu} — {nv['agent']} sinh đủ trước (chấm đầu ra dở chỉ ra "
+                                         "«trả về sửa»)")
+        elif dg["trang_thai"] == "qua":
+            tt, ly_do = "da_qua", f"đã qua đánh giá chéo, tài liệu chưa đổi (biên bản {dg['id']})"
+        elif dg["trang_thai"] == "tra_ve_sua":
+            tt, ly_do = "cho_sua", (f"bị trả về sửa, tài liệu CHƯA sửa (biên bản {dg['id']}) — chấm lại cho cùng kết "
+                                    f"quả; {nv['agent']} sửa trước")
+        elif dg["trang_thai"] == "bat_dong":
+            tt, ly_do = "bat_dong", f"người chấm bất đồng (biên bản {dg['id']}) — xử lý bằng tranh biện BD-{nv['ma']}"
+            if str(dg["id"]) not in da_tranh_bd:
+                bat_dong.append({"ma": f"BD-{nv['ma']}", "nguon": nv["ma"], "nguon_id": dg["id"],
+                                 "tai_lieu_xet": co, "cham": (bien_ban.get(dg["id"]) or {}).get("danh_gia") or []})
+            else:
+                ly_do += " (đã tranh biện, còn hiệu lực)"
+        else:  # chưa đánh giá, hoặc chỉ có biên bản CŨ (tài liệu đã đổi)
+            tt, ly_do = "can_cham", ("biên bản cũ — tài liệu đã đổi" if dg["trang_thai"] == "cu" else "chưa đánh giá")
+        nhiem_vu.append({"ma": nv["ma"], "agent": nv["agent"], "ap_dung": ap, "tai_lieu": co,
+                         "cham_chuyen_mon": next((c for c in nv["cham_chuyen_mon"] if c != nv["agent"]), None),
+                         "danh_gia_cheo": dg, "tinh_trang": tt, "can_cham": tt == "can_cham", "ly_do": ly_do})
+    chon = [d for d in ds_dp if d["ma"] in dp] if dp else ([d for d in ds_dp if d["bat_buoc"]] or list(ds_dp))
+    chua_du = [n["ma"] for n in nhiem_vu if n["tinh_trang"] in ("thieu_dau_ra", "chua_xac_dinh")]
+    dp_ra = []
+    for d in chon:
+        t = tranh.get(d["ma"])
+        if t:
+            ly_do = f"đã tranh biện, tài liệu chưa đổi (biên bản {t['id']}, kết quả {t['ket_qua']})"
+        elif chua_du:
+            ly_do = f"hồ sơ cổng chưa đủ ({', '.join(chua_du)}) — tranh biện khi mọi nhiệm vụ áp dụng có đủ đầu ra"
+        else:
+            ly_do = "chưa có tranh biện còn hiệu lực"
+        dp_ra.append({**d, "can_tranh_bien": t is None and not chua_du, "ly_do": ly_do,
+                      "bien_ban": t["id"] if t else None})
+    cho_bac_si = sorted(m for m, t in tranh.items() if t.get("ket_qua") == "chuyen_bac_si")
+    import cong_song as CS  # noqa: PLC0415
+
+    tien_de = set()
+    for s in PHAN_CONG.get(gate, {}).values():
+        if s.startswith("^"):
+            for g in (x.strip() for x in s[1:].split(",")):
+                tien_de |= set(CONG[:CONG.index(gate)]) if g == "*" else ({g} if g in CONG else set())
+    cong_truoc = []
+    for g in sorted(tien_de, key=lambda x: int(x[1:])):
+        if g not in cache:
+            cache[g] = CS.trang_thai_song(g, study, out_dir, repo_root=out_dir.parent.parent).get("status")
+        if CS.muc_cua_trang_thai(cache[g]) != "PASS":
+            cong_truoc.append({"gate": g, "trang_thai_song": cache[g]})
+    can_hop = any(n["can_cham"] for n in nhiem_vu) or any(d["can_tranh_bien"] for d in dp_ra) or bool(bat_dong)
+    return {"schema": SCHEMA_HO_SO, "study": study, "gate": gate, "dieu_phoi": dieu_phoi_cong(gate),
+            "trang_thai_song": song.get("status"), "thiet_ke": ma_tk, "tat_ca": bool(tat_ca),
+            "nhiem_vu": nhiem_vu, "dp": dp_ra, "bat_dong_treo": bat_dong, "tai_lieu_cong": tai_lieu_cong,
+            "cho_bac_si": cho_bac_si, "cong_truoc_chua_dat": cong_truoc, "can_hop": can_hop,
+            "khuyen_nghi": "khong_can_hop" if not can_hop else ("nen_cho_cong_truoc" if cong_truoc else "hop_duoc")}
+
+
+def uoc_tinh(ho_so: Dict[str, Any], max_vong: int = 1, max_agent: int = 16,
+             gom_giam_khao: int = GOM_GIAM_KHAO) -> Dict[str, Any]:
+    """Số agent + token của MỘT lần họp theo hồ sơ máy (chỉ tính, không mở agent).
+
+    Mỗi đầu ra chấm = 1 người chấm chuyên môn; giám khảo gom ≤ `gom_giam_khao` đầu ra một lượt. Mỗi tranh biện = phản
+    biện + trọng tài (vòng 2 thêm đề xuất + phản biện). DP cần thêm 1 agent điều phối soạn kết luận dự kiến + luận điểm
+    (máy không làm thay được); bất đồng treo cần 1 agent đề xuất. +1 agent ghi biên bản. «tối đa» giả định MỌI đầu ra
+    vừa chấm đều bất đồng (thêm tranh biện BD-…). «che_do_cu» = workflow trước 10/10/2026: agent lập hồ sơ + 2 agent cho
+    MỌI đầu ra áp dụng + mọi DP đã chọn, kể cả phần đã có biên bản còn hiệu lực."""
+    moi_tranh = 2 if max_vong < 2 else 4
+    gom = max(int(gom_giam_khao), 1)
+    so_cham = sum(1 for n in ho_so["nhiem_vu"] if n["can_cham"])
+    so_dp = sum(1 for d in ho_so["dp"] if d["can_tranh_bien"])
+    so_bd = len(ho_so["bat_dong_treo"])
+    viec = (1 if so_dp else 0) + so_cham + -(-so_cham // gom) + moi_tranh * so_dp + (1 + moi_tranh) * so_bd
+    toi_thieu = viec + (1 if viec else 0)
+    toi_da = toi_thieu + (1 + moi_tranh) * so_cham
+    co_dau_ra = sum(1 for n in ho_so["nhiem_vu"] if n["ap_dung"] is not False and n["tai_lieu"])
+    cu = 1 + 2 * co_dau_ra + moi_tranh * len(ho_so["dp"]) + 1
+    return {"gate": ho_so["gate"], "can_hop": ho_so["can_hop"], "khuyen_nghi": ho_so["khuyen_nghi"],
+            "cong_truoc_chua_dat": ho_so["cong_truoc_chua_dat"], "max_vong": max_vong, "gom_giam_khao": gom,
+            "so_dau_ra_cham": so_cham, "so_dp": so_dp, "so_bat_dong_treo": so_bd,
+            "agent_toi_thieu": toi_thieu, "agent_toi_da": toi_da,
+            "token_toi_thieu": toi_thieu * TOKEN_MOI_AGENT, "token_toi_da": toi_da * TOKEN_MOI_AGENT,
+            "agent_che_do_cu": cu, "token_che_do_cu": cu * TOKEN_MOI_AGENT,
+            "vuot_tran": toi_thieu > max_agent, "co_the_cham_tran": toi_da > max_agent, "max_agent": max_agent,
+            "bo_qua": [f"{n['ma']}: {n['ly_do']}" for n in ho_so["nhiem_vu"] if not n["can_cham"]]
+            + [f"{d['ma']}: {d['ly_do']}" for d in ho_so["dp"] if not d["can_tranh_bien"]],
+            "cho_bac_si": ho_so.get("cho_bac_si", [])}
+
+
+def _trieu(token: int) -> str:
+    return f"{token / 1_000_000:.1f}".replace(".", ",") + " triệu"
+
+
+def _khoang(a: int, b: int, don_vi: str = "") -> str:
+    return f"{a}{don_vi}" if a == b else f"{a}–{b}{don_vi}"
+
+
+def in_uoc_tinh(study: str, cac: List[Dict[str, Any]], chi_tiet: bool = False) -> str:
+    dong = [f"ƯỚC TÍNH HỌP HỘI ĐỒNG — {study} (chỉ đọc, 0 agent; ~{TOKEN_MOI_AGENT // 1000} nghìn token/agent theo số "
+            "đo 07/10/2026)"]
+    for u in cac:
+        if u["khuyen_nghi"] == "khong_can_hop":
+            dong.append(f"  {u['gate']:<4} không cần họp" + (f" — đang chờ bác sĩ quyết: {', '.join(u['cho_bac_si'])}"
+                                                            if u["cho_bac_si"] else ""))
+        else:
+            truoc = ", ".join(f"{c['gate']} ({c['trang_thai_song'] or 'không đo được'})"
+                              for c in u["cong_truoc_chua_dat"])
+            nhan = "⏸ NÊN CHỜ" if truoc else "▶ HỌP ĐƯỢC"
+            dong.append(f"  {u['gate']:<4} {nhan}: {u['so_dau_ra_cham']} đầu ra chấm · {u['so_dp']} DP · "
+                        f"{u['so_bat_dong_treo']} bất đồng treo → "
+                        f"{_khoang(u['agent_toi_thieu'], u['agent_toi_da'])} agent ≈ "
+                        f"{_khoang(_trieu(u['token_toi_thieu']), _trieu(u['token_toi_da']))} token "
+                        f"(cách cũ ≥ {u['agent_che_do_cu']} agent ≈ {_trieu(u['token_che_do_cu'])})"
+                        + (f" ⚠ vượt trần {u['max_agent']} agent" if u["vuot_tran"] else "")
+                        + (f"\n       cổng tiền đề chưa đạt: {truoc} — đầu ra cổng này còn đổi khi cổng trước chốt, "
+                           "biên bản sẽ CŨ" if truoc else ""))
+        if chi_tiet or u["khuyen_nghi"] == "hop_duoc":
+            dong += [f"       bỏ qua {b}" for b in u["bo_qua"]]
+    for nhan, kn in (("HỌP ĐƯỢC NGAY", "hop_duoc"), ("NÊN CHỜ CỔNG TRƯỚC", "nen_cho_cong_truoc")):
+        nhom = [u for u in cac if u["khuyen_nghi"] == kn]
+        if nhom:
+            a_min, a_max = sum(u["agent_toi_thieu"] for u in nhom), sum(u["agent_toi_da"] for u in nhom)
+            t_min, t_max = sum(u["token_toi_thieu"] for u in nhom), sum(u["token_toi_da"] for u in nhom)
+            dong.append(f"{nhan} ({', '.join(u['gate'] for u in nhom)}): {_khoang(a_min, a_max)} agent ≈ "
+                        f"{_khoang(_trieu(t_min), _trieu(t_max))} token")
+    dong.append("Triệu tập là quyết định của bác sĩ (CLAUDE.md §0.6). Khi họp: `ho-so --study <mã> --gate GN --json` → "
+                "workflow hoi-dong-cong với args.ho_so. Cần bác sĩ kiểm chứng.")
+    return "\n".join(dong)
+
+
 def _thu_muc_de_tai(study: str, repo_root: Path) -> Path:
     return repo_root / "exports" / study
 
@@ -1800,6 +2017,23 @@ def main(argv: Optional[List[str]] = None) -> int:
     a.add_argument("--nhiem-vu", required=True)
     a.add_argument("--ap-dung", choices=("co", "khong"), required=True)
     a.add_argument("--ly-do", required=True)
+    # 10/10/2026 — họp TIẾT KIỆM: hồ sơ do máy lập + ước tính chi phí (0 agent, chỉ đọc).
+    a = sub.add_parser("ho-so", help="hồ sơ cổng do MÁY lập — truyền vào workflow hoi-dong-cong qua args.ho_so")
+    a.add_argument("--study", required=True)
+    a.add_argument("--gate", choices=CONG, required=True)
+    a.add_argument("--dp", nargs="+", help="chỉ các DP này (mặc định: DP bắt buộc của cổng cứng / mọi DP cổng mềm)")
+    a.add_argument("--tat-ca", action="store_true", help="họp lại từ đầu, bỏ qua biên bản còn hiệu lực")
+    a.add_argument("--json", action="store_true")
+    a = sub.add_parser("uoc-tinh", help="ước tính số agent + token của lần họp TRƯỚC khi bác sĩ quyết triệu tập")
+    a.add_argument("--study", required=True)
+    a.add_argument("--gate", choices=CONG + ("ALL",), required=True)
+    a.add_argument("--max-vong", type=int, choices=(1, 2), default=1)
+    a.add_argument("--max-agent", type=int, default=16)
+    a.add_argument("--gom-giam-khao", type=int, default=GOM_GIAM_KHAO,
+                   help="số đầu ra một giám khảo chấm (1 = không gom)")
+    a.add_argument("--tat-ca", action="store_true", help="ước tính cho họp lại từ đầu")
+    a.add_argument("--chi-tiet", action="store_true", help="liệt kê phần bỏ qua của mọi cổng")
+    a.add_argument("--json", action="store_true")
     a = sub.add_parser("mau")
     a.add_argument("--loai", choices=("danh_gia_cheo", "tranh_bien"), required=True)
     a.add_argument("--gate", choices=CONG, required=True)
@@ -1855,6 +2089,33 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(f"{args.gate} {args.study}: {kq['status']} (nguồn {kq['nguon']}) — chỉ đọc, không ghi gì")
             for r in kq["chua_dat"]:
                 print(f"  {r['id']} {r['status']}: {r['evidence']}")
+        return 0
+    if args.lenh == "ho-so":
+        try:
+            kq = ho_so_cong(args.study, args.gate, out_dir, dp=args.dp, tat_ca=args.tat_ca)
+        except ValueError as exc:
+            print(f"❌ {exc}", file=sys.stderr)
+            return 2
+        if args.json:
+            print(json.dumps(kq, ensure_ascii=False, indent=2))
+            return 0
+        print(f"HỒ SƠ {args.gate} {args.study} (máy lập, 0 agent) — sống: {kq['trang_thai_song']} · "
+              f"{'CẦN HỌP' if kq['can_hop'] else 'KHÔNG CẦN HỌP'}")
+        for n in kq["nhiem_vu"]:
+            print(f"  {'▶' if n['can_cham'] else '·'} {n['ma']} {n['tinh_trang']}: {n['ly_do']}")
+        for d in kq["dp"]:
+            print(f"  {'▶' if d['can_tranh_bien'] else '·'} {d['ma']}: {d['ly_do']}")
+        for b in kq["bat_dong_treo"]:
+            print(f"  ▶ {b['ma']}: bất đồng chưa tranh biện (biên bản {b['nguon_id']})")
+        print("Cần bác sĩ kiểm chứng.")
+        return 0
+    if args.lenh == "uoc-tinh":
+        gs = list(CONG) if args.gate == "ALL" else [args.gate]
+        cache: Dict[str, Any] = {}
+        cac = [uoc_tinh(ho_so_cong(args.study, g, out_dir, tat_ca=args.tat_ca, song_cache=cache), args.max_vong,
+                        args.max_agent, args.gom_giam_khao) for g in gs]
+        print(json.dumps({"study": args.study, "token_moi_agent": TOKEN_MOI_AGENT, "cong": cac}, ensure_ascii=False,
+                         indent=2) if args.json else in_uoc_tinh(args.study, cac, args.chi_tiet))
         return 0
     if args.lenh == "khai-ap-dung":
         p, loi = khai_ap_dung(args.gate, args.nhiem_vu, args.ap_dung == "co", args.ly_do, out_dir)

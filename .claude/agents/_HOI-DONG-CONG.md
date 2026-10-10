@@ -184,9 +184,28 @@ Chế độ này GỬI tới dịch vụ Codex (OpenAI): doctrine trọng tài, 
 cứ CẤP ĐẦU thư mục đề tài — không tệp ẩn/khoá/`.env`, không dữ liệu hay bản gỡ băng ở thư mục con. Bác sĩ chọn chế độ khi
 triệu tập.
 
-Điều phối tổng/cổng LUÔN hỏi bác sĩ (kèm ước lượng) trước khi mở hội đồng `subagent`; mặc định gom MỘT giám khảo cho
-nhiều đầu ra cùng cổng khi được. Workflow Claude Code (`.claude/workflows/hoi-dong-cong.js`) chạy đúng 8 bước với trần
-vòng và trần số agent — chỉ chạy khi bác sĩ gọi.
+**Họp tiết kiệm — hồ sơ do máy lập (10/10/2026; bác sĩ: «việc họp rất tốn token, hãy hoàn thiện theo cách thông minh
+nhất»).** Ba khoản tốn mà máy làm thay được, KHÔNG đổi rubric, luật biên bản, vai hay mức độc lập:
+
+1. **Ước tính trước — 0 agent:** `python3 tools/hoi_dong_cong.py uoc-tinh --study <mã> --gate G<N>|ALL` → số agent +
+   token tối thiểu–tối đa của từng cổng (~380 nghìn/agent), so với cách cũ, kèm khuyến nghị `hop_duoc` ·
+   `nen_cho_cong_truoc` (cổng tiền đề trong `PHAN_CONG` chưa PASS sống: đầu ra cổng này còn đổi khi cổng trước chốt,
+   biên bản sẽ CŨ và phải họp lại) · `khong_can_hop`. Hỏi bác sĩ triệu tập thì báo đúng con số này.
+2. **Hồ sơ máy — 0 agent:** `python3 tools/hoi_dong_cong.py ho-so --study <mã> --gate G<N> --json` → truyền NGUYÊN VĂN
+   vào `args.ho_so` của `hoi-dong-cong.js` (nhiều cổng: `args.ho_so_theo_cong` của `dieu-phoi-tong-hoi-dong.js`, tự
+   dừng trước cổng `nen_cho_cong_truoc` trừ khi bác sĩ truyền `ca_khi_cong_truoc_chua_dat: true`). Chỉ phần CHƯA có
+   biên bản còn hiệu lực mới vào hội đồng: đầu ra đã qua, hoặc bị trả về sửa mà tài liệu chưa đổi, KHÔNG chấm lại
+   (biên bản gắn SHA-256 — chấm lại cho cùng kết quả); bất đồng chưa tranh biện ⇒ tranh biện `BD-…` trỏ id biên bản
+   thật; DP đã có tranh biện còn hiệu lực không tranh biện lại; cổng còn nhiệm vụ thiếu đầu ra hay chưa xác định áp
+   dụng thì CHƯA tranh biện DP (kết luận cổng phải dựa trên hồ sơ đủ — khai `khai-ap-dung` trước). Agent điều phối
+   chỉ còn soạn kết luận dự kiến + luận điểm cho DP cần tranh biện; không có DP thì không mở agent hồ sơ. `--tat-ca`
+   = họp lại từ đầu (chi phí như cách cũ).
+3. **Gom giám khảo:** một `giam-khao-cong` chấm ≤ 4 đầu ra cùng cổng trong một lượt (`args.gom_giam_khao`, mặc định
+   `hoi_dong_cong.GOM_GIAM_KHAO`; 1 = mỗi đầu ra một giám khảo) — mỗi đầu ra một bản chấm riêng đủ RQ1–RQ8; đầu ra
+   thiếu bản chấm của giám khảo thì không ghi biên bản (ghi vào kết quả, không cắt im lặng).
+
+Điều phối tổng/cổng LUÔN hỏi bác sĩ (kèm ước lượng của `uoc-tinh`) trước khi mở hội đồng `subagent`. Workflow Claude
+Code (`.claude/workflows/hoi-dong-cong.js`) chạy đúng 8 bước với trần vòng và trần số agent — chỉ chạy khi bác sĩ gọi.
 
 ## 6. Khối bàn giao (bắt buộc ở cuối mỗi hội đồng cổng)
 

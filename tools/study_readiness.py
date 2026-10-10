@@ -282,6 +282,8 @@ def report(study: str) -> int:
         print("\n🏛️ HỘI ĐỒNG CỔNG (đánh giá chéo + tranh biện giữa các agent — TƯ VẤN, không mở/chặn cổng)")
         if not co_hop:
             print("   Chưa họp cổng nào — triệu tập theo _HOI-DONG-CONG.md §5 (hỏi bác sĩ trước: chi phí).")
+        # 10/10/2026: chi phí đo TRƯỚC bằng máy (0 agent) — chỉ đề xuất cổng «hop_duoc».
+        print(f"   Ước tính chi phí họp: python3 tools/hoi_dong_cong.py uoc-tinh --study {study} --gate ALL")
         for g, t_hd in co_hop.items():
             print(f"   {g}: {t_hd['trang_thai']}" + (f" — {'; '.join(t_hd['ly_do'][:2])}" if t_hd["ly_do"] else ""))
             if t_hd["trang_thai"] in HD.TRANG_THAI_CAN_XU_LY:
