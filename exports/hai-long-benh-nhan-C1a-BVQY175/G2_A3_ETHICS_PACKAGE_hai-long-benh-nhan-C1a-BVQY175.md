@@ -291,8 +291,8 @@ Ký tên: _______________ Ngày: ___/___/2026
 ---
 
 STUDY TITLE: Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
-Institution: [TO BE COMPLETED]
-Principal Investigator: [TO BE COMPLETED]
+Institution: Outpatient Examination Department C1a, On-Demand Examination and Treatment Center C1, Military Hospital 175 (Ho Chi Minh City)
+Principal Investigator: Nguyễn Hà Luân
 
 1. PURPOSE
  You are invited to participate in a study that aims to:
@@ -300,6 +300,10 @@ Principal Investigator: [TO BE COMPLETED]
  Estimated participants: [TO BE COMPLETED, from G3]
  Location: [TO BE COMPLETED]
  PARTICIPATION IS ENTIRELY VOLUNTARY.
+
+1b. STUDY INVESTIGATOR
+ The study is led by Nguyễn Hà Luân, MD, Specialist Level I (BS.CKI), Outpatient Examination Department
+ C1a, Military Hospital 175.
 
 2. PROCEDURES
  ☐ Step 1: [TO BE COMPLETED]
@@ -313,6 +317,14 @@ Principal Investigator: [TO BE COMPLETED]
 4. POTENTIAL BENEFITS
  [TO BE COMPLETED, include both direct and community benefits]
 
+4b. FUNDING AND CONFLICTS OF INTEREST
+ This study has no external funding (self-funded; costs are borne by the principal investigator).
+ The research team has no conflicts of interest related to the study topic (consistent with the COI
+ declaration in Document 8).
+
+4c. PAYMENT OR SUPPORT FOR PARTICIPATION
+ ☑ No payment or support other than routine medical care.
+
 5. CONFIDENTIALITY
  Data encrypted per Vietnamese Personal Data Protection Law
  No. 91/2025/QH15. Results published in aggregate form only.
@@ -320,6 +332,11 @@ Principal Investigator: [TO BE COMPLETED]
 6. VOLUNTARY PARTICIPATION AND WITHDRAWAL
  Participation is voluntary. You may withdraw at any time
  without affecting your medical care.
+
+6c. COMPENSATION FOR INJURY
+ This is a minimal-risk observational study; it involves no procedures or interventions beyond
+ routine clinical practice. If harm directly related to study participation occurs, Military Hospital 175
+ will manage it under its routine clinical care procedures; the study has no separate insurance.
 
 7. CONTACTS
  Investigator: [TO BE COMPLETED] | Email: [TO BE COMPLETED]
