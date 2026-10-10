@@ -140,6 +140,19 @@ NHIEM_VU: Dict[str, List[Dict[str, Any]]] = {
             ("bien-so-nghien-cuu",), "khi đề tài phát triển, sửa đổi hoặc dịch–thích nghi bộ câu hỏi/thang đo"),
         _nv("G1-T5", "An toàn người tham gia trong thiết kế can thiệp", "an-toan-nghien-cuu",
             ("G1_A2_PROTOCOL_DESIGN_<mã>.md",), ("thiet-ke-nghien-cuu",), "thiết kế can thiệp (RCT)"),
+        # 10/10/2026 — bác sĩ giao «mỗi agent phải có nhiệm vụ rõ ràng, có sự kiểm soát của điều phối»: đo 10/10 có 4
+        # agent nghiên cứu KHÔNG thuộc nhiệm vụ cổng nào (mo-hinh-tien-luong, nghien-cuu-dinh-tinh, kinh-te-y-te,
+        # trich-xuat-y-van) ⇒ không điều phối nào giao việc hay kiểm. Gắn vào nhiệm vụ có điều kiện, đầu ra là sản phẩm
+        # của công cụ thật (dòng đề cương lõi theo thiết kế; artifact gen_research_docx; bảng script gộp G6 đọc).
+        _nv("G1-T6", "Đặc tả mô hình dự báo (TRIPOD+AI): yếu tố dự báo ứng viên, khung thời gian dự báo",
+            "mo-hinh-tien-luong", ("G1_A2_PROTOCOL_DESIGN_<mã>.md",), ("thiet-ke-nghien-cuu",),
+            "thiết kế mô hình dự báo (prediction)"),
+        _nv("G1-T7", "Thiết kế định tính (COREQ/SRQR): hiện tượng trung tâm, cách tiếp cận, cách thu thập dữ liệu",
+            "nghien-cuu-dinh-tinh", ("G1_A2_PROTOCOL_DESIGN_<mã>.md",), ("thiet-ke-nghien-cuu",),
+            "thiết kế định tính (qualitative)"),
+        _nv("G1-T8", "Kế hoạch đánh giá kinh tế y tế (CEA/CUA/CBA/BIA — CHEERS 2022, ISPOR BIA GPP II)",
+            "kinh-te-y-te", ("G7c_HEALTH-ECONOMICS_<mã>.docx",), ("thiet-ke-nghien-cuu",),
+            "đề tài có cấu phần kinh tế y tế"),
     ],
     "G2": [
         _nv("G2-T1", "Hồ sơ Hội đồng Đạo đức, phiếu đồng thuận, đăng ký, DMP bản cho Hội đồng", "dao-duc-dang-ky",
@@ -170,14 +183,25 @@ NHIEM_VU: Dict[str, List[Dict[str, Any]]] = {
         _nv("G5-T1", "Nạp, làm sạch, đóng truy vấn, khử định danh, khoá dữ liệu, gói tái lặp", "quan-ly-du-lieu",
             ("G5_A6_DATA_MGMT_<mã>.md", "DATA_LOCK_manifest.json", "G5_REDCap_dictionary_<mã>.csv",
              "G5_checkpoint.json"), ("phan-tich-thong-ke", "dao-duc-dang-ky")),
+        # 10/10/2026: tổng quan hệ thống — «thu thập dữ liệu» là trích xuất CẤP NGHIÊN CỨU; tệp là hợp đồng mà script
+        # gộp G6 (`run_g6_auto._r03_srma_template`) đọc: file.path(DATA_PROC, "study_level_extraction.csv").
+        _nv("G5-T2", "Trích xuất dữ liệu cấp nghiên cứu cho tổng quan hệ thống (bảng cho phân tích gộp)",
+            "trich-xuat-y-van", ("06_phan_tich_R/study_level_extraction.csv",), ("meta-phan-tich",),
+            "tổng quan hệ thống có gộp định lượng"),
     ],
     "G6": [
         _nv("G6-T1", "Phân tích theo SAP đã khoá trên dữ liệu đã khoá", "phan-tich-thong-ke",
             ("G6_A7_ANALYSIS_SCRIPTS_<mã>.md", "G6_checkpoint.json"), ("thiet-ke-nghien-cuu", "dien-giai-ket-qua")),
         _nv("G6-T2", "Phân tích gộp (tổng quan hệ thống)", "meta-phan-tich", ("G6_A7_ANALYSIS_SCRIPTS_<mã>.md",),
             ("phan-tich-thong-ke",), "tổng quan hệ thống có gộp định lượng"),
+        # 10/10/2026: `huong-dan-lam-sang` chấm chéo phần ý nghĩa lâm sàng/đối chiếu hướng dẫn hiện hành (trước đó agent
+        # này không có vai nào ở hội đồng cổng).
         _nv("G6-T3", "Diễn giải kết quả (G6.5): ý nghĩa lâm sàng vs thống kê, đối chiếu y văn", "dien-giai-ket-qua",
-            ("G6_A7_ANALYSIS_SCRIPTS_<mã>.md",), ("phan-tich-thong-ke", "binh-duyet")),
+            ("G6_A7_ANALYSIS_SCRIPTS_<mã>.md",), ("phan-tich-thong-ke", "binh-duyet", "huong-dan-lam-sang")),
+        _nv("G6-T4", "Phát triển và kiểm định mô hình dự báo (TRIPOD+AI)", "mo-hinh-tien-luong",
+            ("G6_A7_ANALYSIS_SCRIPTS_<mã>.md",), ("phan-tich-thong-ke",), "thiết kế mô hình dự báo (prediction)"),
+        _nv("G6-T5", "Phân tích định tính: mã hoá chủ đề, bão hoà dữ liệu (COREQ/SRQR)", "nghien-cuu-dinh-tinh",
+            ("G6_A7_ANALYSIS_SCRIPTS_<mã>.md",), ("dien-giai-ket-qua",), "thiết kế định tính (qualitative)"),
     ],
     "G7": [
         _nv("G7-T1", "Bản thảo theo chuẩn báo cáo của thiết kế", "viet-ban-thao",
@@ -309,12 +333,13 @@ PHAN_CONG: Dict[str, Dict[str, str]] = {
         "G5-AUTO-08": "G5-T1", "G5-AUTO-09": "G5-T1", "G5-AUTO-10": "G5-T1",
         "G5-HUMAN-01": "DATA_MANAGER@G5-T1",
     },
-    # 10/10/2026: G6-AUTO-09 (mô hình phân tích chính ↔ SAP §4) — tổng quan hệ thống có gộp ⇒ script gộp
-    # (metabin/metagen/rma) là đầu ra của G6-T2 `meta-phan-tich`; thiết kế khác ⇒ G6-T1 `phan-tich-thong-ke`.
+    # 10/10/2026: G6-AUTO-09 (mô hình phân tích chính ↔ SAP §4) theo thiết kế — tổng quan hệ thống có gộp ⇒ G6-T2
+    # `meta-phan-tich`; mô hình dự báo ⇒ G6-T4 `mo-hinh-tien-luong`; định tính ⇒ G6-T5 `nghien-cuu-dinh-tinh`; còn lại
+    # ⇒ G6-T1 `phan-tich-thong-ke`.
     "G6": {
         "G6-AUTO-00": "G6-T1", "G6-AUTO-01": "^G4", "G6-AUTO-02": "G6-T1", "G6-AUTO-03": "G6-T1",
         "G6-AUTO-04": "G6-T1", "G6-AUTO-05": "G6-T1", "G6-AUTO-06": "G6-T1", "G6-AUTO-07": "G6-T1",
-        "G6-AUTO-08": "G6-T1", "G6-AUTO-09": "G6-T2|G6-T1", "G6-AUTO-10": "G6-T1",
+        "G6-AUTO-08": "G6-T1", "G6-AUTO-09": "G6-T2|G6-T4|G6-T5|G6-T1", "G6-AUTO-10": "G6-T1",
         "G6-HUMAN-01": "STATISTICIAN@G6-T1",
     },
     "G7": {
@@ -351,7 +376,9 @@ PHAN_CONG: Dict[str, Dict[str, str]] = {
 }
 # Nhiệm vụ có điều kiện mà ĐIỀU KIỆN suy được từ mã thiết kế đã chốt (skill_standards.dac_ta_thiet_ke); điều kiện
 # khác (thang đo, tạp chí tiếng Anh) ⇒ điều phối cổng tự khai áp dụng hay không kèm lý do.
-_DIEU_KIEN_THIET_KE = {"thiết kế can thiệp (RCT)": ("rct",), "tổng quan hệ thống có gộp định lượng": ("sr_ma",)}
+_DIEU_KIEN_THIET_KE = {"thiết kế can thiệp (RCT)": ("rct",), "tổng quan hệ thống có gộp định lượng": ("sr_ma",),
+                       "thiết kế mô hình dự báo (prediction)": ("prediction",),
+                       "thiết kế định tính (qualitative)": ("qualitative",)}
 KET_LUAN_TRACH_NHIEM = ("DAT_TIEU_CHI", "AGENT_XONG_CHO_NGUOI", "AGENT_CON_VIEC", "CHO_CONG_TRUOC",
                         "CHUA_PHAN_CONG", "KHONG_DO_DUOC")
 
@@ -1136,20 +1163,19 @@ def _kiem_pha_cong_cu(out_dir: Path, study: str) -> List[str]:
     return ra
 
 
-# Dòng an toàn người tham gia của đề cương lõi G1 (PHẦN 0 của A2) — nhãn chép ĐÚNG khuôn
+# Dòng của đề cương lõi G1 (PHẦN 0 của A2) mà một nhiệm vụ chuyên biệt phải soạn — nhãn chép ĐÚNG khuôn
 # `g1_quality_gate.build_protocol_core` (test đối chiếu với khuôn sinh thật).
 _DONG_AN_TOAN_G1 = ("- Cân bằng lợi ích, nguy cơ và tính hợp lý khoa học:",
                     "- Tiêu chí dừng/chuyển/điều trị cứu hộ nếu áp dụng:")
+_DONG_DU_BAO_G1 = ("- Yếu tố dự báo ứng viên:", "- Khung thời gian dự báo (prediction horizon):")
+_DONG_DINH_TINH_G1 = ("- Hiện tượng trung tâm:", "- Cách tiếp cận định tính:", "- Phương pháp thu thập dữ liệu:")
 
 
-def _kiem_an_toan_thiet_ke(out_dir: Path, study: str) -> List[str]:
-    """G1-T5 (RCT) — hai dòng an toàn người tham gia của đề cương lõi (cân bằng lợi ích–nguy cơ; tiêu chí dừng/chuyển/
-    điều trị cứu hộ) có mặt và đã điền, đếm bằng ĐÚNG `g1_quality_gate.o_trong_pham_vi_g1` mà G1-AUTO-07 dùng
-    (10/10/2026).
-
-    G1-AUTO-07 vẫn của G1-T1 (`thiet-ke-nghien-cuu` tích hợp đề cương); kiểm này chỉ ra phần NỘI DUNG an toàn mà
-    `an-toan-nghien-cuu` phải soạn. «N/A — <lý do>» hợp lệ như ở bộ chấm. AE/SAE, DMC và quy tắc dừng chi tiết hoãn có
-    chủ ý cho G2 (G2-T2) và G4 (G4-T2) — không đòi ở đây."""
+def _kiem_dong_de_cuong_g1(out_dir: Path, study: str, nhan: Tuple[str, ...]) -> List[str]:
+    """Các dòng `nhan` của đề cương lõi (PHẦN 0 của A2) có mặt và đã điền, đếm bằng ĐÚNG
+    `g1_quality_gate.o_trong_pham_vi_g1` mà G1-AUTO-07 dùng (10/10/2026). G1-AUTO-07 vẫn của G1-T1
+    (`thiet-ke-nghien-cuu` tích hợp đề cương); kiểm này chỉ ra phần NỘI DUNG mà agent chuyên trách của nhiệm vụ
+    phải soạn. «N/A — <lý do>» hợp lệ như ở bộ chấm. Thiếu A2 ⇒ [] (bảng trách nhiệm đã báo «thiếu đầu ra»)."""
     a2 = Path(out_dir) / f"G1_A2_PROTOCOL_DESIGN_{study}.md"
     if not a2.is_file():
         return []
@@ -1163,9 +1189,76 @@ def _kiem_an_toan_thiet_ke(out_dir: Path, study: str) -> List[str]:
     bat_dau = van.find("PHẦN 0 — ĐỀ CƯƠNG LÕI")
     ket_thuc = van.find("\n---", bat_dau) if bat_dau >= 0 else -1
     vung = van[bat_dau: ket_thuc if ket_thuc > 0 else len(van)] if bat_dau >= 0 else ""
-    ra = [f"đề cương lõi thiếu dòng «{n[2:-1]}»" for n in _DONG_AN_TOAN_G1 if n not in vung]
-    ra += [f"đề cương lõi còn trống: {d}" for d in trong if d.startswith(_DONG_AN_TOAN_G1)]
+    ra = [f"đề cương lõi thiếu dòng «{n[2:-1]}»" for n in nhan if n not in vung]
+    ra += [f"đề cương lõi còn trống: {d}" for d in trong if d.startswith(nhan)]
     return ra
+
+
+def _kiem_an_toan_thiet_ke(out_dir: Path, study: str) -> List[str]:
+    """G1-T5 (RCT) — hai dòng an toàn người tham gia (cân bằng lợi ích–nguy cơ; tiêu chí dừng/chuyển/điều trị cứu hộ).
+    AE/SAE, DMC và quy tắc dừng chi tiết hoãn có chủ ý cho G2 (G2-T2) và G4 (G4-T2) — không đòi ở đây."""
+    return _kiem_dong_de_cuong_g1(out_dir, study, _DONG_AN_TOAN_G1)
+
+
+def _kiem_dac_ta_du_bao(out_dir: Path, study: str) -> List[str]:
+    """G1-T6 (prediction) — yếu tố dự báo ứng viên + khung thời gian dự báo (TRIPOD+AI) của đề cương lõi."""
+    return _kiem_dong_de_cuong_g1(out_dir, study, _DONG_DU_BAO_G1)
+
+
+def _kiem_thiet_ke_dinh_tinh(out_dir: Path, study: str) -> List[str]:
+    """G1-T7 (qualitative) — hiện tượng trung tâm, cách tiếp cận định tính, phương pháp thu thập dữ liệu."""
+    return _kiem_dong_de_cuong_g1(out_dir, study, _DONG_DINH_TINH_G1)
+
+
+# Bảng trích xuất cấp nghiên cứu mà script gộp G6 đọc — cột theo ĐÚNG chú thích của `run_g6_auto._r03_srma_template`.
+TEP_TRICH_XUAT_SR = "06_phan_tich_R/study_level_extraction.csv"
+_COT_TX_LIEN_TUC = ("TE", "seTE")
+_COT_TX_NHI_PHAN = ("event.e", "n.e", "event.c", "n.c")
+
+
+def _kiem_bang_trich_xuat(out_dir: Path, study: str) -> List[str]:
+    """G5-T2 (SR/MA) — `study_level_extraction.csv`: cột `study`, `year` + MỘT bộ hiệu ứng ((TE, seTE) hoặc bảng 2x2
+    event.e/n.e/event.c/n.c); ≥ 2 nghiên cứu; nhãn nghiên cứu không trống, không trùng; số đọc được, seTE > 0,
+    0 ≤ biến cố ≤ cỡ nhóm, cỡ nhóm > 0 (10/10/2026). Chỉ CẤU TRÚC — đúng số liệu so với bài gốc là việc của người chấm
+    chéo (`meta-phan-tich`) và `kiem-chung-trich-dan`."""
+    import csv  # noqa: PLC0415
+
+    p = Path(out_dir) / TEP_TRICH_XUAT_SR
+    if not p.is_file():
+        return []
+    try:
+        with p.open(encoding="utf-8-sig", newline="") as f:
+            r = csv.DictReader(f)
+            cot = [c.strip() for c in (r.fieldnames or [])]
+            dong = [{(k or "").strip(): (v or "").strip() for k, v in d.items()} for d in r]
+    except (OSError, UnicodeDecodeError, csv.Error) as exc:
+        return [f"không đọc được bảng trích xuất: {type(exc).__name__}"]
+    ra: List[str] = [f"thiếu cột «{c}»" for c in ("study", "year") if c not in cot]
+    bo = [b for b in (_COT_TX_LIEN_TUC, _COT_TX_NHI_PHAN) if all(c in cot for c in b)]
+    if not bo:
+        ra.append("thiếu bộ hiệu ứng: cần (TE, seTE) hoặc (event.e, n.e, event.c, n.c)")
+    if len(dong) < 2:
+        ra.append(f"chỉ có {len(dong)} nghiên cứu — phân tích gộp cần ≥ 2")
+    nhan = [d.get("study", "") for d in dong]
+    if any(not n for n in nhan):
+        ra.append("có dòng trống nhãn nghiên cứu (cột study)")
+    trung = sorted({n for n in nhan if n and nhan.count(n) > 1})
+    if trung:
+        ra.append(f"nhãn nghiên cứu trùng: {', '.join(trung[:5])}")
+    for i, d in enumerate(dong, 2):
+        for b in bo[:1]:
+            try:
+                so = {c: float(d[c]) for c in b}
+            except (TypeError, ValueError):
+                ra.append(f"dòng {i}: giá trị không phải số ở {', '.join(b)}")
+                continue
+            if b == _COT_TX_LIEN_TUC and not so["seTE"] > 0:
+                ra.append(f"dòng {i}: seTE phải > 0")
+            if b == _COT_TX_NHI_PHAN:
+                for e, n in (("event.e", "n.e"), ("event.c", "n.c")):
+                    if not (so[n] > 0 and 0 <= so[e] <= so[n]):
+                        ra.append(f"dòng {i}: cần 0 ≤ {e} ≤ {n} và {n} > 0")
+    return ra[:12]
 
 
 def _kiem_sap_rct(out_dir: Path, study: str) -> List[str]:
@@ -1191,9 +1284,15 @@ KIEM_NHIEM_VU: Dict[str, Tuple[str, Any]] = {
               _kiem_pha_cong_cu),
     "G1-T5": ("đề cương lõi RCT: dòng cân bằng lợi ích–nguy cơ + tiêu chí dừng/chuyển/cứu hộ có mặt và đã điền",
               _kiem_an_toan_thiet_ke),
+    "G1-T6": ("đề cương lõi: dòng yếu tố dự báo ứng viên + khung thời gian dự báo có mặt và đã điền",
+              _kiem_dac_ta_du_bao),
+    "G1-T7": ("đề cương lõi: dòng hiện tượng trung tâm + cách tiếp cận + phương pháp thu thập có mặt và đã điền",
+              _kiem_thiet_ke_dinh_tinh),
     "G3-T2": ("bộ biến G5 nạp được + không biến định danh trực tiếp", _kiem_bo_bien_so),
     "G3-T3": ("luật kiểm tra CRF: lựa chọn · công thức calc · khoảng hợp lệ · trường bắt buộc", _kiem_crf),
     "G4-T2": ("SAP RCT §13 giữa kỳ/dừng · §14 DMC · §15 tổn hại có mặt và đã điền", _kiem_sap_rct),
+    "G5-T2": ("bảng trích xuất SR/MA: cột study/year + (TE, seTE) hoặc 2x2; ≥ 2 nghiên cứu; số hợp lệ",
+              _kiem_bang_trich_xuat),
 }
 
 

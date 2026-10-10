@@ -44,6 +44,14 @@ DAU_TIEN_DE = ("<!-- TIEN-DE-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach
                "<!-- TIEN-DE-CONG:KET-THUC -->")
 DAU_AGENT = ("<!-- TRACH-NHIEM-AGENT:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->",
              "<!-- TRACH-NHIEM-AGENT:KET-THUC -->")
+# 10/10/2026 — bác sĩ giao «mỗi agent phải có nhiệm vụ rõ ràng, có sự kiểm soát của điều phối và từng điều phối»:
+# khối «Nhiệm vụ & kiểm soát trong ca lâm sàng» của MỖI agent mà nhạc trưởng `dieu-phoi-lam-sang` giao việc — SINH từ
+# hai bảng của chính nhạc trưởng (bảng bước tự chạy + bảng tự-rà hoàn chỉnh), không chép tay.
+DAU_LAM_SANG = ("<!-- DIEU-PHOI-LAM-SANG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py từ bảng của "
+                "dieu-phoi-lam-sang.md — KHÔNG sửa tay) -->", "<!-- DIEU-PHOI-LAM-SANG:KET-THUC -->")
+NHAC_TRUONG_LS = "dieu-phoi-lam-sang"
+TIEU_DE_BUOC_LS = "## ⚙️ CHẾ ĐỘ TỰ ĐỘNG"
+TIEU_DE_TU_RA_LS = "## 🔁 TỰ-RÀ HOÀN CHỈNH"
 _YEU_CAU = ("«Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối\n"
             "của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó»")
 
@@ -63,10 +71,13 @@ def _mo_ta_spec(gate: str, spec: str) -> str:
         vai, _, nv = spec.partition("@")
         return f"`{spec}` — NGƯỜI {vai} quyết/ký; agent chuẩn bị hồ sơ + lệnh: `{_agent_cua(gate, nv)}`"
     if "|" in spec:
-        a, b = spec.split("|")[0], spec.split("|")[-1]
-        dk = (HD._nhiem_vu(gate, a) or {}).get("dieu_kien") or "khi áp dụng"
+        # Ô nhiều lựa chọn (10/10/2026: G6-AUTO-09 có 4) — liệt kê MỌI lựa chọn có điều kiện theo thứ tự, lựa chọn
+        # cuối là mặc định; bản cũ chỉ đọc lựa chọn đầu + cuối nên lựa chọn giữa biến mất khỏi tài liệu.
+        lua = spec.split("|")
+        dau = "; ".join(f"`{_agent_cua(gate, m)}` ({(HD._nhiem_vu(gate, m) or {}).get('dieu_kien') or 'khi áp dụng'})"
+                        for m in lua[:-1])
         spec_md = spec.replace("|", "\\|")
-        return f"`{spec_md}` — agent `{_agent_cua(gate, a)}` ({dk}), ngược lại `{_agent_cua(gate, b)}`"
+        return f"`{spec_md}` — agent {dau}, ngược lại `{_agent_cua(gate, lua[-1])}`"
     return f"`{spec}` — agent `{_agent_cua(gate, spec)}`"
 
 
@@ -207,6 +218,65 @@ def khoi_agent(agent: str) -> str:
     return "\n".join(dong)
 
 
+def _hang_bang(van_ban: str, tieu_de: str) -> List[List[str]]:
+    """Các hàng DỮ LIỆU (bỏ hàng tiêu đề + hàng gạch) của bảng đầu tiên dưới mục `tieu_de`, tách ô ở «|» không thoát."""
+    dong = van_ban.splitlines()
+    i = next((k for k, d in enumerate(dong) if d.startswith(tieu_de)), None)
+    if i is None:
+        raise ValueError(f"{NHAC_TRUONG_LS}.md: không thấy mục «{tieu_de}»")
+    hang = []
+    for d in dong[i + 1:]:
+        if d.startswith("## "):
+            break
+        if d.startswith("|") and not d.startswith("|---"):
+            hang.append([x.strip() for x in re.split(r"(?<!\\)\|", d.strip().strip("|"))])
+    if len(hang) < 2:
+        raise ValueError(f"{NHAC_TRUONG_LS}.md: mục «{tieu_de}» không có bảng dữ liệu")
+    return hang[1:]
+
+
+def _gon(o: str) -> str:
+    """Bỏ nhấn mạnh markdown («**», «*») để chép một ô bảng thành văn xuôi."""
+    return re.sub(r"\*+", "", o).strip()
+
+
+def vai_lam_sang(van_ban_nhac_truong: str) -> Dict[str, Dict[str, List[Tuple[str, str]]]]:
+    """agent → {"buoc": [(bước, điểm dừng)], "tu_ra": [(mã hạng mục, nội dung)]} đọc từ hai bảng của nhạc trưởng.
+    Bảng bước: agent = mọi tên trong backtick ở ô «Tự chạy»; bảng tự-rà: agent = tên trong backtick ở ô CUỐI
+    («Agent phụ trách») — tên nhắc trong nội dung hạng mục (vd «qua `sang-loc-co-do`») KHÔNG tính là phụ trách."""
+    ra: Dict[str, Dict[str, List[Tuple[str, str]]]] = {}
+    for o in _hang_bang(van_ban_nhac_truong, TIEU_DE_BUOC_LS):
+        buoc, dung = _gon(o[0]), (_gon(o[2]) if len(o) > 2 else "—")
+        for a in dict.fromkeys(re.findall(r"`([a-z0-9-]+)`", o[1])):
+            ra.setdefault(a, {"buoc": [], "tu_ra": []})["buoc"].append((buoc, dung))
+    for o in _hang_bang(van_ban_nhac_truong, TIEU_DE_TU_RA_LS):
+        for a in dict.fromkeys(re.findall(r"`([a-z0-9-]+)`", o[-1])):
+            ra.setdefault(a, {"buoc": [], "tu_ra": []})["tu_ra"].append((o[0], _gon(o[1])))
+    ra.pop(NHAC_TRUONG_LS, None)
+    return ra
+
+
+def khoi_lam_sang(agent: str, vai: Dict[str, List[Tuple[str, str]]]) -> str:
+    """Khối «Nhiệm vụ & kiểm soát trong ca lâm sàng» của một agent (kèm dấu mốc)."""
+    buoc = "; ".join(f"«{b}» (dừng: {d})" for b, d in vai["buoc"]) or "— (chưa có trong bảng bước của nhạc trưởng)"
+    dong = [DAU_LAM_SANG[0], "## Nhiệm vụ & kiểm soát trong ca lâm sàng (10/10/2026)",
+            "Bác sĩ giao: «mỗi agent phải có nhiệm vụ rõ ràng, có sự kiểm soát của điều phối». Bạn chạy dưới",
+            f"nhạc trưởng `{NHAC_TRUONG_LS}` (BƯỚC 0 cờ đỏ → 5 bước EBM, dừng ở Cổng A/B). Khối này SINH từ hai bảng",
+            "của nhạc trưởng — đổi việc thì sửa bảng đó rồi chạy lại bộ sinh, không sửa tay ở đây.", "",
+            f"- **Bước bạn chạy:** {buoc}"]
+    if vai["tu_ra"]:
+        dong.append("- **Nhạc trưởng kiểm đầu ra của bạn (bảng tự-rà hoàn chỉnh):**")
+        dong += [f"  - {ma} — {nd}" for ma, nd in vai["tu_ra"]]
+    else:
+        dong.append("- **Nhạc trưởng kiểm đầu ra của bạn:** — (chưa có hạng mục tự-rà)")
+    dong += ["",
+             "Hạng mục còn 🔴 ⇒ nhạc trưởng ghi vào «DANH SÁCH 🔴 BẮT BUỘC còn thiếu» (điều kiện chặn «đủ») và",
+             "giao lại bạn trước khi trả gói. Chỉ ĐỀ XUẤT: không tự «áp dụng» cho bệnh nhân (Cổng A), không ghi sổ cái",
+             "(Cổng B); kèm PMID/DOI + «Cần bác sĩ kiểm chứng»; KHÔNG PII.",
+             DAU_LAM_SANG[1], ""]
+    return "\n".join(dong)
+
+
 def _thay_giua_dau(van_ban: str, dau: Tuple[str, str], khoi: str) -> str:
     i, j = van_ban.find(dau[0].split(" (")[0]), van_ban.find(dau[1])
     if i < 0 or j < i:
@@ -244,9 +314,9 @@ def ap_dung_cong(van_ban: str, gate: str) -> str:
     return van_ban[:m.start()] + khoi + "\n" + van_ban[m.start():]
 
 
-def ap_dung_agent(van_ban: str, agent: str) -> str:
-    khoi = khoi_agent(agent)
-    moi = _thay_giua_dau(van_ban, DAU_AGENT, khoi)
+def _chen_truoc_tu_kiem(van_ban: str, dau: Tuple[str, str], khoi: str) -> str:
+    """Thay khối giữa dấu mốc nếu đã có; chưa có ⇒ chèn trước «## BƯỚC TỰ KIỂM» (hoặc khối guardrail, hoặc cuối tệp)."""
+    moi = _thay_giua_dau(van_ban, dau, khoi)
     if moi:
         return moi
     for neo in ("\n## BƯỚC TỰ KIỂM", "\n<!-- EBM-MANDATORY-FINAL-GUARDRAIL -->"):
@@ -256,18 +326,34 @@ def ap_dung_agent(van_ban: str, agent: str) -> str:
     return van_ban.rstrip("\n") + "\n\n" + khoi
 
 
+def ap_dung_agent(van_ban: str, agent: str) -> str:
+    return _chen_truoc_tu_kiem(van_ban, DAU_AGENT, khoi_agent(agent))
+
+
+def ap_dung_lam_sang(van_ban: str, agent: str, vai: Dict[str, List[Tuple[str, str]]]) -> str:
+    return _chen_truoc_tu_kiem(van_ban, DAU_LAM_SANG, khoi_lam_sang(agent, vai))
+
+
 def ke_hoach(thu_muc: Path) -> List[Tuple[Path, str, str]]:
     """[(tệp, nội dung hiện tại, nội dung sinh)] cho mọi tệp agent liên quan; thiếu tệp ⇒ FileNotFoundError."""
-    ra = []
+    # Một tệp có thể nhận NHIỀU khối (vd agent vừa làm nhiệm vụ cổng vừa chạy trong ca lâm sàng) ⇒ áp tuần tự lên
+    # cùng một bản, không tính mỗi khối từ bản gốc riêng (lần ghi sau sẽ đè lần trước).
+    ban: Dict[Path, List[str]] = {}
+
+    def _doi(p: Path, ham) -> None:
+        if p not in ban:
+            cu = p.read_text(encoding="utf-8")
+            ban[p] = [cu, cu]
+        ban[p][1] = ham(ban[p][1])
+
     for g in HD.CONG:
-        p = thu_muc / f"{HD.dieu_phoi_cong(g)}.md"
-        cu = p.read_text(encoding="utf-8")
-        ra.append((p, cu, ap_dung_cong(cu, g)))
+        _doi(thu_muc / f"{HD.dieu_phoi_cong(g)}.md", lambda v, g=g: ap_dung_cong(v, g))
     for agent in sorted(vai_agent()):
-        p = thu_muc / f"{agent}.md"
-        cu = p.read_text(encoding="utf-8")
-        ra.append((p, cu, ap_dung_agent(cu, agent)))
-    return ra
+        _doi(thu_muc / f"{agent}.md", lambda v, a=agent: ap_dung_agent(v, a))
+    vai_ls = vai_lam_sang((thu_muc / f"{NHAC_TRUONG_LS}.md").read_text(encoding="utf-8"))
+    for agent in sorted(vai_ls):
+        _doi(thu_muc / f"{agent}.md", lambda v, a=agent: ap_dung_lam_sang(v, a, vai_ls[a]))
+    return [(p, cu, moi) for p, (cu, moi) in ban.items()]
 
 
 def main(argv=None) -> int:

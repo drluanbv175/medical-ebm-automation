@@ -31,7 +31,9 @@ Chạy đúng SAP đã khoá trên dữ liệu đã khoá, mô hình đúng họ
 |---|---|---|---|---|
 | G6-T1 | Phân tích theo SAP đã khoá trên dữ liệu đã khoá | `phan-tich-thong-ke` | `G6_A7_ANALYSIS_SCRIPTS_<mã>.md`, `G6_checkpoint.json` | `thiet-ke-nghien-cuu`, `dien-giai-ket-qua` + `giam-khao-cong` |
 | G6-T2 | Phân tích gộp (tổng quan hệ thống) *(khi tổng quan hệ thống có gộp định lượng)* | `meta-phan-tich` | `G6_A7_ANALYSIS_SCRIPTS_<mã>.md` | `phan-tich-thong-ke` + `giam-khao-cong` |
-| G6-T3 | Diễn giải kết quả (G6.5): ý nghĩa lâm sàng vs thống kê, đối chiếu y văn | `dien-giai-ket-qua` | `G6_A7_ANALYSIS_SCRIPTS_<mã>.md` | `phan-tich-thong-ke`, `binh-duyet` + `giam-khao-cong` |
+| G6-T3 | Diễn giải kết quả (G6.5): ý nghĩa lâm sàng vs thống kê, đối chiếu y văn | `dien-giai-ket-qua` | `G6_A7_ANALYSIS_SCRIPTS_<mã>.md` | `phan-tich-thong-ke`, `binh-duyet`, `huong-dan-lam-sang` + `giam-khao-cong` |
+| G6-T4 | Phát triển và kiểm định mô hình dự báo (TRIPOD+AI) *(khi thiết kế mô hình dự báo (prediction))* | `mo-hinh-tien-luong` | `G6_A7_ANALYSIS_SCRIPTS_<mã>.md` | `phan-tich-thong-ke` + `giam-khao-cong` |
+| G6-T5 | Phân tích định tính: mã hoá chủ đề, bão hoà dữ liệu (COREQ/SRQR) *(khi thiết kế định tính (qualitative))* | `nghien-cuu-dinh-tinh` | `G6_A7_ANALYSIS_SCRIPTS_<mã>.md` | `dien-giai-ket-qua` + `giam-khao-cong` |
 
 Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý do ở khối bàn giao, không giao việc.
 
@@ -51,7 +53,7 @@ của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm v
 | Bên chịu trách nhiệm | Tiêu chí |
 |---|---|
 | `G6-T1` — agent `phan-tich-thong-ke` | G6-AUTO-00, G6-AUTO-02, G6-AUTO-03, G6-AUTO-04, G6-AUTO-05, G6-AUTO-06, G6-AUTO-07, G6-AUTO-08, G6-AUTO-10 |
-| `G6-T2\|G6-T1` — agent `meta-phan-tich` (tổng quan hệ thống có gộp định lượng), ngược lại `phan-tich-thong-ke` | G6-AUTO-09 |
+| `G6-T2\|G6-T4\|G6-T5\|G6-T1` — agent `meta-phan-tich` (tổng quan hệ thống có gộp định lượng); `mo-hinh-tien-luong` (thiết kế mô hình dự báo (prediction)); `nghien-cuu-dinh-tinh` (thiết kế định tính (qualitative)), ngược lại `phan-tich-thong-ke` | G6-AUTO-09 |
 | `STATISTICIAN@G6-T1` — NGƯỜI STATISTICIAN quyết/ký; agent chuẩn bị hồ sơ + lệnh: `phan-tich-thong-ke` | G6-HUMAN-01 |
 | `^G4` — cổng tiền đề G4 (điều phối cổng đó chịu trách nhiệm) | G6-AUTO-01 |
 

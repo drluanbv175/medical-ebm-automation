@@ -232,7 +232,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 |---|---|---|---|
 | `G6-T3` — Diễn giải kết quả (G6.5): ý nghĩa lâm sàng vs thống kê, đối chiếu y văn | `G6_A7_ANALYSIS_SCRIPTS_<mã>.md` | — (không có tiêu chí máy: chất lượng chỉ bảo đảm bằng đánh giá chéo) | — |
 
-Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G6-T1` (phan-tich-thong-ke), `G7-T1` (viet-ban-thao). Không bao giờ chấm đầu ra do chính bạn làm.
+Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G6-T1` (phan-tich-thong-ke), `G6-T5` (nghien-cuu-dinh-tinh), `G7-T1` (viet-ban-thao). Không bao giờ chấm đầu ra do chính bạn làm.
 
 Trước khi trả việc cho điều phối cổng: chạy lệnh đo của cổng đó — tiêu chí của bạn còn chưa đạt,
 đầu ra còn thiếu, hoặc biên bản đánh giá chéo «trả về sửa» ⇒ CHƯA xong. Không ký, không bật cờ, không

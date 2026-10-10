@@ -35,7 +35,7 @@ STUDY = "G6T2-THU"
 ])
 def test_chu_g6_auto_09_theo_thiet_ke(thiet_ke, nhiem_vu, agent):
     pc = HD.phan_cong("G6", "G6-AUTO-09", thiet_ke)
-    assert (pc["nhiem_vu"], pc["agent"], pc["lua_chon"]) == (nhiem_vu, agent, ["G6-T2", "G6-T1"])
+    assert (pc["nhiem_vu"], pc["agent"], pc["lua_chon"]) == (nhiem_vu, agent, ["G6-T2", "G6-T4", "G6-T5", "G6-T1"])
 
 
 def test_g6t2_khong_con_la_nhiem_vu_khong_tieu_chi():

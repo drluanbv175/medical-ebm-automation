@@ -474,7 +474,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 | `G1-T1` — Chọn thiết kế, kiểm soát sai lệch, estimand, đề cương lõi | `G1_A2_PROTOCOL_DESIGN_<mã>.md`, `G1_checkpoint.json` | G1-AUTO-00, G1-AUTO-02, G1-AUTO-02b, G1-AUTO-02c, G1-AUTO-02d, G1-AUTO-03, G1-AUTO-03b, G1-AUTO-04, G1-AUTO-04b, G1-AUTO-04c, G1-AUTO-05, G1-AUTO-07 | PI: G1-HUMAN-01, G1-HUMAN-02, G1-HUMAN-03, G1-HUMAN-04, G1-HUMAN-05, G1-HUMAN-08 |
 | `G4-T1` — Kế hoạch phân tích thống kê (SAP) + khung bảng kết quả, khoá trước khi xem dữ liệu | `G4_A5_SAP_FINAL_<mã>.md`, `G4_checkpoint.json` | G4-AUTO-00, G4-AUTO-02, G4-AUTO-03, G4-AUTO-04, G4-AUTO-05, G4-AUTO-06, G4-AUTO-07, G4-AUTO-08, G4-AUTO-09, G4-AUTO-10, G4-AUTO-11, G4-AUTO-15 | PI: G4-AUTO-14; STATISTICIAN: G4-AUTO-13, G4-HUMAN-01, G4-HUMAN-02, G4-HUMAN-03, G4-HUMAN-04, G4-HUMAN-05, G4-HUMAN-06, G4-HUMAN-07, G4-HUMAN-08 |
 
-Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G0-T1` (cau-hoi-nghien-cuu), `G1-T5` (an-toan-nghien-cuu), `G3-T1` (co-mau-nghien-cuu), `G6-T1` (phan-tich-thong-ke). Không bao giờ chấm đầu ra do chính bạn làm.
+Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G0-T1` (cau-hoi-nghien-cuu), `G1-T5` (an-toan-nghien-cuu), `G1-T6` (mo-hinh-tien-luong), `G1-T7` (nghien-cuu-dinh-tinh), `G1-T8` (kinh-te-y-te), `G3-T1` (co-mau-nghien-cuu), `G6-T1` (phan-tich-thong-ke). Không bao giờ chấm đầu ra do chính bạn làm.
 
 Trước khi trả việc cho điều phối cổng: chạy lệnh đo của cổng đó — tiêu chí của bạn còn chưa đạt,
 đầu ra còn thiếu, hoặc biên bản đánh giá chéo «trả về sửa» ⇒ CHƯA xong. Không ký, không bật cờ, không

@@ -78,7 +78,7 @@ TRƯỚC khi tuyên bố gói quyết định "đủ", PHẢI tự rà danh mụ
 | C3 | **Chứng cứ có trích dẫn** (PMID/DOI) hoặc đánh dấu PARTIAL | ✅/🟡/🔴 | `tra-cuu-chung-cu` |
 | C4 | **Phân tầng chẩn đoán** (pretest→LR→hậu nghiệm→ngưỡng test–treat) *nếu là câu hỏi chẩn đoán*; thang/nguy cơ đã kiểm định cấp pretest/nguy cơ nền | ✅/🟡/🔴/⏳ | `chan-doan-xac-suat` + `thang-diem-nguy-co` |
 | C4b | **Diễn giải cận lâm sàng** (quét giá trị nguy kịch + gom nhóm + bước kế tiếp) *nếu ca có panel XN/ECG* | ✅/🟡/🔴/⏳ | `dien-giai-can-lam-sang` |
-| C5 | **Thẩm định** GRADE + NNT/NNH (khi tính được) | ✅/🟡/🔴 | `tham-dinh-grade-nnt` |
+| C5 | **Thẩm định** GRADE + NNT/NNH (khi tính được) + đối chiếu hướng dẫn hiện hành/EtD | ✅/🟡/🔴 | `tham-dinh-grade-nnt` + `huong-dan-lam-sang` |
 | C5b | **Thẩm định độ chính xác test** (QUADAS-3; QUADAS-2 tương thích ngược/QUADAS-C + GRADE-cho-test + STARD/STARD-AI) *nếu là câu hỏi chẩn đoán* | ✅/🟡/🔴/⏳ | `tham-dinh-do-chinh-xac-chan-doan` → `chan-doan-xac-suat` |
 | C6 | **Đối chiếu thuốc · tương tác · hiệu chỉnh thận–gan · chống chỉ định · nhóm đặc biệt** | ✅/🟡/🔴 | `ke-don-an-toan` |
 | C7 | **Cá thể hóa + quyết định chung** (lợi–hại bằng số tuyệt đối) | ✅/🟡/🔴 | `quyet-dinh-chung` |
@@ -88,9 +88,12 @@ TRƯỚC khi tuyên bố gói quyết định "đủ", PHẢI tự rà danh mụ
 | C7e | **Kháng đông**: đã cân nguy cơ huyết khối/chảy máu (CHA₂DS₂-VASc/HAS-BLED) + chọn đúng thuốc theo chỉ định *nếu nhánh kháng đông* | ✅/🟡/🔴/⏳ | `quan-ly-khang-dong` |
 | C8 | **Safety-netting** + lịch tái khám + tiêu chí quay lại ngay/thất bại điều trị | ✅/🟡/🔴 | `loi-dan-tuan-thu` |
 | C8b | **Kế hoạch theo dõi bệnh mạn** (đích·tái khám·theo dõi·chỉnh trị) *nếu bệnh mạn* + **dự phòng/tầm soát** theo tuổi–nguy cơ *nếu phù hợp* | ✅/🟡/🔴/⏳ | `theo-doi-benh-man` + `du-phong-tam-soat` |
+| C8c | **Học tập & độ mới chứng cứ** *(bước 5, sau Cổng A)*: kết cục/biến cố ghi ẨN DANH chỉ là tín hiệu GIẢ THUYẾT (không tự đổi khuyến cáo) + nguồn đã dùng còn hiện hành (có guideline/tổng quan mới hơn thay thế? — nêu, không tự đổi `decision`) | ✅/🟡/🔴/⏳ | `ket-qua-hoc-tap` + `cap-nhat-guideline` |
 | C9 | **Dừng đúng CỔNG A/B** (chỉ đề xuất; ghi sổ cái ở hàng chờ duyệt) | ✅/🟡/🔴 | (điều phối) |
 
-Kết thúc tự-rà bằng **"DANH SÁCH 🔴 BẮT BUỘC còn thiếu"** — đây là điều kiện chặn "đủ". Số liệu chưa chắc → `[CẦN KIỂM CHỨNG]`, KHÔNG bịa.
+Kết thúc tự-rà bằng **"DANH SÁCH 🔴 BẮT BUỘC còn thiếu"** — đây là điều kiện chặn "đủ".
+
+**Hai bảng (bước tự chạy + tự-rà hoàn chỉnh) là NGUỒN giao việc và kiểm soát từng agent (10/10/2026):** khối «Nhiệm vụ & kiểm soát trong ca lâm sàng» trong tài liệu MỖI agent lâm sàng được SINH từ hai bảng này (`medical-ebm-automation/tools/sinh_tai_lieu_trach_nhiem.py`). Đổi việc của agent ⇒ sửa bảng ở đây rồi chạy lại bộ sinh. Test repo y khoa chặn agent lâm sàng nào không có bước chạy HOẶC không có hạng mục tự-rà — không agent nào chạy mà nhạc trưởng không kiểm đầu ra. Số liệu chưa chắc → `[CẦN KIỂM CHỨNG]`, KHÔNG bịa.
 
 ## 🛡️ KẾT QUẢ THẨM ĐỊNH ĐẦU RA (tham-dinh-dau-ra) — KHỐI BẮT BUỘC (BƯỚC CUỐI, trước GÓI QUYẾT ĐỊNH)
 Sau khi đã soạn xong gói quyết định và chạy tự-rà C1–C9, **TRƯỚC KHI TRẢ BÁC SĨ** → gọi `tham-dinh-dau-ra` soi toàn gói. Kết quả PHẢI được điền vào KHỐI dưới đây và đính kèm NGAY TRƯỚC mẫu "GÓI QUYẾT ĐỊNH". Đây là phần BẮT BUỘC của mọi đầu ra cuối — không phải dòng nhắc tùy chọn. Cơ chế & giới hạn (cùng mô hình/phiên — **độc lập về VAI, không về tiến trình**; chốt mạnh hơn cần subagent/phiên tách = **[CẦN MÔI TRƯỜNG HỖ TRỢ]**): `_KIEM-DUYET-DOC-LAP.md`.

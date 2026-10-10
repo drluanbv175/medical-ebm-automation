@@ -82,6 +82,8 @@ def test_kiem_bao_lech_ma_1_va_ghi_sua_duoc(tmp_path, capsys):
 
     for p, _cu, _moi in SG.ke_hoach(AGENTS):
         shutil.copy2(p, tmp_path / p.name)
+    # 10/10/2026: bộ sinh còn ĐỌC bảng của nhạc trưởng lâm sàng làm nguồn (không ghi vào nó) ⇒ đồ gá phải có tệp đó.
+    shutil.copy2(AGENTS / f"{SG.NHAC_TRUONG_LS}.md", tmp_path / f"{SG.NHAC_TRUONG_LS}.md")
     t = tmp_path / "co-mau-nghien-cuu.md"
     t.write_text(t.read_text(encoding="utf-8").replace("G3-AUTO-05, ", ""), encoding="utf-8", newline="\n")
     assert SG.main(["--agents-dir", str(tmp_path)]) == 1
