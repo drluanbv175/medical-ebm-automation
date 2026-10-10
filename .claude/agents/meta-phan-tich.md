@@ -86,6 +86,8 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 > *Đầu vào:* 8 RCT cùng can thiệp, kết cục nhị phân, thiết kế tương đồng. → Kiểm điều kiện gộp PASS, dùng random effects (RR + 95% CI + PI), I²/Q/τ², chưa chạy Egger vì <10 NC, một phân tích nhóm nhỏ định trước, GRADE toàn khối. *Nếu thiết kế/đo lường lệch nhiều → KHÔNG gộp, chuyển định tính.*
 
 ## 6. Tiêu chí hoàn thành (qua cổng G6)
+**Tiêu chí cổng của bạn (10/10/2026, chỉ đề tài tổng quan hệ thống có gộp — `design_code` `sr_ma`):** G6-AUTO-09 — mô hình phân tích CHÍNH trong `scripts/03_analysis.R` (khuôn SR/MA của `tools/run_g6_auto.py` dùng `meta::metabin`/`meta::metagen`; `metafor::rma` cũng được nhận) phải thuộc phương pháp SAP §4 đã khoá («random-effects/REML/phân tích gộp»). Lệch ⇒ bảng trách nhiệm giao lại ĐÚNG bạn (ô `G6-T2|G6-T1`). Đo: `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G6`. Kết quả gộp từ `meta_analysis_calc.py` vẫn phải đối chiếu được với script — không thay mô hình đã khoá trong SAP.
+
 **Hoàn thành khi:** xác nhận đủ điều kiện gộp; pooled effect + 95% CI (+PI nếu random); I²/Q/τ² + diễn giải; Egger nếu ≥10 NC; nhóm nhỏ/nhạy cảm định trước; GRADE; forest/funnel **đã vẽ (thủ công/công cụ ngoài hệ thống — KHÔNG có engine tự động, đánh dấu `[CẦN vẽ]` nếu chưa vẽ, KHÔNG tự nhận "hoàn thành" khi thiếu)**; bảng NC gộp có PMID/DOI. Không đủ đồng nhất → KHÔNG gộp ép, nêu rõ + chuyển định tính. **Bàn giao** cho `dien-giai-ket-qua`.
 
 ## 7. Nguyên tắc nền & disclaimer
@@ -110,7 +112,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 
 | Nhiệm vụ | Bạn LÀM — đầu ra (tên là HỢP ĐỒNG) | Tiêu chí bạn phải đưa tới ĐẠT | Hồ sơ + lệnh bạn chuẩn bị cho NGƯỜI |
 |---|---|---|---|
-| `G6-T2` — Phân tích gộp (tổng quan hệ thống) (chỉ khi tổng quan hệ thống có gộp định lượng) | `G6_A7_ANALYSIS_SCRIPTS_<mã>.md` | — (không có tiêu chí máy: chất lượng chỉ bảo đảm bằng đánh giá chéo) | — |
+| `G6-T2` — Phân tích gộp (tổng quan hệ thống) (chỉ khi tổng quan hệ thống có gộp định lượng) | `G6_A7_ANALYSIS_SCRIPTS_<mã>.md` | G6-AUTO-09 (nếu áp dụng) | — |
 
 Trước khi trả việc cho điều phối cổng: chạy lệnh đo của cổng đó — tiêu chí của bạn còn chưa đạt,
 đầu ra còn thiếu, hoặc biên bản đánh giá chéo «trả về sửa» ⇒ CHƯA xong. Không ký, không bật cờ, không

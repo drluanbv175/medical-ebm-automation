@@ -309,10 +309,12 @@ PHAN_CONG: Dict[str, Dict[str, str]] = {
         "G5-AUTO-08": "G5-T1", "G5-AUTO-09": "G5-T1", "G5-AUTO-10": "G5-T1",
         "G5-HUMAN-01": "DATA_MANAGER@G5-T1",
     },
+    # 10/10/2026: G6-AUTO-09 (mô hình phân tích chính ↔ SAP §4) — tổng quan hệ thống có gộp ⇒ script gộp
+    # (metabin/metagen/rma) là đầu ra của G6-T2 `meta-phan-tich`; thiết kế khác ⇒ G6-T1 `phan-tich-thong-ke`.
     "G6": {
         "G6-AUTO-00": "G6-T1", "G6-AUTO-01": "^G4", "G6-AUTO-02": "G6-T1", "G6-AUTO-03": "G6-T1",
         "G6-AUTO-04": "G6-T1", "G6-AUTO-05": "G6-T1", "G6-AUTO-06": "G6-T1", "G6-AUTO-07": "G6-T1",
-        "G6-AUTO-08": "G6-T1", "G6-AUTO-09": "G6-T1", "G6-AUTO-10": "G6-T1",
+        "G6-AUTO-08": "G6-T1", "G6-AUTO-09": "G6-T2|G6-T1", "G6-AUTO-10": "G6-T1",
         "G6-HUMAN-01": "STATISTICIAN@G6-T1",
     },
     "G7": {
@@ -1134,6 +1136,38 @@ def _kiem_pha_cong_cu(out_dir: Path, study: str) -> List[str]:
     return ra
 
 
+# Dòng an toàn người tham gia của đề cương lõi G1 (PHẦN 0 của A2) — nhãn chép ĐÚNG khuôn
+# `g1_quality_gate.build_protocol_core` (test đối chiếu với khuôn sinh thật).
+_DONG_AN_TOAN_G1 = ("- Cân bằng lợi ích, nguy cơ và tính hợp lý khoa học:",
+                    "- Tiêu chí dừng/chuyển/điều trị cứu hộ nếu áp dụng:")
+
+
+def _kiem_an_toan_thiet_ke(out_dir: Path, study: str) -> List[str]:
+    """G1-T5 (RCT) — hai dòng an toàn người tham gia của đề cương lõi (cân bằng lợi ích–nguy cơ; tiêu chí dừng/chuyển/
+    điều trị cứu hộ) có mặt và đã điền, đếm bằng ĐÚNG `g1_quality_gate.o_trong_pham_vi_g1` mà G1-AUTO-07 dùng
+    (10/10/2026).
+
+    G1-AUTO-07 vẫn của G1-T1 (`thiet-ke-nghien-cuu` tích hợp đề cương); kiểm này chỉ ra phần NỘI DUNG an toàn mà
+    `an-toan-nghien-cuu` phải soạn. «N/A — <lý do>» hợp lệ như ở bộ chấm. AE/SAE, DMC và quy tắc dừng chi tiết hoãn có
+    chủ ý cho G2 (G2-T2) và G4 (G4-T2) — không đòi ở đây."""
+    a2 = Path(out_dir) / f"G1_A2_PROTOCOL_DESIGN_{study}.md"
+    if not a2.is_file():
+        return []
+    try:
+        import g1_quality_gate as G1Q  # noqa: PLC0415
+
+        van = a2.read_text(encoding="utf-8")
+        trong = G1Q.o_trong_pham_vi_g1(van)
+    except Exception as exc:  # noqa: BLE001 — không chạy được bộ đếm ⇒ báo, không coi là đạt
+        return [f"không kiểm được đề cương lõi: {type(exc).__name__}"]
+    bat_dau = van.find("PHẦN 0 — ĐỀ CƯƠNG LÕI")
+    ket_thuc = van.find("\n---", bat_dau) if bat_dau >= 0 else -1
+    vung = van[bat_dau: ket_thuc if ket_thuc > 0 else len(van)] if bat_dau >= 0 else ""
+    ra = [f"đề cương lõi thiếu dòng «{n[2:-1]}»" for n in _DONG_AN_TOAN_G1 if n not in vung]
+    ra += [f"đề cương lõi còn trống: {d}" for d in trong if d.startswith(_DONG_AN_TOAN_G1)]
+    return ra
+
+
 def _kiem_sap_rct(out_dir: Path, study: str) -> List[str]:
     """G4-T2 (RCT) — SAP §13 giữa kỳ/quy tắc dừng · §14 DMC · §15 tổn hại/ngừng/tuân thủ có mặt và không còn ô trống,
     theo ĐÚNG hàm `approve_gate._g4_sections_still_draft` mà bước ký G4 dùng (chỉ lấy §13–§15 — §1–§12 là của G4-T1)."""
@@ -1155,6 +1189,8 @@ def _kiem_sap_rct(out_dir: Path, study: str) -> List[str]:
 KIEM_NHIEM_VU: Dict[str, Tuple[str, Any]] = {
     "G1-T4": ("pha phát triển bộ câu hỏi: phiếu CVI đúng cấu trúc, ≥ 3 chuyên gia; nhật ký phỏng vấn nhận thức đủ cột",
               _kiem_pha_cong_cu),
+    "G1-T5": ("đề cương lõi RCT: dòng cân bằng lợi ích–nguy cơ + tiêu chí dừng/chuyển/cứu hộ có mặt và đã điền",
+              _kiem_an_toan_thiet_ke),
     "G3-T2": ("bộ biến G5 nạp được + không biến định danh trực tiếp", _kiem_bo_bien_so),
     "G3-T3": ("luật kiểm tra CRF: lựa chọn · công thức calc · khoảng hợp lệ · trường bắt buộc", _kiem_crf),
     "G4-T2": ("SAP RCT §13 giữa kỳ/dừng · §14 DMC · §15 tổn hại có mặt và đã điền", _kiem_sap_rct),
