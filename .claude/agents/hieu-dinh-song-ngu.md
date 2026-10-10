@@ -59,6 +59,8 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 > *Đầu vào:* câu VN "Nghiên cứu của chúng tôi đã chứng minh thuốc X làm giảm đáng kể nguy cơ." → hiệu đính EN giữ số liệu: tránh "significant" nếu không kèm p/CI; đổi "chứng minh" (proved) → "suggested/was associated with" cho đúng mức chứng cứ quan sát; gắn 🚩 nếu bản gốc khẳng định nhân quả vượt thiết kế. **Số liệu/PMID giữ nguyên.**
 
 ## 6. Tiêu chí qua cổng G7 (ngôn ngữ)
+**Hợp đồng đầu ra G7-T2 (10/10/2026 — tiêu chuẩn hoàn thiện: nhiệm vụ phải có kiểm máy):** khi điều phối G7 đã khai G7-T2 áp dụng (`khai-ap-dung`, «nộp tạp chí tiếng Anh»), nộp bản tiếng Anh đã hiệu đính `exports/<mã>/G7_A8_MANUSCRIPT_EN_<mã>.md`; GIỮ NGUYÊN bản gốc `G7_A8_MANUSCRIPT_<mã>.md` của `viet-ban-thao`. Bảng trách nhiệm G7 kiểm máy: mọi CON SỐ của bản gốc còn đủ ở bản tiếng Anh (so chuỗi chữ số, bỏ dấu phân cách — «0,85» = «0.85», «1.000» = «1,000»; ngày dd/mm/yyyy, mm/yyyy không tính vì tiếng Anh viết chữ), mọi PMID và DOI của bản gốc có mặt, và ≤ 5% dòng còn chữ tiếng Việt. Nghi số liệu gốc sai ⇒ gắn cờ cho `viet-ban-thao`, KHÔNG tự sửa số.
+
 **Đạt khi:** bản đích đọc tự nhiên học thuật, đúng thì IMRAD; bảng sửa đổi + bảng thuật ngữ thống nhất; đơn vị SI; mọi số liệu/PMID/DOI **nguyên vẹn**; danh sách 🚩 nghi vấn chuyển tác giả. Sau bạn → `kiem-chung-trich-dan` verify trích dẫn.
 
 ## 7. Nguyên tắc nền & disclaimer
@@ -85,7 +87,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 
 | Nhiệm vụ | Bạn LÀM — đầu ra (tên là HỢP ĐỒNG) | Tiêu chí bạn phải đưa tới ĐẠT | Hồ sơ + lệnh bạn chuẩn bị cho NGƯỜI |
 |---|---|---|---|
-| `G7-T2` — Hiệu đính song ngữ cho tạp chí quốc tế (chỉ khi nộp tạp chí tiếng Anh) | `G7_A8_MANUSCRIPT_<mã>.md` | — (không có tiêu chí máy: chất lượng chỉ bảo đảm bằng đánh giá chéo) | — |
+| `G7-T2` — Hiệu đính song ngữ cho tạp chí quốc tế (chỉ khi nộp tạp chí tiếng Anh) | `G7_A8_MANUSCRIPT_EN_<mã>.md` | — (không có tiêu chí cổng; kiểm máy cấp nhiệm vụ: bản tiếng Anh bảo toàn tuyệt đối số liệu + PMID + DOI của bản gốc; không còn đoạn chưa dịch; nội dung bảo đảm bằng đánh giá chéo) | — |
 
 Trước khi trả việc cho điều phối cổng: chạy lệnh đo của cổng đó — tiêu chí của bạn còn chưa đạt,
 đầu ra còn thiếu, hoặc biên bản đánh giá chéo «trả về sửa» ⇒ CHƯA xong. Không ký, không bật cờ, không

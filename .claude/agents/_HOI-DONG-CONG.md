@@ -86,6 +86,12 @@ cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ c�
     bảng biểu đủ chuẩn); G10-T3 `so-cai-ghi-nho` giữ sổ trạng thái RIÊNG mỗi đề tài `exports/<mã>/SO_TRANG_THAI_<mã>.md`
     (đúng schema, mọi khối thuộc đề tài, ngày không lùi, đủ mốc mọi cổng đã ký) — không ghi khối đề tài vào tệp chung
     `_SO-TRANG-THAI-CHECKPOINT.md`.
+12. **Tiêu chuẩn hoàn thiện từng agent và từng điều phối** (10/10/2026, bác sĩ giao «xây dựng từng Agent một cho tới
+    khi hoàn thiện để khỏi tốn thời gian và Token»): `python3 tools/tieu_chuan_hoan_thien.py [--agent <tên>]` (repo y
+    khoa) đo MỘT bộ hạng mục — agent A1 khung doctrine · A2 có điều phối giao việc · A3 khối sinh khớp · A4 mọi
+    nhiệm vụ có kiểm máy · A5 lệnh chạy được · A6 bản Codex; điều phối cổng D1 bảng §3 khớp · D2 phủ đủ tiêu chí
+    bộ chấm · D3 mọi nhiệm vụ có kiểm máy; nhạc trưởng lâm sàng L1; điều phối tổng N1/N2. Mã 0 = mọi agent + điều
+    phối ĐẠT; test chốt không cho lùi. Làm việc theo danh sách công cụ in ra — không rà mở lại từ đầu.
 
 ## 2. Tám bước của một hội đồng cổng (`dieu-phoi-gN`)
 
