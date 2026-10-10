@@ -19,6 +19,9 @@ SAP đủ mục, phân tích chính theo estimand, độ nhạy/nhóm con địn
 
 ## 2. Tiền đề — chấm sống, chỉ đọc
 - G3 chấm sống `PASS_G3_CONFIRMED` (G4-AUTO-12; `approve_gate.py` từ chối ký khi chưa).
+<!-- TIEN-DE-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
+- **Tiêu chí tiền đề bộ chấm kiểm** (sinh từ `hoi_dong_cong.PHAN_CONG`; chưa đạt ⇒ `CHO_CONG_TRUOC`, điều phối cổng đó chịu trách nhiệm): `G4-AUTO-01` → G3 · `G4-AUTO-12` → G3.
+<!-- TIEN-DE-CONG:KET-THUC -->
 - Lệnh: `python3 tools/hoi_dong_cong.py cham-song --study <mã> --gate G4` (và cổng tiền đề). «Không đo được» KHÔNG
   phải «đạt»; tiền đề chưa đạt ⇒ dừng, báo điều phối tổng cổng nào chặn.
 
@@ -50,7 +53,7 @@ của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm v
 | `STATISTICIAN@G4-T1` — NGƯỜI STATISTICIAN quyết/ký; agent chuẩn bị hồ sơ + lệnh: `thiet-ke-nghien-cuu` | G4-AUTO-13, G4-HUMAN-01, G4-HUMAN-02, G4-HUMAN-03, G4-HUMAN-04, G4-HUMAN-05, G4-HUMAN-06, G4-HUMAN-07, G4-HUMAN-08 |
 | `^G3` — cổng tiền đề G3 (điều phối cổng đó chịu trách nhiệm) | G4-AUTO-01, G4-AUTO-12 |
 
-Nhiệm vụ KHÔNG có tiêu chí máy (chất lượng CHỈ bảo đảm bằng đánh giá chéo): G4-T2 `an-toan-nghien-cuu` — chưa có biên bản
+Nhiệm vụ KHÔNG có tiêu chí máy (chất lượng CHỈ bảo đảm bằng đánh giá chéo): G4-T2 `an-toan-nghien-cuu` (kiểm máy cấp nhiệm vụ: SAP RCT §13 giữa kỳ/dừng · §14 DMC · §15 tổn hại có mặt và đã điền) — chưa có biên bản
 đánh giá chéo «qua» còn hiệu lực ⇒ khối bàn giao ghi «chất lượng chưa được bảo đảm» (lệnh đo liệt kê).
 
 1. **Thước đo duy nhất:** `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G4` — chỉ đọc; chấm sống,

@@ -19,6 +19,9 @@ bác sĩ chưa đồng ý (`_HOI-DONG-CONG.md` §5 — chi phí).
 
 ## 2. Tiền đề — chấm sống, chỉ đọc
 - Theo `release.purpose` trong `G10_RELEASE_READINESS.json`: `ETHICS_SUBMISSION`/`REGISTRY_UPDATE` ⇒ G0–G4 (G2 ≥ `READY_FOR_IRB_SUBMISSION`, G4 ≥ READY); mục đích khác ⇒ đủ G0–G9 khoá.
+<!-- TIEN-DE-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
+- **Tiêu chí tiền đề bộ chấm kiểm** (sinh từ `hoi_dong_cong.PHAN_CONG`; chưa đạt ⇒ `CHO_CONG_TRUOC`, điều phối cổng đó chịu trách nhiệm): `G10-AUTO-02` → các cổng tiền đề theo mục đích phát hành · `G10-AUTO-02B` → các cổng tiền đề theo mục đích phát hành · `G10-AUTO-04` → các cổng tiền đề theo mục đích phát hành.
+<!-- TIEN-DE-CONG:KET-THUC -->
 - Lệnh: `python3 tools/hoi_dong_cong.py cham-song --study <mã> --gate G10` (và cổng tiền đề). «Không đo được» KHÔNG
   phải «đạt»; tiền đề chưa đạt ⇒ dừng, báo điều phối tổng cổng nào chặn.
 

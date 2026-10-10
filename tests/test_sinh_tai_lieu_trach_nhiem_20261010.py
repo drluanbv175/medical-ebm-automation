@@ -135,7 +135,11 @@ def test_hoi_dong_qua_khong_tao_viec(monkeypatch, de_tai):
 @pytest.mark.parametrize("thiet_ke, liet_ke", [("rct", True), ("cross_sectional", False)])
 def test_nhiem_vu_khong_tieu_chi_chua_danh_gia_la_chat_luong_chua_bao_dam(monkeypatch, de_tai, thiet_ke, liet_ke):
     _song_g4_dat(monkeypatch, thiet_ke)
-    (de_tai / "G4_A5_SAP_FINAL_HD-THU.md").write_text("SAP\n", encoding="utf-8", newline="\n")
+    # 10/10/2026: G4-T2 (RCT) có kiểm máy cấp nhiệm vụ §13–§15 — SAP giả phải đủ mục để test chỉ đo việc «chưa đánh
+    # giá chéo», không lẫn lỗi kiểm máy.
+    than = "\n\n".join(f"### §{i} Mục\nNội dung thật mục {i}." for i in range(1, 16))
+    (de_tai / "G4_A5_SAP_FINAL_HD-THU.md").write_text(f"## PHẦN 3 — SAP\n\n{than}\n\n## PHẦN 5\nx\n",
+                                                      encoding="utf-8", newline="\n")
     kq = HD.trach_nhiem(STUDY, "G4", de_tai)
     assert ("G4-T2" in kq["chat_luong_chua_bao_dam"]) is liet_ke
     assert kq["ket_luan"] == "DAT_TIEU_CHI", "chưa đánh giá chéo chỉ là cảnh báo nói thật, không đổi kết luận máy"

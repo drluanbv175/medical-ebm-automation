@@ -40,6 +40,8 @@ import hoi_dong_cong as HD  # noqa: E402
 
 DAU_CONG = ("<!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->",
             "<!-- TRACH-NHIEM-CONG:KET-THUC -->")
+DAU_TIEN_DE = ("<!-- TIEN-DE-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->",
+               "<!-- TIEN-DE-CONG:KET-THUC -->")
 DAU_AGENT = ("<!-- TRACH-NHIEM-AGENT:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->",
              "<!-- TRACH-NHIEM-AGENT:KET-THUC -->")
 _YEU_CAU = ("«Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối\n"
@@ -110,6 +112,21 @@ Bác sĩ giao: {_YEU_CAU}. Mọi tiêu chí ({n}) của
    kết luận vào khối bàn giao. Trách nhiệm KHÔNG đòi triệu tập hội đồng nhiều agent (chi phí `_HOI-DONG-CONG.md` §5).
 {DAU_CONG[1]}
 """
+
+
+def khoi_tien_de(gate: str) -> str:
+    """Dòng «tiêu chí tiền đề bộ chấm kiểm» trong §2 của điều phối cổng (10/10/2026) — sinh từ PHAN_CONG để văn xuôi §2
+    không lệch mã (đo 10/10: G3 thiếu G0, G8 thiếu G2, G9 thiếu G2 so với tiêu chí bộ chấm thật kiểm)."""
+    ds = [(ma, s[1:]) for ma, s in HD.PHAN_CONG[gate].items() if s.startswith("^")]
+    if ds:
+        noi = " · ".join(f"`{ma}` → {c.replace('*', 'các cổng tiền đề theo mục đích phát hành').replace(',', ', ')}"
+                         for ma, c in ds)
+        dong = (f"- **Tiêu chí tiền đề bộ chấm kiểm** (sinh từ `hoi_dong_cong.PHAN_CONG`; chưa đạt ⇒ `CHO_CONG_TRUOC`, "
+                f"điều phối cổng đó chịu trách nhiệm): {noi}.")
+    else:
+        dong = (f"- **Tiêu chí tiền đề bộ chấm kiểm:** không có — {gate} là cổng khởi đầu "
+                "(sinh từ `hoi_dong_cong.PHAN_CONG`).")
+    return f"{DAU_TIEN_DE[0]}\n{dong}\n{DAU_TIEN_DE[1]}\n"
 
 
 def vai_agent() -> Dict[str, Dict[str, List[Tuple[str, Dict]]]]:
@@ -189,7 +206,19 @@ def _thay_giua_dau(van_ban: str, dau: Tuple[str, str], khoi: str) -> str:
     return van_ban[:i] + khoi + van_ban[cuoi:]
 
 
+def _ap_dung_tien_de(van_ban: str, gate: str) -> str:
+    khoi = khoi_tien_de(gate)
+    moi = _thay_giua_dau(van_ban, DAU_TIEN_DE, khoi)
+    if moi:
+        return moi
+    k = van_ban.find("- Lệnh: `python3 tools/hoi_dong_cong.py cham-song")
+    if k < 0:
+        raise ValueError(f"{gate}: không tìm thấy dòng «- Lệnh: … cham-song» trong §2 để chèn tiêu chí tiền đề")
+    return van_ban[:k] + khoi + van_ban[k:]
+
+
 def ap_dung_cong(van_ban: str, gate: str) -> str:
+    van_ban = _ap_dung_tien_de(van_ban, gate)
     khoi = muc_cong(gate)
     moi = _thay_giua_dau(van_ban, DAU_CONG, khoi)
     if moi:

@@ -18,7 +18,10 @@ bác sĩ chưa đồng ý (`_HOI-DONG-CONG.md` §5 — chi phí).
 Cỡ mẫu/lực mẫu đúng công thức cho thiết kế, tham số có nguồn; đặc tả bộ biến và CRF kỹ thuật.
 
 ## 2. Tiền đề — chấm sống, chỉ đọc
-- G1 chấm sống PASS (G3-AUTO-01).
+- G0 và G1 có thật, thiết kế không do mặc định im lặng (G3-AUTO-01).
+<!-- TIEN-DE-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
+- **Tiêu chí tiền đề bộ chấm kiểm** (sinh từ `hoi_dong_cong.PHAN_CONG`; chưa đạt ⇒ `CHO_CONG_TRUOC`, điều phối cổng đó chịu trách nhiệm): `G3-AUTO-01` → G0, G1.
+<!-- TIEN-DE-CONG:KET-THUC -->
 - Lệnh: `python3 tools/hoi_dong_cong.py cham-song --study <mã> --gate G3` (và cổng tiền đề). «Không đo được» KHÔNG
   phải «đạt»; tiền đề chưa đạt ⇒ dừng, báo điều phối tổng cổng nào chặn.
 

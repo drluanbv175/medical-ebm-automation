@@ -1049,12 +1049,28 @@ def _kiem_crf(out_dir: Path, study: str) -> List[str]:
     return ra
 
 
+def _kiem_sap_rct(out_dir: Path, study: str) -> List[str]:
+    """G4-T2 (RCT) — SAP §13 giữa kỳ/quy tắc dừng · §14 DMC · §15 tổn hại/ngừng/tuân thủ có mặt và không còn ô trống,
+    theo ĐÚNG hàm `approve_gate._g4_sections_still_draft` mà bước ký G4 dùng (chỉ lấy §13–§15 — §1–§12 là của G4-T1)."""
+    sap = Path(out_dir) / f"G4_A5_SAP_FINAL_{study}.md"
+    if not sap.is_file():
+        return []
+    try:
+        import approve_gate as AG  # noqa: PLC0415
+
+        con = AG._g4_sections_still_draft(sap.read_text(encoding="utf-8"), "rct")
+    except Exception as exc:  # noqa: BLE001 — không chạy được bộ kiểm ⇒ báo, không coi là đạt
+        return [f"không kiểm được SAP §13–§15: {type(exc).__name__}"]
+    return [f"SAP {m}" for m in con if m.startswith(("§13", "§14", "§15"))]
+
+
 # Kiểm máy CẤP NHIỆM VỤ (10/10/2026) cho nhiệm vụ mà bộ chấm cổng không có tiêu chí: KHÔNG phải tiêu chí cổng, không đổi
 # trạng thái cổng; lỗi ⇒ việc của agent nhiệm vụ trong bảng trách nhiệm. Chỉ kiểm CẤU TRÚC — chất lượng nội dung (đủ
 # biến cho câu hỏi/DAG…) vẫn do đánh giá chéo bảo đảm.
 KIEM_NHIEM_VU: Dict[str, Tuple[str, Any]] = {
     "G3-T2": ("bộ biến G5 nạp được + không biến định danh trực tiếp", _kiem_bo_bien_so),
     "G3-T3": ("luật kiểm tra CRF: lựa chọn · công thức calc · khoảng hợp lệ · trường bắt buộc", _kiem_crf),
+    "G4-T2": ("SAP RCT §13 giữa kỳ/dừng · §14 DMC · §15 tổn hại có mặt và đã điền", _kiem_sap_rct),
 }
 
 
@@ -1154,7 +1170,9 @@ def trach_nhiem(study: str, gate: str, out_dir: Path) -> Dict[str, Any]:
             chi_danh_gia.append({"ma": n["ma"], "agent": n["agent"], "ap_dung": n["ap_dung"],
                                  "danh_gia_cheo": dg["trang_thai"]})
         kiem = KIEM_NHIEM_VU.get(n["ma"])
-        if kiem and not n["dau_ra_thieu"]:
+        # Chỉ kiểm khi CHẮC nhiệm vụ áp dụng (ap_dung True) — nhiệm vụ có điều kiện chưa suy được thiết kế không bị
+        # kiểm theo giả định (vd §13–§15 chỉ có ở SAP RCT).
+        if kiem and n["ap_dung"] is True and not n["dau_ra_thieu"]:
             loi_kiem = kiem[1](out_dir, study)
             n["kiem_may"] = {"mo_ta": kiem[0], "loi": loi_kiem}
             agent_con += [{"id": f"{n['ma']}:kiem-may", "status": "REVIEW", "label": kiem[0], "viec": loi,

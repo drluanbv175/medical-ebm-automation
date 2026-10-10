@@ -20,6 +20,9 @@ Dữ liệu thật được nạp/làm sạch/khử định danh, truy vấn đ�
 
 ## 2. Tiền đề — chấm sống, chỉ đọc
 - G2 đã duyệt (`g2_da_duyet`) và G4 khoá (`g4_quality_contract_satisfied`).
+<!-- TIEN-DE-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
+- **Tiêu chí tiền đề bộ chấm kiểm** (sinh từ `hoi_dong_cong.PHAN_CONG`; chưa đạt ⇒ `CHO_CONG_TRUOC`, điều phối cổng đó chịu trách nhiệm): `G5-AUTO-05` → G2, G4 · `G5-AUTO-05b` → G2, G4.
+<!-- TIEN-DE-CONG:KET-THUC -->
 - Lệnh: `python3 tools/hoi_dong_cong.py cham-song --study <mã> --gate G5` (và cổng tiền đề). «Không đo được» KHÔNG
   phải «đạt»; tiền đề chưa đạt ⇒ dừng, báo điều phối tổng cổng nào chặn.
 
