@@ -1,0 +1,50 @@
+{
+  "schema": "g0/khoang_trong/v1",
+  "nguoi_soan": "khoang-trong-nghien-cuu (agent, theo biên bản G0-DG-20261007T182841-79f9a227)",
+  "ngay_soan": "2026-10-10",
+  "guideline_lien_quan": [
+    {
+      "ten": "Quyết định 56/QĐ-BYT — Hướng dẫn phương pháp đo lường sự hài lòng của người dân đối với dịch vụ y tế công giai đoạn 2024–2030 (Mẫu số 2: phiếu ngoại trú)",
+      "nam": "2024 (ngày 2024-01-08)",
+      "nguon": "Bộ Y tế — văn bản quy phạm, không lập chỉ mục PubMed; trích theo đề cương §3.2.1 (PI đối chiếu bản gốc)",
+      "noi_dung": "Văn bản hiện hành thay mẫu phiếu ngoại trú của QĐ 3869/QĐ-BYT 2019; năm lĩnh vực (tiếp cận · minh bạch thông tin và thủ tục · cơ sở vật chất · thái độ ứng xử và năng lực chuyên môn · kết quả cung cấp dịch vụ), Likert 5 mức, người bệnh từ đủ 18 tuổi đã cơ bản hoàn thành khám — khung khái niệm đối chiếu; đề tài tự xây bộ câu hỏi, thêm lĩnh vực chi phí và mục hài lòng chung độc lập",
+      "muc": ""
+    },
+    {
+      "ten": "Quyết định 3869/QĐ-BYT — bộ mẫu phiếu và hướng dẫn khảo sát hài lòng người bệnh và nhân viên y tế",
+      "nam": "2019 (ngày 2019-08-28)",
+      "nguon": "Bộ Y tế — văn bản quy phạm; trích theo đề cương §3.2.1",
+      "noi_dung": "Mẫu phiếu ngoại trú đã bị thay thế bởi QĐ 56/QĐ-BYT 2024 — chỉ để đối chiếu lịch sử, không dùng làm chuẩn hiện hành",
+      "muc": ""
+    },
+    {
+      "ten": "Guideline được PubMed đánh chỉ mục",
+      "nam": "",
+      "nguon": "PubMed, truy vấn G0 «patient satisfaction outpatient department Vietnam hospital», nhánh guideline (2026-07-31)",
+      "noi_dung": "0 hit — chỉ trong phạm vi một truy vấn; trang hiệp hội và văn bản trong nước nằm ở hai dòng trên",
+      "muc": ""
+    }
+  ],
+  "phat_bieu_khoang_trong": "Trong phạm vi đã tra (PubMed 2026-07-31 và 2026-08-30, các nguồn bổ sung của hội đồng G0), chưa thấy dữ liệu công bố về mức hài lòng và yếu tố liên quan của người bệnh ngoại trú tại một khoa khám theo yêu cầu của bệnh viện quân y tuyến cuối như Khoa C1a; bộ phiếu chuẩn của Bộ Y tế (QĐ 56/QĐ-BYT 2024) không tách lĩnh vực chi phí dịch vụ theo yêu cầu. Y văn tiếng Việt không lập chỉ mục PubMed chưa được rà.",
+  "loai_khoang_trong": ["boi_canh", "cong_cu_do"],
+  "muc_novelty": {
+    "muc": "nhan_rong_co_kiem_chung",
+    "y_nghia": "Không mới về chủ đề (đã có nhiều khảo sát tại Việt Nam: PMID 34445940; PMID 36439278; PMID 42625778) — giá trị nằm ở dữ liệu nền tại chính Khoa C1a để cải tiến chất lượng và đối chiếu các kỳ sau, ước lượng ICC theo bàn khám trong bối cảnh Việt Nam, và kiểm định cấu trúc lĩnh vực có bổ sung chi phí (đề cương §3.5)."
+  },
+  "trang_thai_nguon": {
+    "pubmed": "partial",
+    "clinicaltrials_gov": "day_du",
+    "who_ictrp": "chua_tra",
+    "prospero": "khong_ap_dung",
+    "nguon_trong_nuoc": "chua_tra"
+  },
+  "ghi_chu_trang_thai_nguon": "PubMed «partial»: một truy vấn tự do của G0 + nguồn bổ sung, chưa phải chiến lược MeSH đầy đủ ≥ 2 CSDL. ClinicalTrials.gov: đã tra 2026-07-31, 0 hồ sơ khớp (chủ yếu phủ thử nghiệm can thiệp). WHO ICTRP không có API — PI tự tra rồi ghi gate_params.G0.registry_manual_checked.ictrp. Nguồn trong nước (Tạp chí Y học Việt Nam, Y Dược học Quân sự…): đề cương §3.5 còn ô [CẦN CHỦ NHIỆM GHI].",
+  "nhap_finer": {
+    "finer_feasible": "CẦN PI QUYẾT — rủi ro: dry-run F1–F5 chưa chạy (đúng người thứ k_h từ 80%, đồng ý từ 60%, ghép HIS từ 90%); lưu lượng/hệ số biến thiên theo tầng từ HIS chưa có; nhân lực ngoài khoa (điều tra viên, tổ mở hòm, tổ mã hoá ý kiến mở) chưa ấn định (đề cương §4.4.2, §6.1).",
+    "finer_interesting": "ĐỀ XUẤT ĐẠT — thời gian chờ và thủ tục là lĩnh vực hài lòng thấp lặp lại ở người bệnh ngoại trú Việt Nam (PMID 32584904; PMID 31703089) và người chờ lâu hơn ít hài lòng hơn (PMID 34017606); khối dịch vụ theo yêu cầu có tín hiệu hài lòng thấp hơn ở mẫu nhỏ (PMID 34445940).",
+    "finer_novel": "ĐỀ XUẤT ĐẠT ở mức «nhân rộng có kiểm chứng» — chưa thấy dữ liệu công bố tại khoa khám theo yêu cầu của bệnh viện quân y trong phạm vi đã tra; KHÔNG mới về chủ đề (PMID 34445940; PMID 42625778).",
+    "finer_ethical": "CẦN PI QUYẾT — rủi ro: riêng tư ở khâu ghép mốc HIS (khử định danh có kiểm soát, bảng ghép do CNTT/QLCL giữ, huỷ trong 30 ngày), xung đột lợi ích cơ cấu khi nhóm nghiên cứu thuộc khoa được đánh giá, áp lực chiều lòng tại chỗ; chưa có phê duyệt Hội đồng Y đức (đề cương §4.11, §4.11.1).",
+    "finer_relevant": "ĐỀ XUẤT ĐẠT — kết quả dùng trực tiếp cho cải tiến chất lượng của Trung tâm C1/Khoa C1a; đo lường hài lòng là yêu cầu thường quy của quản lý chất lượng bệnh viện (QĐ 56/QĐ-BYT 2024, theo đề cương §1 và §3.2.1)."
+  },
+  "disclaimer": "Cần bác sĩ kiểm chứng. ĐỀ XUẤT của agent — PI viết lại vào gate_params.G0 (finer_*, novelty_justification); agent không ghi gate_params."
+}

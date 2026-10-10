@@ -1,7 +1,7 @@
 {
   "study": "hai-long-benh-nhan-C1a-BVQY175",
   "gate": "G0",
-  "gate_status": "DRAFT — CHỜ BÁC SĨ CHỐT PICO trong study_meta.json (gate_params.G0)",
+  "gate_status": "DRAFT — CHỜ BÁC SĨ: G0-HUMAN-05, G0-HUMAN-06, G0-HUMAN-07, G0-HUMAN-08",
   "generated_at": "2026-07-31T20:39:23.828548",
   "topic": "Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối",
   "base_query": "patient satisfaction outpatient department Vietnam hospital",
@@ -27,7 +27,7 @@
     "n_guideline": 0,
     "n_observational": 12,
     "n_recent": 0,
-    "most_recent_year": null,
+    "most_recent_year": 2025,
     "counts_are_real": true,
     "counts_unavailable": [],
     "query_errors": {}
@@ -49,15 +49,14 @@
     "39132755",
     "36439278"
   ],
-  "evidence_note": "CÓ NỀN QUAN SÁT — ~12 NC quan sát, chưa có RCT/SR",
-  "evidence_level": "CÓ NỀN QUAN SÁT — ~12 NC quan sát, chưa có RCT/SR",
+  "evidence_note": "CÓ NỀN QUAN SÁT — ~12 hit của bộ lọc quan sát (CHƯA sàng lọc mức liên quan), không thấy RCT/SR trong PubMed, truy vấn G0 «patient satisfaction outpatient department Vietnam hospital»",
+  "evidence_level": "CÓ NỀN QUAN SÁT — ~12 hit của bộ lọc quan sát (CHƯA sàng lọc mức liên quan), không thấy RCT/SR trong PubMed, truy vấn G0 «patient satisfaction outpatient department Vietnam hospital»",
   "research_gaps": [
-    "Chưa có systematic review tổng hợp bằng chứng",
-    "Chưa có RCT kiểm định hiệu quả can thiệp",
-    "Chưa có guideline/khuyến cáo chính thức cho vấn đề này",
+    "Không thấy SR/MA trong PubMed, truy vấn G0 «patient satisfaction outpatient department Vietnam hospital» — chỉ trong phạm vi một truy vấn, KHÔNG phải kết luận «chưa có tổng quan»",
+    "Không thấy guideline được PubMed đánh chỉ mục (PubMed, truy vấn G0 «patient satisfaction outpatient department Vietnam hospital») — văn bản quy phạm trong nước (Bộ Y tế…) và trang hiệp hội KHÔNG nằm trên PubMed: phải rà trước khi kết luận «chưa có»",
     "Không có SR/MA, RCT hay guideline mới trong 5 năm gần đây (2021-2026) — nhánh này KHÔNG soi nghiên cứu quan sát"
   ],
-  "design_suggestion": "RCT ngẫu nhiên có đối chứng HOẶC Cohort tiến cứu",
+  "design_suggestion": "Thiết kế `cross_sectional` theo thiết kế đã ghim ở G1 — gợi ý máy theo số hit KHÔNG áp dụng (G1 quyết định chi tiết)",
   "novelty_concern": "Đã có nhiều nghiên cứu quan sát: KHÔNG phải khoảng trống. Cần đọc kỹ nhóm này trước khi biện minh tính mới; hướng khả dĩ là SR/MA tổng hợp chúng, hoặc nghiên cứu ở quần thể/bối cảnh chưa được phủ.",
   "registry_check": {
     "registry": "ClinicalTrials.gov",
@@ -79,26 +78,31 @@
     "A1_docx": "exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.docx"
   },
   "pending_doctor_actions": [
-    "Điền PICO 4 thành phần vào study_meta.json → gate_params.G0",
-    "Ấn định kết cục chính DUY NHẤT + thang đo + thời điểm đo",
-    "Điền giả thuyết H0/H1 + chiều kỳ vọng + loại kiểm định",
-    "Đánh giá FINER đủ 5 tiêu chí (F và E máy không tự làm được)",
-    "Đọc lại bằng chứng §3 + §3.6 rồi biện minh tính mới",
+    "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận.",
+    "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification. Gỡ hết nhãn nháp/ô mẫu còn sót trong trường (vd «[DỰ THẢO…]», «[… — điền]», «___», «☐ … ☐ …») — hệ KHÔNG tự viết thay.",
+    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"df575f9916659dd5\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+    "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn).",
     "Chạy: python tools/g0_quality_gate.py --study hai-long-benh-nhan-C1a-BVQY175"
   ],
   "next_gate": "G1 — Thiết kế nghiên cứu (CHỈ sau khi G0 đạt PASS_G0_CONFIRMED)",
   "disclaimer": "Cần bác sĩ kiểm chứng.",
   "quality_gate": {
-    "status": "PASS_G0_CONFIRMED",
+    "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
     "contract_version": "G0-2026.1",
     "automated_checks_passed": true,
-    "human_confirmation_complete": true,
-    "pending_actions": []
+    "human_confirmation_complete": false,
+    "pending_actions": [
+      "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận.",
+      "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification. Gỡ hết nhãn nháp/ô mẫu còn sót trong trường (vd «[DỰ THẢO…]», «[… — điền]», «___», «☐ … ☐ …») — hệ KHÔNG tự viết thay.",
+      "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"df575f9916659dd5\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+      "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn)."
+    ],
+    "dau_van_tay_luc_cham": "df575f9916659dd5"
   },
   "needs_input": {
-    "blocked": false,
+    "blocked": true,
     "reason_code": "MISSING_PICO",
-    "human_message": "G0 đã dựng xong NỀN BẰNG CHỨNG nhưng CÂU HỎI NGHIÊN CỨU chưa được bác sĩ chốt (PICO/kết cục chính/FINER còn trống). Hệ KHÔNG tự viết PICO thay bác sĩ.",
+    "human_message": "G0 đã dựng xong NỀN BẰNG CHỨNG; câu hỏi nghiên cứu (PICO, kết cục chính, giả thuyết, loại câu hỏi) ĐÃ đạt — còn chờ bác sĩ/PI: G0-HUMAN-05, G0-HUMAN-06, G0-HUMAN-07, G0-HUMAN-08. Không cần tra lại PubMed; điền xong thì chấm lại.",
     "remediation": {
       "action": "rerun_with_real_input",
       "command": "sửa exports/<study>/study_meta.json → gate_params.G0 rồi chạy: python tools/g0_quality_gate.py --study <study>",
@@ -116,8 +120,8 @@
         "hypothesis"
       ]
     },
-    "supplied_by": "doctor",
-    "resolved_by": "g0_quality_gate.refresh_checkpoint",
-    "resolved_at": "2026-09-02T02:35:03"
-  }
+    "supplied_by": "doctor"
+  },
+  "a1_dung_lai_luc": "2026-10-10T13:30:58",
+  "quality_contract_version": "G0-2026.1"
 }
