@@ -1,5 +1,5 @@
 path,sha256,size_bytes
-.claude/agents/an-toan-nghien-cuu.md,d7320e9c9bc9f3c691a12457f5ae1e6f084459dcdb356472388589cd150c048a,21580
+.claude/agents/an-toan-nghien-cuu.md,2687fd8dd97789dc23f0608c753be4f740bef1f4e47e996b10c405b5ad65a8f7,22506
 .claude/agents/bien-so-nghien-cuu.md,18b07fcc1177ef94799a6fa7ab09ada00b2d3959ebe9b2b7ee2bea4156fcc02d,21291
 .claude/agents/binh-duyet.md,4415d1b6550c5aa53f1ad86b75e8e82b1d42732c842e3e282edb3b87ed19f79e,25652
 .claude/agents/cap-nhat-guideline.md,4a65f42a9c9e0e3fe7309978ec2f5f60f04e5ea2238c105debd1b85812a0c669,16949
@@ -13,7 +13,7 @@ path,sha256,size_bytes
 .claude/agents/dien-giai-can-lam-sang.md,2f64478edc42f6ab39efa244df7a3c9fe50791319694607abc9824d91b9d1b91,17147
 .claude/agents/dien-giai-ket-qua.md,55d355d0a527c91bf2740af41b2268dd87d9d01d4497a16c7ea7c49ad2afd2d9,16197
 .claude/agents/dieu-phoi-g0.md,06fd7abf925b337a47ba139e8bcfc1bec3549f96758a6c5449f23da77e8e309a,15190
-.claude/agents/dieu-phoi-g1.md,aa0f852a87dca17834f699e4af5d1169e70d7d40806b2e3d5751ccc6b2c3fadd,15613
+.claude/agents/dieu-phoi-g1.md,fbca191c71415d9b11ec8ff964373dd7e832e943ef2c10e451e88e9b2ee5936d,15978
 .claude/agents/dieu-phoi-g10.md,5cbb5820526e2070f8bf4769250b350fab551a4b6e51b9113c61a280208863e5,15633
 .claude/agents/dieu-phoi-g2.md,b84c54143f3b8f79a56589817dedf4e70dc24538c92c2f526a39046ef3ec0ec1,14668
 .claude/agents/dieu-phoi-g3.md,1bcf3f6928e3bf3e6676f68d83cf0fe4d2c090f136d8fdb827c6512f84036766,14884

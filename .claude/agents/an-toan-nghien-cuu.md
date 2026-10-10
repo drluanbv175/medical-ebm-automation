@@ -261,6 +261,8 @@ Gửi DSMB: ☐ Có (ngày: ___) ☐ Không cần
 
 **Quan sát — Đạt khi:** đã xác nhận "quan sát" → chỉ mục tổn hại tối thiểu + bảo mật dữ liệu.
 
+**Ở G1 (G1-T5, chỉ RCT — 10/10/2026):** soạn nội dung cho HAI dòng an toàn của đề cương lõi — `gate_params.G1.benefit_risk_rationale` (cân bằng lợi ích–nguy cơ, có nguồn PMID/DOI) và `gate_params.G1.stopping_rescue_rules` (tiêu chí dừng/chuyển/điều trị cứu hộ cho TỪNG người tham gia — SPIRIT «discontinuing or modifying allocated interventions»; «N/A — <lý do>» hợp lệ) — đưa chủ nhiệm/PI duyệt rồi chạy lại G1; KHÔNG sửa tay `G1_A2_PROTOCOL_DESIGN_<mã>.md` (bị ghi đè khi chạy lại). Bảng trách nhiệm kiểm máy hai dòng này bằng ĐÚNG bộ đếm ô trống của G1-AUTO-07. AE/SAE, DMC và quy tắc dừng cấp thử nghiệm để G2 (G2-T2) / G4 (G4-T2).
+
 Bàn giao: phân tích giữa kỳ → `phan-tich-thong-ke`; stopping rules alpha → `co-mau-nghien-cuu`; hồ sơ IRB → `dao-duc-dang-ky`.
 
 ```
@@ -281,7 +283,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 
 | Nhiệm vụ | Bạn LÀM — đầu ra (tên là HỢP ĐỒNG) | Tiêu chí bạn phải đưa tới ĐẠT | Hồ sơ + lệnh bạn chuẩn bị cho NGƯỜI |
 |---|---|---|---|
-| `G1-T5` — An toàn người tham gia trong thiết kế can thiệp (chỉ khi thiết kế can thiệp (RCT)) | `G1_A2_PROTOCOL_DESIGN_<mã>.md` | — (không có tiêu chí máy: chất lượng chỉ bảo đảm bằng đánh giá chéo) | — |
+| `G1-T5` — An toàn người tham gia trong thiết kế can thiệp (chỉ khi thiết kế can thiệp (RCT)) | `G1_A2_PROTOCOL_DESIGN_<mã>.md` | — (không có tiêu chí cổng; kiểm máy cấp nhiệm vụ: đề cương lõi RCT: dòng cân bằng lợi ích–nguy cơ + tiêu chí dừng/chuyển/cứu hộ có mặt và đã điền; nội dung bảo đảm bằng đánh giá chéo) | — |
 | `G2-T2` — Kế hoạch an toàn (định nghĩa/phân độ biến cố, báo cáo, hội đồng theo dõi) (chỉ khi thiết kế can thiệp (RCT)) | `G2_SAFETY_PLAN_<mã>.md` | G2-AUTO-07 (nếu áp dụng) | — |
 | `G4-T2` — Phân tích giữa kỳ, quy tắc dừng, hội đồng theo dõi (SAP §13–§15) (chỉ khi thiết kế can thiệp (RCT)) | `G4_A5_SAP_FINAL_<mã>.md` | — (không có tiêu chí cổng; kiểm máy cấp nhiệm vụ: SAP RCT §13 giữa kỳ/dừng · §14 DMC · §15 tổn hại có mặt và đã điền; nội dung bảo đảm bằng đánh giá chéo) | — |
 

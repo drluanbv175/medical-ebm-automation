@@ -33,7 +33,7 @@ Chốt thiết kế hợp loại câu hỏi, kiểm soát sai lệch, estimand, 
 | G1-T2 | Sổ bằng chứng và cơ sở lý luận | `tong-quan-y-van` | `G1_A2b_EVIDENCE_LEDGER_<mã>.md` | `tham-dinh-phe-binh` + `giam-khao-cong` |
 | G1-T3 | Kế hoạch triển khai, sổ rủi ro, kinh phí | `ke-hoach-trien-khai` | `G1_A13_IMPLEMENTATION_PLAN_<mã>.md`, `G1_A13b_RISK_REGISTER_<mã>.md` | `quan-ly-du-lieu` + `giam-khao-cong` |
 | G1-T4 | Phát triển/thích nghi & kiểm định công cụ đo lường (COSMIN) *(khi đề tài phát triển, sửa đổi hoặc dịch–thích nghi bộ câu hỏi/thang đo — điều phối KHAI bằng `khai-ap-dung`, mục 4b quy tắc 5; thang chuẩn dùng NGUYÊN TRẠNG ⇒ khai «khong» kèm tên thang + nguồn)* | `cong-cu-do-luong` | `G1_A2_PROTOCOL_DESIGN_<mã>.md` (§ công cụ đo) + `pha_cong_cu/phieu_cvi.csv` + `pha_cong_cu/nhat_ky_phong_van_nhan_thuc.csv` (sinh bằng `tools/pha_phat_trien_cong_cu.py`) | `bien-so-nghien-cuu` + `giam-khao-cong` |
-| G1-T5 | An toàn người tham gia trong thiết kế can thiệp *(khi thiết kế can thiệp (RCT))* | `an-toan-nghien-cuu` | `G1_A2_PROTOCOL_DESIGN_<mã>.md` | `thiet-ke-nghien-cuu` + `giam-khao-cong` |
+| G1-T5 | An toàn người tham gia trong thiết kế can thiệp *(khi thiết kế can thiệp (RCT))* | `an-toan-nghien-cuu` | `G1_A2_PROTOCOL_DESIGN_<mã>.md` (hai dòng an toàn của đề cương lõi: cân bằng lợi ích–nguy cơ · tiêu chí dừng/chuyển/cứu hộ — nguồn `gate_params.G1.benefit_risk_rationale` + `stopping_rescue_rules`) | `thiet-ke-nghien-cuu` + `giam-khao-cong` |
 
 Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý do ở khối bàn giao, không giao việc.
 
@@ -59,7 +59,7 @@ của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm v
 | `PI@G1-T3` — NGƯỜI PI quyết/ký; agent chuẩn bị hồ sơ + lệnh: `ke-hoach-trien-khai` | G1-HUMAN-06 |
 | `^G0` — cổng tiền đề G0 (điều phối cổng đó chịu trách nhiệm) | G1-AUTO-01 |
 
-Nhiệm vụ KHÔNG có tiêu chí máy (chất lượng CHỈ bảo đảm bằng đánh giá chéo): G1-T4 `cong-cu-do-luong` (kiểm máy cấp nhiệm vụ: pha phát triển bộ câu hỏi: phiếu CVI đúng cấu trúc, ≥ 3 chuyên gia; nhật ký phỏng vấn nhận thức đủ cột), G1-T5 `an-toan-nghien-cuu` — chưa có biên bản
+Nhiệm vụ KHÔNG có tiêu chí máy (chất lượng CHỈ bảo đảm bằng đánh giá chéo): G1-T4 `cong-cu-do-luong` (kiểm máy cấp nhiệm vụ: pha phát triển bộ câu hỏi: phiếu CVI đúng cấu trúc, ≥ 3 chuyên gia; nhật ký phỏng vấn nhận thức đủ cột), G1-T5 `an-toan-nghien-cuu` (kiểm máy cấp nhiệm vụ: đề cương lõi RCT: dòng cân bằng lợi ích–nguy cơ + tiêu chí dừng/chuyển/cứu hộ có mặt và đã điền) — chưa có biên bản
 đánh giá chéo «qua» còn hiệu lực ⇒ khối bàn giao ghi «chất lượng chưa được bảo đảm» (lệnh đo liệt kê).
 
 1. **Thước đo duy nhất:** `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G1` — chỉ đọc; chấm sống,

@@ -56,9 +56,10 @@ cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ c�
    «chất lượng chưa được bảo đảm» và khối bàn giao phải nói thật (không đổi kết luận máy; triệu tập vẫn hỏi bác sĩ §5).
    Nhiệm vụ có tệp hợp đồng thì được thêm **kiểm máy cấp nhiệm vụ** (`hoi_dong_cong.KIEM_NHIEM_VU`, chỉ CẤU TRÚC, không
    phải tiêu chí cổng): G3-T2/G3-T3 — `_bo-bien-rieng.csv` nạp được bằng đúng hàm G5 dùng, không biến định danh, CRF có
-   luật kiểm tra; G4-T2 (chỉ khi thiết kế chắc là RCT) — SAP §13 giữa kỳ/dừng · §14 DMC · §15 tổn hại đã điền theo đúng
-   hàm bước ký G4 dùng; lỗi ⇒ `AGENT_CON_VIEC` của đúng agent. Mục «Tiền đề» §2 của mỗi điều phối có dòng tiêu chí
-   tiền đề SINH từ `PHAN_CONG` (không còn văn xuôi lệch mã).
+   luật kiểm tra; G1-T5 (chỉ RCT) — hai dòng an toàn của đề cương lõi (lợi ích–nguy cơ · dừng/chuyển/cứu hộ) đã điền,
+   đếm bằng đúng bộ đếm ô trống của G1-AUTO-07; G4-T2 (chỉ khi thiết kế chắc là RCT) — SAP §13 giữa kỳ/dừng · §14 DMC
+   · §15 tổn hại đã điền theo đúng hàm bước ký G4 dùng; lỗi ⇒ `AGENT_CON_VIEC` của đúng agent. Mục «Tiền đề» §2 của
+   mỗi điều phối có dòng tiêu chí tiền đề SINH từ `PHAN_CONG` (không còn văn xuôi lệch mã).
 8. **Lệnh trong tài liệu agent phải chạy được:** test `tests/test_lenh_trong_tai_lieu_agent_20261010.py` (repo y khoa)
    đối chiếu mọi cờ của lệnh `python3 tools/…` trong `.codex/agents/*.md` với argparse của công cụ.
 9. **Nhiệm vụ có điều kiện máy không suy được — điều phối KHAI bằng máy** (10/10/2026): điều kiện RCT/SR suy từ thiết
