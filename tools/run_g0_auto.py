@@ -80,6 +80,7 @@ from app.sources.pubmed import PubMedClient  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent))  # thư mục tools/
 import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
 import g0_quality_gate as G0Q  # noqa: E402  (hợp đồng CHẤT LƯỢNG riêng G0)
+import g0_tong_hop as GT  # noqa: E402  (phần ĐỌC BÀI do agent G0-T3/T4 soạn — 10/10/2026)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG + study_meta dùng chung)
 import trial_registry as TR  # noqa: E402  (tra ClinicalTrials.gov — dùng chung với G2)
 
@@ -446,13 +447,38 @@ _format_trial_list = TR.format_trial_list
 # 4. PHÂN TÍCH KHOẢNG TRỐNG TỪ KẾT QUẢ THẬT
 # ════════════════════════════════════════════════════════════════════════════
 
+# Thiết kế KHÔNG phân bổ can thiệp — «chưa có RCT» không phải khoảng trống của câu hỏi loại này (VÁ 10/10/2026).
+_THIET_KE_KHONG_CAN_THIEP = frozenset({"cross_sectional", "cohort", "case_control", "diagnostic", "qualitative",
+                                       "prediction"})
+
+
+def _thiet_ke_theo_quyet_dinh(meta: Optional[dict]) -> tuple:
+    """(mã thiết kế, nguồn) theo QUYẾT ĐỊNH NGƯỜI: thiết kế đã ghim ở G1 → loại câu hỏi đã khai ở G0 (chỉ cặp chắc
+    chắn của g0_quality_gate). Chưa có ⇒ (None, "")."""
+    if not isinstance(meta, dict):
+        return None, ""
+    ma = G0Q._thiet_ke_ghim(meta)
+    if ma:
+        return ma, "thiết kế đã ghim ở G1"
+    qt = G0Q.S.chuan_hoa_question_type(G0Q._g0_meta(meta).get("question_type"))
+    ma = G0Q._THIET_KE_THEO_LOAI_CAU_HOI.get(qt or "")
+    return (ma, f"loại câu hỏi «{qt}» đã khai ở G0") if ma else (None, "")
+
+
 def analyze_evidence_gaps(results: dict, topic: str,
-                          registry: Optional[dict] = None) -> dict:
+                          registry: Optional[dict] = None,
+                          meta: Optional[dict] = None, base_query: str = "") -> dict:
     """Tổng hợp bằng chứng + phân tích khoảng trống từ kết quả PubMed thật.
 
     `registry` (tuỳ chọn) là kết quả check_trial_registry(): dùng để KHÔNG kết
     luận "khoảng trống" khi thực tế đang có thử nghiệm tuyển bệnh cho đúng câu
-    hỏi đó. Để None thì hàm hoạt động y như trước (giữ nguyên mọi test cũ)."""
+    hỏi đó. Để None thì hàm hoạt động y như trước (giữ nguyên mọi test cũ).
+
+    VÁ 10/10/2026 (hội đồng G0 — biên bản DG G0-T3/G0-T4 của C1a): (a) mọi dòng khoảng trống PHỦ ĐỊNH ghi PHẠM VI
+    (PubMed · truy vấn G0) — «chưa có SR/guideline» từng suy từ 0 hit của MỘT truy vấn rồi lan nguyên văn sang sổ
+    chứng cứ G1 và đề cương G10, trái văn bản Bộ Y tế mà chính đề cương dẫn; (b) `meta` (study_meta): câu hỏi KHÔNG
+    can thiệp (thiết kế đã ghim hoặc loại câu hỏi đã khai) thì không nêu «chưa có RCT» làm khoảng trống và không gợi
+    ý RCT/cohort từ số hit; (c) năm mới nhất tính MỌI nhánh đã tải (kể cả quan sát) và nói rõ phạm vi."""
     # ★ VÁ 2026-07-27: ưu tiên SỐ HIT THẬT (esearch Count) thay vì số bài LẤY VỀ.
     # Trước đây n_sr = len(danh sách đã lấy), bị chặn trần bởi --max-results (mặc định 15):
     # một chủ đề có 34 SR/MA và 16 RCT được ghi vào checkpoint là 15/15, nên mọi ngưỡng
@@ -492,11 +518,15 @@ def analyze_evidence_gaps(results: dict, topic: str,
     n_guide = _n("guideline")
     n_obs = _n("observational")
     n_recent = _n("recent")
+    pham_vi = (f"PubMed, truy vấn G0 «{base_query}»" if str(base_query or "").strip()
+               else "PubMed, truy vấn G0")
+    ma_tk, nguon_tk = _thiet_ke_theo_quyet_dinh(meta)
+    khong_can_thiep = ma_tk in _THIET_KE_KHONG_CAN_THIEP
 
-    # Tìm năm gần nhất
+    # Tìm năm gần nhất — MỌI nhánh đã tải (VÁ 10/10/2026: bỏ nhánh quan sát từng in «Không xác định» cạnh bài 2025)
     all_years = []
-    for key in ("sr_ma", "rct", "guideline", "recent"):
-        for r in results[key]:
+    for key in ("sr_ma", "rct", "guideline", "recent", "observational"):
+        for r in results.get(key, []):
             if r.publication_date and r.publication_date.isdigit():
                 all_years.append(int(r.publication_date))
     most_recent = max(all_years) if all_years else None
@@ -518,7 +548,8 @@ def analyze_evidence_gaps(results: dict, topic: str,
         # VÁ 2026-07-27: nhánh MỚI. Trước đây một lĩnh vực có hàng trăm nghiên cứu quan sát
         # nhưng 0 RCT/SR bị báo thẳng là "Khoảng trống lớn — cơ hội nghiên cứu rõ ràng",
         # tức khuyên bác sĩ làm một đề tài đã có rất nhiều người làm.
-        evidence_level = f"CÓ NỀN QUAN SÁT — ~{n_obs} NC quan sát, chưa có RCT/SR"
+        evidence_level = (f"CÓ NỀN QUAN SÁT — ~{n_obs} hit của bộ lọc quan sát (CHƯA sàng lọc mức liên quan), "
+                          f"không thấy RCT/SR trong {pham_vi}")
         novelty_concern = ("Đã có nhiều nghiên cứu quan sát: KHÔNG phải khoảng trống. Cần đọc "
                            "kỹ nhóm này trước khi biện minh tính mới; hướng khả dĩ là SR/MA "
                            "tổng hợp chúng, hoặc nghiên cứu ở quần thể/bối cảnh chưa được phủ.")
@@ -532,11 +563,13 @@ def analyze_evidence_gaps(results: dict, topic: str,
     # Nhận diện khoảng trống cụ thể
     gaps = []
     if n_sr == 0:
-        gaps.append("Chưa có systematic review tổng hợp bằng chứng")
-    if n_rct == 0:
-        gaps.append("Chưa có RCT kiểm định hiệu quả can thiệp")
+        gaps.append(f"Không thấy SR/MA trong {pham_vi} — chỉ trong phạm vi một truy vấn, KHÔNG phải kết luận "
+                    "«chưa có tổng quan»")
+    if n_rct == 0 and not khong_can_thiep:
+        gaps.append(f"Không thấy RCT trong {pham_vi} — chỉ trong phạm vi một truy vấn")
     if n_guide == 0:
-        gaps.append("Chưa có guideline/khuyến cáo chính thức cho vấn đề này")
+        gaps.append(f"Không thấy guideline được PubMed đánh chỉ mục ({pham_vi}) — văn bản quy phạm trong nước "
+                    "(Bộ Y tế…) và trang hiệp hội KHÔNG nằm trên PubMed: phải rà trước khi kết luận «chưa có»")
     this_year = datetime.now().year
     if most_recent and (this_year - most_recent) > 5:
         gaps.append(f"Bằng chứng mới nhất từ {most_recent} — có thể đã lỗi thời")
@@ -560,8 +593,11 @@ def analyze_evidence_gaps(results: dict, topic: str,
             "khoảng trống, ví dụ quần thể/bối cảnh chưa được phủ; hệ KHÔNG suy ra được]"
         )
 
-    # Gợi ý thiết kế
-    if n_sr == 0 and n_rct >= 2:
+    # Gợi ý thiết kế — thiết kế ĐÃ GHIM / loại câu hỏi ĐÃ KHAI đi trước gợi ý theo số hit (VÁ 10/10/2026)
+    if ma_tk:
+        design_hint = (f"Thiết kế `{ma_tk}` theo {nguon_tk} — gợi ý máy theo số hit KHÔNG áp dụng "
+                       "(G1 quyết định chi tiết)")
+    elif n_sr == 0 and n_rct >= 2:
         design_hint = "SR/Meta-analysis (tổng hợp RCT hiện có)"
     elif n_rct == 0:
         design_hint = "RCT ngẫu nhiên có đối chứng HOẶC Cohort tiến cứu"
@@ -633,19 +669,23 @@ def analyze_evidence_gaps(results: dict, topic: str,
 # 5. SINH ARTIFACT A1 (MARKDOWN)
 # ════════════════════════════════════════════════════════════════════════════
 
-def _format_article_list(articles: list, max_show: int = 5) -> str:
+def _format_article_list(articles: list, max_show: Optional[int] = None) -> str:
+    """Liệt kê bài đã tải. VÁ 10/10/2026 (hội đồng G0, DG G0-T3/T4): mặc định liệt kê ĐỦ — bản cũ cắt còn 5 («… và 7
+    bài khác») giấu đúng 4 bài sát đề tài nhất của C1a trong khi G0-HUMAN-06 bảo PI «đọc danh sách PMID ở §3»."""
     if not articles:
         return "  → Không tìm thấy bài nào trên PubMed\n"
     lines = []
-    for i, r in enumerate(articles[:max_show]):
+    shown = articles if max_show is None else articles[:max_show]
+    for i, r in enumerate(shown):
         pmid_str = f"PMID: {r.pmid}" if r.pmid else "PMID: chưa có"
         year = r.publication_date or "?"
-        title = (r.title or "Không có tiêu đề")[:100]
+        title = (r.title or "Không có tiêu đề")[:200]
         lines.append(f"  {i+1}. {title}\n"
-                     f"     {r.authors or 'N/A'} ({year}). {r.journal_or_organization or ''}\n"
+                     f"     {getattr(r, 'authors', None) or 'tác giả: xem trang PubMed'} ({year}). "
+                     f"{r.journal_or_organization or ''}\n"
                      f"     {pmid_str} | URL: {r.url or 'N/A'}")
-    if len(articles) > max_show:
-        lines.append(f"  ... và {len(articles) - max_show} bài khác")
+    if len(articles) > len(shown):
+        lines.append(f"  ... và {len(articles) - len(shown)} bài khác (đủ danh sách: G0_pubmed_raw.json)")
     return "\n".join(lines) + "\n"
 
 
@@ -692,8 +732,9 @@ def _evidence_source_warning() -> str:
                 "đây là dữ liệu GIẢ LẬP dùng để thử phần mềm, KHÔNG phải kết quả PubMed và "
                 "KHÔNG được dùng cho bất kỳ quyết định nghiên cứu nào. Chạy lại với "
                 "USE_MOCK_SOURCES=false để có bằng chứng thật.")
-    return ("Danh sách dưới đây là kết quả THẬT từ PubMed E-utilities. "
-            "PMIDs đã được xác minh.")
+    return ("Danh sách dưới đây là kết quả THẬT từ PubMed E-utilities — PMID được xác minh TỒN TẠI trên PubMed. "
+            "Trạng thái rút bài KHÔNG được khẳng định ở đây: xem §3.0 (nếu agent đã kiểm) và guardrail R1C trong "
+            "G0_checkpoint.json; không kiểm được là «chưa kiểm», không phải «chưa bị rút».")
 
 
 def _section_heading(label: str, n_hits: int, articles: list,
@@ -707,13 +748,17 @@ def _section_heading(label: str, n_hits: int, articles: list,
     """
     shown = len(articles)
     tag = "số hit thật" if counts_are_real else "ước lượng dưới"
-    return f"{label} — ~{n_hits} hit ({tag}); hiển thị {min(shown, 5)}/{shown} bài đã tải"
+    return f"{label} — ~{n_hits} hit ({tag}); liệt kê đủ {shown} bài đã tải"
 
 
 def generate_a1_artifact(topic: str, study_name: str, queries: dict,
                           results: dict, gaps: dict, run_date: str,
-                          registry: Optional[dict] = None, meta: Optional[dict] = None) -> str:
-    """Sinh artifact A1 hoàn chỉnh với kết quả PubMed thật."""
+                          registry: Optional[dict] = None, meta: Optional[dict] = None,
+                          out_dir: Optional[Path] = None) -> str:
+    """Sinh artifact A1 hoàn chỉnh với kết quả PubMed thật.
+
+    `out_dir` (10/10/2026): thư mục đề tài để đọc hai tệp do agent soạn — `G0_TONG_HOP_BANG_CHUNG_<mã>.json` (G0-T3) và
+    `G0_KHOANG_TRONG_<mã>.json` (G0-T4) — xem `tools/g0_tong_hop.py`. None ⇒ in nhãn [CẦN …] chỉ đúng agent, đúng tệp."""
 
     sr_list = _format_article_list(results["sr_ma"])
     rct_list = _format_article_list(results["rct"])
@@ -731,11 +776,20 @@ def generate_a1_artifact(topic: str, study_name: str, queries: dict,
     # bác sĩ KHÔNG nhìn thấy và KHÔNG kiểm chứng được — vi phạm trực tiếp bất
     # biến "mọi đầu ra kèm PMID để bác sĩ kiểm chứng".
     obs_list = _format_article_list(results.get("observational", []))
+    # VÁ 10/10/2026 (hội đồng G0, DG G0-T3/T4): phần ĐỌC BÀI của agent + thiết kế đã ghim + khối việc của PI.
+    khoi_tong_hop = GT.khoi_tong_hop(out_dir, study_name, results.get("all_pmids") or [])
+    khoi_khoang_trong = GT.khoi_khoang_trong(out_dir, study_name)
+    khoi_finer = GT.khoi_nhap_finer(out_dir, study_name)
+    _ma_ghim, _nguon_ghim = _thiet_ke_theo_quyet_dinh(meta)
+    _ghi_chu_ghim = (f"> ✅ **Đã có quyết định thiết kế:** `{_ma_ghim}` theo {_nguon_ghim} — dòng «Ưu tiên 1» bên dưới "
+                     "theo quyết định đó, KHÔNG suy từ số hit; mục này chỉ còn giá trị lịch sử.\n"
+                     if _ma_ghim else "")
+    _can_prospero = _ma_ghim == "sr_ma"
 
     artifact = f"""# A1 — CÂU HỎI NGHIÊN CỨU & PICO | {study_name}
 > Tạo tự động: {run_date} | Truy vấn PubMed thật
 > **Hệ KHÔNG suy ra PICO.** Mọi ô P/I/C/O bên dưới là chỗ TRỐNG — bác sĩ phải tự viết.
-> Thứ G0 làm được là dựng NỀN BẰNG CHỨNG (§3) và chỉ ra khoảng trống (§5) để bác sĩ
+> Thứ G0 làm được là dựng NỀN BẰNG CHỨNG (PHẦN 3) và chỉ ra khoảng trống (PHẦN 4) để bác sĩ
 > viết PICO có căn cứ. (Câu cũ ở dòng này ghi "xác nhận hoặc chỉnh PICO, không điền
 > lại từ đầu" — đã bỏ 2026-07-28 vì mô tả sai việc hệ thật sự làm.)
 >
@@ -760,13 +814,13 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 
 ┌─────────────────────────────────────────────────────────┐
 │ P — POPULATION (Dân số/Bệnh nhân)                      │
-│   Đặc điểm: [suy ra từ topic: "{_truncate_at_word(topic, 40)}"]          │
+│   Đặc điểm: [CẦN BÁC SĨ VIẾT — hệ KHÔNG suy từ topic]    │
 │   Tiêu chí chọn: [CẦN BÁC SĨ XÁC NHẬN]               │
 │   Tiêu chí loại: [CẦN BÁC SĨ XÁC NHẬN]               │
 │   Bối cảnh: Ngoại trú / Nội trú / Cộng đồng           │
 ├─────────────────────────────────────────────────────────┤
 │ I — INTERVENTION / E — EXPOSURE                         │
-│   Can thiệp/Phơi nhiễm: [suy ra từ topic]             │
+│   Can thiệp/Phơi nhiễm: [CẦN BÁC SĨ VIẾT]             │
 │   Liều/thời gian: [CẦN BÁC SĨ XÁC NHẬN]              │
 ├─────────────────────────────────────────────────────────┤
 │ C — COMPARISON (So sánh)                               │
@@ -829,7 +883,7 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 │ N — NOVEL (Tính mới) — DỰA TRÊN PUBMED THẬT              │
 │   SR/MA: {gaps['n_sr']} | RCT: {gaps['n_rct']} | Guideline: {gaps['n_guide']} | Quan sát: {gaps.get('n_observational', 0)}
 │   {'(số hit THẬT từ PubMed)' if gaps.get('counts_are_real') else '(⚠ chỉ đếm bài lấy về — ước lượng DƯỚI, không dùng để kết luận khoảng trống)'}
-│   Bằng chứng mới nhất: {gaps['most_recent_year'] or 'Không xác định'}
+│   Năm công bố mới nhất trong các bài đã tải (mọi nhánh): {gaps['most_recent_year'] or 'không có bài nào'}
 │   Khoảng trống:
 {''.join(f"│     • {g}" + chr(10) for g in gaps['gaps'])}│
 ├─────────────────────────────────────────────────────────────┤
@@ -846,6 +900,10 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 Đánh giá FINER: ☐ ĐẠT  ☐ CẦN SỬA [điểm: ___]  ☐ KHÔNG KHẢ THI
 ```
 
+> Nơi hệ ĐỌC: `gate_params.G0.finer_feasible/_interesting/_novel/_ethical/_relevant` — MỖI khoá một câu
+> «ĐẠT — <lý do>» (cờ true trơn KHÔNG đủ — G0-HUMAN-05). F và E chỉ PI đánh giá được.
+
+{khoi_finer}
 ---
 
 ## PHẦN 3 — BẰNG CHỨNG HIỆN CÓ ({_evidence_source_label()} — {run_date[:10]})
@@ -854,7 +912,11 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 > Bác sĩ cần đọc toàn văn để kiểm chứng nội dung.
 > Mỗi tiêu đề mục ghi RỜI hai con số: ~số hit (toàn kho PubMed) và số bài hệ đã tải
 > về (bị chặn bởi `--max-results`) — trước 2026-07-28 hai số này bị trộn làm một.
+> Phạm vi: MỘT truy vấn PubMed `{queries.get('base', topic)}`; xếp nhánh theo BỘ LỌC PubMed, không phải đọc bài —
+> mức liên quan và thiết kế thật ở §3.0.
 
+### 3.0 Sàng lọc mức liên quan và tóm lược (agent `tong-quan-y-van` đọc bài)
+{khoi_tong_hop}
 ### {_section_heading("3.1 Systematic Review / Meta-analysis", gaps['n_sr'], results['sr_ma'], _real)}
 {sr_list}
 
@@ -865,15 +927,17 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 {guide_list}
 > ⚠️ Chỉ soi guideline được PubMed đánh chỉ mục. KHÔNG thay việc quét trang chính thống
 > (WHO · NICE · USPSTF · hiệp hội chuyên khoa · Bộ Y tế) — nhiều khuyến cáo không nằm
-> trên PubMed. Kết luận "chưa có guideline" ở §5 chỉ đúng trong phạm vi PubMed.
+> trên PubMed. Dòng «không thấy guideline» ở PHẦN 4 chỉ đúng trong phạm vi PubMed; văn bản quy phạm
+> trong nước nằm ở bảng PHẦN 4b.
 
-### {_section_heading("3.5 Nghiên cứu QUAN SÁT (cohort/bệnh-chứng/cắt ngang)", gaps.get('n_observational', 0), results.get('observational', []), _real)}
+### {_section_heading("3.4 Nghiên cứu QUAN SÁT (cohort/bệnh-chứng/cắt ngang — theo bộ lọc PubMed)", gaps.get('n_observational', 0), results.get('observational', []), _real)}
 {obs_list}
 > ⚠️ Con số ~{gaps.get('n_observational', 0)} là SỐ HIT của bộ lọc quan sát và CÓ CHỒNG LẤN
-> với RCT/SR (đo thật: ~13% ở một số chủ đề). Dùng để biết "lĩnh vực này đã có nền quan sát
-> hay chưa", KHÔNG dùng làm số nghiên cứu quan sát thuần.
+> với RCT/SR (mức chồng lấn tuỳ chủ đề — chưa đo cho truy vấn này). Dùng để biết "lĩnh vực
+> này đã có nền quan sát hay chưa", KHÔNG dùng làm số nghiên cứu quan sát thuần, và CHƯA sàng
+> lọc mức liên quan (xem §3.0).
 
-### {_section_heading(f"3.4 SR/MA · RCT · guideline gần đây {int(run_date[:4]) - 5}-{run_date[:4]}", gaps['n_recent'], results['recent'], _real)}
+### {_section_heading(f"3.5 SR/MA · RCT · guideline gần đây {int(run_date[:4]) - 5}-{run_date[:4]}", gaps['n_recent'], results['recent'], _real)}
 {recent_list}
 > ⚠️ Nhánh này chạy với bộ lọc SR/MA·RCT·guideline, nên nó KHÔNG trả lời "có nghiên cứu
 > nào mới không" nói chung — nghiên cứu quan sát mới không xuất hiện ở đây.
@@ -887,6 +951,8 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 > · Đăng ký quốc tế khác → WHO ICTRP: https://trialsearch.who.int/
 > (hai nguồn này không có API mở miễn phí — hệ KHÔNG tra, đừng coi là đã tra)
 > ☐ Bác sĩ đã tự tra PROSPERO   ☐ Bác sĩ đã tự tra WHO ICTRP
+> Nơi hệ ĐỌC: `gate_params.G0.registry_manual_checked = {{"ictrp": "YYYY-MM-DD"{', "prospero": "YYYY-MM-DD"' if _can_prospero else ''}}}`
+> (ngày tự tra, không ở tương lai — G0-HUMAN-08); có thử nghiệm đang tuyển khớp ⇒ thêm `registry_overlap_assessment`.
 
 **Tổng PMIDs thật tìm được:** {results['total']} bài từ {len(results['all_pmids'])} PMID duy nhất
 
@@ -901,11 +967,16 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 
 {("**Đối chiếu đăng ký:** " + gaps["registry_note"]) if gaps.get("registry_note") else ""}
 
+> Các dòng trên do MÁY suy từ số hit của một truy vấn — mỗi dòng phủ định đã ghi phạm vi. Phát biểu khoảng trống
+> có đọc bài nằm ở PHẦN 4b; nơi chốt là `gate_params.G0.novelty_justification`.
+
+## PHẦN 4b — ĐỐI CHIẾU GUIDELINE, PHÁT BIỂU KHOẢNG TRỐNG, TÍNH MỚI (agent `khoang-trong-nghien-cuu`)
+{khoi_khoang_trong}
 ---
 
 ## PHẦN 5 — THIẾT KẾ GỢI Ý SƠ BỘ (G1 quyết định chính thức)
 
-```
+{_ghi_chu_ghim}```
 ┌─────────────────────────────────────────────────────────────┐
 │ Ưu tiên 1 (hệ gợi ý từ bằng chứng thật):                   │
 │   {_truncate_at_word(gaps['design_hint'], 55)}
@@ -944,16 +1015,21 @@ PHẦN CHỈ BÁC SĨ QUYẾT ĐƯỢC (hệ KHÔNG tự điền)
 ☐ Kết cục CHÍNH duy nhất + thang đo + thời điểm → .primary_outcome{{,_measure,_timepoint}}
 ☐ Giả thuyết H0/H1 + chiều kỳ vọng  → .hypothesis_h0/.hypothesis_h1/.expected_direction
 ☐ Loại câu hỏi + loại kiểm định     → .question_type/.test_type
-☐ FINER 5 tiêu chí                  → .finer_feasible/_interesting/_novel/_ethical/_relevant
-☐ Đã đọc lại bằng chứng + biện minh tính mới → .evidence_reviewed_confirmed/.novelty_justification
-☐ Chốt PICO (vai trò + thời điểm)   → .pico_confirmed/.reviewed_by_role/.reviewed_at
+☐ FINER 5 tiêu chí, MỖI khoá một câu «ĐẠT — <lý do>» → .finer_feasible/_interesting/_novel/_ethical/_relevant
+☐ Đã đọc lại bằng chứng + biện minh tính mới (bỏ nhãn [DỰ THẢO …]) → .evidence_reviewed_confirmed/.novelty_justification
+☐ Tự tra WHO ICTRP{' + PROSPERO' if _can_prospero else ''}, ghi NGÀY tra  → .registry_manual_checked = {{"ictrp": "YYYY-MM-DD"}}
+☐ Chốt PICO (vai trò + thời điểm + dấu nội dung) → .pico_confirmed/.reviewed_by_role/.reviewed_at/.dau_van_tay_chot
 ```
 
-**Hành động tiếp theo của bác sĩ:**
-1. Đọc danh sách bài ở §3 (click PMID) và hồ sơ đăng ký ở §3.6
+**Hành động tiếp theo của bác sĩ** (danh sách SỐNG luôn ở `python3 tools/hoi_dong_cong.py cham-song --study {study_name} --gate G0`):
+1. Đọc ĐỦ danh sách bài ở PHẦN 3 (bảng sàng lọc §3.0 nếu có) và hồ sơ đăng ký ở §3.6
 2. Mở `study_meta.json`, điền khối `gate_params.G0` theo bảng trên
-3. Chạy `python tools/g0_quality_gate.py --study {study_name}` để xem còn thiếu gì
+3. Chạy `python tools/g0_quality_gate.py --study {study_name}` — bộ chấm in `dau_van_tay_chot` của nội dung HIỆN TẠI;
+   xác nhận SAU CÙNG (sửa quyết định hay dựng lại A1 sau khi xác nhận làm dấu đổi ⇒ phải xác nhận lại)
 4. Khi trạng thái đạt `PASS_G0_CONFIRMED` thì mới chạy G1 (`thiet-ke-nghien-cuu`)
+
+Dựng lại A1 sau khi agent cập nhật hai tệp ở §3.0/PHẦN 4b (không tra lại PubMed):
+`python3 tools/run_g0_auto.py --study {study_name} --dung-lai-a1`
 
 > G0 KHÔNG tự kích hoạt G1. Bác sĩ tự chạy G1 sau khi chốt câu hỏi.
 
@@ -1369,8 +1445,8 @@ def write_checkpoint(study_name: str, out_dir: Path, results: dict,
             "errors": guardrail["errors"],
         },
         "artifacts": {
-            "A1_markdown": str(artifact_path),
-            "A1_docx": str(docx_path) if docx_path else None,
+            "A1_markdown": _duong_dan_luu(artifact_path),
+            "A1_docx": _duong_dan_luu(docx_path),
         },
         "pending_doctor_actions": [
             "Điền PICO 4 thành phần vào study_meta.json → gate_params.G0",
@@ -1392,6 +1468,89 @@ def write_checkpoint(study_name: str, out_dir: Path, results: dict,
 # 9. MAIN — CLI ENTRY POINT
 # ════════════════════════════════════════════════════════════════════════════
 
+def _duong_dan_luu(p: Optional[Path]) -> Optional[str]:
+    """Đường dẫn ghi vào checkpoint: TƯƠNG ĐỐI theo gốc repo y khoa (dạng POSIX) — đường tuyệt đối làm lộ thư mục máy
+    và worktree tạm vào tệp theo dõi git (đo 10/10/2026 trên C1a). Ngoài gốc repo ⇒ giữ nguyên."""
+    if p is None:
+        return None
+    try:
+        return Path(p).resolve().relative_to(_REPO_ROOT.resolve()).as_posix()
+    except ValueError:
+        return str(p)
+
+
+def _bai_tu_raw(d: dict):
+    """Một bản ghi của G0_pubmed_raw.json → đối tượng có đúng các thuộc tính _format_article_list đọc."""
+    from types import SimpleNamespace  # noqa: PLC0415
+
+    return SimpleNamespace(pmid=d.get("pmid"), title=d.get("title"), publication_date=d.get("year"),
+                           journal_or_organization=d.get("journal"), url=d.get("url"), authors=d.get("authors"))
+
+
+def dung_lai_a1(study: str, out_dir: Path) -> int:
+    """Dựng lại A1 (+ DOCX) từ `G0_pubmed_raw.json` + `G0_checkpoint.json` ĐÃ CÓ — KHÔNG tra lại PubMed (10/10/2026).
+
+    Vì sao: «chấm lại ≠ dựng lại nền bằng chứng» (09/10). Khi bộ sinh A1 đổi khuôn, hoặc agent G0-T3/T4 cập nhật hai
+    tệp `G0_TONG_HOP_BANG_CHUNG_<mã>.json` / `G0_KHOANG_TRONG_<mã>.json`, cần dựng lại BẢN ĐỌC mà giữ nguyên tập PMID
+    (đổi tập PMID làm dấu vân tay G0 đổi ⇒ PI phải xác nhận lại). Chỉ cập nhật các khoá SUY RA của checkpoint
+    (khoảng trống, mức bằng chứng, gợi ý thiết kế, guardrail, đường dẫn artifact) rồi chấm lại bằng g0_quality_gate.
+    Guardrail R1C (kiểm rút bài) vẫn chạy và CÓ THỂ gọi mạng — đó là kiểm liêm chính, không phải tìm bằng chứng mới.
+    Thiếu tệp nền ⇒ mã 2, không ghi gì."""
+    out_dir = Path(out_dir)
+    cp_path, raw_path = out_dir / "G0_checkpoint.json", out_dir / "G0_pubmed_raw.json"
+    if not cp_path.is_file() or not raw_path.is_file():
+        print(f"🚧 Không dựng lại được A1: thiếu {cp_path.name if not cp_path.is_file() else raw_path.name} — chạy G0 "
+              "đầy đủ (có --topic) để dựng nền bằng chứng trước.")
+        return GC.EXIT_BLOCKED
+    cp = json.loads(cp_path.read_text(encoding="utf-8"))
+    raw = json.loads(raw_path.read_text(encoding="utf-8"))
+    pr = cp.get("pubmed_results") if isinstance(cp.get("pubmed_results"), dict) else {}
+    results = {k: [_bai_tu_raw(x) for x in raw.get(k) or [] if isinstance(x, dict)]
+               for k in ("sr_ma", "rct", "guideline", "recent", "observational")}
+    results["true_counts"] = raw.get("true_counts") or {}
+    results["all_pmids"] = list(pr.get("all_pmids") or cp.get("pmids_verified") or [])
+    results["total"] = pr.get("total_found", sum(len(results[k]) for k in ("sr_ma", "rct", "guideline", "recent",
+                                                                          "observational")))
+    results["query_errors"] = ((raw.get("search_provenance") or {}).get("loi_nhanh")
+                               or pr.get("query_errors") or {})
+    topic, base = str(cp.get("topic") or ""), str(cp.get("base_query") or "")
+    registry = cp.get("registry_check") if isinstance(cp.get("registry_check"), dict) else None
+    meta = GC.load_study_meta(out_dir)
+    gaps = analyze_evidence_gaps(results, topic, registry=registry, meta=meta, base_query=base)
+    run_date = datetime.now().strftime("%Y-%m-%d %H:%M")
+    artifact_md = generate_a1_artifact(topic, study, {"base": base}, results, gaps, run_date,
+                                       registry=registry, meta=meta, out_dir=out_dir)
+    md_path = out_dir / f"G0_A1_PICO_FINER_{study}.md"
+    if md_path.exists():
+        backup = out_dir / f"G0_A1_PICO_FINER_{study}.bak-{datetime.now():%Y%m%d-%H%M%S}.md"
+        backup.write_text(md_path.read_text(encoding="utf-8"), encoding="utf-8", newline="\n")
+        print(f"  ↩ Đã sao lưu bản A1 cũ: {backup.name}")
+    md_path.write_text(artifact_md, encoding="utf-8", newline="\n")
+    guardrail = guardrail_check_g0(artifact_md, results)
+    docx_path = export_docx(artifact_md, study, out_dir)
+    pr = dict(pr)
+    pr["most_recent_year"] = gaps["most_recent_year"]
+    cp.update({
+        "pubmed_results": pr,
+        "evidence_note": gaps["evidence_level"], "evidence_level": gaps["evidence_level"],
+        "research_gaps": gaps["gaps"], "design_suggestion": gaps["design_hint"],
+        "novelty_concern": gaps.get("novelty_concern"),
+        "guardrail": {"passed": guardrail["passed"], "n_errors": len(guardrail["errors"]),
+                      "errors": guardrail["errors"]},
+        "artifacts": {"A1_markdown": _duong_dan_luu(md_path), "A1_docx": _duong_dan_luu(docx_path)},
+        "a1_dung_lai_luc": datetime.now().isoformat(timespec="seconds"),
+    })
+    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+    quality = G0Q.evaluate_study(study, out_dir, write=True)
+    print(f"  📝 Đã dựng lại {md_path.name} từ {len(results['all_pmids'])} PMID đã lưu (không tra lại PubMed)")
+    print(f"  🔴 Guardrail: {'✅ PASS' if guardrail['passed'] else str(len(guardrail['errors'])) + ' LỖI'}")
+    print(f"  🧭 G0 quality: {quality['status']}")
+    print("  Cần bác sĩ kiểm chứng.")
+    if not guardrail["passed"] or quality["status"] == G0Q.STATUS_BLOCKED:
+        return GC.EXIT_GUARDRAIL_FAIL
+    return GC.EXIT_OK
+
+
 def _thu_muc_de_tai(study: str) -> Path:
     """Thư mục đề tài exports/<study>/ — neo theo GỐC REPO y khoa (_REPO_ROOT), KHÔNG theo thư mục đang đứng.
 
@@ -1406,7 +1565,7 @@ def main():
     parser = argparse.ArgumentParser(
         description="G0 Auto — Tự động hóa cổng G0: câu hỏi nghiên cứu + PubMed search thật"
     )
-    parser.add_argument("--topic", required=True,
+    parser.add_argument("--topic", required=False, default=None,
                         help="Chủ đề nghiên cứu (tiếng Việt hoặc Anh)")
     parser.add_argument("--study", required=True,
                         help="Mã/tên đề tài (dùng đặt tên file, không dấu, không khoảng trắng)")
@@ -1423,11 +1582,20 @@ def main():
     parser.add_argument("--repo-root", default=None,
                         help="Gốc repo chứa exports/ (mặc định: repo y khoa chứa công cụ này — KHÔNG theo thư mục đang "
                              "đứng). Dùng cho test cô lập hoặc bản sao đo thử.")
+    parser.add_argument("--dung-lai-a1", action="store_true",
+                        help="Dựng lại A1 (+DOCX) từ G0_pubmed_raw.json + G0_checkpoint.json đã có — KHÔNG tra lại "
+                             "PubMed; đọc hai tệp agent G0-T3/T4 (10/10/2026). Không cần --topic.")
     args = parser.parse_args()
+    # --topic chỉ được bỏ khi dựng lại: thiếu --topic ở lượt chạy đầy đủ từng ghi checkpoint BLOCKED đè hồ sơ có sẵn.
+    if args.topic is None and not args.dung_lai_a1:
+        parser.error("cần --topic (hoặc --dung-lai-a1 để dựng lại A1 từ dữ liệu đã lưu)")
     if args.repo_root:
         global _REPO_ROOT
         _REPO_ROOT = Path(args.repo_root).resolve()
     GC.ensure_utf8_stdout()
+    if args.dung_lai_a1:
+        _ma = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))
+        return dung_lai_a1(_ma, _thu_muc_de_tai(_ma))
 
     # Ghi đè email nếu có
     if args.email:
@@ -1519,14 +1687,16 @@ def main():
 
     # 3. Phân tích khoảng trống
     print("\n📊 Bước 4/8: Phân tích bằng chứng & khoảng trống...")
-    gaps = analyze_evidence_gaps(results, args.topic, registry=registry)
+    _meta = GC.load_study_meta(_thu_muc_de_tai(study))
+    gaps = analyze_evidence_gaps(results, args.topic, registry=registry, meta=_meta,
+                                 base_query=queries.get("base", ""))
     print(f"  → Mức độ evidence: {gaps['evidence_level']}")
     print(f"  → Khoảng trống: {len(gaps['gaps'])} điểm")
 
     # 4. Sinh artifact A1
     print("\n✍️  Bước 5/8: Sinh artifact A1 (PICO + Giả thuyết + FINER + Evidence + Gap)...")
     artifact_md = generate_a1_artifact(args.topic, study, queries, results, gaps, run_date,
-                                       registry=registry, meta=GC.load_study_meta(_thu_muc_de_tai(study)))
+                                       registry=registry, meta=_meta, out_dir=_thu_muc_de_tai(study))
 
     # 5. Lưu artifact
     out_dir = _thu_muc_de_tai(study)
@@ -1606,21 +1776,26 @@ def main():
     raw_path = out_dir / "G0_pubmed_raw.json"
     raw_results = {
         "sr_ma": [{"pmid": r.pmid, "title": r.title, "year": r.publication_date,
-                   "journal": r.journal_or_organization, "url": r.url}
+                   "journal": r.journal_or_organization, "url": r.url,
+                   "authors": getattr(r, "authors", None)}
                   for r in results["sr_ma"]],
         "rct": [{"pmid": r.pmid, "title": r.title, "year": r.publication_date,
-                 "journal": r.journal_or_organization, "url": r.url}
+                 "journal": r.journal_or_organization, "url": r.url,
+                   "authors": getattr(r, "authors", None)}
                 for r in results["rct"]],
         "guideline": [{"pmid": r.pmid, "title": r.title, "year": r.publication_date,
-                       "journal": r.journal_or_organization, "url": r.url}
+                       "journal": r.journal_or_organization, "url": r.url,
+                   "authors": getattr(r, "authors", None)}
                       for r in results["guideline"]],
         "recent": [{"pmid": r.pmid, "title": r.title, "year": r.publication_date,
-                    "journal": r.journal_or_organization, "url": r.url}
+                    "journal": r.journal_or_organization, "url": r.url,
+                   "authors": getattr(r, "authors", None)}
                    for r in results["recent"]],
         # VÁ 2026-07-27: PHẢI ghi — trước đây nhánh này đếm mà không lưu, nên "bằng chứng"
         # mở được cổng lại không tồn tại ở bất kỳ file nào bác sĩ đọc được.
         "observational": [{"pmid": r.pmid, "title": r.title, "year": r.publication_date,
-                           "journal": r.journal_or_organization, "url": r.url}
+                           "journal": r.journal_or_organization, "url": r.url,
+                   "authors": getattr(r, "authors", None)}
                           for r in results.get("observational", [])],
         "true_counts": results.get("true_counts", {}),
         # VÁ 09/10/2026 (hội đồng BD-G0-T2): chiến lược tìm tái lập được — CSDL, giao diện, ngày tra, truy vấn gốc,

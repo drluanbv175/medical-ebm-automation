@@ -415,12 +415,15 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
                 raw.get("rationale"),
                 g1_quyet.get("background_problem"),
             ),
+            # VÁ 10/10/2026 (hội đồng G0, DG G0-T4 của C1a): khoảng trống do NGƯỜI viết (G1.knowledge_gap, G0.novelty_
+            # justification) đi TRƯỚC danh sách máy suy từ số hit của một truy vấn (checkpoint G0 research_gaps) —
+            # thứ tự cũ đưa «chưa có SR/guideline» của máy vào đề cương G10 dù PI đã viết khoảng trống đúng mức.
             "evidence_gap": _first(
                 raw.get("evidence_gap"),
                 raw.get("research_gap"),
-                g0.get("research_gaps"),
                 g1_quyet.get("knowledge_gap"),
                 g0_quyet.get("novelty_justification"),
+                g0.get("research_gaps"),
             ),
             "local_context": _first(raw.get("local_context"),
                                     raw.get("practice_context")),

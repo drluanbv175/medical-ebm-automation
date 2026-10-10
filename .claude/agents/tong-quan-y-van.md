@@ -71,6 +71,18 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 6. Tiêu chí hoàn thành (qua cổng)
 **Hoàn thành khi:** PICO + tiêu chí rõ; (SR chính thức) có trường PROSPERO **+ đã sàng lọc ≥2 luồng độc lập (xem Bước 3), không phải một luồng duy nhất**; chiến lược tìm tái lặp + ngày tra; sơ đồ PRISMA có số (đủ 4 tầng gồm "tìm toàn văn/không truy hồi được"); bảng đặc điểm + RoB đúng công cụ; GRADE SoF; nêu khoảng trống + giới hạn; mọi bài có PMID/DOI. Connector lỗi → PARTIAL, không tuyên bố "đầy đủ".
 
+**Hợp đồng đầu ra G0-T3 (10/10/2026 — hội đồng G0 trả về sửa vì A1 chỉ có số hit + tiêu đề 5/12 bài):** ở cổng G0,
+công đọc của bạn nằm trong `exports/<mã>/G0_TONG_HOP_BANG_CHUNG_<mã>.json` (schema `g0/tong_hop_bang_chung/v1`; khuôn và
+bộ kiểm `tools/g0_tong_hop.py`) — KHÔNG viết thẳng vào A1 (chạy lại G0 xoá sạch). Khoá: `sang_loc` = ĐỦ mọi PMID
+nền của `G0_checkpoint.json` (đọc tiêu đề + tóm tắt; {pmid, thiet_ke_that — thiết kế THẬT, không theo bộ lọc PubMed,
+lien_quan ∈ truc_tiep/gian_tiep/khong, tom_tat, ly_do khi «khong»}) · `nguon_bo_sung` (bài liên quan ngoài truy vấn
+G0, vd tìm bằng MeSH/không lọc: {pmid hoặc doi, tieu_de, thiet_ke_that, lien_quan, tom_tat, cach_tim = CSDL · truy vấn
+· ngày — PRISMA-S}) · `tong_hop` (đoạn tóm lược dẫn ≥ 1 PMID liên quan trực tiếp; nói phạm vi, không tuyệt đối hoá) ·
+`rut_bai` {ngay, cong_cu, ket_qua} chạy `check_citation_retraction.py` — không kiểm được thì ghi «chưa kiểm», TUYỆT
+ĐỐI không «chưa bị rút». Ngày viết ISO YYYY-MM-DD (dd/mm/yyyy làm guardrail R2 của
+G0 chặn A1). Đây là ĐỀ XUẤT cho PI đọc (G0-HUMAN-06), không ghi `gate_params.G0`. Xong thì
+`python3 tools/run_g0_auto.py --study <mã> --dung-lai-a1` rồi đo `hoi_dong_cong.py trach-nhiem --gate G0`.
+
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; KHÔNG bịa trích dẫn; chỉ nguồn miễn phí; ghi ngày tra + CSDL; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 
@@ -93,7 +105,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 
 | Nhiệm vụ | Bạn LÀM — đầu ra (tên là HỢP ĐỒNG) | Tiêu chí bạn phải đưa tới ĐẠT | Hồ sơ + lệnh bạn chuẩn bị cho NGƯỜI |
 |---|---|---|---|
-| `G0-T3` — Tổng hợp bằng chứng hiện có | `G0_A1_PICO_FINER_<mã>.md` | — | PI: G0-HUMAN-06 |
+| `G0-T3` — Tổng hợp bằng chứng hiện có | `G0_A1_PICO_FINER_<mã>.md`, `G0_TONG_HOP_BANG_CHUNG_<mã>.json` | — (kiểm máy cấp nhiệm vụ: tổng hợp bằng chứng: sàng lọc đủ mọi PMID nền · nguồn bổ sung có cách tìm · tóm lược dẫn PMID liên quan trực tiếp · đã kiểm rút bài) | PI: G0-HUMAN-06 |
 | `G1-T2` — Sổ bằng chứng và cơ sở lý luận | `G1_A2b_EVIDENCE_LEDGER_<mã>.md` | G1-AUTO-06 | PI: G1-HUMAN-07 |
 
 Trước khi trả việc cho điều phối cổng: chạy lệnh đo của cổng đó — tiêu chí của bạn còn chưa đạt,

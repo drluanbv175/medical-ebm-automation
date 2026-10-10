@@ -104,8 +104,11 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # dieu-phoi-nghien-cuu dạy sổ trạng thái RIÊNG mỗi đề tài — bản cặp y hệt gốc; vẫn 64.
 # 10/10/2026 (tiêu chuẩn hoàn thiện agent/điều phối): kinh-te-y-te (G1_KINH_TE_Y_TE), hieu-dinh-song-ngu
 # (G7_A8_MANUSCRIPT_EN), dieu-phoi-g1/g7 §3, _HOI-DONG-CONG §1b mục 12 — bản cặp y hệt gốc; vẫn 64.
+# 10/10/2026 (hội đồng G0, DG G0-T3/T4): tong-quan-y-van (G0_TONG_HOP_BANG_CHUNG), khoang-trong-nghien-cuu
+# (G0_KHOANG_TRONG), dieu-phoi-g0 (--dung-lai-a1) — hợp đồng đầu ra + khối trách nhiệm hiện kiểm máy cấp nhiệm vụ;
+# bản cặp y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "fc75fa5cadd8790a9e62cdfa72f0b665b50cb35fc92eb428ed75d67c5de4a9e3"
+    "a9f66107e21050501267753e55084b2d394a4e8d53978b782a93cbb7c77077b8"
 )
 
 MINIMUM_AGENT_COUNT = 64
