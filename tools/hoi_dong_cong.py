@@ -494,6 +494,35 @@ def _kiem_can_cu(nhan: str, ds: Any, out_dir: Path, repo_root: Path, loi: List[s
             loi.append(f"{nhan} căn cứ #{i}: căn cứ «lệnh» phải có cả câu lệnh và đoạn kết quả («ket_qua»)")
 
 
+# 10/10/2026 — BÀI HỌC HỆ THỐNG trong biên bản (bác sĩ: «mỗi lần họp đảm bảo hệ thống được hoàn thiện tự động tốt nhất
+# từ vấn đề hệ thống, Agent và các điều phối»). Rubric RQ1–RQ8 + việc sửa nói về ĐẦU RA của một đề tài; lỗi nằm ở HỆ —
+# công cụ/bộ chấm sai, tài liệu agent thiếu chỉ dẫn, điều phối giao sai, doctrine mâu thuẫn, quy trình hội đồng — thì
+# người chấm/trọng tài ghi riêng ở `bai_hoc_he_thong` để vòng hoàn thiện sau họp sửa đúng chỗ (PR hệ thống) thay vì chỉ
+# vá đầu ra. Không bắt buộc (họp không thấy lỗi hệ thì không ghi); đã ghi thì phải có đối tượng, vấn đề, căn cứ kiểm
+# được.
+PHAM_VI_BAI_HOC = ("cong_cu", "agent", "dieu_phoi", "doctrine", "quy_trinh_hoi_dong")
+
+
+def _kiem_bai_hoc(nhan: str, ds: Any, out_dir: Path, repo_root: Path, loi: List[str], kiem_tep: bool = True) -> None:
+    if ds is None:
+        return
+    if not isinstance(ds, list):
+        loi.append(f"{nhan}.bai_hoc_he_thong phải là danh sách")
+        return
+    for i, b in enumerate(ds, 1):
+        n = f"{nhan}.bai_hoc_he_thong #{i}"
+        if not isinstance(b, dict):
+            loi.append(f"{n}: mỗi bài học phải là đối tượng")
+            continue
+        if b.get("pham_vi") not in PHAM_VI_BAI_HOC:
+            loi.append(f"{n}: pham_vi phải thuộc {PHAM_VI_BAI_HOC}")
+        for k in ("doi_tuong", "van_de"):
+            if not _co_noi_dung(b.get(k)):
+                loi.append(f"{n}: thiếu {k} (đối tượng = tệp/agent/điều phối cụ thể; vấn đề = sai gì)")
+        _quet_pii(n, " ".join(str(b.get(k) or "") for k in ("doi_tuong", "van_de", "de_xuat")), loi)
+        _kiem_can_cu(n, b.get("can_cu"), out_dir, repo_root, loi, kiem_tep)
+
+
 def _bam_tai_lieu(tai_lieu: Any, out_dir: Path, loi: List[str]) -> List[Dict[str, str]]:
     ra: List[Dict[str, str]] = []
     if not isinstance(tai_lieu, list) or not tai_lieu:
@@ -545,6 +574,7 @@ def _kiem_danh_gia(bb: Dict[str, Any], gate: str, out_dir: Path, repo_root: Path
         ai = d.get("nguoi_cham")
         if d.get("vai") not in VAI_CHAM:
             loi.append(f"{ai}: vai phải thuộc {VAI_CHAM}")
+        _kiem_bai_hoc(str(ai), d.get("bai_hoc_he_thong"), out_dir, repo_root, loi, kiem_tep)
         tieu_chi = {t.get("ma"): t for t in (d.get("tieu_chi") or []) if isinstance(t, dict)}
         thieu = [ma for ma in RUBRIC if ma not in tieu_chi]
         if thieu:
@@ -649,6 +679,7 @@ def _kiem_tranh_bien(bb: Dict[str, Any], gate: str, out_dir: Path, repo_root: Pa
         loi.append("vong: phản biện chưa nêu luận điểm nào (nhường toàn bộ thì vẫn ghi luận điểm nhuong=true)")
 
     pq = bb.get("phan_quyet") if isinstance(bb.get("phan_quyet"), dict) else {}
+    _kiem_bai_hoc("phan_quyet", pq.get("bai_hoc_he_thong"), out_dir, repo_root, loi, kiem_tep)
     if pq.get("trong_tai") != trong_tai:
         loi.append("phan_quyet.trong_tai phải đúng trọng tài của biên bản")
     tung = {p.get("ma"): p for p in (pq.get("tung_luan_diem") or []) if isinstance(p, dict)}
@@ -2001,6 +2032,130 @@ def in_uoc_tinh(study: str, cac: List[Dict[str, Any]], chi_tiet: bool = False) -
     return "\n".join(dong)
 
 
+# ── Vòng hoàn thiện sau họp: bài học hệ thống + lịch họp hằng ngày (10/10/2026) ───────────────────────────────────────
+# Bác sĩ: «mỗi ngày họp một cổng và với lần họp này sẽ đảm bảo hệ thống được hoàn thiện tự động tốt nhất». `lich_hop`
+# chọn cổng của NGÀY (cổng đầu tiên G0→G10 còn phần cần họp theo hồ sơ máy — không có thì 0 agent); `bai_hoc` gom bài
+# học hệ thống của mọi biên bản hợp lệ kèm trạng thái xử lý từ sổ `hoi_dong/BAI_HOC_XU_LY.json` (ghi bằng
+# `xu_ly_bai_hoc`: đã sửa bằng PR · không sửa kèm lý do · trùng bài học khác). Không ghi xác nhận người, không đụng
+# cổng.
+
+TEP_XU_LY_BAI_HOC = "BAI_HOC_XU_LY.json"
+KET_XU_LY = ("da_sua", "khong_sua", "trung")
+_PR_RE = re.compile(r"^https://github\.com/drluanbv175/(?:EBM-drluanbv175|medical-ebm-automation)/pull/\d+$")
+
+
+def doc_xu_ly_bai_hoc(out_dir: Path) -> Dict[str, Any]:
+    try:
+        v = json.loads((thu_muc_bien_ban(out_dir) / TEP_XU_LY_BAI_HOC).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return v if isinstance(v, dict) else {}
+
+
+def bai_hoc(out_dir: Path, gate: Optional[str] = None) -> List[Dict[str, Any]]:
+    """Bài học hệ thống từ biên bản HỢP LỆ (cả biên bản đã cũ — lỗi của hệ không hết vì tài liệu đề tài đổi). Mã bài
+    học = «<id biên bản>#<thứ tự>» — bền vì biên bản không bị sửa (sửa tay ⇒ hỏng chữ ký nội dung)."""
+    out_dir = Path(out_dir)
+    xu_ly = doc_xu_ly_bai_hoc(out_dir)
+    ra: List[Dict[str, Any]] = []
+    for bb in doc_bien_ban(out_dir, gate):
+        if bb.get("_hong"):
+            continue
+        kq = kiem_bien_ban(bb, out_dir)
+        if not kq["hop_le"]:
+            continue
+        nguon: List[Tuple[Any, Dict[str, Any]]] = []
+        if bb.get("loai") == "danh_gia_cheo":
+            for d in bb.get("danh_gia") or []:
+                if isinstance(d, dict):
+                    nguon += [(d.get("nguoi_cham"), b) for b in d.get("bai_hoc_he_thong") or [] if isinstance(b, dict)]
+        else:
+            pq = bb.get("phan_quyet") if isinstance(bb.get("phan_quyet"), dict) else {}
+            nguon += [(pq.get("trong_tai"), b) for b in pq.get("bai_hoc_he_thong") or [] if isinstance(b, dict)]
+        for i, (ai, b) in enumerate(nguon, 1):
+            ma = f"{bb.get('id')}#{i}"
+            ra.append({"ma": ma, "gate": bb.get("gate"), "bien_ban": bb.get("id"), "nguoi_neu": ai,
+                       "pham_vi": b.get("pham_vi"), "doi_tuong": b.get("doi_tuong"), "van_de": b.get("van_de"),
+                       "de_xuat": b.get("de_xuat"), "can_cu": b.get("can_cu"), "bien_ban_cu": bool(kq["cu"]),
+                       "xu_ly": xu_ly.get(ma) if isinstance(xu_ly.get(ma), dict) else None})
+    return ra
+
+
+def xu_ly_bai_hoc(out_dir: Path, ma: str, ket: str, ly_do: str, pr: Optional[str] = None,
+                  trung_voi: Optional[str] = None) -> Tuple[Optional[Path], List[str]]:
+    """Ghi bài học `ma` đã xử lý: «da_sua» (kèm PR thật của hai repo), «khong_sua» (kèm lý do cụ thể) hoặc «trung»
+    (trỏ bài học khác). Vi phạm ⇒ KHÔNG ghi."""
+    out_dir = Path(out_dir)
+    loi: List[str] = []
+    co = {b["ma"] for b in bai_hoc(out_dir)}
+    if ma not in co:
+        loi.append(f"«{ma}» không phải mã bài học của biên bản hợp lệ nào (xem `bai-hoc`)")
+    if ket not in KET_XU_LY:
+        loi.append(f"ket phải thuộc {KET_XU_LY}")
+    if len(str(ly_do or "").strip()) < 10:
+        loi.append("ly_do phải nêu cụ thể (≥ 10 ký tự): đã sửa gì / vì sao không sửa")
+    if ket == "da_sua" and not _PR_RE.match(str(pr or "")):
+        loi.append("da_sua phải kèm URL PR thật của drluanbv175/EBM-drluanbv175 hoặc medical-ebm-automation")
+    if ket == "trung" and (trung_voi not in co or trung_voi == ma):
+        loi.append("trung phải trỏ một mã bài học KHÁC có thật (--trung-voi)")
+    _quet_pii("ly_do", ly_do, loi)
+    if loi:
+        return None, loi
+    so = doc_xu_ly_bai_hoc(out_dir)
+    so[ma] = {"ket": ket, "ly_do": str(ly_do).strip(), "pr": pr, "trung_voi": trung_voi,
+              "thoi_diem": datetime.now().astimezone().isoformat(timespec="seconds")}
+    d = thu_muc_bien_ban(out_dir)
+    d.mkdir(parents=True, exist_ok=True)
+    p = d / TEP_XU_LY_BAI_HOC
+    p.write_text(json.dumps(so, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+    return p, []
+
+
+def lich_hop(study: str, out_dir: Path, max_agent: int = 16) -> Dict[str, Any]:
+    """Cổng của NGÀY HÔM NAY: cổng ĐẦU TIÊN theo G0→G10 còn phần cần họp theo hồ sơ máy (không có ⇒ gate None, 0 agent).
+    Cổng có tiền đề chưa PASS vẫn được chọn khi đến lượt (bác sĩ chọn nhịp mỗi ngày một cổng) nhưng mang khuyến nghị
+    `nen_cho_cong_truoc` để báo cáo nói rõ biên bản có thể phải làm lại."""
+    out_dir = Path(out_dir)
+    cache: Dict[str, Any] = {}
+    da_xet: List[Dict[str, Any]] = []
+    chon: Optional[Dict[str, Any]] = None
+    for g in CONG:
+        hs = ho_so_cong(study, g, out_dir, song_cache=cache)
+        if hs["can_hop"]:
+            chon = hs
+            break
+        da_xet.append({"gate": g, "cho_bac_si": hs["cho_bac_si"]})
+    con = [b["ma"] for b in bai_hoc(out_dir) if not b["xu_ly"]]
+    ra: Dict[str, Any] = {"schema": "hoi_dong_cong/lich_hop/v1", "study": study, "da_xet": da_xet,
+                          "bai_hoc_chua_xu_ly": con, "gate": None, "khuyen_nghi": None, "uoc_tinh": None}
+    if chon:
+        ra.update(gate=chon["gate"], khuyen_nghi=chon["khuyen_nghi"], cong_truoc_chua_dat=chon["cong_truoc_chua_dat"],
+                  uoc_tinh=uoc_tinh(chon, max_agent=max_agent),
+                  lenh_ho_so=f"python3 tools/hoi_dong_cong.py ho-so --study {study} --gate {chon['gate']} --json")
+    return ra
+
+
+def in_lich_hop(kq: Dict[str, Any]) -> str:
+    if kq["gate"] is None:
+        dong = [f"LỊCH HỌP — {kq['study']}: KHÔNG CÓ CỔNG CẦN HỌP (0 agent)."]
+    else:
+        u = kq["uoc_tinh"]
+        dong = [f"LỊCH HỌP — {kq['study']}: hôm nay họp {kq['gate']} ({kq['khuyen_nghi']}) — "
+                f"{_khoang(u['agent_toi_thieu'], u['agent_toi_da'])} agent ≈ "
+                f"{_khoang(_trieu(u['token_toi_thieu']), _trieu(u['token_toi_da']))} token",
+                f"  hồ sơ: {kq['lenh_ho_so']}"]
+        if kq.get("cong_truoc_chua_dat"):
+            dong.append("  ⏸ cổng tiền đề chưa đạt: " + ", ".join(c["gate"] for c in kq["cong_truoc_chua_dat"])
+                        + " — biên bản có thể CŨ khi cổng trước chốt")
+    cho = [f"{x['gate']}: {', '.join(x['cho_bac_si'])}" for x in kq["da_xet"] if x["cho_bac_si"]]
+    if cho:
+        dong.append("  chờ bác sĩ quyết: " + "; ".join(cho))
+    dong.append(f"  bài học hệ thống chưa xử lý: {len(kq['bai_hoc_chua_xu_ly'])}"
+                + (f" (`bai-hoc --study {kq['study']} --chua-xu-ly`)" if kq["bai_hoc_chua_xu_ly"] else ""))
+    dong.append("Cần bác sĩ kiểm chứng.")
+    return "\n".join(dong)
+
+
 def _thu_muc_de_tai(study: str, repo_root: Path) -> Path:
     return repo_root / "exports" / study
 
@@ -2033,6 +2188,21 @@ def main(argv: Optional[List[str]] = None) -> int:
                    help="số đầu ra một giám khảo chấm (1 = không gom)")
     a.add_argument("--tat-ca", action="store_true", help="ước tính cho họp lại từ đầu")
     a.add_argument("--chi-tiet", action="store_true", help="liệt kê phần bỏ qua của mọi cổng")
+    a.add_argument("--json", action="store_true")
+    # 10/10/2026 — nhịp họp hằng ngày + bài học hệ thống (vòng hoàn thiện sau họp).
+    a = sub.add_parser("lich-hop", help="cổng cần họp HÔM NAY (đầu tiên G0→G10 còn phần cần họp) + ước tính, 0 agent")
+    a.add_argument("--study", required=True)
+    a.add_argument("--max-agent", type=int, default=16)
+    a.add_argument("--json", action="store_true")
+    a = sub.add_parser("bai-hoc", help="bài học HỆ THỐNG từ biên bản + ghi đã xử lý (PR / không sửa / trùng)")
+    a.add_argument("--study", required=True)
+    a.add_argument("--gate", choices=CONG)
+    a.add_argument("--chua-xu-ly", action="store_true", help="chỉ bài học chưa xử lý")
+    a.add_argument("--xu-ly", metavar="MA", help="ghi bài học MA đã xử lý (kèm --ket, --ly-do, …)")
+    a.add_argument("--ket", choices=KET_XU_LY)
+    a.add_argument("--pr", help="URL PR đã sửa (bắt buộc với --ket da_sua)")
+    a.add_argument("--trung-voi", help="mã bài học trùng (bắt buộc với --ket trung)")
+    a.add_argument("--ly-do", default="")
     a.add_argument("--json", action="store_true")
     a = sub.add_parser("mau")
     a.add_argument("--loai", choices=("danh_gia_cheo", "tranh_bien"), required=True)
@@ -2089,6 +2259,31 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(f"{args.gate} {args.study}: {kq['status']} (nguồn {kq['nguon']}) — chỉ đọc, không ghi gì")
             for r in kq["chua_dat"]:
                 print(f"  {r['id']} {r['status']}: {r['evidence']}")
+        return 0
+    if args.lenh == "lich-hop":
+        kq = lich_hop(args.study, out_dir, args.max_agent)
+        print(json.dumps(kq, ensure_ascii=False, indent=2) if args.json else in_lich_hop(kq))
+        return 0
+    if args.lenh == "bai-hoc":
+        if args.xu_ly:
+            p, loi = xu_ly_bai_hoc(out_dir, args.xu_ly, args.ket or "", args.ly_do, args.pr, args.trung_voi)
+            if p is None:
+                print("❌ Không ghi xử lý bài học:")
+                for dong in loi:
+                    print(f"  - {dong}")
+                return 3
+            print(f"✅ Đã ghi {p.relative_to(out_dir).as_posix()} — {args.xu_ly}: {args.ket}")
+            return 0
+        ds = [b for b in bai_hoc(out_dir, args.gate) if not (args.chua_xu_ly and b["xu_ly"])]
+        if args.json:
+            print(json.dumps(ds, ensure_ascii=False, indent=2))
+            return 0
+        print(f"BÀI HỌC HỆ THỐNG — {args.study}: {len(ds)} mục" + (" chưa xử lý" if args.chua_xu_ly else ""))
+        for b in ds:
+            xl = b["xu_ly"]
+            tt = (xl["ket"] + (f" {xl['pr']}" if xl.get("pr") else "")) if xl else "CHƯA XỬ LÝ"
+            print(f"  [{tt}] {b['ma']} · {b['pham_vi']} · {b['doi_tuong']}: {b['van_de']}")
+        print("Cần bác sĩ kiểm chứng.")
         return 0
     if args.lenh == "ho-so":
         try:
