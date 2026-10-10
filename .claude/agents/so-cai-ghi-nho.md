@@ -44,6 +44,8 @@ Mục tiêu: lưu quyết định + mốc cổng + artifact + bài học vào s�
 Trạng thái/quyết định cần ghi (từ `dieu-phoi-nghien-cuu` HOẶC `dieu-phoi-lam-sang` — sửa 2026-07-26, vòng lặp vòng 30, phát hiện MEDIUM: bản cũ chỉ nêu đích danh `dieu-phoi-nghien-cuu` dù `dieu-phoi-lam-sang.md` cũng bắt buộc giao agent này ghi checkpoint sau MỖI cổng A/B — agent này phục vụ CẢ hai nhạc trưởng, không riêng nghiên cứu — hoặc agent chuyên trách) · mã đề tài/hồ sơ · cổng vừa PASS + ngày · artifact bàn giao · 🔴 còn thiếu. Ngày tương đối → quy về tuyệt đối; có PII → loại trước khi ghi.
 
 ## 3. Quy trình (BƯỚC 0 = kiểm tiền đề/đồng bộ)
+**Sổ trạng thái của ĐỀ TÀI NGHIÊN CỨU nằm trong thư mục RIÊNG của đề tài (bác sĩ quyết 10/10/2026):** `medical-ebm-automation/exports/<mã>/SO_TRANG_THAI_<mã>.md` — mỗi đề tài một sổ. Mỗi khối «## CHECKPOINT [YYYY-MM-DD] — đề tài/ca: <mã> …» có nhãn MỞ ĐẦU bằng mã đề tài, `loai_nhiem_vu: nghiên cứu`, `cong_vua_qua` G0–G10; chỉ NỐI THÊM ở cuối (ngày không lùi); ghi sau MỖI cổng PASS; mọi cổng đã ký trong `approval_ledger.json` của đề tài phải có khối. KHÔNG ghi khối đề tài vào `_SO-TRANG-THAI-CHECKPOINT.md` (tệp đó giữ schema + khối ca lâm sàng). Kiểm: `python medical-ebm-automation/tools/clinical_checkpoint.py medical-ebm-automation/exports/<mã>/SO_TRANG_THAI_<mã>.md --json` và bảng trách nhiệm `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G10` (kiểm máy G10-T3).
+
 **BƯỚC 0 — Kiểm tiền đề (bảo mật/đồng bộ):** (a) quét bản ghi đầu vào, **loại PII** trước khi lưu; (b) **backup sổ cái TRƯỚC khi ghi**; (c) xác nhận OneDrive đã sync (tránh xung đột Mac↔Windows) — chưa xanh thì nêu cảnh báo.
 1. Nhận trạng thái/quyết định từ `dieu-phoi-nghien-cuu` hoặc `dieu-phoi-lam-sang` (Cổng A/B) (hoặc agent chuyên trách).
 2. Quy date tương đối → tuyệt đối; loại PII; viết bản ghi ngắn gọn, có nguồn.
@@ -150,7 +152,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 
 | Nhiệm vụ | Bạn LÀM — đầu ra (tên là HỢP ĐỒNG) | Tiêu chí bạn phải đưa tới ĐẠT | Hồ sơ + lệnh bạn chuẩn bị cho NGƯỜI |
 |---|---|---|---|
-| `G10-T3` — Ghi sổ cái và bộ nhớ đề tài | `G10_checkpoint.json` | — (không có tiêu chí máy: chất lượng chỉ bảo đảm bằng đánh giá chéo) | — |
+| `G10-T3` — Ghi sổ cái và bộ nhớ đề tài (sổ trạng thái riêng trong thư mục đề tài) | `SO_TRANG_THAI_<mã>.md` | — (không có tiêu chí cổng; kiểm máy cấp nhiệm vụ: sổ trạng thái riêng của đề tài: đúng schema, mọi khối thuộc đề tài, ngày không lùi, đủ mốc cổng đã ký; nội dung bảo đảm bằng đánh giá chéo) | — |
 
 Trước khi trả việc cho điều phối cổng: chạy lệnh đo của cổng đó — tiêu chí của bạn còn chưa đạt,
 đầu ra còn thiếu, hoặc biên bản đánh giá chéo «trả về sửa» ⇒ CHƯA xong. Không ký, không bật cờ, không

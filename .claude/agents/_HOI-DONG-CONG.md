@@ -81,6 +81,11 @@ cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ c�
     «G6-T2|G6-T4|G6-T5|G6-T1». Bên lâm sàng: hai bảng của `dieu-phoi-lam-sang` sinh khối «Nhiệm vụ & kiểm soát trong
     ca lâm sàng» cho từng agent; thêm C8c (`ket-qua-hoc-tap` + `cap-nhat-guideline` trước đó không có hạng mục
     tự-rà). Test `tests/test_agent_co_dieu_phoi_20261010.py` (repo y khoa) chặn agent mồ côi.
+11. **Diễn giải kết quả và sổ cái đề tài** (10/10/2026, bác sĩ quyết): G6-T3 `dien-giai-ket-qua` nộp `G6_DIEN_GIAI_<mã>.md`
+    (khung + kiểm `tools/dien_giai_ket_qua.py`: số liệu truy nguyên tệp kết quả, văn phong không diễn giải quá mức,
+    bảng biểu đủ chuẩn); G10-T3 `so-cai-ghi-nho` giữ sổ trạng thái RIÊNG mỗi đề tài `exports/<mã>/SO_TRANG_THAI_<mã>.md`
+    (đúng schema, mọi khối thuộc đề tài, ngày không lùi, đủ mốc mọi cổng đã ký) — không ghi khối đề tài vào tệp chung
+    `_SO-TRANG-THAI-CHECKPOINT.md`.
 
 ## 2. Tám bước của một hội đồng cổng (`dieu-phoi-gN`)
 

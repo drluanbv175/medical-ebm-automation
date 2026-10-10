@@ -30,7 +30,7 @@ bác sĩ chưa đồng ý (`_HOI-DONG-CONG.md` §5 — chi phí).
 |---|---|---|---|---|
 | G10-T1 | Lắp đề cương thống nhất + manifest gói phát hành (run_g10_assemble.py) | `dieu-phoi-g10` | `DE_CUONG_THONG_NHAT_<mã>.md`, `G10_checkpoint.json`, `G10_RELEASE_READINESS.json` | `tham-dinh-dau-ra`, `binh-duyet` + `giam-khao-cong` |
 | G10-T2 | A12 phủ mọi PMID của gói cuối (kể cả PMID do hệ chèn) | `kiem-chung-trich-dan` | `A12_RETRACTION_RECEIPT.json`, `A12_METADATA_RECEIPT.json` | `thu-thu-tai-lieu` + `giam-khao-cong` |
-| G10-T3 | Ghi sổ cái và bộ nhớ đề tài | `so-cai-ghi-nho` | `G10_checkpoint.json` | `tham-dinh-dau-ra` + `giam-khao-cong` |
+| G10-T3 | Ghi sổ cái và bộ nhớ đề tài (sổ trạng thái riêng trong thư mục đề tài) | `so-cai-ghi-nho` | `SO_TRANG_THAI_<mã>.md` (một sổ mỗi đề tài; đủ mốc mọi cổng đã ký) | `tham-dinh-dau-ra` + `giam-khao-cong` |
 
 Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý do ở khối bàn giao, không giao việc.
 
@@ -54,7 +54,7 @@ của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm v
 | `PI@G10-T1` — NGƯỜI PI quyết/ký; agent chuẩn bị hồ sơ + lệnh: `dieu-phoi-g10` | G10-HUMAN-01, G10-HUMAN-02, G10-HUMAN-03, G10-HUMAN-04, G10-HUMAN-05 |
 | `^*` — cổng tiền đề các cổng tiền đề theo mục đích phát hành (điều phối cổng đó chịu trách nhiệm) | G10-AUTO-02, G10-AUTO-02B, G10-AUTO-04 |
 
-Nhiệm vụ KHÔNG có tiêu chí máy (chất lượng CHỈ bảo đảm bằng đánh giá chéo): G10-T3 `so-cai-ghi-nho` — chưa có biên bản
+Nhiệm vụ KHÔNG có tiêu chí máy (chất lượng CHỈ bảo đảm bằng đánh giá chéo): G10-T3 `so-cai-ghi-nho` (kiểm máy cấp nhiệm vụ: sổ trạng thái riêng của đề tài: đúng schema, mọi khối thuộc đề tài, ngày không lùi, đủ mốc cổng đã ký) — chưa có biên bản
 đánh giá chéo «qua» còn hiệu lực ⇒ khối bàn giao ghi «chất lượng chưa được bảo đảm» (lệnh đo liệt kê).
 
 1. **Thước đo duy nhất:** `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G10` — chỉ đọc; chấm sống,
