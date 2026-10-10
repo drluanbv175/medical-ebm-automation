@@ -196,8 +196,10 @@ NHIEM_VU: Dict[str, List[Dict[str, Any]]] = {
             ("phan-tich-thong-ke",), "tổng quan hệ thống có gộp định lượng"),
         # 10/10/2026: `huong-dan-lam-sang` chấm chéo phần ý nghĩa lâm sàng/đối chiếu hướng dẫn hiện hành (trước đó agent
         # này không có vai nào ở hội đồng cổng).
+        # 10/10/2026 — bác sĩ giao «G6-T3 bảo đảm kết quả được diễn giải và trình bày tốt nhất (số liệu, văn phong, bảng
+        # biểu)»: đầu ra riêng `G6_DIEN_GIAI_<mã>.md` (khung + kiểm: tools/dien_giai_ket_qua.py) thay tệp script chung.
         _nv("G6-T3", "Diễn giải kết quả (G6.5): ý nghĩa lâm sàng vs thống kê, đối chiếu y văn", "dien-giai-ket-qua",
-            ("G6_A7_ANALYSIS_SCRIPTS_<mã>.md",), ("phan-tich-thong-ke", "binh-duyet", "huong-dan-lam-sang")),
+            ("G6_DIEN_GIAI_<mã>.md",), ("phan-tich-thong-ke", "binh-duyet", "huong-dan-lam-sang")),
         _nv("G6-T4", "Phát triển và kiểm định mô hình dự báo (TRIPOD+AI)", "mo-hinh-tien-luong",
             ("G6_A7_ANALYSIS_SCRIPTS_<mã>.md",), ("phan-tich-thong-ke",), "thiết kế mô hình dự báo (prediction)"),
         _nv("G6-T5", "Phân tích định tính: mã hoá chủ đề, bão hoà dữ liệu (COREQ/SRQR)", "nghien-cuu-dinh-tinh",
@@ -230,8 +232,10 @@ NHIEM_VU: Dict[str, List[Dict[str, Any]]] = {
             ("tham-dinh-dau-ra", "binh-duyet")),
         _nv("G10-T2", "A12 phủ mọi PMID của gói cuối (kể cả PMID do hệ chèn)", "kiem-chung-trich-dan",
             ("A12_RETRACTION_RECEIPT.json", "A12_METADATA_RECEIPT.json"), ("thu-thu-tai-lieu",)),
-        _nv("G10-T3", "Ghi sổ cái và bộ nhớ đề tài", "so-cai-ghi-nho", ("G10_checkpoint.json",),
-            ("tham-dinh-dau-ra",)),
+        # 10/10/2026 — bác sĩ giao «mỗi đề tài lưu sổ cái trong thư mục riêng»: sổ trạng thái checkpoint của đề tài là
+        # `exports/<mã>/SO_TRANG_THAI_<mã>.md` (trước ghi vào tệp doctrine dùng chung `_SO-TRANG-THAI-CHECKPOINT.md`).
+        _nv("G10-T3", "Ghi sổ cái và bộ nhớ đề tài (sổ trạng thái riêng trong thư mục đề tài)", "so-cai-ghi-nho",
+            ("SO_TRANG_THAI_<mã>.md",), ("tham-dinh-dau-ra",)),
     ],
 }
 
@@ -1261,6 +1265,87 @@ def _kiem_bang_trich_xuat(out_dir: Path, study: str) -> List[str]:
     return ra[:12]
 
 
+def _kiem_dien_giai(out_dir: Path, study: str) -> List[str]:
+    """G6-T3 — bản diễn giải `G6_DIEN_GIAI_<mã>.md` theo ĐÚNG `tools/dien_giai_ket_qua.kiem` mà agent dùng: số liệu
+    truy nguyên tệp kết quả, văn phong không diễn giải quá mức (ngôn ngữ nhân quả theo thiết kế), bảng biểu đủ chuẩn."""
+    try:
+        import dien_giai_ket_qua as DG  # noqa: PLC0415
+        import skill_standards as SK  # noqa: PLC0415
+
+        try:
+            tk = SK.dac_ta_thiet_ke(Path(out_dir)).get("design_code")
+        except Exception:  # noqa: BLE001 — không suy được thiết kế ⇒ bỏ kiểm ngôn ngữ nhân quả, phần khác vẫn kiểm
+            tk = None
+        return DG.kiem(study, Path(out_dir), tk)
+    except Exception as exc:  # noqa: BLE001 — thiếu tệp đã báo ở «thiếu đầu ra»; lỗi khác ⇒ báo, không coi là đạt
+        if type(exc).__name__ == "LoiDauVao":
+            return []
+        return [f"không kiểm được bản diễn giải: {type(exc).__name__}"]
+
+
+TEP_SO_TRANG_THAI = "SO_TRANG_THAI_{study}.md"
+
+
+def _kiem_so_trang_thai(out_dir: Path, study: str) -> List[str]:
+    """G10-T3 — sổ trạng thái RIÊNG của đề tài `exports/<mã>/SO_TRANG_THAI_<mã>.md` (10/10/2026): đúng schema
+    `_SO-TRANG-THAI-CHECKPOINT.md` theo ĐÚNG `clinical_checkpoint.parse_checkpoint_log/validate_entries`; mọi khối thuộc
+    đề tài này (nhãn mở đầu bằng mã đề tài), loại «nghiên cứu», cổng G0–G10, ngày không lùi (chỉ nối thêm); mọi cổng
+    có bản ghi APPROVED trong `approval_ledger.json` của đề tài đều có khối checkpoint (sổ cái ghi đủ mốc đã ký — chỉ
+    đối chiếu mốc, KHÔNG xác minh chữ ký; đó là việc của gate_contract)."""
+    p = Path(out_dir) / TEP_SO_TRANG_THAI.format(study=study)
+    if not p.is_file():
+        return []
+    try:
+        khoi = CC.parse_checkpoint_log(p.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError) as exc:
+        return [f"không đọc được sổ trạng thái: {type(exc).__name__}"]
+    except CC.CheckpointFormatError as exc:
+        return [f"sổ trạng thái ghi hỏng: {exc}"]
+    if not khoi:
+        return ["sổ trạng thái chưa có khối «## CHECKPOINT [YYYY-MM-DD] — đề tài/ca: …» nào"]
+    ra = [f"khối #{v.entry_index + 1}: {v.code} — {v.message}" for v in CC.validate_entries(khoi)]
+    ngay_truoc = ""
+    da_ghi = set()
+    for e in khoi:
+        nhan = f"khối #{e.index + 1}"
+        if not e.case_label.startswith(study):
+            ra.append(f"{nhan}: nhãn «{e.case_label[:40]}» không mở đầu bằng mã đề tài {study} — mỗi đề tài một "
+                      "sổ riêng")
+        if "nghiên cứu" not in e.loai_nhiem_vu.casefold():
+            ra.append(f"{nhan}: loai_nhiem_vu phải là «nghiên cứu»")
+        cong = (e.cong_vua_qua.split() or [""])[0]
+        if not re.fullmatch(r"G(?:10|[0-9])", cong):
+            ra.append(f"{nhan}: cong_vua_qua «{e.cong_vua_qua[:20]}» không phải cổng G0–G10")
+        da_ghi.add(cong)
+        ngay = e.ngay.strip()
+        if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", ngay):
+            continue  # sai định dạng đã báo ở validate_entries (INVALID_DATE)
+        try:
+            datetime.strptime(ngay, "%Y-%m-%d")
+        except ValueError:
+            ra.append(f"{nhan}: ngày {ngay} không có thật trên lịch")
+            continue
+        if ngay_truoc and ngay < ngay_truoc:
+            ra.append(f"{nhan}: ngày {ngay} lùi so với khối trước ({ngay_truoc}) — sổ chỉ nối thêm ở cuối")
+        ngay_truoc = ngay
+    so_cai = Path(out_dir) / "approval_ledger.json"
+    if so_cai.is_file():
+        try:
+            ban_ghi = json.loads(so_cai.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            ban_ghi = None
+        if not isinstance(ban_ghi, list):
+            ra.append("không đọc được approval_ledger.json để đối chiếu mốc cổng đã ký")
+        else:
+            da_ky = sorted({str(r.get("gate_id") or r.get("gate") or "").strip() for r in ban_ghi
+                            if isinstance(r, dict) and r.get("decision") == "APPROVED"} - {""},
+                           key=lambda g: (len(g), g))
+            thieu = [g for g in da_ky if g not in da_ghi]
+            if thieu:
+                ra.append(f"sổ trạng thái thiếu khối checkpoint cho cổng đã ký: {', '.join(thieu)}")
+    return ra
+
+
 def _kiem_sap_rct(out_dir: Path, study: str) -> List[str]:
     """G4-T2 (RCT) — SAP §13 giữa kỳ/quy tắc dừng · §14 DMC · §15 tổn hại/ngừng/tuân thủ có mặt và không còn ô trống,
     theo ĐÚNG hàm `approve_gate._g4_sections_still_draft` mà bước ký G4 dùng (chỉ lấy §13–§15 — §1–§12 là của G4-T1)."""
@@ -1293,6 +1378,10 @@ KIEM_NHIEM_VU: Dict[str, Tuple[str, Any]] = {
     "G4-T2": ("SAP RCT §13 giữa kỳ/dừng · §14 DMC · §15 tổn hại có mặt và đã điền", _kiem_sap_rct),
     "G5-T2": ("bảng trích xuất SR/MA: cột study/year + (TE, seTE) hoặc 2x2; ≥ 2 nghiên cứu; số hợp lệ",
               _kiem_bang_trich_xuat),
+    "G6-T3": ("bản diễn giải: số liệu truy nguyên tệp kết quả · văn phong không diễn giải quá mức · bảng biểu đủ chuẩn",
+              _kiem_dien_giai),
+    "G10-T3": ("sổ trạng thái riêng của đề tài: đúng schema, mọi khối thuộc đề tài, ngày không lùi, đủ mốc cổng đã ký",
+               _kiem_so_trang_thai),
 }
 
 

@@ -214,6 +214,13 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact interpretation
 
 ## TIÊU CHÍ QUA CỔNG G6.5
 
+**Hợp đồng đầu ra G6-T3 (bác sĩ quyết 10/10/2026 — «bảo đảm kết quả được diễn giải và trình bày tốt nhất: số liệu, văn phong, bảng biểu»):** tệp `exports/<mã>/G6_DIEN_GIAI_<mã>.md`. Dựng khung bằng `python3 tools/dien_giai_ket_qua.py mau --study <mã>` (không ghi đè), điền, rồi tự kiểm `python3 tools/dien_giai_ket_qua.py kiem --study <mã>` tới khi đạt — bảng trách nhiệm G6 chạy ĐÚNG hàm kiểm này.
+- **Năm mục cố định:** 1. Kết quả chính · 2. Ý nghĩa thống kê và ý nghĩa lâm sàng · 3. Đối chiếu y văn (PMID/DOI) · 4. Điểm mạnh và hạn chế · 5. Hàm ý thực hành và hướng nghiên cứu tiếp; hết «[CẦN …]»; kèm «Cần bác sĩ kiểm chứng».
+- **Số liệu:** Bảng kết quả chính có đủ cột «Kết cục · Thước đo · Ước lượng điểm · KTC 95% · p · Ý nghĩa lâm sàng · Nguồn kết quả»; mỗi dòng dẫn MỘT tệp kết quả có thật trong `06_ket_qua/` hoặc `06_phan_tich_R/output/` và mọi số (ước lượng, hai cận) phải CÓ trong tệp đó (theo số chữ số thập phân đã báo) — chép đúng, không làm tròn khác, không tự tính lại; cận dưới ≤ ước lượng ≤ cận trên; p dưới 0,001 ghi «< 0,001» (không «0,000»); một dấu thập phân thống nhất.
+- **Văn phong:** không «đã chứng minh», «chứng minh rằng», «khẳng định chắc chắn», «xu hướng/gần có ý nghĩa», «rất có ý nghĩa thống kê»; thiết kế không can thiệp (cắt ngang, bệnh–chứng, thuần tập, chẩn đoán, dự báo, định tính) không dùng «gây ra»/«là nguyên nhân» — chỉ «liên quan»; mục 2 tách ý nghĩa LÂM SÀNG khỏi ý nghĩa thống kê; mục 4 nêu hạn chế.
+- **Bảng biểu:** mỗi bảng có chú thích «**Bảng N.** …» ngay trên, hàng tiêu đề + hàng gạch, mọi hàng đủ cột, không ô trống (không áp dụng ghi «—»).
+Kiểm máy không thay người đọc: đúng ý nghĩa lâm sàng/đúng y văn vẫn do người chấm chéo (`phan-tich-thong-ke`, `binh-duyet`, `huong-dan-lam-sang`) và `kiem-chung-trich-dan`. `viet-ban-thao` (G7) viết Kết quả/Bàn luận TỪ tệp này.
+
 **Đạt khi:** mỗi kết cục có diễn giải lâm sàng tách ý nghĩa thống kê · NNT/NNH đã tính (kết cục nhị phân) · Tree-of-Thoughts 4 nhánh · bảng đối chiếu y văn có PMID/DOI · điểm mạnh/hạn chế (nội tại + ngoại suy) · hàm ý thận trọng + hướng tiếp · KHÔNG nhân quả vượt thiết kế quan sát.
 
 ## Ranh giới
@@ -230,7 +237,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 
 | Nhiệm vụ | Bạn LÀM — đầu ra (tên là HỢP ĐỒNG) | Tiêu chí bạn phải đưa tới ĐẠT | Hồ sơ + lệnh bạn chuẩn bị cho NGƯỜI |
 |---|---|---|---|
-| `G6-T3` — Diễn giải kết quả (G6.5): ý nghĩa lâm sàng vs thống kê, đối chiếu y văn | `G6_A7_ANALYSIS_SCRIPTS_<mã>.md` | — (không có tiêu chí máy: chất lượng chỉ bảo đảm bằng đánh giá chéo) | — |
+| `G6-T3` — Diễn giải kết quả (G6.5): ý nghĩa lâm sàng vs thống kê, đối chiếu y văn | `G6_DIEN_GIAI_<mã>.md` | — (không có tiêu chí cổng; kiểm máy cấp nhiệm vụ: bản diễn giải: số liệu truy nguyên tệp kết quả · văn phong không diễn giải quá mức · bảng biểu đủ chuẩn; nội dung bảo đảm bằng đánh giá chéo) | — |
 
 Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G6-T1` (phan-tich-thong-ke), `G6-T5` (nghien-cuu-dinh-tinh), `G7-T1` (viet-ban-thao). Không bao giờ chấm đầu ra do chính bạn làm.
 

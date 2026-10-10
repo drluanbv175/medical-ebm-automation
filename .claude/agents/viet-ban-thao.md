@@ -59,7 +59,7 @@ Script này (bản nâng cấp) tự điền Methods §3/§4 (phơi nhiễm/kế
 | Nguồn (tự lấy) | Điền vào |
 |---|---|
 | Bảng 1–4 từ `phan-tich-thong-ke` MODULE 1–4 | Results — đặc điểm mẫu + kết cục + đa biến |
-| Diễn giải từ `dien-giai-ket-qua` | Discussion — đoạn diễn giải + đối chiếu y văn |
+| Diễn giải từ `dien-giai-ket-qua` — tệp `exports/<mã>/G6_DIEN_GIAI_<mã>.md` (số liệu đã truy nguyên tệp kết quả; 10/10/2026) | Results (chép ĐÚNG số + bảng của tệp) + Discussion — đoạn diễn giải + đối chiếu y văn |
 | Cỡ mẫu thực tế (G5 Data Lock Memo) | Methods — cỡ mẫu thu được |
 | Số phê duyệt + mã đăng ký (G2, bác sĩ đã cấp) | Methods — đạo đức |
 | Chuẩn báo cáo (tự suy từ thiết kế SAP) | Methods + bảng checklist |

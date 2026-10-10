@@ -100,8 +100,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 10/10/2026 (mỗi agent có nhiệm vụ + điều phối kiểm soát): 4 agent mồ côi vào nhiệm vụ cổng (G1-T6/T7/T8, G5-T2,
 # G6-T4/T5), 21 agent lâm sàng thêm khối «Nhiệm vụ & kiểm soát trong ca lâm sàng» sinh từ bảng dieu-phoi-lam-sang
 # (thêm C8c) — bản cặp y hệt gốc; vẫn 64.
+# 10/10/2026 (bác sĩ quyết G6-T3 + G10-T3): dien-giai-ket-qua dạy G6_DIEN_GIAI_<mã>.md, so-cai-ghi-nho/
+# dieu-phoi-nghien-cuu dạy sổ trạng thái RIÊNG mỗi đề tài — bản cặp y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "7e73af1cbe8476d970d3bde5a0a063af3ba688c3678c15de923f6b078b2068cc"
+    "e43c8a11f8437d1432aa9cf84b154bf8624793d298eeae6e2a2c1e9b106e9aaf"
 )
 
 MINIMUM_AGENT_COUNT = 64
