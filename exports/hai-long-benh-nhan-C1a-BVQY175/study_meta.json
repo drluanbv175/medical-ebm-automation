@@ -26,23 +26,24 @@
       "expected_direction": "Chờ lâu hơn liên quan với G1 thấp hơn: OR chung cho mức G1 cao hơn, mỗi 15 phút chờ thêm, < 1 (Quyen 2021, PMID 34017606 — ngoại trú Việt Nam, bằng chứng gián tiếp).",
       "test_type": "descriptive",
       "question_type": "descriptive",
-      "finer_feasible": true,
-      "finer_interesting": true,
-      "finer_novel": true,
-      "finer_ethical": true,
-      "finer_relevant": true,
+      "finer_feasible": "ĐẠT CÓ ĐIỀU KIỆN — phải xong trước khi thu thập dữ liệu: dry-run F1–F5 chưa chạy (đúng người thứ k_h từ 80%, đồng ý từ 60%, ghép HIS từ 90%); lưu lượng/hệ số biến thiên theo tầng từ HIS chưa có; nhân lực ngoài khoa (điều tra viên, tổ mở hòm, tổ mã hoá ý kiến mở) chưa ấn định (đề cương §4.4.2, §6.1).",
+      "finer_interesting": "ĐẠT — thời gian chờ và thủ tục là lĩnh vực hài lòng thấp lặp lại ở người bệnh ngoại trú Việt Nam (PMID 32584904; PMID 31703089) và người chờ lâu hơn ít hài lòng hơn (PMID 34017606); khối dịch vụ theo yêu cầu có tín hiệu hài lòng thấp hơn ở mẫu nhỏ (PMID 34445940).",
+      "finer_novel": "ĐẠT ở mức «nhân rộng có kiểm chứng» — chưa thấy dữ liệu công bố tại khoa khám theo yêu cầu của bệnh viện quân y trong phạm vi đã tra; KHÔNG mới về chủ đề (PMID 34445940; PMID 42625778).",
+      "finer_ethical": "ĐẠT CÓ ĐIỀU KIỆN — rủi ro đã cân nhắc, xử lý theo đề cương: riêng tư ở khâu ghép mốc HIS (khử định danh có kiểm soát, bảng ghép do CNTT/QLCL giữ, huỷ trong 30 ngày), xung đột lợi ích cơ cấu khi nhóm nghiên cứu thuộc khoa được đánh giá, áp lực chiều lòng tại chỗ; chưa có phê duyệt Hội đồng Y đức (đề cương §4.11, §4.11.1). Chỉ thu thập dữ liệu sau khi Hội đồng Y đức phê duyệt.",
+      "finer_relevant": "ĐẠT — kết quả dùng trực tiếp cho cải tiến chất lượng của Trung tâm C1/Khoa C1a; đo lường hài lòng là yêu cầu thường quy của quản lý chất lượng bệnh viện (QĐ 56/QĐ-BYT 2024, theo đề cương §1 và §3.2.1).",
       "evidence_reviewed_confirmed": true,
-      "novelty_justification": "[DỰ THẢO — CHỜ BÁC SĨ ĐỌC 12 PMID Ở §3 CỦA A1 RỒI CHỐT] Tính mới ở mức mở rộng/nhân rộng vào bối cảnh mới (replication), không phải mới về chủ đề hay phương pháp: chưa tìm thấy nghiên cứu công bố, được kiểm chứng, đặc thù cho một khoa khám theo yêu cầu trong bệnh viện quân y tuyến cuối. Kèm đóng góp về công cụ: bộ phiếu chung của Bộ Y tế không có lĩnh vực riêng cho chi phí dịch vụ theo yêu cầu (mục 3.4, 3.5 đề cương)",
+      "novelty_justification": "Tính mới ở mức «nhân rộng có kiểm chứng» (replication vào bối cảnh mới). Không mới về chủ đề (đã có nhiều khảo sát tại Việt Nam: PMID 34445940; PMID 36439278; PMID 42625778) — giá trị nằm ở dữ liệu nền tại chính Khoa C1a để cải tiến chất lượng và đối chiếu các kỳ sau, ước lượng ICC theo bàn khám trong bối cảnh Việt Nam, và kiểm định cấu trúc lĩnh vực có bổ sung chi phí (đề cương §3.5). Trong phạm vi đã tra (PubMed 2026-07-31 và 2026-08-30, các nguồn bổ sung của hội đồng G0), chưa thấy dữ liệu công bố về mức hài lòng và yếu tố liên quan của người bệnh ngoại trú tại một khoa khám theo yêu cầu của bệnh viện quân y tuyến cuối như Khoa C1a; bộ phiếu chuẩn của Bộ Y tế (QĐ 56/QĐ-BYT 2024) không tách lĩnh vực chi phí dịch vụ theo yêu cầu. Y văn tiếng Việt không lập chỉ mục PubMed chưa được rà.",
       "pico_confirmed": true,
       "reviewed_by_role": "PI",
-      "reviewed_at": "2026-08-15",
+      "reviewed_at": "2026-10-11T09:02:59+07:00",
       "descriptive_justification": null,
       "registry_manual_checked": {
-        "ictrp": null,
-        "prospero": null
+        "ictrp": "2026-10-11",
+        "prospero": null,
+        "ictrp_ket_qua": "không thấy nghiên cứu trùng"
       },
       "registry_overlap_assessment": null,
-      "dau_van_tay_chot": null
+      "dau_van_tay_chot": "6c557ef3b0fd3973"
     },
     "G1": {
       "protocol_version": "1.0",

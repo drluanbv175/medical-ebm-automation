@@ -1,6 +1,6 @@
 # BÁO CÁO CHẤT LƯỢNG G0 — hai-long-benh-nhan-C1a-BVQY175
 
-**Trạng thái:** `DRAFT_READY_NEEDS_HUMAN_REVIEW`  ·  **Hợp đồng:** `G0-2026.1`
+**Trạng thái:** `PASS_G0_CONFIRMED`  ·  **Hợp đồng:** `G0-2026.1`
 
 > G0 = cổng CÂU HỎI NGHIÊN CỨU. `DRAFT_READY_NEEDS_HUMAN_REVIEW` là kết quả
 > ĐÚNG của một lần chạy tự động — không phải lỗi. Chỉ `PASS_G0_CONFIRMED`
@@ -25,16 +25,10 @@
 | G0-HUMAN-02 | Kết cục CHÍNH duy nhất, đo được, có thời điểm | PASS | 1 kết cục chính, có thang đo và thời điểm đo |
 | G0-HUMAN-03 | Giả thuyết H0/H1 + chiều kỳ vọng + loại kiểm định | PASS | test_type=descriptive; H0=có; H1=có; chiều=có |
 | G0-HUMAN-04 | Loại câu hỏi đã xác định | PASS | question_type=descriptive (chuẩn hoá: descriptive) |
-| G0-HUMAN-05 | FINER đánh giá đủ từng tiêu chí (5/5), kết luận ĐẠT và có lý do | REVIEW | chỉ có cờ đúng/số, chưa có lý do: feasible, interesting, novel, ethical, relevant |
-| G0-HUMAN-06 | Đã đọc lại bằng chứng G0 và biện minh tính mới | REVIEW | evidence_reviewed_confirmed=True; novelty_justification=còn ô trống/nhãn nháp |
-| G0-HUMAN-07 | Chủ nhiệm/nhà phương pháp chốt PICO (vai trò + thời điểm + gắn đúng nội dung) | REVIEW | pico_confirmed=True; vai trò=pi; reviewed_at=2026-08-15; xác nhận chưa gắn `dau_van_tay` (xác nhận kiểu cũ) — chủ nhiệm xác nhận lại với dau_van_tay=df575f9916659dd5 (dấu nội dung hiện tại) |
-| G0-HUMAN-08 | PI đã tự tra WHO ICTRP (và PROSPERO cho tổng quan) + đánh giá chồng lấn khi có thử nghiệm đang tuyển | REVIEW | thiếu ngày tra (ISO, không ở tương lai): ictrp |
-
-## Việc còn lại trước khi được ghi PASS_G0_CONFIRMED
-1. Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận.
-2. Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification. Gỡ hết nhãn nháp/ô mẫu còn sót trong trường (vd «[DỰ THẢO…]», «[… — điền]», «___», «☐ … ☐ …») — hệ KHÔNG tự viết thay.
-3. Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot="df575f9916659dd5" (dấu của nội dung đang chốt). Không cần lưu danh tính.
-4. Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {"ictrp": "YYYY-MM-DD", "prospero": "YYYY-MM-DD"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn).
+| G0-HUMAN-05 | FINER đánh giá đủ từng tiêu chí (5/5), kết luận ĐẠT và có lý do | PASS | 5/5 tiêu chí có kết luận đạt kèm lý do |
+| G0-HUMAN-06 | Đã đọc lại bằng chứng G0 và biện minh tính mới | PASS | evidence_reviewed_confirmed=True; novelty_justification=có |
+| G0-HUMAN-07 | Chủ nhiệm/nhà phương pháp chốt PICO (vai trò + thời điểm + gắn đúng nội dung) | PASS | pico_confirmed=True; vai trò=pi; reviewed_at=2026-10-11T09:02:59+07:00; xác nhận gắn đúng nội dung hiện tại |
+| G0-HUMAN-08 | PI đã tự tra WHO ICTRP (và PROSPERO cho tổng quan) + đánh giá chồng lấn khi có thử nghiệm đang tuyển | PASS | đã ghi ngày tra |
 
 ## Chuẩn báo cáo DỰ KIẾN (G1 quyết định chính thức)
 - Mã thiết kế suy từ gợi ý G0: `cross_sectional`
@@ -44,7 +38,7 @@
 ## Manifest artifact
 | Artifact | Đường dẫn | SHA-256 |
 |---|---|---|
-| A1 | /Users/nguyenluan/.ebm-worktrees/yk-g0-a1-bien-ban-20261010/exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.md | `fc2a2f1bdfa76a4549a9bd2f9484d01f2efddb683470cf4da948d5b90f8b559d` |
+| A1 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.md | `fc2a2f1bdfa76a4549a9bd2f9484d01f2efddb683470cf4da948d5b90f8b559d` |
 
 ## Nền chuẩn
 | Chuẩn | Phạm vi | PMID/DOI/URL |
