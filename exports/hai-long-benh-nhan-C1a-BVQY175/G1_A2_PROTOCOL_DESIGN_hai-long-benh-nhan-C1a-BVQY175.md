@@ -1,5 +1,5 @@
 # A2 — THIẾT KẾ NGHIÊN CỨU & SAP SKELETON | hai-long-benh-nhan-C1a-BVQY175
-> Tạo tự động: 2026-09-02 07:55 | Rule-based; chưa có effect size truy nguyên; giữ nhãn [CẦN]
+> Tạo tự động: 2026-10-11 13:15 | Rule-based; chưa có effect size truy nguyên; giữ nhãn [CẦN]
 > [BẢN NHÁP TỰ ĐỘNG] — Bác sĩ xác nhận thiết kế chọn + điền [CẦN...] trước khi tiến G2/G4
 > Cần bác sĩ kiểm chứng.
 
@@ -15,7 +15,7 @@
 - Mã đề tài: `hai-long-benh-nhan-C1a-BVQY175`
 - Tên đề tài: Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
 - Phiên bản protocol: 1.0
-- Ngày tạo/cập nhật: 2026-10-10 12:59
+- Ngày tạo/cập nhật: 2026-10-11 13:15
 - Chủ nhiệm, nhà phương pháp, thống kê viên, quản lý dữ liệu: Theo đề cương §6.1 (bảng RACI): chủ nhiệm đề tài (A toàn đề tài — định hướng khoa học, duyệt đề cương/SAP/kinh phí, ký hồ sơ đạo đức); thư ký/điều phối (quản lý tài liệu, lịch, sổ tiến độ, Risk Register; quản lý dữ liệu lưu trữ/sao lưu theo §6.5); nhà thống kê/phân tích (R phân tích, A về tính đúng thống kê — cỡ mẫu Whitehead MT2, viết và khoá SAP; khuyến nghị độc lập với người thu thập); điều tra viên phát/thu phiếu (ngoài Khoa C1a); người nhập liệu (nhập đôi 100%, nên khác điều tra viên); giám sát chất lượng QC; tổ mở hòm phiếu 2 người và tổ mã hoá ý kiến mở 2 người + 1 phân xử (đều ngoài khoa; chủ nhiệm không tham gia); hội đồng chuyên gia I-CVI/S-CVI 6–10 người (≥ 2 đại diện người bệnh, ≤ 2 người thuộc C1a); bên thứ ba Phòng CNTT/QLCL trích HIS. Số người cụ thể mỗi vai do chủ nhiệm ấn định theo cỡ mẫu và lưu lượng khám.
 - Tài trợ, bảo hiểm, xung đột lợi ích và vai trò nhà tài trợ: [CẦN HOÀN THIỆN Ở G2/G9]
 - Chuẩn đề cương: Protocol định trước; đăng ký nếu cần minh bạch
@@ -23,8 +23,8 @@
 
 ### 0.2 Cơ sở khoa học và khoảng trống
 - Vấn đề nghiên cứu và gánh nặng liên quan: Theo đề cương §1: hài lòng người bệnh là chỉ số cốt lõi của chất lượng khám chữa bệnh và là cấu phần bắt buộc trong khung quản lý chất lượng bệnh viện tại Việt Nam. Khối khám theo yêu cầu là mô hình đặc thù — người bệnh chi trả cao hơn, kỳ vọng cao hơn về phục vụ, thời gian chờ và tiện nghi; Khoa C1a giao thoa khối dịch vụ theo yêu cầu với vị trí tuyến cuối tại bệnh viện quân y đô thị lớn. Các «điểm đau» lặp lại trong y văn: thời gian chờ, thủ tục hành chính, thông tin, cơ sở vật chất, chi phí. Đơn vị cần dữ liệu nền tại chỗ để cải tiến chất lượng; đề tài không nhằm so sánh trực tiếp mô hình theo yêu cầu với khám thông thường.
-- Bằng chứng hiện có và giới hạn: Theo đề cương §3.3–3.4: thời gian chờ dài hơn đi kèm hài lòng thấp hơn, khá nhất quán (PMID 34017606; PMID 39944421; PMID 40295132); người bệnh ở tỉnh khác/khoảng cách xa hơn và nhóm dùng dịch vụ theo yêu cầu có xu hướng hài lòng thấp hơn (PMID 34445940; PMID 40295132); học vấn cao hơn có thể đi kèm hài lòng thấp hơn — AOR 0,53, KTC 95% 0,28–0,98 ở Sierra Leone (PMID 40295132), chiều chưa nhất quán nên để ngỏ cả hai chiều; khảo sát đa trung tâm bằng bộ phiếu chuẩn quốc gia Việt Nam 2024 ghi nhận có BHYT, cư trú nông thôn, tái khám nhiều lần đi kèm hài lòng cao hơn (PMID 42625778). Giới hạn: đa số là nghiên cứu cắt ngang, quan hệ là liên quan không phải nhân quả; bộ phiếu Bộ Y tế không có lĩnh vực riêng cho chi phí dịch vụ theo yêu cầu; tra PubMed 30/08/2026 không thấy nghiên cứu trùng bối cảnh bệnh viện quân y. Trích dẫn đối chiếu ở Evidence Ledger G1 (A2b).
-- Khoảng trống, tính mới và lý do cần nghiên cứu: Theo đề cương §3.4–3.5: khoảng trống ở CẤP CƠ SỞ (chưa tìm thấy nghiên cứu công bố, được kiểm chứng, đặc thù cho Khoa C1a/BVQY 175) và về CÔNG CỤ đo tại chỗ (thiếu lĩnh vực chi phí dịch vụ theo yêu cầu). Phát biểu tính mới đã hạ đúng mức: «nhân rộng có kiểm chứng» vào một bối cảnh chưa có dữ liệu — không tuyên bố «lần đầu». Đóng góp kiểm chứng được: (1) dữ liệu nền tại C1a cho các kỳ khảo sát sau; (2) ước lượng ICC theo bàn khám trong bối cảnh Việt Nam; (3) kiểm định thực nghiệm cấu trúc sáu lĩnh vực bằng chia đôi mẫu EFA/CFA. Còn treo: ngày và số kết quả tra nguồn trong nước (§3.5, chủ nhiệm ghi khi hoàn tất).
+- Bằng chứng hiện có và giới hạn: Theo đề cương §3.3–3.4: thời gian chờ dài hơn đi kèm hài lòng thấp hơn, khá nhất quán (PMID 34017606; PMID 39944421; PMID 40295132); người bệnh ở tỉnh khác/khoảng cách xa hơn và nhóm dùng dịch vụ theo yêu cầu có xu hướng hài lòng thấp hơn (PMID 34445940; PMID 40295132); học vấn cao hơn có thể đi kèm hài lòng thấp hơn — AOR 0,53, KTC 95% 0,28–0,98 ở Sierra Leone (PMID 40295132), chiều chưa nhất quán nên để ngỏ cả hai chiều; khảo sát đa trung tâm bằng bộ phiếu chuẩn quốc gia Việt Nam 2024 ghi nhận có BHYT, cư trú nông thôn, tái khám nhiều lần đi kèm hài lòng cao hơn (PMID 42625778). Giới hạn: đa số là nghiên cứu cắt ngang, quan hệ là liên quan không phải nhân quả; bộ phiếu Bộ Y tế không có lĩnh vực riêng cho chi phí dịch vụ theo yêu cầu; tra PubMed 30/08/2026 không thấy nghiên cứu trùng bối cảnh bệnh viện quân y. Trích dẫn đối chiếu ở Evidence Ledger G1 (A2b). Bổ sung 2026-10-11 (Crossref, tạp chí trong nước không lập chỉ mục PubMed): đã có khảo sát cắt ngang tại bệnh viện quân y — BV TƯQĐ 108 khối khám đa khoa (doi:10.52163/yhc.v64i1.573; doi:10.51298/vmj.v549i2.13771) và Khoa Khám bệnh theo yêu cầu (doi:10.52163/yhc.v67icd5.5018); ở khám theo yêu cầu BVĐK Thái Bình, hài lòng với thời gian chờ đợi là yếu tố gắn mạnh nhất với hài lòng chung (doi:10.51298/vmj.v540i1.10302 — số liệu ở danh mục đọc G0; tạp chí không lập chỉ mục PubMed); thời gian chờ đo trực tiếp từ 60 phút trở lên đi kèm tỷ lệ không hài lòng/bình thường cao hơn (34,4% so với 14,1%; doi:10.52163/yhc.v67i7.5934). Câu «không thấy nghiên cứu trùng bối cảnh bệnh viện quân y» ở trên chỉ đúng với PubMed.
+- Khoảng trống, tính mới và lý do cần nghiên cứu: Theo đề cương §3.4–3.5: khoảng trống ở CẤP CƠ SỞ (chưa tìm thấy nghiên cứu công bố, được kiểm chứng, đặc thù cho Khoa C1a/BVQY 175) và về CÔNG CỤ đo tại chỗ (thiếu lĩnh vực chi phí dịch vụ theo yêu cầu). Phát biểu tính mới đã hạ đúng mức: «nhân rộng có kiểm chứng» vào một bối cảnh chưa có dữ liệu — không tuyên bố «lần đầu». Đóng góp kiểm chứng được: (1) dữ liệu nền tại C1a cho các kỳ khảo sát sau; (2) ước lượng ICC theo bàn khám trong bối cảnh Việt Nam; (3) kiểm định thực nghiệm cấu trúc sáu lĩnh vực bằng chia đôi mẫu EFA/CFA. Còn treo: ngày và số kết quả tra nguồn trong nước (§3.5, chủ nhiệm ghi khi hoàn tất). Đính chính 2026-10-11: đã có khảo sát hài lòng tại khoa khám theo yêu cầu và tại bệnh viện quân y (doi:10.52163/yhc.v67icd5.5018; doi:10.52163/yhc.v64i1.573), và tại chính BV Quân y 175 ở khoa YHCT (doi:10.51403/0868-2836/2021/78; doi:10.52163/yhc.v66i1.1940) ⇒ «bối cảnh chưa có dữ liệu» chỉ đúng ở cấp Khoa C1a. Nguồn trong nước đã tra một phần qua Crossref (2026-10-11, xem G0_TONG_HOP_BANG_CHUNG); PI ghi kết quả vào đề cương §3.5.
 - Cân bằng lợi ích, nguy cơ và tính hợp lý khoa học: Theo đề cương §4.11: nghiên cứu quan sát, không can thiệp, khảo sát ẩn danh tự điền — nguy cơ tối thiểu. Lợi ích: dữ liệu nền để Trung tâm C1/Khoa C1a cải tiến chất lượng dịch vụ; không có lợi ích trực tiếp cho cá nhân người tham gia. Nguy cơ chính là riêng tư và áp lực chiều lòng — kiểm soát bằng ICF tách biệt vật lý khỏi phiếu, phiếu không ô định danh, hòm phiếu kín, điều tra viên ngoài khoa, ghép mốc HIS theo khử định danh có kiểm soát do CNTT/QLCL giữ bảng ghép (huỷ trong 30 ngày); tự nguyện, từ chối không ảnh hưởng khám chữa bệnh. Thu thập chỉ bắt đầu sau phê duyệt Hội đồng Y đức BVQY 175.
 
 ### 0.3 Mục tiêu, câu hỏi và giả thuyết
@@ -37,7 +37,7 @@
 - Thiết kế đã chọn: Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)
 - Lý do chọn so với phương án thay thế: Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định thật, ưu tiên hơn suy luận tự động). Lý do của PI: Mô tả cắt ngang có phân tích. MT1 cần ước lượng tỷ lệ hiện mắc của một trạng thái (hài lòng) nên cắt ngang là thiết kế chuẩn; MT2 đo đồng thời phơi nhiễm và kết cục để ước lượng mối liên quan. Đã cân nhắc và loại đoàn hệ tiến cứu (vượt nhu cầu câu hỏi, không khả thi nguồn lực trong phạm vi một khoa) và bệnh chứng (không phù hợp cho câu hỏi ước lượng tỷ lệ). Không áp dụng khung estimand ICH E9(R1) vì là quan sát không can thiệp (mục 4.1 đề cương)
 - Địa điểm/bối cảnh: Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh — khối khám ngoại trú theo yêu cầu (dịch vụ) tại bệnh viện quân y tuyến cuối
-- Thời gian nghiên cứu: [CẦN BỔ SUNG]
+- Thời gian nghiên cứu: Dự kiến từ tháng 12/2026 đến tháng 12/2028. Thu thập mẫu chính chỉ bắt đầu sau T0 = ngày Hội đồng Đạo đức/lãnh đạo BVQY 175 phê duyệt, sau khi đã đăng ký OSF Registries, hoàn tất pha phát triển công cụ và dry-run F1–F5 (đề cương §4.9, §6.2).
 - Sơ đồ nghiên cứu và lịch tuyển-can thiệp-đánh giá: Theo đề cương §4.9 và §6.2 (mốc T0 = ngày Hội đồng Đạo đức/lãnh đạo BVQY 175 phê duyệt): đăng ký công khai OSF Registries trước T0 → phê duyệt đạo đức (T0, phạm vi gồm cả pha công cụ) → pha phát triển và kiểm định công cụ (bảng truy xuất mục, hội đồng chuyên gia I-CVI/S-CVI, phỏng vấn nhận thức 10–15 người bệnh, pilot n ≈ 50–100 tách khỏi mẫu chính, khoá vFinal) + dry-run chấm F1–F5 → khoá SAP → thu thập mẫu chính n = 1000 (chọn mẫu hệ thống phân tầng ngày × khung giờ; mỗi người đo MỘT lần ngay sau khi hoàn tất lượt khám: sàng lọc → ICF riêng → phiếu tự điền → hòm kín) → ghép thời gian chờ HIS (bên thứ ba) → nhập đôi 100%, làm sạch → khoá dữ liệu → phân tích (chỉ sau khi SAP và dữ liệu đã khoá) → bản thảo STROBE → nghiệm thu. Thời lượng từng pha do chủ nhiệm ấn định theo lịch khoa.
 
 ### 0.5 Quần thể, tiêu chí chọn và tuyển mẫu
@@ -108,7 +108,7 @@
 | [Đã pin bởi bác sĩ — không áp dụng bảng thiết kế thay thế tự động] | Phù hợp trong điều kiện đặc biệt | Thấp hơn | [CẦN] | [CẦN] | Phương án 3 |
 
 **Lý do chọn ưu tiên `Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)`:**
-Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định thật, ưu tiên hơn suy luận tự động). Câu hỏi mô tả (tỷ lệ/đặc điểm) → cắt ngang là tiêu chuẩn. Không suy nhân quả từ thiết kế này.
+Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định thật, ưu tiên hơn suy luận tự động). Lý do của PI: Mô tả cắt ngang có phân tích. MT1 cần ước lượng tỷ lệ hiện mắc của một trạng thái (hài lòng) nên cắt ngang là thiết kế chuẩn; MT2 đo đồng thời phơi nhiễm và kết cục để ước lượng mối liên quan. Đã cân nhắc và loại đoàn hệ tiến cứu (vượt nhu cầu câu hỏi, không khả thi nguồn lực trong phạm vi một khoa) và bệnh chứng (không phù hợp cho câu hỏi ước lượng tỷ lệ). Không áp dụng khung estimand ICH E9(R1) vì là quan sát không can thiệp (mục 4.1 đề cương)
 
 **Chuẩn báo cáo:** STROBE
 **Chuẩn đề cương/protocol:** Protocol định trước; đăng ký nếu cần minh bạch
@@ -140,8 +140,8 @@ Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định thật, ưu 
 **Evidence landscape từ G0:**
 - SR/MA hiện có: 0
 - RCT hiện có: 0
-- Năm gần nhất: None
-- Mức độ evidence: CÓ NỀN QUAN SÁT — ~12 NC quan sát, chưa có RCT/SR
+- Năm gần nhất: 2025
+- Mức độ evidence: CÓ NỀN QUAN SÁT — ~12 hit của bộ lọc quan sát (CHƯA sàng lọc mức liên quan), không thấy RCT/SR trong PubMed, truy vấn G0 «patient satisfaction outpatient department Vietnam hospital»
 
 ---
 
@@ -232,7 +232,7 @@ Hoặc: Linear regression → β (95%CI) nếu kết cục liên tục
 VIF < 5 (kiểm đa cộng tuyến); Hosmer-Lemeshow (logistic)
 α (hai đuôi): 0.05 [CẦN XÁC NHẬN THEO GIẢ THUYẾT]
 Hiệu ứng trình bày: [OR/HR/RR/MD + 95%CI] — KHÔNG chỉ p-value
-Phần mềm: ☐ R  ☐ Stata  ☐ SPSS  | Seed ngẫu nhiên: 20260902 [CẦN BÁC SĨ XÁC NHẬN — gợi ý tự sinh từ ngày chạy]
+Phần mềm: ☐ R  ☐ Stata  ☐ SPSS  | Seed ngẫu nhiên: 20261011 [CẦN BÁC SĨ XÁC NHẬN — gợi ý tự sinh từ ngày chạy]
 ```
 
 ### SAP §5 — Phân tích đa biến (Mục tiêu 2 — nếu có)
@@ -285,7 +285,7 @@ Mọi phân tích phải định trước hoặc gắn nhãn hậu nghiệm/thă
 ```
 Phần mềm chính: ☐ R v___  ☐ Stata v___  ☐ SPSS v___
 R packages dự kiến: tableone, car [CẦN BÁC SĨ XÁC NHẬN — gợi ý theo thiết kế cross_sectional]
-Random seed: 20260902 [CẦN XÁC NHẬN nếu có bước ngẫu nhiên/mô phỏng]
+Random seed: 20261011 [CẦN XÁC NHẬN nếu có bước ngẫu nhiên/mô phỏng]
 Script phân tích: lưu tại exports/hai-long-benh-nhan-C1a-BVQY175/scripts/ — versioned cùng protocol
 ```
 
@@ -373,7 +373,7 @@ cỡ mẫu đã đến từ đâu (STROBE mục 10), chọn MỘT trong ba đư�
 ╠══════════════════════════════════════════════════════════════╣
 ║  Đề tài: hai-long-benh-nhan-C1a-BVQY175                        ║
 ║  Phiên bản SAP: 1.0                                         ║
-║  Ngày soạn SAP: 2026-09-02                                    ║
+║  Ngày soạn SAP: 2026-10-11                                    ║
 ║  Trạng thái dữ liệu lúc khóa: CHƯA CÓ / CHƯA XEM          ║
 ║                                                              ║
 ║  Kết cục chính (KHÔNG đổi sau khóa):                       ║

@@ -5,7 +5,7 @@
 ## Chiến lược tìm kiếm
 - Nguồn tối thiểu: PubMed + ít nhất một nguồn phù hợp khác.
 - Truy vấn G0: `patient satisfaction outpatient department Vietnam hospital`
-- Ngày rà: 2026-09-02
+- Ngày rà: 2026-10-11
 - Giới hạn truy xuất/recall: [CẦN XÁC NHẬN]
 
 ## Bảng Evidence Ledger
@@ -23,11 +23,24 @@
 | PMID:38753416 | Psychometric Assessment of an Item Bank for Adaptive Testing on Patient-Reported Experience of Care Environment for Severe Mental Illness: Validation Study. — JMIR mental health (2024) | [CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | [CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |
 | PMID:39132755 | An international observational study assessing conservative management in hemorrhoidal disease: results of CHORALIS (aCute HemORrhoidal disease evALuation International Study). — Journal of comparative effectiveness research (2024) | [CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | [CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |
 | PMID:36439278 | Patient Satisfaction With Healthcare Service Quality and Its Associated Factors at One Polyclinic in Hanoi, Vietnam. — International journal of public health (2022) | [CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | [CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |
+| PMID:34017606 | [CẦN TRÍCH XUẤT METADATA] | [CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | [CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |
+| PMID:42625778 | [CẦN TRÍCH XUẤT METADATA] | [CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | [CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |
+| PMID:28690831 | [CẦN TRÍCH XUẤT METADATA] | [CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | [CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |
+| PMID:32992600 | [CẦN TRÍCH XUẤT METADATA] | [CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | [CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |
+| PMID:40995744 | [CẦN TRÍCH XUẤT METADATA] | [CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | [CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |
+| DOI:10.52163/yhc.v67icd5.5018 | [CẦN TRÍCH XUẤT METADATA] | [CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | [CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |
+| DOI:10.51298/vmj.v540i1.10302 | [CẦN TRÍCH XUẤT METADATA] | [CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | [CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |
+| DOI:10.52163/yhc.v64i1.573 | [CẦN TRÍCH XUẤT METADATA] | [CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | [CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |
+| DOI:10.52163/yhc.v64i6.841 | [CẦN TRÍCH XUẤT METADATA] | [CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | [CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |
+| DOI:10.51298/vmj.v549i2.13771 | [CẦN TRÍCH XUẤT METADATA] | [CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | [CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |
+| DOI:10.38148/jhds.0706skpt23-064 | [CẦN TRÍCH XUẤT METADATA] | [CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | [CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |
+| DOI:10.52163/yhc.v67i7.5934 | [CẦN TRÍCH XUẤT METADATA] | [CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | [CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |
+| DOI:10.51403/0868-2836/2021/78 | [CẦN TRÍCH XUẤT METADATA] | [CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | [CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |
+| DOI:10.52163/yhc.v66i1.1940 | [CẦN TRÍCH XUẤT METADATA] | [CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | [CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |
 
 ## Khoảng trống nghiên cứu
-- Chưa có systematic review tổng hợp bằng chứng
-- Chưa có RCT kiểm định hiệu quả can thiệp
-- Chưa có guideline/khuyến cáo chính thức cho vấn đề này
+- Không thấy SR/MA trong PubMed, truy vấn G0 «patient satisfaction outpatient department Vietnam hospital» — chỉ trong phạm vi một truy vấn, KHÔNG phải kết luận «chưa có tổng quan»
+- Không thấy guideline được PubMed đánh chỉ mục (PubMed, truy vấn G0 «patient satisfaction outpatient department Vietnam hospital») — văn bản quy phạm trong nước (Bộ Y tế…) và trang hiệp hội KHÔNG nằm trên PubMed: phải rà trước khi kết luận «chưa có»
 - Không có SR/MA, RCT hay guideline mới trong 5 năm gần đây (2021-2026) — nhánh này KHÔNG soi nghiên cứu quan sát
 
 > Mỗi luận điểm trong protocol phải truy ngược được về dòng PMID/DOI phù hợp.

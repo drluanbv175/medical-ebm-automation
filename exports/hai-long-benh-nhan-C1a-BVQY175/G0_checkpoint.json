@@ -1,7 +1,7 @@
 {
   "study": "hai-long-benh-nhan-C1a-BVQY175",
   "gate": "G0",
-  "gate_status": "DRAFT — CHỜ BÁC SĨ: G0-HUMAN-07",
+  "gate_status": "PASS_G0_CONFIRMED — câu hỏi nghiên cứu đã được bác sĩ chốt",
   "generated_at": "2026-07-31T20:39:23.828548",
   "topic": "Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối",
   "base_query": "patient satisfaction outpatient department Vietnam hospital",
@@ -77,24 +77,19 @@
     "A1_markdown": "exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.md",
     "A1_docx": "exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.docx"
   },
-  "pending_doctor_actions": [
-    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"79d2f5b9faeb3a4f\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
-    "Chạy: python tools/g0_quality_gate.py --study hai-long-benh-nhan-C1a-BVQY175"
-  ],
+  "pending_doctor_actions": [],
   "next_gate": "G1 — Thiết kế nghiên cứu (CHỈ sau khi G0 đạt PASS_G0_CONFIRMED)",
   "disclaimer": "Cần bác sĩ kiểm chứng.",
   "quality_gate": {
-    "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
+    "status": "PASS_G0_CONFIRMED",
     "contract_version": "G0-2026.1",
     "automated_checks_passed": true,
-    "human_confirmation_complete": false,
-    "pending_actions": [
-      "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"79d2f5b9faeb3a4f\" (dấu của nội dung đang chốt). Không cần lưu danh tính."
-    ],
-    "dau_van_tay_luc_cham": "79d2f5b9faeb3a4f"
+    "human_confirmation_complete": true,
+    "pending_actions": [],
+    "dau_van_tay_luc_cham": "fb4e9befef14a3c6"
   },
   "needs_input": {
-    "blocked": true,
+    "blocked": false,
     "reason_code": "MISSING_PICO",
     "human_message": "G0 đã dựng xong NỀN BẰNG CHỨNG; câu hỏi nghiên cứu (PICO, kết cục chính, giả thuyết, loại câu hỏi) ĐÃ đạt — còn chờ bác sĩ/PI: G0-HUMAN-07. Không cần tra lại PubMed; điền xong thì chấm lại.",
     "remediation": {
@@ -114,7 +109,9 @@
         "hypothesis"
       ]
     },
-    "supplied_by": "doctor"
+    "supplied_by": "doctor",
+    "resolved_by": "g0_quality_gate.refresh_checkpoint",
+    "resolved_at": "2026-10-11T13:18:33"
   },
   "a1_dung_lai_luc": "2026-10-11T10:23:52",
   "quality_contract_version": "G0-2026.1",

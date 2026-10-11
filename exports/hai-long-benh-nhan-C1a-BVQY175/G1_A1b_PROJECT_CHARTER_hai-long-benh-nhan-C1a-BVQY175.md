@@ -1,12 +1,12 @@
 # PROJECT CHARTER (A1b) — hai-long-benh-nhan-C1a-BVQY175
-> [DỰ THẢO] Sinh tự động 2026-09-02 07:55; không thay xác nhận của PI/methodologist.
+> [DỰ THẢO] Sinh tự động 2026-10-11 13:15; không thay xác nhận của PI/methodologist.
 
 ## Phạm vi
 - Tên/chủ đề: Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
 - Thiết kế dự kiến: Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)
 - Quần thể: Người bệnh ngoại trú từ đủ 18 tuổi trở lên (kể cả phụ nữ mang thai), đủ sức khỏe và năng lực nhận thức/ngôn ngữ để trả lời, đã cơ bản hoàn thành quy trình khám tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, và đồng ý tham gia tự nguyện (mục 4.3.1 đề cương)
 - Bối cảnh: Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh — khối khám ngoại trú theo yêu cầu (dịch vụ) tại bệnh viện quân y tuyến cuối
-- Thời gian nghiên cứu: [CẦN BỔ SUNG]
+- Thời gian nghiên cứu: Dự kiến từ tháng 12/2026 đến tháng 12/2028. Thu thập mẫu chính chỉ bắt đầu sau T0 = ngày Hội đồng Đạo đức/lãnh đạo BVQY 175 phê duyệt, sau khi đã đăng ký OSF Registries, hoàn tất pha phát triển công cụ và dry-run F1–F5 (đề cương §4.9, §6.2).
 - Ngoài phạm vi: [CẦN BỔ SUNG]
 
 ## Mục tiêu SMART

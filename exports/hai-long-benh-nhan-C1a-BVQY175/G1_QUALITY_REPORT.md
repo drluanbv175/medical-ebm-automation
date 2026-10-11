@@ -1,41 +1,45 @@
 # BÁO CÁO CHẤT LƯỢNG G1 — hai-long-benh-nhan-C1a-BVQY175
 
-**Trạng thái:** `DRAFT_READY_NEEDS_HUMAN_REVIEW`
+**Trạng thái:** `PASS_G1_CONFIRMED`
 
 ## Kiểm tra tự động
 | Mã | Tiêu chí | Trạng thái | Bằng chứng |
 |---|---|---|---|
 | G1-AUTO-00 | Guardrail liêm chính G1 sạch | PASS | guardrail_passed=True |
-| G1-AUTO-01 | Tiền đề G0 có checkpoint và guardrail sạch | PASS | G0 legacy guardrail passed=True |
+| G1-AUTO-01 | Tiền đề G0 có checkpoint và guardrail sạch | PASS | G0 chấm sống=PASS_G0_CONFIRMED |
 | G1-AUTO-02 | Mã thiết kế thuộc vocabulary canonical | PASS | internal_code='cross_sectional' |
+| G1-AUTO-02c | Thiết kế bác sĩ đã ghim được chuỗi G0–G10 hỗ trợ (không bị thay bằng suy luận) | PASS | không có pin bị từ chối |
+| G1-AUTO-02d | Thiết kế hợp với loại câu hỏi đã chốt ở G0 | PASS | thiết kế «cross_sectional» hợp với loại câu hỏi G0 «descriptive» |
+| G1-AUTO-02b | ICH E6(R3) Annex 2 Step 4: thiết kế phương pháp mới đủ fitness-for-purpose và giám sát | PASS | status=NOT_APPLICABLE; methods=không áp dụng |
 | G1-AUTO-03 | Chuẩn báo cáo khớp thiết kế | PASS | đã chọn='STROBE'; canon='STROBE' |
 | G1-AUTO-03b | Chuẩn đề cương/protocol khớp thiết kế | PASS | đã chọn='Protocol định trước; đăng ký nếu cần minh bạch'; canon='Protocol định trước; đăng ký nếu cần minh bạch' |
 | G1-AUTO-04 | Thiết kế không còn suy luận mơ hồ | PASS | ambiguous=false |
 | G1-AUTO-04b | So sánh ít nhất ba phương án và kiểm soát đủ nhóm sai lệch/trustworthiness theo thiết kế | PASS | primary_present=True; alternatives_complete=True; rationale_present=True; bias_controls=7 |
 | G1-AUTO-04c | SAP không chứa khuôn phân tích mâu thuẫn với thiết kế | PASS | không phát hiện khuôn sai cho cross_sectional |
 | G1-AUTO-05 | Đủ bộ A1b/A2/A2b/A13/A13b và các phần bắt buộc | PASS | 5/5 artifact có mặt và qua kiểm cấu trúc |
-| G1-AUTO-06 | Có định danh PMID/DOI khớp chuỗi trong Evidence Ledger (CHƯA xác minh qua PubMed/Crossref — việc đó thuộc cổng A12 kiem-chung-trich-dan) | PASS | 12 PMID/DOI được thu, ledger_traceable=True (khớp CHUỖI, KHÔNG gọi PubMed để xác minh tồn tại) |
+| G1-AUTO-07 | Đề cương lõi không còn ô trống thuộc phạm vi G1 (dòng hoãn cho cổng sau được bỏ qua) | PASS | mọi dòng thuộc G1 của PHẦN 0 đã có nội dung |
+| G1-AUTO-06 | Có định danh PMID/DOI khớp chuỗi trong Evidence Ledger (CHƯA xác minh qua PubMed/Crossref — việc đó thuộc cổng A12 kiem-chung-trich-dan) | PASS | 26 PMID/DOI được thu, ledger_traceable=True (khớp CHUỖI, KHÔNG gọi PubMed để xác minh tồn tại) |
 
 ## Xác nhận người thật
 | Mã | Tiêu chí | Trạng thái | Bằng chứng |
 |---|---|---|---|
-| G1-HUMAN-01 | PI/methodologist xác nhận thiết kế | REVIEW | pin='cross_sectional'; design_confirmed=False |
+| G1-HUMAN-01 | PI/methodologist xác nhận thiết kế | PASS | pin='cross_sectional'; design_confirmed=True |
 | G1-HUMAN-02 | Mục tiêu và kết cục chính vận hành đã chốt | PASS | objectives=đủ; outcome_name=có; measure=có; timepoint=có; type=có |
-| G1-HUMAN-03 | Quần thể, tiêu chí chọn, tuyển mẫu, bối cảnh và thời gian đã xác định | REVIEW | population=có; inclusion=có; exclusion=có; recruitment=có; setting=có; study_period=thiếu |
+| G1-HUMAN-03 | Quần thể, tiêu chí chọn, tuyển mẫu, bối cảnh và thời gian đã xác định | PASS | population=có; inclusion=có; exclusion=có; recruitment=có; setting=có; study_period=có |
 | G1-HUMAN-04 | Can thiệp/phơi nhiễm, đối chứng và lịch theo dõi đã xác định | PASS | intervention_or_exposure=có; comparator=có; follow_up_schedule=có |
 | G1-HUMAN-05 | Estimand đủ 5 thuộc tính khi là RCT | PASS | N/A cho thiết kế không phải RCT |
-| G1-HUMAN-06 | Đề cương lõi, kiểm soát sai lệch và tính khả thi được xác nhận | REVIEW | protocol_core_confirmed=False; bias_controls_confirmed=False; feasibility_confirmed=False |
-| G1-HUMAN-07 | Khoảng trống và nội dung trích dẫn đã được người thật đọc lại | REVIEW | evidence_review_confirmed=False; identifiers=12 |
-| G1-HUMAN-08 | Có vai trò và thời điểm rà phương pháp | REVIEW | reviewed_by_role=thiếu; reviewed_at=thiếu |
+| G1-HUMAN-06 | Đề cương lõi, kiểm soát sai lệch và tính khả thi được xác nhận | PASS | protocol_core_confirmed=True; bias_controls_confirmed=True; feasibility_confirmed=True |
+| G1-HUMAN-07 | Khoảng trống và nội dung trích dẫn đã được người thật đọc lại | PASS | evidence_review_confirmed=True; identifiers=26 |
+| G1-HUMAN-08 | Có vai trò, thời điểm rà phương pháp và xác nhận gắn đúng nội dung | PASS | reviewed_by_role=pi; reviewed_at=2026-10-11T13:15:54+07:00; xác nhận gắn đúng nội dung hiện tại |
 
 ## Manifest artifact
 | Artifact | Đường dẫn | SHA-256 |
 |---|---|---|
-| A2 | exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md | `39d53fc57bc8bb197d52bf2e717bb56788aec94613ce9377203d9c1e5b6db6b9` |
-| A1b | exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md | `c17800419d16758195b7af4776b2442c19d02e04b9a40b41b8533c8bd34e50b9` |
-| A2b | exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md | `4c14bc86d0d94ad24b58b924159e49cd083921d8ff449b7de8b7f8d97d4bccf7` |
-| A13 | exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md | `5de5087b086310a566d9e16cb13df4ce9a41b5060d585b2ef8560af52dfefcd9` |
-| A13b | exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md | `354392396e57941f3a4c002f05b3e795d7f658d828cac0ed6cade894ca38684d` |
+| A1b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md | `da2bed930fb4c7ef0edf110dbb4394883f1cf3964922aca58ba1eef133a5de23` |
+| A2 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md | `9b927eba57e6dd573fd590c899c97829a6360cff20df5a5881212d9bd98e01dc` |
+| A2b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md | `829fedc6896b19f7e80847d21c63fd26ca2463193f1598cc7102418464a0cd14` |
+| A13 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md | `5de5087b086310a566d9e16cb13df4ce9a41b5060d585b2ef8560af52dfefcd9` |
+| A13b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md | `c274c46c95358259f8119c8b67c8e63e3dbef03363e9e17242e647aa741b3352` |
 
 ## Nền chuẩn
 | Chuẩn | Phạm vi | PMID/DOI/URL |
@@ -43,6 +47,7 @@
 | EQUATOR Network | Bản đồ guideline theo loại nghiên cứu | https://www.equator-network.org/library/ |
 | SPIRIT 2025 | Protocol thử nghiệm ngẫu nhiên | PMID:40294593; DOI:10.1001/jama.2025.4486 |
 | CONSORT 2025 | Báo cáo kết quả thử nghiệm ngẫu nhiên | DOI:10.1136/bmj-2024-081123 |
+| ICH E6(R3) Annex 2 Step 4 | Thử nghiệm có yếu tố phi tập trung, pragmatic và/hoặc RWD | https://database.ich.org/sites/default/files/ICH_E6%28R3%29_Annex%202_Guideline_Step%204_2026_0603_0.pdf |
 | PRISMA-P 2015 | Protocol tổng quan hệ thống | DOI:10.1186/2046-4053-4-1 |
 | ICH E6(R3) | Quality-by-design và GCP cho thử nghiệm lâm sàng | https://www.ema.europa.eu/en/ich-e6-good-clinical-practice-scientific-guideline |
 
