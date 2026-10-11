@@ -861,6 +861,10 @@ def doc_bien_ban(out_dir: Path, gate: Optional[str] = None) -> List[Dict[str, An
     goc = thu_muc_bien_ban(out_dir)
     for g in ([gate] if gate else list(CONG)):
         for p in sorted((goc / g).glob("*.json")) if (goc / g).is_dir() else []:
+            # 11/10/2026: tệp khai áp dụng của điều phối (`khai-ap-dung`) nằm CÙNG thư mục nhưng KHÔNG phải biên bản —
+            # đọc nhầm ⇒ cả cổng báo «HỎNG — gate phải thuộc…» (C1a G1, study_readiness).
+            if p.name == TEP_KHAI_AP_DUNG:
+                continue
             try:
                 bb = json.loads(p.read_text(encoding="utf-8"))
             except (OSError, ValueError):
@@ -1695,6 +1699,16 @@ def trach_nhiem(study: str, gate: str, out_dir: Path) -> Dict[str, Any]:
         ket = "AGENT_XONG_CHO_NGUOI"
     else:
         ket = "DAT_TIEU_CHI"
+    # 11/10/2026: biên bản hội đồng còn việc treo (HỎNG · BẤT ĐỒNG · CHUYỂN BÁC SĨ · CẦN SỬA) phải hiện ở bảng trách
+    # nhiệm. C1a G0 báo DAT_TIEU_CHI trong khi tranh biện BD-G0-T2 (07/10) giao thu-thu-tai-lieu gộp 5 DOI trong nước
+    # vào danh mục đọc của PI mà chưa làm ⇒ PI chốt tính mới thiếu một bài sát (BV TƯQĐ 108). Hội đồng là TƯ VẤN: KHÔNG
+    # đổi kết luận/mã thoát, chỉ không được im lặng; không đọc được biên bản ⇒ báo rõ, không coi là «không có gì».
+    try:
+        hd = tom_tat_cong(gate, out_dir)
+    except Exception as e:  # noqa: BLE001
+        hd = {"trang_thai": "KHÔNG ĐO ĐƯỢC", "ly_do": [f"{type(e).__name__}: {str(e)[:160]}"]}
+    hoi_dong_treo = ({"trang_thai": hd["trang_thai"], "ly_do": list(hd.get("ly_do") or [])}
+                     if hd.get("trang_thai") in TRANG_THAI_CAN_XU_LY + ("KHÔNG ĐO ĐƯỢC",) else None)
     return {"schema": "hoi_dong_cong/trach_nhiem/v1", "study": study, "gate": gate, "dieu_phoi": dieu_phoi_cong(gate),
             "trang_thai_song": song.get("status"), "nguon": song.get("nguon"), "ly_do_khong_do": song.get("ly_do"),
             "thiet_ke": ma_tk, "ket_luan": ket, "so_tieu_chi": len(rows), "so_dat": len(dat),
@@ -1702,7 +1716,8 @@ def trach_nhiem(study: str, gate: str, out_dir: Path) -> Dict[str, Any]:
             "chua_phan_cong": chua_gan, "nhiem_vu": nhiem_vu, "chua_cham": chua_cham,
             "chi_dam_bao_bang_danh_gia_cheo": chi_danh_gia,
             "chat_luong_chua_bao_dam": [m["ma"] for m in chi_danh_gia if m["danh_gia_cheo"] != "qua"],
-            "nhiem_vu_chua_xac_dinh": [n["ma"] for n in nhiem_vu if n["ap_dung"] is None]}
+            "nhiem_vu_chua_xac_dinh": [n["ma"] for n in nhiem_vu if n["ap_dung"] is None],
+            "hoi_dong_treo": hoi_dong_treo}
 
 
 _CHO_NGUOI = re.compile(r"^CHỜ NGƯỜI \(([^)—]+?)(?:\s+—[^)]*)?\):")
@@ -1734,6 +1749,9 @@ def in_tong_trach_nhiem(kq: Dict[str, Any]) -> str:
         dong.append(f"| {k['gate']} | `{k['dieu_phoi']}` | {k['trang_thai_song']} | {k['ket_luan']} | "
                     f"{len(k['agent_con_viec'])} | {len(k['cho_nguoi'])} | {len(k['cho_cong_truoc'])} | "
                     f"{', '.join(k['chat_luong_chua_bao_dam']) or '—'} |")
+    treo = [f"{k['gate']} ({k['hoi_dong_treo']['trang_thai']})" for k in kq["cong"] if k.get("hoi_dong_treo")]
+    if treo:
+        dong.append("⚠ Hội đồng còn việc treo (TƯ VẤN — xem trach-nhiem từng cổng): " + ", ".join(treo))
     if kq["cong_can_giao"]:
         k = next(x for x in kq["cong"] if x["gate"] == kq["cong_can_giao"])
         dau = (k["agent_con_viec"] or k["chua_phan_cong"])[0]
@@ -1777,6 +1795,11 @@ def in_trach_nhiem(kq: Dict[str, Any]) -> str:
             f"- Chấm sống: {kq['trang_thai_song']} (nguồn {kq['nguon']}) · thiết kế: "
             f"{kq['thiet_ke'] or 'chưa xác định'} · {kq['so_dat']}/{kq['so_tieu_chi']} tiêu chí đạt",
             f"- KẾT LUẬN PHẦN AGENT: {kq['ket_luan']}"]
+    treo = kq.get("hoi_dong_treo")
+    if treo:
+        dong.append(f"  ⚠ HỘI ĐỒNG CÒN VIỆC TREO ({treo['trang_thai']}): " + "; ".join(treo["ly_do"][:4])
+                    + f" — đọc biên bản ở hoi_dong/{kq['gate']}/; việc sửa giao agent thì đòi tới khi xong, rồi cần "
+                    "biên bản mới (họp tốn agent: hỏi bác sĩ, §5). Kết luận trên CHỈ nói về tiêu chí bộ chấm.")
     for tieu_de, khoa, mo_ta in (
             ("AGENT CÒN VIỆC (điều phối giao/đòi tới khi đạt)", "agent_con_viec",
              lambda m: f"{m['nhiem_vu']} `{m['agent']}`"),
