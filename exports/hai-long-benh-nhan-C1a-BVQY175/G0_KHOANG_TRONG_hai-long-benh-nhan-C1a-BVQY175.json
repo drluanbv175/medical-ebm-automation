@@ -1,6 +1,6 @@
 {
   "schema": "g0/khoang_trong/v1",
-  "nguoi_soan": "khoang-trong-nghien-cuu (agent, theo biên bản G0-DG-20261007T182841-79f9a227)",
+  "nguoi_soan": "khoang-trong-nghien-cuu (agent, theo biên bản G0-DG-20261007T182841-79f9a227); sửa 2026-10-11 theo biên bản BD-G0-T2 (gộp 9 DOI trong nước — bản trước bỏ sót)",
   "ngay_soan": "2026-10-10",
   "guideline_lien_quan": [
     {
@@ -25,24 +25,27 @@
       "muc": ""
     }
   ],
-  "phat_bieu_khoang_trong": "Trong phạm vi đã tra (PubMed 2026-07-31 và 2026-08-30, các nguồn bổ sung của hội đồng G0), chưa thấy dữ liệu công bố về mức hài lòng và yếu tố liên quan của người bệnh ngoại trú tại một khoa khám theo yêu cầu của bệnh viện quân y tuyến cuối như Khoa C1a; bộ phiếu chuẩn của Bộ Y tế (QĐ 56/QĐ-BYT 2024) không tách lĩnh vực chi phí dịch vụ theo yêu cầu. Y văn tiếng Việt không lập chỉ mục PubMed chưa được rà.",
-  "loai_khoang_trong": ["boi_canh", "cong_cu_do"],
+  "phat_bieu_khoang_trong": "Trong phạm vi đã tra (PubMed 2026-07-31 và 2026-08-30; Crossref tiếng Việt 2026-10-11), đã có khảo sát hài lòng ngoại trú tại khoa khám theo yêu cầu (doi:10.52163/yhc.v67icd5.5018 tại BV TƯQĐ 108; doi:10.51298/vmj.v540i1.10302), tại bệnh viện quân y (doi:10.52163/yhc.v64i1.573) và tại BV Quân y 175 ở khoa YHCT (doi:10.52163/yhc.v66i1.1940); chưa thấy nghiên cứu tại khối khám theo yêu cầu (Khoa C1a) của BV Quân y 175, hay nghiên cứu trong nước gắn hài lòng với thời gian chờ từ mốc HIS hoặc ước lượng ICC theo bàn khám; bộ phiếu QĐ 56/QĐ-BYT 2024 không tách lĩnh vực chi phí dịch vụ theo yêu cầu. Y văn tiếng Việt không có DOI chưa được rà.",
+  "loai_khoang_trong": [
+    "boi_canh",
+    "cong_cu_do"
+  ],
   "muc_novelty": {
     "muc": "nhan_rong_co_kiem_chung",
-    "y_nghia": "Không mới về chủ đề (đã có nhiều khảo sát tại Việt Nam: PMID 34445940; PMID 36439278; PMID 42625778) — giá trị nằm ở dữ liệu nền tại chính Khoa C1a để cải tiến chất lượng và đối chiếu các kỳ sau, ước lượng ICC theo bàn khám trong bối cảnh Việt Nam, và kiểm định cấu trúc lĩnh vực có bổ sung chi phí (đề cương §3.5)."
+    "y_nghia": "Không mới về chủ đề: đã có khảo sát tại Việt Nam, kể cả tại khoa khám theo yêu cầu và tại bệnh viện quân y (PMID 34445940; PMID 42625778; doi:10.52163/yhc.v67icd5.5018; doi:10.52163/yhc.v64i1.573). Giá trị nằm ở: dữ liệu nền tại chính Khoa C1a để cải tiến chất lượng và đối chiếu các kỳ sau; thời gian chờ đo khách quan từ mốc HIS thay vì tự báo cáo; ước lượng ICC theo bàn khám trong bối cảnh Việt Nam; kiểm định cấu trúc lĩnh vực có bổ sung chi phí (đề cương §3.5)."
   },
   "trang_thai_nguon": {
     "pubmed": "partial",
     "clinicaltrials_gov": "day_du",
-    "who_ictrp": "chua_tra",
+    "who_ictrp": "day_du",
     "prospero": "khong_ap_dung",
-    "nguon_trong_nuoc": "chua_tra"
+    "nguon_trong_nuoc": "partial"
   },
-  "ghi_chu_trang_thai_nguon": "PubMed «partial»: một truy vấn tự do của G0 + nguồn bổ sung, chưa phải chiến lược MeSH đầy đủ ≥ 2 CSDL. ClinicalTrials.gov: đã tra 2026-07-31, 0 hồ sơ khớp (chủ yếu phủ thử nghiệm can thiệp). WHO ICTRP không có API — PI tự tra rồi ghi gate_params.G0.registry_manual_checked.ictrp. Nguồn trong nước (Tạp chí Y học Việt Nam, Y Dược học Quân sự…): đề cương §3.5 còn ô [CẦN CHỦ NHIỆM GHI].",
+  "ghi_chu_trang_thai_nguon": "PubMed «partial»: một truy vấn tự do của G0 + nguồn bổ sung, chưa phải chiến lược MeSH đầy đủ ≥ 2 CSDL. ClinicalTrials.gov: đã tra 2026-07-31, 0 hồ sơ khớp (chủ yếu phủ thử nghiệm can thiệp). WHO ICTRP không có API — PI tự tra rồi ghi gate_params.G0.registry_manual_checked.ictrp. Nguồn trong nước (Tạp chí Y học Việt Nam, Y Dược học Quân sự…): đề cương §3.5 còn ô [CẦN CHỦ NHIỆM GHI]. Bổ sung 2026-10-11: nguồn trong nước tra qua Crossref (2 truy vấn tiếng Việt) — «partial»: chỉ phủ tạp chí có DOI; WHO ICTRP PI đã tự tra 2026-10-11.",
   "nhap_finer": {
     "finer_feasible": "CẦN PI QUYẾT — rủi ro: dry-run F1–F5 chưa chạy (đúng người thứ k_h từ 80%, đồng ý từ 60%, ghép HIS từ 90%); lưu lượng/hệ số biến thiên theo tầng từ HIS chưa có; nhân lực ngoài khoa (điều tra viên, tổ mở hòm, tổ mã hoá ý kiến mở) chưa ấn định (đề cương §4.4.2, §6.1).",
     "finer_interesting": "ĐỀ XUẤT ĐẠT — thời gian chờ và thủ tục là lĩnh vực hài lòng thấp lặp lại ở người bệnh ngoại trú Việt Nam (PMID 32584904; PMID 31703089) và người chờ lâu hơn ít hài lòng hơn (PMID 34017606); khối dịch vụ theo yêu cầu có tín hiệu hài lòng thấp hơn ở mẫu nhỏ (PMID 34445940).",
-    "finer_novel": "ĐỀ XUẤT ĐẠT ở mức «nhân rộng có kiểm chứng» — chưa thấy dữ liệu công bố tại khoa khám theo yêu cầu của bệnh viện quân y trong phạm vi đã tra; KHÔNG mới về chủ đề (PMID 34445940; PMID 42625778).",
+    "finer_novel": "ĐỀ XUẤT ĐẠT ở mức «nhân rộng có kiểm chứng» — KHÔNG mới về chủ đề: đã có khảo sát hài lòng tại khoa khám theo yêu cầu (doi:10.52163/yhc.v67icd5.5018; doi:10.51298/vmj.v540i1.10302) và tại bệnh viện quân y (doi:10.52163/yhc.v64i1.573); mới ở bối cảnh Khoa C1a và ở cách đo (thời gian chờ từ mốc HIS, ICC theo bàn khám) trong phạm vi đã tra.",
     "finer_ethical": "CẦN PI QUYẾT — rủi ro: riêng tư ở khâu ghép mốc HIS (khử định danh có kiểm soát, bảng ghép do CNTT/QLCL giữ, huỷ trong 30 ngày), xung đột lợi ích cơ cấu khi nhóm nghiên cứu thuộc khoa được đánh giá, áp lực chiều lòng tại chỗ; chưa có phê duyệt Hội đồng Y đức (đề cương §4.11, §4.11.1).",
     "finer_relevant": "ĐỀ XUẤT ĐẠT — kết quả dùng trực tiếp cho cải tiến chất lượng của Trung tâm C1/Khoa C1a; đo lường hài lòng là yêu cầu thường quy của quản lý chất lượng bệnh viện (QĐ 56/QĐ-BYT 2024, theo đề cương §1 và §3.2.1)."
   },

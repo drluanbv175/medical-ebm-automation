@@ -38,7 +38,7 @@
 ## Manifest artifact
 | Artifact | Đường dẫn | SHA-256 |
 |---|---|---|
-| A1 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.md | `fc2a2f1bdfa76a4549a9bd2f9484d01f2efddb683470cf4da948d5b90f8b559d` |
+| A1 | /Users/nguyenluan/.ebm-worktrees/yk-chot-g0-c1a-20261011/exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.md | `c47babded861253a3e2e72e957bd35c8e9db0a7e0dd39a7ba358629e250cd120` |
 
 ## Nền chuẩn
 | Chuẩn | Phạm vi | PMID/DOI/URL |
