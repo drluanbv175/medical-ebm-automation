@@ -623,6 +623,41 @@ def test_so_chum_khai_lech_trong_dung_sai_lam_tron_nhu_cu(tmp_path):
         assert row["status"] == "PASS" and "khác số chùm suy từ N" not in row["evidence"], (khai, row)
 
 
+# 11/10/2026 — «thiếu CV cỡ chùm» là SỐ LIỆU ĐỜI THỰC (HIS) ⇒ còn MỘT vấn đề đó thì bằng chứng mở đầu
+# «CHỜ NGƯỜI (PI — …)» để bảng trách nhiệm xếp «chờ người»; trạng thái vẫn REVIEW. Có vấn đề khác đi kèm ⇒ vẫn là
+# việc agent (không tiền tố).
+def _khong_khai_deu(meta: dict) -> dict:
+    return {k: v for k, v in meta.items() if k != "equal_cluster_sizes"}
+
+
+def test_chi_thieu_cv_co_chum_la_cho_nguoi_pi(tmp_path):
+    row = _row(_eval_cum_ke_hoach(tmp_path, _full_meta(**_khong_khai_deu(_CHUM_CO_DINH)), confirmed_n=1000,
+                                  n_clusters=27, m=20), "G3-AUTO-12")
+    assert row["status"] == "REVIEW"
+    assert row["evidence"].startswith(G3Q.CHO_NGUOI_SO_LIEU_CUM) and G3Q.VAN_DE_CUM_CHO_SO_LIEU in row["evidence"]
+    assert "HIS" in row["action"] and "KHÔNG ước đoán" in row["action"]
+
+
+def test_thieu_cv_kem_van_de_khac_van_la_viec_agent(tmp_path):
+    meta = _khong_khai_deu({k: v for k, v in _CHUM_CO_DINH.items() if k != "icc_source"})
+    row = _row(_eval_cum_ke_hoach(tmp_path, _full_meta(**meta), confirmed_n=1000, n_clusters=27, m=20),
+               "G3-AUTO-12")
+    assert row["status"] in ("REVIEW", "BLOCK") and G3Q.VAN_DE_CUM_CHO_SO_LIEU in row["evidence"]
+    assert not row["evidence"].startswith("CHỜ NGƯỜI"), row["evidence"]
+
+
+def test_co_cv_that_thi_khong_con_cho_nguoi(tmp_path):
+    meta = {**_khong_khai_deu(_CHUM_CO_DINH), "cluster_size_cv": 0.15}
+    row = _row(_eval_cum_ke_hoach(tmp_path, _full_meta(**meta), confirmed_n=1000, n_clusters=27, m=20), "G3-AUTO-12")
+    assert row["status"] == "PASS" and "CHỜ NGƯỜI" not in row["evidence"]
+
+
+def test_tien_to_khop_bo_doc_cho_nguoi_cua_hoi_dong():
+    import hoi_dong_cong as HD
+    m = HD._CHO_NGUOI.match(G3Q.CHO_NGUOI_SO_LIEU_CUM + G3Q.VAN_DE_CUM_CHO_SO_LIEU)
+    assert m and m.group(1).strip() == "PI"
+
+
 def test_co_chum_khong_deu_va_cv_lon_phai_hieu_chinh(tmp_path):
     meta = {**_CLUSTER_OK}
     meta.pop("equal_cluster_sizes")

@@ -15,10 +15,10 @@
 | G3-AUTO-06 | Effect size không phải số THÔ chưa đọc toàn văn | PASS | effect size do bác sĩ cấp trực tiếp hoặc không áp dụng |
 | G3-AUTO-07 | Alpha/power trong quy ước và đã xử lý bội/giữa kỳ | PASS | alpha=0.05, power=0.8 |
 | G3-AUTO-08 | Mọi tham số phụ đưa vào công thức đều có nguồn | PASS | các tham số phụ đang dùng đều có khai nguồn |
-| G3-AUTO-09 | Các con số trong artifact nhất quán với nhau | REVIEW | ô cơ sở bảng độ nhạy=385 không khớp n_total=532 hay n_adjusted=626 |
+| G3-AUTO-09 | Các con số trong artifact nhất quán với nhau | PASS | N, bảng độ nhạy và dropout khớp nhau |
 | G3-AUTO-10 | Artifact nhắc đúng chuẩn báo cáo của thiết kế | PASS | tìm thấy 'STROBE' trong artifact |
 | G3-AUTO-11 | Non-inferiority/equivalence: biên Δ có khung quy định, biện minh và nguồn | PASS | giả thuyết descriptive_precision (không phải NI/equivalence) |
-| G3-AUTO-12 | Thiết kế theo chùm: ICC có nguồn, design effect đúng số học, đủ số chùm | REVIEW | cỡ chùm không khẳng định là đều nhưng thiếu hệ số biến thiên CV |
+| G3-AUTO-12 | Thiết kế theo chùm: ICC có nguồn, design effect đúng số học, đủ số chùm | REVIEW | CHỜ NGƯỜI (PI — số liệu cỡ chùm từ HIS): cỡ chùm không khẳng định là đều nhưng thiếu hệ số biến thiên CV |
 | G3-AUTO-16 | Hiệu chỉnh quần thể hữu hạn (FPC) chỉ dùng cho khảo sát quần thể hữu hạn | PASS | không dùng hiệu chỉnh quần thể hữu hạn |
 | G3-AUTO-17 | Thiết kế không dùng power đã dùng đúng khung thay thế | PASS | thiết kế dùng công thức power thông thường |
 | G3-AUTO-18 | Tham số đã ghim trong study_meta khớp giá trị thật sự đem vào phép tính | PASS | các tham số đã ghim khớp checkpoint |
@@ -39,8 +39,9 @@
 
 ## Việc còn lại
 - Chạy G0/G1 trước; không tính cỡ mẫu trên thiết kế mặc định.
-- Sinh lại artifact sau khi sửa; bảng độ nhạy phải neo vào chính N đã kết luận.
 - Khai icc/icc_source/cluster_size/n_clusters; số chùm nhỏ phải khai hiệu chỉnh mẫu nhỏ.
+Số chùm CỐ ĐỊNH nhiều hơn mức tối thiểu: khai n_clusters kèm confirmed_n (= số chùm × cỡ chùm m).
+Cỡ chùm không đều: PI khai cluster_size_cv từ số liệu thật (HIS: số lượt khám từng chùm trong kỳ) hoặc equal_cluster_sizes=true nếu khẳng định chùm đều — KHÔNG ước đoán.
 - Đọc toàn văn nguồn rồi đặt gate_params.G3.effect_source_confirmed=true.
 - Rà từng dòng bảng tham số của artifact A4 rồi đặt assumptions_confirmed=true.
 - Chọn nhầm loại giả thuyết là sai toàn bộ phép tính — xác nhận rồi đặt hypothesis_confirmed=true.

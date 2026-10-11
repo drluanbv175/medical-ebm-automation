@@ -377,6 +377,12 @@ STANDARDS_BASIS: Sequence[Mapping[str, str]] = (
 # Ngưỡng lấy từ chuẩn đã xác minh — đặt tên để không rải "số ma" trong code.
 CLUSTER_SMALL_SAMPLE_THRESHOLD = 40  # Kahan 2016: dưới mức này phải hiệu chỉnh mẫu nhỏ
 CLUSTER_CV_NEGLIGIBLE = 0.23  # Eldridge 2006: dưới mức này bỏ qua được
+# 11/10/2026 (C1a, 50 bàn khám): «thiếu CV cỡ chùm» chỉ giải được bằng SỐ LIỆU ĐỜI THỰC (số lượt khám từng bàn
+# trong HIS) hoặc lời khẳng định của PI rằng các chùm đều — agent không được bịa CV hay tự khẳng định. Khi đó là vấn
+# đề DUY NHẤT của G3-AUTO-12 thì bằng chứng mở đầu «CHỜ NGƯỜI (…)» để bảng trách nhiệm hội đồng xếp «chờ người» (cơ
+# chế 10/10, như G1-AUTO-07); trạng thái tiêu chí KHÔNG đổi — vẫn REVIEW.
+VAN_DE_CUM_CHO_SO_LIEU = "cỡ chùm không khẳng định là đều nhưng thiếu hệ số biến thiên CV"
+CHO_NGUOI_SO_LIEU_CUM = "CHỜ NGƯỜI (PI — số liệu cỡ chùm từ HIS): "
 DESIGN_EFFECT_TOLERANCE = 0.01  # dung sai khi đối chiếu DE tự khai với DE tính lại
 CLUSTER_COUNT_TOLERANCE = 1  # lệch ±1 chùm giữa hai số cùng làm tròn lên (khai tay / suy từ N / suy từ N kế hoạch)
 
@@ -1255,9 +1261,7 @@ def evaluate_g3_quality(
         if g3.get("equal_cluster_sizes") is not True:
             cv = _as_float(g3.get("cluster_size_cv"))
             if cv is None:
-                cluster_problems.append(
-                    "cỡ chùm không khẳng định là đều nhưng thiếu hệ số biến thiên CV"
-                )
+                cluster_problems.append(VAN_DE_CUM_CHO_SO_LIEU)
             elif cv >= CLUSTER_CV_NEGLIGIBLE and not _present(
                 g3.get("unequal_cluster_adjustment")
             ):
@@ -1266,8 +1270,10 @@ def evaluate_g3_quality(
                 )
 
         cluster_status = ("BLOCK" if cluster_block else "REVIEW") if cluster_problems else "PASS"
+        chi_cho_so_lieu = (not cluster_block and bool(cluster_problems)
+                           and all(v == VAN_DE_CUM_CHO_SO_LIEU for v in cluster_problems))
         cluster_evidence = (
-            "; ".join(cluster_problems)
+            (CHO_NGUOI_SO_LIEU_CUM if chi_cho_so_lieu else "") + "; ".join(cluster_problems)
             if cluster_problems
             else f"ICC={icc} có nguồn, m={cluster_size}, số chùm={n_clusters}{ghi_chu_chum}"
         )
@@ -1278,7 +1284,9 @@ def evaluate_g3_quality(
             cluster_status,
             cluster_evidence,
             "Khai icc/icc_source/cluster_size/n_clusters; số chùm nhỏ phải khai hiệu chỉnh mẫu nhỏ.\n"
-            "Số chùm CỐ ĐỊNH nhiều hơn mức tối thiểu: khai n_clusters kèm confirmed_n (= số chùm × cỡ chùm m).",
+            "Số chùm CỐ ĐỊNH nhiều hơn mức tối thiểu: khai n_clusters kèm confirmed_n (= số chùm × cỡ chùm m).\n"
+            "Cỡ chùm không đều: PI khai cluster_size_cv từ số liệu thật (HIS: số lượt khám từng chùm trong kỳ) hoặc "
+            "equal_cluster_sizes=true nếu khẳng định chùm đều — KHÔNG ước đoán.",
         )
     )
 

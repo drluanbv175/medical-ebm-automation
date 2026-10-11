@@ -169,6 +169,8 @@
       "icc": 0.02,
       "icc_source": "Giá trị lập kế hoạch thận trọng cho gom cụm theo bàn khám: Adams 2004, PMID 15485730 (31 nghiên cứu cụm chăm sóc ban đầu, trung vị ICC 0,010; IQR 0–0,032); Campbell 2005, PMID 16279131 (ICC ở chăm sóc tuyến hai cao hơn). ICC thật ước lượng từ dữ liệu theo ma_ban_kham (SAP §4).",
       "cluster_size": 20,
+      "n_clusters": 50,
+      "n_clusters_source": "Số bàn khám CỐ ĐỊNH của C1a = 50 (lời bác sĩ 07/10/2026, đã ghi ở small_sample_correction); 50 × m=20 = 1000 = confirmed_n",
       "effect_size": 0.5,
       "effect_type": "PREVALENCE",
       "dropout": 0.15,

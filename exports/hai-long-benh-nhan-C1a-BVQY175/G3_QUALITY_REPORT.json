@@ -74,8 +74,8 @@
     {
       "id": "G3-AUTO-09",
       "label": "Các con số trong artifact nhất quán với nhau",
-      "status": "REVIEW",
-      "evidence": "ô cơ sở bảng độ nhạy=385 không khớp n_total=532 hay n_adjusted=626",
+      "status": "PASS",
+      "evidence": "N, bảng độ nhạy và dropout khớp nhau",
       "action": "Sinh lại artifact sau khi sửa; bảng độ nhạy phải neo vào chính N đã kết luận."
     },
     {
@@ -96,8 +96,8 @@
       "id": "G3-AUTO-12",
       "label": "Thiết kế theo chùm: ICC có nguồn, design effect đúng số học, đủ số chùm",
       "status": "REVIEW",
-      "evidence": "cỡ chùm không khẳng định là đều nhưng thiếu hệ số biến thiên CV",
-      "action": "Khai icc/icc_source/cluster_size/n_clusters; số chùm nhỏ phải khai hiệu chỉnh mẫu nhỏ."
+      "evidence": "CHỜ NGƯỜI (PI — số liệu cỡ chùm từ HIS): cỡ chùm không khẳng định là đều nhưng thiếu hệ số biến thiên CV",
+      "action": "Khai icc/icc_source/cluster_size/n_clusters; số chùm nhỏ phải khai hiệu chỉnh mẫu nhỏ.\nSố chùm CỐ ĐỊNH nhiều hơn mức tối thiểu: khai n_clusters kèm confirmed_n (= số chùm × cỡ chùm m).\nCỡ chùm không đều: PI khai cluster_size_cv từ số liệu thật (HIS: số lượt khám từng chùm trong kỳ) hoặc equal_cluster_sizes=true nếu khẳng định chùm đều — KHÔNG ước đoán."
     },
     {
       "id": "G3-AUTO-16",
@@ -195,8 +195,7 @@
   ],
   "pending_actions": [
     "Chạy G0/G1 trước; không tính cỡ mẫu trên thiết kế mặc định.",
-    "Sinh lại artifact sau khi sửa; bảng độ nhạy phải neo vào chính N đã kết luận.",
-    "Khai icc/icc_source/cluster_size/n_clusters; số chùm nhỏ phải khai hiệu chỉnh mẫu nhỏ.",
+    "Khai icc/icc_source/cluster_size/n_clusters; số chùm nhỏ phải khai hiệu chỉnh mẫu nhỏ.\nSố chùm CỐ ĐỊNH nhiều hơn mức tối thiểu: khai n_clusters kèm confirmed_n (= số chùm × cỡ chùm m).\nCỡ chùm không đều: PI khai cluster_size_cv từ số liệu thật (HIS: số lượt khám từng chùm trong kỳ) hoặc equal_cluster_sizes=true nếu khẳng định chùm đều — KHÔNG ước đoán.",
     "Đọc toàn văn nguồn rồi đặt gate_params.G3.effect_source_confirmed=true.",
     "Rà từng dòng bảng tham số của artifact A4 rồi đặt assumptions_confirmed=true.",
     "Chọn nhầm loại giả thuyết là sai toàn bộ phép tính — xác nhận rồi đặt hypothesis_confirmed=true.",
@@ -206,15 +205,15 @@
   "dau_van_tay_hien_tai": "b892b172aa2ef41a",
   "artifact_manifest": {
     "A4_SAMPLE_SIZE": {
-      "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "beb04b185d88e26241c23e89e234a691256585bfd20e768d9e21f73803d9247e"
+      "path": "/Users/nguyenluan/.ebm-worktrees/yk-g3-so-chum-20261011/exports/hai-long-benh-nhan-C1a-BVQY175/G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md",
+      "sha256": "ffc5bf8e973089be7a872508319a5470a6dbe277fc8f7998591b72ffb5de203f"
     }
   },
   "sensitivity_table": {
     "found": true,
     "cells_total": 9,
     "cells_na": 0,
-    "base_cell": 385
+    "base_cell": 532
   },
   "standards_basis": [
     {

@@ -1,6 +1,6 @@
 # A4 — KẾ HOẠCH CỠ MẪU (DRAFT)
 **Đề tài:** Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối  
-**Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Ngày sinh:** 2026-10-07 | **Trạng thái:** DRAFT — CHỜ BÁC SĨ XÁC NHẬN
+**Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Ngày sinh:** 2026-10-11 | **Trạng thái:** DRAFT — CHỜ BÁC SĨ XÁC NHẬN
 
 ---
 
@@ -38,13 +38,13 @@
 
 ## PHẦN 3 — PHÂN TÍCH ĐỘ NHẠY (Sensitivity Analysis)
 
-Bảng: tỷ lệ ước lượng p × sai số cho phép d → N tối thiểu (TRƯỚC khi bù 15% không trả lời)
+Bảng: tỷ lệ ước lượng p × sai số cho phép d → N tối thiểu (TRƯỚC khi bù 15% không trả lời; đã nhân hiệu ứng thiết kế cụm DE = 1.38 (= 1+(m−1)×ICC, m = 20, ICC = 0.02))
 
 | p ước lượng | d = ±2.5% | d = ±5% | d = ±10% |
 |---|---|---|---|
-| 0.10 | 554 | 139 | 35 |
-| 0.30 | 1291 | 323 | 81 |
-| 0.50 (cơ sở) | 1537 | 385 | 97 |
+| 0.10 | 765 | 192 | 49 |
+| 0.30 | 1782 | 446 | 112 |
+| 0.50 (cơ sở) | 2122 | 532 | 134 |
 
 > *p = 0,50 cho N lớn nhất vì phương sai p(1−p) đạt cực đại tại đó; đây là lựa chọn thận trọng khi chưa biết tỷ lệ thật. Thu hẹp d làm N tăng nhanh theo bình phương.*
 
