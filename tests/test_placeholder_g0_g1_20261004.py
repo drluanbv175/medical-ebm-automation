@@ -58,6 +58,11 @@ def _ban_sao_c1a(tmp_path: Path) -> Path:
     d.mkdir()
     for ten in ("G0_checkpoint.json", "study_meta.json", f"G0_A1_PICO_FINER_{STUDY}.md"):
         shutil.copy2(C1A / ten, d / ten)
+    # 11/10/2026: hai tệp agent G0-T3/T4 là một phần hồ sơ — checkpoint ghi danh mục đọc bổ sung lúc dựng A1 và
+    # G0-AUTO-05 đối chiếu nó với G0_TONG_HOP_BANG_CHUNG; bản sao thiếu tệp này là bản sao SAI (A1 «lệch danh mục»).
+    for ten in (f"G0_TONG_HOP_BANG_CHUNG_{STUDY}.json", f"G0_KHOANG_TRONG_{STUDY}.json"):
+        if (C1A / ten).is_file():
+            shutil.copy2(C1A / ten, d / ten)
     return d
 
 
