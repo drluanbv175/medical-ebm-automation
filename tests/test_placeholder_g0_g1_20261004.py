@@ -61,9 +61,27 @@ def _ban_sao_c1a(tmp_path: Path) -> Path:
     return d
 
 
+NHAN_NHAP = "[DỰ THẢO — CHỜ BÁC SĨ ĐỌC 12 PMID Ở §3 CỦA A1 RỒI CHỐT]"
+
+
+def _ban_sao_c1a_nhan_nhap(tmp_path: Path) -> Path:
+    """Bản sao C1a mà tính mới MANG nhãn nháp như đo ngày 03/10 — chèn trên bản sao, không phụ thuộc trạng thái sống.
+
+    11/10/2026: PI đã chốt G0 thật (bỏ nhãn) ⇒ hai test đọc thẳng dữ liệu sống vỡ (CI #117). Đồ gá tự tạo đúng tình
+    huống cần khoá thay vì giả định đề tài thật dừng mãi ở đó."""
+    d = _ban_sao_c1a(tmp_path)
+    p = d / "study_meta.json"
+    meta = json.loads(p.read_text(encoding="utf-8"))
+    g0 = meta["gate_params"]["G0"]
+    if not str(g0.get("novelty_justification") or "").lstrip().startswith("[DỰ THẢO"):
+        g0["novelty_justification"] = f"{NHAN_NHAP} {g0.get('novelty_justification') or ''}".strip()
+    p.write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8", newline="\n")
+    return d
+
+
 @pytest.mark.skipif(not C1A.is_dir(), reason="thư mục C1a không có trong checkout này")
 def test_g0_c1a_nhan_nhap_o_tinh_moi_khong_con_pass(tmp_path):
-    d = _ban_sao_c1a(tmp_path)
+    d = _ban_sao_c1a_nhan_nhap(tmp_path)
     r = G0.evaluate_study(STUDY, d, write=False)
     h6 = next(c for c in r["human_criteria"] if c["id"] == "G0-HUMAN-06")
     assert r["status"] == "DRAFT_READY_NEEDS_HUMAN_REVIEW", r["status"]
@@ -80,7 +98,7 @@ def test_g0_c1a_dien_that_van_toi_pass(tmp_path):
     đang chốt (G0-07). Dấu tính SAU cùng, trên đúng nội dung đã sửa (mọi giá trị ở đây là của test, không ghi C1a)."""
     import g0_quality_gate as G0Q
 
-    d = _ban_sao_c1a(tmp_path)
+    d = _ban_sao_c1a_nhan_nhap(tmp_path)
     meta = json.loads((d / "study_meta.json").read_text(encoding="utf-8"))
     g0 = meta["gate_params"]["G0"]
     g0["novelty_justification"] = g0["novelty_justification"].split("]", 1)[1].strip()
