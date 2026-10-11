@@ -42,7 +42,7 @@ THÔNG TIN TỔNG QUAN:
  Lộ trình xét duyệt đề nghị: EXPEDITED REVIEW (hoặc EXEMPT nếu không có PII và rủi ro tối thiểu)
  Dân số tham gia: Người bệnh ngoại trú từ đủ 18 tuổi trở lên (kể cả phụ nữ mang thai), đủ sức khỏe và năng lực nhận thức/ngôn ngữ để trả lời, đã cơ bản hoàn thành quy trình khám tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, và đồng ý tham gia tự nguyện (mục 4.3.1 đề cương)
  Cỡ mẫu dự kiến: 1000
- Thời gian nghiên cứu: bắt đầu SAU phê duyệt IRB — một giai đoạn liên tục phủ đều khung giờ/ngày trong tuần (đề cương §4.2); ngày cụ thể [BÁC SĨ ĐIỀN theo lịch khoa]
+ Thời gian nghiên cứu: bắt đầu SAU phê duyệt IRB — một giai đoạn liên tục phủ đều khung giờ/ngày trong tuần (đề cương §4.2); dự kiến từ tháng 12/2026 đến tháng 12/2028 theo thời gian nghiên cứu PI đã chốt ở G1 (11/10/2026); ngày bắt đầu thu thập = sau ngày Hội đồng phê duyệt
  Nguồn tài trợ: Không có tài trợ bên ngoài, kinh phí tự túc (chủ nhiệm đề tài tự chi trả)
  Xung đột lợi ích (COI): Không có xung đột lợi ích (khai đầy đủ ở Tài liệu 8)
  Đăng ký nghiên cứu: OSF Registries (https://osf.io/registries) — đăng ký TRƯỚC người tham gia đầu tiên (khảo sát tiến cứu, đề cương); mã đăng ký cập nhật sau khi đăng ký
@@ -296,9 +296,9 @@ Principal Investigator: Nguyễn Hà Luân
 
 1. PURPOSE
  You are invited to participate in a study that aims to:
- [TO BE COMPLETED, plain language, no jargon]
- Estimated participants: [TO BE COMPLETED, from G3]
- Location: [TO BE COMPLETED]
+ We would like to learn how satisfied you are with today's visit, from reception, waiting time and the examination area to the doctors, nurses and the results, so that the hospital can serve you better.
+ Estimated participants: about 1,000
+ Location: Outpatient Examination Department C1a, Military Hospital 175 (Ho Chi Minh City)
  PARTICIPATION IS ENTIRELY VOLUNTARY.
 
 1b. STUDY INVESTIGATOR
@@ -306,16 +306,16 @@ Principal Investigator: Nguyễn Hà Luân
  C1a, Military Hospital 175.
 
 2. PROCEDURES
- ☐ Step 1: [TO BE COMPLETED]
- ☐ Step 2: [TO BE COMPLETED]
- Estimated time commitment: [TO BE COMPLETED]
+ ☐ Step 1: read this information and confirm that you agree to take part (using the consent procedure approved by the Ethics Committee for anonymous surveys)
+ ☐ Step 2: complete the questionnaire yourself (~15–20 minutes), ONCE only
+ Estimated time commitment: ~15–20 minutes on ONE occasion only (no follow-up); no additional visits, as it is done during your routine clinic visit
 
 3. RISKS AND DISCOMFORTS
  • Rò rỉ thông tin từ bộ câu hỏi (Rất thấp probability / Nhẹ severity): Khuyết danh hoàn toàn nếu không cần theo dõi; mã hóa nếu cần liên kết
  • Gánh nặng thời gian (Thấp probability / Không đáng kể severity): Bộ câu hỏi ngắn; tự điền hoặc qua điện thoại/email
 
 4. POTENTIAL BENEFITS
- [TO BE COMPLETED, include both direct and community benefits]
+ Direct benefit: no direct medical benefit; your views help improve the quality of outpatient services, and NO medical intervention or procedure is added beyond routine examination and care. Community benefit: local data on the proportions of satisfaction and related factors, at low cost. We do NOT guarantee any personal benefit from participation.
 
 4b. FUNDING AND CONFLICTS OF INTEREST
  This study has no external funding (self-funded; costs are borne by the principal investigator).
@@ -339,8 +339,8 @@ Principal Investigator: Nguyễn Hà Luân
  will manage it under its routine clinical care procedures; the study has no separate insurance.
 
 7. CONTACTS
- Investigator: [TO BE COMPLETED] | Email: [TO BE COMPLETED]
- Ethics Committee: [TO BE COMPLETED]
+ Investigator: Nguyễn Hà Luân | Phone/Email: [PII — điền ở bản nộp ngoài hệ thống]
+ Ethics Committee: Medical Ethics Committee of Military Hospital 175 (Hội đồng Y đức Bệnh viện Quân y 175)
 
 ---
 CONSENT SIGNATURE (PARTICIPANT'S COPY)
@@ -531,7 +531,7 @@ Chữ ký chủ nhiệm: _______________ Ngày: ___/___/2026
 
 > ClinicalTrials.gov KHÔNG bao phủ mọi đăng ký. Dù mục trên có kết quả hay không,
 > WHO ICTRP, PROSPERO (nếu SR/MA) và đăng ký trong nước vẫn cần bác sĩ tự tra, 
-> hệ thống không tra được hai nguồn đầu vì không có API mở. [CẦN BÁC SĨ TỰ TRA]
+> hệ thống không tra được hai nguồn đầu vì không có API mở. WHO ICTRP: PI đã tự tra 2026-10-11, không thấy nghiên cứu trùng (ghi ở G0); PROSPERO: không áp dụng (không phải tổng quan hệ thống); đăng ký trong nước: [CẦN BÁC SĨ TỰ TRA]
 
 ```
 WHO Trial Registration Data Set 1.3.1, DRAFT Phiên bản 1.0
