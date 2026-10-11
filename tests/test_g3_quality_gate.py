@@ -541,6 +541,88 @@ def test_so_chum_nho_phai_khai_hieu_chinh_mau_nho(tmp_path):
     assert "hiệu chỉnh mẫu nhỏ" in row["evidence"]
 
 
+# ── Số chùm CỐ ĐỊNH (09/10/2026) ──────────────────────────────────────────────────────────────────────────────
+# Ca C1a: 50 bàn khám thật, m = 20, N kế hoạch 1000, N tối thiểu ≈ 540 ⇒ cần ≥ 27 chùm. checkpoint["n_clusters"] là
+# số chùm TỐI THIỂU cần cho N tối thiểu, không phải số chùm của đề tài. Khai n_clusters là SỰ THẬT THIẾT KẾ; chỉ
+# được tin để nới phép thử mẫu nhỏ khi nó nhiều hơn mức tối thiểu VÀ khớp N kế hoạch ÷ m.
+_CHUM_CO_DINH = {**_CLUSTER_OK, "cluster_size": 20, "n_clusters": 50}
+
+
+def _eval_cum_ke_hoach(tmp_path, meta, *, confirmed_n=None, **kw):
+    """Như _eval_cum nhưng checkpoint có N kế hoạch (confirmed_n) — thiết kế có số chùm cố định."""
+    cp = _checkpoint_cum(**kw)
+    cp["confirmed_n"] = confirmed_n
+    return _evaluate(tmp_path, checkpoint=cp, meta=meta,
+                     artifact=_artifact(n_total=cp["n_total"], n_adjusted=cp["n_adjusted"],
+                                        base_cell=cp["n_adjusted"]))
+
+
+def test_so_chum_co_dinh_nhieu_hon_toi_thieu_khop_n_ke_hoach_thi_dat(tmp_path):
+    """Ca C1a: khai 50 chùm, N kế hoạch 1000 = 50 × m 20, tối thiểu cần 27 ⇒ PASS; không bị báo «khác số chùm suy từ N»
+    và phép thử mẫu nhỏ chạy trên 50 (≥ 40) nên không đòi hiệu chỉnh."""
+    report = _eval_cum_ke_hoach(tmp_path, _full_meta(**_CHUM_CO_DINH), confirmed_n=1000, n_clusters=27, m=20)
+    row = _row(report, "G3-AUTO-12")
+    assert row["status"] == "PASS", row
+    assert "số chùm=50" in row["evidence"] and "tối thiểu cần 27" in row["evidence"]
+
+
+def test_so_chum_co_dinh_van_bi_phep_thu_mau_nho_khi_duoi_40(tmp_path):
+    """Chiều an toàn: 30 chùm cố định (đã khớp N kế hoạch 600 = 30 × 20) vẫn < 40 ⇒ VẪN đòi hiệu chỉnh mẫu nhỏ."""
+    meta = {**_CHUM_CO_DINH, "n_clusters": 30}
+    row = _row(_eval_cum_ke_hoach(tmp_path, _full_meta(**meta), confirmed_n=600, n_clusters=27, m=20), "G3-AUTO-12")
+    assert row["status"] == "REVIEW"
+    assert "số chùm=30 < 40" in row["evidence"] and "hiệu chỉnh mẫu nhỏ" in row["evidence"]
+    assert "khác số chùm suy từ N" not in row["evidence"], "30 khớp N kế hoạch nên không phải khai sai"
+    co = _full_meta(**meta, small_sample_correction="Kenward-Roger, bậc tự do Satterthwaite")
+    row_co = _row(_eval_cum_ke_hoach(tmp_path, co, confirmed_n=600, n_clusters=27, m=20), "G3-AUTO-12")
+    assert row_co["status"] == "PASS", row_co
+
+
+def test_so_chum_khai_nhieu_hon_toi_thieu_ma_thieu_n_ke_hoach_thi_van_than_trong(tmp_path):
+    """Không có N kế hoạch để đối chiếu số chùm × m ⇒ không tin lời khai: báo lệch VÀ phép thử mẫu nhỏ chạy trên 27."""
+    row = _row(_eval_cum_ke_hoach(tmp_path, _full_meta(**_CHUM_CO_DINH), confirmed_n=None, n_clusters=27, m=20),
+               "G3-AUTO-12")
+    assert row["status"] == "REVIEW"
+    assert "khai tay=50 khác số chùm suy từ N=27" in row["evidence"] and "confirmed_n" in row["evidence"]
+    assert "số chùm=27 < 40" in row["evidence"], "chưa đối chiếu được thì KHÔNG nới phép thử mẫu nhỏ"
+
+
+def test_so_chum_khai_khong_khop_n_ke_hoach_thi_khong_duoc_tin(tmp_path):
+    """Khai 50 chùm nhưng N kế hoạch 700 ÷ m 20 = 35 chùm ⇒ lời khai mâu thuẫn với chính N đã chốt."""
+    row = _row(_eval_cum_ke_hoach(tmp_path, _full_meta(**_CHUM_CO_DINH), confirmed_n=700, n_clusters=27, m=20),
+               "G3-AUTO-12")
+    assert row["status"] == "REVIEW"
+    assert "không khớp N kế hoạch" in row["evidence"] and "35" in row["evidence"]
+    assert "số chùm=27 < 40" in row["evidence"]
+
+
+def test_so_chum_khai_it_hon_toi_thieu_thi_phep_thu_mau_nho_chay_tren_so_it_hon(tmp_path):
+    """Khai 18 chùm trong khi N tối thiểu cần 60 chùm: N tối thiểu không đạt được VÀ 18 < 40 ⇒ đòi hiệu chỉnh.
+    Bản cũ chạy phép thử trên 60 (số suy từ N) nên chỉ báo lệch, im lặng về mẫu nhỏ."""
+    row = _row(_eval_cum_ke_hoach(tmp_path, _full_meta(**{**_CLUSTER_OK, "n_clusters": 18}), n_clusters=60, m=25),
+               "G3-AUTO-12")
+    assert row["status"] == "REVIEW"
+    assert "khai tay=18 khác số chùm suy từ N=60" in row["evidence"] and "ít hơn" in row["evidence"]
+    assert "số chùm=18 < 40" in row["evidence"]
+
+
+def test_n_ke_hoach_lon_hon_khong_tu_nang_so_chum(tmp_path):
+    """Phương án «suy số chùm từ N kế hoạch» bị bác: N tăng có thể do chùm TO hơn chứ không phải thêm chùm, nên
+    không khai n_clusters thì N kế hoạch 1000 cũng KHÔNG làm số chùm từ 27 lên 50 — phép thử mẫu nhỏ vẫn chạy
+    trên mức tối thiểu."""
+    meta = {k: v for k, v in _CHUM_CO_DINH.items() if k != "n_clusters"}
+    row = _row(_eval_cum_ke_hoach(tmp_path, _full_meta(**meta), confirmed_n=1000, n_clusters=27, m=20), "G3-AUTO-12")
+    assert row["status"] == "REVIEW" and "số chùm=27 < 40" in row["evidence"]
+
+
+def test_so_chum_khai_lech_trong_dung_sai_lam_tron_nhu_cu(tmp_path):
+    """Lệch ±1 chùm do làm tròn lên vẫn coi là khớp mức tối thiểu (hành vi cũ giữ nguyên)."""
+    for khai in (26, 27, 28):
+        meta = {**_CHUM_CO_DINH, "n_clusters": khai, "small_sample_correction": "Kenward-Roger"}
+        row = _row(_eval_cum_ke_hoach(tmp_path, _full_meta(**meta), n_clusters=27, m=20), "G3-AUTO-12")
+        assert row["status"] == "PASS" and "khác số chùm suy từ N" not in row["evidence"], (khai, row)
+
+
 def test_co_chum_khong_deu_va_cv_lon_phai_hieu_chinh(tmp_path):
     meta = {**_CLUSTER_OK}
     meta.pop("equal_cluster_sizes")

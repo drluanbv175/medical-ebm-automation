@@ -896,17 +896,24 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
     if effect_type == "PREVALENCE":
         _d_list = [round(precision / 2, 4), precision, round(precision * 2, 4)]
         _p_list = sorted({0.10, 0.30, 0.50, round(float(effect_val), 4)})
+        # VÁ 09/10/2026: mỗi ô đi CÙNG đường tính với N chính (n_prevalence → FPC → hiệu ứng thiết kế cụm), nên PHẢI
+        # truyền đủ population_n, icc, cluster_size. Bản cũ chỉ truyền population_n ⇒ đề tài cụm (C1a: ICC 0,02, m=20)
+        # in ô cơ sở 385 trong khi N chính là 532 (G3-AUTO-09 REVIEW). DE do chính ap_fpc_cum trả (None nếu không có cụm).
+        _ket_qua = {(_p, _d): ap_fpc_cum(n_prevalence(_p, _d, alpha), design_code, population_n, icc, cluster_size)
+                    for _p in _p_list for _d in _d_list}
+        _de_cum = next(iter(_ket_qua.values()))[3]
         lines += [
             f"Bảng: tỷ lệ ước lượng p × sai số cho phép d → N tối thiểu "
             f"(TRƯỚC khi bù {int(dropout*100)}% không trả lời"
-            + (f"; đã hiệu chỉnh quần thể hữu hạn N={population_n}" if population_n else "") + ")",
+            + (f"; đã hiệu chỉnh quần thể hữu hạn N={population_n}" if population_n else "")
+            + (f"; đã nhân hiệu ứng thiết kế cụm DE = {_de_cum:.2f} (= 1+(m−1)×ICC, m = {cluster_size}, ICC = {icc})"
+               if _de_cum is not None else "") + ")",
             "",
             "| p ước lượng | " + " | ".join(f"d = ±{d * 100:g}%" for d in _d_list) + " |",
             "|---|" + "---|" * len(_d_list),
         ]
         for _p in _p_list:
-            _cells = " | ".join(
-                str(ap_fpc_cum(n_prevalence(_p, _d, alpha), design_code, population_n)[0]) for _d in _d_list)
+            _cells = " | ".join(str(_ket_qua[(_p, _d)][0]) for _d in _d_list)
             _mark = " (cơ sở)" if abs(_p - float(effect_val)) < 1e-9 else ""
             lines.append(f"| {_p:.2f}{_mark} | {_cells} |")
         lines += [

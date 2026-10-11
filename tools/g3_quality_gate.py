@@ -378,6 +378,7 @@ STANDARDS_BASIS: Sequence[Mapping[str, str]] = (
 CLUSTER_SMALL_SAMPLE_THRESHOLD = 40  # Kahan 2016: dưới mức này phải hiệu chỉnh mẫu nhỏ
 CLUSTER_CV_NEGLIGIBLE = 0.23  # Eldridge 2006: dưới mức này bỏ qua được
 DESIGN_EFFECT_TOLERANCE = 0.01  # dung sai khi đối chiếu DE tự khai với DE tính lại
+CLUSTER_COUNT_TOLERANCE = 1  # lệch ±1 chùm giữa hai số cùng làm tròn lên (khai tay / suy từ N / suy từ N kế hoạch)
 
 # Ba kiểu biện minh biên Δ mà EMA nói rõ là KHÔNG phù hợp. Đây là kiểm VĂN BẢN
 # trên chính lời biện minh do bác sĩ viết, không phải kiểm artifact do máy sinh.
@@ -1202,13 +1203,43 @@ def evaluate_g3_quality(
                 )
 
         # Số chùm là thứ chi phối lực của thử nghiệm theo chùm, không phải tổng N.
+        # VÁ 09/10/2026 (C1a: 50 bàn khám cố định, N kế hoạch 1000, N tối thiểu 532): checkpoint["n_clusters"] là số
+        # chùm TỐI THIỂU cần cho N tối thiểu (⌈n_total/m⌉ = 27), KHÔNG phải số chùm của đề tài. Bản cũ coi nó là số chùm
+        # thật: khai n_clusters=50 bị báo «khác số chùm suy từ N=27», còn không khai thì phép thử mẫu nhỏ chạy trên 27.
+        # Nay n_clusters khai tay là SỰ THẬT THIẾT KẾ (số chùm cố định), chỉ được TIN để nới phép thử mẫu nhỏ khi nó
+        # (a) nhiều hơn mức tối thiểu VÀ (b) khớp N kế hoạch (confirmed_n) ÷ m. Mọi ca còn lại giữ phía thận trọng:
+        # khai ít hơn mức tối thiểu thì phép thử chạy trên số ÍT hơn; nhiều hơn mà không đối chiếu được thì chạy trên
+        # mức tối thiểu. KHÔNG tự suy số chùm từ N kế hoạch khi bác sĩ không khai: N tăng có thể do chùm TO hơn chứ
+        # không do thêm chùm.
         n_clusters_khai = _as_int(g3.get("n_clusters"))
-        n_clusters = _as_int(checkpoint.get("n_clusters"))
-        if n_clusters is None and cluster_size and n_total:
-            n_clusters = -(-n_total // cluster_size)  # làm tròn lên
-        if n_clusters_khai is not None and n_clusters is not None and abs(n_clusters_khai - n_clusters) > 1:
-            cluster_problems.append(f"số chùm khai tay={n_clusters_khai} khác số chùm suy từ N={n_clusters}")
-        if n_clusters is None:
+        n_clusters_toi_thieu = _as_int(checkpoint.get("n_clusters"))
+        if n_clusters_toi_thieu is None and cluster_size and n_total:
+            n_clusters_toi_thieu = -(-n_total // cluster_size)  # làm tròn lên
+        n_clusters = n_clusters_toi_thieu  # số chùm HIỆU LỰC cho phép thử mẫu nhỏ — mặc định là mức tối thiểu
+        ghi_chu_chum = ""
+        if n_clusters_khai is not None and n_clusters_toi_thieu is not None:
+            n_clusters_ke_hoach = None
+            if confirmed_n and confirmed_n > 0 and cluster_size and cluster_size > 0:
+                n_clusters_ke_hoach = -(-confirmed_n // cluster_size)
+            lech = f"số chùm khai tay={n_clusters_khai} khác số chùm suy từ N={n_clusters_toi_thieu}"
+            if n_clusters_khai < n_clusters_toi_thieu - CLUSTER_COUNT_TOLERANCE:
+                cluster_problems.append(f"{lech}: ít hơn số chùm tối thiểu nên N tối thiểu không đạt được")
+                n_clusters = n_clusters_khai
+            elif n_clusters_khai > n_clusters_toi_thieu + CLUSTER_COUNT_TOLERANCE:
+                khop_ke_hoach = (n_clusters_ke_hoach is not None
+                                 and abs(n_clusters_khai - n_clusters_ke_hoach) <= CLUSTER_COUNT_TOLERANCE)
+                if khop_ke_hoach:
+                    n_clusters = n_clusters_khai
+                    ghi_chu_chum = (f" (cố định, khớp N kế hoạch {confirmed_n} ÷ m={cluster_size}; "
+                                    f"tối thiểu cần {n_clusters_toi_thieu})")
+                else:
+                    ly_do = ("chưa có N kế hoạch (confirmed_n) và cỡ chùm để đối chiếu số chùm × m"
+                             if n_clusters_ke_hoach is None else
+                             f"không khớp N kế hoạch confirmed_n={confirmed_n} ÷ m={cluster_size} ≈ "
+                             f"{n_clusters_ke_hoach} chùm")
+                    cluster_problems.append(f"{lech}: nhiều hơn số chùm tối thiểu nhưng {ly_do} — phép thử mẫu nhỏ "
+                                            "vẫn tính trên mức tối thiểu")
+        elif n_clusters_khai is not None:
             n_clusters = n_clusters_khai
         if n_clusters is None:
             cluster_problems.append("thiếu SỐ CHÙM (không suy ra được)")
@@ -1238,7 +1269,7 @@ def evaluate_g3_quality(
         cluster_evidence = (
             "; ".join(cluster_problems)
             if cluster_problems
-            else f"ICC={icc} có nguồn, m={cluster_size}, số chùm={n_clusters}"
+            else f"ICC={icc} có nguồn, m={cluster_size}, số chùm={n_clusters}{ghi_chu_chum}"
         )
     automatic.append(
         _criterion(
@@ -1246,7 +1277,8 @@ def evaluate_g3_quality(
             "Thiết kế theo chùm: ICC có nguồn, design effect đúng số học, đủ số chùm",
             cluster_status,
             cluster_evidence,
-            "Khai icc/icc_source/cluster_size/n_clusters; số chùm nhỏ phải khai hiệu chỉnh mẫu nhỏ.",
+            "Khai icc/icc_source/cluster_size/n_clusters; số chùm nhỏ phải khai hiệu chỉnh mẫu nhỏ.\n"
+            "Số chùm CỐ ĐỊNH nhiều hơn mức tối thiểu: khai n_clusters kèm confirmed_n (= số chùm × cỡ chùm m).",
         )
     )
 
