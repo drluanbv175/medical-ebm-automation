@@ -1697,6 +1697,10 @@ Phần mềm: ☐ R  ☐ Stata  ☐ SPSS  | Seed ngẫu nhiên: {suggested_seed}
 # 5. GUARDRAIL R1-R7 CHO G1
 # ════════════════════════════════════════════════════════════════════════════
 
+# R4 (11/10/2026): DOI đúng định dạng đứng gần một hiệu số được tính là nguồn — xem guardrail_check_g1.
+_DOI_NGUON_R4 = re.compile(r"\b10\.\d{4,9}/[^\s;,)\]]+")
+
+
 def guardrail_check_g1(artifact: str, effects: list, topic: str = "", internal_code: str = "") -> dict:
     errors, warnings = [], []
 
@@ -1757,20 +1761,24 @@ def guardrail_check_g1(artifact: str, effects: list, topic: str = "", internal_c
     # <số> — hợp lệ nếu có "pmid" (effect trích PubMed thật —
     # _effect_size_section luôn in "— PMID:...") HOẶC "[cần" (đã gắn nhãn
     # chờ bác sĩ điền) trong cửa sổ ±80 ký tự.
+    # 11/10/2026 (bác sĩ quyết): nhận thêm một DOI ĐÚNG ĐỊNH DẠNG (10.<4–9 số>/<hậu tố>) trong cùng cửa sổ — tạp chí
+    # trong nước (Y học Việt Nam, Y học Cộng đồng…) không lập chỉ mục PubMed nên chỉ có DOI; chỉ đòi PMID đã buộc
+    # agent bỏ số liệu có nguồn thật (C1a G1 evidence_summary, doi:10.51298/vmj.v540i1.10302). Chữ «doi» trơn
+    # hay DOI sai dạng vẫn KHÔNG tính là nguồn.
     _artifact_lower_r4 = artifact.lower()
     unlabeled_effect_matches = []
     for m in re.finditer(r'\b(?:or|rr|hr|md)\s*[=:]\s*-?\d+\.?\d*', _artifact_lower_r4):
         window = _artifact_lower_r4[max(0, m.start() - 80): m.end() + 80]
-        if "[cần" not in window and "pmid" not in window:
+        if "[cần" not in window and "pmid" not in window and not _DOI_NGUON_R4.search(window):
             unlabeled_effect_matches.append(artifact[m.start():m.end()])
     if unlabeled_effect_matches:
         errors.append(
-            f"R4 🔴 Tìm thấy effect size (OR/RR/HR/MD) KHÔNG kèm PMID nguồn hay "
+            f"R4 🔴 Tìm thấy effect size (OR/RR/HR/MD) KHÔNG kèm PMID/DOI nguồn hay "
             f"nhãn [CẦN...] gần đó (nghi bịa số): {unlabeled_effect_matches[:3]}"
         )
     else:
         warnings.append(
-            "R4 ✅ Mọi effect size (OR/RR/HR/MD) đều có PMID nguồn hoặc nhãn [CẦN...] cục bộ"
+            "R4 ✅ Mọi effect size (OR/RR/HR/MD) đều có PMID/DOI nguồn hoặc nhãn [CẦN...] cục bộ"
         )
 
     # R5 — Không bịa cỡ mẫu

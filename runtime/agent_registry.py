@@ -109,8 +109,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # bản cặp y hệt gốc; vẫn 64.
 # 10/10/2026 (A7 giao nhiệm vụ + tiêu chí kết quả): giam-khao-cong, phan-bien-tranh-bien, trong-tai-tranh-bien nói rõ
 # đầu ra bị kiểm bằng `hoi_dong_cong.py ghi`; bản cặp y hệt gốc; vẫn 64.
+# 11/10/2026 (bác sĩ quyết — dấu vân tay G0 băm danh mục đọc bổ sung): dieu-phoi-g0 sửa câu «dựng lại A1 không đổi dấu»
+# ⇒ danh mục đổi thì PI chốt lại; bản cặp y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "13ff392a704e6638afc90560c7717b6b9688211ee7a79f91b66533fce732fe25"
+    "b96893484ab99ec5025d47181243abedb106524b7295943047138bf7b7015029"
 )
 
 MINIMUM_AGENT_COUNT = 64

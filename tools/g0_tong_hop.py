@@ -81,6 +81,33 @@ def doc(out_dir: Path, mau: str, study: str) -> Tuple[Optional[Dict[str, Any]], 
     return du_lieu, None
 
 
+def ma_danh_muc_bo_sung(du_lieu: Any) -> List[str]:
+    """Danh mục đọc BỔ SUNG đã chuẩn hoá (11/10/2026): «pmid:<n>» / «doi:<chữ thường>», bỏ trùng, sắp xếp.
+
+    Đây là phần danh mục PI đọc ngoài tập PMID PubMed của G0. Checkpoint ghi lại danh mục này lúc dựng A1 và dấu vân
+    tay G0 băm nó ⇒ danh mục đổi thì xác nhận cũ của PI hết hiệu lực (C1a 11/10: PI chốt tính mới trên bản nháp bỏ
+    sót 5 DOI trong nước mà hội đồng đã giao, mọi thước đo vẫn xanh)."""
+    ra = set()
+    for bai in (du_lieu or {}).get("nguon_bo_sung") or [] if isinstance(du_lieu, dict) else []:
+        if not isinstance(bai, dict):
+            continue
+        pmid, doi = _chuoi(str(bai.get("pmid") or "")), _chuoi(bai.get("doi")).lower()
+        if _PMID.match(pmid):
+            ra.add(f"pmid:{pmid}")
+        elif _DOI.match(doi):
+            ra.add(f"doi:{doi}")
+    return sorted(ra)
+
+
+def doc_danh_muc_bo_sung(out_dir: Path, study: str) -> Tuple[Optional[List[str]], Optional[str]]:
+    """(danh mục, lỗi). Tệp tổng hợp vắng ⇒ ([], None) — chưa có danh mục bổ sung là hợp lệ; tệp hỏng ⇒ (None, lỗi)
+    — «không đọc được» KHÔNG phải «không có gì»."""
+    du_lieu, loi = doc(out_dir, TEP_TONG_HOP, study)
+    if loi:
+        return None, loi
+    return ma_danh_muc_bo_sung(du_lieu), None
+
+
 def _quet_pii(nhan: str, du_lieu: Any, loi: List[str]) -> None:
     van = json.dumps(du_lieu, ensure_ascii=False)
     m = _NGAY_DD_MM.search(van)

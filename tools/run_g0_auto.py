@@ -1459,6 +1459,10 @@ def write_checkpoint(study_name: str, out_dir: Path, results: dict,
         "next_gate": "G1 — Thiết kế nghiên cứu (CHỈ sau khi G0 đạt PASS_G0_CONFIRMED)",
         "disclaimer": "Cần bác sĩ kiểm chứng.",
     }
+    # 11/10/2026: danh mục đọc bổ sung mà A1 trình bày (dấu vân tay G0 băm nó) — xem dung_lai_a1.
+    ds, _loi_ds = GT.doc_danh_muc_bo_sung(out_dir, study_name)
+    if ds is not None:
+        checkpoint["danh_muc_doc_bo_sung"] = ds
     cp_path = out_dir / "G0_checkpoint.json"
     cp_path.write_text(json.dumps(checkpoint, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return cp_path
@@ -1493,7 +1497,8 @@ def dung_lai_a1(study: str, out_dir: Path) -> int:
     Vì sao: «chấm lại ≠ dựng lại nền bằng chứng» (09/10). Khi bộ sinh A1 đổi khuôn, hoặc agent G0-T3/T4 cập nhật hai
     tệp `G0_TONG_HOP_BANG_CHUNG_<mã>.json` / `G0_KHOANG_TRONG_<mã>.json`, cần dựng lại BẢN ĐỌC mà giữ nguyên tập PMID
     (đổi tập PMID làm dấu vân tay G0 đổi ⇒ PI phải xác nhận lại). Chỉ cập nhật các khoá SUY RA của checkpoint
-    (khoảng trống, mức bằng chứng, gợi ý thiết kế, guardrail, đường dẫn artifact) rồi chấm lại bằng g0_quality_gate.
+    (khoảng trống, mức bằng chứng, gợi ý thiết kế, guardrail, đường dẫn artifact, `danh_muc_doc_bo_sung` — từ
+    11/10/2026 dấu vân tay G0 băm danh mục này nên danh mục ĐỔI thì PI phải chốt lại) rồi chấm lại bằng g0_quality_gate.
     Guardrail R1C (kiểm rút bài) vẫn chạy và CÓ THỂ gọi mạng — đó là kiểm liêm chính, không phải tìm bằng chứng mới.
     Thiếu tệp nền ⇒ mã 2, không ghi gì."""
     out_dir = Path(out_dir)
@@ -1540,6 +1545,13 @@ def dung_lai_a1(study: str, out_dir: Path) -> int:
         "artifacts": {"A1_markdown": _duong_dan_luu(md_path), "A1_docx": _duong_dan_luu(docx_path)},
         "a1_dung_lai_luc": datetime.now().isoformat(timespec="seconds"),
     })
+    # 11/10/2026: ghi danh mục đọc bổ sung mà A1 vừa trình bày — dấu vân tay G0 băm nó (g0_quality_gate). Tệp tổng hợp
+    # hỏng ⇒ KHÔNG ghi đè khoá cũ (không đo được ≠ rỗng); G0-AUTO-05 báo lệch để agent sửa rồi dựng lại.
+    ds, loi_ds = GT.doc_danh_muc_bo_sung(out_dir, study)
+    if ds is not None:
+        cp["danh_muc_doc_bo_sung"] = ds
+    else:
+        print(f"  ⚠ Không đọc được danh mục đọc bổ sung ({loi_ds}) — checkpoint giữ danh mục cũ.")
     cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     quality = G0Q.evaluate_study(study, out_dir, write=True)
     print(f"  📝 Đã dựng lại {md_path.name} từ {len(results['all_pmids'])} PMID đã lưu (không tra lại PubMed)")

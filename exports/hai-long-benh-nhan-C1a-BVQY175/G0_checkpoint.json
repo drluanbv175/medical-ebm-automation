@@ -1,7 +1,7 @@
 {
   "study": "hai-long-benh-nhan-C1a-BVQY175",
   "gate": "G0",
-  "gate_status": "PASS_G0_CONFIRMED — câu hỏi nghiên cứu đã được bác sĩ chốt",
+  "gate_status": "DRAFT — CHỜ BÁC SĨ: G0-HUMAN-07",
   "generated_at": "2026-07-31T20:39:23.828548",
   "topic": "Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối",
   "base_query": "patient satisfaction outpatient department Vietnam hospital",
@@ -77,21 +77,26 @@
     "A1_markdown": "exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.md",
     "A1_docx": "exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.docx"
   },
-  "pending_doctor_actions": [],
+  "pending_doctor_actions": [
+    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"79d2f5b9faeb3a4f\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+    "Chạy: python tools/g0_quality_gate.py --study hai-long-benh-nhan-C1a-BVQY175"
+  ],
   "next_gate": "G1 — Thiết kế nghiên cứu (CHỈ sau khi G0 đạt PASS_G0_CONFIRMED)",
   "disclaimer": "Cần bác sĩ kiểm chứng.",
   "quality_gate": {
-    "status": "PASS_G0_CONFIRMED",
+    "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
     "contract_version": "G0-2026.1",
     "automated_checks_passed": true,
-    "human_confirmation_complete": true,
-    "pending_actions": [],
-    "dau_van_tay_luc_cham": "6c557ef3b0fd3973"
+    "human_confirmation_complete": false,
+    "pending_actions": [
+      "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"79d2f5b9faeb3a4f\" (dấu của nội dung đang chốt). Không cần lưu danh tính."
+    ],
+    "dau_van_tay_luc_cham": "79d2f5b9faeb3a4f"
   },
   "needs_input": {
-    "blocked": false,
+    "blocked": true,
     "reason_code": "MISSING_PICO",
-    "human_message": "G0 đã dựng xong NỀN BẰNG CHỨNG; câu hỏi nghiên cứu (PICO, kết cục chính, giả thuyết, loại câu hỏi) ĐÃ đạt — còn chờ bác sĩ/PI: G0-HUMAN-05, G0-HUMAN-06, G0-HUMAN-07, G0-HUMAN-08. Không cần tra lại PubMed; điền xong thì chấm lại.",
+    "human_message": "G0 đã dựng xong NỀN BẰNG CHỨNG; câu hỏi nghiên cứu (PICO, kết cục chính, giả thuyết, loại câu hỏi) ĐÃ đạt — còn chờ bác sĩ/PI: G0-HUMAN-07. Không cần tra lại PubMed; điền xong thì chấm lại.",
     "remediation": {
       "action": "rerun_with_real_input",
       "command": "sửa exports/<study>/study_meta.json → gate_params.G0 rồi chạy: python tools/g0_quality_gate.py --study <study>",
@@ -109,10 +114,27 @@
         "hypothesis"
       ]
     },
-    "supplied_by": "doctor",
-    "resolved_by": "g0_quality_gate.refresh_checkpoint",
-    "resolved_at": "2026-10-11T09:02:59"
+    "supplied_by": "doctor"
   },
-  "a1_dung_lai_luc": "2026-10-11T09:25:28",
-  "quality_contract_version": "G0-2026.1"
+  "a1_dung_lai_luc": "2026-10-11T10:23:52",
+  "quality_contract_version": "G0-2026.1",
+  "danh_muc_doc_bo_sung": [
+    "doi:10.38148/jhds.0706skpt23-064",
+    "doi:10.51298/vmj.v540i1.10302",
+    "doi:10.51298/vmj.v549i2.13771",
+    "doi:10.51403/0868-2836/2021/78",
+    "doi:10.52163/yhc.v64i1.573",
+    "doi:10.52163/yhc.v64i6.841",
+    "doi:10.52163/yhc.v66i1.1940",
+    "doi:10.52163/yhc.v67i7.5934",
+    "doi:10.52163/yhc.v67icd5.5018",
+    "pmid:28690831",
+    "pmid:32992600",
+    "pmid:34017606",
+    "pmid:36292392",
+    "pmid:39944421",
+    "pmid:40295132",
+    "pmid:40995744",
+    "pmid:42625778"
+  ]
 }

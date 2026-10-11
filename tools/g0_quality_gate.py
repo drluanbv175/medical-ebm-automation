@@ -63,6 +63,7 @@ for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import cong_song as CS  # noqa: E402
+import g0_tong_hop as GT  # noqa: E402
 import gate_contract as GC  # noqa: E402
 import pii_van_ban as PII  # noqa: E402
 import pipeline_freshness as PF  # noqa: E402
@@ -277,6 +278,12 @@ def dau_van_tay_g0(checkpoint: Mapping[str, Any], meta: Mapping[str, Any]) -> st
     pubmed = checkpoint.get("pubmed_results") if isinstance(checkpoint.get("pubmed_results"), Mapping) else {}
     pmids = sorted(str(x) for x in (pubmed.get("all_pmids") or []))
     g0 = {k: v for k, v in _g0_meta(meta).items() if k not in _KHOA_XAC_NHAN_G0}
+    # 11/10/2026: danh mục đọc BỔ SUNG (ngoài PubMed) mà A1 trình bày — run_g0_auto ghi vào checkpoint lúc dựng A1.
+    # Danh mục đổi ⇒ dấu đổi ⇒ PI chốt lại (C1a: lần chốt 11/10 thiếu 5 DOI trong nước mà hội đồng đã giao). Danh mục
+    # rỗng/vắng ⇒ băm Y NHƯ CŨ, xác nhận của đề tài chưa có danh mục bổ sung không bị vô hiệu oan.
+    bo_sung = sorted(str(x) for x in (checkpoint.get("danh_muc_doc_bo_sung") or []))
+    if bo_sung:
+        return CS.dau_van_tay(str(checkpoint.get("topic") or ""), pmids, g0, bo_sung)
     return CS.dau_van_tay(str(checkpoint.get("topic") or ""), pmids, g0)
 
 
@@ -535,10 +542,26 @@ def evaluate_g0_quality(
     else:
         art_status = "PASS"
         art_evidence = f"A1 có đủ {len(REQUIRED_A1_SECTIONS)} mục bắt buộc"
+    # 11/10/2026: A1 phải trình bày ĐÚNG danh mục đọc bổ sung hiện hành (G0_TONG_HOP_BANG_CHUNG) — agent sửa tệp tổng
+    # hợp mà chưa dựng lại A1 thì PI đọc danh mục cũ, còn dấu vân tay (băm danh mục trong checkpoint) chưa đổi.
+    hanh_dong_05 = "Sinh lại A1 bằng run_g0_auto.py bản hiện hành."
+    a1_path = artifact_paths.get("A1")
+    if art_status == "PASS" and a1_path is not None and Path(a1_path).name.startswith("G0_A1_PICO_FINER_"):
+        ma_de_tai = Path(a1_path).stem[len("G0_A1_PICO_FINER_"):]
+        hien_hanh, loi_ds = GT.doc_danh_muc_bo_sung(Path(a1_path).parent, ma_de_tai)
+        luc_dung = sorted(str(x) for x in (checkpoint.get("danh_muc_doc_bo_sung") or []))
+        if hien_hanh is None:
+            art_status, art_evidence = "REVIEW", f"không đối chiếu được danh mục đọc bổ sung: {loi_ds}"
+            hanh_dong_05 = "Sửa tệp G0_TONG_HOP_BANG_CHUNG (g0_tong_hop.py) rồi dựng lại A1."
+        elif hien_hanh != luc_dung:
+            art_status = "REVIEW"
+            art_evidence = (f"A1 dựng trước khi danh mục đọc bổ sung đổi ({len(luc_dung)} mục lúc dựng, "
+                            f"{len(hien_hanh)} mục hiện hành)")
+            hanh_dong_05 = (f"Dựng lại A1: python3 tools/run_g0_auto.py --study {ma_de_tai} --dung-lai-a1 (không tra "
+                            "lại PubMed); danh mục đổi ⇒ dấu vân tay G0 đổi ⇒ PI chốt lại G0.")
     automatic.append(_criterion(
         "G0-AUTO-05", "Artifact A1 có đủ 6 thành phần theo doctrine",
-        art_status, art_evidence,
-        "Sinh lại A1 bằng run_g0_auto.py bản hiện hành.",
+        art_status, art_evidence, hanh_dong_05,
     ))
 
     # Trùng lặp nghiên cứu: PubMed trả lời "đã CÔNG BỐ gì", không trả lời "đang có
