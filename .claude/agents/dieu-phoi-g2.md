@@ -36,6 +36,10 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 
 ## 4. Công cụ thật của cổng
 - `python3 tools/run_g2_auto.py --study <mã> --design <mã thiết kế>` (chạy từ gốc repo y khoa — công cụ ghi `exports/<mã>` theo thư mục làm việc)
+  Chạy lại khi hồ sơ ĐÃ BIÊN TẬP (ít ô trống hơn khuôn) ⇒ bộ sinh GIỮ NGUYÊN hồ sơ từng byte (không đè `.docx`
+  chuẩn), vẫn dựng lại bản nháp đăng ký và ghi lại `G2_checkpoint.json` theo thượng nguồn hiện hành, thoát mã 2 —
+  trạng thái ĐÚNG, không phải lỗi (11/10/2026, y khoa #122). `--regenerate-artifact` ĐÈ bản đã biên tập (vẫn
+  `.bak-*`): chỉ khi bác sĩ yêu cầu sinh lại có chủ đích — agent KHÔNG tự thêm cờ này.
 - Chấm (CLI có GHI báo cáo/checkpoint — chạy sau khi nhiệm vụ xong): `python3 tools/g2_quality_gate.py --study <mã>`;
   trạng thái: `DRAFT_NEEDS_HUMAN_COMPLETION` → `READY_FOR_IRB_SUBMISSION` → `PASS_G2_APPROVED`.
 - **Người ký (CỔNG CỨNG):** IRB TỰ chạy `python3 tools/approve_gate.py --study <mã> --gate G2 --artifact exports/<mã>/G2_A3_ETHICS_PACKAGE_<mã>.md --reviewer-role <vai>` (kèm `--g2-approval-number/--g2-approval-date/--g2-protocol-version/--g2-icf-version`… do Hội đồng cấp). Agent KHÔNG ký, KHÔNG gọi lệnh này.
