@@ -136,7 +136,13 @@ def test_c1a_that_khong_it_hon_bo_cu_va_o_sau_phe_duyet_duoc_tach():
     assert len(moi) >= len({re.sub(r"\s+", " ", d.strip())[:240] for d in cu if d.strip()})
     pl = G2Q.classify_placeholders(vb)
     assert any("Số phê duyệt IRB" in d for d in pl["post_approval"])
-    assert any("TO BE COMPLETED" in d for d in pl["pre_submission"])
+    # 11/10/2026: ICF tiếng Anh của C1a đã được dịch xong (agent điền từ quyết định đã chốt) ⇒ đồ gá SỐNG không còn
+    # dòng «[TO BE COMPLETED]». Giữ nguyên khẳng định phân loại trên BẢN SAO C1a có chèn lại đúng một dòng ICF tiếng
+    # Anh chưa dịch của bản trước đó (dòng gốc, ngay dưới tiêu đề Tài liệu 5) — sửa đồ gá, không nới khẳng định.
+    dong = vb.split("\n")
+    i = next(k for k, d in enumerate(dong) if d.startswith("## TÀI LIỆU 5."))
+    pl_nhap = G2Q.classify_placeholders("\n".join(dong[:i + 1] + ["Location: [TO BE COMPLETED]"] + dong[i + 1:]))
+    assert any("TO BE COMPLETED" in d for d in pl_nhap["pre_submission"])
 
 
 # ── rào chống đè hồ sơ đã biên tập của run_g2_auto dùng tổng ô trống của hợp đồng chung ────────────────────────────
