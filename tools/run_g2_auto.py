@@ -1951,6 +1951,12 @@ def main():
     # đè đều sao lưu .bak-* trước. Ca thật: tái sinh G2 trên C1a đè mất 45 dòng
     # ICF/mô tả nghiên cứu/khảo sát PubMed đã biên tập tay — file vẫn hợp lệ,
     # guardrail vẫn PASS, chỉ có người đọc kỹ mới thấy nội dung đã bay.
+    # SỬA 11/10/2026 (G10 trước dữ liệu trên C1a): nhánh từ chối cũ thoát NGAY, trước Bước 7 ⇒ hồ sơ đã biên tập (luôn
+    # có ở đề tài thật: PI phải điền ô trống) làm G2_checkpoint.json không bao giờ làm tươi được ⇒ pipeline_freshness
+    # xếp G2 «cũ hơn thượng nguồn» vĩnh viễn ⇒ G10-AUTO-03 CHẶN mọi gói G10 (kể cả gói trình Hội đồng). Nay GIỮ
+    # NGUYÊN hồ sơ từng byte và vẫn thoát mã 2, nhưng chấm guardrail + bộ chấm G2 trên CHÍNH bản đã biên tập và ghi lại
+    # checkpoint theo thượng nguồn hiện hành; nội dung lệch thượng nguồn vẫn bị bắt bằng phép chấm SỐNG.
+    giu_ban_bien_tap = False
     if md_path.exists():
         ban_cu = md_path.read_text(encoding="utf-8")
         bak = md_path.with_name(md_path.name + f".bak-{datetime.now().strftime('%Y%m%d-%H%M%S')}")
@@ -1970,9 +1976,12 @@ def main():
                   "(bản cũ vẫn được sao lưu .bak-* ở trên).")
             print("   Chỉ cần bản .docx CHUẨN TRÌNH BÀY từ bản đã biên tập (không sinh lại nội dung):\n"
                   f"     python3 tools/xuat_docx_chuan.py --study {study}")
-            raise SystemExit(GC.EXIT_BLOCKED)
-    md_path.write_text(artifact_md, encoding="utf-8", newline="\n")
-    print(f"  → Lưu: {md_path} ({len(artifact_md)//1000}KB)")
+            print("   ↻ Giữ NGUYÊN hồ sơ đã biên tập; vẫn làm mới G2_checkpoint.json theo thượng nguồn hiện hành.")
+            giu_ban_bien_tap = True
+            artifact_md = ban_cu
+    if not giu_ban_bien_tap:
+        md_path.write_text(artifact_md, encoding="utf-8", newline="\n")
+        print(f"  → Lưu: {md_path} ({len(artifact_md)//1000}KB)")
     # VÁ 04/10/2026 (soát từng cổng, G2-03 / QĐ-4): thử nghiệm can thiệp cần kế hoạch an toàn RIÊNG. Máy chỉ dựng KHUNG
     # (tiêu đề + ô [CẦN]) khi tệp chưa có — KHÔNG BAO GIỜ ghi đè bản chủ nhiệm đã điền.
     if G2Q.can_ke_hoach_an_toan(design_code, _study_meta_for_g2):
@@ -1995,7 +2004,12 @@ def main():
 
     # ── Bước 6: DOCX ──
     print(f"\n📄 Bước 6/7: Xuất DOCX ({len(artifact_md.split(chr(10)))} dòng)...")
-    docx_path = export_docx_g2(artifact_md, study, out_dir)
+    if giu_ban_bien_tap:
+        # Bản đã biên tập: .docx chuẩn do xuat_docx_chuan.py dựng — không đè bằng khuôn máy.
+        docx_path = md_path.with_suffix(".docx") if md_path.with_suffix(".docx").exists() else None
+        print("  → Giữ .docx hiện có (hồ sơ đã biên tập)")
+    else:
+        docx_path = export_docx_g2(artifact_md, study, out_dir)
     if docx_path:
         print(f"  → Lưu: {docx_path}")
 
@@ -2065,6 +2079,11 @@ def main():
     # luôn 0 dù guardrail có lỗi thật — checkpoint ĐÃ ghi đúng, nhưng process exit code
     # không phản ánh, nên chạy trực tiếp (không qua run_pipeline.py) sẽ tưởng nhầm là
     # xong. Đối xứng cách G3/G4/G9 đã làm.
+    if giu_ban_bien_tap:
+        # Mã 2 giữ nguyên hợp đồng «từ chối đè»: không sinh nội dung mới; guardrail/chất lượng của bản người viết đã in ở
+        # trên và do bộ chấm SỐNG (g2_quality_gate) báo.
+        print(f"🟡 G2: GIỮ HỒ SƠ ĐÃ BIÊN TẬP, checkpoint đã làm mới — {study} (mã 2: không sinh lại nội dung)")
+        raise SystemExit(GC.EXIT_BLOCKED)
     if not guardrail["passed"] or quality_gate["status"] == G2Q.STATUS_BLOCKED:
         raise SystemExit(GC.EXIT_GUARDRAIL_FAIL)
 
