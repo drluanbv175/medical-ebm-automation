@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0",
   "contract_version": "G0-2026.1",
-  "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
+  "status": "PASS_G0_CONFIRMED",
   "automated_checks_passed": true,
-  "human_confirmation_complete": false,
+  "human_confirmation_complete": true,
   "automatic_criteria": [
     {
       "id": "G0-AUTO-00",
@@ -94,42 +94,37 @@
     {
       "id": "G0-HUMAN-05",
       "label": "FINER đánh giá đủ từng tiêu chí (5/5), kết luận ĐẠT và có lý do",
-      "status": "REVIEW",
-      "evidence": "chỉ có cờ đúng/số, chưa có lý do: feasible, interesting, novel, ethical, relevant",
+      "status": "PASS",
+      "evidence": "5/5 tiêu chí có kết luận đạt kèm lý do",
       "action": "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận."
     },
     {
       "id": "G0-HUMAN-06",
       "label": "Đã đọc lại bằng chứng G0 và biện minh tính mới",
-      "status": "REVIEW",
-      "evidence": "evidence_reviewed_confirmed=True; novelty_justification=còn ô trống/nhãn nháp",
-      "action": "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification. Gỡ hết nhãn nháp/ô mẫu còn sót trong trường (vd «[DỰ THẢO…]», «[… — điền]», «___», «☐ … ☐ …») — hệ KHÔNG tự viết thay."
+      "status": "PASS",
+      "evidence": "evidence_reviewed_confirmed=True; novelty_justification=có",
+      "action": "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification."
     },
     {
       "id": "G0-HUMAN-07",
       "label": "Chủ nhiệm/nhà phương pháp chốt PICO (vai trò + thời điểm + gắn đúng nội dung)",
-      "status": "REVIEW",
-      "evidence": "pico_confirmed=True; vai trò=pi; reviewed_at=2026-08-15; xác nhận chưa gắn `dau_van_tay` (xác nhận kiểu cũ) — chủ nhiệm xác nhận lại với dau_van_tay=df575f9916659dd5 (dấu nội dung hiện tại)",
-      "action": "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"df575f9916659dd5\" (dấu của nội dung đang chốt). Không cần lưu danh tính."
+      "status": "PASS",
+      "evidence": "pico_confirmed=True; vai trò=pi; reviewed_at=2026-10-11T09:02:59+07:00; xác nhận gắn đúng nội dung hiện tại",
+      "action": "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"6c557ef3b0fd3973\" (dấu của nội dung đang chốt). Không cần lưu danh tính."
     },
     {
       "id": "G0-HUMAN-08",
       "label": "PI đã tự tra WHO ICTRP (và PROSPERO cho tổng quan) + đánh giá chồng lấn khi có thử nghiệm đang tuyển",
-      "status": "REVIEW",
-      "evidence": "thiếu ngày tra (ISO, không ở tương lai): ictrp",
+      "status": "PASS",
+      "evidence": "đã ghi ngày tra",
       "action": "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn)."
     }
   ],
-  "pending_actions": [
-    "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận.",
-    "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification. Gỡ hết nhãn nháp/ô mẫu còn sót trong trường (vd «[DỰ THẢO…]», «[… — điền]», «___», «☐ … ☐ …») — hệ KHÔNG tự viết thay.",
-    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"df575f9916659dd5\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
-    "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn)."
-  ],
+  "pending_actions": [],
   "artifact_manifest": {
     "A1": {
-      "path": "/Users/nguyenluan/.ebm-worktrees/yk-g0-a1-bien-ban-20261010/exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "fc2a2f1bdfa76a4549a9bd2f9484d01f2efddb683470cf4da948d5b90f8b559d"
+      "path": "/Users/nguyenluan/.ebm-worktrees/yk-chot-g0-c1a-20261011/exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.md",
+      "sha256": "c47babded861253a3e2e72e957bd35c8e9db0a7e0dd39a7ba358629e250cd120"
     }
   },
   "standards_basis": [
@@ -159,29 +154,6 @@
     "primary": "STROBE",
     "protocol": "Protocol định trước; đăng ký nếu cần minh bạch"
   },
-  "dau_van_tay_hien_tai": "df575f9916659dd5",
-  "scope_statement": "PASS_G0_CONFIRMED chỉ xác nhận rằng câu hỏi nghiên cứu ĐÃ ĐƯỢC MỘT NGƯỜI THẬT VIẾT RA VÀ CHỐT, và nền bằng chứng máy dựng là thật. KHÔNG thẩm định chất lượng khoa học của câu hỏi, không thay tổng quan y văn có hệ thống, không thay Hội đồng Đạo đức. Một PICO đầy đủ vẫn có thể là một PICO tồi.",
-  "needs_input": {
-    "blocked": true,
-    "reason_code": "MISSING_PICO",
-    "human_message": "G0 đã dựng xong NỀN BẰNG CHỨNG; câu hỏi nghiên cứu (PICO, kết cục chính, giả thuyết, loại câu hỏi) ĐÃ đạt — còn chờ bác sĩ/PI: G0-HUMAN-05, G0-HUMAN-06, G0-HUMAN-07, G0-HUMAN-08. Không cần tra lại PubMed; điền xong thì chấm lại.",
-    "remediation": {
-      "action": "rerun_with_real_input",
-      "command": "sửa exports/<study>/study_meta.json → gate_params.G0 rồi chạy: python tools/g0_quality_gate.py --study <study>",
-      "study_meta_patch": {
-        "gate_params": {
-          "G0": {
-            "pico_confirmed": true
-          }
-        }
-      },
-      "must_not_fabricate": [
-        "PICO",
-        "primary_outcome",
-        "FINER",
-        "hypothesis"
-      ]
-    },
-    "supplied_by": "doctor"
-  }
+  "dau_van_tay_hien_tai": "6c557ef3b0fd3973",
+  "scope_statement": "PASS_G0_CONFIRMED chỉ xác nhận rằng câu hỏi nghiên cứu ĐÃ ĐƯỢC MỘT NGƯỜI THẬT VIẾT RA VÀ CHỐT, và nền bằng chứng máy dựng là thật. KHÔNG thẩm định chất lượng khoa học của câu hỏi, không thay tổng quan y văn có hệ thống, không thay Hội đồng Đạo đức. Một PICO đầy đủ vẫn có thể là một PICO tồi."
 }

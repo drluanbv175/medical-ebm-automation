@@ -1,7 +1,7 @@
 {
   "study": "hai-long-benh-nhan-C1a-BVQY175",
   "gate": "G0",
-  "gate_status": "DRAFT — CHỜ BÁC SĨ: G0-HUMAN-05, G0-HUMAN-06, G0-HUMAN-07, G0-HUMAN-08",
+  "gate_status": "PASS_G0_CONFIRMED — câu hỏi nghiên cứu đã được bác sĩ chốt",
   "generated_at": "2026-07-31T20:39:23.828548",
   "topic": "Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối",
   "base_query": "patient satisfaction outpatient department Vietnam hospital",
@@ -77,30 +77,19 @@
     "A1_markdown": "exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.md",
     "A1_docx": "exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.docx"
   },
-  "pending_doctor_actions": [
-    "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận.",
-    "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification. Gỡ hết nhãn nháp/ô mẫu còn sót trong trường (vd «[DỰ THẢO…]», «[… — điền]», «___», «☐ … ☐ …») — hệ KHÔNG tự viết thay.",
-    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"df575f9916659dd5\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
-    "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn).",
-    "Chạy: python tools/g0_quality_gate.py --study hai-long-benh-nhan-C1a-BVQY175"
-  ],
+  "pending_doctor_actions": [],
   "next_gate": "G1 — Thiết kế nghiên cứu (CHỈ sau khi G0 đạt PASS_G0_CONFIRMED)",
   "disclaimer": "Cần bác sĩ kiểm chứng.",
   "quality_gate": {
-    "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
+    "status": "PASS_G0_CONFIRMED",
     "contract_version": "G0-2026.1",
     "automated_checks_passed": true,
-    "human_confirmation_complete": false,
-    "pending_actions": [
-      "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận.",
-      "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification. Gỡ hết nhãn nháp/ô mẫu còn sót trong trường (vd «[DỰ THẢO…]», «[… — điền]», «___», «☐ … ☐ …») — hệ KHÔNG tự viết thay.",
-      "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"df575f9916659dd5\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
-      "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn)."
-    ],
-    "dau_van_tay_luc_cham": "df575f9916659dd5"
+    "human_confirmation_complete": true,
+    "pending_actions": [],
+    "dau_van_tay_luc_cham": "6c557ef3b0fd3973"
   },
   "needs_input": {
-    "blocked": true,
+    "blocked": false,
     "reason_code": "MISSING_PICO",
     "human_message": "G0 đã dựng xong NỀN BẰNG CHỨNG; câu hỏi nghiên cứu (PICO, kết cục chính, giả thuyết, loại câu hỏi) ĐÃ đạt — còn chờ bác sĩ/PI: G0-HUMAN-05, G0-HUMAN-06, G0-HUMAN-07, G0-HUMAN-08. Không cần tra lại PubMed; điền xong thì chấm lại.",
     "remediation": {
@@ -120,8 +109,10 @@
         "hypothesis"
       ]
     },
-    "supplied_by": "doctor"
+    "supplied_by": "doctor",
+    "resolved_by": "g0_quality_gate.refresh_checkpoint",
+    "resolved_at": "2026-10-11T09:02:59"
   },
-  "a1_dung_lai_luc": "2026-10-10T13:30:58",
+  "a1_dung_lai_luc": "2026-10-11T09:25:28",
   "quality_contract_version": "G0-2026.1"
 }
