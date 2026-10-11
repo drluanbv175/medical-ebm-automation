@@ -11,6 +11,8 @@ HƠN template → TỪ CHỐI (mã 2), nội dung nguyên vẹn, vẫn .bak-*; (
 hơn → đè như cũ nhưng có .bak-*.
 """
 
+import json
+import os
 import shutil
 import subprocess
 import sys
@@ -62,10 +64,21 @@ def test_toan_chu_trinh_rao_de_ho_so_dao_duc():
         # (2) giả lập hồ sơ đã biên tập gần xong → phải TỪ CHỐI
         ban_bien_tap = template.replace("[CẦN", "ĐÃ-ĐIỀN", template.count("[CẦN") - 1)
         ho_so.write_text(ban_bien_tap, encoding="utf-8", newline="\n")
+        # 11/10/2026: từ chối đè vẫn phải LÀM TƯƠI checkpoint (bản cũ thoát trước Bước 7 ⇒ G2 «cũ hơn thượng nguồn»
+        # vĩnh viễn ⇒ G10-AUTO-03 chặn mọi gói G10) và KHÔNG đè .docx chuẩn của bản đã biên tập.
+        cp = d / "G2_checkpoint.json"
+        docx = ho_so.with_suffix(".docx")
+        cu = time.time() - 3600
+        os.utime(cp, (cu, cu))
+        docx_truoc = docx.read_bytes() if docx.exists() else None
         r2 = _run_g2()
         assert r2.returncode == 2, f"phải từ chối (rc={r2.returncode})\n" + r2.stdout[-1200:]
         assert "TỪ CHỐI đè hồ sơ đạo đức" in r2.stdout
         assert ho_so.read_text(encoding="utf-8") == ban_bien_tap, "nội dung phải nguyên vẹn từng byte"
+        assert cp.stat().st_mtime > cu + 1800, "từ chối đè vẫn phải làm tươi G2_checkpoint.json"
+        assert json.loads(cp.read_text(encoding="utf-8")).get("gate") == "G2"
+        if docx_truoc is not None:
+            assert docx.read_bytes() == docx_truoc, ".docx của bản đã biên tập không được đè bằng khuôn máy"
         baks = sorted(d.glob(f"{ho_so.name}.bak-*"))
         assert baks, "từ chối vẫn phải sao lưu .bak-*"
 

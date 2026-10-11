@@ -15,6 +15,8 @@ Bốn hành vi phải khoá:
 4. SAP cũ KÉM đầy đủ hơn template → đè như cũ nhưng có .bak-*.
 """
 
+import json
+import os
 import shutil
 import subprocess
 import sys
@@ -74,12 +76,23 @@ class TestRaoChongDeSap:
             # (2) Giả lập SAP đã được biên tập gần xong (ít [CẦN hơn hẳn)
             ban_bien_tap = template.replace("[CẦN", "ĐÃ-ĐIỀN", template.count("[CẦN") - 1)
             sap.write_text(ban_bien_tap, encoding="utf-8", newline="\n")
+            # 11/10/2026: từ chối đè vẫn phải LÀM TƯƠI checkpoint (bản cũ thoát trước khi ghi ⇒ G4 «cũ hơn thượng
+            # nguồn» vĩnh viễn ⇒ G10-AUTO-03 chặn mọi gói G10) và KHÔNG đè .docx chuẩn của bản đã biên tập.
+            cp = d / "G4_checkpoint.json"
+            docx = sap.with_suffix(".docx")
+            cu = time.time() - 3600
+            os.utime(cp, (cu, cu))
+            docx_truoc = docx.read_bytes() if docx.exists() else None
             r2 = _run_g4(study)
             assert r2.returncode == 2, (
                 f"phải TỪ CHỐI đè SAP đầy đủ hơn (rc={r2.returncode})\n" + r2.stdout)
             assert "TỪ CHỐI đè SAP" in r2.stdout
             assert sap.read_text(encoding="utf-8") == ban_bien_tap, (
                 "nội dung SAP đã biên tập phải nguyên vẹn từng byte")
+            assert cp.stat().st_mtime > cu + 1800, "từ chối đè vẫn phải làm tươi G4_checkpoint.json"
+            assert json.loads(cp.read_text(encoding="utf-8")).get("sap_giu_ban_bien_tap") is True
+            if docx_truoc is not None:
+                assert docx.read_bytes() == docx_truoc, ".docx của SAP đã biên tập không được đè bằng khuôn máy"
             baks = sorted(d.glob(f"{sap.name}.bak-*"))
             assert baks, "từ chối vẫn phải sao lưu .bak-*"
 

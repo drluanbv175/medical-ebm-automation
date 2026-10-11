@@ -1033,6 +1033,12 @@ def main():
     # (ÍT nhãn [CẦN hơn) → TỪ CHỐI đè; chỉ người thật quyết bằng
     # --regenerate-sap (vẫn sao lưu .bak-* trước). SAP cũ KÉM đầy đủ hơn →
     # đè như cũ nhưng nay LUÔN có .bak-* (cùng khuôn G0 đã làm từ 28/07).
+    # SỬA 11/10/2026 (G10 trước dữ liệu trên C1a): nhánh từ chối cũ thoát NGAY, trước khi ghi checkpoint ⇒ SAP đã biên
+    # tập (luôn có ở đề tài thật) làm G4_checkpoint.json không bao giờ làm tươi được ⇒ pipeline_freshness xếp G4 «cũ
+    # hơn thượng nguồn» vĩnh viễn ⇒ G10-AUTO-03 CHẶN mọi gói G10 (kể cả gói trình Hội đồng). Nay vẫn GIỮ NGUYÊN SAP
+    # từng byte và vẫn thoát mã 2, nhưng chấm guardrail trên CHÍNH bản đã biên tập và ghi lại checkpoint theo thượng
+    # nguồn hiện hành. Nội dung lệch thượng nguồn vẫn bị bắt bằng phép chấm SỐNG (G4-AUTO-03 §12 ↔ G3, G10-AUTO-11).
+    giu_ban_bien_tap = False
     if md.exists():
         ban_cu = md.read_text(encoding="utf-8")
         bak = md.with_name(md.name + f".bak-{datetime.now().strftime('%Y%m%d-%H%M%S')}")
@@ -1047,9 +1053,12 @@ def main():
                   "(bản cũ vẫn được sao lưu .bak-* ở trên).")
             print("   Chỉ cần bản .docx CHUẨN TRÌNH BÀY từ bản đã biên tập (không sinh lại nội dung):\n"
                   f"     python3 tools/xuat_docx_chuan.py --study {study}")
-            raise SystemExit(GC.EXIT_BLOCKED)
-    md.write_text(artifact, encoding="utf-8", newline="\n")
-    print(f"  → Lưu: {md} ({len(artifact)//1000}KB)")
+            print("   ↻ Giữ NGUYÊN SAP đã biên tập; vẫn làm mới G4_checkpoint.json theo thượng nguồn hiện hành.")
+            giu_ban_bien_tap = True
+            artifact = ban_cu
+    if not giu_ban_bien_tap:
+        md.write_text(artifact, encoding="utf-8", newline="\n")
+        print(f"  → Lưu: {md} ({len(artifact)//1000}KB)")
 
     print("🛡️  Kiểm guardrail...")
     errors, warnings = guardrail(artifact)
@@ -1061,8 +1070,9 @@ def main():
     print(f"  → Guardrail: {status}")
 
     docx = out / f"G4_A5_SAP_FINAL_{study}.docx"
-    write_docx(artifact, docx)
-    print(f"  → DOCX: {docx}")
+    if not giu_ban_bien_tap:  # bản đã biên tập: .docx chuẩn do xuat_docx_chuan.py dựng — không đè bằng khuôn máy
+        write_docx(artifact, docx)
+        print(f"  → DOCX: {docx}")
 
     muc_bat_buoc = "§1/§2/§4/§5/§9/§10" + ("/§13/§14/§15" if design_code == "rct" else "")
     cp = {
@@ -1087,9 +1097,17 @@ def main():
                              "có niêm phong) sau khi g4_quality_gate.py báo READY_FOR_SIGNATURE — hệ thống không tự "
                              "ghi trạng thái khoá"),
     }
+    if giu_ban_bien_tap:
+        cp["sap_giu_ban_bien_tap"] = True
     cp_path = out / "G4_checkpoint.json"
     cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     print(f"💾 Lưu: {cp_path}")
+    if giu_ban_bien_tap:
+        # Mã 2 giữ nguyên hợp đồng «từ chối đè»: không sinh nội dung mới; guardrail/chất lượng của bản người viết do bộ
+        # chấm SỐNG (g4_quality_gate) báo — checkpoint đã ghi đúng kết quả guardrail ở trên.
+        print(f"\n🟡 G4: GIỮ SAP ĐÃ BIÊN TẬP, checkpoint đã làm mới — {study} (mã 2: không sinh lại nội dung)")
+        print(f"  → Guardrail (trên bản đã biên tập): {status}")
+        raise SystemExit(GC.EXIT_BLOCKED)
     # Vá 2026-07-11 (vòng 9): trước đây banner "HOÀN THÀNH" in vô điều kiện + exit code luôn
     # 0 dù guardrail có lỗi thật (errors không rỗng) — checkpoint ĐÃ ghi đúng "guardrail":
     # status ở trên, nhưng process exit code không phản ánh, nên chạy trực tiếp (không qua
