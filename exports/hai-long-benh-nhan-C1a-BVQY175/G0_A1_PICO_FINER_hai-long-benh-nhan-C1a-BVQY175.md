@@ -1,5 +1,5 @@
 # A1 — CÂU HỎI NGHIÊN CỨU & PICO | hai-long-benh-nhan-C1a-BVQY175
-> Tạo tự động: 2026-10-11 09:25 | Truy vấn PubMed thật
+> Tạo tự động: 2026-10-11 10:23 | Truy vấn PubMed thật
 > **Hệ KHÔNG suy ra PICO.** Mọi ô P/I/C/O bên dưới là chỗ TRỐNG — bác sĩ phải tự viết.
 > Thứ G0 làm được là dựng NỀN BẰNG CHỨNG (PHẦN 3) và chỉ ra khoảng trống (PHẦN 4) để bác sĩ
 > viết PICO có căn cứ. (Câu cũ ở dòng này ghi "xác nhận hoặc chỉnh PICO, không điền
