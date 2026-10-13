@@ -225,9 +225,9 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
  uỷ quyền của Phòng CNTT/QLCL đối chiếu và chỉ chuyển cho nhóm nghiên cứu mã nghiên cứu cùng số phút chờ;
  bảng đối chiếu do CNTT/QLCL giữ và huỷ trong 30 ngày [BÁC SĨ RÀ]
  Kết quả công bố dùng dữ liệu TỔNG HỢP, KHÔNG tiết lộ danh tính
- Dữ liệu nhận dạng: phiếu KHÔNG ghi thông tin định danh; thời gian chờ được ghép theo cách GIẢ DANH HÓA CÓ
- KIỂM SOÁT — bảng đối chiếu HIS nêu trên là liên kết duy nhất về lượt khám, do CNTT/QLCL giữ và huỷ trong
- 30 ngày [BÁC SĨ RÀ]
+ Dữ liệu nhận dạng: phiếu KHÔNG ghi thông tin định danh; thời gian chờ được ghép theo cách
+ giả danh hóa có kiểm soát — bảng đối chiếu HIS nêu trên là liên kết duy nhất về lượt khám, do CNTT/QLCL giữ
+ và huỷ trong 30 ngày [BÁC SĨ RÀ]
  Trong trường hợp rò rỉ, anh/chị sẽ được thông báo NGAY KHI XÁC NHẬN
  (cơ quan bảo vệ dữ liệu được báo trong 72 giờ theo NĐ 356/2025/NĐ-CP, 
  mốc này áp cho cơ quan quản lý, không phải mốc cam kết với anh/chị)
@@ -386,8 +386,8 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
  Phê duyệt quyền: Chủ nhiệm đề tài
 
 3. KHỬ ĐỊNH DANH:
- Phương pháp: GIẢ DANH HÓA CÓ KIỂM SOÁT — phiếu KHÔNG có ô định danh, chỉ mang mã nghiên cứu; phiếu đồng ý (ICF) ký tên lưu
- TÁCH BIỆT vật lý, không ghép với phiếu (đề cương §4.11) [BÁC SĨ RÀ]
+ Phương pháp: GIẢ DANH HÓA CÓ KIỂM SOÁT — phiếu KHÔNG có ô định danh, chỉ mang mã nghiên cứu; phiếu
+ đồng ý (ICF) ký tên lưu tách biệt vật lý, không ghép với phiếu (đề cương §4.11) [BÁC SĨ RÀ]
  Ghép HIS: nhân sự được uỷ quyền của Phòng CNTT/QLCL trích hai mốc thời gian và giữ bảng ghép mã nghiên cứu ↔
  lượt khám; nhóm nghiên cứu chỉ nhận mã nghiên cứu + số phút chờ; bảng ghép huỷ trong 30 ngày, có nhật ký huỷ
  (đề cương §4.6.3, §4.11, §6.5) [BÁC SĨ RÀ]
