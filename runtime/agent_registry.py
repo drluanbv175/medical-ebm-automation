@@ -111,8 +111,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # đầu ra bị kiểm bằng `hoi_dong_cong.py ghi`; bản cặp y hệt gốc; vẫn 64.
 # 11/10/2026 (bác sĩ quyết — dấu vân tay G0 băm danh mục đọc bổ sung): dieu-phoi-g0 sửa câu «dựng lại A1 không đổi dấu»
 # ⇒ danh mục đổi thì PI chốt lại; bản cặp y hệt gốc; vẫn 64.
+# 11/10/2026 (G10 trước dữ liệu — y khoa #122): dieu-phoi-g2/g4 dạy «chạy lại khi bản đã biên tập ⇒ giữ nguyên,
+# làm tươi checkpoint, mã 2 là đúng»; dieu-phoi-g10 dạy thứ tự gói ETHICS_SUBMISSION; bản cặp y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "b96893484ab99ec5025d47181243abedb106524b7295943047138bf7b7015029"
+    "fb7dbc6d521b91844548c18f3037526712e98f759a0704d49c0d3882efcce6c9"
 )
 
 MINIMUM_AGENT_COUNT = 64

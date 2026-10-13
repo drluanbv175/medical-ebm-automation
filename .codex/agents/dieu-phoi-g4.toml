@@ -35,6 +35,10 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 
 ## 4. Công cụ thật của cổng
 - `python3 tools/run_g4_auto.py --study <mã> [--regenerate-sap]`
+  Chạy lại khi SAP ĐÃ BIÊN TẬP ⇒ bộ sinh GIỮ NGUYÊN SAP từng byte (không đè `.docx` chuẩn), vẫn ghi lại
+  `G4_checkpoint.json` theo thượng nguồn hiện hành (`sap_giu_ban_bien_tap: true`), thoát mã 2 — trạng thái ĐÚNG,
+  không phải lỗi (11/10/2026, y khoa #122). `--regenerate-sap` ĐÈ SAP đã biên tập (vẫn `.bak-*`): chỉ khi bác sĩ
+  yêu cầu sinh lại có chủ đích — agent KHÔNG tự thêm cờ này.
 - Chấm (CLI có GHI báo cáo/checkpoint — chạy sau khi nhiệm vụ xong): `python3 tools/g4_quality_gate.py --study <mã>`;
   trạng thái: `DRAFT_NEEDS_HUMAN_CONTENT` → `READY_FOR_SIGNATURE` → `PASS_G4_SAP_LOCKED`.
 - **Người ký (CỔNG CỨNG):** STATISTICIAN hoặc PI TỰ chạy `python3 tools/approve_gate.py --study <mã> --gate G4 --artifact exports/<mã>/G4_A5_SAP_FINAL_<mã>.md --reviewer-role <vai>` (chỉ khi G3 = PASS_G3_CONFIRMED và chứng chỉ khoá hết ô trống). Agent KHÔNG ký, KHÔNG gọi lệnh này.
