@@ -110,6 +110,8 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - RCT: `G2_SAFETY_PLAN_<mã>.md` (5 mục) + `gate_params.G2.safety_plan_confirmed` (bool) do PI.
 - SR/MA: PROSPERO BẮT BUỘC trước khi bắt đầu tìm kiếm.
 - Ô chỉ điền được SAU phê duyệt (số/ngày, mã đăng ký) giữ nguyên tới khi có thật.
+- G1 đã chốt ghép dữ liệu từ hệ thống ngoài (HIS/eHospital/EHR…) ⇒ ICF Việt/Anh + DMP §1/§3 phải nêu việc ghép, và không
+  gọi «ẩn danh hoàn toàn» khi có ghép (`dao-duc-dang-ky` 4b/4d/4e); kiểm máy cấp nhiệm vụ G2-T1 báo ở `trach-nhiem`.
 
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G2` xác nhận/dấu vân tay · bật cờ đời thực trong

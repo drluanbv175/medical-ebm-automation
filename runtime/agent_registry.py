@@ -113,8 +113,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # ⇒ danh mục đổi thì PI chốt lại; bản cặp y hệt gốc; vẫn 64.
 # 11/10/2026 (G10 trước dữ liệu — y khoa #122): dieu-phoi-g2/g4 dạy «chạy lại khi bản đã biên tập ⇒ giữ nguyên,
 # làm tươi checkpoint, mã 2 là đúng»; dieu-phoi-g10 dạy thứ tự gói ETHICS_SUBMISSION; bản cặp y hệt gốc; vẫn 64.
+# 13/10/2026 (diễn tập đường PI C1a): dao-duc-dang-ky thêm 4e «ghép từ hệ thống ngoài phải nói ra ở ICF + DMP» +
+# khối trách nhiệm sinh lại (kiểm máy G2-T1); dieu-phoi-g2 §7 thêm dòng tương ứng; bản cặp y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "fb7dbc6d521b91844548c18f3037526712e98f759a0704d49c0d3882efcce6c9"
+    "73f4082c6db58c669ad035551b761d43404863e0717d08a4d2f6c462e1fdec98"
 )
 
 MINIMUM_AGENT_COUNT = 64

@@ -260,6 +260,11 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU — Cấp độ IRB (theo Luật 91/2025/QH1
    - Trường này CHỈ dùng trong giai đoạn nhập liệu–làm sạch nội bộ, KHÔNG được xuất hiện trong bộ dữ liệu bàn giao cho nhà thống kê/phân tích.
    - PHẢI xóa/tách trường này TRƯỚC khi khóa cơ sở dữ liệu (G5) — xem quy tắc chi tiết ở `quan-ly-du-lieu.md` TÀI LIỆU 4 BƯỚC 5.
 4d. THUẬT NGỮ "ẨN DANH" PHẢI KHỚP ĐÚNG PHẠM VI (2026-07-07): nếu bất kỳ khâu nào trong quy trình (đặc biệt bước ghép nối 4b/4c) còn dùng một liên kết tạm thời để nối dữ liệu về nguồn có thể định danh, KHÔNG được gọi TOÀN BỘ quy trình là "ẨN DANH HOÀN TOÀN" — thuật ngữ đúng cho bước đó là **"giả danh hóa có kiểm soát / khử định danh trước phân tích"** (controlled pseudonymization/de-identification). Chỉ dùng "ẩn danh hoàn toàn" khi không tồn tại bất kỳ khâu liên kết nào trong toàn bộ pipeline.
+4e. GHÉP TỪ HỆ THỐNG NGOÀI PHẢI NÓI RA (13/10/2026 — C1a: G1 chốt ghép thời gian chờ HIS mà ICF/DMP không nhắc): khi
+   gate_params.G1 đã chốt ghép dữ liệu từ HIS/eHospital/EHR…, ICF tiếng Việt + tiếng Anh phải báo người tham gia (ai
+   trích, nhóm nghiên cứu nhận gì, ai giữ bảng ghép, thời hạn huỷ) và DMP phải nêu ở §1 (loại dữ liệu) + §3 (khử định
+   danh theo 4b/4d). Câu khuôn «thay tên/CMND bằng ID; bảng liên kết ID–tên do chủ nhiệm giữ» KHÔNG dùng cho khảo sát
+   không định danh. Kiểm máy: `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G2` (G2-T1).
 5. CHIA SẺ / MỞ DỮ LIỆU:
    ☐ Không chia sẻ (lý do: ___)
    ☐ Chia sẻ theo yêu cầu hợp lý (DTA cần ký)
@@ -485,7 +490,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 
 | Nhiệm vụ | Bạn LÀM — đầu ra (tên là HỢP ĐỒNG) | Tiêu chí bạn phải đưa tới ĐẠT | Hồ sơ + lệnh bạn chuẩn bị cho NGƯỜI |
 |---|---|---|---|
-| `G2-T1` — Hồ sơ Hội đồng Đạo đức, phiếu đồng thuận, đăng ký, DMP bản cho Hội đồng | `G2_A3_ETHICS_PACKAGE_<mã>.md`, `G2_REGISTRATION_DRAFT_<mã>.json`, `G2_checkpoint.json` | G2-AUTO-01, G2-AUTO-02b, G2-AUTO-03, G2-AUTO-03b, G2-AUTO-04, G2-AUTO-06, G2-AUTO-06b, G2-AUTO-07 (khi G2-T2 không áp dụng), G2-AUTO-08 | IRB: G2-AUTO-09, G2-HUMAN-01, G2-HUMAN-02; PI: G2-AUTO-05, G2-AUTO-08b, G2-AUTO-10 |
+| `G2-T1` — Hồ sơ Hội đồng Đạo đức, phiếu đồng thuận, đăng ký, DMP bản cho Hội đồng | `G2_A3_ETHICS_PACKAGE_<mã>.md`, `G2_REGISTRATION_DRAFT_<mã>.json`, `G2_checkpoint.json` | G2-AUTO-01, G2-AUTO-02b, G2-AUTO-03, G2-AUTO-03b, G2-AUTO-04, G2-AUTO-06, G2-AUTO-06b, G2-AUTO-07 (khi G2-T2 không áp dụng), G2-AUTO-08 + kiểm máy cấp nhiệm vụ: hồ sơ G2 nêu việc ghép dữ liệu từ hệ thống ngoài mà G1 đã chốt (ICF Việt/Anh + DMP) và không gọi «ẩn danh hoàn toàn» khi có ghép (dao-duc-dang-ky 4b/4d) | IRB: G2-AUTO-09, G2-HUMAN-01, G2-HUMAN-02; PI: G2-AUTO-05, G2-AUTO-08b, G2-AUTO-10 |
 
 Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G2-T2` (an-toan-nghien-cuu), `G5-T1` (quan-ly-du-lieu). Không bao giờ chấm đầu ra do chính bạn làm.
 
