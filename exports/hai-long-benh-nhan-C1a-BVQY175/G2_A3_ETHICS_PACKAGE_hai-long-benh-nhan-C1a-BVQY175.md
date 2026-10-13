@@ -220,10 +220,14 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 
  Dữ liệu được mã hóa và lưu trên ổ đĩa mã hóa AES-256 tại Khoa Khám bệnh
  C1a, Bệnh viện Quân y 175
- Chỉ nhóm nghiên cứu được phép truy cập dữ liệu danh tính
+ Nhóm nghiên cứu KHÔNG nhận thông tin danh tính của ông/bà [BÁC SĨ RÀ]
+ Thời gian chờ khám được lấy từ hệ thống quản lý bệnh viện (HIS) qua MÃ NGHIÊN CỨU trên phiếu: nhân viên được
+ uỷ quyền của Phòng CNTT/QLCL đối chiếu và chỉ chuyển cho nhóm nghiên cứu mã nghiên cứu cùng số phút chờ;
+ bảng đối chiếu do CNTT/QLCL giữ và huỷ trong 30 ngày [BÁC SĨ RÀ]
  Kết quả công bố dùng dữ liệu TỔNG HỢP, KHÔNG tiết lộ danh tính
- Dữ liệu nhận dạng: KHÔNG THU THẬP — phiếu nặc danh ngay từ khâu phát, không tồn tại dữ liệu danh tính cần xóa
- sau khi kết thúc nghiên cứu theo quy định lưu trữ y tế
+ Dữ liệu nhận dạng: phiếu KHÔNG ghi thông tin định danh; thời gian chờ được ghép theo cách
+ giả danh hóa có kiểm soát — bảng đối chiếu HIS nêu trên là liên kết duy nhất về lượt khám, do CNTT/QLCL giữ
+ và huỷ trong 30 ngày [BÁC SĨ RÀ]
  Trong trường hợp rò rỉ, anh/chị sẽ được thông báo NGAY KHI XÁC NHẬN
  (cơ quan bảo vệ dữ liệu được báo trong 72 giờ theo NĐ 356/2025/NĐ-CP, 
  mốc này áp cho cơ quan quản lý, không phải mốc cam kết với anh/chị)
@@ -328,6 +332,10 @@ Principal Investigator: Nguyễn Hà Luân
 5. CONFIDENTIALITY
  Data encrypted per Vietnamese Personal Data Protection Law
  No. 91/2025/QH15. Results published in aggregate form only.
+ Your waiting time will be taken from the hospital information system (HIS) via the STUDY CODE on your
+ questionnaire: authorised staff of the IT/Quality Management department match it and pass only the study code
+ and the number of minutes to the research team, which never receives your identity; the matching table is kept
+ by IT/Quality Management and destroyed within 30 days. [BÁC SĨ RÀ]
 
 6. VOLUNTARY PARTICIPATION AND WITHDRAWAL
  Participation is voluntary. You may withdraw at any time
@@ -367,7 +375,9 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
  ☐ Cận lâm sàng (xét nghiệm, hình ảnh), mã hóa
  ☐ Kết quả điều tra/khảo sát, ẩn danh hoặc giả danh
  ☐ Dữ liệu thứ cấp (hồ sơ bệnh án), mã giả danh
- ☑ DUY NHẤT: kết quả khảo sát nặc danh (phiếu tự điền, không định danh) — không dùng hồ sơ bệnh án [BÁC SĨ RÀ]
+ ☑ Kết quả khảo sát (phiếu tự điền, KHÔNG ghi thông tin định danh) — không dùng hồ sơ bệnh án [BÁC SĨ RÀ]
+ ☑ Mốc thời gian hành chính từ HIS/eHospital (hoàn tất đăng ký, gọi vào buồng khám) ghép theo mã nghiên cứu —
+   nhóm nghiên cứu chỉ nhận mã nghiên cứu + số phút chờ (đề cương §4.6.3) [BÁC SĨ RÀ]
 
 2. THU THẬP:
  Công cụ: ☐ REDCap ☐ Google Forms (institutional) ☐ Phiếu giấy
@@ -376,9 +386,11 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
  Phê duyệt quyền: Chủ nhiệm đề tài
 
 3. KHỬ ĐỊNH DANH:
- Phương pháp: Thay thế tên/CMND bằng ID nghiên cứu (vd: PT001)
- Bảng liên kết ID–tên: Lưu riêng, mã hóa AES-256, mật khẩu
- mạnh (≥12 ký tự), chỉ chủ nhiệm giữ
+ Phương pháp: GIẢ DANH HÓA CÓ KIỂM SOÁT — phiếu KHÔNG có ô định danh, chỉ mang mã nghiên cứu; phiếu
+ đồng ý (ICF) ký tên lưu tách biệt vật lý, không ghép với phiếu (đề cương §4.11) [BÁC SĨ RÀ]
+ Ghép HIS: nhân sự được uỷ quyền của Phòng CNTT/QLCL trích hai mốc thời gian và giữ bảng ghép mã nghiên cứu ↔
+ lượt khám; nhóm nghiên cứu chỉ nhận mã nghiên cứu + số phút chờ; bảng ghép huỷ trong 30 ngày, có nhật ký huỷ
+ (đề cương §4.6.3, §4.11, §6.5) [BÁC SĨ RÀ]
  Ngưỡng k-ẩn danh: ≥5 (nhóm nhỏ sẽ nhóm lại trước công bố)
 
 4. LƯU TRỮ:

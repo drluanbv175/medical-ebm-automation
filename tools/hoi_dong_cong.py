@@ -1159,6 +1159,54 @@ def _kiem_bo_bien_so(out_dir: Path, study: str) -> List[str]:
     return [f"biến định danh trực tiếp (G5-AUTO-02 sẽ chặn): {', '.join(pii[:10])}"] if pii else []
 
 
+# 13/10/2026 (diễn tập trọn đường PI C1a): G1 đã chốt ghép thời gian chờ từ HIS/eHospital (CNTT/QLCL giữ bảng ghép,
+# huỷ trong 30 ngày) mà CẢ hồ sơ G2 — ICF Việt/Anh lẫn DMP — không nhắc một lần; DMP §3 còn câu khuôn «bảng liên kết
+# ID–tên do chủ nhiệm giữ», ICF ghi «không tồn tại dữ liệu danh tính». Doctrine dao-duc-dang-ky 4b/4d đã có luật nhưng
+# không phép kiểm nào bắt ⇒ nay kiểm máy cấp nhiệm vụ (TƯ VẤN, không chặn cổng).
+_HE_THONG_NGOAI_RE = re.compile(r"\b(?:HIS|eHospital|EHR|EMR|LIS|PACS)\b|hồ sơ bệnh án điện tử|hệ thống thông tin bệnh "
+                                r"viện|hospital information system", re.IGNORECASE)
+_AN_DANH_TUYET_DOI_RE = re.compile(r"ẩn danh hoàn toàn|nặc danh hoàn toàn|fully anonymous|completely anonymous",
+                                   re.IGNORECASE)
+
+
+def _tai_lieu_g2(van: str) -> Dict[str, str]:
+    """{số tài liệu: thân} theo tiêu đề «## TÀI LIỆU N.» của hồ sơ G2."""
+    phan = re.split(r"^## TÀI LIỆU (\d+)\.", van, flags=re.M)
+    return {phan[i]: phan[i + 1] for i in range(1, len(phan) - 1, 2)}
+
+
+def _kiem_g2_ghep_ngoai(out_dir: Path, study: str) -> List[str]:
+    """G2-T1 — G1 đã chốt ghép dữ liệu từ hệ thống NGOÀI phiếu (HIS/eHospital/EHR…) ⇒ ICF tiếng Việt (Tài liệu 4), ICF
+    tiếng Anh (Tài liệu 5, nếu có) và DMP (Tài liệu 6) phải nêu việc ghép để người tham gia và Hội đồng biết; khi có
+    ghép, không được gọi toàn bộ quy trình là «ẩn danh hoàn toàn» (dao-duc-dang-ky 4b/4d).
+    Không có ghép ⇒ không kiểm."""
+    try:
+        meta = json.loads((Path(out_dir) / "study_meta.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    g1 = ((meta.get("gate_params") or {}).get("G1") or {}) if isinstance(meta, dict) else {}
+    if not _HE_THONG_NGOAI_RE.search(json.dumps(g1, ensure_ascii=False)):
+        return []
+    tep = Path(out_dir) / f"G2_A3_ETHICS_PACKAGE_{study}.md"
+    if not tep.is_file():
+        return [f"G1 đã chốt ghép dữ liệu từ hệ thống ngoài nhưng chưa có hồ sơ {tep.name}"]
+    tl = _tai_lieu_g2(tep.read_text(encoding="utf-8"))
+    ra = []
+    for so, ten in (("4", "ICF tiếng Việt (Tài liệu 4)"), ("5", "ICF tiếng Anh (Tài liệu 5)"),
+                    ("6", "DMP (Tài liệu 6)")):
+        if so not in tl:
+            if so != "5":
+                ra.append(f"{ten}: không tìm thấy tiêu đề «## TÀI LIỆU {so}.»")
+            continue
+        if not _HE_THONG_NGOAI_RE.search(tl[so]):
+            ra.append(f"{ten} chưa nêu việc ghép dữ liệu từ hệ thống ngoài (HIS/eHospital…) mà G1 đã chốt — ai trích, "
+                      "nhóm nghiên cứu nhận gì, ai giữ bảng ghép, thời hạn huỷ (dao-duc-dang-ky 4b)")
+        if _AN_DANH_TUYET_DOI_RE.search(tl[so]):
+            ra.append(f"{ten} gọi quy trình là «ẩn danh hoàn toàn» trong khi có bước ghép — thuật ngữ đúng là «giả "
+                      "danh hóa có kiểm soát» (dao-duc-dang-ky 4d)")
+    return ra
+
+
 def _kiem_crf(out_dir: Path, study: str) -> List[str]:
     """G3-T3 — CRF kỹ thuật có LUẬT KIỂM TRA: trường lựa chọn có danh sách lựa chọn, trường calc có công thức, trường số
     có khoảng hợp lệ (min/max), có ít nhất một trường bắt buộc."""
@@ -1540,6 +1588,8 @@ KIEM_NHIEM_VU: Dict[str, Tuple[str, Any]] = {
               _kiem_dac_ta_du_bao),
     "G1-T7": ("đề cương lõi: dòng hiện tượng trung tâm + cách tiếp cận + phương pháp thu thập có mặt và đã điền",
               _kiem_thiet_ke_dinh_tinh),
+    "G2-T1": ("hồ sơ G2 nêu việc ghép dữ liệu từ hệ thống ngoài mà G1 đã chốt (ICF Việt/Anh + DMP) và không gọi «ẩn "
+              "danh hoàn toàn» khi có ghép (dao-duc-dang-ky 4b/4d)", _kiem_g2_ghep_ngoai),
     "G3-T2": ("bộ biến G5 nạp được + không biến định danh trực tiếp", _kiem_bo_bien_so),
     "G3-T3": ("luật kiểm tra CRF: lựa chọn · công thức calc · khoảng hợp lệ · trường bắt buộc", _kiem_crf),
     "G4-T2": ("SAP RCT §13 giữa kỳ/dừng · §14 DMC · §15 tổn hại có mặt và đã điền", _kiem_sap_rct),
