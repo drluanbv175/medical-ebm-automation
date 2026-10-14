@@ -150,7 +150,7 @@ def test_run_pubmed_searches_ghi_chien_luoc_tung_nhanh(monkeypatch):
                "observational": "b", "recent_5yr": "b AND 2021:2026[dp]"}
     kq = G0A.run_pubmed_searches(queries, max_per_query=7)
     pv = kq["provenance"]
-    assert set(pv) == {"sr_ma", "rct", "guideline", "observational", "recent_5yr"}
+    assert set(pv) == {"sr_ma", "rct", "guideline", "observational", "recent_5yr", "khong_loc"}
     o = pv["observational"]
     assert o["bo_loc"] == G0A.PM_OBSERVATIONAL_FILTER and o["tran_so_bai"] == 7
     assert o["chuoi_hieu_luc"] == f"({queries['observational']}) AND {G0A.PM_OBSERVATIONAL_FILTER}"
@@ -159,11 +159,59 @@ def test_run_pubmed_searches_ghi_chien_luoc_tung_nhanh(monkeypatch):
     assert [(v["truy_van"], v["bo_loc"]) for v in pv.values()] == goi, "chuỗi ghi lại phải đúng chuỗi đã gửi"
 
 
+def test_nhanh_khong_loc_chi_ghi_lai_khong_doi_tap_bang_chung(monkeypatch):
+    """14/10/2026 (BD-G0-T2 việc 3): nhánh không lọc thiết kế gửi truy vấn rộng KHÔNG bộ lọc, ghi số hit + PMID bị
+    bộ lọc loại, nhưng KHÔNG gộp vào all_pmids/nhóm bằng chứng (dấu vân tay G0 băm all_pmids)."""
+    goi: list = []
+
+    class _Client:
+        def search(self, q, max_results=0, pubtype_filter=None):
+            goi.append((q, pubtype_filter, max_results))
+            return [_BanGhi(str(20000000 + len(goi)))]
+
+        def count_hits(self, q, pubtype_filter=None):
+            return 99 if pubtype_filter is None else 3
+
+    monkeypatch.setattr(G0A, "PubMedClient", _Client)
+    monkeypatch.setattr(G0A.time, "sleep", lambda s: None)
+    queries = {"base": "b", "broad": "rong", "sr_ma": "b", "rct": "b", "guideline": "b", "observational": "b",
+               "recent_5yr": "b"}
+    kq = G0A.run_pubmed_searches(queries, max_per_query=7)
+    kl = kq["provenance"]["khong_loc"]
+    assert goi[-1] == ("rong", None, 14), "nhánh cuối là truy vấn rộng, không bộ lọc, trần gấp đôi"
+    assert kl["bo_loc"] is None and kl["chi_ghi_lai"] is True and kl["so_hit_that"] == 99
+    pmid_kl = kl["pmid_lay_ve"]
+    assert len(pmid_kl) == 1 and kl["pmid_bo_loc_da_loai"] == pmid_kl
+    assert not set(pmid_kl) & set(kq["all_pmids"]), "nhánh ghi lại KHÔNG được gộp vào tập bằng chứng"
+    assert len(kq["all_pmids"]) == 5 and len(kq["khong_loc"]) == 1
+
+
+def test_nhanh_khong_loc_loi_khong_lam_hong_nhanh_bang_chung(monkeypatch):
+    dem = iter(range(30000000, 30000100))
+
+    class _Client:
+        def search(self, q, max_results=0, pubtype_filter=None):
+            if pubtype_filter is None:
+                raise RuntimeError("mất mạng")
+            return [_BanGhi(str(next(dem)))]
+
+        def count_hits(self, q, pubtype_filter=None):
+            return 1
+
+    monkeypatch.setattr(G0A, "PubMedClient", _Client)
+    monkeypatch.setattr(G0A.time, "sleep", lambda s: None)
+    queries = {"base": "b", "broad": "b", "sr_ma": "b", "rct": "b", "guideline": "b", "observational": "b",
+               "recent_5yr": "b"}
+    kq = G0A.run_pubmed_searches(queries, max_per_query=7)
+    assert "mất mạng" in kq["query_errors"]["khong_loc"] and kq["khong_loc"] == []
+    assert kq["sr_ma"] and kq["rct"], "lỗi nhánh ghi lại không được làm rỗng nhánh bằng chứng"
+
+
 def test_raw_json_co_khoi_search_provenance_o_dong_thi_hanh():
     import ast
     cay = ast.parse((ROOT / "tools" / "run_g0_auto.py").read_text(encoding="utf-8"))
     khoa = {k.value for n in ast.walk(cay) if isinstance(n, ast.Dict) for k in n.keys if isinstance(k, ast.Constant)}
-    assert {"search_provenance", "co_so_du_lieu", "ngay_tra", "truy_van_goc", "nhanh"} <= khoa
+    assert {"search_provenance", "co_so_du_lieu", "ngay_tra", "truy_van_goc", "nhanh", "khong_loc"} <= khoa
 
 
 # ── ① run_pipeline chỉ chấm lại G0 khi chặn vì chờ người ─────────────────────────────────────────────────────────

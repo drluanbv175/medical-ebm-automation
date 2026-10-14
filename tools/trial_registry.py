@@ -40,6 +40,7 @@ Cần bác sĩ kiểm chứng.
 
 from __future__ import annotations
 
+import re
 import sys
 from datetime import datetime
 from pathlib import Path
@@ -58,6 +59,16 @@ CTG_ACTIVE_STATUSES = "RECRUITING,NOT_YET_RECRUITING,ENROLLING_BY_INVITATION"
 # Nhãn dùng CHUNG cho trạng thái "không tra được". Mọi nơi hiển thị đều phải dùng
 # đúng chuỗi này để bác sĩ/Hội đồng nhận ra ngay, và để test hồi quy neo vào được.
 NOT_CHECKED_LABEL = "CHƯA TRA ĐƯỢC"
+
+
+# Thẻ trường PubMed ([Mesh], [tiab], [pt]…). ClinicalTrials.gov trả HTTP 400 với chúng (đo 14/10/2026 với chuỗi
+# PubMed PI chọn cho C1a) ⇒ bước tra đăng ký thành «CHƯA TRA ĐƯỢC» dù mạng tốt. Bỏ thẻ, giữ AND/OR/ngoặc/nháy.
+_THE_TRUONG_PUBMED_RE = re.compile(r"\[[^\]]*\]")
+
+
+def truy_van_ctgov(query: str) -> str:
+    """Chuỗi THẬT SỰ gửi ClinicalTrials.gov: bỏ thẻ trường PubMed, gom khoảng trắng; chuỗi thường giữ nguyên."""
+    return re.sub(r"\s+", " ", _THE_TRUONG_PUBMED_RE.sub(" ", query or "")).strip()
 
 
 def empty_registry(query: str = "", error: str = "chưa tra") -> dict:
@@ -91,7 +102,10 @@ def check_trial_registry(base_query: str, max_results: int = 5) -> dict:
     """
     out = empty_registry(base_query)
     out["checked_at"] = datetime.now().isoformat(timespec="seconds")
-    if not (base_query or "").strip():
+    term = truy_van_ctgov(base_query)
+    if term != (base_query or "").strip():
+        out["query_gui_ctgov"] = term  # truy nguyên PRISMA-S: chuỗi gửi khác chuỗi PubMed
+    if not term:
         out["error"] = "truy vấn rỗng"
         return out
 
@@ -107,7 +121,7 @@ def check_trial_registry(base_query: str, max_results: int = 5) -> dict:
         http = HttpClient()
 
         data = http.get_json(CTG_STUDIES_API, params={
-            "query.term": base_query,
+            "query.term": term,
             "pageSize": max_results,
             "countTotal": "true",
             "format": "json",
@@ -134,7 +148,7 @@ def check_trial_registry(base_query: str, max_results: int = 5) -> dict:
             })
 
         active = http.get_json(CTG_STUDIES_API, params={
-            "query.term": base_query,
+            "query.term": term,
             "pageSize": 1,
             "countTotal": "true",
             "format": "json",
@@ -164,7 +178,7 @@ def check_trial_registry(base_query: str, max_results: int = 5) -> dict:
 
 def registry_search_url(query: str) -> str:
     """Link để bác sĩ/Hội đồng TỰ tra lại đúng truy vấn hệ đã dùng (tái lặp được)."""
-    return f"https://clinicaltrials.gov/search?term={quote_plus(query or '')}"
+    return f"https://clinicaltrials.gov/search?term={quote_plus(truy_van_ctgov(query))}"
 
 
 # ════════════════════════════════════════════════════════════════════════════

@@ -422,6 +422,32 @@ def run_pubmed_searches(queries: dict[str, str], max_per_query: int = 15) -> dic
             results["query_errors"][qtype] = str(e)
         time.sleep(0.4)  # NCBI rate limit
 
+    # 14/10/2026 (hội đồng BD-G0-T2, việc 3): nhánh KHÔNG LỌC THIẾT KẾ — truy vấn rộng không kèm bộ lọc loại xuất bản/
+    # MeSH thiết kế, để PI thấy bộ lọc đã loại những bản ghi nào (đối chiếu recall với bài mốc). Chỉ GHI LẠI số hit + PMID
+    # lấy về; KHÔNG gộp vào all_pmids hay nhóm bằng chứng ⇒ dấu vân tay G0 và phân loại chứng cứ giữ nguyên nghĩa.
+    q_rong = queries.get("broad") or queries.get("base") or ""
+    tran_rong = max_per_query * 2
+    results["khong_loc"] = []
+    results["provenance"]["khong_loc"] = {
+        "nhom_ket_qua": None, "truy_van": q_rong, "bo_loc": None, "chuoi_hieu_luc": f"({q_rong})",
+        "tran_so_bai": tran_rong, "loai_trung_pmid": False, "chi_ghi_lai": True,
+    }
+    try:
+        print(f"  🔍 Tìm khong_loc [{tran_rong} kết quả, KHÔNG lọc thiết kế]: {q_rong[:80]}...")
+        ban_ghi = client.search(q_rong, max_results=tran_rong, pubtype_filter=None)
+        so_hit = client.count_hits(q_rong, pubtype_filter=None)
+        results["khong_loc"] = list(ban_ghi)
+        results["provenance"]["khong_loc"].update(
+            so_hit_that=so_hit, so_bai_lay_ve=len(ban_ghi), pmid_lay_ve=[r.pmid for r in ban_ghi if r.pmid],
+            pmid_bo_loc_da_loai=[r.pmid for r in ban_ghi if r.pmid and r.pmid not in results["all_pmids"]])
+        if not ban_ghi and so_hit is None:
+            results["query_errors"]["khong_loc"] = ("0 bài lấy về VÀ không tra được số hit — nghi lỗi mạng/rate-limit "
+                                                    "hoặc chế độ mock, KHÔNG kết luận là 'không có bài nào'")
+    except Exception as e:  # noqa: BLE001 — nhánh ghi lại, lỗi không được làm hỏng các nhánh bằng chứng
+        print(f"     ⚠ Lỗi truy vấn khong_loc: {e}")
+        results["query_errors"]["khong_loc"] = str(e)
+    time.sleep(0.4)  # NCBI rate limit
+
     results["total"] = total_found
     results["all_pmids"] = list(results["all_pmids"])
     return results
@@ -776,6 +802,16 @@ def generate_a1_artifact(topic: str, study_name: str, queries: dict,
     # bác sĩ KHÔNG nhìn thấy và KHÔNG kiểm chứng được — vi phạm trực tiếp bất
     # biến "mọi đầu ra kèm PMID để bác sĩ kiểm chứng".
     obs_list = _format_article_list(results.get("observational", []))
+    # 14/10/2026 (BD-G0-T2 việc 3): một dòng cho PI biết bộ lọc thiết kế đã loại bao nhiêu bản ghi của truy vấn rộng.
+    _kl = (results.get("provenance") or {}).get("khong_loc") or {}
+    if _kl.get("so_bai_lay_ve") is not None:
+        khong_loc_dong = (f"> 🔎 Nhánh KHÔNG lọc thiết kế (đối chiếu recall): {_kl.get('so_hit_that')} hit; trong "
+                          f"{_kl.get('so_bai_lay_ve')} bản ghi lấy về có {len(_kl.get('pmid_bo_loc_da_loai') or [])} "
+                          "bản ghi các nhánh có bộ lọc ở trên KHÔNG giữ — danh sách ở `G0_pubmed_raw.json` → "
+                          "`khong_loc`; PI rà xem có bài liên quan bị bộ lọc loại không.")
+    else:
+        khong_loc_dong = ("> 🔎 Nhánh KHÔNG lọc thiết kế: chưa có trong lượt tìm này (lượt sinh trước khi có nhánh này "
+                          "hoặc dựng lại A1 không tra lại PubMed).")
     # VÁ 10/10/2026 (hội đồng G0, DG G0-T3/T4): phần ĐỌC BÀI của agent + thiết kế đã ghim + khối việc của PI.
     khoi_tong_hop = GT.khoi_tong_hop(out_dir, study_name, results.get("all_pmids") or [])
     khoi_khoang_trong = GT.khoi_khoang_trong(out_dir, study_name)
@@ -932,6 +968,8 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 
 ### {_section_heading("3.4 Nghiên cứu QUAN SÁT (cohort/bệnh-chứng/cắt ngang — theo bộ lọc PubMed)", gaps.get('n_observational', 0), results.get('observational', []), _real)}
 {obs_list}
+
+{khong_loc_dong}
 > ⚠️ Con số ~{gaps.get('n_observational', 0)} là SỐ HIT của bộ lọc quan sát và CÓ CHỒNG LẤN
 > với RCT/SR (mức chồng lấn tuỳ chủ đề — chưa đo cho truy vấn này). Dùng để biết "lĩnh vực
 > này đã có nền quan sát hay chưa", KHÔNG dùng làm số nghiên cứu quan sát thuần, và CHƯA sàng
@@ -1809,6 +1847,10 @@ def main():
                            "journal": r.journal_or_organization, "url": r.url,
                    "authors": getattr(r, "authors", None)}
                           for r in results.get("observational", [])],
+        # 14/10/2026 (BD-G0-T2 việc 3): nhánh không lọc thiết kế — CHỈ để đối chiếu recall, không phải nhóm bằng chứng.
+        "khong_loc": [{"pmid": r.pmid, "title": r.title, "year": r.publication_date,
+                       "journal": r.journal_or_organization, "url": r.url}
+                      for r in results.get("khong_loc", [])],
         "true_counts": results.get("true_counts", {}),
         # VÁ 09/10/2026 (hội đồng BD-G0-T2): chiến lược tìm tái lập được — CSDL, giao diện, ngày tra, truy vấn gốc,
         # từng nhánh (chuỗi hiệu lực, bộ lọc, trần, số hit thật, PMID lấy về) và lỗi nhánh nếu có.

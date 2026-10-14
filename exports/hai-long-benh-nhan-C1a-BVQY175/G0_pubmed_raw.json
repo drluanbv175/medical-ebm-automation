@@ -1,9 +1,155 @@
 {
-  "sr_ma": [],
-  "rct": [],
+  "sr_ma": [
+    {
+      "pmid": "22336833",
+      "title": "Paying for performance to improve the delivery of health interventions in low- and middle-income countries .",
+      "year": "2012",
+      "journal": "The Cochrane database of systematic reviews",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/22336833/",
+      "authors": "Witter S, Fretheim A, Kessy FL, Lindahl AK"
+    }
+  ],
+  "rct": [
+    {
+      "pmid": "29980547",
+      "title": "Integrating culturally informed approaches into physiotherapy assessment and treatment of chronic pain: a pilot randomised controlled trial.",
+      "year": "2018",
+      "journal": "BMJ open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/29980547/",
+      "authors": "Brady B, Veljanova I, Schabrun S, Chipchase L"
+    }
+  ],
   "guideline": [],
   "recent": [],
   "observational": [
+    {
+      "pmid": "41162961",
+      "title": "Implementation and evaluation of clinical pharmacy services in elderly outpatients with poorly controlled type 2 diabetes: a single-center experience from Vietnam.",
+      "year": "2025",
+      "journal": "BMC health services research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41162961/",
+      "authors": "Dong PTX, Nguyen TT, Duong HTT, Nguyen TTT, Le AV"
+    },
+    {
+      "pmid": "40771771",
+      "title": "Counseling Preferences Among Patients With Type 2 Diabetes: Implications for Personalized Care.",
+      "year": "2025",
+      "journal": "Journal of diabetes research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40771771/",
+      "authors": "Nguyen TNP, Thi CN, Phuong TPT, Ngoc QN, Pham HT"
+    },
+    {
+      "pmid": "40726017",
+      "title": "Temporal Trends in Patient Choice of Outpatient Care Provider Among Vietnam's Insured Rural Residents, 2006-2020.",
+      "year": "2025",
+      "journal": "The International journal of health planning and management",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40726017/",
+      "authors": "Sepehri A, Minh KN, Vu PH, Pham TM"
+    },
+    {
+      "pmid": "36613075",
+      "title": "Positive Impact on Public Perception toward Commune Health Stations (CHSs) in Rural Areas of Tyuen Quang Province, Vietnam, Following the Application of the Development Program for the Capacity-Building of CHSs.",
+      "year": "2022",
+      "journal": "International journal of environmental research and public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36613075/",
+      "authors": "Jeong YJ, Bajgai J, Kim JK, Ahn DW, Kim YJ"
+    },
+    {
+      "pmid": "36439278",
+      "title": "Patient Satisfaction With Healthcare Service Quality and Its Associated Factors at One Polyclinic in Hanoi, Vietnam.",
+      "year": "2022",
+      "journal": "International journal of public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36439278/",
+      "authors": "Duc Thanh N, My Anh BT, Xiem CH, Quynh Anh P, Tien PH"
+    },
+    {
+      "pmid": "34445940",
+      "title": "Improving Hospital's Quality of Service in Vietnam: The Patient Satisfaction Evaluation in Multiple Health Facilities.",
+      "year": "2023",
+      "journal": "Hospital topics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/34445940/",
+      "authors": "Thach Phuong N, Vu Hoang P, Mac Dang T, Nguyen Thi Huyen T, Ngo Thi T"
+    },
+    {
+      "pmid": "33342367",
+      "title": "Methadone maintenance treatment in Ho Chi Minh City, Vietnam: Multidimensional measure of adherence and associated factors.",
+      "year": "2022",
+      "journal": "Global public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/33342367/",
+      "authors": "Le UTN, Tran TT, Le GT, Thai TT"
+    },
+    {
+      "pmid": "32584904",
+      "title": "Measuring satisfaction with health care services for Vietnamese patients with cardiovascular diseases.",
+      "year": "2020",
+      "journal": "PloS one",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/32584904/",
+      "authors": "Hwang J, Vu GT, Tran BX, Nguyen THT, Nguyen BV"
+    },
+    {
+      "pmid": "31703089",
+      "title": "Patient satisfaction with HIV services in Vietnam: Status, service models and association with treatment outcome.",
+      "year": "2019",
+      "journal": "PloS one",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/31703089/",
+      "authors": "Tran BX, Dang AK, Vu GT, Tran TT, Latkin CA"
+    },
+    {
+      "pmid": "29605829",
+      "title": "Home-Based Care and Perceived Quality of Life Among People Living with HIV in Ho Chi Minh City, Viet Nam.",
+      "year": "2018",
+      "journal": "AIDS and behavior",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/29605829/",
+      "authors": "Bui QTT, Brickley DB, Tieu VTT, Hills NK"
+    },
+    {
+      "pmid": "26683779",
+      "title": "Clocks Moving at Different Speeds: Cultural Variation in the Satisfaction With Wait Time for Outpatient Care.",
+      "year": "2016",
+      "journal": "Medical care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/26683779/",
+      "authors": "Chung S, Johns N, Zhao B, Romanelli R, Pu J"
+    },
+    {
+      "pmid": "16307633",
+      "title": "Interpreter services, language concordance, and health care quality. Experiences of Asian Americans with limited English proficiency.",
+      "year": "2005",
+      "journal": "Journal of general internal medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/16307633/",
+      "authors": "Green AR, Ngo-Metzger Q, Legedza AT, Massagli MP, Phillips RS"
+    },
+    {
+      "pmid": "16148334",
+      "title": "Mental health needs of cohabiting partners of Vietnam veterans with combat-related PTSD.",
+      "year": "2005",
+      "journal": "Psychiatric services (Washington, D.C.)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/16148334/",
+      "authors": "Sherman MD, Sautter F, Lyons JA, Manguno-Mire GM, Han X"
+    },
+    {
+      "pmid": "7612579",
+      "title": "The long-term follow-up result of Swenson's operation in the treatment of Hirschsprung's disease in Vietnamese children.",
+      "year": "1995",
+      "journal": "European journal of pediatric surgery : official journal of Austrian Association of Pediatric Surgery ... [et al] = Zeitschrift fur Kinderchirurgie",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/7612579/",
+      "authors": "Liem NT, Hau BD, Thu NX"
+    }
+  ],
+  "khong_loc": [
+    {
+      "pmid": "42625778",
+      "title": "Outpatient satisfaction assessed using a nationally standardized questionnaire: a survey of five health care facilities in Vietnam.",
+      "year": "2026",
+      "journal": "Frontiers in health services",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42625778/"
+    },
+    {
+      "pmid": "42582692",
+      "title": "Perceived Healthcare Service Quality of Patients in the Post COVID-19 Pandemic: A Cross-Sectional Study at a Public District Hospital in Vietnam.",
+      "year": "2026",
+      "journal": "Health science reports",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42582692/"
+    },
     {
       "pmid": "41162961",
       "title": "Implementation and evaluation of clinical pharmacy services in elderly outpatients with poorly controlled type 2 diabetes: a single-center experience from Vietnam.",
@@ -26,25 +172,25 @@
       "url": "https://pubmed.ncbi.nlm.nih.gov/40726017/"
     },
     {
-      "pmid": "40623792",
-      "title": "Patient experience with cancer care in low- and middle-income Asian countries: a cross-sectional study of patients with advanced cancer.",
+      "pmid": "40453044",
+      "title": "The use of MAST in telepharmacy assessment: First report in Vietnam.",
       "year": "2025",
-      "journal": "BMJ global health",
-      "url": "https://pubmed.ncbi.nlm.nih.gov/40623792/"
+      "journal": "Digital health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40453044/"
     },
     {
-      "pmid": "39132755",
-      "title": "An international observational study assessing conservative management in hemorrhoidal disease: results of CHORALIS (aCute HemORrhoidal disease evALuation International Study).",
+      "pmid": "38903303",
+      "title": "Implementation of Telepharmacy to Provide Medication Consultation Service for Patients: A Case Study From Thu Duc City Hospital, Ho Chi Minh City.",
       "year": "2024",
-      "journal": "Journal of comparative effectiveness research",
-      "url": "https://pubmed.ncbi.nlm.nih.gov/39132755/"
+      "journal": "Cureus",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38903303/"
     },
     {
-      "pmid": "38753416",
-      "title": "Psychometric Assessment of an Item Bank for Adaptive Testing on Patient-Reported Experience of Care Environment for Severe Mental Illness: Validation Study.",
-      "year": "2024",
-      "journal": "JMIR mental health",
-      "url": "https://pubmed.ncbi.nlm.nih.gov/38753416/"
+      "pmid": "36613075",
+      "title": "Positive Impact on Public Perception toward Commune Health Stations (CHSs) in Rural Areas of Tyuen Quang Province, Vietnam, Following the Application of the Development Program for the Capacity-Building of CHSs.",
+      "year": "2022",
+      "journal": "International journal of environmental research and public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36613075/"
     },
     {
       "pmid": "36439278",
@@ -54,11 +200,53 @@
       "url": "https://pubmed.ncbi.nlm.nih.gov/36439278/"
     },
     {
+      "pmid": "36292392",
+      "title": "An Assessment of Outpatient Satisfaction with Hospital Pharmacy Quality and Influential Factors in the Context of the COVID-19 Pandemic.",
+      "year": "2022",
+      "journal": "Healthcare (Basel, Switzerland)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36292392/"
+    },
+    {
+      "pmid": "35880766",
+      "title": "Patient Sense of Belonging in the Veterans Health Administration: A Qualitative Study of Appointment Attendance and Patient Engagement.",
+      "year": "2022",
+      "journal": "Medical care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35880766/"
+    },
+    {
       "pmid": "34445940",
       "title": "Improving Hospital's Quality of Service in Vietnam: The Patient Satisfaction Evaluation in Multiple Health Facilities.",
       "year": "2023",
       "journal": "Hospital topics",
       "url": "https://pubmed.ncbi.nlm.nih.gov/34445940/"
+    },
+    {
+      "pmid": "34163271",
+      "title": "Development and Psychometric Properties of the Health Belief Scales Toward COVID-19 Vaccine in Ho Chi Minh City, Vietnam.",
+      "year": "2021",
+      "journal": "Risk management and healthcare policy",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/34163271/"
+    },
+    {
+      "pmid": "34017606",
+      "title": "Outpatient satisfaction with primary health care services in Vietnam: Multilevel analysis results from The Vietnam Health Facilities Assessment 2015.",
+      "year": "2021",
+      "journal": "Health psychology open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/34017606/"
+    },
+    {
+      "pmid": "33342367",
+      "title": "Methadone maintenance treatment in Ho Chi Minh City, Vietnam: Multidimensional measure of adherence and associated factors.",
+      "year": "2022",
+      "journal": "Global public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/33342367/"
+    },
+    {
+      "pmid": "33116425",
+      "title": "Older Patient Satisfaction with Chronic Pain Management in the National Geriatric Hospital in Vietnam.",
+      "year": "2020",
+      "journal": "Patient preference and adherence",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/33116425/"
     },
     {
       "pmid": "32584904",
@@ -75,25 +263,242 @@
       "url": "https://pubmed.ncbi.nlm.nih.gov/31703089/"
     },
     {
-      "pmid": "29051978",
-      "title": "Symptom prevalence, bother, and treatment satisfaction in men with lower urinary tract symptoms in Southeast Asia: a multinational, cross-sectional survey.",
-      "year": "2018",
-      "journal": "World journal of urology",
-      "url": "https://pubmed.ncbi.nlm.nih.gov/29051978/"
+      "pmid": "31013464",
+      "title": "Patient-Reported Experiences in Discussing Prescribed Medications with a Health Care Provider: Evidence for Racial/Ethnic Disparities in a Large Health Care Delivery System.",
+      "year": "2020",
+      "journal": "Population health management",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/31013464/"
     },
     {
-      "pmid": "16148334",
-      "title": "Mental health needs of cohabiting partners of Vietnam veterans with combat-related PTSD.",
-      "year": "2005",
-      "journal": "Psychiatric services (Washington, D.C.)",
-      "url": "https://pubmed.ncbi.nlm.nih.gov/16148334/"
+      "pmid": "30881090",
+      "title": "Pain incidence, assessment, and management in Vietnam: a cross-sectional study of 12,136 respondents.",
+      "year": "2019",
+      "journal": "Journal of pain research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/30881090/"
+    },
+    {
+      "pmid": "29980547",
+      "title": "Integrating culturally informed approaches into physiotherapy assessment and treatment of chronic pain: a pilot randomised controlled trial.",
+      "year": "2018",
+      "journal": "BMJ open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/29980547/"
+    },
+    {
+      "pmid": "29605829",
+      "title": "Home-Based Care and Perceived Quality of Life Among People Living with HIV in Ho Chi Minh City, Viet Nam.",
+      "year": "2018",
+      "journal": "AIDS and behavior",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/29605829/"
+    },
+    {
+      "pmid": "28690831",
+      "title": "Patient waiting time in the outpatient clinic at a central surgical hospital of Vietnam: Implications for resource allocation.",
+      "year": "2017",
+      "journal": "F1000Research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/28690831/"
+    },
+    {
+      "pmid": "28558740",
+      "title": "Experiences with VHA care: a qualitative study of U.S. women veterans with self-reported trauma histories.",
+      "year": "2017",
+      "journal": "BMC women's health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/28558740/"
+    },
+    {
+      "pmid": "26683779",
+      "title": "Clocks Moving at Different Speeds: Cultural Variation in the Satisfaction With Wait Time for Outpatient Care.",
+      "year": "2016",
+      "journal": "Medical care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/26683779/"
+    },
+    {
+      "pmid": "24926310",
+      "title": "Dialysis and quality of dialysate in southeast asian developing countries.",
+      "year": "2014",
+      "journal": "Nephron extra",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/24926310/"
+    },
+    {
+      "pmid": "22548036",
+      "title": "Potential collaboration with the private sector for the provision of ambulatory care in the Mekong region, Vietnam.",
+      "year": "2012",
+      "journal": "Global health action",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/22548036/"
+    },
+    {
+      "pmid": "22336833",
+      "title": "Paying for performance to improve the delivery of health interventions in low- and middle-income countries .",
+      "year": "2012",
+      "journal": "The Cochrane database of systematic reviews",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/22336833/"
+    },
+    {
+      "pmid": "20619211",
+      "title": "Integrating palliative care into HIV outpatient clinical settings: preliminary findings from an intervention study in Vietnam.",
+      "year": "2010",
+      "journal": "Journal of pain and symptom management",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/20619211/"
+    },
+    {
+      "pmid": "17932796",
+      "title": "Creation of postgraduate training programs for family medicine in Vietnam.",
+      "year": "2007",
+      "journal": "Family medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/17932796/"
     }
   ],
   "true_counts": {
-    "sr_ma": 0,
-    "rct": 0,
+    "sr_ma": 1,
+    "rct": 1,
     "guideline": 0,
-    "observational": 12,
+    "observational": 15,
     "recent": 0
+  },
+  "search_provenance": {
+    "co_so_du_lieu": "PubMed (MEDLINE và phần còn lại của PubMed)",
+    "giao_dien": "NCBI E-utilities (esearch/efetch) qua app.sources.pubmed.PubMedClient",
+    "ngay_tra": "2026-10-14T18:22:29",
+    "truy_van_goc": "(\"Patient Satisfaction\"[Mesh] OR satisf*[tiab] OR \"patient experience\"[tiab]) AND (\"Outpatients\"[Mesh] OR \"Ambulatory Care\"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND (\"Vietnam\"[Mesh] OR vietnam*[tiab] OR \"viet nam\"[tiab])",
+    "query_en_do_nguoi_cung_cap": true,
+    "nhanh": {
+      "sr_ma": {
+        "nhom_ket_qua": "sr_ma",
+        "truy_van": "(\"Patient Satisfaction\"[Mesh] OR satisf*[tiab] OR \"patient experience\"[tiab]) AND (\"Outpatients\"[Mesh] OR \"Ambulatory Care\"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND (\"Vietnam\"[Mesh] OR vietnam*[tiab] OR \"viet nam\"[tiab]) AND (systematic review[pt] OR meta-analysis[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Patient Satisfaction\"[Mesh] OR satisf*[tiab] OR \"patient experience\"[tiab]) AND (\"Outpatients\"[Mesh] OR \"Ambulatory Care\"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND (\"Vietnam\"[Mesh] OR vietnam*[tiab] OR \"viet nam\"[tiab]) AND (systematic review[pt] OR meta-analysis[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 1,
+        "so_bai_lay_ve": 1,
+        "pmid_lay_ve": [
+          "22336833"
+        ]
+      },
+      "rct": {
+        "nhom_ket_qua": "rct",
+        "truy_van": "(\"Patient Satisfaction\"[Mesh] OR satisf*[tiab] OR \"patient experience\"[tiab]) AND (\"Outpatients\"[Mesh] OR \"Ambulatory Care\"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND (\"Vietnam\"[Mesh] OR vietnam*[tiab] OR \"viet nam\"[tiab]) AND randomized controlled trial[pt]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Patient Satisfaction\"[Mesh] OR satisf*[tiab] OR \"patient experience\"[tiab]) AND (\"Outpatients\"[Mesh] OR \"Ambulatory Care\"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND (\"Vietnam\"[Mesh] OR vietnam*[tiab] OR \"viet nam\"[tiab]) AND randomized controlled trial[pt]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 1,
+        "so_bai_lay_ve": 1,
+        "pmid_lay_ve": [
+          "29980547"
+        ]
+      },
+      "guideline": {
+        "nhom_ket_qua": "guideline",
+        "truy_van": "(\"Patient Satisfaction\"[Mesh] OR satisf*[tiab] OR \"patient experience\"[tiab]) AND (\"Outpatients\"[Mesh] OR \"Ambulatory Care\"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND (\"Vietnam\"[Mesh] OR vietnam*[tiab] OR \"viet nam\"[tiab]) AND (guideline[pt] OR practice guideline[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Patient Satisfaction\"[Mesh] OR satisf*[tiab] OR \"patient experience\"[tiab]) AND (\"Outpatients\"[Mesh] OR \"Ambulatory Care\"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND (\"Vietnam\"[Mesh] OR vietnam*[tiab] OR \"viet nam\"[tiab]) AND (guideline[pt] OR practice guideline[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 5,
+        "loai_trung_pmid": true,
+        "so_hit_that": 0,
+        "so_bai_lay_ve": 0,
+        "pmid_lay_ve": []
+      },
+      "observational": {
+        "nhom_ket_qua": "observational",
+        "truy_van": "(\"Patient Satisfaction\"[Mesh] OR satisf*[tiab] OR \"patient experience\"[tiab]) AND (\"Outpatients\"[Mesh] OR \"Ambulatory Care\"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND (\"Vietnam\"[Mesh] OR vietnam*[tiab] OR \"viet nam\"[tiab])",
+        "bo_loc": "(\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "chuoi_hieu_luc": "((\"Patient Satisfaction\"[Mesh] OR satisf*[tiab] OR \"patient experience\"[tiab]) AND (\"Outpatients\"[Mesh] OR \"Ambulatory Care\"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND (\"Vietnam\"[Mesh] OR vietnam*[tiab] OR \"viet nam\"[tiab])) AND (\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 15,
+        "so_bai_lay_ve": 15,
+        "pmid_lay_ve": [
+          "41162961",
+          "40771771",
+          "40726017",
+          "36613075",
+          "36439278",
+          "34445940",
+          "33342367",
+          "32584904",
+          "31703089",
+          "29980547",
+          "29605829",
+          "26683779",
+          "16307633",
+          "16148334",
+          "7612579"
+        ]
+      },
+      "recent_5yr": {
+        "nhom_ket_qua": "recent",
+        "truy_van": "(\"Patient Satisfaction\"[Mesh] OR satisf*[tiab] OR \"patient experience\"[tiab]) AND (\"Outpatients\"[Mesh] OR \"Ambulatory Care\"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND (\"Vietnam\"[Mesh] OR vietnam*[tiab] OR \"viet nam\"[tiab]) AND 2021:2026[dp]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Patient Satisfaction\"[Mesh] OR satisf*[tiab] OR \"patient experience\"[tiab]) AND (\"Outpatients\"[Mesh] OR \"Ambulatory Care\"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND (\"Vietnam\"[Mesh] OR vietnam*[tiab] OR \"viet nam\"[tiab]) AND 2021:2026[dp]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 10,
+        "loai_trung_pmid": false,
+        "so_hit_that": 0,
+        "so_bai_lay_ve": 0,
+        "pmid_lay_ve": []
+      },
+      "khong_loc": {
+        "nhom_ket_qua": null,
+        "truy_van": "(\"Patient Satisfaction\"[Mesh] OR satisf*[tiab] OR \"patient experience\"[tiab]) AND (\"Outpatients\"[Mesh] OR \"Ambulatory Care\"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND (\"Vietnam\"[Mesh] OR vietnam*[tiab] OR \"viet nam\"[tiab])",
+        "bo_loc": null,
+        "chuoi_hieu_luc": "((\"Patient Satisfaction\"[Mesh] OR satisf*[tiab] OR \"patient experience\"[tiab]) AND (\"Outpatients\"[Mesh] OR \"Ambulatory Care\"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND (\"Vietnam\"[Mesh] OR vietnam*[tiab] OR \"viet nam\"[tiab]))",
+        "tran_so_bai": 30,
+        "loai_trung_pmid": false,
+        "chi_ghi_lai": true,
+        "so_hit_that": 35,
+        "so_bai_lay_ve": 30,
+        "pmid_lay_ve": [
+          "42625778",
+          "42582692",
+          "41162961",
+          "40771771",
+          "40726017",
+          "40453044",
+          "38903303",
+          "36613075",
+          "36439278",
+          "36292392",
+          "35880766",
+          "34445940",
+          "34163271",
+          "34017606",
+          "33342367",
+          "33116425",
+          "32584904",
+          "31703089",
+          "31013464",
+          "30881090",
+          "29980547",
+          "29605829",
+          "28690831",
+          "28558740",
+          "26683779",
+          "24926310",
+          "22548036",
+          "22336833",
+          "20619211",
+          "17932796"
+        ],
+        "pmid_bo_loc_da_loai": [
+          "42625778",
+          "42582692",
+          "40453044",
+          "38903303",
+          "36292392",
+          "35880766",
+          "34163271",
+          "34017606",
+          "33116425",
+          "31013464",
+          "30881090",
+          "28690831",
+          "28558740",
+          "24926310",
+          "22548036",
+          "20619211",
+          "17932796"
+        ]
+      }
+    },
+    "loi_nhanh": {}
   }
 }
