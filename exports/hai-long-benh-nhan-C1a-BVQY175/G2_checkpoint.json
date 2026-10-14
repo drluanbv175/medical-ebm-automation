@@ -2,7 +2,7 @@
   "study": "hai-long-benh-nhan-C1a-BVQY175",
   "gate": "G2",
   "gate_status": "READY_FOR_IRB_SUBMISSION — G2 CHƯA ĐƯỢC KHÓA",
-  "generated_at": "2026-10-14T19:39:52.962607",
+  "generated_at": "2026-10-14T20:27:45.529384",
   "quality_contract_version": "G2-2026.1",
   "g2_status": "PENDING",
   "design_ambiguous": false,
@@ -19,7 +19,7 @@
     "n_trials": 5,
     "n_active": 3,
     "error": null,
-    "checked_at": "2026-10-14T19:39:52",
+    "checked_at": "2026-10-14T20:27:45",
     "search_url": "https://clinicaltrials.gov/search?term=%28%22Patient+Satisfaction%22+OR+satisf%2A+OR+%22patient+experience%22+%29+AND+%28%22Outpatients%22+OR+%22Ambulatory+Care%22+OR+outpatient%2A+OR+ambulatory+%29+AND+%28%22Vietnam%22+OR+vietnam%2A+OR+%22viet+nam%22+%29",
     "pending_action": null,
     "samples": [

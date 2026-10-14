@@ -179,7 +179,7 @@
       "sd": null,
       "confirmed_n": 1000,
       "prevalence_source": "Quy ước thận trọng p = 0,50 — giá trị làm phương sai p(1-p) lớn nhất nên cho cỡ mẫu lớn nhất; dùng khi chưa có ước lượng tỷ lệ hài lòng tại chính Khoa C1a. Nguồn công thức: Lwanga SK, Lemeshow S. Sample size determination in health studies: a practical manual. WHO, 1991 (mục 4.4.1 đề cương)",
-      "dropout_source": "Dự phòng 15% cho phiếu không trả lời hoặc phiếu lỗi, do nhóm nghiên cứu ấn định theo kinh nghiệm vận hành khảo sát tại phòng khám (mục 4.4.1 đề cương). Con số này sẽ được đối chiếu lại bằng tỷ lệ không trả lời quan sát được ở pilot n≈50-100 trước khi khóa SAP; cờ assumptions_confirmed giữ ở False cho tới khi đối chiếu xong.",
+      "dropout_source": "Dự phòng 15% cho phiếu không trả lời hoặc phiếu lỗi, do nhóm nghiên cứu ấn định theo kinh nghiệm vận hành khảo sát tại phòng khám (mục 4.4.1 đề cương). PI chấp nhận 15% làm giá trị lập kế hoạch (14/10/2026); sẽ đối chiếu lại bằng tỷ lệ không trả lời quan sát ở pilot n≈50–100 trước khi khoá SAP (G4).",
       "powered_for_outcome": "G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep, Phần 3 phiếu)",
       "software": "Python 3.14 (scipy.stats, statsmodels 0.14); đối chiếu chéo bằng nửa rộng KTC 95%",
       "hypothesis_type": "descriptive_precision",
