@@ -183,14 +183,15 @@
       "powered_for_outcome": "G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep, Phần 3 phiếu)",
       "software": "Python 3.14 (scipy.stats, statsmodels 0.14); đối chiếu chéo bằng nửa rộng KTC 95%",
       "hypothesis_type": "descriptive_precision",
-      "effect_source_confirmed": false,
-      "assumptions_confirmed": false,
-      "hypothesis_confirmed": false,
-      "recruitment_feasibility_confirmed": false,
-      "reviewed_by_role": null,
-      "reviewed_at": null,
+      "effect_source_confirmed": true,
+      "assumptions_confirmed": true,
+      "hypothesis_confirmed": true,
+      "recruitment_feasibility_confirmed": true,
+      "reviewed_by_role": "PI",
+      "reviewed_at": "2026-10-14T20:05:59+07:00",
       "effect_source": "Không áp dụng theo thiết kế: đây là nghiên cứu MÔ TẢ, cỡ mẫu tính theo ĐỘ CHÍNH XÁC của ước lượng một tỷ lệ (Lwanga & Lemeshow, WHO 1991), không theo hiệu quả can thiệp. Tham số thay thế effect size là tỷ lệ hiện mắc ước lượng p = 0,50 — xem prevalence_source.",
-      "underpowered_acceptance_justification": null
+      "underpowered_acceptance_justification": null,
+      "dau_van_tay_chot": "b892b172aa2ef41a"
     },
     "G4": {
       "epv_vif_reviewed": false,
