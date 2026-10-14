@@ -1,72 +1,147 @@
 {
   "study": "hai-long-benh-nhan-C1a-BVQY175",
   "gate": "G0",
-  "gate_status": "PASS_G0_CONFIRMED — câu hỏi nghiên cứu đã được bác sĩ chốt",
-  "generated_at": "2026-07-31T20:39:23.828548",
+  "gate_status": "DRAFT — CHỜ BÁC SĨ: G0-HUMAN-07, G0-HUMAN-08",
+  "generated_at": "2026-10-14T18:22:29.911499",
   "topic": "Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối",
-  "base_query": "patient satisfaction outpatient department Vietnam hospital",
+  "base_query": "(\"Patient Satisfaction\"[Mesh] OR satisf*[tiab] OR \"patient experience\"[tiab]) AND (\"Outpatients\"[Mesh] OR \"Ambulatory Care\"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND (\"Vietnam\"[Mesh] OR vietnam*[tiab] OR \"viet nam\"[tiab])",
   "pubmed_results": {
-    "total_found": 12,
-    "n_pmids": 12,
+    "total_found": 16,
+    "n_pmids": 16,
     "all_pmids": [
+      "26683779",
+      "7612579",
+      "40726017",
       "34445940",
+      "16307633",
       "32584904",
+      "29605829",
       "40771771",
       "16148334",
-      "40726017",
       "31703089",
       "41162961",
-      "40623792",
-      "29051978",
-      "38753416",
-      "39132755",
-      "36439278"
+      "36613075",
+      "36439278",
+      "33342367",
+      "22336833",
+      "29980547"
     ],
-    "n_sr": 0,
-    "n_rct": 0,
+    "n_sr": 1,
+    "n_rct": 1,
     "n_guideline": 0,
-    "n_observational": 12,
+    "n_observational": 15,
     "n_recent": 0,
     "most_recent_year": 2025,
     "counts_are_real": true,
     "counts_unavailable": [],
     "query_errors": {}
   },
-  "n_sr": 0,
-  "n_rct": 0,
-  "n_pmids": 12,
+  "n_sr": 1,
+  "n_rct": 1,
+  "n_pmids": 16,
   "pmids_verified": [
+    "26683779",
+    "7612579",
+    "40726017",
     "34445940",
+    "16307633",
     "32584904",
+    "29605829",
     "40771771",
     "16148334",
-    "40726017",
     "31703089",
     "41162961",
-    "40623792",
-    "29051978",
-    "38753416",
-    "39132755",
-    "36439278"
+    "36613075",
+    "36439278",
+    "33342367",
+    "22336833",
+    "29980547"
   ],
-  "evidence_note": "CÓ NỀN QUAN SÁT — ~12 hit của bộ lọc quan sát (CHƯA sàng lọc mức liên quan), không thấy RCT/SR trong PubMed, truy vấn G0 «patient satisfaction outpatient department Vietnam hospital»",
-  "evidence_level": "CÓ NỀN QUAN SÁT — ~12 hit của bộ lọc quan sát (CHƯA sàng lọc mức liên quan), không thấy RCT/SR trong PubMed, truy vấn G0 «patient satisfaction outpatient department Vietnam hospital»",
+  "evidence_note": "TRUNG BÌNH — có 1 SR/MA",
+  "evidence_level": "TRUNG BÌNH — có 1 SR/MA",
   "research_gaps": [
-    "Không thấy SR/MA trong PubMed, truy vấn G0 «patient satisfaction outpatient department Vietnam hospital» — chỉ trong phạm vi một truy vấn, KHÔNG phải kết luận «chưa có tổng quan»",
-    "Không thấy guideline được PubMed đánh chỉ mục (PubMed, truy vấn G0 «patient satisfaction outpatient department Vietnam hospital») — văn bản quy phạm trong nước (Bộ Y tế…) và trang hiệp hội KHÔNG nằm trên PubMed: phải rà trước khi kết luận «chưa có»",
-    "Không có SR/MA, RCT hay guideline mới trong 5 năm gần đây (2021-2026) — nhánh này KHÔNG soi nghiên cứu quan sát"
+    "Không thấy guideline được PubMed đánh chỉ mục (PubMed, truy vấn G0 «(\"Patient Satisfaction\"[Mesh] OR satisf*[tiab] OR \"patient experience\"[tiab]) AND (\"Outpatients\"[Mesh] OR \"Ambulatory Care\"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND (\"Vietnam\"[Mesh] OR vietnam*[tiab] OR \"viet nam\"[tiab])») — văn bản quy phạm trong nước (Bộ Y tế…) và trang hiệp hội KHÔNG nằm trên PubMed: phải rà trước khi kết luận «chưa có»",
+    "Không có SR/MA, RCT hay guideline mới trong 5 năm gần đây (2021-2026) — nhánh này KHÔNG soi nghiên cứu quan sát",
+    "Có 3 nghiên cứu đang/sắp tuyển trên ClinicalTrials.gov — cần đối chiếu để tránh trùng lặp (xem §3.6)"
   ],
   "design_suggestion": "Thiết kế `cross_sectional` theo thiết kế đã ghim ở G1 — gợi ý máy theo số hit KHÔNG áp dụng (G1 quyết định chi tiết)",
-  "novelty_concern": "Đã có nhiều nghiên cứu quan sát: KHÔNG phải khoảng trống. Cần đọc kỹ nhóm này trước khi biện minh tính mới; hướng khả dĩ là SR/MA tổng hợp chúng, hoặc nghiên cứu ở quần thể/bối cảnh chưa được phủ.",
+  "novelty_concern": "Có thể cập nhật SR/MA hiện có hoặc nghiên cứu quần thể cụ thể | ⚠ ClinicalTrials.gov: 3 nghiên cứu ĐANG/SẮP TUYỂN cho truy vấn này (tổng 5 hồ sơ đăng ký). 'Chưa công bố' KHÔNG có nghĩa 'chưa ai làm' — đọc các hồ sơ ở §3.6 trước khi biện minh tính mới; nguy cơ trùng đề tài thật.",
   "registry_check": {
     "registry": "ClinicalTrials.gov",
-    "query": "patient satisfaction outpatient department Vietnam hospital",
+    "query": "(\"Patient Satisfaction\"[Mesh] OR satisf*[tiab] OR \"patient experience\"[tiab]) AND (\"Outpatients\"[Mesh] OR \"Ambulatory Care\"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND (\"Vietnam\"[Mesh] OR vietnam*[tiab] OR \"viet nam\"[tiab])",
     "checked": true,
-    "n_trials": 0,
-    "n_active": 0,
-    "trials": [],
+    "n_trials": 5,
+    "n_active": 3,
+    "trials": [
+      {
+        "nct_id": "NCT02069301",
+        "title": "Evaluation of an Integrated Microfinance and Depression Care Program for Women",
+        "status": "COMPLETED",
+        "start_date": "2014-02",
+        "phases": [
+          "NA"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Depression",
+        "enrollment": 166,
+        "url": "https://clinicaltrials.gov/study/NCT02069301"
+      },
+      {
+        "nct_id": "NCT01102764",
+        "title": "Prolonged Exposure (PE) for Post Traumatic Stress Disorder (PTSD): Telemedicine Versus In Person",
+        "status": "COMPLETED",
+        "start_date": "2010-10",
+        "phases": [
+          "NA"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "PTSD",
+        "enrollment": 150,
+        "url": "https://clinicaltrials.gov/study/NCT01102764"
+      },
+      {
+        "nct_id": "NCT07602231",
+        "title": "Effectiveness of Enhanced Recovery After Surgery (ERAS) Protocols for Arthroscopic Anterior Cruciate Ligament Reconstruction in an Ambulatory Surgery Setting",
+        "status": "NOT_YET_RECRUITING",
+        "start_date": "2026-05-18",
+        "phases": [
+          "NA"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Anterior Cruciate Ligament Rupture, Enhanced Recovery After Surgery (ERAS) Protocol, Ambulatory Surgery",
+        "enrollment": 115,
+        "url": "https://clinicaltrials.gov/study/NCT07602231"
+      },
+      {
+        "nct_id": "NCT07555704",
+        "title": "Remote App-based Rehabilitation After Rotator Cuff Repair",
+        "status": "NOT_YET_RECRUITING",
+        "start_date": "2026-10-01",
+        "phases": [
+          "NA"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Rotator Cuff Tear, Telemedecine, Rotator Cuff Injuries",
+        "enrollment": 102,
+        "url": "https://clinicaltrials.gov/study/NCT07555704"
+      },
+      {
+        "nct_id": "NCT07540637",
+        "title": "Assessment of Treatment Adherence and Associated Factors in Chronic HepB Patients Supported by HBVCare",
+        "status": "RECRUITING",
+        "start_date": "2026-04-15",
+        "phases": [
+          "NA"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Chronic Hepatitis B",
+        "enrollment": 70,
+        "url": "https://clinicaltrials.gov/study/NCT07540637"
+      }
+    ],
     "error": null,
-    "checked_at": "2026-07-31T20:39:22"
+    "checked_at": "2026-10-14T18:22:26",
+    "query_gui_ctgov": "(\"Patient Satisfaction\" OR satisf* OR \"patient experience\" ) AND (\"Outpatients\" OR \"Ambulatory Care\" OR outpatient* OR ambulatory ) AND (\"Vietnam\" OR vietnam* OR \"viet nam\" )"
   },
   "guardrail": {
     "passed": true,
@@ -77,21 +152,51 @@
     "A1_markdown": "exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.md",
     "A1_docx": "exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.docx"
   },
-  "pending_doctor_actions": [],
+  "pending_doctor_actions": [
+    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"23b65e7241e50d11\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+    "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn).",
+    "Chạy: python tools/g0_quality_gate.py --study hai-long-benh-nhan-C1a-BVQY175"
+  ],
   "next_gate": "G1 — Thiết kế nghiên cứu (CHỈ sau khi G0 đạt PASS_G0_CONFIRMED)",
   "disclaimer": "Cần bác sĩ kiểm chứng.",
+  "danh_muc_doc_bo_sung": [
+    "doi:10.38148/jhds.0706skpt23-064",
+    "doi:10.51298/vmj.v540i1.10302",
+    "doi:10.51298/vmj.v549i2.13771",
+    "doi:10.51403/0868-2836/2021/78",
+    "doi:10.52163/yhc.v64i1.573",
+    "doi:10.52163/yhc.v64i6.841",
+    "doi:10.52163/yhc.v66i1.1940",
+    "doi:10.52163/yhc.v67i7.5934",
+    "doi:10.52163/yhc.v67icd5.5018",
+    "pmid:28690831",
+    "pmid:32946537",
+    "pmid:32992600",
+    "pmid:34017606",
+    "pmid:36292392",
+    "pmid:39944421",
+    "pmid:40295132",
+    "pmid:40432693",
+    "pmid:40623792",
+    "pmid:40995744",
+    "pmid:42625778"
+  ],
+  "quality_contract_version": "G0-2026.1",
   "quality_gate": {
-    "status": "PASS_G0_CONFIRMED",
+    "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
     "contract_version": "G0-2026.1",
     "automated_checks_passed": true,
-    "human_confirmation_complete": true,
-    "pending_actions": [],
-    "dau_van_tay_luc_cham": "fb4e9befef14a3c6"
+    "human_confirmation_complete": false,
+    "pending_actions": [
+      "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"23b65e7241e50d11\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+      "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn)."
+    ],
+    "dau_van_tay_luc_cham": "23b65e7241e50d11"
   },
   "needs_input": {
-    "blocked": false,
+    "blocked": true,
     "reason_code": "MISSING_PICO",
-    "human_message": "G0 đã dựng xong NỀN BẰNG CHỨNG; câu hỏi nghiên cứu (PICO, kết cục chính, giả thuyết, loại câu hỏi) ĐÃ đạt — còn chờ bác sĩ/PI: G0-HUMAN-07. Không cần tra lại PubMed; điền xong thì chấm lại.",
+    "human_message": "G0 đã dựng xong NỀN BẰNG CHỨNG; câu hỏi nghiên cứu (PICO, kết cục chính, giả thuyết, loại câu hỏi) ĐÃ đạt — còn chờ bác sĩ/PI: G0-HUMAN-07, G0-HUMAN-08. Không cần tra lại PubMed; điền xong thì chấm lại.",
     "remediation": {
       "action": "rerun_with_real_input",
       "command": "sửa exports/<study>/study_meta.json → gate_params.G0 rồi chạy: python tools/g0_quality_gate.py --study <study>",
@@ -109,29 +214,7 @@
         "hypothesis"
       ]
     },
-    "supplied_by": "doctor",
-    "resolved_by": "g0_quality_gate.refresh_checkpoint",
-    "resolved_at": "2026-10-11T13:18:33"
+    "supplied_by": "doctor"
   },
-  "a1_dung_lai_luc": "2026-10-11T10:23:52",
-  "quality_contract_version": "G0-2026.1",
-  "danh_muc_doc_bo_sung": [
-    "doi:10.38148/jhds.0706skpt23-064",
-    "doi:10.51298/vmj.v540i1.10302",
-    "doi:10.51298/vmj.v549i2.13771",
-    "doi:10.51403/0868-2836/2021/78",
-    "doi:10.52163/yhc.v64i1.573",
-    "doi:10.52163/yhc.v64i6.841",
-    "doi:10.52163/yhc.v66i1.1940",
-    "doi:10.52163/yhc.v67i7.5934",
-    "doi:10.52163/yhc.v67icd5.5018",
-    "pmid:28690831",
-    "pmid:32992600",
-    "pmid:34017606",
-    "pmid:36292392",
-    "pmid:39944421",
-    "pmid:40295132",
-    "pmid:40995744",
-    "pmid:42625778"
-  ]
+  "a1_dung_lai_luc": "2026-10-14T18:29:15"
 }

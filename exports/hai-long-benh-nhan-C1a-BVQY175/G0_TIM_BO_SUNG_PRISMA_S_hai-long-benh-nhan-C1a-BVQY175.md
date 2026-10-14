@@ -48,4 +48,21 @@ Thư viện luận văn/luận án trong nước, kỷ yếu hội nghị, tạp
 
 Kiểm rút bài: PMID trong bảng 3 chưa kiểm lại hôm nay (NCBI chặn; bản trước đã kiểm khi lập danh mục G0) — sẽ kiểm ở A12.
 
+## 6. Kết quả chạy lại G0 (2026-10-14, việc 4)
+
+NCBI gỡ chặn chiều 14/10. Theo lệnh bác sĩ («giải quyết 4 việc trên»), G0 được chạy lại MỘT lần với chuỗi ở §5.2 (`run_g0_auto.py --query-en`; lượt thứ hai cùng ngày, cùng chuỗi chỉ để tra lại ClinicalTrials.gov sau khi vá lỗi HTTP 400 do thẻ trường PubMed — tập PMID không đổi). PI xác nhận việc chọn chuỗi khi chốt lại G0.
+
+| Nhánh PubMed (E-utilities, 2026-10-14) | Số hit thật | Lấy về |
+|---|---|---|
+| Tổng quan/gộp · RCT · guideline · 5 năm gần (bộ lọc thiết kế) | 1 · 1 · 0 · 0 | 1 · 1 · 0 · 0 |
+| Quan sát (bộ lọc thiết kế quan sát) | 15 | 15 |
+| KHÔNG lọc thiết kế (chỉ ghi lại, PR #128) | 35 | 30 (trần 30) |
+
+- Nền G0 mới: **16 PMID** (giữ 8 của lượt 2026-07-31, thêm 8, rời 4). Kiểm rút bài R1C: 16/16 không phát hiện rút.
+- Sàng lọc (tiêu đề + tóm tắt): **8/16 lạc đề** (khớp chữ, khác chủ đề) — chuỗi §5.2 bắt rộng hơn nhưng độ chính xác thấp.
+- Recall bài mốc: nhánh có bộ lọc thiết kế **0/5**; nhánh KHÔNG lọc **3/5** (36292392 · 28690831 · 34017606 — bộ lọc thiết kế loại cả ba); 32946537 và 40432693 không khớp chuỗi PubMed (đo `AND <pmid>[pmid]` = 0) — chỉ Europe PMC bắt được. Cả 5 nằm trong danh mục đọc (bảng nguồn bổ sung của `G0_TONG_HOP_BANG_CHUNG`), 2 bài sau mang nhãn **gián tiếp** (§5.1).
+- PMID 40623792 (gián tiếp) rời nền ⇒ chuyển sang nguồn bổ sung, ghi cách tìm cũ; 3 bài lạc đề rời nền không giữ.
+- ClinicalTrials.gov (chuỗi §5.2 đã bỏ thẻ trường): 5 hồ sơ khớp chữ, 3 đang/sắp tuyển (NCT07602231, NCT07555704, NCT07540637) — theo tiêu đề đều khác chủ đề; PI viết đánh giá chồng lấn khi chốt (G0-HUMAN-08).
+- Dấu vân tay G0 đổi ⇒ G0 và G1 chờ PI chốt lại G0 (diễn tập trên worktree: chốt lại xong thì G0 + G1 tự về PASS, G2–G10 không đổi).
+
 Cần bác sĩ kiểm chứng.

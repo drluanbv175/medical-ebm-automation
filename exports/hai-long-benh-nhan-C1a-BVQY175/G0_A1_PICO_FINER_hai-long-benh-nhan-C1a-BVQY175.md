@@ -1,5 +1,5 @@
 # A1 — CÂU HỎI NGHIÊN CỨU & PICO | hai-long-benh-nhan-C1a-BVQY175
-> Tạo tự động: 2026-10-11 10:23 | Truy vấn PubMed thật
+> Tạo tự động: 2026-10-14 18:29 | Truy vấn PubMed thật
 > **Hệ KHÔNG suy ra PICO.** Mọi ô P/I/C/O bên dưới là chỗ TRỐNG — bác sĩ phải tự viết.
 > Thứ G0 làm được là dựng NỀN BẰNG CHỨNG (PHẦN 3) và chỉ ra khoảng trống (PHẦN 4) để bác sĩ
 > viết PICO có căn cứ. (Câu cũ ở dòng này ghi "xác nhận hoặc chỉnh PICO, không điền
@@ -15,7 +15,7 @@
 ## PHẦN 1 — PICO / PECO (khung trống — bác sĩ tự viết)
 
 **Topic đề tài:** Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
-**Truy vấn PubMed:** `patient satisfaction outpatient department Vietnam hospital`
+**Truy vấn PubMed:** `("Patient Satisfaction"[Mesh] OR satisf*[tiab] OR "patient experience"[tiab]) AND ("Outpatients"[Mesh] OR "Ambulatory Care"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND ("Vietnam"[Mesh] OR vietnam*[tiab] OR "viet nam"[tiab])`
 
 ```
 ═══════════════════════════════════════════════════════
@@ -89,17 +89,17 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 │   Chuyên môn nhóm NC phù hợp? [CẦN XÁC NHẬN]            │
 ├─────────────────────────────────────────────────────────────┤
 │ I — INTERESTING (Có giá trị khoa học)                      │
-│   Evidence level hiện có: CÓ NỀN QUAN SÁT — ~12 hit của bộ lọc quan sát (CHƯA sàng lọc mức liên quan), không thấy RCT/SR trong PubMed, truy vấn G0 «patient satisfaction outpatient department Vietnam hospital»
-│   → Đã có nhiều nghiên cứu quan sát: KHÔNG phải khoảng trống. Cần đọc kỹ nhóm này trước khi biện minh tính mới; hướng khả dĩ là SR/MA tổng hợp chúng, hoặc nghiên cứu ở quần thể/bối cảnh chưa được phủ.
+│   Evidence level hiện có: TRUNG BÌNH — có 1 SR/MA
+│   → Có thể cập nhật SR/MA hiện có hoặc nghiên cứu quần thể cụ thể | ⚠ ClinicalTrials.gov: 3 nghiên cứu ĐANG/SẮP TUYỂN cho truy vấn này (tổng 5 hồ sơ đăng ký). 'Chưa công bố' KHÔNG có nghĩa 'chưa ai làm' — đọc các hồ sơ ở §3.6 trước khi biện minh tính mới; nguy cơ trùng đề tài thật.
 ├─────────────────────────────────────────────────────────────┤
 │ N — NOVEL (Tính mới) — DỰA TRÊN PUBMED THẬT              │
-│   SR/MA: 0 | RCT: 0 | Guideline: 0 | Quan sát: 12
+│   SR/MA: 1 | RCT: 1 | Guideline: 0 | Quan sát: 15
 │   (số hit THẬT từ PubMed)
 │   Năm công bố mới nhất trong các bài đã tải (mọi nhánh): 2025
 │   Khoảng trống:
-│     • Không thấy SR/MA trong PubMed, truy vấn G0 «patient satisfaction outpatient department Vietnam hospital» — chỉ trong phạm vi một truy vấn, KHÔNG phải kết luận «chưa có tổng quan»
-│     • Không thấy guideline được PubMed đánh chỉ mục (PubMed, truy vấn G0 «patient satisfaction outpatient department Vietnam hospital») — văn bản quy phạm trong nước (Bộ Y tế…) và trang hiệp hội KHÔNG nằm trên PubMed: phải rà trước khi kết luận «chưa có»
+│     • Không thấy guideline được PubMed đánh chỉ mục (PubMed, truy vấn G0 «("Patient Satisfaction"[Mesh] OR satisf*[tiab] OR "patient experience"[tiab]) AND ("Outpatients"[Mesh] OR "Ambulatory Care"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND ("Vietnam"[Mesh] OR vietnam*[tiab] OR "viet nam"[tiab])») — văn bản quy phạm trong nước (Bộ Y tế…) và trang hiệp hội KHÔNG nằm trên PubMed: phải rà trước khi kết luận «chưa có»
 │     • Không có SR/MA, RCT hay guideline mới trong 5 năm gần đây (2021-2026) — nhánh này KHÔNG soi nghiên cứu quan sát
+│     • Có 3 nghiên cứu đang/sắp tuyển trên ClinicalTrials.gov — cần đối chiếu để tránh trùng lặp (xem §3.6)
 │
 ├─────────────────────────────────────────────────────────────┤
 │ E — ETHICAL (Đạo đức) [CẦN BÁC SĨ XÁC NHẬN]             │
@@ -128,17 +128,17 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 
 ---
 
-## PHẦN 3 — BẰNG CHỨNG HIỆN CÓ (THẬT — từ PubMed — 2026-10-11)
+## PHẦN 3 — BẰNG CHỨNG HIỆN CÓ (THẬT — từ PubMed — 2026-10-14)
 
 > **Lưu ý:** Danh sách dưới đây là kết quả THẬT từ PubMed E-utilities — PMID được xác minh TỒN TẠI trên PubMed. Trạng thái rút bài KHÔNG được khẳng định ở đây: xem §3.0 (nếu agent đã kiểm) và guardrail R1C trong G0_checkpoint.json; không kiểm được là «chưa kiểm», không phải «chưa bị rút».
 > Bác sĩ cần đọc toàn văn để kiểm chứng nội dung.
 > Mỗi tiêu đề mục ghi RỜI hai con số: ~số hit (toàn kho PubMed) và số bài hệ đã tải
 > về (bị chặn bởi `--max-results`) — trước 2026-07-28 hai số này bị trộn làm một.
-> Phạm vi: MỘT truy vấn PubMed `patient satisfaction outpatient department Vietnam hospital`; xếp nhánh theo BỘ LỌC PubMed, không phải đọc bài —
+> Phạm vi: MỘT truy vấn PubMed `("Patient Satisfaction"[Mesh] OR satisf*[tiab] OR "patient experience"[tiab]) AND ("Outpatients"[Mesh] OR "Ambulatory Care"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND ("Vietnam"[Mesh] OR vietnam*[tiab] OR "viet nam"[tiab])`; xếp nhánh theo BỘ LỌC PubMed, không phải đọc bài —
 > mức liên quan và thiết kế thật ở §3.0.
 
 ### 3.0 Sàng lọc mức liên quan và tóm lược (agent `tong-quan-y-van` đọc bài)
-Nguồn: `G0_TONG_HOP_BANG_CHUNG_hai-long-benh-nhan-C1a-BVQY175.json` — soạn bởi `tong-quan-y-van (agent, theo biên bản G0-DG-20261007T182841-0b213597); bổ sung 2026-10-11 theo biên bản BD-G0-T2: 9 DOI trong nước (Crossref)` ngày 2026-10-10 (đọc tiêu đề + tóm tắt PubMed (connector PubMed, 2026-10-10) — chưa đọc toàn văn; 9 DOI trong nước (bổ sung 2026-10-11): đọc tiêu đề + tóm tắt Crossref — chưa đọc toàn văn). **ĐỀ XUẤT — PI duyệt.**
+Nguồn: `G0_TONG_HOP_BANG_CHUNG_hai-long-benh-nhan-C1a-BVQY175.json` — soạn bởi `tong-quan-y-van (agent, theo biên bản G0-DG-20261007T182841-0b213597); bổ sung 2026-10-11 theo biên bản BD-G0-T2: 9 DOI trong nước (Crossref); cập nhật 2026-10-14 sau lượt chạy lại G0 với chuỗi PubMed mới (BD-G0-T2 việc 4): sàng 8 PMID mới của nền, chuyển 40623792 sang nguồn bổ sung, thêm 2 bài mốc gián tiếp — Claude soạn trực tiếp, chưa qua đánh giá chéo` ngày 2026-10-14 (đọc tiêu đề + tóm tắt PubMed (connector PubMed, 2026-10-10) — chưa đọc toàn văn; 9 DOI trong nước (bổ sung 2026-10-11): đọc tiêu đề + tóm tắt Crossref — chưa đọc toàn văn; 8 PMID nền mới (2026-10-14): đọc tiêu đề + tóm tắt Europe PMC — chưa đọc toàn văn). **ĐỀ XUẤT — PI duyệt.**
 
 | PMID | Thiết kế thật | Liên quan | Tóm tắt | Ghi chú |
 |---|---|---|---|---|
@@ -146,14 +146,18 @@ Nguồn: `G0_TONG_HOP_BANG_CHUNG_hai-long-benh-nhan-C1a-BVQY175.json` — soạn
 | 32584904 | Cắt ngang, Bệnh viện Tim Hà Nội (n=600, nội trú + ngoại trú), hồi quy Tobit | trực tiếp | Ở ngoại trú, lĩnh vực «thời gian chờ» có điểm thấp nhất (76,6 ± 8,2); người không có BHYT có điểm hài lòng cao hơn người có BHYT. | — |
 | 34445940 | Cắt ngang, 3 bệnh viện Hà Nội (n=108), hồi quy tuyến tính đa biến | trực tiếp | 23,2% hoàn toàn hài lòng chung; người bệnh ngoại trú, ở tỉnh khác, dùng dịch vụ theo yêu cầu, không đủ khả năng chi trả có mức hài lòng thấp hơn; tỷ lệ hài lòng thấp nhất là với giá dịch vụ (13,0%). | — |
 | 36439278 | Cắt ngang, một phòng khám đa khoa Hà Nội (n=301), kiểm định thang đo (EFA, Cronbach) | trực tiếp | Hài lòng chung 53,5%; 5 nhân tố (cơ sở vật chất, kết quả dịch vụ, minh bạch thông tin–thủ tục, tiếp cận, giao tiếp nhân viên y tế), Cronbach's α > 0,9; người có BHYT hài lòng cao gấp 3,5 lần (KTC 95% 1,9–6,2). | — |
-| 40623792 | Cắt ngang đa quốc gia, 10 bệnh viện công ở 7 nước châu Á thu nhập thấp–trung bình, có Việt Nam (n=1933) | gián tiếp | Người bệnh ung thư tiến triển: giao tiếp của bác sĩ ảnh hưởng nhiều nhất tới trải nghiệm chung; chăm sóc ngoại trú gắn với điểm giao tiếp cao hơn. | — |
+| 26683779 | Quan sát hồi cứu: khảo sát trải nghiệm gửi thư liên kết dữ liệu bệnh án điện tử, một tổ chức ngoại trú đa chuyên khoa ở Bắc California (2010–2014) | gián tiếp | So sánh thời gian chờ người bệnh tự báo, thời gian chờ ghi trong bệnh án điện tử và mức hài lòng với thời gian chờ theo chủng tộc/sắc tộc — cùng lĩnh vực thời gian chờ, khác bối cảnh (Mỹ). | — |
+| 36613075 | Cắt ngang, 3 trạm y tế xã tỉnh Tuyên Quang (n=100) | gián tiếp | Hài lòng của người dân với cơ sở vật chất, chuyên môn và thái độ nhân viên trạm y tế xã đối với người bệnh ngoại trú sau chương trình nâng cao năng lực — cùng chủ đề, khác tuyến (xã). | — |
 | 40726017 | Phân tích lặp 8 vòng khảo sát hộ gia đình (VHLSS 2006–2020), mô hình logit đa mức | gián tiếp | Người có BHYT ở nông thôn dịch chuyển dần từ trạm y tế xã sang bệnh viện công tuyến trên và cơ sở tư nhân — bối cảnh áp lực lên khoa khám bệnh viện; không đo hài lòng. | — |
 | 41162961 | Nghiên cứu triển khai CÓ CAN THIỆP, tiến cứu, một trung tâm (đánh giá trước–sau) — bộ lọc PubMed xếp nhầm vào nhánh quan sát | gián tiếp | 210 người bệnh ĐTĐ type 2 cao tuổi ngoại trú; hài lòng với dịch vụ dược lâm sàng 95,2% — đo hài lòng với MỘT dịch vụ can thiệp, không phải hài lòng với khám ngoại trú. | — |
 | 16148334 | Khảo sát qua điện thoại (n=89), Hoa Kỳ | không liên quan | Nhu cầu sức khoẻ tâm thần của bạn đời cựu binh chiến tranh Việt Nam mắc PTSD. | Khớp chữ «Vietnam» trong truy vấn, khác hẳn chủ đề. |
-| 29051978 | Khảo sát cắt ngang đa quốc gia, chọn mẫu thuận tiện (n=1535) | không liên quan | Triệu chứng đường tiểu dưới ở nam giới Đông Nam Á và hài lòng với điều trị. | Khác chủ đề — hài lòng với điều trị triệu chứng tiết niệu. |
-| 38753416 | Cắt ngang đa trung tâm, kiểm định tâm trắc (IRT, CAT), n=498 | không liên quan | Ngân hàng câu hỏi trải nghiệm môi trường chăm sóc cho người bệnh tâm thần nặng tại Pháp. | Khác quần thể và bối cảnh; phương pháp IRT/CAT không thuộc kế hoạch đo của đề tài. |
-| 39132755 | Quan sát tiến cứu đa quốc gia 4 tuần (n=3505) | không liên quan | Hiệu quả điều trị bảo tồn bệnh trĩ cấp. | Khác chủ đề — hài lòng với điều trị một bệnh, không phải với dịch vụ khám. |
+| 16307633 | Khảo sát cắt ngang, 11 trung tâm y tế cộng đồng tại Mỹ (n=2715) | không liên quan | Người nhập cư gốc Hoa và Việt hạn chế tiếng Anh: so sánh giao tiếp và đánh giá lượt khám khi có phiên dịch với khi bác sĩ nói cùng ngôn ngữ. | Khác quần thể và bối cảnh — rào cản ngôn ngữ của người nhập cư tại Mỹ không áp dụng cho đề tài. |
+| 22336833 | Tổng quan hệ thống Cochrane (2012) | không liên quan | Hiệu quả của chi trả theo kết quả thực hiện lên cung ứng dịch vụ và kết cục sức khoẻ ở nước thu nhập thấp–trung bình. | Khác chủ đề — cơ chế tài chính cho cơ sở/nhân viên y tế, không phải khảo sát hài lòng người bệnh. |
+| 29605829 | Cắt ngang có nhóm so sánh, 4 phòng khám ngoại trú TP.HCM (n=180) | không liên quan | Người sống với HIV được chăm sóc tại nhà có điểm chất lượng sống WHOQOL-BREF cao hơn. | Khác kết cục — chất lượng sống, không phải hài lòng với dịch vụ khám. |
+| 29980547 | Thử nghiệm ngẫu nhiên thí điểm, mù người tham gia và người đánh giá (n=48) | không liên quan | Vật lý trị liệu thích ứng văn hoá cho đau cơ xương khớp mạn ở người tự nhận là Mandaean, Assyria hoặc Việt. | Khác chủ đề — can thiệp vật lý trị liệu, không phải hài lòng với dịch vụ khám ngoại trú. |
+| 33342367 | Cắt ngang, 3 cơ sở điều trị methadone TP.HCM (n=450) | không liên quan | Mức tuân thủ điều trị methadone và yếu tố liên quan ở người bệnh ngoại trú. | Khác chủ đề — tuân thủ điều trị, không phải hài lòng với dịch vụ khám. |
 | 40771771 | Cắt ngang mô tả (n=460), hồi quy logistic đa danh | không liên quan | Chủ đề tư vấn ưa thích của người bệnh ĐTĐ type 2 ngoại trú (dinh dưỡng–lối sống 49%). | Đo sở thích nội dung tư vấn, không đo hài lòng với dịch vụ khám. |
+| 7612579 | Theo dõi tiến cứu một nhóm phẫu thuật (n=69, 1987–1990) | không liên quan | Kết quả dài hạn phẫu thuật Swenson điều trị bệnh Hirschsprung ở trẻ em Việt Nam. | Khác chủ đề — «out-patient» chỉ là lịch tái khám sau mổ. |
 
 **Nguồn bổ sung ngoài truy vấn G0** (kèm cách tìm — PRISMA-S):
 
@@ -176,17 +180,24 @@ Nguồn: `G0_TONG_HOP_BANG_CHUNG_hai-long-benh-nhan-C1a-BVQY175.json` — soạn
 | 10.52163/yhc.v67i7.5934 | Thực trạng thời gian chờ khám bệnh và sự hài lòng của người bệnh tại Khoa Khám bệnh, Bệnh viện Mắt Nghệ An năm 2025 (Tạp chí Y học Cộng đồng, 2026) | Cắt ngang mô tả, phỏng vấn + đo thời gian chờ (n=250, tháng 4–9/2025), kiểm định χ² | trực tiếp | Thời gian chờ tăng theo số dịch vụ cận lâm sàng (20 → 85 phút); tỷ lệ không hài lòng/bình thường cao hơn ở nhóm khám từ 60 phút trở lên (34,4% so với 14,1%; p < 0,05). Đo thời gian chờ trực tiếp, không từ mốc HIS. | Crossref, truy vấn «hài lòng người bệnh ngoại trú khoa khám bệnh theo yêu cầu bệnh viện quân y» (20 kết quả đầu) và «sự hài lòng người bệnh Bệnh viện Quân y 175» (15 kết quả đầu), xếp theo liên quan, tra 2026-10-11; chưa kiểm có trên PubMed hay không |
 | 10.51403/0868-2836/2021/78 | Sự hài lòng của người bệnh về chất lượng dịch vụ y tế tại Khoa Y học cổ truyền, Bệnh viện Quân Y 175, năm 2020 (Tạp chí Y học Dự phòng, 2021) | Điều tra cắt ngang người bệnh NỘI trú (n=165) | gián tiếp | Cùng bệnh viện (BV Quân y 175) nhưng khoa YHCT, nội trú: điểm trung bình 5 tiêu chí BYT 4,79; không hài lòng nhất ở cơ sở vật chất (nhà vệ sinh) và chi phí dịch vụ. | Crossref — DOI do hội đồng G0 giao (biên bản DP-G0-2 G0-TB-20261007T182841-d50d86e5 và BD-G0-T2 G0-TB-20261007T192719-bb46520a; hội đồng đo 2026-10-07: không có trên PubMed lẫn Europe PMC); metadata + tóm tắt đối chiếu Crossref 2026-10-11 |
 | 10.52163/yhc.v66i1.1940 | Hài lòng người bệnh về dịch vụ đông y tại Khoa Y học cổ truyền Bệnh viện Quân Y 175 năm 2024 (Tạp chí Y học Cộng đồng, 2025) | Cắt ngang mô tả (n=340, tháng 2–10/2024) | gián tiếp | Cùng bệnh viện, khoa YHCT: hài lòng chung 85,59%; minh bạch thông tin và thủ tục thấp nhất (75,59%); liên quan với nghề nghiệp và học vấn. | Crossref — DOI do hội đồng G0 giao (biên bản DP-G0-2 G0-TB-20261007T182841-d50d86e5 và BD-G0-T2 G0-TB-20261007T192719-bb46520a; hội đồng đo 2026-10-07: không có trên PubMed lẫn Europe PMC); metadata + tóm tắt đối chiếu Crossref 2026-10-11 |
+| 40623792 | Patient experience with cancer care in low- and middle-income Asian countries: a cross-sectional study of patients with advanced cancer (BMJ Glob Health, 2025) | Cắt ngang đa quốc gia, 10 bệnh viện công ở 7 nước châu Á thu nhập thấp–trung bình, có Việt Nam (n=1933) | gián tiếp | Người bệnh ung thư tiến triển: giao tiếp của bác sĩ ảnh hưởng nhiều nhất tới trải nghiệm chung; chăm sóc ngoại trú gắn với điểm giao tiếp cao hơn. | PubMed · chuỗi G0 cũ «patient satisfaction outpatient department Vietnam hospital» · 2026-07-31 (không còn trong nền sau lượt chạy lại 2026-10-14) |
+| 32946537 | Determinants of patient satisfaction: Lessons from large-scale inpatient interviews in Vietnam (PLoS One, 2020) | Cắt ngang toàn quốc, phỏng vấn người bệnh nội trú tại 69 bệnh viện công (n=10.143, 2017–2018) | gián tiếp | Người bệnh NỘI TRÚ lớn tuổi, nghèo, nữ, học vấn thấp và ở nông thôn báo mức hài lòng chung cao hơn — cùng nước, khác loại hình (nội trú). | Europe PMC · EPMC-1 (satisfaction OR "patient experience") AND (outpatient* OR ambulatory OR "out-patient") AND (Vietnam OR "Viet Nam") · 2026-10-14 (gói PRISMA-S BD-G0-T2); chuỗi PubMed nền không bắt (đo 2026-10-14) |
+| 40432693 | A Cross-Sectional Study of Patients Satisfaction With the Pharmacy Services at the 108 Military Central Hospital: Determinants and Implications (Health Sci Rep, 2025) | Cắt ngang (n=457, 8–10/2023): xây dựng bộ câu hỏi (Cronbach alpha, phân tích nhân tố khám phá) + hồi quy tuyến tính đa biến | gián tiếp | Bộ câu hỏi 22 mục, 4 nhân tố về hài lòng với dịch vụ dược tại BV TƯQĐ 108 — cùng loại hình bệnh viện quân y tuyến cuối, khác dịch vụ (dược). | Europe PMC · EPMC-1 (satisfaction OR "patient experience") AND (outpatient* OR ambulatory OR "out-patient") AND (Vietnam OR "Viet Nam") · 2026-10-14 (gói PRISMA-S BD-G0-T2); chuỗi PubMed nền không bắt (đo 2026-10-14) |
 
-**Tóm lược:** Trong phạm vi một truy vấn PubMed G0 (2026-07-31) cộng các nguồn bổ sung ở bảng trên — KHÔNG phải tổng quan hệ thống: bằng chứng tại Việt Nam là các khảo sát cắt ngang về hài lòng người bệnh ngoại trú (PMID 34445940; PMID 36439278; PMID 32584904; PMID 31703089; PMID 34017606; PMID 42625778). Thời gian chờ và thủ tục lặp lại là lĩnh vực hài lòng thấp nhất (PMID 32584904; PMID 31703089) và người chờ lâu hơn ít có khả năng hài lòng hơn (PMID 34017606); nhóm dùng dịch vụ theo yêu cầu và ở tỉnh khác hài lòng thấp hơn trong một mẫu nhỏ 108 người (PMID 34445940). Chiều liên quan của BHYT không nhất quán giữa các nghiên cứu (PMID 36439278 và PMID 42625778 ngược với PMID 32584904). Thời gian chờ đã được đo từ phần mềm quản lý bệnh viện ở quy mô lớn (PMID 28690831). Hai tổng quan hệ thống tìm được đều ở bối cảnh khác (Trung Quốc PMID 32992600; Ethiopia PMID 40995744); trong phạm vi đã tra chưa thấy tổng quan riêng cho Việt Nam, cũng chưa thấy nghiên cứu công bố tại một khoa khám theo yêu cầu của bệnh viện quân y. Năm trong mười hai bài của nền G0 lạc đề (khớp chữ, khác chủ đề). Y văn tiếng Việt không lập chỉ mục PubMed chưa được rà. Bổ sung 2026-10-11 (Crossref, tiếng Việt): đã có khảo sát hài lòng tại khoa khám theo yêu cầu (doi:10.52163/yhc.v67icd5.5018 tại BV TƯQĐ 108 — trọng tâm đăng ký trực tuyến; doi:10.51298/vmj.v540i1.10302; doi:10.52163/yhc.v64i6.841), tại bệnh viện quân y (doi:10.52163/yhc.v64i1.573; doi:10.51298/vmj.v549i2.13771; doi:10.38148/jhds.0706skpt23-064) và tại chính BV Quân y 175 ở khoa Y học cổ truyền (doi:10.51403/0868-2836/2021/78; doi:10.52163/yhc.v66i1.1940); một nghiên cứu 2026 gắn thời gian chờ ĐO TRỰC TIẾP với hài lòng (doi:10.52163/yhc.v67i7.5934). Trong phạm vi đã tra chưa thấy bài tại khối khám ngoại trú theo yêu cầu của BV Quân y 175, cũng chưa thấy bài trong nước gắn hài lòng với thời gian chờ lấy từ mốc HIS.
+**Tóm lược:** Trong phạm vi một truy vấn PubMed G0 (chạy lại 2026-10-14 bằng chuỗi PI chọn) cộng các nguồn bổ sung ở bảng trên — KHÔNG phải tổng quan hệ thống: bằng chứng tại Việt Nam là các khảo sát cắt ngang về hài lòng người bệnh ngoại trú (PMID 34445940; PMID 36439278; PMID 32584904; PMID 31703089; PMID 34017606; PMID 42625778). Thời gian chờ và thủ tục lặp lại là lĩnh vực hài lòng thấp nhất (PMID 32584904; PMID 31703089) và người chờ lâu hơn ít có khả năng hài lòng hơn (PMID 34017606); nhóm dùng dịch vụ theo yêu cầu và ở tỉnh khác hài lòng thấp hơn trong một mẫu nhỏ 108 người (PMID 34445940). Chiều liên quan của BHYT không nhất quán giữa các nghiên cứu (PMID 36439278 và PMID 42625778 ngược với PMID 32584904). Thời gian chờ đã được đo từ phần mềm quản lý bệnh viện ở quy mô lớn (PMID 28690831). Hai tổng quan hệ thống tìm được đều ở bối cảnh khác (Trung Quốc PMID 32992600; Ethiopia PMID 40995744); trong phạm vi đã tra chưa thấy tổng quan riêng cho Việt Nam, cũng chưa thấy nghiên cứu công bố tại một khoa khám theo yêu cầu của bệnh viện quân y. 8/16 bài của nền G0 lạc đề (khớp chữ, khác chủ đề); bộ lọc thiết kế loại cả ba bài mốc trong nước có trên PubMed (PMID 36292392; PMID 28690831; PMID 34017606 — chỉ nhánh KHÔNG lọc bắt được) nên chúng nằm ở bảng nguồn bổ sung. Y văn tiếng Việt không lập chỉ mục PubMed chưa được rà. Bổ sung 2026-10-11 (Crossref, tiếng Việt): đã có khảo sát hài lòng tại khoa khám theo yêu cầu (doi:10.52163/yhc.v67icd5.5018 tại BV TƯQĐ 108 — trọng tâm đăng ký trực tuyến; doi:10.51298/vmj.v540i1.10302; doi:10.52163/yhc.v64i6.841), tại bệnh viện quân y (doi:10.52163/yhc.v64i1.573; doi:10.51298/vmj.v549i2.13771; doi:10.38148/jhds.0706skpt23-064) và tại chính BV Quân y 175 ở khoa Y học cổ truyền (doi:10.51403/0868-2836/2021/78; doi:10.52163/yhc.v66i1.1940); một nghiên cứu 2026 gắn thời gian chờ ĐO TRỰC TIẾP với hài lòng (doi:10.52163/yhc.v67i7.5934). Trong phạm vi đã tra chưa thấy bài tại khối khám ngoại trú theo yêu cầu của BV Quân y 175, cũng chưa thấy bài trong nước gắn hài lòng với thời gian chờ lấy từ mốc HIS.
 
-**Kiểm rút bài:** 20/20 PMID (12 nền + 8 bổ sung) không phát hiện rút bài/expression of concern theo PubMed ngày 2026-10-10; 9/9 DOI trong nước bổ sung 2026-10-11: Crossref không có thông báo rút (updated-by) và Retraction Watch ngoại tuyến không có bản ghi (ngày 2026-10-10; công cụ tools/check_citation_retraction.py (PubMed: PublicationType + CommentsCorrections RetractionIn); kiểm theo mã DOI bằng app/sources/crossref_retraction.py + app/sources/retraction_watch.py (2026-10-11))
+**Kiểm rút bài:** 16/16 PMID nền (2026-10-14) + 11/11 PMID bổ sung (2026-10-14) không phát hiện rút bài/expression of concern theo PubMed; 9/9 DOI trong nước bổ sung 2026-10-11: Crossref không có thông báo rút (updated-by) và Retraction Watch ngoại tuyến không có bản ghi (ngày 2026-10-14; công cụ tools/check_citation_retraction.py (PubMed: PublicationType + CommentsCorrections RetractionIn); kiểm theo mã DOI bằng app/sources/crossref_retraction.py + app/sources/retraction_watch.py (2026-10-11); 2026-10-14: R1C của run_g0_auto (16 PMID nền) + tools/check_citation_retraction.py (11 PMID bổ sung))
 
-### 3.1 Systematic Review / Meta-analysis — ~0 hit (số hit thật); liệt kê đủ 0 bài đã tải
-  → Không tìm thấy bài nào trên PubMed
+### 3.1 Systematic Review / Meta-analysis — ~1 hit (số hit thật); liệt kê đủ 1 bài đã tải
+  1. Paying for performance to improve the delivery of health interventions in low- and middle-income countries .
+     Witter S, Fretheim A, Kessy FL, Lindahl AK (2012). The Cochrane database of systematic reviews
+     PMID: 22336833 | URL: https://pubmed.ncbi.nlm.nih.gov/22336833/
 
 
-### 3.2 Randomized Controlled Trials — ~0 hit (số hit thật); liệt kê đủ 0 bài đã tải
-  → Không tìm thấy bài nào trên PubMed
+### 3.2 Randomized Controlled Trials — ~1 hit (số hit thật); liệt kê đủ 1 bài đã tải
+  1. Integrating culturally informed approaches into physiotherapy assessment and treatment of chronic pain: a pilot randomised controlled trial.
+     Brady B, Veljanova I, Schabrun S, Chipchase L (2018). BMJ open
+     PMID: 29980547 | URL: https://pubmed.ncbi.nlm.nih.gov/29980547/
 
 
 ### 3.3 Guideline / Khuyến cáo — ~0 hit (số hit thật); liệt kê đủ 0 bài đã tải
@@ -197,45 +208,53 @@ Nguồn: `G0_TONG_HOP_BANG_CHUNG_hai-long-benh-nhan-C1a-BVQY175.json` — soạn
 > trên PubMed. Dòng «không thấy guideline» ở PHẦN 4 chỉ đúng trong phạm vi PubMed; văn bản quy phạm
 > trong nước nằm ở bảng PHẦN 4b.
 
-### 3.4 Nghiên cứu QUAN SÁT (cohort/bệnh-chứng/cắt ngang — theo bộ lọc PubMed) — ~12 hit (số hit thật); liệt kê đủ 12 bài đã tải
+### 3.4 Nghiên cứu QUAN SÁT (cohort/bệnh-chứng/cắt ngang — theo bộ lọc PubMed) — ~15 hit (số hit thật); liệt kê đủ 14 bài đã tải
   1. Implementation and evaluation of clinical pharmacy services in elderly outpatients with poorly controlled type 2 diabetes: a single-center experience from Vietnam.
-     tác giả: xem trang PubMed (2025). BMC health services research
+     Dong PTX, Nguyen TT, Duong HTT, Nguyen TTT, Le AV (2025). BMC health services research
      PMID: 41162961 | URL: https://pubmed.ncbi.nlm.nih.gov/41162961/
   2. Counseling Preferences Among Patients With Type 2 Diabetes: Implications for Personalized Care.
-     tác giả: xem trang PubMed (2025). Journal of diabetes research
+     Nguyen TNP, Thi CN, Phuong TPT, Ngoc QN, Pham HT (2025). Journal of diabetes research
      PMID: 40771771 | URL: https://pubmed.ncbi.nlm.nih.gov/40771771/
   3. Temporal Trends in Patient Choice of Outpatient Care Provider Among Vietnam's Insured Rural Residents, 2006-2020.
-     tác giả: xem trang PubMed (2025). The International journal of health planning and management
+     Sepehri A, Minh KN, Vu PH, Pham TM (2025). The International journal of health planning and management
      PMID: 40726017 | URL: https://pubmed.ncbi.nlm.nih.gov/40726017/
-  4. Patient experience with cancer care in low- and middle-income Asian countries: a cross-sectional study of patients with advanced cancer.
-     tác giả: xem trang PubMed (2025). BMJ global health
-     PMID: 40623792 | URL: https://pubmed.ncbi.nlm.nih.gov/40623792/
-  5. An international observational study assessing conservative management in hemorrhoidal disease: results of CHORALIS (aCute HemORrhoidal disease evALuation International Study).
-     tác giả: xem trang PubMed (2024). Journal of comparative effectiveness research
-     PMID: 39132755 | URL: https://pubmed.ncbi.nlm.nih.gov/39132755/
-  6. Psychometric Assessment of an Item Bank for Adaptive Testing on Patient-Reported Experience of Care Environment for Severe Mental Illness: Validation Study.
-     tác giả: xem trang PubMed (2024). JMIR mental health
-     PMID: 38753416 | URL: https://pubmed.ncbi.nlm.nih.gov/38753416/
-  7. Patient Satisfaction With Healthcare Service Quality and Its Associated Factors at One Polyclinic in Hanoi, Vietnam.
-     tác giả: xem trang PubMed (2022). International journal of public health
+  4. Positive Impact on Public Perception toward Commune Health Stations (CHSs) in Rural Areas of Tyuen Quang Province, Vietnam, Following the Application of the Development Program for the Capacity-Buildi
+     Jeong YJ, Bajgai J, Kim JK, Ahn DW, Kim YJ (2022). International journal of environmental research and public health
+     PMID: 36613075 | URL: https://pubmed.ncbi.nlm.nih.gov/36613075/
+  5. Patient Satisfaction With Healthcare Service Quality and Its Associated Factors at One Polyclinic in Hanoi, Vietnam.
+     Duc Thanh N, My Anh BT, Xiem CH, Quynh Anh P, Tien PH (2022). International journal of public health
      PMID: 36439278 | URL: https://pubmed.ncbi.nlm.nih.gov/36439278/
-  8. Improving Hospital's Quality of Service in Vietnam: The Patient Satisfaction Evaluation in Multiple Health Facilities.
-     tác giả: xem trang PubMed (2023). Hospital topics
+  6. Improving Hospital's Quality of Service in Vietnam: The Patient Satisfaction Evaluation in Multiple Health Facilities.
+     Thach Phuong N, Vu Hoang P, Mac Dang T, Nguyen Thi Huyen T, Ngo Thi T (2023). Hospital topics
      PMID: 34445940 | URL: https://pubmed.ncbi.nlm.nih.gov/34445940/
-  9. Measuring satisfaction with health care services for Vietnamese patients with cardiovascular diseases.
-     tác giả: xem trang PubMed (2020). PloS one
+  7. Methadone maintenance treatment in Ho Chi Minh City, Vietnam: Multidimensional measure of adherence and associated factors.
+     Le UTN, Tran TT, Le GT, Thai TT (2022). Global public health
+     PMID: 33342367 | URL: https://pubmed.ncbi.nlm.nih.gov/33342367/
+  8. Measuring satisfaction with health care services for Vietnamese patients with cardiovascular diseases.
+     Hwang J, Vu GT, Tran BX, Nguyen THT, Nguyen BV (2020). PloS one
      PMID: 32584904 | URL: https://pubmed.ncbi.nlm.nih.gov/32584904/
-  10. Patient satisfaction with HIV services in Vietnam: Status, service models and association with treatment outcome.
-     tác giả: xem trang PubMed (2019). PloS one
+  9. Patient satisfaction with HIV services in Vietnam: Status, service models and association with treatment outcome.
+     Tran BX, Dang AK, Vu GT, Tran TT, Latkin CA (2019). PloS one
      PMID: 31703089 | URL: https://pubmed.ncbi.nlm.nih.gov/31703089/
-  11. Symptom prevalence, bother, and treatment satisfaction in men with lower urinary tract symptoms in Southeast Asia: a multinational, cross-sectional survey.
-     tác giả: xem trang PubMed (2018). World journal of urology
-     PMID: 29051978 | URL: https://pubmed.ncbi.nlm.nih.gov/29051978/
-  12. Mental health needs of cohabiting partners of Vietnam veterans with combat-related PTSD.
-     tác giả: xem trang PubMed (2005). Psychiatric services (Washington, D.C.)
+  10. Home-Based Care and Perceived Quality of Life Among People Living with HIV in Ho Chi Minh City, Viet Nam.
+     Bui QTT, Brickley DB, Tieu VTT, Hills NK (2018). AIDS and behavior
+     PMID: 29605829 | URL: https://pubmed.ncbi.nlm.nih.gov/29605829/
+  11. Clocks Moving at Different Speeds: Cultural Variation in the Satisfaction With Wait Time for Outpatient Care.
+     Chung S, Johns N, Zhao B, Romanelli R, Pu J (2016). Medical care
+     PMID: 26683779 | URL: https://pubmed.ncbi.nlm.nih.gov/26683779/
+  12. Interpreter services, language concordance, and health care quality. Experiences of Asian Americans with limited English proficiency.
+     Green AR, Ngo-Metzger Q, Legedza AT, Massagli MP, Phillips RS (2005). Journal of general internal medicine
+     PMID: 16307633 | URL: https://pubmed.ncbi.nlm.nih.gov/16307633/
+  13. Mental health needs of cohabiting partners of Vietnam veterans with combat-related PTSD.
+     Sherman MD, Sautter F, Lyons JA, Manguno-Mire GM, Han X (2005). Psychiatric services (Washington, D.C.)
      PMID: 16148334 | URL: https://pubmed.ncbi.nlm.nih.gov/16148334/
+  14. The long-term follow-up result of Swenson's operation in the treatment of Hirschsprung's disease in Vietnamese children.
+     Liem NT, Hau BD, Thu NX (1995). European journal of pediatric surgery : official journal of Austrian Association of Pediatric Surgery ... [et al] = Zeitschrift fur Kinderchirurgie
+     PMID: 7612579 | URL: https://pubmed.ncbi.nlm.nih.gov/7612579/
 
-> ⚠️ Con số ~12 là SỐ HIT của bộ lọc quan sát và CÓ CHỒNG LẤN
+
+> 🔎 Nhánh KHÔNG lọc thiết kế: chưa có trong lượt tìm này (lượt sinh trước khi có nhánh này hoặc dựng lại A1 không tra lại PubMed).
+> ⚠️ Con số ~15 là SỐ HIT của bộ lọc quan sát và CÓ CHỒNG LẤN
 > với RCT/SR (mức chồng lấn tuỳ chủ đề — chưa đo cho truy vấn này). Dùng để biết "lĩnh vực
 > này đã có nền quan sát hay chưa", KHÔNG dùng làm số nghiên cứu quan sát thuần, và CHƯA sàng
 > lọc mức liên quan (xem §3.0).
@@ -247,9 +266,23 @@ Nguồn: `G0_TONG_HOP_BANG_CHUNG_hai-long-benh-nhan-C1a-BVQY175.json` — soạn
 > nào mới không" nói chung — nghiên cứu quan sát mới không xuất hiện ở đây.
 
 ### 3.6 ĐĂNG KÝ NGHIÊN CỨU — đã có ai ĐANG LÀM chưa? (ClinicalTrials.gov)
-  → Không có hồ sơ đăng ký nào khớp truy vấn
+  1. [COMPLETED] Evaluation of an Integrated Microfinance and Depression Care Program for Women
+     NCT02069301 | Pha: NA | Cỡ mẫu dự kiến: 166 | Bắt đầu: 2014-02
+     URL: https://clinicaltrials.gov/study/NCT02069301
+  2. [COMPLETED] Prolonged Exposure (PE) for Post Traumatic Stress Disorder (PTSD): Telemedicine Versus In Person
+     NCT01102764 | Pha: NA | Cỡ mẫu dự kiến: 150 | Bắt đầu: 2010-10
+     URL: https://clinicaltrials.gov/study/NCT01102764
+  3. [NOT_YET_RECRUITING] Effectiveness of Enhanced Recovery After Surgery (ERAS) Protocols for Arthroscopic Anterior Cruciate Ligament Reconstruction in an Ambulatory Surgery Setting
+     NCT07602231 | Pha: NA | Cỡ mẫu dự kiến: 115 | Bắt đầu: 2026-05-18
+     URL: https://clinicaltrials.gov/study/NCT07602231
+  4. [NOT_YET_RECRUITING] Remote App-based Rehabilitation After Rotator Cuff Repair
+     NCT07555704 | Pha: NA | Cỡ mẫu dự kiến: 102 | Bắt đầu: 2026-10-01
+     URL: https://clinicaltrials.gov/study/NCT07555704
+  5. [RECRUITING] Assessment of Treatment Adherence and Associated Factors in Chronic HepB Patients Supported by HBVCare
+     NCT07540637 | Pha: NA | Cỡ mẫu dự kiến: 70 | Bắt đầu: 2026-04-15
+     URL: https://clinicaltrials.gov/study/NCT07540637
 
-> **Đã tra ngày 2026-07-31: ~0 hồ sơ khớp, 0 đang/sắp tuyển.**
+> **Đã tra ngày 2026-10-14: ~5 hồ sơ khớp, 3 đang/sắp tuyển.**
 > PubMed chỉ biết cái ĐÃ CÔNG BỐ; mục này mới trả lời "đang có ai làm".
 > ClinicalTrials.gov chủ yếu phủ THỬ NGHIỆM CAN THIỆP. Còn phải tự tra thủ công:
 > · Tổng quan hệ thống → PROSPERO: https://www.crd.york.ac.uk/prospero/
@@ -259,20 +292,20 @@ Nguồn: `G0_TONG_HOP_BANG_CHUNG_hai-long-benh-nhan-C1a-BVQY175.json` — soạn
 > Nơi hệ ĐỌC: `gate_params.G0.registry_manual_checked = {"ictrp": "YYYY-MM-DD"}`
 > (ngày tự tra, không ở tương lai — G0-HUMAN-08); có thử nghiệm đang tuyển khớp ⇒ thêm `registry_overlap_assessment`.
 
-**Tổng PMIDs thật tìm được:** 12 bài từ 12 PMID duy nhất
+**Tổng PMIDs thật tìm được:** 16 bài từ 16 PMID duy nhất
 
 ---
 
 ## PHẦN 4 — PHÂN TÍCH KHOẢNG TRỐNG (tự động từ evidence thật)
 
-**Mức độ bằng chứng hiện có:** CÓ NỀN QUAN SÁT — ~12 hit của bộ lọc quan sát (CHƯA sàng lọc mức liên quan), không thấy RCT/SR trong PubMed, truy vấn G0 «patient satisfaction outpatient department Vietnam hospital»
+**Mức độ bằng chứng hiện có:** TRUNG BÌNH — có 1 SR/MA
 
 **Khoảng trống nghiên cứu cụ thể:**
-• Không thấy SR/MA trong PubMed, truy vấn G0 «patient satisfaction outpatient department Vietnam hospital» — chỉ trong phạm vi một truy vấn, KHÔNG phải kết luận «chưa có tổng quan»
-• Không thấy guideline được PubMed đánh chỉ mục (PubMed, truy vấn G0 «patient satisfaction outpatient department Vietnam hospital») — văn bản quy phạm trong nước (Bộ Y tế…) và trang hiệp hội KHÔNG nằm trên PubMed: phải rà trước khi kết luận «chưa có»
+• Không thấy guideline được PubMed đánh chỉ mục (PubMed, truy vấn G0 «("Patient Satisfaction"[Mesh] OR satisf*[tiab] OR "patient experience"[tiab]) AND ("Outpatients"[Mesh] OR "Ambulatory Care"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND ("Vietnam"[Mesh] OR vietnam*[tiab] OR "viet nam"[tiab])») — văn bản quy phạm trong nước (Bộ Y tế…) và trang hiệp hội KHÔNG nằm trên PubMed: phải rà trước khi kết luận «chưa có»
 • Không có SR/MA, RCT hay guideline mới trong 5 năm gần đây (2021-2026) — nhánh này KHÔNG soi nghiên cứu quan sát
+• Có 3 nghiên cứu đang/sắp tuyển trên ClinicalTrials.gov — cần đối chiếu để tránh trùng lặp (xem §3.6)
 
-**Đối chiếu đăng ký:** ClinicalTrials.gov: 0 hồ sơ đăng ký khớp truy vấn (chỉ phủ thử nghiệm; nghiên cứu quan sát thường không đăng ký).
+**Đối chiếu đăng ký:** ⚠ ClinicalTrials.gov: 3 nghiên cứu ĐANG/SẮP TUYỂN cho truy vấn này (tổng 5 hồ sơ đăng ký). 'Chưa công bố' KHÔNG có nghĩa 'chưa ai làm' — đọc các hồ sơ ở §3.6 trước khi biện minh tính mới; nguy cơ trùng đề tài thật.
 
 > Các dòng trên do MÁY suy từ số hit của một truy vấn — mỗi dòng phủ định đã ghi phạm vi. Phát biểu khoảng trống
 > có đọc bài nằm ở PHẦN 4b; nơi chốt là `gate_params.G0.novelty_justification`.
@@ -288,7 +321,7 @@ Nguồn: `G0_KHOANG_TRONG_hai-long-benh-nhan-C1a-BVQY175.json` — soạn bởi 
 | Quyết định 3869/QĐ-BYT — bộ mẫu phiếu và hướng dẫn khảo sát hài lòng người bệnh và nhân viên y tế | 2019 (ngày 2019-08-28) | Bộ Y tế — văn bản quy phạm; trích theo đề cương §3.2.1 | Mẫu phiếu ngoại trú đã bị thay thế bởi QĐ 56/QĐ-BYT 2024 — chỉ để đối chiếu lịch sử, không dùng làm chuẩn hiện hành | nguồn không phân hạng |
 | Guideline được PubMed đánh chỉ mục | — | PubMed, truy vấn G0 «patient satisfaction outpatient department Vietnam hospital», nhánh guideline (2026-07-31) | 0 hit — chỉ trong phạm vi một truy vấn; trang hiệp hội và văn bản trong nước nằm ở hai dòng trên | nguồn không phân hạng |
 
-**Phát biểu khoảng trống:** Trong phạm vi đã tra (PubMed 2026-07-31 và 2026-08-30; Crossref tiếng Việt 2026-10-11), đã có khảo sát hài lòng ngoại trú tại khoa khám theo yêu cầu (doi:10.52163/yhc.v67icd5.5018 tại BV TƯQĐ 108; doi:10.51298/vmj.v540i1.10302), tại bệnh viện quân y (doi:10.52163/yhc.v64i1.573) và tại BV Quân y 175 ở khoa YHCT (doi:10.52163/yhc.v66i1.1940); chưa thấy nghiên cứu tại khối khám theo yêu cầu (Khoa C1a) của BV Quân y 175, hay nghiên cứu trong nước gắn hài lòng với thời gian chờ từ mốc HIS hoặc ước lượng ICC theo bàn khám; bộ phiếu QĐ 56/QĐ-BYT 2024 không tách lĩnh vực chi phí dịch vụ theo yêu cầu. Y văn tiếng Việt không có DOI chưa được rà.
+**Phát biểu khoảng trống:** Trong phạm vi đã tra (PubMed tới 2026-10-14; Europe PMC, Crossref tiếng Việt 2026-10-14), đã có khảo sát hài lòng ngoại trú tại khoa khám theo yêu cầu (doi:10.52163/yhc.v67icd5.5018 tại BV TƯQĐ 108; doi:10.51298/vmj.v540i1.10302), tại bệnh viện quân y (doi:10.52163/yhc.v64i1.573) và tại BV Quân y 175 ở khoa YHCT (doi:10.52163/yhc.v66i1.1940); chưa thấy nghiên cứu tại khối khám theo yêu cầu (Khoa C1a) của BV Quân y 175, hay nghiên cứu trong nước gắn hài lòng với thời gian chờ từ mốc HIS hoặc ước lượng ICC theo bàn khám; bộ phiếu QĐ 56/QĐ-BYT 2024 không tách lĩnh vực chi phí dịch vụ theo yêu cầu. Y văn tiếng Việt không có DOI chưa được rà.
 
 **Loại khoảng trống:** boi_canh, cong_cu_do
 
@@ -296,7 +329,7 @@ Nguồn: `G0_KHOANG_TRONG_hai-long-benh-nhan-C1a-BVQY175.json` — soạn bởi 
 
 **Trạng thái nguồn đã tra:** pubmed=partial · clinicaltrials_gov=day_du · who_ictrp=day_du · prospero=khong_ap_dung · nguon_trong_nuoc=partial
 
-**Ghi chú nguồn:** PubMed «partial»: một truy vấn tự do của G0 + nguồn bổ sung, chưa phải chiến lược MeSH đầy đủ ≥ 2 CSDL. ClinicalTrials.gov: đã tra 2026-07-31, 0 hồ sơ khớp (chủ yếu phủ thử nghiệm can thiệp). WHO ICTRP không có API — PI tự tra rồi ghi gate_params.G0.registry_manual_checked.ictrp. Nguồn trong nước (Tạp chí Y học Việt Nam, Y Dược học Quân sự…): đề cương §3.5 còn ô [CẦN CHỦ NHIỆM GHI]. Bổ sung 2026-10-11: nguồn trong nước tra qua Crossref (2 truy vấn tiếng Việt) — «partial»: chỉ phủ tạp chí có DOI; WHO ICTRP PI đã tự tra 2026-10-11.
+**Ghi chú nguồn:** PubMed «partial»: một chuỗi MeSH + từ tự do PI chọn (chạy lại 2026-10-14) kèm nhánh KHÔNG lọc thiết kế để đối chiếu recall; Europe PMC 3 nhánh (2026-10-14, gói G0_TIM_BO_SUNG_PRISMA_S) + nguồn bổ sung — chưa phải tổng quan hệ thống. ClinicalTrials.gov: tra lại 2026-10-14 bằng chuỗi PubMed đã bỏ thẻ trường — 5 hồ sơ khớp chữ, 3 đang/sắp tuyển (NCT07602231, NCT07555704, NCT07540637); theo tiêu đề cả 5 khác chủ đề (phẫu thuật dây chằng, phục hồi chóp xoay, viêm gan B, trầm cảm, PTSD) — PI đánh giá chồng lấn ở G0-HUMAN-08 (chủ yếu phủ thử nghiệm can thiệp). WHO ICTRP không có API — PI tự tra rồi ghi gate_params.G0.registry_manual_checked.ictrp. Nguồn trong nước (Tạp chí Y học Việt Nam, Y Dược học Quân sự…): đề cương §3.5 còn ô [CẦN CHỦ NHIỆM GHI]. Bổ sung 2026-10-11: nguồn trong nước tra qua Crossref (2 truy vấn tiếng Việt) — «partial»: chỉ phủ tạp chí có DOI; WHO ICTRP PI đã tự tra 2026-10-11.
 
 ---
 
@@ -307,7 +340,7 @@ Nguồn: `G0_KHOANG_TRONG_hai-long-benh-nhan-C1a-BVQY175.json` — soạn bởi 
 ┌─────────────────────────────────────────────────────────────┐
 │ Ưu tiên 1 (hệ gợi ý từ bằng chứng thật):                   │
 │   Thiết kế `cross_sectional` theo thiết kế đã ghim ở G1...
-│   Lý do: suy từ 0 SR/MA · 0 RCT · 12 quan sát
+│   Lý do: suy từ 1 SR/MA · 1 RCT · 15 quan sát
 │   Hạn chế: [CẦN BÁC SĨ NÊU — khả thi tại đơn vị?]         │
 ├─────────────────────────────────────────────────────────────┤
 │ Ưu tiên 2 (phương án thay thế): [CẦN BÁC SĨ ẤN ĐỊNH]     │
@@ -333,7 +366,7 @@ Hệ chấm bằng `tools/g0_quality_gate.py`; báo cáo đầy đủ ở `G0_QU
 ```
 PHẦN MÁY LÀM ĐƯỢC (tự động)
 ☑ Topic đề tài đã có
-☑ Truy vấn PubMed đã chạy (12 bài tải về / 12 PMID duy nhất)
+☑ Truy vấn PubMed đã chạy (16 bài tải về / 16 PMID duy nhất)
 ☑ Khoảng trống nghiên cứu đã phân tích
 ☑ Đã tra đăng ký nghiên cứu đang tiến hành
 

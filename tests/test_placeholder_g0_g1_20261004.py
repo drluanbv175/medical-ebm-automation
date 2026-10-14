@@ -111,6 +111,10 @@ def test_g0_c1a_dien_that_van_toi_pass(tmp_path):
         g0[k] = "Đạt — lý do do bác sĩ viết (giá trị của test)"
     g0["registry_manual_checked"] = {"ictrp": "2026-08-15", "prospero": None}
     cp = json.loads((d / "G0_checkpoint.json").read_text(encoding="utf-8"))
+    # 14/10/2026: lượt tra lại ClinicalTrials.gov của C1a ra thử nghiệm đang tuyển ⇒ cổng đòi thêm đánh giá chồng lấn
+    # (G0-HUMAN-08) — đó cũng là việc bác sĩ phải làm, không phải nới điều kiện PASS.
+    if isinstance((cp.get("registry_check") or {}).get("n_active"), int) and cp["registry_check"]["n_active"] > 0:
+        g0["registry_overlap_assessment"] = "Không chồng lấn — nhận định của bác sĩ (giá trị của test)"
     g0["dau_van_tay_chot"] = G0Q.dau_van_tay_g0(cp, meta)
     (d / "study_meta.json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8", newline="\n")
     r = G0.evaluate_study(STUDY, d, write=False)
