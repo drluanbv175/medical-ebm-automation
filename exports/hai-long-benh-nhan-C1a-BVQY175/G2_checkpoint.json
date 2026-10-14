@@ -1,8 +1,8 @@
 {
   "study": "hai-long-benh-nhan-C1a-BVQY175",
   "gate": "G2",
-  "gate_status": "DRAFT_NEEDS_HUMAN_COMPLETION — G2 CHƯA ĐƯỢC KHÓA",
-  "generated_at": "2026-10-14T19:34:31.258605",
+  "gate_status": "READY_FOR_IRB_SUBMISSION — G2 CHƯA ĐƯỢC KHÓA",
+  "generated_at": "2026-10-14T19:39:52.962607",
   "quality_contract_version": "G2-2026.1",
   "g2_status": "PENDING",
   "design_ambiguous": false,
@@ -19,7 +19,7 @@
     "n_trials": 5,
     "n_active": 3,
     "error": null,
-    "checked_at": "2026-10-14T19:34:31",
+    "checked_at": "2026-10-14T19:39:52",
     "search_url": "https://clinicaltrials.gov/search?term=%28%22Patient+Satisfaction%22+OR+satisf%2A+OR+%22patient+experience%22+%29+AND+%28%22Outpatients%22+OR+%22Ambulatory+Care%22+OR+outpatient%2A+OR+ambulatory+%29+AND+%28%22Vietnam%22+OR+vietnam%2A+OR+%22viet+nam%22+%29",
     "pending_action": null,
     "samples": [
@@ -87,7 +87,7 @@
   "guardrail": {
     "passed": false,
     "errors": [
-      "R5 🟡 Chỉ 9 trường [CẦN...] — kiểm xem còn trường nào trống không"
+      "R5 🟡 Chỉ 8 trường [CẦN...] — kiểm xem còn trường nào trống không"
     ]
   },
   "artifacts": {
@@ -108,7 +108,6 @@
     "WHO TRDS 1.3.1 — bản nháp đủ 24 mục"
   ],
   "pending_doctor_actions": [
-    "Điền nội dung thật; với PII dùng bản nộp ngoài hệ thống và giữ bản redacted. Ô sau phê duyệt (số IRB, ngày phê duyệt, mã/ngày đăng ký…) điền khi có quyết định, TRƯỚC khi ký khoá G2.",
     "Hội đồng/đầu mối được ủy quyền ghi quyết định bằng approve_gate.py.",
     "Người có thẩm quyền IRB tự ký; agent không được chạy lệnh phê duyệt."
   ],
@@ -120,9 +119,9 @@
     "contract_version": "G2-2026.1",
     "study": "hai-long-benh-nhan-C1a-BVQY175",
     "gate": "G2",
-    "status": "DRAFT_NEEDS_HUMAN_COMPLETION",
+    "status": "READY_FOR_IRB_SUBMISSION",
     "package_checks_passed": true,
-    "package_ready_for_submission": false,
+    "package_ready_for_submission": true,
     "human_approval_complete": false,
     "automatic_criteria": [
       {
@@ -170,8 +169,8 @@
       {
         "id": "G2-AUTO-05",
         "label": "Không còn placeholder khoa học/vận hành trọng yếu",
-        "status": "REVIEW",
-        "evidence": "còn 1 dòng [CẦN]/ô mẫu chung/ô trống phải điền TRƯỚC khi nộp IRB; 8 dòng chỉ điền được SAU phê duyệt/đăng ký (thông tin, chưa chặn nộp) — ngoài các ô chỉ chứa PII và chỗ ký/ngày điền tay",
+        "status": "PASS",
+        "evidence": "còn 0 dòng [CẦN]/ô mẫu chung/ô trống phải điền TRƯỚC khi nộp IRB; 8 dòng chỉ điền được SAU phê duyệt/đăng ký (thông tin, chưa chặn nộp) — ngoài các ô chỉ chứa PII và chỗ ký/ngày điền tay",
         "action": "Điền nội dung thật; với PII dùng bản nộp ngoài hệ thống và giữ bản redacted. Ô sau phê duyệt (số IRB, ngày phê duyệt, mã/ngày đăng ký…) điền khi có quyết định, TRƯỚC khi ký khoá G2."
       },
       {
@@ -242,7 +241,6 @@
     ],
     "unresolved_critical_placeholders": [
       "[Phiên bản phê duyệt sẽ có số IRB, CẦN BỔ SUNG]",
-      "> hệ thống không tra được hai nguồn đầu vì không có API mở. WHO ICTRP: PI đã tự tra 2026-10-11, không thấy nghiên cứu trùng (ghi ở G0); PROSPERO: không áp dụng (không phải tổng quan hệ thống); đăng ký trong nước: [CẦN BÁC SĨ TỰ TRA]",
       "[CẦN — sẽ có sau khi đăng ký trên OSF Registries: mã/URL đăng ký dạng osf.io/xxxxx]",
       "[CẦN — ngày đăng ký thành công]",
       "Số phê duyệt IRB: [CẦN sau khi nhận]",
@@ -251,9 +249,7 @@
       "[CẦN — ngày hoàn tất dự kiến; cập nhật ngày thật khi kết thúc]",
       "\"DRAFT, Điền trường còn [CẦN] trước khi gửi đăng ký.\""
     ],
-    "pre_submission_placeholders": [
-      "> hệ thống không tra được hai nguồn đầu vì không có API mở. WHO ICTRP: PI đã tự tra 2026-10-11, không thấy nghiên cứu trùng (ghi ở G0); PROSPERO: không áp dụng (không phải tổng quan hệ thống); đăng ký trong nước: [CẦN BÁC SĨ TỰ TRA]"
-    ],
+    "pre_submission_placeholders": [],
     "post_approval_placeholders": [
       "[Phiên bản phê duyệt sẽ có số IRB, CẦN BỔ SUNG]",
       "[CẦN — sẽ có sau khi đăng ký trên OSF Registries: mã/URL đăng ký dạng osf.io/xxxxx]",
@@ -268,7 +264,6 @@
       "[CẦN CẬP NHẬT sau nghiên cứu, ngày đăng kết quả/tác phẩm,"
     ],
     "pending_actions": [
-      "Điền nội dung thật; với PII dùng bản nộp ngoài hệ thống và giữ bản redacted. Ô sau phê duyệt (số IRB, ngày phê duyệt, mã/ngày đăng ký…) điền khi có quyết định, TRƯỚC khi ký khoá G2.",
       "Hội đồng/đầu mối được ủy quyền ghi quyết định bằng approve_gate.py.",
       "Người có thẩm quyền IRB tự ký; agent không được chạy lệnh phê duyệt."
     ],

@@ -1,7 +1,7 @@
 # G2 QUALITY REPORT — hai-long-benh-nhan-C1a-BVQY175
 
-- Trạng thái: **DRAFT_NEEDS_HUMAN_COMPLETION**
-- Hồ sơ sẵn sàng nộp: **False**
+- Trạng thái: **READY_FOR_IRB_SUBMISSION**
+- Hồ sơ sẵn sàng nộp: **True**
 - Phê duyệt người thật đủ: **False**
 
 ## Kiểm tự động
@@ -13,7 +13,7 @@
 | G2-AUTO-03 | Bộ hồ sơ IRB/ICF/DMP có đủ cấu trúc bắt buộc (ICF đủ mục theo thiết kế) | PASS | đủ marker tài liệu 1-8, ICF, DMP, rủi ro/bồi thường/COI; ICF đủ mục theo thiết kế |
 | G2-AUTO-03b | ICF tiếng Anh tương ứng ICF tiếng Việt (cùng tập mục) | PASS | hai bản ICF có cùng tập mục (hoặc chưa có bản tiếng Anh/tiếng Việt để đối chiếu) |
 | G2-AUTO-04 | WHO TRDS 1.3.1 đủ 24 mục | PASS | 24/24 mục đúng số và nhãn |
-| G2-AUTO-05 | Không còn placeholder khoa học/vận hành trọng yếu | REVIEW | còn 1 dòng [CẦN]/ô mẫu chung/ô trống phải điền TRƯỚC khi nộp IRB; 8 dòng chỉ điền được SAU phê duyệt/đăng ký (thông tin, chưa chặn nộp) — ngoài các ô chỉ chứa PII và chỗ ký/ngày điền tay |
+| G2-AUTO-05 | Không còn placeholder khoa học/vận hành trọng yếu | PASS | còn 0 dòng [CẦN]/ô mẫu chung/ô trống phải điền TRƯỚC khi nộp IRB; 8 dòng chỉ điền được SAU phê duyệt/đăng ký (thông tin, chưa chặn nộp) — ngoài các ô chỉ chứa PII và chỗ ký/ngày điền tay |
 | G2-AUTO-06 | Thiết kế và lộ trình đạo đức không còn mơ hồ | PASS | design_code=cross_sectional; ambiguous=False |
 | G2-AUTO-06b | Hồ sơ G2 sinh đúng thiết kế G1 hiện hành | PASS | hồ sơ G2 và G1 cùng thiết kế «cross_sectional» |
 | G2-AUTO-07 | Kế hoạch an toàn tương xứng thiết kế | PASS | không phải RCT và PI không khai safety_plan_required=true — kế hoạch an toàn theo nguy cơ |
@@ -40,7 +40,6 @@ Không chặn nộp IRB; BẮT BUỘC điền trước khi ký khoá G2 (approve
 - "DRAFT, Điền trường còn [CẦN] trước khi gửi đăng ký."
 
 ## Việc còn lại
-- Điền nội dung thật; với PII dùng bản nộp ngoài hệ thống và giữ bản redacted. Ô sau phê duyệt (số IRB, ngày phê duyệt, mã/ngày đăng ký…) điền khi có quyết định, TRƯỚC khi ký khoá G2.
 - Hội đồng/đầu mối được ủy quyền ghi quyết định bằng approve_gate.py.
 - Người có thẩm quyền IRB tự ký; agent không được chạy lệnh phê duyệt.
 

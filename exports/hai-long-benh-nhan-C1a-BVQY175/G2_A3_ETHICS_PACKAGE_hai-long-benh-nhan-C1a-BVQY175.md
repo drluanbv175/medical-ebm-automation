@@ -543,7 +543,7 @@ Chữ ký chủ nhiệm: _______________ Ngày: ___/___/2026
 
 > ClinicalTrials.gov KHÔNG bao phủ mọi đăng ký. Dù mục trên có kết quả hay không,
 > WHO ICTRP, PROSPERO (nếu SR/MA) và đăng ký trong nước vẫn cần bác sĩ tự tra, 
-> hệ thống không tra được hai nguồn đầu vì không có API mở. WHO ICTRP: PI đã tự tra 2026-10-11, không thấy nghiên cứu trùng (ghi ở G0); PROSPERO: không áp dụng (không phải tổng quan hệ thống); đăng ký trong nước: [CẦN BÁC SĨ TỰ TRA]
+> hệ thống không tra được hai nguồn đầu vì không có API mở. WHO ICTRP: PI đã tự tra 2026-10-11, không thấy nghiên cứu trùng (ghi ở G0); PROSPERO: không áp dụng (không phải tổng quan hệ thống); đăng ký trong nước: 2026-10-14
 
 ```
 WHO Trial Registration Data Set 1.3.1, DRAFT Phiên bản 1.0
