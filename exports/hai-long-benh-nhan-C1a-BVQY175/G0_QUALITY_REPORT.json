@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0",
   "contract_version": "G0-2026.1",
-  "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
+  "status": "PASS_G0_CONFIRMED",
   "automated_checks_passed": true,
-  "human_confirmation_complete": false,
+  "human_confirmation_complete": true,
   "automatic_criteria": [
     {
       "id": "G0-AUTO-00",
@@ -108,25 +108,22 @@
     {
       "id": "G0-HUMAN-07",
       "label": "Chủ nhiệm/nhà phương pháp chốt PICO (vai trò + thời điểm + gắn đúng nội dung)",
-      "status": "REVIEW",
-      "evidence": "pico_confirmed=True; vai trò=pi; reviewed_at=2026-10-11T13:18:33+07:00; nội dung đã đổi sau khi xác nhận (dấu lúc xác nhận fb4e9befef14a3c6 ≠ hiện tại 23b65e7241e50d11) — chủ nhiệm đọc lại rồi xác nhận lại",
-      "action": "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"23b65e7241e50d11\" (dấu của nội dung đang chốt). Không cần lưu danh tính."
+      "status": "PASS",
+      "evidence": "pico_confirmed=True; vai trò=pi; reviewed_at=2026-10-14T19:17:12+07:00; xác nhận gắn đúng nội dung hiện tại",
+      "action": "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"4678a3407d3ccd57\" (dấu của nội dung đang chốt). Không cần lưu danh tính."
     },
     {
       "id": "G0-HUMAN-08",
       "label": "PI đã tự tra WHO ICTRP (và PROSPERO cho tổng quan) + đánh giá chồng lấn khi có thử nghiệm đang tuyển",
-      "status": "REVIEW",
-      "evidence": "đã ghi ngày tra; ClinicalTrials.gov có 3 thử nghiệm đang tuyển khớp — thiếu registry_overlap_assessment",
+      "status": "PASS",
+      "evidence": "đã ghi ngày tra",
       "action": "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn)."
     }
   ],
-  "pending_actions": [
-    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"23b65e7241e50d11\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
-    "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn)."
-  ],
+  "pending_actions": [],
   "artifact_manifest": {
     "A1": {
-      "path": "/Users/nguyenluan/.ebm-worktrees/yk-g0-nhanh-khong-loc-20261014/exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.md",
+      "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.md",
       "sha256": "f52cc1635ccb1803a8f49fea2e18e136dce81b705df85e53bfa32f2a38febe62"
     }
   },
@@ -157,29 +154,6 @@
     "primary": "STROBE",
     "protocol": "Protocol định trước; đăng ký nếu cần minh bạch"
   },
-  "dau_van_tay_hien_tai": "23b65e7241e50d11",
-  "scope_statement": "PASS_G0_CONFIRMED chỉ xác nhận rằng câu hỏi nghiên cứu ĐÃ ĐƯỢC MỘT NGƯỜI THẬT VIẾT RA VÀ CHỐT, và nền bằng chứng máy dựng là thật. KHÔNG thẩm định chất lượng khoa học của câu hỏi, không thay tổng quan y văn có hệ thống, không thay Hội đồng Đạo đức. Một PICO đầy đủ vẫn có thể là một PICO tồi.",
-  "needs_input": {
-    "blocked": true,
-    "reason_code": "MISSING_PICO",
-    "human_message": "G0 đã dựng xong NỀN BẰNG CHỨNG; câu hỏi nghiên cứu (PICO, kết cục chính, giả thuyết, loại câu hỏi) ĐÃ đạt — còn chờ bác sĩ/PI: G0-HUMAN-07, G0-HUMAN-08. Không cần tra lại PubMed; điền xong thì chấm lại.",
-    "remediation": {
-      "action": "rerun_with_real_input",
-      "command": "sửa exports/<study>/study_meta.json → gate_params.G0 rồi chạy: python tools/g0_quality_gate.py --study <study>",
-      "study_meta_patch": {
-        "gate_params": {
-          "G0": {
-            "pico_confirmed": true
-          }
-        }
-      },
-      "must_not_fabricate": [
-        "PICO",
-        "primary_outcome",
-        "FINER",
-        "hypothesis"
-      ]
-    },
-    "supplied_by": "doctor"
-  }
+  "dau_van_tay_hien_tai": "4678a3407d3ccd57",
+  "scope_statement": "PASS_G0_CONFIRMED chỉ xác nhận rằng câu hỏi nghiên cứu ĐÃ ĐƯỢC MỘT NGƯỜI THẬT VIẾT RA VÀ CHỐT, và nền bằng chứng máy dựng là thật. KHÔNG thẩm định chất lượng khoa học của câu hỏi, không thay tổng quan y văn có hệ thống, không thay Hội đồng Đạo đức. Một PICO đầy đủ vẫn có thể là một PICO tồi."
 }

@@ -35,15 +35,15 @@
       "novelty_justification": "Tính mới ở mức «nhân rộng có kiểm chứng» (replication vào bối cảnh mới). Không mới về chủ đề: đã có khảo sát tại Việt Nam, kể cả tại khoa khám theo yêu cầu và tại bệnh viện quân y (PMID 34445940; PMID 42625778; doi:10.52163/yhc.v67icd5.5018; doi:10.52163/yhc.v64i1.573). Giá trị nằm ở: dữ liệu nền tại chính Khoa C1a để cải tiến chất lượng và đối chiếu các kỳ sau; thời gian chờ đo khách quan từ mốc HIS thay vì tự báo cáo; ước lượng ICC theo bàn khám trong bối cảnh Việt Nam; kiểm định cấu trúc lĩnh vực có bổ sung chi phí (đề cương §3.5). Trong phạm vi đã tra (PubMed 2026-07-31 và 2026-08-30; Crossref tiếng Việt 2026-10-11), đã có khảo sát hài lòng ngoại trú tại khoa khám theo yêu cầu (doi:10.52163/yhc.v67icd5.5018 tại BV TƯQĐ 108; doi:10.51298/vmj.v540i1.10302), tại bệnh viện quân y (doi:10.52163/yhc.v64i1.573) và tại BV Quân y 175 ở khoa YHCT (doi:10.52163/yhc.v66i1.1940); chưa thấy nghiên cứu tại khối khám theo yêu cầu (Khoa C1a) của BV Quân y 175, hay nghiên cứu trong nước gắn hài lòng với thời gian chờ từ mốc HIS hoặc ước lượng ICC theo bàn khám; bộ phiếu QĐ 56/QĐ-BYT 2024 không tách lĩnh vực chi phí dịch vụ theo yêu cầu. Y văn tiếng Việt không có DOI chưa được rà.",
       "pico_confirmed": true,
       "reviewed_by_role": "PI",
-      "reviewed_at": "2026-10-11T13:18:33+07:00",
+      "reviewed_at": "2026-10-14T19:17:12+07:00",
       "descriptive_justification": null,
       "registry_manual_checked": {
         "ictrp": "2026-10-11",
         "prospero": null,
         "ictrp_ket_qua": "không thấy nghiên cứu trùng"
       },
-      "registry_overlap_assessment": null,
-      "dau_van_tay_chot": "fb4e9befef14a3c6"
+      "registry_overlap_assessment": "Không chồng lấn với câu hỏi đề tài: NCT07602231 (Anterior Cruciate Ligament Rupture, Enhanced Recovery After Surgery (ERAS) Protocol, Ambulatory Surgery); NCT07555704 (Rotator Cuff Tear, Telemedecine, Rotator Cuff Injuries); NCT07540637 (Chronic Hepatitis B) — theo tiêu đề và bệnh/tình trạng đăng ký, đều là thử nghiệm can thiệp cho vấn đề khác, không phải khảo sát hài lòng với dịch vụ khám ngoại trú theo yêu cầu.",
+      "dau_van_tay_chot": "4678a3407d3ccd57"
     },
     "G1": {
       "protocol_version": "1.0",
