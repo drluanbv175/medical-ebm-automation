@@ -1,7 +1,7 @@
 {
   "gate": "G3",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "run_date": "2026-10-11",
+  "run_date": "2026-10-14",
   "gate_status": "DRAFT — CHỜ BÁC SĨ XÁC NHẬN",
   "design_code": "cross_sectional",
   "design_ambiguous": false,
@@ -60,14 +60,7 @@
     "Xác nhận effect size (PMID/DOI từ y văn/pilot study)",
     "Xác nhận tỷ lệ bỏ cuộc dự kiến",
     "Xác nhận tỷ lệ biến cố nền (với log-rank)",
-    "Copy khối cỡ mẫu vào đề cương",
-    "Chạy G0/G1 trước; không tính cỡ mẫu trên thiết kế mặc định.",
-    "Khai icc/icc_source/cluster_size/n_clusters; số chùm nhỏ phải khai hiệu chỉnh mẫu nhỏ.\nSố chùm CỐ ĐỊNH nhiều hơn mức tối thiểu: khai n_clusters kèm confirmed_n (= số chùm × cỡ chùm m).\nCỡ chùm không đều: PI khai cluster_size_cv từ số liệu thật (HIS: số lượt khám từng chùm trong kỳ) hoặc equal_cluster_sizes=true nếu khẳng định chùm đều — KHÔNG ước đoán.",
-    "Đọc toàn văn nguồn rồi đặt gate_params.G3.effect_source_confirmed=true.",
-    "Rà từng dòng bảng tham số của artifact A4 rồi đặt assumptions_confirmed=true.",
-    "Chọn nhầm loại giả thuyết là sai toàn bộ phép tính — xác nhận rồi đặt hypothesis_confirmed=true.",
-    "Đối chiếu N với lưu lượng bệnh nhân thật và thời gian thu thập, rồi xác nhận.",
-    "Ghi reviewed_by_role (STATISTICIAN hoặc PI), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"b892b172aa2ef41a\" (dấu của các giá trị quyết định N hiện tại); không lưu danh tính."
+    "Copy khối cỡ mẫu vào đề cương"
   ],
   "quality_contract_version": "G3-2026.1",
   "quality_gate": {
@@ -270,7 +263,7 @@
     "artifact_manifest": {
       "A4_SAMPLE_SIZE": {
         "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "ffc5bf8e973089be7a872508319a5470a6dbe277fc8f7998591b72ffb5de203f"
+        "sha256": "5ea911a50015c54588f21b60ede5dbf35589c942a11743e46a665bcb7959f973"
       }
     },
     "sensitivity_table": {
