@@ -215,5 +215,165 @@
     "irb_name": "Hội đồng Y đức Bệnh viện Quân y 175",
     "irb_contact": null,
     "sponsor": "Không có tài trợ bên ngoài — kinh phí tự túc (chủ nhiệm đề tài tự chi trả)"
-  }
+  },
+  "primary_outcome": {
+    "name": "G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep, Phần 3 phiếu)",
+    "measure": "Mục đơn Likert 5 mức — nguyên văn C.3: 'Nói chung, Ông/Bà hài lòng ở mức độ nào với tất cả các dịch vụ đã nhận được tại Khoa Khám bệnh trong lần khám này?'; KHÔNG tính từ trung bình lĩnh vực A–F (chống part-whole bias, mục 4.6.3)",
+    "timepoint": "Đo MỘT lần ngay sau khi cơ bản hoàn thành quy trình khám — đang chờ thanh toán/nhận thuốc/nhận lại thẻ BHYT (mục 4.3.1); cắt ngang, không theo dõi dọc",
+    "type": "Thứ hạng (ordinal) 5 mức 1–5 — GIỮ nguyên thứ hạng trong mô hình chính (logistic thứ tự/proportional odds, SAP §2/§4); ngưỡng nhị phân thứ cấp KHÓA TRƯỚC: hài lòng = G1 ≥ 4/5",
+    "source": "Phiếu khảo sát tự điền ẩn danh — Phần 3, mục C.3 (biến SHLNBChung_TrucTiep); công cụ được phát triển và kiểm định ở pha công cụ trước thu thập mẫu chính (đề cương §4.9, §6.2)"
+  },
+  "instrument": {
+    "name": "Bộ câu hỏi khảo sát sự hài lòng của người bệnh ngoại trú tại Khoa C1a — 6 lĩnh vực A–F (30 mục Likert 5 mức) và mục hài lòng chung C.3",
+    "source": "Nhóm nghiên cứu phát triển và kiểm định trước thu thập chính: bảng truy xuất mục, hội đồng chuyên gia (I-CVI/S-CVI), phỏng vấn nhận thức 10–15 người bệnh, pilot n ≈ 50–100 tách khỏi mẫu chính, khoá phiên bản cuối (đề cương §4.9, §6.2)"
+  },
+  "analysis": {
+    "primary_method": "hồi quy logistic THỨ TỰ (ordinal/proportional odds; `MASS::polr`/`rms::orm`/`ordinal::clm`) trên G1 giữ 5 mức; báo tỷ số chênh chung hiệu chỉnh (cOR) + KTC 95%. Exposure chính `thoigian_cho` báo hiệu ứng theo mỗi 15 phút; kiểm phi tuyến bằng restricted cubic spline 3 nút hoặc phân tích theo phân vị. Kiểm giả định proportional odds (Brant/so sánh log-likelihood theo ranh giới cắt) TRƯỚC khi diễn giải cOR; vi phạm → partial proportional odds/generalized ordered logit, báo hệ số theo từng ranh giới cắt cho biến vi phạm. sai số chuẩn robust theo chùm `ma_ban_kham`; số bàn khám < 15 → mô hình thứ tự hệ số chặn ngẫu nhiên trở thành phân tích CHÍNH; báo ICC cho G1 và từng lĩnh vực A–F. (SAP §4)",
+    "missing_data": "phân tích CHÍNH là complete-case khi tỷ lệ thiếu rất thấp (< 5%); MICE (m ≥ 20, pmm, quy tắc Rubin) CHỈ cho biến nền/phơi nhiễm khi MAR hợp lý và tỷ lệ thiếu đáng kể — vai trò phân tích nhạy cảm. KHÔNG nội suy trực tiếp biến kết cục; không mean substitution/LOCF. (SAP §6)"
+  },
+  "bias": {
+    "risks": "Selection bias; Information bias; Confounding; Prevalence-incidence bias; Non-response bias; Social desirability; Reporting bias",
+    "mitigations": "Theo đề cương §4.4.2, §4.7, §4.8 và §6.5: (1) chọn mẫu hệ thống phân tầng đúng bước k_h — giới hạn chấp nhận F1 ≥ 80%; (2) tỷ lệ đồng ý ≥ 60% (F2), có sổ nhật ký từ chối để báo cáo tỷ lệ đáp ứng; (3) ghép thời gian chờ HIS ≥ 90% phiếu (F3); (4) công cụ rõ nghĩa (F4 trung vị ≤ 20 phút; F5 < 3 mục hiểu sai ≥ 20%); (5) kiểm soát thiên kiến chiều lòng — tự điền ẩn danh, hòm kín, điều tra viên ngoài khoa, đo ngoài buồng khám, cấm trả lời thay; (6) có `ma_ban_kham` giả danh từ phiếu đầu tiên (xử lý gom cụm); (7) nhập đôi 100% với luật range/logic; (8) không PII trong hệ thống dữ liệu của nhóm nghiên cứu; (9) không phân tích trước khi khoá SAP và dữ liệu.",
+    "limitations": "Thiết kế cắt ngang: đo phơi nhiễm và kết cục cùng thời điểm ⇒ chỉ là liên quan, không suy nhân quả; chỉ ước lượng tỷ lệ hiện mắc; kết cục tự báo cáo ⇒ có thể thiên lệch chiều lòng dù tự điền ẩn danh (G1 A2 PHẦN 2 — kiểm soát sai lệch)."
+  },
+  "ethics": {
+    "consent": "Phiếu đồng ý tham gia (ICF) tiếng Việt — Tài liệu 4 hồ sơ G2 — tách biệt vật lý khỏi phiếu khảo sát ẩn danh; người tham gia dừng được bất cứ lúc nào trước khi bỏ phiếu vào hòm (đề cương §4.11)",
+    "privacy": "Phiếu không có ô định danh, hòm phiếu kín, điều tra viên ngoài khoa; ghép mốc thời gian HIS theo mã nghiên cứu, có nhật ký huỷ bảng ghép; kế hoạch quản lý dữ liệu — Tài liệu 6 hồ sơ G2 (Luật 91/2025/QH15) (đề cương §4.11, §6.5)"
+  },
+  "resources": {
+    "timeline": "Theo đề cương §4.9 và §6.2 (mốc T0 = ngày Hội đồng Đạo đức/lãnh đạo BVQY 175 phê duyệt): đăng ký công khai OSF Registries trước T0 → phê duyệt đạo đức (T0, phạm vi gồm cả pha công cụ) → pha phát triển và kiểm định công cụ (bảng truy xuất mục, hội đồng chuyên gia I-CVI/S-CVI, phỏng vấn nhận thức 10–15 người bệnh, pilot n ≈ 50–100 tách khỏi mẫu chính, khoá vFinal) + dry-run chấm F1–F5 → khoá SAP → thu thập mẫu chính n = 1000 (chọn mẫu hệ thống phân tầng ngày × khung giờ; mỗi người đo MỘT lần ngay sau khi hoàn tất lượt khám: sàng lọc → ICF riêng → phiếu tự điền → hòm kín) → ghép thời gian chờ HIS (bên thứ ba) → nhập đôi 100%, làm sạch → khoá dữ liệu → phân tích (chỉ sau khi SAP và dữ liệu đã khoá) → bản thảo STROBE → nghiệm thu. Thời lượng từng pha do chủ nhiệm ấn định theo lịch khoa.",
+    "budget": "Nguồn kinh phí: tự túc (chủ nhiệm đề tài tự chi trả). Các nhóm chi theo Bảng 6.3 đề cương: in phiếu khảo sát và bản thông tin – đồng thuận; pha phát triển công cụ (hội đồng chuyên gia I-CVI/S-CVI, phỏng vấn nhận thức 10–15 người bệnh, pilot n≈50–100); thù lao điều tra viên, giám sát chất lượng, nhập liệu đôi 100% và nhà thống kê; phần mềm thống kê (không mất phí nếu dùng R/JASP); văn phòng phẩm, hòm phiếu; phí công bố (nếu có); dự phòng. Đơn giá và tổng kinh phí do chủ nhiệm ấn định theo định mức hiện hành của đơn vị. Nhân lực và phân công theo Bảng 6.1 đề cương (chủ nhiệm, thư ký điều phối, điều tra viên ngoài khoa, nhập liệu, giám sát chất lượng, nhà thống kê, tổ mở hòm phiếu, tổ mã hoá ý kiến mở, hội đồng chuyên gia, Phòng CNTT/QLCL trích HIS)."
+  },
+  "theory": {
+    "framework": "Khung khái niệm tham chiếu là 5 lĩnh vực hài lòng người bệnh ngoại trú của Mẫu số 2, Quyết định 56/QĐ-BYT năm 2024: khả năng tiếp cận; minh bạch thông tin và thủ tục khám chữa bệnh; cơ sở vật chất và phương tiện phục vụ; thái độ ứng xử và năng lực chuyên môn của nhân viên y tế; kết quả cung cấp dịch vụ. Bộ câu hỏi tự xây dựng của đề tài có các lĩnh vực A–E tương thích về khái niệm với 5 lĩnh vực này và được dùng để giải thích kết quả; biến hiệu chỉnh trong phân tích đa biến được chọn theo sơ đồ nhân quả DAG (Phụ lục D). SERVQUAL và PSQ-18 chỉ dùng làm khung đối chiếu khi bàn luận (đề cương mục 3.2)."
+  },
+  "expected_results_block": {
+    "summary": "Khung bảng trống theo SAP §11 — chưa có số liệu; số liệu chỉ điền sau khi khoá dữ liệu.",
+    "table_shells": [
+      "Bảng 1, Đặc điểm nền",
+      "Bảng 2, Kết cục chính"
+    ]
+  },
+  "document": {
+    "version": "1.0",
+    "date": "2026-10-14"
+  },
+  "summary": "Thiết kế: Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence). Bối cảnh: Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh — khối khám ngoại trú theo yêu cầu (dịch vụ) tại bệnh viện quân y tuyến cuối. Quần thể: Người bệnh ngoại trú từ đủ 18 tuổi trở lên (kể cả phụ nữ mang thai), đủ sức khỏe và năng lực nhận thức/ngôn ngữ để trả lời, đã cơ bản hoàn thành quy trình khám tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, và đồng ý tham gia tự nguyện (mục 4.3.1 đề cương). Cỡ mẫu: 1000. Kết cục chính: G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep, Phần 3 phiếu). Phân tích chính: hồi quy logistic THỨ TỰ (ordinal/proportional odds; `MASS::polr`/`rms::orm`/`ordinal::clm`) trên G1 giữ 5 mức; báo tỷ số chênh chung hiệu chỉnh (cOR) + KTC 95%. Exposure chính `thoigian_cho` báo hiệu ứng theo mỗi 15 phút; kiểm phi tuyến bằng restricted cubic spline 3 nút hoặc phân tích theo phân vị. Kiểm giả định proportional odds (Brant/so sánh log-likelihood theo ranh giới cắt) TRƯỚC khi diễn giải cOR; vi phạm → partial proportional odds/generalized ordered logit, báo hệ số theo từng ranh giới cắt cho biến vi phạm. sai số chuẩn robust theo chùm `ma_ban_kham`; số bàn khám < 15 → mô hình thứ tự hệ số chặn ngẫu nhiên trở thành phân tích CHÍNH; báo ICC cho G1 và từng lĩnh vực A–F. (SAP §4). Thời gian: Dự kiến từ tháng 12/2026 đến tháng 12/2028. Thu thập mẫu chính chỉ bắt đầu sau T0 = ngày Hội đồng Đạo đức/lãnh đạo BVQY 175 phê duyệt, sau khi đã đăng ký OSF Registries, hoàn tất pha phát triển công cụ và dry-run F1–F5 (đề cương §4.9, §6.2).",
+  "variables": [
+    "record_id",
+    "mode_tra_loi",
+    "tuoi",
+    "gioitinh",
+    "trinhdohocvan",
+    "nghenghiep",
+    "nghenghiepkhac",
+    "tinhtranghonnhan",
+    "noicutru",
+    "khoangcachnhabv",
+    "thunhaphogd",
+    "cobhyt",
+    "lydokham",
+    "lydokhamkhac",
+    "solankham12thang",
+    "phuongtiendichuyen",
+    "nguonthongtinbv",
+    "kyvong_thoigiancho",
+    "xacnhan_kyvong",
+    "lydo_chon_theoyeucau",
+    "lydo_chon_khac",
+    "co_yeucau_bacsi",
+    "duoc_dung_bacsi",
+    "kenh_datlich",
+    "co_goikham",
+    "rieng_tu",
+    "suckhoe_tudanhgia",
+    "hoan_vi_chiphi",
+    "a1",
+    "a2",
+    "a3",
+    "a4",
+    "a5",
+    "a6",
+    "b1",
+    "b2",
+    "b3",
+    "b4",
+    "b5",
+    "b6",
+    "b7",
+    "b8",
+    "c1",
+    "c2",
+    "c3",
+    "c4",
+    "c5",
+    "c6",
+    "c7",
+    "c8",
+    "c9",
+    "c10",
+    "d1",
+    "d2",
+    "d3",
+    "e1",
+    "e2",
+    "f1",
+    "g1",
+    "g2",
+    "g3",
+    "ykiendonggop",
+    "thoigian_cho",
+    "khunggio_kham",
+    "ngay_trong_tuan",
+    "chuyenkhoa",
+    "co_cls",
+    "so_quay_buoc",
+    "ma_ban_kham"
+  ],
+  "confounders": [
+    "Tuoi",
+    "GioiTinh",
+    "NoiCuTru",
+    "CoBHYT",
+    "LyDoKham",
+    "khunggio_kham",
+    "ngay_trong_tuan",
+    "suckhoe_tudanhgia",
+    "duoc_dung_bacsi",
+    "chuyenkhoa"
+  ],
+  "data_collection_procedure": "Chọn mẫu hệ thống PHÂN TẦNG theo ngày trong tuần × khung giờ khám, bước nhảy k_h = N_h/n_h (số đủ điều kiện dự kiến chia số cần mời trong tầng h). Một người chuyên trách đếm số thứ tự dòng người bệnh trong từng tầng, không kiêm nhiệm phát/thu phiếu. Có dry-run là cổng quyết định tính khả thi trước thu thập chính thức (mục 4.4.2). Phiếu tự điền ẩn danh, phát khi người bệnh đo MỘT lần ngay sau khi cơ bản hoàn thành quy trình khám — đang chờ thanh toán/nhận thuốc/nhận lại thẻ BHYT (mục 4.3.1); cắt ngang, không theo dõi dọc; ICF tách biệt vật lý khỏi phiếu, thu vào hòm phiếu kín (đề cương §4.11).",
+  "quality_control": "Theo đề cương §4.4.2, §4.7, §4.8 và §6.5: (1) chọn mẫu hệ thống phân tầng đúng bước k_h — giới hạn chấp nhận F1 ≥ 80%; (2) tỷ lệ đồng ý ≥ 60% (F2), có sổ nhật ký từ chối để báo cáo tỷ lệ đáp ứng; (3) ghép thời gian chờ HIS ≥ 90% phiếu (F3); (4) công cụ rõ nghĩa (F4 trung vị ≤ 20 phút; F5 < 3 mục hiểu sai ≥ 20%); (5) kiểm soát thiên kiến chiều lòng — tự điền ẩn danh, hòm kín, điều tra viên ngoài khoa, đo ngoài buồng khám, cấm trả lời thay; (6) có `ma_ban_kham` giả danh từ phiếu đầu tiên (xử lý gom cụm); (7) nhập đôi 100% với luật range/logic; (8) không PII trong hệ thống dữ liệu của nhóm nghiên cứu; (9) không phân tích trước khi khoá SAP và dữ liệu.",
+  "pilot": "Pha phát triển và kiểm định công cụ: hội đồng chuyên gia I-CVI/S-CVI, phỏng vấn nhận thức 10–15 người bệnh, pilot n ≈ 50–100 tách khỏi mẫu chính, khoá phiên bản cuối; dry-run chấm F1–F5 là cổng khả thi trước thu thập chính (đề cương §4.4.2, §4.9).",
+  "data_governance": {
+    "plan": "Kết quả khảo sát (phiếu tự điền, KHÔNG ghi thông tin định danh) — không dùng hồ sơ bệnh án; Mốc thời gian hành chính từ HIS/eHospital (hoàn tất đăng ký, gọi vào buồng khám) ghép theo mã nghiên cứu —; nhóm nghiên cứu chỉ nhận mã nghiên cứu + số phút chờ (đề cương §4.6.3); Công cụ thu thập: Phiếu giấy (nặc danh, tự điền tại khoa) (DMP §1–§2, hồ sơ G2 Tài liệu 6)",
+    "storage": "Nơi lưu: ổ đĩa mã hóa AES-256 tại Khoa Khám bệnh C1a, Bệnh viện Quân y 175;; chỉ nhóm nghiên cứu được truy cập; Bảo mật: AES-256 · mật khẩu cấp người dùng · VPN (nếu từ xa); Sao lưu: hằng tuần, 2 bản độc lập; Thời gian lưu: 2 năm sau kết thúc nghiên cứu; (theo TT38/2018/TT-BYT về lưu trữ hồ sơ y tế) (DMP §4, hồ sơ G2 Tài liệu 6)",
+    "access": "Phân quyền truy cập: Chỉ nhóm nghiên cứu được cấp phép; Phê duyệt quyền: Chủ nhiệm đề tài (DMP §2)",
+    "deidentification": "Phương pháp: GIẢ DANH HÓA CÓ KIỂM SOÁT — phiếu KHÔNG có ô định danh, chỉ mang mã nghiên cứu; phiếu; đồng ý (ICF) ký tên lưu tách biệt vật lý, không ghép với phiếu (đề cương §4.11); Ghép HIS: nhân sự được uỷ quyền của Phòng CNTT/QLCL trích hai mốc thời gian và giữ bảng ghép mã nghiên cứu ↔; lượt khám; nhóm nghiên cứu chỉ nhận mã nghiên cứu + số phút chờ; bảng ghép huỷ trong 30 ngày, có nhật ký huỷ; (đề cương §4.6.3, §4.11, §6.5); Ngưỡng k-ẩn danh: ≥5 (nhóm nhỏ sẽ nhóm lại trước công bố) (DMP §3, hồ sơ G2 Tài liệu 6)"
+  },
+  "dissemination_plan": "Báo cáo kết quả cho Ban Giám đốc, Phòng Quản lý chất lượng và Trung tâm Khám bệnh và Điều trị theo yêu cầu C1 để làm căn cứ cải tiến chất lượng; trình bày tại hội nghị khoa học của Bệnh viện Quân y 175; gửi đăng một bài báo trên tạp chí y học có bình duyệt; cập nhật kết quả lên bản đăng ký OSF Registries. Chỉ công bố số liệu tổng hợp, không công bố dữ liệu có thể nhận dạng người tham gia.",
+  "pmids": [
+    "34017606",
+    "39944421",
+    "40295132",
+    "34445940",
+    "42625778",
+    "32584904",
+    "31703089",
+    "36439278",
+    "28690831"
+  ],
+  "vietnamese_references": [
+    "Đánh giá hiệu quả của hệ thống đăng ký khám bệnh trực tuyến tại Khoa Khám bệnh theo yêu cầu, Bệnh viện Trung ương Quân đội 108 (Tạp chí Y học Cộng đồng, 2026) — doi:10.52163/yhc.v67icd5.5018",
+    "Một số yếu tố liên quan đến sự hài lòng của người bệnh về dịch vụ khám bệnh yêu cầu tại Khoa Khám bệnh, Bệnh viện Đa khoa tỉnh Thái Bình (Tạp chí Y học Việt Nam, 2024) — doi:10.51298/vmj.v540i1.10302",
+    "Sự hài lòng của người bệnh với chất lượng dịch vụ theo yêu cầu tại Khoa Khám bệnh Bệnh viện Đa khoa Đống Đa Hà Nội năm 2023 (Tạp chí Y học Cộng đồng, 2023) — doi:10.52163/yhc.v64i6.841",
+    "Sự hài lòng và mối liên quan của người bệnh đến khám bệnh tại Khoa Khám bệnh đa khoa Bệnh viện Trung ương Quân đội 108, năm 2022 (Tạp chí Y học Cộng đồng, 2022) — doi:10.52163/yhc.v64i1.573",
+    "Khảo sát sự hài lòng người bệnh ngoại trú tại khu Khám bệnh AB – Khoa Khám bệnh đa khoa Bệnh viện Trung ương Quân đội 108 (Tạp chí Y học Việt Nam, 2025) — doi:10.51298/vmj.v549i2.13771",
+    "Đánh giá sự hài lòng của người bệnh khám ngoại trú tại khoa khám bệnh Bệnh viện Quân dân Y 16, năm 2023 (Journal of Health and Development Studies, 2023) — doi:10.38148/jhds.0706skpt23-064",
+    "Thực trạng thời gian chờ khám bệnh và sự hài lòng của người bệnh tại Khoa Khám bệnh, Bệnh viện Mắt Nghệ An năm 2025 (Tạp chí Y học Cộng đồng, 2026) — doi:10.52163/yhc.v67i7.5934",
+    "Sự hài lòng của người bệnh về chất lượng dịch vụ y tế tại Khoa Y học cổ truyền, Bệnh viện Quân Y 175, năm 2020 (Tạp chí Y học Dự phòng, 2021) — doi:10.51403/0868-2836/2021/78",
+    "Hài lòng người bệnh về dịch vụ đông y tại Khoa Y học cổ truyền Bệnh viện Quân Y 175 năm 2024 (Tạp chí Y học Cộng đồng, 2025) — doi:10.52163/yhc.v66i1.1940"
+  ],
+  "literature_consensus": "Thời gian chờ dài hơn đi kèm hài lòng thấp hơn, khá nhất quán (PMID 34017606; PMID 39944421; PMID 40295132); thời gian chờ và thủ tục lặp lại là lĩnh vực hài lòng thấp nhất (PMID 32584904; PMID 31703089).",
+  "literature_disagreements": "Học vấn cao hơn có thể đi kèm hài lòng thấp hơn nhưng chiều chưa nhất quán nên để ngỏ cả hai chiều (PMID 40295132); chiều liên quan của BHYT không nhất quán giữa các nghiên cứu (PMID 36439278 và PMID 42625778 ngược với PMID 32584904)."
 }

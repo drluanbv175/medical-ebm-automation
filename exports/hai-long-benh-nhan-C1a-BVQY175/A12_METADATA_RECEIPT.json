@@ -1,0 +1,92 @@
+{
+  "study": "hai-long-benh-nhan-C1a-BVQY175",
+  "checked_at_utc": "2026-10-14T13:42:42.902263+00:00",
+  "pmids_checked": [
+    "28690831",
+    "31703089",
+    "32584904",
+    "34017606",
+    "34445940",
+    "36439278",
+    "39944421",
+    "40295132",
+    "42625778"
+  ],
+  "pmids_hash": "f63010c36e8a842548cf15b7c5133b8c2f87129e39500a4d8fdcc983294bf795",
+  "all_resolved": true,
+  "metadata": {
+    "28690831": {
+      "status": "resolved",
+      "title": "Patient waiting time in the outpatient clinic at a central surgical hospital of Vietnam: Implications for resource allocation.",
+      "authors": "Tran TD, Nguyen UV, Minh Nong V, Tran BX",
+      "journal": "F1000Research",
+      "year": "2017",
+      "doi": "10.12688/f1000research.11045.3"
+    },
+    "31703089": {
+      "status": "resolved",
+      "title": "Patient satisfaction with HIV services in Vietnam: Status, service models and association with treatment outcome.",
+      "authors": "Tran BX, Dang AK, Vu GT, Tran TT, Latkin CA",
+      "journal": "PloS one",
+      "year": "2019",
+      "doi": "10.1371/journal.pone.0223723"
+    },
+    "32584904": {
+      "status": "resolved",
+      "title": "Measuring satisfaction with health care services for Vietnamese patients with cardiovascular diseases.",
+      "authors": "Hwang J, Vu GT, Tran BX, Nguyen THT, Nguyen BV",
+      "journal": "PloS one",
+      "year": "2020",
+      "doi": "10.1371/journal.pone.0235333"
+    },
+    "34017606": {
+      "status": "resolved",
+      "title": "Outpatient satisfaction with primary health care services in Vietnam: Multilevel analysis results from The Vietnam Health Facilities Assessment 2015.",
+      "authors": "Quyen BTT, Ha NT, Van Minh H",
+      "journal": "Health psychology open",
+      "year": "2021",
+      "doi": "10.1177/20551029211015117"
+    },
+    "34445940": {
+      "status": "resolved",
+      "title": "Improving Hospital's Quality of Service in Vietnam: The Patient Satisfaction Evaluation in Multiple Health Facilities.",
+      "authors": "Thach Phuong N, Vu Hoang P, Mac Dang T, Nguyen Thi Huyen T, Ngo Thi T",
+      "journal": "Hospital topics",
+      "year": "2023",
+      "doi": "10.1080/00185868.2021.1969871"
+    },
+    "36439278": {
+      "status": "resolved",
+      "title": "Patient Satisfaction With Healthcare Service Quality and Its Associated Factors at One Polyclinic in Hanoi, Vietnam.",
+      "authors": "Duc Thanh N, My Anh BT, Xiem CH, Quynh Anh P, Tien PH",
+      "journal": "International journal of public health",
+      "year": "2022",
+      "doi": "10.3389/ijph.2022.1605055"
+    },
+    "39944421": {
+      "status": "resolved",
+      "title": "Exploring Patient Satisfaction and Determinants in Outpatient Services: A Cross-Sectional Study.",
+      "authors": "Mahajan P, Anand A, Hossain S, Vishwakarma M",
+      "journal": "Cureus",
+      "year": "2025",
+      "doi": "10.7759/cureus.77345"
+    },
+    "40295132": {
+      "status": "resolved",
+      "title": "Patient satisfaction and its associated factors in selected primary healthcare facilities in Kono District, Sierra Leone: a cross-sectional study.",
+      "authors": "Dibba Y, Boima F, Jerome JG, Watson SI, Chery L",
+      "journal": "BMJ open",
+      "year": "2025",
+      "doi": "10.1136/bmjopen-2024-093501"
+    },
+    "42625778": {
+      "status": "resolved",
+      "title": "Outpatient satisfaction assessed using a nationally standardized questionnaire: a survey of five health care facilities in Vietnam.",
+      "authors": "Dang KT, Quang NA, Nguyen MH, Huynh NB, Nguyen NT",
+      "journal": "Frontiers in health services",
+      "year": "2026",
+      "doi": "10.3389/frhs.2026.1844842"
+    }
+  },
+  "receipt_signature": "v4:shared:07c0471abee96808a690c933a0433cfd90459106f26a9a63c579778b1d6462a4"
+}
