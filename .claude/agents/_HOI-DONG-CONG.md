@@ -220,7 +220,7 @@ lịch tự chạy (tốn token, chưa bảo đảm hoàn thiện) ⇒ KHÔNG c�
 
 1. **Chọn cổng — 0 agent:** `python3 tools/hoi_dong_cong.py lich-hop --study <mã>` → cổng ĐẦU TIÊN G0→G10 còn phần
    cần họp theo hồ sơ máy (không có ⇒ không mở agent, chỉ làm bước 3–4). Cổng mang `nen_cho_cong_truoc` vẫn họp khi
-   tới lượt (nhịp bác sĩ chọn) nhưng báo cáo phải ghi biên bản có thể CŨ khi cổng trước chốt.
+   tới lượt (khi bác sĩ gọi) nhưng báo cáo phải ghi biên bản có thể CŨ khi cổng trước chốt.
 2. **Họp MỘT cổng:** `ho-so … --json` → workflow `hoi-dong-cong` với `args.ho_so` (trần 16 agent, một vòng tranh
    biện). Lỗi/dừng giữa chừng ⇒ không resume, không chạy lại; đọc journal, báo đã ghi được gì.
 3. **Hoàn thiện đầu ra đề tài:** mục «agent còn việc» của `trach-nhiem --gate G<N>` (gồm đầu ra bị trả về sửa) ⇒
@@ -230,7 +230,7 @@ lịch tự chạy (tốn token, chưa bảo đảm hoàn thiện) ⇒ KHÔNG c�
    công cụ/tài liệu agent/điều phối/doctrine trong worktree, test + kiểm đột biến cho chốt mới, commit + push + PR;
    rồi `bai-hoc --xu-ly <mã> --ket da_sua --pr <URL> --ly-do …` (hoặc `khong_sua`/`trung` kèm lý do). Trước khi
    sửa, xem PR đang mở của hai repo — đã có PR cho cùng vấn đề thì ghi `trung`/bỏ qua, không mở PR trùng.
-5. **Báo cáo ngày** `hoi_dong/BAO_CAO_NGAY_<YYYY-MM-DD>.md` (dấu vết cho `kiem_lich_nen.py`): cổng đã họp, số agent,
+5. **Báo cáo ngày** `hoi_dong/BAO_CAO_NGAY_<YYYY-MM-DD>.md` (dấu vết của lượt bác sĩ gọi — lịch đã huỷ nên `kiem_lich_nen.py` không canh): cổng đã họp, số agent,
    biên bản đã ghi, kết luận từng nhiệm vụ/DP, PR đã mở, bài học đã/chưa xử lý, việc của bác sĩ còn lại.
 
 Vòng này KHÔNG gộp PR, không ký, không ghi cờ/`gate_params`, không đụng sổ cái — mọi PR chờ bác sĩ gộp.
