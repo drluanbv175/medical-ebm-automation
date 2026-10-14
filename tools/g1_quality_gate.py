@@ -598,6 +598,15 @@ def collect_evidence_identifiers(
                 for value in values:
                     add_unique(pmids, value)
 
+    # 14/10/2026: danh mục đọc bổ sung G0-T3 (có cấu trúc «pmid:…»/«doi:…»). A1 ghi PMID của bảng nguồn bổ sung ở ô trần
+    # không tiền tố «PMID» ⇒ regex đọc A1 bên dưới bỏ sót (C1a: 40623792 · 32946537 · 40432693) — đọc thẳng checkpoint.
+    for ma in g0_checkpoint.get("danh_muc_doc_bo_sung") or []:
+        loai, _, gia_tri = str(ma).partition(":")
+        if loai == "pmid":
+            add_unique(pmids, gia_tri)
+        elif loai == "doi":
+            add_unique(dois, gia_tri)
+
     candidates: List[Path] = []
     artifacts = g0_checkpoint.get("artifacts")
     if isinstance(artifacts, Mapping):
@@ -605,7 +614,9 @@ def collect_evidence_identifiers(
         if raw:
             p = Path(str(raw))
             candidates.append(p if p.is_absolute() else Path.cwd() / p)
-    candidates.extend(sorted(Path(out_dir).glob("G0_A1_PICO_FINER_*.md")))
+    # 14/10/2026: glob này khớp cả bản sao lưu `G0_A1_PICO_FINER_<mã>.bak-<thời điểm>.md` mà `--dung-lai-a1` để lại ⇒
+    # PMID của tập G0 CŨ (đã rời nền sau khi chạy lại tìm) lọt lại vào sổ A2b. Bỏ bản sao lưu.
+    candidates.extend(p for p in sorted(Path(out_dir).glob("G0_A1_PICO_FINER_*.md")) if ".bak-" not in p.name)
 
     for path in candidates:
         if not path.exists():
