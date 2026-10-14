@@ -1,5 +1,5 @@
 # A2 — THIẾT KẾ NGHIÊN CỨU & SAP SKELETON | hai-long-benh-nhan-C1a-BVQY175
-> Tạo tự động: 2026-10-11 13:15 | Rule-based; chưa có effect size truy nguyên; giữ nhãn [CẦN]
+> Tạo tự động: 2026-10-14 19:21 | Rule-based; chưa có effect size truy nguyên; giữ nhãn [CẦN]
 > [BẢN NHÁP TỰ ĐỘNG] — Bác sĩ xác nhận thiết kế chọn + điền [CẦN...] trước khi tiến G2/G4
 > Cần bác sĩ kiểm chứng.
 
@@ -15,7 +15,7 @@
 - Mã đề tài: `hai-long-benh-nhan-C1a-BVQY175`
 - Tên đề tài: Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
 - Phiên bản protocol: 1.0
-- Ngày tạo/cập nhật: 2026-10-11 13:15
+- Ngày tạo/cập nhật: 2026-10-14 19:21
 - Chủ nhiệm, nhà phương pháp, thống kê viên, quản lý dữ liệu: Theo đề cương §6.1 (bảng RACI): chủ nhiệm đề tài (A toàn đề tài — định hướng khoa học, duyệt đề cương/SAP/kinh phí, ký hồ sơ đạo đức); thư ký/điều phối (quản lý tài liệu, lịch, sổ tiến độ, Risk Register; quản lý dữ liệu lưu trữ/sao lưu theo §6.5); nhà thống kê/phân tích (R phân tích, A về tính đúng thống kê — cỡ mẫu Whitehead MT2, viết và khoá SAP; khuyến nghị độc lập với người thu thập); điều tra viên phát/thu phiếu (ngoài Khoa C1a); người nhập liệu (nhập đôi 100%, nên khác điều tra viên); giám sát chất lượng QC; tổ mở hòm phiếu 2 người và tổ mã hoá ý kiến mở 2 người + 1 phân xử (đều ngoài khoa; chủ nhiệm không tham gia); hội đồng chuyên gia I-CVI/S-CVI 6–10 người (≥ 2 đại diện người bệnh, ≤ 2 người thuộc C1a); bên thứ ba Phòng CNTT/QLCL trích HIS. Số người cụ thể mỗi vai do chủ nhiệm ấn định theo cỡ mẫu và lưu lượng khám.
 - Tài trợ, bảo hiểm, xung đột lợi ích và vai trò nhà tài trợ: [CẦN HOÀN THIỆN Ở G2/G9]
 - Chuẩn đề cương: Protocol định trước; đăng ký nếu cần minh bạch
@@ -138,10 +138,10 @@ Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định thật, ưu 
   → Không trích xuất được effect size từ abstracts. [CẦN TỰ ĐỌC Y VĂN]
 
 **Evidence landscape từ G0:**
-- SR/MA hiện có: 0
-- RCT hiện có: 0
+- SR/MA hiện có: 1
+- RCT hiện có: 1
 - Năm gần nhất: 2025
-- Mức độ evidence: CÓ NỀN QUAN SÁT — ~12 hit của bộ lọc quan sát (CHƯA sàng lọc mức liên quan), không thấy RCT/SR trong PubMed, truy vấn G0 «patient satisfaction outpatient department Vietnam hospital»
+- Mức độ evidence: TRUNG BÌNH — có 1 SR/MA
 
 ---
 
@@ -232,7 +232,7 @@ Hoặc: Linear regression → β (95%CI) nếu kết cục liên tục
 VIF < 5 (kiểm đa cộng tuyến); Hosmer-Lemeshow (logistic)
 α (hai đuôi): 0.05 [CẦN XÁC NHẬN THEO GIẢ THUYẾT]
 Hiệu ứng trình bày: [OR/HR/RR/MD + 95%CI] — KHÔNG chỉ p-value
-Phần mềm: ☐ R  ☐ Stata  ☐ SPSS  | Seed ngẫu nhiên: 20261011 [CẦN BÁC SĨ XÁC NHẬN — gợi ý tự sinh từ ngày chạy]
+Phần mềm: ☐ R  ☐ Stata  ☐ SPSS  | Seed ngẫu nhiên: 20261014 [CẦN BÁC SĨ XÁC NHẬN — gợi ý tự sinh từ ngày chạy]
 ```
 
 ### SAP §5 — Phân tích đa biến (Mục tiêu 2 — nếu có)
@@ -285,7 +285,7 @@ Mọi phân tích phải định trước hoặc gắn nhãn hậu nghiệm/thă
 ```
 Phần mềm chính: ☐ R v___  ☐ Stata v___  ☐ SPSS v___
 R packages dự kiến: tableone, car [CẦN BÁC SĨ XÁC NHẬN — gợi ý theo thiết kế cross_sectional]
-Random seed: 20261011 [CẦN XÁC NHẬN nếu có bước ngẫu nhiên/mô phỏng]
+Random seed: 20261014 [CẦN XÁC NHẬN nếu có bước ngẫu nhiên/mô phỏng]
 Script phân tích: lưu tại exports/hai-long-benh-nhan-C1a-BVQY175/scripts/ — versioned cùng protocol
 ```
 
@@ -373,7 +373,7 @@ cỡ mẫu đã đến từ đâu (STROBE mục 10), chọn MỘT trong ba đư�
 ╠══════════════════════════════════════════════════════════════╣
 ║  Đề tài: hai-long-benh-nhan-C1a-BVQY175                        ║
 ║  Phiên bản SAP: 1.0                                         ║
-║  Ngày soạn SAP: 2026-10-11                                    ║
+║  Ngày soạn SAP: 2026-10-14                                    ║
 ║  Trạng thái dữ liệu lúc khóa: CHƯA CÓ / CHƯA XEM          ║
 ║                                                              ║
 ║  Kết cục chính (KHÔNG đổi sau khóa):                       ║
