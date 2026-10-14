@@ -73,7 +73,7 @@
 Ba nhóm biến đã KHÓA theo lập luận nhân quả trên DAG (Phụ lục D đề cương) — KHÔNG chọn bằng ngưỡng p đơn biến (lý do ở mục 4.10 đề cương):
 
 - **Exposure chính:** `thoigian_cho` (phút; nguồn ưu tiên mốc HIS/eHospital theo mục 4.6.3; nguồn dự phòng tự báo cáo phân tích TÁCH BẠCH, không trộn chung một biến).  
-- **Biến điều chỉnh bắt buộc (forced-in):** `Tuoi` (giữ liên tục), `GioiTinh`, `NoiCuTru`, `CoBHYT`, `LyDoKham`, `khunggio_kham`, `ngay_trong_tuan`, `suckhoe_tudanhgia`, `duoc_dung_bacsi`, và `chuyenkhoa` *(biến này có điều kiện: [CẦN CHỦ NHIỆM XÁC NHẬN] Khoa C1a có vận hành phân biệt được theo chuyên khoa/phòng khám không — nếu không, loại khỏi tập forced-in và mô hình chính hiệu chỉnh các biến còn lại, mục 4.6.2 đề cương)*.  
+- **Biến điều chỉnh bắt buộc (forced-in):** `Tuoi` (giữ liên tục), `GioiTinh`, `NoiCuTru`, `CoBHYT`, `LyDoKham`, `khunggio_kham`, `ngay_trong_tuan`, `suckhoe_tudanhgia` và `duoc_dung_bacsi` *(PI xác nhận 2026-10-14: Khoa C1a KHÔNG vận hành phân biệt theo chuyên khoa/phòng khám ⇒ `chuyenkhoa` loại khỏi tập forced-in, mô hình chính hiệu chỉnh các biến còn lại; mục 4.6.2 đề cương)*.  
 - **Biến thăm dò (exploratory, ấn định trước):** `TrinhDoHocVan`, `NgheNghiep`, `ThuNhapHoGD`, `KhoangCachNhaBV`, `PhuongTienDiChuyen`, `NguonThongTinbv`, `so_quay_buoc` (nếu đủ điều kiện), `co_cls`, `kenh_datlich`, `co_goikham`, `rieng_tu`.  
 - **Biến trung gian — KHÔNG hiệu chỉnh trong mô hình chính (tránh over-adjustment):** `chenh_kyvong` (= `kyvong_thoigiancho` − thời gian chờ thực tế), `xacnhan_kyvong`; phân tích vai trò trung gian là thăm dò định trước, báo cáo riêng.  
 - **Biến sau-khám KHÔNG hiệu chỉnh:** `co_cls`, `so_quay_buoc` xảy ra sau khi gặp bác sĩ — chỉ dùng mô tả/thăm dò (mục 4.6.2 đề cương).  
