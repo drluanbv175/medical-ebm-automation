@@ -2,28 +2,51 @@
 <html lang="vi">
 <!--
 ==================================================================================
-  TEMPLATE CHUẨN — "DARK ANALYST"  (Mẫu MẶC ĐỊNH mới cho Dashboard lâm sàng EBM)
-  Dùng cho: skill cap-nhat-chung-cu-y-khoa và mọi tác vụ tạo Web Dashboard lâm sàng.
+  TEMPLATE CHUẨN — "DARK ANALYST"  (mẫu THAY THẾ, nền tối — dùng CHỈ KHI bác sĩ yêu
+  cầu riêng; mẫu MẶC ĐỊNH cho Dashboard lâm sàng EBM là "Evidence Workbench" —
+  web-dashboard-evidence-workbench.html, xem SKILL.md mục 5A)
+  Dùng cho: skill cap-nhat-chung-cu-y-khoa/dark-analyst, KHI bác sĩ yêu cầu nền tối/dày dữ liệu.
 ----------------------------------------------------------------------------------
   CÁCH DÙNG (chỉ sửa 1 chỗ): thay khối hằng số DATA = {...} ở cuối <script> bằng
   nội dung đã XÁC MINH. KHÔNG cần đụng HTML/CSS/engine. Chrome (tiêu đề, PICO chips,
   KPI, verdict, Quick View) TỰ SINH từ DATA.
 
-  SCHEMA (DÙNG CHUNG với evidence-workbench-template.html — 1 DATA chạy được cả hai):
+  SCHEMA (DÙNG CHUNG với evidence-workbench-template.html — 1 DATA chạy được cả hai,
+  kể cả `standards` — Lớp 4 "Chuẩn & chất lượng" hiển thị ở CẢ HAI mẫu, đặt trong
+  vùng cuộn của trang, thu gọn mặc định, bấm để mở; ẩn hoàn toàn nếu DATA.standards
+  không khai báo):
     meta:    { eyebrow, question, pico:{P,I,C,O}, updated }
     summary: { conclusion, doNow:[…], dontDo:[…], redFlags:[…] }     // Clinical Quick View
+            // ⚠ ĐÚNG 4 TÊN NÀY, không thêm không đổi. Gõ sai tên (vd `notDo`) thì nội
+            // dung bị VỨT ÂM THẦM — panel rỗng trên MỌI sản phẩm, không báo lỗi.
+            // Đã xảy ra thật 18/08/2026; nay verify_dashboard.py chặn cứng (BH61).
+    standards?: {                                                    // Lớp 4: chuẩn cập nhật chứng cứ
+      frame, sourceHierarchy, reporting, appraisal, currency, safety, vietnamFit,     // (ẩn cả khối nếu không khai báo — tương thích ngược)
+      sourceVerification, lastVerified, verificationTool,
+      searchSources:[…],
+      gates:[{label, status:'ok'|'warn'|'need', note}]
+    }
     items:   [ {
       id:'ITEM-01', title, source, org, dateVersion, pmid?, doi?, url?,
-      design:'Guideline'|'Meta'|'RCT'|'Cohort'|'Consensus',
+      design:'Guideline'|'Meta'|'RCT'|'Cohort'|'Consensus'|chuỗi mô tả,
+                                          // chuỗi tự do được ánh xạ về HỌ theo TIỀN TỐ (vd
+                                          // 'Cross-sectional — …' → Cắt ngang; 'Nhãn thuốc — …' →
+                                          // Nhãn thuốc/cơ quan quản lý); không khớp họ nào → 'Khác'
       population,
       pico:{ P:[txt,'match'|'mis'], I:[…], C:[…], O:[…] },
       frame?:'PICO'|'PECO'|'Chẩn đoán'|'Tiên lượng'|…,            // khung câu hỏi (mặc định PICO)
       frameLabels?:{P,I,C,O},                                     // đổi nhãn 4 ô khi không-PICO
-      effect?:{ measure,hr,lo,hi,ci,favors },                     // CHỈ khi có tỷ số (HR/RR/OR) → forest
+      effect?:{ measure,hr,lo,hi,ci,favors, scale?:'ratio'|'difference' },
+                                          // chỉ điền nếu nguồn báo cáo; số trích ĐÚNG nguồn.
+                                          // `hr` = ước lượng điểm của MỌI thước đo (giữ tên cũ).
+                                          // TỶ SỐ (HR/RR/OR/IRR) vẽ thang log, vạch 1,0; CHÊNH
+                                          // LỆCH (SMD/MD/RD/'Chênh…'/'Hiệu số trung bình…') vẽ
+                                          // thang tuyến tính, vạch 0. Không khai `scale` thì suy
+                                          // từ `measure`; nhãn lạ ⇒ 'ratio' (tương thích ngược).
       effectText?:'RD -1,84%/năm…',                              // hiệu số phi-tỷ-số dạng chữ (đúng nguồn)
       gradeSource, gradeLevel:'high'|'mod'|'low'|'vlow'|'na',
       decision:'apply'|'consider'|'notyet',
-      groups:['cao-tuoi','ckd','gan','dtd','tim-mach','da-thuoc'],
+      groups:['cao-tuoi','thai-ky','tre-em','ckd','gan','dtd','tim-mach','da-thuoc'],
       action, monitoring, vn, references:[…], flag?, safety?,
       rob?:{ 'Ngẫu nhiên hóa':'l'|'s'|'h', … }                    // CHỈ cho RCT; bỏ trống cho guideline
     } ]
@@ -44,6 +67,9 @@
     --ink:#e7edf6; --ink-2:#aebbd0; --muted:#7689a6; --faint:#56688a;
     --line:#1e2c46; --line-2:#2a3b5c;
     --cyan:#22d3ee; --blue:#60a5fa; --violet:#a78bfa; --teal:#2dd4bf; --pink:#f472b6; --green:#34d399; --amber:#fbbf24; --orange:#fb923c; --red:#f87171;
+    /* họ thiết kế thêm 2026-09-16 (xem DESIGN_FAMILIES trong ENGINE) — 5 họ cũ TÁI DÙNG
+       màu sẵn có (--teal/--violet/--blue/--cyan/--pink), chỉ 6 màu dưới đây là MỚI */
+    --sr:#818cf8; --trial:#38bdf8; --casectl:#fb7185; --caseser:#e879f9; --xsec:#a3e635; --stone:#a8a29e;
     --g-high:#34d399; --g-mod:#fbbf24; --g-low:#fb923c; --g-vlow:#f87171; --g-na:#7689a6;
     --apply:#34d399; --consider:#fbbf24; --notyet:#fb923c; --danger:#f87171;
     --mono:ui-monospace,"SF Mono","Menlo","Consolas",monospace;
@@ -108,6 +134,36 @@
   .etd-rec .rh .str{font-size:9px;color:#06121f;background:var(--g-high);border-radius:4px;padding:1px 7px}
   .etd-rec .rv{font-size:12px;color:var(--ink);line-height:1.5}
 
+  /* Lớp 4 — STANDARDS / QUALITY: chuẩn cập nhật chứng cứ, thẩm định và truy nguyên
+     (thêm 2026-09-16, cùng khuôn evidence-workbench-template.html). Dùng chung khối
+     chrome collapsible với .etd/.etd-d (section nền + tam giác thu gọn); chỉ định
+     nghĩa thêm phần nội dung riêng (lưới hộp, cổng liêm chính, bảng truy nguyên).
+     Đặt BÊN TRONG .main (cuộn được) thay vì phần chrome cố định trên đầu trang —
+     gates + bảng truy nguyên có thể dài hơn 1 màn hình; đặt ở phần chrome (như .etd)
+     sẽ bị .app{overflow:hidden} cắt mất khi mở, vì .app không tự cuộn (chỉ .main). */
+  .qual-wrap{border-top:1px solid var(--line);margin-top:2px}
+  .qual-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+  .qbox{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:9px 11px;min-width:0}
+  .qbox.wide{grid-column:1/-1}
+  .qbox h4{font-size:9.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);font-weight:800;margin-bottom:6px}
+  .qbox .v{font-size:11px;color:var(--ink-2);line-height:1.5}
+  .qbox .hint{font-size:10px;color:var(--faint);line-height:1.4;margin-top:5px}
+  .qgate{display:flex;flex-direction:column;gap:6px}
+  .gate{display:grid;grid-template-columns:52px 1fr;gap:8px;align-items:start;border:1px solid var(--line);background:var(--surface-2);border-radius:8px;padding:7px 9px}
+  .gate .s{display:inline-flex;justify-content:center;border-radius:999px;font-size:9px;font-weight:800;padding:2px 6px;text-transform:uppercase;letter-spacing:.3px}
+  .gate.ok .s{background:rgba(52,211,153,.16);color:var(--g-high)}
+  .gate.warn .s{background:rgba(251,191,36,.16);color:var(--g-mod)}
+  .gate.need .s{background:rgba(248,113,113,.16);color:var(--g-vlow)}
+  .gate .t{font-size:11px;color:var(--ink);font-weight:700;line-height:1.35}
+  .gate .g{font-size:10px;color:var(--muted);line-height:1.4;margin-top:1px}
+  .qtrace{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+  .qtrace .row{display:grid;grid-template-columns:74px minmax(0,1fr) 118px;gap:9px;align-items:start;border-bottom:1px solid var(--line);padding:7px 0}
+  .qtrace .id{font-family:var(--mono);font-size:9.5px;color:var(--faint)}
+  .qtrace .name{font-size:11px;color:var(--ink);font-weight:600;line-height:1.35}
+  .qtrace .srcx{font-size:10px;color:var(--muted);line-height:1.4;margin-top:2px}
+  .qtrace .ok2{font-size:9.5px;font-weight:800;color:var(--g-high);white-space:nowrap}
+  .qtrace .need2{font-size:9.5px;font-weight:800;color:var(--g-vlow);white-space:nowrap}
+
   /* Clinical Quick View band */
   .qv{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border-bottom:1px solid var(--line)}
   .qvc{background:var(--bg-2);padding:9px 14px}
@@ -143,6 +199,14 @@
   .b-guide{background:rgba(45,212,191,.12);color:var(--teal);border-color:rgba(45,212,191,.25)}.b-guide .d{background:var(--teal)}
   .b-cohort{background:rgba(34,211,238,.12);color:var(--cyan);border-color:rgba(34,211,238,.25)}.b-cohort .d{background:var(--cyan)}
   .b-consensus{background:rgba(244,114,182,.12);color:var(--pink);border-color:rgba(244,114,182,.25)}.b-consensus .d{background:var(--pink)}
+  .b-sr{background:rgba(129,140,248,.12);color:var(--sr);border-color:rgba(129,140,248,.25)}.b-sr .d{background:var(--sr)}
+  .b-trial{background:rgba(56,189,248,.12);color:var(--trial);border-color:rgba(56,189,248,.25)}.b-trial .d{background:var(--trial)}
+  .b-casectl{background:rgba(251,113,133,.12);color:var(--casectl);border-color:rgba(251,113,133,.25)}.b-casectl .d{background:var(--casectl)}
+  .b-caseser{background:rgba(232,121,249,.12);color:var(--caseser);border-color:rgba(232,121,249,.25)}.b-caseser .d{background:var(--caseser)}
+  .b-xsec{background:rgba(163,230,53,.12);color:var(--xsec);border-color:rgba(163,230,53,.25)}.b-xsec .d{background:var(--xsec)}
+  .b-druglabel{background:rgba(251,146,60,.12);color:var(--orange);border-color:rgba(251,146,60,.25)}.b-druglabel .d{background:var(--orange)}
+  .b-mech{background:rgba(168,162,158,.12);color:var(--stone);border-color:rgba(168,162,158,.25)}.b-mech .d{background:var(--stone)}
+  .b-other{background:rgba(118,137,166,.12);color:var(--muted);border-color:rgba(118,137,166,.25)}.b-other .d{background:var(--muted)}
 
   .dec{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;font-weight:800;padding:2px 9px;border-radius:20px;white-space:nowrap}
   .dec .d{width:6px;height:6px;border-radius:50%}
@@ -159,6 +223,10 @@
   .flag{font-size:9px;font-weight:700;color:var(--g-low);border:1px solid rgba(251,146,60,.35);background:rgba(251,146,60,.1);border-radius:4px;padding:1px 5px;margin-left:6px}
   .robmini{display:flex;gap:3px}.robmini i{width:11px;height:11px;border-radius:50%}
   .rl{background:var(--g-high)}.rs{background:var(--g-mod)}.rh{background:var(--g-vlow)}
+  .robnote{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);max-width:150px}
+  .robnote .dot{width:6px;height:6px;border-radius:50%;background:var(--faint);flex:none}
+  .robnote span.tx{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .robtext{font-size:11.5px;color:var(--ink-2);line-height:1.5;white-space:pre-wrap}
 
   tr.exp td{padding:0;background:var(--bg-2);border-bottom:1px solid var(--line-2)}
   .exp-in{display:grid;grid-template-columns:1.1fr 1fr 1.2fr;gap:0;border-top:1px solid var(--line)}
@@ -204,6 +272,7 @@
     .kpis{grid-template-columns:repeat(4,1fr)}
     .kpis .kp{border-top:1px solid var(--line)}
     .etd-grid{grid-template-columns:repeat(3,1fr)}
+    .qual-grid{grid-template-columns:repeat(2,1fr)}
   }
   @media (max-width:860px){
     .kpis{grid-template-columns:repeat(3,1fr)}
@@ -211,6 +280,8 @@
     .etd-grid{grid-template-columns:repeat(2,1fr)}
     .exp-in{grid-template-columns:1fr}              /* chi tiết bung DỌC cho dễ đọc */
     .exp-col{border-right:0;border-bottom:1px solid var(--line)}
+    .qual-grid{grid-template-columns:1fr}
+    .qtrace .row{grid-template-columns:1fr}
   }
   @media (max-width:540px){
     .kpis{grid-template-columns:repeat(2,1fr)}
@@ -252,6 +323,7 @@
       </tr></thead>
       <tbody id="rows"></tbody>
     </table>
+    <section class="etd qual-wrap" id="qual" style="display:none"></section>
   </div>
 
   <footer class="disclaimer">
@@ -357,24 +429,176 @@ const DATA = {
 /* ▲▲▲  HẾT KHỐI DATA  ▲▲▲ */
 
 /* ============================ ENGINE (không cần sửa) ============================ */
-const DESIGN_META={Guideline:['b-guide','Guideline'],Meta:['b-meta','Meta'],RCT:['b-rct','RCT'],Cohort:['b-cohort','Cohort'],Consensus:['b-consensus','Đồng thuận']};
+/* HỌ THIẾT KẾ — thêm 2026-09-16, cùng khuôn evidence-workbench-template.html. `design`
+   là CHUỖI TỰ DO ("Cross-sectional — kiểm định độ chính xác chẩn đoán", "Nhãn thuốc —
+   cảnh báo thần kinh (FDA)"…). Bản cũ tra KHỚP CHÍNH XÁC 5 khoá nên design lạ rơi vào
+   fallback ['b-guide', design] — hiện đúng chữ nhưng SAI MÀU (tô như Guideline). Nay
+   ánh xạ design → HỌ theo TIỀN TỐ (không phân biệt hoa/thường, tiền tố dài nhất thắng;
+   chuỗi ghép lấy họ của phần ĐẦU). Tập tiền tố PHẢI TRÙNG KHÍT `DESIGN_FAMILIES` của
+   EBM-Dashboards/tools/verify_dashboard.py và của evidence-workbench-template.html —
+   cổng liêm chính và cả hai mẫu dùng CÙNG MỘT định nghĩa "nhận diện được" (test canh:
+   tools/test_ew_template_ho_thiet_ke_thang_hieu_so.py). Không khớp họ nào ⇒ "Khác".
+   Chỉ đổi HIỂN THỊ: không đổi schema DATA, không đổi luật cổng; chuỗi design gốc vẫn
+   hiện ở tooltip huy hiệu và ở panel chi tiết. */
+const DESIGN_FAMILIES=[
+  /* [khoá họ, lớp huy hiệu, nhãn, biến màu, [tiền tố…]] */
+  ['Guideline','b-guide','Guideline','--teal',['guideline','hướng dẫn','khuyến cáo','so sánh đa-guideline','so sánh guideline']],
+  ['Meta','b-meta','Meta','--violet',['meta','phân tích gộp']],
+  ['SR','b-sr','Tổng quan hệ thống','--sr',['tổng quan hệ thống','systematic']],
+  ['RCT','b-rct','RCT','--blue',['rct']],
+  ['Trial','b-trial','Thử nghiệm lâm sàng','--trial',['thử nghiệm','trial']],
+  ['Cohort','b-cohort','Cohort','--cyan',['cohort','đoàn hệ']],
+  ['CaseControl','b-casectl','Bệnh–chứng','--casectl',['case-control','bệnh-chứng']],
+  ['CaseSeries','b-caseser','Ca lâm sàng / chuỗi ca','--caseser',['case series','ca lâm sàng','chuỗi ca']],
+  ['CrossSectional','b-xsec','Cắt ngang','--xsec',['cross-sectional','cắt ngang']],
+  ['Consensus','b-consensus','Đồng thuận','--pink',['consensus','đồng thuận']],
+  ['Regulatory','b-druglabel','Nhãn thuốc / cơ quan quản lý','--orange',['nhãn thuốc','drug label','tờ hướng dẫn sử dụng','cảnh báo','dược cảnh giác','drug safety','đặc tả nguy cơ','rà soát an toàn','kết luận tín hiệu an toàn','tín hiệu an toàn','phê duyệt','regulatory']],
+  ['Mechanism','b-mech','Cơ chế / dược động học','--stone',['cơ chế','pk','dược động']]
+];
+const DESIGN_OTHER=['Other','b-other','Khác','--muted'];
+const DESIGN_META=Object.fromEntries(DESIGN_FAMILIES.map(f=>[f[0],[f[1],f[2],f[3]]]).concat([[DESIGN_OTHER[0],DESIGN_OTHER.slice(1)]]));
+function designFamily(design){
+  const d=String(design??'').normalize('NFC').trim().toLowerCase();
+  let best=DESIGN_OTHER[0],len=0;
+  if(d) for(const f of DESIGN_FAMILIES) for(const p of f[4]) if(p.length>len&&d.startsWith(p)){best=f[0];len=p.length;}
+  return best;
+}
 const GRADE_META={high:['g-high','Cao',4],mod:['g-mod','TB',3],low:['g-low','Thấp',2],vlow:['g-vlow','Rất thấp',1],na:['g-na','Không phân hạng',0]};
 const DEC_META={apply:['d-apply','Áp dụng ngay'],consider:['d-consider','Cân nhắc'],notyet:['d-notyet','Chưa đủ']};
-const GROUP_META={'cao-tuoi':'Người cao tuổi','ckd':'CKD','gan':'Bệnh gan','dtd':'Đái tháo đường','tim-mach':'Tim mạch','da-thuoc':'Đa thuốc'};
+const GROUP_META={'cao-tuoi':'Người cao tuổi','thai-ky':'Thai kỳ · phụ nữ có khả năng mang thai','tre-em':'Trẻ em · vị thành niên','ckd':'CKD','gan':'Bệnh gan','dtd':'Đái tháo đường','tim-mach':'Tim mạch','da-thuoc':'Đa thuốc'};
 const RM={l:['rl','✓'],s:['rs','!'],h:['rh','✕']};
+/* rob — thêm 16/09/2026, cùng khuôn evidence-workbench-template.html. Schema đòi object
+   {miền:'l'|'s'|'h'} (xem RM), nhưng dashboard thật (vd CKM_TimThanChuyenHoa 28/06) từng ghi
+   `rob` là CHUỖI VĂN XUÔI ("Mù đôi, phân bổ ngẫu nhiên che giấu, phân tích ITT — nguy cơ sai
+   lệch thấp."). Bản cũ luôn coi `rob` là object và lặp Object.values(e.rob)/Object.keys(e.rob)
+   — với chuỗi, mỗi KÝ TỰ trở thành một "mã miền" giả, RM[ký tự] undefined ⇒ TypeError ngay khi
+   đọc RM[r][0], làm SẬP render()/expandRow() cho TOÀN BỘ trang (không chỉ mục lỗi). robEntries()
+   chỉ trả về entries khi `rob` THỰC SỰ là object (không phải mảng/chuỗi/null) VÀ có ít nhất một
+   mã hợp lệ trong RM; mã lạ trong object bị bỏ qua (không giả '?') thay vì làm sập trang. Object
+   không còn mã hợp lệ nào, hoặc `rob` là chuỗi/kiểu khác ⇒ trả null — nơi gọi tự quyết định hiển
+   thị (chuỗi hiện nguyên văn, còn lại hiện '—'/thông điệp cũ). */
+function robEntries(rob){
+  if(rob==null||typeof rob!=='object'||Array.isArray(rob))return null;
+  const es=Object.entries(rob).filter(([,r])=>RM[r]);
+  return es.length?es:null;
+}
+const QUAL_STANDARD_GATES=[
+  {label:'Câu hỏi có cấu trúc',status:'need',note:'Khai báo PICO/PECO/PIRD/PROGRESS trước khi sinh dashboard thật.'},
+  {label:'Thứ bậc nguồn',status:'need',note:'Ghi rõ guideline/SR-MA/RCT/quan sát và lý do chọn nguồn.'},
+  {label:'Chuẩn báo cáo',status:'need',note:'Đối chiếu CONSORT, STROBE, PRISMA, STARD, TRIPOD theo thiết kế.'},
+  {label:'Công cụ thẩm định',status:'need',note:'Đối chiếu AGREE II, AMSTAR 2, RoB 2, ROBINS-I, QUADAS-3 v1.2, PROBAST hoặc JBI; QUADAS-2 chỉ để tương thích nghiên cứu lịch sử.'},
+  {label:'Liêm chính phát hành',status:'need',note:'Không PII, có nguồn truy nguyên, tách độ chắc chắn với sức mạnh khuyến cáo.'}
+];
+function gateState(status){
+  const s=String(status||'need').toLowerCase();
+  if(['ok','pass','done','dat','đạt'].includes(s)) return ['ok','Đạt'];
+  if(['warn','partial','review','canh-bao','cảnh-báo'].includes(s)) return ['warn','Rà'];
+  return ['need','Cần'];
+}
 let state={open:null, q:'', filter:'all'};
+
+/* 2026-07-12 (round 20 security review): chống XSS — DATA.items có thể chứa văn bản
+   NGOÀI (tiêu đề/tóm tắt PubMed, guideline...) được nội suy thẳng vào innerHTML khắp
+   file. escHtml() escape trước khi ghép chuỗi HTML; escUrl() chỉ cho phép scheme
+   http(s) khi dựng href (chặn "javascript:" URI). */
+function escHtml(s){return String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function escUrl(u){u=String(u||'').trim();return /^https?:\/\//i.test(u)?encodeURI(u).replace(/"/g,'%22'):'';}
+/* SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 4, phát hiện MEDIUM):
+   escHtml() không đủ cho giá trị nội suy vào chuỗi JS single-quote trong
+   onclick="toggle('${e.id}')" — HTML entity decode xảy ra TRƯỚC khi JS
+   engine thấy chuỗi, nên &#39; quay lại thành ' và không chặn được thoát
+   chuỗi. Dùng escJs() escape backslash/nháy đơn thật. */
+function escJs(s){return String(s??'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");}
+
+/* Lớp 4 — STANDARDS / QUALITY (schema DÙNG CHUNG với evidence-workbench-template.html,
+   khoá DATA.standards). CHỈ gọi khi DATA.standards có khai báo — không tự bịa nội dung
+   cho dashboard cũ chưa khai (renderStatic() giữ ẩn cả section thay vì hiện khung rỗng).
+   Nội dung DATA.standards có thể chứa văn bản trích nguyên văn từ nguồn (tiêu đề, ghi
+   chú cổng…) — escHtml()/escUrl() thoát trước khi ghép vào innerHTML. */
+function qualityView(s){
+  const src=Array.isArray(s.searchSources)?s.searchSources.join(' · '):(s.searchSources||'Chưa khai báo nguồn tìm kiếm');
+  const gates=(Array.isArray(s.gates)&&s.gates.length?s.gates:QUAL_STANDARD_GATES);
+  const box=(h,v,hint)=>`<div class="qbox"><h4>${h}</h4><div class="v">${escHtml(v||'Chưa khai báo')}</div>${hint?`<div class="hint">${escHtml(hint)}</div>`:''}</div>`;
+  const gateHtml=gates.map(g=>{const st=gateState(g.status);return `<div class="gate ${st[0]}"><span class="s">${st[1]}</span><div><div class="t">${escHtml(g.label||'Cổng kiểm')}</div><div class="g">${escHtml(g.note||'—')}</div></div></div>`;}).join('');
+  const traces=(DATA.items||[]).map(e=>{
+    const ok=Boolean(e.pmid||e.doi||escUrl(e.url)||(Array.isArray(e.references)&&e.references.length));
+    const trace=[e.pmid?`PMID ${e.pmid}`:'',e.doi?`DOI ${e.doi}`:'',escUrl(e.url)?'URL':'',Array.isArray(e.references)&&e.references.length?'Refs':''].filter(Boolean).join(' · ')||'Thiếu định danh';
+    return `<div class="row">
+      <div class="id">${escHtml(e.id||'ITEM')}</div>
+      <div><div class="name">${escHtml(e.title||'—')}</div><div class="srcx">${escHtml(e.source||'—')} · ${escHtml(e.dateVersion||'—')}</div></div>
+      <div class="${ok?'ok2':'need2'}">${escHtml(trace)}</div>
+    </div>`;
+  }).join('')||'<div style="padding:12px;text-align:center;color:var(--muted)">Chưa có item chứng cứ.</div>';
+  return `<details class="etd-d"><summary class="eh">▣ Chuẩn &amp; chất lượng cập nhật chứng cứ <span class="note">— bấm để mở/đóng · khoá các yêu cầu tối thiểu trước khi dùng cho thực hành lâm sàng</span></summary>
+    <div class="qual-grid">
+      ${box('Khung câu hỏi',s.frame||DATA.meta.question,'PICO/PECO/PIRD/PROGRESS phải khớp mục tiêu thực hành.')}
+      ${box('Thứ bậc nguồn',s.sourceHierarchy,'Ưu tiên nguồn tổng hợp đáng tin cậy trước nghiên cứu đơn lẻ.')}
+      ${box('Độ cập nhật',s.currency||DATA.meta.updated,`Nguồn tìm kiếm: ${src}`)}
+      ${box('Xác minh tự động nguồn',s.sourceVerification||'Chưa ghi trạng thái xác minh nguồn',`Cổng yêu cầu: ${s.verificationTool||'verify_dashboard.py --online --strict-sources'} · Lần xác minh: ${s.lastVerified||'chưa ghi'}`)}
+      ${box('Chuẩn báo cáo',s.reporting||'CONSORT · STROBE · PRISMA · STARD · TRIPOD','Chọn chuẩn theo thiết kế nghiên cứu của từng nguồn.')}
+      ${box('Công cụ thẩm định',s.appraisal||'AGREE II · AMSTAR 2 · RoB 2 · ROBINS-I · QUADAS-3 v1.2 · PROBAST · JBI','Không dùng RoB 2 cho nghiên cứu không phải RCT; QUADAS-2 chỉ để đọc nghiên cứu lịch sử.')}
+      ${box('An toàn &amp; Việt Nam',`${s.safety||'Chưa khai báo an toàn'}${s.vietnamFit?` · ${s.vietnamFit}`:''}`,'Bắt buộc rà thuốc, chống chỉ định, tương tác, chuyển tuyến, chi phí/BHYT và năng lực theo dõi.')}
+      <div class="qbox wide"><h4>Cổng liêm chính trước phát hành</h4><div class="qgate">${gateHtml}</div></div>
+      <div class="qbox wide"><h4>Truy nguyên từng item</h4><div class="qtrace">${traces}</div></div>
+    </div>
+  </details>`;
+}
+
+/* THANG HIỆU SỐ — thêm 2026-09-16, cùng khuôn evidence-workbench-template.html. Forest
+   mini từng LUÔN vẽ thang log, vạch 1,0: đúng cho TỶ SỐ (HR/RR/OR/IRR), SAI cho CHÊNH
+   LỆCH (SMD/MD/RD — giá trị "không khác biệt" là 0): số dương bị vẽ nhầm sang bên trái
+   vạch 1,0 (phía "có lợi"), số âm bị ép vào mép trái như lợi ích rất lớn.
+   • effect.scale:'ratio'|'difference' (TUỲ CHỌN) khai tường minh ⇒ dùng đúng giá trị đó;
+   • không khai ⇒ suy từ effect.measure: cụm từ nhận ra ĐẦU TIÊN theo vị trí quyết định (cùng
+     vị trí thì cụm dài hơn thắng). Khớp NGUYÊN TỪ — "RD" nằm trong "DMARD" KHÔNG tính; "tỷ số
+     chênh" và "tỷ suất chênh" là odds ratio nên cụm tỷ số đứng trước thắng chữ "chênh". Từ ĐẦU
+     TIÊN bắt đầu bằng Δ hoặc β (ΔHbA1c, hệ số β) ⇒ chênh lệch;
+   • không nhận ra gì ⇒ 'ratio' — tương thích ngược với mọi dashboard cũ.
+   Tỷ số có giá trị ≤ 0 không tồn tại trên thang log ⇒ KHÔNG vẽ (trước đây bị ép vào mép trái).
+   Danh sách PHẢI TRÙNG KHÍT tools/build_ban_doc_chung_cu.py (bản đọc) và
+   evidence-workbench-template.html — test canh: tools/test_ew_template_ho_thiet_ke_thang_hieu_so.py.
+   Chiều CÓ LỢI không suy từ phía của vạch: màu vẫn theo effect.favors như cũ. */
+const SCALE_RATIO_TERMS=['hr','rr','or','irr','ahr','aor','shr','cshr','ror','rom','tỷ số','ty so','tỷ suất chênh','ty suat chenh','nguy cơ tương đối','hazard ratio','odds ratio','risk ratio','rate ratio','relative risk'];
+const SCALE_DIFF_TERMS=['smd','md','wmd','rd','chênh','chenh','hiệu số trung bình','hiệu số trung bình chuẩn hoá','hiệu số trung bình chuẩn hóa','hiệu số rủi ro','hiệu số nguy cơ','khác biệt trung bình','mean difference','standardized mean difference','standardised mean difference','risk difference','hedges','cohen'];
+const SCALE_DIFF_FIRST_TOKEN_PREFIXES=['δ','β'];
+function scaleTokens(s){return String(s??'').replace(/∆/g,'Δ').normalize('NFC').toLowerCase().match(/[\p{L}\p{N}]+/gu)||[];}
+const SCALE_TERM_TOKENS=SCALE_RATIO_TERMS.map(x=>[scaleTokens(x),'ratio']).concat(SCALE_DIFF_TERMS.map(x=>[scaleTokens(x),'difference']));
+function measureScale(measure){
+  const t=scaleTokens(measure);
+  if(t.length&&SCALE_DIFF_FIRST_TOKEN_PREFIXES.some(p=>t[0].startsWith(p))) return 'difference';
+  for(let i=0;i<t.length;i++){
+    let kind=null,len=0;
+    for(const [p,k] of SCALE_TERM_TOKENS) if(p.length>len&&i+p.length<=t.length&&p.every((w,j)=>t[i+j]===w)){kind=k;len=p.length;}
+    if(kind) return kind;
+  }
+  return 'ratio';
+}
+function effectScale(e){
+  const s=String((e&&e.scale)??'').trim().toLowerCase();
+  return (s==='ratio'||s==='difference')?s:measureScale(e&&e.measure);
+}
 
 const FMIN=0.4,FMAX=2.0;
 function lx(v){const a=Math.log(FMIN),b=Math.log(FMAX);return (Math.log(Math.min(Math.max(v,FMIN),FMAX))-a)/(b-a);}
 function forest(e,w,h){
-  if(!e||e.hr==null) return '<span style="color:var(--faint);font-size:10px">—</span>';
-  const cx=w*lx(e.hr),clo=w*lx(e.lo),chi=w*lx(e.hi),x1=w*lx(1);
-  const col=e.favors?'var(--g-high)':(e.favors===false?'var(--g-vlow)':'var(--muted)');
-  return `<svg width="${w}" height="${h}"><line x1="${x1}" y1="2" x2="${x1}" y2="${h-2}" stroke="var(--line-2)" stroke-dasharray="2 2"/><line x1="${clo}" y1="${h/2}" x2="${chi}" y2="${h/2}" stroke="${col}" stroke-width="2"/><rect x="${cx-3}" y="${h/2-3}" width="6" height="6" fill="${col}" transform="rotate(45 ${cx} ${h/2})"/></svg>`;
+  const num=v=>typeof v==='number'&&isFinite(v);
+  if(!e||!num(e.hr)) return '<span style="color:var(--faint);font-size:10px">—</span>';
+  const sc=effectScale(e),ci=num(e.lo)&&num(e.hi);
+  let px,x1;
+  if(sc==='difference'){
+    /* thang TUYẾN TÍNH đối xứng quanh 0, tự co giãn theo |hr|, |lo|, |hi| (chừa lề 15%) */
+    const ext=Math.max(Math.abs(e.hr),ci?Math.abs(e.lo):0,ci?Math.abs(e.hi):0)*1.15||1;
+    px=v=>w*(0.5+v/(2*ext)); x1=w/2;
+  }else{
+    if(e.hr<=0||(ci&&(e.lo<=0||e.hi<=0))) return `<span style="color:var(--faint);font-size:10px" title="Có giá trị ≤ 0 — không vẽ được trên thang tỷ số (log). Nếu đây là hiệu số chênh lệch, khai effect.scale:'difference'.">—</span>`;
+    px=v=>w*lx(v); x1=w*lx(1);
+  }
+  const cx=px(e.hr),col=e.favors?'var(--g-high)':(e.favors===false?'var(--g-vlow)':'var(--muted)');
+  return `<svg width="${w}" height="${h}" data-scale="${sc}"><line x1="${x1}" y1="2" x2="${x1}" y2="${h-2}" stroke="var(--line-2)" stroke-dasharray="2 2"/>${ci?`<line x1="${px(e.lo)}" y1="${h/2}" x2="${px(e.hi)}" y2="${h/2}" stroke="${col}" stroke-width="2"/>`:''}<rect x="${cx-3}" y="${h/2-3}" width="6" height="6" fill="${col}" transform="rotate(45 ${cx} ${h/2})"/></svg>`;
 }
 function effCell(e){
-  if(e.effect&&e.effect.hr!=null){const f=e.effect;return `<span class="effect ${f.favors?'fav':(f.favors===false?'harm':'ns')}">${f.hr.toFixed(2)}</span> <span class="ci">(${f.ci||''})</span>`;}
-  if(e.effectText) return `<span class="effect ns" style="font-size:10.5px">${e.effectText}</span>`;
+  if(e.effect&&e.effect.hr!=null){const f=e.effect;return `<span class="effect ${f.favors?'fav':(f.favors===false?'harm':'ns')}">${f.hr.toFixed(2)}</span> <span class="ci">(${escHtml(f.ci||'')})</span>`;}
+  if(e.effectText) return `<span class="effect ns" style="font-size:10.5px">${escHtml(e.effectText)}</span>`;
   return '<span class="effect ns">—</span>';
 }
 
@@ -385,20 +609,20 @@ function renderStatic(){
   const p=DATA.meta.pico||{};
   document.getElementById('qbar').innerHTML=
     `<span class="lab">PICO</span>`+
-    `<span class="ptok p"><b>P</b> ${p.P||''}</span><span class="ptok i"><b>I</b> ${p.I||''}</span>`+
-    `<span class="ptok c"><b>C</b> ${p.C||''}</span><span class="ptok o"><b>O</b> ${p.O||''}</span>`;
+    `<span class="ptok p"><b>P</b> ${escHtml(p.P||'')}</span><span class="ptok i"><b>I</b> ${escHtml(p.I||'')}</span>`+
+    `<span class="ptok c"><b>C</b> ${escHtml(p.C||'')}</span><span class="ptok o"><b>O</b> ${escHtml(p.O||'')}</span>`;
   // KPI tự tính
   const it=DATA.items, c=k=>it.filter(x=>x.decision===k).length;
-  const cd=d=>it.filter(x=>x.design===d).length;
+  const cd=d=>it.filter(x=>designFamily(x.design)===d).length;
   const newest=it.map(x=>x.dateVersion).filter(Boolean).sort().slice(-1)[0]||'—';
   const kp=[
     ['Nguồn',it.length,'cy'],['Áp dụng ngay',c('apply'),'gr'],['Cân nhắc',c('consider'),'am'],['Chưa đủ',c('notyet'),'or'],
     ['GRADE Cao',it.filter(x=>x.gradeLevel==='high').length,'gr'],['RCT+Meta',cd('RCT')+cd('Meta'),'vi'],['Mới nhất',newest,'']
   ];
-  document.getElementById('kpis').innerHTML=kp.map(d=>`<div class="kp"><div class="l">${d[0]}</div><div class="v ${d[2]}">${d[1]}</div></div>`).join('');
+  document.getElementById('kpis').innerHTML=kp.map(d=>`<div class="kp"><div class="l">${d[0]}</div><div class="v ${d[2]}">${escHtml(d[1])}</div></div>`).join('');
   // Quick View — LỌC PHÒNG VỆ giống bản Evidence Workbench: bỏ gạch đầu dòng nhồi abstract ngoại ngữ;
   // "Nên làm" rỗng sau lọc → suy từ hành động item "Áp dụng ngay" (tiếng Việt thật; KHÔNG bịa).
-  const s=DATA.summary||{}, li=a=>(a||[]).map(x=>`<li>${x}</li>`).join('')||'<li style="color:var(--faint)">—</li>';
+  const s=DATA.summary||{}, li=a=>(a||[]).map(x=>`<li>${escHtml(x)}</li>`).join('')||'<li style="color:var(--faint)">—</li>';
   const _hasVi=t=>/[ăâđêôơưàáạảãằắặẳẵầấậẩẫèéẹẻẽềếệểễìíịỉĩòóọỏõồốộổỗờớợởỡùúụủũừứựửữỳýỵỷỹ]/i.test(t);
   const _foreign=t=>{t=String(t||'').trim();if(/^(conclusion|in conclusion|keywords?|background|objective|methods?|results?|findings?|introduction|aim|purpose)\b/i.test(t))return true;return t.split(/\s+/).length>=5&&!_hasVi(t);};
   const _clean=a=>(a||[]).filter(x=>x&&!_foreign(x));
@@ -413,14 +637,14 @@ function renderStatic(){
     }).filter(Boolean).slice(0,4);
   }
   document.getElementById('qv').innerHTML=`
-    <div class="qvc concl"><div class="h">✓ Kết luận thực hành</div><p>${s.conclusion||'—'}</p></div>
+    <div class="qvc concl"><div class="h">✓ Kết luận thực hành</div><p>${escHtml(s.conclusion||'—')}</p></div>
     <div class="qvc do"><div class="h">➤ Nên làm</div><ul>${li(doNow)}</ul></div>
     <div class="qvc dont"><div class="h">⊘ Không nên / giới hạn</div><ul>${li(_clean(s.dontDo))}</ul></div>
     <div class="qvc flag"><div class="h">⚑ Cờ đỏ / chuyển tuyến</div><ul>${li(_clean(s.redFlags))}</ul></div>`;
   // GRADE Evidence-to-Decision (tùy chọn)
   const etd=DATA.etd, etdEl=document.getElementById('etd');
   if(etd){
-    const cell=(label,val,tag)=>`<div class="etd-c"><div class="l">${label}${tag==='src'?'<span class="src">nguồn</span>':tag==='op'?'<span class="op">vận hành</span>':''}</div><div class="v">${val||'—'}</div></div>`;
+    const cell=(label,val,tag)=>`<div class="etd-c"><div class="l">${label}${tag==='src'?'<span class="src">nguồn</span>':tag==='op'?'<span class="op">vận hành</span>':''}</div><div class="v">${escHtml(val||'—')}</div></div>`;
     etdEl.innerHTML=`<details class="etd-d"><summary class="eh">⚖ GRADE Evidence-to-Decision <span class="note">— bấm để mở/đóng · "nguồn" = từ chứng cứ đã xác minh · "vận hành" = đánh giá của người tổng hợp</span></summary>
       <div class="etd-grid">
         ${cell('Vấn đề ưu tiên',etd.problem,'op')}
@@ -434,8 +658,15 @@ function renderStatic(){
         ${cell('Chấp nhận',etd.acceptability,'op')}
         ${cell('Khả thi',etd.feasibility,'op')}
       </div>
-      ${etd.recommendation?`<div class="etd-rec"><div class="rh">➤ Khuyến cáo (đánh giá vận hành)${etd.strength?`<span class="str">${etd.strength==='strong'?'Mạnh':'Có điều kiện'}</span>`:''}</div><div class="rv">${etd.recommendation}</div></div>`:''}</details>`;
+      ${etd.recommendation?`<div class="etd-rec"><div class="rh">➤ Khuyến cáo (đánh giá vận hành)${etd.strength?`<span class="str">${escHtml(etd.strength==='strong'?'Mạnh':'Có điều kiện')}</span>`:''}</div><div class="rv">${escHtml(etd.recommendation)}</div></div>`:''}</details>`;
     etdEl.style.display='';
+  }
+  // Lớp 4 — Chuẩn & chất lượng: chỉ hiện khi DATA.standards có khai báo (tương thích ngược
+  // với dashboard cũ chưa có field này — không bịa khung rỗng, không crash).
+  const st=DATA.standards, qualEl=document.getElementById('qual');
+  if(st){
+    qualEl.innerHTML=qualityView(st);
+    qualEl.style.display='';
   }
   document.getElementById('verdict').textContent='✓ '+c('apply')+' áp dụng ngay · '+c('consider')+' cân nhắc · '+c('notyet')+' chưa đủ';
   buildFilters();
@@ -462,14 +693,17 @@ function render(){
   const arr=filtered(),rows=[];
   document.getElementById('leadcount').textContent=arr.length+' điểm chứng cứ';
   arr.forEach(e=>{
-    const dm=DESIGN_META[e.design]||['b-guide',e.design||'—'],gm=GRADE_META[e.gradeLevel]||GRADE_META.na,dec=DEC_META[e.decision]||DEC_META.consider;
+    const dm=DESIGN_META[designFamily(e.design)],gm=GRADE_META[e.gradeLevel]||GRADE_META.na,dec=DEC_META[e.decision]||DEC_META.consider;
     const pips=Array.from({length:4},(_,i)=>`<span class="pip ${i<gm[2]?'on':''}"></span>`).join('');
-    const robm=e.rob?Object.values(e.rob).map(r=>`<i class="${RM[r][0]}" title="${RM[r][1]}"></i>`).join(''):'<span style="color:var(--faint);font-size:10px">—</span>';
-    rows.push(`<tr class="main-row ${state.open===e.id?'open':''}" onclick="toggle('${e.id}')">
+    const robEs=robEntries(e.rob);
+    const robm=robEs?robEs.map(([,r])=>`<i class="${RM[r][0]}" title="${RM[r][1]}"></i>`).join('')
+      :(typeof e.rob==='string'&&e.rob.trim())?`<span class="robnote"><span class="dot"></span><span class="tx" title="${escHtml(e.rob)}">${escHtml(e.rob)}</span></span>`
+      :'<span style="color:var(--faint);font-size:10px">—</span>';
+    rows.push(`<tr class="main-row ${state.open===e.id?'open':''}" onclick="toggle('${escJs(e.id)}')">
       <td><span class="twist">▸</span></td>
-      <td><div class="ttl">${e.title}${e.flag?`<span class="flag">⚑ ${e.flag}</span>`:''}<div class="sub">${e.source} · <span class="idtag">${e.id}</span>${e.pmid?` · PMID <span class="pmid">${e.pmid}</span>`:''}</div></div></td>
+      <td><div class="ttl">${escHtml(e.title)}${e.flag?`<span class="flag">⚑ ${escHtml(e.flag)}</span>`:''}<div class="sub">${escHtml(e.source)} · <span class="idtag">${escHtml(e.id)}</span>${e.pmid?` · PMID <span class="pmid">${escHtml(e.pmid)}</span>`:''}</div></div></td>
       <td><span class="dec ${dec[0]}"><span class="d"></span>${dec[1]}</span></td>
-      <td><span class="badge ${dm[0]}"><span class="d"></span>${dm[1]}</span></td>
+      <td><span class="badge ${dm[0]}" title="${escHtml(e.design||'')}"><span class="d"></span>${dm[1]}</span></td>
       <td>${effCell(e)}</td>
       <td><span class="grade ${gm[0]}"><span class="pips">${pips}</span>${gm[1]}</span></td>
       <td><div class="robmini">${robm}</div></td>
@@ -480,41 +714,47 @@ function render(){
 }
 function expandRow(e){
   const FL=e.frameLabels||{P:'P',I:'I',C:'C',O:'O'};
-  const picoRows=['P','I','C','O'].map(k=>{const d=(e.pico||{})[k]||['—','match'];return `<div class="pico-r"><span class="k k${k}">${FL[k]||k}</span><span class="v">${d[0]} ${d[1]==='match'?'<span class="ok">✓</span>':'<span class="no">⚠</span>'}</span></div>`;}).join('');
-  const f=e.effect;
-  const robFull=e.rob?Object.keys(e.rob).map(d=>{const r=RM[e.rob[d]];return `<div class="r"><span>${d}</span><i class="${r[0]}">${r[1]}</i></div>`;}).join(''):'<div class="r" style="color:var(--faint)">RoB 2 chỉ áp dụng cho RCT — không chấm cho guideline/tổng quan.</div>';
-  const forestBox=(f&&f.hr!=null)?`<h5 style="margin-top:14px">⊞ Forest (vs ngưỡng 1.0)</h5><div style="background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:10px;text-align:center">${forest(f,200,26)}<div style="font-size:9px;color:var(--faint);margin-top:4px;font-family:var(--mono)">◄ ủng hộ điều trị · ${FMIN} — 1.0 — ${FMAX} · bất lợi ►</div></div>`:'';
+  const picoRows=['P','I','C','O'].map(k=>{const d=(e.pico||{})[k]||['—','match'];return `<div class="pico-r"><span class="k k${k}">${escHtml(FL[k]||k)}</span><span class="v">${escHtml(d[0])} ${d[1]==='match'?'<span class="ok">✓</span>':'<span class="no">⚠</span>'}</span></div>`;}).join('');
+  const f=e.effect, fSc=f?effectScale(f):'ratio';
+  const robEsFull=robEntries(e.rob);
+  const robFull=robEsFull?robEsFull.map(([d,r])=>`<div class="r"><span>${escHtml(d)}</span><i class="${RM[r][0]}">${RM[r][1]}</i></div>`).join('')
+    :(typeof e.rob==='string'&&e.rob.trim())?`<div class="robtext">${escHtml(e.rob)}</div>`
+    :'<div class="r" style="color:var(--faint)">RoB 2 chỉ áp dụng cho RCT — không chấm cho guideline/tổng quan.</div>';
+  const forestBox=(f&&f.hr!=null)?`<h5 style="margin-top:14px">⊞ Forest (${fSc==='difference'?'vạch 0 = không khác biệt':'vs ngưỡng 1.0'})</h5><div style="background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:10px;text-align:center">${forest(f,200,26)}<div style="font-size:9px;color:var(--faint);margin-top:4px;font-family:var(--mono)">${fSc==='difference'?'◄ ủng hộ điều trị · thang tuyến tính, vạch 0 · bất lợi ►':`◄ ủng hộ điều trị · ${FMIN} — 1.0 — ${FMAX} · bất lợi ►`}</div></div>`:'';
   return `<tr class="exp"><td colspan="7"><div class="exp-in">
     <div class="exp-col">
-      <h5>◧ Đối chiếu ${e.frame||'PICO'}</h5>
+      <h5>◧ Đối chiếu ${escHtml(e.frame||'PICO')}</h5>
       ${picoRows}
       ${forestBox}
     </div>
     <div class="exp-col">
       <h5>∑ Số liệu & thẩm định</h5>
       <div class="kv">
-        <div class="c"><div class="l">Hiệu số (nguồn)</div><div class="n ${(f&&f.favors)?'gr':''}">${(f&&f.hr!=null)?f.hr.toFixed(2)+' ('+(f.ci||'')+')':(e.effectText||'—')}</div></div>
-        <div class="c"><div class="l">Quần thể</div><div class="n" style="font-size:11px">${e.population||'—'}</div></div>
+        <div class="c"><div class="l">Hiệu số (nguồn)</div><div class="n ${(f&&f.favors)?'gr':''}">${(f&&f.hr!=null)?f.hr.toFixed(2)+' ('+escHtml(f.ci||'')+')':escHtml(e.effectText||'—')}</div></div>
+        <div class="c"><div class="l">Quần thể</div><div class="n" style="font-size:11px">${escHtml(e.population||'—')}</div></div>
       </div>
-      <div class="kvline"><div class="r"><span class="k">Grading nguồn</span><span class="v">${e.gradeSource||'Nguồn không cung cấp phân hạng'}</span></div></div>
+      <div class="kvline">
+        <div class="r"><span class="k">Thiết kế</span><span class="v">${escHtml(e.design||'—')}</span></div>
+        <div class="r"><span class="k">Grading nguồn</span><span class="v">${escHtml(e.gradeSource||'Nguồn không cung cấp phân hạng')}</span></div>
+      </div>
       <h5>◉ Nguy cơ sai lệch (RoB 2)</h5>
       <div class="robfull">${robFull}</div>
     </div>
     <div class="exp-col">
       <h5>➤ Áp dụng lâm sàng</h5>
-      <div class="apply"><div class="h">💡 Hành động</div>${e.action||'—'}</div>
+      <div class="apply"><div class="h">💡 Hành động</div>${escHtml(e.action||'—')}</div>
       <div class="kvline" style="margin-top:10px">
-        <div class="r"><span class="k">Monitoring</span><span class="v">${e.monitoring||'—'}</span></div>
-        <div class="r"><span class="k">Nhóm</span><span class="v">${(e.groups||[]).map(g=>GROUP_META[g]||g).join(', ')||'—'}</span></div>
-        <div class="r"><span class="k">Việt Nam</span><span class="v">${e.vn||'—'}</span></div>
+        <div class="r"><span class="k">Monitoring</span><span class="v">${escHtml(e.monitoring||'—')}</span></div>
+        <div class="r"><span class="k">Nhóm</span><span class="v">${escHtml((e.groups||[]).map(g=>GROUP_META[g]||g).join(', ')||'—')}</span></div>
+        <div class="r"><span class="k">Việt Nam</span><span class="v">${escHtml(e.vn||'—')}</span></div>
       </div>
-      ${e.safety?`<div class="safety"><div class="h">⚑ An toàn / chuyển tuyến</div>${e.safety}</div>`:''}
+      ${e.safety?`<div class="safety"><div class="h">⚑ An toàn / chuyển tuyến</div>${escHtml(e.safety)}</div>`:''}
       <div class="srcs">
-        ${e.pmid?`<a href="https://pubmed.ncbi.nlm.nih.gov/${e.pmid}/" target="_blank"><span class="t pm">PMID</span> ${e.pmid}</a>`:''}
-        ${e.doi?`<a href="https://doi.org/${e.doi}" target="_blank"><span class="t doi">DOI</span> mở</a>`:''}
-        ${e.url?`<a href="${e.url}" target="_blank"><span class="t url">URL</span> nguồn</a>`:''}
+        ${e.pmid?`<a href="https://pubmed.ncbi.nlm.nih.gov/${encodeURIComponent(e.pmid)}/" target="_blank" rel="noopener"><span class="t pm">PMID</span> ${escHtml(e.pmid)}</a>`:''}
+        ${e.doi?`<a href="https://doi.org/${encodeURIComponent(e.doi)}" target="_blank" rel="noopener"><span class="t doi">DOI</span> mở</a>`:''}
+        ${escUrl(e.url)?`<a href="${escUrl(e.url)}" target="_blank" rel="noopener"><span class="t url">URL</span> nguồn</a>`:''}
       </div>
-      ${(e.references&&e.references.length)?`<div class="reflist">${e.references.map(r=>`<div class="r">${r}</div>`).join('')}</div>`:''}
+      ${(e.references&&e.references.length)?`<div class="reflist">${e.references.map(r=>`<div class="r">${escHtml(r)}</div>`).join('')}</div>`:''}
     </div>
   </div></td></tr>`;
 }
