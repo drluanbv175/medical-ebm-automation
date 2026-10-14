@@ -72,6 +72,18 @@ if [ "$?" -ne 0 ]; then
   exit 1
 fi
 
+# Them 14/10/2026: mirror .codex/agents CUA REPO NAY duoc track (Codex nap agent du an tu day). Doi
+# .claude/agents/*.md ma quen `sinh_mirror_codex.py --ghi` thi moi chot phia tren van sach (hook goc chi
+# soi mirror cua repo goc; manifest bo qua tep `_*`) — chi CI (test_mirror_codex_agents_20261001.py) va
+# BH144 cua repo goc moi do, ton mot vong CI (xay ra that o ban cap §2septies 14/10). Chay CUNG lenh voi CI.
+if [ -f tools/sinh_mirror_codex.py ]; then
+  if ! python3 tools/sinh_mirror_codex.py --check >/dev/null 2>&1; then
+    python3 tools/sinh_mirror_codex.py --check >&2
+    echo "CHAN COMMIT: mirror .codex/agents lech .claude/agents — chay: python3 tools/sinh_mirror_codex.py --ghi roi git add .codex/agents" >&2
+    exit 1
+  fi
+fi
+
 # Them 2026-07-31 sau su co that: commit a21a01f di qua TOAN BO cac chot tren
 # sach hoan toan, trong khi file de cuong dang hong 26 cho — cac placeholder gia
 # tri cua bang du kien ket qua ("n = —", "cOR = —") bi mot buoc xu ly van ban doi
