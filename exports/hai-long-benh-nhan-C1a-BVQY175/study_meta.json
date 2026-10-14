@@ -197,12 +197,12 @@
       "unequal_cluster_adjustment": "Cỡ chùm không đều (CV=1.0 — Giả định lập kế hoạch thận trọng CV = 1.0 (chưa có số liệu HIS theo bàn); N 1000 vẫn đủ tới CV ≈ 1.43; sẽ thay bằng CV thật từ HIS trước khi khoá SAP (G4).): hiệu ứng thiết kế hiệu chỉnh theo Eldridge SM, Ashby D, Kerry S. Int J Epidemiol 2006;35(5):1292–1300 (doi:10.1093/ije/dyl129): DE = 1 + ((CV²+1)·m̄ − 1)·ICC = 1.78; N cần 808 (đã cộng dự phòng) ≤ N đã chốt 1000 ⇒ N vẫn đủ."
     },
     "G4": {
-      "epv_vif_reviewed": false,
-      "missing_data_mechanism_confirmed": false,
-      "subgroup_multiplicity_predefined_confirmed": false,
-      "reviewed_by_role": null,
-      "reviewed_at": null,
-      "dau_van_tay_chot": null
+      "epv_vif_reviewed": true,
+      "missing_data_mechanism_confirmed": true,
+      "subgroup_multiplicity_predefined_confirmed": true,
+      "reviewed_by_role": "STATISTICIAN",
+      "reviewed_at": "2026-10-14T20:23:22+07:00",
+      "dau_van_tay_chot": "0c69d8d3e0c7d060"
     }
   },
   "design_code": "cross_sectional",
