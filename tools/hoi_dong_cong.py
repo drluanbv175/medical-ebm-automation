@@ -41,7 +41,8 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-for _luong in (sys.stdout, sys.stderr):
+# stdin cũng ép UTF-8 (14/10/2026): «ghi --tep -» đọc JSON tiếng Việt — console Windows cp1252 giải mã sai/từ chối.
+for _luong in (sys.stdin, sys.stdout, sys.stderr):
     try:
         _luong.reconfigure(encoding="utf-8")
     except (AttributeError, ValueError):

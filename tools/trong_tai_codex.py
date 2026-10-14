@@ -401,7 +401,8 @@ def _goi_chay_thu(prompt: str) -> Dict[str, Any]:
 
 
 def main(argv: Optional[List[str]] = None) -> int:
-    for luong in (sys.stdout, sys.stderr):
+    # stdin cũng ép UTF-8 (14/10/2026): «--tep -» đọc JSON tiếng Việt — console Windows cp1252 giải mã sai/từ chối.
+    for luong in (sys.stdin, sys.stdout, sys.stderr):
         try:
             luong.reconfigure(encoding="utf-8")  # type: ignore[attr-defined]
         except (AttributeError, ValueError):

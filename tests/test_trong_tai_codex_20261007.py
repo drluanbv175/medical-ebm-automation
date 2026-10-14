@@ -278,3 +278,18 @@ def test_cli_ghi_bien_ban_hop_le_va_tu_choi_vi_pham(goc, monkeypatch, capsys):
     assert len(da_ghi) == 1
     bb = json.loads(da_ghi[0].read_text(encoding="utf-8"))
     assert bb["che_do"] == "codex" and bb["nguon_trong_tai"]["codex"] == "codex-cli gia"
+
+
+def test_cli_doc_stdin_utf8_khi_console_khong_phai_utf8(goc):
+    """14/10/2026: «--tep -» đọc stdin bằng bảng mã của console — trên Windows (cp1252) JSON tiếng Việt UTF-8 bị
+    giải mã sai âm thầm hoặc bị từ chối. Tiến trình con với PYTHONIOENCODING=cp1252 giả lập đúng console đó."""
+    env = {**os.environ, "PYTHONIOENCODING": "cp1252", "PYTHONUTF8": "0"}
+    for bien in ("PYTEST_CURRENT_TEST",):
+        env.pop(bien, None)
+    r = subprocess.run([sys.executable, str(TOOLS_DIR / "trong_tai_codex.py"), "--study", STUDY, "--gate", "G0",
+                        "--tep", "-", "--chay-thu", "--repo-root", str(goc)],
+                       input=json.dumps(_nhap(), ensure_ascii=False).encode("utf-8"), capture_output=True, env=env,
+                       timeout=120)
+    ra = r.stdout.decode("utf-8", errors="replace")
+    assert r.returncode == 0, r.stderr.decode("utf-8", errors="replace")[-800:]
+    assert "Quần thể và kết cục đã nêu rõ" in ra, "stdin tiếng Việt bị giải mã sai (thiếu ép UTF-8 cho stdin)"
