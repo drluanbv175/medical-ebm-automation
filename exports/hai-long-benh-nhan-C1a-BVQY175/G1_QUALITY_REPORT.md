@@ -18,7 +18,7 @@
 | G1-AUTO-04c | SAP không chứa khuôn phân tích mâu thuẫn với thiết kế | PASS | không phát hiện khuôn sai cho cross_sectional |
 | G1-AUTO-05 | Đủ bộ A1b/A2/A2b/A13/A13b và các phần bắt buộc | PASS | 5/5 artifact có mặt và qua kiểm cấu trúc |
 | G1-AUTO-07 | Đề cương lõi không còn ô trống thuộc phạm vi G1 (dòng hoãn cho cổng sau được bỏ qua) | PASS | mọi dòng thuộc G1 của PHẦN 0 đã có nội dung |
-| G1-AUTO-06 | Có định danh PMID/DOI khớp chuỗi trong Evidence Ledger (CHƯA xác minh qua PubMed/Crossref — việc đó thuộc cổng A12 kiem-chung-trich-dan) | PASS | 26 PMID/DOI được thu, ledger_traceable=True (khớp CHUỖI, KHÔNG gọi PubMed để xác minh tồn tại) |
+| G1-AUTO-06 | Có định danh PMID/DOI khớp chuỗi trong Evidence Ledger (CHƯA xác minh qua PubMed/Crossref — việc đó thuộc cổng A12 kiem-chung-trich-dan) | PASS | 31 PMID/DOI được thu, ledger_traceable=True (khớp CHUỖI, KHÔNG gọi PubMed để xác minh tồn tại) |
 
 ## Xác nhận người thật
 | Mã | Tiêu chí | Trạng thái | Bằng chứng |
@@ -29,15 +29,15 @@
 | G1-HUMAN-04 | Can thiệp/phơi nhiễm, đối chứng và lịch theo dõi đã xác định | PASS | intervention_or_exposure=có; comparator=có; follow_up_schedule=có |
 | G1-HUMAN-05 | Estimand đủ 5 thuộc tính khi là RCT | PASS | N/A cho thiết kế không phải RCT |
 | G1-HUMAN-06 | Đề cương lõi, kiểm soát sai lệch và tính khả thi được xác nhận | PASS | protocol_core_confirmed=True; bias_controls_confirmed=True; feasibility_confirmed=True |
-| G1-HUMAN-07 | Khoảng trống và nội dung trích dẫn đã được người thật đọc lại | PASS | evidence_review_confirmed=True; identifiers=26 |
-| G1-HUMAN-08 | Có vai trò, thời điểm rà phương pháp và xác nhận gắn đúng nội dung | PASS | reviewed_by_role=pi; reviewed_at=2026-10-11T13:15:54+07:00; xác nhận gắn đúng nội dung hiện tại |
+| G1-HUMAN-07 | Khoảng trống và nội dung trích dẫn đã được người thật đọc lại | PASS | evidence_review_confirmed=True; identifiers=31 |
+| G1-HUMAN-08 | Có vai trò, thời điểm rà phương pháp và xác nhận gắn đúng nội dung | PASS | reviewed_by_role=pi; reviewed_at=2026-10-14T19:21:13+07:00; xác nhận gắn đúng nội dung hiện tại |
 
 ## Manifest artifact
 | Artifact | Đường dẫn | SHA-256 |
 |---|---|---|
-| A1b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md | `da2bed930fb4c7ef0edf110dbb4394883f1cf3964922aca58ba1eef133a5de23` |
-| A2 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md | `9b927eba57e6dd573fd590c899c97829a6360cff20df5a5881212d9bd98e01dc` |
-| A2b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md | `829fedc6896b19f7e80847d21c63fd26ca2463193f1598cc7102418464a0cd14` |
+| A1b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md | `c28ef9e123f9c99cbd628b41b1044a3ba113c1727e2cd0aefa853cb9bbfa6541` |
+| A2 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md | `5b2ebc3ffc1022d32505bfc70188fdb26acd21a3a8b4f77ae4b8e93aba7ffb8e` |
+| A2b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md | `ac91618af1450dce76879c25e072846487e87c1f36778b5aa35ef0a435baecc6` |
 | A13 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md | `5de5087b086310a566d9e16cb13df4ce9a41b5060d585b2ef8560af52dfefcd9` |
 | A13b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md | `c274c46c95358259f8119c8b67c8e63e3dbef03363e9e17242e647aa741b3352` |
 

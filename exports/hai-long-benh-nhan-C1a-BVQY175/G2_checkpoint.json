@@ -2,13 +2,9 @@
   "study": "hai-long-benh-nhan-C1a-BVQY175",
   "gate": "G2",
   "gate_status": "DRAFT_NEEDS_HUMAN_COMPLETION — G2 CHƯA ĐƯỢC KHÓA",
-  "generated_at": "2026-07-31T21:43:41.357018",
+  "generated_at": "2026-10-14T19:34:31.258605",
   "quality_contract_version": "G2-2026.1",
   "g2_status": "PENDING",
-  "g2_irb_number": null,
-  "g2_approval_date": null,
-  "g2_icf_version": null,
-  "g2_registration": null,
   "design_ambiguous": false,
   "design_code": "cross_sectional",
   "risk_level": "TỐI THIỂU",
@@ -19,26 +15,85 @@
   "clinicaltrials": {
     "registry": "ClinicalTrials.gov",
     "checked": true,
-    "query": "patient satisfaction outpatient department Vietnam hospital",
-    "n_trials": 0,
-    "n_active": 0,
+    "query": "(\"Patient Satisfaction\"[Mesh] OR satisf*[tiab] OR \"patient experience\"[tiab]) AND (\"Outpatients\"[Mesh] OR \"Ambulatory Care\"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND (\"Vietnam\"[Mesh] OR vietnam*[tiab] OR \"viet nam\"[tiab])",
+    "n_trials": 5,
+    "n_active": 3,
     "error": null,
-    "checked_at": "2026-07-31T21:43:41",
-    "search_url": "https://clinicaltrials.gov/search?term=patient+satisfaction+outpatient+department+Vietnam+hospital",
+    "checked_at": "2026-10-14T19:34:31",
+    "search_url": "https://clinicaltrials.gov/search?term=%28%22Patient+Satisfaction%22+OR+satisf%2A+OR+%22patient+experience%22+%29+AND+%28%22Outpatients%22+OR+%22Ambulatory+Care%22+OR+outpatient%2A+OR+ambulatory+%29+AND+%28%22Vietnam%22+OR+vietnam%2A+OR+%22viet+nam%22+%29",
     "pending_action": null,
-    "samples": []
+    "samples": [
+      {
+        "nct_id": "NCT07602231",
+        "title": "Effectiveness of Enhanced Recovery After Surgery (ERAS) Protocols for Arthroscop",
+        "status": "NOT_YET_RECRUITING",
+        "url": "https://clinicaltrials.gov/study/NCT07602231"
+      },
+      {
+        "nct_id": "NCT02069301",
+        "title": "Evaluation of an Integrated Microfinance and Depression Care Program for Women",
+        "status": "COMPLETED",
+        "url": "https://clinicaltrials.gov/study/NCT02069301"
+      },
+      {
+        "nct_id": "NCT07555704",
+        "title": "Remote App-based Rehabilitation After Rotator Cuff Repair",
+        "status": "NOT_YET_RECRUITING",
+        "url": "https://clinicaltrials.gov/study/NCT07555704"
+      },
+      {
+        "nct_id": "NCT07540637",
+        "title": "Assessment of Treatment Adherence and Associated Factors in Chronic HepB Patient",
+        "status": "RECRUITING",
+        "url": "https://clinicaltrials.gov/study/NCT07540637"
+      },
+      {
+        "nct_id": "NCT01102764",
+        "title": "Prolonged Exposure (PE) for Post Traumatic Stress Disorder (PTSD): Telemedicine ",
+        "status": "COMPLETED",
+        "url": "https://clinicaltrials.gov/study/NCT01102764"
+      }
+    ]
   },
-  "clinicaltrials_found": 0,
+  "clinicaltrials_found": 5,
   "clinicaltrials_checked": true,
-  "clinicaltrials_samples": [],
+  "clinicaltrials_samples": [
+    {
+      "nct_id": "NCT07602231",
+      "title": "Effectiveness of Enhanced Recovery After Surgery (ERAS) Protocols for Arthroscop",
+      "url": "https://clinicaltrials.gov/study/NCT07602231"
+    },
+    {
+      "nct_id": "NCT02069301",
+      "title": "Evaluation of an Integrated Microfinance and Depression Care Program for Women",
+      "url": "https://clinicaltrials.gov/study/NCT02069301"
+    },
+    {
+      "nct_id": "NCT07555704",
+      "title": "Remote App-based Rehabilitation After Rotator Cuff Repair",
+      "url": "https://clinicaltrials.gov/study/NCT07555704"
+    },
+    {
+      "nct_id": "NCT07540637",
+      "title": "Assessment of Treatment Adherence and Associated Factors in Chronic HepB Patient",
+      "url": "https://clinicaltrials.gov/study/NCT07540637"
+    },
+    {
+      "nct_id": "NCT01102764",
+      "title": "Prolonged Exposure (PE) for Post Traumatic Stress Disorder (PTSD): Telemedicine ",
+      "url": "https://clinicaltrials.gov/study/NCT01102764"
+    }
+  ],
   "guardrail": {
-    "passed": true,
-    "errors": []
+    "passed": false,
+    "errors": [
+      "R5 🟡 Chỉ 9 trường [CẦN...] — kiểm xem còn trường nào trống không"
+    ]
   },
   "artifacts": {
-    "A3_markdown": "exports/hai-long-benh-nhan-C1a-BVQY175/G2_A3_ETHICS_PACKAGE_hai-long-benh-nhan-C1a-BVQY175.md",
-    "A3_docx": "exports/hai-long-benh-nhan-C1a-BVQY175/G2_A3_ETHICS_PACKAGE_hai-long-benh-nhan-C1a-BVQY175.docx",
-    "registration_draft": "exports/hai-long-benh-nhan-C1a-BVQY175/G2_REGISTRATION_DRAFT_hai-long-benh-nhan-C1a-BVQY175.json",
+    "A3_markdown": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G2_A3_ETHICS_PACKAGE_hai-long-benh-nhan-C1a-BVQY175.md",
+    "A3_docx": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G2_A3_ETHICS_PACKAGE_hai-long-benh-nhan-C1a-BVQY175.docx",
+    "registration_draft": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G2_REGISTRATION_DRAFT_hai-long-benh-nhan-C1a-BVQY175.json",
     "quality_report": "exports/hai-long-benh-nhan-C1a-BVQY175/G2_QUALITY_REPORT.md"
   },
   "documents_generated": [
@@ -53,8 +108,7 @@
     "WHO TRDS 1.3.1 — bản nháp đủ 24 mục"
   ],
   "pending_doctor_actions": [
-    "Hoàn tất xác nhận phương pháp G1; có thể soạn G2 song song nhưng chưa khóa.",
-    "Điền nội dung thật; với PII dùng bản nộp ngoài hệ thống và giữ bản redacted.",
+    "Điền nội dung thật; với PII dùng bản nộp ngoài hệ thống và giữ bản redacted. Ô sau phê duyệt (số IRB, ngày phê duyệt, mã/ngày đăng ký…) điền khi có quyết định, TRƯỚC khi ký khoá G2.",
     "Hội đồng/đầu mối được ủy quyền ghi quyết định bằng approve_gate.py.",
     "Người có thẩm quyền IRB tự ký; agent không được chạy lệnh phê duyệt."
   ],
@@ -73,16 +127,16 @@
     "automatic_criteria": [
       {
         "id": "G2-AUTO-01",
-        "label": "Guardrail liêm chính G2 sạch",
+        "label": "Liêm chính nội dung hồ sơ HIỆN HÀNH (PII, số phê duyệt tự gán, tự xưng phê duyệt/khoá, disclaimer)",
         "status": "PASS",
-        "evidence": "guardrail_passed=True",
-        "action": "Sửa PII, nguồn, disclaimer hoặc tuyên bố vượt cổng trước khi nộp."
+        "evidence": "R1/R2/R3/R7 sạch trên nội dung hiện hành (guardrail lúc sinh: passed=False)",
+        "action": "Sửa PII, số phê duyệt tự gán, tuyên bố vượt cổng hoặc disclaimer trong hồ sơ trước khi nộp."
       },
       {
         "id": "G2-AUTO-02",
-        "label": "G1 đã được PI/methodologist xác nhận",
-        "status": "REVIEW",
-        "evidence": "G1 quality status=DRAFT_READY_NEEDS_HUMAN_REVIEW",
+        "label": "G1 đã được PI/methodologist xác nhận (chấm sống)",
+        "status": "PASS",
+        "evidence": "G1 chấm sống=PASS_G1_CONFIRMED",
         "action": "Hoàn tất xác nhận phương pháp G1; có thể soạn G2 song song nhưng chưa khóa."
       },
       {
@@ -94,10 +148,17 @@
       },
       {
         "id": "G2-AUTO-03",
-        "label": "Bộ hồ sơ IRB/ICF/DMP có đủ cấu trúc bắt buộc",
+        "label": "Bộ hồ sơ IRB/ICF/DMP có đủ cấu trúc bắt buộc (ICF đủ mục theo thiết kế)",
         "status": "PASS",
-        "evidence": "đủ marker tài liệu 1-8, ICF, DMP, rủi ro/bồi thường/COI",
-        "action": "Sinh lại hoặc bổ sung phần hồ sơ bị thiếu."
+        "evidence": "đủ marker tài liệu 1-8, ICF, DMP, rủi ro/bồi thường/COI; ICF đủ mục theo thiết kế",
+        "action": "Sinh lại hoặc bổ sung phần hồ sơ bị thiếu (RCT: 2b phân nhóm ngẫu nhiên, 5b truy cập hồ sơ gốc, 6b, 6d, 6f thông tin mới, 6g theo dõi khi ngừng/rút, 6h chấm dứt tham gia)."
+      },
+      {
+        "id": "G2-AUTO-03b",
+        "label": "ICF tiếng Anh tương ứng ICF tiếng Việt (cùng tập mục)",
+        "status": "PASS",
+        "evidence": "hai bản ICF có cùng tập mục (hoặc chưa có bản tiếng Anh/tiếng Việt để đối chiếu)",
+        "action": "Bổ sung/xoá mục ở ICF tiếng Anh (Tài liệu 5) cho khớp ICF tiếng Việt (Tài liệu 4), hoặc sinh lại G2."
       },
       {
         "id": "G2-AUTO-04",
@@ -110,8 +171,8 @@
         "id": "G2-AUTO-05",
         "label": "Không còn placeholder khoa học/vận hành trọng yếu",
         "status": "REVIEW",
-        "evidence": "còn 11 dòng [CẦN] ngoài các dòng chỉ chứa PII",
-        "action": "Điền nội dung thật; với PII dùng bản nộp ngoài hệ thống và giữ bản redacted."
+        "evidence": "còn 1 dòng [CẦN]/ô mẫu chung/ô trống phải điền TRƯỚC khi nộp IRB; 8 dòng chỉ điền được SAU phê duyệt/đăng ký (thông tin, chưa chặn nộp) — ngoài các ô chỉ chứa PII và chỗ ký/ngày điền tay",
+        "action": "Điền nội dung thật; với PII dùng bản nộp ngoài hệ thống và giữ bản redacted. Ô sau phê duyệt (số IRB, ngày phê duyệt, mã/ngày đăng ký…) điền khi có quyết định, TRƯỚC khi ký khoá G2."
       },
       {
         "id": "G2-AUTO-06",
@@ -121,11 +182,18 @@
         "action": "PI/methodologist xác nhận thiết kế rồi tính lại lộ trình IRB."
       },
       {
+        "id": "G2-AUTO-06b",
+        "label": "Hồ sơ G2 sinh đúng thiết kế G1 hiện hành",
+        "status": "PASS",
+        "evidence": "hồ sơ G2 và G1 cùng thiết kế «cross_sectional»",
+        "action": "Chạy lại run_g2_auto.py với thiết kế G1 đã xác nhận (hồ sơ cũ được sao lưu)."
+      },
+      {
         "id": "G2-AUTO-07",
         "label": "Kế hoạch an toàn tương xứng thiết kế",
         "status": "PASS",
-        "evidence": "không phải RCT; kế hoạch an toàn điều chỉnh theo nguy cơ",
-        "action": "Bổ sung giám sát AE/SAE, DSMB/DMC và stopping rules cho thử nghiệm."
+        "evidence": "không phải RCT và PI không khai safety_plan_required=true — kế hoạch an toàn theo nguy cơ",
+        "action": "Điền G2_SAFETY_PLAN_hai-long-benh-nhan-C1a-BVQY175.md (5 mục: định nghĩa AE/SAE/SUSAR, mốc báo cáo, quy tắc dừng, DSMB/DMC hoặc lý do không lập, biểu mẫu AE) rồi PI ghi gate_params.G2.safety_plan_confirmed=true."
       },
       {
         "id": "G2-AUTO-08",
@@ -133,6 +201,20 @@
         "status": "PASS",
         "evidence": "mục 13/14/19/20 đã có nội dung",
         "action": "Điền Intervention(s)/Inclusion-Exclusion/Primary-Secondary Outcome từ PICO thật của đề tài (checkpoint G1) trước khi đăng ký thật."
+      },
+      {
+        "id": "G2-AUTO-08b",
+        "label": "Mục WHO TRDS tự điền đã được PI khai (9 tiêu đề công khai, 12 tình trạng sức khỏe, 15 masking của RCT)",
+        "status": "PASS",
+        "evidence": "mục 9/12 (và masking RCT) đã do PI khai",
+        "action": "Khai gate_params.G2.public_title (ngôn ngữ đại chúng), gate_params.G2.health_condition và — với RCT — gate_params.G1.blinding, rồi chạy lại run_g2_auto.py để làm mới bản đăng ký."
+      },
+      {
+        "id": "G2-AUTO-10",
+        "label": "Phiên bản đề cương/ICF hiện hành do PI khai",
+        "status": "PASS",
+        "evidence": "protocol_version=1.0; icf_version=1.0; «1.0» có thể là giá trị khuôn gieo trước 04/10/2026 — PI xác nhận",
+        "action": "PI khai gate_params.G2.protocol_version và icf_version (đúng phiên bản trình Hội đồng)."
       },
       {
         "id": "G2-AUTO-09",
@@ -159,21 +241,34 @@
       }
     ],
     "unresolved_critical_placeholders": [
-      "Quy trình: [CẦN BỔ SUNG quy trình cụ thể của đơn vị]",
-      "SỐ BẢN NỘP: ___ [CẦN XÁC NHẬN tại Hội đồng đạo đức cơ sở]",
-      "> hệ thống không tra được hai nguồn đầu vì không có API mở. [CẦN BÁC SĨ TỰ TRA]",
+      "[Phiên bản phê duyệt sẽ có số IRB, CẦN BỔ SUNG]",
+      "> hệ thống không tra được hai nguồn đầu vì không có API mở. WHO ICTRP: PI đã tự tra 2026-10-11, không thấy nghiên cứu trùng (ghi ở G0); PROSPERO: không áp dụng (không phải tổng quan hệ thống); đăng ký trong nước: [CẦN BÁC SĨ TỰ TRA]",
       "[CẦN — sẽ có sau khi đăng ký trên OSF Registries: mã/URL đăng ký dạng osf.io/xxxxx]",
       "[CẦN — ngày đăng ký thành công]",
       "Số phê duyệt IRB: [CẦN sau khi nhận]",
       "[CẦN — chỉ tuyển sau phê duyệt và đăng ký: ___/___/2026]",
       "Approval date: [CẦN sau quyết định IRB]",
       "[CẦN — ngày hoàn tất dự kiến; cập nhật ngày thật khi kết thúc]",
-      "[CẦN CẬP NHẬT sau nghiên cứu, ngày đăng kết quả/tác phẩm,",
       "\"DRAFT, Điền trường còn [CẦN] trước khi gửi đăng ký.\""
     ],
+    "pre_submission_placeholders": [
+      "> hệ thống không tra được hai nguồn đầu vì không có API mở. WHO ICTRP: PI đã tự tra 2026-10-11, không thấy nghiên cứu trùng (ghi ở G0); PROSPERO: không áp dụng (không phải tổng quan hệ thống); đăng ký trong nước: [CẦN BÁC SĨ TỰ TRA]"
+    ],
+    "post_approval_placeholders": [
+      "[Phiên bản phê duyệt sẽ có số IRB, CẦN BỔ SUNG]",
+      "[CẦN — sẽ có sau khi đăng ký trên OSF Registries: mã/URL đăng ký dạng osf.io/xxxxx]",
+      "[CẦN — ngày đăng ký thành công]",
+      "Số phê duyệt IRB: [CẦN sau khi nhận]",
+      "[CẦN — chỉ tuyển sau phê duyệt và đăng ký: ___/___/2026]",
+      "Approval date: [CẦN sau quyết định IRB]",
+      "[CẦN — ngày hoàn tất dự kiến; cập nhật ngày thật khi kết thúc]",
+      "\"DRAFT, Điền trường còn [CẦN] trước khi gửi đăng ký.\""
+    ],
+    "post_study_placeholders": [
+      "[CẦN CẬP NHẬT sau nghiên cứu, ngày đăng kết quả/tác phẩm,"
+    ],
     "pending_actions": [
-      "Hoàn tất xác nhận phương pháp G1; có thể soạn G2 song song nhưng chưa khóa.",
-      "Điền nội dung thật; với PII dùng bản nộp ngoài hệ thống và giữ bản redacted.",
+      "Điền nội dung thật; với PII dùng bản nộp ngoài hệ thống và giữ bản redacted. Ô sau phê duyệt (số IRB, ngày phê duyệt, mã/ngày đăng ký…) điền khi có quyết định, TRƯỚC khi ký khoá G2.",
       "Hội đồng/đầu mối được ủy quyền ghi quyết định bằng approve_gate.py.",
       "Người có thẩm quyền IRB tự ký; agent không được chạy lệnh phê duyệt."
     ],

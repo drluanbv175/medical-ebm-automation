@@ -100,7 +100,7 @@
       "id": "G1-AUTO-06",
       "label": "Có định danh PMID/DOI khớp chuỗi trong Evidence Ledger (CHƯA xác minh qua PubMed/Crossref — việc đó thuộc cổng A12 kiem-chung-trich-dan)",
       "status": "PASS",
-      "evidence": "26 PMID/DOI được thu, ledger_traceable=True (khớp CHUỖI, KHÔNG gọi PubMed để xác minh tồn tại)",
+      "evidence": "31 PMID/DOI được thu, ledger_traceable=True (khớp CHUỖI, KHÔNG gọi PubMed để xác minh tồn tại)",
       "action": "Bổ sung Evidence Ledger có PMID/DOI thật; không bịa nguồn."
     }
   ],
@@ -151,14 +151,14 @@
       "id": "G1-HUMAN-07",
       "label": "Khoảng trống và nội dung trích dẫn đã được người thật đọc lại",
       "status": "PASS",
-      "evidence": "evidence_review_confirmed=True; identifiers=26",
+      "evidence": "evidence_review_confirmed=True; identifiers=31",
       "action": "Evidence reviewer/PI xác nhận nội dung nguồn và khoảng trống."
     },
     {
       "id": "G1-HUMAN-08",
       "label": "Có vai trò, thời điểm rà phương pháp và xác nhận gắn đúng nội dung",
       "status": "PASS",
-      "evidence": "reviewed_by_role=pi; reviewed_at=2026-10-11T13:15:54+07:00; xác nhận gắn đúng nội dung hiện tại",
+      "evidence": "reviewed_by_role=pi; reviewed_at=2026-10-14T19:21:13+07:00; xác nhận gắn đúng nội dung hiện tại",
       "action": "Ghi reviewed_by_role, reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"0f11b62b095278fe\" (dấu của các quyết định G1 đang chốt); không cần lưu danh tính."
     }
   ],
@@ -166,15 +166,15 @@
   "artifact_manifest": {
     "A1b": {
       "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "da2bed930fb4c7ef0edf110dbb4394883f1cf3964922aca58ba1eef133a5de23"
+      "sha256": "c28ef9e123f9c99cbd628b41b1044a3ba113c1727e2cd0aefa853cb9bbfa6541"
     },
     "A2": {
       "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "9b927eba57e6dd573fd590c899c97829a6360cff20df5a5881212d9bd98e01dc"
+      "sha256": "5b2ebc3ffc1022d32505bfc70188fdb26acd21a3a8b4f77ae4b8e93aba7ffb8e"
     },
     "A2b": {
       "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "829fedc6896b19f7e80847d21c63fd26ca2463193f1598cc7102418464a0cd14"
+      "sha256": "ac91618af1450dce76879c25e072846487e87c1f36778b5aa35ef0a435baecc6"
     },
     "A13": {
       "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md",
@@ -223,15 +223,15 @@
   "artifact_manifest_luc_sinh": {
     "A2": {
       "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "9b927eba57e6dd573fd590c899c97829a6360cff20df5a5881212d9bd98e01dc"
+      "sha256": "5b2ebc3ffc1022d32505bfc70188fdb26acd21a3a8b4f77ae4b8e93aba7ffb8e"
     },
     "A1b": {
       "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "da2bed930fb4c7ef0edf110dbb4394883f1cf3964922aca58ba1eef133a5de23"
+      "sha256": "c28ef9e123f9c99cbd628b41b1044a3ba113c1727e2cd0aefa853cb9bbfa6541"
     },
     "A2b": {
       "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "829fedc6896b19f7e80847d21c63fd26ca2463193f1598cc7102418464a0cd14"
+      "sha256": "ac91618af1450dce76879c25e072846487e87c1f36778b5aa35ef0a435baecc6"
     },
     "A13": {
       "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md",

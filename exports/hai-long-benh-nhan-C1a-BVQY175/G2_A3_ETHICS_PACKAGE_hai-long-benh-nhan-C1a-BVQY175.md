@@ -197,7 +197,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 
  Nếu có bất kỳ vấn đề sức khỏe nào liên quan đến nghiên cứu,
  xin liên hệ ngay chủ nhiệm đề tài (số điện thoại bên dưới).
- Chi phí điều trị biến cố liên quan nghiên cứu: Không áp dụng — nghiên cứu chỉ khảo sát ý kiến, không can thiệp y khoa nên không phát sinh biến cố điều trị liên quan [BÁC SĨ RÀ].
+ Chi phí điều trị biến cố liên quan nghiên cứu: Không áp dụng — nghiên cứu chỉ khảo sát ý kiến, không can thiệp y khoa nên không phát sinh biến cố điều trị liên quan.
 
 4. LỢI ÍCH KỲ VỌNG
  Lợi ích trực tiếp: không có lợi ích y khoa trực tiếp; ý kiến của ông/bà giúp cải thiện chất lượng dịch vụ khám bệnh — KHÔNG có can thiệp/thủ thuật y khoa nào thực hiện thêm ngoài quy trình khám/chăm sóc thường quy
@@ -220,14 +220,14 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 
  Dữ liệu được mã hóa và lưu trên ổ đĩa mã hóa AES-256 tại Khoa Khám bệnh
  C1a, Bệnh viện Quân y 175
- Nhóm nghiên cứu KHÔNG nhận thông tin danh tính của ông/bà [BÁC SĨ RÀ]
+ Nhóm nghiên cứu KHÔNG nhận thông tin danh tính của ông/bà
  Thời gian chờ khám được lấy từ hệ thống quản lý bệnh viện (HIS) qua MÃ NGHIÊN CỨU trên phiếu: nhân viên được
  uỷ quyền của Phòng CNTT/QLCL đối chiếu và chỉ chuyển cho nhóm nghiên cứu mã nghiên cứu cùng số phút chờ;
- bảng đối chiếu do CNTT/QLCL giữ và huỷ trong 30 ngày [BÁC SĨ RÀ]
+ bảng đối chiếu do CNTT/QLCL giữ và huỷ trong 30 ngày
  Kết quả công bố dùng dữ liệu TỔNG HỢP, KHÔNG tiết lộ danh tính
  Dữ liệu nhận dạng: phiếu KHÔNG ghi thông tin định danh; thời gian chờ được ghép theo cách
  giả danh hóa có kiểm soát — bảng đối chiếu HIS nêu trên là liên kết duy nhất về lượt khám, do CNTT/QLCL giữ
- và huỷ trong 30 ngày [BÁC SĨ RÀ]
+ và huỷ trong 30 ngày
  Trong trường hợp rò rỉ, anh/chị sẽ được thông báo NGAY KHI XÁC NHẬN
  (cơ quan bảo vệ dữ liệu được báo trong 72 giờ theo NĐ 356/2025/NĐ-CP, 
  mốc này áp cho cơ quan quản lý, không phải mốc cam kết với anh/chị)
@@ -241,7 +241,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
  đến dịch vụ y tế đang nhận
  Anh/chị có thể RÚT LUI bất kỳ lúc nào, không cần giải thích
  Nếu rút lui, dữ liệu đã thu thập: ☐ sẽ bị xóa ☐ vẫn dùng
- (do tính nặc danh: SAU khi nộp phiếu không thể rút riêng phiếu của ông/bà vì không có cách nhận dạng; ông/bà có toàn quyền từ chối hoặc dừng bất kỳ lúc nào TRƯỚC khi nộp) [BÁC SĨ RÀ]
+ (do tính nặc danh: SAU khi nộp phiếu không thể rút riêng phiếu của ông/bà vì không có cách nhận dạng; ông/bà có toàn quyền từ chối hoặc dừng bất kỳ lúc nào TRƯỚC khi nộp)
 
 
 6c. BỒI THƯỜNG KHI CÓ TỔN HẠI
@@ -260,7 +260,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
                                                            
  Thắc mắc về quyền của người tham gia:                  
  Hội đồng Đạo đức: Hội đồng Y đức Bệnh viện Quân y 175              
- Điện thoại: [CẦN BỔ SUNG]                           
+ Điện thoại: [PII — điền ở bản nộp ngoài hệ thống]                           
  ─────────────────────────────────────────────────────────
 
 ---
@@ -335,7 +335,7 @@ Principal Investigator: Nguyễn Hà Luân
  Your waiting time will be taken from the hospital information system (HIS) via the STUDY CODE on your
  questionnaire: authorised staff of the IT/Quality Management department match it and pass only the study code
  and the number of minutes to the research team, which never receives your identity; the matching table is kept
- by IT/Quality Management and destroyed within 30 days. [BÁC SĨ RÀ]
+ by IT/Quality Management and destroyed within 30 days.
 
 6. VOLUNTARY PARTICIPATION AND WITHDRAWAL
  Participation is voluntary. You may withdraw at any time
@@ -375,22 +375,22 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
  ☐ Cận lâm sàng (xét nghiệm, hình ảnh), mã hóa
  ☐ Kết quả điều tra/khảo sát, ẩn danh hoặc giả danh
  ☐ Dữ liệu thứ cấp (hồ sơ bệnh án), mã giả danh
- ☑ Kết quả khảo sát (phiếu tự điền, KHÔNG ghi thông tin định danh) — không dùng hồ sơ bệnh án [BÁC SĨ RÀ]
+ ☑ Kết quả khảo sát (phiếu tự điền, KHÔNG ghi thông tin định danh) — không dùng hồ sơ bệnh án
  ☑ Mốc thời gian hành chính từ HIS/eHospital (hoàn tất đăng ký, gọi vào buồng khám) ghép theo mã nghiên cứu —
-   nhóm nghiên cứu chỉ nhận mã nghiên cứu + số phút chờ (đề cương §4.6.3) [BÁC SĨ RÀ]
+   nhóm nghiên cứu chỉ nhận mã nghiên cứu + số phút chờ (đề cương §4.6.3)
 
 2. THU THẬP:
  Công cụ: ☐ REDCap ☐ Google Forms (institutional) ☐ Phiếu giấy
- ☑ Phiếu giấy (nặc danh, tự điền tại khoa) [BÁC SĨ RÀ — nếu dùng thêm bản điện tử thì tick bổ sung]
+ ☑ Phiếu giấy (nặc danh, tự điền tại khoa)
  Phân quyền truy cập: Chỉ nhóm nghiên cứu được cấp phép
  Phê duyệt quyền: Chủ nhiệm đề tài
 
 3. KHỬ ĐỊNH DANH:
  Phương pháp: GIẢ DANH HÓA CÓ KIỂM SOÁT — phiếu KHÔNG có ô định danh, chỉ mang mã nghiên cứu; phiếu
- đồng ý (ICF) ký tên lưu tách biệt vật lý, không ghép với phiếu (đề cương §4.11) [BÁC SĨ RÀ]
+ đồng ý (ICF) ký tên lưu tách biệt vật lý, không ghép với phiếu (đề cương §4.11)
  Ghép HIS: nhân sự được uỷ quyền của Phòng CNTT/QLCL trích hai mốc thời gian và giữ bảng ghép mã nghiên cứu ↔
  lượt khám; nhóm nghiên cứu chỉ nhận mã nghiên cứu + số phút chờ; bảng ghép huỷ trong 30 ngày, có nhật ký huỷ
- (đề cương §4.6.3, §4.11, §6.5) [BÁC SĨ RÀ]
+ (đề cương §4.6.3, §4.11, §6.5)
  Ngưỡng k-ẩn danh: ≥5 (nhóm nhỏ sẽ nhóm lại trước công bố)
 
 4. LƯU TRỮ:
@@ -398,7 +398,7 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
  chỉ nhóm nghiên cứu được truy cập
  Bảo mật: AES-256 · mật khẩu cấp người dùng · VPN (nếu từ xa)
  Sao lưu: hằng tuần, 2 bản độc lập
- Thời gian lưu: ___ năm sau kết thúc nghiên cứu
+ Thời gian lưu: 2 năm sau kết thúc nghiên cứu
  (theo TT38/2018/TT-BYT về lưu trữ hồ sơ y tế)
 
 5. CHIA SẺ / MỞ DỮ LIỆU:
@@ -415,10 +415,10 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
  ∎ Thông báo cơ quan bảo vệ dữ liệu trong 72 giờ
  ∎ Thông báo người tham gia bị ảnh hưởng ngay khi xác nhận
  ∎ Khắc phục và điều tra nguyên nhân, lưu hồ sơ xử lý
- Quy trình: [CẦN BỔ SUNG quy trình cụ thể của đơn vị]
+ Quy trình: theo qui định của đơn vị
 
 7. CUỐI NGHIÊN CỨU:
- ∎ Dữ liệu nhận dạng: xóa/hủy vật lý trong ___ tháng
+ ∎ Dữ liệu nhận dạng: xóa/hủy vật lý trong 12 tháng
  ∎ Dữ liệu ẩn danh hóa: lưu theo quy định lưu trữ y tế
  ∎ Backup: xóa an toàn (overwrite 3 lần tiêu chuẩn DoD)
 ---
@@ -454,7 +454,7 @@ HỒ SƠ BỔ SUNG (theo loại NC):
  ICF người giám hộ + biện pháp bảo vệ đặc biệt
 ☐ [Dùng dữ liệu di truyền/nhạy cảm]: ICF đặc biệt
 
-SỐ BẢN NỘP: ___ [CẦN XÁC NHẬN tại Hội đồng đạo đức cơ sở]
+SỐ BẢN NỘP: 02
 HÌNH THỨC: ☐ Bản cứng ☐ Điện tử ☐ Cả hai
 
 LỘ TRÌNH XÉT DUYỆT DỰ KIẾN: EXPEDITED REVIEW (hoặc EXEMPT nếu không có PII và rủi ro tối thiểu)
@@ -563,7 +563,7 @@ Trường 4, Source(s) of monetary or material support:
  None — self-funded by the principal investigator (no external funding)
 
 Trường 5, Primary sponsor:
- Bệnh viện Quân y 175 (Military Hospital 175), TP. Hồ Chí Minh [BÁC SĨ RÀ]
+ Bệnh viện Quân y 175 (Military Hospital 175), TP. Hồ Chí Minh
 
 Trường 6, Secondary sponsor(s) (nếu có):
  Không có (None)
