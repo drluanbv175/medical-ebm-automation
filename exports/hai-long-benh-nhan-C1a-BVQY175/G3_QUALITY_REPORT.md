@@ -1,13 +1,13 @@
 # BÁO CÁO CHẤT LƯỢNG G3 (CỠ MẪU) — hai-long-benh-nhan-C1a-BVQY175
 
-**Trạng thái:** `DRAFT_NEEDS_HUMAN_PARAMETERS`
+**Trạng thái:** `PASS_G3_CONFIRMED`
 **Phiên bản hợp đồng:** G3-2026.1
 
 ## Kiểm tự động (máy kiểm SỐ và NGUỒN)
 | Mã | Tiêu chí | Trạng thái | Bằng chứng |
 |---|---|---|---|
 | G3-AUTO-00 | Guardrail liêm chính G3 sạch | PASS | guardrail='✅ PASS' |
-| G3-AUTO-01 | Tiền đề G0/G1 có thật (thiết kế không do mặc định im lặng) | REVIEW | G1 chấm sống=DRAFT_READY_NEEDS_HUMAN_REVIEW — thiết kế chưa được PI/methodologist chốt |
+| G3-AUTO-01 | Tiền đề G0/G1 có thật (thiết kế không do mặc định im lặng) | PASS | G1 chấm sống=PASS_G1_CONFIRMED |
 | G3-AUTO-02 | Mã thiết kế thuộc từ vựng canonical | PASS | design_code='cross_sectional' |
 | G3-AUTO-03 | Loại effect size tương thích với thiết kế và dạng kết cục | PASS | effect_type=PREVALENCE hợp lệ cho cross_sectional |
 | G3-AUTO-04 | Có giá trị cỡ mẫu dùng được (hoặc N thay thế hợp lệ) | PASS | n_adjusted=626 |
@@ -18,7 +18,7 @@
 | G3-AUTO-09 | Các con số trong artifact nhất quán với nhau | PASS | N, bảng độ nhạy và dropout khớp nhau |
 | G3-AUTO-10 | Artifact nhắc đúng chuẩn báo cáo của thiết kế | PASS | tìm thấy 'STROBE' trong artifact |
 | G3-AUTO-11 | Non-inferiority/equivalence: biên Δ có khung quy định, biện minh và nguồn | PASS | giả thuyết descriptive_precision (không phải NI/equivalence) |
-| G3-AUTO-12 | Thiết kế theo chùm: ICC có nguồn, design effect đúng số học, đủ số chùm | REVIEW | CHỜ NGƯỜI (PI — số liệu cỡ chùm từ HIS): cỡ chùm không khẳng định là đều nhưng thiếu hệ số biến thiên CV |
+| G3-AUTO-12 | Thiết kế theo chùm: ICC có nguồn, design effect đúng số học, đủ số chùm | PASS | ICC=0.02 có nguồn, m=20, số chùm=50 (cố định, khớp N kế hoạch 1000 ÷ m=20; tối thiểu cần 27) |
 | G3-AUTO-16 | Hiệu chỉnh quần thể hữu hạn (FPC) chỉ dùng cho khảo sát quần thể hữu hạn | PASS | không dùng hiệu chỉnh quần thể hữu hạn |
 | G3-AUTO-17 | Thiết kế không dùng power đã dùng đúng khung thay thế | PASS | thiết kế dùng công thức power thông thường |
 | G3-AUTO-18 | Tham số đã ghim trong study_meta khớp giá trị thật sự đem vào phép tính | PASS | các tham số đã ghim khớp checkpoint |
@@ -29,24 +29,16 @@
 ## Xác nhận người thật (thống kê viên / chủ nhiệm đề tài)
 | Mã | Tiêu chí | Trạng thái | Bằng chứng |
 |---|---|---|---|
-| G3-HUMAN-01 | Chủ nhiệm/thống kê viên xác nhận tham số chính của phép tính và nguồn của nó | REVIEW | effect_source_confirmed=False; nguồn tỷ lệ ước lượng=có (prevalence_source) |
-| G3-HUMAN-02 | Đã xác nhận các giả định phụ (bỏ cuộc, tỷ lệ biến cố, SD, tỷ lệ hiện mắc) | REVIEW | assumptions_confirmed=False |
-| G3-HUMAN-03 | Đã xác nhận loại giả thuyết (superiority / không thua kém / tương đương) | REVIEW | hypothesis_type=descriptive_precision (mặc định của hệ là superiority); confirmed=False |
+| G3-HUMAN-01 | Chủ nhiệm/thống kê viên xác nhận tham số chính của phép tính và nguồn của nó | PASS | effect_source_confirmed=True; nguồn tỷ lệ ước lượng=có (prevalence_source) |
+| G3-HUMAN-02 | Đã xác nhận các giả định phụ (bỏ cuộc, tỷ lệ biến cố, SD, tỷ lệ hiện mắc) | PASS | assumptions_confirmed=True |
+| G3-HUMAN-03 | Đã xác nhận loại giả thuyết (superiority / không thua kém / tương đương) | PASS | hypothesis_type=descriptive_precision (mặc định của hệ là superiority); confirmed=True |
 | G3-HUMAN-04 | Cỡ mẫu được tính cho ĐÚNG kết cục chính đã chốt ở G1 | PASS | N tính cho kết cục: G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep, Phần 3 phiếu) |
-| G3-HUMAN-05 | Đã xác nhận khả thi tuyển đủ cỡ mẫu tại cơ sở | REVIEW | recruitment_feasibility_confirmed=False |
-| G3-HUMAN-06 | Có vai trò (thống kê viên/chủ nhiệm), thời điểm rà soát và xác nhận gắn đúng các giá trị đã tính | REVIEW | reviewed_by_role=thiếu (nhóm=không nhận diện); reviewed_at=thiếu; `reviewed_at` không phải ISO-8601 hợp lệ hoặc ở tương lai |
+| G3-HUMAN-05 | Đã xác nhận khả thi tuyển đủ cỡ mẫu tại cơ sở | PASS | recruitment_feasibility_confirmed=True |
+| G3-HUMAN-06 | Có vai trò (thống kê viên/chủ nhiệm), thời điểm rà soát và xác nhận gắn đúng các giá trị đã tính | PASS | reviewed_by_role=PI (nhóm=PI); reviewed_at=2026-10-14T20:17:41+07:00; xác nhận gắn đúng nội dung hiện tại |
 | G3-HUMAN-07 | Thử nghiệm then chốt: có nhà thống kê độc lập và lực đủ cao | PASS | không khai là thử nghiệm then chốt |
 
 ## Việc còn lại
-- Chạy G0/G1 trước; không tính cỡ mẫu trên thiết kế mặc định.
-- Khai icc/icc_source/cluster_size/n_clusters; số chùm nhỏ phải khai hiệu chỉnh mẫu nhỏ.
-Số chùm CỐ ĐỊNH nhiều hơn mức tối thiểu: khai n_clusters kèm confirmed_n (= số chùm × cỡ chùm m).
-Cỡ chùm không đều: PI khai cluster_size_cv từ số liệu thật (HIS: số lượt khám từng chùm trong kỳ) hoặc equal_cluster_sizes=true nếu khẳng định chùm đều — KHÔNG ước đoán.
-- Đọc toàn văn nguồn rồi đặt gate_params.G3.effect_source_confirmed=true.
-- Rà từng dòng bảng tham số của artifact A4 rồi đặt assumptions_confirmed=true.
-- Chọn nhầm loại giả thuyết là sai toàn bộ phép tính — xác nhận rồi đặt hypothesis_confirmed=true.
-- Đối chiếu N với lưu lượng bệnh nhân thật và thời gian thu thập, rồi xác nhận.
-- Ghi reviewed_by_role (STATISTICIAN hoặc PI), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot="b892b172aa2ef41a" (dấu của các giá trị quyết định N hiện tại); không lưu danh tính.
+- Không còn mục chờ trong hợp đồng G3.
 
 ## Nền chuẩn
 | Chuẩn | Phạm vi | PMID/DOI/URL |

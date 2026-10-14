@@ -3,10 +3,10 @@
   "contract_version": "G3-2026.1",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
   "gate": "G3",
-  "status": "DRAFT_NEEDS_HUMAN_PARAMETERS",
+  "status": "PASS_G3_CONFIRMED",
   "automated_checks_passed": true,
-  "parameters_ready_for_review": false,
-  "human_confirmation_complete": false,
+  "parameters_ready_for_review": true,
+  "human_confirmation_complete": true,
   "automatic_criteria": [
     {
       "id": "G3-AUTO-00",
@@ -18,8 +18,8 @@
     {
       "id": "G3-AUTO-01",
       "label": "Tiền đề G0/G1 có thật (thiết kế không do mặc định im lặng)",
-      "status": "REVIEW",
-      "evidence": "G1 chấm sống=DRAFT_READY_NEEDS_HUMAN_REVIEW — thiết kế chưa được PI/methodologist chốt",
+      "status": "PASS",
+      "evidence": "G1 chấm sống=PASS_G1_CONFIRMED",
       "action": "Chạy G0/G1 trước; không tính cỡ mẫu trên thiết kế mặc định."
     },
     {
@@ -95,8 +95,8 @@
     {
       "id": "G3-AUTO-12",
       "label": "Thiết kế theo chùm: ICC có nguồn, design effect đúng số học, đủ số chùm",
-      "status": "REVIEW",
-      "evidence": "CHỜ NGƯỜI (PI — số liệu cỡ chùm từ HIS): cỡ chùm không khẳng định là đều nhưng thiếu hệ số biến thiên CV",
+      "status": "PASS",
+      "evidence": "ICC=0.02 có nguồn, m=20, số chùm=50 (cố định, khớp N kế hoạch 1000 ÷ m=20; tối thiểu cần 27)",
       "action": "Khai icc/icc_source/cluster_size/n_clusters; số chùm nhỏ phải khai hiệu chỉnh mẫu nhỏ.\nSố chùm CỐ ĐỊNH nhiều hơn mức tối thiểu: khai n_clusters kèm confirmed_n (= số chùm × cỡ chùm m).\nCỡ chùm không đều: PI khai cluster_size_cv từ số liệu thật (HIS: số lượt khám từng chùm trong kỳ) hoặc equal_cluster_sizes=true nếu khẳng định chùm đều — KHÔNG ước đoán."
     },
     {
@@ -146,22 +146,22 @@
     {
       "id": "G3-HUMAN-01",
       "label": "Chủ nhiệm/thống kê viên xác nhận tham số chính của phép tính và nguồn của nó",
-      "status": "REVIEW",
-      "evidence": "effect_source_confirmed=False; nguồn tỷ lệ ước lượng=có (prevalence_source)",
+      "status": "PASS",
+      "evidence": "effect_source_confirmed=True; nguồn tỷ lệ ước lượng=có (prevalence_source)",
       "action": "Đọc toàn văn nguồn rồi đặt gate_params.G3.effect_source_confirmed=true."
     },
     {
       "id": "G3-HUMAN-02",
       "label": "Đã xác nhận các giả định phụ (bỏ cuộc, tỷ lệ biến cố, SD, tỷ lệ hiện mắc)",
-      "status": "REVIEW",
-      "evidence": "assumptions_confirmed=False",
+      "status": "PASS",
+      "evidence": "assumptions_confirmed=True",
       "action": "Rà từng dòng bảng tham số của artifact A4 rồi đặt assumptions_confirmed=true."
     },
     {
       "id": "G3-HUMAN-03",
       "label": "Đã xác nhận loại giả thuyết (superiority / không thua kém / tương đương)",
-      "status": "REVIEW",
-      "evidence": "hypothesis_type=descriptive_precision (mặc định của hệ là superiority); confirmed=False",
+      "status": "PASS",
+      "evidence": "hypothesis_type=descriptive_precision (mặc định của hệ là superiority); confirmed=True",
       "action": "Chọn nhầm loại giả thuyết là sai toàn bộ phép tính — xác nhận rồi đặt hypothesis_confirmed=true."
     },
     {
@@ -174,15 +174,15 @@
     {
       "id": "G3-HUMAN-05",
       "label": "Đã xác nhận khả thi tuyển đủ cỡ mẫu tại cơ sở",
-      "status": "REVIEW",
-      "evidence": "recruitment_feasibility_confirmed=False",
+      "status": "PASS",
+      "evidence": "recruitment_feasibility_confirmed=True",
       "action": "Đối chiếu N với lưu lượng bệnh nhân thật và thời gian thu thập, rồi xác nhận."
     },
     {
       "id": "G3-HUMAN-06",
       "label": "Có vai trò (thống kê viên/chủ nhiệm), thời điểm rà soát và xác nhận gắn đúng các giá trị đã tính",
-      "status": "REVIEW",
-      "evidence": "reviewed_by_role=thiếu (nhóm=không nhận diện); reviewed_at=thiếu; `reviewed_at` không phải ISO-8601 hợp lệ hoặc ở tương lai",
+      "status": "PASS",
+      "evidence": "reviewed_by_role=PI (nhóm=PI); reviewed_at=2026-10-14T20:17:41+07:00; xác nhận gắn đúng nội dung hiện tại",
       "action": "Ghi reviewed_by_role (STATISTICIAN hoặc PI), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"b892b172aa2ef41a\" (dấu của các giá trị quyết định N hiện tại); không lưu danh tính."
     },
     {
@@ -193,20 +193,12 @@
       "action": "Với thử nghiệm quyết định, mời nhà thống kê độc lập xác nhận và cân nhắc power 90%."
     }
   ],
-  "pending_actions": [
-    "Chạy G0/G1 trước; không tính cỡ mẫu trên thiết kế mặc định.",
-    "Khai icc/icc_source/cluster_size/n_clusters; số chùm nhỏ phải khai hiệu chỉnh mẫu nhỏ.\nSố chùm CỐ ĐỊNH nhiều hơn mức tối thiểu: khai n_clusters kèm confirmed_n (= số chùm × cỡ chùm m).\nCỡ chùm không đều: PI khai cluster_size_cv từ số liệu thật (HIS: số lượt khám từng chùm trong kỳ) hoặc equal_cluster_sizes=true nếu khẳng định chùm đều — KHÔNG ước đoán.",
-    "Đọc toàn văn nguồn rồi đặt gate_params.G3.effect_source_confirmed=true.",
-    "Rà từng dòng bảng tham số của artifact A4 rồi đặt assumptions_confirmed=true.",
-    "Chọn nhầm loại giả thuyết là sai toàn bộ phép tính — xác nhận rồi đặt hypothesis_confirmed=true.",
-    "Đối chiếu N với lưu lượng bệnh nhân thật và thời gian thu thập, rồi xác nhận.",
-    "Ghi reviewed_by_role (STATISTICIAN hoặc PI), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"b892b172aa2ef41a\" (dấu của các giá trị quyết định N hiện tại); không lưu danh tính."
-  ],
+  "pending_actions": [],
   "dau_van_tay_hien_tai": "b892b172aa2ef41a",
   "artifact_manifest": {
     "A4_SAMPLE_SIZE": {
-      "path": "/Users/nguyenluan/.ebm-worktrees/yk-g3-so-chum-20261011/exports/hai-long-benh-nhan-C1a-BVQY175/G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "ffc5bf8e973089be7a872508319a5470a6dbe277fc8f7998591b72ffb5de203f"
+      "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md",
+      "sha256": "5ea911a50015c54588f21b60ede5dbf35589c942a11743e46a665bcb7959f973"
     }
   },
   "sensitivity_table": {

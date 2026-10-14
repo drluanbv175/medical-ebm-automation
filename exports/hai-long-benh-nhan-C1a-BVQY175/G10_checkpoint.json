@@ -1,7 +1,7 @@
 {
   "gate": "G10",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "generated_at": "2026-09-06T04:59:47.373990",
+  "generated_at": "2026-10-14T20:41:28.357697",
   "gate_status": "BLOCKED — chờ input đời-thực",
   "quality_contract_version": "G10-2026.1",
   "guardrail": {
@@ -10,9 +10,9 @@
       "R1_sections": "PASS (đủ 18 mục)",
       "R2_gate_table": "PASS (10 cổng + 4 mốc)",
       "R3_valid_tags": "PASS",
-      "R4_pmid_traceable": "PASS (0/0 PMID đối chiếu PubMed raw)",
+      "R4_pmid_traceable": "WARN (7 đối chiếu raw, 0 chỉ-seed, 2 biên-nhận cần bác sĩ kiểm, 0 chuẩn đề cương của hệ thống)",
       "R5_disclaimer": "PASS",
-      "R6_no_results": "PASS",
+      "R6_no_results": "WARN (1 mẫu)",
       "R7_display_items": "PASS (Bảng 1/2 + Hình 1/2 + checklist)",
       "R8_international_compliance": "PASS (reporting + ICH-GCP/IRB + SAP + transparency + reproducibility)",
       "R9_technical_completion": "PASS (10 bước + 16 đầu ra + kiểm định cuối + quy tắc hoàn thành)",
@@ -23,14 +23,17 @@
       "R14_protocol_core_coverage": "PASS (đủ P01-P24)",
       "R15_semantic_consistency": "PASS",
       "R16_decision_package": "PASS",
-      "R17_scientific_readiness": "PASS (trung thực: còn quyết định khoa học mở)",
+      "R17_scientific_readiness": "PASS (đủ trường khoa học cốt lõi; vẫn cần người duyệt)",
       "R18_protocol_checklist": "N/A (thiết kế không có checklist đề cương theo mục trong kho)"
     },
     "errors": [],
-    "warnings": [],
-    "study_spec_readiness": "STRUCTURE_COMPLETE_WITH_OPEN_DECISIONS",
-    "scientific_content_complete": false,
-    "protocol_content_complete": false
+    "warnings": [
+      "R4 CẢNH BÁO: 2/9 PMID truy được qua BIÊN NHẬN ngoài-pipeline (_bien-nhan-xac-minh-pmid.json) — mức bảo đảm TỰ KHAI CÓ DẤU VẾT (khác raw-PubMed), và biên nhận KHÔNG bảo đảm trạng thái rút bài (kiểm chuỗi 3 tầng riêng): 39944421, 40295132.",
+      "R6 CẢNH BÁO: thấy 1 mẫu số liệu KẾT QUẢ (OR/RR/HR+CI, p<0.00x, hoặc %+KTC) trong ĐỀ CƯƠNG — đề cương là TRƯỚC khi có dữ liệu, kiểm lại xem có số liệu thật/bịa lọt vào không."
+    ],
+    "study_spec_readiness": "SCIENTIFIC_CONTENT_COMPLETE_DRAFT",
+    "scientific_content_complete": true,
+    "protocol_content_complete": true
   },
   "checkpoints_present": [
     "G0",
@@ -47,8 +50,8 @@
     "G9"
   ],
   "document_control": {
-    "document_version": "[DỰ THẢO]",
-    "document_date": "2026-09-06 04:59",
+    "document_version": "1.0",
+    "document_date": "2026-10-14",
     "requires_change_history": true,
     "status": "[DỰ THẢO]"
   },
@@ -63,35 +66,19 @@
   },
   "study_spec": {
     "schema_version": "1.0",
-    "readiness_level": "STRUCTURE_COMPLETE_WITH_OPEN_DECISIONS",
-    "scientific_content_complete": false,
-    "protocol_content_complete": false,
-    "protocol_complete_items": 2,
+    "readiness_level": "SCIENTIFIC_CONTENT_COMPLETE_DRAFT",
+    "scientific_content_complete": true,
+    "protocol_content_complete": true,
+    "protocol_complete_items": 24,
     "protocol_total_items": 24,
-    "missing_requirement_ids": [
-      "D02",
-      "D03",
-      "D05",
-      "D06",
-      "D07",
-      "D08",
-      "D10",
-      "D11",
-      "D12",
-      "D13",
-      "D14",
-      "D15",
-      "D16",
-      "D17",
-      "D18"
-    ],
+    "missing_requirement_ids": [],
     "semantic_error_codes": []
   },
   "skill_gate_states": {
     "G0": "DỰ THẢO (ĐẠT guardrail)",
     "G1": "DỰ THẢO (ĐẠT guardrail)",
     "G2": "DỰ THẢO (ĐẠT guardrail)",
-    "G3": "DỰ THẢO (ĐẠT guardrail)",
+    "G3": "CHỜ (thiếu điều kiện)",
     "G4": "THIẾU",
     "G5": "THIẾU",
     "G6": "THIẾU",
@@ -102,13 +89,13 @@
   "readiness": [
     {
       "moc": "Sẵn sàng nộp Hội đồng đạo đức",
-      "dat": "ĐẠT (dự thảo — chờ bác sĩ điền/nộp)",
-      "chi_tiet": "Hồ sơ đạo đức + protocol ở dạng dự thảo đầy đủ; bác sĩ điền nốt rồi nộp XIN phê duyệt"
+      "dat": "CHƯA ĐẠT",
+      "chi_tiet": "Hồ sơ đạo đức + protocol ở dạng dự thảo đầy đủ; bác sĩ điền nốt rồi nộp XIN phê duyệt | Chặn bởi: cổng skill G3 (Đạo đức/pháp lý/dữ liệu): CHỜ (thiếu điều kiện)"
     },
     {
       "moc": "Sẵn sàng triển khai (thu thập dữ liệu)",
       "dat": "CHƯA ĐẠT",
-      "chi_tiet": "BẮT BUỘC có phê duyệt Hội đồng Đạo đức THẬT (tín hiệu irb_approved) + công cụ/SOP dự thảo đầy đủ | Chặn bởi: thiếu phê duyệt IRB thật; cổng skill G4 (Công cụ): THIẾU; cổng skill G5 (Triển khai): THIẾU"
+      "chi_tiet": "BẮT BUỘC có phê duyệt Hội đồng Đạo đức THẬT (tín hiệu irb_approved) + công cụ/SOP dự thảo đầy đủ | Chặn bởi: thiếu phê duyệt IRB thật; cổng skill G3 (Đạo đức/pháp lý/dữ liệu): CHỜ (thiếu điều kiện); cổng skill G4 (Công cụ): THIẾU; cổng skill G5 (Triển khai): THIẾU"
     },
     {
       "moc": "Sẵn sàng phân tích chính",
@@ -126,7 +113,9 @@
     "de_cuong_docx": "exports/hai-long-benh-nhan-C1a-BVQY175/DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.docx",
     "study_spec_json": "exports/hai-long-benh-nhan-C1a-BVQY175/STUDY_SPEC_hai-long-benh-nhan-C1a-BVQY175.json",
     "decision_package_md": "exports/hai-long-benh-nhan-C1a-BVQY175/GOI_QUYET_DINH_hai-long-benh-nhan-C1a-BVQY175.md",
-    "release_readiness_json": "exports/hai-long-benh-nhan-C1a-BVQY175/G10_RELEASE_READINESS.json"
+    "release_readiness_json": "exports/hai-long-benh-nhan-C1a-BVQY175/G10_RELEASE_READINESS.json",
+    "de_cuong_md_sha256": "2b9dd5aa9d48f082bb6cc3be4f6f29db2a24bbf451b60a6e1bb9a52c395ede72",
+    "de_cuong_docx_sha256": "09d52f20b7e74bd8a75bb10701d8a558c95b2937b454cb1d566d1b21e5ace58e"
   },
   "quality_gate": {
     "status": "DRAFT_ASSEMBLED_NEEDS_COMPLETION",
