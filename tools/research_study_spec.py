@@ -1218,11 +1218,15 @@ def meta_for_render(meta: Optional[dict], spec: dict) -> dict:
             out[key] = value
     # 06/10/2026: khối resources thô LÀ dict nhưng thiếu khoá (vd chỉ có team) ⇒ bổ sung khoá còn trống từ StudySpec
     # (G1.team_roles, G1.budget) — dựng dict MỚI, không sửa bản thô của study_meta.
-    res_spec = defaults.get("resources")
-    if isinstance(out.get("resources"), dict) and isinstance(res_spec, dict):
-        bo_sung = {k: v for k, v in res_spec.items() if is_present(v) and not is_present(out["resources"].get(k))}
-        if bo_sung:
-            out["resources"] = {**out["resources"], **bo_sung}
+    # 14/10/2026: mở rộng cho MỌI khối dict — C1a: nút G10 ghi `ethics` thô chỉ có consent/privacy ⇒ đề cương in
+    # «Đánh giá lợi ích–nguy cơ: [CẦN BỔ SUNG]» dù StudySpec đã có (G1 benefit_risk_rationale).
+    for key in ("expected_results", "literature", "theory", "analysis", "bias", "ethics", "registration",
+                "resources"):
+        khoi_spec = defaults.get(key)
+        if isinstance(out.get(key), dict) and isinstance(khoi_spec, dict):
+            bo_sung = {k: v for k, v in khoi_spec.items() if is_present(v) and not is_present(out[key].get(k))}
+            if bo_sung:
+                out[key] = {**out[key], **bo_sung}
     return out
 
 

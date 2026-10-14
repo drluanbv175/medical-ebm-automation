@@ -209,6 +209,119 @@ def _design_code(cps: Dict[str, dict]) -> Optional[str]:
 _MULTI_ARM_DESIGNS = {"rct", "cohort", "case_control", "non_randomized"}
 
 
+def _muc_sap(sap: str, so: int) -> Optional[str]:
+    """Thân mục «### §<so> …» của SAP G4 gộp thành MỘT đoạn (bỏ gạch đầu dòng, bỏ dòng bảng) — None khi vắng/rỗng."""
+    m = re.search(rf"^### §{so}\b[^\n]*\n(.*?)(?=^#{{1,3}} |\Z)", sap or "", re.M | re.S)
+    if not m:
+        return None
+    dong = [d.strip().lstrip("-*").strip() for d in m.group(1).splitlines()]
+    van = " ".join(d for d in dong if d and not d.startswith("|")).strip()
+    return van or None
+
+
+def _sap_g4(out_dir: Path) -> str:
+    """Văn bản SAP G4 hiện hành của đề tài (bỏ bản sao lưu .bak-*) — rỗng khi vắng."""
+    for p in sorted(Path(out_dir).glob("G4_A5_SAP_FINAL_*.md")):
+        if ".bak-" not in p.name:
+            try:
+                return p.read_text(encoding="utf-8")
+            except OSError:
+                return ""
+    return ""
+
+
+def bo_sung_tu_nguon_da_chot(meta: dict, cps: Dict[str, dict], out_dir: Path) -> List[str]:
+    """Lấp ô đề cương còn TRỐNG bằng nội dung ĐÃ CHỐT ở cổng trước — KHÔNG ghi đè giá trị đã có, KHÔNG ghi study_meta.
+
+    14/10/2026 (C1a, gói ETHICS_SUBMISSION): đề cương thống nhất in 22 ô «[CẦN…]» dù dữ kiện đã chốt nằm ở G0 (giả
+    thuyết H0/H1), SAP G4 (§2/§3/§7/§8/§9/§10), G1 (tiến độ có nơi đăng ký), G2 (thời hạn lưu PI nhập, bảng rủi ro đã
+    xác nhận) và khối phát hành G10 (mã vai người chuẩn bị) — bộ dựng chỉ đọc khoá cấp cao của study_meta. Mỗi giá trị
+    mang nhãn nguồn để người đọc truy được. Trả danh sách khoá đã lấp (để in nhật ký)."""
+    da: List[str] = []
+    gp = meta.get("gate_params") if isinstance(meta.get("gate_params"), dict) else {}
+    g0 = gp.get("G0") if isinstance(gp.get("G0"), dict) else {}
+    g1 = gp.get("G1") if isinstance(gp.get("G1"), dict) else {}
+
+    def dat(khoa: str, gia_tri) -> None:
+        if RS.is_present(gia_tri) and not RS.is_present(meta.get(khoa)):
+            meta[khoa] = gia_tri
+            da.append(khoa)
+
+    def dat_khoi(khoi: str, khoa: str, gia_tri) -> None:
+        cu = meta.get(khoi) if isinstance(meta.get(khoi), dict) else {}
+        if RS.is_present(gia_tri) and not RS.is_present(cu.get(khoa)):
+            meta[khoi] = {**cu, khoa: gia_tri}
+            da.append(f"{khoi}.{khoa}")
+
+    h0, h1 = g0.get("hypothesis_h0"), g0.get("hypothesis_h1")
+    if RS.is_present(h0) and RS.is_present(h1):
+        dat("hypothesis", f"H0: {h0} H1: {h1} (G0 — PI đã chốt)")
+
+    po = meta.get("primary_outcome")
+    if isinstance(po, dict) and not RS.is_present(po.get("definition")) and RS.is_present(po.get("measure")):
+        meta["primary_outcome"] = po = {**po, "definition": po["measure"]}
+        da.append("primary_outcome.definition")
+    m_bien = re.search(r"biến\s+`?([A-Za-z_][A-Za-z0-9_]*)", f"{po.get('name')} {po.get('source')}") \
+        if isinstance(po, dict) else None
+    if m_bien and not RS.is_present(po.get("variable_name")):
+        meta["primary_outcome"] = po = {**po, "variable_name": m_bien.group(1)}
+        da.append("primary_outcome.variable_name")
+
+    sap = _sap_g4(out_dir)
+    for khoa, so in (("primary_outcome", 2), ("secondary_methods", 3), ("multiplicity", 8), ("sensitivity", 9),
+                     ("software", 10)):
+        van = _muc_sap(sap, so)
+        dat_khoi("analysis", khoa, f"{van} (SAP §{so})" if van else None)
+    van7 = _muc_sap(sap, 7)
+    dat("effect_modifiers", f"{van7} (SAP §7)" if van7 else None)
+    m5 = re.search(r"\*\*Exposure chính:\*\*\s*([^\n]+)", sap)
+    if isinstance(po, dict) and RS.is_present(po.get("source")) and m5:
+        dat("data_source", f"Kết cục và biến số: {str(po['source']).rstrip('. ')}. Phơi nhiễm: "
+                           f"{m5.group(1).strip().rstrip('. ')} (SAP §5)")
+
+    goi_g2 = next((p for p in sorted(Path(out_dir).glob("G2_A3_ETHICS_PACKAGE_*.md")) if ".bak-" not in p.name), None)
+    van_g2 = goi_g2.read_text(encoding="utf-8") if goi_g2 else ""
+    m_luu = re.search(r"Thời gian lưu:\s*([^\n|]+?)\s*$", van_g2, re.M)
+    if m_luu and "___" not in m_luu.group(1) and "[CẦN" not in m_luu.group(1):
+        dat_khoi("data_governance", "retention", f"{m_luu.group(1).strip()} (PI nhập ở hồ sơ G2)")
+    if "Bảng rủi ro–lợi ích" in van_g2 and "Chủ nhiệm đã rà và xác nhận bảng rủi ro" in van_g2:
+        muc = _g(cps.get("G2"), "risk_level", default=None)
+        dat_khoi("ethics", "safety",
+                 (f"Nguy cơ {str(muc).lower()}; " if RS.is_present(muc) else "")
+                 + "rủi ro tiềm tàng, biện pháp giảm thiểu và xử lý theo Bảng rủi ro–lợi ích (Tài liệu 3 hồ sơ G2) — "
+                   "chủ nhiệm đã rà và xác nhận")
+
+    tien_do = str(g1.get("study_schema_timeline") or "")
+    if "OSF Registries" in tien_do:
+        # Nơi đăng ký ĐÃ CHỐT ở G1 thắng gợi ý chung của G2 («ClinicalTrials.gov hoặc WHO ICTRP…» — chỉ là gợi ý).
+        reg = meta.get("registration") if isinstance(meta.get("registration"), dict) else {}
+        if "OSF" not in str(reg.get("registry") or ""):
+            meta["registration"] = {**reg, "registry": "OSF Registries"}
+            da.append("registration.registry")
+        dat_khoi("registration", "plan", "Đăng ký công khai trên OSF Registries trước T0, tức trước khi tuyển người "
+                                         "tham gia đầu tiên (tiến độ G1, đề cương §4.9 và §6.2)")
+
+    try:
+        rel = json.loads((Path(out_dir) / G10Q.READINESS_JSON).read_text(encoding="utf-8")).get("release") or {}
+    except (OSError, ValueError, AttributeError):
+        rel = {}
+    # Gói TRƯỚC dữ liệu + công cụ tự xây có kế hoạch kiểm định ⇒ trạng thái đúng là «chưa có chỉ số kiểm định lúc nộp»
+    # (thay nhãn [CẦN KIỂM CHỨNG NGUỒN CHÍNH THỨC] — nhãn đó dành cho công cụ có sẵn chưa truy được nguồn).
+    cc = meta.get("instrument") if isinstance(meta.get("instrument"), dict) else {}
+    truoc_du_lieu = str(rel.get("purpose") or "").strip().upper() in G10Q.MUC_DICH_TRUOC_DU_LIEU
+    if truoc_du_lieu and "kiểm định" in str(cc.get("source") or "") and not RS.is_present(cc.get("note")):
+        dat_khoi("instrument", "note", "Trạng thái kiểm định: chưa có chỉ số độ tin cậy/giá trị tại thời điểm nộp Hội "
+                                       "đồng — kiểm định trong pha phát triển công cụ nêu trên, trước thu thập chính.")
+    if RS.is_present(rel.get("owner_ref")):
+        dat("prepared_by", f"{rel['owner_ref']} (khối phát hành G10)")
+        dat("approved_by", "Chủ nhiệm đề tài (PI) — phê duyệt bằng chữ ký G10 trong sổ cái phê duyệt")
+
+    dat_khoi("expected_results", "flow_diagram",
+             "khung luồng: được mời/sàng lọc → đủ tiêu chuẩn → đồng ý tham gia → có dữ liệu hợp lệ → đưa vào phân "
+             "tích, kèm số và lý do từ chối/loại ở từng bước")
+    return da
+
+
 # ════════════════════════════════════════════════════════════════════════════
 # CÁC MỤC ĐỀ CƯƠNG (mỗi hàm trả về markdown 1 mục)
 # ════════════════════════════════════════════════════════════════════════════
@@ -949,6 +1062,9 @@ def sec_daoduc(cps, meta) -> str:
     route = _g(g2, "irb_route", default=TAG_BS)
     reg = _g(g2, "registration_required", default=TAG_BS)
     reg_where = _g(g2, "register_where", default=TAG_BS)
+    # 14/10/2026: nơi đăng ký đã chốt (G1 tiến độ ⇒ bo_sung_tu_nguon_da_chot) thắng gợi ý chung của G2.
+    if isinstance(meta.get("registration"), dict) and RS.is_present(meta["registration"].get("registry")):
+        reg_where = meta["registration"]["registry"]
     irb_num = _g(g2, "g2_irb_number", default=None)
     docs = _g(g2, "documents_generated", default=[]) or []
     doc_txt = "\n".join(f"- {d}" for d in docs) if docs else f"- {TAG_BS}"
@@ -2074,6 +2190,9 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     study_spec = RS.build_study_spec(study, cps, raw_meta)
     spec_evaluation = RS.evaluate_study_spec(study_spec, cps, raw_meta)
     meta = RS.meta_for_render(raw_meta, study_spec)
+    da_lap = bo_sung_tu_nguon_da_chot(meta, cps, out_dir)
+    if da_lap:
+        print(f"  ℹ Lấp ô đề cương từ nguồn đã chốt: {', '.join(da_lap)}")
     # 05/10/2026 (soát từng cổng G10 — lộ khi chạy chuỗi THẬT G0→G9 khoá tới G10): ngữ cảnh lắp ráp cho các mục — mục
     # đích phát hành (gói trước dữ liệu), G3 chấm SỐNG đã xác nhận, thư mục đề tài (biên nhận A12, script). Chỉ dùng khi
     # dựng văn bản; KHÔNG ghi vào study_meta.json.
