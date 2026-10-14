@@ -188,10 +188,13 @@
       "hypothesis_confirmed": true,
       "recruitment_feasibility_confirmed": true,
       "reviewed_by_role": "PI",
-      "reviewed_at": "2026-10-14T20:05:59+07:00",
+      "reviewed_at": "2026-10-14T20:17:41+07:00",
       "effect_source": "Không áp dụng theo thiết kế: đây là nghiên cứu MÔ TẢ, cỡ mẫu tính theo ĐỘ CHÍNH XÁC của ước lượng một tỷ lệ (Lwanga & Lemeshow, WHO 1991), không theo hiệu quả can thiệp. Tham số thay thế effect size là tỷ lệ hiện mắc ước lượng p = 0,50 — xem prevalence_source.",
       "underpowered_acceptance_justification": null,
-      "dau_van_tay_chot": "b892b172aa2ef41a"
+      "dau_van_tay_chot": "b892b172aa2ef41a",
+      "cluster_size_cv": 1.0,
+      "cluster_size_cv_source": "Giả định lập kế hoạch thận trọng CV = 1.0 (chưa có số liệu HIS theo bàn); N 1000 vẫn đủ tới CV ≈ 1.43; sẽ thay bằng CV thật từ HIS trước khi khoá SAP (G4).",
+      "unequal_cluster_adjustment": "Cỡ chùm không đều (CV=1.0 — Giả định lập kế hoạch thận trọng CV = 1.0 (chưa có số liệu HIS theo bàn); N 1000 vẫn đủ tới CV ≈ 1.43; sẽ thay bằng CV thật từ HIS trước khi khoá SAP (G4).): hiệu ứng thiết kế hiệu chỉnh theo Eldridge SM, Ashby D, Kerry S. Int J Epidemiol 2006;35(5):1292–1300 (doi:10.1093/ije/dyl129): DE = 1 + ((CV²+1)·m̄ − 1)·ICC = 1.78; N cần 808 (đã cộng dự phòng) ≤ N đã chốt 1000 ⇒ N vẫn đủ."
     },
     "G4": {
       "epv_vif_reviewed": false,

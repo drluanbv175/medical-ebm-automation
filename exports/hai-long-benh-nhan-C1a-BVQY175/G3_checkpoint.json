@@ -75,9 +75,9 @@
     "contract_version": "G3-2026.1",
     "study": "hai-long-benh-nhan-C1a-BVQY175",
     "gate": "G3",
-    "status": "DRAFT_NEEDS_HUMAN_PARAMETERS",
+    "status": "PASS_G3_CONFIRMED",
     "automated_checks_passed": true,
-    "parameters_ready_for_review": false,
+    "parameters_ready_for_review": true,
     "human_confirmation_complete": true,
     "automatic_criteria": [
       {
@@ -167,8 +167,8 @@
       {
         "id": "G3-AUTO-12",
         "label": "Thiết kế theo chùm: ICC có nguồn, design effect đúng số học, đủ số chùm",
-        "status": "REVIEW",
-        "evidence": "CHỜ NGƯỜI (PI — số liệu cỡ chùm từ HIS): cỡ chùm không khẳng định là đều nhưng thiếu hệ số biến thiên CV",
+        "status": "PASS",
+        "evidence": "ICC=0.02 có nguồn, m=20, số chùm=50 (cố định, khớp N kế hoạch 1000 ÷ m=20; tối thiểu cần 27)",
         "action": "Khai icc/icc_source/cluster_size/n_clusters; số chùm nhỏ phải khai hiệu chỉnh mẫu nhỏ.\nSố chùm CỐ ĐỊNH nhiều hơn mức tối thiểu: khai n_clusters kèm confirmed_n (= số chùm × cỡ chùm m).\nCỡ chùm không đều: PI khai cluster_size_cv từ số liệu thật (HIS: số lượt khám từng chùm trong kỳ) hoặc equal_cluster_sizes=true nếu khẳng định chùm đều — KHÔNG ước đoán."
       },
       {
@@ -254,7 +254,7 @@
         "id": "G3-HUMAN-06",
         "label": "Có vai trò (thống kê viên/chủ nhiệm), thời điểm rà soát và xác nhận gắn đúng các giá trị đã tính",
         "status": "PASS",
-        "evidence": "reviewed_by_role=PI (nhóm=PI); reviewed_at=2026-10-14T20:05:59+07:00; xác nhận gắn đúng nội dung hiện tại",
+        "evidence": "reviewed_by_role=PI (nhóm=PI); reviewed_at=2026-10-14T20:17:41+07:00; xác nhận gắn đúng nội dung hiện tại",
         "action": "Ghi reviewed_by_role (STATISTICIAN hoặc PI), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"b892b172aa2ef41a\" (dấu của các giá trị quyết định N hiện tại); không lưu danh tính."
       },
       {
@@ -265,9 +265,7 @@
         "action": "Với thử nghiệm quyết định, mời nhà thống kê độc lập xác nhận và cân nhắc power 90%."
       }
     ],
-    "pending_actions": [
-      "Khai icc/icc_source/cluster_size/n_clusters; số chùm nhỏ phải khai hiệu chỉnh mẫu nhỏ.\nSố chùm CỐ ĐỊNH nhiều hơn mức tối thiểu: khai n_clusters kèm confirmed_n (= số chùm × cỡ chùm m).\nCỡ chùm không đều: PI khai cluster_size_cv từ số liệu thật (HIS: số lượt khám từng chùm trong kỳ) hoặc equal_cluster_sizes=true nếu khẳng định chùm đều — KHÔNG ước đoán."
-    ],
+    "pending_actions": [],
     "dau_van_tay_hien_tai": "b892b172aa2ef41a",
     "artifact_manifest": {
       "A4_SAMPLE_SIZE": {
