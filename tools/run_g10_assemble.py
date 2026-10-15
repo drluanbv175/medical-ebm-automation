@@ -316,6 +316,22 @@ def bo_sung_tu_nguon_da_chot(meta: dict, cps: Dict[str, dict], out_dir: Path) ->
         dat("prepared_by", f"{rel['owner_ref']} (khối phát hành G10)")
         dat("approved_by", "Chủ nhiệm đề tài (PI) — phê duyệt bằng chữ ký G10 trong sổ cái phê duyệt")
 
+    if m5:
+        dat("exposure", f"{m5.group(1).strip().rstrip('. ')} (SAP §5)")
+
+    # 15/10/2026: bìa Word in «[CẦN XÁC NHẬN TẠI ĐƠN VỊ]», «Chủ nhiệm đề tài: [CẦN BỔ SUNG]», «(địa điểm – năm)» dù khối
+    # administrative (PI điền ở G2) có đủ tên, chức danh, đơn vị — bìa đọc org_lines/authors/place_year.
+    adm = meta.get("administrative") if isinstance(meta.get("administrative"), dict) else {}
+    don_vi = [x.strip() for x in str(adm.get("pi_unit") or "").split(",") if x.strip()]
+    if don_vi:
+        dat("org_lines", list(reversed(don_vi)))
+    if RS.is_present(adm.get("principal_investigator")):
+        chuc = f"{adm['pi_title']} " if RS.is_present(adm.get("pi_title")) else ""
+        dat("authors", f"{chuc}{adm['principal_investigator']} (chủ nhiệm đề tài)")
+    nam = str(meta.get("document_date") or "")[:4]
+    if don_vi:
+        dat("place_year", f"{don_vi[-1]} – {nam if nam.isdigit() else datetime.now().year}")
+
     dat_khoi("expected_results", "flow_diagram",
              "khung luồng: được mời/sàng lọc → đủ tiêu chuẩn → đồng ý tham gia → có dữ liệu hợp lệ → đưa vào phân "
              "tích, kèm số và lý do từ chối/loại ở từng bước")
@@ -2191,6 +2207,12 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     spec_evaluation = RS.evaluate_study_spec(study_spec, cps, raw_meta)
     meta = RS.meta_for_render(raw_meta, study_spec)
     da_lap = bo_sung_tu_nguon_da_chot(meta, cps, out_dir)
+    # Bản đồ nghiên cứu đọc StudySpec — dựng trên BẢN SAO có nguồn dữ liệu vừa lấp (15/10/2026: «Dữ liệu hiện có» in câu
+    # mặc định). KHÔNG sửa study_spec: nó được lưu ra STUDY_SPEC và G10-AUTO-06 so với bản tính lại từ study_meta.
+    spec_ban_do = study_spec
+    if RS.is_present(meta.get("data_source")) and not RS.is_present(_g(study_spec, "data_collection", "source")):
+        dc = study_spec.get("data_collection") if isinstance(study_spec.get("data_collection"), dict) else {}
+        spec_ban_do = {**study_spec, "data_collection": {**dc, "source": meta["data_source"]}}
     if da_lap:
         print(f"  ℹ Lấp ô đề cương từ nguồn đã chốt: {', '.join(da_lap)}")
     # 05/10/2026 (soát từng cổng G10 — lộ khi chạy chuỗi THẬT G0→G9 khoá tới G10): ngữ cảnh lắp ráp cho các mục — mục
@@ -2218,7 +2240,7 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     parts.append("")
     parts.append(build_abbreviations(meta))
     parts.append("")
-    parts.append(build_study_map(study_spec, spec_evaluation))
+    parts.append(build_study_map(spec_ban_do, spec_evaluation))
     parts.append("")
     # Bảng trạng thái + kết luận sẵn sàng đặt ĐẦU để bác sĩ thấy bức tranh thật.
     parts.append(build_gate_table(cps, meta))
