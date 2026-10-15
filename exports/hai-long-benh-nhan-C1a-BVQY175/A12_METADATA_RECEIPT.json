@@ -1,20 +1,134 @@
 {
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "checked_at_utc": "2026-10-14T13:42:42.902263+00:00",
+  "checked_at_utc": "2026-10-15T14:00:46.392299+00:00",
   "pmids_checked": [
+    "12210625",
+    "15485730",
+    "16279131",
+    "17161752",
+    "17654487",
+    "18313558",
+    "19564179",
+    "20494804",
+    "23883565",
+    "26776715",
+    "27881078",
     "28690831",
+    "29550964",
+    "31218671",
     "31703089",
     "32584904",
+    "32946537",
+    "32992600",
+    "33886027",
     "34017606",
+    "34053882",
     "34445940",
+    "35155757",
+    "36292392",
     "36439278",
     "39944421",
     "40295132",
-    "42625778"
+    "40432693",
+    "40995744",
+    "41645935",
+    "42582692",
+    "42625778",
+    "8134732",
+    "8970487",
+    "9762873"
   ],
-  "pmids_hash": "f63010c36e8a842548cf15b7c5133b8c2f87129e39500a4d8fdcc983294bf795",
+  "pmids_hash": "f35c8283af53dbcb9e2b3b4305a509d63f9999fca6a4068fd42cb1a087f20184",
   "all_resolved": true,
   "metadata": {
+    "12210625": {
+      "status": "resolved",
+      "title": "A solution to the problem of separation in logistic regression.",
+      "authors": "Heinze G, Schemper M",
+      "journal": "Statistics in medicine",
+      "year": "2002",
+      "doi": "10.1002/sim.1047"
+    },
+    "15485730": {
+      "status": "resolved",
+      "title": "Patterns of intra-cluster correlation from primary care research to inform study design and analysis.",
+      "authors": "Adams G, Gulliford MC, Ukoumunne OC, Eldridge S, Chinn S",
+      "journal": "Journal of clinical epidemiology",
+      "year": "2004",
+      "doi": "10.1016/j.jclinepi.2003.12.013"
+    },
+    "16279131": {
+      "status": "resolved",
+      "title": "Determinants of the intracluster correlation coefficient in cluster randomized trials: the case of implementation research.",
+      "authors": "Campbell MK, Fayers PM, Grimshaw JM",
+      "journal": "Clinical trials (London, England)",
+      "year": "2005",
+      "doi": "10.1191/1740774505cn071oa"
+    },
+    "17161752": {
+      "status": "resolved",
+      "title": "Quality criteria were proposed for measurement properties of health status questionnaires.",
+      "authors": "Terwee CB, Bot SD, de Boer MR, van der Windt DA, Knol DL",
+      "journal": "Journal of clinical epidemiology",
+      "year": "2007",
+      "doi": "10.1016/j.jclinepi.2006.03.012"
+    },
+    "17654487": {
+      "status": "resolved",
+      "title": "Is the CVI an acceptable indicator of content validity? Appraisal and recommendations.",
+      "authors": "Polit DF, Beck CT, Owen SV",
+      "journal": "Research in nursing & health",
+      "year": "2007",
+      "doi": "10.1002/nur.20199"
+    },
+    "18313558": {
+      "status": "resolved",
+      "title": "The Strengthening the Reporting of Observational Studies in Epidemiology (STROBE) statement: guidelines for reporting observational studies.",
+      "authors": "von Elm E, Altman DG, Egger M, Pocock SJ, Gøtzsche PC",
+      "journal": "Journal of clinical epidemiology",
+      "year": "2008",
+      "doi": "10.1016/j.jclinepi.2007.11.008"
+    },
+    "19564179": {
+      "status": "resolved",
+      "title": "Multiple imputation for missing data in epidemiological and clinical research: potential and pitfalls.",
+      "authors": "Sterne JA, White IR, Carlin JB, Spratt M, Royston P",
+      "journal": "BMJ (Clinical research ed.)",
+      "year": "2009",
+      "doi": "10.1136/bmj.b2393"
+    },
+    "20494804": {
+      "status": "resolved",
+      "title": "The COSMIN study reached international consensus on taxonomy, terminology, and definitions of measurement properties for health-related patient-reported outcomes.",
+      "authors": "Mokkink LB, Terwee CB, Patrick DL, Alonso J, Stratford PW",
+      "journal": "Journal of clinical epidemiology",
+      "year": "2010",
+      "doi": "10.1016/j.jclinepi.2010.02.006"
+    },
+    "23883565": {
+      "status": "resolved",
+      "title": "The Patient Satisfaction Questionnaire Short Form (PSQ-18) as an adaptable, reliable, and validated tool for use in various settings.",
+      "authors": "Thayaparan AJ, Mahdi E",
+      "journal": "Medical education online",
+      "year": "2013",
+      "doi": "10.3402/meo.v18i0.21747"
+    },
+    "26776715": {
+      "status": "resolved",
+      "title": "How Many Subjects Does It Take To Do A Regression Analysis.",
+      "authors": "Green SB",
+      "journal": "Multivariate behavioral research",
+      "year": "1991",
+      "doi": "10.1207/s15327906mbr2603_7"
+    },
+    "27881078": {
+      "status": "resolved",
+      "title": "No rationale for 1 variable per 10 events criterion for binary logistic regression analysis.",
+      "authors": "van Smeden M, de Groot JA, Moons KG, Collins GS, Altman DG",
+      "journal": "BMC medical research methodology",
+      "year": "2016",
+      "doi": "10.1186/s12874-016-0267-3"
+    },
     "28690831": {
       "status": "resolved",
       "title": "Patient waiting time in the outpatient clinic at a central surgical hospital of Vietnam: Implications for resource allocation.",
@@ -22,6 +136,22 @@
       "journal": "F1000Research",
       "year": "2017",
       "doi": "10.12688/f1000research.11045.3"
+    },
+    "29550964": {
+      "status": "resolved",
+      "title": "COSMIN methodology for evaluating the content validity of patient-reported outcome measures: a Delphi study.",
+      "authors": "Terwee CB, Prinsen CAC, Chiarotto A, Westerman MJ, Patrick DL",
+      "journal": "Quality of life research : an international journal of quality of life aspects of treatment, care and rehabilitation",
+      "year": "2018",
+      "doi": "10.1007/s11136-018-1829-0"
+    },
+    "31218671": {
+      "status": "resolved",
+      "title": "A systematic review of the validity and reliability of patient-reported experience measures.",
+      "authors": "Bull C, Byrnes J, Hettiarachchi R, Downes M",
+      "journal": "Health services research",
+      "year": "2019",
+      "doi": "10.1111/1475-6773.13187"
     },
     "31703089": {
       "status": "resolved",
@@ -39,6 +169,30 @@
       "year": "2020",
       "doi": "10.1371/journal.pone.0235333"
     },
+    "32946537": {
+      "status": "resolved",
+      "title": "Determinants of patient satisfaction: Lessons from large-scale inpatient interviews in Vietnam.",
+      "authors": "Nguyen T, Nguyen H, Dang A",
+      "journal": "PloS one",
+      "year": "2020",
+      "doi": "10.1371/journal.pone.0239306"
+    },
+    "32992600": {
+      "status": "resolved",
+      "title": "Factors Associated with Outpatient Satisfaction in Tertiary Hospitals in China: A Systematic Review.",
+      "authors": "Li Y, Gong W, Kong X, Mueller O, Lu G",
+      "journal": "International journal of environmental research and public health",
+      "year": "2020",
+      "doi": "10.3390/ijerph17197070"
+    },
+    "33886027": {
+      "status": "resolved",
+      "title": "A Consensus-Based Checklist for Reporting of Survey Studies (CROSS).",
+      "authors": "Sharma A, Minh Duc NT, Luu Lam Thang T, Nam NH, Ng SJ",
+      "journal": "Journal of general internal medicine",
+      "year": "2021",
+      "doi": "10.1007/s11606-021-06737-1"
+    },
     "34017606": {
       "status": "resolved",
       "title": "Outpatient satisfaction with primary health care services in Vietnam: Multilevel analysis results from The Vietnam Health Facilities Assessment 2015.",
@@ -47,6 +201,14 @@
       "year": "2021",
       "doi": "10.1177/20551029211015117"
     },
+    "34053882": {
+      "status": "resolved",
+      "title": "[Cross-cultural adaptation and Spanish validation of Patient Satisfaction Questionnaire in dermatology (PSQ-18)].",
+      "authors": "Iglesias-Puzas Á, de Miguel-Abildúa E, Conde-Taboada A, Iglesias-Bayo L, López-Bran E",
+      "journal": "Journal of healthcare quality research",
+      "year": "2021",
+      "doi": "10.1016/j.jhqr.2021.04.004"
+    },
     "34445940": {
       "status": "resolved",
       "title": "Improving Hospital's Quality of Service in Vietnam: The Patient Satisfaction Evaluation in Multiple Health Facilities.",
@@ -54,6 +216,22 @@
       "journal": "Hospital topics",
       "year": "2023",
       "doi": "10.1080/00185868.2021.1969871"
+    },
+    "35155757": {
+      "status": "resolved",
+      "title": "Does Adjusting for Social Desirability Reduce Ceiling Effects and Increase Variation of Patient-Reported Experience Measures?",
+      "authors": "Badejo MA, Ramtin S, Rossano A, Ring D, Koenig K",
+      "journal": "Journal of patient experience",
+      "year": "2022",
+      "doi": "10.1177/23743735221079144"
+    },
+    "36292392": {
+      "status": "resolved",
+      "title": "An Assessment of Outpatient Satisfaction with Hospital Pharmacy Quality and Influential Factors in the Context of the COVID-19 Pandemic.",
+      "authors": "Nguyen BQ, Nguyen CTT",
+      "journal": "Healthcare (Basel, Switzerland)",
+      "year": "2022",
+      "doi": "10.3390/healthcare10101945"
     },
     "36439278": {
       "status": "resolved",
@@ -79,6 +257,38 @@
       "year": "2025",
       "doi": "10.1136/bmjopen-2024-093501"
     },
+    "40432693": {
+      "status": "resolved",
+      "title": "A Cross-Sectional Study of Patients Satisfaction With the Pharmacy Services at the 108 Military Central Hospital: Determinants and Implications.",
+      "authors": "Thang DX, Tuan HA, Nguyen CTT, Phuong DT, Thuy LT",
+      "journal": "Health science reports",
+      "year": "2025",
+      "doi": "10.1002/hsr2.70868"
+    },
+    "40995744": {
+      "status": "resolved",
+      "title": "Patient Satisfaction With Outpatient Department Health Service and Associated Factors at Public Hospitals in Ethiopia.",
+      "authors": "Tura MR, Amena N, Wondie WT, Olkaba BF, Egu LM",
+      "journal": "Inquiry : a journal of medical care organization, provision and financing",
+      "year": "2025",
+      "doi": "10.1177/00469580251371387"
+    },
+    "41645935": {
+      "status": "resolved",
+      "title": "Translation, cross-cultural adaptation and validation of short-form patient satisfaction questionnaire (PSQ-18) in Bengali.",
+      "authors": "Sinha S, Islam MN, Hassan MM, Karim MR, Khan AH",
+      "journal": "International journal of health care quality assurance",
+      "year": "2026",
+      "doi": "10.1108/IJHCQA-07-2025-0100"
+    },
+    "42582692": {
+      "status": "resolved",
+      "title": "Perceived Healthcare Service Quality of Patients in the Post COVID-19 Pandemic: A Cross-Sectional Study at a Public District Hospital in Vietnam.",
+      "authors": "Thanh ND, Thanh TC, Nguyet HTM, Xiem CH",
+      "journal": "Health science reports",
+      "year": "2026",
+      "doi": "10.1002/hsr2.73018"
+    },
     "42625778": {
       "status": "resolved",
       "title": "Outpatient satisfaction assessed using a nationally standardized questionnaire: a survey of five health care facilities in Vietnam.",
@@ -86,7 +296,31 @@
       "journal": "Frontiers in health services",
       "year": "2026",
       "doi": "10.3389/frhs.2026.1844842"
+    },
+    "8134732": {
+      "status": "resolved",
+      "title": "Sample size calculations for ordered categorical data.",
+      "authors": "Whitehead J",
+      "journal": "Statistics in medicine",
+      "year": "1993",
+      "doi": "10.1002/sim.4780122404"
+    },
+    "8970487": {
+      "status": "resolved",
+      "title": "A simulation study of the number of events per variable in logistic regression analysis.",
+      "authors": "Peduzzi P, Concato J, Kemper E, Holford TR, Feinstein AR",
+      "journal": "Journal of clinical epidemiology",
+      "year": "1996",
+      "doi": "10.1016/s0895-4356(96)00236-3"
+    },
+    "9762873": {
+      "status": "resolved",
+      "title": "Using binary logistic regression models for ordinal data with non-proportional odds.",
+      "authors": "Bender R, Grouven U",
+      "journal": "Journal of clinical epidemiology",
+      "year": "1998",
+      "doi": "10.1016/s0895-4356(98)00066-3"
     }
   },
-  "receipt_signature": "v4:shared:07c0471abee96808a690c933a0433cfd90459106f26a9a63c579778b1d6462a4"
+  "receipt_signature": "v4:shared:f3c82232daddabf3262c599538328ca3a10f6e3ca31965ea9242e33b16acefcf"
 }
