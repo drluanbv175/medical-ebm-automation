@@ -1,7 +1,7 @@
 {
   "gate": "G10",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "generated_at": "2026-10-14T20:41:28.357697",
+  "generated_at": "2026-10-15T18:39:50.157584",
   "gate_status": "BLOCKED — chờ input đời-thực",
   "quality_contract_version": "G10-2026.1",
   "guardrail": {
@@ -10,7 +10,7 @@
       "R1_sections": "PASS (đủ 18 mục)",
       "R2_gate_table": "PASS (10 cổng + 4 mốc)",
       "R3_valid_tags": "PASS",
-      "R4_pmid_traceable": "WARN (7 đối chiếu raw, 0 chỉ-seed, 2 biên-nhận cần bác sĩ kiểm, 0 chuẩn đề cương của hệ thống)",
+      "R4_pmid_traceable": "PASS (9/9 PMID đối chiếu PubMed raw)",
       "R5_disclaimer": "PASS",
       "R6_no_results": "WARN (1 mẫu)",
       "R7_display_items": "PASS (Bảng 1/2 + Hình 1/2 + checklist)",
@@ -28,7 +28,6 @@
     },
     "errors": [],
     "warnings": [
-      "R4 CẢNH BÁO: 2/9 PMID truy được qua BIÊN NHẬN ngoài-pipeline (_bien-nhan-xac-minh-pmid.json) — mức bảo đảm TỰ KHAI CÓ DẤU VẾT (khác raw-PubMed), và biên nhận KHÔNG bảo đảm trạng thái rút bài (kiểm chuỗi 3 tầng riêng): 39944421, 40295132.",
       "R6 CẢNH BÁO: thấy 1 mẫu số liệu KẾT QUẢ (OR/RR/HR+CI, p<0.00x, hoặc %+KTC) trong ĐỀ CƯƠNG — đề cương là TRƯỚC khi có dữ liệu, kiểm lại xem có số liệu thật/bịa lọt vào không."
     ],
     "study_spec_readiness": "SCIENTIFIC_CONTENT_COMPLETE_DRAFT",
@@ -114,27 +113,106 @@
     "study_spec_json": "exports/hai-long-benh-nhan-C1a-BVQY175/STUDY_SPEC_hai-long-benh-nhan-C1a-BVQY175.json",
     "decision_package_md": "exports/hai-long-benh-nhan-C1a-BVQY175/GOI_QUYET_DINH_hai-long-benh-nhan-C1a-BVQY175.md",
     "release_readiness_json": "exports/hai-long-benh-nhan-C1a-BVQY175/G10_RELEASE_READINESS.json",
-    "de_cuong_md_sha256": "2b9dd5aa9d48f082bb6cc3be4f6f29db2a24bbf451b60a6e1bb9a52c395ede72",
-    "de_cuong_docx_sha256": "09d52f20b7e74bd8a75bb10701d8a558c95b2937b454cb1d566d1b21e5ace58e"
+    "de_cuong_md_sha256": "0c5a07f047bf924f0f2224efbd04b5be0e03ff75c5180ba56572d4d8de226dfb",
+    "de_cuong_docx_sha256": "ecee40fcc60a8fca2b441cb0fe5ec5de317ec625b8aa28deb45b6ee240ce23f0"
   },
   "quality_gate": {
-    "status": "DRAFT_ASSEMBLED_NEEDS_COMPLETION",
+    "status": "READY_FOR_G10_PI_RELEASE_APPROVAL",
     "report": "G10_QUALITY_REPORT.json",
+    "package_sha256": "f2c27ee74873a805c30ac20994954f9f227a5f96b577d413c3c3a1542bc5bd45",
     "human_approval_valid": false,
     "external_submission_state": "NOT_PERFORMED_OR_PROVEN_BY_G10"
   },
-  "release_package_ready": false,
+  "release_package_ready": true,
   "release_package_locked": false,
   "n_de_cuong_sections": 18,
   "n_protocol_core_items": 24,
   "disclaimer": "Cần bác sĩ kiểm chứng.",
+  "release_manifest": {
+    "algorithm": "SHA-256",
+    "files": {
+      "final_protocol_md": {
+        "path": "DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.md",
+        "sha256": "0c5a07f047bf924f0f2224efbd04b5be0e03ff75c5180ba56572d4d8de226dfb"
+      },
+      "final_protocol_docx": {
+        "path": "DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.docx",
+        "sha256": "ecee40fcc60a8fca2b441cb0fe5ec5de317ec625b8aa28deb45b6ee240ce23f0"
+      },
+      "study_spec": {
+        "path": "STUDY_SPEC_hai-long-benh-nhan-C1a-BVQY175.json",
+        "sha256": "1a357cf1d2fee61ed7e9bc7b5e485be0420115e1888287e072f189c8f0b93cf8"
+      },
+      "decision_package": {
+        "path": "GOI_QUYET_DINH_hai-long-benh-nhan-C1a-BVQY175.md",
+        "sha256": "4a105f4d23cbf9600208bcad53efbff8200be614131acac491ab6838d0870c36"
+      },
+      "release_readiness": {
+        "path": "G10_RELEASE_READINESS.json",
+        "sha256": "44c761633787a5bce1f4ae91af99d354afd977500c21da60445fa15b13d941f1"
+      },
+      "citation_verification": {
+        "path": "A12_CITATION_VERIFICATION_hai-long-benh-nhan-C1a-BVQY175.md",
+        "sha256": "5b1d2ee3ea9999c62df940b8b11410961d7018b361fea11eb73a3c643f7a7a83"
+      },
+      "citation_retraction_receipt": {
+        "path": "A12_RETRACTION_RECEIPT.json",
+        "sha256": "3d9def8f9a5e38e2595f5d9c835896a28a2e8ac8759c48f3096b33cea1cf4c42"
+      },
+      "citation_metadata_receipt": {
+        "path": "A12_METADATA_RECEIPT.json",
+        "sha256": "c1a1eb435b6c90ef724840596867401cd14c999a7cba88482575911bb8d5e536"
+      },
+      "g2_ethics_package": {
+        "path": "G2_A3_ETHICS_PACKAGE_hai-long-benh-nhan-C1a-BVQY175.md",
+        "sha256": "8929f55c4fa6b7d6e5f5a9825f9d6b46bb739ffa01dec64a7755a83c6acc4234"
+      },
+      "g4_sap_final": {
+        "path": "G4_A5_SAP_FINAL_hai-long-benh-nhan-C1a-BVQY175.md",
+        "sha256": "3b60bc01b3fadb24e9a01f952f2eb7796e35a53fdc075c00fec2c4132fd04ab3"
+      },
+      "checkpoint_g0": {
+        "path": "G0_checkpoint.json",
+        "sha256": "176e568f694d36a07a08df9a75980852ca79c93a4ab148ccad8a5f87735243e2"
+      },
+      "checkpoint_g1": {
+        "path": "G1_checkpoint.json",
+        "sha256": "a2827a773ff406e78295af9c4b8981dbb427174fe95a0e4fa11cacd90e0df9b9"
+      },
+      "checkpoint_g2": {
+        "path": "G2_checkpoint.json",
+        "sha256": "b6c06f6dfb4612ba806b474ab4fab2eb3d86c4f620c59a37011ac0752f1b2429"
+      },
+      "checkpoint_g3": {
+        "path": "G3_checkpoint.json",
+        "sha256": "6300ed2c830d357ad01861f86ddccc39c5354843367b0799bf66f9e4f4c94997"
+      },
+      "checkpoint_g4": {
+        "path": "G4_checkpoint.json",
+        "sha256": "4db7b2154cebb87cea83cddd69167f903f06262a8ddb3031436ce26e9cd6e945"
+      },
+      "g1_protocol_design": {
+        "path": "G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
+        "sha256": "5b2ebc3ffc1022d32505bfc70188fdb26acd21a3a8b4f77ae4b8e93aba7ffb8e"
+      },
+      "g2_registration_draft": {
+        "path": "G2_REGISTRATION_DRAFT_hai-long-benh-nhan-C1a-BVQY175.json",
+        "sha256": "076cf5cacc55ac21f9d425047db1820ac0a19a7391fdc97665a1a320378d5513"
+      },
+      "g3_sample_size": {
+        "path": "G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md",
+        "sha256": "5ea911a50015c54588f21b60ede5dbf35589c942a11743e46a665bcb7959f973"
+      }
+    },
+    "package_sha256": "f2c27ee74873a805c30ac20994954f9f227a5f96b577d413c3c3a1542bc5bd45"
+  },
   "needs_input": {
     "blocked": true,
-    "reason_code": "MISSING_CITATION_VERIFICATION",
-    "human_message": "Trích dẫn (cổng A12) chưa chạy agent `kiem-chung-trich-dan` (thiếu artifact A12).",
+    "reason_code": "MISSING_G10_RELEASE_APPROVAL",
+    "human_message": "Gói G10 đã đủ tiêu chí kỹ thuật nhưng chưa có phê duyệt PI trên đúng manifest.",
     "remediation": {
       "action": "rerun_with_real_input",
-      "command": "python tools/check_citations.py --study hai-long-benh-nhan-C1a-BVQY175 --pmids <...>",
+      "command": "python tools/approve_gate.py --study hai-long-benh-nhan-C1a-BVQY175 --gate G10 --artifact /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G10_checkpoint.json --reviewer-role PI --reviewer-ref <MA_THAM_CHIEU_KHONG_PII>",
       "study_meta_patch": {},
       "must_not_fabricate": [
         "approval_ledger.json",
