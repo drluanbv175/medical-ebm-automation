@@ -124,8 +124,11 @@ dù nhiều mục đã 47–68 ngày tuổi.
 
 **Đọc toàn văn bản guideline mới (thêm 25/09/2026):** trước khi viết «guideline X đổi khuyến cáo Y», đọc
 câu chữ nguyên bản bằng `python3 tools/doc_toan_van_pmc.py <PMID|DOI|PMCID> --tim "<cụm>"`. Đường này đi qua
-bucket S3 PMC OA nên chạy được cả trên Cloud. Mã 1 = bài không có trong PMC OA (đọc trên trang tạp chí qua
-quyền truy cập của bác sĩ). Mã 2 = CHƯA BIẾT: ghi «chưa đọc được toàn văn», không suy ra nội dung từ tóm tắt.
+bucket S3 PMC OA nên chạy được cả trên Cloud. Mã 1 = bài không có trong PMC OA ⇒ theo `_CONNECTOR-CHUNG-CU.md`
+§2septies (điều khoản NXB về AI/TDM): `python3 tools/doc_toan_van_co_nguoi.py --pmid <PMID>` lấy đường đọc; NXB «cấm»
+chưa uỷ quyền (guideline ESC ở MỌI nơi đăng, ADA, AHA/Wolters Kluwer, Elsevier/JACC…) ⇒ bác sĩ đọc trực tiếp rồi ghi
+`--bac-si-da-doc <PMID> --ghi-chu "<kết luận của bác sĩ>" --ghi`; không tự mở trang tạp chí. Mã 2 = CHƯA BIẾT: ghi
+«chưa đọc được toàn văn», không suy ra nội dung từ tóm tắt.
 
 <!-- EBM-CHUAN-QUOC-TE-2026 -->
 ## AGREE II — THẨM ĐỊNH CHÍNH GUIDELINE, đừng tin theo thương hiệu
