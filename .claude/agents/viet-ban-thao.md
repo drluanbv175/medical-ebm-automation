@@ -156,6 +156,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 | Nhiệm vụ | Bạn LÀM — đầu ra (tên là HỢP ĐỒNG) | Tiêu chí bạn phải đưa tới ĐẠT | Hồ sơ + lệnh bạn chuẩn bị cho NGƯỜI |
 |---|---|---|---|
 | `G7-T1` — Bản thảo theo chuẩn báo cáo của thiết kế | `G7_A8_MANUSCRIPT_<mã>.md`, `G7_checkpoint.json` | G7-AUTO-00, G7-AUTO-04, G7-AUTO-05, G7-AUTO-06 | PI: G7-HUMAN-01, G7-HUMAN-02, G7-HUMAN-03, G7-HUMAN-04, G7-HUMAN-05 |
+| `G10-T4` — Đề cương NỘP HỘI ĐỒNG: viết lại thành văn bản khoa học người đọc được từ quyết định đã chốt (chỉ khi gói phát hành trình Hội đồng hoặc cập nhật đăng ký (ETHICS_SUBMISSION/REGISTRY_UPDATE)) | `DE_CUONG_NOP_HOI_DONG_<mã>.md`, `DE_CUONG_NOP_HOI_DONG_<mã>.docx` | — (không có tiêu chí cổng; kiểm máy cấp nhiệm vụ: đề cương nộp Hội đồng: đủ cặp .md/.docx khớp nhau · đủ chương · không ký hiệu nội bộ/tên biến trong văn xuôi · cỡ mẫu khớp G3 · PMID trong biên nhận A12 · không PII liên lạc (kiem_de_cuong_nop_hoi_dong.py); nội dung bảo đảm bằng đánh giá chéo) | — |
 
 Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G7-T2` (hieu-dinh-song-ngu). Không bao giờ chấm đầu ra do chính bạn làm.
 

@@ -32,6 +32,7 @@ bác sĩ chưa đồng ý (`_HOI-DONG-CONG.md` §5 — chi phí).
 | G10-T1 | Lắp đề cương thống nhất + manifest gói phát hành (run_g10_assemble.py) | `dieu-phoi-g10` | `DE_CUONG_THONG_NHAT_<mã>.md`, `G10_checkpoint.json`, `G10_RELEASE_READINESS.json` | `tham-dinh-dau-ra`, `binh-duyet` + `giam-khao-cong` |
 | G10-T2 | A12 phủ mọi PMID của gói cuối (kể cả PMID do hệ chèn) | `kiem-chung-trich-dan` | `A12_RETRACTION_RECEIPT.json`, `A12_METADATA_RECEIPT.json` | `thu-thu-tai-lieu` + `giam-khao-cong` |
 | G10-T3 | Ghi sổ cái và bộ nhớ đề tài (sổ trạng thái riêng trong thư mục đề tài) | `so-cai-ghi-nho` | `SO_TRANG_THAI_<mã>.md` (một sổ mỗi đề tài; đủ mốc mọi cổng đã ký) | `tham-dinh-dau-ra` + `giam-khao-cong` |
+| G10-T4 | Đề cương NỘP HỘI ĐỒNG: viết lại thành văn bản khoa học người đọc được từ quyết định đã chốt (khi gói trình Hội đồng/cập nhật đăng ký) | `viet-ban-thao` | `DE_CUONG_NOP_HOI_DONG_<mã>.md`, `DE_CUONG_NOP_HOI_DONG_<mã>.docx` | `tham-dinh-dau-ra`, `kiem-chung-trich-dan` + `giam-khao-cong` |
 
 Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý do ở khối bàn giao, không giao việc.
 
@@ -55,7 +56,7 @@ của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm v
 | `PI@G10-T1` — NGƯỜI PI quyết/ký; agent chuẩn bị hồ sơ + lệnh: `dieu-phoi-g10` | G10-HUMAN-01, G10-HUMAN-02, G10-HUMAN-03, G10-HUMAN-04, G10-HUMAN-05 |
 | `^*` — cổng tiền đề các cổng tiền đề theo mục đích phát hành (điều phối cổng đó chịu trách nhiệm) | G10-AUTO-02, G10-AUTO-02B, G10-AUTO-04 |
 
-Nhiệm vụ KHÔNG có tiêu chí máy (chất lượng CHỈ bảo đảm bằng đánh giá chéo): G10-T3 `so-cai-ghi-nho` (kiểm máy cấp nhiệm vụ: sổ trạng thái riêng của đề tài: đúng schema, mọi khối thuộc đề tài, ngày không lùi, đủ mốc cổng đã ký) — chưa có biên bản
+Nhiệm vụ KHÔNG có tiêu chí máy (chất lượng CHỈ bảo đảm bằng đánh giá chéo): G10-T3 `so-cai-ghi-nho` (kiểm máy cấp nhiệm vụ: sổ trạng thái riêng của đề tài: đúng schema, mọi khối thuộc đề tài, ngày không lùi, đủ mốc cổng đã ký), G10-T4 `viet-ban-thao` (kiểm máy cấp nhiệm vụ: đề cương nộp Hội đồng: đủ cặp .md/.docx khớp nhau · đủ chương · không ký hiệu nội bộ/tên biến trong văn xuôi · cỡ mẫu khớp G3 · PMID trong biên nhận A12 · không PII liên lạc (kiem_de_cuong_nop_hoi_dong.py)) — chưa có biên bản
 đánh giá chéo «qua» còn hiệu lực ⇒ khối bàn giao ghi «chất lượng chưa được bảo đảm» (lệnh đo liệt kê).
 
 1. **Thước đo duy nhất:** `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G10` — chỉ đọc; chấm sống,
@@ -73,7 +74,7 @@ Nhiệm vụ KHÔNG có tiêu chí máy (chất lượng CHỈ bảo đảm bằ
    `python3 tools/hoi_dong_cong.py khai-ap-dung --study <mã> --gate G10 --nhiem-vu <NV> --ap-dung co --ly-do "…"`
    (`--ap-dung khong` khi không áp dụng) — lưu `hoi_dong/G10/ap_dung_nhiem_vu.json`; khai «co» ⇒ bảng trách nhiệm
    đòi đầu ra + kiểm máy của nhiệm vụ; điều kiện RCT/SR suy từ thiết kế do máy quyết, không khai tay.
-   Ở G10: không có nhiệm vụ như vậy.
+   Ở G10: G10-T4 `viet-ban-thao` (gói phát hành trình Hội đồng hoặc cập nhật đăng ký (ETHICS_SUBMISSION/REGISTRY_UPDATE)).
 6. Bàn giao: chạy lại với `--ghi` (lưu `hoi_dong/G10/trach_nhiem/TN-<mốc>.json`, kèm SHA-256 hồ sơ G10_*) và chép
    kết luận vào khối bàn giao. Trách nhiệm KHÔNG đòi triệu tập hội đồng nhiều agent (chi phí `_HOI-DONG-CONG.md` §5).
 <!-- TRACH-NHIEM-CONG:KET-THUC -->
@@ -116,6 +117,10 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
      có nguồn đã chốt (kinh phí, khung lý thuyết) ⇒ PI gõ — agent KHÔNG bịa. Ghi xong đo lại G0–G4; tụt ⇒ hoàn nguyên.
   4. A12 (G10-T2) chạy trên ĐỀ CƯƠNG ĐÃ LẮP CUỐI (mọi PMID, kể cả hệ chèn), ≤ 30 ngày trước khi PI ký; lắp lại mà
      đổi tập PMID ⇒ chạy lại A12.
+  5. Bản NỘP HỘI ĐỒNG `DE_CUONG_NOP_HOI_DONG_<mã>.md` + `.docx` (15/10/2026, tuỳ chọn — văn bản người đọc được PI
+     thật sự nộp; bản lắp chỉ là hồ sơ truy xuất): có thì CẢ CẶP vào manifest (thiếu nửa ⇒ G10-AUTO-09 chặn), cấm nhãn
+     [CẦN…]/email/số điện thoại (dòng chấm «………» để PI điền tay là hợp lệ), và A12 phải phủ CẢ PMID của nó — chạy
+     `check_citations.py --study <mã> --pmids <hợp PMID hai bản>`. Sửa bản nộp sau khi lắp ⇒ chấm lại G10 trước khi ký.
   C1a: nút một chạm `Chot G10 C1a` ở thư mục gốc làm đúng chuỗi trên, chỉ IN lệnh ký.
 - Kết cục chính khác diễn đạt giữa các cổng ⇒ CHỦ NHIỆM ghi `gate_params.G10.xac_nhan_ket_cuc_chinh`.
 - Kết cục chính ĐÃ ĐỔI THẬT (06/10/2026, G10-07) ⇒ CHỦ NHIỆM khai `gate_params.G10.sua_doi_ket_cuc_chinh` (danh sách theo thời gian; mỗi lần: `ket_cuc_cu` · `ket_cuc_moi` · `ly_do` ≥ 30 ký tự · `ma_sua_doi` · `ngay_sua_doi` · `irb_chap_thuan` · `dang_ky_cap_nhat` · `ngay_cap_nhat_dang_ky` · `reviewed_by_role`=PI · `reviewed_at`; lần cuối gắn `dau_van_tay` do CLI `nhat_quan_xuyen_cong.py` in; tới bản thảo thêm `cong_bo_trong_ban_thao`). Hợp lệ khi chuỗi nối tiếp, SAP §2 và khai báo G8 là kết cục mới (G0/G1/bản nháp đăng ký giữ kết cục cũ — không sửa ngược hồ sơ cổng), sửa TRƯỚC ngày khoá dữ liệu, bản thảo có câu báo cáo thay đổi (CONSORT 2025 mục 10, PMID 40228477; SPIRIT 2025 mục 31) ⇒ G10-AUTO-11 «cần xem», không chặn; đề cương G10 in bảng «Sửa đổi kết cục chính». Agent KHÔNG khai thay chủ nhiệm.

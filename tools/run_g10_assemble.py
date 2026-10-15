@@ -2464,19 +2464,27 @@ def _dois_from_text(text: str) -> set:
     return {d.rstrip(".,;") for d in _DOI_INLINE_RE.findall(text)}
 
 
+def _van_ban_ban_cuoi(study: str, out_dir: Path) -> str:
+    """Văn bản các đề cương thuộc gói phát hành: bản lắp G10 (`DE_CUONG_THONG_NHAT_<mã>.md`) và — khi có — bản nộp
+    Hội đồng (`DE_CUONG_NOP_HOI_DONG_<mã>.md`, THÊM 15/10/2026: văn bản người đọc được mà PI thật sự nộp; G10 ràng buộc
+    nó vào manifest nên mọi trích dẫn của nó cũng phải nằm trong phạm vi A12). Tệp vắng/không đọc được ⇒ bỏ qua."""
+    phan: list[str] = []
+    for ten in (f"DE_CUONG_THONG_NHAT_{study}.md", f"DE_CUONG_NOP_HOI_DONG_{study}.md"):
+        tep = Path(out_dir) / ten
+        if tep.exists():
+            try:
+                phan.append(tep.read_text(encoding="utf-8"))
+            except OSError:
+                continue
+    return "\n".join(phan)
+
+
 def _scan_doi_citation_coverage(artifact_text: str, study: str, out_dir: Path) -> set:
-    """Trả về tập DOI xuất hiện trong artifact A12/bản G10 cuối. Regex thô không đủ
+    """Trả về tập DOI xuất hiện trong artifact A12/bản G10 cuối (kể cả bản nộp Hội đồng khi có). Regex thô không đủ
     để ghép chính xác "DOI này thuộc đúng trích dẫn nào" (không phân biệt chắc chắn
     được DOI-chỉ-DOI với DOI của một trích dẫn đã có PMID riêng ở nơi khác) — CHỈ
     dùng để cảnh báo bác sĩ tự rà, KHÔNG dùng để tự động chặn/kết luận."""
-    final_doc = out_dir / f"DE_CUONG_THONG_NHAT_{study}.md"
-    final_text = ""
-    if final_doc.exists():
-        try:
-            final_text = final_doc.read_text(encoding="utf-8")
-        except OSError:
-            final_text = ""
-    return _dois_from_text(artifact_text + "\n" + final_text)
+    return _dois_from_text(artifact_text + "\n" + _van_ban_ban_cuoi(study, out_dir))
 
 
 def _chuan_doi(doi: str) -> str:
@@ -2517,14 +2525,9 @@ def _extract_pmids_from_final_document(study: str, out_dir: Path) -> set:
     nên đây là lớp đối chiếu phát hành cuối: PMID có mặt trong tài liệu chuẩn bị
     nộp/nghiệm thu cũng phải có trong receipt máy-kiểm A12. Vá 2026-07-18: dùng CHUNG
     `_pmids_from_text` với artifact → cũng bắt PMID trong ô-bảng (trước chỉ bắt inline,
-    bất đối xứng — PMID chỉ nằm ở ô-bảng bản cuối từng thoát coverage)."""
-    final_doc = out_dir / f"DE_CUONG_THONG_NHAT_{study}.md"
-    if not final_doc.exists():
-        return set()
-    try:
-        return _pmids_from_text(final_doc.read_text(encoding="utf-8"))
-    except OSError:
-        return set()
+    bất đối xứng — PMID chỉ nằm ở ô-bảng bản cuối từng thoát coverage). THÊM 15/10/2026: gồm cả bản nộp Hội đồng
+    `DE_CUONG_NOP_HOI_DONG_<mã>.md` khi có (xem `_van_ban_ban_cuoi`)."""
+    return _pmids_from_text(_van_ban_ban_cuoi(study, out_dir))
 
 
 def _safe_compare(a, b) -> bool:
