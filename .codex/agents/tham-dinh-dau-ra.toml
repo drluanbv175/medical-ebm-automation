@@ -225,7 +225,7 @@ Khi điều phối cổng `dieu-phoi-gN` giao việc, bạn chịu trách nhiệ
 bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối tổng — `_HOI-DONG-CONG.md` §1b).
 Đo (chỉ đọc): `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G<N>`.
 
-Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G10-T1` (dieu-phoi-g10), `G10-T3` (so-cai-ghi-nho). Không bao giờ chấm đầu ra do chính bạn làm.
+Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G10-T1` (dieu-phoi-g10), `G10-T3` (so-cai-ghi-nho), `G10-T4` (viet-ban-thao). Không bao giờ chấm đầu ra do chính bạn làm.
 
 Trước khi trả việc cho điều phối cổng: chạy lệnh đo của cổng đó — tiêu chí của bạn còn chưa đạt,
 đầu ra còn thiếu, hoặc biên bản đánh giá chéo «trả về sửa» ⇒ CHƯA xong. Không ký, không bật cờ, không

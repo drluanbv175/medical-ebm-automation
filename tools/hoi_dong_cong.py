@@ -242,6 +242,12 @@ NHIEM_VU: Dict[str, List[Dict[str, Any]]] = {
         # `exports/<mã>/SO_TRANG_THAI_<mã>.md` (trước ghi vào tệp doctrine dùng chung `_SO-TRANG-THAI-CHECKPOINT.md`).
         _nv("G10-T3", "Ghi sổ cái và bộ nhớ đề tài (sổ trạng thái riêng trong thư mục đề tài)", "so-cai-ghi-nho",
             ("SO_TRANG_THAI_<mã>.md",), ("tham-dinh-dau-ra",)),
+        # 15/10/2026 — bác sĩ: đề cương lắp máy «khó mà chấp nhận được» để nộp Hội đồng ⇒ bản NỘP viết lại bằng văn
+        # phong khoa học từ quyết định đã chốt; G10 ràng buộc cả cặp vào manifest (g10_quality_gate) và A12 phủ PMID.
+        _nv("G10-T4", "Đề cương NỘP HỘI ĐỒNG: viết lại thành văn bản khoa học người đọc được từ quyết định đã chốt",
+            "viet-ban-thao", ("DE_CUONG_NOP_HOI_DONG_<mã>.md", "DE_CUONG_NOP_HOI_DONG_<mã>.docx"),
+            ("tham-dinh-dau-ra", "kiem-chung-trich-dan"),
+            dieu_kien="gói phát hành trình Hội đồng hoặc cập nhật đăng ký (ETHICS_SUBMISSION/REGISTRY_UPDATE)"),
     ],
 }
 
@@ -1375,6 +1381,15 @@ def _kiem_dien_giai(out_dir: Path, study: str) -> List[str]:
 TEP_SO_TRANG_THAI = "SO_TRANG_THAI_{study}.md"
 
 
+def _kiem_de_cuong_nop(out_dir: Path, study: str) -> List[str]:
+    """G10-T4 — bản đề cương nộp Hội đồng qua công cụ kiểm máy `kiem_de_cuong_nop_hoi_dong.py` (15/10/2026)."""
+    try:
+        import kiem_de_cuong_nop_hoi_dong as KDN  # noqa: PLC0415
+    except Exception as exc:  # noqa: BLE001 — không chấm được ≠ đạt
+        return [f"không nạp được kiem_de_cuong_nop_hoi_dong: {type(exc).__name__}"]
+    return KDN.kiem(Path(out_dir), study)
+
+
 def _kiem_so_trang_thai(out_dir: Path, study: str) -> List[str]:
     """G10-T3 — sổ trạng thái RIÊNG của đề tài `exports/<mã>/SO_TRANG_THAI_<mã>.md` (10/10/2026): đúng schema
     `_SO-TRANG-THAI-CHECKPOINT.md` theo ĐÚNG `clinical_checkpoint.parse_checkpoint_log/validate_entries`; mọi khối thuộc
@@ -1600,6 +1615,10 @@ KIEM_NHIEM_VU: Dict[str, Tuple[str, Any]] = {
               _kiem_dien_giai),
     "G10-T3": ("sổ trạng thái riêng của đề tài: đúng schema, mọi khối thuộc đề tài, ngày không lùi, đủ mốc cổng đã ký",
                _kiem_so_trang_thai),
+    "G10-T4": ("đề cương nộp Hội đồng: đủ cặp .md/.docx khớp nhau · đủ chương · không ký hiệu nội bộ/tên biến "
+               "trong văn xuôi · cỡ mẫu khớp G3 · PMID trong biên nhận A12 · không PII liên lạc "
+               "(kiem_de_cuong_nop_hoi_dong.py)",
+               _kiem_de_cuong_nop),
     "G1-T8": ("kế hoạch kinh tế y tế: đủ 10 trường, loại CEA/CUA/CBA/BIA, chuẩn báo cáo khớp loại, WTP/chi phí có "
               "nguồn",
               _kiem_kinh_te),

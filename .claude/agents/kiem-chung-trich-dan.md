@@ -114,7 +114,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 | `G9-T2` — Kiểm trích dẫn lần cuối trước khi PI ký | `A12_RETRACTION_RECEIPT.json`, `A12_METADATA_RECEIPT.json` | G9-AUTO-04 | — |
 | `G10-T2` — A12 phủ mọi PMID của gói cuối (kể cả PMID do hệ chèn) | `A12_RETRACTION_RECEIPT.json`, `A12_METADATA_RECEIPT.json` | G10-AUTO-05 | — |
 
-Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G0-T2` (thu-thu-tai-lieu), `G7-T1` (viet-ban-thao), `G8-T1` (binh-duyet), `G9-T1` (nop-bai-phan-hoi). Không bao giờ chấm đầu ra do chính bạn làm.
+Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G0-T2` (thu-thu-tai-lieu), `G7-T1` (viet-ban-thao), `G8-T1` (binh-duyet), `G9-T1` (nop-bai-phan-hoi), `G10-T4` (viet-ban-thao). Không bao giờ chấm đầu ra do chính bạn làm.
 
 Trước khi trả việc cho điều phối cổng: chạy lệnh đo của cổng đó — tiêu chí của bạn còn chưa đạt,
 đầu ra còn thiếu, hoặc biên bản đánh giá chéo «trả về sửa» ⇒ CHƯA xong. Không ký, không bật cờ, không

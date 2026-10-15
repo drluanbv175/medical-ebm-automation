@@ -171,10 +171,13 @@ RISK_PROFILES = {
         "icf_required": True,
         "icf_waiver_eligible": True,
         "risks": [
+            # SỬA 15/10/2026 (C1a): hai câu cũ là câu mẫu ghép mọi kịch bản («khuyết danh hoàn toàn nếu không cần
+            # theo dõi; mã hóa nếu cần liên kết», «tự điền hoặc qua điện thoại/email») chép thẳng vào ICF thành lời hứa
+            # sai bối cảnh với người tham gia. Nay chỉ nêu biện pháp đúng cho mọi khảo sát cắt ngang.
             ("Rò rỉ thông tin từ bộ câu hỏi", "Rất thấp", "Nhẹ",
-             "Khuyết danh hoàn toàn nếu không cần theo dõi; mã hóa nếu cần liên kết"),
+             "Phiếu không ghi thông tin định danh; liên kết dữ liệu (nếu có) chỉ qua mã nghiên cứu"),
             ("Gánh nặng thời gian", "Thấp", "Không đáng kể",
-             "Bộ câu hỏi ngắn; tự điền hoặc qua điện thoại/email"),
+             "Bộ câu hỏi ngắn, trả lời một lần; dừng được bất cứ lúc nào"),
         ],
         "benefits": "Cung cấp dữ liệu tỷ lệ hiện mắc/tỷ lệ các yếu tố liên quan tại địa phương; chi phí thấp",
     },
@@ -520,6 +523,11 @@ def generate_g2_full_package(
             "chất lượng dịch vụ — KHÔNG có can thiệp/thủ thuật y khoa nào thực hiện "
             "thêm ngoài quy trình khám/chăm sóc thường quy]"
         )
+
+    # SỬA 15/10/2026 (C1a): câu «cố gắng lên lịch hẹn trùng với lần tái khám thường quy» chỉ đúng khi có tiếp xúc
+    # NHIỀU lần (thủ thuật/tái khám/theo dõi) — khảo sát một lần (cắt ngang…) chép nó vào ICF là sai bối cảnh.
+    icf_lich_hen = ("   Chúng tôi sẽ cố gắng lên lịch hẹn trùng với lần tái khám\n"
+                    "   thường quy để giảm bất tiện cho anh/chị.\n") if co_thu_thuat else ""
 
     # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, phát hiện HIGH):
     # ICF do hàm này sinh ra trước đây chỉ có 7 mục GỐC (1-7), thiếu 7 mục con
@@ -992,9 +1000,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
    Tổng thời gian tham gia ước tính: [CẦN — ví dụ: 12 tháng]
    Số lần đến cơ sở y tế: [CẦN — ví dụ: 3 lần]
 
-   Chúng tôi sẽ cố gắng lên lịch hẹn trùng với lần tái khám
-   thường quy để giảm bất tiện cho anh/chị.
-{icf_2b}
+{icf_lich_hen}{icf_2b}
 
 3. RỦI RO VÀ BẤT TIỆN CÓ THỂ XẢY RA
    {chr(10).join('   • ' + r[0] + ': ' + r[2] + ' → ' + r[3][:80] for r in risk["risks"])}
@@ -1025,8 +1031,9 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
       (cơ quan bảo vệ dữ liệu được báo trong 72 giờ theo NĐ 356/2025/NĐ-CP —
       mốc này áp cho cơ quan quản lý, không phải mốc cam kết với anh/chị)
 
-   Anh/chị có quyền yêu cầu xem, sửa hoặc xóa dữ liệu của mình
-   (trước khi chúng tôi tiến hành phân tích).
+   Với dữ liệu còn liên kết được với anh/chị, anh/chị có quyền yêu cầu xem,
+   sửa hoặc xóa (trước khi chúng tôi tiến hành phân tích); với phiếu không
+   ghi tên, sau khi đã nộp thì không thể tìm lại phiếu của từng người.
 {icf_5b}
 
 6. QUYỀN TỰ NGUYỆN VÀ RÚT LUI
