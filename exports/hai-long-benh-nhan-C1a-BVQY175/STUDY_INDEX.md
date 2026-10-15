@@ -1,5 +1,5 @@
 # STUDY INDEX — hai-long-benh-nhan-C1a-BVQY175
-> Cập nhật: 2026-10-14 · trạng thái đọc TRỰC TIẾP từ checkpoint hiện có (không phải cố định lúc scaffold)
+> Cập nhật: 2026-10-15 · trạng thái đọc TRỰC TIẾP từ checkpoint hiện có (không phải cố định lúc scaffold)
 
 ## 20 File chuẩn
 

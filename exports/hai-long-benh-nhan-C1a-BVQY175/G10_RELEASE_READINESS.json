@@ -4,38 +4,38 @@
   "status": "DRAFT_ASSEMBLED_NEEDS_COMPLETION",
   "release": {
     "purpose": "ETHICS_SUBMISSION",
-    "package_version": null,
+    "package_version": "1.0",
     "target_system_or_recipient_ref": "Hội đồng Đạo đức trong nghiên cứu y sinh học — Bệnh viện Quân y 175",
-    "target_requirements_checked": false,
-    "prepared_at": "2026-10-14T20:41:28+07:00",
+    "target_requirements_checked": true,
+    "prepared_at": "2026-10-15T17:28:40+07:00",
     "owner_ref": "NGUYỄN HÀ LUÂN",
-    "change_log_reviewed": false,
-    "final_files_confirmed": false,
-    "no_unresolved_critical_issues": false,
-    "prepared_for_pi_review": false
+    "change_log_reviewed": true,
+    "final_files_confirmed": true,
+    "no_unresolved_critical_issues": true,
+    "prepared_for_pi_review": true
   },
   "cross_document_consistency": {
-    "protocol_sap_consistent": false,
-    "registry_protocol_consistent_or_not_applicable": false,
+    "protocol_sap_consistent": true,
+    "registry_protocol_consistent_or_not_applicable": true,
     "manuscript_results_consistent": false,
-    "ethics_consent_consistent": false,
-    "reporting_checklist_complete": false,
-    "analysis_deviations_disclosed_or_none": false,
+    "ethics_consent_consistent": true,
+    "reporting_checklist_complete": true,
+    "analysis_deviations_disclosed_or_none": true,
     "data_code_statements_consistent": false
   },
   "privacy_and_permissions": {
-    "no_direct_identifiers_confirmed": false,
-    "residual_reidentification_risk_reviewed": false,
-    "access_controls_confirmed": false,
-    "external_release_permissions_confirmed": false
+    "no_direct_identifiers_confirmed": true,
+    "residual_reidentification_risk_reviewed": true,
+    "access_controls_confirmed": true,
+    "external_release_permissions_confirmed": true
   },
   "archive_and_reproducibility": {
-    "archive_location_ref": null,
-    "retention_policy_ref": null,
+    "archive_location_ref": "Ổ đĩa mã hoá AES-256 tại Khoa Khám bệnh C1a, Bệnh viện Quân y 175 (DMP §4, hồ sơ G2 Tài liệu 6)",
+    "retention_policy_ref": "DMP G2 Tài liệu 6 — lưu 2 năm sau kết thúc nghiên cứu",
     "software_environment_captured": false,
-    "data_dictionary_included_or_not_applicable": false,
-    "audit_trail_preserved": false,
-    "responsible_owner_ref": null
+    "data_dictionary_included_or_not_applicable": true,
+    "audit_trail_preserved": true,
+    "responsible_owner_ref": "PI-C1a"
   },
   "additional_artifacts": [],
   "automation_limits": {

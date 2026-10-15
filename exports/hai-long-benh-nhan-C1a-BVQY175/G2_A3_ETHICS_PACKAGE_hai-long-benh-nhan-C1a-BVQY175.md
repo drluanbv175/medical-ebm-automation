@@ -151,135 +151,82 @@ Chủ nhiệm đã rà và xác nhận bảng rủi ro theo đề cương (03/10
 
 ```
 ---
- PHIẾU ĐỒNG Ý THAM GIA NGHIÊN CỨU
- DRAFT Phiên bản 1.0, Ngày soạn: 2026-07-31
+ BẢN THÔNG TIN VÀ PHIẾU ĐỒNG Ý THAM GIA NGHIÊN CỨU
+ Phiên bản 1.0 (tài liệu riêng, in tách khỏi phiếu khảo sát)
  [Phiên bản phê duyệt sẽ có số IRB, CẦN BỔ SUNG]
 ---
 
 TÊN ĐỀ TÀI: Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
 Đơn vị thực hiện: Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175 (TP. Hồ Chí Minh)
-Chủ nhiệm đề tài: Nguyễn Hà Luân
+Chủ nhiệm đề tài: BS.CKI Nguyễn Hà Luân
 
----
-PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
-(Xin đọc kỹ trước khi quyết định tham gia)
----
+Kính gửi Ông/Bà,
+Chúng tôi trân trọng mời Ông/Bà tham gia một nghiên cứu về sự hài lòng của người bệnh tại Khoa Khám bệnh C1a. Xin Ông/Bà đọc kỹ (hoặc nghe điều tra viên đọc) các thông tin dưới đây trước khi quyết định. Ông/Bà có thể đặt bất kỳ câu hỏi nào.
 
 1. MỤC ĐÍCH NGHIÊN CỨU
- Chúng tôi kính mời anh/chị tham gia nghiên cứu nhằm:
- Chúng tôi muốn tìm hiểu ông/bà hài lòng đến đâu về lần khám hôm nay — từ khâu đón tiếp, thời gian chờ, nơi khám, đến bác sĩ, điều dưỡng và kết quả — để bệnh viện phục vụ tốt hơn.
- Nghiên cứu do Khoa Khám bệnh C1a, Bệnh viện Quân y 175 thực hiện, không có tài trợ bên
- ngoài (kinh phí tự túc). Cỡ mẫu dự kiến: khoảng 1000 người tham gia
- tại Khoa Khám bệnh C1a, Bệnh viện Quân y 175.
-
- THAM GIA LÀ HOÀN TOÀN TỰ NGUYỆN. Quyết định không tham gia
- KHÔNG ảnh hưởng đến chất lượng chăm sóc y tế của anh/chị.
+ Nghiên cứu nhằm tìm hiểu mức độ hài lòng của người bệnh đối với lần khám tại Khoa Khám bệnh C1a – từ khâu đăng ký, thời gian chờ, cơ sở vật chất, thái độ và năng lực của nhân viên y tế, chi phí đến kết quả khám – và các yếu tố liên quan, để Bệnh viện cải tiến chất lượng phục vụ. Nghiên cứu dự kiến có khoảng 1.000 người bệnh tham gia.
+ Ông/Bà được mời vì là người bệnh từ đủ 18 tuổi, vừa hoàn thành lượt khám tại Khoa và được chọn ngẫu nhiên theo quy trình chọn mẫu của nghiên cứu.
 
 1b. NGƯỜI THỰC HIỆN NGHIÊN CỨU
- Nghiên cứu do Nguyễn Hà Luân, Bác sĩ Chuyên khoa I (BS.CKI), công tác tại Khoa Khám bệnh C1a, Bệnh viện Quân y 175, chủ trì
- thực hiện.
+ Nghiên cứu do BS.CKI Nguyễn Hà Luân, Khoa Khám bệnh C1a, Bệnh viện Quân y 175, chủ trì thực hiện. Người mời Ông/Bà tham gia và phát, thu phiếu là điều tra viên không thuộc Khoa C1a.
 
 2. QUY TRÌNH THỰC HIỆN NẾU ĐỒNG Ý THAM GIA
- Nếu anh/chị đồng ý, chúng tôi sẽ yêu cầu:
- ☐ Bước 1: đọc thông tin này và xác nhận đồng ý tham gia (theo hình thức đồng thuận được Hội đồng phê duyệt cho khảo sát nặc danh)
- ☐ Bước 2: tự điền bộ câu hỏi ~15–20 phút, MỘT lần duy nhất
-
-
- Tổng thời gian tham gia ước tính: ~15–20 phút, trong MỘT lần duy nhất (không theo dõi thêm)
- Số lần đến cơ sở y tế: 0 lần thêm — thực hiện ngay trong lượt khám thường quy
-
- Chúng tôi sẽ cố gắng lên lịch hẹn trùng với lần tái khám
- thường quy để giảm bất tiện cho anh/chị.
+ Nếu đồng ý, Ông/Bà sẽ:
+ - Ký tên (hoặc điểm chỉ) vào phiếu đồng ý này;
+ - Tự điền một phiếu khảo sát không ghi họ tên tại khu vực chờ, mất khoảng 15–20 phút, một lần duy nhất ngay trong lượt khám hôm nay;
+ - Bỏ phiếu khảo sát vào hòm phiếu kín.
+ Ông/Bà không phải đến bệnh viện thêm lần nào và không phải làm thêm xét nghiệm hay thủ thuật nào.
+ Phiếu khảo sát chỉ mang một mã nghiên cứu. Nhân viên được ủy quyền của Phòng Công nghệ thông tin/Quản lý chất lượng dùng mã này để lấy từ hệ thống thông tin bệnh viện (HIS) một số thông tin về lượt khám của Ông/Bà: số phút chờ khám, bàn khám (dưới dạng mã), ngày và khung giờ khám, có làm xét nghiệm/chẩn đoán hình ảnh hay không và số quầy phải qua. Chỉ các thông tin này được chuyển cho nhóm nghiên cứu, kèm mã nghiên cứu. Nhóm nghiên cứu không nhận họ tên, số hồ sơ bệnh án hay thông tin về bệnh của Ông/Bà. Bảng đối chiếu mã do Phòng Công nghệ thông tin/Quản lý chất lượng giữ và hủy trong vòng 30 ngày.
 
 3. RỦI RO VÀ BẤT TIỆN CÓ THỂ XẢY RA
- • Rò rỉ thông tin từ bộ câu hỏi: Nhẹ → Khuyết danh hoàn toàn nếu không cần theo dõi; mã hóa nếu cần liên kết
- • Gánh nặng thời gian: Không đáng kể → Bộ câu hỏi ngắn; tự điền hoặc qua điện thoại/email
-
- Nếu có bất kỳ vấn đề sức khỏe nào liên quan đến nghiên cứu,
- xin liên hệ ngay chủ nhiệm đề tài (số điện thoại bên dưới).
- Chi phí điều trị biến cố liên quan nghiên cứu: Không áp dụng — nghiên cứu chỉ khảo sát ý kiến, không can thiệp y khoa nên không phát sinh biến cố điều trị liên quan.
+ Nghiên cứu chỉ hỏi ý kiến, không can thiệp vào việc khám chữa bệnh.
+ - Mất khoảng 15–20 phút để điền phiếu; Ông/Bà có thể dừng bất cứ lúc nào.
+ - Nguy cơ lộ thông tin rất thấp: phiếu khảo sát không ghi họ tên; phiếu đồng ý có chữ ký được cất giữ riêng, không gắn với phiếu khảo sát.
+ - Một số câu hỏi về thu nhập hoặc chi phí có thể khiến Ông/Bà ngại trả lời: Ông/Bà có thể bỏ qua bất kỳ câu nào không muốn trả lời.
+ - Ông/Bà có thể ngại nhận xét về nhân viên y tế: phiếu không ghi tên, bỏ vào hòm kín, người thu phiếu không thuộc Khoa; ý kiến của Ông/Bà không ảnh hưởng đến việc khám chữa bệnh.
 
 4. LỢI ÍCH KỲ VỌNG
- Lợi ích trực tiếp: không có lợi ích y khoa trực tiếp; ý kiến của ông/bà giúp cải thiện chất lượng dịch vụ khám bệnh — KHÔNG có can thiệp/thủ thuật y khoa nào thực hiện thêm ngoài quy trình khám/chăm sóc thường quy
- Lợi ích cộng đồng: Cung cấp dữ liệu tỷ lệ hiện mắc/tỷ lệ các yếu tố liên quan tại địa phương; chi phí thấp
-
- Chúng tôi KHÔNG đảm bảo lợi ích cá nhân từ việc tham gia.
- Anh/chị sẽ nhận được tóm tắt kết quả nghiên cứu khi hoàn tất.
+ Ông/Bà không nhận được lợi ích trực tiếp về y khoa. Ý kiến của Ông/Bà giúp Bệnh viện cải tiến chất lượng phục vụ cho chính Ông/Bà và những người bệnh khác.
 
 4b. NGUỒN TÀI TRỢ VÀ XUNG ĐỘT LỢI ÍCH
- Nghiên cứu này không có tài trợ bên ngoài (kinh phí tự túc, chủ nhiệm đề tài tự
- chi trả). Nhóm nghiên cứu không có xung đột lợi ích liên quan đến chủ đề
- nghiên cứu (khớp khai báo COI ở Tài liệu 8).
+ Nghiên cứu không có tài trợ bên ngoài (kinh phí tự túc, chủ nhiệm đề tài tự chi trả). Chủ nhiệm đề tài công tác tại Khoa C1a – đơn vị được đánh giá; vì vậy việc mời tham gia, thu phiếu, mở hòm phiếu, nhập liệu và mã hóa ý kiến đều do người ngoài Khoa thực hiện.
 
 4c. HỖ TRỢ/BỒI DƯỠNG KHI THAM GIA
- ☑ Không có hỗ trợ/bồi dưỡng nào ngoài chăm sóc y tế thường quy.
+ Ông/Bà không phải trả bất kỳ chi phí nào và không nhận khoản bồi dưỡng nào khi tham gia.
 
 5. BẢO MẬT THÔNG TIN CÁ NHÂN
- Thông tin cá nhân của anh/chị được bảo vệ theo
- Luật BVDLCN 91/2025/QH15:
-
- Dữ liệu được mã hóa và lưu trên ổ đĩa mã hóa AES-256 tại Khoa Khám bệnh
- C1a, Bệnh viện Quân y 175
- Nhóm nghiên cứu KHÔNG nhận thông tin danh tính của ông/bà
- Thời gian chờ khám được lấy từ hệ thống quản lý bệnh viện (HIS) qua MÃ NGHIÊN CỨU trên phiếu: nhân viên được
- uỷ quyền của Phòng CNTT/QLCL đối chiếu và chỉ chuyển cho nhóm nghiên cứu mã nghiên cứu cùng số phút chờ;
- bảng đối chiếu do CNTT/QLCL giữ và huỷ trong 30 ngày
- Kết quả công bố dùng dữ liệu TỔNG HỢP, KHÔNG tiết lộ danh tính
- Dữ liệu nhận dạng: phiếu KHÔNG ghi thông tin định danh; thời gian chờ được ghép theo cách
- giả danh hóa có kiểm soát — bảng đối chiếu HIS nêu trên là liên kết duy nhất về lượt khám, do CNTT/QLCL giữ
- và huỷ trong 30 ngày
- Trong trường hợp rò rỉ, anh/chị sẽ được thông báo NGAY KHI XÁC NHẬN
- (cơ quan bảo vệ dữ liệu được báo trong 72 giờ theo NĐ 356/2025/NĐ-CP, 
- mốc này áp cho cơ quan quản lý, không phải mốc cam kết với anh/chị)
-
- Anh/chị có quyền yêu cầu xem, sửa hoặc xóa dữ liệu của mình
- (trước khi chúng tôi tiến hành phân tích).
+ - Phiếu khảo sát không ghi họ tên, số điện thoại, địa chỉ, số thẻ bảo hiểm y tế hay số hồ sơ bệnh án.
+ - Thông tin lấy từ hệ thống thông tin bệnh viện được ghép theo cách giả danh hóa có kiểm soát như mô tả ở mục 2.
+ - Số liệu được lưu trữ an toàn (ổ đĩa mã hóa), chỉ nhóm nghiên cứu được tiếp cận, lưu 2 năm sau khi kết thúc nghiên cứu rồi hủy.
+ - Kết quả chỉ công bố dưới dạng số liệu tổng hợp; không ai có thể nhận ra câu trả lời của Ông/Bà.
+ - Thông tin cá nhân được bảo vệ theo Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15.
 
 6. QUYỀN TỰ NGUYỆN VÀ RÚT LUI
- Tham gia là HOÀN TOÀN TỰ NGUYỆN
- Anh/chị có thể KHÔNG ĐỒNG Ý tham gia mà KHÔNG ảnh hưởng
- đến dịch vụ y tế đang nhận
- Anh/chị có thể RÚT LUI bất kỳ lúc nào, không cần giải thích
- Nếu rút lui, dữ liệu đã thu thập: ☐ sẽ bị xóa ☐ vẫn dùng
- (do tính nặc danh: SAU khi nộp phiếu không thể rút riêng phiếu của ông/bà vì không có cách nhận dạng; ông/bà có toàn quyền từ chối hoặc dừng bất kỳ lúc nào TRƯỚC khi nộp)
-
+ Việc tham gia hoàn toàn tự nguyện. Nếu Ông/Bà không tham gia hoặc dừng giữa chừng, việc khám chữa bệnh và mọi quyền lợi của Ông/Bà tại Bệnh viện không bị ảnh hưởng. Ông/Bà có thể dừng bất cứ lúc nào trước khi bỏ phiếu vào hòm, không cần giải thích lý do. Sau khi phiếu đã được bỏ vào hòm, vì phiếu không ghi tên nên không thể tìm lại để rút riêng phiếu của Ông/Bà.
 
 6c. BỒI THƯỜNG KHI CÓ TỔN HẠI
- Đây là nghiên cứu quan sát nguy cơ tối thiểu, không phát sinh thủ thuật/can
- thiệp nào ngoài thực hành khám chữa bệnh thường quy. Nếu xảy ra tổn hại liên
- quan trực tiếp đến việc tham gia nghiên cứu, Bệnh viện Quân y 175 xử trí theo
- quy trình khám chữa bệnh thường quy; nghiên cứu không có bảo hiểm riêng.
-
-
+ Đây là nghiên cứu quan sát nguy cơ tối thiểu, không có thủ thuật hay can thiệp nào ngoài khám chữa bệnh thường quy. Nếu xảy ra tổn hại liên quan trực tiếp đến việc tham gia nghiên cứu, Bệnh viện Quân y 175 xử trí theo quy trình khám chữa bệnh thường quy; nghiên cứu không có bảo hiểm riêng.
 
 7. THÔNG TIN LIÊN HỆ
- ─────────────────────────────────────────────────────────
- Thắc mắc về nghiên cứu:                                
- Chủ nhiệm đề tài: Nguyễn Hà Luân                     
- Điện thoại: [PII — điền ở bản nộp ngoài hệ thống] Email: [PII — điền ở bản nộp ngoài hệ thống]     
-                                                           
- Thắc mắc về quyền của người tham gia:                  
- Hội đồng Đạo đức: Hội đồng Y đức Bệnh viện Quân y 175              
- Điện thoại: [PII — điền ở bản nộp ngoài hệ thống]                           
- ─────────────────────────────────────────────────────────
+ Thắc mắc về nghiên cứu: BS.CKI Nguyễn Hà Luân, Khoa Khám bệnh C1a
+   Điện thoại: [PII — điền ở bản nộp ngoài hệ thống]
+ Thắc mắc về quyền của người tham gia nghiên cứu: Hội đồng Y đức Bệnh viện Quân y 175
+   Điện thoại: [PII — điền ở bản nộp ngoài hệ thống]
 
 ---
-PHẦN KÝ, BẢN NÀY DÀNH CHO NGƯỜI THAM GIA (GIỮ LẠI)
+PHIẾU ĐỒNG Ý THAM GIA NGHIÊN CỨU
 ---
-Tôi đã đọc / được giải thích thông tin bên trên và có đủ thời
-gian để đặt câu hỏi. Tôi ĐỒNG Ý TỰ NGUYỆN tham gia nghiên cứu.
+Tôi đã đọc (hoặc được đọc cho nghe) và hiểu các thông tin trên, đã có cơ hội đặt câu hỏi và được trả lời thỏa đáng. Tôi tự nguyện đồng ý tham gia nghiên cứu.
 
-Họ tên người tham gia: _______________
-Ký tên: _______________ Ngày: ___/___/2026
+Họ và tên người tham gia: _______________
+Ký tên (hoặc điểm chỉ): _______________  Ngày: ___/___/______
 
-Họ tên người chứng kiến (nếu cần): _______________
-Ký tên: _______________ Ngày: ___/___/2026
+Người làm chứng (khi người tham gia không đọc, viết được):
+Họ và tên: _______________
+Ký tên: _______________  Ngày: ___/___/______
 
-Họ tên nghiên cứu viên: _______________
-Ký tên: _______________ Ngày: ___/___/2026
-
-"Tài liệu này do AI hỗ trợ soạn thảo [DRAFT Phiên bản 1.0].
- Cần chủ nhiệm kiểm chứng và HĐ đạo đức phê duyệt trước khi dùng."
+Họ và tên người giải thích, lấy đồng ý: _______________
+Ký tên: _______________  Ngày: ___/___/______
 ---
 ```
 
@@ -289,74 +236,78 @@ Ký tên: _______________ Ngày: ___/___/2026
 
 ```
 ---
- INFORMED CONSENT FORM (ENGLISH TRANSLATION)
- DRAFT Version 1.0, Date: 2026-07-31
- "English translation of Vietnamese ICF, for journal submission only."
+ PARTICIPANT INFORMATION SHEET AND INFORMED CONSENT FORM (ENGLISH TRANSLATION)
+ Version 1.0 — English translation of the Vietnamese form (Document 4), for journal submission only
 ---
 
-STUDY TITLE: Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
+STUDY TITLE: Patient satisfaction with outpatient care at Outpatient Examination Department C1a, On-Demand Examination and Treatment Center C1, Military Hospital 175
 Institution: Outpatient Examination Department C1a, On-Demand Examination and Treatment Center C1, Military Hospital 175 (Ho Chi Minh City)
-Principal Investigator: Nguyễn Hà Luân
+Principal Investigator: Nguyễn Hà Luân, MD, Specialist Level I (BS.CKI)
 
 1. PURPOSE
- You are invited to participate in a study that aims to:
- We would like to learn how satisfied you are with today's visit, from reception, waiting time and the examination area to the doctors, nurses and the results, so that the hospital can serve you better.
- Estimated participants: about 1,000
- Location: Outpatient Examination Department C1a, Military Hospital 175 (Ho Chi Minh City)
- PARTICIPATION IS ENTIRELY VOLUNTARY.
+ This study aims to find out how satisfied patients are with their visit to Outpatient Examination Department C1a – registration, waiting time, facilities, staff attitude and competence, costs and results – and which factors are related to satisfaction, so that the hospital can improve its services. About 1,000 patients are expected to take part.
+ You are invited because you are aged 18 years or older, have just completed your visit, and were selected at random by the study's sampling procedure.
 
 1b. STUDY INVESTIGATOR
- The study is led by Nguyễn Hà Luân, MD, Specialist Level I (BS.CKI), Outpatient Examination Department
- C1a, Military Hospital 175.
+ The study is led by Nguyễn Hà Luân, MD, Specialist Level I, Outpatient Examination Department C1a, Military Hospital 175. The person who invites you and hands out and collects questionnaires is a data collector from outside Department C1a.
 
 2. PROCEDURES
- ☐ Step 1: read this information and confirm that you agree to take part (using the consent procedure approved by the Ethics Committee for anonymous surveys)
- ☐ Step 2: complete the questionnaire yourself (~15–20 minutes), ONCE only
- Estimated time commitment: ~15–20 minutes on ONE occasion only (no follow-up); no additional visits, as it is done during your routine clinic visit
+ If you agree, you will:
+ - sign (or thumbprint) this consent form;
+ - complete, by yourself, one questionnaire that does not ask for your name, in the waiting area (about 15–20 minutes, once only, during today's visit);
+ - put the questionnaire into a sealed ballot box.
+ You will not need any additional visit, test or procedure.
+ The questionnaire carries only a study code. Authorised staff of the IT/Quality Management department use this code to retrieve from the hospital information system (HIS) some information about your visit: waiting time in minutes, the examination desk (as a code), date and time slot, whether laboratory or imaging tests were done, and the number of counters visited. Only this information is passed to the research team, together with the study code. The research team never receives your name, medical record number or any information about your illness. The matching table is kept by IT/Quality Management and destroyed within 30 days.
 
 3. RISKS AND DISCOMFORTS
- • Rò rỉ thông tin từ bộ câu hỏi (Rất thấp probability / Nhẹ severity): Khuyết danh hoàn toàn nếu không cần theo dõi; mã hóa nếu cần liên kết
- • Gánh nặng thời gian (Thấp probability / Không đáng kể severity): Bộ câu hỏi ngắn; tự điền hoặc qua điện thoại/email
+ The study only asks for your opinion; it does not change your medical care.
+ - Completing the questionnaire takes about 15–20 minutes; you may stop at any time.
+ - The risk of disclosure is very low: the questionnaire does not record your name, and the signed consent form is stored separately and is not linked to the questionnaire.
+ - Some questions on income or costs may feel sensitive: you may skip any question.
+ - You may feel uneasy commenting on staff: the questionnaire is unnamed, goes into a sealed box and is collected by people outside the department; your answers will not affect your care.
 
 4. POTENTIAL BENEFITS
- Direct benefit: no direct medical benefit; your views help improve the quality of outpatient services, and NO medical intervention or procedure is added beyond routine examination and care. Community benefit: local data on the proportions of satisfaction and related factors, at low cost. We do NOT guarantee any personal benefit from participation.
+ There is no direct medical benefit to you. Your views will help the hospital improve its services for you and for other patients.
 
 4b. FUNDING AND CONFLICTS OF INTEREST
- This study has no external funding (self-funded; costs are borne by the principal investigator).
- The research team has no conflicts of interest related to the study topic (consistent with the COI
- declaration in Document 8).
+ The study has no external funding (self-funded by the principal investigator). The principal investigator works in Department C1a, the unit being evaluated; therefore invitation, questionnaire collection, ballot-box opening, data entry and coding of comments are all done by people from outside the department.
 
 4c. PAYMENT OR SUPPORT FOR PARTICIPATION
- ☑ No payment or support other than routine medical care.
+ You will not pay anything and will not receive any payment for taking part.
 
 5. CONFIDENTIALITY
- Data encrypted per Vietnamese Personal Data Protection Law
- No. 91/2025/QH15. Results published in aggregate form only.
- Your waiting time will be taken from the hospital information system (HIS) via the STUDY CODE on your
- questionnaire: authorised staff of the IT/Quality Management department match it and pass only the study code
- and the number of minutes to the research team, which never receives your identity; the matching table is kept
- by IT/Quality Management and destroyed within 30 days.
+ - The questionnaire does not record your name, telephone number, address, health insurance number or medical record number.
+ - Information from the hospital information system is linked by controlled pseudonymisation as described in section 2.
+ - Data are stored securely (encrypted drive), accessible only to the research team, kept for 2 years after the end of the study and then destroyed.
+ - Results are published only in aggregate form; no one will be able to identify your answers.
+ - Your personal data are protected under the Vietnamese Personal Data Protection Law No. 91/2025/QH15.
 
 6. VOLUNTARY PARTICIPATION AND WITHDRAWAL
- Participation is voluntary. You may withdraw at any time
- without affecting your medical care.
+ Participation is entirely voluntary. Declining or stopping will not affect your medical care or any of your rights at the hospital. You may stop at any time before putting the questionnaire into the box, without giving a reason. Because the questionnaire carries no name, once it is in the box it cannot be traced and withdrawn individually.
 
 6c. COMPENSATION FOR INJURY
- This is a minimal-risk observational study; it involves no procedures or interventions beyond
- routine clinical practice. If harm directly related to study participation occurs, Military Hospital 175
- will manage it under its routine clinical care procedures; the study has no separate insurance.
+ This is a minimal-risk observational study with no procedures or interventions beyond routine care. If harm directly related to participation occurs, Military Hospital 175 will manage it under its routine clinical care procedures; the study has no separate insurance.
 
 7. CONTACTS
- Investigator: Nguyễn Hà Luân | Phone/Email: [PII — điền ở bản nộp ngoài hệ thống]
- Ethics Committee: Medical Ethics Committee of Military Hospital 175 (Hội đồng Y đức Bệnh viện Quân y 175)
+ Questions about the study: Nguyễn Hà Luân, Outpatient Examination Department C1a
+   Phone: [PII — điền ở bản nộp ngoài hệ thống]
+ Questions about your rights as a participant: Medical Ethics Committee of Military Hospital 175 (Hội đồng Y đức Bệnh viện Quân y 175)
+   Phone: [PII — điền ở bản nộp ngoài hệ thống]
 
 ---
-CONSENT SIGNATURE (PARTICIPANT'S COPY)
-I have read the above and agree to participate voluntarily.
+CONSENT
+---
+I have read (or had read to me) and understood the information above, have had the opportunity to ask questions and have received satisfactory answers. I voluntarily agree to take part.
 
-Participant: _______________ Date: ___/___/2026
-Witness (if applicable): _______________ Date: ___/___/2026
-Investigator: _______________ Date: ___/___/2026
+Participant name: _______________
+Signature (or thumbprint): _______________  Date: ___/___/______
+
+Witness (if the participant cannot read or write):
+Witness name: _______________
+Signature: _______________  Date: ___/___/______
+
+Investigator/data collector name: _______________
+Signature of person obtaining consent: _______________  Date: ___/___/______
 ---
 ```
 
@@ -377,7 +328,7 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
  ☐ Dữ liệu thứ cấp (hồ sơ bệnh án), mã giả danh
  ☑ Kết quả khảo sát (phiếu tự điền, KHÔNG ghi thông tin định danh) — không dùng hồ sơ bệnh án
  ☑ Mốc thời gian hành chính từ HIS/eHospital (hoàn tất đăng ký, gọi vào buồng khám) ghép theo mã nghiên cứu —
-   nhóm nghiên cứu chỉ nhận mã nghiên cứu + số phút chờ (đề cương §4.6.3)
+   nhóm nghiên cứu chỉ nhận mã nghiên cứu kèm số phút chờ, mã bàn khám giả danh, ngày và khung giờ khám, có làm cận lâm sàng hay không và số quầy phải qua (đề cương §4.6.3)
 
 2. THU THẬP:
  Công cụ: ☐ REDCap ☐ Google Forms (institutional) ☐ Phiếu giấy
@@ -389,7 +340,7 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
  Phương pháp: GIẢ DANH HÓA CÓ KIỂM SOÁT — phiếu KHÔNG có ô định danh, chỉ mang mã nghiên cứu; phiếu
  đồng ý (ICF) ký tên lưu tách biệt vật lý, không ghép với phiếu (đề cương §4.11)
  Ghép HIS: nhân sự được uỷ quyền của Phòng CNTT/QLCL trích hai mốc thời gian và giữ bảng ghép mã nghiên cứu ↔
- lượt khám; nhóm nghiên cứu chỉ nhận mã nghiên cứu + số phút chờ; bảng ghép huỷ trong 30 ngày, có nhật ký huỷ
+ lượt khám; nhóm nghiên cứu chỉ nhận mã nghiên cứu kèm các trường vận hành không định danh nêu trên; bảng ghép huỷ trong 30 ngày, có nhật ký huỷ
  (đề cương §4.6.3, §4.11, §6.5)
  Ngưỡng k-ẩn danh: ≥5 (nhóm nhỏ sẽ nhóm lại trước công bố)
 
