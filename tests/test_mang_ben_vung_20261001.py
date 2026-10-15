@@ -89,6 +89,11 @@ class _PhienGia:
 def _khong_ngu_that(monkeypatch):
     monkeypatch.setattr(http_mod.time, "sleep", lambda s: None)
     monkeypatch.setattr(settings, "http_max_retries", 2)
+    # Kín môi trường (14/10/2026): dau_van_mang() đọc biến proxy của máy chạy test — container Cloud LUÔN đặt
+    # HTTPS_PROXY nên mo_ta_ngan() thêm «có proxy môi trường» và test macOS/VPN đỏ ở Cloud dù mã đúng (CI GitHub
+    # không có proxy nên xanh). Test cần proxy tự setenv sau fixture này (vd test_proxy_moi_truong_…).
+    for bien in mang._BIEN_PROXY:
+        monkeypatch.delenv(bien, raising=False)
 
 
 def _client(*chuoi: Any) -> HttpClient:

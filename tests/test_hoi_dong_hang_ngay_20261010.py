@@ -24,6 +24,7 @@ for _p in (str(REPO_ROOT / "tools"), str(REPO_ROOT)):
         sys.path.insert(0, _p)
 
 import cong_song as CS  # noqa: E402
+import goc_ebm  # noqa: E402
 import hoi_dong_cong as HD  # noqa: E402
 import skill_standards as SK  # noqa: E402
 
@@ -238,10 +239,12 @@ def test_doctrine_day_vong_hang_ngay():
 
 
 def test_pham_vi_khop_workflow_repo_goc():
-    goc = os.environ.get("EBM_WORKSPACE_ROOT")
-    wf = Path(goc) / ".claude" / "workflows" / "hoi-dong-cong.js" if goc else None
-    if not wf or not wf.is_file():
-        pytest.skip("không có repo gốc (EBM_WORKSPACE_ROOT) — workflow nằm ở repo gốc")
+    # 14/10/2026: trước đây CHỈ đọc EBM_WORKSPACE_ROOT ⇒ bị bỏ qua ở MỌI nơi chạy mặc định (Mac lồng, Cloud anh em)
+    # vì không ai đặt biến này. Giữ biến làm ưu tiên, rồi lùi về bộ dò chung goc_ebm (EBM_REPO_ROOT → lồng → anh em).
+    goc = os.environ.get("EBM_WORKSPACE_ROOT") or str(goc_ebm.tim_goc_ebm(REPO_ROOT))
+    wf = Path(goc) / ".claude" / "workflows" / "hoi-dong-cong.js"
+    if not wf.is_file():
+        pytest.skip("không tìm thấy repo gốc EBM (CI đơn-repo; đặt EBM_REPO_ROOT để bật) — workflow nằm ở repo gốc")
     js = wf.read_text(encoding="utf-8")
     if "bai_hoc_he_thong" not in js:
         pytest.skip("repo gốc chưa có workflow bài học hệ thống (PR gốc chưa gộp)")

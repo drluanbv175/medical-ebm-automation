@@ -58,8 +58,9 @@ This file contains only Claude Code-specific instructions.
     (`[cloudflare-chan]` · `[cloudfront-chan]` · `[ncbi-chan]` · `[proxy-chan]` · `[ket-noi-het-gio]` · `[ket-noi-hong]` ·
     `[dns-hong]` · `[tls-hong]`); `source_health["mang"]` là dấu vân đường mạng; `hong_keo_dai` = «unavailable» ≥ 3 lượt live liền
     trải ≥ 7 ngày; đo/so đường mạng: `python tools/do_mang_nguon.py [--so-sanh a.json b.json]`. Đường thay qua VPN (khai ở
-    `ingestion._DUONG_THAY_KHI_CHAN_MANG`): WHO IRIS ⇒ `who_publications`; ECDC ⇒ `who_don` + `eurosurveillance`; EMA ⇒ sổ EC
-    `ec_union_register.py`. `SCOPUS_BIND_INTERFACE` KHÔNG vượt được Kaspersky VPN (đo 20/09). Bật/tắt VPN là quyết định của bác sĩ.
+    `ingestion._DUONG_THAY_KHI_CHAN_MANG`): WHO IRIS ⇒ `who_publications`; ECDC ⇒ `who_don` + `eurosurveillance`; EMA lùi sổ
+    EC `ec_union_register.py` trong `ema_medicines._tra_du_phong_ec` (không qua dict đó).
+    `SCOPUS_BIND_INTERFACE` KHÔNG vượt được Kaspersky VPN (đo 20/09). Bật/tắt VPN là quyết định của bác sĩ.
   · **Connector** (khoá CHỈ ở `~/.ebm-secrets/medical-ebm-automation.env`, không qua chat; ngoài lõi miễn phí đều TẮT mặc định):
     lõi PubMed · Europe PMC · Crossref · OpenAlex · ClinicalTrials · openFDA (khoá `OPENFDA_API_KEY` tuỳ chọn; bị từ chối thì báo rõ và
     lùi về không khoá) · Semantic Scholar. Scopus (`ENABLE_SCOPUS`, key bắt buộc; không abstract) · CORE (`ENABLE_CORE`, key tuỳ chọn;
