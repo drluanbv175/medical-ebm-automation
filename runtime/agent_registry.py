@@ -117,8 +117,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # khối trách nhiệm sinh lại (kiểm máy G2-T1); dieu-phoi-g2 §7 thêm dòng tương ứng; bản cặp y hệt gốc; vẫn 64.
 # 15/10/2026 (rà làn Chrome/EndNote): cap-nhat-guideline mã 1 của doc_toan_van_pmc đi theo điều khoản NXB
 # (§2septies) thay cho «đọc trên trang tạp chí qua quyền truy cập của bác sĩ»; bản cặp y hệt gốc; vẫn 64.
+# 15/10/2026 (bản đề cương nộp Hội đồng): dieu-phoi-g10 thêm mục 5 — DE_CUONG_NOP_HOI_DONG vào manifest G10 và phạm vi
+# A12; bản cặp y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "5a38f51400c58c17e54d6c7fb1f388d8046edd7a99ca860ba0fedb0e9b4adeda"
+    "8b5af624e734814ed907af2b10a9a6b1a60c54492cc92acf286ec86637c3643f"
 )
 
 MINIMUM_AGENT_COUNT = 64

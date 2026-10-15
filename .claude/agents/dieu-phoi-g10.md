@@ -116,6 +116,10 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
      có nguồn đã chốt (kinh phí, khung lý thuyết) ⇒ PI gõ — agent KHÔNG bịa. Ghi xong đo lại G0–G4; tụt ⇒ hoàn nguyên.
   4. A12 (G10-T2) chạy trên ĐỀ CƯƠNG ĐÃ LẮP CUỐI (mọi PMID, kể cả hệ chèn), ≤ 30 ngày trước khi PI ký; lắp lại mà
      đổi tập PMID ⇒ chạy lại A12.
+  5. Bản NỘP HỘI ĐỒNG `DE_CUONG_NOP_HOI_DONG_<mã>.md` + `.docx` (15/10/2026, tuỳ chọn — văn bản người đọc được PI
+     thật sự nộp; bản lắp chỉ là hồ sơ truy xuất): có thì CẢ CẶP vào manifest (thiếu nửa ⇒ G10-AUTO-09 chặn), cấm nhãn
+     [CẦN…]/email/số điện thoại (dòng chấm «………» để PI điền tay là hợp lệ), và A12 phải phủ CẢ PMID của nó — chạy
+     `check_citations.py --study <mã> --pmids <hợp PMID hai bản>`. Sửa bản nộp sau khi lắp ⇒ chấm lại G10 trước khi ký.
   C1a: nút một chạm `Chot G10 C1a` ở thư mục gốc làm đúng chuỗi trên, chỉ IN lệnh ký.
 - Kết cục chính khác diễn đạt giữa các cổng ⇒ CHỦ NHIỆM ghi `gate_params.G10.xac_nhan_ket_cuc_chinh`.
 - Kết cục chính ĐÃ ĐỔI THẬT (06/10/2026, G10-07) ⇒ CHỦ NHIỆM khai `gate_params.G10.sua_doi_ket_cuc_chinh` (danh sách theo thời gian; mỗi lần: `ket_cuc_cu` · `ket_cuc_moi` · `ly_do` ≥ 30 ký tự · `ma_sua_doi` · `ngay_sua_doi` · `irb_chap_thuan` · `dang_ky_cap_nhat` · `ngay_cap_nhat_dang_ky` · `reviewed_by_role`=PI · `reviewed_at`; lần cuối gắn `dau_van_tay` do CLI `nhat_quan_xuyen_cong.py` in; tới bản thảo thêm `cong_bo_trong_ban_thao`). Hợp lệ khi chuỗi nối tiếp, SAP §2 và khai báo G8 là kết cục mới (G0/G1/bản nháp đăng ký giữ kết cục cũ — không sửa ngược hồ sơ cổng), sửa TRƯỚC ngày khoá dữ liệu, bản thảo có câu báo cáo thay đổi (CONSORT 2025 mục 10, PMID 40228477; SPIRIT 2025 mục 31) ⇒ G10-AUTO-11 «cần xem», không chặn; đề cương G10 in bảng «Sửa đổi kết cục chính». Agent KHÔNG khai thay chủ nhiệm.

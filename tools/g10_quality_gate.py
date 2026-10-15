@@ -260,6 +260,21 @@ _INTERNAL_TRACE_RE = re.compile(
 )
 _EMAIL_RE = re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.IGNORECASE)
 _PHONE_RE = re.compile(r"(?<!\w)(?:\+?84|0)\s?(?:\d[\s.-]?){8,10}(?!\w)")
+# THÊM 15/10/2026 — bản đề cương NỘP HỘI ĐỒNG (`DE_CUONG_NOP_HOI_DONG_<mã>.md` + `.docx`): văn bản người đọc được mà PI
+# thật sự nộp (bản lắp G10 là hồ sơ truy xuất nội bộ). Tệp hợp đồng TUỲ CHỌN: có mặt thì cả cặp vào manifest (chữ ký G10
+# phủ đúng văn bản nộp; thiếu nửa kia ⇒ missing, fail-closed) và được quét nhãn ô trống [CẦN…] (_PLACEHOLDER_RE), dấu
+# vết nội bộ, PII liên lạc. KHÔNG quét họ ô trống của hợp đồng chung: bản nộp có dòng chấm «………» CỐ Ý để PI điền tay số
+# quyết định phê duyệt, số điện thoại — không đưa PII vào git.
+_TEN_DE_CUONG_NOP = "DE_CUONG_NOP_HOI_DONG_{study}"
+# DOI/URL bị bỏ trước khi dò số điện thoại của bản nộp: danh mục Vancouver có DOI dạng «10.1108/IJHCQA-07-2025-0100»
+# mà _PHONE_RE đọc nhầm thành số điện thoại (đo 15/10/2026 trên đề cương C1a). Số điện thoại thật không nằm trong DOI.
+_DOI_URL_RE = re.compile(r"(?:\bdoi:\s*)?\b10\.\d{4,9}/\S+|https?://\S+", re.IGNORECASE)
+
+
+def _co_lien_lac_ca_nhan(van: str) -> bool:
+    """Văn bản có email/số điện thoại (sau khi bỏ DOI/URL) — dùng cho bản nộp Hội đồng."""
+    sach = _DOI_URL_RE.sub(" ", van)
+    return bool(_EMAIL_RE.search(sach) or _PHONE_RE.search(sach))
 
 
 def _criterion(
@@ -576,6 +591,12 @@ def _package_files(
         for script in sorted((out_dir / "scripts").glob("*.py")) if (out_dir / "scripts").is_dir() else ():
             tuy_chon[f"g6_script_{script.stem}_py"] = script
     files.update({khoa: path for khoa, path in tuy_chon.items() if path.is_file()})
+    # Bản đề cương nộp Hội đồng (THÊM 15/10/2026): có một nửa thì đòi đủ cặp — nửa vắng ⇒ _documents_clean báo missing.
+    nop_md = out_dir / (_TEN_DE_CUONG_NOP.format(study=study) + ".md")
+    nop_docx = out_dir / (_TEN_DE_CUONG_NOP.format(study=study) + ".docx")
+    if nop_md.is_file() or nop_docx.is_file():
+        files["irb_protocol_md"] = nop_md
+        files["irb_protocol_docx"] = nop_docx
 
     invalid: list[str] = []
     additional = readiness.get("additional_artifacts")
@@ -727,6 +748,25 @@ def _documents_clean(
         trace_hits.append("final_protocol_docx")
     if _EMAIL_RE.search(docx_text) or _PHONE_RE.search(docx_text):
         contact_pii_hits.append("final_protocol_docx")
+    if "irb_protocol_md" in files:
+        # Bản nộp Hội đồng: quét chữ HIỂN THỊ của .docx (DOI có thể bị tách qua nhiều thẻ w:t trong XML thô, làm hỏng
+        # bước bỏ DOI trước khi dò số điện thoại).
+        try:
+            nop_text = files["irb_protocol_md"].read_text(encoding="utf-8")
+            with zipfile.ZipFile(files["irb_protocol_docx"]) as archive:
+                nop_xml = archive.read("word/document.xml").decode("utf-8", errors="strict")
+                nop_visible = _docx_visible_text(archive, nop_xml)
+        except (OSError, KeyError, UnicodeDecodeError, zipfile.BadZipFile):
+            return False, "unreadable_irb_protocol=true", True
+        for key, van in (("irb_protocol_md", nop_text), ("irb_protocol_docx", nop_visible)):
+            nhan = [f"L{_so_dong(van, m.start())}:{m.group(0)}" for m in _PLACEHOLDER_RE.finditer(van)]
+            if nhan:
+                placeholder_hits.append(key)
+                placeholder_lines.extend(f"{key}:{item}" for item in nhan[:3])
+            if _INTERNAL_TRACE_RE.search(van):
+                trace_hits.append(key)
+            if _co_lien_lac_ca_nhan(van):
+                contact_pii_hits.append(key)
     clean = not placeholder_hits and not trace_hits and not contact_pii_hits
     return (
         clean,
