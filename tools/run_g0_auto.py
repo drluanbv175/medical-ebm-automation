@@ -1948,7 +1948,8 @@ def main():
         try:
             import subprocess as _sp
             _r = _sp.run([sys.executable, str(Path(__file__).parent / "gom_toan_van_oa.py"),
-                          "--study", study], capture_output=True, text=True, timeout=600)
+                          "--study", study], capture_output=True, text=True,
+                         encoding="utf-8", errors="replace", timeout=600)
             _dong = [x for x in (_r.stdout or "").splitlines() if "OA " in x or "🔴" in x]
             if _dong:
                 print(f"  📚 Toàn văn OA: {_dong[-1].strip()}")

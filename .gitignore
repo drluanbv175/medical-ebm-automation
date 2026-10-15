@@ -169,3 +169,11 @@ runtime/pycache/
 # tools/ hay scripts/. Đổi tên thư mục mặc định thì đổi luật này cùng lúc — canh bởi
 # tests/test_toan_van_khong_lot_vao_git_20260930.py.
 downloads_wiley_tdm/
+
+# Toàn văn do `tools/gom_toan_van_oa.py --pmids … ` gom khi KHÔNG truyền --out: thư mục mặc định
+# `toan_van_oa/` TƯƠNG ĐỐI so với thư mục đang đứng (bản --study ghi vào exports/, vốn đã bị bắt).
+# Bản PMC/Unpaywall có thể mang giấy phép không cho phân phối lại (vd bản thảo tác giả «TDM»), mà
+# repo này CÔNG KHAI ⇒ bắt ở MỌI cấp (không có "/" đầu). Đo 15/10/2026: trước luật này
+# `git check-ignore toan_van_oa/x.xml` trả 1 (git THẤY). Canh bởi
+# tests/test_toan_van_khong_lot_vao_git_20260930.py (ca thư mục mặc định của gom_toan_van_oa).
+toan_van_oa/

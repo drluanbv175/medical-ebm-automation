@@ -1092,3 +1092,24 @@ def test_lenh_luu_vao_cay_git_khac_tra_ma_tu_choi_va_khong_tai_khong_ghi(kho_git
     assert "TỪ CHỐI" in capsys.readouterr().out
     assert not dich.exists()
     assert kho_git.tep_git_thay() == [".gitignore"]
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# 8. Thư mục mặc định của tools/gom_toan_van_oa.py --pmids (15/10/2026)
+# ════════════════════════════════════════════════════════════════════════════
+
+def _thu_muc_mac_dinh_gom_oa() -> str:
+    """Đọc tên thư mục mặc định từ CHÍNH mã (`Path(a.out or "<tên>")`), không chép tay vào test."""
+    import re  # noqa: PLC0415
+    ma = (REPO_ROOT / "tools" / "gom_toan_van_oa.py").read_text(encoding="utf-8")
+    tim = re.findall(r'a\.out or "([^"]+)"', ma)
+    assert len(tim) == 1, f"không tìm thấy (hoặc thấy nhiều) thư mục mặc định của --out trong gom_toan_van_oa.py: {tim}"
+    return tim[0]
+
+
+def test_thu_muc_mac_dinh_gom_toan_van_oa_bi_ignore_moi_cap(kho_git):
+    """`gom_toan_van_oa.py --pmids …` không --out ghi vào `<tên mặc định>/` TƯƠNG ĐỐI thư mục đang đứng. Toàn văn có thể
+    mang giấy phép không cho phân phối lại (bản thảo «TDM»), repo CÔNG KHAI ⇒ phải bị bắt ở mọi cấp."""
+    ten = _thu_muc_mac_dinh_gom_oa()
+    for duong in (f"{ten}/PMID-1_PMC1.xml", f"tools/{ten}/PMID-1_UPW.pdf", f"scripts/{ten}/PMID-2_PMC2.xml"):
+        assert kho_git.bi_ignore(duong), f"{duong} KHÔNG bị ignore — luật khớp: {kho_git.luat_khop(duong)}"
