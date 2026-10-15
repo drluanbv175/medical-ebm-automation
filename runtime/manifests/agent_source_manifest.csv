@@ -2,7 +2,7 @@ path,sha256,size_bytes
 .claude/agents/an-toan-nghien-cuu.md,2687fd8dd97789dc23f0608c753be4f740bef1f4e47e996b10c405b5ad65a8f7,22506
 .claude/agents/bien-so-nghien-cuu.md,18b07fcc1177ef94799a6fa7ab09ada00b2d3959ebe9b2b7ee2bea4156fcc02d,21291
 .claude/agents/binh-duyet.md,4415d1b6550c5aa53f1ad86b75e8e82b1d42732c842e3e282edb3b87ed19f79e,25652
-.claude/agents/cap-nhat-guideline.md,acda0359135ec417d83ebe6e522e809db3b5ebb984d60680159fd0cf85715aa3,18446
+.claude/agents/cap-nhat-guideline.md,a7a2b0198b2d0fd0188e818394ed8548f05409e0034e1b7e0baeba2f2bc2dd54,18801
 .claude/agents/cau-hoi-nghien-cuu.md,629dfdf99db8f2832f2749ef391f4ee241404fbfdc2592deeb7cf2bf5f45387c,23800
 .claude/agents/cham-soc-giam-nhe.md,5fcc00dfd0d6e1c4cc8c9507ce26a4ced0b8d083d11185a78e2eb8c6ff332f87,25407
 .claude/agents/chan-doan-xac-suat.md,8b0701729896d49a7e4c5c857fb3ed3ef6cae3064703f033f86a98ae658eb2d1,19869

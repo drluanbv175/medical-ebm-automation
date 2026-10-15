@@ -115,8 +115,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # làm tươi checkpoint, mã 2 là đúng»; dieu-phoi-g10 dạy thứ tự gói ETHICS_SUBMISSION; bản cặp y hệt gốc; vẫn 64.
 # 13/10/2026 (diễn tập đường PI C1a): dao-duc-dang-ky thêm 4e «ghép từ hệ thống ngoài phải nói ra ở ICF + DMP» +
 # khối trách nhiệm sinh lại (kiểm máy G2-T1); dieu-phoi-g2 §7 thêm dòng tương ứng; bản cặp y hệt gốc; vẫn 64.
+# 15/10/2026 (rà làn Chrome/EndNote): cap-nhat-guideline mã 1 của doc_toan_van_pmc đi theo điều khoản NXB
+# (§2septies) thay cho «đọc trên trang tạp chí qua quyền truy cập của bác sĩ»; bản cặp y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "73f4082c6db58c669ad035551b761d43404863e0717d08a4d2f6c462e1fdec98"
+    "5a38f51400c58c17e54d6c7fb1f388d8046edd7a99ca860ba0fedb0e9b4adeda"
 )
 
 MINIMUM_AGENT_COUNT = 64
