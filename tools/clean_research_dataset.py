@@ -136,16 +136,45 @@ def _variable_name(raw: Dict[str, Any]) -> Optional[str]:
     return None
 
 
+def duong_dan_tu_dien_trong_bao_cao(dictionary_path: Optional[Path], out_dir: Path) -> Optional[str]:
+    """Đường dẫn dictionary ghi vào báo cáo làm sạch: tương đối theo thư mục đề tài khi nằm trong đó (F7)."""
+    if not dictionary_path:
+        return None
+    return _safe_rel(Path(dictionary_path).resolve(), Path(out_dir).resolve())
+
+
+def _rules_cua_dong(raw: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Luật của MỘT dòng dictionary REDCap. Trường checkbox ⇒ thêm luật cho từng cột xuất `<biến>___<mã>` (0/1).
+
+    VÁ 16/10/2026 (diễn tập C1a, F6): REDCap xuất trường checkbox thành nhiều cột `<biến>___<mã>`; bản cũ chỉ biết
+    tên gốc nên mọi cột xuất bị coi là «undeclared_column» ⇒ query mở, chặn khoá dữ liệu thật có câu chọn nhiều
+    đáp án.
+    """
+    rule = _normalise_rule(raw)
+    if not rule:
+        return []
+    kieu = next((str(v).strip().lower() for k, v in raw.items()
+                 if re.sub(r"[^a-z0-9]+", "", str(k).lower()) == "fieldtype"), "")
+    if kieu != "checkbox":
+        return [rule]
+    con = [dict(rule, name=f"{rule['name']}___{ma}", type="category", allowed=["0", "1"], required=False)
+           for ma in rule.get("allowed") or [] if re.fullmatch(r"[A-Za-z0-9_-]+", str(ma))]
+    return [rule, *con]
+
+
 def _normalise_rule(raw: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     # REDCap dùng tiêu đề có khoảng trắng/dấu "/" (vd "Variable / Field Name").
     # Chuẩn hóa khóa trước khi đọc để data dictionary do G5 sinh ra thực sự dùng
     # được, thay vì bị đọc thành danh sách biến rỗng.
+    # F16 (16/10/2026, diễn tập C1a): «Choices, Calculations, OR Slider Labels» chuẩn hoá thành
+    # «choices__calculations__or_slider_labels» (hai gạch dưới) ⇒ không khớp khoá đọc bên dưới ⇒ danh sách mã hợp lệ của
+    # MỌI câu chọn đáp án REDCap rỗng, không bắt được mã sai. Gộp gạch dưới liên tiếp.
     normalized = {
-        re.sub(
+        re.sub(r"_+", "_", re.sub(
             r"[^a-z0-9_]+",
             "_",
             RDI._normalize_header(str(key)),
-        ).strip("_"): value
+        )).strip("_"): value
         for key, value in raw.items()
     }
     name = _variable_name(normalized)
@@ -241,8 +270,7 @@ def _load_dictionary(path: Optional[Path]) -> Dict[str, Any]:
             return {
                 "variables": [
                     rule for row in reader
-                    for rule in [_normalise_rule(row)]
-                    if rule
+                    for rule in _rules_cua_dong(row)
                 ],
                 "id_column": None,
                 "missing_tokens": [],
@@ -765,7 +793,9 @@ def clean_dataset(study: str, data_path: Path, *,
         "column_count": len(columns),
         "pii_scan": pii_scan,
         "dictionary_loaded": bool(dictionary.get("variables")),
-        "dictionary_path": _safe_rel(Path(dictionary_path), out_dir) if dictionary_path else None,
+        # F7 (16/10/2026): đường dẫn tương đối theo gốc repo phải quy về tuyệt đối trước khi lấy tương đối theo thư mục
+        # đề tài — bản cũ ghi nguyên văn nên lock_analysis_dataset (đọc tương đối theo thư mục đề tài) trượt provenance.
+        "dictionary_path": duong_dan_tu_dien_trong_bao_cao(dictionary_path, out_dir),
         "dictionary_sha256": (
             RDI._sha256_file(Path(dictionary_path))
             if dictionary_path and Path(dictionary_path).exists()

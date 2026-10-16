@@ -309,7 +309,9 @@ def ket_cuc_chinh_sap(sap2: str) -> str | None:
                 break
             tiep.append(k)
         for khoi in (d, *tiep):
-            for mau in (r"`([A-Za-z][A-Za-z0-9_]{2,})`",
+            # F13 (16/10/2026, diễn tập C1a): tên trường REDCap 2 ký tự (`g1`) phải được nhận — bản cũ đòi ≥ 3 ký tự
+            # nên rơi xuống tên trong ngoặc đơn của đề cương gốc và G6-AUTO-04 báo lệch kết cục oan.
+            for mau in (r"`([A-Za-z][A-Za-z0-9_]{1,})`",
                         r"\(\s*(?:biến|bien|variable)?\s*:?\s*([A-Za-z][A-Za-z0-9_]{2,})\s*[,)]",
                         r"\b([a-z][a-z0-9]*_[a-z0-9_]+)\b",
                         r"\b([A-Z][a-z0-9]+[A-Z][A-Za-z0-9_]*)\b"):
@@ -362,6 +364,19 @@ def _ho_mo_hinh_sap(sap4: str) -> set[str]:
     if "ordinal" in ho and not re.search(r"logistic\s+(?:nhi\s+phan|binary)|binomial", bd):
         ho.discard("logistic")
     return ho
+
+
+_DAU_SCRIPT_G5 = {
+    "data_cleaning.py": re.compile(r"^data_cleaning\.py — Lam sach du lieu REDCap cho de tai:", re.MULTILINE),
+    "data_quality_report.py": re.compile(r"^data_quality_report\.py — Bao cao chat luong du lieu cho de tai:",
+                                         re.MULTILINE),
+}
+
+
+def _la_script_lam_sach_g5(ten: str, noi_dung: str) -> bool:
+    """Script làm sạch do run_g5_auto sinh: đúng tên VÀ đúng dòng mô tả bộ sinh G5 ghi trong docstring đầu tệp."""
+    mau = _DAU_SCRIPT_G5.get(Path(ten).name)
+    return bool(mau and mau.search(noi_dung[:600]))
 
 
 def _ho_mo_hinh_script(text: str) -> list[str]:
@@ -649,7 +664,11 @@ def evaluate_study(study: str, out_dir: Path | None = None, write: bool = True,
     # DÒNG THI HÀNH — chú thích cùng chuỗi không tính.
     doc_r = [t for t, nd in scripts.items() if t.lower().endswith(".r") and t != "00_setup.R"
              and re.search(r"readRDS\(|read_csv\(|read\.csv\(|LOCKED_DATA", nd)]
-    doc_py = [t for t, nd in scripts.items() if t.endswith(".py") and re.search(r"read_csv\(|--data", nd)]
+    # F12 (16/10/2026, diễn tập C1a): hai script LÀM SẠCH do run_g5_auto sinh (chạy TRƯỚC khoá dữ liệu, trên bản sạch
+    # đang làm) không phải script phân tích — bản cũ đòi chúng gọi chốt «dữ liệu đã khoá» nên G6-AUTO-08 chặn sai mọi
+    # đề tài. Chỉ miễn khi ĐÚNG tên VÀ đúng dòng đầu do bộ sinh G5 ghi (đổi tên một script phân tích không lọt được).
+    doc_py = [t for t, nd in scripts.items() if t.endswith(".py") and re.search(r"read_csv\(|--data", nd)
+              and not _la_script_lam_sach_g5(t, nd)]
     thieu_chot = []
     if doc_r:
         setup = scripts.get("00_setup.R", "")
@@ -672,10 +691,18 @@ def evaluate_study(study: str, out_dir: Path | None = None, write: bool = True,
     ho_sap = _ho_mo_hinh_sap(_sec(sap, 4))
     nguon_mo_hinh = (scripts.get("03_analysis.R")
                      or "\n".join(nd for t, nd in scripts.items() if t.lower().endswith(".r")))
-    ho_script = _ho_mo_hinh_script(nguon_mo_hinh)
+    # F15 (16/10/2026, diễn tập C1a): chỉ DÒNG THI HÀNH mới chứng minh script chạy mô hình chính — bộ sinh để công thức
+    # mô hình ở dạng chú thích (thống kê viên hoàn thiện); bản cũ đọc cả chú thích nên G6 xác nhận «khớp SAP» khi script
+    # chưa chạy mô hình nào (luật §0.8). Mô hình chỉ có trong chú thích ⇒ chưa PASS, chỉ rõ việc phải làm.
+    ho_script = _ho_mo_hinh_script("\n".join(_dong_thi_hanh(nguon_mo_hinh)))
+    ho_chu_thich = _ho_mo_hinh_script(nguon_mo_hinh) if not ho_script else []
     if not ho_sap:
         add("G6-AUTO-09", None, "SAP §4 không rút được họ mô hình (Cox/logistic/Poisson/thứ bậc/tuyến tính/meta/ROC/"
                                 "định tính) — thống kê viên đối chiếu tay; chưa được PASS")
+        trang_thai = _DRAFT
+    elif not ho_script and ho_chu_thich:
+        add("G6-AUTO-09", None, f"mô hình chính «{ho_chu_thich[0]}» CHỈ có trong dòng chú thích — thống kê viên bật "
+                                "(bỏ dấu #) dòng nạp dữ liệu khoá + mô hình chính theo SAP §4 rồi mới xác nhận G6")
         trang_thai = _DRAFT
     elif not ho_script:
         add("G6-AUTO-09", None, "không nhận ra mô hình phân tích chính trong script — chưa đối chiếu được với SAP §4")

@@ -154,6 +154,19 @@ def kiem(out_dir: Path, study: str) -> List[str]:
         loi.append("K5 không đọc được cỡ mẫu đã chốt từ G3_checkpoint.json — không đối chiếu được")
     elif not any(re.search(rf"(?<![\d.,]){re.escape(s)}(?![\d])", md) for s in _dinh_dang_n(n)):
         loi.append(f"K5 cỡ mẫu đã chốt ở G3 ({n}) không xuất hiện trong đề cương nộp")
+    # F2 (16/10/2026, diễn tập C1a): đề cương nộp dùng DE 1,78 / N tối thiểu 808 (có hệ số biến thiên cỡ cụm) trong khi
+    # G3 ghi DE 1,38 / 626 — K5 cũ chỉ so N chốt nên không thấy. Nay DE và N tối thiểu của G3 cũng phải có mặt.
+    if n is not None:
+        de = g3.get("design_effect") if isinstance(g3, dict) else None
+        n_min = g3.get("n_adjusted") if isinstance(g3, dict) else None
+        if isinstance(de, (int, float)) and float(de) > 1:
+            dang = {f"{float(de):.2f}", f"{float(de):.2f}".replace(".", ",")}
+            if not any(re.search(rf"(?<![\d.,]){re.escape(x)}(?![\d])", md) for x in dang):
+                loi.append(f"K5 hiệu ứng thiết kế G3 (DE {float(de):.2f}) không xuất hiện trong đề cương nộp — "
+                           "đề cương dùng con số khác G3? Đồng bộ hai bên (chạy lại G3 hoặc sửa đề cương)")
+        if isinstance(n_min, (int, float)) and int(n_min) != n:
+            if not any(re.search(rf"(?<![\d.,]){re.escape(x)}(?![\d])", md) for x in _dinh_dang_n(int(n_min))):
+                loi.append(f"K5 cỡ mẫu tối thiểu G3 ({int(n_min)}) không xuất hiện trong đề cương nộp")
 
     pm = _pmid(md)
     if pm:

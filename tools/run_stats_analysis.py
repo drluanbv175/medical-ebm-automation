@@ -1194,6 +1194,28 @@ def _ghi_chu_so_cum(n_cum: int) -> str:
             "hay mô hình hỗn hợp không [CẦN THỐNG KÊ VIÊN].")
 
 
+def canh_bao_thieu_phoi_nhiem(outcome_type: str, outcome: str, group: str, summary: dict) -> bool:
+    """F17: kết cục thứ tự thiếu phơi nhiễm ⇒ mô hình chính KHÔNG chạy — cảnh báo + ghi `mo_hinh_chinh` vào tóm tắt."""
+    if outcome_type == "ordinal" and outcome and not group:
+        summary["mo_hinh_chinh"] = {"da_chay": False,
+                                    "ly_do": "thiếu --group (phơi nhiễm chính theo SAP) — chỉ có thống kê mô tả"}
+        print("⚠️  CHƯA CHẠY mô hình chính: kết cục thứ tự cần --group <phơi nhiễm chính theo SAP>.")
+        return True
+    return False
+
+
+def ap_don_vi_phoi_nhiem(df: pd.DataFrame, cot: str, don_vi) -> pd.DataFrame:
+    """Bản sao `df` với phơi nhiễm liên tục chia cho `don_vi` (F18, 16/10/2026): SAP C1a báo hiệu ứng MỖI 15 PHÚT chờ,
+    bản cũ báo mỗi phút (OR ≈ 1,001 — khó đọc, lệch SAP). Không có đơn vị ⇒ trả nguyên `df`; đơn vị ≤ 0 ⇒ lỗi."""
+    if don_vi is None:
+        return df
+    if don_vi <= 0:
+        raise ValueError("--don-vi-phoi-nhiem phải > 0")
+    ra = df.copy()
+    ra[cot] = pd.to_numeric(ra[cot], errors="coerce") / float(don_vi)
+    return ra
+
+
 def ordinal_model(df: pd.DataFrame, outcome_col: str, group_col: str, covariates: list,
                   cluster_col: str | None = None) -> dict:
     """Hồi quy logistic thứ tự (proportional odds, statsmodels OrderedModel) → OR hiệu chỉnh + KTC 95%.
@@ -1513,6 +1535,8 @@ def format_ordinal_text(od: dict) -> str:
     lines = ["BẢNG 4 — HỒI QUY LOGISTIC THỨ TỰ (PROPORTIONAL ODDS)", "=" * 70,
              f"  n = {od['n']} | số mức kết cục = {od['so_muc']} | AIC = {od.get('aic', '?')} | sai số chuẩn: {se}",
              "  Số quan sát theo mức: " + ", ".join(f"{k}: {v}" for k, v in od["so_quan_sat_theo_muc"].items())]
+    if od.get("don_vi_phoi_nhiem"):
+        lines.append(f"  Đơn vị phơi nhiễm: {od['don_vi_phoi_nhiem']['dien_giai']}")
     if od.get("khong_hoi_tu"):
         lines += [f"  {DONG_KHONG_HOI_TU}", f"  {GHI_CHU_KHONG_HOI_TU}"]
         lines += [f"    - {ld}" for ld in od.get("ly_do", [])[:6]]
@@ -2129,6 +2153,9 @@ def main():
                         choices=["auto", "binary", "continuous", "ordinal"],
                         help="Loại kết cục (mặc định: tự phát hiện). 'ordinal' = logistic thứ tự "
                              "(proportional odds) — chỉ bật khi SAP khai tường minh, không tự đoán")
+    parser.add_argument("--don-vi-phoi-nhiem", type=float, default=None,
+                        help="Đơn vị báo hiệu ứng của phơi nhiễm LIÊN TỤC (vd 15 ⇒ OR mỗi 15 phút như SAP); chia cột "
+                             "--group cho giá trị này trước khi đưa vào mô hình (thêm 16/10/2026, F18)")
     parser.add_argument("--cot-cum", default="",
                         help="Cột cụm (vd ma_ban_kham): sai số chuẩn hiệu chỉnh cụm cho nhánh ordinal "
                              "+ OLS nhạy cảm, và báo ICC/hiệu ứng thiết kế (thêm 2026-09-28)")
@@ -2430,19 +2457,26 @@ def main():
             format_ty_le_text(ds_ty_le), encoding="utf-8", newline="\n")
         print(f"✓ Tỷ lệ + KTC Wilson cho {len(ds_ty_le)} cột" + (f" (hiệu chỉnh cụm «{cot_cum}»)" if cot_cum else ""))
 
+    # F17 (16/10/2026, diễn tập C1a): kết cục thứ tự mà thiếu --group thì mô hình chính KHÔNG chạy — bản cũ vẫn in
+    # «HOÀN THÀNH» và tóm tắt G6 không có ước lượng nào, bản thảo G7 lặng lẽ còn ô trống. Nói rõ + ghi vào tóm tắt.
+    canh_bao_thieu_phoi_nhiem(args.outcome_type, args.outcome, args.group, summary)
     # 5'. Kết cục THỨ TỰ (proportional odds) — nhánh riêng, thêm 2026-09-28 (N1)
     if args.outcome_type == "ordinal" and args.outcome and args.group:
         missing_cols = [c for c in (args.outcome, args.group) if c not in df.columns]
         if missing_cols:
             print(f"✗ DỪNG: thiếu cột {missing_cols} cho hồi quy thứ tự.")
             sys.exit(1)
-        od = ordinal_model(df, args.outcome, args.group, covariates, cot_cum)
+        df_mh = ap_don_vi_phoi_nhiem(df, args.group, args.don_vi_phoi_nhiem)
+        od = ordinal_model(df_mh, args.outcome, args.group, covariates, cot_cum)
+        if args.don_vi_phoi_nhiem:
+            od["don_vi_phoi_nhiem"] = {"cot": args.group, "don_vi": args.don_vi_phoi_nhiem,
+                                       "dien_giai": f"OR cho MỖI {args.don_vi_phoi_nhiem:g} đơn vị «{args.group}»"}
         (prefix.parent / f"{args.gate}_table4_ordinal.txt").write_text(format_ordinal_text(od), encoding="utf-8",
                                                                         newline="\n")
         summary["ordinal"] = od
         dau = "✗" if "error" in od else ("⚠" if od.get("khong_hoi_tu") else "✓")
         print(f"{dau} Hồi quy thứ tự: {od.get('error') or str(od.get('n')) + ' quan sát'}")
-        lh = linear_hc3(df, args.outcome, args.group, covariates, cot_cum)
+        lh = linear_hc3(df_mh, args.outcome, args.group, covariates, cot_cum)
         (prefix.parent / f"{args.gate}_table6_sensitivity_linear.txt").write_text(
             format_hc3_text(lh), encoding="utf-8", newline="\n")
         summary["sensitivity_linear"] = lh

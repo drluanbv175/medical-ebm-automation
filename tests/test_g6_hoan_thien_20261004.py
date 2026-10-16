@@ -41,6 +41,7 @@ import run_g6_auto as G6A  # noqa: E402
 import run_stats_analysis as RSA  # noqa: E402
 
 from tests.g5_test_helpers import (  # noqa: E402
+    bat_mo_hinh_chinh_g6,
     configure_test_signing_key,
     ghi_ban_go_bang_tong_hop,
     prepare_locked_g5_study,
@@ -60,7 +61,7 @@ def _ghi(path: Path, text: str) -> Path:
     return path
 
 
-def _de_tai_g6_that(tmp_path: Path, monkeypatch, thiet_ke: str) -> tuple[str, Path, Path]:
+def _de_tai_g6_that(tmp_path: Path, monkeypatch, thiet_ke: str, bat_mo_hinh: bool = True) -> tuple[str, Path, Path]:
     """Chuỗi THẬT G0→G5 (dữ liệu khoá + G5 ký bằng khoá giả tạm) rồi chạy run_g6_auto.main() thật."""
     configure_test_signing_key(tmp_path, monkeypatch)
     goc = tmp_path / "goc"
@@ -83,6 +84,8 @@ def _de_tai_g6_that(tmp_path: Path, monkeypatch, thiet_ke: str) -> tuple[str, Pa
     monkeypatch.setattr(sys, "argv", ["run_g6_auto.py", "--study", study])
     with contextlib.redirect_stdout(io.StringIO()):
         G6A.main()
+    if bat_mo_hinh:
+        bat_mo_hinh_chinh_g6(out)  # F15: thống kê viên bật dòng mô hình chính (G6-AUTO-09 chỉ đếm dòng thi hành)
     CS.xoa_dem()
     return study, out, goc
 
@@ -447,3 +450,13 @@ def test_bang1_rct_khong_kiem_dinh_khac_biet_nen():
     assert all("p" not in r and "CONSORT" in r["test"] for r in rct["rows"])
     qs = RSA.table1_descriptive(df, "nhom", ["tuoi", "nam"])
     assert any("p" in r for r in qs["rows"]), "thiết kế khác giữ kiểm định như cũ"
+
+
+def test_f15_mo_hinh_chinh_chi_trong_chu_thich_thi_g6_chua_dat(tmp_path, monkeypatch):
+    """F15 (16/10/2026, diễn tập C1a): script do bộ sinh để mô hình chính ở dạng chú thích ⇒ G6-AUTO-09 KHÔNG được
+    nhận «khớp SAP» (bản cũ đọc cả chú thích nên xanh giả); phải nói rõ việc thống kê viên cần làm."""
+    study, out, goc = _de_tai_g6_that(tmp_path, monkeypatch, "cross_sectional", bat_mo_hinh=False)
+    bao = G6Q.evaluate_study(study, out, write=False, repo_root=goc)
+    c9 = _ck(bao, "G6-AUTO-09")
+    assert c9["pass"] is None and "CHỈ có trong dòng chú thích" in c9["detail"], c9
+    assert bao["status"] != "READY_FOR_STATISTICIAN_REVIEW"
