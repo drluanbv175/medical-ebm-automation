@@ -302,9 +302,21 @@ def _read_redcap_dictionary(path: Path) -> Dict[str, Any]:
         issues.append(f"redcap_identifier_rows:{flagged_identifiers[:10]}")
     if not names:
         issues.append("empty_dictionary")
+    # VÁ 16/10/2026 (diễn tập C1a, F6): cột XUẤT của trường checkbox REDCap là `<biến>___<mã>` — tính là có khai.
+    type_header = headers.get("field_type")
+    choice_header = headers.get("choices,_calculations,_or_slider_labels")
+    export_names = list(names)
+    for row in rows:
+        ten = str(row.get(name_header) or "").strip()
+        if ten and type_header and str(row.get(type_header) or "").strip().casefold() == "checkbox" and choice_header:
+            for lua in str(row.get(choice_header) or "").split("|"):
+                ma = lua.split(",", 1)[0].strip()
+                if re.fullmatch(r"[A-Za-z0-9_-]+", ma):
+                    export_names.append(f"{ten}___{ma}")
     return {
         "rows": len(rows),
         "names": names,
+        "export_names": export_names,
         "required_names": required_names,
         "issues": issues,
         "headers": list(reader.fieldnames or []),
@@ -1007,7 +1019,7 @@ def evaluate_study(
     locked_path = _safe_child(out_dir, lock.get("locked_dataset_path"))
     du_lieu_path = locked_path if (locked_path and locked_path.exists()) else clean_path
     header = _doc_header_csv(du_lieu_path)
-    ten_dict = {_normalise_key(n) for n in dictionary.get("names") or [] if n}
+    ten_dict = {_normalise_key(n) for n in (dictionary.get("export_names") or dictionary.get("names") or []) if n}
     ten_cot = {_normalise_key(c) for c in header}
     ngoai_dict = [c for c in header if _normalise_key(c) not in ten_dict]
     thieu_bat_buoc = [n for n in dictionary.get("required_names") or [] if _normalise_key(n) not in ten_cot]
