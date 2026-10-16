@@ -655,3 +655,24 @@ def prepare_locked_g5_study(
         assert report["status"] == G5Q.STATUS_LOCKED, report
     locked_path = out_dir / manifest["locked_dataset_path"]
     return locked_path, report
+
+
+def bat_mo_hinh_chinh_g6(out_dir: Path) -> bool:
+    """Mô phỏng THỐNG KÊ VIÊN hoàn thiện `scripts/03_analysis.R` (F15, 16/10/2026): bộ sinh G6 để công thức mô hình ở
+    dạng chú thích; G6-AUTO-09 nay chỉ đếm dòng THI HÀNH. Bỏ dấu `#` ở dòng mô hình chính ĐẦU TIÊN cổng nhận diện được.
+    Trả True nếu đã bật một dòng."""
+    import g6_quality_gate as G6Q  # noqa: PLC0415
+
+    p = Path(out_dir) / "scripts" / "03_analysis.R"
+    if not p.is_file():
+        return False
+    dong = p.read_text(encoding="utf-8").split("\n")
+    for i, d in enumerate(dong):
+        if not d.lstrip().startswith("#"):
+            continue
+        ung_vien = d.lstrip().lstrip("#").strip()
+        if ung_vien and any(bt.search(ung_vien) for _, bt in G6Q._HO_SCRIPT):
+            dong[i] = ung_vien
+            p.write_text("\n".join(dong), encoding="utf-8", newline="\n")
+            return True
+    return False
