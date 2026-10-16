@@ -286,12 +286,6 @@ def test_dien_tap_c1a(monkeypatch):
         bien_ban["buoc"].append(("G5 ký PI (giả)", _ky("G5", "G5_checkpoint.json", "PI", "DIEN-TAP-PI")))
         bien_ban["buoc"].append(("G5 chấm cuối", _chay(["tools/g5_quality_gate.py", "--study", STUDY])))
     if "G6" in cong:
-        # F12: G6-AUTO-08 quét cả script LÀM SẠCH của G5 — mô phỏng tách chúng ra khỏi scripts/ để đi tiếp
-        tach = OUT / "scripts_g5_lam_sach"
-        tach.mkdir(exist_ok=True)
-        for ten in ("data_cleaning.py", "data_quality_report.py"):
-            if (OUT / "scripts" / ten).exists():
-                (OUT / "scripts" / ten).rename(tach / ten)
         bien_ban["buoc"].append(("G6 sinh phân tích", _chay(["tools/run_g6_auto.py", "--study", STUDY])))
         bien_ban["buoc"].append(("G6 chấm", _chay(["tools/g6_quality_gate.py", "--study", STUDY])))
         # mô phỏng thống kê viên xác nhận script khớp SAP (gate_params.G6) với dấu vân tay chốt do cổng tính
@@ -309,6 +303,31 @@ def test_dien_tap_c1a(monkeypatch):
             p_meta.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
             bien_ban["buoc"].append(("G6 chấm sau xác nhận (giả)",
                                      _chay(["tools/g6_quality_gate.py", "--study", STUDY])))
+    if "G6R" in cong:  # phân tích chính chạy THẬT trên dữ liệu mô phỏng đã khoá (đường Python)
+        import glob  # noqa: PLC0415
+        khoa = sorted(glob.glob(str(OUT / "**" / "*locked*.csv"), recursive=True))
+        bien_ban["buoc"].append(("G6 phân tích chính (Python, ordinal + SE cụm)", _chay([
+            "tools/run_stats_analysis.py", "--study", STUDY, "--data", khoa[-1] if khoa else "KHONG_CO_BAN_KHOA",
+            "--outcome", "g1", "--outcome-type", "ordinal", "--cot-cum", "ma_ban_kham", "--group", "thoigian_cho",
+            "--covariates", "tuoi,gioitinh,noicutru,cobhyt,lydokham,khunggio_kham,ngay_trong_tuan,"
+                            "suckhoe_tudanhgia,duoc_dung_bacsi",
+            "--i-confirm-sap-locked", "--i-confirm-irb-approved"])))
+        bien_ban["buoc"].append(("G6 chấm sau phân tích", _chay(["tools/g6_quality_gate.py", "--study", STUDY])))
+    if "G10" in cong:  # biên nhận A12 phải ký bằng khoá của lượt này (bản sao mang biên nhận ký khoá thật)
+        import re as _re  # noqa: PLC0415
+        pm = set()
+        for ten in (f"DE_CUONG_THONG_NHAT_{STUDY}.md", f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md"):
+            if (OUT / ten).is_file():
+                pm |= set(_re.findall(r"PMID:?\s*(\d{5,9})", (OUT / ten).read_text(encoding="utf-8")))
+        bien_ban["buoc"].append(("G10 A12 kiểm trích dẫn (khoá giả)", _chay(
+            ["tools/check_citations.py", "--study", STUDY, "--pmids", ",".join(sorted(pm))])))
+    for g, lenh in (("G7", ["tools/run_g7_auto.py", "--study", STUDY]),
+                    ("G8", ["tools/run_g8_auto.py", "--study", STUDY]),
+                    ("G9", ["tools/run_g9_auto.py", "--study", STUDY]),
+                    ("G10", ["tools/run_g10_assemble.py", "--study", STUDY])):
+        if g in cong:
+            bien_ban["buoc"].append((f"{g} chạy công cụ", _chay(lenh)))
+            bien_ban["buoc"].append((f"{g} chấm", _chay([f"tools/{g.lower()}_quality_gate.py", "--study", STUDY])))
     ra = OUT / "DIEN_TAP" / f"bien_ban_{'_'.join(cong)}.json"
     ra.parent.mkdir(parents=True, exist_ok=True)
     ra.write_text(json.dumps(bien_ban, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
