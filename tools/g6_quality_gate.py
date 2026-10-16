@@ -309,7 +309,9 @@ def ket_cuc_chinh_sap(sap2: str) -> str | None:
                 break
             tiep.append(k)
         for khoi in (d, *tiep):
-            for mau in (r"`([A-Za-z][A-Za-z0-9_]{2,})`",
+            # F13 (16/10/2026, diễn tập C1a): tên trường REDCap 2 ký tự (`g1`) phải được nhận — bản cũ đòi ≥ 3 ký tự
+            # nên rơi xuống tên trong ngoặc đơn của đề cương gốc và G6-AUTO-04 báo lệch kết cục oan.
+            for mau in (r"`([A-Za-z][A-Za-z0-9_]{1,})`",
                         r"\(\s*(?:biến|bien|variable)?\s*:?\s*([A-Za-z][A-Za-z0-9_]{2,})\s*[,)]",
                         r"\b([a-z][a-z0-9]*_[a-z0-9_]+)\b",
                         r"\b([A-Z][a-z0-9]+[A-Z][A-Za-z0-9_]*)\b"):

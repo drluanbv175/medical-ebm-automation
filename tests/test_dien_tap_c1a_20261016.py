@@ -142,6 +142,11 @@ def _mo_phong_chot_dmp(hom_nay: date) -> None:
     khoi = re.sub(r"\[CẦN[^\]]*\]", f"DIỄN TẬP {hom_nay.isoformat()}", goc)
     khoi = re.sub(r"^(\s*[-*]\s+)\[\s\]", r"\1[x]", khoi, flags=re.MULTILINE)
     s = s.replace(goc, khoi, 1)
+    # F10: phần «sống» của DMP còn ô trống + dòng khuôn không thuộc C1a — mô phỏng PI hoàn tất khi khoá
+    s = "".join(d for d in s.splitlines(keepends=True) if "qol_score_baseline" not in d)
+    s = re.sub(r"\*\*\[CẦN[^\]]*\]\*\*\s*", "", s)
+    s = re.sub(r"\[CẦN[^\]]*\]", "DIỄN TẬP", s)
+    s = s.replace("CHỜ BÁC SĨ ĐIỀN CÁC DIỄN TẬP VÀ XÁC NHẬN", "đã hoàn tất khi khoá (diễn tập)")
     dong = s.splitlines()
     for i, ln in enumerate(dong[:15]):
         if ln.startswith("# ") or "**Trạng thái:**" in ln:
@@ -174,6 +179,34 @@ def test_dien_tap_c1a(monkeypatch):
     cong = [c.strip() for c in os.environ.get("DIEN_TAP_CONG", "G2,G4,G5").split(",") if c.strip()]
     hom_nay = date.today()
     bien_ban: dict = {"study": STUDY, "ngay": hom_nay.isoformat(), "buoc": []}
+    if "G3S" in cong:
+        bien_ban["buoc"].append(("G3 mô phỏng sửa F3/F5", {"ma_thoat": 0, "lenh": "(sửa bản sao)", "cuoi": [],
+                                                           "dong_chan": [f"đổi nhãn {_mo_phong_sua_g3()} câu Likert"]}))
+        bien_ban["buoc"].append(("G3 chấm lại", _chay(["tools/g3_quality_gate.py", "--study", STUDY])))
+    if "G4S" in cong:  # F11: SAP §2 đặt tên biến theo đề cương v1.0, bộ biến G3 dùng `g1` — mô phỏng thống kê viên sửa
+        p_sap = OUT / f"G4_A5_SAP_FINAL_{STUDY}.md"
+        t = p_sap.read_text(encoding="utf-8")
+        n = t.count("(biến SHLNBChung_TrucTiep), Phần 3 phiếu")
+        p_sap.write_text(t.replace("(biến SHLNBChung_TrucTiep), Phần 3 phiếu",
+                                   "(biến SHLNBChung_TrucTiep), Phần 3 phiếu — trường dữ liệu `g1`"),
+                         encoding="utf-8", newline="")
+        bien_ban["buoc"].append(("G4 mô phỏng sửa F11", {"ma_thoat": 0, "lenh": "(sửa bản sao)", "cuoi": [],
+                                                         "dong_chan": [f"đổi {n} chỗ tên biến kết cục chính"]}))
+        # sửa SAP làm xác nhận cũ hết hiệu lực (G4-HUMAN-08) — mô phỏng PI đọc lại rồi xác nhận lại dấu vân tay mới
+        import re as _re  # noqa: PLC0415
+        r4 = _chay(["tools/g4_quality_gate.py", "--study", STUDY])
+        m4 = _re.search(r"hiện tại ([0-9a-f]{16})", "\n".join(r4["dong_chan"] + r4["cuoi"]))
+        if not m4:
+            bc4 = (OUT / "G4_QUALITY_REPORT.md").read_text(encoding="utf-8")
+            m4 = _re.search(r"hiện tại ([0-9a-f]{16})", bc4)
+        if m4:
+            p_meta = OUT / "study_meta.json"
+            meta = json.loads(p_meta.read_text(encoding="utf-8"))
+            meta["gate_params"]["G4"].update({"dau_van_tay_chot": m4.group(1), "reviewed_at": hom_nay.isoformat()})
+            p_meta.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+        bien_ban["buoc"].append(("G4 mô phỏng PI xác nhận lại SAP",
+                                 {"ma_thoat": 0 if m4 else 1, "lenh": "(sửa bản sao)", "cuoi": [],
+                                  "dong_chan": [str(m4 and m4.group(1))]}))
     if "G2" in cong:
         bien_ban["buoc"].append(("G2 mô phỏng PI điền ô sau IRB", {"ma_thoat": 0,
                                                                    "dong_chan": _mo_phong_sau_irb(hom_nay),
@@ -196,13 +229,13 @@ def test_dien_tap_c1a(monkeypatch):
                                  _ky("G4", sap, "METHODS_STATISTICS_REVIEWER", "DIEN-TAP-TKV")))
         bien_ban["buoc"].append(("G4 ký PI (giả)", _ky("G4", sap, "PI", "DIEN-TAP-PI")))
         bien_ban["buoc"].append(("G4 chấm", _chay(["tools/g4_quality_gate.py", "--study", STUDY])))
-    if "G3S" in cong:
-        bien_ban["buoc"].append(("G3 mô phỏng sửa F3/F5", {"ma_thoat": 0, "lenh": "(sửa bản sao)", "cuoi": [],
-                                                           "dong_chan": [f"đổi nhãn {_mo_phong_sua_g3()} câu Likert"]}))
-        bien_ban["buoc"].append(("G3 chấm lại", _chay(["tools/g3_quality_gate.py", "--study", STUDY])))
     if "G5" in cong:
         bien_ban["buoc"].append(("G5 sinh bộ công cụ", _chay(["tools/run_g5_auto.py", "--study", STUDY])))
         bien_ban["buoc"].append(("G5 chấm", _chay(["tools/g5_quality_gate.py", "--study", STUDY])))
+    if "G5D" in cong and not (OUT / f"G5_REDCap_dictionary_{STUDY}.csv").is_file():
+        bien_ban["buoc"].append(("G5 dữ liệu — bỏ qua", {"ma_thoat": 1, "lenh": "", "cuoi": [],
+                                                       "dong_chan": ["chưa có từ điển G5 (bước G5 trước bị chặn)"]}))
+        cong = [c for c in cong if c not in ("G5D", "G6")]
     if "G5D" in cong:
         # mô phỏng người quản lý dữ liệu xác nhận hồ sơ vận hành (giá trị GIẢ)
         import g5_quality_gate as G5Q  # noqa: PLC0415
@@ -254,8 +287,29 @@ def test_dien_tap_c1a(monkeypatch):
         bien_ban["buoc"].append(("G5 ký PI (giả)", _ky("G5", "G5_checkpoint.json", "PI", "DIEN-TAP-PI")))
         bien_ban["buoc"].append(("G5 chấm cuối", _chay(["tools/g5_quality_gate.py", "--study", STUDY])))
     if "G6" in cong:
+        # F12: G6-AUTO-08 quét cả script LÀM SẠCH của G5 — mô phỏng tách chúng ra khỏi scripts/ để đi tiếp
+        tach = OUT / "scripts_g5_lam_sach"
+        tach.mkdir(exist_ok=True)
+        for ten in ("data_cleaning.py", "data_quality_report.py"):
+            if (OUT / "scripts" / ten).exists():
+                (OUT / "scripts" / ten).rename(tach / ten)
         bien_ban["buoc"].append(("G6 sinh phân tích", _chay(["tools/run_g6_auto.py", "--study", STUDY])))
         bien_ban["buoc"].append(("G6 chấm", _chay(["tools/g6_quality_gate.py", "--study", STUDY])))
+        # mô phỏng thống kê viên xác nhận script khớp SAP (gate_params.G6) với dấu vân tay chốt do cổng tính
+        import re as _re  # noqa: PLC0415
+        bc = json.loads((OUT / "G6_QUALITY_REPORT.json").read_text(encoding="utf-8"))
+        h1 = next((c for c in bc.get("checks") or [] if c.get("id") == "G6-HUMAN-01"), {})
+        m = _re.search(r'dau_van_tay_chot: \"?([0-9a-f]{8,})', str(h1.get("detail")))
+        if m:
+            p_meta = OUT / "study_meta.json"
+            meta = json.loads(p_meta.read_text(encoding="utf-8"))
+            meta.setdefault("gate_params", {})["G6"] = {"scripts_match_sap_confirmed": True,
+                                                       "reviewed_by_role": "STATISTICIAN",
+                                                       "reviewed_at": hom_nay.isoformat(),
+                                                       "dau_van_tay_chot": m.group(1)}
+            p_meta.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+            bien_ban["buoc"].append(("G6 chấm sau xác nhận (giả)",
+                                     _chay(["tools/g6_quality_gate.py", "--study", STUDY])))
     ra = OUT / "DIEN_TAP" / f"bien_ban_{'_'.join(cong)}.json"
     ra.parent.mkdir(parents=True, exist_ok=True)
     ra.write_text(json.dumps(bien_ban, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
