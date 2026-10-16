@@ -708,6 +708,32 @@ def _contains_placeholder(paths: Iterable[Path]) -> bool:
     return False
 
 
+def vai_da_ky_g5(study: str, checkpoint_path: Path, repo_root: Path) -> list:
+    """Nhóm vai đã ký G5 cho ĐÚNG nội dung checkpoint hiện tại — báo cáo ĐỒNG KÝ khoá dữ liệu (quản trị dữ liệu + PI).
+
+    THÊM 16/10/2026 (diễn tập C1a): G5 đòi MỘT chữ ký của DATA_MANAGER HOẶC PI (gate_contract); người thứ hai đồng ký
+    được (approve_gate) nhưng báo cáo trước đây không cho biết ai đã ký. Chỉ gọi khi GC.ledger_approved("G5") = True —
+    khi đó mọi bản ghi G5 đã qua xác minh chữ ký/vai trò (bất thường ⇒ chưa duyệt), nên ở đây chỉ lọc theo hash và
+    quyết định; một quyết định khác APPROVED xoá các chữ ký đứng trước nó (thu hồi). Chỉ ĐỌC, không phán «đã duyệt»."""
+    hash_hien_tai = _sha256(Path(checkpoint_path))
+    try:
+        records = json.loads((Path(repo_root) / "exports" / str(study) / "approval_ledger.json")
+                             .read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return []
+    vai: list = []
+    for record in records if isinstance(records, list) else []:
+        if not isinstance(record, dict) or str(record.get("gate_id") or "").strip() != "G5":
+            continue
+        if record.get("decision") != "APPROVED":
+            vai = []
+            continue
+        nhom = GC.role_group_for(str(record.get("reviewer_role") or ""))
+        if hash_hien_tai and record.get("evidence_hash") == hash_hien_tai and nhom and nhom not in vai:
+            vai.append(nhom)
+    return vai
+
+
 def _write_markdown(path: Path, report: Mapping[str, Any]) -> None:
     lines = [
         "# Báo cáo chất lượng G5",
@@ -715,6 +741,8 @@ def _write_markdown(path: Path, report: Mapping[str, Any]) -> None:
         f"- Hợp đồng: `{report.get('quality_contract_version')}`",
         f"- Trạng thái: **{report.get('status')}**",
         f"- Sinh lúc: {report.get('generated_at')}",
+        f"- Vai đã ký G5: {' + '.join(report.get('vai_da_ky') or []) or 'chưa có'}"
+        f"{' (đồng ký đủ quản trị dữ liệu + PI)' if report.get('dong_ky_du') else ''}",
         "",
         "## Tiêu chí tự động",
         "",
@@ -1177,12 +1205,13 @@ def evaluate_study(
         checkpoint_path.exists()
         and GC.ledger_approved("G5", study, checkpoint_path, repo_root=root)
     )
+    vai_ky = vai_da_ky_g5(study, checkpoint_path, root) if g5_approved else []
     automatic.append(
         _criterion(
             "G5-HUMAN-01",
             "Người quản trị dữ liệu/PI phê duyệt G5 gắn với hash checkpoint",
             "PASS" if g5_approved else "REVIEW",
-            f"approval_ledger_G5={g5_approved}",
+            f"approval_ledger_G5={g5_approved}" + (f"; vai đã ký: {' + '.join(vai_ky)}" if vai_ky else ""),
             (
                 "Người có thẩm quyền tự chạy approve_gate.py cho G5 sau khi đọc "
                 "DATA_LOCK_memo và G5_QUALITY_REPORT; agent không tự phê duyệt."
@@ -1224,6 +1253,8 @@ def evaluate_study(
         "real_data_present": has_real_data,
         "technical_lock_valid": lock_ok,
         "human_approval_valid": g5_approved,
+        "vai_da_ky": vai_ky,
+        "dong_ky_du": {"DATA_MANAGER", "PI"} <= set(vai_ky),
         "release_rule": (
             "Chỉ PASS_G5_DATA_LOCKED khi khóa kỹ thuật hợp lệ và approval ledger "
             "G5 khớp hash; không tự phê duyệt."
