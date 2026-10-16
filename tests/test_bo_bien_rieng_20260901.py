@@ -177,10 +177,11 @@ class TestC1aTronLane:
         assert v["exposure"] == "thoigian_cho"
         assert v["outcome"] == "g1" and v["outcome_levels"] == [1, 2, 3, 4, 5]
         assert v["cluster_col"] == "ma_ban_kham" and v["mode_var"] == "mode_tra_loi"
+        # 16/10/2026 (F9): PI xác nhận 14/10 Khoa C1a KHÔNG thu `chuyenkhoa` — SAP §5 còn 9 biến forced-in.
         assert sorted(v["covariates"]) == sorted([
             "tuoi", "gioitinh", "noicutru", "cobhyt", "lydokham", "duoc_dung_bacsi",
-            "suckhoe_tudanhgia", "khunggio_kham", "ngay_trong_tuan", "chuyenkhoa"]), (
-            "covariates phải ĐÚNG 10 biến forced-in SAP §5 — không thừa biến "
+            "suckhoe_tudanhgia", "khunggio_kham", "ngay_trong_tuan"]), (
+            "covariates phải ĐÚNG 9 biến forced-in SAP §5 — không thừa biến "
             "mô tả/thăm dò, không thiếu biến đã khoá")
 
     def test_script_thu_bac_mang_ten_that(self):
