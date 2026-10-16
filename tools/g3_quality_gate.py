@@ -686,7 +686,11 @@ def dau_van_tay_g3(checkpoint: Mapping[str, Any]) -> str:
 
     VÁ 04/10/2026 (soát từng cổng, G3-03): các cờ *_confirmed từng KHÔNG gắn với giá trị — chạy lại với effect size/SD/
     giả thuyết khác vẫn PASS_G3_CONFIRMED. Nay G3-HUMAN-06 đòi gate_params.G3.dau_van_tay_chot = dấu này."""
-    return CS.dau_van_tay({k: checkpoint.get(k) for k in KHOA_DAU_VAN_TAY_G3})
+    gia_tri = {k: checkpoint.get(k) for k in KHOA_DAU_VAN_TAY_G3}
+    # 16/10/2026 (F1): CV cỡ cụm quyết định N ⇒ vào dấu — CHỈ khi được khai, để dấu đã xác nhận trước đó không đổi.
+    if checkpoint.get("cluster_cv") is not None:
+        gia_tri["cluster_cv"] = checkpoint.get("cluster_cv")
+    return CS.dau_van_tay(gia_tri)
 
 
 def _cung_gia_tri(a: Any, b: Any) -> bool:
@@ -1200,12 +1204,17 @@ def evaluate_g3_quality(
         # Kiểm SỐ HỌC design effect thay vì tin con số tự khai (CONSORT cluster
         # extension mục 7a đòi nêu cách tính; ở đây ta tính lại và đối chiếu).
         declared_de = _as_float(g3.get("design_effect"))
+        cv = _as_float(checkpoint.get("cluster_cv"))
+        cv = cv if cv is not None else _as_float(g3.get("cluster_cv"))
         if declared_de is not None and icc is not None and cluster_size:
-            expected_de = 1 + (cluster_size - 1) * icc
+            # F1 (16/10/2026): khai CV cỡ cụm ⇒ công thức cụm không đều (Eldridge 2006) thay cho 1+(m−1)·ICC.
+            expected_de = ((1 + (cluster_size - 1) * icc) if cv is None
+                           else (1 + ((cv ** 2 + 1) * cluster_size - 1) * icc))
             if abs(declared_de - expected_de) > DESIGN_EFFECT_TOLERANCE:
                 cluster_problems.append(
-                    f"design_effect tự khai={declared_de} nhưng 1+(m−1)·ICC="
-                    f"{expected_de:.3f}"
+                    f"design_effect tự khai={declared_de} nhưng "
+                    + ("1+(m−1)·ICC=" if cv is None else f"1+((CV²+1)m−1)·ICC (CV={cv:g})=")
+                    + f"{expected_de:.3f}"
                 )
 
         # Số chùm là thứ chi phối lực của thử nghiệm theo chùm, không phải tổng N.

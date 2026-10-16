@@ -203,7 +203,7 @@ def n_two_proportion_ni(p_test, p_control, margin, alpha=0.05, power=0.80, outco
     return math.ceil((za + zb) ** 2 * variance_term / denom ** 2)
 
 
-def apply_fpc_and_cluster_de(n_total, population_n=None, icc=None, cluster_size=None):
+def apply_fpc_and_cluster_de(n_total, population_n=None, icc=None, cluster_size=None, cluster_cv=None):
     """Áp hiệu chỉnh QUẦN THỂ HỮU HẠN (FPC) rồi CLUSTER DESIGN EFFECT (DE) lên
     n_total — ĐÚNG THỨ TỰ doctrine co-mau-nghien-cuu.md dòng 34 (M4): "Tính cỡ
     mẫu từng nhóm → hiệu chỉnh FPC → cluster DE → dropout → tổng tối thiểu".
@@ -226,7 +226,7 @@ def apply_fpc_and_cluster_de(n_total, population_n=None, icc=None, cluster_size=
                  f"n {n:.0f}→{math.ceil(n_fpc)}.")
         n = n_fpc
     if icc is not None and cluster_size:
-        de = 1 + (cluster_size - 1) * icc
+        de = he_so_thiet_ke(icc, cluster_size, cluster_cv)
         n_cluster = n * de
         num_clusters = math.ceil(n_cluster / cluster_size)
         small_k_warning = (
@@ -234,7 +234,8 @@ def apply_fpc_and_cluster_de(n_total, population_n=None, icc=None, cluster_size=
             "thay vì z, đối chiếu với thống kê viên (Donner & Klar 2000)."
             if num_clusters < 15 else ""
         )
-        note += (f" Đã áp design effect cụm (DE=1+(m-1)×ICC={de:.2f}, m={cluster_size}, "
+        cong_thuc = "1+(m-1)×ICC" if cluster_cv is None else f"1+((CV²+1)m-1)×ICC, CV={cluster_cv:g} — Eldridge 2006"
+        note += (f" Đã áp design effect cụm (DE={cong_thuc}={de:.2f}, m={cluster_size}, "
                  f"ICC={icc}): n {n:.0f}→{math.ceil(n_cluster)} (~{num_clusters} cụm).{small_k_warning}")
         n = n_cluster
     return math.ceil(n), note
@@ -533,14 +534,25 @@ def tinh_n_loi(design_code, effect_type, effect_val, alpha, power, *, p0=0.30, p
     return kq
 
 
-def ap_fpc_cum(n_total, design_code, population_n=None, icc=None, cluster_size=None):
+def he_so_thiet_ke(icc, cluster_size, cluster_cv=None):
+    """Hiệu ứng thiết kế cụm. Không khai CV ⇒ 1 + (m − 1)·ICC (cụm bằng nhau). Khai CV cỡ cụm ⇒ công thức cụm KHÔNG đều
+    1 + ((CV² + 1)·m − 1)·ICC (Eldridge, Ashby & Kerry 2006, Int J Epidemiol 35:1292–1300, doi:10.1093/ije/dyl129).
+    Thêm 16/10/2026 (diễn tập C1a, F1): đề cương nộp dùng CV 1,0 (DE 1,78) trong khi G3 chỉ tính được DE 1,38."""
+    if cluster_cv is None:
+        return 1 + (cluster_size - 1) * icc
+    if cluster_cv < 0:
+        raise ValueError("--cluster-cv phải ≥ 0")
+    return 1 + ((cluster_cv ** 2 + 1) * cluster_size - 1) * icc
+
+
+def ap_fpc_cum(n_total, design_code, population_n=None, icc=None, cluster_size=None, cluster_cv=None):
     """(n_total sau FPC/cụm, n_per_group tương ứng, ghi chú, design_effect hoặc None, số cụm hoặc None,
     N NGAY TRƯỚC khi nhân DE — tức sau FPC nếu có)."""
     if not n_total or not (population_n or (icc is not None and cluster_size)):
         return n_total, (n_total if design_code in ONE_GROUP_DESIGNS else math.ceil(n_total / 2)), "", None, None, \
             n_total
-    n2, note = apply_fpc_and_cluster_de(n_total, population_n, icc, cluster_size)
-    de = (1 + (cluster_size - 1) * icc) if (icc is not None and cluster_size) else None
+    n2, note = apply_fpc_and_cluster_de(n_total, population_n, icc, cluster_size, cluster_cv)
+    de = he_so_thiet_ke(icc, cluster_size, cluster_cv) if (icc is not None and cluster_size) else None
     so_cum = math.ceil(n2 / cluster_size) if de is not None else None
     n_truoc_de = math.ceil(n_total / (1 + n_total / population_n)) if population_n else n_total
     # VÁ 04/10/2026 (G3-06): thiết kế MỘT nhóm giữ n_per_group = n_total sau FPC/cụm (trước đây bị chia đôi).
@@ -550,7 +562,7 @@ def ap_fpc_cum(n_total, design_code, population_n=None, icc=None, cluster_size=N
 
 def sensitivity_table(design_code, base_n, effect_val, effect_type, alpha, p_event=0.30, p0=0.30, sd=None, *,
                       power=0.80, precision=0.05, prevalence=None, hypothesis_type="superiority", margin=None,
-                      outcome_direction=None, population_n=None, icc=None, cluster_size=None):
+                      outcome_direction=None, population_n=None, icc=None, cluster_size=None, cluster_cv=None):
     """Bảng độ nhạy N tổng (TRƯỚC dropout, SAU FPC/cụm như N chính): hàng = power, cột = biến thiên tham số chính.
 
     Superiority: ES × 0,8/1,0/1,2 (AUC: biến thiên phần vượt 0,5). Non-inferiority: biên Δ × 0,8/1,0/1,2. Mọi ô gọi
@@ -578,7 +590,7 @@ def sensitivity_table(design_code, base_n, effect_val, effect_type, alpha, p_eve
                 if not n:
                     row.append("N/A")
                     continue
-                n = ap_fpc_cum(n, design_code, population_n, icc, cluster_size)[0]
+                n = ap_fpc_cum(n, design_code, population_n, icc, cluster_size, cluster_cv)[0]
             except (InvalidEffectSizeError, ValueError, ZeroDivisionError, OverflowError):
                 row.append("N/A")
                 continue
@@ -682,7 +694,7 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
                       p_event, run_date, sd=None, design_ambiguous=False, confirmed_n=None,
                       hypothesis_type="superiority", nguon_tham_so=None, nguon_hieu_qua=None,
                       outcome_direction=None, margin=None, precision=0.05, prevalence=None, n_benh=None,
-                      n_khong_benh=None, population_n=None, icc=None, cluster_size=None, nguon_mo_ta=None):
+                      n_khong_benh=None, population_n=None, icc=None, cluster_size=None, cluster_cv=None, nguon_mo_ta=None):
     """Sinh A4 — Kế hoạch cỡ mẫu.
 
     VÁ 04/10/2026 (soát từng cổng, G3-08): cột «Nguồn» in theo XUẤT XỨ THẬT của từng tham số (CLI / study_meta / đặc
@@ -899,7 +911,8 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
         # VÁ 09/10/2026: mỗi ô đi CÙNG đường tính với N chính (n_prevalence → FPC → hiệu ứng thiết kế cụm), nên PHẢI
         # truyền đủ population_n, icc, cluster_size. Bản cũ chỉ truyền population_n ⇒ đề tài cụm (C1a: ICC 0,02, m=20)
         # in ô cơ sở 385 trong khi N chính là 532 (G3-AUTO-09 REVIEW). DE do chính ap_fpc_cum trả (None nếu không có cụm).
-        _ket_qua = {(_p, _d): ap_fpc_cum(n_prevalence(_p, _d, alpha), design_code, population_n, icc, cluster_size)
+        _ket_qua = {(_p, _d): ap_fpc_cum(n_prevalence(_p, _d, alpha), design_code, population_n, icc, cluster_size,
+                                              cluster_cv)
                     for _p in _p_list for _d in _d_list}
         _de_cum = next(iter(_ket_qua.values()))[3]
         lines += [
@@ -1172,6 +1185,8 @@ def main():
     parser.add_argument("--icc", type=float, default=None,
                          help="Hệ số tương quan nội cụm (ICC/rho) — dùng khi ngẫu nhiên hóa/lấy "
                               "mẫu THEO CỤM (cluster-randomized), PHẢI đi cùng --cluster-size")
+    parser.add_argument("--cluster-cv", type=float, default=None,
+                        help="Hệ số biến thiên cỡ cụm (CV) — cụm KHÔNG đều: DE = 1+((CV²+1)m−1)·ICC (Eldridge 2006)")
     parser.add_argument("--cluster-size", type=int, default=None,
                          help="Cỡ cụm trung bình (m) — bắt buộc cùng --icc để tính design effect")
     args = parser.parse_args()
@@ -1223,7 +1238,7 @@ def main():
                                                                      else None)
     _dac_ta = S.dac_ta_thiet_ke(out_dir)
     for _ten, _kieu in (("hypothesis_type", "str"), ("margin", "float"), ("outcome_direction", "str"),
-                        ("icc", "float"), ("cluster_size", "int"), ("population_n", "int"),
+                        ("icc", "float"), ("cluster_size", "int"), ("cluster_cv", "float"), ("population_n", "int"),
                         ("prevalence", "float"), ("precision", "float")):
         _attr = _ten
         if getattr(args, _attr) is not None:
@@ -1539,7 +1554,7 @@ def main():
     # study_meta (không chỉ CLI) và được GHI vào checkpoint (design_effect, N trước DE, số cụm) để cổng kiểm số học.
     if n_total:
         n_total, n_per_group, _fpc_cluster_note, design_effect, n_clusters, n_total_truoc_de = ap_fpc_cum(
-            n_total, design_code, args.population_n, args.icc, args.cluster_size)
+            n_total, design_code, args.population_n, args.icc, args.cluster_size, args.cluster_cv)
         formula_used += _fpc_cluster_note
         n_adjusted = math.ceil(n_total / (1 - dropout))
         if _fpc_cluster_note:
@@ -1549,7 +1564,7 @@ def main():
             design_code, n_total, effect_val, effect_type, alpha, p_event, args.p0, args.sd, power=power,
             precision=precision, prevalence=args.prevalence, hypothesis_type=args.hypothesis_type,
             margin=args.margin, outcome_direction=args.outcome_direction, population_n=args.population_n,
-            icc=args.icc, cluster_size=args.cluster_size)
+            icc=args.icc, cluster_size=args.cluster_size, cluster_cv=args.cluster_cv)
         print(f"  → N mỗi nhóm: {n_per_group}, N tổng: {n_total}, N điều chỉnh: {n_adjusted}")
 
     print("📝 Bước 4/6: Sinh artifact A4...")
@@ -1562,6 +1577,7 @@ def main():
         nguon_tham_so=nguon_tham_so, nguon_hieu_qua=nguon_hieu_qua, outcome_direction=args.outcome_direction,
         margin=args.margin, precision=precision, prevalence=args.prevalence, n_benh=n_benh,
         n_khong_benh=n_khong_benh, population_n=args.population_n, icc=args.icc, cluster_size=args.cluster_size,
+        cluster_cv=args.cluster_cv,
         nguon_mo_ta={k: _g3_pinned.get(k) for k in ("effect_source", "prevalence_source", "margin_source")},
     )
     md_path = out_dir / f"G3_A4_SAMPLE_SIZE_{study}.md"
@@ -1759,7 +1775,7 @@ def main():
     # VÁ 04/10/2026 (G3-02/03/09): ghim cả các tham số quyết định khác khi CHÍNH dòng lệnh này cấp (ensure_study_meta chỉ
     # điền khoá còn thiếu — không bao giờ đè bản bác sĩ đã ghim).
     for _ten in ("hypothesis_type", "margin", "outcome_direction", "precision", "prevalence", "icc", "cluster_size",
-                 "population_n", "alpha", "power", "p0", "dropout", "p_event"):
+                 "cluster_cv", "population_n", "alpha", "power", "p0", "dropout", "p_event"):
         if nguon_tham_so.get(_ten) == "CLI" and getattr(args, _ten) is not None:
             seed_g3[_ten] = getattr(args, _ten)
     if seed_g3:
@@ -1796,6 +1812,7 @@ def main():
         "n_khong_benh": n_khong_benh,
         "icc": args.icc,
         "cluster_size": args.cluster_size,
+        **({"cluster_cv": args.cluster_cv} if args.cluster_cv is not None else {}),
         "design_effect": round(design_effect, 6) if design_effect is not None else None,
         "n_total_truoc_de": n_total_truoc_de,
         "n_clusters": n_clusters,
