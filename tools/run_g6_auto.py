@@ -488,9 +488,72 @@ def _sap_declares_ordinal(out_dir: Path, study: str) -> bool:
 # R SCRIPTS — SETUP & CLEANING (chung)
 # ─────────────────────────────────────────────
 
+#: Khối gói CŨ (một danh sách cho mọi thiết kế) — chỉ còn cho caller không truyền `packages` (R_00_SETUP, test cũ).
+_KHOI_GOI_R_CU = """packages <- c(
+  "tidyverse",    # wrangling + visualization
+  "survival",     # Cox regression, Kaplan-Meier
+  "survminer",    # ggsurvplot — biểu đồ KM đẹp
+  "lme4",         # mixed effects models
+  "tableone",     # CreateTableOne — Table 1
+  "gtsummary",    # tbl_summary — Table 1 xuất Word/HTML
+  "mice",         # Multiple Imputation
+  "sandwich",     # Robust standard errors
+  "lmtest",       # coeftest với robust SE
+  "ggplot2",      # biểu đồ
+  "broom",        # tidy() — kết quả mô hình
+  "here",         # quản lý đường dẫn tương đối
+  "renv",         # quản lý phiên bản packages
+  "flextable",    # xuất bảng ra Word
+  "officer",      # xuất file Word
+  "pROC",         # ROC curve
+  "dcurves",      # Decision Curve Analysis
+  "meta",         # meta-analysis
+  "metafor"       # metafor — meta-analysis nâng cao
+)"""
+
+#: Gói nền 00_setup.R luôn cần: wrangling, đường dẫn (here::), khoá phiên bản, bảng kết quả xuất Word.
+_GOI_R_NEN = ("tidyverse", "here", "renv", "broom", "gtsummary", "flextable", "officer")
+#: Gói đi kèm R (không cài từ CRAN) — bỏ khỏi danh sách cài.
+_GOI_R_KEM_SAN = frozenset({"base", "stats", "utils", "graphics", "grDevices", "methods", "tools", "parallel", "grid",
+                            "splines", "stats4", "tcltk", "compiler", "datasets"})
+#: Gói lõi tidyverse — đã cài/nạp cùng "tidyverse" ở gói nền, không liệt kê lại.
+_GOI_R_TIDYVERSE = frozenset({"dplyr", "readr", "tidyr", "ggplot2", "stringr", "forcats", "purrr", "tibble",
+                              "lubridate"})
+#: Hàm khuôn G6 gọi TRẦN (không «gói::», không library()) — trước đây chạy được vì 00_setup.R nạp sẵn mọi gói.
+#: Thêm hàm trần mới vào khuôn ⇒ thêm vào đây (test_g6_khuon_theo_thiet_ke_20261016 quét 8 thiết kế để bắt hàm sót).
+_HAM_TRAN_GOI_R = {
+    "coxph": "survival", "Surv": "survival", "survfit": "survival", "survdiff": "survival", "cox.zph": "survival",
+    "strata": "survival", "clogit": "survival", "ggsurvplot": "survminer",
+    "roc": "pROC", "auc": "pROC", "coords": "pROC", "ci.coords": "pROC", "ci.auc": "pROC", "ci": "pROC",
+    "rcs": "rms", "lrm": "rms", "orm": "rms", "polr": "MASS", "clm": "ordinal",
+    "vcovCL": "sandwich", "vcovHC": "sandwich", "coeftest": "lmtest", "mice": "mice", "pool": "mice",
+    "glmer": "lme4", "lmer": "lme4", "CreateTableOne": "tableone", "dca": "dcurves",
+    "metabin": "meta", "metagen": "meta", "metacont": "meta", "metaprop": "meta", "rma": "metafor", "escalc": "metafor",
+}
+_RE_HAM_TRAN_R = re.compile(r"(?<![:$\w.])(" + "|".join(re.escape(h) for h in sorted(_HAM_TRAN_GOI_R, key=len,
+                                                                                        reverse=True)) + r")\(")
+_RE_GOI_R = re.compile(r"(?:\b(?:library|require|requireNamespace)\(\s*[\"']?([A-Za-z][A-Za-z0-9.]+)"
+                       r"|\b([A-Za-z][A-Za-z0-9.]+):::?)")
+
+
+def goi_r_cho_script(*ma_r: str) -> list:
+    """Gói R mà 00_setup.R phải cài/nạp = gói nền + MỌI gói các script 01–03 gọi (library/require/gói::/hàm trần).
+
+    THÊM 16/10/2026 (F14, diễn tập C1a). Đọc cả dòng chú thích: mô hình chính đang để dạng chú thích cho thống kê viên
+    bật (F15) — bật lên mà gói chưa cài thì script dừng. Gói kèm sẵn của R bị loại; thứ tự = nền rồi theo ABC."""
+    thay: set = set()
+    for ma in ma_r:
+        for m in _RE_GOI_R.finditer(ma or ""):
+            ten = m.group(1) or m.group(2)
+            if ten and ten not in _GOI_R_KEM_SAN and ten not in _GOI_R_TIDYVERSE:
+                thay.add(ten)
+        thay.update(_HAM_TRAN_GOI_R[m.group(1)] for m in _RE_HAM_TRAN_R.finditer(ma or ""))
+    return list(_GOI_R_NEN) + sorted(thay - set(_GOI_R_NEN), key=str.lower)
+
+
 def make_r00_setup(study: str, seed: Optional[str] = None, seed_khong_ap_dung: bool = False,
                    r_version: Optional[str] = None, alpha: Optional[float] = None,
-                   alpha_khong_ap_dung: bool = False) -> str:
+                   alpha_khong_ap_dung: bool = False, packages: Optional[list] = None) -> str:
     """Sinh 00_setup.R: cài/nạp gói, seed + alpha THEO SAP đã khoá, và CHỐT KHOÁ DỮ LIỆU trước mọi phân tích.
 
     VÁ 04/10/2026 (soát từng cổng): G6-02 — đường R từng KHÔNG có chốt khoá nào (DATA_RAW/DATA_PROC = data/ chung của
@@ -512,6 +575,14 @@ def make_r00_setup(study: str, seed: Optional[str] = None, seed_khong_ap_dung: b
                   else "ALPHA <- NA   # [CẦN ALPHA THEO SAP §12]")
     dong_r = (f"if (getRversion() < \"{r_version}\") warning(\"SAP §10 khoá R >= {r_version}; đang chạy R \", "
               "getRversion())" if r_version else "# Phiên bản R: SAP §10 không khai phiên bản — ghi sessionInfo() ở 03")
+    # SỬA 16/10/2026 (F14, diễn tập C1a): danh sách gói cố định nạp survival/survminer/pROC/meta… cho MỌI thiết kế mà
+    # thiếu đúng gói script dùng (C1a cắt ngang thứ bậc: `ordinal`, `brant`, `clubSandwich` ⇒ 03_analysis.R dừng). main()
+    # truyền goi_r_cho_script() = gói nền + gói chính các script 01–03 gọi; caller cũ (packages=None) giữ danh sách cũ.
+    if packages:
+        dong_goi = ",\n".join(f'  "{g}"' for g in packages)
+        khoi_goi = f"# Gói = nền + đúng gói các script 01–03 của đề tài gọi (library()/gói::)\npackages <- c(\n{dong_goi}\n)"
+    else:
+        khoi_goi = _KHOI_GOI_R_CU
     return f"""\
 # ============================================================
 # 00_setup.R — Môi trường + CHỐT KHOÁ DỮ LIỆU (đề tài {study})
@@ -519,27 +590,7 @@ def make_r00_setup(study: str, seed: Optional[str] = None, seed_khong_ap_dung: b
 # G2 (IRB), G4 (SAP) và G5 (khoá dữ liệu) chưa được ký thật.
 # ============================================================
 
-packages <- c(
-  "tidyverse",    # wrangling + visualization
-  "survival",     # Cox regression, Kaplan-Meier
-  "survminer",    # ggsurvplot — biểu đồ KM đẹp
-  "lme4",         # mixed effects models
-  "tableone",     # CreateTableOne — Table 1
-  "gtsummary",    # tbl_summary — Table 1 xuất Word/HTML
-  "mice",         # Multiple Imputation
-  "sandwich",     # Robust standard errors
-  "lmtest",       # coeftest với robust SE
-  "ggplot2",      # biểu đồ
-  "broom",        # tidy() — kết quả mô hình
-  "here",         # quản lý đường dẫn tương đối
-  "renv",         # quản lý phiên bản packages
-  "flextable",    # xuất bảng ra Word
-  "officer",      # xuất file Word
-  "pROC",         # ROC curve
-  "dcurves",      # Decision Curve Analysis
-  "meta",         # meta-analysis
-  "metafor"       # metafor — meta-analysis nâng cao
-)
+{khoi_goi}
 
 to_install <- packages[!packages %in% installed.packages()[, "Package"]]
 if (length(to_install) > 0) {{
@@ -1909,6 +1960,54 @@ if __name__ == "__main__":
 '''
 
 
+def _make_py_dan_duong(v: dict, study: str, design_code: str, ten_tep: str) -> str:
+    """Script Python «DẪN ĐƯỜNG» cho thiết kế KHÔNG có trục thời gian-đến-biến-cố — KHÔNG chứa mã Cox/Kaplan-Meier.
+
+    SỬA 16/10/2026 (F14, diễn tập C1a): 5 thiết kế trong _WRONG_METHOD_DESIGNS từng nhận nguyên khuôn Cox+KM (lifelines)
+    kèm dải cảnh báo ở đầu tệp — chạy nhầm vẫn ra HR vô nghĩa và tệp kết quả trông như thật. Nay tệp chỉ in phương pháp
+    đúng + lệnh cần chạy rồi thoát mã 2: R 03_analysis.R (nhánh đúng cho thiết kế) và, với cắt ngang, công cụ chuẩn
+    tools/run_stats_analysis.py với biến theo SAP. Không đọc dữ liệu ⇒ không cần chốt khoá riêng (chốt nằm ở nơi chạy)."""
+    exposure = v.get("exposure") or "[CẦN BIẾN PHƠI NHIỄM THEO SAP]"
+    outcome = v.get("outcome") or "[CẦN KẾT CỤC CHÍNH THEO SAP]"
+    lenh = [f"Rscript exports/{study}/scripts/{ten}" for ten in
+            ("00_setup.R", "01_cleaning.R", "02_tables.R", "03_analysis.R")]
+    if design_code == "cross_sectional":
+        loai = "ordinal" if v.get("outcome_ordinal") else "binary"
+        cum = f" --cot-cum {v['cluster_col']}" if v.get("cluster_col") else ""
+        lenh += [f"python3 tools/kiem_khoa_phan_tich.py --study {study}   # in LOCKED_DATA=<tệp đã khoá>",
+                 f"python3 tools/run_stats_analysis.py --study {study} --data <LOCKED_DATA> --outcome {outcome} "
+                 f"--outcome-type {loai} --group {exposure}{cum}"]
+    dong_lenh = "\n".join(f"    {x!r}," for x in lenh)
+    return f'''#!/usr/bin/env python3
+# ⚠️  [CẦN CHÚ Ý — THIẾT KẾ {design_code.upper()}]
+# {ten_tep} — DẪN ĐƯỜNG (đề tài {study}): thiết kế này KHÔNG có trục thời gian-đến-biến-cố nên
+# KHÔNG sinh mã Cox/Kaplan-Meier. Phương pháp đúng: {_METHOD_HINT_BY_DESIGN[design_code]}.
+"""{ten_tep} — dẫn đường tới phân tích đúng phương pháp cho thiết kế {design_code} (sinh bởi run_g6_auto.py).
+
+Tệp này KHÔNG phân tích dữ liệu: nó in các lệnh cần chạy rồi thoát mã 2 để không ai nhầm là đã có kết quả.
+Cần bác sĩ kiểm chứng.
+"""
+import sys
+
+LENH = [
+{dong_lenh}
+]
+
+
+def main() -> int:
+    print("{ten_tep}: thiết kế {design_code} — KHÔNG có phân tích Cox/Kaplan-Meier.")
+    print("Phương pháp đúng: {_METHOD_HINT_BY_DESIGN[design_code]}.")
+    print("Chạy theo thứ tự (từ gốc repo):")
+    for dong in LENH:
+        print("  " + dong)
+    return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+'''
+
+
 def make_run_analysis_cli(v: dict, n_adjusted: int, study: str, design_code: str = "cohort",
                           effect_type: str = "HR") -> str:
     """
@@ -1928,6 +2027,8 @@ def make_run_analysis_cli(v: dict, n_adjusted: int, study: str, design_code: str
     covars        = v["covariates"]
     covars_default = ",".join(covars) if covars else "age,sex,dm,htn"
     covars_display = ", ".join(covars) if covars else "age, sex, dm, htn"
+    if design_code in _WRONG_METHOD_DESIGNS:
+        return _make_py_dan_duong(v, study, design_code, "run_analysis_cli.py")
     template = _CASE_CONTROL_CLI_TEMPLATE if design_code == "case_control" else _RUN_CLI_TEMPLATE
     code = (
         template
@@ -2502,6 +2603,10 @@ def make_sensitivity_analysis(v: dict, study: str, design_code: str = "cohort", 
     # sex/dm/htn + tuổi ≥ 70 (ngưỡng không lấy từ SAP), ghi G6_subgroup.xlsx không nhãn thăm dò. SAP §7 trống ⇒ []/None.
     nhom_con = repr([str(x) for x in (v.get("nhom_con_sap") or [])])
     nguong_tuoi = repr(v.get("nguong_tuoi_sap"))
+    if design_code in _WRONG_METHOD_DESIGNS:
+        # F14 (16/10/2026): khuôn độ nhạy là Cox/HR + E-value theo HR — thiết kế không có thời gian-đến-biến-cố chỉ
+        # nhận tệp dẫn đường; phân tích độ nhạy theo SAP nằm ở 03_analysis.R (và nhánh OLS nhạy cảm của run_stats).
+        return _make_py_dan_duong(v, study, design_code, "sensitivity_analysis.py")
     if design_code == "case_control":
         return (
             _CASE_CONTROL_SENSITIVITY_TEMPLATE
@@ -2792,7 +2897,11 @@ def guardrail(artifact: str, all_scripts_text: str) -> tuple:
     # yếu tín hiệu do boilerplate luôn in cứng) — sửa để nhánh else thật sự
     # errors.append khi thiếu hẳn yêu cầu báo khoảng tin cậy trong scripts.
     ci_n = len(re.findall(r'95%CI|conf\.int|conf_int|ci_lo|CI_lo|lower 95%', artifact + all_scripts_text))
-    if ci_n >= 3:
+    # SỬA 16/10/2026 (F14): định tính KHÔNG có suy luận thống kê ⇒ không có khoảng tin cậy để đòi. Trước đây R6 qua
+    # được chỉ nhờ khuôn Cox của CLI (nay là tệp dẫn đường); thiết kế đọc từ dòng cấu trúc «**Thiết kế:**» của A7.
+    if re.search(r"^\*\*Thiết kế:\*\*\s*qualitative\b", artifact, re.MULTILINE):
+        warnings_list.append("R6 ⚪ không áp dụng — thiết kế định tính không có suy luận thống kê (COREQ/SRQR)")
+    elif ci_n >= 3:
         warnings_list.append(f"R6 ✅ {ci_n} lần yêu cầu 95%CI")
     else:
         errors.append(f"R6 🔴 Thiếu yêu cầu báo cáo 95%CI trong artifact/scripts ({ci_n} lần, cần ≥3)")
@@ -2900,6 +3009,43 @@ _SCRIPT03_INFO = {
 }
 
 
+def _dong_py_a7(design_code, exposure, outcome, time_col) -> list:
+    """Hai dòng run_analysis_cli.py / sensitivity_analysis.py của PHẦN 3 — khớp tệp THẬT được sinh (F14, 16/10/2026):
+    thiết kế không có thời gian-đến-biến-cố chỉ nhận tệp DẪN ĐƯỜNG, không còn ghi «CLI đầy đủ — lifelines»."""
+    if design_code in _WRONG_METHOD_DESIGNS:
+        return ["| `run_analysis_cli.py` | **Dẫn đường** — KHÔNG phân tích (thiết kế không có thời gian-đến-biến-cố); "
+                "in lệnh đúng phương pháp rồi thoát mã 2 | — | — |",
+                "| `sensitivity_analysis.py` | **Dẫn đường** — phân tích độ nhạy theo SAP nằm ở `03_analysis.R` | — | — |"]
+    return [f"| `run_analysis_cli.py` | **Python CLI đầy đủ** — chạy ngay với CSV | {exposure}/{outcome}/{time_col} | "
+            "lifelines, pandas, matplotlib |",
+            f"| `sensitivity_analysis.py` | CC vs MI, Subgroup, E-value | {exposure}/{outcome}/{time_col} | lifelines, pandas |"]
+
+
+def _khoi_chay_py_a7(study, design_code, v, exposure, outcome, time_col, covars) -> list:
+    """Khối «Chạy Python» của PHẦN 3 — thiết kế không có thời gian-đến-biến-cố dùng công cụ chuẩn run_stats_analysis.py
+    (cắt ngang) hoặc chỉ đường R, không in lệnh Cox với --time (F14, 16/10/2026)."""
+    dau = ["**Chạy Python CLI (sau khi khoá — `--data` là LOCKED_DATA do `tools/kiem_khoa_phan_tich.py` in ra):**",
+           "```bash", f"python3 tools/kiem_khoa_phan_tich.py --study {study}"]
+    if design_code == "cross_sectional":
+        loai = "ordinal" if v.get("outcome_ordinal") else "binary"
+        cum = f" --cot-cum {v['cluster_col']}" if v.get("cluster_col") else ""
+        return dau + [f"python3 tools/run_stats_analysis.py --study {study} --data <LOCKED_DATA> \\",
+                      f"    --outcome {outcome} --outcome-type {loai} --group {exposure}{cum}", "```"]
+    if design_code in _WRONG_METHOD_DESIGNS:
+        return dau[:1] + ["Thiết kế này không có CLI Python phân tích — dùng đường R ở trên "
+                          "(`run_analysis_cli.py` chỉ in lệnh, thoát mã 2)."]
+    return dau + [f"python exports/{study}/scripts/run_analysis_cli.py \\",
+                  "    --data <LOCKED_DATA> \\",
+                  f"    --exposure {exposure} \\",
+                  f"    --outcome {outcome} \\",
+                  f"    --time {time_col} \\",
+                  f"    --covariates {','.join(covars) if covars else 'age,sex,dm,htn'}",
+                  "",
+                  f"python exports/{study}/scripts/sensitivity_analysis.py \\",
+                  "    --data <LOCKED_DATA>",
+                  "```"]
+
+
 def _script03_row(design_code, effect_type, exposure, outcome, time_col,
                   outcome_ordinal=False):
     """Dòng '03_analysis.R' của PHẦN 3 — khớp ĐÚNG phương pháp thật dùng cho
@@ -2992,7 +3138,7 @@ def generate_artifact(study, topic, design_code, reporting_std,
                       n_total, alpha, power, effect_val, effect_type,
                       g4_status, run_date, scripts_dir, v: dict,
                       g4_khoa: Optional[bool] = None, g4_nguon: str = "",
-                      tham_so_sap: Optional[dict] = None) -> str:
+                      tham_so_sap: Optional[dict] = None, goi_r: Optional[list] = None) -> str:
     """Sinh A7 artifact đầy đủ — gồm tên biến thật từ REDCap.
 
     04/10/2026 (soát từng cổng G6): `g4_khoa`/`g4_nguon` = phép kiểm khoá G4 THẬT (sổ cái + chấm trực tiếp) do main()
@@ -3122,14 +3268,13 @@ def generate_artifact(study, topic, design_code, reporting_std,
         "| Script | Mục đích | Biến dùng | Thư viện |",
         "|---|---|---|---|",
         "| `00_setup.R` | Cài packages R + seed/alpha theo SAP + **CHỐT KHOÁ dữ liệu** (G2/G4/G5 + checksum) | — | "
-        "tidyverse, survival, mice, gtsummary |",
+        f"{', '.join(goi_r) if goi_r else 'tidyverse, survival, mice, gtsummary'} |",
         f"| `01_cleaning.R` | Đọc dataset ĐÃ KHOÁ, chuyển kiểu (không làm sạch lại) | {exposure}, {outcome}, {time_col} | "
         "tidyverse |",
         f"| `02_tables.R` | Table 1 theo nhóm {exposure} | {', '.join(covars[:4]) if covars else 'age,sex,dm,htn'} | gtsummary, flextable |",
         _script03_row(design_code, effect_type, exposure, outcome, time_col,
                       outcome_ordinal=outcome_ordinal),
-        f"| `run_analysis_cli.py` | **Python CLI đầy đủ** — chạy ngay với CSV | {exposure}/{outcome}/{time_col} | lifelines, pandas, matplotlib |",
-        f"| `sensitivity_analysis.py` | CC vs MI, Subgroup, E-value | {exposure}/{outcome}/{time_col} | lifelines, pandas |",
+        *(_dong_py_a7(design_code, exposure, outcome, time_col)),
         "",
         "**Thứ tự chạy (R, từ gốc repo — 00_setup.R dừng nếu dữ liệu chưa khoá):**",
         "```bash",
@@ -3139,19 +3284,7 @@ def generate_artifact(study, topic, design_code, reporting_std,
         f"Rscript exports/{study}/scripts/03_analysis.R",
         "```",
         "",
-        "**Chạy Python CLI (sau khi khoá — `--data` là LOCKED_DATA do `tools/kiem_khoa_phan_tich.py` in ra):**",
-        "```bash",
-        f"python3 tools/kiem_khoa_phan_tich.py --study {study}",
-        f"python exports/{study}/scripts/run_analysis_cli.py \\",
-        "    --data <LOCKED_DATA> \\",
-        f"    --exposure {exposure} \\",
-        f"    --outcome {outcome} \\",
-        f"    --time {time_col} \\",
-        f"    --covariates {','.join(covars) if covars else 'age,sex,dm,htn'}",
-        "",
-        f"python exports/{study}/scripts/sensitivity_analysis.py \\",
-        "    --data <LOCKED_DATA>",
-        "```",
+        *(_khoi_chay_py_a7(study, design_code, v, exposure, outcome, time_col, covars)),
         "",
         "---",
         "",
@@ -3393,12 +3526,17 @@ def main():
     print("\n  🔧 Sinh R scripts với tên biến thật...")
     r03 = R_ANALYSIS_MAP_FUNC(design_code, v, n_adjusted, alpha, power, effect_val, effect_type)
 
+    r01 = hau_xu_ly_script_r(make_r01_cleaning(v, design_code), study)
+    r02 = hau_xu_ly_script_r(make_r02_tables(v, design_code), study)
+    r03 = hau_xu_ly_script_r(r03, study, tham_so_sap["ket_cuc_phu"], la_03=True)
+    goi_r = goi_r_cho_script(r01, r02, r03)   # F14: 00_setup.R cài đúng gói các script này gọi
     scripts_to_write = {
         "00_setup.R":    make_r00_setup(study, tham_so_sap["seed"], tham_so_sap["seed_khong_ap_dung"],
-                                        tham_so_sap["r_version"], alpha_sap, tham_so_sap["alpha_khong_ap_dung"]),
-        "01_cleaning.R": hau_xu_ly_script_r(make_r01_cleaning(v, design_code), study),
-        "02_tables.R":   hau_xu_ly_script_r(make_r02_tables(v, design_code), study),
-        "03_analysis.R": hau_xu_ly_script_r(r03, study, tham_so_sap["ket_cuc_phu"], la_03=True),
+                                        tham_so_sap["r_version"], alpha_sap, tham_so_sap["alpha_khong_ap_dung"],
+                                        packages=goi_r),
+        "01_cleaning.R": r01,
+        "02_tables.R":   r02,
+        "03_analysis.R": r03,
     }
 
     generated_paths = []
@@ -3430,7 +3568,7 @@ def main():
         study, topic, design_code, reporting_std,
         n_adjusted, alpha, power, effect_val, effect_type,
         g4_status, run_date, scripts_dir, v,
-        g4_khoa=g4_locked, g4_nguon=g4_nguon, tham_so_sap=tham_so_sap,
+        g4_khoa=g4_locked, g4_nguon=g4_nguon, tham_so_sap=tham_so_sap, goi_r=goi_r,
     )
 
     md_path = out / f"G6_A7_ANALYSIS_SCRIPTS_{study}.md"
