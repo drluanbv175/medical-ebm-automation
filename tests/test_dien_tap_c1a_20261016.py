@@ -1,10 +1,12 @@
 """DIỄN TẬP từng cổng trên BẢN SAO hồ sơ C1a (16/10/2026, bác sĩ: «Diễn tập từng cổng cho phù hợp giúp tôi»).
 
-Chỉ chạy CỤC BỘ trong worktree có bản sao `exports/<C1a>/` (CI không có ⇒ bỏ qua). Mọi chữ ký dùng khoá GIẢ của
-pytest (conftest) — không bao giờ chạm khoá thật; bản sao nằm trong worktree, không đụng thư mục đề tài thật.
+Chỉ chạy khi GỌI RÕ: đặt biến môi trường DIEN_TAP_CONG VÀ repo nằm trong `~/.ebm-worktrees` (hồ sơ C1a được git
+theo dõi nên CI cũng có `exports/<C1a>/` — thiếu điều kiện này ⇒ bỏ qua, không bao giờ xoá sổ cái).
+Mọi chữ ký dùng khoá GIẢ của pytest (conftest) — không bao giờ chạm khoá thật; bản sao nằm trong worktree,
+không đụng thư mục đề tài thật.
 Mỗi bước gọi ĐÚNG lệnh thật PI/thống kê viên sẽ gõ và ghi BIÊN BẢN (mã thoát + dòng chặn) — mục đích là TÌM chỗ hở
 trước khi có dữ liệu thật, nên test không đỏ vì một bước bị chặn; chỉ đỏ khi không ghi được biên bản.
-Chọn cổng: biến môi trường DIEN_TAP_CONG="G2,G4,G5" (mặc định G2,G4,G5).
+Chọn cổng: DIEN_TAP_CONG="G2,G4,G5" (giá trị "1" ⇒ mặc định G2,G4,G5).
 """
 from __future__ import annotations
 
@@ -25,8 +27,9 @@ STUDY = "hai-long-benh-nhan-C1a-BVQY175"
 OUT = ROOT / "exports" / STUDY
 NHOM = ("IRB", "STATISTICIAN", "PI", "DATA_MANAGER", "INDEPENDENT_PEER_REVIEWER")
 
-pytestmark = pytest.mark.skipif(not (OUT / "study_meta.json").is_file(),
-                                reason="diễn tập cục bộ: cần bản sao exports/<C1a>/ trong worktree")
+pytestmark = pytest.mark.skipif(
+    not (os.environ.get("DIEN_TAP_CONG") and "ebm-worktrees" in str(OUT) and (OUT / "study_meta.json").is_file()),
+    reason="diễn tập chỉ chạy khi gọi rõ: DIEN_TAP_CONG + bản sao exports/<C1a>/ trong ~/.ebm-worktrees")
 
 
 def _chay(args: list[str]) -> dict:
@@ -176,7 +179,8 @@ def test_dien_tap_c1a(monkeypatch):
     assert "ebm-worktrees" in str(OUT), "chỉ diễn tập trên bản sao trong worktree"
     for ten in ("approval_ledger.json", "approval_ledger.seal.json"):
         (OUT / ten).unlink(missing_ok=True)
-    cong = [c.strip() for c in os.environ.get("DIEN_TAP_CONG", "G2,G4,G5").split(",") if c.strip()]
+    cong = [c.strip() for c in os.environ.get("DIEN_TAP_CONG", "G2,G4,G5").split(",") if c.strip() and c.strip() != "1"]
+    cong = cong or ["G2", "G4", "G5"]
     hom_nay = date.today()
     bien_ban: dict = {"study": STUDY, "ngay": hom_nay.isoformat(), "buoc": []}
     if "G3S" in cong:
