@@ -542,3 +542,14 @@
 ## Sau 03/10/2026
 
 *(ghi bài học mới về nguồn ở đây, kèm ngày)*
+
+## Semantic Scholar ở mức phụ trợ khi bị giới hạn tốc độ 429 (16/10/2026)
+
+- Đo 15/10 (`tools/do_mang_nguon.py`): Semantic Scholar không khoá trả **HTTP 429** (giới hạn tốc độ công khai), không
+  phải chặn đường mạng; nguồn «hỏng kéo dài» 10 ngày trong hòm việc. Bác sĩ quyết 15/10: «chấp nhận để nguồn này ở mức
+  phụ trợ».
+- `app/services/ingestion.py`: đếm `error_http_429` theo nguồn; nguồn trong `_NGUON_PHU_TRO_429_CHAP_NHAN`
+  (`semantic_scholar`) mà MỌI lỗi của lượt là 429 VÀ PubMed/Europe PMC/Crossref đều «ok» ⇒ ghi chú
+  `SEMANTIC_SCHOLAR_AUXILIARY_RATE_LIMITED_429_ACCEPTED` (không đổi trạng thái lượt; `nguon_hong_keo_dai` gắn
+  `da_co_ghi_chu` ⇒ hòm việc hạ xuống ưu tiên 3). Lỗi kiểu khác lẫn vào, hoặc nguồn lõi không khoẻ ⇒ không ghi chú.
+- Có khoá API thì bật `SEMANTIC_SCHOLAR_API_KEY` ở kho secrets (không qua chat) — quyết định của bác sĩ.

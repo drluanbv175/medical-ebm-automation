@@ -92,6 +92,12 @@ _DUONG_THAY_KHI_CHAN_MANG = {
     "feed_ecdc_threats": ("feed_who_don", "feed_eurosurveillance"),
 }
 _HTTP_BI_CHAN_RE = re.compile(r"\b40[13] Client Error\b|\bHTTP 40[13]\b")
+# 429 «Too Many Requests» — giới hạn tốc độ của nhà cung cấp, không phải chặn mạng (16/10/2026).
+_HTTP_429_RE = re.compile(r"\b429 Client Error\b|\bHTTP 429\b|\bToo Many Requests\b")
+# Nguồn PHỤ TRỢ bác sĩ đã chấp nhận để ở mức phụ trợ khi bị giới hạn tốc độ (bác sĩ quyết 15/10/2026: Semantic Scholar
+# không khoá trả 429 kéo dài — đo do_mang_nguon 15/10 — «chấp nhận để nguồn này ở mức phụ trợ»). Chỉ GHI CHÚ khi MỌI
+# lỗi của nguồn trong lượt là 429 VÀ ba nguồn lõi khám phá đều «ok»; lỗi kiểu khác vẫn hiện như cũ.
+_NGUON_PHU_TRO_429_CHAP_NHAN = {"semantic_scholar"}
 
 
 def _http_snapshot(client: object) -> Dict[str, Any]:
@@ -166,7 +172,8 @@ def summarize_source_health(
     """
     grouped: dict[str, dict[str, Any]] = defaultdict(
         lambda: {"requests": 0, "records": 0, "ok": 0, "degraded": 0, "error": 0, "mock": 0,
-                 "error_http_401_403": 0, "error_http_403_cloudflare": 0, "du_phong": 0, "skipped": 0,
+                 "error_http_401_403": 0, "error_http_403_cloudflare": 0, "error_http_429": 0, "du_phong": 0,
+                 "skipped": 0,
                  "error_duong_mang": 0, "kieu_duong_mang": {}}
     )
     for row in logs:
@@ -186,6 +193,8 @@ def summarize_source_health(
             item["error_http_401_403"] += 1
         if status == "error" and _HTTP_403_CLOUDFLARE_RE.search(str(row.get("error_message") or "")):
             item["error_http_403_cloudflare"] += 1
+        if status == "error" and _HTTP_429_RE.search(str(row.get("error_message") or "")):
+            item["error_http_429"] += 1
         nhan = nhan_duong_mang_cua(row.get("error_message")) if status == "error" else None
         if nhan:
             item["error_duong_mang"] += 1
@@ -332,6 +341,11 @@ def summarize_source_health(
     ]
     for name in enhanced_cloudflare:
         mirror_notices.append(f"{name.upper()}_BLOCKED_BY_CLOUDFLARE_403_NETWORK_IP")
+    for name in sorted(_NGUON_PHU_TRO_429_CHAP_NHAN):
+        row_pt = source_rows.get(name) or {}
+        if (row_pt.get("health") == "unavailable" and loi_kham_pha_du and int(row_pt.get("error") or 0) > 0
+                and row_pt.get("error_http_429") == row_pt.get("error")):
+            mirror_notices.append(f"{name.upper()}_AUXILIARY_RATE_LIMITED_429_ACCEPTED")
     enhanced_canh_bao = [name for name in enhanced_failed if name not in enhanced_cloudflare]
     if enhanced_canh_bao:
         redundancy_warnings.append("OPTIONAL_ENHANCED_SOURCE_UNAVAILABLE:" + ",".join(enhanced_canh_bao))
