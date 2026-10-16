@@ -233,11 +233,15 @@ def write_g5_toolkit(
             )
     scripts = out_dir / "scripts"
     scripts.mkdir(exist_ok=True)
+    # Đầu tệp mang ĐÚNG dòng mô tả bộ sinh G5 (run_g5_auto) như script thật — G6 nhận diện script làm sạch của G5
+    # bằng tên + dòng này (F12/F14, 16/10/2026); thân là fixture, không xử lý dữ liệu.
     (scripts / "data_cleaning.py").write_text(
+        f'"""\ndata_cleaning.py — Lam sach du lieu REDCap cho de tai: {study}\n"""\n'
         "# Fixture; không xử lý dữ liệu thật.\n",
         encoding="utf-8", newline="\n"
     )
     (scripts / "data_quality_report.py").write_text(
+        f'"""\ndata_quality_report.py — Bao cao chat luong du lieu cho de tai: {study}\n"""\n'
         "# Fixture; không xử lý dữ liệu thật.\n",
         encoding="utf-8", newline="\n"
     )

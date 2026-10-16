@@ -808,12 +808,20 @@ def _ky(args: argparse.Namespace) -> int:
             except (OSError, ValueError, json.JSONDecodeError) as exc:
                 print(f"✗ TỪ CHỐI ký G5 — không thẩm định được hồ sơ: {exc}")
                 return 1
-            if g5_report.get("status") != G5Q.STATUS_READY:
+            # SỬA 16/10/2026 (diễn tập C1a): G5 = quản trị dữ liệu HOẶC PI ký; người thứ hai ĐỒNG KÝ khoá dữ liệu
+            # từng bị từ chối vì chữ ký đầu đã đưa hồ sơ sang PASS_G5_DATA_LOCKED (G4 nhận đồng ký từ lâu). Nay nhận
+            # đồng ký khi đã khoá VÀ mọi tiêu chí tự động PASS — trạng thái khoá không hạ vì REVIEW mới nảy sinh sau
+            # chữ ký đầu, nên chỉ nhãn LOCKED thì chưa đủ để ký thêm.
+            dong_ky = g5_report.get("status") == G5Q.STATUS_LOCKED and all(
+                item.get("status") == "PASS" for item in g5_report.get("automatic_criteria", []))
+            if g5_report.get("status") != G5Q.STATUS_READY and not dong_ky:
                 print(
                     "✗ TỪ CHỐI ký G5 — hồ sơ chưa ở trạng thái "
                     f"{G5Q.STATUS_READY}."
                 )
                 print(f"   Trạng thái hiện tại: {g5_report.get('status', 'UNKNOWN')}")
+                if g5_report.get("status") == G5Q.STATUS_LOCKED:
+                    print("   G5 đã khoá — đồng ký chỉ nhận khi MỌI tiêu chí tự động đều PASS (mục chưa đạt ở dưới).")
                 blocked = [
                     item
                     for item in g5_report.get("automatic_criteria", [])
@@ -824,7 +832,7 @@ def _ky(args: argparse.Namespace) -> int:
                         f"   - {item.get('id')}: {item.get('label')} "
                         f"({item.get('evidence')})"
                     )
-                if not blocked and g5_report.get("status") == G5Q.STATUS_DRAFT_REVIEW:
+                if not blocked and g5_report.get("status") in (G5Q.STATUS_DRAFT_REVIEW, G5Q.STATUS_LOCKED):
                     # VÁ 04/10/2026 (G5): trạng thái «đã khoá, còn mục REVIEW» — liệt kê mục cần người rà (trừ chính
                     # chữ ký G5-HUMAN-01) thay vì in danh sách BLOCK rỗng.
                     for item in [i for i in g5_report.get("automatic_criteria", [])

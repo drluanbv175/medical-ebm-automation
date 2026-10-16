@@ -845,6 +845,66 @@ VALIDATION_RULES = [
 ]
 
 
+def _ma_hop_le(choices: str) -> list:
+    """Mã của câu chọn đáp án REDCap «1, Nhãn | 2, Nhãn» theo thứ tự khai."""
+    return [p.split(",", 1)[0].strip() for p in str(choices or "").split("|") if "," in p and p.split(",", 1)[0].strip()]
+
+
+def bang_luat_kiem_tra(rows: list) -> tuple:
+    """Luật kiểm tra dữ liệu (PHẦN 3 của DMP) dựng từ CHÍNH từ điển của đề tài — trả (các dòng, số biến tự do).
+
+    SỬA 16/10/2026 (F10, diễn tập C1a): PHẦN 3 từng in NGUYÊN bảng VALIDATION_RULES tĩnh (dựng cho suy tim — lvef,
+    NT-proBNP, «qol_score_baseline … [CẦN CHỈ ĐỊNH THANG ĐO]») cho MỌI đề tài ⇒ DMP của C1a mô tả luật cho biến không
+    hề có và G5-AUTO-03 báo REVIEW. Nay mỗi dòng là một biến THẬT với đúng ràng buộc mà công cụ làm sạch
+    (clean_research_dataset) áp từ từ điển: mã hợp lệ của câu chọn, cột checkbox `<biến>___<mã>` 0/1, phạm vi số/ngày,
+    bắt buộc, điều kiện hiện. Bảng tĩnh chỉ góp phạm vi (khi từ điển không khai) và ghi chú lâm sàng cho biến trùng tên.
+    Biến văn bản tự do không ràng buộc không có dòng — chỉ đếm (kiểm PII ở bước khử định danh)."""
+    tinh = {r[0]: r for r in VALIDATION_RULES}
+    ra: list = []
+    tu_do = 0
+    for r in rows:
+        var, kieu, nhan, lua_chon = r[0], r[3], r[4], r[5]
+        vmin, vmax, bat_buoc = r[8], r[9], r[10]
+        dieu_kien = r[11] if len(r) > 11 else ""   # dòng 11 trường (khuôn cũ) không có điều kiện hiện
+        # Kiểu xác thực ở cột 7; khuôn cũ có nơi ghi «number»/«date_ymd» ở cột loại trường.
+        xac_thuc = r[7] or (kieu if kieu in ("number", "integer") or str(kieu).startswith("date") else "")
+        if kieu in ("descriptive", "calc"):
+            continue   # không nhập tay: tiêu đề mục / trường tính tự động
+        pham_vi, hanh_dong = "", []
+        if kieu == "checkbox":
+            pham_vi = f"0/1 mỗi cột `{var}___<mã>` (mã {', '.join(_ma_hop_le(lua_chon)) or '?'})"
+            hanh_dong.append("query nếu khác 0/1")
+        elif kieu in ("radio", "dropdown") and _ma_hop_le(lua_chon):
+            pham_vi = "mã " + ", ".join(_ma_hop_le(lua_chon))
+            hanh_dong.append("query nếu mã ngoài danh sách")
+        elif kieu in ("yesno", "truefalse"):
+            pham_vi = "mã 0, 1"
+            hanh_dong.append("query nếu mã ngoài danh sách")
+        elif xac_thuc in ("number", "integer") and (str(vmin).strip() or str(vmax).strip()):
+            pham_vi = f"{str(vmin).strip() or '−∞'}–{str(vmax).strip() or '+∞'}"
+            hanh_dong.append("query nếu ngoài phạm vi")
+        elif str(xac_thuc).startswith("date"):
+            pham_vi = "YYYY-MM-DD" + (f" ({str(vmin).strip() or '…'} → {str(vmax).strip() or '…'})"
+                                      if str(vmin).strip() or str(vmax).strip() else "")
+            hanh_dong.append("query nếu sai định dạng/ngoài khoảng")
+        elif var in tinh and "–" in tinh[var][2]:
+            pham_vi = tinh[var][2]
+            hanh_dong.append("query nếu ngoài phạm vi")
+        quy_tac = [str(nhan or var).replace("|", "/")[:70]]
+        if bat_buoc == "y":
+            quy_tac.append("bắt buộc" + (" (khi được hiện)" if dieu_kien else ""))
+            hanh_dong.append("query nếu trống")
+        if dieu_kien:
+            quy_tac.append(f"chỉ hiện khi {str(dieu_kien).replace('|', '/')}")
+        if var in tinh:
+            hanh_dong.append(tinh[var][4])
+        if not pham_vi and bat_buoc != "y" and var not in tinh:
+            tu_do += 1
+            continue
+        ra.append((var, xac_thuc or kieu, pham_vi or "—", "; ".join(quy_tac), "; ".join(hanh_dong) or "—"))
+    return ra, tu_do
+
+
 # ---------------------------------------------------------------------------
 # AUTO-GENERATED PYTHON SCRIPTS
 # ---------------------------------------------------------------------------
@@ -1957,11 +2017,16 @@ def generate_artifact(
         "",
         "## PHẦN 3 — LUẬT KIỂM TRA DỮ LIỆU (Validation Rules)",
         "",
+        "Dựng từ CHÍNH từ điển REDCap của đề tài — đúng các ràng buộc công cụ làm sạch áp khi khoá dữ liệu.",
+        "",
         "| Biến | Loại | Phạm vi | Quy tắc | Hành động |",
         "|------|------|---------|---------|-----------|",
     ]
-    for r in VALIDATION_RULES:
+    luat, so_tu_do = bang_luat_kiem_tra(rows)
+    for r in luat:
         lines.append(f"| `{r[0]}` | {r[1]} | {r[2]} | {r[3]} | {r[4]} |")
+    if so_tu_do:
+        lines += ["", f"{so_tu_do} biến văn bản tự do không có ràng buộc phạm vi/mã — kiểm PII ở bước khử định danh."]
     lines += [
         "",
         "---",

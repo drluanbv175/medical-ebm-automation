@@ -282,6 +282,24 @@ def _co_dong_thi_hanh(text: str, mau: str) -> bool:
     return any(bt.search(d) for d in _dong_thi_hanh(text))
 
 
+#: Tệp Python «dẫn đường» run_g6_auto sinh cho thiết kế không có thời gian-đến-biến-cố (F14, 16/10/2026).
+_TEP_DAN_DUONG = ("run_analysis_cli.py", "sensitivity_analysis.py")
+_DAU_DAN_DUONG = "— DẪN ĐƯỜNG (đề tài "
+_RE_PHAN_TICH_PY = re.compile(r"read_csv\(|read_excel\(|read_parquet\(|\bopen\(|\bexec\(|\beval\(|subprocess|"
+                              r"^(?:import|from)\s+(?:pandas|numpy|lifelines|statsmodels|scipy|sklearn)\b")
+
+
+def _la_tep_dan_duong(ten: str, noi_dung: str) -> bool:
+    """Tệp dẫn đường của bộ sinh G6: chỉ in lệnh đúng phương pháp rồi thoát — không đọc dữ liệu, không phân tích.
+
+    THÊM 16/10/2026 (F14, diễn tập C1a). Nhận diện bằng ĐÚNG tên tệp + dòng mô tả của bộ sinh + KHÔNG có dòng thi hành
+    nào đọc tệp/nạp thư viện phân tích — đổi tên script phân tích thật hay chép dòng mô tả vào script có pandas đều
+    không lọt. Tệp dẫn đường không vào G6-AUTO-08 (không đọc dữ liệu) và G6-AUTO-10 (không có kết quả để tái lập)."""
+    if ten not in _TEP_DAN_DUONG or _DAU_DAN_DUONG not in noi_dung:
+        return False
+    return not any(_RE_PHAN_TICH_PY.search(d) for d in _dong_thi_hanh(noi_dung))
+
+
 def ket_cuc_chinh_sap(sap2: str) -> str | None:
     """Tên biến kết cục CHÍNH trong SAP §2 (chữ thường) — None nếu không rút được (VÁ 04/10/2026, G6-08).
 
@@ -429,8 +447,10 @@ def evaluate_study(study: str, out_dir: Path | None = None, write: bool = True,
     scripts: dict[str, str] = {}
     for sf in sorted((thu_muc / "scripts").glob("*")):
         if sf.suffix in (".R", ".py", ".r"):
-            scripts[sf.name] = sf.read_text(encoding="utf-8", errors="replace")
-            art += "\n" + scripts[sf.name]
+            noi_dung_sf = sf.read_text(encoding="utf-8", errors="replace")
+            art += "\n" + noi_dung_sf
+            if not _la_tep_dan_duong(sf.name, noi_dung_sf):   # F14: tệp dẫn đường không phải script phân tích
+                scripts[sf.name] = noi_dung_sf
     sap = sap_p.read_text(encoding="utf-8", errors="replace")
     try:
         cp = json.loads(cp_p.read_text(encoding="utf-8"))
@@ -716,7 +736,9 @@ def evaluate_study(study: str, out_dir: Path | None = None, write: bool = True,
 
     # ── G6-AUTO-10: ghi phiên bản môi trường để tái lập (VÁ 04/10/2026, G6-11) ──
     r_tep = [t for t in scripts if t.lower().endswith(".r")]
-    py_tep = [t for t in scripts if t.endswith(".py")]
+    # F14 (16/10/2026): tệp dẫn đường đã loại khi nạp; script LÀM SẠCH của G5 chạy trước khoá, không sinh kết quả phân
+    # tích để tái lập ⇒ không tính (trước đây CLI Cox có sys.version che việc này).
+    py_tep = [t for t in scripts if t.endswith(".py") and not _la_script_lam_sach_g5(t, scripts[t])]
     co_r = any(_co_dong_thi_hanh(scripts[t], r"sessionInfo\(|session_info\(") for t in r_tep)
     co_py = any(_co_dong_thi_hanh(scripts[t], r"ghi_moi_truong\(|sys\.version") for t in py_tep)
     if (r_tep and not co_r) or (py_tep and not co_py):
