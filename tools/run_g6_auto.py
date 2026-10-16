@@ -308,7 +308,10 @@ def detect_variables_from_redcap(csv_path: Path) -> dict:
     # biến can thiệp có thể có (vd "intervention_type" của bundle chuyển hóa
     # mới không nằm trong bất kỳ danh sách từ khóa nào), trong khi Section
     # Header do chính G5 gắn nhãn "Phơi nhiễm..." luôn đúng theo cấu trúc CRF.
-    section_exp = [v for v, _label, s in all_vars if _section_is(s, "phơi nhiễm", "exposure")]
+    # SỬA 16/10/2026 (diễn tập C1a, F8): tiêu đề mục KHAI phơi nhiễm khi BẮT ĐẦU bằng «Phơi nhiễm»/«Exposure» (G5 gắn
+    # «Phơi nhiễm SGLT2i», «Phơi nhiễm/Can thiệp (…)»; bộ biến C1a «Phơi nhiễm thời gian chờ …»). Khớp CHỨA từng lấy
+    # nhầm biến kỳ vọng có tiêu đề «… là biến TRƯỚC phơi nhiễm …» (đứng trước) làm phơi nhiễm chính.
+    section_exp = [v for v, _label, s in all_vars if s.strip().lower().startswith(("phơi nhiễm", "exposure"))]
     if section_exp:
         best_exp = section_exp[0]
         result["exposure"] = best_exp
