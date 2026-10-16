@@ -366,6 +366,19 @@ def _ho_mo_hinh_sap(sap4: str) -> set[str]:
     return ho
 
 
+_DAU_SCRIPT_G5 = {
+    "data_cleaning.py": re.compile(r"^data_cleaning\.py — Lam sach du lieu REDCap cho de tai:", re.MULTILINE),
+    "data_quality_report.py": re.compile(r"^data_quality_report\.py — Bao cao chat luong du lieu cho de tai:",
+                                         re.MULTILINE),
+}
+
+
+def _la_script_lam_sach_g5(ten: str, noi_dung: str) -> bool:
+    """Script làm sạch do run_g5_auto sinh: đúng tên VÀ đúng dòng mô tả bộ sinh G5 ghi trong docstring đầu tệp."""
+    mau = _DAU_SCRIPT_G5.get(Path(ten).name)
+    return bool(mau and mau.search(noi_dung[:600]))
+
+
 def _ho_mo_hinh_script(text: str) -> list[str]:
     """Họ mô hình theo THỨ TỰ xuất hiện đầu tiên trong script (phần tử đầu = phân tích chính)."""
     vi_tri = []
@@ -651,7 +664,11 @@ def evaluate_study(study: str, out_dir: Path | None = None, write: bool = True,
     # DÒNG THI HÀNH — chú thích cùng chuỗi không tính.
     doc_r = [t for t, nd in scripts.items() if t.lower().endswith(".r") and t != "00_setup.R"
              and re.search(r"readRDS\(|read_csv\(|read\.csv\(|LOCKED_DATA", nd)]
-    doc_py = [t for t, nd in scripts.items() if t.endswith(".py") and re.search(r"read_csv\(|--data", nd)]
+    # F12 (16/10/2026, diễn tập C1a): hai script LÀM SẠCH do run_g5_auto sinh (chạy TRƯỚC khoá dữ liệu, trên bản sạch
+    # đang làm) không phải script phân tích — bản cũ đòi chúng gọi chốt «dữ liệu đã khoá» nên G6-AUTO-08 chặn sai mọi
+    # đề tài. Chỉ miễn khi ĐÚNG tên VÀ đúng dòng đầu do bộ sinh G5 ghi (đổi tên một script phân tích không lọt được).
+    doc_py = [t for t, nd in scripts.items() if t.endswith(".py") and re.search(r"read_csv\(|--data", nd)
+              and not _la_script_lam_sach_g5(t, nd)]
     thieu_chot = []
     if doc_r:
         setup = scripts.get("00_setup.R", "")

@@ -255,9 +255,8 @@ def test_dien_tap_c1a(monkeypatch):
                                                  "evidence_ref": "DIEN-TAP-SDV"},
                     "reviewer_role": "DATA_GOVERNANCE_QA_REVIEWER", "reviewer_ref": "DIEN-TAP-DM"})
         p_ops.write_text(json.dumps(ops, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
-        du_lieu = _du_lieu_mo_phong(bo_checkbox=os.environ.get("DIEN_TAP_BO_CHECKBOX", "1") == "1")
-        # F7: truyền đường dẫn TƯƠNG ĐỐI (cách PI gõ tự nhiên) làm khoá dữ liệu trượt provenance — tạm dùng tuyệt đối
-        tu_dien = str(OUT / f"G5_REDCap_dictionary_{STUDY}.csv")
+        du_lieu = _du_lieu_mo_phong(bo_checkbox=os.environ.get("DIEN_TAP_BO_CHECKBOX", "0") == "1")
+        tu_dien = f"exports/{STUDY}/G5_REDCap_dictionary_{STUDY}.csv"  # tương đối như PI gõ (F7 đã sửa)
         bien_ban["buoc"].append(("G5 nạp dữ liệu", _chay(["tools/import_real_dataset.py", "--study", STUDY,
                                                           "--data", str(du_lieu)])))
         bien_ban["buoc"].append(("G5 làm sạch", _chay(["tools/clean_research_dataset.py", "--study", STUDY,
@@ -270,7 +269,7 @@ def test_dien_tap_c1a(monkeypatch):
             man = LAD.lock_dataset(
                 STUDY, OUT / rep_clean["clean_dataset_path"], lock_date=hom_nay.isoformat(),
                 reviewer_role="DATA_GOVERNANCE_QA_REVIEWER", reviewer_ref="DIEN-TAP-DM", sap_version="1.0",
-                query_log=OUT / rep_clean["query_log"], dictionary_path=Path(tu_dien),
+                query_log=OUT / rep_clean["query_log"], dictionary_path=ROOT / tu_dien,
                 cleaning_report_path=OUT / CLEAN.REPORT_NAME, exports_root=ROOT / "exports", repo_root=ROOT,
                 confirm_deidentified=True, confirm_clean_copy=True, confirm_no_open_query=True, confirm_sap_locked=True,
                 confirm_dictionary_crf_aligned=True, confirm_access_control_reviewed=True,
