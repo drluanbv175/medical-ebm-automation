@@ -353,7 +353,10 @@ def khoi_tong_hop(out_dir: Optional[Path], study: str, all_pmids: Iterable[Any],
           *dong, ""]
     bo_sung = [b for b in du_lieu.get("nguon_bo_sung") or [] if isinstance(b, dict)]
     if bo_sung:
+        # 17/10/2026 (hội đồng G0 C1a, RQ8): PI phải biết trước — đổi danh mục này làm đổi dấu vân tay G0.
         ra += ["**Nguồn bổ sung ngoài truy vấn G0** (kèm cách tìm — PRISMA-S):", "",
+               "> Thêm/bớt nguồn bổ sung làm đổi dấu vân tay G0 ⇒ xác nhận G0 cũ hết hiệu lực, PI chốt lại "
+               "(G0-HUMAN-07). Bài lạc đề của nhánh KHÔNG lọc nằm ở khoá riêng, không đổi dấu.", "",
                "| PMID/DOI | Tiêu đề | Thiết kế thật | Liên quan | Tóm tắt | Cách tìm |", "|---|---|---|---|---|---|"]
         for b in bo_sung:
             ra.append(f"| {_o(b.get('pmid') or b.get('doi'))} | {_o(b.get('tieu_de'))} | "
