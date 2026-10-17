@@ -281,6 +281,63 @@ _DESIGN_BLOCKS: dict[str, str] = {
 }
 
 
+# 17/10/2026 (hoàn thiện G1 C1a): nhãn của khối thiết kế ⇒ khoá gate_params.G1 PI đã chốt. Khối từng in «[CẦN]» cố định
+# dù PI đã ghi đủ bối cảnh/thời gian/quần thể/tiêu chí/cách chọn mẫu — A2 vì thế còn 74 ô trống sau khi G1 đã chốt.
+_DIEN_TU_G1: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("Dữ liệu thu thập MỚI hay khai thác từ nguồn có sẵn (hồ sơ/đăng bộ):", ("data_collection_method",)),
+    ("Bối cảnh, địa điểm, khoảng thời gian tuyển và theo dõi:", ("setting", "study_period")),
+    ("Nguồn dân số + tiêu chuẩn chọn vào/loại ra + phương pháp chọn người:",
+     ("population", "inclusion_criteria", "exclusion_criteria", "recruitment_strategy")),
+    ("Thời điểm cắt ngang (một mốc hay một khoảng):", ("study_period",)),
+    ("Thời điểm đo PHƠI NHIỄM so với lúc bắt đầu nghiên cứu:", ("G0.intervention",)),
+    ("Thời điểm xác định KẾT CỤC so với lúc đo phơi nhiễm:", ("primary_outcome.timepoint",)),
+    ("Sai lệch KHÔNG ĐÁP ỨNG (non-response): tỷ lệ dự kiến + cách bàn luận:", ("G3.dropout",)),
+    ("quả; nguồn dữ liệu và phương pháp đo cho TỪNG biến:", ("tu_dien_du_lieu",)),
+)
+# Khoá «có chấm»/khoá ngoài G1 ⇒ nơi ghi nguồn (khoá trơn là gate_params.G1.<khoá>).
+_NGUON_KHOA = {"G0.intervention": "gate_params.G0.intervention",
+               "primary_outcome.timepoint": "gate_params.G1.primary_outcome.timepoint",
+               "G3.dropout": "gate_params.G3.dropout + dropout_source"}
+# Khoá trỏ tới TỆP (không phải quyết định PI) ⇒ không được ghi «PI đã chốt».
+_KHOA_TRO_TEP = {"tu_dien_du_lieu": "trỏ tệp — chưa phải xác nhận của PI"}
+
+
+def _gia_tri_g1(v) -> str:
+    if isinstance(v, (list, tuple)):
+        return "; ".join(str(x).strip() for x in v if str(x).strip())
+    if isinstance(v, dict):
+        return "; ".join(f"{k}: {x}" for k, x in v.items() if str(x).strip())
+    return " ".join(str(v).split()) if v not in (None, "") else ""
+
+
+def dien_tu_quyet_dinh(body: str, g1: dict, dong_co_mau: str = "", them: dict | None = None) -> str:
+    """Điền khối thiết kế bằng quyết định PI đã ghi ở `gate_params.G1` (ghi nguồn khoá). Khoá trống ⇒ giữ [CẦN].
+    `dong_co_mau`: câu cỡ mẫu từ G3 (không đặt số ngay sau dấu hai chấm — rào R5 chống bịa số của G1)."""
+    g1 = {**(g1 if isinstance(g1, dict) else {}), **(them or {})}
+    dong_ra = []
+    for dong in body.splitlines():
+        for nhan, khoa in _DIEN_TU_G1:
+            if dong.strip().startswith(nhan) and "[CẦN]" in dong:
+                gia = [(k, _gia_tri_g1(g1.get(k))) for k in khoa]
+                gia = [(k, x) for k, x in gia if x and not x.upper().startswith("[CẦN")]
+                if gia:
+                    noi = " | ".join(x for _k, x in gia)
+                    if all(k in _KHOA_TRO_TEP for k, _x in gia):
+                        dong = dong.replace("[CẦN]", f"{noi} ({_KHOA_TRO_TEP[gia[0][0]]})", 1)
+                    else:
+                        nguon = ", ".join(_NGUON_KHOA.get(k, f"gate_params.G1.{k}") for k, _x in gia)
+                        dong = dong.replace("[CẦN]", f"{noi} (PI đã chốt — {nguon})", 1)
+                break
+        if dong.strip().startswith("Nỗ lực xử lý các nguồn sai lệch tiềm tàng:") and g1.get("bias_controls_confirmed") \
+                is True:
+            dong = dong.replace("[CẦN]", "bảng kiểm soát sai lệch §2 — PI đã xác nhận (gate_params.G1."
+                                "bias_controls_confirmed)", 1)
+        if dong.strip().startswith("Cỡ mẫu dự kiến:") and dong_co_mau:
+            dong = dong[:dong.index("Cỡ mẫu dự kiến:")] + f"Cỡ mẫu dự kiến: {dong_co_mau}"
+        dong_ra.append(dong)
+    return "\n".join(dong_ra)
+
+
 def design_block_body(internal_code: str) -> str:
     """Thân KHỐI THIẾT KẾ (không gồm dòng tiêu đề/loại/chuẩn — nơi gọi tự ghép)."""
     code = str(internal_code or "").strip()
@@ -292,7 +349,7 @@ def design_block_body(internal_code: str) -> str:
             + "\n"
             + specific
             + "\nCỡ mẫu dự kiến: [CẦN — xem SAP §12; giải trình theo STROBE mục 10]"
-            + "\nNguồn tài trợ và vai trò của nhà tài trợ: [CẦN] (STROBE mục 22)"
+            + "\nNguồn tài trợ và vai trò của nhà tài trợ: [CẦN HOÀN THIỆN Ở G2/G9] (STROBE mục 22)"
         )
     return _DESIGN_BLOCKS[fam]
 

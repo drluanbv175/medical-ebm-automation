@@ -138,7 +138,8 @@ NHIEM_VU: Dict[str, List[Dict[str, Any]]] = {
         # đặc tính trong mẫu (α trong mẫu, floor/ceiling) là việc phân tích G6.
         _nv("G1-T4", "Phát triển/thích nghi & kiểm định công cụ đo lường (COSMIN)", "cong-cu-do-luong",
             ("G1_A2_PROTOCOL_DESIGN_<mã>.md", "pha_cong_cu/phieu_cvi.csv",
-             "pha_cong_cu/nhat_ky_phong_van_nhan_thuc.csv"),
+             "pha_cong_cu/nhat_ky_phong_van_nhan_thuc.csv", "pha_cong_cu/phieu_cvi_hoi_dong.csv",
+             "pha_cong_cu/nhat_ky_phong_van_nhan_thuc_theo_nguoi.csv", "pha_cong_cu/bang_truy_xuat_cau_hoi.csv"),
             ("bien-so-nghien-cuu",), "khi đề tài phát triển, sửa đổi hoặc dịch–thích nghi bộ câu hỏi/thang đo"),
         _nv("G1-T5", "An toàn người tham gia trong thiết kế can thiệp", "an-toan-nghien-cuu",
             ("G1_A2_PROTOCOL_DESIGN_<mã>.md",), ("thiet-ke-nghien-cuu",), "thiết kế can thiệp (RCT)"),
@@ -1368,7 +1369,12 @@ def _kiem_pha_cong_cu(out_dir: Path, study: str) -> List[str]:
     """G1-T4 — pha phát triển bộ câu hỏi dựng bằng ĐÚNG `pha_phat_trien_cong_cu.py`: phiếu CVI đúng cấu trúc (cột
     «muc» + cột chuyên gia, mục không trùng, điểm thuộc thang 1–4) với ≥ 3 chuyên gia (ngưỡng I-CVI 0,78 của Polit,
     Beck & Owen 2007, PMID 17654487 cần ≥ 3); nhật ký phỏng vấn nhận thức đủ cột. Ô CHƯA CHẤM và I-CVI thấp là việc
-    của hội đồng chuyên gia/chủ nhiệm — KHÔNG tính là lỗi của agent."""
+    của hội đồng chuyên gia/chủ nhiệm — KHÔNG tính là lỗi của agent.
+
+    THÊM 17/10/2026 (soát G1-T4 của C1a): ba biểu mẫu đề cương cam kết — hội đồng chuyên gia (thành phần + 2 câu hỏi
+    mở về tính bao phủ, đúng các chuyên gia của phiếu CVI), phỏng vấn nhận thức theo người (thời gian điền phiếu),
+    bảng truy xuất nguồn gốc câu hỏi (đúng các mục của phiếu CVI, có nội dung câu). Thành phần lệch đề cương hay ô
+    nguồn gốc chưa điền là việc của chủ nhiệm — chỉ CẤU TRÚC được tính cho agent."""
     try:
         import pha_phat_trien_cong_cu as PCC  # noqa: PLC0415
     except Exception as exc:  # noqa: BLE001
@@ -1388,6 +1394,40 @@ def _kiem_pha_cong_cu(out_dir: Path, study: str) -> List[str]:
             ra.append(f"nhật ký phỏng vấn nhận thức thiếu cột: {', '.join(thieu)}")
     except PCC.LoiDauVao as exc:
         ra.append(f"nhật ký phỏng vấn nhận thức: {exc}")
+    cg_cvi = muc_cvi = None
+    try:
+        cot_cvi, dong_cvi = PCC._doc_csv(thu / "phieu_cvi.csv")
+        cg_cvi = {c for c in cot_cvi if c != PCC.COT_MUC}
+        muc_cvi = {d[PCC.COT_MUC] for d in dong_cvi if d.get(PCC.COT_MUC)}
+    except (PCC.LoiDauVao, KeyError):
+        pass
+    for ten, cot_can, lenh in (("phieu_cvi_hoi_dong.csv", PCC.COT_HOI_DONG, "bo-sung"),
+                               ("nhat_ky_phong_van_nhan_thuc_theo_nguoi.csv", PCC.COT_THEO_NGUOI, "bo-sung"),
+                               ("bang_truy_xuat_cau_hoi.csv", PCC.COT_TRUY_XUAT, "truy-xuat")):
+        if not (thu / ten).is_file():
+            ra.append(f"thiếu {ten} (đề cương mục 4.5.1) — sinh bằng `pha_phat_trien_cong_cu.py {lenh}`")
+            continue
+        try:
+            cot, dong = PCC._doc_csv(thu / ten)
+        except PCC.LoiDauVao as exc:
+            ra.append(f"{ten}: {exc}")
+            continue
+        thieu = [c for c in cot_can if c not in cot]
+        if thieu:
+            ra.append(f"{ten} thiếu cột: {', '.join(thieu)}")
+            continue
+        if ten == "phieu_cvi_hoi_dong.csv" and cg_cvi is not None:
+            ma = {d["ma_chuyen_gia"] for d in dong if d["ma_chuyen_gia"]}
+            if ma != cg_cvi:
+                ra.append(f"{ten}: mã chuyên gia không khớp cột của phiếu CVI ({len(ma)} ≠ {len(cg_cvi)})")
+        if ten == "bang_truy_xuat_cau_hoi.csv" and muc_cvi is not None:
+            ma = {d["muc"] for d in dong if d["muc"]}
+            if ma != muc_cvi:
+                lech = sorted(ma ^ muc_cvi)
+                ra.append(f"{ten}: mục không khớp phiếu CVI ({', '.join(lech[:6])}{' …' if len(lech) > 6 else ''})")
+            rong = [d["muc"] for d in dong if d["muc"] and not d["noi_dung"]]
+            if rong:
+                ra.append(f"{ten}: {len(rong)} mục thiếu nội dung câu")
     return ra
 
 
@@ -1732,7 +1772,8 @@ KIEM_NHIEM_VU: Dict[str, Tuple[str, Any]] = {
               "trực tiếp · đã kiểm rút bài", _kiem_tong_hop_g0),
     "G0-T4": ("khoảng trống: bảng guideline/văn bản quy phạm · phát biểu 1–2 câu không tuyệt đối hoá · loại + mức tính "
               "mới · trạng thái nguồn · nháp FINER (F/E để PI quyết)", _kiem_khoang_trong_g0),
-    "G1-T4": ("pha phát triển bộ câu hỏi: phiếu CVI đúng cấu trúc, ≥ 3 chuyên gia; nhật ký phỏng vấn nhận thức đủ cột",
+    "G1-T4": ("pha phát triển bộ câu hỏi: phiếu CVI đúng cấu trúc, ≥ 3 chuyên gia; nhật ký phỏng vấn nhận thức đủ cột; "
+              "biểu mẫu hội đồng (thành phần + 2 câu hỏi mở), nhật ký theo người, bảng truy xuất khớp phiếu CVI",
               _kiem_pha_cong_cu),
     "G1-T5": ("đề cương lõi RCT: dòng cân bằng lợi ích–nguy cơ + tiêu chí dừng/chuyển/cứu hộ có mặt và đã điền",
               _kiem_an_toan_thiet_ke),

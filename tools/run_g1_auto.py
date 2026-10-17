@@ -998,6 +998,115 @@ def _effect_size_section(effects: list) -> str:
     return "\n".join(lines) + "\n"
 
 
+def _gia_tri_ngoai_g1(meta: Optional[dict], out_dir: Optional[Path]) -> dict:
+    """Giá trị ĐÃ CHỐT ngoài gate_params.G1 dùng điền khối thiết kế A2 (17/10/2026): phơi nhiễm G0, thời điểm đo kết cục
+    chính, tỷ lệ dự phòng không đáp ứng G3 (kèm nguồn), từ điển dữ liệu nếu có. Thiếu ⇒ không có khoá (giữ [CẦN])."""
+    gp = ((meta or {}).get("gate_params") or {}) if isinstance(meta, dict) else {}
+    g0, g1, g3 = gp.get("G0") or {}, gp.get("G1") or {}, gp.get("G3") or {}
+    ra = {}
+    if g0.get("intervention"):
+        ra["G0.intervention"] = g0["intervention"]
+    po = g1.get("primary_outcome")
+    if isinstance(po, dict) and po.get("timepoint"):
+        ra["primary_outcome.timepoint"] = po["timepoint"]
+    if isinstance(g3.get("dropout"), (int, float)) and g3.get("dropout_source"):
+        ra["G3.dropout"] = f"dự phòng {round(g3['dropout'] * 100)}% — {g3['dropout_source']}"
+    if out_dir and (Path(out_dir) / "_bo-bien-rieng.csv").is_file():
+        ra["tu_dien_du_lieu"] = ("`_bo-bien-rieng.csv` (từ điển dữ liệu REDCap: tên biến, kiểu, nhãn, mã hoá, kiểm tra "
+                                 "hợp lệ cho từng biến)")
+    return ra
+
+
+def _khung_g3(out_dir: Optional[Path]) -> str:
+    try:
+        return str(json.loads((Path(out_dir) / "G3_checkpoint.json").read_text(encoding="utf-8")).get(
+            "hypothesis_type") or "") if out_dir else ""
+    except (OSError, json.JSONDecodeError):
+        return ""
+
+
+def _cau_co_mau_g3(out_dir: Optional[Path]) -> str:
+    """Câu cỡ mẫu từ G3_checkpoint (đã tính ở G3) — rỗng nếu chưa có. KHÔNG đặt số ngay sau dấu hai chấm (rào R5)."""
+    try:
+        cp = json.loads((Path(out_dir) / "G3_checkpoint.json").read_text(encoding="utf-8")) if out_dir else {}
+    except (OSError, json.JSONDecodeError):
+        return ""
+    n_min, n_hl, de = cp.get("n_adjusted"), cp.get("confirmed_n"), cp.get("design_effect")
+    if not isinstance(n_min, int) or n_min <= 0:
+        return ""
+    phan = [f"N tối thiểu {n_min}"] + ([f"hệ số thiết kế {de}"] if de else []) + (
+        [f"N hiệu lực {n_hl}"] if isinstance(n_hl, int) else [])
+    trang_thai = "" if _g3_da_xac_nhan(cp) else " (G3 CHƯA được PI xác nhận — số có thể đổi khi chốt G3)"
+    return ("theo G3 (`G3_A4_SAMPLE_SIZE`, G3_checkpoint) — " + ", ".join(phan) + trang_thai
+            + " — giải trình theo STROBE mục 10")
+
+
+def _g3_da_xac_nhan(cp: dict) -> bool:
+    qg = cp.get("quality_gate") if isinstance(cp, dict) else None
+    return isinstance(qg, dict) and qg.get("human_confirmation_complete") is True
+
+
+_DONG_08_G3 = ("- Cỡ mẫu và power chính thức: [CẦN TÍNH Ở G3]",
+               "  [CẦN NGUỒN PMID/DOI HOẶC PILOT — Ở G3]",
+               "- Phân bổ theo nhóm/tầng/trung tâm nếu có: [CẦN TÍNH Ở G3]")
+
+
+def _tro_co_mau_g3(protocol_core: str, out_dir: Optional[Path]) -> str:
+    """§0.8 của đề cương lõi: G3 đã tính ⇒ thay «[CẦN TÍNH Ở G3]» bằng con trỏ sang G3 (17/10/2026). G3 chưa PI xác nhận
+    ⇒ giữ nhãn hoãn «[CẦN PI CHỐT Ở G3]» (vẫn là ô của cổng sau, không phải ô G1). Chưa có G3 ⇒ không đổi."""
+    try:
+        cp = json.loads((Path(out_dir) / "G3_checkpoint.json").read_text(encoding="utf-8")) if out_dir else {}
+    except (OSError, json.JSONDecodeError):
+        return protocol_core
+    if not isinstance(cp.get("n_adjusted"), int) or cp.get("n_adjusted", 0) <= 0:
+        return protocol_core
+    con = "" if _g3_da_xac_nhan(cp) else " — [CẦN PI CHỐT Ở G3]"
+    tham_so = ("không áp dụng effect size — cỡ mẫu theo độ chính xác; tham số và nguồn ghi ở `G3_A4_SAMPLE_SIZE`"
+               if cp.get("hypothesis_type") == "descriptive_precision"
+               else "tham số và nguồn ghi ở `G3_A4_SAMPLE_SIZE`")
+    moi = (f"- Cỡ mẫu và power chính thức: đã tính ở G3 — xem `G3_A4_SAMPLE_SIZE`{con}",
+           f"  {tham_so}{con}",
+           f"- Phân bổ theo nhóm/tầng/trung tâm nếu có: xem `G3_A4_SAMPLE_SIZE` (hệ số thiết kế, cụm){con}")
+    for cu, m in zip(_DONG_08_G3, moi):
+        protocol_core = protocol_core.replace(cu, m, 1)
+    return protocol_core
+
+
+_RE_PHIEN_BAN_SAP = re.compile(r"\*\*Phiên bản SAP:\*\*\s*([0-9][0-9.]*)")
+
+
+def _thay_khung_sap_bang_sap_g4(artifact: str, out_dir: Optional[Path], study_name: str) -> str:
+    """Đã có SAP chính thức ở G4 ⇒ PHẦN 5 (khung SAP 12 mục) + PHẦN 6 (chứng chỉ khoá) của A2 chỉ còn trỏ sang SAP G4 —
+    giữ SAP ở MỘT nơi (17/10/2026, hoàn thiện G1 C1a: khung trong A2 còn ~60 ô [CẦN] trùng việc của SAP 1.3). Giữ
+    nguyên tiêu đề «SAP SKELETON»/«SAP LOCK CERTIFICATE» (bộ chấm G1 đòi tiêu đề). Chưa có SAP G4 ⇒ không đổi gì."""
+    sap = Path(out_dir) / f"G4_A5_SAP_FINAL_{study_name}.md" if out_dir else None
+    if sap is None or not sap.is_file():
+        return artifact
+    bat_dau, ket_thuc = artifact.find("## PHẦN 5 — SAP SKELETON"), artifact.find("## PHẦN 7 —")
+    if bat_dau < 0 or ket_thuc <= bat_dau:
+        return artifact
+    m = _RE_PHIEN_BAN_SAP.search(sap.read_text(encoding="utf-8"))
+    pb = m.group(1) if m else "?"
+    khoi = f"""## PHẦN 5 — SAP SKELETON (đã thay bằng SAP chính thức ở G4)
+
+> **SAP chính thức:** `{sap.name}` — phiên bản {pb}. Mọi mục §1–§12 (quần thể phân tích, kết cục, mô tả, phân tích
+> chính và đa biến, dữ liệu thiếu, nhóm nhỏ, đa so sánh, độ nhạy, phần mềm, bảng giả, cỡ mẫu) soạn và khoá ở G4 — khung
+> 12 mục của G1 không điền tiếp để SAP chỉ nằm ở MỘT nơi. Trạng thái sống:
+> `python3 tools/g4_quality_gate.py --study {study_name}`.
+
+---
+
+## PHẦN 6 — SAP LOCK CERTIFICATE (khoá ở G4)
+
+> Chứng chỉ khoá SAP nằm trong `{sap.name}` (PHẦN 5) và chữ ký G4 ở sổ cái phê duyệt (vai thống kê viên/PI) — G1
+> không giữ bản khoá riêng.
+
+---
+
+"""
+    return artifact[:bat_dau] + khoi + artifact[ket_thuc:]
+
+
 def generate_g1_artifact(
     topic: str,
     study_name: str,
@@ -1007,6 +1116,7 @@ def generate_g1_artifact(
     g0_gaps: dict,
     run_date: str,
     meta: Optional[dict] = None,
+    out_dir: Optional[Path] = None,
 ) -> str:
     bias_table = _bias_table(design["bias_controls"])
     es_section = _effect_size_section(effects)
@@ -1193,6 +1303,7 @@ def generate_g1_artifact(
         meta=meta or {},
         generated_at=run_date,
     )
+    protocol_core = _tro_co_mau_g3(protocol_core, out_dir)
     model_assessment_note = (
         "Đánh giá giả định và độ phù hợp phải khớp mô hình đã chọn; báo residual/"
         "influence diagnostics và calibration khi đó là mục tiêu hợp lệ."
@@ -1456,10 +1567,25 @@ Không yêu cầu random seed trừ khi có bước lấy mẫu/ngẫu nhiên b�
     # `_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md` (thiết kế ↔ SAP ↔ dummy tables phải KHỚP;
     # mâu thuẫn nội tại → 🔴). Chi tiết + nguồn từng chuẩn: `g1_design_blocks.py`.
     design_block_body = G1D.design_block_body(internal)
+    # 17/10/2026 (hoàn thiện G1 C1a): điền khối thiết kế từ quyết định PI + câu cỡ mẫu từ G3 (nếu đã tính).
+    _g1_da_chot = (((meta or {}).get("gate_params") or {}).get("G1") or {}) if isinstance(meta, dict) else {}
+    design_block_body = G1D.dien_tu_quyet_dinh(design_block_body, _g1_da_chot, _cau_co_mau_g3(out_dir),
+                                               _gia_tri_ngoai_g1(meta, out_dir))
     dummy_tables_block = G1D.dummy_tables(internal)
     sap12_title = G1D.sap12_title(internal)
     sap12_body = G1D.sap12_note(internal)
     sample_size_line = G1D.sample_size_next_step(internal)
+    if _cau_co_mau_g3(out_dir):
+        sample_size_line = "Bước cỡ mẫu: G3 đã tính — xem dòng «Cỡ mẫu dự kiến» ở trên và G3_A4_SAMPLE_SIZE"
+    # Bảng thiết kế ứng viên: ô khả thi/lực lấy từ quyết định đã có; phương án thay thế bị pin ⇒ «—».
+    o_kha_thi = ("PI đã xác nhận (gate_params.G1.feasibility_confirmed)"
+                 if _g1_da_chot.get("feasibility_confirmed") is True else "[CẦN BÁC SĨ]")
+    _g3 = _cau_co_mau_g3(out_dir)
+    o_luc = _g3.split(" — giải trình")[0] if _g3 else "[CẦN cỡ mẫu]"
+    o_thay_the = "— (thiết kế đã pin)" if str(design.get("alternative_1", "")).startswith("[Đã pin") else "[CẦN]"
+    if not effects and _khung_g3(out_dir) == "descriptive_precision":
+        es_section = ("  → Không áp dụng: cỡ mẫu tính theo ĐỘ CHÍNH XÁC của ước lượng (G3 — descriptive_precision), "
+                      "không theo effect size; lực cho mục tiêu phụ (nếu có) xem G3_A4 PHẦN 2c.\n")
 
     # Estimand block (chỉ cho RCT/can thiệp).
     # Dùng CHUNG một hằng số với khối thiết kế (G1D.has_estimand_block) để khối
@@ -1512,9 +1638,9 @@ Quần thể phân tích chính liên kết estimand (không phải thuộc tín
 
 | Thiết kế | Phù hợp câu hỏi | Kiểm soát sai lệch | Khả thi | Lực | Chọn/Loại |
 |---|---|---|---|---|---|
-| **{design["primary"]}** | ✅ Phù hợp nhất ({QUESTION_TYPES.get(question_type, question_type)}) | Cao (xem §2) | [CẦN BÁC SĨ] | [CẦN cỡ mẫu] | **→ ƯU TIÊN** |
-| {design["alternative_1"]} | Phù hợp thay thế | Trung bình | [CẦN] | [CẦN] | Phương án 2 |
-| {design["alternative_2"]} | Phù hợp trong điều kiện đặc biệt | Thấp hơn | [CẦN] | [CẦN] | Phương án 3 |
+| **{design["primary"]}** | ✅ Phù hợp nhất ({QUESTION_TYPES.get(question_type, question_type)}) | Cao (xem §2) | {o_kha_thi} | {o_luc} | **→ ƯU TIÊN** |
+| {design["alternative_1"]} | Phù hợp thay thế | Trung bình | {o_thay_the} | {o_thay_the} | Phương án 2 |
+| {design["alternative_2"]} | Phù hợp trong điều kiện đặc biệt | Thấp hơn | {o_thay_the} | {o_thay_the} | Phương án 3 |
 
 **Lý do chọn ưu tiên `{design["primary"]}`:**
 {design["rationale"]}
@@ -1690,7 +1816,7 @@ Phần mềm: ☐ R  ☐ Stata  ☐ SPSS  | Seed ngẫu nhiên: {suggested_seed}
 
 *[BẢN NHÁP TỰ ĐỘNG] — Cần bác sĩ kiểm chứng. Không có PMID/DOI thì không được coi effect size là đã có nguồn.*
 """
-    return artifact
+    return _thay_khung_sap_bang_sap_g4(artifact, out_dir, study_name)
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -2072,6 +2198,8 @@ def main():
     parser.add_argument("--repo-root", default=None,
                         help="Gốc repo chứa exports/ (mặc định: repo y khoa chứa công cụ này — KHÔNG theo thư mục đang "
                              "đứng). Dùng cho test cô lập hoặc bản sao đo thử.")
+    parser.add_argument("--khong-tra-pubmed", action="store_true",
+                        help="Chạy lại G1 đầy đủ nhưng KHÔNG tra PubMed — dùng mẫu effect size đã lưu ở G1_checkpoint")
     parser.add_argument("--dung-lai-ho-tro", action="store_true",
                         help="Dựng lại A1b/A2b/A13/A13b từ dữ liệu đã lưu (không tra PubMed, không sinh lại A2)")
     args = parser.parse_args()
@@ -2189,7 +2317,14 @@ def main():
     # Tìm effect size từ PubMed thật
     print("\n📊 Bước 3/7: Trích xuất effect size từ abstracts PubMed...")
     search_query = g0_gaps.get("base_query") or topic
-    effects = search_for_effect_sizes(search_query, study)
+    if args.khong_tra_pubmed:
+        # 17/10/2026: dựng lại G1 khi mạng NCBI bị chặn — dùng mẫu effect size ĐÃ LƯU ở lượt G1 trước.
+        _cp1 = out_dir / "G1_checkpoint.json"
+        _cu = json.loads(_cp1.read_text(encoding="utf-8")) if _cp1.is_file() else {}
+        effects = [e for e in _cu.get("effect_size_samples") or [] if isinstance(e, dict)]
+        print(f"  → --khong-tra-pubmed: dùng {len(effects)} mẫu effect size đã lưu (không tra PubMed)")
+    else:
+        effects = search_for_effect_sizes(search_query, study)
     print(f"  → Tìm được {len(effects)} ước lượng effect size từ abstracts thật")
     if effects:
         for e in effects[:3]:
@@ -2206,6 +2341,7 @@ def main():
         g0_gaps,
         run_date,
         meta=meta,
+        out_dir=out_dir,
     )
     md_path = out_dir / f"G1_A2_PROTOCOL_DESIGN_{study}.md"
     # VÁ 04/10/2026 (G1-03): A2 đã bị sửa tay sau lượt trước ⇒ sao lưu trước khi ghi đè.
