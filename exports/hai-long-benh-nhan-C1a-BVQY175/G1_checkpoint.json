@@ -1,9 +1,9 @@
 {
   "study": "hai-long-benh-nhan-C1a-BVQY175",
   "gate": "G1",
-  "gate_status": "PASS — G1 DESIGN + REPORTING MAP ĐÃ ĐƯỢC XÁC NHẬN",
+  "gate_status": "DRAFT_READY — KIỂM TỰ ĐỘNG ĐÃ CHẠY; G1 CHƯA ĐƯỢC PI/METHODOLOGIST XÁC NHẬN",
   "automation_status": "AUTOMATED_CHECKS_PASS",
-  "generated_at": "2026-10-14T19:21:13.862366",
+  "generated_at": "2026-10-17T12:02:56.050746",
   "question_type": "descriptive",
   "design": {
     "primary": "Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)",
@@ -220,24 +220,24 @@
       "Hoàn thiện G0 trước khi xác nhận G1."
     ],
     "artifact_manifest": {
-      "A1b": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/yk-c1a-g0-dp-20261017/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "b77d77a8aa7ae8f77c870072823ce20a53f8f33e5a2a4a86c86ebd84ae717624"
-      },
       "A2": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/yk-c1a-g0-dp-20261017/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "5b2ebc3ffc1022d32505bfc70188fdb26acd21a3a8b4f77ae4b8e93aba7ffb8e"
+        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
+        "sha256": "0933db120c0d3a027d5aa19bfabcfd1e93fcff31d3f64f6ae9390cc194413cf3"
+      },
+      "A1b": {
+        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
+        "sha256": "eef78a0c634d51f84305a275f0ce5d84fa5e0241ec2f1f9d6e7e59d262fc265f"
       },
       "A2b": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/yk-c1a-g0-dp-20261017/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",
+        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",
         "sha256": "88d97c4152ce451c77846d91cf119ab6ee8b4bc5470472d3861123ffb2b87765"
       },
       "A13": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/yk-c1a-g0-dp-20261017/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md",
+        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md",
         "sha256": "5de5087b086310a566d9e16cb13df4ce9a41b5060d585b2ef8560af52dfefcd9"
       },
       "A13b": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/yk-c1a-g0-dp-20261017/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md",
+        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md",
         "sha256": "c274c46c95358259f8119c8b67c8e63e3dbef03363e9e17242e647aa741b3352"
       }
     },
@@ -279,15 +279,15 @@
     "artifact_manifest_luc_sinh": {
       "A2": {
         "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "5b2ebc3ffc1022d32505bfc70188fdb26acd21a3a8b4f77ae4b8e93aba7ffb8e"
+        "sha256": "0933db120c0d3a027d5aa19bfabcfd1e93fcff31d3f64f6ae9390cc194413cf3"
       },
       "A1b": {
         "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "c28ef9e123f9c99cbd628b41b1044a3ba113c1727e2cd0aefa853cb9bbfa6541"
+        "sha256": "eef78a0c634d51f84305a275f0ce5d84fa5e0241ec2f1f9d6e7e59d262fc265f"
       },
       "A2b": {
         "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "ac91618af1450dce76879c25e072846487e87c1f36778b5aa35ef0a435baecc6"
+        "sha256": "88d97c4152ce451c77846d91cf119ab6ee8b4bc5470472d3861123ffb2b87765"
       },
       "A13": {
         "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md",
@@ -297,8 +297,7 @@
         "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md",
         "sha256": "c274c46c95358259f8119c8b67c8e63e3dbef03363e9e17242e647aa741b3352"
       }
-    },
-    "dau_van_tay_luc_cham": "0f11b62b095278fe"
+    }
   },
   "quality_contract_version": "G1-2026.1",
   "artifacts": {
@@ -310,7 +309,9 @@
     "A13b_risk_register": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md",
     "quality_report": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_QUALITY_REPORT.md"
   },
-  "pending_doctor_actions": [],
+  "pending_doctor_actions": [
+    "Hoàn thiện G0 trước khi xác nhận G1."
+  ],
   "next_gate": "G2 (Đạo đức IRB) song song với G3 (Cỡ mẫu + SAP hoàn thiện)",
   "g4_status": "PENDING — SAP chưa khóa (khóa sau G3 sau khi bác sĩ ký)",
   "disclaimer": "Cần bác sĩ kiểm chứng.",
@@ -325,7 +326,7 @@
     "masking": null,
     "alpha_sidedness": null,
     "dau_van_tay": "6ba26632a4c46b44",
-    "ghi_luc": "2026-10-14T19:21:13"
+    "ghi_luc": "2026-10-17T12:02:56"
   },
   "dau_gate_params_g1": "0f11b62b095278fe"
 }
