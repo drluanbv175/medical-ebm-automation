@@ -109,3 +109,18 @@ Nhánh C: ngoài PMID 34017606, các bài khác dùng ICC cho độ tin cậy te
 **Rút bài (2026-10-17):** PMID 34017606, 32244937, 29915440, 28690831 — `tools/check_citation_retraction.py` ✅ OK. DOI 10.55401/y8fmp830, 10.52163/yhc.v67i7.5934, 10.52163/yhc.v67i2.4385, 10.54436/jns.2024.03.766 — `app/sources/crossref_retraction.py` «ok» + Retraction Watch ngoại tuyến không có bản ghi ⇒ chưa thấy tín hiệu rút.
 
 **Giới hạn:** Europe PMC tìm cả toàn văn nên nhiều hit lạc đề, chỉ xét 50 đầu; Crossref chỉ xét 20 đầu mỗi truy vấn; y văn không có DOI (luận văn, kỷ yếu) chưa tra.
+
+## 8. Ghi chú phương pháp của truy vấn G0 (2026-10-17, đánh giá chéo G0-T2 — G0-DG-20261017T100649-6a93d4c5)
+
+- **Ai chọn chuỗi:** agent đề xuất (§5.2), **PI chọn** khi chạy lại G0 ngày 2026-10-14 (§6). Nhánh KHÔNG lọc không giới
+  hạn ngôn ngữ hay năm; các nhánh có lọc dùng bộ lọc thiết kế của `run_g0_auto.py`.
+- **Độ đặc hiệu thấp — đã biết:** `vietnam*[tiab]` bắt cả cựu binh Hoa Kỳ («Vietnam veterans») và cộng đồng người Việt
+  ở nước ngoài; bộ lọc thiết kế dựa MeSH LOẠI các bài chưa gán MeSH (bản ghi mới, đang xử lý, ngoài MEDLINE) nên nhánh
+  có lọc bắt được 0/5 bài mốc. Phần này đã được bù: nhánh KHÔNG lọc được sàng đủ 35/35 bản ghi ngày 2026-10-17 (11 lạc
+  đề ghi lý do, 4 bài liên quan vào nguồn bổ sung — `G0_TONG_HOP_BANG_CHUNG`).
+- **Chuỗi chưa ghim vào `study_meta.query_en`:** study_meta vẫn giữ chuỗi văn xuôi cũ «patient satisfaction outpatient
+  department Vietnam hospital». Chạy lại G0 qua `run_pipeline.py` sẽ tra chuỗi cũ, đổi tập PMID và dấu vân tay G0. Việc
+  ghim là của PI: nút «Chot G0 C1a» hỏi PI ghim chuỗi đã chạy khi chốt lại (agent không tự ghi study_meta).
+- **Cho LẦN CHẠY LẠI G0 KẾ TIẾP (không chạy lại riêng vì mục này — hai người chấm cùng khuyên; chạy lại đổi tập PMID
+  ⇒ PI chốt lại G0):** thêm `NOT ("Vietnam veteran*"[tiab] OR "Vietnam War"[tiab])`; với thiết kế mô tả, dùng nhánh
+  KHÔNG lọc làm tập sàng lọc chính; nhánh KHÔNG lọc có ít hit (35) thì tải đủ thay vì dừng ở trần 30.

@@ -646,6 +646,11 @@ def analyze_evidence_gaps(results: dict, topic: str,
                 f"(tổng {n_reg} hồ sơ đăng ký). 'Chưa công bố' KHÔNG có nghĩa 'chưa ai làm' — "
                 "đọc các hồ sơ ở §3.6 trước khi biện minh tính mới; nguy cơ trùng đề tài thật."
             )
+            # 17/10/2026 (hội đồng G0 C1a): PI đã đánh giá chồng lấn ⇒ đặt ngay cạnh cảnh báo máy, không để PI đọc
+            # «nguy cơ trùng» như việc còn treo.
+            _cl = (((meta or {}).get("gate_params") or {}).get("G0") or {}).get("registry_overlap_assessment")
+            if isinstance(_cl, str) and _cl.strip():
+                registry_note += f" — PI ĐÃ ĐÁNH GIÁ chồng lấn (gate_params.G0.registry_overlap_assessment): {_cl.strip()}"
             gaps.append(
                 f"Có {n_active} nghiên cứu đang/sắp tuyển trên ClinicalTrials.gov — "
                 "cần đối chiếu để tránh trùng lặp (xem §3.6)"
@@ -777,6 +782,38 @@ def _section_heading(label: str, n_hits: int, articles: list,
     return f"{label} — ~{n_hits} hit ({tag}); liệt kê đủ {shown} bài đã tải"
 
 
+_PICO_HIEN = (("population", "P — Quần thể"), ("intervention", "I/E — Can thiệp/phơi nhiễm"),
+              ("comparison", "C — So sánh"), ("primary_outcome", "O — Kết cục chính"),
+              ("primary_outcome_measure", "Thang/công cụ đo kết cục chính"),
+              ("primary_outcome_timepoint", "Thời điểm đo"), ("question_type", "Loại câu hỏi"),
+              ("test_type", "Loại kiểm định"), ("hypothesis_h0", "H0"), ("hypothesis_h1", "H1"),
+              ("expected_direction", "Chiều kỳ vọng"))
+
+
+def _co_gia_tri(v) -> bool:
+    return v not in (None, "", [], {}) and not (isinstance(v, str) and v.strip().upper().startswith("[CẦN"))
+
+
+def _khoi_pico_da_chot(g0: dict) -> str:
+    """Khối CHỈ ĐỌC trình bày PICO/giả thuyết đã ghi ở gate_params.G0 (17/10/2026 — hội đồng G0 C1a, G0-T1 RQ5/RQ8:
+    PHẦN 1/1b của A1 luôn là khung trống nên người đọc A1/.docx không thấy câu hỏi đã chốt)."""
+    co = [(nhan, g0.get(k)) for k, nhan in _PICO_HIEN if _co_gia_tri(g0.get(k))]
+    if not co:
+        return ""
+    trang = (f"PI chốt lúc {g0.get('reviewed_at')} (vai {g0.get('reviewed_by_role')}; dấu vân tay lúc chốt "
+             f"{g0.get('dau_van_tay_chot')})" if g0.get("pico_confirmed") else "CHƯA chốt — bản đề xuất đang ghi")
+    dong = [f"> **Đã ghi trong `study_meta.json → gate_params.G0`** — {trang}. Khối này CHỈ ĐỌC; khung bên dưới chỉ "
+            "dùng khi soạn lần đầu.", ">"]
+    for nhan, v in co:
+        gia_tri = json.dumps(v, ensure_ascii=False) if isinstance(v, (dict, list)) else str(v)
+        dong.append(f"> - **{nhan}:** {' '.join(gia_tri.split())}")
+    return "\n".join(dong) + "\n"
+
+
+def _o_tick(g0: dict, *khoa) -> str:
+    return "☑" if all(_co_gia_tri(g0.get(k)) for k in khoa) else "☐"
+
+
 def generate_a1_artifact(topic: str, study_name: str, queries: dict,
                           results: dict, gaps: dict, run_date: str,
                           registry: Optional[dict] = None, meta: Optional[dict] = None,
@@ -820,6 +857,15 @@ def generate_a1_artifact(topic: str, study_name: str, queries: dict,
     khoi_khoang_trong = GT.khoi_khoang_trong(out_dir, study_name)
     khoi_finer = GT.khoi_nhap_finer(out_dir, study_name)
     _ma_ghim, _nguon_ghim = _thiet_ke_theo_quyet_dinh(meta)
+    _g0m = ((meta or {}).get("gate_params") or {}).get("G0") or {}
+    khoi_pico_chot = _khoi_pico_da_chot(_g0m)
+    _ictrp = (_g0m.get("registry_manual_checked") or {}).get("ictrp") if isinstance(
+        _g0m.get("registry_manual_checked"), dict) else None
+    _finer_du = all(_co_gia_tri(_g0m.get(k)) and not str(_g0m.get(k)).upper().startswith(("CẦN", "ĐỀ XUẤT"))
+                    for k in ("finer_feasible", "finer_interesting", "finer_novel", "finer_ethical", "finer_relevant"))
+    _da_chot = bool(_g0m.get("pico_confirmed"))
+    viec_tiep_dong = (f"> PI đã chốt G0 lúc {_g0m.get('reviewed_at')}. Nếu bộ chấm báo dấu vân tay lệch (G0-HUMAN-07) "
+                      "thì chỉ cần chốt lại; các bước 1–4 dưới đây là quy trình lần đầu.\n" if _da_chot else "")
     _ghi_chu_ghim = (f"> ✅ **Đã có quyết định thiết kế:** `{_ma_ghim}` theo {_nguon_ghim} — dòng «Ưu tiên 1» bên dưới "
                      "theo quyết định đó, KHÔNG suy từ số hit; mục này chỉ còn giá trị lịch sử.\n"
                      if _ma_ghim else "")
@@ -841,6 +887,7 @@ def generate_a1_artifact(topic: str, study_name: str, queries: dict,
 
 ## PHẦN 1 — PICO / PECO (khung trống — bác sĩ tự viết)
 
+{khoi_pico_chot}
 **Topic đề tài:** {topic}
 **Truy vấn PubMed:** `{queries.get('base', topic)}`
 
@@ -1054,19 +1101,19 @@ PHẦN MÁY LÀM ĐƯỢC (tự động)
 ☑ Khoảng trống nghiên cứu đã phân tích
 {'☑' if registry.get('checked') else '☐'} Đã tra đăng ký nghiên cứu đang tiến hành
 
-PHẦN CHỈ BÁC SĨ QUYẾT ĐƯỢC (hệ KHÔNG tự điền)
-☐ PICO/PECO 4 thành phần            → gate_params.G0.population/intervention/comparison/outcomes
-☐ Kết cục CHÍNH duy nhất + thang đo + thời điểm → .primary_outcome{{,_measure,_timepoint}}
-☐ Giả thuyết H0/H1 + chiều kỳ vọng  → .hypothesis_h0/.hypothesis_h1/.expected_direction
-☐ Loại câu hỏi + loại kiểm định     → .question_type/.test_type
-☐ FINER 5 tiêu chí, MỖI khoá một câu «ĐẠT — <lý do>» → .finer_feasible/_interesting/_novel/_ethical/_relevant
-☐ Đã đọc lại bằng chứng + biện minh tính mới (bỏ nhãn [DỰ THẢO …]) → .evidence_reviewed_confirmed/.novelty_justification
-☐ Tự tra WHO ICTRP{' + PROSPERO' if _can_prospero else ''}, ghi NGÀY tra  → .registry_manual_checked = {{"ictrp": "YYYY-MM-DD"}}
-☐ Chốt PICO (vai trò + thời điểm + dấu nội dung) → .pico_confirmed/.reviewed_by_role/.reviewed_at/.dau_van_tay_chot
+PHẦN CHỈ BÁC SĨ QUYẾT ĐƯỢC (hệ KHÔNG tự điền; ☑ = ĐÃ GHI trong gate_params — đạt hay không do bộ chấm quyết)
+{_o_tick(_g0m, "population", "intervention", "primary_outcome")} PICO/PECO 4 thành phần            → gate_params.G0.population/intervention/comparison/outcomes
+{_o_tick(_g0m, "primary_outcome", "primary_outcome_measure", "primary_outcome_timepoint")} Kết cục CHÍNH duy nhất + thang đo + thời điểm → .primary_outcome{{,_measure,_timepoint}}
+{_o_tick(_g0m, "hypothesis_h0", "hypothesis_h1", "expected_direction")} Giả thuyết H0/H1 + chiều kỳ vọng  → .hypothesis_h0/.hypothesis_h1/.expected_direction
+{_o_tick(_g0m, "question_type", "test_type")} Loại câu hỏi + loại kiểm định     → .question_type/.test_type
+{"☑" if _finer_du else "☐"} FINER 5 tiêu chí, MỖI khoá một câu «ĐẠT — <lý do>» → .finer_feasible/_interesting/_novel/_ethical/_relevant
+{_o_tick(_g0m, "evidence_reviewed_confirmed", "novelty_justification")} Đã đọc lại bằng chứng + biện minh tính mới (bỏ nhãn [DỰ THẢO …]) → .evidence_reviewed_confirmed/.novelty_justification
+{"☑" if _ictrp else "☐"} Tự tra WHO ICTRP{' + PROSPERO' if _can_prospero else ''}, ghi NGÀY tra  → .registry_manual_checked = {{"ictrp": "YYYY-MM-DD"}}
+{_o_tick(_g0m, "pico_confirmed", "reviewed_by_role", "reviewed_at", "dau_van_tay_chot")} Chốt PICO (vai trò + thời điểm + dấu nội dung) → .pico_confirmed/.reviewed_by_role/.reviewed_at/.dau_van_tay_chot
 ```
 
 **Hành động tiếp theo của bác sĩ** (danh sách SỐNG luôn ở `python3 tools/hoi_dong_cong.py cham-song --study {study_name} --gate G0`):
-1. Đọc ĐỦ danh sách bài ở PHẦN 3 (bảng sàng lọc §3.0 nếu có) và hồ sơ đăng ký ở §3.6
+{viec_tiep_dong}1. Đọc ĐỦ danh sách bài ở PHẦN 3 (bảng sàng lọc §3.0 nếu có) và hồ sơ đăng ký ở §3.6
 2. Mở `study_meta.json`, điền khối `gate_params.G0` theo bảng trên
 3. Chạy `python tools/g0_quality_gate.py --study {study_name}` — bộ chấm in `dau_van_tay_chot` của nội dung HIỆN TẠI;
    xác nhận SAU CÙNG (sửa quyết định hay dựng lại A1 sau khi xác nhận làm dấu đổi ⇒ phải xác nhận lại)

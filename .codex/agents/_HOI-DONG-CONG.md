@@ -234,6 +234,18 @@ lịch tự chạy (tốn token, chưa bảo đảm hoàn thiện) ⇒ KHÔNG c�
 5. **Báo cáo ngày** `hoi_dong/BAO_CAO_NGAY_<YYYY-MM-DD>.md` (dấu vết của lượt bác sĩ gọi — lịch đã huỷ nên `kiem_lich_nen.py` không canh): cổng đã họp, số agent,
    biên bản đã ghi, kết luận từng nhiệm vụ/DP, PR đã mở, bài học đã/chưa xử lý, việc của bác sĩ còn lại.
 
+**Biên bản xử lý việc sửa — giữ hiệu lực cuộc họp đã tốn token (17/10/2026; bác sĩ: «Đã họp và tốn token với lần họp
+vừa rồi»).** Biên bản gắn SHA-256 tài liệu, nên sửa đúng việc hội đồng giao cũng làm biên bản «CŨ» và hồ sơ máy đòi họp
+lại toàn bộ cổng (C1a G0: 4,2–8,7 triệu token). Sau bước 3–4, với MỖI biên bản đã thực hiện:
+`python3 tools/hoi_dong_cong.py mau --loai xu_ly_viec_sua --gate G<N>` → điền `bien_ban_goc` + một mục `viec` cho TỪNG
+việc biên bản giao (đánh giá chéo: `<người chấm>:<RQ>` của mọi tiêu chí chưa «đạt»; tranh biện: `viec_sua:<n>`), mỗi mục
+`cach_xu_ly` ∈ `da_sua` · `chuyen_pi` (ghi `noi_trinh_pi`) · `khong_sua_co_ly_do`, `mo_ta`, `can_cu` kiểm được → `ghi
+--tep`. Công cụ từ chối khi thiếu việc, khi kiểm máy cấp nhiệm vụ còn lỗi, khi mô tả tự tuyên bố ký/duyệt/PASS. Hiệu lực:
+gốc «qua» (kể cả «đạt có lưu ý») ⇒ vẫn «qua»; gốc «trả về sửa»/bất đồng ⇒ chỉ thành «ĐÃ SỬA — CHỜ CHẤM LẠI» (không bao
+giờ tự thành «qua» — biên bản xử lý KHÔNG phải đánh giá độc lập); tranh biện «sửa kết luận» ⇒ DP còn hiệu lực, hết
+«CẦN SỬA». Tài liệu đổi SAU biên bản xử lý ⇒ cả hai lại CŨ. Vì vậy: KHÔNG đề xuất họp lại chỉ vì tài liệu đổi để thực
+hiện biên bản; nếu bác sĩ muốn kiểm độc lập thì chỉ chấm lại đúng nhiệm vụ «chờ chấm lại» (hồ sơ máy tự thu hẹp).
+
 Vòng này KHÔNG gộp PR, không ký, không ghi cờ/`gate_params`, không đụng sổ cái — mọi PR chờ bác sĩ gộp.
 
 ## 6. Khối bàn giao (bắt buộc ở cuối mỗi hội đồng cổng)
