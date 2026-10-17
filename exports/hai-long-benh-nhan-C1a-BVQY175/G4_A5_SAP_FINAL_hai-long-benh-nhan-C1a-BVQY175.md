@@ -49,7 +49,7 @@
 
 - **Kết cục chính:** G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep), Phần 3 phiếu — trường dữ liệu `g1`, thang thứ hạng Likert 1–5; GIỮ nguyên thứ hạng trong mô hình chính (không nhị phân hóa, không coi liên tục ở phân tích chính). Không tính từ điểm trung bình lĩnh vực (chống part-whole bias, mục 4.6.3 đề cương).  
 - **Đơn vị / ngưỡng:** điểm 1–5. Ngưỡng nhị phân hóa cho kết cục thứ cấp KHÓA TRƯỚC: hài lòng = **G1 ≥ 4/5** (tương đương top-two-box của mục đơn G1, mục 4.5.2 đề cương); không dùng ngưỡng theo trung vị mẫu; không đổi sau khi nhìn dữ liệu.  
-- **Kết cục phụ 1:** `SHLNBChung_NhiPhan` (nhị phân từ G1 ≥ 4/5) — hồi quy logistic nhị phân đa biến CHỈ KHI số trường hợp chưa hài lòng đạt ≥ 10 biến cố/tham số của mô hình định trước; không đạt → chỉ báo tỷ lệ + KTC 95% Wilson (mô tả), không chạy Firth để tạo ước lượng không ổn định.  
+- **Kết cục phụ 1:** `SHLNBChung_NhiPhan` (nhị phân từ G1 ≥ 4/5) — hồi quy logistic nhị phân đa biến CHỈ KHI số trường hợp chưa hài lòng đạt ≥ 10 biến cố/tham số của mô hình định trước; không đạt → chỉ báo tỷ lệ + KTC 95% Wilson trên cỡ mẫu hiệu dụng (§3) (mô tả), không chạy Firth để tạo ước lượng không ổn định.  
 - **Kết cục phụ 2:** `SHLNBChung_TinhToan` (trung bình 30 mục A1–F1, loại mã 7/8/9) — đối chiếu hội tụ với G1; điểm 6 lĩnh vực `A_Mean`…`F_Mean` (quy tắc ≥ 80% mục áp dụng); cụm `G2` (ý định quay lại) và `G3` (ý định giới thiệu) — kết cục thứ cấp định trước (Phụ lục C.6.2 đề cương).  
 - **Kết cục an toàn:** không áp dụng — nghiên cứu cắt ngang bằng phiếu khảo sát, tổn hại tối thiểu, không can thiệp, không biến cố an toàn (mục 4.6 đề cương chỉ giữ mục tổn hại tối thiểu ở hồ sơ đạo đức).  
 
@@ -57,7 +57,10 @@
 
 - Biến liên tục: trung bình ± SD (phân phối chuẩn) hoặc trung vị [IQR] (lệch); điểm hài lòng trình bày CẢ HAI (A.2 đề cương)  
 - Biến phân loại: n (%)  
-- Tỷ lệ hài lòng chung và theo lĩnh vực (ngưỡng cố định ≥ 4/5) kèm KTC 95% **Wilson score**  
+- Tỷ lệ hài lòng chung và theo lĩnh vực (ngưỡng cố định ≥ 4/5) kèm KTC 95% **Wilson score trên cỡ mẫu hiệu dụng** n_hd = n ÷ DE (đề cương 4.10, Mục tiêu 1; Dean & Pagano 2015, doi:10.1093/jssam/smv024):  
+  - DE = hiệu ứng thiết kế của CHÍNH tỷ lệ đó, ước lượng từ số liệu bằng phương sai tuyến tính hoá theo chùm `ma_ban_kham` (`survey::svymean(..., deff = TRUE)`; đường Python: `run_stats_analysis.py --ty-le … --cot-cum ma_ban_kham`), chặn dưới 1 — gom cụm không được làm KTC hẹp hơn giả định độc lập  
+  - Báo kèm ICC thực tế, CV cỡ chùm thực tế và DE theo ICC = 1 + ((CV² + 1)·m − 1)·ICC (Eldridge 2006) để đối chiếu với giả định lập kế hoạch (G3: DE 1,78); báo cả KTC Wilson giả định độc lập để thấy mức nới rộng do gom cụm  
+  - Khi áp trọng số hậu phân tầng (§4), DE lấy từ thiết kế CÓ trọng số nên đã gồm cả hiệu ứng trọng số  
 - Báo % đạt điểm sàn/trần mỗi lĩnh vực; > 15% (ngưỡng Terwee) → ghi là hạn chế đo lường, ưu tiên trung vị [IQR]  
 - Đơn biến (Bảng 5.3): t-test/ANOVA hoặc Pearson/Spearman (kết cục liên tục), χ²/Fisher (nhị phân thứ cấp), luôn kèm hiệu ứng + KTC 95% — **chỉ vai trò mô tả, KHÔNG phải bước lọc biến**  
 
@@ -65,6 +68,7 @@
 
 - **Phương pháp:** hồi quy logistic **THỨ TỰ** (ordinal/proportional odds; `MASS::polr`/`rms::orm`/`ordinal::clm`) trên G1 giữ 5 mức; báo tỷ số chênh chung hiệu chỉnh (cOR) + KTC 95%. Exposure chính `thoigian_cho` báo hiệu ứng theo **mỗi 15 phút**; kiểm phi tuyến bằng restricted cubic spline 3 nút hoặc phân tích theo phân vị. Kiểm giả định proportional odds (Brant/so sánh log-likelihood theo ranh giới cắt) TRƯỚC khi diễn giải cOR; vi phạm → partial proportional odds/generalized ordered logit, báo hệ số theo từng ranh giới cắt cho biến vi phạm.  
 - **Gom cụm theo bàn khám (bắt buộc, mọi kịch bản):** sai số chuẩn robust theo chùm `ma_ban_kham`; số bàn khám < 15 → mô hình thứ tự hệ số chặn ngẫu nhiên trở thành phân tích CHÍNH; báo ICC cho G1 và từng lĩnh vực A–F.  
+- **Trọng số theo thiết kế chọn mẫu (quy tắc định trước, đề cương 4.10):** tầng h = ngày trong tuần × khung giờ khám; Nₕ = số lượt khám của tầng trong kỳ thu thập (HIS), nₕ = số phiếu hợp lệ của tầng. Mẫu phân bổ theo lưu lượng nên tự cân bằng ⇒ phân tích chính KHÔNG trọng số. Nếu có BẤT KỲ tầng nào lệch quá 20% so với tỷ lệ lưu lượng thực, tức |(nₕ/n) ÷ (Nₕ/N) − 1| > 0,20, phân tích CHÍNH của cả hai mục tiêu áp trọng số hậu phân tầng wₕ = (Nₕ/N) ÷ (nₕ/n) (Σwᵢ = n): thiết kế `survey::svydesign(ids = ~ma_ban_kham, …)` + `postStratify` theo Nₕ (Lumley 2004, doi:10.18637/jss.v009.i08); tỷ lệ = ước lượng có trọng số kèm KTC Wilson trên n_hd (§3); mô hình chính = `survey::svyolr` (proportional odds theo thiết kế, sai số theo chùm). Phép kiểm lệch tầng chỉ dùng nₕ, Nₕ — làm và ghi bảng nₕ · Nₕ · tỷ số TRƯỚC khi xem kết cục. Bản không trọng số luôn báo song song; chênh lệch lớn giữa hai bản ở mô hình liên quan là tín hiệu hiệu ứng thay đổi theo tầng, được bàn luận, không chọn bản «đẹp hơn» (Solon, Haider & Wooldridge 2015, doi:10.3368/jhr.50.2.301)  
 - **Quần thể:** phân tích đầy đủ trên phiếu hợp lệ (`PhieuHopLe`, ba ngưỡng loại ở §1)  
 - **Trình bày:** ước lượng + 95%CI; không báo p-value đơn độc; làm tròn theo A.1 đề cương (tỷ lệ 1 chữ số; Likert 2 chữ số; OR/β 2 chữ số; p trị số thực 3 chữ số)  
 
@@ -108,14 +112,14 @@ Ba nhóm biến đã KHÓA theo lập luận nhân quả trên DAG (Phụ lục 
 - Có/không điểm ảnh hưởng; mô hình đầy đủ vs rút gọn khi số tham số eo hẹp  
 - **Loại phiếu có hỗ trợ ghi** (`mode_tra_loi` = 2/3), chạy lại trên tập tự điền (`mode_tra_loi` = 1), so sánh chiều và độ lớn cOR  
 - Mô hình thứ tự hệ số chặn ngẫu nhiên theo `ma_ban_kham` (đối chiếu sai số chuẩn chùm)  
-- Ước lượng theo thiết kế (khai tầng + chùm); trọng số hậu phân tầng khi một tầng lệch > 20% lưu lượng thực (w_h = (N_h/N) ÷ (n_h/n)), báo song song có/không trọng số  
+- Có/không trọng số hậu phân tầng: bản KHÔNG được chọn làm phân tích chính theo quy tắc §4 (lệch tầng > 20%) chạy song song; ước lượng theo thiết kế khai tầng + chùm  
 - Phi tuyến exposure: restricted cubic spline 3 nút / phân tích theo phân vị thời gian chờ  
 - Quy tắc gộp mức G1 khi lệch trần (mức < 20 quan sát, gộp 1→2→3, mức 5 không gộp, không dưới 3 mức; bảng 5 mức gốc vẫn in đủ)  
 
 ### §10 PHẦN MỀM + SEED
 
 - **Phần mềm:** R ≥ 4.3 (đã khóa tại mục 4.10 đề cương)  
-- **Packages:** `stats`, `car`, `rms`, `logistf`, `mice` (mô hình phụ trợ); `MASS::polr` / `rms::orm` / `ordinal::clm` (mô hình chính — logistic thứ tự); `brant`, `VGAM`, `ordinal` (kiểm định & mở rộng proportional odds)  
+- **Packages:** `stats`, `car`, `rms`, `logistf`, `mice` (mô hình phụ trợ); `MASS::polr` / `rms::orm` / `ordinal::clm` (mô hình chính — logistic thứ tự); `brant`, `VGAM`, `ordinal` (kiểm định & mở rộng proportional odds); `sandwich` + `lmtest` (sai số chuẩn vững theo chùm `vcovCL`); `survey` (DE/n hiệu dụng, hậu phân tầng `postStratify`, `svyolr`)  
 - **Random seed:** `set.seed(20260830)` — giá trị ĐỀ XUẤT của bản nháp, dùng chung cho MICE/bootstrap/chia đôi mẫu EFA-CFA; chủ nhiệm/nhà thống kê xác nhận hoặc thay giá trị khi ký (A.6 mục 12 đề cương)  
 
 ### §11 DUMMY TABLES (Khung bảng kết quả)
@@ -138,7 +142,7 @@ Ba nhóm biến đã KHÓA theo lập luận nhân quả trên DAG (Phụ lục 
 | Kết cục | Kết quả | 95%CI |
 |---|---|---|
 | Phân bố G1 theo 5 mức, n (%) | ___ | — |
-| Tỷ lệ hài lòng chung (G1 ≥ 4/5), % | ___ | ___–___ (Wilson) |
+| Tỷ lệ hài lòng chung (G1 ≥ 4/5), % | ___ | ___–___ (Wilson, n hiệu dụng) |
 | cOR thời gian chờ mỗi 15 phút (mô hình chính, hiệu chỉnh đủ tập forced-in) | ___ | ___–___ |
 
 ### §12 ALPHA + ĐỘ CHÍNH XÁC (cỡ mẫu theo sai số cho phép)
