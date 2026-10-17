@@ -559,16 +559,16 @@ def analyze_evidence_gaps(results: dict, topic: str,
 
     # Đánh giá mức độ evidence
     if n_sr >= 3:
-        evidence_level = "MẠNH — có SR/MA"
+        evidence_level = "MẠNH — có SR/MA (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)"
         novelty_concern = "⚠ Chủ đề đã có nhiều SR/MA → cần biện minh tính mới rõ ràng"
     elif n_sr >= 1:
-        evidence_level = "TRUNG BÌNH — có 1 SR/MA"
+        evidence_level = "TRUNG BÌNH — có 1 SR/MA (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)"
         novelty_concern = "Có thể cập nhật SR/MA hiện có hoặc nghiên cứu quần thể cụ thể"
     elif n_rct >= 2:
-        evidence_level = "CÓ HẠN — có RCT nhưng chưa có SR"
+        evidence_level = "CÓ HẠN — có RCT nhưng chưa có SR (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)"
         novelty_concern = "Có thể làm SR/MA tổng hợp các RCT này"
     elif n_rct == 1:
-        evidence_level = "YẾU — mới 1 RCT"
+        evidence_level = "YẾU — mới 1 RCT (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)"
         novelty_concern = "Cơ hội tốt cho RCT mới hoặc cohort tiến cứu"
     elif n_obs >= 10:
         # VÁ 2026-07-27: nhánh MỚI. Trước đây một lĩnh vực có hàng trăm nghiên cứu quan sát
@@ -813,7 +813,10 @@ def generate_a1_artifact(topic: str, study_name: str, queries: dict,
         khong_loc_dong = ("> 🔎 Nhánh KHÔNG lọc thiết kế: chưa có trong lượt tìm này (lượt sinh trước khi có nhánh này "
                           "hoặc dựng lại A1 không tra lại PubMed).")
     # VÁ 10/10/2026 (hội đồng G0, DG G0-T3/T4): phần ĐỌC BÀI của agent + thiết kế đã ghim + khối việc của PI.
-    khoi_tong_hop = GT.khoi_tong_hop(out_dir, study_name, results.get("all_pmids") or [])
+    khoi_tong_hop = GT.khoi_tong_hop(out_dir, study_name, results.get("all_pmids") or [], _kl or None)
+    # 17/10/2026 (RQ2 hội đồng G0): mức theo số hit đi kèm mức SAU sàng lọc do agent G0-T3 viết.
+    _th_g0, _ = GT.doc(out_dir, GT.TEP_TONG_HOP, study_name) if out_dir else (None, None)
+    muc_sau_sang_loc = GT.muc_sau_sang_loc(_th_g0) or "[CẦN tong-quan-y-van NÊU trong G0_TONG_HOP]"
     khoi_khoang_trong = GT.khoi_khoang_trong(out_dir, study_name)
     khoi_finer = GT.khoi_nhap_finer(out_dir, study_name)
     _ma_ghim, _nguon_ghim = _thiet_ke_theo_quyet_dinh(meta)
@@ -915,6 +918,7 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 │ I — INTERESTING (Có giá trị khoa học)                      │
 │   Evidence level hiện có: {gaps['evidence_level']}
 │   → {gaps['novelty_concern']}
+│   Sau sàng lọc (G0-T3): {muc_sau_sang_loc}
 ├─────────────────────────────────────────────────────────────┤
 │ N — NOVEL (Tính mới) — DỰA TRÊN PUBMED THẬT              │
 │   SR/MA: {gaps['n_sr']} | RCT: {gaps['n_rct']} | Guideline: {gaps['n_guide']} | Quan sát: {gaps.get('n_observational', 0)}
@@ -1000,6 +1004,8 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 
 **Mức độ bằng chứng hiện có:** {gaps['evidence_level']}
 
+**Mức bằng chứng SAU sàng lọc (agent `tong-quan-y-van`):** {muc_sau_sang_loc}
+
 **Khoảng trống nghiên cứu cụ thể:**
 {chr(10).join(f"• {g}" for g in gaps['gaps'])}
 
@@ -1018,7 +1024,7 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 ┌─────────────────────────────────────────────────────────────┐
 │ Ưu tiên 1 (hệ gợi ý từ bằng chứng thật):                   │
 │   {_truncate_at_word(gaps['design_hint'], 55)}
-│   Lý do: suy từ {gaps['n_sr']} SR/MA · {gaps['n_rct']} RCT · {gaps.get('n_observational', 0)} quan sát
+│   Lý do: suy từ {gaps['n_sr']} SR/MA · {gaps['n_rct']} RCT · {gaps.get('n_observational', 0)} quan sát (số hit, chưa sàng lọc)
 │   Hạn chế: [CẦN BÁC SĨ NÊU — khả thi tại đơn vị?]         │
 ├─────────────────────────────────────────────────────────────┤
 │ Ưu tiên 2 (phương án thay thế): [CẦN BÁC SĨ ẤN ĐỊNH]     │
@@ -1551,6 +1557,9 @@ def dung_lai_a1(study: str, out_dir: Path) -> int:
     results = {k: [_bai_tu_raw(x) for x in raw.get(k) or [] if isinstance(x, dict)]
                for k in ("sr_ma", "rct", "guideline", "recent", "observational")}
     results["true_counts"] = raw.get("true_counts") or {}
+    # 17/10/2026 (hội đồng G0 C1a, G0-DG-20261017T100649-43a39c66): không nạp provenance thì A1 dựng lại luôn in
+    # «Nhánh KHÔNG lọc thiết kế: chưa có…» dù raw có nhánh đó — PI mất lời nhắc rà bài bộ lọc đã loại.
+    results["provenance"] = dict((raw.get("search_provenance") or {}).get("nhanh") or {})
     results["all_pmids"] = list(pr.get("all_pmids") or cp.get("pmids_verified") or [])
     results["total"] = pr.get("total_found", sum(len(results[k]) for k in ("sr_ma", "rct", "guideline", "recent",
                                                                           "observational")))

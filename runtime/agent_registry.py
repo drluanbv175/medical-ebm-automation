@@ -120,8 +120,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 15/10/2026 (bản đề cương nộp Hội đồng): dieu-phoi-g10 thêm mục 5 — DE_CUONG_NOP_HOI_DONG vào manifest G10 và phạm vi
 # A12; bản cặp y hệt gốc; vẫn 64. Cùng ngày: nhiệm vụ G10-T4 (viet-ban-thao soạn đề cương nộp Hội đồng) — sinh lại khối
 # trách nhiệm của dieu-phoi-g10/viet-ban-thao/tham-dinh-dau-ra/kiem-chung-trich-dan; vẫn 64.
+# 17/10/2026 (hội đồng G0 C1a, G0-T3): tong-quan-y-van thêm hợp đồng nhánh KHÔNG lọc + mức bằng chứng sau sàng lọc;
+# bản cặp y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "e3039b3f5475b3520112cdeb4872df3597e739a95bd44d32588c6c5e492bf9b1"
+    "261de5a493022871513164ae8b816ab6835ea62dc75e4c578c8f26aee9e5d2ca"
 )
 
 MINIMUM_AGENT_COUNT = 64
