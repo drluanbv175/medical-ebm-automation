@@ -132,8 +132,58 @@ def _kiem_dau(du_lieu: Dict[str, Any], schema: str, nhan: str, loi: List[str]) -
         loi.append(f"{nhan}: «ngay_soan» phải là ngày ISO YYYY-MM-DD, không ở tương lai")
 
 
-def kiem_tong_hop(du_lieu: Any, all_pmids: Iterable[Any]) -> List[str]:
-    """G0-T3 — lỗi cấu trúc của `G0_TONG_HOP_BANG_CHUNG_<mã>.json` (rỗng = đạt)."""
+def _ma_sang_khong_loc(du_lieu: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
+    """PMID → bản ghi của `sang_loc_khong_loc` (bài nhánh KHÔNG lọc đã sàng là lạc đề)."""
+    ra: Dict[str, Dict[str, Any]] = {}
+    for bai in du_lieu.get("sang_loc_khong_loc") or [] if isinstance(du_lieu.get("sang_loc_khong_loc"), list) else []:
+        if isinstance(bai, dict):
+            ra[_chuoi(str(bai.get("pmid") or ""))] = bai
+    return ra
+
+
+def _kiem_khong_loc(du_lieu: Dict[str, Any], khong_loc: Dict[str, Any], da_doc: set, nhan: str,
+                    loi: List[str]) -> None:
+    """17/10/2026 (hội đồng G0 C1a, G0-DG-20261017T100649-43a39c66 RQ5): nhánh KHÔNG lọc thiết kế của lượt tìm G0
+    (`G0_pubmed_raw.json → search_provenance.nhanh.khong_loc`) phải được SÀNG ĐỦ — mỗi PMID bộ lọc đã loại nằm ở
+    `sang_loc`, `nguon_bo_sung` (bài liên quan) hoặc `sang_loc_khong_loc` (đã sàng, lạc đề — khoá riêng, KHÔNG vào
+    dấu vân tay G0 nên bài lạc đề không buộc PI chốt lại). Nhánh vượt trần (số hit > số lấy về) ⇒ phải lấy nốt và ghi
+    `khong_loc_vuot_tran`. Trước đây kiểm máy trả [] trong khi 13 PMID chưa ai sàng (có một bài liên quan trực tiếp)."""
+    bo_loai = [str(x) for x in khong_loc.get("pmid_bo_loc_da_loai") or []]
+    sang = _ma_sang_khong_loc(du_lieu)
+    for pmid, bai in sang.items():
+        if not _PMID.match(pmid):
+            loi.append(f"{nhan}: sang_loc_khong_loc PMID «{pmid}» sai dạng")
+            continue
+        if bai.get("lien_quan") != "khong" or not _chuoi(bai.get("ly_do")):
+            loi.append(f"{nhan}: sang_loc_khong_loc PMID {pmid} chỉ dành cho bài lạc đề — cần lien_quan «khong» + "
+                       "«ly_do»; bài liên quan đưa vào «nguon_bo_sung»")
+    chua = [p for p in bo_loai if p not in da_doc and p not in sang]
+    if chua:
+        loi.append(f"{nhan}: nhánh KHÔNG lọc của truy vấn G0 còn {len(chua)}/{len(bo_loai)} PMID bộ lọc đã loại "
+                   f"chưa sàng (vd {', '.join(chua[:5])}) — xếp vào «nguon_bo_sung» (liên quan) hoặc "
+                   "«sang_loc_khong_loc» (lạc đề, kèm lý do)")
+    so_hit, lay_ve = khong_loc.get("so_hit_that"), khong_loc.get("so_bai_lay_ve")
+    if isinstance(so_hit, int) and isinstance(lay_ve, int) and so_hit > lay_ve:
+        vt = du_lieu.get("khong_loc_vuot_tran")
+        ds = [str(x) for x in (vt or {}).get("pmid") or []] if isinstance(vt, dict) else []
+        if not isinstance(vt, dict) or not _ngay_hop_le(vt.get("ngay")) or len(ds) < so_hit - lay_ve:
+            loi.append(f"{nhan}: nhánh KHÔNG lọc có {so_hit} hit nhưng chỉ lấy về {lay_ve} — lấy nốt "
+                       f"{so_hit - lay_ve} bản ghi rồi ghi «khong_loc_vuot_tran» {{ngay ISO, pmid[], cach}}")
+        else:
+            thieu_vt = [p for p in ds if p not in da_doc and p not in sang]
+            if thieu_vt:
+                loi.append(f"{nhan}: khong_loc_vuot_tran còn {len(thieu_vt)} PMID chưa sàng (vd "
+                           f"{', '.join(thieu_vt[:5])})")
+
+
+def muc_sau_sang_loc(du_lieu: Any) -> str:
+    """Câu mức bằng chứng SAU sàng lọc do agent G0-T3 viết (rỗng nếu chưa có)."""
+    return _chuoi((du_lieu or {}).get("muc_bang_chung_sau_sang_loc")) if isinstance(du_lieu, dict) else ""
+
+
+def kiem_tong_hop(du_lieu: Any, all_pmids: Iterable[Any], khong_loc: Optional[Dict[str, Any]] = None) -> List[str]:
+    """G0-T3 — lỗi cấu trúc của `G0_TONG_HOP_BANG_CHUNG_<mã>.json` (rỗng = đạt). `khong_loc` = nhánh KHÔNG lọc của
+    `G0_pubmed_raw.json` (có thì đòi sàng đủ — xem `_kiem_khong_loc`)."""
     nhan = "tổng hợp G0-T3"
     if not isinstance(du_lieu, dict):
         return [f"{nhan}: không phải object JSON"]
@@ -193,6 +243,14 @@ def kiem_tong_hop(du_lieu: Any, all_pmids: Iterable[Any]) -> List[str]:
                            + (" (CSDL · truy vấn · ngày — PRISMA-S)" if k == "cach_tim" else ""))
         if bai.get("lien_quan") == "truc_tiep" and _PMID.match(pmid):
             truc_tiep.add(pmid)
+    if isinstance(khong_loc, dict) and khong_loc:
+        da_doc = set(da_loc) | {_chuoi(str(b.get("pmid") or "")) for b in bo_sung if isinstance(b, dict)}
+        _kiem_khong_loc(du_lieu, khong_loc, da_doc, nhan, loi)
+    # 17/10/2026 (hội đồng G0 C1a, RQ2): mức bằng chứng trong A1 suy từ SỐ HIT của bộ lọc — một SR/RCT lạc đề vẫn làm
+    # nó thành «TRUNG BÌNH — có 1 SR/MA». Agent phải nêu mức bằng chứng SAU sàng lọc để PI không đọc nhầm.
+    if not muc_sau_sang_loc(du_lieu):
+        loi.append(f"{nhan}: thiếu «muc_bang_chung_sau_sang_loc» — một câu nêu mức bằng chứng SAU sàng lọc (thiết kế "
+                   "của các bài liên quan, dẫn PMID), khác mức theo số hit của bộ lọc")
     tong = _chuoi(du_lieu.get("tong_hop"))
     if not tong:
         loi.append(f"{nhan}: thiếu «tong_hop» (đoạn tóm lược bằng chứng)")
@@ -273,14 +331,15 @@ def _o(v: Any) -> str:
     return re.sub(r"\s+", " ", str(v if v is not None else "")).replace("|", "/").strip() or "—"
 
 
-def khoi_tong_hop(out_dir: Optional[Path], study: str, all_pmids: Iterable[Any]) -> str:
+def khoi_tong_hop(out_dir: Optional[Path], study: str, all_pmids: Iterable[Any],
+                  khong_loc: Optional[Dict[str, Any]] = None) -> str:
     ten = TEP_TONG_HOP.format(study=study)
     du_lieu, loi_doc = doc(out_dir, TEP_TONG_HOP, study) if out_dir else (None, None)
     if du_lieu is None:
         return (f"> [CẦN `tong-quan-y-van` LẬP `{ten}`] — sàng lọc mức liên quan ĐỦ mọi PMID dưới đây (thiết kế "
                 "thật · trực tiếp/gián tiếp/không · tóm tắt), nguồn bổ sung kèm cách tìm, tóm lược có PMID, kiểm rút "
                 "bài. Khuôn và bộ kiểm: `tools/g0_tong_hop.py`." + (f"\n> ⚠ {loi_doc}" if loi_doc else "") + "\n")
-    loi = kiem_tong_hop(du_lieu, all_pmids)
+    loi = kiem_tong_hop(du_lieu, all_pmids, khong_loc)
     thu_tu = {k: i for i, k in enumerate(LIEN_QUAN)}
     dong = ["| PMID | Thiết kế thật | Liên quan | Tóm tắt | Ghi chú |", "|---|---|---|---|---|"]
     for bai in sorted((b for b in du_lieu.get("sang_loc") or [] if isinstance(b, dict)),
@@ -294,7 +353,10 @@ def khoi_tong_hop(out_dir: Optional[Path], study: str, all_pmids: Iterable[Any])
           *dong, ""]
     bo_sung = [b for b in du_lieu.get("nguon_bo_sung") or [] if isinstance(b, dict)]
     if bo_sung:
+        # 17/10/2026 (hội đồng G0 C1a, RQ8): PI phải biết trước — đổi danh mục này làm đổi dấu vân tay G0.
         ra += ["**Nguồn bổ sung ngoài truy vấn G0** (kèm cách tìm — PRISMA-S):", "",
+               "> Thêm/bớt nguồn bổ sung làm đổi dấu vân tay G0 ⇒ xác nhận G0 cũ hết hiệu lực, PI chốt lại "
+               "(G0-HUMAN-07). Bài lạc đề của nhánh KHÔNG lọc nằm ở khoá riêng, không đổi dấu.", "",
                "| PMID/DOI | Tiêu đề | Thiết kế thật | Liên quan | Tóm tắt | Cách tìm |", "|---|---|---|---|---|---|"]
         for b in bo_sung:
             ra.append(f"| {_o(b.get('pmid') or b.get('doi'))} | {_o(b.get('tieu_de'))} | "
@@ -302,7 +364,16 @@ def khoi_tong_hop(out_dir: Optional[Path], study: str, all_pmids: Iterable[Any])
                       f"{_o(NHAN_LIEN_QUAN.get(b.get('lien_quan'), b.get('lien_quan')))} | {_o(b.get('tom_tat'))} | "
                       f"{_o(b.get('cach_tim'))} |")
         ra.append("")
-    ra += [f"**Tóm lược:** {_o(du_lieu.get('tong_hop'))}", ""]
+    sang_kl = _ma_sang_khong_loc(du_lieu)
+    if sang_kl:
+        ra += [f"**Nhánh KHÔNG lọc của truy vấn G0 — đã sàng, lạc đề ({len(sang_kl)}):** "
+               + "; ".join(f"PMID {p} ({_o(b.get('ly_do'))})" for p, b in sorted(sang_kl.items())), ""]
+    vt = du_lieu.get("khong_loc_vuot_tran")
+    if isinstance(vt, dict) and vt.get("pmid"):
+        ra += [f"**Bản ghi vượt trần của nhánh KHÔNG lọc** (lấy nốt {_o(vt.get('ngay'))}, {_o(vt.get('cach'))}): "
+               + ", ".join(str(x) for x in vt.get("pmid") or []), ""]
+    ra += [f"**Mức bằng chứng SAU sàng lọc:** {_o(muc_sau_sang_loc(du_lieu) or '[CẦN tong-quan-y-van NÊU]')}", "",
+           f"**Tóm lược:** {_o(du_lieu.get('tong_hop'))}", ""]
     rb = du_lieu.get("rut_bai") if isinstance(du_lieu.get("rut_bai"), dict) else {}
     ra.append(f"**Kiểm rút bài:** {_o(rb.get('ket_qua') or 'chưa kiểm')} "
               f"(ngày {_o(rb.get('ngay'))}; công cụ {_o(rb.get('cong_cu'))})")

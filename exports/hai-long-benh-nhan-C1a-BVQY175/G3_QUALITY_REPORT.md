@@ -1,13 +1,13 @@
 # BÁO CÁO CHẤT LƯỢNG G3 (CỠ MẪU) — hai-long-benh-nhan-C1a-BVQY175
 
-**Trạng thái:** `DRAFT_READY_NEEDS_STATISTICIAN_REVIEW`
+**Trạng thái:** `DRAFT_NEEDS_HUMAN_PARAMETERS`
 **Phiên bản hợp đồng:** G3-2026.1
 
 ## Kiểm tự động (máy kiểm SỐ và NGUỒN)
 | Mã | Tiêu chí | Trạng thái | Bằng chứng |
 |---|---|---|---|
 | G3-AUTO-00 | Guardrail liêm chính G3 sạch | PASS | guardrail='✅ PASS' |
-| G3-AUTO-01 | Tiền đề G0/G1 có thật (thiết kế không do mặc định im lặng) | PASS | G1 chấm sống=PASS_G1_CONFIRMED |
+| G3-AUTO-01 | Tiền đề G0/G1 có thật (thiết kế không do mặc định im lặng) | REVIEW | G1 chấm sống=DRAFT_READY_NEEDS_HUMAN_REVIEW — thiết kế chưa được PI/methodologist chốt |
 | G3-AUTO-02 | Mã thiết kế thuộc từ vựng canonical | PASS | design_code='cross_sectional' |
 | G3-AUTO-03 | Loại effect size tương thích với thiết kế và dạng kết cục | PASS | effect_type=PREVALENCE hợp lệ cho cross_sectional |
 | G3-AUTO-04 | Có giá trị cỡ mẫu dùng được (hoặc N thay thế hợp lệ) | PASS | n_adjusted=808 |
@@ -38,6 +38,7 @@
 | G3-HUMAN-07 | Thử nghiệm then chốt: có nhà thống kê độc lập và lực đủ cao | PASS | không khai là thử nghiệm then chốt |
 
 ## Việc còn lại
+- Chạy G0/G1 trước; không tính cỡ mẫu trên thiết kế mặc định.
 - Ghi reviewed_by_role (STATISTICIAN hoặc PI), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot="0e68bb02f642f5eb" (dấu của các giá trị quyết định N hiện tại); không lưu danh tính.
 
 ## Nền chuẩn

@@ -69,6 +69,9 @@ def _tong_hop_hop_le() -> dict:
                            "lien_quan": "truc_tiep", "tom_tat": "Yếu tố liên quan",
                            "cach_tim": "PubMed · MeSH · 2026-10-10"}],
         "tong_hop": "Thời gian chờ đi kèm hài lòng thấp hơn (PMID 34445940; PMID 32992600).",
+        # 17/10/2026: khoá bắt buộc mới (RQ2 hội đồng G0 C1a) — fixture hợp lệ phải có.
+        "muc_bang_chung_sau_sang_loc": "Sau sàng lọc: các bài liên quan là cắt ngang (PMID 34445940) và một tổng "
+                                       "quan ở bối cảnh khác (PMID 32992600).",
         "rut_bai": {"ngay": "2026-10-10", "cong_cu": "check_citation_retraction.py", "ket_qua": "0 rút"},
     }
 

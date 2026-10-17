@@ -1573,7 +1573,14 @@ def _kiem_tong_hop_g0(out_dir: Path, study: str) -> List[str]:
     except (OSError, json.JSONDecodeError):
         return ["không đọc được G0_checkpoint.json để đối chiếu tập PMID nền"]
     pr = cp.get("pubmed_results") if isinstance(cp.get("pubmed_results"), dict) else {}
-    return GT.kiem_tong_hop(du_lieu, pr.get("all_pmids") or cp.get("pmids_verified") or [])
+    # 17/10/2026 (hội đồng G0 C1a, RQ5): đối chiếu cả nhánh KHÔNG lọc của lượt tìm (raw) — trước đây kiểm máy trả []
+    # trong khi 13 PMID bộ lọc đã loại chưa ai sàng.
+    try:
+        raw = json.loads((Path(out_dir) / "G0_pubmed_raw.json").read_text(encoding="utf-8"))
+        khong_loc = ((raw.get("search_provenance") or {}).get("nhanh") or {}).get("khong_loc") or None
+    except (OSError, json.JSONDecodeError):
+        khong_loc = None
+    return GT.kiem_tong_hop(du_lieu, pr.get("all_pmids") or cp.get("pmids_verified") or [], khong_loc)
 
 
 def _kiem_khoang_trong_g0(out_dir: Path, study: str) -> List[str]:

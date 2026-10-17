@@ -76,7 +76,7 @@ bộ kiểm `tools/g0_tong_hop.py`) — KHÔNG viết thẳng vào A1 (chạy l�
 nền của `G0_checkpoint.json` (đọc tiêu đề + tóm tắt; {pmid, thiet_ke_that — thiết kế THẬT, không theo bộ lọc PubMed,
 lien_quan ∈ truc_tiep/gian_tiep/khong, tom_tat, ly_do khi «khong»}) · `nguon_bo_sung` (bài liên quan ngoài truy vấn
 G0, vd tìm bằng MeSH/không lọc: {pmid hoặc doi, tieu_de, thiet_ke_that, lien_quan, tom_tat, cach_tim = CSDL · truy vấn
-· ngày — PRISMA-S}) · `tong_hop` (đoạn tóm lược dẫn ≥ 1 PMID liên quan trực tiếp; nói phạm vi, không tuyệt đối hoá) ·
+· ngày — PRISMA-S}) · **nhánh KHÔNG lọc** (17/10/2026, hội đồng G0 C1a): đọc `G0_pubmed_raw.json → search_provenance.nhanh.khong_loc` và sàng MỌI PMID trong `pmid_bo_loc_da_loai` — bài liên quan vào `nguon_bo_sung` (cach_tim «PubMed · nhánh khong_loc của truy vấn G0 · ngày»), bài lạc đề vào `sang_loc_khong_loc` {pmid, lien_quan «khong», ly_do} (khoá riêng, không vào dấu vân tay G0); số hit > số lấy về thì lấy nốt và ghi `khong_loc_vuot_tran` {ngay, pmid[], cach} · `muc_bang_chung_sau_sang_loc` (một câu: thiết kế của các bài LIÊN QUAN sau sàng lọc, dẫn PMID — mức theo số hit của A1 không tính bài lạc đề) · `tong_hop` (đoạn tóm lược dẫn ≥ 1 PMID liên quan trực tiếp; nói phạm vi, không tuyệt đối hoá; không tự mâu thuẫn với bảng nguồn bổ sung) ·
 `rut_bai` {ngay, cong_cu, ket_qua} chạy `check_citation_retraction.py` — không kiểm được thì ghi «chưa kiểm», TUYỆT
 ĐỐI không «chưa bị rút». Ngày viết ISO YYYY-MM-DD (dd/mm/yyyy làm guardrail R2 của
 G0 chặn A1). Đây là ĐỀ XUẤT cho PI đọc (G0-HUMAN-06), không ghi `gate_params.G0`. Xong thì

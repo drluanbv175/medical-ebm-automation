@@ -1,6 +1,6 @@
 # A5, SAP FINAL + SAP LOCK CERTIFICATE (DRAFT, CHỜ BÁC SĨ KÝ)
 **Đề tài:** Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối  
-**Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Phiên bản SAP:** 1.2 | **Ngày sinh:** 2026-07-31 | **Cập nhật:** 2026-10-17
+**Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Phiên bản SAP:** 1.3 | **Ngày sinh:** 2026-07-31 | **Cập nhật:** 2026-10-17
 **Chuẩn báo cáo:** STROBE
 
 > LƯU Ý: **CỔNG G4, SAP LOCK:** SAP này ở trạng thái DRAFT. Bác sĩ phải đọc, điền [CẦN...], KÝ ở Phần 5.
@@ -23,7 +23,7 @@
 | Thiết kế | Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence) |
 | Chuẩn báo cáo | STROBE |
 | Ngày soạn SAP | 2026-07-31 |
-| Phiên bản | 1.2 (đồng bộ với đề cương nộp Hội đồng 2026-10-17) |
+| Phiên bản | 1.3 (đồng bộ với đề cương nộp Hội đồng và G3 A4 PHẦN 2c, 2026-10-17) |
 
 ---
 
@@ -34,6 +34,7 @@
 | 1.0 | 2026-07-31 | Hệ thống tự động (G1→G4) | Bản đầu tiên (khung 12 mục, sinh tự động) |
 | 1.1 | 2026-08-30 | Trợ lý tự động, đồng bộ từ Phụ lục A đề cương (nội dung chủ nhiệm đã duyệt) | Điền 12 mục từ đề cương: kết cục chính G1 + mô hình logistic thứ tự (proportional odds) + tập biến forced-in theo DAG + kế hoạch dữ liệu thiếu (complete-case chính, MICE nhạy cảm) + gom cụm `ma_ban_kham` + phần mềm R ≥ 4.3. CHƯA ký — chờ chủ nhiệm & nhà thống kê |
 | 1.2 | 2026-10-17 | Trợ lý tự động theo yêu cầu bác sĩ; thẩm định độc lập (tham-dinh-dau-ra) | Đồng bộ với đề cương nộp Hội đồng (bản gốc mới): N tối thiểu 808, DE 1,78, CV 1,0 (§1, §12); KTC Wilson trên n hiệu dụng (§3); quy tắc trọng số hậu phân tầng tách Mục tiêu 1/2 + gộp tầng nhỏ + thứ tự ưu tiên (§4); §9, §10, §11 đồng bộ |
+| 1.3 | 2026-10-17 | Trợ lý tự động theo biên bản hội đồng G0 DP-G0-1 (G0-TB-20261017T100650-107f4acb) | §12: thêm «Lực cho mục tiêu phụ» (Mục tiêu 2 — logistic thứ tự, Whitehead 1993, có hiệu chỉnh gom cụm) lấy từ G3 A4 PHẦN 2c; dòng Power ghi rõ kết cục chính không dùng power. Thống kê viên kiểm, PI quyết khi chốt G4 |
 
 ---
 
@@ -169,7 +170,8 @@ Ba nhóm biến đã KHÓA theo lập luận nhân quả trên DAG (Phụ lục 
 - **Tỷ lệ ước lượng (p):** 0.5  
 - **Sai số tuyệt đối cho phép (d):** ±0.05  
 - **Cỡ mẫu:** N = 1000  
-- **Power:** không dùng — cỡ mẫu theo độ chính xác của ước lượng, không kiểm định giả thuyết  
+- **Power:** kết cục chính không dùng — cỡ mẫu theo độ chính xác của ước lượng, không kiểm định giả thuyết; mục tiêu phụ xem dòng «Lực cho mục tiêu phụ»  
+- **Lực cho mục tiêu phụ:** Mục tiêu 2 (hồi quy logistic thứ tự (tỷ số chênh tương xứng) — Whitehead 1993): với N = 1000, α = 0.05 hai phía, lực 80%, OR nhỏ nhất phát hiện được cho mỗi 15 phút thời gian chờ là 1.10–1.23 (chiều giảm 0.82–0.91) ở n hiệu dụng ≈ 478 (sau 150 phiếu dự phòng hỏng, ÷ DE 1.78); chưa gom cụm 1.07–1.15. Giả định phân bố kết cục, ĐLC phơi nhiễm và R² tính lại khi có số liệu khảo sát thử và HIS (G3 A4 PHẦN 2c)  
 - **Tỷ lệ bỏ cuộc dự kiến:** 0.15  
 - **Hiệu ứng thiết kế (DE):** 1.78 — cỡ cụm không đều, DE = 1 + ((CV² + 1)·m − 1)·ICC (Eldridge, Ashby & Kerry 2006, doi:10.1093/ije/dyl129)  
 - **ICC:** 0.02  
@@ -193,7 +195,7 @@ Ba nhóm biến đã KHÓA theo lập luận nhân quả trên DAG (Phụ lục 
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
-║ SAP LOCK CERTIFICATE, PHIÊN BẢN 1.2 ║
+║ SAP LOCK CERTIFICATE, PHIÊN BẢN 1.3 ║
 ╠══════════════════════════════════════════════════════════════╣
 ║ Đề tài : hai-long-benh-nhan-C1a-BVQY175 ║
 ║ Ngày soạn : 2026-07-31 ║
