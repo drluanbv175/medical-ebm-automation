@@ -545,6 +545,93 @@ def he_so_thiet_ke(icc, cluster_size, cluster_cv=None):
     return 1 + ((cluster_cv ** 2 + 1) * cluster_size - 1) * icc
 
 
+def or_nho_nhat_thu_bac(n, phan_bo, sd_x, buoc, r2=0.0, alpha=0.05, power=0.80):
+    """Tỷ số chênh (OR > 1) nhỏ nhất phát hiện được cho mỗi `buoc` đơn vị của MỘT phơi nhiễm liên tục trong hồi quy
+    logistic thứ tự (tỷ số chênh tương xứng) — công thức Whitehead (Stat Med 1993;12:2257–2271, PMID 8134732,
+    doi:10.1002/sim.4780122404) đảo theo β:
+
+        β² = 3·(z₁₋α/₂ + z₁₋β)² / [n · (1 − Σpᵢ³) · Var(X) · (1 − R²)],  Var(X) = (ĐLC/bước)²
+
+    pᵢ: tỷ lệ dự kiến ở từng mức của kết cục thứ bậc; R²: hệ số xác định khi hồi quy phơi nhiễm theo biến hiệu chỉnh.
+    Thêm 17/10/2026 (hội đồng G0 C1a, DP-G0-1): lực cho mục tiêu phụ đã có trong đề cương nộp (Bảng 4.2) nhưng G3 chưa
+    tính được, nên SAP §12 vẫn ghi «Power: không dùng»."""
+    p = [float(x) for x in phan_bo]
+    if len(p) < 2 or any(x < 0 for x in p) or abs(sum(p) - 1) > 0.011:
+        raise ValueError(f"phân bố kết cục thứ bậc phải ≥ 2 mức, không âm, tổng ≈ 1 (đang {sum(p):.3f})")
+    if n <= 0 or sd_x <= 0 or buoc <= 0 or not 0 <= r2 < 1:
+        raise ValueError("cần n > 0, ĐLC > 0, bước > 0 và 0 ≤ R² < 1")
+    he_so = 1 - sum(x ** 3 for x in p)
+    beta2 = 3 * (z(alpha / 2) + z(1 - power)) ** 2 / (n * he_so * (sd_x / buoc) ** 2 * (1 - r2))
+    return math.exp(math.sqrt(beta2))
+
+
+def tinh_luc_muc_tieu_phu(cfg, n_danh_nghia, dropout, design_effect, alpha, power):
+    """Bảng lực cho mục tiêu phụ khai ở `gate_params.G3.luc_muc_tieu_phu` (KHÔNG đổi N — N vẫn do kết cục chính quyết).
+
+    Hai cột: n danh nghĩa chưa gom cụm (tái lập được bảng của đề cương) và n hiệu dụng thận trọng = n·(1 − bỏ cuộc)/DE.
+    DE của kết cục chính là CHẶN TRÊN cho phóng đại phương sai của hệ số một phơi nhiễm đo ở cấp cá nhân:
+    ≈ 1 + (m − 1)·ρₓ·ρᵧ ≤ DE (Scott & Holt, JASA 1982;77:848–854, doi:10.1080/01621459.1982.10477897).
+    Khai báo sai ⇒ trả {"loi": …} để A4 in rõ chỗ cần sửa, không đoán thay."""
+    try:
+        if not isinstance(cfg, dict):
+            raise ValueError("luc_muc_tieu_phu phải là một đối tượng JSON")
+        phan_bo = cfg.get("phan_bo_ket_cuc") or {}
+        sd_ds = cfg.get("sd_gia_dinh") or []
+        if not isinstance(phan_bo, dict) or not phan_bo or not isinstance(sd_ds, list) or not sd_ds:
+            raise ValueError("cần phan_bo_ket_cuc (tên → tỷ lệ từng mức) và sd_gia_dinh (danh sách ĐLC)")
+        buoc = float(cfg.get("buoc") or 1)
+        r2 = float(cfg.get("r2") or 0)
+        if not n_danh_nghia or n_danh_nghia <= 0:
+            raise ValueError("chưa có N (confirmed_n hoặc N tối thiểu) để tính lực")
+        de = float(design_effect) if design_effect else 1.0
+        n_phan_tich = math.floor(n_danh_nghia * (1 - (dropout or 0)))
+        n_hieu_dung = n_phan_tich / de
+        bang = []
+        for ten, ty_le in phan_bo.items():
+            for sd in sd_ds:
+                bang.append({
+                    "phan_bo": ten, "mot_tru_tong_p3": round(1 - sum(float(x) ** 3 for x in ty_le), 3), "sd": sd,
+                    "or_danh_nghia": round(or_nho_nhat_thu_bac(n_danh_nghia, ty_le, float(sd), buoc, r2, alpha,
+                                                               power), 3),
+                    "or_hieu_dung": round(or_nho_nhat_thu_bac(n_hieu_dung, ty_le, float(sd), buoc, r2, alpha,
+                                                              power), 3),
+                })
+    except (TypeError, ValueError) as exc:
+        return {"loi": str(exc)}
+    hd = [d["or_hieu_dung"] for d in bang]
+    dn = [d["or_danh_nghia"] for d in bang]
+    return {
+        "muc_tieu": cfg.get("muc_tieu") or "mục tiêu phụ",
+        "ket_cuc": cfg.get("ket_cuc") or "kết cục thứ bậc",
+        "phoi_nhiem": cfg.get("phoi_nhiem") or "phơi nhiễm",
+        "don_vi": cfg.get("don_vi") or "đơn vị", "buoc": buoc, "r2": r2,
+        "phan_tich": "hồi quy logistic thứ tự (tỷ số chênh tương xứng) — Whitehead 1993",
+        "alpha": alpha, "power": power, "n_danh_nghia": n_danh_nghia, "n_phan_tich": n_phan_tich,
+        "design_effect": round(de, 6), "n_hieu_dung": round(n_hieu_dung, 1),
+        "bang": bang,
+        "khoang_or_danh_nghia": [min(dn), max(dn)],
+        "khoang_or_hieu_dung": [min(hd), max(hd)],
+        "khoang_or_chieu_giam_hieu_dung": [round(1 / max(hd), 3), round(1 / min(hd), 3)],
+        "nguon": cfg.get("nguon") or "[CẦN NGUỒN giả định — pilot/HIS/y văn]",
+    }
+
+
+def dong_luc_muc_tieu_phu(kq):
+    """MỘT dòng tóm tắt dùng chung cho A4 PHẦN 4 và SAP §12 (run_g4_auto) — hai nơi in cùng một con số."""
+    if not kq or kq.get("loi"):
+        return None
+    lo, hi = kq["khoang_or_hieu_dung"]
+    g_lo, g_hi = kq["khoang_or_chieu_giam_hieu_dung"]
+    dn_lo, dn_hi = kq["khoang_or_danh_nghia"]
+    buoc = f"{kq['buoc']:g} {kq['don_vi']}"
+    return (f"{kq['muc_tieu']} ({kq['phan_tich']}): với N = {kq['n_danh_nghia']}, α = {kq['alpha']:g} hai phía, "
+            f"lực {round(kq['power'] * 100)}%, OR nhỏ nhất phát hiện được cho mỗi {buoc} {kq['phoi_nhiem']} là "
+            f"{lo:.2f}–{hi:.2f} (chiều giảm {g_lo:.2f}–{g_hi:.2f}) ở n hiệu dụng ≈ {kq['n_hieu_dung']:.0f} "
+            f"(sau {kq['n_danh_nghia'] - kq['n_phan_tich']} phiếu dự phòng hỏng, ÷ DE {kq['design_effect']:g}); "
+            f"chưa gom cụm {dn_lo:.2f}–{dn_hi:.2f}. Giả định phân bố kết cục, ĐLC phơi nhiễm và R² tính lại khi có "
+            "số liệu khảo sát thử và HIS")
+
+
 def ap_fpc_cum(n_total, design_code, population_n=None, icc=None, cluster_size=None, cluster_cv=None):
     """(n_total sau FPC/cụm, n_per_group tương ứng, ghi chú, design_effect hoặc None, số cụm hoặc None,
     N NGAY TRƯỚC khi nhân DE — tức sau FPC nếu có)."""
@@ -689,12 +776,53 @@ def guardrail_check(artifact, n_adjusted, effect_val, missing_sd=False):
                              "cần bác sĩ/thống kê viên tính thủ công (xem formula_used)")
     return errors, warnings
 
+def _phan_luc_muc_tieu_phu(kq):
+    """PHẦN 2c của A4 — lực cho mục tiêu phụ (chỉ khi `gate_params.G3.luc_muc_tieu_phu` được khai)."""
+    if not kq:
+        return []
+    dong = ["", "---", "", "## PHẦN 2c — LỰC CHO MỤC TIÊU PHỤ (không đổi N của PHẦN 2/2b)", ""]
+    if kq.get("loi"):
+        return dong + [f"[CẦN SỬA khai báo `gate_params.G3.luc_muc_tieu_phu`] — {kq['loi']}"]
+    buoc = f"{kq['buoc']:g} {kq['don_vi']}"
+    dong += [
+        f"N ở PHẦN 2/2b tính cho kết cục chính. Mục này cho biết, với N đó, mô hình của **{kq['muc_tieu']}** "
+        f"({kq['phan_tich']}) phát hiện được tỷ số chênh (OR) nhỏ nhất bao nhiêu cho mỗi {buoc} "
+        f"{kq['phoi_nhiem']} (α = {kq['alpha']:g} hai phía, lực {round(kq['power'] * 100)}%, "
+        f"R² của {kq['phoi_nhiem']} theo biến hiệu chỉnh = {kq['r2']:g}).",
+        "",
+        "Công thức: β² = 3·(z₁₋α/₂ + z₁₋β)² / [n·(1 − Σpᵢ³)·(ĐLC/bước)²·(1 − R²)], OR = e^β "
+        "(Whitehead 1993, PMID 8134732, doi:10.1002/sim.4780122404).",
+        "",
+        f"| Phân bố {kq['ket_cuc']} | 1 − Σpᵢ³ | ĐLC {kq['phoi_nhiem']} | OR — n = {kq['n_danh_nghia']}, chưa gom cụm "
+        f"| OR — n hiệu dụng ≈ {kq['n_hieu_dung']:.0f} (thận trọng) |",
+        "|---|---|---|---|---|",
+    ]
+    dong += [f"| {d['phan_bo']} | {d['mot_tru_tong_p3']:.3f} | {d['sd']:g} {kq['don_vi']} | {d['or_danh_nghia']:.3f} "
+             f"| {d['or_hieu_dung']:.3f} |" for d in kq["bang"]]
+    lo, hi = kq["khoang_or_hieu_dung"]
+    g_lo, g_hi = kq["khoang_or_chieu_giam_hieu_dung"]
+    dong += [
+        "",
+        f"**Thận trọng:** OR nhỏ nhất phát hiện được {lo:.2f}–{hi:.2f} cho mỗi {buoc} (chiều giảm {g_lo:.2f}–{g_hi:.2f}).",
+        "",
+        f"n hiệu dụng = {kq['n_danh_nghia']} × (1 − dự phòng phiếu hỏng) = {kq['n_phan_tich']}, chia DE "
+        f"{kq['design_effect']:g} của kết cục chính. DE này là CHẶN TRÊN: với phơi nhiễm đo ở cấp cá nhân, phương "
+        "sai của hệ số hồi quy phóng đại khoảng 1 + (m − 1)·ρₓ·ρᵧ ≤ DE (Scott & Holt 1982, "
+        "doi:10.1080/01621459.1982.10477897); ICC thật của phơi nhiễm ước lượng từ dữ liệu.",
+        "",
+        f"Nguồn giả định: {kq['nguon']}. [CẦN THỐNG KÊ VIÊN KIỂM] — tính lại khi có số liệu khảo sát thử và HIS; "
+        "thay đổi sau khi khoá SAP ghi «SAP AMENDMENT».",
+    ]
+    return dong
+
+
 def generate_artifact(study, topic, design_code, design_primary, alpha, power, effect_val, effect_type,
                       n_per_group, n_total, n_adjusted, dropout, formula_used, sens_rows, sens_mults,
                       p_event, run_date, sd=None, design_ambiguous=False, confirmed_n=None,
                       hypothesis_type="superiority", nguon_tham_so=None, nguon_hieu_qua=None,
                       outcome_direction=None, margin=None, precision=0.05, prevalence=None, n_benh=None,
-                      n_khong_benh=None, population_n=None, icc=None, cluster_size=None, cluster_cv=None, nguon_mo_ta=None):
+                      n_khong_benh=None, population_n=None, icc=None, cluster_size=None, cluster_cv=None, nguon_mo_ta=None,
+                      luc_phu=None):
     """Sinh A4 — Kế hoạch cỡ mẫu.
 
     VÁ 04/10/2026 (soát từng cổng, G3-08): cột «Nguồn» in theo XUẤT XỨ THẬT của từng tham số (CLI / study_meta / đặc
@@ -892,6 +1020,7 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
                 "effect size ở PHẦN 1); N chốt ở trên vẫn được ghi nhận nhưng KHÔNG có cơ sở "
                 "so sánh."
             )
+    lines += _phan_luc_muc_tieu_phu(luc_phu)
     lines += [
         "",
         "---",
@@ -1012,6 +1141,8 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
             f"N THỰC TẾ đã được bác sĩ/chủ nhiệm CHỐT = {confirmed_n} người "
             f"({'≥' if (n_adjusted > 0 and confirmed_n >= n_adjusted) else '—'} N tối thiểu tính toán)."
         )
+    if dong_luc_muc_tieu_phu(luc_phu):
+        lines.append(f"Lực cho {dong_luc_muc_tieu_phu(luc_phu)}.")
     lines += [
         "```",
         "",
@@ -1571,6 +1702,10 @@ def main():
             icc=args.icc, cluster_size=args.cluster_size, cluster_cv=args.cluster_cv)
         print(f"  → N mỗi nhóm: {n_per_group}, N tổng: {n_total}, N điều chỉnh: {n_adjusted}")
 
+    # 17/10/2026 (hội đồng G0 C1a, DP-G0-1): lực cho mục tiêu phụ khai ở study_meta — chỉ báo cáo, không đổi N.
+    luc_phu = (tinh_luc_muc_tieu_phu(_g3_pinned["luc_muc_tieu_phu"], args.confirmed_n or n_adjusted, dropout,
+                                     design_effect, alpha, power)
+               if _g3_pinned.get("luc_muc_tieu_phu") is not None else None)
     print("📝 Bước 4/6: Sinh artifact A4...")
     artifact = generate_artifact(
         study, topic, design_code, design_primary, alpha, power,
@@ -1583,6 +1718,7 @@ def main():
         n_khong_benh=n_khong_benh, population_n=args.population_n, icc=args.icc, cluster_size=args.cluster_size,
         cluster_cv=args.cluster_cv,
         nguon_mo_ta={k: _g3_pinned.get(k) for k in ("effect_source", "prevalence_source", "margin_source")},
+        luc_phu=luc_phu,
     )
     md_path = out_dir / f"G3_A4_SAMPLE_SIZE_{study}.md"
     md_path.write_text(artifact, encoding="utf-8", newline="\n")
@@ -1820,6 +1956,7 @@ def main():
         "design_effect": round(design_effect, 6) if design_effect is not None else None,
         "n_total_truoc_de": n_total_truoc_de,
         "n_clusters": n_clusters,
+        **({"luc_muc_tieu_phu": luc_phu} if luc_phu is not None else {}),
         "population_n": args.population_n,
         "nguon_tham_so": nguon_tham_so,
         "nguon_hieu_qua": nguon_hieu_qua,
