@@ -42,6 +42,33 @@ Retraction Watch ngoại tuyến không được nạp trên máy ở lượt n�
 
 Nội dung các DOI trong nước đã được đối chiếu ở tổng hợp G0-T3 (2026-10-11, tiêu đề + tóm tắt Crossref).
 
+## 3b. Kiểm rút bài qua DOI không có PMID (Crossref `updated-by` + Retraction Watch ngoại tuyến, 2026-10-17)
+
+Bộ kiểm rút bài máy-kiểm (`check_citation_retraction.py`) chỉ nhận PMID; cảnh báo cổng A12 đòi tra riêng các DOI không có
+PMID song song. Đã tra bằng `app/sources/crossref_retraction.CrossrefRetraction` (siêu dữ liệu nhà xuất bản, quan hệ
+`updated-by`) và chỉ mục Retraction Watch ngoại tuyến (62.707 DOI có phán quyết).
+
+| DOI | Tiêu đề (Crossref, rút gọn) | Dùng ở | Crossref | Retraction Watch |
+|---|---|---|---|---|
+| 10.1002/9780470316696 | Multiple Imputation for Nonresponse in Surveys… | đề cương TLTK 49 (sách) | tồn tại, không có thông báo rút | không có bản ghi |
+| 10.1093/ije/dyl129 | Sample size for cluster randomized trials: effect of coefficient of va… | G3, SAP §3/§12, đề cương 4.4 | tồn tại, không có thông báo rút | không có bản ghi |
+| 10.1093/jssam/smv024 | Evaluating Confidence Interval Methods for Binomial Proportions in Clu… | SAP 1.2 §3 | tồn tại, không có thông báo rút | không có bản ghi |
+| 10.18637/jss.v009.i08 | Analysis of Complex Survey Samples… | SAP 1.2 §4 | tồn tại, không có thông báo rút | không có bản ghi |
+| 10.3368/jhr.50.2.301 | What Are We Weighting For?… | SAP 1.2 §4 | tồn tại, không có thông báo rút | không có bản ghi |
+| 10.38148/jhds.0706skpt23-064 | Đánh giá sự hài lòng của người bệnh khám ngoại trú tại khoa khám bệnh… | đề cương TLTK (tạp chí trong nước) | tồn tại, không có thông báo rút | không có bản ghi |
+| 10.51298/vmj.v540i1.10302 | MỘT SỐ YẾU TỐ LIÊN QUAN ĐẾN SỰ HÀI LÒNG CỦA NGƯỜI BỆNH VỀ DỊCH VỤ KHÁM… | đề cương TLTK (tạp chí trong nước) | tồn tại, không có thông báo rút | không có bản ghi |
+| 10.51298/vmj.v549i2.13771 | KHẢO SÁT SỰ HÀI LÒNG NGƯỜI BỆNH NGOẠI TRÚ TẠI KHU KHÁM BỆNH AB – KHOA… | đề cương TLTK (tạp chí trong nước) | tồn tại, không có thông báo rút | không có bản ghi |
+| 10.51403/0868-2836/2021/78 | Sự hài lòng của người bệnh về chất lượng dịch vụ y tế tại Khoa Y học c… | đề cương TLTK (tạp chí trong nước) | tồn tại, không có thông báo rút | không có bản ghi |
+| 10.52163/yhc.v64i1.573 | SỰ HÀI LÒNG VÀ MỐI LIÊN QUAN CỦA NGƯỜI BỆNH ĐẾN KHÁM BỆNH TẠI KHOA KHÁ… | đề cương TLTK (tạp chí trong nước) | tồn tại, không có thông báo rút | không có bản ghi |
+| 10.52163/yhc.v64i6.841 | SỰ HÀI LÒNG CỦA NGƯỜI BỆNH VỚI CHẤT LƯỢNG DỊCH VỤ THEO YÊU CẦU TẠI KHO… | đề cương TLTK (tạp chí trong nước) | tồn tại, không có thông báo rút | không có bản ghi |
+| 10.52163/yhc.v66i1.1940 | 36. HÀI LÒNG NGƯỜI BỆNH VỀ DỊCH VỤ ĐÔNG Y TẠI KHOA Y HỌC CỔ TRUYỀN BỆ… | đề cương TLTK (tạp chí trong nước) | tồn tại, không có thông báo rút | không có bản ghi |
+| 10.52163/yhc.v67i7.5934 | THỰC TRẠNG THỜI GIAN CHỜ KHÁM BỆNH VÀ SỰ HÀI LÒNG CỦA NGƯỜI BỆNH TẠI K… | đề cương TLTK (tạp chí trong nước) | tồn tại, không có thông báo rút | không có bản ghi |
+| 10.52163/yhc.v67icd5.5018 | ĐÁNH GIÁ HIỆU QUẢ CỦA HỆ THỐNG ĐĂNG KÝ KHÁM BỆNH TRỰC TUYẾN TẠI KHOA K… | đề cương TLTK (tạp chí trong nước) | tồn tại, không có thông báo rút | không có bản ghi |
+
+Ba DOI mới của SAP 1.2 đã được thẩm định độc lập (`tham-dinh-dau-ra`, 17/10/2026) đối chiếu nội dung: mỗi nguồn
+ủng hộ đúng mệnh đề gắn với nó (Dean & Pagano qua tóm tắt; Lumley 2004 qua toàn văn mục 2.3, 3, 5.1.2; Solon và cộng
+sự 2015 qua tóm tắt).
+
 ## 4. Việc còn lại cho PI (không chặn A12)
 
 - 🟡 Danh mục tài liệu tham khảo của đề cương thống nhất còn ghi «[CẦN BỔ SUNG] (định dạng Vancouver đầy đủ)» ở các mục PMID — metadata đầy đủ đã có trong `A12_METADATA_RECEIPT.json`; định dạng Vancouver là việc trình bày, không phải tính có thật của trích dẫn.
