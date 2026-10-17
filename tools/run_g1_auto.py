@@ -2025,6 +2025,37 @@ def _thu_muc_de_tai(study: str) -> Path:
     return _REPO_ROOT / "exports" / study
 
 
+def dung_lai_ho_tro(study: str, out_dir: Path) -> int:
+    """Dựng lại 4 artifact phụ trợ G1 (A1b · A2b · A13 · A13b) từ dữ liệu ĐÃ LƯU — KHÔNG tra PubMed (17/10/2026).
+
+    Vì sao: sổ bằng chứng A2b dùng lại sàng lọc G0-T3 (`G0_TONG_HOP_BANG_CHUNG_<mã>.json`) — khi agent G0 sửa sàng lọc
+    thì sổ G1 phải dựng lại, nhưng chạy lại G1 đầy đủ thì tra lại PubMed (mạng có thể bị chặn) và sinh lại A2. Đường
+    này chỉ đọc G1_checkpoint (thiết kế, mẫu effect size), G0_checkpoint, study_meta; tệp người đã sửa tay được sao lưu
+    trước khi ghi đè (`build_supporting_artifacts`). Không đổi dấu vân tay chốt G1 (dấu băm gate_params.G1 + thiết kế).
+    Thiếu G1_checkpoint ⇒ mã 2, không ghi gì."""
+    out_dir = Path(out_dir)
+    cp_path = out_dir / "G1_checkpoint.json"
+    if not cp_path.is_file():
+        print(f"🚧 Không dựng lại được: thiếu {cp_path.name} — chạy G1 đầy đủ trước.")
+        return GC.EXIT_BLOCKED
+    cp = json.loads(cp_path.read_text(encoding="utf-8"))
+    g0_path = out_dir / "G0_checkpoint.json"
+    g0_cp = json.loads(g0_path.read_text(encoding="utf-8")) if g0_path.is_file() else {}
+    meta = GC.load_study_meta(out_dir)
+    design = cp.get("design") if isinstance(cp.get("design"), dict) else {}
+    effects = [e for e in cp.get("effect_size_samples") or [] if isinstance(e, dict)]
+    topic = meta.get("topic") or g0_cp.get("topic") or study
+    paths = G1Q.build_supporting_artifacts(study=study, topic=topic, out_dir=out_dir, design=design,
+                                           g0_checkpoint=g0_cp, effects=effects, meta=meta,
+                                           generated_at=datetime.now().strftime("%Y-%m-%d %H:%M"))
+    for key, path in paths.items():
+        print(f"  📝 {key}: {path.name}")
+    bao_cao = G1Q.evaluate_study(study, out_dir, write=True)
+    print(f"  🧭 G1 quality: {bao_cao.get('status')}")
+    print("  Cần bác sĩ kiểm chứng.")
+    return GC.EXIT_OK
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="G1 Auto — Tự động hóa cổng G1: Thiết kế nghiên cứu + SAP skeleton"
@@ -2041,10 +2072,15 @@ def main():
     parser.add_argument("--repo-root", default=None,
                         help="Gốc repo chứa exports/ (mặc định: repo y khoa chứa công cụ này — KHÔNG theo thư mục đang "
                              "đứng). Dùng cho test cô lập hoặc bản sao đo thử.")
+    parser.add_argument("--dung-lai-ho-tro", action="store_true",
+                        help="Dựng lại A1b/A2b/A13/A13b từ dữ liệu đã lưu (không tra PubMed, không sinh lại A2)")
     args = parser.parse_args()
     if args.repo_root:
         global _REPO_ROOT
         _REPO_ROOT = Path(args.repo_root).resolve()
+    if args.dung_lai_ho_tro:
+        _ma = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))
+        return dung_lai_ho_tro(_ma, _thu_muc_de_tai(_ma))
 
     if args.email:
         os.environ["NCBI_EMAIL"] = args.email

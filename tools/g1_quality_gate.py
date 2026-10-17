@@ -26,6 +26,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence
 
 import annex2_quality_gate as A2X
 import cong_song as CS
+import g0_tong_hop as GT
 import placeholder_contract as PC
 import skill_standards as S
 
@@ -688,6 +689,32 @@ def _o_bang(gia_tri: Any) -> str:
     return " ".join(str(gia_tri or "").split()).replace("|", "/")
 
 
+def _o_so(v: Any) -> str:
+    """Ô sổ bằng chứng (Markdown một dòng, không «|»); trống ⇒ nhãn [CẦN TRÍCH XUẤT]."""
+    return re.sub(r"\s+", " ", str(v if v is not None else "")).replace("|", "/").strip() or "[CẦN TRÍCH XUẤT]"
+
+
+def _sang_loc_g0(out_dir: Path, study: str) -> Dict[str, Mapping[str, Any]]:
+    """«pmid:<n>»/«doi:<x>» → bản ghi sàng lọc G0-T3 (`sang_loc` · `nguon_bo_sung` · `sang_loc_khong_loc`). Tệp vắng
+    hoặc hỏng ⇒ {} (sổ giữ nhãn [CẦN] như cũ — không đoán)."""
+    du_lieu, _loi = GT.doc(Path(out_dir), GT.TEP_TONG_HOP, study)
+    if not isinstance(du_lieu, dict):
+        return {}
+    ra: Dict[str, Mapping[str, Any]] = {}
+    for khoa in ("sang_loc", "nguon_bo_sung", "sang_loc_khong_loc"):
+        for bai in du_lieu.get(khoa) or []:
+            if not isinstance(bai, dict):
+                continue
+            ban = dict(bai)
+            if khoa == "sang_loc_khong_loc":
+                ban["lien_quan"] = "khong"
+            if bai.get("pmid"):
+                ra[f"pmid:{str(bai['pmid']).strip()}"] = ban
+            if bai.get("doi"):
+                ra[f"doi:{str(bai['doi']).strip().lower()}"] = ban
+    return ra
+
+
 def build_supporting_artifacts(
     *,
     study: str,
@@ -769,24 +796,41 @@ def build_supporting_artifacts(
         )
     effect_pmids = {str(effect.get("pmid") or "").strip() for effect in effects}
     meta_g0 = _metadata_tu_g0(out_dir)
-    n_tu_g0 = 0
+    sang_g0 = _sang_loc_g0(out_dir, study)
+    n_tu_g0 = n_sang = 0
+    lac_de: List[str] = []
+
+    def _dong_ledger(ma_hien: str, khoa: str, tieu_de_md: Optional[str]) -> None:
+        nonlocal n_sang
+        bai = sang_g0.get(khoa)
+        if bai and bai.get("lien_quan") == "khong":
+            lac_de.append(f"{ma_hien} — {_text(bai.get('ly_do') or bai.get('tom_tat'))}")
+            return
+        tieu_de = tieu_de_md or (_text(bai.get("tieu_de")) if bai and bai.get("tieu_de") else None)
+        if bai:
+            n_sang += 1
+            nhan = {"truc_tiep": "liên quan TRỰC TIẾP",
+                    "gian_tiep": "liên quan GIÁN TIẾP"}.get(bai.get("lien_quan"), "")
+            evidence_rows.append(
+                f"| {ma_hien} | {tieu_de or '[CẦN TRÍCH XUẤT METADATA]'} | {_o_so(bai.get('thiet_ke_that'))} | "
+                f"{_o_so(bai.get('tom_tat'))} (theo tóm tắt) | [CẦN THẨM ĐỊNH RoB — đọc toàn văn] | "
+                f"Đã sàng ở G0-T3 (tiêu đề + tóm tắt): {nhan}; chưa đọc toàn văn |")
+            return
+        evidence_rows.append(
+            f"| {ma_hien} | {tieu_de or '[CẦN TRÍCH XUẤT METADATA]'} | "
+            "[CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | "
+            "[CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |"
+        )
+
     for pmid in identifiers["pmids"]:
         if pmid in effect_pmids:
             continue
         md = meta_g0.get(str(pmid))
         if md:
             n_tu_g0 += 1
-        evidence_rows.append(
-            f"| PMID:{pmid} | {md or '[CẦN TRÍCH XUẤT METADATA]'} | "
-            "[CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | "
-            "[CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |"
-        )
+        _dong_ledger(f"PMID:{pmid}", f"pmid:{pmid}", md)
     for doi in identifiers["dois"]:
-        evidence_rows.append(
-            f"| DOI:{doi} | [CẦN TRÍCH XUẤT METADATA] | "
-            "[CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | "
-            "[CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |"
-        )
+        _dong_ledger(f"DOI:{doi}", f"doi:{str(doi).lower()}", None)
     if not evidence_rows:
         evidence_rows.append(
             "| [CẦN PMID/DOI] | [CẦN TRÍCH XUẤT] | [CẦN] | [CẦN] | "
@@ -803,6 +847,17 @@ def build_supporting_artifacts(
         "(`G0_pubmed_raw.json`) — chỉ là tiêu đề/tạp chí/năm, KHÔNG phải thẩm định. "
         "Các cột còn lại vẫn là việc người thật.\n"
     ) if n_tu_g0 else ""
+    if n_sang:
+        # 17/10/2026 (hoàn thiện G1 C1a): sổ từng là 36 dòng «[CẦN TRÍCH XUẤT]» kể cả bài G0-T3 đã sàng là lạc đề
+        # (Hirschsprung, phiên dịch ở Mỹ…) — dùng lại công đọc của G0 thay vì đẩy lại cho người thật.
+        ghi_chu_md += (
+            f"> Cột **Thiết kế · Hiệu ứng · Trạng thái**: {n_sang} dòng lấy từ sàng lọc G0-T3 "
+            f"(`{GT.TEP_TONG_HOP.format(study=study)}`, đọc tiêu đề + tóm tắt) — KHÔNG phải trích xuất toàn văn; "
+            "thẩm định RoB vẫn là việc người thật. Bài G0-T3 xếp lạc đề nằm ở mục riêng, không vào bảng.\n")
+    gioi_han = (f"xem `G0_TIM_BO_SUNG_PRISMA_S_{study}.md` (nguồn, chuỗi, số hit, recall bài mốc, giới hạn — PRISMA-S)"
+                if (out_dir / f"G0_TIM_BO_SUNG_PRISMA_S_{study}.md").exists() else "[CẦN XÁC NHẬN]")
+    lac_de_md = ("\n## Đã sàng ở G0 — lạc đề (không vào sổ)\n" + "\n".join(f"- {x}" for x in lac_de) + "\n"
+                 if lac_de else "")
     evidence = f"""# EVIDENCE LEDGER (A2b) — {study}
 > [DỰ THẢO] Không tự gán GRADE; chưa đọc toàn văn phải giữ nhãn [CẦN].
 {ghi_chu_md}
@@ -810,13 +865,13 @@ def build_supporting_artifacts(
 - Nguồn tối thiểu: PubMed + ít nhất một nguồn phù hợp khác.
 - Truy vấn G0: `{query}`
 - Ngày rà: {generated_at[:10]}
-- Giới hạn truy xuất/recall: [CẦN XÁC NHẬN]
+- Giới hạn truy xuất/recall: {gioi_han}
 
 ## Bảng Evidence Ledger
 | PMID/DOI | Tiêu đề | Thiết kế/N | Hiệu ứng chính | RoB | Trạng thái nội dung |
 |---|---|---|---|---|---|
 {chr(10).join(evidence_rows)}
-
+{lac_de_md}
 ## Khoảng trống nghiên cứu
 {gap_text}
 
