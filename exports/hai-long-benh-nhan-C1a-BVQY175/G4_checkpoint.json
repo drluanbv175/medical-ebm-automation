@@ -200,8 +200,8 @@
         "id": "G4-HUMAN-08",
         "label": "Xác nhận G4 của thống kê viên/PI gắn đúng nội dung SAP hiện tại (dấu vân tay)",
         "status": "REVIEW",
-        "evidence": "nội dung đã đổi sau khi xác nhận (dấu lúc xác nhận 0c69d8d3e0c7d060 ≠ hiện tại 641a9e9c25a2e38a) — chủ nhiệm đọc lại rồi xác nhận lại",
-        "action": "Sau khi đọc lại SAP, ghi gate_params.G4.dau_van_tay_chot=\"641a9e9c25a2e38a\" (dấu nội dung PHẦN 3 hiện tại) cùng reviewed_at dạng ISO-8601; sửa SAP sau đó phải xác nhận lại."
+        "evidence": "nội dung đã đổi sau khi xác nhận (dấu lúc xác nhận 0c69d8d3e0c7d060 ≠ hiện tại 08abfd86c2c311b2) — chủ nhiệm đọc lại rồi xác nhận lại",
+        "action": "Sau khi đọc lại SAP, ghi gate_params.G4.dau_van_tay_chot=\"08abfd86c2c311b2\" (dấu nội dung PHẦN 3 hiện tại) cùng reviewed_at dạng ISO-8601; sửa SAP sau đó phải xác nhận lại."
       }
     ],
     "pending_actions": [
@@ -209,7 +209,7 @@
       "Thống kê viên/PI tự ký: approve_gate.py --gate G4 --reviewer-role METHODS_STATISTICS_REVIEWER / BIOSTATISTICIAN / STATISTICIAN HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR",
       "Tạo khóa riêng: setup_gate_approval_key.py --role STATISTICIAN, và để thống kê viên giữ.",
       "Cân nhắc để thống kê viên (không phải người đã ký G2/G8/G9) ký G4.",
-      "Sau khi đọc lại SAP, ghi gate_params.G4.dau_van_tay_chot=\"641a9e9c25a2e38a\" (dấu nội dung PHẦN 3 hiện tại) cùng reviewed_at dạng ISO-8601; sửa SAP sau đó phải xác nhận lại."
+      "Sau khi đọc lại SAP, ghi gate_params.G4.dau_van_tay_chot=\"08abfd86c2c311b2\" (dấu nội dung PHẦN 3 hiện tại) cùng reviewed_at dạng ISO-8601; sửa SAP sau đó phải xác nhận lại."
     ],
     "standards_basis": [
       {

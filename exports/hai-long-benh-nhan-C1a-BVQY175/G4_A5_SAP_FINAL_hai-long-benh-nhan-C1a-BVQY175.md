@@ -1,15 +1,16 @@
 # A5, SAP FINAL + SAP LOCK CERTIFICATE (DRAFT, CHỜ BÁC SĨ KÝ)
 **Đề tài:** Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối  
-**Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Phiên bản SAP:** 1.1 | **Ngày sinh:** 2026-07-31 | **Cập nhật:** 2026-08-30
+**Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Phiên bản SAP:** 1.2 | **Ngày sinh:** 2026-07-31 | **Cập nhật:** 2026-10-17
 **Chuẩn báo cáo:** STROBE
 
 > LƯU Ý: **CỔNG G4, SAP LOCK:** SAP này ở trạng thái DRAFT. Bác sĩ phải đọc, điền [CẦN...], KÝ ở Phần 5.
 > Sau khi ký: KHÔNG thay đổi kết cục chính / mô hình chính. Phân tích thêm sau khi xem dữ liệu → ghi THĂM DÒ.
 >
-> **QUAN HỆ VỚI ĐỀ CƯƠNG:** SAP chi tiết đầy đủ là **Phụ lục A của đề cương**
-> (`De-cuong_Hai-long-C1a_BVQY175.md`, mục A.1–A.6, kèm DAG ở Phụ lục D). Bản 12 mục dưới đây
-> là bản ĐỒNG BỘ máy-đọc phục vụ cổng G4, chép từ Phụ lục A ngày 2026-08-30 — hai bản phải
-> khớp nhau; phát hiện lệch thì Phụ lục A của đề cương là bản gốc và bản này phải sửa theo.
+> **QUAN HỆ VỚI ĐỀ CƯƠNG:** từ 2026-10-17 bản gốc là **đề cương nộp Hội đồng**
+> (`DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md`, mục 4.10 và Phụ lục A). Đề cương v1.0
+> (`De-cuong_Hai-long-C1a_BVQY175.md`, Phụ lục A, DAG ở Phụ lục D) giữ làm lịch sử — bản 1.1 của SAP chép từ
+> đó ngày 2026-08-30. Bản 12 mục dưới đây là bản ĐỒNG BỘ máy-đọc phục vụ cổng G4; phát hiện lệch thì đề
+> cương nộp Hội đồng là bản gốc và bản này phải sửa theo. Mọi «đề cương 4.10» dưới đây là của bản nộp.
 
 ---
 
@@ -22,7 +23,7 @@
 | Thiết kế | Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence) |
 | Chuẩn báo cáo | STROBE |
 | Ngày soạn SAP | 2026-07-31 |
-| Phiên bản | 1.1 (đồng bộ từ đề cương 2026-08-30) |
+| Phiên bản | 1.2 (đồng bộ với đề cương nộp Hội đồng 2026-10-17) |
 
 ---
 
@@ -32,6 +33,7 @@
 |---|---|---|---|
 | 1.0 | 2026-07-31 | Hệ thống tự động (G1→G4) | Bản đầu tiên (khung 12 mục, sinh tự động) |
 | 1.1 | 2026-08-30 | Trợ lý tự động, đồng bộ từ Phụ lục A đề cương (nội dung chủ nhiệm đã duyệt) | Điền 12 mục từ đề cương: kết cục chính G1 + mô hình logistic thứ tự (proportional odds) + tập biến forced-in theo DAG + kế hoạch dữ liệu thiếu (complete-case chính, MICE nhạy cảm) + gom cụm `ma_ban_kham` + phần mềm R ≥ 4.3. CHƯA ký — chờ chủ nhiệm & nhà thống kê |
+| 1.2 | 2026-10-17 | Trợ lý tự động theo yêu cầu bác sĩ; thẩm định độc lập (tham-dinh-dau-ra) | Đồng bộ với đề cương nộp Hội đồng (bản gốc mới): N tối thiểu 808, DE 1,78, CV 1,0 (§1, §12); KTC Wilson trên n hiệu dụng (§3); quy tắc trọng số hậu phân tầng tách Mục tiêu 1/2 + gộp tầng nhỏ + thứ tự ưu tiên (§4); §9, §10, §11 đồng bộ |
 
 ---
 
@@ -58,9 +60,10 @@
 - Biến liên tục: trung bình ± SD (phân phối chuẩn) hoặc trung vị [IQR] (lệch); điểm hài lòng trình bày CẢ HAI (A.2 đề cương)  
 - Biến phân loại: n (%)  
 - Tỷ lệ hài lòng chung và theo lĩnh vực (ngưỡng cố định ≥ 4/5) kèm KTC 95% **Wilson score trên cỡ mẫu hiệu dụng** n_hd = n ÷ DE (đề cương 4.10, Mục tiêu 1; Dean & Pagano 2015, doi:10.1093/jssam/smv024):  
-  - DE = hiệu ứng thiết kế của CHÍNH tỷ lệ đó, ước lượng từ số liệu bằng phương sai tuyến tính hoá theo chùm `ma_ban_kham` (`survey::svymean(..., deff = TRUE)`; đường Python: `run_stats_analysis.py --ty-le … --cot-cum ma_ban_kham`), chặn dưới 1 — gom cụm không được làm KTC hẹp hơn giả định độc lập  
-  - Báo kèm ICC thực tế, CV cỡ chùm thực tế và DE theo ICC = 1 + ((CV² + 1)·m − 1)·ICC (Eldridge 2006) để đối chiếu với giả định lập kế hoạch (G3: DE 1,78); báo cả KTC Wilson giả định độc lập để thấy mức nới rộng do gom cụm  
-  - Khi áp trọng số hậu phân tầng (§4), DE lấy từ thiết kế CÓ trọng số nên đã gồm cả hiệu ứng trọng số  
+  - DE = hiệu ứng thiết kế của CHÍNH tỷ lệ đó, ước lượng từ số liệu bằng phương sai tuyến tính hoá theo chùm `ma_ban_kham` (`survey::svymean(..., deff = "replace")` — KHÔNG dùng `deff = TRUE`: thiết kế không trọng số cho Inf, có hiệu chỉnh quần thể hữu hạn sau `postStratify`; đường Python cho bản KHÔNG trọng số: `run_stats_analysis.py --ty-le g1 --nguong-ty-le 4 --cot-cum ma_ban_kham`), chặn dưới 1 — gom cụm không được làm KTC hẹp hơn giả định độc lập  
+  - Hiệu chỉnh bậc tự do thiết kế: n_hd × (z₀,₉₇₅ ÷ t₀,₉₇₅; K−1)², K = số bàn khám có phiếu (K = 50 ⇒ ×≈0,95) (Dean & Pagano 2015)  
+  - Báo kèm ICC thực tế, CV cỡ chùm thực tế (độ lệch chuẩn ÷ trung bình số phiếu mỗi bàn) và DE theo ICC = 1 + ((CV² + 1)·m − 1)·ICC (Eldridge 2006) để đối chiếu với giả định lập kế hoạch (G3: DE 1,78); báo cả KTC Wilson giả định độc lập để thấy mức nới rộng do gom cụm  
+  - Khi áp trọng số hậu phân tầng (§4), tỷ lệ và DE lấy từ thiết kế CÓ trọng số (R `survey`, đường Python không hỗ trợ trọng số) nên DE đã gồm cả hiệu ứng trọng số  
 - Báo % đạt điểm sàn/trần mỗi lĩnh vực; > 15% (ngưỡng Terwee) → ghi là hạn chế đo lường, ưu tiên trung vị [IQR]  
 - Đơn biến (Bảng 5.3): t-test/ANOVA hoặc Pearson/Spearman (kết cục liên tục), χ²/Fisher (nhị phân thứ cấp), luôn kèm hiệu ứng + KTC 95% — **chỉ vai trò mô tả, KHÔNG phải bước lọc biến**  
 
@@ -68,7 +71,10 @@
 
 - **Phương pháp:** hồi quy logistic **THỨ TỰ** (ordinal/proportional odds; `MASS::polr`/`rms::orm`/`ordinal::clm`) trên G1 giữ 5 mức; báo tỷ số chênh chung hiệu chỉnh (cOR) + KTC 95%. Exposure chính `thoigian_cho` báo hiệu ứng theo **mỗi 15 phút**; kiểm phi tuyến bằng restricted cubic spline 3 nút hoặc phân tích theo phân vị. Kiểm giả định proportional odds (Brant/so sánh log-likelihood theo ranh giới cắt) TRƯỚC khi diễn giải cOR; vi phạm → partial proportional odds/generalized ordered logit, báo hệ số theo từng ranh giới cắt cho biến vi phạm.  
 - **Gom cụm theo bàn khám (bắt buộc, mọi kịch bản):** sai số chuẩn robust theo chùm `ma_ban_kham`; số bàn khám < 15 → mô hình thứ tự hệ số chặn ngẫu nhiên trở thành phân tích CHÍNH; báo ICC cho G1 và từng lĩnh vực A–F.  
-- **Trọng số theo thiết kế chọn mẫu (quy tắc định trước, đề cương 4.10):** tầng h = ngày trong tuần × khung giờ khám; Nₕ = số lượt khám của tầng trong kỳ thu thập (HIS), nₕ = số phiếu hợp lệ của tầng. Mẫu phân bổ theo lưu lượng nên tự cân bằng ⇒ phân tích chính KHÔNG trọng số. Nếu có BẤT KỲ tầng nào lệch quá 20% so với tỷ lệ lưu lượng thực, tức |(nₕ/n) ÷ (Nₕ/N) − 1| > 0,20, phân tích CHÍNH của cả hai mục tiêu áp trọng số hậu phân tầng wₕ = (Nₕ/N) ÷ (nₕ/n) (Σwᵢ = n): thiết kế `survey::svydesign(ids = ~ma_ban_kham, …)` + `postStratify` theo Nₕ (Lumley 2004, doi:10.18637/jss.v009.i08); tỷ lệ = ước lượng có trọng số kèm KTC Wilson trên n_hd (§3); mô hình chính = `survey::svyolr` (proportional odds theo thiết kế, sai số theo chùm). Phép kiểm lệch tầng chỉ dùng nₕ, Nₕ — làm và ghi bảng nₕ · Nₕ · tỷ số TRƯỚC khi xem kết cục. Bản không trọng số luôn báo song song; chênh lệch lớn giữa hai bản ở mô hình liên quan là tín hiệu hiệu ứng thay đổi theo tầng, được bàn luận, không chọn bản «đẹp hơn» (Solon, Haider & Wooldridge 2015, doi:10.3368/jhr.50.2.301)  
+- **Trọng số theo thiết kế chọn mẫu (quy tắc định trước, đề cương 4.10):** tầng h = ngày trong tuần × khung giờ khám; Nₕ = số lượt khám của tầng trong kỳ thu thập (HIS), nₕ = số phiếu hợp lệ của tầng. Tầng có nₕ < 10 (hoặc trống) được gộp với khung giờ liền kề cùng ngày, chưa đủ thì gộp tiếp với cùng khung giờ của ngày liền kề, TRƯỚC khi tính trọng số. Mẫu phân bổ theo lưu lượng nên tự cân bằng ⇒ mặc định KHÔNG trọng số. Quy tắc kích hoạt: có BẤT KỲ tầng nào lệch quá 20% so với tỷ lệ lưu lượng thực, tức |(nₕ/n) ÷ (Nₕ/N) − 1| > 0,20; phép kiểm chỉ dùng nₕ, Nₕ — làm và ghi bảng nₕ · Nₕ · tỷ số TRƯỚC khi xem kết cục. Khi kích hoạt, trọng số hậu phân tầng wₕ = (Nₕ/N) ÷ (nₕ/n) áp như sau:  
+  - **Mục tiêu 1 (tỷ lệ, phân bố mô tả):** bản CÓ trọng số là phân tích CHÍNH — `survey::svydesign(ids = ~ma_ban_kham, data = …)` rồi `postStratify(…, strata = ~tang, population = <Nₕ>)` (Lumley 2004, doi:10.18637/jss.v009.i08; `postStratify` chuẩn hoá Σw = N, ước lượng không đổi so với wₕ chuẩn hoá Σw = n); KTC Wilson trên n_hd với DE từ `deff = "replace"` (§3); bản không trọng số báo song song  
+  - **Mục tiêu 2 (mô hình chính):** giữ KHÔNG trọng số — ngày trong tuần và khung giờ (biến tạo tầng) đã nằm trong tập forced-in nên trọng số không cần cho ước lượng vững của cOR hiệu chỉnh; mô hình CÓ trọng số `survey::svyolr` (cùng thiết kế trên) là phân tích độ nhạy định trước (§9). Chênh lệch lớn giữa hai bản là tín hiệu hiệu ứng thay đổi theo tầng, được bàn luận, không chọn bản «đẹp hơn» (Solon, Haider & Wooldridge 2015, doi:10.3368/jhr.50.2.301)  
+  - Thứ tự ưu tiên: các quy tắc về giả định proportional odds và số bàn khám < 15 ở trên áp cho mô hình chính KHÔNG trọng số; `svyolr` chỉ ước lượng mô hình PO nên khi PO bị vi phạm, bản có trọng số vẫn chỉ là độ nhạy và được diễn giải là cOR trung bình hoá  
 - **Quần thể:** phân tích đầy đủ trên phiếu hợp lệ (`PhieuHopLe`, ba ngưỡng loại ở §1)  
 - **Trình bày:** ước lượng + 95%CI; không báo p-value đơn độc; làm tròn theo A.1 đề cương (tỷ lệ 1 chữ số; Likert 2 chữ số; OR/β 2 chữ số; p trị số thực 3 chữ số)  
 
@@ -112,14 +118,15 @@ Ba nhóm biến đã KHÓA theo lập luận nhân quả trên DAG (Phụ lục 
 - Có/không điểm ảnh hưởng; mô hình đầy đủ vs rút gọn khi số tham số eo hẹp  
 - **Loại phiếu có hỗ trợ ghi** (`mode_tra_loi` = 2/3), chạy lại trên tập tự điền (`mode_tra_loi` = 1), so sánh chiều và độ lớn cOR  
 - Mô hình thứ tự hệ số chặn ngẫu nhiên theo `ma_ban_kham` (đối chiếu sai số chuẩn chùm)  
-- Có/không trọng số hậu phân tầng: bản KHÔNG được chọn làm phân tích chính theo quy tắc §4 (lệch tầng > 20%) chạy song song; ước lượng theo thiết kế khai tầng + chùm  
+- Có/không trọng số hậu phân tầng (quy tắc §4): Mục tiêu 1 — bản không phải phân tích chính chạy song song; Mục tiêu 2 — mô hình CÓ trọng số `svyolr` khi quy tắc kích hoạt  
+- Ước lượng theo thiết kế (đề cương 4.10, kịch bản 5): chùm `ma_ban_kham` + hậu phân tầng ngày × khung giờ (`postStratify`) — KHÔNG khai `strata =` vì bàn khám không lồng trong tầng (khai `nest = TRUE` tách mỗi bàn thành PSU bàn × tầng, làm sai số chuẩn hẹp giả)  
 - Phi tuyến exposure: restricted cubic spline 3 nút / phân tích theo phân vị thời gian chờ  
 - Quy tắc gộp mức G1 khi lệch trần (mức < 20 quan sát, gộp 1→2→3, mức 5 không gộp, không dưới 3 mức; bảng 5 mức gốc vẫn in đủ)  
 
 ### §10 PHẦN MỀM + SEED
 
 - **Phần mềm:** R ≥ 4.3 (đã khóa tại mục 4.10 đề cương)  
-- **Packages:** `stats`, `car`, `rms`, `logistf`, `mice` (mô hình phụ trợ); `MASS::polr` / `rms::orm` / `ordinal::clm` (mô hình chính — logistic thứ tự); `brant`, `VGAM`, `ordinal` (kiểm định & mở rộng proportional odds); `sandwich` + `lmtest` (sai số chuẩn vững theo chùm `vcovCL`); `survey` (DE/n hiệu dụng, hậu phân tầng `postStratify`, `svyolr`)  
+- **Packages:** `stats`, `car`, `rms`, `logistf`, `mice` (mô hình phụ trợ); `MASS::polr` / `rms::orm` / `ordinal::clm` (mô hình chính — logistic thứ tự); `brant`, `VGAM`, `ordinal` (kiểm định & mở rộng proportional odds); `sandwich` + `lmtest` (sai số chuẩn vững theo chùm `vcovCL`); `survey` ≥ 4.5 (DE/n hiệu dụng `deff = "replace"`, hậu phân tầng `postStratify`, `svyolr`; phiên bản chính xác ghi bằng `sessionInfo()` khi chạy)  
 - **Random seed:** `set.seed(20260830)` — giá trị ĐỀ XUẤT của bản nháp, dùng chung cho MICE/bootstrap/chia đôi mẫu EFA-CFA; chủ nhiệm/nhà thống kê xác nhận hoặc thay giá trị khi ký (A.6 mục 12 đề cương)  
 
 ### §11 DUMMY TABLES (Khung bảng kết quả)
@@ -144,6 +151,17 @@ Ba nhóm biến đã KHÓA theo lập luận nhân quả trên DAG (Phụ lục 
 | Phân bố G1 theo 5 mức, n (%) | ___ | — |
 | Tỷ lệ hài lòng chung (G1 ≥ 4/5), % | ___ | ___–___ (Wilson, n hiệu dụng) |
 | cOR thời gian chờ mỗi 15 phút (mô hình chính, hiệu chỉnh đủ tập forced-in) | ___ | ___–___ |
+
+**Bảng 2b, Gom cụm và trọng số của tỷ lệ hài lòng chung (§3, §4):**
+| Chỉ số | Giá trị |
+|---|---|
+| Số bàn khám K; CV cỡ chùm thực tế | ___; ___ |
+| ICC thực tế; DE theo ICC (Eldridge) | ___; ___ |
+| DE thiết kế (tuyến tính hoá, chặn dưới 1); n hiệu dụng (đã hiệu chỉnh bậc tự do) | ___; ___ |
+| KTC 95% Wilson giả định độc lập | ___–___ |
+| Quy tắc trọng số §4 kích hoạt? (tầng lệch lớn nhất, %) | Có/Không (___) |
+| Tỷ lệ có trọng số · không trọng số, KTC 95% Wilson n hiệu dụng | ___ (___–___) · ___ (___–___) |
+| cOR thời gian chờ có trọng số `svyolr` (độ nhạy) | ___ (___–___) |
 
 ### §12 ALPHA + ĐỘ CHÍNH XÁC (cỡ mẫu theo sai số cho phép)
 
@@ -175,7 +193,7 @@ Ba nhóm biến đã KHÓA theo lập luận nhân quả trên DAG (Phụ lục 
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
-║ SAP LOCK CERTIFICATE, PHIÊN BẢN 1.0 ║
+║ SAP LOCK CERTIFICATE, PHIÊN BẢN 1.2 ║
 ╠══════════════════════════════════════════════════════════════╣
 ║ Đề tài : hai-long-benh-nhan-C1a-BVQY175 ║
 ║ Ngày soạn : 2026-07-31 ║

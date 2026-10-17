@@ -34,14 +34,14 @@
 | G4-HUMAN-05 | Bác sĩ/thống kê viên xác nhận cơ chế dữ liệu thiếu ở §6 | PASS | gate_params.G4.missing_data_mechanism_confirmed=True |
 | G4-HUMAN-06 | Subgroup/đa so sánh xác nhận TIỀN ĐỊNH trước khi khóa dữ liệu (ngày ISO, ký trước khoá hoặc có amendment) | PASS | subgroup đã xác nhận tiền định, mốc thời gian hợp lý (hoặc chưa có data_lock_date để đối chiếu) |
 | G4-HUMAN-07 | reviewed_by_role khớp vai trò bắt buộc của G4 | PASS | gate_params.G4.reviewed_by_role='STATISTICIAN' |
-| G4-HUMAN-08 | Xác nhận G4 của thống kê viên/PI gắn đúng nội dung SAP hiện tại (dấu vân tay) | REVIEW | nội dung đã đổi sau khi xác nhận (dấu lúc xác nhận 0c69d8d3e0c7d060 ≠ hiện tại 641a9e9c25a2e38a) — chủ nhiệm đọc lại rồi xác nhận lại |
+| G4-HUMAN-08 | Xác nhận G4 của thống kê viên/PI gắn đúng nội dung SAP hiện tại (dấu vân tay) | REVIEW | nội dung đã đổi sau khi xác nhận (dấu lúc xác nhận 0c69d8d3e0c7d060 ≠ hiện tại 08abfd86c2c311b2) — chủ nhiệm đọc lại rồi xác nhận lại |
 
 ## Việc còn lại
 - Chạy python3 tools/g3_quality_gate.py --study <đề tài>, xử lý mục BLOCK/REVIEW của G3 (thống kê viên/PI xác nhận tham số gắn dấu vân tay) rồi chấm lại G4.
 - Thống kê viên/PI tự ký: approve_gate.py --gate G4 --reviewer-role METHODS_STATISTICS_REVIEWER / BIOSTATISTICIAN / STATISTICIAN HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR
 - Tạo khóa riêng: setup_gate_approval_key.py --role STATISTICIAN, và để thống kê viên giữ.
 - Cân nhắc để thống kê viên (không phải người đã ký G2/G8/G9) ký G4.
-- Sau khi đọc lại SAP, ghi gate_params.G4.dau_van_tay_chot="641a9e9c25a2e38a" (dấu nội dung PHẦN 3 hiện tại) cùng reviewed_at dạng ISO-8601; sửa SAP sau đó phải xác nhận lại.
+- Sau khi đọc lại SAP, ghi gate_params.G4.dau_van_tay_chot="08abfd86c2c311b2" (dấu nội dung PHẦN 3 hiện tại) cùng reviewed_at dạng ISO-8601; sửa SAP sau đó phải xác nhận lại.
 
 ## Nền chuẩn
 | Chuẩn | Phạm vi | Nguồn |
