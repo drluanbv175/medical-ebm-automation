@@ -1,8 +1,8 @@
 {
   "schema": "g0/tong_hop_bang_chung/v1",
-  "nguoi_soan": "tong-quan-y-van (agent, theo biên bản G0-DG-20261007T182841-0b213597); bổ sung 2026-10-11 theo biên bản BD-G0-T2: 9 DOI trong nước (Crossref); cập nhật 2026-10-14 sau lượt chạy lại G0 với chuỗi PubMed mới (BD-G0-T2 việc 4): sàng 8 PMID mới của nền, chuyển 40623792 sang nguồn bổ sung, thêm 2 bài mốc gián tiếp — Claude soạn trực tiếp, chưa qua đánh giá chéo; cập nhật 2026-10-17 theo biên bản DP-G0-2 (G0-TB-20261017T100650-0c046ac2): thêm 5 nguồn bổ sung từ lượt tìm nhắm đúng — Claude soạn trực tiếp, chưa qua đánh giá chéo",
+  "nguoi_soan": "tong-quan-y-van (agent, theo biên bản G0-DG-20261007T182841-0b213597); bổ sung 2026-10-11 theo biên bản BD-G0-T2: 9 DOI trong nước (Crossref); cập nhật 2026-10-14 sau lượt chạy lại G0 với chuỗi PubMed mới (BD-G0-T2 việc 4): sàng 8 PMID mới của nền, chuyển 40623792 sang nguồn bổ sung, thêm 2 bài mốc gián tiếp — Claude soạn trực tiếp, chưa qua đánh giá chéo; cập nhật 2026-10-17 theo biên bản DP-G0-2 (G0-TB-20261017T100650-0c046ac2): thêm 5 nguồn bổ sung từ lượt tìm nhắm đúng — Claude soạn trực tiếp, chưa qua đánh giá chéo; cập nhật 2026-10-17 theo biên bản G0-DG-20261017T100649-43a39c66 (RQ2–RQ5, RQ8): sàng nhánh KHÔNG lọc, sửa câu tự mâu thuẫn, ghi chú mâu thuẫn nội tại doi:10.52163/yhc.v64i6.841, thêm mức bằng chứng sau sàng lọc — Claude soạn trực tiếp, chưa qua đánh giá chéo",
   "ngay_soan": "2026-10-17",
-  "cach_doc": "đọc tiêu đề + tóm tắt PubMed (connector PubMed, 2026-10-10) — chưa đọc toàn văn; 9 DOI trong nước (bổ sung 2026-10-11): đọc tiêu đề + tóm tắt Crossref — chưa đọc toàn văn; 8 PMID nền mới (2026-10-14): đọc tiêu đề + tóm tắt Europe PMC — chưa đọc toàn văn; 5 nguồn bổ sung 2026-10-17 (lượt tìm nhắm đúng, §7 G0_TIM_BO_SUNG_PRISMA_S): đọc tiêu đề + tóm tắt; PMID 32244937 đọc toàn văn PMC (CC BY 4.0); doi:10.55401/y8fmp830 CHƯA đọc toàn văn (chưa đọc được điều khoản nhà xuất bản — PI đọc)",
+  "cach_doc": "đọc tiêu đề + tóm tắt PubMed (connector PubMed, 2026-10-10) — chưa đọc toàn văn; 9 DOI trong nước (bổ sung 2026-10-11): đọc tiêu đề + tóm tắt Crossref — chưa đọc toàn văn; 8 PMID nền mới (2026-10-14): đọc tiêu đề + tóm tắt Europe PMC — chưa đọc toàn văn; 5 nguồn bổ sung 2026-10-17 (lượt tìm nhắm đúng, §7 G0_TIM_BO_SUNG_PRISMA_S): đọc tiêu đề + tóm tắt; PMID 32244937 đọc toàn văn PMC (CC BY 4.0); doi:10.55401/y8fmp830 CHƯA đọc toàn văn (chưa đọc được điều khoản nhà xuất bản — PI đọc); nhánh KHÔNG lọc (13 PMID bộ lọc đã loại + 2 bản ghi vượt trần) sàng 2026-10-17: đọc tiêu đề + tóm tắt PubMed qua connector",
   "sang_loc": [
     {
       "pmid": "26683779",
@@ -195,7 +195,7 @@
       "tieu_de": "Sự hài lòng của người bệnh với chất lượng dịch vụ theo yêu cầu tại Khoa Khám bệnh Bệnh viện Đa khoa Đống Đa Hà Nội năm 2023 (Tạp chí Y học Cộng đồng, 2023)",
       "thiet_ke_that": "Cắt ngang có phân tích (cỡ mẫu không nêu trong tóm tắt), thang 5 khía cạnh kiểu SERVQUAL",
       "lien_quan": "truc_tiep",
-      "tom_tat": "Dịch vụ khám theo yêu cầu: hài lòng chung 62,3%; khía cạnh hữu hình thấp nhất (64,9%).",
+      "tom_tat": "Dịch vụ khám theo yêu cầu: hài lòng chung 62,3%; năm khía cạnh: hữu hình 64,9%, tin tưởng 70,1%, đáp ứng 62,3%, đảm bảo 80,1%, cảm thông 70,1%. Lưu ý: tóm tắt kết luận khía cạnh hữu hình thấp nhất trong khi chính số liệu cho khía cạnh đáp ứng thấp hơn — mâu thuẫn nội tại của nguồn; chỉ trích con số, không trích kết luận xếp hạng.",
       "cach_tim": "Crossref, truy vấn «hài lòng người bệnh ngoại trú khoa khám bệnh theo yêu cầu bệnh viện quân y» (20 kết quả đầu) và «sự hài lòng người bệnh Bệnh viện Quân y 175» (15 kết quả đầu), xếp theo liên quan, tra 2026-10-11; chưa kiểm có trên PubMed hay không"
     },
     {
@@ -309,14 +309,116 @@
       "lien_quan": "truc_tiep",
       "tom_tat": "Thời gian chờ theo 4 quy trình 26,3–174,8 phút; tỷ lệ hài lòng chung về thời gian chờ 53,7%; tóm tắt không nêu thời gian chờ đo bằng phần mềm/HIS hay cách khác — CHƯA đọc toàn văn (PI đọc mục Phương pháp).",
       "cach_tim": "G0_TIM_BO_SUNG_PRISMA_S §7 (lượt tìm nhắm đúng 2026-10-17, hội đồng G0 DP-G0-2)"
+    },
+    {
+      "pmid": "42582692",
+      "tieu_de": "Perceived Healthcare Service Quality of Patients in the Post COVID-19 Pandemic: A Cross-Sectional Study at a Public District Hospital in Vietnam (Health Sci Rep, 2026)",
+      "thiet_ke_that": "Cắt ngang, người bệnh ngoại trú một bệnh viện huyện công lập (n=190, 11/2022–06/2023), thang SERVPERF",
+      "lien_quan": "truc_tiep",
+      "tom_tat": "75,3% đánh giá chất lượng dịch vụ «tốt»; Cronbach's alpha 0,96; tuổi, thu nhập, học vấn liên quan với đánh giá; tỷ lệ «tốt» thấp hơn mốc trước đại dịch.",
+      "cach_tim": "PubMed · nhánh khong_loc của truy vấn G0 (chuỗi PI chọn) · 2026-10-14"
+    },
+    {
+      "pmid": "33116425",
+      "tieu_de": "Older Patient Satisfaction with Chronic Pain Management in the National Geriatric Hospital in Vietnam (Patient Prefer Adherence, 2020)",
+      "thiet_ke_that": "Cắt ngang, 495 người cao tuổi đau mạn (BV Lão khoa Trung ương, 05–10/2018), thang PTSS, hồi quy Tobit",
+      "lien_quan": "gian_tiep",
+      "tom_tat": "Kém hài lòng nhất với thông tin về đau và hiệu quả thuốc; người bệnh ngoại trú kém hài lòng hơn nội trú về thông tin được cung cấp — hài lòng với quản lý đau, không phải dịch vụ khám ngoại trú chung.",
+      "cach_tim": "PubMed · nhánh khong_loc của truy vấn G0 (chuỗi PI chọn) · 2026-10-14"
+    },
+    {
+      "pmid": "22548036",
+      "tieu_de": "Potential collaboration with the private sector for the provision of ambulatory care in the Mekong region, Vietnam (Glob Health Action, 2012)",
+      "thiet_ke_that": "Phương pháp hỗn hợp: thảo luận nhóm, phỏng vấn sâu, đánh giá cơ sở và khảo sát người bệnh lúc ra về tại cơ sở tư nhân",
+      "lien_quan": "gian_tiep",
+      "tom_tat": "80% người bệnh tìm cơ sở tư nhân trước dù sống gần cơ sở công, chủ yếu vì cảm nhận chất lượng; người dùng cả hai loại cơ sở hài lòng hơn với cơ sở tư.",
+      "cach_tim": "PubMed · nhánh khong_loc của truy vấn G0 (chuỗi PI chọn) · 2026-10-14"
+    },
+    {
+      "pmid": "16162387",
+      "tieu_de": "Healthcare in the New Vietnam: comparing patients' satisfaction with outpatient care in a traditional neighborhood clinic and a new, western-style clinic in Ho Chi Minh City (Soc Sci Med, 2005)",
+      "thiet_ke_that": "Cắt ngang so sánh, phỏng vấn 194 người bệnh tại hai phòng khám tư nhân (kiểu phương Tây và kiểu ngoài giờ truyền thống)",
+      "lien_quan": "gian_tiep",
+      "tom_tat": "Người bệnh ở phòng khám kiểu phương Tây có kỳ vọng và mức hài lòng cao hơn ở nhiều khía cạnh, dựa vào cách giao tiếp và cách cung cấp dịch vụ hơn là tay nghề — liên quan tới dịch vụ khám theo yêu cầu/trả phí.",
+      "cach_tim": "PubMed · nhánh khong_loc của truy vấn G0 — bản ghi vượt trần 30, lấy nốt qua connector PubMed · 2026-10-17"
     }
   ],
-  "tong_hop": "Trong phạm vi một truy vấn PubMed G0 (chạy lại 2026-10-14 bằng chuỗi PI chọn) cộng các nguồn bổ sung ở bảng trên — KHÔNG phải tổng quan hệ thống: bằng chứng tại Việt Nam là các khảo sát cắt ngang về hài lòng người bệnh ngoại trú (PMID 34445940; PMID 36439278; PMID 32584904; PMID 31703089; PMID 34017606; PMID 42625778). Thời gian chờ và thủ tục lặp lại là lĩnh vực hài lòng thấp nhất (PMID 32584904; PMID 31703089) và người chờ lâu hơn ít có khả năng hài lòng hơn (PMID 34017606); nhóm dùng dịch vụ theo yêu cầu và ở tỉnh khác hài lòng thấp hơn trong một mẫu nhỏ 108 người (PMID 34445940). Chiều liên quan của BHYT không nhất quán giữa các nghiên cứu (PMID 36439278 và PMID 42625778 ngược với PMID 32584904). Thời gian chờ đã được đo từ phần mềm quản lý bệnh viện ở quy mô lớn (PMID 28690831). Hai tổng quan hệ thống tìm được đều ở bối cảnh khác (Trung Quốc PMID 32992600; Ethiopia PMID 40995744); trong phạm vi đã tra chưa thấy tổng quan riêng cho Việt Nam, cũng chưa thấy nghiên cứu công bố tại một khoa khám theo yêu cầu của bệnh viện quân y. 8/16 bài của nền G0 lạc đề (khớp chữ, khác chủ đề); bộ lọc thiết kế loại cả ba bài mốc trong nước có trên PubMed (PMID 36292392; PMID 28690831; PMID 34017606 — chỉ nhánh KHÔNG lọc bắt được) nên chúng nằm ở bảng nguồn bổ sung. Y văn tiếng Việt không lập chỉ mục PubMed chưa được rà. Bổ sung 2026-10-11 (Crossref, tiếng Việt): đã có khảo sát hài lòng tại khoa khám theo yêu cầu (doi:10.52163/yhc.v67icd5.5018 tại BV TƯQĐ 108 — trọng tâm đăng ký trực tuyến; doi:10.51298/vmj.v540i1.10302; doi:10.52163/yhc.v64i6.841), tại bệnh viện quân y (doi:10.52163/yhc.v64i1.573; doi:10.51298/vmj.v549i2.13771; doi:10.38148/jhds.0706skpt23-064) và tại chính BV Quân y 175 ở khoa Y học cổ truyền (doi:10.51403/0868-2836/2021/78; doi:10.52163/yhc.v66i1.1940); một nghiên cứu 2026 gắn thời gian chờ ĐO TRỰC TIẾP với hài lòng (doi:10.52163/yhc.v67i7.5934). Trong phạm vi đã tra chưa thấy bài tại khối khám ngoại trú theo yêu cầu của BV Quân y 175, cũng chưa thấy bài trong nước gắn hài lòng với thời gian chờ lấy từ mốc HIS. Lượt tìm nhắm đúng 2026-10-17 (§7 G0_TIM_BO_SUNG_PRISMA_S): thời gian chờ lấy từ phần mềm/HIS đã có ở nghiên cứu trong nước (PMID 28690831; PMID 29915440; doi:10.52163/yhc.v67i2.4385; doi:10.54436/jns.2024.03.766) nhưng các bài này không đo hài lòng; các bài gắn thời gian chờ với hài lòng dùng thời gian chờ tự báo (PMID 34017606 — cách đo nêu ở PMID 32244937) hoặc đo trực tiếp (doi:10.52163/yhc.v67i7.5934); doi:10.55401/y8fmp830 chưa rõ cách đo. Phân tích đa mức hài lòng ngoại trú đã có ở cấp cơ sở y tế và tỉnh (PMID 34017606); chưa thấy ước lượng ICC theo bàn khám.",
+  "tong_hop": "Trong phạm vi một truy vấn PubMed G0 (chạy lại 2026-10-14 bằng chuỗi PI chọn) cộng các nguồn bổ sung ở bảng trên — KHÔNG phải tổng quan hệ thống: bằng chứng tại Việt Nam là các khảo sát cắt ngang về hài lòng người bệnh ngoại trú (PMID 34445940; PMID 36439278; PMID 32584904; PMID 31703089; PMID 34017606; PMID 42625778). Thời gian chờ và thủ tục lặp lại là lĩnh vực hài lòng thấp nhất (PMID 32584904; PMID 31703089) và người chờ lâu hơn ít có khả năng hài lòng hơn (PMID 34017606); nhóm dùng dịch vụ theo yêu cầu và ở tỉnh khác hài lòng thấp hơn trong một mẫu nhỏ 108 người (PMID 34445940). Chiều liên quan của BHYT không nhất quán giữa các nghiên cứu (PMID 36439278 và PMID 42625778 ngược với PMID 32584904). Thời gian chờ đã được đo từ phần mềm quản lý bệnh viện ở quy mô lớn (PMID 28690831). Hai tổng quan hệ thống tìm được đều ở bối cảnh khác (Trung Quốc PMID 32992600; Ethiopia PMID 40995744); trong phạm vi truy vấn PubMed G0 chưa thấy tổng quan riêng cho Việt Nam; nghiên cứu tại khoa khám theo yêu cầu của bệnh viện quân y chỉ thấy ở tạp chí trong nước (Crossref, xem phần bổ sung 2026-10-11 dưới đây). 8/16 bài của nền G0 (các nhánh có lọc thiết kế) lạc đề (khớp chữ, khác chủ đề); nhánh KHÔNG lọc thêm 11 bài lạc đề (sang_loc_khong_loc) và 4 bài liên quan đưa vào nguồn bổ sung (2026-10-17); bộ lọc thiết kế loại cả ba bài mốc trong nước có trên PubMed (PMID 36292392; PMID 28690831; PMID 34017606 — chỉ nhánh KHÔNG lọc bắt được) nên chúng nằm ở bảng nguồn bổ sung. Y văn tiếng Việt không lập chỉ mục PubMed chưa được rà. Bổ sung 2026-10-11 (Crossref, tiếng Việt): đã có khảo sát hài lòng tại khoa khám theo yêu cầu (doi:10.52163/yhc.v67icd5.5018 tại BV TƯQĐ 108 — trọng tâm đăng ký trực tuyến; doi:10.51298/vmj.v540i1.10302; doi:10.52163/yhc.v64i6.841), tại bệnh viện quân y (doi:10.52163/yhc.v64i1.573; doi:10.51298/vmj.v549i2.13771; doi:10.38148/jhds.0706skpt23-064) và tại chính BV Quân y 175 ở khoa Y học cổ truyền (doi:10.51403/0868-2836/2021/78; doi:10.52163/yhc.v66i1.1940); một nghiên cứu 2026 gắn thời gian chờ ĐO TRỰC TIẾP với hài lòng (doi:10.52163/yhc.v67i7.5934). Trong phạm vi đã tra chưa thấy bài tại khối khám ngoại trú theo yêu cầu của BV Quân y 175, cũng chưa thấy bài trong nước gắn hài lòng với thời gian chờ lấy từ mốc HIS. Lượt tìm nhắm đúng 2026-10-17 (§7 G0_TIM_BO_SUNG_PRISMA_S): thời gian chờ lấy từ phần mềm/HIS đã có ở nghiên cứu trong nước (PMID 28690831; PMID 29915440; doi:10.52163/yhc.v67i2.4385; doi:10.54436/jns.2024.03.766) nhưng các bài này không đo hài lòng; các bài gắn thời gian chờ với hài lòng dùng thời gian chờ tự báo (PMID 34017606 — cách đo nêu ở PMID 32244937) hoặc đo trực tiếp (doi:10.52163/yhc.v67i7.5934); doi:10.55401/y8fmp830 chưa rõ cách đo. Phân tích đa mức hài lòng ngoại trú đã có ở cấp cơ sở y tế và tỉnh (PMID 34017606); chưa thấy ước lượng ICC theo bàn khám. Sàng nhánh KHÔNG lọc 2026-10-17 (hội đồng G0, G0-DG-20261017T100649-43a39c66): thêm một khảo sát cắt ngang ngoại trú tại bệnh viện huyện (PMID 42582692) và ba bài gián tiếp (PMID 33116425; PMID 22548036; PMID 16162387); không bài nào lấy thời gian chờ từ mốc HIS. Các tỷ lệ hài lòng nêu trên đến từ công cụ khác nhau (mẫu phiếu QĐ 3869/QĐ-BYT, SERVQUAL/SERVPERF, bộ phiếu chuẩn 2024) — không so trực tiếp với nhau hay với kết quả của đề tài.",
   "rut_bai": {
     "ngay": "2026-10-14",
     "cong_cu": "tools/check_citation_retraction.py (PubMed: PublicationType + CommentsCorrections RetractionIn); kiểm theo mã DOI bằng app/sources/crossref_retraction.py + app/sources/retraction_watch.py (2026-10-11); 2026-10-14: R1C của run_g0_auto (16 PMID nền) + tools/check_citation_retraction.py (11 PMID bổ sung)",
     "ket_qua": "16/16 PMID nền (2026-10-14) + 11/11 PMID bổ sung (2026-10-14) không phát hiện rút bài/expression of concern theo PubMed; 9/9 DOI trong nước bổ sung 2026-10-11: Crossref không có thông báo rút (updated-by) và Retraction Watch ngoại tuyến không có bản ghi",
-    "ngay_bo_sung_20261017": "PMID 34017606, 32244937, 29915440, 28690831: tools/check_citation_retraction.py OK; DOI 10.55401/y8fmp830, 10.52163/yhc.v67i7.5934, 10.52163/yhc.v67i2.4385, 10.54436/jns.2024.03.766: crossref_retraction «ok» + Retraction Watch ngoại tuyến không có bản ghi — chưa thấy tín hiệu rút"
+    "ngay_bo_sung_20261017": "PMID 34017606, 32244937, 29915440, 28690831: tools/check_citation_retraction.py OK; DOI 10.55401/y8fmp830, 10.52163/yhc.v67i7.5934, 10.52163/yhc.v67i2.4385, 10.54436/jns.2024.03.766: crossref_retraction «ok» + Retraction Watch ngoại tuyến không có bản ghi — chưa thấy tín hiệu rút",
+    "ngay_bo_sung_20261017_khong_loc": "PMID 42582692, 33116425, 16162387, 22548036: tools/check_citation_retraction.py OK — chưa thấy tín hiệu rút"
   },
-  "disclaimer": "Cần bác sĩ kiểm chứng. ĐỀ XUẤT của agent — PI đọc và tự chốt novelty_justification ở gate_params.G0."
+  "disclaimer": "Cần bác sĩ kiểm chứng. ĐỀ XUẤT của agent — PI đọc và tự chốt novelty_justification ở gate_params.G0.",
+  "sang_loc_khong_loc": [
+    {
+      "pmid": "40453044",
+      "lien_quan": "khong",
+      "ly_do": "dược lâm sàng từ xa (telepharmacy), khác chủ đề"
+    },
+    {
+      "pmid": "38903303",
+      "lien_quan": "khong",
+      "ly_do": "dược lâm sàng từ xa (telepharmacy), khác chủ đề"
+    },
+    {
+      "pmid": "35880766",
+      "lien_quan": "khong",
+      "ly_do": "cựu binh Hoa Kỳ (VHA) — khớp chữ «Vietnam»"
+    },
+    {
+      "pmid": "34163271",
+      "lien_quan": "khong",
+      "ly_do": "niềm tin về vắc-xin COVID-19, không đo hài lòng dịch vụ"
+    },
+    {
+      "pmid": "31013464",
+      "lien_quan": "khong",
+      "ly_do": "hệ thống y tế Bắc California, Hoa Kỳ"
+    },
+    {
+      "pmid": "30881090",
+      "lien_quan": "khong",
+      "ly_do": "dịch tễ đau; hài lòng với kết quả điều trị đau, không phải dịch vụ khám ngoại trú"
+    },
+    {
+      "pmid": "28558740",
+      "lien_quan": "khong",
+      "ly_do": "nữ cựu binh Hoa Kỳ (VHA)"
+    },
+    {
+      "pmid": "24926310",
+      "lien_quan": "khong",
+      "ly_do": "lọc máu và chất lượng dịch lọc"
+    },
+    {
+      "pmid": "20619211",
+      "lien_quan": "khong",
+      "ly_do": "can thiệp chăm sóc giảm nhẹ trong phòng khám HIV"
+    },
+    {
+      "pmid": "17932796",
+      "lien_quan": "khong",
+      "ly_do": "chương trình đào tạo sau đại học y học gia đình"
+    },
+    {
+      "pmid": "10948789",
+      "lien_quan": "khong",
+      "ly_do": "người Mỹ gốc Việt/Hoa tại Hoa Kỳ (bản ghi vượt trần)"
+    }
+  ],
+  "khong_loc_vuot_tran": {
+    "ngay": "2026-10-17",
+    "pmid": [
+      "16307633",
+      "16162387",
+      "16148334",
+      "10948789",
+      "7612579"
+    ],
+    "cach": "connector PubMed (E-utilities), cùng chuỗi PI chọn, 35/35 bản ghi — 3/5 đã có trong hồ sơ"
+  },
+  "muc_bang_chung_sau_sang_loc": "Sau sàng lọc (mọi nhánh của truy vấn G0 + nguồn bổ sung): bằng chứng liên quan TRỰC TIẾP đều là khảo sát cắt ngang tại Việt Nam (vd PMID 34445940; PMID 42625778; PMID 42582692; doi:10.52163/yhc.v67icd5.5018). SR/MA duy nhất (PMID 22336833) và RCT duy nhất (PMID 29980547) của nền G0 là lạc đề; hai tổng quan hệ thống liên quan ở bối cảnh khác (PMID 32992600 Trung Quốc; PMID 40995744 Ethiopia). Trong phạm vi đã tra chưa thấy RCT hay tổng quan hệ thống về hài lòng người bệnh ngoại trú tại Việt Nam. Dòng «TRUNG BÌNH — có 1 SR/MA» của A1 tính theo số hit, không theo sàng lọc."
 }

@@ -57,8 +57,8 @@
     "22336833",
     "29980547"
   ],
-  "evidence_note": "TRUNG BÌNH — có 1 SR/MA",
-  "evidence_level": "TRUNG BÌNH — có 1 SR/MA",
+  "evidence_note": "TRUNG BÌNH — có 1 SR/MA (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)",
+  "evidence_level": "TRUNG BÌNH — có 1 SR/MA (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)",
   "research_gaps": [
     "Không thấy guideline được PubMed đánh chỉ mục (PubMed, truy vấn G0 «(\"Patient Satisfaction\"[Mesh] OR satisf*[tiab] OR \"patient experience\"[tiab]) AND (\"Outpatients\"[Mesh] OR \"Ambulatory Care\"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND (\"Vietnam\"[Mesh] OR vietnam*[tiab] OR \"viet nam\"[tiab])») — văn bản quy phạm trong nước (Bộ Y tế…) và trang hiệp hội KHÔNG nằm trên PubMed: phải rà trước khi kết luận «chưa có»",
     "Không có SR/MA, RCT hay guideline mới trong 5 năm gần đây (2021-2026) — nhánh này KHÔNG soi nghiên cứu quan sát",
@@ -153,7 +153,7 @@
     "A1_docx": "exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.docx"
   },
   "pending_doctor_actions": [
-    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"f619939b4c69e1e5\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"4a93f21a3eb997b2\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
     "Chạy: python tools/g0_quality_gate.py --study hai-long-benh-nhan-C1a-BVQY175"
   ],
   "next_gate": "G1 — Thiết kế nghiên cứu (CHỈ sau khi G0 đạt PASS_G0_CONFIRMED)",
@@ -171,11 +171,14 @@
     "doi:10.52163/yhc.v67icd5.5018",
     "doi:10.54436/jns.2024.03.766",
     "doi:10.55401/y8fmp830",
+    "pmid:16162387",
+    "pmid:22548036",
     "pmid:28690831",
     "pmid:29915440",
     "pmid:32244937",
     "pmid:32946537",
     "pmid:32992600",
+    "pmid:33116425",
     "pmid:34017606",
     "pmid:36292392",
     "pmid:39944421",
@@ -183,6 +186,7 @@
     "pmid:40432693",
     "pmid:40623792",
     "pmid:40995744",
+    "pmid:42582692",
     "pmid:42625778"
   ],
   "quality_contract_version": "G0-2026.1",
@@ -192,9 +196,9 @@
     "automated_checks_passed": true,
     "human_confirmation_complete": false,
     "pending_actions": [
-      "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"f619939b4c69e1e5\" (dấu của nội dung đang chốt). Không cần lưu danh tính."
+      "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"4a93f21a3eb997b2\" (dấu của nội dung đang chốt). Không cần lưu danh tính."
     ],
-    "dau_van_tay_luc_cham": "f619939b4c69e1e5"
+    "dau_van_tay_luc_cham": "4a93f21a3eb997b2"
   },
   "needs_input": {
     "blocked": true,
@@ -219,5 +223,5 @@
     },
     "supplied_by": "doctor"
   },
-  "a1_dung_lai_luc": "2026-10-17T10:31:01"
+  "a1_dung_lai_luc": "2026-10-17T10:57:46"
 }

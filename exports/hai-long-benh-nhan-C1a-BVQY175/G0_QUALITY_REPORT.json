@@ -109,8 +109,8 @@
       "id": "G0-HUMAN-07",
       "label": "Chủ nhiệm/nhà phương pháp chốt PICO (vai trò + thời điểm + gắn đúng nội dung)",
       "status": "REVIEW",
-      "evidence": "pico_confirmed=True; vai trò=pi; reviewed_at=2026-10-14T19:17:12+07:00; nội dung đã đổi sau khi xác nhận (dấu lúc xác nhận 4678a3407d3ccd57 ≠ hiện tại f619939b4c69e1e5) — chủ nhiệm đọc lại rồi xác nhận lại",
-      "action": "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"f619939b4c69e1e5\" (dấu của nội dung đang chốt). Không cần lưu danh tính."
+      "evidence": "pico_confirmed=True; vai trò=pi; reviewed_at=2026-10-14T19:17:12+07:00; nội dung đã đổi sau khi xác nhận (dấu lúc xác nhận 4678a3407d3ccd57 ≠ hiện tại 4a93f21a3eb997b2) — chủ nhiệm đọc lại rồi xác nhận lại",
+      "action": "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"4a93f21a3eb997b2\" (dấu của nội dung đang chốt). Không cần lưu danh tính."
     },
     {
       "id": "G0-HUMAN-08",
@@ -121,12 +121,12 @@
     }
   ],
   "pending_actions": [
-    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"f619939b4c69e1e5\" (dấu của nội dung đang chốt). Không cần lưu danh tính."
+    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"4a93f21a3eb997b2\" (dấu của nội dung đang chốt). Không cần lưu danh tính."
   ],
   "artifact_manifest": {
     "A1": {
       "path": "/Users/nguyenluan/.ebm-worktrees/yk-c1a-g0-dp-20261017/exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "ea33bc87500360552ba41ccdad260001149ae8c118d8f8010194b2b16b8e402c"
+      "sha256": "a5cca83e5ff7e7f92beef17bc60bbed97f8bc6dee475f527a64c710f685b7664"
     }
   },
   "standards_basis": [
@@ -156,7 +156,7 @@
     "primary": "STROBE",
     "protocol": "Protocol định trước; đăng ký nếu cần minh bạch"
   },
-  "dau_van_tay_hien_tai": "f619939b4c69e1e5",
+  "dau_van_tay_hien_tai": "4a93f21a3eb997b2",
   "scope_statement": "PASS_G0_CONFIRMED chỉ xác nhận rằng câu hỏi nghiên cứu ĐÃ ĐƯỢC MỘT NGƯỜI THẬT VIẾT RA VÀ CHỐT, và nền bằng chứng máy dựng là thật. KHÔNG thẩm định chất lượng khoa học của câu hỏi, không thay tổng quan y văn có hệ thống, không thay Hội đồng Đạo đức. Một PICO đầy đủ vẫn có thể là một PICO tồi.",
   "needs_input": {
     "blocked": true,
