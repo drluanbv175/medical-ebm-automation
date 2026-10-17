@@ -7,7 +7,7 @@
 ## Kiểm tự động
 | ID | Tiêu chí | Trạng thái | Bằng chứng |
 |---|---|---|---|
-| G2-AUTO-01 | Liêm chính nội dung hồ sơ HIỆN HÀNH (PII, số phê duyệt tự gán, tự xưng phê duyệt/khoá, disclaimer) | PASS | R1/R2/R3/R7 sạch trên nội dung hiện hành (guardrail lúc sinh: passed=False) |
+| G2-AUTO-01 | Liêm chính nội dung hồ sơ HIỆN HÀNH (PII, số phê duyệt tự gán, tự xưng phê duyệt/khoá, disclaimer) | PASS | R1/R2/R3/R7 sạch trên nội dung hiện hành (guardrail lúc sinh: passed=True) |
 | G2-AUTO-02 | G1 đã được PI/methodologist xác nhận (chấm sống) | PASS | G1 chấm sống=PASS_G1_CONFIRMED |
 | G2-AUTO-02b | ICH E6(R3) Annex 2 Step 4: IRB/consent/privacy/data governance đủ cho phương pháp mới | PASS | status=NOT_APPLICABLE; methods=không áp dụng |
 | G2-AUTO-03 | Bộ hồ sơ IRB/ICF/DMP có đủ cấu trúc bắt buộc (ICF đủ mục theo thiết kế) | PASS | đủ marker tài liệu 1-8, ICF, DMP, rủi ro/bồi thường/COI; ICF đủ mục theo thiết kế |

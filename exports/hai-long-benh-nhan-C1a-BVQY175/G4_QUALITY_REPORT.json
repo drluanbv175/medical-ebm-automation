@@ -3,11 +3,11 @@
   "contract_version": "G4-2026.1",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
   "gate": "G4",
-  "status": "DRAFT_NEEDS_HUMAN_CONTENT",
+  "status": "PASS_G4_SAP_LOCKED",
   "automated_checks_passed": true,
-  "sap_ready_for_signature": false,
-  "human_confirmation_complete": false,
-  "signature_scope": null,
+  "sap_ready_for_signature": true,
+  "human_confirmation_complete": true,
+  "signature_scope": "role",
   "automatic_criteria": [
     {
       "id": "G4-AUTO-00",
@@ -96,8 +96,8 @@
     {
       "id": "G4-AUTO-12",
       "label": "G3 (cỡ mẫu) chấm sống đã chốt PASS_G3_CONFIRMED — không bị chặn",
-      "status": "REVIEW",
-      "evidence": "G3 chấm sống=DRAFT_NEEDS_HUMAN_PARAMETERS — cỡ mẫu chưa được thống kê viên/PI chốt (PASS_G3_CONFIRMED); SAP không được khoá trên N chưa chốt",
+      "status": "PASS",
+      "evidence": "G3 chấm sống=PASS_G3_CONFIRMED",
       "action": "Chạy python3 tools/g3_quality_gate.py --study <đề tài>, xử lý mục BLOCK/REVIEW của G3 (thống kê viên/PI xác nhận tham số gắn dấu vân tay) rồi chấm lại G4."
     },
     {
@@ -126,22 +126,22 @@
     {
       "id": "G4-HUMAN-01",
       "label": "Sổ cái có phê duyệt G4 hợp lệ đúng vai trò thống kê/PI",
-      "status": "REVIEW",
-      "evidence": "chưa có sổ cái phê duyệt (approval_ledger.json) cho đề tài này",
+      "status": "PASS",
+      "evidence": "ledger_approved=True",
       "action": "Thống kê viên/PI tự ký: approve_gate.py --gate G4 --reviewer-role METHODS_STATISTICS_REVIEWER / BIOSTATISTICIAN / STATISTICIAN HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR"
     },
     {
       "id": "G4-HUMAN-02",
       "label": "Mức bảo đảm của khóa ký được nêu đúng (không nói quá)",
-      "status": "REVIEW",
-      "evidence": "chưa xác định phạm vi khóa; khóa riêng nhóm thống kê/PI có sẵn=False",
+      "status": "PASS",
+      "evidence": "ký bằng khóa RIÊNG của nhóm thống kê/PI (scope=role) — có dấu vết tách bạch vận hành, NHƯNG vẫn không chứng minh được người ký khác chủ nhiệm",
       "action": "Tạo khóa riêng: setup_gate_approval_key.py --role STATISTICIAN, và để thống kê viên giữ."
     },
     {
       "id": "G4-HUMAN-03",
       "label": "Người ký G4 khác người ký các cổng khác (chỉ dấu độc lập)",
-      "status": "REVIEW",
-      "evidence": "chưa có bản ghi phê duyệt G4 để đối chiếu",
+      "status": "PASS",
+      "evidence": "reviewer_ref của G4 ('TKV-C1A-01') khác mọi cổng còn lại",
       "action": "Cân nhắc để thống kê viên (không phải người đã ký G2/G8/G9) ký G4."
     },
     {
@@ -175,18 +175,12 @@
     {
       "id": "G4-HUMAN-08",
       "label": "Xác nhận G4 của thống kê viên/PI gắn đúng nội dung SAP hiện tại (dấu vân tay)",
-      "status": "REVIEW",
-      "evidence": "nội dung đã đổi sau khi xác nhận (dấu lúc xác nhận 0c69d8d3e0c7d060 ≠ hiện tại f59e4e2290b3dfdb) — chủ nhiệm đọc lại rồi xác nhận lại",
+      "status": "PASS",
+      "evidence": "xác nhận gắn đúng nội dung hiện tại",
       "action": "Sau khi đọc lại SAP, ghi gate_params.G4.dau_van_tay_chot=\"f59e4e2290b3dfdb\" (dấu nội dung PHẦN 3 hiện tại) cùng reviewed_at dạng ISO-8601; sửa SAP sau đó phải xác nhận lại."
     }
   ],
-  "pending_actions": [
-    "Chạy python3 tools/g3_quality_gate.py --study <đề tài>, xử lý mục BLOCK/REVIEW của G3 (thống kê viên/PI xác nhận tham số gắn dấu vân tay) rồi chấm lại G4.",
-    "Thống kê viên/PI tự ký: approve_gate.py --gate G4 --reviewer-role METHODS_STATISTICS_REVIEWER / BIOSTATISTICIAN / STATISTICIAN HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR",
-    "Tạo khóa riêng: setup_gate_approval_key.py --role STATISTICIAN, và để thống kê viên giữ.",
-    "Cân nhắc để thống kê viên (không phải người đã ký G2/G8/G9) ký G4.",
-    "Sau khi đọc lại SAP, ghi gate_params.G4.dau_van_tay_chot=\"f59e4e2290b3dfdb\" (dấu nội dung PHẦN 3 hiện tại) cùng reviewed_at dạng ISO-8601; sửa SAP sau đó phải xác nhận lại."
-  ],
+  "pending_actions": [],
   "standards_basis": [
     {
       "standard": "ICH E9(R1) — Addendum on Estimands and Sensitivity Analysis",

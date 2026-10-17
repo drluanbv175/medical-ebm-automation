@@ -155,9 +155,7 @@
     "Xác nhận effect size (PMID/DOI từ y văn/pilot study)",
     "Xác nhận tỷ lệ bỏ cuộc dự kiến",
     "Xác nhận tỷ lệ biến cố nền (với log-rank)",
-    "Copy khối cỡ mẫu vào đề cương",
-    "Chạy G0/G1 trước; không tính cỡ mẫu trên thiết kế mặc định.",
-    "Ghi reviewed_by_role (STATISTICIAN hoặc PI), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"0e68bb02f642f5eb\" (dấu của các giá trị quyết định N hiện tại); không lưu danh tính."
+    "Copy khối cỡ mẫu vào đề cương"
   ],
   "quality_contract_version": "G3-2026.1",
   "quality_gate": {
@@ -165,10 +163,10 @@
     "contract_version": "G3-2026.1",
     "study": "hai-long-benh-nhan-C1a-BVQY175",
     "gate": "G3",
-    "status": "DRAFT_NEEDS_HUMAN_PARAMETERS",
+    "status": "PASS_G3_CONFIRMED",
     "automated_checks_passed": true,
-    "parameters_ready_for_review": false,
-    "human_confirmation_complete": false,
+    "parameters_ready_for_review": true,
+    "human_confirmation_complete": true,
     "automatic_criteria": [
       {
         "id": "G3-AUTO-00",
@@ -180,8 +178,8 @@
       {
         "id": "G3-AUTO-01",
         "label": "Tiền đề G0/G1 có thật (thiết kế không do mặc định im lặng)",
-        "status": "REVIEW",
-        "evidence": "G1 chấm sống=DRAFT_READY_NEEDS_HUMAN_REVIEW — thiết kế chưa được PI/methodologist chốt",
+        "status": "PASS",
+        "evidence": "G1 chấm sống=PASS_G1_CONFIRMED",
         "action": "Chạy G0/G1 trước; không tính cỡ mẫu trên thiết kế mặc định."
       },
       {
@@ -343,8 +341,8 @@
       {
         "id": "G3-HUMAN-06",
         "label": "Có vai trò (thống kê viên/chủ nhiệm), thời điểm rà soát và xác nhận gắn đúng các giá trị đã tính",
-        "status": "REVIEW",
-        "evidence": "reviewed_by_role=PI (nhóm=PI); reviewed_at=2026-10-14T20:17:41+07:00; nội dung đã đổi sau khi xác nhận (dấu lúc xác nhận b892b172aa2ef41a ≠ hiện tại 0e68bb02f642f5eb) — chủ nhiệm đọc lại rồi xác nhận lại",
+        "status": "PASS",
+        "evidence": "reviewed_by_role=STATISTICIAN (nhóm=STATISTICIAN); reviewed_at=2026-10-17T17:04:54+07:00; xác nhận gắn đúng nội dung hiện tại",
         "action": "Ghi reviewed_by_role (STATISTICIAN hoặc PI), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"0e68bb02f642f5eb\" (dấu của các giá trị quyết định N hiện tại); không lưu danh tính."
       },
       {
@@ -355,10 +353,7 @@
         "action": "Với thử nghiệm quyết định, mời nhà thống kê độc lập xác nhận và cân nhắc power 90%."
       }
     ],
-    "pending_actions": [
-      "Chạy G0/G1 trước; không tính cỡ mẫu trên thiết kế mặc định.",
-      "Ghi reviewed_by_role (STATISTICIAN hoặc PI), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"0e68bb02f642f5eb\" (dấu của các giá trị quyết định N hiện tại); không lưu danh tính."
-    ],
+    "pending_actions": [],
     "dau_van_tay_hien_tai": "0e68bb02f642f5eb",
     "artifact_manifest": {
       "A4_SAMPLE_SIZE": {

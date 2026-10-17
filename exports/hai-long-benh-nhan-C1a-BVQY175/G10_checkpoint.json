@@ -1,8 +1,8 @@
 {
   "gate": "G10",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "generated_at": "2026-10-15T21:00:55.044133",
-  "gate_status": "BLOCKED — chờ input đời-thực",
+  "generated_at": "2026-10-17T17:26:20.540453",
+  "gate_status": "READY_FOR_G10_PI_RELEASE_APPROVAL",
   "quality_contract_version": "G10-2026.1",
   "guardrail": {
     "passed": true,
@@ -56,7 +56,7 @@
   },
   "real_world_signals": {
     "irb_approved": false,
-    "sap_locked": false,
+    "sap_locked": true,
     "db_locked": false,
     "results_final": false,
     "peer_review_approved": false,
@@ -76,8 +76,8 @@
   "skill_gate_states": {
     "G0": "DỰ THẢO (ĐẠT guardrail)",
     "G1": "DỰ THẢO (ĐẠT guardrail)",
-    "G2": "DỰ THẢO (ĐẠT guardrail)",
-    "G3": "CHỜ (thiếu điều kiện)",
+    "G2": "KHOÁ",
+    "G3": "DỰ THẢO (ĐẠT guardrail)",
     "G4": "THIẾU",
     "G5": "THIẾU",
     "G6": "THIẾU",
@@ -88,18 +88,18 @@
   "readiness": [
     {
       "moc": "Sẵn sàng nộp Hội đồng đạo đức",
-      "dat": "CHƯA ĐẠT",
-      "chi_tiet": "Hồ sơ đạo đức + protocol ở dạng dự thảo đầy đủ; bác sĩ điền nốt rồi nộp XIN phê duyệt | Chặn bởi: cổng skill G3 (Đạo đức/pháp lý/dữ liệu): CHỜ (thiếu điều kiện)"
+      "dat": "ĐẠT (dự thảo — chờ bác sĩ điền/nộp)",
+      "chi_tiet": "Hồ sơ đạo đức + protocol ở dạng dự thảo đầy đủ; bác sĩ điền nốt rồi nộp XIN phê duyệt"
     },
     {
       "moc": "Sẵn sàng triển khai (thu thập dữ liệu)",
       "dat": "CHƯA ĐẠT",
-      "chi_tiet": "BẮT BUỘC có phê duyệt Hội đồng Đạo đức THẬT (tín hiệu irb_approved) + công cụ/SOP dự thảo đầy đủ | Chặn bởi: thiếu phê duyệt IRB thật; cổng skill G3 (Đạo đức/pháp lý/dữ liệu): CHỜ (thiếu điều kiện); cổng skill G4 (Công cụ): THIẾU; cổng skill G5 (Triển khai): THIẾU"
+      "chi_tiet": "BẮT BUỘC có phê duyệt Hội đồng Đạo đức THẬT (tín hiệu irb_approved) + công cụ/SOP dự thảo đầy đủ | Chặn bởi: thiếu phê duyệt IRB thật; cổng skill G4 (Công cụ): THIẾU; cổng skill G5 (Triển khai): THIẾU"
     },
     {
       "moc": "Sẵn sàng phân tích chính",
       "dat": "CHƯA ĐẠT",
-      "chi_tiet": "BẮT BUỘC SAP đã ký khoá (sap_locked) VÀ dữ liệu đã khoá thật (db_locked) — khớp SKILL.md §Kết luận | Chặn bởi: thiếu SAP đã ký khoá; thiếu dữ liệu đã khoá thật; cổng skill G6 (Dữ liệu): THIẾU"
+      "chi_tiet": "BẮT BUỘC SAP đã ký khoá (sap_locked) VÀ dữ liệu đã khoá thật (db_locked) — khớp SKILL.md §Kết luận | Chặn bởi: thiếu dữ liệu đã khoá thật; cổng skill G6 (Dữ liệu): THIẾU"
     },
     {
       "moc": "Sẵn sàng nộp công bố/nghiệm thu",
@@ -113,13 +113,13 @@
     "study_spec_json": "exports/hai-long-benh-nhan-C1a-BVQY175/STUDY_SPEC_hai-long-benh-nhan-C1a-BVQY175.json",
     "decision_package_md": "exports/hai-long-benh-nhan-C1a-BVQY175/GOI_QUYET_DINH_hai-long-benh-nhan-C1a-BVQY175.md",
     "release_readiness_json": "exports/hai-long-benh-nhan-C1a-BVQY175/G10_RELEASE_READINESS.json",
-    "de_cuong_md_sha256": "15347baeb039208e63cf97e9967889a539890852bcf8c77bf601edf15a0a1818",
-    "de_cuong_docx_sha256": "fcc1c1d828ad41d38c2d8e638a2986caa2152d914451a90d0a85d1991f199b1f"
+    "de_cuong_md_sha256": "08954ad58f9a95047254dcdafa5ea2476cf1aaff7867cb83e2a4a4ab6b45c310",
+    "de_cuong_docx_sha256": "d53c4b743854c04cadd35fd7913e1c036998b384f8224638325eec003f32983e"
   },
   "quality_gate": {
     "status": "READY_FOR_G10_PI_RELEASE_APPROVAL",
     "report": "G10_QUALITY_REPORT.json",
-    "package_sha256": "76055675b71b5f9bae2fbfa53912d5a0d527f8f23d53a8016e0a496f8dbeefc0",
+    "package_sha256": "cbeb25e7fe6030d11a6d49b30db85c7b812c59f7f09e13b03dbb68fa0c0034c0",
     "human_approval_valid": false,
     "external_submission_state": "NOT_PERFORMED_OR_PROVEN_BY_G10"
   },
@@ -133,15 +133,15 @@
     "files": {
       "final_protocol_md": {
         "path": "DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "15347baeb039208e63cf97e9967889a539890852bcf8c77bf601edf15a0a1818"
+        "sha256": "08954ad58f9a95047254dcdafa5ea2476cf1aaff7867cb83e2a4a4ab6b45c310"
       },
       "final_protocol_docx": {
         "path": "DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.docx",
-        "sha256": "fcc1c1d828ad41d38c2d8e638a2986caa2152d914451a90d0a85d1991f199b1f"
+        "sha256": "d53c4b743854c04cadd35fd7913e1c036998b384f8224638325eec003f32983e"
       },
       "study_spec": {
         "path": "STUDY_SPEC_hai-long-benh-nhan-C1a-BVQY175.json",
-        "sha256": "1a357cf1d2fee61ed7e9bc7b5e485be0420115e1888287e072f189c8f0b93cf8"
+        "sha256": "cf9387377505cbaf5f5b89944d99174900d07172a82f71dd31d1ec23f9d078f5"
       },
       "decision_package": {
         "path": "GOI_QUYET_DINH_hai-long-benh-nhan-C1a-BVQY175.md",
@@ -153,7 +153,7 @@
       },
       "citation_verification": {
         "path": "A12_CITATION_VERIFICATION_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "5b1d2ee3ea9999c62df940b8b11410961d7018b361fea11eb73a3c643f7a7a83"
+        "sha256": "db6fe2466fb1e571a0a48d7bc364416706f6f1dfa8635d3b8820624e6832cd17"
       },
       "citation_retraction_receipt": {
         "path": "A12_RETRACTION_RECEIPT.json",
@@ -169,67 +169,49 @@
       },
       "g4_sap_final": {
         "path": "G4_A5_SAP_FINAL_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "3b60bc01b3fadb24e9a01f952f2eb7796e35a53fdc075c00fec2c4132fd04ab3"
+        "sha256": "0b2a37424c34518f2a0e0ab8ad96933ba75ebb69038b73f65c0df3ce4d598ce9"
       },
       "checkpoint_g0": {
         "path": "G0_checkpoint.json",
-        "sha256": "176e568f694d36a07a08df9a75980852ca79c93a4ab148ccad8a5f87735243e2"
+        "sha256": "9dbe6533f7aa547d33fbcce51e84a09a7554a92847d7d2e677d8503215671a1d"
       },
       "checkpoint_g1": {
         "path": "G1_checkpoint.json",
-        "sha256": "a2827a773ff406e78295af9c4b8981dbb427174fe95a0e4fa11cacd90e0df9b9"
+        "sha256": "da75eb371eb132ff983ce7861c7a7af516d6fcd5af8d9606c67ab8e3e89cef5e"
       },
       "checkpoint_g2": {
         "path": "G2_checkpoint.json",
-        "sha256": "b6c06f6dfb4612ba806b474ab4fab2eb3d86c4f620c59a37011ac0752f1b2429"
+        "sha256": "0ed1f4af00724d47f1feb4e6bf0bc45b4c52c1d0ece3e87784dec5697dfb81c8"
       },
       "checkpoint_g3": {
         "path": "G3_checkpoint.json",
-        "sha256": "6300ed2c830d357ad01861f86ddccc39c5354843367b0799bf66f9e4f4c94997"
+        "sha256": "a97d1d8f49c032197c750b8e49a2fc32d1e3c72f9ab9df315bf03ea1cfb64093"
       },
       "checkpoint_g4": {
         "path": "G4_checkpoint.json",
-        "sha256": "4db7b2154cebb87cea83cddd69167f903f06262a8ddb3031436ce26e9cd6e945"
+        "sha256": "3087f099fb0f6e86dae7e3fcea862c282a736ae91fa38b021bb28f5a76ca9a2d"
       },
       "g1_protocol_design": {
         "path": "G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "5b2ebc3ffc1022d32505bfc70188fdb26acd21a3a8b4f77ae4b8e93aba7ffb8e"
+        "sha256": "0933db120c0d3a027d5aa19bfabcfd1e93fcff31d3f64f6ae9390cc194413cf3"
       },
       "g2_registration_draft": {
         "path": "G2_REGISTRATION_DRAFT_hai-long-benh-nhan-C1a-BVQY175.json",
-        "sha256": "076cf5cacc55ac21f9d425047db1820ac0a19a7391fdc97665a1a320378d5513"
+        "sha256": "d55b7484d60a877f991539eaf4389d633ce85a318939d71afd7149be78607c30"
       },
       "g3_sample_size": {
         "path": "G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "5ea911a50015c54588f21b60ede5dbf35589c942a11743e46a665bcb7959f973"
+        "sha256": "ace4826a6779139a72cecf84227f756b935be39ffb6105ac7c598ede40392c04"
       },
       "irb_protocol_md": {
         "path": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "92a07da57ac023021b9f38f5f2c6e84372a6699814da69c98152a34054cc252a"
+        "sha256": "11d2adb3a206c80ed82ca1733437fb856803d2d3cfdfe463b6da34b93fbc6335"
       },
       "irb_protocol_docx": {
         "path": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.docx",
-        "sha256": "63bb6f71132f7330289fd822840e7a286d55fecf9031a22f50273f08e64118db"
+        "sha256": "b02aa5f336b2d70c87a1b9aea56f1d099688c92e901f8b0bc7233fadaa281c58"
       }
     },
-    "package_sha256": "76055675b71b5f9bae2fbfa53912d5a0d527f8f23d53a8016e0a496f8dbeefc0"
-  },
-  "needs_input": {
-    "blocked": true,
-    "reason_code": "MISSING_G10_RELEASE_APPROVAL",
-    "human_message": "Gói G10 đã đủ tiêu chí kỹ thuật nhưng chưa có phê duyệt PI trên đúng manifest.",
-    "remediation": {
-      "action": "rerun_with_real_input",
-      "command": "python tools/approve_gate.py --study hai-long-benh-nhan-C1a-BVQY175 --gate G10 --artifact /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G10_checkpoint.json --reviewer-role PI --reviewer-ref <MA_THAM_CHIEU_KHONG_PII>",
-      "study_meta_patch": {},
-      "must_not_fabricate": [
-        "approval_ledger.json",
-        "A12_RETRACTION_RECEIPT.json",
-        "A12_METADATA_RECEIPT.json",
-        "G10_RELEASE_READINESS.json",
-        "G10_checkpoint.json"
-      ]
-    },
-    "supplied_by": "doctor"
+    "package_sha256": "cbeb25e7fe6030d11a6d49b30db85c7b812c59f7f09e13b03dbb68fa0c0034c0"
   }
 }
