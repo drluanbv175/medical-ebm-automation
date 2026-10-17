@@ -1773,7 +1773,9 @@ def generate_csv(study: str, out_dir: Path, rows: list) -> tuple[Path, int]:
                     "Question Number (surveys only)": "",
                     "Matrix Group Name": "",
                     "Matrix Ranking?": "",
-                    "Field Annotation": "",
+                    # 17/10/2026 (hội đồng G3 C1a): action tag của bộ biến riêng (phần tử THỨ 14, vd
+                    # `@MAXCHECKED=2`); bundle không có ⇒ rỗng. Bản cũ luôn ghi rỗng nên luật khai ở bộ biến mất.
+                    "Field Annotation": row[13] if len(row) > 13 else "",
                 }
             )
     return csv_path, len(rows)
@@ -2274,6 +2276,8 @@ def nap_bo_bien_rieng(out_dir: Path, study: str):
       xuất khử định danh của REDCap («remove tagged identifiers») và luật
       redcap_identifier_rows của G5-AUTO-02 không bao giờ kích hoạt dù bộ biến đã
       gắn cờ ma_benh_an/sdt. Mọi consumer chỉ đọc theo chỉ số 0–11 nên không vỡ.
+    - VÁ 17/10/2026 (hội đồng G3 C1a): phần tử THỨ 14 = «Field Annotation» (action tag REDCap, vd `@MAXCHECKED=2`
+      cho câu chọn tối đa 2). Bản cũ bỏ cột này nên generate_csv luôn ghi rỗng — luật khai ở bộ biến không tới REDCap.
     """
     duong = Path(out_dir) / BO_BIEN_RIENG_TEN_FILE
     if not duong.exists():
@@ -2328,6 +2332,7 @@ def nap_bo_bien_rieng(out_dir: Path, study: str):
                     "y" if req in ("y", "yes", "1", "true") else "n",
                     (r.get("Branching Logic (Show field only if...)") or "").strip(),
                     "y" if dinh_danh in ("y", "yes", "1", "true") else "",
+                    (r.get("Field Annotation") or "").strip(),
                 ))
     except OSError as e:
         raise SystemExit(f"⛔ Không đọc được {duong}: {e}") from e
@@ -2341,7 +2346,7 @@ def nap_bo_bien_rieng(out_dir: Path, study: str):
     if rows[0][0] != "record_id":
         # REDCap đòi record_id là trường ĐẦU TIÊN — thiếu thì import gãy ngay.
         rows.insert(0, ("record_id", rows[0][1], "", "text", "Mã bản ghi (tự sinh)",
-                        "", "", "", "", "", "y", "", ""))
+                        "", "", "", "", "", "y", "", "", ""))
     return rows
 
 

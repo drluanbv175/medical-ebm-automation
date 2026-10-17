@@ -56,7 +56,7 @@ class TestNapBoBienRieng:
               '"record_id","m","","text","Mã phiếu","","","","","","","","y","","","","",""',
               '"tuoi","m","Hiệu chỉnh","text","Tuổi","","","integer","18","120","","","y","","","","",""')
         rows = G5.nap_bo_bien_rieng(tmp_path, "S")
-        assert len(rows) == 2 and len(rows[0]) == 13
+        assert len(rows) == 2 and len(rows[0]) == 14  # 13 = Identifier? (04/10) · 14 = Field Annotation (17/10)
         assert rows[1][0] == "tuoi" and rows[1][7] == "integer" and rows[1][10] == "y"
         assert rows[0][12] == rows[1][12] == "", "không gắn cờ Identifier? ⇒ rỗng"
 
