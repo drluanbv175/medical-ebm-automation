@@ -36,6 +36,32 @@
 
 ---
 
+## PHẦN 2c — LỰC CHO MỤC TIÊU PHỤ (không đổi N của PHẦN 2/2b)
+
+N ở PHẦN 2/2b tính cho kết cục chính. Mục này cho biết, với N đó, mô hình của **Mục tiêu 2** (hồi quy logistic thứ tự (tỷ số chênh tương xứng) — Whitehead 1993) phát hiện được tỷ số chênh (OR) nhỏ nhất bao nhiêu cho mỗi 15 phút thời gian chờ (α = 0.05 hai phía, lực 80%, R² của thời gian chờ theo biến hiệu chỉnh = 0.2).
+
+Công thức: β² = 3·(z₁₋α/₂ + z₁₋β)² / [n·(1 − Σpᵢ³)·(ĐLC/bước)²·(1 − R²)], OR = e^β (Whitehead 1993, PMID 8134732, doi:10.1002/sim.4780122404).
+
+| Phân bố G1 | 1 − Σpᵢ³ | ĐLC thời gian chờ | OR — n = 1000, chưa gom cụm | OR — n hiệu dụng ≈ 478 (thận trọng) |
+|---|---|---|---|---|
+| Lệch về phía hài lòng mạnh (1/3/11/40/45%) | 0.844 | 20 phút | 1.150 | 1.225 |
+| Lệch về phía hài lòng mạnh (1/3/11/40/45%) | 0.844 | 30 phút | 1.098 | 1.145 |
+| Lệch về phía hài lòng mạnh (1/3/11/40/45%) | 0.844 | 40 phút | 1.073 | 1.107 |
+| Lệch vừa (2/5/18/45/30%) | 0.876 | 20 phút | 1.147 | 1.220 |
+| Lệch vừa (2/5/18/45/30%) | 0.876 | 30 phút | 1.096 | 1.142 |
+| Lệch vừa (2/5/18/45/30%) | 0.876 | 40 phút | 1.071 | 1.105 |
+| Lệch nhẹ (3/7/25/42/23%) | 0.898 | 20 phút | 1.145 | 1.217 |
+| Lệch nhẹ (3/7/25/42/23%) | 0.898 | 30 phút | 1.095 | 1.140 |
+| Lệch nhẹ (3/7/25/42/23%) | 0.898 | 40 phút | 1.070 | 1.103 |
+
+**Thận trọng:** OR nhỏ nhất phát hiện được 1.10–1.23 cho mỗi 15 phút (chiều giảm 0.82–0.91).
+
+n hiệu dụng = 1000 × (1 − dự phòng phiếu hỏng) = 850, chia DE 1.78 của kết cục chính. DE này là CHẶN TRÊN: với phơi nhiễm đo ở cấp cá nhân, phương sai của hệ số hồi quy phóng đại khoảng 1 + (m − 1)·ρₓ·ρᵧ ≤ DE (Scott & Holt 1982, doi:10.1080/01621459.1982.10477897); ICC thật của phơi nhiễm ước lượng từ dữ liệu.
+
+Nguồn giả định: Đề cương nộp Hội đồng §4.4.1 Bảng 4.2 — giả định lập kế hoạch của nhóm nghiên cứu (phân bố G1, ĐLC thời gian chờ 20/30/40 phút, R² 0,20); đưa vào G3 theo biên bản hội đồng G0 DP-G0-1 (G0-TB-20261017T100650-107f4acb); thống kê viên kiểm, PI quyết khi chốt G3/G4. [CẦN THỐNG KÊ VIÊN KIỂM] — tính lại khi có số liệu khảo sát thử và HIS; thay đổi sau khi khoá SAP ghi «SAP AMENDMENT».
+
+---
+
 ## PHẦN 3 — PHÂN TÍCH ĐỘ NHẠY (Sensitivity Analysis)
 
 Bảng: tỷ lệ ước lượng p × sai số cho phép d → N tối thiểu (TRƯỚC khi bù 15% không trả lời; đã nhân hiệu ứng thiết kế cụm DE = 1.78 (= 1+(m−1)×ICC, m = 20, ICC = 0.02))
@@ -60,6 +86,7 @@ với tỷ lệ ước lượng p = 0.50 (Quy ước thận trọng p = 0,50 —
 cần 686 người.
 Tính thêm 15% không trả lời dự kiến, cỡ mẫu cuối = 808 người.
 N THỰC TẾ đã được bác sĩ/chủ nhiệm CHỐT = 1000 người (≥ N tối thiểu tính toán).
+Lực cho Mục tiêu 2 (hồi quy logistic thứ tự (tỷ số chênh tương xứng) — Whitehead 1993): với N = 1000, α = 0.05 hai phía, lực 80%, OR nhỏ nhất phát hiện được cho mỗi 15 phút thời gian chờ là 1.10–1.23 (chiều giảm 0.82–0.91) ở n hiệu dụng ≈ 478 (sau 150 phiếu dự phòng hỏng, ÷ DE 1.78); chưa gom cụm 1.07–1.15. Giả định phân bố kết cục, ĐLC phơi nhiễm và R² tính lại khi có số liệu khảo sát thử và HIS.
 ```
 
 > Trình bày cỡ mẫu theo mục cỡ mẫu của **STROBE** khi đưa vào đề cương/bản thảo (vd CONSORT 2025 mục 16a, SPIRIT 2025 mục 19, STROBE mục 10, STARD 2015 mục 18, TRIPOD+AI mục 10 — tùy thiết kế).

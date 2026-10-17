@@ -3,9 +3,9 @@
   "contract_version": "G3-2026.1",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
   "gate": "G3",
-  "status": "DRAFT_READY_NEEDS_STATISTICIAN_REVIEW",
+  "status": "DRAFT_NEEDS_HUMAN_PARAMETERS",
   "automated_checks_passed": true,
-  "parameters_ready_for_review": true,
+  "parameters_ready_for_review": false,
   "human_confirmation_complete": false,
   "automatic_criteria": [
     {
@@ -18,8 +18,8 @@
     {
       "id": "G3-AUTO-01",
       "label": "Tiền đề G0/G1 có thật (thiết kế không do mặc định im lặng)",
-      "status": "PASS",
-      "evidence": "G1 chấm sống=PASS_G1_CONFIRMED",
+      "status": "REVIEW",
+      "evidence": "G1 chấm sống=DRAFT_READY_NEEDS_HUMAN_REVIEW — thiết kế chưa được PI/methodologist chốt",
       "action": "Chạy G0/G1 trước; không tính cỡ mẫu trên thiết kế mặc định."
     },
     {
@@ -194,13 +194,14 @@
     }
   ],
   "pending_actions": [
+    "Chạy G0/G1 trước; không tính cỡ mẫu trên thiết kế mặc định.",
     "Ghi reviewed_by_role (STATISTICIAN hoặc PI), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"0e68bb02f642f5eb\" (dấu của các giá trị quyết định N hiện tại); không lưu danh tính."
   ],
   "dau_van_tay_hien_tai": "0e68bb02f642f5eb",
   "artifact_manifest": {
     "A4_SAMPLE_SIZE": {
-      "path": "/Users/nguyenluan/.ebm-worktrees/yk-c1a-g3-cv-20261017/exports/hai-long-benh-nhan-C1a-BVQY175/G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "ba23f1014ab80d7f4a80afa304df457a193bb46b85bb7e50886335b9e6324f83"
+      "path": "/Users/nguyenluan/.ebm-worktrees/yk-c1a-g0-dp-20261017/exports/hai-long-benh-nhan-C1a-BVQY175/G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md",
+      "sha256": "ace4826a6779139a72cecf84227f756b935be39ffb6105ac7c598ede40392c04"
     }
   },
   "sensitivity_table": {

@@ -194,7 +194,44 @@
       "dau_van_tay_chot": "b892b172aa2ef41a",
       "cluster_size_cv": 1.0,
       "cluster_size_cv_source": "Giả định lập kế hoạch thận trọng CV = 1.0 (chưa có số liệu HIS theo bàn); N 1000 vẫn đủ tới CV ≈ 1.43; sẽ thay bằng CV thật từ HIS trước khi khoá SAP (G4).",
-      "unequal_cluster_adjustment": "Cỡ chùm không đều (CV=1.0 — Giả định lập kế hoạch thận trọng CV = 1.0 (chưa có số liệu HIS theo bàn); N 1000 vẫn đủ tới CV ≈ 1.43; sẽ thay bằng CV thật từ HIS trước khi khoá SAP (G4).): hiệu ứng thiết kế hiệu chỉnh theo Eldridge SM, Ashby D, Kerry S. Int J Epidemiol 2006;35(5):1292–1300 (doi:10.1093/ije/dyl129): DE = 1 + ((CV²+1)·m̄ − 1)·ICC = 1.78; N cần 808 (đã cộng dự phòng) ≤ N đã chốt 1000 ⇒ N vẫn đủ."
+      "unequal_cluster_adjustment": "Cỡ chùm không đều (CV=1.0 — Giả định lập kế hoạch thận trọng CV = 1.0 (chưa có số liệu HIS theo bàn); N 1000 vẫn đủ tới CV ≈ 1.43; sẽ thay bằng CV thật từ HIS trước khi khoá SAP (G4).): hiệu ứng thiết kế hiệu chỉnh theo Eldridge SM, Ashby D, Kerry S. Int J Epidemiol 2006;35(5):1292–1300 (doi:10.1093/ije/dyl129): DE = 1 + ((CV²+1)·m̄ − 1)·ICC = 1.78; N cần 808 (đã cộng dự phòng) ≤ N đã chốt 1000 ⇒ N vẫn đủ.",
+      "luc_muc_tieu_phu": {
+        "muc_tieu": "Mục tiêu 2",
+        "ket_cuc": "G1",
+        "phoi_nhiem": "thời gian chờ",
+        "don_vi": "phút",
+        "buoc": 15,
+        "sd_gia_dinh": [
+          20,
+          30,
+          40
+        ],
+        "phan_bo_ket_cuc": {
+          "Lệch về phía hài lòng mạnh (1/3/11/40/45%)": [
+            0.01,
+            0.03,
+            0.11,
+            0.4,
+            0.45
+          ],
+          "Lệch vừa (2/5/18/45/30%)": [
+            0.02,
+            0.05,
+            0.18,
+            0.45,
+            0.3
+          ],
+          "Lệch nhẹ (3/7/25/42/23%)": [
+            0.03,
+            0.07,
+            0.25,
+            0.42,
+            0.23
+          ]
+        },
+        "r2": 0.2,
+        "nguon": "Đề cương nộp Hội đồng §4.4.1 Bảng 4.2 — giả định lập kế hoạch của nhóm nghiên cứu (phân bố G1, ĐLC thời gian chờ 20/30/40 phút, R² 0,20); đưa vào G3 theo biên bản hội đồng G0 DP-G0-1 (G0-TB-20261017T100650-107f4acb); thống kê viên kiểm, PI quyết khi chốt G3/G4"
+      }
     },
     "G4": {
       "epv_vif_reviewed": true,

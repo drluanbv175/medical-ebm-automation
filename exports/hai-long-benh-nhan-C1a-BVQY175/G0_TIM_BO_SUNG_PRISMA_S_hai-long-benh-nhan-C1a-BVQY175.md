@@ -66,3 +66,46 @@ NCBI gỡ chặn chiều 14/10. Theo lệnh bác sĩ («giải quyết 4 việc 
 - Dấu vân tay G0 đổi ⇒ G0 và G1 chờ PI chốt lại G0 (diễn tập trên worktree: chốt lại xong thì G0 + G1 tự về PASS, G2–G10 không đổi).
 
 Cần bác sĩ kiểm chứng.
+
+## 7. Lượt tìm nhắm đúng hai yếu tố tính mới (2026-10-17, hội đồng G0 DP-G0-2)
+
+> Việc 1 của biên bản `hoi_dong/G0/G0-TB-20261017T100650-0c046ac2.json`: kiểm hai khẳng định «chưa thấy» — **thời gian chờ từ mốc HIS gắn với hài lòng** và **ICC theo bàn khám**. Claude tra trực tiếp qua connector; KHÔNG phải tổng quan hệ thống.
+
+| Nhánh | Nguồn · giao diện | Ngày tra | Chuỗi | Số hit |
+|---|---|---|---|---|
+| A1 | PubMed · connector PubMed (E-utilities) | 2026-10-17 | `("waiting time"[tiab] OR "wait time"[tiab] OR "waiting times"[tiab] OR "Waiting Lists"[Mesh]) AND ("Patient Satisfaction"[Mesh] OR satisf*[tiab]) AND ("Outpatients"[Mesh] OR "Ambulatory Care"[Mesh] OR outpatient[tiab] OR outpatients[tiab] OR ambulatory[tiab]) AND ("Vietnam"[Mesh] OR vietnam[tiab] OR "viet nam"[tiab])` | 4 |
+| A2 | Europe PMC · connector pubmed-search (`unified_search`, nguồn europe_pmc — tìm cả toàn văn) | 2026-10-17 | `("waiting time" OR "wait time") AND (satisfaction) AND (outpatient OR ambulatory) AND (Vietnam OR "Viet Nam")` | 50 đầu (xếp theo liên quan) |
+| B1 | Crossref · `works` (connector paper-search) | 2026-10-17 | `thời gian chờ khám bệnh hài lòng người bệnh ngoại trú` | 20 đầu |
+| B2 | Crossref · `works` | 2026-10-17 | `phần mềm quản lý bệnh viện thời gian chờ khám bệnh` | 20 đầu |
+| C | PubMed · connector PubMed | 2026-10-17 | `("intraclass correlation"[tiab] OR "intra-class correlation"[tiab] OR ICC[tiab] OR multilevel[tiab] OR "multi-level"[tiab] OR hierarchical[tiab] OR "Multilevel Analysis"[Mesh] OR clustering[tiab]) AND ("Patient Satisfaction"[Mesh] OR satisf*[tiab] OR "patient experience"[tiab]) AND ("Vietnam"[Mesh] OR vietnam[tiab] OR "viet nam"[tiab])` | 31 |
+
+`query_translation` của PubMed khớp chuỗi gửi ở cả A1 và C (không thẻ nào bị bỏ).
+
+**Recall 3 bài mốc của biên bản:** PMID 28690831 ✓ (A1) · doi:10.52163/yhc.v67i7.5934 ✓ (B1, B2) · doi:10.55401/y8fmp830 ✓ (B1, B2) ⇒ 3/3.
+
+**Sàng lọc** (tiêu đề + tóm tắt; một bài đọc toàn văn):
+
+| Định danh | Đo thời gian chờ bằng | Có đo hài lòng? | Nhánh |
+|---|---|---|---|
+| PMID 34017606 — VHFA 2015, 4.372 NB ngoại trú, logistic ba mức (cấp cơ sở y tế, tỉnh) | tự báo (cùng khảo sát với PMID 32244937) | có — chờ lâu hơn ít hài lòng hơn | A1, A2, C |
+| PMID 32244937 — VHFA 2015, 4.949 NB bệnh viện huyện + 1.724 NB trạm y tế | **tự báo** — toàn văn PMC (CC BY 4.0), mục Bàn luận: số liệu dựa trên thông tin người bệnh tự báo, không đối chiếu nguồn khách quan | không (kết cục là thời gian chờ) | A2 |
+| PMID 28690831 — BV Việt Đức 2014–2015, 137.881 NB | phần mềm quản lý bệnh viện | không | A1 |
+| PMID 29915440 — BV Thống Nhất 2016, 7.931 NB | cơ sở dữ liệu lâm sàng điện tử | không | A2 |
+| doi:10.52163/yhc.v67i2.4385 — BV Quân y 103, 2024, 303 NB | hệ thống quản lý bệnh viện | không | B1, B2 |
+| doi:10.54436/jns.2024.03.766 — BV TƯQĐ 108, 2022, 800 NB | phần mềm quản lý khám bệnh | không | B2 |
+| doi:10.52163/yhc.v67i7.5934 — BV Mắt Nghệ An 2025, 250 NB | đo trực tiếp kết hợp phỏng vấn | có — thang 3 mức, χ² | B1, B2 |
+| doi:10.55401/y8fmp830 — BV Lê Văn Việt 2023, 255 NB | **tóm tắt không nêu** | có | B1, B2 |
+| PMID 32584904 · PMID 31703089 | — (lĩnh vực «thời gian chờ» trong thang hài lòng) | có | A1 |
+
+Nhánh C: ngoài PMID 34017606, các bài khác dùng ICC cho độ tin cậy test–retest của thang đo — khác nghĩa với ICC theo cụm; không thấy bài ước lượng ICC của hài lòng theo bàn khám/bác sĩ. Các hit còn lại của A2/B1/B2: khác bối cảnh, chỉ đo hài lòng, hoặc thời gian chờ đo bằng phiếu/quan sát.
+
+**Kết luận cho tính mới — ĐỀ XUẤT, PI quyết ở G0-HUMAN-06:**
+
+1. *Thời gian chờ từ mốc HIS:* thời gian chờ lấy từ phần mềm/HIS **đã có** ở nghiên cứu trong nước (PMID 28690831; PMID 29915440; doi:10.52163/yhc.v67i2.4385; doi:10.54436/jns.2024.03.766) nhưng các bài này không đo hài lòng; các bài gắn thời gian chờ với hài lòng dùng thời gian chờ tự báo (PMID 34017606) hoặc đo trực tiếp (doi:10.52163/yhc.v67i7.5934). ⇒ GIỮ, viết hẹp: «gắn mức hài lòng với thời gian chờ lấy từ mốc HIS» — không viết «chưa có nghiên cứu dùng HIS đo thời gian chờ». **Điều kiện:** PI đọc mục Phương pháp của doi:10.55401/y8fmp830; nếu bài này lấy thời gian chờ từ phần mềm/HIS thì bỏ yếu tố này khỏi phạm vi tính mới.
+2. *ICC theo bàn khám:* phân tích đa mức hài lòng ngoại trú tại Việt Nam **đã có** ở cấp cơ sở y tế và tỉnh (PMID 34017606); chưa thấy ước lượng theo bàn khám trong một khoa. ⇒ GIỮ, viết «ICC theo bàn khám trong một khoa», ghi nhận PMID 34017606.
+
+**Toàn văn doi:10.55401/y8fmp830 — CHƯA ĐỌC.** Nhà xuất bản (Tạp chí Khoa học và Công nghệ, Trường ĐH Nguyễn Tất Thành) chưa có trong bảng điều khoản; trang bài và trang tạp chí trả 404 khi máy mở (2026-10-17), không đọc được điều khoản ⇒ theo luật, Claude không tải bài. **PI đọc trực tiếp** https://doi.org/10.55401/y8fmp830 (mục Phương pháp: thời gian chờ lấy từ phần mềm/HIS hay bấm giờ/tự báo). Toàn văn PMID 34017606 (SAGE) không đọc ngoài Chrome của bác sĩ theo phạm vi uỷ quyền; cách đo của khảo sát VHFA 2015 lấy từ PMID 32244937 (CC BY 4.0).
+
+**Rút bài (2026-10-17):** PMID 34017606, 32244937, 29915440, 28690831 — `tools/check_citation_retraction.py` ✅ OK. DOI 10.55401/y8fmp830, 10.52163/yhc.v67i7.5934, 10.52163/yhc.v67i2.4385, 10.54436/jns.2024.03.766 — `app/sources/crossref_retraction.py` «ok» + Retraction Watch ngoại tuyến không có bản ghi ⇒ chưa thấy tín hiệu rút.
+
+**Giới hạn:** Europe PMC tìm cả toàn văn nên nhiều hit lạc đề, chỉ xét 50 đầu; Crossref chỉ xét 20 đầu mỗi truy vấn; y văn không có DOI (luận văn, kỷ yếu) chưa tra.

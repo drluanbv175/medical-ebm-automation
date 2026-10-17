@@ -52,9 +52,9 @@ PMID song song. Đã tra bằng `app/sources/crossref_retraction.CrossrefRetract
 |---|---|---|---|---|
 | 10.1002/9780470316696 | Multiple Imputation for Nonresponse in Surveys… | đề cương TLTK 49 (sách) | tồn tại, không có thông báo rút | không có bản ghi |
 | 10.1093/ije/dyl129 | Sample size for cluster randomized trials: effect of coefficient of va… | G3, SAP §3/§12, đề cương 4.4 | tồn tại, không có thông báo rút | không có bản ghi |
-| 10.1093/jssam/smv024 | Evaluating Confidence Interval Methods for Binomial Proportions in Clu… | SAP 1.2 §3 | tồn tại, không có thông báo rút | không có bản ghi |
-| 10.18637/jss.v009.i08 | Analysis of Complex Survey Samples… | SAP 1.2 §4 | tồn tại, không có thông báo rút | không có bản ghi |
-| 10.3368/jhr.50.2.301 | What Are We Weighting For?… | SAP 1.2 §4 | tồn tại, không có thông báo rút | không có bản ghi |
+| 10.1093/jssam/smv024 | Evaluating Confidence Interval Methods for Binomial Proportions in Clu… | SAP §3 | tồn tại, không có thông báo rút | không có bản ghi |
+| 10.18637/jss.v009.i08 | Analysis of Complex Survey Samples… | SAP §4 | tồn tại, không có thông báo rút | không có bản ghi |
+| 10.3368/jhr.50.2.301 | What Are We Weighting For?… | SAP §4 | tồn tại, không có thông báo rút | không có bản ghi |
 | 10.38148/jhds.0706skpt23-064 | Đánh giá sự hài lòng của người bệnh khám ngoại trú tại khoa khám bệnh… | đề cương TLTK (tạp chí trong nước) | tồn tại, không có thông báo rút | không có bản ghi |
 | 10.51298/vmj.v540i1.10302 | MỘT SỐ YẾU TỐ LIÊN QUAN ĐẾN SỰ HÀI LÒNG CỦA NGƯỜI BỆNH VỀ DỊCH VỤ KHÁM… | đề cương TLTK (tạp chí trong nước) | tồn tại, không có thông báo rút | không có bản ghi |
 | 10.51298/vmj.v549i2.13771 | KHẢO SÁT SỰ HÀI LÒNG NGƯỜI BỆNH NGOẠI TRÚ TẠI KHU KHÁM BỆNH AB – KHOA… | đề cương TLTK (tạp chí trong nước) | tồn tại, không có thông báo rút | không có bản ghi |
