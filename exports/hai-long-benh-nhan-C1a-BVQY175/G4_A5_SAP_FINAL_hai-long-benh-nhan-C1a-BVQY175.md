@@ -41,7 +41,7 @@
 
 - **Quần thể chính:** Toàn bộ mẫu đủ tiêu chí  
 - **Cỡ mẫu cuối:** N = 1000 (độ tin cậy 95%, sai số tuyệt đối d = ±0.05)  
-- **N tối thiểu theo thống kê (từ G3):** 626. N ở trên là cỡ mẫu KẾ HOẠCH do chủ nhiệm/Hội đồng chốt, lớn hơn mức tối thiểu.  
+- **N tối thiểu theo thống kê (từ G3):** 808. N ở trên là cỡ mẫu KẾ HOẠCH do chủ nhiệm/Hội đồng chốt, lớn hơn mức tối thiểu.  
 - **Tiêu chí nhận (mục 4.3.1 đề cương):** người bệnh ngoại trú từ đủ 18 tuổi (gồm phụ nữ mang thai); đủ sức khỏe, tỉnh táo và đủ năng lực nhận thức/ngôn ngữ để trả lời; đã cơ bản hoàn thành quy trình khám tại Khoa C1a (đang chờ thanh toán/nhận thuốc/nhận lại thẻ BHYT); đồng ý tham gia tự nguyện sau khi được giải thích (ICF là tài liệu giấy riêng, Phụ lục B).  
 - **Tiêu chí loại (mục 4.3.2 đề cương):** từ chối tham gia; không đủ năng lực trả lời (cấp cứu, suy giảm nhận thức, rào cản ngôn ngữ không khắc phục được); nhân viên y tế của chính khoa/bệnh viện đi khám; đã tham gia nghiên cứu ở lượt khám trước trong cùng kỳ (chống trùng); phiếu khuyết dữ liệu vượt ngưỡng theo **ba ngưỡng đã khóa**: (1) thiếu G1; (2) bỏ trống ≥ 7/30 mục Likert Phần 2 (> 20%); (3) bỏ trống trọn một lĩnh vực A–F. Số phiếu loại theo TỪNG ngưỡng báo riêng ở sơ đồ luồng STROBE (Bảng 5.6). KHÔNG loại phiếu chỉ vì thiếu biến nền hoặc thiếu mốc HIS — các trường hợp đó đi theo kế hoạch dữ liệu thiếu (§6).  
 
@@ -149,9 +149,10 @@ Ba nhóm biến đã KHÓA theo lập luận nhân quả trên DAG (Phụ lục 
 - **Cỡ mẫu:** N = 1000  
 - **Power:** không dùng — cỡ mẫu theo độ chính xác của ước lượng, không kiểm định giả thuyết  
 - **Tỷ lệ bỏ cuộc dự kiến:** 0.15  
-- **Hiệu ứng thiết kế (DE):** 1.38  
+- **Hiệu ứng thiết kế (DE):** 1.78 — cỡ cụm không đều, DE = 1 + ((CV² + 1)·m − 1)·ICC (Eldridge, Ashby & Kerry 2006, doi:10.1093/ije/dyl129)  
 - **ICC:** 0.02  
 - **Cỡ cụm trung bình (m):** 20  
+- **Hệ số biến thiên cỡ cụm (CV):** 1.0 — giả định lập kế hoạch thận trọng (PI khai 14/10/2026; thay bằng CV thật từ HIS trước khi khoá SAP)  
 
 ---
 

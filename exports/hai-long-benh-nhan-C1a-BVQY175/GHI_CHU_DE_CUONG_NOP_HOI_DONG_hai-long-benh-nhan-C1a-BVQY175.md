@@ -41,7 +41,7 @@ Thay đổi so với phiếu gốc chỉ gồm những điểm đã có ở v1.0
 3. **Tên Hội đồng:** văn bản dùng «Hội đồng Y đức Bệnh viện Quân y 175» theo hồ sơ G2; Thông tư 43/2024/TT-BYT gọi là «Hội đồng đạo đức trong nghiên cứu y sinh học». Bác sĩ xác nhận tên chính thức tại Bệnh viện.
 4. **Bảng tiến độ theo tháng (mục 6.2):** là đề xuất trong khoảng 12/2026–12/2028; chỉnh theo lịch khoa.
 5. **Biến «được khám đúng bác sĩ đã yêu cầu»:** có thể chịu ảnh hưởng của chính thời gian chờ; khi khóa kế hoạch phân tích nên cân nhắc phân tích độ nhạy thay bằng «có yêu cầu bác sĩ cụ thể» (Phụ lục D).
-6. **Kế hoạch phân tích thống kê (SAP G4) cần đồng bộ trước khi khóa:** SAP hiện ghi cỡ mẫu tối thiểu 626 và DE 1,38 (đề cương: 808 và 1,78), KTC Wilson chưa tính gom cụm, trọng số hậu phân tầng chỉ ở phân tích độ nhạy.
+6. **Kế hoạch phân tích thống kê (SAP G4) cần đồng bộ trước khi khóa:** SAP hiện ghi cỡ mẫu tối thiểu 626 và DE 1,38 (đề cương: 808 và 1,78), KTC Wilson chưa tính gom cụm, trọng số hậu phân tầng chỉ ở phân tích độ nhạy. *(17/10/2026: phần cỡ mẫu ĐÃ đồng bộ — G3 chạy lại với CV cỡ cụm 1,0 PI khai 14/10 ⇒ DE 1,78, N tối thiểu 808; SAP §1/§12 sửa theo. Còn chờ PI/thống kê viên: KTC Wilson có hiệu chỉnh gom cụm, vị trí trọng số hậu phân tầng.)*
 7. **`study_meta.data_governance`** vẫn ghi «nhóm nghiên cứu chỉ nhận mã + số phút chờ» — lệch với đề cương v1.0 (đã gồm mã bàn khám) và bản nộp. Bác sĩ đồng ý thì tôi cập nhật câu này để bản lắp G10 khớp.
 8. **Thời hạn lưu 2 năm:** đúng quyết định G2; lưu ý nhiều tạp chí đòi giữ dữ liệu lâu hơn.
 
