@@ -1399,6 +1399,17 @@ def icc_cum(df: pd.DataFrame, outcome_col: str, cluster_col: str) -> dict:
 Z_95 = 1.959963984540054
 
 
+def he_so_bac_tu_do(so_cum: int) -> float:
+    """(z₀,₉₇₅ ÷ t₀,₉₇₅; K−1)² — hiệu chỉnh bậc tự do thiết kế cho cỡ mẫu hiệu dụng của mẫu chùm.
+
+    THÊM 17/10/2026 (SAP C1a 1.2 §3, thẩm định độc lập): Dean & Pagano 2015 (J Surv Stat Methodol 3(4):484–503,
+    doi:10.1093/jssam/smv024) — KTC kiểu Wilson trên cỡ mẫu hiệu dụng cần nhân n hiệu dụng với hệ số này (K = số cụm);
+    K = 50 ⇒ ≈ 0,951. Thiếu scipy ⇒ 1 (không hiệu chỉnh) — nơi gọi ghi cảnh báo."""
+    if so_cum < 2 or not HAS_SCIPY:
+        return 1.0
+    return float((Z_95 / sp_stats.t.ppf(0.975, so_cum - 1)) ** 2)
+
+
 def _wilson(p: float, n: float, z: float = Z_95) -> list:
     """KTC Wilson score cho một tỷ lệ; n có thể là cỡ mẫu hiệu dụng (không nguyên)."""
     if n <= 0:
@@ -1418,6 +1429,9 @@ def ty_le_wilson_cum(df: pd.DataFrame, col: str, nguong: float | None = None,
     - DE thiết kế (tuyến tính hoá, ước lượng tỷ số theo cụm):
       Var(p̂) = K/(K−1) · Σ_c (t_c − p̂·m_c)² / n², DE = Var(p̂) / [p̂(1−p̂)/n], chặn dưới 1
       (không để gom cụm làm KTC HẸP hơn giả định độc lập). DE theo ICC(1) báo kèm để đối chiếu.
+    - 17/10/2026 (SAP C1a 1.2 §3): KTC chính = Wilson trên n hiệu dụng ĐÃ hiệu chỉnh bậc tự do thiết kế
+      n/DE × (z/t_{K−1})² (Dean & Pagano 2015); báo kèm CV cỡ cụm (độ lệch chuẩn tổng thể ÷ trung bình số quan sát
+      mỗi cụm) và DE theo ICC công thức cụm không đều 1 + ((CV²+1)·m̄ − 1)·ICC (Eldridge 2006, doi:10.1093/ije/dyl129).
     """
     if col not in df.columns:
         return {"cot": col, "error": f"không có cột «{col}»"}
@@ -1457,6 +1471,11 @@ def ty_le_wilson_cum(df: pd.DataFrame, col: str, nguong: float | None = None,
     ic = icc_cum(pd.DataFrame({"y": y.values, "c": data[cluster_col].values}), "y", "c")
     out["de_theo_icc"] = ic.get("hieu_ung_thiet_ke")
     out["icc"] = ic.get("icc")
+    m_tb = float(m_c.mean())
+    cv = float(m_c.std(ddof=0) / m_tb) if m_tb > 0 else float("nan")
+    out["cv_co_cum"] = round(cv, 3) if np.isfinite(cv) else None
+    if ic.get("icc") is not None and np.isfinite(cv):
+        out["de_theo_icc_eldridge"] = round(1 + ((cv * cv + 1) * m_tb - 1) * max(float(ic["icc"]), 0.0), 3)
     if var_srs > 0:
         de_tho = var_lin / var_srs
         de = max(1.0, de_tho)
@@ -1465,11 +1484,16 @@ def ty_le_wilson_cum(df: pd.DataFrame, col: str, nguong: float | None = None,
         de = 1.0
         out["canh_bao"].append("Tỷ lệ bằng 0 hoặc 1 — không ước lượng được DE; KTC dưới đây là Wilson độc lập.")
     n_hd = n / de
+    hs = he_so_bac_tu_do(K)
     out["hieu_ung_thiet_ke"] = round(de, 3)
     out["co_mau_hieu_dung"] = round(n_hd, 1)
-    out["CI_95"] = [round(v, 4) for v in _wilson(p, n_hd)]
-    out["phuong_phap"] = ("Wilson score trên cỡ mẫu hiệu dụng n/DE; DE từ phương sai tuyến tính hoá "
-                          "theo cụm (chặn dưới 1)")
+    out["he_so_bac_tu_do"] = round(hs, 4)
+    out["co_mau_hieu_dung_hieu_chinh_bac_tu_do"] = round(n_hd * hs, 1)
+    out["CI_95"] = [round(v, 4) for v in _wilson(p, n_hd * hs)]
+    out["phuong_phap"] = ("Wilson score trên cỡ mẫu hiệu dụng n/DE × (z/t_{K−1})²; DE từ phương sai tuyến tính hoá "
+                          "theo cụm (chặn dưới 1); hiệu chỉnh bậc tự do theo Dean & Pagano 2015")
+    if not HAS_SCIPY:
+        out["canh_bao"].append("Thiếu scipy — KHÔNG hiệu chỉnh được bậc tự do thiết kế; KTC hẹp hơn SAP quy định.")
     out["canh_bao"].append(_ghi_chu_so_cum(K))
     return out
 
@@ -1489,8 +1513,11 @@ def format_ty_le_text(ds: list) -> str:
             lines.append(f"    KTC 95% hiệu chỉnh cụm «{r['cluster']['cot']}» ({r['cluster']['so_cum']} cụm): "
                          f"{a * 100:.1f}%–{b * 100:.1f}%  | DE = {r['hieu_ung_thiet_ke']}"
                          f" (thô {r.get('de_thiet_ke_tho', '—')}; theo ICC {r.get('de_theo_icc')},"
-                         f" ICC = {r.get('icc')})"
-                         f" | n hiệu dụng ≈ {r['co_mau_hieu_dung']}")
+                         f" ICC = {r.get('icc')}; CV cỡ cụm {r.get('cv_co_cum')} ⇒ DE Eldridge"
+                         f" {r.get('de_theo_icc_eldridge')})"
+                         f" | n hiệu dụng ≈ {r['co_mau_hieu_dung']}"
+                         f" (× bậc tự do {r.get('he_so_bac_tu_do')} ⇒"
+                         f" {r.get('co_mau_hieu_dung_hieu_chinh_bac_tu_do')})")
         for cb in r.get("canh_bao", []):
             lines.append(f"    ⚠ {cb}")
     lines.append("\n  " + "Báo KTC hiệu chỉnh cụm làm kết quả chính khi dữ liệu gom cụm; KTC độc lập chỉ để đối chiếu.")

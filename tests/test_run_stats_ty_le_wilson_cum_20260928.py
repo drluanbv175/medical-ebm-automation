@@ -43,14 +43,17 @@ def test_de_tuyen_tinh_hoa_theo_so_tinh_tay():
     df = pd.DataFrame({"y": [1] * 4 + [0] * 4, "c": ["A"] * 4 + ["B"] * 4})
     r = RSA.ty_le_wilson_cum(df, "y", cluster_col="c")
     assert r["de_thiet_ke_tho"] == pytest.approx(8.0) and r["co_mau_hieu_dung"] == pytest.approx(1.0)
-    assert r["CI_95"] == pytest.approx([round(v, 4) for v in RSA._wilson(0.5, 1.0)])
+    # 17/10/2026 (SAP C1a 1.2): KTC chính tính trên n hiệu dụng ĐÃ hiệu chỉnh bậc tự do (K = 2 ⇒ t₁).
+    assert r["CI_95"] == pytest.approx([round(v, 4) for v in RSA._wilson(0.5, 1.0 * RSA.he_so_bac_tu_do(2))])
 
 
 def test_de_chan_duoi_1_va_ty_le_bien():
     # Mỗi cụm đúng 1/2 ⇒ phương sai giữa cụm = 0 ⇒ DE thô 0 → dùng 1 (không làm KTC hẹp hơn độc lập).
     df = pd.DataFrame({"y": [1, 0] * 5, "c": np.repeat(list("ABCDE"), 2)})
     r = RSA.ty_le_wilson_cum(df, "y", cluster_col="c")
-    assert r["hieu_ung_thiet_ke"] == 1.0 and r["CI_95"] == r["CI_95_wilson_doc_lap"]
+    assert r["hieu_ung_thiet_ke"] == 1.0
+    # DE chặn ở 1 vẫn hiệu chỉnh bậc tự do (Korn–Graubard / Dean & Pagano): KTC = Wilson trên n × (z/t_{K−1})².
+    assert r["CI_95"] == pytest.approx([round(v, 4) for v in RSA._wilson(0.5, 10 * RSA.he_so_bac_tu_do(5))])
     tat_ca = RSA.ty_le_wilson_cum(pd.DataFrame({"y": [1] * 6, "c": list("AABBCC")}), "y", cluster_col="c")
     assert tat_ca["hieu_ung_thiet_ke"] == 1.0 and any("0 hoặc 1" in c for c in tat_ca["canh_bao"])
 
