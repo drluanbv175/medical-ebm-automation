@@ -391,6 +391,12 @@ PHAN_CONG: Dict[str, Dict[str, str]] = {
         "G10-HUMAN-04": "PI@G10-T1", "G10-HUMAN-05": "PI@G10-T1",
     },
 }
+# 17/10/2026 (C1a: PI vừa ký G4 ⇒ G6 chuyển sang «AGENT_CON_VIEC» dù chưa có dữ liệu): cổng TIỀN ĐỀ của CẢ cổng — nhiệm
+# vụ của cổng cần đầu ra của cổng trước mà không tiêu chí nào gắn «^» cho cổng đó được bộ chấm phát khi dừng sớm. G6:
+# G6-T1 «phân tích trên dữ liệu ĐÃ KHOÁ» cần từ điển REDCap + DATA_LOCK của G5 (§2 của `dieu-phoi-g6` đã ghi «G5
+# PASS_G5_DATA_LOCKED»), còn G6-AUTO-06 chỉ xét G5 khi ĐÃ có tệp kết quả. Chỉ dùng khi cổng BỊ CHẶN và cổng tiền đề chấm
+# sống chưa PASS — không đổi chủ của tiêu chí nào trong PHAN_CONG.
+TIEN_DE_CA_CONG: Dict[str, Tuple[str, ...]] = {"G6": ("G5",)}
 # Nhiệm vụ có điều kiện mà ĐIỀU KIỆN suy được từ mã thiết kế đã chốt (skill_standards.dac_ta_thiet_ke); điều kiện
 # khác (thang đo, tạp chí tiếng Anh) ⇒ điều phối cổng tự khai áp dụng hay không kèm lý do.
 _DIEU_KIEN_THIET_KE = {"thiết kế can thiệp (RCT)": ("rct",), "tổng quan hệ thống có gộp định lượng": ("sr_ma",),
@@ -1926,8 +1932,9 @@ def trach_nhiem(study: str, gate: str, out_dir: Path) -> Dict[str, Any]:
         # Bộ chấm DỪNG SỚM (vd G6 thiếu tệp đầu vào) không phát các tiêu chí tiền đề ⇒ tự chấm sống cổng tiền đề theo
         # bảng phân công; cổng tiền đề chưa PASS ⇒ cổng này chờ cổng trước, không quy là «agent còn việc».
         da_neu = {g for m in cho_truoc for g in m["cong"]}
-        tien_de = sorted({g for s in PHAN_CONG.get(gate, {}).values() if s.startswith("^")
-                          for g in s[1:].split(",") if g and g != "*"} - da_neu, key=lambda g: int(g[1:]))
+        tien_de = sorted(({g for s in PHAN_CONG.get(gate, {}).values() if s.startswith("^")
+                           for g in s[1:].split(",") if g and g != "*"} | set(TIEN_DE_CA_CONG.get(gate, ())))
+                         - da_neu, key=lambda g: int(g[1:]))
         for g in tien_de:
             st = CS.trang_thai_song(g, study, out_dir, repo_root=out_dir.parent.parent).get("status")
             if CS.muc_cua_trang_thai(st) != "PASS":
@@ -2221,7 +2228,7 @@ def ho_so_cong(study: str, gate: str, out_dir: Path, dp: Optional[List[str]] = N
     cho_bac_si = sorted(m for m, t in tranh.items() if t.get("ket_qua") == "chuyen_bac_si")
     import cong_song as CS  # noqa: PLC0415
 
-    tien_de = set()
+    tien_de = set(TIEN_DE_CA_CONG.get(gate, ()))
     for s in PHAN_CONG.get(gate, {}).values():
         if s.startswith("^"):
             for g in (x.strip() for x in s[1:].split(",")):
