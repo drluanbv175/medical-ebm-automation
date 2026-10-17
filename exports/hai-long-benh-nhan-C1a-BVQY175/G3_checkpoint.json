@@ -1,7 +1,7 @@
 {
   "gate": "G3",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "run_date": "2026-10-14",
+  "run_date": "2026-10-17",
   "gate_status": "DRAFT — CHỜ BÁC SĨ XÁC NHẬN",
   "design_code": "cross_sectional",
   "design_ambiguous": false,
@@ -10,13 +10,13 @@
   "effect_val": 0.5,
   "effect_type": "PREVALENCE",
   "effect_quality": null,
-  "n_per_group": 532,
-  "n_total": 532,
-  "n_adjusted": 626,
+  "n_per_group": 686,
+  "n_total": 686,
+  "n_adjusted": 808,
   "confirmed_n": 1000,
   "confirmed_n_adequate": true,
   "dropout": 0.15,
-  "formula_used": "Cỡ mẫu ước lượng một tỷ lệ theo độ chính xác (Lwanga & Lemeshow/Cochran, xấp xỉ chuẩn): tỷ lệ hiện mắc ước lượng p=0.50, sai số cho phép d=0.05, alpha=0.05 Đã áp design effect cụm (DE=1+(m-1)×ICC=1.38, m=20, ICC=0.02): n 385→532 (~27 cụm).",
+  "formula_used": "Cỡ mẫu ước lượng một tỷ lệ theo độ chính xác (Lwanga & Lemeshow/Cochran, xấp xỉ chuẩn): tỷ lệ hiện mắc ước lượng p=0.50, sai số cho phép d=0.05, alpha=0.05 Đã áp design effect cụm (DE=1+((CV²+1)m-1)×ICC, CV=1 — Eldridge 2006=1.78, m=20, ICC=0.02): n 385→686 (~35 cụm).",
   "p_event": 0.3,
   "p0": 0.3,
   "sd": null,
@@ -29,9 +29,10 @@
   "n_khong_benh": null,
   "icc": 0.02,
   "cluster_size": 20,
-  "design_effect": 1.38,
+  "cluster_cv": 1.0,
+  "design_effect": 1.78,
   "n_total_truoc_de": 385,
-  "n_clusters": 27,
+  "n_clusters": 35,
   "population_n": null,
   "nguon_tham_so": {
     "effect_size": "study_meta",
@@ -41,6 +42,7 @@
     "hypothesis_type": "study_meta",
     "icc": "study_meta",
     "cluster_size": "study_meta",
+    "cluster_cv": "study_meta",
     "prevalence": "study_meta",
     "precision": "study_meta",
     "alpha": "checkpoint lượt trước",
@@ -53,14 +55,15 @@
   "guardrail": "✅ PASS",
   "core_value": {
     "name": "n_adjusted",
-    "value": 626,
+    "value": 808,
     "is_empty": false
   },
   "pending_doctor_actions": [
     "Xác nhận effect size (PMID/DOI từ y văn/pilot study)",
     "Xác nhận tỷ lệ bỏ cuộc dự kiến",
     "Xác nhận tỷ lệ biến cố nền (với log-rank)",
-    "Copy khối cỡ mẫu vào đề cương"
+    "Copy khối cỡ mẫu vào đề cương",
+    "Ghi reviewed_by_role (STATISTICIAN hoặc PI), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"0e68bb02f642f5eb\" (dấu của các giá trị quyết định N hiện tại); không lưu danh tính."
   ],
   "quality_contract_version": "G3-2026.1",
   "quality_gate": {
@@ -68,10 +71,10 @@
     "contract_version": "G3-2026.1",
     "study": "hai-long-benh-nhan-C1a-BVQY175",
     "gate": "G3",
-    "status": "PASS_G3_CONFIRMED",
+    "status": "DRAFT_READY_NEEDS_STATISTICIAN_REVIEW",
     "automated_checks_passed": true,
     "parameters_ready_for_review": true,
-    "human_confirmation_complete": true,
+    "human_confirmation_complete": false,
     "automatic_criteria": [
       {
         "id": "G3-AUTO-00",
@@ -105,7 +108,7 @@
         "id": "G3-AUTO-04",
         "label": "Có giá trị cỡ mẫu dùng được (hoặc N thay thế hợp lệ)",
         "status": "PASS",
-        "evidence": "n_adjusted=626",
+        "evidence": "n_adjusted=808",
         "action": "Cấp effect size có nguồn, hoặc N tính bằng phương pháp thay thế của thiết kế."
       },
       {
@@ -161,7 +164,7 @@
         "id": "G3-AUTO-12",
         "label": "Thiết kế theo chùm: ICC có nguồn, design effect đúng số học, đủ số chùm",
         "status": "PASS",
-        "evidence": "ICC=0.02 có nguồn, m=20, số chùm=50 (cố định, khớp N kế hoạch 1000 ÷ m=20; tối thiểu cần 27)",
+        "evidence": "ICC=0.02 có nguồn, m=20, số chùm=50 (cố định, khớp N kế hoạch 1000 ÷ m=20; tối thiểu cần 35)",
         "action": "Khai icc/icc_source/cluster_size/n_clusters; số chùm nhỏ phải khai hiệu chỉnh mẫu nhỏ.\nSố chùm CỐ ĐỊNH nhiều hơn mức tối thiểu: khai n_clusters kèm confirmed_n (= số chùm × cỡ chùm m).\nCỡ chùm không đều: PI khai cluster_size_cv từ số liệu thật (HIS: số lượt khám từng chùm trong kỳ) hoặc equal_cluster_sizes=true nếu khẳng định chùm đều — KHÔNG ước đoán."
       },
       {
@@ -189,7 +192,7 @@
         "id": "G3-AUTO-13",
         "label": "N thực tế đã chốt đủ lực và có phương pháp",
         "status": "PASS",
-        "evidence": "N chốt=1000 ≥ N tối thiểu=626",
+        "evidence": "N chốt=1000 ≥ N tối thiểu=808",
         "action": "Nâng N, hoặc ghi rõ chấp nhận giảm lực kèm hệ quả; ghi confirmed_n_method cho thiết kế không dùng power."
       },
       {
@@ -246,9 +249,9 @@
       {
         "id": "G3-HUMAN-06",
         "label": "Có vai trò (thống kê viên/chủ nhiệm), thời điểm rà soát và xác nhận gắn đúng các giá trị đã tính",
-        "status": "PASS",
-        "evidence": "reviewed_by_role=PI (nhóm=PI); reviewed_at=2026-10-14T20:17:41+07:00; xác nhận gắn đúng nội dung hiện tại",
-        "action": "Ghi reviewed_by_role (STATISTICIAN hoặc PI), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"b892b172aa2ef41a\" (dấu của các giá trị quyết định N hiện tại); không lưu danh tính."
+        "status": "REVIEW",
+        "evidence": "reviewed_by_role=PI (nhóm=PI); reviewed_at=2026-10-14T20:17:41+07:00; nội dung đã đổi sau khi xác nhận (dấu lúc xác nhận b892b172aa2ef41a ≠ hiện tại 0e68bb02f642f5eb) — chủ nhiệm đọc lại rồi xác nhận lại",
+        "action": "Ghi reviewed_by_role (STATISTICIAN hoặc PI), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"0e68bb02f642f5eb\" (dấu của các giá trị quyết định N hiện tại); không lưu danh tính."
       },
       {
         "id": "G3-HUMAN-07",
@@ -258,19 +261,21 @@
         "action": "Với thử nghiệm quyết định, mời nhà thống kê độc lập xác nhận và cân nhắc power 90%."
       }
     ],
-    "pending_actions": [],
-    "dau_van_tay_hien_tai": "b892b172aa2ef41a",
+    "pending_actions": [
+      "Ghi reviewed_by_role (STATISTICIAN hoặc PI), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"0e68bb02f642f5eb\" (dấu của các giá trị quyết định N hiện tại); không lưu danh tính."
+    ],
+    "dau_van_tay_hien_tai": "0e68bb02f642f5eb",
     "artifact_manifest": {
       "A4_SAMPLE_SIZE": {
-        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "5ea911a50015c54588f21b60ede5dbf35589c942a11743e46a665bcb7959f973"
+        "path": "/Users/nguyenluan/.ebm-worktrees/yk-c1a-g3-cv-20261017/exports/hai-long-benh-nhan-C1a-BVQY175/G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md",
+        "sha256": "ba23f1014ab80d7f4a80afa304df457a193bb46b85bb7e50886335b9e6324f83"
       }
     },
     "sensitivity_table": {
       "found": true,
       "cells_total": 9,
       "cells_na": 0,
-      "base_cell": 532
+      "base_cell": 686
     },
     "standards_basis": [
       {
