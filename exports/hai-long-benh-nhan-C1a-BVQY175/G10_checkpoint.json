@@ -1,7 +1,7 @@
 {
   "gate": "G10",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "generated_at": "2026-10-17T17:07:35.939642",
+  "generated_at": "2026-10-17T17:26:20.540453",
   "gate_status": "READY_FOR_G10_PI_RELEASE_APPROVAL",
   "quality_contract_version": "G10-2026.1",
   "guardrail": {
@@ -113,13 +113,13 @@
     "study_spec_json": "exports/hai-long-benh-nhan-C1a-BVQY175/STUDY_SPEC_hai-long-benh-nhan-C1a-BVQY175.json",
     "decision_package_md": "exports/hai-long-benh-nhan-C1a-BVQY175/GOI_QUYET_DINH_hai-long-benh-nhan-C1a-BVQY175.md",
     "release_readiness_json": "exports/hai-long-benh-nhan-C1a-BVQY175/G10_RELEASE_READINESS.json",
-    "de_cuong_md_sha256": "47cada22e35e9ff3cc0cb0aa2957caa43078a8611094edef46ebb5b496a81cd1",
-    "de_cuong_docx_sha256": "89ff6e82013bdc30eb6ddeca8704f950b60aec13cf3fb11510b8b5a5c21d4c76"
+    "de_cuong_md_sha256": "08954ad58f9a95047254dcdafa5ea2476cf1aaff7867cb83e2a4a4ab6b45c310",
+    "de_cuong_docx_sha256": "d53c4b743854c04cadd35fd7913e1c036998b384f8224638325eec003f32983e"
   },
   "quality_gate": {
     "status": "READY_FOR_G10_PI_RELEASE_APPROVAL",
     "report": "G10_QUALITY_REPORT.json",
-    "package_sha256": "9f535eac4d7f28a2b73279c64d4f7bdff004cc18e0b8070ace2098360087b8d3",
+    "package_sha256": "cbeb25e7fe6030d11a6d49b30db85c7b812c59f7f09e13b03dbb68fa0c0034c0",
     "human_approval_valid": false,
     "external_submission_state": "NOT_PERFORMED_OR_PROVEN_BY_G10"
   },
@@ -133,11 +133,11 @@
     "files": {
       "final_protocol_md": {
         "path": "DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "47cada22e35e9ff3cc0cb0aa2957caa43078a8611094edef46ebb5b496a81cd1"
+        "sha256": "08954ad58f9a95047254dcdafa5ea2476cf1aaff7867cb83e2a4a4ab6b45c310"
       },
       "final_protocol_docx": {
         "path": "DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.docx",
-        "sha256": "89ff6e82013bdc30eb6ddeca8704f950b60aec13cf3fb11510b8b5a5c21d4c76"
+        "sha256": "d53c4b743854c04cadd35fd7913e1c036998b384f8224638325eec003f32983e"
       },
       "study_spec": {
         "path": "STUDY_SPEC_hai-long-benh-nhan-C1a-BVQY175.json",
@@ -189,7 +189,7 @@
       },
       "checkpoint_g4": {
         "path": "G4_checkpoint.json",
-        "sha256": "99373ab0adeb3040a42142698db1e5fc9124752aea11cd7e1063cf61ad472653"
+        "sha256": "3087f099fb0f6e86dae7e3fcea862c282a736ae91fa38b021bb28f5a76ca9a2d"
       },
       "g1_protocol_design": {
         "path": "G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
@@ -212,6 +212,6 @@
         "sha256": "b02aa5f336b2d70c87a1b9aea56f1d099688c92e901f8b0bc7233fadaa281c58"
       }
     },
-    "package_sha256": "9f535eac4d7f28a2b73279c64d4f7bdff004cc18e0b8070ace2098360087b8d3"
+    "package_sha256": "cbeb25e7fe6030d11a6d49b30db85c7b812c59f7f09e13b03dbb68fa0c0034c0"
   }
 }
