@@ -1523,19 +1523,14 @@ def guardrail_check_g2(artifact: str) -> dict:
     # sơ đã sẵn sàng nộp Hội đồng" — xem g2_quality_gate.py (lớp kiểm chất
     # lượng riêng, có phân biệt DRAFT/READY/APPROVED) cho đánh giá đó.
 
-    # R4 — Có nhãn DRAFT trên tài liệu
+    # R4/R5 — CHỈ THÔNG TIN (SỬA 17/10/2026): đòi ≥5 nhãn DRAFT và ≥10 ô [CẦN] phạt chính việc hoàn thiện hồ sơ — C1a
+    # đã điền đến chỉ còn 8 ô chờ dữ kiện sau phê duyệt ⇒ guardrail FAIL ⇒ kiem_chi_tiet_he_nghien_cuu trục ① 🔴.
+    # g2_quality_gate đã bỏ hai luật này khỏi G2-AUTO-01 từ 04/10/2026 (CHUNG-H); nay bộ sinh nhất quán. Độ sẵn sàng của
+    # hồ sơ (ô trống thật, attestation, số phê duyệt) do g2_quality_gate chấm trên nội dung hiện hành.
     draft_count = artifact.count("DRAFT")
-    if draft_count >= 5:
-        warnings.append(f"R4 ✅ Nhãn DRAFT đủ ({draft_count} lần)")
-    else:
-        errors.append(f"R4 🔴 Thiếu nhãn DRAFT (chỉ {draft_count} lần — cần ≥5)")
-
-    # R5 — [CẦN BỔ SUNG] đủ cho các trường trống
     can_count = artifact.count("[CẦN")
-    if can_count >= 10:
-        warnings.append(f"R5 ✅ {can_count} trường [CẦN...] đã gắn nhãn")
-    else:
-        errors.append(f"R5 🟡 Chỉ {can_count} trường [CẦN...] — kiểm xem còn trường nào trống không")
+    warnings.append(f"R4 ℹ️ {draft_count} nhãn DRAFT (thông tin — hồ sơ hoàn thiện có thể ít nhãn hơn khuôn)")
+    warnings.append(f"R5 ℹ️ còn {can_count} ô [CẦN...] chờ dữ kiện thật (thông tin — độ sẵn sàng do g2_quality_gate chấm)")
 
     # R6 — 7 mục ICF gốc đủ
     icf_sections = ["MỤC ĐÍCH", "QUY TRÌNH", "RỦI RO", "LỢI ÍCH", "BẢO MẬT", "TỰ NGUYỆN", "LIÊN HỆ"]
