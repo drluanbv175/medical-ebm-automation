@@ -1913,8 +1913,13 @@ def trach_nhiem(study: str, gate: str, out_dir: Path) -> Dict[str, Any]:
                               "viec": f"sửa theo biên bản {dg['id']} rồi đánh giá chéo lại", "nhiem_vu": n["ma"],
                               "agent": n["agent"]})
         if n["ma"] in khong_tc:
+            # 17/10/2026 (bác sĩ chọn «tách dòng chưa tới lượt»): đầu ra CHƯA CÓ ⇒ chưa có gì để chấm chéo (C1a: G6-T3
+            # cần dữ liệu thật, G7-T2 cần bản thảo) — đo bất kể áp dụng đã suy được hay chưa, để tách khỏi «chất lượng
+            # chưa bảo đảm» mà vẫn hiện, không bao giờ thành «đạt».
+            chua_co = [d.replace("<mã>", study) for d in (_nhiem_vu(gate, n["ma"]) or {}).get("dau_ra", ())
+                       if not (out_dir / d.replace("<mã>", study)).is_file()]
             chi_danh_gia.append({"ma": n["ma"], "agent": n["agent"], "ap_dung": n["ap_dung"],
-                                 "danh_gia_cheo": dg["trang_thai"]})
+                                 "danh_gia_cheo": dg["trang_thai"], "dau_ra_chua_co": chua_co})
         kiem = KIEM_NHIEM_VU.get(n["ma"])
         # Chỉ kiểm khi CHẮC nhiệm vụ áp dụng (ap_dung True) — nhiệm vụ có điều kiện chưa suy được thiết kế không bị
         # kiểm theo giả định (vd §13–§15 chỉ có ở SAP RCT).
@@ -1970,7 +1975,13 @@ def trach_nhiem(study: str, gate: str, out_dir: Path) -> Dict[str, Any]:
             "agent_con_viec": agent_con, "cho_nguoi": cho_nguoi, "cho_cong_truoc": cho_truoc,
             "chua_phan_cong": chua_gan, "nhiem_vu": nhiem_vu, "chua_cham": chua_cham,
             "chi_dam_bao_bang_danh_gia_cheo": chi_danh_gia,
-            "chat_luong_chua_bao_dam": [m["ma"] for m in chi_danh_gia if m["danh_gia_cheo"] != "qua"],
+            "chat_luong_chua_bao_dam": [m["ma"] for m in chi_danh_gia
+                                        if m["danh_gia_cheo"] != "qua" and not m["dau_ra_chua_co"]],
+            "chat_luong_chua_toi_luot": [
+                {"ma": m["ma"], "agent": m["agent"],
+                 "ly_do": "chưa có đầu ra: " + ", ".join(m["dau_ra_chua_co"])
+                 + ("; chưa xác định áp dụng — điều phối cổng khai" if m["ap_dung"] is None else "")}
+                for m in chi_danh_gia if m["danh_gia_cheo"] != "qua" and m["dau_ra_chua_co"]],
             "nhiem_vu_chua_xac_dinh": [n["ma"] for n in nhiem_vu if n["ap_dung"] is None],
             "hoi_dong_treo": hoi_dong_treo}
 
@@ -2004,6 +2015,9 @@ def in_tong_trach_nhiem(kq: Dict[str, Any]) -> str:
         dong.append(f"| {k['gate']} | `{k['dieu_phoi']}` | {k['trang_thai_song']} | {k['ket_luan']} | "
                     f"{len(k['agent_con_viec'])} | {len(k['cho_nguoi'])} | {len(k['cho_cong_truoc'])} | "
                     f"{', '.join(k['chat_luong_chua_bao_dam']) or '—'} |")
+    toi_luot = [m["ma"] for k in kq["cong"] for m in (k.get("chat_luong_chua_toi_luot") or [])]
+    if toi_luot:
+        dong.append("⏳ Chưa tới lượt đánh giá chéo (chưa có đầu ra — không phải «đạt»): " + ", ".join(toi_luot))
     treo = [f"{k['gate']} ({k['hoi_dong_treo']['trang_thai']})" for k in kq["cong"] if k.get("hoi_dong_treo")]
     if treo:
         dong.append("⚠ Hội đồng còn việc treo (TƯ VẤN — xem trach-nhiem từng cổng): " + ", ".join(treo))
@@ -2079,6 +2093,9 @@ def in_trach_nhiem(kq: Dict[str, Any]) -> str:
         if kq["chat_luong_chua_bao_dam"]:
             dong.append("  ⚠ CHẤT LƯỢNG CHƯA ĐƯỢC BẢO ĐẢM: " + ", ".join(kq["chat_luong_chua_bao_dam"])
                         + " — khối bàn giao phải nói thật điều này (đánh giá chéo tốn agent: hỏi bác sĩ trước, §5)")
+        if kq.get("chat_luong_chua_toi_luot"):
+            dong.append("  ⏳ CHƯA TỚI LƯỢT ĐÁNH GIÁ CHÉO (không phải «đạt»): " + "; ".join(
+                f"{m['ma']} — {m['ly_do']}" for m in kq["chat_luong_chua_toi_luot"]))
     da_khai = [n for n in kq["nhiem_vu"] if n.get("khai_ap_dung")]
     if da_khai:
         dong.append("- Điều phối đã khai áp dụng: " + "; ".join(
