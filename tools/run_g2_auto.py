@@ -326,6 +326,31 @@ def get_risk_profile(internal_code: str, design_primary: str = "") -> dict:
     return profile
 
 
+def ap_quyet_dinh_dang_ky(risk: dict, meta: Optional[dict]) -> dict:
+    """Quyết định đăng ký PI ĐÃ GHIM ở `gate_params.G2` thắng gợi ý mặc định theo thiết kế (17/10/2026).
+
+    C1a: bác sĩ chọn OSF Registries (13/09/2026, chép tay vào hồ sơ A3) nhưng lựa chọn chưa được ghim thành khoá
+    ⇒ bản nháp đăng ký WHO TRDS (sinh lại mỗi lượt) cứ quay về «ClinicalTrials.gov hoặc WHO ICTRP», lệch hồ sơ A3 —
+    hai tài liệu nộp cùng bộ nói hai nơi đăng ký khác nhau. Chỉ áp khi khoá ĐÃ ghim (chưa ghim ⇒ giữ gợi ý, không đoán).
+    `recruitment_mode` tiến cứu (hoặc `registration_required` = true) ⇒ đăng ký BẮT BUỘC trước người tham gia đầu tiên
+    (Helsinki §35 — cùng quy tắc bộ chấm G2 dùng khi ký). `registration_required` = false KHÔNG hạ được nghĩa vụ của
+    nghiên cứu tiến cứu."""
+    g2 = (((meta or {}).get("gate_params") or {}).get("G2") or {}) if isinstance(meta, dict) else {}
+    ra = dict(risk)
+    noi = str(g2.get("registration_registry") or "").strip()
+    if noi and not noi.upper().startswith("[CẦN"):
+        ra["register_where"] = f"{noi} (PI đã chốt — gate_params.G2.registration_registry)"
+    che_do = str(g2.get("recruitment_mode") or "").strip().upper()
+    if che_do == "PROSPECTIVE_NEW_PARTICIPANTS" or g2.get("registration_required") is True:
+        nguon = "recruitment_mode" if che_do == "PROSPECTIVE_NEW_PARTICIPANTS" else "registration_required"
+        ra["registration"] = ("BẮT BUỘC — tiến cứu, tuyển người tham gia mới: đăng ký TRƯỚC người tham gia đầu tiên "
+                              f"(Helsinki §35) (PI đã chốt — gate_params.G2.{nguon})")
+    elif che_do == "RETROSPECTIVE_SECONDARY_DATA":
+        ra["registration"] = ("TÙY CHỌN — hồi cứu dữ liệu thứ cấp, không tuyển người tham gia mới "
+                              "(PI đã chốt — gate_params.G2.recruitment_mode)")
+    return ra
+
+
 # ════════════════════════════════════════════════════════════════════════════
 # 2. TRA CLINICALTRIALS.GOV — PRIOR ART CHO HỒ SƠ ĐẠO ĐỨC
 # ════════════════════════════════════════════════════════════════════════════
@@ -1880,6 +1905,7 @@ def main():
         out_dir,
         seed={"title": topic, "design_code": design_code},
     )
+    risk = ap_quyet_dinh_dang_ky(risk, _study_meta_for_g2)
     print(f"  → Mức nguy cơ: {risk['risk_level']}")
     print(f"  → Lộ trình IRB: {risk['irb_route']}")
     print(f"  → Đăng ký: {risk['registration']}")
