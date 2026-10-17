@@ -1205,7 +1205,11 @@ def evaluate_g3_quality(
         # extension mục 7a đòi nêu cách tính; ở đây ta tính lại và đối chiếu).
         declared_de = _as_float(g3.get("design_effect"))
         cv = _as_float(checkpoint.get("cluster_cv"))
-        cv = cv if cv is not None else _as_float(g3.get("cluster_cv"))
+        # Khoá chuẩn của study_meta là `cluster_size_cv` (G3-AUTO-12); `cluster_cv` chỉ là tên trường checkpoint.
+        # CV khai < CLUSTER_CV_NEGLIGIBLE (0,23) ⇒ công thức cụm đều vẫn chấp nhận được (cùng ngưỡng G3-AUTO-12).
+        cv_khai = _as_float(g3.get("cluster_size_cv", g3.get("cluster_cv")))
+        if cv is None and cv_khai is not None and cv_khai >= CLUSTER_CV_NEGLIGIBLE:
+            cv = cv_khai
         if declared_de is not None and icc is not None and cluster_size:
             # F1 (16/10/2026): khai CV cỡ cụm ⇒ công thức cụm không đều (Eldridge 2006) thay cho 1+(m−1)·ICC.
             expected_de = ((1 + (cluster_size - 1) * icc) if cv is None
@@ -1215,6 +1219,22 @@ def evaluate_g3_quality(
                     f"design_effect tự khai={declared_de} nhưng "
                     + ("1+(m−1)·ICC=" if cv is None else f"1+((CV²+1)m−1)·ICC (CV={cv:g})=")
                     + f"{expected_de:.3f}"
+                )
+        # SỬA 17/10/2026: CV của checkpoint phải khớp CV PI khai, và DE CỦA CHECKPOINT (con số G3 thật nhân vào N) phải
+        # khớp công thức với CV đó. PI khai cluster_size_cv SAU lượt chạy G3 (C1a 14/10) ⇒ checkpoint còn DE cụm đều
+        # 1,38 / N tối thiểu 626 trong khi đúng là 1,78 / 808 — bản cũ không kiểm DE checkpoint nên vẫn PASS.
+        cv_cp = _as_float(checkpoint.get("cluster_cv"))
+        cv_meta = cv_khai
+        if cv_cp is not None and cv_meta is not None and not _cung_gia_tri(cv_cp, cv_meta):
+            cluster_problems.append(f"CV cỡ chùm lệch: checkpoint {cv_cp:g} ≠ study_meta {cv_meta:g}")
+        if de_cp is not None and icc is not None and cluster_size:
+            de_dung = ((1 + (cluster_size - 1) * icc) if cv is None
+                       else (1 + ((cv ** 2 + 1) * cluster_size - 1) * icc))
+            if abs(de_cp - de_dung) > DESIGN_EFFECT_TOLERANCE:
+                cluster_problems.append(
+                    f"design_effect của checkpoint={de_cp:g} nhưng "
+                    + ("1+(m−1)·ICC=" if cv is None else f"1+((CV²+1)m−1)·ICC (CV={cv:g})=")
+                    + f"{de_dung:.3f} — chạy lại run_g3_auto (CV đọc từ study_meta.gate_params.G3.cluster_size_cv)"
                 )
 
         # Số chùm là thứ chi phối lực của thử nghiệm theo chùm, không phải tổng N.
