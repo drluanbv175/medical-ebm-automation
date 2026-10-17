@@ -301,6 +301,12 @@ def _thiet_ke_ghim(meta: Mapping[str, Any]) -> Optional[str]:
 _G0_HUMAN_CAU_HOI = ("G0-HUMAN-01", "G0-HUMAN-02", "G0-HUMAN-03", "G0-HUMAN-04")
 
 
+def _da_go(thong_diep, luc) -> str:
+    """Đánh dấu một thông điệp needs_input là ĐÃ GỠ (giữ nguyên văn cũ phía sau để truy vết)."""
+    goc = str(thong_diep or "").strip()
+    return goc if goc.startswith("ĐÃ GỠ") else f"ĐÃ GỠ ({luc}) — cổng đã PASS_G0_CONFIRMED; nội dung cũ: {goc}"
+
+
 def dong_bo_trang_thai_checkpoint(checkpoint: Dict[str, Any], report: Mapping[str, Any], study: str) -> None:
     """Ghi `gate_status` + `pending_doctor_actions` của checkpoint G0 TỪ KẾT QUẢ CHẤM (09/10/2026, hội đồng BD-G0-T1).
 
@@ -1018,11 +1024,19 @@ def refresh_checkpoint(*, study: str, out_dir: Path,
         # ngược nhau về CÙNG một cổng. Hai lớp kể hai chuyện. Giữ bản ghi để truy vết,
         # chỉ gỡ cờ chặn và ghi rõ ai/khi nào gỡ. Cờ MISSING_PUBMED KHÔNG gỡ ở đây —
         # 0 PMID không thể được "xác nhận" qua.
+        luc = datetime.now().isoformat(timespec="seconds")
         checkpoint["needs_input"] = {
             **existing, "blocked": False,
             "resolved_by": "g0_quality_gate.refresh_checkpoint",
-            "resolved_at": datetime.now().isoformat(timespec="seconds"),
+            "resolved_at": luc,
+            "human_message": _da_go(existing.get("human_message"), luc),
         }
+    elif (report.get("status") == STATUS_CONFIRMED and existing.get("resolved_by") and not existing.get("blocked")
+          and not str(existing.get("human_message") or "").startswith("ĐÃ GỠ")):
+        # 17/10/2026 (hội đồng G0 C1a, G0-T1 RQ8): cờ đã gỡ nhưng câu «còn chờ bác sĩ/PI: …» vẫn nằm nguyên ⇒ người đọc
+        # checkpoint thấy G0 PASS mà vẫn «còn chờ». Đánh dấu đã gỡ, giữ nguyên văn để truy vết.
+        checkpoint["needs_input"] = {**existing, "human_message": _da_go(existing.get("human_message"),
+                                                                          existing.get("resolved_at"))}
     dong_bo_trang_thai_checkpoint(checkpoint, report, study)
     PF.ghi_checkpoint_giu_moc_sinh(checkpoint_path, json.dumps(checkpoint, ensure_ascii=False, indent=2))
     return checkpoint_path
