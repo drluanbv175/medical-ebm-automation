@@ -27,11 +27,11 @@
 | G0-HUMAN-04 | Loại câu hỏi đã xác định | PASS | question_type=descriptive (chuẩn hoá: descriptive) |
 | G0-HUMAN-05 | FINER đánh giá đủ từng tiêu chí (5/5), kết luận ĐẠT và có lý do | PASS | 5/5 tiêu chí có kết luận đạt kèm lý do |
 | G0-HUMAN-06 | Đã đọc lại bằng chứng G0 và biện minh tính mới | PASS | evidence_reviewed_confirmed=True; novelty_justification=có |
-| G0-HUMAN-07 | Chủ nhiệm/nhà phương pháp chốt PICO (vai trò + thời điểm + gắn đúng nội dung) | REVIEW | pico_confirmed=True; vai trò=pi; reviewed_at=2026-10-14T19:17:12+07:00; nội dung đã đổi sau khi xác nhận (dấu lúc xác nhận 4678a3407d3ccd57 ≠ hiện tại 4a93f21a3eb997b2) — chủ nhiệm đọc lại rồi xác nhận lại |
+| G0-HUMAN-07 | Chủ nhiệm/nhà phương pháp chốt PICO (vai trò + thời điểm + gắn đúng nội dung) | REVIEW | pico_confirmed=True; vai trò=pi; reviewed_at=2026-10-14T19:17:12+07:00; nội dung đã đổi sau khi xác nhận (dấu lúc xác nhận 4678a3407d3ccd57 ≠ hiện tại e486f1b001aeb2b6) — chủ nhiệm đọc lại rồi xác nhận lại |
 | G0-HUMAN-08 | PI đã tự tra WHO ICTRP (và PROSPERO cho tổng quan) + đánh giá chồng lấn khi có thử nghiệm đang tuyển | PASS | đã ghi ngày tra |
 
 ## Việc còn lại trước khi được ghi PASS_G0_CONFIRMED
-1. Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot="4a93f21a3eb997b2" (dấu của nội dung đang chốt). Không cần lưu danh tính.
+1. Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot="e486f1b001aeb2b6" (dấu của nội dung đang chốt). Không cần lưu danh tính.
 
 ## Chuẩn báo cáo DỰ KIẾN (G1 quyết định chính thức)
 - Mã thiết kế suy từ gợi ý G0: `cross_sectional`
@@ -41,7 +41,7 @@
 ## Manifest artifact
 | Artifact | Đường dẫn | SHA-256 |
 |---|---|---|
-| A1 | /Users/nguyenluan/.ebm-worktrees/yk-c1a-g0-dp-20261017/exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.md | `6b1b42f397135eaa18e5b933f56c402d271a1f1fc741ff10d3ca31ae056a1dad` |
+| A1 | /Users/nguyenluan/.ebm-worktrees/yk-c1a-g0-dp-20261017/exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.md | `d5d63235536023e9709eebfb44396134eaada960e5b56da80269bb6b610aeb8d` |
 
 ## Nền chuẩn
 | Chuẩn | Phạm vi | PMID/DOI/URL |

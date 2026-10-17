@@ -153,7 +153,7 @@
     "A1_docx": "exports/hai-long-benh-nhan-C1a-BVQY175/G0_A1_PICO_FINER_hai-long-benh-nhan-C1a-BVQY175.docx"
   },
   "pending_doctor_actions": [
-    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"4a93f21a3eb997b2\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"e486f1b001aeb2b6\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
     "Chạy: python tools/g0_quality_gate.py --study hai-long-benh-nhan-C1a-BVQY175"
   ],
   "next_gate": "G1 — Thiết kế nghiên cứu (CHỈ sau khi G0 đạt PASS_G0_CONFIRMED)",
@@ -173,6 +173,7 @@
     "doi:10.55401/y8fmp830",
     "pmid:16162387",
     "pmid:22548036",
+    "pmid:22961881",
     "pmid:28690831",
     "pmid:29915440",
     "pmid:32244937",
@@ -196,9 +197,9 @@
     "automated_checks_passed": true,
     "human_confirmation_complete": false,
     "pending_actions": [
-      "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"4a93f21a3eb997b2\" (dấu của nội dung đang chốt). Không cần lưu danh tính."
+      "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"e486f1b001aeb2b6\" (dấu của nội dung đang chốt). Không cần lưu danh tính."
     ],
-    "dau_van_tay_luc_cham": "4a93f21a3eb997b2"
+    "dau_van_tay_luc_cham": "e486f1b001aeb2b6"
   },
   "needs_input": {
     "blocked": true,
@@ -223,5 +224,5 @@
     },
     "supplied_by": "doctor"
   },
-  "a1_dung_lai_luc": "2026-10-17T11:19:47"
+  "a1_dung_lai_luc": "2026-10-17T11:34:39"
 }
