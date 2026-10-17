@@ -575,6 +575,11 @@ def generate(study, topic, design_code, design_primary, reporting_std,
     ]
 
     # ── §12 + chứng chỉ khoá theo khung (G4-06/G4-08) ──
+    # 17/10/2026 (hội đồng G0 C1a, DP-G0-1): lực cho mục tiêu phụ G3 đã tính ⇒ §12 in CÙNG câu với A4 PHẦN 4.
+    dong_luc_phu = None
+    if g3.get("luc_muc_tieu_phu"):
+        import run_g3_auto as _G3A  # noqa: PLC0415 — chỉ cần khi G3 có khai lực mục tiêu phụ
+        dong_luc_phu = _G3A.dong_luc_muc_tieu_phu(g3.get("luc_muc_tieu_phu"))
     dong_n_12 = (f"- **Cỡ mẫu:** {n_na_note}  " if n_not_applicable else
                  (f"- **Cỡ mẫu:** N = {n_adjusted}  " if n_adjusted else "- **Cỡ mẫu:** [CẦN từ G3]  "))
     if loai12 == "dinh_tinh":
@@ -600,7 +605,9 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             f"- **Tỷ lệ ước lượng (p):** {_so(effect_val)}  ",
             f"- **Sai số tuyệt đối cho phép (d):** ±{_so(precision)}  ",
             dong_n_12,
-            "- **Power:** không dùng — cỡ mẫu theo độ chính xác của ước lượng, không kiểm định giả thuyết  ",
+            ("- **Power:** kết cục chính không dùng — cỡ mẫu theo độ chính xác của ước lượng, không kiểm định giả "
+             "thuyết; mục tiêu phụ xem dòng «Lực cho mục tiêu phụ»  " if dong_luc_phu else
+             "- **Power:** không dùng — cỡ mẫu theo độ chính xác của ước lượng, không kiểm định giả thuyết  "),
         ]
     else:
         tieu_de_12 = "### §12 ALPHA + POWER"
@@ -631,6 +638,8 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             muc_12 += [f"- **Số ca bệnh cần:** {g3.get('n_benh')}  ",
                        f"- **Số ca không bệnh cần:** {g3.get('n_khong_benh')}  ",
                        f"- **Tỷ lệ hiện mắc dự kiến:** {_so(g3.get('prevalence'))}  "]
+    if dong_luc_phu and loai12 != "dinh_tinh":
+        muc_12.append(f"- **Lực cho mục tiêu phụ:** {dong_luc_phu} (G3 A4 PHẦN 2c)  ")
     if loai12 != "dinh_tinh" and g3.get("dropout") is not None:
         muc_12.append(f"- **Tỷ lệ bỏ cuộc dự kiến:** {_so(g3.get('dropout'))}  ")
     if co_cum:
