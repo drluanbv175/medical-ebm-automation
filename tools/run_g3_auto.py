@@ -1245,6 +1245,10 @@ def main():
             nguon_tham_so[_ten] = "CLI"
             continue
         _gia_tri = _g3_pinned.get(_ten)
+        if _ten == "cluster_cv":
+            # SỬA 17/10/2026: khoá CHUẨN trong study_meta là `cluster_size_cv` (PI khai 14/10, G3-AUTO-12 đọc) — bản
+            # 16/10 chỉ đọc `cluster_cv` nên CV PI đã chốt bị bỏ qua và DE tính như cụm đều.
+            _gia_tri = _g3_pinned.get("cluster_size_cv", _gia_tri)
         _nguon = "study_meta"
         if _gia_tri is None and _ten in ("hypothesis_type", "margin", "outcome_direction"):
             _gia_tri = _dac_ta.get(_ten)
@@ -1777,7 +1781,7 @@ def main():
     for _ten in ("hypothesis_type", "margin", "outcome_direction", "precision", "prevalence", "icc", "cluster_size",
                  "cluster_cv", "population_n", "alpha", "power", "p0", "dropout", "p_event"):
         if nguon_tham_so.get(_ten) == "CLI" and getattr(args, _ten) is not None:
-            seed_g3[_ten] = getattr(args, _ten)
+            seed_g3["cluster_size_cv" if _ten == "cluster_cv" else _ten] = getattr(args, _ten)
     if seed_g3:
         GC.ensure_study_meta(out_dir, seed={"gate_params": {"G3": seed_g3}})
 
