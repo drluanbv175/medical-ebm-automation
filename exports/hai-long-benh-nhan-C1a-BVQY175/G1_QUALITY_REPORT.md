@@ -35,9 +35,9 @@
 ## Manifest artifact
 | Artifact | Đường dẫn | SHA-256 |
 |---|---|---|
+| A1b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md | `5fe4f0aceb564ee8dd1c2cd0815d784044c23f96ddf861116703ae2bf56d926d` |
 | A2 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md | `0933db120c0d3a027d5aa19bfabcfd1e93fcff31d3f64f6ae9390cc194413cf3` |
-| A1b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md | `eef78a0c634d51f84305a275f0ce5d84fa5e0241ec2f1f9d6e7e59d262fc265f` |
-| A2b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md | `88d97c4152ce451c77846d91cf119ab6ee8b4bc5470472d3861123ffb2b87765` |
+| A2b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md | `5b8d18e9e193cd46f0d9ad9a2b443b1a5d6c1eab107d107ff0be857afccdb7e3` |
 | A13 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md | `5de5087b086310a566d9e16cb13df4ce9a41b5060d585b2ef8560af52dfefcd9` |
 | A13b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md | `c274c46c95358259f8119c8b67c8e63e3dbef03363e9e17242e647aa741b3352` |
 
