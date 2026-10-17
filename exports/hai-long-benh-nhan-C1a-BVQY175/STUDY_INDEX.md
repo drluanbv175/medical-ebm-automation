@@ -1,5 +1,5 @@
 # STUDY INDEX — hai-long-benh-nhan-C1a-BVQY175
-> Cập nhật: 2026-10-15 · trạng thái đọc TRỰC TIẾP từ checkpoint hiện có (không phải cố định lúc scaffold)
+> Cập nhật: 2026-10-17 · trạng thái đọc TRỰC TIẾP từ checkpoint hiện có (không phải cố định lúc scaffold)
 
 ## 20 File chuẩn
 
@@ -11,7 +11,7 @@
 | 03 | 03_Evidence_Ledger.md | G0c_LITERATURE_hai-long-benh-nhan-C1a-BVQY175.docx | G0-G1 | `literature` | ✅ Xong |
 | 04 | 04_Literature_Review.md | G0c_LITERATURE_hai-long-benh-nhan-C1a-BVQY175.docx | G0-G1 | `literature` | ✅ Xong |
 | 05 | 05_Protocol.md | G1a_PROTOCOL_hai-long-benh-nhan-C1a-BVQY175.docx | G1 | `protocol` | ✅ Xong |
-| 06 | 06_Ethics_Package_Checklist.md | G2_ETHICS_hai-long-benh-nhan-C1a-BVQY175.docx | G2 | `ethics` | 🚧 Dự thảo — chờ input |
+| 06 | 06_Ethics_Package_Checklist.md | G2_ETHICS_hai-long-benh-nhan-C1a-BVQY175.docx | G2 | `ethics` | ✅ Xong |
 | 07 | 07_CRF_or_Questionnaire.md | G3c_CRF_hai-long-benh-nhan-C1a-BVQY175.docx | G3 | `crf` | ✅ Xong |
 | 08 | 08_SOP_Data_Collection.md | G5a_SOP_hai-long-benh-nhan-C1a-BVQY175.docx | G5 | `sop` | 🔴 Chưa có |
 | 09 | 09_Data_Dictionary.md | G3b_VARIABLES_hai-long-benh-nhan-C1a-BVQY175.docx | G3-G5 | `variables` | 🔴 Chưa có |

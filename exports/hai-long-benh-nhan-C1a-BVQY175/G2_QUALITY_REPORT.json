@@ -11,7 +11,7 @@
       "id": "G2-AUTO-01",
       "label": "Liêm chính nội dung hồ sơ HIỆN HÀNH (PII, số phê duyệt tự gán, tự xưng phê duyệt/khoá, disclaimer)",
       "status": "PASS",
-      "evidence": "R1/R2/R3/R7 sạch trên nội dung hiện hành (guardrail lúc sinh: passed=False)",
+      "evidence": "R1/R2/R3/R7 sạch trên nội dung hiện hành (guardrail lúc sinh: passed=True)",
       "action": "Sửa PII, số phê duyệt tự gán, tuyên bố vượt cổng hoặc disclaimer trong hồ sơ trước khi nộp."
     },
     {
