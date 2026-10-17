@@ -2457,11 +2457,49 @@ def _extract_pmids_from_artifact(text: str) -> set:
 # nháp đầu của vá này) làm CẮT CỤT chính những DOI phổ biến đó ngay tại dấu
 # ngoặc đầu tiên — bắt được qua test hồi quy (tests/test_audit_round5_fixes.py).
 _DOI_INLINE_RE = re.compile(r'\b10\.\d{4,9}/[-._;()/:a-zA-Z0-9]+', re.IGNORECASE)
+# Dấu câu bị regex «nuốt» ở cuối DOI khi văn bản viết DOI ngay trước dấu câu: «(doi:10.x/y).», «10.x/y;», «10.x/y:».
+_DAU_CAU_CUOI_DOI = ".,;:"
+
+
+def _cat_duoi_doi(doi: str) -> str:
+    """Bỏ dấu câu cuối (`.,;:`) và ngoặc đóng KHÔNG CÂN (`)`/`]`) mà regex quét dính vào đuôi DOI.
+
+    SỬA 17/10/2026: DOI viết trong ngoặc đơn — «(doi:10.51298/vmj.v549i2.13771)» — bị bắt thành
+    «10.51298/vmj.v549i2.13771)» vì `)` là ký tự HỢP LỆ của regex (giữ cho DOI Lancet «…(20)30183-5»). Đo trên
+    A12 của C1a: 16 DOI «cần tra» có 5 bản trùng dính `)`, và bản dính ngoặc không ghép được với PMID song song
+    (`_doi_co_pmid_da_kiem`). Chỉ cắt `)` khi số `)` nhiều hơn số `(` — ngoặc CÂN BẰNG trong hậu tố (Lancet, SICI
+    «10.1002/(SICI)…») giữ nguyên. Không dùng `app.sources.retraction_watch.chuan_hoa_doi`: hàm đó chỉ cắt `.,;`
+    (không xử lý ngoặc/dấu hai chấm) và kéo theo `app.config` vào bộ lắp G10 vốn không phụ thuộc gói `app`."""
+    d = str(doi or "").strip()
+    while d:
+        if d[-1] in _DAU_CAU_CUOI_DOI:
+            d = d[:-1]
+        elif d[-1] == ")" and d.count(")") > d.count("("):
+            d = d[:-1]
+        elif d[-1] == "]" and d.count("]") > d.count("["):
+            d = d[:-1]
+        else:
+            break
+    return d
+
+
+def _chuan_doi(doi: str) -> str:
+    """Khoá so khớp DOI: cắt đuôi như `_cat_duoi_doi` rồi chữ thường hoá (DOI không phân biệt hoa/thường — cùng lệ
+    với `cap_doi_pmid_tai_lieu_chuan` và chỉ mục DOI của Retraction Watch)."""
+    return _cat_duoi_doi(doi).lower()
 
 
 def _dois_from_text(text: str) -> set:
-    """Trích các chuỗi trông giống DOI (10.xxxx/...) xuất hiện trong văn bản."""
-    return {d.rstrip(".,;") for d in _DOI_INLINE_RE.findall(text)}
+    """Trích các chuỗi trông giống DOI (10.xxxx/...) xuất hiện trong văn bản.
+
+    Mỗi DOI đã cắt đuôi dấu câu/ngoặc không cân (`_cat_duoi_doi`) và khử trùng KHÔNG phân biệt hoa/thường — giữ
+    cách viết của lần xuất hiện ĐẦU để cảnh báo in đúng như tài liệu; so khớp PMID dùng `_chuan_doi`."""
+    theo_khoa: Dict[str, str] = {}
+    for tho in _DOI_INLINE_RE.findall(text):
+        doi = _cat_duoi_doi(tho)
+        if "/" in doi and not doi.endswith("/"):
+            theo_khoa.setdefault(doi.lower(), doi)
+    return set(theo_khoa.values())
 
 
 def _van_ban_ban_cuoi(study: str, out_dir: Path) -> str:
@@ -2485,10 +2523,6 @@ def _scan_doi_citation_coverage(artifact_text: str, study: str, out_dir: Path) -
     được DOI-chỉ-DOI với DOI của một trích dẫn đã có PMID riêng ở nơi khác) — CHỈ
     dùng để cảnh báo bác sĩ tự rà, KHÔNG dùng để tự động chặn/kết luận."""
     return _dois_from_text(artifact_text + "\n" + _van_ban_ban_cuoi(study, out_dir))
-
-
-def _chuan_doi(doi: str) -> str:
-    return str(doi or "").strip().rstrip(".,;").lower()
 
 
 def _doi_co_pmid_da_kiem(dois: set, checked_pmids: set, out_dir: Path) -> set:
