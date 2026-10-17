@@ -36,9 +36,17 @@ def _de_tai(tmp_path: Path) -> Path:
     return out
 
 
+_TU_DIEN = ("Variable / Field Name,Section Header,Field Label,Field Note\n"
+            "a1,A. Tiếp cận,A1. Chờ đăng ký,\na2,,A2. Chờ gặp bác sĩ,\nb1,B. Cơ sở vật chất,B1. Vệ sinh,\n")
+
+
 def _pha(out: Path, so_cg: int = 3, diem: dict | None = None) -> Path:
     thu = out / "pha_cong_cu"
     PCC.sinh_mau(["A1", "A2", "B1"], so_cg, thu)
+    # 17/10/2026: hợp đồng G1-T4 thêm ba biểu mẫu đề cương mục 4.5.1 (hội đồng · theo người · bảng truy xuất).
+    PCC.sinh_bo_sung(so_cg, thu)
+    (out / "_tu_dien.csv").write_text(_TU_DIEN, encoding="utf-8", newline="\n")
+    PCC.sinh_truy_xuat(["A1", "A2", "B1"], out / "_tu_dien.csv", thu)
     if diem:
         p = thu / "phieu_cvi.csv"
         dong = p.read_text(encoding="utf-8").splitlines()
@@ -166,7 +174,10 @@ def test_khai_ap_dung_thi_doi_san_pham_cong_cu_va_kiem_may(tmp_path, g1_dat):
     kq = HD.trach_nhiem(STUDY, "G1", out)
     n = _g1t4(kq)
     assert n["ap_dung"] is True and n["khai_ap_dung"]["ly_do"] == LY_DO
-    assert sorted(n["dau_ra_thieu"]) == ["pha_cong_cu/nhat_ky_phong_van_nhan_thuc.csv", "pha_cong_cu/phieu_cvi.csv"]
+    assert sorted(n["dau_ra_thieu"]) == ["pha_cong_cu/bang_truy_xuat_cau_hoi.csv",
+                                         "pha_cong_cu/nhat_ky_phong_van_nhan_thuc.csv",
+                                         "pha_cong_cu/nhat_ky_phong_van_nhan_thuc_theo_nguoi.csv",
+                                         "pha_cong_cu/phieu_cvi.csv", "pha_cong_cu/phieu_cvi_hoi_dong.csv"]
     viec = [m for m in kq["agent_con_viec"] if m["nhiem_vu"] == "G1-T4"]
     assert viec and all(m["agent"] == "cong-cu-do-luong" and m["id"] == "G1-T4:dau-ra" for m in viec)
     assert "kiem_may" not in n, "thiếu tệp thì không ghi «đã kiểm máy»"

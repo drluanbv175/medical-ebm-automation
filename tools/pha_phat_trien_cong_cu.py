@@ -58,6 +58,27 @@ COT_MUC = "muc"
 COT_NHAT_KY = ["ma_nguoi", "muc", "van_de", "loai_van_de", "de_xuat_sua"]
 LOAI_VAN_DE = ("hieu_cau_hoi", "nho_lai", "can_nhac", "chon_dap_an", "khac")
 
+# THÊM 17/10/2026 (soát chất lượng G1-T4 của C1a): ba biểu mẫu đề cương C1a mục 4.5.1 cam kết nhưng bộ mẫu cũ chưa có.
+# (1) Hội đồng chuyên gia — thành phần (6–10 thành viên, ≥ 2 đại diện người bệnh, ≤ 2 người của đơn vị nghiên cứu) và
+#     HAI câu hỏi mở về nội dung còn thiếu: COSMIN coi giá trị nội dung gồm cả tính BAO PHỦ, mà chỉ số CVI không phát
+#     hiện được nội dung vắng mặt. (2) Phỏng vấn nhận thức theo NGƯỜI — thời gian điền phiếu (đối chiếu sơ bộ tiêu chí
+#     khả thi số 4 «trung vị > 20 phút», bảng 4.3) và nội dung người bệnh thấy còn thiếu. (3) Bảng truy xuất nguồn gốc
+#     câu hỏi (bước 1) — nội dung câu lấy từ từ điển dữ liệu REDCap; nguồn gốc/lý do đưa vào do CHỦ NHIỆM điền.
+COT_HOI_DONG = ["ma_chuyen_gia", "nhom", "thuoc_don_vi_nghien_cuu", "km1_khia_canh_thieu", "km2_linh_vuc_thieu",
+                "phan_hoi_chu_nhiem"]
+NHOM_CHUYEN_GIA = ("lam_sang", "quan_ly_chat_luong", "phuong_phap_thong_ke", "dai_dien_nguoi_benh", "khac")
+CAU_HOI_MO = {
+    "km1_khia_canh_thieu": "Trong từng lĩnh vực của bộ câu hỏi, còn khía cạnh nào quan trọng với người bệnh mà chưa có "
+                           "câu hỏi? (ghi mã lĩnh vực + khía cạnh)",
+    "km2_linh_vuc_thieu": "Ngoài các lĩnh vực hiện có, còn lĩnh vực/khía cạnh nào quan trọng đối với sự hài lòng của "
+                          "người bệnh tại đơn vị mà bộ câu hỏi chưa đề cập?",
+}
+COT_THEO_NGUOI = ["ma_nguoi", "thoi_gian_dien_phut", "noi_dung_con_thieu", "ghi_chu"]
+COT_TRUY_XUAT = ["muc", "noi_dung", "phan_linh_vuc", "nguon_goc", "ly_do_dua_vao", "ghi_chu_tu_dien"]
+CHO_CHU_NHIEM = "[CẦN CHỦ NHIỆM]"
+NGUON_THANH_PHAN = "đề cương C1a mục 4.5.1, bước 2"
+NGUON_TIEU_CHI_4 = "đề cương C1a bảng 4.3, tiêu chí 4 (chính thức đo ở buổi chạy thử)"
+
 
 class LoiDauVao(ValueError):
     """Đầu vào không dùng được — CLI trả mã 2."""
@@ -208,6 +229,104 @@ def sinh_mau(muc: list[str], so_cg: int, thu_muc: Path) -> list[Path]:
     return [p_cvi, p_nk]
 
 
+def _ghi_moi(p: Path, cot: list[str], dong: list[list[str]]) -> Path:
+    if p.exists():
+        raise LoiDauVao(f"đã có {p} — không ghi đè dữ liệu đã nhập")
+    with p.open("w", encoding="utf-8", newline="") as f:
+        w = csv.writer(f, lineterminator="\n")
+        w.writerow(cot)
+        w.writerows(dong)
+    return p
+
+
+def sinh_bo_sung(so_cg: int, thu_muc: Path, so_nguoi: int = 1) -> list[Path]:
+    """Biểu mẫu hội đồng chuyên gia (thành phần + 2 câu hỏi mở) và phỏng vấn nhận thức theo người — rỗng."""
+    if so_cg < 1 or so_nguoi < 1:
+        raise LoiDauVao("--so-chuyen-gia và --so-nguoi phải ≥ 1")
+    thu_muc.mkdir(parents=True, exist_ok=True)
+    p_hd, p_tn = thu_muc / "phieu_cvi_hoi_dong.csv", thu_muc / "nhat_ky_phong_van_nhan_thuc_theo_nguoi.csv"
+    for p in (p_hd, p_tn):
+        if p.exists():
+            raise LoiDauVao(f"đã có {p} — không ghi đè dữ liệu đã nhập")
+    return [_ghi_moi(p_hd, COT_HOI_DONG, [[f"CG{i:02d}"] + [""] * (len(COT_HOI_DONG) - 1)
+                                          for i in range(1, so_cg + 1)]),
+            _ghi_moi(p_tn, COT_THEO_NGUOI, [[f"NT{i:02d}", "", "", ""] for i in range(1, so_nguoi + 1)])]
+
+
+def sinh_truy_xuat(muc: list[str], tu_dien: Path, thu_muc: Path) -> Path:
+    """Bảng truy xuất nguồn gốc câu hỏi: nội dung + phần/lĩnh vực + ghi chú lấy từ từ điển REDCap (khớp mã không phân
+    biệt hoa thường; tiêu đề phần của REDCap áp cho các trường phía sau tới tiêu đề kế tiếp). Nguồn gốc và lý do đưa vào
+    là việc của chủ nhiệm ⇒ để «[CẦN CHỦ NHIỆM]» — công cụ không đoán. Mục không có trong từ điển ⇒ lỗi (bảng truy xuất
+    phải truy được)."""
+    cot, dong = _doc_csv(tu_dien)
+    ten, nhan, phan, ghi = ("Variable / Field Name", "Field Label", "Section Header", "Field Note")
+    if ten not in cot or nhan not in cot:
+        raise LoiDauVao(f"{Path(tu_dien).name}: không phải từ điển REDCap (thiếu cột «{ten}»/«{nhan}»)")
+    theo_ma, phan_hien = {}, ""
+    for d in dong:
+        phan_hien = d.get(phan, "") or phan_hien
+        theo_ma[d[ten].lower()] = (d[nhan], phan_hien, d.get(ghi, ""))
+    thieu = [m for m in muc if m.lower() not in theo_ma]
+    if thieu:
+        raise LoiDauVao(f"{len(thieu)} mục không có trong từ điển dữ liệu: {', '.join(thieu)}")
+    thu_muc.mkdir(parents=True, exist_ok=True)
+    return _ghi_moi(thu_muc / "bang_truy_xuat_cau_hoi.csv", COT_TRUY_XUAT,
+                    [[m, *theo_ma[m.lower()][:2], CHO_CHU_NHIEM, CHO_CHU_NHIEM, theo_ma[m.lower()][2]] for m in muc])
+
+
+def tinh_hoi_dong(cot: list[str], dong: list[dict[str, str]], tv_min: int = 6, tv_max: int = 10,
+                  nb_min: int = 2, dv_max: int = 2) -> dict:
+    """Thành phần hội đồng so với đề cương + câu hỏi mở chưa được chủ nhiệm phản hồi. Chỉ đếm dòng đã khai nhóm."""
+    thieu = [c for c in COT_HOI_DONG if c not in cot]
+    if thieu:
+        raise LoiDauVao(f"biểu mẫu hội đồng thiếu cột: {', '.join(thieu)}")
+    tv = [d for d in dong if d["ma_chuyen_gia"] and d["nhom"]]
+    for d in tv:
+        if d["nhom"] not in NHOM_CHUYEN_GIA:
+            raise LoiDauVao(f"{d['ma_chuyen_gia']}: nhóm «{d['nhom']}» không thuộc {', '.join(NHOM_CHUYEN_GIA)}")
+        if d["thuoc_don_vi_nghien_cuu"] not in {"co", "khong"}:
+            raise LoiDauVao(f"{d['ma_chuyen_gia']}: thuoc_don_vi_nghien_cuu phải là co/khong")
+    nb = sum(1 for d in tv if d["nhom"] == "dai_dien_nguoi_benh")
+    dv = sum(1 for d in tv if d["thuoc_don_vi_nghien_cuu"] == "co")
+    vi_pham = ([f"{len(tv)} thành viên ngoài khoảng {tv_min}–{tv_max}"] if not tv_min <= len(tv) <= tv_max else []) \
+        + ([f"{nb} đại diện người bệnh < {nb_min}"] if nb < nb_min else []) \
+        + ([f"{dv} thành viên thuộc đơn vị nghiên cứu > {dv_max}"] if dv > dv_max else [])
+    y_kien = sum(1 for d in tv for k in CAU_HOI_MO if d[k])
+    chua_phan_hoi = [d["ma_chuyen_gia"] for d in tv if any(d[k] for k in CAU_HOI_MO) and not d["phan_hoi_chu_nhiem"]]
+    return {"so_thanh_vien": len(tv), "so_dai_dien_nguoi_benh": nb, "so_thuoc_don_vi": dv,
+            "theo_nhom": {n: sum(1 for d in tv if d["nhom"] == n) for n in NHOM_CHUYEN_GIA},
+            "nguong": {"thanh_vien": [tv_min, tv_max], "nguoi_benh_toi_thieu": nb_min, "don_vi_toi_da": dv_max,
+                       "nguon": NGUON_THANH_PHAN},
+            "vi_pham_thanh_phan": vi_pham, "so_y_kien_noi_dung_thieu": y_kien,
+            "chua_phan_hoi": len(chua_phan_hoi)}
+
+
+def tinh_theo_nguoi(cot: list[str], dong: list[dict[str, str]], nguong_phut: float = 20.0) -> dict:
+    """Thời gian điền phiếu (trung vị, khoảng) + số người nêu nội dung còn thiếu. Dòng chưa ghi thời gian bỏ qua."""
+    thieu = [c for c in COT_THEO_NGUOI if c not in cot]
+    if thieu:
+        raise LoiDauVao(f"nhật ký theo người thiếu cột: {', '.join(thieu)}")
+    tg = []
+    for d in dong:
+        v = d["thoi_gian_dien_phut"].replace(",", ".")
+        if not v:
+            continue
+        try:
+            x = float(v)
+        except ValueError as exc:
+            raise LoiDauVao(f"{d['ma_nguoi']}: thoi_gian_dien_phut «{d['thoi_gian_dien_phut']}» không phải số") from exc
+        if not 0 < x < 240:
+            raise LoiDauVao(f"{d['ma_nguoi']}: thời gian {x} phút ngoài khoảng hợp lý (0–240)")
+        tg.append(x)
+    tg.sort()
+    n = len(tg)
+    tv = (tg[n // 2] if n % 2 else (tg[n // 2 - 1] + tg[n // 2]) / 2) if n else float("nan")
+    return {"so_nguoi_co_thoi_gian": n, "trung_vi_phut": tv, "min_phut": tg[0] if n else float("nan"),
+            "max_phut": tg[-1] if n else float("nan"), "nguong_phut": nguong_phut, "nguon_nguong": NGUON_TIEU_CHI_4,
+            "vuot_nguong_so_bo": bool(n) and tv > nguong_phut,
+            "so_nguoi_neu_noi_dung_thieu": sum(1 for d in dong if d["noi_dung_con_thieu"])}
+
+
 # ---------------------------------------------------------------- in báo cáo
 def _f(x: float, so: int = 2) -> str:
     return "—" if not math.isfinite(x) else f"{x:.{so}f}"
@@ -267,9 +386,44 @@ def chay(argv: list[str] | None = None) -> int:
     a_nt.add_argument("--nguong-ty-le", type=float, default=0.20, help="mặc định 0,20 theo F5 đề cương C1a")
     a_nt.add_argument("--nguong-so-muc", type=int, default=3, help="mặc định 3 theo F5 đề cương C1a")
     a_nt.add_argument("--json", action="store_true")
+    a_nt.add_argument("--theo-nguoi", help="nhật ký theo người (thời gian điền phiếu + nội dung còn thiếu)")
+    a_bs = sub.add_parser("bo-sung", help="sinh biểu mẫu hội đồng (thành phần + 2 câu hỏi mở) + nhật ký theo người")
+    a_bs.add_argument("--so-chuyen-gia", type=int, required=True)
+    a_bs.add_argument("--so-nguoi", type=int, default=1)
+    a_bs.add_argument("--thu-muc", required=True)
+    a_tx = sub.add_parser("truy-xuat", help="sinh bảng truy xuất nguồn gốc câu hỏi từ từ điển REDCap")
+    a_tx.add_argument("--muc", nargs="+", required=True)
+    a_tx.add_argument("--tu-dien", required=True)
+    a_tx.add_argument("--thu-muc", required=True)
+    a_hd = sub.add_parser("hoi-dong", help="kiểm thành phần hội đồng chuyên gia + câu hỏi mở chưa phản hồi")
+    a_hd.add_argument("tep")
+    a_hd.add_argument("--json", action="store_true")
     a = ap.parse_args(argv)
+    if a.lenh == "bo-sung":
+        for p in sinh_bo_sung(a.so_chuyen_gia, Path(a.thu_muc), a.so_nguoi):
+            print(f"đã tạo {p}")
+        print("Câu hỏi mở (DỰ THẢO — chủ nhiệm duyệt câu chữ):")
+        for k, v in CAU_HOI_MO.items():
+            print(f"  {k}: {v}")
+        return 0
+    if a.lenh == "truy-xuat":
+        print(f"đã tạo {sinh_truy_xuat(a.muc, Path(a.tu_dien), Path(a.thu_muc))} — cột nguon_goc/ly_do_dua_vao do "
+              "chủ nhiệm điền. Cần bác sĩ kiểm chứng.")
+        return 0
+    if a.lenh == "hoi-dong":
+        kq = tinh_hoi_dong(*_doc_csv(a.tep))
+        if a.json:
+            print(_json(kq))
+        else:
+            vp = kq["vi_pham_thanh_phan"]
+            print(f"# Hội đồng chuyên gia — {kq['so_thanh_vien']} thành viên đã khai\n\n- "
+                  + (f"🔴 Lệch thành phần ({kq['nguong']['nguon']}): " + "; ".join(vp) if vp
+                     else f"🟢 Thành phần đúng {kq['nguong']['nguon']}")
+                  + f"\n- Ý kiến về nội dung còn thiếu: {kq['so_y_kien_noi_dung_thieu']} · thành viên chưa được chủ "
+                  f"nhiệm phản hồi: {kq['chua_phan_hoi']}\n\n_Cần bác sĩ kiểm chứng._")
+        return 1 if kq["vi_pham_thanh_phan"] else 0
     if a.lenh == "mau":
-        for p in sinh_mau(a.muc, a.so_chuyen_gia, Path(a.thu_muc)):
+        for p in sinh_mau(a.muc, a.so_chuyen_gia, Path(a.thu_muc)) + sinh_bo_sung(a.so_chuyen_gia, Path(a.thu_muc)):
             print(f"đã tạo {p}")
         print("Điền mã ẩn danh (CG01…, NT01…) — KHÔNG ghi họ tên chuyên gia hay người bệnh. Cần bác sĩ kiểm chứng.")
         return 0
@@ -280,7 +434,16 @@ def chay(argv: list[str] | None = None) -> int:
     if not 0 < a.nguong_ty_le <= 1 or a.nguong_so_muc < 1:
         raise LoiDauVao("ngưỡng không hợp lệ: 0 < --nguong-ty-le ≤ 1 và --nguong-so-muc ≥ 1")
     kq = tinh_nhan_thuc(*_doc_csv(a.tep), a.nguong_ty_le, a.nguong_so_muc)
-    print(_json(kq) if a.json else in_nhan_thuc(kq))
+    if a.theo_nguoi:
+        kq["theo_nguoi"] = tinh_theo_nguoi(*_doc_csv(a.theo_nguoi))
+    van = _json(kq) if a.json else in_nhan_thuc(kq)
+    if a.theo_nguoi and not a.json:
+        t = kq["theo_nguoi"]
+        van += (f"\n\n- Thời gian điền phiếu: trung vị {_f(t['trung_vi_phut'], 1)} phút "
+                f"({_f(t['min_phut'], 0)}–{_f(t['max_phut'], 0)}; {t['so_nguoi_co_thoi_gian']} người)"
+                + (f" — 🟠 vượt sơ bộ {t['nguong_phut']:g} phút" if t["vuot_nguong_so_bo"] else "")
+                + f" ({t['nguon_nguong']})\n- Người nêu nội dung còn thiếu: {t['so_nguoi_neu_noi_dung_thieu']}")
+    print(van)
     return 1 if kq["vi_pham_f5"] else 0
 
 

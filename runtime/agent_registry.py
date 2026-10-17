@@ -123,7 +123,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 17/10/2026 (hội đồng G0 C1a, G0-T3): tong-quan-y-van thêm hợp đồng nhánh KHÔNG lọc + mức bằng chứng sau sàng lọc;
 # bản cặp y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "261de5a493022871513164ae8b816ab6835ea62dc75e4c578c8f26aee9e5d2ca"
+    "2dd32de91ebc3f3413a6c36e4743580d2ac42d5003e8b5a8006957cd6a0ed774"
 )
 
 MINIMUM_AGENT_COUNT = 64
