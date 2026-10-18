@@ -72,7 +72,9 @@ def get_enabled_sources() -> List[SourceClient]:
         (settings.enable_crossref, "CrossrefClient", CrossrefClient),
         (settings.enable_clinicaltrials, "ClinicalTrialsClient", ClinicalTrialsClient),
         (settings.enable_openalex, "OpenAlexClient", OpenAlexClient),
-        (settings.enable_semantic_scholar, "SemanticScholarClient", SemanticScholarClient),
+        # Semantic Scholar: LOẠI KHỎI VẬN HÀNH 18/10/2026 (bác sĩ quyết) — kênh không khoá trả HTTP 429 kéo
+        # dài (đo 22/09, 01→18/10). Không còn trong danh sách nguồn, bất kể ENABLE_SEMANTIC_SCHOLAR; mã kết
+        # nối giữ ở app/sources/semantic_scholar.py làm lưu trữ.
         (settings.enable_scopus, "ScopusClient", ScopusClient),
         (settings.enable_core, "CoreClient", CoreClient),
         (settings.enable_epistemonikos, "EpistemonikosClient", EpistemonikosClient),

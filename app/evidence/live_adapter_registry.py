@@ -11,7 +11,6 @@ from app.evidence.live_adapters import (
     OpenAlexLiveAdapter,
     OpenFDALiveAdapter,
     PubMedLiveAdapter,
-    SemanticScholarLiveAdapter,
 )
 from app.evidence.live_adapters.base import LiveSourceAdapter
 from app.evidence.source_health_monitor import SourceHealthMonitor
@@ -21,7 +20,7 @@ ADAPTER_CLASSES = {
     "europepmc": EuropePMCLiveAdapter,
     "crossref": CrossrefLiveAdapter,
     "openalex": OpenAlexLiveAdapter,
-    "semantic_scholar": SemanticScholarLiveAdapter,
+    # "semantic_scholar": loại khỏi vận hành 18/10/2026 (bác sĩ quyết — HTTP 429 kéo dài khi không khoá).
     "guideline_rss": GuidelineRssLiveAdapter,
     "openfda": OpenFDALiveAdapter,
 }

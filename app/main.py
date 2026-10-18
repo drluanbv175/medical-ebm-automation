@@ -184,13 +184,12 @@ def _build_source_map():
         OpenFDAClient,
         PubMedClient,
         ScopusClient,
-        SemanticScholarClient,
         SerpApiScholarClient,
     )
     _SOURCE_MAP.update({
         "pubmed": PubMedClient, "europepmc": EuropePMCClient,
         "crossref": CrossrefClient, "clinicaltrials": ClinicalTrialsClient,
-        "openalex": OpenAlexClient, "semantic_scholar": SemanticScholarClient,
+        "openalex": OpenAlexClient,  # semantic_scholar: loại khỏi vận hành 18/10/2026 (bác sĩ quyết)
         "openfda": OpenFDAClient, "scopus": ScopusClient, "core": CoreClient,
         "epistemonikos": EpistemonikosClient,
         # Mỗi lần test-live thật tốn 1 search SerpApi; thiếu SERPAPI_API_KEY sẽ nổ RuntimeError rõ ràng.
