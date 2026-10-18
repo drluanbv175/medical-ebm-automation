@@ -1,0 +1,3 @@
+BTR, Người bệnh bỏ trống câu này trên phiếu
+KDD, Câu trả lời không đọc được hoặc không hợp lệ (đánh nhiều ô, chữ không rõ)
+998, Không nghĩ tới/không ước lượng được
