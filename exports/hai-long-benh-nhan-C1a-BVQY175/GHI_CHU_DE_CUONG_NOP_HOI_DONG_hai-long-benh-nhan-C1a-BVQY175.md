@@ -6,7 +6,7 @@
 ## 1. Bản này là gì
 
 - Đề cương viết lại bằng văn phong khoa học tiếng Việt, giữ khung chương mục của đề cương gốc v1.0 (`De-cuong_Hai-long-C1a_BVQY175.md`) để các tham chiếu «đề cương §…» trong hồ sơ cổng vẫn khớp.
-- Tên tệp theo hợp đồng của cổng G10: khi tệp có mặt, chữ ký G10 ràng buộc CẢ CẶP `.md` + `.docx` (sau khi PR sửa cổng G10 được gộp).
+- Tên tệp theo hợp đồng của cổng G10: khi tệp có mặt, chữ ký G10 ràng buộc CẢ CẶP `.md` + `.docx`.
 - Đã loại bỏ ký hiệu nội bộ (G0–G10, «SAP §», «cổng», nhãn [CẦN…]) và tên biến tiếng Anh trong văn xuôi (dồn về Phụ lục E).
 - `DE_CUONG_THONG_NHAT_*.md` (bản máy lắp ở G10) giữ nguyên làm hồ sơ truy xuất nội bộ — không phải bản để nộp.
 
@@ -34,21 +34,33 @@ Thay đổi so với phiếu gốc chỉ gồm những điểm đã có ở v1.0
 - **Đ5** Mã «không ước lượng được» của thời gian chờ dự kiến đổi từ 8 sang 998 (8 trùng với 8 phút).
 - Các mục nên sửa: CFA năm nhân tố A–E (F là chỉ số đơn câu); kỳ vọng trước khi đến khám là biến trước phơi nhiễm (chỉ «chênh lệch» và «so với mong đợi» là trung gian); phiếu đồng ý cho pha phát triển công cụ; người đã tham gia pha thử không vào mẫu chính; ghi rõ hồi quy nhị phân thứ cấp nhiều khả năng chỉ dừng ở mô tả (≈24 tham số); dữ liệu thiếu: điền khuyết đa lần là phân tích độ nhạy; KTC Wilson trên cỡ mẫu hiệu dụng; Firth chỉ cho hồi quy nhị phân; bảng chiến lược tìm kiếm ghi đúng ngày/số kết quả, thêm WHO ICTRP; phiếu đã điền được niêm phong, chủ nhiệm không tiếp cận; thay Bender 1997 bằng Bender 1998 (PMID 9762873), Karahalios bằng Sterne 2009 (PMID 19564179); danh mục tham khảo liệt kê tới 6 tác giả theo Vancouver; bỏ câu không nguồn về «gắn bó và uy tín»; bỏ chỉ tiêu 85%/90% (chưa kiểm được văn bản gốc).
 
+## 3b. Đã sửa theo hội đồng G10 (18/10/2026, chủ nhiệm chọn «sửa cả 5»)
+
+Biên bản đánh giá chéo G10-T4 `G10-DG-20261017T192537-eadd7f0a` (qua, có lưu ý):
+
+- **H1** Dòng 148: tách hai aOR — khoảng cách 0,40 (KTC 95%: 0,18–0,87), thời gian chờ 0,41 (0,22–0,76) (PubMed PMID 40295132).
+- **H2** Kế hoạch phân tích đã khoá (phiên bản 1.3, 17/10/2026): bỏ các câu «trước khi khóa kế hoạch phân tích»; cập nhật sau khảo sát thử đi theo thủ tục sửa đổi (hai đoạn về cỡ mẫu, bước chuẩn bị thu thập, Bảng 6.2 mốc 4, Phụ lục A, Phụ lục D).
+- **H3** Câu 9 của phiếu sửa thành «còn hiệu lực» cho khớp biến hiệu chỉnh «Có thẻ BHYT còn hiệu lực» (chủ nhiệm chọn 18/10) — đây là chỗ DUY NHẤT bản nộp khác nguyên văn phiếu gốc ngoài các điểm đã có ở v1.0.
+- **H4** Phụ lục D.1: thêm đường BHYT → thời gian chờ [28] và BHYT → hài lòng [3, 16, 17].
+- **H5** Ngưỡng phù hợp CFA dẫn nguồn [45]–[47]; tài liệu cũ [45]–[49] đánh số lại thành [48]–[52].
+- Sửa xong đã xuất lại Word; `kiem_de_cuong_nop_hoi_dong.py`: ĐẠT. Gói G10 đổi ⇒ chủ nhiệm bấm «Chot G10 C1a» rồi ký lại G10.
+
 ## 4. Việc bác sĩ cần quyết hoặc điền
 
-1. **Điền tay trước khi nộp:** mã đăng ký OSF, ngày phiên bản, số điện thoại liên hệ, tổng dự toán kinh phí (Bảng 6.3).
+1. **Điền tay — trên BẢN SAO NỘP nằm ngoài `exports/` và ngoài git** (chữ ký G10 ràng buộc mã băm của cặp tệp trong `exports/`; sửa ở đó thì G10 chặn và phải khoá + ký lại): mã đăng ký OSF (đăng ký TRƯỚC khi nộp), ngày phiên bản, Bảng 6.3 (số lượng còn trống, đơn giá, thành tiền, tổng cộng), trang ký (ngày, chữ ký chủ nhiệm, xác nhận + dấu đơn vị chủ trì), hai số điện thoại trong Bản thông tin. Ô chỉ có SAU khi nộp (số, ngày quyết định của Hội đồng) ghi ở bước G2 — người vai IRB tự chạy `approve_gate.py --gate G2 --reviewer-role IRB`.
 2. **Chỉ tiêu 85% (2025) / 90% (2030):** bản v1.0 gán cho QĐ 56/QĐ-BYT nhưng chưa ai đối chiếu văn bản gốc (có thể nằm ở văn bản khác). Nếu muốn giữ, cần tra và ghi đúng điều, khoản.
 3. **Tên Hội đồng:** văn bản dùng «Hội đồng Y đức Bệnh viện Quân y 175» theo hồ sơ G2; Thông tư 43/2024/TT-BYT gọi là «Hội đồng đạo đức trong nghiên cứu y sinh học». Bác sĩ xác nhận tên chính thức tại Bệnh viện.
 4. **Bảng tiến độ theo tháng (mục 6.2):** là đề xuất trong khoảng 12/2026–12/2028; chỉnh theo lịch khoa.
-5. **Biến «được khám đúng bác sĩ đã yêu cầu»:** có thể chịu ảnh hưởng của chính thời gian chờ; khi khóa kế hoạch phân tích nên cân nhắc phân tích độ nhạy thay bằng «có yêu cầu bác sĩ cụ thể» (Phụ lục D).
-6. **Kế hoạch phân tích thống kê (SAP G4) cần đồng bộ trước khi khóa:** SAP hiện ghi cỡ mẫu tối thiểu 626 và DE 1,38 (đề cương: 808 và 1,78), KTC Wilson chưa tính gom cụm, trọng số hậu phân tầng chỉ ở phân tích độ nhạy. *(17/10/2026: phần cỡ mẫu ĐÃ đồng bộ — G3 chạy lại với CV cỡ cụm 1,0 PI khai 14/10 ⇒ DE 1,78, N tối thiểu 808; SAP §1/§12 sửa theo. Cũng ngày 17/10, theo yêu cầu của bác sĩ: (a) SAP §3 — KTC 95% Wilson trên cỡ mẫu hiệu dụng n ÷ DE, DE ước lượng từ số liệu bằng phương sai tuyến tính hoá theo chùm bàn khám, chặn dưới 1, báo kèm ICC và DE theo ICC để đối chiếu kế hoạch (Dean & Pagano 2015, doi:10.1093/jssam/smv024); câu tương ứng ở mục 4.10 đề cương sửa cho khớp; (b) SAP §4 — quy tắc trọng số hậu phân tầng: không trọng số khi mẫu tự cân bằng; khi có tầng lệch > 20% (kiểm trên nₕ, Nₕ trước khi xem kết cục, tầng < 10 phiếu gộp trước) thì ước lượng mô tả của Mục tiêu 1 dùng wₕ = (Nₕ/N) ÷ (nₕ/n) làm phân tích chính, còn mô hình Mục tiêu 2 giữ không trọng số (ngày và khung giờ đã là biến hiệu chỉnh bắt buộc) với bản có trọng số `svyolr` là độ nhạy; đoạn «Trọng số theo thiết kế chọn mẫu» và kịch bản (5) của đề cương 4.10 sửa cho khớp (bàn khám không lồng trong tầng ⇒ tầng vào bằng hậu phân tầng). Nguồn: Lumley 2004, doi:10.18637/jss.v009.i08; Solon, Haider & Wooldridge 2015, doi:10.3368/jhr.50.2.301. SAP lên bản 1.2, bản gốc đổi sang đề cương nộp Hội đồng; §9–§11 đồng bộ. Đã qua thẩm định độc lập (tham-dinh-dau-ra, 4 lỗi đỏ đã sửa). Ba DOI đã kiểm Crossref + Retraction Watch: không thấy tín hiệu rút bài. **PI xác nhận lựa chọn tách Mục tiêu 1/2 khi bấm «Chot G4».**)*
+5. **Biến «được khám đúng bác sĩ đã yêu cầu»:** có thể chịu ảnh hưởng của chính thời gian chờ; trong bản sửa đổi kế hoạch phân tích sau khảo sát thử nên cân nhắc phân tích độ nhạy thay bằng «có yêu cầu bác sĩ cụ thể» (Phụ lục D).
+6. **Kế hoạch phân tích thống kê — ĐÃ XONG:** kế hoạch phiên bản 1.3 đồng bộ với đề cương (tối thiểu 808, DE 1,78) và được ký khoá ngày 17/10/2026; cập nhật sau khảo sát thử đi theo thủ tục sửa đổi (đề cương Phụ lục A).
 7. **`study_meta.data_governance`** vẫn ghi «nhóm nghiên cứu chỉ nhận mã + số phút chờ» — lệch với đề cương v1.0 (đã gồm mã bàn khám) và bản nộp. Bác sĩ đồng ý thì tôi cập nhật câu này để bản lắp G10 khớp. *(17/10/2026: ĐÃ cập nhật theo yêu cầu của bác sĩ — `data_governance.plan` và `.deidentification` nay liệt kê đúng các trường nhận từ HIS như mục 4.6.3: số phút chờ, mã bàn khám giả danh, ngày và khung giờ khám, có làm cận lâm sàng hay không, số quầy phải qua, cùng số liệu tổng hợp không định danh về người bệnh bỏ về.)*
 8. **Thời hạn lưu 2 năm:** đúng quyết định G2; lưu ý nhiều tạp chí đòi giữ dữ liệu lâu hơn.
 
 ## 5. Mức kiểm chứng tài liệu tham khảo (15/10/2026)
 
-- 35/35 PMID: metadata phân giải từ PubMed; kiểm rút bài chuỗi Retraction Watch + PubMed: **không bài nào bị rút**. Biên nhận máy-kiểm A12 hiện chỉ phủ 9 PMID của bản lắp — sau khi PR G10 gộp, chạy lại `check_citations.py --study` với hợp PMID của hai bản.
+- 35/35 PMID: metadata phân giải từ PubMed; kiểm rút bài chuỗi Retraction Watch + PubMed: **không bài nào bị rút**. Biên nhận máy-kiểm A12 phủ đủ 35/35 PMID (17/10/2026).
 - 9 DOI tạp chí trong nước + Eldridge 2006: metadata và tóm tắt từ Crossref; không có thông báo đính chính/rút bài.
+- 3 DOI thêm ngày 18/10/2026 cho ngưỡng phù hợp CFA (Hu & Bentler 1999; Bentler & Bonett 1980; Browne & Cudeck 1992): metadata Crossref; Retraction Watch ngoại tuyến + Crossref: không có thông báo rút bài.
 - Nội dung các câu trích được đối chiếu với tiêu đề + tóm tắt (thẩm định độc lập soát lại toàn bộ: khớp), chưa đọc toàn văn.
 - Tên tác giả bài tiếng Việt theo Crossref; «Lê Đình Son» có thể là «Sơn» — bác sĩ đối chiếu PDF.
 

@@ -20,8 +20,13 @@
 | `khunggio_kham` | Ranh giới giờ của 4 khung và mốc HIS dùng để quy khung (giờ lấy số hay giờ gọi khám) — biến tạo tầng chọn mẫu và hậu phân tầng | SAP §4; đề cương 4.4 |
 | `NhomTuoi` | Điểm cắt nhóm tuổi (chỉ dùng mô tả; mô hình giữ tuổi liên tục) | `_bien-phai-sinh.csv` |
 | C6, C9 | Tách câu ghép nhiều thuộc tính — hội đồng chuyên gia quyết | Phiếu soát G1-T4 |
+| `xacnhan_kyvong`, `g2`, `g3` | Bảng E.1 không có mã 8/9 nhưng bộ biến có — bỏ cho khớp E.1, hay giữ và ghi xung đột (Field Note g2/g3 ghi «khớp E.1» là chưa đủ) | Chấm lại G3 18/10 (G3-DG-20261018T063835-44c67cf9) |
+| Missing Data Codes cấp dự án | Danh mục mã cụ thể (giá trị + nhãn); trường số lấy từ HIS (`thoigian_cho`, `so_quay_buoc`) gắn `@NOMISSING` để 998 phút hợp lệ không bị hiểu là mã thiếu | Chấm lại G3 18/10 |
+| Khoá đối chiếu sổ chọn mẫu | Nối từng phiếu với sổ chọn mẫu: thêm `ngay_kham` (Identifier?=y) hay mã đợt; trường trạng thái «không ghép được HIS» | Chấm lại G3 18/10 |
 
 ## 3. Đã làm theo biên bản (máy, 0 agent)
+
+- `run_g5_auto.py` nay chép cột Field Annotation sang từ điển REDCap (PR #164) — `@MAXCHECKED=2` tới được REDCap.
 
 - `rieng_tu`/`g2`/`g3`: bỏ nhãn thang hài lòng ở mức 2–4 và câu gán nguồn sai «chốt 15/10/2026».
 - `duoc_dung_bacsi`: luật nhất quán `co_yeucau_bacsi = 2 ⇒ duoc_dung_bacsi = 7`; `co_yeucau_bacsi = 1 ⇒ duoc_dung_bacsi ∈ {1, 2}`
@@ -41,5 +46,8 @@
   `run_g6_auto.py` đang đọc Section Header (vd «Phơi nhiễm», «Biến hiệu chỉnh») — đổi mà chưa sửa công cụ sẽ làm G6 dò
   sai biến.
 - Mã thiếu theo TỪNG cột ở `clean_research_dataset.py` (hiện `--missing-tokens` áp cho mọi cột).
-- `run_g5_auto.py` chưa chép cột Field Annotation sang từ điển REDCap — `@MAXCHECKED=2` sẽ mất khi sinh từ điển G5
-  (đang sửa).
+- 8 con trỏ «Phụ lục A/C.5/C.6.2/C.4» trong Field Note còn trỏ đề cương v1.0 — đổi sang đề cương nộp Hội đồng (chỉ đổi
+  con trỏ, không đổi nội dung).
+- Thêm «Câu N.» vào nhãn các trường Phần 1 cho khớp phiếu in (đã thử trên bản sao: không làm sai bộ dò G6).
+- Hai mục trên đổi `_bo-bien-rieng.csv` ⇒ biên bản chấm lại 18/10 thành «cũ»; gộp vào lượt sửa trước G5 kèm biên bản
+  xử lý (0 agent).
