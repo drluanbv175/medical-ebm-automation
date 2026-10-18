@@ -470,6 +470,52 @@ class LedgerTailChanged(RuntimeError):
     tiến trình khác vừa ghi xen vào. Không ghi; chạy lại lệnh."""
 
 
+def bao_loai_khoa_ky(signature: str, role_group: str, gate: str) -> list:
+    """Các dòng báo người duyệt biết bản ghi vừa được ký bằng LOẠI KHOÁ nào và mức bảo đảm thật của nó.
+
+    SỬA 18/10/2026 (đo thật trên C1a: PI ký G10 hai lần đều được báo «khóa CHUNG của máy», trong khi sổ cái ghi
+    `ed1:role:…`): bản cũ chỉ hỏi `per_role_key_available()` — khoá HMAC theo vai — nên chữ ký Ed25519 (mà
+    `sign_approval()` ƯU TIÊN khi nhóm vai có khoá riêng Ed25519) bị báo nhầm là khoá chung, hạ thấp mức bảo đảm thật.
+    Nay suy loại khoá từ CHÍNH chuỗi chữ ký vừa ký, bằng hai hàm đọc chính thức `signature_scheme`/`signature_scope`."""
+    ban_ghi = {"approver_signature": signature}
+    scheme, scope = GC.signature_scheme(ban_ghi), GC.signature_scope(ban_ghi)
+    if scheme == "ed1" and scope == GC.SIGNATURE_SCOPE_ROLE:
+        return [
+            f"🔑 Đã ký bằng KHÓA RIÊNG Ed25519 của nhóm {role_group} (chữ ký bất đối xứng «ed1:role»).",
+            "   → Xác minh chỉ cần KHÓA CÔNG (config/gate_ed25519_pubkeys/): máy kiểm không cần giữ bí mật.",
+            "   ⚠️  GIỚI HẠN THẬT: khóa riêng đang nằm trên máy đã ký — ai truy cập được máy đó thì ký được vai",
+            f"      {role_group}. Chữ ký chứng minh người giữ khóa riêng đã ký, KHÔNG chứng minh người đó độc lập",
+            "      với chủ nhiệm đề tài nếu hai người dùng chung máy hoặc chung khóa.",
+        ]
+    if scope == GC.SIGNATURE_SCOPE_ROLE:
+        # SỬA 2026-07-26 vòng 2: dòng này TỪNG ghi "bằng chứng TÁCH VAI TRÒ thật" — red-team độc lập chỉ ra là NÓI
+        # QUÁ. HMAC đối xứng: máy này xác minh được nghĩa là chính nó đang giữ khóa đó, nên không thể loại trừ khả
+        # năng chủ nhiệm đề tài tự ký. Nói đúng mức bảo đảm thay vì trấn an.
+        return [
+            f"🔑 Đã ký bằng KHÓA RIÊNG HMAC của nhóm {role_group} (~/.ebm-secrets/gate_approval_key_{role_group}).",
+            "   → Tách bạch VẬN HÀNH: khóa riêng cho vai trò này, không dùng chung với vai trò khác.",
+            "   ⚠️  KHÔNG phải bằng chứng mật mã về tính độc lập: máy này xác minh được",
+            "      nghĩa là chính nó đang giữ khóa đó. Bảo đảm độc lập thật cần chữ ký",
+            "      bất đối xứng (người duyệt giữ khóa riêng, máy chỉ giữ khóa công).",
+        ]
+    if scope == GC.SIGNATURE_SCOPE_SHARED:
+        dong = [
+            "🔑 Đã ký bằng khóa CHUNG của máy (~/.ebm-secrets/gate_approval_key).",
+            "   ⚠️  GIỚI HẠN THẬT — nói rõ để không hiểu nhầm mức bảo đảm: khóa chung ký được",
+            "      MỌI vai trò, nên chữ ký này CHỨNG MINH 'có người truy cập được máy đã ký',",
+            "      KHÔNG chứng minh người ký độc lập với chủ nhiệm đề tài.",
+        ]
+        if role_group in ("IRB", "INDEPENDENT_PEER_REVIEWER"):
+            dong += [f"      Với {gate} ({role_group}) — vai trò BẮT BUỘC phải độc lập — muốn có",
+                     "      bằng chứng tách vai trò thật, tạo khóa riêng cho người duyệt đó:",
+                     f"      python3 tools/setup_gate_approval_key.py --role {role_group}"]
+        return dong
+    # Không nhận ra định dạng: KHÔNG đoán loại khoá — báo để kiểm lại, không trấn an.
+    return [f"⚠️  Đã ký nhưng không nhận ra định dạng chữ ký («{str(signature).split(':', 1)[0]}…»).",
+            "   Không suy được loại khóa — kiểm lại chữ ký bằng gate_contract.verify_approval_signature()",
+            "   trước khi dựa vào phê duyệt này."]
+
+
 def main() -> int:
     configure_unicode_console()
     ap = argparse.ArgumentParser(description=__doc__.split("Dùng:")[0])
@@ -1046,26 +1092,8 @@ def _ky(args: argparse.Namespace) -> int:
                                  decision=args.decision, is_synthetic=False,
                                  prev_hash=prev_hash)
     if signature:
-        if GC.per_role_key_available(role_group or ""):
-            print(f"🔑 Đã ký bằng KHÓA RIÊNG của nhóm {role_group} "
-                  f"(~/.ebm-secrets/gate_approval_key_{role_group}).")
-            # SỬA 2026-07-26 vòng 2: dòng này TỪNG ghi "bằng chứng TÁCH VAI TRÒ thật" —
-            # red-team độc lập chỉ ra là NÓI QUÁ. HMAC đối xứng: máy này xác minh được
-            # nghĩa là chính nó đang giữ khóa đó, nên không thể loại trừ khả năng chủ
-            # nhiệm đề tài tự ký. Nói đúng mức bảo đảm thay vì trấn an.
-            print("   → Tách bạch VẬN HÀNH: khóa riêng cho vai trò này, không dùng chung với vai trò khác.")
-            print("   ⚠️  KHÔNG phải bằng chứng mật mã về tính độc lập: máy này xác minh được")
-            print("      nghĩa là chính nó đang giữ khóa đó. Bảo đảm độc lập thật cần chữ ký")
-            print("      bất đối xứng (người duyệt giữ khóa riêng, máy chỉ giữ khóa công).")
-        else:
-            print("🔑 Đã ký bằng khóa CHUNG của máy (~/.ebm-secrets/gate_approval_key).")
-            print("   ⚠️  GIỚI HẠN THẬT — nói rõ để không hiểu nhầm mức bảo đảm: khóa chung ký được")
-            print("      MỌI vai trò, nên chữ ký này CHỨNG MINH 'có người truy cập được máy đã ký',")
-            print("      KHÔNG chứng minh người ký độc lập với chủ nhiệm đề tài.")
-            if role_group in ("IRB", "INDEPENDENT_PEER_REVIEWER"):
-                print(f"      Với {args.gate} ({role_group}) — vai trò BẮT BUỘC phải độc lập — muốn có")
-                print("      bằng chứng tách vai trò thật, tạo khóa riêng cho người duyệt đó:")
-                print(f"      python3 tools/setup_gate_approval_key.py --role {role_group}")
+        for dong in bao_loai_khoa_ky(signature, role_group or "", args.gate):
+            print(dong)
     else:
         print("⚠️  CHƯA THIẾT LẬP KHÓA KÝ — phê duyệt này KHÔNG có chữ ký mật mã.")
         print("   Chạy MỘT LẦN (TỰ TAY, không nhờ agent): python3 tools/setup_gate_approval_key.py")
