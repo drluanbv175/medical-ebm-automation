@@ -1,8 +1,9 @@
-# Bộ biến số C1a — quyết định của chủ nhiệm và việc còn chờ (cập nhật 18/10/2026)
+# Bộ biến số C1a — quyết định của chủ nhiệm và việc còn chờ (cập nhật 18/10/2026, lượt 4)
 
 > Lập theo các biên bản hội đồng G3: đánh giá chéo 17/10 (G3-T2 `G3-DG-20261017T190619-b8357b07`, G3-T3
 > `G3-DG-20261017T190628-66a09087`), tranh biện `G3-TB-20261017T190638-43914aa7`, chấm lại 18/10 (QUA:
-> `G3-DG-20261018T063835-44c67cf9`, `G3-DG-20261018T063841-8490f642`). Tài liệu hỗ trợ — không thay quyết định của chủ
+> `G3-DG-20261018T063835-44c67cf9`, `G3-DG-20261018T063841-8490f642`), biên bản xử lý việc sửa
+> `G3-XL-20261018T074332-c8a38393` / `-da995f3b` và lượt 4 cùng ngày. Tài liệu hỗ trợ — không thay quyết định của chủ
 > nhiệm, không mở/chặn cổng. Cần bác sĩ kiểm chứng.
 
 ## 1. Đã quyết
@@ -22,7 +23,7 @@ Mỗi lựa chọn dựa trên nguồn đã có trong đề cương nộp; khôn
 
 | Trường | Đã chọn | Căn cứ |
 |---|---|---|
-| `khunggio_kham` | Mốc HIS = thời điểm **lấy số** thứ tự khám; mỗi buổi chia đôi tại điểm giữa giờ làm việc (1/2 = nửa đầu/nửa sau buổi sáng · 3/4 = nửa đầu/nửa sau buổi chiều); CNTT áp CÙNG mốc cho phiếu lẫn Nₕ của tầng | Cùng mốc bắt đầu của thời gian chờ (4.6.3) và cùng dãy số thứ tự dùng để chọn người thứ kₕ (4.4.2) |
+| `khunggio_kham` | Mốc HIS = thời điểm **lấy số** thứ tự khám; mỗi buổi chia đôi tại điểm giữa giờ làm việc. Giờ làm việc Khoa C1a (chủ nhiệm cung cấp 18/10/2026): sáng 05:00–11:30, chiều 13:00–16:30 ⇒ **1** = lấy số trước 08:15 (kể cả trước 05:00) · **2** = 08:15 đến trước 11:30 · **3** = 11:30 đến trước 14:45 (kể cả trong giờ nghỉ trưa — khám buổi chiều) · **4** = từ 14:45; CNTT áp CÙNG mốc cho phiếu lẫn Nₕ của tầng | Cùng mốc bắt đầu của thời gian chờ (4.6.3) và cùng dãy số thứ tự dùng để chọn người thứ kₕ (4.4.2); lấy số trong giờ nghỉ trưa được khám ở buổi chiều nên vào khung 3 |
 | `NhomTuoi` | 1 = dưới 40 · 2 = 40–59 · 3 = từ 60 trở lên | Trùng nhóm tuổi ước lượng của Sổ chọn mẫu và từ chối ⇒ so sánh được người từ chối với người tham gia (4.4.2) |
 | `g2`, `g3`, `xacnhan_kyvong` | Bỏ mã 8/9; chỉ 1–5 | Phiếu in (Phụ lục C) không có ô «không biết», Bảng E.1 ghi «1–5»; bỏ trống ⇒ Missing Data Code |
 | Missing Data Codes cấp dự án | `BTR` = người bệnh bỏ trống · `KDD` = không đọc được/không hợp lệ · `998` chỉ cho `kyvong_thoigiancho` — máy đọc được ở `_ma-thieu-theo-bien.csv` | Quyết định 1a; nhập kép phiếu giấy (4.9 bước 11) |
@@ -33,6 +34,8 @@ Mỗi lựa chọn dựa trên nguồn đã có trong đề cương nộp; khôn
 | Field Note và Field Annotation | Field Note chỉ còn hướng dẫn NHẬP (hiện ngay dưới ô nhập); tài liệu nội bộ (nguồn, tên SPSS, vai trò phân tích, quyết định) ở Field Annotation (không hiện); bảng truy xuất nguồn gốc câu hỏi gộp cả hai | Hội đồng chấm lại 18/10 (G3-T3 RQ2); `pha_phat_trien_cong_cu` gộp Field Annotation (PR #166) |
 | Ô chữ tự do (`ykiendonggop`, 5 trường «Khác — ghi rõ») | KHÔNG gắn `Identifier?=y`. Bản xuất phân tích định lượng chọn trường, không gồm 6 trường này; xuất riêng cho hai người mã hoá câu hỏi mở (4.9 bước 11) sau khi sàng thông tin định danh | Gắn cờ thì G5-AUTO-02 chặn; tuỳ chọn «Remove unvalidated Text fields» của REDCap bỏ luôn `ma_ban_kham` (trường chữ không kiểm định dạng) — biến cụm của phân tích |
 | Luật kiểm dữ liệu chéo trường | `_luat-dq.csv` — 9 luật DQ01–DQ09 viết bằng logic REDCap (`chan` = giải quyết trước khoá CSDL · `truy_van` = truy vấn mềm); kiểm máy G3-T3 đối chiếu mọi tên biến | Đề cương 4.9 bước 11 (nhập kép có luật logic); hội đồng chấm lại 18/10 (G3-T3 RQ5) |
+| KDD ở Phần 2 và ngưỡng loại phiếu (thống kê viên, uỷ quyền 18/10/2026) | KDD **tính như mã 9 (bỏ trống)**: vào ngưỡng loại phiếu «bỏ trống từ 7/30 câu Phần 2» và «bỏ trống trọn một lĩnh vực» (4.3.2), và là thiếu ở quy tắc điểm lĩnh vực ≥ 80% câu hợp lệ (4.5.2). Mã 8 không tính vào ngưỡng loại (là câu trả lời, không phải bỏ trống) nhưng vẫn là thiếu khi tính điểm lĩnh vực. KDD ở G1 = không trả lời G1 ⇒ loại | KDD là câu trả lời không dùng được; coi như bỏ trống là thận trọng, đúng ý ngưỡng loại và quy tắc «tính là thiếu» của SAP §6/4.5.2 — quy tắc xử lý mã nhập liệu, không phải sửa đổi SAP; ghi ở `_ma-thieu-theo-bien.csv` và SOP-DL-01 §9 |
+| Tách C6, C9 | Không sửa phiếu nộp Hội đồng. Soạn sẵn phương án cho hội đồng chuyên gia: khuyến nghị tách C6 → C6a (điều dưỡng) + C6b (kỹ thuật viên và NVYT khác), C9 → C9a (bảo vệ) + C9b (hướng dẫn, tiếp đón); hội đồng chấm CVI cả câu gốc lẫn câu tách rồi quyết | Đề cương 4.5.1 bước 2 giao quyết định cho hội đồng chuyên gia (sau phê duyệt); sửa Phụ lục C bây giờ làm lệch gói G10 đã khoá. Tài liệu: `pha_cong_cu/DE_XUAT_TACH_C6_C9.md` + `phieu_cvi_bo_sung_C6_C9.csv` |
 | Section Header | Bỏ khoảng trắng thừa ở cuối hai tiêu đề «Nhân khẩu (mô tả)» (`khoangcachnhabv`, `solankham12thang`) | Có từ bản đầu 01/09 không ghi lý do; bộ nạp G5 và bộ dò G6 đều cắt khoảng trắng ⇒ không có tác dụng (bộ dò G6 cho kết quả giống hệt, đã đo) |
 | Nhãn trường Phần 1 | Thêm «Câu N.» theo số câu ở Bảng E.1 | Nhập kép đối chiếu phiếu giấy; bộ dò vai trò biến của G6 cho kết quả GIỐNG HỆT trước/sau (đã đo) |
 | Con trỏ phụ lục | «Phụ lục A/C.5/C.6.2/C.4» của đề cương v1.0 ⇒ Bảng E.1, Phụ lục C/D, mục 4.5.1, 4.6.1 của đề cương nộp | Đối chiếu từng con trỏ |
@@ -41,15 +44,16 @@ Mỗi lựa chọn dựa trên nguồn đã có trong đề cương nộp; khôn
 
 | Việc | Ai | Ghi chú |
 |---|---|---|
-| Giờ làm việc buổi sáng/chiều của Khoa C1a ⇒ mốc giờ cụ thể cho 4 khung | Chủ nhiệm / Phòng CNTT-QLCL | `[CẦN XÁC NHẬN TẠI ĐƠN VỊ]` — quy tắc đã chốt ở 1b, chỉ còn con số thật |
-| Khai Missing Data Codes (`BTR`, `KDD`, `998`) khi tạo dự án REDCap | Người quản trị dữ liệu | Project Setup → Missing Data Codes; danh mục ở `_ma-thieu-theo-bien.csv`. REDCap áp mã thiếu cấp dự án cho MỌI trường ⇒ trường HIS đã gắn `@NOMISSING`; luật DQ06/DQ07 bắt dùng sai chỗ |
-| Dựng 9 luật DQ01–DQ09 trong REDCap (Data Quality → thêm luật) | Người quản trị dữ liệu | Trước khi nhập phiếu đầu tiên; dán đúng cột `bieu_thuc_redcap` của `_luat-dq.csv` |
-| SOP nhập kép ghi rõ: thứ tự màn hình khác thứ tự phiếu ở câu 19–22 (nhãn «Câu N.» là chỉ dẫn) | Người quản trị dữ liệu | Trước khi soạn SOP nhập liệu, tức trước G5 |
-| KDD ở câu Phần 2 có tính vào ngưỡng loại «bỏ trống từ 7 câu Phần 2 trở lên» (4.3.2) không | Thống kê viên / chủ nhiệm | Ghi trong SOP làm sạch, trước khi nạp dữ liệu. Đề xuất: tính như mã 9, vì cùng là không có câu trả lời dùng được (SAP §6: 9 tính là thiếu) |
-| `study_meta.json` → `variables` và `confounders` còn `chuyenkhoa` — không có trong bộ biến và không thuộc 9 biến hiệu chỉnh của SAP §5 | Chủ nhiệm | Agent không ghi `study_meta.json`; đối chiếu xuyên cổng hiện không báo lệch |
-| Tách câu C6, C9 (ghép nhiều thuộc tính) | Hội đồng chuyên gia (pha phát triển bộ câu hỏi, 4.5.1) | Không phải việc máy làm thay |
+| Tạo dự án REDCap: tải từ điển, khai Missing Data Codes, bật nhập kép, dựng 9 luật DQ | Thư ký đề tài + quản trị viên REDCap của bệnh viện | Trợ lý tự động không truy cập được REDCap của bệnh viện. Bộ tệp sẵn ở `redcap_thiet_lap/` (`missing_data_codes.txt`, `data_quality_rules.csv` — sinh từ `_ma-thieu-theo-bien.csv` và `_luat-dq.csv`); làm theo SOP-DL-01 §4, kể cả bước thử trên bản sao |
+| Duyệt và ban hành SOP nhập kép | Chủ nhiệm đề tài | `SOP_NHAP_KEP_<mã>.md/.docx` (SOP-DL-01, bản soạn 18/10/2026) |
+| Hội đồng chuyên gia quyết tách C6, C9 | Hội đồng chuyên gia (pha phát triển, 4.5.1) | Phương án và phiếu chấm bổ sung ở `pha_cong_cu/`; nếu tách: làm 6 việc ở mục 4 của đề xuất |
 
 ## 3. Đã làm (máy, 0 agent)
+
+- Lượt 4 (18/10): điền mốc giờ thật cho 4 khung giờ (choices + Field Annotation của `khunggio_kham`; bộ biến hết nhãn
+  `[CẦN…]`); quy tắc KDD ở `_ma-thieu-theo-bien.csv`; bộ thiết lập REDCap `redcap_thiet_lap/`; SOP-DL-01; đề xuất tách
+  C6/C9. PI gỡ `chuyenkhoa` khỏi `study_meta.json` (08:48 ngày 18/10). Đo sau sửa: bộ dò G6 giống hệt; kiểm máy
+  G1-T4, G3-T2, G3-T3 rỗng.
 
 - `run_g5_auto.py` chép cột Field Annotation sang từ điển REDCap (PR #164) — `@MAXCHECKED`, `@NOMISSING` tới được REDCap.
 - `rieng_tu`/`g2`/`g3`: bỏ nhãn thang hài lòng ở mức 2–4 và câu gán nguồn sai «chốt 15/10/2026».
@@ -76,5 +80,5 @@ Mỗi lựa chọn dựa trên nguồn đã có trong đề cương nộp; khôn
 
 - Vai trò phân tích vẫn ở Section Header và thứ tự trường chưa xếp lại theo phiếu in: bộ dò vai trò của `run_g6_auto.py`
   đọc Section Header và lan xuống các dòng dưới. Nhãn «Câu N.» thay cho việc xếp lại (hội đồng chấm lại 18/10 đề xuất
-  cách này). Người chịu trách nhiệm: người quản trị dữ liệu; hạn: trước khi soạn SOP nhập kép (trước G5) — SOP ghi rõ
-  thứ tự màn hình khác thứ tự phiếu (mục §2).
+  cách này). Đã ghi vào SOP-DL-01 §6 bước 4: ở câu 19–22 thứ tự màn hình khác thứ tự phiếu, người nhập dò theo nhãn
+  «Câu N.».
