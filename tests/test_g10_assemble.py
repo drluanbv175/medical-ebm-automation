@@ -74,6 +74,11 @@ def _write_cross_sectional_fixture(d: Path, specialty="generic",
     for g, cp in cps.items():
         (d / f"{g}_checkpoint.json").write_text(
             json.dumps(cp, ensure_ascii=False), encoding="utf-8", newline="\n")
+    # 18/10/2026: G4 thật luôn sinh tệp SAP — bộ lắp G10 đọc phiên bản SAP từ tiêu đề tệp này (tranh biện G10 C1a),
+    # không từ trường thô g4_sap_version của checkpoint.
+    (d / "G4_A5_SAP_FINAL_FIXT.md").write_text(
+        "# A5, SAP FINAL + SAP LOCK CERTIFICATE (DRAFT, CHỜ BÁC SĨ KÝ)\n"
+        "**Mã:** FIXT | **Phiên bản SAP:** 1.0 | **Ngày sinh:** 2026-07-30\n", encoding="utf-8", newline="\n")
     # G0_pubmed_raw.json: nguồn PubMed THẬT — để R4 đối chiếu (raw-verified).
     raw = {"pmids": pmids, "results": [{"pmid": p} for p in pmids]}
     (d / "G0_pubmed_raw.json").write_text(
