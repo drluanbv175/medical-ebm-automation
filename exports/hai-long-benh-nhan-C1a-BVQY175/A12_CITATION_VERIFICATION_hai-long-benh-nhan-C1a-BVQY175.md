@@ -64,10 +64,15 @@ PMID song song. Đã tra bằng `app/sources/crossref_retraction.CrossrefRetract
 | 10.52163/yhc.v66i1.1940 | 36. HÀI LÒNG NGƯỜI BỆNH VỀ DỊCH VỤ ĐÔNG Y TẠI KHOA Y HỌC CỔ TRUYỀN BỆ… | đề cương TLTK (tạp chí trong nước) | tồn tại, không có thông báo rút | không có bản ghi |
 | 10.52163/yhc.v67i7.5934 | THỰC TRẠNG THỜI GIAN CHỜ KHÁM BỆNH VÀ SỰ HÀI LÒNG CỦA NGƯỜI BỆNH TẠI K… | đề cương TLTK (tạp chí trong nước) | tồn tại, không có thông báo rút | không có bản ghi |
 | 10.52163/yhc.v67icd5.5018 | ĐÁNH GIÁ HIỆU QUẢ CỦA HỆ THỐNG ĐĂNG KÝ KHÁM BỆNH TRỰC TUYẾN TẠI KHOA K… | đề cương TLTK (tạp chí trong nước) | tồn tại, không có thông báo rút | không có bản ghi |
+| 10.1080/10705519909540118 | Cutoff criteria for fit indexes in covariance structure analysis… | đề cương 4.5.3 mục 4 (ngưỡng CFA), TLTK 45 | tồn tại, không có thông báo rút | không có bản ghi |
+| 10.1037/0033-2909.88.3.588 | Significance tests and goodness of fit in the analysis of covariance structures | đề cương 4.5.3 mục 4 (ngưỡng CFA), TLTK 46 | tồn tại, không có thông báo rút | không có bản ghi |
+| 10.1177/0049124192021002005 | Alternative Ways of Assessing Model Fit | đề cương 4.5.3 mục 4 (ngưỡng CFA), TLTK 47 | tồn tại, không có thông báo rút | không có bản ghi |
 
 Ba DOI mới của SAP 1.2 đã được thẩm định độc lập (`tham-dinh-dau-ra`, 17/10/2026) đối chiếu nội dung: mỗi nguồn
 ủng hộ đúng mệnh đề gắn với nó (Dean & Pagano qua tóm tắt; Lumley 2004 qua toàn văn mục 2.3, 3, 5.1.2; Solon và cộng
 sự 2015 qua tóm tắt).
+
+Ba DOI ngưỡng CFA (TLTK 45–47, thêm vào đề cương nộp ngày 18/10/2026 theo góp ý hội đồng G10) tra ngày 18/10/2026 theo tranh biện `G10-TB-20261018T074752-4af4efab` (việc 5): Crossref `updated-by` trả «ok» cho cả ba, chỉ mục Retraction Watch ngoại tuyến (tải 27 ngày trước, 62.707 DOI) không có bản ghi; bộ chuyển định danh NCBI không trả PMID nên chúng nằm ở bảng này. Tiêu đề Crossref khớp tiêu đề trong danh mục TLTK. Nội dung: mệnh đề gắn với nguồn là các ngưỡng phù hợp mô hình — chưa đối chiếu toàn văn, cần bác sĩ kiểm chứng.
 
 ## 4. Việc còn lại cho PI (không chặn A12)
 
