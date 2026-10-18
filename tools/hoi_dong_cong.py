@@ -1368,6 +1368,41 @@ def _kiem_crf(out_dir: Path, study: str) -> List[str]:
         ra.append(f"trường số thiếu khoảng hợp lệ (min/max): {', '.join(thieu_khoang[:10])}")
     if not any(r[10] == "y" for r in rows if r[0] != "record_id"):
         ra.append("không trường nào đánh dấu bắt buộc (Required Field?)")
+    # 18/10/2026 (hội đồng G3 C1a): câu «chọn tối đa N» phải có luật chặn REDCap `@MAXCHECKED=N` (Field Annotation, phần
+    # tử thứ 14 của bộ nạp G5); mã thiếu khai riêng cho một biến số phải nằm NGOÀI khoảng hợp lệ của chính biến đó
+    # (trong khoảng thì không phân biệt được giá trị thật với mã thiếu).
+    thieu_max = []
+    for r in rows:
+        m = re.search(r"tối đa\s*(\d+)", r[4], re.I)
+        if r[3] == "checkbox" and m and f"@MAXCHECKED={m.group(1)}" not in (r[13] if len(r) > 13 else ""):
+            thieu_max.append(r[0])
+    if thieu_max:
+        ra.append(f"câu «chọn tối đa N» thiếu luật @MAXCHECKED=N ở Field Annotation: {', '.join(thieu_max[:10])}")
+    try:
+        import run_g5_auto as RG5  # noqa: PLC0415
+
+        ma_thieu = RG5.nap_ma_thieu_theo_bien(Path(out_dir)) or {}
+    except SystemExit as exc:
+        return ra + [f"tệp mã thiếu theo biến hỏng: {' '.join(str(exc).split())[:200]}"]
+    except Exception as exc:  # noqa: BLE001 — không nạp được ⇒ báo, không coi là đạt
+        return ra + [f"không kiểm được mã thiếu theo biến: {type(exc).__name__}"]
+    trong_khoang = []
+    for r in rows:
+        if r[0] not in ma_thieu or r[7] not in ("integer", "number"):
+            continue
+        try:
+            lo, hi = float(r[8]), float(r[9])
+        except ValueError:
+            continue
+        for ma in ma_thieu[r[0]]:
+            try:
+                if lo <= float(ma) <= hi:
+                    trong_khoang.append(f"{r[0]}={ma}")
+            except ValueError:
+                continue
+    if trong_khoang:
+        ra.append(f"mã thiếu nằm TRONG khoảng hợp lệ của biến (không phân biệt được với giá trị thật): "
+                  f"{', '.join(trong_khoang[:10])}")
     return ra
 
 

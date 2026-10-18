@@ -15,6 +15,7 @@ import sys
 import sys as _sys_r4
 from datetime import datetime
 from pathlib import Path
+from typing import Dict, List, Optional
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
@@ -933,7 +934,8 @@ def _range_lines_tu_rows(rows: list, da_co: set, nhay: str = '"') -> list:
     return lines
 
 
-def gen_data_cleaning_script(study: str, design_code: str, rows: list) -> str:
+def gen_data_cleaning_script(study: str, design_code: str, rows: list,
+                             ma_thieu: Optional[Dict[str, List[str]]] = None) -> str:
     """Sinh data_cleaning.py đọc REDCap export và làm sạch theo CRF dictionary."""
     col_names    = [r[0] for r in rows]
     numeric_cols = [r[0] for r in rows if r[7] in ("number", "integer")]
@@ -1001,7 +1003,9 @@ def gen_data_cleaning_script(study: str, design_code: str, rows: list) -> str:
         '# Kiem tra pham vi (var, min, max) — sinh tu dong tu VALIDATION_RULES\n'
         'RANGE_CHECKS = [\n'
         '__RANGES__\n'
-        ']\n\n\n'
+        ']\n\n'
+        '# Ma thieu THEO TUNG BIEN (_ma-thieu-theo-bien.csv) — mien khoi kiem pham vi\n'
+        'MISSING_CODES = __MISSING__\n\n\n'
         'def load_data(csv_path: str) -> pd.DataFrame:\n'
         '    """Doc REDCap export CSV."""\n'
         '    df = pd.read_csv(csv_path, dtype=str, encoding="utf-8-sig")\n'
@@ -1038,6 +1042,7 @@ def gen_data_cleaning_script(study: str, design_code: str, rows: list) -> str:
         '        if varname in df.columns:\n'
         '            flag_col = "flag_" + varname\n'
         '            col_num = pd.to_numeric(df[varname], errors="coerce")\n'
+        '            col_num = col_num.mask(col_num.isin(MISSING_CODES.get(varname, [])))\n'
         '            df[flag_col] = col_num.notna() & ((col_num < lo) | (col_num > hi))\n'
         '            n_flag = int(df[flag_col].sum())\n'
         '            if n_flag > 0:\n'
@@ -1106,11 +1111,13 @@ def gen_data_cleaning_script(study: str, design_code: str, rows: list) -> str:
               .replace("__DATES__", repr(date_cols))
               .replace("__REQUIRED__", repr(required_cols))
               .replace("__RANGES__", range_checks_str)
+              .replace("__MISSING__", _ma_thieu_so(ma_thieu))
               .replace("__DATEPAIRS__", date_pairs_str))
     return script
 
 
-def gen_data_quality_report_script(study: str, design_code: str, rows: list) -> str:
+def gen_data_quality_report_script(study: str, design_code: str, rows: list,
+                                   ma_thieu: Optional[Dict[str, List[str]]] = None) -> str:
     """
     Sinh data_quality_report.py đọc cleaned data và báo cáo chất lượng.
     SỬA: trước đây RANGE_CHECKS hardcode cứng 15 biến của bundle
@@ -1156,7 +1163,9 @@ def gen_data_quality_report_script(study: str, design_code: str, rows: list) -> 
         'from datetime import datetime\n\n\n'
         'RANGE_CHECKS = [\n'
         '__RANGES__\n'
-        ']\n\n\n'
+        ']\n\n'
+        '# Ma thieu THEO TUNG BIEN (_ma-thieu-theo-bien.csv) — mien khoi kiem pham vi\n'
+        'MISSING_CODES = __MISSING__\n\n\n'
         'def generate_report(df: pd.DataFrame, study_name: str, design: str, out_path: Path) -> None:\n'
         '    lines = []\n'
         '    now = datetime.now().strftime("%Y-%m-%d %H:%M")\n'
@@ -1197,6 +1206,7 @@ def gen_data_quality_report_script(study: str, design_code: str, rows: list) -> 
         '    for varname, lo, hi in RANGE_CHECKS:\n'
         '        if varname in df.columns:\n'
         '            col_num = pd.to_numeric(df[varname], errors="coerce")\n'
+        '            col_num = col_num.mask(col_num.isin(MISSING_CODES.get(varname, [])))\n'
         '            n_bad = int(((col_num < lo) | (col_num > hi)).sum())\n'
         '            if n_bad > 0:\n'
         '                lines.append(f"  {varname:<30} {n_bad} gia tri ngoai [{lo}, {hi}]  CANH BAO")\n'
@@ -1242,7 +1252,8 @@ def gen_data_quality_report_script(study: str, design_code: str, rows: list) -> 
     script = (template
               .replace("__STUDY__", study)
               .replace("__DESIGN__", design_code)
-              .replace("__RANGES__", range_checks_str))
+              .replace("__RANGES__", range_checks_str)
+              .replace("__MISSING__", _ma_thieu_so(ma_thieu)))
     return script
 
 
@@ -2246,6 +2257,58 @@ _BO_BIEN_FIELD_TYPES = {
 }
 
 
+MA_THIEU_TEN_FILE = "_ma-thieu-theo-bien.csv"
+_MA_THIEU_COT = ("bien", "ma", "nhan")
+
+
+def nap_ma_thieu_theo_bien(out_dir: Path) -> Optional[Dict[str, List[str]]]:
+    """Nạp `exports/<study>/_ma-thieu-theo-bien.csv` — mã thiếu khai THEO TỪNG BIẾN (bien, ma, nhan, …); `bien` = «*» là
+    Missing Data Code cấp dự án (mọi trường). Vắng tệp ⇒ None (như cũ).
+
+    VÌ SAO (17–18/10/2026, hội đồng G3 C1a): mã 998 của `kyvong_thoigiancho` nằm ngoài khoảng 0–600 của chính trường đó ⇒
+    mọi phiếu «không ước lượng được» thành cờ ngoài khoảng (truy vấn giả); cách lách duy nhất là `--missing-tokens 998`
+    TOÀN CỤC của clean_research_dataset.py, vốn xoá luôn giá trị 998 hợp lệ của `thoigian_cho`. Tệp hỏng cấu trúc ⇒
+    DỪNG (SystemExit 2) — không âm thầm bỏ qua mã thiếu đã khai."""
+    duong = Path(out_dir) / MA_THIEU_TEN_FILE
+    if not duong.exists():
+        return None
+    try:
+        with duong.open(encoding="utf-8-sig", newline="") as f:
+            doc = csv.DictReader(f)
+            thieu = [c for c in _MA_THIEU_COT if c not in (doc.fieldnames or [])]
+            if thieu:
+                raise SystemExit(f"⛔ {MA_THIEU_TEN_FILE} thiếu cột: {', '.join(thieu)}")
+            ra: Dict[str, List[str]] = {}
+            for i, r in enumerate(doc, start=2):
+                bien, ma = (r.get("bien") or "").strip(), (r.get("ma") or "").strip()
+                if not bien or not ma:
+                    raise SystemExit(f"⛔ {MA_THIEU_TEN_FILE} dòng {i}: thiếu «bien» hoặc «ma»")
+                ra.setdefault(bien, [])
+                if ma not in ra[bien]:
+                    ra[bien].append(ma)
+            return ra
+    except OSError as e:
+        raise SystemExit(f"⛔ Không đọc được {duong}: {e}") from e
+
+
+def _ma_thieu_so(ma_thieu: Optional[Dict[str, List[str]]]) -> str:
+    """dict {biến: [mã số]} cho script sinh — chỉ mã SỐ của từng biến (mã chữ cấp dự án như «BTR» đã thành NaN khi ép
+    kiểu số nên không cần che)."""
+    ra: Dict[str, List[float]] = {}
+    for bien, ds in (ma_thieu or {}).items():
+        if bien == "*":
+            continue
+        so = []
+        for m in ds:
+            try:
+                so.append(float(m.replace(",", ".")))
+            except ValueError:
+                continue
+        if so:
+            ra[bien] = so
+    return repr(ra)
+
+
 def nap_bo_bien_rieng(out_dir: Path, study: str):
     """Nạp BỘ BIẾN RIÊNG của đề tài từ `exports/<study>/_bo-bien-rieng.csv`.
 
@@ -2603,13 +2666,14 @@ def main():
     print(f"  → Guardrail: {status}")
 
     # Sinh data_cleaning.py
-    cleaning_script = gen_data_cleaning_script(study, design_code, rows)
+    ma_thieu = nap_ma_thieu_theo_bien(out) if rows_rieng is not None else None
+    cleaning_script = gen_data_cleaning_script(study, design_code, rows, ma_thieu)
     cleaning_path = scripts_dir / "data_cleaning.py"
     cleaning_path.write_text(cleaning_script, encoding="utf-8", newline="\n")
     print(f"  → Script sinh: {cleaning_path}")
 
     # Sinh data_quality_report.py
-    dqr_script = gen_data_quality_report_script(study, design_code, rows)
+    dqr_script = gen_data_quality_report_script(study, design_code, rows, ma_thieu)
     dqr_path = scripts_dir / "data_quality_report.py"
     dqr_path.write_text(dqr_script, encoding="utf-8", newline="\n")
     print(f"  → Script sinh: {dqr_path}")
