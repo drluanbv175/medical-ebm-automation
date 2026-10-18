@@ -310,6 +310,30 @@ def _missing_key(value: str) -> str:
     return RDI._normalize_header(value)
 
 
+MA_THIEU_TEN_FILE = "_ma-thieu-theo-bien.csv"
+
+
+def _nap_ma_thieu_theo_bien(path: Path) -> Tuple[List[str], Dict[str, List[str]]]:
+    """(mã cấp dự án, {cột: [mã]}) từ CSV `bien, ma, nhan` — `bien` = «*» là mã của MỌI cột. Thiếu cột/ô ⇒ ValueError
+    (bộ làm sạch chặn, không âm thầm bỏ qua mã đã khai)."""
+    path = Path(path)
+    if not path.exists():
+        raise ValueError(f"không có tệp {path.name}")
+    with path.open("r", encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f)
+        thieu = [c for c in ("bien", "ma") if c not in (reader.fieldnames or [])]
+        if thieu:
+            raise ValueError(f"thiếu cột {', '.join(thieu)}")
+        chung: List[str] = []
+        theo_cot: Dict[str, List[str]] = {}
+        for i, r in enumerate(reader, start=2):
+            bien, ma = (r.get("bien") or "").strip(), (r.get("ma") or "").strip()
+            if not bien or not ma:
+                raise ValueError(f"dòng {i} thiếu «bien» hoặc «ma»")
+            (chung if bien == "*" else theo_cot.setdefault(bien, [])).append(ma)
+    return chung, theo_cot
+
+
 def _clean_cell(value: Any, missing_tokens: Iterable[str]) -> Tuple[str, Dict[str, int]]:
     original = "" if value is None else str(value)
     collapsed = " ".join(original.strip().split())
@@ -599,6 +623,7 @@ def clean_dataset(study: str, data_path: Path, *,
                   required_columns: Optional[List[str]] = None,
                   missing_tokens: Optional[List[str]] = None,
                   max_scan_rows: int = 5000,
+                  ma_thieu_path: Optional[Path] = None,
                   query_resolutions_path: Optional[Path] = None) -> Dict[str, Any]:
     """Làm sạch an toàn 1 CSV đã khử định danh/pseudonymized.
 
@@ -684,17 +709,28 @@ def clean_dataset(study: str, data_path: Path, *,
     output_sha256: Optional[str] = None
     query_log_sha256: Optional[str] = None
 
+    # 18/10/2026 (hội đồng G3 C1a): mã thiếu THEO TỪNG BIẾN (`_ma-thieu-theo-bien.csv`; «*» = cấp dự án). Trước đây chỉ
+    # có --missing-tokens TOÀN CỤC: khai 998 cho kyvong_thoigiancho thì xoá luôn 998 phút hợp lệ của thoigian_cho.
+    ma_thieu_file = Path(ma_thieu_path) if ma_thieu_path else out_dir / MA_THIEU_TEN_FILE
+    ma_thieu_cot: Dict[str, List[str]] = {}
+    ma_thieu_chung: List[str] = []
+    if blocker is None and (ma_thieu_path or ma_thieu_file.exists()):
+        try:
+            ma_thieu_chung, ma_thieu_cot = _nap_ma_thieu_theo_bien(ma_thieu_file)
+        except ValueError as e:
+            blocker = f"ma_thieu_theo_bien_invalid: {e}"
     if blocker is None:
         all_missing_tokens = sorted(
             set(DEFAULT_MISSING_TOKENS)
             | {_missing_key(token) for token in (dictionary.get("missing_tokens") or [])}
             | {_missing_key(token) for token in (missing_tokens or [])}
+            | {_missing_key(token) for token in ma_thieu_chung}
         )
         clean_rows: List[Dict[str, str]] = []
         for row in rows:
             clean_row: Dict[str, str] = {}
             for col in columns:
-                cleaned, actions = _clean_cell(row.get(col), all_missing_tokens)
+                cleaned, actions = _clean_cell(row.get(col), list(all_missing_tokens) + ma_thieu_cot.get(col, []))
                 clean_row[col] = cleaned
                 for key, value in actions.items():
                     action_counts[key] = action_counts.get(key, 0) + value
@@ -747,6 +783,8 @@ def clean_dataset(study: str, data_path: Path, *,
             "id_column": detected_id_column,
             "required_columns": merged_required,
             "missing_tokens": all_missing_tokens,
+            "missing_tokens_by_column": ma_thieu_cot,
+            "ma_thieu_theo_bien_sha256": (RDI._sha256_file(ma_thieu_file) if ma_thieu_cot or ma_thieu_chung else None),
             "safe_actions": [
                 "trim_or_collapse_whitespace",
                 "standardize_missing_token",
@@ -802,6 +840,9 @@ def clean_dataset(study: str, data_path: Path, *,
             else None
         ),
         "dictionary_blocker": dictionary_blocker,
+        # 18/10/2026: mã thiếu theo từng biến đã áp (bằng chứng cho khoá dữ liệu — tệp gắn băm).
+        "missing_tokens_by_column": ma_thieu_cot,
+        "ma_thieu_theo_bien_sha256": (RDI._sha256_file(ma_thieu_file) if ma_thieu_cot or ma_thieu_chung else None),
         "safe_action_counts": action_counts,
         "open_query_count": open_query_count,
         "query_resolutions": qr_rel,
@@ -838,6 +879,9 @@ def main() -> int:
     parser.add_argument("--required-cols", default="", help="Danh sách cột bắt buộc, ngăn cách dấu phẩy")
     parser.add_argument("--missing-tokens", default="", help="Mã missing bổ sung, ngăn cách dấu phẩy")
     parser.add_argument("--max-scan-rows", type=int, default=5000)
+    parser.add_argument("--ma-thieu-theo-bien", default=None,
+                        help="CSV mã thiếu theo từng biến (bien, ma, nhan; bien=* là cấp dự án). Vắng ⇒ tự đọc "
+                             "exports/<mã>/_ma-thieu-theo-bien.csv nếu có")
     parser.add_argument("--query-resolutions", default=None,
                         help="CSV/JSON giải quyết query: issue_type, column, row, resolution (da_sua/xac_nhan_dung/"
                              "khong_ap_dung_co_ly_do), ly_do, owner_ref (không PII), resolved_at (ISO) — G5-04")
@@ -853,6 +897,7 @@ def main() -> int:
         missing_tokens=_split_list(args.missing_tokens),
         max_scan_rows=args.max_scan_rows,
         query_resolutions_path=Path(args.query_resolutions) if args.query_resolutions else None,
+        ma_thieu_path=Path(args.ma_thieu_theo_bien) if args.ma_thieu_theo_bien else None,
     )
     print(f"DATA_CLEANING: {report['status']}")
     print(

@@ -253,6 +253,15 @@ def sinh_bo_sung(so_cg: int, thu_muc: Path, so_nguoi: int = 1) -> list[Path]:
             _ghi_moi(p_tn, COT_THEO_NGUOI, [[f"NT{i:02d}", "", "", ""] for i in range(1, so_nguoi + 1)])]
 
 
+def _ghi_chu_tu_dien(ghi_chu: str | None, chu_thich: str | None) -> str:
+    """Ghi chú từ điển cho bảng truy xuất = Field Note (hướng dẫn nhập, hiện trên màn hình) + phần CHỮ của Field
+    Annotation (tài liệu nội bộ: nguồn, quyết định) sau khi bỏ action tag REDCap (`@MAXCHECKED=2`, `@NOMISSING`…).
+    THÊM 18/10/2026 (hội đồng G3 C1a): tài liệu nội bộ dời từ Field Note sang Field Annotation — không gộp thì bảng
+    truy xuất mất nguồn của câu hỏi."""
+    chu = " ".join(t for t in (chu_thich or "").split() if not t.startswith("@"))
+    return " · ".join(x for x in ((ghi_chu or "").strip(), chu) if x)
+
+
 def sinh_truy_xuat(muc: list[str], tu_dien: Path, thu_muc: Path) -> Path:
     """Bảng truy xuất nguồn gốc câu hỏi: nội dung + phần/lĩnh vực + ghi chú lấy từ từ điển REDCap (khớp mã không phân
     biệt hoa thường; tiêu đề phần của REDCap áp cho các trường phía sau tới tiêu đề kế tiếp). Nguồn gốc và lý do đưa vào
@@ -265,7 +274,7 @@ def sinh_truy_xuat(muc: list[str], tu_dien: Path, thu_muc: Path) -> Path:
     theo_ma, phan_hien = {}, ""
     for d in dong:
         phan_hien = d.get(phan, "") or phan_hien
-        theo_ma[d[ten].lower()] = (d[nhan], phan_hien, d.get(ghi, ""))
+        theo_ma[d[ten].lower()] = (d[nhan], phan_hien, _ghi_chu_tu_dien(d.get(ghi, ""), d.get("Field Annotation", "")))
     thieu = [m for m in muc if m.lower() not in theo_ma]
     if thieu:
         raise LoiDauVao(f"{len(thieu)} mục không có trong từ điển dữ liệu: {', '.join(thieu)}")

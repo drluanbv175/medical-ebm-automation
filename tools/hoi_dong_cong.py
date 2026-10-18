@@ -33,6 +33,7 @@ tìm thấy/không đo được · 3 biên bản vi phạm luật.
 from __future__ import annotations
 
 import argparse
+import csv
 import hashlib
 import json
 import re
@@ -1368,7 +1369,94 @@ def _kiem_crf(out_dir: Path, study: str) -> List[str]:
         ra.append(f"trường số thiếu khoảng hợp lệ (min/max): {', '.join(thieu_khoang[:10])}")
     if not any(r[10] == "y" for r in rows if r[0] != "record_id"):
         ra.append("không trường nào đánh dấu bắt buộc (Required Field?)")
+    # 18/10/2026 (hội đồng G3 C1a): câu «chọn tối đa N» phải có luật chặn REDCap `@MAXCHECKED=N` (Field Annotation, phần
+    # tử thứ 14 của bộ nạp G5); mã thiếu khai riêng cho một biến số phải nằm NGOÀI khoảng hợp lệ của chính biến đó
+    # (trong khoảng thì không phân biệt được giá trị thật với mã thiếu).
+    thieu_max = []
+    for r in rows:
+        m = re.search(r"tối đa\s*(\d+)", r[4], re.I)
+        if r[3] == "checkbox" and m and f"@MAXCHECKED={m.group(1)}" not in (r[13] if len(r) > 13 else ""):
+            thieu_max.append(r[0])
+    if thieu_max:
+        ra.append(f"câu «chọn tối đa N» thiếu luật @MAXCHECKED=N ở Field Annotation: {', '.join(thieu_max[:10])}")
+    ra += _kiem_luat_dq(Path(out_dir), rows)
+    try:
+        import run_g5_auto as RG5  # noqa: PLC0415
+
+        ma_thieu = RG5.nap_ma_thieu_theo_bien(Path(out_dir)) or {}
+    except SystemExit as exc:
+        return ra + [f"tệp mã thiếu theo biến hỏng: {' '.join(str(exc).split())[:200]}"]
+    except Exception as exc:  # noqa: BLE001 — không nạp được ⇒ báo, không coi là đạt
+        return ra + [f"không kiểm được mã thiếu theo biến: {type(exc).__name__}"]
+    trong_khoang = []
+    for r in rows:
+        if r[0] not in ma_thieu or r[7] not in ("integer", "number"):
+            continue
+        try:
+            lo, hi = float(r[8]), float(r[9])
+        except ValueError:
+            continue
+        for ma in ma_thieu[r[0]]:
+            try:
+                if lo <= float(ma) <= hi:
+                    trong_khoang.append(f"{r[0]}={ma}")
+            except ValueError:
+                continue
+    if trong_khoang:
+        ra.append(f"mã thiếu nằm TRONG khoảng hợp lệ của biến (không phân biệt được với giá trị thật): "
+                  f"{', '.join(trong_khoang[:10])}")
     return ra
+
+
+LUAT_DQ_TEN_FILE = "_luat-dq.csv"
+COT_LUAT_DQ = ("ma_luat", "muc_do", "mo_ta", "bieu_thuc_redcap", "nguon")
+MUC_DO_LUAT_DQ = ("chan", "truy_van")
+
+
+def _kiem_luat_dq(out_dir: Path, rows: list) -> List[str]:
+    """Luật kiểm dữ liệu chéo trường `_luat-dq.csv` (logic REDCap, dán thẳng vào mô-đun Data Quality) — THÊM 18/10/2026
+    (hội đồng G3 C1a, G3-T3 RQ5: luật logic chỉ có dạng văn xuôi trong Field Note thì G5 không có gì để dựng).
+
+    Tệp vắng ⇒ không kiểm (bộ biến không có luật chéo trường vẫn hợp lệ). Có tệp thì: đủ cột, `ma_luat` duy nhất,
+    `muc_do` ∈ chan/truy_van, biểu thức không trống và cân ngoặc, MỌI tham chiếu `[bien]`/`[bien(ma)]` là biến CÓ
+    THẬT của bộ biến; `(ma)` chỉ cho trường checkbox và phải nằm trong danh sách lựa chọn. Luật sai tên biến thì REDCap
+    báo lỗi lúc dựng hoặc lặng lẽ không bắt được gì."""
+    p = out_dir / LUAT_DQ_TEN_FILE
+    if not p.exists():
+        return []
+    try:
+        with p.open(encoding="utf-8", newline="") as f:
+            doc = csv.DictReader(f)
+            dong = list(doc)
+            cot = list(doc.fieldnames or [])
+    except (OSError, UnicodeDecodeError, csv.Error) as exc:
+        return [f"{LUAT_DQ_TEN_FILE}: không đọc được ({type(exc).__name__})"]
+    thieu = [c for c in COT_LUAT_DQ if c not in cot]
+    if thieu:
+        return [f"{LUAT_DQ_TEN_FILE}: thiếu cột {', '.join(thieu)}"]
+    bien = {r[0]: r for r in rows}
+    loi: List[str] = []
+    da_co: set = set()
+    for i, d in enumerate(dong, 2):
+        ma = (d.get("ma_luat") or "").strip() or f"dòng {i}"
+        if not (d.get("ma_luat") or "").strip() or ma in da_co:
+            loi.append(f"{ma}: ma_luat trống hoặc trùng")
+        da_co.add(ma)
+        if (d.get("muc_do") or "").strip() not in MUC_DO_LUAT_DQ:
+            loi.append(f"{ma}: muc_do phải là {'/'.join(MUC_DO_LUAT_DQ)}")
+        bt = (d.get("bieu_thuc_redcap") or "").strip()
+        if not bt or bt.count("(") != bt.count(")") or bt.count("[") != bt.count("]"):
+            loi.append(f"{ma}: biểu thức trống hoặc lệch ngoặc")
+            continue
+        for ten, ma_cb in re.findall(r"\[([A-Za-z][A-Za-z0-9_]*)(?:\(([^)]*)\))?\]", bt):
+            r = bien.get(ten)
+            if r is None:
+                loi.append(f"{ma}: [{ten}] không có trong bộ biến")
+            elif ma_cb and r[3] != "checkbox":
+                loi.append(f"{ma}: [{ten}({ma_cb})] — chỉ trường checkbox mới có mã trong ngoặc")
+            elif ma_cb and ma_cb.strip() not in {x.split(",", 1)[0].strip() for x in r[5].split("|")}:
+                loi.append(f"{ma}: [{ten}({ma_cb})] — mã không có trong danh sách lựa chọn")
+    return [f"luật DQ {x}" for x in loi[:10]]
 
 
 def _kiem_pha_cong_cu(out_dir: Path, study: str) -> List[str]:
