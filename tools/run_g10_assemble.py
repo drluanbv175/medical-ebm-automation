@@ -651,6 +651,13 @@ def sec_bienso(cps, meta) -> str:
         f"**Bộ biến số CRF/REDCap (tự động từ G5):** {n_rows} biến, "
         f"chuyên khoa nhận diện = `{specialty}`.\n",
     ]
+    # 18/10/2026 (tranh biện hội đồng G10 C1a, việc sửa 3): gói TRƯỚC dữ liệu chưa có G5 — bản cũ in «0 biến, chuyên
+    # khoa nhận diện = `generic`». Dùng cùng nhánh dự phòng của ma trận truy xuất (biến định trước của study_meta).
+    bien = meta.get("variables")
+    if not cps.get("G5") and isinstance(bien, list) and bien:
+        lines[1] = (f"**Biến định trước:** {len(bien)} biến (study_meta.variables); CRF/REDCap dựng ở G5 sau phê "
+                    "duyệt.\n")
+
     if crf:
         lines.append("Danh sách trường CRF hiện có:\n")
         lines.append("| # | Tên trường CRF |")
@@ -960,9 +967,24 @@ _SURVIVAL_CAPABLE_DESIGNS = {"cohort", "rct", "prediction"}
 # vd Cox tiên lượng tử vong 5 năm, là một dạng TRIPOD+AI hợp lệ).
 
 
+def _sap_hien_thi(meta) -> tuple:
+    """(phiên bản, trạng thái) SAP để in vào gói G10 — THÊM 18/10/2026 (tranh biện hội đồng G10 C1a,
+    G10-TB-20261018T074752-4af4efab, việc sửa 1–2). Nguồn: `meta['_g10']['sap']` = `RS.sap_song()` (tiêu đề SAP + chấm
+    sống G4). Chỉ ghi «đã khoá» khi chấm sống G4 là PASS_G4_SAP_LOCKED; còn lại ghi nhãn chờ. KHÔNG BAO GIỜ in trường
+    thô `g4_sap_version`/`g4_status` của G4_checkpoint (run_g4_auto ghi cứng «1.0»/«PENDING — CHỜ BÁC SĨ KÝ SAP»).
+    Không có ngữ cảnh lắp ráp (gọi lẻ) ⇒ nhãn [CẦN BỔ SUNG]."""
+    sap = (meta.get("_g10") or {}).get("sap") if isinstance(meta, dict) else None
+    if not isinstance(sap, dict):
+        return TAG_BS, TAG_BS
+    ver = sap.get("sap_version") or TAG_BS
+    if sap.get("sap_locked"):
+        return ver, f"đã khoá (chấm sống G4: {sap.get('sap_status')})"
+    return ver, (f"chưa khoá (chấm sống G4: {sap.get('sap_status') or 'không đo được'}) — SAP phải khoá trước khi "
+                 "tiếp cận dữ liệu")
+
+
 def sec_sap(cps, meta) -> str:
-    ver = _g(cps["G4"], "g4_sap_version", default=TAG_BS)
-    status = _g(cps["G4"], "g4_status", default=TAG_BS)
+    ver, status = _sap_hien_thi(meta)
     code = _design_code(cps) or TAG_BS
     analysis = meta.get("analysis") if isinstance(meta.get("analysis"), dict) else {}
     # THÊM 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 3, phát hiện CRITICAL):
@@ -1546,8 +1568,7 @@ def build_traceability_matrix(cps, meta=None) -> str:
     meta = meta or {}
     design = _g(cps.get("G1"), "design", "primary", default=TAG_BS)
     question_type = _g(cps.get("G1"), "question_type", default=TAG_BS)
-    sap_version = _g(cps.get("G4"), "g4_sap_version", default=TAG_BS)
-    sap_status = _g(cps.get("G4"), "g4_status", default=TAG_BS)
+    sap_version, sap_status = _sap_hien_thi(meta)
     crf = _g(cps.get("G5"), "crf_columns", default=[]) or []
     specialty = _g(cps.get("G5"), "specialty", default=TAG_BS)
     crf_source = (
@@ -2080,7 +2101,7 @@ def build_document_control(study: str, cps, meta, generated: str | None = None) 
     prepared_by = meta.get("prepared_by") or meta.get("authors") or TAG_BS
     approved_by = meta.get("approved_by") or meta.get("pi") or meta.get("principal_investigator")
     approved_by = approved_by or TAG_BS
-    sap_version = _g(cps.get("G4"), "g4_sap_version", default=TAG_BS)
+    sap_version = _sap_hien_thi(meta)[0]
     source = ", ".join(present) if present else TAG_BS
 
     lines = [
@@ -2203,7 +2224,9 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
 
     cps = load_checkpoints(out_dir)
     raw_meta = load_meta(out_dir)
-    study_spec = RS.build_study_spec(study, cps, raw_meta)
+    # 18/10/2026 (tranh biện G10 C1a): SAP lấy từ nguồn sống — cùng giá trị G10-AUTO-06 tính lại.
+    sap = RS.sap_song(study, out_dir, repo_root=BASE)
+    study_spec = RS.build_study_spec(study, cps, raw_meta, sap=sap)
     spec_evaluation = RS.evaluate_study_spec(study_spec, cps, raw_meta)
     meta = RS.meta_for_render(raw_meta, study_spec)
     da_lap = bo_sung_tu_nguon_da_chot(meta, cps, out_dir)
@@ -2223,6 +2246,7 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
         "muc_dich": G10Q.muc_dich_phat_hanh(G10Q._read_json(out_dir / G10Q.READINESS_JSON)),
         "g3_song_pass": bool(cps.get("G3"))
         and CS.trang_thai_song("G3", study, out_dir, repo_root=BASE).get("muc") == "PASS",
+        "sap": sap,
     }
     now = datetime.now()
     generated_display = now.strftime("%Y-%m-%d %H:%M")

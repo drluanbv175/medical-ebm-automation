@@ -138,7 +138,7 @@ def _study_spec_song(study: str, out_dir: Path) -> tuple[Dict[str, Any], Optiona
 
     cps = G10A.load_checkpoints(out_dir)
     meta = G10A.load_meta(out_dir)
-    spec = RS.build_study_spec(study, cps, meta)
+    spec = RS.build_study_spec(study, cps, meta, sap=RS.sap_song(study, out_dir, repo_root=G10A.BASE))
     danh_gia = RS.evaluate_study_spec(spec, cps, meta)
     luu = _read_json(Path(out_dir) / f"STUDY_SPEC_{study}.json")
     luu = {k: v for k, v in luu.items() if k != "_evaluation"}

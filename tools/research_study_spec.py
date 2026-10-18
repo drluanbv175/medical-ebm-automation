@@ -206,9 +206,37 @@ def _canonical_meta(meta: Optional[dict]) -> dict:
     return meta
 
 
+SAP_LOCKED_STATUS = "PASS_G4_SAP_LOCKED"
+_SAP_VERSION_RE = re.compile(r"Phiên bản SAP\W{0,6}([0-9]+(?:\.[0-9]+)*)")
+
+
+def sap_song(study: str, out_dir: Any, repo_root: Any = None) -> dict:
+    """Phiên bản + trạng thái SAP lấy từ NGUỒN SỐNG — THÊM 18/10/2026 (tranh biện hội đồng G10 C1a,
+    G10-TB-20261018T074752-4af4efab).
+
+    Phiên bản đọc từ tiêu đề `G4_A5_SAP_FINAL_<mã>.md`; trạng thái là chấm sống G4 (`cong_song.trang_thai_song`). KHÔNG
+    đọc `g4_sap_version`/`g4_status` của G4_checkpoint: run_g4_auto ghi cứng «1.0»/«PENDING — CHỜ BÁC SĨ KÝ SAP» lúc
+    sinh và không ai cập nhật khi SAP được sửa hay khoá ⇒ đề cương thống nhất C1a in «SAP 1.0 — PENDING» trong khi SAP
+    1.3 đã khoá. Không đọc được tiêu đề ⇒ phiên bản None (không đoán)."""
+    from pathlib import Path  # noqa: PLC0415
+
+    import cong_song as CS  # noqa: PLC0415
+
+    out_dir = Path(out_dir)
+    try:
+        m = _SAP_VERSION_RE.search((out_dir / f"G4_A5_SAP_FINAL_{study}.md").read_text(encoding="utf-8")[:4000])
+    except (OSError, UnicodeDecodeError):
+        m = None
+    status = CS.trang_thai_song("G4", study, out_dir, repo_root=repo_root).get("status")
+    return {"sap_version": m.group(1) if m else None, "sap_status": status, "sap_locked": status == SAP_LOCKED_STATUS}
+
+
 def build_study_spec(study: str, checkpoints: Dict[str, dict],
-                     meta: Optional[dict] = None) -> dict:
-    """Hợp nhất checkpoint + study_meta thành StudySpec chuẩn, không bịa dữ kiện."""
+                     meta: Optional[dict] = None, sap: Optional[dict] = None) -> dict:
+    """Hợp nhất checkpoint + study_meta thành StudySpec chuẩn, không bịa dữ kiện.
+
+    `sap` (THÊM 18/10/2026): kết quả `sap_song()` — có thì phiên bản/trạng thái SAP lấy từ nguồn sống, KHÔNG rơi về
+    trường thô của G4_checkpoint; vắng (người gọi cũ, vd check_de_cuong) thì giữ hành vi cũ."""
     raw = _canonical_meta(meta)
     # THÊM 06/10/2026 (soát từng cổng — CHUNG-F/CHUNG-H, đo trên bản sao C1a): quyết định PI đã CHỐT ở G0/G1 (và G3)
     # nằm ở study_meta.gate_params — nguồn của A2 PHẦN 0, WHO TRDS và bộ chấm G1. StudySpec cũ chỉ đọc khoá CẤP CAO của
@@ -557,9 +585,9 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
         },
         "analysis": {
             "sap_version": _first(analysis_meta.get("sap_version"),
-                                  g4.get("g4_sap_version")),
+                                  sap.get("sap_version") if sap is not None else g4.get("g4_sap_version")),
             "sap_status": _first(analysis_meta.get("sap_status"),
-                                 g4.get("g4_status")),
+                                 sap.get("sap_status") if sap is not None else g4.get("g4_status")),
             "primary_outcome": _first(analysis_meta.get("primary_outcome"),
                                       raw.get("sap_primary_outcome")),
             "primary_method": _first(

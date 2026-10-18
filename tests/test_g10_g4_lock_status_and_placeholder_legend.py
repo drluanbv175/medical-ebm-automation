@@ -112,6 +112,8 @@ def test_document_control_chi_bao_placeholder_that_khong_phai_chu_giai_co_dinh()
         "document_date": "2026-07-30",
         "prepared_by": "BS. Nguyen Van A",
         "approved_by": "PGS.TS. Tran Van B",
+        # 18/10/2026: phiên bản SAP lấy từ nguồn sống (RS.sap_song qua ngữ cảnh lắp ráp), không từ g4_sap_version.
+        "_g10": {"sap": {"sap_version": "1.0", "sap_status": "PASS_G4_SAP_LOCKED", "sap_locked": True}},
     }
     dc = G10.build_document_control("TEST", cps_full, meta_filled)
     match = G10Q._PLACEHOLDER_RE.search(dc)
