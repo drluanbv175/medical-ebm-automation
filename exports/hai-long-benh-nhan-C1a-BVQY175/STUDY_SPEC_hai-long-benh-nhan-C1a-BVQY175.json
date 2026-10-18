@@ -155,7 +155,6 @@
       "thoigian_cho",
       "khunggio_kham",
       "ngay_trong_tuan",
-      "chuyenkhoa",
       "co_cls",
       "so_quay_buoc",
       "ma_ban_kham"
@@ -169,8 +168,7 @@
       "khunggio_kham",
       "ngay_trong_tuan",
       "suckhoe_tudanhgia",
-      "duoc_dung_bacsi",
-      "chuyenkhoa"
+      "duoc_dung_bacsi"
     ],
     "effect_modifiers": []
   },
@@ -206,8 +204,8 @@
     "missing_data": null
   },
   "analysis": {
-    "sap_version": "1.0",
-    "sap_status": "PENDING — CHỜ BÁC SĨ KÝ SAP",
+    "sap_version": "1.3",
+    "sap_status": "PASS_G4_SAP_LOCKED",
     "primary_outcome": null,
     "primary_method": "hồi quy logistic THỨ TỰ (ordinal/proportional odds; `MASS::polr`/`rms::orm`/`ordinal::clm`) trên G1 giữ 5 mức; báo tỷ số chênh chung hiệu chỉnh (cOR) + KTC 95%. Exposure chính `thoigian_cho` báo hiệu ứng theo mỗi 15 phút; kiểm phi tuyến bằng restricted cubic spline 3 nút hoặc phân tích theo phân vị. Kiểm giả định proportional odds (Brant/so sánh log-likelihood theo ranh giới cắt) TRƯỚC khi diễn giải cOR; vi phạm → partial proportional odds/generalized ordered logit, báo hệ số theo từng ranh giới cắt cho biến vi phạm. sai số chuẩn robust theo chùm `ma_ban_kham`; số bàn khám < 15 → mô hình thứ tự hệ số chặn ngẫu nhiên trở thành phân tích CHÍNH; báo ICC cho G1 và từng lĩnh vực A–F. (SAP §4)",
     "secondary_methods": null,

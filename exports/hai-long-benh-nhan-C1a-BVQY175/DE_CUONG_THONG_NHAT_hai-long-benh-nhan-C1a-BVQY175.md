@@ -2,7 +2,7 @@
 
 ---
 
-> **Ghi chú tài liệu:** Đề cương THỐNG NHẤT này do cổng G10 (assembler) lắp ráp TỰ ĐỘNG lúc 2026-10-17 17:26 từ checkpoint G0–G9 của đề tài `hai-long-benh-nhan-C1a-BVQY175`, theo mẫu 18 chương và ma trận bao phủ 24 thành phần protocol lõi của skill `nghien-cuu-y-khoa-chuan-quoc-te`. Dữ liệu cấu trúc (thiết kế, cỡ mẫu, công thức, đạo đức, chuẩn báo cáo, 16 PMID) lấy TỪ pipeline — không bịa. Mọi chỗ còn thiếu dữ liệu/thẩm quyền sẽ được đánh dấu NGAY TẠI ĐÓ bằng một trong các nhãn quy ước của skill (CẦN BỔ SUNG · CẦN XÁC NHẬN TẠI ĐƠN VỊ · DỰ THẢO · CẦN KIỂM CHỨNG NGUỒN CHÍNH THỨC — luôn đặt trong ngoặc vuông tại đúng vị trí thiếu). **Văn xuôi học thuật (Đặt vấn đề, Tổng quan, Bàn luận) do bác sĩ/agent viết riêng — G10 chỉ dựng khung + nhồi dữ liệu thật + chỉ chỗ cần điền.** Cần bác sĩ kiểm chứng toàn bộ trước khi trình Hội đồng Đạo đức hoặc sử dụng chính thức.
+> **Ghi chú tài liệu:** Đề cương THỐNG NHẤT này do cổng G10 (assembler) lắp ráp TỰ ĐỘNG lúc 2026-10-18 08:55 từ checkpoint G0–G9 của đề tài `hai-long-benh-nhan-C1a-BVQY175`, theo mẫu 18 chương và ma trận bao phủ 24 thành phần protocol lõi của skill `nghien-cuu-y-khoa-chuan-quoc-te`. Dữ liệu cấu trúc (thiết kế, cỡ mẫu, công thức, đạo đức, chuẩn báo cáo, 16 PMID) lấy TỪ pipeline — không bịa. Mọi chỗ còn thiếu dữ liệu/thẩm quyền sẽ được đánh dấu NGAY TẠI ĐÓ bằng một trong các nhãn quy ước của skill (CẦN BỔ SUNG · CẦN XÁC NHẬN TẠI ĐƠN VỊ · DỰ THẢO · CẦN KIỂM CHỨNG NGUỒN CHÍNH THỨC — luôn đặt trong ngoặc vuông tại đúng vị trí thiếu). **Văn xuôi học thuật (Đặt vấn đề, Tổng quan, Bàn luận) do bác sĩ/agent viết riêng — G10 chỉ dựng khung + nhồi dữ liệu thật + chỉ chỗ cần điền.** Cần bác sĩ kiểm chứng toàn bộ trước khi trình Hội đồng Đạo đức hoặc sử dụng chính thức.
 
 
 # Kiểm soát phiên bản và lịch sử thay đổi
@@ -13,15 +13,15 @@ Mục này bắt buộc cho tài liệu chính của nghiên cứu. Mọi chỉn
 |---|---|---|
 | Phiên bản tài liệu | 1.0 | Nếu thay đổi mục tiêu, thiết kế, kết cục, SAP hoặc consent sau khi đã duyệt thì phải lập amendment. |
 | Ngày tạo/cập nhật | 2026-10-14 | Ngày do hệ thống ghi hoặc chủ nhiệm cung cấp; kiểm lại trước khi nộp. |
-| Nguồn thay đổi | Checkpoint G0, G1, G2, G3, G4; SAP version 1.0 | Chỉ dùng nguồn có trace; không sửa tay ngoài pipeline mà không ghi nhật ký. |
-| Người soạn/cập nhật | NGUYỄN HÀ LUÂN (khối phát hành G10) | Người thật chịu trách nhiệm rà soát. |
+| Nguồn thay đổi | Checkpoint G0, G1, G2, G3, G4; SAP version 1.3 | Chỉ dùng nguồn có trace; không sửa tay ngoài pipeline mà không ghi nhật ký. |
+| Người soạn/cập nhật | PI-C1A-01 (khối phát hành G10) | Người thật chịu trách nhiệm rà soát. |
 | Người phê duyệt/chủ nhiệm | Chủ nhiệm đề tài (PI) — phê duyệt bằng chữ ký G10 trong sổ cái phê duyệt | Cần tên/vai trò thật; nếu chưa có chữ ký/xác nhận sẽ tự mang nhãn quy ước tương ứng ở cột bên trái. |
 | Trạng thái khóa tài liệu | [DỰ THẢO] | Chỉ khóa khi G2/G4/G6/G9 có bằng chứng thật. |
 
 ## Nhật ký thay đổi
 | Phiên bản | Ngày | Nguồn thay đổi | Nội dung thay đổi | Người phê duyệt/chủ nhiệm |
 |---|---|---|---|---|
-| 1.0 | 2026-10-17 17:26 | G10 assembler từ G0, G1, G2, G3, G4 | Lắp ráp đề cương thống nhất, bảng cổng, bảng/hình, compliance, kiểm hoàn thành và thiếu sót còn lại. | Chủ nhiệm đề tài (PI) — phê duyệt bằng chữ ký G10 trong sổ cái phê duyệt |
+| 1.0 | 2026-10-18 08:55 | G10 assembler từ G0, G1, G2, G3, G4 | Lắp ráp đề cương thống nhất, bảng cổng, bảng/hình, compliance, kiểm hoàn thành và thiếu sót còn lại. | Chủ nhiệm đề tài (PI) — phê duyệt bằng chữ ký G10 trong sổ cái phê duyệt |
 
 > Nếu không có nhật ký thay đổi, mọi đầu ra chỉ là bản nháp có kiểm soát; không được coi là bản đã phê duyệt hoặc đã khóa.
 
@@ -208,7 +208,7 @@ Chọn mẫu hệ thống PHÂN TẦNG theo ngày trong tuần × khung giờ kh
 
 # 8. Biến số và kết cục
 
-**Bộ biến số CRF/REDCap (tự động từ G5):** 0 biến, chuyên khoa nhận diện = `generic`.
+**Biến định trước:** 68 biến (study_meta.variables); CRF/REDCap dựng ở G5 sau phê duyệt.
 
 **Kết cục chính đã cấu trúc hóa:**
 
@@ -218,7 +218,7 @@ Chọn mẫu hệ thống PHÂN TẦNG theo ngày trong tuần × khung giờ kh
 
 **Kết cục phụ:** Điểm hài lòng theo 6 lĩnh vực A-F (30 mục Likert 5 mức); Tỷ lệ hài lòng theo ngưỡng cố định G1 >= 4/5 (kết cục nhị phân thứ cấp, chỉ thực hiện nếu đủ điều kiện kích hoạt); Điểm hài lòng chung tính toán SHLNBChung_TinhToan (kết cục đối chiếu/hội tụ).
 
-**Yếu tố nhiễu:** Tuoi; GioiTinh; NoiCuTru; CoBHYT; LyDoKham; khunggio_kham; ngay_trong_tuan; suckhoe_tudanhgia; duoc_dung_bacsi; chuyenkhoa.  
+**Yếu tố nhiễu:** Tuoi; GioiTinh; NoiCuTru; CoBHYT; LyDoKham; khunggio_kham; ngay_trong_tuan; suckhoe_tudanhgia; duoc_dung_bacsi.  
 **Biến tương tác/effect modifiers:** **Nhóm nhỏ tiền định:** KHÔNG CÓ ở phiên bản hiện tại (A.4 đề cương) — phân nhóm theo đối tượng quân/dân đã gỡ bỏ vì biến `doituong_qd` không được thu thập (mục 4.6.2). Muốn thêm một phân nhóm định trước, phải bổ sung tại Phụ lục A đề cương KÈM lý do trên DAG, TRƯỚC khi khóa SAP và mở dữ liệu. **Kiểm định tương tác:** không có số hạng tương tác định trước; nếu chạy sau này, dùng interaction term và gắn nhãn thăm dò **Cảnh báo:** mọi phân tích phân nhóm/tương tác chỉ diễn giải thăm dò (exploratory) (SAP §7).
 
 Với thang đo/PROM: bổ sung quyền sử dụng, quy tắc chấm điểm và COSMIN khi phát triển/thích nghi/thẩm định công cụ.
@@ -275,7 +275,7 @@ Với thang đo/PROM: bổ sung quyền sử dụng, quy tắc chấm điểm v�
 
 # 12. Kế hoạch phân tích thống kê
 
-**Phiên bản SAP (tự động từ G4):** 1.0 — trạng thái: PENDING — CHỜ BÁC SĨ KÝ SAP.
+**Phiên bản SAP (tự động từ G4):** 1.3 — trạng thái: đã khoá (chấm sống G4: PASS_G4_SAP_LOCKED).
 
 - **Kết cục chính trong SAP:** **Kết cục chính:** G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep), Phần 3 phiếu — trường dữ liệu `g1`, thang thứ hạng Likert 1–5; GIỮ nguyên thứ hạng trong mô hình chính (không nhị phân hóa, không coi liên tục ở phân tích chính). Không tính từ điểm trung bình lĩnh vực (chống part-whole bias, mục 4.6.3 đề cương). **Đơn vị / ngưỡng:** điểm 1–5. Ngưỡng nhị phân hóa cho kết cục thứ cấp KHÓA TRƯỚC: hài lòng = **G1 ≥ 4/5** (tương đương top-two-box của mục đơn G1, mục 4.5.2 đề cương); không dùng ngưỡng theo trung vị mẫu; không đổi sau khi nhìn dữ liệu. **Kết cục phụ 1:** `SHLNBChung_NhiPhan` (nhị phân từ G1 ≥ 4/5) — hồi quy logistic nhị phân đa biến CHỈ KHI số trường hợp chưa hài lòng đạt ≥ 10 biến cố/tham số của mô hình định trước; không đạt → chỉ báo tỷ lệ + KTC 95% Wilson trên cỡ mẫu hiệu dụng (§3) (mô tả), không chạy Firth để tạo ước lượng không ổn định. **Kết cục phụ 2:** `SHLNBChung_TinhToan` (trung bình 30 mục A1–F1, loại mã 7/8/9) — đối chiếu hội tụ với G1; điểm 6 lĩnh vực `A_Mean`…`F_Mean` (quy tắc ≥ 80% mục áp dụng); cụm `G2` (ý định quay lại) và `G3` (ý định giới thiệu) — kết cục thứ cấp định trước (Phụ lục C.6.2 đề cương). **Kết cục an toàn:** không áp dụng — nghiên cứu cắt ngang bằng phiếu khảo sát, tổn hại tối thiểu, không can thiệp, không biến cố an toàn (mục 4.6 đề cương chỉ giữ mục tổn hại tối thiểu ở hồ sơ đạo đức). (SAP §2).
 - **Phân tích chính định trước:** hồi quy logistic THỨ TỰ (ordinal/proportional odds; `MASS::polr`/`rms::orm`/`ordinal::clm`) trên G1 giữ 5 mức; báo tỷ số chênh chung hiệu chỉnh (cOR) + KTC 95%. Exposure chính `thoigian_cho` báo hiệu ứng theo mỗi 15 phút; kiểm phi tuyến bằng restricted cubic spline 3 nút hoặc phân tích theo phân vị. Kiểm giả định proportional odds (Brant/so sánh log-likelihood theo ranh giới cắt) TRƯỚC khi diễn giải cOR; vi phạm → partial proportional odds/generalized ordered logit, báo hệ số theo từng ranh giới cắt cho biến vi phạm. sai số chuẩn robust theo chùm `ma_ban_kham`; số bàn khám < 15 → mô hình thứ tự hệ số chặn ngẫu nhiên trở thành phân tích CHÍNH; báo ICC cho G1 và từng lĩnh vực A–F. (SAP §4).
@@ -448,7 +448,7 @@ Ma trận này là cầu nối bắt buộc giữa đề cương, CRF/codebook, 
 
 | Mục tiêu/câu hỏi | Biến/kết cục | Công cụ/nguồn dữ liệu | Phân tích định trước | Bảng/hình đầu ra | Cổng nguồn |
 |---|---|---|---|---|---|
-| Mục tiêu chung: Xác định mức độ hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175; đánh giá một số yếu tố liên quan đến mức độ hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175.; câu hỏi: Mức độ hài lòng của người bệnh ngoại trú tại Khoa Khám bệnh C1a là bao nhiêu, và những yếu tố nào liên quan đến mức độ hài lòng đó? | Kết cục chính: G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep, Phần 3 phiếu); phơi nhiễm/yếu tố chính: `thoigian_cho` (phút; nguồn ưu tiên mốc HIS/eHospital theo mục 4.6.3; nguồn dự phòng tự báo cáo phân tích TÁCH BẠCH, không trộn chung một biến) (SAP §5) | Biến định trước (69 biến — mục Biến số); CRF/REDCap dựng ở G5 sau phê duyệt | Thiết kế Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence); SAP version 1.0 (PENDING — CHỜ BÁC SĨ KÝ SAP); mô tả + ước lượng chính kèm 95% CI/KTC 95%, không p-value đơn độc | Bảng 1, Bảng 2, Hình 1, Hình 2 | G0/G1/G4/G5 |
+| Mục tiêu chung: Xác định mức độ hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175; đánh giá một số yếu tố liên quan đến mức độ hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175.; câu hỏi: Mức độ hài lòng của người bệnh ngoại trú tại Khoa Khám bệnh C1a là bao nhiêu, và những yếu tố nào liên quan đến mức độ hài lòng đó? | Kết cục chính: G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep, Phần 3 phiếu); phơi nhiễm/yếu tố chính: `thoigian_cho` (phút; nguồn ưu tiên mốc HIS/eHospital theo mục 4.6.3; nguồn dự phòng tự báo cáo phân tích TÁCH BẠCH, không trộn chung một biến) (SAP §5) | Biến định trước (68 biến — mục Biến số); CRF/REDCap dựng ở G5 sau phê duyệt | Thiết kế Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence); SAP version 1.3 (đã khoá (chấm sống G4: PASS_G4_SAP_LOCKED)); mô tả + ước lượng chính kèm 95% CI/KTC 95%, không p-value đơn độc | Bảng 1, Bảng 2, Hình 1, Hình 2 | G0/G1/G4/G5 |
 | Mục tiêu cụ thể 1: MT1 (mô tả): Xác định mức độ hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175 | [XÁC NHẬN THỦ CÔNG NGOÀI HỆ THỐNG] — biến/kết cục tương ứng cần map trong codebook | CRF/codebook + nguồn đo tương ứng | Phân tích định trước trong SAP; nếu thăm dò phải ghi rõ exploratory | Bảng/Hình tương ứng mục tiêu 1 | G4/G5/G7 |
 | Mục tiêu cụ thể 2: MT2 (phân tích): Đánh giá một số yếu tố liên quan đến mức độ hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175 | [XÁC NHẬN THỦ CÔNG NGOÀI HỆ THỐNG] — biến/kết cục tương ứng cần map trong codebook | CRF/codebook + nguồn đo tương ứng | Phân tích định trước trong SAP; nếu thăm dò phải ghi rõ exploratory | Bảng/Hình tương ứng mục tiêu 2 | G4/G5/G7 |
 
