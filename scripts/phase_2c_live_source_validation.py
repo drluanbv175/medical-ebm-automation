@@ -26,7 +26,7 @@ SOURCE_IDENTIFIERS: Dict[str, Mapping[str, str]] = {
     "europepmc": {"doi": "10.1056/NEJMoa2034577", "url": "https://doi.org/10.1056/NEJMoa2034577"},
     "crossref": {"doi": "10.1056/NEJMoa2034577", "url": "https://doi.org/10.1056/NEJMoa2034577"},
     "openalex": {"doi": "10.1056/NEJMoa2034577", "url": "https://doi.org/10.1056/NEJMoa2034577"},
-    "semantic_scholar": {"doi": "10.1056/NEJMoa2034577", "url": "https://doi.org/10.1056/NEJMoa2034577"},
+    # semantic_scholar: loại khỏi vận hành 18/10/2026 (bác sĩ quyết).
     "guideline_rss": {
         "query": "BMJ Evidence-Based Medicine",
         "source_type": "guideline",

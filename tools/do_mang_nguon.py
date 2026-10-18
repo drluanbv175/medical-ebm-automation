@@ -115,8 +115,7 @@ def danh_sach_diem(cfg: Any, co_scopus: bool = False) -> List[Diem]:
         ("GINA — feed", NHOM_GUIDELINE, "https://ginasthma.org/feed/", {}, rss, (200,)),
         ("BJGP — RSS", NHOM_GUIDELINE, "https://bjgp.org/rss/current.xml", {}, rss, (200,)),
         ("Unpaywall", NHOM_PHU, "https://api.unpaywall.org/v2/10.1056/nejmoa2204233", {"email": email}, {}, (200,)),
-        ("Semantic Scholar (không khoá)", NHOM_PHU, "https://api.semanticscholar.org/graph/v1/paper/search",
-         {"query": "heart failure", "limit": "1"}, {}, (200,)),
+        # Semantic Scholar: loại khỏi vận hành 18/10/2026 (bác sĩ quyết) — không đo nữa.
         ("scite (công khai)", NHOM_PHU, "https://api.scite.ai/tallies/10.1056/nejmoa2204233", {}, {}, (200,)),
         # Không có token TDM thì máy chủ Wiley trả 400 — vẫn là «tới được», đúng thứ cần đo.
         ("Wiley TDM API (chỉ chạm máy chủ)", NHOM_PHU,

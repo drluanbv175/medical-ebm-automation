@@ -63,7 +63,7 @@ This file contains only Claude Code-specific instructions.
     `SCOPUS_BIND_INTERFACE` KHÔNG vượt được Kaspersky VPN (đo 20/09). Bật/tắt VPN là quyết định của bác sĩ.
   · **Connector** (khoá CHỈ ở `~/.ebm-secrets/medical-ebm-automation.env`, không qua chat; ngoài lõi miễn phí đều TẮT mặc định):
     lõi PubMed · Europe PMC · Crossref · OpenAlex · ClinicalTrials · openFDA (khoá `OPENFDA_API_KEY` tuỳ chọn; bị từ chối thì báo rõ và
-    lùi về không khoá) · Semantic Scholar. Scopus (`ENABLE_SCOPUS`, key bắt buộc; không abstract) · CORE (`ENABLE_CORE`, key tuỳ chọn;
+    lùi về không khoá); Semantic Scholar LOẠI khỏi vận hành 18/10/2026 (bác sĩ quyết — 429 kéo dài khi không khoá). Scopus (`ENABLE_SCOPUS`, key bắt buộc; không abstract) · CORE (`ENABLE_CORE`, key tuỳ chọn;
     nhịp riêng `CORE_MIN_INTERVAL_SECONDS`, chờ đúng mốc header rate-limit; `not_attempted` = truy vấn bị cầu dao cắt) ·
     Epistemonikos (token bắt buộc, phải email xin — chưa có) · Wiley TDM (tải toàn văn THEO DOI đã biết, không phải nguồn khám phá;
     truy cập theo IP; PDF có bản quyền ⇒ thư mục tải bị git ignore và client từ chối thư mục git thấy).
