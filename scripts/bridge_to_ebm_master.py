@@ -98,6 +98,23 @@ def key_of(card):
     return s.get("doi") or s.get("pmid") or card.get("topic", "")
 
 
+def khoa_khong_nap_lai(data):
+    """Khoá engine (doi>pmid>title) bác sĩ đã xử lý — cầu nối KHÔNG được nạp lại (18/10/2026).
+
+    Cầu nối quét lại MỌI mục tier A/actionable của engine ở mỗi lượt và chỉ chống trùng theo `source.doi` của thẻ
+    đang có. Thẻ bác sĩ đã THAY NGUỒN (DOI máy sinh → DOI văn bản gốc) hoặc đã LOẠI thì khoá cũ biến mất khỏi sổ cái
+    ⇒ lượt sau nạp lại đúng mục đó thành thẻ mới. Ca đo thật 18/10: 5 câu trả lời AI/kỷ yếu (DOI Zenodo, 10.82161)
+    vào hub dưới dạng «guideline tier A». Danh sách nằm ở `meta.bridge_khong_nap_lai` của sổ cái — mỗi phần tử là
+    chuỗi khoá hoặc {"key": …, "ly_do": …}. So không phân biệt hoa thường (DOI không phân biệt hoa thường).
+    """
+    out = set()
+    for m in (data.get("meta") or {}).get("bridge_khong_nap_lai") or []:
+        k = m.get("key") if isinstance(m, dict) else m
+        if isinstance(k, str) and k.strip():
+            out.add(k.strip().lower())
+    return out
+
+
 def main():
     ensure_utf8_console()
 
@@ -137,8 +154,9 @@ def main():
     shutil.copy(master_path, os.path.join(backups, "EBM_MASTER_%s_pre-bridge.json" % stamp))
 
     existing = {key_of(c) for c in data.get("evidence_cards", [])}
+    tu_choi = khoa_khong_nap_lai(data)
     seq = max_seq(data.get("evidence_cards", []))
-    added = dup = 0
+    added = dup = bo_qua = 0
 
     for it in rows:
         item = dict(it)
@@ -183,6 +201,9 @@ def main():
             ],
         }
         k = key_of(card)
+        if str(k).strip().lower() in tu_choi:
+            bo_qua += 1
+            continue
         if k in existing:
             dup += 1
             continue
@@ -197,8 +218,8 @@ def main():
     data["meta"]["counts"]["evidence_cards"] = len(data["evidence_cards"])
     assert_unique(data["evidence_cards"])  # cổng khóa chống trùng id — chặn tái diễn lỗi 2026-07-17
     json.dump(data, open(master_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    print("Cầu nối: +%d thẻ mới (chưa xác minh, chờ bác sĩ duyệt), %d trùng. Tổng sổ cái: %d." %
-          (added, dup, len(data["evidence_cards"])))
+    print("Cầu nối: +%d thẻ mới (chưa xác minh, chờ bác sĩ duyệt), %d trùng, %d bỏ qua theo danh sách không nạp lại."
+          " Tổng sổ cái: %d." % (added, dup, bo_qua, len(data["evidence_cards"])))
 
     if args.regen:
         gen = os.path.join(HUB, "tools", "gen_webapp_html.py")
