@@ -713,10 +713,17 @@ def _fetch(client, query: str, area: str, max_results: int,
         successes = _counter_delta(health_before, health_after, "success_count")
         chi_du_phong = bool(records) and all(
             (r.raw or {}).get("_via") in _VIA_DU_PHONG for r in records)
+        du_phong_rong = getattr(client, "du_phong_tra_loi_rong", None)
         if terminal_failures and chi_du_phong:
             via = (records[0].raw or {}).get("_via")
             status = "degraded"
             err = f"du_phong:{via} sau lỗi nguồn chính: {health_after.get('last_error') or 'HTTP request failed'}"[:500]
+        elif terminal_failures and not records and du_phong_rong in _VIA_DU_PHONG:
+            # Dự phòng CHÍNH THỨC đã trả lời «0 bản ghi trong cửa sổ» (openFDA 404 NOT_FOUND — rss_feed đặt cờ,
+            # 20/10/2026): nguồn được phục vụ, không phải lỗi; tiền tố `du_phong:` ⇒ ghi chú SERVED_BY_OFFICIAL_FALLBACK
+            status = "degraded"
+            err = (f"du_phong:{du_phong_rong} trả lời 0 mục (404 NOT_FOUND — không có bản ghi trong cửa sổ) "
+                   "sau lỗi nguồn chính")[:500]
         elif terminal_failures:
             status = "error"
             err = str(health_after.get("last_error") or "HTTP request failed")
