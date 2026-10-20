@@ -211,6 +211,8 @@ class RSSFeedClient(SourceClient):
 
     def search(self, query: str = "", clinical_area: Optional[str] = None,
                max_results: int = 20, since_date: Optional[str] = None) -> List[RawRecord]:
+        # Đặt lại mỗi lượt gọi — client dùng lại cho nhiều truy vấn (xem `_du_phong_openfda_thu_hoi`).
+        self.du_phong_tra_loi_rong = None
         if self.use_mock:
             return self._mock(max_results)
         if self.feed.mode == "crossref":
@@ -236,15 +238,26 @@ class RSSFeedClient(SourceClient):
     # Bản ghi dự phòng mang raw["_via"]="openfda_enforcement" để người đọc biết đường đi.
     _DU_PHONG_OPENFDA = {"fda_recalls"}
     _OPENFDA_ENFORCEMENT = "https://api.fda.gov/drug/enforcement.json"
+    # Dự phòng TRẢ LỜI HỢP LỆ nhưng rỗng (20/10/2026): openFDA trả 404 + {"error":{"code":"NOT_FOUND"}} khi cửa sổ
+    # ngày không có bản ghi nào — đo thật: cửa sổ từ 10/10/2026 ⇒ 404 «No matches found!», báo cáo mới nhất 07/10/2026
+    # (FDA công bố Enforcement Report theo tuần). Trước đây nhánh này bị ghi «error» ⇒ feed_fda_recalls «unavailable» ⇒
+    # nguồn an toàn BẮT BUỘC suy giảm ⇒ lượt tuần 19/10 PARTIAL ⇒ cầu nối Hub bị chặn oan. Nay `_fetch` đọc cờ này: dự
+    # phòng chính thức đã phục vụ (0 mục), ghi chú `FEED_FDA_RECALLS_SERVED_BY_OFFICIAL_FALLBACK`. Lỗi khác vẫn là lỗi.
+    du_phong_tra_loi_rong: Optional[str] = None
 
     def _du_phong_openfda_thu_hoi(self, max_results: int, since_date: Optional[str]) -> List[RawRecord]:
-        from app.sources.openfda import get_json_openfda
+        from app.sources.openfda import get_json_openfda, la_404_khong_khop
         tu = (since_date or (date.today() - timedelta(days=self._CUA_SO_NGAY)).isoformat()).replace("-", "")
         params = {"search": f"report_date:[{tu} TO 99991231]", "sort": "report_date:desc",
                   "limit": max(1, min(int(max_results), 100))}
         try:
             data = get_json_openfda(self.http, self._OPENFDA_ENFORCEMENT, params)
-        except Exception as exc:  # pragma: no cover - lỗi mạng thực tế
+        except Exception as exc:  # lỗi mạng thực tế — trừ «0 kết quả» hợp lệ của openFDA
+            if la_404_khong_khop(exc):
+                self.du_phong_tra_loi_rong = "openfda_enforcement"
+                logger.info("[%s] RSS FDA bị chặn — openFDA enforcement trả lời: 0 thu hồi trong cửa sổ từ %s "
+                            "(404 NOT_FOUND, không phải lỗi).", self.name, tu)
+                return []
             logger.warning("[%s] dự phòng openFDA enforcement cũng lỗi — KHÔNG bịa: %s", self.name, exc)
             return []
         out: List[RawRecord] = []
