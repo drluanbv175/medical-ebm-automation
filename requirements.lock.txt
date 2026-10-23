@@ -84,7 +84,7 @@ openpyxl==3.1.5
 packaging==26.2
 pandas==2.3.3
 patsy==1.0.2
-pillow==12.3.0
+pillow==13.0.0
 plotly==6.8.0
 pluggy==1.6.0
 protobuf==7.35.1

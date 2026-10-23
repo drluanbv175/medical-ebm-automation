@@ -54,7 +54,7 @@ openpyxl>=3.1.5
 markdown>=3.6
 
 # Sinh ảnh slideshow TikTok (photo mode)
-Pillow>=10.0.0
+Pillow>=13.0.0
 # Ghép video TikTok (kèm sẵn ffmpeg tĩnh; giọng đọc dùng macOS `say`)
 imageio-ffmpeg>=0.4.9
 
