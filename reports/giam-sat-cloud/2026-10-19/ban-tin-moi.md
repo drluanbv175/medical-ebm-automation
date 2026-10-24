@@ -1,0 +1,992 @@
+# 🔔 Cảnh báo EBM – Mới trong 10 ngày qua
+
+*Tạo lúc: 2026-10-19 00:06 UTC | Chế độ: live | Lấy bài từ: 2026-10-08*
+
+> Tổng **1577** tài liệu mới. Mục dưới đây CHỈ gồm cái mới lần đầu xuất hiện; không lặp lại kho cũ.
+
+## ⛑️ Cảnh báo an toàn thuốc CHÍNH THỨC mới (14)
+
+- **Early Alert: Transcatheter Mitral Valve Delivery System Issue from Edwards Lifesciences** _(An toàn thiết bị y tế)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ Potential balloon burst during inflation can lead to embolism or the need for su
+  - Nguồn: http://www.fda.gov/medical-devices/medical-device-recalls-and-early-alerts/early-alert-transcatheter-mitral-valve-delivery-system-issue-edwards-lifesciences
+- **Convenience Kit Recall: AVID Medical Removes Convenience Kits Affected by BD ChloraPrep Applicator Recall** _(An toàn thiết bị y tế)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ Avid Medical is removing certain convenience kits affected by the BD ChloraPrep 
+  - Nguồn: http://www.fda.gov/medical-devices/medical-device-recalls-and-early-alerts/convenience-kit-recall-avid-medical-removes-convenience-kits-affected-bd-chloraprep-applicator-0
+- **Par Health Issues Voluntary Nationwide Recall of Argatroban Injection Due to the Presence of Particulate Matte** _(An toàn thuốc)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ FOR IMMEDIATE RELEASE - ROCHESTER, MI– October 13, 2026 – Par Health is recallin
+  - Nguồn: http://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts/par-health-issues-voluntary-nationwide-recall-argatroban-injection-due-presence-particulate-matter
+- **Infusion Set Recall: BD and CareFusion 303, Inc. Remove BD Alaris Pump Infusion Sets** _(An toàn thiết bị y tế)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ BD Alaris Pump Infusion Sets are being removed and discontinued; Alaris Pump Mod
+  - Nguồn: http://www.fda.gov/medical-devices/medical-device-recalls-and-early-alerts/infusion-set-recall-bd-and-carefusion-303-inc-remove-bd-alaris-pump-infusion-sets
+- **Early Alert: Diagnostic Ultrasound System Issue from Philips Ultrasound** _(An toàn thiết bị y tế)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ A software app or transducer connection problem with the Philips Lumify diagnost
+  - Nguồn: http://www.fda.gov/medical-devices/medical-device-recalls-and-early-alerts/early-alert-diagnostic-ultrasound-system-issue-philips-ultrasound
+- **Par Health Issues Voluntary Nationwide Recall of Two Lots of Brevital® Sodium 500 mg/vial CIV (Methohexital So** _(An toàn thuốc)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ FOR IMMEDIATE RELEASE - ROCHESTER, MI– October 8, 2026 –Par Health is voluntaril
+  - Nguồn: http://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts/par-health-issues-voluntary-nationwide-recall-two-lots-brevitalr-sodium-500-mgvial-civ-methohexital
+- **Lidl US Recalls Gelatelli Coffee &amp; Vanilla Gelato Due to Possible Health Risk** _(Thu hồi thực phẩm)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ ARLINGTON, VA – OCTOBER 16, 2026 – Lidl US is recalling one lot of Gelatelli Cof
+  - Nguồn: http://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts/lidl-us-recalls-gelatelli-coffee-vanilla-gelato-due-possible-health-risk
+- **Family Farmstead Dairy Announces Recall of Raw Mild Cheddar Cheese Due to Potential E. coli O26:H11 and O45:H2** _(Thu hồi thực phẩm)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ WORCESTER, NY, October 15, 2026 - Family Farmstead Dairy of Worcester, NY is rec
+  - Nguồn: http://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts/family-farmstead-dairy-announces-recall-raw-mild-cheddar-cheese-due-potential-e-coli-o26h11-and
+- **Pan Pepin Inc. Issues Allergy Alert of Para Bien Al Grano Due to Undeclared Sesame** _(Thu hồi thực phẩm)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ Pan Pepin Inc. of Bayamón, Puerto Rico is recalling certain lots of Para Bien Al
+  - Nguồn: http://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts/pan-pepin-inc-issues-allergy-alert-para-bien-al-grano-due-undeclared-sesame
+- **Pan Pepín Inc. Emite Alerta por Alérgenos en el Producto Parabien al Grano Debido a la Presencia de Sésamo No ** _(An toàn thuốc)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ Bayamón, Puerto Rico - Pan Pepín Inc., con sede en Bayamón, Puerto Rico, está re
+  - Nguồn: http://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts/pan-pepin-inc-emite-alerta-por-alergenos-en-el-producto-parabien-al-grano-debido-la-presencia-de
+- **Oliva LLC Issues Allergy Alert on Undeclared Sesame in Baba Ghanouj, Spicy Baba Ghanouj, and Hummus** _(Thu hồi thực phẩm)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ Oliva LLC of Bethlehem, CT is recalling approximately 250 units of Riad’s Oliva 
+  - Nguồn: http://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts/oliva-llc-issues-allergy-alert-undeclared-sesame-baba-ghanouj-spicy-baba-ghanouj-and-hummus
+- **Krasnyi Oktyabr Inc. Recalls Starfish Seafood Trio Because of Possible Health Risk** _(Thu hồi thực phẩm)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ Krasnyi Oktyabr Inc. of Brooklyn, New York, is voluntarily recalling Starfish Se
+  - Nguồn: http://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts/krasnyi-oktyabr-inc-recalls-starfish-seafood-trio-because-possible-health-risk
+- **Krasnyi Oktyabr Inc. Recalls Starfish Seafood Premium Cold Smoked Norwegian Salmon Sliced (227g/8oz) Because o** _(Thu hồi thực phẩm)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ Krasnyi Oktyabr Inc. of Brooklyn, New York, is voluntarily recalling STARFISH SE
+  - Nguồn: http://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts/krasnyi-oktyabr-inc-recalls-starfish-seafood-premium-cold-smoked-norwegian-salmon-sliced-227g8oz
+- **Antidepressants: new safety measures for all patients to improve communication of the risk of suicidal thought** _(An toàn thuốc)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ New safety measures are now being implemented to improve how the risks of suicid
+  - Nguồn: https://www.gov.uk/drug-safety-update/antidepressants-new-safety-measures-for-all-patients-to-improve-communication-of-the-risk-of-suicidal-thoughts-and-behaviours-and-persistent-sexual-dysfunction
+
+## 📌 Guideline mới / cập nhật (85)
+
+- **In-person training programme for health and care workers on integrated care for older people: guidance**
+  - Mức: High (operational) | Tier A
+  - Nguồn: https://iris.who.int/handle/10665/387827
+- **Pattern of Antibiotic Prescribing and Adherence to Antimicrobial Stewardship Guidelines in General Medicine: A** _(Nhiễm khuẩn)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.64911/zdkzj049 ; https://doi.org/10.64911/zdkzj049
+- **Consensus Guidelines for Diagnosis and Management of Pyruvate Dehydrogenase Complex Deficiency.** _(Thần kinh/Đột quỵ)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1002/jimd.70226 ; PMID:42823914 ; https://europepmc.org/article/MED/42823914
+- **EASL-EASD-EASO Guidance for the Use of Resmetirom and Semaglutide as MASH-Targeted Therapy.** _(Nội tiết - Chuyển hóa)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1016/j.jhep.2026.08.028 ; PMID:42805503 ; https://pubmed.ncbi.nlm.nih.gov/42805503/
+- **Guideline‐Directed Treatment Eligibility and Burden of Untreated Stage‐1 Hypertension Under the 2025 American ** _(Tim mạch)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1161/jaha.125.049525 ; https://doi.org/10.1161/jaha.125.049525
+- **ERS/ESRS clinical practice guideline for continuous positive airway pressure for the treatment of adult obstru** _(Hô hấp)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1183/13993003.01186-2026 ; https://doi.org/10.1183/13993003.01186-2026
+- **Recommendations of the Brazilian Society of Nephrology for the management of chronic kidney disease in primary**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1590/2175-8239-jbn-2026-0093en ; PMID:42832700 ; https://europepmc.org/article/MED/42832700
+- **Pharmacologic Treatment for Migraine Prevention in Adults Practice Guideline Recommendations: Report of the AA** _(Tim mạch)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1212/wnl.0000000000214881 ; PMID:42673560 ; https://pubmed.ncbi.nlm.nih.gov/42673560/
+- **[Chinese expert consensus on the clinical application of lung biopsy in interstitial lung disease].** _(Tim mạch)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.3760/cma.j.cn112147-20260524-00302 ; PMID:42811563 ; https://pubmed.ncbi.nlm.nih.gov/42811563/
+- **Antibiotic Treatment of Severe Infections with Multiresistant Bacteria.** _(Nhiễm khuẩn)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.3238/arztebl.m2026.0154 ; PMID:42661422 ; https://pubmed.ncbi.nlm.nih.gov/42661422/
+- **Institutionalized-Care Recommendations for Older Patients with Heart Failure** _(Tim mạch)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.3390/hearts7040029 ; https://openalex.org/W7221863490
+- **KDIGO 2027 CKD Guideline Focused Update: Public Review Open** _(Thận)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: https://kdigo.org/kdigo-2027-ckd-guideline-focused-update-public-review-open/#utm_source=rss&utm_medium=rss&utm_campaign=kdigo-2027-ckd-guideline-focused-update-public-review-open
+- **Timing of heart failure diagnosis and uptake of newly recommended therapies following clinical guideline updat** _(Tim mạch)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1136/heartjnl-2025-327578 ; https://doi.org/10.1136/heartjnl-2025-327578
+- **Updated Stroke Guideline Emphasizes Early, Holistic Intervention**
+  - Mức: High (operational) | Tier A
+  - Nguồn: https://jamanetwork.com/journals/jama/fullarticle/2854424
+- **Gulf regional guidelines for managing diabetic foot ulcers: assessment, treatment and prevention of recurrence**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.12968/jowc.2026.0559 ; PMID:42847475 ; https://europepmc.org/article/MED/42847475
+- **Role of remimazolam in gastrointestinal endoscopy: American Society for Gastrointestinal Endoscopy clinical pr**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1016/j.gie.2026.08.019 ; PMID:42848339 ; https://europepmc.org/article/MED/42848339
+- **Appraisal of Clinical Practice Guideline: European Alliance of Associations for Rheumatology recommendations f**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1016/j.jphys.2026.08.005 ; PMID:42838839 ; https://europepmc.org/article/MED/42838839
+- **Technical Update No. 472: The Resuscitative Use of Intact Umbilical Cord Milking for Non-Vigorous Late Preterm**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1016/j.jogc.2026.103523 ; PMID:42837684 ; https://europepmc.org/article/MED/42837684
+- **ACR Appropriateness Criteria® Suspected Diaphragm Dysfunction**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1016/j.jacr.2026.08.034 ; PMID:42836804 ; https://europepmc.org/article/MED/42836804
+- **ACR Appropriateness Criteria® Postmenopausal Acute Pelvic Pain: 2026 Update**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1016/j.jacr.2026.08.033 ; PMID:42836805 ; https://europepmc.org/article/MED/42836805
+- **Diagnosis and Management of Infectious Encephalitis in Adults: Guidelines From the European Academy of Neurolo**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1111/ene.70647 ; PMID:42851210 ; https://europepmc.org/article/MED/42851210
+- **Recommendations of the Brazilian Society of Nephrology for hemodiafiltration in maintenance dialysis therapy**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1590/2175-8239-jbn-2026-0161en ; PMID:42837114 ; https://europepmc.org/article/MED/42837114
+- **WHO consolidated guidelines on tuberculosis: Module 4: treatment and care**
+  - Mức: High (operational) | Tier A
+  - Nguồn: PMID:42866503 ; https://europepmc.org/article/MED/42866503
+- **Guidance on evidence generation on new tuberculosis diagnostics: web annex B: data-sharing template for indivi**
+  - Mức: High (operational) | Tier A
+  - Nguồn: https://iris.who.int/handle/10665/387883
+- **Treatment of Advanced Biliary Tract Cancer: ASCO Living Guideline, Version 2026.1.0**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1200/jco-26-02462 ; https://doi.org/10.1200/jco-26-02462
+- **American Society of Hematology 2026 Guidelines for the Management of Myelofibrosis in Adults**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1182/bloodadvances.2026021650 ; https://doi.org/10.1182/bloodadvances.2026021650
+- **2026 iCARDIO Alliance Global Implementation Guidelines on Heart Failure.** _(Tim mạch)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1016/j.cardfail.2026.09.001 ; PMID:42822640 ; https://pubmed.ncbi.nlm.nih.gov/42822640/
+- **Canadian Cardiovascular Society/Canadian Society of Cardiovascular Surgery/Canadian Association of Interventio** _(Tim mạch)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1016/j.cjca.2026.07.372 ; PMID:42862133 ; https://pubmed.ncbi.nlm.nih.gov/42862133/
+- **Medical Management of Kidney Stones: AUA Guideline (2026) Part I: Evaluation of Patients With Kidney Stones an** _(Thận)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1097/ju.0000000000005227 ; PMID:42529981 ; https://pubmed.ncbi.nlm.nih.gov/42529981/
+- **Medical Management of Kidney Stones: AUA Guideline (2026) Part II: Treatment and Follow-up of Kidney Stones.** _(Nhiễm khuẩn)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1097/ju.0000000000005228 ; PMID:42529979 ; https://pubmed.ncbi.nlm.nih.gov/42529979/
+- **School-Based Executive Function Guideline (SB-EFG): A Practice Guideline for Executive Function Assessment and** _(Tim mạch)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.15453/2168-6408.2381 ; https://doi.org/10.15453/2168-6408.2381
+- **Scientific Recommendations for Food-Based Dietary Guidelines for Adolescents in Ireland** _(Tim mạch)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.48049/igtv5038 ; https://doi.org/10.48049/igtv5038
+- **Authors’ reply to the Letter to the Editor by Dotis J: Pediatric IgA vasculitis nephritis: Japanese guidance i** _(Thận)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1007/s10157-026-02963-1 ; https://doi.org/10.1007/s10157-026-02963-1
+- **Diagnosis and treatment of urothelial carcinoma of the upper urinary tract: Evaluation of guideline compliance** _(Thận)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1159/uin/aewag033 ; https://doi.org/10.1159/uin/aewag033
+- **Updated recommendations for osteoporosis treatment according to fracture risk: 2026 revision by the Swiss Asso** _(Cơ xương khớp - Thấp khớp)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.57187/5700 ; https://doi.org/10.57187/5700
+- **A critical appraisal of guidelines and recommendations for the management of ANCA-associated vasculitis** _(Thận)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1093/ckj/sfag317 ; https://openalex.org/W7221098354
+- **Representation of the LGBTQIA+ Patient Community in Cardiovascular Disease Clinical Guidelines** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1007/s11606-026-10857-x ; https://openalex.org/W7221630323
+- **Statin Prescribing and Guideline Concordance Among Adults With HIV Aged 40–75 Years in a Single Urban Outpatie** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1097/qai.0000000000003993 ; https://openalex.org/W7222234879
+- **Multidisciplinary Approach to Antiplatelet Management in Coronary Syndromes: A Scientific Statement From the A** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1161/cir.0000000000001478 ; https://doi.org/10.1161/cir.0000000000001478
+- **Correction to: Infective Endocarditis: Diagnosis, Antibiotic Therapy, and Management: A Scientific Statement F** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1161/cir.0000000000001485 ; https://doi.org/10.1161/cir.0000000000001485
+- **[Tricuspid Valve Disease - Evaluation and Management in Clinical Practice]**
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1055/a-2794-8087 ; PMID:42833206 ; https://europepmc.org/article/MED/42833206
+- **Quyết định về việc ban hành tài liệu chuyên môn “Hướng dẫn điều trị, quản lý bệnh thận mạn giai đoạn cuối tron**
+  - Mức: High (operational) | Tier B
+  - Nguồn: https://kcb.vn/phac-do/quyet-dinh-ve-viec-ban-hanh-tai-lieu-chuyen-mon-huong-dan-di.html
+- **Dental Students’ Knowledge and Opinion on Optimizing Antibiotic Prophylaxis Guidelines: A Cross-Sectional Surv** _(Nhiễm khuẩn)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: https://europepmc.org/article/PMC/PMC13649284
+- **IPNA Commentary on the KDIGO 2026 Clinical Practice Guideline for the Management of Anemia in CKD** _(Thận)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1007/s00467-026-07610-1 ; https://doi.org/10.1007/s00467-026-07610-1
+- **Improving predictive accuracy for surgical indication of the current management guideline for intraductal papi** _(Thần kinh/Đột quỵ)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1007/s00330-026-12944-3 ; https://doi.org/10.1007/s00330-026-12944-3
+- **Technology-Supported Solutions to Improve Guideline-Informed Care for Kidney Disease: Conclusions from a Kidne** _(Thận)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.kint.2026.09.015 ; https://doi.org/10.1016/j.kint.2026.09.015
+- **Consensus statement from the International Society of Glomerular Disease for Certification of Centers of Excel** _(Thận)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.kint.2026.07.023 ; https://doi.org/10.1016/j.kint.2026.07.023
+- **New guidance brings attention to bronchiectasis**
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.7326/annals-26-04202-im ; https://doi.org/10.7326/annals-26-04202-im
+- **Gastric and oesophageal cancer: ESMO Clinical Practice Guideline for diagnosis, treatment and follow-up**
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.annonc.2026.09.015 ; https://doi.org/10.1016/j.annonc.2026.09.015
+- **Perspectives on FDA Guidance for Myelodysplastic Syndromes**
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1182/bloodadvances.2026022255 ; https://doi.org/10.1182/bloodadvances.2026022255
+- **Mise à jour technique n° 472 : Utilisation de la traite du cordon ombilical intact lors de la réanimation des **
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.jogc.2026.103524 ; PMID:42837683 ; https://europepmc.org/article/MED/42837683
+- **[Guideline for HER2 detection in gastric cancer (2026 version)]**
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.3760/cma.j.cn112151-20260531-00424 ; PMID:42851193 ; https://europepmc.org/article/MED/42851193
+- **[Guidelines on clinical practice of molecular tests in non-small cell lung cancer (2026 updated version)]**
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.3760/cma.j.cn112151-20260706-00508 ; PMID:42851192 ; https://europepmc.org/article/MED/42851192
+- **Appraisal of Clinical Practice Guideline: physical therapy management of children with developmental coordinat**
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.jphys.2026.08.013 ; PMID:42838840 ; https://europepmc.org/article/MED/42838840
+- **Directrices de la OMS para el tratamiento de pacientes con equinococosis quística**
+  - Mức: High (operational) | Tier B
+  - Nguồn: PMID:42866511 ; https://europepmc.org/article/MED/42866511
+- **Guidance on evidence generation on new tuberculosis diagnostics: web annex A: data-collection template for ori**
+  - Mức: High (operational) | Tier B
+  - Nguồn: https://iris.who.int/handle/10665/387882
+- **WHO Academy quality standards: leading lifelong learning for a healthier world**
+  - Mức: High (operational) | Tier B
+  - Nguồn: https://www.who.int/publications/i/item/B09490
+- **Surveillance, case investigation and contact tracing in filovirus disease outbreaks**
+  - Mức: High (operational) | Tier B
+  - Nguồn: https://www.who.int/publications/i/item/387838
+- **Exercise Prescriptions for Cardiovascular Health in Adults: 2026 ACC Scientific Statement** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.jacc.2026.09.008 ; https://doi.org/10.1016/j.jacc.2026.09.008
+- **Are Current Lipid Guidelines Adequate for South Asian Patients? A Narrative Review** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: https://europepmc.org/article/PMC/PMC13651774
+- **Cardiovascular magnetic resonance derived myocardial strain: applications, acquisition techniques, analysis, a** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.jocmr.2026.102758 ; PMID:42855356 ; https://europepmc.org/article/MED/42855356
+- **Left ventricular ejection fraction recovery under contemporary quadruple guideline-directed therapy and the ne** _(Nội tiết - Chuyển hóa)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1080/14779072.2026.2748165 ; PMID:42855941 ; https://europepmc.org/article/MED/42855941
+- **Metabolic dysfunction–associated steatotic liver disease assessment and management: Clinical practice guidance** _(Tiêu hóa - Gan mật)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: https://europepmc.org/article/PMC/PMC13661159
+- **Correction to: Implementation of guideline-directed medical therapy in patients with heart failure and obesity** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1093/ejhf/xuag264 ; https://doi.org/10.1093/ejhf/xuag264
+- **Real-world comparison of guideline and non-guideline intravenous iron therapy in heart failure** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.ijcard.2026.134898 ; https://doi.org/10.1016/j.ijcard.2026.134898
+- **Pharmacotherapy of heart failure: Impact of the 2021 guideline update on guideline-directed medical therapy as** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.5414/cp205008 ; https://doi.org/10.5414/cp205008
+- **The Japanese Society of Hypertension practical consensus guidelines for seasonal blood pressure management: fo** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1038/s41440-026-02823-1 ; https://doi.org/10.1038/s41440-026-02823-1
+- **Guideline for Designing a Building Rainwater Harvesting System** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1061/9780784486955.025 ; https://doi.org/10.1061/9780784486955.025
+- **Strategic guidelines for the development of science and education** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.21661/a-982 ; https://doi.org/10.21661/a-982
+- **Dietary Guidelines for Americans 2026 point to a complex dismay confronting politics and science** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.56095/eaj.v5i2.136 ; https://doi.org/10.56095/eaj.v5i2.136
+- **Analysing EN16883:2017 guidelines on energy retrofit and its use outside of Europe:A proposal for New Zealand ** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.enbuild.2026.118050 ; https://doi.org/10.1016/j.enbuild.2026.118050
+- **Preconception and first trimester blood pressure: risks of hypertensive disorders in pregnancy using AHA guide** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.preghy.2026.101528 ; https://doi.org/10.1016/j.preghy.2026.101528
+- **Primary prevention statin eligibility for U.S. adults under the 2026 ACC/AHA dyslipidemia guideline** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.ajpc.2026.101709 ; https://doi.org/10.1016/j.ajpc.2026.101709
+- **Health Literacy and Communication in Stroke Prevention, Management, and Recovery: A Scientific Statement From ** _(Thần kinh/Đột quỵ)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1161/str.0000000000000537 ; https://doi.org/10.1161/str.0000000000000537
+- **Guideline-concordant decision support in abdominal radiology: An expert-based evaluation of Gemini** _(Thần kinh/Đột quỵ)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.ejrad.2026.113166 ; https://doi.org/10.1016/j.ejrad.2026.113166
+- **Bipolar disorder in pregnancy: Strong guidelines, limited trial evidence** _(Tâm thần)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.jad.2026.122314 ; https://doi.org/10.1016/j.jad.2026.122314
+- **2025 European Society of Cardiology guidelines for the management of cardiovascular disease and pregnancy** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1007/s12471-026-02085-z ; https://openalex.org/W7221989494
+- **Are there recent guidelines on hypertensive emergencies?** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.5281/zenodo.23398958 ; https://openalex.org/W7221930719
+- **The Most Recent European and American Guidelines on Cardiac Rehabilitation: A Lack of Focus on Diaphragm Train** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.7759/cureus.117884 ; https://openalex.org/W7221784232
+- **2026 Guidelines for Stress echocardiography performed for non-ischemic indications** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.15829/1560-4071-2026-7105 ; https://openalex.org/W7221674009
+- **Changes in Statin Use Pre and Post-2013 ACC/AHA Guidelines Among High-Risk Adults in the U.S: A Nationally Rep** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.13140/rg.2.2.10267.84008 ; https://openalex.org/W7222845058
+- **AI IN DRUG THERAPY OPTIMIZATION: A COMPARATIVE STUDY OF MACHINE LEARNING MODELS FOR GUIDELINE ADHERANT THERAPY** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.5281/zenodo.23411540 ; https://openalex.org/W7222484539
+- **Point/Counterpoint on the Controversial 2025–2030 Dietary Guidelines for Americans** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1002/lipd.70088 ; https://openalex.org/W7222436389
+- **The Japanese Society of Hypertension Practical Consensus Guidelines for Seasonal Blood Pressure Management** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1038/s41440-026-02826-y ; https://openalex.org/W7221084094
+- **What are the current guidelines for secondary prevention of stroke in patients with a history of cerebrovascul** _(Thần kinh/Đột quỵ)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.5281/zenodo.23352513 ; https://openalex.org/W7221617468
+
+## ✅ Đáng cân nhắc thay đổi thực hành – MỚI (36)
+
+- **In-person training programme for health and care workers on integrated care for older people: guidance**
+  - Mức: High (operational) | Tier A
+  - Nguồn: https://iris.who.int/handle/10665/387827
+- **Pattern of Antibiotic Prescribing and Adherence to Antimicrobial Stewardship Guidelines in General Medicine: A** _(Nhiễm khuẩn)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.64911/zdkzj049 ; https://doi.org/10.64911/zdkzj049
+- **Consensus Guidelines for Diagnosis and Management of Pyruvate Dehydrogenase Complex Deficiency.** _(Thần kinh/Đột quỵ)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1002/jimd.70226 ; PMID:42823914 ; https://europepmc.org/article/MED/42823914
+- **EASL-EASD-EASO Guidance for the Use of Resmetirom and Semaglutide as MASH-Targeted Therapy.** _(Nội tiết - Chuyển hóa)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1016/j.jhep.2026.08.028 ; PMID:42805503 ; https://pubmed.ncbi.nlm.nih.gov/42805503/
+- **Guideline‐Directed Treatment Eligibility and Burden of Untreated Stage‐1 Hypertension Under the 2025 American ** _(Tim mạch)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1161/jaha.125.049525 ; https://doi.org/10.1161/jaha.125.049525
+- **ERS/ESRS clinical practice guideline for continuous positive airway pressure for the treatment of adult obstru** _(Hô hấp)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1183/13993003.01186-2026 ; https://doi.org/10.1183/13993003.01186-2026
+- **Recommendations of the Brazilian Society of Nephrology for the management of chronic kidney disease in primary**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1590/2175-8239-jbn-2026-0093en ; PMID:42832700 ; https://europepmc.org/article/MED/42832700
+- **Pharmacologic Treatment for Migraine Prevention in Adults Practice Guideline Recommendations: Report of the AA** _(Tim mạch)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1212/wnl.0000000000214881 ; PMID:42673560 ; https://pubmed.ncbi.nlm.nih.gov/42673560/
+- **[Chinese expert consensus on the clinical application of lung biopsy in interstitial lung disease].** _(Tim mạch)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.3760/cma.j.cn112147-20260524-00302 ; PMID:42811563 ; https://pubmed.ncbi.nlm.nih.gov/42811563/
+- **Antibiotic Treatment of Severe Infections with Multiresistant Bacteria.** _(Nhiễm khuẩn)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.3238/arztebl.m2026.0154 ; PMID:42661422 ; https://pubmed.ncbi.nlm.nih.gov/42661422/
+- **Institutionalized-Care Recommendations for Older Patients with Heart Failure** _(Tim mạch)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.3390/hearts7040029 ; https://openalex.org/W7221863490
+- **KDIGO 2027 CKD Guideline Focused Update: Public Review Open** _(Thận)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: https://kdigo.org/kdigo-2027-ckd-guideline-focused-update-public-review-open/#utm_source=rss&utm_medium=rss&utm_campaign=kdigo-2027-ckd-guideline-focused-update-public-review-open
+- **Timing of heart failure diagnosis and uptake of newly recommended therapies following clinical guideline updat** _(Tim mạch)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1136/heartjnl-2025-327578 ; https://doi.org/10.1136/heartjnl-2025-327578
+- **Updated Stroke Guideline Emphasizes Early, Holistic Intervention**
+  - Mức: High (operational) | Tier A
+  - Nguồn: https://jamanetwork.com/journals/jama/fullarticle/2854424
+- **Gulf regional guidelines for managing diabetic foot ulcers: assessment, treatment and prevention of recurrence**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.12968/jowc.2026.0559 ; PMID:42847475 ; https://europepmc.org/article/MED/42847475
+- **Role of remimazolam in gastrointestinal endoscopy: American Society for Gastrointestinal Endoscopy clinical pr**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1016/j.gie.2026.08.019 ; PMID:42848339 ; https://europepmc.org/article/MED/42848339
+- **Appraisal of Clinical Practice Guideline: European Alliance of Associations for Rheumatology recommendations f**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1016/j.jphys.2026.08.005 ; PMID:42838839 ; https://europepmc.org/article/MED/42838839
+- **Technical Update No. 472: The Resuscitative Use of Intact Umbilical Cord Milking for Non-Vigorous Late Preterm**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1016/j.jogc.2026.103523 ; PMID:42837684 ; https://europepmc.org/article/MED/42837684
+- **ACR Appropriateness Criteria® Suspected Diaphragm Dysfunction**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1016/j.jacr.2026.08.034 ; PMID:42836804 ; https://europepmc.org/article/MED/42836804
+- **ACR Appropriateness Criteria® Postmenopausal Acute Pelvic Pain: 2026 Update**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1016/j.jacr.2026.08.033 ; PMID:42836805 ; https://europepmc.org/article/MED/42836805
+- **Diagnosis and Management of Infectious Encephalitis in Adults: Guidelines From the European Academy of Neurolo**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1111/ene.70647 ; PMID:42851210 ; https://europepmc.org/article/MED/42851210
+- **Recommendations of the Brazilian Society of Nephrology for hemodiafiltration in maintenance dialysis therapy**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1590/2175-8239-jbn-2026-0161en ; PMID:42837114 ; https://europepmc.org/article/MED/42837114
+- **WHO consolidated guidelines on tuberculosis: Module 4: treatment and care**
+  - Mức: High (operational) | Tier A
+  - Nguồn: PMID:42866503 ; https://europepmc.org/article/MED/42866503
+- **Guidance on evidence generation on new tuberculosis diagnostics: web annex B: data-sharing template for indivi**
+  - Mức: High (operational) | Tier A
+  - Nguồn: https://iris.who.int/handle/10665/387883
+- **Treatment of Advanced Biliary Tract Cancer: ASCO Living Guideline, Version 2026.1.0**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1200/jco-26-02462 ; https://doi.org/10.1200/jco-26-02462
+- **American Society of Hematology 2026 Guidelines for the Management of Myelofibrosis in Adults**
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1182/bloodadvances.2026021650 ; https://doi.org/10.1182/bloodadvances.2026021650
+- **2026 iCARDIO Alliance Global Implementation Guidelines on Heart Failure.** _(Tim mạch)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1016/j.cardfail.2026.09.001 ; PMID:42822640 ; https://pubmed.ncbi.nlm.nih.gov/42822640/
+- **Canadian Cardiovascular Society/Canadian Society of Cardiovascular Surgery/Canadian Association of Interventio** _(Tim mạch)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1016/j.cjca.2026.07.372 ; PMID:42862133 ; https://pubmed.ncbi.nlm.nih.gov/42862133/
+- **Medical Management of Kidney Stones: AUA Guideline (2026) Part I: Evaluation of Patients With Kidney Stones an** _(Thận)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1097/ju.0000000000005227 ; PMID:42529981 ; https://pubmed.ncbi.nlm.nih.gov/42529981/
+- **Medical Management of Kidney Stones: AUA Guideline (2026) Part II: Treatment and Follow-up of Kidney Stones.** _(Nhiễm khuẩn)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1097/ju.0000000000005228 ; PMID:42529979 ; https://pubmed.ncbi.nlm.nih.gov/42529979/
+- **School-Based Executive Function Guideline (SB-EFG): A Practice Guideline for Executive Function Assessment and** _(Tim mạch)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.15453/2168-6408.2381 ; https://doi.org/10.15453/2168-6408.2381
+- **Scientific Recommendations for Food-Based Dietary Guidelines for Adolescents in Ireland** _(Tim mạch)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.48049/igtv5038 ; https://doi.org/10.48049/igtv5038
+- **Authors’ reply to the Letter to the Editor by Dotis J: Pediatric IgA vasculitis nephritis: Japanese guidance i** _(Thận)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1007/s10157-026-02963-1 ; https://doi.org/10.1007/s10157-026-02963-1
+- **Diagnosis and treatment of urothelial carcinoma of the upper urinary tract: Evaluation of guideline compliance** _(Thận)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1159/uin/aewag033 ; https://doi.org/10.1159/uin/aewag033
+- **Updated recommendations for osteoporosis treatment according to fracture risk: 2026 revision by the Swiss Asso** _(Cơ xương khớp - Thấp khớp)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.57187/5700 ; https://doi.org/10.57187/5700
+- **A critical appraisal of guidelines and recommendations for the management of ANCA-associated vasculitis** _(Thận)_
+  - Mức: High (operational) | Tier A
+  - Nguồn: DOI:10.1093/ckj/sfag317 ; https://openalex.org/W7221098354
+
+## 📖 Mới – cần đọc toàn văn trước khi áp dụng (157)
+
+- **Effectiveness of pharmacist-led interventions to improve adherence to self-administered antibiotics in communi** _(Nhiễm khuẩn)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.sapharm.2026.07.012 ; PMID:42532699 ; https://pubmed.ncbi.nlm.nih.gov/42532699/
+- **Medication safety in older adults in India: an integrative PhD synthesis of direct evidence and contextual imp** _(Lão khoa - Đa bệnh lý)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1080/16549716.2026.2713867 ; PMID:42605781 ; https://pubmed.ncbi.nlm.nih.gov/42605781/
+- **Integrating Infectious Disease Experts into Primary Care Antibiotic Stewardship: A Multicentre, Cluster-Random** _(Nhiễm khuẩn)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.cmi.2026.09.034 ; PMID:42849833 ; https://europepmc.org/article/MED/42849833
+- **CHOICE UTI - Clinical Efficacy of Single Dose (Daily) IV Antibiotics Followed by 2 Days Oral Antibiotics Compa** _(Nhiễm khuẩn)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT04876131 ; https://clinicaltrials.gov/study/NCT04876131
+- **Early Alert: Transcatheter Mitral Valve Delivery System Issue from Edwards Lifesciences** _(An toàn thiết bị y tế)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ Potential balloon burst during inflation can lead to embolism or the need for su
+  - Nguồn: http://www.fda.gov/medical-devices/medical-device-recalls-and-early-alerts/early-alert-transcatheter-mitral-valve-delivery-system-issue-edwards-lifesciences
+- **Convenience Kit Recall: AVID Medical Removes Convenience Kits Affected by BD ChloraPrep Applicator Recall** _(An toàn thiết bị y tế)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ Avid Medical is removing certain convenience kits affected by the BD ChloraPrep 
+  - Nguồn: http://www.fda.gov/medical-devices/medical-device-recalls-and-early-alerts/convenience-kit-recall-avid-medical-removes-convenience-kits-affected-bd-chloraprep-applicator-0
+- **Par Health Issues Voluntary Nationwide Recall of Argatroban Injection Due to the Presence of Particulate Matte** _(An toàn thuốc)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ FOR IMMEDIATE RELEASE - ROCHESTER, MI– October 13, 2026 – Par Health is recallin
+  - Nguồn: http://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts/par-health-issues-voluntary-nationwide-recall-argatroban-injection-due-presence-particulate-matter
+- **Infusion Set Recall: BD and CareFusion 303, Inc. Remove BD Alaris Pump Infusion Sets** _(An toàn thiết bị y tế)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ BD Alaris Pump Infusion Sets are being removed and discontinued; Alaris Pump Mod
+  - Nguồn: http://www.fda.gov/medical-devices/medical-device-recalls-and-early-alerts/infusion-set-recall-bd-and-carefusion-303-inc-remove-bd-alaris-pump-infusion-sets
+- **Early Alert: Diagnostic Ultrasound System Issue from Philips Ultrasound** _(An toàn thiết bị y tế)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ A software app or transducer connection problem with the Philips Lumify diagnost
+  - Nguồn: http://www.fda.gov/medical-devices/medical-device-recalls-and-early-alerts/early-alert-diagnostic-ultrasound-system-issue-philips-ultrasound
+- **Par Health Issues Voluntary Nationwide Recall of Two Lots of Brevital® Sodium 500 mg/vial CIV (Methohexital So** _(An toàn thuốc)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ FOR IMMEDIATE RELEASE - ROCHESTER, MI– October 8, 2026 –Par Health is voluntaril
+  - Nguồn: http://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts/par-health-issues-voluntary-nationwide-recall-two-lots-brevitalr-sodium-500-mgvial-civ-methohexital
+- **Lidl US Recalls Gelatelli Coffee &amp; Vanilla Gelato Due to Possible Health Risk** _(Thu hồi thực phẩm)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ ARLINGTON, VA – OCTOBER 16, 2026 – Lidl US is recalling one lot of Gelatelli Cof
+  - Nguồn: http://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts/lidl-us-recalls-gelatelli-coffee-vanilla-gelato-due-possible-health-risk
+- **Family Farmstead Dairy Announces Recall of Raw Mild Cheddar Cheese Due to Potential E. coli O26:H11 and O45:H2** _(Thu hồi thực phẩm)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ WORCESTER, NY, October 15, 2026 - Family Farmstead Dairy of Worcester, NY is rec
+  - Nguồn: http://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts/family-farmstead-dairy-announces-recall-raw-mild-cheddar-cheese-due-potential-e-coli-o26h11-and
+- **Pan Pepin Inc. Issues Allergy Alert of Para Bien Al Grano Due to Undeclared Sesame** _(Thu hồi thực phẩm)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ Pan Pepin Inc. of Bayamón, Puerto Rico is recalling certain lots of Para Bien Al
+  - Nguồn: http://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts/pan-pepin-inc-issues-allergy-alert-para-bien-al-grano-due-undeclared-sesame
+- **Pan Pepín Inc. Emite Alerta por Alérgenos en el Producto Parabien al Grano Debido a la Presencia de Sésamo No ** _(An toàn thuốc)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ Bayamón, Puerto Rico - Pan Pepín Inc., con sede en Bayamón, Puerto Rico, está re
+  - Nguồn: http://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts/pan-pepin-inc-emite-alerta-por-alergenos-en-el-producto-parabien-al-grano-debido-la-presencia-de
+- **Oliva LLC Issues Allergy Alert on Undeclared Sesame in Baba Ghanouj, Spicy Baba Ghanouj, and Hummus** _(Thu hồi thực phẩm)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ Oliva LLC of Bethlehem, CT is recalling approximately 250 units of Riad’s Oliva 
+  - Nguồn: http://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts/oliva-llc-issues-allergy-alert-undeclared-sesame-baba-ghanouj-spicy-baba-ghanouj-and-hummus
+- **Krasnyi Oktyabr Inc. Recalls Starfish Seafood Trio Because of Possible Health Risk** _(Thu hồi thực phẩm)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ Krasnyi Oktyabr Inc. of Brooklyn, New York, is voluntarily recalling Starfish Se
+  - Nguồn: http://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts/krasnyi-oktyabr-inc-recalls-starfish-seafood-trio-because-possible-health-risk
+- **Krasnyi Oktyabr Inc. Recalls Starfish Seafood Premium Cold Smoked Norwegian Salmon Sliced (227g/8oz) Because o** _(Thu hồi thực phẩm)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ Krasnyi Oktyabr Inc. of Brooklyn, New York, is voluntarily recalling STARFISH SE
+  - Nguồn: http://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts/krasnyi-oktyabr-inc-recalls-starfish-seafood-premium-cold-smoked-norwegian-salmon-sliced-227g8oz
+- **Antidepressants: new safety measures for all patients to improve communication of the risk of suicidal thought** _(An toàn thuốc)_
+  - Mức: Moderate (operational) | Tier B | ⚠️ New safety measures are now being implemented to improve how the risks of suicid
+  - Nguồn: https://www.gov.uk/drug-safety-update/antidepressants-new-safety-measures-for-all-patients-to-improve-communication-of-the-risk-of-suicidal-thoughts-and-behaviours-and-persistent-sexual-dysfunction
+- **Representation of the LGBTQIA+ Patient Community in Cardiovascular Disease Clinical Guidelines** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1007/s11606-026-10857-x ; https://openalex.org/W7221630323
+- **Statin Prescribing and Guideline Concordance Among Adults With HIV Aged 40–75 Years in a Single Urban Outpatie** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1097/qai.0000000000003993 ; https://openalex.org/W7222234879
+- **Brain-lung Interactions in Patients Receiving High-flow Humidified Oxygen for de Novo Acute Hypoxemic Respirat** _(Hô hấp)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07279831 ; https://clinicaltrials.gov/study/NCT07279831
+- **Multidisciplinary Approach to Antiplatelet Management in Coronary Syndromes: A Scientific Statement From the A** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1161/cir.0000000000001478 ; https://doi.org/10.1161/cir.0000000000001478
+- **Correction to: Infective Endocarditis: Diagnosis, Antibiotic Therapy, and Management: A Scientific Statement F** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1161/cir.0000000000001485 ; https://doi.org/10.1161/cir.0000000000001485
+- **[Tricuspid Valve Disease - Evaluation and Management in Clinical Practice]**
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1055/a-2794-8087 ; PMID:42833206 ; https://europepmc.org/article/MED/42833206
+- **Quyết định về việc ban hành tài liệu chuyên môn “Hướng dẫn điều trị, quản lý bệnh thận mạn giai đoạn cuối tron**
+  - Mức: High (operational) | Tier B
+  - Nguồn: https://kcb.vn/phac-do/quyet-dinh-ve-viec-ban-hanh-tai-lieu-chuyen-mon-huong-dan-di.html
+- **Global Underutilization of Antiviral Therapy and Survival Outcomes in Hepatitis B Virus-Related Hepatocellular** _(Tiêu hóa - Gan mật)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1111/jvh.70245 ; PMID:42876044 ; https://pubmed.ncbi.nlm.nih.gov/42876044/
+- **Dental Students’ Knowledge and Opinion on Optimizing Antibiotic Prophylaxis Guidelines: A Cross-Sectional Surv** _(Nhiễm khuẩn)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: https://europepmc.org/article/PMC/PMC13649284
+- **Effects of tirzepatide (GIP/GLP-1 dual receptor agonist) on cardiorenal biomarkers and functional capacity in ** _(Nội tiết - Chuyển hóa)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1210/clinem/dgag284 ; https://doi.org/10.1210/clinem/dgag284
+- **IPNA Commentary on the KDIGO 2026 Clinical Practice Guideline for the Management of Anemia in CKD** _(Thận)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1007/s00467-026-07610-1 ; https://doi.org/10.1007/s00467-026-07610-1
+- **Improving predictive accuracy for surgical indication of the current management guideline for intraductal papi** _(Thần kinh/Đột quỵ)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1007/s00330-026-12944-3 ; https://doi.org/10.1007/s00330-026-12944-3
+- **Ketogenic Approach to Restore Muscle in Older Patients With Community-Acquired Pneumonia - KARMA-P Trial** _(Hô hấp)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07308483 ; https://clinicaltrials.gov/study/NCT07308483
+- **Food-Associated Kounis Syndrome: Clinical Spectrum and Diagnostic Considerations from a Case Report and System** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1007/s12016-026-09210-1 ; PMID:42859290 ; https://pubmed.ncbi.nlm.nih.gov/42859290/
+- **Dose Considerations and Generalization Following Script Training for Poststroke Aphasia: A Randomized Factoria** _(Thần kinh/Đột quỵ)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1044/2026_jslhr-26-00120 ; PMID:42821294 ; https://pubmed.ncbi.nlm.nih.gov/42821294/
+- **ECHO for Diabetes and Multiple Chronic Conditions Study** _(Nội tiết - Chuyển hóa)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT06451458 ; https://clinicaltrials.gov/study/NCT06451458
+- **Impact of HIF-prolyl hydroxylase inhibitors on VEGF expression and vascular adverse events in chronic kidney d** _(Thận)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1093/joneph/aajag065 ; PMID:42488997 ; https://pubmed.ncbi.nlm.nih.gov/42488997/
+- **Outer membrane vesicles in Pseudomonas aeruginosa pathogenesis: a systematic review of virulence dissemination** _(Tiêu hóa - Gan mật)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.rvsc.2026.106367 ; PMID:42667818 ; https://pubmed.ncbi.nlm.nih.gov/42667818/
+- **Finite Versus Indefinite Nucleos(t)ide Analogue Therapy in HBeAg‑Negative Chronic Hepatitis B: Meta‑Analysis o** _(Tiêu hóa - Gan mật)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1111/jvh.70243 ; PMID:42834661 ; https://pubmed.ncbi.nlm.nih.gov/42834661/
+- **A randomized, double-blind, phase 3, non-inferiority trial of pradefovir mesylate versus tenofovir disoproxil ** _(Tiêu hóa - Gan mật)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1097/hep.0000000000001754 ; PMID:41945711 ; https://pubmed.ncbi.nlm.nih.gov/41945711/
+- **Antimicrobial Resistance Consequences of the Use of Doxycycline for Prevention of Bacterial Sexually Transmitt** _(Nhiễm khuẩn)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1097/olq.0000000000002309 ; PMID:42048607 ; https://pubmed.ncbi.nlm.nih.gov/42048607/
+- **Global prevalence of tigecycline-resistant foodborne Enterobacterales along the food chain: A meta-analysis.** _(Nhiễm khuẩn)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.foodres.2026.120410 ; PMID:42705767 ; https://pubmed.ncbi.nlm.nih.gov/42705767/
+- **Planned Antihypertensive Deprescribing in Long-Term Care Residents: A Systematic Review of Randomized Evidence** _(Lão khoa - Đa bệnh lý)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1007/s40266-026-01342-5 ; PMID:42888381 ; https://pubmed.ncbi.nlm.nih.gov/42888381/
+- **Radiotherapy versus observation following surgical resection of WHO grade 2 atypical meningioma (ROAM/EORTC-13** _(Tạp chí hàng đầu)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/s0140-6736(26)01804-0 ; PMID:42790456 ; https://pubmed.ncbi.nlm.nih.gov/42790456/
+- **Optimizing emergency management of anaphylaxis in dentistry: a systematic review of current practices** _(Cấp cứu ban đầu)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1159/iaa/adfag037 ; https://doi.org/10.1159/iaa/adfag037
+- **Prevalence and Predictors of Hypercorticolism in Patients With Difficult to Control Type 2 Diabetes Mellitus** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07873320 ; https://clinicaltrials.gov/study/NCT07873320
+- **Optimised Multidisciplinary Cardiovascular and Renal Protection in Patients With Chronic Kidney Disease and Ca** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07835828 ; https://clinicaltrials.gov/study/NCT07835828
+- **DOUBLE PRO-TECT Alport: A Confirmatory, Multicenter, Randomized, Double-blind, Placebo-controlled Clinical Tri** _(Thận)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT05944016 ; https://clinicaltrials.gov/study/NCT05944016
+- **Evaluation of Recommended Once-daily Dosing of Edoxaban and Rivaroxaban in Patients With Atrial Fibrillation a** _(Tiêu hóa - Gan mật)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07874555 ; https://clinicaltrials.gov/study/NCT07874555
+- **Effectiveness of Short-Course Antibiotic Prophylaxis After Simple Tooth Extraction in Immunosuppressed Patient** _(Nhiễm khuẩn)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07275580 ; https://clinicaltrials.gov/study/NCT07275580
+- **EAT-UP - Extended Antibiotic Treatment in Chronic UTI Patients; a Phase II Safety and Efficacy Trial** _(Nhiễm khuẩn)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07202949 ; https://clinicaltrials.gov/study/NCT07202949
+- **Empiric Antibiotic Treatment for Septic Patients in the Intensive Care Unit: Appropriateness and Therapeutic O** _(Nhiễm khuẩn)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT05924126 ; https://clinicaltrials.gov/study/NCT05924126
+- **Pharmacotherapy Review and Optimization: Impact on Clinical Outcomes, Social Determinants of Health, and Quali** _(Lão khoa - Đa bệnh lý)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07866677 ; https://clinicaltrials.gov/study/NCT07866677
+- **Spontaneous Coronary Artery Dissection - Antiplatelet Therapy Intensity in Guided Conservative Management (SCA** _(Tâm thần)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07683923 ; https://clinicaltrials.gov/study/NCT07683923
+- **Prognostic utility of Oxford MEST-C classification for allograft failure in transplant IgA nephropathy: A syst** _(Thận)_
+  - Mức: Moderate (operational) | Tier B
+  - Nguồn: DOI:10.1093/joneph/aajag258 ; https://doi.org/10.1093/joneph/aajag258
+- **Technology-Supported Solutions to Improve Guideline-Informed Care for Kidney Disease: Conclusions from a Kidne** _(Thận)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.kint.2026.09.015 ; https://doi.org/10.1016/j.kint.2026.09.015
+- **Consensus statement from the International Society of Glomerular Disease for Certification of Centers of Excel** _(Thận)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.kint.2026.07.023 ; https://doi.org/10.1016/j.kint.2026.07.023
+- **New guidance brings attention to bronchiectasis**
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.7326/annals-26-04202-im ; https://doi.org/10.7326/annals-26-04202-im
+- **Gastric and oesophageal cancer: ESMO Clinical Practice Guideline for diagnosis, treatment and follow-up**
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.annonc.2026.09.015 ; https://doi.org/10.1016/j.annonc.2026.09.015
+- **Perspectives on FDA Guidance for Myelodysplastic Syndromes**
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1182/bloodadvances.2026022255 ; https://doi.org/10.1182/bloodadvances.2026022255
+- **Mise à jour technique n° 472 : Utilisation de la traite du cordon ombilical intact lors de la réanimation des **
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.jogc.2026.103524 ; PMID:42837683 ; https://europepmc.org/article/MED/42837683
+- **[Guideline for HER2 detection in gastric cancer (2026 version)]**
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.3760/cma.j.cn112151-20260531-00424 ; PMID:42851193 ; https://europepmc.org/article/MED/42851193
+- **[Guidelines on clinical practice of molecular tests in non-small cell lung cancer (2026 updated version)]**
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.3760/cma.j.cn112151-20260706-00508 ; PMID:42851192 ; https://europepmc.org/article/MED/42851192
+- **Appraisal of Clinical Practice Guideline: physical therapy management of children with developmental coordinat**
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.jphys.2026.08.013 ; PMID:42838840 ; https://europepmc.org/article/MED/42838840
+- **Directrices de la OMS para el tratamiento de pacientes con equinococosis quística**
+  - Mức: High (operational) | Tier B
+  - Nguồn: PMID:42866511 ; https://europepmc.org/article/MED/42866511
+- **Guidance on evidence generation on new tuberculosis diagnostics: web annex A: data-collection template for ori**
+  - Mức: High (operational) | Tier B
+  - Nguồn: https://iris.who.int/handle/10665/387882
+- **WHO Academy quality standards: leading lifelong learning for a healthier world**
+  - Mức: High (operational) | Tier B
+  - Nguồn: https://www.who.int/publications/i/item/B09490
+- **Surveillance, case investigation and contact tracing in filovirus disease outbreaks**
+  - Mức: High (operational) | Tier B
+  - Nguồn: https://www.who.int/publications/i/item/387838
+- **Exercise Prescriptions for Cardiovascular Health in Adults: 2026 ACC Scientific Statement** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.jacc.2026.09.008 ; https://doi.org/10.1016/j.jacc.2026.09.008
+- **Wearable Myoelectric Interface for Neurorehabilitation (MINT) to Recover Arm Activity After Stroke: A Randomiz** _(Thần kinh/Đột quỵ)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1177/15459683261454937 ; PMID:42261097 ; https://pubmed.ncbi.nlm.nih.gov/42261097/
+- **Efficacy and Safety of SGLT2 Inhibitors and GLP-1 Receptor Agonists on Ventricular Arrhythmias and Cardiovascu** _(Nội tiết - Chuyển hóa)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1111/dom.71094 ; PMID:42426564 ; https://pubmed.ncbi.nlm.nih.gov/42426564/
+- **Are Current Lipid Guidelines Adequate for South Asian Patients? A Narrative Review** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: https://europepmc.org/article/PMC/PMC13651774
+- **Cardiovascular magnetic resonance derived myocardial strain: applications, acquisition techniques, analysis, a** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.jocmr.2026.102758 ; PMID:42855356 ; https://europepmc.org/article/MED/42855356
+- **Left ventricular ejection fraction recovery under contemporary quadruple guideline-directed therapy and the ne** _(Nội tiết - Chuyển hóa)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1080/14779072.2026.2748165 ; PMID:42855941 ; https://europepmc.org/article/MED/42855941
+- **Metabolic dysfunction–associated steatotic liver disease assessment and management: Clinical practice guidance** _(Tiêu hóa - Gan mật)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: https://europepmc.org/article/PMC/PMC13661159
+- **Correction to: Implementation of guideline-directed medical therapy in patients with heart failure and obesity** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1093/ejhf/xuag264 ; https://doi.org/10.1093/ejhf/xuag264
+- **Real-world comparison of guideline and non-guideline intravenous iron therapy in heart failure** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.ijcard.2026.134898 ; https://doi.org/10.1016/j.ijcard.2026.134898
+- **Pharmacotherapy of heart failure: Impact of the 2021 guideline update on guideline-directed medical therapy as** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.5414/cp205008 ; https://doi.org/10.5414/cp205008
+- **The Japanese Society of Hypertension practical consensus guidelines for seasonal blood pressure management: fo** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1038/s41440-026-02823-1 ; https://doi.org/10.1038/s41440-026-02823-1
+- **Guideline for Designing a Building Rainwater Harvesting System** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1061/9780784486955.025 ; https://doi.org/10.1061/9780784486955.025
+- **Strategic guidelines for the development of science and education** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.21661/a-982 ; https://doi.org/10.21661/a-982
+- **Dietary Guidelines for Americans 2026 point to a complex dismay confronting politics and science** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.56095/eaj.v5i2.136 ; https://doi.org/10.56095/eaj.v5i2.136
+- **Analysing EN16883:2017 guidelines on energy retrofit and its use outside of Europe:A proposal for New Zealand ** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.enbuild.2026.118050 ; https://doi.org/10.1016/j.enbuild.2026.118050
+- **Preconception and first trimester blood pressure: risks of hypertensive disorders in pregnancy using AHA guide** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.preghy.2026.101528 ; https://doi.org/10.1016/j.preghy.2026.101528
+- **Primary prevention statin eligibility for U.S. adults under the 2026 ACC/AHA dyslipidemia guideline** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.ajpc.2026.101709 ; https://doi.org/10.1016/j.ajpc.2026.101709
+- **Health Literacy and Communication in Stroke Prevention, Management, and Recovery: A Scientific Statement From ** _(Thần kinh/Đột quỵ)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1161/str.0000000000000537 ; https://doi.org/10.1161/str.0000000000000537
+- **Guideline-concordant decision support in abdominal radiology: An expert-based evaluation of Gemini** _(Thần kinh/Đột quỵ)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.ejrad.2026.113166 ; https://doi.org/10.1016/j.ejrad.2026.113166
+- **Bipolar disorder in pregnancy: Strong guidelines, limited trial evidence** _(Tâm thần)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.jad.2026.122314 ; https://doi.org/10.1016/j.jad.2026.122314
+- **Effect of Personalized Perioperative Blood Pressure Management on Postoperative Complications and Mortality in** _(Nhiễm khuẩn)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT05416944 ; https://clinicaltrials.gov/study/NCT05416944
+- **2025 European Society of Cardiology guidelines for the management of cardiovascular disease and pregnancy** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1007/s12471-026-02085-z ; https://openalex.org/W7221989494
+- **Are there recent guidelines on hypertensive emergencies?** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.5281/zenodo.23398958 ; https://openalex.org/W7221930719
+- **The Most Recent European and American Guidelines on Cardiac Rehabilitation: A Lack of Focus on Diaphragm Train** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.7759/cureus.117884 ; https://openalex.org/W7221784232
+- **2026 Guidelines for Stress echocardiography performed for non-ischemic indications** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.15829/1560-4071-2026-7105 ; https://openalex.org/W7221674009
+- **Changes in Statin Use Pre and Post-2013 ACC/AHA Guidelines Among High-Risk Adults in the U.S: A Nationally Rep** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.13140/rg.2.2.10267.84008 ; https://openalex.org/W7222845058
+- **AI IN DRUG THERAPY OPTIMIZATION: A COMPARATIVE STUDY OF MACHINE LEARNING MODELS FOR GUIDELINE ADHERANT THERAPY** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.5281/zenodo.23411540 ; https://openalex.org/W7222484539
+- **Point/Counterpoint on the Controversial 2025–2030 Dietary Guidelines for Americans** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1002/lipd.70088 ; https://openalex.org/W7222436389
+- **The Japanese Society of Hypertension Practical Consensus Guidelines for Seasonal Blood Pressure Management** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1038/s41440-026-02826-y ; https://openalex.org/W7221084094
+- **What are the current guidelines for secondary prevention of stroke in patients with a history of cerebrovascul** _(Thần kinh/Đột quỵ)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.5281/zenodo.23352513 ; https://openalex.org/W7221617468
+- **Oleanolic Acid-Enriched Olive Oil Attenuates Kidney Function Decline in Patients With Type 2 Diabetes: Results** _(Thận)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1111/dom.71206 ; PMID:42608317 ; https://pubmed.ncbi.nlm.nih.gov/42608317/
+- **CKD Awareness, Referrals, Education, and Support Intervention for Early-Stage CKD** _(Nội tiết - Chuyển hóa)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07210710 ; https://clinicaltrials.gov/study/NCT07210710
+- **Post-Intensive Care Syndrome - Pediatrics (PICS-p) Longitudinal Cohort Study** _(Hô hấp)_
+  - Mức: Moderate (operational) | Tier B
+  - Nguồn: NCT07876271 ; https://clinicaltrials.gov/study/NCT07876271
+- **Optimizing Care for Children Hospitalized With Community-acquired Pneumonia: a Feasibility Randomized Controll** _(Hô hấp)_
+  - Mức: Moderate (operational) | Tier B
+  - Nguồn: NCT06114888 ; https://clinicaltrials.gov/study/NCT06114888
+- **Human-Resource Utilisation of Conventional Chest Radiography Versus Ultra-Low-Dose Chest Computed Tomography f** _(Hô hấp)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07870525 ; https://clinicaltrials.gov/study/NCT07870525
+- **CLARITHROMYCIN TO PREVENT SECONDARY INFECTIONS IN PATIENTS WITH SEPSIS FOLLOWING LOWER RESPIRATORY TRACT INFEC** _(Hô hấp)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07834346 ; https://clinicaltrials.gov/study/NCT07834346
+- **EVOLV-Rx VA: Evaluating Opportunities to Decrease Low-Value Prescribing in Community Living Centers** _(Lão khoa - Đa bệnh lý)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07166107 ; https://clinicaltrials.gov/study/NCT07166107
+- **Nurse Coach-Led Early Palliative Care for Older Adults With Chronic Obstructive Pulmonary Disease and Their Ca** _(Lão khoa - Đa bệnh lý)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT05040386 ; https://clinicaltrials.gov/study/NCT05040386
+- **OPTIMUM: OPTIMisation du Parcours de Soins du Patient Insuffisant Cardiaque Chronique** _(Lão khoa - Đa bệnh lý)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07439081 ; https://clinicaltrials.gov/study/NCT07439081
+- **Clinical Research on Acupuncture at the Heel Pain Point for the Treatment of Heel Pain Syndrome** _(Cơ xương khớp - Thấp khớp)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07607223 ; https://clinicaltrials.gov/study/NCT07607223
+- **Saroglitazar improves hepatic steatosis and liver enzymes in women with polycystic ovary syndrome and MASLD: A** _(Tiêu hóa - Gan mật)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1097/hep.0000000000001862 ; https://doi.org/10.1097/hep.0000000000001862
+- **Clinical frailty scale for risk stratification in elderly patients with heart failure: a meta-analysis.** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.cpcardiol.2026.103432 ; PMID:42641835 ; https://pubmed.ncbi.nlm.nih.gov/42641835/
+- **Rationale, design, and experiences from the vanguard phase of the bariatric surgery for the reduction of cardi** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.ahj.2026.107544 ; PMID:42501951 ; https://pubmed.ncbi.nlm.nih.gov/42501951/
+- **Efficacy of SGLT2 Inhibitors in Patients With Heart Failure and Mildly Reduced or Preserved Ejection Fraction:** _(Nội tiết - Chuyển hóa)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1177/10600280261447498 ; PMID:42218708 ; https://pubmed.ncbi.nlm.nih.gov/42218708/
+- **Effectiveness of sodium-glucose cotransporter 2 inhibitors in patients with metabolic dysfunction-associated s** _(Nội tiết - Chuyển hóa)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1097/meg.0000000000003196 ; PMID:42215421 ; https://pubmed.ncbi.nlm.nih.gov/42215421/
+- **Predictors of immunological non-response despite virological suppression in people living with HIV on antiretr** _(Tiêu hóa - Gan mật)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1371/journal.pone.0358793 ; PMID:42862878 ; https://pubmed.ncbi.nlm.nih.gov/42862878/
+- **Global prevalence of antimicrobial resistance in Staphylococcus spp. isolated from canine otitis externa: a sy** _(Nhiễm khuẩn)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.rvsc.2026.106423 ; PMID:42826469 ; https://pubmed.ncbi.nlm.nih.gov/42826469/
+- **Antidepressant effects of facial botulinum toxin a injections: Insights from randomized controlled trials.** _(Lão khoa - Đa bệnh lý)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.jad.2026.122443 ; PMID:42669382 ; https://pubmed.ncbi.nlm.nih.gov/42669382/
+- **Efficacy and safety of garetosmab, an activin A-blocking antibody, in fibrodysplasia ossificans progressiva (O** _(Tạp chí hàng đầu)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/s0140-6736(26)01599-0 ; PMID:42805227 ; https://pubmed.ncbi.nlm.nih.gov/42805227/
+- **The Rhabdomyolysis Evaluation in the Emergency Department (REED) Score - a Risk Prediction Model for Older Adu** _(Thận)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07158554 ; https://clinicaltrials.gov/study/NCT07158554
+- **Efficacy Evaluation of Electronic Psychometric Hepatic Encephalopathy Score (PHES) in Diagnosing Hepatic Encep** _(Tiêu hóa - Gan mật)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07874204 ; https://clinicaltrials.gov/study/NCT07874204
+- **Functional Outcomes, Management, and Prognostic Factors in Older Adults With Fragility Fractures of the Pelvis** _(Cơ xương khớp - Thấp khớp)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07871084 ; https://clinicaltrials.gov/study/NCT07871084
+- **Atrial fibrillation patients&#x27; experiences and perceptions of patient education in health care settings: a** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.pec.2026.109864 ; PMID:42759084 ; https://pubmed.ncbi.nlm.nih.gov/42759084/
+- **Robotic-assisted versus conventional coronary artery bypass grafting: a systematic review, meta-analysis, and ** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1186/s13019-026-04684-8 ; PMID:42864674 ; https://pubmed.ncbi.nlm.nih.gov/42864674/
+- **Occlusion-Focused Triage vs Very-High-Risk NSTEMI Criteria: A DIFOCCULT-3 Substudy.** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.jcin.2026.06.040 ; PMID:42863867 ; https://pubmed.ncbi.nlm.nih.gov/42863867/
+- **Efficacy and Safety of Oral Non-Statin Lipid-Lowering Therapies in Dyslipidaemia: A Systematic Review and Netw** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1002/edm2.70353 ; PMID:42817005 ; https://pubmed.ncbi.nlm.nih.gov/42817005/
+- **Impact of Evolocumab on LDL-Cholesterol and Cardiovascular Outcomes in Patients With Established CVD: Systemat** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1002/edm2.70355 ; PMID:42850775 ; https://pubmed.ncbi.nlm.nih.gov/42850775/
+- **Factor XIa Inhibitors for Secondary Prevention After Noncardioembolic Stroke: A Systematic Review and Meta-Ana** _(Thần kinh/Đột quỵ)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1212/wnl.0000000000218521 ; PMID:42748394 ; https://pubmed.ncbi.nlm.nih.gov/42748394/
+- **GLP-1 receptor agonist exposure in the periconceptional period and adverse obstetric outcomes: A systematic re** _(Nội tiết - Chuyển hóa)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.medj.2026.101267 ; PMID:42810337 ; https://pubmed.ncbi.nlm.nih.gov/42810337/
+- **Body Composition Remodelling During GLP-1-Based Therapy: A Systematic Review and Meta-Analysis Using a Hierarc** _(Nội tiết - Chuyển hóa)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1111/dom.71220 ; PMID:42608323 ; https://pubmed.ncbi.nlm.nih.gov/42608323/
+- **From pathobiology to prescribing in obesity-driven HFpEF: A systematic review and practical therapeutic framew** _(Nội tiết - Chuyển hóa)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.cpcardiol.2026.103423 ; PMID:42586458 ; https://pubmed.ncbi.nlm.nih.gov/42586458/
+- **Pediatric Postoperative Acute Kidney Injury After Noncardiac Surgery: A Systematic Review and Meta-Analysis.** _(Thận)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1002/pan.70284 ; PMID:42610771 ; https://pubmed.ncbi.nlm.nih.gov/42610771/
+- **Number Needed to Treat with Biologics in Type-2 Inflammation COPD: A Systematic Review and Meta-Analysis.** _(Hô hấp)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1080/15412555.2026.2689394 ; PMID:42405817 ; https://pubmed.ncbi.nlm.nih.gov/42405817/
+- **Gastrointestinal Adverse Events Following Rotavirus Vaccination in Children: A Systematic Review.** _(Tiêu hóa - Gan mật)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1111/apa.70709 ; PMID:42541397 ; https://pubmed.ncbi.nlm.nih.gov/42541397/
+- **Adherence and efficacy of the 0 - 7 - 21-day versus the 0 - 1 - 6-month hepatitis B vaccination schedules amon** _(Tiêu hóa - Gan mật)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1080/14760584.2026.2626920 ; PMID:41622674 ; https://pubmed.ncbi.nlm.nih.gov/41622674/
+- **Assessment of in-hospital mortality in patients with upper gastrointestinal bleeding on antithrombotic treatme** _(Tiêu hóa - Gan mật)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.amjmed.2026.06.006 ; PMID:42336227 ; https://pubmed.ncbi.nlm.nih.gov/42336227/
+- **Predictive performance of CT-based artificial intelligence for predicting variceal bleeding in portal hyperten** _(Tiêu hóa - Gan mật)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1007/s00261-026-05564-4 ; PMID:42159671 ; https://pubmed.ncbi.nlm.nih.gov/42159671/
+- **First-line vasopressor therapy in neonates with fluid-refractory septic shock: A systematic review and meta-an** _(Nhiễm khuẩn)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.ajem.2026.06.027 ; PMID:42361705 ; https://pubmed.ncbi.nlm.nih.gov/42361705/
+- **Early clinical decision support using interpretable artificial intelligence in acute illness (sepsis and infec** _(Cấp cứu ban đầu)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.ijmedinf.2026.106629 ; PMID:42480414 ; https://pubmed.ncbi.nlm.nih.gov/42480414/
+- **Combination pharmacotherapy in psychotic depression: A systematic review and pairwise meta-analysis of randomi** _(Tâm thần)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.jad.2026.122253 ; PMID:42448052 ; https://pubmed.ncbi.nlm.nih.gov/42448052/
+- **Cross-Disciplinary Cardiovascular and Psychiatric Recommendations: A Systematic Review of Clinical Guidelines.** _(Tâm thần)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1177/00912174251348996 ; PMID:40505152 ; https://pubmed.ncbi.nlm.nih.gov/40505152/
+- **Patient-reported outcome measures for depression or anxiety symptoms in patients with cardiovascular disease: ** _(Tâm thần)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.jpsychores.2026.112971 ; PMID:42664848 ; https://pubmed.ncbi.nlm.nih.gov/42664848/
+- **A psychosocial manipulation of the error-related negativity does not transfer to the balance N1: A randomized ** _(Tâm thần)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.jad.2026.122125 ; PMID:42285525 ; https://pubmed.ncbi.nlm.nih.gov/42285525/
+- **Concordance between objective and subjective sleep measures of people with bipolar disorder: A systematic revi** _(Tâm thần)_
+  - Mức: Moderate (operational) | Tier B
+  - Nguồn: DOI:10.1016/j.jad.2026.122529 ; PMID:42772525 ; https://pubmed.ncbi.nlm.nih.gov/42772525/
+- **Bipolar Disorder and Perimenopause: An Update.** _(Tâm thần)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1111/bdi.70186 ; PMID:42811911 ; https://pubmed.ncbi.nlm.nih.gov/42811911/
+- **Preoperative mFOLFIRINOX versus PAXG for stage I-III resectable and borderline resectable pancreatic ductal ad** _(Tạp chí hàng đầu)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1016/s0140-6736(25)01685-x ; PMID:41275879 ; https://pubmed.ncbi.nlm.nih.gov/41275879/
+- **Reporting completeness of clinical trials evaluating large language model interventions in medicine: systemati** _(Tạp chí hàng đầu)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: DOI:10.1136/bmj-2026-100855 ; PMID:42869550 ; https://pubmed.ncbi.nlm.nih.gov/42869550/
+- **Echo-CT-ProtecT-2-D: Effects of an Integrated Multifactorial Cardiometabolic Intervention and Identification o** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07878325 ; https://clinicaltrials.gov/study/NCT07878325
+- **Guideline Implementation and Quality of Care Evaluation in Patients With Heart Failure and Reduced Ejection Fr** _(Tim mạch)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07702760 ; https://clinicaltrials.gov/study/NCT07702760
+- **TENACITY - A Phase III, Prospective, Randomized, Open-label, Blinded Endpoint Assessment (PROBE) to Assess Eff** _(Thần kinh/Đột quỵ)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07361302 ; https://clinicaltrials.gov/study/NCT07361302
+- **Clinical Evaluation of Continuous Dual Aspiration Technique With Zoom System for Stroke (ADAPT 2.0)** _(Thần kinh/Đột quỵ)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07491952 ; https://clinicaltrials.gov/study/NCT07491952
+- **Clinical Evaluation of a I-124 PET/CT Based Remnant Radioiodine Ablation Decision Concept in Differentiated Th** _(Nội tiết - Chuyển hóa)_
+  - Mức: Moderate (operational) | Tier B
+  - Nguồn: NCT01704586 ; https://clinicaltrials.gov/study/NCT01704586
+- **Reassessment of the Risk of Hemolytic Syndrome in Patients With Chronic Lymphocytic Leukemia Treated With a Re** _(Thận)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07691047 ; https://clinicaltrials.gov/study/NCT07691047
+- **The Impact of Early Automated Insulin Delivery (AID) Therapy on Diabetes Control and Comorbidities, and Cost-e** _(Thận)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07423637 ; https://clinicaltrials.gov/study/NCT07423637
+- **&quot;HBV unIversal vs Point-Of-Care-based Antiviral treatMent to Prevent Mother-to-child Transmission&quot;** _(Tiêu hóa - Gan mật)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07054359 ; https://clinicaltrials.gov/study/NCT07054359
+- **A Natural History Study of Bone and Mineral Disorders** _(Cơ xương khớp - Thấp khớp)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT00024804 ; https://clinicaltrials.gov/study/NCT00024804
+- **Quebec Registry for Atypical Femur Fractures** _(Cơ xương khớp - Thấp khớp)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT02150850 ; https://clinicaltrials.gov/study/NCT02150850
+- **The AMNIO-BRAIN Trial: A Randomized Trial of Amnioinfusion for Chorioamnionitis Targeting Neonatal Brain Injur** _(Nhiễm khuẩn)_
+  - Mức: Moderate (operational) | Tier B
+  - Nguồn: NCT07610642 ; https://clinicaltrials.gov/study/NCT07610642
+- **A Phase 3b Randomised, Multicentre, Open-label Study Evaluating the Effectiveness of Switching to Two-monthly ** _(Nhiễm khuẩn)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT05546242 ; https://clinicaltrials.gov/study/NCT05546242
+- **An Integrated Intervention of Spinal Cord Stimulation and Multidisciplinary Rehabilitation for Chronic Neuropa** _(Tâm thần)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07403331 ; https://clinicaltrials.gov/study/NCT07403331
+- **Post-Marketing Clinical Investigation to Evaluate the Safety and Effectiveness of the Certified Medical Device** _(Tâm thần)_
+  - Mức: High (operational) | Tier B
+  - Nguồn: NCT07870031 ; https://clinicaltrials.gov/study/NCT07870031
+
+## 🧪 Tín hiệu an toàn thuốc mới (FAERS – KHÔNG kết luận nhân quả) (32)
+
+- **FAERS signal: sglt2 – RENAL IMPAIRMENT (2 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 2 báo cáo phản ứng &#x27;RENAL IMPAIRMENT&#x27;. FAERS chỉ là tín hiệu, KHÔNG kế
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: sglt2 – DIABETIC KETOACIDOSIS (2 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 2 báo cáo phản ứng &#x27;DIABETIC KETOACIDOSIS&#x27;. FAERS chỉ là tín hiệu, KHÔ
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: sglt2 – LACTIC ACIDOSIS (2 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 2 báo cáo phản ứng &#x27;LACTIC ACIDOSIS&#x27;. FAERS chỉ là tín hiệu, KHÔNG kết
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: sglt2 – ACUTE KIDNEY INJURY (1 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 1 báo cáo phản ứng &#x27;ACUTE KIDNEY INJURY&#x27;. FAERS chỉ là tín hiệu, KHÔNG
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: sglt2 – BODY MASS INDEX DECREASED (1 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 1 báo cáo phản ứng &#x27;BODY MASS INDEX DECREASED&#x27;. FAERS chỉ là tín hiệu,
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: sglt2 – CARDIAC FAILURE (1 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 1 báo cáo phản ứng &#x27;CARDIAC FAILURE&#x27;. FAERS chỉ là tín hiệu, KHÔNG kết
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: sglt2 – CARDIAC FAILURE CHRONIC (1 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 1 báo cáo phản ứng &#x27;CARDIAC FAILURE CHRONIC&#x27;. FAERS chỉ là tín hiệu, K
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: sglt2 – DECREASED APPETITE (1 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 1 báo cáo phản ứng &#x27;DECREASED APPETITE&#x27;. FAERS chỉ là tín hiệu, KHÔNG 
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: metformin – NAUSEA (30195 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 30195 báo cáo phản ứng &#x27;NAUSEA&#x27;. FAERS chỉ là tín hiệu, KHÔNG kết luận
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: metformin – DIARRHOEA (28014 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 28014 báo cáo phản ứng &#x27;DIARRHOEA&#x27;. FAERS chỉ là tín hiệu, KHÔNG kết l
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: metformin – BLOOD GLUCOSE INCREASED (27171 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 27171 báo cáo phản ứng &#x27;BLOOD GLUCOSE INCREASED&#x27;. FAERS chỉ là tín hiệ
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: metformin – DRUG INEFFECTIVE (22502 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 22502 báo cáo phản ứng &#x27;DRUG INEFFECTIVE&#x27;. FAERS chỉ là tín hiệu, KHÔN
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: metformin – FATIGUE (21326 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 21326 báo cáo phản ứng &#x27;FATIGUE&#x27;. FAERS chỉ là tín hiệu, KHÔNG kết luậ
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: metformin – LACTIC ACIDOSIS (20131 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 20131 báo cáo phản ứng &#x27;LACTIC ACIDOSIS&#x27;. FAERS chỉ là tín hiệu, KHÔNG
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: metformin – VOMITING (19623 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 19623 báo cáo phản ứng &#x27;VOMITING&#x27;. FAERS chỉ là tín hiệu, KHÔNG kết lu
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: metformin – ACUTE KIDNEY INJURY (18364 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 18364 báo cáo phản ứng &#x27;ACUTE KIDNEY INJURY&#x27;. FAERS chỉ là tín hiệu, K
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: warfarin – INTERNATIONAL NORMALISED RATIO INCREASED (11155 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 11155 báo cáo phản ứng &#x27;INTERNATIONAL NORMALISED RATIO INCREASED&#x27;. FAE
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: warfarin – DYSPNOEA (8905 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 8905 báo cáo phản ứng &#x27;DYSPNOEA&#x27;. FAERS chỉ là tín hiệu, KHÔNG kết luậ
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: warfarin – DRUG INTERACTION (6756 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 6756 báo cáo phản ứng &#x27;DRUG INTERACTION&#x27;. FAERS chỉ là tín hiệu, KHÔNG
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: warfarin – FATIGUE (6480 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 6480 báo cáo phản ứng &#x27;FATIGUE&#x27;. FAERS chỉ là tín hiệu, KHÔNG kết luận
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: warfarin – DIARRHOEA (6337 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 6337 báo cáo phản ứng &#x27;DIARRHOEA&#x27;. FAERS chỉ là tín hiệu, KHÔNG kết lu
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: warfarin – NAUSEA (6312 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 6312 báo cáo phản ứng &#x27;NAUSEA&#x27;. FAERS chỉ là tín hiệu, KHÔNG kết luận 
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: warfarin – DIZZINESS (5465 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 5465 báo cáo phản ứng &#x27;DIZZINESS&#x27;. FAERS chỉ là tín hiệu, KHÔNG kết lu
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: warfarin – DRUG INEFFECTIVE (5404 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 5404 báo cáo phản ứng &#x27;DRUG INEFFECTIVE&#x27;. FAERS chỉ là tín hiệu, KHÔNG
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: amiodarone – DYSPNOEA (4553 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 4553 báo cáo phản ứng &#x27;DYSPNOEA&#x27;. FAERS chỉ là tín hiệu, KHÔNG kết luậ
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: amiodarone – ATRIAL FIBRILLATION (3827 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 3827 báo cáo phản ứng &#x27;ATRIAL FIBRILLATION&#x27;. FAERS chỉ là tín hiệu, KH
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: amiodarone – DRUG INEFFECTIVE (3673 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 3673 báo cáo phản ứng &#x27;DRUG INEFFECTIVE&#x27;. FAERS chỉ là tín hiệu, KHÔNG
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: amiodarone – DRUG INTERACTION (3584 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 3584 báo cáo phản ứng &#x27;DRUG INTERACTION&#x27;. FAERS chỉ là tín hiệu, KHÔNG
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: amiodarone – ASTHENIA (3196 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 3196 báo cáo phản ứng &#x27;ASTHENIA&#x27;. FAERS chỉ là tín hiệu, KHÔNG kết luậ
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: amiodarone – FATIGUE (3094 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 3094 báo cáo phản ứng &#x27;FATIGUE&#x27;. FAERS chỉ là tín hiệu, KHÔNG kết luận
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: amiodarone – OFF LABEL USE (3056 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 3056 báo cáo phản ứng &#x27;OFF LABEL USE&#x27;. FAERS chỉ là tín hiệu, KHÔNG kế
+  - Nguồn: https://open.fda.gov/apis/drug/event/
+- **FAERS signal: amiodarone – HYPOTENSION (2787 reports)** _(An toàn thuốc)_
+  - Mức: Low (operational) | Tier C | ⚠️ 2787 báo cáo phản ứng &#x27;HYPOTENSION&#x27;. FAERS chỉ là tín hiệu, KHÔNG kết 
+  - Nguồn: https://open.fda.gov/apis/drug/event/
