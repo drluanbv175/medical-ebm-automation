@@ -122,8 +122,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # trách nhiệm của dieu-phoi-g10/viet-ban-thao/tham-dinh-dau-ra/kiem-chung-trich-dan; vẫn 64.
 # 17/10/2026 (hội đồng G0 C1a, G0-T3): tong-quan-y-van thêm hợp đồng nhánh KHÔNG lọc + mức bằng chứng sau sàng lọc;
 # bản cặp y hệt gốc; vẫn 64.
+# 24/10/2026 (bác sĩ gỡ plugin aipoch): dieu-phoi-nghien-cuu + _PLUGIN-ROUTING-CONTRACT bỏ worker aipoch; bản cặp y hệt
+# gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "2dd32de91ebc3f3413a6c36e4743580d2ac42d5003e8b5a8006957cd6a0ed774"
+    "fd422c3406b8ef29b38bbd334027a478ea0f0270f26eb8536c177a23aedaee4f"
 )
 
 MINIMUM_AGENT_COUNT = 64
