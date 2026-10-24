@@ -116,7 +116,7 @@ responses==0.26.1
 rpds-py==2026.5.1
 ruff==0.15.17
 scipy==1.18.0
-setuptools==83.0.0
+setuptools==84.1.0
 six==1.17.0
 smmap==5.0.3
 soupsieve==2.9.0

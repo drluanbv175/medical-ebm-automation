@@ -2,7 +2,7 @@
 # (58.0.4 -> 78.1.1 vá 2026-07-15, xem reports/DEPENDENCY_AUDIT_2026-07-15.md).
 # Đây là công cụ build/interpreter, KHÔNG phải thư viện app import — ghim ở đây chỉ để
 # `pip install -r requirements.txt` trên venv mới cũng nhận bản đã vá.
-setuptools>=78.1.1
+setuptools>=84.1.0
 
 # Core
 python-dotenv>=1.0.1
