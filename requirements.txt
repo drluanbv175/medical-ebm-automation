@@ -16,7 +16,7 @@ mcp>=1.30.0,<2        # MCP server chỉ đọc cho ChatGPT App (stable v1.x)
 APScheduler>=3.10.4
 
 # Dashboard
-streamlit>=1.36.0
+streamlit>=1.66.1  # bản đầu tiên nhận pillow 13 (vá bảo mật 24/10/2026)
 pandas>=2.2.0
 plotly>=5.22.0
 
@@ -54,7 +54,7 @@ openpyxl>=3.1.5
 markdown>=3.6
 
 # Sinh ảnh slideshow TikTok (photo mode)
-Pillow>=10.0.0
+Pillow>=13.0.0  # vá bảo mật 24/10/2026 (Dependabot: 9 cảnh báo đến 13.0.0, có GHSA-8g5g-8vmr-9782 critical)
 # Ghép video TikTok (kèm sẵn ffmpeg tĩnh; giọng đọc dùng macOS `say`)
 imageio-ffmpeg>=0.4.9
 
