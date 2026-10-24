@@ -2226,7 +2226,9 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     raw_meta = load_meta(out_dir)
     # 18/10/2026 (tranh biện G10 C1a): SAP lấy từ nguồn sống — cùng giá trị G10-AUTO-06 tính lại.
     sap = RS.sap_song(study, out_dir, repo_root=BASE)
-    study_spec = RS.build_study_spec(study, cps, raw_meta, sap=sap)
+    # 24/10/2026: dựng từ cổng của mục đích phát hành — đúng phép G10-AUTO-06 tính lại (G10Q.checkpoint_theo_muc_dich).
+    muc_dich_goi = G10Q.muc_dich_phat_hanh(G10Q._read_json(out_dir / G10Q.READINESS_JSON))
+    study_spec = RS.build_study_spec(study, G10Q.checkpoint_theo_muc_dich(cps, muc_dich_goi), raw_meta, sap=sap)
     spec_evaluation = RS.evaluate_study_spec(study_spec, cps, raw_meta)
     meta = RS.meta_for_render(raw_meta, study_spec)
     da_lap = bo_sung_tu_nguon_da_chot(meta, cps, out_dir)
@@ -2243,7 +2245,7 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     # dựng văn bản; KHÔNG ghi vào study_meta.json.
     meta["_g10"] = {
         "out_dir": str(out_dir),
-        "muc_dich": G10Q.muc_dich_phat_hanh(G10Q._read_json(out_dir / G10Q.READINESS_JSON)),
+        "muc_dich": muc_dich_goi,
         "g3_song_pass": bool(cps.get("G3"))
         and CS.trang_thai_song("G3", study, out_dir, repo_root=BASE).get("muc") == "PASS",
         "sap": sap,
