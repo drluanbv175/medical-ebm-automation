@@ -53,7 +53,6 @@ xác minh trước khi vào kho):
 
 | Cụm worker mới | Chủ | Phạm vi | Ghi chú |
 |---|---|---|---|
-| **aipoch 8 planner đặc thù** (MR · FAERS · đơn tế bào · đa omics · tái định vị thuốc · QTL · độc chất mạng · biomarker tiên lượng) | `thiet-ke-nghien-cuu` (dưới nhạc trưởng `dieu-phoi-nghien-cuu`) | G0–G1, `specialty_planning_worker` | Đây là 8 mảng hệ agent KHÔNG có; bản kế hoạch plugin trả về phải được chủ chuẩn hoá theo khung G0–G10 rồi mới thành artifact |
 | **meta-pipe từng bước** (`ma-search-bibliography` · `ma-screening-quality` · `ma-meta-analysis`) | `tong-quan-y-van` / `meta-phan-tich` | SEARCH_PLAN · SCREENING_DRAFT · SYNTHESIS_DRAFT, `pipeline_step_worker` | CỐ Ý không khai `ma-end-to-end` làm worker — nó tự điều phối trọn chuỗi nên dễ tranh owner; bác sĩ gọi đích danh thì vẫn chạy DƯỚI owner, không thay owner |
 | **pubmed-search MCP** (`pubmed-quick-search` · `pubmed-systematic-search`) | `tra-cuu-chung-cu` / `thu-thu-tai-lieu` | DISCOVERY · METADATA · SEARCH_PLAN | Chính danh hoá đường tra dùng nhiều nhất kho (1322 lượt); kết quả tra vẫn qua thứ bậc nguồn của owner· ĐÃ CANARY 16/08/2026: lượt unified_search thật đầu tiên (GONB-migraine-ED) trả đúng AHS 2025 đang dùng + phát hiện RCT 2025 mới (PMID 41100185) làm ứng viên — dây worker→owner→candidate hoạt động |
 
@@ -61,10 +60,12 @@ xác minh trước khi vào kho):
 
 Chi tiết allowlist từng worker/stage nằm trong JSON canonical, không sao chép lại vào agent.
 
+Plugin aipoch (8 planner đặc thù ở G0–G1) ĐÃ GỠ 24/10/2026 theo bác sĩ — 0 lượt gọi trong mọi phiên; registry không còn provider này.
+
 ### 2-bis. Provider biết đến nhưng chưa bind worker (rà 2026-09-01)
 
 Registry chỉ còn năm provider `unbound_providers`: `openmed-skills`, `medsci-project`,
-`mattpocock-skills`, `humanizer`, `healthcare`. AIPOCH, Meta-pipe và PubMed đã có binding
+`mattpocock-skills`, `humanizer`, `healthcare`. Meta-pipe và PubMed đã có binding
 chính danh tại mục 2b nên CẤM đồng thời nằm trong danh sách unbound; verifier phải fail khi
 một provider vừa bound vừa unbound.
 
