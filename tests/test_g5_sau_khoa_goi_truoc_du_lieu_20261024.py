@@ -116,3 +116,60 @@ def test_g5_khong_co_confirmed_n_giu_n_dieu_chinh_va_luu_do_mot_mau_khong_chia_n
 def test_luu_do_hai_nhom_van_in_so_chia_nhom_cua_g3():
     lu = G5A.build_strobe_flowchart("S", "cohort", 400, 360, 180)
     assert "N ≈ 180" in lu and "N ≈ [CẦN]" not in lu and "N = 400 (N dự kiến + 20% dự phòng)" in lu
+
+
+# ── 3. Trách nhiệm cổng: chuỗi dữ liệu G5 chưa tới lượt khi G2/G4 chưa vào sổ cái (G5-AUTO-05) ──────────────────────
+
+import cong_song as CS  # noqa: E402
+import hoi_dong_cong as HD  # noqa: E402
+import skill_standards as SK  # noqa: E402
+
+_CHUOI_DU_LIEU = ("G5-AUTO-06", "G5-AUTO-07", "G5-AUTO-08", "G5-AUTO-09")
+
+
+def _trach_nhiem_g5(monkeypatch, tmp_path: Path, hang: dict) -> dict:
+    """G5 chấm sống DRAFT với các tiêu chí `hang`; bộ công cụ G5 đã sinh (chỉ còn thiếu DATA_LOCK_manifest)."""
+    study = "G5-CHUA-TOI-LUOT"
+    out = tmp_path / "exports" / study
+    out.mkdir(parents=True)
+    for ten in (f"G5_A6_DATA_MGMT_{study}.md", f"G5_REDCap_dictionary_{study}.csv", "G5_checkpoint.json"):
+        (out / ten).write_text("x", encoding="utf-8", newline="\n")
+
+    def gia(gate, study_, out_dir, repo_root=None):
+        return {"status": "DRAFT_READY_NEEDS_REAL_DATA", "nguon": "song",
+                "bao_cao": {"automatic_criteria": [{"id": k, "status": v, "action": f"việc {k}"}
+                                                   for k, v in hang.items()]}}
+    monkeypatch.setattr(CS, "trang_thai_song", gia)
+    monkeypatch.setattr(SK, "dac_ta_thiet_ke", lambda out_dir: {"design_code": "cross_sectional"})
+    return HD.trach_nhiem(study, "G5", out)
+
+
+def test_chuoi_du_lieu_g5_cho_cong_truoc_khi_g2_chua_vao_so_cai(monkeypatch, tmp_path):
+    kq = _trach_nhiem_g5(monkeypatch, tmp_path, {"G5-AUTO-01": "PASS", "G5-AUTO-05": "REVIEW",
+                                                 **{m: "REVIEW" for m in _CHUOI_DU_LIEU}})
+    assert kq["ket_luan"] == "CHO_CONG_TRUOC", kq["agent_con_viec"]
+    assert not kq["agent_con_viec"]
+    cho = {m["id"]: m for m in kq["cho_cong_truoc"]}
+    assert set(_CHUOI_DU_LIEU) | {"G5-AUTO-05", "G5-T1:dau-ra"} == set(cho)
+    assert all(cho[m]["chua_toi_luot_vi"] == "G5-AUTO-05" and cho[m]["cong"] == ["G2", "G4"]
+               for m in (*_CHUOI_DU_LIEU, "G5-T1:dau-ra"))
+
+
+def test_chuoi_du_lieu_g5_tro_lai_viec_agent_khi_g2_g4_da_vao_so_cai(monkeypatch, tmp_path):
+    kq = _trach_nhiem_g5(monkeypatch, tmp_path, {"G5-AUTO-05": "PASS", **{m: "REVIEW" for m in _CHUOI_DU_LIEU}})
+    assert kq["ket_luan"] == "AGENT_CON_VIEC"
+    assert {m["id"] for m in kq["agent_con_viec"]} == set(_CHUOI_DU_LIEU) | {"G5-T1:dau-ra"}
+    assert not kq["cho_cong_truoc"]
+
+
+def test_viec_bo_cong_cu_g5_khong_phu_thuoc_g2_van_la_viec_agent(monkeypatch, tmp_path):
+    kq = _trach_nhiem_g5(monkeypatch, tmp_path, {"G5-AUTO-01": "REVIEW", "G5-AUTO-05": "REVIEW"})
+    assert kq["ket_luan"] == "AGENT_CON_VIEC" and "G5-AUTO-01" in {m["id"] for m in kq["agent_con_viec"]}
+
+
+def test_bang_chi_sau_tieu_chi_tro_tieu_chi_va_dau_ra_co_that():
+    for gate, bang in HD.CHI_SAU_TIEU_CHI.items():
+        dau_ra = {d for nv in HD.NHIEM_VU.get(gate, []) for d in nv["dau_ra"]}
+        for khoa, goc in bang.items():
+            assert khoa in HD.PHAN_CONG[gate] or khoa in dau_ra, khoa
+            assert HD.PHAN_CONG[gate][goc].startswith("^"), f"{goc} phải là tiêu chí tiền đề cổng trước"

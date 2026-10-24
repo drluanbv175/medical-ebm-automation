@@ -398,6 +398,14 @@ PHAN_CONG: Dict[str, Dict[str, str]] = {
 # PASS_G5_DATA_LOCKED»), còn G6-AUTO-06 chỉ xét G5 khi ĐÃ có tệp kết quả. Chỉ dùng khi cổng BỊ CHẶN và cổng tiền đề chấm
 # sống chưa PASS — không đổi chủ của tiêu chí nào trong PHAN_CONG.
 TIEN_DE_CA_CONG: Dict[str, Tuple[str, ...]] = {"G6": ("G5",)}
+# 24/10/2026 (C1a, vừa sinh bộ công cụ G5 sau khi G4 ký): việc agent CHỈ làm được SAU một tiêu chí tiền đề của cùng cổng
+# (khoá: mã tiêu chí, hoặc tên tệp đầu ra của nhiệm vụ) — chuỗi nạp → làm sạch → truy vấn → khoá dữ liệu cần G2 (IRB) +
+# G4 trong sổ cái (G5-AUTO-05; import_real_dataset từ chối trước đó). Tiền đề chưa đạt ⇒ «chờ cổng trước», không phải
+# «agent còn việc» (bản cũ báo G5 AGENT_CON_VIEC 5 việc không ai làm được trước khi Hội đồng duyệt).
+CHI_SAU_TIEU_CHI: Dict[str, Dict[str, str]] = {
+    "G5": {"G5-AUTO-06": "G5-AUTO-05", "G5-AUTO-07": "G5-AUTO-05", "G5-AUTO-07b": "G5-AUTO-05",
+           "G5-AUTO-08": "G5-AUTO-05", "G5-AUTO-09": "G5-AUTO-05", "DATA_LOCK_manifest.json": "G5-AUTO-05"},
+}
 # Nhiệm vụ có điều kiện mà ĐIỀU KIỆN suy được từ mã thiết kế đã chốt (skill_standards.dac_ta_thiet_ke); điều kiện
 # khác (thang đo, tạp chí tiếng Anh) ⇒ điều phối cổng tự khai áp dụng hay không kèm lý do.
 _DIEU_KIEN_THIET_KE = {"thiết kế can thiệp (RCT)": ("rct",), "tổng quan hệ thống có gộp định lượng": ("sr_ma",),
@@ -1985,7 +1993,7 @@ def trach_nhiem(study: str, gate: str, out_dir: Path) -> Dict[str, Any]:
         for d in thieu:
             agent_con.append({"id": f"{nv['ma']}:dau-ra", "status": "BLOCK", "label": f"đầu ra {d}",
                               "viec": f"{nv['agent']} sinh {d.replace('<mã>', study)} bằng công cụ thật của cổng",
-                              "nhiem_vu": nv["ma"], "agent": nv["agent"]})
+                              "nhiem_vu": nv["ma"], "agent": nv["agent"], "dau_ra": d})
     # 10/10/2026: kết quả đánh giá chéo của hội đồng là một phần trách nhiệm — đầu ra bị TRẢ VỀ SỬA là việc agent còn
     # nợ; nhiệm vụ không có tiêu chí máy chỉ được bảo đảm chất lượng bằng đánh giá chéo (chưa đánh giá ⇒ nói thật).
     danh_gia = danh_gia_cheo_moi_nhat(gate, out_dir)
@@ -2016,6 +2024,20 @@ def trach_nhiem(study: str, gate: str, out_dir: Path) -> Dict[str, Any]:
             n["kiem_may"] = {"mo_ta": kiem[0], "loi": loi_kiem}
             agent_con += [{"id": f"{n['ma']}:kiem-may", "status": "REVIEW", "label": kiem[0], "viec": loi,
                            "nhiem_vu": n["ma"], "agent": n["agent"]} for loi in loi_kiem]
+    # Việc agent chưa tới lượt vì tiêu chí tiền đề CỦA CÙNG CỔNG còn chờ cổng trước (CHI_SAU_TIEU_CHI) ⇒ chuyển sang chờ
+    # cổng trước, vẫn giữ nguyên việc để điều phối biết bước kế tiếp.
+    tien_de_chua_dat = {m["id"]: m for m in cho_truoc}
+    phu_thuoc = CHI_SAU_TIEU_CHI.get(gate, {})
+    con_lai = []
+    for m in agent_con:
+        goc = phu_thuoc.get(m.get("dau_ra") or m["id"])
+        if goc in tien_de_chua_dat:
+            cho_truoc.append({**m, "cong": tien_de_chua_dat[goc]["cong"], "chua_toi_luot_vi": goc,
+                              "viec": f"{m['viec']} — chưa tới lượt: chờ {goc} "
+                                      f"({', '.join(tien_de_chua_dat[goc]['cong'])})"})
+        else:
+            con_lai.append(m)
+    agent_con = con_lai
     import cong_song as CS  # noqa: PLC0415
 
     bi_chan = CS.muc_cua_trang_thai(song.get("status")) == "BLOCKED"
