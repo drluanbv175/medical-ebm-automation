@@ -28,6 +28,11 @@
 # GitPython 3.1.59→3.1.60 (PYSEC-2026-3982–3984). Nâng đúng 2 gói bằng pip trong venv; freeze trước/sau
 # chỉ lệch đúng 2 dòng này. deep-translator PYSEC-2022-252 KHÔNG có bản vá (xem PR) — giữ nguyên.
 #
+# 2026-10-24: vá bảo mật pillow 12.3.0→13.0.0 (9 cảnh báo Dependabot, có GHSA-8g5g-8vmr-9782 critical — tràn bộ đệm
+# heap ở ImagingJpegDecode; bản vá chỉ có từ 13.0.0). streamlit 1.58.0 đòi pillow<13 nên nâng cùng lúc lên 1.66.1 —
+# bản ĐẦU TIÊN nhận pillow<14 (1.59–1.66.0 vẫn <13; nền starlette/uvicorn không đổi). Cách làm như 28/09: venv cài
+# đúng file này rồi `pip install streamlit==1.66.1 pillow==13.0.0`; freeze trước/sau lệch đúng 2 dòng, `pip check` sạch.
+#
 # Không sửa tay file này — luôn sinh lại bằng `pip freeze` để đảm bảo khớp thật với
 # venv đã chạy test, không phải liệt kê tay dễ lệch.
 
@@ -84,7 +89,7 @@ openpyxl==3.1.5
 packaging==26.2
 pandas==2.3.3
 patsy==1.0.2
-pillow==12.3.0
+pillow==13.0.0
 plotly==6.8.0
 pluggy==1.6.0
 protobuf==7.35.1
@@ -119,7 +124,7 @@ SQLAlchemy==2.0.51
 sse-starlette==3.4.5
 starlette==1.3.1
 statsmodels==0.14.6
-streamlit==1.58.0
+streamlit==1.66.1
 tenacity==9.1.4
 toml==0.10.2
 typing-inspection==0.4.2
