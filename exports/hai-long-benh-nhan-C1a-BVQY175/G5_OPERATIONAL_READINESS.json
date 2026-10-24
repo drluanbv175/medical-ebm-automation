@@ -1,0 +1,42 @@
+{
+  "schema_version": "G5-OPS-2026.2",
+  "status": "DRAFT_REQUIRES_HUMAN_VERIFICATION",
+  "access_control_review": {
+    "completed": false,
+    "reviewed_at": "[CẦN NGÀY YYYY-MM-DD]",
+    "least_privilege_confirmed": false,
+    "evidence_ref": "[CẦN MÃ BIÊN BẢN/SOP, KHÔNG PII]"
+  },
+  "backup_restore_test": {
+    "completed": false,
+    "tested_at": "[CẦN NGÀY YYYY-MM-DD]",
+    "restore_verified": false,
+    "checksum_verified": false,
+    "evidence_ref": "[CẦN MÃ BIÊN BẢN, KHÔNG PII]"
+  },
+  "retention_plan": {
+    "confirmed": false,
+    "retention_rule": "[CẦN QUY TẮC THEO IRB, tài trợ và pháp luật]"
+  },
+  "protocol_deviations": {
+    "reconciled": false,
+    "open_count": "[CẦN SỐ NGUYÊN]",
+    "log_ref": "[CẦN MÃ DEVIATION LOG, KHÔNG PII]"
+  },
+  "audit_trail_review": {
+    "completed": false,
+    "reviewed_at": "[CẦN NGÀY YYYY-MM-DD]",
+    "evidence_ref": "[CẦN MÃ BIÊN BẢN RÀ AUDIT TRAIL (REDCap Logging), KHÔNG PII]"
+  },
+  "source_data_verification": {
+    "method": "[CẦN CÁCH ĐỐI CHIẾU: nhập kép / kiểm ngẫu nhiên ≥10% hồ sơ / khác — mô tả]",
+    "fraction_or_n": "[CẦN TỶ LỆ hoặc SỐ HỒ SƠ đã đối chiếu]",
+    "completed": false,
+    "evidence_ref": "[CẦN MÃ BIÊN BẢN ĐỐI CHIẾU, KHÔNG PII]",
+    "not_applicable_reason": null,
+    "huong_dan": "Điền method, fraction_or_n, completed=true và evidence_ref; HOẶC xoá bốn trường đó và ghi not_applicable_reason (vd dữ liệu nhập thẳng vào eCRF, không có hồ sơ nguồn giấy)."
+  },
+  "reviewer_role": "[CẦN DATA_MANAGER hoặc PI]",
+  "reviewer_ref": "[CẦN MÃ THAM CHIẾU, KHÔNG GHI HỌ TÊN/PII]",
+  "disclaimer": "Cần bác sĩ kiểm chứng."
+}
