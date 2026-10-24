@@ -1,0 +1,159 @@
+{
+  "kind": "g5_quality_report",
+  "study": "hai-long-benh-nhan-C1a-BVQY175",
+  "quality_contract_version": "G5-2026.2",
+  "status": "DRAFT_READY_NEEDS_REAL_DATA",
+  "generated_at": "2026-10-24T03:17:22.268853+00:00",
+  "automatic_criteria": [
+    {
+      "id": "G5-AUTO-00",
+      "label": "Guardrail liêm chính G5 sạch",
+      "status": "PASS",
+      "evidence": "guardrail='✅ PASS'",
+      "action": "Sửa lỗi nguồn, PII, vượt cổng hoặc disclaimer trước khi dùng bộ công cụ."
+    },
+    {
+      "id": "G5-AUTO-01",
+      "label": "Đủ DMP, data dictionary và script QC tái lập",
+      "status": "PASS",
+      "evidence": "DMP=True, dictionary=True, cleaning_script=True, quality_script=True",
+      "action": "Chạy lại run_g5_auto.py để sinh đủ bộ công cụ G5."
+    },
+    {
+      "id": "G5-AUTO-02",
+      "label": "Data dictionary là CSV có cấu trúc, tên biến duy nhất và không có định danh trực tiếp",
+      "status": "PASS",
+      "evidence": "rows=71; placeholder=False",
+      "action": "Hoàn thiện CRF/codebook, xóa placeholder và đối chiếu với G3/SAP trước thu thập."
+    },
+    {
+      "id": "G5-AUTO-03",
+      "label": "DMP phủ vòng đời dữ liệu theo ICH E6(R3), có NỘI DUNG thật dưới mỗi mục; hoàn tất khi khoá dữ liệu",
+      "status": "PASS",
+      "evidence": "đủ 11 nhãn, mỗi mục có tiêu đề riêng và nội dung thật (capture/QC/audit/privacy/access/backup/retention/lock/sharing)",
+      "action": "Bổ sung mục còn thiếu/viết nội dung thật dưới các phần vòng đời dữ liệu; trước khi khoá dữ liệu: bỏ nhãn DRAFT, điền ngày khoá + người khoá/người chứng kiến (mã, không PII) và đánh dấu đủ checklist khoá CSDL."
+    },
+    {
+      "id": "G5-AUTO-04",
+      "label": "Hồ sơ vận hành xác minh access, backup/restore, retention và deviation",
+      "status": "REVIEW",
+      "evidence": "valid=False; issues=['status_not_verified', 'access_control_not_verified', 'backup_restore_not_verified', 'retention_plan_not_confirmed', 'protocol_deviations_not_reconciled', 'audit_trail_not_reviewed', 'thieu_bang_chung:access_control_review.evidence_ref', 'thieu_bang_chung:backup_restore_test.evidence_ref', 'thieu_bang_chung:protocol_deviations.log_ref', 'thieu_bang_chung:audit_trail_review.evidence_ref', 'invalid_reviewer_role', 'missing_reviewer_ref', 'invalid_reviewed_at', 'invalid_tested_at', 'invalid_audit_reviewed_at', 'unresolved_placeholder']; sha256=ee6eb2c94494e32d938c62fad4c0fa2ce61863906a2a7976effd2b89713bbaa3",
+      "action": "Hoàn tất G5_OPERATIONAL_READINESS.json bằng bằng chứng vận hành và người quản trị dữ liệu/PI xác nhận."
+    },
+    {
+      "id": "G5-AUTO-04b",
+      "label": "Kế hoạch kiểm dữ liệu nguồn (SDV/spot-check) đã khai và hoàn tất, hoặc khai không áp dụng kèm lý do",
+      "status": "REVIEW",
+      "evidence": "sdv_chua_khai_hoac_chua_xong: khai source_data_verification {method, fraction_or_n, completed, evidence_ref} hoặc not_applicable_reason",
+      "action": "Ghi source_data_verification trong G5_OPERATIONAL_READINESS.json (QĐ-10)."
+    },
+    {
+      "id": "G5-AUTO-05",
+      "label": "G2 và G4 đã khóa bằng phê duyệt hợp lệ trước xử lý dữ liệu thật",
+      "status": "REVIEW",
+      "evidence": "G2=False; G4=True",
+      "action": "Hoàn tất G2 IRB/IEC và G4 SAP trong approval ledger trước intake/lock."
+    },
+    {
+      "id": "G5-AUTO-05b",
+      "label": "Dữ liệu được nạp/làm sạch SAU khi G2 (IRB) và G4 (SAP) được ký",
+      "status": "PASS",
+      "evidence": "chưa có dữ liệu",
+      "action": "Không nạp dữ liệu trước khi IRB và SAP được ký; SAP sửa sau khi đã thấy dữ liệu phải ghi SAP AMENDMENT."
+    },
+    {
+      "id": "G5-AUTO-06",
+      "label": "Bản raw khử định danh có checksum và chỉ đọc",
+      "status": "REVIEW",
+      "evidence": "status=None; hash_match=True; readonly=False",
+      "action": "Nạp dữ liệu qua import_real_dataset.py; không khóa file ngoài provenance intake."
+    },
+    {
+      "id": "G5-AUTO-07",
+      "label": "Làm sạch có provenance, dictionary và checksum khớp",
+      "status": "REVIEW",
+      "evidence": "status=None; output_hash_match=True; source_matches_intake=True; dictionary_loaded=None",
+      "action": "Chạy clean_research_dataset.py trên raw readonly với đúng data dictionary G5."
+    },
+    {
+      "id": "G5-AUTO-07b",
+      "label": "Mọi cột của bộ dữ liệu có trong data dictionary và đủ biến bắt buộc",
+      "status": "PASS",
+      "evidence": "chưa có dữ liệu",
+      "action": "Khai mọi biến trong G5_REDCap_dictionary (kèm loại/phạm vi) hoặc bỏ cột ngoài kế hoạch; không khoá cột không có luật kiểm."
+    },
+    {
+      "id": "G5-AUTO-08",
+      "label": "Query log tồn tại, mọi query đã đóng và hash khớp",
+      "status": "REVIEW",
+      "evidence": "rows=0; open=0; issues=['missing_query_log']; hash_match=True; giai_quyet_khop=True",
+      "action": "Đối chiếu nguồn rồi ghi tệp giải quyết query (clean_research_dataset.py --query-resolutions: mã da_sua/xac_nhan_dung/khong_ap_dung_co_ly_do + lý do + người đóng + thời điểm ISO); không tự sửa giá trị."
+    },
+    {
+      "id": "G5-AUTO-09",
+      "label": "Manifest khóa liên kết toàn bộ hồ sơ và dataset chỉ đọc",
+      "status": "REVIEW",
+      "evidence": "status=None; checksum=True; readonly=False; reviewer_group=None; confirmations=False; checkpoint_hashes=False",
+      "action": "Khóa lại qua lock_analysis_dataset.py sau khi mọi điều kiện đã đủ."
+    },
+    {
+      "id": "G5-AUTO-10",
+      "label": "Định tính: bản gỡ băng có TRANSCRIPT_manifest (băm, khử định danh, chỉ đọc, không còn mẫu PII)",
+      "status": "PASS",
+      "evidence": "không áp dụng (không phải định tính hoặc chưa có dữ liệu)",
+      "action": "Lập TRANSCRIPT_manifest.json cho mọi transcript_id (tệp đã khử định danh, chỉ đọc, sha256, reviewer_ref không PII) rồi khoá lại."
+    },
+    {
+      "id": "G5-HUMAN-01",
+      "label": "Người quản trị dữ liệu/PI phê duyệt G5 gắn với hash checkpoint",
+      "status": "REVIEW",
+      "evidence": "approval_ledger_G5=False",
+      "action": "Người có thẩm quyền tự chạy approve_gate.py cho G5 sau khi đọc DATA_LOCK_memo và G5_QUALITY_REPORT; agent không tự phê duyệt."
+    }
+  ],
+  "actions": [
+    "Hoàn tất G5_OPERATIONAL_READINESS.json bằng bằng chứng vận hành và người quản trị dữ liệu/PI xác nhận.",
+    "Ghi source_data_verification trong G5_OPERATIONAL_READINESS.json (QĐ-10).",
+    "Hoàn tất G2 IRB/IEC và G4 SAP trong approval ledger trước intake/lock.",
+    "Nạp dữ liệu qua import_real_dataset.py; không khóa file ngoài provenance intake.",
+    "Chạy clean_research_dataset.py trên raw readonly với đúng data dictionary G5.",
+    "Đối chiếu nguồn rồi ghi tệp giải quyết query (clean_research_dataset.py --query-resolutions: mã da_sua/xac_nhan_dung/khong_ap_dung_co_ly_do + lý do + người đóng + thời điểm ISO); không tự sửa giá trị.",
+    "Khóa lại qua lock_analysis_dataset.py sau khi mọi điều kiện đã đủ.",
+    "Người có thẩm quyền tự chạy approve_gate.py cho G5 sau khi đọc DATA_LOCK_memo và G5_QUALITY_REPORT; agent không tự phê duyệt."
+  ],
+  "standards_basis": [
+    {
+      "standard": "ICH E6(R3), Principles and Annex 1",
+      "scope": "Data governance, metadata/audit trail, correction có lý do, finalisation trước phân tích, bảo mật và validation hệ thống",
+      "url": "https://www.ema.europa.eu/en/ich-e6-good-clinical-practice-scientific-guideline"
+    },
+    {
+      "standard": "FDA Electronic Systems, Electronic Records and Signatures (2024)",
+      "scope": "Hồ sơ điện tử tin cậy, audit trail và chữ ký điện tử",
+      "url": "https://www.fda.gov/regulatory-information/search-fda-guidance-documents/electronic-systems-electronic-records-and-electronic-signatures-clinical-investigations-questions"
+    },
+    {
+      "standard": "CDISC CDASH",
+      "scope": "Metadata và cấu trúc biến thu thập dữ liệu lâm sàng",
+      "url": "https://www.cdisc.org/standards/foundational/cdash"
+    },
+    {
+      "standard": "NIH Data Management and Sharing Policy / 2026 format",
+      "scope": "Quản lý, bảo tồn, quyền riêng tư, repository và giám sát chia sẻ",
+      "url": "https://www.grants.nih.gov/policy-and-compliance/policy-topics/sharing-policies/dms/writing-dms-plan"
+    },
+    {
+      "standard": "FAIR Guiding Principles",
+      "scope": "Dữ liệu và metadata tìm được, truy cập được, liên thông và tái sử dụng",
+      "pmid": "26978244",
+      "doi": "10.1038/sdata.2016.18"
+    }
+  ],
+  "real_data_present": false,
+  "technical_lock_valid": false,
+  "human_approval_valid": false,
+  "vai_da_ky": [],
+  "dong_ky_du": false,
+  "release_rule": "Chỉ PASS_G5_DATA_LOCKED khi khóa kỹ thuật hợp lệ và approval ledger G5 khớp hash; không tự phê duyệt.",
+  "disclaimer": "Cần bác sĩ kiểm chứng."
+}
