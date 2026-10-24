@@ -95,6 +95,17 @@ def yeu_cau_tien_de(purpose: Optional[str]) -> Dict[str, Any]:
     return {"cong": CONG_DAY_DU, "chap_nhan_san_sang": frozenset(), "khoa": ("G2", "G4", "G5", "G8", "G9")}
 
 
+def checkpoint_theo_muc_dich(cps: Mapping[str, Any], purpose: Optional[str]) -> Dict[str, Any]:
+    """Checkpoint dùng để DỰNG StudySpec của gói: chỉ các cổng mà mục đích phát hành đòi (gói trước dữ liệu = G0–G4),
+    cổng ngoài phạm vi ⇒ None. Dùng chung cho lúc lắp (run_g10_assemble) và lúc chấm lại (G10-AUTO-06).
+
+    VÁ 24/10/2026 (diễn tập G5 cho C1a): chạy run_g5_auto.py SAU khi PI đã khoá gói trình Hội đồng làm StudySpec tính
+    lại có thêm G5 trong `provenance.checkpoints` ⇒ G10-AUTO-06 «khác STUDY_SPEC đã lắp» ⇒ G10 tụt BLOCKED, dù gói
+    ETHICS_SUBMISSION chỉ dựa G0–G4 — đi tiếp đúng thứ tự (G4 ký rồi sinh bộ công cụ G5) làm vỡ khoá đã ký."""
+    cong = set(yeu_cau_tien_de(purpose)["cong"])
+    return {g: (v if g in cong else None) for g, v in cps.items()}
+
+
 def tien_de_song(study: str, out_dir: Path, repo_root: Optional[Path] = None) -> Dict[str, Dict[str, Any]]:
     """{cổng: {status PASS|REVIEW|BLOCK, muc, evidence}} — G0–G6 qua g7_quality_gate.tien_de_song (G2 = g2_da_duyet dùng
     chung G5/G6/G7/G8/G9), G7–G9 qua cong_song; `muc` là mức SỐNG thô (READY/DRAFT/…) để xét mục đích trước dữ liệu.
@@ -130,15 +141,18 @@ def _guardrail_de_cuong_song(study: str, out_dir: Path) -> tuple[bool, str]:
     return bool(rep.get("passed")), f"check_de_cuong sống: passed={rep.get('passed')}; lỗi={loi[:2]}"
 
 
-def _study_spec_song(study: str, out_dir: Path) -> tuple[Dict[str, Any], Optional[str]]:
+def _study_spec_song(study: str, out_dir: Path,
+                     purpose: Optional[str] = None) -> tuple[Dict[str, Any], Optional[str]]:
     """(đánh giá StudySpec TÍNH LẠI từ checkpoint/study_meta hiện hành, lệch so với STUDY_SPEC đã lắp | None) — G10-02.
-    Bản cũ đọc checkpoint['study_spec'] (bản sao lúc lắp ráp)."""
+    Bản cũ đọc checkpoint['study_spec'] (bản sao lúc lắp ráp). Dựng từ cổng của mục đích (checkpoint_theo_muc_dich, như
+    lúc lắp); đánh giá vẫn trên MỌI checkpoint để mâu thuẫn với cổng sau vẫn hiện."""
     import research_study_spec as RS  # noqa: PLC0415
     import run_g10_assemble as G10A  # noqa: PLC0415
 
     cps = G10A.load_checkpoints(out_dir)
     meta = G10A.load_meta(out_dir)
-    spec = RS.build_study_spec(study, cps, meta, sap=RS.sap_song(study, out_dir, repo_root=G10A.BASE))
+    spec = RS.build_study_spec(study, checkpoint_theo_muc_dich(cps, purpose), meta,
+                               sap=RS.sap_song(study, out_dir, repo_root=G10A.BASE))
     danh_gia = RS.evaluate_study_spec(spec, cps, meta)
     luu = _read_json(Path(out_dir) / f"STUDY_SPEC_{study}.json")
     luu = {k: v for k, v in luu.items() if k != "_evaluation"}
@@ -1003,7 +1017,7 @@ def evaluate_study(
 
     # G10-02: StudySpec TÍNH LẠI từ checkpoint/study_meta hiện hành (bản cũ: checkpoint['study_spec'] lúc lắp ráp).
     try:
-        spec, spec_lech = _study_spec_song(study, out_dir)
+        spec, spec_lech = _study_spec_song(study, out_dir, purpose)
     except Exception as exc:  # noqa: BLE001 — không tính được ≠ hoàn chỉnh
         spec, spec_lech = {}, f"không tính lại được StudySpec: {type(exc).__name__}: {exc}"
     thieu_ids = [row.get("id") for row in spec.get("missing_requirements") or [] if isinstance(row, Mapping)]

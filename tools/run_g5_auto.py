@@ -1281,8 +1281,14 @@ _STROBE_EXPOSURE_LABEL_RCT = {
 }
 
 
-def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_total: int, n_per_group: int, specialty: str = "generic") -> str:
-    """Sinh sơ đồ tham gia nghiên cứu dạng ASCII theo STROBE/CONSORT."""
+def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_total: int, n_per_group: int,
+                           specialty: str = "generic", n_toi_thieu: Optional[int] = None) -> str:
+    """Sinh sơ đồ tham gia nghiên cứu dạng ASCII theo STROBE/CONSORT.
+
+    `n_adjusted` là N HIỆU LỰC (G3 confirmed_n nếu có); `n_toi_thieu` là N tối thiểu theo thống kê — khác nhau thì
+    nhãn ghi «cỡ mẫu kế hoạch» thay vì «N dự kiến + 20% dự phòng» (24/10/2026)."""
+    nhan_n = (f"cỡ mẫu kế hoạch, tối thiểu theo thống kê {n_toi_thieu}"
+              if n_toi_thieu and n_toi_thieu != n_adjusted else "N dự kiến + 20% dự phòng")
     is_rct = design_code == "rct"
     exposure_label = _STROBE_EXPOSURE_LABEL.get(specialty, "[CẦN — tên biến phơi nhiễm/can thiệp theo PICO]")
     exposure_label_rct = _STROBE_EXPOSURE_LABEL_RCT.get(specialty, "([CẦN — tên can thiệp])")
@@ -1368,7 +1374,7 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
                    │
   ┌────────────────▼─────────────────────────┐
   │  TUYỂN VÀO (Enrolled):                   │
-  │  N = {n_adjusted} (N dự kiến + 20% dự phòng)│
+  │  N = {n_adjusted} ({nhan_n})│
   └────────────────┬─────────────────────────┘
                    │
         ┌──────────▼──────────────────┐
@@ -1482,7 +1488,7 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
                    │
   ┌────────────────▼─────────────────────────┐
   │  TUYỂN VÀO (Enrolled):                   │
-  │  N = {n_adjusted} (N dự kiến + 20% dự phòng)│
+  │  N = {n_adjusted} ({nhan_n})│
   └────────────────┬─────────────────────────┘
                    │
         ┌──────────┴──────────────────┐
@@ -1609,6 +1615,11 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
   │  Không có giai đoạn theo dõi dọc.       │
   └────────────────┬─────────────────────────┘
                    │"""
+        # 24/10/2026: G3 một mẫu (cắt ngang ước tính tỷ lệ) ghi n_per_group = n_total ⇒ ô «KHÔNG PHƠI NHIỄM» từng in
+        # N ≈ 0 và ô «CÓ PHƠI NHIỄM» in cả cỡ mẫu — số do máy chia, không phải dữ kiện. Không có phép chia nhóm ⇒ [CẦN].
+        _co_chia_nhom = n_total - n_per_group > 0
+        n_nhom_1 = n_per_group if _co_chia_nhom else "[CẦN]"
+        n_nhom_2 = n_total - n_per_group if _co_chia_nhom else "[CẦN]"
         flowchart = f"""\
 ┌─────────────────────────────────────────────────────────────────┐
 │        BIỂU ĐỒ THAM GIA NGHIÊN CỨU (STROBE Flowchart)         │
@@ -1630,7 +1641,7 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
                    │
   ┌────────────────▼─────────────────────────┐
   │  TUYỂN VÀO (Enrolled):                   │
-  │  N = {n_adjusted} (N dự kiến + 20% dự phòng)│
+  │  N = {n_adjusted} ({nhan_n})│
   └────────────────┬─────────────────────────┘
                    │
         ┌──────────┴──────────────────┐
@@ -1639,13 +1650,13 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
   ┌───────────────┐           ┌───────────────┐
   │  CÓ PHƠI      │           │  KHÔNG PHƠI   │
   │  NHIỄM {exposure_label:<8}│          │  NHIỄM        │
-  │  N ≈ {n_per_group:<8}     │           │  N ≈ {n_total - n_per_group:<8}     │
+  │  N ≈ {n_nhom_1:<8}     │           │  N ≈ {n_nhom_2:<8}     │
   └───────┬───────┘           └───────┬───────┘
 {followup_block}
   ┌────────────────▼─────────────────────────┐
   │  PHÂN TÍCH (Analysed):                   │
   │  N = {n_adjusted} → [CẦN điều chỉnh thực tế]│
-  │  Phân tích chính: {n_total} (sau loại trừ)  │
+  │  Phân tích chính: N = [CẦN — sau loại trừ] (cần tối thiểu {n_total} theo G3)│
   └──────────────────────────────────────────┘
 
   Ghi chú: Điền N=[CẦN] SAU khi thu thập dữ liệu thật.
@@ -1922,17 +1933,22 @@ def generate_artifact(
     n_adjusted: int, n_total: int, n_per_group: int,
     run_date: str, rows: list, specialty: str = "generic",
     specialty_runner_up=None, hypothesis_type=None, margin=None,
+    n_toi_thieu: Optional[int] = None,
 ) -> str:
     is_srma = (design_code == "sr_ma")
     n_rows = len(rows)
+    # N hiệu lực khác N tối thiểu (G3 confirmed_n) ⇒ ghi cả hai, như SAP (24/10/2026).
+    n_hien = (f"{n_adjusted} (cỡ mẫu kế hoạch, G3 confirmed_n; tối thiểu theo thống kê {n_toi_thieu})"
+              if n_toi_thieu and n_toi_thieu != n_adjusted else f"{n_adjusted}")
 
-    flowchart = build_strobe_flowchart(study, design_code, n_adjusted, n_total, n_per_group, specialty)
+    flowchart = build_strobe_flowchart(study, design_code, n_adjusted, n_total, n_per_group, specialty,
+                                       n_toi_thieu=n_toi_thieu)
     specialty_label = _SPECIALTY_LABELS.get(specialty, specialty)
 
     lines = [
         "# A6 — KẾ HOẠCH QUẢN LÝ DỮ LIỆU (DRAFT)",
         f"**Đề tài:** {topic}  ",
-        f"**Mã:** {study} | **Ngày:** {run_date} | **Thiết kế:** {design_code} | **N dự kiến:** {n_adjusted}  ",
+        f"**Mã:** {study} | **Ngày:** {run_date} | **Thiết kế:** {design_code} | **N dự kiến:** {n_hien}  ",
         "**Trạng thái:** DRAFT — CHỜ BÁC SĨ ĐIỀN CÁC [CẦN...] VÀ XÁC NHẬN",
         "",
         "> **BẢO MẬT:** KHÔNG đưa PII vào pipeline. Chỉ xử lý bản đã khử định danh trong "
@@ -1974,7 +1990,7 @@ def generate_artifact(
         "## PHẦN 1 — CẤU TRÚC CRF (Case Report Form)",
         "",
         f"Thiết kế: **{design_code}** | Chuyên khoa: **{specialty_label}** | "
-        f"Tổng biến CRF: **{n_rows} dòng** | N dự kiến: **{n_adjusted}**",
+        f"Tổng biến CRF: **{n_rows} dòng** | N dự kiến: **{n_hien}**",
         "",
     ]
 
@@ -2544,6 +2560,16 @@ def main():
     n_adjusted  = g3.get("n_adjusted") or 0
     n_total     = (g3.get("n_total") or n_adjusted) if n_adjusted else 0
     n_per_group = (g3.get("n_per_group") or n_total // 2) if n_total else 0
+    # VÁ 24/10/2026 (diễn tập G5 cho C1a): N HIỆU LỰC = confirmed_n cho MỌI thiết kế — cùng lớp lỗi đã vá ở G4
+    # (run_g4_auto.py, 2026-07-31). Bản cũ in «N dự kiến: 808» (N tối thiểu theo thống kê) trong khi SAP ĐÃ KÝ ghi N =
+    # 1000 (cỡ mẫu kế hoạch chủ nhiệm/Hội đồng chốt). N tối thiểu vẫn in kèm.
+    n_toi_thieu = n_adjusted
+    try:
+        _confirmed_n = int(g3.get("confirmed_n")) if g3.get("confirmed_n") is not None else None
+    except (TypeError, ValueError):
+        _confirmed_n = None
+    if _confirmed_n:
+        n_adjusted = _confirmed_n
     g3_effect_type = g3.get("effect_type")  # THÊM 2026-07-06: để đối chiếu loại kết cục vs CRF
     # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 20): G5 trước đây
     # KHÔNG đọc specialist_modules (G1) lẫn hypothesis_type/margin (G3) —
@@ -2557,7 +2583,11 @@ def main():
 
     print(f"📊 G5 NÂNG CẤP — Quản lý dữ liệu: {study}")
     print(f"  → Đề tài: {topic}")
-    print(f"  → Thiết kế: {design_code} | N={n_adjusted} (điều chỉnh) / {n_total} (cơ bản) / {n_per_group}/nhóm")
+    if n_adjusted != n_toi_thieu:
+        print(f"  → Thiết kế: {design_code} | N hiệu lực={n_adjusted} (G3 confirmed_n) · N tối thiểu theo thống kê="
+              f"{n_toi_thieu} (điều chỉnh) / {n_total} (cơ bản)")
+    else:
+        print(f"  → Thiết kế: {design_code} | N={n_adjusted} (điều chỉnh) / {n_total} (cơ bản) / {n_per_group}/nhóm")
 
     # THÊM 2026-07-08: G5 chỉ soạn CRF/kế hoạch quản lý dữ liệu (được phép làm
     # song song/trước khi G2 LOCKED — CRF thường phải nộp kèm hồ sơ IRB). KHÔNG
@@ -2642,6 +2672,7 @@ def main():
         run_date, rows, specialty,
         specialty_runner_up=specialty_runner_up,
         hypothesis_type=hypothesis_type, margin=margin,
+        n_toi_thieu=n_toi_thieu,
     )
     md = out / f"G5_A6_DATA_MGMT_{study}.md"
     md.write_text(artifact, encoding="utf-8", newline="\n")
