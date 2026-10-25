@@ -620,3 +620,47 @@ def test_moc_truyen_tay_giu_nguyen_khong_ep_thu_tu(de_tai):
     p2, kq2 = HD.ghi_bien_ban(STUDY, "G4", _tranh_bien("DP-G4-1"), de_tai, de_tai.parent.parent, bay_gio=cu_hon)
     assert p2 is not None, kq2.get("loi")
     assert _dt.fromisoformat(json.loads(p2.read_text(encoding="utf-8"))["thoi_diem"]) == cu_hon
+
+
+# ── 25/10/2026: sổ quyết định của bác sĩ cho vấn đề «chuyển bác sĩ» ─────────────────────────────────────────────────
+
+def _chuyen_hai_van_de(de_tai: Path, dp: str = "DP-G4-1") -> str:
+    bb = _tranh_bien(dp, ket_qua="chuyen_bac_si", ket="chap_nhan")
+    bb["phan_quyet"]["chuyen_bac_si"] = [{"van_de": "Chọn MAR hay MNAR", "vi_sao": "thống kê viên quyết"},
+                                         {"van_de": "Giữ ICC giả định hay đo lại", "vi_sao": "thống kê viên quyết"}]
+    p, kq = _ghi(de_tai, bb)
+    assert p is not None, kq["loi"]
+    return json.loads(p.read_text(encoding="utf-8"))["id"]
+
+
+def test_quyet_dinh_bac_si_doi_trang_thai_khi_du_moi_van_de(de_tai):
+    _ghi(de_tai, _danh_gia())
+    bb_id = _chuyen_hai_van_de(de_tai)
+    assert _tt(de_tai)["trang_thai"] == "CHUYỂN BÁC SĨ"
+    p, loi = HD.ghi_quyet_dinh("G4", bb_id, 1, "MAR, kèm phân tích độ nhạy MNAR", de_tai)
+    assert p is not None, loi
+    assert _tt(de_tai)["trang_thai"] == "CHUYỂN BÁC SĨ", "còn vấn đề 2 chưa quyết ⇒ vẫn chờ bác sĩ"
+    assert HD.ho_so_cong(STUDY, "G4", de_tai)["cho_bac_si"] == ["DP-G4-1"]
+    HD.ghi_quyet_dinh("G4", bb_id, 2, "Đo lại ICC từ HIS", de_tai)
+    tt = _tt(de_tai)
+    assert tt["trang_thai"] == "BÁC SĨ ĐÃ QUYẾT — CHỜ THỰC HIỆN" and "DP-G4-1" in tt["ly_do"][0], tt
+    hs = HD.ho_so_cong(STUDY, "G4", de_tai)
+    assert hs["cho_bac_si"] == [] and hs["cho_thuc_hien"] == ["DP-G4-1"]
+    so = HD.doc_quyet_dinh("G4", de_tai)
+    assert so[f"{bb_id}#2"]["loi_bac_si"] == "Đo lại ICC từ HIS" and so[f"{bb_id}#2"]["vai"] == "STATISTICIAN"
+    # Sổ quyết định nằm cùng thư mục biên bản nhưng KHÔNG phải biên bản (không làm cổng «HỎNG»).
+    assert all(b.get("loai") in ("danh_gia_cheo", "tranh_bien", HD.LOAI_XU_LY) for b in HD.doc_bien_ban(de_tai, "G4"))
+    assert "BÁC SĨ ĐÃ QUYẾT — CHỜ THỰC HIỆN" in HD.TRANG_THAI_CAN_XU_LY, "đã quyết vẫn là việc treo tới khi thực hiện"
+
+
+def test_quyet_dinh_bac_si_tu_choi_dau_vao_sai(de_tai):
+    bb_id = _chuyen_hai_van_de(de_tai)
+    assert "chỉ chuyển 2 vấn đề" in HD.ghi_quyet_dinh("G4", bb_id, 3, "abc", de_tai)[1][0]
+    assert HD.ghi_quyet_dinh("G4", "G4-TB-khong-co", 1, "abc", de_tai)[0] is None
+    assert HD.ghi_quyet_dinh("G4", bb_id, 1, " ", de_tai)[0] is None
+    p, loi = HD.ghi_quyet_dinh("G4", bb_id, 1, "Gọi 0912345678 để hỏi", de_tai)
+    assert p is None and any("PII" in x or "SĐT" in x or "điện thoại" in x.lower() for x in loi), loi
+    giu = _tranh_bien("DP-G4-2")
+    p_giu, _kq = _ghi(de_tai, giu)
+    id_giu = json.loads(p_giu.read_text(encoding="utf-8"))["id"]
+    assert "không chuyển vấn đề nào" in HD.ghi_quyet_dinh("G4", id_giu, 1, "abc", de_tai)[1][0]

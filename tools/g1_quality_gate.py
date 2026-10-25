@@ -410,7 +410,14 @@ def build_protocol_core(
     gp_all = meta.get("gate_params") if isinstance(meta.get("gate_params"), Mapping) else {}
     g0 = gp_all.get("G0") if isinstance(gp_all.get("G0"), Mapping) else {}
     test_type = str(g0.get("test_type") or "").strip().lower()
-    if test_type in {"descriptive", "mô tả"}:
+    # 25/10/2026 (hội đồng G1 C1a, DP-G1-2 — PI chọn phương án (i)): đề tài mô tả có MỤC TIÊU PHỤ phân tích với giả
+    # thuyết định trước (vd MT2: H0 OR = 1, hai phía) — khoá gate_params.G0.hypothesis_secondary (không có trong khuôn
+    # mặc định: thêm vào sẽ đổi dấu vân tay G0). Vắng ⇒ câu cũ.
+    gia_thuyet_phu = g0.get("hypothesis_secondary")
+    if test_type in {"descriptive", "mô tả"} and _filled(gia_thuyet_phu):
+        gia_thuyet = ("Kết cục chính mô tả — ước lượng theo độ chính xác, không kiểm định giả thuyết (test_type="
+                      f"descriptive, chốt ở G0); mục tiêu phụ có giả thuyết định trước: {_text(gia_thuyet_phu)}")
+    elif test_type in {"descriptive", "mô tả"}:
         gia_thuyet = "Nghiên cứu mô tả — không kiểm định giả thuyết (test_type=descriptive, chốt ở G0)"
     elif _filled(g0.get("hypothesis_h1")):
         gia_thuyet = (f"{_text(g0.get('hypothesis_h1'))} (chiều kỳ vọng: {_text(g0.get('expected_direction'))}; "

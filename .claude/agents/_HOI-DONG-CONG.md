@@ -167,6 +167,12 @@ thì không bịa bài học cho có.
   sàng/đạo đức/thống kê thuộc vai ký của cổng (`tham_quyen` của DP: PI · IRB · STATISTICIAN · DATA_MANAGER ·
   INDEPENDENT_PEER_REVIEWER) ⇒ `chuyen_bac_si`. Kết luận tranh biện KHÔNG BAO GIỜ được viết như trạng thái cổng
   («đã ký», «đã duyệt», «PASS_…», «…_LOCKED») — công cụ từ chối ghi.
+- **Bác sĩ quyết vấn đề «chuyển bác sĩ»** (25/10/2026): chép NGUYÊN VĂN lời bác sĩ cho TỪNG vấn đề bằng
+  `python3 tools/hoi_dong_cong.py ghi-quyet-dinh --study <mã> --gate GN --bien-ban <id TB> --van-de <n> --loi "<nguyên văn>"`
+  (sổ `hoi_dong/GN/quyet_dinh_bac_si.json`, không phải biên bản; quét PII; KHÔNG mở/chặn cổng, KHÔNG thay chữ ký). Đủ
+  mọi vấn đề của một DP ⇒ trạng thái «BÁC SĨ ĐÃ QUYẾT — CHỜ THỰC HIỆN» (vẫn là việc treo); hồ sơ tách `cho_bac_si`
+  (chưa quyết) khỏi `cho_thuc_hien`; điều phối tổng DỪNG ở cổng còn `cho_thuc_hien` — sửa tài liệu theo quyết định
+  (một lượt), ghi biên bản xử lý/chấm lại, rồi mới họp cổng sau. Không chép thì hệ báo «đang chờ bác sĩ quyết» mãi.
 
 ## 5. Chính sách chi phí — hỏi bác sĩ trước khi triệu tập
 

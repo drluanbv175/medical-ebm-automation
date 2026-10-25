@@ -464,6 +464,10 @@ def sec_cauhoi(cps, meta) -> str:
         lines.append("**Loại giả thuyết (tự động từ G3):** DESCRIPTIVE_PRECISION — nghiên cứu mô tả: cỡ mẫu theo độ "
                      "chính xác của ước lượng (khoảng tin cậy), không kiểm định giả thuyết so sánh nên không có "
                      "biên Δ.\n")
+        # 25/10/2026 (hội đồng G1 C1a, DP-G1-2 phương án i): mục tiêu phụ phân tích có giả thuyết định trước.
+        _gtp = _gp(meta, "G0").get("hypothesis_secondary")
+        if RS.is_present(_gtp):
+            lines.append(f"**Giả thuyết mục tiêu phụ (định trước, chốt ở G0):** {' '.join(str(_gtp).split())}\n")
     elif hypothesis_type in ("non_inferiority", "equivalence"):
         margin_text = margin if margin is not None else TAG_BS
         nguon_bien = _gp(meta, "G3").get("margin_source")
