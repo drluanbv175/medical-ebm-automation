@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from typing import Dict
 
+from app.utils.kho_luu_tru import kho_luu_tru_da_nang
+
 # Các thiết kế bị loại khỏi phần "thay đổi thực hành" -> D.
 # SỬA 2026-09-05 (Workflow đối kháng đa-agent, vòng 19) — thiếu
 # "expert_opinion": app.scoring.evidence_quality.DESIGN_BASE xếp
@@ -29,6 +31,10 @@ def reliability_tier(item: Dict, evidence_q: float, practice_c: float) -> str:
         return "D"
     if item.get("reason_for_exclusion"):
         return "D"
+    # Kho lưu trữ đa năng (Zenodo/figshare/OSF…, 25/10/2026): không phải nơi phát hành ⇒ tối đa C, bất kể study_type
+    # hay điểm đã lưu — câu trả lời AI trên Zenodo từng lên A «actionable» và vào hub EBM_MASTER (18/10/2026).
+    if kho_luu_tru_da_nang(item.get("doi"), item.get("journal_or_organization")):
+        return "C"
 
     # A: nguồn rất mạnh + tiềm năng đổi thực hành cao.
     # regulatory_alert KHÔNG nằm đây: cảnh báo cơ quan quản lý cần đọc toàn văn (tối đa Tier B),

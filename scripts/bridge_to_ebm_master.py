@@ -30,6 +30,8 @@ import sys
 HUB = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "EBM_MASTER")
 sys.path.insert(0, os.path.join(HUB, "tools"))
 from ledger_ids import assert_unique, max_seq  # isort: skip  # noqa: E402 — vá 2026-07-17: seq=len(cards) từng gây trùng id thật (xem ledger_ids.py)
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from app.utils.kho_luu_tru import kho_luu_tru_da_nang  # isort: skip  # noqa: E402 — chỉ thư viện chuẩn
 
 
 def ensure_utf8_console() -> None:
@@ -156,7 +158,7 @@ def main():
     existing = {key_of(c) for c in data.get("evidence_cards", [])}
     tu_choi = khoa_khong_nap_lai(data)
     seq = max_seq(data.get("evidence_cards", []))
-    added = dup = bo_qua = 0
+    added = dup = bo_qua = bo_qua_kho = 0
 
     for it in rows:
         item = dict(it)
@@ -204,6 +206,11 @@ def main():
         if str(k).strip().lower() in tu_choi:
             bo_qua += 1
             continue
+        # Kho lưu trữ đa năng (25/10/2026): hàng DB chấm TRƯỚC luật mới vẫn mang tier A/actionable cho tới lượt
+        # chấm lại ⇒ chặn ngay lúc đọc, không chờ `scripts/rescore.py --apply`.
+        if kho_luu_tru_da_nang(item.get("doi"), item.get("journal_or_organization")):
+            bo_qua_kho += 1
+            continue
         if k in existing:
             dup += 1
             continue
@@ -218,8 +225,9 @@ def main():
     data["meta"]["counts"]["evidence_cards"] = len(data["evidence_cards"])
     assert_unique(data["evidence_cards"])  # cổng khóa chống trùng id — chặn tái diễn lỗi 2026-07-17
     json.dump(data, open(master_path, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
-    print("Cầu nối: +%d thẻ mới (chưa xác minh, chờ bác sĩ duyệt), %d trùng, %d bỏ qua theo danh sách không nạp lại."
-          " Tổng sổ cái: %d." % (added, dup, bo_qua, len(data["evidence_cards"])))
+    print("Cầu nối: +%d thẻ mới (chưa xác minh, chờ bác sĩ duyệt), %d trùng, %d bỏ qua theo danh sách không nạp lại,"
+          " %d bỏ qua vì nằm trên kho lưu trữ đa năng. Tổng sổ cái: %d."
+          % (added, dup, bo_qua, bo_qua_kho, len(data["evidence_cards"])))
 
     if args.regen:
         gen = os.path.join(HUB, "tools", "gen_webapp_html.py")
