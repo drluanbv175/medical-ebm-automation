@@ -1005,16 +1005,43 @@ def doc_bien_ban(out_dir: Path, gate: Optional[str] = None) -> List[Dict[str, An
 # ── Tóm tắt theo cổng (tư vấn — không chặn cổng) ─────────────────────────────────────────────────────────────────────
 
 TRANG_THAI = ("CHƯA HỌP", "HỎNG", "CŨ", "BẤT ĐỒNG — CẦN TRANH BIỆN", "CHUYỂN BÁC SĨ", "CẦN SỬA",
-              "THIẾU TRANH BIỆN BẮT BUỘC", "ĐÃ SỬA — CHỜ CHẤM LẠI", "ĐỒNG THUẬN")
+              "THIẾU TRANH BIỆN BẮT BUỘC", "ĐÃ SỬA — CHỜ CHẤM LẠI", "ĐỒNG THUẬN MỘT PHẦN", "ĐỒNG THUẬN")
 # Trạng thái là VIỆC còn treo (công cụ hiển thị đếm vào «việc chưa xong»); «chưa họp»/«cũ»/«thiếu tranh biện bắt buộc»
-# chỉ là khuyến nghị triệu tập — hội đồng tốn chi phí và do bác sĩ quyết.
+# /«đồng thuận một phần» chỉ là khuyến nghị triệu tập — hội đồng tốn chi phí và do bác sĩ quyết.
 TRANG_THAI_CAN_XU_LY = ("HỎNG", "BẤT ĐỒNG — CẦN TRANH BIỆN", "CHUYỂN BÁC SĨ", "CẦN SỬA")
 
 
+def _nhiem_vu_chua_phu(gate: str, out_dir: Path, da_cham: set, cu_ma: set) -> List[str]:
+    """Nhiệm vụ ÁP DỤNG (hoặc chưa xác định), ĐỦ đầu ra mà CHƯA có đánh giá chéo còn hiệu lực — cùng luật «can_cham» /
+    «chua_xac_dinh» của `ho_so_cong`. Nhiệm vụ thiếu đầu ra là «chưa tới lượt», không tính.
+
+    25/10/2026: C1a G1 báo «ĐỒNG THUẬN» khi chỉ G1-T4 có biên bản — G1-T1…T3 đủ đầu ra mà chưa ai chấm (uoc-tinh báo
+    «họp được»). Nhãn gộp không được nói thay cho phần chưa họp (CLAUDE.md §0.2)."""
+    study = Path(out_dir).name  # exports/<mã> — cùng quy ước thay «<mã>» của ho_so_cong
+    ma_tk = _ma_thiet_ke(out_dir)
+    khai = doc_ap_dung(gate, out_dir)
+    ra: List[str] = []
+    for nv in NHIEM_VU.get(gate, []):
+        ap = _ap_dung(nv, ma_tk, khai)
+        if ap is False or nv["ma"] in da_cham:
+            continue
+        if not all((Path(out_dir) / d.replace("<mã>", study)).is_file() for d in nv["dau_ra"]):
+            continue
+        if ap is None:
+            ra.append(f"{nv['ma']}: chưa xác định áp dụng — chưa đánh giá chéo")
+        else:
+            ra.append(f"{nv['ma']}: " + ("biên bản cũ — tài liệu đã đổi" if nv["ma"] in cu_ma
+                                         else "chưa đánh giá chéo"))
+    return ra
+
+
 def tom_tat_cong(gate: str, out_dir: Path, repo_root: Optional[Path] = None) -> Dict[str, Any]:
-    """Trạng thái hội đồng của MỘT cổng. Chỉ biên bản HỢP LỆ và CÒN HIỆU LỰC (tài liệu chưa đổi) mới được tính."""
+    """Trạng thái hội đồng của MỘT cổng. Chỉ biên bản HỢP LỆ và CÒN HIỆU LỰC (tài liệu chưa đổi) mới được tính.
+    «ĐỒNG THUẬN» chỉ khi mọi nhiệm vụ áp dụng đã có đầu ra đều qua đánh giá chéo còn hiệu lực; còn sót ⇒ «ĐỒNG THUẬN
+    MỘT PHẦN» (tư vấn, như «chưa họp» — không phải việc treo)."""
     tat_ca = doc_bien_ban(out_dir, gate)
     hong, cu, hieu_luc = [], [], []
+    cu_ma: set = set()
     for bb in tat_ca:
         if bb.get("_hong"):
             hong.append(f"{bb['id']}: {bb['_hong']}")
@@ -1024,6 +1051,8 @@ def tom_tat_cong(gate: str, out_dir: Path, repo_root: Optional[Path] = None) -> 
             hong.append(f"{bb.get('id')}: {kq['loi'][0]}")
         elif kq["cu"]:
             cu.append(f"{bb.get('id')}: tài liệu đã đổi ({', '.join(kq['cu'][:3])})")
+            if bb.get("loai") == "danh_gia_cheo":
+                cu_ma.add(str((bb.get("dau_ra") or {}).get("ma_nhiem_vu")))
         elif bb.get("loai") == LOAI_XU_LY:
             continue  # biên bản xử lý chỉ làm biên bản gốc còn hiệu lực — không phải một lượt chấm/tranh biện
         else:
@@ -1062,6 +1091,8 @@ def tom_tat_cong(gate: str, out_dir: Path, repo_root: Optional[Path] = None) -> 
     elif cho_cham_lai:
         trang_thai, ly_do = "ĐÃ SỬA — CHỜ CHẤM LẠI", [f"{ma}: đã sửa theo biên bản (có biên bản xử lý) — chưa chấm lại "
                                                       "độc lập" for ma in cho_cham_lai]
+    elif chua_phu := _nhiem_vu_chua_phu(gate, out_dir, set(danh_gia_moi), cu_ma):
+        trang_thai, ly_do = "ĐỒNG THUẬN MỘT PHẦN", chua_phu
     else:
         trang_thai = "ĐỒNG THUẬN"
     return {"gate": gate, "trang_thai": trang_thai, "ly_do": ly_do, "so_bien_ban_hieu_luc": len(hieu_luc),

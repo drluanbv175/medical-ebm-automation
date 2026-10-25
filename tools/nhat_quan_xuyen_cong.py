@@ -78,6 +78,10 @@ THIET_KE_DANG_KY_MO_HO = frozenset({"diagnostic"})
 # Thông số mà G10 đòi phải SO ĐƯỢC (≥ 2 nơi) theo thiết kế — thiếu ⇒ REVIEW, không phải PASS im lặng.
 _KHONG_CO_CO_MAU = frozenset({"qualitative", "sr_ma", "systematic_review"})
 _KHONG_CO_KET_CUC = frozenset({"qualitative"})
+# Thông số không áp dụng theo khung §12 (g4_quality_gate.loai_muc_12): độ chính xác / SR–dự báo không có power; định
+# tính không có alpha lẫn power.
+_KHONG_AP_DUNG_THEO_MUC_12 = {"chinh_xac": frozenset({"power"}), "khong_power": frozenset({"power"}),
+                              "dinh_tinh": frozenset({"alpha", "power"})}
 
 _DINH_DANH = re.compile(r"\b[A-Za-z][A-Za-z0-9]*_[A-Za-z0-9_]+\b")
 _TU = re.compile(r"[0-9]+/[0-9]+|>=|<=|≥|≤|\w+", re.UNICODE)
@@ -623,6 +627,12 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
     except Exception:  # noqa: BLE001 — thiếu bộ đọc ⇒ không đem G3 ra so (vẫn so G0 ↔ SAP)
         loai12 = None
     g3_gt = {"chinh_xac": "descriptive_precision", "power": g3.get("hypothesis_type")}.get(loai12)
+    # 25/10/2026: thông số KHÔNG ÁP DỤNG cho cách N được quyết định (g4_quality_gate.loai_muc_12) thì SAP §12 không in
+    # dòng của nó, G3 chỉ lưu mặc định của bộ tính ⇒ «⚪ chưa đủ để so» vĩnh viễn (C1a cắt ngang theo độ chính xác:
+    # kiem_chi_tiet ⚪ «Power» không bao giờ hết). Bỏ trục đó khi nó «chưa đủ để so» — cùng cách trục «sai số d» chỉ
+    # có ở thiết kế độ chính xác. Hai nơi ghi mà LỆCH nhau thì vẫn báo (cố ý bi quan).
+    khong_ap_dung = _KHONG_AP_DUNG_THEO_MUC_12.get(loai12, frozenset())
+    ket = [k for k in ket if not (k["ma"] in khong_ap_dung and k["muc"] == MUC_CHUA_DU)]
     nguon_gt = [
         {"cong": "G0", "noi": "study_meta.gate_params.G0.test_type", "gia_tri": _gp(meta, "G0").get("test_type")},
         {"cong": "G3", "noi": "G3_checkpoint.hypothesis_type" + (" (N theo độ chính xác ⇒ mô tả)"
