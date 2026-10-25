@@ -321,7 +321,7 @@ def _dong_muc_2(design_code, ket_cuc_chinh_da_chot=None):
 def generate(study, topic, design_code, design_primary, reporting_std,
              n_adjusted, alpha, power, effect_val, effect_type, run_date, sd=None,
              hypothesis_type="superiority", margin=None, n_statistical_min=None, *,
-             g3=None, estimand=None, giai_trinh_thieu_luc=None, ket_cuc_chinh_da_chot=None):
+             g3=None, estimand=None, giai_trinh_thieu_luc=None, ket_cuc_chinh_da_chot=None, gia_thuyet_phu=None):
     """Sinh SAP Final + chứng chỉ khoá (DRAFT — CHỜ KÝ).
 
     Tham số vị trí giữ nguyên hợp đồng cũ. Từ khoá mới (VÁ 04/10/2026, soát từng cổng):
@@ -330,6 +330,9 @@ def generate(study, topic, design_code, design_primary, reporting_std,
       estimand — gate_params.G1.estimand (5 thuộc tính ICH E9(R1)) cho §4 của RCT — G4-03; vắng ⇒ ô [CẦN].
       giai_trinh_thieu_luc — gate_params.G3.underpowered_acceptance_justification khi N kế hoạch < N tối thiểu — G4-05.
       ket_cuc_chinh_da_chot — kết cục chính ĐÃ CHỐT ở G1 (rồi G0); thiết kế ĐỊNH TÍNH điền sẵn vào §2 (06/10/2026).
+      gia_thuyet_phu — gate_params.G0.hypothesis_secondary: giả thuyết định trước của MỤC TIÊU PHỤ phân tích ở đề tài
+            mô tả theo độ chính xác (25/10/2026, hội đồng G1 C1a DP-G1-2) — §12 không còn nói cả đề tài «không kiểm
+            định giả thuyết».
     """
     g3 = dict(g3 or {})
     loai12 = G4Q.loai_muc_12(design_code, {"effect_type": effect_type})
@@ -607,6 +610,8 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             dong_n_12,
             ("- **Power:** kết cục chính không dùng — cỡ mẫu theo độ chính xác của ước lượng, không kiểm định giả "
              "thuyết; mục tiêu phụ xem dòng «Lực cho mục tiêu phụ»  " if dong_luc_phu else
+             "- **Power:** kết cục chính không dùng — cỡ mẫu theo độ chính xác của ước lượng, không kiểm định giả "
+             "thuyết; mục tiêu phụ xem dòng «Giả thuyết mục tiêu phụ»  " if gia_thuyet_phu else
              "- **Power:** không dùng — cỡ mẫu theo độ chính xác của ước lượng, không kiểm định giả thuyết  "),
         ]
     else:
@@ -638,6 +643,9 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             muc_12 += [f"- **Số ca bệnh cần:** {g3.get('n_benh')}  ",
                        f"- **Số ca không bệnh cần:** {g3.get('n_khong_benh')}  ",
                        f"- **Tỷ lệ hiện mắc dự kiến:** {_so(g3.get('prevalence'))}  "]
+    if gia_thuyet_phu and str(gia_thuyet_phu).strip() and loai12 != "dinh_tinh":
+        muc_12.append(f"- **Giả thuyết mục tiêu phụ (định trước, gate_params.G0.hypothesis_secondary):** "
+                      f"{' '.join(str(gia_thuyet_phu).split())}  ")
     if dong_luc_phu and loai12 != "dinh_tinh":
         muc_12.append(f"- **Lực cho mục tiêu phụ:** {dong_luc_phu} (G3 A4 PHẦN 2c)  ")
     if loai12 != "dinh_tinh" and g3.get("dropout") is not None:
@@ -1027,7 +1035,9 @@ def main():
                         n_statistical_min=n_statistical_min,
                         g3=g3, estimand=S.dac_ta_thiet_ke(out).get("estimand"),
                         giai_trinh_thieu_luc=g3_meta.get("underpowered_acceptance_justification"),
-                        ket_cuc_chinh_da_chot=_ket_cuc_chinh_da_chot(meta_cp))
+                        ket_cuc_chinh_da_chot=_ket_cuc_chinh_da_chot(meta_cp),
+                        gia_thuyet_phu=(((meta_cp.get("gate_params") or {}).get("G0") or {}).get("hypothesis_secondary")
+                                        if isinstance(meta_cp, dict) else None))
     md = out / f"G4_A5_SAP_FINAL_{study}.md"
     # SAP là tài liệu bác sĩ/thống kê viên ĐỌC RỒI KÝ, nên chuẩn hoá văn phong
     # trước khi ghi. keep_box=True: khung của SAP LOCK CERTIFICATE đóng vai con
