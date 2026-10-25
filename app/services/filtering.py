@@ -8,6 +8,7 @@ from __future__ import annotations
 from typing import Dict, List, Optional, Tuple
 
 from app.config import settings
+from app.utils.kho_luu_tru import kho_luu_tru_da_nang, ly_do_kho_luu_tru
 
 # Thiết kế bị loại khỏi phần "thay đổi thực hành" (mục 4.4).
 EXCLUDED_STUDY_TYPES = {
@@ -101,6 +102,11 @@ def _classify_co_ban(item: Dict) -> Tuple[str, bool, str, str]:
         return ("excluded", False, "", "Tài liệu không có tiêu đề/không truy xuất được nguồn gốc.")
     if tier == "D":
         return ("excluded", False, "", "Reliability Tier D – loại khỏi báo cáo chính.")
+    # Kho lưu trữ đa năng (25/10/2026): chỉ theo dõi, kèm lý do — không actionable, không «cần đọc toàn văn» như
+    # guideline.
+    kho = kho_luu_tru_da_nang(item.get("doi"), item.get("journal_or_organization"))
+    if kho:
+        return ("watch_only", False, "", ly_do_kho_luu_tru(kho))
 
     # 2) Actionable: đạt ngưỡng cấu hình + tier A
     if (eq >= settings.min_evidence_score and pc >= settings.min_practice_change_score

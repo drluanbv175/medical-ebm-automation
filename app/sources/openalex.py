@@ -64,7 +64,7 @@ class OpenAlexClient(SourceClient):
                     journal_or_organization=journal,
                     publication_date=w.get("publication_date"),
                     doi=doi, document_type=w.get("type"),
-                    study_type=infer_study_type(title, w.get("type"), journal, src_tag),
+                    study_type=infer_study_type(title, w.get("type"), journal, src_tag, doi=doi),
                     clinical_area=clinical_area, url=w.get("id"),
                     keywords=[c.get("display_name") for c in (w.get("concepts") or [])[:5]],
                     ingest_query=query, api_endpoint=WORKS,

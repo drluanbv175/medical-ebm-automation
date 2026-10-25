@@ -13,6 +13,7 @@ import re
 from typing import Optional
 
 from app.sources.authority import match_authority_source
+from app.utils.kho_luu_tru import kho_luu_tru_da_nang
 
 # Viết tắt ngắn dễ trùng từ tiếng Anh thông thường (who/Canada/vaccine...). Các tín hiệu này
 # CHỈ khớp trong trường journal/organization, không khớp trong tiêu đề/tác giả.
@@ -102,22 +103,27 @@ OFFICIAL_ORG_SIGNALS = {
 
 def infer_study_type(title: Optional[str], document_type: Optional[str] = None,
                      journal: Optional[str] = None,
-                     source_tag: Optional[str] = None) -> Optional[str]:
+                     source_tag: Optional[str] = None,
+                     doi: Optional[str] = None) -> Optional[str]:
     """Suy ra study_type chuẩn hóa từ các tín hiệu metadata thật.
 
     source_tag: cờ nguồn (vd 'PPR' của Europe PMC -> preprint).
+    Bản lưu trên KHO LƯU TRỮ ĐA NĂNG (Zenodo/figshare/OSF… — `app.utils.kho_luu_tru`, 25/10/2026): chữ guideline/
+    systematic review/RCT trong tiêu đề KHÔNG chứng minh thiết kế — «What do the KDIGO guidelines recommend…?» là câu
+    trả lời AI chứ không phải guideline ⇒ bỏ qua ba tín hiệu mạnh đó, các tín hiệu còn lại xét như thường.
     """
     blob = " ".join(x for x in (title, document_type, journal) if x).lower()
     src = (source_tag or "").lower()
+    tren_kho = kho_luu_tru_da_nang(doi, journal) is not None
 
     if src in ("ppr", "preprint") or any(p in blob for p in _PREPRINT):
         return "preprint"
-    if any(k in blob for k in _SR):
+    if not tren_kho and any(k in blob for k in _SR):
         return "systematic_review"
     # Guideline: ưu tiên trước RCT vì nhiều guideline có chữ 'trial' trong nền.
-    if any(k in blob for k in _GUIDELINE):
+    if not tren_kho and any(k in blob for k in _GUIDELINE):
         return "guideline"
-    if any(k in blob for k in _RCT):
+    if not tren_kho and any(k in blob for k in _RCT):
         return "rct"
     if any(k in blob for k in _COHORT):
         return "cohort"

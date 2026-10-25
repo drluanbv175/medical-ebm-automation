@@ -25,7 +25,8 @@ from app.services.pipeline import score_item  # noqa: E402
 # để tái lập đúng như pipeline chấm trên dữ liệu vừa normalize.
 INPUT_FIELDS = ["study_type", "title", "abstract", "document_type", "safety_signal",
                 "official_grade", "journal_or_organization", "authors", "keywords",
-                "publication_date", "guideline_version", "source_type"]
+                "publication_date", "guideline_version", "source_type",
+                "doi"]  # doi: luật kho lưu trữ đa năng đọc tiền tố DOI (25/10/2026)
 
 
 def _item_tu_hang(obj) -> dict:

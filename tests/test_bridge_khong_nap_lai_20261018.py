@@ -79,10 +79,14 @@ def test_khoa_khong_nap_lai_doc_ca_chuoi_lan_dict_khong_phan_biet_hoa_thuong(bri
 
 
 def test_ca_loi_goc_khong_co_danh_sach_thi_nap_lai_muc_da_thay_nguon(bridge, tmp_path, monkeypatch):
-    """Đối chứng: thẻ đã đổi sang DOI gốc, sổ cái KHÔNG có danh sách ⇒ mục Zenodo bị nạp lại (đúng lỗi 18/10)."""
+    """Đối chứng: thẻ đã đổi sang DOI gốc, sổ cái KHÔNG có danh sách ⇒ mục kỷ yếu bị nạp lại (đúng lỗi 18/10).
+
+    25/10/2026: mục Zenodo không còn là đối chứng — luật kho lưu trữ đa năng chặn nó ở gốc
+    (`tests/test_kho_luu_tru_da_nang_20261025.py`); mục kỷ yếu 10.82161 vẫn chỉ danh sách này chặn được."""
     da_thay = {"id": "EVID-2026-1149", "source": {"doi": "10.1016/j.ard.2026.03.006", "pmid": "42036268"}}
     the = _chay(bridge, tmp_path, monkeypatch, {}, [da_thay])
-    assert {c["source"]["doi"] for c in the} >= {"10.5281/zenodo.20834906", "10.82161/0fgc-zz44"}
+    doi = {c["source"]["doi"] for c in the}
+    assert "10.82161/0fgc-zz44" in doi and "10.5281/zenodo.20834906" not in doi
 
 
 def test_danh_sach_chan_nap_lai_nhung_van_nap_muc_moi_that(bridge, tmp_path, monkeypatch, capsys):

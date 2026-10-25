@@ -553,3 +553,20 @@
   `SEMANTIC_SCHOLAR_AUXILIARY_RATE_LIMITED_429_ACCEPTED` (không đổi trạng thái lượt; `nguon_hong_keo_dai` gắn
   `da_co_ghi_chu` ⇒ hòm việc hạ xuống ưu tiên 3). Lỗi kiểu khác lẫn vào, hoặc nguồn lõi không khoẻ ⇒ không ghi chú.
 - Có khoá API thì bật `SEMANTIC_SCHOLAR_API_KEY` ở kho secrets (không qua chat) — quyết định của bác sĩ.
+
+## Kho lưu trữ đa năng không bao giờ là guideline/tier A (25/10/2026)
+
+- Sự cố 18/10: OpenAlex trả câu trả lời AI «Trip Database Ask» lưu trên Zenodo (DOI 10.5281/zenodo.*). Tiêu đề kiểu
+  «What do the KDIGO guidelines recommend…?» ⇒ `infer_study_type` = guideline, tên KDIGO/AUA trong CÂU HỎI bị đọc thành
+  tổ chức phát hành ⇒ điểm 90–93 ⇒ tier A «actionable» ⇒ cầu nối đưa 4 bản vào hub EBM_MASTER. #175 chỉ chặn nạp lại 5
+  khoá đã biết (`meta.bridge_khong_nap_lai`).
+- Đo DB engine 25/10: 484 bản chính trên kho lưu trữ đa năng (Zenodo 333 · OSF 84 · figshare 59 · Mendeley Data 7 ·
+  Dataverse 1); mọi bản «guideline» trên Zenodo (4 tier A + 10 tier B) đều KHÔNG phải guideline — câu trả lời AI,
+  infographic, nghiên cứu tuân thủ. DOI 10.5281/ còn mang tên một loạt «tạp chí» dùng Zenodo cấp DOI.
+- Luật (`app/utils/kho_luu_tru.py`, nhận diện theo tiền tố DOI do kho cấp HOẶC tên nơi lưu): bộ suy bỏ qua tín hiệu
+  guideline/SR/RCT trong tiêu đề; điểm chất lượng không cộng nền thiết kế mạnh, không cộng «guideline chính thức», không
+  cộng uy tín tổ chức đọc từ tiêu đề; tier tối đa C; phân loại `watch_only` kèm lý do «Bản lưu trên kho lưu trữ đa
+  năng …»; cầu nối bỏ qua các hàng đó ngay lúc đọc (hàng DB chấm trước luật mới vẫn mang tier A tới lượt
+  `scripts/rescore.py --apply` — `rescore` nay mang `doi` vào luật). Đo tác động trên DB (chỉ đọc): 4 A + 15 B → C,
+  116 bản đã loại giữ nguyên, không hàng nào ngoài kho bị đổi.
+- Bản thật của tổ chức nằm ở nơi phát hành (PubMed/Crossref/trang hội) — bản trên kho chỉ là đầu mối để tìm văn bản gốc.

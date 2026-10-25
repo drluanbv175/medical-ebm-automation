@@ -10,6 +10,8 @@ from __future__ import annotations
 import re
 from typing import Dict, Tuple
 
+from app.utils.kho_luu_tru import THIET_KE_MANH, kho_luu_tru_da_nang
+
 # Điểm nền theo loại thiết kế (study_type chuẩn hóa).
 DESIGN_BASE = {
     "guideline": 85,
@@ -56,6 +58,12 @@ def evidence_quality_score(item: Dict) -> Tuple[float, Dict[str, float]]:
     # thường nếu văn bản có tín hiệu thật.
     base = DESIGN_BASE.get(study_type, 0)
     breakdown["base_design"] = float(base)
+    # Kho lưu trữ đa năng (25/10/2026): thiết kế mạnh đã lưu cho bản ghi đó chỉ suy từ chữ trong tiêu đề (hàng DB
+    # cũ còn «guideline») ⇒ không cộng nền thiết kế; tên tổ chức nằm trong tiêu đề không phải nơi phát hành ⇒ không
+    # cộng uy tín.
+    kho = kho_luu_tru_da_nang(item.get("doi"), item.get("journal_or_organization"))
+    if kho and study_type in THIET_KE_MANH:
+        breakdown["kho_luu_tru_da_nang"] = -float(base)
 
     text = _text(item, "title", "abstract", "document_type")
 
@@ -92,14 +100,14 @@ def evidence_quality_score(item: Dict) -> Tuple[float, Dict[str, float]]:
         breakdown["large_sample"] = 3
 
     # Guideline chính thức / GRADE
-    if study_type == "guideline":
+    if study_type == "guideline" and not kho:
         breakdown["official_guideline"] = 5
     if item.get("official_grade"):
         breakdown["has_grade"] = 4
 
     # Nguồn từ tổ chức/tạp chí chính thống (ESC, AHA, NICE, NEJM, Lancet...)
     from app.sources.authority import authority_breakdown_for
-    authority, authority_breakdown = authority_breakdown_for((
+    authority, authority_breakdown = (None, {}) if kho else authority_breakdown_for((
         item.get("journal_or_organization"),
         item.get("source"),
         item.get("authors"),
