@@ -402,7 +402,9 @@ def test_supporting_artifacts_are_complete_and_traceable(tmp_path):
     assert set(paths) == {"A1b", "A2", "A2b", "A13", "A13b"}
     assert "PMID:12345678" in texts["A2b"]
     assert "DOI:10.1000/example" in texts["A2b"]
-    assert texts["A13b"].count("| G1-R0") == 6
+    # 25/10/2026: khuôn có thêm G1-R07 (lộ/mất dữ liệu người tham gia) — hội đồng G1 C1a: sổ rủi ro bỏ trống trục
+    # an toàn dữ liệu.
+    assert texts["A13b"].count("| G1-R0") == 7
     assert all("Cần bác sĩ kiểm chứng" in text for text in texts.values())
 
 

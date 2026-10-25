@@ -22,7 +22,7 @@ import hashlib
 import json
 import re
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 import annex2_quality_gate as A2X
 import cong_song as CS
@@ -715,6 +715,55 @@ def _sang_loc_g0(out_dir: Path, study: str) -> Dict[str, Mapping[str, Any]]:
     return ra
 
 
+# 25/10/2026 (hội đồng G1 C1a, G1-T2 RQ2): cột RoB của sổ A2b ghi MỘT nhãn chung cho mọi thiết kế. Máy GỢI Ý công cụ
+# theo thiết kế ghi ở sàng lọc G0 (chuỗi tự do) — chỉ gợi ý, việc chấm vẫn của người đọc toàn văn. Thứ tự khớp có chủ ý:
+# tổng quan trước «ngẫu nhiên», ngẫu nhiên trước «can thiệp», hỗn hợp trước «định tính»/«cắt ngang».
+_CONG_CU_ROB_THEO_THIET_KE: Tuple[Tuple[Tuple[str, ...], str], ...] = (
+    (("xã luận", "bình luận", "editorial", "commentary", "thư gửi"), ""),
+    (("tổng quan hệ thống", "phân tích gộp", "systematic review", "meta-analys", "sr+ma", "sr/ma"), "AMSTAR 2 / ROBIS"),
+    (("chẩn đoán", "độ chính xác", "diagnostic accuracy"), "QUADAS-3"),
+    (("ngẫu nhiên", "randomi", "rct"), "RoB 2"),
+    (("hỗn hợp", "mixed method"), "MMAT"),
+    (("can thiệp", "triển khai", "trước–sau", "trước-sau", "non-random"), "ROBINS-I"),
+    (("định tính", "phỏng vấn sâu", "thảo luận nhóm", "qualitative"), "JBI định tính / CASP"),
+    (("bệnh–chứng", "bệnh-chứng", "case-control", "case control"), "ROBINS-E / Newcastle–Ottawa"),
+    (("thuần tập", "tiến cứu", "theo dõi", "cohort"), "ROBINS-E / Newcastle–Ottawa"),
+    (("cắt ngang", "khảo sát", "cross-sectional", "survey"), "JBI cắt ngang có phân tích / AXIS"),
+)
+
+
+def _o_rob(thiet_ke: Any) -> str:
+    """Ô RoB của sổ A2b: gợi ý công cụ theo thiết kế (không chấm thay người)."""
+    t = str(thiet_ke or "").lower()
+    for tu_khoa, cong_cu in _CONG_CU_ROB_THEO_THIET_KE:
+        if any(k in t for k in tu_khoa):
+            if not cong_cu:
+                return "Không áp dụng — xã luận/bình luận, không dùng làm căn cứ số liệu"
+            return f"[CẦN THẨM ĐỊNH RoB — gợi ý công cụ: {cong_cu}; đọc toàn văn]"
+    return "[CẦN THẨM ĐỊNH RoB — chọn công cụ theo thiết kế; đọc toàn văn]"
+
+
+def _rut_bai_g0(out_dir: Path, study: str) -> Optional[str]:
+    """Tóm tắt lần kiểm rút bài của G0 (khoá `rut_bai` của tệp tổng hợp G0-T3) — None nếu không có."""
+    du_lieu, _loi = GT.doc(Path(out_dir), GT.TEP_TONG_HOP, study)
+    rb = du_lieu.get("rut_bai") if isinstance(du_lieu, dict) else None
+    if not isinstance(rb, dict) or not _present(rb.get("ket_qua")):
+        return None
+    return _o_bang(f"{rb.get('ngay') or '[ngày?]'} — {rb.get('ket_qua')}")
+
+
+def _gap_theo_quyet_dinh_g0(dong: str, meta: Mapping[str, Any]) -> str:
+    """Dòng khoảng trống «… cần đối chiếu để tránh trùng lặp» viết TRƯỚC khi PI đánh giá chồng lấn đăng ký ở G0 ⇒ nối
+    kết luận đã chốt (gate_params.G0.registry_overlap_assessment), không để như việc còn treo (G1-T2 RQ4,
+    25/10/2026)."""
+    gp = meta.get("gate_params") if isinstance(meta.get("gate_params"), Mapping) else {}
+    g0 = gp.get("G0") if isinstance(gp.get("G0"), Mapping) else {}
+    danh_gia = g0.get("registry_overlap_assessment")
+    if "trùng lặp" in dong and "PI ĐÃ ĐÁNH GIÁ" not in dong and _present(danh_gia):
+        return f"{dong} — PI ĐÃ ĐÁNH GIÁ ở G0 (gate_params.G0.registry_overlap_assessment): {_o_bang(danh_gia)}"
+    return dong
+
+
 def build_supporting_artifacts(
     *,
     study: str,
@@ -813,7 +862,7 @@ def build_supporting_artifacts(
                     "gian_tiep": "liên quan GIÁN TIẾP"}.get(bai.get("lien_quan"), "")
             evidence_rows.append(
                 f"| {ma_hien} | {tieu_de or '[CẦN TRÍCH XUẤT METADATA]'} | {_o_so(bai.get('thiet_ke_that'))} | "
-                f"{_o_so(bai.get('tom_tat'))} (theo tóm tắt) | [CẦN THẨM ĐỊNH RoB — đọc toàn văn] | "
+                f"{_o_so(bai.get('tom_tat'))} (theo tóm tắt) | {_o_rob(bai.get('thiet_ke_that'))} | "
                 f"Đã sàng ở G0-T3 (tiêu đề + tóm tắt): {nhan}; chưa đọc toàn văn |")
             return
         evidence_rows.append(
@@ -839,7 +888,7 @@ def build_supporting_artifacts(
 
     gap_lines = g0_checkpoint.get("research_gaps")
     if isinstance(gap_lines, list) and gap_lines:
-        gap_text = "\n".join(f"- {item}" for item in gap_lines)
+        gap_text = "\n".join(f"- {_gap_theo_quyet_dinh_g0(str(item), meta)}" for item in gap_lines)
     else:
         gap_text = "- [CẦN BỔ SUNG sau tổng quan có hệ thống]"
     ghi_chu_md = (
@@ -854,6 +903,9 @@ def build_supporting_artifacts(
             f"> Cột **Thiết kế · Hiệu ứng · Trạng thái**: {n_sang} dòng lấy từ sàng lọc G0-T3 "
             f"(`{GT.TEP_TONG_HOP.format(study=study)}`, đọc tiêu đề + tóm tắt) — KHÔNG phải trích xuất toàn văn; "
             "thẩm định RoB vẫn là việc người thật. Bài G0-T3 xếp lạc đề nằm ở mục riêng, không vào bảng.\n")
+    rut_bai = _rut_bai_g0(out_dir, study)
+    dong_rut_bai = (f"- Kiểm rút bài (G0, khoá `rut_bai` của `{GT.TEP_TONG_HOP.format(study=study)}`): {rut_bai}\n"
+                    if rut_bai else "- Kiểm rút bài: [CHƯA KIỂM RÚT BÀI — chạy tools/check_citation_retraction.py]\n")
     gioi_han = (f"xem `G0_TIM_BO_SUNG_PRISMA_S_{study}.md` (nguồn, chuỗi, số hit, recall bài mốc, giới hạn — PRISMA-S)"
                 if (out_dir / f"G0_TIM_BO_SUNG_PRISMA_S_{study}.md").exists() else "[CẦN XÁC NHẬN]")
     lac_de_md = ("\n## Đã sàng ở G0 — lạc đề (không vào sổ)\n" + "\n".join(f"- {x}" for x in lac_de) + "\n"
@@ -866,7 +918,7 @@ def build_supporting_artifacts(
 - Truy vấn G0: `{query}`
 - Ngày rà: {generated_at[:10]}
 - Giới hạn truy xuất/recall: {gioi_han}
-
+{dong_rut_bai}
 ## Bảng Evidence Ledger
 | PMID/DOI | Tiêu đề | Thiết kế/N | Hiệu ứng chính | RoB | Trạng thái nội dung |
 |---|---|---|---|---|---|
@@ -888,16 +940,17 @@ def build_supporting_artifacts(
         for r in (bud if isinstance(bud, list) else []) if isinstance(r, Mapping)
     ) or (
         "| Nhân công | [CẦN] | [CẦN CHỦ NHIỆM ẤN ĐỊNH] | [CẦN] | Dự thảo |\n"
-        "| Thu thập/xét nghiệm | [CẦN] | [CẦN] | [CẦN] | Dự thảo |\n"
+        "| Thu thập dữ liệu (in phiếu, nhập liệu, đi lại…) | [CẦN] | [CẦN] | [CẦN] | Dự thảo |\n"
+        "| Xét nghiệm/cận lâm sàng (chỉ khi đề cương có) | [CẦN] | [CẦN] | [CẦN] | Dự thảo |\n"
         "| Dữ liệu/phần mềm | [CẦN] | [CẦN] | [CẦN] | Dự thảo |\n"
         "| Công bố/lưu trữ | [CẦN] | [CẦN] | [CẦN] | Dự thảo |"
     )
-
-    plan = f"""# KẾ HOẠCH TRIỂN KHAI (A13) — {study}
-> [DỰ THẢO] Đơn giá, nhân sự và thời lượng thật do chủ nhiệm/đơn vị xác nhận.
-
-## RACI
-| Công việc | PI | Methodologist | Biostatistician | Data Manager | Site team |
+    # 25/10/2026 (hội đồng G1 C1a, G1-T3): A13 in RACI/GANTT/QTL/giám sát cứng trong khi PI ĐÃ chốt team_roles,
+    # study_schema_timeline, critical_to_quality, monitoring_plan ở gate_params.G1 ⇒ hai tài liệu lệch nhau, PI không
+    # biết điền ở đâu. Có dữ kiện thì dùng dữ kiện; không có thì giữ khuôn KÈM chỗ điền.
+    vai = g1.get("team_roles")
+    raci = (f"Vai trò đã khai (`gate_params.G1.team_roles`): {_o_bang(vai)}" if _present(vai) else
+            """| Công việc | PI | Methodologist | Biostatistician | Data Manager | Site team |
 |---|---|---|---|---|---|
 | Chốt thiết kế/protocol | A | R | C | I | C |
 | Cỡ mẫu/SAP | A | C | R | C | I |
@@ -905,25 +958,48 @@ def build_supporting_artifacts(
 | Thu thập/QC dữ liệu | A | I | C | R | R |
 | Phân tích/báo cáo | A | C | R | C | I |
 
+> KHUÔN THAM CHIẾU — khai vai thật (ai, độc lập với ai) ở `gate_params.G1.team_roles` rồi chạy lại G1.""")
+    lich = g1.get("study_schema_timeline")
+    tl = "theo lịch đã khai" if _present(lich) else "[CẦN]"
+    lich_md = (f"\nLịch đã khai (`gate_params.G1.study_schema_timeline`): {_o_bang(lich)}\n" if _present(lich) else
+               "\n> Khai lịch ở `gate_params.G1.study_schema_timeline` rồi chạy lại G1.\n")
+    ctq = g1.get("critical_to_quality")
+    ctq_md = ("- Critical-to-quality factors và quality tolerance limits đã khai "
+              f"(`gate_params.G1.critical_to_quality`): {_o_bang(ctq)}" if _present(ctq) else
+              "- Critical-to-quality factors: quyền/an toàn người tham gia; tính tin cậy kết cục chính;\n"
+              "  tuyển mẫu; missing data; tuân thủ protocol; truy nguyên dữ liệu.\n"
+              "- Quality tolerance limits: [CẦN PI/methodologist ấn định trước triển khai — `gate_params.G1."
+              "critical_to_quality`].")
+    gs = g1.get("monitoring_plan")
+    gs_md = (f"- Monitoring và escalation đã khai (`gate_params.G1.monitoring_plan`): {_o_bang(gs)}" if _present(gs)
+             else "- Monitoring và escalation: [CẦN xác nhận tại đơn vị — `gate_params.G1.monitoring_plan`].")
+    kp_md = ("" if isinstance(bud, list) and bud else
+             "\n> Khai kinh phí ở `gate_params.G1.budget` (mỗi dòng: nhom/so_luong/don_gia/thanh_tien/trang_thai) rồi "
+             "chạy lại G1 — máy không tự đặt đơn giá.\n")
+
+    plan = f"""# KẾ HOẠCH TRIỂN KHAI (A13) — {study}
+> [DỰ THẢO] Đơn giá, nhân sự và thời lượng thật do chủ nhiệm/đơn vị xác nhận.
+
+## RACI
+{raci}
+
 ## GANTT theo cổng
 | Chặng | Phụ thuộc | Thời lượng | Mốc nghiệm thu |
 |---|---|---|---|
-| G0–G1 | Không | [CẦN] | Thiết kế + protocol map |
-| G2 | G1 | [CẦN] | IRB/registration |
-| G3–G4 | G1 | [CẦN] | Cỡ mẫu + SAP lock |
-| G5 | G2/G4 | [CẦN] | Pilot/SOP/data tools |
-| G6–G10 | Data lock | [CẦN] | Analysis/report/review/closeout |
-
+| G0–G1 | Không | {tl} | Thiết kế + protocol map |
+| G2 | G1 | {tl} | IRB/registration |
+| G3–G4 | G1 | {tl} | Cỡ mẫu + SAP lock |
+| G5 | G2/G4 | {tl} | Pilot/SOP/data tools |
+| G6–G10 | Data lock | {tl} | Analysis/report/review/closeout |
+{lich_md}
 ## KINH PHÍ
 | Nhóm chi phí | Số lượng | Đơn giá có nguồn | Thành tiền | Trạng thái |
 |---|---:|---:|---:|---|
 {kinh_phi_rows}
-
+{kp_md}
 ## QUALITY-BY-DESIGN
-- Critical-to-quality factors: quyền/an toàn người tham gia; tính tin cậy kết cục chính;
-  tuyển mẫu; missing data; tuân thủ protocol; truy nguyên dữ liệu.
-- Quality tolerance limits: [CẦN PI/methodologist ấn định trước triển khai].
-- Monitoring và escalation: [CẦN xác nhận tại đơn vị].
+{ctq_md}
+{gs_md}
 
 > Cần bác sĩ kiểm chứng.
 """
@@ -943,26 +1019,41 @@ def build_supporting_artifacts(
             ngay = row.get("ngay_ra")
             o.append(str(ngay) if _valid_review_time(ngay) else "[CẦN NGƯỜI RÀ]")
             rr_rows_meta.append("| " + " | ".join(o) + " |")
+    # 25/10/2026 (hội đồng G1 C1a, G1-T3): khuôn cũ viết cho thử nghiệm nhiều điểm («estimand», «nhiều điểm tuyển»),
+    # mọi tác động «Cao», không có dòng an toàn dữ liệu. Khuôn nay theo thiết kế, tác động để nhóm chấm, có rủi ro dữ
+    # liệu cá nhân, và nói rõ đây là KHUÔN khi risk_register chưa khai.
+    ma_tk = str(design.get("internal_code") or "")
+    can_thiep = ma_tk in ("rct", "non_randomized")
     risk_rows = (
-        "| G1-R01 | Thiết kế | Thiết kế không khớp câu hỏi/estimand | [CẦN] | Cao | "
+        "| G1-R01 | Thiết kế | Thiết kế không khớp câu hỏi/"
+        + ("estimand" if can_thiep else "kết cục chính") + " | [CẦN] | [CẦN] | "
         "Methodologist rà trước G2 | Sửa protocol có version; vô hiệu downstream cũ | "
         f"PI/Methodologist | Mở | {review_date} |",
-        "| G1-R02 | Đạo đức | Hồ sơ không khớp phiên bản protocol | [CẦN] | Cao | "
-        f"Hash/version mọi artifact | Dừng tuyển; amendment IRB | PI | Mở | {review_date} |",
-        "| G1-R03 | Tuyển mẫu | Không đạt tốc độ tuyển dự kiến | [CẦN] | Cao | "
-        "Feasibility log + nhiều điểm tuyển | CAPA tuyển mẫu; điều chỉnh timeline đã duyệt | "
-        f"Site lead | Mở | {review_date} |",
-        "| G1-R04 | Dữ liệu | Thiếu/sai dữ liệu kết cục chính | [CẦN] | Cao | "
+        "| G1-R02 | Đạo đức | Hồ sơ không khớp phiên bản protocol | [CẦN] | [CẦN] | "
+        "Hash/version mọi artifact | " + ("Dừng tuyển; amendment IRB" if can_thiep else
+                                         "Tạm dừng thu thập; nộp sửa đổi Hội đồng Đạo đức")
+        + f" | PI | Mở | {review_date} |",
+        "| G1-R03 | Tuyển mẫu | Không đạt tốc độ tuyển dự kiến | [CẦN] | [CẦN] | "
+        "Sổ khả thi; rà khung mẫu và thời gian thu thập | CAPA tuyển mẫu; điều chỉnh timeline đã duyệt | "
+        f"Người điều phối thu thập | Mở | {review_date} |",
+        "| G1-R04 | Dữ liệu | Thiếu/sai dữ liệu kết cục chính | [CẦN] | [CẦN] | "
         f"CRF validation + pilot | Query/CAPA; không tự điền dữ liệu | Data Manager | Mở | {review_date} |",
-        "| G1-R05 | Thống kê | Outcome/SAP thay đổi sau xem dữ liệu | [CẦN] | Cao | "
+        "| G1-R05 | Thống kê | Outcome/SAP thay đổi sau xem dữ liệu | [CẦN] | [CẦN] | "
         "Khóa SAP G4 | Ghi deviation; phân tích gắn nhãn thăm dò | "
         f"Biostatistician | Mở | {review_date} |",
-        "| G1-R06 | Liêm chính | Trích dẫn ma/sai nội dung | [CẦN] | Cao | "
+        "| G1-R06 | Liêm chính | Trích dẫn ma/sai nội dung | [CẦN] | [CẦN] | "
         f"Evidence Ledger + A12 | Loại/sửa nguồn; chạy lại A12 | Evidence reviewer | Mở | {review_date} |",
+        "| G1-R07 | Dữ liệu cá nhân | Lộ hoặc mất dữ liệu người tham gia | [CẦN] | [CẦN] | "
+        "Khử định danh, phân quyền, sao lưu theo DMP | Báo sự cố theo quy trình đơn vị; đánh giá tác động | "
+        f"Data Manager/PI | Mở | {review_date} |",
     )
+    rr_nhan = ("" if rr_rows_meta else
+               "> KHUÔN MẶC ĐỊNH — `gate_params.G1.risk_register` chưa khai. Đề cương đã có sổ rủi ro riêng thì chép "
+               "từng dòng vào đó (id/loai/rui_ro/xac_suat/tac_dong/giam_thieu/capa/chu_nhan/trang_thai/ngay_ra) rồi "
+               "chạy lại G1, để chỉ còn MỘT sổ rủi ro.\n")
     risks = f"""# RISK REGISTER SỐNG (A13b) — {study}
-> [DỰ THẢO] Mức xác suất/tác động phải được nhóm nghiên cứu hiệu chỉnh.
-
+> [DỰ THẢO] Mức xác suất/tác động phải được nhóm nghiên cứu hiệu chỉnh (thang Thấp · Vừa · Cao).
+{rr_nhan}
 | ID | Loại | Rủi ro | Xác suất | Tác động | Giảm thiểu trước | CAPA nếu xảy ra | Chủ nhân | Trạng thái | Ngày rà |
 |---|---|---|---|---|---|---|---|---|---|
 {chr(10).join(rr_rows_meta or risk_rows)}

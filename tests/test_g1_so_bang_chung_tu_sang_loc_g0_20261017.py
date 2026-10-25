@@ -63,7 +63,9 @@ def test_dong_co_sang_loc_lay_tu_g0(tmp_path):
     so = _so(_de_tai(tmp_path, prisma=True))
     dong = next(x for x in so.splitlines() if x.startswith("| PMID:11111111"))
     assert "cắt ngang n=300" in dong and "Hài lòng 80% (theo tóm tắt)" in dong
-    assert "[CẦN THẨM ĐỊNH RoB — đọc toàn văn]" in dong and "Đã sàng ở G0-T3" in dong and "TRỰC TIẾP" in dong
+    # 25/10/2026: ô RoB gợi ý công cụ theo thiết kế của sàng lọc G0 (cắt ngang ⇒ JBI/AXIS), vẫn đòi đọc toàn văn.
+    assert "[CẦN THẨM ĐỊNH RoB — gợi ý công cụ: JBI cắt ngang có phân tích / AXIS; đọc toàn văn]" in dong
+    assert "Đã sàng ở G0-T3" in dong and "TRỰC TIẾP" in dong
     doi = next(x for x in so.splitlines() if x.startswith("| DOI:10.1/abc"))
     assert "Bài trong nước" in doi and "Hài lòng 70%" in doi, "DOI so khớp không phân biệt hoa thường"
     assert "Giới hạn truy xuất/recall: xem `G0_TIM_BO_SUNG_PRISMA_S_" in so

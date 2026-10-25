@@ -122,7 +122,8 @@ BIAS_CONTROLS = {
         ("Confounding",     "Đa biến; hạn chế: cùng thời điểm → không loại trừ causal confounders"),
         ("Prevalence-incidence bias", "Thiết kế chỉ ước lượng hiện mắc; bàn luận giới hạn này"),
         ("Non-response bias", "So sánh người trả lời vs không trả lời (nếu có thể)"),
-        ("Social desirability", "Tự báo cáo → có thể underreport hành vi tiêu cực"),
+        ("Social desirability", "Tự báo cáo → lệch theo kỳ vọng xã hội (khai thấp điều tiêu cực, khai cao mức "
+                                "hài lòng); ẩn danh, người thu phiếu độc lập với người được đánh giá"),
         ("Reporting bias",  "Đăng ký nghiên cứu + tiền định phân tích"),
     ],
     "diagnostic": [
@@ -984,6 +985,26 @@ def _bias_table(bias_list: list) -> str:
     return "\n".join(rows)
 
 
+def _bias_rieng_de_tai(meta: Optional[dict]) -> list:
+    """Sai lệch RIÊNG của đề tài do PI khai ở `gate_params.G1.bias_controls` — mỗi dòng {sai_lech, bien_phap, chieu?}.
+
+    25/10/2026 (hội đồng G1 C1a, G1-T1 RQ2): PHẦN 2 chỉ có khuôn chung theo thiết kế, không có chỗ nhập sai lệch của
+    chính đề tài (vd người bỏ về trước khi khám ở khảo sát hài lòng) ⇒ bảng gắn nhãn «khống chế» cho thứ mới được đếm.
+    Khoá này KHÔNG có trong khuôn mặc định (thêm vào sẽ đổi dấu vân tay G1 đã chốt) — PI tự khai khi cần."""
+    g1 = (((meta or {}).get("gate_params") or {}).get("G1") or {})
+    ra = []
+    ds = g1.get("bias_controls") if isinstance(g1, dict) else None
+    for dong in ds if isinstance(ds, list) else []:
+        if not isinstance(dong, dict):
+            continue
+        ten, bien_phap = str(dong.get("sai_lech") or "").strip(), str(dong.get("bien_phap") or "").strip()
+        if not ten or not bien_phap:
+            continue
+        chieu = str(dong.get("chieu") or "").strip()
+        ra.append((ten.replace("|", "/"), (bien_phap + (f" (chiều lệch: {chieu})" if chieu else "")).replace("|", "/")))
+    return ra
+
+
 def _effect_size_section(effects: list) -> str:
     if not effects:
         return "  → Không trích xuất được effect size từ abstracts. [CẦN TỰ ĐỌC Y VĂN]\n"
@@ -1118,7 +1139,17 @@ def generate_g1_artifact(
     meta: Optional[dict] = None,
     out_dir: Optional[Path] = None,
 ) -> str:
-    bias_table = _bias_table(design["bias_controls"])
+    bias_rieng = _bias_rieng_de_tai(meta)
+    if bias_rieng:
+        bias_table = _bias_table(bias_rieng)
+        bias_nguon = ("> Sai lệch RIÊNG của đề tài (`gate_params.G1.bias_controls`). Khuôn chung của thiết kế để đối chiếu: "
+                      + ", ".join(b for b, _ in design["bias_controls"]) + ".")
+        nhieu_chinh = "xem PHẦN 2 (sai lệch riêng của đề tài — gate_params.G1.bias_controls)"
+    else:
+        bias_table = _bias_table(design["bias_controls"])
+        bias_nguon = ("> KHUÔN CHUNG theo thiết kế — chưa phải sai lệch của riêng đề tài. PI khai từng dòng {sai_lech, "
+                      "bien_phap, chieu} ở `gate_params.G1.bias_controls` rồi chạy lại G1.")
+        nhieu_chinh = "[từ §2 Bias Control]"
     es_section = _effect_size_section(effects)
     internal = design["internal_code"]
     specialist_modules = detect_specialist_modules(topic)
@@ -1652,6 +1683,8 @@ Quần thể phân tích chính liên kết estimand (không phải thuộc tín
 
 ## PHẦN 2 — KIỂM SOÁT 7 SAI LỆCH CHÍNH
 
+{bias_nguon}
+
 | Sai lệch | Biện pháp kiểm soát cho `{design["primary"]}` |
 |---|---|
 {bias_table}
@@ -1683,7 +1716,7 @@ Quần thể phân tích chính liên kết estimand (không phải thuộc tín
 KHỐI THIẾT KẾ — {study_name}
 Loại thiết kế: {design["primary"]}
 {design_block_body}
-Kiểm soát biến nhiễu chính: [từ §2 Bias Control]
+Kiểm soát biến nhiễu chính: {nhieu_chinh}
 {sample_size_line}
 Chuẩn báo cáo: {design["reporting_standard"]}
 Chuẩn đề cương/protocol: {protocol_standard}
