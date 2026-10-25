@@ -1523,6 +1523,55 @@ def _fail_closed_on_crypto_error(exc: BaseException) -> None:
         raise exc
 
 
+# 25/10/2026 — «KHÔNG KIỂM ĐƯỢC» ≠ «chữ ký sai». Python không có thư viện `cryptography` (vd `python3` hệ thống thay vì
+# ~/.ebm-venv) thì mọi chữ ký «ed1» đều ra False — đúng là fail-closed (không có chữ ký kiểm được thì không có phê
+# duyệt), nhưng bộ chấm báo «BẤT THƯỜNG — bị sửa sau khi ký» và hạ G4 đã khoá xuống READY_FOR_SIGNATURE. Agent hội đồng
+# G1 gọi `python3`, đọc sai «G4 chưa khoá» rồi ghi vào biên bản tranh biện. Ghi lại các lần không kiểm được để lớp chấm
+# sống (`cong_song`) trả «không đo được», và nói đúng nguyên nhân. KHÔNG nới cổng: hàm xác minh vẫn trả False.
+_KHONG_KIEM_DUOC_ED1: list = []
+
+
+def thu_vien_ed25519_san_co() -> bool:
+    """True khi Python đang chạy nạp được phần Ed25519 của thư viện ``cryptography``."""
+    try:
+        from cryptography.hazmat.primitives.asymmetric import ed25519  # noqa: F401
+        from cryptography.hazmat.primitives.serialization import load_pem_public_key  # noqa: F401
+        return True
+    except BaseException as _exc:  # noqa: BLE001 — thiếu/hỏng thư viện đều = không kiểm được (BH99-A)
+        _fail_closed_on_crypto_error(_exc)
+        return False
+
+
+def la_chu_ky_ed1(sig: Any) -> bool:
+    return isinstance(sig, str) and sig.startswith(_ED_SIGNATURE_SCHEME + ":")
+
+
+def moc_khong_kiem_duoc_ed1() -> int:
+    """Mốc sổ «không kiểm được» — người gọi lấy mốc TRƯỚC một lượt chấm, rồi đọc phần phát sinh bằng
+    ``khong_kiem_duoc_ed1_tu(moc)``. Không xoá sổ: chấm G10 gọi lồng chấm sống G0–G9, xoá ở lượt trong sẽ làm mất dấu
+    của lượt ngoài."""
+    return len(_KHONG_KIEM_DUOC_ED1)
+
+
+def khong_kiem_duoc_ed1_tu(moc: int) -> list:
+    return list(_KHONG_KIEM_DUOC_ED1[moc:])
+
+
+def ly_do_khong_kiem_duoc_ed1() -> str:
+    return (f"Python đang chạy ({sys.executable}) THIẾU thư viện cryptography — KHÔNG KIỂM ĐƯỢC chữ ký Ed25519 (ed1), "
+            "không phải bằng chứng bị sửa; chạy lại bằng ~/.ebm-venv/bin/python "
+            "(Windows: ~/.ebm-venv/Scripts/python.exe)")
+
+
+def _ly_do_chu_ky_khong_xac_minh(rec: Dict[str, Any], where: str) -> str:
+    """Lý do một bản ghi sổ cái không xác minh được — nói đúng «không kiểm được» khi thiếu thư viện (vẫn là bản ghi lạ:
+    fail-closed giữ nguyên)."""
+    if la_chu_ky_ed1(rec.get("approver_signature")) and not thu_vien_ed25519_san_co():
+        return f"{where}: {ly_do_khong_kiem_duoc_ed1()}"
+    return (f"{where} có chữ ký KHÔNG xác minh được bằng khóa trên máy này "
+            "(bị sửa sau khi ký, ký bằng máy/khóa khác, hoặc khóa đã đổi)")
+
+
 def _load_ed_private(group: str):
     """Khóa riêng Ed25519 của nhóm — None nếu không có/không đọc được/thiếu thư viện."""
     try:
@@ -1707,6 +1756,9 @@ def verify_approval_signature(record: Dict[str, Any], study: str) -> bool:
             return False
         role_raw = record.get("reviewer_role", "")
         group = role_group_for(role_raw if isinstance(role_raw, str) else "") or ""
+        if group and not thu_vien_ed25519_san_co():
+            _KHONG_KIEM_DUOC_ED1.append(f"{record.get('gate_id') or '?'}@{record.get('timestamp_utc') or '?'}")
+            return False
         pub = _load_ed_public(group) if group else None
         if pub is None:
             return False
@@ -1929,6 +1981,8 @@ def verify_ledger_seal(study: str, records: Any,
         "approver_signature": seal.get("seal_signature"),
     }
     if any_signing_key_available() and not verify_approval_signature(probe, str(study)):
+        if la_chu_ky_ed1(probe["approver_signature"]) and not thu_vien_ed25519_san_co():
+            return False, f"chữ ký của {p.name}: {ly_do_khong_kiem_duoc_ed1()}"
         return False, (f"chữ ký của {p.name} KHÔNG xác minh được bằng khóa trên máy này "
                        "(dấu bị sửa, hoặc niêm phong ở máy/khóa khác)")
     if int(seal.get("record_count") or -1) != count or str(seal.get("tip_hash")) != tip:
@@ -2112,8 +2166,7 @@ def _diagnose_gate_records(records: Any, gate_id: str, study: str,
             problem = (f"{where} có timestamp_utc={rec.get('timestamp_utc')!r} "
                        "không phải ISO-8601 hợp lệ")
         elif key_available and not verify_approval_signature(rec, study):
-            problem = (f"{where} có chữ ký KHÔNG xác minh được bằng khóa trên máy này "
-                       "(bị sửa sau khi ký, ký bằng máy/khóa khác, hoặc khóa đã đổi)")
+            problem = _ly_do_chu_ky_khong_xac_minh(rec, where)
         if problem:
             suspects.append((ts, problem))
         else:

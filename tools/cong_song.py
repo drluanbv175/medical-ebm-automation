@@ -42,6 +42,7 @@ import inspect
 import io
 import json
 import re
+import sys
 import unicodedata
 from datetime import datetime
 from pathlib import Path
@@ -156,12 +157,23 @@ def _cham(gate: str, study: str, out_dir: Path, repo_root: Optional[Path], luu: 
             # Quy ước out_dir = <repo>/exports/<study> (giống kiem_chi_tiet_he_nghien_cuu._cham_song): suy repo_root từ
             # out_dir để không đọc sổ cái của repo THẬT khi đang chấm một thư mục thử.
             kw["repo_root"] = Path(repo_root) if repo_root is not None else out_dir.parent.parent
+        GC = sys.modules.get("gate_contract")
+        moc = GC.moc_khong_kiem_duoc_ed1() if GC is not None else 0
         with contextlib.redirect_stdout(io.StringIO()):
             bao_cao = fn(study, **kw)
     except SystemExit as exc:
         return _ket(gate, None, NGUON_LOI, f"bộ chấm thoát mã {exc.code} — không đo được", luu)
     except Exception as exc:  # noqa: BLE001 — lỗi ⇒ không đo được, KHÔNG BAO GIỜ PASS
         return _ket(gate, None, NGUON_LOI, f"bộ chấm hỏng: {type(exc).__name__}: {str(exc)[:160]}", luu)
+    # 25/10/2026: bộ chấm vừa gặp chữ ký ed1 mà Python này không kiểm được (thiếu `cryptography`) ⇒ trạng thái nó trả
+    # (vd G4 đã khoá ra READY_FOR_SIGNATURE) KHÔNG phải số đo thật — «không đo được», nêu đúng cách đo lại.
+    GC = sys.modules.get("gate_contract")
+    khong_kiem = GC.khong_kiem_duoc_ed1_tu(moc) if GC is not None else []
+    if khong_kiem:
+        da_tra = bao_cao.get("status") if isinstance(bao_cao, dict) else "?"
+        return _ket(gate, None, NGUON_LOI,
+                    f"{len(khong_kiem)} chữ ký sổ cái không kiểm được — {GC.ly_do_khong_kiem_duoc_ed1()}; bộ chấm "
+                    f"trả {da_tra} nhưng đó KHÔNG phải trạng thái thật", luu)
     if not isinstance(bao_cao, dict) or not bao_cao.get("status"):
         return _ket(gate, None, NGUON_LOI, "bộ chấm không trả trạng thái", luu)
     return _ket(gate, str(bao_cao["status"]), NGUON_SONG, "chấm sống (write=False)", luu, bao_cao)
