@@ -742,8 +742,8 @@ def guardrail_check(artifact, n_adjusted, effect_val, missing_sd=False):
         errors.append("R5 🔴 Thiếu sensitivity analysis")
     # R6 — Có [CẦN]
     # SỬA 2026-07-31: generate_artifact() luôn in tối thiểu 4 chuỗi "[CẦN"
-    # VÔ ĐIỀU KIỆN (1 ở bảng dropout + 3 ở checklist PHẦN 5 cố định) — đã
-    # xác nhận thực nghiệm can_count dao động 5-11 nhưng LUÔN >=3 ở 12 tổ
+    # VÔ ĐIỀU KIỆN (1 ở bảng dropout + ≥2 ở checklist PHẦN 5 theo thiết kế, từ
+    # 25/10/2026) — đã xác nhận thực nghiệm can_count dao động 5-11 nhưng LUÔN >=3 ở 12 tổ
     # hợp thử, R6 LUÔN PASS bất kể mức độ hoàn thiện thật của đề tài. Cùng
     # dạng lỗi "thưởng dán nhãn" đã đóng ở G0::guardrail_check_g0() R6.
     # KHÔNG thêm ngưỡng phụ thuộc dữ liệu mới ở đây — PHẦN 5 giữ checklist
@@ -1166,14 +1166,23 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
             "STROBE mục 10, STARD 2015 mục 18, TRIPOD+AI mục 10 — tùy thiết kế)."
         )
         lines.append("")
+    # 25/10/2026: tiêu chí theo ĐÚNG thiết kế. Khuôn chung cũ in «effect size» và «biến cố nền (sống còn)» cho cả đề
+    # tài mô tả theo độ chính xác (C1a cắt ngang) ⇒ study_readiness đếm việc không bao giờ làm được.
+    tieu_chi_g3 = (["- [ ] Bác sĩ xác nhận tỷ lệ dự kiến p và sai số cho phép d (nguồn: PMID/DOI hoặc pilot) "
+                    "[CẦN BÁC SĨ]"] if mo_ta_chinh_xac
+                   else ["- [ ] Bác sĩ xác nhận effect size (nguồn: PMID/DOI) [CẦN BÁC SĨ]"])
+    tieu_chi_g3.append("- [ ] Bác sĩ xác nhận tỷ lệ dropout"
+                       + (" / không trả lời" if mo_ta_chinh_xac else "") + " [CẦN BÁC SĨ]")
+    if effect_type == "HR":
+        tieu_chi_g3.append("- [ ] Bác sĩ xác nhận tỷ lệ biến cố nền (thiết kế sống còn) [CẦN BÁC SĨ]")
+    if icc is not None or cluster_size:
+        tieu_chi_g3.append("- [ ] Bác sĩ xác nhận ICC và cỡ cụm (nguồn: PMID/DOI hoặc pilot) [CẦN BÁC SĨ]")
     lines += [
         "---",
         "",
         "## PHẦN 5 — TIÊU CHÍ QUA CỔNG G3",
         "",
-        "- [ ] Bác sĩ xác nhận effect size (nguồn: PMID/DOI) [CẦN BÁC SĨ]",
-        "- [ ] Bác sĩ xác nhận tỷ lệ dropout [CẦN BÁC SĨ]",
-        "- [ ] Bác sĩ xác nhận tỷ lệ biến cố nền (với thiết kế sống còn) [CẦN BÁC SĨ]",
+        *tieu_chi_g3,
         "- [ ] Cập nhật G3_checkpoint.json với N đã duyệt",
         "- [ ] Copy khối cỡ mẫu vào đề cương (PHẦN 4)",
         "",

@@ -67,6 +67,9 @@ _CONG_CUNG = [g for g, _nhan, cung in _GATES if cung]
 
 _UNCHECKED = re.compile(r"^\s*[-*]\s*\[ \]\s*(.+?)\s*$", re.M)
 _PENDING_DECISION = re.compile(r"QUYẾT ĐỊNH CÒN TREO|CHƯA TỰ Ý XỬ LÝ|CẦN QUYẾT ĐỊNH", re.I)
+# Khối «## PHẦN n — TIÊU CHÍ QUA CỔNG Gk» do run_gk_auto.py sinh: danh sách tiêu chí ĐỂ qua cổng, không phải việc mới.
+_TIEU_CHI_QUA_CONG = re.compile(r"^(#{1,6})\s.*TIÊU CHÍ QUA CỔNG (G\d+)\b.*$", re.M)
+_TIEU_DE = re.compile(r"^(#{1,6})\s", re.M)
 # Chỗ để trống trong tài liệu: dãy dấu chấm/gạch dưới dài, hoặc placeholder [CẦN…]
 # (marker CŨ — giữ nguyên ngữ nghĩa, chỉ được CỘNG THÊM; xem _HO_CON_TRONG ngay dưới).
 _BLANKS = re.compile(r"…{3,}|\.{5,}|_{5,}|\[CẦN")
@@ -159,8 +162,27 @@ def _gate_state(study: str, d: Path) -> list[tuple[str, str, str]]:
     return rows
 
 
-def _collect_todo(d: Path) -> tuple[list[tuple[str, str]], list[str]]:
-    """(việc chưa tick, cảnh báo quyết định treo) quét mọi tài liệu .md trong thư mục."""
+def _khoi_tieu_chi_cong_dat(text: str, cong_dat: set[str]) -> list[tuple[int, int, str]]:
+    """[(đầu, cuối, cổng)] — vùng ký tự của khối «TIÊU CHÍ QUA CỔNG Gk» với Gk ĐÃ ĐẠT; khối kết thúc ở tiêu đề kế tiếp
+    cùng cấp hoặc cao hơn."""
+    vung = []
+    for m in _TIEU_CHI_QUA_CONG.finditer(text):
+        if m.group(2) not in cong_dat:
+            continue
+        cap = len(m.group(1))
+        cuoi = next((t.start() for t in _TIEU_DE.finditer(text, m.end()) if len(t.group(1)) <= cap), len(text))
+        vung.append((m.start(), cuoi, m.group(2)))
+    return vung
+
+
+def _collect_todo(d: Path, cong_dat: set[str] | None = None,
+                  bo_qua: dict[str, int] | None = None) -> tuple[list[tuple[str, str]], list[str]]:
+    """(việc chưa tick, cảnh báo quyết định treo) quét mọi tài liệu .md trong thư mục.
+
+    25/10/2026: dòng chưa tick trong khối «TIÊU CHÍ QUA CỔNG Gk» của cổng thuộc `cong_dat` (đạt theo CHẤM SỐNG — cổng
+    mềm ✅, cổng cứng 🔒 có chữ ký) KHÔNG đếm: cổng đã qua thì danh sách tiêu chí để qua nó không còn là việc (C1a: 5
+    dòng G3_A4 PHẦN 5 — tệp nằm trong bản kê G10 đã khoá nên không tick được). Cổng mất trạng thái đạt ⇒ đếm lại ngay.
+    Số dòng bỏ qua theo cổng ghi vào `bo_qua` để báo cáo nói rõ, không giấu."""
     todo: list[tuple[str, str]] = []
     pending: list[str] = []
     for f in sorted(d.glob("*.md")):
@@ -168,7 +190,13 @@ def _collect_todo(d: Path) -> tuple[list[tuple[str, str]], list[str]]:
             text = f.read_text(encoding="utf-8")
         except (OSError, UnicodeDecodeError):
             continue
+        vung = _khoi_tieu_chi_cong_dat(text, cong_dat or set())
         for m in _UNCHECKED.finditer(text):
+            khoi = next((g for dau, cuoi, g in vung if dau <= m.start() < cuoi), None)
+            if khoi:
+                if bo_qua is not None:
+                    bo_qua[khoi] = bo_qua.get(khoi, 0) + 1
+                continue
             item = re.sub(r"\s+", " ", m.group(1)).strip()
             todo.append((f.name, item))
         for line in text.splitlines():
@@ -210,8 +238,11 @@ def report(study: str) -> int:
     print("\n📍 CHUỖI CỔNG G0–G10")
     signed_hard = 0
     mat_hieu_luc: list[str] = []
+    cong_dat: set[str] = set()
     for gate, label, state in _gate_state(study, d):
         print(f"   {gate:4} {label:24} {state}")
+        if state.startswith(("✅", "🔒")):
+            cong_dat.add(gate)
         if state.startswith("🔒"):
             signed_hard += 1
         elif state.startswith("⚠️ CÓ CHỮ KÝ"):
@@ -225,8 +256,11 @@ def report(study: str) -> int:
     if signed_hard == 0:
         print("     ⚠️  CHƯA CỔNG CỨNG NÀO ĐƯỢC KÝ. Mọi hồ sơ hiện có là DỰ THẢO.")
 
-    todo, pending = _collect_todo(d)
+    bo_qua: dict[str, int] = {}
+    todo, pending = _collect_todo(d, cong_dat, bo_qua)
     print(f"\n📋 VIỆC CHƯA LÀM (đếm từ chính tài liệu của đề tài): {len(todo)}")
+    for g, n in sorted(bo_qua.items(), key=lambda x: int(x[0][1:])):
+        print(f"   (không đếm {n} dòng «TIÊU CHÍ QUA CỔNG {g}» — {g} đã đạt theo chấm sống)")
     if todo:
         by_file: dict[str, int] = {}
         for fname, _ in todo:

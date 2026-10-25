@@ -312,6 +312,10 @@ def _tt(de_tai: Path, gate: str = "G4") -> dict:
 
 
 def test_tom_tat_chuoi_trang_thai_cua_cong_cung(de_tai):
+    # 25/10/2026: «ĐỒNG THUẬN» đòi mọi nhiệm vụ áp dụng có đầu ra đã qua đánh giá chéo. G4-T2 (chỉ RCT) dùng chung SAP
+    # nên đề tài phải có thiết kế đã chốt thì mới biết G4-T2 không áp dụng — fixture khai thiết kế cắt ngang.
+    (de_tai / "G1_checkpoint.json").write_text('{"dac_ta_thiet_ke": {"design_code": "cross_sectional"}}\n',
+                                              encoding="utf-8", newline="\n")
     assert _tt(de_tai)["trang_thai"] == "CHƯA HỌP"
     _ghi(de_tai, _danh_gia())
     tt = _tt(de_tai)
@@ -334,6 +338,47 @@ def test_tom_tat_cong_khong_bat_buoc_chi_can_dong_thuan(de_tai):
     p, kq = _ghi(de_tai, bb, "G0")
     assert p is not None, kq["loi"]
     assert _tt(de_tai, "G0")["trang_thai"] == "ĐỒNG THUẬN"
+
+
+# 25/10/2026 — C1a G1 báo «ĐỒNG THUẬN» khi chỉ G1-T4 có biên bản; G1-T1…T3 đủ đầu ra mà chưa ai chấm.
+
+def _danh_gia_g0(ma: str, tep: list, nguoi_cham: str) -> dict:
+    bb = _danh_gia()
+    tac_gia = next(nv["agent"] for nv in HD.NHIEM_VU["G0"] if nv["ma"] == ma)
+    bb["dau_ra"] = {"ma_nhiem_vu": ma, "tac_gia": tac_gia, "tai_lieu": tep}
+    bb["danh_gia"][0]["nguoi_cham"] = nguoi_cham
+    return bb
+
+
+def test_dong_thuan_mot_phan_khi_nhiem_vu_du_dau_ra_chua_cham(de_tai):
+    for ten in ("G0_A1_PICO_FINER_HD-THU.md", "G0_checkpoint.json", "G0_pubmed_raw.json"):
+        (de_tai / ten).write_text(f"{ten}\n", encoding="utf-8", newline="\n")
+    p, kq = _ghi(de_tai, _danh_gia_g0("G0-T1", ["G0_A1_PICO_FINER_HD-THU.md"], "khoang-trong-nghien-cuu"), "G0")
+    assert p is not None, kq["loi"]
+    tt = _tt(de_tai, "G0")
+    # G0-T3/G0-T4 thiếu đầu ra ⇒ «chưa tới lượt», không tính; chỉ G0-T2 đủ đầu ra mà chưa chấm.
+    assert tt["trang_thai"] == "ĐỒNG THUẬN MỘT PHẦN" and tt["ly_do"] == ["G0-T2: chưa đánh giá chéo"], tt
+    p, kq = _ghi(de_tai, _danh_gia_g0("G0-T2", ["G0_pubmed_raw.json"], "kiem-chung-trich-dan"), "G0")
+    assert p is not None, kq["loi"]
+    assert _tt(de_tai, "G0")["trang_thai"] == "ĐỒNG THUẬN"
+    # Đầu ra của G0-T2 đổi ⇒ biên bản của nó CŨ; biên bản G0-T1 còn hiệu lực ⇒ một phần, nêu đúng lý do.
+    (de_tai / "G0_pubmed_raw.json").write_text("đã tra lại\n", encoding="utf-8", newline="\n")
+    tt = _tt(de_tai, "G0")
+    assert tt["trang_thai"] == "ĐỒNG THUẬN MỘT PHẦN" and tt["ly_do"] == ["G0-T2: biên bản cũ — tài liệu đã đổi"], tt
+
+
+def test_dong_thuan_mot_phan_khi_chua_xac_dinh_ap_dung(de_tai):
+    # Không có thiết kế đã chốt ⇒ G4-T2 (chỉ RCT, dùng chung SAP) chưa xác định áp dụng — không được nói «đồng thuận».
+    for bb in (_danh_gia(), _tranh_bien("DP-G4-1"), _tranh_bien("DP-G4-2")):
+        p, kq = _ghi(de_tai, bb)
+        assert p is not None, kq["loi"]
+    tt = _tt(de_tai)
+    assert tt["trang_thai"] == "ĐỒNG THUẬN MỘT PHẦN", tt
+    assert tt["ly_do"] == ["G4-T2: chưa xác định áp dụng — chưa đánh giá chéo"], tt
+
+
+def test_dong_thuan_mot_phan_chi_la_tu_van():
+    assert "ĐỒNG THUẬN MỘT PHẦN" in HD.TRANG_THAI and "ĐỒNG THUẬN MỘT PHẦN" not in HD.TRANG_THAI_CAN_XU_LY
 
 
 def test_bat_dong_doi_tranh_bien_noi_nguon(de_tai):

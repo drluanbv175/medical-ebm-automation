@@ -161,6 +161,11 @@ runtime/pycache/
 # app/sources/wiley_tdm.py) — có .git riêng, KHÔNG commit vào repo này (2026-09-23).
 /tdm-client/
 
+# 25/10/2026: một bản CLONE thứ hai của chính repo này từng nằm lồng ở `medical-ebm-automation/medical-ebm-automation/`
+# (clone 07:43, có .git riêng) — `git add -A` sẽ đưa nó vào thành gitlink, và pytest thu thập trùng tests/conftest.py ⇒
+# ImportPathMismatchError, cả lượt dừng. Bản clone phụ đặt NGOÀI repo (~/.ebm-worktrees), không lồng vào đây.
+/medical-ebm-automation/
+
 # PDF toàn văn tải qua Wiley TDM (app/sources/wiley_tdm.py::THU_MUC_TAI_MAC_DINH) — nội
 # dung CÓ BẢN QUYỀN của nhà xuất bản, mà repo này CÔNG KHAI: đưa vào git là phân phối lại
 # công khai. Đo 30/09/2026: `git status` hiện `?? downloads_wiley_tdm/`, tức một lần
