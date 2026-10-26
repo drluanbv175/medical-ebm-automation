@@ -1147,6 +1147,11 @@ def tom_tat_cong(gate: str, out_dir: Path, repo_root: Optional[Path] = None) -> 
     qd = doc_quyet_dinh(gate, out_dir)
     da_quyet = [dp for dp, bb in chuyen_tat_ca if da_quyet_het(bb, qd)]
     chuyen = [dp for dp, _bb in chuyen_tat_ca if dp not in da_quyet]
+    # 26/10/2026 (lượt sửa C1a): đã quyết + đã có biên bản xử lý còn hiệu lực ⇒ ĐÃ thực hiện — trước đây kẹt mãi ở «chờ
+    # thực hiện» dù chính lời nhắn bảo «sửa tài liệu theo quyết định rồi ghi biên bản xử lý».
+    xl_hl = xu_ly_hieu_luc(out_dir, gate)
+    cho_thuc_hien = [dp for dp in da_quyet if not (tranh_bien_moi[dp][1].get("viec_sua_da_xu_ly")
+                                                   or str(tranh_bien_moi[dp][0].get("id")) in xl_hl)]
     can_sua = ([dp for dp, (_bb, tom) in tranh_bien_moi.items()
                 if tom.get("ket_qua") == "sua_ket_luan" and not tom.get("viec_sua_da_xu_ly")]
                + [ma for ma, (_bb, tom) in danh_gia_moi.items() if tom.get("ket_luan_chung") == "tra_ve_sua"])
@@ -1159,10 +1164,10 @@ def tom_tat_cong(gate: str, out_dir: Path, repo_root: Optional[Path] = None) -> 
         trang_thai, ly_do = "BẤT ĐỒNG — CẦN TRANH BIỆN", [f"{ma}: người chấm không đồng thuận" for ma in bat_dong_treo]
     elif chuyen:
         trang_thai, ly_do = "CHUYỂN BÁC SĨ", [f"{dp}: trọng tài chuyển người có thẩm quyền quyết" for dp in chuyen]
-    elif da_quyet:
+    elif cho_thuc_hien:
         trang_thai, ly_do = "BÁC SĨ ĐÃ QUYẾT — CHỜ THỰC HIỆN", [
             f"{dp}: bác sĩ đã quyết (`{TEP_QUYET_DINH}`) — sửa tài liệu theo quyết định rồi ghi biên bản xử lý/chấm lại"
-            for dp in da_quyet]
+            for dp in cho_thuc_hien]
     elif can_sua:
         trang_thai, ly_do = "CẦN SỬA", [f"{ma}: hội đồng yêu cầu sửa" for ma in can_sua]
     elif thieu_bb:
@@ -2537,8 +2542,11 @@ def ho_so_cong(study: str, gate: str, out_dir: Path, dp: Optional[List[str]] = N
                       "bien_ban": t["id"] if t else None})
     qd = doc_quyet_dinh(gate, out_dir)
     chuyen = {m: t for m, t in tranh.items() if t.get("ket_qua") == "chuyen_bac_si"}
-    cho_thuc_hien = sorted(m for m, t in chuyen.items() if da_quyet_het(bien_ban.get(t.get("id")) or {}, qd))
-    cho_bac_si = sorted(m for m in chuyen if m not in cho_thuc_hien)
+    da_quyet_m = {m for m, t in chuyen.items() if da_quyet_het(bien_ban.get(t.get("id")) or {}, qd)}
+    xl_hl = xu_ly_hieu_luc(out_dir, gate)
+    # 26/10/2026: đã quyết + có biên bản xử lý còn hiệu lực ⇒ không còn «chờ thực hiện».
+    cho_thuc_hien = sorted(m for m in da_quyet_m if not (chuyen[m].get("xu_ly") or str(chuyen[m].get("id")) in xl_hl))
+    cho_bac_si = sorted(m for m in chuyen if m not in da_quyet_m)
     import cong_song as CS  # noqa: PLC0415
 
     tien_de = set(TIEN_DE_CA_CONG.get(gate, ()))

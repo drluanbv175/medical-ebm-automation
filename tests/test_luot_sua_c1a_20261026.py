@@ -361,3 +361,29 @@ def test_ghi_lai_xu_ly_chi_khi_chi_checkpoint_doi(de_tai):  # noqa: F811 — fix
     _sua_sap(de_tai, "SAP đổi nội dung lần nữa\n")
     bo = HD.ghi_lai_xu_ly("TK-THU", "G4", de_tai, ap_dung=True)
     assert len(bo) == 1 and bo[0]["ket"].startswith("bo_qua"), bo
+
+
+# ── 12. «Bác sĩ đã quyết» + biên bản xử lý ⇒ không còn «chờ thực hiện» ──────────────────────────────────────────────
+
+def test_da_quyet_va_co_bien_ban_xu_ly_thi_het_cho_thuc_hien(de_tai):  # noqa: F811 — fixture nhập từ test 17/10
+    from test_hoi_dong_tiet_kiem_20261010 import _tranh_bien as _tb
+
+    bb = _tb("DP-G4-1", ket_qua="chuyen_bac_si")
+    pq = bb["phan_quyet"]
+    pq["tung_luan_diem"][0]["ket"] = "chap_nhan"
+    pq["chuyen_bac_si"] = [{"van_de": "Chọn MAR hay MNAR", "vi_sao": "thống kê viên quyết"}]
+    pq["viec_sua"] = ["Ghi cách xử lý dữ liệu thiếu đã chọn vào SAP §9"]
+    goc = _ghi_ok(de_tai, bb)
+    p, loi = HD.ghi_quyet_dinh("G4", goc, 1, "MAR, kèm độ nhạy MNAR", de_tai)
+    assert p is not None, loi
+    assert HD.tom_tat_cong("G4", de_tai)["trang_thai"] == "BÁC SĨ ĐÃ QUYẾT — CHỜ THỰC HIỆN"
+    assert HD.ho_so_cong("TK-THU", "G4", de_tai)["cho_thuc_hien"] == ["DP-G4-1"]
+    _sua_sap(de_tai, "§9 Dữ liệu thiếu: MAR, độ nhạy MNAR\n")
+    xl = {"loai": HD.LOAI_XU_LY, "bien_ban_goc": goc, "nguoi_ghi": "dieu-phoi-g4 (agent làm việc sửa)",
+          "viec": [{"nguon": "viec_sua:1", "noi_dung": "ghi §9", "cach_xu_ly": "da_sua", "mo_ta": "Đã ghi §9",
+                    "can_cu": [{"loai": "tep", "gia_tri": SAP_XL, "mau": "MAR, độ nhạy MNAR"}]}]}
+    _ghi_ok(de_tai, xl)
+    tt = HD.tom_tat_cong("G4", de_tai)
+    assert tt["trang_thai"] != "BÁC SĨ ĐÃ QUYẾT — CHỜ THỰC HIỆN", tt
+    hs = HD.ho_so_cong("TK-THU", "G4", de_tai)
+    assert hs["cho_thuc_hien"] == [] and hs["cho_bac_si"] == [], "đã quyết + đã thực hiện ⇒ không chờ ai"
