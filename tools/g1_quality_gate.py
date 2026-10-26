@@ -842,6 +842,17 @@ def _gap_theo_quyet_dinh_g0(dong: str, meta: Mapping[str, Any]) -> str:
     return dong
 
 
+def _o_kinh_phi(v: Any) -> str:
+    """Ô bảng kinh phí A13 (26/10/2026, lượt sửa C1a): giữ NHÃN AI ĐIỀN («[CẦN CHỦ NHIỆM ẤN ĐỊNH]») và «–» (không áp
+    dụng, như bảng dự trù của đề cương) thay vì gộp mọi ô về «[CẦN]»; ô thật sự trống vẫn là «[CẦN]»."""
+    t = " ".join(str(v if v is not None else "").split())
+    if _present(v):
+        return _text(v)
+    if t.startswith("[CẦN") or t in ("–", "-"):
+        return t
+    return "[CẦN]"
+
+
 def _pham_vi_khoang_trong(dong: str, sr_trong_so: Sequence[str]) -> str:
     """Câu «Không có SR/MA … 5 năm» của G0 chỉ đúng với các nhánh tìm PubMed của truy vấn G0, nhưng đứng cạnh một bảng
     có SR/MA từ lượt tìm bổ sung ⇒ ghi rõ phạm vi (26/10/2026, G1-T2 RQ3b/RQ4)."""
@@ -1061,7 +1072,7 @@ def build_supporting_artifacts(
     # thanh_tien/trang_thai); chưa khai thì giữ khuôn [CẦN] — máy KHÔNG bịa đơn giá.
     bud = g1.get("budget")
     kinh_phi_rows = "\n".join(
-        "| " + " | ".join(_text(r.get(k), "[CẦN]").replace("|", "/") for k in (
+        "| " + " | ".join(_o_kinh_phi(r.get(k)).replace("|", "/") for k in (
             "nhom", "so_luong", "don_gia", "thanh_tien", "trang_thai")) + " |"
         for r in (bud if isinstance(bud, list) else []) if isinstance(r, Mapping)
     ) or (

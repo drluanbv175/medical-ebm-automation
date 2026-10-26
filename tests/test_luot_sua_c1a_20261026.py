@@ -327,3 +327,13 @@ def test_bien_ban_xu_ly_can_cu_theo_mau_noi_dung(de_tai):  # noqa: F811 — fixt
     assert p is None and any("không có trong" in x for x in kq["loi"]), kq["loi"]
     p, kq = _ghi(de_tai, _xl_mau(mau="MICE", khong_chua="Dòng 3"))
     assert p is None and any("VẪN còn" in x for x in kq["loi"]), kq["loi"]
+
+
+def test_bang_kinh_phi_giu_nhan_nguoi_dien_va_o_khong_ap_dung(tmp_path):
+    _so_a2b(tmp_path, {"budget": [
+        {"nhom": "In phiếu", "so_luong": "≈ 1.300 bản", "don_gia": "[CẦN CHỦ NHIỆM ẤN ĐỊNH]", "thanh_tien": "",
+         "trang_thai": "Dự thảo"},
+        {"nhom": "Phần mềm R", "so_luong": "–", "don_gia": "0", "thanh_tien": "0", "trang_thai": "Dự thảo"}]})
+    a13 = (tmp_path / "exports" / _S2B / f"G1_A13_IMPLEMENTATION_PLAN_{_S2B}.md").read_text(encoding="utf-8")
+    assert "| In phiếu | ≈ 1.300 bản | [CẦN CHỦ NHIỆM ẤN ĐỊNH] | [CẦN] | Dự thảo |" in a13
+    assert "| Phần mềm R | – | 0 | 0 | Dự thảo |" in a13
