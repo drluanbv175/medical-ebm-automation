@@ -337,3 +337,27 @@ def test_bang_kinh_phi_giu_nhan_nguoi_dien_va_o_khong_ap_dung(tmp_path):
     a13 = (tmp_path / "exports" / _S2B / f"G1_A13_IMPLEMENTATION_PLAN_{_S2B}.md").read_text(encoding="utf-8")
     assert "| In phiếu | ≈ 1.300 bản | [CẦN CHỦ NHIỆM ẤN ĐỊNH] | [CẦN] | Dự thảo |" in a13
     assert "| Phần mềm R | – | 0 | 0 | Dự thảo |" in a13
+
+
+# ── 11. Ghi lại biên bản xử lý cũ CHỈ vì checkpoint của cổng đổi ──────────────────────────────────────────────────────
+
+def test_ghi_lai_xu_ly_chi_khi_chi_checkpoint_doi(de_tai):  # noqa: F811 — fixture nhập từ test xử lý 17/10
+    goc_bb = _dg_co_luu_y()
+    goc_bb["dau_ra"]["tai_lieu"] = [SAP_XL, "G4_checkpoint.json"]
+    goc = _ghi_ok(de_tai, goc_bb)
+    _sua_sap(de_tai)
+    xl = _ghi_ok(de_tai, _xl(goc, "giam-khao-cong:RQ5"))
+    assert HD.ghi_lai_xu_ly("TK-THU", "G4", de_tai) == [], "xử lý còn hiệu lực ⇒ không có gì để ghi lại"
+    (de_tai / "G4_checkpoint.json").write_text('{"gate": "G4", "dau_van_tay_luc_cham": "moi"}\n', encoding="utf-8",
+                                               newline="\n")
+    kho = HD.ghi_lai_xu_ly("TK-THU", "G4", de_tai)
+    assert len(kho) == 1 and kho[0]["id"] == xl and kho[0]["ket"].startswith("se_ghi_lai")
+    assert HD.danh_gia_cheo_moi_nhat("G4", de_tai)["G4-T1"]["trang_thai"] == "cu", "chạy khô không ghi"
+    ra = HD.ghi_lai_xu_ly("TK-THU", "G4", de_tai, ap_dung=True)
+    assert ra[0]["ket"].startswith("da_ghi G4-XL-"), ra
+    dg = HD.danh_gia_cheo_moi_nhat("G4", de_tai)["G4-T1"]
+    assert dg["trang_thai"] == "qua" and dg["xu_ly"] != xl
+    # Tài liệu NỘI DUNG đổi ⇒ không ghi lại (phải soạn biên bản xử lý mới có căn cứ).
+    _sua_sap(de_tai, "SAP đổi nội dung lần nữa\n")
+    bo = HD.ghi_lai_xu_ly("TK-THU", "G4", de_tai, ap_dung=True)
+    assert len(bo) == 1 and bo[0]["ket"].startswith("bo_qua"), bo

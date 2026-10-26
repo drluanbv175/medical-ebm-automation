@@ -890,6 +890,46 @@ def xu_ly_hieu_luc(out_dir: Path, gate: str) -> Dict[str, str]:
     return {g: v[0] for g, v in ra.items()}
 
 
+def ghi_lai_xu_ly(study: str, gate: str, out_dir: Path, repo_root: Optional[Path] = None,
+                  *, ap_dung: bool = False) -> List[Dict[str, Any]]:
+    """GHI LẠI biên bản xử lý đã «cũ» CHỈ vì `<cổng>_checkpoint.json` đổi (26/10/2026, lượt sửa C1a).
+
+    Vì sao: PI xác nhận lại một cổng ⇒ checkpoint ghi trạng thái/dấu vân tay mới ⇒ biên bản xử lý băm checkpoint đó
+    thành «cũ» ⇒ hồ sơ đòi họp lại dù NỘI DUNG tài liệu không đổi (đo trên bản sao C1a: sau nút Chot G0, bốn biên bản
+    G0 cũ chỉ vì trường dấu vân tay trong G0_checkpoint.json). Chỉ ghi lại khi MỌI tài liệu đổi là checkpoint của cổng;
+    tài liệu nội dung (.md, tổng hợp, study_meta, SAP…) đổi ⇒ không ghi lại — phải soạn biên bản xử lý mới có căn cứ.
+    Lấy biên bản xử lý MỚI NHẤT của mỗi gốc; gốc đã có biên bản xử lý còn hiệu lực ⇒ bỏ. Chạy khô mặc định."""
+    out_dir = Path(out_dir)
+    tep_cp = f"{gate}_checkpoint.json"
+    moi_nhat: Dict[str, Dict[str, Any]] = {}
+    for bb in doc_bien_ban(out_dir, gate):
+        if bb.get("_hong") or bb.get("loai") != LOAI_XU_LY:
+            continue
+        goc = str(bb.get("bien_ban_goc"))
+        if goc not in moi_nhat or _moc_thoi_gian(bb.get("thoi_diem")) >= _moc_thoi_gian(moi_nhat[goc].get("thoi_diem")):
+            moi_nhat[goc] = bb
+    ra: List[Dict[str, Any]] = []
+    for goc, bb in sorted(moi_nhat.items()):
+        if goc in xu_ly_hieu_luc(out_dir, gate):
+            continue
+        kq = kiem_bien_ban(bb, out_dir, repo_root, ap_xu_ly=False)
+        if not kq["cu"]:
+            continue
+        muc: Dict[str, Any] = {"id": bb.get("id"), "bien_ban_goc": goc, "tai_lieu_doi": kq["cu"]}
+        if any(Path(str(x)).name != tep_cp for x in kq["cu"]):
+            muc["ket"] = "bo_qua — tài liệu nội dung đổi: cần biên bản xử lý mới có căn cứ"
+        elif not ap_dung:
+            muc["ket"] = "se_ghi_lai (chạy khô — thêm --ap-dung để ghi)"
+        else:
+            nhap = {k: bb[k] for k in ("loai", "bien_ban_goc", "nguoi_ghi", "viec") if k in bb}
+            nhap["ghi_chu"] = (f"Ghi lại {bb.get('id')}: chỉ {tep_cp} đổi (người có thẩm quyền xác nhận lại "
+                               "cổng) — nội dung xử lý giữ nguyên.")
+            p, kq2 = ghi_bien_ban(study, gate, nhap, out_dir, repo_root)
+            muc["ket"] = f"da_ghi {p.name}" if p else "loi: " + "; ".join(kq2["loi"][:3])
+        ra.append(muc)
+    return ra
+
+
 def kiem_bien_ban(bb: Dict[str, Any], out_dir: Path, repo_root: Optional[Path] = None,
                   *, kiem_bam: bool = True, ap_xu_ly: bool = True) -> Dict[str, Any]:
     """Kiểm MỘT biên bản (nháp hoặc đã ghi). Trả {hop_le, loi, cu, tom_tat}. `kiem_bam`: so băm tài liệu đã ghi —
@@ -2778,6 +2818,11 @@ def main(argv: Optional[List[str]] = None) -> int:
     a.add_argument("--trung-voi", help="mã bài học trùng (bắt buộc với --ket trung)")
     a.add_argument("--ly-do", default="")
     a.add_argument("--json", action="store_true")
+    a = sub.add_parser("ghi-lai-xu-ly", help="ghi lại biên bản xử lý cũ CHỈ vì checkpoint của cổng đổi (chạy khô "
+                                             "mặc định)")
+    a.add_argument("--study", required=True)
+    a.add_argument("--gate", choices=CONG, required=True)
+    a.add_argument("--ap-dung", action="store_true")
     a = sub.add_parser("mau")
     a.add_argument("--loai", choices=("danh_gia_cheo", "tranh_bien", LOAI_XU_LY), required=True)
     a.add_argument("--gate", choices=CONG, required=True)
@@ -2825,6 +2870,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         # .as_posix(): cùng một thông điệp trên Mac và Windows (CI Windows từng đỏ vì «\\» — 10/10/2026).
         print(f"✅ Đã ghi {p.relative_to(out_dir).as_posix()} — {json.dumps(kq['tom_tat'], ensure_ascii=False)}")
         return 0
+    if args.lenh == "ghi-lai-xu-ly":
+        ds = ghi_lai_xu_ly(args.study, args.gate, out_dir, ap_dung=args.ap_dung)
+        print(f"GHI LẠI BIÊN BẢN XỬ LÝ — {args.gate}: {len(ds)} biên bản cũ" + ("" if args.ap_dung else " (chạy khô)"))
+        for m in ds:
+            print(f"  {m['id']} (gốc {m['bien_ban_goc']}): {m['ket']} · đổi: {', '.join(map(str, m['tai_lieu_doi']))}")
+        return 3 if any(str(m["ket"]).startswith("loi") for m in ds) else 0
     if args.lenh == "cham-song":
         kq = cham_song(args.study, args.gate, out_dir)
         if args.json:
