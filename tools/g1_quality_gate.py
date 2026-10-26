@@ -713,6 +713,7 @@ def _sang_loc_g0(out_dir: Path, study: str) -> Dict[str, Mapping[str, Any]]:
             if not isinstance(bai, dict):
                 continue
             ban = dict(bai)
+            ban["_nhom"] = khoa
             if khoa == "sang_loc_khong_loc":
                 ban["lien_quan"] = "khong"
             if bai.get("pmid"):
@@ -779,6 +780,47 @@ def _ngay_tim_g0(out_dir: Path) -> Optional[str]:
     return str(ngay)[:10] if _present(ngay) else None
 
 
+def _bien_nhan_rut_bai(out_dir: Path) -> Tuple[Dict[str, str], str]:
+    """({PMID: trạng thái}, ngày kiểm) từ `A12_RETRACTION_RECEIPT.json` (tools/check_citation_retraction.py --study) —
+    ({}, "") nếu vắng/hỏng. Chỉ để HIỂN THỊ từng dòng sổ A2b (26/10/2026, G1-T2 RQ5); cổng A12 tự kiểm chữ ký biên
+    nhận."""
+    try:
+        bn = json.loads((Path(out_dir) / "A12_RETRACTION_RECEIPT.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}, ""
+    kq = bn.get("results") if isinstance(bn, dict) else None
+    if not isinstance(kq, dict):
+        return {}, ""
+    return ({str(k).strip(): str((v or {}).get("status") or "") for k, v in kq.items() if isinstance(v, dict)},
+            str(bn.get("checked_at_utc") or "")[:10])
+
+
+def _o_rut_bai(ma_hien: str, bien_nhan: Mapping[str, str], ngay: str) -> str:
+    """Cụm «rút bài» cho MỘT dòng sổ: có biên nhận máy theo đúng PMID thì ghi kết quả + ngày; không có thì nói thẳng."""
+    pmid = ma_hien[5:] if ma_hien.startswith("PMID:") else ""
+    tt = bien_nhan.get(pmid) if pmid else None
+    if tt == "ok":
+        return f"rút bài: không phát hiện (biên nhận A12, {ngay})"
+    if tt:
+        return f"⚠ rút bài/EoC: «{tt}» (biên nhận A12, {ngay}) — CẦN BÁC SĨ XEM"
+    return "rút bài: không có biên nhận máy theo định danh này (xem dòng «Kiểm rút bài»)"
+
+
+# Nguồn của một dòng sổ (khoá `cach_tim` của sàng lọc G0) ⇒ tên nguồn để khai «≥ 2 nguồn» ở mục chiến lược tìm.
+_NGUON_CACH_TIM: Tuple[Tuple[str, str], ...] = (
+    ("crossref", "Crossref"), ("europe pmc", "Europe PMC"), ("clinicaltrials", "ClinicalTrials.gov"),
+    ("ictrp", "WHO ICTRP"), ("scholar", "Google Scholar"), ("scopus", "Scopus"), ("pubmed", "PubMed — lượt bổ sung"),
+    ("prisma_s", "lượt tìm bổ sung (PRISMA-S)"),
+)
+
+
+def _nguon_cua_dong(bai: Mapping[str, Any], khoa_nhom: str) -> str:
+    if khoa_nhom == "sang_loc":
+        return "PubMed — truy vấn G0"
+    cach = str(bai.get("cach_tim") or "").lower()
+    return next((ten for k, ten in _NGUON_CACH_TIM if k in cach), "khác")
+
+
 def _rut_bai_g0(out_dir: Path, study: str) -> Optional[str]:
     """Tóm tắt lần kiểm rút bài của G0 (khoá `rut_bai` của tệp tổng hợp G0-T3) — None nếu không có."""
     du_lieu, _loi = GT.doc(Path(out_dir), GT.TEP_TONG_HOP, study)
@@ -803,6 +845,8 @@ def _gap_theo_quyet_dinh_g0(dong: str, meta: Mapping[str, Any]) -> str:
 def _pham_vi_khoang_trong(dong: str, sr_trong_so: Sequence[str]) -> str:
     """Câu «Không có SR/MA … 5 năm» của G0 chỉ đúng với các nhánh tìm PubMed của truy vấn G0, nhưng đứng cạnh một bảng
     có SR/MA từ lượt tìm bổ sung ⇒ ghi rõ phạm vi (26/10/2026, G1-T2 RQ3b/RQ4)."""
+    # «(xem §3.6)» của G0 trỏ G0_A1, nhưng trong hồ sơ nộp Hội đồng §3.6 là «Khung lý thuyết» (G1-T2 RQ4a).
+    dong = dong.replace("(xem §3.6)", "(xem §3.6 của G0_A1)")
     if not dong.startswith("Không có SR/MA") or "phạm vi:" in dong:
         return dong
     them = (f"; sổ này có SR/MA từ lượt tìm bổ sung, NGOÀI phạm vi đó: {', '.join(sr_trong_so)}" if sr_trong_so
@@ -895,6 +939,8 @@ def build_supporting_artifacts(
     n_tu_g0 = n_sang = 0
     lac_de: List[str] = []
     sr_trong_so: List[str] = []
+    dem_nguon: Dict[str, int] = {}
+    bien_nhan, ngay_bn = _bien_nhan_rut_bai(out_dir)
 
     def _dong_ledger(ma_hien: str, khoa: str, tieu_de_md: Optional[str]) -> bool:
         """Thêm một dòng sổ; False khi bài đã sàng là lạc đề (không vào bảng)."""
@@ -909,12 +955,19 @@ def build_supporting_artifacts(
             nhan = {"truc_tiep": "liên quan TRỰC TIẾP",
                     "gian_tiep": "liên quan GIÁN TIẾP"}.get(bai.get("lien_quan"), "")
             hau_to, pham_vi, doc = _nguon_doc_g0(bai)
-            if str(bai.get("thiet_ke_that") or "").lower().startswith(("tổng quan hệ thống", "phân tích gộp")):
+            thiet_ke = str(bai.get("thiet_ke_that") or "")
+            if thiet_ke.lower().startswith(("tổng quan hệ thống", "phân tích gộp")):
                 sr_trong_so.append(ma_hien)
+            # 26/10/2026 (G1-T2 RQ5-1): cỡ mẫu vắng mà không gắn nhãn ⇒ người đọc tưởng đã trích đủ.
+            o_tk = _o_so(thiet_ke)
+            if thiet_ke and not re.search(r"\d", thiet_ke) and not _o_rob(thiet_ke).startswith("Không áp dụng"):
+                o_tk += " (cỡ mẫu: [CẦN TRÍCH — sàng lọc G0 không ghi])"
+            nguon = _nguon_cua_dong(bai, str(bai.get("_nhom") or ""))
+            dem_nguon[nguon] = dem_nguon.get(nguon, 0) + 1
             evidence_rows.append(
-                f"| {ma_hien} | {tieu_de or '[CẦN TRÍCH XUẤT METADATA]'} | {_o_so(bai.get('thiet_ke_that'))} | "
-                f"{_o_so(bai.get('tom_tat'))} {hau_to} | {_o_rob(bai.get('thiet_ke_that'))} | "
-                f"Đã sàng ở G0-T3 ({pham_vi}): {nhan}; {doc} |")
+                f"| {ma_hien} | {tieu_de or '[CẦN TRÍCH XUẤT METADATA]'} | {o_tk} | "
+                f"{_o_so(bai.get('tom_tat'))} {hau_to} | {_o_rob(thiet_ke)} | "
+                f"Đã sàng ở G0-T3 ({pham_vi}): {nhan}; {doc}; {_o_rut_bai(ma_hien, bien_nhan, ngay_bn)} |")
             return True
         evidence_rows.append(
             f"| {ma_hien} | {tieu_de or '[CẦN TRÍCH XUẤT METADATA]'} | "
@@ -975,6 +1028,10 @@ def build_supporting_artifacts(
     ngay_tim = _ngay_tim_g0(out_dir) or "[CẦN — không đọc được `G0_pubmed_raw.json` → search_provenance.ngay_tra]"
     dong_ngay_tim = (f"- Ngày tìm cuối (PubMed, truy vấn G0): {ngay_tim} · lượt tìm bổ sung: theo tệp PRISMA-S ở "
                      f"dòng dưới · ngày sinh sổ: {generated_at[:10]}")
+    # 26/10/2026 (G1-T2 RQ5-4): mục chiến lược đòi ≥ 2 nguồn mà chỉ in chuỗi PubMed — đếm nguồn THẬT của các dòng sổ.
+    if dem_nguon:
+        dong_ngay_tim += ("\n- Nguồn của các dòng trong sổ (khoá `cach_tim` của sàng lọc G0): "
+                          + "; ".join(f"{k} ({v})" for k, v in sorted(dem_nguon.items(), key=lambda x: -x[1])))
     evidence = f"""# EVIDENCE LEDGER (A2b) — {study}
 > [DỰ THẢO] Không tự gán GRADE; chưa đọc toàn văn phải giữ nhãn [CẦN].
 {ghi_chu_md}
@@ -1046,6 +1103,18 @@ def build_supporting_artifacts(
              "\n> Khai kinh phí ở `gate_params.G1.budget` (mỗi dòng: nhom/so_luong/don_gia/thanh_tien/trang_thai) rồi "
              "chạy lại G1 — máy không tự đặt đơn giá.\n")
 
+    # 26/10/2026 (hội đồng G1 C1a, G1-T3 RQ5): GANTT phải đánh dấu MỐC CỨNG — cổng cần chữ ký đúng vai
+    # (gate_contract._GATE_REQUIRED_STAKEHOLDERS là nguồn sự thật duy nhất).
+    try:
+        import gate_contract as _GC
+        _cung = dict(_GC._GATE_REQUIRED_STAKEHOLDERS)
+    except Exception:  # noqa: BLE001 — thiếu module thì GANTT không đánh dấu, không chặn sinh tệp
+        _cung = {}
+
+    def cung(*cong: str) -> str:
+        co = [f"{c} ({'/'.join(_cung[c])})" for c in cong if c in _cung]
+        return f" — ★ mốc cứng, chữ ký: {', '.join(co)}" if co else ""
+
     plan = f"""# KẾ HOẠCH TRIỂN KHAI (A13) — {study}
 > [DỰ THẢO] Đơn giá, nhân sự và thời lượng thật do chủ nhiệm/đơn vị xác nhận.
 
@@ -1055,11 +1124,11 @@ def build_supporting_artifacts(
 ## GANTT theo cổng
 | Chặng | Phụ thuộc | Thời lượng | Mốc nghiệm thu |
 |---|---|---|---|
-| G0–G1 | Không | {tl} | Thiết kế + protocol map |
-| G2 | G1 | {tl} | IRB/registration |
-| G3–G4 | G1 | {tl} | Cỡ mẫu + SAP lock |
-| G5 | G2/G4 | {tl} | Pilot/SOP/data tools |
-| G6–G10 | Data lock | {tl} | Analysis/report/review/closeout |
+| G0–G1 | Không | {tl} | Thiết kế + protocol map{cung("G0", "G1")} |
+| G2 | G1 | {tl} | IRB/registration{cung("G2")} |
+| G3–G4 | G1 | {tl} | Cỡ mẫu + SAP lock{cung("G3", "G4")} |
+| G5 | G2/G4 | {tl} | Pilot/SOP/data tools{cung("G5")} |
+| G6–G10 | Data lock | {tl} | Analysis/report/review/closeout{cung("G6", "G7", "G8", "G9", "G10")} |
 {lich_md}
 ## KINH PHÍ
 | Nhóm chi phí | Số lượng | Đơn giá có nguồn | Thành tiền | Trạng thái |

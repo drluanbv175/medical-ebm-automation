@@ -12,6 +12,10 @@
    size» cho thiết kế độ chính xác, «SAP skeleton đã sinh» ngay dưới PHẦN 5 nói khung đã thay; sổ A2b gắn «(theo tóm
    tắt) … chưa đọc toàn văn» cho dòng đã đọc toàn văn và cho xã luận không có tóm tắt, ghi ngày SINH tệp làm ngày rà,
    đếm cả PMID lạc đề vào «n dòng điền tự động», để câu «Không có SR/MA … 5 năm» cạnh một SR/MA trong bảng.
+8–10. Lượt hai cùng ngày: A2 không ghi trạng thái chốt của G3 (lỗi thời khi G3 chốt; chạy lại G1 sau G3 làm G2/G3
+   «cũ»), đếm đúng số sai lệch + trạng thái từng dòng, dòng không đáp ứng có cách bàn luận; A2b gắn nhãn cỡ mẫu thiếu,
+   đếm nguồn thật của các dòng, trạng thái rút bài TỪNG định danh từ biên nhận A12, «§3.6» trỏ đúng G0_A1; GANTT đánh
+   dấu mốc cứng; biên bản xử lý khai căn cứ bằng NỘI DUNG (máy điền tệp:dòng lúc ghi, không khớp ⇒ không ghi).
 Ngoại tuyến, dữ liệu tổng hợp.
 """
 from __future__ import annotations
@@ -39,6 +43,8 @@ import hoi_dong_cong as HD  # noqa: E402
 import run_g1_auto as G1A  # noqa: E402
 import run_g3_auto as R3  # noqa: E402
 from _chuoi_da_chot import dung_g0_g1_da_chot  # noqa: E402
+from test_hoi_dong_tiet_kiem_20261010 import SAP as SAP_XL  # noqa: E402
+from test_hoi_dong_xu_ly_viec_sua_20261017 import _dg_co_luu_y, _ghi, _ghi_ok, _sua_sap, _xl, de_tai  # noqa: E402,F401
 
 # ── 1. Độ tươi của gói trước dữ liệu ─────────────────────────────────────────────────────────────────────────────────
 
@@ -187,7 +193,9 @@ def _so_a2b(tmp_path: Path, g1: dict | None = None) -> str:
     d.mkdir(parents=True)
     cp0 = {"study": _S2B, "gate": "G0", "base_query": "q",
            "pubmed_results": {"all_pmids": ["11111111", "22222222"]},
-           "danh_muc_doc_bo_sung": ["pmid:33333333", "pmid:44444444", "pmid:55555555"], "research_gaps": [_GAP_SR]}
+           "danh_muc_doc_bo_sung": ["pmid:33333333", "pmid:44444444", "pmid:55555555"],
+           "research_gaps": [_GAP_SR, "Có 3 nghiên cứu đang/sắp tuyển trên ClinicalTrials.gov — cần đối chiếu để tránh "
+                             "trùng lặp (xem §3.6)"]}
     (d / "G0_checkpoint.json").write_text(json.dumps(cp0, ensure_ascii=False), encoding="utf-8", newline="\n")
     raw = {"recent": [{"pmid": "11111111", "title": "Bài A", "journal": "J", "year": "2024"},
                       {"pmid": "22222222", "title": "Bài lạc đề", "journal": "J", "year": "2020"}],
@@ -202,10 +210,14 @@ def _so_a2b(tmp_path: Path, g1: dict | None = None) -> str:
                              "có tóm tắt trên PubMed", "lien_quan": "gian_tiep", "tom_tat": "Bàn về hướng dẫn"},
                             {"pmid": "44444444", "tieu_de": "SR", "thiet_ke_that": "Tổng quan hệ thống (35 nghiên cứu)",
                              "lien_quan": "gian_tiep", "tom_tat": "Hài lòng thấp với chờ"},
-                            {"pmid": "55555555", "tieu_de": "Bài đọc", "thiet_ke_that": "Cắt ngang", "lien_quan":
-                             "truc_tiep", "tom_tat": "Chờ 26–175 phút — đọc toàn văn 2026-10-17."}]}
+                            {"pmid": "55555555", "tieu_de": "Bài đọc", "thiet_ke_that": "Cắt ngang, n=255",
+                             "lien_quan": "truc_tiep", "tom_tat": "Chờ 26–175 phút — đọc toàn văn 2026-10-17.",
+                             "cach_tim": "Crossref theo tiêu đề"}]}
     (d / GT.TEP_TONG_HOP.format(study=_S2B)).write_text(json.dumps(th, ensure_ascii=False), encoding="utf-8",
                                                           newline="\n")
+    (d / "A12_RETRACTION_RECEIPT.json").write_text(json.dumps({"checked_at_utc": "2026-10-15T14:00:46+00:00",
+                                                               "results": {"11111111": {"status": "ok"}}}),
+                                                   encoding="utf-8", newline="\n")
     meta = {"gate_params": {"G1": g1 or {}}}
     G1Q.build_supporting_artifacts(study=_S2B, topic="T", out_dir=d, design={"primary": "Cắt ngang"},
                                    g0_checkpoint=cp0, effects=[], meta=meta, generated_at="2026-10-26 10:00")
@@ -245,3 +257,73 @@ def test_dong_luc_muc_tieu_phu_lam_tron_he_so_thiet_ke():
           "khoang_or_danh_nghia": [1.07, 1.15]}
     dong = R3.dong_luc_muc_tieu_phu(kq)
     assert "÷ DE 1.39)" in dong and "1.38784" not in dong, dong
+
+
+# ── 8. A2: không ghi trạng thái chốt G3; số sai lệch + trạng thái; cách bàn luận không đáp ứng ──────────────────────
+
+def test_a2_khong_ghi_trang_thai_g3_dem_dung_sai_lech_va_ban_luan_khong_dap_ung(tmp_path):
+    (tmp_path / "G3_checkpoint.json").write_text(json.dumps({"hypothesis_type": "descriptive_precision",
+                                                             "n_adjusted": 630, "confirmed_n": 1000,
+                                                             "quality_gate": {"human_confirmation_complete": False}}),
+                                                 encoding="utf-8", newline="\n")
+    meta = {"gate_params": {
+        "G1": {"bias_controls": [{"sai_lech": "Người bỏ về", "bien_phap": "Đếm HIS",
+                                  "trang_thai": "định lượng + hạn chế mở"},
+                                 {"sai_lech": "Chọn mẫu", "bien_phap": "Hệ thống"}],
+               "non_response_plan": "Sổ từ chối; so người từ chối với người tham gia"},
+        "G3": {"dropout": 0.15, "dropout_source": "kinh nghiệm vận hành"}}}
+    design = G1A.infer_study_design("descriptive", {}, "hài lòng người bệnh ngoại trú")
+    a2 = G1A.generate_g1_artifact("t", "S", "descriptive", design, [], {}, "2026-10-26 10:00", meta=meta,
+                                  out_dir=tmp_path)
+    assert "[CẦN PI CHỐT Ở G3]" not in a2 and "G3 CHƯA được PI xác nhận" not in a2
+    assert "g3_quality_gate.py" in a2
+    assert "## PHẦN 2 — KIỂM SOÁT 2 SAI LỆCH CHÍNH" in a2 and "☑ 2 sai lệch đã phân tích" in a2
+    assert "Đếm HIS — trạng thái: định lượng + hạn chế mở" in a2
+    nr = next(x for x in a2.splitlines() if x.startswith("Sai lệch KHÔNG ĐÁP ỨNG"))
+    assert "dự phòng 15%" in nr and "Sổ từ chối; so người từ chối với người tham gia" in nr
+    assert "gate_params.G1.non_response_plan" in nr
+
+
+# ── 9. A2b: cỡ mẫu thiếu, nguồn từng dòng, rút bài từng định danh, §3.6; A13: mốc cứng ───────────────────────────────
+
+def test_so_a2b_co_mau_nguon_rut_bai_tung_dong_va_gantt_moc_cung(tmp_path):
+    so = _so_a2b(tmp_path, {"reviewed_at": "2026-10-27T09:00:00+07:00"})
+    a = _dong(so, "PMID:11111111")
+    assert "(cỡ mẫu: [CẦN TRÍCH — sàng lọc G0 không ghi])" in a, "thiết kế không có số ⇒ nhãn cỡ mẫu"
+    assert "rút bài: không phát hiện (biên nhận A12, 2026-10-15)" in a
+    assert "cỡ mẫu: [CẦN TRÍCH" not in _dong(so, "PMID:55555555"), "có n ⇒ không gắn nhãn"
+    assert "cỡ mẫu: [CẦN TRÍCH" not in _dong(so, "PMID:33333333"), "xã luận không cần cỡ mẫu"
+    assert "không có biên nhận máy theo định danh này" in _dong(so, "PMID:33333333")
+    nguon = next(x for x in so.splitlines() if x.startswith("- Nguồn của các dòng trong sổ"))
+    assert "PubMed — truy vấn G0 (1)" in nguon and "Crossref (1)" in nguon and "khác (2)" in nguon
+    assert "(xem §3.6 của G0_A1)" in so and "(xem §3.6)" not in so
+    a13 = (tmp_path / "exports" / _S2B / f"G1_A13_IMPLEMENTATION_PLAN_{_S2B}.md").read_text(encoding="utf-8")
+    g2 = next(x for x in a13.splitlines() if x.startswith("| G2 |"))
+    assert "★ mốc cứng, chữ ký: G2 (IRB)" in g2
+    assert "G4 (STATISTICIAN/PI)" in next(x for x in a13.splitlines() if x.startswith("| G3–G4 |"))
+    assert "★" not in next(x for x in a13.splitlines() if x.startswith("| G0–G1 |"))
+
+
+def test_rut_bai_dong_co_tin_hieu_thi_canh_bao():
+    assert "CẦN BÁC SĨ XEM" in G1Q._o_rut_bai("PMID:1", {"1": "retracted"}, "2026-10-15")
+    assert G1Q._o_rut_bai("DOI:10.1/x", {"1": "ok"}, "2026-10-15").startswith("rút bài: không có biên nhận")
+
+
+# ── 10. Biên bản xử lý: căn cứ theo NỘI DUNG ──────────────────────────────────────────────────────────────────────────
+
+def test_bien_ban_xu_ly_can_cu_theo_mau_noi_dung(de_tai):  # noqa: F811 — fixture nhập từ test xử lý 17/10
+    goc = _ghi_ok(de_tai, _dg_co_luu_y())
+    _sua_sap(de_tai, "Dòng 1\n§9 Dữ liệu thiếu: MICE 20 bộ\nDòng 3\n")
+
+    def _xl_mau(**cc):
+        xl = _xl(goc, "giam-khao-cong:RQ5")
+        xl["viec"][0]["can_cu"] = [{"loai": "tep", "gia_tri": SAP_XL, **cc}]
+        return xl
+
+    p, kq = _ghi(de_tai, _xl_mau(mau="MICE 20 bộ", khong_chua="[CẦN"))
+    assert p is not None, kq["loi"]
+    assert json.loads(p.read_text(encoding="utf-8"))["viec"][0]["can_cu"][0]["gia_tri"] == f"{SAP_XL}:2"
+    p, kq = _ghi(de_tai, _xl_mau(mau="chữ chưa hề có"))
+    assert p is None and any("không có trong" in x for x in kq["loi"]), kq["loi"]
+    p, kq = _ghi(de_tai, _xl_mau(mau="MICE", khong_chua="Dòng 3"))
+    assert p is None and any("VẪN còn" in x for x in kq["loi"]), kq["loi"]

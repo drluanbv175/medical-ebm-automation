@@ -653,7 +653,7 @@ def analyze_evidence_gaps(results: dict, topic: str,
                 registry_note += f" — PI ĐÃ ĐÁNH GIÁ chồng lấn (gate_params.G0.registry_overlap_assessment): {_cl.strip()}"
             gaps.append(
                 f"Có {n_active} nghiên cứu đang/sắp tuyển trên ClinicalTrials.gov — "
-                "cần đối chiếu để tránh trùng lặp (xem §3.6)"
+                "cần đối chiếu để tránh trùng lặp (xem §3.6 của G0_A1)"
             )
             novelty_concern = f"{novelty_concern} | {registry_note}"
             # Không để hệ khuyên "làm RCT mới" một cách phẳng khi đang có thử nghiệm

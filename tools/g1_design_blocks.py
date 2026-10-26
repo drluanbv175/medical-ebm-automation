@@ -291,7 +291,9 @@ _DIEN_TU_G1: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("Thời điểm cắt ngang (một mốc hay một khoảng):", ("study_period",)),
     ("Thời điểm đo PHƠI NHIỄM so với lúc bắt đầu nghiên cứu:", ("G0.intervention",)),
     ("Thời điểm xác định KẾT CỤC so với lúc đo phơi nhiễm:", ("primary_outcome.timepoint",)),
-    ("Sai lệch KHÔNG ĐÁP ỨNG (non-response): tỷ lệ dự kiến + cách bàn luận:", ("G3.dropout",)),
+    # 26/10/2026 (hội đồng G1 C1a, G1-T1 RQ5e): dòng này chỉ có tỷ lệ dự phòng, thiếu «cách bàn luận» (sổ từ chối, so
+    # người trả lời với người không trả lời, ngưỡng đồng ý) ⇒ thêm khoá gate_params.G1.non_response_plan.
+    ("Sai lệch KHÔNG ĐÁP ỨNG (non-response): tỷ lệ dự kiến + cách bàn luận:", ("G3.dropout", "non_response_plan")),
     ("quả; nguồn dữ liệu và phương pháp đo cho TỪNG biến:", ("tu_dien_du_lieu",)),
 )
 # Khoá «có chấm»/khoá ngoài G1 ⇒ nơi ghi nguồn (khoá trơn là gate_params.G1.<khoá>).

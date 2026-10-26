@@ -4,8 +4,10 @@ Trước đây khối thiết kế STROBE, bảng thiết kế ứng viên, mụ
 ô trống — dù PI đã ghi quyết định ở `gate_params` và G3/G4 đã tính/soạn. Test chốt:
 ① dòng STROBE điền từ G0/G1/G3 kèm NGUỒN khoá; tệp từ điển dữ liệu KHÔNG được ghi là «PI đã chốt»; nhãn [CẦN] trong giá
    trị không được coi là đã ghi;
-② câu cỡ mẫu từ G3 nói rõ khi G3 CHƯA được PI xác nhận, và không đặt số ngay sau dấu hai chấm (rào R5);
-③ §0.8 trỏ sang G3, giữ nhãn hoãn «[CẦN PI CHỐT Ở G3]» (bộ chấm G1 coi là ô của cổng sau) khi G3 chưa xác nhận;
+② câu cỡ mẫu từ G3 KHÔNG ghi trạng thái chốt của G3 mà trỏ lệnh đo sống (26/10/2026, hội đồng G1 C1a RQ4: «G3 CHƯA
+   được PI xác nhận» sai ngay khi G3 chốt, và chạy lại G1 sau G3 làm G2/G3 thành «cũ»), không đặt số ngay sau dấu hai
+   chấm (rào R5);
+③ §0.8 trỏ sang G3 + lệnh đo sống, không còn nhãn hoãn «[CẦN PI CHỐT Ở G3]» (cùng lý do ②);
 ④ bảng thiết kế: ô khả thi/lực lấy từ quyết định + G3; phương án thay thế đã pin ⇒ «—»; descriptive_precision ⇒ effect
    size «không áp dụng»;
 ⑤ có SAP G4 ⇒ PHẦN 5/6 trỏ SAP (giữ tiêu đề), không còn ô [CẦN] ở đó; chưa có SAP ⇒ giữ khung.
@@ -23,7 +25,6 @@ for _p in (str(ROOT / "tools"), str(ROOT / "tests")):
         sys.path.insert(0, _p)
 
 import g1_design_blocks as G1D  # noqa: E402
-import g1_quality_gate as G1Q  # noqa: E402
 import run_g1_auto as G1  # noqa: E402
 
 STUDY = "S-G1A2"
@@ -73,13 +74,14 @@ def test_gia_tri_ngoai_g1_chi_lay_khi_du(tmp_path):
     assert "tu_dien_du_lieu" not in ra
 
 
-def test_cau_co_mau_g3_noi_ro_chua_xac_nhan_va_khong_vuong_r5(tmp_path):
+def test_cau_co_mau_g3_tro_do_song_va_khong_vuong_r5(tmp_path):
     _cp_g3(tmp_path, xac_nhan=False)
     cau = G1._cau_co_mau_g3(tmp_path)
-    assert "N tối thiểu 808" in cau and "N hiệu lực 1000" in cau and "G3 CHƯA được PI xác nhận" in cau
+    assert "N tối thiểu 808" in cau and "N hiệu lực 1000" in cau and "g3_quality_gate.py" in cau
     assert not re.search(r":\s*\d", cau), "R5 cấm «cỡ mẫu…: <số>» không kèm [CẦN]"
     _cp_g3(tmp_path, xac_nhan=True)
-    assert "CHƯA được PI xác nhận" not in G1._cau_co_mau_g3(tmp_path)
+    assert G1._cau_co_mau_g3(tmp_path) == cau, "câu không đổi theo trạng thái chốt G3 (không lỗi thời khi G3 chốt)"
+    assert "CHƯA được PI xác nhận" not in cau
     assert G1._cau_co_mau_g3(tmp_path / "khong-co") == ""
 
 
@@ -92,9 +94,9 @@ def test_muc_08_tro_sang_g3_giu_nhan_hoan(tmp_path):
     assert "CẦN TÍNH Ở G3" not in ra and "đã tính ở G3 — xem `G3_A4_SAMPLE_SIZE`" in ra
     assert "không áp dụng effect size — cỡ mẫu theo độ chính xác" in ra
     dong = [x for x in ra.splitlines() if "G3_A4_SAMPLE_SIZE" in x]
-    assert len(dong) == 3 and all(G1Q._HOAN_CHO_CONG_SAU.search(x) for x in dong), "vẫn là ô của cổng sau"
+    assert len(dong) == 3 and "[CẦN" not in ra and "g3_quality_gate.py" in ra
     _cp_g3(tmp_path, xac_nhan=True)
-    assert "[CẦN" not in G1._tro_co_mau_g3(loi, tmp_path)
+    assert G1._tro_co_mau_g3(loi, tmp_path) == ra, "không đổi theo trạng thái chốt G3"
 
 
 def _a2(tmp_path: Path, *, g3: bool, kha_thi: bool) -> str:
