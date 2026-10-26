@@ -627,7 +627,7 @@ def dong_luc_muc_tieu_phu(kq):
     return (f"{kq['muc_tieu']} ({kq['phan_tich']}): với N = {kq['n_danh_nghia']}, α = {kq['alpha']:g} hai phía, "
             f"lực {round(kq['power'] * 100)}%, OR nhỏ nhất phát hiện được cho mỗi {buoc} {kq['phoi_nhiem']} là "
             f"{lo:.2f}–{hi:.2f} (chiều giảm {g_lo:.2f}–{g_hi:.2f}) ở n hiệu dụng ≈ {kq['n_hieu_dung']:.0f} "
-            f"(sau {kq['n_danh_nghia'] - kq['n_phan_tich']} phiếu dự phòng hỏng, ÷ DE {kq['design_effect']:g}); "
+            f"(sau {kq['n_danh_nghia'] - kq['n_phan_tich']} phiếu dự phòng hỏng, ÷ DE {kq['design_effect']:.2f}); "
             f"chưa gom cụm {dn_lo:.2f}–{dn_hi:.2f}. Giả định phân bố kết cục, ĐLC phơi nhiễm và R² tính lại khi có "
             "số liệu khảo sát thử và HIS")
 
@@ -1048,8 +1048,10 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
             f"Bảng: tỷ lệ ước lượng p × sai số cho phép d → N tối thiểu "
             f"(TRƯỚC khi bù {int(dropout*100)}% không trả lời"
             + (f"; đã hiệu chỉnh quần thể hữu hạn N={population_n}" if population_n else "")
-            + (f"; đã nhân hiệu ứng thiết kế cụm DE = {_de_cum:.2f} (= 1+(m−1)×ICC, m = {cluster_size}, ICC = {icc})"
-               if _de_cum is not None else "") + ")",
+            # 26/10/2026: có CV cỡ cụm thì DE theo Eldridge (cụm KHÔNG đều) — nhãn cũ luôn in công thức cụm đều.
+            + (f"; đã nhân hiệu ứng thiết kế cụm DE = {_de_cum:.2f} ("
+               + (f"= 1+((CV²+1)×m−1)×ICC, CV = {cluster_cv}, " if cluster_cv is not None else "= 1+(m−1)×ICC, ")
+               + f"m = {cluster_size}, ICC = {icc})" if _de_cum is not None else "") + ")",
             "",
             "| p ước lượng | " + " | ".join(f"d = ±{d * 100:g}%" for d in _d_list) + " |",
             "|---|" + "---|" * len(_d_list),

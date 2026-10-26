@@ -291,7 +291,9 @@ _DIEN_TU_G1: tuple[tuple[str, tuple[str, ...]], ...] = (
     ("Thời điểm cắt ngang (một mốc hay một khoảng):", ("study_period",)),
     ("Thời điểm đo PHƠI NHIỄM so với lúc bắt đầu nghiên cứu:", ("G0.intervention",)),
     ("Thời điểm xác định KẾT CỤC so với lúc đo phơi nhiễm:", ("primary_outcome.timepoint",)),
-    ("Sai lệch KHÔNG ĐÁP ỨNG (non-response): tỷ lệ dự kiến + cách bàn luận:", ("G3.dropout",)),
+    # 26/10/2026 (hội đồng G1 C1a, G1-T1 RQ5e): dòng này chỉ có tỷ lệ dự phòng, thiếu «cách bàn luận» (sổ từ chối, so
+    # người trả lời với người không trả lời, ngưỡng đồng ý) ⇒ thêm khoá gate_params.G1.non_response_plan.
+    ("Sai lệch KHÔNG ĐÁP ỨNG (non-response): tỷ lệ dự kiến + cách bàn luận:", ("G3.dropout", "non_response_plan")),
     ("quả; nguồn dữ liệu và phương pháp đo cho TỪNG biến:", ("tu_dien_du_lieu",)),
 )
 # Khoá «có chấm»/khoá ngoài G1 ⇒ nơi ghi nguồn (khoá trơn là gate_params.G1.<khoá>).
@@ -300,6 +302,38 @@ _NGUON_KHOA = {"G0.intervention": "gate_params.G0.intervention",
                "G3.dropout": "gate_params.G3.dropout + dropout_source"}
 # Khoá trỏ tới TỆP (không phải quyết định PI) ⇒ không được ghi «PI đã chốt».
 _KHOA_TRO_TEP = {"tu_dien_du_lieu": "trỏ tệp — chưa phải xác nhận của PI"}
+
+
+# 26/10/2026 (hội đồng G1 C1a, G1-T1 RQ5): ô «Chọn mẫu»/«Thước đo kết hợp» của khối thiết kế chưa bao giờ được đánh dấu
+# dù đề cương đã chốt hệ thống + phân tầng + gom cụm và tỷ lệ + OR. PI khai MÃ ở gate_params.G1.<khoá>; «khac:<mô tả>»
+# thêm một ô đã đánh dấu; mã lạ thì in ra cho PI thấy, không im lặng bỏ. Khoá vắng ⇒ khối giữ nguyên ô trống.
+_O_DANH_DAU: dict[str, tuple[str, dict[str, str]]] = {
+    "sampling_design": ("Chọn mẫu:", {"toan_bo": "Toàn bộ", "ngau_nhien_don": "Ngẫu nhiên đơn", "he_thong": "Hệ thống",
+                                     "phan_tang": "Phân tầng", "cum": "Cụm"}),
+    "association_measures": ("Thước đo kết hợp định trước:", {
+        "prevalence": "tỷ lệ hiện mắc (prevalence)", "prevalence_or": "prevalence OR", "pr": "PR", "hr": "HR",
+        "rr": "RR", "ty_suat": "tỷ suất mới mắc", "rd": "RD"}),
+}
+
+
+def _danh_dau_o(dong: str, khoa: str, ma_ds) -> str:
+    """Đổi «☐ <nhãn>» thành «☑ <nhãn>» cho các mã PI đã khai (chỉ trên dòng này)."""
+    for ma in ma_ds:
+        nhan = _O_DANH_DAU[khoa][1].get(str(ma).strip())
+        if nhan:
+            dong = dong.replace(f"☐ {nhan}", f"☑ {nhan}", 1)
+    return dong
+
+
+def _duoi_o_danh_dau(khoa: str, ma_ds) -> str:
+    """Phần nối cuối khối ô đã đánh dấu: ô «khác», mã lạ, nguồn khoá."""
+    bang = _O_DANH_DAU[khoa][1]
+    khac = [str(m).split(":", 1)[1].strip() for m in ma_ds if str(m).strip().startswith("khac:")]
+    la = [str(m) for m in ma_ds if str(m).strip() not in bang and not str(m).strip().startswith("khac:")]
+    phan = [f"☑ khác: {x}" for x in khac if x]
+    if la:
+        phan.append(f"[mã lạ, không đánh dấu được: {', '.join(la)} — mã hợp lệ: {', '.join(bang)}]")
+    return ("  " + "  ".join(phan) if phan else "") + f"  (PI đã chốt — gate_params.G1.{khoa})"
 
 
 def _gia_tri_g1(v) -> str:
@@ -315,7 +349,25 @@ def dien_tu_quyet_dinh(body: str, g1: dict, dong_co_mau: str = "", them: dict | 
     `dong_co_mau`: câu cỡ mẫu từ G3 (không đặt số ngay sau dấu hai chấm — rào R5 chống bịa số của G1)."""
     g1 = {**(g1 if isinstance(g1, dict) else {}), **(them or {})}
     dong_ra = []
+    dang_o: str | None = None  # khoá ô đánh dấu của khối đang đọc (khối có thể tràn sang dòng thụt lề kế tiếp)
+
+    def _dong_khoi_o() -> None:
+        nonlocal dang_o
+        if dang_o:
+            dong_ra[-1] += _duoi_o_danh_dau(dang_o, g1[dang_o])
+        dang_o = None
+
     for dong in body.splitlines():
+        if dang_o and dong.startswith("  ") and "☐" in dong:
+            dong_ra.append(_danh_dau_o(dong, dang_o, g1[dang_o]))
+            continue
+        _dong_khoi_o()
+        for khoa_o, (dau, _bang) in _O_DANH_DAU.items():
+            ma_ds = g1.get(khoa_o)
+            if dong.strip().startswith(dau) and "☐" in dong and isinstance(ma_ds, (list, tuple)) and ma_ds:
+                dang_o = khoa_o
+                dong = _danh_dau_o(dong, khoa_o, ma_ds)
+                break
         for nhan, khoa in _DIEN_TU_G1:
             if dong.strip().startswith(nhan) and "[CẦN]" in dong:
                 gia = [(k, _gia_tri_g1(g1.get(k))) for k in khoa]
@@ -335,6 +387,7 @@ def dien_tu_quyet_dinh(body: str, g1: dict, dong_co_mau: str = "", them: dict | 
         if dong.strip().startswith("Cỡ mẫu dự kiến:") and dong_co_mau:
             dong = dong[:dong.index("Cỡ mẫu dự kiến:")] + f"Cỡ mẫu dự kiến: {dong_co_mau}"
         dong_ra.append(dong)
+    _dong_khoi_o()
     return "\n".join(dong_ra)
 
 

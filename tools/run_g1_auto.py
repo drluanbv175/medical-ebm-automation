@@ -32,7 +32,7 @@ import time
 import unicodedata
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Sequence
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
@@ -1001,7 +1001,11 @@ def _bias_rieng_de_tai(meta: Optional[dict]) -> list:
         if not ten or not bien_phap:
             continue
         chieu = str(dong.get("chieu") or "").strip()
-        ra.append((ten.replace("|", "/"), (bien_phap + (f" (chiều lệch: {chieu})" if chieu else "")).replace("|", "/")))
+        # 26/10/2026 (G1-TB-20261025T152106-1ac1bb54 việc sửa 2–3): mỗi dòng mang trạng thái (khống chế / định lượng /
+        # hạn chế mở) — «người bỏ về» không còn đứng chung nhóm «khống chế» với thứ chỉ mới được đếm.
+        tt = str(dong.get("trang_thai") or "").strip()
+        ra.append((ten.replace("|", "/"), (bien_phap + (f" (chiều lệch: {chieu})" if chieu else "")
+                                           + (f" — trạng thái: {tt}" if tt else "")).replace("|", "/")))
     return ra
 
 
@@ -1055,16 +1059,17 @@ def _cau_co_mau_g3(out_dir: Optional[Path]) -> str:
     n_min, n_hl, de = cp.get("n_adjusted"), cp.get("confirmed_n"), cp.get("design_effect")
     if not isinstance(n_min, int) or n_min <= 0:
         return ""
+    if isinstance(de, (int, float)) and not isinstance(de, bool):
+        de = f"{de:.2f}"  # 26/10/2026: G3 lưu DE đủ chữ số (1.38784) — A2 in làm tròn như đề cương
     phan = [f"N tối thiểu {n_min}"] + ([f"hệ số thiết kế {de}"] if de else []) + (
         [f"N hiệu lực {n_hl}"] if isinstance(n_hl, int) else [])
-    trang_thai = "" if _g3_da_xac_nhan(cp) else " (G3 CHƯA được PI xác nhận — số có thể đổi khi chốt G3)"
+    # 26/10/2026 (hội đồng G1 C1a, G1-T1 RQ4): A2 từng ghi «G3 CHƯA được PI xác nhận» — đúng lúc sinh, sai ngay khi thống
+    # kê viên chốt G3. Muốn câu tự hết phải chạy lại G1 SAU G3, mà G1 mới hơn thì G2/G3 thành «cũ» theo thứ tự thời gian
+    # (pipeline_freshness). Không ghi trạng thái của cổng sau; trỏ lệnh đo sống.
+    trang_thai = (" (số lấy từ G3_checkpoint lúc sinh tệp; G3 chốt hay chưa: đo sống "
+                  "`python3 tools/g3_quality_gate.py`)")
     return ("theo G3 (`G3_A4_SAMPLE_SIZE`, G3_checkpoint) — " + ", ".join(phan) + trang_thai
             + " — giải trình theo STROBE mục 10")
-
-
-def _g3_da_xac_nhan(cp: dict) -> bool:
-    qg = cp.get("quality_gate") if isinstance(cp, dict) else None
-    return isinstance(qg, dict) and qg.get("human_confirmation_complete") is True
 
 
 _DONG_08_G3 = ("- Cỡ mẫu và power chính thức: [CẦN TÍNH Ở G3]",
@@ -1073,24 +1078,35 @@ _DONG_08_G3 = ("- Cỡ mẫu và power chính thức: [CẦN TÍNH Ở G3]",
 
 
 def _tro_co_mau_g3(protocol_core: str, out_dir: Optional[Path]) -> str:
-    """§0.8 của đề cương lõi: G3 đã tính ⇒ thay «[CẦN TÍNH Ở G3]» bằng con trỏ sang G3 (17/10/2026). G3 chưa PI xác nhận
-    ⇒ giữ nhãn hoãn «[CẦN PI CHỐT Ở G3]» (vẫn là ô của cổng sau, không phải ô G1). Chưa có G3 ⇒ không đổi."""
+    """§0.8 của đề cương lõi: G3 đã tính ⇒ thay «[CẦN TÍNH Ở G3]» bằng con trỏ sang G3 (17/10/2026). KHÔNG ghi trạng
+    thái chốt của G3 (26/10/2026 — xem `_cau_co_mau_g3`), trỏ lệnh đo sống. Chưa có G3 ⇒ không đổi."""
     try:
         cp = json.loads((Path(out_dir) / "G3_checkpoint.json").read_text(encoding="utf-8")) if out_dir else {}
     except (OSError, json.JSONDecodeError):
         return protocol_core
     if not isinstance(cp.get("n_adjusted"), int) or cp.get("n_adjusted", 0) <= 0:
         return protocol_core
-    con = "" if _g3_da_xac_nhan(cp) else " — [CẦN PI CHỐT Ở G3]"
     tham_so = ("không áp dụng effect size — cỡ mẫu theo độ chính xác; tham số và nguồn ghi ở `G3_A4_SAMPLE_SIZE`"
                if cp.get("hypothesis_type") == "descriptive_precision"
                else "tham số và nguồn ghi ở `G3_A4_SAMPLE_SIZE`")
-    moi = (f"- Cỡ mẫu và power chính thức: đã tính ở G3 — xem `G3_A4_SAMPLE_SIZE`{con}",
-           f"  {tham_so}{con}",
-           f"- Phân bổ theo nhóm/tầng/trung tâm nếu có: xem `G3_A4_SAMPLE_SIZE` (hệ số thiết kế, cụm){con}")
+    moi = ("- Cỡ mẫu và power chính thức: đã tính ở G3 — xem `G3_A4_SAMPLE_SIZE` (G3 chốt hay chưa: đo sống "
+           "`python3 tools/g3_quality_gate.py`)",
+           f"  {tham_so}",
+           "- Phân bổ theo nhóm/tầng/trung tâm nếu có: xem `G3_A4_SAMPLE_SIZE` (hệ số thiết kế, cụm)")
     for cu, m in zip(_DONG_08_G3, moi):
         protocol_core = protocol_core.replace(cu, m, 1)
     return protocol_core
+
+
+def _dong_xac_nhan_nguoi(cac_muc: Sequence[str], study_name: str) -> str:
+    """PHẦN 7: việc của NGƯỜI — liệt kê, KHÔNG ghi trạng thái (26/10/2026, hội đồng G1 C1a, G1-T1 RQ8).
+
+    A2 sinh TRƯỚC khi chấm nên ô «☐ … [CHỜ]» lỗi thời ngay khi PI xác nhận: checkpoint ghi G1-HUMAN-01…08 PASS mà A2
+    vẫn «CHỜ» ⇒ người ký nhận hai chỉ dẫn trái nhau. Trạng thái đo sống bằng bộ chấm."""
+    return "\n".join([f"• {m}" for m in cac_muc] + [
+        "⚠ Tệp này sinh TRƯỚC khi chấm nên KHÔNG ghi ☐/☑ cho các xác nhận của người ở trên — trạng thái sống "
+        "(G1-HUMAN-01…08):",
+        f"  python3 tools/g1_quality_gate.py --study {study_name}"])
 
 
 _RE_PHIEN_BAN_SAP = re.compile(r"\*\*Phiên bản SAP:\*\*\s*([0-9][0-9.]*)")
@@ -1125,7 +1141,11 @@ def _thay_khung_sap_bang_sap_g4(artifact: str, out_dir: Optional[Path], study_na
 ---
 
 """
-    return artifact[:bat_dau] + khoi + artifact[ket_thuc:]
+    # 26/10/2026 (G1-T1 RQ8): PHẦN 7 từng tick «SAP skeleton 12 mục đã sinh» ngay dưới PHẦN 5 nói khung đã thay.
+    phan_sau = artifact[ket_thuc:].replace(
+        "☑ SAP skeleton 12 mục đã sinh", f"☑ Khung SAP 12 mục của G1 đã thay bằng SAP chính thức G4 (phiên bản {pb} — "
+        "PHẦN 5)", 1)
+    return artifact[:bat_dau] + khoi + phan_sau
 
 
 def generate_g1_artifact(
@@ -1150,6 +1170,8 @@ def generate_g1_artifact(
         bias_nguon = ("> KHUÔN CHUNG theo thiết kế — chưa phải sai lệch của riêng đề tài. PI khai từng dòng {sai_lech, "
                       "bien_phap, chieu} ở `gate_params.G1.bias_controls` rồi chạy lại G1.")
         nhieu_chinh = "[từ §2 Bias Control]"
+    # 26/10/2026: tiêu đề + PHẦN 7 từng ghi cứng «7 sai lệch» khi bảng riêng của đề tài có 11 dòng.
+    so_sai_lech = len(bias_rieng) if bias_rieng else len(design["bias_controls"])
     es_section = _effect_size_section(effects)
     internal = design["internal_code"]
     specialist_modules = detect_specialist_modules(topic)
@@ -1557,23 +1579,30 @@ Không yêu cầu random seed trừ khi có bước lấy mẫu/ngẫu nhiên b�
         lock_population_prompt = "[CẦN ĐIỀN — từ sampling ở SAP §1]"
         lock_method_prompt = "[CẦN ĐIỀN — từ analytic approach]"
 
-    gate_human_lines = """☐ PI/methodologist xác nhận thiết kế và toàn bộ đề cương lõi [CHỜ]
-☐ Kết cục chính được định nghĩa vận hành + lịch đo [CHỜ]
-☐ Quần thể, tuyển mẫu, can thiệp/phơi nhiễm, comparator và theo dõi đã chốt [CHỜ]
-☐ Effect size/precision input có nguồn + cỡ mẫu → G3 [BƯỚC TIẾP]
-☐ SAP Lock Certificate chỉ ký ở G4 sau khi G3 hoàn tất [CHỜ]"""
-    next_step_lines = f"""1. PI/methodologist hoàn thiện `study_meta.json` và chạy lại G1
-2. Chạy G3: `python tools/run_g3_auto.py --study {study_name}`
-3. Hoàn thiện SAP rồi xin khóa ở G4; hệ không tự ký."""
+    gate_human_lines = _dong_xac_nhan_nguoi((
+        "PI/methodologist xác nhận thiết kế và toàn bộ đề cương lõi",
+        "Kết cục chính được định nghĩa vận hành + lịch đo",
+        "Quần thể, tuyển mẫu, can thiệp/phơi nhiễm, comparator và theo dõi đã chốt",
+        "Cổng sau, KHÔNG phải điều kiện qua G1: tham số độ chính xác/effect size có nguồn + cỡ mẫu (G3); SAP khoá "
+        "bằng chữ ký ở G4"), study_name)
+    # 26/10/2026 (hội đồng G1 C1a, G1-T1 RQ8): «Bước tiếp theo» từng bảo PI chạy lại G1 rồi chạy G3 dù cả hai đã chốt.
+    next_step_lines = (
+        "1. Trạng thái sống của mọi cổng và việc còn treo (ai làm, lệnh nào): "
+        f"`python3 tools/study_readiness.py --study {study_name}`\n"
+        "2. Sửa nội dung G1 = sửa `study_meta.json → gate_params.G1` rồi chạy lại G1 (tệp này được sinh lại); nội dung "
+        "đổi thì xác nhận cũ của PI hết hiệu lực (dấu vân tay) — PI xác nhận lại\n"
+        f"3. G3: thống kê viên chốt cỡ mẫu (`python tools/run_g3_auto.py --study {study_name}`); G4: SAP khoá bằng chữ "
+        "ký thống kê viên/PI (`tools/approve_gate.py`) — hệ không tự ký.")
     if internal == "sr_ma":
         effect_gate_line = (
             "☐ Nguồn nền và chiến lược tìm kiếm truy nguyên được trong Evidence Ledger"
         )
-        gate_human_lines = """☐ PI/methodologist xác nhận PICO, eligibility và protocol PRISMA-P [CHỜ]
-☐ Nguồn tìm, chiến lược tìm, chọn lọc, trích xuất và RoB đã chốt [CHỜ]
-☐ Kết cục, effect measure, mô hình tổng hợp và phân tích nhạy cảm đã chốt [CHỜ]
-☐ Đăng ký PROSPERO/OSF nếu phù hợp xử lý ở G2 [CHỜ]
-☐ SAP/synthesis plan chỉ khóa ở G4; không có power tuyển mẫu người bệnh."""
+        gate_human_lines = _dong_xac_nhan_nguoi((
+            "PI/methodologist xác nhận PICO, eligibility và protocol PRISMA-P",
+            "Nguồn tìm, chiến lược tìm, chọn lọc, trích xuất và RoB đã chốt",
+            "Kết cục, effect measure, mô hình tổng hợp và phân tích nhạy cảm đã chốt",
+            "Đăng ký PROSPERO/OSF nếu phù hợp xử lý ở G2",
+            "SAP/synthesis plan chỉ khóa ở G4; không có power tuyển mẫu người bệnh"), study_name)
         next_step_lines = """1. Hoàn thiện protocol PRISMA-P và Evidence Ledger
 2. Xử lý đăng ký protocol ở G2 nếu phù hợp
 3. Khóa search/screening/RoB/synthesis plan ở G4 trước khi tổng hợp."""
@@ -1581,11 +1610,12 @@ Không yêu cầu random seed trừ khi có bước lấy mẫu/ngẫu nhiên b�
         effect_gate_line = (
             "☐ Nguồn bối cảnh/phương pháp truy nguyên được trong Evidence Ledger"
         )
-        gate_human_lines = """☐ PI/nhà phương pháp định tính xác nhận câu hỏi và cách tiếp cận [CHỜ]
-☐ Lấy mẫu, thu thập dữ liệu, reflexivity và quy tắc bão hòa đã chốt [CHỜ]
-☐ Mã hóa, audit trail, triangulation/negative cases đã chốt [CHỜ]
-☐ Không dùng effect size, α hoặc power làm điều kiện đạt G1
-☐ Kế hoạch phân tích định tính chỉ khóa ở G4; không tự ký."""
+        gate_human_lines = _dong_xac_nhan_nguoi((
+            "PI/nhà phương pháp định tính xác nhận câu hỏi và cách tiếp cận",
+            "Lấy mẫu, thu thập dữ liệu, reflexivity và quy tắc bão hòa đã chốt",
+            "Mã hóa, audit trail, triangulation/negative cases đã chốt",
+            "Không dùng effect size, α hoặc power làm điều kiện đạt G1",
+            "Kế hoạch phân tích định tính chỉ khóa ở G4; không tự ký"), study_name)
         next_step_lines = """1. Hoàn thiện protocol/reflexivity plan và tài liệu người tham gia
 2. Xử lý đạo đức/đồng thuận ở G2
 3. Khóa kế hoạch lấy mẫu, bão hòa, mã hóa và phân tích ở G4."""
@@ -1617,6 +1647,12 @@ Không yêu cầu random seed trừ khi có bước lấy mẫu/ngẫu nhiên b�
     if not effects and _khung_g3(out_dir) == "descriptive_precision":
         es_section = ("  → Không áp dụng: cỡ mẫu tính theo ĐỘ CHÍNH XÁC của ước lượng (G3 — descriptive_precision), "
                       "không theo effect size; lực cho mục tiêu phụ (nếu có) xem G3_A4 PHẦN 2c.\n")
+        if internal not in ("sr_ma", "qualitative"):
+            # 26/10/2026 (G1-T1 RQ8): tiêu đề + PHẦN 7 từng ghi «Chưa có effect size truy nguyên [CHỜ BỔ SUNG…]» —
+            # PI đi tìm một effect size mà thiết kế độ chính xác không cần.
+            effect_source_note = "cỡ mẫu theo độ chính xác (G3) — không cần effect size cho kết cục chính"
+            effect_gate_line = ("☑ Kết cục chính ước lượng theo độ chính xác — không cần effect size (tham số + nguồn ở "
+                                "`G3_A4_SAMPLE_SIZE`)")
 
     # Estimand block (chỉ cho RCT/can thiệp).
     # Dùng CHUNG một hằng số với khối thiết kế (G1D.has_estimand_block) để khối
@@ -1681,7 +1717,7 @@ Quần thể phân tích chính liên kết estimand (không phải thuộc tín
 
 ---
 
-## PHẦN 2 — KIỂM SOÁT 7 SAI LỆCH CHÍNH
+## PHẦN 2 — KIỂM SOÁT {so_sai_lech} SAI LỆCH CHÍNH
 
 {bias_nguon}
 
@@ -1835,7 +1871,7 @@ Phần mềm: ☐ R  ☐ Stata  ☐ SPSS  | Seed ngẫu nhiên: {suggested_seed}
 ```
 ☑ Loại thiết kế đã suy luận từ câu hỏi/topic + evidence landscape nếu có
 ☑ 2-3 thiết kế ứng viên đã so sánh
-☑ 7 sai lệch đã phân tích với biện pháp kiểm soát
+☑ {so_sai_lech} sai lệch đã phân tích với biện pháp kiểm soát
 ☑ SAP skeleton 12 mục đã sinh
 ☑ Khối thiết kế + dummy tables sinh RIÊNG theo thiết kế `{internal}` (không dùng khuôn RCT chung)
 {effect_gate_line}

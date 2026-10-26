@@ -786,6 +786,34 @@ LOAI_XU_LY = "xu_ly_viec_sua"
 CACH_XU_LY = ("da_sua", "chuyen_pi", "khong_sua_co_ly_do")
 
 
+def _giai_mau_can_cu(bb: Dict[str, Any], out_dir: Path, repo_root: Path, loi: List[str]) -> None:
+    """Căn cứ «tep» của biên bản xử lý khai bằng NỘI DUNG thay số dòng (26/10/2026, lượt sửa C1a G1).
+
+    Vì sao: biên bản xử lý chỉ ghi được SAU lần sinh lại cuối cùng của tài liệu (biên bản băm tài liệu); số dòng soạn
+    trước sẽ trôi. Khoá «mau» = chuỗi phải CÓ trong tệp ⇒ lúc ghi điền «tệp:dòng» của dòng đầu tiên khớp; «khong_chua» =
+    chuỗi phải KHÔNG còn trong tệp. Không đạt ⇒ lỗi (việc khai «đã sửa» chưa thật sự có trong tài liệu ⇒ không ghi gì).
+    So khớp chuỗi con, không regex."""
+    for i, v in enumerate(bb.get("viec") or [], 1):
+        for j, cc in enumerate((v.get("can_cu") or []) if isinstance(v, dict) else [], 1):
+            if not (isinstance(cc, dict) and cc.get("loai") == "tep" and (cc.get("mau") or cc.get("khong_chua"))):
+                continue
+            duong = str(cc.get("gia_tri") or "").split(":")[0].strip()
+            tep = _tim_tep(duong, out_dir, repo_root)
+            if tep is None:
+                loi.append(f"viec[{i}] căn cứ #{j}: tệp «{duong}» không tồn tại trong thư mục đề tài/repo")
+                continue
+            dong = tep.read_text(encoding="utf-8", errors="replace").splitlines()
+            if cc.get("khong_chua") and any(str(cc["khong_chua"]) in d for d in dong):
+                loi.append(f"viec[{i}] căn cứ #{j}: «{str(cc['khong_chua'])[:60]}» VẪN còn trong {duong}")
+            if cc.get("mau"):
+                n = next((k for k, d in enumerate(dong, 1) if str(cc["mau"]) in d), 0)
+                if n:
+                    cc["gia_tri"] = f"{duong}:{n}"
+                else:
+                    loi.append(f"viec[{i}] căn cứ #{j}: mẫu «{str(cc['mau'])[:60]}» không có trong {duong} — việc "
+                               "khai đã sửa chưa thật sự có trong tài liệu")
+
+
 def viec_can_xu_ly(goc: Dict[str, Any]) -> List[str]:
     """Mã các việc mà một biên bản giao — đánh giá chéo: «<người chấm>:<RQ>» cho mọi tiêu chí chưa «đạt»; tranh biện:
     «viec_sua:<n>» theo `phan_quyet.viec_sua`. Biên bản xử lý phải phủ ĐỦ danh sách này."""
@@ -860,6 +888,46 @@ def xu_ly_hieu_luc(out_dir: Path, gate: str) -> Dict[str, str]:
         if goc not in ra or moc >= ra[goc][1]:
             ra[goc] = (str(bb.get("id")), moc)
     return {g: v[0] for g, v in ra.items()}
+
+
+def ghi_lai_xu_ly(study: str, gate: str, out_dir: Path, repo_root: Optional[Path] = None,
+                  *, ap_dung: bool = False) -> List[Dict[str, Any]]:
+    """GHI LẠI biên bản xử lý đã «cũ» CHỈ vì `<cổng>_checkpoint.json` đổi (26/10/2026, lượt sửa C1a).
+
+    Vì sao: PI xác nhận lại một cổng ⇒ checkpoint ghi trạng thái/dấu vân tay mới ⇒ biên bản xử lý băm checkpoint đó
+    thành «cũ» ⇒ hồ sơ đòi họp lại dù NỘI DUNG tài liệu không đổi (đo trên bản sao C1a: sau nút Chot G0, bốn biên bản
+    G0 cũ chỉ vì trường dấu vân tay trong G0_checkpoint.json). Chỉ ghi lại khi MỌI tài liệu đổi là checkpoint của cổng;
+    tài liệu nội dung (.md, tổng hợp, study_meta, SAP…) đổi ⇒ không ghi lại — phải soạn biên bản xử lý mới có căn cứ.
+    Lấy biên bản xử lý MỚI NHẤT của mỗi gốc; gốc đã có biên bản xử lý còn hiệu lực ⇒ bỏ. Chạy khô mặc định."""
+    out_dir = Path(out_dir)
+    tep_cp = f"{gate}_checkpoint.json"
+    moi_nhat: Dict[str, Dict[str, Any]] = {}
+    for bb in doc_bien_ban(out_dir, gate):
+        if bb.get("_hong") or bb.get("loai") != LOAI_XU_LY:
+            continue
+        goc = str(bb.get("bien_ban_goc"))
+        if goc not in moi_nhat or _moc_thoi_gian(bb.get("thoi_diem")) >= _moc_thoi_gian(moi_nhat[goc].get("thoi_diem")):
+            moi_nhat[goc] = bb
+    ra: List[Dict[str, Any]] = []
+    for goc, bb in sorted(moi_nhat.items()):
+        if goc in xu_ly_hieu_luc(out_dir, gate):
+            continue
+        kq = kiem_bien_ban(bb, out_dir, repo_root, ap_xu_ly=False)
+        if not kq["cu"]:
+            continue
+        muc: Dict[str, Any] = {"id": bb.get("id"), "bien_ban_goc": goc, "tai_lieu_doi": kq["cu"]}
+        if any(Path(str(x)).name != tep_cp for x in kq["cu"]):
+            muc["ket"] = "bo_qua — tài liệu nội dung đổi: cần biên bản xử lý mới có căn cứ"
+        elif not ap_dung:
+            muc["ket"] = "se_ghi_lai (chạy khô — thêm --ap-dung để ghi)"
+        else:
+            nhap = {k: bb[k] for k in ("loai", "bien_ban_goc", "nguoi_ghi", "viec") if k in bb}
+            nhap["ghi_chu"] = (f"Ghi lại {bb.get('id')}: chỉ {tep_cp} đổi (người có thẩm quyền xác nhận lại "
+                               "cổng) — nội dung xử lý giữ nguyên.")
+            p, kq2 = ghi_bien_ban(study, gate, nhap, out_dir, repo_root)
+            muc["ket"] = f"da_ghi {p.name}" if p else "loi: " + "; ".join(kq2["loi"][:3])
+        ra.append(muc)
+    return ra
 
 
 def kiem_bien_ban(bb: Dict[str, Any], out_dir: Path, repo_root: Optional[Path] = None,
@@ -953,6 +1021,8 @@ def ghi_bien_ban(study: str, gate: str, nhap: Dict[str, Any], out_dir: Path, rep
         goc = next((b for b in doc_bien_ban(Path(out_dir), gate) if b.get("id") == bb.get("bien_ban_goc")), {})
         nguon_tl = [t.get("duong_dan") for t in goc.get("tai_lieu_xet") or [] if isinstance(t, dict)]
     bb["tai_lieu_xet"] = _bam_tai_lieu(nguon_tl, Path(out_dir), loi_tl)
+    if bb.get("loai") == LOAI_XU_LY:
+        _giai_mau_can_cu(bb, Path(out_dir), Path(repo_root) if repo_root else BASE, loi_tl)
     kq = kiem_bien_ban(bb, out_dir, repo_root, kiem_bam=False)
     kq["loi"] = loi_tl + kq["loi"]
     if bb.get("loai") == LOAI_XU_LY and not kq["loi"] and kq["tom_tat"].get("loai_goc") == "danh_gia_cheo":
@@ -1077,6 +1147,11 @@ def tom_tat_cong(gate: str, out_dir: Path, repo_root: Optional[Path] = None) -> 
     qd = doc_quyet_dinh(gate, out_dir)
     da_quyet = [dp for dp, bb in chuyen_tat_ca if da_quyet_het(bb, qd)]
     chuyen = [dp for dp, _bb in chuyen_tat_ca if dp not in da_quyet]
+    # 26/10/2026 (lượt sửa C1a): đã quyết + đã có biên bản xử lý còn hiệu lực ⇒ ĐÃ thực hiện — trước đây kẹt mãi ở «chờ
+    # thực hiện» dù chính lời nhắn bảo «sửa tài liệu theo quyết định rồi ghi biên bản xử lý».
+    xl_hl = xu_ly_hieu_luc(out_dir, gate)
+    cho_thuc_hien = [dp for dp in da_quyet if not (tranh_bien_moi[dp][1].get("viec_sua_da_xu_ly")
+                                                   or str(tranh_bien_moi[dp][0].get("id")) in xl_hl)]
     can_sua = ([dp for dp, (_bb, tom) in tranh_bien_moi.items()
                 if tom.get("ket_qua") == "sua_ket_luan" and not tom.get("viec_sua_da_xu_ly")]
                + [ma for ma, (_bb, tom) in danh_gia_moi.items() if tom.get("ket_luan_chung") == "tra_ve_sua"])
@@ -1089,10 +1164,10 @@ def tom_tat_cong(gate: str, out_dir: Path, repo_root: Optional[Path] = None) -> 
         trang_thai, ly_do = "BẤT ĐỒNG — CẦN TRANH BIỆN", [f"{ma}: người chấm không đồng thuận" for ma in bat_dong_treo]
     elif chuyen:
         trang_thai, ly_do = "CHUYỂN BÁC SĨ", [f"{dp}: trọng tài chuyển người có thẩm quyền quyết" for dp in chuyen]
-    elif da_quyet:
+    elif cho_thuc_hien:
         trang_thai, ly_do = "BÁC SĨ ĐÃ QUYẾT — CHỜ THỰC HIỆN", [
             f"{dp}: bác sĩ đã quyết (`{TEP_QUYET_DINH}`) — sửa tài liệu theo quyết định rồi ghi biên bản xử lý/chấm lại"
-            for dp in da_quyet]
+            for dp in cho_thuc_hien]
     elif can_sua:
         trang_thai, ly_do = "CẦN SỬA", [f"{ma}: hội đồng yêu cầu sửa" for ma in can_sua]
     elif thieu_bb:
@@ -1173,7 +1248,9 @@ def mau_bien_ban(loai: str, gate: str) -> Dict[str, Any]:
                 "viec": [{"nguon": "<người chấm>:<RQ> (đánh giá chéo) | viec_sua:<n> (tranh biện)",
                           "noi_dung": "(việc biên bản giao, tóm một câu)",
                           "cach_xu_ly": "|".join(CACH_XU_LY), "mo_ta": "(đã làm gì / vì sao không sửa)",
-                          "can_cu": [{"loai": "tep|lenh|commit|pmid|doi", "gia_tri": "", "ket_qua": "(với lenh)"}],
+                          "can_cu": [{"loai": "tep|lenh|commit|pmid|doi", "gia_tri": "", "ket_qua": "(với lenh)",
+                                      "mau": "(tuỳ chọn, với tep: chuỗi PHẢI có — máy điền tệp:dòng lúc ghi)",
+                                      "khong_chua": "(tuỳ chọn, với tep: chuỗi PHẢI không còn)"}],
                           "noi_trinh_pi": "(chỉ khi chuyen_pi: PI đọc/quyết ở đâu)"}]}
     if loai == "danh_gia_cheo":
         nv = NHIEM_VU[gate][0]
@@ -2413,7 +2490,10 @@ def ho_so_cong(study: str, gate: str, out_dir: Path, dp: Optional[List[str]] = N
         dg = danh_gia.get(nv["ma"], {"trang_thai": "chua_danh_gia", "id": None})
         if ap is False:
             k = khai.get(nv["ma"]) if isinstance(khai.get(nv["ma"]), dict) else {}
-            tt, ly_do = "khong_ap_dung", f"không áp dụng ({k.get('ly_do') or nv.get('dieu_kien')})"
+            # 26/10/2026: «không áp dụng (thiết kế can thiệp (RCT))» đọc như thể đề tài LÀ RCT — điều kiện là phạm vi
+            # của nhiệm vụ, không phải thiết kế của đề tài.
+            tt, ly_do = "khong_ap_dung", (f"không áp dụng — {k['ly_do']}" if k.get("ly_do") else
+                                          f"không áp dụng — nhiệm vụ chỉ dành cho {nv.get('dieu_kien')}")
         elif ap is None:
             tt, ly_do = "chua_xac_dinh", (f"chưa xác định áp dụng (điều kiện «{nv.get('dieu_kien')}») — điều phối cổng "
                                           "khai bằng `khai-ap-dung` trước khi họp")
@@ -2462,8 +2542,11 @@ def ho_so_cong(study: str, gate: str, out_dir: Path, dp: Optional[List[str]] = N
                       "bien_ban": t["id"] if t else None})
     qd = doc_quyet_dinh(gate, out_dir)
     chuyen = {m: t for m, t in tranh.items() if t.get("ket_qua") == "chuyen_bac_si"}
-    cho_thuc_hien = sorted(m for m, t in chuyen.items() if da_quyet_het(bien_ban.get(t.get("id")) or {}, qd))
-    cho_bac_si = sorted(m for m in chuyen if m not in cho_thuc_hien)
+    da_quyet_m = {m for m, t in chuyen.items() if da_quyet_het(bien_ban.get(t.get("id")) or {}, qd)}
+    xl_hl = xu_ly_hieu_luc(out_dir, gate)
+    # 26/10/2026: đã quyết + có biên bản xử lý còn hiệu lực ⇒ không còn «chờ thực hiện».
+    cho_thuc_hien = sorted(m for m in da_quyet_m if not (chuyen[m].get("xu_ly") or str(chuyen[m].get("id")) in xl_hl))
+    cho_bac_si = sorted(m for m in chuyen if m not in da_quyet_m)
     import cong_song as CS  # noqa: PLC0415
 
     tien_de = set(TIEN_DE_CA_CONG.get(gate, ()))
@@ -2743,6 +2826,11 @@ def main(argv: Optional[List[str]] = None) -> int:
     a.add_argument("--trung-voi", help="mã bài học trùng (bắt buộc với --ket trung)")
     a.add_argument("--ly-do", default="")
     a.add_argument("--json", action="store_true")
+    a = sub.add_parser("ghi-lai-xu-ly", help="ghi lại biên bản xử lý cũ CHỈ vì checkpoint của cổng đổi (chạy khô "
+                                             "mặc định)")
+    a.add_argument("--study", required=True)
+    a.add_argument("--gate", choices=CONG, required=True)
+    a.add_argument("--ap-dung", action="store_true")
     a = sub.add_parser("mau")
     a.add_argument("--loai", choices=("danh_gia_cheo", "tranh_bien", LOAI_XU_LY), required=True)
     a.add_argument("--gate", choices=CONG, required=True)
@@ -2790,6 +2878,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         # .as_posix(): cùng một thông điệp trên Mac và Windows (CI Windows từng đỏ vì «\\» — 10/10/2026).
         print(f"✅ Đã ghi {p.relative_to(out_dir).as_posix()} — {json.dumps(kq['tom_tat'], ensure_ascii=False)}")
         return 0
+    if args.lenh == "ghi-lai-xu-ly":
+        ds = ghi_lai_xu_ly(args.study, args.gate, out_dir, ap_dung=args.ap_dung)
+        print(f"GHI LẠI BIÊN BẢN XỬ LÝ — {args.gate}: {len(ds)} biên bản cũ" + ("" if args.ap_dung else " (chạy khô)"))
+        for m in ds:
+            print(f"  {m['id']} (gốc {m['bien_ban_goc']}): {m['ket']} · đổi: {', '.join(map(str, m['tai_lieu_doi']))}")
+        return 3 if any(str(m["ket"]).startswith("loi") for m in ds) else 0
     if args.lenh == "cham-song":
         kq = cham_song(args.study, args.gate, out_dir)
         if args.json:
