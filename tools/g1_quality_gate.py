@@ -750,6 +750,35 @@ def _o_rob(thiet_ke: Any) -> str:
     return "[CẦN THẨM ĐỊNH RoB — chọn công cụ theo thiết kế; đọc toàn văn]"
 
 
+# 26/10/2026 (hội đồng G1 C1a, G1-T2 RQ3a/RQ8): mọi dòng sổ từng gắn «(theo tóm tắt) … chưa đọc toàn văn» kể cả khi sàng
+# lọc G0 ghi rõ «(toàn văn, CC BY 4.0)» / «đọc toàn văn 2026-10-17», và kể cả xã luận PubMed không có tóm tắt ⇒ người ký
+# không biết số liệu lấy từ đâu. Đọc đúng NHÃN người soạn sàng lọc đã ghi; không có nhãn thì giữ mặc định thận trọng.
+_RE_DA_DOC_TOAN_VAN = re.compile(r"(?<!chưa )đọc toàn văn\s+(\d{4}-\d{2}-\d{2})|\(toàn văn\b", re.IGNORECASE)
+
+
+def _nguon_doc_g0(bai: Mapping[str, Any]) -> Tuple[str, str, str]:
+    """(hậu tố ô Hiệu ứng, phạm vi đã sàng, trạng thái đọc) của một dòng sổ A2b lấy từ sàng lọc G0."""
+    tom_tat, thiet_ke = str(bai.get("tom_tat") or ""), str(bai.get("thiet_ke_that") or "")
+    m = _RE_DA_DOC_TOAN_VAN.search(tom_tat)
+    if m:
+        ngay = f" {m.group(1)}" if m.group(1) else ""
+        return "(theo toàn văn)", "tiêu đề + tóm tắt", f"ĐÃ đọc toàn văn{ngay} (ghi ở sàng lọc G0)"
+    if "không có tóm tắt" in (thiet_ke + " " + tom_tat).lower():
+        return "(theo nội dung bài — không có tóm tắt)", "tiêu đề + nội dung bài", "chưa đọc toàn văn"
+    return "(theo tóm tắt)", "tiêu đề + tóm tắt", "chưa đọc toàn văn"
+
+
+def _ngay_tim_g0(out_dir: Path) -> Optional[str]:
+    """Ngày tìm PubMed THẬT của G0 (`G0_pubmed_raw.json` → search_provenance.ngay_tra) — mục «ngày tìm cuối» của
+    PRISMA-S; None nếu không đọc được (26/10/2026, G1-T2 RQ4b: sổ từng ghi ngày SINH tệp làm ngày rà)."""
+    try:
+        raw = json.loads((Path(out_dir) / "G0_pubmed_raw.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    ngay = ((raw.get("search_provenance") or {}) if isinstance(raw, dict) else {}).get("ngay_tra")
+    return str(ngay)[:10] if _present(ngay) else None
+
+
 def _rut_bai_g0(out_dir: Path, study: str) -> Optional[str]:
     """Tóm tắt lần kiểm rút bài của G0 (khoá `rut_bai` của tệp tổng hợp G0-T3) — None nếu không có."""
     du_lieu, _loi = GT.doc(Path(out_dir), GT.TEP_TONG_HOP, study)
@@ -769,6 +798,16 @@ def _gap_theo_quyet_dinh_g0(dong: str, meta: Mapping[str, Any]) -> str:
     if "trùng lặp" in dong and "PI ĐÃ ĐÁNH GIÁ" not in dong and _present(danh_gia):
         return f"{dong} — PI ĐÃ ĐÁNH GIÁ ở G0 (gate_params.G0.registry_overlap_assessment): {_o_bang(danh_gia)}"
     return dong
+
+
+def _pham_vi_khoang_trong(dong: str, sr_trong_so: Sequence[str]) -> str:
+    """Câu «Không có SR/MA … 5 năm» của G0 chỉ đúng với các nhánh tìm PubMed của truy vấn G0, nhưng đứng cạnh một bảng
+    có SR/MA từ lượt tìm bổ sung ⇒ ghi rõ phạm vi (26/10/2026, G1-T2 RQ3b/RQ4)."""
+    if not dong.startswith("Không có SR/MA") or "phạm vi:" in dong:
+        return dong
+    them = (f"; sổ này có SR/MA từ lượt tìm bổ sung, NGOÀI phạm vi đó: {', '.join(sr_trong_so)}" if sr_trong_so
+            else "")
+    return f"{dong} — phạm vi: chỉ các nhánh tìm PubMed của truy vấn G0 ở mục «Chiến lược tìm kiếm»{them}"
 
 
 def build_supporting_artifacts(
@@ -855,36 +894,43 @@ def build_supporting_artifacts(
     sang_g0 = _sang_loc_g0(out_dir, study)
     n_tu_g0 = n_sang = 0
     lac_de: List[str] = []
+    sr_trong_so: List[str] = []
 
-    def _dong_ledger(ma_hien: str, khoa: str, tieu_de_md: Optional[str]) -> None:
+    def _dong_ledger(ma_hien: str, khoa: str, tieu_de_md: Optional[str]) -> bool:
+        """Thêm một dòng sổ; False khi bài đã sàng là lạc đề (không vào bảng)."""
         nonlocal n_sang
         bai = sang_g0.get(khoa)
         if bai and bai.get("lien_quan") == "khong":
             lac_de.append(f"{ma_hien} — {_text(bai.get('ly_do') or bai.get('tom_tat'))}")
-            return
+            return False
         tieu_de = tieu_de_md or (_text(bai.get("tieu_de")) if bai and bai.get("tieu_de") else None)
         if bai:
             n_sang += 1
             nhan = {"truc_tiep": "liên quan TRỰC TIẾP",
                     "gian_tiep": "liên quan GIÁN TIẾP"}.get(bai.get("lien_quan"), "")
+            hau_to, pham_vi, doc = _nguon_doc_g0(bai)
+            if str(bai.get("thiet_ke_that") or "").lower().startswith(("tổng quan hệ thống", "phân tích gộp")):
+                sr_trong_so.append(ma_hien)
             evidence_rows.append(
                 f"| {ma_hien} | {tieu_de or '[CẦN TRÍCH XUẤT METADATA]'} | {_o_so(bai.get('thiet_ke_that'))} | "
-                f"{_o_so(bai.get('tom_tat'))} (theo tóm tắt) | {_o_rob(bai.get('thiet_ke_that'))} | "
-                f"Đã sàng ở G0-T3 (tiêu đề + tóm tắt): {nhan}; chưa đọc toàn văn |")
-            return
+                f"{_o_so(bai.get('tom_tat'))} {hau_to} | {_o_rob(bai.get('thiet_ke_that'))} | "
+                f"Đã sàng ở G0-T3 ({pham_vi}): {nhan}; {doc} |")
+            return True
         evidence_rows.append(
             f"| {ma_hien} | {tieu_de or '[CẦN TRÍCH XUẤT METADATA]'} | "
             "[CẦN TRÍCH XUẤT] | [CẦN TRÍCH XUẤT] | "
             "[CẦN THẨM ĐỊNH RoB] | [CẦN XÁC NHẬN NỘI DUNG] |"
         )
+        return True
 
     for pmid in identifiers["pmids"]:
         if pmid in effect_pmids:
             continue
         md = meta_g0.get(str(pmid))
-        if md:
+        # 26/10/2026 (G1-T2 RQ3c): chỉ đếm dòng THẬT vào bảng — bản cũ đếm cả PMID bị sàng là lạc đề (ghi «33 dòng»
+        # trong khi bảng chỉ có 15 dòng lấy metadata từ G0_pubmed_raw).
+        if _dong_ledger(f"PMID:{pmid}", f"pmid:{pmid}", md) and md:
             n_tu_g0 += 1
-        _dong_ledger(f"PMID:{pmid}", f"pmid:{pmid}", md)
     for doi in identifiers["dois"]:
         _dong_ledger(f"DOI:{doi}", f"doi:{str(doi).lower()}", None)
     if not evidence_rows:
@@ -895,7 +941,8 @@ def build_supporting_artifacts(
 
     gap_lines = g0_checkpoint.get("research_gaps")
     if isinstance(gap_lines, list) and gap_lines:
-        gap_text = "\n".join(f"- {_gap_theo_quyet_dinh_g0(str(item), meta)}" for item in gap_lines)
+        gap_text = "\n".join(f"- {_pham_vi_khoang_trong(_gap_theo_quyet_dinh_g0(str(item), meta), sr_trong_so)}"
+                             for item in gap_lines)
     else:
         gap_text = "- [CẦN BỔ SUNG sau tổng quan có hệ thống]"
     ghi_chu_md = (
@@ -908,8 +955,16 @@ def build_supporting_artifacts(
         # (Hirschsprung, phiên dịch ở Mỹ…) — dùng lại công đọc của G0 thay vì đẩy lại cho người thật.
         ghi_chu_md += (
             f"> Cột **Thiết kế · Hiệu ứng · Trạng thái**: {n_sang} dòng lấy từ sàng lọc G0-T3 "
-            f"(`{GT.TEP_TONG_HOP.format(study=study)}`, đọc tiêu đề + tóm tắt) — KHÔNG phải trích xuất toàn văn; "
-            "thẩm định RoB vẫn là việc người thật. Bài G0-T3 xếp lạc đề nằm ở mục riêng, không vào bảng.\n")
+            f"(`{GT.TEP_TONG_HOP.format(study=study)}`, đọc tiêu đề + tóm tắt; dòng nào ĐÃ đọc toàn văn thì cột Trạng "
+            "thái ghi rõ) — KHÔNG phải trích xuất toàn văn; thẩm định RoB vẫn là việc người thật. Bài G0-T3 xếp lạc đề "
+            "nằm ở mục riêng, không vào bảng.\n")
+        # 26/10/2026 (G1-T2 RQ8): PI xác nhận nguồn (14/10) TRƯỚC khi các cột này được điền (17/10) mà sổ không báo.
+        tong_hop, _loi_th = GT.doc(Path(out_dir), GT.TEP_TONG_HOP, study)
+        ngay_soan = str((tong_hop or {}).get("ngay_soan") or "")[:10] if isinstance(tong_hop, dict) else ""
+        ngay_pi = str(g1.get("reviewed_at") or "")[:10]
+        if ngay_soan and ngay_pi and ngay_pi < ngay_soan:
+            ghi_chu_md += (f"> ⚠ Các cột này soạn ngày {ngay_soan} — SAU lần PI xác nhận G1 ({ngay_pi}). PI đọc lại "
+                           "trước khi dựa vào (G1-HUMAN-07); dòng này tự mất khi PI xác nhận lại.\n")
     rut_bai = _rut_bai_g0(out_dir, study)
     dong_rut_bai = (f"- Kiểm rút bài (G0, khoá `rut_bai` của `{GT.TEP_TONG_HOP.format(study=study)}`): {rut_bai}\n"
                     if rut_bai else "- Kiểm rút bài: [CHƯA KIỂM RÚT BÀI — chạy tools/check_citation_retraction.py]\n")
@@ -917,13 +972,16 @@ def build_supporting_artifacts(
                 if (out_dir / f"G0_TIM_BO_SUNG_PRISMA_S_{study}.md").exists() else "[CẦN XÁC NHẬN]")
     lac_de_md = ("\n## Đã sàng ở G0 — lạc đề (không vào sổ)\n" + "\n".join(f"- {x}" for x in lac_de) + "\n"
                  if lac_de else "")
+    ngay_tim = _ngay_tim_g0(out_dir) or "[CẦN — không đọc được `G0_pubmed_raw.json` → search_provenance.ngay_tra]"
+    dong_ngay_tim = (f"- Ngày tìm cuối (PubMed, truy vấn G0): {ngay_tim} · lượt tìm bổ sung: theo tệp PRISMA-S ở "
+                     f"dòng dưới · ngày sinh sổ: {generated_at[:10]}")
     evidence = f"""# EVIDENCE LEDGER (A2b) — {study}
 > [DỰ THẢO] Không tự gán GRADE; chưa đọc toàn văn phải giữ nhãn [CẦN].
 {ghi_chu_md}
 ## Chiến lược tìm kiếm
 - Nguồn tối thiểu: PubMed + ít nhất một nguồn phù hợp khác.
 - Truy vấn G0: `{query}`
-- Ngày rà: {generated_at[:10]}
+{dong_ngay_tim}
 - Giới hạn truy xuất/recall: {gioi_han}
 {dong_rut_bai}
 ## Bảng Evidence Ledger
@@ -934,6 +992,10 @@ def build_supporting_artifacts(
 ## Khoảng trống nghiên cứu
 {gap_text}
 
+> Việc còn lại của sổ (26/10/2026, G1-T2 RQ8): thẩm định RoB bằng đúng công cụ ở cột RoB và đọc toàn văn trước khi dùng
+> số liệu của một nguồn — người thật (nhóm nghiên cứu, PI duyệt). KHÔNG phải tiêu chí máy của G1 (G1-HUMAN-07 là PI
+> xác nhận đã đọc lại nội dung trích dẫn); cần xong trước khi dùng nguồn làm căn cứ số liệu ở bản thảo (G7) — bình
+> duyệt G8 soát lại.
 > Mỗi luận điểm trong protocol phải truy ngược được về dòng PMID/DOI phù hợp.
 > Cần bác sĩ kiểm chứng.
 """
@@ -1059,7 +1121,7 @@ def build_supporting_artifacts(
                "từng dòng vào đó (id/loai/rui_ro/xac_suat/tac_dong/giam_thieu/capa/chu_nhan/trang_thai/ngay_ra) rồi "
                "chạy lại G1, để chỉ còn MỘT sổ rủi ro.\n")
     risks = f"""# RISK REGISTER SỐNG (A13b) — {study}
-> [DỰ THẢO] Mức xác suất/tác động phải được nhóm nghiên cứu hiệu chỉnh (thang Thấp · Vừa · Cao).
+> [DỰ THẢO] Mức xác suất/tác động phải được nhóm nghiên cứu hiệu chỉnh (thang Thấp · Trung bình · Cao).
 {rr_nhan}
 | ID | Loại | Rủi ro | Xác suất | Tác động | Giảm thiểu trước | CAPA nếu xảy ra | Chủ nhân | Trạng thái | Ngày rà |
 |---|---|---|---|---|---|---|---|---|---|

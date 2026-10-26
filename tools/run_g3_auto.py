@@ -627,7 +627,7 @@ def dong_luc_muc_tieu_phu(kq):
     return (f"{kq['muc_tieu']} ({kq['phan_tich']}): với N = {kq['n_danh_nghia']}, α = {kq['alpha']:g} hai phía, "
             f"lực {round(kq['power'] * 100)}%, OR nhỏ nhất phát hiện được cho mỗi {buoc} {kq['phoi_nhiem']} là "
             f"{lo:.2f}–{hi:.2f} (chiều giảm {g_lo:.2f}–{g_hi:.2f}) ở n hiệu dụng ≈ {kq['n_hieu_dung']:.0f} "
-            f"(sau {kq['n_danh_nghia'] - kq['n_phan_tich']} phiếu dự phòng hỏng, ÷ DE {kq['design_effect']:g}); "
+            f"(sau {kq['n_danh_nghia'] - kq['n_phan_tich']} phiếu dự phòng hỏng, ÷ DE {kq['design_effect']:.2f}); "
             f"chưa gom cụm {dn_lo:.2f}–{dn_hi:.2f}. Giả định phân bố kết cục, ĐLC phơi nhiễm và R² tính lại khi có "
             "số liệu khảo sát thử và HIS")
 
