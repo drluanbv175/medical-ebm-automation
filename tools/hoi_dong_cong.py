@@ -2413,7 +2413,10 @@ def ho_so_cong(study: str, gate: str, out_dir: Path, dp: Optional[List[str]] = N
         dg = danh_gia.get(nv["ma"], {"trang_thai": "chua_danh_gia", "id": None})
         if ap is False:
             k = khai.get(nv["ma"]) if isinstance(khai.get(nv["ma"]), dict) else {}
-            tt, ly_do = "khong_ap_dung", f"không áp dụng ({k.get('ly_do') or nv.get('dieu_kien')})"
+            # 26/10/2026: «không áp dụng (thiết kế can thiệp (RCT))» đọc như thể đề tài LÀ RCT — điều kiện là phạm vi
+            # của nhiệm vụ, không phải thiết kế của đề tài.
+            tt, ly_do = "khong_ap_dung", (f"không áp dụng — {k['ly_do']}" if k.get("ly_do") else
+                                          f"không áp dụng — nhiệm vụ chỉ dành cho {nv.get('dieu_kien')}")
         elif ap is None:
             tt, ly_do = "chua_xac_dinh", (f"chưa xác định áp dụng (điều kiện «{nv.get('dieu_kien')}») — điều phối cổng "
                                           "khai bằng `khai-ap-dung` trước khi họp")

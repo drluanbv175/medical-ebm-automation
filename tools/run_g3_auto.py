@@ -1048,8 +1048,10 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
             f"Bảng: tỷ lệ ước lượng p × sai số cho phép d → N tối thiểu "
             f"(TRƯỚC khi bù {int(dropout*100)}% không trả lời"
             + (f"; đã hiệu chỉnh quần thể hữu hạn N={population_n}" if population_n else "")
-            + (f"; đã nhân hiệu ứng thiết kế cụm DE = {_de_cum:.2f} (= 1+(m−1)×ICC, m = {cluster_size}, ICC = {icc})"
-               if _de_cum is not None else "") + ")",
+            # 26/10/2026: có CV cỡ cụm thì DE theo Eldridge (cụm KHÔNG đều) — nhãn cũ luôn in công thức cụm đều.
+            + (f"; đã nhân hiệu ứng thiết kế cụm DE = {_de_cum:.2f} ("
+               + (f"= 1+((CV²+1)×m−1)×ICC, CV = {cluster_cv}, " if cluster_cv is not None else "= 1+(m−1)×ICC, ")
+               + f"m = {cluster_size}, ICC = {icc})" if _de_cum is not None else "") + ")",
             "",
             "| p ước lượng | " + " | ".join(f"d = ±{d * 100:g}%" for d in _d_list) + " |",
             "|---|" + "---|" * len(_d_list),

@@ -77,6 +77,26 @@ RELEASE_PURPOSES = {
 # khoá). Bản cũ đòi đủ G0–G9 và G5/G8/G9 đã khoá cho MỌI mục đích ⇒ hai mục đích này có trong RELEASE_PURPOSES mà không
 # bao giờ khoá được (các cổng đó chỉ có SAU khi Hội đồng duyệt). Mục đích chưa chọn/không hợp lệ ⇒ đòi ĐỦ (bi quan).
 MUC_DICH_TRUOC_DU_LIEU = frozenset({"ETHICS_SUBMISSION", "REGISTRY_UPDATE"})
+_CONG_SAU_DU_LIEU = frozenset(f"G{i}" for i in range(5, 10))
+
+
+def loc_do_tuoi_truoc_du_lieu(issues: list) -> list:
+    """Vấn đề độ tươi còn ý nghĩa với gói phát hành TRƯỚC dữ liệu (chỉ chứa G0–G4).
+
+    05/10/2026 (G10-09): G5–G9 CHƯA có là đúng trạng thái; bộ đo xếp G10 «mồ côi» vì thượng nguồn G5–G9 vắng ⇒ bỏ.
+    26/10/2026 (lượt sửa C1a): checkpoint G5 dự thảo (có từ 24/10) sinh TRƯỚC G1–G4 vừa chạy lại ⇒ «G5 cũ» chặn G10,
+    trong khi gói không mang tài liệu nào của G5–G9 và G5 chỉ chạy lại được sau khi G4 KÝ (vòng chặn: G10 đòi G5 tươi,
+    G5 đòi G4 ký).
+    Nay bỏ mọi vấn đề CỦA G5–G9 và vấn đề của G10 mà nguyên nhân chỉ nằm ở G5–G9; vấn đề của G0–G4 (cổng cũ hơn thượng
+    nguồn, mồ côi) và của G10 do G0–G4 vẫn GIỮ."""
+    ra = []
+    for i in issues:
+        if isinstance(i, Mapping) and (
+                i.get("gate") in _CONG_SAU_DU_LIEU
+                or (i.get("gate") == "G10" and set(i.get("offending_upstream") or []) <= _CONG_SAU_DU_LIEU)):
+            continue
+        ra.append(i)
+    return ra
 CONG_DAY_DU = tuple(f"G{i}" for i in range(10))
 CONG_TRUOC_DU_LIEU = ("G0", "G1", "G2", "G3", "G4")
 
@@ -928,12 +948,7 @@ def evaluate_study(
         issues = list(fresh_report.get("issues") or [])
         freshness_ok = bool(fresh_report.get("fresh"))
         if purpose in MUC_DICH_TRUOC_DU_LIEU and not freshness_ok:
-            # 05/10/2026 (G10-09): gói TRƯỚC dữ liệu — G5–G9 CHƯA có là đúng trạng thái; bộ đo độ tươi xếp G10 «mồ côi»
-            # vì thượng nguồn G5–G9 vắng. Chỉ bỏ đúng loại vấn đề đó; mọi vấn đề khác (cổng cũ hơn thượng nguồn…) giữ.
-            sau_du_lieu = {f"G{i}" for i in range(5, 10)}
-            issues = [i for i in issues if not (
-                isinstance(i, Mapping) and i.get("gate") == "G10" and i.get("kind") == "orphan_downstream"
-                and set(i.get("offending_upstream") or []) <= sau_du_lieu)]
+            issues = loc_do_tuoi_truoc_du_lieu(issues)
             freshness_ok = not issues
         freshness_evidence = (
             f"fresh={freshness_ok}; issues={issues}"

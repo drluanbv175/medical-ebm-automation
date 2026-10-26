@@ -1055,6 +1055,8 @@ def _cau_co_mau_g3(out_dir: Optional[Path]) -> str:
     n_min, n_hl, de = cp.get("n_adjusted"), cp.get("confirmed_n"), cp.get("design_effect")
     if not isinstance(n_min, int) or n_min <= 0:
         return ""
+    if isinstance(de, (int, float)) and not isinstance(de, bool):
+        de = f"{de:.2f}"  # 26/10/2026: G3 lưu DE đủ chữ số (1.38784) — A2 in làm tròn như đề cương
     phan = [f"N tối thiểu {n_min}"] + ([f"hệ số thiết kế {de}"] if de else []) + (
         [f"N hiệu lực {n_hl}"] if isinstance(n_hl, int) else [])
     trang_thai = "" if _g3_da_xac_nhan(cp) else " (G3 CHƯA được PI xác nhận — số có thể đổi khi chốt G3)"
