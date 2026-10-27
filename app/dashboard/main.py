@@ -204,6 +204,15 @@ def _evidence_rows(s, **filters):
     } for r in q.order_by(EvidenceItem.practice_change_score.desc().nullslast()).all()]
 
 
+@st.cache_data(ttl=300, show_spinner=False)
+def _evidence_rows_cached(filters: tuple = ()):
+    """Bản đệm của _evidence_rows (27/10/2026, bác sĩ báo Dashboard EBM «rất chậm»). Đo: mỗi lượt chạy lại trang
+    (bấm BẤT KỲ nút nào) nạp lại toàn bộ ~22.000 bản ghi chứng cứ tới 5 lần (tab 1–5). Dữ liệu chỉ đổi sau một lượt
+    cập nhật ⇒ đệm 5 phút; các nút «Cập nhật ngay», «Dữ liệu mẫu», «Quét lại» xoá đệm ngay."""
+    with session_scope() as s:
+        return _evidence_rows(s, **dict(filters))
+
+
 def _evidence_detail(item_id: int):
     """Lấy đầy đủ một bản ghi chứng cứ (kèm synthesis) theo id."""
     with session_scope() as s:
@@ -629,6 +638,7 @@ if st.sidebar.button("🔄 Cập nhật ngay (nguồn THẬT + email)",
         with st.spinner("Đang quét nguồn thật (PubMed/FDA/MHRA…) – có thể vài phút. "
                         "Sẽ tự gửi email nếu có mục mới…"):
             res = cmd_live_update()
+        _evidence_rows_cached.clear()
         p = res.get("pipeline", {})
         notify = res.get("notify", {}) or {}
         st.sidebar.success(
@@ -649,11 +659,13 @@ if c_a.button("🌱 Dữ liệu mẫu", use_container_width=True,
               help="Nạp dữ liệu minh hoạ (offline) để xem thử giao diện"):
     with st.spinner("Đang nạp dữ liệu mẫu..."):
         seed_all(run_pipeline_mock=True)
+    _evidence_rows_cached.clear()
     st.rerun()
 if c_b.button("🔁 Quét lại", use_container_width=True,
               help="Chạy lại pipeline với dữ liệu/nguồn hiện có"):
     with st.spinner("Đang chạy..."):
         run_pipeline()
+    _evidence_rows_cached.clear()
     st.rerun()
 
 # ===== BÁO CÁO: xem / tải ngay trong dashboard =====
@@ -728,7 +740,7 @@ with tabs[0]:
     st.divider()
 
     with session_scope() as s:
-        rows = _evidence_rows(s)
+        rows = _evidence_rows_cached()
         n_sources = s.query(SourceLog).count()
         n_scanned = s.query(SourceLog).with_entities(SourceLog.record_count).all()
         total_scanned = sum(x[0] or 0 for x in n_scanned)
@@ -782,7 +794,7 @@ with tabs[0]:
 with tabs[1]:
     st.header("Cập nhật EBM tuần")
     with session_scope() as s:
-        rows = _evidence_rows(s)
+        rows = _evidence_rows_cached()
     if rows:
         col1, col2, col3 = st.columns([2, 2, 1])
         areas = ["(Tất cả)"] + sorted({r["clinical_area"] for r in rows if r["clinical_area"]})
@@ -808,14 +820,14 @@ with tabs[2]:
     st.header("Cảnh báo an toàn thuốc")
     st.caption("⚠️ FAERS chỉ là tín hiệu báo cáo tự phát — KHÔNG kết luận nhân quả.")
     with session_scope() as s:
-        rows = [r for r in _evidence_rows(s) if r["safety_signal"]]
+        rows = [r for r in _evidence_rows_cached() if r["safety_signal"]]
     render_dark_tab(rows, topic="An toàn thuốc", key="dark_drug")
 
 # --- Tab 4: Antibiotics ---------------------------------------------------
 with tabs[3]:
     st.header("Kháng sinh / Antibiotic Stewardship")
     with session_scope() as s:
-        rows = _evidence_rows(s)
+        rows = _evidence_rows_cached()
     from app.services.filtering import is_antibiotic_text
     ab = [r for r in rows if r["title"] and is_antibiotic_text(r["title"], r.get("source", ""))]
     st.caption("Không cổ vũ lạm dụng kháng sinh; cân nhắc phân loại WHO AWaRe.")
@@ -825,7 +837,7 @@ with tabs[3]:
 with tabs[4]:
     st.header("Guideline mới / cập nhật")
     with session_scope() as s:
-        rows = [r for r in _evidence_rows(s, study_type="guideline")]
+        rows = [r for r in _evidence_rows_cached((("study_type", "guideline"),))]
     render_dark_tab(rows, topic="Guideline mới / cập nhật", key="dark_guide")
 
 # --- Tab 6: Research ------------------------------------------------------
