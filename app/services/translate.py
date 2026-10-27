@@ -12,6 +12,7 @@ import hashlib
 import json
 import re
 import threading
+import time
 from typing import Dict, Optional
 
 from app.config import settings
@@ -28,9 +29,48 @@ _cache: Optional[Dict[str, str]] = None
 # lên 1 lệnh gọi không hỗ trợ timeout sẵn, MÀ KHÔNG làm treo tiến trình cha nếu thread con kẹt.
 _TRANSLATE_TIMEOUT_SEC = 15.0
 
+# CẦU DAO (27/10/2026, bác sĩ báo Dashboard EBM «rất chậm»). Đo: MỘT lần mở trang bắn ~90 yêu cầu dịch liên tiếp
+# trong hơn 2 phút, lần nào Google cũng trả «too many requests» (~1 giây/lần, thử lại 2 lần/câu) và câu lỗi không
+# được lưu ⇒ lần mở sau lặp lại y hệt. Nay: lỗi chặn/mạng/timeout đầu tiên NGẮT việc gọi mạng trong
+# _TAM_NGUNG_GIAY — chỉ dùng bản dịch đã lưu, câu chưa có trả None (giao diện tự hiện nguyên văn). Mốc ngắt ghi
+# ra tệp để lần mở trang sau (tiến trình Streamlit mới) cũng không gọi lại ngay. Đường dẫn tính lúc gọi (không
+# chốt lúc import) để thư mục dữ liệu tạm của test tự áp dụng.
+_TAM_NGUNG_GIAY = 15 * 60
+_tam_ngung_trong_tien_trinh = 0.0
+_DAU_HIEU_BI_CHAN = ("too many requests", "429", "max retries", "connection", "timed out", "timeout",
+                     "temporary failure", "name or service not known", "nodename nor servname")
 
-def _call_with_timeout(fn, *args, timeout: float = _TRANSLATE_TIMEOUT_SEC):
-    """Gọi fn(*args) với timeout cứng. Trả None nếu timeout/lỗi (không ném lỗi ra ngoài).
+
+def _tam_ngung_path():
+    return settings.processed_dir / "_translate_tam_ngung.json"
+
+
+def _dang_tam_ngung() -> bool:
+    """True khi cầu dao đang ngắt (trong tiến trình này HOẶC theo mốc ghi ở tệp)."""
+    den = _tam_ngung_trong_tien_trinh
+    try:
+        den = max(den, float(json.loads(_tam_ngung_path().read_text(encoding="utf-8")).get("den", 0)))
+    except (OSError, ValueError, TypeError, AttributeError):
+        pass
+    return time.time() < den
+
+
+def _ngat_cau_dao(ly_do: str) -> None:
+    """Ngừng gọi dịch máy qua mạng trong _TAM_NGUNG_GIAY; ghi mốc ra tệp (lỗi ghi thì vẫn ngắt trong tiến trình)."""
+    global _tam_ngung_trong_tien_trinh
+    _tam_ngung_trong_tien_trinh = time.time() + _TAM_NGUNG_GIAY
+    logger.warning("Dịch máy: tạm ngừng gọi mạng %d phút (%s) — chỉ dùng bản dịch đã lưu.",
+                   _TAM_NGUNG_GIAY // 60, ly_do[:160])
+    try:
+        _tam_ngung_path().write_text(
+            json.dumps({"den": _tam_ngung_trong_tien_trinh, "ly_do": ly_do[:300]}, ensure_ascii=False),
+            encoding="utf-8", newline="\n")
+    except OSError:  # pragma: no cover
+        pass
+
+
+def _call_with_timeout_va_loi(fn, *args, timeout: float = _TRANSLATE_TIMEOUT_SEC):
+    """Gọi fn(*args) với timeout cứng → (kết quả, lý do lỗi). Lý do None khi thành công; không ném lỗi ra ngoài.
 
     QUAN TRỌNG — bài học từ 1 lần tự làm treo cả tiến trình khi viết hàm này: KHÔNG dùng
     `ThreadPoolExecutor` (kể cả với `shutdown(wait=False)`) — thread nó tạo ra mặc định
@@ -55,11 +95,26 @@ def _call_with_timeout(fn, *args, timeout: float = _TRANSLATE_TIMEOUT_SEC):
     if t.is_alive():
         logger.warning("Dịch máy timeout sau %.0fs -> bỏ qua câu này (server không phản hồi).",
                         timeout)
-        return None
+        return None, f"timeout sau {timeout:.0f}s"
     if error[0] is not None:
         logger.warning("Dịch máy lỗi: %s", error[0])
+        return None, str(error[0])
+    return result[0], None
+
+
+def _call_with_timeout(fn, *args, timeout: float = _TRANSLATE_TIMEOUT_SEC):
+    """Gọi fn(*args) với timeout cứng. Trả None nếu timeout/lỗi (không ném lỗi ra ngoài)."""
+    return _call_with_timeout_va_loi(fn, *args, timeout=timeout)[0]
+
+
+def _goi_mang(fn, *args, timeout: float = _TRANSLATE_TIMEOUT_SEC):
+    """Một lượt gọi dịch máy qua mạng, đi qua cầu dao: đang ngắt ⇒ None ngay; lỗi chặn/mạng/timeout ⇒ ngắt."""
+    if _dang_tam_ngung():
         return None
-    return result[0]
+    kq, loi = _call_with_timeout_va_loi(fn, *args, timeout=timeout)
+    if loi is not None and any(d in loi.lower() for d in _DAU_HIEU_BI_CHAN):
+        _ngat_cau_dao(loi)
+    return kq
 
 _VN_MARKS = set("ăâđêôơưĂÂĐÊÔƠƯàáạảãằắặẳẵầấậẩẫèéẹẻẽềếệểễìíịỉĩòóọỏõồốộổỗ"
                 "ờớợởỡùúụủũừứựửữỳýỵỷỹ")
@@ -134,7 +189,7 @@ def translate_vi(text: str) -> Optional[str]:
         from deep_translator import GoogleTranslator
         # auto: tự nhận ngôn ngữ nguồn (Anh hoặc Trung...) -> dịch sạch hơn so với ép 'en'
         tr = GoogleTranslator(source="auto", target="vi")
-        vi = _call_with_timeout(tr.translate, text[:4500])
+        vi = _goi_mang(tr.translate, text[:4500])
         if vi and _is_degenerate(vi):
             logger.warning("Bản dịch máy bị lặp/lỗi -> bỏ, fallback nguyên văn.")
             return None
@@ -170,7 +225,7 @@ def translate_vi_batch(texts, cache_only: bool = False):
             results[i] = _cache[key]
         else:
             to_fetch.append((i, t, key))
-    if not to_fetch or cache_only:
+    if not to_fetch or cache_only or _dang_tam_ngung():
         return results
     try:
         from deep_translator import GoogleTranslator
@@ -184,7 +239,7 @@ def translate_vi_batch(texts, cache_only: bool = False):
         timeout cứng (_call_with_timeout) nên tối đa 2 lần * _TRANSLATE_TIMEOUT_SEC, không
         bao giờ treo vô hạn dù deep_translator không hỗ trợ timeout riêng."""
         for _ in range(2):
-            vi = _call_with_timeout(tr.translate, text[:4500])
+            vi = _goi_mang(tr.translate, text[:4500])
             if vi is not None:
                 return vi if not _is_degenerate(vi) else None
         return None
@@ -208,7 +263,7 @@ def translate_vi_batch(texts, cache_only: bool = False):
         joined = "\n".join(srcs)
         # Khối gộp dài hơn 1 câu đơn -> cho thêm thời gian tương ứng, tránh timeout giả do
         # văn bản dài cần lâu hơn để dịch xong dù server vẫn đang phản hồi bình thường.
-        out_joined = _call_with_timeout(tr.translate, joined,
+        out_joined = _goi_mang(tr.translate, joined,
                                          timeout=_TRANSLATE_TIMEOUT_SEC * 2)
         lines = [s.strip() for s in (out_joined or "").split("\n") if s.strip()] if out_joined else []
         if out_joined and len(lines) == len(group):

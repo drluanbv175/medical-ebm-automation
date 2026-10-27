@@ -209,6 +209,21 @@ def _khoa_ky_gia_tung_test(tmp_path_factory, monkeypatch):
     yield
 
 
+@pytest.fixture(autouse=True)
+def _cau_dao_dich_may_sach(monkeypatch):
+    """Cầu dao dịch máy (app/services/translate.py, 27/10/2026) là trạng thái cấp tiến trình + tệp mốc trong
+    processed/: một test làm ngắt (vd gọi dịch thật bị Google chặn) không được lan sang test sau — đo 27/10/2026, lượt
+    pytest đầy đủ làm đỏ test dịch đi qua nhánh gọi mạng giả vì cầu dao đã ngắt từ test trước."""
+    try:
+        (settings.processed_dir / "_translate_tam_ngung.json").unlink()
+    except OSError:
+        pass
+    module = sys.modules.get("app.services.translate")
+    if module is not None:
+        monkeypatch.setattr(module, "_tam_ngung_trong_tien_trinh", 0.0)
+    yield
+
+
 # ── Chốt canh thư mục dữ liệu thật + thư mục bí mật thật: nối vào vòng đời của pytest ─
 def pytest_runtest_logstart(nodeid, location):
     for canh in (*cac_canh(), *CBM.cac_canh()):
