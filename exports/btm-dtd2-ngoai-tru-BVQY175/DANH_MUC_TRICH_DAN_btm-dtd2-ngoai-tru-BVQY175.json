@@ -1,0 +1,537 @@
+{
+ "schema": "de_tai/danh_muc_trich_dan/v1",
+ "study": "btm-dtd2-ngoai-tru-BVQY175",
+ "ngay": "2026-10-25",
+ "nguon": "G0_TONG_HOP_BANG_CHUNG + G0_KHOANG_TRONG (bài liên quan trực tiếp/gián tiếp + guideline); bài lạc đề không đưa vào",
+ "trich_dan": [
+  {
+   "pmid": "40902917",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "truc_tiep",
+   "id": "T03"
+  },
+  {
+   "pmid": "32111192",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "truc_tiep",
+   "id": "T05"
+  },
+  {
+   "pmid": "38922613",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "truc_tiep",
+   "id": "T06"
+  },
+  {
+   "pmid": "41741270",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "truc_tiep",
+   "id": "T07"
+  },
+  {
+   "pmid": "42031191",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "truc_tiep",
+   "id": "T08"
+  },
+  {
+   "pmid": "30238781",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "truc_tiep",
+   "id": "T09"
+  },
+  {
+   "pmid": "40667713",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "truc_tiep",
+   "id": "T10"
+  },
+  {
+   "pmid": "39487060",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "gian_tiep",
+   "id": "T11"
+  },
+  {
+   "pmid": "42575755",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "gian_tiep",
+   "id": "T13"
+  },
+  {
+   "pmid": "33722396",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "truc_tiep",
+   "id": "T14"
+  },
+  {
+   "pmid": "40037768",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "gian_tiep",
+   "id": "T15"
+  },
+  {
+   "pmid": "39507052",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "truc_tiep",
+   "id": "T16"
+  },
+  {
+   "pmid": "41358900",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "gian_tiep",
+   "id": "T18"
+  },
+  {
+   "pmid": "35606699",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "gian_tiep",
+   "id": "T19"
+  },
+  {
+   "pmid": "36352203",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "truc_tiep",
+   "id": "T20"
+  },
+  {
+   "pmid": "41276836",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "truc_tiep",
+   "id": "T22"
+  },
+  {
+   "pmid": "35177470",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "truc_tiep",
+   "id": "T24"
+  },
+  {
+   "pmid": "41358893",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "gian_tiep",
+   "id": "T25"
+  },
+  {
+   "pmid": "42838586",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "truc_tiep",
+   "id": "T26"
+  },
+  {
+   "pmid": "42723263",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "truc_tiep",
+   "id": "T27"
+  },
+  {
+   "pmid": "42541306",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "gian_tiep",
+   "id": "T28"
+  },
+  {
+   "pmid": "41541781",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "gian_tiep",
+   "id": "T30"
+  },
+  {
+   "pmid": "40428801",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "truc_tiep",
+   "id": "T33"
+  },
+  {
+   "pmid": "40335370",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "gian_tiep",
+   "id": "T34"
+  },
+  {
+   "pmid": "39156845",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "gian_tiep",
+   "id": "T37"
+  },
+  {
+   "pmid": "35101868",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "truc_tiep",
+   "id": "T40"
+  },
+  {
+   "pmid": "41345917",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "truc_tiep",
+   "id": "T42"
+  },
+  {
+   "pmid": "39023418",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "truc_tiep",
+   "id": "T43"
+  },
+  {
+   "pmid": "41916900",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "truc_tiep",
+   "id": "T44"
+  },
+  {
+   "pmid": "37153973",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "gian_tiep",
+   "id": "T46"
+  },
+  {
+   "pmid": "39391521",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "gian_tiep",
+   "id": "T48"
+  },
+  {
+   "pmid": "40814615",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "gian_tiep",
+   "id": "T49"
+  },
+  {
+   "pmid": null,
+   "doi": "10.34071/jmp.2026.5.914",
+   "vai": "bo_sung",
+   "lien_quan": "truc_tiep",
+   "id": "T50"
+  },
+  {
+   "pmid": null,
+   "doi": "10.51298/vmj.v556i3.16531",
+   "vai": "bo_sung",
+   "lien_quan": "truc_tiep",
+   "id": "T51"
+  },
+  {
+   "pmid": null,
+   "doi": "10.32895/hcjm.m.2025.11.21",
+   "vai": "bo_sung",
+   "lien_quan": "truc_tiep",
+   "id": "T52"
+  },
+  {
+   "pmid": null,
+   "doi": "10.51298/vmj.v531i1b.7074",
+   "vai": "bo_sung",
+   "lien_quan": "truc_tiep",
+   "id": "T53"
+  },
+  {
+   "pmid": null,
+   "doi": "10.56283/1859-0381/390",
+   "vai": "bo_sung",
+   "lien_quan": "truc_tiep",
+   "id": "T54"
+  },
+  {
+   "pmid": null,
+   "doi": "10.51298/vmj.v548i3.13725",
+   "vai": "bo_sung",
+   "lien_quan": "truc_tiep",
+   "id": "T55"
+  },
+  {
+   "pmid": null,
+   "doi": "10.51298/vmj.v534i2.8190",
+   "vai": "bo_sung",
+   "lien_quan": "truc_tiep",
+   "id": "T56"
+  },
+  {
+   "pmid": null,
+   "doi": "10.52389/ydls.v20i0.2832",
+   "vai": "bo_sung",
+   "lien_quan": "truc_tiep",
+   "id": "T57"
+  },
+  {
+   "pmid": null,
+   "doi": "10.51298/vmj.v545i1.12165",
+   "vai": "bo_sung",
+   "lien_quan": "truc_tiep",
+   "id": "T58"
+  },
+  {
+   "pmid": null,
+   "doi": "10.51298/vmj.v542i3.11221",
+   "vai": "bo_sung",
+   "lien_quan": "truc_tiep",
+   "id": "T59"
+  },
+  {
+   "pmid": null,
+   "doi": "10.52389/ydls.v0i0.879",
+   "vai": "bo_sung",
+   "lien_quan": "gian_tiep",
+   "id": "T60"
+  },
+  {
+   "pmid": null,
+   "doi": "10.51298/vmj.v556i1.16273",
+   "vai": "bo_sung",
+   "lien_quan": "gian_tiep",
+   "id": "T62"
+  },
+  {
+   "pmid": "38490803",
+   "doi": null,
+   "vai": "guideline",
+   "lien_quan": "truc_tiep",
+   "id": "T64"
+  },
+  {
+   "pmid": "36272764",
+   "doi": null,
+   "vai": "guideline",
+   "lien_quan": "truc_tiep",
+   "id": "T65"
+  },
+  {
+   "pmid": "41358881",
+   "doi": null,
+   "vai": "guideline",
+   "lien_quan": "truc_tiep",
+   "id": "T66"
+  }
+ ],
+ "loai_bo": [
+  {
+   "pmid": "41905685",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "gian_tiep",
+   "id": "T01",
+   "nhom_ly_do": "it_phu_hop_voi_de_tai",
+   "ly_do": "Trọng tâm là mô hình dược sĩ tại phòng khám, không đo xét nghiệm thận hay ghi nhận BTM.",
+   "ngay": "2026-10-25"
+  },
+  {
+   "pmid": "41494416",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "gian_tiep",
+   "id": "T02",
+   "nhom_ly_do": "it_phu_hop_voi_de_tai",
+   "ly_do": "Quản lý ĐTĐ ở người suy yếu; BTM chỉ là tiêu chí phụ — lệch quần thể và kết cục của đề tài.",
+   "ngay": "2026-10-25"
+  },
+  {
+   "pmid": "36066519",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "gian_tiep",
+   "id": "T04",
+   "nhom_ly_do": "it_phu_hop_voi_de_tai",
+   "ly_do": "Khác biệt chủng tộc trong kê thuốc; không đo xét nghiệm thận — trục so sánh không có trong đề tài.",
+   "ngay": "2026-10-25"
+  },
+  {
+   "pmid": "38647229",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "gian_tiep",
+   "id": "T12",
+   "nhom_ly_do": "khong_lay_duoc_toan_van",
+   "ly_do": "SAGE (J Pharm Pract): chỉ có tóm tắt, trang yêu cầu mua quyền đọc; đã ghi sổ không truy cập 25/10/2026.",
+   "ngay": "2026-10-25"
+  },
+  {
+   "pmid": "41220901",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "gian_tiep",
+   "id": "T17",
+   "nhom_ly_do": "it_phu_hop_voi_de_tai",
+   "ly_do": "Chỉ người MỚI chẩn đoán ĐTĐ, kê thuốc trong 3 tháng đầu — khác quần thể đang điều trị ngoại trú của đề tài.",
+   "ngay": "2026-10-25"
+  },
+  {
+   "pmid": "40057872",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "gian_tiep",
+   "id": "T21",
+   "nhom_ly_do": "it_phu_hop_voi_de_tai",
+   "ly_do": "So sánh kê thuốc giữa các chuyên khoa — đề tài không có trục so sánh này.",
+   "ngay": "2026-10-25"
+  },
+  {
+   "pmid": "38719510",
+   "doi": null,
+   "vai": "nen_G0",
+   "lien_quan": "gian_tiep",
+   "id": "T23",
+   "nhom_ly_do": "it_phu_hop_voi_de_tai",
+   "ly_do": "Thí điểm can thiệp tư vấn điện tử — thuộc giai đoạn can thiệp sau, không dùng cho đề tài mô tả.",
+   "ngay": "2026-10-25"
+  },
+  {
+   "pmid": "42134923",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "gian_tiep",
+   "id": "T29",
+   "nhom_ly_do": "it_phu_hop_voi_de_tai",
+   "ly_do": "Tóm tắt hội nghị (tổng quan tường thuật, phụ san BJGP) — chứng cứ yếu, trùng ý với các bài gốc đã giữ.",
+   "ngay": "2026-10-25"
+  },
+  {
+   "pmid": "41512580",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "gian_tiep",
+   "id": "T31",
+   "nhom_ly_do": "khong_lay_duoc_toan_van",
+   "ly_do": "Elsevier (Semergen): ScienceDirect chỉ cho xem trước; đã ghi sổ không truy cập 25/10/2026.",
+   "ngay": "2026-10-25"
+  },
+  {
+   "pmid": "40492893",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "gian_tiep",
+   "id": "T32",
+   "nhom_ly_do": "it_phu_hop_voi_de_tai",
+   "ly_do": "Kiểm tra–phản hồi tại phòng khám thận — can thiệp, bối cảnh chuyên khoa thận, không phải mô tả ngoại trú ĐTĐ.",
+   "ngay": "2026-10-25"
+  },
+  {
+   "pmid": "39986337",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "gian_tiep",
+   "id": "T35",
+   "nhom_ly_do": "it_phu_hop_voi_de_tai",
+   "ly_do": "Đề cương RCT chưa có kết quả — không cung cấp số liệu để đối chiếu.",
+   "ngay": "2026-10-25"
+  },
+  {
+   "pmid": "39162984",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "gian_tiep",
+   "id": "T36",
+   "nhom_ly_do": "it_phu_hop_voi_de_tai",
+   "ly_do": "Tổng quan tường thuật trùng ý với T30 (Kidney Int Rep) và T49 (KDIGO Summit) đã giữ.",
+   "ngay": "2026-10-25"
+  },
+  {
+   "pmid": "38712604",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "gian_tiep",
+   "id": "T38",
+   "nhom_ly_do": "it_phu_hop_voi_de_tai",
+   "ly_do": "Tổng quan về công cụ hỗ trợ áp dụng khuyến cáo — không gắn với kết cục đo của đề tài.",
+   "ngay": "2026-10-25"
+  },
+  {
+   "pmid": "36593152",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "gian_tiep",
+   "id": "T39",
+   "nhom_ly_do": "it_phu_hop_voi_de_tai",
+   "ly_do": "Mô tả thiết kế can thiệp do dược sĩ dẫn dắt — không có số liệu thực trạng để đối chiếu.",
+   "ngay": "2026-10-25"
+  },
+  {
+   "pmid": "42485647",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "gian_tiep",
+   "id": "T41",
+   "nhom_ly_do": "it_phu_hop_voi_de_tai",
+   "ly_do": "Đồng thuận Delphi về bộ chỉ số — gián tiếp; chỉ số của đề tài đã bám KDIGO/ADA.",
+   "ngay": "2026-10-25"
+  },
+  {
+   "pmid": "41950426",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "gian_tiep",
+   "id": "T45",
+   "nhom_ly_do": "khong_lay_duoc_toan_van",
+   "ly_do": "OUP (EHJ QCCO): chỉ có trang tóm tắt; đã ghi sổ không truy cập 25/10/2026.",
+   "ngay": "2026-10-25"
+  },
+  {
+   "pmid": "42746991",
+   "doi": null,
+   "vai": "bo_sung",
+   "lien_quan": "gian_tiep",
+   "id": "T47",
+   "nhom_ly_do": "it_phu_hop_voi_de_tai",
+   "ly_do": "Nghiên cứu dấu ấn sinh học (homocystein) — không đo chuỗi phát hiện–ghi nhận–điều trị.",
+   "ngay": "2026-10-25"
+  },
+  {
+   "pmid": null,
+   "doi": "10.59354/ydth175.2023.227",
+   "vai": "bo_sung",
+   "lien_quan": "gian_tiep",
+   "id": "T61",
+   "nhom_ly_do": "khong_lay_duoc_toan_van",
+   "ly_do": "Tạp chí Y Dược Thực hành 175: trang tạp chí bị chặn (chứng chỉ TLS sai miền), không lấy được PDF. Thêm lại được nếu bác sĩ có PDF từ toà soạn.",
+   "ngay": "2026-10-25"
+  },
+  {
+   "pmid": null,
+   "doi": "10.52389/ydls.v19incs.2358",
+   "vai": "bo_sung",
+   "lien_quan": "gian_tiep",
+   "id": "T63",
+   "nhom_ly_do": "it_phu_hop_voi_de_tai",
+   "ly_do": "Liên quan yếu tố nguy cơ tim mạch với ACR — không đo xét nghiệm, ghi nhận hay điều trị; trùng ý với T54/T62.",
+   "ngay": "2026-10-25"
+  }
+ ],
+ "quyet_dinh_loai_bo": {
+  "ngay": "2026-10-25",
+  "loi_bac_si": "Với các trích dẫn cho nghiên cứu không thể lấy được toàn văn hãy loại bỏ luôn cho tôi,trích dẫn phải đảm bảo phù hợp nhất với nghiên cứu",
+  "tieu_chi": "Giữ trích dẫn phục vụ ít nhất một việc cụ thể của đề tài: (1) định nghĩa/chuẩn đo (guideline KDIGO 2022/2024, ADA 2026); (2) số liệu đối chiếu trực tiếp cho một kết cục — tỷ lệ xét nghiệm UACR + creatinin, tỷ lệ BTM và BTM chưa ghi nhận, tỷ lệ dùng ACEi/ARB/SGLT2i ở người đủ chỉ định, yếu tố liên quan; (3) bối cảnh trong nước/Đông Nam Á; (4) tổng quan khung khoảng trống chăm sóc thận. Loại: không lấy được toàn văn; lệch quần thể/kết cục; đề cương hoặc mô tả can thiệp chưa có số liệu; tóm tắt hội nghị; tổng quan trùng ý.",
+  "nguoi_de_xuat": "Claude (phiên Code) — bác sĩ duyệt lại; khôi phục mục nào thì chuyển từ loai_bo về trich_dan",
+  "ban_sao_truoc": "DANH_MUC_TRICH_DAN_btm-dtd2-ngoai-tru-BVQY175.bak-20261025-truoc-loai-bo.json",
+  "ghi_chu_G0": "Hồ sơ sàng lọc G0 (G0_TONG_HOP_BANG_CHUNG, A1) GIỮ NGUYÊN — đó là nhật ký những gì đã sàng, cổng G0 đòi đủ mọi PMID đã sàng; danh mục này mới là danh sách trích dẫn dùng cho đề cương/bài báo."
+ }
+}

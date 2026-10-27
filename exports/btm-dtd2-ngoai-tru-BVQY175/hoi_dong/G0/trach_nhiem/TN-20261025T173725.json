@@ -1,0 +1,168 @@
+{
+  "schema": "hoi_dong_cong/trach_nhiem/v1",
+  "study": "btm-dtd2-ngoai-tru-BVQY175",
+  "gate": "G0",
+  "dieu_phoi": "dieu-phoi-g0",
+  "trang_thai_song": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
+  "nguon": "song",
+  "ly_do_khong_do": "chấm sống (write=False)",
+  "thiet_ke": null,
+  "ket_luan": "AGENT_XONG_CHO_NGUOI",
+  "so_tieu_chi": 16,
+  "so_dat": 8,
+  "agent_con_viec": [],
+  "cho_nguoi": [
+    {
+      "id": "G0-HUMAN-01",
+      "status": "REVIEW",
+      "label": "PICO/PECO đủ 4 thành phần do bác sĩ viết",
+      "viec": "Điền gate_params.G0.population/intervention/comparison/outcomes trong study_meta.json (ghi 'không có nhóm so sánh — mô tả' nếu đúng vậy).",
+      "vai": "PI",
+      "chuan_bi": "G0-T1",
+      "agent_chuan_bi": "cau-hoi-nghien-cuu"
+    },
+    {
+      "id": "G0-HUMAN-02",
+      "status": "REVIEW",
+      "label": "Kết cục CHÍNH duy nhất, đo được, có thời điểm",
+      "viec": "Điền primary_outcome (1 kết cục) + primary_outcome_measure + primary_outcome_timepoint.",
+      "vai": "PI",
+      "chuan_bi": "G0-T1",
+      "agent_chuan_bi": "cau-hoi-nghien-cuu"
+    },
+    {
+      "id": "G0-HUMAN-03",
+      "status": "REVIEW",
+      "label": "Giả thuyết H0/H1 + chiều kỳ vọng + loại kiểm định",
+      "viec": "Điền test_type (superiority/non_inferiority/equivalence/descriptive); nếu không phải nghiên cứu mô tả thì điền cả hypothesis_h0/h1 và expected_direction.",
+      "vai": "PI",
+      "chuan_bi": "G0-T1",
+      "agent_chuan_bi": "cau-hoi-nghien-cuu"
+    },
+    {
+      "id": "G0-HUMAN-04",
+      "status": "REVIEW",
+      "label": "Loại câu hỏi đã xác định",
+      "viec": "Điền question_type: treatment (≡ therapy)/diagnosis/prognosis/harm/descriptive/qualitative/prediction_model.",
+      "vai": "PI",
+      "chuan_bi": "G0-T1",
+      "agent_chuan_bi": "cau-hoi-nghien-cuu"
+    },
+    {
+      "id": "G0-HUMAN-05",
+      "status": "REVIEW",
+      "label": "FINER đánh giá đủ từng tiêu chí (5/5), kết luận ĐẠT và có lý do",
+      "viec": "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận.",
+      "vai": "PI",
+      "chuan_bi": "G0-T4",
+      "agent_chuan_bi": "khoang-trong-nghien-cuu"
+    },
+    {
+      "id": "G0-HUMAN-06",
+      "status": "REVIEW",
+      "label": "Đã đọc lại bằng chứng G0 và biện minh tính mới",
+      "viec": "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification.",
+      "vai": "PI",
+      "chuan_bi": "G0-T3",
+      "agent_chuan_bi": "tong-quan-y-van"
+    },
+    {
+      "id": "G0-HUMAN-07",
+      "status": "REVIEW",
+      "label": "Chủ nhiệm/nhà phương pháp chốt PICO (vai trò + thời điểm + gắn đúng nội dung)",
+      "viec": "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"6066b69fc03971c8\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+      "vai": "PI",
+      "chuan_bi": "G0-T1",
+      "agent_chuan_bi": "cau-hoi-nghien-cuu"
+    },
+    {
+      "id": "G0-HUMAN-08",
+      "status": "REVIEW",
+      "label": "PI đã tự tra WHO ICTRP (và PROSPERO cho tổng quan) + đánh giá chồng lấn khi có thử nghiệm đang tuyển",
+      "viec": "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn).",
+      "vai": "PI",
+      "chuan_bi": "G0-T4",
+      "agent_chuan_bi": "khoang-trong-nghien-cuu"
+    }
+  ],
+  "cho_cong_truoc": [],
+  "chua_phan_cong": [],
+  "nhiem_vu": [
+    {
+      "ma": "G0-T1",
+      "agent": "cau-hoi-nghien-cuu",
+      "ap_dung": true,
+      "dieu_kien": null,
+      "dau_ra_thieu": [],
+      "khai_ap_dung": null,
+      "danh_gia_cheo": {
+        "trang_thai": "chua_danh_gia",
+        "id": null
+      }
+    },
+    {
+      "ma": "G0-T2",
+      "agent": "thu-thu-tai-lieu",
+      "ap_dung": true,
+      "dieu_kien": null,
+      "dau_ra_thieu": [],
+      "khai_ap_dung": null,
+      "danh_gia_cheo": {
+        "trang_thai": "chua_danh_gia",
+        "id": null
+      }
+    },
+    {
+      "ma": "G0-T3",
+      "agent": "tong-quan-y-van",
+      "ap_dung": true,
+      "dieu_kien": null,
+      "dau_ra_thieu": [],
+      "khai_ap_dung": null,
+      "danh_gia_cheo": {
+        "trang_thai": "chua_danh_gia",
+        "id": null
+      },
+      "kiem_may": {
+        "mo_ta": "tổng hợp bằng chứng: sàng lọc đủ mọi PMID nền · nguồn bổ sung có cách tìm · tóm lược dẫn PMID liên quan trực tiếp · đã kiểm rút bài",
+        "loi": []
+      }
+    },
+    {
+      "ma": "G0-T4",
+      "agent": "khoang-trong-nghien-cuu",
+      "ap_dung": true,
+      "dieu_kien": null,
+      "dau_ra_thieu": [],
+      "khai_ap_dung": null,
+      "danh_gia_cheo": {
+        "trang_thai": "chua_danh_gia",
+        "id": null
+      },
+      "kiem_may": {
+        "mo_ta": "khoảng trống: bảng guideline/văn bản quy phạm · phát biểu 1–2 câu không tuyệt đối hoá · loại + mức tính mới · trạng thái nguồn · nháp FINER (F/E để PI quyết)",
+        "loi": []
+      }
+    }
+  ],
+  "chua_cham": [],
+  "chi_dam_bao_bang_danh_gia_cheo": [],
+  "chat_luong_chua_bao_dam": [],
+  "chat_luong_chua_toi_luot": [],
+  "nhiem_vu_chua_xac_dinh": [],
+  "hoi_dong_treo": null,
+  "thoi_diem": "2026-10-25T17:37:25+07:00",
+  "tai_lieu_luc_ghi": {
+    "G0_A1_PICO_FINER_btm-dtd2-ngoai-tru-BVQY175.bak-20261025-173629.md": "f7c586b03de5cdd1f2c838e33113a35c4352bd150313ca95461fa95b354758e6",
+    "G0_A1_PICO_FINER_btm-dtd2-ngoai-tru-BVQY175.bak-20261025-173711.md": "930217668fdb9c40908e1c8fc1f1e9d25fac2356c502f7747cca41f2d9e392ed",
+    "G0_A1_PICO_FINER_btm-dtd2-ngoai-tru-BVQY175.docx": "fdb1a25d376edeac0c7512be08b4adbd5a36d0f434db4d33395f11c6e65a9151",
+    "G0_A1_PICO_FINER_btm-dtd2-ngoai-tru-BVQY175.md": "053e18598b9e2f12cab184d40f595562beecf5c5797a92e8d420ce8347d46ad4",
+    "G0_KHOANG_TRONG_btm-dtd2-ngoai-tru-BVQY175.json": "897201ad79d936632790ee0141057b3be73cd895f6617d37e9b01d5fb04682a3",
+    "G0_QUALITY_REPORT.json": "0ba896d7b50a992bc776bd02bf1e9cbe7a564a2f6903e661e3ea04b3122f607f",
+    "G0_QUALITY_REPORT.md": "3caa4a21015b41251d5e86eca670f49a98c5b0b8b1da5db8336ad27ffe6d1fb5",
+    "G0_TONG_HOP_BANG_CHUNG_btm-dtd2-ngoai-tru-BVQY175.json": "21aff1a9bf50e600fa66574922a9e6dd4a02fb3b435aca9af60aa83cdf2b478b",
+    "G0_checkpoint.json": "64067a114df6cf17bd26937195fe6318ea369d503eb1837dd93d933fd272d6b3",
+    "G0_pubmed_raw.json": "c028a877abb9f20b369a54f55657f84d443f114f770ee31e4d1f8476de56dcb9"
+  },
+  "cam_ket": "dieu-phoi-g0 chịu trách nhiệm kết quả thực hiện nhiệm vụ của cổng G0: bảng này do công cụ tính từ chấm sống, không do điều phối tự khai. TƯ VẤN — không mở/không chặn cổng."
+}

@@ -1,0 +1,1132 @@
+{
+ "schema": "de_tai/so_tien_do/v1",
+ "study": "btm-dtd2-ngoai-tru-BVQY175",
+ "ten_de_tai": "Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026",
+ "tap_chi_dich": "Tạp chí Y Dược Thực hành 175",
+ "cap_nhat": "2026-10-27",
+ "cach_dung": "Nguồn sự thật của bảng theo dõi tiến độ. Trạng thái: xong · dang · cho_bs · chua (máy tự suy «khoa» khi việc trước chưa xong). Mục gắn cổng đo sống bằng công cụ ở `do_song` mỗi lần cập nhật — không tự đánh «xong» khi cổng chưa đạt. Hạn là ƯỚC TÍNH, chủ nhiệm chỉnh.",
+ "ai": {
+  "may": "Máy",
+  "bs": "Bác sĩ",
+  "may_bs": "Máy + bác sĩ",
+  "hd": "Hội đồng",
+  "pb": "Phản biện ngoài",
+  "tc": "Tạp chí"
+ },
+ "giai_doan": [
+  {
+   "id": "GĐ1",
+   "ten": "Câu hỏi nghiên cứu (G0)",
+   "tu": "25/10/2026",
+   "den": "06/11/2026"
+  },
+  {
+   "id": "GĐ2",
+   "ten": "Thiết kế, cỡ mẫu, biến số (G1, G3)",
+   "tu": "02/11/2026",
+   "den": "08/11/2026"
+  },
+  {
+   "id": "GĐ3",
+   "ten": "Hồ sơ xét duyệt (G2, G4 sẵn sàng)",
+   "tu": "09/11/2026",
+   "den": "22/11/2026"
+  },
+  {
+   "id": "GĐ4",
+   "ten": "Hội đồng xét duyệt, ký G2 và G4",
+   "tu": "23/11/2026",
+   "den": "18/01/2027"
+  },
+  {
+   "id": "GĐ5",
+   "ten": "Dữ liệu (G5)",
+   "tu": "19/01/2027",
+   "den": "28/02/2027"
+  },
+  {
+   "id": "GĐ6",
+   "ten": "Phân tích (G6)",
+   "tu": "01/03/2027",
+   "den": "14/03/2027"
+  },
+  {
+   "id": "GĐ7",
+   "ten": "Bản thảo (G7)",
+   "tu": "15/03/2027",
+   "den": "07/04/2027"
+  },
+  {
+   "id": "GĐ8",
+   "ten": "Bình duyệt và liêm chính (G8, G9)",
+   "tu": "08/04/2027",
+   "den": "28/04/2027"
+  },
+  {
+   "id": "GĐ9",
+   "ten": "Nộp và đăng tạp chí (G10)",
+   "tu": "29/04/2027",
+   "den": "30/09/2027"
+  }
+ ],
+ "viec": [
+  {
+   "id": "1.1",
+   "gd": "GĐ1",
+   "ten": "Tìm khoảng trống, tính mới",
+   "ai": "may",
+   "lenh": "/tim-khoang-trong",
+   "xong_khi": "G0_KHOANG_TRONG có đủ guideline + phát biểu khoảng trống",
+   "phu_thuoc": [],
+   "han": "25/10/2026",
+   "trang_thai": "xong",
+   "ngay_xong": "25/10/2026",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "1.2",
+   "gd": "GĐ1",
+   "ten": "Tổng hợp bằng chứng G0, sàng lọc",
+   "ai": "may",
+   "lenh": "run_g0_auto + sàng lọc tay",
+   "xong_khi": "G0_TONG_HOP_BANG_CHUNG sàng đủ PMID, tra rút bài",
+   "phu_thuoc": [],
+   "han": "25/10/2026",
+   "trang_thai": "xong",
+   "ngay_xong": "25/10/2026",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "1.3",
+   "gd": "GĐ1",
+   "ten": "Danh mục trích dẫn có toàn văn",
+   "ai": "may",
+   "lenh": "EndNote nhóm «NC · …», làn Chrome",
+   "xong_khi": "47/47 có toàn văn, đã loại 19",
+   "phu_thuoc": [
+    "1.2"
+   ],
+   "han": "25/10/2026",
+   "trang_thai": "xong",
+   "ngay_xong": "25/10/2026",
+   "do_song": "do_toan_van_endnote",
+   "ghi_chu": ""
+  },
+  {
+   "id": "1.4",
+   "gd": "GĐ1",
+   "ten": "Quyết định cửa sổ, biến, FINER F và E",
+   "ai": "bs",
+   "lenh": "chat",
+   "xong_khi": "4 quyết định ghi vào đề xuất G0 26/10",
+   "phu_thuoc": [
+    "1.2"
+   ],
+   "han": "26/10/2026",
+   "trang_thai": "xong",
+   "ngay_xong": "26/10/2026",
+   "do_song": "",
+   "ghi_chu": "Cửa sổ 01/01–31/12/2026; 4 nhóm biến; F đạt có điều kiện; E để Hội đồng quyết"
+  },
+  {
+   "id": "1.5",
+   "gd": "GĐ1",
+   "ten": "Chép nội dung PICO vào gate_params.G0",
+   "ai": "may",
+   "lenh": "study_meta.json",
+   "xong_khi": "g0_quality_gate đạt G0-HUMAN-01..05",
+   "phu_thuoc": [
+    "1.4"
+   ],
+   "han": "26/10/2026",
+   "trang_thai": "xong",
+   "ngay_xong": "26/10/2026",
+   "do_song": "g0_quality_gate",
+   "ghi_chu": "Dấu vân tay nội dung d96a17831685912b"
+  },
+  {
+   "id": "1.6",
+   "gd": "GĐ1",
+   "ten": "Tự tra WHO ICTRP",
+   "ai": "bs",
+   "lenh": "trialsearch.who.int",
+   "xong_khi": "registry_manual_checked.ictrp có ngày thật",
+   "phu_thuoc": [],
+   "han": "01/11/2026",
+   "trang_thai": "cho_bs",
+   "ngay_xong": "",
+   "do_song": "study_meta G0.registry_manual_checked",
+   "ghi_chu": "Ghi chồng lấn nếu có thử nghiệm đang tuyển trùng"
+  },
+  {
+   "id": "1.7",
+   "gd": "GĐ1",
+   "ten": "Xác nhận G0: đọc PMID, chốt PICO",
+   "ai": "bs",
+   "lenh": "nói xác nhận trong chat theo mẫu",
+   "xong_khi": "pico_confirmed, evidence_reviewed_confirmed, vai trò, thời điểm, dấu vân tay",
+   "phu_thuoc": [
+    "1.5"
+   ],
+   "han": "01/11/2026",
+   "trang_thai": "dang",
+   "ngay_xong": "",
+   "do_song": "study_meta G0",
+   "ghi_chu": "Bác sĩ chọn cách đọc xác nhận để Claude chép nguyên văn"
+  },
+  {
+   "id": "1.8",
+   "gd": "GĐ1",
+   "ten": "Cổng G0 đạt PASS_G0_CONFIRMED",
+   "ai": "may",
+   "lenh": "tools/g0_quality_gate.py",
+   "xong_khi": "Trạng thái PASS_G0_CONFIRMED",
+   "phu_thuoc": [
+    "1.6",
+    "1.7"
+   ],
+   "han": "01/11/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "g0_quality_gate",
+   "ghi_chu": ""
+  },
+  {
+   "id": "1.9",
+   "gd": "GĐ1",
+   "ten": "Hỏi phòng CNTT khả năng xuất HIS",
+   "ai": "bs",
+   "lenh": "văn bản gửi phòng CNTT",
+   "xong_khi": "Xác nhận xuất được creatinin, UACR, ICD, đơn thuốc theo mã ẩn danh",
+   "phu_thuoc": [],
+   "han": "06/11/2026",
+   "trang_thai": "cho_bs",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": "Điều kiện của FINER khả thi — rủi ro lớn nhất"
+  },
+  {
+   "id": "1.10",
+   "gd": "GĐ1",
+   "ten": "Hỏi quy trình Hội đồng Khoa học, Đạo đức BVQY175",
+   "ai": "bs",
+   "lenh": "Phòng Khoa học / thư ký HĐĐĐ",
+   "xong_khi": "Mẫu hồ sơ, lịch họp, thời gian xét",
+   "phu_thuoc": [],
+   "han": "06/11/2026",
+   "trang_thai": "cho_bs",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "2.1",
+   "gd": "GĐ2",
+   "ten": "G1: chọn thiết kế, kiểm soát sai lệch",
+   "ai": "may",
+   "lenh": "/thiet-ke-de-tai (run_g1_auto)",
+   "xong_khi": "Đề cương lõi G1, mã thiết kế cross_sectional, STROBE + RECORD",
+   "phu_thuoc": [
+    "1.8"
+   ],
+   "han": "05/11/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "g1_quality_gate",
+   "ghi_chu": ""
+  },
+  {
+   "id": "2.2",
+   "gd": "GĐ2",
+   "ten": "Định nghĩa vận hành các kết cục",
+   "ai": "may_bs",
+   "lenh": "/thiet-ke-de-tai",
+   "xong_khi": "BTM theo KDIGO 2024, đủ chỉ định theo KDIGO 2022, «xét nghiệm đủ», «BTM chưa ghi nhận»",
+   "phu_thuoc": [
+    "2.1"
+   ],
+   "han": "05/11/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "2.3",
+   "gd": "GĐ2",
+   "ten": "Bác sĩ duyệt G1",
+   "ai": "bs",
+   "lenh": "đọc đề cương lõi",
+   "xong_khi": "g1_quality_gate đạt",
+   "phu_thuoc": [
+    "2.2"
+   ],
+   "han": "06/11/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "g1_quality_gate",
+   "ghi_chu": ""
+  },
+  {
+   "id": "2.4",
+   "gd": "GĐ2",
+   "ten": "Kế hoạch triển khai: nhân lực, tiến độ, kinh phí",
+   "ai": "may_bs",
+   "lenh": "agent ke-hoach-trien-khai",
+   "xong_khi": "A13 có phân công, Gantt, dự trù (đơn giá do chủ nhiệm điền)",
+   "phu_thuoc": [
+    "2.1"
+   ],
+   "han": "08/11/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "2.5",
+   "gd": "GĐ2",
+   "ten": "Chọn chiến lược mẫu, p và d",
+   "ai": "bs",
+   "lenh": "chat",
+   "xong_khi": "Lấy toàn bộ hay ngẫu nhiên; p có nguồn PMID; sai số d",
+   "phu_thuoc": [
+    "2.1"
+   ],
+   "han": "06/11/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": "Gợi ý p: PMID 38922613 (24,9%), 33722396 (43,3%)"
+  },
+  {
+   "id": "2.6",
+   "gd": "GĐ2",
+   "ten": "G3: tính cỡ mẫu",
+   "ai": "may",
+   "lenh": "/tinh-co-mau (run_g3_auto --prevalence --precision [--population-n])",
+   "xong_khi": "g3_quality_gate đạt, N kèm nguồn",
+   "phu_thuoc": [
+    "2.5"
+   ],
+   "han": "07/11/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "g3_quality_gate",
+   "ghi_chu": ""
+  },
+  {
+   "id": "2.7",
+   "gd": "GĐ2",
+   "ten": "Bộ biến số và codebook",
+   "ai": "may_bs",
+   "lenh": "/dat-bien-so",
+   "xong_khi": "Codebook đủ biến 4 nhóm + biến kết cục, xuất được REDCap/Excel",
+   "phu_thuoc": [
+    "2.1"
+   ],
+   "han": "08/11/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "2.8",
+   "gd": "GĐ2",
+   "ten": "Phiếu yêu cầu trích xuất dữ liệu gửi CNTT",
+   "ai": "may",
+   "lenh": "soạn từ codebook",
+   "xong_khi": "Danh sách trường, cửa sổ 2026, mã ẩn danh",
+   "phu_thuoc": [
+    "2.7",
+    "1.9"
+   ],
+   "han": "08/11/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "3.1",
+   "gd": "GĐ3",
+   "ten": "Hồ sơ Hội đồng Đạo đức",
+   "ai": "may",
+   "lenh": "/lam-ho-so-dao-duc",
+   "xong_khi": "Đề cương, đơn xin miễn/rút gọn đồng thuận, cam kết bảo mật, DMP, COI",
+   "phu_thuoc": [
+    "2.3",
+    "2.6",
+    "2.7",
+    "1.10"
+   ],
+   "han": "15/11/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "3.2",
+   "gd": "GĐ3",
+   "ten": "Quyết định có đăng ký nghiên cứu không",
+   "ai": "bs",
+   "lenh": "chat",
+   "xong_khi": "Ghi quyết định vào gate_params.G2",
+   "phu_thuoc": [
+    "2.3"
+   ],
+   "han": "12/11/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "3.3",
+   "gd": "GĐ3",
+   "ten": "G2 ở mức sẵn sàng",
+   "ai": "may",
+   "lenh": "g2_quality_gate",
+   "xong_khi": "READY_FOR_G2 (chưa ký)",
+   "phu_thuoc": [
+    "3.1",
+    "3.2"
+   ],
+   "han": "16/11/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "g2_quality_gate",
+   "ghi_chu": ""
+  },
+  {
+   "id": "3.4",
+   "gd": "GĐ3",
+   "ten": "Dự thảo kế hoạch phân tích (SAP)",
+   "ai": "may",
+   "lenh": "/thiet-ke-de-tai (run_g4_auto)",
+   "xong_khi": "SAP: tỷ lệ + KTC 95%, phân bố G/A, Poisson phương sai vững, dữ liệu thiếu, độ nhạy",
+   "phu_thuoc": [
+    "2.6",
+    "2.7"
+   ],
+   "han": "15/11/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "3.5",
+   "gd": "GĐ3",
+   "ten": "G4 ở mức sẵn sàng",
+   "ai": "may",
+   "lenh": "g4_quality_gate",
+   "xong_khi": "SAP READY (chưa khoá)",
+   "phu_thuoc": [
+    "3.4"
+   ],
+   "han": "16/11/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "g4_quality_gate",
+   "ghi_chu": ""
+  },
+  {
+   "id": "3.6",
+   "gd": "GĐ3",
+   "ten": "Kiểm nhất quán xuyên cổng",
+   "ai": "may",
+   "lenh": "nhat_quan_xuyen_cong.py",
+   "xong_khi": "Không lệch N, thiết kế, kết cục chính",
+   "phu_thuoc": [
+    "3.3",
+    "3.5"
+   ],
+   "han": "18/11/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "3.7",
+   "gd": "GĐ3",
+   "ten": "Gói đề cương nộp hội đồng",
+   "ai": "may",
+   "lenh": "run_g10_assemble (ETHICS_SUBMISSION)",
+   "xong_khi": "Đề cương thống nhất + Word đúng khổ nộp",
+   "phu_thuoc": [
+    "3.6"
+   ],
+   "han": "20/11/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "g10 readiness",
+   "ghi_chu": ""
+  },
+  {
+   "id": "3.8",
+   "gd": "GĐ3",
+   "ten": "Bác sĩ đọc duyệt bộ hồ sơ, ký đơn",
+   "ai": "bs",
+   "lenh": "đọc Word",
+   "xong_khi": "Bộ hồ sơ in ký sẵn sàng nộp",
+   "phu_thuoc": [
+    "3.7"
+   ],
+   "han": "22/11/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "4.1",
+   "gd": "GĐ4",
+   "ten": "Nộp Hội đồng Khoa học",
+   "ai": "bs",
+   "lenh": "ngoài hệ thống",
+   "xong_khi": "Biên nhận nộp",
+   "phu_thuoc": [
+    "3.8"
+   ],
+   "han": "25/11/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "4.2",
+   "gd": "GĐ4",
+   "ten": "Nộp Hội đồng Đạo đức",
+   "ai": "bs",
+   "lenh": "ngoài hệ thống",
+   "xong_khi": "Biên nhận nộp",
+   "phu_thuoc": [
+    "3.8"
+   ],
+   "han": "25/11/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "4.3",
+   "gd": "GĐ4",
+   "ten": "Sửa hồ sơ theo góp ý hội đồng",
+   "ai": "may_bs",
+   "lenh": "theo góp ý",
+   "xong_khi": "Bản sửa + giải trình",
+   "phu_thuoc": [
+    "4.1",
+    "4.2"
+   ],
+   "han": "31/12/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": "Chỉ khi hội đồng yêu cầu"
+  },
+  {
+   "id": "4.4",
+   "gd": "GĐ4",
+   "ten": "Nhận quyết định phê duyệt đạo đức",
+   "ai": "hd",
+   "lenh": "ngoài hệ thống",
+   "xong_khi": "Số quyết định, ngày ký, cơ quan cấp",
+   "phu_thuoc": [
+    "4.2"
+   ],
+   "han": "15/01/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": "Tạp chí bắt buộc ghi trong Phương pháp"
+  },
+  {
+   "id": "4.5",
+   "gd": "GĐ4",
+   "ten": "Ký G2",
+   "ai": "bs",
+   "lenh": "approve_gate.py --gate G2",
+   "xong_khi": "Sổ cái ghi G2 đã ký",
+   "phu_thuoc": [
+    "4.4",
+    "3.3"
+   ],
+   "han": "18/01/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "approval_ledger G2",
+   "ghi_chu": ""
+  },
+  {
+   "id": "4.6",
+   "gd": "GĐ4",
+   "ten": "Khoá và ký G4 trước khi xem dữ liệu",
+   "ai": "bs",
+   "lenh": "approve_gate.py --gate G4",
+   "xong_khi": "Sổ cái ghi G4 đã ký",
+   "phu_thuoc": [
+    "4.5",
+    "3.5"
+   ],
+   "han": "18/01/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "approval_ledger G4",
+   "ghi_chu": ""
+  },
+  {
+   "id": "5.1",
+   "gd": "GĐ5",
+   "ten": "Gửi yêu cầu trích xuất HIS năm 2026",
+   "ai": "bs",
+   "lenh": "phiếu ở mục 2.8",
+   "xong_khi": "CNTT nhận yêu cầu",
+   "phu_thuoc": [
+    "4.5",
+    "4.6",
+    "2.8"
+   ],
+   "han": "22/01/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": "Chỉ sau khi đã ký G2 và hết năm 2026"
+  },
+  {
+   "id": "5.2",
+   "gd": "GĐ5",
+   "ten": "Nhận dữ liệu, khử định danh ngay",
+   "ai": "may_bs",
+   "lenh": "/khu-dinh-danh",
+   "xong_khi": "Tệp chỉ mang mã nghiên cứu ẩn danh",
+   "phu_thuoc": [
+    "5.1"
+   ],
+   "han": "05/02/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "5.3",
+   "gd": "GĐ5",
+   "ten": "Từ điển dữ liệu",
+   "ai": "may",
+   "lenh": "/tu-dien-du-lieu",
+   "xong_khi": "Codebook đối chiếu dữ liệu thật",
+   "phu_thuoc": [
+    "5.2"
+   ],
+   "han": "07/02/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "5.4",
+   "gd": "GĐ5",
+   "ten": "Làm sạch dữ liệu",
+   "ai": "may_bs",
+   "lenh": "/lam-sach-du-lieu",
+   "xong_khi": "Nhật ký làm sạch, bác sĩ duyệt từng quyết định",
+   "phu_thuoc": [
+    "5.3"
+   ],
+   "han": "21/02/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "5.5",
+   "gd": "GĐ5",
+   "ten": "Kiểm ngẫu nhiên chất lượng mã ICD",
+   "ai": "bs",
+   "lenh": "đối chiếu hồ sơ",
+   "xong_khi": "Tỷ lệ khớp mã ICD được ghi nhận",
+   "phu_thuoc": [
+    "5.4"
+   ],
+   "han": "24/02/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "5.6",
+   "gd": "GĐ5",
+   "ten": "Khoá cơ sở dữ liệu, ký G5",
+   "ai": "bs",
+   "lenh": "/khoa-du-lieu → approve_gate.py --gate G5",
+   "xong_khi": "Sổ cái ghi G5 đã ký",
+   "phu_thuoc": [
+    "5.4",
+    "5.5"
+   ],
+   "han": "28/02/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "approval_ledger G5",
+   "ghi_chu": ""
+  },
+  {
+   "id": "6.1",
+   "gd": "GĐ6",
+   "ten": "Chạy phân tích theo SAP đã khoá",
+   "ai": "may",
+   "lenh": "/chay-thong-ke",
+   "xong_khi": "Bảng kết quả, G6",
+   "phu_thuoc": [
+    "5.6"
+   ],
+   "han": "07/03/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "G6 checkpoint",
+   "ghi_chu": ""
+  },
+  {
+   "id": "6.2",
+   "gd": "GĐ6",
+   "ten": "Bảng 1 đặc điểm mẫu",
+   "ai": "may",
+   "lenh": "/lam-bang-mot",
+   "xong_khi": "Bảng 1",
+   "phu_thuoc": [
+    "6.1"
+   ],
+   "han": "10/03/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "6.3",
+   "gd": "GĐ6",
+   "ten": "Sơ đồ chọn mẫu, biểu đồ chuỗi chăm sóc",
+   "ai": "may",
+   "lenh": "/ve-hinh-bai-bao",
+   "xong_khi": "Hình đạt chuẩn (tổng ≤ 5 hình)",
+   "phu_thuoc": [
+    "6.1"
+   ],
+   "han": "10/03/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "6.4",
+   "gd": "GĐ6",
+   "ten": "Phân tích độ nhạy",
+   "ai": "may",
+   "lenh": "/chay-thong-ke",
+   "xong_khi": "Kết quả độ nhạy theo SAP",
+   "phu_thuoc": [
+    "6.1"
+   ],
+   "han": "10/03/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "6.5",
+   "gd": "GĐ6",
+   "ten": "Diễn giải ý nghĩa lâm sàng",
+   "ai": "may_bs",
+   "lenh": "/dien-giai-so-lieu",
+   "xong_khi": "Ý chính cho Bàn luận",
+   "phu_thuoc": [
+    "6.2",
+    "6.3",
+    "6.4"
+   ],
+   "han": "14/03/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "7.1",
+   "gd": "GĐ7",
+   "ten": "Dàn ý bài theo thể lệ tạp chí",
+   "ai": "may",
+   "lenh": "/viet-bai-bao",
+   "xong_khi": "Dàn ý IMRAD + kiến nghị",
+   "phu_thuoc": [
+    "6.5"
+   ],
+   "han": "17/03/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "7.2",
+   "gd": "GĐ7",
+   "ten": "Bản thảo tiếng Việt ≤ 5.000 từ",
+   "ai": "may_bs",
+   "lenh": "/viet-bai-bao",
+   "xong_khi": "Bản thảo, ≤ 5 bảng, ≤ 5 hình",
+   "phu_thuoc": [
+    "7.1"
+   ],
+   "han": "28/03/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "7.3",
+   "gd": "GĐ7",
+   "ten": "Chọn ≤ 20 tài liệu, kiểm trích dẫn",
+   "ai": "may_bs",
+   "lenh": "/kiem-trich-dan",
+   "xong_khi": "Danh mục Vancouver ≤ 20, không bài rút",
+   "phu_thuoc": [
+    "7.2"
+   ],
+   "han": "31/03/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "7.4",
+   "gd": "GĐ7",
+   "ten": "Tóm tắt 250 từ + bản Anh, ≤ 6 từ khoá",
+   "ai": "may",
+   "lenh": "/viet-bai-bao, /got-tieng-anh",
+   "xong_khi": "Tóm tắt 4 phần hai ngôn ngữ",
+   "phu_thuoc": [
+    "7.2"
+   ],
+   "han": "31/03/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "7.5",
+   "gd": "GĐ7",
+   "ten": "Đối chiếu STROBE + RECORD",
+   "ai": "may",
+   "lenh": "/kiem-chuan-bao-cao",
+   "xong_khi": "Bảng kiểm đủ mục",
+   "phu_thuoc": [
+    "7.2"
+   ],
+   "han": "31/03/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "7.6",
+   "gd": "GĐ7",
+   "ten": "Tự rà bằng con mắt phản biện",
+   "ai": "may",
+   "lenh": "/tu-ra-bai",
+   "xong_khi": "Danh sách sửa đã xử lý",
+   "phu_thuoc": [
+    "7.3",
+    "7.4",
+    "7.5"
+   ],
+   "han": "03/04/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "7.7",
+   "gd": "GĐ7",
+   "ten": "Bác sĩ duyệt bản thảo cuối",
+   "ai": "bs",
+   "lenh": "đọc Word",
+   "xong_khi": "Bản thảo chốt",
+   "phu_thuoc": [
+    "7.6"
+   ],
+   "han": "07/04/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "8.1",
+   "gd": "GĐ8",
+   "ten": "Phản biện nội bộ thử",
+   "ai": "may",
+   "lenh": "/nho-phan-bien",
+   "xong_khi": "Danh sách góp ý",
+   "phu_thuoc": [
+    "7.7"
+   ],
+   "han": "10/04/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "8.2",
+   "gd": "GĐ8",
+   "ten": "Chọn người phản biện ngoài nhóm",
+   "ai": "bs",
+   "lenh": "liên hệ đồng nghiệp",
+   "xong_khi": "Người nhận lời phản biện",
+   "phu_thuoc": [
+    "3.8"
+   ],
+   "han": "31/03/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": "Chọn sớm để không chờ"
+  },
+  {
+   "id": "8.3",
+   "gd": "GĐ8",
+   "ten": "Phản biện ngoài viết báo cáo, sửa bài",
+   "ai": "pb",
+   "lenh": "G8_PEER_REVIEW_REPORT",
+   "xong_khi": "Báo cáo phản biện thật + bản sửa",
+   "phu_thuoc": [
+    "8.1",
+    "8.2"
+   ],
+   "han": "24/04/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "8.4",
+   "gd": "GĐ8",
+   "ten": "Ký G8",
+   "ai": "bs",
+   "lenh": "approve_gate.py --gate G8",
+   "xong_khi": "PASS_G8_REVIEW_RECORDED",
+   "phu_thuoc": [
+    "8.3"
+   ],
+   "han": "26/04/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "approval_ledger G8",
+   "ghi_chu": ""
+  },
+  {
+   "id": "8.5",
+   "gd": "GĐ8",
+   "ten": "Tác giả, CRediT, COI, khai AI, dữ liệu",
+   "ai": "bs",
+   "lenh": "/nop-bai (máy soạn mẫu)",
+   "xong_khi": "Đủ nhóm tiêu chí G9",
+   "phu_thuoc": [
+    "7.7"
+   ],
+   "han": "20/04/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "8.6",
+   "gd": "GĐ8",
+   "ten": "Ký G9",
+   "ai": "bs",
+   "lenh": "approve_gate.py --gate G9",
+   "xong_khi": "Sổ cái ghi G9 đã ký",
+   "phu_thuoc": [
+    "8.5",
+    "8.4"
+   ],
+   "han": "28/04/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "approval_ledger G9",
+   "ghi_chu": ""
+  },
+  {
+   "id": "9.1",
+   "gd": "GĐ9",
+   "ten": "Kiểm trùng lặp trước khi nộp",
+   "ai": "bs",
+   "lenh": "iThenticate hoặc tương đương",
+   "xong_khi": "Trùng lặp < 25%",
+   "phu_thuoc": [
+    "8.4"
+   ],
+   "han": "30/04/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "9.2",
+   "gd": "GĐ9",
+   "ten": "Định dạng đúng thể lệ",
+   "ai": "may",
+   "lenh": "md_sang_docx_times / Word",
+   "xong_khi": "A4, Times New Roman 13, giãn dòng 1,3, lề đúng",
+   "phu_thuoc": [
+    "8.4"
+   ],
+   "han": "30/04/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "9.3",
+   "gd": "GĐ9",
+   "ten": "Đóng gói nộp, ký G10",
+   "ai": "bs",
+   "lenh": "/nop-bai → approve_gate.py --gate G10",
+   "xong_khi": "Sổ cái ghi G10 đã ký",
+   "phu_thuoc": [
+    "8.6",
+    "9.1",
+    "9.2"
+   ],
+   "han": "03/05/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "approval_ledger G10",
+   "ghi_chu": ""
+  },
+  {
+   "id": "9.4",
+   "gd": "GĐ9",
+   "ten": "Nộp bài qua «Gửi bài mới»",
+   "ai": "bs",
+   "lenh": "jpmp175.vn",
+   "xong_khi": "Mã bài nộp",
+   "phu_thuoc": [
+    "9.3"
+   ],
+   "han": "05/05/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "9.5",
+   "gd": "GĐ9",
+   "ten": "Nhận kết quả phản biện của tạp chí",
+   "ai": "tc",
+   "lenh": "ngoài hệ thống",
+   "xong_khi": "Thư phản biện (≈ 30–40 ngày)",
+   "phu_thuoc": [
+    "9.4"
+   ],
+   "han": "15/06/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "9.6",
+   "gd": "GĐ9",
+   "ten": "Thư phản hồi và bản sửa",
+   "ai": "may_bs",
+   "lenh": "/tra-loi-phan-bien",
+   "xong_khi": "Thư phản hồi từng điểm + bản sửa",
+   "phu_thuoc": [
+    "9.5"
+   ],
+   "han": "30/06/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "9.7",
+   "gd": "GĐ9",
+   "ten": "Tạp chí chấp nhận đăng",
+   "ai": "tc",
+   "lenh": "ngoài hệ thống",
+   "xong_khi": "Thư chấp nhận",
+   "phu_thuoc": [
+    "9.6"
+   ],
+   "han": "31/07/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "9.8",
+   "gd": "GĐ9",
+   "ten": "Đọc bản in thử",
+   "ai": "bs",
+   "lenh": "bản PDF tạp chí gửi",
+   "xong_khi": "Xác nhận bản in thử",
+   "phu_thuoc": [
+    "9.7"
+   ],
+   "han": "15/08/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  },
+  {
+   "id": "9.9",
+   "gd": "GĐ9",
+   "ten": "Bài đăng: số tạp chí và DOI",
+   "ai": "tc",
+   "lenh": "ngoài hệ thống",
+   "xong_khi": "Có số tạp chí + DOI 10.59354/…",
+   "phu_thuoc": [
+    "9.8"
+   ],
+   "han": "30/09/2027",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": ""
+  }
+ ],
+ "lich_su": [
+  {
+   "ngay": "2026-10-27",
+   "viec": "Lập sổ tiến độ; đo sống G0 = DRAFT_READY_NEEDS_HUMAN_REVIEW (13/16 tiêu chí)"
+  }
+ ]
+}

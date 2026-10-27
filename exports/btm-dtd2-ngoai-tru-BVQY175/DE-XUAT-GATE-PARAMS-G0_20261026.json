@@ -1,0 +1,44 @@
+{
+ "_ghi_chu": "ĐỀ XUẤT của agent (cau-hoi-nghien-cuu / khoang-trong-nghien-cuu) — máy CHƯA ghi vào study_meta.json. PI đọc A1 (G0_A1_PICO_FINER_btm-dtd2-ngoai-tru-BVQY175.md), sửa từng khoá theo ý mình rồi TỰ ghi vào gate_params.G0 (hoặc nói «áp dụng đề xuất G0 đã sửa» để máy chép đúng nội dung PI duyệt). Các khoá xác nhận (pico_confirmed, reviewed_by_role, reviewed_at, dau_van_tay_chot, evidence_reviewed_confirmed, registry_manual_checked) LUÔN do PI ghi — đề xuất này cố ý bỏ trống. finer_feasible/finer_ethical: máy không tự đánh giá. Cần bác sĩ kiểm chứng.",
+ "ngay": "2026-10-26",
+ "thay_cho": "DE-XUAT-GATE-PARAMS-G0_20261025.json (giữ nguyên bản cũ)",
+ "quyet_dinh_PI_20261026": {
+  "cach_ghi": "Bác sĩ chọn trực tiếp trong phiên Claude Code ngày 26/10/2026 (khung câu hỏi lựa chọn); Claude chép đúng lựa chọn vào các khoá dưới.",
+  "cua_so_hoi_cuu": "Năm 2026 trọn: 01/01/2026–31/12/2026",
+  "bien_giai_thich": [
+   "Nhân khẩu & đối tượng khám",
+   "Đặc điểm ĐTĐ",
+   "Bệnh kèm",
+   "Mô hình chăm sóc"
+  ],
+  "finer_kha_thi": "Đạt có điều kiện",
+  "finer_dao_duc": "Để Hội đồng Đạo đức quyết hình thức đồng thuận"
+ },
+ "tap_chi_dich": "Tạp chí Y Dược Thực hành 175 (ISSN 2354-1024 theo Crossref, tiền tố DOI 10.59354)",
+ "gate_params.G0": {
+  "population": "Người từ 18 tuổi, chẩn đoán đái tháo đường típ 2 (ICD-10 E11), quản lý ngoại trú tại Khoa Khám bệnh BVQY175, có ít nhất 2 lượt khám trong cửa sổ hồi cứu 01/01/2026–31/12/2026; loại trừ: lọc máu hoặc ghép thận, có thai, đái tháo đường típ 1 hoặc thể khác.",
+  "intervention": "Không có can thiệp — nghiên cứu quan sát hồi cứu. Biến giải thích cho mục tiêu phụ 4: tuổi, giới, nhóm đối tượng khám (quân nhân / BHYT / dịch vụ); thời gian mắc ĐTĐ, HbA1c gần nhất, đang dùng insulin, số thuốc hạ glucose; tăng huyết áp, BMI, bệnh tim mạch do xơ vữa hoặc suy tim; số lượt khám trong cửa sổ, phòng khám theo dõi chính (nội tiết / nội chung).",
+  "comparison": "Không có nhóm so sánh ngoài — thiết kế mô tả cắt ngang có phân tích.",
+  "outcomes": [
+   "Kết cục chính: tỷ lệ người bệnh được xét nghiệm CẢ UACR lẫn creatinin huyết thanh (để tính eGFR) trong cửa sổ 12 tháng.",
+   "Phụ 1: tỷ lệ BTM theo KDIGO 2024 (eGFR dưới 60 và/hoặc UACR từ 30 mg/g, xác nhận bằng 2 lần đo cách nhau từ 90 ngày; người chỉ có 1 lần đo xếp nhóm nghi BTM) — phân bố theo G và A.",
+   "Phụ 2: tỷ lệ BTM theo xét nghiệm nhưng CHƯA được ghi chẩn đoán (mã ICD) trong hồ sơ.",
+   "Phụ 3: ở người đủ chỉ định theo KDIGO 2022 — tỷ lệ đang dùng ACEi/ARB (có tăng huyết áp và albumin niệu) và SGLT2i (BTM, eGFR từ 20).",
+   "Phụ 4: yếu tố liên quan với việc không được xét nghiệm đủ (hồi quy Poisson phương sai vững, báo cáo tỷ số tỷ lệ hiện mắc) — biến giải thích: tuổi, giới, nhóm đối tượng khám (quân nhân / BHYT / dịch vụ); thời gian mắc ĐTĐ, HbA1c gần nhất, đang dùng insulin, số thuốc hạ glucose; tăng huyết áp, BMI, bệnh tim mạch do xơ vữa hoặc suy tim; số lượt khám trong cửa sổ, phòng khám theo dõi chính (nội tiết / nội chung)."
+  ],
+  "primary_outcome": "Tỷ lệ người ĐTĐ típ 2 ngoại trú được xét nghiệm đủ UACR + creatinin trong 12 tháng",
+  "primary_outcome_measure": "Biến nhị phân trích từ kết quả xét nghiệm trong HIS (có/không có cả hai xét nghiệm trong cửa sổ); báo cáo tỷ lệ % kèm KTC 95%",
+  "primary_outcome_timepoint": "Cửa sổ hồi cứu 12 tháng: 01/01/2026–31/12/2026",
+  "test_type": "descriptive",
+  "question_type": "descriptive",
+  "hypothesis_h0": "",
+  "hypothesis_h1": "",
+  "expected_direction": "",
+  "finer_feasible": "ĐẠT có điều kiện — điều kiện: phòng CNTT BVQY175 xác nhận HIS xuất được creatinin, UACR, mã ICD-10 và đơn thuốc theo mã nghiên cứu ẩn danh cho cửa sổ 01/01/2026–31/12/2026; phương án dự phòng: trích hồ sơ thủ công một mẫu ngẫu nhiên. Rủi ro đã biết: UACR làm ở cơ sở khác không có trong HIS ⇒ ghi là hạn chế và phân tích độ nhạy.",
+  "finer_interesting": "ĐẠT — trả lời trực tiếp mức bỏ sót xét nghiệm và điều trị bảo vệ thận tại Khoa Khám bệnh; y văn nước ngoài cho thấy chỉ 24,9% đến 43,3% được làm UACR (PMID 38922613, 33722396).",
+  "finer_novel": "ĐẠT ở mức «mở rộng bối cảnh» — không mới trên thế giới; trong nước chủ yếu đo tỷ lệ BTM hoặc kê đơn ở người đã có BTM; trong phạm vi PubMed + Crossref đã tra (2026-10-25) chưa thấy bài đo cả chuỗi xét nghiệm → ghi nhận → điều trị ở ĐTĐ típ 2 ngoại trú bệnh viện quân đội.",
+  "finer_ethical": "ĐẠT — hồi cứu hồ sơ, không can thiệp, rủi ro tối thiểu; khử định danh ngay khi trích xuất, chỉ dùng mã nghiên cứu ẩn danh, không lấy trường định danh nào; hình thức đồng thuận (miễn hay rút gọn) do Hội đồng Đạo đức BVQY175 quyết định.",
+  "finer_relevant": "ĐẠT — phục vụ cải tiến chất lượng chăm sóc bệnh mạn ngoại trú tại chính BVQY175; tạp chí đích là Tạp chí Y Dược Thực hành 175; là số liệu nền cho nghiên cứu can thiệp nhắc xét nghiệm tiếp nối.",
+  "novelty_justification": "Mở rộng bối cảnh: đo trọn chuỗi chăm sóc thận (xét nghiệm, ghi nhận chẩn đoán, điều trị theo chỉ định) ở người ĐTĐ típ 2 ngoại trú một bệnh viện quân đội tuyến cuối; các nghiên cứu trong nước tìm được chỉ đo tỷ lệ BTM trong mẫu đã xét nghiệm hoặc mô tả kê đơn ở người đã có BTM (xem G0_KHOANG_TRONG). Phạm vi tra: PubMed + Crossref; chưa tra Google Scholar và thư viện luận văn."
+ }
+}

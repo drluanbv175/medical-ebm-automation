@@ -1,0 +1,54 @@
+<h2 class="sr-only">Bảng theo dõi tiến độ đề tài btm-dtd2 theo 9 giai đoạn; bấm một việc chưa xong để tiếp tục làm việc đó.</h2>
+<style>
+.tr{display:flex;align-items:center;gap:10px;padding:8px 12px;border-top:0.5px solid var(--border);font-size:14px;cursor:pointer}
+.tr:hover{background:var(--surface-1)}
+.tr.x{cursor:default;color:var(--text-secondary)}
+.tr.x:hover{background:transparent}
+.chip{font-size:12px;padding:2px 8px;border-radius:var(--radius);white-space:nowrap;min-width:92px;text-align:center}
+.ph{border:0.5px solid var(--border);border-radius:12px;margin:0 0 10px;overflow:hidden}
+.phh{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;font-size:14px}
+.bar{height:6px;background:var(--surface-1);border-radius:3px;overflow:hidden;width:90px;flex:none}
+.bar>i{display:block;height:100%;background:var(--fill-success)}
+.mc{background:var(--surface-1);border-radius:var(--radius);padding:12px 14px}
+.lb{font-size:13px;color:var(--text-secondary);margin:0 0 6px}
+</style>
+<div id="m" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:0 0 1.25rem"></div>
+<p class="lb">Việc làm được ngay</p>
+<div id="now" style="border:0.5px solid var(--border);border-radius:12px;overflow:hidden;margin:0 0 1.25rem"></div>
+<p class="lb">Toàn bộ kế hoạch theo giai đoạn</p>
+<div id="ph"></div>
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px">
+<button id="rf">Cập nhật tiến độ ↗</button>
+<span id="up" style="font-size:12px;color:var(--text-muted)"></span>
+</div>
+<script>
+const D={"u":"2026-10-27","g":[["Câu hỏi nghiên cứu (G0)","25/10/26","06/11/26"],["Thiết kế, cỡ mẫu, biến số (G1, G3)","02/11/26","08/11/26"],["Hồ sơ xét duyệt (G2, G4 sẵn sàng)","09/11/26","22/11/26"],["Hội đồng xét duyệt, ký G2 và G4","23/11/26","18/01/27"],["Dữ liệu (G5)","19/01/27","28/02/27"],["Phân tích (G6)","01/03/27","14/03/27"],["Bản thảo (G7)","15/03/27","07/04/27"],["Bình duyệt và liêm chính (G8, G9)","08/04/27","28/04/27"],["Nộp và đăng tạp chí (G10)","29/04/27","30/09/27"]],"v":[["1.1",0,"Tìm khoảng trống, tính mới","may","25/10/26","xong",[]],["1.2",0,"Tổng hợp bằng chứng G0, sàng lọc","may","25/10/26","xong",[]],["1.3",0,"Danh mục trích dẫn có toàn văn","may","25/10/26","xong",["1.2"]],["1.4",0,"Quyết định cửa sổ, biến, FINER F và E","bs","26/10/26","xong",["1.2"]],["1.5",0,"Chép nội dung PICO vào gate_params.G0","may","26/10/26","xong",["1.4"]],["1.6",0,"Tự tra WHO ICTRP","bs","01/11/26","cho_bs",[]],["1.7",0,"Xác nhận G0: đọc PMID, chốt PICO","bs","01/11/26","dang",["1.5"]],["1.8",0,"Cổng G0 đạt PASS_G0_CONFIRMED","may","01/11/26","chua",["1.6","1.7"]],["1.9",0,"Hỏi phòng CNTT khả năng xuất HIS","bs","06/11/26","cho_bs",[]],["1.10",0,"Hỏi quy trình Hội đồng Khoa học, Đạo đức BVQY175","bs","06/11/26","cho_bs",[]],["2.1",1,"G1: chọn thiết kế, kiểm soát sai lệch","may","05/11/26","chua",["1.8"]],["2.2",1,"Định nghĩa vận hành các kết cục","may_bs","05/11/26","chua",["2.1"]],["2.3",1,"Bác sĩ duyệt G1","bs","06/11/26","chua",["2.2"]],["2.4",1,"Kế hoạch triển khai: nhân lực, tiến độ, kinh phí","may_bs","08/11/26","chua",["2.1"]],["2.5",1,"Chọn chiến lược mẫu, p và d","bs","06/11/26","chua",["2.1"]],["2.6",1,"G3: tính cỡ mẫu","may","07/11/26","chua",["2.5"]],["2.7",1,"Bộ biến số và codebook","may_bs","08/11/26","chua",["2.1"]],["2.8",1,"Phiếu yêu cầu trích xuất dữ liệu gửi CNTT","may","08/11/26","chua",["2.7","1.9"]],["3.1",2,"Hồ sơ Hội đồng Đạo đức","may","15/11/26","chua",["2.3","2.6","2.7","1.10"]],["3.2",2,"Quyết định có đăng ký nghiên cứu không","bs","12/11/26","chua",["2.3"]],["3.3",2,"G2 ở mức sẵn sàng","may","16/11/26","chua",["3.1","3.2"]],["3.4",2,"Dự thảo kế hoạch phân tích (SAP)","may","15/11/26","chua",["2.6","2.7"]],["3.5",2,"G4 ở mức sẵn sàng","may","16/11/26","chua",["3.4"]],["3.6",2,"Kiểm nhất quán xuyên cổng","may","18/11/26","chua",["3.3","3.5"]],["3.7",2,"Gói đề cương nộp hội đồng","may","20/11/26","chua",["3.6"]],["3.8",2,"Bác sĩ đọc duyệt bộ hồ sơ, ký đơn","bs","22/11/26","chua",["3.7"]],["4.1",3,"Nộp Hội đồng Khoa học","bs","25/11/26","chua",["3.8"]],["4.2",3,"Nộp Hội đồng Đạo đức","bs","25/11/26","chua",["3.8"]],["4.3",3,"Sửa hồ sơ theo góp ý hội đồng","may_bs","31/12/26","chua",["4.1","4.2"]],["4.4",3,"Nhận quyết định phê duyệt đạo đức","hd","15/01/27","chua",["4.2"]],["4.5",3,"Ký G2","bs","18/01/27","chua",["4.4","3.3"]],["4.6",3,"Khoá và ký G4 trước khi xem dữ liệu","bs","18/01/27","chua",["4.5","3.5"]],["5.1",4,"Gửi yêu cầu trích xuất HIS năm 2026","bs","22/01/27","chua",["4.5","4.6","2.8"]],["5.2",4,"Nhận dữ liệu, khử định danh ngay","may_bs","05/02/27","chua",["5.1"]],["5.3",4,"Từ điển dữ liệu","may","07/02/27","chua",["5.2"]],["5.4",4,"Làm sạch dữ liệu","may_bs","21/02/27","chua",["5.3"]],["5.5",4,"Kiểm ngẫu nhiên chất lượng mã ICD","bs","24/02/27","chua",["5.4"]],["5.6",4,"Khoá cơ sở dữ liệu, ký G5","bs","28/02/27","chua",["5.4","5.5"]],["6.1",5,"Chạy phân tích theo SAP đã khoá","may","07/03/27","chua",["5.6"]],["6.2",5,"Bảng 1 đặc điểm mẫu","may","10/03/27","chua",["6.1"]],["6.3",5,"Sơ đồ chọn mẫu, biểu đồ chuỗi chăm sóc","may","10/03/27","chua",["6.1"]],["6.4",5,"Phân tích độ nhạy","may","10/03/27","chua",["6.1"]],["6.5",5,"Diễn giải ý nghĩa lâm sàng","may_bs","14/03/27","chua",["6.2","6.3","6.4"]],["7.1",6,"Dàn ý bài theo thể lệ tạp chí","may","17/03/27","chua",["6.5"]],["7.2",6,"Bản thảo tiếng Việt ≤ 5.000 từ","may_bs","28/03/27","chua",["7.1"]],["7.3",6,"Chọn ≤ 20 tài liệu, kiểm trích dẫn","may_bs","31/03/27","chua",["7.2"]],["7.4",6,"Tóm tắt 250 từ + bản Anh, ≤ 6 từ khoá","may","31/03/27","chua",["7.2"]],["7.5",6,"Đối chiếu STROBE + RECORD","may","31/03/27","chua",["7.2"]],["7.6",6,"Tự rà bằng con mắt phản biện","may","03/04/27","chua",["7.3","7.4","7.5"]],["7.7",6,"Bác sĩ duyệt bản thảo cuối","bs","07/04/27","chua",["7.6"]],["8.1",7,"Phản biện nội bộ thử","may","10/04/27","chua",["7.7"]],["8.2",7,"Chọn người phản biện ngoài nhóm","bs","31/03/27","chua",["3.8"]],["8.3",7,"Phản biện ngoài viết báo cáo, sửa bài","pb","24/04/27","chua",["8.1","8.2"]],["8.4",7,"Ký G8","bs","26/04/27","chua",["8.3"]],["8.5",7,"Tác giả, CRediT, COI, khai AI, dữ liệu","bs","20/04/27","chua",["7.7"]],["8.6",7,"Ký G9","bs","28/04/27","chua",["8.5","8.4"]],["9.1",8,"Kiểm trùng lặp trước khi nộp","bs","30/04/27","chua",["8.4"]],["9.2",8,"Định dạng đúng thể lệ","may","30/04/27","chua",["8.4"]],["9.3",8,"Đóng gói nộp, ký G10","bs","03/05/27","chua",["8.6","9.1","9.2"]],["9.4",8,"Nộp bài qua «Gửi bài mới»","bs","05/05/27","chua",["9.3"]],["9.5",8,"Nhận kết quả phản biện của tạp chí","tc","15/06/27","chua",["9.4"]],["9.6",8,"Thư phản hồi và bản sửa","may_bs","30/06/27","chua",["9.5"]],["9.7",8,"Tạp chí chấp nhận đăng","tc","31/07/27","chua",["9.6"]],["9.8",8,"Đọc bản in thử","bs","15/08/27","chua",["9.7"]],["9.9",8,"Bài đăng: số tạp chí và DOI","tc","30/09/27","chua",["9.8"]]]};
+const L={xong:["Xong","success"],dang:["Đang làm","accent"],cho_bs:["Chờ bác sĩ","warning"],san:["Làm được ngay","accent"],khoa:["Chờ việc trước","n"]};
+const A={may:"Máy",bs:"Bác sĩ",may_bs:"Máy + bác sĩ",hd:"Hội đồng",pb:"Phản biện ngoài",tc:"Tạp chí"};
+const by={};D.v.forEach(x=>by[x[0]]=x);
+const dt=s=>{const p=s.split("/");return new Date(2000+ +p[2],p[1]-1,+p[0]).getTime();};
+const now=Date.now();
+const st=x=>x[5]!=="chua"?x[5]:(x[6].every(d=>by[d]&&by[d][5]==="xong")?"san":"khoa");
+const go=x=>sendPrompt("Tiếp tục mục "+x[0]+" «"+x[2]+"» của đề tài btm-dtd2-ngoai-tru-BVQY175");
+const chip=s=>{const c=L[s][1];const bg=c==="n"?"var(--surface-1)":"var(--bg-"+c+")";const fg=c==="n"?"var(--text-secondary)":"var(--text-"+c+")";return '<span class="chip" style="background:'+bg+';color:'+fg+'">'+L[s][0]+'</span>';};
+function row(x){const s=st(x);const late=s!=="xong"&&dt(x[4])<now;const d=document.createElement("div");d.className="tr"+(s==="xong"?" x":"");
+d.innerHTML=chip(s)+'<span style="color:var(--text-muted);min-width:30px">'+x[0]+'</span><span style="flex:1;min-width:0">'+x[2]+'</span><span style="font-size:12px;color:var(--text-secondary);white-space:nowrap">'+A[x[3]]+'</span><span style="font-size:12px;white-space:nowrap;min-width:58px;text-align:right;color:'+(late?"var(--text-danger)":"var(--text-muted)")+'">'+x[4]+'</span>'+(s==="xong"?'':'<i class="ti ti-arrow-right" aria-hidden="true" style="font-size:16px;color:var(--text-muted)"></i>');
+if(s!=="xong"){d.setAttribute("role","button");d.tabIndex=0;d.title="Bấm để tiếp tục việc này";d.onclick=()=>go(x);d.onkeydown=e=>{if(e.key==="Enter")go(x);};}return d;}
+const tot=D.v.length,done=D.v.filter(x=>x[5]==="xong").length;
+const signed=["4.5","4.6","5.6","8.4","8.6","9.3"].filter(i=>by[i]&&by[i][5]==="xong").length;
+const cur=D.g.findIndex((g,k)=>D.v.some(x=>x[1]===k&&x[5]!=="xong"));
+const open=D.v.filter(x=>["dang","cho_bs","san"].includes(st(x))).sort((a,b)=>dt(a[4])-dt(b[4]));
+const card=(l,v)=>'<div class="mc"><p class="lb">'+l+'</p><div style="font-size:22px;font-weight:500">'+v+'</div></div>';
+document.getElementById("m").innerHTML=card("Hoàn thành · "+done+"/"+tot+" việc",Math.round(done*100/tot)+"%")+card("Cổng cứng đã ký",signed+"/6")+card("Giai đoạn hiện tại",cur<0?"Xong":"GĐ"+(cur+1))+card("Hạn gần nhất",open.length?open[0][4].slice(0,5):"—");
+const nw=document.getElementById("now");open.forEach((x,k)=>{const r=row(x);if(k===0)r.style.borderTop="0";nw.appendChild(r);});
+const ph=document.getElementById("ph");
+D.g.forEach((g,k)=>{const it=D.v.filter(x=>x[1]===k);const dn=it.filter(x=>x[5]==="xong").length;const box=document.createElement("div");box.className="ph";
+const h=document.createElement("div");h.className="phh";h.setAttribute("role","button");h.tabIndex=0;
+h.innerHTML='<i class="ti ti-chevron-down" aria-hidden="true" style="font-size:16px;color:var(--text-muted)"></i><span style="font-weight:500">GĐ'+(k+1)+'</span><span style="flex:1;min-width:0">'+g[0]+'</span><span style="font-size:12px;color:var(--text-muted);white-space:nowrap">'+g[1].slice(0,5)+'–'+g[2]+'</span><span class="bar"><i style="width:'+Math.round(dn*100/it.length)+'%"></i></span><span style="font-size:12px;color:var(--text-secondary);min-width:36px;text-align:right">'+dn+'/'+it.length+'</span>';
+const body=document.createElement("div");it.forEach(x=>body.appendChild(row(x)));
+let op=(k===cur||k===cur+1);const set=()=>{body.style.display=op?"block":"none";h.querySelector(".ti").className="ti "+(op?"ti-chevron-down":"ti-chevron-right");};
+h.onclick=()=>{op=!op;set();};h.onkeydown=e=>{if(e.key==="Enter"){op=!op;set();}};set();
+box.appendChild(h);box.appendChild(body);ph.appendChild(box);});
+document.getElementById("rf").onclick=()=>sendPrompt("Cập nhật sổ tiến độ đề tài btm-dtd2-ngoai-tru-BVQY175 và hiển thị lại bảng theo dõi");
+document.getElementById("up").textContent="Sổ cập nhật "+D.u.split("-").reverse().join("/")+" · hạn là ước tính";
+</script>

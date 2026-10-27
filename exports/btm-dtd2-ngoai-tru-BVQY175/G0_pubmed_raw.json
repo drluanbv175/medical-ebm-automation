@@ -1,0 +1,918 @@
+{
+  "sr_ma": [
+    {
+      "pmid": "41358893",
+      "title": "2. Diagnosis and Classification of Diabetes: Standards of Care in Diabetes-2026.",
+      "year": "2026",
+      "journal": "Diabetes care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41358893/",
+      "authors": null
+    },
+    {
+      "pmid": "41358900",
+      "title": "9. Pharmacologic Approaches to Glycemic Treatment: Standards of Care in Diabetes-2026.",
+      "year": "2026",
+      "journal": "Diabetes care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41358900/",
+      "authors": null
+    }
+  ],
+  "rct": [
+    {
+      "pmid": "42031191",
+      "title": "Electronic alert-based computerized decision support for detection of chronic kidney disease in type 2 diabetes mellitus: CKD-DETECT.",
+      "year": "2026",
+      "journal": "The American journal of medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42031191/",
+      "authors": "Goldhaber SZ, Rashedi S, Pfeferman M, Leyva H, Bacare B"
+    }
+  ],
+  "guideline": [],
+  "recent": [
+    {
+      "pmid": "41358893",
+      "title": "2. Diagnosis and Classification of Diabetes: Standards of Care in Diabetes-2026.",
+      "year": "2026",
+      "journal": "Diabetes care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41358893/",
+      "authors": null
+    },
+    {
+      "pmid": "41358900",
+      "title": "9. Pharmacologic Approaches to Glycemic Treatment: Standards of Care in Diabetes-2026.",
+      "year": "2026",
+      "journal": "Diabetes care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41358900/",
+      "authors": null
+    },
+    {
+      "pmid": "42031191",
+      "title": "Electronic alert-based computerized decision support for detection of chronic kidney disease in type 2 diabetes mellitus: CKD-DETECT.",
+      "year": "2026",
+      "journal": "The American journal of medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42031191/",
+      "authors": "Goldhaber SZ, Rashedi S, Pfeferman M, Leyva H, Bacare B"
+    }
+  ],
+  "observational": [
+    {
+      "pmid": "42838586",
+      "title": "Prevalence, risk factors and renoprotective treatment of chronic kidney disease among internal medicine outpatients at a Central European tertiary care centre: a cross-sectional study.",
+      "year": "2026",
+      "journal": "BMJ open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42838586/",
+      "authors": "Zahradka I, Petr V, Tichanek F, Chroma A, Neskudla T"
+    },
+    {
+      "pmid": "42575755",
+      "title": "A cross-regional initiative for improving type 2 diabetes mellitus care quality measurement in Spain - The Diabetes Lighthouse project.",
+      "year": "2026",
+      "journal": "Primary care diabetes",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42575755/",
+      "authors": "Arzuaga A, García-Casanovas A, Mas-Morán A, Megia-Colet A, Adam-Ruiz D"
+    },
+    {
+      "pmid": "41905685",
+      "title": "A cross-sectional study of prescribing rates for SGLT2 inhibitors and GLP-1 receptor agonists among primary care clinics with and without embedded pharmacists.",
+      "year": "2026",
+      "journal": "Journal of the American Pharmacists Association : JAPhA",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41905685/",
+      "authors": "Dixon DL, Salgado TM, Robinson A, Carbone S, Wagner TD"
+    },
+    {
+      "pmid": "41741270",
+      "title": "Undiagnosed chronic kidney disease in people with type 2 diabetes in Spain: Prevalence, treatment patterns and associated factors in a multicentre cross-sectional study.",
+      "year": "2026",
+      "journal": "Primary care diabetes",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41741270/",
+      "authors": "Cebrián Cuenca A, Cornejo Martin J, Álvarez Guisasola F, Orozco Beltrán D, Quesada JA"
+    },
+    {
+      "pmid": "41494416",
+      "title": "[Management of type 2 diabetes mellitus in frail patients from the Perspective of Real-World Clinical Practice].",
+      "year": "2026",
+      "journal": "Atencion primaria",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41494416/",
+      "authors": "Miñana-Castellanos M, Ramon Granés M, Fernández Camins B, Navas Méndez E, Barrot de la Puente J"
+    },
+    {
+      "pmid": "41276836",
+      "title": "Chronic kidney disease screening in primary care: a descriptive analysis of the Girona Sud health region.",
+      "year": "2025",
+      "journal": "BMC primary care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41276836/",
+      "authors": "Barrot-de la Puente J, Lopez Arpí C, Ramon Granes M, Escribà Planes M, Fernandez-Camins B"
+    },
+    {
+      "pmid": "41220901",
+      "title": "SGLT2 Inhibitor and GLP-1 Receptor Agonist Prescriptions in Newly Diagnosed Type 2 Diabetes Patients With Cardiorenal Risks: A Cross-Sectional Study.",
+      "year": "2025",
+      "journal": "Journal of diabetes research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41220901/",
+      "authors": "Müller F, Bouthillier MJ, Alshaarawy O, Azhary H, Holman HT"
+    },
+    {
+      "pmid": "40902917",
+      "title": "Optimizing guideline-directed medical therapy in chronic kidney disease and type 2 diabetes mellitus patients in primary care.",
+      "year": "2026",
+      "journal": "The American journal of medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40902917/",
+      "authors": "Santana R, Umana CD, Oo ZT, Kolli ST, Bejugam VR"
+    },
+    {
+      "pmid": "40667713",
+      "title": "Prevalence of SGLT2 inhibitor and GLP1 receptor agonist prescriptions in type 2 diabetes patients with and without chronic kidney disease: Analysis of an Australian primary care dataset.",
+      "year": "2025",
+      "journal": "Diabetes, obesity & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40667713/",
+      "authors": "Wallace H, Wick J, Neuen BL, Buizen L, Badve SV"
+    },
+    {
+      "pmid": "40057872",
+      "title": "Prescribing Patterns of SGLT2 Inhibitors and GLP-1 Receptor Agonists in Patients With Type 2 Diabetes at Cardiology, Endocrinology, and Primary Care Visits.",
+      "year": "2025",
+      "journal": "Mayo Clinic proceedings",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40057872/",
+      "authors": "Dixon DL, Salgado TM, Robinson A, Carbone S, Wagner TD"
+    },
+    {
+      "pmid": "40037768",
+      "title": "Missed opportunities to manage complex comorbidity of heart failure, type 2 diabetes mellitus and chronic kidney disease: a retrospective cohort study.",
+      "year": "2025",
+      "journal": "Heart (British Cardiac Society)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40037768/",
+      "authors": "Pasea L, Mohamed M, Dashtban A, Bhuva A, Mizani MA"
+    },
+    {
+      "pmid": "39507052",
+      "title": "Temporal trend in quality indicators of diabetes care performance among persons with type 2 diabetes in primary care practice: a serial cross-sectional analytical study, 2013/14 to 2021/22.",
+      "year": "2024",
+      "journal": "Frontiers in endocrinology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39507052/",
+      "authors": "Awiphan R, Kowatcharakul W, Ruengorn C, Noppakun K, Thavorn K"
+    },
+    {
+      "pmid": "39487060",
+      "title": "Trends in type 2 diabetes medication use and guideline adherence in Belgian primary care (2019-2023).",
+      "year": "2025",
+      "journal": "Primary care diabetes",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39487060/",
+      "authors": "Raat W, Mamouris P, Mathieu C, Goderis G, Vaes B"
+    },
+    {
+      "pmid": "38922613",
+      "title": "Concordance With Screening and Treatment Guidelines for Chronic Kidney Disease in Type 2 Diabetes.",
+      "year": "2024",
+      "journal": "JAMA network open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38922613/",
+      "authors": "Edmonston D, Lydon E, Mulder H, Chiswell K, Lampron Z"
+    },
+    {
+      "pmid": "38719510",
+      "title": "Multidisciplinary proactive e-consults to improve guideline-directed medical therapies for patients with diabetes and chronic kidney disease: an implementation study.",
+      "year": "2024",
+      "journal": "BMJ open diabetes research & care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38719510/",
+      "authors": "Rikin S, Bauman L, Arnaoudova I, DiPalo K, Suda N"
+    },
+    {
+      "pmid": "38647229",
+      "title": "Impact of American Diabetes Association 2022 Guidelines on Prescribing Rates of Sodium-Glucose Cotransporter-2 Inhibitors in Ambulatory Care Organization Patients With Type 2 Diabetes.",
+      "year": "2024",
+      "journal": "Journal of pharmacy practice",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38647229/",
+      "authors": "Bogannam AR, McNicol E, DeLeonardo K, Ranade A, Zaiken K"
+    },
+    {
+      "pmid": "37922316",
+      "title": "Sociodemographic characteristics and longitudinal progression of multimorbidity: A multistate modelling analysis of a large primary care records dataset in England.",
+      "year": "2023",
+      "journal": "PLoS medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37922316/",
+      "authors": "Chen S, Marshall T, Jackson C, Cooper J, Crowe F"
+    },
+    {
+      "pmid": "36352203",
+      "title": "Care Gaps in Sodium-Glucose Cotransporter-2 Inhibitor and Renin Angiotensin System Inhibitor Prescriptions for Patients with Diabetic Kidney Disease.",
+      "year": "2023",
+      "journal": "Journal of general internal medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36352203/",
+      "authors": "Rikin S, Deccy S, Zhang C, Crandall J, Deng Y"
+    },
+    {
+      "pmid": "36066519",
+      "title": "Association of Race and Ethnicity With Prescription of SGLT2 Inhibitors and GLP1 Receptor Agonists Among Patients With Type 2 Diabetes in the Veterans Health Administration System.",
+      "year": "2022",
+      "journal": "JAMA",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36066519/",
+      "authors": "Lamprea-Montealegre JA, Madden E, Tummalapalli SL, Peralta C, Neilands TB"
+    },
+    {
+      "pmid": "35606699",
+      "title": "Underuse of cardiorenal protective agents in high-risk diabetes patients in primary care: a cross-sectional study.",
+      "year": "2022",
+      "journal": "BMC primary care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35606699/",
+      "authors": "Hao R, Myroniuk T, McGuckin T, Manca D, Campbell-Scherer D"
+    },
+    {
+      "pmid": "35177470",
+      "title": "Using electronic medical record data to assess chronic kidney disease, type 2 diabetes and cardiovascular disease testing, recognition and management as documented in Australian general practice: a cross-sectional analysis.",
+      "year": "2022",
+      "journal": "Family medicine and community health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35177470/",
+      "authors": "Jones JL, Lumsden NG, Simons K, Ta'eed A, de Courten MP"
+    },
+    {
+      "pmid": "33722396",
+      "title": "Adherence to Chronic Kidney Disease Screening Guidelines Among Patients With Type 2 Diabetes in a US Administrative Claims Database.",
+      "year": "2021",
+      "journal": "Mayo Clinic proceedings",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/33722396/",
+      "authors": "Folkerts K, Petruski-Ivleva N, Comerford E, Blankenburg M, Evers T"
+    },
+    {
+      "pmid": "32900590",
+      "title": "Silent atrial fibrillation detected by home-monitoring: Cardiovascular disease and stroke prevention in patients with diabetes.",
+      "year": "2020",
+      "journal": "Journal of diabetes and its complications",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/32900590/",
+      "authors": "Højager A, Tingsgaard JK, Andersen D, Søholm H, Taskiran M"
+    },
+    {
+      "pmid": "32799429",
+      "title": "Prevalence and risk factors for diabetic neuropathy and painful diabetic neuropathy in primary and secondary healthcare in Qatar.",
+      "year": "2021",
+      "journal": "Journal of diabetes investigation",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/32799429/",
+      "authors": "Ponirakis G, Elhadd T, Chinnaiyan S, Hamza AH, Sheik S"
+    },
+    {
+      "pmid": "32111192",
+      "title": "The burden of unrecognised chronic kidney disease in patients with type 2 diabetes at a county hospital clinic in Kenya: implications to care and need for screening.",
+      "year": "2020",
+      "journal": "BMC nephrology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/32111192/",
+      "authors": "Otieno FCF, Ogola EN, Kimando MW, Mutai K"
+    },
+    {
+      "pmid": "30238781",
+      "title": "Guidelines and clinical practice at the primary level of healthcare in patients with type 2 diabetes mellitus with and without kidney disease in five European countries.",
+      "year": "2019",
+      "journal": "Diabetes & vascular disease research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/30238781/",
+      "authors": "Eder S, Leierer J, Kerschbaum J, Rosivall L, Wiecek A"
+    },
+    {
+      "pmid": "30136354",
+      "title": "Effectiveness of dapagliflozin versus comparators on renal endpoints in the real world: A multicentre retrospective study.",
+      "year": "2019",
+      "journal": "Diabetes, obesity & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/30136354/",
+      "authors": "Fadini GP, Solini A, Manca ML, Penno G, Gatti A"
+    }
+  ],
+  "khong_loc": [
+    {
+      "pmid": "42838586",
+      "title": "Prevalence, risk factors and renoprotective treatment of chronic kidney disease among internal medicine outpatients at a Central European tertiary care centre: a cross-sectional study.",
+      "year": "2026",
+      "journal": "BMJ open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42838586/"
+    },
+    {
+      "pmid": "42772884",
+      "title": "Differential uptake of SGLT2 inhibitors in England following heart failure guideline expansion: a controlled interrupted time series analysis.",
+      "year": "2026",
+      "journal": "BMJ open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42772884/"
+    },
+    {
+      "pmid": "42723263",
+      "title": "The SGLT2i Treatment Gap in UK Primary Care: A Cross-Sectional RWE Study of Prescribing in Clinical Practice.",
+      "year": "2026",
+      "journal": "Diabetes, obesity & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42723263/"
+    },
+    {
+      "pmid": "42575755",
+      "title": "A cross-regional initiative for improving type 2 diabetes mellitus care quality measurement in Spain - The Diabetes Lighthouse project.",
+      "year": "2026",
+      "journal": "Primary care diabetes",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42575755/"
+    },
+    {
+      "pmid": "42541306",
+      "title": "Current attitudes of primary care providers toward albuminuria testing in patients with diabetes in the United States.",
+      "year": "2026",
+      "journal": "Preventive medicine reports",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42541306/"
+    },
+    {
+      "pmid": "42485647",
+      "title": "From guidelines to practice: general practitioners' consensus on indicators for managing selected multimorbidity in primary care in Western Australia.",
+      "year": "2026",
+      "journal": "Family practice",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42485647/"
+    },
+    {
+      "pmid": "42394388",
+      "title": "Importance of Hypercortisolism in BP Control, Cardiovascular Risk and in Patients With Difficult-to-Control Hypertension: An Overview for Primary Care Physicians.",
+      "year": "2026",
+      "journal": "Diabetes, obesity & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42394388/"
+    },
+    {
+      "pmid": "42134923",
+      "title": "The SGLT2 inhibitor gap: why are we missing opportunities in primary care?",
+      "year": "2026",
+      "journal": "The British journal of general practice : the journal of the Royal College of General Practitioners",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42134923/"
+    },
+    {
+      "pmid": "42031191",
+      "title": "Electronic alert-based computerized decision support for detection of chronic kidney disease in type 2 diabetes mellitus: CKD-DETECT.",
+      "year": "2026",
+      "journal": "The American journal of medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42031191/"
+    },
+    {
+      "pmid": "41905685",
+      "title": "A cross-sectional study of prescribing rates for SGLT2 inhibitors and GLP-1 receptor agonists among primary care clinics with and without embedded pharmacists.",
+      "year": "2026",
+      "journal": "Journal of the American Pharmacists Association : JAPhA",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41905685/"
+    },
+    {
+      "pmid": "41741270",
+      "title": "Undiagnosed chronic kidney disease in people with type 2 diabetes in Spain: Prevalence, treatment patterns and associated factors in a multicentre cross-sectional study.",
+      "year": "2026",
+      "journal": "Primary care diabetes",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41741270/"
+    },
+    {
+      "pmid": "41541781",
+      "title": "From Evidence to Action: Advancing Timely Implementation of Triple Therapy in Type 2 Diabetes Mellitus and CKD.",
+      "year": "2026",
+      "journal": "Kidney international reports",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41541781/"
+    },
+    {
+      "pmid": "41512580",
+      "title": "[Discrepancies in the perception of chronic kidney disease detection and proper management among medical specialties in Spain].",
+      "year": "2026",
+      "journal": "Semergen",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41512580/"
+    },
+    {
+      "pmid": "41494416",
+      "title": "[Management of type 2 diabetes mellitus in frail patients from the Perspective of Real-World Clinical Practice].",
+      "year": "2026",
+      "journal": "Atencion primaria",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41494416/"
+    },
+    {
+      "pmid": "41276836",
+      "title": "Chronic kidney disease screening in primary care: a descriptive analysis of the Girona Sud health region.",
+      "year": "2025",
+      "journal": "BMC primary care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41276836/"
+    },
+    {
+      "pmid": "41220901",
+      "title": "SGLT2 Inhibitor and GLP-1 Receptor Agonist Prescriptions in Newly Diagnosed Type 2 Diabetes Patients With Cardiorenal Risks: A Cross-Sectional Study.",
+      "year": "2025",
+      "journal": "Journal of diabetes research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41220901/"
+    },
+    {
+      "pmid": "41209442",
+      "title": "Prevalence of Metabolic Syndrome and Autoimmune Markers in Adults: A Cross-Sectional Study From Türkiye.",
+      "year": "2025",
+      "journal": "International journal of endocrinology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41209442/"
+    },
+    {
+      "pmid": "40902917",
+      "title": "Optimizing guideline-directed medical therapy in chronic kidney disease and type 2 diabetes mellitus patients in primary care.",
+      "year": "2026",
+      "journal": "The American journal of medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40902917/"
+    },
+    {
+      "pmid": "40667713",
+      "title": "Prevalence of SGLT2 inhibitor and GLP1 receptor agonist prescriptions in type 2 diabetes patients with and without chronic kidney disease: Analysis of an Australian primary care dataset.",
+      "year": "2025",
+      "journal": "Diabetes, obesity & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40667713/"
+    },
+    {
+      "pmid": "40611530",
+      "title": "A model based on artificial intelligence for the prediction, prevention and patient-centred approach for non-communicable diseases related to metabolic syndrome.",
+      "year": "2025",
+      "journal": "European journal of public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40611530/"
+    },
+    {
+      "pmid": "40492893",
+      "title": "Audit and Feedback Supporting New Guideline Implementation in Chronic Kidney Disease.",
+      "year": "2025",
+      "journal": "Journal of evaluation in clinical practice",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40492893/"
+    },
+    {
+      "pmid": "40428801",
+      "title": "The Underdiagnosis of Chronic Kidney Disease in Patients with a Documented Estimated Glomerular Filtration Rate and/or Urine Albumin-Creatinine Ratio in Germany.",
+      "year": "2025",
+      "journal": "Medicina (Kaunas, Lithuania)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40428801/"
+    },
+    {
+      "pmid": "40335370",
+      "title": "Evaluating risk stratification according to Type 2 diabetes guidelines in primary care - Insights from the Danish DIAGRAM project.",
+      "year": "2025",
+      "journal": "Primary care diabetes",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40335370/"
+    },
+    {
+      "pmid": "40082634",
+      "title": "Clinically available predictors of obstructive sleep apnoea requiring treatment in type 2 diabetes patients in primary care.",
+      "year": "2025",
+      "journal": "Scientific reports",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40082634/"
+    },
+    {
+      "pmid": "40057872",
+      "title": "Prescribing Patterns of SGLT2 Inhibitors and GLP-1 Receptor Agonists in Patients With Type 2 Diabetes at Cardiology, Endocrinology, and Primary Care Visits.",
+      "year": "2025",
+      "journal": "Mayo Clinic proceedings",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40057872/"
+    },
+    {
+      "pmid": "40037768",
+      "title": "Missed opportunities to manage complex comorbidity of heart failure, type 2 diabetes mellitus and chronic kidney disease: a retrospective cohort study.",
+      "year": "2025",
+      "journal": "Heart (British Cardiac Society)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40037768/"
+    },
+    {
+      "pmid": "39986337",
+      "title": "Encouraging the prescribing of SGLT2i and GLP-1RA medications to reduce cardiovascular and renal risk in patients with type 2 diabetes: Rationale and design of a randomized controlled trial.",
+      "year": "2025",
+      "journal": "American heart journal",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39986337/"
+    },
+    {
+      "pmid": "39606498",
+      "title": "Screening For Occult Heart Failure in Type 2 Diabetes Mellitus Using NT-proBNP: Real-World Evidence From a Tertiary Care Center in India.",
+      "year": "2024",
+      "journal": "Cureus",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39606498/"
+    },
+    {
+      "pmid": "39507052",
+      "title": "Temporal trend in quality indicators of diabetes care performance among persons with type 2 diabetes in primary care practice: a serial cross-sectional analytical study, 2013/14 to 2021/22.",
+      "year": "2024",
+      "journal": "Frontiers in endocrinology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39507052/"
+    },
+    {
+      "pmid": "39487060",
+      "title": "Trends in type 2 diabetes medication use and guideline adherence in Belgian primary care (2019-2023).",
+      "year": "2025",
+      "journal": "Primary care diabetes",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39487060/"
+    },
+    {
+      "pmid": "39162984",
+      "title": "Early Identification and Management of Chronic Kidney Disease: A Narrative Review of the Crucial Role of Primary Care Practitioners.",
+      "year": "2024",
+      "journal": "Advances in therapy",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39162984/"
+    },
+    {
+      "pmid": "39156845",
+      "title": "Using eGFR and Albumin Creatinine Ratio as an Initial Screening Tool in Trinidadian Primary Care to Identify High-risk Population for CKD: A Cross-Sectional Study.",
+      "year": "2024",
+      "journal": "Indian journal of nephrology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39156845/"
+    },
+    {
+      "pmid": "38958872",
+      "title": "Finerenone: Who should prescribe it for CKD? The physician associate's perspective.",
+      "year": "2024",
+      "journal": "Journal of nephrology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38958872/"
+    },
+    {
+      "pmid": "38922613",
+      "title": "Concordance With Screening and Treatment Guidelines for Chronic Kidney Disease in Type 2 Diabetes.",
+      "year": "2024",
+      "journal": "JAMA network open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38922613/"
+    },
+    {
+      "pmid": "38719510",
+      "title": "Multidisciplinary proactive e-consults to improve guideline-directed medical therapies for patients with diabetes and chronic kidney disease: an implementation study.",
+      "year": "2024",
+      "journal": "BMJ open diabetes research & care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38719510/"
+    },
+    {
+      "pmid": "38712604",
+      "title": "Making treatment guideline recommendations in chronic kidney disease and type 2 diabetes more accessible to primary care providers in the United States.",
+      "year": "2024",
+      "journal": "Postgraduate medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38712604/"
+    },
+    {
+      "pmid": "38647229",
+      "title": "Impact of American Diabetes Association 2022 Guidelines on Prescribing Rates of Sodium-Glucose Cotransporter-2 Inhibitors in Ambulatory Care Organization Patients With Type 2 Diabetes.",
+      "year": "2024",
+      "journal": "Journal of pharmacy practice",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38647229/"
+    },
+    {
+      "pmid": "38173786",
+      "title": "A cross-sectional study in type 2 diabetes patients reveals that elevated pulse wave velocity predicts asymptomatic peripheral arterial disease associated with age and diabetes duration.",
+      "year": "2023",
+      "journal": "International journal of cardiology. Heart & vasculature",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38173786/"
+    },
+    {
+      "pmid": "37922316",
+      "title": "Sociodemographic characteristics and longitudinal progression of multimorbidity: A multistate modelling analysis of a large primary care records dataset in England.",
+      "year": "2023",
+      "journal": "PLoS medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37922316/"
+    },
+    {
+      "pmid": "37712156",
+      "title": "[SGLT2 inhibitors : on the borders of diabetology, cardiology, nephrology and… primary care].",
+      "year": "2023",
+      "journal": "Revue medicale de Liege",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37712156/"
+    },
+    {
+      "pmid": "37312231",
+      "title": "Recurrent diabetic myonecrosis in an African American woman with long-standing uncontrolled type 2 diabetes: a case report.",
+      "year": "2023",
+      "journal": "Journal of medical case reports",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37312231/"
+    },
+    {
+      "pmid": "36969120",
+      "title": "The prevalence of osteoporosis and its association with serum testosterone and serum vitamin D in the elderly male population: A cross-sectional study.",
+      "year": "2023",
+      "journal": "Medical journal, Armed Forces India",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36969120/"
+    },
+    {
+      "pmid": "36593152",
+      "title": "\"Positive Kidney Health\": Implementation and design of a pharmacist-led intervention for patients at risk for development or progression of chronic kidney disease.",
+      "year": "2023",
+      "journal": "Journal of the American Pharmacists Association : JAPhA",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36593152/"
+    },
+    {
+      "pmid": "36352203",
+      "title": "Care Gaps in Sodium-Glucose Cotransporter-2 Inhibitor and Renin Angiotensin System Inhibitor Prescriptions for Patients with Diabetic Kidney Disease.",
+      "year": "2023",
+      "journal": "Journal of general internal medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36352203/"
+    },
+    {
+      "pmid": "36066519",
+      "title": "Association of Race and Ethnicity With Prescription of SGLT2 Inhibitors and GLP1 Receptor Agonists Among Patients With Type 2 Diabetes in the Veterans Health Administration System.",
+      "year": "2022",
+      "journal": "JAMA",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36066519/"
+    },
+    {
+      "pmid": "35606699",
+      "title": "Underuse of cardiorenal protective agents in high-risk diabetes patients in primary care: a cross-sectional study.",
+      "year": "2022",
+      "journal": "BMC primary care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35606699/"
+    },
+    {
+      "pmid": "35177470",
+      "title": "Using electronic medical record data to assess chronic kidney disease, type 2 diabetes and cardiovascular disease testing, recognition and management as documented in Australian general practice: a cross-sectional analysis.",
+      "year": "2022",
+      "journal": "Family medicine and community health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35177470/"
+    },
+    {
+      "pmid": "35101868",
+      "title": "Improving annual albuminuria testing for individuals with diabetes.",
+      "year": "2022",
+      "journal": "BMJ open quality",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35101868/"
+    },
+    {
+      "pmid": "34741455",
+      "title": "Cashew-Induced Oxalate Nephropathy: A Rare Cause of Acute Renal Failure.",
+      "year": "2023",
+      "journal": "Military medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/34741455/"
+    },
+    {
+      "pmid": "34561213",
+      "title": "Impact of the COVID-19 Pandemic on Primary Health Care Disease Incidence Rates: 2017 to 2020.",
+      "year": "2022",
+      "journal": "Annals of family medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/34561213/"
+    },
+    {
+      "pmid": "33722396",
+      "title": "Adherence to Chronic Kidney Disease Screening Guidelines Among Patients With Type 2 Diabetes in a US Administrative Claims Database.",
+      "year": "2021",
+      "journal": "Mayo Clinic proceedings",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/33722396/"
+    },
+    {
+      "pmid": "33190216",
+      "title": "Risk Prediction of the Diabetes Missing Million: Identifying Individuals at High Risk of Diabetes and Related Complications.",
+      "year": "2021",
+      "journal": "Diabetes therapy : research, treatment and education of diabetes and related disorders",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/33190216/"
+    },
+    {
+      "pmid": "32900590",
+      "title": "Silent atrial fibrillation detected by home-monitoring: Cardiovascular disease and stroke prevention in patients with diabetes.",
+      "year": "2020",
+      "journal": "Journal of diabetes and its complications",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/32900590/"
+    },
+    {
+      "pmid": "32799429",
+      "title": "Prevalence and risk factors for diabetic neuropathy and painful diabetic neuropathy in primary and secondary healthcare in Qatar.",
+      "year": "2021",
+      "journal": "Journal of diabetes investigation",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/32799429/"
+    },
+    {
+      "pmid": "32506471",
+      "title": "Prevalence of insulin as a first-line therapy and associated factors in people with type 2 diabetes in German primary care practices.",
+      "year": "2020",
+      "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/32506471/"
+    },
+    {
+      "pmid": "32245636",
+      "title": "Contemporary Trends in Prescription of Dipeptidyl Peptidase-4 Inhibitors in the Context of US Food and Drug Administration Warnings of Heart Failure Risk.",
+      "year": "2020",
+      "journal": "The American journal of cardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/32245636/"
+    },
+    {
+      "pmid": "32111192",
+      "title": "The burden of unrecognised chronic kidney disease in patients with type 2 diabetes at a county hospital clinic in Kenya: implications to care and need for screening.",
+      "year": "2020",
+      "journal": "BMC nephrology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/32111192/"
+    },
+    {
+      "pmid": "32105769",
+      "title": "Impact on guidelines: The general practitioner point of view.",
+      "year": "2020",
+      "journal": "Diabetes research and clinical practice",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/32105769/"
+    },
+    {
+      "pmid": "30238781",
+      "title": "Guidelines and clinical practice at the primary level of healthcare in patients with type 2 diabetes mellitus with and without kidney disease in five European countries.",
+      "year": "2019",
+      "journal": "Diabetes & vascular disease research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/30238781/"
+    },
+    {
+      "pmid": "30136354",
+      "title": "Effectiveness of dapagliflozin versus comparators on renal endpoints in the real world: A multicentre retrospective study.",
+      "year": "2019",
+      "journal": "Diabetes, obesity & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/30136354/"
+    }
+  ],
+  "true_counts": {
+    "sr_ma": 0,
+    "rct": 1,
+    "guideline": 0,
+    "observational": 27,
+    "recent": 1
+  },
+  "search_provenance": {
+    "co_so_du_lieu": "PubMed (MEDLINE và phần còn lại của PubMed)",
+    "giao_dien": "NCBI E-utilities (esearch/efetch) qua app.sources.pubmed.PubMedClient",
+    "ngay_tra": "2026-10-25T17:26:14",
+    "truy_van_goc": "(\"Diabetes Mellitus, Type 2\"[Mesh] OR \"type 2 diabetes\"[tiab]) AND (\"Renal Insufficiency, Chronic\"[Mesh] OR \"Diabetic Nephropathies\"[Mesh] OR \"chronic kidney disease\"[tiab] OR albuminuria[tiab]) AND (\"Guideline Adherence\"[Mesh] OR \"Practice Patterns, Physicians'\"[Mesh] OR \"care gap\"[tiab] OR \"albuminuria testing\"[tiab] OR \"albuminuria screening\"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR \"Ambulatory Care\"[Mesh] OR \"Primary Health Care\"[Mesh] OR \"primary care\"[tiab]) AND 2019:2026[dp]",
+    "query_en_do_nguoi_cung_cap": true,
+    "nhanh": {
+      "sr_ma": {
+        "nhom_ket_qua": "sr_ma",
+        "truy_van": "(\"Diabetes Mellitus, Type 2\"[Mesh] OR \"type 2 diabetes\"[tiab]) AND (\"Renal Insufficiency, Chronic\"[Mesh] OR \"Diabetic Nephropathies\"[Mesh] OR \"chronic kidney disease\"[tiab] OR albuminuria[tiab]) AND (\"Guideline Adherence\"[Mesh] OR \"Practice Patterns, Physicians'\"[Mesh] OR \"care gap\"[tiab] OR \"albuminuria testing\"[tiab] OR \"albuminuria screening\"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR \"Ambulatory Care\"[Mesh] OR \"Primary Health Care\"[Mesh] OR \"primary care\"[tiab]) AND 2019:2026[dp] AND (systematic review[pt] OR meta-analysis[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Diabetes Mellitus, Type 2\"[Mesh] OR \"type 2 diabetes\"[tiab]) AND (\"Renal Insufficiency, Chronic\"[Mesh] OR \"Diabetic Nephropathies\"[Mesh] OR \"chronic kidney disease\"[tiab] OR albuminuria[tiab]) AND (\"Guideline Adherence\"[Mesh] OR \"Practice Patterns, Physicians'\"[Mesh] OR \"care gap\"[tiab] OR \"albuminuria testing\"[tiab] OR \"albuminuria screening\"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR \"Ambulatory Care\"[Mesh] OR \"Primary Health Care\"[Mesh] OR \"primary care\"[tiab]) AND 2019:2026[dp] AND (systematic review[pt] OR meta-analysis[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 30,
+        "loai_trung_pmid": true,
+        "so_hit_that": 0,
+        "so_bai_lay_ve": 2,
+        "pmid_lay_ve": [
+          "41358893",
+          "41358900"
+        ]
+      },
+      "rct": {
+        "nhom_ket_qua": "rct",
+        "truy_van": "(\"Diabetes Mellitus, Type 2\"[Mesh] OR \"type 2 diabetes\"[tiab]) AND (\"Renal Insufficiency, Chronic\"[Mesh] OR \"Diabetic Nephropathies\"[Mesh] OR \"chronic kidney disease\"[tiab] OR albuminuria[tiab]) AND (\"Guideline Adherence\"[Mesh] OR \"Practice Patterns, Physicians'\"[Mesh] OR \"care gap\"[tiab] OR \"albuminuria testing\"[tiab] OR \"albuminuria screening\"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR \"Ambulatory Care\"[Mesh] OR \"Primary Health Care\"[Mesh] OR \"primary care\"[tiab]) AND 2019:2026[dp] AND randomized controlled trial[pt]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Diabetes Mellitus, Type 2\"[Mesh] OR \"type 2 diabetes\"[tiab]) AND (\"Renal Insufficiency, Chronic\"[Mesh] OR \"Diabetic Nephropathies\"[Mesh] OR \"chronic kidney disease\"[tiab] OR albuminuria[tiab]) AND (\"Guideline Adherence\"[Mesh] OR \"Practice Patterns, Physicians'\"[Mesh] OR \"care gap\"[tiab] OR \"albuminuria testing\"[tiab] OR \"albuminuria screening\"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR \"Ambulatory Care\"[Mesh] OR \"Primary Health Care\"[Mesh] OR \"primary care\"[tiab]) AND 2019:2026[dp] AND randomized controlled trial[pt]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 30,
+        "loai_trung_pmid": true,
+        "so_hit_that": 1,
+        "so_bai_lay_ve": 3,
+        "pmid_lay_ve": [
+          "41358893",
+          "41358900",
+          "42031191"
+        ]
+      },
+      "guideline": {
+        "nhom_ket_qua": "guideline",
+        "truy_van": "(\"Diabetes Mellitus, Type 2\"[Mesh] OR \"type 2 diabetes\"[tiab]) AND (\"Renal Insufficiency, Chronic\"[Mesh] OR \"Diabetic Nephropathies\"[Mesh] OR \"chronic kidney disease\"[tiab] OR albuminuria[tiab]) AND (\"Guideline Adherence\"[Mesh] OR \"Practice Patterns, Physicians'\"[Mesh] OR \"care gap\"[tiab] OR \"albuminuria testing\"[tiab] OR \"albuminuria screening\"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR \"Ambulatory Care\"[Mesh] OR \"Primary Health Care\"[Mesh] OR \"primary care\"[tiab]) AND 2019:2026[dp] AND (guideline[pt] OR practice guideline[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Diabetes Mellitus, Type 2\"[Mesh] OR \"type 2 diabetes\"[tiab]) AND (\"Renal Insufficiency, Chronic\"[Mesh] OR \"Diabetic Nephropathies\"[Mesh] OR \"chronic kidney disease\"[tiab] OR albuminuria[tiab]) AND (\"Guideline Adherence\"[Mesh] OR \"Practice Patterns, Physicians'\"[Mesh] OR \"care gap\"[tiab] OR \"albuminuria testing\"[tiab] OR \"albuminuria screening\"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR \"Ambulatory Care\"[Mesh] OR \"Primary Health Care\"[Mesh] OR \"primary care\"[tiab]) AND 2019:2026[dp] AND (guideline[pt] OR practice guideline[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 5,
+        "loai_trung_pmid": true,
+        "so_hit_that": 0,
+        "so_bai_lay_ve": 2,
+        "pmid_lay_ve": [
+          "41358893",
+          "41358900"
+        ]
+      },
+      "observational": {
+        "nhom_ket_qua": "observational",
+        "truy_van": "(\"Diabetes Mellitus, Type 2\"[Mesh] OR \"type 2 diabetes\"[tiab]) AND (\"Renal Insufficiency, Chronic\"[Mesh] OR \"Diabetic Nephropathies\"[Mesh] OR \"chronic kidney disease\"[tiab] OR albuminuria[tiab]) AND (\"Guideline Adherence\"[Mesh] OR \"Practice Patterns, Physicians'\"[Mesh] OR \"care gap\"[tiab] OR \"albuminuria testing\"[tiab] OR \"albuminuria screening\"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR \"Ambulatory Care\"[Mesh] OR \"Primary Health Care\"[Mesh] OR \"primary care\"[tiab]) AND 2019:2026[dp]",
+        "bo_loc": "(\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "chuoi_hieu_luc": "((\"Diabetes Mellitus, Type 2\"[Mesh] OR \"type 2 diabetes\"[tiab]) AND (\"Renal Insufficiency, Chronic\"[Mesh] OR \"Diabetic Nephropathies\"[Mesh] OR \"chronic kidney disease\"[tiab] OR albuminuria[tiab]) AND (\"Guideline Adherence\"[Mesh] OR \"Practice Patterns, Physicians'\"[Mesh] OR \"care gap\"[tiab] OR \"albuminuria testing\"[tiab] OR \"albuminuria screening\"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR \"Ambulatory Care\"[Mesh] OR \"Primary Health Care\"[Mesh] OR \"primary care\"[tiab]) AND 2019:2026[dp]) AND (\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "tran_so_bai": 30,
+        "loai_trung_pmid": true,
+        "so_hit_that": 27,
+        "so_bai_lay_ve": 27,
+        "pmid_lay_ve": [
+          "42838586",
+          "42575755",
+          "41905685",
+          "41741270",
+          "41494416",
+          "41276836",
+          "41220901",
+          "40902917",
+          "40667713",
+          "40057872",
+          "40037768",
+          "39507052",
+          "39487060",
+          "38922613",
+          "38719510",
+          "38647229",
+          "37922316",
+          "36352203",
+          "36066519",
+          "35606699",
+          "35177470",
+          "33722396",
+          "32900590",
+          "32799429",
+          "32111192",
+          "30238781",
+          "30136354"
+        ]
+      },
+      "recent_5yr": {
+        "nhom_ket_qua": "recent",
+        "truy_van": "(\"Diabetes Mellitus, Type 2\"[Mesh] OR \"type 2 diabetes\"[tiab]) AND (\"Renal Insufficiency, Chronic\"[Mesh] OR \"Diabetic Nephropathies\"[Mesh] OR \"chronic kidney disease\"[tiab] OR albuminuria[tiab]) AND (\"Guideline Adherence\"[Mesh] OR \"Practice Patterns, Physicians'\"[Mesh] OR \"care gap\"[tiab] OR \"albuminuria testing\"[tiab] OR \"albuminuria screening\"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR \"Ambulatory Care\"[Mesh] OR \"Primary Health Care\"[Mesh] OR \"primary care\"[tiab]) AND 2019:2026[dp] AND 2021:2026[dp]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Diabetes Mellitus, Type 2\"[Mesh] OR \"type 2 diabetes\"[tiab]) AND (\"Renal Insufficiency, Chronic\"[Mesh] OR \"Diabetic Nephropathies\"[Mesh] OR \"chronic kidney disease\"[tiab] OR albuminuria[tiab]) AND (\"Guideline Adherence\"[Mesh] OR \"Practice Patterns, Physicians'\"[Mesh] OR \"care gap\"[tiab] OR \"albuminuria testing\"[tiab] OR \"albuminuria screening\"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR \"Ambulatory Care\"[Mesh] OR \"Primary Health Care\"[Mesh] OR \"primary care\"[tiab]) AND 2019:2026[dp] AND 2021:2026[dp]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 10,
+        "loai_trung_pmid": false,
+        "so_hit_that": 1,
+        "so_bai_lay_ve": 3,
+        "pmid_lay_ve": [
+          "41358893",
+          "41358900",
+          "42031191"
+        ]
+      },
+      "khong_loc": {
+        "nhom_ket_qua": null,
+        "truy_van": "(\"Diabetes Mellitus, Type 2\"[Mesh] OR \"type 2 diabetes\"[tiab]) AND (\"Renal Insufficiency, Chronic\"[Mesh] OR \"Diabetic Nephropathies\"[Mesh] OR \"chronic kidney disease\"[tiab] OR albuminuria[tiab]) AND (\"Guideline Adherence\"[Mesh] OR \"Practice Patterns, Physicians'\"[Mesh] OR \"care gap\"[tiab] OR \"albuminuria testing\"[tiab] OR \"albuminuria screening\"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR \"Ambulatory Care\"[Mesh] OR \"Primary Health Care\"[Mesh] OR \"primary care\"[tiab]) AND 2019:2026[dp]",
+        "bo_loc": null,
+        "chuoi_hieu_luc": "((\"Diabetes Mellitus, Type 2\"[Mesh] OR \"type 2 diabetes\"[tiab]) AND (\"Renal Insufficiency, Chronic\"[Mesh] OR \"Diabetic Nephropathies\"[Mesh] OR \"chronic kidney disease\"[tiab] OR albuminuria[tiab]) AND (\"Guideline Adherence\"[Mesh] OR \"Practice Patterns, Physicians'\"[Mesh] OR \"care gap\"[tiab] OR \"albuminuria testing\"[tiab] OR \"albuminuria screening\"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR \"Ambulatory Care\"[Mesh] OR \"Primary Health Care\"[Mesh] OR \"primary care\"[tiab]) AND 2019:2026[dp])",
+        "tran_so_bai": 60,
+        "loai_trung_pmid": false,
+        "chi_ghi_lai": true,
+        "so_hit_that": 60,
+        "so_bai_lay_ve": 60,
+        "pmid_lay_ve": [
+          "42838586",
+          "42772884",
+          "42723263",
+          "42575755",
+          "42541306",
+          "42485647",
+          "42394388",
+          "42134923",
+          "42031191",
+          "41905685",
+          "41741270",
+          "41541781",
+          "41512580",
+          "41494416",
+          "41276836",
+          "41220901",
+          "41209442",
+          "40902917",
+          "40667713",
+          "40611530",
+          "40492893",
+          "40428801",
+          "40335370",
+          "40082634",
+          "40057872",
+          "40037768",
+          "39986337",
+          "39606498",
+          "39507052",
+          "39487060",
+          "39162984",
+          "39156845",
+          "38958872",
+          "38922613",
+          "38719510",
+          "38712604",
+          "38647229",
+          "38173786",
+          "37922316",
+          "37712156",
+          "37312231",
+          "36969120",
+          "36593152",
+          "36352203",
+          "36066519",
+          "35606699",
+          "35177470",
+          "35101868",
+          "34741455",
+          "34561213",
+          "33722396",
+          "33190216",
+          "32900590",
+          "32799429",
+          "32506471",
+          "32245636",
+          "32111192",
+          "32105769",
+          "30238781",
+          "30136354"
+        ],
+        "pmid_bo_loc_da_loai": [
+          "42772884",
+          "42723263",
+          "42541306",
+          "42485647",
+          "42394388",
+          "42134923",
+          "41541781",
+          "41512580",
+          "41209442",
+          "40611530",
+          "40492893",
+          "40428801",
+          "40335370",
+          "40082634",
+          "39986337",
+          "39606498",
+          "39162984",
+          "39156845",
+          "38958872",
+          "38712604",
+          "38173786",
+          "37712156",
+          "37312231",
+          "36969120",
+          "36593152",
+          "35101868",
+          "34741455",
+          "34561213",
+          "33190216",
+          "32506471",
+          "32245636",
+          "32105769"
+        ]
+      }
+    },
+    "loi_nhanh": {}
+  }
+}
