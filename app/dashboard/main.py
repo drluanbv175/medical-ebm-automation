@@ -831,6 +831,10 @@ with tabs[4]:
 # --- Tab 6: Research ------------------------------------------------------
 with tabs[5]:
     st.header("Dự án nghiên cứu y khoa")
+    # Tiến độ đề tài (27/10/2026): đọc sổ exports/<mã>/tien_do/ — cùng nguồn với Antifacts (thư mục cha «Claude AI»).
+    from app.dashboard.tien_do_de_tai import render_tien_do_de_tai
+    render_tien_do_de_tai(st, ROOT / "exports", ROOT.parent / "Antifacts.html")
+    st.divider()
     with session_scope() as s:
         projs = [{
             "project_id": p.project_id, "title": p.project_title,
