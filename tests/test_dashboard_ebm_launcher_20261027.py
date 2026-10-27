@@ -5,8 +5,12 @@ nhánh «máy chủ khoẻ + đúng phiên bản ⇒ chỉ mở trình duyệt r
 """
 from __future__ import annotations
 
+import os
+import shutil
 import subprocess
 from pathlib import Path
+
+import pytest
 
 LAUNCHER = Path(__file__).resolve().parents[1] / "scripts" / "mac" / "dashboard_ebm_launcher.sh"
 
@@ -32,5 +36,7 @@ def test_ghi_dau_phien_ban_khi_khoi_dong_lai():
     assert any(d == 'echo "$PHIEN_BAN" > "$DAU"' for d in dong[chay:])
 
 
+@pytest.mark.skipif(shutil.which("bash") is None or os.name == "nt",
+                    reason="launcher chỉ chạy trên macOS; bash của Windows (WSL) không đọc được đường dẫn này")
 def test_cu_phap_bash_hop_le():
     assert subprocess.run(["bash", "-n", str(LAUNCHER)], capture_output=True).returncode == 0
