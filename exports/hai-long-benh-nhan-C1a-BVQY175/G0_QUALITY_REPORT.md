@@ -27,7 +27,7 @@
 | G0-HUMAN-04 | Loại câu hỏi đã xác định | PASS | question_type=descriptive (chuẩn hoá: descriptive) |
 | G0-HUMAN-05 | FINER đánh giá đủ từng tiêu chí (5/5), kết luận ĐẠT và có lý do | PASS | 5/5 tiêu chí có kết luận đạt kèm lý do |
 | G0-HUMAN-06 | Đã đọc lại bằng chứng G0 và biện minh tính mới | PASS | evidence_reviewed_confirmed=True; novelty_justification=có |
-| G0-HUMAN-07 | Chủ nhiệm/nhà phương pháp chốt PICO (vai trò + thời điểm + gắn đúng nội dung) | PASS | pico_confirmed=True; vai trò=pi; reviewed_at=2026-10-17T17:00:56+07:00; xác nhận gắn đúng nội dung hiện tại |
+| G0-HUMAN-07 | Chủ nhiệm/nhà phương pháp chốt PICO (vai trò + thời điểm + gắn đúng nội dung) | PASS | pico_confirmed=True; vai trò=pi; reviewed_at=2026-10-28T15:06:57+07:00; xác nhận gắn đúng nội dung hiện tại |
 | G0-HUMAN-08 | PI đã tự tra WHO ICTRP (và PROSPERO cho tổng quan) + đánh giá chồng lấn khi có thử nghiệm đang tuyển | PASS | đã ghi ngày tra |
 
 ## Chuẩn báo cáo DỰ KIẾN (G1 quyết định chính thức)

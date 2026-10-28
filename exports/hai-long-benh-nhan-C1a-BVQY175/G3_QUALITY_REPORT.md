@@ -10,7 +10,7 @@
 | G3-AUTO-01 | Tiền đề G0/G1 có thật (thiết kế không do mặc định im lặng) | PASS | G1 chấm sống=PASS_G1_CONFIRMED |
 | G3-AUTO-02 | Mã thiết kế thuộc từ vựng canonical | PASS | design_code='cross_sectional' |
 | G3-AUTO-03 | Loại effect size tương thích với thiết kế và dạng kết cục | PASS | effect_type=PREVALENCE hợp lệ cho cross_sectional |
-| G3-AUTO-04 | Có giá trị cỡ mẫu dùng được (hoặc N thay thế hợp lệ) | PASS | n_adjusted=808 |
+| G3-AUTO-04 | Có giá trị cỡ mẫu dùng được (hoặc N thay thế hợp lệ) | PASS | n_adjusted=630 |
 | G3-AUTO-05 | Effect size có định danh nguồn thật (PMID/DOI/MCID/pilot) | PASS | thiết kế mô tả: cỡ mẫu theo độ chính xác, không dùng effect size; nguồn tỷ lệ ước lượng p đã ghi: Quy ước thận trọng p = 0,50 — giá trị làm phương sai p(1-p) lớn nhất nên cho cỡ mẫu lớn nhất; dùng k |
 | G3-AUTO-06 | Effect size không phải số THÔ chưa đọc toàn văn | PASS | effect size do bác sĩ cấp trực tiếp hoặc không áp dụng |
 | G3-AUTO-07 | Alpha/power trong quy ước và đã xử lý bội/giữa kỳ | PASS | alpha=0.05, power=0.8 |
@@ -18,11 +18,11 @@
 | G3-AUTO-09 | Các con số trong artifact nhất quán với nhau | PASS | N, bảng độ nhạy và dropout khớp nhau |
 | G3-AUTO-10 | Artifact nhắc đúng chuẩn báo cáo của thiết kế | PASS | tìm thấy 'STROBE' trong artifact |
 | G3-AUTO-11 | Non-inferiority/equivalence: biên Δ có khung quy định, biện minh và nguồn | PASS | giả thuyết descriptive_precision (không phải NI/equivalence) |
-| G3-AUTO-12 | Thiết kế theo chùm: ICC có nguồn, design effect đúng số học, đủ số chùm | PASS | ICC=0.02 có nguồn, m=20, số chùm=50 (cố định, khớp N kế hoạch 1000 ÷ m=20; tối thiểu cần 35) |
+| G3-AUTO-12 | Thiết kế theo chùm: ICC có nguồn, design effect đúng số học, đủ số chùm | PASS | ICC=0.02 có nguồn, m=20, số chùm=50 (cố định, khớp N kế hoạch 1000 ÷ m=20; tối thiểu cần 27) |
 | G3-AUTO-16 | Hiệu chỉnh quần thể hữu hạn (FPC) chỉ dùng cho khảo sát quần thể hữu hạn | PASS | không dùng hiệu chỉnh quần thể hữu hạn |
 | G3-AUTO-17 | Thiết kế không dùng power đã dùng đúng khung thay thế | PASS | thiết kế dùng công thức power thông thường |
 | G3-AUTO-18 | Tham số đã ghim trong study_meta khớp giá trị thật sự đem vào phép tính | PASS | các tham số đã ghim khớp checkpoint |
-| G3-AUTO-13 | N thực tế đã chốt đủ lực và có phương pháp | PASS | N chốt=1000 ≥ N tối thiểu=808 |
+| G3-AUTO-13 | N thực tế đã chốt đủ lực và có phương pháp | PASS | N chốt=1000 ≥ N tối thiểu=630 |
 | G3-AUTO-14 | Tham số đã ghim đủ để chạy lại ra cùng một N | PASS | tham số quyết định đã ghim trong study_meta |
 | G3-AUTO-15 | Khai rõ công thức đã dùng và phần mềm/phiên bản | PASS | formula=có; software=Python 3.14 (scipy.stats, statsmodels 0.14); đối chiếu chéo bằng nửa rộng KTC 95% |
 
@@ -34,7 +34,7 @@
 | G3-HUMAN-03 | Đã xác nhận loại giả thuyết (superiority / không thua kém / tương đương) | PASS | hypothesis_type=descriptive_precision (mặc định của hệ là superiority); confirmed=True |
 | G3-HUMAN-04 | Cỡ mẫu được tính cho ĐÚNG kết cục chính đã chốt ở G1 | PASS | N tính cho kết cục: G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep, Phần 3 phiếu) |
 | G3-HUMAN-05 | Đã xác nhận khả thi tuyển đủ cỡ mẫu tại cơ sở | PASS | recruitment_feasibility_confirmed=True |
-| G3-HUMAN-06 | Có vai trò (thống kê viên/chủ nhiệm), thời điểm rà soát và xác nhận gắn đúng các giá trị đã tính | PASS | reviewed_by_role=STATISTICIAN (nhóm=STATISTICIAN); reviewed_at=2026-10-17T17:04:54+07:00; xác nhận gắn đúng nội dung hiện tại |
+| G3-HUMAN-06 | Có vai trò (thống kê viên/chủ nhiệm), thời điểm rà soát và xác nhận gắn đúng các giá trị đã tính | PASS | reviewed_by_role=STATISTICIAN (nhóm=STATISTICIAN); reviewed_at=2026-10-28T15:10:15+07:00; xác nhận gắn đúng nội dung hiện tại |
 | G3-HUMAN-07 | Thử nghiệm then chốt: có nhà thống kê độc lập và lực đủ cao | PASS | không khai là thử nghiệm then chốt |
 
 ## Việc còn lại

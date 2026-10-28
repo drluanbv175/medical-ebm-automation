@@ -112,4 +112,31 @@
 - buoc_ke:        Làm theo các bước (1)–(5) của khối ĐÍNH CHÍNH G10 ngày 2026-10-18: (1) PI đăng ký OSF Registries trước khi nộp; (2) PI tạo BẢN SAO NỘP ngoài exports/ và ngoài cây git rồi điền tay các ô (mã OSF, ngày phiên bản, Bảng 6.3, trang ký, số điện thoại trong Bản thông tin); (3) KHÔNG sửa DE_CUONG_NOP_HOI_DONG .md/.docx trong exports/ (nằm trong bản kê G10 vừa ký); (4) PI nộp hồ sơ cho Hội đồng Đạo đức; (5) khi có quyết định, NGƯỜI VAI IRB tự chạy approve_gate.py --gate G2 --reviewer-role IRB kèm số, ngày, phiên bản theo quyết định. Agent không chạy lệnh ký
 - agent_ghi:      so-cai-ghi-nho
 
+## CHECKPOINT [2026-10-28] — đề tài/ca: hai-long-benh-nhan-C1a-BVQY175 — lượt sửa theo hội đồng G1: chốt lại câu hỏi, đề cương lõi và cỡ mẫu (G0–G3)
+- cong_vua_qua:   G3
+- ngay:           2026-10-28
+- loai_nhiem_vu:  nghiên cứu
+- san_pham_vua_xong: theo quyết định của bác sĩ 25/10/2026 ở hội đồng G1 (phương án A): hệ số biến thiên cỡ cụm CV ≈ 0,14 (CV 1,0 giữ làm phân tích độ nhạy) ⇒ DE 1,39, cỡ mẫu tối thiểu 630, giữ N = 1.000 phiếu HỢP LỆ (định nghĩa duy nhất); giả thuyết Mục tiêu 2 H₀/H₁ hai phía; phân tích giới hạn cho người bệnh bỏ về trước khi khám — đề cương nộp, SAP 1.4 và study_meta.json đã cập nhật (bộ sinh/công cụ: PR y khoa #196, #199). PI chốt lại G0 lúc 15:06:57 và G1 lúc 15:08:06 giờ Việt Nam; bấm «Chot G2 C1a» ⇒ G2 READY_FOR_IRB_SUBMISSION; vai thống kê viên chốt lại G3 lúc 15:10:15 ⇒ G3 PASS_G3_CONFIRMED; máy chạy liền run_g2_auto → run_g3_auto → run_g4_auto (độ tươi G2↔G3 hai chiều)
+- danh_muc_🔴_con_lai: SAP 1.4 chưa ký (người: thống kê viên); gói G10 lắp ngày 18/10 không còn khớp hồ sơ (người: PI)
+- buoc_ke:        Thống kê viên bấm «Chot G4 C1a» rồi ký G4; PI thu hồi gói G10 cũ, bấm «Chot G10 C1a» (ETHICS_SUBMISSION) và ký lại G10
+- agent_ghi:      so-cai-ghi-nho
+
+## CHECKPOINT [2026-10-28] — đề tài/ca: hai-long-benh-nhan-C1a-BVQY175 — kế hoạch phân tích thống kê phiên bản 1.4 đã khoá (G4)
+- cong_vua_qua:   G4
+- ngay:           2026-10-28
+- loai_nhiem_vu:  nghiên cứu
+- san_pham_vua_xong: vai thống kê viên bấm «Chot G4 C1a» (xác nhận lúc 17:18:09 giờ Việt Nam) và ký G4 bản ghi 8bcb77a0e012f920 lúc 17:19:33 giờ Việt Nam (10:19:33Z, chữ ký ed1:role, mã TKV-C1A-01) ⇒ G4 PASS_G4_SAP_LOCKED; SAP phiên bản 1.4 (sửa đổi 26/10/2026, trước khi có số liệu)
+- danh_muc_🔴_con_lai: gói G10 lắp ngày 18/10 không còn khớp hồ sơ (người: PI)
+- buoc_ke:        PI ghi quyết định G10 REJECTED để thu hồi gói 18/10, bấm «Chot G10 C1a» (ETHICS_SUBMISSION) rồi ký lại G10
+- agent_ghi:      so-cai-ghi-nho
+
+## CHECKPOINT [2026-10-28] — đề tài/ca: hai-long-benh-nhan-C1a-BVQY175 — gói nộp Hội đồng Đạo đức lắp lại và ký lại sau lượt sửa (G10)
+- cong_vua_qua:   G10
+- ngay:           2026-10-28
+- loai_nhiem_vu:  nghiên cứu
+- san_pham_vua_xong: PI ghi G10 REJECTED bản ghi 4c164a4094b0b334 lúc 17:49:58 giờ Việt Nam (10:49:58Z) thu hồi gói lắp ngày 18/10; lần lắp lại 17:50 dừng ở bản nháp vì mục 11 còn 2 ô «[CẦN BỔ SUNG]» (bộ lắp coi bộ công cụ G5 đang chờ G2 là đã có dữ liệu) ⇒ PR y khoa #201 sửa bộ lắp (đã gộp, 3a37ac0); PI bấm lại «Chot G10 C1a» (ETHICS_SUBMISSION) và ký G10 bản ghi 929f12c076daa911 lúc 19:19:44 giờ Việt Nam (12:19:44Z, chữ ký ed1:role, mã PI-C1A-01) ⇒ chấm sống G10 PASS_G10_RELEASE_PACKAGE_LOCKED, G4 PASS_G4_SAP_LOCKED, G2 READY_FOR_IRB_SUBMISSION. A12: 35 PMID nằm trong biên nhận rút bài; 17 DOI không có PMID song song đã tra Retraction Watch + Crossref ngày 28/10: không bài nào bị rút. kiem_de_cuong_nop_hoi_dong: ĐẠT; bản .docx khớp .md
+- danh_muc_🔴_con_lai: G2 chờ quyết định Hội đồng Đạo đức (người: vai IRB); đăng ký OSF Registries (người: PI); bản sao nộp MỚI từ cặp tệp ký 28/10 và điền tay (người: PI); dựng dự án REDCap theo SOP-DL-01 §4 trước G5 (người: thư ký đề tài + quản trị viên REDCap); chỉ định vai DATA_MANAGER khi ký G5 (người: PI)
+- buoc_ke:        (1) PI đăng ký OSF Registries trước khi nộp; (2) PI tạo BẢN SAO NỘP MỚI ngoài exports/ và ngoài cây git từ cặp DE_CUONG_NOP_HOI_DONG đã ký ngày 28/10 (bản sao tạo trước 28/10 đã lỗi thời) rồi điền tay theo GHI_CHU_DE_CUONG_NOP_HOI_DONG §4.1; (3) KHÔNG sửa cặp tệp trong exports/ (nằm trong bản kê G10 vừa ký); (4) PI nộp hồ sơ cho Hội đồng Đạo đức; (5) khi có quyết định, NGƯỜI VAI IRB tự chạy approve_gate.py --gate G2 --reviewer-role IRB kèm số, ngày, phiên bản theo quyết định. Agent không chạy lệnh ký
+- agent_ghi:      so-cai-ghi-nho
+
 > **«Cần bác sĩ kiểm chứng.»** Sổ trạng thái hỗ trợ liên tục công việc, không thay quyết định của bác sĩ.

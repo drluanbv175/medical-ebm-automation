@@ -1,12 +1,12 @@
 # BÁO CÁO CHẤT LƯỢNG G1 — hai-long-benh-nhan-C1a-BVQY175
 
-**Trạng thái:** `DRAFT_READY_NEEDS_HUMAN_REVIEW`
+**Trạng thái:** `PASS_G1_CONFIRMED`
 
 ## Kiểm tra tự động
 | Mã | Tiêu chí | Trạng thái | Bằng chứng |
 |---|---|---|---|
 | G1-AUTO-00 | Guardrail liêm chính G1 sạch | PASS | guardrail_passed=True |
-| G1-AUTO-01 | Tiền đề G0 có checkpoint và guardrail sạch | REVIEW | G0 chấm sống=DRAFT_READY_NEEDS_HUMAN_REVIEW — câu hỏi nghiên cứu chưa được chốt |
+| G1-AUTO-01 | Tiền đề G0 có checkpoint và guardrail sạch | PASS | G0 chấm sống=PASS_G0_CONFIRMED |
 | G1-AUTO-02 | Mã thiết kế thuộc vocabulary canonical | PASS | internal_code='cross_sectional' |
 | G1-AUTO-02c | Thiết kế bác sĩ đã ghim được chuỗi G0–G10 hỗ trợ (không bị thay bằng suy luận) | PASS | không có pin bị từ chối |
 | G1-AUTO-02d | Thiết kế hợp với loại câu hỏi đã chốt ở G0 | PASS | thiết kế «cross_sectional» hợp với loại câu hỏi G0 «descriptive» |
@@ -30,16 +30,16 @@
 | G1-HUMAN-05 | Estimand đủ 5 thuộc tính khi là RCT | PASS | N/A cho thiết kế không phải RCT |
 | G1-HUMAN-06 | Đề cương lõi, kiểm soát sai lệch và tính khả thi được xác nhận | PASS | protocol_core_confirmed=True; bias_controls_confirmed=True; feasibility_confirmed=True |
 | G1-HUMAN-07 | Khoảng trống và nội dung trích dẫn đã được người thật đọc lại | PASS | evidence_review_confirmed=True; identifiers=57 |
-| G1-HUMAN-08 | Có vai trò, thời điểm rà phương pháp và xác nhận gắn đúng nội dung | PASS | reviewed_by_role=pi; reviewed_at=2026-10-14T19:21:13+07:00; xác nhận gắn đúng nội dung hiện tại |
+| G1-HUMAN-08 | Có vai trò, thời điểm rà phương pháp và xác nhận gắn đúng nội dung | PASS | reviewed_by_role=pi; reviewed_at=2026-10-28T15:08:06+07:00; xác nhận gắn đúng nội dung hiện tại |
 
 ## Manifest artifact
 | Artifact | Đường dẫn | SHA-256 |
 |---|---|---|
-| A1b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md | `5fe4f0aceb564ee8dd1c2cd0815d784044c23f96ddf861116703ae2bf56d926d` |
-| A2 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md | `0933db120c0d3a027d5aa19bfabcfd1e93fcff31d3f64f6ae9390cc194413cf3` |
-| A2b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md | `5b8d18e9e193cd46f0d9ad9a2b443b1a5d6c1eab107d107ff0be857afccdb7e3` |
-| A13 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md | `5de5087b086310a566d9e16cb13df4ce9a41b5060d585b2ef8560af52dfefcd9` |
-| A13b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md | `c274c46c95358259f8119c8b67c8e63e3dbef03363e9e17242e647aa741b3352` |
+| A1b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md | `1a30a1b8e56ede81c929f137a89a0a52b2e966026893ace395797f6caba8f1e5` |
+| A2 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md | `12ea13d68357105443ccef0d1320bceb27107b0024101c29687bfe993ab88767` |
+| A2b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md | `897e60465d38b7cb0d8bf87c2b4fd8db4b02538c8774dab104669701ac46c79c` |
+| A13 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md | `b5447450de68773cb6885835d25b55247f24293ae6b1caf21890f6d667e99b9d` |
+| A13b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md | `ded3d82b9b4d6c7d68bfa57f703efcf29488998be89529fb247c0426afeee4ef` |
 
 ## Nền chuẩn
 | Chuẩn | Phạm vi | PMID/DOI/URL |

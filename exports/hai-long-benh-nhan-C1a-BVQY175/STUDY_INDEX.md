@@ -1,5 +1,5 @@
 # STUDY INDEX — hai-long-benh-nhan-C1a-BVQY175
-> Cập nhật: 2026-10-18 · trạng thái đọc TRỰC TIẾP từ checkpoint hiện có (không phải cố định lúc scaffold)
+> Cập nhật: 2026-10-28 · trạng thái đọc TRỰC TIẾP từ checkpoint hiện có (không phải cố định lúc scaffold)
 
 ## 20 File chuẩn
 
@@ -13,11 +13,11 @@
 | 05 | 05_Protocol.md | G1a_PROTOCOL_hai-long-benh-nhan-C1a-BVQY175.docx | G1 | `protocol` | ✅ Xong |
 | 06 | 06_Ethics_Package_Checklist.md | G2_ETHICS_hai-long-benh-nhan-C1a-BVQY175.docx | G2 | `ethics` | ✅ Xong |
 | 07 | 07_CRF_or_Questionnaire.md | G3c_CRF_hai-long-benh-nhan-C1a-BVQY175.docx | G3 | `crf` | ✅ Xong |
-| 08 | 08_SOP_Data_Collection.md | G5a_SOP_hai-long-benh-nhan-C1a-BVQY175.docx | G5 | `sop` | 🔴 Chưa có |
-| 09 | 09_Data_Dictionary.md | G3b_VARIABLES_hai-long-benh-nhan-C1a-BVQY175.docx | G3-G5 | `variables` | 🔴 Chưa có |
+| 08 | 08_SOP_Data_Collection.md | G5a_SOP_hai-long-benh-nhan-C1a-BVQY175.docx | G5 | `sop` | ✅ Xong |
+| 09 | 09_Data_Dictionary.md | G3b_VARIABLES_hai-long-benh-nhan-C1a-BVQY175.docx | G3-G5 | `variables` | ✅ Xong |
 | 10 | 10_Sample_Size_Calculation.md | G3a_SAMPLESIZE_hai-long-benh-nhan-C1a-BVQY175.docx | G3 | `samplesize` | ✅ Xong |
 | 11 | 11_Statistical_Analysis_Plan.md | G4_SAP_hai-long-benh-nhan-C1a-BVQY175.docx | G4 | `sap` | ✅ Xong |
-| 12 | 12_Data_Cleaning_Plan.md | G5b_DMP_hai-long-benh-nhan-C1a-BVQY175.docx | G5 | `dmp` | 🔴 Chưa có |
+| 12 | 12_Data_Cleaning_Plan.md | G5b_DMP_hai-long-benh-nhan-C1a-BVQY175.docx | G5 | `dmp` | ✅ Xong |
 | 13 | 13_Data_Lock_Memo.md | G5c_DATALOCK_hai-long-benh-nhan-C1a-BVQY175.docx | G5-G6 | `datalock` | 🔴 Chưa có |
 | 14 | 14_Analysis_Syntax.md | G6a_ANALYSIS_hai-long-benh-nhan-C1a-BVQY175.docx | G6 | `analysis` | 🔴 Chưa có |
 | 15 | 15_Table_Shells.md | G4_SAP_hai-long-benh-nhan-C1a-BVQY175.docx | G4 | `sap` | ✅ Xong |

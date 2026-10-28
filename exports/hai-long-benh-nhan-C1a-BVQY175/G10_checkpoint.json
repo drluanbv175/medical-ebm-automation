@@ -1,7 +1,7 @@
 {
   "gate": "G10",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "generated_at": "2026-10-18T08:55:05.041944",
+  "generated_at": "2026-10-28T19:19:08.041909",
   "gate_status": "READY_FOR_G10_PI_RELEASE_APPROVAL",
   "quality_contract_version": "G10-2026.1",
   "guardrail": {
@@ -39,10 +39,10 @@
     "G1",
     "G2",
     "G3",
-    "G4"
+    "G4",
+    "G5"
   ],
   "checkpoints_missing": [
-    "G5",
     "G6",
     "G7",
     "G8",
@@ -78,8 +78,8 @@
     "G1": "DỰ THẢO (ĐẠT guardrail)",
     "G2": "KHOÁ",
     "G3": "DỰ THẢO (ĐẠT guardrail)",
-    "G4": "THIẾU",
-    "G5": "THIẾU",
+    "G4": "DỰ THẢO (ĐẠT guardrail)",
+    "G5": "DỰ THẢO (ĐẠT guardrail)",
     "G6": "THIẾU",
     "G7": "THIẾU",
     "G8": "THIẾU",
@@ -94,7 +94,7 @@
     {
       "moc": "Sẵn sàng triển khai (thu thập dữ liệu)",
       "dat": "CHƯA ĐẠT",
-      "chi_tiet": "BẮT BUỘC có phê duyệt Hội đồng Đạo đức THẬT (tín hiệu irb_approved) + công cụ/SOP dự thảo đầy đủ | Chặn bởi: thiếu phê duyệt IRB thật; cổng skill G4 (Công cụ): THIẾU; cổng skill G5 (Triển khai): THIẾU"
+      "chi_tiet": "BẮT BUỘC có phê duyệt Hội đồng Đạo đức THẬT (tín hiệu irb_approved) + công cụ/SOP dự thảo đầy đủ | Chặn bởi: thiếu phê duyệt IRB thật"
     },
     {
       "moc": "Sẵn sàng phân tích chính",
@@ -113,13 +113,13 @@
     "study_spec_json": "exports/hai-long-benh-nhan-C1a-BVQY175/STUDY_SPEC_hai-long-benh-nhan-C1a-BVQY175.json",
     "decision_package_md": "exports/hai-long-benh-nhan-C1a-BVQY175/GOI_QUYET_DINH_hai-long-benh-nhan-C1a-BVQY175.md",
     "release_readiness_json": "exports/hai-long-benh-nhan-C1a-BVQY175/G10_RELEASE_READINESS.json",
-    "de_cuong_md_sha256": "2d6ad3e0c1dd2ac4b0b9a3ee8f566a664226e17898c44b2e19b9ce3b458ce143",
-    "de_cuong_docx_sha256": "42a67b376c340f3cc2f80aff881d7219760cb39e6ffbfd1b4f571aede8784ec3"
+    "de_cuong_md_sha256": "47f17b2ff8e789e573ec8d14a452cdb341f331ff63a6511f1df28e1061ed842c",
+    "de_cuong_docx_sha256": "541c2e9fbb3d1d3d57b33fc72e4726f8c4df1084afa2d16ce6f81ff781bc173d"
   },
   "quality_gate": {
     "status": "READY_FOR_G10_PI_RELEASE_APPROVAL",
     "report": "G10_QUALITY_REPORT.json",
-    "package_sha256": "b892bfa7acfa687c0a7adc141748054fd349437db0f2227361dfdb0d34b9d574",
+    "package_sha256": "8c7a0c92cc78b4c6596ede8139e7756fa303b4e687cae0498525f8e6c95b6ed6",
     "human_approval_valid": false,
     "external_submission_state": "NOT_PERFORMED_OR_PROVEN_BY_G10"
   },
@@ -133,15 +133,15 @@
     "files": {
       "final_protocol_md": {
         "path": "DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "2d6ad3e0c1dd2ac4b0b9a3ee8f566a664226e17898c44b2e19b9ce3b458ce143"
+        "sha256": "47f17b2ff8e789e573ec8d14a452cdb341f331ff63a6511f1df28e1061ed842c"
       },
       "final_protocol_docx": {
         "path": "DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.docx",
-        "sha256": "42a67b376c340f3cc2f80aff881d7219760cb39e6ffbfd1b4f571aede8784ec3"
+        "sha256": "541c2e9fbb3d1d3d57b33fc72e4726f8c4df1084afa2d16ce6f81ff781bc173d"
       },
       "study_spec": {
         "path": "STUDY_SPEC_hai-long-benh-nhan-C1a-BVQY175.json",
-        "sha256": "2e5b5000da5c77e9d16380a0b492d226cb8cfda36f1af2e34b7edc69c05caa27"
+        "sha256": "8311115ad4a4255d073e8eba4c1fd18bf57dcfbcd1bf137371d21bbbf88aaca5"
       },
       "decision_package": {
         "path": "GOI_QUYET_DINH_hai-long-benh-nhan-C1a-BVQY175.md",
@@ -169,49 +169,49 @@
       },
       "g4_sap_final": {
         "path": "G4_A5_SAP_FINAL_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "0b2a37424c34518f2a0e0ab8ad96933ba75ebb69038b73f65c0df3ce4d598ce9"
+        "sha256": "1754cb4ad785cef70d341ac8a927159f4c347b1d4d654a9cdb55c2a8e5734bc2"
       },
       "checkpoint_g0": {
         "path": "G0_checkpoint.json",
-        "sha256": "9dbe6533f7aa547d33fbcce51e84a09a7554a92847d7d2e677d8503215671a1d"
+        "sha256": "f74358ceddaa50553e26329d9bb4d95a20ac5f6004e3a5d69125e2f22d2b3109"
       },
       "checkpoint_g1": {
         "path": "G1_checkpoint.json",
-        "sha256": "da75eb371eb132ff983ce7861c7a7af516d6fcd5af8d9606c67ab8e3e89cef5e"
+        "sha256": "ec111c42f3281933406a0b5e2c27b7de9d3abedb8c9b43d61cfb7a958d4643fc"
       },
       "checkpoint_g2": {
         "path": "G2_checkpoint.json",
-        "sha256": "0ed1f4af00724d47f1feb4e6bf0bc45b4c52c1d0ece3e87784dec5697dfb81c8"
+        "sha256": "015378131283e203dde5b63f3380d52a2fd5a2b5a170db0152bad56171fbdc58"
       },
       "checkpoint_g3": {
         "path": "G3_checkpoint.json",
-        "sha256": "a97d1d8f49c032197c750b8e49a2fc32d1e3c72f9ab9df315bf03ea1cfb64093"
+        "sha256": "36b7a3e6b5dfa7cd258f51b45ec5ed5fc8a1a41d0bca20a1eb86547b28be7717"
       },
       "checkpoint_g4": {
         "path": "G4_checkpoint.json",
-        "sha256": "3087f099fb0f6e86dae7e3fcea862c282a736ae91fa38b021bb28f5a76ca9a2d"
+        "sha256": "51a1ffe5dfb676b1867ddc92b86712474d69f96cd9163d8ca694bc9aa68a0934"
       },
       "g1_protocol_design": {
         "path": "G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "0933db120c0d3a027d5aa19bfabcfd1e93fcff31d3f64f6ae9390cc194413cf3"
+        "sha256": "12ea13d68357105443ccef0d1320bceb27107b0024101c29687bfe993ab88767"
       },
       "g2_registration_draft": {
         "path": "G2_REGISTRATION_DRAFT_hai-long-benh-nhan-C1a-BVQY175.json",
-        "sha256": "d55b7484d60a877f991539eaf4389d633ce85a318939d71afd7149be78607c30"
+        "sha256": "935277b768e9fd08a736a9656ad5a7f1cca937772d0e8f28c86cd03abe6e985b"
       },
       "g3_sample_size": {
         "path": "G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "ace4826a6779139a72cecf84227f756b935be39ffb6105ac7c598ede40392c04"
+        "sha256": "5b9bfa37b4ef7caabcf8df17ffc652759caead149acd8e5084ee424ab8b9020f"
       },
       "irb_protocol_md": {
         "path": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "7b7d183a4de64f1e167a5d726285c95612f243f84fb3295d978347af60284e78"
+        "sha256": "adb1be741485f3a94c712d6e6210f8519e2c82702e37bfc59022c57b806fcff9"
       },
       "irb_protocol_docx": {
         "path": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.docx",
-        "sha256": "365b53969ca036e9a699170803bb83f76e236a87f423f737f257db54917e2198"
+        "sha256": "b28af3e5d2e3bb22f3fed559f7080fc74684473b596e8aa3ac8bc53f1f0b40ab"
       }
     },
-    "package_sha256": "b892bfa7acfa687c0a7adc141748054fd349437db0f2227361dfdb0d34b9d574"
+    "package_sha256": "8c7a0c92cc78b4c6596ede8139e7756fa303b4e687cae0498525f8e6c95b6ed6"
   }
 }

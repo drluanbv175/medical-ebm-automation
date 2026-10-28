@@ -177,7 +177,7 @@
       "label": "Xác nhận G4 của thống kê viên/PI gắn đúng nội dung SAP hiện tại (dấu vân tay)",
       "status": "PASS",
       "evidence": "xác nhận gắn đúng nội dung hiện tại",
-      "action": "Sau khi đọc lại SAP, ghi gate_params.G4.dau_van_tay_chot=\"f59e4e2290b3dfdb\" (dấu nội dung PHẦN 3 hiện tại) cùng reviewed_at dạng ISO-8601; sửa SAP sau đó phải xác nhận lại."
+      "action": "Sau khi đọc lại SAP, ghi gate_params.G4.dau_van_tay_chot=\"837e9ceb0b89d3a9\" (dấu nội dung PHẦN 3 hiện tại) cùng reviewed_at dạng ISO-8601; sửa SAP sau đó phải xác nhận lại."
     }
   ],
   "pending_actions": [],
