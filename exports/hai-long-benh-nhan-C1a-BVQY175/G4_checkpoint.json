@@ -1,10 +1,10 @@
 {
   "gate": "G4",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "run_date": "2026-10-17",
+  "run_date": "2026-10-28",
   "g4_status": "PENDING — CHỜ BÁC SĨ KÝ SAP",
   "g4_sap_version": "1.0",
-  "g4_lock_date": "2026-10-17T10:09:01.022471+00:00",
+  "g4_lock_date": "2026-10-28T10:19:33.832368+00:00",
   "n_from_g3": 1000,
   "alpha": 0.05,
   "power": 0.8,
@@ -201,7 +201,7 @@
         "label": "Xác nhận G4 của thống kê viên/PI gắn đúng nội dung SAP hiện tại (dấu vân tay)",
         "status": "PASS",
         "evidence": "xác nhận gắn đúng nội dung hiện tại",
-        "action": "Sau khi đọc lại SAP, ghi gate_params.G4.dau_van_tay_chot=\"f59e4e2290b3dfdb\" (dấu nội dung PHẦN 3 hiện tại) cùng reviewed_at dạng ISO-8601; sửa SAP sau đó phải xác nhận lại."
+        "action": "Sau khi đọc lại SAP, ghi gate_params.G4.dau_van_tay_chot=\"837e9ceb0b89d3a9\" (dấu nội dung PHẦN 3 hiện tại) cùng reviewed_at dạng ISO-8601; sửa SAP sau đó phải xác nhận lại."
       }
     ],
     "pending_actions": [],

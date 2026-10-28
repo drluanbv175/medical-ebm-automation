@@ -1,6 +1,6 @@
 # A5, SAP FINAL + SAP LOCK CERTIFICATE (DRAFT, CHỜ BÁC SĨ KÝ)
 **Đề tài:** Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối  
-**Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Phiên bản SAP:** 1.3 | **Ngày sinh:** 2026-07-31 | **Cập nhật:** 2026-10-17
+**Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Phiên bản SAP:** 1.4 | **Ngày sinh:** 2026-07-31 | **Cập nhật:** 2026-10-26
 **Chuẩn báo cáo:** STROBE
 
 > LƯU Ý: **CỔNG G4, SAP LOCK:** SAP này ở trạng thái DRAFT. Bác sĩ phải đọc, điền [CẦN...], KÝ ở Phần 5.
@@ -23,7 +23,7 @@
 | Thiết kế | Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence) |
 | Chuẩn báo cáo | STROBE |
 | Ngày soạn SAP | 2026-07-31 |
-| Phiên bản | 1.3 (đồng bộ với đề cương nộp Hội đồng và G3 A4 PHẦN 2c, 2026-10-17) |
+| Phiên bản | 1.4 (sửa đổi sau khoá, TRƯỚC khi có số liệu — quyết định của bác sĩ 25/10/2026 ở hội đồng G1; đồng bộ với đề cương nộp Hội đồng và G3 A4, 2026-10-26) |
 
 ---
 
@@ -35,6 +35,7 @@
 | 1.1 | 2026-08-30 | Trợ lý tự động, đồng bộ từ Phụ lục A đề cương (nội dung chủ nhiệm đã duyệt) | Điền 12 mục từ đề cương: kết cục chính G1 + mô hình logistic thứ tự (proportional odds) + tập biến forced-in theo DAG + kế hoạch dữ liệu thiếu (complete-case chính, MICE nhạy cảm) + gom cụm `ma_ban_kham` + phần mềm R ≥ 4.3. CHƯA ký — chờ chủ nhiệm & nhà thống kê |
 | 1.2 | 2026-10-17 | Trợ lý tự động theo yêu cầu bác sĩ; thẩm định độc lập (tham-dinh-dau-ra) | Đồng bộ với đề cương nộp Hội đồng (bản gốc mới): N tối thiểu 808, DE 1,78, CV 1,0 (§1, §12); KTC Wilson trên n hiệu dụng (§3); quy tắc trọng số hậu phân tầng tách Mục tiêu 1/2 + gộp tầng nhỏ + thứ tự ưu tiên (§4); §9, §10, §11 đồng bộ |
 | 1.3 | 2026-10-17 | Trợ lý tự động theo biên bản hội đồng G0 DP-G0-1 (G0-TB-20261017T100650-107f4acb) | §12: thêm «Lực cho mục tiêu phụ» (Mục tiêu 2 — logistic thứ tự, Whitehead 1993, có hiệu chỉnh gom cụm) lấy từ G3 A4 PHẦN 2c; dòng Power ghi rõ kết cục chính không dùng power. Thống kê viên kiểm, PI quyết khi chốt G4 |
+| 1.4 | 2026-10-26 | Trợ lý tự động theo quyết định của bác sĩ 25/10/2026 (hội đồng G1: biên bản G1-TB-20261025T152106-1ac1bb54 và G1-TB-20261025T152307-267c5105; `hoi_dong/G1/quyet_dinh_bac_si.json`) | SAP AMENDMENT trước khi có số liệu: CV cỡ chùm 1,0 → 0,14 (ước của chủ nhiệm, phương án A; CV 1,0 giữ làm độ nhạy) ⇒ DE 1,78 → 1,39, N tối thiểu 808 → 630, n hiệu dụng mục tiêu 2 ≈ 478 → 612 (§1, §3, §12); quần thể ước lượng = người đã khám xong (§1, §4); phân tích giới hạn định trước cho người bỏ về (§9; DP-G1-1/DP-G1-2 phương án (i)); giả thuyết mục tiêu phụ MT2 H0/H1 (§12; DP-G1-2 phương án (i)); §1 tách luật loại PHIẾU (`PhieuHopLe`) khỏi tiêu chí loại NGƯỜI và ghi đúng tiêu chí «đã tham gia nghiên cứu trước đó» như mục 4.3.2 đề cương (biên bản G1-TB-20261025T152307-267c5105, việc sửa 4); §1/§12 ghi MỘT định nghĩa N = 1.000 phiếu hợp lệ, 850 là kịch bản thận trọng của lực MT2 (biên bản G1-DG-20261025T151536-2f1beb6d). Kết cục chính, mô hình chính, ngưỡng hài lòng KHÔNG đổi. Chờ thống kê viên ký lại G4 |
 
 ---
 
@@ -42,11 +43,13 @@
 
 ### §1 QUẦN THỂ PHÂN TÍCH
 
-- **Quần thể chính:** Toàn bộ mẫu đủ tiêu chí  
-- **Cỡ mẫu cuối:** N = 1000 (độ tin cậy 95%, sai số tuyệt đối d = ±0.05)  
-- **N tối thiểu theo thống kê (từ G3):** 808. N ở trên là cỡ mẫu KẾ HOẠCH do chủ nhiệm/Hội đồng chốt, lớn hơn mức tối thiểu.  
+- **Quần thể chính:** toàn bộ phiếu HỢP LỆ (`PhieuHopLe` = 1) của người bệnh đủ tiêu chí nhận và không thuộc tiêu chí loại dưới đây  
+- **Quần thể ước lượng (cả hai mục tiêu):** người bệnh ngoại trú đã HOÀN THÀNH lượt khám tại Khoa C1a (khung mẫu mục 4.4.2 đề cương). Người bỏ về trước khi vào buồng khám không thuộc quần thể ước lượng; ảnh hưởng của nhóm này đánh giá bằng phân tích giới hạn định trước (§9), không thay ước lượng chính  
+- **Cỡ mẫu cuối:** N = 1000 phiếu HỢP LỆ — định nghĩa duy nhất, như mục 4.4.2 đề cương (mời khoảng 1.180–1.250 người với tỷ lệ không đáp ứng dự kiến 15%) (độ tin cậy 95%, sai số tuyệt đối d = ±0.05)  
+- **N tối thiểu theo thống kê (từ G3):** 630 (CV cỡ chùm 0,14; độ nhạy CV 1,0: 808). N ở trên là cỡ mẫu KẾ HOẠCH do chủ nhiệm/Hội đồng chốt, lớn hơn mức tối thiểu.  
 - **Tiêu chí nhận (mục 4.3.1 đề cương):** người bệnh ngoại trú từ đủ 18 tuổi (gồm phụ nữ mang thai); đủ sức khỏe, tỉnh táo và đủ năng lực nhận thức/ngôn ngữ để trả lời; đã cơ bản hoàn thành quy trình khám tại Khoa C1a (đang chờ thanh toán/nhận thuốc/nhận lại thẻ BHYT); đồng ý tham gia tự nguyện sau khi được giải thích (ICF là tài liệu giấy riêng, Phụ lục B).  
-- **Tiêu chí loại (mục 4.3.2 đề cương):** từ chối tham gia; không đủ năng lực trả lời (cấp cứu, suy giảm nhận thức, rào cản ngôn ngữ không khắc phục được); nhân viên y tế của chính khoa/bệnh viện đi khám; đã tham gia nghiên cứu ở lượt khám trước trong cùng kỳ (chống trùng); phiếu khuyết dữ liệu vượt ngưỡng theo **ba ngưỡng đã khóa**: (1) thiếu G1; (2) bỏ trống ≥ 7/30 mục Likert Phần 2 (> 20%); (3) bỏ trống trọn một lĩnh vực A–F. Số phiếu loại theo TỪNG ngưỡng báo riêng ở sơ đồ luồng STROBE (Bảng 5.6). KHÔNG loại phiếu chỉ vì thiếu biến nền hoặc thiếu mốc HIS — các trường hợp đó đi theo kế hoạch dữ liệu thiếu (§6).  
+- **Tiêu chí loại (mục 4.3.2 đề cương):** từ chối tham gia; không đủ năng lực trả lời (cấp cứu, suy giảm nhận thức, rào cản ngôn ngữ không khắc phục được); nhân viên y tế của chính khoa/bệnh viện đi khám; đã tham gia nghiên cứu trước đó, kể cả phỏng vấn nhận thức hoặc khảo sát thử ở pha phát triển bộ câu hỏi (chống trùng).  
+- **Luật tập phân tích — loại PHIẾU, không phải loại NGƯỜI (mục 4.3.2 đề cương, «Tiêu chuẩn loại phiếu khỏi phân tích»):** biến `PhieuHopLe` = 0 khi phiếu vi phạm ít nhất một trong **ba ngưỡng đã khóa**: (1) thiếu G1; (2) bỏ trống ≥ 7/30 mục Likert Phần 2 (> 20%); (3) bỏ trống trọn một lĩnh vực A–F. Số phiếu loại theo TỪNG ngưỡng báo riêng ở sơ đồ luồng STROBE (Bảng 5.6). KHÔNG loại phiếu chỉ vì thiếu biến nền hoặc thiếu mốc HIS — các trường hợp đó đi theo kế hoạch dữ liệu thiếu (§6).  
 
 ### §2 KẾT CỤC
 
@@ -63,7 +66,7 @@
 - Tỷ lệ hài lòng chung và theo lĩnh vực (ngưỡng cố định ≥ 4/5) kèm KTC 95% **Wilson score trên cỡ mẫu hiệu dụng** n_hd = n ÷ DE (đề cương 4.10, Mục tiêu 1; Dean & Pagano 2015, doi:10.1093/jssam/smv024):  
   - DE = hiệu ứng thiết kế của CHÍNH tỷ lệ đó, ước lượng từ số liệu bằng phương sai tuyến tính hoá theo chùm `ma_ban_kham` (`survey::svymean(..., deff = "replace")` — KHÔNG dùng `deff = TRUE`: thiết kế không trọng số cho Inf, có hiệu chỉnh quần thể hữu hạn sau `postStratify`; đường Python cho bản KHÔNG trọng số: `run_stats_analysis.py --ty-le g1 --nguong-ty-le 4 --cot-cum ma_ban_kham`), chặn dưới 1 — gom cụm không được làm KTC hẹp hơn giả định độc lập  
   - Hiệu chỉnh bậc tự do thiết kế: n_hd × (z₀,₉₇₅ ÷ t₀,₉₇₅; K−1)², K = số bàn khám có phiếu (K = 50 ⇒ ×≈0,95) (Dean & Pagano 2015)  
-  - Báo kèm ICC thực tế, CV cỡ chùm thực tế (độ lệch chuẩn ÷ trung bình số phiếu mỗi bàn) và DE theo ICC = 1 + ((CV² + 1)·m − 1)·ICC (Eldridge 2006) để đối chiếu với giả định lập kế hoạch (G3: DE 1,78); báo cả KTC Wilson giả định độc lập để thấy mức nới rộng do gom cụm  
+  - Báo kèm ICC thực tế, CV cỡ chùm thực tế (độ lệch chuẩn ÷ trung bình số phiếu mỗi bàn) và DE theo ICC = 1 + ((CV² + 1)·m − 1)·ICC (Eldridge 2006) để đối chiếu với giả định lập kế hoạch (G3: DE 1,39 với CV 0,14; độ nhạy CV 1,0: DE 1,78); báo cả KTC Wilson giả định độc lập để thấy mức nới rộng do gom cụm  
   - Khi áp trọng số hậu phân tầng (§4), tỷ lệ và DE lấy từ thiết kế CÓ trọng số (R `survey`, đường Python không hỗ trợ trọng số) nên DE đã gồm cả hiệu ứng trọng số  
 - Báo % đạt điểm sàn/trần mỗi lĩnh vực; > 15% (ngưỡng Terwee) → ghi là hạn chế đo lường, ưu tiên trung vị [IQR]  
 - Đơn biến (Bảng 5.3): t-test/ANOVA hoặc Pearson/Spearman (kết cục liên tục), χ²/Fisher (nhị phân thứ cấp), luôn kèm hiệu ứng + KTC 95% — **chỉ vai trò mô tả, KHÔNG phải bước lọc biến**  
@@ -77,6 +80,8 @@
   - **Mục tiêu 2 (mô hình chính):** giữ KHÔNG trọng số — ngày trong tuần và khung giờ (biến tạo tầng) đã nằm trong tập forced-in nên trọng số không cần cho ước lượng vững của cOR hiệu chỉnh; mô hình CÓ trọng số `survey::svyolr` (cùng thiết kế trên) là phân tích độ nhạy định trước (§9). Chênh lệch lớn giữa hai bản là tín hiệu hiệu ứng thay đổi theo tầng, được bàn luận, không chọn bản «đẹp hơn» (Solon, Haider & Wooldridge 2015, doi:10.3368/jhr.50.2.301)  
   - Thứ tự ưu tiên: các quy tắc về giả định proportional odds và số bàn khám < 15 ở trên áp cho mô hình chính KHÔNG trọng số; `svyolr` chỉ ước lượng mô hình PO nên khi PO bị vi phạm, bản có trọng số vẫn chỉ là độ nhạy và được diễn giải là cOR trung bình hoá  
 - **Quần thể:** phân tích đầy đủ trên phiếu hợp lệ (`PhieuHopLe`, ba ngưỡng loại ở §1)  
+- **Quần thể ước lượng:** cOR của thời gian chờ diễn giải cho người bệnh đã khám xong (§1), không cho mọi lượt lấy số; sai lệch chọn lọc do người bỏ về đánh giá ở §9  
+- **Giả thuyết kiểm định (Mục tiêu 2):** H0: OR chung = 1; H1: OR chung ≠ 1, hai phía, α = 0,05 (mục 2.3 đề cương; §12)  
 - **Trình bày:** ước lượng + 95%CI; không báo p-value đơn độc; làm tròn theo A.1 đề cương (tỷ lệ 1 chữ số; Likert 2 chữ số; OR/β 2 chữ số; p trị số thực 3 chữ số)  
 
 ### §5 PHÂN TÍCH ĐA BIẾN
@@ -123,6 +128,9 @@ Ba nhóm biến đã KHÓA theo lập luận nhân quả trên DAG (Phụ lục 
 - Ước lượng theo thiết kế (đề cương 4.10, kịch bản 5): chùm `ma_ban_kham` + hậu phân tầng ngày × khung giờ (`postStratify`) — KHÔNG khai `strata =` vì bàn khám không lồng trong tầng (khai `nest = TRUE` tách mỗi bàn thành PSU bàn × tầng, làm sai số chuẩn hẹp giả)  
 - Phi tuyến exposure: restricted cubic spline 3 nút / phân tích theo phân vị thời gian chờ  
 - Quy tắc gộp mức G1 khi lệch trần (mức < 20 quan sát, gộp 1→2→3, mức 5 không gộp, không dưới 3 mức; bảng 5 mức gốc vẫn in đủ)  
+- **Phân tích giới hạn cho người bỏ về trước khi khám (định trước, v1.4; DP-G1-1/DP-G1-2 phương án (i)):** f = số lượt bỏ về ÷ tổng số lượt lấy số trong kỳ thu thập (HIS, số liệu tổng hợp không định danh; Bảng 5.6 đề cương)  
+  - Mục tiêu 1: báo khoảng giới hạn của tỷ lệ hài lòng trên toàn bộ lượt lấy số [p̂·(1 − f); p̂·(1 − f) + f] — giới hạn dưới coi mọi người bỏ về là chưa hài lòng, giới hạn trên coi là hài lòng; p̂ là tỷ lệ chính (§3); báo kèm, không thay ước lượng chính  
+  - Mục tiêu 2: so sánh trung vị [IQR] thời gian chờ của nhóm bỏ về với nhóm được khám — mô tả (HIS chỉ cung cấp số liệu tổng hợp của nhóm bỏ về, không kiểm định); nhóm bỏ về chờ lâu hơn rõ ⇒ bàn luận khả năng cOR của mô hình chính bị kéo về 1  
 
 ### §10 PHẦN MỀM + SEED
 
@@ -171,12 +179,15 @@ Ba nhóm biến đã KHÓA theo lập luận nhân quả trên DAG (Phụ lục 
 - **Sai số tuyệt đối cho phép (d):** ±0.05  
 - **Cỡ mẫu:** N = 1000  
 - **Power:** kết cục chính không dùng — cỡ mẫu theo độ chính xác của ước lượng, không kiểm định giả thuyết; mục tiêu phụ xem dòng «Lực cho mục tiêu phụ»  
-- **Lực cho mục tiêu phụ:** Mục tiêu 2 (hồi quy logistic thứ tự (tỷ số chênh tương xứng) — Whitehead 1993): với N = 1000, α = 0.05 hai phía, lực 80%, OR nhỏ nhất phát hiện được cho mỗi 15 phút thời gian chờ là 1.10–1.23 (chiều giảm 0.82–0.91) ở n hiệu dụng ≈ 478 (sau 150 phiếu dự phòng hỏng, ÷ DE 1.78); chưa gom cụm 1.07–1.15. Giả định phân bố kết cục, ĐLC phơi nhiễm và R² tính lại khi có số liệu khảo sát thử và HIS (G3 A4 PHẦN 2c)  
+- **Giả thuyết mục tiêu phụ (định trước, gate_params.G0.hypothesis_secondary):** MT2: H0: OR chung = 1; H1: OR chung ≠ 1, hai phía, α = 0,05; mô hình logistic thứ tự là mô hình chính; lực theo Whitehead ở n hiệu dụng khoảng 612 (850 phiếu phân tích ÷ DE 1,39, CV cỡ chùm 0,14; độ nhạy CV 1,0: khoảng 478)  
+- **Lực cho mục tiêu phụ:** Mục tiêu 2 (hồi quy logistic thứ tự (tỷ số chênh tương xứng) — Whitehead 1993): với N = 1000, α = 0.05 hai phía, lực 80%, OR nhỏ nhất phát hiện được cho mỗi 15 phút thời gian chờ là 1.09–1.20 (chiều giảm 0.84–0.92) ở n hiệu dụng ≈ 612 (sau 150 phiếu dự phòng hỏng, ÷ DE 1.39); chưa gom cụm 1.07–1.15. Giả định phân bố kết cục, ĐLC phơi nhiễm và R² tính lại khi có số liệu khảo sát thử và HIS (G3 A4 PHẦN 2c); độ nhạy CV 1,0 (DE 1.78, n hiệu dụng ≈ 478): 1.10–1.23 (chiều giảm 0.82–0.91)  
+- **Định nghĩa N cho dòng lực ở trên:** N = 1.000 phiếu hợp lệ (§1); dòng lực tính THẬN TRỌNG như thể chỉ 850 phiếu phân tích được (giả định thêm 15% phiếu hỏng/thiếu biến trong 1.000 phiếu). Đủ 1.000 phiếu hợp lệ thì n hiệu dụng ≈ 720 (1.000 ÷ DE 1,39) và lực cao hơn.  
 - **Tỷ lệ bỏ cuộc dự kiến:** 0.15  
-- **Hiệu ứng thiết kế (DE):** 1.78 — cỡ cụm không đều, DE = 1 + ((CV² + 1)·m − 1)·ICC (Eldridge, Ashby & Kerry 2006, doi:10.1093/ije/dyl129)  
+- **Hiệu ứng thiết kế (DE):** 1.38784 — cỡ cụm không đều, DE = 1 + ((CV² + 1)·m − 1)·ICC (Eldridge, Ashby & Kerry 2006, doi:10.1093/ije/dyl129); độ nhạy CV 1,0: DE 1,78  
 - **ICC:** 0.02  
 - **Cỡ cụm trung bình (m):** 20  
-- **Hệ số biến thiên cỡ cụm (CV):** 1.0 — giả định lập kế hoạch thận trọng (PI khai 14/10/2026; thay bằng CV thật từ HIS trước khi khoá SAP)  
+- **Hệ số biến thiên cỡ cụm (CV):** 0.14 — ước của chủ nhiệm 25/10/2026 (60–100 lượt/bàn/ngày, coi phân bố đều ⇒ CV ≈ 0,14; bác sĩ vai thống kê viên chọn phương án A); CV 1,0 giữ làm phân tích độ nhạy; đối chiếu CV thật từ HIS theo bàn trước khi thu mẫu (cập nhật theo thủ tục sửa đổi nếu khác)  
+- **N tối thiểu theo thống kê (G3):** 630 (đã cộng 15% không trả lời; độ nhạy CV 1,0: 808) ≤ N kế hoạch 1000  
 
 ---
 
@@ -184,7 +195,7 @@ Ba nhóm biến đã KHÓA theo lập luận nhân quả trên DAG (Phụ lục 
 
 | Ngày | Mô tả thay đổi | Loại | Người duyệt |
 |---|---|---|---|
-| (chưa có) | | | |
+| 2026-10-26 | Phiên bản 1.3 → 1.4: CV cỡ chùm 1,0 → 0,14 (DE 1,39, N tối thiểu 630; CV 1,0 giữ làm độ nhạy); quần thể ước lượng = người đã khám xong; thêm phân tích giới hạn định trước cho người bỏ về (§9); ghi giả thuyết mục tiêu phụ MT2 (§12); §1 tách luật loại phiếu `PhieuHopLe` khỏi tiêu chí loại người, đúng mục 4.3.2 đề cương; §1/§12 ghi một định nghĩa N (phiếu hợp lệ). Kết cục chính, mô hình chính, ngưỡng hài lòng KHÔNG đổi. Thực hiện TRƯỚC khi có bất kỳ số liệu nào | SAP AMENDMENT (tiền định — chưa xem dữ liệu) | Quyết định của bác sĩ 25/10/2026 (hội đồng G1); chờ thống kê viên ký lại G4 |
 
 > **Quy tắc:** Mọi thay đổi sau khi ký → phân loại TIỀN ĐỊNH / THĂM DÒ / SAP AMENDMENT.  
 > Không được thay đổi kết cục chính hoặc mô hình chính sau khi xem dữ liệu.
@@ -195,7 +206,7 @@ Ba nhóm biến đã KHÓA theo lập luận nhân quả trên DAG (Phụ lục 
 
 ```
 ╔══════════════════════════════════════════════════════════════╗
-║ SAP LOCK CERTIFICATE, PHIÊN BẢN 1.3 ║
+║ SAP LOCK CERTIFICATE, PHIÊN BẢN 1.4 ║
 ╠══════════════════════════════════════════════════════════════╣
 ║ Đề tài : hai-long-benh-nhan-C1a-BVQY175 ║
 ║ Ngày soạn : 2026-07-31 ║

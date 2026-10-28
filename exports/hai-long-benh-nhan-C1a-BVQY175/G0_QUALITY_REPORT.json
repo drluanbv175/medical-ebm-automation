@@ -109,8 +109,8 @@
       "id": "G0-HUMAN-07",
       "label": "Chủ nhiệm/nhà phương pháp chốt PICO (vai trò + thời điểm + gắn đúng nội dung)",
       "status": "PASS",
-      "evidence": "pico_confirmed=True; vai trò=pi; reviewed_at=2026-10-17T17:00:56+07:00; xác nhận gắn đúng nội dung hiện tại",
-      "action": "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"6ae50bc5a45ee202\" (dấu của nội dung đang chốt). Không cần lưu danh tính."
+      "evidence": "pico_confirmed=True; vai trò=pi; reviewed_at=2026-10-28T15:06:57+07:00; xác nhận gắn đúng nội dung hiện tại",
+      "action": "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"d33688f542ce7146\" (dấu của nội dung đang chốt). Không cần lưu danh tính."
     },
     {
       "id": "G0-HUMAN-08",
@@ -154,6 +154,6 @@
     "primary": "STROBE",
     "protocol": "Protocol định trước; đăng ký nếu cần minh bạch"
   },
-  "dau_van_tay_hien_tai": "6ae50bc5a45ee202",
+  "dau_van_tay_hien_tai": "d33688f542ce7146",
   "scope_statement": "PASS_G0_CONFIRMED chỉ xác nhận rằng câu hỏi nghiên cứu ĐÃ ĐƯỢC MỘT NGƯỜI THẬT VIẾT RA VÀ CHỐT, và nền bằng chứng máy dựng là thật. KHÔNG thẩm định chất lượng khoa học của câu hỏi, không thay tổng quan y văn có hệ thống, không thay Hội đồng Đạo đức. Một PICO đầy đủ vẫn có thể là một PICO tồi."
 }

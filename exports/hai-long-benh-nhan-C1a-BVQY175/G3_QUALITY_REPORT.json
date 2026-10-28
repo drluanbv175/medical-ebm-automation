@@ -40,7 +40,7 @@
       "id": "G3-AUTO-04",
       "label": "Có giá trị cỡ mẫu dùng được (hoặc N thay thế hợp lệ)",
       "status": "PASS",
-      "evidence": "n_adjusted=808",
+      "evidence": "n_adjusted=630",
       "action": "Cấp effect size có nguồn, hoặc N tính bằng phương pháp thay thế của thiết kế."
     },
     {
@@ -96,7 +96,7 @@
       "id": "G3-AUTO-12",
       "label": "Thiết kế theo chùm: ICC có nguồn, design effect đúng số học, đủ số chùm",
       "status": "PASS",
-      "evidence": "ICC=0.02 có nguồn, m=20, số chùm=50 (cố định, khớp N kế hoạch 1000 ÷ m=20; tối thiểu cần 35)",
+      "evidence": "ICC=0.02 có nguồn, m=20, số chùm=50 (cố định, khớp N kế hoạch 1000 ÷ m=20; tối thiểu cần 27)",
       "action": "Khai icc/icc_source/cluster_size/n_clusters; số chùm nhỏ phải khai hiệu chỉnh mẫu nhỏ.\nSố chùm CỐ ĐỊNH nhiều hơn mức tối thiểu: khai n_clusters kèm confirmed_n (= số chùm × cỡ chùm m).\nCỡ chùm không đều: PI khai cluster_size_cv từ số liệu thật (HIS: số lượt khám từng chùm trong kỳ) hoặc equal_cluster_sizes=true nếu khẳng định chùm đều — KHÔNG ước đoán."
     },
     {
@@ -124,7 +124,7 @@
       "id": "G3-AUTO-13",
       "label": "N thực tế đã chốt đủ lực và có phương pháp",
       "status": "PASS",
-      "evidence": "N chốt=1000 ≥ N tối thiểu=808",
+      "evidence": "N chốt=1000 ≥ N tối thiểu=630",
       "action": "Nâng N, hoặc ghi rõ chấp nhận giảm lực kèm hệ quả; ghi confirmed_n_method cho thiết kế không dùng power."
     },
     {
@@ -182,8 +182,8 @@
       "id": "G3-HUMAN-06",
       "label": "Có vai trò (thống kê viên/chủ nhiệm), thời điểm rà soát và xác nhận gắn đúng các giá trị đã tính",
       "status": "PASS",
-      "evidence": "reviewed_by_role=STATISTICIAN (nhóm=STATISTICIAN); reviewed_at=2026-10-17T17:04:54+07:00; xác nhận gắn đúng nội dung hiện tại",
-      "action": "Ghi reviewed_by_role (STATISTICIAN hoặc PI), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"0e68bb02f642f5eb\" (dấu của các giá trị quyết định N hiện tại); không lưu danh tính."
+      "evidence": "reviewed_by_role=STATISTICIAN (nhóm=STATISTICIAN); reviewed_at=2026-10-28T15:10:15+07:00; xác nhận gắn đúng nội dung hiện tại",
+      "action": "Ghi reviewed_by_role (STATISTICIAN hoặc PI), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"c57c765a4f74b34c\" (dấu của các giá trị quyết định N hiện tại); không lưu danh tính."
     },
     {
       "id": "G3-HUMAN-07",
@@ -194,18 +194,18 @@
     }
   ],
   "pending_actions": [],
-  "dau_van_tay_hien_tai": "0e68bb02f642f5eb",
+  "dau_van_tay_hien_tai": "c57c765a4f74b34c",
   "artifact_manifest": {
     "A4_SAMPLE_SIZE": {
       "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "ace4826a6779139a72cecf84227f756b935be39ffb6105ac7c598ede40392c04"
+      "sha256": "5b9bfa37b4ef7caabcf8df17ffc652759caead149acd8e5084ee424ab8b9020f"
     }
   },
   "sensitivity_table": {
     "found": true,
     "cells_total": 9,
     "cells_na": 0,
-    "base_cell": 686
+    "base_cell": 535
   },
   "standards_basis": [
     {
