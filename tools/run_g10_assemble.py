@@ -841,7 +841,12 @@ def sec_quantri_dulieu(cps, meta) -> str:
     # 05/10/2026 (G10-09): G5 CHƯA bắt đầu (hồ sơ trình Hội đồng, trước dữ liệu) là trạng thái ĐÚNG, không phải ô
     # thiếu — bản cũ in «[CẦN BỔ SUNG]» cho khoá CSDL/nhập/khoá dữ liệu ⇒ gói trình Hội đồng không bao giờ qua
     # G10-AUTO-09.
-    chua_g5 = not cps.get("G5")
+    # 28/10/2026 (C1a lắp lại sau khi G4 ký lại): từ 24/10 đề tài có G5_checkpoint (bộ công cụ G5, g5_status PENDING
+    # chờ G2) ⇒ bản trên coi là «đã vào G5» và lại in «[CẦN BỔ SUNG]» cho nhập/khoá dữ liệu ⇒ gói trình Hội đồng kẹt
+    # G10-AUTO-09. Gói trước dữ liệu (ETHICS_SUBMISSION/REGISTRY_UPDATE) chưa thể có dữ liệu thật — ghi «chưa có» như
+    # khi G5 vắng; bản ghi dữ liệu thật (intake/làm sạch/khoá trong study_meta) vẫn được in nếu có.
+    truoc_du_lieu = ((meta or {}).get("_g10") or {}).get("muc_dich") in G10Q.MUC_DICH_TRUOC_DU_LIEU
+    chua_g5 = not cps.get("G5") or truoc_du_lieu
     chua_co = "chưa có — dữ liệu thật chỉ thu thập SAU phê duyệt đạo đức (G5)"
     lock = _g(cps["G5"], "database_lock_status", default=chua_co if chua_g5 else TAG_BS)
     pseudo = (meta or {}).get("real_data_pseudonymization") or {}
