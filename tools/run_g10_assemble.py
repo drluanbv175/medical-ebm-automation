@@ -1363,10 +1363,13 @@ def sec_dukien_ketqua(cps, meta) -> str:
             "đặc điểm nền · Bảng 2 kết cục chính · Bảng 3 mô hình chính), mỗi mục "
             "tiêu cụ thể ở mục 5 có ít nhất một bảng/hình tương ứng."
         )
-    sap_version = _g(cps.get("G4"), "g4_sap_version", default=None)
+    # SỬA 28/10/2026 (đánh giá chéo hội đồng G10 C1a, G10-DG-20261028T211135-9a0c2aba, RQ4): mục này từng đọc trường
+    # thô `g4_sap_version` (run_g4_auto ghi cứng «1.0») ⇒ đề cương thống nhất in «SAP phiên bản 1.0» trong khi SAP 1.4
+    # đã khoá — đúng lỗi tranh biện 18/10 đã cấm, bị sót ở mục 13. Nay dùng chung nguồn sống với mục SAP.
+    sap_version, _trang_thai = _sap_hien_thi(meta)
     sap_txt = (
         f"SAP phiên bản {sap_version} §11 DUMMY TABLES (artifact G4)"
-        if RS.is_present(sap_version) else "SAP §11 DUMMY TABLES (sinh ở G4)"
+        if sap_version != TAG_BS else "SAP §11 DUMMY TABLES (sinh ở G4)"
     )
     return (
         f"{S.de_cuong_heading('dukien_ketqua')}\n\n"

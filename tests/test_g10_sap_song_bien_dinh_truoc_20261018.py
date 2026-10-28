@@ -63,7 +63,7 @@ def test_muc_sap_ma_tran_va_kiem_soat_khong_in_truong_tho():
     cps["G4"] = {"g4_sap_version": "1.0", "g4_status": THO}
     meta = {"_g10": {"sap": KHOA}}
     for van_ban in (G10.sec_sap(cps, meta), G10.build_traceability_matrix(cps, meta),
-                    G10.build_document_control("X", cps, meta)):
+                    G10.build_document_control("X", cps, meta), G10.sec_dukien_ketqua(cps, meta)):
         assert THO not in van_ban and "1.3" in van_ban
     assert "đã khoá (chấm sống G4: PASS_G4_SAP_LOCKED)" in G10.sec_sap(cps, meta)
     cho = {"_g10": {"sap": {"sap_version": "1.3", "sap_status": "READY_FOR_SIGNATURE", "sap_locked": False}}}
@@ -88,3 +88,15 @@ def test_g10_auto06_tinh_lai_cung_nguon_song_khong_lech_gia(tmp_path):
     assert luu["analysis"]["sap_status"] != "PENDING", "StudySpec đã lắp không mang trường thô của checkpoint"
     _danh_gia, lech = G10Q._study_spec_song("FIXT", tmp_path)
     assert lech is None, lech
+
+
+def test_muc13_khong_in_phien_ban_tho_cua_checkpoint():
+    """SỬA 28/10/2026 (G10-DG-20261028T211135-9a0c2aba, RQ4): mục 13 từng in «SAP phiên bản 1.0» (trường thô) khi SAP
+    1.4 đã khoá. Không có ngữ cảnh lắp ráp ⇒ không in số phiên bản nào (không đoán, không rơi về trường thô)."""
+    cps = {f"G{i}": {} for i in range(10)}
+    cps["G1"] = {"design": {"internal_code": "cross_sectional"}}
+    cps["G4"] = {"g4_sap_version": "1.0", "g4_status": THO}
+    meta = {"_g10": {"sap": {"sap_version": "1.4", "sap_status": RS.SAP_LOCKED_STATUS, "sap_locked": True}}}
+    assert "SAP phiên bản 1.4 §11 DUMMY TABLES" in G10.sec_dukien_ketqua(cps, meta)
+    van_ban = G10.sec_dukien_ketqua(cps, {})
+    assert "SAP phiên bản" not in van_ban and "SAP §11 DUMMY TABLES (sinh ở G4)" in van_ban
