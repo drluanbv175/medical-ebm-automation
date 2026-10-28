@@ -107,7 +107,7 @@ def test_bang_truy_xuat_phai_khop_muc_phieu_cvi(tmp_path):
     (thu / "bang_truy_xuat_cau_hoi.csv").write_text(
         ",".join(PCC.COT_TRUY_XUAT) + "\nA1,,x,,,\n", encoding="utf-8", newline="\n")
     loi = HD._kiem_pha_cong_cu(out, "S")
-    assert any("mục không khớp phiếu CVI (A2)" in x for x in loi) and any("thiếu nội dung câu" in x for x in loi)
+    assert any("thiếu mục của phiếu CVI (A2)" in x for x in loi) and any("thiếu nội dung câu" in x for x in loi)
 
 
 def test_cli_hoi_dong_ma_1_khi_lech_thanh_phan(tmp_path, capsys):
