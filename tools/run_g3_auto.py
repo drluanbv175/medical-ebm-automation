@@ -1185,8 +1185,11 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
         "## PHẦN 5 — TIÊU CHÍ QUA CỔNG G3",
         "",
         *tieu_chi_g3,
-        "- [ ] Cập nhật G3_checkpoint.json với N đã duyệt",
-        "- [ ] Copy khối cỡ mẫu vào đề cương (PHẦN 4)",
+        "",
+        # 28/10/2026 (kiểm C1a): hai dòng này là việc của MÁY nhưng từng in thành ô «- [ ]» ⇒ study_readiness đếm là
+        # việc người còn nợ khi G3 chưa chốt.
+        "Máy tự làm, không phải ô việc của người: khi thống kê viên chốt G3, `G3_checkpoint.json` ghi N đã duyệt "
+        "(`confirmed_n`); khối cỡ mẫu ở PHẦN 4 dùng để dán vào đề cương.",
         "",
         "---",
         "*Cần bác sĩ kiểm chứng. Mọi số liệu cỡ mẫu phải được bác sĩ duyệt trước khi đưa vào đề cương chính thức.*",

@@ -2220,6 +2220,26 @@ def _thu_muc_de_tai(study: str) -> Path:
     return _REPO_ROOT / "exports" / study
 
 
+def _xuat_word_ho_tro(paths: dict) -> None:
+    """Xuất Word CHUẨN TRÌNH BÀY cho A1b/A2b/A13/A13b vừa dựng (28/10/2026, kiểm chi tiết C1a trục ④).
+
+    Vì sao: bộ sinh chỉ xuất Word cho A2 ⇒ sau mỗi lần dựng lại, Word của bốn tài liệu hỗ trợ CŨ hơn .md (người ký
+    mở Word đọc bản lỗi thời). Dùng đúng đường chuẩn `xuat_docx_chuan.render_mot_file` (md2docx_vn, Times New Roman
+    13pt, làm sạch ký tự trang trí); thiếu python-docx hay render lỗi ⇒ báo, không chặn G1."""
+    try:
+        import xuat_docx_chuan as XDC  # noqa: PLC0415 — chỉ cần khi có tài liệu để xuất
+    except Exception as exc:  # noqa: BLE001
+        print(f"  ⚠ Không xuất được Word tài liệu hỗ trợ G1 ({exc.__class__.__name__}: {exc})")
+        return
+    for path in paths.values():
+        if Path(path).suffix != ".md":
+            continue
+        try:
+            XDC.render_mot_file(Path(path))
+        except Exception as exc:  # noqa: BLE001
+            print(f"  ⚠ Word {Path(path).name}: {exc.__class__.__name__}: {exc}")
+
+
 def dung_lai_ho_tro(study: str, out_dir: Path) -> int:
     """Dựng lại 4 artifact phụ trợ G1 (A1b · A2b · A13 · A13b) từ dữ liệu ĐÃ LƯU — KHÔNG tra PubMed (17/10/2026).
 
@@ -2245,6 +2265,7 @@ def dung_lai_ho_tro(study: str, out_dir: Path) -> int:
                                            generated_at=datetime.now().strftime("%Y-%m-%d %H:%M"))
     for key, path in paths.items():
         print(f"  📝 {key}: {path.name}")
+    _xuat_word_ho_tro(paths)
     bao_cao = G1Q.evaluate_study(study, out_dir, write=True)
     print(f"  🧭 G1 quality: {bao_cao.get('status')}")
     print("  Cần bác sĩ kiểm chứng.")
@@ -2436,6 +2457,7 @@ def main():
     )
     for key, path in supporting_paths.items():
         print(f"  → {key}: {path}")
+    _xuat_word_ho_tro(supporting_paths)
 
     # Guardrail
     print("\n🛡️  Bước 5/7: Kiểm guardrail R1-R7...")
