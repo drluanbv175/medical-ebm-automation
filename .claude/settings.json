@@ -1,0 +1,16 @@
+{
+  "_ghi_chu": "UserPromptSubmit (29/10/2026, «một cửa vào» cho phiên mở trong repo y khoa): Claude Code chỉ đọc settings của THƯ MỤC DỰ ÁN đang mở, nên hook nhắc định tuyến khai ở repo gốc không chạy khi phiên mở trong medical-ebm-automation/ hay worktree của nó. tools/nhac_dinh_tuyen_cau_noi.py tìm repo gốc (EBM_WORKSPACE_ROOT → đi ngược lên từ thư mục dự án → checkout chính của worktree) rồi chạy ĐÚNG tools/nhac_dinh_tuyen.py của repo gốc — không chép bộ định tuyến sang đây. Không tìm thấy repo gốc hoặc có lỗi ⇒ im lặng, mã 0. Python thuần, không đường dẫn riêng máy nên khai ở tệp đi qua git.",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "D=\"${CLAUDE_PROJECT_DIR:-$PWD}\"; if [ -f \"$D/tools/nhac_dinh_tuyen_cau_noi.py\" ]; then PY=\"$(command -v python3 || command -v python)\"; if [ -n \"$PY\" ]; then \"$PY\" \"$D/tools/nhac_dinh_tuyen_cau_noi.py\"; fi; fi; true",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
