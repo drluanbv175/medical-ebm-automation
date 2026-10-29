@@ -14,6 +14,13 @@ json`) mà cổng A12 (`run_g10_assemble.py`) đòi. Lợi ích:
   `write_metadata_receipt`) — không phân kỳ logic/định dạng/chữ ký, nên hai tool lẻ
   vẫn tương thích (dùng khi chỉ cần một trong hai).
 
+SỬA 29/10/2026 (đánh giá chéo hội đồng G10 C1a, G10-DG-20261028T211140-262b8de6, RQ2 — cả hai người chấm): nhánh
+rút bài từng lấy THẲNG kết quả PubMed — receipt A12 thành bằng chứng MỘT nguồn, trái chuỗi 3 tầng bắt buộc
+(CLAUDE.md §6.4): mỗi mục chỉ có {"status": "ok"}, không có `source`/`sources_tried`, và tầng Retraction Watch
+ngoại tuyến (tầng duy nhất từng bắt ca rút-và-thay mà cả PubMed lẫn Europe PMC báo «ok») không được hỏi. Nay
+rút bài đi `RetractionChain` (Retraction Watch → NCBI → Europe PMC khi NCBI không kết luận được), tầng NCBI
+DÙNG LẠI kết quả của lời efetch gộp (`_TangNcbiDungLai`) ⇒ PubMed vẫn chỉ bị gọi MỘT lần cho cả hai nhánh.
+
 Dùng:
     python tools/check_citations.py --pmids 12345678,23456789
     python tools/check_citations.py --pmids 12345678 --study KKB-2026 --json
@@ -47,6 +54,21 @@ import check_citation_metadata as CCM  # noqa: E402
 import check_citation_retraction as CCR  # noqa: E402
 
 from app.sources.pubmed import PubMedClient  # noqa: E402
+from app.sources.retraction_chain import RetractionChain  # noqa: E402
+
+
+class _TangNcbiDungLai:
+    """Tầng NCBI của `RetractionChain` dùng lại kết quả rút bài của lời efetch gộp — không gọi PubMed lần hai.
+    `fetch_metadata` (tiêu đề thông báo rút bài — chuỗi chỉ gọi khi đã có tín hiệu rút) chuyển cho client thật."""
+
+    def __init__(self, client: PubMedClient, ket_qua: dict) -> None:
+        self._client, self._kq = client, ket_qua if isinstance(ket_qua, dict) else {}
+
+    def check_retraction_status(self, pmids: list) -> dict:
+        return {p: self._kq[p] for p in pmids if p in self._kq}
+
+    def fetch_metadata(self, pmids: list) -> dict:
+        return self._client.fetch_metadata(pmids)
 
 
 def main() -> int:
@@ -66,7 +88,9 @@ def main() -> int:
     # MỘT efetch → cả hai kết quả.
     client = PubMedClient()
     both = client.check_citations(pmids)
-    retraction = both["retraction"]
+    # Rút bài qua chuỗi 3 tầng — luật gộp bất đối xứng ở app/sources/retraction_chain.py, hợp đồng 6 trạng thái
+    # giữ nguyên nên receipt A12 và mọi nơi đọc không đổi cách đọc (chỉ THÊM `source`/`sources_tried`).
+    retraction = RetractionChain(pubmed=_TangNcbiDungLai(client, both["retraction"])).check(pmids)
     metadata = both["metadata"]
 
     if args.study.strip():
@@ -88,7 +112,8 @@ def main() -> int:
                          ensure_ascii=False, indent=2))
         return 1 if (retr_problem or meta_problem) else 0
 
-    print(f"Kiểm TRỌN GÓI {len(pmids)} PMID trong 1 lời gọi PubMed (rút bài + metadata)\n")
+    print(f"Kiểm TRỌN GÓI {len(pmids)} PMID — 1 lời gọi PubMed (metadata + tầng NCBI), rút bài qua chuỗi 3 tầng "
+          "(Retraction Watch → NCBI → Europe PMC khi NCBI không kết luận được)\n")
     for pmid in pmids:
         r = retraction.get(pmid, {"status": "unresolved"})
         m = metadata.get(pmid, {"status": "unresolved"})
@@ -98,7 +123,9 @@ def main() -> int:
         m_label = CCM._STATUS_LABEL.get(m.get("status")) or (
             f"⚠️  TRẠNG THÁI LẠ {m.get('status')!r} — CHƯA phân giải (không được coi là sạch)")
         print(f"  PMID {pmid}:")
-        print(f"      Rút bài:  {r_label}")
+        nguon = r.get("source") or "—"
+        print(f"      Rút bài:  {r_label} (nguồn kết luận: {nguon}; đã hỏi: "
+              f"{', '.join(r.get('sources_tried') or []) or '—'})")
         print(f"      Metadata: {m_label}")
         if m.get("status") == "resolved":
             print(f"          → {m.get('authors') or '[?]'} — {m.get('title') or '[?]'} — "

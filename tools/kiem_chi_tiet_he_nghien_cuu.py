@@ -841,10 +841,29 @@ def kiem_xuyen_cong(study: str, out_dir: Path) -> list[Muc]:
     return ra
 
 
+def _do_tuoi_theo_muc_dich_g10(tuoi: dict, out_dir: Path) -> dict:
+    """Bỏ vấn đề độ tươi CỦA G10 mà nguyên nhân chỉ nằm ở G5–G9 khi gói phát hành là gói TRƯỚC dữ liệu.
+
+    THÊM 29/10/2026 (đo toàn hệ nghiên cứu C1a): gói ETHICS_SUBMISSION chỉ dựa G0–G4, nhưng trục ① vẫn tô G10 vàng
+    «MỒ CÔI (thượng nguồn thiếu: G6, G7, G8, G9)» và xếp vào «việc của người thật» — sai: G5–G9 vắng là đúng trạng thái.
+    Dùng ĐÚNG luật của cổng (`g10_quality_gate.loc_do_tuoi_truoc_du_lieu`) cho riêng vấn đề của G10; vấn đề của G5–G9
+    tự chúng vẫn giữ trên dòng của cổng đó. Không đọc được mục đích ⇒ giữ nguyên (không đoán)."""
+    try:
+        import g10_quality_gate as G10Q  # noqa: PLC0415
+        rd = json.loads((Path(out_dir) / "G10_RELEASE_READINESS.json").read_text(encoding="utf-8"))
+        if G10Q.muc_dich_phat_hanh(rd) not in G10Q.MUC_DICH_TRUOC_DU_LIEU:
+            return tuoi
+    except Exception:  # noqa: BLE001 — thiếu tệp/hỏng JSON/không nạp được ⇒ giữ nguyên báo cáo độ tươi
+        return tuoi
+    van_de = [i for i in tuoi.get("issues", []) if isinstance(i, dict)]
+    g10 = G10Q.loc_do_tuoi_truoc_du_lieu([i for i in van_de if i.get("gate") == "G10"])
+    return {**tuoi, "issues": [i for i in van_de if i.get("gate") != "G10"] + g10}
+
+
 def kiem_de_tai(study: str, out_dir: Path, *, canary: bool = True) -> dict[str, Any]:
     cps = ARG._load_checkpoints(out_dir)
     ky = {g: da_ky(g, study, out_dir)[0] for g in CONG_CUNG}
-    tuoi = PF.stale_report(out_dir)
+    tuoi = _do_tuoi_theo_muc_dich_g10(PF.stale_report(out_dir), out_dir)
     dx_cong = docx_theo_cong(out_dir)
     muc: list[Muc] = []
     for g in CONG:
