@@ -31,6 +31,18 @@ Cách dùng:
         --thu-muc exports/<de-tai>/pha_cong_cu
     python tools/pha_phat_trien_cong_cu.py cvi phieu_cvi.csv
     python tools/pha_phat_trien_cong_cu.py nhan-thuc nhat_ky.csv [--json]
+    python tools/pha_phat_trien_cong_cu.py cvi phieu_cvi.csv --muc-thang '[A-F][0-9]*'
+    python tools/pha_phat_trien_cong_cu.py truy-xuat --muc-tu-cvi --them-form phieu_khao_sat \
+        --tu-dien <từ điển REDCap>.csv --nguyen-van <đề cương nộp>.md --tron --thu-muc exports/<de-tai>/pha_cong_cu
+    python tools/pha_phat_trien_cong_cu.py huong-dan-ma-hoa --thu-muc exports/<de-tai>/pha_cong_cu \
+        --tham-do B3 B6 --muc-nhat-ky-them C6a C6b
+
+THÊM 29/10/2026 (tranh biện hội đồng G1 C1a, G1-TB-20261028T204958-b2aab6a1, đợt B — việc sửa 3, 4, 6):
+  cvi --muc-thang   S-CVI chỉ tính trên các mục THUỘC THANG (mẫu so khớp); mục ngoài thang chỉ báo I-CVI.
+  truy-xuat         --them-form phủ mọi câu của form phiếu (bỏ mã bản ghi + trường phụ «ghi rõ»); --nguyen-van thêm
+                    cột câu chữ nguyên văn từ phụ lục đề cương; --tron sinh lại mà GIỮ cột chủ nhiệm đã điền.
+  huong-dan-ma-hoa  xuất hướng dẫn mã hoá các biểu mẫu (thang 1–4, van_de, loai_van_de, nhóm chuyên gia, câu hỏi mở,
+                    câu thăm dò đích danh) — mọi câu chữ là DỰ THẢO cho chủ nhiệm duyệt.
 Mã thoát: 0 xong · 1 (chỉ nhan-thuc) vi phạm tiêu chí F5 · 2 lỗi đầu vào.
 """
 from __future__ import annotations
@@ -39,7 +51,11 @@ import argparse
 import csv
 import json
 import math
+import re
+import shutil
 import sys
+from datetime import datetime
+from fnmatch import fnmatchcase
 from pathlib import Path
 
 # Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
@@ -78,6 +94,16 @@ COT_TRUY_XUAT = ["muc", "noi_dung", "phan_linh_vuc", "nguon_goc", "ly_do_dua_vao
 CHO_CHU_NHIEM = "[CẦN CHỦ NHIỆM]"
 NGUON_THANH_PHAN = "đề cương C1a mục 4.5.1, bước 2"
 NGUON_TIEU_CHI_4 = "đề cương C1a bảng 4.3, tiêu chí 4 (chính thức đo ở buổi chạy thử)"
+# THÊM 29/10/2026 (G1-TB-20261028T204958-b2aab6a1, việc sửa 4): cột câu chữ NGUYÊN VĂN của phiếu — cột TUỲ CHỌN, không
+# thuộc COT_TRUY_XUAT bắt buộc (bảng cũ 6 cột vẫn hợp lệ với kiểm máy G1-T4).
+COT_NGUYEN_VAN = "nguyen_van_phieu"
+TEP_TRUY_XUAT = "bang_truy_xuat_cau_hoi.csv"
+TEP_HUONG_DAN = "huong_dan_ma_hoa.md"
+_CAU_SO_RE = re.compile(r"^Câu\s+(\d+)\b")
+_PHAN_TU_DIEN_RE = re.compile(r"^Phần\s+(\d+)\b", re.IGNORECASE)
+_PHAN_PHU_LUC_RE = re.compile(r"^\*\*PH[ẦA]N\s+(\d+)\b", re.IGNORECASE)
+_CAU_PHU_LUC_RE = re.compile(r"^(\d+)\.\s+(.+)$")
+_DONG_BANG_RE = re.compile(r"^\|\s*([A-Za-z]\d+[a-z]?)\s*\|\s*([^|]*?)\s*\|")
 
 
 class LoiDauVao(ValueError):
@@ -106,7 +132,23 @@ def kappa_hieu_chinh(n: int, a: int) -> float:
     return float("nan") if pc >= 1 else (i_cvi - pc) / (1 - pc)
 
 
-def tinh_cvi(cot: list[str], dong: list[dict[str, str]]) -> dict:
+def _pham_vi_thang(ma_muc: list[str], muc_thang: list[str] | None) -> set[str] | None:
+    """Tập mục THUỘC THANG — S-CVI chỉ tính trên đó. THÊM 29/10/2026 (tranh biện hội đồng G1 C1a,
+    G1-TB-20261028T204958-b2aab6a1, việc sửa 3): phiếu CVI C1a chấm cả câu thông tin chung lẫn câu kết cục, nên trung
+    bình S-CVI trên mọi dòng không còn là giá trị nội dung của THANG. Mẫu so khớp phân biệt hoa thường (`fnmatchcase`,
+    như nhau trên Mac/Windows); mẫu không khớp mục nào ⇒ lỗi (bắt gõ nhầm). None ⇒ chưa khai."""
+    if muc_thang is None:
+        return None
+    thang: set[str] = set()
+    for mau in muc_thang:
+        khop = {m for m in ma_muc if fnmatchcase(m, mau)}
+        if not khop:
+            raise LoiDauVao(f"--muc-thang «{mau}» không khớp mục nào của phiếu CVI")
+        thang |= khop
+    return thang
+
+
+def tinh_cvi(cot: list[str], dong: list[dict[str, str]], muc_thang: list[str] | None = None) -> dict:
     if COT_MUC not in cot:
         raise LoiDauVao(f"phiếu CVI cần cột «{COT_MUC}» (mã mục) + mỗi chuyên gia một cột")
     cg = [c for c in cot if c != COT_MUC]
@@ -136,11 +178,18 @@ def tinh_cvi(cot: list[str], dong: list[dict[str, str]]) -> dict:
         })
     if not muc_kq:
         raise LoiDauVao("phiếu CVI không có mục nào")
+    thang = _pham_vi_thang([m["muc"] for m in muc_kq], muc_thang)
+    for m in muc_kq:
+        m["thuoc_thang"] = thang is None or m["muc"] in thang
     co_diem = [m for m in muc_kq if m["so_chuyen_gia_cham"]]
-    s_ave = sum(m["i_cvi"] for m in co_diem) / len(co_diem) if co_diem else float("nan")
-    s_ua = sum(1 for m in co_diem if m["so_dong_y_lien_quan"] == m["so_chuyen_gia_cham"]) / len(co_diem) \
-        if co_diem else float("nan")
+    co_diem_thang = [m for m in co_diem if m["thuoc_thang"]]
+    s_ave = sum(m["i_cvi"] for m in co_diem_thang) / len(co_diem_thang) if co_diem_thang else float("nan")
+    s_ua = sum(1 for m in co_diem_thang if m["so_dong_y_lien_quan"] == m["so_chuyen_gia_cham"]) / len(co_diem_thang) \
+        if co_diem_thang else float("nan")
     canh_bao = []
+    if thang is None:
+        canh_bao.append("S-CVI tính trên MỌI mục có điểm — chưa khai phạm vi thang (--muc-thang); câu thông tin chung "
+                        "hay câu kết cục chấm chung phiếu làm lệch S-CVI của thang")
     if len(cg) < 3:
         canh_bao.append(f"hội đồng {len(cg)} chuyên gia < 3 — ngưỡng I-CVI 0,78 của {NGUON_POLIT_2007} không áp được")
     duoi = [m["muc"] for m in co_diem if m["i_cvi"] < I_CVI_NGUONG]
@@ -155,6 +204,9 @@ def tinh_cvi(cot: list[str], dong: list[dict[str, str]]) -> dict:
     return {
         "so_chuyen_gia": len(cg), "so_muc": len(muc_kq),
         "s_cvi_ave": s_ave, "s_cvi_ua": s_ua,
+        "pham_vi_s_cvi": {"da_khai": thang is not None, "mau": list(muc_thang or []),
+                          "so_muc_thang": sum(1 for m in muc_kq if m["thuoc_thang"]),
+                          "muc_ngoai_thang": sorted(m["muc"] for m in muc_kq if not m["thuoc_thang"])},
         "muc": sorted(muc_kq, key=lambda m: (math.isnan(m["i_cvi"]), m["i_cvi"])),
         "canh_bao": canh_bao,
     }
@@ -262,25 +314,163 @@ def _ghi_chu_tu_dien(ghi_chu: str | None, chu_thich: str | None) -> str:
     return " · ".join(x for x in ((ghi_chu or "").strip(), chu) if x)
 
 
-def sinh_truy_xuat(muc: list[str], tu_dien: Path, thu_muc: Path) -> Path:
-    """Bảng truy xuất nguồn gốc câu hỏi: nội dung + phần/lĩnh vực + ghi chú lấy từ từ điển REDCap (khớp mã không phân
-    biệt hoa thường; tiêu đề phần của REDCap áp cho các trường phía sau tới tiêu đề kế tiếp). Nguồn gốc và lý do đưa vào
-    là việc của chủ nhiệm ⇒ để «[CẦN CHỦ NHIỆM]» — công cụ không đoán. Mục không có trong từ điển ⇒ lỗi (bảng truy xuất
-    phải truy được)."""
+def _doc_tu_dien(tu_dien: Path) -> list[dict[str, str]]:
+    """Từ điển REDCap thành danh sách trường THEO THỨ TỰ (tên, form, nhãn, phần, ghi chú, loại). Tiêu đề phần của
+    REDCap áp cho các trường phía sau tới tiêu đề kế tiếp. Thiếu cột tên/nhãn ⇒ không phải từ điển REDCap."""
     cot, dong = _doc_csv(tu_dien)
-    ten, nhan, phan, ghi = ("Variable / Field Name", "Field Label", "Section Header", "Field Note")
+    ten, nhan = "Variable / Field Name", "Field Label"
     if ten not in cot or nhan not in cot:
         raise LoiDauVao(f"{Path(tu_dien).name}: không phải từ điển REDCap (thiếu cột «{ten}»/«{nhan}»)")
-    theo_ma, phan_hien = {}, ""
+    ra, phan_hien = [], ""
     for d in dong:
-        phan_hien = d.get(phan, "") or phan_hien
-        theo_ma[d[ten].lower()] = (d[nhan], phan_hien, _ghi_chu_tu_dien(d.get(ghi, ""), d.get("Field Annotation", "")))
+        phan_hien = d.get("Section Header", "") or phan_hien
+        ra.append({"ten": d[ten], "form": d.get("Form Name", ""), "nhan": d[nhan], "phan": phan_hien,
+                   "ghi_chu": _ghi_chu_tu_dien(d.get("Field Note", ""), d.get("Field Annotation", "")),
+                   "loai": d.get("Field Type", "")})
+    return ra
+
+
+def truong_can_truy_xuat(truong: list[dict[str, str]], form: str) -> list[str]:
+    """Các trường của `form` phải có dòng trong bảng truy xuất — THÊM 29/10/2026 (G1-TB-20261028T204958-b2aab6a1, việc
+    sửa 4: phủ đủ các câu của phiếu, không chỉ các mục đem chấm CVI). Bỏ: trường ĐẦU TIÊN của từ điển (mã bản ghi
+    REDCap — hành chính), trường descriptive/calc (không phải câu hỏi), và TRƯỜNG PHỤ = trường mang cùng số «Câu N.» với
+    một trường đứng trước trong cùng form (ô «ghi rõ nếu chọn Khác» thuộc câu cha). Từ điển không đánh số «Câu N.» thì
+    không trường nào bị coi là phụ — lệch về phía đòi phủ nhiều hơn, không bỏ sót."""
+    if not truong:
+        return []
+    ma_ban_ghi, da_gap, ra = truong[0]["ten"], set(), []
+    for t in truong:
+        if t["form"] != form or t["ten"] == ma_ban_ghi or t["loai"] in ("descriptive", "calc"):
+            continue
+        so = _CAU_SO_RE.match(t["nhan"])
+        if so:
+            if so.group(1) in da_gap:
+                continue
+            da_gap.add(so.group(1))
+        ra.append(t["ten"])
+    return ra
+
+
+def doc_nguyen_van(tep: str | Path, tieu_de: str = "PHỤ LỤC C") -> dict[str, dict[str, str]]:
+    """Câu chữ NGUYÊN VĂN của phiếu trong phụ lục đề cương (Markdown) — THÊM 29/10/2026 (việc sửa 4: «Field Label» của
+    REDCap là bản rút gọn, mất mệnh đề của câu gốc; vd câu 11 của C1a thiếu «tính từ lúc lấy số đến lúc được vào phòng
+    khám»). Phụ lục bắt đầu ở dòng tiêu đề Markdown chứa `tieu_de`, hết ở tiêu đề cấp 1 kế tiếp. Trả ba bảng tra:
+    `so` = câu đánh số «N. …»; `ma` = dòng bảng «| A1 | … |» (khoá IN HOA); `phan` = đoạn chữ đầu tiên của một «PHẦN K»
+    không có câu đánh số hay dòng bảng (vd câu hỏi mở). Giữ nguyên văn, kể cả phương án trả lời — không diễn đạt lại."""
+    p = Path(tep)
+    if not p.is_file():
+        raise LoiDauVao(f"không thấy tệp: {p}")
+    dong = p.read_text(encoding="utf-8").splitlines()
+    bd = next((i for i, x in enumerate(dong) if x.startswith("#") and tieu_de.lower() in x.lower()), None)
+    if bd is None:
+        raise LoiDauVao(f"{p.name}: không thấy tiêu đề «{tieu_de}»")
+    so, ma, doan, co_cau, phan = {}, {}, {}, set(), None
+    for x in dong[bd + 1:]:
+        if x.startswith("# "):
+            break
+        s = x.strip()
+        m = _PHAN_PHU_LUC_RE.match(s)
+        if m:
+            phan = m.group(1)
+            continue
+        m = _CAU_PHU_LUC_RE.match(s)
+        if m:
+            so.setdefault(m.group(1), m.group(2).strip())
+            co_cau.add(phan)
+            continue
+        m = _DONG_BANG_RE.match(s)
+        if m and m.group(2):
+            ma.setdefault(m.group(1).upper(), m.group(2))
+            co_cau.add(phan)
+            continue
+        if phan and s and phan not in doan and not s.startswith(("|", "*", "…", "#", "_", ">")):
+            doan[phan] = s
+    return {"so": so, "ma": ma, "phan": {k: v for k, v in doan.items() if k not in co_cau}}
+
+
+def _nguyen_van_cho(t: dict[str, str], ma: str, nv: dict[str, dict[str, str]]) -> str:
+    so = _CAU_SO_RE.match(t["nhan"])
+    if so and so.group(1) in nv["so"]:
+        return nv["so"][so.group(1)]
+    if ma.upper() in nv["ma"]:
+        return nv["ma"][ma.upper()]
+    ph = _PHAN_TU_DIEN_RE.match(t["phan"])
+    return nv["phan"].get(ph.group(1), "") if ph else ""
+
+
+def _giu_o_chu_nhiem(cu: dict[str, str], cot: str) -> str:
+    v = (cu.get(cot) or "").strip()
+    return v if v and v != CHO_CHU_NHIEM else CHO_CHU_NHIEM
+
+
+def sinh_truy_xuat(muc: list[str], tu_dien: Path, thu_muc: Path, them_form: str | None = None,
+                   nguyen_van: str | Path | None = None, tron: bool = False, phu_luc: str = "PHỤ LỤC C") -> Path:
+    """Bảng truy xuất nguồn gốc câu hỏi: nội dung + phần/lĩnh vực + ghi chú lấy từ từ điển REDCap (khớp mã không phân
+    biệt hoa thường). Nguồn gốc và lý do đưa vào là việc của chủ nhiệm ⇒ «[CẦN CHỦ NHIỆM]» — công cụ không đoán. Mục
+    không có trong từ điển ⇒ lỗi (bảng truy xuất phải truy được). Tuỳ chọn 29/10/2026: xem `sinh_truy_xuat_chi_tiet`."""
+    return sinh_truy_xuat_chi_tiet(muc, tu_dien, thu_muc, them_form, nguyen_van, tron, phu_luc)[0]
+
+
+def sinh_truy_xuat_chi_tiet(muc: list[str], tu_dien: Path, thu_muc: Path, them_form: str | None = None,
+                            nguyen_van: str | Path | None = None, tron: bool = False,
+                            phu_luc: str = "PHỤ LỤC C") -> tuple[Path, list[str]]:
+    """Như `sinh_truy_xuat`, trả thêm cảnh báo. THÊM 29/10/2026 (G1-TB-20261028T204958-b2aab6a1, việc sửa 4):
+    - `them_form`: nối mọi câu của form REDCap đó chưa có trong `muc` (theo `truong_can_truy_xuat`);
+    - `nguyen_van`: đề cương Markdown ⇒ cột `nguyen_van_phieu` lấy từ phụ lục; câu không tìm thấy ⇒ cảnh báo;
+    - `tron`: bảng đã có thì SINH LẠI — nội dung/phần/ghi chú làm mới từ từ điển, còn nguồn gốc/lý do chủ nhiệm đã
+      điền (khác «[CẦN CHỦ NHIỆM]») và câu nguyên văn cũ được GIỮ; bản cũ chép sang `_ban_luu/` trước khi ghi. Bảng cũ
+      có mục không còn trong danh sách mới ⇒ lỗi, vì công cụ không bỏ dòng chủ nhiệm đã điền.
+    Không `tron` mà bảng đã có ⇒ lỗi như cũ (không ghi đè dữ liệu đã nhập)."""
+    truong = _doc_tu_dien(Path(tu_dien))
+    theo_ma = {t["ten"].lower(): t for t in truong}
+    muc = list(muc or [])
     thieu = [m for m in muc if m.lower() not in theo_ma]
     if thieu:
         raise LoiDauVao(f"{len(thieu)} mục không có trong từ điển dữ liệu: {', '.join(thieu)}")
-    thu_muc.mkdir(parents=True, exist_ok=True)
-    return _ghi_moi(thu_muc / "bang_truy_xuat_cau_hoi.csv", COT_TRUY_XUAT,
-                    [[m, *theo_ma[m.lower()][:2], CHO_CHU_NHIEM, CHO_CHU_NHIEM, theo_ma[m.lower()][2]] for m in muc])
+    if them_form is not None:
+        if not any(t["form"] == them_form for t in truong):
+            raise LoiDauVao(f"{Path(tu_dien).name}: không có form «{them_form}»")
+        da_co = {m.lower() for m in muc}
+        muc += [x for x in truong_can_truy_xuat(truong, them_form) if x.lower() not in da_co]
+    if not muc:
+        raise LoiDauVao("chưa có mục nào (--muc, --muc-tu-cvi hoặc --them-form)")
+    if len({m.lower() for m in muc}) != len(muc):
+        raise LoiDauVao("danh sách mục có mã trùng (không phân biệt hoa thường)")
+    nv = doc_nguyen_van(nguyen_van, phu_luc) if nguyen_van else None
+    p, cu = Path(thu_muc) / TEP_TRUY_XUAT, {}
+    if p.exists():
+        if not tron:
+            raise LoiDauVao(f"đã có {p} — không ghi đè dữ liệu đã nhập (sinh lại mà giữ cột chủ nhiệm đã điền: --tron)")
+        cu = {d["muc"].lower(): d for d in _doc_csv(p)[1] if d.get("muc")}
+        mat = sorted(set(cu) - {m.lower() for m in muc})
+        if mat:
+            raise LoiDauVao(f"bảng cũ có {len(mat)} mục không còn trong danh sách mới ({', '.join(mat[:6])}) — "
+                            "thêm vào --muc; công cụ không bỏ dòng chủ nhiệm đã điền")
+    dong, khong_thay = [], []
+    for m in muc:
+        t, c = theo_ma[m.lower()], cu.get(m.lower(), {})
+        van = _nguyen_van_cho(t, m, nv) if nv else ""
+        if nv and not van:
+            khong_thay.append(m)
+        dong.append([m, t["nhan"], t["phan"], _giu_o_chu_nhiem(c, "nguon_goc"), _giu_o_chu_nhiem(c, "ly_do_dua_vao"),
+                     t["ghi_chu"], van or (c.get(COT_NGUYEN_VAN) or "")])
+    cot = COT_TRUY_XUAT + [COT_NGUYEN_VAN]
+    if not cu:
+        Path(thu_muc).mkdir(parents=True, exist_ok=True)
+        return _ghi_moi(p, cot, dong), _canh_bao_nguyen_van(khong_thay)
+    luu = p.parent / "_ban_luu" / f"{p.stem}_{datetime.now().strftime('%Y%m%dT%H%M%S')}.csv"
+    luu.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(p, luu)
+    with p.open("w", encoding="utf-8", newline="") as f:
+        w = csv.writer(f, lineterminator="\n")
+        w.writerow(cot)
+        w.writerows(dong)
+    return p, _canh_bao_nguyen_van(khong_thay) + [f"bản cũ đã chép sang {luu.as_posix()}"]
+
+
+def _canh_bao_nguyen_van(khong_thay: list[str]) -> list[str]:
+    return [f"{len(khong_thay)} mục không tìm thấy câu chữ nguyên văn trong phụ lục — cột {COT_NGUYEN_VAN} để trống: "
+            + ", ".join(khong_thay)] if khong_thay else []
 
 
 def tinh_hoi_dong(cot: list[str], dong: list[dict[str, str]], tv_min: int = 6, tv_max: int = 10,
@@ -336,20 +526,103 @@ def tinh_theo_nguoi(cot: list[str], dong: list[dict[str, str]], nguong_phut: flo
             "so_nguoi_neu_noi_dung_thieu": sum(1 for d in dong if d["noi_dung_con_thieu"])}
 
 
+# ---------------------------------------------------------------- hướng dẫn mã hoá
+# THÊM 29/10/2026 (G1-TB-20261028T204958-b2aab6a1, việc sửa 6): người nhập các biểu mẫu chưa có văn bản nói mã nào nghĩa
+# là gì. Nhãn tiếng Việt của thang liên quan, câu hỏi mở và câu thăm dò là DỰ THẢO — chủ nhiệm duyệt câu chữ.
+NHAN_THANG_LIEN_QUAN = {"1": "Không liên quan", "2": "Ít liên quan", "3": "Khá liên quan", "4": "Rất liên quan"}
+NGHIA_LOAI_VAN_DE = {
+    "hieu_cau_hoi": "hiểu sai hoặc không hiểu câu hỏi/từ ngữ",
+    "nho_lai": "khó nhớ lại thông tin cần để trả lời",
+    "can_nhac": "khó cân nhắc để đưa ra đánh giá",
+    "chon_dap_an": "khó chọn phương án hoặc khớp câu trả lời vào thang",
+    "khac": "vấn đề khác — ghi rõ ở de_xuat_sua",
+}
+NGHIA_NHOM_CHUYEN_GIA = {
+    "lam_sang": "bác sĩ/điều dưỡng lâm sàng", "quan_ly_chat_luong": "quản lý chất lượng",
+    "phuong_phap_thong_ke": "phương pháp nghiên cứu/thống kê", "dai_dien_nguoi_benh": "đại diện người bệnh",
+    "khac": "khác — ghi rõ ở cột ghi chú của biên bản",
+}
+
+
+def sinh_huong_dan_ma_hoa(thu_muc: Path, tham_do: list[str] | None = None,
+                          muc_nhat_ky_them: list[str] | None = None) -> Path:
+    """Hướng dẫn mã hoá các biểu mẫu pha phát triển (`huong_dan_ma_hoa.md`). Câu thăm dò đích danh (`tham_do`) lấy câu
+    chữ từ bảng truy xuất (ưu tiên cột nguyên văn) ⇒ mục không có trong bảng ⇒ lỗi. Không ghi đè tệp đã có."""
+    thu_muc = Path(thu_muc)
+    p = thu_muc / TEP_HUONG_DAN
+    if p.exists():
+        raise LoiDauVao(f"đã có {p} — không ghi đè (dời bản cũ sang _ban_luu/ rồi sinh lại)")
+    tham_do, muc_nhat_ky_them = list(tham_do or []), list(muc_nhat_ky_them or [])
+    cau = {}
+    if (thu_muc / TEP_TRUY_XUAT).is_file():
+        cau = {d["muc"].lower(): d.get(COT_NGUYEN_VAN) or d.get("noi_dung", "")
+               for d in _doc_csv(thu_muc / TEP_TRUY_XUAT)[1] if d.get("muc")}
+    thieu = [m for m in tham_do if m.lower() not in cau]
+    if thieu:
+        raise LoiDauVao(f"câu thăm dò cho mục không có trong {TEP_TRUY_XUAT}: {', '.join(thieu)}")
+    du = "_(DỰ THẢO — chủ nhiệm duyệt câu chữ)_"
+    dong = [
+        "# Hướng dẫn mã hoá — pha phát triển bộ câu hỏi", "",
+        "> Sinh bằng `pha_phat_trien_cong_cu.py huong-dan-ma-hoa`. Chỉ ghi MÃ ẨN DANH (CG01…, NT01…) — không ghi "
+        "họ tên chuyên gia hay người bệnh. Cần bác sĩ kiểm chứng.", "",
+        "## 1. Phiếu chấm CVI (`phieu_cvi.csv`)", "",
+        f"Mỗi ô là điểm liên quan 1–4 {du}:", "",
+        *[f"- `{k}` = {v}" for k, v in NHAN_THANG_LIEN_QUAN.items()], "",
+        f"Điểm 3 hoặc 4 tính là «liên quan» khi tính I-CVI; ô trống = chuyên gia chưa chấm ({NGUON_POLIT_2007}).", "",
+        "## 2. Biểu mẫu hội đồng chuyên gia (`phieu_cvi_hoi_dong.csv`)", "",
+        "- `nhom`: " + " · ".join(f"`{k}` = {v}" for k, v in NGHIA_NHOM_CHUYEN_GIA.items()),
+        "- `thuoc_don_vi_nghien_cuu`: `co` / `khong`",
+        f"- Hai câu hỏi mở {du}:",
+        *[f"  - `{k}`: {v}" for k, v in CAU_HOI_MO.items()],
+        "- `phan_hoi_chu_nhiem`: chủ nhiệm ghi cách xử lý từng ý kiến (thêm câu, sửa câu, không đổi kèm lý do).", "",
+        "## 3. Nhật ký phỏng vấn nhận thức theo mục (`nhat_ky_phong_van_nhan_thuc.csv`)", "",
+        "- Mỗi dòng = một người × một mục. `van_de`: `0` = không vấn đề · `1` = hỏi lại hoặc hiểu sai.",
+        "- `loai_van_de` (chỉ khi `van_de` = `1`): " + " · ".join(f"`{k}` = {v}" for k, v in NGHIA_LOAI_VAN_DE.items()),
+        "- `de_xuat_sua`: câu chữ người phỏng vấn đề xuất, ghi nguyên lời người tham gia nếu có.", "",
+        "## 4. Nhật ký theo người (`nhat_ky_phong_van_nhan_thuc_theo_nguoi.csv`)", "",
+        f"- `thoi_gian_dien_phut`: số phút điền phiếu ({NGUON_TIEU_CHI_4}).",
+        "- `noi_dung_con_thieu`: điều người tham gia thấy phiếu chưa hỏi.", "",
+    ]
+    if tham_do:
+        dong += [f"## 5. Câu thăm dò đích danh {du}", ""]
+        for m in tham_do:
+            dong += [f"**{m}** — «{cau[m.lower()]}»", "",
+                     "- Hiểu câu hỏi: «Ông/Bà có thể nói lại câu này bằng lời của mình không? Theo Ông/Bà, câu này hỏi "
+                     "về điều gì?»",
+                     "- Trải nghiệm thật: «Hôm nay Ông/Bà có thực sự sử dụng hoặc trải qua điều câu này hỏi không? Nếu "
+                     "không, Ông/Bà đã chọn mức nào và vì sao?» (đối chiếu nhu cầu ô «không sử dụng»)", ""]
+    if muc_nhat_ky_them:
+        dong += ["## 6. Mục ghi thêm vào nhật ký phỏng vấn nhận thức", "",
+                 "Ghi như mục 3 (mỗi người × mục một dòng): " + ", ".join(f"`{m}`" for m in muc_nhat_ky_them) + ". "
+                 "Mục chưa có trong phiếu CVI chỉ vào phiếu khi chủ nhiệm quyết.", ""]
+    dong += ["## Lưu ý sửa đổi", "",
+             "Đổi câu chữ của phiếu SAU pha phát triển là sửa đổi đề cương: phải báo Hội đồng Đạo đức trước khi dùng "
+             "bản sửa; PI quyết có ghi nhận sửa đổi lên bản đăng ký (OSF) hay không.", "", "_Cần bác sĩ kiểm chứng._",
+             ""]
+    thu_muc.mkdir(parents=True, exist_ok=True)
+    p.write_text("\n".join(dong), encoding="utf-8", newline="\n")
+    return p
+
+
 # ---------------------------------------------------------------- in báo cáo
 def _f(x: float, so: int = 2) -> str:
     return "—" if not math.isfinite(x) else f"{x:.{so}f}"
 
 
 def in_cvi(kq: dict) -> str:
+    pv = kq.get("pham_vi_s_cvi") or {}
+    pham_vi = (f"- Phạm vi S-CVI: {pv['so_muc_thang']} mục thuộc thang (mẫu {' '.join(pv['mau'])}); "
+               f"{len(pv['muc_ngoai_thang'])} mục ngoài thang chỉ báo I-CVI" if pv.get("da_khai")
+               else "- Phạm vi S-CVI: mọi mục có điểm (chưa khai --muc-thang)")
     dong = [
         f"# Giá trị nội dung — hội đồng {kq['so_chuyen_gia']} chuyên gia, {kq['so_muc']} mục", "",
-        f"- S-CVI/Ave = {_f(kq['s_cvi_ave'])} · S-CVI/UA = {_f(kq['s_cvi_ua'])} (báo cả hai — {NGUON_POLIT_2006})", "",
-        "| Mục | Số CG chấm | Chấm 3–4 | I-CVI | Kappa hiệu chỉnh |", "|---|---|---|---|---|",
+        f"- S-CVI/Ave = {_f(kq['s_cvi_ave'])} · S-CVI/UA = {_f(kq['s_cvi_ua'])} (báo cả hai — {NGUON_POLIT_2006})",
+        pham_vi, "",
+        "| Mục | Số CG chấm | Chấm 3–4 | I-CVI | Kappa hiệu chỉnh | Thuộc thang |", "|---|---|---|---|---|---|",
     ]
     for m in kq["muc"]:
         dong.append(f"| {m['muc']} | {m['so_chuyen_gia_cham']} | {m['so_dong_y_lien_quan']} | {_f(m['i_cvi'])} |"
-                    f" {_f(m['kappa_hieu_chinh'])} |")
+                    f" {_f(m['kappa_hieu_chinh'])} | {'✓' if m.get('thuoc_thang', True) else '—'} |")
     dong.append("")
     dong += [f"- ⚠️ {c}" for c in kq["canh_bao"]]
     dong += ["", "_Mục xếp tăng dần theo I-CVI. Công cụ không quyết định giữ/bỏ/sửa mục — hội đồng quyết định._",
@@ -390,6 +663,8 @@ def chay(argv: list[str] | None = None) -> int:
     a_cvi = sub.add_parser("cvi", help="tính I-CVI, kappa hiệu chỉnh, S-CVI/Ave, S-CVI/UA")
     a_cvi.add_argument("tep")
     a_cvi.add_argument("--json", action="store_true")
+    a_cvi.add_argument("--muc-thang", nargs="+", metavar="MAU",
+                       help="mẫu mục THUỘC THANG (vd '[A-F][0-9]*'): S-CVI chỉ tính trên các mục này")
     a_nt = sub.add_parser("nhan-thuc", help="tổng hợp nhật ký phỏng vấn nhận thức + tiêu chí F5")
     a_nt.add_argument("tep")
     a_nt.add_argument("--nguong-ty-le", type=float, default=0.20, help="mặc định 0,20 theo F5 đề cương C1a")
@@ -401,9 +676,19 @@ def chay(argv: list[str] | None = None) -> int:
     a_bs.add_argument("--so-nguoi", type=int, default=1)
     a_bs.add_argument("--thu-muc", required=True)
     a_tx = sub.add_parser("truy-xuat", help="sinh bảng truy xuất nguồn gốc câu hỏi từ từ điển REDCap")
-    a_tx.add_argument("--muc", nargs="+", required=True)
+    a_tx.add_argument("--muc", nargs="+", default=[])
+    a_tx.add_argument("--muc-tu-cvi", action="store_true", help="lấy các mục của phieu_cvi.csv trong --thu-muc")
+    a_tx.add_argument("--them-form", help="nối mọi câu của form REDCap này (bỏ mã bản ghi và trường phụ «ghi rõ»)")
+    a_tx.add_argument("--nguyen-van", help="đề cương Markdown có phụ lục phiếu ⇒ cột nguyen_van_phieu")
+    a_tx.add_argument("--phu-luc", default="PHỤ LỤC C", help="tiêu đề phụ lục chứa phiếu (mặc định «PHỤ LỤC C»)")
+    a_tx.add_argument("--tron", action="store_true",
+                      help="sinh lại bảng đã có, GIỮ cột nguồn gốc/lý do chủ nhiệm đã điền (bản cũ sang _ban_luu/)")
     a_tx.add_argument("--tu-dien", required=True)
     a_tx.add_argument("--thu-muc", required=True)
+    a_hdm = sub.add_parser("huong-dan-ma-hoa", help="xuất hướng dẫn mã hoá các biểu mẫu pha phát triển")
+    a_hdm.add_argument("--thu-muc", required=True)
+    a_hdm.add_argument("--tham-do", nargs="+", default=[], help="mục cần câu thăm dò đích danh")
+    a_hdm.add_argument("--muc-nhat-ky-them", nargs="+", default=[], help="mục ghi thêm vào nhật ký phỏng vấn nhận thức")
     a_hd = sub.add_parser("hoi-dong", help="kiểm thành phần hội đồng chuyên gia + câu hỏi mở chưa phản hồi")
     a_hd.add_argument("tep")
     a_hd.add_argument("--json", action="store_true")
@@ -416,8 +701,21 @@ def chay(argv: list[str] | None = None) -> int:
             print(f"  {k}: {v}")
         return 0
     if a.lenh == "truy-xuat":
-        print(f"đã tạo {sinh_truy_xuat(a.muc, Path(a.tu_dien), Path(a.thu_muc))} — cột nguon_goc/ly_do_dua_vao do "
-              "chủ nhiệm điền. Cần bác sĩ kiểm chứng.")
+        muc = list(a.muc)
+        if a.muc_tu_cvi:
+            da_co = {m.lower() for m in muc}
+            muc += [d[COT_MUC] for d in _doc_csv(Path(a.thu_muc) / "phieu_cvi.csv")[1]
+                    if d.get(COT_MUC) and d[COT_MUC].lower() not in da_co]
+        p, canh_bao = sinh_truy_xuat_chi_tiet(muc, Path(a.tu_dien), Path(a.thu_muc), a.them_form, a.nguyen_van,
+                                              a.tron, a.phu_luc)
+        print(f"đã ghi {p} — {len(_doc_csv(p)[1])} mục; cột nguon_goc/ly_do_dua_vao do chủ nhiệm điền. "
+              "Cần bác sĩ kiểm chứng.")
+        for c in canh_bao:
+            print(f"⚠️ {c}")
+        return 0
+    if a.lenh == "huong-dan-ma-hoa":
+        print(f"đã tạo {sinh_huong_dan_ma_hoa(Path(a.thu_muc), a.tham_do, a.muc_nhat_ky_them)} — câu chữ là DỰ THẢO, "
+              "chủ nhiệm duyệt. Cần bác sĩ kiểm chứng.")
         return 0
     if a.lenh == "hoi-dong":
         kq = tinh_hoi_dong(*_doc_csv(a.tep))
@@ -437,7 +735,7 @@ def chay(argv: list[str] | None = None) -> int:
         print("Điền mã ẩn danh (CG01…, NT01…) — KHÔNG ghi họ tên chuyên gia hay người bệnh. Cần bác sĩ kiểm chứng.")
         return 0
     if a.lenh == "cvi":
-        kq = tinh_cvi(*_doc_csv(a.tep))
+        kq = tinh_cvi(*_doc_csv(a.tep), muc_thang=a.muc_thang)
         print(_json(kq) if a.json else in_cvi(kq))
         return 0
     if not 0 < a.nguong_ty_le <= 1 or a.nguong_so_muc < 1:

@@ -1661,7 +1661,13 @@ def _kiem_pha_cong_cu(out_dir: Path, study: str) -> List[str]:
     THÊM 17/10/2026 (soát G1-T4 của C1a): ba biểu mẫu đề cương cam kết — hội đồng chuyên gia (thành phần + 2 câu hỏi
     mở về tính bao phủ, đúng các chuyên gia của phiếu CVI), phỏng vấn nhận thức theo người (thời gian điền phiếu),
     bảng truy xuất nguồn gốc câu hỏi (đúng các mục của phiếu CVI, có nội dung câu). Thành phần lệch đề cương hay ô
-    nguồn gốc chưa điền là việc của chủ nhiệm — chỉ CẤU TRÚC được tính cho agent."""
+    nguồn gốc chưa điền là việc của chủ nhiệm — chỉ CẤU TRÚC được tính cho agent.
+
+    SỬA 29/10/2026 (tranh biện hội đồng G1 C1a, G1-TB-20261028T204958-b2aab6a1, bài học hệ thống): luật «bảng truy xuất
+    BẰNG tập mục của phiếu CVI» làm hai việc sửa hợp lệ kéo ngược nhau — tách phạm vi S-CVI và phủ mọi câu của phiếu —
+    nên biên bản xử lý không qua được kiểm máy. Nay: bảng truy xuất phải CHỨA mọi mục của phiếu CVI (so không phân biệt
+    hoa thường) và, khi có từ điển REDCap của đề tài, phủ mọi câu của form phiếu khảo sát
+    (`pha_phat_trien_cong_cu.truong_can_truy_xuat`)."""
     try:
         import pha_phat_trien_cong_cu as PCC  # noqa: PLC0415
     except Exception as exc:  # noqa: BLE001
@@ -1708,14 +1714,43 @@ def _kiem_pha_cong_cu(out_dir: Path, study: str) -> List[str]:
             if ma != cg_cvi:
                 ra.append(f"{ten}: mã chuyên gia không khớp cột của phiếu CVI ({len(ma)} ≠ {len(cg_cvi)})")
         if ten == "bang_truy_xuat_cau_hoi.csv" and muc_cvi is not None:
-            ma = {d["muc"] for d in dong if d["muc"]}
-            if ma != muc_cvi:
-                lech = sorted(ma ^ muc_cvi)
-                ra.append(f"{ten}: mục không khớp phiếu CVI ({', '.join(lech[:6])}{' …' if len(lech) > 6 else ''})")
+            ma = {d["muc"].lower() for d in dong if d["muc"]}
+            thieu_muc = sorted(m for m in muc_cvi if m.lower() not in ma)
+            if thieu_muc:
+                ra.append(f"{ten}: thiếu mục của phiếu CVI ({', '.join(thieu_muc[:6])}"
+                          f"{' …' if len(thieu_muc) > 6 else ''})")
             rong = [d["muc"] for d in dong if d["muc"] and not d["noi_dung"]]
             if rong:
                 ra.append(f"{ten}: {len(rong)} mục thiếu nội dung câu")
+            ra += _kiem_phu_form_phieu(Path(out_dir), study, muc_cvi, ma, PCC)
     return ra
+
+
+def _kiem_phu_form_phieu(out_dir: Path, study: str, muc_cvi: set, ma_truy_xuat: set, pcc: Any) -> List[str]:
+    """Bảng truy xuất phủ mọi câu của form phiếu khảo sát — THÊM 29/10/2026 (G1-TB-20261028T204958-b2aab6a1). Form
+    phiếu = form của từ điển REDCap chứa nhiều mục phiếu CVI nhất. Chưa có từ điển `G5_REDCap_dictionary_<mã>.csv` ⇒
+    không kiểm phần này (bảng truy xuất vẫn phải chứa mọi mục phiếu CVI)."""
+    td = out_dir / f"G5_REDCap_dictionary_{study}.csv"
+    if not td.is_file():
+        return []
+    try:
+        truong = pcc._doc_tu_dien(td)
+    except pcc.LoiDauVao as exc:
+        return [f"từ điển REDCap: {exc}"]
+    muc_thuong = {m.lower() for m in muc_cvi}
+    dem: Dict[str, int] = {}
+    for t in truong:
+        if t["ten"].lower() in muc_thuong:
+            dem[t["form"]] = dem.get(t["form"], 0) + 1
+    if not dem:
+        return []
+    form = max(dem, key=lambda f: dem[f])
+    thieu = [x for x in pcc.truong_can_truy_xuat(truong, form) if x.lower() not in ma_truy_xuat]
+    if not thieu:
+        return []
+    return [f"bang_truy_xuat_cau_hoi.csv: chưa phủ {len(thieu)} câu của form «{form}» trong từ điển REDCap "
+            f"({', '.join(thieu[:6])}{' …' if len(thieu) > 6 else ''}) — sinh lại bằng `pha_phat_trien_cong_cu.py "
+            f"truy-xuat --muc-tu-cvi --them-form {form} --tron`"]
 
 
 # Dòng của đề cương lõi G1 (PHẦN 0 của A2) mà một nhiệm vụ chuyên biệt phải soạn — nhãn chép ĐÚNG khuôn
