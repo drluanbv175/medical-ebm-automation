@@ -53,10 +53,14 @@ NGUON_SONG = "song"
 NGUON_LUU = "luu"
 NGUON_LOI = "loi"
 
-# Bộ nhớ đệm theo (cổng, thư mục, chữ ký tệp) — một lượt chấm G10 gọi chấm sống G0..G9, mỗi cổng lại chấm cổng trước
-# nó: không có đệm thì số lần chấm là O(n²). Chữ ký = (tên, mtime_ns, kích thước) của mọi tệp trong thư mục đề tài ⇒
-# tệp nào đổi thì đệm tự mất hiệu lực.
-_DEM: Dict[Tuple[str, str, Tuple], Dict[str, Any]] = {}
+# Bộ nhớ đệm theo (cổng, mã đề tài, thư mục, chữ ký tệp) — một lượt chấm G10 gọi chấm sống G0..G9, mỗi cổng lại chấm
+# cổng trước nó: không có đệm thì số lần chấm là O(n²). Chữ ký = (tên, mtime_ns, kích thước) của mọi tệp trong thư mục
+# đề tài ⇒ tệp nào đổi thì đệm tự mất hiệu lực.
+# SỬA 02/11/2026: khoá cũ THIẾU mã đề tài, mà tên artifact được dựng theo mã (G1_A2_…_<mã>.md). Một lời gọi mang mã
+# SAI cho cùng thư mục (vd skill_standards.real_world_signals suy mã từ tên thư mục khi checkpoint thiếu «study») chấm
+# ra BLOCKED «thiếu file» rồi ghi đè đệm ⇒ lời gọi đúng mã sau đó đọc lại kết quả sai (đài kiểm soát báo G1
+# GUARDRAIL_FAIL dù G1 chấm riêng là PASS_G1_CONFIRMED).
+_DEM: Dict[Tuple[str, str, str, Tuple], Dict[str, Any]] = {}
 _DANG_CHAM: set = set()
 
 
@@ -115,7 +119,7 @@ def trang_thai_song(gate: str, study: str, out_dir: Path, repo_root: Optional[Pa
     out_dir = Path(out_dir)
     gate = str(gate).upper()
     luu, cp = _trang_thai_luu(out_dir, gate)
-    khoa = (gate, str(out_dir.resolve()), _chu_ky_thu_muc(out_dir))
+    khoa = (gate, str(study), str(out_dir.resolve()), _chu_ky_thu_muc(out_dir))
     if khoa in _DEM:
         return _DEM[khoa]
     if (gate, str(out_dir.resolve())) in _DANG_CHAM:
