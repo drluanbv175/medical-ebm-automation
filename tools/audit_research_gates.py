@@ -1517,7 +1517,13 @@ def _classify_gate(gate: str, study: str, out_dir: Path, topic: Optional[str],
     # cho G6, ĐÚNG khuôn G0 (chỉ chặn khi BLOCKED — các trạng thái khác của
     # quality_gate vẫn rơi vào nhánh REAL_SIGNAL_BY_PIPELINE_GATE như cũ, giữ
     # nguyên hành vi hiện có cho phần chưa bị lỗi này).
-    if gate == "G6" and isinstance(cp.get("quality_gate"), dict):
+    #
+    # SỬA 02/11/2026: từ khi trạng thái là CHẤM SỐNG (_cp_theo_song ghi đè quality_gate), G6 bị chặn chỉ vì G5 CHƯA KHOÁ
+    # dữ liệu cũng ra BLOCKED ⇒ nhánh này gán GUARDRAIL_FAIL + «Sửa lỗi G6_QUALITY_REPORT» cho agent, che mất người phải
+    # hành động (PI/data manager khoá dữ liệu). Chưa có tín hiệu db_locked ⇒ để rơi xuống nhánh tín hiệu thật bên dưới
+    # (NEEDS_REAL, không chạy tự động, blocker «dataset phân tích đã khóa»). Khi G5 đã khoá mà G6 vẫn BLOCKED (vd
+    # G6-AUTO-06 phân tích trước khi khoá) thì vẫn là GUARDRAIL_FAIL như vá 06/09.
+    if gate == "G6" and isinstance(cp.get("quality_gate"), dict) and signals.get("db_locked"):
         quality = cp["quality_gate"]
         if quality.get("status") == "BLOCKED":
             return {
