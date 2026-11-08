@@ -27,6 +27,10 @@ Pisters et al. 2010 Chest (HAS-BLED); Lim et al. 2003 Thorax (CURB-65); Singer e
 2016 JAMA — Sepsis-3 (qSOFA); Wells et al. 2000/2001 (Wells PE); Kline et al. 2004
 (PERC); Child & Turcotte 1964 / Pugh 1973 (Child-Pugh); Kamath et al. 2001 / OPTN-UNOS
 (MELD).
+Bổ sung 08/11/2026 (lý do khám ngoại trú): Wells DVT (Wells 2003 NEJM); Centor/McIsaac
+(McIsaac 1998 CMAJ; NICE NG84); Marburg Heart Score (Bösner 2010 CMAJ); FeverPAIN (Little
+2013 BMJ Open; NICE NG84); CRB-65 (Bauer 2006 J Intern Med; NICE NG250); Ottawa cổ chân/bàn
+chân (Stiell 1993 JAMA) và Ottawa gối (Stiell 1996 JAMA) — hai quy tắc Ottawa là CÓ/KHÔNG.
 
 Dùng:
   python tools/risk_score_calc.py cha2ds2vasc --chf 0 --hypertension 1 --age 78 \\
@@ -412,6 +416,195 @@ def meld(bilirubin: float, inr: float, creatinine: float,
 
 
 # ═══════════════════════════════════════════════════════════════════════════
+# BỔ SUNG 08/11/2026 — thang cho lý do khám ngoại trú thường gặp. Thành phần +
+# ngưỡng KHỚP mục tương ứng trong app/clinical_scores/verified.py (một nguồn sự
+# thật); chỉ trả ĐIỂM + PHÂN LOẠI ĐỊNH TÍNH, không bịa % nguy cơ tuyệt đối.
+# ═══════════════════════════════════════════════════════════════════════════
+
+def _age(age: float, lo: int = 0, hi: int = 130) -> float:
+    _require_finite("age", age)
+    if age < lo or age > hi:
+        raise RiskScoreError(f"age={age} ngoài miền hợp lệ ({lo}–{hi}).")
+    return age
+
+
+def wells_dvt(active_cancer: int, paralysis_or_cast: int, bedridden_or_surgery: int,
+              deep_vein_tenderness: int, entire_leg_swollen: int, calf_swelling_3cm: int,
+              pitting_edema: int, collateral_veins: int, previous_dvt: int,
+              alternative_dx_as_likely: int) -> Dict:
+    """Wells DVT (mô hình 2 mức) — Wells PS et al. N Engl J Med. 2003;349(13):1227-35.
+    9 tiêu chí +1 điểm; chẩn đoán khác có khả năng ≥ DVT: −2 điểm.
+    ≤1: ít khả năng (làm D-dimer); ≥2: nhiều khả năng (siêu âm ép)."""
+    plus = {"active_cancer": active_cancer, "paralysis_or_cast": paralysis_or_cast,
+            "bedridden_or_surgery": bedridden_or_surgery,
+            "deep_vein_tenderness": deep_vein_tenderness,
+            "entire_leg_swollen": entire_leg_swollen, "calf_swelling_3cm": calf_swelling_3cm,
+            "pitting_edema": pitting_edema, "collateral_veins": collateral_veins,
+            "previous_dvt": previous_dvt}
+    for k, v in plus.items():
+        plus[k] = _bit(k, v)
+    alt = _bit("alternative_dx_as_likely", alternative_dx_as_likely)
+    total = sum(plus.values()) - 2 * alt
+    if total <= 1:
+        category = "DVT ít khả năng (unlikely) — làm D-dimer; âm tính ⇒ loại trừ"
+    else:
+        category = "DVT nhiều khả năng (likely) — siêu âm ép tĩnh mạch"
+    note = ("Người đang có UNG THƯ: tổ hợp Wells thấp + D-dimer âm KHÔNG an toàn — siêu âm thẳng "
+            "(Geersing GJ et al. BMJ 2014;348:g1340)." if plus["active_cancer"] else
+            "Nghi DVT TÁI PHÁT: chỉ dùng Wells sửa đổi (+1 tiền sử) — Geersing 2014.")
+    return {"score": total, "min_score": -2, "max_score": 9, "category": category,
+            "components": {**plus, "alternative_dx_as_likely": -2 * alt},
+            "note": note, "source": "Wells PS et al. N Engl J Med. 2003;349(13):1227-35."}
+
+
+def centor_mcisaac(fever_over_38: int, absence_of_cough: int, tender_anterior_nodes: int,
+                   tonsillar_swelling_exudate: int, age: float) -> Dict:
+    """Centor gốc (0–4) và McIsaac (−1 đến 5) — McIsaac WJ et al. CMAJ 1998;158(1):75-83.
+    Tuổi (McIsaac): 3–14 = +1; 15–44 = 0; ≥45 = −1. Ngưỡng hành động theo verified.py
+    (McIsaac) và NICE NG84 (Centor gốc 0–2 / 3–4)."""
+    f = {"fever_over_38": fever_over_38, "absence_of_cough": absence_of_cough,
+         "tender_anterior_nodes": tender_anterior_nodes,
+         "tonsillar_swelling_exudate": tonsillar_swelling_exudate}
+    for k, v in f.items():
+        f[k] = _bit(k, v)
+    _age(age)
+    if age < 3:
+        raise RiskScoreError("age<3: thang chỉ dùng cho người ≥3 tuổi.")
+    age_adj = 1 if age <= 14 else (0 if age <= 44 else -1)
+    centor = sum(f.values())
+    mcisaac = centor + age_adj
+    if mcisaac <= 1:
+        cat = "thấp — không xét nghiệm, không kháng sinh"
+    elif mcisaac <= 3:
+        cat = "trung gian — xét nghiệm nhanh liên cầu (RADT)"
+    else:
+        cat = "cao — xét nghiệm; điều trị nếu dương tính (không kháng sinh theo kinh nghiệm thường quy)"
+    nice = ("Centor 0–2: NICE NG84 — không kê kháng sinh" if centor <= 2 else
+            "Centor 3–4: NICE NG84 — cân nhắc kháng sinh ngay hoặc kê đơn dự phòng")
+    return {"score": mcisaac, "min_score": -1, "max_score": 5, "category": cat,
+            "centor_score": centor, "centor_nice_ng84": nice,
+            "components": {**f, "age_adjustment": age_adj},
+            "source": "McIsaac WJ et al. CMAJ. 1998;158(1):75-83; NICE NG84 (2018)."}
+
+
+def marburg_heart(age: float, sex: str, known_vascular_disease: int,
+                  pain_worse_on_exercise: int, pain_not_reproducible_by_palpation: int,
+                  patient_assumes_cardiac: int) -> Dict:
+    """Marburg Heart Score — Bösner S et al. CMAJ. 2010;182(12):1295-300.
+    Tuổi/giới: nữ ≥65 hoặc nam ≥55 = 1. Ngưỡng 3: 0–2 âm tính, 3–5 dương tính."""
+    _age(age, 18, 130)
+    if sex not in ("male", "female"):
+        raise RiskScoreError("sex phải là 'male' hoặc 'female'.")
+    age_sex = 1 if (sex == "female" and age >= 65) or (sex == "male" and age >= 55) else 0
+    f = {"known_vascular_disease": known_vascular_disease,
+         "pain_worse_on_exercise": pain_worse_on_exercise,
+         "pain_not_reproducible_by_palpation": pain_not_reproducible_by_palpation,
+         "patient_assumes_cardiac": patient_assumes_cardiac}
+    for k, v in f.items():
+        f[k] = _bit(k, v)
+    total = age_sex + sum(f.values())
+    cat = ("âm tính (0–2) — khả năng bệnh mạch vành thấp; kết hợp phán đoán lâm sàng" if total <= 2
+           else "dương tính (3–5) — cần đánh giá thêm bệnh mạch vành")
+    return {"score": total, "max_score": 5, "category": cat,
+            "components": {"age_sex": age_sex, **f},
+            "note": "Chỉ cho đau ngực tại chăm sóc ban đầu; KHÔNG dùng để loại trừ hội chứng vành cấp — "
+                    "đau ngực cấp nghi HCVC ⇒ chuyển nơi có ECG và troponin.",
+            "source": "Bösner S et al. CMAJ. 2010;182(12):1295-300."}
+
+
+def feverpain(fever_24h: int, purulence: int, attend_within_3_days: int,
+              severely_inflamed_tonsils: int, no_cough_or_coryza: int) -> Dict:
+    """FeverPAIN — Little P et al. BMJ Open. 2013;3(10):e003943; ngưỡng hành động NICE NG84.
+    Mỗi tiêu chí 1 điểm (0–5): 0–1 / 2–3 / 4–5."""
+    f = {"fever_24h": fever_24h, "purulence": purulence,
+         "attend_within_3_days": attend_within_3_days,
+         "severely_inflamed_tonsils": severely_inflamed_tonsils,
+         "no_cough_or_coryza": no_cough_or_coryza}
+    for k, v in f.items():
+        f[k] = _bit(k, v)
+    total = sum(f.values())
+    if total <= 1:
+        cat = "thấp (0–1) — NICE NG84: không kê kháng sinh"
+    elif total <= 3:
+        cat = "trung gian (2–3) — NICE NG84: cân nhắc không kê hoặc kê đơn dự phòng (back-up)"
+    else:
+        cat = "cao (4–5) — NICE NG84: cân nhắc kháng sinh ngay hoặc kê đơn dự phòng"
+    return {"score": total, "max_score": 5, "category": cat, "components": f,
+            "source": "Little P et al. BMJ Open. 2013;3(10):e003943; NICE NG84 (2018)."}
+
+
+def crb65(confusion: int, rr_high: int, bp_low: int, age: float) -> Dict:
+    """CRB-65 — Bauer TT et al. J Intern Med. 2006;260(1):93-101; phân tầng NICE NG250 (2025).
+    rr_high: nhịp thở ≥30/phút. bp_low: HA tâm trương ≤60 HOẶC tâm thu <90 mmHg."""
+    f = {"confusion": confusion, "rr_high": rr_high, "bp_low": bp_low}
+    for k, v in f.items():
+        f[k] = _bit(k, v)
+    _age(age, 18, 130)
+    age_point = 1 if age >= 65 else 0
+    total = sum(f.values()) + age_point
+    if total == 0:
+        cat = "nguy cơ thấp (0) — NICE NG250: chăm sóc ban đầu có dặn dò an toàn"
+    elif total <= 2:
+        cat = ("nguy cơ trung gian (1–2) — NICE NG250: 1 điểm ⇒ chăm sóc ban đầu có dặn dò an toàn "
+               "hoặc chuyển dịch vụ cấp cứu trong ngày/bệnh viện; 2 điểm ⇒ cân nhắc chuyển viện")
+    else:
+        cat = "nguy cơ cao (3–4) — NICE NG250: cân nhắc chuyển viện"
+    return {"score": total, "max_score": 4, "category": cat,
+            "components": {**f, "age_geq_65": age_point},
+            "note": "Kết hợp phán đoán lâm sàng, SpO₂, bệnh nền, thai kỳ; có ure thì dùng CURB-65.",
+            "source": "Bauer TT et al. J Intern Med. 2006;260(1):93-101; NICE NG250 (2025)."}
+
+
+def ottawa_ankle(malleolar_pain: int, lateral_malleolus_tenderness: int,
+                 medial_malleolus_tenderness: int, midfoot_pain: int,
+                 fifth_metatarsal_tenderness: int, navicular_tenderness: int,
+                 unable_bear_weight: int) -> Dict:
+    """Ottawa Ankle and Foot Rules (bản tinh chỉnh) — Stiell IG et al. JAMA. 1993;269(9):1127-32.
+    Quy tắc CÓ/KHÔNG, không cộng điểm. Ấn đau xương: bờ sau hoặc đỉnh mắt cá (6 cm dưới);
+    không chịu sức nặng: không đi được 4 bước cả ngay sau chấn thương lẫn lúc khám."""
+    f = {"malleolar_pain": malleolar_pain,
+         "lateral_malleolus_tenderness": lateral_malleolus_tenderness,
+         "medial_malleolus_tenderness": medial_malleolus_tenderness,
+         "midfoot_pain": midfoot_pain, "fifth_metatarsal_tenderness": fifth_metatarsal_tenderness,
+         "navicular_tenderness": navicular_tenderness, "unable_bear_weight": unable_bear_weight}
+    for k, v in f.items():
+        f[k] = _bit(k, v)
+    ankle = bool(f["malleolar_pain"] and (f["lateral_malleolus_tenderness"]
+                 or f["medial_malleolus_tenderness"] or f["unable_bear_weight"]))
+    foot = bool(f["midfoot_pain"] and (f["fifth_metatarsal_tenderness"]
+                or f["navicular_tenderness"] or f["unable_bear_weight"]))
+    return {"ankle_xray_indicated": ankle, "foot_xray_indicated": foot,
+            "category": ("chỉ định X-quang: " + ", ".join(x for x, b in
+                         (("cổ chân", ankle), ("bàn chân", foot)) if b)) if (ankle or foot)
+            else "quy tắc âm tính — không cần X-quang thường quy",
+            "components": f,
+            "note": "Quy tắc độ nhạy cao để LOẠI TRỪ; độ đặc hiệu thấp — dương tính không có nghĩa là gãy.",
+            "source": "Stiell IG et al. JAMA. 1993;269(9):1127-32."}
+
+
+def ottawa_knee(age: float, fibular_head_tenderness: int, isolated_patellar_tenderness: int,
+                unable_flex_90: int, unable_bear_weight: int) -> Dict:
+    """Ottawa Knee Rule — Stiell IG et al. JAMA. 1996;275(8):611-5 (dẫn xuất Ann Emerg Med 1995).
+    ≥1 tiêu chí (tuổi ≥55, ấn đau đầu xương mác, ấn đau khu trú xương bánh chè, không gấp
+    được 90°, không đi được 4 bước) ⇒ chỉ định X-quang gối. Dẫn xuất ở NGƯỜI LỚN."""
+    _age(age, 0, 130)
+    if age < 18:
+        raise RiskScoreError("age<18: quy tắc dẫn xuất và kiểm định ở người lớn.")
+    f = {"fibular_head_tenderness": fibular_head_tenderness,
+         "isolated_patellar_tenderness": isolated_patellar_tenderness,
+         "unable_flex_90": unable_flex_90, "unable_bear_weight": unable_bear_weight}
+    for k, v in f.items():
+        f[k] = _bit(k, v)
+    age55 = 1 if age >= 55 else 0
+    indicated = bool(age55 or any(f.values()))
+    return {"knee_xray_indicated": indicated,
+            "category": "chỉ định X-quang gối" if indicated
+            else "quy tắc âm tính — không cần X-quang gối",
+            "components": {"age_geq_55": age55, **f},
+            "source": "Stiell IG et al. JAMA. 1996;275(8):611-5."}
+
+
+# ═══════════════════════════════════════════════════════════════════════════
 # CLI
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -498,6 +691,55 @@ def main() -> int:
                     default=False, dest="dialysis")
     md.add_argument("--json", action="store_true")
 
+    wd = sub.add_parser("wells-dvt")
+    for name in ("active-cancer", "paralysis-or-cast", "bedridden-or-surgery",
+                 "deep-vein-tenderness", "entire-leg-swollen", "calf-swelling-3cm",
+                 "pitting-edema", "collateral-veins", "previous-dvt", "alternative-dx-as-likely"):
+        wd.add_argument(f"--{name}", type=int, required=True, dest=name.replace("-", "_"))
+    wd.add_argument("--json", action="store_true")
+
+    cm = sub.add_parser("centor-mcisaac")
+    for name in ("fever-over-38", "absence-of-cough", "tender-anterior-nodes",
+                 "tonsillar-swelling-exudate"):
+        cm.add_argument(f"--{name}", type=int, required=True, dest=name.replace("-", "_"))
+    cm.add_argument("--age", type=float, required=True)
+    cm.add_argument("--json", action="store_true")
+
+    mh = sub.add_parser("marburg")
+    mh.add_argument("--age", type=float, required=True)
+    mh.add_argument("--sex", required=True, choices=["male", "female"])
+    for name in ("known-vascular-disease", "pain-worse-on-exercise",
+                 "pain-not-reproducible-by-palpation", "patient-assumes-cardiac"):
+        mh.add_argument(f"--{name}", type=int, required=True, dest=name.replace("-", "_"))
+    mh.add_argument("--json", action="store_true")
+
+    fp = sub.add_parser("feverpain")
+    for name in ("fever-24h", "purulence", "attend-within-3-days",
+                 "severely-inflamed-tonsils", "no-cough-or-coryza"):
+        fp.add_argument(f"--{name}", type=int, required=True, dest=name.replace("-", "_"))
+    fp.add_argument("--json", action="store_true")
+
+    cr = sub.add_parser("crb65")
+    cr.add_argument("--confusion", type=int, required=True)
+    cr.add_argument("--rr-high", type=int, required=True, dest="rr_high")
+    cr.add_argument("--bp-low", type=int, required=True, dest="bp_low")
+    cr.add_argument("--age", type=float, required=True)
+    cr.add_argument("--json", action="store_true")
+
+    oa = sub.add_parser("ottawa-ankle")
+    for name in ("malleolar-pain", "lateral-malleolus-tenderness", "medial-malleolus-tenderness",
+                 "midfoot-pain", "fifth-metatarsal-tenderness", "navicular-tenderness",
+                 "unable-bear-weight"):
+        oa.add_argument(f"--{name}", type=int, required=True, dest=name.replace("-", "_"))
+    oa.add_argument("--json", action="store_true")
+
+    ok = sub.add_parser("ottawa-knee")
+    ok.add_argument("--age", type=float, required=True)
+    for name in ("fibular-head-tenderness", "isolated-patellar-tenderness", "unable-flex-90",
+                 "unable-bear-weight"):
+        ok.add_argument(f"--{name}", type=int, required=True, dest=name.replace("-", "_"))
+    ok.add_argument("--json", action="store_true")
+
     args = ap.parse_args()
     try:
         if args.cmd == "cha2ds2vasc":
@@ -523,6 +765,34 @@ def main() -> int:
             res = child_pugh(args.bilirubin, args.albumin, args.inr, args.ascites, args.encephalopathy)
         elif args.cmd == "meld":
             res = meld(args.bilirubin, args.inr, args.creatinine, args.dialysis)
+        elif args.cmd == "wells-dvt":
+            res = wells_dvt(args.active_cancer, args.paralysis_or_cast, args.bedridden_or_surgery,
+                            args.deep_vein_tenderness, args.entire_leg_swollen,
+                            args.calf_swelling_3cm, args.pitting_edema, args.collateral_veins,
+                            args.previous_dvt, args.alternative_dx_as_likely)
+        elif args.cmd == "centor-mcisaac":
+            res = centor_mcisaac(args.fever_over_38, args.absence_of_cough,
+                                 args.tender_anterior_nodes, args.tonsillar_swelling_exudate,
+                                 args.age)
+        elif args.cmd == "marburg":
+            res = marburg_heart(args.age, args.sex, args.known_vascular_disease,
+                                args.pain_worse_on_exercise,
+                                args.pain_not_reproducible_by_palpation,
+                                args.patient_assumes_cardiac)
+        elif args.cmd == "feverpain":
+            res = feverpain(args.fever_24h, args.purulence, args.attend_within_3_days,
+                            args.severely_inflamed_tonsils, args.no_cough_or_coryza)
+        elif args.cmd == "crb65":
+            res = crb65(args.confusion, args.rr_high, args.bp_low, args.age)
+        elif args.cmd == "ottawa-ankle":
+            res = ottawa_ankle(args.malleolar_pain, args.lateral_malleolus_tenderness,
+                               args.medial_malleolus_tenderness, args.midfoot_pain,
+                               args.fifth_metatarsal_tenderness, args.navicular_tenderness,
+                               args.unable_bear_weight)
+        elif args.cmd == "ottawa-knee":
+            res = ottawa_knee(args.age, args.fibular_head_tenderness,
+                              args.isolated_patellar_tenderness, args.unable_flex_90,
+                              args.unable_bear_weight)
     except RiskScoreError as e:
         print(f"❌ LỖI: {e}")
         return 1

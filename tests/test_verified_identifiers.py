@@ -19,9 +19,9 @@ _NO_IDENTIFIER_OK = {"news2", "nyha", "gold_abe"}
 
 def test_coverage_jumped_from_baseline():
     cov = identifier_coverage()
-    assert cov["total"] == 32
+    assert cov["total"] == 37  # 32 + 5 thang ngoại trú bổ sung 08/11/2026 (đều có PMID)
     # Mốc cũ 2/32 (6%); mục tiêu vá ≥ 90%.
-    assert cov["with_identifier"] >= 29
+    assert cov["with_identifier"] >= 34
     assert cov["coverage_pct"] >= 90.0
 
 

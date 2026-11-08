@@ -3,7 +3,7 @@
 1.3 — seed_verified_scores() phải ghi ChangeLogEntry khi NÂNG CẤP một thang
       từ skeleton → verified, và KHÔNG ghi trùng khi chạy lại (idempotent).
 1.4 — số liệu danh mục phải khớp doc RA_SOAT_THANG_DIEM_2026-06.md:
-      32 verified, 16 needs_verification; không thang needs_verification nào có công thức.
+      37 verified (32 + 5 bổ sung 08/11/2026), 16 needs_verification; không thang needs_verification nào có công thức.
 
 Lưu ý: DB test là session-scoped (dùng chung). Các test ở đây viết theo tính
 chất BẤT BIẾN nên không phụ thuộc thứ tự chạy.
@@ -14,7 +14,7 @@ from app.clinical_scores import VERIFIED_SCORES, seed_clinical_scores, seed_veri
 from app.database import session_scope
 from app.models import ChangeLogEntry, ClinicalScore
 
-EXPECTED_VERIFIED = 32          # = len(VERIFIED_SCORES), doc 2026-06
+EXPECTED_VERIFIED = 37          # = len(VERIFIED_SCORES): 32 (doc 2026-06) + 5 thang ngoại trú (08/11/2026)
 EXPECTED_NEEDS_VERIFICATION = 16  # doc 2026-06: 16 công cụ chưa điền công thức
 
 
@@ -33,7 +33,7 @@ def _changelog_count() -> int:
 # ---- 1.4: liêm chính số liệu ----
 
 def test_verified_scores_list_count_pinned():
-    # Pin số lượng để mọi thêm/bớt thang verified là CHỦ Ý (khớp doc = 32)
+    # Pin số lượng để mọi thêm/bớt thang verified là CHỦ Ý (khớp doc = 37)
     assert len(VERIFIED_SCORES) == EXPECTED_VERIFIED
 
 
