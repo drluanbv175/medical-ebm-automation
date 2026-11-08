@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""xuat_phieu_ky_thang_diem.py — Sinh PHIẾU KÝ XÁC NHẬN CHUYÊN KHOA cho 32 thang
+"""xuat_phieu_ky_thang_diem.py — Sinh PHIẾU KÝ XÁC NHẬN CHUYÊN KHOA cho các thang
 điểm/công cụ lâm sàng "verified" (app/clinical_scores/verified.py::VERIFIED_SCORES).
 
 VÌ SAO CÓ (13/09/2026, bác sĩ yêu cầu "soạn sẵn tất cả nội dung để ký xác thực"
@@ -81,7 +81,7 @@ def sinh_noi_dung() -> str:
     hom_nay = datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
     dong: list[str] = []
-    dong.append("# PHIẾU KÝ XÁC NHẬN CHUYÊN KHOA — 32 thang điểm/công cụ lâm sàng \"verified\"\n")
+    dong.append(f"# PHIẾU KÝ XÁC NHẬN CHUYÊN KHOA — {len(VERIFIED_SCORES)} thang điểm/công cụ lâm sàng \"verified\"\n")
     dong.append(f"_Sinh tự động ngày {hom_nay} từ `app/clinical_scores/verified.py::VERIFIED_SCORES` "
                 "— MỘT NGUỒN DUY NHẤT, không gõ tay lại. Sửa nội dung phải sửa file nguồn đó rồi "
                 "sinh lại phiếu này, KHÔNG sửa tay bản `.md`/`.docx` đã xuất._\n")

@@ -121,3 +121,33 @@ không bịa).
 2. Thêm/sửa **test khóa** trong `tests/test_clinical_scores_updates.py` (và `_integrity.py` nếu đổi số đếm).
 3. Ghi Change Log: `docs/TEST_BASELINE.md` + mục này.
 4. Chạy `pytest` (phải xanh) → commit.
+
+## G. BỔ SUNG 08/11/2026 — THANG CHO LÝ DO KHÁM NGOẠI TRÚ THƯỜNG GẶP
+
+Nguồn yêu cầu: bác sĩ kiểm độ phủ thang điểm cho dashboard
+`WebDashboard_EBM_VanDeCuThe_LyDoKhamNgoaiTru_TiepCanChanDoanDieuTri_20261108.html`.
+Đo sống trước khi sửa: 32 verified · 45 khung · 8 máy tính.
+
+**Thêm 5 thang verified** (đồng thời thêm khung trong `catalog.py`, nâng thẳng lên verified;
+`needs_verification` giữ nguyên 16; verified 32 → **37**; khung 45 → **50**):
+
+| score_id | Nguồn gốc (PMID) | Nơi chép thành phần + ngưỡng |
+|---|---|---|
+| `marburg_heart` | Bösner 2010 CMAJ (20603345) | Toàn văn PMC2934794 — Bảng 2/3 |
+| `ottawa_ankle` | Stiell 1993 JAMA (8433468) | Tóm tắt (độ nhạy, xác suất khi âm tính) + mô tả thống nhất ở hai bài toàn văn mở (PMC10592341, PMC12200823); toàn văn JAMA 1993 không mở |
+| `ottawa_knee` | Stiell 1996 JAMA (8594242) | Tóm tắt dẫn xuất 1995 (PMID 7574120) + kiểm định 1996 |
+| `feverpain` | Little 2013 BMJ Open (24163209) | NICE NG84 «Terms used» (mỗi tiêu chí 1 điểm, ngưỡng 0–1/2–3/4–5) + RCT PRISM (PMID 24114306, PMC3805475) |
+| `crb65` | Bauer 2006 J Intern Med (16789984) | NICE NG250 (02/09/2025, thay CG191) Box 1 + khuyến cáo 1.2.3 |
+
+**Cập nhật nội dung 4 thang đã có** (đề xuất trong PR, chờ chuyên khoa duyệt):
+`centor_mcisaac` (thêm IDSA 2025 PMID 41343363 + ngưỡng Centor gốc NICE NG84) ·
+`wells_dvt` (ung thư không an toàn, DVT tái phát dùng Wells sửa đổi — Geersing 2014 PMID 24615063) ·
+`phq9` (Negeri 2021 IPD, PMID 34610915) · `gad7` (Cochrane 2025, PMID 40130828 — độ nhạy 0,64).
+
+**Máy tính mới trong `tools/risk_score_calc.py`** (8 → **15**): `wells-dvt`, `centor-mcisaac`,
+`marburg`, `feverpain`, `crb65`, `ottawa-ankle`, `ottawa-knee` — chỉ điểm + phân loại định tính,
+không nhúng % nguy cơ. Test `tests/test_risk_score_calc_ngoai_tru_20261108.py`; kiểm đột biến
+10/10 ngưỡng bị bắt.
+
+- [ ] Chuyên khoa ký xác nhận 5 thang mới (phiếu sinh lại bằng `tools/xuat_phieu_ky_thang_diem.py`).
+  - Người xác nhận: ______________  Ngày: ____________  Chữ ký: ______________

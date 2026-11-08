@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""kiem_do_tuoi_thang_diem.py — Kiểm RÚT BÀI + ĐỘ TƯƠI cho 32 thang điểm/công cụ
+"""kiem_do_tuoi_thang_diem.py — Kiểm RÚT BÀI + ĐỘ TƯƠI cho các thang điểm/công cụ (37 tại 08/11/2026)
 lâm sàng "verified" (app/clinical_scores/verified.py::VERIFIED_SCORES).
 
 VÌ SAO CÓ (13/09/2026, bác sĩ chốt "xây ngay" sau audit toàn diện hệ nghiên cứu
@@ -98,7 +98,7 @@ def _ghi_so(du_lieu: dict) -> None:
 
 
 def thu_thap_dinh_danh() -> List[Dict[str, Optional[str]]]:
-    """[{score_id, score_name, pmid, doi}] cho toàn bộ 32 thang điểm verified."""
+    """[{score_id, score_name, pmid, doi}] cho toàn bộ thang điểm verified."""
     ra = []
     for s in VERIFIED_SCORES:
         ra.append({
@@ -211,7 +211,7 @@ def main() -> int:
     try:
         ket_qua = kiem_day_du()
     except Exception as e:  # noqa: BLE001 — lỗi công cụ, KHÔNG phải một phát hiện
-        print(f"✗ Lỗi công cụ khi kiểm rút bài 32 thang điểm: {type(e).__name__}: {e}",
+        print(f"✗ Lỗi công cụ khi kiểm rút bài các thang điểm verified: {type(e).__name__}: {e}",
               file=sys.stderr)
         return 2
 
@@ -242,7 +242,7 @@ def main() -> int:
         return 1
 
     if not args.json:
-        print("✅ Không phát hiện rút bài/expression of concern trong 32 thang điểm verified.")
+        print(f"✅ Không phát hiện rút bài/expression of concern trong {ket_qua['n_scores']} thang điểm verified.")
         print("Cần bác sĩ kiểm chứng.")
     return 0
 

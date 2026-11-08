@@ -1,4 +1,4 @@
-"""Danh mục ~45 thang điểm/công cụ lâm sàng cốt lõi cho ngoại trú.
+"""Danh mục ~50 thang điểm/công cụ lâm sàng cốt lõi cho ngoại trú.
 
 NGUYÊN TẮC CHỐNG BỊA ĐẶT:
 - KHÔNG tự bịa công thức/cut-off. Vì các công thức cần đối chiếu nguồn gốc,
@@ -33,7 +33,7 @@ def _score(score_id: str, name: str, area: str, situation: str, purpose: str) ->
     }
 
 
-# Danh sách khung (skeleton) ~45 công cụ. Công thức để trống cho tới khi xác minh.
+# Danh sách khung (skeleton) ~50 công cụ. Công thức để trống cho tới khi xác minh.
 CORE_SCORES: List[Dict] = [
     _score("cha2ds2_vasc", "CHA2DS2-VASc / CHA2DS2-VA", "Tim mạch",
            "Rung nhĩ không do van", "Đánh giá nguy cơ đột quỵ để cân nhắc kháng đông"),
@@ -125,6 +125,17 @@ CORE_SCORES: List[Dict] = [
            "Đánh giá đề kháng insulin", "Chỉ số đề kháng insulin"),
     _score("anion_gap", "Anion Gap", "Thận",
            "Rối loạn toan kiềm", "Hỗ trợ chẩn đoán toan chuyển hóa"),
+    # Bổ sung 08/11/2026 — lý do khám ngoại trú thường gặp (đều được nâng lên verified).
+    _score("marburg_heart", "Marburg Heart Score", "Tim mạch",
+           "Đau ngực tại chăm sóc ban đầu", "Loại trừ bệnh mạch vành"),
+    _score("ottawa_ankle", "Ottawa Ankle and Foot Rules", "Cấp cứu ban đầu",
+           "Chấn thương cổ chân/bàn chân cấp", "Quyết định chụp X-quang"),
+    _score("ottawa_knee", "Ottawa Knee Rule", "Cấp cứu ban đầu",
+           "Chấn thương gối cấp", "Quyết định chụp X-quang"),
+    _score("feverpain", "FeverPAIN", "Nhiễm khuẩn",
+           "Đau họng cấp", "Khả năng liên cầu, quyết định kháng sinh"),
+    _score("crb65", "CRB-65", "Hô hấp",
+           "Viêm phổi cộng đồng tại chăm sóc ban đầu", "Nguy cơ tử vong khi không có ure"),
 ]
 
 

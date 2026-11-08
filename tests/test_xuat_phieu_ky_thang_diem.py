@@ -25,7 +25,7 @@ def _co_lap_state_path(tmp_path, monkeypatch):
     yield
 
 
-def test_sinh_noi_dung_co_du_32_thang_diem():
+def test_sinh_noi_dung_co_du_37_thang_diem():
     noi_dung = CLI.sinh_noi_dung()
     for s in VERIFIED_SCORES:
         assert s["score_name"] in noi_dung
@@ -48,7 +48,7 @@ def test_co_state_sach_thi_hien_thi_dung_trang_thai_ok(tmp_path, monkeypatch):
     monkeypatch.setattr(CLI, "STATE_PATH", state_path)
     noi_dung = CLI.sinh_noi_dung()
     assert "✅ Còn nguyên vẹn" in noi_dung
-    assert noi_dung.count("✅ Còn nguyên vẹn (đã kiểm rút bài)") >= 28  # 28/32 có PMID
+    assert noi_dung.count("✅ Còn nguyên vẹn (đã kiểm rút bài)") >= 33  # 33/37 có PMID (28 + 5 bổ sung 08/11/2026)
 
 
 def test_thang_bi_rut_bai_hien_ro_canh_bao_do(tmp_path, monkeypatch):

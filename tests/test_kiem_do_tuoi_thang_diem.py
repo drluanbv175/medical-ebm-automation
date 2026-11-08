@@ -1,4 +1,4 @@
-"""Kiểm `tools/kiem_do_tuoi_thang_diem.py` — kiểm rút bài + độ tươi cho 32 thang
+"""Kiểm `tools/kiem_do_tuoi_thang_diem.py` — kiểm rút bài + độ tươi cho 37 thang
 điểm lâm sàng "verified" (khoảng trống đo được 13/09/2026: kho này có 0 cơ chế
 tự động tái-kiểm định kỳ trước khi công cụ này ra đời).
 
@@ -52,12 +52,12 @@ def _co_lap_state_path(tmp_path, monkeypatch):
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# thu_thap_dinh_danh() — độ phủ đúng 32 thang điểm
+# thu_thap_dinh_danh() — độ phủ đúng 37 thang điểm (32 + 5 bổ sung 08/11/2026)
 # ════════════════════════════════════════════════════════════════════════════
 
-def test_thu_thap_dinh_danh_dem_du_32_thang():
+def test_thu_thap_dinh_danh_dem_du_37_thang():
     items = CLI.thu_thap_dinh_danh()
-    assert len(items) == len(VERIFIED_SCORES) == 32
+    assert len(items) == len(VERIFIED_SCORES) == 37
     assert {it["score_id"] for it in items} == {s["score_id"] for s in VERIFIED_SCORES}
 
 
@@ -78,7 +78,7 @@ def test_kiem_day_du_moi_pmid_ok_khong_co_van_de():
     crossref = _FakeCrossref({})
     ket_qua = CLI.kiem_day_du(chain=chain, crossref=crossref)
 
-    assert ket_qua["n_scores"] == 32
+    assert ket_qua["n_scores"] == 37
     van_de = [h for h in ket_qua["hang_muc"] if h["ket_qua"]["status"] in CLI._VAN_DE]
     assert van_de == []
 
@@ -146,7 +146,7 @@ def test_main_json_sach_la_json_thuan_khong_lan_van_ban(monkeypatch, capsys):
     out = capsys.readouterr().out
     assert rc == 0
     data = json.loads(out)  # phải parse được — không có dòng thừa sau khối JSON
-    assert data["n_scores"] == 32
+    assert data["n_scores"] == 37
 
 
 def test_main_json_co_van_de_van_la_json_thuan(monkeypatch, capsys):
@@ -182,7 +182,7 @@ def test_main_ghi_so_sau_khi_chay_day_du(monkeypatch):
     _chay_main(monkeypatch, [])
     assert CLI.STATE_PATH.exists()
     so = json.loads(CLI.STATE_PATH.read_text(encoding="utf-8"))
-    assert so["n_scores"] == 32
+    assert so["n_scores"] == 37
     assert so["n_van_de"] == 0
 
 

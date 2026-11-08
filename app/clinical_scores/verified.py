@@ -120,7 +120,7 @@ VERIFIED_SCORES: List[Dict] = [
         "interpretation": "≤1: ít khả năng (DVT unlikely). ≥2: nhiều khả năng (DVT likely).",
         "action_thresholds": "≤1: D-dimer; âm tính → loại trừ. ≥2 (hoặc D-dimer dương): siêu âm ép tĩnh mạch.",
         "clinical_action": "Phối hợp D-dimer độ nhạy cao ở nhóm nguy cơ thấp.",
-        "limitations": "Độ chính xác giảm ở bệnh nhân nội trú/ung thư.",
+        "limitations": "Độ chính xác giảm ở bệnh nhân nội trú/ung thư. Phân tích gộp dữ liệu cá thể (Geersing GJ, et al. BMJ 2014; PMID 24615063; doi:10.1136/bmj.g1340): Wells ≤1 + D-dimer âm còn 1,2% DVT (KTC 95% 0,7–1,8%), đúng ở cả chăm sóc ban đầu lẫn bệnh viện; ở người UNG THƯ tổ hợp này KHÔNG an toàn và không hiệu quả (2,2% DVT, chỉ 9% người bệnh đạt) ⇒ siêu âm thẳng; nghi DVT TÁI PHÁT chỉ dùng Wells sửa đổi (+1 điểm tiền sử).",
         "source": "Wells PS, et al. N Engl J Med 2003;349:1227-1235.",
         "guideline_reference": "NICE NG158; ACCP/ASH VTE.",
     },
@@ -259,7 +259,7 @@ VERIFIED_SCORES: List[Dict] = [
         "clinical_action": "Dùng theo dõi đáp ứng (giảm ≥5 điểm có ý nghĩa lâm sàng).",
         "limitations": "Là công cụ sàng lọc, không thay chẩn đoán lâm sàng.",
         "source": "Kroenke K, Spitzer RL, Williams JBW. J Gen Intern Med 2001;16:606-613.",
-        "guideline_reference": "USPSTF depression screening.",
+        "guideline_reference": "USPSTF depression screening. Phân tích gộp dữ liệu cá thể 100 nghiên cứu, 44.503 người (Negeri ZF, et al. BMJ 2021; PMID 34610915; doi:10.1136/bmj.n2183): ngưỡng ≥10 so với phỏng vấn bán cấu trúc — độ nhạy 0,85 (KTC 95% 0,79–0,89), độ đặc hiệu 0,85 (0,82–0,87).",
     },
     {
         "score_id": "gad7",
@@ -276,7 +276,7 @@ VERIFIED_SCORES: List[Dict] = [
         "limitations": "Công cụ sàng lọc, không thay chẩn đoán.",
         "source": "Spitzer RL, et al. Arch Intern Med 2006;166:1092-1097.",
         "guideline_reference": "USPSTF 2023: khuyến cáo MỚI (mức B) sàng lọc rối loạn lo âu ở người lớn "
-                               "≤64 tuổi (gồm thai kỳ/hậu sản); NICE anxiety. Ngưỡng ≥10 xác nhận lại bởi meta-analysis 2023.",
+                               "≤64 tuổi (gồm thai kỳ/hậu sản); NICE anxiety. Ngưỡng ≥10 xác nhận lại bởi meta-analysis 2023. Cochrane 2025 (Aktürk Z, et al.; PMID 40130828; doi:10.1002/14651858.CD015455; 48 nghiên cứu, 19.228 người): GAD-7 ≥10 phát hiện lo âu lan toả — độ nhạy 0,64 (KTC 95% 0,56–0,72), độ đặc hiệu 0,91 (0,87–0,93); với mọi rối loạn lo âu độ nhạy chỉ 0,48 ⇒ điểm thấp KHÔNG loại trừ.",
     },
     {
         "score_id": "centor_mcisaac",
@@ -297,7 +297,9 @@ VERIFIED_SCORES: List[Dict] = [
         "clinical_action": "Ưu tiên xét nghiệm xác định trước khi kê kháng sinh (stewardship).",
         "limitations": "Không phân biệt người lành mang GAS; dịch tễ địa phương ảnh hưởng.",
         "source": "McIsaac WJ, et al. CMAJ 1998;158:75-83; Centor RM 1981.",
-        "guideline_reference": "IDSA pharyngitis; NICE sore throat (FeverPAIN là lựa chọn thay thế).",
+        "guideline_reference": "IDSA 2025 cập nhật viêm họng liên cầu nhóm A — phần 1: dùng thang điểm lâm sàng để chọn người cần xét nghiệm (Linder JA, et al. Clin Infect Dis 2026; PMID 41343363; doi:10.1093/cid/ciaf668). "
+                               "NICE NG84 (2018): Centor GỐC 4 tiêu chí (không hiệu chỉnh tuổi) 0–2 điểm ⇒ không kê kháng sinh; 3–4 điểm ⇒ cân nhắc kháng sinh ngay hoặc kê đơn dự phòng (back-up). "
+                               "FeverPAIN là lựa chọn thay thế — xem mục `feverpain`.",
     },
     {
         "score_id": "anion_gap",
@@ -670,6 +672,141 @@ VERIFIED_SCORES: List[Dict] = [
         "source": "SCORE2-Diabetes Working Group & ESC CVD Risk Collaboration. Eur Heart J 2023;44:2544-2556.",
         "guideline_reference": "ESC 2023 CVD trong ĐTĐ (Eur Heart J 2023;44:4043).",
     },
+    # ── Bổ sung 08/11/2026: thang cho lý do khám ngoại trú thường gặp (dashboard
+    #    LyDoKhamNgoaiTru_TiepCanChanDoanDieuTri_20261108). Thành phần + ngưỡng chép
+    #    từ bài gốc/guideline đã đọc trong phiên; PMID/DOI lấy từ chính bản ghi PubMed.
+    {
+        "score_id": "marburg_heart",
+        "score_name": "Marburg Heart Score",
+        "clinical_area": "Tim mạch",
+        "clinical_situation": "Đau ngực tại chăm sóc ban đầu – loại trừ bệnh mạch vành",
+        "purpose": "Ước lượng khả năng đau ngực do bệnh mạch vành để tránh chuyển tuyến/thăm dò thừa ở người nguy cơ thấp",
+        "target_population": "Người lớn đau ngực khám tại phòng khám đa khoa/chăm sóc ban đầu",
+        "components": [
+            "Tuổi/giới: nữ ≥65 tuổi hoặc nam ≥55 tuổi = 1",
+            "Bệnh mạch máu đã biết (bệnh mạch vành, bệnh mạch máu tắc nghẽn hoặc bệnh mạch máu não) = 1",
+            "Đau tăng khi gắng sức = 1",
+            "Đau KHÔNG tái hiện khi ấn = 1",
+            "Người bệnh cho rằng đau do tim = 1",
+        ],
+        "calculation_method": "Tổng 5 tiêu chí, mỗi tiêu chí 1 điểm (0–5).",
+        "interpretation": "Ngưỡng 3 phân biệt tốt nhất: 0–2 điểm = âm tính; 3–5 điểm = dương tính "
+                          "(độ nhạy 87,1%, độ đặc hiệu 80,8% ở nhóm kiểm định). Ngưỡng 2 (2–5 dương tính): độ nhạy 98,8% "
+                          "nhưng đánh đổi độ đặc hiệu. AUC 0,87 (dẫn xuất) và 0,90 (kiểm định).",
+        "action_thresholds": "0–2: khả năng bệnh mạch vành thấp — kết hợp phán đoán lâm sàng, theo dõi, dặn quay lại. "
+                             "3–5: cần đánh giá thêm bệnh mạch vành.",
+        "clinical_action": "Dùng cho đau ngực TỪNG CƠN/không cấp tại phòng khám. KHÔNG dùng để loại trừ hội chứng vành cấp: "
+                           "đau ngực cấp nghi HCVC ⇒ chuyển nơi có ECG và troponin.",
+        "limitations": "Dẫn xuất và kiểm định ở chăm sóc ban đầu Đức (74 phòng khám, 1.249 người); chưa kiểm định trên người Việt. "
+                       "Tổng quan 2024 (van den Bulk S, et al. Ann Fam Med; PMID 39313342): không quy tắc lâm sàng nào "
+                       "(không kèm troponin) đủ nhạy để loại trừ HCVC tại tuyến đầu.",
+        "source": "Bösner S, et al. Ruling out coronary artery disease in primary care: development and validation of a "
+                  "simple prediction rule. CMAJ 2010;182(12):1295-1300.",
+        "guideline_reference": "Tổng quan quy tắc đau ngực tuyến đầu: Harskamp RE, et al. BMJ Open 2019 (PMID 30819715) — "
+                               "Marburg Heart Score được kiểm định tốt nhất, độ nhạy 86–91%, độ đặc hiệu 61–81%.",
+    },
+    {
+        "score_id": "ottawa_ankle",
+        "score_name": "Ottawa Ankle and Foot Rules",
+        "clinical_area": "Cấp cứu ban đầu",
+        "clinical_situation": "Chấn thương cổ chân/bàn chân cấp – quyết định chụp X-quang",
+        "purpose": "Loại trừ gãy xương để giảm chụp X-quang không cần thiết",
+        "target_population": "Người lớn chấn thương cổ chân cấp",
+        "components": [
+            "X-quang CỔ CHÂN nếu đau vùng mắt cá KÈM ít nhất một: (a) ấn đau xương ở bờ sau hoặc đỉnh mắt cá ngoài "
+            "(6 cm dưới); (b) ấn đau xương ở bờ sau hoặc đỉnh mắt cá trong (6 cm dưới); (c) không chịu được sức nặng "
+            "(đi 4 bước) cả ngay sau chấn thương lẫn lúc khám",
+            "X-quang BÀN CHÂN nếu đau vùng giữa bàn chân KÈM ít nhất một: (a) ấn đau nền xương bàn ngón V; "
+            "(b) ấn đau xương thuyền; (c) không chịu được sức nặng (đi 4 bước) cả ngay sau chấn thương lẫn lúc khám",
+        ],
+        "calculation_method": "Quy tắc quyết định có/không (không cộng điểm): một tiêu chí dương tính trong vùng đau ⇒ chỉ định chụp vùng đó.",
+        "interpretation": "Quy tắc ĐỘ NHẠY cao để LOẠI TRỪ: bản tinh chỉnh độ nhạy 1,0 cho gãy vùng mắt cá (KTC 95% 0,93–1,0) "
+                          "và giữa bàn chân (0,83–1,0); xác suất gãy khi quy tắc âm tính 0% (0–0,8% cổ chân; 0–0,4% bàn chân). "
+                          "Phân tích gộp 2022 (Gomes YE, et al.; PMID 36151550): độ nhạy 0,91, độ đặc hiệu 0,25.",
+        "action_thresholds": "Âm tính ⇒ không cần X-quang thường quy. Dương tính ⇒ chụp vùng tương ứng (độ đặc hiệu thấp — dương tính KHÔNG có nghĩa là gãy).",
+        "clinical_action": "Áp trước khi chỉ định X-quang; tái khám nếu không đỡ hoặc không chịu lực được sau vài ngày.",
+        "limitations": "Dẫn xuất/kiểm định tại khoa cấp cứu (người lớn). Tiêu chí chép theo mô tả nhất quán của hai bài toàn văn mở "
+                       "(Acta Ortop Bras 2023, PMC10592341; Cureus 2025, PMC12200823) vì toàn văn JAMA 1993 không mở; "
+                       "khác bản dẫn xuất 1992 (có tiêu chí tuổi ≥55 và ấn đau xương hộp).",
+        "source": "Stiell IG, et al. Decision rules for the use of radiography in acute ankle injuries. Refinement and "
+                  "prospective validation. JAMA 1993;269(9):1127-1132.",
+        "guideline_reference": "Bản dẫn xuất: Stiell IG, et al. Ann Emerg Med 1992;21:384-390 (PMID 1554175). NICE CKS Sprains and strains.",
+    },
+    {
+        "score_id": "ottawa_knee",
+        "score_name": "Ottawa Knee Rule",
+        "clinical_area": "Cấp cứu ban đầu",
+        "clinical_situation": "Chấn thương gối cấp – quyết định chụp X-quang",
+        "purpose": "Loại trừ gãy xương gối để giảm chụp X-quang không cần thiết",
+        "target_population": "Người lớn chấn thương gối cấp",
+        "components": [
+            "Tuổi ≥55",
+            "Ấn đau đầu xương mác",
+            "Ấn đau KHU TRÚ xương bánh chè (không đau xương khác của gối)",
+            "Không gấp gối được tới 90°",
+            "Không chịu được sức nặng (đi 4 bước) cả ngay sau chấn thương lẫn tại khoa cấp cứu",
+        ],
+        "calculation_method": "Quy tắc quyết định có/không: có ít nhất 1 trong 5 tiêu chí ⇒ chỉ định X-quang gối.",
+        "interpretation": "Dẫn xuất (1.047 người): độ nhạy 1,0 (KTC 95% 0,95–1,0), độ đặc hiệu 0,54. Kiểm định tiến cứu (1.096 người): "
+                          "độ nhạy 1,0 (0,94–1,0) cho 63 gãy quan trọng; xác suất gãy khi âm tính 0% (0–0,4%). "
+                          "Phân tích gộp 2020 (Sims JI, et al.; PMID 32222797): độ nhạy 0,99, độ đặc hiệu 0,49, LR− 0,07.",
+        "action_thresholds": "Không tiêu chí nào ⇒ không cần X-quang. ≥1 tiêu chí ⇒ chụp X-quang gối.",
+        "clinical_action": "Áp trước khi chỉ định X-quang; quy tắc không đánh giá tổn thương dây chằng/sụn chêm.",
+        "limitations": "Dẫn xuất và kiểm định ở người lớn tại khoa cấp cứu hai bệnh viện đại học (Canada).",
+        "source": "Stiell IG, et al. Prospective validation of a decision rule for the use of radiography in acute knee "
+                  "injuries. JAMA 1996;275(8):611-615.",
+        "guideline_reference": "Bản dẫn xuất: Stiell IG, et al. Ann Emerg Med 1995;26:405-413 (PMID 7574120).",
+    },
+    {
+        "score_id": "feverpain",
+        "score_name": "FeverPAIN",
+        "clinical_area": "Nhiễm khuẩn",
+        "clinical_situation": "Đau họng cấp – khả năng liên cầu và quyết định kháng sinh",
+        "purpose": "Nhận diện người ít khả năng nhiễm liên cầu để tránh kháng sinh không cần thiết",
+        "target_population": "Người ≥3 tuổi đau họng cấp tại chăm sóc ban đầu",
+        "components": [
+            "Fever — sốt trong 24 giờ qua = 1",
+            "Purulence — mủ trên amidan = 1",
+            "Attend rapidly — đến khám trong vòng 3 ngày từ khi khởi phát = 1",
+            "severely Inflamed tonsils — amidan viêm nặng = 1",
+            "No cough or coryza — không ho, không sổ mũi = 1",
+        ],
+        "calculation_method": "Tổng 5 tiêu chí, mỗi tiêu chí 1 điểm (0–5).",
+        "interpretation": "Theo NICE NG84: 0–1 điểm ⇒ khả năng phân lập liên cầu 13–18%; 2–3 ⇒ 34–40%; 4–5 ⇒ 62–65%. "
+                          "Dẫn xuất (PRISM): AUC 0,73 và 0,71 ở hai đoàn hệ; 36–38% người bệnh có điểm ≤1.",
+        "action_thresholds": "NICE NG84: 0–1 ⇒ không kê kháng sinh; 2–3 ⇒ cân nhắc không kê kháng sinh hoặc kê đơn dự phòng (back-up); "
+                             "4–5 ⇒ cân nhắc kháng sinh ngay hoặc kê đơn dự phòng. RCT PRISM: dùng thang giảm 29% dùng kháng sinh so với "
+                             "kê đơn trì hoãn (RR hiệu chỉnh 0,71; KTC 95% 0,50–0,95) và giảm mức triệu chứng.",
+        "clinical_action": "Kèm lời dặn quay lại khi triệu chứng nặng nhanh, không đỡ sau 1 tuần hoặc toàn thân rất mệt.",
+        "limitations": "Dẫn xuất và thử nghiệm ở Anh; tỷ lệ liên cầu nền ở Việt Nam có thể khác. Không phân biệt người lành mang liên cầu.",
+        "source": "Little P, et al. PRImary care Streptococcal Management (PRISM) study: identifying clinical variables associated "
+                  "with Lancefield group A β-haemolytic streptococci and Lancefield non-Group A streptococcal throat infections "
+                  "from two cohorts of patients presenting with an acute sore throat. BMJ Open 2013;3(10):e003943.",
+        "guideline_reference": "NICE NG84 (2018) Sore throat (acute): antimicrobial prescribing. RCT: Little P, et al. BMJ 2013;347:f5806 (PMID 24114306).",
+    },
+    {
+        "score_id": "crb65",
+        "score_name": "CRB-65",
+        "clinical_area": "Hô hấp",
+        "clinical_situation": "Viêm phổi cộng đồng tại chăm sóc ban đầu (không có xét nghiệm ure) – nguy cơ tử vong và nơi điều trị",
+        "purpose": "Phân tầng nguy cơ tử vong 30 ngày khi không có ure máu, hỗ trợ quyết định điều trị tại nhà hay chuyển viện",
+        "target_population": "Người lớn được chẩn đoán lâm sàng viêm phổi cộng đồng",
+        "components": [
+            "Confusion — lú lẫn (AMT ≤8 hoặc mất định hướng mới về người, nơi chốn, thời gian) = 1",
+            "Respiratory rate — nhịp thở ≥30/phút = 1",
+            "Blood pressure — HA tâm trương ≤60 mmHg hoặc tâm thu <90 mmHg = 1",
+            "65 — tuổi ≥65 = 1",
+        ],
+        "calculation_method": "Tổng 4 tiêu chí, mỗi tiêu chí 1 điểm (0–4).",
+        "interpretation": "NICE NG250 (Box 1): 0 = nguy cơ tử vong 30 ngày thấp (<1%); 1–2 = trung gian (1–10%); 3–4 = cao (>10%).",
+        "action_thresholds": "NICE NG250 (khuyến cáo 2025): ≥2 ⇒ cân nhắc chuyển viện; 1 ⇒ chăm sóc ban đầu có dặn dò an toàn hoặc chuyển "
+                             "phòng bệnh ảo/đơn vị cấp cứu trong ngày/bệnh viện; 0 ⇒ chăm sóc ban đầu có dặn dò an toàn.",
+        "clinical_action": "Luôn kết hợp phán đoán lâm sàng, SpO₂, bệnh nền, thai kỳ; chuyển viện ngay nếu có dấu hiệu suy hô hấp–tuần hoàn hoặc nhiễm khuẩn huyết.",
+        "limitations": "Kiểm định CAPNETZ (Bauer 2006): tử vong 30 ngày 0,6% ở ngoại trú; CRB-65 dự báo tương đương CURB nhưng sẵn có hơn "
+                       "(90% so với 65%) vì không cần ure. Có ure thì dùng CURB-65 (mục `curb65`).",
+        "source": "Bauer TT, et al. CRB-65 predicts death from community-acquired pneumonia. J Intern Med 2006;260(1):93-101.",
+        "guideline_reference": "NICE NG250 (02/09/2025) Pneumonia: diagnosis and management — thay CG191; dẫn xuất CURB-65/CRB-65: Lim WS, et al. Thorax 2003 (PMID 12728155).",
+    },
 ]
 
 
@@ -712,9 +849,15 @@ _VERIFIED_IDS: Dict[str, Dict[str, Optional[str]]] = {
     "beers":           {"pmid": "37139824", "doi": "10.1111/jgs.18372"},
     "stopp_start":     {"pmid": "37256475", "doi": "10.1007/s41999-023-00777-y"},
     "score2_diabetes": {"pmid": "37247330", "doi": "10.1093/eurheartj/ehad260"},
+    # Bổ sung 08/11/2026 — PMID/DOI lấy từ chính bản ghi PubMed (esummary articleids).
+    "marburg_heart":   {"pmid": "20603345", "doi": "10.1503/cmaj.100212"},
+    "ottawa_ankle":    {"pmid": "8433468", "doi": "10.1001/jama.269.9.1127"},
+    "ottawa_knee":     {"pmid": "8594242", "doi": None},  # JAMA 1996 — bản ghi PubMed không ghi DOI
+    "feverpain":       {"pmid": "24163209", "doi": "10.1136/bmjopen-2013-003943"},
+    "crb65":           {"pmid": "16789984", "doi": "10.1111/j.1365-2796.2006.01657.x"},
 }
 
-# Gán PMID/DOI đã xác minh vào từng thang (một nguồn sự thật — tránh sửa tay 32 chỗ).
+# Gán PMID/DOI đã xác minh vào từng thang (một nguồn sự thật — tránh sửa tay từng chỗ).
 for _score in VERIFIED_SCORES:
     _ids = _VERIFIED_IDS.get(_score["score_id"], {})
     _score.setdefault("pmid", _ids.get("pmid"))
