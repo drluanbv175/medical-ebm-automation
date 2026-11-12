@@ -1,0 +1,31 @@
+{
+ "_ghi_chu": "ĐỀ XUẤT của agent (cau-hoi-nghien-cuu / khoang-trong-nghien-cuu) — máy CHƯA ghi vào study_meta.json. PI đọc A1 (G0_A1_PICO_FINER_btm-dtd2-ngoai-tru-BVQY175.md), sửa từng khoá theo ý mình rồi TỰ ghi vào gate_params.G0 (hoặc nói «áp dụng đề xuất G0 đã sửa» để máy chép đúng nội dung PI duyệt). Các khoá xác nhận (pico_confirmed, reviewed_by_role, reviewed_at, dau_van_tay_chot, evidence_reviewed_confirmed, registry_manual_checked) LUÔN do PI ghi — đề xuất này cố ý bỏ trống. finer_feasible/finer_ethical: máy không tự đánh giá. Cần bác sĩ kiểm chứng.",
+ "ngay": "2026-10-25",
+ "tap_chi_dich": "Tạp chí Y Dược Thực hành 175 (ISSN 2354-1024 theo Crossref, tiền tố DOI 10.59354)",
+ "gate_params.G0": {
+  "population": "Người từ 18 tuổi, chẩn đoán đái tháo đường típ 2 (ICD-10 E11), quản lý ngoại trú tại Khoa Khám bệnh BVQY175, có ít nhất 2 lượt khám trong cửa sổ 12 tháng [CẦN PI ẤN ĐỊNH cửa sổ]; loại trừ: lọc máu hoặc ghép thận, có thai, đái tháo đường típ 1 hoặc thể khác.",
+  "intervention": "Không có can thiệp — nghiên cứu quan sát hồi cứu. Biến giải thích cho mục tiêu phụ: tuổi, giới, thời gian mắc ĐTĐ, HbA1c, tăng huyết áp, BMI, số thuốc đang dùng, nhóm đối tượng khám [CẦN PI chốt danh sách].",
+  "comparison": "Không có nhóm so sánh ngoài — thiết kế mô tả cắt ngang có phân tích.",
+  "outcomes": [
+   "Kết cục chính: tỷ lệ người bệnh được xét nghiệm CẢ UACR lẫn creatinin huyết thanh (để tính eGFR) trong cửa sổ 12 tháng.",
+   "Phụ 1: tỷ lệ BTM theo KDIGO 2024 (eGFR dưới 60 và/hoặc UACR từ 30 mg/g, xác nhận bằng 2 lần đo cách nhau từ 90 ngày; người chỉ có 1 lần đo xếp nhóm nghi BTM) — phân bố theo G và A.",
+   "Phụ 2: tỷ lệ BTM theo xét nghiệm nhưng CHƯA được ghi chẩn đoán (mã ICD) trong hồ sơ.",
+   "Phụ 3: ở người đủ chỉ định theo KDIGO 2022 — tỷ lệ đang dùng ACEi/ARB (có tăng huyết áp và albumin niệu) và SGLT2i (BTM, eGFR từ 20).",
+   "Phụ 4: yếu tố liên quan với việc không được xét nghiệm đủ (hồi quy Poisson phương sai vững, báo cáo tỷ số tỷ lệ hiện mắc)."
+  ],
+  "primary_outcome": "Tỷ lệ người ĐTĐ típ 2 ngoại trú được xét nghiệm đủ UACR + creatinin trong 12 tháng",
+  "primary_outcome_measure": "Biến nhị phân trích từ kết quả xét nghiệm trong HIS (có/không có cả hai xét nghiệm trong cửa sổ); báo cáo tỷ lệ % kèm KTC 95%",
+  "primary_outcome_timepoint": "Cửa sổ hồi cứu 12 tháng [CẦN PI ẤN ĐỊNH ngày đầu–cuối]",
+  "test_type": "descriptive",
+  "question_type": "descriptive",
+  "hypothesis_h0": "",
+  "hypothesis_h1": "",
+  "expected_direction": "",
+  "finer_feasible": "[CẦN PI QUYẾT] — rủi ro: khả năng HIS xuất creatinin, UACR, mã ICD, đơn thuốc theo mã ẩn danh; UACR làm ở cơ sở khác không có trong HIS; nhân lực trích xuất.",
+  "finer_interesting": "ĐẠT — trả lời trực tiếp mức bỏ sót xét nghiệm và điều trị bảo vệ thận tại Khoa Khám bệnh; y văn nước ngoài cho thấy chỉ 24,9% đến 43,3% được làm UACR (PMID 38922613, 33722396).",
+  "finer_novel": "ĐẠT ở mức «mở rộng bối cảnh» — không mới trên thế giới; trong nước chủ yếu đo tỷ lệ BTM hoặc kê đơn ở người đã có BTM; trong phạm vi PubMed + Crossref đã tra (2026-10-25) chưa thấy bài đo cả chuỗi xét nghiệm → ghi nhận → điều trị ở ĐTĐ típ 2 ngoại trú bệnh viện quân đội.",
+  "finer_ethical": "[CẦN PI QUYẾT] — hồi cứu, không can thiệp; rủi ro chính là bảo mật dữ liệu (khử định danh ngay khi trích xuất) và hình thức miễn đồng thuận do Hội đồng Đạo đức BVQY175 quyết.",
+  "finer_relevant": "ĐẠT — phục vụ cải tiến chất lượng chăm sóc bệnh mạn ngoại trú tại chính BVQY175; tạp chí đích là Tạp chí Y Dược Thực hành 175; là số liệu nền cho nghiên cứu can thiệp nhắc xét nghiệm tiếp nối.",
+  "novelty_justification": "Mở rộng bối cảnh: đo trọn chuỗi chăm sóc thận (xét nghiệm, ghi nhận chẩn đoán, điều trị theo chỉ định) ở người ĐTĐ típ 2 ngoại trú một bệnh viện quân đội tuyến cuối; các nghiên cứu trong nước tìm được chỉ đo tỷ lệ BTM trong mẫu đã xét nghiệm hoặc mô tả kê đơn ở người đã có BTM (xem G0_KHOANG_TRONG). Phạm vi tra: PubMed + Crossref; chưa tra Google Scholar và thư viện luận văn."
+ }
+}

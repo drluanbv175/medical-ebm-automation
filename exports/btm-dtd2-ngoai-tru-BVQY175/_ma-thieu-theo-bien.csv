@@ -1,0 +1,3 @@
+bien,ma,nhan,pham_vi,nguon
+*,KGHS,Hồ sơ không ghi thông tin này,"Missing Data Code cấp dự án REDCap — chỉ cho trường có thể vắng trong bệnh án (nam_chan_doan_dtd, can_nang, chieu_cao). KHÔNG dùng cho số lượng xét nghiệm: không có kết quả thì ghi 0",Chủ nhiệm duyệt 28/10/2026 — «Áp dụng B1–B9» (B9)
+*,KDD,Không đọc được hoặc thông tin mâu thuẫn trong hồ sơ,Missing Data Code cấp dự án REDCap — mọi trường nhập tay; phân tích coi là thiếu,Chủ nhiệm duyệt 28/10/2026 — «Áp dụng B1–B9» (B9)

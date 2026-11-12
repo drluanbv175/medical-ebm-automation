@@ -1,0 +1,353 @@
+{
+  "study": "btm-dtd2-ngoai-tru-BVQY175",
+  "gate": "G1",
+  "gate_status": "DRAFT_READY — KIỂM TỰ ĐỘNG ĐÃ CHẠY; G1 CHƯA ĐƯỢC PI/METHODOLOGIST XÁC NHẬN",
+  "automation_status": "AUTOMATED_CHECKS_PASS",
+  "generated_at": "2026-10-28T15:29:48.629333",
+  "question_type": "descriptive",
+  "design": {
+    "primary": "Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)",
+    "internal_code": "cross_sectional",
+    "reporting_standard": "STROBE",
+    "protocol_standard": "Protocol định trước; đăng ký nếu cần minh bạch",
+    "alternative_1": "[Đã pin bởi bác sĩ — không áp dụng bảng thiết kế thay thế tự động]",
+    "alternative_2": "[Đã pin bởi bác sĩ — không áp dụng bảng thiết kế thay thế tự động]",
+    "rationale": "Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định thật, ưu tiên hơn suy luận tự động). Lý do của PI: Cắt ngang mô tả có phân tích trên dữ liệu y tế thu thập thường quy: chủ nhiệm mở và trích hồ sơ bệnh án điện tử trên phần mềm eHospital (HIS của BVQY175) của một mẫu ngẫu nhiên người ĐTĐ típ 2, đo tình trạng xét nghiệm, ghi nhận chẩn đoán và kê đơn trong cửa sổ 12 tháng (01/01/2026–31/12/2026). Câu hỏi đã chốt ở G0 là mô tả (question_type = descriptive) nên cắt ngang là thiết kế chuẩn; MT3 chỉ ước lượng mối liên quan (tỷ số tỷ lệ hiện mắc), không suy nhân quả. Đã cân nhắc và loại: (1) đoàn hệ hồi cứu theo dõi kết cục thận — vượt nhu cầu câu hỏi (đề tài đo khoảng trống chăm sóc, không đo tiến triển bệnh) và cần dữ liệu nhiều năm; (2) cắt ngang thu mới bằng phỏng vấn/khám — tốn nguồn lực và không đo được hành vi xét nghiệm, kê đơn thực tế; (3) trích xuất tự động toàn bộ quần thể từ HIS — không dùng vì dữ liệu do chủ nhiệm trích bằng cách mở từng hồ sơ (quyết định 28/10/2026), nên lấy một mẫu ngẫu nhiên đủ cỡ theo G3 thay cho lấy toàn bộ. Khung đo tương tự PMID 38922613 (cohort hồi cứu trên dữ liệu thường quy) và PMID 41741270 (cắt ngang, dùng hồi quy Poisson phương sai vững). Chuẩn báo cáo: STROBE kèm phần mở rộng RECORD cho nghiên cứu dùng dữ liệu y tế thu thập thường quy (Benchimol 2015, PMID 26440803, DOI 10.1371/journal.pmed.1001885).",
+    "ambiguous": false,
+    "bias_controls": [
+      [
+        "Selection bias",
+        "Sampling ngẫu nhiên hoặc liên tiếp; tránh tự chọn"
+      ],
+      [
+        "Information bias",
+        "Đo phơi nhiễm + kết cục cùng thời điểm → không suy nhân quả"
+      ],
+      [
+        "Confounding",
+        "Đa biến; hạn chế: cùng thời điểm → không loại trừ causal confounders"
+      ],
+      [
+        "Prevalence-incidence bias",
+        "Thiết kế chỉ ước lượng hiện mắc; bàn luận giới hạn này"
+      ],
+      [
+        "Non-response bias",
+        "So sánh người trả lời vs không trả lời (nếu có thể)"
+      ],
+      [
+        "Social desirability",
+        "Tự báo cáo → lệch theo kỳ vọng xã hội (khai thấp điều tiêu cực, khai cao mức hài lòng); ẩn danh, người thu phiếu độc lập với người được đánh giá"
+      ],
+      [
+        "Reporting bias",
+        "Đăng ký nghiên cứu + tiền định phân tích"
+      ]
+    ]
+  },
+  "specialist_modules": [],
+  "effect_sizes_found": 2,
+  "effect_size_samples": [
+    {
+      "type": "OR",
+      "value": 0.5,
+      "ci": "95%CI: 0.04–5.53",
+      "pmid": "42031191",
+      "title": "Electronic alert-based computerized decision support for detection of chronic ki",
+      "year": "2026",
+      "quality": "labeled"
+    },
+    {
+      "type": "OR",
+      "value": 3.41,
+      "ci": "95%CI: 1.37–8.48",
+      "pmid": "42031191",
+      "title": "Electronic alert-based computerized decision support for detection of chronic ki",
+      "year": "2026",
+      "quality": "labeled"
+    }
+  ],
+  "guardrail": {
+    "passed": true,
+    "errors": []
+  },
+  "quality_gate": {
+    "schema_version": "1.1",
+    "contract_version": "G1-2026.1",
+    "status": "PASS_G1_CONFIRMED",
+    "automated_checks_passed": true,
+    "human_confirmation_complete": true,
+    "automatic_criteria": [
+      {
+        "id": "G1-AUTO-00",
+        "label": "Guardrail liêm chính G1 sạch",
+        "status": "PASS",
+        "evidence": "guardrail_passed=True",
+        "action": "Sửa mọi lỗi PII, vượt cổng, nguồn hoặc disclaimer trước khi tiếp tục."
+      },
+      {
+        "id": "G1-AUTO-01",
+        "label": "Tiền đề G0 có checkpoint và guardrail sạch",
+        "status": "PASS",
+        "evidence": "G0 chấm sống=PASS_G0_CONFIRMED",
+        "action": "Hoàn thiện G0 trước khi xác nhận G1."
+      },
+      {
+        "id": "G1-AUTO-02",
+        "label": "Mã thiết kế thuộc vocabulary canonical",
+        "status": "PASS",
+        "evidence": "internal_code='cross_sectional'",
+        "action": "Chọn một mã thiết kế canonical được hệ hỗ trợ."
+      },
+      {
+        "id": "G1-AUTO-02c",
+        "label": "Thiết kế bác sĩ đã ghim được chuỗi G0–G10 hỗ trợ (không bị thay bằng suy luận)",
+        "status": "PASS",
+        "evidence": "không có pin bị từ chối",
+        "action": "PI ghim lại study_meta.design_code bằng một trong rct/cohort/case_control/cross_sectional/diagnostic/sr_ma/prediction/qualitative có chủ ý, hoặc dùng agent chuyên trách cho thiết kế này (vd quasi-experimental → TREND, cải tiến chất lượng → SQUIRE 2.0, ca lâm sàng → CARE)."
+      },
+      {
+        "id": "G1-AUTO-02d",
+        "label": "Thiết kế hợp với loại câu hỏi đã chốt ở G0",
+        "status": "PASS",
+        "evidence": "thiết kế «cross_sectional» hợp với loại câu hỏi G0 «descriptive»",
+        "action": "Đổi thiết kế cho khớp câu hỏi, hoặc sửa question_type ở G0 rồi chạy lại G1 (PI giải trình nếu cố ý)."
+      },
+      {
+        "id": "G1-AUTO-02b",
+        "label": "ICH E6(R3) Annex 2 Step 4: thiết kế phương pháp mới đủ fitness-for-purpose và giám sát",
+        "status": "PASS",
+        "evidence": "status=NOT_APPLICABLE; methods=không áp dụng",
+        "action": "Điền study_meta.gate_params.G1.annex2 (RCT: applicable=true kèm methodologies, hoặc applicable=false); không mở G1 khi thiếu."
+      },
+      {
+        "id": "G1-AUTO-03",
+        "label": "Chuẩn báo cáo khớp thiết kế",
+        "status": "PASS",
+        "evidence": "đã chọn='STROBE'; canon='STROBE'",
+        "action": "Sửa reporting map theo skill_standards.py."
+      },
+      {
+        "id": "G1-AUTO-03b",
+        "label": "Chuẩn đề cương/protocol khớp thiết kế",
+        "status": "PASS",
+        "evidence": "đã chọn='Protocol định trước; đăng ký nếu cần minh bạch'; canon='Protocol định trước; đăng ký nếu cần minh bạch'",
+        "action": "Gắn chuẩn protocol riêng; không dùng checklist báo cáo kết quả thay thế."
+      },
+      {
+        "id": "G1-AUTO-04",
+        "label": "Thiết kế không còn suy luận mơ hồ",
+        "status": "PASS",
+        "evidence": "ambiguous=false",
+        "action": "PI/methodologist phải pin thiết kế sau khi đọc lại khoảng trống."
+      },
+      {
+        "id": "G1-AUTO-04b",
+        "label": "So sánh ít nhất ba phương án và kiểm soát đủ nhóm sai lệch/trustworthiness theo thiết kế",
+        "status": "PASS",
+        "evidence": "primary_present=True; alternatives_complete=True; rationale_present=True; bias_controls=7",
+        "action": "Bổ sung 3 phương án, lý do chọn/loại và đủ 7 nhóm sai lệch."
+      },
+      {
+        "id": "G1-AUTO-04c",
+        "label": "SAP không chứa khuôn phân tích mâu thuẫn với thiết kế",
+        "status": "PASS",
+        "evidence": "không phát hiện khuôn sai cho cross_sectional",
+        "action": "Sinh lại A2 bằng template theo đúng thiết kế; không vá một khuôn RCT cho mọi loại."
+      },
+      {
+        "id": "G1-AUTO-05",
+        "label": "Đủ bộ A1b/A2/A2b/A13/A13b và các phần bắt buộc",
+        "status": "PASS",
+        "evidence": "5/5 artifact có mặt và qua kiểm cấu trúc",
+        "action": "Sinh lại hoặc sửa artifact G1 bị thiếu."
+      },
+      {
+        "id": "G1-AUTO-07",
+        "label": "Đề cương lõi không còn ô trống thuộc phạm vi G1 (dòng hoãn cho cổng sau được bỏ qua)",
+        "status": "PASS",
+        "evidence": "mọi dòng thuộc G1 của PHẦN 0 đã có nội dung",
+        "action": "Điền các khoá tương ứng ở study_meta.gate_params.G1 (team_roles, background_problem, evidence_summary, knowledge_gap, benefit_risk_rationale, study_schema_timeline, intervention_dose_adherence, stopping_rescue_rules, critical_to_quality, monitoring_plan và khoá theo thiết kế) rồi chạy lại G1; «N/A — <lý do>» là câu trả lời hợp lệ. KHÔNG sửa tay A2 (bị ghi đè khi chạy lại)."
+      },
+      {
+        "id": "G1-AUTO-06",
+        "label": "Có định danh PMID/DOI khớp chuỗi trong Evidence Ledger (CHƯA xác minh qua PubMed/Crossref — việc đó thuộc cổng A12 kiem-chung-trich-dan)",
+        "status": "PASS",
+        "evidence": "90 PMID/DOI được thu, ledger_traceable=True (khớp CHUỖI, KHÔNG gọi PubMed để xác minh tồn tại)",
+        "action": "Bổ sung Evidence Ledger có PMID/DOI thật; không bịa nguồn."
+      }
+    ],
+    "human_criteria": [
+      {
+        "id": "G1-HUMAN-01",
+        "label": "PI/methodologist xác nhận thiết kế",
+        "status": "PASS",
+        "evidence": "pin='cross_sectional'; design_confirmed=True",
+        "action": "Điền design_code/gate_params.G1.design và design_confirmed=true."
+      },
+      {
+        "id": "G1-HUMAN-02",
+        "label": "Mục tiêu và kết cục chính vận hành đã chốt",
+        "status": "PASS",
+        "evidence": "objectives=đủ; outcome_name=có; measure=có; timepoint=có; type=có",
+        "action": "Điền objectives và primary_outcome gồm tên, định nghĩa/công cụ đo, thời điểm và loại dữ liệu."
+      },
+      {
+        "id": "G1-HUMAN-03",
+        "label": "Quần thể, tiêu chí chọn, tuyển mẫu, bối cảnh và thời gian đã xác định",
+        "status": "PASS",
+        "evidence": "population=có; inclusion=có; exclusion=có; recruitment=có; setting=có; study_period=có",
+        "action": "Điền population, inclusion/exclusion criteria, recruitment_strategy, setting và study_period."
+      },
+      {
+        "id": "G1-HUMAN-04",
+        "label": "Can thiệp/phơi nhiễm, đối chứng và lịch theo dõi đã xác định",
+        "status": "PASS",
+        "evidence": "intervention_or_exposure=có; comparator=có; follow_up_schedule=có",
+        "action": "Điền intervention_or_exposure, comparator (hoặc lý do N/A) và follow_up_schedule."
+      },
+      {
+        "id": "G1-HUMAN-05",
+        "label": "Estimand đủ 5 thuộc tính khi là RCT",
+        "status": "PASS",
+        "evidence": "N/A cho thiết kế không phải RCT",
+        "action": "Điền population, treatment condition, variable, intercurrent-event strategy và population summary measure."
+      },
+      {
+        "id": "G1-HUMAN-06",
+        "label": "Đề cương lõi, kiểm soát sai lệch và tính khả thi được xác nhận",
+        "status": "PASS",
+        "evidence": "protocol_core_confirmed=True; bias_controls_confirmed=True; feasibility_confirmed=True",
+        "action": "PI/methodologist rà toàn bộ protocol core, bảng bias và tính khả thi rồi bật ba cờ xác nhận."
+      },
+      {
+        "id": "G1-HUMAN-07",
+        "label": "Khoảng trống và nội dung trích dẫn đã được người thật đọc lại",
+        "status": "PASS",
+        "evidence": "evidence_review_confirmed=True; identifiers=90",
+        "action": "Evidence reviewer/PI xác nhận nội dung nguồn và khoảng trống."
+      },
+      {
+        "id": "G1-HUMAN-08",
+        "label": "Có vai trò, thời điểm rà phương pháp và xác nhận gắn đúng nội dung",
+        "status": "PASS",
+        "evidence": "reviewed_by_role=chủ nhiệm; reviewed_at=2026-10-28T15:54:00+07:00; xác nhận gắn đúng nội dung hiện tại",
+        "action": "Ghi reviewed_by_role, reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"91fc5cdaaa5a689c\" (dấu của các quyết định G1 đang chốt); không cần lưu danh tính."
+      }
+    ],
+    "pending_actions": [],
+    "artifact_manifest": {
+      "A1b": {
+        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "b4425e627d6b43b478fc90e68c726306f231bf09fde626d42c4f6f52df4dbd4b"
+      },
+      "A2": {
+        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "a11cd71cc27474c5e63b4d6eea788a894bc9c15f2e38ac0def1dc986aa3c8362"
+      },
+      "A2b": {
+        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "ca4ac49548deba8d829d4a72d55749be33dcbe7e9167a9855c85c62cf833e573"
+      },
+      "A13": {
+        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "d533755ed3479bf47c125b1147a6a02e8bf3213d05efa6c8d75cfddbd211f2c2"
+      },
+      "A13b": {
+        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13b_RISK_REGISTER_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "aa398df7656c05ee5f285dc23e331a5d3ed283f4cf4a4eb7b438ba4f090ec7c4"
+      }
+    },
+    "dau_van_tay_hien_tai": "91fc5cdaaa5a689c",
+    "standards_basis": [
+      {
+        "standard": "EQUATOR Network",
+        "scope": "Bản đồ guideline theo loại nghiên cứu",
+        "url": "https://www.equator-network.org/library/"
+      },
+      {
+        "standard": "SPIRIT 2025",
+        "scope": "Protocol thử nghiệm ngẫu nhiên",
+        "pmid": "40294593",
+        "doi": "10.1001/jama.2025.4486"
+      },
+      {
+        "standard": "CONSORT 2025",
+        "scope": "Báo cáo kết quả thử nghiệm ngẫu nhiên",
+        "doi": "10.1136/bmj-2024-081123"
+      },
+      {
+        "standard": "ICH E6(R3) Annex 2 Step 4",
+        "scope": "Thử nghiệm có yếu tố phi tập trung, pragmatic và/hoặc RWD",
+        "url": "https://database.ich.org/sites/default/files/ICH_E6%28R3%29_Annex%202_Guideline_Step%204_2026_0603_0.pdf"
+      },
+      {
+        "standard": "PRISMA-P 2015",
+        "scope": "Protocol tổng quan hệ thống",
+        "doi": "10.1186/2046-4053-4-1"
+      },
+      {
+        "standard": "ICH E6(R3)",
+        "scope": "Quality-by-design và GCP cho thử nghiệm lâm sàng",
+        "url": "https://www.ema.europa.eu/en/ich-e6-good-clinical-practice-scientific-guideline"
+      }
+    ],
+    "scope_statement": "PASS_G1_CONFIRMED chỉ xác nhận thiết kế/reporting map và bộ artifact G1 theo bằng chứng đã ghi; không thay IRB, khóa SAP, dữ liệu thật hoặc thẩm định khoa học độc lập. Checklist báo cáo đánh giá tính đầy đủ của mô tả, không tự chứng minh chất lượng thiết kế hay thực hiện.",
+    "artifact_manifest_luc_sinh": {
+      "A2": {
+        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "a11cd71cc27474c5e63b4d6eea788a894bc9c15f2e38ac0def1dc986aa3c8362"
+      },
+      "A1b": {
+        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "b4425e627d6b43b478fc90e68c726306f231bf09fde626d42c4f6f52df4dbd4b"
+      },
+      "A2b": {
+        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "ca4ac49548deba8d829d4a72d55749be33dcbe7e9167a9855c85c62cf833e573"
+      },
+      "A13": {
+        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "d533755ed3479bf47c125b1147a6a02e8bf3213d05efa6c8d75cfddbd211f2c2"
+      },
+      "A13b": {
+        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13b_RISK_REGISTER_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "aa398df7656c05ee5f285dc23e331a5d3ed283f4cf4a4eb7b438ba4f090ec7c4"
+      }
+    },
+    "dau_van_tay_luc_cham": "91fc5cdaaa5a689c"
+  },
+  "quality_contract_version": "G1-2026.1",
+  "artifacts": {
+    "A2_markdown": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md",
+    "A2_docx": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.docx",
+    "A1b_project_charter": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md",
+    "A2b_evidence_ledger": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md",
+    "A13_implementation_plan": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md",
+    "A13b_risk_register": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13b_RISK_REGISTER_btm-dtd2-ngoai-tru-BVQY175.md",
+    "quality_report": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_QUALITY_REPORT.md"
+  },
+  "pending_doctor_actions": [
+    "Điền design_code/gate_params.G1.design và design_confirmed=true.",
+    "PI/methodologist rà toàn bộ protocol core, bảng bias và tính khả thi rồi bật ba cờ xác nhận.",
+    "Evidence reviewer/PI xác nhận nội dung nguồn và khoảng trống.",
+    "Ghi reviewed_by_role, reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"91fc5cdaaa5a689c\" (dấu của các quyết định G1 đang chốt); không cần lưu danh tính."
+  ],
+  "next_gate": "G2 (Đạo đức IRB) song song với G3 (Cỡ mẫu + SAP hoàn thiện)",
+  "g4_status": "PENDING — SAP chưa khóa (khóa sau G3 sau khi bác sĩ ký)",
+  "disclaimer": "Cần bác sĩ kiểm chứng.",
+  "dac_ta_thiet_ke": {
+    "design_code": "cross_sectional",
+    "question_type": "descriptive",
+    "test_type": "descriptive",
+    "hypothesis_type": "descriptive_precision",
+    "margin": null,
+    "outcome_direction": null,
+    "estimand": null,
+    "masking": null,
+    "alpha_sidedness": null,
+    "dau_van_tay": "6ba26632a4c46b44",
+    "ghi_luc": "2026-10-28T15:29:48"
+  },
+  "dau_gate_params_g1": "91fc5cdaaa5a689c"
+}

@@ -1,0 +1,34 @@
+{
+  "schema": "g0/khoang_trong/v1",
+  "nguoi_soan": "khoang-trong-nghien-cuu (phiên Claude Code, điều phối trực tiếp — CHƯA qua đánh giá chéo hội đồng cổng)",
+  "ngay_soan": "2026-10-25",
+  "guideline_lien_quan": [
+    {"ten": "KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease", "nam": 2024, "nguon": "Kidney Int 2024;105(4S):S117-S314 · PMID 38490803 · DOI 10.1016/j.kint.2023.10.018", "noi_dung": "Định nghĩa và phân loại BTM theo eGFR (G1–G5) và albumin niệu (A1–A3), bất thường kéo dài trên 3 tháng; đánh giá bằng eGFR + UACR ở người có nguy cơ (gồm ĐTĐ). Là chuẩn định nghĩa ca BTM của đề tài.", "muc": "nguồn có phân hạng riêng từng khuyến cáo — CẦN PI đối chiếu nguyên văn khi trích"},
+    {"ten": "KDIGO 2022 Clinical Practice Guideline for Diabetes Management in Chronic Kidney Disease", "nam": 2022, "nguon": "Kidney Int 2022;102(5S):S1-S127 · PMID 36272764 · DOI 10.1016/j.kint.2022.06.008", "noi_dung": "Khuyến cáo SGLT2i cho người ĐTĐ típ 2 + BTM có eGFR từ 20 mL/phút/1,73 m²; ACEi/ARB cho người ĐTĐ có tăng huyết áp và albumin niệu — căn cứ định nghĩa 'đủ chỉ định' cho mục tiêu điều trị.", "muc": "KDIGO tự phân hạng: SGLT2i 1A; ACEi/ARB 1B — CẦN PI đối chiếu nguyên văn"},
+    {"ten": "ADA Standards of Care in Diabetes—2026, mục 11: Chronic Kidney Disease and Risk Management", "nam": 2026, "nguon": "Diabetes Care 2026;49(Suppl 1):S246-S260 · PMID 41358881 · DOI 10.2337/dc26-S011", "noi_dung": "Đánh giá UACR và eGFR ít nhất mỗi năm ở người ĐTĐ típ 2; quản lý nguy cơ thận — căn cứ chỉ số 'được xét nghiệm trong 12 tháng'.", "muc": "ADA có hệ phân hạng A/B/C/E — CẦN PI đối chiếu cấp của khuyến cáo nguyên văn"},
+    {"ten": "ADA Standards of Care in Diabetes—2026, mục 9: Pharmacologic Approaches to Glycemic Treatment", "nam": 2026, "nguon": "PMID 41358900", "noi_dung": "Chọn thuốc hạ glucose theo bệnh kèm tim–thận, gồm SGLT2i.", "muc": "CẦN PI đối chiếu nguyên văn"},
+    {"ten": "Bộ Y tế — Hướng dẫn chẩn đoán và điều trị đái tháo đường típ 2 (Quyết định 5481/QĐ-BYT ký 2020-12-30; sửa đổi bởi Quyết định 1353/QĐ-BYT ký 2021-02-23)", "nam": 2020, "nguon": "Văn bản quy phạm trong nước, không lập chỉ mục PubMed; số hiệu xác nhận qua tra web 2026-10-25 (caselaw.vn, hoatieu.vn) — CHƯA đọc toàn văn", "noi_dung": "Hướng dẫn quốc gia về chẩn đoán và điều trị ĐTĐ típ 2 — chuẩn thực hành áp dụng tại bệnh viện Việt Nam; CẦN PI đọc mục theo dõi biến chứng thận và chỉ định SGLT2i, ACEi/ARB để đối chiếu với KDIGO/ADA.", "muc": "nguồn không phân hạng"}
+  ],
+  "phat_bieu_khoang_trong": "Y văn quốc tế cho thấy hụt ở mọi bước của chuỗi chăm sóc thận cho người ĐTĐ típ 2 (xét nghiệm UACR, ghi nhận chẩn đoán BTM, kê thuốc bảo vệ thận); ở Việt Nam, các nghiên cứu tìm được (PubMed + Crossref, tra 2026-10-25) chủ yếu đo tỷ lệ BTM trong mẫu đã xét nghiệm hoặc mô tả kê đơn ở người đã có BTM, chưa thấy nghiên cứu đo đồng thời cả chuỗi xét nghiệm → phát hiện → ghi nhận → điều trị ở người ĐTĐ típ 2 ngoại trú tại bệnh viện quân đội.",
+  "loai_khoang_trong": ["boi_canh", "ket_cuc"],
+  "muc_novelty": {
+    "muc": "mo_rong_boi_canh",
+    "y_nghia": "Câu hỏi không mới trên thế giới; điểm mới nằm ở (1) đo cả chuỗi chăm sóc thận thay vì chỉ tỷ lệ BTM, (2) bối cảnh Khoa Khám bệnh một bệnh viện quân đội tuyến cuối phía Nam, (3) tạo số liệu nền cho dự án cải tiến (nhắc xét nghiệm trong HIS) tại chính BVQY175. Phạm vi tra: PubMed + Crossref; chưa tra Google Scholar, thư viện luận văn, tạp chí không đăng ký DOI."
+  },
+  "trang_thai_nguon": {
+    "pubmed": "day_du",
+    "clinicaltrials_gov": "partial",
+    "who_ictrp": "chua_tra",
+    "crossref_tap_chi_trong_nuoc": "partial",
+    "tap_chi_y_duoc_thuc_hanh_175": "partial",
+    "prospero": "khong_ap_dung"
+  },
+  "ghi_chu_trang_thai_nguon": "PubMed: lấy đủ 60/60 bản ghi nhánh không lọc của truy vấn G0 + 3 truy vấn bổ sung. ClinicalTrials.gov: bộ G0 gửi chuỗi cú pháp PubMed nên kết quả 0 hồ sơ không có giá trị kết luận; tra lại qua connector (type 2 diabetes chronic kidney disease, địa điểm Vietnam) ngày 2026-10-25: 2 thử nghiệm thuốc (NCT07662135, NCT02540993), không có nghiên cứu về chuỗi chăm sóc. WHO ICTRP: PI tự tra. Crossref: 5 truy vấn tiếng Việt, không phủ tạp chí không đăng ký DOI. Tạp chí Y Dược Thực hành 175: tra Crossref theo tiền tố DOI 10.59354 — không thấy bài về chuỗi chăm sóc thận ở ĐTĐ; có 1 bài mô tả dùng thuốc ĐTĐ ở người cao tuổi ngoại trú BVQY175 (DOI 10.59354/ydth175.2023.227).",
+  "nhap_finer": {
+    "finer_feasible": "CẦN PI QUYẾT — rủi ro: (1) HIS Khoa Khám bệnh có xuất được creatinin, UACR, mã ICD và đơn thuốc theo mã bệnh nhân ẩn danh trong 12 tháng không; (2) UACR làm ở cơ sở khác không có trong HIS ⇒ đánh giá thấp tỷ lệ xét nghiệm; (3) chọn lấy toàn bộ hay mẫu ngẫu nhiên, và nhân lực trích xuất.",
+    "finer_interesting": "Bác sĩ nội khoa ngoại trú quan tâm vì kết quả trả lời trực tiếp phòng khám đang bỏ sót bao nhiêu; nghiên cứu nước ngoài cho thấy chỉ 24,9% đến 43,3% được làm UACR (PMID 38922613, 33722396).",
+    "finer_novel": "Mở rộng bối cảnh: y văn quốc tế đã nhiều; trong nước chủ yếu đo tỷ lệ BTM hoặc kê đơn ở người đã có BTM; trong phạm vi PubMed + Crossref đã tra chưa thấy bài đo cả chuỗi xét nghiệm → ghi nhận → điều trị ở ĐTĐ típ 2 ngoại trú bệnh viện quân đội.",
+    "finer_ethical": "CẦN PI QUYẾT — hồi cứu hồ sơ, không can thiệp; rủi ro chính là bảo mật dữ liệu (khử định danh ngay khi trích xuất, chỉ lấy mã nghiên cứu ẩn danh, không lấy bất kỳ trường định danh nào) và hình thức miễn/rút gọn đồng thuận do Hội đồng Đạo đức BVQY175 quyết.",
+    "finer_relevant": "Phù hợp ưu tiên chất lượng chăm sóc bệnh mạn ngoại trú; tạp chí đích là Tạp chí Y Dược Thực hành 175 (tạp chí của chính bệnh viện, DOI 10.59354) — kết quả phục vụ cải tiến tại Khoa Khám bệnh và là số liệu nền cho nghiên cứu can thiệp tiếp nối."
+  }
+}
