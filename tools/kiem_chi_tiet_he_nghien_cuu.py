@@ -102,6 +102,24 @@ TIEN_DE = {
 }
 # Tài liệu NỘP do agent/bác sĩ soạn (ngoài artifact cổng) — bắt buộc có bản .docx
 TAI_LIEU_NOP_PREFIX = ("DE_CUONG_THONG_NHAT_", "De-cuong_", "Bai-bao-giao-thuc_")
+# Bản sao lưu bộ sinh ghi trước khi đè (run_g0_auto, g9_quality_gate: «<tên>.bak-YYYYMMDD-HHMMSS.md/.docx») — không
+# phải artifact, không đòi bản Word, không soi chuẩn trình bày (12/11/2026: BTM báo đỏ 2 bản .bak của G0_A1).
+_RE_BAN_SAO_LUU = re.compile(r"\.bak-\d{8}-\d{6}\.(?:md|docx)$")
+
+
+def la_ban_sao_luu(p: Path) -> bool:
+    return bool(_RE_BAN_SAO_LUU.search(p.name))
+
+
+def docx_mang_dau_cong(gate: str, p: Path) -> bool:
+    """Tên tệp tự nhận là sản phẩm của cổng: tiền tố «G<n>_» — riêng G10 còn gồm tài liệu gói nộp (TAI_LIEU_NOP_PREFIX).
+
+    12/11/2026: docx_theo_cong() xếp MỌI .docx không tiền tố cổng vào G10 (để vẫn được soi chuẩn trình bày), nên tài
+    liệu làm việc của đề tài (SOP trích hồ sơ, phiếu thu thập, kế hoạch hoàn thiện — BTM) bị luật «docx trên đĩa dù
+    cổng CHƯA TỪNG chạy» báo đỏ như thể G10 đã sinh. Luật đó nhắm tài liệu ĐỌC NHẦM được là đầu ra của cổng."""
+    if re.match(rf"^{gate}[_a-z]", p.name):
+        return True
+    return gate == "G10" and p.name.startswith(TAI_LIEU_NOP_PREFIX)
 MAU_ARTIFACT_CONG = re.compile(r"^G\d{1,2}_A\d{1,2}[a-z]?_")
 BO_SINH_DOCX = [  # 11 điểm doc.save phải đi qua chuan_trinh_bay (đo 01/09/2026)
     "run_g0_auto.py", "run_g1_auto.py", "run_g2_auto.py", "run_g3_auto.py", "run_g4_auto.py",
@@ -348,6 +366,8 @@ def docx_theo_cong(out_dir: Path) -> dict[str, list[Path]]:
     """
     theo: dict[str, list[Path]] = {}
     for p in sorted(out_dir.glob("*.docx")):
+        if la_ban_sao_luu(p):
+            continue
         m = re.match(r"^G(\d{1,2})[_a-z]", p.name)
         gate = f"G{m.group(1)}" if m and f"G{m.group(1)}" in CONG else "G10"
         theo.setdefault(gate, []).append(p)
@@ -582,10 +602,11 @@ def kiem_cong(gate: str, study: str, out_dir: Path, cps: dict[str, dict[str, Any
         # trong một đề tài THẬT. Nội dung xác minh: 100% khung placeholder
         # "[CẦN CHỦ NHIỆM XÁC NHẬN] Chủ nhiệm điền nội dung cho phần này." — 0
         # chữ nào do người viết.
-        if docx_cong.get(gate):
-            ten = ", ".join(p.name for p in docx_cong[gate])
+        mo_coi = [p for p in docx_cong.get(gate, []) if docx_mang_dau_cong(gate, p)]
+        if mo_coi:
+            ten = ", ".join(p.name for p in mo_coi)
             m.append(Muc(gate, "①", DO,
-                         f"{gate}: có {len(docx_cong[gate])} bản .docx TRÊN ĐĨA dù cổng CHƯA TỪNG chạy",
+                         f"{gate}: có {len(mo_coi)} bản .docx TRÊN ĐĨA dù cổng CHƯA TỪNG chạy",
                          f"{ten} — không checkpoint, không guardrail, nghi tài liệu lạc/khung rỗng",
                          f"xác minh nội dung; nếu chỉ là khung rỗng thì dời sang "
                          f"exports/{study}/_tai-lieu-mo-coi/ (không xoá — giữ truy vết, tiền tố "
@@ -680,7 +701,7 @@ def kiem_cong(gate: str, study: str, out_dir: Path, cps: dict[str, dict[str, Any
     for it in rd["items"]:
         for rel in it.get("matches", []):
             p = out_dir / rel
-            if p.suffix == ".md" and p.exists() and p not in md_files:
+            if p.suffix == ".md" and p.exists() and p not in md_files and not la_ban_sao_luu(p):
                 md_files.append(p)
     if gate == "G10":
         md_files += [p for p in sorted(out_dir.glob("*.md"))
