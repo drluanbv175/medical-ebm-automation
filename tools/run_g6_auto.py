@@ -33,6 +33,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
 import g6_quality_gate as G6Q  # noqa: E402  (bộ đọc SAP + phép kiểm khoá G4 dùng CHUNG với bộ chấm — 04/10/2026)
+import g6_trong_so_survey as TSS  # noqa: E402  (trọng số hậu phân tầng + giới hạn người bỏ về theo SAP — 12/11/2026)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 
 # Kết cục NHỊ PHÂN (tỷ lệ tích luỹ, không có trục thời gian) — G3 cho rct/cohort tính cỡ mẫu bằng hai tỷ lệ với các
@@ -3532,7 +3533,15 @@ def main():
     r01 = hau_xu_ly_script_r(make_r01_cleaning(v, design_code), study)
     r02 = hau_xu_ly_script_r(make_r02_tables(v, design_code), study)
     r03 = hau_xu_ly_script_r(r03, study, tham_so_sap["ket_cuc_phu"], la_03=True)
-    goi_r = goi_r_cho_script(r01, r02, r03)   # F14: 00_setup.R cài đúng gói các script này gọi
+    # THÊM 12/11/2026 (nhóm B, B2): SAP §4 GỌI postStratify( ⇒ sinh script R `survey` cho trọng số hậu phân tầng,
+    # KTC Wilson trên n hiệu dụng, độ nhạy svyolr và giới hạn người bỏ về (SAP §9) — trước đây G6 không sinh dòng nào.
+    ts_trong_so = TSS.doc_tham_so_trong_so(sap_text, v)
+    r04 = TSS.make_r04_trong_so(study, ts_trong_so) if ts_trong_so["can_trong_so"] else {}
+    if r04:
+        r04[TSS.TEP_CHAY] = hau_xu_ly_script_r(r04[TSS.TEP_CHAY], study)
+        print(f"  → SAP §4 đòi trọng số hậu phân tầng ⇒ sinh {TSS.TEP_CHAY} + {TSS.TEP_HAM}"
+              + (f" (⚠️ chưa rút được: {', '.join(ts_trong_so['thieu'])})" if ts_trong_so["thieu"] else ""))
+    goi_r = goi_r_cho_script(r01, r02, r03, *r04.values())   # F14: 00_setup.R cài đúng gói các script này gọi
     scripts_to_write = {
         "00_setup.R":    make_r00_setup(study, tham_so_sap["seed"], tham_so_sap["seed_khong_ap_dung"],
                                         tham_so_sap["r_version"], alpha_sap, tham_so_sap["alpha_khong_ap_dung"],
@@ -3540,7 +3549,15 @@ def main():
         "01_cleaning.R": r01,
         "02_tables.R":   r02,
         "03_analysis.R": r03,
+        **r04,
     }
+    # SAP không còn đòi trọng số (vd sửa đổi SAP) ⇒ dọn script 04 cũ DO CHÍNH BỘ SINH NÀY tạo (nhận bằng dòng đầu).
+    for ten_cu in (TSS.TEP_HAM, TSS.TEP_CHAY):
+        p_cu = scripts_dir / ten_cu
+        if ten_cu not in scripts_to_write and p_cu.exists() and \
+                p_cu.read_text(encoding="utf-8", errors="replace").startswith(TSS.DAU_TEP):
+            p_cu.unlink()
+            print(f"  → Dọn {ten_cu} cũ: SAP §4 hiện hành không gọi postStratify")
 
     generated_paths = []
     for filename, code in scripts_to_write.items():
@@ -3574,6 +3591,8 @@ def main():
         g4_khoa=g4_locked, g4_nguon=g4_nguon, tham_so_sap=tham_so_sap, goi_r=goi_r,
     )
 
+    if r04:
+        artifact += TSS.doan_a7(ts_trong_so)
     md_path = out / f"G6_A7_ANALYSIS_SCRIPTS_{study}.md"
     md_path.write_text(artifact, encoding="utf-8", newline="\n")
     print(f"\n  → A7 Markdown: {md_path.name} ({len(artifact)//1024}KB)")
