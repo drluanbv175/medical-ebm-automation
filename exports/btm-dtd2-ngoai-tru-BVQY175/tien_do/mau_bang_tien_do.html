@@ -1,0 +1,54 @@
+<h2 class="sr-only">Bảng theo dõi tiến độ đề tài btm-dtd2 theo 9 giai đoạn; bấm một việc chưa xong để tiếp tục làm việc đó.</h2>
+<style>
+.tr{display:flex;align-items:center;gap:10px;padding:8px 12px;border-top:0.5px solid var(--border);font-size:14px;cursor:pointer}
+.tr:hover{background:var(--surface-1)}
+.tr.x{cursor:default;color:var(--text-secondary)}
+.tr.x:hover{background:transparent}
+.chip{font-size:12px;padding:2px 8px;border-radius:var(--radius);white-space:nowrap;min-width:92px;text-align:center}
+.ph{border:0.5px solid var(--border);border-radius:12px;margin:0 0 10px;overflow:hidden}
+.phh{display:flex;align-items:center;gap:10px;padding:10px 12px;cursor:pointer;font-size:14px}
+.bar{height:6px;background:var(--surface-1);border-radius:3px;overflow:hidden;width:90px;flex:none}
+.bar>i{display:block;height:100%;background:var(--fill-success)}
+.mc{background:var(--surface-1);border-radius:var(--radius);padding:12px 14px}
+.lb{font-size:13px;color:var(--text-secondary);margin:0 0 6px}
+</style>
+<div id="m" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:0 0 1.25rem"></div>
+<p class="lb">Việc làm được ngay</p>
+<div id="now" style="border:0.5px solid var(--border);border-radius:12px;overflow:hidden;margin:0 0 1.25rem"></div>
+<p class="lb">Toàn bộ kế hoạch theo giai đoạn</p>
+<div id="ph"></div>
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px">
+<button id="rf">Cập nhật tiến độ ↗</button>
+<span id="up" style="font-size:12px;color:var(--text-muted)"></span>
+</div>
+<script>
+const D=__DATA__;
+const L={xong:["Xong","success"],dang:["Đang làm","accent"],cho_bs:["Chờ bác sĩ","warning"],san:["Làm được ngay","accent"],khoa:["Chờ việc trước","n"]};
+const A={may:"Máy",bs:"Bác sĩ",may_bs:"Máy + bác sĩ",hd:"Hội đồng",pb:"Phản biện ngoài",tc:"Tạp chí"};
+const by={};D.v.forEach(x=>by[x[0]]=x);
+const dt=s=>{const p=s.split("/");return new Date(2000+ +p[2],p[1]-1,+p[0]).getTime();};
+const now=Date.now();
+const st=x=>x[5]!=="chua"?x[5]:(x[6].every(d=>by[d]&&by[d][5]==="xong")?"san":"khoa");
+const go=x=>sendPrompt("Tiếp tục mục "+x[0]+" «"+x[2]+"» của đề tài btm-dtd2-ngoai-tru-BVQY175");
+const chip=s=>{const c=L[s][1];const bg=c==="n"?"var(--surface-1)":"var(--bg-"+c+")";const fg=c==="n"?"var(--text-secondary)":"var(--text-"+c+")";return '<span class="chip" style="background:'+bg+';color:'+fg+'">'+L[s][0]+'</span>';};
+function row(x){const s=st(x);const late=s!=="xong"&&dt(x[4])<now;const d=document.createElement("div");d.className="tr"+(s==="xong"?" x":"");
+d.innerHTML=chip(s)+'<span style="color:var(--text-muted);min-width:30px">'+x[0]+'</span><span style="flex:1;min-width:0">'+x[2]+'</span><span style="font-size:12px;color:var(--text-secondary);white-space:nowrap">'+A[x[3]]+'</span><span style="font-size:12px;white-space:nowrap;min-width:58px;text-align:right;color:'+(late?"var(--text-danger)":"var(--text-muted)")+'">'+x[4]+'</span>'+(s==="xong"?'':'<i class="ti ti-arrow-right" aria-hidden="true" style="font-size:16px;color:var(--text-muted)"></i>');
+if(s!=="xong"){d.setAttribute("role","button");d.tabIndex=0;d.title="Bấm để tiếp tục việc này";d.onclick=()=>go(x);d.onkeydown=e=>{if(e.key==="Enter")go(x);};}return d;}
+const tot=D.v.length,done=D.v.filter(x=>x[5]==="xong").length;
+const signed=["4.5","4.6","5.6","8.4","8.6","9.3"].filter(i=>by[i]&&by[i][5]==="xong").length;
+const cur=D.g.findIndex((g,k)=>D.v.some(x=>x[1]===k&&x[5]!=="xong"));
+const open=D.v.filter(x=>["dang","cho_bs","san"].includes(st(x))).sort((a,b)=>dt(a[4])-dt(b[4]));
+const card=(l,v)=>'<div class="mc"><p class="lb">'+l+'</p><div style="font-size:22px;font-weight:500">'+v+'</div></div>';
+document.getElementById("m").innerHTML=card("Hoàn thành · "+done+"/"+tot+" việc",Math.round(done*100/tot)+"%")+card("Cổng cứng đã ký",signed+"/6")+card("Giai đoạn hiện tại",cur<0?"Xong":"GĐ"+(cur+1))+card("Hạn gần nhất",open.length?open[0][4].slice(0,5):"—");
+const nw=document.getElementById("now");open.forEach((x,k)=>{const r=row(x);if(k===0)r.style.borderTop="0";nw.appendChild(r);});
+const ph=document.getElementById("ph");
+D.g.forEach((g,k)=>{const it=D.v.filter(x=>x[1]===k);const dn=it.filter(x=>x[5]==="xong").length;const box=document.createElement("div");box.className="ph";
+const h=document.createElement("div");h.className="phh";h.setAttribute("role","button");h.tabIndex=0;
+h.innerHTML='<i class="ti ti-chevron-down" aria-hidden="true" style="font-size:16px;color:var(--text-muted)"></i><span style="font-weight:500">GĐ'+(k+1)+'</span><span style="flex:1;min-width:0">'+g[0]+'</span><span style="font-size:12px;color:var(--text-muted);white-space:nowrap">'+g[1].slice(0,5)+'–'+g[2]+'</span><span class="bar"><i style="width:'+Math.round(dn*100/it.length)+'%"></i></span><span style="font-size:12px;color:var(--text-secondary);min-width:36px;text-align:right">'+dn+'/'+it.length+'</span>';
+const body=document.createElement("div");it.forEach(x=>body.appendChild(row(x)));
+let op=(k===cur||k===cur+1);const set=()=>{body.style.display=op?"block":"none";h.querySelector(".ti").className="ti "+(op?"ti-chevron-down":"ti-chevron-right");};
+h.onclick=()=>{op=!op;set();};h.onkeydown=e=>{if(e.key==="Enter"){op=!op;set();}};set();
+box.appendChild(h);box.appendChild(body);ph.appendChild(box);});
+document.getElementById("rf").onclick=()=>sendPrompt("Cập nhật sổ tiến độ đề tài btm-dtd2-ngoai-tru-BVQY175 và hiển thị lại bảng theo dõi");
+document.getElementById("up").textContent="Sổ cập nhật "+D.u.split("-").reverse().join("/")+" · hạn là ước tính";
+</script>

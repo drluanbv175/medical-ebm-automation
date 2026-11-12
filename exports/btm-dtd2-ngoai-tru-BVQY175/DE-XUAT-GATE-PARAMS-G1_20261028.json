@@ -1,0 +1,284 @@
+{
+ "_ghi_chu": "ĐỀ XUẤT của máy cho mục 2.1 (G1: chọn thiết kế, kiểm soát sai lệch) — máy CHƯA ghi vào study_meta.json. Nội dung dựng từ PICO đã chốt ở G0 (dấu vân tay b9638397b7403e29), G0 §3.0 và G0_KHOANG_TRONG. Chủ nhiệm đọc, sửa từng khoá rồi nói «áp dụng đề xuất G1» (kèm phần sửa nếu có) để máy chép đúng nội dung đã duyệt, sao lưu trước khi ghi. Các khoá xác nhận (design_confirmed, protocol_core_confirmed, bias_controls_confirmed, feasibility_confirmed, evidence_review_confirmed, reviewed_by_role, reviewed_at, dau_van_tay_chot) LUÔN do chủ nhiệm ghi — đề xuất này cố ý bỏ trống. budget để trống cho mục 2.4 (kế hoạch triển khai, đơn giá do chủ nhiệm điền). Cần bác sĩ kiểm chứng.",
+ "ngay": "2026-10-28",
+ "nguoi_soan": "Claude Code (phiên điều phối trực tiếp, không qua hội đồng cổng G1)",
+ "quyet_dinh_can_chu_nhiem": [
+  {
+   "ma": "D1",
+   "noi_dung": "Thiết kế cắt ngang (cross_sectional), báo cáo theo STROBE kèm RECORD",
+   "de_xuat": "Chấp nhận",
+   "lua_chon_khac": "Không có phương án thay thế hợp với câu hỏi mô tả đã chốt"
+  },
+  {
+   "ma": "D2",
+   "noi_dung": "Gom 5 dòng kết cục G0 thành 3 mục tiêu: MT1 phát hiện, MT2 điều trị, MT3 yếu tố liên quan",
+   "de_xuat": "3 mục tiêu (khung quen thuộc của đề tài cơ sở)",
+   "lua_chon_khac": "Giữ 5 mục tiêu tách như G0"
+  },
+  {
+   "ma": "D3",
+   "noi_dung": "Chiến lược mẫu (mục 2.5 sổ tiến độ)",
+   "de_xuat": "Lấy toàn bộ người đủ tiêu chuẩn trong HIS",
+   "lua_chon_khac": "Chọn ngẫu nhiên đơn từ danh sách đủ tiêu chuẩn với cỡ mẫu theo G3"
+  },
+  {
+   "ma": "D4",
+   "noi_dung": "Xét nghiệm nào được tính là UACR ở phân tích chính (mục 2.2)",
+   "de_xuat": "Chỉ UACR dạng tỷ số; nồng độ microalbumin niệu và que nhúng đưa vào phân tích độ nhạy",
+   "lua_chon_khac": "Gộp mọi dạng xét nghiệm albumin niệu vào phân tích chính"
+  },
+  {
+   "ma": "D5",
+   "noi_dung": "Xác nhận tính mạn của bệnh thận mạn (mục 2.2)",
+   "de_xuat": "Chỉ dùng dữ liệu trong cửa sổ 2026 như G0 đã chốt; người 1 lần đo xếp «nghi bệnh thận mạn»",
+   "lua_chon_khac": "Cho tra lùi kết quả năm 2025 chỉ để xác nhận tính mạn — đổi phạm vi trích xuất và hồ sơ đạo đức"
+  },
+  {
+   "ma": "D6",
+   "noi_dung": "Ngưỡng chấp nhận của đối chiếu thủ công cho biến kết cục chính",
+   "de_xuat": "Đồng thuận từ 95% giữa trích xuất tự động và hồ sơ",
+   "lua_chon_khac": "Chủ nhiệm ấn định ngưỡng khác; cỡ mẫu kiểm chứng tính ở G3/G5"
+  },
+  {
+   "ma": "D7",
+   "noi_dung": "Vai ghi ở reviewed_by_role khi chốt G1",
+   "de_xuat": "Ghi «chủ nhiệm» — cổng G1 hiện KHÔNG nhận chuỗi «chủ nhiệm đề tài» (G0 và G7 nhận)",
+   "lua_chon_khac": "«PI» hoặc «nhà phương pháp»"
+  }
+ ],
+ "nguon_moi_cua_G1": [
+  {
+   "pmid": "26440803",
+   "doi": "10.1371/journal.pmed.1001885",
+   "trich": "Benchimol EI và cs. The RECORD statement. PLoS Med 2015;12(10):e1001885",
+   "kiem_metadata": "PubMed connector 28/10/2026",
+   "kiem_rut_bai": "OK — tools/check_citation_retraction.py 28/10/2026: lượt 1 kết luận từ Europe PMC (NCBI chặn IP); lượt 2 sau khi bác sĩ bật lại VPN kết luận từ PubMed"
+  },
+  {
+   "pmid": "34554658",
+   "doi": "10.1056/NEJMoa2102953",
+   "trich": "Inker LA và cs. New creatinine- and cystatin C-based equations to estimate GFR without race. N Engl J Med 2021;385(19):1737-1749",
+   "kiem_metadata": "PubMed connector 28/10/2026",
+   "kiem_rut_bai": "OK — tools/check_citation_retraction.py 28/10/2026: lượt 1 kết luận từ Europe PMC (NCBI chặn IP); lượt 2 sau khi bác sĩ bật lại VPN kết luận từ PubMed"
+  }
+ ],
+ "gate_params.G1": {
+  "protocol_version": "1.0",
+  "design": "cross_sectional",
+  "design_rationale": "Cắt ngang mô tả có phân tích trên dữ liệu y tế thu thập thường quy (HIS của BVQY175), đo tình trạng xét nghiệm, ghi nhận chẩn đoán và kê đơn của người ĐTĐ típ 2 trong một cửa sổ 12 tháng (01/01/2026–31/12/2026). Câu hỏi đã chốt ở G0 là mô tả (question_type = descriptive) nên cắt ngang là thiết kế chuẩn; MT3 chỉ ước lượng mối liên quan (tỷ số tỷ lệ hiện mắc), không suy nhân quả. Đã cân nhắc và loại: (1) đoàn hệ hồi cứu theo dõi kết cục thận — vượt nhu cầu câu hỏi (đề tài đo khoảng trống chăm sóc, không đo tiến triển bệnh) và cần dữ liệu nhiều năm; (2) cắt ngang thu mới bằng phỏng vấn/khám — tốn nguồn lực và không đo được hành vi xét nghiệm, kê đơn thực tế; (3) audit lâm sàng trích hồ sơ thủ công — giữ làm phương án dự phòng khi HIS không xuất được dữ liệu (điều kiện FINER khả thi đã chốt ở G0). Khung đo tương tự PMID 38922613 (cohort hồi cứu trên dữ liệu thường quy) và PMID 41741270 (cắt ngang, dùng hồi quy Poisson phương sai vững). Chuẩn báo cáo: STROBE kèm phần mở rộng RECORD cho nghiên cứu dùng dữ liệu y tế thu thập thường quy (Benchimol 2015, PMID 26440803, DOI 10.1371/journal.pmed.1001885).",
+  "objectives": [
+   "MT1: Mô tả thực trạng phát hiện bệnh thận mạn ở người bệnh đái tháo đường típ 2 điều trị ngoại trú tại Khoa Khám bệnh, Bệnh viện Quân y 175 năm 2026 — tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh (kết cục chính), tỷ lệ bệnh thận mạn theo KDIGO 2024 và tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán.",
+   "MT2: Mô tả thực trạng điều trị bảo vệ thận (ACEi/ARB, SGLT2i) ở người bệnh đủ chỉ định theo KDIGO 2022 trong cùng quần thể.",
+   "MT3: Phân tích một số yếu tố liên quan với việc không được xét nghiệm đủ UACR và creatinin (phân tích thăm dò, không kiểm định giả thuyết định trước)."
+  ],
+  "research_question": "Trong năm 2026, bao nhiêu phần trăm người ĐTĐ típ 2 điều trị ngoại trú tại Khoa Khám bệnh BVQY175 được xét nghiệm đủ UACR và creatinin, bao nhiêu người có bệnh thận mạn (kể cả chưa được ghi nhận), bao nhiêu người đủ chỉ định đang được điều trị bảo vệ thận, và yếu tố nào liên quan với việc không được xét nghiệm đủ?",
+  "primary_outcome": {
+   "name": "Được xét nghiệm đủ UACR và creatinin huyết thanh trong cửa sổ 12 tháng (biến XN_DU)",
+   "measure": "Biến nhị phân trích từ HIS: bằng 1 khi trong 01/01–31/12/2026 người bệnh có ít nhất một kết quả UACR (tỷ số albumin/creatinin niệu, mg/g hoặc mg/mmol) VÀ ít nhất một kết quả creatinin huyết thanh (để tính eGFR); bằng 0 khi thiếu một hoặc cả hai. Xét nghiệm albumin niệu không ở dạng tỷ số (nồng độ microalbumin niệu đơn thuần, que nhúng protein niệu) không tính là UACR ở phân tích chính — đếm riêng và đưa vào phân tích độ nhạy. Kết quả làm ngoài BVQY175 không có trong HIS được tính bằng 0 ở phân tích chính và đánh giá bằng đối chiếu hồ sơ thủ công một mẫu ngẫu nhiên.",
+   "timepoint": "Một khoảng cắt ngang: cửa sổ hồi cứu 12 tháng 01/01/2026–31/12/2026 (ADA 2026 khuyến cáo đánh giá UACR và eGFR ít nhất mỗi năm, PMID 41358881); không theo dõi dọc",
+   "type": "Nhị phân; báo cáo tỷ lệ phần trăm kèm KTC 95% (phương pháp tính khoảng chốt ở SAP, cổng G4)"
+  },
+  "secondary_outcomes": [
+   "Phụ 1 — bệnh thận mạn theo KDIGO 2024 (PMID 38490803): eGFR dưới 60 mL/phút/1,73 m² và/hoặc UACR từ 30 mg/g (3 mg/mmol), bất thường ở 2 lần đo cách nhau từ 90 ngày; chỉ 1 lần bất thường thì xếp nhóm «nghi bệnh thận mạn», báo cáo riêng. eGFR tính từ creatinin bằng phương trình CKD-EPI 2021 không hệ số chủng tộc (PMID 34554658). Mẫu số là người có đủ xét nghiệm để phân loại; báo cáo phân bố theo nhóm G1–G5 và A1–A3.",
+   "Phụ 2 — bệnh thận mạn chưa được ghi nhận: người thoả định nghĩa bệnh thận mạn theo xét nghiệm (Phụ 1) nhưng không có mã ICD-10 của bệnh thận mạn hoặc biến chứng thận do ĐTĐ ở bất kỳ lượt khám nào trong cửa sổ (danh sách mã chốt cùng codebook); mẫu số là người có bệnh thận mạn theo xét nghiệm.",
+   "Phụ 3 — điều trị bảo vệ thận ở người đủ chỉ định theo KDIGO 2022 (PMID 36272764): (a) ACEi hoặc ARB ở người có tăng huyết áp và albumin niệu (UACR từ 30 mg/g); (b) SGLT2i ở người có bệnh thận mạn và eGFR từ 20. «Đang dùng» là có đơn kê thuốc nhóm đó tại lượt khám cuối cùng trong cửa sổ; người có chống chỉ định ghi trong hồ sơ được loại khỏi mẫu số và báo cáo riêng.",
+   "Phụ 4 — yếu tố liên quan với việc không được xét nghiệm đủ: hồi quy Poisson phương sai vững, báo cáo tỷ số tỷ lệ hiện mắc (PR) kèm KTC 95%; biến giải thích như gate_params.G0.intervention; phân tích thăm dò."
+  ],
+  "population": "Người từ 18 tuổi, chẩn đoán đái tháo đường típ 2 (ICD-10 E11), quản lý ngoại trú tại Khoa Khám bệnh BVQY175, có ít nhất 2 lượt khám trong cửa sổ hồi cứu 01/01/2026–31/12/2026; loại trừ: lọc máu hoặc ghép thận, có thai, đái tháo đường típ 1 hoặc thể khác (PICO đã chốt ở G0).",
+  "inclusion_criteria": [
+   "Từ 18 tuổi trở lên tại lượt khám đầu tiên trong cửa sổ",
+   "Có mã ICD-10 E11 (chẩn đoán chính hoặc kèm theo) ở ít nhất một lượt khám ngoại trú tại Khoa Khám bệnh BVQY175 trong cửa sổ 01/01/2026–31/12/2026",
+   "Có ít nhất 2 lượt khám ngoại trú tại Khoa Khám bệnh trong cùng cửa sổ"
+  ],
+  "exclusion_criteria": [
+   "Đang lọc máu (thận nhân tạo hoặc lọc màng bụng) hoặc đã ghép thận — nhận diện qua mã ICD-10 (ví dụ Z49, Z99.2, Z94.0; danh sách đầy đủ chốt cùng codebook) hoặc chỉ định lọc máu trong HIS",
+   "Có thai trong cửa sổ (mã chương O hoặc Z33)",
+   "Có mã ĐTĐ típ 1 (E10) hoặc thể khác (E12, E13) ở bất kỳ lượt khám nào trong cửa sổ; người chỉ có mã E14 (không xác định típ) không vào mẫu và được đếm trong sơ đồ chọn"
+  ],
+  "setting": "Khoa Khám bệnh, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh — bệnh viện quân đội tuyến cuối; người bệnh gồm quân nhân, người có BHYT và người khám dịch vụ, theo dõi ĐTĐ ở phòng khám nội tiết hoặc nội chung. Nguồn dữ liệu: hệ thống thông tin bệnh viện (HIS) — lượt khám, mã ICD-10, kết quả xét nghiệm, đơn thuốc ngoại trú.",
+  "study_period": "Cửa sổ dữ liệu hồi cứu 01/01/2026–31/12/2026. Thời gian thực hiện dự kiến 11/2026–09/2027 theo sổ tiến độ đề tài. Trích xuất dữ liệu chỉ bắt đầu sau khi Hội đồng Đạo đức BVQY175 phê duyệt (T0), SAP đã khoá ở cổng G4 và cửa sổ đã khép (sớm nhất tháng 01/2027) — dự kiến 19/01–28/02/2027.",
+  "intervention_or_exposure": "Không can thiệp. Biến giải thích cho MT3: tuổi, giới, nhóm đối tượng khám (quân nhân / BHYT / dịch vụ); thời gian mắc ĐTĐ, HbA1c gần nhất, đang dùng insulin, số thuốc hạ glucose; tăng huyết áp, BMI, bệnh tim mạch do xơ vữa hoặc suy tim; số lượt khám trong cửa sổ, phòng khám theo dõi chính (nội tiết / nội chung) — đã chốt ở gate_params.G0.intervention; định nghĩa vận hành từng biến ở codebook (mục 2.7 sổ tiến độ).",
+  "comparator": "N/A — thiết kế mô tả cắt ngang, không có nhóm so sánh ngoài; MT3 so sánh giữa các mức của biến giải thích trong cùng quần thể bằng hồi quy Poisson phương sai vững.",
+  "recruitment_strategy": "Lấy TOÀN BỘ người đủ tiêu chuẩn có trong HIS (chọn mẫu toàn bộ, không chọn ngẫu nhiên): dữ liệu trích xuất tự động nên chi phí thêm cho mỗi người gần như bằng 0, không có sai số chọn mẫu và đủ người cho phân tích nhóm nhỏ; cỡ mẫu tính ở G3 dùng để kiểm số người đủ tiêu chuẩn có đạt độ chính xác mong muốn hay không. Phương án dự phòng khi HIS không xuất được dữ liệu: trích hồ sơ thủ công một mẫu ngẫu nhiên đơn từ danh sách người đủ tiêu chuẩn, cỡ mẫu theo G3. Sơ đồ chọn (STROBE, RECORD) báo số người ở từng bước loại.",
+  "follow_up_schedule": "N/A — cắt ngang hồi cứu, không theo dõi; mỗi người được quan sát một lần trên dữ liệu có sẵn trong cửa sổ 12 tháng.",
+  "data_collection_method": "Khai thác nguồn CÓ SẴN, không thu mới: phòng CNTT BVQY175 trích xuất từ HIS theo phiếu yêu cầu dựng từ codebook — lượt khám, mã ICD-10, kết quả xét nghiệm (creatinin, UACR, các dạng albumin niệu khác, HbA1c), đơn thuốc ngoại trú, thông tin hành chính cần cho biến giải thích; gộp các mã hồ sơ của cùng một người TRƯỚC khi gán mã nghiên cứu ẩn danh; nhóm nghiên cứu chỉ nhận tệp đã giả danh, không có trường định danh. Kiểm chứng: hai người đối chiếu độc lập hồ sơ bệnh án của một mẫu ngẫu nhiên (cả nhóm đã và chưa xét nghiệm đủ) để đo độ chính xác của trích xuất tự động và tìm kết quả làm ở cơ sở khác.",
+  "team_roles": "Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và SAP, ký hồ sơ đạo đức, chịu trách nhiệm chung. Nhà phương pháp/thống kê: cỡ mẫu (G3), viết và khoá SAP (G4), phân tích (G6). Quản lý dữ liệu: codebook, kiểm tra chất lượng, khoá cơ sở dữ liệu (G5), lưu trữ tệp giả danh. Phòng CNTT BVQY175: trích xuất HIS và giả danh hoá theo phiếu yêu cầu, giữ khoá nối mã (nhóm nghiên cứu không giữ). Hai người rà hồ sơ độc lập: đối chiếu mẫu kiểm chứng. Người đảm nhận từng vai do chủ nhiệm phân công (bảng RACI ở A13, mục 2.4 sổ tiến độ).",
+  "background_problem": "Bệnh thận mạn thường gặp ở người ĐTĐ típ 2 (khoảng 32% đến 35% trong các mẫu chăm sóc ngoại trú đã tra, PMID 30238781, 41741270) và phát hiện sớm cần cả eGFR lẫn UACR. ADA 2026 khuyến cáo đánh giá UACR và eGFR ít nhất mỗi năm (PMID 41358881); KDIGO 2024 định nghĩa và phân loại bệnh thận mạn theo eGFR (G1–G5) và albumin niệu (A1–A3) (PMID 38490803). Không làm UACR thì bệnh thận mạn giai đoạn sớm bị bỏ sót và người bệnh mất cơ hội dùng các thuốc bảo vệ thận đã được khuyến cáo (SGLT2i, ACEi/ARB — KDIGO 2022, PMID 36272764). Tại Khoa Khám bệnh BVQY175 chưa có số liệu về mức độ được xét nghiệm, ghi nhận và điều trị bệnh thận mạn ở người ĐTĐ típ 2 ngoại trú.",
+  "evidence_summary": "Theo G0 §3.0: ở các hệ thống có dữ liệu thường quy, chuỗi chăm sóc thận cho người ĐTĐ típ 2 hụt ở mọi bước. Xét nghiệm: chỉ 24,9% được làm cả creatinin lẫn UACR (PMID 38922613); UACR 43,3% trong khi creatinin 84,8% (PMID 33722396); phân tích gộp ước tỷ lệ xét nghiệm uACR khoảng 22% theo mô hình cố định, dao động rất rộng (PMID 41345917). Ghi nhận: 54% bệnh thận mạn theo xét nghiệm chưa được chẩn đoán (PMID 41741270); chẩn đoán chỉ được ghi ở 46,9% người có xét nghiệm bất thường lặp lại (PMID 40428801). Điều trị: khoảng trống kê SGLT2i 80,3% và RAASi 42,0% ở bệnh thận ĐTĐ (PMID 36352203). Trong nước: các nghiên cứu tìm được đo tỷ lệ bệnh thận mạn trong mẫu ĐTĐ típ 2 ngoại trú (15,32% đến 31,1%) hoặc mô tả kê đơn ở người đã có bệnh thận mạn; chỉ một nghiên cứu đo tỷ lệ làm UACR, ở người tăng huyết áp nội trú (34,3%, PMID 41916900). Giới hạn: gần như toàn bộ là nghiên cứu quan sát trên dữ liệu thường quy, đa số ở Âu–Mỹ–Úc; G0 chưa đọc toàn văn và không chấm GRADE cho tập này.",
+  "knowledge_gap": "Theo G0_KHOANG_TRONG (25/10/2026): ở Việt Nam chưa thấy nghiên cứu đo đồng thời cả chuỗi xét nghiệm → phát hiện → ghi nhận → điều trị ở người ĐTĐ típ 2 ngoại trú tại bệnh viện quân đội; các nghiên cứu tìm được chủ yếu đo tỷ lệ bệnh thận mạn trong mẫu đã xét nghiệm hoặc mô tả kê đơn ở người đã có bệnh thận mạn. Mức tính mới: mở rộng bối cảnh — không mới trên thế giới. Phạm vi tra: PubMed + Crossref; chưa tra Google Scholar và thư viện luận văn.",
+  "benefit_risk_rationale": "Nghiên cứu quan sát hồi cứu trên hồ sơ có sẵn, không can thiệp, không tiếp xúc người bệnh — nguy cơ tối thiểu; nguy cơ chính là lộ thông tin cá nhân, kiểm soát bằng giả danh hoá tại phòng CNTT trước khi bàn giao, không trích trường định danh, lưu trữ có phân quyền. Lợi ích: số liệu nền cho cải tiến chất lượng chăm sóc thận tại Khoa Khám bệnh (ví dụ nhắc xét nghiệm UACR trong HIS — cảnh báo điện tử đã làm tăng chỉ định UACR trong PMID 42031191); không có lợi ích trực tiếp cho từng người bệnh. Hình thức đồng thuận (miễn hay rút gọn) do Hội đồng Đạo đức BVQY175 quyết định (G0, finer_ethical).",
+  "study_schema_timeline": "T0 = ngày Hội đồng Đạo đức BVQY175 phê duyệt. Trình tự: chốt G1, cỡ mẫu G3 và codebook (11/2026) → hồ sơ đạo đức G2 và SAP sẵn sàng G4 (09–22/11/2026) → Hội đồng Khoa học, Đạo đức xét duyệt (23/11/2026–18/01/2027) → khoá SAP trước khi nhận dữ liệu → cửa sổ dữ liệu khép 31/12/2026 → phiếu yêu cầu gửi phòng CNTT, trích xuất, giả danh hoá, đối chiếu thủ công, khoá dữ liệu G5 (19/01–28/02/2027) → phân tích G6 (01–14/03/2027) → bản thảo G7 (15/03–07/04/2027) → bình duyệt và liêm chính G8–G9 (08–28/04/2027) → nộp Tạp chí Y Dược Thực hành 175 (G10, từ 29/04/2027).",
+  "intervention_dose_adherence": "N/A — không có can thiệp. Cách đo biến giải thích: lấy từ HIS trong cửa sổ — giá trị gần nhất (HbA1c, BMI), có/không (insulin, tăng huyết áp, bệnh tim mạch do xơ vữa hoặc suy tim), đếm (số thuốc hạ glucose, số lượt khám); định nghĩa vận hành ở codebook.",
+  "stopping_rescue_rules": "N/A ở cấp người tham gia — không can thiệp, không tiếp xúc người bệnh. Cấp nghiên cứu: nếu phòng CNTT không xuất được creatinin, UACR, mã ICD-10 hoặc đơn thuốc theo mã ẩn danh (mục 1.9 sổ tiến độ), chuyển sang phương án dự phòng trích hồ sơ thủ công một mẫu ngẫu nhiên (đã chốt ở G0) và sửa đề cương trước khi trình Hội đồng; nếu đối chiếu thủ công cho thấy trích xuất tự động sai ở biến kết cục chính vượt ngưỡng chấp nhận, dừng phân tích, sửa quy tắc trích xuất rồi trích lại.",
+  "critical_to_quality": "(1) Xác định đúng quần thể — mã E11, từ 2 lượt khám, loại trừ theo mã — kiểm bằng sơ đồ chọn và đối chiếu mẫu; (2) độ chính xác của biến kết cục chính XN_DU — đối chiếu thủ công mẫu ngẫu nhiên, đề xuất ngưỡng chấp nhận đồng thuận từ 95% giữa trích xuất tự động và hồ sơ; (3) phân biệt UACR với nồng độ microalbumin niệu và que nhúng — bảng ánh xạ mã xét nghiệm HIS do hai người duyệt trước khi trích; (4) gộp hồ sơ trùng của cùng một người trước khi giả danh hoá; (5) tính eGFR đúng phương trình và đơn vị (creatinin µmol/L hay mg/dL); (6) tệp nhóm nghiên cứu nhận không có trường định danh.",
+  "monitoring_plan": "Chủ nhiệm rà sổ tiến độ và Risk Register (A13b) sau mỗi mốc cổng; quản lý dữ liệu chạy kiểm tra phạm vi, logic và trùng lặp trên tệp trích xuất trước khi khoá (G5), ghi nhật ký truy vấn dữ liệu; hai người rà hồ sơ đối chiếu độc lập mẫu kiểm chứng, đo mức đồng thuận và giải quyết bất đồng có biên bản; mọi thay đổi đề cương sau khi Hội đồng duyệt đi qua quy trình sửa đổi và báo Hội đồng trước khi áp dụng.",
+  "sampling_design": [
+   "toan_bo"
+  ],
+  "association_measures": [
+   "prevalence",
+   "pr"
+  ],
+  "non_response_plan": "Không có không-đáp-ứng theo nghĩa khảo sát (dùng hồ sơ có sẵn, không mời tham gia). Thay vào đó: sơ đồ chọn báo số người ở từng bước loại; với từng biến báo số và tỷ lệ thiếu dữ liệu; so sánh đặc điểm người thiếu với người đủ dữ liệu; cách xử lý dữ liệu thiếu chốt ở SAP (G4).",
+  "bias_controls": [
+   {
+    "sai_lech": "Sai lệch chọn do tiêu chí từ 2 lượt khám",
+    "bien_phap": "Lấy toàn bộ người đủ tiêu chuẩn; sơ đồ chọn báo số người có mã E11 nhưng chỉ 1 lượt khám và so sánh tuổi, giới, nhóm đối tượng với mẫu nghiên cứu",
+    "chieu": "Mẫu nghiêng về người theo dõi đều nên có thể ước lượng CAO tỷ lệ được xét nghiệm so với mọi người ĐTĐ típ 2 từng đến khám",
+    "trang_thai": "định lượng + hạn chế mở"
+   },
+   {
+    "sai_lech": "Sai lệch phân loại quần thể do mã ICD-10",
+    "bien_phap": "Định nghĩa ca bằng E11, loại E10/E12/E13, đếm riêng người chỉ có E14; phân tích độ nhạy giới hạn người có E11 kèm ít nhất một đơn thuốc hạ glucose trong cửa sổ",
+    "chieu": "Mã E11 ghi nhầm làm lẫn người không ĐTĐ típ 2 vào mẫu; chiều lệch của kết cục không xác định trước",
+    "trang_thai": "khống chế"
+   },
+   {
+    "sai_lech": "Sai lệch thông tin — xét nghiệm làm ngoài BVQY175 không có trong HIS",
+    "bien_phap": "Đối chiếu thủ công hồ sơ bệnh án một mẫu ngẫu nhiên của nhóm chưa xét nghiệm đủ để tìm kết quả ngoài viện được ghi lại; báo tỷ lệ tìm thấy và phân tích độ nhạy tính lại kết cục chính",
+    "chieu": "Ước lượng THẤP tỷ lệ được xét nghiệm đủ",
+    "trang_thai": "định lượng + hạn chế mở"
+   },
+   {
+    "sai_lech": "Sai lệch phân loại kết cục — UACR với nồng độ microalbumin niệu hoặc que nhúng",
+    "bien_phap": "Bảng ánh xạ mã xét nghiệm HIS do hai người duyệt trước khi trích; phân tích chính chỉ tính UACR dạng tỷ số, phân tích độ nhạy tính cả các dạng albumin niệu khác",
+    "chieu": "Loại dạng khác thì đếm thiếu xét nghiệm; gộp vào thì đếm thừa so với khuyến cáo",
+    "trang_thai": "khống chế"
+   },
+   {
+    "sai_lech": "Sai lệch phân loại bệnh thận mạn khi chỉ có 1 lần đo",
+    "bien_phap": "Xác nhận tính mạn bằng 2 lần đo bất thường cách nhau từ 90 ngày theo KDIGO 2024; người chỉ có 1 lần bất thường xếp nhóm «nghi bệnh thận mạn», báo cáo riêng",
+    "chieu": "Dùng 1 lần đo sẽ ước lượng CAO tỷ lệ bệnh thận mạn",
+    "trang_thai": "khống chế"
+   },
+   {
+    "sai_lech": "Sai lệch thông tin — thuốc kê hoặc mua ngoài BVQY175",
+    "bien_phap": "Đối chiếu bệnh án mẫu kiểm chứng để tìm thuốc đang dùng ghi trong bệnh án mà không có đơn trong HIS; nêu rõ trong hạn chế",
+    "chieu": "Ước lượng THẤP tỷ lệ đang dùng ACEi/ARB và SGLT2i",
+    "trang_thai": "định lượng + hạn chế mở"
+   },
+   {
+    "sai_lech": "Thời gian quan sát không đều trong cửa sổ",
+    "bien_phap": "Báo phân bố số tháng từ lượt khám đầu đến hết cửa sổ; phân tích độ nhạy giới hạn người có lượt khám đầu trước 01/07/2026",
+    "chieu": "Người bắt đầu khám muộn có ít thời gian được xét nghiệm nên kéo tỷ lệ xuống THẤP",
+    "trang_thai": "định lượng"
+   },
+   {
+    "sai_lech": "Nhiễu và tương quan trong cụm ở phân tích yếu tố liên quan (MT3)",
+    "bien_phap": "Mô hình đa biến với tập biến đã chốt ở G0; phòng khám theo dõi chính là biến trong mô hình; sai số chuẩn vững; diễn giải là mối liên quan, không nhân quả",
+    "chieu": "Không xác định trước; chỉ ảnh hưởng MT3, không ảnh hưởng ước lượng tỷ lệ của MT1–MT2",
+    "trang_thai": "khống chế một phần"
+   },
+   {
+    "sai_lech": "Sai lệch báo cáo và phân tích có chọn lọc",
+    "bien_phap": "Khoá SAP ở G4 trước khi nhận dữ liệu; báo cáo đủ mọi kết cục đã định trước theo STROBE và RECORD; cân nhắc đăng ký công khai đề cương (quyết ở G2)",
+    "chieu": "Chỉ báo các chỉ số «đẹp» hoặc đổi định nghĩa sau khi thấy số liệu",
+    "trang_thai": "khống chế"
+   }
+  ],
+  "risk_register": [
+   {
+    "id": "R1",
+    "loai": "Dữ liệu",
+    "rui_ro": "HIS không xuất được một trong các trường bắt buộc (UACR, creatinin, mã ICD-10, đơn thuốc) theo mã ẩn danh",
+    "xac_suat": "Trung bình (máy ước — chủ nhiệm chỉnh)",
+    "tac_dong": "Cao",
+    "giam_thieu": "Hỏi phòng CNTT trước khi nộp Hội đồng (mục 1.9); lập phiếu yêu cầu chi tiết từ codebook",
+    "capa": "Chuyển phương án dự phòng trích hồ sơ thủ công mẫu ngẫu nhiên; sửa đề cương",
+    "chu_nhan": "Chủ nhiệm đề tài",
+    "trang_thai": "Mở"
+   },
+   {
+    "id": "R2",
+    "loai": "Đo lường",
+    "rui_ro": "Xét nghiệm và đơn thuốc làm ngoài BVQY175 không có trong HIS",
+    "xac_suat": "Cao (máy ước — chủ nhiệm chỉnh)",
+    "tac_dong": "Trung bình",
+    "giam_thieu": "Đối chiếu thủ công mẫu ngẫu nhiên; phân tích độ nhạy",
+    "capa": "Báo cáo như hạn chế, trình bày khoảng ước lượng",
+    "chu_nhan": "Quản lý dữ liệu",
+    "trang_thai": "Mở"
+   },
+   {
+    "id": "R3",
+    "loai": "Đo lường",
+    "rui_ro": "Tên/mã xét nghiệm albumin niệu trong HIS không thống nhất (UACR, microalbumin niệu, que nhúng)",
+    "xac_suat": "Cao (máy ước — chủ nhiệm chỉnh)",
+    "tac_dong": "Cao",
+    "giam_thieu": "Bảng ánh xạ mã xét nghiệm do hai người duyệt trước khi trích",
+    "capa": "Trích lại với ánh xạ đã sửa",
+    "chu_nhan": "Quản lý dữ liệu",
+    "trang_thai": "Mở"
+   },
+   {
+    "id": "R4",
+    "loai": "Chọn mẫu",
+    "rui_ro": "Mã E11 ghi thiếu hoặc nhầm (dùng E14)",
+    "xac_suat": "Trung bình (máy ước — chủ nhiệm chỉnh)",
+    "tac_dong": "Trung bình",
+    "giam_thieu": "Đếm người chỉ có E14; phân tích độ nhạy E11 kèm thuốc hạ glucose",
+    "capa": "Nêu trong hạn chế",
+    "chu_nhan": "Nhà phương pháp/thống kê",
+    "trang_thai": "Mở"
+   },
+   {
+    "id": "R5",
+    "loai": "Dữ liệu",
+    "rui_ro": "Một người có nhiều mã hồ sơ trong HIS",
+    "xac_suat": "Trung bình (máy ước — chủ nhiệm chỉnh)",
+    "tac_dong": "Trung bình",
+    "giam_thieu": "Phòng CNTT gộp hồ sơ trùng trước khi giả danh hoá",
+    "capa": "Gộp lại và trích lại",
+    "chu_nhan": "Phòng CNTT",
+    "trang_thai": "Mở"
+   },
+   {
+    "id": "R6",
+    "loai": "Bảo mật",
+    "rui_ro": "Lộ thông tin định danh trong tệp trích xuất",
+    "xac_suat": "Thấp (máy ước — chủ nhiệm chỉnh)",
+    "tac_dong": "Cao",
+    "giam_thieu": "Giả danh hoá tại phòng CNTT; không trích trường định danh; lưu trữ có phân quyền",
+    "capa": "Huỷ tệp lỗi, báo Hội đồng Đạo đức, trích lại",
+    "chu_nhan": "Quản lý dữ liệu",
+    "trang_thai": "Mở"
+   },
+   {
+    "id": "R7",
+    "loai": "Tiến độ",
+    "rui_ro": "Hội đồng xét duyệt chậm hơn dự kiến",
+    "xac_suat": "Trung bình (máy ước — chủ nhiệm chỉnh)",
+    "tac_dong": "Trung bình",
+    "giam_thieu": "Hỏi quy trình Hội đồng sớm (mục 1.10); nộp hồ sơ đủ ngay lần đầu",
+    "capa": "Dời mốc trích xuất; không trích trước khi được phê duyệt",
+    "chu_nhan": "Chủ nhiệm đề tài",
+    "trang_thai": "Mở"
+   }
+  ]
+ },
+ "khoa_xac_nhan_de_trong": [
+  "design_confirmed",
+  "protocol_core_confirmed",
+  "bias_controls_confirmed",
+  "feasibility_confirmed",
+  "evidence_review_confirmed",
+  "reviewed_by_role",
+  "reviewed_at",
+  "dau_van_tay_chot"
+ ],
+ "quyet_dinh_PI_20261028": {
+  "cau_hoi": "Áp dụng đề xuất G1 theo các phương án máy đề xuất cho D1–D7?",
+  "nguyen_van": "Áp dụng",
+  "thoi_diem": "2026-10-28 (sau khi bác sĩ bật lại VPN)",
+  "cach_ghi": "Bác sĩ trả lời trong phiên Claude Code; Claude chép nguyên nội dung «gate_params.G1» của đề xuất vào study_meta.json (sao lưu trước: study_meta.bak-20261028-truoc-ap-dung-G1.json). Khoá xác nhận vẫn để trống.",
+  "phuong_an_da_chon": {
+   "D1": "Chấp nhận",
+   "D2": "3 mục tiêu (khung quen thuộc của đề tài cơ sở)",
+   "D3": "Lấy toàn bộ người đủ tiêu chuẩn trong HIS",
+   "D4": "Chỉ UACR dạng tỷ số; nồng độ microalbumin niệu và que nhúng đưa vào phân tích độ nhạy",
+   "D5": "Chỉ dùng dữ liệu trong cửa sổ 2026 như G0 đã chốt; người 1 lần đo xếp «nghi bệnh thận mạn»",
+   "D6": "Đồng thuận từ 95% giữa trích xuất tự động và hồ sơ",
+   "D7": "Ghi «chủ nhiệm» — cổng G1 hiện KHÔNG nhận chuỗi «chủ nhiệm đề tài» (G0 và G7 nhận)"
+  }
+ }
+}
