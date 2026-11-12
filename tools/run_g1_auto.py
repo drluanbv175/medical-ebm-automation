@@ -295,6 +295,25 @@ def detect_specialist_modules(topic: str) -> list[str]:
     ]
 
 
+def mo_dun_chuyen_biet(topic: str, meta: Optional[dict] = None, out_dir: Optional[Path] = None) -> list[str]:
+    """Mô-đun chuyên biệt của A2 = tín hiệu từ CHỦ ĐỀ ∪ PI khai ∪ bằng chứng CẤU TRÚC của đề tài.
+
+    VÁ 12/11/2026 (nhóm B, B3 — bình duyệt độc lập C1a 29/10): chỉ dò từ khoá trên TÊN đề tài nên đề tài có pha
+    phát triển bộ câu hỏi (CVI, EFA/CFA) mà tên chỉ là «Sự hài lòng …» không bao giờ nhận khối COSMIN trong A2.
+    Thêm hai nguồn: (1) PI khai `study_meta.json → gate_params.G1.mo_dun_chuyen_biet` (chuỗi hoặc danh sách mã
+    trong _SPECIALIST_MODULE_LABEL — mã lạ bị bỏ qua); (2) thư mục `pha_cong_cu/` (công cụ pha phát triển công cụ
+    sinh ra) ⇒ prom_tool. Thứ tự: tín hiệu chủ đề trước, rồi phần thêm, không trùng."""
+    ds = detect_specialist_modules(topic)
+    g1 = (((meta or {}).get("gate_params") or {}).get("G1") or {}) if isinstance(meta, dict) else {}
+    khai = g1.get("mo_dun_chuyen_biet") or []
+    if isinstance(khai, str):
+        khai = [khai]
+    them = [str(m) for m in khai if str(m) in _SPECIALIST_MODULE_LABEL]
+    if out_dir is not None and (Path(out_dir) / "pha_cong_cu").is_dir():
+        them.append("prom_tool")
+    return ds + [m for m in dict.fromkeys(them) if m not in ds]
+
+
 def _specialist_module_section(module: str) -> str:
     if module == "prom_tool":
         return f"""### MÔ-ĐUN — {_SPECIALIST_MODULE_LABEL[module]}
@@ -1174,7 +1193,7 @@ def generate_g1_artifact(
     so_sai_lech = len(bias_rieng) if bias_rieng else len(design["bias_controls"])
     es_section = _effect_size_section(effects)
     internal = design["internal_code"]
-    specialist_modules = detect_specialist_modules(topic)
+    specialist_modules = mo_dun_chuyen_biet(topic, meta, out_dir)
     specialist_block = specialist_modules_block(specialist_modules)
     protocol_standard = (
         design.get("protocol_standard")
@@ -2438,7 +2457,7 @@ def main():
     G1Q.sao_luu_neu_sua_tay(md_path, G1Q._manifest_luot_truoc(out_dir).get("A2"), artifact_md)
     md_path.write_text(artifact_md, encoding="utf-8", newline="\n")
     print(f"  → Lưu: {md_path}")
-    detected_modules = detect_specialist_modules(topic)
+    detected_modules = mo_dun_chuyen_biet(topic, meta, out_dir)
     if detected_modules:
         labels = ", ".join(_SPECIALIST_MODULE_LABEL[m] for m in detected_modules)
         print(f"  → 🧩 Mô-đun chuyên biệt phát hiện: {labels}")
@@ -2504,7 +2523,7 @@ def main():
 
     # Checkpoint
     print("\n💾 Bước 7/7: Ghi checkpoint G1...")
-    specialist_modules = detect_specialist_modules(topic)
+    specialist_modules = mo_dun_chuyen_biet(topic, meta, out_dir)
     cp_path = write_g1_checkpoint(
         study, out_dir, question_type, design, effects, guardrail, md_path, docx_path,
         specialist_modules=specialist_modules,
