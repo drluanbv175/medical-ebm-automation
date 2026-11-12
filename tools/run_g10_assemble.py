@@ -55,6 +55,7 @@ import g8_quality_gate as G8Q  # noqa: E402
 import g9_quality_gate as G9Q  # noqa: E402
 import g10_quality_gate as G10Q  # noqa: E402
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung — 4 mã thoát)
+import kiem_a12_khop_bien_nhan as KA12  # noqa: E402  (mô tả A12 ↔ biên nhận — 12/11/2026)
 import research_study_spec as RS  # noqa: E402
 import skill_standards as S  # noqa: E402
 
@@ -2470,6 +2471,18 @@ def _pmids_from_text(text: str) -> set:
     return found
 
 
+def canh_bao_mo_ta_a12(study: str, out_dir: Path) -> list[str]:
+    """Advisory KHÔNG chặn (12/11/2026, B3): lời khai trong mô tả A12 (số PMID, thời điểm, all_clean) lệch biên nhận
+    máy-kiểm ⇒ các dòng cảnh báo để in khi lắp G10. Không đổi điều kiện cổng A12 (đổi sẽ làm đổi trạng thái sống của
+    G10 đã ký — việc của bác sĩ)."""
+    kq = KA12.doi_chieu(study, out_dir)
+    if kq["trang_thai"] != "LECH":
+        return []
+    return ["⚠️  Mô tả A12 LỆCH biên nhận máy-kiểm: " + "; ".join(kq["chi_tiet"][:3]),
+            f"   Sửa mục «Bằng chứng máy-kiểm» theo biên nhận: python tools/kiem_a12_khop_bien_nhan.py --study {study} "
+            "--goi-y"]
+
+
 def _extract_pmids_from_artifact(text: str) -> set:
     """Trích PMID mà artifact A12 nhắc tới, để đối chiếu receipt máy-kiểm."""
     return _pmids_from_text(text)
@@ -3144,6 +3157,8 @@ def main() -> int:
         return GC.EXIT_BLOCKED
     if not citation_ok and args.i_know_citations_not_verified:
         bypass_notes.append(f"Cổng A12 (trích dẫn) bị BỎ QUA bằng --i-know-citations-not-verified: {citation_reason}.")
+    for dong in canh_bao_mo_ta_a12(study, out_dir):
+        print(("\n" if dong.startswith("⚠️") else "") + dong)
 
     # Advisory KHÔNG chặn (vá 2026-07-18, audit vòng 2 D5): cổng metadata (điều kiện e)
     # chỉ BẮT BUỘC receipt cho đề tài THẬT trong denylist. Một đề tài thật MỚI quên thêm

@@ -441,6 +441,12 @@ def build_readiness_template(study: str) -> Dict[str, Any]:
         "schema_version": QUALITY_CONTRACT_VERSION,
         "study": study,
         "status": STATUS_DRAFT,
+        # 12/11/2026 (B3, bình duyệt C1a 29/10): «status» là trạng thái MẪU lúc tạo tệp — tệp này là phiếu xác nhận của
+        # PI, ensure_readiness() không bao giờ ghi đè nên «status» KHÔNG đổi khi cổng đổi hay PI ký; người đọc hồ sơ
+        # từng hiểu nhầm là trạng thái hiện hành của gói.
+        "status_y_nghia": ("Trạng thái MẪU lúc tạo tệp — phiếu xác nhận của PI, KHÔNG cập nhật khi cổng đổi hay PI ký. "
+                           "Trạng thái sống: tools/g10_quality_gate.py --study <mã> hoặc tools/study_readiness.py."),
+        "tao_luc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "release": {
             "purpose": None,
             "package_version": None,
