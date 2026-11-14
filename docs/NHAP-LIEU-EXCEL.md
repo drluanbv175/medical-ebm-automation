@@ -13,7 +13,8 @@
 | `nhap --study <mã> --excel <tệp> [--tiep-nhan]` | Excel ⇒ CSV chuẩn + báo cáo lỗi từng ô; `--tiep-nhan` chạy luôn `import_real_dataset.py` khi sạch | CSV + báo cáo: thư mục NGOÀI repo (mặc định `<tệp>_csv/` cạnh tệp Excel) |
 
 Thứ tự cho một đề tài: `mau` → hai người nhập hai bản → `so-sanh` tới khi `TRUNG_KHOP` → `nhap --tiep-nhan` →
-`clean_research_dataset.py` → khoá → G6.
+`clean_research_dataset.py` → khoá → `cau_noi_spss.py xuat-sav` / `cau_noi_r.py xuat-rds` (khứ hồi từng ô, kiểm ba
+chiều — `docs/CAU-NOI-SPSS.md`) → G6.
 
 ## Mẫu nhập liệu có gì
 

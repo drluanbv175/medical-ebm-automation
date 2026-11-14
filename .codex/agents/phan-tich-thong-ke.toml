@@ -80,6 +80,10 @@ kém tin cậy, chép nguyên cảnh báo và để thống kê viên quyết; (
 **Một lệnh cho cả SPSS + R (14/11/2026):** `python3 medical-ebm-automation/tools/kiem_cheo_g6.py chay --study <mã>` ⇒
 `G6_kiem_cheo.md` (trạng thái chung + từng phần mềm); các lệnh lẻ dưới đây (0c SPSS · 0d R) để chạy riêng một phần mềm
 hoặc tìm lỗi. Hòm việc nhắc 🛎 khi kết quả Python mới hơn lượt kiểm chéo.
+Chạy ngay sau phân tích chính: thêm `--kiem-cheo` vào `run_stats_analysis.py` (tư vấn — không đổi mã thoát/cổng).
+`xuat-sav` nay tự KHỨ HỒI từng ô (.sav đọc lại so với CSV nguồn) + so từ điển `.sav` với kế hoạch — lệch ⇒ bỏ tệp, mã 1.
+Cho R/RStudio: `python3 medical-ebm-automation/tools/cau_noi_r.py xuat-rds --study <mã>` ⇒ `.rds` có nhãn (khuôn haven,
+mã thiếu trong `na_values`), kiểm ba chiều từ điển ↔ `.sav` ↔ `.rds`; chặng chưa đo KHÔNG phải khớp.
 
 Máy có IBM SPSS Statistics (`python3 medical-ebm-automation/tools/cau_noi_spss.py kiem` ⇒ ✓) thì SAU BƯỚC 0b chạy lại
 CÙNG phân tích bằng SPSS ở chế độ nền (không mở giao diện) và đối chiếu từng ước lượng:
