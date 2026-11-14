@@ -1,0 +1,9 @@
+record_id,tuoi,chi_so,gioitinh,hai_long,hut_thuoc,nghe,ghi,trieu_chung___1,trieu_chung___2
+P001,50.5,0.41817215137075947,1,3,0,cong_chuc,"  Đau đầu nhẹ, buổi sáng  ",1,0
+P002,61,-906834.6387644875,2,9,BTR,khac,"Nói ""không"" rõ",0,1
+P003,,1e3,1,1,1,nong_dan,,0,0
+P004, 72 ,+5,2,5,0,,Việt Nam — tiếng Việt có dấu,1,1
+P005,45.25,.5,1,2,BTR,khac,x,0,0
+P006,38,007,2,4,1,cong_chuc,"a,b,c",1,0
+P007,29.75,123456789012,1,9,0,nong_dan
+P008,80,-0.000001234,2,3,1,khac,ổn định,0,1
