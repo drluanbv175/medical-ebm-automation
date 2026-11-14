@@ -198,3 +198,12 @@ def test_tach_ham_r_va_ham_chet():
     # Thân không đóng tới hết tệp ⇒ trả về cấp cao (không đoán chặn).
     cap_cao, ham = G6Q._tach_ham_r("g <- function(d) {\n  survey::svydesign(ids = ~a, data = d)\n")
     assert ham == {} and any("svydesign" in d for d in cap_cao)
+
+
+def test_dieu_kien_chung_chi_xet_loi_goi_o_muc_4():
+    """`sap_goi_post_stratify` (bộ sinh + bộ chấm dùng chung): chỉ LỜI GỌI ở §4 — §9 hay chữ trơn không tính."""
+    mau = "### §3 MÔ TẢ\n- x\n\n### §4 PHÂN TÍCH CHÍNH\n{s4}\n\n### §9 ĐỘ NHẠY\n{s9}\n\n### §10 PHẦN MỀM\n"
+    goi = "- `postStratify(tk, strata = ~tang, population = N)`"
+    assert TSS.sap_goi_post_stratify(mau.format(s4=goi, s9="- không"))
+    assert not TSS.sap_goi_post_stratify(mau.format(s4="- trọng số hậu phân tầng (postStratify)", s9=goi))
+    assert not TSS.sap_goi_post_stratify(mau.format(s4="- không trọng số", s9="- không"))
