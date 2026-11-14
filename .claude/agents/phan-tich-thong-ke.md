@@ -76,6 +76,29 @@ quả chính khi dữ liệu gom cụm, KTC giả định độc lập chỉ đ�
 kém tin cậy, chép nguyên cảnh báo và để thống kê viên quyết; (4) ICC tính trên điểm số (xấp xỉ tuyến tính), không phải thang tiềm ẩn;
 (5) ngưỡng `--nguong-ty-le` lấy từ SAP, không chọn sau khi nhìn dữ liệu.
 
+## 🔁 BƯỚC 0c — KIỂM CHÉO BẰNG SPSS (phần mềm thứ hai — thêm 14/11/2026, bác sĩ giao)
+
+Máy có IBM SPSS Statistics (`python3 medical-ebm-automation/tools/cau_noi_spss.py kiem` ⇒ ✓) thì SAU BƯỚC 0b chạy lại
+CÙNG phân tích bằng SPSS ở chế độ nền (không mở giao diện) và đối chiếu từng ước lượng:
+
+```bash
+T=medical-ebm-automation/tools/cau_noi_spss.py
+python3 $T xuat-sav  --study <mã>   # dữ liệu ĐÃ KHOÁ (SHA-256 khớp manifest) + từ điển G5 ⇒ .sps nhãn biến + .sav có nhãn
+python3 $T cu-phap   --study <mã>   # cú pháp khớp đặc tả G6 (khoá dac_ta_phan_tich do run_stats_analysis.py ghi)
+python3 $T chay      --study <mã>   # SPSS chạy nền ⇒ OXML + .spv + G6_spss_ket_qua.json
+python3 $T doi-chieu --study <mã>   # ⇒ G6_spss_doi_chieu.md/json · mã 0 khớp · 1 lệch · 2 không đo được · 3 từ chối
+```
+
+Luật đọc: (1) ✓ khớp (ước lượng ±0,5 %, KTC ±1,5 %, p ±0,005) ⇒ được ghi ở phần phương pháp «kết quả tái lập độc lập bằng
+SPSS <phiên bản>»; (2) ⚠ lệch nhỏ = khác PHƯƠNG PHÁP đã biết (hiệu chỉnh cụm: GEE robust ≠ sandwich có hiệu chỉnh mẫu nhỏ;
+Cox: Breslow ≠ Efron; SE hồi quy thứ tự) ⇒ chép nguyên ghi chú, thống kê viên chọn cách báo cáo theo SAP; (3) ✗ LỆCH ⇒ tìm
+nguyên nhân (mã hoá biến, tập ca phân tích, nhóm tham chiếu) TRƯỚC khi dùng số, ghi [CẦN THỐNG KÊ VIÊN] — KHÔNG sửa Python cho
+khớp SPSS hay ngược lại (đo 14/11/2026: chính phép đối chiếu bắt được HR «thô» của Python tính trên tập ca của mô hình hiệu
+chỉnh); (4) đây là KIỂM CHÉO kỹ thuật — không đổi trạng thái G6, không thay G6-HUMAN-01; (5) máy không có SPSS ⇒ mã 2
+(⚪ không đo được, KHÔNG phải đạt) — `xuat-sav` vẫn sinh `.sps` để bác sĩ chạy tay trong SPSS. Bác sĩ đưa tệp `.sav`: `python3
+$T nhap-sav --sav <tệp> --ra <thư mục NGOÀI repo>` ⇒ CSV + từ điển nhãn + từ điển khuôn REDCap, rồi nhập qua cổng tiếp nhận
+`import_real_dataset.py` (cổng đó quét PII theo giá trị). Hướng dẫn: `medical-ebm-automation/docs/CAU-NOI-SPSS.md`.
+
 **Khi không có file dữ liệu thật:** tiếp tục MODULE 1–4 bên dưới để sinh code R/SPSS template để bác sĩ chạy thủ công.
 
 ---

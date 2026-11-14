@@ -2415,6 +2415,13 @@ def main():
         "n_total": len(df),
         "disclaimer": "Cần bác sĩ kiểm chứng."
     }
+    # ĐẶC TẢ phân tích đúng như lượt chạy này (14/11/2026) — để tools/cau_noi_spss.py sinh cú pháp SPSS khớp TỪNG biến
+    # và đối chiếu kết quả bằng phần mềm thứ hai, không bắt người dùng khai lại tham số.
+    summary["dac_ta_phan_tich"] = {
+        "outcome": args.outcome, "group": args.group, "covariates": covariates,
+        "outcome_type": args.outcome_type, "time": args.time, "event": args.event,
+        "cot_cum": (args.cot_cum or "").strip() or None,
+    }
 
     # 3. Dữ liệu thiếu
     # SỬA 2026-09-03 (Workflow đối kháng đa-agent vòng 2, phát hiện MEDIUM+CRITICAL+
