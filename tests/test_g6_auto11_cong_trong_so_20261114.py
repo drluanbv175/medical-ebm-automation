@@ -6,6 +6,7 @@ PR #220 cho `run_g6_auto.py` sinh `04_trong_so_va_gioi_han.R` + `04a_ham_trong_s
 không chạy trọng số mà SAP đòi là lệch SAP ⇒ CHẶN. Test khoá trên chuỗi THẬT G0→G5 + run_g6_auto:
   (1) SAP có postStratify( ⇒ G6-AUTO-11 đạt (04 nạp 00_setup.R → 04a, gọi hàm chứa hai dòng);
   (2) xoá 04 / xoá 04a / biến dòng svydesign( thành chú thích / tắt dòng gọi hàm / tắt dòng nạp 04a ⇒ CHẶN, BLOCKED;
+      kể cả khi lời gọi/lời nạp chỉ còn trong chú thích CUỐI DÒNG (`tk_w <- tk0  # survey::postStratify(`);
   (3) SAP không gọi postStratify( ⇒ không áp dụng (đạt, ghi chú) — kể cả khi SAP nhắc «trọng số» trơn;
   (4) điều kiện SAP là CHÍNH hàm của bộ sinh (`g6_trong_so_survey.sap_goi_post_stratify`), không phải bản sao;
   (5) thống kê viên tự viết script chạy (nạp 00_setup.R, gọi svydesign/postStratify cấp cao) ⇒ đạt, không chặn oan.
@@ -113,7 +114,9 @@ def test_chuoi_that_sap_goi_poststratify_thi_dat(de_tai):
 
 
 @pytest.mark.parametrize("cach", ["xoa_04", "xoa_04a", "chu_thich_svydesign", "chu_thich_poststratify",
-                                  "tat_goi_ham", "tat_nap_04a"])
+                                  "tat_goi_ham", "tat_nap_04a", "chu_thich_cuoi_dong_poststratify",
+                                  "chu_thich_cuoi_dong_svydesign", "goi_ham_chi_trong_chu_thich_cuoi_dong",
+                                  "nap_04a_chi_trong_chu_thich_cuoi_dong"])
 def test_script_khong_chay_trong_so_thi_chan(de_tai, cach):
     study, out, goc, *_ = de_tai
     s4, s4a = out / "scripts" / TSS.TEP_CHAY, out / "scripts" / TSS.TEP_HAM
@@ -128,6 +131,17 @@ def test_script_khong_chay_trong_so_thi_chan(de_tai, cach):
     elif cach == "tat_goi_ham":
         # Hàm vẫn nằm trong 04a (dòng svydesign/postStratify «thi hành» trong thân) nhưng không ai gọi ⇒ không chạy.
         _sua(s4, "KQ_TS <- chay_trong_so_va_gioi_han(", "# KQ_TS <- chay_trong_so_va_gioi_han(")
+    # Chú thích CUỐI DÒNG (người duyệt PR #228): dòng vẫn chạy nhưng phần lời gọi nằm sau «#» ⇒ không phải lời gọi.
+    elif cach == "chu_thich_cuoi_dong_poststratify":
+        # Cách tắt trọng số tự nhiên mà script vẫn chạy được: tk_w là chính thiết kế KHÔNG trọng số.
+        _sua(s4a, "  tk_w <- survey::postStratify(", "  tk_w <- tk0  # survey::postStratify(")
+    elif cach == "chu_thich_cuoi_dong_svydesign":
+        _sua(s4a, "  tk0 <- suppressWarnings(survey::svydesign(", "  tk0 <- d  # suppressWarnings(survey::svydesign(")
+    elif cach == "goi_ham_chi_trong_chu_thich_cuoi_dong":
+        _sua(s4, "KQ_TS <- chay_trong_so_va_gioi_han(", "KQ_TS <- list()  # chay_trong_so_va_gioi_han(")
+    elif cach == "nap_04a_chi_trong_chu_thich_cuoi_dong":
+        _sua(s4, f'source(here::here("exports", STUDY, "scripts", "{TSS.TEP_HAM}"))',
+             f'invisible(NULL)  # source(here::here("exports", STUDY, "scripts", "{TSS.TEP_HAM}"))')
     else:
         _sua(s4, f'source(here::here("exports", STUDY, "scripts", "{TSS.TEP_HAM}"))',
              f'# source(here::here("exports", STUDY, "scripts", "{TSS.TEP_HAM}"))')
@@ -176,7 +190,11 @@ def test_script_tu_viet_cua_thong_ke_vien_khong_bi_chan_oan(de_tai):
     assert ck["pass"] is True and "05_trong_so_tu_viet.R" in ck["detail"], ck
     assert bao["status"] != "BLOCKED", [(k["id"], k["detail"][:120]) for k in bao["checks"] if k["pass"] is False]
     # Cùng script nhưng KHÔNG nạp 00_setup.R (không qua chuỗi khoá) ⇒ không phải đường chạy hợp lệ ⇒ chặn.
-    _sua(rieng, f'source(here::here("exports", "{study}", "scripts", "00_setup.R"))', "# không nạp chốt khoá")
+    nap = f'source(here::here("exports", "{study}", "scripts", "00_setup.R"))'
+    _sua(rieng, nap, "# không nạp chốt khoá")
+    _chan(_cham(study, out, goc))
+    # Lời nạp chốt khoá chỉ nằm trong chú thích CUỐI DÒNG cũng không phải đường chạy hợp lệ (người duyệt PR #228).
+    _sua(rieng, "# không nạp chốt khoá", f"invisible(NULL)  # {nap}")
     _chan(_cham(study, out, goc))
 
 
@@ -198,6 +216,20 @@ def test_tach_ham_r_va_ham_chet():
     # Thân không đóng tới hết tệp ⇒ trả về cấp cao (không đoán chặn).
     cap_cao, ham = G6Q._tach_ham_r("g <- function(d) {\n  survey::svydesign(ids = ~a, data = d)\n")
     assert ham == {} and any("svydesign" in d for d in cap_cao)
+
+
+def test_bo_chu_thich_r_cat_dung_dau_thang_ngoai_chuoi():
+    """Cắt từ «#» đầu tiên NGOÀI chuỗi — «#» trong '…', "…", `…` (kể cả sau dấu thoát) không phải chú thích."""
+    f = G6Q._bo_chu_thich_r
+    assert f("tk <- survey::svydesign(ids = ~a, data = d)  # ghi chú") == "tk <- survey::svydesign(ids = ~a, data = d)"
+    assert f("  # tk <- survey::svydesign(") == ""
+    assert f('x <- paste0("#", y); survey::postStratify(tk)') == 'x <- paste0("#", y); survey::postStratify(tk)'
+    assert f("y <- 'a\\'#'; survey::postStratify(tk) # c") == "y <- 'a\\'#'; survey::postStratify(tk)"
+    assert f("`a#b` <- survey::svydesign(ids = ~a)") == "`a#b` <- survey::svydesign(ids = ~a)"
+    # Thân hàm đóng bằng «}  # hết hàm» vẫn đóng ⇒ hàm không ai gọi vẫn là hàm chết (không rò thân ra cấp cao).
+    r = "ham <- function(d) {  # mở\n  survey::svydesign(ids = ~a, data = d)\n}  # hết hàm\nx <- 1\n"
+    assert "svydesign" not in "\n".join(G6Q._dong_chay_that_r(["a.R"], {"a.R": r}))
+    assert "svydesign" in "\n".join(G6Q._dong_chay_that_r(["a.R"], {"a.R": r + "kq <- ham(df)\n"}))
 
 
 def test_dieu_kien_chung_chi_xet_loi_goi_o_muc_4():
