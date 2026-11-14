@@ -1872,6 +1872,9 @@ def format_table1_text(t1: dict) -> str:
 def format_outcome_text(res: dict, outcome_col: str, hypothesis_interp: dict = None) -> str:
     if "error" in res:
         return f"LỖI: {res['error']}"
+    if res.get("skipped"):  # F3: phơi nhiễm liên tục/nhiều mức — bỏ so sánh thô có chủ đích
+        return (f"BẢNG 2 — KẾT CỤC CHÍNH: {outcome_col}\n  Không so sánh thô hai nhóm: {res['reason']}\n"
+                "Cần bác sĩ kiểm chứng.\n")
     g = res.get("groups", ["A", "B"])
     n0 = res.get("group_0", {})
     n1 = res.get("group_1", {})
@@ -2397,6 +2400,9 @@ def main():
                              "(proportional odds) — chỉ bật khi SAP khai tường minh, không tự đoán. "
                              "'poisson_pr' = Poisson log-link phương sai vững HC0 ⇒ tỷ số tỷ lệ hiện mắc (PR) cho "
                              "kết cục 0/1 (Zou 2004) — chỉ khi SAP khai")
+    parser.add_argument("--loc", default="",
+                        help="Quần thể phân tích theo SAP — biểu thức ngôn ngữ công thức (docs/BIEN-PHAI-SINH.md), giữ "
+                             "ca có giá trị = 1, vd \"PhieuHopLe == 1\". Cầu nối SPSS/R lọc y hệt")
     parser.add_argument("--hiep-bien-phan-loai", default="",
                         help="Hiệp biến PHÂN LOẠI mã số (radio REDCap), cách nhau dấu phẩy — mỗi cột thành biến giả "
                              "<cột>_<mã>, tham chiếu = mã nhỏ nhất (SAP: «biến phân loại k mức tính k−1»). Phải nằm "
@@ -2623,6 +2629,12 @@ def main():
     # cảnh báo). Trước bản vá: kết cục chính phái sinh (vd `xn_du` của BTM) không tồn tại ⇒ phân tích không chạy được.
     can_phai_sinh = [args.outcome, args.group, args.time, args.event, args.cot_cum, *covariates, *(args.ty_le or []),
                      *[v.strip() for v in args.vars.split(",") if v.strip()]]  # fmt: skip
+    if args.loc.strip():  # F3: biến phái sinh mà biểu thức lọc dùng cũng phải tính (và đã duyệt)
+        try:
+            can_phai_sinh += BPS.cot_cua_cay(BPS.phan_tich(args.loc))
+        except BPS.LoiCongThuc as e:
+            print(f"✗ DỪNG: biểu thức --loc không hợp lệ — {e}")
+            sys.exit(1)
     try:
         df, thong_tin_phai_sinh = BPS.ap_dung_cho_phan_tich(df, _thu_muc_de_tai(args.study), args.study, can_phai_sinh)
     except (BPS.TuChoi, BPS.LoiCongThuc) as e:
@@ -2633,6 +2645,21 @@ def main():
             f"{t} ({v['so_co_gia_tri']} ca có giá trị, {v['duyet']})" for t, v in thong_tin_phai_sinh["bien"].items()))
         for cb in thong_tin_phai_sinh["canh_bao"]:
             print(f"  ⚠️  {cb}")
+
+    # 1b'. LỌC QUẦN THỂ PHÂN TÍCH (F3, 14/11/2026) — TRƯỚC biến giả: mức của biến phân loại theo đúng quần thể này
+    loc_cot_ngay: list = []
+    n_truoc_loc = len(df)
+    if args.loc.strip():
+        try:
+            mat_na, loc_cot_ngay = BPS.loc_python(df, _thu_muc_de_tai(args.study), args.study, args.loc)
+        except (BPS.TuChoi, BPS.LoiCongThuc) as e:
+            print(f"✗ DỪNG: lọc quần thể — {e}")
+            sys.exit(1)
+        df = df[mat_na.to_numpy()].copy()
+        print(f"✓ Lọc quần thể «{args.loc}»: {len(df)}/{n_truoc_loc} ca")
+        if len(df) == 0:
+            print("✗ DỪNG: lọc quần thể không còn ca nào")
+            sys.exit(1)
 
     # 1c. HIỆP BIẾN PHÂN LOẠI (F2, 14/11/2026): cột mã số khai phân loại ⇒ biến giả tường minh <cột>_<mã> (tham chiếu =
     # mã nhỏ nhất) dùng cho MỌI mô hình complete-case; MI nhận cột gốc + C(). Cầu nối SPSS/R dựng đúng các biến giả này.
@@ -2687,7 +2714,12 @@ def main():
         "don_vi_phoi_nhiem": args.don_vi_phoi_nhiem,  # OR cho MỖI k đơn vị (C1a: 15 phút) — SPSS phải chia cùng k
         # F2: biến giả của hiệp biến phân loại — cầu nối SPSS/R dựng ĐÚNG các mức này (tên hệ số trùng nhau)
         "hiep_bien_phan_loai": bien_gia,
+        # F3: quần thể phân tích — cầu nối lọc y hệt (cùng biểu thức, cùng cột ngày)
+        "loc": args.loc.strip() or None,
+        "loc_cot_ngay": loc_cot_ngay,
     }
+    if args.loc.strip():
+        summary["loc"] = {"bieu_thuc": args.loc.strip(), "n_truoc": n_truoc_loc, "n_sau": len(df)}
 
     # 3. Dữ liệu thiếu
     # SỬA 2026-09-03 (Workflow đối kháng đa-agent vòng 2, phát hiện MEDIUM+CRITICAL+
@@ -2793,9 +2825,16 @@ def main():
 
     # 5. Kết cục chính
     if args.outcome_type != "ordinal" and args.outcome and args.group and args.outcome in df.columns:
+        so_nhom = int(df[args.group].dropna().nunique()) if args.group in df.columns else 0
         try:
-            res = compare_primary_outcome(df, args.outcome, args.group, "binary" if poisson else args.outcome_type,
-                                          cot_cum)
+            if so_nhom != 2:
+                # F3 (14/11/2026): phơi nhiễm LIÊN TỤC/nhiều mức — so sánh thô HAI nhóm không có nghĩa; bỏ CÓ CHỦ ĐÍCH
+                # (trước đây ghi «lỗi» và cầu nối SPSS từ chối cả cú pháp). Ước lượng nằm ở mô hình đa biến.
+                res = {"skipped": True, "reason": f"biến nhóm «{args.group}» có {so_nhom} mức — không so sánh thô "
+                                                  "hai nhóm (phơi nhiễm liên tục/nhiều mức); xem mô hình đa biến"}
+            else:
+                res = compare_primary_outcome(df, args.outcome, args.group,
+                                              "binary" if poisson else args.outcome_type, cot_cum)
         except (ZeroDivisionError, ValueError) as exc:
             res = {"error": f"Lỗi tính kết cục chính: {exc}",
                    "note": "[CẦN BIOSTATISTICIAN — kiểm tra dữ liệu]"}
@@ -2807,6 +2846,8 @@ def main():
             summary["hypothesis_interpretation"] = hypothesis_interp
         if res.get("error"):
             print(f"✗ Kết cục chính THẤT BẠI: {res['error']}")
+        elif res.get("skipped"):
+            print(f"ℹ️  Kết cục chính: {res['reason']}")
         else:
             print(f"✓ Kết cục chính ({res.get('outcome_type','')}): p={res.get('p_value','?')}")
         # SỬA 2026-07-24 (vòng lặp vòng 22): dùng .get("note") thay vì

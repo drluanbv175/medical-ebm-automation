@@ -592,8 +592,10 @@ POISSON <- identical(LOAI, "poisson_pr")
 if (POISSON) LOAI <- "binary"
 
 # ── 3. Kết cục chính — compare_primary_outcome() ──────────────────────────────────────────────────────
+# F3: phơi nhiễm liên tục/nhiều mức ⇒ Python BỎ so sánh thô hai nhóm (có chủ đích) — R bỏ y hệt
+HAI_NHOM <- co(NHOM) && length(sap_xep(D[[NHOM]][!is.na(D[[NHOM]])])) == 2
 if (co(KET_CUC) && co(NHOM) && LOAI %in% c("binary", "continuous")) {
-  KET$ket_cuc_chinh <- khoi("ket_cuc_chinh", {
+  if (HAI_NHOM) KET$ket_cuc_chinh <- khoi("ket_cuc_chinh", {
     g <- D[[NHOM]]
     muc <- sap_xep(g[!is.na(g)])
     if (length(muc) != 2) stop("biến nhóm cần đúng 2 mức (đang có ", length(muc), ")")
@@ -628,7 +630,7 @@ if (co(KET_CUC) && co(NHOM) && LOAI %in% c("binary", "continuous")) {
     }
   })
   # Ước lượng thô hiệu chỉnh cụm — _so_sanh_hai_nhom_cum()
-  if (co(CUM)) {
+  if (co(CUM) && HAI_NHOM) {
     KET$ket_cuc_chinh_cum <- khoi("ket_cuc_chinh_cum", {
       dc <- ca_du(D, c(KET_CUC, NHOM, CUM))
       g <- D[[NHOM]]
@@ -910,6 +912,10 @@ def lenh_cu_phap(args) -> int:
         raise TuChoi(f"biến phái sinh: {e}") from e
     tieu_de_goc = tieu_de_csv(csv_p)
     tieu_de = tieu_de_goc + [t for t in ds_ps if t not in tieu_de_goc]
+    try:  # F3: lọc quần thể SAU biến phái sinh, TRƯỚC biến giả — y hệt lượt Python
+        khoi_ps += BPS.khoi_loc_cau_noi(tom, "r", bien_d="D")
+    except (BPS.TuChoi, BPS.LoiCongThuc) as e:
+        raise TuChoi(f"lọc quần thể: {e}") from e
     khoi_ps += ma_r_bien_gia(dt)  # biến giả SAU biến phái sinh (biến phái sinh cũng có thể là biến phân loại)
     thieu = [dt[k] for k in ("outcome", "group", "time", "event", "cot_cum") if dt.get(k) and dt[k] not in tieu_de]
     if thieu:
@@ -1672,7 +1678,7 @@ def _cung_nhom(a, b) -> bool:
 
 def _ket_cuc_chinh(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
     pc, rc = tom.get("primary_outcome"), kq.get("ket_cuc_chinh")
-    if pc is None and rc is None:
+    if (pc is None or pc.get("skipped")) and rc is None:  # F3: cả hai cùng bỏ có chủ đích (nhóm không đúng 2 mức)
         return []
     ten = "Kết cục chính"
     if not rc:
@@ -1993,7 +1999,7 @@ def doi_chieu(tom: dict, r: dict) -> list[dict]:
 
 def _dac_ta_lech(dt_py: dict, dt_r: dict) -> list[str]:
     lech = []
-    for k in ("outcome", "group", "time", "event", "cot_cum"):
+    for k in ("outcome", "group", "time", "event", "cot_cum", "loc"):
         if (dt_py.get(k) or None) != (dt_r.get(k) or None):
             lech.append(f"{k}: Python={dt_py.get(k)!r} · R={dt_r.get(k)!r}")
     if list(dt_py.get("covariates") or []) != list(dt_r.get("covariates") or []):
