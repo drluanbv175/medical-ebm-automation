@@ -1,0 +1,217 @@
+{
+ "n_total": 400,
+ "dac_ta_phan_tich": {
+  "outcome": "hai_long",
+  "group": "cho_phut",
+  "covariates": [
+   "tuoi",
+   "gioitinh",
+   "nghe"
+  ],
+  "outcome_type": "ordinal",
+  "time": null,
+  "event": null,
+  "cot_cum": "ban_kham"
+ },
+ "ordinal": {
+  "model": "ordinal_logit_po",
+  "n": 380,
+  "so_muc": 5,
+  "so_quan_sat_theo_muc": {
+   "1": 62,
+   "2": 86,
+   "3": 81,
+   "4": 74,
+   "5": 77
+  },
+  "canh_bao": [
+   "Số cụm = 20. KTC/p hiệu chỉnh cụm dùng phân phối t với G−1 = 19 bậc tự do (hiệu chỉnh cỡ mẫu nhỏ CR1) thay cho z. Sai số chuẩn hiệu chỉnh cụm (sandwich) vẫn kém tin cậy khi số cụm ít — thống kê viên quyết định có cần hiệu chỉnh cỡ mẫu nhỏ/bootstrap theo cụm hay mô hình hỗn hợp không [CẦN THỐNG KÊ VIÊN]."
+  ],
+  "cluster": {
+   "cot": "ban_kham",
+   "so_cum": 20
+  },
+  "results": [
+   {
+    "variable": "cho_phut",
+    "OR_adj": 1.01,
+    "CI_95": [
+     0.918,
+     1.112
+    ],
+    "p": 0.8237
+   },
+   {
+    "variable": "tuoi",
+    "OR_adj": 1.011,
+    "CI_95": [
+     0.989,
+     1.032
+    ],
+    "p": 0.31
+   },
+   {
+    "variable": "gioitinh",
+    "OR_adj": 0.853,
+    "CI_95": [
+     0.594,
+     1.227
+    ],
+    "p": 0.3727
+   },
+   {
+    "variable": "nghe_cong_chuc",
+    "OR_adj": 0.55,
+    "CI_95": [
+     0.228,
+     1.329
+    ],
+    "p": 0.1724
+   },
+   {
+    "variable": "nghe_khac",
+    "OR_adj": 0.397,
+    "CI_95": [
+     0.188,
+     0.836
+    ],
+    "p": 0.0177
+   },
+   {
+    "variable": "nghe_nong_dan",
+    "OR_adj": 0.493,
+    "CI_95": [
+     0.227,
+     1.071
+    ],
+    "p": 0.0717
+   }
+  ],
+  "aic": 1233.34,
+  "cov_type": "cluster",
+  "convergence": true,
+  "kiem_gia_dinh_ty_le_odds": [
+   {
+    "nguong": "Y > 1",
+    "OR": {
+     "cho_phut": 0.977,
+     "tuoi": 1.007,
+     "gioitinh": 0.642,
+     "nghe_cong_chuc": 0.0,
+     "nghe_khac": 0.0,
+     "nghe_nong_dan": 0.0
+    }
+   },
+   {
+    "nguong": "Y > 2",
+    "OR": {
+     "cho_phut": 1.028,
+     "tuoi": 1.01,
+     "gioitinh": 0.796,
+     "nghe_cong_chuc": 0.0,
+     "nghe_khac": 0.0,
+     "nghe_nong_dan": 0.0
+    }
+   },
+   {
+    "nguong": "Y > 3",
+    "OR": {
+     "cho_phut": 1.007,
+     "tuoi": 1.012,
+     "gioitinh": 1.003,
+     "nghe_cong_chuc": 0.377,
+     "nghe_khac": 0.236,
+     "nghe_nong_dan": 0.321
+    }
+   },
+   {
+    "nguong": "Y > 4",
+    "OR": {
+     "cho_phut": 1.019,
+     "tuoi": 1.011,
+     "gioitinh": 0.937,
+     "nghe_cong_chuc": 2373101096.796,
+     "nghe_khac": 1338623369.241,
+     "nghe_nong_dan": 1983390928.159
+    }
+   }
+  ],
+  "brant": {
+   "loi": "Logistic tại ngưỡng Y > 1 không hội tụ/tách hoàn toàn — không tính Brant."
+  },
+  "don_vi_phoi_nhiem": {
+   "cot": "cho_phut",
+   "don_vi": 15.0,
+   "dien_giai": "OR cho MỖI 15 đơn vị «cho_phut»"
+  }
+ },
+ "sensitivity_linear": {
+  "model": "linear_sensitivity",
+  "cov_type": "cluster",
+  "n": 380,
+  "r_squared": 0.0145,
+  "results": [
+   {
+    "variable": "cho_phut",
+    "beta": 0.0079,
+    "CI_95": [
+     -0.0675,
+     0.0833
+    ],
+    "p": 0.8283
+   },
+   {
+    "variable": "tuoi",
+    "beta": 0.0078,
+    "CI_95": [
+     -0.0072,
+     0.0227
+    ],
+    "p": 0.2901
+   },
+   {
+    "variable": "gioitinh",
+    "beta": -0.1236,
+    "CI_95": [
+     -0.3982,
+     0.1511
+    ],
+    "p": 0.3582
+   },
+   {
+    "variable": "nghe_cong_chuc",
+    "beta": -0.6152,
+    "CI_95": [
+     -1.4004,
+     0.17
+    ],
+    "p": 0.1175
+   },
+   {
+    "variable": "nghe_khac",
+    "beta": -0.8754,
+    "CI_95": [
+     -1.5947,
+     -0.1561
+    ],
+    "p": 0.0197
+   },
+   {
+    "variable": "nghe_nong_dan",
+    "beta": -0.7017,
+    "CI_95": [
+     -1.4294,
+     0.026
+    ],
+    "p": 0.0579
+   }
+  ],
+  "cluster": {
+   "cot": "ban_kham",
+   "so_cum": 20
+  }
+ },
+ "data_lock": {
+  "sha256": "6f9cb72bafec5661e8100ac9bd4c0b8e1b7eb1778a7262c2516207302d296499"
+ }
+}

@@ -124,16 +124,39 @@ def _do_mang():
     return mod
 
 
+def _diem_theo_ten(mod, cfg) -> Dict[str, Dict[str, Any]]:
+    """Mở mỗi điểm đo `Diem` thành dict có TÊN trường để khẳng định theo tên, không theo chỉ số `d[2]`/`d[5]`.
+
+    Thứ tự trường lấy đúng chú thích kiểu `Diem` ở `tools/do_mang_nguon.py`: (tên, nhóm, url, params, headers,
+    mã HTTP coi là «tới được»). Mở bằng gán SÁU tên: thêm/bớt trường ở `Diem` ⇒ ValueError ngay tại đây, thay vì
+    âm thầm so nhầm trường.
+    """
+    ket_qua: Dict[str, Dict[str, Any]] = {}
+    for d in mod.danh_sach_diem(cfg):
+        ten, nhom, url, params, headers, ma_toi_duoc = d
+        ket_qua[ten] = {"nhom": nhom, "url": url, "params": params, "headers": headers, "ma_toi_duoc": ma_toi_duoc}
+    return ket_qua
+
+
 def test_do_mang_nguon_do_crossref_bjgp_cung_issn_voi_cau_hinh():
     class _Cfg:
         ncbi_email = "x@example.org"
 
-    diem = {d[0]: d for d in _do_mang().danh_sach_diem(_Cfg())}
+    mod = _do_mang()
+    diem = _diem_theo_ten(mod, _Cfg())
     crossref = diem.get("Crossref — BJGP (thay RSS)")
     assert crossref is not None, "thiếu điểm đo đường Crossref của feed_bjgp"
     # Cùng ISSN với cấu hình engine: đổi ISSN một nơi mà quên nơi kia thì test đỏ.
-    assert crossref[2] == f"https://api.crossref.org/journals/{_feed_bjgp().issn}/works"
+    assert crossref["url"] == f"https://api.crossref.org/journals/{_feed_bjgp().issn}/works"
+    assert crossref["nhom"] == mod.NHOM_GUIDELINE
+    # Một yêu cầu nhỏ, đi polite pool của Crossref (mailto) như mọi điểm Crossref khác; không header riêng.
+    assert crossref["params"] == {"rows": "1", "mailto": "x@example.org"} and crossref["headers"] == {}
+    # Chỉ HTTP 200 mới là «tới được»: 403 trang chặn Cloudflare mà lọt vào đây thì bộ đo báo xanh giả.
+    assert crossref["ma_toi_duoc"] == (200,)
     # Đường RSS cũ vẫn được đo (biết khi nào thông lại) nhưng nhãn nói rõ engine không dùng nó nữa.
     rss = diem.get("BJGP — RSS (nay engine đọc qua Crossref)")
-    assert rss is not None and rss[2] == "https://bjgp.org/rss/current.xml"
+    assert rss is not None and rss["url"] == "https://bjgp.org/rss/current.xml"
+    # Đo RSS bằng ĐÚNG User-Agent của engine — UA khác cho kết quả chặn/không chặn khác.
+    assert rss["headers"] == {"User-Agent": mod.UA_ENGINE} and rss["ma_toi_duoc"] == (200,)
+    assert rss["nhom"] == mod.NHOM_GUIDELINE
     assert "BJGP — RSS" not in diem

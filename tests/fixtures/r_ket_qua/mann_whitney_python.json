@@ -1,0 +1,73 @@
+{
+ "n_total": 400,
+ "dac_ta_phan_tich": {
+  "outcome": "diem_lech",
+  "group": "nhom",
+  "covariates": [
+   "tuoi",
+   "gioitinh"
+  ],
+  "outcome_type": "continuous",
+  "time": null,
+  "event": null,
+  "cot_cum": null
+ },
+ "primary_outcome": {
+  "outcome_type": "continuous",
+  "groups": [
+   "0",
+   "1"
+  ],
+  "group_0": {
+   "n": 205,
+   "mean": 4.177,
+   "sd": 5.087
+  },
+  "group_1": {
+   "n": 195,
+   "mean": 4.999,
+   "sd": 4.958
+  },
+  "md_crude": 0.822,
+  "effect": "Median diff=-0.560",
+  "p_value": 0.0295,
+  "test": "Mann-Whitney"
+ },
+ "multivariate": {
+  "model": "linear",
+  "n": 380,
+  "r_squared": 0.0113,
+  "results": [
+   {
+    "variable": "nhom",
+    "beta": 0.9105,
+    "CI_95": [
+     -0.1237,
+     1.9447
+    ],
+    "p": 0.0842
+   },
+   {
+    "variable": "tuoi",
+    "beta": -0.0124,
+    "CI_95": [
+     -0.0557,
+     0.0309
+    ],
+    "p": 0.5741
+   },
+   {
+    "variable": "gioitinh",
+    "beta": -0.5478,
+    "CI_95": [
+     -1.5822,
+     0.4866
+    ],
+    "p": 0.2984
+   }
+  ]
+ },
+ "data_lock": {
+  "sha256": "6f9cb72bafec5661e8100ac9bd4c0b8e1b7eb1778a7262c2516207302d296499"
+ }
+}
