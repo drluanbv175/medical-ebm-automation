@@ -201,6 +201,14 @@ _CROSSREF_THAY_RSS = {
     # điện tử đối chiếu bằng api.crossref.org/journals/1533-4406 (nhà xuất bản «New England Journal of Medicine», cùng
     # bản ghi với ISSN in 0028-4793); 189 bài từ 01/08/2026, DOI tiền tố 10.1056, ngày công bố đủ ngày.
     "nejm_current": "1533-4406",
+    # 14/11/2026: RSS bjgp.org trả trang chặn Cloudflare — `tu_de_xuat_viec.py` báo feed_bjgp «HỎNG KÉO DÀI» 6 lượt live
+    # liền từ 29/10 (14 ngày, kiểu cloudflare-chan) mà lượt vẫn PASS nên không tự lộ; `tools/do_mang_nguon.py` đo lại
+    # 14/11 (qua VPN): «BJGP — RSS» cloudflare-chan, Crossref OK. ISSN điện tử đối chiếu bằng
+    # api.crossref.org/journals/1478-5242 (đúng «British Journal of General Practice», nhà xuất bản Royal College of
+    # General Practitioners; cùng bản ghi với ISSN in 0960-1643, số bài như nhau); 81 bài từ 01/08/2026, 48 bài từ
+    # 01/10/2026, DOI tiền tố 10.3399, bài mới nhất Crossref nhận ngày 11/11/2026. Lane chỉ lấy METADATA (DOI · tiêu
+    # đề · ngày · tóm tắt Crossref); đọc toàn văn bài BJGP vẫn theo luật NXB RCGP ở `tools/doc_toan_van_co_nguoi.py`.
+    "bjgp": "1478-5242",
 }
 GUIDELINE_FEEDS = [replace(f, issn=_CROSSREF_THAY_RSS[f.id], mode="crossref") if f.id in _CROSSREF_THAY_RSS else f
                    for f in GUIDELINE_FEEDS]
