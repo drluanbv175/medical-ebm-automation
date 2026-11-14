@@ -763,7 +763,10 @@ cat("XONG_R ", TEP_RA, "\n", sep = "")
 """
 
 
-def sinh_script_r(study: str, csv_p: Path, sha: str, tep_ra: Path, dt: dict, loai: str, don_vi: float | None) -> str:
+def sinh_script_r(
+    study: str, csv_p: Path, sha: str, tep_ra: Path, dt: dict, loai: str, don_vi: float | None,
+    khoi_phai_sinh: str = "",
+) -> str:
     na, ver_pd = na_pandas()
     thay = {
         "@@STUDY@@": study,
@@ -785,6 +788,11 @@ def sinh_script_r(study: str, csv_p: Path, sha: str, tep_ra: Path, dt: dict, loa
     # MỘT lượt thay (regex): giá trị đã thay KHÔNG bị quét lại — tên cột chứa «@@…@@» không thể kéo mã R khác vào
     # script (lượt rà 14/11/2026: thay tuần tự từng khoá đã cho tiêm mã R qua tên cột).
     vb = re.sub(r"@@[A-Z_]+@@", lambda m: thay[m.group(0)], MAU_R)
+    if khoi_phai_sinh:  # F1: biến phái sinh tính lại ĐỘC LẬP bằng R ngay sau khi nạp dữ liệu khoá
+        neo = "D <- doc_nhu_pandas(DU_LIEU)\n"
+        if vb.count(neo) != 1:
+            raise RuntimeError("mẫu script R đổi — không tìm thấy chỗ chèn khối biến phái sinh")
+        vb = vb.replace(neo, neo + "\n# ── 2b. Biến phái sinh (tools/bien_phai_sinh.py) ──\n" + khoi_phai_sinh)
     return ascii_hoa_chuoi_r(vb)
 
 
@@ -845,7 +853,14 @@ def lenh_cu_phap(args) -> int:
     don_vi = args.don_vi_phoi_nhiem
     if don_vi is None:
         don_vi = ((tom.get("ordinal") or {}).get("don_vi_phoi_nhiem") or {}).get("don_vi")
-    tieu_de = tieu_de_csv(csv_p)
+    import bien_phai_sinh as BPS  # noqa: PLC0415
+
+    try:
+        khoi_ps, ds_ps, _muc = BPS.khoi_cho_cau_noi(d, tom, "r", csv_p, bien_d="D")
+    except (BPS.TuChoi, BPS.LoiCongThuc) as e:
+        raise TuChoi(f"biến phái sinh: {e}") from e
+    tieu_de_goc = tieu_de_csv(csv_p)
+    tieu_de = tieu_de_goc + [t for t in ds_ps if t not in tieu_de_goc]
     thieu = [dt[k] for k in ("outcome", "group", "time", "event", "cot_cum") if dt.get(k) and dt[k] not in tieu_de]
     if thieu:
         raise TuChoi(f"bộ dữ liệu khoá không có cột: {', '.join(thieu)}")
@@ -856,13 +871,14 @@ def lenh_cu_phap(args) -> int:
             f"hiệp biến không có trong bộ dữ liệu khoá: {', '.join(bo)} — sửa đặc tả G6 (Python bỏ qua im lặng)"
         )
     cot_pt = [c for c in [dt.get(k) for k in ("outcome", "group", "time", "event", "cot_cum")] + dt["covariates"] if c]
-    canh_bao += canh_bao_ma_thieu(args.study, csv_p, [c for c in cot_pt if c in tieu_de], args.ma_thieu)
+    canh_bao += canh_bao_ma_thieu(args.study, csv_p, [c for c in cot_pt if c in tieu_de_goc], args.ma_thieu)
     r_dir = d / "r"
     (r_dir / "ket_qua").mkdir(parents=True, exist_ok=True)
     tep_ra = r_dir / "ket_qua" / f"{args.study}_r_tho.json"
     script = r_dir / f"{args.study}_phan_tich.R"
     script.write_text(
-        sinh_script_r(args.study, csv_p, man["sha256"], tep_ra, dt, loai, don_vi), encoding="utf-8", newline="\n"
+        sinh_script_r(args.study, csv_p, man["sha256"], tep_ra, dt, loai, don_vi, khoi_ps), encoding="utf-8",
+        newline="\n",
     )
     dac = {
         "study": args.study,
@@ -874,6 +890,7 @@ def lenh_cu_phap(args) -> int:
         "sha256": man["sha256"],
         "manifest_khoa": {k: man.get(k) for k in ("lock_date", "sap_version", "sha256", "approved_by")},
         "tu_dien": str(td_p),
+        "bien_phai_sinh": ds_ps,
         "canh_bao": canh_bao,
         "disclaimer": CAN_KIEM,
     }

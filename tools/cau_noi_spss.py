@@ -1364,6 +1364,39 @@ def _doc_manifest_sav(study: str, *, can_sav: bool = True) -> dict:
     raise KhongDoDuoc(f"chưa có .sav của {study} — chạy `cau_noi_spss.py xuat-sav --study {study}` trước")
 
 
+def them_bien_phai_sinh(study: str, man: dict, gate: str) -> dict:
+    """F1 (14/11/2026): lượt Python dùng biến phái sinh (khoá bien_phai_sinh của <gate>_analysis_summary.json) ⇒ trả
+    manifest MỞ RỘNG: thêm các biến đó như thể có trong .sav (tên = tên biến, biến số, mức giá trị tính từ dữ liệu khoá)
+    và khoá `khoi_phai_sinh` = cú pháp SPSS tự tính lại ĐỘC LẬP từ cùng công thức (chèn ngay sau GET FILE). Không dùng
+    ⇒ trả nguyên manifest. Công thức đổi sau lượt Python ⇒ TuChoi."""
+    tom = _doc_json(thu_muc_de_tai(study) / f"{gate}_analysis_summary.json")
+    if not ((tom.get("bien_phai_sinh") or {}).get("bien")):
+        return man
+    import bien_phai_sinh as BPS  # noqa: PLC0415
+
+    csv_khoa = Path(man.get("nguon_csv") or "")
+    if not csv_khoa.is_file():
+        raise KhongDoDuoc(f"manifest .sav không trỏ tới CSV nguồn đọc được ({csv_khoa}) — không tính biến phái sinh")
+    ten_spss = {b["cot"]: (b["ten"], bool(b["so"])) for b in man["bien"] if not b.get("bo")}
+    try:
+        khoi, ds, muc = BPS.khoi_cho_cau_noi(
+            thu_muc_de_tai(study), tom, "spss", csv_khoa, ten_spss=ten_spss, dang_co={b["ten"] for b in man["bien"]}
+        )
+    except (BPS.TuChoi, BPS.LoiCongThuc) as e:
+        raise TuChoi(f"biến phái sinh: {e}") from e
+    trung = sorted(t for t in ds if t.upper() in {b["ten"].upper() for b in man["bien"]})
+    if trung:
+        raise TuChoi(f"biến phái sinh trùng tên biến SPSS đã có trong .sav: {', '.join(trung)}")
+    man2 = dict(man)
+    man2["bien"] = list(man["bien"]) + [
+        {"cot": t, "ten": t, "so": True, "bo": False, "muc": muc.get(t), "nhan": t, "nhan_gia_tri": {}, "ma_chu": {},
+         "ma_thieu_so": [], "phai_sinh": True}
+        for t in ds
+    ]  # fmt: skip
+    man2["khoi_phai_sinh"] = khoi
+    return man2
+
+
 def dac_ta(args) -> dict:
     tom_day_du = _doc_json(thu_muc_de_tai(args.study) / f"{args.gate}_analysis_summary.json")
     tom = tom_day_du.get("dac_ta_phan_tich") or {}
@@ -1438,6 +1471,7 @@ def cu_phap_phan_tich(
         _chu_thich("Sinh bởi tools/cau_noi_spss.py cu-phap — khớp đặc tả G6 (run_stats_analysis.py). Cần bác sĩ kiểm."),
         "SET OLANG=ENGLISH TVARS=NAMES TNUMBERS=VALUES.",
         f"GET FILE={dd_spss(sav or man['sav'])}.",
+        *([man["khoi_phai_sinh"].rstrip("\n")] if man.get("khoi_phai_sinh") else []),
         f"OMS /SELECT ALL /DESTINATION FORMAT=SPV OUTFILE={dd_spss(thu_muc_kq / (study + '_phan_tich.spv'))}"
         " /TAG='ebm_spv'.",
     ]
@@ -1577,6 +1611,7 @@ def _xoa_ket_qua_cu(d: Path, gate: str) -> None:
 
 def lenh_cu_phap(args) -> int:
     man = _doc_manifest_sav(args.study, can_sav=False)  # máy không có SPSS vẫn sinh cú pháp để chạy tay
+    man = them_bien_phai_sinh(args.study, man, args.gate)
     dt = dac_ta(args)
     if not dt["outcome"] and not (dt["time"] and dt["event"]):
         raise TuChoi(
@@ -1753,7 +1788,7 @@ def lenh_chay(args) -> int:
     if not sps.exists() or not (kq / "dac_ta.json").exists():
         raise KhongDoDuoc(f"chưa có {sps.name} — chạy `cau_noi_spss.py cu-phap --study {args.study}` trước")
     _xoa_ket_qua_cu(d, args.gate)  # lượt hỏng không được để lại kết quả của lượt trước cho doi-chieu đọc nhầm
-    man = _doc_manifest_sav(args.study)
+    man = them_bien_phai_sinh(args.study, _doc_manifest_sav(args.study), args.gate)
     dt = _doc_json(kq / "dac_ta.json")
     sav = Path(man["sav"])
     if man.get("sha256_sav") and sha256_tep(sav) != man["sha256_sav"]:
@@ -2103,7 +2138,7 @@ def lenh_doi_chieu(args) -> int:
         raise KhongDoDuoc(
             "tóm tắt Python không ghi SHA-256 dữ liệu khoá (data_lock.sha256) — không xác nhận được cùng dữ liệu"
         )
-    man = _doc_manifest_sav(args.study)
+    man = them_bien_phai_sinh(args.study, _doc_manifest_sav(args.study), args.gate)
     if not kq.get("sha256_sav") or kq["sha256_sav"] != man.get("sha256_sav"):
         raise TuChoi(
             "kết quả SPSS không thuộc tệp .sav hiện tại (SHA-256 khác/thiếu) — chạy lại `cau_noi_spss.py chay`"
@@ -2384,6 +2419,7 @@ def cu_phap_bo_sung(
         "SET OLANG=ENGLISH TVARS=NAMES TNUMBERS=VALUES.",
         "SET MDISPLAY=TABLES.",
         f"GET FILE={dd_spss(sav or man['sav'])}.",
+        *([man["khoi_phai_sinh"].rstrip("\n")] if man.get("khoi_phai_sinh") else []),
         f"OMS /SELECT ALL /DESTINATION FORMAT=SPV OUTFILE={dd_spss(thu_muc_kq / (study + '_phan_tich_bo_sung.spv'))}"
         " /TAG='ebm_spv_bs'.",
     ]

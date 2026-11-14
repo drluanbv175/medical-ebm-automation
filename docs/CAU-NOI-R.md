@@ -3,6 +3,8 @@
 Bác sĩ giao ngày 14/11/2026: «xây dựng kết nối và tải công cụ thống kê R giúp tôi». Công cụ: `tools/cau_noi_r.py`
 (Python của hệ, `~/.ebm-venv`). R chạy bằng `Rscript --vanilla`.
 
+> **Biến phái sinh (F1, 14/11/2026):** khi lượt Python dùng biến phái sinh (khoá `bien_phai_sinh` của `G6_analysis_summary.json`), cầu nối tự sinh mã tính lại ĐỘC LẬP từ cùng công thức ngay sau khi nạp dữ liệu khoá; công thức đổi sau lượt Python ⇒ từ chối. Xem `docs/BIEN-PHAI-SINH.md`.
+
 ## R dùng để làm gì trong hệ
 
 R là **phần mềm kiểm chéo thứ hai, chạy độc lập**, song song với cầu nối SPSS (`docs/CAU-NOI-SPSS.md`). Phân tích
