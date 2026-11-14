@@ -2,7 +2,8 @@
 """Sửa bộ sinh theo bình duyệt độc lập C1a 29/10/2026 (đánh giá hệ nghiên cứu 12/11 — nhóm B, B3).
 
 (1) Mô tả A12 viết tay (9 PMID, 14/10) lệch biên nhận hiện hành (35 PMID, 15/10) mà không gì báo:
-    `kiem_a12_khop_bien_nhan` đối chiếu lời khai ↔ biên nhận (chỉ đo, không đổi cổng); G10 cảnh báo khi lắp.
+    `kiem_a12_khop_bien_nhan` đối chiếu lời khai ↔ biên nhận (chỉ đo, không đổi cổng); G10 cảnh báo khi lắp
+    (14/11/2026: nâng thành CHẶN lắp mới — tests/test_a12_chan_khi_lap_20261114.py).
 (2) `G10_RELEASE_READINESS.json → status` là trạng thái MẪU lúc tạo tệp (không bao giờ cập nhật) — người đọc hiểu nhầm
     là trạng thái gói: mẫu nay ghi rõ ý nghĩa + thời điểm tạo.
 (3) A2 chỉ nhận khối COSMIN khi TÊN đề tài có từ khoá: đề tài có pha phát triển bộ câu hỏi (`pha_cong_cu/`) hoặc PI khai

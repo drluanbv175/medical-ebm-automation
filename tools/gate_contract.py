@@ -69,6 +69,9 @@ REASON_MISSING_SAP_LOCK = "MISSING_SAP_SIGNATURE"        # G4: chưa ký khóa S
 REASON_MISSING_DATA = "MISSING_REAL_DATA"                # G5: chưa có dữ liệu thật
 REASON_MISSING_INTEGRITY = "MISSING_INTEGRITY_SIGNATURES"  # G9: chưa ký liêm chính
 REASON_MISSING_CITATION_VERIFICATION = "MISSING_CITATION_VERIFICATION"  # G10: A12 receipt chưa có/chưa sạch
+# G10 (14/11/2026): lời khai «Bằng chứng máy-kiểm» trong mô tả A12 (số PMID, thời điểm, all_clean) LỆCH biên nhận — chỉ
+# chặn LẮP MỚI ở run_g10_assemble.main(); máy sửa được (kiem_a12_khop_bien_nhan.py --goi-y) nên KHÔNG phải «chờ người».
+REASON_A12_DESCRIPTION_MISMATCH = "A12_DESCRIPTION_MISMATCH_RECEIPT"
 REASON_MISSING_PEER_REVIEW = "MISSING_PEER_REVIEW_SIGNATURE"  # G10: G8 (bình duyệt độc lập) chưa ký ledger
 REASON_MANUSCRIPT_CHANGED_AFTER_PEER_REVIEW = "MANUSCRIPT_CHANGED_AFTER_PEER_REVIEW"  # G10: bản thảo đổi SAU KHI G8 ký
 REASON_MISSING_RELEASE_READINESS = "MISSING_G10_RELEASE_READINESS"
