@@ -113,6 +113,9 @@ def _de_tai(
                 "locked_dataset_path": "05_clean_locked/k.csv",
                 "sha256": hashlib.sha256(k.read_bytes()).hexdigest(),
                 "lock_date": "2026-11-14",
+                # khuôn manifest thật của lock_analysis_dataset.py (PR #234 bắt buộc hai trường này)
+                "status": "LOCKED_FOR_ANALYSIS",
+                "analysis_allowed": True,
             }
         ),
         encoding="utf-8",
@@ -830,6 +833,9 @@ def test_chay_that_python_den_r(ten, tmp_path, monkeypatch):
                 "locked_dataset_path": "05_clean_locked/k.csv",
                 "sha256": hashlib.sha256(p.read_bytes()).hexdigest(),
                 "lock_date": "2026-11-14",
+                # khuôn manifest thật của lock_analysis_dataset.py (PR #234 bắt buộc hai trường này)
+                "status": "LOCKED_FOR_ANALYSIS",
+                "analysis_allowed": True,
             }
         ),
         encoding="utf-8",
