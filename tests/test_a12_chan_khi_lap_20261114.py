@@ -52,14 +52,19 @@ def _so_pmid_bien_nhan(d: Path) -> int:
     return len(json.loads((d / "A12_RETRACTION_RECEIPT.json").read_text(encoding="utf-8"))["pmids_checked"])
 
 
-def _khai_bang_chung(d: Path, study: str, so_khai: int) -> None:
-    """Chèn mục «1. Bằng chứng máy-kiểm» (đúng khuôn agent viết) lên đầu mô tả A12 sạch — khai `so_khai` PMID."""
+def _chen_muc_bang_chung(d: Path, study: str, dong: str) -> None:
+    """Chèn mục «1. Bằng chứng máy-kiểm» (bảng như agent viết) với dòng `dong` lên đầu mô tả A12 sạch."""
     p = d / f"A12_CITATION_VERIFICATION_{study}.md"
     p.write_text(
         "## 1. Bằng chứng máy-kiểm\n\n| Bước | Công cụ | Kết quả |\n|---|---|---|\n"
-        f"| Rút bài + metadata {so_khai} PMID | `tools/check_citations.py --study {study}` | all_clean=true |\n\n"
-        "## 2. Đối chiếu nội dung\n\n" + p.read_text(encoding="utf-8"),
+        f"{dong}\n\n## 2. Đối chiếu nội dung\n\n" + p.read_text(encoding="utf-8"),
         encoding="utf-8", newline="\n")
+
+
+def _khai_bang_chung(d: Path, study: str, so_khai: int) -> None:
+    """Mục bằng chứng khai `so_khai` PMID (đúng khuôn agent viết)."""
+    _chen_muc_bang_chung(d, study, f"| Rút bài + metadata {so_khai} PMID | `tools/check_citations.py --study {study}` "
+                                   "| all_clean=true |")
 
 
 def _de_tai(tmp_path, monkeypatch, study: str, *, lech: bool | None) -> Path:
@@ -169,3 +174,124 @@ def test_thu_muc_trong_la_khong_do_duoc_khong_phai_khop(tmp_path):
     d.mkdir()
     trang_thai, dong, _ = G10.luat_mo_ta_a12_khi_lap("ZZ", d)
     assert trang_thai == "KHONG_DO_DUOC" and dong and dong[0].startswith("ℹ️")
+
+
+# ── Sửa theo bình duyệt PR #227 (14/11/2026) ───────────────────────────────────────────────────────────────────────
+# (1) Thiếu số PMID tách được KHÔNG được làm bỏ qua phép so thời điểm/all_clean (bản cũ trả KHÔNG ĐO ĐƯỢC sớm ⇒ lọt).
+# (2) «PMIDs» (số nhiều) phải được nhận là lời khai số PMID.
+# (3) Số PMID CHỈ đọc ở ô tên bước — ghi chú «0 PMID bị rút», «Ghi chú metadata: 2 PMID có erratum» không phải lời khai.
+
+_MOC_BN = "2026-10-15T14:00:46.390410+00:00"
+
+
+def _a12_tay(tmp_path: Path, muc_bang_chung: str, n_bien_nhan: int = 35, all_clean: bool = True) -> Path:
+    """Thư mục đề tài giả (không chữ ký) chỉ để đo `KA12.doi_chieu`: mục 1 = `muc_bang_chung`, biên nhận 35 PMID."""
+    d = tmp_path / "ZZ"
+    d.mkdir(parents=True)
+    (d / "A12_CITATION_VERIFICATION_ZZ.md").write_text(
+        "# A12 — ZZ\n\n## 1. Bằng chứng máy-kiểm\n\n| Bước | Công cụ | Kết quả |\n|---|---|---|\n"
+        f"{muc_bang_chung}\n\n## 2. Đối chiếu nội dung\n\n| PMID | Bài |\n|---|---|\n| 12345678 | 7 PMID ở mục 2 |\n",
+        encoding="utf-8", newline="\n")
+    pm = [str(10000000 + i) for i in range(n_bien_nhan)]
+    (d / "A12_RETRACTION_RECEIPT.json").write_text(
+        json.dumps({"study": "ZZ", "checked_at_utc": _MOC_BN, "pmids_checked": pm, "all_clean": all_clean}),
+        encoding="utf-8", newline="\n")
+    (d / "A12_METADATA_RECEIPT.json").write_text(
+        json.dumps({"study": "ZZ", "checked_at_utc": _MOC_BN, "pmids_checked": pm, "all_resolved": True}),
+        encoding="utf-8", newline="\n")
+    return d
+
+
+def test_khong_khai_so_pmid_nhung_thoi_diem_sai_la_lech(tmp_path):
+    for i, dong in enumerate(("| Rút bài + metadata 9 bài | x | all_clean=true (2026-10-14T13:42:42Z) |",
+                              "| Retraction check | x | all_clean=true (2026-10-14T13:42Z) |",
+                              "| Kiểm trích dẫn | `check_citations.py` 9 PMID | (2026-10-14T13:42Z) |")):
+        d = _a12_tay(tmp_path / str(i), dong)
+        kq = KA12.doi_chieu("ZZ", d)
+        assert kq["trang_thai"] == "LECH", (dong, kq)
+        assert any("2026-10-14T13:42" in x for x in kq["chi_tiet"]), kq
+        assert "so_pmid" not in kq["da_doi_chieu"] and "thoi_diem" in kq["da_doi_chieu"], kq
+
+
+def test_khong_khai_so_pmid_nhung_all_clean_sai_la_lech(tmp_path):
+    d = _a12_tay(tmp_path, "| Rút bài | x | all_clean=true |", all_clean=False)
+    kq = KA12.doi_chieu("ZZ", d)
+    assert kq["trang_thai"] == "LECH" and kq["da_doi_chieu"] == ["all_clean"], kq
+
+
+def test_so_nhieu_pmids_duoc_nhan_la_loi_khai(tmp_path):
+    d = _a12_tay(tmp_path, "| Rút bài + metadata 9 PMIDs | x | all_clean=true (2026-10-15T14:00Z) |")
+    kq = KA12.doi_chieu("ZZ", d)
+    assert kq["trang_thai"] == "LECH" and kq["chi_tiet"] == ["mô tả khai 9 PMID, biên nhận rút bài kiểm 35"], kq
+
+
+def test_ghi_chu_o_khac_hoac_van_xuoi_khong_phai_loi_khai_so_pmid(tmp_path):
+    for i, muc in enumerate((
+        "| Rút bài + metadata 35 PMID | x | all_clean=true (2026-10-15T14:00Z); 0 PMID bị rút |",
+        "| Rút bài + metadata 35 PMID | x | all_clean=true (2026-10-15T14:00Z) |\n\n"
+        "Ghi chú metadata: 2 PMID có erratum (không phải rút bài).",
+    )):
+        d = _a12_tay(tmp_path / str(i), muc)
+        kq = KA12.doi_chieu("ZZ", d)
+        assert kq["trang_thai"] == "KHOP", (muc, kq)
+        assert kq["da_doi_chieu"] == ["so_pmid", "thoi_diem", "all_clean"], kq
+
+
+def test_o_ten_buoc_khong_co_so_thi_so_o_o_khac_khong_tinh(tmp_path):
+    """Ô tên bước không ghi số ⇒ «0 PMID bị rút» ở ô kết quả KHÔNG thành lời khai «0 PMID đã kiểm»."""
+    d = _a12_tay(tmp_path, "| Rút bài + metadata | x | all_clean=true (2026-10-15T14:00Z); 0 PMID bị rút |")
+    kq = KA12.doi_chieu("ZZ", d)
+    assert kq["trang_thai"] == "KHOP" and kq["da_doi_chieu"] == ["thoi_diem", "all_clean"], kq
+
+
+def test_khai_sai_so_o_o_ten_buoc_van_bi_bat_du_co_ghi_chu(tmp_path):
+    d = _a12_tay(tmp_path, "| Rút bài + metadata 9 PMID | x | all_clean=true (2026-10-15T14:00Z); 0 PMID bị rút |")
+    kq = KA12.doi_chieu("ZZ", d)
+    assert kq["trang_thai"] == "LECH" and kq["chi_tiet"] == ["mô tả khai 9 PMID, biên nhận rút bài kiểm 35"], kq
+
+
+def test_dong_goi_y_dan_vao_la_khop(tmp_path):
+    d = _a12_tay(tmp_path, "| Rút bài + metadata 9 PMID | x | all_clean=true (2026-10-14T13:42Z) |")
+    assert KA12.doi_chieu("ZZ", d)["trang_thai"] == "LECH"
+    _a12 = d / "A12_CITATION_VERIFICATION_ZZ.md"
+    cu = _a12.read_text(encoding="utf-8")
+    _a12.write_text(cu.replace("| Rút bài + metadata 9 PMID | x | all_clean=true (2026-10-14T13:42Z) |",
+                               KA12.goi_y("ZZ", d)), encoding="utf-8", newline="\n")
+    kq = KA12.doi_chieu("ZZ", d)
+    assert kq["trang_thai"] == "KHOP" and kq["da_doi_chieu"] == ["so_pmid", "thoi_diem", "all_clean"], kq
+
+
+def test_khong_co_loi_khai_nao_kiem_duoc_la_khong_do_duoc(tmp_path):
+    d = _a12_tay(tmp_path, "| Kiểm trích dẫn | `check_citations.py` | mã 0 |")
+    kq = KA12.doi_chieu("ZZ", d)
+    assert kq["trang_thai"] == "KHONG_DO_DUOC" and kq["da_doi_chieu"] == [], kq
+
+
+def test_lap_moi_khong_khai_so_pmid_thoi_diem_sai_bi_chan(tmp_path, monkeypatch):
+    """Ca bình duyệt PR #227 nêu: «9 PMIDs»/«9 bài» kèm thời điểm sai từng ra KHÔNG ĐO ĐƯỢC ⇒ main() trả 0."""
+    study = "PYTEST-A12LAP-MOC"
+    d = _de_tai(tmp_path, monkeypatch, study, lech=None)
+    try:
+        _chen_muc_bang_chung(d, study, "| Rút bài + metadata 9 bài | `tools/check_citations.py` | "
+                                       "all_clean=true (2026-10-14T13:42:42Z) |")
+        assert KA12.doi_chieu(study, d)["trang_thai"] == "LECH"
+        assert _run_main(study) == GC.EXIT_BLOCKED
+        ni = _read_g10_needs_input(d)
+        assert ni["reason_code"] == GC.REASON_A12_DESCRIPTION_MISMATCH
+        assert "2026-10-14T13:42" in ni["human_message"]
+    finally:
+        _rmtree_retry(d)
+
+
+def test_lap_moi_khai_dung_kem_ghi_chu_khong_bi_chan(tmp_path, monkeypatch):
+    """Mô tả khai ĐÚNG số PMID kèm ghi chú «0 PMID bị rút» không được chặn lắp (bản cũ chặn sai, mã 2)."""
+    study = "PYTEST-A12LAP-GHICHU"
+    d = _de_tai(tmp_path, monkeypatch, study, lech=None)
+    try:
+        n = _so_pmid_bien_nhan(d)
+        _chen_muc_bang_chung(d, study, f"| Rút bài + metadata {n} PMID | `tools/check_citations.py` | "
+                                       "all_clean=true; 0 PMID bị rút |\n\nGhi chú metadata: 2 PMID có erratum.")
+        assert KA12.doi_chieu(study, d)["trang_thai"] == "KHOP"
+        assert _run_main(study) == 0
+    finally:
+        _rmtree_retry(d)

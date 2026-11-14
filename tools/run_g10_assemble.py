@@ -2487,8 +2487,10 @@ def canh_bao_mo_ta_a12(study: str, out_dir: Path, kq: dict | None = None) -> lis
 
 def luat_mo_ta_a12_khi_lap(study: str, out_dir: Path) -> tuple[str, list[str], str]:
     """Luật LẮP MỚI G10 (14/11/2026, bác sĩ duyệt nâng cảnh báo B3): → (trạng thái KHOP|LECH|KHONG_DO_DUOC, các dòng
-    in ra, lý do một câu). main() CHẶN khi LECH; KHONG_DO_DUOC KHÔNG chặn ở luật này (thiếu tệp/biên nhận do cổng trích
-    dẫn A12 sẵn có lo) nhưng vẫn in rõ — «không đo được» không phải «khớp»."""
+    in ra, lý do một câu). main() CHẶN khi LECH — MỘT lời khai kiểm được (số PMID ở ô tên bước, thời điểm, all_clean)
+    lệch là đủ, dù mô tả không khai số PMID (sửa 14/11/2026 theo bình duyệt PR #227). KHONG_DO_DUOC (thiếu tệp/biên
+    nhận — cổng trích dẫn A12 sẵn có lo — hoặc mô tả không có lời khai nào kiểm được) KHÔNG chặn ở luật này nhưng vẫn
+    in rõ — «không đo được» không phải «khớp»."""
     kq = KA12.doi_chieu(study, out_dir)
     tt = kq["trang_thai"]
     ly_do = "; ".join(kq["chi_tiet"][:3])
