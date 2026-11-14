@@ -1,0 +1,211 @@
+{
+ "nguon_sap": "G4_A5_SAP_FINAL_hai-long-benh-nhan-C1a-BVQY175.md",
+ "sha256_sap": "1754cb4ad785cef70d341ac8a927159f4c347b1d4d654a9cdb55c2a8e5734bc2",
+ "trang_thai_de_xuat": "ĐỀ XUẤT CỦA AGENT 15/11/2026 — CHỜ thống kê viên/PI duyệt (ghi nguoi_duyet). SAP nguồn còn là bản DRAFT chưa ký: SAP sửa trước khi khoá ⇒ sha256_sap lệch, đặc tả bị coi là cũ và phải đồng bộ lại.",
+ "can_thong_ke_vien_quyet": [
+  "suckhoe_tudanhgia (5 mức thứ tự): đề xuất đưa vào dạng SỐ (1 tham số, giả định tuyến tính); SAP §5 chưa nói rõ số hay phân loại — chuyển vào hiep_bien_phan_loai nếu muốn 4 biến giả.",
+  "duoc_dung_bacsi mã 7 «Không áp dụng» KHÔNG khai là mã thiếu ⇒ đề xuất giữ như một MỨC (biến giả _2 và _7, tham chiếu 1 «Có»).",
+  "Biến phân loại → biến giả, tham chiếu = mã nhỏ nhất (lydokham 1 «Khám lần đầu», khunggio_kham 1, ngay_trong_tuan 1 «Thứ Hai»); mức không có ca (vd Chủ Nhật) không sinh biến giả.",
+  "P1_nhi_phan: SAP §2 chỉ cho diễn giải logistic khi ≥ 10 biến cố chưa hài lòng/tham số — kiểm EPV trước khi đọc kết quả; không đạt thì chỉ báo tỷ lệ (MT1_ty_le).",
+  "Lượt MT2_chinh sinh kèm: OR theo từng ngưỡng (đọc giả định tỷ lệ odds — vi phạm ⇒ DN_ppo), OLS HC3/chùm (§9 «G1 coi liên tục»), MI m = 20 khi có thiếu (§9 «complete-case vs MICE»), ICC — không cần mục riêng.",
+  "Trọng số hậu phân tầng (§4): bản CÓ trọng số chỉ có ở R survey / khối bổ sung SPSS Complex Samples khi kiểm chéo — đường Python không hỗ trợ trọng số; quy tắc kích hoạt (lệch > 20%) phải làm trên nₕ/Nₕ TRƯỚC khi xem kết cục."
+ ],
+ "phan_tich": [
+  {
+   "id": "MT2_chinh",
+   "vai": "chinh",
+   "sap_muc": "§4–§5",
+   "mo_ta": "Logistic thứ tự G1 (5 mức) theo thoigian_cho mỗi 15 phút, hiệu chỉnh tập forced-in §5, SE chùm ma_ban_kham, phiếu hợp lệ",
+   "tham_so": {
+    "outcome": "g1",
+    "outcome_type": "ordinal",
+    "group": "thoigian_cho",
+    "don_vi_phoi_nhiem": 15,
+    "covariates": [
+     "tuoi",
+     "gioitinh",
+     "noicutru",
+     "cobhyt",
+     "lydokham",
+     "khunggio_kham",
+     "ngay_trong_tuan",
+     "suckhoe_tudanhgia",
+     "duoc_dung_bacsi"
+    ],
+    "hiep_bien_phan_loai": [
+     "gioitinh",
+     "noicutru",
+     "cobhyt",
+     "lydokham",
+     "khunggio_kham",
+     "ngay_trong_tuan",
+     "duoc_dung_bacsi"
+    ],
+    "cot_cum": "ma_ban_kham",
+    "n_imputations": 20,
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "MT1_ty_le",
+   "vai": "mo_ta",
+   "sap_muc": "§3",
+   "mo_ta": "Tỷ lệ hài lòng chung (G1 ≥ 4/5) và theo lĩnh vực A–F (điểm ≥ 4) + KTC 95% Wilson hiệu chỉnh chùm — bản KHÔNG trọng số",
+   "tham_so": {
+    "ty_le": [
+     "g1",
+     "A_Mean",
+     "B_Mean",
+     "C_Mean",
+     "D_Mean",
+     "E_Mean",
+     "F_Mean"
+    ],
+    "nguong_ty_le": 4,
+    "cot_cum": "ma_ban_kham",
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "P1_nhi_phan",
+   "vai": "phu",
+   "sap_muc": "§2, §9",
+   "mo_ta": "Logistic nhị phân SHLNBChung_NhiPhan (G1 ≥ 4/5), cùng tập hiệu chỉnh — chỉ diễn giải khi EPV ≥ 10",
+   "tham_so": {
+    "outcome": "SHLNBChung_NhiPhan",
+    "outcome_type": "binary",
+    "group": "thoigian_cho",
+    "don_vi_phoi_nhiem": 15,
+    "covariates": [
+     "tuoi",
+     "gioitinh",
+     "noicutru",
+     "cobhyt",
+     "lydokham",
+     "khunggio_kham",
+     "ngay_trong_tuan",
+     "suckhoe_tudanhgia",
+     "duoc_dung_bacsi"
+    ],
+    "hiep_bien_phan_loai": [
+     "gioitinh",
+     "noicutru",
+     "cobhyt",
+     "lydokham",
+     "khunggio_kham",
+     "ngay_trong_tuan",
+     "duoc_dung_bacsi"
+    ],
+    "cot_cum": "ma_ban_kham",
+    "n_imputations": 20,
+    "loc": "PhieuHopLe == 1"
+   }
+  },
+  {
+   "id": "DN_tu_dien",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "mo_ta": "Loại phiếu có hỗ trợ ghi (mode_tra_loi 2/3), chạy lại mô hình chính trên tập tự điền",
+   "tham_so": {
+    "outcome": "g1",
+    "outcome_type": "ordinal",
+    "group": "thoigian_cho",
+    "don_vi_phoi_nhiem": 15,
+    "covariates": [
+     "tuoi",
+     "gioitinh",
+     "noicutru",
+     "cobhyt",
+     "lydokham",
+     "khunggio_kham",
+     "ngay_trong_tuan",
+     "suckhoe_tudanhgia",
+     "duoc_dung_bacsi"
+    ],
+    "hiep_bien_phan_loai": [
+     "gioitinh",
+     "noicutru",
+     "cobhyt",
+     "lydokham",
+     "khunggio_kham",
+     "ngay_trong_tuan",
+     "duoc_dung_bacsi"
+    ],
+    "cot_cum": "ma_ban_kham",
+    "n_imputations": 20,
+    "loc": "PhieuHopLe == 1 and mode_tra_loi == 1"
+   }
+  },
+  {
+   "id": "P2_g2_g3",
+   "vai": "phu",
+   "sap_muc": "§2",
+   "mo_ta": "G2 (ý định quay lại), G3 (ý định giới thiệu) — kết cục thứ cấp định trước",
+   "chua_tu_dong": "SAP §2 nêu là kết cục thứ cấp nhưng CHƯA định phương pháp (tỷ lệ? thứ tự?) — thống kê viên chốt rồi đổi mục này thành tham_so"
+  },
+  {
+   "id": "P2_hoi_tu",
+   "vai": "phu",
+   "sap_muc": "§2",
+   "mo_ta": "SHLNBChung_TinhToan đối chiếu hội tụ với G1",
+   "chua_tu_dong": "tương quan hội tụ chưa có công cụ trong run_stats_analysis — thống kê viên chạy tay"
+  },
+  {
+   "id": "DN_ppo",
+   "vai": "do_nhay",
+   "sap_muc": "§4, §9",
+   "mo_ta": "Partial proportional odds / generalized ordered logit khi vi phạm tỷ lệ odds",
+   "chua_tu_dong": "chưa có công cụ — thống kê viên chạy tay (R VGAM/ordinal::clm nominal=)"
+  },
+  {
+   "id": "DN_rcs",
+   "vai": "do_nhay",
+   "sap_muc": "§4, §9",
+   "mo_ta": "Phi tuyến thời gian chờ: spline RCS 3 nút / theo phân vị",
+   "chua_tu_dong": "chưa có công cụ — thống kê viên chạy tay (R rms::rcs)"
+  },
+  {
+   "id": "DN_firth",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "mo_ta": "Logistic thường vs Firth (chỉ khi separation)",
+   "chua_tu_dong": "chưa có công cụ — thống kê viên chạy tay (R logistf)"
+  },
+  {
+   "id": "DN_anh_huong",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "mo_ta": "Có/không điểm ảnh hưởng; mô hình đầy đủ vs rút gọn",
+   "chua_tu_dong": "cần phán đoán của thống kê viên trên chẩn đoán mô hình"
+  },
+  {
+   "id": "DN_hon_hop",
+   "vai": "do_nhay",
+   "sap_muc": "§4, §9",
+   "mo_ta": "Mô hình thứ tự hệ số chặn ngẫu nhiên theo ma_ban_kham",
+   "chua_tu_dong": "không có ở đường Python — khối bổ sung SPSS (GENLINMIXED) và R (ordinal::clmm) khi kiểm chéo gate G6; < 15 bàn khám thì đây là phân tích CHÍNH (§4)"
+  },
+  {
+   "id": "DN_trong_so",
+   "vai": "do_nhay",
+   "sap_muc": "§4, §9",
+   "mo_ta": "Có/không trọng số hậu phân tầng (svyolr; postStratify cho Mục tiêu 1)",
+   "chua_tu_dong": "Python không hỗ trợ trọng số — R survey / khối bổ sung SPSS Complex Samples khi kiểm chéo; kiểm quy tắc kích hoạt trước"
+  },
+  {
+   "id": "DN_gop_muc",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "mo_ta": "Gộp mức G1 khi lệch trần (mức < 20 quan sát)",
+   "chua_tu_dong": "quy tắc gộp phụ thuộc phân bố — thống kê viên áp rồi chạy lại"
+  },
+  {
+   "id": "DN_bo_ve",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "mo_ta": "Phân tích giới hạn cho người bỏ về trước khi khám (f từ số liệu tổng hợp HIS)",
+   "chua_tu_dong": "dùng số liệu tổng hợp HIS, không có trong bộ dữ liệu phiếu — tính tay theo công thức §9"
+  }
+ ],
+ "nguoi_duyet": ""
+}
