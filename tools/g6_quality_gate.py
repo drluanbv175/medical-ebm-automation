@@ -34,7 +34,8 @@ soi DANH SÁCH THAM SỐ RIÊNG của khuôn sinh trong script/A7 (không quét 
 THÊM 14/11/2026 (G6-AUTO-11, bác sĩ duyệt ép bằng cổng sau PR #220): SAP §4 GỌI `postStratify(` (cùng điều kiện với bộ
 sinh `g6_trong_so_survey.sap_goi_post_stratify`) ⇒ phân tích CHÍNH Mục tiêu 1 là bản có trọng số khi kích hoạt, nên một
 script R CHẠY trên chuỗi khoá (nạp 00_setup.R) phải tới được dòng THI HÀNH `svydesign(` + `postStratify(` — trực tiếp
-hoặc qua tệp nó `source(` và hàm nó thực sự gọi; chú thích, hàm không ai gọi, tệp không ai nạp đều không tính ⇒ CHẶN.
+hoặc qua tệp nó `source(` và hàm nó thực sự gọi; chú thích (kể cả chú thích CUỐI DÒNG), hàm không ai gọi, tệp không ai
+nạp đều không tính ⇒ CHẶN. Phân tích TĨNH: không xét luồng điều khiển (`if (FALSE) …` vẫn tính là chạy).
 
 Dùng:  python3 tools/g6_quality_gate.py --study <mã>     (tự chạy cuối run_g6_auto)
 """
@@ -296,6 +297,36 @@ _RE_POSTSTRATIFY = r"\bpostStratify\s*\("
 _RE_HAM_R_CAP_CAO = re.compile(r"^([A-Za-z.][\w.]*)\s*(?:<-|=)\s*function\s*\(")
 
 
+def _bo_chu_thich_r(dong: str) -> str:
+    """Một dòng R đã cắt CHÚ THÍCH: bỏ từ dấu «#» đầu tiên nằm NGOÀI chuỗi '…', "…" hoặc tên `…` (có thoát «\\»).
+
+    SỬA 14/11/2026 (người duyệt PR #228): `_dong_thi_hanh` chỉ bỏ dòng BẮT ĐẦU bằng «#», nên chú thích CUỐI DÒNG
+    (`tk_w <- tk0  # survey::postStratify(`) vẫn bị tính là lời gọi ⇒ G6-AUTO-11 xanh giả (§0.8). Chỉ dùng cho
+    G6-AUTO-11 — các check khác giữ nguyên nghĩa. Chuỗi nhiều dòng và chuỗi thô r"(…)" không được theo dõi qua dòng:
+    phần nằm trong chuỗi ở các dòng sau có thể bị cắt (chỉ có thể làm MẤT lời gọi ⇒ nghiêng về chặn, không xanh giả)."""
+    nhay = ""
+    i = 0
+    while i < len(dong):
+        c = dong[i]
+        if nhay:
+            if c == "\\":
+                i += 2
+                continue
+            if c == nhay:
+                nhay = ""
+        elif c in "'\"`":
+            nhay = c
+        elif c == "#":
+            return dong[:i].rstrip()
+        i += 1
+    return dong
+
+
+def _bo_chu_thich_tep_r(noi_dung: str) -> str:
+    """Cả script R sau khi cắt chú thích từng dòng (`_bo_chu_thich_r`) — giữ nguyên số dòng và thụt lề."""
+    return "\n".join(_bo_chu_thich_r(d) for d in noi_dung.splitlines())
+
+
 def _tach_ham_r(noi_dung: str) -> tuple[list[str], dict[str, list[str]]]:
     """(dòng CẤP CAO, {tên hàm cấp cao: dòng thân}) của một script R — dòng thô, chưa lọc chú thích.
 
@@ -327,13 +358,16 @@ def _tach_ham_r(noi_dung: str) -> tuple[list[str], dict[str, list[str]]]:
 
 
 def _chuoi_nap_r(goc: str, scripts: dict[str, str]) -> list[str]:
-    """Tệp R mà `goc` nạp bằng `source(…<tên tệp>…)` trên DÒNG THI HÀNH — bắc cầu, gồm cả `goc`, giữ thứ tự gặp."""
+    """Tệp R mà `goc` nạp bằng `source(…<tên tệp>…)` trên DÒNG THI HÀNH — bắc cầu, gồm cả `goc`, giữ thứ tự gặp.
+
+    `source(` chỉ nằm trong chú thích cuối dòng không tính là nạp (`_bo_chu_thich_r`)."""
     r_tep = [t for t in scripts if t.lower().endswith(".r")]
     chuoi, hang = [goc], [goc]
     while hang:
         t = hang.pop(0)
+        sach = _bo_chu_thich_tep_r(scripts[t])
         for khac in r_tep:
-            if khac not in chuoi and _co_dong_thi_hanh(scripts[t], rf"source\([^)]*{re.escape(khac)}"):
+            if khac not in chuoi and _co_dong_thi_hanh(sach, rf"source\([^)]*{re.escape(khac)}"):
                 chuoi.append(khac)
                 hang.append(khac)
     return chuoi
@@ -343,11 +377,16 @@ def _dong_chay_that_r(chuoi: list[str], scripts: dict[str, str]) -> list[str]:
     """Dòng THI HÀNH thật sự chạy của một chuỗi tệp R: dòng cấp cao + thân các hàm GỌI ĐƯỢC từ đó (bắc cầu).
 
     Hàm định nghĩa mà không dòng chạy nào gọi tới ⇒ thân của nó không tính (dòng «thi hành» trong hàm chết không chạy).
+    Chú thích (kể cả CUỐI DÒNG) bị cắt TRƯỚC khi tách hàm và dò lời gọi (`_bo_chu_thich_r`): `x <- list()  # f(` không
+    gọi f, và `}  # hết hàm` vẫn đóng thân hàm.
+
+    Giới hạn của phân tích TĨNH: không xét luồng điều khiển — dòng chạy trong nhánh không bao giờ vào (`if (FALSE) …`,
+    sau `stop(`/`return(`) vẫn tính là chạy; cổng chỉ bắt các cách tắt bằng xoá/chú thích/không nạp/không gọi.
     """
     cap_cao: list[str] = []
     ham: dict[str, list[str]] = {}
     for t in chuoi:
-        cc, h = _tach_ham_r(scripts[t])
+        cc, h = _tach_ham_r(_bo_chu_thich_tep_r(scripts[t]))
         cap_cao += _dong_thi_hanh("\n".join(cc))
         for ten, than in h.items():
             ham.setdefault(ten, []).extend(_dong_thi_hanh("\n".join(than)))
@@ -837,7 +876,9 @@ def evaluate_study(study: str, out_dir: Path | None = None, write: bool = True,
     if not TSS.sap_goi_post_stratify(sap):
         add("G6-AUTO-11", True, "SAP §4 không gọi postStratify( — không đòi trọng số hậu phân tầng (không áp dụng)")
     else:
-        r_chay = [t for t, nd in scripts.items() if t.lower().endswith(".r") and t != "00_setup.R"
+        # Chú thích CUỐI DÒNG cũng bị cắt (SỬA 14/11/2026, người duyệt PR #228) — chỉ trong check này.
+        r_sach = {t: _bo_chu_thich_tep_r(nd) for t, nd in scripts.items() if t.lower().endswith(".r")}
+        r_chay = [t for t, nd in r_sach.items() if t != "00_setup.R"
                   and _co_dong_thi_hanh(nd, r"source\([^)]*00_setup\.R")]
         dat = []
         for t in r_chay:
@@ -845,8 +886,8 @@ def evaluate_study(study: str, out_dir: Path | None = None, write: bool = True,
             chay = "\n".join(_dong_chay_that_r(chuoi, scripts))
             if re.search(_RE_SVYDESIGN, chay) and re.search(_RE_POSTSTRATIFY, chay):
                 dat.append((t, chuoi))
-        co_dong = sorted(t for t, nd in scripts.items() if t.lower().endswith(".r")
-                         and (_co_dong_thi_hanh(nd, _RE_SVYDESIGN) or _co_dong_thi_hanh(nd, _RE_POSTSTRATIFY)))
+        co_dong = sorted(t for t, nd in r_sach.items()
+                         if _co_dong_thi_hanh(nd, _RE_SVYDESIGN) or _co_dong_thi_hanh(nd, _RE_POSTSTRATIFY))
         if dat:
             t, chuoi = dat[0]
             add("G6-AUTO-11", True, f"SAP §4 gọi postStratify( và `{t}` (nạp 00_setup.R) chạy svydesign( + "
