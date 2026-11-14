@@ -159,6 +159,21 @@ def lenh_mo(args, phan_mem: str) -> int:
     return MA_OK
 
 
+def lenh_mo_phan_tich(args, phan_mem: str) -> int:
+    """15/11/2026 (bác sĩ: «chú ý là phần mềm RStudio», «đúng phần mềm SPSS đang chạy»): mở PHÂN TÍCH G6 trong giao
+    diện IBM SPSS Statistics (cùng bộ cài với cầu nối) hoặc RStudio — ủy cho kiem_cheo_g6.py chay --trong-ung-dung
+    (chỉ dữ liệu ĐÃ KHOÁ, cú pháp/script sinh từ đặc tả G6, mọi chốt như chế độ nền)."""
+    if args.excel:
+        print("⛔ --phan-tich chỉ chạy trên dữ liệu ĐÃ KHOÁ — bỏ --excel (bản nháp chỉ để xem dữ liệu).")
+        return MA_TU_CHOI
+    lenh = [sys.executable, str(TOOLS / "kiem_cheo_g6.py"), "chay", "--study", args.study, "--gate", args.gate,
+            "--chi", phan_mem, "--trong-ung-dung"]  # fmt: skip
+    if args.khong_mo:
+        print("ℹ️ --khong-mo: không mở phần mềm — " + " ".join(lenh[1:]))
+        return MA_OK
+    return chay(lenh)
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Mở dữ liệu đề tài thẳng trong SPSS hoặc RStudio. " + CAN_KIEM)
     sub = ap.add_subparsers(dest="phan_mem", required=True)
@@ -168,8 +183,14 @@ def main(argv: list[str] | None = None) -> int:
         p.add_argument("--excel", help="tệp đã nhập (.xlsx hoặc .sav nhập trong SPSS) — dùng khi CHƯA khoá dữ liệu")
         p.add_argument("--ra", help="thư mục CSV trung gian (NGOÀI repo; mặc định cạnh tệp nhập)")
         p.add_argument("--khong-mo", action="store_true", help="chỉ chuẩn bị tệp, không mở phần mềm")
+        p.add_argument("--phan-tich", action="store_true",
+                       help="mở PHÂN TÍCH G6 (cú pháp SPSS / script RStudio, dữ liệu ĐÃ KHOÁ nạp sẵn) thay vì chỉ "
+                            "dữ liệu; xong chạy kiem_cheo_g6.py nhan-ket-qua")  # fmt: skip
+        p.add_argument("--gate", default="G6", help="gate của phân tích (dùng với --phan-tich)")
     args = ap.parse_args(argv)
     try:
+        if args.phan_tich:
+            return lenh_mo_phan_tich(args, args.phan_mem)
         return lenh_mo(args, args.phan_mem)
     except SP.TuChoi as e:
         print(f"⛔ {e}")

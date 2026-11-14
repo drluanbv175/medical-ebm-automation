@@ -107,7 +107,7 @@ def test_chay_mot_lenh_ca_hai_phan_mem_va_bao_cao_chung(tmp_path, monkeypatch):
     kq = json.loads((d / KC.TEP_JSON).read_text(encoding="utf-8"))
     assert kq["trang_thai"] == KC.LECH_NHO and kq["phan_mem"]["spss"]["dem"]["lech_nho"] == 3
     md = (d / KC.TEP_MD).read_text(encoding="utf-8")
-    assert "| SPSS |" in md and "| R |" in md and "TƯ VẤN" in md
+    assert "| SPSS |" in md and "| R / RStudio |" in md and "TƯ VẤN" in md  # 15/11: gọi đúng tên RStudio
     goi.clear()
     assert KC.main(["chay", "--study", "THU", "--chi", "spss"]) == 0
     assert ("spss", "xuat-sav") not in goi and not any(

@@ -97,6 +97,35 @@ từ điển ↔ .sav ↔ .rds đều khớp); RStudio đọc nhãn tiếng Vi�
 `python3 tools/mo_trong_phan_mem.py spss --study <mã>` (hoặc `r`) gọi `xuat-sav`/`xuat-rds` có kiểm rồi mở cửa sổ phần
 mềm; chưa khoá dữ liệu thì thêm `--excel <tệp đã nhập>` để mở BẢN NHÁP. Chi tiết: `docs/NHAP-LIEU-EXCEL.md`.
 
+## Chạy phân tích ngay trong RStudio và giao diện IBM SPSS Statistics (15/11/2026)
+
+Bác sĩ nhắc «chú ý là phần mềm RStudio» và «đúng phần mềm SPSS đang chạy». Chế độ nền (Rscript, Python của SPSS) giữ nguyên. Chế độ mới để bác sĩ tự chạy và xem từng bước ngay trong phần mềm:
+
+```bash
+python3 tools/kiem_cheo_g6.py chay --study <mã> --trong-ung-dung   # mở cả hai; --chi spss|r để mở một
+# trong IBM SPSS Statistics: Run > All · trong RStudio: bấm Source (⇧⌘S)
+python3 tools/kiem_cheo_g6.py nhan-ket-qua --study <mã>            # đọc kết quả, đối chiếu Python, ghi G6_kiem_cheo
+```
+
+Mở riêng từng phần mềm cũng được:
+- `python3 tools/mo_trong_phan_mem.py r --study <mã> --phan-tich`
+- `python3 tools/mo_trong_phan_mem.py spss --study <mã> --phan-tich`
+- hoặc ở mức cầu nối: `cau_noi_spss.py chay --trong-spss` / `cau_noi_r.py chay --trong-rstudio`, rồi `nhan-ket-qua`.
+
+**Chốt (giống chế độ nền):**
+- Chỉ dữ liệu ĐÃ KHOÁ.
+- Cú pháp/script phải trùng bản sinh từ đặc tả G6. Sửa tay sau khi mở thì `nhan-ket-qua` từ chối.
+- Kết quả phải MỚI hơn lượt mở; kết quả của lượt trước không được nhận.
+- SHA-256 dữ liệu được kiểm như cũ.
+
+**Đúng phần mềm:**
+- SPSS: chỉ mở `IBM SPSS Statistics.app` của CÙNG bộ cài với Python mà cầu nối dùng (Mac: `/Applications/IBM SPSS Statistics/`). Không tìm thấy thì từ chối, không mở một bản SPSS khác.
+- Kết quả ghi `chay_bang` (vd «giao diện IBM SPSS Statistics 31.0.1.0», «RStudio 2026.11.0+203») và phiên bản lấy từ chính ứng dụng.
+
+**Đo thật 15/11/2026** (đề tài giả lập, 300 ca, logistic + biến giả):
+- RStudio 2026.11.0: Source, script tự ghi kết quả, `nhan-ket-qua` đạt; đối chiếu với Python **5/5 khớp**.
+- SPSS 31.0.1: cú pháp mở đúng trong giao diện. Bước Run > All do bác sĩ bấm.
+
 ## Thứ tự dùng cho một đề tài
 
 1. G5 khoá dữ liệu (`lock_analysis_dataset.py`) — manifest khoá ghi SHA-256.

@@ -45,14 +45,17 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import os
+import plistlib
 import re
 import shutil
 import stat
 import subprocess
 import sys
 import tempfile
+import time
 from datetime import datetime
 from pathlib import Path
 
@@ -965,7 +968,7 @@ def lenh_cu_phap(args) -> int:
 # ───────────────────────────── lệnh chay ─────────────────────────────
 
 
-def lenh_chay(args) -> int:
+def _kiem_truoc_chay(args) -> dict:
     d = thu_muc_de_tai(args.study)
     r_dir = d / "r"
     script = r_dir / f"{args.study}_phan_tich.R"
@@ -976,14 +979,135 @@ def lenh_chay(args) -> int:
     if dac.get("sha256") != man.get("sha256"):
         raise TuChoi("manifest khoá đã đổi sau khi sinh script R — chạy lại `cau_noi_r.py cu-phap`")
     kiem_pii(args.study, csv_p, dac.get("tu_dien"))
-    rs = tim_r()
     kq = r_dir / "ket_qua"
     kq.mkdir(parents=True, exist_ok=True)
-    tho = kq / f"{args.study}_r_tho.json"
+    return {"d": d, "script": script, "dac": dac, "csv": csv_p, "man": man, "kq": kq,
+            "tho": kq / f"{args.study}_r_tho.json"}  # fmt: skip
+
+
+def _ghi_ket_qua(args, c: dict, *, chay_bang: str, rscript: str | None, nhat_ky: Path) -> int:
+    """Kết quả thô R (tệp script tự ghi) ⇒ G6_r_ket_qua.json — chung chế độ nền (Rscript) và RStudio."""
+    tho_kq = S._doc_json(c["tho"])
+    if tho_kq.get("sha256_du_lieu") != c["man"].get("sha256"):
+        raise TuChoi("SHA-256 R đọc được khác manifest khoá — không dùng kết quả này")
+    loi = tho_kq.get("loi") if isinstance(tho_kq.get("loi"), dict) else {}
+    canh = _ds(c["dac"].get("canh_bao")) + _ds(tho_kq.get("canh_bao"))
+    ket = {
+        "study": args.study,
+        "luc": datetime.now().astimezone().isoformat(timespec="seconds"),
+        "rscript": rscript,
+        "chay_bang": chay_bang,
+        "r_phien_ban": tho_kq.get("r_phien_ban"),
+        "goi_phien_ban": tho_kq.get("goi"),
+        "du_lieu": str(c["csv"]),
+        "sha256_du_lieu": tho_kq.get("sha256_du_lieu"),
+        "so_ca_doc": tho_kq.get("so_ca_doc"),
+        "dac_ta": c["dac"].get("dac_ta"),
+        "loai_ket_cuc": tho_kq.get("loai_ket_cuc"),
+        "ket_qua": tho_kq.get("ket_qua") if isinstance(tho_kq.get("ket_qua"), dict) else {},
+        "loi": loi,
+        "canh_bao": canh,
+        "script": str(c["script"]),
+        "nhat_ky": str(nhat_ky),
+        "disclaimer": CAN_KIEM,
+    }
+    ra = c["d"] / f"{args.gate}_r_ket_qua.json"
+    ra.write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
+    print(f"✓ R chạy xong ({ket['r_phien_ban']} · {chay_bang}) · {ra}")
+    for x in canh:
+        print(f"  ⚠ {x}")
+    if loi:
+        for k, v in loi.items():
+            print(f"  🔴 khối {k}: {v}")
+        return MA_LECH
+    return MA_OK
+
+
+# ── chạy trong RStudio (15/11/2026 — bác sĩ: «chú ý là phần mềm RStudio») ──
+TEP_DAU_CHO = ".cho_rstudio_{gate}.json"
+
+
+def ung_dung_rstudio() -> Path | None:
+    """RStudio trên máy (macOS: /Applications hoặc ~/Applications). Không có ⇒ None."""
+    for p in (Path("/Applications/RStudio.app"), Path.home() / "Applications" / "RStudio.app"):
+        if (p / "Contents" / "Info.plist").is_file():
+            return p
+    return None
+
+
+def phien_ban_rstudio(app: Path | None) -> str | None:
+    if app is None:
+        return None
+    try:
+        return plistlib.loads((app / "Contents" / "Info.plist").read_bytes()).get("CFBundleShortVersionString")
+    except (OSError, ValueError, plistlib.InvalidFileException):
+        return None
+
+
+def mo_trong_ung_dung(app: Path, tep: Path) -> bool:
+    try:
+        if sys.platform == "darwin":
+            return subprocess.run(["open", "-a", str(app), str(tep)], check=False).returncode == 0
+        if os.name == "nt":
+            os.startfile(str(tep))  # type: ignore[attr-defined]  # noqa: S606 — .R mở bằng RStudio đã gán
+            return True
+    except OSError:
+        return False
+    return False
+
+
+def _mo_trong_rstudio(args, c: dict) -> int:
+    app = ung_dung_rstudio()
+    if app is None and sys.platform == "darwin":
+        raise KhongDoDuoc("không thấy RStudio (/Applications/RStudio.app) — cài RStudio hoặc chạy chế độ nền")
+    if c["tho"].exists():
+        c["tho"].unlink()
+    ver = phien_ban_rstudio(app)
+    (c["kq"] / TEP_DAU_CHO.format(gate=args.gate)).write_text(json.dumps({
+        "t": time.time(), "luc": datetime.now().astimezone().isoformat(timespec="seconds"), "ung_dung": str(app),
+        "phien_ban": ver, "sha256_script": hashlib.sha256(c["script"].read_bytes()).hexdigest()},
+        ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")  # fmt: skip
+    if not mo_trong_ung_dung(app, c["script"]):
+        print(f"⚪ Không mở được RStudio — mở tay {c['script']} rồi bấm Source")
+        return MA_KHONG_DO
+    print(f"✓ Đã mở trong RStudio {ver or ''}: {c['script'].name} (dữ liệu ĐÃ KHOÁ nạp sẵn ở mục 0).\n"
+          "   Trong RStudio: bấm «Source» (⇧⌘S) — chạy từng khối, kết quả hiện ở Console; xong script tự ghi kết quả.\n"
+          f"   Xong: python3 tools/cau_noi_r.py nhan-ket-qua --study {args.study} --gate {args.gate}"
+          "  (rồi doi-chieu)")  # fmt: skip
+    return MA_OK
+
+
+def lenh_nhan_ket_qua(args) -> int:
+    """Đọc kết quả lượt chạy trong RStudio (tệp thô script tự ghi) ⇒ G6_r_ket_qua.json như chế độ nền."""
+    c = _kiem_truoc_chay(args)
+    dau = S._doc_json(c["kq"] / TEP_DAU_CHO.format(gate=args.gate))
+    if not dau:
+        raise KhongDoDuoc(f"chưa có lượt mở trong RStudio cho {args.gate} — chạy `cau_noi_r.py chay --study "
+                          f"{args.study} --trong-rstudio` trước")  # fmt: skip
+    if hashlib.sha256(c["script"].read_bytes()).hexdigest() != dau.get("sha256_script"):
+        raise TuChoi("script R đã đổi sau khi mở trong RStudio (sửa tay?) — chạy lại cu-phap rồi "
+                     "`chay --trong-rstudio`")
+    if not c["tho"].exists() or c["tho"].stat().st_mtime < float(dau.get("t") or 0):
+        raise KhongDoDuoc(f"chưa thấy kết quả mới ({c['tho'].name}) — trong RStudio bấm Source cho tới dòng «XONG_R», "
+                          "lỗi thì xem Console")  # fmt: skip
+    nhat_ky = c["kq"] / f"{args.study}_phan_tich.log"
+    nhat_ky.write_text(f"Chạy trong RStudio {dau.get('phien_ban') or ''} — nhật ký đầy đủ ở Console của RStudio.\n",
+                       encoding="utf-8", newline="\n")  # fmt: skip
+    nhan = f"RStudio {dau.get('phien_ban') or ''}".strip()
+    return _ghi_ket_qua(args, c, chay_bang=nhan, rscript=None, nhat_ky=nhat_ky)
+
+
+def lenh_chay(args) -> int:
+    c = _kiem_truoc_chay(args)
+    if getattr(args, "trong_rstudio", False):
+        return _mo_trong_rstudio(args, c)
+    rs = tim_r()
+    tho = c["tho"]
     if tho.exists():
         tho.unlink()
-    ma, out, err = chay_r(rs, [str(script), csv_p.as_posix(), tho.as_posix()], thu_muc=kq, thoi_han=args.thoi_han)
-    nhat_ky = kq / f"{args.study}_phan_tich.log"
+    ma, out, err = chay_r(rs, [str(c["script"]), c["csv"].as_posix(), tho.as_posix()], thu_muc=c["kq"],
+                          thoi_han=args.thoi_han)  # fmt: skip
+    nhat_ky = c["kq"] / f"{args.study}_phan_tich.log"
     nhat_ky.write_text(out + ("\n--- stderr ---\n" + err if err else ""), encoding="utf-8", newline="\n")
     cuoi = (err or out).strip()[-800:]
     if ma == MA_TU_CHOI:
@@ -995,40 +1119,8 @@ def lenh_chay(args) -> int:
     if ma != 0 or not tho.exists():
         print(f"🔴 R báo lỗi (mã {ma}) — {cuoi}\n   nhật ký: {nhat_ky}")
         return MA_LECH
-    tho_kq = S._doc_json(tho)
-    if tho_kq.get("sha256_du_lieu") != man.get("sha256"):
-        raise TuChoi("SHA-256 R đọc được khác manifest khoá — không dùng kết quả này")
-    loi = tho_kq.get("loi") if isinstance(tho_kq.get("loi"), dict) else {}
-    canh = _ds(dac.get("canh_bao")) + _ds(tho_kq.get("canh_bao"))
-    ket = {
-        "study": args.study,
-        "luc": datetime.now().astimezone().isoformat(timespec="seconds"),
-        "rscript": str(rs),
-        "r_phien_ban": tho_kq.get("r_phien_ban"),
-        "goi_phien_ban": tho_kq.get("goi"),
-        "du_lieu": str(csv_p),
-        "sha256_du_lieu": tho_kq.get("sha256_du_lieu"),
-        "so_ca_doc": tho_kq.get("so_ca_doc"),
-        "dac_ta": dac.get("dac_ta"),
-        "loai_ket_cuc": tho_kq.get("loai_ket_cuc"),
-        "ket_qua": tho_kq.get("ket_qua") if isinstance(tho_kq.get("ket_qua"), dict) else {},
-        "loi": loi,
-        "canh_bao": canh,
-        "script": str(script),
-        "nhat_ky": str(nhat_ky),
-        "disclaimer": CAN_KIEM,
-    }
-    ra = d / f"{args.gate}_r_ket_qua.json"
-    ra.write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
-    print(f"✓ R chạy xong ({ket['r_phien_ban']}) · {ra}")
-    for c in canh:
-        print(f"  ⚠ {c}")
-    if loi:
-        for k, v in loi.items():
-            print(f"  🔴 khối {k}: {v}")
-        return MA_LECH
-    return MA_OK
-
+    return _ghi_ket_qua(args, c, chay_bang="nền (Rscript --vanilla — cùng R với RStudio)", rscript=str(rs),
+                        nhat_ky=nhat_ky)  # fmt: skip
 
 # ───────────────────────────── lệnh xuat-rds (E2) ─────────────────────────────
 #
@@ -2126,6 +2218,11 @@ def main(argv: list[str] | None = None) -> int:
             p.add_argument("--ma-thieu", help="tệp mã thiếu cấp dự án (mặc định exports/<mã>/_ma-thieu-theo-bien.csv)")
         if ten == "chay":
             p.add_argument("--thoi-han", type=int, default=1200, help="giây (mặc định 1200)")
+            p.add_argument("--trong-rstudio", action="store_true",
+                           help="MỞ script phân tích trong RStudio để bác sĩ bấm Source; xong gọi nhan-ket-qua")
+    nk = sub.add_parser("nhan-ket-qua", help="đọc kết quả lượt chạy trong RStudio ⇒ G6_r_ket_qua.json")
+    nk.add_argument("--study", required=True)
+    nk.add_argument("--gate", default="G6")
     x = sub.add_parser("xuat-rds", help=".rds có nhãn (khuôn haven) từ CÙNG kế hoạch biến với .sav + kiểm ba chiều")
     x.add_argument("--study", required=True)
     x.add_argument("--data", help="CSV khác bộ đã khoá (bắt buộc kèm --ban-nhap)")
@@ -2141,6 +2238,7 @@ def main(argv: list[str] | None = None) -> int:
         "cai-goi": lenh_cai_goi,
         "cu-phap": lenh_cu_phap,
         "chay": lenh_chay,
+        "nhan-ket-qua": lenh_nhan_ket_qua,
         "doi-chieu": lenh_doi_chieu,
     }[args.lenh]
     try:

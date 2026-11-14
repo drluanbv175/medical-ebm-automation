@@ -1,4 +1,4 @@
-# Cầu nối R (G5–G6)
+# Cầu nối R / RStudio (G5–G6)
 
 Bác sĩ giao ngày 14/11/2026: «xây dựng kết nối và tải công cụ thống kê R giúp tôi». Công cụ: `tools/cau_noi_r.py`
 (Python của hệ, `~/.ebm-venv`). R chạy bằng `Rscript --vanilla`.
@@ -43,6 +43,35 @@ Mã thoát (cùng nghĩa với cầu nối SPSS):
 - **1** — có dòng LỆCH, R lỗi, hoặc một khối R lỗi.
 - **2** — không đo được: không có R, thiếu gói, thiếu tệp, thiếu từ điển G5 hoặc từ điển thiếu cột «Identifier?». `doi-chieu` cũng trả 2 khi **còn mục chỉ một phía ra số** (ví dụ Python sập mô hình chính mà R vẫn chạy). Đối chiếu khi đó CHƯA trọn, không phải «khớp».
 - **3** — từ chối: cột định danh, cột không có trong từ điển G5, dữ liệu không khớp manifest khoá, R và Python khác dữ liệu hoặc khác đặc tả, tên biến không có trong dữ liệu, tham số sai.
+
+## Chạy phân tích ngay trong RStudio và giao diện IBM SPSS Statistics (15/11/2026)
+
+Bác sĩ nhắc «chú ý là phần mềm RStudio» và «đúng phần mềm SPSS đang chạy». Chế độ nền (Rscript, Python của SPSS) giữ nguyên. Chế độ mới để bác sĩ tự chạy và xem từng bước ngay trong phần mềm:
+
+```bash
+python3 tools/kiem_cheo_g6.py chay --study <mã> --trong-ung-dung   # mở cả hai; --chi spss|r để mở một
+# trong IBM SPSS Statistics: Run > All · trong RStudio: bấm Source (⇧⌘S)
+python3 tools/kiem_cheo_g6.py nhan-ket-qua --study <mã>            # đọc kết quả, đối chiếu Python, ghi G6_kiem_cheo
+```
+
+Mở riêng từng phần mềm cũng được:
+- `python3 tools/mo_trong_phan_mem.py r --study <mã> --phan-tich`
+- `python3 tools/mo_trong_phan_mem.py spss --study <mã> --phan-tich`
+- hoặc ở mức cầu nối: `cau_noi_spss.py chay --trong-spss` / `cau_noi_r.py chay --trong-rstudio`, rồi `nhan-ket-qua`.
+
+**Chốt (giống chế độ nền):**
+- Chỉ dữ liệu ĐÃ KHOÁ.
+- Cú pháp/script phải trùng bản sinh từ đặc tả G6. Sửa tay sau khi mở thì `nhan-ket-qua` từ chối.
+- Kết quả phải MỚI hơn lượt mở; kết quả của lượt trước không được nhận.
+- SHA-256 dữ liệu được kiểm như cũ.
+
+**Đúng phần mềm:**
+- SPSS: chỉ mở `IBM SPSS Statistics.app` của CÙNG bộ cài với Python mà cầu nối dùng (Mac: `/Applications/IBM SPSS Statistics/`). Không tìm thấy thì từ chối, không mở một bản SPSS khác.
+- Kết quả ghi `chay_bang` (vd «giao diện IBM SPSS Statistics 31.0.1.0», «RStudio 2026.11.0+203») và phiên bản lấy từ chính ứng dụng.
+
+**Đo thật 15/11/2026** (đề tài giả lập, 300 ca, logistic + biến giả):
+- RStudio 2026.11.0: Source, script tự ghi kết quả, `nhan-ket-qua` đạt; đối chiếu với Python **5/5 khớp**.
+- SPSS 31.0.1: cú pháp mở đúng trong giao diện. Bước Run > All do bác sĩ bấm.
 
 ## Gói R cần
 
