@@ -141,6 +141,8 @@ Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:
   KẾT: ĐẠT TỰ KIỂM / CÒN 🔴 → [hành động cụ thể]
 ```
 
+**Đọc đúng mã của sổ xác minh (14/11/2026):** `--quet`/`--vong`/`--phu-mo-coi` mà hết hạn chờ khoá sổ ⇒ `[MA] SO_DANG_KHOA` (mã 3): lượt KHÔNG ghi gì, chạy lại khi lượt kia xong — không phải «sạch», cũng không phải lỗi hạ tầng cần sửa. Kèm thêm `[MA] DUONG_TINH_CHUA_VAO_SO` (mã 2) ⇒ chính lượt này VỪA phát hiện nguồn đã rút/EoC mà chưa ghi được vào sổ: coi là ĐÃ BIẾT ngay, KHÔNG dùng kết luận của bài «ĐÃ BỊ RÚT», đưa 🔴 lên đầu báo cáo, chạy lại sau để ghi vào sổ. Bảng mã đầy đủ: skill `cap-nhat-chung-cu-y-khoa` (mục BH14).
+
 <!-- EBM-CONGCU-CHUNGCU-LAMSANG -->
 ## Công cụ bắt buộc — SỔ XÁC MINH NGUỒN (tích luỹ, chịu được mạng chập chờn)
 

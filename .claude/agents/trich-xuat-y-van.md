@@ -137,7 +137,7 @@ có `🟠 [ITEM-xx] K…` thì đối chiếu đúng phép đó với nguồn g�
 bản đọc/Word · K4 nguồn ngược chiều mục `apply` · **K3b** nguồn khuyến cáo CÓ ĐIỀU KIỆN (ngưỡng, «if/unless/only/in
 patients with…») mà mục đã bỏ điều kiện · **K4b** mục «KHÔNG làm» trong khi nguồn ủng hộ. Lệnh xem từng dòng:
 `python3 tools/kiem_quan_the_chieu.py <dashboard>.html --online` (K3: `tools/kiem_cheo_ngu_nghia.py`). 🟠 không phải
-«sai»; chỉ sửa khi đọc lại thấy lệch thật, không tự đổi `decision`/`gradeLevel`. Không có 🟠 cũng KHÔNG có nghĩa là
+«sai»; chỉ sửa khi đọc lại thấy lệch thật, không tự đổi `decision`/`gradeLevel`. Sửa làm ĐỔI CHIỀU hay độ mạnh khuyến cáo (thường gặp ở K4/K4b), hoặc mục đã có trong `EBM-Dashboards/quyet-dinh-da-duyet.json` ⇒ KHÔNG tự sửa: đặt cạnh bằng chứng (trích ≤15 từ + vị trí) để bác sĩ quyết (14/11/2026). Không có 🟠 cũng KHÔNG có nghĩa là
 đúng: độ nhạy đo bằng `tools/do_nhay_kiem_ngu_nghia.py` — lượt 14/11/2026c K3b ~1%, K4b ~25% — nên vẫn tự đối chiếu điều
 kiện và chiều khuyến cáo của mọi mục `apply` với nguồn.
 
