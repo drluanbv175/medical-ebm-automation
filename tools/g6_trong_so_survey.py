@@ -49,13 +49,22 @@ def _tim_bien(all_vars, mau: re.Pattern) -> Optional[str]:
     return None
 
 
+def sap_goi_post_stratify(sap_text: str) -> bool:
+    """SAP §4 có GỌI `postStratify(` không — điều kiện DUY NHẤT để đòi trọng số hậu phân tầng.
+
+    Dùng chung cho bộ sinh (`doc_tham_so_trong_so` → run_g6_auto sinh script 04) và bộ chấm (G6-AUTO-11 của
+    g6_quality_gate) để hai bên không bao giờ hiểu SAP khác nhau. Chữ «trọng số» trơn không đủ (mọi SAP do G4 sinh
+    đều có câu nhắc trọng số chung chung)."""
+    return bool(re.search(r"postStratify\s*\(", _sec(sap_text, 4)))
+
+
 def doc_tham_so_trong_so(sap_text: str, v: dict) -> dict:
     """Rút tham số trọng số/giới hạn từ SAP đã khoá (+ tên biến từ dictionary G5 qua `v`).
 
-    `can_trong_so` chỉ True khi SAP §4 GỌI `postStratify(` — chữ «trọng số» trơn không đủ (mọi SAP do G4 sinh đều có
-    câu nhắc trọng số chung chung). Trả các giá trị đã rút; giá trị thiếu là None và tên của nó nằm trong `thieu`."""
+    `can_trong_so` chỉ True khi SAP §4 GỌI `postStratify(` (`sap_goi_post_stratify`). Trả các giá trị đã rút; giá trị
+    thiếu là None và tên của nó nằm trong `thieu`."""
     sap3, sap4, sap9 = _sec(sap_text, 3), _sec(sap_text, 4), _sec(sap_text, 9)
-    can = bool(re.search(r"postStratify\s*\(", sap4))
+    can = sap_goi_post_stratify(sap_text)
     all_vars = v.get("all_vars") or []
 
     m = re.search(r"ids\s*=\s*~\s*([A-Za-z_][\w.]*)", sap4)
