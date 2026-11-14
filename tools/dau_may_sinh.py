@@ -97,6 +97,34 @@ def doc_dau(tep_ho_so: Path) -> Optional[dict]:
     return ban_ghi
 
 
+def so_cai_co_duyet_trung_noi_dung(so_cai: Path, gate_id: str, tep_ho_so: Path) -> bool:
+    """Sổ cái phê duyệt có bản ghi APPROVED của `gate_id` mà evidence_hash TRÙNG SHA-256 nội dung hồ sơ hiện tại không.
+
+    Chỉ dùng cho quyết định GIỮ (sửa sau thẩm định #248, mục «thấp»): GC.ledger_approved() fail-closed theo chiều
+    «đã duyệt» — máy thiếu khoá xác minh hoặc con dấu niêm phong hỏng thì trả False ⇒ nhánh «không đè bản đã ký» không
+    kích hoạt và máy đè hồ sơ/SAP người đã ký nguyên trạng. Với việc GIỮ, đi theo chiều BẢO TOÀN: có dấu vết APPROVED
+    trùng nội dung là giữ, KHÔNG xác minh chữ ký. Hàm này không mở cổng nào và không bao giờ được dùng để kết luận
+    «đã duyệt» — chỉ thêm khả năng giữ lại (PI vẫn sinh lại có chủ đích được bằng --regenerate). Băm đúng cách
+    approve_gate/ledger_approved băm: SHA-256 của BYTES tệp (không quy đổi xuống dòng). Sổ vắng/hỏng/dị dạng ⇒ False
+    (luật dấu bình thường quyết)."""
+    try:
+        ban_ghi = json.loads(Path(so_cai).read_text(encoding="utf-8"))
+        bam = hashlib.sha256(Path(tep_ho_so).read_bytes()).hexdigest()
+    except (OSError, ValueError, UnicodeDecodeError):
+        return False
+    if not isinstance(ban_ghi, list):
+        return False
+    cong = str(gate_id or "").strip().casefold()
+    for rec in ban_ghi:
+        if not isinstance(rec, dict):
+            continue
+        if (str(rec.get("gate_id") or "").strip().casefold() == cong
+                and str(rec.get("decision") or "").strip().upper() == "APPROVED"
+                and str(rec.get("evidence_hash") or "").strip().lower() == bam):
+            return True
+    return False
+
+
 def xet_ban_hien_co(tep_ho_so: Path, noi_dung_hien_tai: str,
                     dau_vao_moi: Optional[Mapping[str, Any]]) -> dict:
     """So nội dung hồ sơ hiện tại với dấu bản máy sinh lần trước.
@@ -127,7 +155,8 @@ def quyet_dinh_ghi_de(tep_ho_so: Path, noi_dung_cu: str, dau_vao_moi: Optional[M
     Thứ tự:
       1. Cờ sinh lại có chủ đích (--regenerate) ⇒ đè (nơi gọi đã sao lưu .bak-* trước).
       2. Khớp dấu (bản máy sinh nguyên) ⇒ đè — trừ khi chính nội dung này đã được KÝ trong sổ cái phê duyệt
-         (`da_ky()` True): luật mới không được hạ cấp quyết định đã ký, nên vẫn GIỮ.
+         (`da_ky()` True): luật mới không được hạ cấp quyết định đã ký, nên vẫn GIỮ. Nơi gọi (G2/G4) nối
+         `da_ky` = GC.ledger_approved(...) HOẶC so_cai_co_duyet_trung_noi_dung(...) — chiều bảo toàn khi máy thiếu khoá.
       3. Lệch dấu ⇒ GIỮ (đã có người sửa tay).
       4. Không có dấu (hồ sơ cũ) ⇒ luật cũ do nơi gọi tính (`cu_day_du_hon_theo_luat_cu`).
 
@@ -147,7 +176,8 @@ def quyet_dinh_ghi_de(tep_ho_so: Path, noi_dung_cu: str, dau_vao_moi: Optional[M
     elif trang_thai == MAY_SINH_NGUYEN:
         if da_ky is not None and da_ky():
             ra.update(giu=True, ly_do=("bản đang có khớp dấu bản máy sinh NHƯNG chính nội dung này đã được ký trong "
-                                       "sổ cái phê duyệt — máy không tự đè bản đã ký"))
+                                       "sổ cái phê duyệt (approval_ledger.json có bản ghi APPROVED trùng SHA-256) — "
+                                       "máy không tự đè bản đã ký"))
         else:
             ra["ghi_chu"] = ("bản đang có là bản MÁY SINH NGUYÊN (khớp dấu SHA-256 lần sinh trước, chưa ai sửa) — "
                              + (f"đầu vào đã đổi ({ra['mo_ta_doi']}), tự sinh lại" if doi

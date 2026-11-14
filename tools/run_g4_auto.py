@@ -1079,7 +1079,11 @@ def main():
             ep_sinh_lai=bool(getattr(args, "regenerate_sap", False)),
             cu_day_du_hon_theo_luat_cu=ban_cu.count("[CẦN") < artifact.count("[CẦN"),
             chi_tiet_luat_cu=f"{ban_cu.count('[CẦN')} vs {artifact.count('[CẦN')} nhãn [CẦN...]",
-            da_ky=lambda: GC.ledger_approved("G4", study, md, repo_root=BASE),
+            # «Không hạ cấp quyết định đã ký»: chữ ký xác minh được HOẶC (chiều bảo toàn, máy thiếu khoá/niêm phong
+            # hỏng) bản ghi APPROVED trùng SHA-256 nội dung hiện tại ⇒ GIỮ (sửa sau thẩm định #248).
+            da_ky=lambda: (GC.ledger_approved("G4", study, md, repo_root=BASE)
+                           or DMS.so_cai_co_duyet_trung_noi_dung(
+                               BASE / "exports" / study / "approval_ledger.json", "G4", md)),
             thiet_ke_cu_checkpoint=(_cp_g4_cu.get("design_code") if isinstance(_cp_g4_cu, dict) else None),
         )
         if quyet_dinh_de["giu"]:

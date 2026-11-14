@@ -120,6 +120,8 @@ def test_k6_g2_doi_thiet_ke_ban_may_sinh_duoc_sinh_lai(tmp_path):
     assert cp["loai_can_thiep"]["loai"] == ["behavioral"] and cp["loai_can_thiep"]["da_chot"] is False
     icf = ban_rct.split("TÀI LIỆU 4")[1].split("TÀI LIỆU 5")[0]
     assert "Lấy máu" not in icf and "thuốc/sản phẩm thử nghiệm" not in icf
+    # Sửa sau thẩm định #248: máy SUY (PI chưa chốt) ⇒ phiếu đồng thuận một ô [CẦN], không thu hẹp theo loại máy đoán.
+    assert "[CẦN PI XÁC NHẬN loại can thiệp" in icf
 
 
 def test_k6_g2_ban_da_sua_doi_thiet_ke_giu_va_bao_ro(tmp_path):
@@ -306,7 +308,13 @@ def test_k9_can_thiep_tin_nhan_icf_khong_co_rui_ro_thuoc_lay_mau():
     risk = G2.ap_loai_can_thiep(G2.get_risk_profile("rct", "RCT"), "rct", meta, "")
     tl3, icf = _goi(risk, meta)
     assert "Lấy máu" not in icf and "thuốc/sản phẩm thử nghiệm" not in icf
-    assert "tin nhắn" in icf.lower()
+    # Sửa sau thẩm định #248: máy SUY «hành vi» ⇒ phiếu đồng thuận KHÔNG thu hẹp theo loại máy đoán (bản đầu chép dòng
+    # hành vi vào ICF mà không có nhãn [CẦN] nào); một ô [CẦN] kèm gợi ý, bộ đếm ô trống G2 bắt được.
+    assert "[CẦN PI XÁC NHẬN loại can thiệp — máy suy: hành vi" in icf
+    assert "Nội dung tin nhắn/cuộc gọi bị người khác đọc" not in icf
+    # Tài liệu 3: loại máy suy gắn [CẦN PI XÁC NHẬN — máy suy], các loại khác vẫn liệt kê [CẦN PI CHỌN].
+    assert "[CẦN PI XÁC NHẬN — máy suy: hành vi" in tl3 and "Nội dung tin nhắn/cuộc gọi" in tl3
+    assert "[CẦN PI CHỌN — chỉ giữ nếu can thiệp là thuốc" in tl3
     assert "[CẦN PI XÁC NHẬN loại can thiệp" in tl3, "máy suy ⇒ phải đòi PI xác nhận"
     # Máy suy KHÔNG được hạ mức nguy cơ/lộ trình trình Hội đồng.
     assert risk["risk_level"] == G2.RISK_PROFILES["rct"]["risk_level"]
@@ -330,7 +338,9 @@ def test_k9_pi_chot_loai_can_thiep():
     assert hanh_vi["risk_level"].startswith("TỐI THIỂU") and "Hội đồng" in hanh_vi["irb_route"]
     thuoc = G2.ap_loai_can_thiep(G2.get_risk_profile("rct", "RCT"), "rct", _meta(G2={"intervention_type": "drug"}), "")
     _, icf = _goi(thuoc)
-    assert thuoc["risk_level"] == "LỚN HƠN TỐI THIỂU" and "Lấy máu" in icf and "CHỈ khi đề cương có" in icf
+    assert thuoc["risk_level"] == "LỚN HƠN TỐI THIỂU" and "Lấy máu" in icf
+    # Sửa sau thẩm định #248: điều kiện «có lấy máu không» là nhãn [CẦN…] đếm được, không phải lời dặn «(CHỈ khi …)».
+    assert "[CẦN PI XÁC NHẬN: đề cương có lấy máu" in icf and "CHỈ khi" not in icf
 
 
 @pytest.mark.parametrize("thiet_ke", ["cross_sectional", "cohort", "case_control", "diagnostic", "sr_ma",
@@ -339,3 +349,222 @@ def test_k9_khong_doi_thiet_ke_khong_phai_rct(thiet_ke):
     """C1a (cắt ngang) và mọi thiết kế không phải RCT: hồ sơ nguy cơ giữ nguyên từng khoá."""
     goc = G2.get_risk_profile(thiet_ke, "Thiết kế")
     assert G2.ap_loai_can_thiep(goc, thiet_ke, _meta(G0={"intervention": SMS}), "") is goc
+
+
+# ═════════════════════════════ Sửa sau thẩm định PR #248 (14/11/2026) — tái hiện từng mục ═════════════════════════════
+import hashlib  # noqa: E402
+
+import g2_quality_gate as G2Q  # noqa: E402
+
+_KET_HOP_THUOC_HANH_VI = (
+    "Chương trình giáo dục sức khoẻ kết hợp aspirin",
+    "Tập luyện thể lực kết hợp metformin",
+    "Chế độ ăn giảm muối và chlorthalidone",
+    "Tư vấn dinh dưỡng kèm bổ sung vitamin D",
+)
+_TEN_DONG_THEO_LOAI = [ten for dong in G2._RUI_RO_RCT_THEO_LOAI.values() for ten, *_ in dong]
+
+
+@pytest.mark.parametrize("topic", _KET_HOP_THUOC_HANH_VI)
+def test_tham_dinh_cao_ket_hop_thuoc_hanh_vi_khong_suy_thanh_hanh_vi(topic):
+    """Mục «cao»: thuốc gọi bằng tên hoạt chất từng không khớp loại «thuốc» ⇒ suy thành «hành vi»."""
+    pl = G2.phan_loai_can_thiep(_meta(G1={"intervention_or_exposure": topic}), "")
+    assert "drug" in pl["ung_vien"] and "behavioral" in pl["ung_vien"], pl
+    assert pl["loai"] == [], "kết hợp thuốc + hành vi ⇒ CHƯA rõ một loại, không được đoán"
+
+
+@pytest.mark.parametrize("topic", _KET_HOP_THUOC_HANH_VI + ("Giáo dục sức khoẻ kết hợp Zentravex", SMS))
+def test_tham_dinh_cao_may_suy_khong_thu_hep_phieu_dong_thuan(topic):
+    """Mục «cao»: PI chưa chốt ⇒ ICF KHÔNG được thu hẹp theo loại máy suy; Tài liệu 3 không được mất tác dụng phụ thuốc.
+
+    «Zentravex» là tên thuốc bịa (không có trong bộ từ khoá) — máy chắc chắn suy SAI thành «hành vi»; đó đúng là ca phải
+    an toàn bất kể bộ từ khoá: phiếu cho người bệnh một ô [CẦN], bảng cho Hội đồng vẫn đủ mọi loại."""
+    meta = _meta(G1={"intervention_or_exposure": topic})
+    risk = G2.ap_loai_can_thiep(G2.get_risk_profile("rct", "RCT"), "rct", meta, "")
+    assert risk["_loai_can_thiep"]["da_chot"] is False
+    tl3, icf = _goi(risk, meta)
+    assert "[CẦN PI XÁC NHẬN loại can thiệp" in icf
+    lot = [ten for ten in _TEN_DONG_THEO_LOAI if ten.split("] ")[-1] in icf]
+    assert not lot, f"ICF chép rủi ro riêng của loại máy đoán khi PI chưa chốt: {lot}"
+    assert all(ten.split("] ")[-1] in tl3 for ten in _TEN_DONG_THEO_LOAI), "Tài liệu 3 phải giữ rủi ro của MỌI loại"
+    assert "Tác dụng phụ của thuốc/sản phẩm thử nghiệm" in tl3
+    # Ô [CẦN] của ICF là ô trống THẬT theo hợp đồng G2 (bộ đếm bắt được, không lọt vào bản nộp).
+    dong_can = next(x for x in icf.splitlines() if "[CẦN PI XÁC NHẬN loại can thiệp" in x)
+    assert G2Q.placeholder_total(dong_can) >= 1
+
+
+@pytest.mark.parametrize("loai,cum,ten", [("drug", "[CẦN PI XÁC NHẬN: đề cương có lấy máu", "Lấy máu"),
+                                          ("procedure", "[CẦN PI XÁC NHẬN: thủ thuật có gây tê/gây mê", "gây tê")])
+def test_tham_dinh_thap_dong_co_dieu_kien_la_nhan_dem_duoc(loai, cum, ten):
+    """Mục «thấp»: «(CHỈ khi đề cương có)» từng chép thẳng vào ICF mà bộ đếm ô trống G2 không nhận."""
+    risk = G2.ap_loai_can_thiep(G2.get_risk_profile("rct", "RCT"), "rct", _meta(G2={"intervention_type": loai}), "")
+    _, icf = _goi(risk)
+    assert "CHỈ khi" not in icf
+    dong = next(x for x in icf.splitlines() if ten in x)
+    assert cum in dong and G2Q.placeholder_total(dong) >= 1, dong
+
+
+def test_tham_dinh_g3_ban_ghim_da_go_khong_ghim_lai_qua_pipeline(tmp_path, monkeypatch):
+    """Mục «vừa» G3: đề tài sinh TRƯỚC bản vá có precision/p_event/dropout do máy cũ ghim vào study_meta.
+
+    Lượt 1 ghi nguồn «study_meta»; PI gỡ ba khoá; pipeline truyền lại từ checkpoint ⇒ bản đầu ghim lại cả ba với nhãn
+    «CLI»."""
+    study = "S-TD-G3-GO"
+    d = tmp_path / "exports" / study
+    dung_g0_g1_da_chot(d, study, thiet_ke="cross_sectional", mau_hieu_qua=[],
+                       them_meta={"G3": {"precision": 0.05, "p_event": 0.3, "dropout": 0.2}})
+    cp1, _, _, _ = _g3(tmp_path, study, monkeypatch, [])
+    assert all(cp1["nguon_tham_so"].get(k) == "study_meta" for k in ("precision", "p_event", "dropout")), \
+        cp1["nguon_tham_so"]
+    meta_p = d / "study_meta.json"
+    meta = json.loads(meta_p.read_text(encoding="utf-8"))
+    for k in ("precision", "p_event", "dropout"):
+        meta["gate_params"]["G3"].pop(k)
+    meta_p.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+    argv = RP._recover_params("G3", d, meta)
+    assert {"--precision", "--p-event", "--dropout"} <= set(argv), f"đồ gá phải tái hiện lệnh truyền lại: {argv}"
+    cp2, _, out2, g3_2 = _g3(tmp_path, study, monkeypatch, argv)
+    assert all(g3_2.get(k) is None for k in ("precision", "p_event", "dropout")), f"bản ghim đã gỡ bị ghim lại: {g3_2}"
+    assert "PI đã GỠ" in out2
+    assert all(cp2["nguon_tham_so"].get(k) != "CLI" for k in ("precision", "p_event", "dropout")), cp2["nguon_tham_so"]
+    assert cp2["n_adjusted"] == cp1["n_adjusted"], "lọc truyền-lại không được đổi phép tính"
+    # Lượt nữa vẫn ổn định (không tái ghim ở vòng sau).
+    argv3 = RP._recover_params("G3", d, json.loads(meta_p.read_text(encoding="utf-8")))
+    _, _, _, g3_3 = _g3(tmp_path, study, monkeypatch, argv3)
+    assert all(g3_3.get(k) is None for k in ("precision", "p_event", "dropout")), g3_3
+
+
+def test_tham_dinh_g3_ban_ghim_con_nguyen_van_la_cua_nguoi(tmp_path, monkeypatch):
+    """Đối chứng: khoá còn trong study_meta ⇒ nguồn «study_meta» vẫn là người, không bị lọc (bản ghim giữ nguyên)."""
+    study = "S-TD-G3-CON"
+    d = tmp_path / "exports" / study
+    dung_g0_g1_da_chot(d, study, thiet_ke="cross_sectional", mau_hieu_qua=[], them_meta={"G3": {"precision": 0.04}})
+    _g3(tmp_path, study, monkeypatch, [])
+    argv = RP._recover_params("G3", d, json.loads((d / "study_meta.json").read_text(encoding="utf-8")))
+    cp, _, out, g3 = _g3(tmp_path, study, monkeypatch, argv)
+    assert g3.get("precision") == 0.04 and "PI đã GỠ" not in out
+    assert cp["nguon_tham_so"]["precision"] in ("CLI", "study_meta")
+
+
+def _sha(p: Path) -> str:
+    return hashlib.sha256(p.read_bytes()).hexdigest()
+
+
+def _g2_trong(goc: Path, study: str, monkeypatch, *them: str):
+    """Chạy G2 TRONG tiến trình (để vá GC.ledger_approved) — cùng cờ với _g2() chạy tiến trình con."""
+    monkeypatch.setattr(G2, "_REPO_ROOT", goc)
+    monkeypatch.setattr(G2, "export_docx_g2", lambda *_a, **_k: None)
+    monkeypatch.setattr(sys, "argv", ["run_g2_auto.py", "--study", study, "--skip-registry", "--repo-root", str(goc),
+                                      *them])
+    CS.xoa_dem()
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        try:
+            rc = G2.main()
+        except SystemExit as exc:
+            rc = exc.code
+    CS.xoa_dem()
+    return rc, buf.getvalue()
+
+
+def _va_ky_dung_noi_dung(monkeypatch, cong: str, tep: Path):
+    """GC.ledger_approved giả: True CHỈ cho đúng cổng + đúng bytes hiện tại của `tep` (như chữ ký thật)."""
+    da_ky = _sha(tep)
+
+    def _gia(gate_id, study, artifact_path, repo_root=None):
+        return gate_id == cong and Path(artifact_path).exists() and _sha(Path(artifact_path)) == da_ky
+    monkeypatch.setattr(GC, "ledger_approved", _gia)
+
+
+def test_tham_dinh_g2_ho_so_da_ky_khong_bi_de_khi_doi_thiet_ke(tmp_path, monkeypatch):
+    """Mục «vừa»: nối dây «không hạ cấp quyết định đã ký» ở G2 chưa có test (đột biến da_ky=None vẫn xanh)."""
+    study = "S-TD-G2-KY"
+    d = tmp_path / "exports" / study
+    dung_g0_g1_da_chot(d, study, thiet_ke="cross_sectional")
+    rc1, out1 = _g2_trong(tmp_path, study, monkeypatch)
+    assert rc1 in (None, 0), out1[-1500:]
+    ho_so = d / f"G2_A3_ETHICS_PACKAGE_{study}.md"
+    bytes_ky = ho_so.read_bytes()
+    _va_ky_dung_noi_dung(monkeypatch, "G2", ho_so)
+    dung_g0_g1_da_chot(d, study, thiet_ke="rct", them_meta={"G1": {"intervention_or_exposure": SMS}})
+    rc2, out2 = _g2_trong(tmp_path, study, monkeypatch)
+    assert rc2 == GC.EXIT_BLOCKED, out2[-1500:]
+    assert ho_so.read_bytes() == bytes_ky, "hồ sơ đã ký phải nguyên từng byte"
+    assert "đã được ký" in out2.splitlines()[-6], out2.splitlines()[-6:]
+
+
+def test_tham_dinh_g4_sap_da_ky_khong_bi_de_khi_doi_thiet_ke(tmp_path, monkeypatch):
+    """Mục «vừa»: cùng nguyên tắc ở G4 (SAP đã ký)."""
+    study = "S-TD-G4-KY"
+    d = tmp_path / "exports" / study
+    dung_g0_g3_da_chot(d, study, thiet_ke="cross_sectional")
+    rc1, out1 = _g4(tmp_path, study, monkeypatch)
+    assert rc1 in (None, 0), out1[-1500:]
+    sap = d / f"G4_A5_SAP_FINAL_{study}.md"
+    bytes_ky = sap.read_bytes()
+    _va_ky_dung_noi_dung(monkeypatch, "G4", sap)
+    dung_g0_g3_da_chot(d, study, thiet_ke="rct")
+    rc2, out2 = _g4(tmp_path, study, monkeypatch)
+    assert rc2 == GC.EXIT_BLOCKED, out2[-1500:]
+    assert sap.read_bytes() == bytes_ky, "SAP đã ký phải nguyên từng byte"
+    assert "đã được ký" in out2.splitlines()[-6], out2.splitlines()[-6:]
+
+
+def _ghi_so_cai_khong_chu_ky(d: Path, cong: str, tep: Path, quyet_dinh: str = "APPROVED") -> None:
+    """Bản ghi APPROVED trùng SHA-256 nội dung nhưng KHÔNG có chữ ký (như máy thiếu khoá xác minh/niêm phong hỏng)."""
+    (d / "approval_ledger.json").write_text(json.dumps([
+        {"gate_id": cong, "study": d.name, "decision": quyet_dinh, "evidence_hash": _sha(tep),
+         "timestamp": "2026-11-14T10:00:00+07:00"}], ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+
+
+def test_tham_dinh_thap_so_cai_trung_noi_dung_chieu_bao_toan(tmp_path):
+    tep = tmp_path / "HS.md"
+    tep.write_text("bản đã ký\n", encoding="utf-8", newline="\n")
+    so_cai = tmp_path / "approval_ledger.json"
+    assert DMS.so_cai_co_duyet_trung_noi_dung(so_cai, "G2", tep) is False, "sổ vắng ⇒ không giữ theo sổ"
+    _ghi_so_cai_khong_chu_ky(tmp_path, "G2", tep)
+    assert DMS.so_cai_co_duyet_trung_noi_dung(so_cai, "G2", tep) is True
+    assert DMS.so_cai_co_duyet_trung_noi_dung(so_cai, "g2 ", tep) is True
+    assert DMS.so_cai_co_duyet_trung_noi_dung(so_cai, "G4", tep) is False, "khác cổng"
+    tep.write_text("bản đã ký\nsửa sau khi ký\n", encoding="utf-8", newline="\n")
+    assert DMS.so_cai_co_duyet_trung_noi_dung(so_cai, "G2", tep) is False, "nội dung đổi sau khi ký"
+    _ghi_so_cai_khong_chu_ky(tmp_path, "G2", tep, quyet_dinh="REJECTED")
+    assert DMS.so_cai_co_duyet_trung_noi_dung(so_cai, "G2", tep) is False
+    so_cai.write_text("{hỏng", encoding="utf-8", newline="\n")
+    assert DMS.so_cai_co_duyet_trung_noi_dung(so_cai, "G2", tep) is False
+    so_cai.write_text(json.dumps({"gate_id": "G2"}), encoding="utf-8", newline="\n")
+    assert DMS.so_cai_co_duyet_trung_noi_dung(so_cai, "G2", tep) is False
+
+
+def test_tham_dinh_thap_g4_giu_sap_khi_chi_co_ban_ghi_khong_xac_minh_duoc(tmp_path, monkeypatch):
+    """Mục «thấp»: ledger_approved fail-closed (không xác minh được chữ ký) ⇒ bản đầu ĐÈ SAP đã ký nguyên trạng."""
+    study = "S-TD-G4-SOCAI"
+    d = tmp_path / "exports" / study
+    dung_g0_g3_da_chot(d, study, thiet_ke="cross_sectional")
+    rc1, out1 = _g4(tmp_path, study, monkeypatch)
+    assert rc1 in (None, 0), out1[-1500:]
+    sap = d / f"G4_A5_SAP_FINAL_{study}.md"
+    bytes_ky = sap.read_bytes()
+    _ghi_so_cai_khong_chu_ky(d, "G4", sap)
+    assert GC.ledger_approved("G4", study, sap, repo_root=tmp_path) is False, "đồ gá: chữ ký KHÔNG xác minh được"
+    dung_g0_g3_da_chot(d, study, thiet_ke="rct")
+    rc2, out2 = _g4(tmp_path, study, monkeypatch)
+    assert rc2 == GC.EXIT_BLOCKED, out2[-1500:]
+    assert sap.read_bytes() == bytes_ky
+    assert "đã được ký" in out2.splitlines()[-6]
+
+
+def test_tham_dinh_thap_g2_giu_ho_so_khi_chi_co_ban_ghi_khong_xac_minh_duoc(tmp_path):
+    """Như trên cho G2, chạy TIẾN TRÌNH CON thật (không vá gì)."""
+    study = "S-TD-G2-SOCAI"
+    d = tmp_path / "exports" / study
+    dung_g0_g1_da_chot(d, study, thiet_ke="cross_sectional")
+    assert _g2(tmp_path, study).returncode == 0
+    ho_so = d / f"G2_A3_ETHICS_PACKAGE_{study}.md"
+    bytes_ky = ho_so.read_bytes()
+    _ghi_so_cai_khong_chu_ky(d, "G2", ho_so)
+    dung_g0_g1_da_chot(d, study, thiet_ke="rct")
+    r = _g2(tmp_path, study)
+    assert r.returncode == GC.EXIT_BLOCKED, r.stdout[-1500:]
+    assert ho_so.read_bytes() == bytes_ky
+    assert "đã được ký" in r.stdout.splitlines()[-6]
