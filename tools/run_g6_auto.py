@@ -3593,6 +3593,32 @@ def main():
 
     if r04:
         artifact += TSS.doan_a7(ts_trong_so)
+    # THÊM 14/11/2026 (bác sĩ chọn mục 5): cú pháp SPSS XEM TRƯỚC cạnh script R — cùng đặc tả (tên biến thật, SAP).
+    # Kiểm chéo bằng phần mềm thứ hai; bộ chấm G6 chỉ đọc .R/.py nên tệp .sps không đổi hợp đồng cổng. Lỗi ở đây
+    # KHÔNG được làm hỏng việc sinh script G6.
+    spss_paths = []
+    try:
+        import cau_noi_spss as CNS  # noqa: PLC0415
+
+        sps, cb_sps = CNS.sps_tu_tu_dien(
+            study, out, v, ts_trong_so, design_code, sinh_ton=_is_cox_like(design_code, effect_type)
+        )
+        for ten_cu in (CNS.TEP_SPS_G6, CNS.TEP_SPS_G6_BS):
+            p_cu = scripts_dir / ten_cu
+            if ten_cu not in sps and p_cu.exists() and "BẢN XEM TRƯỚC do run_g6_auto.py" in p_cu.read_text(
+                encoding="utf-8", errors="replace"
+            )[:300]:
+                p_cu.unlink()
+        for ten_sps, code in sps.items():
+            (scripts_dir / ten_sps).write_text(code, encoding="utf-8", newline="\n")
+            spss_paths.append(str(scripts_dir / ten_sps))
+        if sps:
+            artifact += CNS.doan_a7_spss(list(sps), cb_sps)
+            print(f"  → SPSS xem trước: {', '.join(sps)}")
+        else:
+            print(f"  → SPSS xem trước: bỏ qua ({'; '.join(cb_sps)})")
+    except Exception as _exc:  # noqa: BLE001 — cú pháp phụ không được giết cổng sinh
+        print(f"  ⚠ Không sinh được cú pháp SPSS xem trước: {_exc}")
     md_path = out / f"G6_A7_ANALYSIS_SCRIPTS_{study}.md"
     md_path.write_text(artifact, encoding="utf-8", newline="\n")
     print(f"\n  → A7 Markdown: {md_path.name} ({len(artifact)//1024}KB)")
@@ -3637,6 +3663,9 @@ def main():
         },
         "scripts_generated": generated_paths,
         "n_scripts":         len(generated_paths),
+        # THÊM 14/11/2026: tham số trọng số đã rút từ SAP (cầu nối SPSS dùng lại — Complex Samples) + cú pháp SPSS
+        "trong_so":          ts_trong_so,
+        "spss_cu_phap":      spss_paths,
         "python_cli":        str(cli_path),
         "sensitivity_script": str(sens_path),
         "guardrail":         status,

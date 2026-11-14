@@ -24,6 +24,7 @@ Chạy trong `medical-ebm-automation/`:
 | `… cu-phap --study <mã>` | Cú pháp phân tích khớp đặc tả G6 | `exports/<mã>/spss/<mã>_phan_tich.sps` |
 | `… chay --study <mã>` | Chạy cú pháp trong SPSS | `spss/ket_qua/*.xml` (OXML), `<mã>_phan_tich.spv`, `G6_spss_ket_qua.json` |
 | `… doi-chieu --study <mã>` | So SPSS ↔ Python | `G6_spss_doi_chieu.md` + `.json` |
+| `… cu-phap --study <mã> --thang-do "A:a1,a2,a3"` | Thêm RELIABILITY cho thang đo (lặp được) | `<mã>_phan_tich_bo_sung.sps` |
 | `… nhap-sav --sav <tệp> --ra <thư mục ngoài repo>` | `.sav` của bác sĩ ⇒ CSV + từ điển nhãn + từ điển khuôn REDCap | thư mục `--ra` |
 
 Mã thoát: 0 xong/khớp · 1 lệch hoặc SPSS lỗi · 2 không đo được (không có SPSS, thiếu tệp) · 3 từ chối (PII, dữ liệu
@@ -71,6 +72,53 @@ Bảng 1 phân nhóm, không có so sánh thô 2 nhóm; `--don-vi-phoi-nhiem 15`
   `import_real_dataset.py`, kể cả cột không có trong từ điển); bộ dữ liệu chưa qua cổng khoá (kiểm bằng
   `gate_contract.locked_analysis_dataset_blockers` — status `LOCKED_FOR_ANALYSIS`, `analysis_allowed`, có và khớp
   SHA-256).
+
+## Phân tích bổ sung (mở rộng 14/11/2026)
+
+`cu-phap` sinh thêm tệp `<mã>_phan_tich_bo_sung.sps`. `chay` chạy tệp này như một lượt SPSS RIÊNG, SAU phân tích chính.
+Một khối hỏng (ví dụ GENLINMIXED không hội tụ) chỉ làm các dòng của khối đó thành «⚪ không so được»; phần đối chiếu
+chính vẫn còn nguyên.
+
+| Khối | Khi nào sinh | SPSS | Tham chiếu |
+|---|---|---|---|
+| Mô hình hỗn hợp | có cột cụm, kết cục thứ tự/nhị phân (`--khong-hon-hop` để tắt) | GENLINMIXED, intercept ngẫu nhiên theo cụm | R `ordinal::clmm` / `lme4::glmer` (Laplace) trên CÙNG tệp .sav |
+| Trọng số hậu phân tầng | `G6_checkpoint.json → trong_so` (run_g6_auto rút từ SAP §4) + `his_tong_hop/N_tang_HIS.csv` (`--khong-trong-so` để tắt) | CSPLAN + CSDESCRIPTIVES (tỷ lệ hài lòng) + CSORDINAL (svyolr) | R `survey`: trọng số CỐ ĐỊNH (phải khớp) và `postStratify` (SAP — lệch nhỏ ở SE) |
+| Độ tin cậy | `--thang-do "TÊN:mục1,mục2,…"` (lặp được) | RELIABILITY + ICC nhất quán (KTC Feldt) | `kiem_tin_cay_thang_do.py` trên cùng dữ liệu, cùng mã thiếu |
+| Giả định tỷ lệ odds | kết cục thứ tự ≥ 3 mức | LOGISTIC nhị phân tại từng ngưỡng Y > k + Test of Parallel Lines | bảng OR theo ngưỡng + Brant của `run_stats_analysis.ordinal_model` |
+
+Tham chiếu R chạy bằng `Rscript --vanilla` trên đúng tệp .sav SPSS dùng (haven, mã thiếu người dùng ⇒ NA). Script và kết
+quả lưu ở `spss/ket_qua/r_doi_chieu.R` + `r_kq.json`. Không có R ⇒ dòng «⚪ không so được» (`--khong-r` để bỏ hẳn).
+
+Trọng số:
+- Bảng tầng (gộp tầng nₕ < ngưỡng, quy tắc kích hoạt) được tính hai lần: bằng bản Python của cầu nối, và bằng chính hàm R
+  `04a_ham_trong_so.R` mà G6 sinh từ SAP.
+- Dòng «Trọng số — bảng tầng sau gộp» LỆCH ⇒ dừng, báo thống kê viên. Đây là hai bản của cùng một thuật toán.
+- `chay` từ chối khi `N_tang_HIS.csv` đổi sau `cu-phap`.
+
+Đo thật 14/11/2026 (SPSS 31.0.1 · R 4.6.2 · dữ liệu GIẢ 420 phiếu, 10 bàn khám, mô phỏng C1a):
+- OR theo ngưỡng 12/12 khớp. Cronbach α khớp tới 15 chữ số. Bảng tầng hai bản trùng nhau (16 tầng, đều kích hoạt).
+- Tỷ lệ có trọng số và svyolr của SPSS khớp R (trọng số cố định) tới từng chữ số, cả KTC. Với R `postStratify`, ước
+  lượng trùng, SE khác (đúng dự đoán).
+- GENLINMIXED so với clmm: «lệch nhỏ» khoảng 1 % SE.
+- Brant (Wald) và Test of Parallel Lines (LR) là hai kiểm định khác nhau — chỉ so kết luận ở ngưỡng 0,05.
+
+Bẫy SPSS đã gặp khi xây khối này:
+- GENLINMIXED chỉ ra bảng qua OMS khi có `SET MDISPLAY=TABLES`.
+- GENLINMIXED coi biến số mức NOMINAL là YẾU TỐ, nên cú pháp tạm đặt biến dự báo dạng số về SCALE như Python.
+- Kết cục nhị phân cần `REFERENCE=<mã thấp>` để mô hình hoá P(mã cao) như glmer.
+- Tên biến SPSS KHÔNG phân biệt hoa/thường: `ebm_Nh` và `ebm_nh` là MỘT biến. Lỗi này từng làm mọi trọng số = 1; nay có
+  chốt test.
+- Bảng Complex Samples dùng t (bậc tự do = số cụm − 1), còn R dùng z. Bộ đọc dựng lại KTC/p từ SE để so cùng thang.
+- DEFF: SPSS trùng R `deff=TRUE`; 04a dùng `deff="replace"` (n hiệu dụng cho KTC Wilson) — báo cả hai, không so.
+
+### Cú pháp xem trước ở G6
+
+`run_g6_auto.py` ghi `scripts/05_spss_phan_tich.sps` (và `05b_spss_bo_sung.sps` nếu có khối bổ sung) cạnh script R:
+- Cùng đặc tả với script R: tên biến thật, kết cục/phơi nhiễm theo SAP, OR mỗi k phút theo SAP §4.
+- Dựng từ từ điển G5, TRƯỚC khi có dữ liệu. Sau khi khoá dữ liệu: `xuat-sav` → `cu-phap` sinh lại bản khớp dữ liệu.
+- Bộ chấm G6 chỉ đọc `.R/.py`: tệp .sps không vào dấu vân tay G6-HUMAN-01 và không đổi trạng thái cổng.
+- Lỗi khi sinh .sps không làm hỏng việc sinh script R.
+- Checkpoint G6 ghi thêm `trong_so` (tham số SAP §4) và `spss_cu_phap`.
 
 ## Đối chiếu SPSS ↔ Python — đọc thế nào
 

@@ -131,9 +131,11 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 14/11/2026 (lượt 3): phan-tich-thong-ke — luật đọc đối chiếu SPSS theo ngưỡng mới (SE, thang log, p khác phía 0,05,
 # chốt SHA/đặc tả) + đồng bộ đoạn G6-AUTO-11 đã có ở repo gốc; vẫn 64.
 # 14/11/2026 (gộp #230): bản cặp A12/G6-AUTO-11/bình duyệt độc lập từ nhánh nền + luật đọc SPSS mới; vẫn 64.
+# 14/11/2026 (lượt 4): phan-tich-thong-ke — đọc dòng đối chiếu phân tích SPSS bổ sung (GENLINMIXED, Complex
+# Samples, RELIABILITY, OR từng ngưỡng) + .sps xem trước ở run_g6_auto; vẫn 64.
 # 14/11/2026 (lượt 3, #236): phan-tich-thong-ke thêm BƯỚC 0d — kiểm chéo bằng R (tools/cau_noi_r.py), cặp y hệt repo
 # gốc; vẫn 64.
-# 14/11/2026 (gộp #236 vào #234): phan-tich-thong-ke = bản master repo gốc (BƯỚC 0c SPSS + 0d R); vẫn 64.
+# 14/11/2026 (gộp #236 vào #234/#237): phan-tich-thong-ke = bản master repo gốc (0c SPSS + bổ sung + 0d R); vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
     "5cf9527798dcb377b23a1179e8b8f499567cd02de082d3d5a655e69c2767b8fd"
 )

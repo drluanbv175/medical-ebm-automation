@@ -242,13 +242,12 @@ def _don_con_sot(p: subprocess.Popen) -> None:
         pass
 
 
-def chay_spss(py: Path, doi_so: list[str], *, thu_muc: Path, thoi_han: int = 1200) -> tuple[int, str, str]:
-    """Chạy trình nền bằng Python của SPSS. Trả (mã, stdout, stderr). Không nuốt timeout: báo mã 1 kèm lý do.
+def _chay_lenh(lenh: list[str], *, thu_muc: Path, thoi_han: int, nhan: str) -> tuple[int, str, str]:
+    """Chạy một tiến trình ngoài (Python của SPSS, Rscript). Trả (mã, stdout, stderr); hết hạn ⇒ mã 1 kèm lý do.
 
     Đầu ra ghi vào TỆP tạm, KHÔNG qua ống dẫn (pipe): đo 14/11/2026, khi SPSS gặp lỗi nghiêm trọng một tiến trình con
     của nó vẫn giữ ống stdout nên `subprocess.run(capture_output=True)` chờ tới hết thời hạn (20 phút) dù trình nền đã
-    dừng. Chỉ chờ
-    CHÍNH trình nền; hết hạn ⇒ dừng cả nhóm tiến trình."""
+    dừng. Chỉ chờ CHÍNH tiến trình đã gọi; hết hạn hoặc nó đã thoát ⇒ dừng cả nhóm tiến trình."""
     env = {k: v for k, v in os.environ.items() if k not in ("PYTHONPATH", "PYTHONHOME", "PYTHONSTARTUP")}
     nhom = {"start_new_session": True} if os.name != "nt" else {"creationflags": subprocess.CREATE_NEW_PROCESS_GROUP}
     with tempfile.TemporaryDirectory(prefix="ebm-spss-log-") as tam:
@@ -256,7 +255,7 @@ def chay_spss(py: Path, doi_so: list[str], *, thu_muc: Path, thoi_han: int = 120
         with open(p_out, "wb") as f_out, open(p_err, "wb") as f_err:
             try:
                 p = subprocess.Popen(
-                    [str(py), "-I", str(TRINH_CHAY), *doi_so],
+                    lenh,
                     stdout=f_out,
                     stderr=f_err,
                     stdin=subprocess.DEVNULL,
@@ -265,7 +264,7 @@ def chay_spss(py: Path, doi_so: list[str], *, thu_muc: Path, thoi_han: int = 120
                     **nhom,
                 )
             except OSError as e:
-                return 1, "", f"LOI_SPSS không chạy được Python của SPSS: {e}"
+                return 1, "", f"{nhan} không chạy được: {e}"
             try:
                 ma: int | None = p.wait(timeout=thoi_han)
             except subprocess.TimeoutExpired:
@@ -276,8 +275,13 @@ def chay_spss(py: Path, doi_so: list[str], *, thu_muc: Path, thoi_han: int = 120
         out = p_out.read_text(encoding="utf-8", errors="replace")
         err = p_err.read_text(encoding="utf-8", errors="replace")
     if ma is None:
-        return 1, out, err + f"\nLOI_SPSS quá thời hạn {thoi_han} giây"
+        return 1, out, err + f"\n{nhan} quá thời hạn {thoi_han} giây"
     return ma, out, err
+
+
+def chay_spss(py: Path, doi_so: list[str], *, thu_muc: Path, thoi_han: int = 1200) -> tuple[int, str, str]:
+    """Chạy trình nền `spss_chay_nen.py` bằng Python của SPSS (xem _chay_lenh)."""
+    return _chay_lenh([str(py), "-I", str(TRINH_CHAY), *doi_so], thu_muc=thu_muc, thoi_han=thoi_han, nhan="LOI_SPSS")
 
 
 def tim_spss() -> Path:
@@ -669,6 +673,7 @@ def ke_hoach_bien(
                 "ma_thieu": [(k, cat_byte(v, TRAN_NHAN_GIA_TRI)) for k, v in cap_thieu],
                 "menh_de_thieu": menh_de,
                 "thieu_chuoi": thieu_chuoi,
+                "ma_thieu_so": list(ma_so_ap),
                 "muc": sorted(t["gia_tri"], key=lambda v: (_so(v) is None, _so(v) or 0, v))
                 if not t["nhieu_muc"]
                 else None,
@@ -855,7 +860,11 @@ def lenh_xuat_sav(args) -> int:
         "sav": str(sav_p),
         "sav_da_tao": False,
         "canh_bao": canh_bao,
-        "bien": [{k: b[k] for k in ("cot", "ten", "so", "muc_do", "nhan", "muc", "ma_chu")} for b in ke if not b["bo"]],
+        "bien": [
+            {k: b[k] for k in ("cot", "ten", "so", "muc_do", "nhan", "muc", "ma_chu", "ma_thieu_so")}
+            for b in ke
+            if not b["bo"]
+        ],
         "bien_bo": [b["cot"] for b in ke if b["bo"]],
         "disclaimer": CAN_KIEM,
     }
@@ -941,6 +950,22 @@ def dac_ta(args) -> dict:
     if dv is not None and (not isinstance(dv, (int, float)) or dv <= 0):
         raise TuChoi(f"đơn vị phơi nhiễm phải > 0 (đang là {dv!r})")
     dt["don_vi_phoi_nhiem"] = dv
+    # Phân tích bổ sung (mở rộng 14/11/2026)
+    thang: dict[str, list[str]] = {}
+    for x in getattr(args, "thang_do", None) or []:
+        if ":" not in x:
+            raise TuChoi(f"--thang-do cần dạng «TÊN:mục1,mục2,…» (đang là {x!r})")
+        tn, ds = x.split(":", 1)
+        thang[tn.strip()] = [c.strip() for c in ds.split(",") if c.strip()]
+    dt["thang_do"] = thang
+    dt["hon_hop"] = not getattr(args, "khong_hon_hop", False)
+    ts = (_doc_json(thu_muc_de_tai(args.study) / f"{args.gate}_checkpoint.json").get("trong_so")) or {}
+    dt["trong_so"] = None
+    if ts.get("can_trong_so") and not getattr(args, "khong_trong_so", False):
+        if ts.get("thieu"):
+            print(f"  ⚠ trọng số: SAP/dictionary chưa cho {', '.join(ts['thieu'])} — bỏ khối Complex Samples")
+        else:
+            dt["trong_so"] = {k: v for k, v in ts.items() if k not in ("thieu", "can_trong_so")}
     return dt
 
 
@@ -1132,14 +1157,46 @@ def lenh_cu_phap(args) -> int:
     vb, canh_bao, phu = cu_phap_phan_tich(args.study, man, dt, kq, bien_bang1=dt["vars_bang1"])
     dt.update(phu)
     dt["sav"] = man.get("sav")
+    dt["trong_so_tang"] = None
+    if dt.get("trong_so"):
+        try:
+            dt["trong_so_tang"] = tinh_tang_trong_so(
+                Path(man["nguon_csv"]), dt["trong_so"], d / "his_tong_hop" / "N_tang_HIS.csv", _ma_thieu_theo_cot(man)
+            )
+            if dt["trong_so_tang"]["phieu_co_ket_cuc_thieu_tang"]:
+                canh_bao.append(
+                    f"trọng số: {dt['trong_so_tang']['phieu_co_ket_cuc_thieu_tang']} phiếu có kết cục nhưng thiếu "
+                    "ngày/khung giờ — R postStratify sẽ báo lỗi; SPSS loại các phiếu này"
+                )
+        except KhongDoDuoc as e:
+            canh_bao.append(f"trọng số: {e} — bỏ khối Complex Samples")
+    vb_bs, cb_bs, phu_bs = cu_phap_bo_sung(args.study, man, dt, kq)
+    canh_bao += cb_bs
+    dt.update(
+        {
+            "po_nguong": phu_bs.get("po_nguong"),
+            "hon_hop_da_sinh": bool(phu_bs.get("hon_hop")),
+            "tin_cay": phu_bs.get("tin_cay"),
+        }
+    )
     sps = d / "spss" / f"{args.study}_phan_tich.sps"
     sps.write_text(vb, encoding="utf-8", newline="\n")
+    sps_bs = d / "spss" / f"{args.study}_phan_tich_bo_sung.sps"
+    if vb_bs:
+        sps_bs.write_text(vb_bs, encoding="utf-8", newline="\n")
+    elif sps_bs.exists():
+        sps_bs.unlink()
     (kq / "dac_ta.json").write_text(json.dumps(dt, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
     _xoa_ket_qua_cu(d, args.gate)
-    print(f"✓ Cú pháp phân tích: {sps}")
+    print(f"✓ Cú pháp phân tích: {sps}" + (f"\n✓ Cú pháp bổ sung: {sps_bs}" if vb_bs else ""))
     for c in canh_bao:
         print(f"  ⚠ {c}")
     return MA_OK
+
+
+def _ma_thieu_theo_cot(man: dict) -> dict[str, set[str]]:
+    """Mã thiếu của từng cột (mã chữ + mã số khai) như GIÁ TRỊ CHUỖI trong CSV nguồn."""
+    return {b["cot"]: set(b.get("ma_chu") or {}) | set(b.get("ma_thieu_so") or []) for b in man["bien"]}
 
 
 # ───────────────────────────── lệnh chay + đọc OXML ─────────────────────────────
@@ -1170,16 +1227,19 @@ def he_so(bang: dict, *, mu: bool) -> dict[str, dict]:
     mu=True ⇒ thang Exp(B) (OR/HR); PLUM chỉ in B nên lấy mũ của B và hai cận KTC."""
     ra = {}
     for hang, cot in _hang_theo_bien(bang).items():
-        if not hang or _KHONG_PHAI_BIEN.match(hang[-1].strip()) or (hang and hang[0].lower() == "threshold"):
+        if not hang or _KHONG_PHAI_BIEN.match(hang[-1].strip()) or hang[0].lower().startswith("threshold"):
             continue
         buoc = re.match(r"step\s*(\d+)", hang[0], re.I)
         if len(hang) > 1 and buoc and buoc.group(1) != "1":  # chỉ bảng LOGISTIC nhiều bước (Step 0/1…)
             continue
-        b = _lay(cot, r"^(B|Estimate)$")
+        b = _lay(cot, r"^(B|Estimate|Coefficient)$")
+        se = _lay(cot, r"^(Std\. Error|Standard Error)$")
+        if b is not None and se is None and b == 0 and any("Error" in k for k in cot):
+            continue  # hệ số dư (mức tham chiếu của biến phân loại GENLINMIXED) — không phải ước lượng
         p = _lay(cot, r"(^|\| )Sig\.?$")
-        exp = _lay(cot, r"^Exp\(B\)$")
-        lo_e, hi_e = _lay(cot, r"exp\(b\)", r"lower"), _lay(cot, r"exp\(b\)", r"upper")
-        lo, hi = _lay(cot, r"lower", tru=(r"exp\(b\)",)), _lay(cot, r"upper", tru=(r"exp\(b\)",))
+        exp = _lay(cot, r"^Exp\((B|Coefficient)\)$")
+        lo_e, hi_e = _lay(cot, r"exp\((b|coefficient)\)", r"lower"), _lay(cot, r"exp\((b|coefficient)\)", r"upper")
+        lo, hi = _lay(cot, r"lower", tru=(r"exp\(",)), _lay(cot, r"upper", tru=(r"exp\(",))
         if mu:
             uoc = exp if exp is not None else (math.exp(b) if b is not None else None)
             ci = (
@@ -1190,7 +1250,7 @@ def he_so(bang: dict, *, mu: bool) -> dict[str, dict]:
         else:
             uoc, ci = b, ([lo, hi] if lo is not None else None)
         if uoc is not None:
-            ra[hang[-1].strip()] = {"uoc_luong": uoc, "ci": ci, "p": p, "b": b}
+            ra[hang[-1].strip()] = {"uoc_luong": uoc, "ci": ci, "p": p, "b": b, "se": se}
     return ra
 
 
@@ -1272,10 +1332,19 @@ def lenh_chay(args) -> int:
             f"{sps.name} khác bản sinh từ đặc tả + .sav hiện tại (sửa tay, hoặc đã xuất lại .sav) — chạy lại cu-phap; "
             "muốn chạy bản sửa tay thì mở tệp trong SPSS"
         )
+    sps_bs = d / "spss" / f"{args.study}_phan_tich_bo_sung.sps"
+    vb_bs_that, _, _ = cu_phap_bo_sung(args.study, man, dt, kq)
+    if (sps_bs.read_text(encoding="utf-8") if sps_bs.exists() else "") != vb_bs_that:
+        raise TuChoi(f"{sps_bs.name} khác bản sinh từ đặc tả (sửa tay/thiếu/thừa) — chạy lại cu-phap")
+    tang = dt.get("trong_so_tang") or {}
+    his = d / "his_tong_hop" / "N_tang_HIS.csv"
+    if tang and (not his.exists() or sha256_tep(his) != tang.get("sha256_his")):
+        raise TuChoi("bảng Nₕ HIS đã đổi (hoặc mất) sau khi sinh cú pháp — chạy lại cu-phap")
     py = tim_spss()
-    for cu in [*kq.glob("oms_*.xml"), kq / f"{args.study}_phan_tich.spv"]:
+    for cu in [*kq.glob("oms_*.xml"), *kq.glob(f"{args.study}_phan_tich*.spv"), *kq.glob("r_*")]:
         if cu.exists():
             cu.unlink()
+    ma_bs, out_bs, err_bs, r_kq = None, "", "", {}
     with vung_tam() as tam_s:
         tam = Path(tam_s)
         (tam / "kq").mkdir()
@@ -1285,14 +1354,38 @@ def lenh_chay(args) -> int:
         )
         (tam / "phan_tich.sps").write_text(vb, encoding="utf-8", newline="\n")
         ma, out, err = chay_spss(py, ["--cu-phap", str(tam / "phan_tich.sps")], thu_muc=tam, thoi_han=args.thoi_han)
+        if ma == 0 and vb_bs_that:
+            vb_bs, _, _ = cu_phap_bo_sung(args.study, man, dt, tam / "kq", sav=tam / "vao.sav")
+            (tam / "phan_tich_bo_sung.sps").write_text(vb_bs, encoding="utf-8", newline="\n")
+            ma_bs, out_bs, err_bs = chay_spss(
+                py, ["--cu-phap", str(tam / "phan_tich_bo_sung.sps")], thu_muc=tam, thoi_han=args.thoi_han
+            )
+        if ma == 0 and not getattr(args, "khong_r", False):
+            (tam / "r").mkdir()
+            dt_r = dict(dt)
+            m = next((b.get("muc") for b in man["bien"] if b["cot"] == dt.get("outcome")), None)
+            if dt_r.get("outcome_type") in (None, "auto"):
+                dt_r["outcome_type"] = "binary" if m is not None and len(m) == 2 else "continuous"
+            r_kq = chay_r_tham_chieu(man, dt_r, tam / "vao.sav", tam / "r", his=his if tang else None)
+            for f in (tam / "r").iterdir():
+                if f.name in ("r_doi_chieu.R", "r_kq.json"):
+                    shutil.copyfile(f, kq / f.name)
         for f in (tam / "kq").iterdir():
             shutil.move(str(f), kq / f.name)
     (kq / f"{args.study}_phan_tich.log").write_text(
         out + ("\n--- stderr ---\n" + err if err else ""), encoding="utf-8", newline="\n"
     )
+    if ma_bs is not None:
+        (kq / f"{args.study}_phan_tich_bo_sung.log").write_text(
+            out_bs + ("\n--- stderr ---\n" + err_bs if err_bs else ""), encoding="utf-8", newline="\n"
+        )
     if ma != 0:
         print("🔴 SPSS báo lỗi —", (err or out).strip()[-800:], f"\n   nhật ký: {kq / (args.study + '_phan_tich.log')}")
         return MA_LECH
+    if ma_bs not in (None, 0):
+        print("⚠ Phân tích BỔ SUNG của SPSS lỗi (phân tích chính vẫn dùng được) —", (err_bs or out_bs).strip()[-400:])
+    if r_kq.get("loi"):
+        print(f"⚪ Tham chiếu R: {r_kq['loi']}")
     m = next((b.get("muc") for b in man["bien"] if b["cot"] == dt.get("outcome")), None)
     dt["outcome_type_da_xac_dinh"] = (
         dt.get("outcome_type")
@@ -1307,7 +1400,9 @@ def lenh_chay(args) -> int:
         "sha256_sav": man.get("sha256_sav"),
         "sha256_nguon": man.get("sha256_nguon"),
         "dac_ta": dt,
-        "ket_qua": doc_ket_qua(kq, dt, man),
+        "ket_qua": {**doc_ket_qua(kq, dt, man), "bo_sung": doc_ket_qua_bo_sung(kq, dt, man)},
+        "bo_sung_loi": (err_bs or out_bs).strip()[-600:] if ma_bs not in (None, 0) else None,
+        "r_tham_chieu": r_kq,
         "spv": str(kq / f"{args.study}_phan_tich.spv"),
         "disclaimer": CAN_KIEM,
     }
@@ -1594,6 +1689,16 @@ def lenh_doi_chieu(args) -> int:
             + "\n   ".join(lech)
         )
     dong = doi_chieu(tom, kq.get("ket_qua") or {})
+    dt_sp = kq.get("dac_ta") or {}
+    tin_cay_py = (
+        tin_cay_python(man, {x["ten"]: x["muc"] for x in dt_sp.get("tin_cay") or []}) if dt_sp.get("tin_cay") else {}
+    )
+    dong_bs, thong_tin = doi_chieu_bo_sung(
+        tom, kq.get("ket_qua") or {}, dt_sp, r=kq.get("r_tham_chieu"), tin_cay_py=tin_cay_py
+    )
+    if kq.get("bo_sung_loi"):
+        dong_bs.insert(0, _khong_so("Phân tích bổ sung", f"SPSS lỗi ở tệp bổ sung: {kq['bo_sung_loi'][-200:]}"))
+    dong += dong_bs
     dem = {k: sum(1 for x in dong if x["trang_thai"] == k) for k in ("khop", "lech_nho", "lech", "khong_so_duoc")}
     ket = {
         "study": args.study,
@@ -1607,6 +1712,8 @@ def lenh_doi_chieu(args) -> int:
         "spss_phien_ban": kq.get("spss_phien_ban"),
         "dem": dem,
         "dong": dong,
+        "thong_tin": thong_tin,
+        "r_phien_ban": (kq.get("r_tham_chieu") or {}).get("phien_ban_r"),
         "disclaimer": CAN_KIEM,
     }
     (d / f"{args.gate}_spss_doi_chieu.json").write_text(
@@ -1628,7 +1735,8 @@ def lenh_doi_chieu(args) -> int:
         f"Tổng: {dem['khop']} khớp · {dem['lech_nho']} lệch nhỏ · {dem['lech']} lệch · "
         f"{dem['khong_so_duoc']} không so được.",
         "",
-        "| Mục | Python (ước lượng · KTC 95% · p) | SPSS (ước lượng · KTC 95% · p) | Kết quả | Ghi chú |",
+        "| Mục | Tham chiếu: Python, hoặc R ở dòng ghi «tham chiếu R»/«R …» (ước lượng · KTC 95% · p) "
+        "| SPSS (ước lượng · KTC 95% · p) | Kết quả | Ghi chú |",
         "|---|---|---|---|---|",
     ]
     for x in dong:
@@ -1638,6 +1746,10 @@ def lenh_doi_chieu(args) -> int:
             f"{_fmt(sp.get('uoc_luong'))} · {_fmt(sp.get('ci'))} · {_fmt(sp.get('p'))} | "
             f"{ky[x['trang_thai']]} | {x['ghi_chu']} |"
         )
+    if thong_tin:
+        md += ["", "Thông tin thêm (không so tự động):", "", *[f"- {x}" for x in thong_tin]]
+    if ket["r_phien_ban"]:
+        md += ["", f"Tham chiếu R: {ket['r_phien_ban']} — chạy trên CÙNG tệp .sav (haven, mã thiếu người dùng ⇒ NA)."]
     md += [
         "",
         "Đối chiếu bằng phần mềm thứ hai là KIỂM CHÉO kỹ thuật — không thay thống kê viên, "
@@ -1652,6 +1764,938 @@ def lenh_doi_chieu(args) -> int:
     if dem["lech"]:
         return MA_LECH
     return MA_OK if (dem["khop"] + dem["lech_nho"]) else MA_KHONG_DO
+
+
+# ───────────────────────────── phân tích BỔ SUNG (mở rộng 14/11/2026) ─────────────────────────────
+#
+# Bác sĩ chọn 14/11/2026: (1) mô hình hỗn hợp intercept ngẫu nhiên theo cụm — SAP C1a lấy làm phân tích CHÍNH khi < 15
+# cụm; (2) Complex Samples có trọng số hậu phân tầng; (3) RELIABILITY (Cronbach α); (4) kiểm giả định tỷ lệ odds tại
+# từng ngưỡng; (5) tự sinh .sps cùng script R ở run_g6_auto.py. Các khối này nằm trong tệp cú pháp RIÊNG
+# `<mã>_phan_tich_bo_sung.sps`, chạy SAU phân tích chính: một khối hỏng (vd GENLINMIXED không hội tụ) không làm mất
+# phần đối chiếu chính.
+#
+# Tham chiếu của từng khối: (1)(2) là phân tích mà G6 chỉ có dạng script R (ordinal::clmm / lme4::glmer, survey) —
+# công cụ chạy R TRÊN CÙNG tệp .sav (haven, mã thiếu người dùng ⇒ NA) để có số tham chiếu; (3) công cụ tin cậy của hệ
+# `kiem_tin_cay_thang_do.py`; (4) bảng OR theo ngưỡng của `run_stats_analysis.ordinal_model`.
+#
+# Đo thật 14/11/2026 (SPSS 31.0.1, R 4.6.2, dữ liệu giả 400 ca, 10 cụm): CSORDINAL/CSDESCRIPTIVES trùng svyolr/svymean
+# (trọng số cố định) tới 5 chữ số, KỂ CẢ SE và DEFF; PLUM trùng MASS::polr; GENLINMIXED (giả khả dĩ tuyến tính hoá) lệch
+# clmm (Laplace) ~2 % SE; GENLINMIXED nhị phân cần REFERENCE=<mã thấp> để mô hình hoá P(mã cao) như glmer. GENLINMIXED
+# chỉ ra bảng qua OMS khi `SET MDISPLAY=TABLES` (mặc định là Model Viewer). Biến số mức NOMINAL bị GENLINMIXED coi là
+# YẾU TỐ (mức cuối làm tham chiếu) — Python coi là biến số ⇒ cú pháp tạm đặt mọi biến dự báo dạng số về SCALE.
+
+TEP_HAM_TRONG_SO = "ham_trong_so.R"
+
+
+def _ten_g_mh(man: dict, g: str, dv) -> str:
+    """Tên biến phơi nhiễm đã chia đơn vị — CÙNG luật với cu_phap_phan_tich (hai tệp cú pháp dùng chung tên)."""
+    g_mh = chuan_ten(f"{g}_dv")
+    while g_mh.upper() in {b["ten"].upper() for b in man["bien"]}:
+        g_mh = chuan_ten(g_mh + "_")
+    return g_mh
+
+
+def _so_r(x: float) -> str:
+    """Số in như `sprintf("%s", x)` của R cho mã ô (1 ⇒ «1», 1.5 ⇒ «1.5») — nhãn tầng phải trùng nhãn 04a."""
+    return str(int(x)) if float(x).is_integer() else repr(float(x))
+
+
+def _gia_tri_ma(v: str | None, thieu: set[str]) -> float | None:
+    v = (v or "").strip()
+    if v == "" or v in thieu:
+        return None
+    return _so(v)
+
+
+def tinh_tang_trong_so(csv_p: Path, ts: dict, his_p: Path, ma_thieu_cot: dict[str, set[str]]) -> dict:
+    """Bản Python của `bang_tang` + `gop_tang_nho` + `bang_kich_hoat` (04a_ham_trong_so.R, g6_trong_so_survey.py).
+
+    Cùng quy tắc: nₕ đếm trên MỌI phiếu có đủ ngày + khung (NA bị bỏ như table() của R); ô có phiếu mà HIS không có
+    lượt khám ⇒ dừng; tầng nₕ < n_toi_thieu gộp với khung giờ liền kề CÙNG NGÀY, chưa có thì cùng khung giờ của ngày
+    liền kề; chọn tầng nhỏ nhất (nₕ rồi nhãn) để gộp trước, gộp vào tầng liền kề có nₕ nhỏ nhất. doi-chieu so kết quả
+    này với chính hàm R (04a) ⇒ hai bản của cùng thuật toán phải cho cùng bảng tầng."""
+    bn, bk = ts.get("bien_ngay"), ts.get("bien_khung")
+    if not bn or not bk:
+        raise TuChoi("trọng số: SAP/dictionary chưa cho tên biến ngày/khung giờ (G6_checkpoint.trong_so)")
+    dem: dict[tuple[float, float], int] = {}
+    thieu_tang = 0
+    with open(csv_p, encoding="utf-8-sig", newline="") as f:
+        for r in csv.DictReader(f):
+            a = _gia_tri_ma(r.get(bn), ma_thieu_cot.get(bn, set()))
+            b = _gia_tri_ma(r.get(bk), ma_thieu_cot.get(bk, set()))
+            if a is None or b is None:
+                kc = _gia_tri_ma(r.get(ts.get("ket_cuc") or ""), ma_thieu_cot.get(ts.get("ket_cuc") or "", set()))
+                thieu_tang += kc is not None
+                continue
+            dem[(a, b)] = dem.get((a, b), 0) + 1
+    if not his_p.exists():
+        raise KhongDoDuoc(f"CHƯA CÓ SỐ LIỆU HIS: {his_p} — PI cung cấp Nₕ theo ô ngày × khung giờ (SAP §4)")
+    his: dict[tuple[float, float], float] = {}
+    with open(his_p, encoding="utf-8-sig", newline="") as f:
+        for r in csv.DictReader(f):
+            a, b, nh = _so(r.get(bn) or ""), _so(r.get(bk) or ""), _so(r.get("N_h") or "")
+            if a is None or b is None:
+                raise TuChoi(f"bảng Nₕ HIS: mã ngày/khung phải là số ({r.get(bn)!r}, {r.get(bk)!r})")
+            if (a, b) in his:
+                raise TuChoi("bảng Nₕ HIS có ô ngày × khung giờ bị trùng")
+            his[(a, b)] = nh if nh is not None else float("nan")
+    o_lech = [k for k, n in dem.items() if n > 0 and not (his.get(k, float("nan")) > 0)]
+    if o_lech:
+        raise TuChoi(
+            "có phiếu ở ô không có lượt khám trong bảng Nₕ HIS: "
+            + ", ".join(f"{_so_r(a)}×{_so_r(b)}" for a, b in sorted(o_lech))
+        )
+    o = sorted(
+        ({"ngay": a, "khung": b, "nhom": f"N{_so_r(a)}_K{_so_r(b)}", "n_h": dem.get((a, b), 0), "N_h": nh}
+         for (a, b), nh in his.items() if nh > 0),
+        key=lambda x: (x["ngay"], x["khung"]),
+    )  # fmt: skip
+    so_o = len(o)
+
+    def tong() -> dict[str, list[float]]:
+        t: dict[str, list[float]] = {}
+        for x in o:
+            t.setdefault(x["nhom"], [0, 0.0])
+            t[x["nhom"]][0] += x["n_h"]
+            t[x["nhom"]][1] += x["N_h"]
+        return t
+
+    def ke(g: str, cap: int) -> set[str]:
+        cua_g = [x for x in o if x["nhom"] == g]
+        ra = set()
+        for x in o:
+            if x["nhom"] == g:
+                continue
+            for y in cua_g:
+                if (cap == 1 and y["ngay"] == x["ngay"] and abs(y["khung"] - x["khung"]) == 1) or (
+                    cap == 2 and y["khung"] == x["khung"] and abs(y["ngay"] - x["ngay"]) == 1
+                ):
+                    ra.add(x["nhom"])
+        return ra
+
+    n_min = ts.get("n_toi_thieu")
+    if n_min is None:
+        raise TuChoi("trọng số: SAP chưa cho ngưỡng gộp tầng nₕ")
+    nhat_ky = []
+    while True:
+        t = tong()
+        nho = sorted(((v[0], g) for g, v in t.items() if v[0] < n_min))
+        if not nho or len(t) == 1:
+            break
+        n_g, g = nho[0]
+        ung, cap = ke(g, 1), 1
+        if not ung:
+            ung, cap = ke(g, 2), 2
+        if not ung:
+            raise TuChoi(f"không gộp được tầng {g} (không có ô liền kề theo quy tắc SAP §4)")
+        dich = sorted((t[u][0], u) for u in ung)[0][1]
+        nhat_ky.append(
+            f"gộp {g} (nₕ={int(n_g)}) vào {dich} — "
+            + ("khung giờ liền kề cùng ngày" if cap == 1 else "cùng khung giờ, ngày liền kề")
+        )
+        for x in o:
+            if x["nhom"] == g:
+                x["nhom"] = dich
+    t = tong()
+    n, N = sum(v[0] for v in t.values()), sum(v[1] for v in t.values())
+    tang = []
+    for g in sorted(t):
+        nh, Nh = t[g]
+        ty = (nh / n) / (Nh / N) if n and N else float("nan")
+        tang.append({"nhom": g, "n_h": nh, "N_h": Nh, "lech": abs(ty - 1)})
+    nguong = ts.get("nguong_lech")
+    lech_max = max((x["lech"] for x in tang), default=float("nan"))
+    return {
+        "o": [{k: x[k] for k in ("ngay", "khung", "nhom", "N_h")} for x in o],
+        "tang": tang,
+        "nhat_ky": nhat_ky,
+        "so_o_truoc_gop": so_o,
+        "so_tang_sau_gop": len(tang),
+        "lech_max": lech_max,
+        "kich_hoat": bool(nguong is not None and any(x["lech"] > nguong for x in tang)),
+        "phieu_co_ket_cuc_thieu_tang": thieu_tang,
+        "sha256_his": sha256_tep(his_p),
+    }
+
+
+def cu_phap_bo_sung(
+    study: str, man: dict, dt: dict, thu_muc_kq: Path, *, sav: Path | str | None = None
+) -> tuple[str, list[str], dict]:
+    """Cú pháp `<mã>_phan_tich_bo_sung.sps` (rỗng nếu không có khối nào áp dụng). Trả (cú pháp, cảnh báo, phụ)."""
+    bien = {b["cot"]: b for b in man["bien"]}
+    so = {b["ten"]: b["so"] for b in man["bien"]}
+    canh_bao: list[str] = []
+    phu: dict = {}
+
+    def ten(cot: str | None) -> str | None:
+        if not cot:
+            return None
+        if cot not in bien:
+            raise TuChoi(f"biến «{cot}» không có trong .sav của {study}")
+        return bien[cot]["ten"]
+
+    trung = sorted(b["ten"] for b in man["bien"] if b["ten"].upper().startswith("EBM_"))
+    if trung:
+        raise TuChoi(f"biến trong .sav trùng tiền tố biến tạm của cầu nối (ebm_…): {', '.join(trung)} — đổi tên trước")
+    y, g, cum = ten(dt.get("outcome")), ten(dt.get("group")), ten(dt.get("cot_cum"))
+    cov = [ten(c) for c in dt.get("covariates") or []]
+    loai = dt.get("outcome_type") or "auto"
+    muc_y = bien[dt["outcome"]].get("muc") if y else None
+    if y and loai == "auto":
+        loai = "binary" if (muc_y is not None and len(muc_y) == 2) else "continuous"
+    dv = dt.get("don_vi_phoi_nhiem")
+    dau = [
+        _chu_thich(
+            "Sinh bởi tools/cau_noi_spss.py cu-phap — phân tích BỔ SUNG (chạy sau phân tích chính). Cần bác sĩ kiểm."
+        ),
+        "SET OLANG=ENGLISH TVARS=NAMES TNUMBERS=VALUES.",
+        "SET MDISPLAY=TABLES.",
+        f"GET FILE={dd_spss(sav or man['sav'])}.",
+        f"OMS /SELECT ALL /DESTINATION FORMAT=SPV OUTFILE={dd_spss(thu_muc_kq / (study + '_phan_tich_bo_sung.spv'))}"
+        " /TAG='ebm_spv_bs'.",
+    ]
+    dong: list[str] = []
+    g_mh = g
+    if dv and g and loai == "ordinal" and so.get(g):
+        g_mh = _ten_g_mh(man, g, dv)
+        dong.append(f"COMPUTE {g_mh} = {g} / {dv:g}.")
+        so = {**so, g_mh: True}
+
+    def khoi(tag: str, lenh: list[str]):
+        dong.append(
+            f"OMS /SELECT TABLES /DESTINATION FORMAT=OXML OUTFILE={dd_spss(thu_muc_kq / ('oms_' + tag + '.xml'))}"
+            f" /TAG='{tag}'."
+        )
+        dong.extend(lenh)
+        dong.append(f"OMSEND TAG='{tag}'.")
+
+    pred = ([g_mh if loai == "ordinal" else g] if g else []) + cov
+    so_pred = [v for v in pred if so.get(v)]
+    chu_pred = [v for v in pred if not so.get(v)]
+
+    # (4) Giả định tỷ lệ odds: logistic nhị phân tại TỪNG ngưỡng Y > k — cùng phép của ordinal_model (Python)
+    if y and g and loai == "ordinal" and dt.get("kiem_po", True):
+        muc = sorted((_so(m) for m in muc_y or [] if _so(m) is not None)) if muc_y else []
+        if len(muc) >= 3:
+            ds = []
+            for i, k in enumerate(muc[:-1], 1):
+                v = chuan_ten(f"ebm_po{i}")
+                ds.append({"i": i, "k": k, "ten": v})
+                dong.append(f"COMPUTE {v} = ({y} > {k:g}).")
+                cat = [f"  /CATEGORICAL={goi_ds(chu_pred)}"] + [f"  /CONTRAST({c})=Indicator(1)" for c in chu_pred]
+                khoi(
+                    f"po_nguong_{i}",
+                    [
+                        f"LOGISTIC REGRESSION VARIABLES {v}",
+                        f"  /METHOD=ENTER {goi_ds(pred)}",
+                        *(cat if chu_pred else []),
+                        "  /PRINT=CI(95) /CRITERIA=ITERATE(50) CUT(.5).",
+                    ],
+                )
+            phu["po_nguong"] = ds
+        else:
+            canh_bao.append("giả định tỷ lệ odds: kết cục thứ tự cần ≥ 3 mức đọc được trong .sav — bỏ qua")
+
+    # (1) Mô hình hỗn hợp: intercept ngẫu nhiên theo cụm (GENLINMIXED) — SAP C1a: phân tích CHÍNH khi < 15 cụm
+    if y and g and cum and loai in ("ordinal", "binary") and dt.get("hon_hop", True):
+        tuy_chon = "DISTRIBUTION=MULTINOMIAL LINK=LOGIT"
+        if loai == "binary":
+            ma0 = sorted(muc_y or [], key=lambda m: (_so(m) is None, _so(m) or 0, m))
+            if not so.get(y) or not ma0:
+                canh_bao.append("mô hình hỗn hợp: kết cục nhị phân cần mã số đọc được — bỏ qua GENLINMIXED")
+                tuy_chon = ""
+            else:
+                tuy_chon = f"REFERENCE={ma0[0]} DISTRIBUTION=BINOMIAL LINK=LOGIT"
+        if tuy_chon:
+            muc_do = [f"VARIABLE LEVEL {y} ({'ORDINAL' if loai == 'ordinal' else 'NOMINAL'})", f"/{cum} (NOMINAL)"]
+            if so_pred:
+                muc_do.append(f"/{goi_ds(so_pred)} (SCALE)")
+            khoi(
+                "da_bien_hon_hop",
+                [
+                    "\n  ".join(muc_do) + ".",
+                    "GENLINMIXED",
+                    f"  /DATA_STRUCTURE SUBJECTS={cum}",
+                    f"  /FIELDS TARGET={y} TRIALS=NONE OFFSET=NONE",
+                    f"  /TARGET_OPTIONS {tuy_chon}",
+                    f"  /FIXED EFFECTS={goi_ds(pred)}\n    USE_INTERCEPT=TRUE",
+                    f"  /RANDOM USE_INTERCEPT=TRUE SUBJECTS={cum} COVARIANCE_TYPE=VARIANCE_COMPONENTS",
+                    "  /BUILD_OPTIONS TARGET_CATEGORY_ORDER=ASCENDING INPUTS_CATEGORY_ORDER=ASCENDING"
+                    " MAX_ITERATIONS=100\n    CONFIDENCE_LEVEL=95 DF_METHOD=RESIDUAL COVB=MODEL.",
+                ],
+            )
+            phu["hon_hop"] = {"loai": loai}
+            canh_bao.append(
+                "Mô hình hỗn hợp: GENLINMIXED (giả khả dĩ tuyến tính hoá) ≠ R clmm/glmer (Laplace) ⇒ ước lượng "
+                "lệch nhỏ là bình thường"
+            )
+
+    # (2) Complex Samples: trọng số hậu phân tầng theo SAP §4 (tầng đã gộp tính sẵn — dt["trong_so_tang"])
+    ts, tang = dt.get("trong_so") or {}, dt.get("trong_so_tang") or {}
+    if ts and tang:
+        bn, bk, kc = ten(ts["bien_ngay"]), ten(ts["bien_khung"]), ten(ts["ket_cuc"])
+        cum_ts = ten(ts.get("bien_cum"))
+        if not (so.get(bn) and so.get(bk) and so.get(kc)) or not cum_ts:
+            raise TuChoi("trọng số: biến ngày/khung giờ/kết cục phải là biến số và phải có biến cụm (SAP §4)")
+        nhom = sorted({x["nhom"] for x in tang["o"]})
+        so_tang = {nh: i for i, nh in enumerate(nhom, 1)}
+        lenh = ["COMPUTE ebm_tang = $SYSMIS."]
+        lenh += [
+            f"IF ({bn} = {_so_r(x['ngay'])} AND {bk} = {_so_r(x['khung'])}) ebm_tang = {so_tang[x['nhom']]}."
+            for x in tang["o"]
+        ]
+        lenh.append("COMPUTE ebm_n_tong_the = $SYSMIS.")
+        lenh += [f"IF (ebm_tang = {so_tang[t_['nhom']]}) ebm_n_tong_the = {t_['N_h']:g}." for t_ in tang["tang"]]
+        lenh += [
+            f"COMPUTE ebm_co_kq = NOT MISSING({kc}).",
+            "AGGREGATE /OUTFILE=* MODE=ADDVARIABLES OVERWRITE=YES /BREAK=ebm_tang /ebm_n_mau = SUM(ebm_co_kq).",
+            # postStratify của R cho mỗi phiếu có kết cục trọng số Nₕ / nₕ (nₕ đếm trên phiếu CÓ kết cục). Tên biến
+            # SPSS KHÔNG phân biệt hoa/thường — bản thử đầu dùng ebm_Nh + ebm_nh (cùng một biến) ⇒ mọi trọng số = 1.
+            "COMPUTE ebm_w = ebm_n_tong_the / ebm_n_mau.",
+            f"COMPUTE ebm_hl = ({kc} >= {ts['nguong_hai_long']:g}).",
+            f"CSPLAN ANALYSIS /PLAN FILE={dd_spss(thu_muc_kq / 'trong_so.csaplan')}",
+            f"  /PLANVARS ANALYSISWEIGHT=ebm_w /DESIGN CLUSTER={cum_ts} /ESTIMATOR TYPE=WR.",
+        ]
+        dong.extend(lenh)
+        khoi(
+            "trong_so_ty_le",
+            [
+                f"CSDESCRIPTIVES /PLAN FILE={dd_spss(thu_muc_kq / 'trong_so.csaplan')}",
+                "  /SUMMARY VARIABLES=ebm_hl /MEAN /STATISTICS SE CIN(95) DEFF COUNT.",
+            ],
+        )
+        phu["trong_so"] = {"so_tang": so_tang}
+        pn = ten(ts.get("phoi_nhiem")) if ts.get("chay_svyolr") else None
+        if pn:
+            if not so.get(pn):
+                raise TuChoi(f"trọng số: phơi nhiễm {pn} của svyolr phải là biến số")
+            hb = [ten(c) for c in ts.get("hiep_bien") or []]
+            dong.append(f"COMPUTE ebm_pn = {pn} / {float(ts.get('don_vi_phoi_nhiem') or 1):g}.")
+            wi = ["ebm_pn"] + [v for v in hb if so.get(v)]
+            by = [v for v in hb if not so.get(v)]
+            khoi(
+                "trong_so_thu_tu",
+                [
+                    f"CSORDINAL {kc}" + (f" BY {goi_ds(by)}" if by else "") + f"\n    WITH {goi_ds(wi)}",
+                    f"  /PLAN FILE={dd_spss(thu_muc_kq / 'trong_so.csaplan')}",
+                    "  /LINK FUNCTION=LOGIT /STATISTICS PARAMETER EXP SE CINTERVAL TTEST /PRINT SUMMARY.",
+                ],
+            )
+            phu["trong_so"]["phoi_nhiem"] = ts.get("phoi_nhiem")
+        canh_bao.append(
+            "Trọng số: SPSS Complex Samples coi trọng số là CỐ ĐỊNH; R postStratify hiệu chỉnh theo tổng thể ⇒ ước "
+            "lượng trùng, SE/KTC khác (so cả với R trọng số cố định — phải khớp)"
+        )
+    elif ts and not tang:
+        canh_bao.append("trọng số: chưa tính được bảng tầng (thiếu số liệu HIS?) — bỏ khối Complex Samples")
+
+    # (3) Độ tin cậy thang đo (Cronbach α + KTC Feldt qua ICC nhất quán, trung bình k mục)
+    for i, (tn, cot_td) in enumerate((dt.get("thang_do") or {}).items(), 1):
+        muc_td = [ten(c) for c in cot_td]
+        chu = [c for c, v in zip(cot_td, muc_td) if not so.get(v)]
+        if chu:
+            raise TuChoi(f"thang đo «{tn}»: mục không phải biến số trong .sav: {', '.join(chu)}")
+        if len(muc_td) < 2:
+            raise TuChoi(f"thang đo «{tn}» cần ít nhất 2 mục")
+        khoi(
+            f"tin_cay_{i}",
+            [
+                f"RELIABILITY /VARIABLES={goi_ds(muc_td)}",
+                f"  /SCALE({chuoi_spss(tn)}) ALL /MODEL=ALPHA /SUMMARY=TOTAL",
+                "  /ICC=MODEL(MIXED) TYPE(CONSISTENCY) CIN=95 TESTVAL=0.",
+            ],
+        )
+        phu.setdefault("tin_cay", []).append({"i": i, "ten": tn, "muc": list(cot_td)})
+
+    if not dong or not any(x.startswith("OMSEND") for x in dong):
+        return "", canh_bao, phu
+    return "\n".join(dau + dong + ["OMSEND TAG='ebm_spv_bs'.", ""]), canh_bao, phu
+
+
+def doc_ket_qua_bo_sung(thu_muc_kq: Path, dt: dict, man: dict) -> dict:
+    """Đọc OXML của các khối bổ sung (+ bảng Test of Parallel Lines của PLUM ở phân tích chính)."""
+    nguoc = {b["ten"]: b["cot"] for b in man["bien"]}
+    if dt.get("ten_phoi_nhiem_mo_hinh") and dt.get("group"):
+        nguoc[dt["ten_phoi_nhiem_mo_hinh"]] = dt["group"]
+    ts = dt.get("trong_so") or {}
+    if ts.get("phoi_nhiem"):
+        nguoc["ebm_pn"] = ts["phoi_nhiem"]
+    ra: dict = {}
+
+    def bang(tag: str, *loai: str) -> list[dict]:
+        p = thu_muc_kq / f"oms_{tag}.xml"
+        return [b for b in phang_oxml(p) if _chuan_bang(b["bang"]) in loai] if p.exists() else []
+
+    def doi_ten(d: dict) -> dict:
+        return {nguoc.get(k, k): v for k, v in d.items()}
+
+    tp = bang("da_bien", "testofparallellines")
+    if tp:
+        for hang, cot in _hang_theo_bien(tp[-1]).items():
+            if hang and hang[-1].lower().startswith("general"):
+                ra["po_tparallel"] = {"chi2": _lay(cot, "chi-square"), "df": _lay(cot, r"^df$"), "p": _lay(cot, "sig")}
+    for x in dt.get("po_nguong") or []:
+        bs = bang(f"po_nguong_{x['i']}", "variablesintheequation")
+        if bs:
+            ra.setdefault("po_nguong", {})[f"{x['k']:g}"] = doi_ten(he_so(bs[-1], mu=True))
+    bs = bang("da_bien_hon_hop", "fixedcoefficients")
+    if bs:
+        hs = doi_ten(he_so(bs[-1], mu=True))
+        for v in hs.values():  # KTC Wald chuẩn từ SE (R cũng dùng z) — bảng SPSS dùng t bậc tự do phần dư
+            if v.get("b") is not None and v.get("se"):
+                v["ci"] = [math.exp(v["b"] - 1.959964 * v["se"]), math.exp(v["b"] + 1.959964 * v["se"])]
+        ra["hon_hop"] = {"thang": "OR", "he_so": hs}
+        cp = bang("da_bien_hon_hop", "covarianceparameters")
+        if cp:
+            for hang, cot in _hang_theo_bien(cp[-1]).items():
+                if hang and "intercept" in hang[-1].lower():
+                    ra["hon_hop"]["phuong_sai_ngau_nhien"] = _lay(cot, r"^Estimate$")
+    us = bang("trong_so_ty_le", "univariatestatistics")
+    if us:
+        for hang, cot in _hang_theo_bien(us[-1]).items():
+            if hang and hang[-1] == "ebm_hl":
+                ra.setdefault("trong_so", {})["ty_le"] = {
+                    "p": _lay(cot, r"^Estimate$"),
+                    "se": _lay(cot, r"^Standard Error$"),
+                    "deff": _lay(cot, r"^Design Effect$"),
+                    "n": _lay(cot, r"^Unweighted Count$"),
+                }
+    pe = bang("trong_so_thu_tu", "parameterestimates")
+    if pe:
+        hs = doi_ten(he_so(pe[-1], mu=True))
+        for v in hs.values():  # so với R trên thang z: KTC/p dựng lại từ SE (bảng SPSS dùng t, bậc tự do = số cụm − 1)
+            if v.get("b") is not None and v.get("se"):
+                v["ci"] = [math.exp(v["b"] - 1.959964 * v["se"]), math.exp(v["b"] + 1.959964 * v["se"])]
+                v["p"] = math.erfc(abs(v["b"] / v["se"]) / math.sqrt(2))
+        ra.setdefault("trong_so", {})["thu_tu"] = hs
+    for x in dt.get("tin_cay") or []:
+        p = thu_muc_kq / f"oms_tin_cay_{x['i']}.xml"
+        if not p.exists():
+            continue
+        kq: dict = {"muc": {}}
+        for b in phang_oxml(p):
+            loai, hang_cot = _chuan_bang(b["bang"]), _hang_theo_bien(b)
+            if loai == "reliabilitystatistics":
+                for cot in hang_cot.values():
+                    kq["alpha"] = _lay(cot, "cronbach")
+            elif loai == "intraclasscorrelationcoefficient":
+                for hang, cot in hang_cot.items():
+                    if hang and hang[-1].lower().startswith("average"):
+                        kq["ktc95"] = [_lay(cot, "lower"), _lay(cot, "upper")]
+            elif loai == "itemtotalstatistics":
+                for hang, cot in hang_cot.items():
+                    if hang:
+                        kq["muc"][nguoc.get(hang[-1], hang[-1])] = {
+                            "r_muc_tong": _lay(cot, "corrected item-total"),
+                            "alpha_neu_bo": _lay(cot, "if item deleted", tru=("mean", "variance")),
+                        }
+            elif loai == "caseprocessingsummary":
+                for hang, cot in hang_cot.items():
+                    if hang and hang[-1].lower() == "valid":
+                        kq["n"] = _lay(cot, r"^N$")
+        ra.setdefault("tin_cay", {})[x["ten"]] = kq
+    return ra
+
+
+R_DOI_CHIEU = r"""# Sinh bởi tools/cau_noi_spss.py — số THAM CHIẾU bằng R cho phân tích bổ sung của SPSS
+# (không phải phân tích chính).
+# Đọc ĐÚNG tệp .sav SPSS dùng (haven, mã thiếu người dùng ⇒ NA), không đọc dữ liệu nào khác ngoài bảng Nₕ HIS tổng hợp.
+suppressPackageStartupMessages({library(jsonlite); library(haven)})
+a <- commandArgs(trailingOnly = TRUE)
+P <- fromJSON(a[1], simplifyVector = TRUE)
+d <- as.data.frame(zap_labels(read_sav(P$sav, user_na = FALSE)))
+ten_spss <- unlist(P$ten_theo_cot)
+i <- match(names(d), ten_spss)
+names(d) <- ifelse(is.na(i), names(d), names(ten_spss)[i])
+hs_ra <- function(est, se, ten) {
+  z <- qnorm(0.975); out <- list()
+  for (v in ten) if (v %in% names(est) && v %in% names(se)) {
+    b <- unname(est[[v]]); s <- unname(se[[v]])
+    out[[v]] <- list(uoc_luong = exp(b), ci = c(exp(b - z * s), exp(b + z * s)),
+                     p = 2 * pnorm(-abs(b / s)), b = b, se = s)
+  }
+  out
+}
+ra <- list(phien_ban_r = R.version.string)
+du_bao <- c(P$group, P$covariates)
+if (isTRUE(P$hon_hop)) ra$hon_hop <- tryCatch({
+  X <- data.frame(.y = d[[P$outcome]], .cum = d[[P$cot_cum]])
+  for (v in du_bao) X[[v]] <- if (is.numeric(d[[v]])) d[[v]] else factor(d[[v]])
+  if (!is.null(P$don_vi_phoi_nhiem)) X[[P$group]] <- X[[P$group]] / P$don_vi_phoi_nhiem
+  X <- X[stats::complete.cases(X), , drop = FALSE]
+  X$.cum <- factor(X$.cum)
+  vp <- paste(sprintf("`%s`", du_bao), collapse = " + ")
+  if (P$loai == "ordinal") {
+    suppressPackageStartupMessages(library(ordinal))
+    X$.y <- factor(X$.y, ordered = TRUE)
+    m <- clmm(stats::as.formula(paste(".y ~", vp, "+ (1 | .cum)")), data = X)
+    est <- coef(m); se <- sqrt(diag(stats::vcov(m)))
+    list(phuong_phap = "ordinal::clmm (Laplace)", he_so = hs_ra(est, se, du_bao),
+         phuong_sai_ngau_nhien = as.numeric(ordinal::VarCorr(m)[[1]][1]), n = nrow(X))
+  } else {
+    suppressPackageStartupMessages(library(lme4))
+    lv <- sort(unique(X$.y)); X$.y <- as.integer(X$.y == lv[length(lv)])
+    m <- glmer(stats::as.formula(paste(".y ~", vp, "+ (1 | .cum)")), data = X, family = stats::binomial)
+    est <- lme4::fixef(m); v <- as.matrix(stats::vcov(m)); se <- stats::setNames(sqrt(diag(v)), rownames(v))
+    list(phuong_phap = "lme4::glmer (Laplace)", he_so = hs_ra(est, se, du_bao),
+         phuong_sai_ngau_nhien = as.numeric(lme4::VarCorr(m)[[1]][1]), n = nrow(X))
+  }
+}, error = function(e) list(loi = conditionMessage(e)))
+if (!is.null(P$trong_so)) ra$trong_so <- tryCatch({
+  suppressPackageStartupMessages(library(survey))
+  source(P$ham_r, encoding = "UTF-8")
+  ts <- P$trong_so
+  N_his <- utils::read.csv(P$his, stringsAsFactors = FALSE)
+  b0 <- bang_tang(d, N_his, ts$bien_ngay, ts$bien_khung)
+  gop <- gop_tang_nho(b0, ts$n_toi_thieu)
+  kh <- bang_kich_hoat(gop$bang, ts$nguong_lech)
+  diem <- suppressWarnings(as.numeric(d[[ts$ket_cuc]]))
+  dd <- d[!is.na(diem), , drop = FALSE]
+  dd$.hl <- as.integer(diem[!is.na(diem)] >= ts$nguong_hai_long)
+  o <- sprintf("N%s_K%s", dd[[ts$bien_ngay]], dd[[ts$bien_khung]])
+  dd$.tang <- gop$bang$nhom[match(o, sprintf("N%s_K%s", gop$bang$ngay, gop$bang$khung))]
+  dd$.w <- kh$bang$N_h[match(dd$.tang, kh$bang$nhom)] / as.numeric(table(dd$.tang)[dd$.tang])
+  co_tt <- isTRUE(ts$chay_svyolr) && !is.null(ts$phoi_nhiem) && nzchar(ts$phoi_nhiem)
+  if (co_tt) {
+    dd$.yo <- factor(diem[!is.na(diem)], ordered = TRUE)
+    dd$.pn <- as.numeric(dd[[ts$phoi_nhiem]]) / ts$don_vi_phoi_nhiem
+  }
+  ids <- stats::as.formula(paste0("~", ts$bien_cum))
+  tk0 <- svydesign(ids = ids, data = dd)
+  pop <- stats::setNames(data.frame(kh$bang$nhom, kh$bang$N_h), c(".tang", "Freq"))
+  tk_ps <- postStratify(tk0, strata = ~.tang, population = pop)
+  tk_cd <- svydesign(ids = ids, weights = ~.w, data = dd)
+  ty_le <- function(tk) {
+    m <- svymean(~.hl, tk, deff = "replace")  # như 04a (n hiệu dụng cho KTC Wilson)
+    m2 <- svymean(~.hl, tk, deff = TRUE)       # định nghĩa SPSS CSDESCRIPTIVES dùng (đo 14/11/2026: trùng)
+    list(p = unname(coef(m)[1]), se = unname(SE(m)[1]), deff = unname(deff(m)[1]), deff_spss = unname(deff(m2)[1]))
+  }
+  out <- list(bang = gop$bang[, c("ngay", "khung", "nhom", "N_h")], nhat_ky = I(gop$nhat_ky),
+              kich_hoat = kh$kich_hoat, lech_max = kh$lech_max, so_tang = nrow(kh$bang),
+              ty_le = list(hau_phan_tang = ty_le(tk_ps), co_dinh = ty_le(tk_cd)))
+  if (co_tt) {
+    hb <- ts$hiep_bien
+    f <- stats::as.formula(paste(".yo ~", paste(c(".pn", sprintf("`%s`", hb)), collapse = " + ")))
+    tt <- function(tk) {
+      fit <- svyolr(f, design = tk)
+      est <- coef(fit); se <- sqrt(diag(stats::vcov(fit)))
+      names(est)[names(est) == ".pn"] <- ts$phoi_nhiem; names(se)[names(se) == ".pn"] <- ts$phoi_nhiem
+      hs_ra(est, se, c(ts$phoi_nhiem, hb))
+    }
+    out$thu_tu <- list(hau_phan_tang = tt(tk_ps), co_dinh = tt(tk_cd))
+  }
+  out
+}, error = function(e) list(loi = conditionMessage(e)))
+write_json(ra, a[2], auto_unbox = TRUE, digits = NA, null = "null", na = "null", pretty = TRUE)
+"""
+
+
+def tim_rscript() -> str | None:
+    env = os.environ.get("EBM_RSCRIPT", "").strip()
+    return env or shutil.which("Rscript")
+
+
+def chay_r_tham_chieu(man: dict, dt: dict, sav: Path, thu_muc: Path, *, his: Path | None, thoi_han: int = 900) -> dict:
+    """Chạy R (clmm/glmer + survey) trên CÙNG tệp .sav ⇒ {hon_hop, trong_so} hoặc {"loi": …}. Không có R ⇒ «loi»."""
+    can_hh = bool((dt.get("hon_hop_da_sinh")) and dt.get("cot_cum"))
+    can_ts = bool(dt.get("trong_so") and dt.get("trong_so_tang") and his)
+    if not (can_hh or can_ts):
+        return {}
+    rs = tim_rscript()
+    if not rs:
+        return {"loi": "máy không có Rscript (đặt EBM_RSCRIPT nếu cài chỗ khác) — chưa có số tham chiếu R"}
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import g6_trong_so_survey as TSS  # noqa: PLC0415 — hàm R thuần CHÍNH THỨC của SAP (bang_tang, gop_tang_nho…)
+
+    loai = dt.get("outcome_type_da_xac_dinh") or dt.get("outcome_type")
+    tham_so = {
+        "sav": str(sav),
+        "ten_theo_cot": {b["cot"]: b["ten"] for b in man["bien"]},
+        "loai": loai,
+        "outcome": dt.get("outcome"),
+        "group": dt.get("group"),
+        "covariates": list(dt.get("covariates") or []),
+        "cot_cum": dt.get("cot_cum"),
+        "don_vi_phoi_nhiem": dt.get("don_vi_phoi_nhiem") if loai == "ordinal" else None,
+        "hon_hop": can_hh,
+        "trong_so": dt.get("trong_so") if can_ts else None,
+        "his": str(his) if can_ts else None,
+        "ham_r": str(thu_muc / TEP_HAM_TRONG_SO),
+    }
+    (thu_muc / TEP_HAM_TRONG_SO).write_text(TSS.R_HAM, encoding="utf-8", newline="\n")
+    (thu_muc / "r_tham_so.json").write_text(json.dumps(tham_so, ensure_ascii=False), encoding="utf-8", newline="\n")
+    (thu_muc / "r_doi_chieu.R").write_text(R_DOI_CHIEU, encoding="utf-8", newline="\n")
+    ma, out, err = _chay_lenh(
+        [rs, "--vanilla", str(thu_muc / "r_doi_chieu.R"), str(thu_muc / "r_tham_so.json"), str(thu_muc / "r_kq.json")],
+        thu_muc=thu_muc,
+        thoi_han=thoi_han,
+        nhan="LOI_R",
+    )
+    kq = _doc_json(thu_muc / "r_kq.json")
+    if ma != 0 or not kq:
+        return {"loi": "R báo lỗi: " + (err or out).strip()[-600:]}
+    return kq
+
+
+def tin_cay_python(man: dict, thang_do: dict[str, list[str]]) -> dict:
+    """Cronbach α, KTC Feldt, r mục–tổng hiệu chỉnh, α nếu bỏ mục bằng `kiem_tin_cay_thang_do.py` trên CÙNG dữ liệu
+    nguồn của .sav, với CÙNG mã thiếu (mã chữ ⇒ NaN, mã số khai trong _ma-thieu-theo-bien.csv ⇒ NaN)."""
+    import pandas as pd  # noqa: PLC0415
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import kiem_tin_cay_thang_do as K  # noqa: PLC0415
+
+    bien = {b["cot"]: b for b in man["bien"]}
+    df = pd.read_csv(man["nguon_csv"], dtype=str, encoding="utf-8-sig", keep_default_na=False)
+    ra: dict = {}
+    for tn, cot in thang_do.items():
+        try:
+            sub = df[cot].copy()
+            ma_so: set[float] = set()
+            for c in cot:
+                for ma in (bien.get(c) or {}).get("ma_chu") or {}:
+                    sub[c] = sub[c].mask(sub[c].str.strip() == ma, "")
+                ma_so |= {float(x) for x in (bien.get(c) or {}).get("ma_thieu_so") or []}
+            sub = sub.replace("", None)
+            kq = K.phan_tich_thang(tn, K.chuan_hoa_muc(sub, cot, sorted(ma_so)), None, None)
+            ra[tn] = {
+                "alpha": kq.get("alpha"),
+                "ktc95": kq.get("alpha_ktc95"),
+                "n": kq.get("n_dung"),
+                "muc": {m["muc"]: {"r_muc_tong": m["r_muc_tong_hieu_chinh"], "alpha_neu_bo": m["alpha_neu_bo_muc"]}
+                        for m in kq.get("muc") or []},
+                "ma_thieu_so": sorted(ma_so),
+            }  # fmt: skip
+        except (K.LoiDauVao, KeyError, ValueError) as e:
+            ra[tn] = {"loi": str(e)}
+    return ra
+
+
+def _dong_tu_so(muc: str, py, sp, *, khop: bool, ghi_chu: str = "", lech_nho: bool = False) -> dict:
+    return {
+        "muc": muc,
+        "python": py,
+        "spss": sp,
+        "kiem": {},
+        "trang_thai": "khop" if khop else ("lech_nho" if lech_nho else "lech"),
+        "ghi_chu": ghi_chu,
+    }
+
+
+def doi_chieu_bo_sung(tom: dict, kq: dict, dt: dict, *, r: dict | None = None, tin_cay_py: dict | None = None) -> tuple:
+    """Dòng đối chiếu của phân tích bổ sung + thông tin không so được. Trả (dòng, thông tin)."""
+    dong: list[dict] = []
+    tt: list[str] = []
+    bs = kq.get("bo_sung") or {}
+    r = r or {}
+
+    # (4) Giả định tỷ lệ odds tại từng ngưỡng: SPSS LOGISTIC ↔ ordinal_model (Python)
+    od = tom.get("ordinal") or {}
+    if dt.get("po_nguong"):
+        sp_ng = bs.get("po_nguong") or {}
+        for x in od.get("kiem_gia_dinh_ty_le_odds") or []:
+            k = x.get("nguong", "").replace("Y >", "").strip()
+            if x.get("loi"):
+                dong.append(_khong_so(f"Giả định tỷ lệ odds — {x.get('nguong')}", f"Python lỗi: {x['loi']}"))
+                continue
+            for v, or_py in (x.get("OR") or {}).items():
+                sp = (sp_ng.get(k) or {}).get(v)
+                if sp is None:
+                    dong.append(
+                        _khong_so(f"Giả định tỷ lệ odds — OR tại {x.get('nguong')} — {v}", "SPSS không có hệ số này")
+                    )
+                    continue
+                dong.append(
+                    so_mot(
+                        f"Giả định tỷ lệ odds — OR tại {x.get('nguong')} — {v}",
+                        {"uoc_luong": or_py, "ci": None},
+                        {"uoc_luong": sp["uoc_luong"], "ci": None},
+                        ty_so=True,
+                        lam_tron=LAM_TRON["ty_so"],
+                    )
+                )
+        br, tp = (od.get("brant") or {}).get("tong") or {}, bs.get("po_tparallel") or {}
+        if br.get("p") is not None and tp.get("p") is not None:
+            cung = (br["p"] < 0.05) == (tp["p"] < 0.05)
+            dong.append(
+                _dong_tu_so(
+                    "Giả định tỷ lệ odds — kiểm định tổng (kết luận ở 0,05)",
+                    {"uoc_luong": br["p"]},
+                    {"uoc_luong": tp["p"]},
+                    khop=cung,
+                    lech_nho=not cung,
+                    ghi_chu=f"Brant (Wald, Python) χ²={br.get('chi2')} df={br.get('df')} ≠ Test of Parallel Lines (LR, "
+                    f"SPSS) χ²={_fmt(tp.get('chi2'))} df={_fmt(tp.get('df'))} — hai kiểm định khác nhau, "
+                    "chỉ so kết luận",
+                )
+            )
+
+    # (1) Mô hình hỗn hợp: SPSS GENLINMIXED ↔ R clmm/glmer
+    if dt.get("hon_hop_da_sinh"):
+        hh_r, hh_sp = r.get("hon_hop") or {}, bs.get("hon_hop") or {}
+        ten_hh = f"Mô hình hỗn hợp — intercept ngẫu nhiên theo {dt.get('cot_cum')}"
+        if r.get("loi") or hh_r.get("loi") or not hh_r:
+            dong.append(_khong_so(ten_hh, f"chưa có tham chiếu R: {r.get('loi') or hh_r.get('loi') or 'không chạy'}"))
+        elif not hh_sp:
+            dong.append(_khong_so(ten_hh, "SPSS thiếu bảng GENLINMIXED (xem nhật ký bổ sung)"))
+        else:
+            for v in [dt.get("group"), *(dt.get("covariates") or [])]:
+                a, b = (hh_r.get("he_so") or {}).get(v), (hh_sp.get("he_so") or {}).get(v)
+                if not a or not b:
+                    dong.append(_khong_so(f"{ten_hh} — {v}", "không có hệ số cùng tên ở một bên (biến phân loại?)"))
+                    continue
+                dong.append(
+                    so_mot(
+                        f"{ten_hh} — {v} (tham chiếu R)",
+                        {"uoc_luong": a["uoc_luong"], "ci": a["ci"], "p": a["p"]},
+                        {"uoc_luong": b["uoc_luong"], "ci": b["ci"], "p": b["p"]},
+                        phuong_phap_khac=f"GENLINMIXED (giả khả dĩ) ≠ {hh_r.get('phuong_phap')}",
+                        ty_so=True,
+                    )
+                )
+            tt.append(
+                f"Phương sai intercept ngẫu nhiên ({dt.get('cot_cum')}): "
+                f"SPSS {_fmt(hh_sp.get('phuong_sai_ngau_nhien'))}"
+                f" · R {_fmt(hh_r.get('phuong_sai_ngau_nhien'))}"
+            )
+
+    # (2) Trọng số hậu phân tầng: bảng tầng Python ↔ R 04a; SPSS CS ↔ R (cố định: phải khớp; postStratify: lệch nhỏ)
+    if dt.get("trong_so_tang"):
+        ts_r, ts_sp, tang_py = r.get("trong_so") or {}, bs.get("trong_so") or {}, dt["trong_so_tang"]
+        if r.get("loi") or ts_r.get("loi") or not ts_r:
+            dong.append(
+                _khong_so("Trọng số hậu phân tầng", f"chưa có tham chiếu R: {r.get('loi') or ts_r.get('loi') or '—'}")
+            )
+        else:
+            o_r = {(float(x["ngay"]), float(x["khung"])): x["nhom"] for x in _hang_r(ts_r.get("bang"))}
+            o_py = {(float(x["ngay"]), float(x["khung"])): x["nhom"] for x in tang_py["o"]}
+            cung = o_r == o_py and bool(ts_r.get("kich_hoat")) == bool(tang_py["kich_hoat"])
+            dong.append(
+                _dong_tu_so(
+                    "Trọng số — bảng tầng sau gộp + quy tắc kích hoạt (cầu nối Python ↔ hàm R 04a)",
+                    {"uoc_luong": f"{tang_py['so_tang_sau_gop']} tầng, kích hoạt={tang_py['kich_hoat']}"},
+                    {"uoc_luong": f"{ts_r.get('so_tang')} tầng, kích hoạt={ts_r.get('kich_hoat')}"},
+                    khop=cung,
+                    ghi_chu=""
+                    if cung
+                    else "hai bản của cùng thuật toán gộp tầng cho kết quả KHÁC — dừng, báo thống kê viên",
+                )
+            )
+            tl = ts_sp.get("ty_le") or {}
+
+            def _ci(x: dict) -> list | None:
+                return [x["p"] - 1.959964 * x["se"], x["p"] + 1.959964 * x["se"]] if x.get("se") is not None else None
+
+            for khoa, nhan, khac in (
+                ("co_dinh", "R trọng số cố định", None),
+                (
+                    "hau_phan_tang",
+                    "R postStratify",
+                    "R hậu phân tầng hiệu chỉnh SE theo tổng thể ≠ SPSS trọng số cố định",
+                ),
+            ):
+                rr = (ts_r.get("ty_le") or {}).get(khoa) or {}
+                if tl.get("p") is None or rr.get("p") is None:
+                    dong.append(_khong_so(f"Tỷ lệ hài lòng có trọng số — {nhan}", "thiếu ước lượng ở một bên"))
+                    continue
+                dong.append(
+                    so_mot(
+                        f"Tỷ lệ hài lòng có trọng số (SE ⇒ KTC Wald) — {nhan}",
+                        {"uoc_luong": rr["p"], "ci": _ci(rr)},
+                        {"uoc_luong": tl["p"], "ci": _ci(tl)},
+                        phuong_phap_khac=khac,
+                    )
+                )
+                tt.append(
+                    f"DEFF tỷ lệ có trọng số — SPSS {_fmt(tl.get('deff'))} · {nhan}: cùng định nghĩa SPSS "
+                    f"{_fmt(rr.get('deff_spss'))}, deff='replace' của 04a (n hiệu dụng Wilson) {_fmt(rr.get('deff'))}"
+                )
+            for khoa, nhan, khac in (
+                ("co_dinh", "R svyolr trọng số cố định", None),
+                ("hau_phan_tang", "R svyolr postStratify", "R hậu phân tầng ≠ SPSS trọng số cố định (SE)"),
+            ):
+                hr = ((ts_r.get("thu_tu") or {}).get(khoa)) or {}
+                hs = ts_sp.get("thu_tu") or {}
+                for v in hr:
+                    if v not in hs:
+                        dong.append(_khong_so(f"Thứ tự có trọng số — {v} — {nhan}", "SPSS không có hệ số cùng tên"))
+                        continue
+                    dong.append(
+                        so_mot(
+                            f"Thứ tự có trọng số — {v} — {nhan}",
+                            {"uoc_luong": hr[v]["uoc_luong"], "ci": hr[v]["ci"], "p": hr[v]["p"]},
+                            {"uoc_luong": hs[v]["uoc_luong"], "ci": hs[v]["ci"], "p": hs[v]["p"]},
+                            phuong_phap_khac=khac,
+                            ty_so=True,
+                        )
+                    )
+
+    # (3) Độ tin cậy: SPSS RELIABILITY ↔ kiem_tin_cay_thang_do.py
+    for x in dt.get("tin_cay") or []:
+        tn = x["ten"]
+        py, sp = (tin_cay_py or {}).get(tn) or {}, (bs.get("tin_cay") or {}).get(tn) or {}
+        if py.get("loi") or not py:
+            dong.append(_khong_so(f"Tin cậy — {tn}", f"Python: {py.get('loi') or 'không tính được'}"))
+            continue
+        if not sp.get("alpha"):
+            dong.append(_khong_so(f"Tin cậy — {tn}", "SPSS thiếu bảng RELIABILITY"))
+            continue
+        d1 = so_mot(
+            f"Tin cậy — {tn} — Cronbach α (KTC Feldt)",
+            {"uoc_luong": py["alpha"], "ci": py.get("ktc95")},
+            {"uoc_luong": sp["alpha"], "ci": sp.get("ktc95")},
+        )
+        if py.get("n") is not None and sp.get("n") is not None and int(py["n"]) != int(sp["n"]):
+            d1["trang_thai"] = "lech"
+            d1["ghi_chu"] = f"số ca dùng KHÁC: Python {py['n']} · SPSS {int(sp['n'])} — mã thiếu xử lý khác nhau?"
+        dong.append(d1)
+        lech_max, thieu = 0.0, []
+        for m, a in (py.get("muc") or {}).items():
+            b = (sp.get("muc") or {}).get(m)
+            if not b:
+                thieu.append(m)
+                continue
+            for k in ("r_muc_tong", "alpha_neu_bo"):
+                if a.get(k) is not None and b.get(k) is not None:
+                    lech_max = max(lech_max, abs(a[k] - b[k]))
+        dong.append(
+            _dong_tu_so(
+                f"Tin cậy — {tn} — r mục–tổng hiệu chỉnh + α nếu bỏ mục ({len(py.get('muc') or {})} mục)",
+                {"uoc_luong": f"{len(py.get('muc') or {})} mục"},
+                {"uoc_luong": f"lệch lớn nhất {lech_max:.2g}"},
+                khop=lech_max <= 0.0005 and not thieu,
+                ghi_chu=(f"SPSS thiếu mục: {', '.join(thieu)}" if thieu else ""),
+            )
+        )
+    return dong, tt
+
+
+def _hang_r(bang) -> list[dict]:
+    """jsonlite ghi data.frame thành danh sách bản ghi (hoặc cột) — chuẩn hoá về danh sách bản ghi."""
+    if isinstance(bang, list):
+        return bang
+    if isinstance(bang, dict) and bang:
+        k = list(bang)
+        return [dict(zip(k, v)) for v in zip(*(bang[x] for x in k))]
+    return []
+
+
+# ───────────────────────────── (5) cú pháp xem trước cho run_g6_auto.py ─────────────────────────────
+
+TEP_SPS_G6, TEP_SPS_G6_BS = "05_spss_phan_tich.sps", "05b_spss_bo_sung.sps"
+_THIET_KE_SPS = ("rct", "cohort", "cross_sectional", "case_control")
+
+
+def man_tu_tu_dien(td: dict[str, dict], ma_thieu: list[dict], sav: Path) -> tuple[dict, list[str]]:
+    """Manifest «giả» dựng từ RIÊNG từ điển G5 (G6 sinh script TRƯỚC khi có dữ liệu): tên SPSS theo «Tên SPSS: …»,
+    mã mức theo lựa chọn, biến số theo kiểu kiểm tra. Trường định danh/descriptive bị bỏ (bộ khoá đã khử định danh)."""
+    tieu_de: list[str] = []
+    tk: list[dict] = []
+    for ten, d in td.items():
+        loai = d.get("loai", "").lower()
+        if loai == "descriptive" or d.get("dinh_danh", "").lower() in ("y", "yes", "1"):
+            continue
+        lc = lua_chon(d)
+        if loai == "checkbox":
+            for ma in lc:
+                tieu_de.append(f"{ten}___{ma}")
+                tk.append(
+                    {"rong": 1, "le": 0, "nguyen": 1, "khong_so": set(), "gia_tri": {"0", "1"}, "nhieu_muc": False}
+                )
+            continue
+        if lc:
+            ma = set(lc)
+            tk.append(
+                {
+                    "rong": max(len(m.encode("utf-8")) for m in ma),
+                    "le": 0,
+                    "nguyen": max(len(m) for m in ma),
+                    "khong_so": {m for m in ma if _so(m) is None},
+                    "gia_tri": ma,
+                    "nhieu_muc": len(ma) > TRAN_MUC_LIET_KE,
+                }
+            )
+        elif (
+            d.get("kiem_tra", "") in ("integer", "number")
+            or loai == "calc"
+            or d.get("kiem_tra", "").startswith("number")
+        ):
+            le = 0 if d.get("kiem_tra") == "integer" else 2
+            tk.append({"rong": 8, "le": le, "nguyen": 6, "khong_so": set(), "gia_tri": set(), "nhieu_muc": True})
+        else:
+            tk.append({"rong": 255, "le": 0, "nguyen": 1, "khong_so": {"chữ"}, "gia_tri": set(), "nhieu_muc": True})
+        tieu_de.append(ten)
+    ke, canh_bao, _ = ke_hoach_bien(tieu_de, tk, td, ma_thieu)
+    bien = [
+        {k: b[k] for k in ("cot", "ten", "so", "muc_do", "nhan", "muc", "ma_chu", "ma_thieu_so")}
+        for b in ke
+        if not b["bo"]
+    ]
+    return {"bien": bien, "sav": str(sav)}, canh_bao
+
+
+def sps_tu_tu_dien(
+    study: str, thu_muc: Path, v: dict, ts: dict | None, design_code: str, *, sinh_ton: bool = False
+) -> tuple[dict[str, str], list[str]]:
+    """Cú pháp SPSS XEM TRƯỚC (tên biến thật, đặc tả theo SAP/dictionary) để run_g6_auto ghi cạnh script R.
+
+    Trả ({tên tệp: nội dung}, cảnh báo). Thiết kế không có mô hình hồi quy tương ứng (chẩn đoán, dự báo, tổng quan,
+    định tính) ⇒ rỗng. Sau khi KHOÁ dữ liệu: `xuat-sav` → `cu-phap` sinh lại bản khớp dữ liệu (độ rộng, mức thật)."""
+    if design_code not in _THIET_KE_SPS:
+        return {}, [f"thiết kế {design_code}: không có cú pháp SPSS tương ứng — bỏ qua"]
+    td_p = thu_muc / f"G5_REDCap_dictionary_{study}.csv"
+    td = doc_tu_dien(td_p)
+    man, canh_bao = man_tu_tu_dien(
+        td, doc_ma_thieu(thu_muc / "_ma-thieu-theo-bien.csv"), thu_muc / "spss" / f"{study}_khoa.sav"
+    )
+    sinh_ton = sinh_ton and bool(v.get("time_col"))  # cùng cờ _is_cox_like của run_g6_auto
+    thu_tu = bool(v.get("outcome_ordinal"))
+    dv = (ts or {}).get("don_vi_phoi_nhiem")
+    dt = {
+        "outcome": None if sinh_ton else v.get("outcome"),
+        "group": v.get("exposure"),
+        "covariates": [c for c in v.get("covariates") or [] if c],
+        "outcome_type": "ordinal" if thu_tu else "auto",
+        "time": v.get("time_col") if sinh_ton else None,
+        "event": v.get("outcome") if sinh_ton else None,
+        "cot_cum": v.get("cluster_col"),
+        "don_vi_phoi_nhiem": float(dv) if thu_tu and dv and float(dv) > 1 else None,
+        "thang_do": {},
+        "hon_hop": True,
+        "trong_so": None,
+        "trong_so_tang": None,
+    }
+    kq = thu_muc / "spss" / "ket_qua"
+    dau = [
+        _chu_thich(
+            "BẢN XEM TRƯỚC do run_g6_auto.py sinh TỪ từ điển G5 + SAP, TRƯỚC khi có dữ liệu — cùng đặc tả với script R"
+        ),
+        _chu_thich(
+            f"Sau khi khoá dữ liệu: python3 tools/cau_noi_spss.py xuat-sav --study {study} rồi cu-phap sinh lại bản "
+            "khớp dữ liệu; kiểm chéo bằng phần mềm thứ hai, KHÔNG phải phân tích chính G6"
+        ),
+    ]
+    vb, cb, _ = cu_phap_phan_tich(study, man, dt, kq)
+    vb_bs, cb_bs, _ = cu_phap_bo_sung(study, man, dt, kq)
+    ra = {TEP_SPS_G6: "\n".join(dau) + "\n" + vb}
+    if vb_bs:
+        ra[TEP_SPS_G6_BS] = "\n".join(dau) + "\n" + vb_bs
+    return ra, canh_bao + cb + cb_bs
+
+
+def doan_a7_spss(ten_tep: list[str], canh_bao: list[str]) -> str:
+    """Khối mô tả cho artifact A7 của G6."""
+    dong = [
+        "",
+        "## Cú pháp SPSS xem trước (cầu nối IBM SPSS — kiểm chéo bằng phần mềm thứ hai)",
+        "",
+        f"- Tệp: {', '.join(f'`scripts/{t}`' for t in ten_tep)} — cùng đặc tả với script R (biến thật, SAP).",
+        "- Sinh TỪ từ điển G5 trước khi có dữ liệu. Sau khi khoá: `tools/cau_noi_spss.py xuat-sav` → `cu-phap` → `chay`"
+        " → `doi-chieu` (đối chiếu từng ước lượng với Python; mô hình hỗn hợp / Complex Samples có tham chiếu R).",
+        "- Không thay script R/Python là phân tích chính; bộ chấm G6 không đọc tệp .sps.",
+    ]
+    dong += [f"- ⚠️ {c}" for c in canh_bao[:6]]
+    return "\n".join(dong) + "\n"
 
 
 # ───────────────────────────── lệnh nhap-sav ─────────────────────────────
@@ -1852,8 +2896,12 @@ def main(argv: list[str] | None = None) -> int:
             p.add_argument(
                 "--don-vi-phoi-nhiem", type=float, help="OR cho MỖI k đơn vị phơi nhiễm (như run_stats_analysis)"
             )
+            p.add_argument("--thang-do", action="append", help="thang đo cho RELIABILITY: «TÊN:mục1,mục2,…» (lặp được)")
+            p.add_argument("--khong-hon-hop", action="store_true", help="không chạy mô hình hỗn hợp (GENLINMIXED)")
+            p.add_argument("--khong-trong-so", action="store_true", help="không chạy Complex Samples có trọng số")
         if ten == "chay":
             p.add_argument("--thoi-han", type=int, default=1200, help="giây (mặc định 1200)")
+            p.add_argument("--khong-r", action="store_true", help="không chạy R làm tham chiếu cho phân tích bổ sung")
     n = sub.add_parser("nhap-sav", help=".sav của bác sĩ ⇒ CSV + từ điển nhãn (ngoài repo) cho cổng tiếp nhận")
     n.add_argument("--sav", required=True)
     n.add_argument("--ra", help="thư mục ra (NGOÀI repo; mặc định cạnh tệp .sav)")
