@@ -1,0 +1,274 @@
+{
+ "nguon_sap": "G4_A5_SAP_FINAL_btm-dtd2-ngoai-tru-BVQY175.md",
+ "sha256_sap": "fec7c0ea81ec9b79963eb87b795212d58ae8d1e05f1ce4299b0848990f36d8d1",
+ "trang_thai_de_xuat": "ĐỀ XUẤT CỦA AGENT 15/11/2026 — CHỜ thống kê viên/PI duyệt (ghi nguoi_duyet). SAP nguồn còn là bản DRAFT chưa ký: SAP sửa trước khi khoá ⇒ sha256_sap lệch, đặc tả bị coi là cũ và phải đồng bộ lại.",
+ "can_thong_ke_vien_quyet": [
+  "Đề tài CHƯA có từ điển G5 — tên biến lấy theo bộ biến G3 (_bo-bien-rieng.csv) và _bien-phai-sinh.csv; đối chiếu lại khi dựng từ điển G5.",
+  "SAP cần 8 biến phái sinh CHƯA có trong bộ biến G3 đã duyệt (co_creat, co_uacr, hba1c_3muc, thoi_gian_mac_dtd_5, bmi_5, nhom_tuoi_65, btm_chua_ghi_nhan_mr, chi_dinh_raasi_1lan) — KHÔNG thêm thẳng vào _bien-phai-sinh.csv; đề xuất bổ sung bộ biến ở DE-XUAT-BO-SUNG-BO-BIEN-G3_20261115.md, các mục dùng chúng để «chờ bổ sung bộ biến» (MT1_thanh_phan, MT3_poisson, NC_tuoi, DN5, DN6).",
+  "hba1c_3muc (đề xuất): tham chiếu = mã nhỏ nhất = 1 «không làm HbA1c» (theo thứ tự SAP liệt kê). Muốn tham chiếu «< 7%» thì đổi mã khi duyệt bổ sung bộ biến.",
+  "Quy tắc giảm tham số khi EPV < 10 (SAP §5 bước 1–3) là điều kiện — kiểm EPV trên dữ liệu, bước nào áp thì thêm mục với tập biến đã giảm.",
+  "MI: run_stats_analysis chạy MI m = 20 khi có thiếu (CC báo song song = ĐN8); biến phụ trợ vao_truoc_0107 trong mô hình gán (SAP §6) chưa khai được qua đặc tả — thống kê viên xác nhận.",
+  "Phụ 3 loại người có chống chỉ định ghi rõ (= 1); ô chống chỉ định để trống (nhánh không hiện) vẫn giữ trong mẫu số.",
+  "MT3_poisson khi đã đủ biến: 'tuoi' làm phơi nhiễm chỉ để có PR mỗi 10 năm (don_vi_phoi_nhiem 10); tham_so đề xuất: outcome khong_xn_du, poisson_pr, covariates gioi, nhom_doi_tuong, thoi_gian_mac_dtd_5, hba1c_3muc, dung_insulin, so_nhom_ha_glucose, tha, bmi_5, tim_mach, so_luot_kham, phong_kham_chinh; hiep_bien_phan_loai gioi, nhom_doi_tuong, hba1c_3muc, phong_kham_chinh; n_imputations 20; loc du_tieu_chuan == 1.",
+  "du_tieu_chuan và bmi là trường calc của REDCap: nhập Excel/SPSS không tính calc ⇒ PR này khai bản công thức CÙNG TÊN (đúng định nghĩa calc của bộ biến) — chờ duyệt như mọi biến phái sinh."
+ ],
+ "phan_tich": [
+  {
+   "id": "MT1_chinh",
+   "vai": "chinh",
+   "sap_muc": "§4",
+   "mo_ta": "Tỷ lệ xét nghiệm đủ UACR + creatinin (xn_du) trên toàn bộ N + KTC 95% Wilson",
+   "tham_so": {
+    "ty_le": [
+     "xn_du"
+    ],
+    "loc": "du_tieu_chuan == 1"
+   }
+  },
+  {
+   "id": "MT1_thanh_phan",
+   "vai": "mo_ta",
+   "sap_muc": "§4",
+   "mo_ta": "Hai thành phần của kết cục chính: tỷ lệ có ≥ 1 creatinin, tỷ lệ có ≥ 1 UACR dạng tỷ số",
+   "chua_tu_dong": "CHỜ BỔ SUNG BỘ BIẾN G3: cần biến co_creat, co_uacr — đề xuất ở DE-XUAT-BO-SUNG-BO-BIEN-G3_20261115.md; chủ nhiệm duyệt thêm vào bộ biến §4 rồi mới thêm công thức và đổi mục này thành tham_so"
+  },
+  {
+   "id": "MT3_poisson",
+   "vai": "phu",
+   "sap_muc": "§5–§6",
+   "mo_ta": "Poisson log + SE vững: PR của KHÔNG xét nghiệm đủ theo 12 biến giải thích (thăm dò); tuổi mỗi 10 năm, thời gian mắc mỗi 5 năm, BMI mỗi 5 kg/m²",
+   "chua_tu_dong": "CHỜ BỔ SUNG BỘ BIẾN G3: cần biến hba1c_3muc, thoi_gian_mac_dtd_5, bmi_5 — đề xuất ở DE-XUAT-BO-SUNG-BO-BIEN-G3_20261115.md; chủ nhiệm duyệt thêm vào bộ biến §4 rồi mới thêm công thức và đổi mục này thành tham_so"
+  },
+  {
+   "id": "P1_btm_xac_nhan",
+   "vai": "phu",
+   "sap_muc": "§2, §4",
+   "mo_ta": "Tỷ lệ BTM xác nhận (phan_loai_btm = 2) trên người đủ xét nghiệm để phân loại",
+   "tham_so": {
+    "ty_le": [
+     "phan_loai_btm"
+    ],
+    "nguong_ty_le": 2,
+    "loc": "du_tieu_chuan == 1 and phan_loai_btm != 9"
+   }
+  },
+  {
+   "id": "P2_chua_ghi_nhan",
+   "vai": "phu",
+   "sap_muc": "§2, §4",
+   "mo_ta": "Tỷ lệ BTM chưa được ghi nhận mã trong người BTM xác nhận",
+   "tham_so": {
+    "ty_le": [
+     "btm_chua_ghi_nhan"
+    ],
+    "loc": "du_tieu_chuan == 1 and phan_loai_btm == 2"
+   }
+  },
+  {
+   "id": "P3a_raasi",
+   "vai": "phu",
+   "sap_muc": "§2, §4",
+   "mo_ta": "Tỷ lệ đang dùng ACEi/ARB ở người đủ chỉ định (trừ chống chỉ định ghi rõ)",
+   "tham_so": {
+    "ty_le": [
+     "dung_raasi"
+    ],
+    "loc": "du_tieu_chuan == 1 and chi_dinh_raasi == 1 and (la_thieu(ccd_raasi) or ccd_raasi != 1)"
+   }
+  },
+  {
+   "id": "P3b_sglt2i",
+   "vai": "phu",
+   "sap_muc": "§2, §4",
+   "mo_ta": "Tỷ lệ đang dùng SGLT2i ở người đủ chỉ định (trừ chống chỉ định ghi rõ)",
+   "tham_so": {
+    "ty_le": [
+     "dung_sglt2i"
+    ],
+    "loc": "du_tieu_chuan == 1 and chi_dinh_sglt2i == 1 and (la_thieu(ccd_sglt2i) or ccd_sglt2i != 1)"
+   }
+  },
+  {
+   "id": "NC_pk1",
+   "vai": "nhom_con",
+   "sap_muc": "§7",
+   "mo_ta": "Tỷ lệ xn_du — phòng khám theo dõi chính = 1 (nội tiết)",
+   "tham_so": {
+    "ty_le": [
+     "xn_du"
+    ],
+    "loc": "du_tieu_chuan == 1 and phong_kham_chinh == 1"
+   }
+  },
+  {
+   "id": "NC_pk2",
+   "vai": "nhom_con",
+   "sap_muc": "§7",
+   "mo_ta": "Tỷ lệ xn_du — phòng khám theo dõi chính = 2 (nội chung)",
+   "tham_so": {
+    "ty_le": [
+     "xn_du"
+    ],
+    "loc": "du_tieu_chuan == 1 and phong_kham_chinh == 2"
+   }
+  },
+  {
+   "id": "NC_pk3",
+   "vai": "nhom_con",
+   "sap_muc": "§7",
+   "mo_ta": "Tỷ lệ xn_du — phòng khám theo dõi chính = 3 (khác)",
+   "tham_so": {
+    "ty_le": [
+     "xn_du"
+    ],
+    "loc": "du_tieu_chuan == 1 and phong_kham_chinh == 3"
+   }
+  },
+  {
+   "id": "NC_dt1",
+   "vai": "nhom_con",
+   "sap_muc": "§7",
+   "mo_ta": "Tỷ lệ xn_du — nhóm đối tượng = 1 (quân nhân)",
+   "tham_so": {
+    "ty_le": [
+     "xn_du"
+    ],
+    "loc": "du_tieu_chuan == 1 and nhom_doi_tuong == 1"
+   }
+  },
+  {
+   "id": "NC_dt2",
+   "vai": "nhom_con",
+   "sap_muc": "§7",
+   "mo_ta": "Tỷ lệ xn_du — nhóm đối tượng = 2 (BHYT)",
+   "tham_so": {
+    "ty_le": [
+     "xn_du"
+    ],
+    "loc": "du_tieu_chuan == 1 and nhom_doi_tuong == 2"
+   }
+  },
+  {
+   "id": "NC_dt3",
+   "vai": "nhom_con",
+   "sap_muc": "§7",
+   "mo_ta": "Tỷ lệ xn_du — nhóm đối tượng = 3 (dịch vụ)",
+   "tham_so": {
+    "ty_le": [
+     "xn_du"
+    ],
+    "loc": "du_tieu_chuan == 1 and nhom_doi_tuong == 3"
+   }
+  },
+  {
+   "id": "NC_dt4",
+   "vai": "nhom_con",
+   "sap_muc": "§7",
+   "mo_ta": "Tỷ lệ xn_du — nhóm đối tượng = 4 (khác)",
+   "tham_so": {
+    "ty_le": [
+     "xn_du"
+    ],
+    "loc": "du_tieu_chuan == 1 and nhom_doi_tuong == 4"
+   }
+  },
+  {
+   "id": "NC_tuoi",
+   "vai": "nhom_con",
+   "sap_muc": "§7",
+   "mo_ta": "Tỷ lệ xn_du theo nhóm tuổi < 65 / ≥ 65",
+   "chua_tu_dong": "CHỜ BỔ SUNG BỘ BIẾN G3: cần biến nhom_tuoi_65 — đề xuất ở DE-XUAT-BO-SUNG-BO-BIEN-G3_20261115.md; chủ nhiệm duyệt thêm vào bộ biến §4 rồi mới thêm công thức và đổi mục này thành tham_so"
+  },
+  {
+   "id": "DN1_alb",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "mo_ta": "ĐN1 — kết cục chính tính cả albumin/protein niệu dạng khác",
+   "tham_so": {
+    "ty_le": [
+     "xn_du_nhay_alb"
+    ],
+    "loc": "du_tieu_chuan == 1"
+   }
+  },
+  {
+   "id": "DN2_ngoai_vien",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "mo_ta": "ĐN2 — kết cục chính tính cả xét nghiệm ngoài viện có ghi ngày và kết quả",
+   "tham_so": {
+    "ty_le": [
+     "xn_du_nhay_nv"
+    ],
+    "loc": "du_tieu_chuan == 1"
+   }
+  },
+  {
+   "id": "DN3_quan_sat",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "mo_ta": "ĐN3 — kết cục chính chỉ trên người có lượt khám đầu trước 01/07/2026",
+   "tham_so": {
+    "ty_le": [
+     "xn_du"
+    ],
+    "loc": "du_tieu_chuan == 1 and vao_truoc_0107 == 1"
+   }
+  },
+  {
+   "id": "DN4_co_thuoc",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "mo_ta": "ĐN4 — kết cục chính chỉ trên người có đơn thuốc hạ glucose",
+   "tham_so": {
+    "ty_le": [
+     "xn_du"
+    ],
+    "loc": "du_tieu_chuan == 1 and so_nhom_ha_glucose >= 1"
+   }
+  },
+  {
+   "id": "DN5_ma_mo_rong",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "mo_ta": "ĐN5 — Phụ 2 với danh mục mã thận mở rộng (N19, I12, I13, R80)",
+   "chua_tu_dong": "CHỜ BỔ SUNG BỘ BIẾN G3: cần biến btm_chua_ghi_nhan_mr (bộ biến §4 đã mô tả trong định nghĩa btm_chua_ghi_nhan nhưng chưa đặt tên biến) — đề xuất ở DE-XUAT-BO-SUNG-BO-BIEN-G3_20261115.md; chủ nhiệm duyệt thêm vào bộ biến §4 rồi mới thêm công thức và đổi mục này thành tham_so"
+  },
+  {
+   "id": "DN6_raasi_1lan",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "mo_ta": "ĐN6 — Phụ 3a với albumin niệu chỉ cần một lần UACR ≥ 30 mg/g",
+   "chua_tu_dong": "CHỜ BỔ SUNG BỘ BIẾN G3: cần biến chi_dinh_raasi_1lan (bộ biến §4 đã mô tả trong định nghĩa chi_dinh_raasi nhưng chưa đặt tên biến) — đề xuất ở DE-XUAT-BO-SUNG-BO-BIEN-G3_20261115.md; chủ nhiệm duyệt thêm vào bộ biến §4 rồi mới thêm công thức và đổi mục này thành tham_so"
+  },
+  {
+   "id": "DN7_ngoai_don",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "mo_ta": "ĐN7 — Phụ 3 tính cả thuốc bệnh án ghi «đang dùng» ngoài đơn",
+   "chua_tu_dong": "cần biến phái sinh từ ô chọn thuoc_ngoai_don (mã nhóm thuốc chưa đối chiếu) — thống kê viên chốt công thức rồi thêm mục"
+  },
+  {
+   "id": "DN9_chia_nhom",
+   "vai": "do_nhay",
+   "sap_muc": "§5, §9",
+   "mo_ta": "ĐN9 — MT3 với biến liên tục chia nhóm",
+   "chua_tu_dong": "chỉ làm khi đồ thị phần dư lệch tuyến tính (điều kiện) — thống kê viên quyết điểm cắt"
+  },
+  {
+   "id": "P1_bang_GxA",
+   "vai": "phu",
+   "sap_muc": "§2, §4",
+   "mo_ta": "Bảng chéo nhóm G × nhóm A theo KDIGO 2024",
+   "chua_tu_dong": "bảng chéo G × A chưa có công cụ — nhom_g, nhom_a đã có công thức; thống kê viên lập bảng"
+  },
+  {
+   "id": "MT1_fpc",
+   "vai": "mo_ta",
+   "sap_muc": "§4",
+   "mo_ta": "KTC có hiệu chỉnh quần thể hữu hạn (thông tin phụ, khi biết kích thước khung mẫu)",
+   "chua_tu_dong": "cần kích thước khung mẫu eHospital — tính tay"
+  }
+ ],
+ "nguoi_duyet": ""
+}
