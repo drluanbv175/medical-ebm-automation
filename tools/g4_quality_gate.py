@@ -504,6 +504,85 @@ def _reviewer_ref(record: Optional[Mapping[str, Any]]) -> str:
     return ""
 
 
+# VÁ 14/11/2026 (giả lập đề tài lần 1, K3): nhóm vai mà G4-HUMAN-03 coi là «người ký độc lập» của SAP.
+NHOM_VAI_THONG_KE = "STATISTICIAN"
+
+
+def doc_ban_ky_theo_vai(records: Sequence[Mapping[str, Any]]) -> dict[str, str]:
+    """«<cổng>/<nhóm vai>» → reviewer_ref của bản ký APPROVED MỚI NHẤT đúng cặp cổng–nhóm vai đó.
+
+    Chỉ để ĐỐI CHIẾU chỉ dấu độc lập (G4-HUMAN-03), KHÔNG phán cổng (phán cổng luôn qua gate_contract.ledger_approved).
+    Nhóm vai lấy từ gate_contract.role_group_for (vd METHODS_STATISTICS_REVIEWER → STATISTICIAN); bản ghi không thuộc
+    nhóm vai người nào (biên lai máy) bị bỏ qua. Giá trị có thể là chuỗi rỗng khi bản ký mới nhất không ghi reviewer_ref
+    — giữ để nơi gọi nói đúng «không đối chiếu được» thay vì lặng lẽ dùng ref của một bản ký cũ hơn."""
+    moi_nhat: dict[str, tuple[str, str]] = {}
+    for record in records:
+        if str(record.get("decision", "")).strip().upper() != "APPROVED":
+            continue
+        cong = str(record.get("gate_id", "")).strip().upper()
+        nhom = GC.role_group_for(str(record.get("reviewer_role") or ""))
+        if not cong or not nhom:
+            continue
+        khoa = f"{cong}/{nhom}"
+        moc = str(record.get("timestamp_utc", ""))
+        # Hoà mốc: bản đứng sau trong sổ thắng (sổ chỉ nối đuôi).
+        if khoa not in moi_nhat or moc >= moi_nhat[khoa][0]:
+            moi_nhat[khoa] = (moc, _reviewer_ref(record))
+    return {khoa: ref for khoa, (_moc, ref) in moi_nhat.items()}
+
+
+def _chuan_hoa_ref(ref: Any) -> str:
+    """So người ký giữa các vai/cổng theo CÙNG luật với G8-HUMAN-04/G9-HUMAN-10 (g8_quality_gate.norm_ref: NFC, không
+    phân biệt hoa/thường, bỏ khoảng trắng . _ -). Import lười để tránh vòng nạp; thiếu module thì rơi về casefold."""
+    try:
+        import g8_quality_gate as G8Q  # noqa: PLC0415
+    except ImportError:  # pragma: no cover - lưới an toàn
+        return str(ref or "").strip().casefold()
+    return G8Q.norm_ref(ref)
+
+
+def _doi_chieu_doc_lap_g4(cross_gate_refs: Mapping[str, str],
+                          ban_ky_theo_vai: Optional[Mapping[str, str]]) -> tuple[str, str]:
+    """(trạng thái, bằng chứng) của G4-HUMAN-03 — chỉ dấu người ký SAP độc lập.
+
+    VÁ 14/11/2026 (K3): bản cũ so reviewer_ref của bản ký G4 MỚI NHẤT bất kỳ vai (thường là PI ĐỒNG KÝ) với bản mới
+    nhất của từng cổng khác ⇒ PI ký G5 bằng cùng mã làm G4 rơi khỏi LOCKED hồi tố. Nay (khi có ``ban_ky_theo_vai``) so
+    reviewer_ref của bản ký VAI THỐNG KÊ VIÊN của G4 với reviewer_ref của MỌI bản ký VAI KHÁC ở mọi cổng — gồm cả PI
+    đồng ký G4 (cùng một người ký hai vai trên cùng SAP chính là điều chỉ dấu này muốn nêu). Bản ký thống kê viên ở
+    cổng khác là CÙNG vai, không tính trùng. Vắng ``ban_ky_theo_vai`` (nơi gọi trực tiếp kiểu cũ: test, canary) thì
+    giữ phép so theo cổng của bản cũ."""
+    if ban_ky_theo_vai is None:
+        g4_ref = str(cross_gate_refs.get("G4", "") or "")
+        clashes = [
+            gate for gate, ref in cross_gate_refs.items()
+            if gate != "G4" and ref and g4_ref and _chuan_hoa_ref(ref) == _chuan_hoa_ref(g4_ref)
+        ]
+        if not g4_ref:
+            return "REVIEW", "chưa có bản ghi phê duyệt G4 để đối chiếu"
+        if clashes:
+            return "REVIEW", (f"reviewer_ref của G4 ({g4_ref!r}) TRÙNG với cổng {', '.join(sorted(clashes))} "
+                              "— cùng một người đang ký nhiều vai trò")
+        return "PASS", f"reviewer_ref của G4 ({g4_ref!r}) khác mọi cổng còn lại"
+
+    khoa_tk = f"G4/{NHOM_VAI_THONG_KE}"
+    if khoa_tk not in ban_ky_theo_vai:
+        co_g4 = sorted(k for k in ban_ky_theo_vai if k.startswith("G4/"))
+        return "REVIEW", ("chưa có bản ký G4 của vai thống kê viên (STATISTICIAN)"
+                          + (f" — G4 mới chỉ có {', '.join(co_g4)}; đồng ký PI không phải chỉ dấu độc lập" if co_g4
+                             else ""))
+    tk_ref = str(ban_ky_theo_vai.get(khoa_tk) or "")
+    if not tk_ref:
+        return "REVIEW", "bản ký G4 của thống kê viên không ghi reviewer_ref — không đối chiếu được"
+    vai_khac = {k: str(v or "") for k, v in ban_ky_theo_vai.items()
+                if k.split("/", 1)[-1] != NHOM_VAI_THONG_KE and v}
+    trung = sorted(k for k, v in vai_khac.items() if _chuan_hoa_ref(v) == _chuan_hoa_ref(tk_ref))
+    if trung:
+        return "REVIEW", (f"reviewer_ref của thống kê viên ký G4 ({tk_ref!r}) TRÙNG với bản ký vai khác: "
+                          f"{', '.join(trung)} — cùng một người đang ký nhiều vai trò")
+    return "PASS", (f"reviewer_ref của thống kê viên ký G4 ({tk_ref!r}) khác mọi bản ký vai khác "
+                    f"({len(vai_khac)} bản ký: {', '.join(sorted(vai_khac)) or 'chưa có'})")
+
+
 # ════════════════════════════════════════════════════════════════════════════
 # Lõi đánh giá
 # ════════════════════════════════════════════════════════════════════════════
@@ -525,13 +604,16 @@ def evaluate_g4_quality(
     g3_song: Optional[Mapping[str, Any]] = None,
     ledger_lock_timestamp: Optional[str] = None,
     dac_ta: Optional[Mapping[str, Any]] = None,
+    ban_ky_theo_vai: Optional[Mapping[str, str]] = None,
 ) -> dict[str, Any]:
     """Chấm G4 hai tầng: máy kiểm NỘI DUNG SAP, rồi bằng chứng ký người thật.
 
     g3_song: kết quả cong_song.trang_thai_song("G3") — G3 CHẤM SỐNG (evaluate_study truyền vào). VẮNG ⇒ G4-AUTO-12
       REVIEW «không đo được» (fail-closed: nơi gọi trực tiếp phải tự chấm G3 rồi truyền vào, không được ngầm «đạt»).
     ledger_lock_timestamp: timestamp_utc của bản ghi phê duyệt G4 mới nhất còn hợp lệ — so với data_lock_date (G4-07).
-    dac_ta: skill_standards.dac_ta_thiet_ke(out_dir) — estimand G1 cho G4-AUTO-15; vắng thì đọc gate_params.G1."""
+    dac_ta: skill_standards.dac_ta_thiet_ke(out_dir) — estimand G1 cho G4-AUTO-15; vắng thì đọc gate_params.G1.
+    ban_ky_theo_vai: doc_ban_ky_theo_vai(sổ cái) — «<cổng>/<nhóm vai>» → reviewer_ref (evaluate_study truyền vào); có
+      thì G4-HUMAN-03 so theo VAI thống kê viên, vắng thì so theo cổng bằng cross_gate_refs như bản cũ."""
     g4_meta = _gate_params(meta, "G4")
     design_code = str(checkpoint.get("design_code") or "")
     g3_design_code = str(g3_checkpoint.get("design_code") or "")
@@ -1175,27 +1257,18 @@ def evaluate_g4_quality(
         "Tạo khóa riêng: setup_gate_approval_key.py --role STATISTICIAN, và để thống kê viên giữ.",
     ))
 
-    g4_ref = cross_gate_refs.get("G4", "")
-    clashes = [
-        gate for gate, ref in cross_gate_refs.items()
-        if gate != "G4" and ref and g4_ref and ref == g4_ref
-    ]
-    if not g4_ref:
-        ref_status, ref_evidence = "REVIEW", "chưa có bản ghi phê duyệt G4 để đối chiếu"
-    elif clashes:
-        ref_status = "REVIEW"
-        ref_evidence = (
-            f"reviewer_ref của G4 ({g4_ref!r}) TRÙNG với cổng {', '.join(sorted(clashes))} "
-            "— cùng một người đang ký nhiều vai trò"
-        )
-    else:
-        ref_status, ref_evidence = "PASS", f"reviewer_ref của G4 ({g4_ref!r}) khác mọi cổng còn lại"
+    # VÁ 14/11/2026 (K3): so theo VAI thống kê viên (xem _doi_chieu_doc_lap_g4); sau khi G4 đã ký hợp lệ, tiêu chí này
+    # chỉ HIỂN THỊ (loại khỏi human_complete ở phần Tổng hợp) — bản ký của MỘT CỔNG SAU không được hạ cấp SAP đã khoá.
+    ref_status, ref_evidence = _doi_chieu_doc_lap_g4(cross_gate_refs, ban_ky_theo_vai)
+    if ref_status != "PASS" and ledger_signed:
+        ref_evidence += " — CHỈ HIỂN THỊ: G4 đã ký hợp lệ, chỉ dấu này không hạ cấp SAP đã khoá"
     approval.append(_criterion(
         "G4-HUMAN-03",
-        "Người ký G4 khác người ký các cổng khác (chỉ dấu độc lập)",
+        "Thống kê viên ký G4 khác người ký các vai khác (chỉ dấu độc lập)",
         ref_status,
         ref_evidence,
-        "Cân nhắc để thống kê viên (không phải người đã ký G2/G8/G9) ký G4.",
+        "Cân nhắc để thống kê viên (không phải người đã ký vai PI/IRB/quản lý dữ liệu/phản biện) ký G4 bằng "
+        "reviewer_ref riêng.",
     ))
 
     epv_confirmed = g4_meta.get("epv_vif_reviewed") is True
@@ -1311,7 +1384,17 @@ def evaluate_g4_quality(
     ]
     auto_blocked = any(row["status"] == "BLOCK" for row in _status_driving)
     auto_review = any(row["status"] == "REVIEW" for row in _status_driving)
-    human_complete = all(row["status"] == "PASS" for row in approval)
+    # VÁ 14/11/2026 (giả lập đề tài lần 1, K3 — cùng nguyên tắc «luật mới/sự kiện sau không hạ cấp quyết định đã ký»):
+    # G4-HUMAN-03 là CHỈ DẤU độc lập (HMAC đối xứng không chứng minh được người ký khác chủ nhiệm), và giá trị của nó
+    # đổi theo bản ký của CỔNG KHÁC ký SAU. Bản cũ cho nó tham gia human_complete ⇒ PI ký G5 bằng cùng reviewer_ref làm
+    # G4 đã khoá rơi về READY ⇒ G5-AUTO-05 «G4=False» ⇒ G6… chặn cả chuỗi (bác sĩ kiêm mọi vai là thiết kế đã biết). Nay
+    # khi G4 đã ký hợp lệ (ledger_signed) nó chỉ HIỂN THỊ (dòng REVIEW + pending vẫn còn để đọc); trước khi ký vẫn tham
+    # gia để nhắc. Sửa SAP sau khi ký làm lệch băm ⇒ ledger_signed=False ⇒ nó lại tham gia như mọi tiêu chí khác.
+    _nguoi_chi_hien_thi_sau_ky = {"G4-HUMAN-03"}
+    human_complete = all(
+        row["status"] == "PASS" for row in approval
+        if not (row["id"] in _nguoi_chi_hien_thi_sau_ky and ledger_signed)
+    )
 
     if auto_blocked:
         status = STATUS_BLOCKED
@@ -1504,6 +1587,8 @@ def evaluate_study(study: str, out_dir: Path, *, repo_root: Optional[Path] = Non
         g3_song=CS.trang_thai_song("G3", study, out_dir, repo_root=repo_root),
         ledger_lock_timestamp=ledger_lock_timestamp,
         dac_ta=S.dac_ta_thiet_ke(out_dir),
+        # VÁ 14/11/2026 (K3): G4-HUMAN-03 so theo VAI thống kê viên, không theo bản ký G4 mới nhất bất kỳ vai.
+        ban_ky_theo_vai=doc_ban_ky_theo_vai(records),
     )
     if write:
         report_path = write_quality_report(study, out_dir, report)
