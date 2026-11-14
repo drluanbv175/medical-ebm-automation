@@ -30,6 +30,25 @@ Chạy trong `medical-ebm-automation/`:
 Mã thoát: 0 xong/khớp · 1 lệch hoặc SPSS lỗi · 2 không đo được (không có SPSS, thiếu tệp) · 3 từ chối (PII, dữ liệu
 không khớp manifest khoá, tham số sai).
 
+## Một lệnh cho cả SPSS + R (tự động hoá 14/11/2026)
+
+`python3 tools/kiem_cheo_g6.py chay --study <mã>` chạy trọn hai chuỗi lệnh:
+- SPSS: `xuat-sav` (chỉ khi `.sav` chưa có hoặc không khớp dữ liệu khoá) → `cu-phap` → `chay` → `doi-chieu`.
+- R (`tools/cau_noi_r.py`): `cu-phap` → `chay` → `doi-chieu`.
+
+Kết quả ghi MỘT báo cáo chung `G6_kiem_cheo.md/.json`:
+- Trạng thái chung theo thứ tự ưu tiên: LỆCH > lỗi > từ chối > lệch nhỏ > khớp.
+- Máy thiếu một phần mềm ⇒ phần đó «⚪ không đo được», phần kia vẫn chạy.
+- Tuỳ chọn: `--chi spss|r` để chạy riêng một phần mềm; `--thang-do` truyền cho SPSS.
+
+Trạng thái đọc nhanh, không chạy phần mềm nào: `… trang-thai --study <mã>` hoặc `--tat-ca`.
+- Báo «CŨ» khi `G6_analysis_summary.json` hoặc dữ liệu khoá đổi sau lượt kiểm chéo (so bằng dấu vân tay SHA-256).
+- Ba nơi dùng chung hàm này (chỉ hiển thị, không mở/chặn cổng):
+  - Hòm việc (repo gốc `tu_de_xuat_viec.py`): chưa kiểm chéo/CŨ ⇒ 🛎, LỆCH/lỗi ⇒ 👤.
+  - `study_readiness.py`: mục «KIỂM CHÉO G6», đếm là việc còn treo.
+  - Đài kiểm soát `audit_research_gates.py`: dòng `kiem_cheo_g6=…`, gắn vào cổng G6.
+- Agent `dieu-phoi-g6` chạy lệnh này sau G6-T1; khi LỆCH thì trả về `phan-tich-thong-ke`.
+
 ## Thứ tự dùng cho một đề tài
 
 1. G5 khoá dữ liệu (`lock_analysis_dataset.py`) — manifest khoá ghi SHA-256.

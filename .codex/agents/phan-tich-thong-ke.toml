@@ -77,6 +77,10 @@ kém tin cậy, chép nguyên cảnh báo và để thống kê viên quyết; (
 
 ## 🔁 BƯỚC 0c — KIỂM CHÉO BẰNG SPSS (phần mềm thứ hai — thêm 14/11/2026, bác sĩ giao)
 
+**Một lệnh cho cả SPSS + R (14/11/2026):** `python3 medical-ebm-automation/tools/kiem_cheo_g6.py chay --study <mã>` ⇒
+`G6_kiem_cheo.md` (trạng thái chung + từng phần mềm); các lệnh lẻ dưới đây (0c SPSS · 0d R) để chạy riêng một phần mềm
+hoặc tìm lỗi. Hòm việc nhắc 🛎 khi kết quả Python mới hơn lượt kiểm chéo.
+
 Máy có IBM SPSS Statistics (`python3 medical-ebm-automation/tools/cau_noi_spss.py kiem` ⇒ ✓) thì SAU BƯỚC 0b chạy lại
 CÙNG phân tích bằng SPSS ở chế độ nền (không mở giao diện) và đối chiếu từng ước lượng:
 

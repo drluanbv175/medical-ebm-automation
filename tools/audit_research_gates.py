@@ -1985,6 +1985,9 @@ def _write_markdown(out_dir: Path, report: Dict[str, Any]) -> Path:
         "- Hội đồng cổng (tư vấn — không mở/chặn cổng): "
         + (" · ".join(f"{g} {t.get('trang_thai')}" for g, t in (report.get("hoi_dong_cong") or {}).items()
                       if t.get("trang_thai") != "CHƯA HỌP") or "chưa họp cổng nào"),
+        "- Kiểm chéo G6 bằng SPSS + R (tư vấn — không mở/chặn cổng): "
+        + ((report.get("kiem_cheo_g6") or {}).get("nhan") or (report.get("kiem_cheo_g6") or {}).get("trang_thai")
+           or "KHONG_DO_DUOC"),
         "",
         "## Gate Release Contracts",
         "",
@@ -2166,6 +2169,16 @@ def _hoi_dong_cong(out_dir: Path) -> Dict[str, Any]:
                 for g in ("G0", "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10")}
 
 
+def _kiem_cheo_g6(out_dir: Path) -> Dict[str, Any]:
+    """Trạng thái kiểm chéo G6 bằng phần mềm thứ hai (chỉ đọc tệp). Lỗi ⇒ KHONG_DO_DUOC, không phải «khớp»."""
+    try:
+        import kiem_cheo_g6 as KC  # noqa: PLC0415
+
+        return KC.trang_thai(Path(out_dir))
+    except Exception as exc:  # noqa: BLE001
+        return {"trang_thai": "KHONG_DO_DUOC", "ly_do": f"{type(exc).__name__}: {exc}"}
+
+
 def audit_gates(study: str, *, out_dir: Optional[Path] = None,
                 topic: Optional[str] = None, write: bool = True) -> Dict[str, Any]:
     study_id = study.strip()
@@ -2185,6 +2198,12 @@ def audit_gates(study: str, *, out_dir: Optional[Path] = None,
     hoi_dong = _hoi_dong_cong(out_dir)
     for row in pipeline_rows:
         row["hoi_dong"] = (hoi_dong.get(row["gate"]) or {}).get("trang_thai", "KHÔNG ĐO ĐƯỢC")
+    # 14/11/2026 — kiểm chéo G6 bằng SPSS + R (tools/kiem_cheo_g6.py): TƯ VẤN như hội đồng cổng — gắn vào dòng G6,
+    # KHÔNG đổi overall_status/verdict.
+    kiem_cheo = _kiem_cheo_g6(out_dir)
+    for row in pipeline_rows:
+        if row["gate"] == "G6":
+            row["kiem_cheo"] = kiem_cheo.get("trang_thai", "KHONG_DO_DUOC")
     hard_stop_count = sum(
         1 for row in pipeline_rows
         if row["status"] in {STATUS_BLOCKED, STATUS_GUARDRAIL_FAIL, STATUS_NEEDS_REAL}
@@ -2223,6 +2242,7 @@ def audit_gates(study: str, *, out_dir: Optional[Path] = None,
         "pipeline_gates": pipeline_rows,
         "gate_release_summary": _release_summary(pipeline_rows),
         "hoi_dong_cong": hoi_dong,
+        "kiem_cheo_g6": kiem_cheo,
         "data_pipeline": data_pipeline,
         "skill_gates": _skill_gate_rows(cps, meta),
         "readiness": S.readiness_report(cps, meta),
@@ -2268,6 +2288,8 @@ def print_summary(report: Dict[str, Any]) -> None:
     hd = report.get("hoi_dong_cong") or {}
     can = [f"{g}:{t.get('trang_thai')}" for g, t in hd.items() if t.get("trang_thai") not in ("CHƯA HỌP", "ĐỒNG THUẬN")]
     print(f"hoi_dong_cong={'; '.join(can) if can else 'không có việc treo (tư vấn)'}")
+    kc = report.get("kiem_cheo_g6") or {}
+    print(f"kiem_cheo_g6={kc.get('trang_thai', 'KHONG_DO_DUOC')} (tư vấn — SPSS + R, tools/kiem_cheo_g6.py)")
     for row in report["pipeline_gates"]:
         if row["gate"] == report.get("current_actionable_gate"):
             print(f"next_action={row['next_action']}")
