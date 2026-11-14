@@ -1,0 +1,169 @@
+{
+ "so_ca": 8,
+ "bien": [
+  {
+   "ten": "ID",
+   "nhan": "Mã phiếu (tổng hợp)",
+   "muc_do": "NOMINAL",
+   "kieu": 4,
+   "dinh_dang": "A4",
+   "nhan_gia_tri": {},
+   "thieu": [
+    1,
+    "    ",
+    null,
+    null
+   ]
+  },
+  {
+   "ten": "Tuoi",
+   "nhan": "Câu 2. Tuổi (năm)",
+   "muc_do": "SCALE",
+   "kieu": 0,
+   "dinh_dang": "F8.2",
+   "nhan_gia_tri": {},
+   "thieu": [
+    0,
+    null,
+    null,
+    null
+   ]
+  },
+  {
+   "ten": "chi_so",
+   "nhan": "Chỉ số tổng hợp",
+   "muc_do": "SCALE",
+   "kieu": 0,
+   "dinh_dang": "F22.8",
+   "nhan_gia_tri": {},
+   "thieu": [
+    0,
+    null,
+    null,
+    null
+   ]
+  },
+  {
+   "ten": "gioitinh",
+   "nhan": "Giới tính",
+   "muc_do": "NOMINAL",
+   "kieu": 0,
+   "dinh_dang": "F8",
+   "nhan_gia_tri": {
+    "1.0": "Nam",
+    "2.0": "Nữ"
+   },
+   "thieu": [
+    0,
+    null,
+    null,
+    null
+   ]
+  },
+  {
+   "ten": "hai_long",
+   "nhan": "Mức hài lòng chung",
+   "muc_do": "ORDINAL",
+   "kieu": 0,
+   "dinh_dang": "F8",
+   "nhan_gia_tri": {
+    "1.0": "Rất không hài lòng",
+    "2.0": "Không hài lòng",
+    "3.0": "Bình thường",
+    "4.0": "Hài lòng",
+    "5.0": "Rất hài lòng",
+    "9.0": "Không biết"
+   },
+   "thieu": [
+    1,
+    9.0,
+    null,
+    null
+   ]
+  },
+  {
+   "ten": "hut_thuoc",
+   "nhan": "Hút thuốc lá",
+   "muc_do": "NOMINAL",
+   "kieu": 0,
+   "dinh_dang": "F8",
+   "nhan_gia_tri": {
+    "-9991.0": "BTR — Bỏ trống",
+    "0.0": "Không",
+    "1.0": "Có"
+   },
+   "thieu": [
+    1,
+    -9991.0,
+    null,
+    null
+   ]
+  },
+  {
+   "ten": "nghe",
+   "nhan": "Nghề nghiệp",
+   "muc_do": "NOMINAL",
+   "kieu": 9,
+   "dinh_dang": "A9",
+   "nhan_gia_tri": {
+    "khac     ": "Khác",
+    "nong_dan ": "Nông dân",
+    "cong_chuc": "Công chức"
+   },
+   "thieu": [
+    1,
+    "        ",
+    null,
+    null
+   ]
+  },
+  {
+   "ten": "ghi",
+   "nhan": "Ghi chú ngắn của điều tra viên",
+   "muc_do": "NOMINAL",
+   "kieu": 39,
+   "dinh_dang": "A39",
+   "nhan_gia_tri": {},
+   "thieu": [
+    1,
+    "        ",
+    null,
+    null
+   ]
+  },
+  {
+   "ten": "trieu_chung___1",
+   "nhan": "Triệu chứng: Đau đầu",
+   "muc_do": "NOMINAL",
+   "kieu": 0,
+   "dinh_dang": "F8",
+   "nhan_gia_tri": {
+    "0.0": "Không",
+    "1.0": "Có"
+   },
+   "thieu": [
+    0,
+    null,
+    null,
+    null
+   ]
+  },
+  {
+   "ten": "trieu_chung___2",
+   "nhan": "Triệu chứng: Khó thở",
+   "muc_do": "NOMINAL",
+   "kieu": 0,
+   "dinh_dang": "F8",
+   "nhan_gia_tri": {
+    "0.0": "Không",
+    "1.0": "Có"
+   },
+   "thieu": [
+    0,
+    null,
+    null,
+    null
+   ]
+  }
+ ]
+}

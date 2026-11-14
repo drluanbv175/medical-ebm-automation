@@ -47,7 +47,8 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 - **Kiểm chéo bằng phần mềm thứ hai (SPSS + R — TƯ VẤN, 14/11/2026):** sau G6-T1 (đã có `G6_analysis_summary.json`):
   `python3 tools/kiem_cheo_g6.py chay --study <mã>` — MỘT lệnh chạy trọn cầu nối SPSS lẫn R, ghi `G6_kiem_cheo.md`
   (`--thang-do "TÊN:mục1,…"` thêm Cronbach α); đọc nhanh không chạy phần mềm: `… trang-thai --study <mã>`. Không đổi
-  trạng thái cổng, không thay G6-HUMAN-01.
+  trạng thái cổng, không thay G6-HUMAN-01. Hoặc chạy liền sau phân tích chính bằng `run_stats_analysis.py … --kiem-cheo`
+  (cùng lệnh, chỉ tư vấn).
 - **Xác nhận người (cổng mềm):** Thống kê viên xác nhận ở `gate_params.G6` (`scripts_match_sap_confirmed`, `reviewed_by_role`, `reviewed_at`, `dau_van_tay_chot`). Agent CHÉP dấu cho người xác nhận nhìn — KHÔNG tự ghi.
 
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->

@@ -49,6 +49,45 @@ Trạng thái đọc nhanh, không chạy phần mềm nào: `… trang-thai --s
   - Đài kiểm soát `audit_research_gates.py`: dòng `kiem_cheo_g6=…`, gắn vào cổng G6.
 - Agent `dieu-phoi-g6` chạy lệnh này sau G6-T1; khi LỆCH thì trả về `phan-tich-thong-ke`.
 
+## Khứ hồi từng ô, kiểm từ điển và bản .rds cho R (E3 · E2 · E4 — 14/11/2026)
+
+**E3 — khứ hồi từng ô, tự động ở mọi lượt `xuat-sav`.** SPSS tạo `.sav` trong vùng tạm, rồi cầu nối gọi
+`spss_chay_nen.py --du-lieu` đọc lại MỌI ca bằng `spss.Cursor` (giá trị thô — `SAVE TRANSLATE /TYPE=CSV` làm tròn theo định
+dạng hiển thị nên không dùng). Từng biến × từng ca được so với giá trị suy từ CSV nguồn qua CÙNG kế hoạch biến: biến số =
+`float(ô)` (ô rỗng ⇒ SYSMIS, mã chữ BTR/KDD… ⇒ −9991/−9992…), biến chuỗi = ô gốc bỏ dấu cách cuối. Lệch dù một ô ⇒ bỏ
+`.sav`, mã 1, in tối đa 10 lệch đầu (ca · biến · kỳ vọng · nhận được · loại: cắt cụt theo độ rộng, hỏng mã hoá tiếng Việt,
+mất số thành SYSMIS, dịch dòng…; giá trị biến chữ tự do bị che) và ghi `khu_hoi` vào manifest. So số theo ngưỡng 8 ulp: bộ
+đọc số của SPSS 31 (và R) lệch `float()` của Python tới 6 ulp với số 16–17 chữ số. Luật GET DATA đo thật: ô rỗng/chỉ dấu
+cách ⇒ SYSMIS; dấu cách quanh số bị bỏ nhưng TAB thì không (`\t3` ⇒ SYSMIS); `NA`, `1_000`, `3,5`, `1,000` ⇒ SYSMIS; chuỗi
+giữ khoảng trắng đầu, bỏ dấu cách cuối, quá độ rộng thì cắt theo byte; dòng trống bị bỏ, ô có xuống dòng bị tách thành
+hai ca. Phép khứ hồi đã tìm ra một lỗi thật (độ rộng A đo trên ô đã bỏ khoảng trắng đầu ⇒ «  Nguyễn Văn» bị cắt), đã vá.
+
+**E2 — từ điển `.sav` ↔ kế hoạch.** Cùng lượt đọc lại (một lần khởi động SPSS), so tên + thứ tự biến, số/chuỗi (độ rộng
+A), nhãn biến, nhãn giá trị (kể cả nhãn mã thiếu), MISSING VALUES, mức đo; lệch ⇒ bỏ tệp, mã 1, ghi `kiem_tu_dien`.
+
+**Vá sau rà phản biện độc lập (14/11/2026):** (1) số > 15 chữ số có nghĩa mà double không lưu đúng (vd
+`12345678901234567` ⇒ `…568`) từng «khớp» vì cả kỳ vọng lẫn bản đọc lại cùng bị làm tròn — nay là LỆCH riêng
+«vượt độ chính xác double» (nếu là MÃ, giữ dạng chữ ở nguồn); (2) số NGUYÊN ≤ 15 chữ số phải trùng TUYỆT ĐỐI (ở 1e15,
+8 ulp = 1 đơn vị); ngưỡng ulp chỉ cho số thực dài; (3) CSV có ô XUỐNG DÒNG ⇒ `xuat-sav` từ chối (mã 3) TRƯỚC khi chạy
+SPSS, chỉ rõ dòng · cột (không in giá trị) — trước đây SPSS tách ca và chỉ báo «số ca lệch».
+
+**E2 — `.rds` có nhãn cho R/RStudio:** `python3 tools/cau_noi_r.py xuat-rds --study <mã>` (bản nháp: `--data <csv>
+--ban-nhap`). Dựng từ CÙNG kế hoạch biến với `.sav` ⇒ `exports/<mã>/r/<mã>_khoa.rds` (chỉ đọc) + manifest + script `.R`
+chạy tay được. Script chỉ cần BASE R để ghi; thuộc tính theo khuôn haven (`labels` gồm nhãn mã thiếu, `na_values`/
+`na_range`, `label`, `format.spss`) nên `haven::as_factor`/`zap_missing` dùng được ngay. Sau khi ghi, đọc lại `.rds` và so
+TỪNG ô với nguồn + thuộc tính với kế hoạch; máy có haven thì thêm chặng `.sav` ↔ `.rds`. Kết quả ba chiều: từ điển ↔ .sav ·
+từ điển ↔ .rds · .sav ↔ .rds — chặng không đo được ghi «chưa đo», không bao giờ «khớp». Mã: 0 khớp · 1 lệch/R lỗi · 2 không
+có R · 3 từ chối. Mã thiếu của biến CHUỖI («» và mã chữ) không mang sang `.rds`. Tên cột của `.rds`/`.sav` là tên SPSS
+(«Tên SPSS: …» trong Field Annotation, vd `Tuoi`, `GioiTinh`).
+
+**E4 — kiểm chéo ngay sau phân tích chính:** `python3 tools/run_stats_analysis.py … --kiem-cheo` chạy `kiem_cheo_g6.py chay`
+sau khi ghi `G6_analysis_summary.json`. Chỉ TƯ VẤN: không đổi mã thoát, không đổi trạng thái cổng; thiếu SPSS/R hay kiểm
+chéo lỗi chỉ in ra.
+
+**Đo đầu–cuối trên Mac của bác sĩ (14/11/2026, từ điển C1a thật, dữ liệu giả):** Excel nhập tay ⇒ `nhap_lieu_excel.py
+nhap` (CSV, tự kiểm khớp từng ô) ⇒ `xuat-sav --ban-nhap` (E3: 231 ô khớp, E2 khớp) ⇒ `xuat-rds --ban-nhap` (231 ô khớp ·
+từ điển ↔ .sav ↔ .rds đều khớp); RStudio đọc nhãn tiếng Việt UTF-8, `zap_missing` biến BTR (−9991) thành NA.
+
 ## Thứ tự dùng cho một đề tài
 
 1. G5 khoá dữ liệu (`lock_analysis_dataset.py`) — manifest khoá ghi SHA-256.
