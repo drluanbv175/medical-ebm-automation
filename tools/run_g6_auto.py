@@ -31,6 +31,7 @@ BASE = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import bien_phai_sinh as _BPS  # noqa: E402  (biến phái sinh có công thức — F1, 14/11/2026)
 import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
 import g6_quality_gate as G6Q  # noqa: E402  (bộ đọc SAP + phép kiểm khoá G4 dùng CHUNG với bộ chấm — 04/10/2026)
 import g6_trong_so_survey as TSS  # noqa: E402  (trọng số hậu phân tầng + giới hạn người bỏ về theo SAP — 12/11/2026)
@@ -100,6 +101,20 @@ def _reject_if_variable_names_invalid(v: dict) -> None:
         print("   Nguyên nhân thường gặp: G5_REDCap_dictionary_<study>.csv sai định dạng, "
               "hoặc bị sửa tay làm lệch cột. Kiểm lại file dictionary trước khi chạy lại G6.")
         raise SystemExit(GC.EXIT_GUARDRAIL_FAIL)
+
+
+def bien_phai_sinh_da_biet(out: Path, study: str) -> tuple[dict[str, str], Optional[str]]:
+    """F1 (14/11/2026): biến phái sinh CÓ công thức hợp lệ (tính được) trong `_bien-phai-sinh.csv` ⇒ {tên: trạng thái
+    duyệt}. Biến chưa có công thức / lỗi công thức KHÔNG có trong kết quả (không được coi là biến đã biết). Trả kèm lý do
+    khi tệp không đọc được."""
+    try:
+        ps = _BPS.doc_dac_ta(out)
+        if not ps:
+            return {}, None
+        kq = _BPS.kiem_dac_ta(ps, _BPS.doc_danh_muc_tu_dien(out, study))
+    except (_BPS.LoiCongThuc, _BPS.KhongDoDuoc) as e:
+        return {}, str(e)
+    return {t: kq.trang_thai[t] for t in kq.thu_tu}, None
 
 
 def detect_variables_from_redcap(csv_path: Path) -> dict:
@@ -3501,13 +3516,28 @@ def main():
     tham_so_sap = doc_tham_so_sap(sap_text, v.get("all_vars") or [])
     kc_sap = tham_so_sap["ket_cuc_chinh"]
     ten_goc = {str(x).lower(): str(x) for x in (v.get("all_vars") or [])}
+    # F1 (14/11/2026): biến PHÁI SINH có công thức hợp lệ trong _bien-phai-sinh.csv cũng là biến «đã biết» — tính TẤT
+    # ĐỊNH bằng tools/bien_phai_sinh.py trong run_stats_analysis.py (kết cục chính BTM `xn_du` là biến phái sinh;
+    # trước bản vá G6-AUTO-04 chặn oan). Biến chưa có công thức/lỗi công thức KHÔNG được tính là đã biết.
+    _ps, _loi_ps = bien_phai_sinh_da_biet(out, study)
+    if _loi_ps:
+        v["detection_log"].append(f"⚠️  _bien-phai-sinh.csv chưa dùng được: {_loi_ps}")
+    for _t in _ps:
+        ten_goc.setdefault(_t.lower(), _t)
+    if _ps:
+        v["bien_phai_sinh"] = _ps
     if kc_sap and kc_sap in ten_goc and kc_sap != str(v.get("outcome") or "").lower():
         v["detection_log"].append(f"✅ Kết cục chính THEO SAP §2: {ten_goc[kc_sap]} (thay biến dò được: {v['outcome']})")
         v["outcome"] = ten_goc[kc_sap]
+        if ten_goc[kc_sap] in (v.get("bien_phai_sinh") or {}):
+            v["detection_log"].append(
+                f"   ↳ `{ten_goc[kc_sap]}` là BIẾN PHÁI SINH ({v['bien_phai_sinh'][ten_goc[kc_sap]]}) — run_stats_analysis.py "
+                "tính từ _bien-phai-sinh.csv; phân tích chính DỪNG nếu công thức chưa được thống kê viên/PI duyệt")
     elif kc_sap and kc_sap not in ten_goc:
         v["detection_log"].append(f"⚠️  SAP §2 khai kết cục chính `{kc_sap}` nhưng dictionary G5 KHÔNG có biến này — "
                                   "G6-AUTO-04 sẽ chặn tới khi khớp. Nếu là biến DẪN XUẤT (vd tính từ câu hỏi gốc): "
-                                  "khai trường calc trong _bo-bien-rieng.csv theo đúng quy tắc SAP rồi chạy lại G5; "
+                                  "khai CÔNG THỨC ở cột cong_thuc của _bien-phai-sinh.csv theo đúng quy tắc SAP "
+                                  "(docs/BIEN-PHAI-SINH.md; trường calc KHÔNG được tính khi nhập Excel/SPSS); "
                                   "nếu SAP ghi sai tên: sửa SAP bằng dòng SAP AMENDMENT và ký lại G4")
     v["nhom_con_sap"] = tham_so_sap["nhom_con"]
     v["nguong_tuoi_sap"] = tham_so_sap["nguong_tuoi"]
