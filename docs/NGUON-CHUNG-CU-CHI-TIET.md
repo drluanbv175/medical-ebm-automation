@@ -570,3 +570,27 @@
   `scripts/rescore.py --apply` — `rescore` nay mang `doi` vào luật). Đo tác động trên DB (chỉ đọc): 4 A + 15 B → C,
   116 bản đã loại giữ nguyên, không hàng nào ngoài kho bị đổi.
 - Bản thật của tổ chức nằm ở nơi phát hành (PubMed/Crossref/trang hội) — bản trên kho chỉ là đầu mối để tìm văn bản gốc.
+
+## feed_bjgp đọc qua Crossref theo ISSN thay RSS bị Cloudflare chặn (14/11/2026)
+
+- **Sự cố:** RSS `bjgp.org/rss/current.xml` trả trang chặn Cloudflare từ 29/10. Ngày 14/11, hòm việc của repo gốc
+  (`tools/tu_de_xuat_viec.py`) báo feed_bjgp «HỎNG KÉO DÀI»: 6 lượt live liền, kiểu `cloudflare-chan`. Lượt vẫn PASS
+  nên lỗi không tự lộ.
+- **Đo lại 14/11 bằng `tools/do_mang_nguon.py`:** RSS bị chặn, Crossref thông.
+- **Vá ở #229:**
+  - `app/sources/feeds.py` thêm `"bjgp": "1478-5242"` vào `_CROSSREF_THAY_RSS`, cùng chế độ Crossref theo ISSN với
+    họ BMJ và NEJM ở trên.
+  - Id và tên nguồn `feed_bjgp` giữ nguyên, để SourceLog và sổ sức khoẻ nối tiếp được.
+  - `endpoint` nay là `api.crossref.org/works?filter=issn:1478-5242`, không còn trỏ bjgp.org.
+- **ISSN:** đối chiếu bằng `api.crossref.org/journals/1478-5242`. Bản ghi là «British Journal of General Practice»,
+  nhà xuất bản Royal College of General Practitioners, cùng bản ghi với ISSN in 0960-1643. Số bài: 81 từ 01/08/2026,
+  48 từ 01/10/2026; DOI tiền tố 10.3399.
+- **Đo sống qua `RSSFeedClient`:** 25 bài từ 29/10, tức đúng khoảng RSS bị chặn.
+- **Bộ đo mạng:** `do_mang_nguon.py` có điểm «Crossref — BJGP (thay RSS)», đo đúng đường engine dùng. Điểm RSS cũ đổi
+  nhãn thành «BJGP — RSS (nay engine đọc qua Crossref)» và vẫn được đo, để biết khi nào đường cũ thông lại.
+- **Test:** `tests/test_feed_bjgp_crossref_20261114.py`, ngoại tuyến. Lỗi Crossref ⇒ trả rỗng: không bịa, không quay
+  lại RSS. Điểm đo được khẳng định theo TÊN trường (thêm 14/11, góp ý sau #229).
+- **Phạm vi:** lane chỉ lấy METADATA: DOI, tiêu đề, ngày, tóm tắt Crossref.
+  - Đọc toàn văn bài BJGP vẫn theo luật NXB RCGP ở REPO GỐC: `tools/doc_toan_van_co_nguoi.py`, bảng `DIEU_KHOAN_NXB`.
+  - Bài mang giấy phép CC của chính bài đi làn giấy phép.
+  - Chuỗi «hỏng kéo dài» chỉ đứt sau một lượt live mới ghi `feed_bjgp` = ok.
