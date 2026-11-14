@@ -509,6 +509,8 @@ def _apply_design_pin(design: dict, pinned: str, meta: Optional[dict] = None) ->
     lý do lấy từ gate_params.G1.design_rationale của PI (không có thì chỉ ghi câu «do BÁC SĨ pin»)."""
     d = dict(design)
     d["ambiguous"] = False
+    # 14/11/2026: từ khoá bị bỏ qua là chuyện của SUY LUẬN — PI đã ghim thì không còn ý nghĩa, không in/ghi nữa.
+    d["tu_khoa_bi_bo_qua"] = []
     d["internal_code"] = pinned
     d["primary"] = _DESIGN_LABEL.get(pinned, f"Thiết kế: {pinned}")
     try:
@@ -591,7 +593,26 @@ DESIGN_KEYWORD_HINTS = {
     # tự elif của infer_study_design() vì không đụng độ (không cụm nào ở đây
     # trùng "hài lòng/khảo sát/thực trạng/tỷ lệ" của descriptive).
     "qualitative": SPECIALIST_MODULE_KEYWORDS["qualitative"],
+    # THÊM 14/11/2026 (giả lập đề tài RCT, khiếm khuyết K1): trước đây KHÔNG có nhóm nào nhận ra đề tài TỰ KHAI thử
+    # nghiệm ngẫu nhiên — chủ đề «… lên TỶ LỆ kiểm soát huyết áp …: thử nghiệm lâm sàng ngẫu nhiên có đối chứng» khớp
+    # «tỷ lệ» của nhóm "descriptive" và bị dựng thành cắt ngang (STROBE, N theo độ chính xác, SAP 12 mục). Chỉ dùng
+    # CỤM khai thiết kế/phân bổ: KHÔNG dùng «ngẫu nhiên» trơn (trùng «chọn mẫu ngẫu nhiên» của khảo sát cắt ngang) hay
+    # «trial» trơn (trùng «pilot/feasibility trial», tên thử nghiệm trong đề tài khác). Câu phủ định («không ngẫu
+    # nhiên», «non-randomized», bán thực nghiệm) bị loại ở _khop_nhom_tu_khoa — xem _RCT_PHU_DINH.
+    "rct": ["thử nghiệm ngẫu nhiên", "thu nghiem ngau nhien", "thử nghiệm lâm sàng", "thu nghiem lam sang",
+            "ngẫu nhiên có đối chứng", "ngau nhien co doi chung", "ngẫu nhiên có nhóm chứng",
+            "ngau nhien co nhom chung", "phân bổ ngẫu nhiên", "phan bo ngau nhien", "phân nhóm ngẫu nhiên",
+            "phan nhom ngau nhien", "ngẫu nhiên hóa", "ngẫu nhiên hoá", "ngau nhien hoa", "randomized",
+            "randomised", "randomization", "randomisation", "rct", "clinical trial", "controlled trial"],
 }
+
+# Cụm PHỦ ĐỊNH làm nhóm "rct" KHÔNG khớp dù chứa cụm của nhóm (vd «thử nghiệm lâm sàng KHÔNG ngẫu nhiên»,
+# «non-randomized controlled trial» chứa «controlled trial»): thiết kế không ngẫu nhiên/bán thực nghiệm nằm ngoài
+# 8 mã chuỗi G0–G10 — để PI ghim/chọn agent chuyên trách, máy không tự dựng thành RCT.
+_RCT_PHU_DINH = ["không ngẫu nhiên", "khong ngau nhien", "phi ngẫu nhiên", "phi ngau nhien", "non-randomized",
+                 "non-randomised", "nonrandomized", "nonrandomised", "non randomized", "non randomised",
+                 "quasi-experimental", "quasi experimental", "bán thực nghiệm", "ban thuc nghiem",
+                 "giả thực nghiệm", "gia thuc nghiem"]
 
 # question_type (từ khóa phát hiện) → internal_code KỲ VỌNG tương ứng, dùng
 # cho guardrail đối chiếu ngược (không dùng để suy luận — suy luận vẫn qua
@@ -604,7 +625,41 @@ _KEYWORD_TO_EXPECTED_INTERNAL = {
     "harm": "case_control",
     "descriptive": "cross_sectional",
     "qualitative": "qualitative",
+    "rct": "rct",
 }
+
+# Thứ tự ƯU TIÊN khi nhiều nhóm cùng khớp (lý do từng vị trí: chú thích ở infer_study_design). "rct" là cụm KHAI
+# THIẾT KẾ nên đứng TRƯỚC các nhóm CHỦ ĐỀ/KẾT CỤC (diagnosis/prognosis/descriptive — «tỷ lệ tử vong», «chiến lược
+# chẩn đoán» là kết cục/đối tượng của thử nghiệm, không phải thiết kế), sau sr/qualitative/prediction_model (tổng
+# quan CÁC thử nghiệm, định tính lồng trong thử nghiệm, mô hình dự đoán dựng từ dữ liệu thử nghiệm vẫn là thiết kế đó).
+_THU_TU_NHOM_TU_KHOA = ("sr", "qualitative", "prediction_model", "rct", "diagnosis", "prognosis", "harm",
+                        "descriptive")
+
+# Nhóm từ khoá KHAI THIẾT KẾ tường minh (khác nhóm chủ đề/kết cục diagnosis/prognosis/descriptive).
+_NHOM_KHAI_THIET_KE = frozenset({"sr", "qualitative", "prediction_model", "rct", "harm"})
+
+
+def _khop_nhom_tu_khoa(nhom: str, topic_lower: str) -> bool:
+    """Tên đề tài (đã lower) có khớp nhóm từ khoá `nhom` không — nhóm "rct" bị loại khi có cụm phủ định."""
+    if nhom == "rct" and _kw_in(_RCT_PHU_DINH, topic_lower):
+        return False
+    return _kw_in(DESIGN_KEYWORD_HINTS[nhom], topic_lower)
+
+
+def _tu_khoa_duoc_tinh_chinh(qt_da_chot: str, nhom: str) -> bool:
+    """Nhóm từ khoá tên đề tài có được TINH CHỈNH thiết kế khi PI đã chốt loại câu hỏi `qt_da_chot` không.
+
+    14/11/2026 (K1): thứ tự ưu tiên là thiết kế PI ghim > loại câu hỏi PI đã chốt ở G0 > từ khoá tên đề tài. Khi đã
+    chốt, từ khoá chỉ được chọn thiết kế NẰM TRONG nhóm thiết kế hợp với loại câu hỏi đó (cùng bảng G1-AUTO-02d), và
+    câu hỏi CAN THIỆP có so sánh («treatment») chỉ nhận cụm KHAI THIẾT KẾ (RCT, tổng quan, bệnh-chứng) — cụm chủ
+    đề/kết cục («tỷ lệ», «tử vong», «chẩn đoán») không bao giờ đổi được thiết kế của câu hỏi can thiệp. Loại câu hỏi
+    không có bảng (vd «sr») ⇒ giữ nguyên lựa chọn của PI."""
+    hop_le = G1Q.thiet_ke_hop_le_theo_cau_hoi(qt_da_chot)
+    if not hop_le or _KEYWORD_TO_EXPECTED_INTERNAL.get(nhom) not in hop_le:
+        return False
+    if qt_da_chot == "treatment" and nhom not in _NHOM_KHAI_THIET_KE:
+        return False
+    return True
 
 
 def check_topic_design_consistency(topic: str, chosen_internal_code: str) -> list:
@@ -629,10 +684,16 @@ def check_topic_design_consistency(topic: str, chosen_internal_code: str) -> lis
     # "sensitivity" — cũng thường khớp cùng lúc với đề tài prediction model
     # (vd "AUC của mô hình dự đoán..."). Bỏ qua luôn "diagnosis" cùng lý do.
     _skip_qtypes = {"prognosis", "diagnosis"} if _kw_in(DESIGN_KEYWORD_HINTS["prediction_model"], topic_lower) else set()
-    for qtype, kws in DESIGN_KEYWORD_HINTS.items():
+    # 14/11/2026 (K11): đề tài TỰ KHAI thử nghiệm ngẫu nhiên thì «tỷ lệ kiểm soát», «tử vong», «chiến lược chẩn đoán»
+    # là KẾT CỤC/đối tượng của thử nghiệm — cảnh báo «gợi ý cross_sectional/cohort/diagnostic» khi đã chọn đúng RCT là
+    # cảnh báo sai chiều (giả lập 14/11: ghim rct vẫn in «gợi ý 'cross_sectional'»). Nhóm khai thiết kế khác (harm,
+    # sr…) vẫn đối chiếu — RCT kèm «bệnh-chứng» là mâu thuẫn thật.
+    if _khop_nhom_tu_khoa("rct", topic_lower):
+        _skip_qtypes |= {"descriptive", "prognosis", "diagnosis"}
+    for qtype in DESIGN_KEYWORD_HINTS:
         if qtype in _skip_qtypes:
             continue
-        if _kw_in(kws, topic_lower):
+        if _khop_nhom_tu_khoa(qtype, topic_lower):
             expected = _KEYWORD_TO_EXPECTED_INTERNAL[qtype]
             if chosen_internal_code != expected:
                 warns.append(
@@ -643,14 +704,21 @@ def check_topic_design_consistency(topic: str, chosen_internal_code: str) -> lis
     return warns
 
 
-def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
+def infer_study_design(question_type: str, gaps: dict, topic: str, loai_cau_hoi_da_chot: bool = False) -> dict:
     """
     Suy luận loại thiết kế từ câu hỏi + bức tranh evidence từ G0.
     Trả về: dict với primary, alternatives, rationale, internal_code, reporting
+
+    `loai_cau_hoi_da_chot=True` khi `question_type` là lựa chọn TƯỜNG MINH (PI chốt ở gate_params.G0, hoặc
+    --question-type): từ khoá tên đề tài khi đó chỉ được tinh chỉnh thiết kế trong nhóm hợp với loại câu hỏi
+    (_tu_khoa_duoc_tinh_chinh); nhóm bị bỏ qua ghi vào `tu_khoa_bi_bo_qua` để in/ghi checkpoint. Mặc định False
+    (loại câu hỏi chỉ là mặc định «treatment») giữ hành vi cũ: từ khoá được đổi loại câu hỏi.
     """
     n_sr  = gaps.get("n_sr", 0)
     n_rct = gaps.get("n_rct", 0)
     topic_lower = topic.lower()
+    qt_da_chot = question_type
+    tu_khoa_bi_bo_qua = []
     # THÊM 2026-07-08: nhánh bão hòa RCT+SR dưới đây gán internal_code="cohort"
     # làm PLACEHOLDER TẠM (bác sĩ CHƯA xác nhận khoảng trống thật) — nhưng
     # run_g3_auto.py vẫn đọc thẳng "cohort" này và tính N THẬT, không có cờ
@@ -666,8 +734,7 @@ def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
     # thường). Nếu để "prognosis" thắng trước (thứ tự cũ), mọi đề tài prediction
     # model đều bị phân loại nhầm thành "cohort" — không bao giờ chạm được vào
     # nhánh TRIPOD+AI đã nối xuyên G2-G9 (xem infer_study_design elif dưới).
-    if _kw_in(DESIGN_KEYWORD_HINTS["sr"], topic_lower):
-        question_type = "sr"
+    # Thứ tự áp dụng: _THU_TU_NHOM_TU_KHOA — «sr» đứng ĐẦU.
     # THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG): kiểm "qualitative"
     # NGAY SAU "sr" — trước bản vá này, đề tài định tính rơi thẳng vào nhánh
     # else "descriptive" hoặc mặc định "treatment"→"rct", SAI phương pháp
@@ -677,8 +744,6 @@ def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
     # "tiên lượng" (vd "Ý nghĩa của chẩn đoán ung thư..." là câu hỏi định
     # tính dù chứa chữ "chẩn đoán" — đã xác nhận qua ca thật khi kiểm chứng
     # bản vá, "diagnosis" từng nuốt mất câu này khi đặt "qualitative" sau).
-    elif _kw_in(DESIGN_KEYWORD_HINTS["qualitative"], topic_lower):
-        question_type = "qualitative"
     # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 21, phát hiện MEDIUM):
     # "prediction_model" kiểm TRƯỚC "diagnosis" (đảo thứ tự cũ) — DESIGN_KEYWORD_
     # HINTS["diagnosis"] chứa "auc"/"sensitivity" (dòng ~447), thuật ngữ chỉ-số-
@@ -689,19 +754,43 @@ def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
     # cùng lớp lỗi đã vá cho xung đột prediction_model/prognosis 2026-07-17.
     # Cụm "mô hình dự đoán/tiên lượng/nomogram" (đặc hiệu ý định thiết kế) phải
     # thắng thuật ngữ chỉ-số-hiệu-năng chung (AUC/sensitivity).
-    elif _kw_in(DESIGN_KEYWORD_HINTS["prediction_model"], topic_lower):
-        question_type = "prediction_model"
-    elif _kw_in(DESIGN_KEYWORD_HINTS["diagnosis"], topic_lower):
-        question_type = "diagnosis"
-    elif _kw_in(DESIGN_KEYWORD_HINTS["prognosis"], topic_lower):
-        question_type = "prognosis"
-    elif _kw_in(DESIGN_KEYWORD_HINTS["harm"], topic_lower):
-        question_type = "harm"
-    elif _kw_in(DESIGN_KEYWORD_HINTS["descriptive"], topic_lower):
-        question_type = "descriptive"
+    # THÊM 14/11/2026 (K1): "rct" ngay sau "prediction_model", TRƯỚC diagnosis/prognosis/harm/descriptive — xem
+    # _THU_TU_NHOM_TU_KHOA. Đặt sau sr/qualitative/prediction_model vì «tổng quan các thử nghiệm ngẫu nhiên», định tính
+    # lồng trong thử nghiệm, mô hình dự đoán dựng từ dữ liệu thử nghiệm vẫn thuộc thiết kế đó.
+    # VÁ 14/11/2026 (K1, giả lập đề tài RCT): loại câu hỏi PI ĐÃ CHỐT ở G0 («treatment», PICO có can thiệp + so sánh)
+    # từng bị chữ «tỷ lệ» trong «tỷ lệ kiểm soát huyết áp» đổi thành "descriptive" ⇒ cắt ngang. Khi đã chốt, từ khoá
+    # chỉ tinh chỉnh trong nhóm thiết kế hợp với loại câu hỏi (_tu_khoa_duoc_tinh_chinh); nhóm trái bị BỎ QUA và ghi
+    # lại — không bao giờ ghi đè lựa chọn của PI. Chưa chốt ⇒ nhóm khớp đầu tiên thắng như cũ.
+    nhom_khop = [nhom for nhom in _THU_TU_NHOM_TU_KHOA if _khop_nhom_tu_khoa(nhom, topic_lower)]
+    nhom_ap_dung = None
+    for nhom in nhom_khop:
+        if not loai_cau_hoi_da_chot or _tu_khoa_duoc_tinh_chinh(qt_da_chot, nhom):
+            nhom_ap_dung = nhom
+            break
+        tu_khoa_bi_bo_qua.append(
+            f"Tên đề tài có từ khoá gợi ý thiết kế «{_KEYWORD_TO_EXPECTED_INTERNAL[nhom]}» (nhóm {nhom}) — KHÔNG "
+            f"dùng để suy thiết kế vì trái loại câu hỏi PI đã chốt «{qt_da_chot}» (G1-AUTO-02d). Muốn thiết kế "
+            "khác thì PI sửa question_type ở G0 hoặc ghim study_meta.design_code."
+        )
+    khai_rct = nhom_ap_dung == "rct"
+    if nhom_ap_dung:
+        question_type = "treatment" if khai_rct else nhom_ap_dung
 
     if question_type == "treatment":
-        if n_rct == 0 and n_sr == 0:
+        if khai_rct:
+            # 14/11/2026 (K1): tên đề tài TỰ KHAI thử nghiệm ngẫu nhiên ⇒ RCT là ý định thiết kế tường minh (như
+            # «bệnh-chứng» ⇒ case_control), không suy lại theo số SR/RCT của G0. Lĩnh vực đã nhiều RCT/SR thì phần
+            # PI phải làm là biện minh tính mới, không phải để máy hạ thiết kế.
+            primary = "RCT Song song (Randomized Controlled Trial)"
+            internal = "rct"
+            alt1 = "Cohort tiến cứu (nếu RCT không khả thi về đạo đức/nguồn lực)"
+            alt2 = "RCT cụm / RCT thực dụng (nếu can thiệp triển khai ở cấp cơ sở/nhóm hoặc trong thực hành thường quy)"
+            rationale = ("Tên đề tài khai TƯỜNG MINH thiết kế thử nghiệm ngẫu nhiên có đối chứng → RCT song song. "
+                         f"Nền bằng chứng G0: {n_sr} SR/MA, {n_rct} RCT"
+                         + (" — lĩnh vực đã có RCT/SR: PI biện minh tính mới (quần thể/can thiệp/bối cảnh/kết cục) "
+                            "trước khi khoá thiết kế." if (n_sr or n_rct) else ".")
+                         + " Ngẫu nhiên hóa kiểm soát confounders đã biết và chưa biết.")
+        elif n_rct == 0 and n_sr == 0:
             primary = "RCT Song song (Randomized Controlled Trial)"
             internal = "rct"
             alt1 = "Cohort tiến cứu (nếu RCT không khả thi về đạo đức/nguồn lực)"
@@ -872,6 +961,9 @@ def infer_study_design(question_type: str, gaps: dict, topic: str) -> dict:
         # log ghi "question_type" cũ mâu thuẫn với "design.internal_code" mới
         # trong CÙNG một G1_checkpoint.json.
         "resolved_question_type": question_type,
+        # 14/11/2026 (K1): nhóm từ khoá tên đề tài bị BỎ QUA vì trái loại câu hỏi PI đã chốt — in ra và ghi
+        # checkpoint để PI thấy máy đã không theo từ khoá (không lặng lẽ).
+        "tu_khoa_bi_bo_qua": tu_khoa_bi_bo_qua,
     }
 
 
@@ -2158,6 +2250,8 @@ def write_g1_checkpoint(study_name: str, out_dir: Path, question_type: str,
             # 04/10/2026: pin thiết kế của bác sĩ bị từ chối (ngoài 8 mã) phải NẰM TRONG checkpoint — chấm lại G1 từ
             # checkpoint (chấm sống ở cổng sau) vẫn thấy và vẫn CHẶN (G1-AUTO-02c), không chỉ ở lượt chạy đầu.
             **({"pin_bi_tu_choi": design["pin_bi_tu_choi"]} if design.get("pin_bi_tu_choi") else {}),
+            # 14/11/2026 (K1): từ khoá tên đề tài máy đã BỎ QUA vì trái loại câu hỏi PI chốt ở G0 (chỉ ghi khi có).
+            **({"tu_khoa_bi_bo_qua": list(design["tu_khoa_bi_bo_qua"])} if design.get("tu_khoa_bi_bo_qua") else {}),
         },
         "specialist_modules": specialist_modules or [],
         "effect_sizes_found": len(effects),
@@ -2377,19 +2471,23 @@ def main():
     # «treatment» dựng đề tài phân tích yếu tố liên quan thành RCT. Không truyền --question-type ⇒ lấy G0 (therapy ≡
     # treatment…); G0 cũng chưa khai ⇒ «treatment» NHƯNG đánh dấu thiết kế mơ hồ để G1/G3 giữ REVIEW.
     question_type_mac_dinh = False
+    # VÁ 14/11/2026 (K1): loại câu hỏi TƯỜNG MINH (--question-type hoặc G0 đã chốt) đứng TRÊN từ khoá tên đề tài —
+    # infer_study_design chỉ cho từ khoá tinh chỉnh trong nhóm thiết kế hợp với loại câu hỏi đó.
+    loai_cau_hoi_da_chot = args.question_type is not None
     if args.question_type is None:
         _qt_g0 = S.chuan_hoa_question_type(((meta.get("gate_params") or {}).get("G0") or {}).get("question_type"))
         _qt_g0 = {"prediction_model": "prediction_model" if "prediction_model" in QUESTION_TYPES else "prognosis"}.get(
             _qt_g0, _qt_g0)
         if _qt_g0 in QUESTION_TYPES:
             question_type = _qt_g0
+            loai_cau_hoi_da_chot = True
             print(f"  → Loại câu hỏi lấy từ G0 đã chốt: {question_type}")
         else:
             question_type_mac_dinh = True
             print("  → ⚠️  G0 chưa chốt loại câu hỏi — tạm dùng «treatment», thiết kế bị đánh dấu MƠ HỒ (REVIEW).")
 
     # Suy loại thiết kế
-    design = infer_study_design(question_type, g0_gaps, topic)
+    design = infer_study_design(question_type, g0_gaps, topic, loai_cau_hoi_da_chot=loai_cau_hoi_da_chot)
     if question_type_mac_dinh:
         design = dict(design)
         design["ambiguous"] = True
@@ -2418,6 +2516,8 @@ def main():
             design = dict(design)
             design["pin_bi_tu_choi"] = raw_pin
             print(f"  → ⛔ Thiết kế bác sĩ ghim «{raw_pin}» chưa được chuỗi G0–G10 hỗ trợ — G1 sẽ CHẶN (G1-AUTO-02c).")
+    for _cb in design.get("tu_khoa_bi_bo_qua") or []:
+        print(f"  → ⚠️  {_cb}")
 
     print(f"  → Thiết kế ưu tiên: {design['primary']}")
     print(f"  → Chuẩn báo cáo: {design['reporting_standard']}")

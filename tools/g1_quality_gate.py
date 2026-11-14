@@ -277,6 +277,15 @@ _THIET_KE_HOP_LE_THEO_CAU_HOI: Dict[str, frozenset] = {
     "prediction_model": frozenset({"prediction", "cohort"}),
 }
 
+
+def thiet_ke_hop_le_theo_cau_hoi(question_type: Optional[str]) -> frozenset:
+    """Nhóm mã thiết kế hợp với loại câu hỏi (đã chuẩn hoá) — tập rỗng nếu loại câu hỏi không có trong bảng.
+
+    MỘT nguồn cho cả G1-AUTO-02d lẫn run_g1_auto (từ khoá tên đề tài chỉ được tinh chỉnh thiết kế TRONG nhóm này khi
+    PI đã chốt loại câu hỏi ở G0 — vá K1 14/11/2026)."""
+    return _THIET_KE_HOP_LE_THEO_CAU_HOI.get(S.chuan_hoa_question_type(question_type) or "", frozenset())
+
+
 # Dòng đề cương lõi mang «[CẦN … G2…G10 …]» là việc của CỔNG SAU — không tính là ô trống của G1 (G1-02).
 _HOAN_CHO_CONG_SAU = re.compile(r"\[CẦN[^\]]*\bG(?:[2-9]|10)\b[^\]]*\]")
 
@@ -1412,22 +1421,34 @@ def evaluate_g1_quality(
     gp_all = meta.get("gate_params") if isinstance(meta.get("gate_params"), Mapping) else {}
     g0_meta = gp_all.get("G0") if isinstance(gp_all.get("G0"), Mapping) else {}
     qt_g0 = S.chuan_hoa_question_type(g0_meta.get("question_type"))
-    hop_le = _THIET_KE_HOP_LE_THEO_CAU_HOI.get(qt_g0 or "")
+    hop_le = thiet_ke_hop_le_theo_cau_hoi(qt_g0)
+    # VÁ 14/11/2026 (K1, giả lập đề tài RCT): lệch giữa loại câu hỏi PI ĐÃ CHỐT ở G0 và thiết kế G1 mà PI CHƯA ghim
+    # ⇒ BLOCK (trước chỉ REVIEW: câu hỏi điều trị bị từ khoá «tỷ lệ» dựng thành cắt ngang vẫn đi tiếp G2–G4 với N theo
+    # độ chính xác và SAP cắt ngang). Thiết kế đó là SUY LUẬN của máy, không phải quyết định của ai. PI đã ghim đúng
+    # thiết kế đang dùng ⇒ vẫn REVIEW (quyết định tường minh, PI giải trình nếu cố ý). Không hạ cấp quyết định đã chốt:
+    # G1-HUMAN-01 chỉ PASS khi pin khớp thiết kế, nên một G1 từng được xác nhận luôn rơi vào nhánh «đã ghim».
+    ghim_02d = _first_present(meta.get("design_code"), _g1_meta(meta).get("design"))
+    pi_da_ghim = _present(ghim_02d) and S.ma_thiet_ke_chuoi(str(ghim_02d)) == internal
     if not hop_le:
         tk_status = "PASS"
         tk_evidence = "G0 chưa khai loại câu hỏi — không đối chiếu được (G1-AUTO-01 đã giữ G1 chờ G0 chốt)"
     elif internal in hop_le:
         tk_status, tk_evidence = "PASS", f"thiết kế «{internal}» hợp với loại câu hỏi G0 «{qt_g0}»"
-    else:
+    elif pi_da_ghim:
         tk_status = "REVIEW"
-        tk_evidence = (f"thiết kế «{internal}» không thuộc nhóm thiết kế của loại câu hỏi G0 «{qt_g0}» "
+        tk_evidence = (f"thiết kế «{internal}» (PI đã ghim) không thuộc nhóm thiết kế của loại câu hỏi G0 «{qt_g0}» "
+                       f"({', '.join(sorted(hop_le))}) — PI giải trình nếu cố ý")
+    else:
+        tk_status = "BLOCK"
+        tk_evidence = (f"thiết kế «{internal}» do MÁY suy (PI chưa ghim) trái loại câu hỏi PI đã chốt ở G0 «{qt_g0}» "
                        f"({', '.join(sorted(hop_le))})")
     automatic.append(_criterion(
         "G1-AUTO-02d",
         "Thiết kế hợp với loại câu hỏi đã chốt ở G0",
         tk_status,
         tk_evidence,
-        "Đổi thiết kế cho khớp câu hỏi, hoặc sửa question_type ở G0 rồi chạy lại G1 (PI giải trình nếu cố ý).",
+        "Chạy lại G1 để suy lại theo loại câu hỏi G0; hoặc PI sửa question_type ở G0, hoặc ghim study_meta.design_code "
+        "(PI giải trình nếu cố ý chọn thiết kế ngoài nhóm).",
     ))
 
     annex2 = A2X.evaluate(meta, internal, "G1")
