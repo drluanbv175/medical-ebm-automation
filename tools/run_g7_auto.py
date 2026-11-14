@@ -896,11 +896,73 @@ _KHOA_UOC_LUONG_G6 = ("primary_outcome", "ordinal", "survival", "multivariate", 
 _SO_RE = re.compile(r"(?<!\w)(?<!\d\.)-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?(?!\w)(?!\.\d)")
 
 
-def _mot_dong(s: Any, toi_da: int = 220) -> str:
-    """Chuỗi một dòng, an toàn để nhúng trong ô [CẦN …] / ô bảng: gộp khoảng trắng, ngoặc vuông → ngoặc tròn (ngoặc
-    lạ làm ô [CẦN không đóng — lỗi cấu trúc G7-AUTO-05), «|» → «/», cắt bớt khi quá dài."""
-    t = " ".join(str(s if s is not None else "").split()).replace("[", "(").replace("]", ")").replace("|", "/")
+# Ô chờ người thật mà G6 tự ghi trong chuỗi của nó («[CẦN BÁC SĨ/THỐNG KÊ VIÊN XÁC NHẬN CHIỀU DIỄN GIẢI …]», «[CẦN
+# BIOSTATISTICIAN …]», «[TODO …]»). So trên bản NFC, không phân biệt hoa thường.
+_O_CHO_G6_RE = re.compile(r"\[\s*(?:CẦN|REQUIRE_HUMAN|TODO)", re.IGNORECASE)
+
+
+def _gop_mot_dong(s: Any) -> str:
+    """Gộp mọi khoảng trắng (kể cả xuống dòng — dòng trống làm ô [CẦN …] «không đóng trong đoạn») về một dấu cách."""
+    return " ".join(unicodedata.normalize("NFC", str(s if s is not None else "")).split())
+
+
+def _ngoac_can_bang(t: str) -> bool:
+    """Ngoặc vuông cân và không bao giờ đóng trước khi mở — điều kiện để giữ nguyên ngoặc khi lồng trong một ô [CẦN …]
+    (g7_quality_gate._khoi_can đếm độ lồng, nên ô lồng cân vẫn là MỘT ô đã đóng)."""
+    sau = 0
+    for c in t:
+        if c == "[":
+            sau += 1
+        elif c == "]":
+            sau -= 1
+            if sau < 0:
+                return False
+    return sau == 0
+
+
+def _trong_o(s: Any, toi_da: int = 220) -> str:
+    """Chuỗi G6 nhúng VÀO TRONG một ô [CẦN …] của G7 (lỗi, cảnh báo, lý do): gộp một dòng, ngoặc vuông → ngoặc tròn
+    (ngoặc lạ làm ô không đóng — lỗi cấu trúc G7-AUTO-05), «|» → «/», cắt bớt khi quá dài. Đổi ngoặc ở ĐÂY an toàn vì
+    ô ngoài của G7 đã là ô chờ người thật — bộ đếm G7/G8 vẫn bắt."""
+    t = _gop_mot_dong(s).replace("[", "(").replace("]", ")").replace("|", "/")
     return t if len(t) <= toi_da else t[: toi_da - 1] + "…"
+
+
+def _nguyen_van_trong_o(s: Any) -> str:
+    """Chuỗi G6 chép NGUYÊN VĂN vào trong một ô [CẦN …] của G7 — KHÔNG cắt (cắt giữa câu làm cụt caveat của G6, vd
+    phần TOST của diễn giải equivalence). Giữ ngoặc vuông khi cân (ô [CẦN …] của G6 lồng bên trong vẫn hiện nguyên);
+    lệch thì đổi sang ngoặc tròn để ô ngoài luôn đóng. «|» → «/» (an toàn cả khi nằm trong ô bảng)."""
+    t = _gop_mot_dong(s).replace("|", "/")
+    return t if _ngoac_can_bang(t) else t.replace("[", "(").replace("]", ")")
+
+
+def _mot_dong(s: Any, toi_da: int = 220) -> str:
+    """Chuỗi G6 đặt NGOÀI ô [CẦN …] (tên nhóm/biến/mô hình, tên phép kiểm, định nghĩa tỷ lệ, phương pháp…).
+
+    SỬA 15/11/2026 (thẩm định PR #261): bản trước đổi «[» → «(» cho MỌI chuỗi, kể cả văn xuôi G6 nằm ngoài ô — ô
+    người-thật của G6 («[CẦN BÁC SĨ/THỐNG KÊ VIÊN XÁC NHẬN CHIỀU DIỄN GIẢI …]») bị tẩy thành «(CẦN …)»: bác sĩ gỡ nhãn
+    đối chiếu xong thì G7-AUTO-05/G8-AUTO-04 đếm 0 ô, cho qua (xanh giả). Nay chuỗi G6 có ô chờ người thật ⇒ bọc
+    NGUYÊN VĂN, không cắt, trong một ô [CẦN THỐNG KÊ VIÊN …] của G7 — luôn là ô chờ cho tới khi người thật xử lý.
+    Chuỗi không có ô chờ: gộp một dòng, ngoặc vuông → ngoặc tròn (chỉ là hình thức), «|» → «/», cắt khi quá dài."""
+    t = _gop_mot_dong(s)
+    if _O_CHO_G6_RE.search(t):
+        return f"[CẦN THỐNG KÊ VIÊN — G6 ghi kèm ô chờ người thật: {_nguyen_van_trong_o(t)}]"
+    t = t.replace("[", "(").replace("]", ")").replace("|", "/")
+    return t if len(t) <= toi_da else t[: toi_da - 1] + "…"
+
+
+def _dong_canh_bao_g6(*nguon: Any, nhan: str = "G6 cảnh báo gắn với số ở trên") -> list[str]:
+    """Mỗi cảnh báo G6 (chuỗi, hoặc danh sách chuỗi như `canh_bao`) ⇒ MỘT dòng «[CẦN THỐNG KÊ VIÊN — <nhãn>: …]» chép
+    nguyên văn, đặt NGAY dưới số mà nó gắn với (THÊM 15/11/2026, thẩm định PR #261: EPV, ít cụm/SE sandwich thiên
+    thấp, Brant giả định độc lập, tỷ lệ 0/1 không ước lượng được DE, thiếu scipy ⇒ KTC hẹp hơn SAP… trước đây bị bỏ
+    âm thầm trong khi chính số đó được chép như số chính)."""
+    dong: list[str] = []
+    for x in nguon:
+        for c in (x if isinstance(x, (list, tuple)) else [x]):
+            if c is None or isinstance(c, (dict, bool)) or not str(c).strip():
+                continue
+            dong.append(f"[CẦN THỐNG KÊ VIÊN — {nhan}: {_nguyen_van_trong_o(c)}]  ")
+    return dong
 
 
 def _so_g6(v: Any) -> str:
@@ -1007,14 +1069,16 @@ def doc_tom_tat_g6_hop_le(out_dir: Path) -> dict:
 
 def _bang_mo_hinh_g6(tieu_de: str, mh: Any) -> list[str]:
     """Bảng Markdown cho MỘT mô hình của G6 ({model, n, results:[{variable, OR_adj|beta, CI_95, p}]}). Mục G6 gắn cờ
-    không hội tụ (số đã bị G6 gỡ khỏi khoá chính) ⇒ ô [CẦN THỐNG KÊ VIÊN], không in số «không tin cậy»."""
+    không hội tụ (số đã bị G6 gỡ khỏi khoá chính) ⇒ ô [CẦN THỐNG KÊ VIÊN], không in số «không tin cậy». Cảnh báo G6
+    của chính mô hình (`warning` kể cả khi CÓ results, `epv_warning`, danh sách `canh_bao` — vd ít cụm ⇒ SE sandwich
+    thiên thấp) ⇒ mỗi cảnh báo một ô [CẦN THỐNG KÊ VIÊN] ngay dưới bảng (thẩm định PR #261)."""
     if not isinstance(mh, dict):
         return []
     if mh.get("error"):
-        return [f"{tieu_de}: [CẦN THỐNG KÊ VIÊN — G6 báo lỗi: {_mot_dong(mh['error'])}]  ", ""]
+        return [f"{tieu_de}: [CẦN THỐNG KÊ VIÊN — G6 báo lỗi: {_trong_o(mh['error'])}]  ", ""]
     kq = [r for r in (mh.get("results") or []) if isinstance(r, dict)]
     if mh.get("warning") and not kq:
-        return [f"{tieu_de}: [CẦN THỐNG KÊ VIÊN — G6 không chạy mô hình: {_mot_dong(mh['warning'])}]  ", ""]
+        return [f"{tieu_de}: [CẦN THỐNG KÊ VIÊN — G6 không chạy mô hình: {_trong_o(mh['warning'])}]  ", ""]
     if not kq:
         return []
     co_or = any("OR_adj" in r or "OR_adj" in (r.get("so_tho_khong_tin_cay") or {}) for r in kq)
@@ -1030,45 +1094,101 @@ def _bang_mo_hinh_g6(tieu_de: str, mh: Any) -> list[str]:
         dong.append(f"| `{ten}` | {_so_g6(r[khoa])} | {_ci_g6(r.get('CI_95'))} | {_p_g6(r.get('p'))} |")
     dong.append("")
     if mh.get("khong_hoi_tu"):
-        ly_do = _mot_dong("; ".join(map(str, mh.get("ly_do") or [])))
+        ly_do = _trong_o("; ".join(map(str, mh.get("ly_do") or [])))
         dong += [f"[CẦN THỐNG KÊ VIÊN — G6: mô hình không hội tụ ({ly_do})]  ", ""]
+    canh_bao = _dong_canh_bao_g6(mh.get("warning"), mh.get("epv_warning"), mh.get("canh_bao"))
+    if canh_bao:
+        dong += canh_bao + [""]
     return dong
+
+
+def _khoi_cum_g6(cu: dict, g0: str, g1: str, nhi_phan: bool) -> list[str]:
+    """Ước lượng thô hiệu chỉnh cụm của G6 (`primary_outcome.cum` — SE sandwich theo cụm, N7) chép NGUYÊN VĂN làm
+    dòng CHÍNH của thiết kế cụm. Chiều đúng như G6 tính (`_so_sanh_hai_nhom_cum`: biến nhóm = 1 ở `g1`): OR = `g1` so
+    với `g0`, RD/MD = `g1` − `g0`. Không hội tụ / lỗi / ghi chú ⇒ ô [CẦN THỐNG KÊ VIÊN]; `canh_bao` ⇒ ô cảnh báo."""
+    N = NHAN_DOI_CHIEU_G6
+    cot = _mot_dong(cu.get("cot", "?"))
+    if cu.get("error"):
+        return [f"[CẦN THỐNG KÊ VIÊN — G6 KHÔNG hiệu chỉnh cụm «{cot}» được ({_trong_o(cu['error'])}); thiết kế gom "
+                "cụm cần ước lượng hiệu chỉnh cụm làm kết quả chính — chưa có thì chưa báo cáo được kết cục chính]  "]
+    dong = [f"Ước lượng CHÍNH theo thiết kế cụm — G6 hiệu chỉnh cụm «{cot}» (SE sandwich theo cụm; "
+            f"{_so_g6(cu.get('so_cum'))} cụm; n phân tích = {_so_g6(cu.get('n'))}) {N}  "]
+    if cu.get("loai_thieu_ma_cum"):
+        dong.append(f"G6 loại {_so_g6(cu['loai_thieu_ma_cum'])} hàng thiếu mã cụm {N}  ")
+    co_so = False
+    if nhi_phan:
+        if cu.get("khong_hoi_tu"):
+            dong.append("OR hiệu chỉnh cụm: [CẦN THỐNG KÊ VIÊN — G6 gắn cờ không hội tụ, không dùng số này]  ")
+        elif "or_cum" in cu:
+            co_so = True
+            dong.append(f"Hiệu chỉnh cụm (nhóm `{g1}` so với `{g0}`): OR = {_so_g6(cu['or_cum'])} "
+                        f"(95% CI {_ci_g6(cu.get('ci_95_cum'))}), p = {_p_g6(cu.get('p_cum'))} {N}  ")
+        if cu.get("ghi_chu"):
+            dong.append(f"[CẦN THỐNG KÊ VIÊN — G6 ghi chú hiệu chỉnh cụm: {_nguyen_van_trong_o(cu['ghi_chu'])}]  ")
+        if "risk_diff_cum" in cu:
+            co_so = True
+            dong.append(f"Hiệu chỉnh cụm (`{g1}` − `{g0}`): RD = {_so_g6(cu['risk_diff_cum'])} "
+                        f"(95% CI {_ci_g6(cu.get('risk_diff_ci_95_cum'))}), p = {_p_g6(cu.get('p_rd_cum'))} {N}  ")
+    elif "md_cum" in cu:
+        co_so = True
+        dong.append(f"Hiệu chỉnh cụm (`{g1}` − `{g0}`): MD = {_so_g6(cu['md_cum'])} "
+                    f"(95% CI {_ci_g6(cu.get('md_ci_95_cum'))}), p = {_p_g6(cu.get('p_cum'))} {N}  ")
+    if not co_so:
+        dong.append("[CẦN THỐNG KÊ VIÊN — tóm tắt G6 không mang ước lượng hiệu chỉnh cụm dùng được; chưa có ước "
+                    "lượng chính của thiết kế cụm]  ")
+    return dong + _dong_canh_bao_g6(cu.get("canh_bao"))
 
 
 def _khoi_ket_cuc_chinh_g6(po: dict) -> list[str]:
     """Kết cục chính (compare_primary_outcome của G6): nhị phân ⇒ biến cố/n, OR thô, RD thô; liên tục ⇒ trung bình (SD),
-    MD thô, ước lượng của phép kiểm; p + tên phép kiểm."""
+    MD thô, ước lượng của phép kiểm; p + tên phép kiểm.
+
+    Chiều GHIM theo cách G6 tính: OR thô = `g1` so với `g0`, RD = p(`g1`) − p(`g0`), MD thô = `g1` − `g0`; còn chuỗi
+    ước lượng của phép kiểm (`effect`, `_compare_continuous(s0, s1)`) tính `g0` − `g1` — NGƯỢC chiều MD thô, nên dòng
+    đó mang nhãn chiều riêng (không để hai dấu trái nhau đứng cạnh mà không giải thích).
+
+    Có cụm (`po.cum`, SỬA 15/11/2026 theo thẩm định PR #261): ước lượng hiệu chỉnh cụm chép làm dòng CHÍNH; OR/RD/MD
+    thô và p của Chi-square/t-test giả định quan sát ĐỘC LẬP (G6 dán nhãn như vậy ở Bảng 2) ⇒ mỗi dòng mang nhãn
+    «giả định quan sát ĐỘC LẬP» và đứng sau một ô [CẦN THỐNG KÊ VIÊN] nói rõ đây KHÔNG phải ước lượng chính."""
     N = NHAN_DOI_CHIEU_G6
     if po.get("error"):
-        return [f"Kết cục chính: [CẦN THỐNG KÊ VIÊN — G6 báo lỗi: {_mot_dong(po['error'])}]  "]
+        return [f"Kết cục chính: [CẦN THỐNG KÊ VIÊN — G6 báo lỗi: {_trong_o(po['error'])}]  "]
     g0, g1 = [_mot_dong(g) for g in (list(po.get("groups") or []) + ["?", "?"])[:2]]
     a = po.get("group_0") if isinstance(po.get("group_0"), dict) else {}
     b = po.get("group_1") if isinstance(po.get("group_1"), dict) else {}
+    nhi_phan = po.get("outcome_type") == "binary"
+    cu = po.get("cum") if isinstance(po.get("cum"), dict) else None
     dong: list[str] = []
-    if po.get("outcome_type") == "binary":
+    if nhi_phan:
         dong.append(f"Nhóm `{g0}`: {_so_g6(a.get('events'))}/{_so_g6(a.get('n'))} ({_so_g6(a.get('pct'))}%); "
                     f"nhóm `{g1}`: {_so_g6(b.get('events'))}/{_so_g6(b.get('n'))} ({_so_g6(b.get('pct'))}%) {N}  ")
-        if "or_crude" in po:
-            dong.append(f"Ước lượng thô (nhóm `{g1}` so với `{g0}`): OR = {_so_g6(po['or_crude'])} "
-                        f"(95% CI {_ci_g6(po.get('ci_95'))}) {N}  ")
-        if "risk_diff" in po:
-            dong.append(f"Hiệu số nguy cơ thô: RD = {_so_g6(po['risk_diff'])} "
-                        f"(95% CI {_ci_g6(po.get('risk_diff_ci_95'))}) {N}  ")
     else:
         dong.append(f"Nhóm `{g0}`: n = {_so_g6(a.get('n'))}, trung bình {_so_g6(a.get('mean'))} "
                     f"(SD {_so_g6(a.get('sd'))}); nhóm `{g1}`: n = {_so_g6(b.get('n'))}, trung bình "
                     f"{_so_g6(b.get('mean'))} (SD {_so_g6(b.get('sd'))}) {N}  ")
+    doc_lap = ""
+    if cu is not None:
+        dong += _khoi_cum_g6(cu, g0, g1, nhi_phan)
+        dong.append("[CẦN THỐNG KÊ VIÊN — các ước lượng thô và p dưới đây GIẢ ĐỊNH QUAN SÁT ĐỘC LẬP (G6 dán nhãn như "
+                    "vậy ở Bảng 2) — KHÔNG phải ước lượng chính của thiết kế cụm: KTC hẹp giả, p nhỏ giả; chỉ để đối "
+                    "chiếu — giữ làm phụ hay bỏ theo SAP]  ")
+        doc_lap = " — giả định quan sát ĐỘC LẬP"
+    if nhi_phan:
+        if "or_crude" in po:
+            dong.append(f"Ước lượng thô{doc_lap} (nhóm `{g1}` so với `{g0}`): OR = {_so_g6(po['or_crude'])} "
+                        f"(95% CI {_ci_g6(po.get('ci_95'))}) {N}  ")
+        if "risk_diff" in po:
+            dong.append(f"Hiệu số nguy cơ thô{doc_lap} (`{g1}` − `{g0}`): RD = {_so_g6(po['risk_diff'])} "
+                        f"(95% CI {_ci_g6(po.get('risk_diff_ci_95'))}) {N}  ")
+    else:
         if "md_crude" in po:
-            dong.append(f"Hiệu số trung bình thô (`{g1}` − `{g0}`): MD = {_so_g6(po['md_crude'])} {N}  ")
+            dong.append(f"Hiệu số trung bình thô{doc_lap} (`{g1}` − `{g0}`): MD = {_so_g6(po['md_crude'])} {N}  ")
         if po.get("effect") not in (None, "", "N/A"):
-            dong.append(f"Ước lượng của phép kiểm (G6): {_so_g6(po['effect'])} {N}  ")
+            dong.append(f"Ước lượng của phép kiểm (G6{doc_lap}; chiều `{g0}` − `{g1}` — NGƯỢC chiều MD thô ở trên): "
+                        f"{_so_g6(po['effect'])} {N}  ")
     if "p_value" in po:
-        dong.append(f"p = {_p_g6(po['p_value'])} ({_so_g6(po.get('test'))}) {N}  ")
-    if po.get("data_quality_warning"):
-        dong.append(f"[CẦN THỐNG KÊ VIÊN — G6 cảnh báo dữ liệu: {_mot_dong(po['data_quality_warning'])}]  ")
-    if isinstance(po.get("cum"), dict):
-        dong.append("[CẦN KẾT QUẢ THẬT — G6 có thêm ước lượng hiệu chỉnh cụm ở Bảng 2 "
-                    "(G6_table2_main_outcome.txt); chép từ bảng đó]  ")
+        dong.append(f"p = {_p_g6(po['p_value'])} ({_so_g6(po.get('test'))}){doc_lap} {N}  ")
+    dong += _dong_canh_bao_g6(po.get("data_quality_warning"), nhan="G6 cảnh báo dữ liệu")
     return dong
 
 
@@ -1081,6 +1201,10 @@ def dung_ket_qua_tu_g6(g6: dict) -> dict:
     if not (g6 or {}).get("hop_le"):
         return {"da_dung": False, "ly_do": (g6 or {}).get("ly_do") or "không có tóm tắt G6 hợp lệ"}
     tt, nguon, N = g6["tom_tat"], g6["nguon"], NHAN_DOI_CHIEU_G6
+    # Hệ quả có chủ ý (thẩm định PR #261, mức thấp): chép N của G6 vào nháp làm vế «N phân tích có trong Tóm tắt/Kết
+    # quả» của G7-AUTO-03 (g7_quality_gate.doi_chieu_ket_qua_g6) khớp THEO CẤU TẠO — tiêu chí đó giảm sức phân biệt,
+    # không thành đường fail-open: results_final do bác sĩ đặt và G7-AUTO-05 ở REVIEW khi còn nhãn đối chiếu. Checkpoint
+    # ghi rõ điều này (sections_auto_filled) để người đọc báo cáo cổng không hiểu nhầm.
     s1 = [f"Phân tích (G6): N = {_so_g6(tt['n_total'])} {N}  "]
     md = tt.get("missing_data")
     if isinstance(md, dict) and not md.get("error") and "n_complete_cases" in md:
@@ -1091,7 +1215,7 @@ def dung_ket_qua_tu_g6(g6: dict) -> dict:
     n_theo_nhom: Optional[dict] = None
     t1 = tt.get("table1")
     if isinstance(t1, dict) and t1.get("error"):
-        s2.append(f"[CẦN THỐNG KÊ VIÊN — G6 báo lỗi Bảng 1: {_mot_dong(t1['error'])}]  ")
+        s2.append(f"[CẦN THỐNG KÊ VIÊN — G6 báo lỗi Bảng 1: {_trong_o(t1['error'])}]  ")
     elif isinstance(t1, dict) and isinstance(t1.get("n_per_group"), dict) and t1["n_per_group"]:
         n_theo_nhom = {_mot_dong(g): v for g, v in t1["n_per_group"].items()}
         s2.append("Số người theo nhóm (G6): " + "; ".join(f"`{g}`: {_so_g6(v)}" for g, v in n_theo_nhom.items())
@@ -1102,12 +1226,19 @@ def dung_ket_qua_tu_g6(g6: dict) -> dict:
     s3: list[str] = []
     mh = tt.get("mo_hinh_chinh")
     if isinstance(mh, dict) and mh.get("da_chay") is False:
-        s3.append(f"[CẦN THỐNG KÊ VIÊN — G6: mô hình chính CHƯA chạy ({_mot_dong(mh.get('ly_do'))})]  ")
+        s3.append(f"[CẦN THỐNG KÊ VIÊN — G6: mô hình chính CHƯA chạy ({_trong_o(mh.get('ly_do'))})]  ")
     if isinstance(tt.get("primary_outcome"), dict):
         s3 += _khoi_ket_cuc_chinh_g6(tt["primary_outcome"])
     hi = tt.get("hypothesis_interpretation")
     if isinstance(hi, dict) and hi.get("note"):
-        s3.append(f"Diễn giải theo loại giả thuyết G3 (G6): {_mot_dong(hi['note'], 400)} {N}  ")
+        # SỬA 15/11/2026 (thẩm định PR #261): bản trước chép ghi chú vào THÂN BÀI qua _mot_dong(…, 400) — ô người-thật
+        # của G6 bị đổi «[» → «(» và phần caveat TOST bị cắt giữa câu; gỡ nhãn đối chiếu xong thì mệnh đề «… ĐẠT
+        # non-inferiority» ở lại bản thảo mà G7-AUTO-05/G8-AUTO-04 không thấy ô nào (xanh giả). Nay: cả ghi chú nằm
+        # NGUYÊN VĂN trong MỘT ô [CẦN THỐNG KÊ VIÊN …] — chiều diễn giải và kết luận NI/equivalence là quyết định của
+        # người thật, ô này chỉ hết khi người thật viết lại đoạn đó.
+        loai = _trong_o(hi.get("hypothesis_type") or "non_inferiority/equivalence", 60)
+        s3.append(f"[CẦN THỐNG KÊ VIÊN — diễn giải {loai} của G6 (chép nguyên văn, CHƯA phải kết luận; chiều diễn giải "
+                  f"và kết luận do người thật viết lại): {_nguyen_van_trong_o(hi['note'])}]  ")
     if s3:
         s3.append("")
     for ty in (tt.get("ty_le") if isinstance(tt.get("ty_le"), list) else []):
@@ -1115,28 +1246,34 @@ def dung_ket_qua_tu_g6(g6: dict) -> dict:
             continue
         if ty.get("error"):
             s3 += [f"Tỷ lệ `{_mot_dong(ty.get('cot', '?'))}`: [CẦN THỐNG KÊ VIÊN — G6 báo lỗi: "
-                   f"{_mot_dong(ty['error'])}]  ", ""]
+                   f"{_trong_o(ty['error'])}]  ", ""]
             continue
         ci = ty.get("CI_95") if ty.get("CI_95") is not None else ty.get("CI_95_wilson_doc_lap")
         s3.append(f"Tỷ lệ {_mot_dong(ty.get('dinh_nghia') or ty.get('cot'))}: {_so_g6(ty.get('so_su_kien'))}/"
                   f"{_so_g6(ty.get('n'))} = {_so_g6(ty.get('ty_le'))} (95% CI {_ci_g6(ci)}; "
                   f"{_mot_dong(ty.get('phuong_phap') or 'phương pháp: xem G6')}) {N}  ")
+        s3 += _dong_canh_bao_g6(ty.get("canh_bao"))
     if isinstance(tt.get("ordinal"), dict):
         s3 += _bang_mo_hinh_g6("Hồi quy thứ tự (G6, `G6_table4_ordinal.txt`)", tt["ordinal"])
         dvi = (tt["ordinal"].get("don_vi_phoi_nhiem") or {}) if isinstance(tt["ordinal"].get("don_vi_phoi_nhiem"),
                                                                              dict) else {}
         if dvi.get("dien_giai"):
             s3 += [f"Đơn vị phơi nhiễm (G6): {_mot_dong(dvi['dien_giai'])} {N}  ", ""]
+        br = tt["ordinal"].get("brant") if isinstance(tt["ordinal"].get("brant"), dict) else {}
+        cb_br = _dong_canh_bao_g6(br.get("canh_bao"), nhan="G6 cảnh báo kiểm định Brant (giả định tỷ lệ odds của "
+                                                          "bảng trên; số Brant không chép vào nháp)")
+        if cb_br:
+            s3 += cb_br + [""]
     sv = tt.get("survival")
     if isinstance(sv, dict):
         if sv.get("error"):
-            s3.append(f"Sống còn: [CẦN THỐNG KÊ VIÊN — G6 báo lỗi: {_mot_dong(sv['error'])}]  ")
+            s3.append(f"Sống còn: [CẦN THỐNG KÊ VIÊN — G6 báo lỗi: {_trong_o(sv['error'])}]  ")
         for khoa, ten in (("crude", "Cox thô"), ("adjusted", "Cox hiệu chỉnh")):
             c = sv.get(khoa)
             if not isinstance(c, dict):
                 loi = sv.get(khoa + "_error")
                 if loi:
-                    s3.append(f"{ten}: [CẦN THỐNG KÊ VIÊN — G6 báo lỗi: {_mot_dong(loi)}]  ")
+                    s3.append(f"{ten}: [CẦN THỐNG KÊ VIÊN — G6 báo lỗi: {_trong_o(loi)}]  ")
                 continue
             if c.get("khong_hoi_tu") or "HR" not in c:
                 s3.append(f"{ten}: [CẦN THỐNG KÊ VIÊN — G6 gắn cờ không hội tụ, không dùng số này]  ")
@@ -1145,6 +1282,7 @@ def dung_ket_qua_tu_g6(g6: dict) -> dict:
                   if khoa == "adjusted" else "")
             s3.append(f"{ten}{hb}: HR = {_so_g6(c['HR'])} (95% CI {_ci_g6(c.get('CI_95'))}), p = {_p_g6(c.get('p'))} "
                       f"{N}  ")
+        s3 += _dong_canh_bao_g6(sv.get("epv_warning"), nhan="G6 cảnh báo EPV của mô hình Cox ở trên")
         s3.append("")
     km = tt.get("kaplan_meier")
     if isinstance(km, dict) and isinstance(km.get("groups"), dict) and km["groups"]:
@@ -1168,9 +1306,9 @@ def dung_ket_qua_tu_g6(g6: dict) -> dict:
     mi = tt.get("multiple_imputation")
     if isinstance(mi, dict):
         if mi.get("skipped"):
-            s5.append(f"[CẦN KẾT QUẢ THẬT — G6 không chạy gán đa trị (MI): {_mot_dong(mi.get('reason'))}]  ")
+            s5.append(f"[CẦN KẾT QUẢ THẬT — G6 không chạy gán đa trị (MI): {_trong_o(mi.get('reason'))}]  ")
         elif mi.get("error"):
-            s5.append(f"Gán đa trị (MI): [CẦN THỐNG KÊ VIÊN — G6 báo lỗi: {_mot_dong(mi['error'])}]  ")
+            s5.append(f"Gán đa trị (MI): [CẦN THỐNG KÊ VIÊN — G6 báo lỗi: {_trong_o(mi['error'])}]  ")
         else:
             s5 += [f"Gán đa trị (G6): m = {_so_g6(mi.get('n_imputations'))}; {_so_g6(mi.get('n_missing_rows'))}/"
                    f"{_so_g6(mi.get('n_total'))} hàng có dữ liệu thiếu được gán {N}  ", ""]
@@ -2337,6 +2475,11 @@ def write_checkpoint(
         sections_auto_filled.append(
             f"III. Results — NHÁP chép nguyên văn số từ {ket_qua_g6.get('nguon')} (N16); mỗi dòng số chờ bác sĩ "
             "đối chiếu + xoá nhãn; sàng lọc/giá trị từng biến Bảng 1/kết cục phụ vẫn [CẦN]"
+        )
+        sections_auto_filled.append(
+            "Lưu ý G7-AUTO-03: vế «N phân tích có trong Tóm tắt/Kết quả» nay khớp THEO CẤU TẠO (máy chép N của G6 vào "
+            "nháp) — không còn là bằng chứng tác giả tự đưa đúng N vào phần mình viết; chốt thật là bác sĩ đối chiếu, "
+            "gỡ nhãn rồi mới đặt results_final"
         )
     cp = {
         "gate":       "G7",
