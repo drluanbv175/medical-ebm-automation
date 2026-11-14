@@ -125,8 +125,9 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 24/10/2026 (bác sĩ gỡ plugin aipoch): dieu-phoi-nghien-cuu + _PLUGIN-ROUTING-CONTRACT bỏ worker aipoch; bản cặp y hệt
 # gốc; vẫn 64.
 # 12/11/2026: thang-diem-nguy-co chép bản chuẩn của repo gốc (#316, 08/11 — 7 máy tính lý do khám ngoại trú); vẫn 64.
+# 14/11/2026: sinh lại khối TRÁCH NHIỆM (máy sinh) của dieu-phoi-g6 + phan-tich-thong-ke cho G6-AUTO-11; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "44b72b384b7bff6a9408d894210b80227f6dd0a81590546170da0bed05c83fa1"
+    "c17b52cf7a654e1fe559bef1791165ddedb737da51d4431a056a005f3ff18804"
 )
 
 MINIMUM_AGENT_COUNT = 64

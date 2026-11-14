@@ -46,13 +46,13 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G6 (09/10/2026)
 Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối
-của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Mọi tiêu chí (12) của
+của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Mọi tiêu chí (13) của
 `tools/g6_quality_gate.py` đã gán ĐÚNG MỘT bên ở `hoi_dong_cong.PHAN_CONG`
 (bảng dưới chép lại; test đối chiếu):
 
 | Bên chịu trách nhiệm | Tiêu chí |
 |---|---|
-| `G6-T1` — agent `phan-tich-thong-ke` | G6-AUTO-00, G6-AUTO-02, G6-AUTO-03, G6-AUTO-04, G6-AUTO-05, G6-AUTO-06, G6-AUTO-07, G6-AUTO-08, G6-AUTO-10 |
+| `G6-T1` — agent `phan-tich-thong-ke` | G6-AUTO-00, G6-AUTO-02, G6-AUTO-03, G6-AUTO-04, G6-AUTO-05, G6-AUTO-06, G6-AUTO-07, G6-AUTO-08, G6-AUTO-10, G6-AUTO-11 |
 | `G6-T2\|G6-T4\|G6-T5\|G6-T1` — agent `meta-phan-tich` (tổng quan hệ thống có gộp định lượng); `mo-hinh-tien-luong` (thiết kế mô hình dự báo (prediction)); `nghien-cuu-dinh-tinh` (thiết kế định tính (qualitative)), ngược lại `phan-tich-thong-ke` | G6-AUTO-09 |
 | `STATISTICIAN@G6-T1` — NGƯỜI STATISTICIAN quyết/ký; agent chuẩn bị hồ sơ + lệnh: `phan-tich-thong-ke` | G6-HUMAN-01 |
 | `^G4` — cổng tiền đề G4 (điều phối cổng đó chịu trách nhiệm) | G6-AUTO-01 |
