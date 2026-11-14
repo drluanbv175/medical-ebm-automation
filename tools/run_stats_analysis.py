@@ -75,6 +75,7 @@ for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
         pass
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import bien_phai_sinh as BPS  # noqa: E402 — biến phái sinh (F1, 14/11/2026)
 import g5_quality_gate as G5Q  # noqa: E402
 import gate_contract as GC  # noqa: E402
 
@@ -2438,6 +2439,24 @@ def main():
     df = load_data(args.data)
 
     covariates = [c.strip() for c in args.covariates.split(",") if c.strip()]
+
+    # 1b. BIẾN PHÁI SINH (F1, 14/11/2026 — bác sĩ chọn «biến phái sinh tự động»): biến mà đặc tả dùng tới nhưng dữ liệu
+    # khoá không có, có công thức trong exports/<mã>/_bien-phai-sinh.csv ⇒ tính TẤT ĐỊNH ngay đây (dữ liệu khoá không
+    # đổi, lượt sau tính lại ra đúng số). Công thức dùng tới chưa được thống kê viên/PI duyệt ⇒ DỪNG (đề tài giả lập:
+    # cảnh báo). Trước bản vá: kết cục chính phái sinh (vd `xn_du` của BTM) không tồn tại ⇒ phân tích không chạy được.
+    can_phai_sinh = [args.outcome, args.group, args.time, args.event, args.cot_cum, *covariates, *(args.ty_le or []),
+                     *[v.strip() for v in args.vars.split(",") if v.strip()]]  # fmt: skip
+    try:
+        df, thong_tin_phai_sinh = BPS.ap_dung_cho_phan_tich(df, _thu_muc_de_tai(args.study), args.study, can_phai_sinh)
+    except (BPS.TuChoi, BPS.LoiCongThuc) as e:
+        print(f"✗ DỪNG: biến phái sinh — {e}")
+        sys.exit(1)
+    if thong_tin_phai_sinh:
+        print(f"✓ Biến phái sinh tính từ {BPS.TEP_DAC_TA}: " + ", ".join(
+            f"{t} ({v['so_co_gia_tri']} ca có giá trị, {v['duyet']})" for t, v in thong_tin_phai_sinh["bien"].items()))
+        for cb in thong_tin_phai_sinh["canh_bao"]:
+            print(f"  ⚠️  {cb}")
+
     vars_for_t1 = ([v.strip() for v in args.vars.split(",") if v.strip()]
                    or [c for c in df.columns if c not in [args.group, args.outcome]])
 
@@ -2461,6 +2480,8 @@ def main():
         "n_total": len(df),
         "disclaimer": "Cần bác sĩ kiểm chứng."
     }
+    if thong_tin_phai_sinh:
+        summary["bien_phai_sinh"] = thong_tin_phai_sinh  # cầu nối SPSS/R tự tính lại ĐỘC LẬP từ cùng công thức
     # ĐẶC TẢ phân tích đúng như lượt chạy này (14/11/2026) — để tools/cau_noi_spss.py sinh cú pháp SPSS khớp TỪNG biến
     # và đối chiếu kết quả bằng phần mềm thứ hai, không bắt người dùng khai lại tham số.
     summary["dac_ta_phan_tich"] = {

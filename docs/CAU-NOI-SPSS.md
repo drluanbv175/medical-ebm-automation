@@ -13,6 +13,8 @@ cổng tiếp nhận.
 SPSS chạy ở **chế độ nền** (external mode): không mở giao diện, không cần bấm. Máy không có SPSS (Windows chưa cài,
 Cloud, CI) thì công cụ vẫn sinh cú pháp `.sps` để chạy tay trong SPSS ở máy khác.
 
+> **Biến phái sinh (F1, 14/11/2026):** khi lượt Python dùng biến phái sinh (khoá `bien_phai_sinh` của `G6_analysis_summary.json`), cầu nối tự sinh mã tính lại ĐỘC LẬP từ cùng công thức ngay sau khi nạp dữ liệu khoá; công thức đổi sau lượt Python ⇒ từ chối. Xem `docs/BIEN-PHAI-SINH.md`.
+
 ## Lệnh
 
 Chạy trong `medical-ebm-automation/`:
