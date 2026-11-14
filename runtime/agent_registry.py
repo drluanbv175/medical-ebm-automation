@@ -126,8 +126,11 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # gốc; vẫn 64.
 # 12/11/2026: thang-diem-nguy-co chép bản chuẩn của repo gốc (#316, 08/11 — 7 máy tính lý do khám ngoại trú); vẫn 64.
 # 14/11/2026: sinh lại khối TRÁCH NHIỆM (máy sinh) của dieu-phoi-g6 + phan-tich-thong-ke cho G6-AUTO-11; vẫn 64.
+# 14/11/2026 (dạy agent luật mới, cặp PR gốc): kiem-chung-trich-dan (A12 dựng từ biên nhận, lệch ⇒ chặn lắp G10),
+# phan-tich-thong-ke + dieu-phoi-g6 (G6-AUTO-11 trọng số hậu phân tầng), dieu-phoi-nghien-cuu (bình duyệt độc lập
+# MỘT agent trước mốc nộp/khoá); bản cặp y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "c17b52cf7a654e1fe559bef1791165ddedb737da51d4431a056a005f3ff18804"
+    "15153effb2726c7ea8e2ab3d70c6ccdcf5498823bb825a2d5e164a993d83d7b7"
 )
 
 MINIMUM_AGENT_COUNT = 64
