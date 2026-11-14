@@ -85,16 +85,19 @@
      "gia_tri": 0,
      "n": 205,
      "so_bien_co": 138,
-     "trung_vi": 70
+     "trung_vi": 70,
+     "trung_vi_thay_the": null
     },
     {
      "gia_tri": 1,
      "n": 195,
      "so_bien_co": 161,
-     "trung_vi": 30
+     "trung_vi": 30,
+     "trung_vi_thay_the": null
     }
    ],
-   "logrank_p": 1.51975944691405e-07
+   "logrank_p": 1.51975944691405e-07,
+   "logrank_n": 400
   }
  },
  "loi": {},

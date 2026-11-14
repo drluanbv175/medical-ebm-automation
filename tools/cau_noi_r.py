@@ -19,18 +19,21 @@ Năm lệnh:
               CÙNG tập ca với mô hình hiệu chỉnh; Kaplan–Meier + log-rank).
   chay        `Rscript --vanilla` có thời hạn ⇒ nhật ký + `exports/<mã>/G6_r_ket_qua.json` (phiên bản R, phiên bản gói,
               SHA-256 dữ liệu).
-  doi-chieu   So ước lượng R với G6_analysis_summary.json (ngưỡng và `so_mot` của cầu nối SPSS) ⇒
-              `G6_r_doi_chieu.json/.md`; chặn khi R và Python không cùng bộ dữ liệu khoá hoặc không cùng đặc tả.
+  doi-chieu   So ước lượng R với G6_analysis_summary.json (ngưỡng ước lượng/KTC của cầu nối SPSS; p thêm điều kiện
+              tương đối; số ca phải bằng; KHÔNG miễn trừ «khác phương pháp») ⇒ `G6_r_doi_chieu.json/.md`. Mục chỉ MỘT
+              phía ra số (Python sập mô hình mà R chạy, hoặc ngược lại) ⇒ dòng «không so được», mã 2. Chặn khi R và
+              Python không cùng bộ dữ liệu khoá hoặc không cùng đặc tả.
 
 RANH GIỚI (CLAUDE.md §1.1): R là phần mềm KIỂM CHÉO — chủ G6 vẫn là `run_stats_analysis.py`. Công cụ không đổi trạng
 thái cổng, không ký, không ghi study_meta/approval_ledger; dữ liệu không PII (cột «Identifier?=y» trong từ điển G5 ⇒ từ
-chối).
+chối; cột không có trong từ điển ⇒ từ chối; từ điển thiếu cột «Identifier?» ⇒ không đo được).
 
 Đo thật 14/11/2026 trên R 4.6.2 (Mac), dữ liệu giả, phía Python là chính `run_stats_analysis.py`: xem
 `docs/CAU-NOI-R.md` mục «Kết quả đo thật».
 
-Mã thoát: 0 xong/khớp · 1 lệch hoặc R lỗi · 2 không đo được (máy không có R, thiếu gói, thiếu tệp đầu vào) · 3 từ chối
-(PII, dữ liệu không khớp manifest khoá, đặc tả lệch, tham số sai). Cần bác sĩ kiểm chứng.
+Mã thoát: 0 xong/MỌI dòng khớp · 1 lệch, R lỗi hoặc một khối R lỗi · 2 không đo được (máy không có R, thiếu gói, thiếu
+tệp/từ điển, còn mục chỉ một phía ra số) · 3 từ chối (PII hoặc cột ngoài từ điển, dữ liệu không khớp manifest khoá, đặc
+tả lệch, tên biến không có trong dữ liệu, tham số sai). Cần bác sĩ kiểm chứng.
 """
 
 from __future__ import annotations
@@ -64,14 +67,26 @@ GOI_CAN = ("jsonlite", "sandwich", "lmtest", "survival", "ordinal")
 KHO_CRAN = "https://cloud.r-project.org"
 # keep_default_na của pandas 2.x — chỉ dùng khi máy sinh script không có pandas (bình thường đọc thẳng từ pandas).
 NA_PANDAS_DU_PHONG = (
-    "", "#N/A", "#N/A N/A", "#NA", "-1.#IND", "-1.#QNAN", "-NaN", "-nan", "1.#IND", "1.#QNAN", "<NA>", "N/A",
-    "NA", "NULL", "NaN", "None", "n/a", "nan", "null",
-)  # fmt: skip
-GHI_CHU_THU_TU = (
-    "statsmodels OrderedModel (BFGS, SE từ Hessian số) ≠ ordinal::clm (Newton, Hessian giải tích) — "
-    "ước lượng trùng, KTC/p lệch rất nhỏ"
+    "",
+    "#N/A",
+    "#N/A N/A",
+    "#NA",
+    "-1.#IND",
+    "-1.#QNAN",
+    "-NaN",
+    "-nan",
+    "1.#IND",
+    "1.#QNAN",
+    "<NA>",
+    "N/A",
+    "NA",
+    "NULL",
+    "NaN",
+    "None",
+    "n/a",
+    "nan",
+    "null",
 )
-GHI_CHU_MW_NHO = "scipy dùng phép chính xác khi một nhóm ≤ 8 ca và không có hạng trùng; R dùng xấp xỉ chuẩn"
 
 
 def thu_muc_de_tai(study: str) -> Path:
@@ -302,31 +317,62 @@ def lenh_cai_goi(args) -> int:
 # ───────────────────────────── PII, mã thiếu, đặc tả ─────────────────────────────
 
 
+def _ds(x) -> list[str]:
+    """Danh sách chuỗi từ JSON của R: jsonlite `auto_unbox` biến mảng MỘT phần tử thành chuỗi — đừng `list()` chuỗi."""
+    if x is None:
+        return []
+    return [x] if isinstance(x, str) else [str(v) for v in x]
+
+
 def tieu_de_csv(p: Path) -> list[str]:
     with open(p, encoding="utf-8-sig", newline="") as f:
         return next(csv.reader(f), [])
 
 
+# Cột hệ thống REDCap không nằm trong từ điển dữ liệu (không phải câu trả lời của người tham gia). Mốc giờ khảo sát
+# (`*_timestamp`) KHÔNG được miễn — ngày giờ có thể là định danh gián tiếp.
+COT_HE_THONG_REDCAP = re.compile(
+    r"^(redcap_event_name|redcap_repeat_instrument|redcap_repeat_instance|redcap_data_access_group|[a-z0-9_]+_complete)$"
+)
+
+
 def kiem_pii(study: str, csv_p: Path, tu_dien: str | None = None) -> Path:
     """Từ chối khi bộ dữ liệu khoá có cột mà từ điển G5 đánh dấu «Identifier? = y» (cùng luật `xuat-sav` của SPSS).
 
-    Không có từ điển thì KHÔNG ĐO ĐƯỢC (mã 2) — không coi là «không có PII»."""
+    KHÔNG BAO GIỜ coi «không kiểm được» là «không có PII»:
+      · không có từ điển, hoặc từ điển không có cột «Identifier?» ⇒ KhongDoDuoc (mã 2);
+      · bộ dữ liệu có cột KHÔNG khai trong từ điển (trừ cột hệ thống REDCap) ⇒ TuChoi (mã 3) — không biết cột đó có
+        phải định danh hay không (G5 đòi mọi cột phải có trong từ điển)."""
     td_p = Path(tu_dien).expanduser() if tu_dien else thu_muc_de_tai(study) / f"G5_REDCap_dictionary_{study}.csv"
     if not td_p.exists():
         raise KhongDoDuoc(
             f"không thấy từ điển G5 ({td_p.name}) — không kiểm được cột định danh (Identifier?=y); "
             "truyền --dictionary <tệp>"
         )
+    if not any(c in S._TEN_COT_TD["dinh_danh"] for c in tieu_de_csv(td_p)):
+        raise KhongDoDuoc(
+            f"từ điển G5 ({td_p.name}) không có cột «Identifier?» — không kiểm được cột định danh; "
+            "bổ sung cột đó (y = định danh) rồi chạy lại"
+        )
     td = S.doc_tu_dien(td_p)
-    dinh_danh = []
+    dinh_danh, ngoai = [], []
     for cot in tieu_de_csv(csv_p):
-        d = td.get(cot) or td.get(re.sub(r"___[^_].*$", "", cot)) or {}
-        if d.get("dinh_danh", "").lower() in ("y", "yes", "1"):
+        d = td.get(cot) or td.get(re.sub(r"___[^_].*$", "", cot))
+        if d is None:
+            if not COT_HE_THONG_REDCAP.match(cot):
+                ngoai.append(cot)
+        elif d.get("dinh_danh", "").lower() in ("y", "yes", "1"):
             dinh_danh.append(cot)
     if dinh_danh:
         raise TuChoi(
             f"bộ dữ liệu khoá có cột ĐỊNH DANH (Identifier?=y trong từ điển G5): {', '.join(dinh_danh)} — "
             "khử định danh trước khi kiểm chéo bằng R"
+        )
+    if ngoai:
+        raise TuChoi(
+            f"bộ dữ liệu khoá có {len(ngoai)} cột KHÔNG có trong từ điển G5 ({', '.join(ngoai[:8])}"
+            f"{'…' if len(ngoai) > 8 else ''}) — không xác định được có phải định danh không; khai vào từ điển "
+            "(kèm «Identifier?») hoặc bỏ khỏi bộ dữ liệu khoá"
         )
     return td_p
 
@@ -500,6 +546,31 @@ bang_he_so <- function(b, V, ten, df_t = Inf, mu = FALSE) {
   ra
 }
 # Sandwich theo cụm CR1 = statsmodels cov_type="cluster" (use_correction: G/(G−1)·(N−1)/(N−K)).
+# >>> ham-kiem-thu (tests/test_cau_noi_r_20261114.py trích khối này chạy riêng)
+# Mann–Whitney như scipy.stats.mannwhitneyu(method="auto"): phép CHÍNH XÁC khi một nhóm ≤ 8 ca và KHÔNG có hạng
+# trùng; còn lại xấp xỉ chuẩn có hiệu chỉnh liên tục và hiệu chỉnh hạng trùng.
+p_mann_whitney <- function(s0, s1) {
+  chinh_xac <- (length(s0) <= 8 || length(s1) <= 8) && !anyDuplicated(c(s0, s1))
+  p <- suppressWarnings(stats::wilcox.test(s0, s1, exact = chinh_xac, correct = TRUE)$p.value)
+  list(p = p, phuong_phap = if (chinh_xac) "exact" else "asymptotic")
+}
+# Trung vị sống còn như lifelines: S(t) = exp(Σ[log(n − d) − log(n)]) — ĐÚNG phép tính số thực của lifelines (survfit
+# nhân dồn nên ra đúng 0,5 khi lifelines ra 0,5000000000000001) — rồi lấy thời điểm ĐẦU TIÊN S(t) ≤ 0,5. S(t) sát 0,5
+# (|S − 0,5| ≤ 1e−9) thì kèm trung vị THAY THẾ (thời điểm kề): ở điểm biên, kết quả phụ thuộc làm tròn của thư viện
+# toán chứ không phải khác biệt thật.
+trung_vi_lifelines <- function(thoi_gian, n_nguy_co, n_bien_co) {
+  s <- exp(cumsum(log(n_nguy_co - n_bien_co) - log(n_nguy_co)))
+  tv <- if (any(s <= 0.5)) min(thoi_gian[s <= 0.5]) else NA_real_
+  thay <- NA_real_
+  bien <- which(abs(s - 0.5) <= 1e-9)
+  if (length(bien)) {
+    ung <- c(thoi_gian[bien[1]], if (any(s < 0.5 - 1e-9)) min(thoi_gian[s < 0.5 - 1e-9]) else NA_real_)
+    khac <- ung[!is.na(ung) & (is.na(tv) | ung != tv)]
+    if (length(khac)) thay <- khac[1]
+  }
+  list(tv = tv, thay = thay)
+}
+# <<< ham-kiem-thu
 vc_cum <- function(fit, cum) sandwich::vcovCL(fit, cluster = cum, type = "HC1", cadjust = TRUE)
 df_cum <- function(cum) max(length(unique(cum)) - 1, 1)  # suy luận t(G−1) như Python (use_t=True, N11)
 
@@ -537,13 +608,12 @@ if (co(KET_CUC) && co(NHOM) && LOAI %in% c("binary", "continuous")) {
       s1 <- s1[is.finite(s1)]
       w <- stats::t.test(s1, s0, var.equal = FALSE)
       st <- stats::t.test(s1, s0, var.equal = TRUE)
-      mw <- suppressWarnings(stats::wilcox.test(s0, s1, exact = FALSE, correct = TRUE))
       list(loai = "continuous", nhom = muc, n = c(length(s0), length(s1)), md_g1_tru_g0 = mean(s1) - mean(s0),
            welch = list(md_g1_tru_g0 = unname(w$estimate[1] - w$estimate[2]), ci = as.numeric(w$conf.int),
                         p = w$p.value),
            student = list(md_g1_tru_g0 = unname(st$estimate[1] - st$estimate[2]), ci = as.numeric(st$conf.int),
                           p = st$p.value),
-           mann_whitney = list(p = mw$p.value))
+           mann_whitney = p_mann_whitney(s0, s1))
     }
   })
   # Ước lượng thô hiệu chỉnh cụm — _so_sanh_hai_nhom_cum()
@@ -659,9 +729,9 @@ if (co(THOI_GIAN) && co(BIEN_CO) && co(NHOM)) {
       if (!nrow(sub)) next
       e <- as.numeric(as.numeric(sub[[BIEN_CO]]) != 0)
       sf <- survival::survfit(Surv(as.numeric(sub[[THOI_GIAN]]), e) ~ 1)
-      # lifelines median_survival_time_: thời điểm ĐẦU TIÊN S(t) ≤ 0,5 (R mặc định lấy trung điểm khi S = 0,5)
-      tv <- if (any(sf$surv <= 0.5)) min(sf$time[sf$surv <= 0.5]) else NA_real_
-      nhom[[length(nhom) + 1]] <- list(gia_tri = m, n = nrow(sub), so_bien_co = sum(e), trung_vi = tv)
+      tv <- trung_vi_lifelines(sf$time, sf$n.risk, sf$n.event)
+      nhom[[length(nhom) + 1]] <- list(gia_tri = m, n = nrow(sub), so_bien_co = sum(e), trung_vi = tv$tv,
+                                       trung_vi_thay_the = tv$thay)
     }
     ra <- list(nhom = nhom)
     if (length(muc) == 2) {
@@ -669,6 +739,7 @@ if (co(THOI_GIAN) && co(BIEN_CO) && co(NHOM)) {
       e <- as.numeric(as.numeric(dk[[BIEN_CO]]) != 0)
       lr <- survival::survdiff(Surv(as.numeric(dk[[THOI_GIAN]]), e) ~ dk[[NHOM]])
       ra$logrank_p <- stats::pchisq(lr$chisq, df = 1, lower.tail = FALSE)
+      ra$logrank_n <- nrow(dk)
     }
     ra
   })
@@ -679,7 +750,8 @@ rong <- stats::setNames(list(), character(0))
 ra <- list(r_phien_ban = R.version.string, goi = lapply(stats::setNames(GOI_CAN, GOI_CAN),
            function(g) as.character(utils::packageVersion(g))),
            sha256_du_lieu = SHA_THUC, so_ca_doc = nrow(D), loai_ket_cuc = LOAI,
-           ket_qua = if (length(KET)) KET else rong, loi = if (length(LOI)) LOI else rong, canh_bao = CANH_BAO)
+           ket_qua = if (length(KET)) KET else rong, loi = if (length(LOI)) LOI else rong,
+           canh_bao = I(CANH_BAO))  # I(): MỘT cảnh báo vẫn là mảng (auto_unbox sẽ biến thành chuỗi)
 jsonlite::write_json(ra, TEP_RA, auto_unbox = TRUE, digits = NA, null = "null", na = "null", pretty = TRUE)
 cat("XONG_R ", TEP_RA, "\n", sep = "")
 """
@@ -704,10 +776,37 @@ def sinh_script_r(study: str, csv_p: Path, sha: str, tep_ra: Path, dt: dict, loa
         "@@PANDAS@@": ver_pd,
         "@@NA_PANDAS@@": vec_r(na),
     }
-    vb = MAU_R
-    for k, v in thay.items():
-        vb = vb.replace(k, v)
-    return vb
+    # MỘT lượt thay (regex): giá trị đã thay KHÔNG bị quét lại — tên cột chứa «@@…@@» không thể kéo mã R khác vào
+    # script (lượt rà 14/11/2026: thay tuần tự từng khoá đã cho tiêm mã R qua tên cột).
+    vb = re.sub(r"@@[A-Z_]+@@", lambda m: thay[m.group(0)], MAU_R)
+    return ascii_hoa_chuoi_r(vb)
+
+
+def ascii_hoa_chuoi_r(vb: str) -> str:
+    """Ký tự ngoài ASCII TRONG chuỗi R ⇒ «\\u{xxxx}». R đọc script theo mã trang của máy: ở locale C/Latin, chữ
+    Việt viết thẳng trong chuỗi bị đọc thành byte rời, ghi ra JSON thành «kh<c3><b4>ng». Chú thích giữ nguyên."""
+    ra, trong, chu_thich, i = [], None, False, 0
+    while i < len(vb):
+        ch = vb[i]
+        if chu_thich:
+            chu_thich = ch != "\n"
+            ra.append(ch)
+        elif trong:
+            if ch == "\\":
+                ra.append(vb[i : i + 2])
+                i += 2
+                continue
+            if ch == trong:
+                trong = None
+            ra.append(ch if ord(ch) < 128 else f"\\u{{{ord(ch):x}}}")
+        else:
+            if ch in "\"'":
+                trong = ch
+            elif ch == "#":
+                chu_thich = True
+            ra.append(ch)
+        i += 1
+    return "".join(ra)
 
 
 # ───────────────────────────── lệnh cu-phap ─────────────────────────────
@@ -746,8 +845,10 @@ def lenh_cu_phap(args) -> int:
         raise TuChoi(f"bộ dữ liệu khoá không có cột: {', '.join(thieu)}")
     canh_bao = []
     bo = [c for c in dt["covariates"] if c not in tieu_de]
-    if bo:
-        canh_bao.append(f"hiệp biến không có trong dữ liệu (Python cũng bỏ qua): {', '.join(bo)}")
+    if bo:  # Python lặng lẽ bỏ hiệp biến vắng — với kiểm chéo, đặc tả gọi tên cột không có là đặc tả sai ⇒ từ chối
+        raise TuChoi(
+            f"hiệp biến không có trong bộ dữ liệu khoá: {', '.join(bo)} — sửa đặc tả G6 (Python bỏ qua im lặng)"
+        )
     cot_pt = [c for c in [dt.get(k) for k in ("outcome", "group", "time", "event", "cot_cum")] + dt["covariates"] if c]
     canh_bao += canh_bao_ma_thieu(args.study, csv_p, [c for c in cot_pt if c in tieu_de], args.ma_thieu)
     r_dir = d / "r"
@@ -819,7 +920,7 @@ def lenh_chay(args) -> int:
     if tho_kq.get("sha256_du_lieu") != man.get("sha256"):
         raise TuChoi("SHA-256 R đọc được khác manifest khoá — không dùng kết quả này")
     loi = tho_kq.get("loi") if isinstance(tho_kq.get("loi"), dict) else {}
-    canh = list(dac.get("canh_bao") or []) + list(tho_kq.get("canh_bao") or [])
+    canh = _ds(dac.get("canh_bao")) + _ds(tho_kq.get("canh_bao"))
     ket = {
         "study": args.study,
         "luc": datetime.now().astimezone().isoformat(timespec="seconds"),
@@ -851,29 +952,81 @@ def lenh_chay(args) -> int:
 
 
 # ───────────────────────────── lệnh doi-chieu ─────────────────────────────
+#
+# Luật so (14/11/2026, sau lượt rà độc lập): R tái lập ĐÚNG phương pháp của Python ở mọi mục, nên KHÔNG còn miễn trừ
+# «lệch nhỏ (khác phương pháp)». Ước lượng/KTC dùng `_gan` và ngưỡng của cầu nối SPSS; p dùng luật riêng của R
+# (`_so_p_r`: thêm điều kiện TƯƠNG ĐỐI cho p nhỏ — luật tuyệt đối 0,005 của SPSS coi 0,0018 ↔ 0,0002 là khớp). Mục chỉ
+# có ở MỘT phía (Python sập mà R chạy, hoặc ngược lại; KTC/p chỉ một phía có) ⇒ «không so được», không bao giờ im lặng.
+
+NGUONG_P_TUONG_DOI = 0.25  # |p_R − p_Py| ≤ 25 % của p lớn hơn …
+SAN_P_TUYET_DOI = 6e-5  # … hoặc ≤ 0,00006 (Python làm tròn p tới 4 chữ số: sai số làm tròn ≤ 0,00005)
+DONG_KHONG_SO_DUOC = "khong_so_duoc"
+
+
+def _so_p_r(p_r: float | None, p_py: float | None) -> bool | None:
+    """p khớp khi lệch tuyệt đối ≤ TOL_P (như SPSS) VÀ lệch ≤ max(0,00006; 25 % của p lớn hơn) — p nhỏ không còn được
+    «khớp» chỉ vì cả hai cùng nhỏ."""
+    if p_r is None or p_py is None:
+        return None
+    d = abs(p_r - p_py)
+    return d <= S.TOL_P and d <= max(SAN_P_TUYET_DOI, NGUONG_P_TUONG_DOI * max(abs(p_r), abs(p_py)))
+
+
+def _co_ci(ci) -> bool:
+    return bool(ci) and len(ci) == 2 and None not in ci
 
 
 def _dong(ten: str, py: dict, r: dict, *, ghi_chu: str | None = None, n_py=None, n_r=None) -> dict:
-    """Một dòng đối chiếu — ngưỡng và trạng thái của `cau_noi_spss.so_mot`; thêm phép so SỐ CA (tập ca khác nhau ⇒ LỆCH
-    dù số trùng tình cờ)."""
-    x = S.so_mot(ten, py, r, phuong_phap_khac=ghi_chu)
-    x["r"] = x.pop("spss")
-    x["n"] = {"python": n_py, "r": n_r}
+    """Một dòng đối chiếu: py/r = {uoc_luong, ci, p}. Trạng thái khop · lech · khong_so_duoc (không còn «lệch nhỏ»).
+
+    Thêm hai luật so với `so_mot` của SPSS: (1) SỐ CA khác nhau ⇒ LỆCH dù số trùng tình cờ; (2) KTC hoặc p chỉ có ở MỘT
+    phía ⇒ phần đó không so được và cả dòng là «không so được» (không chấm khớp chỉ bằng ước lượng điểm)."""
+    py, r = py or {}, r or {}
+    kt = {"uoc_luong": S._gan(r.get("uoc_luong"), py.get("uoc_luong"), S.TOL_UOC)}
+    mot_phia = []
+    if _co_ci(py.get("ci")) and _co_ci(r.get("ci")):
+        kt["ci"] = all(S._gan(a, b, S.TOL_CI) for a, b in zip(r["ci"], py["ci"]))
+    else:
+        kt["ci"] = None
+        if _co_ci(py.get("ci")) != _co_ci(r.get("ci")):
+            mot_phia.append(f"KTC chỉ có ở phía {'Python' if _co_ci(py.get('ci')) else 'R'}")
+    kt["p"] = _so_p_r(r.get("p"), py.get("p"))
+    if kt["p"] is None and (py.get("p") is None) != (r.get("p") is None):
+        mot_phia.append(f"p chỉ có ở phía {'Python' if py.get('p') is not None else 'R'}")
+    ghi = [ghi_chu] if ghi_chu else []
+    co = [v for v in kt.values() if v is not None]
+    if kt["uoc_luong"] is None:
+        tt = DONG_KHONG_SO_DUOC
+    elif not all(co):
+        tt = "lech"
+    elif mot_phia:
+        tt = DONG_KHONG_SO_DUOC
+        ghi.append("ước lượng khớp; " + "; ".join(mot_phia) + " — phần đó không so được")
+    else:
+        tt = "khop"
     if n_py is not None and n_r is not None and int(n_py) != int(n_r):
-        x["trang_thai"] = "lech"
-        x["ghi_chu"] = (x["ghi_chu"] + " · " if x["ghi_chu"] else "") + f"SỐ CA KHÁC: Python {n_py}, R {n_r}"
-    return x
-
-
-def _khong_so(ten: str, py: dict, ly_do: str) -> dict:
+        tt = "lech"
+        ghi.append(f"SỐ CA KHÁC: Python {n_py}, R {n_r}")
     return {
         "muc": ten,
         "python": py,
-        "r": None,
+        "r": r,
+        "kiem": kt,
+        "trang_thai": tt,
+        "ghi_chu": " · ".join(ghi),
+        "n": {"python": n_py, "r": n_r},
+    }
+
+
+def _khong_so(ten: str, ly_do: str, *, py: dict | None = None, r: dict | None = None, n_py=None, n_r=None) -> dict:
+    return {
+        "muc": ten,
+        "python": py or {},
+        "r": r or {},
         "kiem": {},
-        "trang_thai": "khong_so_duoc",
+        "trang_thai": DONG_KHONG_SO_DUOC,
         "ghi_chu": ly_do,
-        "n": {"python": None, "r": None},
+        "n": {"python": n_py, "r": n_r},
     }
 
 
@@ -888,27 +1041,70 @@ def _r(x: dict | None) -> dict:
     return {"uoc_luong": x.get("uoc_luong"), "ci": x.get("ci"), "p": x.get("p")}
 
 
-def doi_chieu(tom: dict, kq: dict) -> list[dict]:
-    dong: list[dict] = []
-    dt = tom.get("dac_ta_phan_tich") or {}
-    pc, rc = tom.get("primary_outcome") or {}, kq.get("ket_cuc_chinh") or {}
-    n_pc = sum(int((pc.get(g) or {}).get("n") or 0) for g in ("group_0", "group_1")) or None
-    n_rc = sum(rc.get("n") or []) or None
-    if pc.get("outcome_type") == "binary" and rc.get("loai") == "binary":
-        dong.append(
+def _tim(he_so: dict | None, ten: str | None) -> tuple[str | None, dict | None]:
+    """Hệ số theo tên Python: trùng hẳn, hoặc biến giả DUY NHẤT «<tên>_<mức>» (nhóm chữ A/B ⇒ R ghi `nhom_B`)."""
+    he_so = he_so or {}
+    if not ten:
+        return None, None
+    if ten in he_so:
+        return ten, he_so[ten]
+    ung = [k for k in he_so if k.startswith(ten + "_")]
+    return (ung[0], he_so[ung[0]]) if len(ung) == 1 else (None, None)
+
+
+def _loi_py(x: dict | None, *khoa: str) -> str:
+    x = x or {}
+    for k in ("error", "warning", *khoa):
+        if x.get(k):
+            return str(x[k])[:200]
+    return "vắng trong G6_analysis_summary.json"
+
+
+def _cung_nhom(a, b) -> bool:
+    try:
+        return float(a) == float(b)
+    except (TypeError, ValueError):
+        return str(a) == str(b)
+
+
+def _ket_cuc_chinh(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
+    pc, rc = tom.get("primary_outcome"), kq.get("ket_cuc_chinh")
+    if pc is None and rc is None:
+        return []
+    ten = "Kết cục chính"
+    if not rc:
+        return [_khong_so(ten, f"R KHÔNG ra kết cục chính: {loi_r.get('ket_cuc_chinh') or 'vắng'}")]
+    if not pc or pc.get("error"):
+        return [_khong_so(ten, f"Python KHÔNG ra kết cục chính: {_loi_py(pc)} [CẦN THỐNG KÊ VIÊN]")]
+    n_py = sum(int((pc.get(g) or {}).get("n") or 0) for g in ("group_0", "group_1")) or None
+    n_r = sum(rc.get("n") or []) or None
+    lp, lr = pc.get("outcome_type"), rc.get("loai")
+    if lp == "binary" and lr == "binary":
+        ten = "Kết cục chính — OR thô (nhóm sau so nhóm trước; p χ² Yates)"
+        if pc.get("or_crude") is None:
+            return [
+                _khong_so(
+                    ten,
+                    "Python không tính OR thô (một nhóm 0 % hoặc 100 % biến cố)",
+                    r=_r({"uoc_luong": rc.get("or"), "ci": rc.get("ci"), "p": rc.get("p_yates")}),
+                    n_py=n_py,
+                    n_r=n_r,
+                )
+            ]
+        return [
             _dong(
-                "Kết cục chính — OR thô (nhóm sau so nhóm trước; p χ² Yates)",
+                ten,
                 {"uoc_luong": pc.get("or_crude"), "ci": list(pc.get("ci_95") or []) or None, "p": pc.get("p_value")},
                 {"uoc_luong": rc.get("or"), "ci": rc.get("ci"), "p": rc.get("p_yates")},
-                n_py=n_pc,
-                n_r=n_rc,
+                n_py=n_py,
+                n_r=n_r,
             )
-        )
-    elif pc.get("outcome_type") in ("continuous", "categorical") and rc.get("loai") == "continuous":
+        ]
+    if lp in ("continuous", "categorical") and lr == "continuous":
         test = str(pc.get("test", "")).lower()
         if "welch" in test:
             w = rc.get("welch") or {}
-            dong.append(
+            return [
                 _dong(
                     "Kết cục chính — hiệu trung bình, Welch t-test (nhóm sau − nhóm trước)",
                     {
@@ -917,166 +1113,273 @@ def doi_chieu(tom: dict, kq: dict) -> list[dict]:
                         "p": pc.get("p_value"),
                     },
                     {"uoc_luong": w.get("md_g1_tru_g0"), "ci": w.get("ci"), "p": w.get("p")},
-                    n_py=n_pc,
-                    n_r=n_rc,
+                    n_py=n_py,
+                    n_r=n_r,
                 )
-            )
-        elif "mann" in test:
-            nho = min(rc.get("n") or [99]) <= 8
-            dong.append(
+            ]
+        if "mann" in test:
+            mw = rc.get("mann_whitney") or {}
+            return [
                 _dong(
-                    "Kết cục chính — hiệu trung bình + p Mann–Whitney (nhóm sau − nhóm trước)",
+                    f"Kết cục chính — hiệu trung bình + p Mann–Whitney ({mw.get('phuong_phap', '?')})",
                     {"uoc_luong": pc.get("md_crude"), "ci": None, "p": pc.get("p_value")},
-                    {"uoc_luong": rc.get("md_g1_tru_g0"), "ci": None, "p": (rc.get("mann_whitney") or {}).get("p")},
-                    ghi_chu=GHI_CHU_MW_NHO if nho else None,
-                    n_py=n_pc,
-                    n_r=n_rc,
+                    {"uoc_luong": rc.get("md_g1_tru_g0"), "ci": None, "p": mw.get("p")},
+                    n_py=n_py,
+                    n_r=n_r,
                 )
+            ]
+        return [
+            _khong_so(
+                "Kết cục chính — hiệu trung bình",
+                f"Python dùng phép «{pc.get('test') or '?'}» — R không tái lập phép này",
+                py={"uoc_luong": pc.get("md_crude")},
+                r={"uoc_luong": rc.get("md_g1_tru_g0")},
+                n_py=n_py,
+                n_r=n_r,
             )
-        else:
-            dong.append(
-                _dong(
-                    "Kết cục chính — hiệu trung bình (nhóm sau − nhóm trước)",
-                    {"uoc_luong": pc.get("md_crude"), "ci": None, "p": None},
-                    {"uoc_luong": rc.get("md_g1_tru_g0"), "ci": None, "p": None},
-                    ghi_chu=f"Python dùng {pc.get('test') or '?'} — chỉ so hiệu trung bình",
-                    n_py=n_pc,
-                    n_r=n_rc,
-                )
-            )
-    cu, rcc = pc.get("cum") or {}, kq.get("ket_cuc_chinh_cum") or {}
+        ]
+    return [_khong_so(ten, f"loại kết cục khác nhau: Python «{lp}», R «{lr}»", n_py=n_py, n_r=n_r)]
+
+
+def _ket_cuc_chinh_cum(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
+    cu, rcc = (tom.get("primary_outcome") or {}).get("cum"), kq.get("ket_cuc_chinh_cum")
+    if cu is None and rcc is None:
+        return []
+    cot = (cu or {}).get("cot") or (tom.get("dac_ta_phan_tich") or {}).get("cot_cum")
+    ten = f"Kết cục chính — ước lượng thô hiệu chỉnh cụm «{cot}»"
+    if not rcc:
+        return [_khong_so(ten, f"R KHÔNG ra: {loi_r.get('ket_cuc_chinh_cum') or 'vắng'}")]
+    if not cu or cu.get("error"):
+        return [_khong_so(ten, f"Python KHÔNG ra: {_loi_py(cu)} [CẦN THỐNG KÊ VIÊN]")]
+    ra = []
     for k_uoc, k_ci, k_p, k_r, nhan in (
         ("or_cum", "ci_95_cum", "p_cum", "or", "OR thô"),
         ("risk_diff_cum", "risk_diff_ci_95_cum", "p_rd_cum", "rd", "RD thô"),
         ("md_cum", "md_ci_95_cum", "p_cum", "md", "MD thô"),
     ):
-        if cu.get(k_uoc) is not None and rcc.get(k_r):
-            dong.append(
-                _dong(
-                    f"Kết cục chính — {nhan} hiệu chỉnh cụm «{cu.get('cot')}» (sandwich CR1, t(G−1))",
-                    {"uoc_luong": cu.get(k_uoc), "ci": list(cu.get(k_ci) or []) or None, "p": cu.get(k_p)},
-                    _r(rcc.get(k_r)),
+        if not rcc.get(k_r):
+            continue
+        ten_k = f"Kết cục chính — {nhan} hiệu chỉnh cụm «{cot}» (sandwich CR1, t(G−1))"
+        if cu.get(k_uoc) is None:
+            ly_do = cu.get("ghi_chu") or ("mô hình không hội tụ" if cu.get("khong_hoi_tu") else "vắng")
+            ra.append(
+                _khong_so(
+                    ten_k,
+                    f"Python không ra {nhan} theo cụm: {ly_do}",
+                    r=_r(rcc[k_r]),
                     n_py=cu.get("n"),
                     n_r=rcc.get("n"),
                 )
             )
-    od = tom.get("ordinal") or {}
-    la_tt = bool(od.get("results"))
-    mv = od if la_tt else (tom.get("multivariate") or {})
-    cum = mv.get("cov_type") == "cluster"
-    nguon = (kq.get("da_bien_cum") if cum else kq.get("da_bien")) or {}
-    nhan_mh = f"{mv.get('model', '?')}{', SE cụm CR1 t(G−1)' if cum else ''}"
-    for r in mv.get("results") or []:
-        v = r.get("variable")
-        uoc = r.get("OR_adj", r.get("beta"))
-        rr = (nguon.get("he_so") or {}).get(v)
-        if rr is None:
-            dong.append(_khong_so(f"Đa biến ({nhan_mh}) — {v}", {"uoc_luong": uoc}, "R không có hệ số cùng tên"))
             continue
-        if uoc is None and r.get("khong_hoi_tu"):
-            dong.append(_khong_so(f"Đa biến ({nhan_mh}) — {v}", {}, "Python: mô hình không hội tụ — không so"))
-            continue
-        dong.append(
+        ra.append(
             _dong(
-                f"Đa biến ({nhan_mh}) — {v}",
-                {"uoc_luong": uoc, "ci": r.get("CI_95"), "p": r.get("p")},
+                ten_k,
+                {"uoc_luong": cu.get(k_uoc), "ci": list(cu.get(k_ci) or []) or None, "p": cu.get(k_p)},
+                _r(rcc[k_r]),
+                n_py=cu.get("n"),
+                n_r=rcc.get("n"),
+            )
+        )
+    return ra
+
+
+def _he_so_hai_phia(ten_mh: str, mv: dict | None, nguon: dict | None, loi: str | None, khoa_uoc: tuple) -> list[dict]:
+    """So TỪNG hệ số của một mô hình theo cả hai chiều: Python có mà R không, R có mà Python không ⇒ hiện dòng."""
+    if mv is None and nguon is None:
+        return []
+    if not nguon or not nguon.get("he_so"):
+        return [_khong_so(f"{ten_mh} — toàn mô hình", f"R KHÔNG ra hệ số: {loi or 'vắng'}")]
+    if not mv or not mv.get("results"):
+        return [
+            _khong_so(
+                f"{ten_mh} — toàn mô hình",
+                f"Python KHÔNG ra hệ số: {_loi_py(mv)} — R ra {len(nguon['he_so'])} hệ số "
+                "(xem G6_r_ket_qua.json) [CẦN THỐNG KÊ VIÊN]",
+            )
+        ]
+    ra, da_dung = [], set()
+    for kq_py in mv["results"]:
+        v = kq_py.get("variable")
+        ten_r, rr = _tim(nguon["he_so"], v)
+        if ten_r:
+            da_dung.add(ten_r)
+        uoc = next((kq_py[k] for k in khoa_uoc if k in kq_py), None)
+        if rr is None:
+            ra.append(_khong_so(f"{ten_mh} — {v}", "R không có hệ số cùng tên", py={"uoc_luong": uoc}))
+            continue
+        if uoc is None:
+            ra.append(_khong_so(f"{ten_mh} — {v}", "Python: mô hình không hội tụ — đã gỡ số, không so", r=_r(rr)))
+            continue
+        ra.append(
+            _dong(
+                f"{ten_mh} — {v}" + (f" (R: {ten_r})" if ten_r != v else ""),
+                {"uoc_luong": uoc, "ci": kq_py.get("CI_95"), "p": kq_py.get("p")},
                 _r(rr),
-                ghi_chu=GHI_CHU_THU_TU if la_tt else None,
                 n_py=mv.get("n"),
                 n_r=nguon.get("n"),
             )
         )
-    loi_mv = mv.get("error") or mv.get("warning")
-    if not mv.get("results") and loi_mv and (kq.get("da_bien") or {}).get("he_so"):
-        # Python không ra hệ số mà R ra được ⇒ không im lặng bỏ dòng: phải hiện cho thống kê viên thấy.
-        dong.append(
-            _khong_so(
-                f"Đa biến ({mv.get('model') or 'Python'}) — toàn mô hình",
-                {},
-                f"Python KHÔNG ra hệ số: {str(loi_mv)[:200]} — R ra {len(kq['da_bien']['he_so'])} hệ số "
-                "(xem G6_r_ket_qua.json) [CẦN THỐNG KÊ VIÊN]",
-            )
-        )
-    sl, rs = tom.get("sensitivity_linear") or {}, kq.get("nhay_cam_ols") or {}
-    for r in sl.get("results") or []:
-        rr = (rs.get("he_so") or {}).get(r.get("variable"))
-        if rr:
-            dong.append(
-                _dong(
-                    f"Nhạy cảm OLS ({sl.get('cov_type')}) — {r.get('variable')}",
-                    {"uoc_luong": r.get("beta"), "ci": r.get("CI_95"), "p": r.get("p")},
-                    _r(rr),
-                    n_py=sl.get("n"),
-                    n_r=rs.get("n"),
+    for ten_r, rr in nguon["he_so"].items():
+        if ten_r not in da_dung:
+            ra.append(_khong_so(f"{ten_mh} — {ten_r}", "Python không có hệ số này", r=_r(rr)))
+    return ra
+
+
+def _song_con(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
+    sv = tom.get("survival")
+    nhom = (tom.get("dac_ta_phan_tich") or {}).get("group") or (sv or {}).get("group_col")
+    ra = []
+    for k_py, k_r, nhan in (("crude", "song_con_tho", "thô"), ("adjusted", "song_con_hieu_chinh", "hiệu chỉnh")):
+        r, kr = (sv or {}).get(k_py), kq.get(k_r)
+        co_py = bool(r) or bool((sv or {}).get(f"{k_py}_error"))
+        if not co_py and not kr and not (k_py == "crude" and sv is not None and sv.get("error")):
+            continue
+        ten = f"Cox (Efron) — HR {nhan} ({nhom})"
+        if not kr:
+            ra.append(_khong_so(ten, f"R KHÔNG ra HR {nhan}: {loi_r.get(k_r) or 'vắng'}", n_py=(sv or {}).get("n")))
+            continue
+        ten_r, rr = _tim(kr.get("he_so"), nhom)
+        if not r:
+            ly_do = (sv or {}).get(f"{k_py}_error") or _loi_py(sv)
+            ra.append(
+                _khong_so(
+                    ten,
+                    f"Python KHÔNG ra HR {nhan}: {str(ly_do)[:200]}"
+                    + (f" — R ra hệ số «{ten_r}»" if ten_r else "")
+                    + " [CẦN THỐNG KÊ VIÊN]",
+                    r=_r(rr),
+                    n_py=(sv or {}).get("n"),
+                    n_r=kr.get("n"),
                 )
             )
-    sv = tom.get("survival") or {}
-    nhom = dt.get("group") or sv.get("group_col")
-    for k_py, k_r, nhan in (("crude", "song_con_tho", "thô"), ("adjusted", "song_con_hieu_chinh", "hiệu chỉnh")):
-        r = sv.get(k_py) or {}
-        kr = kq.get(k_r) or {}
-        rr = (kr.get("he_so") or {}).get(nhom) if nhom else None
-        loi_sv = sv.get(f"{k_py}_error") or sv.get("error")
-        if not r and loi_sv and rr:
-            dong.append(_khong_so(f"Cox — HR {nhan} ({nhom})", {}, f"Python KHÔNG ra HR: {str(loi_sv)[:200]}"))
             continue
-        if not r or not rr:
+        if rr is None:
+            ra.append(_khong_so(ten, f"R không có hệ số của «{nhom}»", py={"uoc_luong": r.get("HR")}))
             continue
         if r.get("HR") is None:
-            dong.append(_khong_so(f"Cox — HR {nhan} ({nhom})", {}, "Python: mô hình không hội tụ — không so"))
+            ra.append(_khong_so(ten, "Python: mô hình không hội tụ — đã gỡ số, không so", r=_r(rr)))
             continue
-        dong.append(
+        ra.append(
             _dong(
-                f"Cox (Efron) — HR {nhan} ({nhom})",
+                ten + (f" (R: {ten_r})" if ten_r != nhom else ""),
                 {"uoc_luong": r.get("HR"), "ci": r.get("CI_95"), "p": r.get("p")},
                 _r(rr),
                 n_py=sv.get("n"),
                 n_r=kr.get("n"),
             )
         )
-    km, rk = tom.get("kaplan_meier") or {}, kq.get("kaplan_meier") or {}
-    if km.get("logrank_p") is not None and rk.get("logrank_p") is not None:
-        dong.append(
+    return ra
+
+
+def _kaplan_meier(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
+    km, rk = tom.get("kaplan_meier"), kq.get("kaplan_meier")
+    if km is None and rk is None:
+        return []
+    if not rk:
+        return [_khong_so("Kaplan–Meier", f"R KHÔNG ra: {loi_r.get('kaplan_meier') or 'vắng'}")]
+    if not km or km.get("error"):
+        return [_khong_so("Kaplan–Meier", f"Python KHÔNG ra: {_loi_py(km)}")]
+    ra = []
+    nhom_py = km.get("groups") or {}
+    n_lr_py = sum(int(x.get("n") or 0) for x in nhom_py.values()) if len(nhom_py) == 2 else None
+    if km.get("logrank_p") is not None or rk.get("logrank_p") is not None:
+        ra.append(
             _dong(
                 "Kaplan–Meier — p log-rank",
-                {"uoc_luong": km["logrank_p"], "ci": None, "p": km["logrank_p"]},
-                {"uoc_luong": rk["logrank_p"], "ci": None, "p": rk["logrank_p"]},
+                {"uoc_luong": km.get("logrank_p"), "ci": None, "p": km.get("logrank_p")},
+                {"uoc_luong": rk.get("logrank_p"), "ci": None, "p": rk.get("logrank_p")},
+                n_py=n_lr_py,
+                n_r=rk.get("logrank_n"),
             )
         )
-    for g, x in (km.get("groups") or {}).items():
-        rg = next((y for y in rk.get("nhom") or [] if _cung_nhom(g, y.get("gia_tri"))), None)
+    con_r = list(rk.get("nhom") or [])
+    for g, x in nhom_py.items():
+        rg = next((y for y in con_r if _cung_nhom(g, y.get("gia_tri"))), None)
+        ten = f"Kaplan–Meier — trung vị sống còn, nhóm {g}"
         if rg is None:
-            continue
-        if x.get("median_survival") is None and rg.get("trung_vi") is None:
-            dong.append(
-                {
-                    "muc": f"Kaplan–Meier — trung vị sống còn, nhóm {g}",
-                    "python": {},
-                    "r": {},
-                    "kiem": {},
-                    "trang_thai": "khop",
-                    "ghi_chu": "cả hai: chưa đạt trung vị (< 50% có biến cố)",
-                    "n": {"python": x.get("n"), "r": rg.get("n")},
-                }
+            ra.append(
+                _khong_so(ten, "R không có nhóm này", py={"uoc_luong": x.get("median_survival")}, n_py=x.get("n"))
             )
             continue
-        dong.append(
-            _dong(
-                f"Kaplan–Meier — trung vị sống còn, nhóm {g}",
-                {"uoc_luong": x.get("median_survival"), "ci": None, "p": None},
-                {"uoc_luong": rg.get("trung_vi"), "ci": None, "p": None},
+        con_r.remove(rg)
+        tv_py, tv_r, thay = x.get("median_survival"), rg.get("trung_vi"), rg.get("trung_vi_thay_the")
+        if tv_py is None and tv_r is None:
+            d = _dong(ten, {"uoc_luong": 0.0}, {"uoc_luong": 0.0}, n_py=x.get("n"), n_r=rg.get("n"))
+            d.update(python={}, r={}, kiem={})
+            d["ghi_chu"] = "cả hai: chưa đạt trung vị (< 50 % có biến cố)" + (
+                " · " + d["ghi_chu"] if d["ghi_chu"] else ""
+            )
+            ra.append(d)
+            continue
+        d = _dong(ten, {"uoc_luong": tv_py}, {"uoc_luong": tv_r}, n_py=x.get("n"), n_r=rg.get("n"))
+        if d["trang_thai"] != "khop" and thay is not None:
+            d2 = _dong(
+                ten,
+                {"uoc_luong": tv_py},
+                {"uoc_luong": thay},
                 n_py=x.get("n"),
+                n_r=rg.get("n"),
+                ghi_chu=f"S(t) = 0,5 đúng tại một thời điểm (điểm biên, phụ thuộc làm tròn số thực của thư "
+                f"viện toán): R {tv_r} theo phép tính lifelines, thời điểm kề {thay}",
+            )
+            if d2["trang_thai"] == "khop":
+                d = d2
+        ra.append(d)
+    for rg in con_r:
+        ra.append(
+            _khong_so(
+                f"Kaplan–Meier — trung vị sống còn, nhóm {rg.get('gia_tri')}",
+                "Python không có nhóm này",
+                r={"uoc_luong": rg.get("trung_vi")},
                 n_r=rg.get("n"),
             )
         )
+    return ra
+
+
+def doi_chieu(tom: dict, r: dict) -> list[dict]:
+    """Đối chiếu tóm tắt G6 (Python) với KẾT QUẢ R ĐẦY ĐỦ (`G6_r_ket_qua.json`: ket_qua · loi · so_ca_doc)."""
+    kq = r.get("ket_qua") or {}
+    loi_r = r.get("loi") if isinstance(r.get("loi"), dict) else {}
+    dt = tom.get("dac_ta_phan_tich") or {}
+    dong: list[dict] = []
+    if tom.get("n_total") is not None or r.get("so_ca_doc") is not None:
+        dong.append(
+            _dong(
+                "Số ca đọc từ bộ dữ liệu khoá",
+                {"uoc_luong": tom.get("n_total")},
+                {"uoc_luong": r.get("so_ca_doc")},
+                n_py=tom.get("n_total"),
+                n_r=r.get("so_ca_doc"),
+            )
+        )
+    dong += _ket_cuc_chinh(tom, kq, loi_r)
+    dong += _ket_cuc_chinh_cum(tom, kq, loi_r)
+    la_tt = "ordinal" in tom or r.get("loai_ket_cuc") == "ordinal"
+    mv = tom.get("ordinal") if la_tt else tom.get("multivariate")
+    cum = bool(dt.get("cot_cum")) or (mv or {}).get("cov_type") == "cluster"
+    nguon = kq.get("da_bien_cum") if cum else kq.get("da_bien")
+    mo_hinh = (mv or {}).get("model") or (nguon or {}).get("mo_hinh") or ("ordinal_logit_po" if la_tt else "?")
+    dong += _he_so_hai_phia(
+        f"Đa biến ({mo_hinh}{', SE cụm CR1 t(G−1)' if cum else ''})",
+        mv,
+        nguon,
+        loi_r.get("da_bien"),
+        ("OR_adj", "beta"),
+    )
+    if la_tt:
+        sl = tom.get("sensitivity_linear")
+        dong += _he_so_hai_phia(
+            f"Nhạy cảm OLS ({(sl or {}).get('cov_type') or ('cluster' if cum else 'HC3')})",
+            sl,
+            kq.get("nhay_cam_ols"),
+            loi_r.get("nhay_cam_ols"),
+            ("beta",),
+        )
+    dong += _song_con(tom, kq, loi_r)
+    dong += _kaplan_meier(tom, kq, loi_r)
     return dong
-
-
-def _cung_nhom(a, b) -> bool:
-    try:
-        return float(a) == float(b)
-    except (TypeError, ValueError):
-        return str(a) == str(b)
 
 
 def _dac_ta_lech(dt_py: dict, dt_r: dict) -> list[str]:
@@ -1109,37 +1412,42 @@ def lenh_doi_chieu(args) -> int:
             raise TuChoi("đặc tả R khác lượt Python (so như vậy là so hai phân tích khác nhau): " + "; ".join(lech))
     else:
         canh.append("G6_analysis_summary.json không có dac_ta_phan_tich (bản cũ) — không kiểm được cùng đặc tả")
-    dong = doi_chieu(tom, kq.get("ket_qua") or {})
-    dem = {k: sum(1 for x in dong if x["trang_thai"] == k) for k in ("khop", "lech_nho", "lech", "khong_so_duoc")}
-    loi_r = kq.get("loi") or {}
+    dong = doi_chieu(tom, kq)
+    dem = {k: sum(1 for x in dong if x["trang_thai"] == k) for k in ("khop", "lech", "khong_so_duoc")}
+    loi_r = kq.get("loi") if isinstance(kq.get("loi"), dict) else {}
     ket = {
         "study": args.study,
         "luc": datetime.now().astimezone().isoformat(timespec="seconds"),
-        "nguong": {"uoc_luong_tuong_doi": S.TOL_UOC, "ci_tuong_doi": S.TOL_CI, "p_tuyet_doi": S.TOL_P},
+        "nguong": {
+            "uoc_luong_tuong_doi": S.TOL_UOC,
+            "ci_tuong_doi": S.TOL_CI,
+            "p_tuyet_doi": S.TOL_P,
+            "p_tuong_doi": NGUONG_P_TUONG_DOI,
+            "p_san_tuyet_doi": SAN_P_TUYET_DOI,
+        },
         "r_phien_ban": kq.get("r_phien_ban"),
         "goi_phien_ban": kq.get("goi_phien_ban"),
         "sha256_du_lieu": sha_r,
         "dem": dem,
         "dong": dong,
         "loi_r": loi_r,
-        "canh_bao": canh + list(kq.get("canh_bao") or []),
+        "canh_bao": canh + _ds(kq.get("canh_bao")),
         "disclaimer": CAN_KIEM,
     }
     (d / f"{args.gate}_r_doi_chieu.json").write_text(
         json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n"
     )
-    ky = {"khop": "✓ khớp", "lech_nho": "⚠ lệch nhỏ (khác phương pháp)", "lech": "✗ LỆCH",
-          "khong_so_duoc": "⚪ không so được"}  # fmt: skip
+    ky = {"khop": "✓ khớp", "lech": "✗ LỆCH", "khong_so_duoc": "⚪ không so được"}
     goi = ", ".join(f"{k} {v}" for k, v in (kq.get("goi_phien_ban") or {}).items())
     md = [
         f"# Đối chiếu R ↔ Python — {args.study}",
         "",
         f"{kq.get('r_phien_ban') or 'R ?'} ({goi or '?'}) · {ket['luc']} · dữ liệu khoá SHA-256 {sha_r[:16]}… · "
-        f"ngưỡng: ước lượng ±{S.TOL_UOC:.1%}, KTC ±{S.TOL_CI:.1%}, p ±{S.TOL_P} (hai bên < 0,001 coi là khớp); số ca "
-        "phải bằng nhau.",
+        f"ngưỡng: ước lượng ±{S.TOL_UOC:.1%}, KTC ±{S.TOL_CI:.1%}, p lệch ≤ {S.TOL_P} VÀ ≤ max({SAN_P_TUYET_DOI:g}; "
+        f"{NGUONG_P_TUONG_DOI:.0%} của p lớn hơn); số ca phải bằng nhau; không có miễn trừ «khác phương pháp».",
         "",
-        f"Tổng: {dem['khop']} khớp · {dem['lech_nho']} lệch nhỏ · {dem['lech']} lệch · "
-        f"{dem['khong_so_duoc']} không so được.",
+        f"Tổng: {dem['khop']} khớp · {dem['lech']} lệch · {dem['khong_so_duoc']} không so được"
+        + (" — CHƯA đối chiếu trọn: có mục chỉ một phía ra số (mã 2)." if dem["khong_so_duoc"] else "."),
         "",
         "| Mục | n (Py/R) | Python (ước lượng · KTC 95% · p) | R (ước lượng · KTC 95% · p) | Kết quả | Ghi chú |",
         "|---|---|---|---|---|---|",
@@ -1168,8 +1476,10 @@ def lenh_doi_chieu(args) -> int:
     print(md[4])
     print(f"✓ {d / (args.gate + '_r_doi_chieu.md')}")
     if dem["lech"] or loi_r:
-        return MA_LECH
-    return MA_OK if (dem["khop"] + dem["lech_nho"]) else MA_KHONG_DO
+        return MA_LECH  # lệch thật hoặc một khối R lỗi
+    if dem["khong_so_duoc"] or not dem["khop"]:
+        return MA_KHONG_DO  # còn mục chỉ một phía ra số (vd Python sập mô hình) ⇒ CHƯA đo trọn, không phải «khớp»
+    return MA_OK
 
 
 # ───────────────────────────── CLI ─────────────────────────────

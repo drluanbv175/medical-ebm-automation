@@ -51,7 +51,8 @@
     "p": 6.38049855675307e-07
    },
    "mann_whitney": {
-    "p": 4.59530921974699e-07
+    "p": 4.59530921974699e-07,
+    "phuong_phap": "asymptotic"
    }
   },
   "ket_cuc_chinh_cum": {
