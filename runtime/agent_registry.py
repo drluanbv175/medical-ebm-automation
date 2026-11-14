@@ -128,10 +128,14 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 14/11/2026: sinh lại khối TRÁCH NHIỆM (máy sinh) của dieu-phoi-g6 + phan-tich-thong-ke cho G6-AUTO-11; vẫn 64.
 # 14/11/2026 (lượt 2): phan-tich-thong-ke thêm BƯỚC 0c — kiểm chéo bằng SPSS (tools/cau_noi_spss.py), chép bản chuẩn của
 # repo gốc; vẫn 64.
-# 14/11/2026 (lượt 3): phan-tich-thong-ke thêm BƯỚC 0d — kiểm chéo bằng R (tools/cau_noi_r.py), cặp y hệt repo gốc;
-# vẫn 64.
+# 14/11/2026 (lượt 3): phan-tich-thong-ke — luật đọc đối chiếu SPSS theo ngưỡng mới (SE, thang log, p khác phía 0,05,
+# chốt SHA/đặc tả) + đồng bộ đoạn G6-AUTO-11 đã có ở repo gốc; vẫn 64.
+# 14/11/2026 (gộp #230): bản cặp A12/G6-AUTO-11/bình duyệt độc lập từ nhánh nền + luật đọc SPSS mới; vẫn 64.
+# 14/11/2026 (lượt 3, #236): phan-tich-thong-ke thêm BƯỚC 0d — kiểm chéo bằng R (tools/cau_noi_r.py), cặp y hệt repo
+# gốc; vẫn 64.
+# 14/11/2026 (gộp #236 vào #234): phan-tich-thong-ke = bản master repo gốc (BƯỚC 0c SPSS + 0d R); vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "189927432f700e915c01f6a24814549092145cec7307737b7fe6d2cf4f2f863b"
+    "5cf9527798dcb377b23a1179e8b8f499567cd02de082d3d5a655e69c2767b8fd"
 )
 
 MINIMUM_AGENT_COUNT = 64

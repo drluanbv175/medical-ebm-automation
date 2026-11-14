@@ -13,7 +13,14 @@ Mã thoát: 0 xong · 1 SPSS báo lỗi (thông điệp ở stderr, dòng «LOI_
 """
 
 import json
+import math
 import sys
+
+for _s in (sys.stdout, sys.stderr):  # `-I` bỏ qua PYTHONIOENCODING — Windows cp1252 làm vỡ thông điệp tiếng Việt (§0.9)
+    try:
+        _s.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError):
+        pass
 
 
 def _chuoi(s):
@@ -36,6 +43,17 @@ def _so_ca(spss):
         return int(spss.GetCaseCount())
     except Exception:  # noqa: BLE001 — chưa có bộ dữ liệu nào đang mở
         return -1
+
+
+def _thieu(mv):
+    """missingValues của SPSS ⇒ JSON được: cận vô hạn của khoảng (LO/HI ≈ ±1,8e308) ghi thành chuỗi «LO»/«HI»."""
+    ra = []
+    for x in mv:
+        if isinstance(x, float) and (not math.isfinite(x) or abs(x) >= 1e300):
+            ra.append("LO" if x < 0 else "HI")
+        else:
+            ra.append(x)
+    return ra
 
 
 def main(argv):
@@ -80,7 +98,7 @@ def main(argv):
                             "kieu": v.type,
                             "dinh_dang": v.format,
                             "nhan_gia_tri": {str(k): val for k, val in v.valueLabels.data.items()},
-                            "thieu": list(v.missingValues),
+                            "thieu": _thieu(v.missingValues),
                         }
                     )
             finally:
