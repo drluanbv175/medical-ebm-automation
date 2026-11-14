@@ -824,3 +824,10 @@ def test_trinh_chay_nen_tham_so_va_ma_thieu_khoang(capsys):
     assert N._thieu([-2, -1.7976931348623157e308, -1.0, None]) == [-2, "LO", -1.0, None]
     assert N._thieu([-3, 5.0, 1.7976931348623157e308, 9.0]) == [-3, 5.0, "HI", 9.0]
     assert C.mo_ta_thieu(N._thieu([-2, -1.7976931348623157e308, -1.0, None])) == "LO THRU -1"
+
+
+def test_gan_giu_chu_ky_cu_cho_cau_noi_r():
+    # tools/cau_noi_r.py gọi S._gan(a, b, S.TOL_UOC) — chữ ký cũ phải còn chạy, kết quả như bản đầu
+    assert C._gan(1.003, 1.0, C.TOL_UOC) is True and C._gan(1.01, 1.0, C.TOL_UOC) is False
+    assert C._gan(0.0005, 0.0, C.TOL_UOC) is True  # sàn tuyệt đối 0,0006 như bản đầu
+    assert C._gan(None, 1.0, C.TOL_UOC) is None and C._gan(1.0, 1.0, tran=0.0) is True

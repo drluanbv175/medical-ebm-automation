@@ -1338,9 +1338,20 @@ def _se(ci: list | None, ty_so: bool) -> float | None:
     return (hi - lo) / 3.92 if lo is not None and hi is not None and hi > lo else None
 
 
-def _gan(a: float | None, b: float | None, *, tran: float) -> bool | None:
+def _gan(
+    a: float | None,
+    b: float | None,
+    tuong_doi: float | None = None,
+    tuyet_doi: float = 0.0006,
+    *,
+    tran: float | None = None,
+) -> bool | None:
+    """|a − b| ≤ `tran` (dung sai tuyệt đối đã tính sẵn — so_mot dùng). Gọi kiểu CŨ `_gan(a, b, tương_đối)` vẫn chạy:
+    |a − b| ≤ max(tuyet_doi, tương_đối·|b|) — tools/cau_noi_r.py (phiên khác, 14/11/2026) dùng chữ ký này."""
     if a is None or b is None:
         return None
+    if tran is None:
+        tran = max(tuyet_doi, (tuong_doi or 0.0) * abs(b))
     return abs(a - b) <= tran + 1e-9
 
 
