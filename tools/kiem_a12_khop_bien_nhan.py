@@ -7,8 +7,10 @@ kiểm mọi PMID nhắc trong `A12_CITATION_VERIFICATION_<mã>.md` đã nằm t
 Mô tả A12 của C1a viết tay ngày 14/10 ghi «Rút bài + metadata 9 PMID … (2026-10-14T13:42:42Z)» trong khi biên nhận
 hiện hành kiểm 35 PMID lúc 2026-10-15T14:00Z: người đọc hồ sơ thấy một bằng chứng KHÔNG còn tồn tại.
 
-Chỉ ĐO và BÁO, không sửa tệp nào, không đổi trạng thái cổng (đổi điều kiện cổng A12 làm đổi trạng thái sống của G10
-đã ký — việc của bác sĩ). `--goi-y` in dòng «Bằng chứng máy-kiểm» dựng THẲNG từ biên nhận để dán vào lượt sửa sau.
+Công cụ này chỉ ĐO và BÁO, không sửa tệp nào. Từ 14/11/2026 (bác sĩ duyệt) `run_g10_assemble.main()` dùng kết quả
+LỆCH để CHẶN LẮP MỚI G10 (mã lý do `gate_contract.REASON_A12_DESCRIPTION_MISMATCH`); phép chấm sống
+(`citation_verification_ok`, g10_quality_gate G10-AUTO-05) KHÔNG đổi nên gói G10 đã ký giữ nguyên trạng thái.
+`--goi-y` in dòng «Bằng chứng máy-kiểm» dựng THẲNG từ biên nhận để dán vào lượt sửa sau.
 
 Mã thoát: 0 KHỚP · 1 LỆCH · 2 KHÔNG ĐO ĐƯỢC (thiếu tệp / mô tả không khai số PMID) — «không đo được» không phải «khớp».
 """

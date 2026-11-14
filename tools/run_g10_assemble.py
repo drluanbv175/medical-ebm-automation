@@ -2471,16 +2471,33 @@ def _pmids_from_text(text: str) -> set:
     return found
 
 
-def canh_bao_mo_ta_a12(study: str, out_dir: Path) -> list[str]:
-    """Advisory KHÔNG chặn (12/11/2026, B3): lời khai trong mô tả A12 (số PMID, thời điểm, all_clean) lệch biên nhận
-    máy-kiểm ⇒ các dòng cảnh báo để in khi lắp G10. Không đổi điều kiện cổng A12 (đổi sẽ làm đổi trạng thái sống của
-    G10 đã ký — việc của bác sĩ)."""
-    kq = KA12.doi_chieu(study, out_dir)
+def canh_bao_mo_ta_a12(study: str, out_dir: Path, kq: dict | None = None) -> list[str]:
+    """Các dòng báo khi lời khai trong mô tả A12 (số PMID, thời điểm, all_clean) LỆCH biên nhận máy-kiểm; [] khi KHỚP
+    hoặc KHÔNG ĐO ĐƯỢC. Lịch sử: 12/11/2026 (B3) chỉ cảnh báo; 14/11/2026 bác sĩ duyệt nâng thành luật — main() CHẶN
+    LẮP MỚI khi LỆCH (`luat_mo_ta_a12_khi_lap`). Hàm này KHÔNG nằm trong phép chấm sống: `citation_verification_ok` và
+    g10_quality_gate (G10-AUTO-05) giữ nguyên, nên gói G10 đã ký/khoá không đổi trạng thái. `kq`: kết quả
+    `KA12.doi_chieu` đã tính sẵn (tránh đọc lại tệp)."""
+    kq = kq if kq is not None else KA12.doi_chieu(study, out_dir)
     if kq["trang_thai"] != "LECH":
         return []
     return ["⚠️  Mô tả A12 LỆCH biên nhận máy-kiểm: " + "; ".join(kq["chi_tiet"][:3]),
             f"   Sửa mục «Bằng chứng máy-kiểm» theo biên nhận: python tools/kiem_a12_khop_bien_nhan.py --study {study} "
             "--goi-y"]
+
+
+def luat_mo_ta_a12_khi_lap(study: str, out_dir: Path) -> tuple[str, list[str], str]:
+    """Luật LẮP MỚI G10 (14/11/2026, bác sĩ duyệt nâng cảnh báo B3): → (trạng thái KHOP|LECH|KHONG_DO_DUOC, các dòng
+    in ra, lý do một câu). main() CHẶN khi LECH; KHONG_DO_DUOC KHÔNG chặn ở luật này (thiếu tệp/biên nhận do cổng trích
+    dẫn A12 sẵn có lo) nhưng vẫn in rõ — «không đo được» không phải «khớp»."""
+    kq = KA12.doi_chieu(study, out_dir)
+    tt = kq["trang_thai"]
+    ly_do = "; ".join(kq["chi_tiet"][:3])
+    if tt == "LECH":
+        return tt, canh_bao_mo_ta_a12(study, out_dir, kq), ly_do
+    if tt == "KHONG_DO_DUOC":
+        return tt, [f"ℹ️  Không đo được mô tả A12 ↔ biên nhận ({ly_do}) — luật chặn khi LỆCH không áp dụng; "
+                    "«không đo được» không phải «khớp»."], ly_do
+    return tt, [], ly_do
 
 
 def _extract_pmids_from_artifact(text: str) -> set:
@@ -2959,7 +2976,8 @@ def main() -> int:
                          "bản NHÁP, KHÔNG dùng bản xuất ra khi cờ này bật để nộp bài.")
     ap.add_argument("--i-know-citations-not-verified", action="store_true",
                     help="Vẫn lắp ráp dù trích dẫn (cổng A12, agent "
-                         "`kiem-chung-trich-dan`) chưa được xác minh sạch — CHỈ dùng "
+                         "`kiem-chung-trich-dan`) chưa được xác minh sạch, hoặc mô tả "
+                         "A12 lệch biên nhận máy-kiểm — CHỈ dùng "
                          "để xem trước bản NHÁP, KHÔNG dùng bản xuất ra khi cờ này "
                          "bật để nộp bài.")
     args = ap.parse_args()
@@ -3157,8 +3175,33 @@ def main() -> int:
         return GC.EXIT_BLOCKED
     if not citation_ok and args.i_know_citations_not_verified:
         bypass_notes.append(f"Cổng A12 (trích dẫn) bị BỎ QUA bằng --i-know-citations-not-verified: {citation_reason}.")
-    for dong in canh_bao_mo_ta_a12(study, out_dir):
-        print(("\n" if dong.startswith("⚠️") else "") + dong)
+
+    # 14/11/2026 (bác sĩ duyệt nâng cảnh báo B3 thành luật): lời khai «Bằng chứng máy-kiểm» trong mô tả A12 (số PMID,
+    # thời điểm, all_clean) LỆCH biên nhận ⇒ CHẶN LẮP MỚI — người đọc hồ sơ không được thấy một bằng chứng không còn tồn
+    # tại (C1a 14/10: «9 PMID» trong khi biên nhận kiểm 35 PMID lúc 15/10). Chỉ ở đây, SAU nhánh «G10 đã khoá hợp lệ»
+    # (return sớm phía trên): citation_verification_ok và g10_quality_gate KHÔNG đổi ⇒ gói đã ký giữ nguyên trạng thái
+    # sống. Cờ --i-know-citations-not-verified (cờ xem-trước của A12) bỏ qua được, có ghi bypass_notes.
+    a12_tt, a12_dong, a12_ly_do = luat_mo_ta_a12_khi_lap(study, out_dir)
+    for dong in a12_dong:
+        print(("\n" if dong.startswith(("⚠️", "ℹ️")) else "") + dong)
+    if a12_tt == "LECH" and not args.i_know_citations_not_verified:
+        print("🚧 CHƯA SẴN SÀNG NỘP BÀI: G10 CHẶN lắp mới vì mô tả A12 lệch biên nhận máy-kiểm. Dán dòng gợi ý vào mục")
+        print("   «Bằng chứng máy-kiểm» của A12 rồi chạy lại run_g10_assemble.py. Tài liệu đã xuất Ở TRÊN chỉ là BẢN")
+        print("   NHÁP. Nếu chỉ muốn xem trước, thêm --i-know-citations-not-verified.")
+        _mark_g10_blocked(
+            GC.REASON_A12_DESCRIPTION_MISMATCH,
+            f"Mô tả A12 lệch biên nhận máy-kiểm: {a12_ly_do}. Sửa mục «Bằng chứng máy-kiểm» theo biên nhận rồi "
+            "chạy lại run_g10_assemble.py.",
+            f"python tools/kiem_a12_khop_bien_nhan.py --study {study} --goi-y",
+        )
+        _apply_submission_status_banner([
+            "> 🚧 **BẢN NHÁP — CHƯA SẴN SÀNG NỘP.** Mô tả A12 lệch biên nhận máy-kiểm: "
+            f"{a12_ly_do}. KHÔNG dùng tài liệu này để nộp Hội đồng/tạp chí.",
+        ])
+        return GC.EXIT_BLOCKED
+    if a12_tt == "LECH":
+        bypass_notes.append("Luật mô tả A12 ↔ biên nhận bị BỎ QUA bằng --i-know-citations-not-verified: "
+                            f"{a12_ly_do}.")
 
     # Advisory KHÔNG chặn (vá 2026-07-18, audit vòng 2 D5): cổng metadata (điều kiện e)
     # chỉ BẮT BUỘC receipt cho đề tài THẬT trong denylist. Một đề tài thật MỚI quên thêm
