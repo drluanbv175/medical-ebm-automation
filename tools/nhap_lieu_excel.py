@@ -846,6 +846,12 @@ def chuyen_o(c: Cot, v, dinh_dang: str, dem: dict) -> tuple[str, str | None, str
         return _DIEU_KHIEN.sub("", s), "ky_tu_dieu_khien", None
     if s.startswith("#") and s.upper() in ("#N/A", "#VALUE!", "#REF!", "#DIV/0!", "#NUM!", "#NAME?", "#NULL!"):
         return s, "o_loi_excel", None
+    if s and c.kieu not in ("id", "chu", "van_ban", "gio"):
+        hop_le = [*c.lua_chon, *c.ma_thieu] if c.kieu == "ma" else list(c.ma_thieu)
+        khop = [m for m in hop_le if m.casefold() == s.casefold()]
+        if s not in hop_le and len(khop) == 1:  # «btr» = «BTR»: Excel kiểm nhập & bộ làm sạch đều không phân biệt
+            s = khop[0]
+            dem["chuan_hoa_thuong_ma"] = dem.get("chuan_hoa_thuong_ma", 0) + 1
     if c.kieu in ("so_nguyen", "so") and s and s not in c.ma_thieu:
         if re.fullmatch(r"[+-]?\d+,\d+", s):
             return s, "so_dung_dau_phay", None
@@ -1106,6 +1112,13 @@ def doc_excel(
                 if f"{p_.trang}!{p_.o}" in vt.values():
                     ph[k].ma_nc = ma_nc
                     break
+    theo_thuong: dict[str, list[str]] = {}
+    for m in hang:
+        theo_thuong.setdefault(m.casefold(), []).append(m)
+    for ds in theo_thuong.values():
+        if len(ds) > 1:  # Excel (COUNTIF) coi là TRÙNG; máy không đoán đây là hai người khác nhau
+            chi_tiet = "mã nghiên cứu chỉ khác hoa/thường: " + ", ".join(ds)
+            ph.append(PhatHien(LOI, "trung_ma_khac_hoa_thuong", "", "", cid.ten, ds[0], chi_tiet))
     cot_co = [c.ten for c in cot if c.ten in cot_thay]
     return Bang(cot, hang, vi_tri, trang_cua_ma, ph, dem, meta, cot_co)
 
@@ -1227,9 +1240,11 @@ def ghi_csv(bang: Bang, p: Path) -> None:
     tam.replace(p)
 
 
-def tu_kiem_csv(bang: Bang, p: Path) -> list[str]:
-    """Đọc lại CSV bằng ĐÚNG các đường đọc phía sau và so từng ô với bảng trong bộ nhớ. Trả danh sách lỗi."""
+def tu_kiem_csv(bang: Bang, p: Path) -> tuple[list[str], list[str]]:
+    """Đọc lại CSV bằng ĐÚNG các đường đọc phía sau và so từng ô với bảng trong bộ nhớ.
+    Trả (lỗi, các đường đọc ĐÃ THẬT SỰ kiểm) — không khai đã kiểm pandas khi máy không có pandas."""
     loi: list[str] = []
+    da_kiem = ["csv"]
     mong = [[c for c in bang.cot_co]] + [[bang.hang[m].get(c, "") for c in bang.cot_co] for m in bang.hang]
     with open(p, encoding="utf-8", newline="") as f:
         doc = list(csv.reader(f))
@@ -1239,6 +1254,7 @@ def tu_kiem_csv(bang: Bang, p: Path) -> list[str]:
         import clean_research_dataset as CRD  # noqa: PLC0415
 
         cot_crd, hang_crd, _ = CRD._read_csv(p)
+        da_kiem.append("bộ làm sạch")
         if cot_crd != mong[0] or [[r.get(c, "") for c in cot_crd] for r in hang_crd] != mong[1:]:
             loi.append(
                 "bộ làm sạch (clean_research_dataset) đọc CSV KHÁC dữ liệu gốc — csv.Sniffer đoán sai dấu phân cách"
@@ -1249,11 +1265,12 @@ def tu_kiem_csv(bang: Bang, p: Path) -> list[str]:
         import pandas as pd  # noqa: PLC0415
 
         df = pd.read_csv(p, dtype=str, keep_default_na=False, encoding="utf-8-sig")
+        da_kiem.append("pandas")
         if list(df.columns) != mong[0] or df.values.tolist() != mong[1:]:
             loi.append("pandas đọc CSV (dtype=str) không trùng từng ô với dữ liệu gốc")
     except ImportError:
         pass
-    return loi
+    return loi, da_kiem
 
 
 def o_bi_pandas_coi_la_thieu(bang: Bang) -> list[tuple[str, str]]:
@@ -1415,9 +1432,10 @@ def lenh_nhap(args) -> int:
     ra.mkdir(parents=True, exist_ok=True)
     csv_p = ra / f"{p.stem}.csv"
     tu_kiem: list[str] = []
+    da_kiem: list[str] = []
     if not loi and bang.hang:
         ghi_csv(bang, csv_p)
-        tu_kiem = tu_kiem_csv(bang, csv_p)
+        tu_kiem, da_kiem = tu_kiem_csv(bang, csv_p)
         if tu_kiem:
             csv_p.unlink()
     elif csv_p.exists():
@@ -1440,6 +1458,7 @@ def lenh_nhap(args) -> int:
         "so_truy_van": len(tv),
         "so_canh_bao": len(canh),
         "tu_kiem_csv": tu_kiem or "KHOP",
+        "tu_kiem_doc_bang": da_kiem,
         "chuan_hoa": bang.dem,
         "csv": str(csv_p) if csv_p.exists() else None,
         "csv_sha256": _sha256(csv_p) if csv_p.exists() else None,
@@ -1464,7 +1483,7 @@ def lenh_nhap(args) -> int:
         print("   Chuẩn hoá không đổi nghĩa (đếm ô): " + ", ".join(f"{k}={v}" for k, v in bang.dem.items()))
     print(f"   Báo cáo: {ra / (p.stem + '_bao_cao_nhap.md')}")
     if csv_p.exists():
-        print(f"✓ CSV: {csv_p} (tự kiểm đọc lại: khớp từng ô — csv · bộ làm sạch · pandas)")
+        print(f"✓ CSV: {csv_p} (tự kiểm đọc lại, khớp từng ô: {' · '.join(da_kiem)})")
     if trang_thai == "LOI":
         return MA_LOI
     lenh_cong = [sys.executable, str(TOOLS / "import_real_dataset.py"), "--study", args.study, "--data", str(csv_p)]

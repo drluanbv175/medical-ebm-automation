@@ -301,6 +301,7 @@ def test_nhap_sach_ghi_csv_dung_tung_o(tmp_path, de_tai, capsys):
     assert doc[0]["ykien"] == "Phục vụ tốt" and doc[1]["nghe_khac"] == ""
     bc = _doc_bao_cao(ra, p)
     assert bc["trang_thai"] == "SACH" and bc["tu_kiem_csv"] == "KHOP" and bc["csv_sha256"]
+    assert bc["tu_kiem_doc_bang"][:2] == ["csv", "bộ làm sạch"]
     assert b"\r\n" not in (ra / "lan1.csv").read_bytes()
 
 
@@ -519,3 +520,16 @@ def test_logic_nhanh_khong_danh_gia_duoc_thi_khong_doan_la_hien(tmp_path, de_tai
     assert not [x for x in ph if x["ma"] == "thieu_bat_buoc"]
     canh = [x for x in ph if x["ma"] == "logic_nhanh_khong_danh_gia_duoc"]
     assert len(canh) == 1 and canh[0]["cot"] == "nghe_khac" and canh[0]["chi_tiet"].startswith("2/2 hàng")
+
+
+def test_ma_khac_hoa_thuong_chuan_ve_ma_tu_dien_va_ma_nc_chi_khac_hoa_thuong_la_trung(tmp_path, de_tai):
+    c = N.Cot(ten="tuoi", truong="tuoi", form="f", kieu="so_nguyen", ma_thieu={"BTR": "", "KDD": ""})
+    dem: dict = {}
+    assert N.chuyen_o(c, "btr", "General", dem)[:2] == ("BTR", None) and dem["chuan_hoa_thuong_ma"] == 1
+    m = N.Cot(ten="g", truong="g", form="f", kieu="ma", lua_chon={"A": "x", "a": "y"})
+    assert N.chuyen_o(m, "a", "General", {})[0] == "a"  # mã từ điển phân biệt hoa/thường ⇒ không đổi
+    mau = _mau(tmp_path, de_tai)
+    p = _dien(mau, tmp_path / "ngoai" / "lan1.xlsx", [_hop_le("P01"), _hop_le("p01")])
+    ra = tmp_path / "ngoai" / "ra"
+    assert _nhap(p, ra) == N.MA_LOI and not (ra / "lan1.csv").exists()
+    assert "trung_ma_khac_hoa_thuong" in {x["ma"] for x in _doc_bao_cao(ra, p)["phat_hien"]}
