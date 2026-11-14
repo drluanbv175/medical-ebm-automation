@@ -24,6 +24,10 @@ CODE NHÚNG trong chuỗi template mà run_g6_auto.py ghi ra exports/<study>/run
 — cùng công thức/quy ước đã dùng ở run_g6_auto.py::run_cox/plot_km, qua ĐÚNG cổng data-lock
 này (không phải một script riêng biệt ít được kiểm hơn).
 
+Kiểm chéo tư vấn (E4, 14/11/2026): thêm `--kiem-cheo` ⇒ sau khi ghi G6_analysis_summary.json, chạy
+`tools/kiem_cheo_g6.py chay --study <mã>` (SPSS + R). Chỉ TƯ VẤN: không đổi mã thoát, không đổi trạng thái cổng;
+thiếu SPSS/R hay kiểm chéo lỗi chỉ in ra.
+
 Multiple imputation (vá 2026-07-15): khi biến outcome/group/covariates có dữ liệu thiếu, script
 TỰ CHẠY MI thật (statsmodels MICEData/MICE, m=20 mặc định, --n-imputations để đổi) song song với
 complete-case — trước đây "MI" trong sensitivity_analysis.py (template do run_g6_auto.py sinh)
@@ -52,6 +56,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import subprocess
 import sys
 
 # Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
@@ -77,11 +82,49 @@ import gate_contract as GC  # noqa: E402
 # 06/10/2026: bản cũ đọc/ghi exports theo THƯ MỤC ĐANG ĐỨNG nhưng sổ cái/dữ liệu khoá lại theo gốc repo (gate_contract)
 # ⇒ chạy từ thư mục khác thì hai nửa lệch nhau. Test cô lập bằng cách vá BASE.
 BASE = Path(__file__).resolve().parents[1]
+# E4 (14/11/2026): kiểm chéo G6 bằng SPSS + R sau phân tích chính — chỉ khi gọi --kiem-cheo, TƯ VẤN.
+TEP_KIEM_CHEO = Path(__file__).resolve().parent / "kiem_cheo_g6.py"
+THOI_HAN_KIEM_CHEO = 7200  # giây cho CẢ lượt kiểm chéo (mỗi bước SPSS/R đã có thời hạn riêng trong kiem_cheo_g6.py)
+NHAN_MA_KIEM_CHEO = {
+    0: "khớp / lệch nhỏ",
+    1: "LỆCH hoặc một bước kiểm chéo lỗi — tìm nguyên nhân TRƯỚC khi dùng số",
+    2: "không đo được (máy thiếu SPSS/R hoặc chưa đủ đầu vào) — KHÔNG phải «khớp»",
+    3: "từ chối (dữ liệu/đặc tả không khớp)",
+}
 
 
 def _thu_muc_de_tai(study: str) -> Path:
     """exports/<study>/ dưới gốc repo (BASE), không theo thư mục làm việc."""
     return BASE / "exports" / study
+
+
+def chay_kiem_cheo_tu_van(study: str, gate: str) -> int | None:
+    """E4 — sau khi G6_analysis_summary.json đã ghi: chạy `kiem_cheo_g6.py chay` (SPSS + R) bằng CHÍNH trình thông
+    dịch này, đầu ra chảy thẳng ra màn hình. TƯ VẤN: không đổi mã thoát của phân tích, không đổi trạng thái cổng nào;
+    mọi lỗi (thiếu SPSS/R, tiến trình con sập, quá hạn) chỉ IN ra, không ném. Trả mã của kiểm chéo, hoặc None nếu không
+    chạy được."""
+    print(f"\n{'=' * 60}")
+    print("🔁 Kiểm chéo G6 bằng SPSS + R (--kiem-cheo) — TƯ VẤN, không đổi kết quả phân tích hay trạng thái cổng G6")
+    try:
+        sys.stdout.flush()  # tiến trình con ghi thẳng ra cùng màn hình — không để chữ của hai bên lẫn thứ tự
+        kq = subprocess.run(
+            [sys.executable, str(TEP_KIEM_CHEO), "chay", "--study", study, "--gate", gate],
+            cwd=str(BASE),
+            stdin=subprocess.DEVNULL,
+            timeout=THOI_HAN_KIEM_CHEO,
+            check=False,
+        )
+    except subprocess.TimeoutExpired:
+        print(f"⚠ Kiểm chéo quá {THOI_HAN_KIEM_CHEO} giây — bỏ qua; phân tích chính giữ nguyên")
+        return None
+    except Exception as e:  # noqa: BLE001 — tư vấn: không bao giờ làm hỏng lượt phân tích chính
+        print(f"⚠ Không chạy được kiểm chéo ({type(e).__name__}: {e}) — phân tích chính giữ nguyên")
+        return None
+    print(
+        f"🔁 Kiểm chéo (tư vấn): mã {kq.returncode} — {NHAN_MA_KIEM_CHEO.get(kq.returncode, 'không rõ')}. "
+        f"Báo cáo: exports/{study}/{gate}_kiem_cheo.md"
+    )
+    return kq.returncode
 
 warnings.filterwarnings("ignore")
 
@@ -2199,6 +2242,9 @@ def main():
                         help="Ghi đè kiểm tra G4/G5 checkpoint khi không có file checkpoint "
                              "(vd chạy thủ công ngoài pipeline) nhưng SAP+DB thực tế đã khóa. "
                              "KHÔNG dùng để né việc chưa khóa thật.")
+    parser.add_argument("--kiem-cheo", action="store_true",
+                        help="Sau khi ghi G6_analysis_summary.json, chạy kiểm chéo bằng SPSS + R "
+                             "(tools/kiem_cheo_g6.py chay) — TƯ VẤN: không đổi mã thoát hay trạng thái cổng")
     parser.add_argument("--i-confirm-irb-approved", action="store_true",
                         help="Ghi đè kiểm tra G2 (đạo đức/IRB) khi không có file checkpoint "
                              "nhưng IRB thực tế ĐÃ phê duyệt. KHÔNG dùng để né việc chưa duyệt thật.")
@@ -2628,6 +2674,8 @@ def main():
     print(f"\n{'='*60}")
     print(f"✅ HOÀN THÀNH — Đầu ra tại: {out_dir}/")
     print(f"   Dùng cho viet-ban-thao: {args.gate}_analysis_summary.json")
+    if args.kiem_cheo:
+        chay_kiem_cheo_tu_van(args.study, args.gate)
     print("\nCần bác sĩ kiểm chứng.")
     return summary
 

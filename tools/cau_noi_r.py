@@ -6,7 +6,12 @@ Bác sĩ giao 14/11/2026: «xây dựng kết nối và tải công cụ thống
 R chạy bằng `Rscript --vanilla` (không mở giao diện, không đọc .Rprofile/.RData). Công cụ luôn sinh một script `.R`
 đọc được, chạy tay được trong R/RStudio ở máy khác; máy có R thì chạy luôn.
 
-Năm lệnh:
+Sáu lệnh:
+  xuat-rds    (E2, 14/11/2026) `.rds` có nhãn cho R/RStudio — `exports/<mã>/r/<mã>_khoa.rds` (chỉ đọc) + manifest — dựng
+              từ CÙNG kế hoạch biến với `.sav` của `cau_noi_spss.py xuat-sav` (từ điển G5 + mã thiếu cấp dự án): thuộc
+              tính khuôn haven (labels gồm nhãn mã thiếu · na_values/na_range · label), script chỉ cần BASE R để ghi.
+              Đọc lại .rds và so TỪNG ô với nguồn + thuộc tính với kế hoạch; máy có haven ⇒ thêm chặng .sav ↔ .rds (kiểm
+              ba chiều từ điển ↔ .sav ↔ .rds, chặng chưa đo ghi «chưa đo»). Lệch ⇒ bỏ tệp, mã 1; không có R ⇒ mã 2.
   kiem        Tìm Rscript (PATH · /usr/local/bin · R.framework · C:\\Program Files\\R\\R-*\\bin), in phiên bản, chạy thử
               một biểu thức, liệt kê gói CẦN cho cầu nối (đủ/thiếu).
   cai-goi     Gói cần mà thiếu — CHẠY KHÔ mặc định; `--ap-dung` mới cài từ https://cloud.r-project.org.
@@ -44,6 +49,7 @@ import json
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -951,6 +957,536 @@ def lenh_chay(args) -> int:
     return MA_OK
 
 
+# ───────────────────────────── lệnh xuat-rds (E2) ─────────────────────────────
+#
+# .rds có nhãn cho R/RStudio, dựng từ CÙNG kế hoạch biến với .sav (cau_noi_spss.ke_hoach_bien) ⇒ một nguồn sự thật
+# cho cả hai tệp. Script R chỉ dùng BASE R để GHI (không cần jsonlite/haven); thuộc tính theo khuôn haven để
+# haven::as_factor/zap_missing/write_sav dùng được ngay. Sau khi ghi, CÙNG script đọc lại .rds và xả giá trị + thuộc
+# tính ra tệp văn bản THUẦN ASCII (chuỗi dạng hex UTF-8, số «%.17g») — Python so từng ô với CÙNG giá trị kỳ vọng của
+# phép khứ hồi .sav (S.so_sanh_gia_tri) và thuộc tính với kế hoạch. Máy có haven ⇒ thêm chặng .sav ↔ .rds.
+#
+# Đo thật 14/11/2026 (R 4.6.2, arm64, Rscript --vanilla chạy ở locale C): read.csv(fileEncoding="UTF-8-BOM") ở locale C
+# biến «ò» thành «<c3><b2>»; read.table báo «more columns than column names» khi một dòng thừa ô; as.numeric lệch
+# float() của Python 1–6 ulp như SPSS. Nên script đọc bằng scan() (what = chuỗi cho MỌI cột — kiểu do kế hoạch quyết,
+# R không đoán; fill/flush như SPSS: dòng thiếu ô ⇒ «», dòng thừa ô ⇒ bỏ phần thừa), đánh dấu UTF-8 bằng Encoding<-
+# (không chuyển mã), so số theo S.SAI_SO_ULP.
+
+LOP_SO_NHAN = ["haven_labelled_spss", "haven_labelled", "vctrs_vctr", "double"]
+LOP_CHU_NHAN = ["haven_labelled", "vctrs_vctr", "character"]
+
+
+def chuoi_r_u(s) -> str:
+    """Hằng chuỗi R thuần ASCII: ký tự ngoài ASCII ⇒ «\\U{xxxx}» (đúng cả ký tự ngoài BMP — `chuoi_r` qua JSON sinh cặp
+    \\uD83D\\uDE00 mà R không ghép), ký tự điều khiển ⇒ «\\xhh»."""
+    ra = ['"']
+    for ch in str(s):
+        o = ord(ch)
+        if ch == "\\":
+            ra.append("\\\\")
+        elif ch == '"':
+            ra.append('\\"')
+        elif o < 0x20 or o == 0x7F:
+            ra.append(f"\\x{o:02x}")
+        elif o < 0x80:
+            ra.append(ch)
+        else:
+            ra.append(f"\\U{{{o:x}}}")
+    ra.append('"')
+    return "".join(ra)
+
+
+def _so_r_u(x) -> str:
+    if x == "LO":
+        return "-Inf"
+    if x == "HI":
+        return "Inf"
+    return repr(float(x))
+
+
+def ke_cho_r(ke: list[dict]) -> list[dict]:
+    """Kế hoạch biến (đã bỏ biến «bo») ⇒ phần R cần: nhãn gộp khoảng trắng như .sav, nhãn giá trị kỳ vọng, mã thiếu."""
+    ra = []
+    for b in ke:
+        if b["bo"]:
+            continue
+        th = S.ky_vong_thieu(b)
+        ra.append(
+            {
+                "cot": b["cot"],
+                "ten": b["ten"],
+                "so": bool(b["so"]),
+                "ma_chu": {k: float(v) for k, v in (b.get("ma_chu") or {}).items()} if b["so"] else {},
+                "nhan": S._gop(b["nhan"]),
+                "dinh_dang": S.dinh_dang_cuoi(b),
+                "nhan_gia_tri": S.ky_vong_nhan_gia_tri(b),
+                "na_values": th["roi"] if b["so"] else [],
+                "na_range": th["khoang"] if b["so"] else None,
+            }
+        )
+    return ra
+
+
+def _vec_r_u(ds, *, so: bool) -> str:
+    ds = list(ds)
+    if not ds:
+        return "numeric(0)" if so else "character(0)"
+    return "c(" + ", ".join(_so_r_u(x) if so else chuoi_r_u(x) for x in ds) + ")"
+
+
+def _ke_r(kr: list[dict]) -> str:
+    dong = []
+    for b in kr:
+        gt = b["nhan_gia_tri"]
+        mc = b["ma_chu"]
+        phan = [
+            f"cot = {chuoi_r_u(b['cot'])}",
+            f"ten = {chuoi_r_u(b['ten'])}",
+            f"so = {'TRUE' if b['so'] else 'FALSE'}",
+            f"ma_chu = stats::setNames({_vec_r_u(mc.values(), so=True)}, {_vec_r_u(mc.keys(), so=False)})",
+            f"nhan = {chuoi_r_u(b['nhan'])}",
+            f"dinh_dang = {chuoi_r_u(b['dinh_dang'])}",
+            f"gt = {_vec_r_u(gt.keys(), so=b['so'])}",
+            f"gt_nhan = {_vec_r_u(gt.values(), so=False)}",
+            f"na_values = {_vec_r_u(b['na_values'], so=True)}",
+            "na_range = " + (_vec_r_u(b["na_range"], so=True) if b["na_range"] else "NULL"),
+        ]
+        dong.append("  list(" + ", ".join(phan) + ")")
+    return "list(\n" + ",\n".join(dong) + "\n)" if dong else "list()"
+
+
+MAU_RDS = r"""# ══════════════════════════════════════════════════════════════════════════════════════════════════
+# .rds có nhãn cho R/RStudio — @@STUDY@@ (@@NHAN_BAN@@)
+# Sinh bởi tools/cau_noi_r.py xuat-rds (@@LUC@@) từ CÙNG kế hoạch biến với .sav của SPSS (từ điển G5 + mã thiếu cấp
+# dự án). KHÔNG sửa tay — sinh lại bằng xuat-rds. Chỉ cần BASE R (không cần jsonlite/haven để ghi).
+# Chạy:    Rscript --vanilla <tệp này> [<CSV> [<tệp .rds ra>]]
+# RStudio: Source tệp này; đọc lại: d <- readRDS(TEP_RDS) — biến có nhãn theo khuôn haven (haven::as_factor,
+#          haven::zap_missing dùng được nếu đã cài haven). Mã thiếu chữ (BTR…) đã đổi về mã số như .sav (−9991…),
+#          khai ở na_values/na_range; chuỗi rỗng là «» (không phải NA). Cần bác sĩ kiểm chứng.
+# ══════════════════════════════════════════════════════════════════════════════════════════════════
+.a <- commandArgs(trailingOnly = TRUE)
+.lay <- function(i, mac_dinh) if (length(.a) >= i && nzchar(.a[i])) .a[i] else mac_dinh
+DU_LIEU <- .lay(1, @@DU_LIEU@@)
+TEP_RDS <- .lay(2, @@TEP_RDS@@)
+TEP_GIA_TRI <- .lay(3, "")         # xả giá trị đọc lại (cho Python so) — để trống khi chạy tay
+TEP_THUOC_TINH <- .lay(4, "")
+SAV <- .lay(5, "")                 # .sav cùng kế hoạch (chặng .sav ↔ .rds, cần haven)
+TEP_SAV_GIA_TRI <- .lay(6, "")
+TEP_SAV_THUOC_TINH <- .lay(7, "")
+SHA256_NGUON <- @@SHA@@
+COT <- @@COT@@
+KE <- @@KE@@
+
+dung <- function(ma, ...) {
+  thong_diep <- paste0(...)
+  if (interactive()) stop(thong_diep, call. = FALSE)
+  message(thong_diep)
+  quit(save = "no", status = ma)
+}
+cat("PHIEN_BAN=", R.version.string, "\n", sep = "")
+if (!file.exists(DU_LIEU)) dung(2, "LOI_DU_LIEU không thấy tệp ", DU_LIEU)
+if (exists("sha256sum", envir = asNamespace("tools"), inherits = FALSE)) {
+  .sha <- tolower(unname(tools::sha256sum(DU_LIEU)))
+  if (!identical(.sha, SHA256_NGUON)) dung(3, "LOI_KHOA SHA-256 CSV (", .sha, ") khác kế hoạch (", SHA256_NGUON, ")")
+} else {
+  cat("CANH_BAO=R < 4.5 không có tools::sha256sum — bỏ qua kiểm SHA-256 trong R\n")
+}
+hex1 <- function(s) if (is.na(s)) "NA" else paste(as.character(charToRaw(s)), collapse = "")
+hex <- function(x) vapply(as.character(x), hex1, "", USE.NAMES = FALSE)
+utf8 <- function(x) {
+  Encoding(x) <- "UTF-8"
+  x
+}
+
+# ── 1. Đọc CSV: MỌI cột là chuỗi (kiểu do kế hoạch quyết, R không đoán) ──────────────────────────────
+.td <- scan(DU_LIEU, what = "", sep = ",", quote = "\"", nlines = 1, quiet = TRUE, na.strings = character(0),
+            strip.white = FALSE, comment.char = "", allowEscapes = FALSE, blank.lines.skip = FALSE)
+if (length(.td)) .td[1] <- sub("^\xef\xbb\xbf", "", .td[1], useBytes = TRUE)
+if (length(.td) != length(COT) || !all(hex(utf8(.td)) == hex(COT))) {
+  dung(3, "LOI_TIEU_DE tiêu đề CSV khác kế hoạch biến — sinh lại bằng xuat-rds")
+}
+.v <- scan(DU_LIEU, what = stats::setNames(rep(list(character()), length(COT)), COT), sep = ",", quote = "\"",
+           skip = 1, na.strings = character(0), fill = TRUE, flush = TRUE, blank.lines.skip = FALSE,
+           strip.white = FALSE, quiet = TRUE, multi.line = FALSE, comment.char = "", allowEscapes = FALSE)
+.v <- lapply(.v, function(x) utf8(ifelse(is.na(x), "", x)))
+N_CA <- if (length(.v)) length(.v[[1]]) else 0L
+
+# ── 2. Đổi kiểu + gắn thuộc tính theo kế hoạch (giống .sav) ─────────────────────────────────────────
+# Bỏ khoảng trắng ASCII hai đầu (Python strip() bỏ cả khoảng trắng Unicode như NBSP — ô như vậy R đọc thành NA và
+# phép so báo lệch, không im lặng). Mã thiếu chữ (BTR…) ⇒ mã số thay như .sav; ô không đọc được số ⇒ NA + đếm.
+chuyen_so <- function(x, ma_chu, ten) {
+  t <- sub("^[ \t\r\n\f\v]+", "", x, useBytes = TRUE)
+  t <- utf8(sub("[ \t\r\n\f\v]+$", "", t, useBytes = TRUE))
+  ra <- rep(NA_real_, length(t))
+  la_ma <- t %in% names(ma_chu)
+  ra[la_ma] <- unname(ma_chu[t[la_ma]])
+  con <- !la_ma & nzchar(t)
+  ra[con] <- suppressWarnings(as.numeric(t[con]))
+  hong <- sum(con & is.na(ra))
+  if (hong) cat("SO_HONG=", ten, ": ", hong, " ô không đọc được số\n", sep = "")
+  ra
+}
+.ra <- list()
+for (b in KE) {
+  x <- .v[[b$cot]]
+  if (b$so) {
+    x <- chuyen_so(x, b$ma_chu, b$ten)
+  } else {
+    x <- utf8(sub(" +$", "", x, useBytes = TRUE))  # như SPSS: dấu cách CUỐI không có nghĩa
+  }
+  attr(x, "label") <- b$nhan
+  attr(x, "format.spss") <- b$dinh_dang
+  if (b$so) {
+    if (length(b$gt)) attr(x, "labels") <- stats::setNames(b$gt, b$gt_nhan)
+    if (length(b$na_values)) attr(x, "na_values") <- b$na_values
+    if (!is.null(b$na_range)) attr(x, "na_range") <- b$na_range
+    if (length(b$gt) || length(b$na_values) || !is.null(b$na_range)) {
+      class(x) <- c("haven_labelled_spss", "haven_labelled", "vctrs_vctr", "double")
+    }
+  } else if (length(b$gt)) {
+    attr(x, "labels") <- stats::setNames(b$gt, b$gt_nhan)
+    class(x) <- c("haven_labelled", "vctrs_vctr", "character")
+  }
+  .ra[[b$ten]] <- x
+}
+D <- structure(.ra, names = vapply(KE, function(b) b$ten, ""), class = "data.frame",
+               row.names = c(NA_integer_, -as.integer(N_CA)))
+saveRDS(D, TEP_RDS)
+cat("DA_GHI=", N_CA, "\n", sep = "")
+
+# ── 3. Đọc lại và xả ra văn bản ASCII cho Python so (chuỗi = «x» + hex UTF-8, số = %.17g, thiếu = NA) ──────
+so17 <- function(x) ifelse(is.na(x), "NA", sprintf("%.17g", as.numeric(x)))
+gia <- function(v) if (is.character(v)) paste0("x", hex1(v)) else so17(v)
+ghi_gia_tri <- function(d, tep) {
+  cot <- lapply(d, function(x) {
+    x <- as.vector(unclass(x))
+    if (is.character(x)) ifelse(is.na(x), "NA", paste0("x", hex(x))) else so17(x)
+  })
+  dong <- paste(hex(names(d)), collapse = "\t")
+  if (length(cot) && length(cot[[1]])) dong <- c(dong, do.call(paste, c(unname(cot), sep = "\t")))
+  writeLines(dong, tep, useBytes = TRUE)
+}
+ghi_thuoc_tinh <- function(d, tep) {
+  dong <- character(0)
+  for (n in names(d)) {
+    x <- d[[n]]
+    h <- hex1(n)
+    lb <- attr(x, "label", exact = TRUE)
+    dong <- c(dong, paste("BIEN", h, typeof(x), paste(class(x), collapse = ","), sep = "\t"),
+              paste("NHAN", h, if (is.null(lb)) "NULL" else hex1(lb), sep = "\t"))
+    gt <- attr(x, "labels", exact = TRUE)
+    for (i in seq_along(gt)) dong <- c(dong, paste("GT_NHAN", h, gia(unname(gt[i])), hex1(names(gt)[i]), sep = "\t"))
+    for (v in attr(x, "na_values", exact = TRUE)) dong <- c(dong, paste("NA_VALUES", h, gia(v), sep = "\t"))
+    nr <- attr(x, "na_range", exact = TRUE)
+    if (!is.null(nr)) dong <- c(dong, paste("NA_RANGE", h, so17(nr[1]), so17(nr[2]), sep = "\t"))
+  }
+  writeLines(dong, tep, useBytes = TRUE)
+}
+if (nzchar(TEP_GIA_TRI)) {
+  .d2 <- readRDS(TEP_RDS)
+  ghi_gia_tri(.d2, TEP_GIA_TRI)
+  ghi_thuoc_tinh(.d2, TEP_THUOC_TINH)
+}
+# ── 4. Chặng .sav ↔ .rds (chỉ khi có haven — tuỳ chọn, không cần để GHI .rds) ──────────────────────────
+if (nzchar(SAV)) {
+  if (requireNamespace("haven", quietly = TRUE)) {
+    .s <- haven::read_sav(SAV, user_na = TRUE)
+    ghi_gia_tri(.s, TEP_SAV_GIA_TRI)
+    ghi_thuoc_tinh(.s, TEP_SAV_THUOC_TINH)
+    cat("HAVEN=", as.character(utils::packageVersion("haven")), "\n", sep = "")
+  } else {
+    cat("HAVEN=\n")
+  }
+}
+cat("XONG_RDS\n")
+"""
+
+
+def sinh_script_rds(
+    study: str, csv_p: Path, rds_p: Path, sha: str, tieu_de: list[str], ke: list[dict], *, ban_nhap: bool
+) -> str:
+    thay = {
+        "@@STUDY@@": study,
+        "@@NHAN_BAN@@": "BẢN NHÁP — chưa khoá" if ban_nhap else "bộ dữ liệu ĐÃ KHOÁ",
+        "@@LUC@@": datetime.now().astimezone().isoformat(timespec="seconds"),
+        "@@DU_LIEU@@": chuoi_r_u(csv_p.as_posix()),
+        "@@TEP_RDS@@": chuoi_r_u(rds_p.as_posix()),
+        "@@SHA@@": chuoi_r_u(sha.lower()),
+        "@@COT@@": _vec_r_u(tieu_de, so=False),
+        "@@KE@@": _ke_r(ke_cho_r(ke)),
+    }
+    vb = re.sub(r"@@[A-Z_]+@@", lambda m: thay[m.group(0)], MAU_RDS)  # MỘT lượt thay — tên cột không tiêm được mã
+    return ascii_hoa_chuoi_r(vb)  # thông điệp tiếng Việt trong chuỗi R ⇒ \\u{…}: đúng cả khi Rscript chạy ở locale C
+
+
+def _hex_chu(h: str) -> str:
+    return bytes.fromhex(h).decode("utf-8", errors="replace")
+
+
+def _gia_tri_tu_hex(o: str):
+    """Một ô script R xả ra: «NA» ⇒ None · «x<hex>» ⇒ chuỗi (đúng byte UTF-8; «x» trơn là chuỗi rỗng) · còn lại ⇒ số."""
+    if o == "NA":
+        return None
+    if o.startswith("x"):
+        return _hex_chu(o[1:])
+    return float(o)
+
+
+def doc_ban_xa_r(p_gt: Path, p_tt: Path) -> tuple[list[str], list[list], dict[str, dict]]:
+    """Đọc hai tệp script R xả ra ⇒ (tên biến, ca[giá trị], thuộc tính theo tên). Chuỗi hex UTF-8 giải lại đúng byte."""
+    dong = p_gt.read_text(encoding="ascii").splitlines()
+    if not dong:
+        raise ValueError(f"{p_gt.name} rỗng")
+    bien = [_hex_chu(h) for h in dong[0].split("\t")] if dong[0] else []
+    ca = [[_gia_tri_tu_hex(o) for o in d.split("\t")] for d in dong[1:]]
+    tt: dict[str, dict] = {}
+    for d in p_tt.read_text(encoding="ascii").splitlines():
+        p = d.split("\t")
+        ten = _hex_chu(p[1])
+        if p[0] == "BIEN":
+            tt[ten] = {"typeof": p[2], "class": p[3].split(","), "nhan": None, "gt": {}, "na_values": [],
+                       "na_range": None}  # fmt: skip
+        elif p[0] == "NHAN":
+            tt[ten]["nhan"] = None if p[2] == "NULL" else _hex_chu(p[2])
+        elif p[0] == "GT_NHAN":
+            tt[ten]["gt"][_gia_tri_tu_hex(p[2])] = _hex_chu(p[3])
+        elif p[0] == "NA_VALUES":
+            tt[ten]["na_values"].append(_gia_tri_tu_hex(p[2]))
+        elif p[0] == "NA_RANGE":
+            tt[ten]["na_range"] = [float(p[2]), float(p[3])]
+    return bien, ca, tt
+
+
+def _khoang_r(k: list | None) -> list | None:
+    if not k:
+        return None
+    return [float("-inf") if x == "LO" else float("inf") if x == "HI" else float(x) for x in k]
+
+
+def kiem_thuoc_tinh_rds(ke: list[dict], bien: list[str], tt: dict[str, dict]) -> dict:
+    """Thuộc tính .rds đọc lại so với kế hoạch: tên + thứ tự, kiểu/lớp (khuôn haven), nhãn biến, nhãn giá trị (kể cả
+    nhãn mã thiếu), na_values/na_range (biến số). Trả {trang_thai, so_lech, lech}."""
+    lech: list[str] = []
+    kr = ke_cho_r(ke)
+    if [b["ten"] for b in kr] != bien:
+        lech.append("tên/thứ tự biến .rds khác kế hoạch")
+    for b in kr:
+        a = tt.get(b["ten"])
+        if a is None:
+            continue
+        co_nhan = bool(b["nhan_gia_tri"])
+        if b["so"]:
+            lop = LOP_SO_NHAN if (co_nhan or b["na_values"] or b["na_range"]) else ["numeric"]
+            kieu = "double"
+        else:
+            lop = LOP_CHU_NHAN if co_nhan else ["character"]
+            kieu = "character"
+        if a["typeof"] != kieu or a["class"] != lop:
+            lech.append(f"{b['ten']}: kiểu/lớp {a['typeof']}/{','.join(a['class'])} — kỳ vọng {kieu}/{','.join(lop)}")
+        if a["nhan"] != b["nhan"]:
+            lech.append(f"{b['ten']}: nhãn biến (label) khác kế hoạch")
+        if a["gt"] != b["nhan_gia_tri"]:
+            lech.append(f"{b['ten']}: nhãn giá trị (labels) khác kế hoạch")
+        if b["so"]:
+            if sorted(a["na_values"]) != sorted(b["na_values"]):
+                lech.append(f"{b['ten']}: na_values {a['na_values']} — kỳ vọng {b['na_values']}")
+            if a["na_range"] != _khoang_r(b["na_range"]):
+                lech.append(f"{b['ten']}: na_range {a['na_range']} — kỳ vọng {_khoang_r(b['na_range'])}")
+    return {"trang_thai": "KHOP" if not lech else "LECH", "so_lech": len(lech), "lech": lech}
+
+
+def so_sav_rds(ke: list[dict], sav: tuple, rds: tuple) -> dict:
+    """Chặng .sav (haven::read_sav, user_na=TRUE) ↔ .rds: tên, giá trị từng ô (số theo S.SAI_SO_ULP), nhãn biến, nhãn
+    giá trị, mã thiếu biến số. Mã thiếu biến CHUỖI («» và mã chữ) không mang sang .rds theo khuôn đã chọn ⇒ không so."""
+    (b_s, ca_s, tt_s), (b_r, ca_r, tt_r) = sav, rds
+    lech: list[str] = []
+    if b_s != b_r:
+        lech.append("tên/thứ tự biến .sav khác .rds")
+    if len(ca_s) != len(ca_r):
+        lech.append(f"số ca .sav {len(ca_s)} ≠ .rds {len(ca_r)}")
+    vs, vr = {t: i for i, t in enumerate(b_s)}, {t: i for i, t in enumerate(b_r)}
+    so_o = so_lech_o = 0
+    for b in (x for x in ke if not x["bo"]):
+        if b["ten"] not in vs or b["ten"] not in vr:
+            continue
+        lech_bien = 0
+        for hs, hr in zip(ca_s, ca_r):
+            so_o += 1
+            x, y = hs[vs[b["ten"]]], hr[vr[b["ten"]]]
+            dung = S._khop_so(x, y) if b["so"] and not isinstance(x, str) and not isinstance(y, str) else x == y
+            if not dung:
+                lech_bien += 1
+        if lech_bien:
+            so_lech_o += lech_bien
+            lech.append(f"{b['ten']}: {lech_bien} ô .sav ≠ .rds")
+        a, c = tt_s.get(b["ten"]) or {}, tt_r.get(b["ten"]) or {}
+        if a.get("nhan") != c.get("nhan"):
+            lech.append(f"{b['ten']}: nhãn biến .sav ≠ .rds")
+        if (a.get("gt") or {}) != (c.get("gt") or {}):
+            lech.append(f"{b['ten']}: nhãn giá trị .sav ≠ .rds")
+        na_s, na_r = sorted(a.get("na_values") or []), sorted(c.get("na_values") or [])
+        if b["so"] and (na_s != na_r or a.get("na_range") != c.get("na_range")):
+            lech.append(f"{b['ten']}: mã thiếu (na_values/na_range) .sav ≠ .rds")
+    return {"trang_thai": "KHOP" if not lech else "LECH", "so_o": so_o, "so_lech_o": so_lech_o, "lech": lech}
+
+
+def _sav_cung_ke(d: Path, study: str, hau_to: str, sha_nguon: str, sha_td: str) -> tuple[Path | None, dict, str]:
+    """.sav của CÙNG nguồn + CÙNG từ điển (manifest khớp SHA-256 cả hai, tệp còn và khớp SHA-256 .sav) hoặc lý do."""
+    man_p = d / "spss" / f"{study}{hau_to}.sav.manifest.json"
+    man = S._doc_json(man_p)
+    if not man:
+        return None, {}, "chưa có .sav (chạy cau_noi_spss.py xuat-sav)"
+    sav = Path(man.get("sav") or "")
+    if man.get("sha256_nguon") != sha_nguon or man.get("sha256_tu_dien") != sha_td:
+        return None, man, ".sav dựng từ nguồn/từ điển KHÁC — chạy lại xuat-sav"
+    if not (man.get("sav_da_tao") and sav.is_file()):
+        return None, man, "lượt xuat-sav gần nhất không tạo được .sav"
+    if S.sha256_tep(sav) != man.get("sha256_sav"):
+        return None, man, "tệp .sav đã đổi sau khi tạo (SHA-256 khác manifest)"
+    return sav, man, ""
+
+
+def lenh_xuat_rds(args) -> int:
+    d = thu_muc_de_tai(args.study)
+    if args.data:
+        csv_p = Path(args.data).expanduser().resolve()
+        if not args.ban_nhap:
+            raise TuChoi(
+                "--data chỉ dùng cùng --ban-nhap (bản nháp, KHÔNG phải dữ liệu khoá); bỏ --data để dùng bộ đã khoá"
+            )
+        man_khoa: dict = {"locked": False}
+    else:
+        csv_p, man_khoa = S.tim_du_lieu_khoa(args.study)
+    if csv_p.suffix.lower() != ".csv":
+        raise TuChoi(f"chỉ nhận CSV (đang là {csv_p.suffix})")
+    td_p = Path(args.dictionary).expanduser() if args.dictionary else d / f"G5_REDCap_dictionary_{args.study}.csv"
+    if not td_p.exists():
+        raise KhongDoDuoc(f"không thấy từ điển G5: {td_p}")
+    mt_p = Path(args.ma_thieu).expanduser() if args.ma_thieu else d / "_ma-thieu-theo-bien.csv"
+    td, mt = S.doc_tu_dien(td_p), S.doc_ma_thieu(mt_p)
+    tieu_de, tk, n = S.quet_csv(csv_p)
+    ke, canh_bao, _ = S.ke_hoach_bien(tieu_de, tk, td, mt, giu_ghi_chu=getattr(args, "giu_ghi_chu", False))
+    r_dir = d / "r"
+    r_dir.mkdir(parents=True, exist_ok=True)
+    hau_to = "_BAN-NHAP" if args.ban_nhap else "_khoa"
+    rds_p = r_dir / f"{args.study}{hau_to}.rds"
+    script_p = r_dir / f"{args.study}_xuat_rds{'_ban-nhap' if args.ban_nhap else ''}.R"
+    man_p = r_dir / f"{rds_p.name}.manifest.json"
+    sha_nguon, sha_td = S.sha256_tep(csv_p), S.sha256_tep(td_p)
+    script_p.write_text(
+        sinh_script_rds(args.study, csv_p, rds_p, sha_nguon, tieu_de, ke, ban_nhap=args.ban_nhap),
+        encoding="utf-8",
+        newline="\n",
+    )
+    print(f"✓ Script R (base R) dựng .rds: {script_p}")
+    for c in canh_bao:
+        print(f"  ⚠ {c}")
+    ket: dict = {
+        "study": args.study,
+        "luc": datetime.now().astimezone().isoformat(timespec="seconds"),
+        "ban_nhap": bool(args.ban_nhap),
+        "nguon_csv": str(csv_p),
+        "sha256_nguon": sha_nguon,
+        "manifest_khoa": {k: man_khoa.get(k) for k in ("lock_date", "sap_version", "sha256", "approved_by")},
+        "tu_dien": str(td_p),
+        "sha256_tu_dien": sha_td,
+        "ma_thieu": str(mt_p) if mt else None,
+        "so_ca_csv": n,
+        "script": str(script_p),
+        "rds": str(rds_p),
+        "rds_da_tao": False,
+        "ke_hoach": ke_cho_r(ke),
+        "bien_bo": [b["cot"] for b in ke if b["bo"]],
+        "canh_bao": canh_bao,
+        "disclaimer": CAN_KIEM,
+    }
+    for p in (rds_p, man_p):
+        if p.exists():
+            os.chmod(p, 0o600)
+            p.unlink()  # tệp cũ không được sống sót qua một lượt hỏng
+    try:
+        rs = tim_r()
+    except KhongDoDuoc as e:
+        ket["ba_chieu"] = {"tu_dien_rds": "KHONG_DO_DUOC", "khu_hoi_rds": "KHONG_DO_DUOC", "sav_rds": "KHONG_DO_DUOC"}
+        man_p.write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
+        print(f"⚪ {e}\n   Chạy {script_p.name} trong R/RStudio để tạo {rds_p.name}. KHÔNG phải «đạt».")
+        return MA_KHONG_DO
+    sav, man_sav, ly_do_sav = _sav_cung_ke(d, args.study, hau_to, sha_nguon, sha_td)
+    with tempfile.TemporaryDirectory(prefix="ebm-r-rds-") as tam_s:
+        tam = Path(tam_s)
+        t = {k: tam / f"{k}.txt" for k in ("gt", "tt", "sav_gt", "sav_tt")}
+        tam_rds = tam / "ra.rds"
+        ma, out, err = chay_r(
+            rs,
+            [str(script_p), csv_p.as_posix(), tam_rds.as_posix(), t["gt"].as_posix(), t["tt"].as_posix(),
+             sav.as_posix() if sav else "", t["sav_gt"].as_posix(), t["sav_tt"].as_posix()],
+            thu_muc=tam,
+            thoi_han=args.thoi_han,
+        )  # fmt: skip
+        nhat_ky = r_dir / f"{script_p.stem}.log"
+        nhat_ky.write_text(out + ("\n--- stderr ---\n" + err if err else ""), encoding="utf-8", newline="\n")
+        cuoi = (err or out).strip()[-800:]
+        if ma == MA_TU_CHOI:
+            man_p.write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
+            print(f"⛔ R từ chối: {cuoi}")
+            return MA_TU_CHOI
+        if ma != 0 or not tam_rds.exists() or not t["gt"].exists() or not t["tt"].exists():
+            man_p.write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
+            print(f"🔴 R báo lỗi (mã {ma}) khi dựng/đọc lại .rds — {cuoi}\n   nhật ký: {nhat_ky}")
+            return MA_LECH
+        r_ver = S._gia_tri_dong(out, "PHIEN_BAN")
+        haven_ver = S._gia_tri_dong(out, "HAVEN")
+        b_r, ca_r, tt_r = doc_ban_xa_r(t["gt"], t["tt"])
+        luc = datetime.now().astimezone().isoformat(timespec="seconds")
+        kh = S.so_sanh_gia_tri(csv_p, ke, b_r, ca_r)
+        ktt = kiem_thuoc_tinh_rds(ke, b_r, tt_r)
+        kh["luc"] = ktt["luc"] = luc
+        if sav and haven_ver and t["sav_gt"].exists() and t["sav_tt"].exists():
+            sr = so_sav_rds(ke, doc_ban_xa_r(t["sav_gt"], t["sav_tt"]), (b_r, ca_r, tt_r))
+            sr["luc"] = luc
+        else:
+            ly = ly_do_sav or ("máy không có gói haven (tuỳ chọn) — chặng .sav ↔ .rds chưa đo" if sav else "")
+            sr = {"trang_thai": "CHUA_DO", "ly_do": ly}
+        tdsav = man_sav.get("kiem_tu_dien") if sav else None
+        ba_chieu = {
+            "tu_dien_sav": (tdsav or {}).get("trang_thai") or "CHUA_DO",
+            "tu_dien_rds": ktt["trang_thai"],
+            "khu_hoi_rds": kh["trang_thai"],
+            "sav_rds": sr["trang_thai"],
+        }
+        ket.update(
+            {"r_phien_ban": r_ver, "haven_phien_ban": haven_ver or None, "khu_hoi": kh, "kiem_thuoc_tinh": ktt,
+             "sav_rds": sr, "sav": str(sav) if sav else None, "ba_chieu": ba_chieu}
+        )  # fmt: skip
+        tot = kh["trang_thai"] == "KHOP" and ktt["trang_thai"] == "KHOP" and sr["trang_thai"] in ("KHOP", "CHUA_DO")
+        if tot:
+            shutil.move(str(tam_rds), rds_p)
+    if not tot:
+        man_p.write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
+        print("🔴 .rds KHÔNG khớp — đã bỏ tệp, không dùng (chi tiết trong manifest):")
+        if kh["trang_thai"] != "KHOP":
+            print("\n".join(S.bao_cao_lech(kh, tieu_de="  Khứ hồi từng ô .rds")))
+        for ten, x in (("Thuộc tính .rds ↔ kế hoạch", ktt), (".sav ↔ .rds (haven)", sr)):
+            if x["trang_thai"] == "LECH":
+                print(f"  {ten}: " + "; ".join(x["lech"][:10]))
+        return MA_LECH
+    os.chmod(rds_p, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+    ket.update({"rds_da_tao": True, "sha256_rds": S.sha256_tep(rds_p)})
+    man_p.write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
+    nhan = {"KHOP": "✓ khớp", "LECH": "✗ LỆCH", "CHUA_DO": "⚪ chưa đo", "LOI": "✗ lỗi"}
+    print(f"✓ {rds_p} — {n} ca · {kh['so_bien']} biến (chỉ đọc) · {r_ver}")
+    print(f"  Khứ hồi từng ô .rds: {kh['so_o']} ô khớp nguồn")
+    print("  Ba chiều (từ điển ↔ .sav ↔ .rds):")
+    print(f"    từ điển ↔ .sav : {nhan.get(ba_chieu['tu_dien_sav'], ba_chieu['tu_dien_sav'])}" + (
+        f" — {ly_do_sav}" if ba_chieu["tu_dien_sav"] == "CHUA_DO" and ly_do_sav else ""))  # fmt: skip
+    print(f"    từ điển ↔ .rds : {nhan[ba_chieu['tu_dien_rds']]}")
+    print(f"    .sav ↔ .rds    : {nhan.get(ba_chieu['sav_rds'], ba_chieu['sav_rds'])}" + (
+        f" — {sr.get('ly_do')}" if sr.get("ly_do") else ""))  # fmt: skip
+    for g in kh.get("ghi_chu") or []:
+        print(f"  ⚠ {g}")
+    print(CAN_KIEM)
+    return MA_OK
+
+
 # ───────────────────────────── lệnh doi-chieu ─────────────────────────────
 #
 # Luật so (14/11/2026, sau lượt rà độc lập): R tái lập ĐÚNG phương pháp của Python ở mọi mục, nên KHÔNG còn miễn trừ
@@ -1511,8 +2047,17 @@ def main(argv: list[str] | None = None) -> int:
             p.add_argument("--ma-thieu", help="tệp mã thiếu cấp dự án (mặc định exports/<mã>/_ma-thieu-theo-bien.csv)")
         if ten == "chay":
             p.add_argument("--thoi-han", type=int, default=1200, help="giây (mặc định 1200)")
+    x = sub.add_parser("xuat-rds", help=".rds có nhãn (khuôn haven) từ CÙNG kế hoạch biến với .sav + kiểm ba chiều")
+    x.add_argument("--study", required=True)
+    x.add_argument("--data", help="CSV khác bộ đã khoá (bắt buộc kèm --ban-nhap)")
+    x.add_argument("--ban-nhap", action="store_true", help="bản nháp, KHÔNG phải dữ liệu khoá")
+    x.add_argument("--dictionary", help="từ điển REDCap (mặc định exports/<mã>/G5_REDCap_dictionary_<mã>.csv)")
+    x.add_argument("--ma-thieu", help="tệp mã thiếu cấp dự án (mặc định exports/<mã>/_ma-thieu-theo-bien.csv)")
+    x.add_argument("--giu-ghi-chu", action="store_true", help="giữ trường văn bản tự do (notes) — như xuat-sav")
+    x.add_argument("--thoi-han", type=int, default=600, help="giây (mặc định 600)")
     args = ap.parse_args(argv)
     ham = {
+        "xuat-rds": lenh_xuat_rds,
         "kiem": lenh_kiem,
         "cai-goi": lenh_cai_goi,
         "cu-phap": lenh_cu_phap,

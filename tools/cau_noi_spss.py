@@ -10,7 +10,9 @@ Sáu lệnh:
   kiem        Tìm SPSS, phiên bản, chạy thử một lệnh (giấy phép), liệt kê mô-đun được cấp phép.
   xuat-sav    Bộ dữ liệu ĐÃ KHOÁ (manifest khoá, đối chiếu SHA-256) + từ điển REDCap G5 + mã thiếu cấp dự án
               ⇒ `exports/<mã>/spss/<mã>_nhan_bien.sps` + `<mã>_khoa.sav` (nhãn biến · nhãn giá trị · mức đo ·
-              MISSING VALUES · tên theo «Tên SPSS: …» trong Field Annotation) + manifest.
+              MISSING VALUES · tên theo «Tên SPSS: …» trong Field Annotation) + manifest. Mỗi lượt TỰ ĐỘNG đọc lại
+              .sav vừa tạo (trước khi nhận) và so TỪNG ô với CSV nguồn qua cùng kế hoạch biến (E3 — khứ hồi) + so từ
+              điển .sav với kế hoạch (E2); lệch ⇒ bỏ tệp, mã 1, ghi `khu_hoi`/`kiem_tu_dien` vào manifest.
   cu-phap     Cú pháp phân tích `<mã>_phan_tich.sps` khớp ĐẶC TẢ của run_stats_analysis.py (khoá `dac_ta_phan_tich`
               trong G6_analysis_summary.json, hoặc --outcome/--group/… như lệnh đó): Bảng 1, kết cục chính, mô hình đa
               biến (logistic · tuyến tính · thứ tự), hiệu chỉnh cụm (GENLIN robust), sống còn (Cox + Kaplan–Meier).
@@ -50,6 +52,7 @@ import sys
 import tempfile
 import xml.etree.ElementTree as ET
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 for _s in (sys.stdout, sys.stderr):  # Windows cp1252 (BH55/R4)
@@ -489,11 +492,14 @@ def quet_csv(p: Path) -> tuple[list[str], list[dict], int]:
         for dong in r:
             n += 1
             for i, v in enumerate(dong[: len(tieu_de)]):
+                t = tk[i]
+                # Độ rộng A tính trên ô GỐC chỉ bỏ dấu cách CUỐI: đo 14/11/2026, GET DATA giữ nguyên khoảng trắng ĐẦU
+                # (và tab) của ô chuỗi, chỉ dấu cách cuối mất. Bản cũ đo trên ô đã strip() ⇒ «  Nguyễn Văn  » (A13)
+                # bị SPSS cắt thành «  Nguyễn V» — phép khứ hồi từng ô (E3) bắt được lỗi này.
+                t["rong"] = max(t["rong"], len(v.rstrip(" ").encode("utf-8")))
                 v = v.strip()
                 if v == "":
                     continue
-                t = tk[i]
-                t["rong"] = max(t["rong"], len(v.encode("utf-8")))
                 x = _so(v)
                 if x is None:
                     t["khong_so"].add(v)
@@ -702,6 +708,13 @@ def _dinh_dang(b: dict) -> str:
     return f"A{max(1, b['rong'])}"
 
 
+def dinh_dang_cuoi(b: dict) -> str:
+    """Định dạng SPSS CUỐI CÙNG của biến trong .sav (sau ALTER TYPE nếu đọc chuỗi rồi đổi) — cho format.spss .rds."""
+    if b["so"]:
+        return f"F{max(8, b['nguyen'] + b['le'] + 2)}.{b['le']}"
+    return f"A{max(1, b['rong'])}"
+
+
 def _chu_thich(s: str) -> str:
     """Một dòng chú thích SPSS. PHẢI kết thúc bằng dấu chấm: chú thích không có dấu chấm nuốt luôn lệnh kế tiếp (đo
     14/11/2026 — `SET UNICODE=ON.` của bản cũ không bao giờ chạy)."""
@@ -767,6 +780,382 @@ def cu_phap_nhan_bien(csv_p: Path, sav_p: Path, ke: list[dict], *, ghi_chu: list
     return "\n".join(dong)
 
 
+# ───────────────────────────── khứ hồi từng ô (E3) + kiểm từ điển .sav (E2) ─────────────────────────────
+#
+# Luật GET DATA /TYPE=TXT (SPSS 31.0.1, SET UNICODE=ON, ENCODING='UTF8', DELIMITED) — ĐO THẬT 14/11/2026 bằng
+# `spss_chay_nen.py --du-lieu`, không đoán:
+#   · biến SỐ (F): độ rộng/số lẻ của định dạng KHÔNG cắt/làm tròn giá trị (F3.0 vẫn đọc đủ 123456789012 và
+#     1.2345678901234567); ô rỗng hoặc chỉ dấu cách ⇒ SYSMIS; dấu cách đầu/cuối bỏ qua (« 2 » ⇒ 2); TAB không bỏ
+#     («\t3» ⇒ SYSMIS); «NA», «nan», «Inf», «1_000», «3,5», «1,000», «$5», «5%», chữ số Ả Rập, số ngoài miền double
+#     ⇒ SYSMIS; «1e3», «1E+02», «+5», «.5», «5.», «007», «-0» ⇒ như float(); «1d3» ⇒ 1000 (Python từ chối «1d3» nên
+#     cột đó không bao giờ là biến số trong kế hoạch).
+#   · bộ đọc số của SPSS KHÔNG làm tròn đúng tuyệt đối: 662/3000 số ngẫu nhiên 15–17 chữ số có nghĩa (hoặc số mũ lớn)
+#     lệch float() của Python 1–6 ulp (R 4.6.2 lệch y hệt) ⇒ so số theo SAI_SO_ULP — lệch thật do hỏng dữ liệu không
+#     bao giờ ở cỡ 1e-15 tương đối.
+#   · biến CHUỖI (A): giữ khoảng trắng ĐẦU và tab; dấu cách CUỐI mất (đệm); quá độ rộng ⇒ cắt theo BYTE nhưng không cắt
+#     giữa một ký tự («Việt» trong A4 ⇒ «Vi»); ô có nháy kép ("a""b", "x,y") đọc đúng.
+#   · cấu trúc: dòng TRỐNG bị BỎ (csv.reader của Python trả một dòng rỗng ⇒ số ca lệch); dòng thiếu ô ⇒ ô cuối rỗng;
+#     dòng thừa ô ⇒ phần thừa bị bỏ; ô có XUỐNG DÒNG trong nháy ⇒ SPSS TÁCH thành hai ca (dịch dòng) — Python đọc một ô.
+#   · ALTER TYPE chuỗi → số dùng CÙNG bộ đọc số (kết quả trùng từng bit với đọc thẳng F).
+SAI_SO_ULP = 8
+TRAN_MAU_LECH = 20
+
+
+def _gop(s) -> str:
+    """Chuỗi đúng như SPSS nhận qua chuoi_spss(): gộp mọi khoảng trắng thành một dấu cách, bỏ đầu/cuối."""
+    return re.sub(r"\s+", " ", str(s)).strip()
+
+
+def doc_hang_csv(p: Path) -> tuple[list[str], list[list[str]]]:
+    """Tiêu đề + mọi dòng dữ liệu, đọc ĐÚNG như quet_csv (utf-8-sig, csv.reader) — cùng số dòng với `so_ca_csv`."""
+    with open(p, encoding="utf-8-sig", newline="") as f:
+        r = csv.reader(f)
+        return next(r, []), list(r)
+
+
+def gia_tri_ky_vong(b: dict, o: str | None) -> float | str | None:
+    """Giá trị .sav/.rds PHẢI chứa cho ô nguồn `o` theo kế hoạch biến `b` (None = SYSMIS/NA).
+
+    Biến số: ô rỗng/khoảng trắng ⇒ None; mã thiếu CHỮ (ma_chu) ⇒ mã số thay (−9991…); còn lại float(ô) — kế hoạch chỉ
+    gọi một cột là SỐ khi MỌI giá trị (đã strip, như quet_csv) là số hữu hạn hoặc mã chữ đã khai. Biến chuỗi: ô gốc bỏ
+    dấu cách CUỐI (SPSS đệm/bỏ dấu cách cuối; khoảng trắng đầu giữ nguyên); dòng thiếu ô ⇒ «»."""
+    if b["so"]:
+        s = (o or "").strip()
+        if s == "":
+            return None
+        if s in b.get("ma_chu", {}):
+            return float(b["ma_chu"][s])
+        x = _so(s)
+        return x
+    return (o or "").rstrip(" ")
+
+
+def _khop_so(a: float | None, b: float | None) -> bool:
+    if a is None or b is None:
+        return a is None and b is None
+    if a == b:
+        return True
+    if not (math.isfinite(a) and math.isfinite(b)):
+        return False
+    return abs(a - b) <= SAI_SO_ULP * math.ulp(max(abs(a), abs(b)))
+
+
+_SO_NGUYEN_15 = re.compile(r"[+-]?[0-9]{1,15}")
+
+
+def vuot_do_chinh_xac(o: str | None) -> bool:
+    """Ô SỐ mà double (SPSS/R/pandas) KHÔNG lưu đúng được: giá trị thập phân ≠ giá trị của double gần nhất
+    (vd 12345678901234567 ⇒ 12345678901234568). Ngưỡng ulp sẽ che lệch này ⇒ phải báo riêng. «0.1» không tính."""
+    s = (o or "").strip()
+    try:
+        return Decimal(s) != Decimal(repr(float(s)))
+    except (InvalidOperation, ValueError, OverflowError):
+        return False
+
+
+def khop_o(b: dict, ky_vong, nhan_duoc, o: str | None = None) -> bool:
+    """`o` = ô nguồn: số NGUYÊN ≤ 15 chữ số (mã, số đếm) phải trùng TUYỆT ĐỐI — ngưỡng ulp chỉ cho số thực dài, nơi bộ
+    đọc của SPSS/R lệch float() vài ulp (ở 1e15, 8 ulp = 1 đơn vị: 999999999999999 không được «khớp» 1e15)."""
+    if b["so"]:
+        if isinstance(nhan_duoc, str):
+            return False
+        nd = None if nhan_duoc is None else float(nhan_duoc)
+        if o is not None and _SO_NGUYEN_15.fullmatch(o.strip()) and ky_vong is not None and nd is not None:
+            return ky_vong == nd
+        return _khop_so(ky_vong, nd)
+    return isinstance(nhan_duoc, str) and nhan_duoc == ky_vong
+
+
+def la_chu_tu_do(b: dict) -> bool:
+    """Biến chuỗi KHÔNG có nhãn giá trị (văn bản tự do, mã phiếu…) ⇒ che giá trị trong báo cáo (có thể chứa PII)."""
+    return not b["so"] and not b.get("nhan_gia_tri")
+
+
+def _hien(b: dict, x) -> str:
+    if x is None:
+        return "SYSMIS/NA" if b["so"] else "∅"
+    if isinstance(x, str):
+        if la_chu_tu_do(b):
+            return f"‹chuỗi {len(x)} ký tự · {len(x.encode('utf-8'))} byte›"
+        return repr(x)
+    return repr(float(x))
+
+
+def _loai_lech(b: dict, ky_vong, nhan_duoc) -> str:
+    if b["so"]:
+        if isinstance(nhan_duoc, str):
+            return "biến số thành chuỗi"
+        if ky_vong is not None and nhan_duoc is None:
+            return "mất số (đọc thành SYSMIS — ký tự lạ, dấu phẩy thập phân, tab, chữ số không phải ASCII?)"
+        if ky_vong is None:
+            return "ô trống thành số"
+        return "lệch số"
+    if not isinstance(nhan_duoc, str):
+        return "mất chuỗi"
+    kv_b, nd_b = ky_vong.encode("utf-8"), nhan_duoc.encode("utf-8")
+    if len(nd_b) < len(kv_b) and ky_vong.startswith(nhan_duoc):
+        return f"cắt cụt theo độ rộng (A{b.get('rong', '?')}: {len(kv_b)} → {len(nd_b)} byte)"
+    if "�" in nhan_duoc:
+        return "hỏng mã hoá (ký tự thay U+FFFD)"
+    for ma in ("cp1252", "latin-1"):
+        try:
+            if kv_b.decode(ma) == nhan_duoc:
+                return f"hỏng mã hoá tiếng Việt (UTF-8 đọc thành {ma})"
+        except UnicodeDecodeError:
+            continue
+    import unicodedata
+
+    if unicodedata.normalize("NFC", ky_vong) == unicodedata.normalize("NFC", nhan_duoc):
+        return "khác dạng chuẩn hoá Unicode (NFC/NFD)"
+    if nhan_duoc.strip() == ky_vong.strip():
+        return "khác khoảng trắng đầu"
+    return "lệch chuỗi"
+
+
+def so_sanh_gia_tri(
+    csv_p: Path, ke: list[dict], bien: list[str], ca: list[list], *, tran_mau: int = TRAN_MAU_LECH
+) -> dict:
+    """So TỪNG biến giữ lại × TỪNG ca của bản đọc lại (.sav qua spss.Cursor, hoặc .rds qua R) với giá trị kỳ vọng suy từ
+    CSV nguồn qua CÙNG kế hoạch biến `ke`. Ca i của bản đọc lại phải khớp dòng dữ liệu i của CSV (thứ tự giữ nguyên).
+
+    Trả {trang_thai KHOP|LECH, so_o, so_lech, so_ca_nguon, so_ca_doc, so_bien, mau_lech[≤ tran_mau] (giá trị biến chữ tự
+    do đã che), lech_theo_bien, ghi_chu}."""
+    giu = [b for b in ke if not b["bo"]]
+    tieu_de, hang = doc_hang_csv(csv_p)
+    cot = {c: i for i, c in enumerate(tieu_de)}
+    vi_tri = {t: j for j, t in enumerate(bien)}
+    so_o, so_lech, mau, theo_bien, ghi_chu = len(hang) * len(giu), 0, [], {}, []
+
+    def ghi(i: int, b: dict, kv, nd, loai: str | None = None) -> None:
+        nonlocal so_lech
+        so_lech += 1
+        theo_bien[b["ten"]] = theo_bien.get(b["ten"], 0) + 1
+        if len(mau) < tran_mau:
+            mau.append(
+                {
+                    "ca": i + 1,
+                    "bien": b["ten"],
+                    "ky_vong": _hien(b, kv),
+                    "nhan_duoc": _hien(b, nd) if loai is None else "—",
+                    "loai": loai or _loai_lech(b, kv, nd),
+                }
+            )
+
+    thieu_bien = [b["ten"] for b in giu if b["ten"] not in vi_tri or b["cot"] not in cot]
+    if thieu_bien:
+        ghi_chu.append("biến có trong kế hoạch nhưng KHÔNG có trong bản đọc lại: " + ", ".join(thieu_bien[:12]))
+    dau_lech: int | None = None
+    for i, dong in enumerate(hang):
+        hang_doc = ca[i] if i < len(ca) else None
+        for b in giu:
+            ci = cot.get(b["cot"])
+            o = dong[ci] if ci is not None and ci < len(dong) else None
+            kv = gia_tri_ky_vong(b, o)
+            if hang_doc is None:
+                ghi(i, b, kv, None, "thiếu ca trong bản đọc lại")
+            elif b["ten"] not in vi_tri:
+                ghi(i, b, kv, None, "thiếu biến trong bản đọc lại")
+            elif b["so"] and o is not None and o.strip() not in b.get("ma_chu", {}) and vuot_do_chinh_xac(o):
+                ghi(i, b, kv, hang_doc[vi_tri[b["ten"]]], "vượt độ chính xác double (> 15 chữ số có nghĩa) — .sav/.rds "
+                    "lưu giá trị KHÁC nguồn; nếu là MÃ, giữ dạng chữ ở nguồn")  # fmt: skip
+            elif not khop_o(b, kv, hang_doc[vi_tri[b["ten"]]], o):
+                ghi(i, b, kv, hang_doc[vi_tri[b["ten"]]])
+            else:
+                continue
+            if dau_lech is None:
+                dau_lech = i
+    for i in range(len(hang), len(ca)):  # bản đọc lại THỪA ca (ô nhiều dòng bị tách, …)
+        so_lech += 1
+        if len(mau) < tran_mau:
+            mau.append({"ca": i + 1, "bien": "*", "ky_vong": "—", "nhan_duoc": "ca thừa", "loai": "thừa ca"})
+        dau_lech = len(hang) if dau_lech is None else dau_lech
+    if len(ca) != len(hang):
+        ghi_chu.append(f"số ca: CSV {len(hang)} dòng dữ liệu, bản đọc lại {len(ca)} ca")
+
+    def khop_hang(i_ca: int, i_nguon: int) -> bool:
+        """Ca i_ca của bản đọc lại khớp TRỌN dòng nguồn i_nguon (mọi biến)?"""
+        if not (0 <= i_ca < len(ca) and 0 <= i_nguon < len(hang)):
+            return False
+        d = hang[i_nguon]
+        return all(
+            b["ten"] in vi_tri
+            and khop_o(
+                b,
+                gia_tri_ky_vong(b, d[cot[b["cot"]]] if cot[b["cot"]] < len(d) else None),
+                ca[i_ca][vi_tri[b["ten"]]],
+                d[cot[b["cot"]]] if cot[b["cot"]] < len(d) else None,
+            )
+            for b in giu
+            if b["cot"] in cot
+        )
+
+    if dau_lech is not None and dau_lech < min(len(hang), len(ca)):
+        r = dau_lech
+        if khop_hang(r, r + 1) or khop_hang(r + 1, r + 2):  # bản đọc lại thiếu một dòng nguồn
+            ghi_chu.append(f"nghi DỊCH DÒNG từ ca {r + 1}: bản đọc lại đã BỎ một dòng (dòng trống?)")
+        elif khop_hang(r + 1, r) or khop_hang(r + 2, r + 1):  # bản đọc lại thêm một ca (một ô bị tách đôi)
+            ghi_chu.append(f"nghi DỊCH DÒNG từ ca {r + 1}: bản đọc lại đã CHÈN thêm một ca (ô có xuống dòng bị tách?)")
+    so_0_dau = [
+        b["ten"]
+        for b in giu
+        if b["so"]
+        and b["cot"] in cot
+        and any(
+            re.match(r"[+-]?0\d", (d[cot[b["cot"]]] if cot[b["cot"]] < len(d) else "").strip())
+            and (d[cot[b["cot"]]].strip() not in b.get("ma_chu", {}))
+            for d in hang
+        )
+    ]
+    if so_0_dau:  # TƯ VẤN, không tính lệch: pandas cũng đọc «007» thành 7
+        ghi_chu.append(
+            "biến SỐ có giá trị mang số 0 đứng đầu (vd «007») — .sav/.rds lưu dạng số nên mất số 0 đầu; nếu đó là MÃ "
+            "(mã vùng, mã phiếu) hãy giữ dạng chữ ở nguồn: " + ", ".join(so_0_dau[:12])
+        )
+    return {
+        "trang_thai": "KHOP" if so_lech == 0 else "LECH",
+        "so_o": so_o,
+        "so_lech": so_lech,
+        "so_ca_nguon": len(hang),
+        "so_ca_doc": len(ca),
+        "so_bien": len(giu),
+        "sai_so_ulp": SAI_SO_ULP,
+        "mau_lech": mau,
+        "lech_theo_bien": theo_bien,
+        "ghi_chu": ghi_chu,
+    }
+
+
+def bao_cao_lech(kq: dict, *, tieu_de: str, tran: int = 10) -> list[str]:
+    """Báo cáo gọn: N lệch đầu (ca · biến · kỳ vọng · nhận được · loại) + ghi chú. Giá trị biến chữ tự do đã che."""
+    dong = [f"{tieu_de}: {kq.get('so_lech', 0)} ô lệch / {kq.get('so_o', 0)} ô"]
+    for m in (kq.get("mau_lech") or [])[:tran]:
+        dong.append(f"   ca {m['ca']} · {m['bien']}: kỳ vọng {m['ky_vong']} — nhận {m['nhan_duoc']} ({m['loai']})")
+    con = kq.get("so_lech", 0) - min(tran, len(kq.get("mau_lech") or []))
+    if con > 0:
+        dong.append(f"   … còn {con} ô lệch (theo biến: {kq.get('lech_theo_bien')})")
+    dong += [f"   • {g}" for g in kq.get("ghi_chu") or []]
+    return dong
+
+
+def ky_vong_nhan_gia_tri(b: dict) -> dict:
+    """Nhãn giá trị .sav PHẢI có theo kế hoạch — cùng luật cu_phap_nhan_bien(): nhãn lựa chọn + nhãn mã thiếu (mã thiếu
+    ghi sau nên thắng khi trùng mã); biến số bỏ mã chữ; nhãn gộp khoảng trắng như chuoi_spss()."""
+    cap = dict(b["nhan_gia_tri"])
+    cap.update(dict(b["ma_thieu"]))
+    ra: dict = {}
+    for ma, nhan in cap.items():
+        if b["so"]:
+            x = _so(ma)
+            if x is not None:
+                ra[x] = _gop(nhan)
+        else:
+            ra[ma.rstrip(" ")] = _gop(nhan)
+    return ra
+
+
+def _gia_tri_thieu(x, so: bool):
+    if isinstance(x, str) and x.strip() in ("LO", "HI", "LOWEST", "HIGHEST"):
+        return "LO" if x.strip().startswith("LO") else "HI"
+    return float(x) if so else str(x).rstrip(" ")
+
+
+def ky_vong_thieu(b: dict) -> dict:
+    """MISSING VALUES theo kế hoạch ⇒ {roi: [giá trị rời, đã xếp], khoang: [thấp, cao] | None} (LO/HI giữ chữ)."""
+    if not b["so"]:
+        return {"roi": sorted(x.rstrip(" ") for x in b.get("thieu_chuoi") or []), "khoang": None}
+    roi, khoang = [], None
+    for t in (b.get("menh_de_thieu") or "").split(","):
+        t = t.strip()
+        if not t:
+            continue
+        if " THRU " in t:
+            lo, hi = t.split(" THRU ", 1)
+            khoang = [_gia_tri_thieu(lo, True), _gia_tri_thieu(hi, True)]
+        else:
+            roi.append(float(t))
+    return {"roi": sorted(roi), "khoang": khoang}
+
+
+def thieu_tu_spss(th: list | None, so: bool) -> dict:
+    """missingValues của spss.Dataset ([kiểu, a, b, c] — kiểu 1–3 rời, −2 khoảng, −3 khoảng + rời) ⇒ cùng khuôn
+    ky_vong_thieu. Chuỗi bỏ dấu cách đệm (SPSS lưu mã thiếu chuỗi đệm tới 8 byte)."""
+    th = list(th or [0])
+    k = int(th[0] or 0)
+    if k in (-2, -3):
+        roi = [_gia_tri_thieu(th[3], so)] if k == -3 and len(th) > 3 and th[3] is not None else []
+        return {"roi": sorted(roi), "khoang": [_gia_tri_thieu(th[1], so), _gia_tri_thieu(th[2], so)]}
+    return {"roi": sorted(_gia_tri_thieu(x, so) for x in th[1 : 1 + max(0, k)] if x is not None), "khoang": None}
+
+
+def kiem_tu_dien_sav(ke: list[dict], td: dict) -> dict:
+    """Từ điển .sav (dump `--tu-dien`) so với kế hoạch: tên + thứ tự biến, số/chuỗi (và độ rộng A), nhãn biến, nhãn giá
+    trị (cả nhãn mã thiếu), MISSING VALUES, mức đo. Trả {trang_thai KHOP|LECH, so_lech, lech[...]}."""
+    giu = [b for b in ke if not b["bo"]]
+    ds = td.get("bien") or []
+    lech: list[str] = []
+    ten_ke, ten_sav = [b["ten"] for b in giu], [v.get("ten") for v in ds]
+    if ten_ke != ten_sav:
+        thieu = [t for t in ten_ke if t not in ten_sav]
+        thua = [t for t in ten_sav if t not in ten_ke]
+        lech.append(
+            "tên/thứ tự biến khác kế hoạch"
+            + (f" — thiếu: {', '.join(thieu[:8])}" if thieu else "")
+            + (f" — thừa: {', '.join(str(t) for t in thua[:8])}" if thua else "")
+            + (" — cùng tập biến nhưng KHÁC thứ tự" if not thieu and not thua else "")
+        )
+    theo_ten = {v.get("ten"): v for v in ds}
+    for b in giu:
+        v = theo_ten.get(b["ten"])
+        if v is None:
+            continue
+        kieu = v.get("kieu")
+        if b["so"] and kieu != 0:
+            lech.append(f"{b['ten']}: kế hoạch là biến SỐ nhưng .sav là chuỗi (A{kieu})")
+            continue
+        if not b["so"] and kieu != max(1, b["rong"]):
+            lech.append(f"{b['ten']}: kế hoạch là chuỗi A{max(1, b['rong'])} nhưng .sav có kiểu {kieu}")
+        if (v.get("nhan") or "") != _gop(b["nhan"]):
+            lech.append(f"{b['ten']}: nhãn biến khác kế hoạch")
+        ngt = {}
+        for k, nhan in (v.get("nhan_gia_tri") or {}).items():
+            ngt[float(k) if b["so"] else str(k).rstrip(" ")] = nhan
+        kv = ky_vong_nhan_gia_tri(b)
+        if ngt != kv:
+            thieu = sorted(str(k) for k in set(kv) - set(ngt))
+            thua = sorted(str(k) for k in set(ngt) - set(kv))
+            sai = sorted(str(k) for k in set(kv) & set(ngt) if kv[k] != ngt[k])
+            lech.append(
+                f"{b['ten']}: nhãn giá trị khác kế hoạch"
+                + (f" — thiếu mã {', '.join(thieu[:8])}" if thieu else "")
+                + (f" — thừa mã {', '.join(thua[:8])}" if thua else "")
+                + (f" — sai nhãn mã {', '.join(sai[:8])}" if sai else "")
+            )
+        if thieu_tu_spss(v.get("thieu"), b["so"]) != ky_vong_thieu(b):
+            lech.append(
+                f"{b['ten']}: MISSING VALUES khác kế hoạch (kỳ vọng {ky_vong_thieu(b)} — .sav "
+                f"{thieu_tu_spss(v.get('thieu'), b['so'])})"
+            )
+        if str(v.get("muc_do") or "").upper() != b["muc_do"]:
+            lech.append(f"{b['ten']}: mức đo {v.get('muc_do')} khác kế hoạch {b['muc_do']}")
+    return {"trang_thai": "KHOP" if not lech else "LECH", "so_lech": len(lech), "lech": lech}
+
+
+def doc_lai_sav(py: Path, thu_muc: Path, sav: Path, csv_p: Path, ke: list[dict]) -> dict:
+    """MỘT lượt SPSS đọc lại .sav vừa tạo (`--du-lieu` kèm từ điển) ⇒ {khu_hoi, kiem_tu_dien, loi, out, err}."""
+    p_dl, p_td = thu_muc / "doc_lai_du_lieu.json", thu_muc / "doc_lai_tu_dien.json"
+    ma, out, err = chay_spss(py, ["--du-lieu", str(sav), str(p_dl), str(p_td)], thu_muc=thu_muc)
+    luc = datetime.now().astimezone().isoformat(timespec="seconds")
+    dl, td = _doc_json(p_dl), _doc_json(p_td)
+    if ma != 0 or not dl or not td:
+        ly_do = "SPSS không đọc lại được .sav vừa tạo — " + ((err or out).strip()[-400:] or f"mã {ma}")
+        loi = {"trang_thai": "LOI", "ly_do": ly_do, "luc": luc}
+        return {"khu_hoi": loi, "kiem_tu_dien": dict(loi), "loi": ly_do, "out": out, "err": err}
+    kh = so_sanh_gia_tri(csv_p, ke, list(dl.get("bien") or []), list(dl.get("ca") or []))
+    ktd = kiem_tu_dien_sav(ke, td)
+    kh["luc"] = ktd["luc"] = luc
+    return {"khu_hoi": kh, "kiem_tu_dien": ktd, "loi": None, "out": out, "err": err}
+
+
 # ───────────────────────────── lệnh xuat-sav ─────────────────────────────
 
 
@@ -818,6 +1207,21 @@ def lenh_xuat_sav(args) -> int:
     mt_p = Path(args.ma_thieu).expanduser() if args.ma_thieu else d / "_ma-thieu-theo-bien.csv"
     td, mt = doc_tu_dien(td_p), doc_ma_thieu(mt_p)
     tieu_de, tk, n = quet_csv(csv_p)
+    _, hang_csv = doc_hang_csv(csv_p)
+    nhieu_dong = [
+        f"dòng {i + 1} · {tieu_de[j] if j < len(tieu_de) else f'cột {j + 1}'}"
+        for i, d in enumerate(hang_csv)
+        for j, o in enumerate(d)
+        if "\n" in o or "\r" in o
+    ]
+    # SPSS GET DATA tách ô nhiều dòng thành HAI ca ⇒ dịch dòng (đo thật 14/11/2026) — chặn TRƯỚC khi chạy
+    if nhieu_dong:
+        raise TuChoi(
+            f"{len(nhieu_dong)} ô có XUỐNG DÒNG — SPSS sẽ tách thành hai ca: "
+            + "; ".join(nhieu_dong[:10])
+            + (" …" if len(nhieu_dong) > 10 else "")
+            + ". Thay xuống dòng ở nguồn (nhap_lieu_excel báo «xuong_dong_trong_o») rồi chạy lại"
+        )
     ke, canh_bao, de_xuat = ke_hoach_bien(tieu_de, tk, td, mt, giu_ghi_chu=getattr(args, "giu_ghi_chu", False))
     ra = d / "spss"
     ra.mkdir(parents=True, exist_ok=True)
@@ -880,6 +1284,8 @@ def lenh_xuat_sav(args) -> int:
         sav_p.unlink()
     if man_sav.exists():
         man_sav.unlink()  # manifest cũ không được sống sót qua một lượt tạo .sav hỏng
+    doc_lai: dict | None = None
+    da_tao = False
     with vung_tam() as tam_s:
         tam = Path(tam_s)
         shutil.copyfile(csv_p, tam / "du_lieu.csv")
@@ -887,18 +1293,38 @@ def lenh_xuat_sav(args) -> int:
             cu_phap_nhan_bien(tam / "du_lieu.csv", tam / "ra.sav", ke, ghi_chu=ghi_chu), encoding="utf-8", newline="\n"
         )
         ma, out, err = chay_spss(py, ["--cu-phap", str(tam / "nhan_bien.sps")], thu_muc=tam)
-        if ma == 0 and (tam / "ra.sav").exists():
-            shutil.move(str(tam / "ra.sav"), sav_p)
-    (ra / f"{sps_p.stem}.log").write_text(
-        out + ("\n--- stderr ---\n" + err if err else ""), encoding="utf-8", newline="\n"
-    )
-    so_ca = _gia_tri_dong(out, "SO_CA")
-    if ma != 0 or not sav_p.exists():
+        so_ca = _gia_tri_dong(out, "SO_CA")
+        da_tao = ma == 0 and (tam / "ra.sav").exists()
+        if da_tao and (so_ca is None or so_ca == str(n)):
+            # E3 + E2: đọc lại .sav NGAY TRONG vùng tạm — chỉ tệp qua cả hai phép kiểm mới được chuyển về exports/.
+            doc_lai = doc_lai_sav(py, tam, tam / "ra.sav", tam / "du_lieu.csv", ke)
+            if doc_lai["khu_hoi"]["trang_thai"] == "KHOP" and doc_lai["kiem_tu_dien"]["trang_thai"] == "KHOP":
+                shutil.move(str(tam / "ra.sav"), sav_p)
+    nhat_ky = out + ("\n--- stderr ---\n" + err if err else "")
+    if doc_lai:
+        nhat_ky += "\n--- đọc lại .sav (--du-lieu) ---\n" + doc_lai["out"]
+        nhat_ky += "\n--- stderr ---\n" + doc_lai["err"] if doc_lai["err"] else ""
+    (ra / f"{sps_p.stem}.log").write_text(nhat_ky, encoding="utf-8", newline="\n")
+    if not da_tao:
         print("🔴 SPSS báo lỗi khi tạo .sav —", (err or out).strip()[-800:])
         return MA_LECH
     if so_ca is not None and so_ca != str(n):
         print(f"🔴 Số ca trong .sav ({so_ca}) khác số dòng CSV ({n}) — không dùng tệp này")
-        sav_p.unlink()
+        return MA_LECH
+    if doc_lai is None:  # không thể xảy ra (đã tạo + đúng số ca ⇒ đã đọc lại) — giữ cho chắc, không nhận tệp
+        return MA_LECH
+    ket.update({"khu_hoi": doc_lai["khu_hoi"], "kiem_tu_dien": doc_lai["kiem_tu_dien"]})
+    if not sav_p.exists():  # khứ hồi/từ điển LỆCH hoặc không đọc lại được ⇒ .sav đã bị bỏ cùng vùng tạm
+        man_sav.write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
+        if doc_lai["loi"]:
+            print(f"🔴 {doc_lai['loi']} — không nhận tệp chưa kiểm được")
+            return MA_LECH
+        print("🔴 .sav KHÔNG khớp nguồn — đã bỏ tệp, không dùng (chi tiết trong manifest, mục khu_hoi/kiem_tu_dien):")
+        if doc_lai["khu_hoi"]["trang_thai"] != "KHOP":
+            print("\n".join(bao_cao_lech(doc_lai["khu_hoi"], tieu_de="  Khứ hồi từng ô (E3)")))
+        if doc_lai["kiem_tu_dien"]["trang_thai"] != "KHOP":
+            print(f"  Từ điển .sav ↔ kế hoạch (E2): {doc_lai['kiem_tu_dien']['so_lech']} điểm lệch")
+            print("\n".join(f"   • {x}" for x in doc_lai["kiem_tu_dien"]["lech"][:12]))
         return MA_LECH
     os.chmod(sav_p, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
     ket.update(
@@ -910,7 +1336,14 @@ def lenh_xuat_sav(args) -> int:
         }
     )
     man_sav.write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
+    kh = doc_lai["khu_hoi"]
     print(f"✓ {sav_p} — {so_ca} ca · {len(ket['bien'])} biến (chỉ đọc) · manifest {man_sav.name}")
+    print(
+        f"✓ Khứ hồi từng ô (E3): {kh['so_o']} ô khớp nguồn · từ điển .sav khớp kế hoạch (E2: tên, nhãn biến, nhãn giá "
+        "trị, MISSING VALUES, mức đo)"
+    )
+    for g in kh.get("ghi_chu") or []:
+        print(f"  ⚠ {g}")
     return MA_OK
 
 
