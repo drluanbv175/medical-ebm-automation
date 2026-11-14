@@ -6,6 +6,11 @@
 
 ## Ba lệnh
 
+Chạy trong thư mục `medical-ebm-automation/` bằng **Python của môi trường dự án** `~/.ebm-venv/bin/python` (Windows:
+`%USERPROFILE%\.ebm-venv\Scripts\python`) — `python3` hệ thống của máy không có `openpyxl` (công cụ trả mã 2 và chỉ đúng
+lệnh). Thay mọi `<mã>` bằng mã đề tài thật (zsh hiểu `<`/`>` là chuyển hướng ⇒ `parse error`); trang `HUONG_DAN` của mẫu
+đã điền sẵn lệnh đúng cho đề tài.
+
 | Lệnh | Làm gì | Ra đâu |
 |---|---|---|
 | `mau --study <mã>` | Sinh mẫu nhập `.xlsx` từ từ điển G5 + `_ma-thieu-theo-bien.csv` | `exports/<mã>/nhap_lieu/MAU_NHAP_LIEU_<mã>.xlsx` |
@@ -85,6 +90,8 @@ Báo cáo `<tệp>_bao_cao_nhap.md/.json`: mỗi phát hiện ghi trang!ô, cộ
   `exports/<mã>/nhap_lieu/NHAP_KEP_tom_tat_<mốc>.json` KHÔNG chứa giá trị: SHA-256 hai tệp, số ô so/lệch, tỷ lệ lệch
   theo biến — dùng làm bằng chứng `source_data_verification` (nhập kép) của G5.
 - Lỗi cấu trúc ở một trong hai tệp ⇒ không so (mã 1).
+- KHÔNG có ô nào được so (hai mẫu chưa nhập, hoặc không có mã nghiên cứu chung) ⇒ `KHONG_CO_DU_LIEU`, mã 1, KHÔNG ghi
+  bằng chứng — 0 ô không bao giờ là «trùng khớp» (bản đầu báo nhầm «✓ TRÙNG KHỚP», phát hiện khi dùng thật 14/11/2026).
 
 ## Excel trên máy tiếng Việt
 

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 import sys
 import unicodedata
 from datetime import date, datetime
@@ -695,3 +696,33 @@ def test_excel_co_du_lieu_trong_repo_bi_canh_bao(tmp_path, de_tai):
     ra = tmp_path / "ngoai" / "ra"
     _nhap(p, ra)
     assert "excel_trong_repo" in _ma(ra, p, N.CANH_BAO)
+
+
+# ───────────────────────────── dùng thật lần đầu 14/11/2026 ─────────────────────────────
+
+
+def test_so_sanh_hai_mau_trong_khong_bao_gio_trung_khop(tmp_path, de_tai, capsys):
+    """Hai mẫu CHƯA nhập: 0 ô được so ⇒ KHONG_CO_DU_LIEU, mã 1, KHÔNG ghi bằng chứng G5 (bản cũ báo «✓ TRÙNG KHỚP»)."""
+    mau = _mau(tmp_path, de_tai)
+    l1 = _dien(mau, tmp_path / "ngoai" / "lan1.xlsx", [])
+    l2 = _dien(mau, tmp_path / "ngoai" / "lan2.xlsx", [])
+    ra = tmp_path / "ngoai" / "kep"
+    assert N.main(["so-sanh", "--study", STUDY, "--excel1", str(l1), "--excel2", str(l2), "--ra", str(ra)]) == N.MA_LOI
+    assert "TRÙNG KHỚP" not in capsys.readouterr().out
+    assert json.loads((ra / "NHAP_KEP_tom_tat.json").read_text(encoding="utf-8"))["trang_thai"] == "KHONG_CO_DU_LIEU"
+    assert not list((de_tai / "nhap_lieu").glob("NHAP_KEP_tom_tat_*.json"))
+    l3 = _dien(mau, tmp_path / "ngoai" / "lan3.xlsx", [_hop_le("P01")])  # một bên có mã, bên kia trống ⇒ LỆCH
+    assert N.main(["so-sanh", "--study", STUDY, "--excel1", str(l3), "--excel2", str(l2), "--ra", str(ra)]) == N.MA_LOI
+    assert json.loads((ra / "NHAP_KEP_tom_tat.json").read_text(encoding="utf-8"))["trang_thai"] == "CO_LECH"
+
+
+def test_thieu_openpyxl_chi_ro_python_moi_truong_du_an(monkeypatch):
+    monkeypatch.setitem(sys.modules, "openpyxl", None)
+    with pytest.raises(N.KhongDoDuoc, match=re.escape("~/.ebm-venv/bin/python tools/nhap_lieu_excel.py")):
+        N._openpyxl()
+
+
+def test_huong_dan_trong_mau_dien_san_ma_de_tai(tmp_path, de_tai):
+    wb = openpyxl.load_workbook(_mau(tmp_path, de_tai))
+    chu = "\n".join(str(o.value) for o in wb[N.TEN_HD]["A"] if o.value)
+    assert f"--study {STUDY}" in chu and "<mã>" not in chu and "~/.ebm-venv/bin/python" in chu
