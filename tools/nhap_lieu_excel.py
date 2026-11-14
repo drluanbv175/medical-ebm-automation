@@ -32,13 +32,14 @@ import csv
 import hashlib
 import io
 import json
+import math
 import re
 import subprocess
 import sys
 import unicodedata
 from dataclasses import dataclass, field
 from datetime import date, datetime, time
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 for _s in (sys.stdout, sys.stderr):
@@ -66,6 +67,15 @@ LOI = "LOI"  # lỗi cấu trúc/chuyển đổi — CSV KHÔNG được ghi
 TRUY_VAN = "TRUY_VAN"  # giá trị cần đối chiếu phiếu gốc — CSV vẫn ghi, mã thoát 1
 CANH_BAO = "CANH_BAO"  # không chặn, ghi vào báo cáo
 
+# Cảnh báo mang nghĩa «có phần CHƯA ĐƯỢC KIỂM/ĐỌC» ⇒ trạng thái CHUA_DU (mã 1, chặn --tiep-nhan), không bao giờ SACH.
+CHUA_DU_KIEM = frozenset(
+    {"logic_nhanh_khong_danh_gia_duoc", "luat_dq_khong_danh_gia_duoc", "trang_la_bi_bo_qua", "cot_cua_trang_vang_mat"}
+)
+# Chuỗi pandas.read_csv mặc định coi là THIẾU — bản chép pandas 2.x dùng khi máy không có pandas.
+NA_PANDAS_DU_PHONG = frozenset(
+    {"", "#N/A", "#N/A N/A", "#NA", "-1.#IND", "-1.#QNAN", "-NaN", "-nan", "1.#IND", "1.#QNAN", "<NA>", "N/A", "NA",
+     "NULL", "NaN", "None", "n/a", "nan", "null"}
+)  # fmt: skip
 KIEU_CHU = {"id", "chu", "van_ban"}  # giá trị chữ tự do: KHÔNG in nguyên văn ra màn hình/báo cáo tóm tắt
 _KHONG_RONG = "​‌‍⁠﻿"  # ký tự rộng 0 hay lẫn khi dán từ web/Zalo
 
@@ -283,6 +293,32 @@ def tim_tu_dien(study: str, tu_dien: str | None, ma_thieu: str | None) -> tuple[
     return td_p, (mt_p if mt_p.exists() else None)
 
 
+# ───────────────────────────── số ASCII chặt ─────────────────────────────
+
+_SO_CHU = re.compile(r"[+-]?([0-9]+(\.[0-9]*)?|\.[0-9]+)([eE][+-]?[0-9]+)?")
+
+
+def _so_chat(s) -> float | None:
+    """Số theo cú pháp ASCII CHẶT — float() của Python nhận cả «1_0», «６０», «inf», «nan» mà SPSS đọc thành SYSMIS."""
+    if not isinstance(s, str) or not _SO_CHU.fullmatch(s.strip()):
+        return None
+    x = float(s)
+    return x if math.isfinite(x) else None
+
+
+def vuot_do_chinh_xac(s: str) -> bool:
+    """Số mà double (Excel, SPSS, R, pandas) KHÔNG lưu đúng được: giá trị thập phân ≠ giá trị của double gần nhất
+    (vd 12345678901234567 ⇒ 12345678901234568). «0.1» không tính — chuỗi ngắn nhất của double khứ hồi đúng."""
+    try:
+        return Decimal(s.strip()) != Decimal(repr(float(s)))
+    except (InvalidOperation, ValueError, OverflowError):
+        return False
+
+
+def _co_chu_so_khong_ascii(s: str) -> bool:
+    return any(ch.isdigit() and not ch.isascii() for ch in s)
+
+
 # ───────────────────────────── logic REDCap (nhánh + luật DQ) ─────────────────────────────
 
 _TOKEN = re.compile(
@@ -313,15 +349,12 @@ def _tach_token(bt: str) -> list[tuple[str, str]]:
 def _so_logic(s) -> float | None:
     if isinstance(s, float):
         return s
-    try:
-        return float(s)
-    except (TypeError, ValueError):
-        return None
+    return _so_chat(s)
 
 
 def _so_sanh(a, op: str, b) -> bool:
     if a is None or b is None:
-        return False  # phép tính có toán hạng không phải số (REDCap: NaN) ⇒ mọi so sánh sai
+        return op in ("<>", "!=")  # phép tính có toán hạng không phải số ⇒ NaN: NaN <> x đúng, mọi so sánh khác sai
     na, nb = _so_logic(a), _so_logic(b)
     if na is not None and nb is not None:
         x, y = na, nb
@@ -465,7 +498,7 @@ def _openpyxl():
 
 def _so_hay_chu(ma: str):
     """Mã danh mục ghi vào ô danh sách: mã SỐ phải là SỐ (Excel so ô gõ 1 — kiểu số — với mục danh sách cùng kiểu)."""
-    x = SP._so(ma)
+    x = _so_chat(ma)
     if x is None:
         return ma
     return int(x) if x.is_integer() and re.fullmatch(r"-?\d+", ma) else x
@@ -482,8 +515,8 @@ def _ngay_xl(s: str) -> str | None:
 
 def cong_thuc_kiem(c: Cot, o: str, vung_hop: str | None, vung_id: str | None) -> str | None:
     """Công thức kiểm tra nhập (Excel «Custom») cho ô trên-trái `o` của vùng; None = không đặt (kiểm lúc nhập)."""
-    so_thieu = [m for m in c.ma_thieu if SP._so(m) is not None]
-    chu_thieu = [m for m in c.ma_thieu if SP._so(m) is None]
+    so_thieu = [m for m in c.ma_thieu if _so_chat(m) is not None]
+    chu_thieu = [m for m in c.ma_thieu if _so_chat(m) is None]
     nhanh_chu = "OR(" + ",".join(f"{o}={_chuoi_xl(m)}" for m in chu_thieu) + ")" if chu_thieu else "FALSE"
     if c.kieu == "id":
         return f"COUNTIF({vung_id},{o})=1" if vung_id else None
@@ -503,13 +536,22 @@ def cong_thuc_kiem(c: Cot, o: str, vung_hop: str | None, vung_id: str | None) ->
                 x = _ngay_xl(gh)
                 if x:
                     dk.append(f"{o}{op}{x}")
-            elif SP._so(gh) is not None:
+            elif _so_chat(gh) is not None:
                 dk.append(f"{o}{op}{gh}")
         nhanh_so = "AND(" + ",".join(dk) + ")" if dk else "TRUE"
         if so_thieu:
             nhanh_so = "OR(" + ",".join(f"{o}={m}" for m in so_thieu) + "," + nhanh_so + ")"
         return f"IF(ISNUMBER({o}),{nhanh_so},{nhanh_chu})"
     return None
+
+
+def _dinh_dang_cot(c: Cot) -> str:
+    """Định dạng số của ô nhập liệu trong mẫu — «nhap» so lại: ô số mang định dạng KHÁC ⇒ truy vấn (vd «50%» ⇒ 0.5)."""
+    if c.kieu == "ngay":
+        return {"date_mdy": "mm/dd/yyyy", "date_ymd": "yyyy-mm-dd"}.get(c.kiem_tra, "dd/mm/yyyy")
+    if c.kieu == "ngay_gio":
+        return "dd/mm/yyyy hh:mm:ss" if "seconds" in c.kiem_tra else "dd/mm/yyyy hh:mm"
+    return {"id": "@", "chu": "@", "van_ban": "@", "gio": "@"}.get(c.kieu, "General")
 
 
 def _goi_y(c: Cot) -> str:
@@ -541,6 +583,12 @@ def _goi_y(c: Cot) -> str:
     if c.nhanh:
         phan.append(f"chỉ khi {c.nhanh}")
     return " | ".join(p for p in phan if p)
+
+
+def _bam_hang_phu(ws, so_cot: int) -> str:
+    """Dấu vân tay hàng nhãn + gợi ý (giữa hàng tên và hàng dữ liệu đầu) — gõ nhầm dữ liệu vào đó sẽ bị phát hiện."""
+    gia = [[ws.cell(r, j).value for j in range(1, so_cot + 1)] for r in range(DONG_TEN + 1, DONG_DAU)]
+    return hashlib.sha256(json.dumps(gia, ensure_ascii=False, default=str).encode("utf-8")).hexdigest()
 
 
 def _ten_trang(form: str, da_dung: set[str]) -> str:
@@ -596,6 +644,7 @@ def tao_mau(
     ket_thuc = DONG_DAU + so_dong - 1
     cot_dm = 0
     trang_meta: dict[str, list[str]] = {}
+    hang_phu: dict[str, str] = {}
     da_dung: set[str] = set()
     khong_kiem: list[str] = []
     for form, ds in nhom:
@@ -613,18 +662,14 @@ def tao_mau(
             if c.ghi_chu:
                 o_nhan.comment = Comment(c.ghi_chu[:1000], "nhap_lieu_excel")
             ws.column_dimensions[chu].width = max(12, min(28, len(c.ten) + 2))
-            dinh_dang = {"id": "@", "chu": "@", "van_ban": "@", "gio": "@"}.get(c.kieu, "General")
-            if c.kieu == "ngay":
-                dinh_dang = {"date_mdy": "mm/dd/yyyy", "date_ymd": "yyyy-mm-dd"}.get(c.kiem_tra, "dd/mm/yyyy")
-            elif c.kieu == "ngay_gio":
-                dinh_dang = "dd/mm/yyyy hh:mm"
+            dinh_dang = _dinh_dang_cot(c)
             for r in range(DONG_DAU, ket_thuc + 1):
                 o = ws.cell(r, j)
                 o.protection = mo_khoa
                 o.number_format = dinh_dang
             vung = f"{chu}{DONG_DAU}:{chu}{ket_thuc}"
             o0 = f"{chu}{DONG_DAU}"
-            loi_msg = _goi_y(c)[:250]
+            loi_msg = _goi_y(c)[:220]  # Excel: thông báo lỗi ≤ 225 ký tự
             if c.kieu == "ma":
                 ds_ma = list(c.lua_chon) + list(c.ma_thieu)
                 cot_dm += 1
@@ -655,6 +700,7 @@ def tao_mau(
             dv.promptTitle, dv.prompt = c.ten[:32], (c.nhan + " — " + _goi_y(c))[:250]
             ws.add_data_validation(dv)
             dv.add(vung)
+        hang_phu[ws.title] = _bam_hang_phu(ws, len(ds))
         ws.row_dimensions[DONG_NHAN].height = 60
         ws.row_dimensions[DONG_GOI_Y].height = 45
         ws.freeze_panes = f"B{DONG_DAU}"
@@ -678,6 +724,7 @@ def tao_mau(
         "so_dong": so_dong,
         "tao_luc": datetime.now().astimezone().isoformat(timespec="seconds"),
         "trang": trang_meta,
+        "hang_phu": hang_phu,
     }
     for k, (khoa, gt) in enumerate(thong_tin.items(), start=1):
         meta.cell(k, 1, khoa)
@@ -804,65 +851,89 @@ def _chuan_chuoi(s: str, dem: dict) -> str:
 
 
 _DIEU_KHIEN = re.compile(r"[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]")
-_SO_CHU = re.compile(r"[+-]?(\d+(\.\d*)?|\.\d+)([eE][+-]?\d+)?")
 
 
-def chuyen_o(c: Cot, v, dinh_dang: str, dem: dict) -> tuple[str, str | None, str | None]:
-    """Giá trị ô openpyxl ⇒ (chuỗi chuẩn, mã lỗi | None, mã cảnh báo | None). KHÔNG đoán: mơ hồ ⇒ lỗi."""
+def chuyen_o(
+    c: Cot, v, dinh_dang: str, dem: dict, dinh_dang_mau: str | None = None
+) -> tuple[str, str | None, str | None]:
+    """Giá trị ô openpyxl ⇒ (chuỗi chuẩn, mã phát hiện | None, mức LOI/TRUY_VAN | None). KHÔNG đoán: mơ hồ ⇒ lỗi.
+
+    `dinh_dang_mau`: định dạng mẫu đã gán cho ô (None khi tệp không sinh từ «mau»). Chuẩn hoá KHÔNG đổi nghĩa thì chỉ
+    đếm vào `dem`; mọi thứ có thể đã đổi giá trị (định dạng %, số 0 đầu, số quá 15 chữ số…) là phát hiện."""
+
+    def dem_(k: str) -> None:
+        dem[k] = dem.get(k, 0) + 1
+
     if v is None:
         return "", None, None
     if isinstance(v, bool):
-        return str(v).upper(), "o_kieu_logic_true_false", None
+        return str(v).upper(), "o_kieu_logic_true_false", LOI
     if isinstance(v, (datetime, date, time)):
         if c.kieu == "ngay":
             if isinstance(v, datetime) and (v.hour, v.minute, v.second, v.microsecond) != (0, 0, 0, 0):
-                return v.isoformat(sep=" "), "ngay_co_gio", None
+                return v.isoformat(sep=" "), "ngay_co_gio", LOI
             if isinstance(v, time):
-                return v.isoformat(), "excel_tu_doi_thanh_gio", None
+                return v.isoformat(), "excel_tu_doi_thanh_gio", LOI
             return (v.date() if isinstance(v, datetime) else v).isoformat(), None, None
         if c.kieu == "ngay_gio" and isinstance(v, datetime):
+            if "seconds" in c.kiem_tra:
+                return v.strftime("%Y-%m-%d %H:%M:%S"), None, None
             if v.second or v.microsecond:
-                return v.isoformat(sep=" "), "ngay_gio_co_giay", None
+                return v.isoformat(sep=" "), "ngay_gio_co_giay", LOI
             return v.strftime("%Y-%m-%d %H:%M"), None, None
         if c.kieu == "gio" and isinstance(v, time) and not v.second and not v.microsecond:
             return v.strftime("%H:%M"), None, None
-        return str(v), "excel_tu_doi_thanh_ngay_gio", None
+        return str(v), "excel_tu_doi_thanh_ngay_gio", LOI
     if isinstance(v, (int, float)):
         if isinstance(v, float) and v != v:  # NaN
-            return "", "o_so_khong_hop_le", None
+            return "", "o_so_khong_hop_le", LOI
         s = str(v) if isinstance(v, int) else _so_chuoi(v)
-        canh = "dinh_dang_phan_tram" if "%" in (dinh_dang or "") else None
+        dd = dinh_dang or "General"
         if c.kieu in ("chu", "van_ban", "gio"):
-            return s, None, "so_trong_cot_chu"
+            return s, "so_trong_cot_chu", TRUY_VAN  # ô chữ thành SỐ: số 0 đầu/định dạng có thể đã mất
         if c.kieu == "id":
             if isinstance(v, float) and not v.is_integer():
-                return s, "ma_nghien_cuu_la_so_le", None
-            return s, None, "ma_nghien_cuu_luu_dang_so"
+                return s, "ma_nghien_cuu_la_so_le", LOI
+            return s, "ma_nghien_cuu_luu_dang_so", TRUY_VAN
         if c.kieu in ("ngay", "ngay_gio"):
-            return s, "ngay_luu_dang_so", None
-        return s, None, canh
+            if s in c.ma_thieu:
+                return s, None, None  # mã thiếu dạng số (khai qua mẫu glob) ở cột ngày
+            return s, "ngay_luu_dang_so", LOI
+        if "%" in dd:
+            return s, "dinh_dang_phan_tram", LOI  # «50%» được Excel lưu thành 0.5
+        if dinh_dang_mau is not None and dd != dinh_dang_mau:
+            return s, "dinh_dang_o_khac_mau", TRUY_VAN
+        if dinh_dang_mau is None and re.search(r"#[,.]##", dd):
+            return s, "dinh_dang_hang_nghin", TRUY_VAN  # «1.500» trên máy tiếng Việt ⇒ 1500
+        return s, None, None
     s = _chuan_chuoi(str(v), dem)
     if _DIEU_KHIEN.search(s):
-        return _DIEU_KHIEN.sub("", s), "ky_tu_dieu_khien", None
+        return _DIEU_KHIEN.sub("", s), "ky_tu_dieu_khien", LOI
     if s.startswith("#") and s.upper() in ("#N/A", "#VALUE!", "#REF!", "#DIV/0!", "#NUM!", "#NAME?", "#NULL!"):
-        return s, "o_loi_excel", None
+        return s, "o_loi_excel", LOI
+    if c.kieu not in ("chu", "van_ban") and _co_chu_so_khong_ascii(s):
+        return s, "chu_so_khong_ascii", LOI  # «６０»: SPSS đọc thành SYSMIS, pandas đọc thành chữ
+    if "\n" in s:
+        return s, "xuong_dong_trong_o", TRUY_VAN  # SPSS GET DATA tách ô nhiều dòng thành HAI ca
     if s and c.kieu not in ("id", "chu", "van_ban", "gio"):
         hop_le = [*c.lua_chon, *c.ma_thieu] if c.kieu == "ma" else list(c.ma_thieu)
         khop = [m for m in hop_le if m.casefold() == s.casefold()]
         if s not in hop_le and len(khop) == 1:  # «btr» = «BTR»: Excel kiểm nhập & bộ làm sạch đều không phân biệt
             s = khop[0]
-            dem["chuan_hoa_thuong_ma"] = dem.get("chuan_hoa_thuong_ma", 0) + 1
+            dem_("chuan_hoa_thuong_ma")
     if c.kieu in ("so_nguyen", "so") and s and s not in c.ma_thieu:
-        if re.fullmatch(r"[+-]?\d+,\d+", s):
-            return s, "so_dung_dau_phay", None
+        if re.fullmatch(r"[+-]?[0-9]+,[0-9]+", s):
+            return s, "so_dung_dau_phay", LOI
         if _SO_CHU.fullmatch(s):
-            return s, None, "so_luu_dang_chu"
+            if vuot_do_chinh_xac(s):
+                return s, "so_vuot_do_chinh_xac", TRUY_VAN  # > 15 chữ số có nghĩa: SPSS/R/pandas lưu số KHÁC
+            dem_("so_luu_dang_chu")
     if c.kieu == "ma" and s and s not in c.lua_chon and s not in c.ma_thieu and _SO_CHU.fullmatch(s):
-        x = SP._so(s)
+        x = _so_chat(s)
         if x is not None and x.is_integer() and str(int(x)) in c.lua_chon and s != str(int(x)):
-            return s, "ma_so_viet_khac", None  # «01», «1.0» gõ dạng chữ: không tự đổi thành «1»
+            return s, "ma_so_viet_khac", LOI  # «01», «1.0» gõ dạng chữ: không tự đổi thành «1»
     if c.kieu in ("ngay", "ngay_gio") and s and s not in c.ma_thieu:
-        return s, "ngay_luu_dang_chu", None  # «12/03/2026» mơ hồ ngày/tháng ⇒ gõ lại thành ô ngày thật
+        return s, "ngay_luu_dang_chu", LOI  # «12/03/2026» mơ hồ ngày/tháng ⇒ gõ lại thành ô ngày thật
     return s, None, None
 
 
@@ -890,11 +961,12 @@ def _doc_meta(wb) -> dict:
     for k, v in wb[TEN_META].iter_rows(min_col=1, max_col=2, values_only=True):
         if k:
             ra[str(k)] = v
-    if isinstance(ra.get("trang"), str):
-        try:
-            ra["trang"] = json.loads(ra["trang"])
-        except ValueError:
-            ra["trang"] = {}
+    for khoa in ("trang", "hang_phu"):
+        if isinstance(ra.get(khoa), str):
+            try:
+                ra[khoa] = json.loads(ra[khoa])
+            except ValueError:
+                ra[khoa] = {}
     return ra
 
 
@@ -946,11 +1018,13 @@ def doc_excel(
         so_dong_mau = 0
         trang_du_lieu = []
         for ws in wb.worksheets:
-            if ws.title in TRANG_PHU or ws.sheet_state != "visible":
+            if ws.title in TRANG_PHU:
                 continue
             ten = [str(o.value).strip().lower() for o in ws[dtd] if o.value is not None]
             if any(t in theo_ten for t in ten):
-                trang_du_lieu.append(ws.title)
+                trang_du_lieu.append(ws.title)  # trang ẨN có tiêu đề biến vẫn được đọc (không bỏ dữ liệu lặng lẽ)
+                if ws.sheet_state != "visible":
+                    ph.append(PhatHien(CANH_BAO, "trang_an", ws.title, "", "", "", "trang đang ẨN (vẫn được đọc)"))
         if not trang_du_lieu:
             raise TuChoi(
                 f"không trang nào có hàng tiêu đề (hàng {dtd}) chứa tên biến của từ điển — dùng mẫu của «mau» hoặc "
@@ -961,9 +1035,15 @@ def doc_excel(
     for ws in wb.worksheets:
         if ws.title not in trang_du_lieu and ws.title not in TRANG_PHU:
             co_gt = any(v is not None for hang in ws.iter_rows(values_only=True) for v in hang)
-            if co_gt:
+            if co_gt and meta:  # mẫu: mọi dữ liệu phải ở trang của mẫu — trang chép thêm («phieu (2)») KHÔNG được đọc
                 ph.append(
-                    PhatHien(CANH_BAO, "trang_la_bi_bo_qua", ws.title, "", "", "", "trang không thuộc mẫu, KHÔNG đọc")
+                    PhatHien(LOI, "trang_la_co_du_lieu", ws.title, "", "", "", "trang ngoài mẫu có dữ liệu — KHÔNG đọc")
+                )
+            elif co_gt:
+                ph.append(
+                    PhatHien(
+                        CANH_BAO, "trang_la_bi_bo_qua", ws.title, "", "", "", "trang không có tiêu đề biến, KHÔNG đọc"
+                    )
                 )
     hang: dict[str, dict[str, str]] = {}
     vi_tri: dict[str, dict[str, str]] = {}
@@ -972,6 +1052,19 @@ def doc_excel(
     for t in trang_du_lieu:
         ws = wb[t]
         tieu_de: dict[int, Cot] = {}
+        bam_mau = (meta.get("hang_phu") or {}).get(t) if meta else None
+        if bam_mau and _bam_hang_phu(ws, len((meta.get("trang") or {}).get(t, []))) != bam_mau:
+            ph.append(
+                PhatHien(
+                    LOI,
+                    "hang_tieu_de_bi_sua",
+                    t,
+                    f"{DONG_TEN + 1}:{DONG_DAU - 1}",
+                    "",
+                    "",
+                    f"hàng {DONG_TEN + 1}–{DONG_DAU - 1} (nhãn/gợi ý) đã bị sửa — dữ liệu gõ vào đó KHÔNG được đọc",
+                )
+            )
         for o in ws[dtd]:
             if o.value is None or str(o.value).strip() == "":
                 continue
@@ -1061,12 +1154,13 @@ def doc_excel(
                 if o.data_type == "e":
                     ph.append(PhatHien(LOI, "o_loi_excel", t, o.coordinate, c.ten, "", f"ô báo lỗi {v}"))
                     continue
-                s, ma_loi, ma_canh = chuyen_o(c, v, o.number_format, dem)
+                s, ma, muc = chuyen_o(c, v, o.number_format, dem, _dinh_dang_cot(c) if meta else None)
                 hien = "" if c.kieu in KIEU_CHU - {"id"} else s
-                if ma_loi:
-                    ph.append(PhatHien(LOI, ma_loi, t, o.coordinate, c.ten, "", _GIAI_THICH.get(ma_loi, ma_loi), hien))
-                if ma_canh:
-                    dem[ma_canh] = dem.get(ma_canh, 0) + 1
+                if muc:
+                    chi_tiet = _GIAI_THICH.get(ma, ma)
+                    if ma in ("dinh_dang_o_khac_mau", "dinh_dang_hang_nghin", "dinh_dang_phan_tram"):
+                        chi_tiet += f" (định dạng ô «{o.number_format}»)"
+                    ph.append(PhatHien(muc, ma, t, o.coordinate, c.ten, "", chi_tiet, hien))
                 gt_hang[c.ten] = s
                 vt_hang[c.ten] = f"{t}!{o.coordinate}"
             ma_nc = gt_hang.get(cid.ten, "")
@@ -1137,6 +1231,14 @@ _GIAI_THICH = {
     "so_dung_dau_phay": "số dạng chữ dùng dấu phẩy («1,5») — không đoán 1.5 hay 15; gõ lại số",
     "ma_so_viet_khac": "mã gõ dạng chữ khác mã của từ điển («01», «1.0») — gõ lại đúng mã",
     "ngay_luu_dang_chu": "ngày đang là CHỮ (mơ hồ ngày/tháng) — gõ lại thành ô ngày thật",
+    "so_trong_cot_chu": "ô chữ bị Excel đổi thành SỐ — số 0 đầu có thể đã mất; đối chiếu phiếu, gõ lại dạng chữ",
+    "ma_nghien_cuu_luu_dang_so": "mã nghiên cứu lưu dạng SỐ — số 0 đầu có thể đã mất; đối chiếu phiếu",
+    "dinh_dang_phan_tram": "ô định dạng PHẦN TRĂM: Excel lưu «50%» thành 0.5 — gõ lại số trong ô định dạng General",
+    "dinh_dang_o_khac_mau": "ô số mang định dạng khác mẫu — kiểm giá trị thật (Excel có thể đã đổi khi gõ)",
+    "dinh_dang_hang_nghin": "ô số định dạng hàng nghìn — «1.500» trên máy tiếng Việt là 1500; đối chiếu phiếu",
+    "chu_so_khong_ascii": "chữ số không phải ASCII (vd chữ số toàn khổ «６０») — gõ lại",
+    "xuong_dong_trong_o": "ô có XUỐNG DÒNG (Alt+Enter) — SPSS tách thành hai ca; thay xuống dòng bằng « / »",
+    "so_vuot_do_chinh_xac": "số quá 15 chữ số có nghĩa — SPSS/R/pandas lưu số KHÁC; nếu là mã, nhập dạng chữ",
 }
 
 
@@ -1179,7 +1281,9 @@ def kiem_gia_tri(bang: Bang, luat_dq: list[dict]) -> None:
                     goi_y = f" (ghi mã thiếu {'/'.join(c.ma_thieu)} nếu phiếu bỏ trống)" if c.ma_thieu else ""
                     tv("thieu_bat_buoc", c, "câu bắt buộc bị trống" + goi_y)
                 continue
-            if hien_thi is False:
+            # ô chọn nhiều trống được ghi 0 (quy ước REDCap) — đó KHÔNG phải «có giá trị khi câu bị ẩn»
+            bo_qua_hop_0 = c.kieu == "hop" and v == "0"
+            if hien_thi is False and not bo_qua_hop_0:
                 tv("co_gia_tri_khi_bi_an", c, f"có giá trị dù logic nhánh «{c.nhanh}» đang ẩn câu này", v)
             if v in c.ma_thieu:
                 continue
@@ -1188,15 +1292,15 @@ def kiem_gia_tri(bang: Bang, luat_dq: list[dict]) -> None:
             elif c.kieu == "hop" and v not in ("0", "1"):
                 tv("checkbox_khong_phai_0_1", c, "ô chọn nhiều chỉ nhận 0/1", v)
             elif c.kieu in ("so_nguyen", "so"):
-                x = SP._so(v)
+                x = _so_chat(v)
                 if x is None:
                     tv("khong_phai_so", c, "không phải số" + (", không phải mã thiếu" if c.ma_thieu else ""), v)
                     continue
                 if c.kieu == "so_nguyen" and not x.is_integer():
                     tv("khong_phai_so_nguyen", c, "không phải số nguyên — không tự làm tròn", v)
-                if c.min and SP._so(c.min) is not None and x < float(c.min):
+                if c.min and _so_chat(c.min) is not None and x < float(c.min):
                     tv("duoi_khoang", c, f"nhỏ hơn {c.min}", v)
-                if c.max and SP._so(c.max) is not None and x > float(c.max):
+                if c.max and _so_chat(c.max) is not None and x > float(c.max):
                     tv("tren_khoang", c, f"lớn hơn {c.max}", v)
             elif c.kieu in ("ngay", "ngay_gio"):
                 for gh, ten_ma, op in ((c.min, "truoc_khoang", "<"), (c.max, "sau_khoang", ">")):
@@ -1278,13 +1382,39 @@ def o_bi_pandas_coi_la_thieu(bang: Bang) -> list[tuple[str, str]]:
     try:
         from pandas._libs.parsers import STR_NA_VALUES  # noqa: PLC0415
     except ImportError:
-        return []
+        STR_NA_VALUES = NA_PANDAS_DU_PHONG  # noqa: N806 — máy không có pandas: dùng bản chép, không bỏ kiểm
     ra = []
     for ma_nc, dong in bang.hang.items():
         for c, v in dong.items():
             if v and v in STR_NA_VALUES:
                 ra.append((ma_nc, c))
     return ra
+
+
+def kiem_trang_thieu(bang: Bang) -> None:
+    """Mã nghiên cứu có ở trang này mà vắng ở trang khác ⇒ TRUY VẤN từng mã (gõ lệch «BN001»/«BN00l» tách MỘT người
+    thành HAI bản ghi nửa trống — câu bắt buộc của trang vắng sẽ không được kiểm)."""
+    moi_trang = sorted({t for v in bang.trang_cua_ma.values() for t in v})
+    if len(moi_trang) < 2:
+        return
+    for ma_nc, co in bang.trang_cua_ma.items():
+        thieu = [t for t in moi_trang if t not in co]
+        if thieu:
+            bang.phat_hien.append(
+                PhatHien(
+                    TRUY_VAN,
+                    "ma_nc_thieu_trang",
+                    sorted(co)[0],
+                    "",
+                    bang.cot[0].ten,
+                    ma_nc,
+                    "mã có ở trang "
+                    + ", ".join(sorted(co))
+                    + " nhưng VẮNG ở trang "
+                    + ", ".join(thieu)
+                    + " — gõ lệch mã hoặc chưa nhập trang đó",
+                )
+            )
 
 
 # ───────────────────────────── lệnh ─────────────────────────────
@@ -1395,10 +1525,28 @@ def lenh_nhap(args) -> int:
     luat = doc_luat_dq(luat_p)
     if not bang.loi():
         kiem_gia_tri(bang, luat)
-    thieu_cot = [c.ten for c in cot if c.ten not in bang.cot_co and c.kieu != "id"]
-    if thieu_cot:
+    kiem_trang_thieu(bang)
+    form_co = {c.form for c in cot if c.ten in bang.cot_co and c.kieu != "id"}
+    for ma, muc, cung_form in (
+        ("cot_cua_trang_vang_mat", CANH_BAO, True),  # cột của biểu mẫu ĐANG có trong tệp mà vắng ⇒ CHUA_DU
+        ("trang_tu_dien_chua_nhap", CANH_BAO, False),  # cả biểu mẫu chưa có trong tệp ⇒ chỉ báo
+    ):
+        thieu_cot = [
+            c.ten for c in cot if c.ten not in bang.cot_co and c.kieu != "id" and ((c.form in form_co) == cung_form)
+        ]
+        if thieu_cot:
+            bang.phat_hien.append(PhatHien(muc, ma, "", "", f"{len(thieu_cot)} cột", "", ", ".join(thieu_cot[:30])))
+    if SP._trong_repo_git(p.parent):
         bang.phat_hien.append(
-            PhatHien(CANH_BAO, "cot_tu_dien_vang_mat", "", "", f"{len(thieu_cot)} cột", "", ", ".join(thieu_cot[:30]))
+            PhatHien(
+                CANH_BAO,
+                "excel_trong_repo",
+                "",
+                "",
+                "",
+                "",
+                "tệp Excel ĐÃ CÓ DỮ LIỆU đang nằm trong cây repo — chuyển ra ngoài (vd ~/NhapLieu/) trước khi lưu tiếp",
+            )
         )
     for ma_nc, c in o_bi_pandas_coi_la_thieu(bang):
         bang.phat_hien.append(
@@ -1412,23 +1560,9 @@ def lenh_nhap(args) -> int:
                 "giá trị trùng chuỗi pandas coi là THIẾU (NA/None…)",
             )
         )
-    so_trang = len({t for v in bang.trang_cua_ma.values() for t in v})
-    if so_trang > 1:
-        thieu_trang = [m for m, v in bang.trang_cua_ma.items() if len(v) < so_trang]
-        if thieu_trang:
-            bang.phat_hien.append(
-                PhatHien(
-                    CANH_BAO,
-                    "ma_nc_thieu_trang",
-                    "",
-                    "",
-                    "",
-                    "",
-                    f"{len(thieu_trang)} mã nghiên cứu chưa có ở mọi trang",
-                )
-            )
     loi, tv = bang.loi(), [x for x in bang.phat_hien if x.muc == TRUY_VAN]
     canh = [x for x in bang.phat_hien if x.muc == CANH_BAO]
+    chua_du = [x for x in canh if x.ma in CHUA_DU_KIEM]
     ra.mkdir(parents=True, exist_ok=True)
     csv_p = ra / f"{p.stem}.csv"
     tu_kiem: list[str] = []
@@ -1437,10 +1571,13 @@ def lenh_nhap(args) -> int:
         ghi_csv(bang, csv_p)
         tu_kiem, da_kiem = tu_kiem_csv(bang, csv_p)
         if tu_kiem:
-            csv_p.unlink()
+            _xoa(csv_p)
     elif csv_p.exists():
-        csv_p.unlink()  # CSV cũ không được sống sót qua một lượt có lỗi
-    trang_thai = "LOI" if (loi or tu_kiem or not bang.hang) else ("CAN_DOI_CHIEU" if tv else "SACH")
+        _xoa(csv_p)  # CSV cũ không được sống sót qua một lượt có lỗi
+    if loi or tu_kiem or not bang.hang:
+        trang_thai = "LOI"
+    else:
+        trang_thai = "CAN_DOI_CHIEU" if tv else ("CHUA_DU" if chua_du else "SACH")
     tom = {
         "study": args.study,
         "luc": datetime.now().astimezone().isoformat(timespec="seconds"),
@@ -1477,10 +1614,13 @@ def lenh_nhap(args) -> int:
     if tv:
         print(f"🟠 {len(tv)} TRUY VẤN — đối chiếu PHIẾU GỐC, sửa trong Excel rồi nhập lại:")
         _in_phat_hien(tv)
+    if chua_du:
+        print(f"⚪ {len(chua_du)} phần CHƯA KIỂM/ĐỌC ĐƯỢC — trạng thái CHUA_DU, không phải sạch:")
+        _in_phat_hien(chua_du)
     if canh:
         print(f"⚠ {len(canh)} cảnh báo (xem báo cáo)")
     if bang.dem:
-        print("   Chuẩn hoá không đổi nghĩa (đếm ô): " + ", ".join(f"{k}={v}" for k, v in bang.dem.items()))
+        print("   Chuẩn hoá KHÔNG đổi nghĩa (đếm ô): " + ", ".join(f"{k}={v}" for k, v in bang.dem.items()))
     print(f"   Báo cáo: {ra / (p.stem + '_bao_cao_nhap.md')}")
     if csv_p.exists():
         print(f"✓ CSV: {csv_p} (tự kiểm đọc lại, khớp từng ô: {' · '.join(da_kiem)})")
@@ -1488,6 +1628,9 @@ def lenh_nhap(args) -> int:
         return MA_LOI
     lenh_cong = [sys.executable, str(TOOLS / "import_real_dataset.py"), "--study", args.study, "--data", str(csv_p)]
     if args.tiep_nhan:
+        if chua_du and not tv:
+            print("⛔ --tiep-nhan: còn phần CHƯA KIỂM/ĐỌC ĐƯỢC (xem trên) — không chạy cổng tiếp nhận.")
+            return MA_LOI
         if tv:
             print(
                 "⛔ --tiep-nhan: còn truy vấn — sửa trong Excel rồi nhập lại. Nếu giá trị ĐÚNG là thật"
@@ -1502,7 +1645,17 @@ def lenh_nhap(args) -> int:
         f'{args.study} --data "{csv_p}"'
     )
     print(CAN_KIEM)
-    return MA_LOI if tv else MA_OK
+    return MA_LOI if (tv or chua_du) else MA_OK
+
+
+def _xoa(p: Path) -> None:
+    """Xoá CSV cũ/hỏng; tệp đang mở (Windows khoá tệp) ⇒ báo rõ thay vì đổ vết, và KHÔNG để nó trông như kết quả mới."""
+    try:
+        p.unlink()
+    except FileNotFoundError:
+        pass
+    except PermissionError as e:
+        raise TuChoi(f"không xoá được {p.name} (đang mở trong Excel?) — đóng tệp rồi chạy lại") from e
 
 
 def _ten_nghi_pii(p: Path) -> bool:

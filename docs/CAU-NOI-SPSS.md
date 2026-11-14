@@ -65,6 +65,12 @@ hai ca. Phép khứ hồi đã tìm ra một lỗi thật (độ rộng A đo tr
 **E2 — từ điển `.sav` ↔ kế hoạch.** Cùng lượt đọc lại (một lần khởi động SPSS), so tên + thứ tự biến, số/chuỗi (độ rộng
 A), nhãn biến, nhãn giá trị (kể cả nhãn mã thiếu), MISSING VALUES, mức đo; lệch ⇒ bỏ tệp, mã 1, ghi `kiem_tu_dien`.
 
+**Vá sau rà phản biện độc lập (14/11/2026):** (1) số > 15 chữ số có nghĩa mà double không lưu đúng (vd
+`12345678901234567` ⇒ `…568`) từng «khớp» vì cả kỳ vọng lẫn bản đọc lại cùng bị làm tròn — nay là LỆCH riêng
+«vượt độ chính xác double» (nếu là MÃ, giữ dạng chữ ở nguồn); (2) số NGUYÊN ≤ 15 chữ số phải trùng TUYỆT ĐỐI (ở 1e15,
+8 ulp = 1 đơn vị); ngưỡng ulp chỉ cho số thực dài; (3) CSV có ô XUỐNG DÒNG ⇒ `xuat-sav` từ chối (mã 3) TRƯỚC khi chạy
+SPSS, chỉ rõ dòng · cột (không in giá trị) — trước đây SPSS tách ca và chỉ báo «số ca lệch».
+
 **E2 — `.rds` có nhãn cho R/RStudio:** `python3 tools/cau_noi_r.py xuat-rds --study <mã>` (bản nháp: `--data <csv>
 --ban-nhap`). Dựng từ CÙNG kế hoạch biến với `.sav` ⇒ `exports/<mã>/r/<mã>_khoa.rds` (chỉ đọc) + manifest + script `.R`
 chạy tay được. Script chỉ cần BASE R để ghi; thuộc tính theo khuôn haven (`labels` gồm nhãn mã thiếu, `na_values`/

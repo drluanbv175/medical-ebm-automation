@@ -52,6 +52,7 @@ import sys
 import tempfile
 import xml.etree.ElementTree as ET
 from datetime import datetime
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
 for _s in (sys.stdout, sys.stderr):  # Windows cp1252 (BH55/R4)
@@ -839,11 +840,29 @@ def _khop_so(a: float | None, b: float | None) -> bool:
     return abs(a - b) <= SAI_SO_ULP * math.ulp(max(abs(a), abs(b)))
 
 
-def khop_o(b: dict, ky_vong, nhan_duoc) -> bool:
+_SO_NGUYEN_15 = re.compile(r"[+-]?[0-9]{1,15}")
+
+
+def vuot_do_chinh_xac(o: str | None) -> bool:
+    """Ô SỐ mà double (SPSS/R/pandas) KHÔNG lưu đúng được: giá trị thập phân ≠ giá trị của double gần nhất
+    (vd 12345678901234567 ⇒ 12345678901234568). Ngưỡng ulp sẽ che lệch này ⇒ phải báo riêng. «0.1» không tính."""
+    s = (o or "").strip()
+    try:
+        return Decimal(s) != Decimal(repr(float(s)))
+    except (InvalidOperation, ValueError, OverflowError):
+        return False
+
+
+def khop_o(b: dict, ky_vong, nhan_duoc, o: str | None = None) -> bool:
+    """`o` = ô nguồn: số NGUYÊN ≤ 15 chữ số (mã, số đếm) phải trùng TUYỆT ĐỐI — ngưỡng ulp chỉ cho số thực dài, nơi bộ
+    đọc của SPSS/R lệch float() vài ulp (ở 1e15, 8 ulp = 1 đơn vị: 999999999999999 không được «khớp» 1e15)."""
     if b["so"]:
         if isinstance(nhan_duoc, str):
             return False
-        return _khop_so(ky_vong, None if nhan_duoc is None else float(nhan_duoc))
+        nd = None if nhan_duoc is None else float(nhan_duoc)
+        if o is not None and _SO_NGUYEN_15.fullmatch(o.strip()) and ky_vong is not None and nd is not None:
+            return ky_vong == nd
+        return _khop_so(ky_vong, nd)
     return isinstance(nhan_duoc, str) and nhan_duoc == ky_vong
 
 
@@ -936,7 +955,10 @@ def so_sanh_gia_tri(
                 ghi(i, b, kv, None, "thiếu ca trong bản đọc lại")
             elif b["ten"] not in vi_tri:
                 ghi(i, b, kv, None, "thiếu biến trong bản đọc lại")
-            elif not khop_o(b, kv, hang_doc[vi_tri[b["ten"]]]):
+            elif b["so"] and o is not None and o.strip() not in b.get("ma_chu", {}) and vuot_do_chinh_xac(o):
+                ghi(i, b, kv, hang_doc[vi_tri[b["ten"]]], "vượt độ chính xác double (> 15 chữ số có nghĩa) — .sav/.rds "
+                    "lưu giá trị KHÁC nguồn; nếu là MÃ, giữ dạng chữ ở nguồn")  # fmt: skip
+            elif not khop_o(b, kv, hang_doc[vi_tri[b["ten"]]], o):
                 ghi(i, b, kv, hang_doc[vi_tri[b["ten"]]])
             else:
                 continue
@@ -961,6 +983,7 @@ def so_sanh_gia_tri(
                 b,
                 gia_tri_ky_vong(b, d[cot[b["cot"]]] if cot[b["cot"]] < len(d) else None),
                 ca[i_ca][vi_tri[b["ten"]]],
+                d[cot[b["cot"]]] if cot[b["cot"]] < len(d) else None,
             )
             for b in giu
             if b["cot"] in cot
@@ -1184,6 +1207,21 @@ def lenh_xuat_sav(args) -> int:
     mt_p = Path(args.ma_thieu).expanduser() if args.ma_thieu else d / "_ma-thieu-theo-bien.csv"
     td, mt = doc_tu_dien(td_p), doc_ma_thieu(mt_p)
     tieu_de, tk, n = quet_csv(csv_p)
+    _, hang_csv = doc_hang_csv(csv_p)
+    nhieu_dong = [
+        f"dòng {i + 1} · {tieu_de[j] if j < len(tieu_de) else f'cột {j + 1}'}"
+        for i, d in enumerate(hang_csv)
+        for j, o in enumerate(d)
+        if "\n" in o or "\r" in o
+    ]
+    # SPSS GET DATA tách ô nhiều dòng thành HAI ca ⇒ dịch dòng (đo thật 14/11/2026) — chặn TRƯỚC khi chạy
+    if nhieu_dong:
+        raise TuChoi(
+            f"{len(nhieu_dong)} ô có XUỐNG DÒNG — SPSS sẽ tách thành hai ca: "
+            + "; ".join(nhieu_dong[:10])
+            + (" …" if len(nhieu_dong) > 10 else "")
+            + ". Thay xuống dòng ở nguồn (nhap_lieu_excel báo «xuong_dong_trong_o») rồi chạy lại"
+        )
     ke, canh_bao, de_xuat = ke_hoach_bien(tieu_de, tk, td, mt, giu_ghi_chu=getattr(args, "giu_ghi_chu", False))
     ra = d / "spss"
     ra.mkdir(parents=True, exist_ok=True)

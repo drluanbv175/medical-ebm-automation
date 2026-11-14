@@ -39,25 +39,41 @@ chiều — `docs/CAU-NOI-SPSS.md`) → G6.
 trùng · thiếu cột mã nghiên cứu · ô gộp trong vùng dữ liệu · ô công thức (trừ `--cho-phep-cong-thuc` và có giá trị lưu
 sẵn) · ô lỗi Excel (`#N/A`…) · Excel tự đổi giá trị thành ngày/giờ ở cột không phải ngày · TRUE/FALSE · số dạng chữ có
 dấu phẩy («1,5» — không đoán 1.5 hay 15) · mã gõ dạng chữ khác mã từ điển («01», «1.0») · ngày dạng chữ (mơ hồ ngày/
-tháng) · ký tự điều khiển ẩn · hàng có dữ liệu mà trống mã · mã nghiên cứu trùng trong một trang · mẫu sinh từ đặc tả
-từ điển KHÁC đặc tả hiện tại (mã 3; `--chap-nhan-tu-dien-moi` để kiểm theo từ điển hiện tại).
+tháng) · ký tự điều khiển ẩn · chữ số không phải ASCII («６０») · ô ĐỊNH DẠNG PHẦN TRĂM ở cột số (Excel lưu «50%» thành
+0.5) · hàng có dữ liệu mà trống mã · mã nghiên cứu trùng trong một trang (kể cả chỉ khác hoa/thường) · trang ngoài mẫu có
+dữ liệu (vd trang chép thêm «phieu (2)» — không được đọc) · hàng nhãn/gợi ý (2–3) bị sửa (dấu vân tay trong `_META` —
+dữ liệu gõ vào đó không được đọc) · mẫu sinh từ đặc tả từ điển KHÁC đặc tả hiện tại (mã 3; `--chap-nhan-tu-dien-moi`
+để kiểm theo từ điển hiện tại).
 
 **Truy vấn (CSV vẫn ghi, mã thoát 1 — sửa trong Excel theo phiếu gốc rồi nhập lại):** mã ngoài danh mục · ngoài khoảng ·
 không phải số/số nguyên · câu bắt buộc trống (chỉ khi logic nhánh đang HIỆN câu đó) · có giá trị khi logic nhánh ẩn câu ·
-chọn quá `@MAXCHECKED` · mã thiếu dùng sai trường (vd 998 ở `tuoi`, BTR ở trường `@NOMISSING`) · luật `_luat-dq.csv`.
+chọn quá `@MAXCHECKED` · mã thiếu dùng sai trường (vd 998 ở `tuoi`, BTR ở trường `@NOMISSING`) · luật `_luat-dq.csv` ·
+**mã nghiên cứu có ở trang này mà VẮNG ở trang khác** (gõ lệch «BN001»/«BN00l» tách một người thành hai bản ghi nửa
+trống) · ô số mang định dạng khác mẫu (vd hàng nghìn «1.500» ⇒ 1500) · ô chữ/mã nghiên cứu bị Excel đổi thành SỐ (số 0
+đầu có thể đã mất) · số quá 15 chữ số có nghĩa (double không lưu đúng — nếu là mã, nhập dạng chữ) · ô có XUỐNG DÒNG
+(SPSS tách thành hai ca; thay bằng « / »).
+
+**CHUA_DU (mã 1, chặn `--tiep-nhan`, không bao giờ «sạch»):** phần chưa kiểm/chưa đọc được — logic nhánh hoặc luật DQ
+không đánh giá được, cột của một biểu mẫu đang có trong tệp mà vắng, trang không có tiêu đề biến (tệp không sinh từ mẫu).
+Cả một biểu mẫu chưa có trong tệp chỉ là cảnh báo. Tệp Excel đã có dữ liệu mà nằm trong cây repo ⇒ cảnh báo chuyển ra ngoài.
 
 **Logic REDCap:** tập con `[biến]`, `[biến(mã)]`, `'…'`, số, `+ - * /`, `= <> != > < >= <=`, `and`/`or`, ngoặc — đủ
-cho cả 9 luật DQ và 5 logic nhánh của đề tài C1a. Ô trống trong phép tính ⇒ so sánh sai (như REDCap). Hàm (`datediff`…)
-hoặc biến vắng trong tệp ⇒ **cảnh báo kèm số hàng**, không bao giờ coi là đạt hay là lỗi.
+cho cả 9 luật DQ và 5 logic nhánh của đề tài C1a. Số theo cú pháp ASCII chặt («1_0», «６０», «inf» không phải số). Phép
+tính có toán hạng không phải số (ô trống) ⇒ NaN: `<>`/`!=` đúng, mọi so sánh khác sai. So lớn/nhỏ giữa chuỗi ⇒ sai (quy
+ước thận trọng). Hàm (`datediff`…) hoặc biến vắng trong tệp ⇒ **CHUA_DU kèm số hàng**, không bao giờ coi là đạt.
 
 **Chuẩn hoá không đổi nghĩa (đếm từng loại trong báo cáo):** Unicode NFC (tiếng Việt gõ trên Mac hay ở dạng tổ hợp NFD),
 bỏ khoảng trắng đầu/cuối, khoảng trắng không ngắt và ký tự rộng 0 · số `18.0` ⇒ `18`, `1e-05` ⇒ `0.00001` (chuỗi thập
-phân ngắn nhất khứ hồi được) · ngày ⇒ `YYYY-MM-DD` · ô chọn nhiều trống ⇒ `0` (quy ước xuất của REDCap). Mã thiếu giữ
+phân ngắn nhất khứ hồi được) · số gõ dạng chữ «18» ⇒ `18` · mã chỉ khác hoa/thường «btr» ⇒ `BTR` (khi khớp DUY NHẤT một
+mã — Excel và bộ làm sạch đều không phân biệt) · ngày ⇒ `YYYY-MM-DD` (`datetime_seconds_*` giữ giây) · ô chọn nhiều
+trống ⇒ `0` (quy ước xuất của REDCap; ô 0 dưới logic nhánh đang ẩn không bị coi là «có giá trị»). Mã thiếu giữ
 NGUYÊN (BTR/KDD/998) — bước làm sạch mới chuẩn hoá theo `_ma-thieu-theo-bien.csv`.
 
 **Tự kiểm CSV vừa ghi:** đọc lại bằng `csv` của Python, bằng ĐÚNG hàm đọc của bộ làm sạch
 (`clean_research_dataset._read_csv`, có `csv.Sniffer`) và bằng `pandas` — phải trùng từng ô, không thì xoá CSV. Cảnh báo
-riêng các ô mà `pandas.read_csv` mặc định (dùng ở `run_stats_analysis.py`) sẽ đọc thành THIẾU (vd ô chữ «NA», «None»).
+riêng các ô mà `pandas.read_csv` mặc định (dùng ở `run_stats_analysis.py`) sẽ đọc thành THIẾU (vd ô chữ «NA», «None»);
+máy không có pandas thì dùng bản chép danh sách của pandas 2.x, không bỏ kiểm. Báo cáo ghi rõ các đường đọc ĐÃ THẬT SỰ
+kiểm (`tu_kiem_doc_bang`).
 
 Báo cáo `<tệp>_bao_cao_nhap.md/.json`: mỗi phát hiện ghi trang!ô, cột, mã nghiên cứu, chi tiết; giá trị chỉ in cho mã/số
 (không in nguyên văn ô chữ tự do).
@@ -77,10 +93,15 @@ Báo cáo `<tệp>_bao_cao_nhap.md/.json`: mỗi phát hiện ghi trang!ô, cộ
 
 ## Mã thoát
 
-0 sạch · 1 lỗi hoặc truy vấn · 2 không đo được (thiếu từ điển/openpyxl) · 3 từ chối (thư mục ra trong repo, mẫu từ
+0 sạch · 1 lỗi, truy vấn hoặc CHUA_DU · 2 không đo được (thiếu từ điển/openpyxl) · 3 từ chối (thư mục ra trong repo, mẫu từ
 đặc tả khác, tệp `.xls` cũ…).
 
 ## Ranh giới
 
 Không thay người quản lý dữ liệu/thống kê viên. Máy không sửa giá trị, không điền mã thiếu thay người nhập, không chạy
-cổng tiếp nhận khi còn truy vấn. Dữ liệu chưa qua cổng tiếp nhận không được ghi vào bất kỳ cây git nào.
+cổng tiếp nhận khi còn truy vấn hoặc phần chưa kiểm. CSV/báo cáo (chưa qua cổng tiếp nhận) không được ghi vào bất kỳ cây
+git nào; mẫu trống mặc định nằm ở `exports/<mã>/nhap_lieu/` (đã gitignore, không chứa dữ liệu) — bản ĐÃ NHẬP nên lưu
+ngoài repo (`nhap` cảnh báo nếu không).
+
+Rà phản biện độc lập 14/11/2026 (một agent, có chạy SPSS/R thật) bắt 2 lỗi CAO + 5 TRUNG BÌNH — đã vá cả, mỗi vá có test
+và đột biến đỏ đúng chỗ (23/23).

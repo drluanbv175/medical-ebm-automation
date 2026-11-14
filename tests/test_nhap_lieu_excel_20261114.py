@@ -49,8 +49,8 @@ MA_THIEU = [("*", "BTR", "Bỏ trống"), ("*", "KDD", "Không đọc được")
 LUAT_DQ = [
     ("DQ01", "truy_van", "Nữ dưới 20", "[gioitinh] = '2' and [tuoi] < 20"),
     ("DQ02", "truy_van", "Quá 2 lý do", "([lydo(1)] + [lydo(2)] + [lydo(3)]) > 2"),
-    ("DQ99", "truy_van", "Hàm chưa hỗ trợ", "datediff([ngay_kham], 'today', 'd') > 1"),
 ]
+LUAT_KHONG_HO = ("DQ99", "truy_van", "Hàm chưa hỗ trợ", "datediff([ngay_kham], 'today', 'd') > 1")
 
 
 def _ghi_csv(p: Path, tieu_de: list[str], hang: list[list[str]]) -> None:
@@ -267,8 +267,9 @@ def test_chuyen_o_chuan_unicode_khoang_trang_va_ma_viet_khac():
     assert N.chuyen_o(c, "01", "@", {})[1] == "ma_so_viet_khac"
     assert N.chuyen_o(c, "1.0", "@", {})[1] == "ma_so_viet_khac"
     assert N.chuyen_o(c, "1", "@", {})[1] is None
-    assert N.chuyen_o(_c("so", ma_thieu={"BTR": ""}), "18", "@", {})[2] == "so_luu_dang_chu"
-    assert N.chuyen_o(_c("so"), 0.5, "0%", {})[2] == "dinh_dang_phan_tram"
+    dem2: dict = {}
+    assert N.chuyen_o(_c("so", ma_thieu={"BTR": ""}), "18", "@", dem2) == ("18", None, None)
+    assert dem2 == {"so_luu_dang_chu": 1}  # «18» dạng chữ = 18: chuẩn hoá KHÔNG đổi nghĩa, chỉ đếm
 
 
 # ───────────────────────────── nhập đầu–cuối ─────────────────────────────
@@ -316,8 +317,11 @@ def test_nhap_bat_truy_van_gia_tri_nhu_redcap(tmp_path, de_tai, capsys):
             _hop_le("P03", gioitinh=None, nghe=9, kyvong=998),  # thiếu bắt buộc · nghe=9 mà nghe_khac trống
             _hop_le("P04", tuoi=998, co_bh="BTR"),  # 998 KHÔNG phải mã thiếu của tuoi
         ],
-        [{"record_id": "P01", "thoigian": "BTR"}],  # @NOMISSING không nhận BTR
+        [{"record_id": "P01", "thoigian": "BTR"}]  # @NOMISSING không nhận BTR
+        + [{"record_id": m, "thoigian": 5} for m in ("P02", "P03", "P04")],
     )
+    with open(de_tai / "_luat-dq.csv", "a", encoding="utf-8", newline="") as f:
+        csv.writer(f, lineterminator="\n").writerow(LUAT_KHONG_HO)
     ra = tmp_path / "ngoai" / "ra"
     assert _nhap(p, ra) == N.MA_LOI
     ph = [(x["ma"], x["ma_nc"], x["cot"]) for x in _doc_bao_cao(ra, p)["phat_hien"] if x["muc"] == N.TRUY_VAN]
@@ -515,7 +519,8 @@ def test_logic_nhanh_khong_danh_gia_duoc_thi_khong_doan_la_hien(tmp_path, de_tai
     p.parent.mkdir(parents=True)
     wb.save(p)
     ra = tmp_path / "ngoai" / "ra"
-    assert _nhap(p, ra) == N.MA_OK
+    assert _nhap(p, ra) == N.MA_LOI  # «chưa kiểm được» ⇒ CHUA_DU, KHÔNG BAO GIỜ sạch
+    assert _doc_bao_cao(ra, p)["trang_thai"] == "CHUA_DU"
     ph = _doc_bao_cao(ra, p)["phat_hien"]
     assert not [x for x in ph if x["ma"] == "thieu_bat_buoc"]
     canh = [x for x in ph if x["ma"] == "logic_nhanh_khong_danh_gia_duoc"]
@@ -533,3 +538,160 @@ def test_ma_khac_hoa_thuong_chuan_ve_ma_tu_dien_va_ma_nc_chi_khac_hoa_thuong_la_
     ra = tmp_path / "ngoai" / "ra"
     assert _nhap(p, ra) == N.MA_LOI and not (ra / "lan1.csv").exists()
     assert "trung_ma_khac_hoa_thuong" in {x["ma"] for x in _doc_bao_cao(ra, p)["phat_hien"]}
+
+
+# ───────────────────────────── rà phản biện độc lập 14/11/2026 ─────────────────────────────
+
+
+def _ma(ra: Path, p: Path, muc: str | None = None) -> set[str]:
+    return {x["ma"] for x in _doc_bao_cao(ra, p)["phat_hien"] if muc is None or x["muc"] == muc}
+
+
+def test_dinh_dang_o_so_doi_gia_tri_khong_bao_gio_la_sach(tmp_path, de_tai):
+    """«50%» được Excel lưu 0.5 ⇒ LỖI; ô số mang định dạng khác mẫu ⇒ TRUY VẤN; số trong cột chữ/mã ⇒ TRUY VẤN."""
+    mau = _mau(tmp_path, de_tai)
+
+    def dinh_dang(wb):
+        ws = wb["phieu"]
+        ten = {ws.cell(1, j).value: j for j in range(1, ws.max_column + 1)}
+        ws.cell(N.DONG_DAU, ten["kyvong"]).number_format = "0%"
+        ws.cell(N.DONG_DAU + 1, ten["kyvong"]).number_format = "#,##0"
+
+    his = [{"record_id": m, "thoigian": 1} for m in ("P01", "P02", "P03")]
+    p = _dien(mau, tmp_path / "ngoai" / "lan1.xlsx", [_hop_le("P01", kyvong=0.5), _hop_le("P02", kyvong=1500),
+              _hop_le("P03", nghe_khac=7)], his, sua=dinh_dang)  # fmt: skip
+    ra = tmp_path / "ngoai" / "ra"
+    assert _nhap(p, ra) == N.MA_LOI and not (ra / "lan1.csv").exists()
+    assert "dinh_dang_phan_tram" in _ma(ra, p, N.LOI)
+    assert {"dinh_dang_o_khac_mau", "so_trong_cot_chu"} <= _ma(ra, p, N.TRUY_VAN)
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.append(["record_id", "gioitinh", "tuoi", "kyvong"])
+    ws.append([7, 1, 30, 1500])  # mã nghiên cứu dạng SỐ (số 0 đầu có thể đã mất)
+    ws["D2"].number_format = "#,##0"
+    q = tmp_path / "ngoai" / "tu_lam.xlsx"
+    wb.save(q)
+    _nhap(q, ra)
+    assert {"dinh_dang_hang_nghin", "ma_nghien_cuu_luu_dang_so"} <= _ma(ra, q, N.TRUY_VAN)
+
+
+def test_ma_lech_giua_cac_trang_la_truy_van_tung_ma(tmp_path, de_tai, monkeypatch):
+    mau = _mau(tmp_path, de_tai)
+    p = _dien(mau, tmp_path / "ngoai" / "lan1.xlsx", [_hop_le("BN001")], [{"record_id": "BN00l", "thoigian": 5}])
+    ra = tmp_path / "ngoai" / "ra"
+    goi: list = []
+    monkeypatch.setattr(N.subprocess, "run", lambda *a, **k: goi.append(a))
+    assert _nhap(p, ra, "--tiep-nhan") == N.MA_LOI and goi == []
+    tv = [x for x in _doc_bao_cao(ra, p)["phat_hien"] if x["ma"] == "ma_nc_thieu_trang"]
+    assert {x["ma_nc"] for x in tv} == {"BN001", "BN00l"} and all(x["muc"] == N.TRUY_VAN for x in tv)
+    assert _doc_bao_cao(ra, p)["trang_thai"] == "CAN_DOI_CHIEU"
+
+
+def test_trang_ngoai_mau_va_hang_tieu_de_bi_sua_la_loi(tmp_path, de_tai):
+    mau = _mau(tmp_path, de_tai)
+    his = [{"record_id": "P01", "thoigian": 1}]
+
+    def them_trang(wb):
+        ws = wb.copy_worksheet(wb["phieu"])  # «phieu Copy» — bệnh nhân nhập nhầm sang trang chép thêm
+        ws.cell(N.DONG_DAU, 1, "P09")
+
+    p = _dien(mau, tmp_path / "ngoai" / "a.xlsx", [_hop_le("P01")], his, sua=them_trang)
+    ra = tmp_path / "ngoai" / "ra"
+    assert _nhap(p, ra) == N.MA_LOI and "trang_la_co_du_lieu" in _ma(ra, p, N.LOI)
+
+    def go_hang_3(wb):
+        wb["phieu"].protection.sheet = False
+        wb["phieu"].cell(N.DONG_DAU - 1, 1, "P08")  # gõ nhầm dữ liệu vào hàng gợi ý
+
+    q = _dien(mau, tmp_path / "ngoai" / "b.xlsx", [_hop_le("P01")], his, sua=go_hang_3)
+    assert _nhap(q, ra) == N.MA_LOI and "hang_tieu_de_bi_sua" in _ma(ra, q, N.LOI)
+    assert N.main(["mau", "--study", STUDY, "--ra", str(p), "--ghi-de"]) == N.MA_TU_CHOI  # có dữ liệu ở trang thêm
+
+
+def test_trang_an_co_tieu_de_van_duoc_doc(tmp_path, de_tai):
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.append(["record_id", "gioitinh", "tuoi"])
+    ws.append(["P01", 1, 30])
+    an = wb.create_sheet("an")
+    an.append(["record_id", "gioitinh", "tuoi"])
+    an.append(["P02", 2, 40])
+    an.sheet_state = "hidden"
+    p = tmp_path / "ngoai" / "an.xlsx"
+    p.parent.mkdir(parents=True)
+    wb.save(p)
+    ra = tmp_path / "ngoai" / "ra"
+    _nhap(p, ra)
+    assert "trang_an" in _ma(ra, p) and _doc_bao_cao(ra, p)["so_ma_nghien_cuu"] == 2
+
+
+def test_chua_kiem_duoc_chan_tiep_nhan(tmp_path, de_tai, monkeypatch):
+    with open(de_tai / "_luat-dq.csv", "a", encoding="utf-8", newline="") as f:
+        csv.writer(f, lineterminator="\n").writerow(LUAT_KHONG_HO)
+    mau = _mau(tmp_path, de_tai)
+    p = _dien(mau, tmp_path / "ngoai" / "lan1.xlsx", [_hop_le("P01")], [{"record_id": "P01", "thoigian": 1}])
+    goi: list = []
+    monkeypatch.setattr(N.subprocess, "run", lambda *a, **k: goi.append(a))
+    ra = tmp_path / "ngoai" / "ra"
+    assert _nhap(p, ra, "--tiep-nhan") == N.MA_LOI and goi == []
+    assert _doc_bao_cao(ra, p)["trang_thai"] == "CHUA_DU"
+
+
+def test_xuong_dong_chu_so_toan_kho_va_so_qua_15_chu_so(tmp_path, de_tai):
+    mau = _mau(tmp_path, de_tai)
+    his = [{"record_id": m, "thoigian": 1} for m in ("P01", "P02", "P03", "P04")]
+    phieu = [
+        _hop_le("P01", ykien="dòng 1\ndòng 2"),
+        _hop_le("P02", tuoi="６０"),
+        _hop_le("P03", kyvong="12345678901234567"),
+        _hop_le("P04", kyvong="1_0"),
+    ]
+    p = _dien(mau, tmp_path / "ngoai" / "lan1.xlsx", phieu, his)
+    ra = tmp_path / "ngoai" / "ra"
+    assert _nhap(p, ra) == N.MA_LOI
+    assert "chu_so_khong_ascii" in _ma(ra, p, N.LOI)
+    p2 = _dien(mau, tmp_path / "ngoai" / "lan2.xlsx", [phieu[0], *phieu[2:]], his[:1] + his[2:])
+    assert _nhap(p2, ra) == N.MA_LOI
+    tv = {(x["ma"], x["ma_nc"]) for x in _doc_bao_cao(ra, p2)["phat_hien"] if x["muc"] == N.TRUY_VAN}
+    assert {("xuong_dong_trong_o", "P01"), ("so_vuot_do_chinh_xac", "P03"), ("khong_phai_so", "P04")} <= tv
+
+
+def test_checkbox_duoi_logic_nhanh_khong_sinh_truy_van_gia():
+    hop = [N.Cot(ten=f"x___{k}", truong="x", form="f", kieu="hop", ma_hop=str(k), nhanh="[a] = '1'") for k in (1, 2)]
+    cot = [N.Cot(ten="id", truong="id", form="f", kieu="id"), N.Cot(ten="a", truong="a", form="f", kieu="ma",
+           lua_chon={"1": "", "2": ""}), *hop]  # fmt: skip
+    bang = N.Bang(cot, {"P1": {"id": "P1", "a": "2", "x___1": "0", "x___2": "1"}}, {"P1": {}}, {"P1": {"f"}}, [], {},
+                  {}, [c.ten for c in cot])  # fmt: skip
+    N.kiem_gia_tri(bang, [])
+    assert [(x.ma, x.cot) for x in bang.phat_hien] == [("co_gia_tri_khi_bi_an", "x___2")]  # «0» không phải giá trị
+
+
+def test_logic_nan_khac_dung_va_so_khong_ascii_khong_phai_so():
+    assert N.danh_gia_logic("[a] + [b] <> 5", {"a": "", "b": "1"}) is True  # NaN <> 5
+    assert N.danh_gia_logic("[a] + [b] = 5", {"a": "", "b": "1"}) is False
+    assert N.danh_gia_logic("[z] = 10", {"z": "1_0"}) is False  # «1_0» KHÔNG phải số 10
+    assert N._so_chat("６０") is None and N._so_chat("inf") is None and N._so_chat(" 2.5 ") == 2.5
+
+
+def test_ma_thieu_so_o_cot_ngay_va_ngay_gio_co_giay():
+    c = N.Cot(ten="d", truong="d", form="f", kieu="ngay", ma_thieu={"9999": ""})
+    assert N.chuyen_o(c, 9999, "General", {}) == ("9999", None, None)
+    g = N.Cot(ten="g", truong="g", form="f", kieu="ngay_gio", kiem_tra="datetime_seconds_dmy")
+    assert N.chuyen_o(g, datetime(2026, 3, 1, 8, 5, 7), "General", {}) == ("2026-03-01 08:05:07", None, None)
+    assert N._dinh_dang_cot(g) == "dd/mm/yyyy hh:mm:ss"
+
+
+def test_khong_co_pandas_van_canh_bao_o_na(monkeypatch):
+    monkeypatch.setitem(sys.modules, "pandas._libs.parsers", None)  # import ⇒ ImportError
+    cot = [N.Cot(ten="id", truong="id", form="f", kieu="id"), N.Cot(ten="t", truong="t", form="f", kieu="chu")]
+    bang = N.Bang(cot, {"P1": {"id": "P1", "t": "NA"}}, {}, {}, [], {}, {}, ["id", "t"])
+    assert N.o_bi_pandas_coi_la_thieu(bang) == [("P1", "t")]
+
+
+def test_excel_co_du_lieu_trong_repo_bi_canh_bao(tmp_path, de_tai):
+    mau = _mau(tmp_path, de_tai)
+    (tmp_path / "repo_gia" / ".git").mkdir(parents=True)
+    p = _dien(mau, tmp_path / "repo_gia" / "lan1.xlsx", [_hop_le("P01")], [{"record_id": "P01", "thoigian": 1}])
+    ra = tmp_path / "ngoai" / "ra"
+    _nhap(p, ra)
+    assert "excel_trong_repo" in _ma(ra, p, N.CANH_BAO)
