@@ -255,6 +255,25 @@ def test_n4_test_type_g0_khi_g3_lay_gia_thuyet_tu_g0_hoac_mac_dinh(tmp_path):
     assert RP._g3_lech_dau_vao_chi_tiet(out, _meta(out, {}, G0={"test_type": "non_inferiority"})) == []
 
 
+def test_n4_test_type_g0_cat_ngang_superiority_la_do_chinh_xac(tmp_path):
+    """Sửa sau thẩm định PR #262 (đột biến M3 lọt): đề tài CẮT NGANG lấy giả thuyết từ test_type G0 «superiority» —
+    run_g3_auto quy về descriptive_precision ⇒ bộ so PHẢI im (nếu không: G3 chạy lại vô cớ rồi báo «không áp được» sai).
+    test_type thật sự đổi (non_inferiority) thì vẫn bắt."""
+    out = _thu_muc(tmp_path)
+    cat_ngang = {**CP_A05, "design_code": "cross_sectional", "hypothesis_type": "descriptive_precision",
+                 "effect_type": "PREVALENCE", "effect_val": None, "prevalence": 0.3, "precision": 0.05,
+                 "n_adjusted": 404,
+                 "nguon_tham_so": {**CP_A05["nguon_tham_so"],
+                                   "hypothesis_type": "G0 test_type (study_meta.gate_params.G0)"}}
+    _cp(out, "G3", **cat_ngang)
+    assert RP._thiet_ke_phan_giai(out) is None, "G1/G2 chưa ghi thiết kế ⇒ dùng design_code của G3"
+    assert RP._g3_lech_dau_vao_chi_tiet(out, _meta(out, {}, G0={"test_type": "superiority"})) == []
+    _cp(out, "G3", **{**cat_ngang, "nguon_tham_so": {**cat_ngang["nguon_tham_so"], "hypothesis_type": "mặc định máy"}})
+    assert RP._g3_lech_dau_vao_chi_tiet(out, _meta(out, {}, G0={"test_type": "superiority"})) == []
+    lech = RP._g3_lech_dau_vao_chi_tiet(out, _meta(out, {}, G0={"test_type": "non_inferiority"}))
+    assert len(lech) == 1 and "test_type" in lech[0]["khoa"] and lech[0]["mong_muon"] == "non_inferiority"
+
+
 def test_n4_chieu_ket_cuc_chuan_hoa_va_lech(tmp_path):
     out = _thu_muc(tmp_path)
     _cp(out, "G3", **{**CP_A11, "outcome_direction": "higher_better"})
@@ -329,13 +348,18 @@ def _song(muc: str) -> dict:
 
 
 def _chay(tmp_path, monkeypatch, out, kich_ban, *, song=None, start=None, runner=None):
+    """`song`: dict {cổng: mức} (chấm sống TĨNH) hoặc hàm (gate, study, out_dir) -> mức (chấm sống ĐỘNG — phụ thuộc
+    trạng thái tệp như bộ chấm thật, vd G4-AUTO-03 so §12 với G3_checkpoint HIỆN TẠI)."""
     gia = runner or _CongGia(out, kich_ban)
-    song = {**_SONG_MAC_DINH, **(song or {})}
     monkeypatch.setattr(RP, "BASE", tmp_path)
     monkeypatch.setattr(RP, "_run_gate_once", gia)
     monkeypatch.setattr(RP.FRESH, "stale_report", lambda out_dir: {
         "stale_gates": [], "orphan_gates": [], "fresh": True, "issues": [], "checkpoints_present": []})
-    monkeypatch.setattr(RP, "_cham_song", lambda gate, study, out_dir: _song(song.get(gate, "DRAFT")))
+    if callable(song):
+        monkeypatch.setattr(RP, "_cham_song", lambda gate, study, out_dir: _song(song(gate, study, out_dir)))
+    else:
+        bang = {**_SONG_MAC_DINH, **(song or {})}
+        monkeypatch.setattr(RP, "_cham_song", lambda gate, study, out_dir: _song(bang.get(gate, "DRAFT")))
     return gia, RP.orchestrate(STUDY, None, 1, start, False)
 
 
@@ -388,7 +412,8 @@ def test_n4_truoc_ban_va_khong_ghim_thi_g3_van_tuoi(tmp_path, monkeypatch):
 
 
 def test_n4_rao_cong_da_ky_g4_giu_nguyen_khi_g3_chay_lai(tmp_path, monkeypatch, capsys):
-    """G4 (SAP) ĐÃ KÝ: đầu vào G3 đổi ⇒ G3 chạy lại, nhưng dây chuyền KHÔNG sinh lại G4 — chỉ báo (rào #249)."""
+    """G4 (SAP) ĐÃ KÝ: đầu vào G3 đổi ⇒ G3 chạy lại, nhưng dây chuyền KHÔNG sinh lại G4 — chỉ báo (rào #249). Chấm sống
+    TĨNH (G4 vẫn PASS sau khi G3 chạy lại) — kịch bản bộ chấm thật ở test `..._cham_song_dong` ngay dưới."""
     assert "G4" in GC._GATE_REQUIRED_STAKEHOLDERS
     out = _thu_muc(tmp_path)
     _chuoi_a08(out)
@@ -402,6 +427,114 @@ def test_n4_rao_cong_da_ky_g4_giu_nguyen_khi_g3_chay_lai(tmp_path, monkeypatch, 
     RP.print_summary(bc)
     ra = capsys.readouterr().out
     assert "🔏 G4: GIỮ — cổng ĐÃ KÝ" in ra and "✅ TƯƠI" not in ra
+
+
+# ─────────────────────────── Sửa sau thẩm định PR #262 — rào cổng ĐÃ KÝ xét theo ẢNH CHỤP ĐẦU LƯỢT, không chấm tại chỗ
+# Thẩm định đo: với bộ chấm G4 THẬT, G4-AUTO-03 (N/tham số §12 phải khớp G3_checkpoint HIỆN TẠI) và G4-AUTO-12 (G3
+# chấm sống PASS) vẫn tham gia trạng thái sau khi ký ⇒ G3 vừa chạy lại ra N mới là G4 rời PASS ngay ⇒ rào chấm sống
+# lúc vòng lặp tới G4 trả False ⇒ pipeline gọi run_g4_auto trên SAP đã ký. Đồ gá dưới cho chấm sống phụ thuộc
+# G3_checkpoint như bộ chấm thật.
+N_DA_KY = CP_A05["n_adjusted"]   # 1323 — N mà SAP (G4) / TRDS 17 (G2) đã ký ở lượt a05
+
+
+def _n_g3(out_dir: Path):
+    return _doc(out_dir / "G3_checkpoint.json").get("n_adjusted")
+
+
+def _song_g4_theo_g3(gate, study, out_dir):
+    """G4 ĐÃ KÝ với N=1323: PASS khi G3 còn N đó, BLOCKED khi G3 đổi N (G4-AUTO-03/12 của bộ chấm thật)."""
+    if gate == "G4":
+        return "PASS" if _n_g3(out_dir) == N_DA_KY else "BLOCKED"
+    return _SONG_MAC_DINH.get(gate, "DRAFT")
+
+
+def test_n4_rao_g4_da_ky_theo_anh_chup_khi_g3_doi_n_cham_song_dong(tmp_path, monkeypatch, capsys):
+    """Đúng kịch bản N4: PI đổi gate_params.G3 sau khi G4 đã ký ⇒ G3 chạy lại (N 1323→218) ⇒ chấm sống G4 rời PASS —
+    G4 vẫn GIỮ (ảnh chụp đầu lượt), run_g4_auto KHÔNG được gọi, G4_checkpoint không bị làm mới, báo cáo hiện
+    «giu_cong_da_ky» + việc của PI/IRB (không phải «blocked_missing_input»)."""
+    out = _thu_muc(tmp_path)
+    _chuoi_a08(out)
+    _cp(out, "G4", sap_n=N_DA_KY)
+    g4_truoc = (out / "G4_checkpoint.json").read_bytes()
+    gia, bc = _chay(tmp_path, monkeypatch, out, {"G3": _ghi_cp("G3", **CP_A11), "G4": _ghi_cp("G4", sap_n=218)},
+                    song=_song_g4_theo_g3)
+    assert _n_g3(out) == 218, "G3 đã chạy lại với bản ghim"
+    assert gia.lenh[0] == "G3" and "G4" not in gia.lenh, f"rào #249 bị vượt: gọi run_g4_auto trên G4 đã ký — {gia.lenh}"
+    assert (out / "G4_checkpoint.json").read_bytes() == g4_truoc, "G4_checkpoint của SAP đã ký giữ nguyên"
+    kq = _theo_cong(bc)
+    assert kq["G4"]["status"] == "giu_cong_da_ky" and kq["G4"]["da_ky_theo"] == "anh_chup_dau_luot"
+    assert kq["G4"]["song"]["muc"] == "BLOCKED", "báo trung thực chấm sống hiện tại"
+    ct = kq["G4"]["detail"]
+    assert "dây chuyền: G3" in ct and "lúc đầu lượt" in ct and "HIỆN TẠI BLOCKED" in ct and "--from G4" in ct
+    assert bc["n_giu_da_ky"] == 1 and bc["converged_fresh"] is False
+    RP.print_summary(bc)
+    ra = capsys.readouterr().out
+    assert "🔏 G4: GIỮ — cổng ĐÃ KÝ" in ra and "✅ TƯƠI" not in ra
+
+
+def test_n4_g4_chua_ky_luc_dau_van_duoc_sinh_lai_khi_g3_doi_n(tmp_path, monkeypatch):
+    """Đối chứng: G4 CHƯA ký lúc đầu lượt (dự thảo) ⇒ ảnh chụp trống, G3 đổi N ⇒ G4 được sinh lại theo dây chuyền."""
+    out = _thu_muc(tmp_path)
+    _chuoi_a08(out)
+    gia, bc = _chay(tmp_path, monkeypatch, out, {"G3": _ghi_cp("G3", **CP_A11), "G4": _ghi_cp("G4")},
+                    song=lambda gate, study, out_dir: _SONG_MAC_DINH.get(gate, "DRAFT"))
+    assert gia.lenh[:2] == ["G3", "G4"] and bc["n_giu_da_ky"] == 0
+
+
+def _g2_theo_g3(out_dir: Path) -> dict:
+    return _doc(out_dir / "G2_checkpoint.json")
+
+
+def _lech_trds17(out_dir, study):
+    """Bản chép N của G2 (TRDS 17) ≠ N sống của G3 ⇒ «bản chép N lệch» (như `_lech_co_mau_g3` đọc tệp TRDS thật)."""
+    n2, n3 = _g2_theo_g3(out_dir).get("trds17_n"), _n_g3(out_dir)
+    return {"G2": f"TRDS 17 «N {n2}» ≠ G3 n_adjusted={n3}"} if n2 != n3 else {}
+
+
+def _song_g2_theo_g3(gate, study, out_dir):
+    """G2 ĐÃ KÝ (bản chưa sinh lại) chỉ PASS khi TRDS 17 khớp N G3 hiện tại; bản máy vừa sinh lại là DỰ THẢO."""
+    if gate == "G2":
+        cp2 = _g2_theo_g3(out_dir)
+        if cp2.get("sinh_lai"):
+            return "DRAFT"
+        return "PASS" if cp2.get("trds17_n") == _n_g3(out_dir) else "BLOCKED"
+    return _SONG_MAC_DINH.get(gate, "DRAFT")
+
+
+def _g2_chep_n(out, cmd):
+    _cp(out, "G2", trds17_n=_n_g3(out), sinh_lai=True)
+    return GC.EXIT_OK
+
+
+def test_n4_g2_da_ky_khong_bi_quay_lai_dong_bo_n_khi_g3_doi_n(tmp_path, monkeypatch):
+    """G2 ĐÃ KÝ (TRDS 17 = 1323): G3 chạy lại ra 218 ⇒ TRDS 17 lệch ⇒ chấm sống G2 rời PASS. Nhánh quay lại đồng bộ N
+    phải xét «đã ký» theo ảnh chụp đầu lượt — không quay lại G2, không gọi run_g2_auto; chỉ báo «ĐÃ KÝ»."""
+    out = _thu_muc(tmp_path)
+    _chuoi_a08(out)
+    _cp(out, "G2", trds17_n=N_DA_KY)
+    monkeypatch.setattr(RP, "_lech_co_mau_g3", _lech_trds17)
+    gia, bc = _chay(tmp_path, monkeypatch, out, {"G2": _g2_chep_n, "G3": _ghi_cp("G3", **CP_A11),
+                                                 "G4": _ghi_cp("G4")}, song=_song_g2_theo_g3)
+    assert "G2" not in gia.lenh, f"nhánh quay lại đồng bộ N gọi run_g2_auto trên G2 đã ký — {gia.lenh}"
+    assert gia.lenh == ["G3", "G4", "G5"]
+    assert "quay_lai_dong_bo_n" not in {r["status"] for r in bc["gate_results"]}
+    assert _g2_theo_g3(out)["trds17_n"] == N_DA_KY, "hồ sơ G2 đã ký giữ nguyên"
+    assert "ĐÃ KÝ" in bc["lech_co_mau_g3"]["G2"] and bc["converged_fresh"] is False
+
+
+def test_n4_from_dung_cong_da_ky_thi_sau_khi_sinh_lai_xet_theo_cham_song(tmp_path, monkeypatch):
+    """`--from G2` (PI CHỦ Ý sinh lại G2 đã ký): sau khi gọi run_g2_auto, ảnh chụp không còn nói về bản hiện tại ⇒ G3
+    đổi N thì bản G2 VỪA SINH (dự thảo) được quay lại đồng bộ N như mọi cổng chưa ký — không bị báo nhầm «ĐÃ KÝ»."""
+    out = _thu_muc(tmp_path)
+    _chuoi_a08(out)
+    _cp(out, "G2", trds17_n=N_DA_KY)
+    monkeypatch.setattr(RP, "_lech_co_mau_g3", _lech_trds17)
+    gia, bc = _chay(tmp_path, monkeypatch, out, {"G2": _g2_chep_n, "G3": _ghi_cp("G3", **CP_A11),
+                                                 "G4": _ghi_cp("G4")}, song=_song_g2_theo_g3, start="G2")
+    assert gia.lenh == ["G2", "G3", "G2", "G3", "G4", "G5"], gia.lenh
+    assert [r["status"] for r in bc["gate_results"]].count("quay_lai_dong_bo_n") == 1
+    assert _g2_theo_g3(out)["trds17_n"] == 218 and "G2" not in bc["lech_co_mau_g3"]
+    assert bc["n_giu_da_ky"] == 0
 
 
 def test_n4_g3_khong_ap_duoc_ghim_chi_bao_khong_chay_lai_mai(tmp_path, monkeypatch, capsys):
@@ -486,6 +619,23 @@ def test_n4_check_only_bao_dau_vao_g3_ma_thoat_1(tmp_path, monkeypatch, capsys):
     assert RP.main() == 1
     ra = capsys.readouterr().out
     assert "dau_vao_g3_doi" in ra and "p0=0.48" in ra and "✅ TƯƠI" not in ra
+
+
+def test_n4_check_only_bao_gia_tri_ghim_khong_ap_ma_thoat_1(tmp_path, monkeypatch, capsys):
+    """Sửa sau thẩm định PR #262 (đột biến M4 lọt): lượt trước đã ghi «không áp được» (G3 chạy lại vẫn dùng OR 1,44
+    trích y văn vì effect_size thiếu effect_type) ⇒ --check-only KHÔNG được báo «✅ TƯƠI»/mã 0 khi chỉ còn giá trị ghim
+    không áp được — pipeline_run_report vẫn mang bản ghi đó."""
+    out = _thu_muc(tmp_path)
+    _chuoi_a08(out)
+    _meta(out, {"effect_size": 1.4583})
+    _gia, bc = _chay(tmp_path, monkeypatch, out, {"G3": _ghi_cp("G3", **CP_A05), "G4": _ghi_cp("G4")})
+    assert bc["g3_dau_vao_khong_ap"]["khoa"] == {"gate_params.G3.effect_size": "1.4583"}
+    assert bc["g3_dau_vao_doi"] == [], "chỉ còn giá trị ghim KHÔNG ÁP ĐƯỢC — không còn «đổi» chờ chạy lại"
+    capsys.readouterr()
+    monkeypatch.setattr(sys, "argv", ["run_pipeline.py", "--study", STUDY, "--check-only"])
+    assert RP.main() == 1
+    ra = capsys.readouterr().out
+    assert "dau_vao_g3_khong_ap" in ra and "✅ TƯƠI" not in ra
 
 
 def test_n4_from_sau_g3_khong_chay_g3_nhung_khong_bao_tuoi(tmp_path, monkeypatch):

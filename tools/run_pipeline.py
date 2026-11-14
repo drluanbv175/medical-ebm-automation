@@ -29,6 +29,9 @@ BÁO TRUNG THỰC THEO CHẤM SỐNG (14/11/2026, giả lập đề tài RCT —
     chuyền dirty từ cổng phía trước (kể cả `--from` sớm hơn), cũ/mồ côi theo mtime ở lượt sau, bản chép N lệch, nhánh
     quay lại đồng bộ N. Trạng thái «giu_cong_da_ky» (không bật dirty, mã thoát ≠ 0, việc của PI/IRB); sinh lại CÓ CHỦ Ý
     chỉ bằng `--from <đúng cổng đó>`. Luật mới không hạ cấp quyết định đã ký.
+    «Đã ký» xét theo ẢNH CHỤP ĐẦU LƯỢT (sửa sau thẩm định PR #262): cổng cứng chấm sống PASS lúc bắt đầu lượt giữ
+    nguyên suốt lượt dù cổng phía trước vừa sinh lại làm chấm sống của nó rời PASS (vd G3 đổi N ⇒ G4-AUTO-03/12 của
+    SAP đã ký chặn) — chấm sống tại chỗ chỉ còn là đường bổ sung, không thể làm rào mất hiệu lực giữa lượt.
   - K5: dấu vân tay đầu vào của G0 = (chủ đề, query_en). query_en trong study_meta (gate_params.G0.query_en hoặc
     query_en cấp đầu) khác truy vấn G0 đã tra, hoặc --topic mới khác chủ đề đã tra ⇒ TRA LẠI PubMed (không chỉ chấm
     lại).
@@ -554,13 +557,40 @@ def _cong_da_ky(gate: str, study: str, out_dir: Path) -> bool:
     của `orchestrate`, TRƯỚC khi gọi cổng con: cổng cứng đã ký chỉ được sinh lại khi người gọi `--from` ĐÚNG cổng đó —
     mọi lý do tự động khác (dây chuyền dirty từ cổng phía trước, cũ/mồ côi theo mtime ở lượt sau, nhánh quay lại đồng bộ
     N) đều GIỮ NGUYÊN. Thẩm định PR #247 đo được (1) một mình bị vượt qua đường dây chuyền: A2 của G1 lệch cùng TRDS 17
-    ⇒ G1 chạy lại ⇒ dirty ⇒ run_g2_auto ghi đè hồ sơ G2 đã ký (run_g2_auto không tự kiểm sổ cái như run_g5_auto)."""
+    ⇒ G1 chạy lại ⇒ dirty ⇒ run_g2_auto ghi đè hồ sơ G2 đã ký (run_g2_auto không tự kiểm sổ cái như run_g5_auto).
+
+    Hàm này chỉ là phép chấm SỐNG tại chỗ; trong `orchestrate` hai chỗ rào dùng `_la_cong_da_ky` (ảnh chụp đầu lượt
+    `_chup_cong_da_ky` HOẶC hàm này) — sửa sau thẩm định PR #262."""
     return gate in GC._GATE_REQUIRED_STAKEHOLDERS and _cham_song(gate, study, out_dir).get("muc") == "PASS"
 
 
+def _chup_cong_da_ky(study: str, out_dir: Path) -> set:
+    """ẢNH CHỤP ĐẦU LƯỢT các cổng CỨNG đã ký (có checkpoint + chấm sống PASS) — chụp TRƯỚC khi chạy bất kỳ cổng nào.
+
+    Sửa sau thẩm định PR #262: rào chấm SỐNG đúng lúc vòng lặp tới cổng ⇒ đã muộn. Đúng kịch bản N4 (PI đổi
+    gate_params.G3 sau khi G4 đã ký): G3 chạy lại ra N mới ⇒ chấm sống G4 rời PASS ngay (G4-AUTO-03: N/tham số §12 phải
+    khớp G3_checkpoint HIỆN TẠI; G4-AUTO-12: G3 chấm sống phải PASS — cả hai vẫn tham gia trạng thái sau khi ký) ⇒
+    `_cong_da_ky('G4')` False ⇒ pipeline gọi run_g4_auto trên SAP đã ký (chỉ rào nội bộ sổ cái của run_g4_auto cứu nội
+    dung SAP; checkpoint vẫn bị làm mới, báo cáo hiện «blocked_missing_input» thay vì «giu_cong_da_ky»). Tương tự G2:
+    TRDS 17 lệch N mới ⇒ G2 rời PASS ⇒ nhánh quay lại đồng bộ N gọi run_g2_auto. «Đã ký» là sự kiện của SỔ CÁI, không
+    đổi chỉ vì một cổng phía trước vừa sinh lại trong cùng lượt — nên xét theo trạng thái TRƯỚC lượt."""
+    return {g for g in GC._GATE_REQUIRED_STAKEHOLDERS
+            if (out_dir / f"{g}_checkpoint.json").exists() and _cong_da_ky(g, study, out_dir)}
+
+
+def _la_cong_da_ky(gate: str, study: str, out_dir: Path, da_ky_truoc: Optional[set]) -> bool:
+    """Cổng cứng đã ký theo ẢNH CHỤP ĐẦU LƯỢT (`da_ky_truoc`) HOẶC chấm sống hiện tại. Ảnh chụp luôn thắng: chấm sống
+    rời PASS giữa lượt (vì cổng phía trước vừa sinh lại) KHÔNG làm cổng đã ký mất rào."""
+    return bool(da_ky_truoc and gate in da_ky_truoc) or _cong_da_ky(gate, study, out_dir)
+
+
 def _ly_do_giu_da_ky(gate: str, study: str, out_dir: Path, *, nguon_dirty: Optional[str], tu_from: Optional[str],
-                     cu_mtime: Optional[str], blocked_cp: bool, ep_tu_dong: bool) -> str:
-    """Một dòng: vì sao chuỗi MUỐN sinh lại cổng đã ký `gate` + việc của PI/IRB. Không tự sinh lại — chỉ báo."""
+                     cu_mtime: Optional[str], blocked_cp: bool, ep_tu_dong: bool,
+                     song_hien_tai: Optional[Dict[str, Any]] = None) -> str:
+    """Một dòng: vì sao chuỗi MUỐN sinh lại cổng đã ký `gate` + việc của PI/IRB. Không tự sinh lại — chỉ báo.
+
+    `song_hien_tai` (chấm sống lúc này): rời PASS ⇒ nói rõ «ký theo ảnh chụp đầu lượt; nay hồ sơ đã ký có thể không còn
+    khớp cổng phía trước» — đó chính là việc PI/IRB phải xem (sửa đổi đề cương), không phải lý do để máy sinh lại."""
     ly: List[str] = []
     if nguon_dirty:
         ly.append(f"dây chuyền: {nguon_dirty} phía trước vừa sinh lại"
@@ -575,16 +605,27 @@ def _ly_do_giu_da_ky(gate: str, study: str, out_dir: Path, *, nguon_dirty: Optio
     if ep_tu_dong:
         ly.append("nhánh quay lại đồng bộ N")
     vi_sao = "; ".join(ly) or "chuỗi muốn chạy lại"
-    return (f"GIỮ {gate} — cổng ĐÃ KÝ (chấm sống PASS), hệ KHÔNG tự sinh lại: {vi_sao}. "
+    muc_nay = (song_hien_tai or {}).get("muc") if isinstance(song_hien_tai, dict) else None
+    if muc_nay is None or muc_nay == "PASS":
+        ky = "chấm sống PASS"
+        luu_y = ""
+    else:
+        ky = "chấm sống PASS lúc đầu lượt"
+        luu_y = (f" Chấm sống HIỆN TẠI {muc_nay} sau khi cổng phía trước vừa sinh lại — hồ sơ đã ký có thể KHÔNG còn "
+                 "khớp (vd N/tham số G3 mới ≠ bản đã ký); máy không sửa hồ sơ đã ký.")
+    return (f"GIỮ {gate} — cổng ĐÃ KÝ ({ky}), hệ KHÔNG tự sinh lại: {vi_sao}.{luu_y} "
             "Việc của PI/IRB: nếu thay đổi phía trước ảnh hưởng hồ sơ đã ký thì sửa đổi đề cương rồi ký lại — sinh lại "
             f"CÓ CHỦ Ý bằng: python3 tools/run_pipeline.py --study {study} --from {gate}")
 
 
-def _lech_co_mau_tu_chay_lai(out_dir: Path, study: str) -> Tuple[Dict[str, str], Dict[str, str]]:
-    """(bản chép N lệch được TỰ chạy lại, bản chép N lệch ở cổng cứng ĐÃ KÝ — chỉ báo)."""
+def _lech_co_mau_tu_chay_lai(out_dir: Path, study: str,
+                             da_ky_truoc: Optional[set] = None) -> Tuple[Dict[str, str], Dict[str, str]]:
+    """(bản chép N lệch được TỰ chạy lại, bản chép N lệch ở cổng cứng ĐÃ KÝ — chỉ báo). «Đã ký» theo ảnh chụp đầu lượt
+    `da_ky_truoc` (nếu có) hoặc chấm sống — sau khi G3 vừa đổi N, chấm sống G2 rời PASS vì chính TRDS 17 lệch; nếu chỉ
+    xét chấm sống thì nhánh quay lại đồng bộ N sẽ gọi run_g2_auto trên G2 đã ký (sửa sau thẩm định PR #262)."""
     lech = _lech_co_mau_g3(out_dir, study)
     da_ky = {g: ly + " — cổng ĐÃ KÝ: không tự sinh lại, PI/IRB sửa đổi đề cương rồi ký lại"
-             for g, ly in lech.items() if _cong_da_ky(g, study, out_dir)}
+             for g, ly in lech.items() if _la_cong_da_ky(g, study, out_dir, da_ky_truoc)}
     return {g: ly for g, ly in lech.items() if g not in da_ky}, da_ky
 
 
@@ -1157,6 +1198,10 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
                                                       lech_g3=lech_g3 + lech_g3_khong_ap),
                 "nhat_quan_xuyen_cong": nq, "gate_results": [], "note": "Chỉ kiểm, không chạy."}
 
+    # Sửa sau thẩm định PR #262 — ẢNH CHỤP cổng cứng đã ký TRƯỚC khi chạy bất kỳ cổng nào: rào «không tự sinh lại cổng
+    # đã ký» không được phụ thuộc thứ vừa sinh lại trong cùng lượt (G3 đổi N ⇒ chấm sống G4/G2 rời PASS ngay).
+    da_ky_truoc = _chup_cong_da_ky(study, out_dir)
+
     # 2) Xác định điểm 'bẩn': cổng thiếu / stale / orphan / bản chép N lệch / đầu vào G0 đổi; hoặc --from.
     # Bản chép N lệch ở cổng cứng ĐÃ KÝ không vào stale_set (chỉ báo) — luật mới không hạ cấp quyết định đã ký.
     stale_set = (set(pre.get("stale_gates") or []) | set(pre.get("orphan_gates") or []) | set(lech_n))
@@ -1224,18 +1269,20 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
             # Rào cổng ĐÃ KÝ (sửa sau thẩm định PR #247): cổng cứng chấm sống PASS chỉ được sinh lại khi người gọi
             # `--from` ĐÚNG cổng đó. Dây chuyền dirty (kể cả từ `--from` sớm hơn), cũ/mồ côi theo mtime (lượt sau khi
             # cổng phía trước đã sinh lại), nhánh quay lại đồng bộ N ⇒ GIỮ NGUYÊN, không gọi cổng con, không bật dirty.
+            # «Đã ký» theo ẢNH CHỤP ĐẦU LƯỢT (sửa sau thẩm định PR #262) — chấm sống tại chỗ chỉ là đường bổ sung.
             ep_dung_cong = vong == 1 and from_nguoi == gate
             if (gate in GC._GATE_REQUIRED_STAKEHOLDERS and cp_exists and not ep_dung_cong
-                    and _cong_da_ky(gate, study, out_dir)):
+                    and _la_cong_da_ky(gate, study, out_dir, da_ky_truoc)):
+                song_nay = _cham_song(gate, study, out_dir)
                 gate_results.append({
                     "gate": gate, "status": TRANG_THAI_GIU_DA_KY, "attempts": 0,
                     "guardrail": _read_guardrail(out_dir, gate), "vong": vong,
-                    "song": _cham_song(gate, study, out_dir),
+                    "song": song_nay, "da_ky_theo": ("anh_chup_dau_luot" if gate in da_ky_truoc else "cham_song"),
                     "detail": _ly_do_giu_da_ky(
                         gate, study, out_dir, nguon_dirty=nguon_dirty if dirty else None,
                         tu_from=from_nguoi if (dirty and vong == 1) else None,
                         cu_mtime=(ly_do_chay_lai.get(gate, "") if gate in stale_set else None),
-                        blocked_cp=blocked_cp, ep_tu_dong=forced_start)})
+                        blocked_cp=blocked_cp, ep_tu_dong=forced_start, song_hien_tai=song_nay)})
                 continue
 
             # K2 — nền phía trước không dùng được thì KHÔNG dựng tiếp cổng này.
@@ -1275,6 +1322,9 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
                 res["detail"] = ("chỉ CHẤM LẠI G0 (không tra lại PubMed) — "
                                  + str(res.get("detail") or "")).rstrip(" —")
             total_runs += 1
+            # Cổng vừa được gọi (chỉ cổng đã ký khi `--from` ĐÚNG nó) ⇒ ảnh chụp không còn nói về bản hiện tại: từ đây
+            # xét theo chấm sống (hành vi #249).
+            da_ky_truoc.discard(gate)
             res["vong"] = vong
             if gate in ly_do_chay_lai:
                 res["ly_do_chay_lai"] = ly_do_chay_lai[gate]
@@ -1293,7 +1343,7 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
                 nguon_dirty = nguon_dirty or gate
                 # K7 — G3 vừa sinh N: bản chép N ở cổng TRƯỚC (G1 A2, G2 TRDS 17) lệch ⇒ quay lại đồng bộ MỘT lần.
                 if gate == "G3" and not da_quay_lai_n:
-                    lech_sau, _da_ky = _lech_co_mau_tu_chay_lai(out_dir, study)
+                    lech_sau, _da_ky = _lech_co_mau_tu_chay_lai(out_dir, study, da_ky_truoc)
                     if lech_sau:
                         quay_lai = min(lech_sau, key=_chi_so_cong)
                         for g, ly in lech_sau.items():
@@ -1305,7 +1355,8 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
 
         if quay_lai is not None:
             da_quay_lai_n = True
-            cong_lech = ", ".join(sorted(_lech_co_mau_tu_chay_lai(out_dir, study)[0], key=_chi_so_cong)) or quay_lai
+            cong_lech = ", ".join(sorted(_lech_co_mau_tu_chay_lai(out_dir, study, da_ky_truoc)[0],
+                                         key=_chi_so_cong)) or quay_lai
             gate_results.append({
                 "gate": "G3", "status": "quay_lai_dong_bo_n", "attempts": 0, "guardrail": None, "vong": vong,
                 "detail": (f"G3 vừa sinh N mới — bản chép N ở {cong_lech} còn số cũ ⇒ chạy lại từ {quay_lai} "
@@ -1318,7 +1369,7 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
 
     # 3) Kiểm freshness sau (phải tươi nếu chạy trọn) — mtime + nội dung.
     post = FRESH.stale_report(out_dir)
-    lech_n_sau = {k: v for d in _lech_co_mau_tu_chay_lai(out_dir, study) for k, v in d.items()}
+    lech_n_sau = {k: v for d in _lech_co_mau_tu_chay_lai(out_dir, study, da_ky_truoc) for k, v in d.items()}
     meta_sau = _load_meta(out_dir)
     lech_g0_sau = _g0_lech_dau_vao(out_dir, topic, meta_sau)
     # N4 — sau lượt: G3 đã chạy (sinh lại checkpoint) mà đầu vào VẪN lệch ⇒ G3 không áp được giá trị ghim đó; ghi lại
