@@ -1,0 +1,27 @@
+{
+ "can_trong_so": true,
+ "bien_cum": "ma_ban_kham",
+ "ten_tang": "tang",
+ "bien_ngay": "ngay_trong_tuan",
+ "bien_khung": "khunggio_kham",
+ "ket_cuc": "g1",
+ "muc_ket_cuc": [
+  1,
+  2,
+  3,
+  4,
+  5
+ ],
+ "nguong_hai_long": 4,
+ "nguong_lech": 0.2,
+ "n_toi_thieu": 10,
+ "chay_svyolr": true,
+ "phoi_nhiem": "thoigian_cho",
+ "don_vi_phoi_nhiem": 15,
+ "hiep_bien": [
+  "tuoi",
+  "gioitinh"
+ ],
+ "chay_gioi_han": false,
+ "thieu": []
+}

@@ -1,0 +1,203 @@
+{
+ "bien": [
+  {
+   "cot": "record_id",
+   "ten": "record_id",
+   "so": false,
+   "muc_do": "NOMINAL",
+   "nhan": "Mã phiếu",
+   "muc": null,
+   "ma_chu": {},
+   "ma_thieu_so": []
+  },
+  {
+   "cot": "g1",
+   "ten": "HL_Chung",
+   "so": true,
+   "muc_do": "ORDINAL",
+   "nhan": "G1. Hài lòng chung",
+   "muc": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "BTR"
+   ],
+   "ma_chu": {
+    "BTR": -9991
+   },
+   "ma_thieu_so": []
+  },
+  {
+   "cot": "thoigian_cho",
+   "ten": "thoigian_cho",
+   "so": true,
+   "muc_do": "SCALE",
+   "nhan": "Thời gian chờ (phút)",
+   "muc": null,
+   "ma_chu": {},
+   "ma_thieu_so": []
+  },
+  {
+   "cot": "tuoi",
+   "ten": "tuoi",
+   "so": true,
+   "muc_do": "SCALE",
+   "nhan": "Tuổi",
+   "muc": null,
+   "ma_chu": {},
+   "ma_thieu_so": []
+  },
+  {
+   "cot": "gioitinh",
+   "ten": "gioitinh",
+   "so": true,
+   "muc_do": "NOMINAL",
+   "nhan": "Giới tính",
+   "muc": [
+    "1",
+    "2"
+   ],
+   "ma_chu": {},
+   "ma_thieu_so": []
+  },
+  {
+   "cot": "ma_ban_kham",
+   "ten": "ma_ban_kham",
+   "so": false,
+   "muc_do": "NOMINAL",
+   "nhan": "Bàn khám (cụm)",
+   "muc": [
+    "BK01",
+    "BK02",
+    "BK03",
+    "BK04",
+    "BK05",
+    "BK06",
+    "BK07",
+    "BK08",
+    "BK09",
+    "BK10"
+   ],
+   "ma_chu": {},
+   "ma_thieu_so": []
+  },
+  {
+   "cot": "ngay_trong_tuan",
+   "ten": "ngay_trong_tuan",
+   "so": true,
+   "muc_do": "NOMINAL",
+   "nhan": "Ngày",
+   "muc": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6"
+   ],
+   "ma_chu": {},
+   "ma_thieu_so": []
+  },
+  {
+   "cot": "khunggio_kham",
+   "ten": "khunggio_kham",
+   "so": true,
+   "muc_do": "NOMINAL",
+   "nhan": "Khung giờ",
+   "muc": [
+    "1",
+    "2",
+    "3",
+    "4"
+   ],
+   "ma_chu": {},
+   "ma_thieu_so": []
+  },
+  {
+   "cot": "a1",
+   "ten": "a1",
+   "so": true,
+   "muc_do": "ORDINAL",
+   "nhan": "A1",
+   "muc": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "8",
+    "9"
+   ],
+   "ma_chu": {},
+   "ma_thieu_so": [
+    "8",
+    "9"
+   ]
+  },
+  {
+   "cot": "a2",
+   "ten": "a2",
+   "so": true,
+   "muc_do": "ORDINAL",
+   "nhan": "A2",
+   "muc": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "8",
+    "9"
+   ],
+   "ma_chu": {},
+   "ma_thieu_so": [
+    "8",
+    "9"
+   ]
+  },
+  {
+   "cot": "a3",
+   "ten": "a3",
+   "so": true,
+   "muc_do": "ORDINAL",
+   "nhan": "A3",
+   "muc": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "8",
+    "9"
+   ],
+   "ma_chu": {},
+   "ma_thieu_so": [
+    "8",
+    "9"
+   ]
+  },
+  {
+   "cot": "a4",
+   "ten": "a4",
+   "so": true,
+   "muc_do": "ORDINAL",
+   "nhan": "A4",
+   "muc": [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "8",
+    "9"
+   ],
+   "ma_chu": {},
+   "ma_thieu_so": [
+    "8",
+    "9"
+   ]
+  }
+ ]
+}

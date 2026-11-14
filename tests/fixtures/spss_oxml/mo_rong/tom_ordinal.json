@@ -1,0 +1,127 @@
+{
+ "dac_ta_phan_tich": {
+  "outcome": "g1",
+  "group": "thoigian_cho",
+  "covariates": [
+   "tuoi",
+   "gioitinh"
+  ],
+  "outcome_type": "ordinal",
+  "time": null,
+  "event": null,
+  "cot_cum": "ma_ban_kham",
+  "don_vi_phoi_nhiem": 15.0
+ },
+ "ordinal": {
+  "model": "ordinal_logit_po",
+  "n": 410,
+  "so_muc": 5,
+  "so_quan_sat_theo_muc": {
+   "1.0": 37,
+   "2.0": 51,
+   "3.0": 100,
+   "4.0": 116,
+   "5.0": 106
+  },
+  "canh_bao": [
+   "Số cụm = 10. KTC/p hiệu chỉnh cụm dùng phân phối t với G−1 = 9 bậc tự do (hiệu chỉnh cỡ mẫu nhỏ CR1) thay cho z. Sai số chuẩn hiệu chỉnh cụm (sandwich) vẫn kém tin cậy khi số cụm ít — thống kê viên quyết định có cần hiệu chỉnh cỡ mẫu nhỏ/bootstrap theo cụm hay mô hình hỗn hợp không [CẦN THỐNG KÊ VIÊN]."
+  ],
+  "cluster": {
+   "cot": "ma_ban_kham",
+   "so_cum": 10
+  },
+  "results": [
+   {
+    "variable": "thoigian_cho",
+    "OR_adj": 0.87,
+    "CI_95": [
+     0.802,
+     0.944
+    ],
+    "p": 0.004
+   },
+   {
+    "variable": "tuoi",
+    "OR_adj": 1.015,
+    "CI_95": [
+     1.001,
+     1.029
+    ],
+    "p": 0.0367
+   },
+   {
+    "variable": "gioitinh",
+    "OR_adj": 1.091,
+    "CI_95": [
+     0.869,
+     1.371
+    ],
+    "p": 0.4091
+   }
+  ],
+  "aic": 1242.51,
+  "cov_type": "cluster",
+  "convergence": true,
+  "kiem_gia_dinh_ty_le_odds": [
+   {
+    "nguong": "Y > 1",
+    "OR": {
+     "thoigian_cho": 0.826,
+     "tuoi": 1.028,
+     "gioitinh": 0.875
+    }
+   },
+   {
+    "nguong": "Y > 2",
+    "OR": {
+     "thoigian_cho": 0.851,
+     "tuoi": 1.008,
+     "gioitinh": 1.193
+    }
+   },
+   {
+    "nguong": "Y > 3",
+    "OR": {
+     "thoigian_cho": 0.88,
+     "tuoi": 1.017,
+     "gioitinh": 1.371
+    }
+   },
+   {
+    "nguong": "Y > 4",
+    "OR": {
+     "thoigian_cho": 0.887,
+     "tuoi": 1.016,
+     "gioitinh": 0.745
+    }
+   }
+  ],
+  "brant": {
+   "tong": {
+    "chi2": 15.275,
+    "df": 9,
+    "p": 0.0837
+   },
+   "theo_bien": {
+    "thoigian_cho": {
+     "chi2": 1.182,
+     "df": 3,
+     "p": 0.7573
+    },
+    "tuoi": {
+     "chi2": 4.534,
+     "df": 3,
+     "p": 0.2092
+    },
+    "gioitinh": {
+     "chi2": 9.49,
+     "df": 3,
+     "p": 0.0234
+    }
+   },
+   "canh_bao": [
+    "Kiểm định Brant giả định quan sát độc lập — dữ liệu gom cụm «ma_ban_kham» làm p nhỏ giả; đọc cùng bảng OR theo ngưỡng [CẦN THỐNG KÊ VIÊN]."
+   ]
+  }
+ }
+}
