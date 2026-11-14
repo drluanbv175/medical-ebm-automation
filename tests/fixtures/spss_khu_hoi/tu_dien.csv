@@ -1,0 +1,10 @@
+Variable / Field Name,Field Type,Field Label,"Choices, Calculations, OR Slider Labels",Text Validation Type OR Show Slider Number,Identifier?,Field Annotation
+record_id,text,Mã phiếu (tổng hợp),,,,Tên SPSS: ID.
+tuoi,text,"Câu 2. <b>Tuổi</b>   (năm)",,number,,Tên SPSS: Tuoi.
+chi_so,text,Chỉ số tổng hợp,,number,,
+gioitinh,radio,Giới tính,"1, Nam | 2, Nữ | X, Khác",,,
+hai_long,radio,Mức hài lòng chung,"1, Rất không hài lòng | 2, Không hài lòng | 3, Bình thường | 4, Hài lòng | 5, Rất hài lòng | 9, Không biết",,,
+hut_thuoc,yesno,Hút thuốc lá,,,,
+nghe,dropdown,Nghề nghiệp,"cong_chuc, Công chức | khac, Khác | nong_dan, Nông dân",,,
+ghi,text,Ghi chú ngắn của điều tra viên,,,,
+trieu_chung,checkbox,Triệu chứng,"1, Đau đầu | 2, Khó thở",,,
