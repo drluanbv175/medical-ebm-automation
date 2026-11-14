@@ -1,0 +1,62 @@
+{
+ "n_total": 400,
+ "dac_ta_phan_tich": {
+  "outcome": null,
+  "group": "nhom",
+  "covariates": [
+   "tuoi",
+   "gioitinh"
+  ],
+  "outcome_type": "auto",
+  "time": "thoi_gian",
+  "event": "bien_co",
+  "cot_cum": null
+ },
+ "survival": {
+  "n": 380,
+  "n_events": 284,
+  "time_col": "thoi_gian",
+  "event_col": "bien_co",
+  "group_col": "nhom",
+  "crude": {
+   "HR": 1.879,
+   "CI_95": [
+    1.482,
+    2.384
+   ],
+   "p": 0.0,
+   "concordance": 0.5828
+  },
+  "adjusted": {
+   "HR": 1.865,
+   "CI_95": [
+    1.47,
+    2.366
+   ],
+   "p": 0.0,
+   "concordance": 0.6201
+  },
+  "adjusted_covariates": [
+   "tuoi",
+   "gioitinh"
+  ]
+ },
+ "kaplan_meier": {
+  "groups": {
+   "0": {
+    "n": 205,
+    "n_events": 138,
+    "median_survival": 70.0
+   },
+   "1": {
+    "n": 195,
+    "n_events": 161,
+    "median_survival": 30.0
+   }
+  },
+  "logrank_p": 0.0
+ },
+ "data_lock": {
+  "sha256": "6f9cb72bafec5661e8100ac9bd4c0b8e1b7eb1778a7262c2516207302d296499"
+ }
+}

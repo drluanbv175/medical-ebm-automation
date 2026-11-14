@@ -1,0 +1,52 @@
+{
+ "n_total": 400,
+ "dac_ta_phan_tich": {
+  "outcome": "kq_nhi",
+  "group": "nhom",
+  "covariates": [
+   "tuoi",
+   "gioitinh",
+   "nghe"
+  ],
+  "outcome_type": "binary",
+  "time": null,
+  "event": null,
+  "cot_cum": null
+ },
+ "primary_outcome": {
+  "outcome_type": "binary",
+  "groups": [
+   "0",
+   "1"
+  ],
+  "group_0": {
+   "n": 205,
+   "events": 31,
+   "pct": 15.1
+  },
+  "group_1": {
+   "n": 195,
+   "events": 50,
+   "pct": 25.6
+  },
+  "or_crude": 1.935,
+  "ci_95": [
+   1.175,
+   3.189
+  ],
+  "risk_diff": 0.1052,
+  "risk_diff_ci_95": [
+   0.0267,
+   0.1837
+  ],
+  "p_value": 0.0127,
+  "test": "Chi-square"
+ },
+ "multivariate": {
+  "error": "Pandas data cast to numpy dtype of object. Check input data with np.asarray(data).",
+  "note": "[CẦN BIOSTATISTICIAN — mô hình không hội tụ]"
+ },
+ "data_lock": {
+  "sha256": "6f9cb72bafec5661e8100ac9bd4c0b8e1b7eb1778a7262c2516207302d296499"
+ }
+}

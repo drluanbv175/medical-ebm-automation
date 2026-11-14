@@ -1,0 +1,111 @@
+{
+ "n_total": 400,
+ "dac_ta_phan_tich": {
+  "outcome": "kq_nhi",
+  "group": "nhom",
+  "covariates": [
+   "tuoi",
+   "gioitinh"
+  ],
+  "outcome_type": "binary",
+  "time": null,
+  "event": null,
+  "cot_cum": "ban_kham"
+ },
+ "primary_outcome": {
+  "outcome_type": "binary",
+  "groups": [
+   "0",
+   "1"
+  ],
+  "group_0": {
+   "n": 205,
+   "events": 31,
+   "pct": 15.1
+  },
+  "group_1": {
+   "n": 195,
+   "events": 50,
+   "pct": 25.6
+  },
+  "or_crude": 1.935,
+  "ci_95": [
+   1.175,
+   3.189
+  ],
+  "risk_diff": 0.1052,
+  "risk_diff_ci_95": [
+   0.0267,
+   0.1837
+  ],
+  "p_value": 0.0127,
+  "test": "Chi-square",
+  "cum": {
+   "cot": "ban_kham",
+   "so_cum": 20,
+   "n": 400,
+   "cov_type": "cluster",
+   "canh_bao": [
+    "Số cụm = 20. KTC/p hiệu chỉnh cụm dùng phân phối t với G−1 = 19 bậc tự do (hiệu chỉnh cỡ mẫu nhỏ CR1) thay cho z. Sai số chuẩn hiệu chỉnh cụm (sandwich) vẫn kém tin cậy khi số cụm ít — thống kê viên quyết định có cần hiệu chỉnh cỡ mẫu nhỏ/bootstrap theo cụm hay mô hình hỗn hợp không [CẦN THỐNG KÊ VIÊN]."
+   ],
+   "or_cum": 1.935,
+   "ci_95_cum": [
+    1.252,
+    2.993
+   ],
+   "p_cum": 0.005,
+   "risk_diff_cum": 0.1052,
+   "risk_diff_ci_95_cum": [
+    0.0238,
+    0.1866
+   ],
+   "p_rd_cum": 0.014
+  }
+ },
+ "multivariate": {
+  "model": "logistic",
+  "n": 380,
+  "aic": 376.82,
+  "results": [
+   {
+    "variable": "nhom",
+    "OR_adj": 1.759,
+    "CI_95": [
+     1.152,
+     2.687
+    ],
+    "p": 0.0116
+   },
+   {
+    "variable": "tuoi",
+    "OR_adj": 1.02,
+    "CI_95": [
+     0.995,
+     1.046
+    ],
+    "p": 0.1143
+   },
+   {
+    "variable": "gioitinh",
+    "OR_adj": 1.666,
+    "CI_95": [
+     0.933,
+     2.976
+    ],
+    "p": 0.0812
+   }
+  ],
+  "convergence": true,
+  "cov_type": "cluster",
+  "cluster": {
+   "cot": "ban_kham",
+   "so_cum": 20
+  },
+  "canh_bao": [
+   "Số cụm = 20. KTC/p hiệu chỉnh cụm dùng phân phối t với G−1 = 19 bậc tự do (hiệu chỉnh cỡ mẫu nhỏ CR1) thay cho z. Sai số chuẩn hiệu chỉnh cụm (sandwich) vẫn kém tin cậy khi số cụm ít — thống kê viên quyết định có cần hiệu chỉnh cỡ mẫu nhỏ/bootstrap theo cụm hay mô hình hỗn hợp không [CẦN THỐNG KÊ VIÊN]."
+  ]
+ },
+ "data_lock": {
+  "sha256": "6f9cb72bafec5661e8100ac9bd4c0b8e1b7eb1778a7262c2516207302d296499"
+ }
+}

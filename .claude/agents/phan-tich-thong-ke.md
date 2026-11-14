@@ -111,6 +111,26 @@ khoá dữ liệu phải `xuat-sav` → `cu-phap` sinh lại, không chạy bả
 $T nhap-sav --sav <tệp> --ra <thư mục NGOÀI repo>` ⇒ CSV + từ điển nhãn + từ điển khuôn REDCap, rồi nhập qua cổng tiếp nhận
 `import_real_dataset.py` (cổng đó quét PII theo giá trị). Hướng dẫn: `medical-ebm-automation/docs/CAU-NOI-SPSS.md`.
 
+## 🔁 BƯỚC 0d — KIỂM CHÉO BẰNG R (phần mềm thứ hai, song song SPSS — thêm 14/11/2026, bác sĩ giao)
+
+Máy có R (`python3 medical-ebm-automation/tools/cau_noi_r.py kiem` ⇒ ✓; thiếu gói ⇒ `cai-goi --ap-dung`) thì SAU BƯỚC 0b
+chạy lại CÙNG phân tích bằng R (`Rscript --vanilla`) và đối chiếu từng ước lượng:
+
+```bash
+T=medical-ebm-automation/tools/cau_noi_r.py
+python3 $T cu-phap   --study <mã>   # dữ liệu ĐÃ KHOÁ (SHA-256 khớp manifest) + đặc tả G6 ⇒ exports/<mã>/r/<mã>_phan_tich.R
+python3 $T chay      --study <mã>   # Rscript --vanilla có thời hạn ⇒ G6_r_ket_qua.json (phiên bản R + gói + SHA dữ liệu)
+python3 $T doi-chieu --study <mã>   # ⇒ G6_r_doi_chieu.md/json · mã 0 MỌI dòng khớp · 1 lệch/R lỗi · 2 chưa đo trọn · 3 từ chối
+```
+
+Luật đọc: R tái lập ĐÚNG phương pháp Python ở mọi mục (sandwich CR1 + t(G−1), Cox Efron cùng tập ca, biến giả, Mann–Whitney
+và trung vị KM như scipy/lifelines) ⇒ KHÔNG có «lệch nhỏ»: ✗ LỆCH là lệch thật — tìm nguyên nhân TRƯỚC khi dùng số, ghi
+[CẦN THỐNG KÊ VIÊN], KHÔNG sửa Python cho khớp R; số ca khác nhau luôn là LỆCH; mã 2 / «⚪ Python (hoặc R) KHÔNG ra …» =
+một phía sập mô hình — CHƯA được ghi «tái lập độc lập», thống kê viên xem lỗi. Từ chối (mã 3): dữ liệu không khớp khoá, cột
+định danh (Identifier?=y) hoặc cột không có trong từ điển G5, biến không có trong bộ dữ liệu. Kiểm chéo kỹ thuật — không đổi
+trạng thái G6, không thay G6-HUMAN-01; không có R ⇒ mã 2 (⚪, KHÔNG phải đạt), script `.R` vẫn sinh để chạy tay trong
+R/RStudio. Hướng dẫn: `medical-ebm-automation/docs/CAU-NOI-R.md`.
+
 **Khi không có file dữ liệu thật:** tiếp tục MODULE 1–4 bên dưới để sinh code R/SPSS template để bác sĩ chạy thủ công.
 
 ---

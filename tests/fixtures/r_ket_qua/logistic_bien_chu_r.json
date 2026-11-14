@@ -1,0 +1,121 @@
+{
+ "r_phien_ban": "R version 4.6.2 (2026-10-29)",
+ "goi_phien_ban": {
+  "jsonlite": "2.0.0",
+  "sandwich": "3.1.3",
+  "lmtest": "0.9.40",
+  "survival": "3.8.12",
+  "ordinal": "2026.7.26"
+ },
+ "sha256_du_lieu": "6f9cb72bafec5661e8100ac9bd4c0b8e1b7eb1778a7262c2516207302d296499",
+ "so_ca_doc": 400,
+ "dac_ta": {
+  "outcome": "kq_nhi",
+  "group": "nhom",
+  "outcome_type": "binary",
+  "time": null,
+  "event": null,
+  "cot_cum": null,
+  "covariates": [
+   "tuoi",
+   "gioitinh",
+   "nghe"
+  ]
+ },
+ "loai_ket_cuc": "binary",
+ "ket_qua": {
+  "ket_cuc_chinh": {
+   "loai": "binary",
+   "nhom": [
+    0,
+    1
+   ],
+   "n": [
+    205,
+    195
+   ],
+   "bien_co": [
+    31,
+    50
+   ],
+   "or": 1.93548387096774,
+   "ci": [
+    1.1747217102878,
+    3.18892362503329
+   ],
+   "p_yates": 0.0126918558057368,
+   "p_pearson": 0.00887687058850065
+  },
+  "da_bien": {
+   "mo_hinh": "logistic",
+   "thang": "OR",
+   "n": 380,
+   "he_so": {
+    "nhom": {
+     "uoc_luong": 1.80469451243595,
+     "ci": [
+      1.07372077377122,
+      3.03330471271145
+     ],
+     "p": 0.0258508072740642,
+     "b": 0.590391332273422,
+     "se": 0.264934132087516
+    },
+    "tuoi": {
+     "uoc_luong": 1.01883194285291,
+     "ci": [
+      0.996620007929905,
+      1.04153892107135
+     ],
+     "p": 0.0971329319872114,
+     "b": 0.0186568170404787,
+     "se": 0.0112463975673824
+    },
+    "gioitinh": {
+     "uoc_luong": 1.76041164333261,
+     "ci": [
+      1.04627296722561,
+      2.96198912813236
+     ],
+     "p": 0.0331421790310832,
+     "b": 0.565547669959633,
+     "se": 0.265470885962794
+    },
+    "nghe_cong_chuc": {
+     "uoc_luong": 102825129.340233,
+     "ci": [
+      0,
+      null
+     ],
+     "p": 0.997617941610336,
+     "b": 18.4485403299475,
+     "se": 6179.43863011147
+    },
+    "nghe_khac": {
+     "uoc_luong": 84991966.6037212,
+     "ci": [
+      0,
+      null
+     ],
+     "p": 0.997642535239387,
+     "b": 18.2580672994437,
+     "se": 6179.43863072006
+    },
+    "nghe_nong_dan": {
+     "uoc_luong": 124941523.68238,
+     "ci": [
+      0,
+      null
+     ],
+     "p": 0.997592787219289,
+     "b": 18.6433563752681,
+     "se": 6179.43862967082
+    }
+   }
+  }
+ },
+ "loi": {},
+ "canh_bao": [
+  "cột «nghe» còn 3 ô mang mã thiếu «BTR» — run_stats_analysis.py (pandas) coi đó là GIÁ TRỊ THẬT, R làm y hệt để kiểm chéo; thống kê viên xem lại bước làm sạch G5 [CẦN THỐNG KÊ VIÊN]"
+ ]
+}
