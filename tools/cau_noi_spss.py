@@ -1397,6 +1397,24 @@ def them_bien_phai_sinh(study: str, man: dict, gate: str) -> dict:
     return man2
 
 
+def them_loc(study: str, man: dict, gate: str) -> dict:
+    """F3 (14/11/2026): lượt Python lọc quần thể (dac_ta_phan_tich.loc) ⇒ manifest có khoá `khoi_loc` = cú pháp SPSS lọc
+    Y HỆT (cùng biểu thức, cùng cột ngày; SELECT IF giữ ca = 1) — chèn sau khối biến phái sinh, trước biến giả."""
+    tom = _doc_json(thu_muc_de_tai(study) / f"{gate}_analysis_summary.json")
+    if not ((tom.get("dac_ta_phan_tich") or {}).get("loc")):
+        return man
+    import bien_phai_sinh as BPS  # noqa: PLC0415
+
+    ten_spss = {b["cot"]: (b["ten"], bool(b["so"])) for b in man["bien"] if not b.get("bo")}
+    try:
+        khoi = BPS.khoi_loc_cau_noi(tom, "spss", ten_spss=ten_spss, dang_co={b["ten"] for b in man["bien"]})
+    except (BPS.TuChoi, BPS.LoiCongThuc) as e:
+        raise TuChoi(f"lọc quần thể: {e}") from e
+    man2 = dict(man)
+    man2["khoi_loc"] = khoi
+    return man2
+
+
 def them_bien_gia(man: dict, dt: dict) -> dict:
     """F2 (14/11/2026): biến giả TƯỜNG MINH cho hiệp biến phân loại (dt["hiep_bien_phan_loai"] từ tóm tắt Python) ⇒
     manifest mở rộng (biến giả như biến số trong .sav) + khoá `khoi_bien_gia` = cú pháp COMPUTE chèn sau GET FILE (sau
@@ -1443,6 +1461,7 @@ def dac_ta(args) -> dict:
     # F2: biến giả của hiệp biến phân loại — đúng các mức Python đã dùng (tên hệ số trùng nhau ở cả ba phần mềm)
     bg = tom.get("hiep_bien_phan_loai") or {}
     dt["hiep_bien_phan_loai"] = {c: v for c, v in bg.items() if c in dt["covariates"]}
+    dt["loc"] = tom.get("loc")  # F3: quần thể phân tích của lượt Python (để kiểm lệch đặc tả)
     pl = dt["hiep_bien_phan_loai"]
     dt["covariates_mo_hinh"] = [t for c in dt["covariates"] for t in (pl[c]["ten"] if c in pl else [c])]
     # OR theo MỖI k đơn vị phơi nhiễm (C1a: mỗi 15 phút chờ) — thiếu thì SPSS tính theo mỗi phút ⇒ «lệch» giả
@@ -1510,6 +1529,7 @@ def cu_phap_phan_tich(
         "SET OLANG=ENGLISH TVARS=NAMES TNUMBERS=VALUES.",
         f"GET FILE={dd_spss(sav or man['sav'])}.",
         *([man["khoi_phai_sinh"].rstrip("\n")] if man.get("khoi_phai_sinh") else []),
+        *([man["khoi_loc"].rstrip("\n")] if man.get("khoi_loc") else []),
         *([man["khoi_bien_gia"]] if man.get("khoi_bien_gia") else []),
         f"OMS /SELECT ALL /DESTINATION FORMAT=SPV OUTFILE={dd_spss(thu_muc_kq / (study + '_phan_tich.spv'))}"
         " /TAG='ebm_spv'.",
@@ -1564,11 +1584,10 @@ def cu_phap_phan_tich(
     # Kết cục chính — Poisson (F2) so thô như NHỊ PHÂN, đúng như Python (compare_primary_outcome «binary»)
     if y and g:
         loai_kc = "binary" if loai == "poisson_pr" else loai
-        if loai == "poisson_pr" and len(muc_g or []) != 2:
-            canh_bao.append(f"Poisson: biến nhóm {g} không có đúng 2 mức — bỏ so sánh thô hai nhóm")
+        if loai_kc in ("binary", "continuous") and len(muc_g or []) != 2:
+            # F3: phơi nhiễm liên tục/nhiều mức — Python cũng BỎ so sánh thô hai nhóm (có chủ đích, không phải lỗi)
+            canh_bao.append(f"biến nhóm {g} không có đúng 2 mức — bỏ so sánh thô hai nhóm (như Python)")
         elif loai_kc in ("binary", "continuous"):
-            if len(muc_g or []) != 2:
-                raise TuChoi(f"biến nhóm {g} cần đúng 2 mức (đang có {len(muc_g) if muc_g else '>20'})")
             if loai_kc == "binary":
                 khoi("ket_cuc_chinh", [f"CROSSTABS /TABLES={g} BY {y} /STATISTICS=CHISQ RISK /CELLS=COUNT ROW."])
             else:
@@ -1677,7 +1696,7 @@ def _xoa_ket_qua_cu(d: Path, gate: str) -> None:
 
 def lenh_cu_phap(args) -> int:
     man = _doc_manifest_sav(args.study, can_sav=False)  # máy không có SPSS vẫn sinh cú pháp để chạy tay
-    man = them_bien_phai_sinh(args.study, man, args.gate)
+    man = them_loc(args.study, them_bien_phai_sinh(args.study, man, args.gate), args.gate)
     dt = dac_ta(args)
     man = them_bien_gia(man, dt)
     if not dt["outcome"] and not (dt["time"] and dt["event"]):
@@ -1866,7 +1885,7 @@ def lenh_chay(args) -> int:
     if not sps.exists() or not (kq / "dac_ta.json").exists():
         raise KhongDoDuoc(f"chưa có {sps.name} — chạy `cau_noi_spss.py cu-phap --study {args.study}` trước")
     _xoa_ket_qua_cu(d, args.gate)  # lượt hỏng không được để lại kết quả của lượt trước cho doi-chieu đọc nhầm
-    man = them_bien_phai_sinh(args.study, _doc_manifest_sav(args.study), args.gate)
+    man = them_loc(args.study, them_bien_phai_sinh(args.study, _doc_manifest_sav(args.study), args.gate), args.gate)
     dt = _doc_json(kq / "dac_ta.json")
     man = them_bien_gia(man, dt)  # F2: cùng biến giả như lúc sinh cú pháp (dac_ta.json giữ hiep_bien_phan_loai)
     sav = Path(man["sav"])
@@ -1913,7 +1932,8 @@ def lenh_chay(args) -> int:
             m = next((b.get("muc") for b in man["bien"] if b["cot"] == dt.get("outcome")), None)
             if dt_r.get("outcome_type") in (None, "auto"):
                 dt_r["outcome_type"] = "binary" if m is not None and len(m) == 2 else "continuous"
-            r_kq = chay_r_tham_chieu(man, dt_r, tam / "vao.sav", tam / "r", his=his if tang else None)
+            r_kq = chay_r_tham_chieu(man, dt_r, tam / "vao.sav", tam / "r", his=his if tang else None,
+                                     khoi_r=ma_r_chuan_bi_tham_chieu(args.study, args.gate, man, dt_r))  # fmt: skip
             for f in (tam / "r").iterdir():
                 if f.name in ("r_doi_chieu.R", "r_kq.json"):
                     shutil.copyfile(f, kq / f.name)
@@ -2200,7 +2220,7 @@ def doi_chieu(tom: dict, kq: dict) -> list[dict]:
 def lech_dac_ta(dt_spss: dict, dt_py: dict, tom: dict) -> list[str]:
     """Đặc tả SPSS đã chạy khác đặc tả Python ở đâu (rỗng = trùng)."""
     ra = []
-    for k in ("outcome", "group", "time", "event", "cot_cum"):
+    for k in ("outcome", "group", "time", "event", "cot_cum", "loc"):
         if (dt_spss.get(k) or None) != (dt_py.get(k) or None):
             ra.append(f"{k}: SPSS {dt_spss.get(k)!r} · Python {dt_py.get(k)!r}")
     if sorted(dt_spss.get("covariates") or []) != sorted(dt_py.get("covariates") or []):
@@ -2521,6 +2541,7 @@ def cu_phap_bo_sung(
         "SET MDISPLAY=TABLES.",
         f"GET FILE={dd_spss(sav or man['sav'])}.",
         *([man["khoi_phai_sinh"].rstrip("\n")] if man.get("khoi_phai_sinh") else []),
+        *([man["khoi_loc"].rstrip("\n")] if man.get("khoi_loc") else []),
         *([man["khoi_bien_gia"]] if man.get("khoi_bien_gia") else []),
         f"OMS /SELECT ALL /DESTINATION FORMAT=SPV OUTFILE={dd_spss(thu_muc_kq / (study + '_phan_tich_bo_sung.spv'))}"
         " /TAG='ebm_spv_bs'.",
@@ -2778,6 +2799,7 @@ d <- as.data.frame(zap_labels(read_sav(P$sav, user_na = FALSE)))
 ten_spss <- unlist(P$ten_theo_cot)
 i <- match(names(d), ten_spss)
 names(d) <- ifelse(is.na(i), names(d), names(ten_spss)[i])
+# @@KHOI_CHUAN_BI@@
 hs_ra <- function(est, se, ten) {
   z <- qnorm(0.975); out <- list()
   for (v in ten) if (v %in% names(est) && v %in% names(se)) {
@@ -2866,8 +2888,30 @@ def tim_rscript() -> str | None:
     return env or shutil.which("Rscript")
 
 
-def chay_r_tham_chieu(man: dict, dt: dict, sav: Path, thu_muc: Path, *, his: Path | None, thoi_han: int = 900) -> dict:
-    """Chạy R (clmm/glmer + survey) trên CÙNG tệp .sav ⇒ {hon_hop, trong_so} hoặc {"loi": …}. Không có R ⇒ «loi»."""
+def ma_r_chuan_bi_tham_chieu(study: str, gate: str, man: dict, dt: dict) -> str:
+    """F3 (14/11/2026): R tham chiếu của khối bổ sung đọc .sav (không có biến phái sinh, chưa lọc, chưa có biến giả) —
+    sinh ĐÚNG ba khối như SPSS/Python: biến phái sinh → lọc quần thể → biến giả (dữ liệu R tên `d`). Trước bản vá: số
+    tham chiếu R tính trên dữ liệu CHƯA lọc và cột mã số ⇒ «LỆCH» giả khi SAP có lọc/biến phân loại."""
+    import bien_phai_sinh as BPS  # noqa: PLC0415
+
+    tom = _doc_json(thu_muc_de_tai(study) / f"{gate}_analysis_summary.json")
+    csv_khoa = Path(man.get("nguon_csv") or "")
+    ma = ""
+    if (tom.get("bien_phai_sinh") or {}).get("bien"):
+        ma, _ds, _muc = BPS.khoi_cho_cau_noi(thu_muc_de_tai(study), tom, "r", csv_khoa, bien_d="d")
+    ma += BPS.khoi_loc_cau_noi(tom, "r", bien_d="d")
+    for c, v in (dt.get("hiep_bien_phan_loai") or {}).items():
+        for muc, t in zip(v["muc"], v["ten"]):
+            ma += (f"d[[{json.dumps(t)}]] <- ifelse(is.na(d[[{json.dumps(c)}]]), NA_real_, "
+                   f"as.numeric(d[[{json.dumps(c)}]] == {float(muc)!r}))\n")  # fmt: skip
+    return ma
+
+
+def chay_r_tham_chieu(
+    man: dict, dt: dict, sav: Path, thu_muc: Path, *, his: Path | None, thoi_han: int = 900, khoi_r: str = ""
+) -> dict:
+    """Chạy R (clmm/glmer + survey) trên CÙNG tệp .sav ⇒ {hon_hop, trong_so} hoặc {"loi": …}. Không có R ⇒ «loi».
+    khoi_r = mã chuẩn bị (biến phái sinh · lọc · biến giả — ma_r_chuan_bi_tham_chieu) chèn ngay sau khi đọc .sav."""
     can_hh = bool((dt.get("hon_hop_da_sinh")) and dt.get("cot_cum"))
     can_ts = bool(dt.get("trong_so") and dt.get("trong_so_tang") and his)
     if not (can_hh or can_ts):
@@ -2885,7 +2929,7 @@ def chay_r_tham_chieu(man: dict, dt: dict, sav: Path, thu_muc: Path, *, his: Pat
         "loai": loai,
         "outcome": dt.get("outcome"),
         "group": dt.get("group"),
-        "covariates": list(dt.get("covariates") or []),
+        "covariates": list(dt.get("covariates_mo_hinh") or dt.get("covariates") or []),
         "cot_cum": dt.get("cot_cum"),
         "don_vi_phoi_nhiem": dt.get("don_vi_phoi_nhiem") if loai == "ordinal" else None,
         "hon_hop": can_hh,
@@ -2895,7 +2939,8 @@ def chay_r_tham_chieu(man: dict, dt: dict, sav: Path, thu_muc: Path, *, his: Pat
     }
     (thu_muc / TEP_HAM_TRONG_SO).write_text(TSS.R_HAM, encoding="utf-8", newline="\n")
     (thu_muc / "r_tham_so.json").write_text(json.dumps(tham_so, ensure_ascii=False), encoding="utf-8", newline="\n")
-    (thu_muc / "r_doi_chieu.R").write_text(R_DOI_CHIEU, encoding="utf-8", newline="\n")
+    (thu_muc / "r_doi_chieu.R").write_text(R_DOI_CHIEU.replace("# @@KHOI_CHUAN_BI@@\n", khoi_r), encoding="utf-8",
+                                           newline="\n")  # fmt: skip
     ma, out, err = _chay_lenh(
         [rs, "--vanilla", str(thu_muc / "r_doi_chieu.R"), str(thu_muc / "r_tham_so.json"), str(thu_muc / "r_kq.json")],
         thu_muc=thu_muc,
@@ -3010,7 +3055,7 @@ def doi_chieu_bo_sung(tom: dict, kq: dict, dt: dict, *, r: dict | None = None, t
         elif not hh_sp:
             dong.append(_khong_so(ten_hh, "SPSS thiếu bảng GENLINMIXED (xem nhật ký bổ sung)"))
         else:
-            for v in [dt.get("group"), *(dt.get("covariates") or [])]:
+            for v in [dt.get("group"), *(dt.get("covariates_mo_hinh") or dt.get("covariates") or [])]:  # F3: biến giả
                 a, b = (hh_r.get("he_so") or {}).get(v), (hh_sp.get("he_so") or {}).get(v)
                 if not a or not b:
                     dong.append(_khong_so(f"{ten_hh} — {v}", "không có hệ số cùng tên ở một bên (biến phân loại?)"))

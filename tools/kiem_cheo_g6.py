@@ -40,7 +40,13 @@ for _s in (sys.stdout, sys.stderr):  # Windows cp1252 (BH55/R4)
 TOOLS = Path(__file__).resolve().parent
 BASE = TOOLS.parent
 EXPORTS = BASE / "exports"
-TEP_JSON, TEP_MD = "G6_kiem_cheo.json", "G6_kiem_cheo.md"
+TEP_JSON, TEP_MD = "G6_kiem_cheo.json", "G6_kiem_cheo.md"  # tên của gate G6 (tương thích ngược)
+
+
+def tep_kiem_cheo(gate: str = "G6") -> tuple[str, str]:
+    """F3 (14/11/2026): tên tệp kết quả kiểm chéo THEO GATE — chạy trọn SAP (chay_sap_g6.py) kiểm chéo nhiều phân tích
+    (G6, G6_<mã>…); tên cố định cũ để lượt sau ghi đè kết quả lượt trước."""
+    return f"{gate}_kiem_cheo.json", f"{gate}_kiem_cheo.md"
 CAN_KIEM = "Cần bác sĩ kiểm chứng."
 
 KHONG_AP_DUNG, CHUA_CHAY, CU = "KHONG_AP_DUNG", "CHUA_CHAY", "CU"
@@ -117,7 +123,7 @@ def trang_thai(d: Path, gate: str = "G6") -> dict:
     vt = van_tay(d, gate)
     if vt is None:
         return {"trang_thai": KHONG_AP_DUNG, "nhan": NHAN[KHONG_AP_DUNG], "ly_do": "chưa có kết quả Python G6"}
-    kc = _doc_json(d / TEP_JSON)
+    kc = _doc_json(d / tep_kiem_cheo(gate)[0])
     if not kc:
         return {"trang_thai": CHUA_CHAY, "nhan": NHAN[CHUA_CHAY], "ly_do": "có kết quả Python G6 nhưng chưa kiểm chéo"}
     if kc.get("van_tay") != vt:
@@ -274,6 +280,19 @@ def lenh_chay(args) -> int:
     if vt is None:
         print(f"⚪ chưa có {args.gate}_analysis_summary.json — chạy run_stats_analysis.py (phân tích chính) trước")
         return 2
+    dt = (_doc_json(d / f"{args.gate}_analysis_summary.json").get("dac_ta_phan_tich") or {})
+    if not dt.get("outcome") and not dt.get("time"):
+        # F3 (14/11/2026): lượt chỉ mô tả (vd tỷ lệ Wilson) — hai cầu nối CHƯA có bản kiểm chéo cho dạng này; ghi rõ
+        # «không áp dụng» kèm lý do (trước đây báo «từ chối/lỗi» như thể phân tích hỏng).
+        ket = {"study": args.study, "gate": args.gate, "luc": datetime.now().astimezone().isoformat(timespec="seconds"),
+               "van_tay": vt, "phan_mem": {}, "trang_thai": KHONG_AP_DUNG,
+               "ly_do": "phân tích chỉ mô tả (không có kết cục/thời gian) — chưa có bản kiểm chéo SPSS/R",
+               "disclaimer": CAN_KIEM}  # fmt: skip
+        tj, tm = tep_kiem_cheo(args.gate)
+        (d / tj).write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
+        (d / tm).write_text(_md(args.study, ket), encoding="utf-8", newline="\n")
+        print(f"⚪ {args.gate}: {ket['ly_do']}")
+        return 0
     phan_mem: dict[str, dict] = {}
     if args.chi in (None, "spss"):
         print("\n══════ SPSS ══════")
@@ -293,15 +312,16 @@ def lenh_chay(args) -> int:
     if van_tay(d, args.gate) != vt:  # tóm tắt Python bị ghi lại GIỮA lượt — kết quả không còn gắn với đầu vào nào
         ket["trang_thai"] = LOI
         ket["canh_bao"] = "kết quả Python G6 đổi trong lúc kiểm chéo — chạy lại"
-    (d / TEP_JSON).write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
-    (d / TEP_MD).write_text(_md(args.study, ket), encoding="utf-8", newline="\n")
+    tj, tm = tep_kiem_cheo(args.gate)
+    (d / tj).write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
+    (d / tm).write_text(_md(args.study, ket), encoding="utf-8", newline="\n")
     print(f"\n══════ KIỂM CHÉO G6 — {args.study}: {NHAN.get(ket['trang_thai'], ket['trang_thai'])} ══════")
     for ten, x in phan_mem.items():
         print(
             f"  {ten.upper():5} {NHAN.get(x['trang_thai'], x['trang_thai'])}"
             + (f" — {x['ly_do']}" if x.get("ly_do") else "")
         )
-    print(f"✓ {d / TEP_MD}\n{CAN_KIEM}")
+    print(f"✓ {d / tm}\n{CAN_KIEM}")
     tt = ket["trang_thai"]
     return {LECH: 1, LOI: 1, TU_CHOI: 3, KHONG_DO_DUOC: 2}.get(tt, 0)
 

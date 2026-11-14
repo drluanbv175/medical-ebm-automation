@@ -1305,6 +1305,57 @@ def khoi_cho_cau_noi(
     return ma, ds, muc
 
 
+# ─────────────────────────────── lọc quần thể phân tích (F3) ───────────────────────────────
+
+TEN_LOC = "ebm_loc"
+
+
+def loc_python(df, study_dir: Path, study: str, bieu_thuc: str):
+    """F3 (14/11/2026): quần thể phân tích theo SAP (vd «PhieuHopLe == 1», «vao_truoc_0107 == 1») — biểu thức viết
+    bằng CHÍNH ngôn ngữ công thức, giữ ca có giá trị = 1 (thiếu ⇒ loại, như SELECT IF của SPSS). Gọi SAU khi đã tính
+    biến phái sinh mà biểu thức dùng. Trả (mặt nạ, danh sách cột ngày đã dùng — cầu nối dùng đúng danh sách này)."""
+    cay = phan_tich(bieu_thuc)
+    cot = cot_cua_cay(cay)
+    vang = [c for c in cot if c not in df.columns]
+    if vang:
+        raise TuChoi("biểu thức lọc dùng cột không có trong dữ liệu (kể cả biến phái sinh): " + ", ".join(vang))
+    try:
+        ngay = doc_danh_muc_tu_dien(study_dir, study).ngay
+    except KhongDoDuoc:
+        ngay = doan_cot_ngay(df)
+    v = tinh_cay(cay, {c: cot_so(df, c, c in ngay) for c in cot}, df.index)
+    return (v == 1), sorted(c for c in cot if c in ngay)
+
+
+def khoi_loc_cau_noi(
+    tom: dict, dang: str, *, ten_spss: dict[str, tuple[str, bool]] | None = None, dang_co: set[str] | None = None,
+    bien_d: str = "D",
+) -> str:
+    """Khối lọc quần thể cho cầu nối (chèn SAU khối biến phái sinh, TRƯỚC biến giả): cùng biểu thức + cùng cột ngày
+    với lượt Python (khoá dac_ta_phan_tich.loc / loc_cot_ngay). Không lọc ⇒ chuỗi rỗng."""
+    dt = (tom or {}).get("dac_ta_phan_tich") or {}
+    bt = dt.get("loc")
+    if not bt:
+        return ""
+    cay = phan_tich(bt)
+    ngay = set(dt.get("loc_cot_ngay") or [])
+    ps = set(((tom or {}).get("bien_phai_sinh") or {}).get("bien") or {})  # biến phái sinh đã tính ở khối trước
+    if dang == "spss":
+        s = SinhSpss(ten_spss or {}, ngay, (dang_co or set()) | {TEN_LOC})
+        e = s.bt(cay, ps)
+        dong = [f"* Lọc quần thể phân tích (SAP): {_chu_thich_spss(bt)}.", *s.dong, f"COMPUTE {TEN_LOC} = {e}.",
+                f"SELECT IF ({TEN_LOC} = 1).", "EXECUTE."]  # fmt: skip
+        dong.append("DELETE VARIABLES " + " ".join([*s.tam, TEN_LOC]) + ".")
+        return "\n".join(dong) + "\n"
+    if dang == "r":
+        s = SinhR(ngay, bien_d)
+        e = s.bt(cay, ps)
+        return "\n".join([f"# ── Lọc quần thể phân tích (SAP): {chuan_cong_thuc(bt)} ──", R_HAM.strip(), ".n <- list()",
+                          *s.chuan_bi, f".loc <- as.numeric({e})",
+                          f"{bien_d} <- {bien_d}[!is.na(.loc) & .loc == 1, , drop = FALSE]"]) + "\n"  # fmt: skip
+    raise ValueError(dang)
+
+
 # ─────────────────────────────── dòng lệnh ───────────────────────────────
 
 
