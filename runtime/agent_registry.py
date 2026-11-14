@@ -125,8 +125,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 24/10/2026 (bác sĩ gỡ plugin aipoch): dieu-phoi-nghien-cuu + _PLUGIN-ROUTING-CONTRACT bỏ worker aipoch; bản cặp y hệt
 # gốc; vẫn 64.
 # 12/11/2026: thang-diem-nguy-co chép bản chuẩn của repo gốc (#316, 08/11 — 7 máy tính lý do khám ngoại trú); vẫn 64.
+# 14/11/2026 (PR #227 — dạy agent luật cổng G10 mới A12_DESCRIPTION_MISMATCH_RECEIPT): kiem-chung-trich-dan,
+# dieu-phoi-g10, dieu-phoi-nghien-cuu — bản cặp phải chép sang repo gốc (PR cặp, bác sĩ mở sau khi gộp); vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "44b72b384b7bff6a9408d894210b80227f6dd0a81590546170da0bed05c83fa1"
+    "363624174eb8ddbbd86630bc07d1f071182370d5e769016d6fa99719248f893c"
 )
 
 MINIMUM_AGENT_COUNT = 64

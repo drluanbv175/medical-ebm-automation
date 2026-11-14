@@ -74,6 +74,10 @@ chưa xử lý đều bị chặn (`EXIT_BLOCKED`).
 
 File PHẢI chứa, theo đúng chữ (để máy đọc được, không diễn giải khác đi):
 - Bảng trạng thái từng trích dẫn (mẫu ở mục 4).
+- Mục `## 1. Bằng chứng máy-kiểm` (đứng TRƯỚC tiêu đề `## 2`; 14/11/2026): sau MỖI lần chạy `check_citations.py`, dòng
+  bảng rút bài + metadata DỰNG bằng `python tools/kiem_a12_khop_bien_nhan.py --study <mã> --goi-y` — KHÔNG gõ số PMID /
+  thời điểm / `all_clean` bằng tay; chạy lại lệnh (không `--goi-y`) tới khi 🟢 KHỚP (mã 0). LỆCH biên nhận ⇒
+  `run_g10_assemble.py` CHẶN lắp mới (mã 2, `needs_input` `A12_DESCRIPTION_MISMATCH_RECEIPT`).
 - **Đúng một trong ba** dòng kết luận:
   - Sạch hoàn toàn (không còn 🔴 nào chưa xử lý): `KẾT QUẢ CỔNG A12: ĐÃ XÁC MINH TOÀN BỘ TRÍCH DẪN — KHÔNG CÒN 🔴`
   - Còn 🔴 chưa xử lý: `KẾT QUẢ CỔNG A12: CÒN 🔴 CHƯA XỬ LÝ — CHƯA ĐẠT`
