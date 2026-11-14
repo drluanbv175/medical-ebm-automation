@@ -1,0 +1,96 @@
+{
+ "n_total": 400,
+ "dac_ta_phan_tich": {
+  "outcome": "diem",
+  "group": "nhom",
+  "covariates": [
+   "tuoi",
+   "gioitinh"
+  ],
+  "outcome_type": "continuous",
+  "time": null,
+  "event": null,
+  "cot_cum": "ban_kham"
+ },
+ "primary_outcome": {
+  "outcome_type": "continuous",
+  "groups": [
+   "0",
+   "1"
+  ],
+  "group_0": {
+   "n": 205,
+   "mean": 49.995,
+   "sd": 9.383
+  },
+  "group_1": {
+   "n": 195,
+   "mean": 54.503,
+   "sd": 8.372
+  },
+  "md_crude": 4.508,
+  "effect": "MD=-4.508 (95%CI -6.254–-2.762)",
+  "p_value": 0.0,
+  "test": "Welch's t-test",
+  "cum": {
+   "cot": "ban_kham",
+   "so_cum": 20,
+   "n": 400,
+   "cov_type": "cluster",
+   "canh_bao": [
+    "Số cụm = 20. KTC/p hiệu chỉnh cụm dùng phân phối t với G−1 = 19 bậc tự do (hiệu chỉnh cỡ mẫu nhỏ CR1) thay cho z. Sai số chuẩn hiệu chỉnh cụm (sandwich) vẫn kém tin cậy khi số cụm ít — thống kê viên quyết định có cần hiệu chỉnh cỡ mẫu nhỏ/bootstrap theo cụm hay mô hình hỗn hợp không [CẦN THỐNG KÊ VIÊN]."
+   ],
+   "md_cum": 4.508,
+   "md_ci_95_cum": [
+    2.69,
+    6.327
+   ],
+   "p_cum": 0.0001
+  }
+ },
+ "multivariate": {
+  "model": "linear",
+  "n": 380,
+  "r_squared": 0.1423,
+  "results": [
+   {
+    "variable": "nhom",
+    "beta": 4.6862,
+    "CI_95": [
+     2.561,
+     6.8113
+    ],
+    "p": 0.0002
+   },
+   {
+    "variable": "tuoi",
+    "beta": 0.1907,
+    "CI_95": [
+     0.1215,
+     0.26
+    ],
+    "p": 0.0
+   },
+   {
+    "variable": "gioitinh",
+    "beta": -2.3902,
+    "CI_95": [
+     -3.9873,
+     -0.793
+    ],
+    "p": 0.0055
+   }
+  ],
+  "cov_type": "cluster",
+  "cluster": {
+   "cot": "ban_kham",
+   "so_cum": 20
+  },
+  "canh_bao": [
+   "Số cụm = 20. KTC/p hiệu chỉnh cụm dùng phân phối t với G−1 = 19 bậc tự do (hiệu chỉnh cỡ mẫu nhỏ CR1) thay cho z. Sai số chuẩn hiệu chỉnh cụm (sandwich) vẫn kém tin cậy khi số cụm ít — thống kê viên quyết định có cần hiệu chỉnh cỡ mẫu nhỏ/bootstrap theo cụm hay mô hình hỗn hợp không [CẦN THỐNG KÊ VIÊN]."
+  ]
+ },
+ "data_lock": {
+  "sha256": "6f9cb72bafec5661e8100ac9bd4c0b8e1b7eb1778a7262c2516207302d296499"
+ }
+}

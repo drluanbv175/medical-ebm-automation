@@ -1,0 +1,207 @@
+{
+ "n_total": 400,
+ "dac_ta_phan_tich": {
+  "outcome": "hai_long",
+  "group": "cho_phut",
+  "covariates": [
+   "tuoi",
+   "gioitinh",
+   "nghe"
+  ],
+  "outcome_type": "ordinal",
+  "time": null,
+  "event": null,
+  "cot_cum": null
+ },
+ "ordinal": {
+  "model": "ordinal_logit_po",
+  "n": 380,
+  "so_muc": 5,
+  "so_quan_sat_theo_muc": {
+   "1": 62,
+   "2": 86,
+   "3": 81,
+   "4": 74,
+   "5": 77
+  },
+  "canh_bao": [],
+  "results": [
+   {
+    "variable": "cho_phut",
+    "OR_adj": 1.01,
+    "CI_95": [
+     0.916,
+     1.114
+    ],
+    "p": 0.8354
+   },
+   {
+    "variable": "tuoi",
+    "OR_adj": 1.011,
+    "CI_95": [
+     0.995,
+     1.027
+    ],
+    "p": 0.1817
+   },
+   {
+    "variable": "gioitinh",
+    "OR_adj": 0.853,
+    "CI_95": [
+     0.595,
+     1.225
+    ],
+    "p": 0.3897
+   },
+   {
+    "variable": "nghe_cong_chuc",
+    "OR_adj": 0.55,
+    "CI_95": [
+     0.098,
+     3.092
+    ],
+    "p": 0.4977
+   },
+   {
+    "variable": "nghe_khac",
+    "OR_adj": 0.397,
+    "CI_95": [
+     0.071,
+     2.23
+    ],
+    "p": 0.294
+   },
+   {
+    "variable": "nghe_nong_dan",
+    "OR_adj": 0.493,
+    "CI_95": [
+     0.088,
+     2.76
+    ],
+    "p": 0.421
+   }
+  ],
+  "aic": 1233.34,
+  "cov_type": "nonrobust",
+  "convergence": true,
+  "kiem_gia_dinh_ty_le_odds": [
+   {
+    "nguong": "Y > 1",
+    "OR": {
+     "cho_phut": 0.977,
+     "tuoi": 1.007,
+     "gioitinh": 0.642,
+     "nghe_cong_chuc": 0.0,
+     "nghe_khac": 0.0,
+     "nghe_nong_dan": 0.0
+    }
+   },
+   {
+    "nguong": "Y > 2",
+    "OR": {
+     "cho_phut": 1.028,
+     "tuoi": 1.01,
+     "gioitinh": 0.796,
+     "nghe_cong_chuc": 0.0,
+     "nghe_khac": 0.0,
+     "nghe_nong_dan": 0.0
+    }
+   },
+   {
+    "nguong": "Y > 3",
+    "OR": {
+     "cho_phut": 1.007,
+     "tuoi": 1.012,
+     "gioitinh": 1.003,
+     "nghe_cong_chuc": 0.377,
+     "nghe_khac": 0.236,
+     "nghe_nong_dan": 0.321
+    }
+   },
+   {
+    "nguong": "Y > 4",
+    "OR": {
+     "cho_phut": 1.019,
+     "tuoi": 1.011,
+     "gioitinh": 0.937,
+     "nghe_cong_chuc": 2373101096.796,
+     "nghe_khac": 1338623369.241,
+     "nghe_nong_dan": 1983390928.159
+    }
+   }
+  ],
+  "brant": {
+   "loi": "Logistic tại ngưỡng Y > 1 không hội tụ/tách hoàn toàn — không tính Brant."
+  },
+  "don_vi_phoi_nhiem": {
+   "cot": "cho_phut",
+   "don_vi": 15.0,
+   "dien_giai": "OR cho MỖI 15 đơn vị «cho_phut»"
+  }
+ },
+ "sensitivity_linear": {
+  "model": "linear_sensitivity",
+  "cov_type": "HC3",
+  "n": 380,
+  "r_squared": 0.0145,
+  "results": [
+   {
+    "variable": "cho_phut",
+    "beta": 0.0079,
+    "CI_95": [
+     -0.0674,
+     0.0833
+    ],
+    "p": 0.8368
+   },
+   {
+    "variable": "tuoi",
+    "beta": 0.0078,
+    "CI_95": [
+     -0.0048,
+     0.0204
+    ],
+    "p": 0.2258
+   },
+   {
+    "variable": "gioitinh",
+    "beta": -0.1236,
+    "CI_95": [
+     -0.405,
+     0.1579
+    ],
+    "p": 0.3895
+   },
+   {
+    "variable": "nghe_cong_chuc",
+    "beta": -0.6152,
+    "CI_95": [
+     -1.5081,
+     0.2777
+    ],
+    "p": 0.1769
+   },
+   {
+    "variable": "nghe_khac",
+    "beta": -0.8754,
+    "CI_95": [
+     -1.7624,
+     0.0116
+    ],
+    "p": 0.0531
+   },
+   {
+    "variable": "nghe_nong_dan",
+    "beta": -0.7017,
+    "CI_95": [
+     -1.5865,
+     0.1831
+    ],
+    "p": 0.1201
+   }
+  ]
+ },
+ "data_lock": {
+  "sha256": "6f9cb72bafec5661e8100ac9bd4c0b8e1b7eb1778a7262c2516207302d296499"
+ }
+}
