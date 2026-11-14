@@ -138,8 +138,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 14/11/2026 (gộp #236 vào #234/#237): phan-tich-thong-ke = bản master repo gốc (0c SPSS + bổ sung + 0d R); vẫn 64.
 # 14/11/2026 (gói tự động hoá A–D): dieu-phoi-g6 + phan-tich-thong-ke — lệnh kiểm chéo một cửa kiem_cheo_g6.py;
 # vẫn 64.
+# 14/11/2026 (tầng 5, việc N): trich-xuat-y-van + tham-dinh-dau-ra — dạy đọc 🟠 kiểm chéo ngữ nghĩa ④-bis/④-ter
+# (K1–K4 + K3b/K4b, CẢNH BÁO), cặp y hệt repo gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "4d0d59771d58660b3ab0b764327bebdcf4ecfa2b2258b7a75d89b78d4b812214"
+    "707334c679290766f492b34b70ffbdca22f4b79bde178b5bfd430ac5cf67f228"
 )
 
 MINIMUM_AGENT_COUNT = 64
