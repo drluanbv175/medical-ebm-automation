@@ -13,6 +13,7 @@ from __future__ import annotations
 import copy
 import json
 import sys
+from datetime import datetime
 from pathlib import Path
 from unittest.mock import patch
 
@@ -100,10 +101,25 @@ def test_g1_06_thiet_ke_phai_hop_loai_cau_hoi_g0(tmp_path):
     assert _row(_evaluate(_build_case(tmp_path / "b", meta=meta)), "G1-AUTO-02d")["status"] == "PASS"
 
 
+class _GioCoDinh(datetime):
+    """Đồng hồ CỐ ĐỊNH cho run_g1_auto trong test.
+
+    Artifact G1 mang dấu giờ tới PHÚT (`run_date = datetime.now().strftime("%Y-%m-%d %H:%M")`). Test gọi sinh hai lượt
+    mà hai lượt rơi vào hai phút khác nhau thì nội dung khác nhau ⇒ nhánh G1-03 «báo cáo kiểu cũ, không có mốc lúc
+    sinh» (so NGUYÊN nội dung) sao lưu nhầm tệp không ai sửa. Đo 14/11/2026: CI Windows lượt 43568814638 hỏng
+    test_g1_03_bao_cao_kieu_cu_van_sao_luu_ban_sua_tay khi lượt 1 lúc 07:19, lượt 2 đúng 07:20:00 (bản sao lưu
+    `.bak-20261114-072000`). Sửa ở FIXTURE (CLAUDE.md §0.8), không nới assertion, không đổi mã cổng."""
+
+    @classmethod
+    def now(cls, tz=None):
+        return cls(2026, 10, 4, 9, 30, 0, tzinfo=tz)
+
+
 def _chay_main(tmp_path, monkeypatch, meta_g0=None, them_args=(), g0_luu=None, g0_ghi_de=None):
     """Chạy run_g1_auto.main() thật (mạng giả). Gọi lại trên cùng tmp_path = SINH LẠI (giữ nguyên G0 đã có).
 
-    g0_luu: trạng thái chất lượng G0 LƯU trong checkpoint (để thử «bản lưu PASS nhưng chấm sống chưa đạt»)."""
+    g0_luu: trạng thái chất lượng G0 LƯU trong checkpoint (để thử «bản lưu PASS nhưng chấm sống chưa đạt»).
+    Đồng hồ của run_g1_auto cố định (_GioCoDinh) — mọi lượt sinh trong một test mang cùng dấu giờ."""
     study = "TEST-G1-MAIN"
     d = tmp_path / "exports" / study
     if not d.exists():
@@ -120,6 +136,7 @@ def _chay_main(tmp_path, monkeypatch, meta_g0=None, them_args=(), g0_luu=None, g
                                                encoding="utf-8", newline="\n")
     monkeypatch.chdir(tmp_path)
     monkeypatch.setattr(G1, "_REPO_ROOT", tmp_path)  # 06/10/2026: G0–G2 neo exports theo _REPO_ROOT, không theo cwd
+    monkeypatch.setattr(G1, "datetime", _GioCoDinh)
     monkeypatch.setattr(sys, "argv", ["run_g1_auto.py", "--study", study, *them_args])
     CS.xoa_dem()
     with patch.object(G1, "search_for_effect_sizes", return_value=[]), \
