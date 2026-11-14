@@ -806,11 +806,13 @@ def test_chay_that_python_den_r(ten, tmp_path, monkeypatch):
     pytest.importorskip("lifelines")
     import run_stats_analysis as RSA
 
-    locked = {"g2_status": "LOCKED", "g4_status": "LOCKED", "g5_status": "LOCKED"}
+    locked = {"g2_status": "LOCKED", "g5_status": "LOCKED"}
     monkeypatch.setattr(RSA, "BASE", tmp_path)
     monkeypatch.setattr(S, "EXPORTS", tmp_path / "exports")
     monkeypatch.setattr(RSA, "_load_checkpoint", lambda study, gate: dict(locked))
     monkeypatch.setattr(RSA, "_ledger_approved", lambda *a, **k: True)
+    # N1 (14/11/2026): G6 xác định G4 đã khoá theo TRẠNG THÁI SỐNG (_g4_khoa_song), không đọc g4_status.
+    monkeypatch.setattr(RSA, "_g4_khoa_song", lambda study: (True, "giả lập: G4 khoá sống"))
     monkeypatch.setattr(RSA.GC, "g2_quality_contract_satisfied", lambda *a, **k: True)
     monkeypatch.setattr(RSA.GC, "resolve_design_code", lambda *a, **k: ("cohort", None))
     monkeypatch.setattr(RSA.G5Q, "evaluate_study", lambda *a, **k: {"status": RSA.G5Q.STATUS_LOCKED})
