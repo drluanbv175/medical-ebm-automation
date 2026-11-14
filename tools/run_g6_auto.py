@@ -1149,10 +1149,14 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
         return {}
 
     g2 = _load_cp("G2")
-    g4 = _load_cp("G4")
     g5 = _load_cp("G5")
     g2_checkpoint_locked = _is_locked(g2.get("g2_status", g2.get("G2_STATUS")))
-    g4_checkpoint_locked = _is_locked(g4.get("g4_status", g4.get("G4_STATUS")))
+    # VÁ 14/11/2026 (N1): G4 theo TRẠNG THÁI SỐNG — G4 chấm trực tiếp PASS_G4_SAP_LOCKED (cùng hàm G5-AUTO-05 và cổng
+    # G6 dùng), KHÔNG đọc g4_status (approve_gate không bao giờ ghi trường đó). Không đo được ⇒ chưa khoá.
+    try:
+        g4_song = _GC.g4_quality_contract_satisfied("__STUDY__") is True
+    except Exception:
+        g4_song = False
     g5_checkpoint_locked = _is_locked(g5.get("g5_status", g5.get("G5_STATUS")))
     g2_ledger_ok = _GC.ledger_approved(
         "G2", "__STUDY__", Path("exports") / "__STUDY__" / "G2_A3_ETHICS_PACKAGE___STUDY__.md")
@@ -1172,7 +1176,8 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
         and g2_ledger_ok
         and g2_quality_ok
     )
-    g4_locked = (g4_checkpoint_locked or i_confirm_sap) and g4_ledger_ok
+    # Cờ --i-confirm-sap-locked chỉ thay phần chấm sống G4 — chữ ký sổ cái khớp băm SAP hiện tại LUÔN bắt buộc.
+    g4_locked = (g4_song or i_confirm_sap) and g4_ledger_ok
     g5_quality_ok = _GC.g5_quality_contract_satisfied("__STUDY__")
     g5_locked = (
         (g5_checkpoint_locked or i_confirm_sap)
@@ -1189,14 +1194,17 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
         sys.exit(1)
     if not (g4_locked and g5_locked):
         print("✗ DỪNG: G4 (SAP) hoặc G5 (khóa DB) chưa xác nhận LOCKED bằng phê duyệt thật cho đề tài __STUDY__.")
-        print(f"   G4 checkpoint: {'✅ LOCKED' if g4_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
+        print(f"   G4 trạng thái sống: {'✅ ĐÃ KHOÁ' if g4_song else '⚠️ CHƯA khoá/không đo được'}"
               f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g4_ledger_ok else '⚠️ thiếu/không khớp'}")
         print(f"   G5 checkpoint: {'✅ LOCKED' if g5_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
               f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g5_ledger_ok else '⚠️ thiếu/không khớp'}")
         print("   Không chạy phân tích xác nhận trên dữ liệu chưa khóa (chống p-hacking/HARKing).")
         print("   Cần bác sĩ TỰ TAY ghi phê duyệt thật bằng tools/approve_gate.py (không nhờ agent chạy hộ).")
-        print("   --i-confirm-sap-locked chỉ thay được checkpoint-file bị mất — KHÔNG thay được ledger.")
+        print("   --i-confirm-sap-locked chỉ thay phần chấm sống G4/checkpoint G5 — KHÔNG thay được ledger.")
         sys.exit(1)
+    if i_confirm_sap and not g4_song:
+        print("⚠️  GHI ĐÈ CÓ CHỦ Ý (--i-confirm-sap-locked): G4 KHÔNG được xác nhận khoá theo trạng thái sống; "
+              "chạy tiếp nhờ chữ ký sổ cái G4 khớp băm SAP hiện tại — người truyền cờ chịu trách nhiệm.")
 
 
 
@@ -1646,10 +1654,14 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
         return {}
 
     g2 = _load_cp("G2")
-    g4 = _load_cp("G4")
     g5 = _load_cp("G5")
     g2_checkpoint_locked = _is_locked(g2.get("g2_status", g2.get("G2_STATUS")))
-    g4_checkpoint_locked = _is_locked(g4.get("g4_status", g4.get("G4_STATUS")))
+    # VÁ 14/11/2026 (N1): G4 theo TRẠNG THÁI SỐNG — G4 chấm trực tiếp PASS_G4_SAP_LOCKED (cùng hàm G5-AUTO-05 và cổng
+    # G6 dùng), KHÔNG đọc g4_status (approve_gate không bao giờ ghi trường đó). Không đo được ⇒ chưa khoá.
+    try:
+        g4_song = _GC.g4_quality_contract_satisfied("__STUDY__") is True
+    except Exception:
+        g4_song = False
     g5_checkpoint_locked = _is_locked(g5.get("g5_status", g5.get("G5_STATUS")))
     g2_ledger_ok = _GC.ledger_approved(
         "G2", "__STUDY__", Path("exports") / "__STUDY__" / "G2_A3_ETHICS_PACKAGE___STUDY__.md")
@@ -1669,7 +1681,8 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
         and g2_ledger_ok
         and g2_quality_ok
     )
-    g4_locked = (g4_checkpoint_locked or i_confirm_sap) and g4_ledger_ok
+    # Cờ --i-confirm-sap-locked chỉ thay phần chấm sống G4 — chữ ký sổ cái khớp băm SAP hiện tại LUÔN bắt buộc.
+    g4_locked = (g4_song or i_confirm_sap) and g4_ledger_ok
     g5_quality_ok = _GC.g5_quality_contract_satisfied("__STUDY__")
     g5_locked = (
         (g5_checkpoint_locked or i_confirm_sap)
@@ -1686,14 +1699,17 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
         sys.exit(1)
     if not (g4_locked and g5_locked):
         print("✗ DỪNG: G4 (SAP) hoặc G5 (khóa DB) chưa xác nhận LOCKED bằng phê duyệt thật cho đề tài __STUDY__.")
-        print(f"   G4 checkpoint: {'✅ LOCKED' if g4_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
+        print(f"   G4 trạng thái sống: {'✅ ĐÃ KHOÁ' if g4_song else '⚠️ CHƯA khoá/không đo được'}"
               f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g4_ledger_ok else '⚠️ thiếu/không khớp'}")
         print(f"   G5 checkpoint: {'✅ LOCKED' if g5_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
               f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g5_ledger_ok else '⚠️ thiếu/không khớp'}")
         print("   Không chạy phân tích xác nhận trên dữ liệu chưa khóa (chống p-hacking/HARKing).")
         print("   Cần bác sĩ TỰ TAY ghi phê duyệt thật bằng tools/approve_gate.py (không nhờ agent chạy hộ).")
-        print("   --i-confirm-sap-locked chỉ thay được checkpoint-file bị mất — KHÔNG thay được ledger.")
+        print("   --i-confirm-sap-locked chỉ thay phần chấm sống G4/checkpoint G5 — KHÔNG thay được ledger.")
         sys.exit(1)
+    if i_confirm_sap and not g4_song:
+        print("⚠️  GHI ĐÈ CÓ CHỦ Ý (--i-confirm-sap-locked): G4 KHÔNG được xác nhận khoá theo trạng thái sống; "
+              "chạy tiếp nhờ chữ ký sổ cái G4 khớp băm SAP hiện tại — người truyền cờ chịu trách nhiệm.")
 
 
 
@@ -2162,9 +2178,14 @@ _SENSITIVITY_TEMPLATE = (
     "            except (ValueError, OSError):\n"
     "                return {}\n"
     "        return {}\n"
-    "    g2 = _load_cp(\'G2\'); g4 = _load_cp(\'G4\'); g5 = _load_cp(\'G5\')\n"
+    "    g2 = _load_cp(\'G2\'); g5 = _load_cp(\'G5\')\n"
     "    g2_cp = _is_locked(g2.get(\'g2_status\', g2.get(\'G2_STATUS\')))\n"
-    "    g4_cp = _is_locked(g4.get(\'g4_status\', g4.get(\'G4_STATUS\')))\n"
+    "    # Va 14/11/2026 (N1): G4 theo TRANG THAI SONG (G4 cham truc tiep PASS_G4_SAP_LOCKED), KHONG doc g4_status\n"
+    "    # (approve_gate khong bao gio ghi). Khong do duoc => chua khoa.\n"
+    "    try:\n"
+    "        g4_song = _GC.g4_quality_contract_satisfied('__STUDY__') is True\n"
+    "    except Exception:\n"
+    "        g4_song = False\n"
     "    g5_cp = _is_locked(g5.get(\'g5_status\', g5.get(\'G5_STATUS\')))\n"
     "    g2_ledger = _GC.ledger_approved(\n"
     "        \"G2\", \"__STUDY__\", _Path(\'exports\') / \'__STUDY__\' / \'G2_A3_ETHICS_PACKAGE___STUDY__.md\')\n"
@@ -2176,7 +2197,7 @@ _SENSITIVITY_TEMPLATE = (
     "        g2, _GC.load_study_meta(_Path('exports') / '__STUDY__'),\n"
     "        study='__STUDY__', out_dir=_Path('exports') / '__STUDY__')\n"
     "    g2_locked = (g2_cp or i_confirm_irb) and g2_ledger and g2_quality\n"
-    "    g4_locked = (g4_cp or i_confirm_sap) and g4_ledger\n"
+    "    g4_locked = (g4_song or i_confirm_sap) and g4_ledger\n"
     "    g5_quality = _GC.g5_quality_contract_satisfied('__STUDY__')\n"
     "    g5_locked = (g5_cp or i_confirm_sap) and g5_ledger and g5_quality\n"
     "    if not g2_locked:\n"
@@ -2184,7 +2205,10 @@ _SENSITIVITY_TEMPLATE = (
     "                         \'--i-confirm-irb-approved chi thay checkpoint-file, KHONG thay duoc ledger.\')\n"
     "    if not (g4_locked and g5_locked):\n"
     "        raise SystemExit(\'DUNG: G4 (SAP) hoac G5 (khoa DB) chua xac nhan LOCKED bang phe duyet that (chu ky). \'\n"
-    "                         \'--i-confirm-sap-locked chi thay checkpoint-file, KHONG thay duoc ledger.\')\n"
+    "                         \'--i-confirm-sap-locked chi thay phan cham song G4/checkpoint G5, KHONG thay duoc ledger.\')\n"
+    "    if i_confirm_sap and not g4_song:\n"
+    "        print(\'CANH BAO - GHI DE CO CHU Y (--i-confirm-sap-locked): G4 KHONG duoc xac nhan khoa theo trang thai \'\n"
+    "              \'song; chay tiep nho chu ky so cai G4 khop bam SAP hien tai.\')\n"
     "\n"
     "\n"
     "def _require_locked_dataset(data_arg):\n"
@@ -2414,10 +2438,14 @@ def _check_sap_db_locked(i_confirm_sap, i_confirm_irb=False):
         return {}
 
     g2 = _load_cp('G2')
-    g4 = _load_cp('G4')
     g5 = _load_cp('G5')
     g2_cp = _is_locked(g2.get('g2_status', g2.get('G2_STATUS')))
-    g4_cp = _is_locked(g4.get('g4_status', g4.get('G4_STATUS')))
+    # Va 14/11/2026 (N1): G4 theo TRANG THAI SONG (G4 cham truc tiep PASS_G4_SAP_LOCKED), KHONG doc g4_status
+    # (approve_gate khong bao gio ghi). Khong do duoc => chua khoa.
+    try:
+        g4_song = _GC.g4_quality_contract_satisfied("__STUDY__") is True
+    except Exception:
+        g4_song = False
     g5_cp = _is_locked(g5.get('g5_status', g5.get('G5_STATUS')))
     g2_ledger = _GC.ledger_approved(
         "G2", "__STUDY__", _Path('exports') / '__STUDY__' / 'G2_A3_ETHICS_PACKAGE___STUDY__.md')
@@ -2429,7 +2457,7 @@ def _check_sap_db_locked(i_confirm_sap, i_confirm_irb=False):
         g2, _GC.load_study_meta(_Path('exports') / '__STUDY__'),
         study='__STUDY__', out_dir=_Path('exports') / '__STUDY__')
     g2_locked = (g2_cp or i_confirm_irb) and g2_ledger and g2_quality
-    g4_locked = (g4_cp or i_confirm_sap) and g4_ledger
+    g4_locked = (g4_song or i_confirm_sap) and g4_ledger
     g5_quality = _GC.g5_quality_contract_satisfied("__STUDY__")
     g5_locked = (g5_cp or i_confirm_sap) and g5_ledger and g5_quality
     if not g2_locked:
@@ -2437,7 +2465,10 @@ def _check_sap_db_locked(i_confirm_sap, i_confirm_irb=False):
                           '--i-confirm-irb-approved chi thay checkpoint-file, KHONG thay duoc ledger.')
     if not (g4_locked and g5_locked):
         raise SystemExit('DUNG: G4 (SAP) hoac G5 (khoa DB) chua xac nhan LOCKED bang phe duyet that (chu ky). '
-                          '--i-confirm-sap-locked chi thay checkpoint-file, KHONG thay duoc ledger.')
+                          '--i-confirm-sap-locked chi thay phan cham song G4/checkpoint G5, KHONG thay duoc ledger.')
+    if i_confirm_sap and not g4_song:
+        print('CANH BAO - GHI DE CO CHU Y (--i-confirm-sap-locked): G4 KHONG duoc xac nhan khoa theo trang thai '
+              'song; chay tiep nho chu ky so cai G4 khop bam SAP hien tai.')
 
 
 

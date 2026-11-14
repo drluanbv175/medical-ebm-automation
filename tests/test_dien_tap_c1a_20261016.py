@@ -310,12 +310,15 @@ def test_dien_tap_c1a(monkeypatch):
     if "G6R" in cong:  # phân tích chính chạy THẬT trên dữ liệu mô phỏng đã khoá (đường Python)
         import glob  # noqa: PLC0415
         khoa = sorted(glob.glob(str(OUT / "**" / "*locked*.csv"), recursive=True))
+        # N1 (14/11/2026): bỏ --i-confirm-sap-locked — cờ này chỉ để vượt lỗi G6 đòi g4_status (approve_gate không
+        # ghi); nay G6 đọc trạng thái SỐNG của G4 nên G4 ký thật phải tự qua. Giữ --i-confirm-irb-approved: G2 ngoài
+        # phạm vi N1, chưa diễn tập lại để chứng minh bỏ được.
         bien_ban["buoc"].append(("G6 phân tích chính (Python, ordinal + SE cụm)", _chay([
             "tools/run_stats_analysis.py", "--study", STUDY, "--data", khoa[-1] if khoa else "KHONG_CO_BAN_KHOA",
             "--outcome", "g1", "--outcome-type", "ordinal", "--cot-cum", "ma_ban_kham", "--group", "thoigian_cho",
             "--covariates", "tuoi,gioitinh,noicutru,cobhyt,lydokham,khunggio_kham,ngay_trong_tuan,"
                             "suckhoe_tudanhgia,duoc_dung_bacsi",
-            "--i-confirm-sap-locked", "--i-confirm-irb-approved"])))
+            "--i-confirm-irb-approved"])))
         bien_ban["buoc"].append(("G6 chấm sau phân tích", _chay(["tools/g6_quality_gate.py", "--study", STUDY])))
     if "G10" in cong:  # biên nhận A12 phải ký bằng khoá của lượt này (bản sao mang biên nhận ký khoá thật)
         import re as _re  # noqa: PLC0415
