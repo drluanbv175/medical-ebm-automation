@@ -8,6 +8,9 @@ Công cụ này nằm giữa intake/pseudonymization/de-identification và data 
 - Chỉ tự động hóa các thao tác an toàn: trim whitespace, chuẩn hóa mã missing.
 - Không tự sửa giá trị lâm sàng/phương pháp mơ hồ; chỉ tạo query log mở.
 - Data lock sẽ tự chặn nếu query log còn open.
+- Tôn trọng Branching Logic của từ điển REDCap (15/11/2026, N2) bằng ĐÚNG bộ đánh giá của công cụ nhập Excel
+  (`nhap_lieu_excel.danh_gia_logic`): trường bị nhánh ẩn mà trống ⇒ không sinh query thiếu; bị ẩn mà có giá trị ⇒
+  query `value_when_branch_hidden`; biểu thức không đánh giá được ⇒ giữ hành vi cũ + cảnh báo trong báo cáo.
 
 Ví dụ:
   python3 tools/clean_research_dataset.py --study KKB-HAI-LONG-2026 \\
@@ -27,7 +30,7 @@ import sys
 import sys as _sys_r4
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
@@ -157,7 +160,10 @@ def _rules_cua_dong(raw: Dict[str, Any]) -> List[Dict[str, Any]]:
                  if re.sub(r"[^a-z0-9]+", "", str(k).lower()) == "fieldtype"), "")
     if kieu != "checkbox":
         return [rule]
-    con = [dict(rule, name=f"{rule['name']}___{ma}", type="category", allowed=["0", "1"], required=False)
+    # Cột con thừa hưởng Branching Logic của trường gốc (REDCap ẩn cả nhóm ô chọn cùng lúc — như nhap_lieu_excel);
+    # `checkbox_of` đánh dấu cột con để ô «0» dưới nhánh ẩn KHÔNG bị coi là «có giá trị» (quy ước REDCap).
+    con = [dict(rule, name=f"{rule['name']}___{ma}", type="category", allowed=["0", "1"], required=False,
+                checkbox_of=rule["name"])
            for ma in rule.get("allowed") or [] if re.fullmatch(r"[A-Za-z0-9_-]+", str(ma))]
     return [rule, *con]
 
@@ -233,6 +239,14 @@ def _normalise_rule(raw: Dict[str, Any]) -> Optional[Dict[str, Any]]:
             or normalized.get("identifier")
         ),
         "date_format": str(normalized.get("date_format") or "%Y-%m-%d").strip(),
+        # N2 (15/11/2026): «Branching Logic (Show field only if...)» chuẩn hoá thành
+        # «branching_logic_show_field_only_if»; tên cột API REDCap là «branching_logic». Bản cũ không đọc khoá này ⇒
+        # mọi trường «chỉ hiện khi» bị kiểm «Required Field?» như luôn hiện.
+        "branching": str(_first_declared(
+            normalized.get("branching_logic_show_field_only_if"),
+            normalized.get("branching_logic"),
+            normalized.get("branching"),
+        ) or "").strip(),
     }
     return rule
 
@@ -388,12 +402,61 @@ def _detect_id_column(columns: List[str], rules: Dict[str, Dict[str, Any]],
     return None
 
 
+BO_DANH_GIA_NHANH = "nhap_lieu_excel.danh_gia_logic"
+
+
+def _bo_danh_gia_nhanh() -> Tuple[Optional[Callable[[str, Dict[str, str]], bool]], Tuple[type, ...], Optional[str]]:
+    """(hàm đánh giá, lớp lỗi «không hỗ trợ», lý do không nạp được) của bộ đánh giá Branching Logic DÙNG CHUNG.
+
+    N2 (15/11/2026, giả lập RCT lần 2): bộ làm sạch từng bỏ qua Branching Logic ⇒ 170 query «thiếu bắt buộc» giả
+    (34 người mất theo dõi × 5 trường «chỉ hiện khi theo dõi được») trong khi công cụ nhập Excel đọc đúng nhánh ⇒
+    hai công cụ cùng dây chuyền mâu thuẫn. Dùng ĐÚNG `nhap_lieu_excel.danh_gia_logic` — KHÔNG viết bộ phân tích
+    thứ hai (hai bộ sẽ lệch nhau theo thời gian). Nạp muộn (lazy) để lock/pseudonymize import mô-đun này không trả
+    thêm chi phí. Nạp hỏng ⇒ fail-safe: mọi biểu thức coi là «không đánh giá được» (giữ hành vi cũ + cảnh báo),
+    tuyệt đối không coi là «ẩn» (ẩn = bớt query)."""
+    try:
+        import nhap_lieu_excel as NLE  # noqa: PLC0415
+    except Exception as exc:  # noqa: BLE001 — mọi lỗi nạp đều phải về hành vi cũ, không làm sập bộ làm sạch
+        return None, (), f"không nạp được bộ đánh giá logic dùng chung ({BO_DANH_GIA_NHANH}): {type(exc).__name__}"
+    return NLE.danh_gia_logic, (NLE.LogicKhongHo,), None
+
+
+def _dong_cho_logic(row: Dict[str, Any], columns: List[str]) -> Dict[str, str]:
+    """Giá trị một hàng để đánh giá Branching Logic: CHỈ gọt khoảng trắng, GIỮ NGUYÊN mã thiếu (BTR, 998…).
+
+    Cùng góc nhìn với công cụ nhập Excel trên CÙNG tệp CSV (mã thiếu là chuỗi thật) ⇒ hai công cụ ra cùng trạng thái
+    nhánh. Chiều an toàn: nếu quy mã thiếu về trống trước khi đánh giá, «[tuoi] >= 65» với tuoi=998 sẽ thành SAI ⇒
+    ẩn ⇒ bớt query; giữ nguyên thì không ẩn thêm ngoài phép đánh giá chữ-như-chữ. Kèm bí danh tên cột chuẩn hoá
+    (chữ thường, bỏ dấu) để tiêu đề viết hoa vẫn khớp «[ten_bien]»."""
+    dong: Dict[str, str] = {}
+    for col in columns:
+        dong[col] = " ".join(str(row.get(col) or "").strip().split())
+    for col in columns:
+        dong.setdefault(RDI._normalize_header(col), dong[col])
+    return dong
+
+
 def _validate_rows(columns: List[str], rows: List[Dict[str, str]],
                    rules: Dict[str, Dict[str, Any]],
                    id_column: Optional[str],
-                   required_columns: List[str]) -> List[Dict[str, Any]]:
+                   required_columns: List[str],
+                   *,
+                   logic_rows: Optional[List[Dict[str, str]]] = None,
+                   branching_stats: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+    """Sinh query từ luật dictionary.
+
+    logic_rows (N2, 15/11/2026): hàng dùng đánh giá Branching Logic (xem `_dong_cho_logic`); vắng ⇒ dùng `rows`.
+    branching_stats: dict do người gọi truyền vào để nhận thống kê nhánh (trường có logic, số ô bắt buộc trống không
+    sinh query vì nhánh ẩn, số query «có giá trị khi nhánh ẩn», trường không đánh giá được + lý do + số hàng)."""
     issues: List[Dict[str, Any]] = []
     normalised_columns = {RDI._normalize_header(col): col for col in columns}
+    thong_ke: Dict[str, Any] = branching_stats if branching_stats is not None else {}
+    thong_ke.setdefault("fields_with_logic", [])
+    thong_ke.setdefault("required_missing_suppressed", 0)
+    thong_ke.setdefault("value_when_hidden", 0)
+    thong_ke.setdefault("khong_danh_gia_duoc", {})
+    co_logic = any(str(r.get("branching") or "").strip() for r in rules.values())
+    danh_gia, loi_khong_ho, ly_do_khong_nap = _bo_danh_gia_nhanh() if co_logic else (None, (), None)
 
     # VÁ 04/10/2026 (soát từng cổng, G5-03): cột KHÔNG có trong dictionary từng bị bỏ qua im lặng («if not rule:
     # continue») ⇒ không luật range/category nào được áp mà bộ dữ liệu vẫn sẵn sàng khoá (tuoi_nam=450 lọt vì
@@ -434,21 +497,54 @@ def _validate_rows(columns: List[str], rows: List[Dict[str, str]],
                 else:
                     seen_ids[value] = row_idx
 
+        logic_row = logic_rows[row_idx - 1] if logic_rows is not None else row
         for col in columns:
             value = str(row.get(col) or "")
             rule = rules.get(RDI._normalize_header(col))
             if not rule:
                 continue
-            if rule.get("required") and value == "":
+            # N2: trạng thái nhánh — True (hiện / không có logic), False (ẩn), None (không đánh giá được ⇒ hành vi cũ).
+            hien_thi: Optional[bool] = True
+            bieu_thuc = str(rule.get("branching") or "").strip()
+            if bieu_thuc and col != id_column:  # REDCap: trường mã bản ghi không có nhánh (như nhap_lieu_excel)
+                if col not in thong_ke["fields_with_logic"]:
+                    thong_ke["fields_with_logic"].append(col)
+                ly_do: Optional[str] = ly_do_khong_nap
+                if danh_gia is not None:
+                    try:
+                        hien_thi = bool(danh_gia(bieu_thuc, logic_row))
+                    except loi_khong_ho as exc:  # cú pháp ngoài tập con / biến vắng — thông điệp chỉ chứa biểu thức
+                        ly_do = str(exc)
+                    except Exception as exc:  # noqa: BLE001 — lỗi lạ của bộ đánh giá cũng về hành vi cũ
+                        ly_do = f"lỗi bộ đánh giá: {type(exc).__name__}"
+                if ly_do is not None:
+                    # Fail-safe: không đánh giá được thì KHÔNG coi là ẩn (ẩn = bớt query) — giữ hành vi cũ.
+                    hien_thi = None
+                    muc = thong_ke["khong_danh_gia_duoc"].setdefault(col, {"ly_do": ly_do, "so_hang": 0})
+                    muc["so_hang"] += 1
+            if value == "":
+                if rule.get("required"):
+                    if hien_thi is False:
+                        # Trường bị nhánh ẩn: trống là ĐÚNG (REDCap không cho nhập) — không phải dữ liệu thiếu.
+                        thong_ke["required_missing_suppressed"] += 1
+                        continue
+                    issues.append(_issue(
+                        "missing_required_value",
+                        col,
+                        row_idx,
+                        "Biến bắt buộc bị thiếu; không tự điền.",
+                    ))
+                continue
+            # Ô chọn nhiều trống được ghi 0 (quy ước REDCap) — «0» dưới nhánh ẩn KHÔNG phải «có giá trị».
+            if hien_thi is False and not (rule.get("checkbox_of") and value == "0"):
+                thong_ke["value_when_hidden"] += 1
                 issues.append(_issue(
-                    "missing_required_value",
+                    "value_when_branch_hidden",
                     col,
                     row_idx,
-                    "Biến bắt buộc bị thiếu; không tự điền.",
+                    f"Có giá trị dù Branching Logic «{bieu_thuc}» đang ẩn trường này; đối chiếu phiếu gốc — "
+                    "không tự xoá, không lưu giá trị.",
                 ))
-                continue
-            if value == "":
-                continue
 
             dtype = str(rule.get("type") or "text").lower()
             if dtype in {"number", "numeric", "float", "int", "integer"}:
@@ -551,6 +647,23 @@ def _nap_giai_quyet(path: Optional[Path]) -> Tuple[Dict[Tuple[str, str, str], Di
         hop_le[khoa] = {"resolution": ma, "ly_do": str(r.get("ly_do")).strip(),
                         "owner_ref": str(r.get("owner_ref")).strip(), "resolved_at": str(r.get("resolved_at")).strip()}
     return hop_le, loi
+
+
+def _tom_tat_nhanh(stats: Dict[str, Any], row_count: int) -> Dict[str, Any]:
+    """Khối `branching_logic` của báo cáo làm sạch — không chứa giá trị dữ liệu (lý do chỉ trích biểu thức từ điển)."""
+    khong = dict(stats.get("khong_danh_gia_duoc") or {})
+    return {
+        "evaluator": BO_DANH_GIA_NHANH,
+        "fields_with_logic": list(stats.get("fields_with_logic") or []),
+        "required_missing_suppressed": int(stats.get("required_missing_suppressed") or 0),
+        "value_when_hidden_queries": int(stats.get("value_when_hidden") or 0),
+        "khong_danh_gia_duoc": khong,
+        "canh_bao": [
+            f"{col}: Branching Logic không đánh giá được ở {muc['so_hang']}/{row_count} hàng ({muc['ly_do']}) — giữ "
+            "hành vi cũ: trường bắt buộc trống vẫn sinh query, không kiểm «có giá trị khi nhánh ẩn»."
+            for col, muc in khong.items()
+        ],
+    }
 
 
 def _write_query_log(path: Path, issues: List[Dict[str, Any]]) -> Path:
@@ -702,6 +815,7 @@ def clean_dataset(study: str, data_path: Path, *,
 
     action_counts: Dict[str, int] = {}
     validation_issues: List[Dict[str, Any]] = []
+    branching_stats: Dict[str, Any] = {}
     loi_giai_quyet: List[str] = []
     clean_dataset_path: Optional[Path] = None
     query_log_path: Optional[Path] = None
@@ -750,7 +864,9 @@ def clean_dataset(study: str, data_path: Path, *,
         detected_id_column = _detect_id_column(
             columns, rules, id_column or dictionary.get("id_column"))
         validation_issues = _validate_rows(
-            columns, clean_rows, rules, detected_id_column, merged_required)
+            columns, clean_rows, rules, detected_id_column, merged_required,
+            logic_rows=[_dong_cho_logic(row, columns) for row in rows],
+            branching_stats=branching_stats)
         giai_quyet, loi_giai_quyet = _nap_giai_quyet(query_resolutions_path)
         for item in validation_issues:
             r = giai_quyet.get((item["type"], item.get("column") or "", str(item.get("row") or "")))
@@ -853,6 +969,8 @@ def clean_dataset(study: str, data_path: Path, *,
             issue_type: sum(1 for item in validation_issues if item["type"] == issue_type)
             for issue_type in sorted({item["type"] for item in validation_issues})
         },
+        # N2 (15/11/2026): bằng chứng kiểm toán vì sao số query «thiếu bắt buộc» ít hơn số ô trống.
+        "branching_logic": _tom_tat_nhanh(branching_stats, len(rows)),
         "blocker": blocker,
         "ready_for_lock": status == CLEAN_READY_STATUS,
         "rules": [
@@ -861,6 +979,8 @@ def clean_dataset(study: str, data_path: Path, *,
             "Không xóa dòng/biến nếu chưa có protocol hoặc query resolution.",
             "Query log phải không còn open trước khi khóa dữ liệu.",
             "Report/query log không lưu giá trị PII hoặc giá trị bất thường thô.",
+            "Branching Logic đánh giá bằng bộ dùng chung với công cụ nhập Excel: nhánh ẩn + trống ⇒ không query thiếu; "
+            "nhánh ẩn + có giá trị ⇒ query value_when_branch_hidden; không đánh giá được ⇒ giữ hành vi cũ + cảnh báo.",
         ],
     }
     report_path = _write_json(out_dir / REPORT_NAME, report)
@@ -907,6 +1027,15 @@ def main() -> int:
             queries=report["open_query_count"],
         )
     )
+    nhanh = report.get("branching_logic") or {}
+    if nhanh.get("fields_with_logic"):
+        print(
+            f"Branching Logic: {len(nhanh['fields_with_logic'])} trường có logic; "
+            f"{nhanh.get('required_missing_suppressed', 0)} ô bắt buộc trống do nhánh ẩn (không phải thiếu); "
+            f"{nhanh.get('value_when_hidden_queries', 0)} query «có giá trị khi nhánh ẩn»."
+        )
+    for canh_bao in nhanh.get("canh_bao") or []:
+        print(f"⚠ {canh_bao}")
     if report["status"] == CLEAN_READY_STATUS:
         print(f"clean_dataset={report['clean_dataset_path']}")
         print(f"query_log={report['query_log']}")
