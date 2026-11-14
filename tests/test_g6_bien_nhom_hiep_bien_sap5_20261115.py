@@ -64,9 +64,9 @@ def _sap(sap5: str = _SAP5_RCT) -> str:
             "### §12 ALPHA + POWER\n\n- **Alpha (two-sided):** 0.05  \n")
 
 
-def _do(tmp_path: Path, rows: list) -> dict:
+def _do(tmp_path: Path, rows: list, design_code=None) -> dict:
     csv_path, _ = G5.generate_csv("T", tmp_path, rows)
-    return G6.detect_variables_from_redcap(csv_path)
+    return G6.detect_variables_from_redcap(csv_path, design_code)
 
 
 def _ten_goc(v: dict) -> dict:
@@ -138,7 +138,8 @@ def test_sap5_chua_dien_thi_khong_doi_gi(tmp_path):
     v = _do(tmp_path, _HANG_RCT)
     sap5 = "- **Biến độc lập đưa vào:** [CẦN THỐNG KÊ VIÊN ĐIỀN — ví dụ: nhom + tuoi, gioi]  \n"
     dt = G6.doc_bien_sap_5(_sap(sap5), _ten_goc(v))
-    assert dt == {"bien_phan_nhom": None, "hiep_bien": None, "mo_ho": [], "nguon": None}, \
+    assert dt == {"bien_phan_nhom": None, "nguon_nhom": None, "hiep_bien": None, "mo_ho": [], "nhom_khong_nhan": [],
+                  "bo_qua_phu": [], "nguon": None}, \
         "câu ví dụ BÊN TRONG nhãn chưa điền không được đọc thành danh sách đã chốt"
 
 
@@ -174,17 +175,148 @@ def test_ap_sap5_chi_neu_bien_nhom_thi_khong_ghi_de_bang_danh_sach_rong(tmp_path
     assert v["covariates"] == ["tuoi"], "danh sách rỗng ⇒ khuôn rơi về «age + sex + bmi» — không được ghi đè"
 
 
+# ── (3b) Sửa theo thẩm định PR #260 (15/11/2026) ─────────────────────────────────────────────────────────────────────
+
+_TEN_RCT = {t: t for t in ("nhom", "kiem_soat_t6", "tuoi", "gioi", "ha_tt_nen", "so_thuoc_nen", "dtd", "ngay_nn",
+                           "tang_nn", "record_id")}
+
+
+def _v(**kw) -> dict:
+    v = {"exposure": "nhom", "outcome": "kiem_soat_t6", "time_col": None, "covariates": ["tuoi", "gioi"],
+         "cluster_col": None, "detection_log": []}
+    v.update(kw)
+    return v
+
+
+def test_tham_dinh_1_ten_nhom_dang_cong_khong_co_trong_dictionary_thi_khong_nhan_danh_sach():
+    """Vấn đề VỪA: «nhom_sai + tuoi, gioi» với `nhom_sai` không có trong dictionary — bản cũ bỏ LẶNG LẼ tên nhóm rồi vẫn
+    nhận `tuoi, gioi`. Nay tên nhóm lạ là một mục lạ ⇒ cả danh sách không được nhận + cảnh báo nêu đúng tên."""
+    sap = _sap("- **Biến độc lập đưa vào:** nhom_sai + tuoi, gioi, ha_tt_nen  \n")
+    dt = G6.doc_bien_sap_5(sap, _TEN_RCT)
+    assert dt["bien_phan_nhom"] is None and dt["hiep_bien"] is None, dt
+    assert dt["mo_ho"][:1] == ["nhom_sai"] and dt["nhom_khong_nhan"] == ["nhom_sai"]
+    v = _v(exposure="exposure")
+    G6.ap_bien_sap_5(v, sap, _TEN_RCT)
+    assert v["exposure"] == "exposure" and v["covariates"] == ["tuoi", "gioi"], "fail-closed: giữ biến dò được"
+    canh_bao = [d for d in v["detection_log"] if "nhom_sai" in d]
+    assert any("biến phân nhóm" in d and "KHÔNG khớp" in d for d in canh_bao), v["detection_log"]
+    assert not any(d.startswith("✅") for d in v["detection_log"]), "không được có dòng ✅ khi SAP lệch dictionary"
+
+
+def test_tham_dinh_1_dong_exposure_chinh_ten_la_thi_canh_bao_khong_bo_qua():
+    sap = _sap("- **Exposure chính:** `can_thiep_sms` (biến nhánh)  \n"
+               "- **Biến điều chỉnh bắt buộc (forced-in):** `tuoi`, `gioi`  \n")
+    dt = G6.doc_bien_sap_5(sap, _TEN_RCT)
+    assert dt["bien_phan_nhom"] is None and dt["nhom_khong_nhan"] == ["can_thiep_sms"]
+    assert dt["hiep_bien"] == ["tuoi", "gioi"], "danh sách hiệp biến hợp lệ vẫn được nhận"
+    v = _v(exposure="exposure")
+    G6.ap_bien_sap_5(v, sap, _TEN_RCT)
+    assert v["exposure"] == "exposure"
+    assert any("«can_thiep_sms»" in d and "KHÔNG khớp đúng MỘT tên biến" in d for d in v["detection_log"])
+
+
+def test_tham_dinh_1_dong_tuong_minh_thang_dang_cong_va_tra_muc_ve_danh_sach():
+    sap = _sap("- **Biến độc lập đưa vào:** tuoi + gioi, ha_tt_nen  \n- **Biến phân nhóm:** `nhom`  \n")
+    dt = G6.doc_bien_sap_5(sap, _TEN_RCT)
+    assert (dt["bien_phan_nhom"], dt["nguon_nhom"]) == ("nhom", "tuong_minh")
+    assert dt["hiep_bien"] == ["tuoi", "gioi", "ha_tt_nen"], "mục trước «+» không phải biến nhóm ⇒ là hiệp biến"
+
+
+def test_tham_dinh_1_nhan_chi_hiep_bien_dang_cong_khong_suy_bien_nhom():
+    dt = G6.doc_bien_sap_5(_sap("- **Hiệp biến hiệu chỉnh:** tuoi + gioi + ha_tt_nen  \n"), _TEN_RCT)
+    assert dt["bien_phan_nhom"] is None and dt["hiep_bien"] == ["tuoi", "gioi", "ha_tt_nen"]
+
+
+def test_tham_dinh_1_dang_cong_mau_thuan_bien_nhom_that_cua_dictionary_thi_khong_doan():
+    sap = _sap("- **Biến độc lập đưa vào:** tuoi + gioi, ha_tt_nen  \n")
+    v = _v(covariates=["gioi"])
+    G6.ap_bien_sap_5(v, sap, _TEN_RCT)
+    assert v["exposure"] == "nhom" and v["covariates"] == ["gioi"], v["detection_log"]
+    assert any("GỢI Ý `tuoi`" in d for d in v["detection_log"])
+
+
+def test_tham_dinh_2_dong_mo_hinh_do_nhay_dung_truoc_khong_thanh_mo_hinh_chinh():
+    """Vấn đề 2: nhãn bị bóc ngoặc trước khi so ⇒ «Hiệp biến hiệu chỉnh (mô hình độ nhạy)» đứng trước bị nhận làm mô
+    hình CHÍNH. Nay xét mô hình phụ trên nhãn ĐỦ."""
+    sap = _sap("- **Hiệp biến hiệu chỉnh (mô hình độ nhạy):** tuoi, gioi, ha_tt_nen, dtd  \n"
+               "- **Biến độc lập đưa vào:** nhom + tuoi, gioi, ha_tt_nen, so_thuoc_nen  \n")
+    dt = G6.doc_bien_sap_5(sap, _TEN_RCT)
+    assert dt["hiep_bien"] == ["tuoi", "gioi", "ha_tt_nen", "so_thuoc_nen"], dt
+    assert dt["nguon"] == "bien doc lap dua vao" and dt["bo_qua_phu"]
+
+
+@pytest.mark.parametrize("nhan", ["Hiệp biến hiệu chỉnh (phân tích thăm dò)", "Covariates (sensitivity model)",
+                                  "Biến đưa vào mô hình phụ", "Hiệp biến hiệu chỉnh (phân tích nhóm con)"])
+def test_tham_dinh_2_chi_co_mo_hinh_phu_thi_giu_bien_do_va_canh_bao(nhan):
+    sap = _sap(f"- **{nhan}:** tuoi, gioi, dtd  \n")
+    dt = G6.doc_bien_sap_5(sap, _TEN_RCT)
+    assert dt["hiep_bien"] is None and dt["bo_qua_phu"], dt
+    v = _v()
+    G6.ap_bien_sap_5(v, sap, _TEN_RCT)
+    assert v["covariates"] == ["tuoi", "gioi"] and any("mô hình PHỤ" in d for d in v["detection_log"])
+
+
+def test_tham_dinh_2_phu_luc_va_forced_in_trong_ngoac_khong_bi_coi_la_mo_hinh_phu():
+    sap = _sap("- **Biến điều chỉnh bắt buộc (forced-in, theo DAG ở Phụ lục D):** tuoi, gioi, ha_tt_nen  \n")
+    assert G6.doc_bien_sap_5(sap, _TEN_RCT)["hiep_bien"] == ["tuoi", "gioi", "ha_tt_nen"]
+
+
+def test_tham_dinh_3_doi_bien_nhom_theo_sap_thi_bo_khoi_hiep_bien_do_duoc():
+    """Vấn đề 3: SAP đổi biến nhóm, danh sách hiệp biến văn xuôi ⇒ hiệp biến dò được giữ nguyên và có thể chứa chính
+    biến nhóm mới (công thức trùng số hạng). Nay bỏ biến nhóm khỏi hiệp biến."""
+    sap = _sap("- **Exposure chính:** `dtd`  \n- **Biến độc lập đưa vào:** tuổi, giới và huyết áp nền  \n")
+    v = _v(exposure="exposure", covariates=["tuoi", "dtd"])
+    G6.ap_bien_sap_5(v, sap, _TEN_RCT)
+    assert v["exposure"] == "dtd" and v["covariates"] == ["tuoi"], v
+
+
+@pytest.mark.parametrize("vai", ["outcome", "time_col", "cluster_col"])
+@pytest.mark.parametrize("dong", ["- **Biến độc lập đưa vào:** {x} + tuoi, gioi  \n",
+                                  "- **Exposure chính:** `{x}`  \n"])
+def test_tham_dinh_6_bien_nhom_sap_trung_vai_khac_thi_khong_thay(vai, dong):
+    """Vấn đề 6: đột biến bỏ chặn `nhom != outcome` từng không bị test nào bắt. Biến nhóm SAP trùng kết cục/biến thời
+    gian/biến cụm ⇒ không thay (exposure dự phòng không phải biến đã biết nên đường «dạng +» cũng đi tới chặn này)."""
+    x = {"outcome": "kiem_soat_t6", "time_col": "ngay_nn", "cluster_col": "tang_nn"}[vai]
+    v = _v(exposure="exposure", time_col="ngay_nn", cluster_col="tang_nn")
+    G6.ap_bien_sap_5(v, _sap(dong.format(x=x)), _TEN_RCT)
+    assert v["exposure"] == "exposure", v["detection_log"]
+    assert any(f"`{x}` là biến phân nhóm nhưng khuôn đang dùng nó làm" in d for d in v["detection_log"])
+
+
+@pytest.mark.parametrize("muc, thiet_ke, la_nhom", [
+    ("Phân bố theo nhóm tuổi", None, False),       # «phân bố» (distribution) ≠ «phân bổ» (allocation)
+    ("Phan bo nhom", None, False),                 # không dấu ⇒ mơ hồ ⇒ chỉ RCT
+    ("Phan bo nhom", "rct", True),
+    ("Phân nhóm nguy cơ", None, False),
+    ("Phân nhóm nguy cơ", "cohort", False),
+    ("Phân nhóm can thiệp", "rct", True),
+    ("Phân bổ ngẫu nhiên", None, True),            # «Phân bổ» còn dấu ⇒ không mơ hồ
+    ("Ngẫu nhiên hoá", "cohort", False),           # thiết kế quan sát ⇒ tắt hẳn đường dò theo mục
+    ("Ngẫu nhiên hoá", "cross_sectional", False),
+    ("Ngẫu nhiên hoá", "rct", True),
+])
+def test_tham_dinh_4_muc_phan_bo_phan_nhom_theo_dau_va_thiet_ke(tmp_path, muc, thiet_ke, la_nhom):
+    hang = [_hang("record_id", "Hành chính"),
+            _hang("nhom_x", muc, kieu="radio", nhan="Nhóm", lua_chon="1, A | 2, B"),
+            _hang("y", "Kết cục chính", kieu="radio", lua_chon="0, Không | 1, Có")]
+    v = _do(tmp_path, hang, thiet_ke)
+    assert (v["exposure"] == "nhom_x") is la_nhom, (muc, thiet_ke, v["exposure"], v["detection_log"])
+
+
 # ── (4) Đầu–cuối: run_g6_auto.main() trên đề tài RCT dựng tay ⇒ script dùng biến THẬT + hiệp biến SAP §5───────────────
 
-def _de_tai_rct(tmp_path: Path, monkeypatch) -> Path:
+def _de_tai_rct(tmp_path: Path, monkeypatch, hang: list = _HANG_RCT, sap: str = "", thiet_ke: str = "rct") -> Path:
     goc = tmp_path / "goc"
     out = goc / "exports" / STUDY
     out.mkdir(parents=True)
-    (out / "G1_checkpoint.json").write_text(json.dumps({"design_code": "rct"}), encoding="utf-8", newline="\n")
+    # SỬA 15/11/2026 (thẩm định PR #260): G1 ghi thiết kế LỒNG ở design.internal_code
+    # (gate_contract.resolve_design_code) — fixture cũ ghi `design_code` cấp cao nên main() âm thầm chạy như «cohort».
+    (out / "G1_checkpoint.json").write_text(json.dumps({"design": {"internal_code": thiet_ke}}), encoding="utf-8",
+                                            newline="\n")
     (out / "G3_checkpoint.json").write_text(json.dumps({"effect_type": "RR", "n_adjusted": 218, "alpha": 0.05}),
                                             encoding="utf-8", newline="\n")
-    (out / f"G4_A5_SAP_FINAL_{STUDY}.md").write_text(_sap(), encoding="utf-8", newline="\n")
-    G5.generate_csv(STUDY, out, _HANG_RCT)
+    (out / f"G4_A5_SAP_FINAL_{STUDY}.md").write_text(sap or _sap(), encoding="utf-8", newline="\n")
+    G5.generate_csv(STUDY, out, hang)
     CS.xoa_dem()
     monkeypatch.setattr(G6, "BASE", goc)
     monkeypatch.setattr(sys, "argv", ["run_g6_auto.py", "--study", STUDY])
@@ -208,6 +340,17 @@ def test_dau_cuoi_khuon_rct_dung_nhom_va_hiep_bien_sap5(tmp_path, monkeypatch):
     assert 'default="tuoi,gioi,ha_tt_nen,so_thuoc_nen"' in cli
     a7 = (out / f"G6_A7_ANALYSIS_SCRIPTS_{STUDY}.md").read_text(encoding="utf-8")
     assert "Hiệp biến THEO SAP §5" in a7 and "Biến phân nhóm (từ Section Header" in a7
+    assert cp["design_code"] == "rct", "fixture phải đi đúng nhánh RCT (G1 design.internal_code)"
+
+
+def test_dau_cuoi_main_truyen_thiet_ke_rct_cho_bo_do_muc_phan_nhom(tmp_path, monkeypatch):
+    """Tiêu đề «Phân nhóm …» chỉ được nhận khi thiết kế ĐÃ GIẢI QUYẾT là RCT ⇒ main() phải truyền design_code; SAP §5
+    viết văn xuôi nên không «cứu» được biến nhóm — biến nhóm đúng chỉ có thể đến từ bộ dò theo mục."""
+    hang = [(h[0], h[1], "Phân nhóm can thiệp", *h[3:]) if h[0] == "ngay_nn" else h for h in _HANG_RCT]
+    sap = _sap("- **Biến độc lập đưa vào:** nhánh can thiệp, tuổi, giới  \n")
+    out = _de_tai_rct(tmp_path, monkeypatch, hang=hang, sap=sap)
+    vd = json.loads((out / "G6_checkpoint.json").read_text(encoding="utf-8"))["variables_detected"]
+    assert vd["exposure"] == "nhom", vd
 
 
 def test_dau_cuoi_cong_thuc_khuon_khop_du_lieu_va_uoc_luong_rr_cai_san_nam_trong_ktc(tmp_path, monkeypatch):

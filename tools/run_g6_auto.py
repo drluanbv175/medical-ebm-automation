@@ -16,6 +16,7 @@ import sys
 
 # Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
 import sys as _sys_r4
+import unicodedata
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -117,12 +118,15 @@ def bien_phai_sinh_da_biet(out: Path, study: str) -> tuple[dict[str, str], Optio
     return {t: kq.trang_thai[t] for t in kq.thu_tu}, None
 
 
-def detect_variables_from_redcap(csv_path: Path) -> dict:
+def detect_variables_from_redcap(csv_path: Path, design_code: Optional[str] = None) -> dict:
     """
     Đọc G5 REDCap dictionary → phát hiện tên biến theo vai trò.
     Hỗ trợ 2 định dạng:
       - Chuẩn CSV (dấu phẩy): "Variable Name","Form Name",...
       - Định dạng / delimiter: record_id / Admin / ... / text / label / ...
+    `design_code` (THÊM 15/11/2026, sửa theo thẩm định PR #260): thiết kế đã giải quyết của đề tài — chỉ dùng để
+    bật/tắt đường dò biến phân nhóm theo mục ngẫu nhiên hoá (`_bien_phan_nhom_tu_muc`); None = không biết (gọi trực
+    tiếp, test cũ) ⇒ chỉ nhận tiêu đề mục ngẫu nhiên hoá KHÔNG mơ hồ.
     Trả về dict: exposure, outcome, time_col, covariates, all_vars.
     """
     result = {
@@ -331,7 +335,7 @@ def detect_variables_from_redcap(csv_path: Path) -> dict:
     # THÊM 15/11/2026 (giả lập RCT lần 2, N6): RCT ghi biến PHÂN NHÓM dưới mục «Ngẫu nhiên hoá»/«Phân bổ»/
     # «Randomisation» — không bắt đầu bằng «Phơi nhiễm», tên tiếng Việt («nhom») không khớp từ khoá tiếng Anh ⇒ khuôn
     # từng rơi về tên dự phòng 'exposure'. Tín hiệu CẤU TRÚC thắng từ khoá, cùng lý lẽ với mục «Phơi nhiễm».
-    bien_phan_nhom = None if section_exp else _bien_phan_nhom_tu_muc(all_vars, type_by_var)
+    bien_phan_nhom = None if section_exp else _bien_phan_nhom_tu_muc(all_vars, type_by_var, design_code)
     if section_exp:
         best_exp = section_exp[0]
         result["exposure"] = best_exp
@@ -504,20 +508,42 @@ def _bd(s: str) -> str:
     return G6Q._bo_dau(s).replace("đ", "d")
 
 
-#: Tiêu đề mục (đã bỏ dấu, chữ thường) BẮT ĐẦU bằng các cụm này ⇒ mục chứa biến phân nhóm ngẫu nhiên hoá (15/11/2026).
-_MUC_PHAN_NHOM = ("ngau nhien", "randomi", "phan bo", "phan nhom", "allocation")
+#: Tiêu đề mục (đã bỏ dấu, chữ thường) BẮT ĐẦU bằng các cụm này ⇒ mục ngẫu nhiên hoá KHÔNG mơ hồ (15/11/2026).
+_MUC_PHAN_NHOM = ("ngau nhien", "randomi", "allocation")
+#: «Phân bổ» (allocation) chỉ nhận khi CÒN dấu: bỏ dấu thì «Phân bố» (distribution — «Phân bố theo nhóm tuổi» của đề
+#: tài quan sát) cũng thành «phan bo» (sửa theo thẩm định PR #260). So trên chuỗi NFC, chữ thường.
+_MUC_PHAN_BO_CON_DAU = unicodedata.normalize("NFC", "phân bổ")
+#: Tiêu đề mơ hồ — «Phân nhóm nguy cơ», «phan bo» viết không dấu — CHỈ nhận khi thiết kế đã giải quyết là RCT.
+_MUC_PHAN_NHOM_CHI_RCT = ("phan nhom", "phan bo")
 #: Gợi ý trong tên/nhãn biến (token) ⇒ đúng biến nhánh, không phải ngày/khối/tầng ngẫu nhiên hoá cùng mục.
 _GOI_Y_BIEN_NHOM = ("nhanh", "nhom", "arm", "phan bo", "allocation", "group")
 
 
-def _bien_phan_nhom_tu_muc(all_vars, type_by_var: dict) -> Optional[str]:
+def _la_muc_phan_nhom(muc: str, design_code: Optional[str]) -> bool:
+    """Tiêu đề mục có phải mục ngẫu nhiên hoá/phân bổ không (khớp theo ĐẦU tiêu đề).
+
+    Sửa theo thẩm định PR #260: «Phân bổ» chỉ khớp khi còn dấu (bỏ dấu thì trùng «Phân bố»); «Phân nhóm …» và «phan bo»
+    không dấu là mơ hồ ⇒ chỉ nhận khi `design_code == "rct"`."""
+    bd = _bd(muc).strip()
+    if bd.startswith(_MUC_PHAN_NHOM):
+        return True
+    if unicodedata.normalize("NFC", muc or "").strip().lower().startswith(_MUC_PHAN_BO_CON_DAU):
+        return True
+    return design_code == "rct" and bd.startswith(_MUC_PHAN_NHOM_CHI_RCT)
+
+
+def _bien_phan_nhom_tu_muc(all_vars, type_by_var: dict, design_code: Optional[str] = None) -> Optional[str]:
     """Biến phân nhóm của RCT từ mục «Ngẫu nhiên hoá»/«Phân bổ»/«Randomi…»/«Allocation» của dictionary G5 (N6).
 
     Chỉ nhận biến CHỌN MỘT (radio/dropdown/yesno) — ngày, mã khối, tầng ngẫu nhiên hoá cùng mục không phải nhóm; ưu
     tiên biến có tên/nhãn gợi ý nhánh («nhánh», «nhóm», «arm», «allocation»…). Mục khớp theo ĐẦU tiêu đề (bỏ dấu) để
-    «Đặc điểm nền (trước ngẫu nhiên hoá)» không bị nhận nhầm. Không có ⇒ None (giữ đường dò cũ)."""
+    «Đặc điểm nền (trước ngẫu nhiên hoá)» không bị nhận nhầm. Không có ⇒ None (giữ đường dò cũ).
+    Sửa theo thẩm định PR #260: thiết kế đã giải quyết KHÁC RCT (cohort, cắt ngang…) ⇒ tắt hẳn đường này — đề tài quan
+    sát không có biến phân bổ ngẫu nhiên, mục «Phân bố…/Phân nhóm nguy cơ» của chúng không được đổi phơi nhiễm."""
+    if design_code is not None and design_code != "rct":
+        return None
     chon_mot = [(bien, nhan) for bien, nhan, muc in all_vars
-                if _bd(muc).strip().startswith(_MUC_PHAN_NHOM)
+                if _la_muc_phan_nhom(muc, design_code)
                 and type_by_var.get(bien) in ("radio", "dropdown", "yesno")]
     for bien, nhan in chon_mot:
         chuoi = _bd(f"{bien} {nhan}")
@@ -537,10 +563,20 @@ def _bien_phan_nhom_tu_muc(all_vars, type_by_var: dict) -> Optional[str]:
 #: Nhãn dòng (đã bỏ dấu) khai danh sách hiệp biến của mô hình chính.
 _NHAN_HIEP_BIEN_SAP5 = ("bien doc lap dua vao", "bien dua vao mo hinh", "bien dieu chinh bat buoc", "forced-in",
                         "forced in", "hiep bien hieu chinh", "independent variables", "covariates")
+#: Nhãn GỒM CẢ biến phân nhóm (biến độc lập của mô hình) — CHỈ ở các nhãn này dạng «<nhóm> + a, b» mới coi mục trước
+#: «+» là biến nhóm; nhãn chỉ-hiệp-biến («forced-in», «Hiệp biến hiệu chỉnh: tuoi + gioi + bmi») thì mọi mục là hiệp
+#: biến, không mục nào được suy thành biến nhóm (sửa theo thẩm định PR #260).
+_NHAN_GOM_NHOM_SAP5 = ("bien doc lap dua vao", "bien dua vao mo hinh", "independent variables")
 #: Nhãn dòng (đã bỏ dấu) khai biến phân nhóm/phơi nhiễm chính.
 _NHAN_NHOM_SAP5 = ("exposure chinh", "phoi nhiem chinh", "bien phan nhom", "bien nhom", "main exposure")
 #: Nhãn mang phủ định («KHÔNG hiệu chỉnh», «không đưa vào») — không bao giờ là danh sách hiệp biến.
 _PHU_DINH_SAP5 = re.compile(r"\bkhong\b|\bnot\b|\bexclud")
+#: Nhãn của mô hình PHỤ (độ nhạy, thăm dò, nhóm con, post-hoc). Xét trên nhãn ĐỦ — CÒN chú thích trong ngoặc — vì chú
+#: thích «(mô hình độ nhạy)» chính là chỗ phân biệt với mô hình chính; bóc ngoặc trước thì dòng mô hình phụ đứng trước
+#: bị nhận làm mô hình CHÍNH (sửa theo thẩm định PR #260). «phụ» chỉ khớp trong «mô hình/phân tích phụ» để «Phụ lục»,
+#: «biến phụ thuộc» không bị loại.
+_MO_HINH_PHU_SAP5 = re.compile(r"do nhay|sensitivity|secondary|\b(?:mo hinh|phan tich) phu\b|tham do|exploratory"
+                               r"|nhom con|nhom nho|subgroup|post[- ]?hoc")
 _TEN_BIEN_TRAN = re.compile(r"[A-Za-z_][A-Za-z0-9_.]*")
 
 
@@ -553,13 +589,16 @@ def _bo_ngoac_tron(s: str) -> str:
 
 
 def _cac_dong_sap5(sec5: str):
-    """(nhãn đã bỏ dấu, giá trị nguyên văn) của từng dòng «- **Nhãn:** giá trị» trong §5 (đã bóc nhãn chưa điền)."""
+    """(nhãn ĐỦ đã bỏ dấu — CÒN chú thích trong ngoặc, nhãn đã bóc ngoặc + bỏ dấu, giá trị nguyên văn) của từng dòng
+    «- **Nhãn:** giá trị» trong §5 (đã bóc nhãn chưa điền). Khoảng trắng trong nhãn gộp về một dấu cách."""
     for dong in G6Q._bo_nhan_chua_dien(sec5).splitlines():
         than = dong.strip().lstrip("-•").strip()
         if ":" not in than:
             continue
         nhan, gia_tri = than.split(":", 1)
-        yield _bd(_bo_ngoac_tron(nhan).replace("*", "")).strip(), gia_tri.replace("*", " ").strip()
+        nhan = nhan.replace("*", "")
+        yield (re.sub(r"\s+", " ", _bd(nhan)).strip(), re.sub(r"\s+", " ", _bd(_bo_ngoac_tron(nhan))).strip(),
+               gia_tri.replace("*", " ").strip())
 
 
 def _danh_sach_ten(gia_tri: str, ten_goc: dict) -> tuple[list, list]:
@@ -583,70 +622,140 @@ def doc_bien_sap_5(sap: str, ten_goc: dict) -> dict:
     """Biến phân nhóm + hiệp biến của mô hình CHÍNH khai ở SAP §5 đã khoá (N6, 15/11/2026).
 
     `ten_goc`: {tên chữ thường: tên gốc} của mọi biến ĐÃ BIẾT (dictionary G5 + biến phái sinh có công thức hợp lệ).
-    - Dòng «Biến độc lập đưa vào / Biến điều chỉnh bắt buộc (forced-in) / Hiệp biến hiệu chỉnh: …» ⇒ hiệp biến; dạng
-      «<nhóm> + a, b, c» ⇒ mục trước dấu «+» là biến phân nhóm.
-    - Dòng «Exposure chính / Phơi nhiễm chính / Biến phân nhóm: `x`» ⇒ biến phân nhóm (đúng MỘT tên).
-    - Danh sách chỉ được nhận khi MỌI mục là tên biến đã biết; có mục lạ (văn xuôi, tên chưa có trong dictionary) ⇒
-      `hiep_bien = None` + `mo_ho` liệt kê mục lạ — khuôn giữ biến dò, KHÔNG đoán thay thống kê viên.
-    Trả {"bien_phan_nhom", "hiep_bien", "mo_ho", "nguon"}."""
-    kq: dict = {"bien_phan_nhom": None, "hiep_bien": None, "mo_ho": [], "nguon": None}
-    for nhan, gia_tri in _cac_dong_sap5(G6Q._sec(sap or "", 5)):
+    - Dòng «Biến độc lập đưa vào / Biến điều chỉnh bắt buộc (forced-in) / Hiệp biến hiệu chỉnh: …» ⇒ hiệp biến; RIÊNG
+      nhãn gồm cả biến nhóm («Biến độc lập đưa vào», «Biến đưa vào mô hình») dạng «<nhóm> + a, b, c» ⇒ mục trước dấu
+      «+» được SUY là biến phân nhóm (`nguon_nhom = "dang_cong"`).
+    - Dòng «Exposure chính / Phơi nhiễm chính / Biến phân nhóm: `x`» ⇒ biến phân nhóm TƯỜNG MINH (đúng MỘT tên;
+      `nguon_nhom = "tuong_minh"`) — thắng biến suy từ dạng «+» (mục đó trả về danh sách biến độc lập).
+    - Danh sách chỉ được nhận khi MỌI mục là tên biến đã biết — KỂ CẢ mục trước «+»; có mục lạ (văn xuôi, tên chưa có
+      trong dictionary) ⇒ `hiep_bien = None` + `mo_ho` liệt kê mục lạ — khuôn giữ biến dò, KHÔNG đoán thay thống kê viên.
+    - Biến nhóm SAP nêu mà không khớp đúng MỘT tên biến đã biết ⇒ `nhom_khong_nhan` (khuôn ghi cảnh báo, không im lặng
+      bỏ — sửa theo thẩm định PR #260: SAP khoá ở G4 trước dictionary ở G5 nên lệch tên là chuyện dễ gặp).
+    - Dòng của mô hình PHỤ (độ nhạy/thăm dò/nhóm con) bị bỏ qua, ghi vào `bo_qua_phu`.
+    Trả {"bien_phan_nhom", "nguon_nhom", "hiep_bien", "mo_ho", "nhom_khong_nhan", "bo_qua_phu", "nguon"}."""
+    kq: dict = {"bien_phan_nhom": None, "nguon_nhom": None, "hiep_bien": None, "mo_ho": [], "nhom_khong_nhan": [],
+                "bo_qua_phu": [], "nguon": None}
+    nhom_tm = None      # biến nhóm từ dòng TƯỜNG MINH
+    la_tm: list = []    # mục của dòng tường minh không khớp đúng một tên biến đã biết
+    nhom_cong = None    # biến nhóm SUY từ dạng «<nhóm> + a, b»
+    for nhan_du, nhan, gia_tri in _cac_dong_sap5(G6Q._sec(sap or "", 5)):
         if _PHU_DINH_SAP5.search(nhan):
             continue
-        if kq["hiep_bien"] is None and not kq["mo_ho"] and any(n in nhan for n in _NHAN_HIEP_BIEN_SAP5):
-            phan = gia_tri
-            m_nhom = re.match(r"\s*`?([A-Za-z_][A-Za-z0-9_.]*)`?\s*\+", _bo_ngoac_tron(gia_tri))
+        la_hiep = any(n in nhan for n in _NHAN_HIEP_BIEN_SAP5)
+        la_nhom = not la_hiep and any(n in nhan for n in _NHAN_NHOM_SAP5)
+        if not (la_hiep or la_nhom):
+            continue
+        if _MO_HINH_PHU_SAP5.search(nhan_du):
+            kq["bo_qua_phu"].append(nhan_du[:60])
+            continue
+        if la_hiep:
+            if kq["hiep_bien"] is not None or kq["mo_ho"]:
+                continue
+            phan = _bo_ngoac_tron(gia_tri)
+            la_nhom_cong: list = []
+            m_nhom = (re.match(r"\s*`?([A-Za-z_][A-Za-z0-9_.]*)`?\s*\+", phan)
+                      if any(n in nhan for n in _NHAN_GOM_NHOM_SAP5) else None)
             if m_nhom:
-                nhom = ten_goc.get(m_nhom.group(1).lower())
-                if nhom:
-                    kq["bien_phan_nhom"] = kq["bien_phan_nhom"] or nhom
-                phan = _bo_ngoac_tron(gia_tri)[m_nhom.end():]
+                ten = ten_goc.get(m_nhom.group(1).lower())
+                if ten and _VALID_R_IDENTIFIER.match(ten):
+                    nhom_cong = ten
+                else:
+                    # Tên nhóm lạ là một mục KHÔNG phải tên biến đã biết ⇒ cả danh sách không được nhận (fail-closed).
+                    la_nhom_cong = [m_nhom.group(1)]
+                    kq["nhom_khong_nhan"].append(m_nhom.group(1))
+                phan = phan[m_nhom.end():]
             biet, la = _danh_sach_ten(phan, ten_goc)
+            la = la_nhom_cong + la
             if la:
                 kq["mo_ho"] = la
             elif biet:
                 kq["hiep_bien"], kq["nguon"] = biet, nhan
-        elif kq["bien_phan_nhom"] is None and any(n in nhan for n in _NHAN_NHOM_SAP5):
+        elif nhom_tm is None:
             biet, la = _danh_sach_ten(gia_tri, ten_goc)
             if len(biet) == 1 and not la:
-                kq["bien_phan_nhom"] = biet[0]
+                nhom_tm = biet[0]
+            elif biet or la:
+                la_tm.extend(la + biet)
+    if nhom_tm:
+        kq["bien_phan_nhom"], kq["nguon_nhom"] = nhom_tm, "tuong_minh"
+        if nhom_cong and nhom_cong != nhom_tm and kq["hiep_bien"] is not None:
+            # Dòng tường minh là thẩm quyền: mục trước «+» KHÔNG phải biến nhóm ⇒ trả về danh sách biến độc lập.
+            kq["hiep_bien"] = [nhom_cong] + [b for b in kq["hiep_bien"] if b != nhom_cong]
+    else:
+        kq["nhom_khong_nhan"].extend(la_tm)
+        if nhom_cong:
+            kq["bien_phan_nhom"], kq["nguon_nhom"] = nhom_cong, "dang_cong"
     return kq
+
+
+#: Vai trò khác của khuôn mà biến nhóm SAP không được chiếm (sửa theo thẩm định PR #260).
+_VAI_KHAC_NHOM = (("outcome", "kết cục"), ("time_col", "biến thời gian"), ("cluster_col", "biến cụm (SE theo chùm)"))
 
 
 def ap_bien_sap_5(v: dict, sap: str, ten_goc: dict) -> dict:
     """Áp biến phân nhóm + hiệp biến THEO SAP §5 vào `v` (SAP thắng biến dò từ dictionary; mỗi lần thay ghi log A7).
 
     Hiệp biến = danh sách §5 trừ biến nhóm/kết cục; biến cụm (SE theo chùm) vẫn không đồng thời là hiệp biến cố định
-    (giữ bất biến cũ, ghi cảnh báo để thống kê viên quyết). SAP chưa điền/viết văn xuôi ⇒ giữ nguyên `v`."""
+    (giữ bất biến cũ, ghi cảnh báo để thống kê viên quyết). SAP chưa điền/viết văn xuôi ⇒ giữ nguyên `v`.
+    Sửa theo thẩm định PR #260:
+    - Biến nhóm SAP trùng kết cục/biến thời gian/biến cụm ⇒ KHÔNG thay, cảnh báo.
+    - Biến nhóm chỉ SUY từ dạng «X + …» mà dictionary đã cho biến nhóm THẬT khác ⇒ không đoán: giữ cả biến nhóm lẫn
+      hiệp biến dò được, cảnh báo (vai trò của X trong danh sách chưa rõ).
+    - Thay biến nhóm ⇒ bỏ biến đó khỏi hiệp biến dò được (không để công thức trùng số hạng).
+    - SAP nêu biến nhóm không khớp tên biến nào ⇒ cảnh báo, không im lặng."""
     dt = doc_bien_sap_5(sap, ten_goc)
     v["bien_sap_5"] = dt
-    nhom = dt["bien_phan_nhom"]
-    if nhom and nhom != v.get("outcome") and nhom != v.get("exposure"):
-        v["detection_log"].append(f"✅ Biến phân nhóm THEO SAP §5: {nhom} (thay biến dò được: {v.get('exposure')})")
-        v["exposure"] = nhom
-    if dt["hiep_bien"]:
+    log = v["detection_log"]
+    nhom, hien = dt["bien_phan_nhom"], v.get("exposure")
+    ap_hiep_bien = True
+    if nhom and nhom != hien:
+        vai = next((ten for khoa, ten in _VAI_KHAC_NHOM if v.get(khoa) == nhom), None)
+        if vai:
+            log.append(f"⚠️  SAP §5 nêu `{nhom}` là biến phân nhóm nhưng khuôn đang dùng nó làm {vai} — GIỮ biến nhóm dò "
+                       f"được `{hien}`; thống kê viên đối chiếu SAP §2/§5 với dictionary rồi sửa công thức mô hình")
+        elif dt["nguon_nhom"] == "dang_cong" and str(hien or "").lower() in ten_goc:
+            ap_hiep_bien = False
+            log.append(f"⚠️  SAP §5 dạng «{nhom} + …» GỢI Ý `{nhom}` là biến phân nhóm nhưng dictionary G5 cho biến nhóm "
+                       f"`{hien}` — không đoán: GIỮ `{hien}` và hiệp biến dò được (vai trò của `{nhom}` chưa rõ); "
+                       "thống kê viên ghi dòng «Biến phân nhóm: `…`» ở SAP §5 (SAP AMENDMENT) hoặc sửa công thức")
+        else:
+            log.append(f"✅ Biến phân nhóm THEO SAP §5: {nhom} (thay biến dò được: {hien})")
+            v["exposure"] = nhom
+            if nhom in (v.get("covariates") or []):
+                v["covariates"] = [b for b in v["covariates"] if b != nhom]
+                log.append(f"   ↳ bỏ `{nhom}` khỏi hiệp biến dò được — nay là biến phân nhóm (tránh trùng số hạng)")
+    if dt["nhom_khong_nhan"]:
+        log.append("⚠️  SAP §5 nêu biến phân nhóm/phơi nhiễm ("
+                   + ", ".join(f"«{m[:40]}»" for m in dt["nhom_khong_nhan"][:3])
+                   + ") KHÔNG khớp đúng MỘT tên biến trong dictionary G5/biến phái sinh — biến nhóm của khuôn hiện là "
+                   f"`{v.get('exposure')}`; thống kê viên đối chiếu SAP §5 với dictionary rồi sửa công thức mô hình")
+    if dt["hiep_bien"] and ap_hiep_bien:
         hb = [b for b in dt["hiep_bien"] if b not in {v.get("exposure"), v.get("outcome")}]
         cum = v.get("cluster_col")
         if cum and cum in hb:
             hb = [b for b in hb if b != cum]
-            v["detection_log"].append(f"⚠️  SAP §5 đưa `{cum}` vào mô hình như hiệp biến nhưng khuôn đang dùng nó làm "
-                                      "biến CỤM (SE theo chùm) — thống kê viên quyết một trong hai rồi sửa script")
+            log.append(f"⚠️  SAP §5 đưa `{cum}` vào mô hình như hiệp biến nhưng khuôn đang dùng nó làm "
+                       "biến CỤM (SE theo chùm) — thống kê viên quyết một trong hai rồi sửa script")
         if not hb:
             # Khuôn rơi về «age + sex + bmi» khi danh sách rỗng — không được ghi đè biến dò bằng danh sách rỗng.
-            v["detection_log"].append("⚠️  SAP §5 không nêu hiệp biến nào ngoài biến nhóm/kết cục — khuôn GIỮ hiệp biến "
-                                      "dò từ dictionary; mô hình không hiệu chỉnh thì thống kê viên bỏ khỏi công thức")
+            log.append("⚠️  SAP §5 không nêu hiệp biến nào ngoài biến nhóm/kết cục — khuôn GIỮ hiệp biến "
+                       "dò từ dictionary; mô hình không hiệu chỉnh thì thống kê viên bỏ khỏi công thức")
         elif set(hb) == set(v.get("covariates") or []):
             # Cùng TẬP biến ⇒ giữ thứ tự cũ: thứ tự số hạng không đổi ước lượng, đổi vô cớ chỉ làm script đã duyệt lệch dấu.
-            v["detection_log"].append(f"✅ Hiệp biến dò từ dictionary KHỚP SAP §5 ({len(hb)} biến)")
+            log.append(f"✅ Hiệp biến dò từ dictionary KHỚP SAP §5 ({len(hb)} biến)")
         else:
-            v["detection_log"].append(f"✅ Hiệp biến THEO SAP §5: {', '.join(hb)} "
-                                      f"(thay biến dò được: {', '.join(v.get('covariates') or []) or 'không có'})")
+            log.append(f"✅ Hiệp biến THEO SAP §5: {', '.join(hb)} "
+                       f"(thay biến dò được: {', '.join(v.get('covariates') or []) or 'không có'})")
             v["covariates"] = hb
     elif dt["mo_ho"]:
-        v["detection_log"].append(
+        log.append(
             "⚠️  SAP §5 nêu hiệp biến có mục KHÔNG phải tên biến trong dictionary/biến phái sinh ("
             + ", ".join(f"«{m[:40]}»" for m in dt["mo_ho"][:4]) + (" …" if len(dt["mo_ho"]) > 4 else "")
             + ") — khuôn GIỮ hiệp biến dò từ dictionary; thống kê viên đối chiếu SAP §5 và sửa công thức mô hình")
+    elif not dt["hiep_bien"] and dt["bo_qua_phu"]:
+        log.append("⚠️  SAP §5 chỉ có danh sách hiệp biến của mô hình PHỤ ("
+                   + ", ".join(f"«{m}»" for m in dt["bo_qua_phu"][:2])
+                   + ") — không dùng cho mô hình chính; khuôn GIỮ hiệp biến dò từ dictionary, thống kê viên đối chiếu")
     return dt
 
 
@@ -3665,7 +3774,8 @@ def main():
     # ─── Đọc REDCap dictionary → phát hiện biến ───
     redcap_csv = out / f"G5_REDCap_dictionary_{study}.csv"
     print(f"\n  📂 Đọc REDCap dictionary: {redcap_csv.name}")
-    v = detect_variables_from_redcap(redcap_csv)
+    # Sửa theo thẩm định PR #260: truyền thiết kế đã giải quyết — đường dò biến nhóm theo mục ngẫu nhiên hoá chỉ cho RCT.
+    v = detect_variables_from_redcap(redcap_csv, design_code)
     _reject_if_variable_names_invalid(v)
 
     # THÊM 2026-09-01: cờ kết cục THỨ BẬC — thẩm quyền là SAP đã khoá (G4),
