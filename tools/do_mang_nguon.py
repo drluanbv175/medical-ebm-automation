@@ -113,7 +113,12 @@ def danh_sach_diem(cfg: Any, co_scopus: bool = False) -> List[Diem]:
         ("Bộ Y tế VN — kcb.vn", NHOM_GUIDELINE, "https://kcb.vn/phac-do", {}, {}, (200,)),
         ("GOLD — feed", NHOM_GUIDELINE, "https://goldcopd.org/feed/", {}, rss, (200,)),
         ("GINA — feed", NHOM_GUIDELINE, "https://ginasthma.org/feed/", {}, rss, (200,)),
-        ("BJGP — RSS", NHOM_GUIDELINE, "https://bjgp.org/rss/current.xml", {}, rss, (200,)),
+        # 14/11/2026: RSS BJGP bị Cloudflare chặn kéo dài ⇒ engine đọc feed_bjgp qua Crossref (ISSN 1478-5242, xem
+        # `_CROSSREF_THAY_RSS` ở app/sources/feeds.py). Vẫn đo RSS để biết khi nào đường cũ thông lại.
+        ("BJGP — RSS (nay engine đọc qua Crossref)", NHOM_GUIDELINE, "https://bjgp.org/rss/current.xml", {}, rss,
+         (200,)),
+        ("Crossref — BJGP (thay RSS)", NHOM_GUIDELINE, "https://api.crossref.org/journals/1478-5242/works",
+         {"rows": "1", "mailto": email}, {}, (200,)),
         ("Unpaywall", NHOM_PHU, "https://api.unpaywall.org/v2/10.1056/nejmoa2204233", {"email": email}, {}, (200,)),
         # Semantic Scholar: loại khỏi vận hành 18/10/2026 (bác sĩ quyết) — không đo nữa.
         ("scite (công khai)", NHOM_PHU, "https://api.scite.ai/tallies/10.1056/nejmoa2204233", {}, {}, (200,)),
