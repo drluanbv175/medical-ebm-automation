@@ -344,7 +344,8 @@ def test_ro_ri_exports_that_la_khiem_khuyet(tmp_path):
     (tmp_path / "exports" / "ZZCANARY-RCT-NHI-PHAN").mkdir(parents=True)
     (tmp_path / "exports" / "de-tai-that").mkdir()
     assert GL._de_tai_canary_trong_exports(tmp_path) == ["ZZCANARY-RCT-NHI-PHAN"]
-    bc = GL.tong_hop({}, {"do_duoc": True, "khiem_khuyet": []}, {}, "ngoai_tuyen", None, ["ZZCANARY-RCT-NHI-PHAN"])
+    bc = GL.tong_hop({}, {"do_duoc": True, "khiem_khuyet": []}, {}, "ngoai_tuyen", None, ["ZZCANARY-RCT-NHI-PHAN"],
+                     du_kien=[])
     assert bc["moi"] == ["he:ro_ri_exports_that:ZZCANARY-RCT-NHI-PHAN"] and bc["ma_thoat"] == 1
 
 
@@ -387,13 +388,13 @@ def _kb_kq(ma, khiem, do_duoc=True, g0=True):
 
 def test_lan_dau_moi_khiem_khuyet_la_moi_lan_sau_chi_bao_cai_moi():
     pk = {"do_duoc": True, "khiem_khuyet": []}
-    bc1 = GL.tong_hop({"a": _kb_kq("a", ["a:k1"])}, pk, {}, "truc_tuyen", None, [])
+    bc1 = GL.tong_hop({"a": _kb_kq("a", ["a:k1"])}, pk, {}, "truc_tuyen", None, [], du_kien=["a"])
     assert bc1["lan_dau"] and bc1["moi"] == ["a:k1"] and bc1["ma_thoat"] == 1
-    bc2 = GL.tong_hop({"a": _kb_kq("a", ["a:k1"])}, pk, bc1, "truc_tuyen", None, [])
+    bc2 = GL.tong_hop({"a": _kb_kq("a", ["a:k1"])}, pk, bc1, "truc_tuyen", None, [], du_kien=["a"])
     assert bc2["moi"] == [] and bc2["ma_thoat"] == 0
-    bc3 = GL.tong_hop({"a": _kb_kq("a", ["a:k1", "a:k2"])}, pk, bc2, "truc_tuyen", None, [])
+    bc3 = GL.tong_hop({"a": _kb_kq("a", ["a:k1", "a:k2"])}, pk, bc2, "truc_tuyen", None, [], du_kien=["a"])
     assert bc3["moi"] == ["a:k2"] and bc3["ma_thoat"] == 1
-    bc4 = GL.tong_hop({"a": _kb_kq("a", [])}, pk, bc3, "truc_tuyen", None, [])
+    bc4 = GL.tong_hop({"a": _kb_kq("a", [])}, pk, bc3, "truc_tuyen", None, [], du_kien=["a"])
     assert bc4["da_het"] == ["a:k1", "a:k2"] and bc4["ma_thoat"] == 0
 
 
@@ -407,12 +408,15 @@ def test_moc_tach_theo_che_do():
 
 def test_phan_khong_do_duoc_giu_khoa_cu_khong_coi_la_da_het():
     pk = {"do_duoc": True, "khiem_khuyet": []}
-    bc1 = GL.tong_hop({"a": _kb_kq("a", ["a:k1"]), "b": _kb_kq("b", ["b:k9"])}, pk, {}, "truc_tuyen", None, [])
+    ab = ["a", "b"]
+    bc1 = GL.tong_hop({"a": _kb_kq("a", ["a:k1"]), "b": _kb_kq("b", ["b:k9"])}, pk, {}, "truc_tuyen", None, [],
+                      du_kien=ab)
     bc2 = GL.tong_hop({"a": _kb_kq("a", [], do_duoc=False), "b": _kb_kq("b", ["b:k9"])}, pk, bc1, "truc_tuyen",
-                      None, [])
+                      None, [], du_kien=ab)
     assert bc2["da_het"] == [] and "a" in bc2["khong_do_duoc"] and bc2["ma_thoat"] == 2
     assert "a:k1" in bc2["theo_che_do"]["truc_tuyen"]["khiem_khuyet"]
-    bc3 = GL.tong_hop({"a": _kb_kq("a", ["a:k1"]), "b": _kb_kq("b", ["b:k9"])}, pk, bc2, "truc_tuyen", None, [])
+    bc3 = GL.tong_hop({"a": _kb_kq("a", ["a:k1"]), "b": _kb_kq("b", ["b:k9"])}, pk, bc2, "truc_tuyen", None, [],
+                      du_kien=ab)
     assert bc3["moi"] == [] and bc3["ma_thoat"] == 0  # đo lại được: khoá cũ không bị báo «mới»
 
 
@@ -423,7 +427,7 @@ def test_ma_thoat_moi_uu_tien_hon_khong_do_duoc(moi, khong_do, ma):
 
 
 def test_g0_ngoai_tuyen_va_bo_pytest_la_khong_do_duoc():
-    bc = GL.tong_hop({"a": _kb_kq("a", [], g0=False)}, None, {}, "ngoai_tuyen", None, [])
+    bc = GL.tong_hop({"a": _kb_kq("a", [], g0=False)}, None, {}, "ngoai_tuyen", None, [], du_kien=["a"])
     assert bc["khong_do_duoc"] == ["a.G0", "pytest"] and bc["ma_thoat"] == 2
 
 
@@ -454,13 +458,162 @@ def test_main_ghi_state_va_doi_tep_hong(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(GL, "GiaLap", GiaLapGia)
     monkeypatch.setattr(GL, "chay_pytest", lambda goc, tam: {"do_duoc": True, "dat": 9, "hong": [],
                                                              "khiem_khuyet": []})
-    tham = ["--truc-tuyen", "--state", str(state), "--kich-ban", "rct_nhi_phan"]
+    tham = ["--truc-tuyen", "--state", str(state)]
     assert GL.main(tham) == 1
     assert list(state.parent.glob("gia-lap.hong-*.json")), "tệp state hỏng phải được dời, không ghi đè mất"
     bc = _doc(state)
-    assert bc["moi"] == ["rct_nhi_phan:can_thiep_do_may:G3:tu_chay_cong"] and bc["loi_moc"]
+    assert bc["moi"] == sorted(f"{ma}:can_thiep_do_may:G3:tu_chay_cong" for ma in GL.KICH_BAN) and bc["loi_moc"]
     assert GL.main(tham) == 0  # lần hai: không có gì mới
     assert "không có khiếm khuyết mới" in capsys.readouterr().out
+
+
+# ─────────────────────────── thẩm định PR #259 (15/11/2026): «không đo được» không bao giờ thành «đã hết»/«xanh»
+def test_thuoc_phan_cong_chi_lay_khoa_phu_thuoc_cong_cua_dung_kich_ban():
+    phan = "rct.G0"
+    for k in ("rct:can_thiep_do_may:G0:khai_query_en", "rct:kiem_chi_tiet_do:G0/①", "rct:cong_mem_chua_dat:G0",
+              "rct:ket:G0:G0-HUMAN-07", "rct:dung_sai:G0"):
+        assert GL.thuoc_phan(k, phan), k
+    for k in ("rct:can_thiep_do_may:G3:tu_chay_cong", "rct:kiem_chi_tiet_do:G1/④", "cat:can_thiep_do_may:G0:x",
+              "rct:dung_sai:G05", "rct:ket:G10:x"):
+        assert not GL.thuoc_phan(k, phan), k
+    assert GL.thuoc_phan("rct:bat_ky", "rct") and GL.thuoc_phan("pytest:hong:t", "pytest")
+    assert not GL.thuoc_phan("rct2:x", "rct")
+
+
+def test_g0_dung_nen_cu_thi_khoa_k4_giu_nguyen_qua_ba_luot(tmp_path):
+    """Vấn đề cao của thẩm định: L1 trực tuyến có K4 → L2 G0 hỏng vì mạng (R1B), dùng nền cũ nên K4 không thể xuất hiện
+    → L3 mạng tốt lại. Trước bản sửa: L2 in «✔️ đã hết» K4 và xoá khỏi mốc, L3 báo lại «🆕» (mã 1, 🛎 hồi quy giả)."""
+    nen = tmp_path / "nen"
+    pk = {"do_duoc": True, "khiem_khuyet": []}
+    k4 = "thu:can_thiep_do_may:G0:khai_query_en"
+    _g, kq1 = _chay_kb(tmp_path / "l1", TheGioi(n4=False, kct_do=()), True, nen)
+    bc1 = GL.tong_hop({"thu": kq1}, pk, {}, "truc_tuyen", None, [], du_kien=["thu"])
+    assert bc1["moi"] == [k4] and bc1["ma_thoat"] == 1
+    _g, kq2 = _chay_kb(tmp_path / "l2", TheGioi(n4=False, kct_do=(), g0_r1b=True), True, nen)
+    assert kq2["do_duoc"] and not kq2["g0_do_duoc"] and k4 not in kq2["khiem_khuyet"]
+    bc2 = GL.tong_hop({"thu": kq2}, pk, bc1, "truc_tuyen", None, [], du_kien=["thu"])
+    assert bc2["da_het"] == [] and bc2["ma_thoat"] == 2 and "thu.G0" in bc2["khong_do_duoc"]
+    assert k4 in bc2["giu_lai"] and k4 in bc2["theo_che_do"]["truc_tuyen"]["khiem_khuyet"]
+    _g, kq3 = _chay_kb(tmp_path / "l3", TheGioi(n4=False, kct_do=()), True, nen)
+    bc3 = GL.tong_hop({"thu": kq3}, pk, bc2, "truc_tuyen", None, [], du_kien=["thu"])
+    assert bc3["moi"] == [] and bc3["ma_thoat"] == 0
+
+
+def test_g0_khong_do_duoc_van_bao_da_het_khoa_g1_g4_do_duoc():
+    """Giữ khoá phụ thuộc G0 KHÔNG được che phần đo được: khoá G3 biến mất vẫn là «đã hết» khi G0 dùng nền."""
+    pk = {"do_duoc": True, "khiem_khuyet": []}
+    bc1 = GL.tong_hop({"a": _kb_kq("a", ["a:can_thiep_do_may:G0:khai_query_en", "a:can_thiep_do_may:G3:tu_chay_cong"])},
+                      pk, {}, "truc_tuyen", None, [], du_kien=["a"])
+    bc2 = GL.tong_hop({"a": _kb_kq("a", [], g0=False)}, pk, bc1, "truc_tuyen", None, [], du_kien=["a"])
+    assert bc2["da_het"] == ["a:can_thiep_do_may:G3:tu_chay_cong"]
+    assert bc2["giu_lai"] == ["a:can_thiep_do_may:G0:khai_query_en"]
+
+
+def test_kich_ban_khong_chay_luot_nay_la_khong_do_duoc_va_giu_khoa():
+    """Vấn đề vừa: mốc đủ {rct:k1, cat:k2} → chạy riêng rct. Trước bản sửa: mã 0 (xanh giả), da_het=['cat:k2']."""
+    pk = {"do_duoc": True, "khiem_khuyet": []}
+    du = ["rct", "cat"]
+    bc1 = GL.tong_hop({"rct": _kb_kq("rct", ["rct:k1"]), "cat": _kb_kq("cat", ["cat:k2"])}, pk, {}, "truc_tuyen",
+                      None, [], du_kien=du)
+    bc2 = GL.tong_hop({"rct": _kb_kq("rct", ["rct:k1"])}, pk, bc1, "truc_tuyen", None, [], du_kien=du)
+    assert bc2["ma_thoat"] == 2 and bc2["da_het"] == [] and bc2["khong_chay_luot_nay"] == ["cat"]
+    assert "cat" in bc2["khong_do_duoc"] and "cat:k2" in bc2["theo_che_do"]["truc_tuyen"]["khiem_khuyet"]
+    bc3 = GL.tong_hop({"rct": _kb_kq("rct", ["rct:k1"]), "cat": _kb_kq("cat", ["cat:k2"])}, pk, bc2, "truc_tuyen",
+                      None, [], du_kien=du)
+    assert bc3["moi"] == [] and bc3["ma_thoat"] == 0
+    # mặc định du_kien = cả KICH_BAN thật
+    assert set(GL.tong_hop({}, pk, {}, "truc_tuyen", None, [])["khong_chay_luot_nay"]) == set(GL.KICH_BAN)
+
+
+class _GiaLapGia:
+    """Thay GiaLap trong main: mỗi kịch bản trả một khoá cố định; `loi` = tập kịch bản ném lỗi nội bộ."""
+    loi: set = set()
+
+    def __init__(self, ma, kb, repo, truc_tuyen, **kw):
+        self.ma, self.kb = ma, kb
+
+    def chay_kich_ban(self):
+        if self.ma in self.loi:
+            raise TypeError("_recover_params() takes 2 positional arguments but 3 were given")
+        return {"ma": self.ma, "thiet_ke": self.kb["thiet_ke"], "do_duoc": True, "g0_do_duoc": True,
+                "khiem_khuyet": [f"{self.ma}:k"], "can_thiep": [], "so_can_thiep": 0, "so_can_thiep_do_may": 0,
+                "cong_dung": "G5", "cong_dung_mong_doi": "G5", "crash": [], "kiem_chi_tiet": {"do_duoc": False},
+                "ghi_chu": [], "buoc": []}
+
+
+@pytest.fixture
+def main_gia(tmp_path, monkeypatch):
+    monkeypatch.setattr(GL, "REPO_ROOT", tmp_path)
+    monkeypatch.setattr(GL, "GiaLap", _GiaLapGia)
+    monkeypatch.setattr(_GiaLapGia, "loi", set())
+    monkeypatch.setattr(GL, "chay_pytest", lambda goc, tam: {"do_duoc": True, "dat": 9, "hong": [],
+                                                             "khiem_khuyet": []})
+    return tmp_path / "state" / "gl.json"
+
+
+def test_main_chay_tap_con_tra_ma_2_va_giu_khoa_kich_ban_khong_chay(main_gia, capsys):
+    tham = ["--truc-tuyen", "--state", str(main_gia)]
+    assert GL.main(tham) == 1  # mốc đầu, đủ kịch bản
+    assert GL.main(tham + ["--kich-ban", "rct_nhi_phan"]) == 2
+    bc = _doc(main_gia)
+    assert bc["da_het"] == [] and bc["khong_chay_luot_nay"] == ["cat_ngang_mo_ta"]
+    assert "cat_ngang_mo_ta:k" in bc["theo_che_do"]["truc_tuyen"]["khiem_khuyet"]
+    assert "cat_ngang_mo_ta (không chạy lượt này)" in capsys.readouterr().out
+    assert GL.main(tham) == 0  # chạy đủ lại: không có gì «🆕»
+
+
+def test_loi_noi_bo_trong_kich_ban_la_khong_do_duoc_ma_2_khong_phai_1(main_gia, capsys):
+    """Vấn đề thấp: ngoại lệ chưa bắt trong GiaLap từng làm Python thoát mã 1 = «khiếm khuyết MỚI» (🛎 giả)."""
+    tham = ["--truc-tuyen", "--state", str(main_gia)]
+    assert GL.main(tham) == 1
+    _GiaLapGia.loi = {"cat_ngang_mo_ta"}
+    assert GL.main(tham) == 2
+    bc = _doc(main_gia)
+    kq = bc["kich_ban"]["cat_ngang_mo_ta"]
+    assert not kq["do_duoc"] and "TypeError" in kq["loi_noi_bo"] and bc["da_het"] == []
+    assert "cat_ngang_mo_ta:k" in bc["theo_che_do"]["truc_tuyen"]["khiem_khuyet"]
+    ra = capsys.readouterr().out
+    assert "⚪ KHÔNG ĐO ĐƯỢC: cat_ngang_mo_ta — lỗi nội bộ của canary (TypeError" in ra
+
+
+def test_loi_noi_bo_pytest_va_loi_ngoai_kich_ban_deu_tra_ma_2(main_gia, monkeypatch, capsys):
+    def nem_loi(*a, **k):
+        raise RuntimeError("hỏng")
+
+    tham = ["--truc-tuyen", "--state", str(main_gia)]
+    assert GL.main(tham) == 1
+    monkeypatch.setattr(GL, "chay_pytest", nem_loi)
+    assert GL.main(tham) == 2 and "pytest" in _doc(main_gia)["khong_do_duoc"]
+    monkeypatch.setattr(GL, "tong_hop", nem_loi)
+    assert GL.chay_an_toan(tham) == 2
+    assert "⚪ KHÔNG ĐO ĐƯỢC: lỗi nội bộ của canary (RuntimeError: hỏng)" in capsys.readouterr().out
+    nguon = (ROOT / "tools" / "gia_lap_dinh_ky.py").read_text(encoding="utf-8")
+    assert "raise SystemExit(chay_an_toan())" in nguon.split('if __name__ == "__main__":', 1)[1]
+
+
+def test_crash_dung_ngay_khong_chay_tiep_va_ghi_cong_mem_chua_dat(tmp_path):
+    """Lỗ phủ D4: bỏ `if self.crash: break` thì vòng PI chạy tiếp sau crash và sinh khoá nhiễu `ket:G0:…`.
+    Lỗ phủ D1: crash để lại cổng mềm chưa đạt mà PI không kẹt ⇒ phải có khoá `cong_mem_chua_dat`."""
+    tg = TheGioi(dich_lac=False, n4=False, kct_do=(), crash=True)
+    _gl, kq = _chay_kb(tmp_path, tg)
+    assert tg.lenh.count("run_pipeline.py") == 1, tg.lenh  # không bước pipeline nào sau crash
+    assert kq["can_thiep"] == [] and kq["ket"] is None
+    assert not any(":ket:" in k for k in kq["khiem_khuyet"]), kq["khiem_khuyet"]
+    assert {"thu:crash:pipeline", "thu:cong_mem_chua_dat:G0", "thu:cong_mem_chua_dat:G1",
+            "thu:cong_mem_chua_dat:G3"} <= set(kq["khiem_khuyet"])
+
+
+def test_cong_mem_khong_dat_cuoi_luot_ma_pi_khong_ket_la_khiem_khuyet(tmp_path):
+    """Lỗ phủ D1: cổng mềm kịch bản không có nội dung PI (PI giả lập bỏ qua) kết thúc chưa đạt, ket rỗng — chỉ khoá
+    `cong_mem_chua_dat` báo được."""
+    kb = {**KB_THU, "pi": {g: v for g, v in KB_THU["pi"].items() if g != "G3"},
+          "xac_nhan": {g: v for g, v in KB_THU["xac_nhan"].items() if g != "G3"}}
+    tg = TheGioi(dich_lac=False, n4=False, kct_do=())
+    repo = tmp_path / "repo"
+    (repo / "exports").mkdir(parents=True)
+    kq = GL.GiaLap("thu", kb, repo, True, chay=tg.chay, cham=tg.cham, nen_g0_dir=tmp_path / "nen").chay_kich_ban()
+    assert kq["ket"] is None and kq["cham_song_cuoi"]["G3"] != "PASS"
+    assert kq["khiem_khuyet"] == ["thu:cong_mem_chua_dat:G3"]
 
 
 # ═══════════════════════════════════════════════════════════════════════════════════ ranh giới

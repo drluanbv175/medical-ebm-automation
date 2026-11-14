@@ -31,8 +31,9 @@ B. TEST ĐẦU–CUỐI SẴN CÓ (pytest, khoá GIẢ của conftest, thư mụ
    SPSS, R): danh sách `KIEM_PYTEST` để thêm khi có.
 C. SO VỚI LẦN TRƯỚC. Mỗi khiếm khuyết là một KHOÁ ổn định (vd `rct_nhi_phan:can_thiep_do_may:G3:tu_chay_cong`). So với
    tập khoá của lần trước CÙNG CHẾ ĐỘ (trực tuyến / ngoại tuyến) trong `state/gia-lap-dinh-ky-gan-nhat.json`. Phần
-   không đo được lượt này giữ nguyên khoá cũ (không coi là «đã hết»). Lần đầu chưa có mốc thì mọi khiếm khuyết đang có
-   đều là MỚI.
+   không đo được lượt này giữ nguyên khoá cũ (không coi là «đã hết»): cả kịch bản (kể cả kịch bản không chạy vì
+   `--kich-ban` chọn tập con, hoặc lỗi nội bộ canary giữa chừng), pytest, hoặc chỉ phần phụ thuộc G0 khi G0 dùng nền cũ
+   (vd K4 `…:G0:khai_query_en`). Lần đầu chưa có mốc thì mọi khiếm khuyết đang có đều là MỚI.
 
 G0 VÀ MẠNG
 ----------
@@ -53,7 +54,8 @@ nhãn GIẢ LẬP, không PII; số và PMID của kịch bản RCT lấy từ l
 MÃ THOÁT
 --------
 0 = đo đủ và không có khiếm khuyết mới · 1 = có khiếm khuyết MỚI (ưu tiên hơn 2) · 2 = có phần không đo được (vd G0
-ngoại tuyến, không chạy được pytest) mà không có khiếm khuyết mới — «không đo được» không bao giờ là «ổn».
+ngoại tuyến, không chạy được pytest, kịch bản không chạy lượt này, lỗi nội bộ của canary) mà không có khiếm khuyết mới
+— «không đo được» không bao giờ là «ổn». Lỗi nội bộ chưa bắt của canary cũng trả 2 (`chay_an_toan`), không bao giờ 1.
 
 Dùng (từ thư mục repo y khoa hoặc gốc workspace):
     python3 tools/gia_lap_dinh_ky.py [--truc-tuyen] [--kich-ban rct_nhi_phan ...] [--bo-pytest] [--khong-ghi]
@@ -854,14 +856,30 @@ def chay_pytest(goc: Path, thu_muc_tam: Path, *, chay: Callable[..., Dict[str, A
 
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════ so sánh + state
+def thuoc_phan(khoa: str, phan: str) -> bool:
+    """Khoá khiếm khuyết `khoa` có thuộc phần `phan` (một mục của «không đo được») không.
+
+    `phan` có hai dạng:
+    - «<kịch bản>» hoặc «pytest» — cả phần: mọi khoá bắt đầu bằng «<phan>:».
+    - «<kịch bản>.<cổng>» (vd «rct_nhi_phan.G0») — chỉ khoá của kịch bản đó PHỤ THUỘC cổng: có đoạn «:<cổng>:» hoặc
+      «:<cổng>/», hoặc kết thúc bằng «:<cổng>» (vd «…:can_thiep_do_may:G0:khai_query_en», «…:kiem_chi_tiet_do:G0/①»,
+      «…:cong_mem_chua_dat:G0»). Lượt G0 dùng nền cũ thì K4 không thể xuất hiện — vắng K4 không phải bằng chứng đã sửa.
+    """
+    if "." in phan:
+        ma, cong = phan.split(".", 1)
+        return khoa.startswith(f"{ma}:") and (f":{cong}:" in khoa or f":{cong}/" in khoa or khoa.endswith(f":{cong}"))
+    return khoa.startswith(f"{phan}:")
+
+
 def so_sanh(hien_tai: List[str], truoc: Optional[List[str]], khong_do: List[str]) -> Dict[str, List[str]]:
     """moi = có bây giờ mà lần trước không có; da_het = lần trước có, nay không có VÀ phần đó đo được lượt này.
-    Khoá của phần không đo được lượt này được giữ lại cho lần sau (`giu_lai`)."""
+    Khoá của phần không đo được lượt này (cả kịch bản, pytest, hoặc phần phụ thuộc một cổng — xem `thuoc_phan`) được
+    giữ lại cho lần sau (`giu_lai`), không bao giờ báo «đã hết» (§0.2: «không đo được» ≠ «ổn»)."""
     truoc_set = set(truoc or [])
     hien = set(hien_tai)
 
     def _thuoc_phan_khong_do(k: str) -> bool:
-        return any(k.startswith(f"{p}:") for p in khong_do)
+        return any(thuoc_phan(k, p) for p in khong_do)
 
     giu_lai = sorted(k for k in truoc_set if _thuoc_phan_khong_do(k))
     return {"moi": sorted(hien - truoc_set), "da_het": sorted(k for k in truoc_set - hien
@@ -891,9 +909,16 @@ def ma_thoat(moi: List[str], khong_do: List[str]) -> int:
 
 
 def tong_hop(kich_ban: Dict[str, Dict[str, Any]], pytest_kq: Optional[Dict[str, Any]], state_cu: Dict[str, Any],
-             che_do: str, loi_state: Optional[str], ro_ri: List[str]) -> Dict[str, Any]:
+             che_do: str, loi_state: Optional[str], ro_ri: List[str],
+             du_kien: Optional[List[str]] = None) -> Dict[str, Any]:
+    """Gộp kết quả lượt này, so với mốc cùng chế độ, tính mã thoát.
+
+    `du_kien` = mọi kịch bản LẼ RA phải đo (mặc định: cả `KICH_BAN`). Kịch bản không chạy lượt này (`--kich-ban` chọn
+    tập con) là «không đo được»: khoá cũ của nó được giữ, mã thoát là 2 chứ không phải 0 (không báo «đã hết» giả)."""
     khiem: List[str] = []
     khong_do: List[str] = []
+    khong_chay = [ma for ma in (list(KICH_BAN) if du_kien is None else du_kien) if ma not in kich_ban]
+    khong_do += khong_chay
     for ma, kq in kich_ban.items():
         if not kq.get("do_duoc"):
             khong_do.append(ma)
@@ -911,8 +936,9 @@ def tong_hop(kich_ban: Dict[str, Dict[str, Any]], pytest_kq: Optional[Dict[str, 
         khiem.append(f"he:ro_ri_exports_that:{d}")
     khiem = sorted(set(khiem))
     truoc = ((state_cu.get("theo_che_do") or {}).get(che_do) or {}).get("khiem_khuyet")
-    # phần «không đo được» chỉ tính ở cấp khoá: «rct_nhi_phan.G0» không làm mất khoá của kịch bản đó
-    ss = so_sanh(khiem, truoc, [k for k in khong_do if "." not in k])
+    # «rct_nhi_phan» không đo được ⇒ giữ mọi khoá của kịch bản; «rct_nhi_phan.G0» ⇒ chỉ giữ khoá phụ thuộc G0 (K4…),
+    # khoá G1–G4 của kịch bản vẫn so bình thường vì phần đó đo được.
+    ss = so_sanh(khiem, truoc, khong_do)
     theo_che_do = dict(state_cu.get("theo_che_do") or {})
     theo_che_do[che_do] = {"luc": _bay_gio(), "khiem_khuyet": sorted(set(khiem) | set(ss["giu_lai"]))}
     ma = ma_thoat(ss["moi"], khong_do)
@@ -920,6 +946,7 @@ def tong_hop(kich_ban: Dict[str, Dict[str, Any]], pytest_kq: Optional[Dict[str, 
         "phien_ban": PHIEN_BAN, "luc": _bay_gio(), "che_do": che_do, "ma_thoat": ma,
         "lan_dau": truoc is None, "loi_moc": loi_state,
         "khiem_khuyet": khiem, "moi": ss["moi"], "da_het": ss["da_het"], "khong_do_duoc": khong_do,
+        "giu_lai": ss["giu_lai"], "khong_chay_luot_nay": khong_chay,
         "kich_ban": {k: {x: v for x, v in kq.items() if x != "buoc"} for k, kq in kich_ban.items()},
         "chi_tiet_buoc": {k: kq.get("buoc") for k, kq in kich_ban.items()},
         "pytest": pytest_kq,
@@ -931,6 +958,19 @@ def tong_hop(kich_ban: Dict[str, Dict[str, Any]], pytest_kq: Optional[Dict[str, 
 
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════ in + main
+def _mo_ta_loi(exc: BaseException) -> str:
+    return f"({type(exc).__name__}: {str(exc)[:200]})"
+
+
+def kich_ban_loi_noi_bo(ma: str, exc: BaseException) -> Dict[str, Any]:
+    """Kết quả của kịch bản bị lỗi nội bộ canary giữa chừng: «không đo được» (khoá cũ giữ nguyên), không sinh khoá."""
+    kb = KICH_BAN.get(ma) or {}
+    return {"ma": ma, "study": kb.get("study"), "thiet_ke": kb.get("thiet_ke"), "mo_ta": kb.get("mo_ta"),
+            "do_duoc": False, "g0_do_duoc": False, "khiem_khuyet": [], "loi_noi_bo": _mo_ta_loi(exc),
+            "ghi_chu": [f"lỗi nội bộ của canary {_mo_ta_loi(exc)} — không phải khiếm khuyết của hệ; sửa canary"],
+            "buoc": []}
+
+
 def in_tom_tat(bc: Dict[str, Any]) -> None:
     nhan_ma = {0: "🟢 không có khiếm khuyết mới", 1: "🔴 CÓ KHIẾM KHUYẾT MỚI", 2: "⚪ có phần KHÔNG ĐO ĐƯỢC"}
     print(f"\n🧪 GIẢ LẬP ĐỊNH KỲ hệ nghiên cứu — chế độ {bc['che_do']} — {bc['luc']}")
@@ -969,7 +1009,11 @@ def in_tom_tat(bc: Dict[str, Any]) -> None:
     for k in bc["da_het"]:
         print(f"  ✔️ đã hết: {k}")
     if bc["khong_do_duoc"]:
-        print(f"  ⚪ không đo được: {', '.join(bc['khong_do_duoc'])}")
+        kc = set(bc.get("khong_chay_luot_nay") or [])
+        nhan = [f"{k} (không chạy lượt này)" if k in kc else k for k in bc["khong_do_duoc"]]
+        print(f"  ⚪ không đo được: {', '.join(nhan)}")
+    if bc.get("giu_lai"):
+        print(f"  ⏸ giữ nguyên {len(bc['giu_lai'])} khoá cũ của phần không đo được (không tính «đã hết»)")
     print(f"  → {nhan_ma[bc['ma_thoat']]} (mã {bc['ma_thoat']}). {bc['disclaimer']}")
 
 
@@ -1000,16 +1044,24 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(f"⚪ KHÔNG ĐO ĐƯỢC: không dựng được bản sao tạm — {exc}")
             return 2
         for ma in (args.kich_ban or list(KICH_BAN)):
-            kich_ban[ma] = GiaLap(ma, KICH_BAN[ma], repo, args.truc_tuyen).chay_kich_ban()
+            try:
+                kich_ban[ma] = GiaLap(ma, KICH_BAN[ma], repo, args.truc_tuyen).chay_kich_ban()
+            except Exception as exc:  # noqa: BLE001 — lỗi của CANARY (vd hàm nội bộ đổi chữ ký) ≠ khiếm khuyết của hệ
+                kich_ban[ma] = kich_ban_loi_noi_bo(ma, exc)
+                print(f"⚪ KHÔNG ĐO ĐƯỢC: {ma} — lỗi nội bộ của canary {_mo_ta_loi(exc)}")
         if not args.bo_pytest:
-            pytest_kq = chay_pytest(REPO_ROOT, tam)
+            try:
+                pytest_kq = chay_pytest(REPO_ROOT, tam)
+            except Exception as exc:  # noqa: BLE001
+                pytest_kq = {"do_duoc": False, "ly_do": f"lỗi nội bộ của canary {_mo_ta_loi(exc)}",
+                             "khiem_khuyet": []}
     finally:
         if args.giu_thu_muc:
             print(f"📁 Giữ thư mục tạm: {tam.as_posix()}")
         else:
             shutil.rmtree(tam, ignore_errors=True)
     ro_ri = sorted(set(_de_tai_canary_trong_exports(REPO_ROOT)) - truoc_ro_ri)
-    bc = tong_hop(kich_ban, pytest_kq, state_cu, che_do, loi_state, ro_ri)
+    bc = tong_hop(kich_ban, pytest_kq, state_cu, che_do, loi_state, ro_ri, du_kien=list(KICH_BAN))
     if not args.khong_ghi:
         if loi_state and state_path.exists():
             os.replace(state_path, state_path.with_name(f"{state_path.stem}.hong-{datetime.now():%Y%m%d%H%M%S}.json"))
@@ -1021,5 +1073,16 @@ def main(argv: Optional[List[str]] = None) -> int:
     return bc["ma_thoat"]
 
 
+def chay_an_toan(argv: Optional[List[str]] = None) -> int:
+    """Điểm vào dòng lệnh: lỗi nội bộ chưa bắt của canary trả mã 2 («không đo được»), KHÔNG để Python thoát mã 1 mặc
+    định — mã 1 nghĩa là «có khiếm khuyết MỚI» và sinh việc 🛎 trong tác vụ tháng."""
+    try:
+        return main(argv)
+    except Exception as exc:  # noqa: BLE001
+        print(f"⚪ KHÔNG ĐO ĐƯỢC: lỗi nội bộ của canary {_mo_ta_loi(exc)} — không phải khiếm khuyết của hệ; "
+              "sửa canary trong phiên có người")
+        return 2
+
+
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(chay_an_toan())
