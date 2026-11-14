@@ -18,10 +18,11 @@ Bác sĩ nhập phiếu giấy vào Excel. Công cụ này giữ cho đường �
 
 Không thay thống kê viên/quản lý dữ liệu; mọi giá trị nghi sai phải đối chiếu PHIẾU GỐC. Cần bác sĩ kiểm chứng.
 
-Ví dụ:
-  python3 tools/nhap_lieu_excel.py mau --study hai-long-benh-nhan-C1a-BVQY175
-  python3 tools/nhap_lieu_excel.py nhap --study hai-long-benh-nhan-C1a-BVQY175 --excel ~/NhapLieu/lan1.xlsx
-  python3 tools/nhap_lieu_excel.py so-sanh --study hai-long-benh-nhan-C1a-BVQY175 \\
+Chạy bằng Python của MÔI TRƯỜNG DỰ ÁN (~/.ebm-venv — python3 hệ thống của máy không có openpyxl). Ví dụ:
+  ~/.ebm-venv/bin/python tools/nhap_lieu_excel.py mau --study hai-long-benh-nhan-C1a-BVQY175
+  ~/.ebm-venv/bin/python tools/nhap_lieu_excel.py nhap --study hai-long-benh-nhan-C1a-BVQY175 \\
+      --excel ~/NhapLieu/lan1.xlsx
+  ~/.ebm-venv/bin/python tools/nhap_lieu_excel.py so-sanh --study hai-long-benh-nhan-C1a-BVQY175 \\
       --excel1 ~/NhapLieu/lan1.xlsx --excel2 ~/NhapLieu/lan2.xlsx
 """
 
@@ -487,13 +488,29 @@ def doc_luat_dq(p: Path | None) -> list[dict]:
 # ───────────────────────────── sinh mẫu Excel ─────────────────────────────
 
 
+def _py() -> str:
+    """Lệnh Python để IN trong gợi ý bước kế: đúng trình thông dịch đang chạy (venv dự án ⇒ «~/.ebm-venv/bin/python»)
+    — gợi ý «python3» từng làm bác sĩ chạy bằng python3 hệ thống (không có openpyxl)."""
+    exe = Path(sys.executable)
+    try:
+        return (
+            "~/" + exe.relative_to(Path.home()).as_posix() if (Path.home() / ".ebm-venv") in exe.parents else str(exe)
+        )
+    except ValueError:
+        return str(exe)
+
+
 def _openpyxl():
     try:
         import openpyxl  # noqa: PLC0415
 
         return openpyxl
     except ImportError as e:
-        raise KhongDoDuoc("thiếu thư viện openpyxl (pip install -r requirements.txt)") from e
+        raise KhongDoDuoc(
+            "thiếu thư viện openpyxl — chạy bằng Python của môi trường dự án: ~/.ebm-venv/bin/python "
+            "tools/nhap_lieu_excel.py … (python3 hệ thống của máy không có openpyxl; Windows: "
+            "%USERPROFILE%\\.ebm-venv\\Scripts\\python)"
+        ) from e
 
 
 def _so_hay_chu(ma: str):
@@ -793,9 +810,12 @@ def _trang_huong_dan(wb, study: str, ket_thuc: int) -> None:
         f"6. Excel chỉ kiểm khi GÕ trong vùng tới hàng {ket_thuc}; DÁN (paste) sẽ bỏ qua kiểm tra"
         " — công cụ nhập sẽ kiểm lại TOÀN BỘ.",
         "7. Không dùng công thức, không gộp ô, không thêm trang chứa dữ liệu khác.",
-        "8. Nhập kép: hai người nhập độc lập hai bản từ CÙNG mẫu này, rồi chạy:",
-        "   python3 tools/nhap_lieu_excel.py so-sanh --study <mã> --excel1 lan1.xlsx --excel2 lan2.xlsx",
-        "9. Đưa vào hệ thống: python3 tools/nhap_lieu_excel.py nhap --study <mã> --excel <tệp.xlsx> [--tiep-nhan]",
+        "8. Nhập kép: hai người nhập độc lập hai bản từ CÙNG mẫu này (lưu NGOÀI thư mục repo, vd ~/NhapLieu/), rồi chạy"
+        " trong thư mục medical-ebm-automation (Python của môi trường dự án ~/.ebm-venv, KHÔNG phải python3 hệ thống):",
+        f"   ~/.ebm-venv/bin/python tools/nhap_lieu_excel.py so-sanh --study {study}"
+        " --excel1 ~/NhapLieu/lan1.xlsx --excel2 ~/NhapLieu/lan2.xlsx",
+        f"9. Đưa vào hệ thống: ~/.ebm-venv/bin/python tools/nhap_lieu_excel.py nhap --study {study}"
+        " --excel ~/NhapLieu/lan1.xlsx --tiep-nhan",
         "",
         "Tệp đã có dữ liệu là dữ liệu nghiên cứu: lưu ở nơi được phép theo kế hoạch quản lý dữ liệu,"
         " không gửi qua mạng xã hội.",
@@ -1460,7 +1480,8 @@ def lenh_mau(args) -> int:
             + ", ".join(kq["khong_kiem_excel"])
         )
     print(f"   Từ điển: {td_p.name}" + (f" · mã thiếu: {mt_p.name}" if mt_p else " · KHÔNG có tệp mã thiếu"))
-    print("→ Nhập xong: python3 tools/nhap_lieu_excel.py nhap --study " + args.study + ' --excel "<tệp đã nhập>.xlsx"')
+    print("→ Chép mẫu ra NGOÀI repo (vd ~/NhapLieu/lan1.xlsx, lan2.xlsx) rồi nhập. Nhập xong:")
+    print(f"   {_py()} tools/nhap_lieu_excel.py nhap --study {args.study} --excel ~/NhapLieu/lan1.xlsx")
     print(CAN_KIEM)
     return MA_OK
 
@@ -1641,7 +1662,7 @@ def lenh_nhap(args) -> int:
         kq = subprocess.run(lenh_cong, check=False)
         return kq.returncode
     print(
-        "→ Bước kế (cổng tiếp nhận, quét PII theo giá trị): python3 tools/import_real_dataset.py --study "
+        f"→ Bước kế (cổng tiếp nhận, quét PII theo giá trị): {_py()} tools/import_real_dataset.py --study "
         f'{args.study} --data "{csv_p}"'
     )
     print(CAN_KIEM)
@@ -1733,13 +1754,23 @@ def lenh_so_sanh(args) -> int:
         "so_o_lech": len(lech),
         "ty_le_lech": round(len(lech) / so_o, 6) if so_o else None,
         "lech_theo_bien": {k: {"so_o": v[0], "so_lech": v[1]} for k, v in theo_bien.items() if v[1]},
-        "trang_thai": "TRUNG_KHOP" if not (lech or chi_1 or chi_2 or cot_chi_mot) else "CO_LECH",
+        "trang_thai": (
+            "CO_LECH"
+            if (lech or chi_1 or chi_2 or cot_chi_mot)
+            else ("TRUNG_KHOP" if so_o else "KHONG_CO_DU_LIEU")  # 0 ô được so KHÔNG BAO GIỜ là «trùng khớp»
+        ),
         "ghi_chu": "Tóm tắt KHÔNG chứa giá trị dữ liệu — bằng chứng đối chiếu nguồn (G5 source_data_verification).",
         "disclaimer": CAN_KIEM,
     }
     (ra / "NHAP_KEP_tom_tat.json").write_text(
         json.dumps(tom, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n"
     )
+    if tom["trang_thai"] == "KHONG_CO_DU_LIEU":  # không ghi «bằng chứng» nhập kép khi chưa so được ô nào
+        print(
+            f"🔴 Không có ô nào để so ({len(chung)} mã chung · {so_o} ô) — hai tệp chưa có dữ liệu nhập, hoặc không"
+            " có mã nghiên cứu chung. KHÔNG ghi bằng chứng nhập kép."
+        )
+        return MA_LOI
     bang_chung = SP.thu_muc_de_tai(args.study) / "nhap_lieu"
     bang_chung.mkdir(parents=True, exist_ok=True)
     ten_bc = f"NHAP_KEP_tom_tat_{datetime.now().strftime('%Y%m%d-%H%M%S')}.json"
