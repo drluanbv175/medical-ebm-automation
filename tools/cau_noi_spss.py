@@ -50,6 +50,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+import time
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from decimal import Decimal, InvalidOperation
@@ -1878,13 +1879,14 @@ def doc_ket_qua(thu_muc_kq: Path, dt: dict, man: dict) -> dict:
     return ra
 
 
-def lenh_chay(args) -> int:
+def _kiem_truoc_chay(args) -> dict:
+    """Mọi chốt TRƯỚC khi chạy (dùng chung chế độ nền và chế độ giao diện SPSS): cú pháp đúng bản sinh từ đặc tả + .sav
+    hiện tại, .sav chưa đổi sau xuất, bảng Nₕ HIS chưa đổi."""
     d = thu_muc_de_tai(args.study)
     sps = d / "spss" / f"{args.study}_phan_tich.sps"
     kq = d / "spss" / "ket_qua"
     if not sps.exists() or not (kq / "dac_ta.json").exists():
         raise KhongDoDuoc(f"chưa có {sps.name} — chạy `cau_noi_spss.py cu-phap --study {args.study}` trước")
-    _xoa_ket_qua_cu(d, args.gate)  # lượt hỏng không được để lại kết quả của lượt trước cho doi-chieu đọc nhầm
     man = them_loc(args.study, them_bien_phai_sinh(args.study, _doc_manifest_sav(args.study), args.gate), args.gate)
     dt = _doc_json(kq / "dac_ta.json")
     man = them_bien_gia(man, dt)  # F2: cùng biến giả như lúc sinh cú pháp (dac_ta.json giữ hiep_bien_phan_loai)
@@ -1906,39 +1908,37 @@ def lenh_chay(args) -> int:
     his = d / "his_tong_hop" / "N_tang_HIS.csv"
     if tang and (not his.exists() or sha256_tep(his) != tang.get("sha256_his")):
         raise TuChoi("bảng Nₕ HIS đã đổi (hoặc mất) sau khi sinh cú pháp — chạy lại cu-phap")
-    py = tim_spss()
-    for cu in [*kq.glob("oms_*.xml"), *kq.glob(f"{args.study}_phan_tich*.spv"), *kq.glob("r_*")]:
+    return {"d": d, "sps": sps, "kq": kq, "man": man, "dt": dt, "sav": sav, "sps_bs": sps_bs, "vb_bs_that": vb_bs_that,
+            "tang": tang, "his": his}  # fmt: skip
+
+
+def _xoa_dau_ra_lan_truoc(c: dict, study: str) -> None:
+    kq = c["kq"]
+    for cu in [*kq.glob("oms_*.xml"), *kq.glob(f"{study}_phan_tich*.spv"), *kq.glob("r_*")]:
         if cu.exists():
             cu.unlink()
-    ma_bs, out_bs, err_bs, r_kq = None, "", "", {}
-    with vung_tam() as tam_s:
-        tam = Path(tam_s)
-        (tam / "kq").mkdir()
-        shutil.copyfile(sav, tam / "vao.sav")
-        vb, _, _ = cu_phap_phan_tich(
-            args.study, man, dt, tam / "kq", sav=tam / "vao.sav", bien_bang1=dt.get("vars_bang1")
-        )
-        (tam / "phan_tich.sps").write_text(vb, encoding="utf-8", newline="\n")
-        ma, out, err = chay_spss(py, ["--cu-phap", str(tam / "phan_tich.sps")], thu_muc=tam, thoi_han=args.thoi_han)
-        if ma == 0 and vb_bs_that:
-            vb_bs, _, _ = cu_phap_bo_sung(args.study, man, dt, tam / "kq", sav=tam / "vao.sav")
-            (tam / "phan_tich_bo_sung.sps").write_text(vb_bs, encoding="utf-8", newline="\n")
-            ma_bs, out_bs, err_bs = chay_spss(
-                py, ["--cu-phap", str(tam / "phan_tich_bo_sung.sps")], thu_muc=tam, thoi_han=args.thoi_han
-            )
-        if ma == 0 and not getattr(args, "khong_r", False):
-            (tam / "r").mkdir()
-            dt_r = dict(dt)
-            m = next((b.get("muc") for b in man["bien"] if b["cot"] == dt.get("outcome")), None)
-            if dt_r.get("outcome_type") in (None, "auto"):
-                dt_r["outcome_type"] = "binary" if m is not None and len(m) == 2 else "continuous"
-            r_kq = chay_r_tham_chieu(man, dt_r, tam / "vao.sav", tam / "r", his=his if tang else None,
-                                     khoi_r=ma_r_chuan_bi_tham_chieu(args.study, args.gate, man, dt_r))  # fmt: skip
-            for f in (tam / "r").iterdir():
-                if f.name in ("r_doi_chieu.R", "r_kq.json"):
-                    shutil.copyfile(f, kq / f.name)
-        for f in (tam / "kq").iterdir():
-            shutil.move(str(f), kq / f.name)
+
+
+def _r_tham_chieu(args, c: dict, sav_dung: Path, tam: Path) -> dict:
+    """R làm tham chiếu cho khối BỔ SUNG của SPSS (mô hình hỗn hợp, trọng số) — chạy nền bằng Rscript."""
+    (tam / "r").mkdir(exist_ok=True)
+    man, dt = c["man"], c["dt"]
+    dt_r = dict(dt)
+    m = next((b.get("muc") for b in man["bien"] if b["cot"] == dt.get("outcome")), None)
+    if dt_r.get("outcome_type") in (None, "auto"):
+        dt_r["outcome_type"] = "binary" if m is not None and len(m) == 2 else "continuous"
+    r_kq = chay_r_tham_chieu(man, dt_r, sav_dung, tam / "r", his=c["his"] if c["tang"] else None,
+                             khoi_r=ma_r_chuan_bi_tham_chieu(args.study, args.gate, man, dt_r))  # fmt: skip
+    for f in (tam / "r").iterdir():
+        if f.name in ("r_doi_chieu.R", "r_kq.json"):
+            shutil.copyfile(f, c["kq"] / f.name)
+    return r_kq
+
+
+def _ghi_ket_qua(args, c: dict, *, ma: int, out: str, err: str, ma_bs, out_bs: str, err_bs: str, r_kq: dict,
+                 phien_ban: str | None, chay_bang: str) -> int:  # fmt: skip
+    """Nhật ký + G6_spss_ket_qua.json từ các tệp OMS đã có trong spss/ket_qua (chung hai chế độ)."""
+    d, kq, man, dt = c["d"], c["kq"], c["man"], c["dt"]
     (kq / f"{args.study}_phan_tich.log").write_text(
         out + ("\n--- stderr ---\n" + err if err else ""), encoding="utf-8", newline="\n"
     )
@@ -1962,7 +1962,8 @@ def lenh_chay(args) -> int:
     ket = {
         "study": args.study,
         "luc": datetime.now().astimezone().isoformat(timespec="seconds"),
-        "spss_phien_ban": _gia_tri_dong(out, "PHIEN_BAN") or phien_ban_tu_goi(py),
+        "spss_phien_ban": phien_ban,
+        "chay_bang": chay_bang,
         "sav": man.get("sav"),
         "sha256_sav": man.get("sha256_sav"),
         "sha256_nguon": man.get("sha256_nguon"),
@@ -1976,9 +1977,145 @@ def lenh_chay(args) -> int:
     (d / f"{args.gate}_spss_ket_qua.json").write_text(
         json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n"
     )
-    print(f"✓ SPSS chạy xong · kết quả {d / (args.gate + '_spss_ket_qua.json')} · bảng mở trong SPSS: {ket['spv']}")
+    print(f"✓ SPSS chạy xong ({chay_bang}) · kết quả {d / (args.gate + '_spss_ket_qua.json')} · bảng: {ket['spv']}")
     return MA_OK
 
+
+# ── chạy trong GIAO DIỆN IBM SPSS Statistics (15/11/2026 — bác sĩ: «đúng phần mềm SPSS đang chạy») ──
+TEP_DAU_CHO = ".cho_giao_dien_{gate}.json"
+
+
+def ung_dung_spss(py: Path) -> Path | None:
+    """Ứng dụng IBM SPSS Statistics CÙNG BỘ CÀI với Python mà cầu nối dùng (macOS: thư mục gốc chứa
+    Resources/Python3 — vd /Applications/IBM SPSS Statistics/IBM SPSS Statistics.app; Windows: stats.exe cạnh Python3).
+    Không tìm thấy ⇒ None — KHÔNG mở một bản SPSS khác (bác sĩ đòi đúng phần mềm đang dùng)."""
+    if os.name == "nt":
+        p = py.parent.parent / "stats.exe"
+        return p if p.is_file() else None
+    try:
+        goc = py.resolve().parents[3]
+    except IndexError:
+        return None
+    ds = [a for a in goc.glob("*.app") if (a / "Contents" / "Info.plist").is_file() and "SPSS Statistics" in a.name]
+    uu_tien = [a for a in ds if a.name == "IBM SPSS Statistics.app"]
+    return (uu_tien or sorted(ds))[0] if ds else None
+
+
+def phien_ban_ung_dung(app: Path) -> str | None:
+    try:
+        return plistlib.loads((app / "Contents" / "Info.plist").read_bytes()).get("CFBundleShortVersionString")
+    except (OSError, ValueError, plistlib.InvalidFileException):
+        return None
+
+
+def mo_trong_ung_dung(app: Path, tep: Path) -> bool:
+    """Mở tệp bằng ĐÚNG ứng dụng (đường dẫn đầy đủ, không theo tên — tránh mở bản SPSS khác)."""
+    try:
+        if sys.platform == "darwin":
+            return subprocess.run(["open", "-a", str(app), str(tep)], check=False).returncode == 0
+        if os.name == "nt":
+            subprocess.Popen([str(app), str(tep)])  # noqa: S603 — stats.exe của bộ cài, đường dẫn đã kiểm
+            return True
+    except OSError:
+        return False
+    return False
+
+
+def _mo_trong_giao_dien(args, c: dict) -> int:
+    py = tim_spss()
+    app = ung_dung_spss(py)
+    if app is None:
+        raise KhongDoDuoc(f"không thấy ứng dụng IBM SPSS Statistics cùng bộ cài với {py} — không mở bản SPSS khác; "
+                          "chạy chế độ nền (bỏ --trong-spss) hoặc mở tay tệp cú pháp")  # fmt: skip
+    _xoa_ket_qua_cu(c["d"], args.gate)
+    _xoa_dau_ra_lan_truoc(c, args.study)
+    vo = c["d"] / "spss" / f"chay_trong_spss_{args.gate}.sps"
+    dong = [f"* Chạy trong IBM SPSS Statistics: menu Run > All. Sinh bởi cau_noi_spss.py chay --trong-spss "
+            f"({datetime.now().astimezone().isoformat(timespec='seconds')}).",
+            f"* Xong quay lại: python3 tools/cau_noi_spss.py nhan-ket-qua --study {args.study} --gate {args.gate}.",
+            f"INSERT FILE={dd_spss(c['sps'])}."]  # fmt: skip
+    if c["vb_bs_that"]:
+        dong.append(f"INSERT FILE={dd_spss(c['sps_bs'])}.")
+    vo.write_text("\n".join(dong) + "\n", encoding="utf-8", newline="\n")
+    ver = phien_ban_ung_dung(app)  # stats.exe (Windows) không có Info.plist ⇒ None
+    (c["kq"] / TEP_DAU_CHO.format(gate=args.gate)).write_text(json.dumps({
+        "t": time.time(), "luc": datetime.now().astimezone().isoformat(timespec="seconds"), "ung_dung": str(app),
+        "phien_ban": ver, "sha256_sps": sha256_tep(c["sps"]),
+        "sha256_sps_bo_sung": sha256_tep(c["sps_bs"]) if c["vb_bs_that"] else None, "tep_chay": str(vo)},
+        ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")  # fmt: skip
+    if not mo_trong_ung_dung(app, vo):
+        print(f"⚪ Không mở được {app.name} — mở tay {vo} trong SPSS rồi Run > All")
+        return MA_KHONG_DO
+    print(f"✓ Đã mở trong {app.name} {ver or ''} (cùng bộ cài với cầu nối): {vo.name}\n"
+          f"   Trong SPSS: menu Run > All (chạy phân tích chính + bổ sung, bảng hiện ở cửa sổ Viewer).\n"
+          f"   Xong: python3 tools/cau_noi_spss.py nhan-ket-qua --study {args.study} --gate {args.gate}"
+          "  (rồi doi-chieu)")  # fmt: skip
+    return MA_OK
+
+
+def lenh_nhan_ket_qua(args) -> int:
+    """Đọc kết quả lượt chạy trong GIAO DIỆN SPSS (tệp OMS mà cú pháp tự ghi) ⇒ G6_spss_ket_qua.json như chế độ nền."""
+    c = _kiem_truoc_chay(args)
+    dau_p = c["kq"] / TEP_DAU_CHO.format(gate=args.gate)
+    dau = _doc_json(dau_p)
+    if not dau:
+        raise KhongDoDuoc(f"chưa có lượt mở trong SPSS cho {args.gate} — chạy `cau_noi_spss.py chay --study "
+                          f"{args.study} --trong-spss` trước")  # fmt: skip
+    if sha256_tep(c["sps"]) != dau.get("sha256_sps"):
+        raise TuChoi("cú pháp đã đổi sau khi mở trong SPSS — chạy lại `chay --trong-spss`")
+    moi = [p for p in c["kq"].glob("oms_*.xml") if p.stat().st_mtime >= float(dau.get("t") or 0)]
+    if not moi:
+        raise KhongDoDuoc("chưa thấy kết quả OMS mới trong spss/ket_qua — trong SPSS chạy Run > All cho tới hết, rồi "
+                          "gọi lại; SPSS báo lỗi thì xem cửa sổ Viewer")  # fmt: skip
+    co_bs = bool(c["vb_bs_that"])
+    spv_bs = c["kq"] / f"{args.study}_phan_tich_bo_sung.spv"
+    ma_bs = (0 if spv_bs.exists() and spv_bs.stat().st_mtime >= float(dau.get("t") or 0) else 1) if co_bs else None
+    r_kq: dict = {}
+    if not getattr(args, "khong_r", False):
+        with vung_tam() as tam_s:
+            tam = Path(tam_s)
+            shutil.copyfile(c["sav"], tam / "vao.sav")
+            r_kq = _r_tham_chieu(args, c, tam / "vao.sav", tam)
+    ten_app = Path(dau.get("ung_dung") or "SPSS").name
+    ghi_chu = f"Chạy trong giao diện {ten_app} — nhật ký đầy đủ ở cửa sổ Viewer / tệp .spv."
+    return _ghi_ket_qua(args, c, ma=0, out=ghi_chu, err="", ma_bs=ma_bs, out_bs=ghi_chu if co_bs else "",
+                        err_bs="" if ma_bs in (None, 0) else "không thấy .spv bổ sung mới — khối bổ sung chưa xong",
+                        r_kq=r_kq, phien_ban=dau.get("phien_ban"),
+                        chay_bang=f"giao diện {Path(dau.get('ung_dung') or 'IBM SPSS Statistics').stem} "
+                                  f"{dau.get('phien_ban') or ''}".strip())  # fmt: skip
+
+
+def lenh_chay(args) -> int:
+    c = _kiem_truoc_chay(args)
+    if getattr(args, "trong_spss", False):
+        return _mo_trong_giao_dien(args, c)
+    _xoa_ket_qua_cu(c["d"], args.gate)  # lượt hỏng không được để lại kết quả của lượt trước cho doi-chieu đọc nhầm
+    py = tim_spss()
+    _xoa_dau_ra_lan_truoc(c, args.study)
+    man, dt, kq = c["man"], c["dt"], c["kq"]
+    ma_bs, out_bs, err_bs, r_kq = None, "", "", {}
+    with vung_tam() as tam_s:
+        tam = Path(tam_s)
+        (tam / "kq").mkdir()
+        shutil.copyfile(c["sav"], tam / "vao.sav")
+        vb, _, _ = cu_phap_phan_tich(
+            args.study, man, dt, tam / "kq", sav=tam / "vao.sav", bien_bang1=dt.get("vars_bang1")
+        )
+        (tam / "phan_tich.sps").write_text(vb, encoding="utf-8", newline="\n")
+        ma, out, err = chay_spss(py, ["--cu-phap", str(tam / "phan_tich.sps")], thu_muc=tam, thoi_han=args.thoi_han)
+        if ma == 0 and c["vb_bs_that"]:
+            vb_bs, _, _ = cu_phap_bo_sung(args.study, man, dt, tam / "kq", sav=tam / "vao.sav")
+            (tam / "phan_tich_bo_sung.sps").write_text(vb_bs, encoding="utf-8", newline="\n")
+            ma_bs, out_bs, err_bs = chay_spss(
+                py, ["--cu-phap", str(tam / "phan_tich_bo_sung.sps")], thu_muc=tam, thoi_han=args.thoi_han
+            )
+        if ma == 0 and not getattr(args, "khong_r", False):
+            r_kq = _r_tham_chieu(args, c, tam / "vao.sav", tam)
+        for f in (tam / "kq").iterdir():
+            shutil.move(str(f), kq / f.name)
+    return _ghi_ket_qua(args, c, ma=ma, out=out, err=err, ma_bs=ma_bs, out_bs=out_bs, err_bs=err_bs, r_kq=r_kq,
+                        phien_ban=_gia_tri_dong(out, "PHIEN_BAN") or phien_ban_tu_goi(py),
+                        chay_bang="nền (Python của SPSS)")  # fmt: skip
 
 # ───────────────────────────── lệnh doi-chieu ─────────────────────────────
 
@@ -3518,6 +3655,13 @@ def main(argv: list[str] | None = None) -> int:
         if ten == "chay":
             p.add_argument("--thoi-han", type=int, default=1200, help="giây (mặc định 1200)")
             p.add_argument("--khong-r", action="store_true", help="không chạy R làm tham chiếu cho phân tích bổ sung")
+            p.add_argument("--trong-spss", action="store_true",
+                           help="MỞ cú pháp trong giao diện IBM SPSS Statistics (cùng bộ cài) để bác sĩ Run > All; "
+                                "xong gọi nhan-ket-qua")  # fmt: skip
+    nk = sub.add_parser("nhan-ket-qua", help="đọc kết quả lượt chạy trong giao diện SPSS ⇒ G6_spss_ket_qua.json")
+    nk.add_argument("--study", required=True)
+    nk.add_argument("--gate", default="G6")
+    nk.add_argument("--khong-r", action="store_true", help="không chạy R làm tham chiếu cho phân tích bổ sung")
     n = sub.add_parser("nhap-sav", help=".sav của bác sĩ ⇒ CSV + từ điển nhãn (ngoài repo) cho cổng tiếp nhận")
     n.add_argument("--sav", required=True)
     n.add_argument("--ra", help="thư mục ra (NGOÀI repo; mặc định cạnh tệp .sav)")
@@ -3527,6 +3671,7 @@ def main(argv: list[str] | None = None) -> int:
         "xuat-sav": lenh_xuat_sav,
         "cu-phap": lenh_cu_phap,
         "chay": lenh_chay,
+        "nhan-ket-qua": lenh_nhan_ket_qua,
         "doi-chieu": lenh_doi_chieu,
         "nhap-sav": lenh_nhap_sav,
     }[args.lenh]
