@@ -103,12 +103,26 @@ class TestRaoChongDeSap:
             assert sap.read_text(encoding="utf-8") != ban_bien_tap
             assert len(sorted(d.glob(f"{sap.name}.bak-*"))) > len(baks)
 
-            # (4) SAP cũ KÉM đầy đủ hơn (nhiều [CẦN hơn template) → đè như cũ
+            # (4) SAP cũ KÉM đầy đủ hơn (nhiều [CẦN hơn template) → đè như cũ. 14/11/2026 (K6): luật đếm nhãn nay CHỈ
+            # áp cho SAP CHƯA có dấu bản máy sinh (sinh trước bản vá, như C1a) — fixture xoá dấu để dựng đúng «SAP cũ».
+            dau = d / "_dau_may_sinh" / f"{sap.name}.json"
+            assert dau.exists(), "lượt sinh lại (3) phải ghi dấu bản máy sinh"
+            dau.unlink()
             sap.write_text(template + "\n[CẦN X] [CẦN Y] [CẦN Z]\n",
                            encoding="utf-8", newline="\n")
             time.sleep(1.1)
             r4 = _run_g4(study)
             assert r4.returncode == 0, r4.stdout + r4.stderr
             assert "[CẦN X]" not in sap.read_text(encoding="utf-8")
+
+            # (5) 14/11/2026 (K6): SAP CÓ dấu mà nội dung đã khác dấu ⇒ GIỮ (chặt hơn luật đếm cũ).
+            assert dau.exists(), "lượt đè (4) phải ghi lại dấu"
+            ban_sua = sap.read_text(encoding="utf-8") + "\n[CẦN X — thống kê viên sửa tay]\n"
+            sap.write_text(ban_sua, encoding="utf-8", newline="\n")
+            time.sleep(1.1)
+            r5 = _run_g4(study)
+            assert r5.returncode == 2, r5.stdout + r5.stderr
+            assert sap.read_text(encoding="utf-8") == ban_sua
+            assert "lệch dấu SHA-256" in r5.stdout
         finally:
             _rmtree_retry(d)

@@ -1268,6 +1268,48 @@ def _coerce_pinned_float(raw, field_name):
         return None
 
 
+# ── K8 (giả lập đề tài 14/11/2026): phân biệt quyết định của NGƯỜI với mặc định của MÁY ──────────────────────────────
+# Nguồn được coi là NGƯỜI quyết: dòng lệnh do người gõ (CLI) và bản ghim trong study_meta. Mọi nguồn khác («mặc định …»,
+# «checkpoint lượt trước», «đặc tả thiết kế G1 (…)», «G0 test_type (…)», hiệu quả «trích từ y văn…») là giá trị máy
+# hoặc quyết định đã ghi ở cổng KHÁC — không được ghim lại vào gate_params.G3 như thể PI vừa quyết ở G3.
+_NGUON_NGUOI = ("CLI", "study_meta")
+# Tên khoá trong G3_checkpoint của từng tham số (khác tên tham số dòng lệnh).
+_KHOA_CHECKPOINT_THAM_SO = {"effect_size": "effect_val"}
+
+
+def _nguon_la_nguoi(nguon) -> bool:
+    return str(nguon or "").strip() in _NGUON_NGUOI
+
+
+def _nhan_goc(nguon) -> str:
+    """Bỏ phần đuôi «— truyền lại…»/«— giữ từ…» để nhãn không dài thêm qua mỗi lượt chạy lại."""
+    return str(nguon or "").split(" — ")[0].strip()
+
+
+def _nguon_lan_truoc(cp_cu: dict, ten: str):
+    """Nguồn của tham số `ten` ở checkpoint LƯỢT TRƯỚC; None khi checkpoint cũ chưa ghi nguồn (không kết luận được).
+
+    effect_size/effect_type không có nguồn riêng khi máy tự trích từ y văn ⇒ dùng `nguon_hieu_qua` của lượt trước."""
+    nguon = cp_cu.get("nguon_tham_so") if isinstance(cp_cu, dict) else None
+    if not isinstance(nguon, dict):
+        return None
+    goc = nguon.get(ten)
+    if not goc and ten in ("effect_size", "effect_type"):
+        goc = cp_cu.get("nguon_hieu_qua")
+    return goc or None
+
+
+def _cung_gia_tri_tham_so(a, b) -> bool:
+    """Hai giá trị tham số có bằng nhau không (số: sai khác ≤ 1e-9 tương đối; chuỗi: không phân biệt hoa thường)."""
+    if a is None or b is None or isinstance(a, bool) or isinstance(b, bool):
+        return False
+    try:
+        fa, fb = float(a), float(b)
+        return abs(fa - fb) <= 1e-9 * max(1.0, abs(fa), abs(fb))
+    except (TypeError, ValueError):
+        return str(a).strip().casefold() == str(b).strip().casefold()
+
+
 def main():
     parser = argparse.ArgumentParser(description="G3 — Tính cỡ mẫu tự động")
     parser.add_argument("--study", required=True, help="Mã đề tài")
@@ -1353,6 +1395,30 @@ def main():
     # khi CLI không truyền (None), KHÔNG bao giờ ghi đè giá trị CLI đã cho.
     _study_meta = GC.load_study_meta(out_dir)
     _g3_pinned = (_study_meta.get("gate_params") or {}).get("G3") or {}
+    _cp_cu = load_checkpoint(out_dir / "G3_checkpoint.json")
+    # K8 (giả lập đề tài 14/11/2026): run_pipeline chạy lại G3 bằng cách TRUYỀN LẠI qua dòng lệnh mọi giá trị của
+    # checkpoint cũ — gồm cả MẶC ĐỊNH MÁY (precision 0,05, p_event 0,3, giả thuyết suy từ thiết kế cũ…). Dòng lệnh =
+    # «CLI» = được ghim vào vùng quyết định của PI trong study_meta ⇒ mặc định máy bị «rửa» thành quyết định người (lượt
+    # thiết kế sai để lại precision=0,05 và p_event=0,3 ⇒ G3-AUTO-18 REVIEW sau khi đổi sang RCT). Nay: giá trị dòng lệnh
+    # TRÙNG giá trị lượt trước mà nguồn lượt trước KHÔNG phải người (CLI/study_meta) ⇒ coi như KHÔNG truyền: tham số đi
+    # lại đúng thứ tự study_meta → đặc tả G1 → checkpoint lượt trước → mặc định (nhãn ghi rõ), và KHÔNG bị ghim.
+    _truyen_lai_may = {}
+    for _ten in ("effect_size", "effect_type", "sd", "confirmed_n", "hypothesis_type", "margin", "outcome_direction",
+                 "icc", "cluster_size", "cluster_cv", "population_n", "prevalence", "precision", "alpha", "power",
+                 "p0", "dropout", "p_event"):
+        _gia_tri_cli = getattr(args, _ten, None)
+        if _gia_tri_cli is None:
+            continue
+        _goc_cu = _nguon_lan_truoc(_cp_cu, _ten)
+        if _goc_cu is None or _nguon_la_nguoi(_goc_cu):
+            continue
+        if _cung_gia_tri_tham_so(_gia_tri_cli, _cp_cu.get(_KHOA_CHECKPOINT_THAM_SO.get(_ten, _ten))):
+            _truyen_lai_may[_ten] = (_gia_tri_cli, _goc_cu)
+            setattr(args, _ten, None)
+            print(f"  ⚠ {_ten}={_gia_tri_cli} qua dòng lệnh TRÙNG giá trị MÁY của lượt trước ({_goc_cu}) — coi như "
+                  "không truyền, KHÔNG ghim vào study_meta; nếu đây là quyết định của PI, ghi thẳng "
+                  f"gate_params.G3.{'cluster_size_cv' if _ten == 'cluster_cv' else _ten}.")
+    _cli_da_truyen -= set(_truyen_lai_may)
     if args.effect_size is None and _g3_pinned.get("effect_size") is not None:
         args.effect_size = _coerce_pinned_float(_g3_pinned["effect_size"], "effect_size")
         if args.effect_size is not None:
@@ -1411,7 +1477,6 @@ def main():
             setattr(args, _attr, _gia_tri)
             nguon_tham_so[_ten] = _nguon
             print(f"  → Khôi phục {_ten}={_gia_tri} từ {_nguon}")
-    _cp_cu = load_checkpoint(out_dir / "G3_checkpoint.json")
     for _ten, _mac_dinh in (("alpha", 0.05), ("power", 0.80), ("p0", 0.30), ("dropout", 0.20), ("p_event", 0.30)):
         if getattr(args, _ten) is not None:
             nguon_tham_so[_ten] = "CLI"
@@ -1420,6 +1485,11 @@ def main():
             else None, "study_meta"
         if _gia_tri is None and isinstance(_cp_cu.get(_ten), (int, float)) and not isinstance(_cp_cu.get(_ten), bool):
             _gia_tri, _nguon = float(_cp_cu[_ten]), "checkpoint lượt trước"
+            # K8 (14/11/2026): giá trị lượt trước vốn là MẶC ĐỊNH MÁY thì giữ nhãn mặc định — không để nó «sạch» thành
+            # «checkpoint lượt trước» rồi bị đọc như quyết định của người.
+            _goc_cu = _nguon_lan_truoc(_cp_cu, _ten)
+            if str(_goc_cu or "").startswith("mặc định"):
+                _nguon = f"{_nhan_goc(_goc_cu)} — giữ từ checkpoint lượt trước"
         if _gia_tri is None:
             _gia_tri, _nguon = _mac_dinh, f"mặc định {_mac_dinh}"
         setattr(args, _ten, _gia_tri)
@@ -1911,25 +1981,26 @@ def main():
 
     # PIN durable: nếu bác sĩ cấp effect size qua CLI → ghi vào study_meta.json để
     # CHẠY LẠI (chỉ với --study) KHÔNG mất input (đóng vòng param-loss ở re-run).
+    # SỬA 14/11/2026 (K8): chỉ ghim giá trị NGƯỜI cấp ở CHÍNH lượt này (nguồn «CLI» sau bước lọc truyền-lại ở trên). Bản
+    # cũ ghim kèm «dropout»/«p_event» mỗi khi có effect size — kể cả khi effect size lấy lại từ study_meta và dropout/
+    # p_event là MẶC ĐỊNH MÁY ⇒ xoá bản ghim đi thì lượt sau lại tự ghi p_event=0,3. Dropout/p_event nay đi qua vòng
+    # chung dưới đây như mọi tham số khác (ghim khi và chỉ khi người truyền).
     seed_g3 = {}
-    if args.effect_size is not None and args.effect_type:
-        seed_g3.update({"effect_size": args.effect_size, "effect_type": args.effect_type,
-                        "dropout": dropout, "p_event": p_event})
-        if args.sd is not None:
-            seed_g3["sd"] = args.sd
-    elif args.effect_size is not None and effect_type == "NI_PROPORTION":
+    _nguoi_cap_hieu_qua = nguon_tham_so.get("effect_size") == "CLI"
+    if args.effect_size is not None and args.effect_type and _nguoi_cap_hieu_qua:
+        seed_g3.update({"effect_size": args.effect_size, "effect_type": args.effect_type})
+    elif args.effect_size is not None and effect_type == "NI_PROPORTION" and _nguoi_cap_hieu_qua:
         # VÁ 04/10/2026 (soát từng cổng — lộ khi dựng chuỗi tổng hợp): nhánh không-kém-hơn/tương đương dùng --effect-size
         # làm p_test KHÔNG cần --effect-type ⇒ bản cũ không ghim gì ⇒ G3-AUTO-14 («tham số đã ghim») REVIEW mãi.
-        seed_g3.update({"effect_size": args.effect_size, "effect_type": "NI_PROPORTION",
-                        "dropout": dropout, "p_event": p_event})
+        seed_g3.update({"effect_size": args.effect_size, "effect_type": "NI_PROPORTION"})
     if args.confirmed_n is not None:
         # Bác sĩ có thể chốt N thực tế TRƯỚC khi effect size sẵn sàng — vẫn ghim
         # riêng để không mất khi chạy lại.
         seed_g3["confirmed_n"] = args.confirmed_n
     # VÁ 04/10/2026 (G3-02/03/09): ghim cả các tham số quyết định khác khi CHÍNH dòng lệnh này cấp (ensure_study_meta chỉ
     # điền khoá còn thiếu — không bao giờ đè bản bác sĩ đã ghim).
-    for _ten in ("hypothesis_type", "margin", "outcome_direction", "precision", "prevalence", "icc", "cluster_size",
-                 "cluster_cv", "population_n", "alpha", "power", "p0", "dropout", "p_event"):
+    for _ten in ("sd", "hypothesis_type", "margin", "outcome_direction", "precision", "prevalence", "icc",
+                 "cluster_size", "cluster_cv", "population_n", "alpha", "power", "p0", "dropout", "p_event"):
         if nguon_tham_so.get(_ten) == "CLI" and getattr(args, _ten) is not None:
             seed_g3["cluster_size_cv" if _ten == "cluster_cv" else _ten] = getattr(args, _ten)
     if seed_g3:
@@ -1973,6 +2044,8 @@ def main():
         **({"luc_muc_tieu_phu": luc_phu} if luc_phu is not None else {}),
         "population_n": args.population_n,
         "nguon_tham_so": nguon_tham_so,
+        # K8 (14/11/2026): tham số đang dùng MẶC ĐỊNH MÁY (không phải quyết định PI) — đọc nhanh, không cần dò nhãn.
+        "tham_so_mac_dinh_may": sorted(k for k, v in nguon_tham_so.items() if str(v or "").startswith("mặc định")),
         "nguon_hieu_qua": nguon_hieu_qua,
         "guardrail": status,
         "core_value": core,

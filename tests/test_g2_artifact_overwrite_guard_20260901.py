@@ -89,11 +89,26 @@ def test_toan_chu_trinh_rao_de_ho_so_dao_duc():
         assert ho_so.read_text(encoding="utf-8") != ban_bien_tap
         assert len(sorted(d.glob(f"{ho_so.name}.bak-*"))) > len(baks)
 
-        # (4) hồ sơ cũ KÉM đầy đủ hơn → đè như cũ (có .bak)
+        # (4) hồ sơ cũ KÉM đầy đủ hơn → đè như cũ (có .bak). 14/11/2026 (K6): luật đếm nhãn nay CHỈ áp cho hồ sơ CHƯA có
+        # dấu bản máy sinh (sinh trước bản vá, như C1a) — fixture xoá dấu để dựng đúng «hồ sơ cũ»; assertion giữ nguyên.
+        dau = d / "_dau_may_sinh" / f"{ho_so.name}.json"
+        assert dau.exists(), "lượt sinh lại (3) phải ghi dấu bản máy sinh"
+        dau.unlink()
         ho_so.write_text(template + "\n[CẦN X] [CẦN Y] [CẦN Z]\n", encoding="utf-8", newline="\n")
         time.sleep(1.1)
         r4 = _run_g2()
         assert r4.returncode == 0, r4.stdout[-1200:]
         assert "[CẦN X]" not in ho_so.read_text(encoding="utf-8")
+
+        # (5) 14/11/2026 (K6): hồ sơ CÓ dấu mà nội dung đã khác dấu (người sửa tay, kể cả sửa làm TĂNG ô trống) ⇒ GIỮ —
+        # chặt hơn luật đếm cũ (lệch dấu = đã sửa tay, máy không đoán bằng số nhãn).
+        assert dau.exists(), "lượt đè (4) phải ghi lại dấu"
+        ban_sua = ho_so.read_text(encoding="utf-8") + "\n[CẦN X — PI sửa tay]\n"
+        ho_so.write_text(ban_sua, encoding="utf-8", newline="\n")
+        time.sleep(1.1)
+        r5 = _run_g2()
+        assert r5.returncode == 2, r5.stdout[-1200:]
+        assert ho_so.read_text(encoding="utf-8") == ban_sua
+        assert "lệch dấu SHA-256" in r5.stdout
     finally:
         _rmtree_retry(d)
