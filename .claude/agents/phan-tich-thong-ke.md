@@ -101,7 +101,13 @@ chỉnh); (4) đây là KIỂM CHÉO kỹ thuật — không đổi trạng thá
 nguồn/`.sav`/đặc tả SPSS ≠ Python (kết quả cũ, khác hiệp biến, khác `--don-vi-phoi-nhiem`) ⇒ chạy lại `cu-phap` + `chay`, KHÔNG
 lách; dòng «⚪ không so được» (Python lỗi/bỏ qua, SPSS thiếu bảng) phải nêu trong báo cáo, không coi là khớp; (7)
 `spss/de-xuat-ma-thieu.csv` (mã «Không biết/Từ chối…» chưa khai thiếu) là việc của thống kê viên — agent KHÔNG tự ghi
-`_ma-thieu-theo-bien.csv`. Bác sĩ đưa tệp `.sav`: `python3
+`_ma-thieu-theo-bien.csv`; (8) phân tích BỔ SUNG (`<mã>_phan_tich_bo_sung.sps`, lượt SPSS riêng sau phân tích
+chính — `cu-phap --thang-do "TÊN:mục1,…"` thêm RELIABILITY): GENLINMIXED ↔ R clmm/glmer «lệch nhỏ» là bình thường
+(báo kèm phương sai intercept); Complex Samples có trọng số ↔ R survey trọng số CỐ ĐỊNH phải ✓ khớp, ↔ R
+postStratify (SAP) chỉ lệch SE; dòng «Trọng số — bảng tầng» ✗ LỆCH ⇒ DỪNG, báo thống kê viên (hai bản của cùng
+thuật toán gộp tầng); OR từng ngưỡng ↔ `ordinal_model`; Brant ≠ Test of Parallel Lines chỉ so kết luận; R chưa có
+⇒ ⚪ không so được, KHÔNG phải khớp; (9) `run_g6_auto.py` ghi `scripts/05_spss_phan_tich.sps` XEM TRƯỚC — sau khi
+khoá dữ liệu phải `xuat-sav` → `cu-phap` sinh lại, không chạy bản xem trước như kết quả. Bác sĩ đưa tệp `.sav`: `python3
 $T nhap-sav --sav <tệp> --ra <thư mục NGOÀI repo>` ⇒ CSV + từ điển nhãn + từ điển khuôn REDCap, rồi nhập qua cổng tiếp nhận
 `import_real_dataset.py` (cổng đó quét PII theo giá trị). Hướng dẫn: `medical-ebm-automation/docs/CAU-NOI-SPSS.md`.
 

@@ -131,8 +131,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 14/11/2026 (lượt 3): phan-tich-thong-ke — luật đọc đối chiếu SPSS theo ngưỡng mới (SE, thang log, p khác phía 0,05,
 # chốt SHA/đặc tả) + đồng bộ đoạn G6-AUTO-11 đã có ở repo gốc; vẫn 64.
 # 14/11/2026 (gộp #230): bản cặp A12/G6-AUTO-11/bình duyệt độc lập từ nhánh nền + luật đọc SPSS mới; vẫn 64.
+# 14/11/2026 (lượt 4): phan-tich-thong-ke — đọc dòng đối chiếu phân tích SPSS bổ sung (GENLINMIXED, Complex
+# Samples, RELIABILITY, OR từng ngưỡng) + .sps xem trước ở run_g6_auto; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "1e6f8c5471d42349e8f1ce06daefdfad73efdffda0f23b72cfa6f02a0f6a74b0"
+    "ccbeeed609f15737a836e7c114971ef95cddefb5710a5d6f1f94a31f8b492ceb"
 )
 
 MINIMUM_AGENT_COUNT = 64
