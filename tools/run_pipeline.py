@@ -32,6 +32,12 @@ BÁO TRUNG THỰC THEO CHẤM SỐNG (14/11/2026, giả lập đề tài RCT —
   - K5: dấu vân tay đầu vào của G0 = (chủ đề, query_en). query_en trong study_meta (gate_params.G0.query_en hoặc
     query_en cấp đầu) khác truy vấn G0 đã tra, hoặc --topic mới khác chủ đề đã tra ⇒ TRA LẠI PubMed (không chỉ chấm
     lại).
+  - N4 (15/11/2026, giả lập lần 2): dấu vân tay đầu vào của G3 = tham số quyết định N PI khai ở gate_params.G3 (effect
+    size/loại, p0, tỷ lệ bỏ cuộc, α, lực, SD, giả thuyết, biên, cụm, N chốt…) + test_type G0 + thiết kế phân giải + cấu
+    hình lực mục tiêu phụ, so với giá trị G3 ĐÃ dùng ghi trong G3_checkpoint. Lệch ⇒ G3 chạy lại và dây chuyền sau G3
+    thành «cũ» (rào cổng ĐÃ KÝ giữ nguyên). Gỡ ghim KHÔNG tự chạy lại (như K5). Chống lặp: giá trị ghim mà G3 đã chạy
+    lại vẫn không áp được ⇒ ghi vào pipeline_run_report (gắn SHA-256 phần PHÉP TÍNH của G3_checkpoint + bộ ghim) và
+    chỉ BÁO ở các lượt sau (bộ chấm ghi kết quả chấm vào checkpoint không làm bản ghi mất hiệu lực).
 
 Dùng:
   python3 tools/run_pipeline.py --study <MÃ> [--topic "<chủ đề>"] [--check-only]
@@ -41,7 +47,9 @@ Dùng:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import math
 import os
 import re
 import subprocess
@@ -146,6 +154,311 @@ def _g0_lech_dau_vao(out_dir: Path, topic: Optional[str], meta: dict) -> Optiona
     if topic and topic.strip() and chu_de_cu and _chuan_chuoi(topic) != _chuan_chuoi(chu_de_cu):
         ly_do.append(f"--topic mới («{topic.strip()[:70]}») khác chủ đề G0 đã tra («{chu_de_cu[:70]}»)")
     return "; ".join(ly_do) or None
+
+
+# ── N4 (15/11/2026) — dấu vân tay ĐẦU VÀO của G3 ─────────────────────────────────────────────────────────────────────
+# Giả lập lần 2 (a09): PI điền gate_params.G3 có nguồn (effect size RR 1,4583, p0 0,48, bỏ cuộc 20 %) rồi chạy
+# run_pipeline thường ⇒ «G3: đã tươi, bỏ qua» vì bảng mtime chỉ nhìn checkpoint, không nhìn study_meta; N giữ mặc định
+# máy (1323) cho tới khi PI tự chạy run_g3_auto. Nay so NỘI DUNG như K5 làm cho G0: giá trị PI khai ↔ giá trị G3 đã dùng
+# (G3_checkpoint ghi đúng tham số đem vào phép tính). Luật so bám ĐÚNG cách run_g3_auto đọc bản ghim — giá trị G3 không
+# nhận (ô mẫu, không ép được kiểu) bị bỏ qua, để G3 chạy lại xong là KHỚP (hội tụ, không vòng lặp).
+# (khoá gate_params.G3, khoá G3_checkpoint, kiểu) — các tham số G3 lưu NGUYÊN giá trị đã dùng.
+_G3_KHOA_SO = (
+    ("alpha", "alpha", "so"), ("power", "power", "so"), ("p0", "p0", "so"), ("dropout", "dropout", "so"),
+    ("p_event", "p_event", "so"), ("sd", "sd", "so"), ("margin", "margin", "so"), ("icc", "icc", "so"),
+    ("prevalence", "prevalence", "so"), ("cluster_size_cv", "cluster_cv", "so"),
+    ("cluster_size", "cluster_size", "nguyen"), ("population_n", "population_n", "nguyen"),
+    ("confirmed_n", "confirmed_n", "nguyen_duong"),
+)
+_G3_LOAI_HIEU_QUA_CLI = ("HR", "OR", "RR", "ARR%", "AUC", "MD", "PREVALENCE")   # choices của run_g3_auto --effect-type
+# Khoá G3_checkpoint do PHÉP TÍNH của run_g3_auto quyết (tham số đã dùng + kết quả N + nguồn). Chữ ký «lượt G3» băm
+# RIÊNG các khoá này: bộ chấm g3_quality_gate (CLI, write=True) ghi lại checkpoint (quality_gate,
+# pending_doctor_actions, artifacts, disclaimer…) mà G3 không hề chạy lại — băm cả tệp thì mỗi lần chấm làm bản ghi
+# «không áp được» mất hiệu lực ⇒ G3 + dây chuyền sau G3 bị sinh lại vô cớ.
+_G3_KHOA_LUOT_TINH = (
+    "run_date", "design_code", "alpha", "power", "effect_val", "effect_type", "n_per_group", "n_total", "n_adjusted",
+    "confirmed_n", "dropout", "p_event", "p0", "sd", "hypothesis_type", "margin", "outcome_direction", "precision",
+    "prevalence", "icc", "cluster_size", "cluster_cv", "design_effect", "population_n", "luc_muc_tieu_phu",
+    "formula_used", "nguon_tham_so", "nguon_hieu_qua",
+)
+
+
+def _r3() -> Any:
+    """Mô-đun run_g3_auto (dùng ĐÚNG bộ chuẩn hoá của nơi tiêu thụ bản ghim); hỏng ⇒ None (bỏ các phép so cần nó)."""
+    try:
+        import run_g3_auto as R3  # noqa: PLC0415
+        return R3
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _so_ghim(v: Any, kieu: str = "so") -> Optional[float]:
+    """Giá trị ghim ép kiểu như run_g3_auto (float(); số nguyên khi `kieu` đòi); ô mẫu/không ép được/bool ⇒ None."""
+    if v is None or isinstance(v, bool) or (isinstance(v, str) and _la_o_mau(v)):
+        return None
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(f):
+        return None
+    if kieu in ("nguyen", "nguyen_duong"):
+        if not f.is_integer() or (kieu == "nguyen_duong" and f <= 0):
+            return None
+        return float(int(f))
+    return f
+
+
+def _cung_so(a: Any, b: Any) -> bool:
+    """Hai số bằng nhau (sai khác ≤ 1e-9 tương đối) — cùng phép so của run_g3_auto._cung_gia_tri_tham_so."""
+    try:
+        fa, fb = float(a), float(b)
+    except (TypeError, ValueError):
+        return False
+    return abs(fa - fb) <= 1e-9 * max(1.0, abs(fa), abs(fb))
+
+
+def _gia_thuyet_chuan(v: Any) -> Optional[str]:
+    if v is None or (isinstance(v, str) and _la_o_mau(v)):
+        return None
+    if SKILL is not None:
+        try:
+            return SKILL.chuan_hoa_hypothesis_type(v)
+        except Exception:  # noqa: BLE001
+            return None
+    return str(v).strip().lower() or None
+
+
+def _loai_hieu_qua_chuan(v: Any) -> Optional[str]:
+    """effect_type chuẩn như run_g3_auto._canonicalize_pinned_effect_type (HR/OR/RR/ARR%/AUC/MD/PREVALENCE…)."""
+    if v is None or (isinstance(v, str) and _la_o_mau(v)) or not str(v).strip():
+        return None
+    r3 = _r3()
+    if r3 is not None:
+        try:
+            return str(r3._canonicalize_pinned_effect_type(v))
+        except Exception:  # noqa: BLE001
+            pass
+    return str(v).strip().upper()
+
+
+def _nhan_nguon(v: Any) -> str:
+    """Phần đầu nhãn nguồn («mặc định 0.3 — giữ từ checkpoint lượt trước» ⇒ «mặc định 0.3»)."""
+    return str(v or "").split(" — ")[0].strip()
+
+
+def _hien(v: Any) -> str:
+    return "∅" if v is None else (f"{v:g}" if isinstance(v, float) else str(v))
+
+
+def _thiet_ke_phan_giai(out_dir: Path) -> Optional[str]:
+    """Thiết kế G1/G2 phân giải bằng ĐÚNG hàm G3 dùng (gate_contract.resolve_design_code) — nhưng KHÔNG nhận mặc định
+    «cohort» khi G1/G2 chưa ghi thiết kế (không đo được ≠ đổi): trả None."""
+    try:
+        return GC.resolve_design_code(out_dir, default="")[0] or None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def _g3_chu_ky_checkpoint(out_dir: Path) -> Optional[str]:
+    """SHA-256 của phần PHÉP TÍNH trong G3_checkpoint.json (_G3_KHOA_LUOT_TINH) — gắn bản ghi «không áp được» với ĐÚNG
+    lượt G3 đó. Bộ chấm ghi thêm kết quả chấm vào checkpoint không đổi chữ ký; G3 chạy lại ra tham số/N khác thì đổi.
+    Checkpoint vắng/hỏng ⇒ None (bản ghi không bao giờ khớp)."""
+    cp = _load_cp(out_dir, "G3")
+    if not cp:
+        return None
+    phan = {k: cp.get(k) for k in _G3_KHOA_LUOT_TINH}
+    return hashlib.sha256(json.dumps(phan, ensure_ascii=False, sort_keys=True, default=str).encode("utf-8")).hexdigest()
+
+
+def _g3_lech_dau_vao_chi_tiet(out_dir: Path, meta: dict) -> List[Dict[str, Any]]:
+    """N4 — các đầu vào G3 đã ĐỔI so với lượt G3 đang có; [] nếu khớp hoặc không so được.
+
+    Mỗi phần tử: {khoa, mong_muon (giá trị G3 SẼ dùng nếu chạy lại), da_dung (giá trị trong G3_checkpoint), nguon_cu,
+    ly_do}. Chỉ so khi G3 có checkpoint KHÔNG ở trạng thái chặn (checkpoint chặn đã luôn được chạy lại). Bốn nhóm:
+      1. Tham số số PI khai ở gate_params.G3 (bảng _G3_KHOA_SO) ↔ cùng khoá trong checkpoint. `precision` chỉ so khi G3
+         đang tính theo độ chính xác (effect_type PREVALENCE) — thiết kế khác G3 không ghi nó.
+      2. effect_size/effect_type: effect_type PREVALENCE ⇒ effect_size là tỷ lệ ước lượng (so với `prevalence`, trừ khi
+         prevalence được ghim riêng — G3 lấy bản ghim đó); còn lại effect_size ↔ effect_val. effect_type chỉ so khi có
+         effect_size đi kèm (G3 không dùng loại hiệu quả đứng một mình) và G3 đang ở nhánh superiority (NI/tương đương
+         ghi «NI_PROPORTION»).
+      3. hypothesis_type ghim (chuẩn hoá; cắt ngang + superiority ⇒ descriptive_precision như run_g3_auto) — chưa ghim
+         mà lượt trước lấy giả thuyết từ test_type G0 hoặc mặc định máy ⇒ so với giả thuyết suy từ
+         gate_params.G0.test_type hiện hành. Cùng nhóm: outcome_direction ghim (chuẩn hoá bằng run_g3_auto).
+      4. Thiết kế phân giải (gate_contract.resolve_design_code) ↔ design_code G3 đã dùng; cấu hình luc_muc_tieu_phu
+         (tính lại bằng chính run_g3_auto.tinh_luc_muc_tieu_phu trên N/α/lực của checkpoint, so phần do cấu hình quyết).
+    Gỡ một khoá ghim KHÔNG tính là đổi (ô trống/ô mẫu không phân biệt được với «chưa khai» — như K5)."""
+    cp = _load_cp(out_dir, "G3")
+    if not cp or GC.is_blocked(cp):
+        return []
+    gp = (meta or {}).get("gate_params") if isinstance(meta, dict) else None
+    g3 = gp.get("G3") if isinstance(gp, dict) and isinstance(gp.get("G3"), dict) else {}
+    g0 = gp.get("G0") if isinstance(gp, dict) and isinstance(gp.get("G0"), dict) else {}
+    nguon = cp.get("nguon_tham_so") if isinstance(cp.get("nguon_tham_so"), dict) else {}
+    ra: List[Dict[str, Any]] = []
+
+    def _them(khoa: str, mong: Any, da: Any, nguon_cu: Any) -> None:
+        nc = _nhan_nguon(nguon_cu) or "không ghi"
+        ra.append({"khoa": khoa, "mong_muon": mong, "da_dung": da, "nguon_cu": nc,
+                   "ly_do": f"{khoa}={_hien(mong)} ≠ G3 đã dùng {_hien(da)} (nguồn lượt trước: {nc})"})
+
+    # 1. Tham số số.
+    for khoa_ghim, khoa_cp, kieu in _G3_KHOA_SO:
+        raw = g3.get(khoa_ghim)
+        if khoa_ghim == "cluster_size_cv" and "cluster_size_cv" not in g3:
+            raw = g3.get("cluster_cv")   # run_g3_auto: _g3_pinned.get("cluster_size_cv", <cluster_cv>)
+        gia_tri = _so_ghim(raw, kieu)
+        if gia_tri is None:
+            continue
+        da = cp.get(khoa_cp)
+        if da is None or not _cung_so(gia_tri, da):
+            _them(f"gate_params.G3.{khoa_ghim}", gia_tri, da, nguon.get(khoa_cp))
+    precision = _so_ghim(g3.get("precision"))
+    if precision is not None and str(cp.get("effect_type") or "").upper() == "PREVALENCE":
+        if cp.get("precision") is None or not _cung_so(precision, cp.get("precision")):
+            _them("gate_params.G3.precision", precision, cp.get("precision"), nguon.get("precision"))
+    r3 = _r3()
+    if r3 is not None and g3.get("outcome_direction") is not None:
+        try:
+            chieu = r3.chuan_hoa_chieu_ket_cuc(g3.get("outcome_direction"))
+            chieu_cp = r3.chuan_hoa_chieu_ket_cuc(cp.get("outcome_direction"))
+        except Exception:  # noqa: BLE001
+            chieu = chieu_cp = None
+        if chieu and chieu != chieu_cp:   # chiều không nhận ra ⇒ run_g3_auto dừng lỗi, không phải «đổi»
+            _them("gate_params.G3.outcome_direction", chieu, cp.get("outcome_direction"),
+                  nguon.get("outcome_direction"))
+
+    # 2. effect_size / effect_type.
+    loai_ghim = _loai_hieu_qua_chuan(g3.get("effect_type"))
+    es = _so_ghim(g3.get("effect_size"))
+    gia_thuyet_cp = _gia_thuyet_chuan(cp.get("hypothesis_type"))
+    if es is not None:
+        if loai_ghim == "PREVALENCE":
+            if _so_ghim(g3.get("prevalence")) is None and (cp.get("prevalence") is None
+                                                           or not _cung_so(es, cp.get("prevalence"))):
+                _them("gate_params.G3.effect_size (tỷ lệ ước lượng — effect_type PREVALENCE)", es,
+                      cp.get("prevalence"), nguon.get("prevalence"))
+        elif cp.get("effect_val") is None or not _cung_so(es, cp.get("effect_val")):
+            _them("gate_params.G3.effect_size", es, cp.get("effect_val"),
+                  cp.get("nguon_hieu_qua") or nguon.get("effect_size"))
+        loai_cp = _loai_hieu_qua_chuan(cp.get("effect_type"))
+        if (loai_ghim and loai_ghim != "PREVALENCE" and loai_cp not in ("NI_PROPORTION", "P_TEST", "PREVALENCE")
+                and gia_thuyet_cp in (None, "superiority") and loai_ghim != loai_cp):
+            _them("gate_params.G3.effect_type", loai_ghim, cp.get("effect_type"),
+                  cp.get("nguon_hieu_qua") or nguon.get("effect_type"))
+
+    # 3. Giả thuyết — ghim ở G3, hoặc suy từ test_type G0 khi lượt trước lấy từ đó/mặc định máy.
+    thiet_ke_moi = _thiet_ke_phan_giai(out_dir)
+    thiet_ke = str(cp.get("design_code") or thiet_ke_moi or "")
+    gt_ghim = _gia_thuyet_chuan(g3.get("hypothesis_type"))
+    if gt_ghim:
+        mong = "descriptive_precision" if (thiet_ke == "cross_sectional" and gt_ghim == "superiority") else gt_ghim
+        if mong != gia_thuyet_cp:
+            _them("gate_params.G3.hypothesis_type", mong, cp.get("hypothesis_type"), nguon.get("hypothesis_type"))
+    else:
+        nguon_gt = _nhan_nguon(nguon.get("hypothesis_type"))
+        if nguon_gt.startswith("G0 test_type") or nguon_gt == "mặc định máy":
+            mong = None
+            if SKILL is not None:
+                try:
+                    mong = SKILL.gia_thuyet_tu_test_type(g0.get("test_type"), thiet_ke_moi or thiet_ke)
+                except Exception:  # noqa: BLE001
+                    mong = None
+            if mong == "superiority" and (thiet_ke_moi or thiet_ke) == "cross_sectional":
+                mong = "descriptive_precision"
+            if mong and mong != gia_thuyet_cp:
+                _them(f"gate_params.G0.test_type ({_hien(g0.get('test_type'))}) ⇒ giả thuyết", mong,
+                      cp.get("hypothesis_type"), nguon.get("hypothesis_type"))
+
+    # 4a. Thiết kế phân giải từ G1/G2 ↔ thiết kế G3 đã tính.
+    if thiet_ke_moi and cp.get("design_code") and str(cp.get("design_code")) != thiet_ke_moi:
+        _them("thiết kế phân giải (G1/G2 — gate_contract.resolve_design_code)", thiet_ke_moi, cp.get("design_code"),
+              "G3_checkpoint.design_code")
+
+    # 4b. Lực cho mục tiêu phụ (không đổi N nhưng đổi A4 PHẦN 2c và SAP §12).
+    cfg = g3.get("luc_muc_tieu_phu")
+    if cfg is not None:
+        cu = cp.get("luc_muc_tieu_phu")
+        if not isinstance(cu, dict):
+            _them("gate_params.G3.luc_muc_tieu_phu", "(đã khai)", None, "lượt G3 chưa tính lực mục tiêu phụ")
+        else:
+            moi = None
+            if r3 is not None:
+                try:
+                    moi = r3.tinh_luc_muc_tieu_phu(cfg, cp.get("confirmed_n") or cp.get("n_adjusted"),
+                                                   cp.get("dropout"), cp.get("design_effect"), cp.get("alpha"),
+                                                   cp.get("power"))
+                except Exception:  # noqa: BLE001
+                    moi = None
+            if isinstance(moi, dict) and _phan_cau_hinh_luc(moi) != _phan_cau_hinh_luc(cu):
+                _them("gate_params.G3.luc_muc_tieu_phu", "(cấu hình mới)", "(cấu hình cũ)",
+                      "G3_checkpoint.luc_muc_tieu_phu")
+    return ra
+
+
+def _phan_cau_hinh_luc(kq: Dict[str, Any]) -> str:
+    """Phần kết quả lực mục tiêu phụ do CẤU HÌNH + N danh nghĩa quyết định (không lấy cột hiệu dụng — phụ thuộc DE đã
+    làm tròn trong checkpoint) — chuỗi ổn định để so."""
+    if "loi" in kq:
+        return json.dumps({"loi": kq.get("loi")}, ensure_ascii=False, sort_keys=True)
+    bang = [(d.get("phan_bo"), d.get("sd"), d.get("mot_tru_tong_p3"), d.get("or_danh_nghia"))
+            for d in kq.get("bang") or [] if isinstance(d, dict)]
+    phan = {k: kq.get(k) for k in ("muc_tieu", "ket_cuc", "phoi_nhiem", "don_vi", "buoc", "r2", "nguon",
+                                    "n_danh_nghia")}
+    return json.dumps({**phan, "bang": bang}, ensure_ascii=False, sort_keys=True, default=str)
+
+
+def _g3_lech_dau_vao(out_dir: Path, meta: dict) -> Optional[str]:
+    """N4 — một dòng lý do G3 phải CHẠY LẠI vì đầu vào đã đổi; None nếu khớp/không so được."""
+    return "; ".join(d["ly_do"] for d in _g3_lech_dau_vao_chi_tiet(out_dir, meta)) or None
+
+
+# Khoá gate_params.G3 mà run_g3_auto đem vào phép tính (bộ so ở trên đọc đúng các khoá này).
+_G3_KHOA_QUYET_DINH = tuple(k for k, _c, _t in _G3_KHOA_SO) + (
+    "cluster_cv", "precision", "effect_size", "effect_type", "hypothesis_type", "outcome_direction", "luc_muc_tieu_phu")
+
+
+def _g3_dau_van_tay_ghim(out_dir: Path, meta: dict) -> str:
+    """SHA-256 của BỘ đầu vào G3 hiện hành (khoá quyết định của gate_params.G3 + test_type G0 + thiết kế phân giải). Bản
+    ghi «không áp được» chỉ còn hiệu lực khi bộ này giữ nguyên — PI sửa BẤT KỲ giá trị nào (vd thêm effect_type cho
+    effect_size đã ghim) thì tổ hợp mới phải được thử lại."""
+    gp = (meta or {}).get("gate_params") if isinstance(meta, dict) else None
+    g3 = gp.get("G3") if isinstance(gp, dict) and isinstance(gp.get("G3"), dict) else {}
+    g0 = gp.get("G0") if isinstance(gp, dict) and isinstance(gp.get("G0"), dict) else {}
+    thiet_ke = _thiet_ke_phan_giai(out_dir)
+    goi = {"G3": {k: g3.get(k) for k in _G3_KHOA_QUYET_DINH if g3.get(k) is not None},
+           "test_type": g0.get("test_type"), "thiet_ke": thiet_ke}
+    return hashlib.sha256(json.dumps(goi, ensure_ascii=False, sort_keys=True, default=str).encode("utf-8")).hexdigest()
+
+
+def _g3_khong_ap_da_ghi(out_dir: Path, meta: dict) -> Dict[str, str]:
+    """{khoá: giá trị ghim} mà lượt run_pipeline TRƯỚC đã chạy lại G3 nhưng G3 vẫn không áp được — chỉ khi bản ghi gắn
+    ĐÚNG lượt G3 hiện tại (_g3_chu_ky_checkpoint) VÀ đúng bộ đầu vào hiện hành. G3 chạy lại ra tham số/N khác (bằng bất
+    kỳ đường nào) hoặc PI sửa bất kỳ giá trị ghim nào ⇒ bản ghi hết hiệu lực."""
+    try:
+        bc = json.loads((out_dir / "pipeline_run_report.json").read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return {}
+    ghi = bc.get("g3_dau_vao_khong_ap") if isinstance(bc, dict) else None
+    if (not isinstance(ghi, dict) or not ghi.get("chu_ky") or ghi.get("chu_ky") != _g3_chu_ky_checkpoint(out_dir)
+            or ghi.get("dau_van_tay_ghim") != _g3_dau_van_tay_ghim(out_dir, meta)):
+        return {}
+    khoa = ghi.get("khoa")
+    return {str(k): str(v) for k, v in khoa.items()} if isinstance(khoa, dict) else {}
+
+
+def _khoa_khong_ap(d: Dict[str, Any]) -> Tuple[str, str]:
+    return str(d.get("khoa")), json.dumps(d.get("mong_muon"), ensure_ascii=False, sort_keys=True, default=str)
+
+
+def _tach_khong_ap(lech: List[Dict[str, Any]], da_ghi: Dict[str, str]) -> Tuple[List[Dict[str, Any]],
+                                                                                 List[Dict[str, Any]]]:
+    """(đầu vào ĐỔI cần chạy lại G3, giá trị ghim G3 đã chạy lại mà KHÔNG áp được — chỉ báo, không chạy lại nữa)."""
+    doi, khong_ap = [], []
+    for d in lech:
+        k, v = _khoa_khong_ap(d)
+        (khong_ap if da_ghi.get(k) == v else doi).append({**d, "khong_ap": da_ghi.get(k) == v})
+    return doi, khong_ap
 
 
 def _so_nguyen_duong(v: Any) -> Optional[int]:
@@ -363,10 +676,13 @@ def _lech_cung_truoc(ket: Optional[Dict[str, Any]], idx: int) -> List[Dict[str, 
 
 
 def _do_tuoi_tong_hop(fresh: Dict[str, Any], lech_n: Dict[str, str], lech_g0: Optional[str],
-                      nq: Dict[str, Any], giu_da_ky: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
-    """Độ tươi TỔNG HỢP = mtime (pipeline_freshness) + bản chép N của G3 (K7) + đầu vào G0 (K5) + không lệch cứng xuyên
-    cổng + không còn cổng ĐÃ KÝ bị giữ lại giữa chuỗi đã sinh lại. «TƯƠI» chỉ khi tất cả sạch VÀ đo được — cùng một báo
-    cáo không được vừa «✅ TƯƠI» vừa «🔴 lệch cỡ mẫu».
+                      nq: Dict[str, Any], giu_da_ky: Optional[Dict[str, str]] = None,
+                      lech_g3: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
+    """Độ tươi TỔNG HỢP = mtime (pipeline_freshness) + bản chép N của G3 (K7) + đầu vào G0 (K5) + đầu vào G3 (N4) +
+    không lệch cứng xuyên cổng + không còn cổng ĐÃ KÝ bị giữ lại giữa chuỗi đã sinh lại. «TƯƠI» chỉ khi tất cả sạch VÀ
+    đo được — cùng một báo cáo không được vừa «✅ TƯƠI» vừa «🔴 lệch cỡ mẫu».
+
+    `lech_g3` (N4): phần tử mang «khong_ap»=True là giá trị ghim G3 đã chạy lại mà vẫn không áp được (chỉ báo).
 
     `ket_luan` ∈ {«tuoi», «chua_tuoi», «khong_ket_luan»}. Sửa sau thẩm định PR #247: nhất quán xuyên cổng KHÔNG ĐO ĐƯỢC
     (nq có «loi») mà các trục khác sạch ⇒ «khong_ket_luan», fresh=False (mã thoát ≠ 0) — «không đo được» không bao giờ
@@ -377,6 +693,19 @@ def _do_tuoi_tong_hop(fresh: Dict[str, Any], lech_n: Dict[str, str], lech_g0: Op
                        "offending_upstream": ["G3"]})
     if lech_g0:
         issues.append({"gate": "G0", "kind": "dau_vao_g0_doi", "reason": f"G0 — {lech_g0}", "offending_upstream": []})
+    g3_doi = [d for d in lech_g3 or [] if isinstance(d, dict) and not d.get("khong_ap")]
+    g3_khong_ap = [d for d in lech_g3 or [] if isinstance(d, dict) and d.get("khong_ap")]
+    if g3_doi:
+        issues.append({"gate": "G3", "kind": "dau_vao_g3_doi", "offending_upstream": [],
+                       "reason": ("G3 — đầu vào đổi so với lượt G3 đang có: " + "; ".join(d["ly_do"] for d in g3_doi)
+                                  + " — run_pipeline thường tự chạy lại G3 (hoặc --from G3)")})
+    if g3_khong_ap:
+        issues.append({"gate": "G3", "kind": "dau_vao_g3_khong_ap", "offending_upstream": [],
+                       "reason": ("G3 — giá trị ghim KHÔNG được áp dù G3 đã chạy lại: "
+                                  + "; ".join(d["ly_do"] for d in g3_khong_ap)
+                                  + " — PI kiểm khai báo gate_params.G3 (vd effect_size cần kèm effect_type; giá trị "
+                                  "ngoài miền hợp lệ); hệ không tự chạy lại G3 nữa cho tới khi giá trị ghim hoặc G3 "
+                                  "đổi")})
     for k in (nq or {}).get("lech") or []:
         if isinstance(k, dict) and k.get("muc") == "lech_cung":
             issues.append({"gate": "*", "kind": "lech_cung_xuyen_cong",
@@ -395,6 +724,7 @@ def _do_tuoi_tong_hop(fresh: Dict[str, Any], lech_n: Dict[str, str], lech_g0: Op
             "checkpoints_present": fresh.get("checkpoints_present") or [],
             "stale_gates": list(fresh.get("stale_gates") or []), "orphan_gates": list(fresh.get("orphan_gates") or []),
             "lech_noi_dung": sorted(lech_n, key=_chi_so_cong),
+            "dau_vao_g3_doi": [d["ly_do"] for d in g3_doi], "dau_vao_g3_khong_ap": [d["ly_do"] for d in g3_khong_ap],
             "mtime_khong_tin_duoc": fresh.get("mtime_khong_tin_duoc"),
             "nhat_quan_do_duoc": not nq_loi, "nhat_quan_loi": nq_loi}
 
@@ -466,6 +796,13 @@ def _recover_params(gate: str, out_dir: Path, meta: dict) -> List[str]:
         # VÁ 04/10/2026 (soát từng cổng, G3-09): loại hiệu quả của NI («p_test»/«NI_PROPORTION») không phải lựa chọn
         # của --effect-type — giả thuyết quyết định công thức; truyền nó làm argparse thoát mã 2 và bị đọc nhầm thành
         # «chờ input». PREVALENCE nay được run_g3_auto nhận.
+        # N4 (15/11/2026): pipeline nay tự chạy lại G3 ngay khi PI sửa gate_params.G3 ⇒ đường bản ghim → dòng lệnh phải
+        # chịu được cách PI gõ: «rr»/«risk ratio» chuẩn hoá về mã --effect-type nhận (choices viết hoa) như
+        # run_g3_auto._canonicalize_pinned_effect_type làm khi đọc thẳng study_meta — truyền nguyên văn thì argparse
+        # thoát mã 2 và cổng bị báo «ĐỐI SỐ SAI». Mã lạ không đổi hành vi cũ.
+        loai_chuan = _loai_hieu_qua_chuan(et)
+        if loai_chuan in _G3_LOAI_HIEU_QUA_CLI:
+            et = loai_chuan
         if ev is not None:
             args += ["--effect-size", str(ev)]
         if et and str(et) not in ("p_test", "NI_PROPORTION"):
@@ -484,11 +821,21 @@ def _recover_params(gate: str, out_dir: Path, meta: dict) -> List[str]:
             args += ["--power", str(pw)]
         # Các tham số quyết định N khác — trước đây mất khi chạy lại (run_g3_auto nay cũng tự đọc study_meta; truyền
         # thêm ở đây để giá trị trong checkpoint CŨ không bị bỏ khi study_meta chưa ghim).
+        # N4: effect_type PREVALENCE ghim kèm effect_size mà KHÔNG ghim prevalence ⇒ tỷ lệ ước lượng LÀ effect_size
+        # (run_g3_auto chép effect_size sang prevalence khi prevalence trống). Truyền lại prevalence CŨ của checkpoint
+        # sẽ thắng effect_size PI vừa sửa — PI đổi mà G3 không áp.
+        bo_prevalence_cu = (_loai_hieu_qua_chuan(mp.get("effect_type")) == "PREVALENCE"
+                            and _so_ghim(mp.get("effect_size")) is not None and _so_ghim(mp.get("prevalence")) is None)
         for khoa, co in (("precision", "--precision"), ("prevalence", "--prevalence"),
                          ("hypothesis_type", "--hypothesis-type"), ("margin", "--margin"),
                          ("outcome_direction", "--outcome-direction"), ("population_n", "--population-n"),
                          ("icc", "--icc"), ("cluster_size", "--cluster-size"), ("confirmed_n", "--confirmed-n")):
+            if khoa == "prevalence" and bo_prevalence_cu:
+                continue
             gia_tri = mp.get(khoa, cp.get(khoa))
+            if khoa == "hypothesis_type":
+                # N4: bí danh/hoa thường («Non-inferiority», «vượt trội») ⇒ mã choices của --hypothesis-type.
+                gia_tri = _gia_thuyet_chuan(gia_tri) or gia_tri
             if gia_tri is not None and str(gia_tri).strip() and not str(gia_tri).strip().startswith(("<", "[")):
                 args += [co, str(gia_tri)]
     elif gate == "G8":
@@ -798,11 +1145,16 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
     pre = FRESH.stale_report(out_dir)
     lech_n, lech_n_da_ky = _lech_co_mau_tu_chay_lai(out_dir, study)
     lech_g0 = _g0_lech_dau_vao(out_dir, topic, meta)
+    # N4 — đầu vào G3 đổi (gate_params.G3, test_type G0, thiết kế, lực mục tiêu phụ). Giá trị ghim mà lượt trước đã chạy
+    # lại G3 vẫn không áp được (cùng G3_checkpoint) thì chỉ báo — không chạy lại nữa (hội tụ, không vòng lặp).
+    khong_ap_da_ghi = _g3_khong_ap_da_ghi(out_dir, meta)
+    lech_g3, lech_g3_khong_ap = _tach_khong_ap(_g3_lech_dau_vao_chi_tiet(out_dir, meta), khong_ap_da_ghi)
 
     if check_only:
         nq = _nhat_quan_tom_tat(out_dir, study)
         return {"study": study, "mode": "check_only", "freshness_before": pre,
-                "do_tuoi_tong_hop": _do_tuoi_tong_hop(pre, {**lech_n, **lech_n_da_ky}, lech_g0, nq),
+                "do_tuoi_tong_hop": _do_tuoi_tong_hop(pre, {**lech_n, **lech_n_da_ky}, lech_g0, nq,
+                                                      lech_g3=lech_g3 + lech_g3_khong_ap),
                 "nhat_quan_xuyen_cong": nq, "gate_results": [], "note": "Chỉ kiểm, không chạy."}
 
     # 2) Xác định điểm 'bẩn': cổng thiếu / stale / orphan / bản chép N lệch / đầu vào G0 đổi; hoặc --from.
@@ -817,6 +1169,11 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
     if lech_g0:
         stale_set.add("G0")
         ly_do_chay_lai["G0"] = "TRA LẠI PubMed vì đầu vào G0 đổi — " + lech_g0
+    if lech_g3:
+        stale_set.add("G3")
+        cu = ly_do_chay_lai.get("G3")
+        ly_do_chay_lai["G3"] = ("CHẠY LẠI G3 vì đầu vào G3 đổi — " + "; ".join(d["ly_do"] for d in lech_g3)
+                                + (f" | {cu}" if cu else ""))
     start_idx = GATE_ORDER.index(start_gate) if start_gate in GATE_ORDER else 0
     cong_ep = start_gate if start_gate in GATE_ORDER else None   # --from ÉP chạy lại từ cổng này (cascade)
     # --from do NGƯỜI GỌI (khác `cong_ep` của nhánh quay lại đồng bộ N — tự động). Chỉ `--from` ĐÚNG một cổng cứng đã ký
@@ -962,7 +1319,21 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
     # 3) Kiểm freshness sau (phải tươi nếu chạy trọn) — mtime + nội dung.
     post = FRESH.stale_report(out_dir)
     lech_n_sau = {k: v for d in _lech_co_mau_tu_chay_lai(out_dir, study) for k, v in d.items()}
-    lech_g0_sau = _g0_lech_dau_vao(out_dir, topic, _load_meta(out_dir))
+    meta_sau = _load_meta(out_dir)
+    lech_g0_sau = _g0_lech_dau_vao(out_dir, topic, meta_sau)
+    # N4 — sau lượt: G3 đã chạy (sinh lại checkpoint) mà đầu vào VẪN lệch ⇒ G3 không áp được giá trị ghim đó; ghi lại
+    # (gắn chữ ký lượt G3 mới) để lượt sau chỉ BÁO, không chạy lại G3 mãi. G3 không chạy ⇒ giữ bản ghi cũ còn hiệu
+    # lực (cùng checkpoint, cùng giá trị ghim).
+    lech_g3_sau_tho = _g3_lech_dau_vao_chi_tiet(out_dir, meta_sau)
+    g3_da_chay = any(r.get("gate") == "G3" and r.get("status") in TRANG_THAI_DA_SINH + ("chan_song",)
+                     for r in gate_results)
+    if g3_da_chay:
+        khong_ap_moi = dict(_khoa_khong_ap(d) for d in lech_g3_sau_tho)
+    else:
+        con_hieu_luc = _g3_khong_ap_da_ghi(out_dir, meta_sau)
+        khong_ap_moi = {k: v for k, v in (_khoa_khong_ap(d) for d in lech_g3_sau_tho) if con_hieu_luc.get(k) == v}
+    lech_g3_sau = [{**d, "khong_ap": khong_ap_moi.get(_khoa_khong_ap(d)[0]) == _khoa_khong_ap(d)[1]}
+                   for d in lech_g3_sau_tho]
 
     # 4) Kết luận sẵn sàng từ G10 checkpoint (nếu có).
     readiness = None
@@ -1016,10 +1387,16 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
         "nhat_quan_xuyen_cong": _nhat_quan_tom_tat(out_dir, study),
         "lech_co_mau_g3": lech_n_sau,
         "g0_dau_vao_doi": lech_g0_sau,
+        "g3_dau_vao_doi": [d["ly_do"] for d in lech_g3_sau if not d["khong_ap"]],
+        "g3_dau_vao_khong_ap": ({"chu_ky": _g3_chu_ky_checkpoint(out_dir),
+                                 "dau_van_tay_ghim": _g3_dau_van_tay_ghim(out_dir, meta_sau), "khoa": khong_ap_moi,
+                                 "ly_do": [d["ly_do"] for d in lech_g3_sau if d["khong_ap"]]}
+                                if khong_ap_moi else None),
     }
-    # K7 — «tươi» chỉ khi mtime, bản chép N, đầu vào G0 và nhất quán xuyên cổng (không lệch cứng) đều sạch.
+    # K7 — «tươi» chỉ khi mtime, bản chép N, đầu vào G0, đầu vào G3 (N4) và nhất quán xuyên cổng (không lệch cứng) đều
+    # sạch.
     report["do_tuoi_tong_hop"] = _do_tuoi_tong_hop(post, lech_n_sau, lech_g0_sau, report["nhat_quan_xuyen_cong"],
-                                                   giu_da_ky)
+                                                   giu_da_ky, lech_g3=lech_g3_sau)
     report["converged_fresh"] = report["do_tuoi_tong_hop"]["fresh"]
     # Ghi report.
     (out_dir / "pipeline_run_report.json").write_text(
@@ -1072,11 +1449,11 @@ def _in_do_tuoi(th: Dict[str, Any], nhan: str) -> None:
         return
     nq_loi = th.get("nhat_quan_loi") or ("không rõ lỗi" if th.get("nhat_quan_do_duoc") is False else None)
     if th.get("fresh"):
-        print(f"  {nhan}: ✅ TƯƠI (mtime + bản chép N của G3 + đầu vào G0 + không lệch cứng xuyên cổng)")
+        print(f"  {nhan}: ✅ TƯƠI (mtime + bản chép N của G3 + đầu vào G0 + đầu vào G3 + không lệch cứng xuyên cổng)")
         return
     if th.get("ket_luan") == "khong_ket_luan":
-        print(f"  {nhan}: ⚪ CHƯA KẾT LUẬN ĐƯỢC — mtime, bản chép N của G3, đầu vào G0 sạch nhưng nhất quán xuyên cổng "
-              f"KHÔNG ĐO ĐƯỢC ({str(nq_loi)[:100]}) — không phải «tươi», cũng không phải «lệch»")
+        print(f"  {nhan}: ⚪ CHƯA KẾT LUẬN ĐƯỢC — mtime, bản chép N của G3, đầu vào G0/G3 sạch nhưng nhất quán xuyên "
+              f"cổng KHÔNG ĐO ĐƯỢC ({str(nq_loi)[:100]}) — không phải «tươi», cũng không phải «lệch»")
         return
     print(f"  {nhan}: ⚠ CHƯA TƯƠI / CHƯA NHẤT QUÁN — {th.get('n_issues', 0)} vấn đề:")
     for i in th.get("issues") or []:
