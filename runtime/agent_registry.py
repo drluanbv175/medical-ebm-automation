@@ -139,7 +139,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 14/11/2026 (gói tự động hoá A–D): dieu-phoi-g6 + phan-tich-thong-ke — lệnh kiểm chéo một cửa kiem_cheo_g6.py;
 # vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "974a8af6db8e191a55141ffed1999be7069c870cf344768271a7301bf06ead20"
+    "4d0d59771d58660b3ab0b764327bebdcf4ecfa2b2258b7a75d89b78d4b812214"
 )
 
 MINIMUM_AGENT_COUNT = 64

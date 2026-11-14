@@ -40,6 +40,8 @@ python medical-ebm-automation/tools/run_g5_auto.py --study "MA-DE-TAI"
 >    mục/khoảng, thiếu câu bắt buộc, logic nhánh, luật `_luat-dq.csv`) ⇒ sửa TRONG EXCEL theo phiếu gốc rồi nhập lại;
 >    `--tiep-nhan` chỉ chạy cổng `import_real_dataset.py` khi sạch. Máy KHÔNG tự sửa giá trị; logic nhánh/luật DQ
 >    không đánh giá được ⇒ cảnh báo, không phải «đạt».
+>    Muốn gõ thẳng trong SPSS thay Excel: `mau --study <mã> --dang sav` ⇒ gõ trong Data View (chọn nhãn giá trị; SPSS
+>    KHÔNG chặn lỗi lúc gõ) ⇒ `nhap`/`so-sanh` với tệp `.sav` — CÙNG kiểm và nhập kép như Excel.
 
 > **Luồng làm sạch dữ liệu thật tự động (2026-07-13):** sau khi dữ liệu đã qua `import_real_dataset.py` hoặc `deidentify_research_dataset.py`/`pseudonymize_research_dataset.py --then-import`, gọi tool tổng quát:
 > ```bash

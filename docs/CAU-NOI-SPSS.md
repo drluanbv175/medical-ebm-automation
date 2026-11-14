@@ -88,6 +88,11 @@ chéo lỗi chỉ in ra.
 nhap` (CSV, tự kiểm khớp từng ô) ⇒ `xuat-sav --ban-nhap` (E3: 231 ô khớp, E2 khớp) ⇒ `xuat-rds --ban-nhap` (231 ô khớp ·
 từ điển ↔ .sav ↔ .rds đều khớp); RStudio đọc nhãn tiếng Việt UTF-8, `zap_missing` biến BTR (−9991) thành NA.
 
+## Mở thẳng trong SPSS / RStudio (14/11/2026)
+
+`python3 tools/mo_trong_phan_mem.py spss --study <mã>` (hoặc `r`) gọi `xuat-sav`/`xuat-rds` có kiểm rồi mở cửa sổ phần
+mềm; chưa khoá dữ liệu thì thêm `--excel <tệp đã nhập>` để mở BẢN NHÁP. Chi tiết: `docs/NHAP-LIEU-EXCEL.md`.
+
 ## Thứ tự dùng cho một đề tài
 
 1. G5 khoá dữ liệu (`lock_analysis_dataset.py`) — manifest khoá ghi SHA-256.
