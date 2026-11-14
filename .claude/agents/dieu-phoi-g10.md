@@ -116,7 +116,10 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
      §4/§6/§11, hồ sơ G2) kèm nguồn; PI đồng ý/sửa rồi mới ghi khoá cấp cao `study_meta` (ghi đè có chủ ý). Mục không
      có nguồn đã chốt (kinh phí, khung lý thuyết) ⇒ PI gõ — agent KHÔNG bịa. Ghi xong đo lại G0–G4; tụt ⇒ hoàn nguyên.
   4. A12 (G10-T2) chạy trên ĐỀ CƯƠNG ĐÃ LẮP CUỐI (mọi PMID, kể cả hệ chèn), ≤ 30 ngày trước khi PI ký; lắp lại mà
-     đổi tập PMID ⇒ chạy lại A12.
+     đổi tập PMID ⇒ chạy lại A12. Mỗi lần chạy lại, mốc biên nhận đổi ⇒ dựng lại mục «Bằng chứng máy-kiểm» của
+     `A12_CITATION_VERIFICATION_<mã>.md` bằng `kiem_a12_khop_bien_nhan.py --study <mã> --goi-y`, kiểm tới KHỚP (mã 0).
+     Lệch ⇒ lắp mới bị chặn `A12_DESCRIPTION_MISMATCH_RECEIPT` (mã 2; máy sửa được, KHÔNG phải việc chờ PI; gói đã
+     khoá không bị đụng — phép chấm sống G10-AUTO-05 không đổi).
   5. Bản NỘP HỘI ĐỒNG `DE_CUONG_NOP_HOI_DONG_<mã>.md` + `.docx` (15/10/2026, tuỳ chọn — văn bản người đọc được PI
      thật sự nộp; bản lắp chỉ là hồ sơ truy xuất): có thì CẢ CẶP vào manifest (thiếu nửa ⇒ G10-AUTO-09 chặn), cấm nhãn
      [CẦN…]/email/số điện thoại (dòng chấm «………» để PI điền tay là hợp lệ), và A12 phải phủ CẢ PMID của nó — chạy

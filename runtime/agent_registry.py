@@ -130,7 +130,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # phan-tich-thong-ke + dieu-phoi-g6 (G6-AUTO-11 trọng số hậu phân tầng), dieu-phoi-nghien-cuu (bình duyệt độc lập
 # MỘT agent trước mốc nộp/khoá); bản cặp y hệt gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "15153effb2726c7ea8e2ab3d70c6ccdcf5498823bb825a2d5e164a993d83d7b7"
+    "21492d89c39b7ebd53e50c9bbf13d1c9165e31676396582f538f0c2e23fdc6c9"
 )
 
 MINIMUM_AGENT_COUNT = 64
