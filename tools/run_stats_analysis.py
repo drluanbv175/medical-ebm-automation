@@ -76,6 +76,7 @@ for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import g5_quality_gate as G5Q  # noqa: E402
+import g6_quality_gate as G6Q  # noqa: E402
 import gate_contract as GC  # noqa: E402
 
 # Gốc repo y khoa — MỐC DUY NHẤT cho exports/<study>/ (checkpoint, artifact, sổ cái, dữ liệu khoá, đầu ra).
@@ -2140,6 +2141,26 @@ def _ledger_approved(study: str, gate_id: str, artifact_path: Path) -> bool:
     return GC.ledger_approved(gate_id, study, artifact_path, repo_root=BASE)
 
 
+def _g4_khoa_song(study: str) -> tuple[bool, str]:
+    """(G4 đã khoá THEO TRẠNG THÁI SỐNG?, nguồn/lý do) — dùng ĐÚNG hàm cổng G6 dùng: `g6_quality_gate._g4_da_khoa`
+    = chữ ký sổ cái đúng vai khớp băm SAP HIỆN TẠI (`gate_contract.ledger_approved`) VÀ G4 chấm trực tiếp
+    PASS_G4_SAP_LOCKED (`gate_contract.g4_quality_contract_satisfied` — cũng là hàm G5-AUTO-05 dùng).
+    Không viết luật mới.
+
+    VÁ 14/11/2026 (giả lập RCT lần 2, N1 — mức CAO): bản cũ đòi `g4_status` của G4_checkpoint mang chữ LOCKED — trường
+    mà `approve_gate.py` và `g4_quality_gate.refresh_checkpoint` KHÔNG BAO GIỜ ghi ⇒ đề tài ký G4 đúng quy trình vẫn bị
+    G6 từ chối, chỉ chạy được nhờ cờ `--i-confirm-sap-locked` (diễn tập C1a 16/10 truyền sẵn cờ nên che lỗi).
+
+    Fail-closed: mọi lỗi khi đo ⇒ (False, «không đo được …») — «không đo được» KHÔNG BAO GIỜ là «đã khoá»; chỉ nhận đúng
+    giá trị `True` (không nhận chuỗi/giá trị truthy khác)."""
+    sap = _thu_muc_de_tai(study) / f"G4_A5_SAP_FINAL_{study}.md"
+    try:
+        ok, nguon = G6Q._g4_da_khoa(study, sap, BASE)
+    except Exception as exc:  # noqa: BLE001 — không đo được không phải «đã khoá»
+        return False, f"không đo được ({type(exc).__name__})"
+    return ok is True, str(nguon)
+
+
 def _sha256_file(path: Path) -> str:
     import hashlib
     h = hashlib.sha256()
@@ -2239,9 +2260,10 @@ def main():
     parser.add_argument("--gate", default="G6", help="Cổng phân tích (mặc định: G6)")
     parser.add_argument("--vars", default="", help="Biến cho Bảng 1 (mặc định: tất cả)")
     parser.add_argument("--i-confirm-sap-locked", action="store_true",
-                        help="Ghi đè kiểm tra G4/G5 checkpoint khi không có file checkpoint "
-                             "(vd chạy thủ công ngoài pipeline) nhưng SAP+DB thực tế đã khóa. "
-                             "KHÔNG dùng để né việc chưa khóa thật.")
+                        help="GHI ĐÈ CÓ CHỦ Ý (đường thường KHÔNG cần): thay phần chấm sống G4 và trạng thái G5 "
+                             "trong checkpoint — KHÔNG BAO GIỜ thay chữ ký sổ cái khớp băm SAP/G5 hiện tại hay G5 chấm "
+                             "sống. Khi dùng thật sự, lượt chạy in cảnh báo và ghi vào G6_analysis_summary.json "
+                             "(khoá khoa_g4). KHÔNG dùng để né việc chưa khóa thật.")
     parser.add_argument("--kiem-cheo", action="store_true",
                         help="Sau khi ghi G6_analysis_summary.json, chạy kiểm chéo bằng SPSS + R "
                              "(tools/kiem_cheo_g6.py chay) — TƯ VẤN: không đổi mã thoát hay trạng thái cổng")
@@ -2317,7 +2339,7 @@ def main():
               f"--artifact exports/{args.study}/G2_A3_ETHICS_PACKAGE_{args.study}.md ...")
         print("   --i-confirm-irb-approved chỉ thay được checkpoint-file bị mất — KHÔNG thay được ledger.")
         sys.exit(1)
-    g4_cp = _load_checkpoint(args.study, "G4")
+    # G4 KHÔNG đọc checkpoint nữa (N1, 14/11/2026) — xem _g4_khoa_song.
     g5_cp = _load_checkpoint(args.study, "G5")
     # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 16, phát hiện HIGH):
     # đọc lại hypothesis_type/margin đã ghim ở G3 (run_g3_auto.py) để diễn
@@ -2394,7 +2416,11 @@ def main():
         print("⚠️  [CẦN THỐNG KÊ VIÊN] specialist_modules phát hiện cấu phần KINH TẾ Y TẾ cộng thêm "
               "(G1) — script này KHÔNG tính ICER/chi phí-hiệu quả (CHEERS 2022); cần phân tích riêng "
               "cho cấu phần đó, không suy ra được từ Bảng 1/2/3 ở đây.")
-    g4_checkpoint_locked = _is_locked(g4_cp.get("g4_status", g4_cp.get("G4_STATUS")))
+    # VÁ 14/11/2026 (giả lập RCT lần 2, N1 — CAO): «G4 đã khoá» = TRẠNG THÁI SỐNG (_g4_khoa_song: chữ ký sổ cái khớp
+    # băm SAP hiện tại + G4 chấm trực tiếp PASS_G4_SAP_LOCKED) — KHÔNG đọc `g4_status` (approve_gate không bao giờ ghi
+    # trường đó ⇒ G4 ký đúng quy trình vẫn bị từ chối). G5 giữ nguyên: `g5_status` do lock_analysis_dataset /
+    # g5_quality_gate ghi thật, lại còn G5 chấm sống (g5_quality_ok) đi kèm.
+    g4_song_ok, g4_song_nguon = _g4_khoa_song(args.study)
     g5_checkpoint_locked = _is_locked(g5_cp.get("g5_status", g5_cp.get("G5_STATUS")))
     g4_ledger_ok = _ledger_approved(
         args.study, "G4", _thu_muc_de_tai(args.study) / f"G4_A5_SAP_FINAL_{args.study}.md")
@@ -2407,7 +2433,11 @@ def main():
         write=False,
     )
     g5_quality_ok = g5_quality["status"] == G5Q.STATUS_LOCKED
-    g4_locked = (g4_checkpoint_locked or args.i_confirm_sap_locked) and g4_ledger_ok
+    # Cờ --i-confirm-sap-locked: đường GHI ĐÈ CÓ CHỦ Ý cho phần chấm sống G4 — CHỈ khi chữ ký sổ cái G4 khớp băm SAP
+    # HIỆN TẠI (sửa SAP sau khi ký ⇒ cờ cũng không cứu). Thực tế G5 chấm sống (g5_quality_ok, không cờ nào thay) vẫn đòi
+    # G4 khoá sống ở G5-AUTO-05, nên cờ không mở được G6 cho một G4 thật sự chưa khoá.
+    g4_ghi_de = bool(args.i_confirm_sap_locked and g4_ledger_ok and not g4_song_ok)
+    g4_locked = g4_song_ok or g4_ghi_de
     g5_locked = (
         (g5_checkpoint_locked or args.i_confirm_sap_locked)
         and g5_ledger_ok
@@ -2415,7 +2445,7 @@ def main():
     )
     if not (g4_locked and g5_locked):
         print("✗ DỪNG: G4 (SAP) hoặc G5 (khóa DB) chưa xác nhận LOCKED bằng phê duyệt thật.")
-        print(f"   G4 checkpoint: {'✅ LOCKED' if g4_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
+        print(f"   G4 trạng thái sống: {'✅ ĐÃ KHOÁ' if g4_song_ok else '⚠️ CHƯA khoá/không đo được'} ({g4_song_nguon})"
               f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g4_ledger_ok else '⚠️ thiếu/không khớp'}")
         print(f"   G5 checkpoint: {'✅ LOCKED' if g5_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
               f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g5_ledger_ok else '⚠️ thiếu/không khớp'}"
@@ -2429,8 +2459,23 @@ def main():
         print("   Checkpoint 'LOCKED' không còn đủ — cần bác sĩ tự tay ghi phê duyệt thật bằng:")
         print(f"     python tools/approve_gate.py --study \"{args.study}\" --gate G4 "
               f"--artifact exports/{args.study}/G4_A5_SAP_FINAL_{args.study}.md ...")
-        print("   --i-confirm-sap-locked chỉ thay được checkpoint-file bị mất — KHÔNG thay được ledger.")
+        print("   --i-confirm-sap-locked chỉ thay phần chấm sống G4/checkpoint G5 — KHÔNG thay được ledger.")
         sys.exit(1)
+    # Ghi nhận cách xác định khoá G4 cho lượt này (in ra + vào G6_analysis_summary.json, khoá «khoa_g4»).
+    khoa_g4 = {
+        "trang_thai_song": g4_song_ok,
+        "nguon": g4_song_nguon,
+        "so_cai_khop_sap": g4_ledger_ok,
+        "ghi_de_i_confirm_sap_locked": g4_ghi_de,
+        "co_truyen_i_confirm_sap_locked": bool(args.i_confirm_sap_locked),
+    }
+    if g4_ghi_de:
+        print("⚠️  GHI ĐÈ CÓ CHỦ Ý (--i-confirm-sap-locked): G4 KHÔNG được xác nhận khoá theo trạng thái sống "
+              f"({g4_song_nguon}); chạy tiếp nhờ chữ ký sổ cái G4 khớp băm SAP hiện tại. Người truyền cờ chịu trách "
+              "nhiệm — đã ghi vào G6_analysis_summary.json (khoa_g4.ghi_de_i_confirm_sap_locked = true).")
+    else:
+        print(f"✅ G4 đã khoá theo trạng thái sống: {g4_song_nguon}"
+              + (" — cờ --i-confirm-sap-locked KHÔNG cần cho G4 ở lượt này." if args.i_confirm_sap_locked else ""))
 
     data_lock_manifest = _require_locked_analysis_dataset(args.study, args.data)
 
@@ -2459,6 +2504,7 @@ def main():
             "sap_version": data_lock_manifest.get("sap_version"),
         },
         "n_total": len(df),
+        "khoa_g4": khoa_g4,
         "disclaimer": "Cần bác sĩ kiểm chứng."
     }
     # ĐẶC TẢ phân tích đúng như lượt chạy này (14/11/2026) — để tools/cau_noi_spss.py sinh cú pháp SPSS khớp TỪNG biến
