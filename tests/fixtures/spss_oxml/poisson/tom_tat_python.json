@@ -1,0 +1,285 @@
+{
+ "n_total": 600,
+ "dac_ta_phan_tich": {
+  "outcome": "khong_xn_du",
+  "group": "insulin",
+  "covariates": [
+   "tuoi10",
+   "doi_tuong",
+   "hba1c3",
+   "pk"
+  ],
+  "outcome_type": "poisson_pr",
+  "time": null,
+  "event": null,
+  "cot_cum": null,
+  "don_vi_phoi_nhiem": null,
+  "hiep_bien_phan_loai": {
+   "doi_tuong": {
+    "tham_chieu": "1",
+    "muc": [
+     "2",
+     "3",
+     "4"
+    ],
+    "ten": [
+     "doi_tuong_2",
+     "doi_tuong_3",
+     "doi_tuong_4"
+    ]
+   },
+   "hba1c3": {
+    "tham_chieu": "0",
+    "muc": [
+     "1",
+     "2"
+    ],
+    "ten": [
+     "hba1c3_1",
+     "hba1c3_2"
+    ]
+   },
+   "pk": {
+    "tham_chieu": "1",
+    "muc": [
+     "2",
+     "3"
+    ],
+    "ten": [
+     "pk_2",
+     "pk_3"
+    ]
+   }
+  }
+ },
+ "primary_outcome": {
+  "outcome_type": "binary",
+  "groups": [
+   "0",
+   "1"
+  ],
+  "group_0": {
+   "n": 313,
+   "events": 100,
+   "pct": 31.9
+  },
+  "group_1": {
+   "n": 287,
+   "events": 145,
+   "pct": 50.5
+  },
+  "or_crude": 2.175,
+  "ci_95": [
+   1.561,
+   3.03
+  ],
+  "risk_diff": 0.1857,
+  "risk_diff_ci_95": [
+   0.1082,
+   0.2633
+  ],
+  "p_value": 0.0,
+  "test": "Chi-square"
+ },
+ "poisson_pr": {
+  "model": "poisson_robust_hc0",
+  "n": 538,
+  "n_bien_co": 218,
+  "phuong_sai": "HC0 (sandwich) — Zou 2004 PMID 15033648",
+  "tho": [
+   {
+    "variable": "insulin",
+    "PR": 1.573,
+    "CI_95": [
+     1.2744,
+     1.9417
+    ],
+    "p": 0.0
+   },
+   {
+    "variable": "tuoi10",
+    "PR": 0.985,
+    "CI_95": [
+     0.8975,
+     1.081
+    ],
+    "p": 0.7497
+   },
+   {
+    "variable": "doi_tuong_2",
+    "PR": 1.329,
+    "CI_95": [
+     1.0075,
+     1.7531
+    ],
+    "p": 0.0441
+   },
+   {
+    "variable": "doi_tuong_3",
+    "PR": 1.5996,
+    "CI_95": [
+     1.1905,
+     2.1493
+    ],
+    "p": 0.0018
+   },
+   {
+    "variable": "doi_tuong_4",
+    "PR": 1.2037,
+    "CI_95": [
+     0.8116,
+     1.7852
+    ],
+    "p": 0.3566
+   },
+   {
+    "variable": "hba1c3_1",
+    "PR": 0.8569,
+    "CI_95": [
+     0.6738,
+     1.0898
+    ],
+    "p": 0.2079
+   },
+   {
+    "variable": "hba1c3_2",
+    "PR": 0.7747,
+    "CI_95": [
+     0.6025,
+     0.9961
+    ],
+    "p": 0.0465
+   },
+   {
+    "variable": "pk_2",
+    "PR": 0.8416,
+    "CI_95": [
+     0.6528,
+     1.085
+    ],
+    "p": 0.1833
+   },
+   {
+    "variable": "pk_3",
+    "PR": 0.9556,
+    "CI_95": [
+     0.7503,
+     1.2172
+    ],
+    "p": 0.7131
+   }
+  ],
+  "results": [
+   {
+    "variable": "insulin",
+    "PR_adj": 1.6188,
+    "CI_95": [
+     1.3145,
+     1.9936
+    ],
+    "p": 0.0
+   },
+   {
+    "variable": "tuoi10",
+    "PR_adj": 0.9715,
+    "CI_95": [
+     0.8897,
+     1.0608
+    ],
+    "p": 0.519
+   },
+   {
+    "variable": "doi_tuong_2",
+    "PR_adj": 1.3678,
+    "CI_95": [
+     1.0417,
+     1.796
+    ],
+    "p": 0.0242
+   },
+   {
+    "variable": "doi_tuong_3",
+    "PR_adj": 1.6015,
+    "CI_95": [
+     1.1937,
+     2.1486
+    ],
+    "p": 0.0017
+   },
+   {
+    "variable": "doi_tuong_4",
+    "PR_adj": 1.2621,
+    "CI_95": [
+     0.8651,
+     1.8411
+    ],
+    "p": 0.2271
+   },
+   {
+    "variable": "hba1c3_1",
+    "PR_adj": 0.8207,
+    "CI_95": [
+     0.6511,
+     1.0345
+    ],
+    "p": 0.0944
+   },
+   {
+    "variable": "hba1c3_2",
+    "PR_adj": 0.7424,
+    "CI_95": [
+     0.5789,
+     0.9521
+    ],
+    "p": 0.0189
+   },
+   {
+    "variable": "pk_2",
+    "PR_adj": 0.8334,
+    "CI_95": [
+     0.6509,
+     1.0671
+    ],
+    "p": 0.1484
+   },
+   {
+    "variable": "pk_3",
+    "PR_adj": 0.9,
+    "CI_95": [
+     0.7079,
+     1.1443
+    ],
+    "p": 0.3899
+   }
+  ],
+  "nhom_bien": {
+   "insulin": [
+    "insulin"
+   ],
+   "tuoi10": [
+    "tuoi10"
+   ],
+   "doi_tuong": [
+    "doi_tuong_2",
+    "doi_tuong_3",
+    "doi_tuong_4"
+   ],
+   "hba1c3": [
+    "hba1c3_1",
+    "hba1c3_2"
+   ],
+   "pk": [
+    "pk_2",
+    "pk_3"
+   ]
+  }
+ },
+ "data_lock": {
+  "manifest": "/tmp/f2-dc-gs6pq1dx/exports/F2-POISSON/DATA_LOCK_manifest.json",
+  "locked_dataset_path": "05_clean_locked/k.csv",
+  "sha256": "327854b6c36c0120e36aee9943cdfb4acf6fa1657402add660bf2191d31f7ce9",
+  "lock_date": "2026-11-14",
+  "approved_by": null,
+  "sap_version": null
+ }
+}
