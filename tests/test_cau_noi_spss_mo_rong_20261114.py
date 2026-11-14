@@ -117,18 +117,19 @@ def test_tang_trong_so_python_trung_ham_r_04a_ngau_nhien(tmp_path, hat):
     d, h = _du_lieu(tmp_path, o), _his(tmp_path, N)
     py = C.tinh_tang_trong_so(d, TS_NHO, h, {})
     (tmp_path / "ham.R").write_text(TSS.R_HAM, encoding="utf-8", newline="\n")
+    # CHỈ R gốc (không jsonlite): máy CI Windows có Rscript nhưng không có gói bổ sung (đo 14/11/2026, lượt 43569340401)
     r_code = (
         'source("ham.R", encoding="UTF-8"); d <- read.csv("d.csv"); N <- read.csv("N.csv");'
         'b <- gop_tang_nho(bang_tang(d, N, "ngay", "khung"), 10); k <- bang_kich_hoat(b$bang, 0.2);'
-        'jsonlite::write_json(list(o=b$bang[,c("ngay","khung","nhom")], kich_hoat=k$kich_hoat), "r.json",'
-        "auto_unbox=TRUE, digits=NA)"
+        'utils::write.csv(b$bang[, c("ngay", "khung", "nhom")], "r_o.csv", row.names = FALSE);'
+        'writeLines(as.character(k$kich_hoat), "r_kh.txt")'
     )
-    subprocess.run([RSCRIPT, "--vanilla", "-e", r_code], cwd=tmp_path, check=True, capture_output=True, timeout=120)
-    r = json.loads((tmp_path / "r.json").read_text(encoding="utf-8"))
-    assert {(x["ngay"], x["khung"]): x["nhom"] for x in py["o"]} == {
-        (float(x["ngay"]), float(x["khung"])): x["nhom"] for x in C._hang_r(r["o"])
-    }
-    assert py["kich_hoat"] == r["kich_hoat"]
+    kq = subprocess.run([RSCRIPT, "--vanilla", "-e", r_code], cwd=tmp_path, capture_output=True, text=True, timeout=120)
+    assert kq.returncode == 0, kq.stderr[-800:]
+    with open(tmp_path / "r_o.csv", encoding="utf-8", newline="") as f:
+        o_r = {(float(x["ngay"]), float(x["khung"])): x["nhom"] for x in csv.DictReader(f)}
+    assert {(x["ngay"], x["khung"]): x["nhom"] for x in py["o"]} == o_r
+    assert py["kich_hoat"] == ((tmp_path / "r_kh.txt").read_text(encoding="utf-8").strip() == "TRUE")
 
 
 # ───────────── cú pháp bổ sung ─────────────
