@@ -43,6 +43,7 @@ sys.path.insert(0, str(_REPO_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
+import dau_may_sinh as DMS  # noqa: E402  (dấu SHA-256 bản máy sinh — K6, 14/11/2026)
 import g2_quality_gate as G2Q  # noqa: E402  (hợp đồng chất lượng riêng G2)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 import pii_van_ban as PII  # noqa: E402  (bộ dò PII dùng chung — CHUNG-G)
@@ -67,6 +68,72 @@ DESIGN_DEFAULTS = {
 # 1. PHÂN LOẠI RỦI RO VÀ LỘ TRÌNH IRB
 # ════════════════════════════════════════════════════════════════════════════
 
+# ── K9 (giả lập đề tài RCT 14/11/2026): rủi ro RCT THEO LOẠI CAN THIỆP ──────────────────────────────────────────────
+# Bảng cũ dùng MỘT danh sách cho mọi RCT — của thử nghiệm THUỐC có LẤY MÁU («Tác dụng phụ của thuốc thử nghiệm»,
+# «Lấy mẫu máu … Cao»). Đề tài giả lập là tin nhắn SMS nhắc uống thuốc (nguy cơ tối thiểu, không lấy máu) mà phiếu đồng
+# thuận vẫn chép rủi ro lấy máu ⇒ nói QUÁ nguy cơ trong tài liệu cho người bệnh. Nay: dòng chung cho mọi RCT + dòng
+# riêng theo loại can thiệp. Loại lấy theo thứ tự: PI chốt ở `gate_params.G2.intervention_type` → máy suy từ PICO I
+# (G1.intervention_or_exposure / G0.intervention, gắn [CẦN PI XÁC NHẬN]) → KHÔNG rõ ⇒ Bảng rủi ro liệt kê mọi loại để PI
+# chọn, phiếu đồng thuận để một ô [CẦN] (không chép rủi ro của loại can thiệp chưa xác định vào tài liệu cho người bệnh).
+LOAI_CAN_THIEP_RCT = {
+    "drug": "thuốc / sản phẩm sinh học / vắc-xin",
+    "procedure": "thủ thuật / phẫu thuật",
+    "device": "thiết bị y tế",
+    "behavioral": "hành vi / giáo dục / tư vấn / tin nhắn (can thiệp số)",
+}
+_RUI_RO_RCT_CHUNG = [
+    ("Rò rỉ thông tin cá nhân", "Rất thấp", "Trung bình",
+     "Mã hóa AES-256; bảng liên kết ID–tên lưu riêng, khóa mật khẩu mạnh; quy trình vi phạm 72h"),
+    ("Gánh nặng thời gian / bất tiện cho NTG", "Cao", "Nhẹ",
+     "Tối giản lịch hẹn; bồi thường chi phí đi lại hợp lý; tái khám kết hợp với chăm sóc thường quy"),
+    ("Mất theo dõi / dropout ảnh hưởng kết cục", "Trung bình", "Nhẹ",
+     "Liên hệ định kỳ; lịch tái khám linh hoạt; ITT analysis trong SAP"),
+]
+_RUI_RO_RCT_THEO_LOAI = {
+    "drug": [
+        ("Tác dụng phụ của thuốc/sản phẩm thử nghiệm", "Trung bình–Cao", "Nhẹ–Trung bình",
+         "Giám sát chặt AE/SAE; dừng nghiên cứu nếu xuất hiện SAE nghiêm trọng; DSMB/DMC giám sát"),
+        ("Lấy máu / xét nghiệm theo dõi ngoài chăm sóc thường quy (CHỈ khi đề cương có)", "Cao", "Nhẹ",
+         "Nhân viên được đào tạo; vô trùng; gộp với lần lấy máu thường quy khi có thể"),
+    ],
+    "procedure": [
+        ("Biến chứng của thủ thuật/phẫu thuật (đau, chảy máu, nhiễm trùng)", "Thấp–Trung bình", "Nhẹ–Nặng",
+         "Người thực hiện đủ năng lực; quy trình vô khuẩn; theo dõi sau thủ thuật; báo cáo AE/SAE"),
+        ("Rủi ro của gây tê/gây mê (CHỈ khi thủ thuật có)", "Thấp", "Nhẹ–Nặng",
+         "Khám trước gây mê; người gây mê theo dõi; phương tiện cấp cứu sẵn sàng"),
+    ],
+    "device": [
+        ("Trục trặc/hỏng thiết bị hoặc kết quả đo sai", "Thấp", "Nhẹ–Trung bình",
+         "Thiết bị đã được cấp phép/kiểm định; hướng dẫn sử dụng; kênh báo sự cố thiết bị"),
+        ("Khó chịu/kích ứng khi đeo hoặc dùng thiết bị", "Thấp–Trung bình", "Nhẹ",
+         "Hướng dẫn cách dùng; NTG được ngừng dùng bất cứ lúc nào; kiểm tra ở lần tái khám"),
+    ],
+    "behavioral": [
+        ("Nội dung tin nhắn/cuộc gọi bị người khác đọc (điện thoại dùng chung)", "Thấp", "Nhẹ",
+         "Nội dung không ghi tên bệnh/chẩn đoán; NTG chọn số nhận và khung giờ; ngừng nhận được bất cứ lúc nào"),
+        ("Phiền hà, áp lực tâm lý do nhắc nhở/tư vấn lặp lại", "Thấp", "Không đáng kể–Nhẹ",
+         "Tần suất hợp lý; NTG giảm/ngừng nhận được; có đầu mối liên hệ khi thấy phiền"),
+        ("Hiểu nhầm can thiệp thay cho chăm sóc thường quy", "Thấp", "Nhẹ–Trung bình",
+         "ICF nói rõ NTG vẫn được khám, điều trị, tái khám theo chuẩn; không tự ý đổi hay ngừng thuốc đang dùng"),
+    ],
+}
+
+
+def _rui_ro_rct_chua_ro_loai() -> list:
+    """Bảng rủi ro khi CHƯA rõ loại can thiệp: dòng chung + mọi dòng theo loại, mỗi dòng gắn nhãn [CẦN PI CHỌN]."""
+    dong = list(_RUI_RO_RCT_CHUNG)
+    for loai, mo_ta in LOAI_CAN_THIEP_RCT.items():
+        for ten, xs, md, bp in _RUI_RO_RCT_THEO_LOAI[loai]:
+            dong.append((f"[CẦN PI CHỌN — chỉ giữ nếu can thiệp là {mo_ta}] {ten}", xs, md, bp))
+    return dong
+
+
+# Dòng duy nhất phiếu đồng thuận nhận thay cho rủi ro riêng khi loại can thiệp CHƯA rõ — không chép danh mục chọn (gồm cả
+# rủi ro lấy máu/thuốc) vào tài liệu cho người bệnh.
+_DONG_ICF_CHUA_RO_LOAI = ("[CẦN PI XÁC NHẬN loại can thiệp]", "—", "—",
+                          "Chép đúng rủi ro riêng của loại can thiệp đã chốt từ Tài liệu 3")
+
+
 RISK_PROFILES = {
     "rct": {
         "risk_level": "LỚN HƠN TỐI THIỂU",
@@ -75,18 +142,10 @@ RISK_PROFILES = {
         "register_where": "ClinicalTrials.gov hoặc ANZCTR/ISRCTN",
         "icf_required": True,
         "icf_waiver_eligible": False,
-        "risks": [
-            ("Tác dụng phụ của can thiệp/thuốc thử nghiệm", "Trung bình–Cao", "Nhẹ–Trung bình",
-             "Giám sát chặt AE/SAE; dừng nghiên cứu nếu xuất hiện SAE nghiêm trọng; DSMB/DMC giám sát"),
-            ("Lấy mẫu máu / thủ thuật bổ sung", "Cao", "Nhẹ",
-             "Nhân viên được đào tạo; vô trùng; băng keo sau lấy máu"),
-            ("Rò rỉ thông tin cá nhân", "Rất thấp", "Trung bình",
-             "Mã hóa AES-256; bảng liên kết ID–tên lưu riêng, khóa mật khẩu mạnh; quy trình vi phạm 72h"),
-            ("Gánh nặng thời gian / bất tiện cho NTG", "Cao", "Nhẹ",
-             "Tối giản lịch hẹn; bồi thường chi phí đi lại hợp lý; tái khám kết hợp với chăm sóc thường quy"),
-            ("Mất theo dõi / dropout ảnh hưởng kết cục", "Trung bình", "Nhẹ",
-             "Liên hệ định kỳ; lịch tái khám linh hoạt; ITT analysis trong SAP"),
-        ],
+        # K9 (14/11/2026): mặc định = CHƯA rõ loại can thiệp (an toàn): Bảng rủi ro liệt kê để PI chọn, ICF một ô [CẦN].
+        # ap_loai_can_thiep() thu hẹp theo loại khi PI đã chốt hoặc máy suy được từ PICO I.
+        "risks": _rui_ro_rct_chua_ro_loai(),
+        "risks_icf": list(_RUI_RO_RCT_CHUNG) + [_DONG_ICF_CHUA_RO_LOAI],
         "benefits": "Phát sinh bằng chứng RCT cấp độ cao nhất; cải thiện thực hành điều trị; NTG có thể hưởng lợi trực tiếp từ can thiệp mới",
     },
     "cohort": {
@@ -351,6 +410,127 @@ def ap_quyet_dinh_dang_ky(risk: dict, meta: Optional[dict]) -> dict:
     return ra
 
 
+# Bí danh PI có thể ghi ở gate_params.G2.intervention_type (K9) → mã loại can thiệp chuẩn.
+_BI_DANH_LOAI_CAN_THIEP = {
+    "drug": "drug", "thuoc": "drug", "thuốc": "drug", "medication": "drug", "biologic": "drug", "vaccine": "drug",
+    "vắc-xin": "drug",
+    "procedure": "procedure", "thu_thuat": "procedure", "thủ thuật": "procedure", "surgery": "procedure",
+    "phẫu thuật": "procedure",
+    "device": "device", "thiet_bi": "device", "thiết bị": "device",
+    "behavioral": "behavioral", "behavioural": "behavioral", "hanh_vi": "behavioral", "hành vi": "behavioral",
+    "education": "behavioral", "giáo dục": "behavioral", "digital": "behavioral", "sms": "behavioral",
+    "tin nhắn": "behavioral",
+}
+# Từ khoá máy dùng để SUY loại can thiệp từ PICO I (chỉ là gợi ý — luôn gắn [CẦN PI XÁC NHẬN]).
+_TU_KHOA_LOAI_CAN_THIEP = {
+    "drug": (r"thuốc", r"giả dược", r"\bliều\b", r"vắc[\s-]?xin", r"\bvaccin", r"\btiêm\b", r"kháng sinh",
+             r"\bplacebo\b", r"\bdrugs?\b", r"\bdos(?:e|es|ing)\b", r"\bmg\b", r"\btablets?\b", r"\bmedications?\b"),
+    "procedure": (r"phẫu thuật", r"thủ thuật", r"nội soi", r"đặt stent", r"can thiệp mạch", r"sinh thiết",
+                  r"\bsurg", r"\bprocedur", r"endoscop", r"cathet", r"ablation", r"biops", r"\bstent"),
+    "device": (r"thiết bị", r"máy đo", r"cảm biến", r"dụng cụ", r"máy thở", r"\bdevices?\b", r"wearable",
+               r"\bsensors?\b", r"\bcpap\b"),
+    "behavioral": (r"tin nhắn", r"\bsms\b", r"\bzalo\b", r"\bnhắc\b", r"giáo dục", r"tư vấn", r"truyền thông",
+                   r"ứng dụng", r"điện thoại", r"cuộc gọi", r"hành vi", r"lối sống", r"tập luyện", r"chế độ ăn",
+                   r"từ xa", r"tự quản lý", r"can thiệp số", r"\bapp\b", r"\bmhealth\b", r"telehealth",
+                   r"telemedicine", r"educat", r"counsel", r"coach", r"remind", r"text messag", r"behavio",
+                   r"lifestyle", r"exercise", r"self-manag"),
+}
+# Cụm «nhắc/tuân thủ uống thuốc»: thuốc là ĐÍCH của can thiệp hành vi, không phải thuốc thử nghiệm — thay bằng cụm
+# hành vi trước khi dò từ khoá (đề tài giả lập «tin nhắn nhắc uống thuốc hạ áp» không được suy thành thử nghiệm thuốc).
+_CUM_TUAN_THU_THUOC = (
+    r"(?:nhắc(?:\s+nhở)?|tuân\s+thủ)(?:\s+\S+){0,2}?\s+thuốc",
+    r"(?:medications?|drugs?|pills?)\s+(?:adherence|reminders?|compliance)",
+    r"adherence\s+to\s+(?:\S+\s+)?(?:medications?|drugs?|treatment)",
+    r"remind\w*\s+(?:\S+\s+){0,3}?(?:medications?|pills?|drugs?)",
+)
+
+
+def _co_noi_dung(v) -> bool:
+    """Giá trị có nội dung thật (không rỗng, không phải ô chờ «[CẦN…]»/«<…>»)."""
+    s = str(v or "").strip()
+    return bool(s) and not s.startswith(("[", "<"))
+
+
+def phan_loai_can_thiep(meta: Optional[dict], topic: str = "") -> dict:
+    """Loại can thiệp của RCT (K9, 14/11/2026) — PI chốt thắng máy suy; không chắc thì nói KHÔNG rõ, không đoán.
+
+    Trả {"loai": [mã…] (rỗng = chưa rõ), "nguon": str, "da_chot": bool, "ung_vien": [mã…], "canh_bao": str}.
+    - `gate_params.G2.intervention_type` (chuỗi hoặc danh sách; nhận bí danh Việt/Anh) ⇒ da_chot=True.
+    - Không ghim: suy từ G1.intervention_or_exposure → G0.intervention → tên đề tài; đúng MỘT loại khớp mới nhận
+      (da_chot=False — nơi dùng phải gắn [CẦN PI XÁC NHẬN]); 0 hoặc ≥2 loại ⇒ chưa rõ."""
+    gp = ((meta or {}).get("gate_params") or {}) if isinstance(meta, dict) else {}
+    g0 = gp.get("G0") if isinstance(gp.get("G0"), dict) else {}
+    g1 = gp.get("G1") if isinstance(gp.get("G1"), dict) else {}
+    g2 = gp.get("G2") if isinstance(gp.get("G2"), dict) else {}
+    canh_bao = ""
+    ghim = g2.get("intervention_type")
+    gia_tri = [x for x in (ghim if isinstance(ghim, list) else [ghim]) if _co_noi_dung(x)]
+    if gia_tri:
+        ma = [_BI_DANH_LOAI_CAN_THIEP.get(str(x).strip().casefold()) for x in gia_tri]
+        if all(ma):
+            return {"loai": sorted(set(ma)), "nguon": "PI đã chốt — gate_params.G2.intervention_type",
+                    "da_chot": True, "ung_vien": sorted(set(ma)), "canh_bao": ""}
+        canh_bao = (f"gate_params.G2.intervention_type={ghim!r} có giá trị không nhận ra — dùng "
+                    f"{'/'.join(LOAI_CAN_THIEP_RCT)}; tạm bỏ qua bản ghim, máy suy từ PICO I")
+    for nguon, gia in (("PICO I — gate_params.G1.intervention_or_exposure", g1.get("intervention_or_exposure")),
+                       ("PICO I — gate_params.G0.intervention", g0.get("intervention")),
+                       ("tên đề tài", topic)):
+        if _co_noi_dung(gia):
+            van = str(gia).casefold()
+            break
+    else:
+        return {"loai": [], "nguon": "không có mô tả can thiệp", "da_chot": False, "ung_vien": [],
+                "canh_bao": canh_bao}
+    for mau in _CUM_TUAN_THU_THUOC:
+        van = re.sub(mau, " nhắc tuân thủ ", van)
+    ung_vien = [loai for loai, cac_mau in _TU_KHOA_LOAI_CAN_THIEP.items()
+                if any(re.search(m, van) for m in cac_mau)]
+    return {"loai": ung_vien if len(ung_vien) == 1 else [], "nguon": f"máy suy từ {nguon}", "da_chot": False,
+            "ung_vien": ung_vien, "canh_bao": canh_bao}
+
+
+def ap_loai_can_thiep(risk: dict, design_code: str, meta: Optional[dict], topic: str = "") -> dict:
+    """Thu hẹp bảng rủi ro RCT theo loại can thiệp (K9). Chỉ áp cho design_code == "rct".
+
+    Đã rõ loại (PI chốt hoặc máy suy được) ⇒ dòng chung + dòng của đúng loại đó, cho cả Bảng rủi ro lẫn phiếu đồng thuận.
+    Chưa rõ ⇒ giữ mặc định an toàn (Bảng liệt kê mọi loại để PI chọn, phiếu đồng thuận một ô [CẦN]). Mức nguy cơ/lộ trình
+    IRB CHỈ đổi khi PI đã chốt loại — máy suy không được hạ mức nguy cơ trình Hội đồng."""
+    if design_code != "rct":
+        return risk
+    pl = phan_loai_can_thiep(meta, topic)
+    ra = dict(risk)
+    loai = pl["loai"]
+    if loai:
+        ra["risks"] = list(_RUI_RO_RCT_CHUNG) + [d for ma in loai for d in _RUI_RO_RCT_THEO_LOAI[ma]]
+        ra["risks_icf"] = list(ra["risks"])
+        mo_ta = " + ".join(LOAI_CAN_THIEP_RCT[ma] for ma in loai)
+        if pl["da_chot"]:
+            ghi_chu = f"Loại can thiệp: **{mo_ta}** ({pl['nguon']}); bảng chỉ gồm rủi ro chung và rủi ro của loại này."
+            if set(loai) == {"behavioral"}:
+                ra["risk_level"] = ("TỐI THIỂU (can thiệp hành vi/giáo dục/tin nhắn — PI đã chốt loại can thiệp; "
+                                    "Hội đồng quyết định mức cuối)")
+                ra["irb_route"] = ("Theo quyết định Hội đồng — thử nghiệm can thiệp nguy cơ tối thiểu có thể được xét "
+                                   "RÚT GỌN; Hội đồng không chấp nhận thì FULL BOARD REVIEW (Toàn Hội đồng)")
+            elif set(loai) == {"device"} or set(loai) == {"behavioral", "device"}:
+                ra["risk_level"] = ("TỐI THIỂU ĐẾN LỚN HƠN TỐI THIỂU (tùy thiết bị có xâm lấn hay không — PI đã chốt "
+                                    "loại can thiệp)")
+        else:
+            ghi_chu = (f"Loại can thiệp máy SUY từ {pl['nguon'].removeprefix('máy suy từ ')}: **{mo_ta}** — "
+                       "`[CẦN PI XÁC NHẬN loại can thiệp: ghi gate_params.G2.intervention_type]`. Mức nguy cơ/lộ trình "
+                       "IRB giữ mặc định an toàn của thử nghiệm can thiệp tới khi PI chốt.")
+    else:
+        ung = ", ".join(LOAI_CAN_THIEP_RCT[ma] for ma in pl["ung_vien"]) if pl["ung_vien"] else "không khớp loại nào"
+        ghi_chu = ("`[CẦN PI XÁC NHẬN loại can thiệp: ghi gate_params.G2.intervention_type]` — máy CHƯA xác định được "
+                   f"loại can thiệp ({pl['nguon']}; ứng viên: {ung}). Bảng dưới liệt kê rủi ro riêng của từng loại để PI "
+                   "chọn; phiếu đồng thuận chỉ chép rủi ro của loại đã chốt.")
+    if pl["canh_bao"]:
+        ghi_chu += f" ⚠ {pl['canh_bao']}."
+    ra["_ghi_chu_can_thiep"] = ghi_chu
+    ra["_loai_can_thiep"] = {"loai": loai, "nguon": pl["nguon"], "da_chot": pl["da_chot"],
+                             "ung_vien": pl["ung_vien"]}
+    return ra
+
+
 # ════════════════════════════════════════════════════════════════════════════
 # 2. TRA CLINICALTRIALS.GOV — PRIOR ART CHO HỒ SƠ ĐẠO ĐỨC
 # ════════════════════════════════════════════════════════════════════════════
@@ -463,6 +643,10 @@ def generate_g2_full_package(
     _obj1 = str(_objectives[0]) if len(_objectives) > 0 else "[CẦN — Mục tiêu 1, từ PICO G0]"
     _obj2 = str(_objectives[1]) if len(_objectives) > 1 else "[CẦN — Mục tiêu 2 nếu có]"
     risk_table_str = _risk_table(risk["risks"])
+    # K9 (14/11/2026): phiếu đồng thuận (tài liệu cho NGƯỜI BỆNH) dùng danh sách riêng — khi loại can thiệp RCT chưa rõ,
+    # không chép danh mục chọn (gồm rủi ro lấy máu/thuốc) vào ICF; ghi chú loại can thiệp in ngay dưới Bảng rủi ro.
+    _risks_icf = risk.get("risks_icf") or risk["risks"]
+    ghi_chu_can_thiep = f"\n\n{risk['_ghi_chu_can_thiep']}" if risk.get("_ghi_chu_can_thiep") else ""
     ct_table_str   = _ct_table(registry)
 
     # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 15, phát hiện MEDIUM):
@@ -970,7 +1154,7 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT — ngôn ngữ hành chính)
 **Phân loại nguy cơ tổng thể: {risk["risk_level"]}**
 **Lộ trình xét duyệt đề nghị: {risk["irb_route"]}**
 
-{risk_table_str}
+{risk_table_str}{ghi_chu_can_thiep}
 
 | | **Lợi ích bù đắp** |
 |---|---|
@@ -1028,7 +1212,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 {icf_lich_hen}{icf_2b}
 
 3. RỦI RO VÀ BẤT TIỆN CÓ THỂ XẢY RA
-   {chr(10).join('   • ' + r[0] + ': ' + r[2] + ' → ' + r[3][:80] for r in risk["risks"])}
+   {chr(10).join('   • ' + r[0] + ': ' + r[2] + ' → ' + r[3][:80] for r in _risks_icf)}
 
    Nếu có bất kỳ vấn đề sức khỏe nào liên quan đến nghiên cứu,
    xin liên hệ ngay chủ nhiệm đề tài (số điện thoại bên dưới).
@@ -1135,7 +1319,7 @@ Principal Investigator: [TO BE COMPLETED]
 {en_2b}
 
 3. RISKS AND DISCOMFORTS
-   {chr(10).join('   • ' + r[0] + ' (' + r[1] + ' probability / ' + r[2] + ' severity): ' + r[3][:80] for r in risk["risks"])}
+   {chr(10).join('   • ' + r[0] + ' (' + r[1] + ' probability / ' + r[2] + ' severity): ' + r[3][:80] for r in _risks_icf)}
 
 4. POTENTIAL BENEFITS
    [TO BE COMPLETED — include both direct and community benefits]
@@ -1660,7 +1844,8 @@ def write_g2_checkpoint(study_name: str, out_dir: Path, design_code: str,
                          risk: dict, registry: Optional[dict], guardrail: dict,
                          artifact_path: Path, docx_path: Optional[Path],
                          registration_path: Path,
-                         design_ambiguous: bool = False) -> Path:
+                         design_ambiguous: bool = False,
+                         sinh_lai: Optional[dict] = None) -> Path:
     cp = {
         "study": study_name, "gate": "G2",
         "gate_status": "DRAFT — CHỜ BÁC SĨ NỘP IRB VÀ NHẬN SỐ PHÊ DUYỆT",
@@ -1681,6 +1866,8 @@ def write_g2_checkpoint(study_name: str, out_dir: Path, design_code: str,
         "registration_required": risk["registration"],
         "register_where": risk["register_where"],
         "icf_required": risk["icf_required"],
+        # K9 (14/11/2026): loại can thiệp RCT dùng để chọn bảng rủi ro — PI chốt hay máy suy (khi máy suy: cần PI xác nhận).
+        **({"loai_can_thiep": risk["_loai_can_thiep"]} if risk.get("_loai_can_thiep") else {}),
         # VÁ 2026-07-28: khối MÁY-ĐỌC-ĐƯỢC đầy đủ, giữ nguyên 3 trạng thái của hợp
         # đồng `trial_registry` (CHƯA TRA ĐƯỢC ≠ đã tra & 0 hồ sơ ≠ có prior art).
         "clinicaltrials": TR.checkpoint_block(registry),
@@ -1726,6 +1913,10 @@ def write_g2_checkpoint(study_name: str, out_dir: Path, design_code: str,
         "note": "G5 (thu thập dữ liệu THẬT) chỉ mở sau khi G2 LOCKED",
         "disclaimer": "Cần bác sĩ kiểm chứng.",
     }
+    if sinh_lai:
+        # 14/11/2026 (K6): khối MÁY-ĐỌC-ĐƯỢC cho biết lượt này sinh lại hay GIỮ bản đã biên tập, vì sao, và cờ cần dùng —
+        # chỉ để báo (KHÔNG phải needs_input: giữ bản đã biên tập là trạng thái bình thường của đề tài thật).
+        cp["sinh_lai"] = sinh_lai
     cp_path = out_dir / "G2_checkpoint.json"
     cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     return cp_path
@@ -1761,9 +1952,10 @@ def main():
     # THÊM 2026-09-01: rào chống đè hồ sơ đạo đức đã biên tập (xem khối trước
     # md_path.write_text). Ca thật cùng ngày: tái sinh G2 trên C1a đè mất 45 dòng
     # ICF/mô tả nghiên cứu đã biên tập tay — cùng nguy cơ đã chặn ở G4.
-    parser.add_argument("--regenerate-artifact", action="store_true",
-                        help="Ép sinh lại hồ sơ đạo đức từ template dù bản đang có đầy đủ hơn "
-                             "(bản cũ vẫn được sao lưu .bak-* trước khi đè)")
+    # 14/11/2026 (K6): thêm bí danh CHUNG «--regenerate» (G4 nhận cùng tên) — giữ nguyên cờ cũ.
+    parser.add_argument("--regenerate-artifact", "--regenerate", dest="regenerate_artifact", action="store_true",
+                        help="Ép sinh lại hồ sơ đạo đức từ template dù bản đang có đã được sửa tay "
+                             "(bản cũ vẫn được sao lưu .bak-* trước khi đè). Bí danh chung với G4: --regenerate")
     parser.add_argument("--skip-registry", action="store_true",
                         help="Bỏ qua tra ClinicalTrials.gov (offline). Hồ sơ sẽ ghi rõ "
                              "CHƯA TRA ĐƯỢC, không được đọc thành 'chưa ai làm'.")
@@ -1906,11 +2098,17 @@ def main():
         seed={"title": topic, "design_code": design_code},
     )
     risk = ap_quyet_dinh_dang_ky(risk, _study_meta_for_g2)
+    risk = ap_loai_can_thiep(risk, design_code, _study_meta_for_g2, topic)
     print(f"  → Mức nguy cơ: {risk['risk_level']}")
     print(f"  → Lộ trình IRB: {risk['irb_route']}")
     print(f"  → Đăng ký: {risk['registration']}")
     if risk.get("_fallback_warning"):
         print(f"  {risk['_fallback_warning']}")
+    if risk.get("_loai_can_thiep"):
+        _lct = risk["_loai_can_thiep"]
+        _mo_ta_lct = " + ".join(LOAI_CAN_THIEP_RCT[m] for m in _lct["loai"]) or "CHƯA RÕ — Bảng rủi ro liệt kê để PI chọn"
+        print(f"  → Loại can thiệp (RCT): {_mo_ta_lct} ({_lct['nguon']}"
+              + ("" if _lct["da_chot"] else " — [CẦN PI XÁC NHẬN: gate_params.G2.intervention_type]") + ")")
     if design_ambiguous:
         print(f"  ⚠️  [CẦN BÁC SĨ XÁC NHẬN THIẾT KẾ TRƯỚC KHI DÙNG] — G1 gán `{design_code}` "
               "làm PLACEHOLDER TẠM (lĩnh vực bão hòa cả RCT lẫn SR/MA, bác sĩ CHƯA xác nhận "
@@ -1984,7 +2182,13 @@ def main():
     # xếp G2 «cũ hơn thượng nguồn» vĩnh viễn ⇒ G10-AUTO-03 CHẶN mọi gói G10 (kể cả gói trình Hội đồng). Nay GIỮ
     # NGUYÊN hồ sơ từng byte và vẫn thoát mã 2, nhưng chấm guardrail + bộ chấm G2 trên CHÍNH bản đã biên tập và ghi lại
     # checkpoint theo thượng nguồn hiện hành; nội dung lệch thượng nguồn vẫn bị bắt bằng phép chấm SỐNG.
+    # SỬA 14/11/2026 (K6, giả lập đề tài RCT): phép ĐẾM nhãn coi hồ sơ máy sinh cho thiết kế CŨ (chưa ai sửa) là «bác
+    # sĩ đã biên tập» chỉ vì hồ sơ RCT nhiều mục hơn (91 vs 92 nhãn) ⇒ từ chối sinh lại sau khi PI đổi thiết kế. Nay nhận
+    # biết «đã sửa tay» bằng DẤU SHA-256 của bản máy ghi lần trước (tools/dau_may_sinh.py): khớp ⇒ sinh lại; lệch ⇒
+    # giữ; chưa có dấu (hồ sơ cũ, vd C1a) ⇒ luật đếm cũ, hành vi cũ nguyên vẹn.
     giu_ban_bien_tap = False
+    quyet_dinh_de: dict = {}
+    dau_vao_sinh = {"design_code": design_code, "n": n_adjusted or None}
     if md_path.exists():
         ban_cu = md_path.read_text(encoding="utf-8")
         bak = md_path.with_name(md_path.name + f".bak-{datetime.now().strftime('%Y%m%d-%H%M%S')}")
@@ -1992,24 +2196,39 @@ def main():
         print(f"  → Sao lưu hồ sơ đạo đức hiện có: {bak.name}")
         # 04/10/2026: OR thêm tổng ô trống theo hợp đồng chung (G2Q.placeholder_total — gồm «___», «[TÊN ĐƠN VỊ —
         # CẦN BỔ SUNG]», «[sẽ/sẽ không]»…): bác sĩ điền «Thời gian lưu: ___ năm» không đổi số «[CẦN» nên rào cũ không
-        # thấy và đè mất. Giữ nguyên điều kiện cũ ⇒ rào chỉ CHẶT hơn.
+        # thấy và đè mất. Giữ nguyên điều kiện cũ ⇒ rào chỉ CHẶT hơn. (Từ 14/11/2026 chỉ dùng khi hồ sơ CHƯA có dấu.)
         tong_cu, tong_moi = G2Q.placeholder_total(ban_cu), G2Q.placeholder_total(artifact_md)
-        if ((ban_cu.count("[CẦN") < artifact_md.count("[CẦN") or tong_cu < tong_moi)
-                and not getattr(args, "regenerate_artifact", False)):
-            print("⛔ TỪ CHỐI đè hồ sơ đạo đức: bản đang có ĐẦY ĐỦ HƠN bản máy sắp sinh "
-                  f"({ban_cu.count('[CẦN')} vs {artifact_md.count('[CẦN')} nhãn [CẦN...]; "
-                  f"{tong_cu} vs {tong_moi} ô trống theo hợp đồng chung) — "
-                  "nhiều khả năng đã được bác sĩ biên tập.")
-            print("   Muốn sinh lại từ template CÓ CHỦ ĐÍCH: thêm cờ --regenerate-artifact "
-                  "(bản cũ vẫn được sao lưu .bak-* ở trên).")
+        try:
+            _cp_g2_cu = json.loads((out_dir / "G2_checkpoint.json").read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            _cp_g2_cu = {}
+        quyet_dinh_de = DMS.quyet_dinh_ghi_de(
+            md_path, ban_cu, dau_vao_sinh,
+            ep_sinh_lai=bool(getattr(args, "regenerate_artifact", False)),
+            cu_day_du_hon_theo_luat_cu=(ban_cu.count("[CẦN") < artifact_md.count("[CẦN") or tong_cu < tong_moi),
+            chi_tiet_luat_cu=(f"{ban_cu.count('[CẦN')} vs {artifact_md.count('[CẦN')} nhãn [CẦN...]; "
+                              f"{tong_cu} vs {tong_moi} ô trống theo hợp đồng chung"),
+            da_ky=lambda: GC.ledger_approved("G2", study, md_path, repo_root=_REPO_ROOT),
+            thiet_ke_cu_checkpoint=(_cp_g2_cu.get("design_code") if isinstance(_cp_g2_cu, dict) else None),
+        )
+        if quyet_dinh_de["giu"]:
+            print(f"⛔ TỪ CHỐI đè hồ sơ đạo đức: {quyet_dinh_de['ly_do']}.")
+            if quyet_dinh_de["doi"]:
+                print(f"   ⚠ Đầu vào đã đổi kể từ lần máy sinh: {quyet_dinh_de['mo_ta_doi']} — bản đã biên tập có thể "
+                      "KHÔNG còn khớp thiết kế/cỡ mẫu hiện hành; PI rà lại hoặc sinh lại có chủ đích.")
+            print(f"   Muốn sinh lại từ template CÓ CHỦ ĐÍCH: python3 tools/run_g2_auto.py --study {study} --regenerate "
+                  "(bí danh cũ --regenerate-artifact; bản cũ vẫn được sao lưu .bak-* ở trên).")
             print("   Chỉ cần bản .docx CHUẨN TRÌNH BÀY từ bản đã biên tập (không sinh lại nội dung):\n"
                   f"     python3 tools/xuat_docx_chuan.py --study {study}")
             print("   ↻ Giữ NGUYÊN hồ sơ đã biên tập; vẫn làm mới G2_checkpoint.json theo thượng nguồn hiện hành.")
             giu_ban_bien_tap = True
             artifact_md = ban_cu
+        elif quyet_dinh_de["ghi_chu"]:
+            print(f"  ↻ {quyet_dinh_de['ghi_chu']}.")
     if not giu_ban_bien_tap:
         md_path.write_text(artifact_md, encoding="utf-8", newline="\n")
         print(f"  → Lưu: {md_path} ({len(artifact_md)//1000}KB)")
+        DMS.ghi_dau(md_path, artifact_md, dau_vao_sinh, "run_g2_auto.py")
     # VÁ 04/10/2026 (soát từng cổng, G2-03 / QĐ-4): thử nghiệm can thiệp cần kế hoạch an toàn RIÊNG. Máy chỉ dựng KHUNG
     # (tiêu đề + ô [CẦN]) khi tệp chưa có — KHÔNG BAO GIỜ ghi đè bản chủ nhiệm đã điền.
     if G2Q.can_ke_hoach_an_toan(design_code, _study_meta_for_g2):
@@ -2047,6 +2266,7 @@ def main():
         study, out_dir, design_code, risk, registry, guardrail, md_path, docx_path,
         registration_path,
         design_ambiguous=design_ambiguous,
+        sinh_lai=DMS.khoi_checkpoint(quyet_dinh_de, giu_ban_bien_tap, dau_vao_sinh),
     )
     print(f"  → Lưu: {cp_path}")
     quality_gate = G2Q.evaluate_study(
@@ -2110,7 +2330,10 @@ def main():
     if giu_ban_bien_tap:
         # Mã 2 giữ nguyên hợp đồng «từ chối đè»: không sinh nội dung mới; guardrail/chất lượng của bản người viết đã in ở
         # trên và do bộ chấm SỐNG (g2_quality_gate) báo.
-        print(f"🟡 G2: GIỮ HỒ SƠ ĐÃ BIÊN TẬP, checkpoint đã làm mới — {study} (mã 2: không sinh lại nội dung)")
+        # 14/11/2026 (K6): run_pipeline lấy 6 dòng CUỐI stdout làm lời giải thích khi cổng thoát mã 2 (dòng đầu in cạnh
+        # tên cổng) — bản cũ để 6 dòng cuối là «5. Chạy G3 song song…» không liên quan. Nay 6 dòng cuối là LÝ DO + CỜ.
+        for dong in DMS.dong_cuoi_giu_ban_bien_tap("G2", study, quyet_dinh_de, "tools/run_g2_auto.py"):
+            print(dong)
         raise SystemExit(GC.EXIT_BLOCKED)
     if not guardrail["passed"] or quality_gate["status"] == G2Q.STATUS_BLOCKED:
         raise SystemExit(GC.EXIT_GUARDRAIL_FAIL)

@@ -27,6 +27,7 @@ sys.path.insert(0, str(TOOLS))
 
 import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
 import cong_song as CS  # noqa: E402  (chấm sống G3 trước khi sinh SAP — G4-04)
+import dau_may_sinh as DMS  # noqa: E402  (dấu SHA-256 bản máy sinh — K6, 14/11/2026)
 import g4_quality_gate as G4Q  # noqa: E402  (khung §12 dùng chung với bộ chấm — G4-06)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 import skill_standards as S  # noqa: E402  (đặc tả thiết kế khoá ở G1, chuẩn báo cáo theo thiết kế)
@@ -866,9 +867,12 @@ def main():
     parser.add_argument("--study", required=True)
     # THÊM 2026-09-01 (kiểm toàn diện): cờ ghi đè CÓ CHỦ ĐÍCH cho rào chống
     # đè SAP đã biên tập (xem khối rào trước md.write_text bên dưới).
-    parser.add_argument("--regenerate-sap", action="store_true",
-                        help="Ép sinh lại SAP từ template dù bản đang có đầy đủ hơn "
-                             "(bản cũ vẫn được sao lưu .bak-* trước khi đè)")
+    # 14/11/2026 (K6): thêm bí danh CHUNG «--regenerate» (G2 nhận cùng tên) và «--regenerate-artifact» (tên của G2) —
+    # giữ nguyên cờ cũ --regenerate-sap.
+    parser.add_argument("--regenerate-sap", "--regenerate", "--regenerate-artifact", dest="regenerate_sap",
+                        action="store_true",
+                        help="Ép sinh lại SAP từ template dù bản đang có đã được sửa tay "
+                             "(bản cũ vẫn được sao lưu .bak-* trước khi đè). Bí danh chung với G2: --regenerate")
     args = parser.parse_args()
     GC.ensure_utf8_stdout()
     study = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))
@@ -1057,27 +1061,45 @@ def main():
     # hơn thượng nguồn» vĩnh viễn ⇒ G10-AUTO-03 CHẶN mọi gói G10 (kể cả gói trình Hội đồng). Nay vẫn GIỮ NGUYÊN SAP
     # từng byte và vẫn thoát mã 2, nhưng chấm guardrail trên CHÍNH bản đã biên tập và ghi lại checkpoint theo thượng
     # nguồn hiện hành. Nội dung lệch thượng nguồn vẫn bị bắt bằng phép chấm SỐNG (G4-AUTO-03 §12 ↔ G3, G10-AUTO-11).
+    # SỬA 14/11/2026 (K6, giả lập đề tài RCT): phép ĐẾM nhãn coi SAP máy sinh cho thiết kế CŨ (chưa ai sửa) là «đã biên
+    # tập» chỉ vì SAP RCT có thêm §13–§15 ⇒ giữ SAP cắt ngang sau khi PI đổi sang RCT. Nay nhận biết «đã sửa tay» bằng DẤU
+    # SHA-256 của bản máy ghi lần trước (tools/dau_may_sinh.py): khớp ⇒ sinh lại; lệch ⇒ giữ; chưa có dấu (SAP cũ, vd
+    # C1a) ⇒ luật đếm cũ, hành vi cũ nguyên vẹn.
     giu_ban_bien_tap = False
+    quyet_dinh_de: dict = {}
+    dau_vao_sinh = {"design_code": design_code, "n": n_adjusted or None}
     if md.exists():
         ban_cu = md.read_text(encoding="utf-8")
         bak = md.with_name(md.name + f".bak-{datetime.now().strftime('%Y%m%d-%H%M%S')}")
         bak.write_text(ban_cu, encoding="utf-8", newline="\n")
         print(f"  → Sao lưu SAP hiện có: {bak.name}")
-        if (ban_cu.count("[CẦN") < artifact.count("[CẦN")
-                and not getattr(args, "regenerate_sap", False)):
-            print("⛔ TỪ CHỐI đè SAP: bản đang có ĐẦY ĐỦ HƠN bản máy sắp sinh "
-                  f"({ban_cu.count('[CẦN')} vs {artifact.count('[CẦN')} nhãn [CẦN...]) — "
-                  "nhiều khả năng đã được bác sĩ/thống kê viên biên tập.")
-            print("   Muốn sinh lại từ template CÓ CHỦ ĐÍCH: thêm cờ --regenerate-sap "
-                  "(bản cũ vẫn được sao lưu .bak-* ở trên).")
+        _cp_g4_cu = load_cp(out / "G4_checkpoint.json")
+        quyet_dinh_de = DMS.quyet_dinh_ghi_de(
+            md, ban_cu, dau_vao_sinh,
+            ep_sinh_lai=bool(getattr(args, "regenerate_sap", False)),
+            cu_day_du_hon_theo_luat_cu=ban_cu.count("[CẦN") < artifact.count("[CẦN"),
+            chi_tiet_luat_cu=f"{ban_cu.count('[CẦN')} vs {artifact.count('[CẦN')} nhãn [CẦN...]",
+            da_ky=lambda: GC.ledger_approved("G4", study, md, repo_root=BASE),
+            thiet_ke_cu_checkpoint=(_cp_g4_cu.get("design_code") if isinstance(_cp_g4_cu, dict) else None),
+        )
+        if quyet_dinh_de["giu"]:
+            print(f"⛔ TỪ CHỐI đè SAP: {quyet_dinh_de['ly_do']}.")
+            if quyet_dinh_de["doi"]:
+                print(f"   ⚠ Đầu vào đã đổi kể từ lần máy sinh: {quyet_dinh_de['mo_ta_doi']} — SAP đã biên tập có thể "
+                      "KHÔNG còn khớp thiết kế/cỡ mẫu hiện hành; thống kê viên/PI rà lại hoặc sinh lại có chủ đích.")
+            print(f"   Muốn sinh lại từ template CÓ CHỦ ĐÍCH: python3 tools/run_g4_auto.py --study {study} --regenerate "
+                  "(bí danh cũ --regenerate-sap; bản cũ vẫn được sao lưu .bak-* ở trên).")
             print("   Chỉ cần bản .docx CHUẨN TRÌNH BÀY từ bản đã biên tập (không sinh lại nội dung):\n"
                   f"     python3 tools/xuat_docx_chuan.py --study {study}")
             print("   ↻ Giữ NGUYÊN SAP đã biên tập; vẫn làm mới G4_checkpoint.json theo thượng nguồn hiện hành.")
             giu_ban_bien_tap = True
             artifact = ban_cu
+        elif quyet_dinh_de["ghi_chu"]:
+            print(f"  ↻ {quyet_dinh_de['ghi_chu']}.")
     if not giu_ban_bien_tap:
         md.write_text(artifact, encoding="utf-8", newline="\n")
         print(f"  → Lưu: {md} ({len(artifact)//1000}KB)")
+        DMS.ghi_dau(md, artifact, dau_vao_sinh, "run_g4_auto.py")
 
     print("🛡️  Kiểm guardrail...")
     errors, warnings = guardrail(artifact)
@@ -1118,6 +1140,9 @@ def main():
     }
     if giu_ban_bien_tap:
         cp["sap_giu_ban_bien_tap"] = True
+    if quyet_dinh_de or giu_ban_bien_tap:
+        # 14/11/2026 (K6): khối máy-đọc-được — sinh lại hay giữ, vì sao, cờ cần dùng (chỉ để báo, không phải needs_input).
+        cp["sinh_lai"] = DMS.khoi_checkpoint(quyet_dinh_de, giu_ban_bien_tap, dau_vao_sinh)
     cp_path = out / "G4_checkpoint.json"
     cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     print(f"💾 Lưu: {cp_path}")
@@ -1126,6 +1151,10 @@ def main():
         # chấm SỐNG (g4_quality_gate) báo — checkpoint đã ghi đúng kết quả guardrail ở trên.
         print(f"\n🟡 G4: GIỮ SAP ĐÃ BIÊN TẬP, checkpoint đã làm mới — {study} (mã 2: không sinh lại nội dung)")
         print(f"  → Guardrail (trên bản đã biên tập): {status}")
+        # 14/11/2026 (K6): 6 dòng CUỐI là LÝ DO + CỜ — run_pipeline lấy đúng 6 dòng cuối làm lời giải thích mã 2 (bản
+        # cũ để lọt dòng «R3 ✅ …» của guardrail).
+        for dong in DMS.dong_cuoi_giu_ban_bien_tap("G4", study, quyet_dinh_de, "tools/run_g4_auto.py"):
+            print(dong)
         raise SystemExit(GC.EXIT_BLOCKED)
     # Vá 2026-07-11 (vòng 9): trước đây banner "HOÀN THÀNH" in vô điều kiện + exit code luôn
     # 0 dù guardrail có lỗi thật (errors không rỗng) — checkpoint ĐÃ ghi đúng "guardrail":
