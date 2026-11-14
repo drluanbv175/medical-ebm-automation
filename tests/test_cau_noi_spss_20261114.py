@@ -661,8 +661,11 @@ def test_cu_phap_phoi_nhiem_lien_tuc_thu_tu_c1a(tmp_path):
     assert "PLUM hai_long" in vb and "WITH Tuoi_dv GioiTinh" in vb
     vb2, _, phu2 = C.cu_phap_phan_tich("THU", man, dt, tmp_path, sav="x.sav")  # không đơn vị ⇒ mỗi 1 đơn vị
     assert "COMPUTE" not in vb2 and "WITH Tuoi GioiTinh" in vb2 and phu2 == {}
-    with pytest.raises(C.TuChoi, match="2 mức"):  # kết cục nhị phân vẫn đòi nhóm 2 mức
-        C.cu_phap_phan_tich("THU", man, _dt(outcome="kq_nhi", group="tuoi"), tmp_path, sav="x.sav")
+    # F3 (14/11/2026) — ĐỔI HỢP ĐỒNG CÓ CHỦ ĐÍCH: kết cục nhị phân + phơi nhiễm liên tục ⇒ BỎ so sánh thô hai nhóm
+    # (Python cũng bỏ, có lý do) thay vì từ chối cả cú pháp (từ chối làm mất luôn kiểm chéo mô hình đa biến).
+    vb3, cb3, _ = C.cu_phap_phan_tich("THU", man, _dt(outcome="kq_nhi", group="tuoi"), tmp_path, sav="x.sav")
+    assert "CROSSTABS /TABLES=Tuoi BY" not in vb3 and any("bỏ so sánh thô" in c for c in cb3)
+    assert "LOGISTIC REGRESSION VARIABLES kq_nhi" in vb3
 
 
 def test_doc_ket_qua_doi_ten_phoi_nhiem_chia_don_vi(tmp_path):
