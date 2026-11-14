@@ -56,6 +56,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 
@@ -909,9 +910,120 @@ def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
 # 6a. MULTIPLE IMPUTATION (thay complete-case khi có dữ liệu thiếu) — vá 2026-07-15
 # ════════════════════════════════════════════════════════════════════════════
 
+class LoiBienPhanLoai(ValueError):
+    """Hiệp biến khai phân loại không mở rộng được thành biến giả (mã không phải số nguyên ≥ 0, < 2 mức, trùng tên)."""
+
+
+def mo_rong_bien_gia(df: pd.DataFrame, cot_phan_loai: list) -> tuple[pd.DataFrame, dict]:
+    """F2 (14/11/2026): hiệp biến PHÂN LOẠI mã số (radio REDCap: khung giờ 1–4, nhóm đối tượng 1–4…) ⇒ biến giả
+    TƯỜNG MINH `<cột>_<mã>` cho mọi mã trừ mã NHỎ NHẤT (tham chiếu). Trước bản vá cả Python, SPSS lẫn R đều coi cột mã
+    số là LIÊN TỤC (xu hướng tuyến tính theo mã) — kiểm chéo vẫn «khớp» nhưng mô hình LỆCH SAP («biến phân loại k mức
+    tính k−1»). Cùng tên biến giả ở Python · SPSS · R ⇒ phép đối chiếu theo tên dùng lại được.
+
+    Chỉ nhận mã nguyên ≥ 0 (bộ dữ liệu khoá đã qua làm sạch: mã thiếu chữ đã thành ô trống). Biến giả thiếu khi cột gốc
+    thiếu. Trả (df có thêm cột, {cột: {tham_chieu, muc, ten}})."""
+    ra = df.copy()
+    bg: dict = {}
+    for c in cot_phan_loai:
+        if c not in ra.columns:
+            raise LoiBienPhanLoai(f"hiệp biến phân loại «{c}» không có trong dữ liệu")
+        s = pd.to_numeric(ra[c], errors="coerce")
+        hong = ra[c].notna() & s.isna()
+        if hong.any():
+            vd = ra.loc[hong, c].astype(str).unique()[:3].tolist()
+            raise LoiBienPhanLoai(f"«{c}» có giá trị không phải số ({vd}) — xử lý mã thiếu khi làm sạch trước khi khoá")
+        v = s.dropna()
+        if ((v % 1) != 0).any() or (v < 0).any():
+            raise LoiBienPhanLoai(f"«{c}» cần mã nguyên ≥ 0 (mã lựa chọn REDCap)")
+        muc = sorted({int(x) for x in v})
+        if len(muc) < 2:
+            raise LoiBienPhanLoai(f"«{c}» chỉ có {len(muc)} mức — không làm biến phân loại được")
+        ten = []
+        for m in muc[1:]:
+            t = f"{c}_{m}"
+            if t in ra.columns:
+                raise LoiBienPhanLoai(f"tên biến giả «{t}» trùng một cột dữ liệu — đổi tên cột")
+            ra[t] = (s == m).astype(float).where(s.notna())
+            ten.append(t)
+        bg[c] = {"tham_chieu": str(muc[0]), "muc": [str(m) for m in muc[1:]], "ten": ten}
+    return ra, bg
+
+
+def mo_rong_hiep_bien(covariates: list, bien_gia: dict) -> list:
+    """Danh sách hiệp biến đưa vào mô hình: cột phân loại ⇒ các biến giả của nó (giữ thứ tự)."""
+    return [t for c in covariates for t in (bien_gia[c]["ten"] if c in bien_gia else [c])]
+
+
+def poisson_pr_model(df: pd.DataFrame, outcome_col: str, group_col: str, covariates: list,
+                     bien_gia: dict | None = None, cluster_col: str | None = None) -> dict:
+    """F2 (14/11/2026): hồi quy POISSON liên kết log, phương sai VỮNG HC0 (sandwich — Zou 2004, PMID 15033648; Barros
+    & Hirakata 2003, PMID 14567763) ⇒ tỷ số tỷ lệ hiện mắc (PR) cho kết cục nhị phân 0/1 (SAP BTM mục tiêu 3).
+
+    PR THÔ từng biến (biến phân loại: các biến giả của nó cùng một mô hình) và PR HIỆU CHỈNH (mô hình đầy đủ) — CÙNG
+    tập ca đầy đủ mọi biến của mô hình đầy đủ (để thô và hiệu chỉnh so được với nhau; SPSS/R lọc y hệt). Hiệu chỉnh
+    cụm chưa hỗ trợ (SAP BTM đưa phòng khám vào mô hình làm biến) ⇒ trả lỗi, không chạy âm thầm sai."""
+    if not HAS_STATSMODELS:
+        return {"error": "statsmodels chưa cài. Chạy: pip install statsmodels"}
+    if cluster_col:
+        return {"error": "Poisson vững chưa hỗ trợ hiệu chỉnh cụm — đưa biến cụm vào mô hình như SAP, hoặc bỏ cụm",
+                "note": "[CẦN THỐNG KÊ VIÊN]"}
+    bien_gia = bien_gia or {}
+    goc = [group_col] + [c for c in covariates if c in df.columns]
+    nhom_bien = [(b, bien_gia[b]["ten"] if b in bien_gia else [b]) for b in goc]
+    cot = [outcome_col] + [t for _b, ds in nhom_bien for t in ds]
+    data = df[cot].apply(pd.to_numeric, errors="coerce").dropna()
+    y = data[outcome_col].astype(float)
+    if not set(y.unique()) <= {0.0, 1.0}:
+        return {"error": f"Poisson vững cho PR cần kết cục 0/1 — «{outcome_col}» có {sorted(set(y.unique()))[:5]}"}
+    if len(data) == 0 or y.sum() == 0:
+        return {"error": "không có ca đầy đủ dữ liệu hoặc không có biến cố"}
+
+    def khop(ds: list) -> tuple:
+        X = sm.add_constant(data[ds].astype(float), has_constant="add")
+        m, caught = _chay_fit_bat_canh_bao(
+            lambda: sm.GLM(y, X, family=sm.families.Poisson()).fit(cov_type="HC0", maxiter=200))
+        ly_do = _ly_do_tu_canh_bao(caught)
+        if not getattr(m, "converged", True):
+            ly_do.append("statsmodels GLM converged = False")
+        conf = m.conf_int()
+        for v in m.params.index:
+            ly_do.extend(_ly_do_tu_uoc_luong(str(v), m.params[v], m.bse[v], conf.loc[v, 0], conf.loc[v, 1],
+                                             kiem_do_lon=(v != "const")))
+        return m, conf, ly_do
+
+    def dong(m, conf, ly_do: list, ds: list, khoa: str) -> list:
+        ra = []
+        for v in ds:
+            with np.errstate(over="ignore", under="ignore"):
+                e = {"variable": v, khoa: round(float(np.exp(m.params[v])), 4),
+                     "CI_95": [round(float(np.exp(conf.loc[v, 0])), 4), round(float(np.exp(conf.loc[v, 1])), 4)],
+                     "p": round(float(m.pvalues[v]), 4)}
+            ra.append(_gan_co_khong_hoi_tu(e, ly_do, (khoa, "CI_95", "p")))
+        return ra
+
+    try:
+        tho = []
+        for _b, ds in nhom_bien:
+            m, conf, ly_do = khop(ds)
+            tho += dong(m, conf, ly_do, ds, "PR")
+        tat_ca = [t for _b, ds in nhom_bien for t in ds]
+        m, conf, ly_do = khop(tat_ca)
+        out = {"model": "poisson_robust_hc0", "n": len(data), "n_bien_co": int(y.sum()),
+               "phuong_sai": "HC0 (sandwich) — Zou 2004 PMID 15033648",
+               "tho": tho, "results": dong(m, conf, ly_do, tat_ca, "PR_adj"),
+               "nhom_bien": {b: ds for b, ds in nhom_bien}}
+        if ly_do:
+            out["khong_hoi_tu"] = True
+            out["ly_do"] = ly_do
+        return out
+    except Exception as e:  # noqa: BLE001 — mọi lỗi khớp mô hình ⇒ báo, không sập cả lượt phân tích
+        return {"error": str(e), "note": "[CẦN BIOSTATISTICIAN — mô hình Poisson không hội tụ]"}
+
+
 def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str,
                                covariates: list, outcome_type: str = "auto",
-                               n_imputations: int = 20, cluster_col: str | None = None) -> dict:
+                               n_imputations: int = 20, cluster_col: str | None = None,
+                               bien_gia: dict | None = None) -> dict:
     """Multiple imputation THẬT (statsmodels MICEData+MICE, m=n_imputations mặc
     định 20, pooling theo luật Rubin qua MICEResults) — vá 2026-07-15. Trước đây
     "MI" trong exports/<study>/sensitivity_analysis.py (template do run_g6_auto.py
@@ -933,13 +1045,23 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
 
     Có ``cluster_col`` (28/09/2026, N8) ⇒ mỗi lần fit trong MICE dùng SE sandwich theo cụm (``fit_kwds``), luật Rubin
     gộp đúng các ma trận hiệp phương sai đó. Cột cụm KHÔNG vào mô hình impute (mã bàn khám không phải biến dự báo);
-    hàng thiếu mã cụm bị loại TRƯỚC khi impute và được đếm. Không có cụm ⇒ đầu ra cũ giữ nguyên từng khoá."""
+    hàng thiếu mã cụm bị loại TRƯỚC khi impute và được đếm. Không có cụm ⇒ đầu ra cũ giữ nguyên từng khoá.
+
+    F2 (14/11/2026): ``outcome_type="poisson_pr"`` ⇒ GLM Poisson liên kết log, SE vững HC0 trong MỖI lần fit, Rubin gộp
+    (PR_adj). ``bien_gia`` (hiệp biến phân loại) ⇒ cột MÃ GỐC vào mô hình impute (pmm rút mã có thật — không impute rời
+    từng biến giả, tránh hai biến giả cùng bằng 1) và mã hoá ``C()`` trong công thức phân tích; hệ số đổi tên về
+    ``<cột>_<mã>`` như mô hình complete-case."""
     if not HAS_STATSMODELS:
         return {
             "error": "statsmodels chưa cài. Chạy: pip install statsmodels",
             "note": "[CẦN BỔ SUNG — multiple imputation cần statsmodels]",
         }
     from statsmodels.imputation.mice import MICE, MICEData
+
+    bien_gia = bien_gia or {}
+    poisson = outcome_type == "poisson_pr"
+    if poisson and cluster_col:
+        return {"error": "MI Poisson vững chưa hỗ trợ hiệu chỉnh cụm", "note": "[CẦN THỐNG KÊ VIÊN]"}
 
     if outcome_type == "auto":
         outcome_type = detect_var_type(df[outcome_col])
@@ -967,9 +1089,15 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
     safe_map = {c: f"v{i}" for i, c in enumerate(analysis_cols)}
     rev_map = {v: k for k, v in safe_map.items()}
     sub_safe = sub.rename(columns=safe_map)
-    formula = f"{safe_map[outcome_col]} ~ " + " + ".join(safe_map[p] for p in predictors)
-    model_class = sm.Logit if outcome_type == "binary" else sm.OLS
-    fit_kwds = {"disp": 0} if outcome_type == "binary" else None
+    formula = f"{safe_map[outcome_col]} ~ " + " + ".join(
+        f"C({safe_map[p]})" if p in bien_gia else safe_map[p] for p in predictors)
+    init_kwds = None
+    if poisson:
+        model_class, init_kwds, fit_kwds = sm.GLM, {"family": sm.families.Poisson()}, {"cov_type": "HC0"}
+        sub_safe = sub_safe.apply(pd.to_numeric, errors="coerce")
+    else:
+        model_class = sm.Logit if outcome_type == "binary" else sm.OLS
+        fit_kwds = {"disp": 0} if outcome_type == "binary" else None
     if cluster_col:
         so_cum = int(df[cluster_col].nunique())
         if so_cum < 2:
@@ -980,7 +1108,7 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
 
     try:
         imp = MICEData(sub_safe)
-        mice = MICE(formula, model_class, imp, fit_kwds=fit_kwds)
+        mice = MICE(formula, model_class, imp, init_kwds=init_kwds, fit_kwds=fit_kwds)
         res, caught = _chay_fit_bat_canh_bao(
             lambda: mice.fit(n_imputations=n_imputations, n_burnin=10))
     except Exception as e:
@@ -996,11 +1124,17 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
     # Kiểm hội tụ chỉ áp cho nhánh logistic (thang log-odds); OLS không có vấn đề
     # tách hoàn toàn. Lý do cấp mô hình (cảnh báo trong bất kỳ lần fit MI nào,
     # hệ số vô nghĩa ở bất kỳ tham số nào) ⇒ mọi ước lượng gộp không tin cậy.
+    def ten_goc(safe_name: str) -> str:
+        m = re.fullmatch(r"C\((v\d+)\)\[T\.([^\]]+)\]", safe_name)  # biến giả patsy ⇒ <cột>_<mã>
+        if m:
+            return f"{rev_map[m.group(1)]}_{int(float(m.group(2)))}"
+        return rev_map.get(safe_name, safe_name)
+
     ly_do_mo_hinh = []
-    if outcome_type == "binary":
+    if outcome_type == "binary" or poisson:
         ly_do_mo_hinh = _ly_do_tu_canh_bao(caught)
         for i, safe_name in enumerate(res.model.exog_names):
-            ten = rev_map.get(safe_name, safe_name)
+            ten = ten_goc(safe_name)
             se_i = float(bse[i]) if bse is not None else None
             ly_do_mo_hinh.extend(_ly_do_tu_uoc_luong(
                 str(ten), float(res.params[i]), se_i, float(ci[i][0]), float(ci[i][1]),
@@ -1009,11 +1143,16 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
     for i, safe_name in enumerate(res.model.exog_names):
         if safe_name == "Intercept":
             continue
-        var = rev_map.get(safe_name, safe_name)
+        var = ten_goc(safe_name)
         est = float(res.params[i])
         lo, hi = float(ci[i][0]), float(ci[i][1])
         p = round(float(pvals[i]), 4)
-        if outcome_type == "binary":
+        if poisson:
+            results.append(_gan_co_khong_hoi_tu(
+                {"variable": var, "PR_adj": round(float(np.exp(est)), 4),
+                 "CI_95": [round(float(np.exp(lo)), 4), round(float(np.exp(hi)), 4)], "p": p},
+                ly_do_mo_hinh, ("PR_adj", "CI_95", "p")))
+        elif outcome_type == "binary":
             results.append(_gan_co_khong_hoi_tu(
                 {"variable": var, "OR_adj": round(float(np.exp(est)), 3),
                  "CI_95": [round(float(np.exp(lo)), 3), round(float(np.exp(hi)), 3)],
@@ -1024,7 +1163,7 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
                              "CI_95": [round(lo, 4), round(hi, 4)], "p": p})
 
     out_mi = {
-        "model": "logistic_mi" if outcome_type == "binary" else "linear_mi",
+        "model": "poisson_hc0_mi" if poisson else ("logistic_mi" if outcome_type == "binary" else "linear_mi"),
         "n_imputations": n_imputations,
         "n_total": n_total, "n_complete_case": n_complete,
         "n_missing_rows": n_missing_rows,
@@ -1839,6 +1978,26 @@ def format_multivariate_text(mv: dict) -> str:
     return "\n".join(lines)
 
 
+def format_poisson_text(pr: dict) -> str:
+    """Bảng PR thô + hiệu chỉnh (Poisson log-link, SE vững HC0)."""
+    if pr.get("error"):
+        return f"POISSON VỮNG (PR) — LỖI: {pr['error']}\n{pr.get('note', '')}\nCần bác sĩ kiểm chứng.\n"
+    dong = ["BẢNG 4 — HỒI QUY POISSON LIÊN KẾT LOG, PHƯƠNG SAI VỮNG HC0 (tỷ số tỷ lệ hiện mắc, PR)",
+            f"Zou 2004 (PMID 15033648) · n = {pr['n']} ca đầy đủ dữ liệu · {pr['n_bien_co']} biến cố",
+            "PR thô và hiệu chỉnh trên CÙNG tập ca. Biến phân loại: <cột>_<mã> so với mã tham chiếu.", ""]
+    for nhan, ds, khoa in (("PR THÔ (từng biến)", pr.get("tho") or [], "PR"),
+                           ("PR HIỆU CHỈNH (mô hình đầy đủ)", pr.get("results") or [], "PR_adj")):
+        dong.append(nhan)
+        for r in ds:
+            ci = r.get("CI_95") or [None, None]
+            dong.append(f"  {r['variable']:30} {r.get(khoa)}  (KTC 95% {ci[0]}–{ci[1]})  p = {r.get('p')}")
+        dong.append("")
+    if pr.get("khong_hoi_tu"):
+        dong.append(f"{DONG_KHONG_HOI_TU}: " + "; ".join(pr.get("ly_do", [])[:5]))
+    dong.append("Cần bác sĩ kiểm chứng.")
+    return "\n".join(dong) + "\n"
+
+
 def format_mi_text(mi: dict, mv: dict = None) -> str:
     """mv (kết quả complete-case của multivariate_model(), nếu có) được đặt cạnh
     MI để bác sĩ thấy trực tiếp mức chênh — đúng mục đích sensitivity analysis
@@ -2030,9 +2189,21 @@ def _r_khoi_mi(outcome_col: str, bien: list, family: str, cluster_col: str | Non
 
 
 def generate_r_script(study: str, gate: str, outcome_col: str, group_col: str,
-                       covariates: list, outcome_type: str, cluster_col: str | None = None) -> str:
-    """Script R tái lặp kết quả (để audit/tái lặp độc lập). Có cụm ⇒ thêm KTC sandwich theo cụm (vcovCL)."""
-    formula = " + ".join([group_col] + covariates)
+                       covariates: list, outcome_type: str, cluster_col: str | None = None,
+                       phan_loai: list | None = None) -> str:
+    """Script R tái lặp kết quả (để audit/tái lặp độc lập). Có cụm ⇒ thêm KTC sandwich theo cụm (vcovCL).
+    F2: hiệp biến phân loại ⇒ factor(); poisson_pr ⇒ glm Poisson log + KTC sandwich HC0 (PR)."""
+    pl = set(phan_loai or [])
+    formula = " + ".join([group_col] + [f"factor({c})" if c in pl else c for c in covariates])
+    if outcome_type == "poisson_pr":
+        return (f"# Script R tái lặp G6 — {study} ({gate}) — Poisson log-link, SE vững HC0 (Zou 2004).\n"
+                "# Cần bác sĩ kiểm chứng.\n"
+                "library(sandwich); library(lmtest)\n"
+                "data <- read.csv('<CSV đã khoá>', check.names = FALSE)\n"
+                f"model_adj <- glm({outcome_col} ~ {formula}, family = poisson(link = 'log'), data = data)\n"
+                "vc <- vcovHC(model_adj, type = 'HC0')\n"
+                "print(coeftest(model_adj, vcov. = vc))\n"
+                "print(exp(cbind(PR = coef(model_adj), coefci(model_adj, vcov. = vc))))\n")
     family = "binomial" if outcome_type == "binary" else "gaussian"
     # Pre-compute conditionals to avoid backslash-in-f-string (Python < 3.12)
     model_comment = "# Logistic regression" if family == "binomial" else "# Linear regression"
@@ -2221,9 +2392,15 @@ def main():
                         help="Số bộ dữ liệu impute (m) cho multiple imputation khi biến phân "
                              "tích có dữ liệu thiếu — mặc định 20 (vá 2026-07-15)")
     parser.add_argument("--outcome-type", default="auto",
-                        choices=["auto", "binary", "continuous", "ordinal"],
+                        choices=["auto", "binary", "continuous", "ordinal", "poisson_pr"],
                         help="Loại kết cục (mặc định: tự phát hiện). 'ordinal' = logistic thứ tự "
-                             "(proportional odds) — chỉ bật khi SAP khai tường minh, không tự đoán")
+                             "(proportional odds) — chỉ bật khi SAP khai tường minh, không tự đoán. "
+                             "'poisson_pr' = Poisson log-link phương sai vững HC0 ⇒ tỷ số tỷ lệ hiện mắc (PR) cho "
+                             "kết cục 0/1 (Zou 2004) — chỉ khi SAP khai")
+    parser.add_argument("--hiep-bien-phan-loai", default="",
+                        help="Hiệp biến PHÂN LOẠI mã số (radio REDCap), cách nhau dấu phẩy — mỗi cột thành biến giả "
+                             "<cột>_<mã>, tham chiếu = mã nhỏ nhất (SAP: «biến phân loại k mức tính k−1»). Phải nằm "
+                             "trong --covariates. Không khai ⇒ cột mã số được coi là LIÊN TỤC")
     parser.add_argument("--don-vi-phoi-nhiem", type=float, default=None,
                         help="Đơn vị báo hiệu ứng của phơi nhiễm LIÊN TỤC (vd 15 ⇒ OR mỗi 15 phút như SAP); chia cột "
                              "--group cho giá trị này trước khi đưa vào mô hình (thêm 16/10/2026, F18)")
@@ -2457,8 +2634,27 @@ def main():
         for cb in thong_tin_phai_sinh["canh_bao"]:
             print(f"  ⚠️  {cb}")
 
+    # 1c. HIỆP BIẾN PHÂN LOẠI (F2, 14/11/2026): cột mã số khai phân loại ⇒ biến giả tường minh <cột>_<mã> (tham chiếu =
+    # mã nhỏ nhất) dùng cho MỌI mô hình complete-case; MI nhận cột gốc + C(). Cầu nối SPSS/R dựng đúng các biến giả này.
+    cot_phan_loai = [c.strip() for c in args.hiep_bien_phan_loai.split(",") if c.strip()]
+    ngoai_cov = [c for c in cot_phan_loai if c not in covariates]
+    if ngoai_cov:
+        print(f"✗ DỪNG: --hiep-bien-phan-loai phải nằm trong --covariates: {', '.join(ngoai_cov)}")
+        sys.exit(1)
+    try:
+        df, bien_gia = mo_rong_bien_gia(df, cot_phan_loai)
+    except LoiBienPhanLoai as e:
+        print(f"✗ DỪNG: hiệp biến phân loại — {e}")
+        sys.exit(1)
+    covariates_mh = mo_rong_hiep_bien(covariates, bien_gia)
+    ten_bien_gia = {t for v in bien_gia.values() for t in v["ten"]}
+    if bien_gia:
+        print("✓ Hiệp biến phân loại (biến giả, tham chiếu = mã nhỏ nhất): " + "; ".join(
+            f"{c} → {', '.join(v['ten'])} (tham chiếu {v['tham_chieu']})" for c, v in bien_gia.items()))
+    poisson = args.outcome_type == "poisson_pr"
+
     vars_for_t1 = ([v.strip() for v in args.vars.split(",") if v.strip()]
-                   or [c for c in df.columns if c not in [args.group, args.outcome]])
+                   or [c for c in df.columns if c not in [args.group, args.outcome] and c not in ten_bien_gia])
 
     # 2. Output dir
     out_dir = _thu_muc_de_tai(args.study)
@@ -2489,6 +2685,8 @@ def main():
         "outcome_type": args.outcome_type, "time": args.time, "event": args.event,
         "cot_cum": (args.cot_cum or "").strip() or None,
         "don_vi_phoi_nhiem": args.don_vi_phoi_nhiem,  # OR cho MỖI k đơn vị (C1a: 15 phút) — SPSS phải chia cùng k
+        # F2: biến giả của hiệp biến phân loại — cầu nối SPSS/R dựng ĐÚNG các mức này (tên hệ số trùng nhau)
+        "hiep_bien_phan_loai": bien_gia,
     }
 
     # 3. Dữ liệu thiếu
@@ -2569,7 +2767,7 @@ def main():
             print(f"✗ DỪNG: thiếu cột {missing_cols} cho hồi quy thứ tự.")
             sys.exit(1)
         df_mh = ap_don_vi_phoi_nhiem(df, args.group, args.don_vi_phoi_nhiem)
-        od = ordinal_model(df_mh, args.outcome, args.group, covariates, cot_cum)
+        od = ordinal_model(df_mh, args.outcome, args.group, covariates_mh, cot_cum)
         if args.don_vi_phoi_nhiem:
             od["don_vi_phoi_nhiem"] = {"cot": args.group, "don_vi": args.don_vi_phoi_nhiem,
                                        "dien_giai": f"OR cho MỖI {args.don_vi_phoi_nhiem:g} đơn vị «{args.group}»"}
@@ -2578,7 +2776,7 @@ def main():
         summary["ordinal"] = od
         dau = "✗" if "error" in od else ("⚠" if od.get("khong_hoi_tu") else "✓")
         print(f"{dau} Hồi quy thứ tự: {od.get('error') or str(od.get('n')) + ' quan sát'}")
-        lh = linear_hc3(df_mh, args.outcome, args.group, covariates, cot_cum)
+        lh = linear_hc3(df_mh, args.outcome, args.group, covariates_mh, cot_cum)
         (prefix.parent / f"{args.gate}_table6_sensitivity_linear.txt").write_text(
             format_hc3_text(lh), encoding="utf-8", newline="\n")
         summary["sensitivity_linear"] = lh
@@ -2596,7 +2794,8 @@ def main():
     # 5. Kết cục chính
     if args.outcome_type != "ordinal" and args.outcome and args.group and args.outcome in df.columns:
         try:
-            res = compare_primary_outcome(df, args.outcome, args.group, args.outcome_type, cot_cum)
+            res = compare_primary_outcome(df, args.outcome, args.group, "binary" if poisson else args.outcome_type,
+                                          cot_cum)
         except (ZeroDivisionError, ValueError) as exc:
             res = {"error": f"Lỗi tính kết cục chính: {exc}",
                    "note": "[CẦN BIOSTATISTICIAN — kiểm tra dữ liệu]"}
@@ -2615,12 +2814,21 @@ def main():
         if hypothesis_interp.get("note"):
             print(f"  ℹ️  Diễn giải {hypothesis_type}: xem {args.gate}_table2_main_outcome.txt")
 
-        # 6. Đa biến
-        mv = multivariate_model(df, args.outcome, args.group, covariates, args.outcome_type, cot_cum)
-        mv_txt = format_multivariate_text(mv)
-        (prefix.parent / f"{args.gate}_table4_multivariate.txt").write_text(mv_txt, encoding="utf-8", newline="\n")
-        summary["multivariate"] = mv
-        if mv.get("khong_hoi_tu") or mv.get("convergence") is False:
+        # 6. Đa biến — Poisson vững (F2) thay logistic khi SAP khai PR
+        if poisson:
+            mv = poisson_pr_model(df, args.outcome, args.group, covariates, bien_gia, cot_cum)
+            (prefix.parent / f"{args.gate}_table4_poisson_pr.txt").write_text(
+                format_poisson_text(mv), encoding="utf-8", newline="\n")
+            summary["poisson_pr"] = mv
+        else:
+            mv = multivariate_model(df, args.outcome, args.group, covariates_mh, args.outcome_type, cot_cum)
+            mv_txt = format_multivariate_text(mv)
+            (prefix.parent / f"{args.gate}_table4_multivariate.txt").write_text(mv_txt, encoding="utf-8",
+                                                                                 newline="\n")
+            summary["multivariate"] = mv
+        if mv.get("error"):
+            print(f"✗ Mô hình đa biến: {mv['error']}")
+        elif mv.get("khong_hoi_tu") or mv.get("convergence") is False:
             print(f"⚠ Mô hình đa biến: {mv.get('model','?')} ({mv.get('n','?')} quan sát) — "
                   f"{DONG_KHONG_HOI_TU}")
         else:
@@ -2628,7 +2836,7 @@ def main():
 
         # 6a. Multiple imputation (chỉ khi biến phân tích có dữ liệu thiếu) — vá 2026-07-15
         mi = multiple_imputation_model(df, args.outcome, args.group, covariates,
-                                        args.outcome_type, args.n_imputations, cot_cum)
+                                        args.outcome_type, args.n_imputations, cot_cum, bien_gia)
         summary["multiple_imputation"] = mi
         if mi.get("skipped"):
             print(f"ℹ️  Multiple imputation: bỏ qua ({mi['reason']})")
@@ -2646,7 +2854,7 @@ def main():
 
         # 7. Script R tái lặp
         r_script = generate_r_script(args.study, args.gate, args.outcome,
-                                      args.group, covariates, args.outcome_type, cot_cum)
+                                      args.group, covariates, args.outcome_type, cot_cum, cot_phan_loai)
         (prefix.parent / f"{args.gate}_analysis_syntax.R").write_text(r_script, encoding="utf-8", newline="\n")
         print("✓ Script R tái lặp đã tạo")
 
@@ -2656,7 +2864,7 @@ def main():
         if missing_cols:
             print(f"✗ DỪNG: thiếu cột {missing_cols} trong dữ liệu cho phân tích sống còn.")
             sys.exit(1)
-        surv = survival_model(df, args.time, args.event, args.group, covariates)
+        surv = survival_model(df, args.time, args.event, args.group, covariates_mh)
         km_path = prefix.parent / f"{args.gate}_km_curve.png"
         km = kaplan_meier_summary(df, args.time, args.event, args.group, out_path=km_path)
         # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 22, phát hiện HIGH):

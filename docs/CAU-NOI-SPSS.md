@@ -13,6 +13,8 @@ cổng tiếp nhận.
 SPSS chạy ở **chế độ nền** (external mode): không mở giao diện, không cần bấm. Máy không có SPSS (Windows chưa cài,
 Cloud, CI) thì công cụ vẫn sinh cú pháp `.sps` để chạy tay trong SPSS ở máy khác.
 
+> **Poisson vững + hiệp biến phân loại (F2, 14/11/2026):** `run_stats_analysis.py --outcome-type poisson_pr` (Poisson log-link, SE vững HC0 — Zou 2004, PMID 15033648) ⇒ PR thô từng biến + PR hiệu chỉnh trên cùng tập ca; `--hiep-bien-phan-loai a,b` ⇒ biến giả `<cột>_<mã>` (tham chiếu = mã nhỏ nhất) cho mọi mô hình. Cầu nối tự dựng đúng các biến giả đó và tái lập Poisson (SPSS `GENLIN … COVB=ROBUST`, R `glm` + `sandwich::vcovHC(type="HC0")`); đo thật: SPSS ≡ statsmodels ≡ R tới ngưỡng làm tròn.
+
 > **Biến phái sinh (F1, 14/11/2026):** khi lượt Python dùng biến phái sinh (khoá `bien_phai_sinh` của `G6_analysis_summary.json`), cầu nối tự sinh mã tính lại ĐỘC LẬP từ cùng công thức ngay sau khi nạp dữ liệu khoá; công thức đổi sau lượt Python ⇒ từ chối. Xem `docs/BIEN-PHAI-SINH.md`.
 
 ## Lệnh
