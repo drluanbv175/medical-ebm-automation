@@ -4,60 +4,40 @@
  "trang_thai_de_xuat": "ĐỀ XUẤT CỦA AGENT 15/11/2026 — CHỜ thống kê viên/PI duyệt (ghi nguoi_duyet). SAP nguồn còn là bản DRAFT chưa ký: SAP sửa trước khi khoá ⇒ sha256_sap lệch, đặc tả bị coi là cũ và phải đồng bộ lại.",
  "can_thong_ke_vien_quyet": [
   "Đề tài CHƯA có từ điển G5 — tên biến lấy theo bộ biến G3 (_bo-bien-rieng.csv) và _bien-phai-sinh.csv; đối chiếu lại khi dựng từ điển G5.",
-  "9 biến phái sinh MỚI đề xuất kèm (co_creat, co_uacr, hba1c_3muc, thoi_gian_mac_dtd_5, bmi_tinh, bmi_5, nhom_tuoi_65, btm_chua_ghi_nhan_mr, chi_dinh_raasi_1lan) — chờ duyệt cùng lượt.",
-  "MT3_poisson: 'tuoi' đặt làm phơi nhiễm chỉ để có PR mỗi 10 năm (don_vi_phoi_nhiem 10) — MT3 là THĂM DÒ, mọi biến cùng vai; PR thô từng biến + PR hiệu chỉnh mô hình đầy đủ.",
-  "hba1c_3muc: tham chiếu = mã nhỏ nhất = 1 «không làm HbA1c» (theo thứ tự SAP liệt kê). Muốn tham chiếu «< 7%» thì đổi mã trong công thức trước khi duyệt.",
+  "SAP cần 8 biến phái sinh CHƯA có trong bộ biến G3 đã duyệt (co_creat, co_uacr, hba1c_3muc, thoi_gian_mac_dtd_5, bmi_5, nhom_tuoi_65, btm_chua_ghi_nhan_mr, chi_dinh_raasi_1lan) — KHÔNG thêm thẳng vào _bien-phai-sinh.csv; đề xuất bổ sung bộ biến ở DE-XUAT-BO-SUNG-BO-BIEN-G3_20261115.md, các mục dùng chúng để «chờ bổ sung bộ biến» (MT1_thanh_phan, MT3_poisson, NC_tuoi, DN5, DN6).",
+  "hba1c_3muc (đề xuất): tham chiếu = mã nhỏ nhất = 1 «không làm HbA1c» (theo thứ tự SAP liệt kê). Muốn tham chiếu «< 7%» thì đổi mã khi duyệt bổ sung bộ biến.",
   "Quy tắc giảm tham số khi EPV < 10 (SAP §5 bước 1–3) là điều kiện — kiểm EPV trên dữ liệu, bước nào áp thì thêm mục với tập biến đã giảm.",
   "MI: run_stats_analysis chạy MI m = 20 khi có thiếu (CC báo song song = ĐN8); biến phụ trợ vao_truoc_0107 trong mô hình gán (SAP §6) chưa khai được qua đặc tả — thống kê viên xác nhận.",
-  "Phụ 3 loại người có chống chỉ định ghi rõ (= 1); ô chống chỉ định để trống (nhánh không hiện) vẫn giữ trong mẫu số."
+  "Phụ 3 loại người có chống chỉ định ghi rõ (= 1); ô chống chỉ định để trống (nhánh không hiện) vẫn giữ trong mẫu số.",
+  "MT3_poisson khi đã đủ biến: 'tuoi' làm phơi nhiễm chỉ để có PR mỗi 10 năm (don_vi_phoi_nhiem 10); tham_so đề xuất: outcome khong_xn_du, poisson_pr, covariates gioi, nhom_doi_tuong, thoi_gian_mac_dtd_5, hba1c_3muc, dung_insulin, so_nhom_ha_glucose, tha, bmi_5, tim_mach, so_luot_kham, phong_kham_chinh; hiep_bien_phan_loai gioi, nhom_doi_tuong, hba1c_3muc, phong_kham_chinh; n_imputations 20; loc du_tieu_chuan == 1.",
+  "du_tieu_chuan và bmi là trường calc của REDCap: nhập Excel/SPSS không tính calc ⇒ PR này khai bản công thức CÙNG TÊN (đúng định nghĩa calc của bộ biến) — chờ duyệt như mọi biến phái sinh."
  ],
  "phan_tich": [
   {
    "id": "MT1_chinh",
    "vai": "chinh",
    "sap_muc": "§4",
-   "mo_ta": "Tỷ lệ xét nghiệm đủ UACR + creatinin (xn_du) trên toàn bộ N + KTC 95% Wilson; kèm hai thành phần (≥ 1 creatinin, ≥ 1 UACR)",
+   "mo_ta": "Tỷ lệ xét nghiệm đủ UACR + creatinin (xn_du) trên toàn bộ N + KTC 95% Wilson",
    "tham_so": {
     "ty_le": [
-     "xn_du",
-     "co_creat",
-     "co_uacr"
+     "xn_du"
     ],
     "loc": "du_tieu_chuan == 1"
    }
+  },
+  {
+   "id": "MT1_thanh_phan",
+   "vai": "mo_ta",
+   "sap_muc": "§4",
+   "mo_ta": "Hai thành phần của kết cục chính: tỷ lệ có ≥ 1 creatinin, tỷ lệ có ≥ 1 UACR dạng tỷ số",
+   "chua_tu_dong": "CHỜ BỔ SUNG BỘ BIẾN G3: cần biến co_creat, co_uacr — đề xuất ở DE-XUAT-BO-SUNG-BO-BIEN-G3_20261115.md; chủ nhiệm duyệt thêm vào bộ biến §4 rồi mới thêm công thức và đổi mục này thành tham_so"
   },
   {
    "id": "MT3_poisson",
    "vai": "phu",
    "sap_muc": "§5–§6",
    "mo_ta": "Poisson log + SE vững: PR của KHÔNG xét nghiệm đủ theo 12 biến giải thích (thăm dò); tuổi mỗi 10 năm, thời gian mắc mỗi 5 năm, BMI mỗi 5 kg/m²",
-   "tham_so": {
-    "outcome": "khong_xn_du",
-    "outcome_type": "poisson_pr",
-    "group": "tuoi",
-    "don_vi_phoi_nhiem": 10,
-    "covariates": [
-     "gioi",
-     "nhom_doi_tuong",
-     "thoi_gian_mac_dtd_5",
-     "hba1c_3muc",
-     "dung_insulin",
-     "so_nhom_ha_glucose",
-     "tha",
-     "bmi_5",
-     "tim_mach",
-     "so_luot_kham",
-     "phong_kham_chinh"
-    ],
-    "hiep_bien_phan_loai": [
-     "gioi",
-     "nhom_doi_tuong",
-     "hba1c_3muc",
-     "phong_kham_chinh"
-    ],
-    "n_imputations": 20,
-    "loc": "du_tieu_chuan == 1"
-   }
+   "chua_tu_dong": "CHỜ BỔ SUNG BỘ BIẾN G3: cần biến hba1c_3muc, thoi_gian_mac_dtd_5, bmi_5 — đề xuất ở DE-XUAT-BO-SUNG-BO-BIEN-G3_20261115.md; chủ nhiệm duyệt thêm vào bộ biến §4 rồi mới thêm công thức và đổi mục này thành tham_so"
   },
   {
    "id": "P1_btm_xac_nhan",
@@ -193,28 +173,11 @@
    }
   },
   {
-   "id": "NC_tuoi1",
+   "id": "NC_tuoi",
    "vai": "nhom_con",
    "sap_muc": "§7",
-   "mo_ta": "Tỷ lệ xn_du — nhóm tuổi < 65",
-   "tham_so": {
-    "ty_le": [
-     "xn_du"
-    ],
-    "loc": "du_tieu_chuan == 1 and nhom_tuoi_65 == 1"
-   }
-  },
-  {
-   "id": "NC_tuoi2",
-   "vai": "nhom_con",
-   "sap_muc": "§7",
-   "mo_ta": "Tỷ lệ xn_du — nhóm tuổi ≥ 65",
-   "tham_so": {
-    "ty_le": [
-     "xn_du"
-    ],
-    "loc": "du_tieu_chuan == 1 and nhom_tuoi_65 == 2"
-   }
+   "mo_ta": "Tỷ lệ xn_du theo nhóm tuổi < 65 / ≥ 65",
+   "chua_tu_dong": "CHỜ BỔ SUNG BỘ BIẾN G3: cần biến nhom_tuoi_65 — đề xuất ở DE-XUAT-BO-SUNG-BO-BIEN-G3_20261115.md; chủ nhiệm duyệt thêm vào bộ biến §4 rồi mới thêm công thức và đổi mục này thành tham_so"
   },
   {
    "id": "DN1_alb",
@@ -269,24 +232,14 @@
    "vai": "do_nhay",
    "sap_muc": "§9",
    "mo_ta": "ĐN5 — Phụ 2 với danh mục mã thận mở rộng (N19, I12, I13, R80)",
-   "tham_so": {
-    "ty_le": [
-     "btm_chua_ghi_nhan_mr"
-    ],
-    "loc": "du_tieu_chuan == 1 and phan_loai_btm == 2"
-   }
+   "chua_tu_dong": "CHỜ BỔ SUNG BỘ BIẾN G3: cần biến btm_chua_ghi_nhan_mr (bộ biến §4 đã mô tả trong định nghĩa btm_chua_ghi_nhan nhưng chưa đặt tên biến) — đề xuất ở DE-XUAT-BO-SUNG-BO-BIEN-G3_20261115.md; chủ nhiệm duyệt thêm vào bộ biến §4 rồi mới thêm công thức và đổi mục này thành tham_so"
   },
   {
    "id": "DN6_raasi_1lan",
    "vai": "do_nhay",
    "sap_muc": "§9",
    "mo_ta": "ĐN6 — Phụ 3a với albumin niệu chỉ cần một lần UACR ≥ 30 mg/g",
-   "tham_so": {
-    "ty_le": [
-     "dung_raasi"
-    ],
-    "loc": "du_tieu_chuan == 1 and chi_dinh_raasi_1lan == 1 and (la_thieu(ccd_raasi) or ccd_raasi != 1)"
-   }
+   "chua_tu_dong": "CHỜ BỔ SUNG BỘ BIẾN G3: cần biến chi_dinh_raasi_1lan (bộ biến §4 đã mô tả trong định nghĩa chi_dinh_raasi nhưng chưa đặt tên biến) — đề xuất ở DE-XUAT-BO-SUNG-BO-BIEN-G3_20261115.md; chủ nhiệm duyệt thêm vào bộ biến §4 rồi mới thêm công thức và đổi mục này thành tham_so"
   },
   {
    "id": "DN7_ngoai_don",

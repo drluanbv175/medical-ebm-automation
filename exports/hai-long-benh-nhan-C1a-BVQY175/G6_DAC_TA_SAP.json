@@ -8,7 +8,8 @@
   "Biến phân loại → biến giả, tham chiếu = mã nhỏ nhất (lydokham 1 «Khám lần đầu», khunggio_kham 1, ngay_trong_tuan 1 «Thứ Hai»); mức không có ca (vd Chủ Nhật) không sinh biến giả.",
   "P1_nhi_phan: SAP §2 chỉ cho diễn giải logistic khi ≥ 10 biến cố chưa hài lòng/tham số — kiểm EPV trước khi đọc kết quả; không đạt thì chỉ báo tỷ lệ (MT1_ty_le).",
   "Lượt MT2_chinh sinh kèm: OR theo từng ngưỡng (đọc giả định tỷ lệ odds — vi phạm ⇒ DN_ppo), OLS HC3/chùm (§9 «G1 coi liên tục»), MI m = 20 khi có thiếu (§9 «complete-case vs MICE»), ICC — không cần mục riêng.",
-  "Trọng số hậu phân tầng (§4): bản CÓ trọng số chỉ có ở R survey / khối bổ sung SPSS Complex Samples khi kiểm chéo — đường Python không hỗ trợ trọng số; quy tắc kích hoạt (lệch > 20%) phải làm trên nₕ/Nₕ TRƯỚC khi xem kết cục."
+  "Trọng số hậu phân tầng (§4): bản CÓ trọng số chỉ có ở R survey / khối bổ sung SPSS Complex Samples khi kiểm chéo — đường Python không hỗ trợ trọng số; quy tắc kích hoạt (lệch > 20%) phải làm trên nₕ/Nₕ TRƯỚC khi xem kết cục.",
+  "NhomTuoi (_bien-phai-sinh.csv: 3 mức < 40 / 40–59 / ≥ 60, theo sổ người từ chối) KHÔNG có trong Bảng E.1 của đề cương, còn bảng dự kiến kết quả của đề cương chia 4 mức (< 30; 30–44; 45–59; ≥ 60) — chủ nhiệm chọn một cách chia rồi đồng bộ Bảng E.1 và _bien-phai-sinh.csv. Đặc tả này không dùng NhomTuoi; công cụ đối chiếu chặn mọi phân tích dùng nó tới khi đồng bộ."
  ],
  "phan_tich": [
   {
