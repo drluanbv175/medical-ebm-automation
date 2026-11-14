@@ -7,7 +7,7 @@ Bốn chế độ (đúng một):
   --cu-phap <tệp.sps>            INSERT FILE … ERROR=STOP; in «SO_CA=<n>» của bộ dữ liệu đang mở cuối cùng.
   --kiem <ra.xml>                SHOW LICENSE ghi qua OMS (OXML) — mô-đun nào được cấp phép; in «PHIEN_BAN=<x>».
   --tu-dien <tệp.sav> <ra.json>  từ điển biến của một tệp .sav (tên · nhãn · mức đo · định dạng · nhãn giá trị ·
-                                 mã thiếu).
+                                 mã thiếu) + `thuoc_tinh_tep` (DATAFILE ATTRIBUTE — dấu vân tay của mẫu nhập SPSS).
   --du-lieu <tệp.sav> <ra.json> [<tu_dien.json>]
                                  MỌI ca của tệp .sav, giá trị THÔ (spss.Cursor — KHÔNG qua định dạng hiển thị như
                                  SAVE TRANSLATE /TYPE=CSV, vốn làm tròn): số là double đủ chữ số (JSON ghi bằng repr nên
@@ -84,6 +84,15 @@ def _tu_dien(spss):
     finally:
         spss.EndDataStep()
     return bien
+
+
+def _thuoc_tinh_tep(spss):
+    """DATAFILE ATTRIBUTE của bộ dữ liệu đang mở ⇒ {tên: [giá trị…]} (mẫu nhập liệu SPSS ghi dấu vân tay đặc tả ở đây).
+    SPSS cũ không có API này ⇒ {} (người gọi coi là «không phải mẫu», không đoán)."""
+    try:
+        return {t: [str(v) for v in spss.GetDataFileAttributes(t)] for t in spss.GetDataFileAttributeNames()}
+    except Exception:  # noqa: BLE001 — API vắng/khác phiên bản: không có thuộc tính
+        return {}
 
 
 def gia_tri_tho(x):
@@ -163,14 +172,24 @@ def main(argv):
             spss.Submit("GET FILE=" + _chuoi(argv[1]) + ".")
             bien = _tu_dien(spss)
             with open(argv[2], "w", encoding="utf-8") as f:
-                json.dump({"so_ca": _so_ca(spss), "bien": bien}, f, ensure_ascii=False, indent=1)
+                json.dump(
+                    {"so_ca": _so_ca(spss), "bien": bien, "thuoc_tinh_tep": _thuoc_tinh_tep(spss)},
+                    f,
+                    ensure_ascii=False,
+                    indent=1,
+                )
             print("SO_CA=" + str(_so_ca(spss)))
         else:
             spss.Submit("GET FILE=" + _chuoi(argv[1]) + ".")
             print("SO_CA_DOC=" + str(_du_lieu(spss, argv[2])))
             if len(argv) >= 4:
                 with open(argv[3], "w", encoding="utf-8") as f:
-                    json.dump({"so_ca": _so_ca(spss), "bien": _tu_dien(spss)}, f, ensure_ascii=False, indent=1)
+                    json.dump(
+                        {"so_ca": _so_ca(spss), "bien": _tu_dien(spss), "thuoc_tinh_tep": _thuoc_tinh_tep(spss)},
+                        f,
+                        ensure_ascii=False,
+                        indent=1,
+                    )
             print("SO_CA=" + str(_so_ca(spss)))
     except spss.SpssError as e:  # lỗi cú pháp/dữ liệu trong SPSS
         print("LOI_SPSS " + str(e), file=sys.stderr)

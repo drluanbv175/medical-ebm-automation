@@ -15,7 +15,7 @@ lệnh). Thay mọi `<mã>` bằng mã đề tài thật (zsh hiểu `<`/`>` là
 |---|---|---|
 | `mau --study <mã>` | Sinh mẫu nhập `.xlsx` từ từ điển G5 + `_ma-thieu-theo-bien.csv` | `exports/<mã>/nhap_lieu/MAU_NHAP_LIEU_<mã>.xlsx` |
 | `so-sanh --study <mã> --excel1 A --excel2 B` | So hai lần nhập độc lập (nhập kép) từng ô theo mã nghiên cứu | chi tiết có giá trị: thư mục NGOÀI repo · tóm tắt không giá trị: `exports/<mã>/nhap_lieu/` |
-| `nhap --study <mã> --excel <tệp> [--tiep-nhan]` | Excel ⇒ CSV chuẩn + báo cáo lỗi từng ô; `--tiep-nhan` chạy luôn `import_real_dataset.py` khi sạch | CSV + báo cáo: thư mục NGOÀI repo (mặc định `<tệp>_csv/` cạnh tệp Excel) |
+| `nhap --study <mã> --excel <tệp .xlsx/.sav> [--tiep-nhan]` | Excel ⇒ CSV chuẩn + báo cáo lỗi từng ô; `--tiep-nhan` chạy luôn `import_real_dataset.py` khi sạch | CSV + báo cáo: thư mục NGOÀI repo (mặc định `<tệp>_csv/` cạnh tệp Excel) |
 
 Thứ tự cho một đề tài: `mau` → hai người nhập hai bản → `so-sanh` tới khi `TRUNG_KHOP` → `nhap --tiep-nhan` →
 `clean_research_dataset.py` → khoá → `cau_noi_spss.py xuat-sav` / `cau_noi_r.py xuat-rds` (khứ hồi từng ô, kiểm ba
@@ -82,6 +82,32 @@ kiểm (`tu_kiem_doc_bang`).
 
 Báo cáo `<tệp>_bao_cao_nhap.md/.json`: mỗi phát hiện ghi trang!ô, cột, mã nghiên cứu, chi tiết; giá trị chỉ in cho mã/số
 (không in nguyên văn ô chữ tự do).
+
+## Nhập thẳng trong SPSS (.sav) — thay cho Excel nếu muốn
+
+- `mau --study <mã> --dang sav` ⇒ `exports/<mã>/nhap_lieu/MAU_NHAP_LIEU_<mã>.sav` (0 phiếu, sinh bằng SPSS thật) + `.sps`
+  cùng tên: đủ biến (tên = cột nhập liệu của từ điển, chọn nhiều tách `<trường>___<mã>`), định dạng (ngày EDATE/ADATE/SDATE
+  theo `date_dmy/mdy/ymd`), nhãn biến, nhãn giá trị, MISSING VALUES, mức đo. Mã thiếu CHỮ của dự án (BTR, KDD…) ở biến SỐ
+  là −9991, −9992… có nhãn «BTR — …» — trong Data View bật **View › Value Labels** để chọn từ danh sách. DATAFILE
+  ATTRIBUTE ghi dấu vân tay đặc tả + bảng mã chữ ⇒ số.
+- **SPSS KHÔNG chặn lỗi lúc gõ** (khác mẫu Excel) ⇒ mọi kiểm diễn ra ở bước `nhap`.
+- `nhap --excel <tệp.sav>` và `so-sanh --excel1 a.sav --excel2 b.sav` dùng CÙNG đường kiểm như Excel; vị trí ghi
+  «SPSS!ca 5». −9991/−9992 đổi ngược về BTR/KDD; ngày ⇒ `YYYY-MM-DD`. Đo 14/11/2026 trên SPSS 31: 30 phiếu giả lập đi
+  đường SPSS ra CSV **trùng từng byte** với đường Excel; nhập kép hai tệp .sav bắt đúng ô lệch.
+- Cần SPSS trên máy (đọc .sav bằng SPSS thật); máy không có ⇒ mã 2. Tệp .sav tự làm (không từ mẫu) vẫn đọc theo tên biến
+  (không phân biệt hoa/thường); biến lạ ⇒ LỖI — tệp SPSS bất kỳ thì dùng `cau_noi_spss.py nhap-sav`.
+
+## Mở dữ liệu thẳng trong SPSS / RStudio
+
+`tools/mo_trong_phan_mem.py spss|r --study <mã> [--excel <tệp.xlsx|.sav>]` — như kết nối EndNote: một lệnh nối chuỗi rồi
+mở cửa sổ phần mềm trên máy.
+- Đã khoá dữ liệu ⇒ LUÔN mở bản khoá (bỏ qua `--excel`); chưa khoá ⇒ `--excel` bắt buộc, chạy `nhap` (CHỈ khi sạch mới
+  đi tiếp) rồi xuất BẢN NHÁP.
+- `spss`: `xuat-sav` (khứ hồi từng ô + so từ điển) ⇒ mở `.sav` trong IBM SPSS Statistics.
+- `r`: `xuat-rds` (ba chiều) ⇒ sinh `mo_trong_rstudio_<mã>.R` (chỉ đường dẫn, không chứa dữ liệu) ⇒ mở RStudio; bấm
+  **Source** để nạp `d` có nhãn và hiện bảng. RStudio 2026.11.0 đã cài trên Mac của bác sĩ (14/11/2026, bản ký
+  RStudio Inc., Apple công chứng).
+- Bước nào lỗi ⇒ dừng, KHÔNG mở tệp (kể cả tệp cũ của lượt trước). `--khong-mo` chỉ chuẩn bị tệp.
 
 ## Nhập kép
 

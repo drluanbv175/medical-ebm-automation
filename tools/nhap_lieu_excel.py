@@ -35,11 +35,12 @@ import io
 import json
 import math
 import re
+import shutil
 import subprocess
 import sys
 import unicodedata
 from dataclasses import dataclass, field
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
@@ -1262,6 +1263,270 @@ _GIAI_THICH = {
 }
 
 
+# ───────────────────────────── mẫu nhập THẲNG trong SPSS (.sav) ─────────────────────────────
+
+TT_MAU, TT_DAC_TA, TT_MA_CHU = "ebm_mau_nhap_lieu", "ebm_dac_ta_sha256", "ebm_ma_chu"
+TU_KHOA_SPSS = frozenset({"ALL", "AND", "BY", "EQ", "GE", "GT", "LE", "LT", "NE", "NOT", "OR", "TO", "WITH"})
+NGAY_GOC_SPSS = datetime(1582, 10, 14)  # giá trị ngày/giờ của SPSS = số giây kể từ mốc lịch Gregory này
+
+
+def ma_chu_so(mt: list[dict]) -> dict[str, int]:
+    """Mã thiếu dạng CHỮ của dự án (BTR, KDD…) ⇒ số thay trong biến SỐ của SPSS (−9991, −9992… theo thứ tự khai trong
+    _ma-thieu-theo-bien.csv — cùng mốc với cau_noi_spss.MA_CHU_BAT_DAU). Ô Data Editor của SPSS không gõ chữ vào biến số
+    được; người nhập chọn nhãn «BTR — …» trong danh sách nhãn giá trị."""
+    ra: dict[str, int] = {}
+    for m in mt:
+        if _so_chat(m["ma"]) is None and m["ma"] not in ra:
+            ra[m["ma"]] = SP.MA_CHU_BAT_DAU - len(ra)
+    return ra
+
+
+def _kieu_spss(c: Cot) -> tuple[bool, str]:
+    """(biến SỐ?, định dạng SPSS) của một cột nhập liệu."""
+    if c.kieu == "id":
+        return False, "A50"
+    if c.kieu == "chu":
+        return False, "A255"
+    if c.kieu == "van_ban":
+        return False, "A1000"
+    if c.kieu == "ma" and any(_so_chat(m) is None for m in c.lua_chon):
+        return False, "A20"  # danh mục mã chữ ⇒ biến chuỗi
+    if c.kieu == "ngay":
+        return True, {"date_mdy": "ADATE10", "date_ymd": "SDATE10"}.get(c.kiem_tra, "EDATE10")
+    if c.kieu == "ngay_gio":
+        return True, "DATETIME20" if "seconds" in c.kiem_tra else "DATETIME17"
+    if c.kieu == "gio":
+        return True, "TIME5"
+    return True, "F10.2" if c.kieu == "so" else "F8.0"
+
+
+def cu_phap_mau_sav(cot: list[Cot], mt: list[dict], dac_ta: str, ra_sav: Path) -> str:
+    """Cú pháp SPSS dựng mẫu nhập 0 phiếu: biến · định dạng · nhãn biến · nhãn giá trị (kể cả mã thiếu) · MISSING
+    VALUES ·
+    mức đo · DATAFILE ATTRIBUTE (dấu vân tay đặc tả + bảng mã chữ ⇒ số) để lúc nhập biết tệp sinh từ từ điển nào."""
+    ma_chu = ma_chu_so(mt)
+    for c in cot:
+        if c.ten.upper() in TU_KHOA_SPSS or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_.]{0,63}", c.ten):
+            raise TuChoi(f"tên biến «{c.ten}» không dùng được trong SPSS (từ khoá hoặc ký tự lạ)")
+    dong = [
+        SP._chu_thich("Sinh bởi tools/nhap_lieu_excel.py mau --dang sav — KHÔNG sửa tay (sinh lại từ từ điển G5)."),
+        "SET UNICODE=ON.",
+        "INPUT PROGRAM.",
+    ]
+    theo_dd: dict[tuple[bool, str], list[str]] = {}
+    for c in cot:
+        theo_dd.setdefault(_kieu_spss(c), []).append(c.ten)
+    for (so, dd), ten in theo_dd.items():
+        dong.append(f"{'NUMERIC' if so else 'STRING'} {SP.goi_ds(ten)} ({dd}).")
+    dong += ["END FILE.", "END INPUT PROGRAM.", "VARIABLE LABELS"]
+    for k, c in enumerate(cot):
+        nhan = c.nhan if c.kieu != "hop" else f"{c.nhan} — {c.lua_chon.get(c.ma_hop, c.ma_hop)}"
+        dong.append(f"  {'/' if k else ''}{c.ten} {SP.chuoi_spss(nhan or c.ten)}")
+    dong[-1] += "."
+    khoi_nhan, thieu = [], []
+    for c in cot:
+        so, _ = _kieu_spss(c)
+        cap: list[tuple[str, str]] = []
+        if c.kieu == "hop":
+            cap = [("0", "Không chọn"), ("1", "Có chọn")]
+        elif c.kieu == "ma":
+            cap = list(c.lua_chon.items())
+        ma_so_thieu = [m for m in c.ma_thieu if _so_chat(m) is not None]
+        ma_chu_thieu = [m for m in c.ma_thieu if _so_chat(m) is None]
+        cap += [(m, c.ma_thieu[m] or m) for m in ma_so_thieu]
+        if so:
+            cap += [(str(ma_chu[m]), f"{m} — {c.ma_thieu[m] or m}") for m in ma_chu_thieu]
+            mde = SP.menh_de_thieu_so(c.ten, ma_so_thieu, [ma_chu[m] for m in ma_chu_thieu])
+            if mde:
+                thieu.append(f"MISSING VALUES {c.ten} ({mde}).")
+        else:
+            cap += [(m, f"{m} — {c.ma_thieu[m] or m}") for m in ma_chu_thieu]
+            gia = [m for m in c.ma_thieu if len(m.encode("utf-8")) <= 8][:3]
+            if gia:
+                thieu.append(
+                    f"MISSING VALUES {c.ten} (" + ", ".join("'" + g.replace("'", "''") + "'" for g in gia) + ")."
+                )
+        if cap:
+            gia_tri = [f"    {m if so else chr(39) + m.replace(chr(39), chr(39) * 2) + chr(39)} {SP.chuoi_spss(n)}"
+                       for m, n in cap]  # fmt: skip
+            khoi_nhan.append((c.ten, gia_tri))
+    if khoi_nhan:
+        dong.append("VALUE LABELS")
+        for k, (ten, gia_tri) in enumerate(khoi_nhan):
+            dong.append(f"  {'/' if k else ''}{ten}")
+            dong += gia_tri
+        dong[-1] += "."
+    dong += thieu
+    for muc, ds in (
+        ("SCALE", [c.ten for c in cot if c.kieu in ("so", "so_nguyen", "ngay", "ngay_gio", "gio")]),
+        ("NOMINAL", [c.ten for c in cot if c.kieu in ("id", "ma", "hop", "chu", "van_ban")]),
+    ):
+        if ds:
+            dong.append(f"VARIABLE LEVEL {SP.goi_ds(ds)} ({muc}).")
+    dong.append(
+        f"DATAFILE ATTRIBUTE ATTRIBUTE={TT_MAU}('nhap_lieu_excel.py') {TT_DAC_TA}('{dac_ta}') "
+        f"{TT_MA_CHU}('{json.dumps(ma_chu, ensure_ascii=False)}')."
+    )
+    dong += [f"SAVE OUTFILE={SP.dd_spss(ra_sav)}.", ""]
+    return "\n".join(dong)
+
+
+def tao_mau_sav(study: str, td_p: Path, mt_p: Path | None, ra: Path) -> dict:
+    td = doc_tu_dien_day_du(td_p)
+    mt = SP.doc_ma_thieu(mt_p) if mt_p else []
+    cot, bo_qua = ke_hoach_cot(td, mt)
+    py = SP.tim_spss()
+    with SP.vung_tam() as tam_s:
+        tam = Path(tam_s)
+        (tam / "mau.sps").write_text(
+            cu_phap_mau_sav(cot, mt, dau_van_tay_dac_ta(cot), tam / "mau.sav"), encoding="utf-8", newline="\n"
+        )
+        ma, out, err = SP.chay_spss(py, ["--cu-phap", str(tam / "mau.sps")], thu_muc=tam)
+        if ma != 0 or not (tam / "mau.sav").exists():
+            raise TuChoi("SPSS không tạo được mẫu .sav — " + (err or out).strip()[-600:])
+        ra.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(tam / "mau.sav", ra)
+    (ra.with_suffix(".sps")).write_text(cu_phap_mau_sav(cot, mt, dau_van_tay_dac_ta(cot), ra), encoding="utf-8",
+                                        newline="\n")  # fmt: skip
+    return {"so_cot": len(cot), "bo_qua": bo_qua}
+
+
+def doc_lai_sav(p: Path) -> tuple[dict, dict]:
+    """(từ điển + thuộc tính tệp, dữ liệu thô) của tệp .sav — đọc bằng SPSS thật (spss_chay_nen.py --du-lieu)."""
+    py = SP.tim_spss()
+    with SP.vung_tam() as tam_s:
+        tam = Path(tam_s)
+        shutil.copyfile(p, tam / "vao.sav")
+        ma, out, err = SP.chay_spss(
+            py, ["--du-lieu", str(tam / "vao.sav"), str(tam / "dl.json"), str(tam / "td.json")], thu_muc=tam
+        )
+        if ma != 0 or not (tam / "dl.json").exists():
+            raise TuChoi(f"SPSS không đọc được {p.name} — " + (err or out).strip()[-600:])
+        return SP._doc_json(tam / "td.json"), SP._doc_json(tam / "dl.json")
+
+
+def gia_tri_tu_sav(c: Cot, v, ma_chu_nguoc: dict[float, str], dem: dict) -> tuple[str, str | None, str | None]:
+    """Giá trị THÔ của SPSS ⇒ (chuỗi chuẩn, mã phát hiện, mức) — cùng quy ước với ô Excel (chuyen_o)."""
+    if v is None:
+        return "", None, None
+    if isinstance(v, str):
+        return chuyen_o(c, v, "@", dem)
+    x = float(v)
+    if x in ma_chu_nguoc and c.kieu not in ("id", "chu", "van_ban"):
+        return ma_chu_nguoc[x], None, None
+    la_ma_thieu_so = x.is_integer() and _so_chuoi(x) in c.ma_thieu  # vd 9999 khai là mã thiếu của cột ngày
+    if c.kieu in ("ngay", "ngay_gio", "gio") and not la_ma_thieu_so:
+        try:
+            tg = NGAY_GOC_SPSS + timedelta(seconds=x) if c.kieu != "gio" else None
+        except OverflowError:
+            return _so_chuoi(x), "ngay_luu_dang_so", LOI
+        if c.kieu == "ngay":
+            if (tg.hour, tg.minute, tg.second, tg.microsecond) != (0, 0, 0, 0):
+                return tg.isoformat(sep=" "), "ngay_co_gio", LOI
+            return tg.date().isoformat(), None, None
+        if c.kieu == "ngay_gio":
+            if "seconds" in c.kiem_tra:
+                return tg.strftime("%Y-%m-%d %H:%M:%S"), None, None
+            if tg.second or tg.microsecond:
+                return tg.isoformat(sep=" "), "ngay_gio_co_giay", LOI
+            return tg.strftime("%Y-%m-%d %H:%M"), None, None
+        if x % 60 or x < 0 or x >= 86400:
+            return _so_chuoi(x), "gio_sai_dinh_dang", LOI
+        return f"{int(x) // 3600:02d}:{int(x) % 3600 // 60:02d}", None, None
+    s = _so_chuoi(x)
+    if c.kieu == "id":
+        return s, "ma_nghien_cuu_luu_dang_so", TRUY_VAN
+    if c.kieu in ("chu", "van_ban"):
+        return s, "so_trong_cot_chu", TRUY_VAN
+    return s, None, None
+
+
+def doc_sav(
+    p: Path,
+    cot: list[Cot],
+    *,
+    ma_chu_mac_dinh: dict[str, int],
+    dac_ta_hien: str | None = None,
+    chap_nhan_tu_dien_moi: bool = False,
+    doc_lai=None,
+) -> Bang:
+    """Tệp .sav nhập THẲNG trong SPSS ⇒ Bang (cùng cấu trúc với doc_excel ⇒ cùng kiểm giá trị/CSV/nhập kép)."""
+    if not p.exists():
+        raise TuChoi(f"không thấy tệp: {p}")
+    td, dl = (doc_lai or doc_lai_sav)(p)
+    tt = {k: (v[0] if isinstance(v, list) and v else v) for k, v in (td.get("thuoc_tinh_tep") or {}).items()}
+    ph: list[PhatHien] = []
+    dem: dict = {}
+    meta: dict = {}
+    if tt.get(TT_MAU):
+        meta = {"dang": "sav", "dac_ta_sha256": tt.get(TT_DAC_TA)}
+        if dac_ta_hien and tt.get(TT_DAC_TA) and tt[TT_DAC_TA] != dac_ta_hien:
+            if not chap_nhan_tu_dien_moi:
+                raise TuChoi(
+                    "tệp .sav được sinh từ một đặc tả từ điển KHÁC đặc tả hiện tại — sinh mẫu mới (mau --dang sav) và"
+                    " chép dữ liệu sang, hoặc dùng --chap-nhan-tu-dien-moi để kiểm theo từ điển hiện tại."
+                )
+            ph.append(PhatHien(CANH_BAO, "mau_tu_tu_dien_cu", "", "", "", "", "kiểm theo từ điển HIỆN TẠI"))
+    try:
+        ma_chu = {k: int(v) for k, v in json.loads(tt[TT_MA_CHU]).items()} if tt.get(TT_MA_CHU) else ma_chu_mac_dinh
+    except (ValueError, TypeError):
+        ma_chu = ma_chu_mac_dinh
+    ma_chu_nguoc = {float(v): k for k, v in ma_chu.items()}
+    theo_ten = {c.ten.lower(): c for c in cot}
+    truong_hop = {c.truong.lower() for c in cot if c.kieu == "hop"}
+    cid = cot[0]
+    bien = list(dl.get("bien") or [])
+    vi_tri_cot: dict[int, Cot] = {}
+    for j, ten in enumerate(bien):
+        c = theo_ten.get(str(ten).lower())
+        if c is None:
+            ma = "cot_checkbox_chua_tach" if str(ten).lower() in truong_hop else "cot_khong_co_trong_tu_dien"
+            ph.append(
+                PhatHien(LOI, ma, "SPSS", f"biến {ten}", str(ten), "", "biến không khớp cột nhập liệu của từ điển")
+            )
+            continue
+        vi_tri_cot[j] = c
+    hang: dict[str, dict[str, str]] = {}
+    vi_tri: dict[str, dict[str, str]] = {}
+    if cid not in vi_tri_cot.values():
+        ph.append(PhatHien(LOI, "thieu_cot_ma_nghien_cuu", "SPSS", "", cid.ten, "", "tệp phải có biến mã nghiên cứu"))
+    else:
+        for i, ca in enumerate(dl.get("ca") or [], start=1):
+            if all(x is None or (isinstance(x, str) and x.strip() == "") for x in ca):
+                continue
+            gt: dict[str, str] = {}
+            vt: dict[str, str] = {}
+            for j, c in vi_tri_cot.items():
+                s, ma, muc = gia_tri_tu_sav(c, ca[j] if j < len(ca) else None, ma_chu_nguoc, dem)
+                if muc:
+                    hien = "" if c.kieu in KIEU_CHU - {"id"} else s
+                    ph.append(PhatHien(muc, ma, "SPSS", f"ca {i}", c.ten, "", _GIAI_THICH.get(ma, ma), hien))
+                if c.kieu == "hop" and s == "":
+                    s = "0"
+                    dem["o_checkbox_trong_ghi_0"] = dem.get("o_checkbox_trong_ghi_0", 0) + 1
+                gt[c.ten], vt[c.ten] = s, f"SPSS!ca {i}"
+            ma_nc = gt.get(cid.ten, "")
+            if not ma_nc:
+                ph.append(
+                    PhatHien(LOI, "thieu_ma_nghien_cuu", "SPSS", f"ca {i}", cid.ten, "", "ca có dữ liệu nhưng trống mã")
+                )
+                continue
+            if ma_nc in hang or ma_nc.casefold() in {m.casefold() for m in hang}:
+                ph.append(
+                    PhatHien(LOI, "trung_ma_nghien_cuu", "SPSS", f"ca {i}", cid.ten, ma_nc, "mã nghiên cứu trùng")
+                )
+                continue
+            hang[ma_nc], vi_tri[ma_nc] = gt, vt
+    for k, p_ in enumerate(ph):
+        if not p_.ma_nc and p_.o:
+            for m, vt in vi_tri.items():
+                if f"SPSS!{p_.o}" in vt.values():
+                    ph[k].ma_nc = m
+                    break
+    cot_co = [c.ten for c in cot if c in vi_tri_cot.values()]
+    return Bang(cot, hang, vi_tri, {m: {"SPSS"} for m in hang}, ph, dem, meta, cot_co)
+
+
 # ───────────────────────────── kiểm giá trị ─────────────────────────────
 
 
@@ -1452,15 +1717,20 @@ def _ngoai_repo(ra: Path) -> None:
 def lenh_mau(args) -> int:
     td_p, mt_p = tim_tu_dien(args.study, args.dictionary, args.ma_thieu)
     d = SP.thu_muc_de_tai(args.study)
-    ra = Path(args.ra).expanduser().resolve() if args.ra else d / "nhap_lieu" / f"MAU_NHAP_LIEU_{args.study}.xlsx"
-    if ra.suffix.lower() != ".xlsx":
-        raise TuChoi("tệp mẫu phải có đuôi .xlsx")
+    duoi = ".sav" if args.dang == "sav" else ".xlsx"
+    ra = Path(args.ra).expanduser().resolve() if args.ra else d / "nhap_lieu" / f"MAU_NHAP_LIEU_{args.study}{duoi}"
+    if ra.suffix.lower() != duoi:
+        raise TuChoi(f"tệp mẫu phải có đuôi {duoi}")
     if ra.exists():
         if not args.ghi_de:
             raise TuChoi(f"đã có {ra} — KHÔNG ghi đè (có thể đã có dữ liệu). Chọn --ra khác hoặc --ghi-de")
         cot, _ = ke_hoach_cot(doc_tu_dien_day_du(td_p), SP.doc_ma_thieu(mt_p) if mt_p else [])
         try:
-            cu = doc_excel(ra, cot, chap_nhan_tu_dien_moi=True)
+            cu = (
+                doc_sav(ra, cot, ma_chu_mac_dinh={}, chap_nhan_tu_dien_moi=True)
+                if duoi == ".sav"
+                else doc_excel(ra, cot, chap_nhan_tu_dien_moi=True)
+            )
             co_du_lieu = bool(cu.hang or cu.loi())
         except TuChoi:
             co_du_lieu = True  # không đọc được tệp cũ ⇒ không dám ghi đè
@@ -1468,6 +1738,19 @@ def lenh_mau(args) -> int:
             raise TuChoi(f"{ra.name} có (hoặc có thể có) dữ liệu — không ghi đè kể cả khi có --ghi-de; chọn --ra khác")
     if args.so_dong < 1 or args.so_dong > 20000:
         raise TuChoi("--so-dong phải trong 1–20000")
+    if duoi == ".sav":
+        kq = tao_mau_sav(args.study, td_p, mt_p, ra)
+        print(f"✓ Mẫu nhập liệu SPSS: {ra} ({kq['so_cot']} biến, 0 phiếu)")
+        for b in kq["bo_qua"]:
+            print(f"   ⚪ không nhập tay: {b}")
+        print(
+            "   Mở bằng SPSS ⇒ Data View, mỗi phiếu một hàng; bật View › Value Labels để CHỌN đáp án từ danh sách nhãn"
+            " (mã thiếu BTR/KDD là các nhãn «BTR — …» = −9991/−9992). SPSS KHÔNG chặn lỗi lúc gõ — «nhap» kiểm TOÀN BỘ."
+        )
+        print("→ Chép mẫu ra NGOÀI repo (vd ~/NhapLieu/lan1.sav, lan2.sav) rồi nhập. Nhập xong:")
+        print(f"   {_py()} tools/nhap_lieu_excel.py nhap --study {args.study} --excel ~/NhapLieu/lan1.sav")
+        print(CAN_KIEM)
+        return MA_OK
     kq = tao_mau(args.study, td_p, mt_p, ra, so_dong=args.so_dong, forms=args.form.split(",") if args.form else None)
     print(f"✓ Mẫu nhập liệu: {ra}")
     for t, ds in kq["trang"].items():
@@ -1488,7 +1771,17 @@ def lenh_mau(args) -> int:
 
 def _bang_tu_args(args, p: Path) -> tuple[Bang, list[Cot], Path, Path | None]:
     td_p, mt_p = tim_tu_dien(args.study, args.dictionary, args.ma_thieu)
-    cot, _ = ke_hoach_cot(doc_tu_dien_day_du(td_p), SP.doc_ma_thieu(mt_p) if mt_p else [])
+    mt = SP.doc_ma_thieu(mt_p) if mt_p else []
+    cot, _ = ke_hoach_cot(doc_tu_dien_day_du(td_p), mt)
+    if p.suffix.lower() == ".sav":  # nhập THẲNG trong SPSS — cùng kiểm/CSV/nhập kép như Excel
+        bang = doc_sav(
+            p,
+            cot,
+            ma_chu_mac_dinh=ma_chu_so(mt),
+            dac_ta_hien=dau_van_tay_dac_ta(cot),
+            chap_nhan_tu_dien_moi=args.chap_nhan_tu_dien_moi,
+        )
+        return bang, cot, td_p, mt_p
     bang = doc_excel(
         p,
         cot,
@@ -1824,9 +2117,15 @@ def main(argv: list[str] | None = None) -> int:
     m.add_argument("--so-dong", type=int, default=SO_DONG_MAC_DINH, help="số hàng có kiểm tra nhập (mặc định 1000)")
     m.add_argument("--form", help="chỉ các biểu mẫu này (ngăn cách dấu phẩy)")
     m.add_argument("--ghi-de", action="store_true", help="ghi đè mẫu CHƯA có dữ liệu")
+    m.add_argument(
+        "--dang",
+        choices=["xlsx", "sav"],
+        default="xlsx",
+        help="xlsx (Excel, mặc định) hoặc sav (nhập thẳng trong SPSS)",
+    )
     n = sub.add_parser("nhap", help="Excel đã nhập ⇒ CSV chuẩn + báo cáo lỗi từng ô")
     chung(n, doc=True)
-    n.add_argument("--excel", required=True)
+    n.add_argument("--excel", required=True, help="tệp đã nhập: .xlsx/.xlsm (Excel) hoặc .sav (nhập trong SPSS)")
     n.add_argument("--luat-dq", help="luật DQ (mặc định exports/<mã>/_luat-dq.csv)")
     n.add_argument("--tiep-nhan", action="store_true", help="sạch ⇒ chạy luôn cổng tiếp nhận import_real_dataset.py")
     s = sub.add_parser("so-sanh", help="so hai lần nhập độc lập (nhập kép) từng ô")

@@ -85,6 +85,8 @@ Chạy ngay sau phân tích chính: thêm `--kiem-cheo` vào `run_stats_analysis
 `xuat-sav` nay tự KHỨ HỒI từng ô (.sav đọc lại so với CSV nguồn) + so từ điển `.sav` với kế hoạch — lệch ⇒ bỏ tệp, mã 1.
 Cho R/RStudio: `python3 medical-ebm-automation/tools/cau_noi_r.py xuat-rds --study <mã>` ⇒ `.rds` có nhãn (khuôn haven,
 mã thiếu trong `na_values`), kiểm ba chiều từ điển ↔ `.sav` ↔ `.rds`; chặng chưa đo KHÔNG phải khớp.
+Mở thẳng cho bác sĩ xem: `python3 medical-ebm-automation/tools/mo_trong_phan_mem.py spss|r --study <mã>` (xuất có kiểm rồi
+mở SPSS/RStudio; chưa khoá ⇒ `--excel <tệp đã nhập>` mở BẢN NHÁP; bước nào lỗi thì KHÔNG mở).
 
 Máy có IBM SPSS Statistics (`python3 medical-ebm-automation/tools/cau_noi_spss.py kiem` ⇒ ✓) thì SAU BƯỚC 0b chạy lại
 CÙNG phân tích bằng SPSS ở chế độ nền (không mở giao diện) và đối chiếu từng ước lượng:
