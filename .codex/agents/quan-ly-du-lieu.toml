@@ -27,6 +27,20 @@ python medical-ebm-automation/tools/run_g5_auto.py --study "MA-DE-TAI"
 
 > **Khảo sát file dữ liệu thô TRƯỚC khi có CRF (2026-07-04):** 2 script Python mà `run_g5_auto.py` sinh ra (làm sạch + báo cáo chất lượng) chỉ chạy đúng trên file CSV **đã khớp cột theo CRF/chuyên khoa định sẵn** (REDCap export) — không phải công cụ tổng quát để soi 1 file dữ liệu thô bất kỳ. Khi bác sĩ đưa 1 file (Excel/CSV thô chưa theo CRF, hoặc định dạng khác như ảnh/phổ/gen học) và cần biết nhanh cấu trúc/chất lượng TRƯỚC khi dựng CRF chính thức, dùng skill `exploratory-data-analysis` (`scripts/eda_analyzer.py`, đã kiểm chứng chạy thật) để khảo sát trước — kết quả dùng làm căn cứ thiết kế Data Dictionary ở trên, KHÔNG thay thế CRF/luật kiểm tra chính thức. **Lưu ý môi trường Windows đã xác nhận thật:** cần `PYTHONUTF8=1` khi chạy (console mặc định cp1252 sẽ lỗi in tiếng Việt), và cần cài `pandas`+`numpy` trước (Python hệ thống không có sẵn — script vẫn chạy nhưng bỏ qua phần phân tích số liệu chính nếu thiếu).
 
+> **Nhập liệu BẰNG TAY qua Excel (14/11/2026 — bác sĩ nhập phiếu giấy vào Excel):** đường DUY NHẤT từ Excel vào hệ
+> là `tools/nhap_lieu_excel.py` — không tự viết script đọc Excel, không cho `run_stats_analysis.py` đọc thẳng `.xlsx`:
+> 1. `python3 tools/nhap_lieu_excel.py mau --study <mã>` — sinh `exports/<mã>/nhap_lieu/MAU_NHAP_LIEU_<mã>.xlsx` từ từ
+>    điển G5 + `_ma-thieu-theo-bien.csv`: chính Excel chặn mã ngoài danh mục, số ngoài khoảng, mã thiếu sai chỗ, mã
+>    nghiên cứu trùng, chọn quá `@MAXCHECKED`. Không ghi đè mẫu đã có dữ liệu.
+> 2. Nhập kép theo đề cương: hai người nhập độc lập hai bản từ CÙNG mẫu ⇒ `python3 tools/nhap_lieu_excel.py so-sanh
+>    --study <mã> --excel1 … --excel2 …` tới khi `TRUNG_KHOP`; tóm tắt KHÔNG chứa giá trị
+>    (`exports/<mã>/nhap_lieu/NHAP_KEP_tom_tat_*.json`) là bằng chứng `source_data_verification` của G5.
+> 3. `python3 tools/nhap_lieu_excel.py nhap --study <mã> --excel <tệp> [--tiep-nhan]` — CSV ở thư mục NGOÀI repo. Lỗi
+>    cấu trúc (ô gộp, công thức, Excel tự đổi mã thành ngày, trùng mã…) ⇒ không ghi CSV; truy vấn giá trị (ngoài danh
+>    mục/khoảng, thiếu câu bắt buộc, logic nhánh, luật `_luat-dq.csv`) ⇒ sửa TRONG EXCEL theo phiếu gốc rồi nhập lại;
+>    `--tiep-nhan` chỉ chạy cổng `import_real_dataset.py` khi sạch. Máy KHÔNG tự sửa giá trị; logic nhánh/luật DQ
+>    không đánh giá được ⇒ cảnh báo, không phải «đạt».
+
 > **Luồng làm sạch dữ liệu thật tự động (2026-07-13):** sau khi dữ liệu đã qua `import_real_dataset.py` hoặc `deidentify_research_dataset.py`/`pseudonymize_research_dataset.py --then-import`, gọi tool tổng quát:
 > ```bash
 > python medical-ebm-automation/tools/clean_research_dataset.py \

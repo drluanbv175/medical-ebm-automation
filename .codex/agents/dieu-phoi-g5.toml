@@ -35,6 +35,9 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 
 ## 4. Công cụ thật của cổng
 - `python3 tools/run_g5_auto.py --study <mã>`
+- Nhập liệu bằng tay qua Excel: `python3 tools/nhap_lieu_excel.py mau|so-sanh|nhap --study <mã> …` — giao
+  `quan-ly-du-lieu` (quy trình ở tài liệu agent đó); nhập kép `TRUNG_KHOP` + `nhap` sạch rồi mới tới
+  `import_real_dataset.py` (`--tiep-nhan`). Không tự sửa giá trị trong Excel thay người nhập.
 - Khoá: `python3 tools/lock_analysis_dataset.py --study <mã> --clean-data … --query-log … --lock-date … --sap-version …` + ĐỦ 10 cờ `--confirm-*` (gồm `--confirm-audit-trail-reviewed`) — do NGƯỜI quản lý dữ liệu chạy khi đã kiểm thật
 - Chấm (CLI có GHI báo cáo/checkpoint — chạy sau khi nhiệm vụ xong): `python3 tools/g5_quality_gate.py --study <mã>`;
   trạng thái: `DRAFT_READY_NEEDS_REAL_DATA` → `READY_FOR_CLEANING_NOT_LOCKED` → `READY_FOR_G5_APPROVAL` → `PASS_G5_DATA_LOCKED`.
