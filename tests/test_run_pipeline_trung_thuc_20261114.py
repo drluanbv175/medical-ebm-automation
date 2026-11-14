@@ -370,10 +370,21 @@ def test_k7_do_tuoi_tong_hop_khong_tuoi_khi_lech_cung_du_mtime_tuoi(capsys):
     assert "✅ TƯƠI" not in ra and "co_mau" in ra
     assert RP._do_tuoi_tong_hop(tuoi, {}, None, {"tong": {}, "lech": []})["fresh"] is True
     assert RP._do_tuoi_tong_hop(tuoi, {"G2": "TRDS 17 ghi N=482"}, None, {})["fresh"] is False
+    # THAY ĐỔI ĐẶC TẢ CÓ CHỦ Ý (thẩm định PR #247, CLAUDE.md §0.2): bản đầu khẳng định NQ không đo được vẫn fresh=True
+    # và in «✅ TƯƠI» kèm chú thích ⚪ — tức «không đo được» bị báo xanh (mã thoát 0). Nay: fresh=False, ket_luan
+    # «khong_ket_luan», in «⚪ CHƯA KẾT LUẬN ĐƯỢC», không «TƯƠI»; cũng không thành «vấn đề» (không báo đỏ giả).
     khong_do = RP._do_tuoi_tong_hop(tuoi, {}, None, {"loi": "hỏng"})
-    assert khong_do["fresh"] is True and khong_do["nhat_quan_do_duoc"] is False
+    assert khong_do["fresh"] is False and khong_do["nhat_quan_do_duoc"] is False
+    assert khong_do["ket_luan"] == "khong_ket_luan" and khong_do["issues"] == []
     RP._in_do_tuoi(khong_do, "Freshness sau")
-    assert "KHÔNG ĐO ĐƯỢC" in capsys.readouterr().out
+    ra = capsys.readouterr().out
+    assert "⚪ CHƯA KẾT LUẬN ĐƯỢC" in ra and "hỏng" in ra and "✅ TƯƠI" not in ra
+    # Có vấn đề thật + NQ không đo được ⇒ «CHƯA TƯƠI» và vẫn nêu phần ⚪.
+    ca_hai = RP._do_tuoi_tong_hop(tuoi, {"G2": "TRDS 17 ghi N=482"}, None, {"loi": "hỏng"})
+    assert ca_hai["ket_luan"] == "chua_tuoi"
+    RP._in_do_tuoi(ca_hai, "Freshness sau")
+    ra = capsys.readouterr().out
+    assert "CHƯA TƯƠI" in ra and "KHÔNG ĐO ĐƯỢC" in ra
 
 
 def test_k7_check_only_bao_ban_chep_lech_va_ma_thoat_1(tmp_path, monkeypatch, capsys):
@@ -482,3 +493,144 @@ def test_k7_cong_cung_da_ky_khong_tu_sinh_lai_chi_bao(tmp_path, monkeypatch, cap
     gia2, _bc2 = _chay(tmp_path, monkeypatch, out, {"G2": _g2_chep, "G3": _g3_ghi(218)},
                        song={"G0": "PASS", "G1": "PASS", "G2": "DRAFT", "G3": "PASS"})
     assert gia2.lenh[0] == "G2"
+
+
+# ─────────────────────────────────────── Sửa sau thẩm định PR #247 — rào cổng ĐÃ KÝ phải giữ qua đường dây chuyền
+# Thẩm định đo: G2 ĐÃ KÝ (chấm sống PASS) + TRDS 17 lệch + A2 CŨNG lệch (hai bản chép thường lệch cùng nhau vì cùng chép
+# N lúc sinh) ⇒ G1 (cổng mềm) được chạy lại ⇒ dirty ⇒ run_g2_auto chạy lại trên G2 đã ký, ghi đè hồ sơ đã ký (TRDS 17
+# thành 218). Rào cũ chỉ loại chính G2 khỏi stale_set nên bị vượt qua đường dây chuyền. Nay: cổng CỨNG đã ký KHÔNG bị
+# sinh lại vì bất kỳ lý do TỰ ĐỘNG nào (dây chuyền, cũ theo mtime, bản chép N) — chỉ khi người gọi `--from` ĐÚNG
+# cổng đó.
+def _trds17_hien(out: Path):
+    return json.loads((out / f"G2_REGISTRATION_DRAFT_{STUDY}.json").read_text(encoding="utf-8"))["items"][0]["value"]
+
+
+_SONG_G2_DA_KY = {"G0": "PASS", "G1": "PASS", "G2": "PASS", "G3": "PASS"}
+
+
+def test_k7_rao_da_ky_a_a2_cung_lech_g2_khong_bi_chay_lai_qua_day_chuyen(tmp_path, monkeypatch, capsys):
+    """(a) G2 PASS + TRDS17 lệch + A2 lệch, mtime tươi: G1 chạy lại (A2) nhưng G2 đã ký KHÔNG có trong lệnh cổng con."""
+    out = _thu_muc(tmp_path)
+    _ba_cong_dau(out, 218)
+    _trds17(out, 482)
+    _a2(out, 482)
+    gia, bc = _chay(tmp_path, monkeypatch, out,
+                    {"G1": _g1_chep, "G2": _g2_chep, "G3": _g3_ghi(218), "G4": _ghi_cp("G4")}, song=_SONG_G2_DA_KY)
+    assert "G2" not in gia.lenh, "cổng cứng đã ký không bị sinh lại qua dây chuyền G1 → G2"
+    assert gia.lenh == ["G1", "G3"]
+    assert _trds17_hien(out) == 482, "hồ sơ đã ký giữ nguyên"
+    kq = _theo_cong(bc)
+    assert kq["G2"]["status"] == "giu_cong_da_ky" and "ĐÃ KÝ" in kq["G2"]["detail"]
+    assert "--from G2" in kq["G2"]["detail"], "nêu đường sinh lại CÓ CHỦ Ý cho PI"
+    assert kq["G4"]["status"] == "dung_lech_xuyen_cong", "không dựng G4 trên nền G2(482) ≠ G3(218)"
+    assert bc["n_giu_da_ky"] == 1 and bc["converged_fresh"] is False
+    assert "giu_cong_da_ky" in {i["kind"] for i in bc["do_tuoi_tong_hop"]["issues"]}
+    RP.print_summary(bc)
+    ra = capsys.readouterr().out
+    assert "🔏 G2: GIỮ — cổng ĐÃ KÝ" in ra and "✅ TƯƠI" not in ra
+    assert "PI/IRB" in ra and f"--study {STUDY} --from G2" in ra, "lệnh sinh lại có chủ ý không bị cắt khỏi báo cáo"
+
+
+def test_k7_rao_da_ky_b_nhanh_quay_lai_khong_chay_g2_da_ky(tmp_path, monkeypatch):
+    """(b) G3 đổi N giữa lượt ⇒ quay lại G1 (dây chuyền vòng 2) — G2 đã ký vẫn không bị chạy."""
+    out = _thu_muc(tmp_path)
+    _ba_cong_dau(out, 482)
+    _trds17(out, 482)
+    _a2(out, 482)
+    gia, bc = _chay(tmp_path, monkeypatch, out,
+                    {"G1": _g1_chep, "G2": _g2_chep, "G3": _g3_ghi(218), "G4": _ghi_cp("G4")},
+                    song=_SONG_G2_DA_KY, stale=("G3",))
+    assert "G2" not in gia.lenh
+    assert gia.lenh == ["G3", "G1", "G3"]
+    assert [r["status"] for r in bc["gate_results"]].count("quay_lai_dong_bo_n") == 1
+    kq = _theo_cong(bc)
+    assert kq["G2"]["status"] == "giu_cong_da_ky" and kq["G2"]["vong"] == 2
+    assert _trds17_hien(out) == 482
+    assert kq["G4"]["status"] == "dung_lech_xuyen_cong"
+    assert bc["converged_fresh"] is False
+
+
+def test_k7_rao_da_ky_c_luot_sau_g2_cu_theo_mtime_van_khong_chay(tmp_path, monkeypatch, capsys):
+    """(c) Lượt run_pipeline KẾ TIẾP sau khi G1 đã chạy lại: pipeline_freshness báo G2 cũ theo mtime (G2←G1) — G2 đã
+    ký vẫn không bị sinh lại; báo cáo không «TƯƠI», mã thoát ≠ 0."""
+    out = _thu_muc(tmp_path)
+    _ba_cong_dau(out, 218)
+    _trds17(out, 482)
+    _a2(out, 218)
+    gia, bc = _chay(tmp_path, monkeypatch, out,
+                    {"G1": _g1_chep, "G2": _g2_chep, "G3": _g3_ghi(218), "G4": _ghi_cp("G4")},
+                    song=_SONG_G2_DA_KY, stale=("G2",))
+    assert "G2" not in gia.lenh
+    assert gia.lenh == [], "cổng bị GIỮ không tính là «đã sinh» với phía sau: G3 tươi không bị kéo chạy lại"
+    assert _trds17_hien(out) == 482
+    kq = _theo_cong(bc)
+    assert kq["G2"]["status"] == "giu_cong_da_ky"
+    assert bc["converged_fresh"] is False and bc["n_giu_da_ky"] == 1
+    RP.print_summary(bc)
+    ra = capsys.readouterr().out
+    assert "ĐÃ KÝ" in ra and "✅ TƯƠI" not in ra
+
+
+def test_k7_rao_da_ky_chi_from_dung_cong_moi_sinh_lai(tmp_path, monkeypatch):
+    """Sinh lại cổng đã ký là việc CÓ CHỦ Ý của người: `--from G2` (đúng cổng) ⇒ chạy; `--from G1` (dây chuyền)
+    ⇒ giữ."""
+    out = _thu_muc(tmp_path)
+    _ba_cong_dau(out, 218)
+    _trds17(out, 482)
+    _a2(out, 218)
+    kb = {"G1": _g1_chep, "G2": _g2_chep, "G3": _g3_ghi(218)}
+    gia, bc = _chay(tmp_path, monkeypatch, out, kb, song=_SONG_G2_DA_KY, start="G1")
+    assert gia.lenh[:2] == ["G1", "G3"] and "G2" not in gia.lenh
+    assert _theo_cong(bc)["G2"]["status"] == "giu_cong_da_ky"
+    gia, bc = _chay(tmp_path, monkeypatch, out, kb, song=_SONG_G2_DA_KY, start="G2")
+    assert gia.lenh[:2] == ["G2", "G3"], "--from G2: người gọi chủ động sinh lại cổng đã ký"
+    assert _trds17_hien(out) == 218
+
+
+def test_k7_rao_da_ky_cong_cung_chua_ky_van_chay_theo_day_chuyen(tmp_path, monkeypatch):
+    """Rào chỉ áp cho cổng cứng ĐÃ KÝ: G2 dự thảo (chấm sống DRAFT) vẫn chạy lại theo dây chuyền như trước."""
+    out = _thu_muc(tmp_path)
+    _ba_cong_dau(out, 218)
+    _trds17(out, 482)
+    _a2(out, 482)
+    gia, _bc = _chay(tmp_path, monkeypatch, out, {"G1": _g1_chep, "G2": _g2_chep, "G3": _g3_ghi(218)},
+                     song={"G0": "PASS", "G1": "PASS", "G2": "DRAFT", "G3": "PASS"})
+    assert gia.lenh[:3] == ["G1", "G2", "G3"]
+    assert _trds17_hien(out) == 218
+
+
+# ─────────────────────────────────────── Sửa sau thẩm định PR #247 — «không đo được» nhất quán xuyên cổng ≠ «TƯƠI»
+def _nq_hong(monkeypatch):
+    import nhat_quan_xuyen_cong as NQ
+
+    def hong(*a, **k):
+        raise RuntimeError("bộ đối chiếu hỏng")
+
+    monkeypatch.setattr(NQ, "doi_chieu", hong)
+
+
+def test_nq_khong_do_duoc_check_only_chua_ket_luan_ma_thoat_khac_0(tmp_path, monkeypatch, capsys):
+    out = _thu_muc(tmp_path)
+    _ba_cong_dau(out, 218)
+    _a2(out, 218)
+    _nq_hong(monkeypatch)
+    monkeypatch.setattr(RP, "BASE", tmp_path)
+    monkeypatch.setattr(RP.FRESH, "stale_report", lambda out_dir: {
+        "stale_gates": [], "orphan_gates": [], "fresh": True, "issues": [], "checkpoints_present": ["G0", "G3"]})
+    monkeypatch.setattr(sys, "argv", ["run_pipeline.py", "--study", STUDY, "--check-only"])
+    assert RP.main() != 0, "không đo được ≠ ổn"
+    ra = capsys.readouterr().out
+    assert "⚪ CHƯA KẾT LUẬN ĐƯỢC" in ra and "✅ TƯƠI" not in ra and "bộ đối chiếu hỏng" in ra
+
+
+def test_nq_khong_do_duoc_che_do_chay_khong_hoi_tu_tuoi(tmp_path, monkeypatch, capsys):
+    out = _thu_muc(tmp_path)
+    _cp(out, "G0", topic="chủ đề", base_query="q")
+    _nq_hong(monkeypatch)
+    gia, bc = _chay(tmp_path, monkeypatch, out, {"G1": _ghi_cp("G1")}, song={"G0": "PASS", "G1": "PASS"}, start="G1")
+    assert gia.lenh == ["G1", "G2"], "không đo được ≠ có vấn đề: chuỗi không bị chặn giả"
+    assert bc["converged_fresh"] is False
+    assert bc["do_tuoi_tong_hop"]["ket_luan"] == "khong_ket_luan"
+    RP.print_summary(bc)
+    ra = capsys.readouterr().out
+    assert "⚪ CHƯA KẾT LUẬN ĐƯỢC" in ra and "✅ TƯƠI" not in ra
