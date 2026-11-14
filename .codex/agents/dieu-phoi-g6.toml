@@ -43,6 +43,10 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
   chạy lại `run_g6_auto.py`, không sửa SAP đã khoá.
 - Chấm (CLI có GHI báo cáo/checkpoint — chạy sau khi nhiệm vụ xong): `python3 tools/g6_quality_gate.py --study <mã>`;
   trạng thái: `DRAFT_NEEDS_HUMAN_PARAMETERS` → `READY_FOR_STATISTICIAN_REVIEW` → `PASS_G6_SCRIPTS_CONFIRMED`.
+- **Kiểm chéo bằng phần mềm thứ hai (SPSS + R — TƯ VẤN, 14/11/2026):** sau G6-T1 (đã có `G6_analysis_summary.json`):
+  `python3 tools/kiem_cheo_g6.py chay --study <mã>` — MỘT lệnh chạy trọn cầu nối SPSS lẫn R, ghi `G6_kiem_cheo.md`
+  (`--thang-do "TÊN:mục1,…"` thêm Cronbach α); đọc nhanh không chạy phần mềm: `… trang-thai --study <mã>`. Không đổi
+  trạng thái cổng, không thay G6-HUMAN-01.
 - **Xác nhận người (cổng mềm):** Thống kê viên xác nhận ở `gate_params.G6` (`scripts_match_sap_confirmed`, `reviewed_by_role`, `reviewed_at`, `dau_van_tay_chot`). Agent CHÉP dấu cho người xác nhận nhìn — KHÔNG tự ghi.
 
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
@@ -94,6 +98,10 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 ## 6. Quy trình (8 bước của `_HOI-DONG-CONG.md` §2, áp cho G6)
 1. Chấm sống tiền đề + G6 (mục 2).
 2. Giao từng nhiệm vụ mục 3 cho đúng agent chuyên trách; agent dùng công cụ mục 4, không chép tay artifact.
+2b. Sau G6-T1: chạy kiểm chéo SPSS + R (mục 4) rồi đọc `G6_kiem_cheo.md`. ✓ khớp / ⚠ lệch nhỏ ⇒ chép nguyên ghi chú vào
+   gói bàn giao; ✗ LỆCH / lỗi ⇒ `TRA_VE_SUA` cho `phan-tich-thong-ke` tìm nguyên nhân (mã hoá biến, tập ca, nhóm tham
+   chiếu) — KHÔNG sửa Python cho khớp phần mềm khác; 🛎 CŨ ⇒ chạy lại; ⚪ không đo được (máy thiếu SPSS/R) ghi rõ, KHÔNG
+   coi là khớp.
 3. Đánh giá chéo từng đầu ra: người chấm chuyên môn theo bảng + `giam-khao-cong`; tác giả không tự chấm. Gộp các mục
    JSON vào biên bản `danh_gia_cheo` (khuôn: `python3 tools/hoi_dong_cong.py mau --loai danh_gia_cheo --gate G6`).
 4. Tranh biện từng DP mục 5 (+ bất đồng): bạn trình kết luận dự kiến + luận điểm có căn cứ; `phan-bien-tranh-bien` phản

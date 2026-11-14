@@ -326,8 +326,23 @@ def report(study: str) -> int:
         print(f"\n🏛️ HỘI ĐỒNG CỔNG: ⚪ KHÔNG ĐO ĐƯỢC ({type(exc).__name__}) — không phải «đồng thuận»")
         lech_hd.append("hội đồng cổng (không đo được)")
 
+    # 14/11/2026 — kiểm chéo G6 bằng phần mềm thứ hai (SPSS + R, tools/kiem_cheo_g6.py): TƯ VẤN, không mở/chặn cổng.
+    # Chưa kiểm chéo / CŨ / LỆCH / lỗi là việc còn treo; «không đo được» (máy thiếu SPSS/R) chỉ hiện để biết.
+    lech_kc: list[str] = []
+    try:
+        import kiem_cheo_g6 as KC  # noqa: PLC0415
+        tt_kc = KC.trang_thai(d)
+        if tt_kc["trang_thai"] != KC.KHONG_AP_DUNG:
+            print("\n🔁 KIỂM CHÉO G6 BẰNG PHẦN MỀM THỨ HAI (SPSS + R — TƯ VẤN, không mở/chặn cổng)")
+            print(f"   {tt_kc['nhan']}" + (f" — {tt_kc['ly_do']}" if tt_kc.get("ly_do") else ""))
+            if tt_kc["trang_thai"] in KC.CAN_XU_LY:
+                lech_kc.append(f"kiểm chéo G6: {tt_kc['trang_thai']}")
+                print(f"   → python3 tools/kiem_cheo_g6.py chay --study {study}  (đọc G6_kiem_cheo.md)")
+    except Exception as exc:  # noqa: BLE001 — không đo được ≠ khớp
+        print(f"\n🔁 KIỂM CHÉO G6: ⚪ KHÔNG ĐO ĐƯỢC ({type(exc).__name__}) — không phải «khớp»")
+
     print("\n" + "-" * 78)
-    total = len(todo) + len(pending) + len(lech_xc) + len(lech_hd)
+    total = len(todo) + len(pending) + len(lech_xc) + len(lech_hd) + len(lech_kc)
     if signed_hard == len(_CONG_CUNG) and total == 0:
         if so_con_trong:
             # 03/10/2026: đủ chữ ký + hết việc nội bộ mà tài liệu vẫn còn ô chưa điền thì KHÔNG in câu «không còn
