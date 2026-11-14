@@ -359,6 +359,7 @@ PHAN_CONG: Dict[str, Dict[str, str]] = {
         "G6-AUTO-00": "G6-T1", "G6-AUTO-01": "^G4", "G6-AUTO-02": "G6-T1", "G6-AUTO-03": "G6-T1",
         "G6-AUTO-04": "G6-T1", "G6-AUTO-05": "G6-T1", "G6-AUTO-06": "G6-T1", "G6-AUTO-07": "G6-T1",
         "G6-AUTO-08": "G6-T1", "G6-AUTO-09": "G6-T2|G6-T4|G6-T5|G6-T1", "G6-AUTO-10": "G6-T1",
+        "G6-AUTO-11": "G6-T1",  # 14/11/2026: SAP §4 gọi postStratify( ⇒ script chạy svydesign( + postStratify(
         "G6-HUMAN-01": "STATISTICIAN@G6-T1",
     },
     "G7": {

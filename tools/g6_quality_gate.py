@@ -31,6 +31,11 @@ hộp chứng nhận khoá, che ô alpha còn trống ở §12 ⇒ nay §12 dừ
 soi DANH SÁCH THAM SỐ RIÊNG của khuôn sinh trong script/A7 (không quét chung ngoặc/[CẦN] trên script:
 ô bảng khung, ô đánh dấu, cú pháp mã, băng cảnh báo «[CẦN CHÚ Ý …]» là hợp lệ).
 
+THÊM 14/11/2026 (G6-AUTO-11, bác sĩ duyệt ép bằng cổng sau PR #220): SAP §4 GỌI `postStratify(` (cùng điều kiện với bộ
+sinh `g6_trong_so_survey.sap_goi_post_stratify`) ⇒ phân tích CHÍNH Mục tiêu 1 là bản có trọng số khi kích hoạt, nên một
+script R CHẠY trên chuỗi khoá (nạp 00_setup.R) phải tới được dòng THI HÀNH `svydesign(` + `postStratify(` — trực tiếp
+hoặc qua tệp nó `source(` và hàm nó thực sự gọi; chú thích, hàm không ai gọi, tệp không ai nạp đều không tính ⇒ CHẶN.
+
 Dùng:  python3 tools/g6_quality_gate.py --study <mã>     (tự chạy cuối run_g6_auto)
 """
 from __future__ import annotations
@@ -51,12 +56,14 @@ for _s in (sys.stdout, sys.stderr):
 
 HERE = Path(__file__).resolve().parent
 EXPORTS = HERE.parent / "exports"
-VERSION = "1.2.0"  # 04/10/2026: soát từng cổng G6 (G6-01…G6-12)
+VERSION = "1.3.0"  # 14/11/2026: G6-AUTO-11 — SAP §4 gọi postStratify( ⇒ script phải chạy svydesign( + postStratify(
 
 # Test nạp module này bằng spec_from_file_location (không qua sys.path) — tự thêm thư mục tools/ để
 # import được hợp đồng ô trống dùng chung.
 if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
+# G6-AUTO-11 dùng CHUNG điều kiện «SAP §4 gọi postStratify(» với bộ sinh g6_trong_so_survey.
+import g6_trong_so_survey as TSS  # noqa: E402
 import placeholder_contract as PC  # noqa: E402
 
 # Dấu hiệu CŨ của G6 (trước 03/10/2026) — giữ NGUYÊN ngữ nghĩa, chỉ được cộng thêm, không được thay:
@@ -280,6 +287,79 @@ def _dong_thi_hanh(text: str) -> list[str]:
 def _co_dong_thi_hanh(text: str, mau: str) -> bool:
     bt = re.compile(mau)
     return any(bt.search(d) for d in _dong_thi_hanh(text))
+
+
+# ── G6-AUTO-11: đường chạy thật của trọng số hậu phân tầng (THÊM 14/11/2026) ──────────────────────────────────────────
+_RE_SVYDESIGN = r"\bsvydesign\s*\("
+_RE_POSTSTRATIFY = r"\bpostStratify\s*\("
+# Định nghĩa hàm R CẤP CAO: tên ở CỘT 0, «<-» hoặc «=», rồi function( — khuôn của bộ sinh và phong cách tidyverse.
+_RE_HAM_R_CAP_CAO = re.compile(r"^([A-Za-z.][\w.]*)\s*(?:<-|=)\s*function\s*\(")
+
+
+def _tach_ham_r(noi_dung: str) -> tuple[list[str], dict[str, list[str]]]:
+    """(dòng CẤP CAO, {tên hàm cấp cao: dòng thân}) của một script R — dòng thô, chưa lọc chú thích.
+
+    Thân hàm nhiều dòng = từ dòng `ten <- function(… {` ở cột 0 tới dòng `}` đứng một mình ở cột 0; hàm một dòng (không
+    mở «{» chưa đóng) coi cả dòng là thân. Thân không đóng tới hết tệp ⇒ trả phần đó về CẤP CAO (không đoán chặn)."""
+    cap_cao: list[str] = []
+    ham: dict[str, list[str]] = {}
+    ten: str | None = None
+    than: list[str] = []
+    dong_mo: str = ""
+    for d in noi_dung.splitlines():
+        if ten is not None:
+            if d.rstrip() == "}":
+                ham.setdefault(ten, []).extend(than)
+                ten, than = None, []
+            else:
+                than.append(d)
+            continue
+        m = _RE_HAM_R_CAP_CAO.match(d)
+        if not m:
+            cap_cao.append(d)
+        elif d.count("{") > d.count("}"):
+            ten, than, dong_mo = m.group(1), [], d
+        else:
+            ham.setdefault(m.group(1), []).append(d[m.end():])
+    if ten is not None:
+        cap_cao += [dong_mo, *than]
+    return cap_cao, ham
+
+
+def _chuoi_nap_r(goc: str, scripts: dict[str, str]) -> list[str]:
+    """Tệp R mà `goc` nạp bằng `source(…<tên tệp>…)` trên DÒNG THI HÀNH — bắc cầu, gồm cả `goc`, giữ thứ tự gặp."""
+    r_tep = [t for t in scripts if t.lower().endswith(".r")]
+    chuoi, hang = [goc], [goc]
+    while hang:
+        t = hang.pop(0)
+        for khac in r_tep:
+            if khac not in chuoi and _co_dong_thi_hanh(scripts[t], rf"source\([^)]*{re.escape(khac)}"):
+                chuoi.append(khac)
+                hang.append(khac)
+    return chuoi
+
+
+def _dong_chay_that_r(chuoi: list[str], scripts: dict[str, str]) -> list[str]:
+    """Dòng THI HÀNH thật sự chạy của một chuỗi tệp R: dòng cấp cao + thân các hàm GỌI ĐƯỢC từ đó (bắc cầu).
+
+    Hàm định nghĩa mà không dòng chạy nào gọi tới ⇒ thân của nó không tính (dòng «thi hành» trong hàm chết không chạy).
+    """
+    cap_cao: list[str] = []
+    ham: dict[str, list[str]] = {}
+    for t in chuoi:
+        cc, h = _tach_ham_r(scripts[t])
+        cap_cao += _dong_thi_hanh("\n".join(cc))
+        for ten, than in h.items():
+            ham.setdefault(ten, []).extend(_dong_thi_hanh("\n".join(than)))
+    chay, da_goi = list(cap_cao), set()
+    while True:
+        moi = [ten for ten in ham if ten not in da_goi
+               and any(re.search(rf"(?<![\w.]){re.escape(ten)}\s*\(", d) for d in chay)]
+        if not moi:
+            return chay
+        for ten in moi:
+            da_goi.add(ten)
+            chay += ham[ten]
 
 
 #: Tệp Python «dẫn đường» run_g6_auto sinh cho thiết kế không có thời gian-đến-biến-cố (F14, 16/10/2026).
@@ -747,6 +827,38 @@ def evaluate_study(study: str, out_dir: Path | None = None, write: bool = True,
         trang_thai = _DRAFT
     else:
         add("G6-AUTO-10", True, "script ghi phiên bản môi trường khi chạy" if scripts else "không có script")
+
+    # ── G6-AUTO-11: SAP §4 GỌI postStratify( ⇒ script phải CHẠY svydesign( + postStratify( (THÊM 14/11/2026) ──
+    # PR #220 cho run_g6_auto sinh 04_trong_so_va_gioi_han.R + 04a_ham_trong_so.R khi SAP §4 gọi postStratify(; bác sĩ
+    # duyệt ép bằng cổng: SAP khoá phân tích CHÍNH là bản có trọng số khi kích hoạt mà script không chạy trọng số là
+    # lệch SAP (sinh trước PR #220, xoá/tắt bằng #, hoặc không ai nạp/gọi). Điều kiện SAP dùng CHUNG hàm của bộ sinh.
+    # «Chạy» = script R nạp 00_setup.R (chuỗi khoá như G6-AUTO-08) tới được dòng THI HÀNH svydesign( + postStratify(
+    # trực tiếp hoặc qua tệp nó source( và hàm nó thực sự gọi — chú thích, hàm chết, tệp không ai nạp không tính.
+    if not TSS.sap_goi_post_stratify(sap):
+        add("G6-AUTO-11", True, "SAP §4 không gọi postStratify( — không đòi trọng số hậu phân tầng (không áp dụng)")
+    else:
+        r_chay = [t for t, nd in scripts.items() if t.lower().endswith(".r") and t != "00_setup.R"
+                  and _co_dong_thi_hanh(nd, r"source\([^)]*00_setup\.R")]
+        dat = []
+        for t in r_chay:
+            chuoi = _chuoi_nap_r(t, scripts)
+            chay = "\n".join(_dong_chay_that_r(chuoi, scripts))
+            if re.search(_RE_SVYDESIGN, chay) and re.search(_RE_POSTSTRATIFY, chay):
+                dat.append((t, chuoi))
+        co_dong = sorted(t for t, nd in scripts.items() if t.lower().endswith(".r")
+                         and (_co_dong_thi_hanh(nd, _RE_SVYDESIGN) or _co_dong_thi_hanh(nd, _RE_POSTSTRATIFY)))
+        if dat:
+            t, chuoi = dat[0]
+            add("G6-AUTO-11", True, f"SAP §4 gọi postStratify( và `{t}` (nạp 00_setup.R) chạy svydesign( + "
+                                    f"postStratify( qua {' → '.join(chuoi)}")
+        else:
+            ly_do = (f"có dòng svydesign/postStratify ở {co_dong[:3]} nhưng không script R nào nạp 00_setup.R vừa nạp "
+                     "tệp đó vừa gọi tới hàm chứa CẢ HAI dòng" if co_dong else
+                     "không script R nào có dòng THI HÀNH svydesign( + postStratify( (chú thích không tính)")
+            add("G6-AUTO-11", False,
+                f"SAP §4 GỌI postStratify( (phân tích CHÍNH Mục tiêu 1 là bản có trọng số khi kích hoạt) nhưng {ly_do} "
+                f"— chạy lại run_g6_auto.py để sinh scripts/{TSS.TEP_CHAY} + {TSS.TEP_HAM} (hoặc bỏ dấu # / nạp lại "
+                "tệp, gọi lại hàm đã tắt); không sửa SAP đã khoá để né", True)
 
     # ── G6-HUMAN-01: thống kê viên xác nhận (study_meta.gate_params.G6) ─────
     # VÁ 04/10/2026 (G6-10): xác nhận GẮN DẤU nội dung scripts + A7 (dau_van_tay_chot) — sinh lại/sửa script sau khi
