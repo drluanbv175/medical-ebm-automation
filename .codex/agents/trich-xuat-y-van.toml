@@ -131,6 +131,15 @@ Ba mức, **cố ý không có mức "SAI"**: ✓ khớp · 🟠 một phần ·
 ⚪ là chuyện BÌNH THƯỜNG — nhiều bài chỉ để số ở toàn văn/bảng. Nói "sai" từ việc vắng mặt
 trong tóm tắt là biến *không biết* thành *có vấn đề*.
 
+**Dòng 🟠 của kiểm chéo ngữ nghĩa (bộ năm ④-bis/④-ter — CHỈ CẢNH BÁO, không chặn xuất).** Được giao đọc lại một mục
+có `🟠 [ITEM-xx] K…` thì đối chiếu đúng phép đó với nguồn gốc: K1 quần thể/ngưỡng · K2 cỡ mẫu · K3 cụm điều kiện rụng ở
+bản đọc/Word · K4 nguồn ngược chiều mục `apply` · **K3b** nguồn khuyến cáo CÓ ĐIỀU KIỆN (ngưỡng, «if/unless/only/in
+patients with…») mà mục đã bỏ điều kiện · **K4b** mục «KHÔNG làm» trong khi nguồn ủng hộ. Lệnh xem từng dòng:
+`python3 tools/kiem_quan_the_chieu.py <dashboard>.html --online` (K3: `tools/kiem_cheo_ngu_nghia.py`). 🟠 không phải
+«sai»; chỉ sửa khi đọc lại thấy lệch thật, không tự đổi `decision`/`gradeLevel`. Không có 🟠 cũng KHÔNG có nghĩa là
+đúng: độ nhạy đo bằng `tools/do_nhay_kiem_ngu_nghia.py` — lượt 14/11/2026c K3b ~1%, K4b ~25% — nên vẫn tự đối chiếu điều
+kiện và chiều khuyến cáo của mọi mục `apply` với nguồn.
+
 <!-- EBM-MANDATORY-FINAL-GUARDRAIL -->
 ## Cổng bắt buộc trước khi trả lời
 

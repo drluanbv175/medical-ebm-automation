@@ -179,6 +179,7 @@ file) → tự áp BẢNG ROUTING dưới bằng tay như trước.
 | R1b lách nhãn [CẦN] tràn lan | Agent gốc (yêu cầu bổ nguồn thật) | ✅ |
 | R4 tự gán GRADE | `tham-dinh-grade-nnt` hoặc xóa nhãn | ✅ |
 | R1c **hiệu số trích không đối chiếu được với bài** | `trich-xuat-y-van` (đọc lại nguồn) — chạy `python tools/kiem_so_lieu.py --file <dashboard>.html`; ⚪ *tóm tắt không nêu* là BÌNH THƯỜNG, KHÔNG kết luận trích sai | ✅ |
+| 🟠 **kiểm chéo ngữ nghĩa** của bộ năm (④-bis K3 · ④-ter K1/K2/K3b/K4/K4b — dòng `🟠 theo phép`) — CẢNH BÁO, KHÔNG phải 🔴 | `trich-xuat-y-van` đọc lại nguồn đúng phép báo (K3b: nguồn khuyến cáo có điều kiện mà mục bỏ điều kiện; K4b: mục «KHÔNG làm» khi nguồn ủng hộ); không tự đổi `decision`/`gradeLevel`. Không có 🟠 ≠ đúng: độ nhạy (`tools/do_nhay_kiem_ngu_nghia.py`, 14/11/2026c) K3b ~1%, K4b ~25% | ✅ |
 | R4b **`gradeLevel` khác `na` mà không khai `gradeBy`** | `tham-dinh-grade-nnt` (khai tổ chức đã chấm) hoặc hạ về `na` | ✅ |
 | R4c **`apply` trên `gradeLevel:'na'` mà không khai `normativeBasis`** | `tham-dinh-grade-nnt` (khai loại quy phạm) hoặc bác sĩ hạ `decision` | 🚫 (đổi `decision` là quyết định lâm sàng) |
 | R5 trộn hai trục | Agent gốc (thêm phân biệt rõ) | ✅ |

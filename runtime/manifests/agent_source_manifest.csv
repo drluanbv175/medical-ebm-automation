@@ -49,7 +49,7 @@ path,sha256,size_bytes
 .claude/agents/quyet-dinh-chung.md,c73541dbf82e5aee31e2f4b9e21b712e16daf4a0644d7cfac21ddbc023b35c1e,13082
 .claude/agents/sang-loc-co-do.md,3c8715fedd12461c10ad7b0540717a52e2f5705935668eb6cb15e59ffbc377e0,27486
 .claude/agents/so-cai-ghi-nho.md,167f2439bad20a77bd8dccf97a7a43e22998770b39095527e1f3b9b222c9c3d2,20998
-.claude/agents/tham-dinh-dau-ra.md,ae51cadb8a8fce6af4e1f1c465ab1c28cf289a9318968a195727c3a509faad6e,41180
+.claude/agents/tham-dinh-dau-ra.md,7fc3a84dbdb045ab3a25ed8459ddaf56e3dc5b5b5824d10ede346fe7eb1c5e1e,41688
 .claude/agents/tham-dinh-do-chinh-xac-chan-doan.md,ea57cae223097b66c9bf2b7b464696d8e196a78736d92bd04fe7bdedd881ef98,18359
 .claude/agents/tham-dinh-grade-nnt.md,2c083ae7e8e6eacf748930f0c0df6d4c61f100758f87bde95d036ed7350a675c,25961
 .claude/agents/tham-dinh-phe-binh.md,9c12038b9a161cf96fe1b9125291ae0d1b76f0dd17f26dbcb91815c5d99d08f2,17960
@@ -60,6 +60,6 @@ path,sha256,size_bytes
 .claude/agents/tong-quan-y-van.md,022b25e7bdf2db0181c252953b21a8fb1c39aa29eec61157b03ad352bb4df67d,23193
 .claude/agents/tra-cuu-chung-cu.md,23ae3d470bc891e373601d7ac08321383485d120867f71aa06284f5fb6ca94d9,21803
 .claude/agents/tram-cam-lo-au.md,742bf0ea65ed05925380dc491a6ea22b3f08aabb97a586cd137ab32ded2c0e13,19917
-.claude/agents/trich-xuat-y-van.md,e5848fe6ea70d5aa8fab8de21c3d75dc4b5889e2ae55fa08ac861990c82adab8,14253
+.claude/agents/trich-xuat-y-van.md,2c45d7bf08c105a4e6495be99c039a47f777bd683b7764823197e611fb161d86,15364
 .claude/agents/trong-tai-tranh-bien.md,fe4d547d13a2124ed9be1080ac82628938d6300836474c49a4415ec204b429ec,9602
 .claude/agents/viet-ban-thao.md,2541cea2e5e5db29d394786b5a9c5defa3c7615e33499d76133265592ccfcf69,25281
