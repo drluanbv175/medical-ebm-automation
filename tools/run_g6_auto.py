@@ -328,10 +328,18 @@ def detect_variables_from_redcap(csv_path: Path) -> dict:
     # «Phơi nhiễm SGLT2i», «Phơi nhiễm/Can thiệp (…)»; bộ biến C1a «Phơi nhiễm thời gian chờ …»). Khớp CHỨA từng lấy
     # nhầm biến kỳ vọng có tiêu đề «… là biến TRƯỚC phơi nhiễm …» (đứng trước) làm phơi nhiễm chính.
     section_exp = [v for v, _label, s in all_vars if s.strip().lower().startswith(("phơi nhiễm", "exposure"))]
+    # THÊM 15/11/2026 (giả lập RCT lần 2, N6): RCT ghi biến PHÂN NHÓM dưới mục «Ngẫu nhiên hoá»/«Phân bổ»/
+    # «Randomisation» — không bắt đầu bằng «Phơi nhiễm», tên tiếng Việt («nhom») không khớp từ khoá tiếng Anh ⇒ khuôn
+    # từng rơi về tên dự phòng 'exposure'. Tín hiệu CẤU TRÚC thắng từ khoá, cùng lý lẽ với mục «Phơi nhiễm».
+    bien_phan_nhom = None if section_exp else _bien_phan_nhom_tu_muc(all_vars, type_by_var)
     if section_exp:
         best_exp = section_exp[0]
         result["exposure"] = best_exp
         result["detection_log"].append(f"✅ Phơi nhiễm (từ Section Header): {best_exp}")
+    elif bien_phan_nhom:
+        result["exposure"] = bien_phan_nhom
+        result["detection_log"].append(
+            f"✅ Biến phân nhóm (từ Section Header ngẫu nhiên hoá/phân bổ): {bien_phan_nhom}")
     else:
         best_exp, best_score = None, 0
         for var, label, _sec in all_vars:
@@ -489,6 +497,157 @@ def detect_variables_from_redcap(csv_path: Path) -> dict:
             break
 
     return result
+
+
+def _bd(s: str) -> str:
+    """Bỏ dấu + chữ thường + «đ»→«d» (NFD không tách «đ» nên bộ bỏ dấu của g6_quality_gate giữ nguyên «đ»)."""
+    return G6Q._bo_dau(s).replace("đ", "d")
+
+
+#: Tiêu đề mục (đã bỏ dấu, chữ thường) BẮT ĐẦU bằng các cụm này ⇒ mục chứa biến phân nhóm ngẫu nhiên hoá (15/11/2026).
+_MUC_PHAN_NHOM = ("ngau nhien", "randomi", "phan bo", "phan nhom", "allocation")
+#: Gợi ý trong tên/nhãn biến (token) ⇒ đúng biến nhánh, không phải ngày/khối/tầng ngẫu nhiên hoá cùng mục.
+_GOI_Y_BIEN_NHOM = ("nhanh", "nhom", "arm", "phan bo", "allocation", "group")
+
+
+def _bien_phan_nhom_tu_muc(all_vars, type_by_var: dict) -> Optional[str]:
+    """Biến phân nhóm của RCT từ mục «Ngẫu nhiên hoá»/«Phân bổ»/«Randomi…»/«Allocation» của dictionary G5 (N6).
+
+    Chỉ nhận biến CHỌN MỘT (radio/dropdown/yesno) — ngày, mã khối, tầng ngẫu nhiên hoá cùng mục không phải nhóm; ưu
+    tiên biến có tên/nhãn gợi ý nhánh («nhánh», «nhóm», «arm», «allocation»…). Mục khớp theo ĐẦU tiêu đề (bỏ dấu) để
+    «Đặc điểm nền (trước ngẫu nhiên hoá)» không bị nhận nhầm. Không có ⇒ None (giữ đường dò cũ)."""
+    chon_mot = [(bien, nhan) for bien, nhan, muc in all_vars
+                if _bd(muc).strip().startswith(_MUC_PHAN_NHOM)
+                and type_by_var.get(bien) in ("radio", "dropdown", "yesno")]
+    for bien, nhan in chon_mot:
+        chuoi = _bd(f"{bien} {nhan}")
+        if any(re.search(rf"(?<![a-z0-9]){re.escape(g)}(?![a-z0-9])", chuoi) for g in _GOI_Y_BIEN_NHOM):
+            return bien
+    return chon_mot[0][0] if chon_mot else None
+
+
+# ─────────────────────────────────────────────
+# BIẾN PHÂN NHÓM + HIỆP BIẾN THEO SAP §5 ĐÃ KHOÁ — THÊM 15/11/2026 (giả lập RCT lần 2, N6)
+# ─────────────────────────────────────────────
+# Lượt giả lập 14/11: SAP §5 khoá «nhom + tuoi, gioi, ha_tt_nen, so_thuoc_nen» nhưng khuôn G6 sinh mô hình trên biến
+# dự phòng 'exposure' với hiệp biến dò từ từ khoá `tuoi, gioi` (bỏ `ha_tt_nen, so_thuoc_nen`). SAP đã ký là thẩm
+# quyền; dictionary chỉ cho TÊN biến. Bộ đọc dưới đây CHỈ nhận danh sách mà MỌI mục đều là tên biến đã biết — SAP viết
+# văn xuôi («tuổi (mỗi 10 năm), giới, …») thì KHÔNG đoán, giữ biến dò từ dictionary và ghi rõ vì sao.
+
+#: Nhãn dòng (đã bỏ dấu) khai danh sách hiệp biến của mô hình chính.
+_NHAN_HIEP_BIEN_SAP5 = ("bien doc lap dua vao", "bien dua vao mo hinh", "bien dieu chinh bat buoc", "forced-in",
+                        "forced in", "hiep bien hieu chinh", "independent variables", "covariates")
+#: Nhãn dòng (đã bỏ dấu) khai biến phân nhóm/phơi nhiễm chính.
+_NHAN_NHOM_SAP5 = ("exposure chinh", "phoi nhiem chinh", "bien phan nhom", "bien nhom", "main exposure")
+#: Nhãn mang phủ định («KHÔNG hiệu chỉnh», «không đưa vào») — không bao giờ là danh sách hiệp biến.
+_PHU_DINH_SAP5 = re.compile(r"\bkhong\b|\bnot\b|\bexclud")
+_TEN_BIEN_TRAN = re.compile(r"[A-Za-z_][A-Za-z0-9_.]*")
+
+
+def _bo_ngoac_tron(s: str) -> str:
+    """Bóc mọi cụm «( … )» (lặp tới hết ngoặc lồng) — chú thích như «(giữ liên tục)», «(PI xác nhận: `x` loại …)»."""
+    truoc = None
+    while truoc != s:
+        truoc, s = s, re.sub(r"\([^()]*\)", " ", s)
+    return s
+
+
+def _cac_dong_sap5(sec5: str):
+    """(nhãn đã bỏ dấu, giá trị nguyên văn) của từng dòng «- **Nhãn:** giá trị» trong §5 (đã bóc nhãn chưa điền)."""
+    for dong in G6Q._bo_nhan_chua_dien(sec5).splitlines():
+        than = dong.strip().lstrip("-•").strip()
+        if ":" not in than:
+            continue
+        nhan, gia_tri = than.split(":", 1)
+        yield _bd(_bo_ngoac_tron(nhan).replace("*", "")).strip(), gia_tri.replace("*", " ").strip()
+
+
+def _danh_sach_ten(gia_tri: str, ten_goc: dict) -> tuple[list, list]:
+    """Tách «a, b và c» (đã bóc ngoặc, dừng ở hết câu đầu) ⇒ (tên biến đã biết theo đúng chữ hoa/thường, mục KHÔNG
+    phải tên biến đã biết)."""
+    s = _bo_ngoac_tron(gia_tri).replace("`", " ")
+    s = re.split(r"\.(?:\s|$)|;", s, maxsplit=1)[0]
+    muc = [m.strip() for m in re.split(r",|\+|\s(?:và|and)\s", s) if m.strip()]
+    biet, la = [], []
+    for m in muc:
+        ten = ten_goc.get(m.lower()) if _TEN_BIEN_TRAN.fullmatch(m) else None
+        if ten and _VALID_R_IDENTIFIER.match(ten):
+            if ten not in biet:
+                biet.append(ten)
+        else:
+            la.append(m)
+    return biet, la
+
+
+def doc_bien_sap_5(sap: str, ten_goc: dict) -> dict:
+    """Biến phân nhóm + hiệp biến của mô hình CHÍNH khai ở SAP §5 đã khoá (N6, 15/11/2026).
+
+    `ten_goc`: {tên chữ thường: tên gốc} của mọi biến ĐÃ BIẾT (dictionary G5 + biến phái sinh có công thức hợp lệ).
+    - Dòng «Biến độc lập đưa vào / Biến điều chỉnh bắt buộc (forced-in) / Hiệp biến hiệu chỉnh: …» ⇒ hiệp biến; dạng
+      «<nhóm> + a, b, c» ⇒ mục trước dấu «+» là biến phân nhóm.
+    - Dòng «Exposure chính / Phơi nhiễm chính / Biến phân nhóm: `x`» ⇒ biến phân nhóm (đúng MỘT tên).
+    - Danh sách chỉ được nhận khi MỌI mục là tên biến đã biết; có mục lạ (văn xuôi, tên chưa có trong dictionary) ⇒
+      `hiep_bien = None` + `mo_ho` liệt kê mục lạ — khuôn giữ biến dò, KHÔNG đoán thay thống kê viên.
+    Trả {"bien_phan_nhom", "hiep_bien", "mo_ho", "nguon"}."""
+    kq: dict = {"bien_phan_nhom": None, "hiep_bien": None, "mo_ho": [], "nguon": None}
+    for nhan, gia_tri in _cac_dong_sap5(G6Q._sec(sap or "", 5)):
+        if _PHU_DINH_SAP5.search(nhan):
+            continue
+        if kq["hiep_bien"] is None and not kq["mo_ho"] and any(n in nhan for n in _NHAN_HIEP_BIEN_SAP5):
+            phan = gia_tri
+            m_nhom = re.match(r"\s*`?([A-Za-z_][A-Za-z0-9_.]*)`?\s*\+", _bo_ngoac_tron(gia_tri))
+            if m_nhom:
+                nhom = ten_goc.get(m_nhom.group(1).lower())
+                if nhom:
+                    kq["bien_phan_nhom"] = kq["bien_phan_nhom"] or nhom
+                phan = _bo_ngoac_tron(gia_tri)[m_nhom.end():]
+            biet, la = _danh_sach_ten(phan, ten_goc)
+            if la:
+                kq["mo_ho"] = la
+            elif biet:
+                kq["hiep_bien"], kq["nguon"] = biet, nhan
+        elif kq["bien_phan_nhom"] is None and any(n in nhan for n in _NHAN_NHOM_SAP5):
+            biet, la = _danh_sach_ten(gia_tri, ten_goc)
+            if len(biet) == 1 and not la:
+                kq["bien_phan_nhom"] = biet[0]
+    return kq
+
+
+def ap_bien_sap_5(v: dict, sap: str, ten_goc: dict) -> dict:
+    """Áp biến phân nhóm + hiệp biến THEO SAP §5 vào `v` (SAP thắng biến dò từ dictionary; mỗi lần thay ghi log A7).
+
+    Hiệp biến = danh sách §5 trừ biến nhóm/kết cục; biến cụm (SE theo chùm) vẫn không đồng thời là hiệp biến cố định
+    (giữ bất biến cũ, ghi cảnh báo để thống kê viên quyết). SAP chưa điền/viết văn xuôi ⇒ giữ nguyên `v`."""
+    dt = doc_bien_sap_5(sap, ten_goc)
+    v["bien_sap_5"] = dt
+    nhom = dt["bien_phan_nhom"]
+    if nhom and nhom != v.get("outcome") and nhom != v.get("exposure"):
+        v["detection_log"].append(f"✅ Biến phân nhóm THEO SAP §5: {nhom} (thay biến dò được: {v.get('exposure')})")
+        v["exposure"] = nhom
+    if dt["hiep_bien"]:
+        hb = [b for b in dt["hiep_bien"] if b not in {v.get("exposure"), v.get("outcome")}]
+        cum = v.get("cluster_col")
+        if cum and cum in hb:
+            hb = [b for b in hb if b != cum]
+            v["detection_log"].append(f"⚠️  SAP §5 đưa `{cum}` vào mô hình như hiệp biến nhưng khuôn đang dùng nó làm "
+                                      "biến CỤM (SE theo chùm) — thống kê viên quyết một trong hai rồi sửa script")
+        if not hb:
+            # Khuôn rơi về «age + sex + bmi» khi danh sách rỗng — không được ghi đè biến dò bằng danh sách rỗng.
+            v["detection_log"].append("⚠️  SAP §5 không nêu hiệp biến nào ngoài biến nhóm/kết cục — khuôn GIỮ hiệp biến "
+                                      "dò từ dictionary; mô hình không hiệu chỉnh thì thống kê viên bỏ khỏi công thức")
+        elif set(hb) == set(v.get("covariates") or []):
+            # Cùng TẬP biến ⇒ giữ thứ tự cũ: thứ tự số hạng không đổi ước lượng, đổi vô cớ chỉ làm script đã duyệt lệch dấu.
+            v["detection_log"].append(f"✅ Hiệp biến dò từ dictionary KHỚP SAP §5 ({len(hb)} biến)")
+        else:
+            v["detection_log"].append(f"✅ Hiệp biến THEO SAP §5: {', '.join(hb)} "
+                                      f"(thay biến dò được: {', '.join(v.get('covariates') or []) or 'không có'})")
+            v["covariates"] = hb
+    elif dt["mo_ho"]:
+        v["detection_log"].append(
+            "⚠️  SAP §5 nêu hiệp biến có mục KHÔNG phải tên biến trong dictionary/biến phái sinh ("
+            + ", ".join(f"«{m[:40]}»" for m in dt["mo_ho"][:4]) + (" …" if len(dt["mo_ho"]) > 4 else "")
+            + ") — khuôn GIỮ hiệp biến dò từ dictionary; thống kê viên đối chiếu SAP §5 và sửa công thức mô hình")
+    return dt
 
 
 def _sap_declares_ordinal(out_dir: Path, study: str) -> bool:
@@ -2102,7 +2261,9 @@ def make_run_analysis_cli(v: dict, n_adjusted: int, study: str, design_code: str
     return code
 
 
-
+# SỬA 15/11/2026 (giả lập RCT lần 2, N15): cột p của bảng độ nhạy/nhóm con (cả hai khuôn sensitivity dưới đây) ghi
+# bằng fmt_pval(pv) — `round(pv, 3)` in «0.0» cho p rất nhỏ (đọc như «p = 0»); nay «<0.001», cùng định dạng dòng in
+# console của chính script.
 _SENSITIVITY_TEMPLATE = (
     "#!/usr/bin/env python3\n"
     "# sensitivity_analysis.py -- Phan tich do nhay\n"
@@ -2254,7 +2415,7 @@ _SENSITIVITY_TEMPLATE = (
     "    # Complete-case\n"
     "    try:\n"
     "        hr,clo,chi,pv,n,ev = run_cox_sub(df,time_col,outcome,exposure,avail)\n"
-    "        sens_rows.append(dict(method=\'Complete-case\',HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=round(pv,3),N=n,Events=ev))\n"
+    "        sens_rows.append(dict(method=\'Complete-case\',HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=fmt_pval(pv),N=n,Events=ev))\n"
     "        print(f\'   CC: HR={hr:.2f} ({clo:.2f}-{chi:.2f}), p={fmt_pval(pv)}\')\n"
     "    except Exception as e:\n"
     "        print(f\'   CC loi: {e}\')\n"
@@ -2269,7 +2430,7 @@ _SENSITIVITY_TEMPLATE = (
     "                df2[col]=df2[col].fillna(fill)\n"
     "        df2=df2.dropna()\n"
     "        hr,clo,chi,pv,n,ev = run_cox_sub(df2,time_col,outcome,exposure,avail)\n"
-    "        sens_rows.append(dict(method=\'Dien trung binh/mode (KHONG phai MI; MI that: R mice m=20)\',HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=round(pv,3),N=n,Events=ev))\n"
+    "        sens_rows.append(dict(method=\'Dien trung binh/mode (KHONG phai MI; MI that: R mice m=20)\',HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=fmt_pval(pv),N=n,Events=ev))\n"
     "        print(f\'   MI: HR={hr:.2f} ({clo:.2f}-{chi:.2f}), p={fmt_pval(pv)}\')\n"
     "    except Exception as e:\n"
     "        print(f\'   MI loi: {e}\')\n"
@@ -2283,12 +2444,12 @@ _SENSITIVITY_TEMPLATE = (
     "            sub_covars = pick_subgroup_covars(sub, outcome, avail, exclude=sg)\n"
     "            try:\n"
     "                hr,clo,chi,pv,n,ev = run_cox_sub(sub,time_col,outcome,exposure,sub_covars)\n"
-    "                sub_rows.append(dict(Subgroup=sg,Value=str(val),HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=round(pv,3),N=n,Events=ev,Covars_used=len(sub_covars)))\n"
+    "                sub_rows.append(dict(Subgroup=sg,Value=str(val),HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=fmt_pval(pv),N=n,Events=ev,Covars_used=len(sub_covars)))\n"
     "                print(f\'   {sg}={val}: HR={hr:.2f} ({clo:.2f}-{chi:.2f}), p={fmt_pval(pv)} [adj {len(sub_covars)} bien]\')\n"
     "            except Exception as e:\n"
     "                try:\n"
     "                    hr,clo,chi,pv,n,ev = run_cox_sub(sub,time_col,outcome,exposure,[])\n"
-    "                    sub_rows.append(dict(Subgroup=sg,Value=str(val),HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=round(pv,3),N=n,Events=ev,Covars_used=0))\n"
+    "                    sub_rows.append(dict(Subgroup=sg,Value=str(val),HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=fmt_pval(pv),N=n,Events=ev,Covars_used=0))\n"
     "                    print(f\'   {sg}={val}: HR tho={hr:.2f} ({clo:.2f}-{chi:.2f}), p={fmt_pval(pv)} [khong hoi tu voi covariates, dung mo hinh tho]\')\n"
     "                except Exception as e2:\n"
     "                    print(f\'   {sg}={val} loi: {e2}\')\n"
@@ -2301,11 +2462,11 @@ _SENSITIVITY_TEMPLATE = (
     "            sub_covars = pick_subgroup_covars(sub, outcome, avail, exclude=\'age\')\n"
     "            try:\n"
     "                hr,clo,chi,pv,n,ev=run_cox_sub(sub,time_col,outcome,exposure,sub_covars)\n"
-    "                sub_rows.append(dict(Subgroup=\'age_group\',Value=val,HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=round(pv,3),N=n,Events=ev,Covars_used=len(sub_covars)))\n"
+    "                sub_rows.append(dict(Subgroup=\'age_group\',Value=val,HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=fmt_pval(pv),N=n,Events=ev,Covars_used=len(sub_covars)))\n"
     "            except Exception:\n"
     "                try:\n"
     "                    hr,clo,chi,pv,n,ev=run_cox_sub(sub,time_col,outcome,exposure,[])\n"
-    "                    sub_rows.append(dict(Subgroup=\'age_group\',Value=val,HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=round(pv,3),N=n,Events=ev,Covars_used=0))\n"
+    "                    sub_rows.append(dict(Subgroup=\'age_group\',Value=val,HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=fmt_pval(pv),N=n,Events=ev,Covars_used=0))\n"
     "                except Exception: pass\n"
     "    # E-value\n"
     "    if sens_rows:\n"
@@ -2525,7 +2686,7 @@ def main():
     # Complete-case
     try:
         or_, clo, chi, pv, n, ev = run_logistic_sub(df, outcome, exposure, avail)
-        sens_rows.append(dict(method='Complete-case', OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=round(pv, 3), N=n, Ca=ev))
+        sens_rows.append(dict(method='Complete-case', OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=fmt_pval(pv), N=n, Ca=ev))
         print(f'   CC: OR={or_:.2f} ({clo:.2f}-{chi:.2f}), p={fmt_pval(pv)}')
     except Exception as e:
         print(f'   CC loi: {e}')
@@ -2540,7 +2701,7 @@ def main():
                 df2[col] = df2[col].fillna(fill)
         df2 = df2.dropna()
         or_, clo, chi, pv, n, ev = run_logistic_sub(df2, outcome, exposure, avail)
-        sens_rows.append(dict(method='Dien trung binh/mode (KHONG phai MI; MI that: R mice m=20)', OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=round(pv, 3), N=n, Ca=ev))
+        sens_rows.append(dict(method='Dien trung binh/mode (KHONG phai MI; MI that: R mice m=20)', OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=fmt_pval(pv), N=n, Ca=ev))
         print(f'   MI: OR={or_:.2f} ({clo:.2f}-{chi:.2f}), p={fmt_pval(pv)}')
     except Exception as e:
         print(f'   MI loi: {e}')
@@ -2556,12 +2717,12 @@ def main():
             sub_covars = pick_subgroup_covars(sub, outcome, avail, exclude=sg)
             try:
                 or_, clo, chi, pv, n, ev = run_logistic_sub(sub, outcome, exposure, sub_covars)
-                sub_rows.append(dict(Subgroup=sg, Value=str(val), OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=round(pv, 3), N=n, Ca=ev, Covars_used=len(sub_covars)))
+                sub_rows.append(dict(Subgroup=sg, Value=str(val), OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=fmt_pval(pv), N=n, Ca=ev, Covars_used=len(sub_covars)))
                 print(f'   {sg}={val}: OR={or_:.2f} ({clo:.2f}-{chi:.2f}), p={fmt_pval(pv)} [adj {len(sub_covars)} bien]')
             except Exception:
                 try:
                     or_, clo, chi, pv, n, ev = run_logistic_sub(sub, outcome, exposure, [])
-                    sub_rows.append(dict(Subgroup=sg, Value=str(val), OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=round(pv, 3), N=n, Ca=ev, Covars_used=0))
+                    sub_rows.append(dict(Subgroup=sg, Value=str(val), OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=fmt_pval(pv), N=n, Ca=ev, Covars_used=0))
                     print(f'   {sg}={val}: OR tho={or_:.2f} ({clo:.2f}-{chi:.2f}), p={fmt_pval(pv)} [khong hoi tu voi covariates, dung mo hinh tho]')
                 except Exception as e2:
                     print(f'   {sg}={val} loi: {e2}')
@@ -2575,11 +2736,11 @@ def main():
             sub_covars = pick_subgroup_covars(sub, outcome, avail, exclude='age')
             try:
                 or_, clo, chi, pv, n, ev = run_logistic_sub(sub, outcome, exposure, sub_covars)
-                sub_rows.append(dict(Subgroup='age_group', Value=val, OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=round(pv, 3), N=n, Ca=ev, Covars_used=len(sub_covars)))
+                sub_rows.append(dict(Subgroup='age_group', Value=val, OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=fmt_pval(pv), N=n, Ca=ev, Covars_used=len(sub_covars)))
             except Exception:
                 try:
                     or_, clo, chi, pv, n, ev = run_logistic_sub(sub, outcome, exposure, [])
-                    sub_rows.append(dict(Subgroup='age_group', Value=val, OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=round(pv, 3), N=n, Ca=ev, Covars_used=0))
+                    sub_rows.append(dict(Subgroup='age_group', Value=val, OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=fmt_pval(pv), N=n, Ca=ev, Covars_used=0))
                 except Exception:
                     pass
     # E-value
@@ -3541,6 +3702,10 @@ def main():
                                   "nếu SAP ghi sai tên: sửa SAP bằng dòng SAP AMENDMENT và ký lại G4")
     v["nhom_con_sap"] = tham_so_sap["nhom_con"]
     v["nguong_tuoi_sap"] = tham_so_sap["nguong_tuoi"]
+    # THÊM 15/11/2026 (giả lập RCT lần 2, N6): biến phân nhóm + hiệp biến THEO SAP §5 đã khoá — script R, CLI Python
+    # và cú pháp SPSS xem trước cùng đọc `v`. SAP chưa điền/viết văn xuôi ⇒ giữ biến dò từ dictionary (log A7 nói rõ).
+    ap_bien_sap_5(v, sap_text, ten_goc)
+    _reject_if_variable_names_invalid(v)
     if v["outcome_ordinal"] and design_code == "cross_sectional":
         print("  → Kết cục    : THỨ BẬC theo SAP đã khoá → 03_analysis.R dùng "
               "proportional odds (cOR), không gộp nhị phân ở phân tích chính")
@@ -3680,6 +3845,8 @@ def main():
         "g4_lock_source":    g4_nguon,
         "g4_status":         g4_status,
         "tham_so_sap":       tham_so_sap,
+        # THÊM 15/11/2026 (N6): biến phân nhóm + hiệp biến rút từ SAP §5 (None = SAP chưa điền/văn xuôi, giữ biến dò)
+        "bien_sap_5":        v.get("bien_sap_5"),
         "redcap_csv":        str(redcap_csv),
         "variables_detected": {
             "exposure":   v["exposure"],
