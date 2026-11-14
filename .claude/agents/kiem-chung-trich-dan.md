@@ -73,6 +73,11 @@ nay đọc LẠI đúng file này trước khi cho lắp gói nộp — thiếu 
 chưa xử lý đều bị chặn (`EXIT_BLOCKED`).
 
 File PHẢI chứa, theo đúng chữ (để máy đọc được, không diễn giải khác đi):
+- Mục «## 1. Bằng chứng máy-kiểm» dựng TỪ BIÊN NHẬN, không gõ tay (14/11/2026): sau `check_citations.py` chạy
+  `python tools/kiem_a12_khop_bien_nhan.py --study <mã> --goi-y` rồi dán nguyên dòng nó in (số PMID · mốc · `all_clean`
+  · `all_resolved`). Biên nhận chạy lại ⇒ dựng lại dòng. Lời khai LỆCH biên nhận ⇒ `run_g10_assemble.py` CHẶN lắp G10 mới
+  (`A12_DESCRIPTION_MISMATCH_RECEIPT`, mã 2; gói G10 đã khoá hợp lệ không bị ảnh hưởng); mã 2 của công cụ = «không đo được»,
+  KHÔNG phải «khớp».
 - Bảng trạng thái từng trích dẫn (mẫu ở mục 4).
 - **Đúng một trong ba** dòng kết luận:
   - Sạch hoàn toàn (không còn 🔴 nào chưa xử lý): `KẾT QUẢ CỔNG A12: ĐÃ XÁC MINH TOÀN BỘ TRÍCH DẪN — KHÔNG CÒN 🔴`

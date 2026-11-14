@@ -38,7 +38,10 @@ Chạy đúng SAP đã khoá trên dữ liệu đã khoá, mô hình đúng họ
 Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý do ở khối bàn giao, không giao việc.
 
 ## 4. Công cụ thật của cổng
-- `python3 tools/run_g6_auto.py --study <mã>` (sinh script R/Python theo SAP; đường R có chốt `tools/kiem_khoa_phan_tich.py` trong `00_setup.R`)
+- `python3 tools/run_g6_auto.py --study <mã>` (sinh script R/Python theo SAP; đường R có chốt `tools/kiem_khoa_phan_tich.py` trong `00_setup.R`).
+  SAP §4 gọi `postStratify(` ⇒ sinh thêm `04_trong_so_va_gioi_han.R` + `04a_ham_trong_so.R`; **G6-AUTO-11** (giao `G6-T1`)
+  CHẶN khi không script R nạp `00_setup.R` nào chạy tới `svydesign(` + `postStratify(` — trả lại `phan-tich-thong-ke`
+  chạy lại `run_g6_auto.py`, không sửa SAP đã khoá.
 - Chấm (CLI có GHI báo cáo/checkpoint — chạy sau khi nhiệm vụ xong): `python3 tools/g6_quality_gate.py --study <mã>`;
   trạng thái: `DRAFT_NEEDS_HUMAN_PARAMETERS` → `READY_FOR_STATISTICIAN_REVIEW` → `PASS_G6_SCRIPTS_CONFIRMED`.
 - **Xác nhận người (cổng mềm):** Thống kê viên xác nhận ở `gate_params.G6` (`scripts_match_sap_confirmed`, `reviewed_by_role`, `reviewed_at`, `dau_van_tay_chot`). Agent CHÉP dấu cho người xác nhận nhìn — KHÔNG tự ghi.
