@@ -188,8 +188,8 @@ của nó.
 
 ## Đề xuất cho agent
 
-Đoạn dưới để phiên chính dán vào `.claude/agents/phan-tich-thong-ke.md` (sau BƯỚC 0c). Cầu nối này không tự sửa tệp
-agent.
+Đoạn dưới ĐÃ đưa vào `.claude/agents/phan-tich-thong-ke.md` (BƯỚC 0d, sau BƯỚC 0c) ở CẢ HAI repo ngày 14/11/2026 —
+bản trong tệp agent có thêm khối lệnh và luật từ chối (mã 3); sửa luật đọc thì sửa cặp hai repo cùng lúc.
 
 ```markdown
 ## 🔁 BƯỚC 0d — KIỂM CHÉO BẰNG R (phần mềm thứ hai, song song SPSS — thêm 14/11/2026, bác sĩ giao)
