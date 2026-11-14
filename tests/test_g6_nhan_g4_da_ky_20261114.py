@@ -281,3 +281,97 @@ def test_template_g6_doc_trang_thai_song_g4_khong_doc_g4_status(ten, sinh):
     assert any("g4_quality_contract_satisfied(" in d for d in thi_hanh), ten
     assert "g4_locked = (g4_song or i_confirm_sap) and g4_ledger" in code, ten
     assert any(d.startswith("g4_song = False") for d in thi_hanh), f"{ten}: thiếu nhánh «không đo được ⇒ chưa khoá»"
+
+
+# ── Template: HÀNH VI của phần chấm sống G4 (không chỉ văn bản) ────────────────────────────────────────────────────
+# Sửa sau thẩm định PR #255 (15/11/2026): test văn bản ở trên để lọt đột biến đổi `... is True` thành
+# `... is not None` (script sinh ra coi «không khoá» là khoá — fail-open). Các test dưới THI HÀNH đúng hàm
+# `_check_sap_db_locked` của mã sinh ra (bóc bằng ast), với `gate_contract` GIẢ qua sys.modules, cwd = tmp_path
+# (không chạm exports/ thật, không dùng khoá).
+_TEMPLATES = [
+    ("cli_cohort", lambda: G6A.make_run_analysis_cli(_V, 60, "TEST-STUDY", "cohort", "HR")),
+    ("cli_case_control", lambda: G6A.make_run_analysis_cli(_V, 60, "TEST-STUDY", "case_control", "OR")),
+    ("sens_cohort", lambda: G6A.make_sensitivity_analysis(_V, "TEST-STUDY", "cohort")),
+    ("sens_case_control", lambda: G6A.make_sensitivity_analysis(_V, "TEST-STUDY", "case_control")),
+]
+_GHI_DE = ("GHI ĐÈ CÓ CHỦ Ý", "GHI DE CO CHU Y")  # CLI in có dấu, bản sensitivity in không dấu
+
+
+def _ham_kiem_cong_cua_template(code: str, tmp_path: Path, monkeypatch, g4_song, g4_so_cai: bool = True):
+    """Trả về hàm `_check_sap_db_locked` THẬT của script sinh ra, nối với gate_contract giả.
+
+    g4_song: giá trị `g4_quality_contract_satisfied` trả về, hoặc một Exception để mô phỏng «không đo được».
+    G2/G5 cho đạt (checkpoint LOCKED + sổ cái + chấm) để phép thử cô lập đúng nhánh G4.
+    """
+    import ast
+    import types
+
+    cay = ast.parse(code)
+    ham = [n for n in cay.body if isinstance(n, ast.FunctionDef) and n.name == "_check_sap_db_locked"]
+    assert len(ham) == 1, "template phải có đúng một _check_sap_db_locked ở cấp module"
+    nguon = ast.get_source_segment(code, ham[0])
+
+    def _g4(study):
+        if isinstance(g4_song, Exception):
+            raise g4_song
+        return g4_song
+
+    gia = types.ModuleType("gate_contract")
+    gia.g4_quality_contract_satisfied = _g4
+    gia.ledger_approved = lambda gate, *a, **k: g4_so_cai if gate == "G4" else True
+    gia.g2_quality_contract_satisfied = lambda *a, **k: True
+    gia.g5_quality_contract_satisfied = lambda *a, **k: True
+    gia.load_study_meta = lambda *a, **k: {}
+    monkeypatch.setitem(sys.modules, "gate_contract", gia)
+    monkeypatch.setattr(sys, "path", list(sys.path))  # hàm tự chèn đường dẫn tools/ — trả lại sau test
+
+    d = tmp_path / "exports" / "TEST-STUDY"
+    d.mkdir(parents=True)
+    (d / "G2_checkpoint.json").write_text('{"g2_status": "LOCKED"}', encoding="utf-8", newline="\n")
+    (d / "G5_checkpoint.json").write_text('{"g5_status": "LOCKED"}', encoding="utf-8", newline="\n")
+    monkeypatch.chdir(tmp_path)
+
+    ns = {"Path": Path, "sys": sys, "__name__": "template_g6_test",
+          "__file__": str(tmp_path / "a" / "b" / "c" / "scripts" / "run_analysis_cli.py")}
+    exec(compile(nguon, "<template-g6:_check_sap_db_locked>", "exec"), ns)  # noqa: S102 — mã do run_g6_auto sinh
+    return ns["_check_sap_db_locked"]
+
+
+@pytest.mark.parametrize("ten,sinh", _TEMPLATES)
+def test_template_g4_chua_khoa_song_khong_co_thi_dung(ten, sinh, tmp_path, monkeypatch, capsys):
+    kiem = _ham_kiem_cong_cua_template(sinh(), tmp_path, monkeypatch, g4_song=False)
+    with pytest.raises(SystemExit):
+        kiem(False, False)
+    ra = capsys.readouterr().out  # đọc MỘT lần — readouterr() xoá bộ đệm
+    assert not any(c in ra for c in _GHI_DE), ten
+
+
+@pytest.mark.parametrize("ten,sinh", _TEMPLATES)
+def test_template_g4_chua_khoa_song_co_co_thi_ghi_de_co_chu_y(ten, sinh, tmp_path, monkeypatch, capsys):
+    kiem = _ham_kiem_cong_cua_template(sinh(), tmp_path, monkeypatch, g4_song=False)
+    kiem(True, False)  # chữ ký sổ cái G4 khớp ⇒ cờ được phép ghi đè phần chấm sống — và phải in rõ
+    ra = capsys.readouterr().out  # đọc MỘT lần — readouterr() xoá bộ đệm
+    assert any(c in ra for c in _GHI_DE), ten
+
+
+@pytest.mark.parametrize("ten,sinh", _TEMPLATES)
+def test_template_g4_khoa_song_khong_can_co_khong_ghi_de(ten, sinh, tmp_path, monkeypatch, capsys):
+    kiem = _ham_kiem_cong_cua_template(sinh(), tmp_path, monkeypatch, g4_song=True)
+    kiem(False, False)
+    ra = capsys.readouterr().out  # đọc MỘT lần — readouterr() xoá bộ đệm
+    assert not any(c in ra for c in _GHI_DE), ten
+
+
+@pytest.mark.parametrize("ten,sinh", _TEMPLATES)
+@pytest.mark.parametrize("gia_tri", [RuntimeError("không đo được"), "LOCKED", 1, None])
+def test_template_g4_khong_do_duoc_hoac_khong_dung_true_thi_dung(ten, sinh, gia_tri, tmp_path, monkeypatch):
+    kiem = _ham_kiem_cong_cua_template(sinh(), tmp_path, monkeypatch, g4_song=gia_tri)
+    with pytest.raises(SystemExit):
+        kiem(False, False)
+
+
+@pytest.mark.parametrize("ten,sinh", _TEMPLATES)
+def test_template_co_khong_thay_duoc_so_cai_g4(ten, sinh, tmp_path, monkeypatch):
+    kiem = _ham_kiem_cong_cua_template(sinh(), tmp_path, monkeypatch, g4_song=True, g4_so_cai=False)
+    with pytest.raises(SystemExit):
+        kiem(True, True)
