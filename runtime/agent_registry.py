@@ -129,7 +129,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 14/11/2026 (lượt 2): phan-tich-thong-ke thêm BƯỚC 0c — kiểm chéo bằng SPSS (tools/cau_noi_spss.py), chép bản chuẩn của
 # repo gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "c42411f38d21a051b1e4ee6edb095d09a9997b6b312c8231863e72e3f8e78b12"
+    "299ddd8581b65f16ba399a9d8b35a4b1b792230569f8945eb1438dc78437c190"
 )
 
 MINIMUM_AGENT_COUNT = 64

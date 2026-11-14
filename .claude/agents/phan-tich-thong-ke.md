@@ -349,6 +349,10 @@ sink("session_info.txt"); sessionInfo(); sink()
   nhị phân ⇒ RR/OR/RD theo đúng thước đo SAP); nhóm con theo SAP §7; seed/alpha theo SAP.
 - `sessionInfo()`/`G6_moi_truong.json` là TIÊU CHÍ qua cổng (G6-AUTO-10), không tuỳ chọn; Bảng 1 RCT KHÔNG kiểm định ý
   nghĩa khác biệt nền (CONSORT 2010 E&E, PMID 20332511).
+- SAP §4 gọi `postStratify(` (trọng số hậu phân tầng) ⇒ `run_g6_auto.py` sinh `04_trong_so_va_gioi_han.R` (nạp `00_setup.R`)
+  + `04a_ham_trong_so.R` (hàm thuần); **G6-AUTO-11 CHẶN** khi không script R nào nạp `00_setup.R` chạy tới dòng THI HÀNH
+  `svydesign(` + `postStratify(` (chú thích, hàm không ai gọi, tệp không ai nạp không tính) — chạy lại `run_g6_auto.py`,
+  KHÔNG sửa SAP đã khoá để né. SAP không gọi `postStratify(` ⇒ «không áp dụng», vẫn đạt.
 - Kết quả nằm ở `exports/<mã>/06_ket_qua/` (CLI) và `06_phan_tich_R/output/` (R) — G7/G10 đọc/đóng gói từ đây.
 
 Xuất Word:
