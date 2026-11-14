@@ -89,13 +89,19 @@ python3 $T chay      --study <mã>   # SPSS chạy nền ⇒ OXML + .spv + G6_sp
 python3 $T doi-chieu --study <mã>   # ⇒ G6_spss_doi_chieu.md/json · mã 0 khớp · 1 lệch · 2 không đo được · 3 từ chối
 ```
 
-Luật đọc: (1) ✓ khớp (ước lượng ±0,5 %, KTC ±1,5 %, p ±0,005) ⇒ được ghi ở phần phương pháp «kết quả tái lập độc lập bằng
+Luật đọc: (1) ✓ khớp (ước lượng ≤ 0,2 % SE, KTC ≤ 1 % SE — OR/HR so trên THANG LOG, cộng nửa đơn vị làm tròn của Python; p
+±0,005; p hai bên khác phía 0,05 KHÔNG BAO GIỜ khớp) ⇒ được ghi ở phần phương pháp «kết quả tái lập độc lập bằng
 SPSS <phiên bản>»; (2) ⚠ lệch nhỏ = khác PHƯƠNG PHÁP đã biết (hiệu chỉnh cụm: GEE robust ≠ sandwich có hiệu chỉnh mẫu nhỏ;
-Cox: Breslow ≠ Efron; SE hồi quy thứ tự) ⇒ chép nguyên ghi chú, thống kê viên chọn cách báo cáo theo SAP; (3) ✗ LỆCH ⇒ tìm
+Cox: Breslow ≠ Efron; SE hồi quy thứ tự) và ước lượng lệch ≤ 10 % SE ⇒ chép nguyên ghi chú (kể cả cờ «p khác phía 0,05»),
+thống kê viên chọn cách báo cáo theo SAP; (3) ✗ LỆCH ⇒ tìm
 nguyên nhân (mã hoá biến, tập ca phân tích, nhóm tham chiếu) TRƯỚC khi dùng số, ghi [CẦN THỐNG KÊ VIÊN] — KHÔNG sửa Python cho
 khớp SPSS hay ngược lại (đo 14/11/2026: chính phép đối chiếu bắt được HR «thô» của Python tính trên tập ca của mô hình hiệu
 chỉnh); (4) đây là KIỂM CHÉO kỹ thuật — không đổi trạng thái G6, không thay G6-HUMAN-01; (5) máy không có SPSS ⇒ mã 2
-(⚪ không đo được, KHÔNG phải đạt) — `xuat-sav` vẫn sinh `.sps` để bác sĩ chạy tay trong SPSS. Bác sĩ đưa tệp `.sav`: `python3
+(⚪ không đo được, KHÔNG phải đạt) — `xuat-sav` vẫn sinh `.sps` để bác sĩ chạy tay trong SPSS; (6) `doi-chieu` DỪNG khi SHA-256
+nguồn/`.sav`/đặc tả SPSS ≠ Python (kết quả cũ, khác hiệp biến, khác `--don-vi-phoi-nhiem`) ⇒ chạy lại `cu-phap` + `chay`, KHÔNG
+lách; dòng «⚪ không so được» (Python lỗi/bỏ qua, SPSS thiếu bảng) phải nêu trong báo cáo, không coi là khớp; (7)
+`spss/de-xuat-ma-thieu.csv` (mã «Không biết/Từ chối…» chưa khai thiếu) là việc của thống kê viên — agent KHÔNG tự ghi
+`_ma-thieu-theo-bien.csv`. Bác sĩ đưa tệp `.sav`: `python3
 $T nhap-sav --sav <tệp> --ra <thư mục NGOÀI repo>` ⇒ CSV + từ điển nhãn + từ điển khuôn REDCap, rồi nhập qua cổng tiếp nhận
 `import_real_dataset.py` (cổng đó quét PII theo giá trị). Hướng dẫn: `medical-ebm-automation/docs/CAU-NOI-SPSS.md`.
 
@@ -349,6 +355,10 @@ sink("session_info.txt"); sessionInfo(); sink()
   nhị phân ⇒ RR/OR/RD theo đúng thước đo SAP); nhóm con theo SAP §7; seed/alpha theo SAP.
 - `sessionInfo()`/`G6_moi_truong.json` là TIÊU CHÍ qua cổng (G6-AUTO-10), không tuỳ chọn; Bảng 1 RCT KHÔNG kiểm định ý
   nghĩa khác biệt nền (CONSORT 2010 E&E, PMID 20332511).
+- SAP §4 gọi `postStratify(` (trọng số hậu phân tầng) ⇒ `run_g6_auto.py` sinh `04_trong_so_va_gioi_han.R` (nạp `00_setup.R`)
+  + `04a_ham_trong_so.R` (hàm thuần); **G6-AUTO-11 CHẶN** khi không script R nào nạp `00_setup.R` chạy tới dòng THI HÀNH
+  `svydesign(` + `postStratify(` (chú thích, hàm không ai gọi, tệp không ai nạp không tính) — chạy lại `run_g6_auto.py`,
+  KHÔNG sửa SAP đã khoá để né. SAP không gọi `postStratify(` ⇒ «không áp dụng», vẫn đạt.
 - Kết quả nằm ở `exports/<mã>/06_ket_qua/` (CLI) và `06_phan_tich_R/output/` (R) — G7/G10 đọc/đóng gói từ đây.
 
 Xuất Word:

@@ -2421,6 +2421,7 @@ def main():
         "outcome": args.outcome, "group": args.group, "covariates": covariates,
         "outcome_type": args.outcome_type, "time": args.time, "event": args.event,
         "cot_cum": (args.cot_cum or "").strip() or None,
+        "don_vi_phoi_nhiem": args.don_vi_phoi_nhiem,  # OR cho MỖI k đơn vị (C1a: 15 phút) — SPSS phải chia cùng k
     }
 
     # 3. Dữ liệu thiếu

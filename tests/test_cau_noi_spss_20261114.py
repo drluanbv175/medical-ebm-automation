@@ -132,7 +132,7 @@ def _du_lieu(tmp: Path) -> tuple[Path, dict]:
 def test_ke_hoach_bien_ten_muc_do_ma_thieu_checkbox(tmp_path):
     p, td = _du_lieu(tmp_path)
     tieu_de, tk, n = C.quet_csv(p)
-    ke, canh_bao = C.ke_hoach_bien(tieu_de, tk, td, [{"bien": "*", "ma": "BTR", "nhan": "Bỏ trống"}])
+    ke, canh_bao, de_xuat = C.ke_hoach_bien(tieu_de, tk, td, [{"bien": "*", "ma": "BTR", "nhan": "Bỏ trống"}])
     b = {x["cot"]: x for x in ke}
     assert n == 3
     assert b["record_id"]["ten"] == "ID" and b["tuoi"]["ten"] == "Tuoi"
@@ -142,7 +142,8 @@ def test_ke_hoach_bien_ten_muc_do_ma_thieu_checkbox(tmp_path):
     assert ("-9991", "BTR — Bỏ trống") in b["hut_thuoc"]["ma_thieu"]
     assert b["trieu_chung___2"]["nhan"] == "Triệu chứng: Khó thở"
     assert b["trieu_chung___2"]["nhan_gia_tri"] == {"1": "Có", "0": "Không"}
-    assert not b["nghe"]["so"] and not canh_bao
+    assert not b["nghe"]["so"] and not canh_bao and not de_xuat
+    assert b["nghe"]["thieu_chuoi"] == [""]  # biến chuỗi: ô rỗng khai là thiếu (pandas đọc là NaN)
 
 
 def test_cot_dinh_danh_bi_chan(tmp_path):
@@ -156,14 +157,17 @@ def test_cot_dinh_danh_bi_chan(tmp_path):
 def test_cu_phap_nhan_bien(tmp_path):
     p, td = _du_lieu(tmp_path)
     tieu_de, tk, _ = C.quet_csv(p)
-    ke, _ = C.ke_hoach_bien(tieu_de, tk, td, [{"bien": "*", "ma": "BTR", "nhan": "Bỏ trống"}])
+    ke, _, _ = C.ke_hoach_bien(tieu_de, tk, td, [{"bien": "*", "ma": "BTR", "nhan": "Bỏ trống"}])
     s = C.cu_phap_nhan_bien(p, tmp_path / "d.sav", ke, ghi_chu=["thử"])
-    assert "ID A2" in s and "Tuoi F8.1" in s and "hut_thuoc A3" in s
+    # hut_thuoc (0/1/BTR) đọc dạng chuỗi rồi RECODE — độ rộng phải chứa «-9991» (bản cũ A3 cắt thành «-99» hợp lệ)
+    assert "ID A2" in s and "Tuoi F8.1" in s and "hut_thuoc A5" in s and "hut_thuoc A3" not in s
     assert "RECODE hut_thuoc ('BTR'='-9991')." in s and "ALTER TYPE hut_thuoc (F8.0)." in s
     assert "MISSING VALUES hut_thuoc (-9991)." in s
     assert "'cong_chuc' 'Công chức'" in s  # mã chữ của biến chuỗi được trích dẫn
     assert "'X'" not in s  # mã chữ «X» không gắn được vào biến số GioiTinh ⇒ bỏ, không làm SPSS lỗi
     assert "VARIABLE LEVEL hai_long (ORDINAL)." in s and s.rstrip().endswith("/COMPRESSED.")
+    assert "MISSING VALUES nghe ('')." in s
+    assert "* thử." in s  # chú thích kết thúc bằng dấu chấm — không nuốt lệnh kế tiếp
 
 
 # ───────────── xuat-sav (không SPSS) ─────────────
@@ -182,6 +186,8 @@ def _de_tai(tmp_path: Path, monkeypatch) -> Path:
                 "locked_dataset_path": "05_clean_locked/k.csv",
                 "sha256": hashlib.sha256(khoa.read_bytes()).hexdigest(),
                 "lock_date": "2026-11-14",
+                "status": "LOCKED_FOR_ANALYSIS",
+                "analysis_allowed": True,
             }
         ),
         encoding="utf-8",
@@ -235,14 +241,14 @@ def test_xuat_sav_data_ngoai_khoa_phai_kem_ban_nhap(tmp_path, monkeypatch):
 
 
 def test_cu_phap_cox_tho_loc_cung_tap_ca_voi_python(tmp_path):
-    vb, _ = C.cu_phap_phan_tich("THU", _man(), _dt(time="thoi_gian", event="bien_co"), tmp_path)
+    vb, _, _ = C.cu_phap_phan_tich("THU", _man(), _dt(time="thoi_gian", event="bien_co"), tmp_path, sav="x.sav")
     i = vb.index("COXREG thoi_gian /STATUS=bien_co(1) /METHOD=ENTER Nhom /PRINT")
     truoc = vb[vb.rindex("OMS ", 0, i) : i]
     assert "TEMPORARY." in truoc and "SELECT IF (NOT MISSING(Tuoi) AND NOT MISSING(GioiTinh))." in truoc
 
 
 def test_cu_phap_nhi_phan_va_cum(tmp_path):
-    vb, cb = C.cu_phap_phan_tich("THU", _man(), _dt(outcome="kq_nhi", cot_cum="ban_kham"), tmp_path)
+    vb, cb, _ = C.cu_phap_phan_tich("THU", _man(), _dt(outcome="kq_nhi", cot_cum="ban_kham"), tmp_path, sav="x.sav")
     assert "SET OLANG=ENGLISH TVARS=NAMES TNUMBERS=VALUES." in vb
     assert "CROSSTABS /TABLES=Nhom BY kq_nhi /STATISTICS=CHISQ RISK" in vb
     assert "LOGISTIC REGRESSION VARIABLES kq_nhi" in vb and "/METHOD=ENTER Nhom Tuoi GioiTinh" in vb
@@ -254,8 +260,8 @@ def test_cu_phap_khong_co_bien_so_khong_de_with_rong(tmp_path):
     for b in man["bien"]:
         if b["cot"] in ("tuoi", "gioitinh", "nhom"):
             b["so"] = False
-    vb, _ = C.cu_phap_phan_tich("THU", man, _dt(outcome="diem", outcome_type="continuous"), tmp_path)
-    assert "UNIANOVA diem BY Nhom Tuoi GioiTinh\n" in vb and "WITH \n" not in vb and " WITH\n" not in vb
+    vb, _, _ = C.cu_phap_phan_tich("THU", man, _dt(outcome="diem", outcome_type="continuous"), tmp_path, sav="x.sav")
+    assert "UNIANOVA diem\n    BY Nhom Tuoi GioiTinh\n" in vb and "WITH \n" not in vb and "WITH\n" not in vb
 
 
 # ───────────── đọc OXML thật ─────────────
@@ -339,29 +345,52 @@ def test_doi_chieu_cum_la_lech_nho_khong_phai_lech(tmp_path):
     assert nhom["trang_thai"] == "lech_nho" and "GEE" in nhom["ghi_chu"]
 
 
-def test_lenh_chay_va_doi_chieu_gia_lap_spss(tmp_path, monkeypatch):
+def _de_tai_co_sav(tmp_path: Path, monkeypatch, *, dt: dict | None = None) -> Path:
+    """Đề tài giả có .sav (tệp byte giả, SHA-256 khớp manifest) + cú pháp sinh bằng cu-phap."""
     monkeypatch.setattr(C, "EXPORTS", tmp_path / "exports")
     d = tmp_path / "exports" / "THU"
-    (d / "spss" / "ket_qua").mkdir(parents=True)
-    man = _man() | {"sav": str(d / "spss" / "THU_khoa.sav"), "sha256_sav": "x", "sha256_nguon": "abc"}
+    (d / "spss").mkdir(parents=True)
+    sav = d / "spss" / "THU_khoa.sav"
+    sav.write_bytes(b"$FL2 gia lap")
+    man = _man() | {
+        "sav": str(sav),
+        "sav_da_tao": True,
+        "sha256_sav": hashlib.sha256(sav.read_bytes()).hexdigest(),
+        "sha256_nguon": "abc",
+    }
     (d / "spss" / "THU_khoa.sav.manifest.json").write_text(json.dumps(man), encoding="utf-8", newline="\n")
-    (d / "spss" / "THU_phan_tich.sps").write_text("* thử\n", encoding="utf-8", newline="\n")
-    (d / "spss" / "ket_qua" / "dac_ta.json").write_text(
-        json.dumps(_dt(outcome="kq_nhi", outcome_type="binary")), encoding="utf-8", newline="\n"
-    )
+    dt = dt or _dt(outcome="kq_nhi", outcome_type="binary")
+    (d / "G6_analysis_summary.json").write_text(json.dumps({"dac_ta_phan_tich": dt}), encoding="utf-8", newline="\n")
+    assert C.main(["cu-phap", "--study", "THU"]) == C.MA_OK
+    return d
+
+
+def _gia_lap_spss(monkeypatch, kich_ban: str, *, ma: int = 0):
     goi = []
 
     def gia_lap(py, doi_so, *, thu_muc, thoi_han=0):
-        goi.append(doi_so)
-        _kq_tu_mau(thu_muc.parent, "binary")
-        return 0, "PHIEN_BAN=31.0\nSO_CA=240\n", ""
+        goi.append((doi_so, (thu_muc / "phan_tich.sps").read_text(encoding="utf-8")))
+        if ma == 0:
+            for f in (FX / kich_ban).glob("oms_*.xml"):
+                shutil.copy(f, thu_muc / "kq" / f.name)
+        return ma, "PHIEN_BAN=31.0\nSO_CA=240\n", "" if ma == 0 else "LOI_SPSS hỏng"
 
     monkeypatch.setattr(C, "tim_spss", lambda: Path("python-cua-spss"))
     monkeypatch.setattr(C, "chay_spss", gia_lap)
+    return goi
+
+
+def test_lenh_chay_va_doi_chieu_gia_lap_spss(tmp_path, monkeypatch):
+    d = _de_tai_co_sav(tmp_path, monkeypatch)
+    goi = _gia_lap_spss(monkeypatch, "binary")
     assert C.main(["chay", "--study", "THU"]) == C.MA_OK
-    assert goi and goi[0][0] == "--cu-phap"
+    doi_so, vb = goi[0]
+    assert doi_so[0] == "--cu-phap"
+    # chạy trong VÙNG TẠM đường dẫn ngắn (SPSS hỏng khi đường dẫn > ~255 byte), không phải đường OneDrive
+    assert "vao.sav" in vb and str(d) not in vb
     kq = json.loads((d / "G6_spss_ket_qua.json").read_text(encoding="utf-8"))
     assert kq["spss_phien_ban"] == "31.0" and "nhom" in kq["ket_qua"]["da_bien"]["he_so"]
+    assert (d / "spss" / "ket_qua" / "oms_da_bien.xml").exists()  # kết quả đã chép về
     tom = _tom_nhi_phan() | {"data_lock": {"sha256": "abc"}}
     (d / "G6_analysis_summary.json").write_text(json.dumps(tom), encoding="utf-8", newline="\n")
     assert C.main(["doi-chieu", "--study", "THU"]) == C.MA_OK
@@ -369,6 +398,38 @@ def test_lenh_chay_va_doi_chieu_gia_lap_spss(tmp_path, monkeypatch):
     tom["data_lock"]["sha256"] = "khac"  # SPSS và Python không cùng bộ dữ liệu khoá ⇒ chặn
     (d / "G6_analysis_summary.json").write_text(json.dumps(tom), encoding="utf-8", newline="\n")
     assert C.main(["doi-chieu", "--study", "THU"]) == C.MA_TU_CHOI
+    del tom["data_lock"]  # thiếu SHA-256 phía Python ⇒ KHÔNG đo được (bản cũ bỏ qua chốt, vẫn «khớp»)
+    (d / "G6_analysis_summary.json").write_text(json.dumps(tom), encoding="utf-8", newline="\n")
+    assert C.main(["doi-chieu", "--study", "THU"]) == C.MA_KHONG_DO
+
+
+def test_doi_chieu_chan_ket_qua_spss_cu_va_dac_ta_lech(tmp_path, monkeypatch):
+    d = _de_tai_co_sav(tmp_path, monkeypatch)
+    _gia_lap_spss(monkeypatch, "binary")
+    assert C.main(["chay", "--study", "THU"]) == C.MA_OK
+    tom = _tom_nhi_phan() | {"data_lock": {"sha256": "abc"}}
+    tom["dac_ta_phan_tich"]["covariates"] = ["tuoi"]  # Python chạy với bộ hiệp biến khác ⇒ chặn
+    (d / "G6_analysis_summary.json").write_text(json.dumps(tom), encoding="utf-8", newline="\n")
+    assert C.main(["doi-chieu", "--study", "THU"]) == C.MA_TU_CHOI
+    tom["dac_ta_phan_tich"]["covariates"] = ["tuoi", "gioitinh"]
+    (d / "G6_analysis_summary.json").write_text(json.dumps(tom), encoding="utf-8", newline="\n")
+    kq_p = d / "G6_spss_ket_qua.json"
+    kq = json.loads(kq_p.read_text(encoding="utf-8"))
+    kq["sha256_sav"] = "cua-sav-truoc"  # kết quả SPSS của .sav CŨ ⇒ chặn
+    kq_p.write_text(json.dumps(kq), encoding="utf-8", newline="\n")
+    assert C.main(["doi-chieu", "--study", "THU"]) == C.MA_TU_CHOI
+
+
+def test_chay_hong_xoa_ket_qua_cu_va_chan_sps_sua_tay(tmp_path, monkeypatch):
+    d = _de_tai_co_sav(tmp_path, monkeypatch)
+    _gia_lap_spss(monkeypatch, "binary")
+    assert C.main(["chay", "--study", "THU"]) == C.MA_OK and (d / "G6_spss_ket_qua.json").exists()
+    _gia_lap_spss(monkeypatch, "binary", ma=1)
+    assert C.main(["chay", "--study", "THU"]) == C.MA_LECH
+    assert not (d / "G6_spss_ket_qua.json").exists()  # lượt hỏng không để lại kết quả lượt trước
+    sps = d / "spss" / "THU_phan_tich.sps"
+    sps.write_text(sps.read_text(encoding="utf-8") + "* sửa tay.\n", encoding="utf-8", newline="\n")
+    assert C.main(["chay", "--study", "THU"]) == C.MA_TU_CHOI
 
 
 def test_dac_ta_lay_tu_tom_tat_g6(tmp_path, monkeypatch):
@@ -463,3 +524,303 @@ def test_ghi_tu_dien_redcap(tmp_path):
         r["socon"]["Text Validation Type OR Show Slider Number"] == "integer" and r["socon"]["Field Label"] == "SoCon"
     )
     assert r["gioitinh"]["Identifier?"] == ""
+
+
+# ───────────── vá sau rà độc lập 14/11/2026 ─────────────
+
+
+def test_goi_ds_va_duong_dan_khong_gop_khoang_trang():
+    ten = [f"bien_ten_rat_dai_so_{i:02d}_cho_thong_ke_vien" for i in range(70)]
+    s = C.goi_ds(ten)
+    assert all(len(x.encode("utf-8")) <= 204 for x in s.split("\n")) and s.split() == ten
+    assert C.dd_spss("/a/OneDrive  hai cach/t.csv") == "'/a/OneDrive  hai cach/t.csv'"  # bản cũ gộp thành một dấu cách
+    assert C.chuoi_spss("a  b") == "'a b'"  # nhãn vẫn gộp khoảng trắng
+
+
+def test_chuan_ten_khong_sinh_ten_hong():
+    for x in ("#nhap", "$sys", "9x", "a" * 63 + ".b", "_x"):
+        assert C.ten_hop_le(C.chuan_ten(x)), (x, C.chuan_ten(x))
+    assert not C.ten_hop_le("#nhap") and not C.ten_hop_le("$sys")  # biến nháp/biến hệ thống không lưu được
+
+
+def test_cu_phap_nhan_bien_goi_dong_dai_va_chu_thich_co_dau_cham(tmp_path):
+    ten = [f"cau_hoi_hai_long_linh_vuc_{i:02d}_chi_tiet" for i in range(70)]
+    p = tmp_path / "d.csv"
+    p.write_text(",".join(ten) + "\n" + ",".join("1" for _ in ten) + "\n", encoding="utf-8", newline="\n")
+    tieu_de, tk, _ = C.quet_csv(p)
+    td = {t: {"loai": "radio", "nhan": t, "lua_chon": "1, Có | 0, Không"} for t in ten}
+    ke, _, _ = C.ke_hoach_bien(tieu_de, tk, td, [])
+    s = C.cu_phap_nhan_bien(p, tmp_path / "d.sav", ke, ghi_chu=["Nguồn: d.csv · 1 ca", "câu không có dấu chấm"])
+    assert max(len(x.encode("utf-8")) for x in s.split("\n")) <= 260  # đo 14/11: > ~1024 byte ⇒ SPSS lỗi cú pháp
+    assert all(x.endswith(".") for x in s.split("\n") if x.startswith("*"))
+
+
+def test_ma_thieu_qua_3_gom_khoang_va_tu_choi_khi_khong_khai_duoc():
+    assert C.menh_de_thieu_so("x", ["998"], [-9991, -9992, -9993]) == "LO THRU -9991, 998"
+    assert C.menh_de_thieu_so("x", ["7", "8", "9", "10"], []) == "7 THRU 10"
+    assert C.menh_de_thieu_so("x", ["8", "9"], [-9991]) == "8, 9, -9991"
+    with pytest.raises(C.TuChoi, match="3 giá trị rời"):
+        C.menh_de_thieu_so("x", ["8", "9"], [-9991, -9992])
+
+
+def _td_c1a() -> dict:
+    likert = (
+        "1, Rất không hài lòng | 2, Không hài lòng | 3, Bình thường/Không ý kiến | 4, Hài lòng | 5, Rất hài lòng"
+        " | 8, Không biết/không nhớ | 9, Không trả lời/từ chối"
+    )
+    return {
+        "a1": {"loai": "radio", "nhan": "A1", "lua_chon": likert},
+        "nghenghiep": {
+            "loai": "radio",
+            "nhan": "Nghề",
+            "lua_chon": "1, CBCC/viên chức | 2, Nông/Lâm/Ngư | 3, Công nhân | 4, LĐ tự do | 5, Hưu trí | 6, Nội trợ",
+        },
+        "khoangcach": {"loai": "radio", "nhan": "KC", "lua_chon": "1, Dưới 5 km | 2, 5–10 km | 3, Trên 10 km"},
+        "ykien": {"loai": "notes", "nhan": "Ý kiến đóng góp"},
+    }
+
+
+def test_muc_do_thu_tu_va_de_xuat_ma_thieu_theo_nhan(tmp_path):
+    p = tmp_path / "d.csv"
+    p.write_text("a1,nghenghiep,khoangcach,ykien\n4,2,1,tot\n9,5,3,\n", encoding="utf-8", newline="\n")
+    tieu_de, tk, _ = C.quet_csv(p)
+    ke, cb, de_xuat = C.ke_hoach_bien(tieu_de, tk, _td_c1a(), [])
+    b = {x["cot"]: x for x in ke}
+    # Likert có mã 8/9 vẫn là ORDINAL; nghề nghiệp mã 1..6 liên tiếp KHÔNG phải thứ tự;
+    # khoảng cách «dưới/trên» là thứ tự
+    assert b["a1"]["muc_do"] == "ORDINAL" and b["nghenghiep"]["muc_do"] == "NOMINAL"
+    assert b["khoangcach"]["muc_do"] == "ORDINAL"
+    assert {(x["bien"], x["ma"]) for x in de_xuat} == {("a1", "8"), ("a1", "9")}  # chỉ đề xuất, không tự khai
+    assert b["a1"]["menh_de_thieu"] is None and any("de-xuat-ma-thieu" in c for c in cb)
+    assert b["ykien"]["bo"] and not b["a1"]["bo"]  # văn bản tự do bị bỏ khỏi .sav
+    s = C.cu_phap_nhan_bien(p, tmp_path / "d.sav", ke, ghi_chu=[])
+    assert "/DROP=ykien." in s and "ykien '" not in s.split("VARIABLE LABELS")[1]
+    ke2, _, _ = C.ke_hoach_bien(tieu_de, tk, _td_c1a(), [], giu_ghi_chu=True)
+    assert not {x["cot"]: x for x in ke2}["ykien"]["bo"]
+
+
+def test_ma_thieu_mau_glob_ap_ma_so_con_sao_tran_khong(tmp_path):
+    p = tmp_path / "d.csv"
+    p.write_text("a1,a2,nghenghiep\n4,8,2\n9,5,9\n", encoding="utf-8", newline="\n")
+    tieu_de, tk, _ = C.quet_csv(p)
+    td = _td_c1a() | {"a2": _td_c1a()["a1"]}
+    mt = [
+        {"bien": "a?", "ma": "8", "nhan": "Không biết"},
+        {"bien": "a?", "ma": "9", "nhan": "Từ chối"},
+        {"bien": "*", "ma": "9", "nhan": "mã số với «*» KHÔNG áp mọi trường"},
+    ]
+    ke, _, de_xuat = C.ke_hoach_bien(tieu_de, tk, td, mt)
+    b = {x["cot"]: x for x in ke}
+    assert b["a1"]["menh_de_thieu"] == "8, 9" and b["a2"]["menh_de_thieu"] == "8, 9"
+    assert b["nghenghiep"]["menh_de_thieu"] is None and not de_xuat
+
+
+def test_bien_chuoi_ma_chu_giu_nguyen_va_nhan_vua_do_rong(tmp_path):
+    p = tmp_path / "d.csv"
+    p.write_text("ban_kham,nghe\nP1,A\n,BTR\nP2,B\n", encoding="utf-8", newline="\n")
+    tieu_de, tk, _ = C.quet_csv(p)
+    td = {"nghe": {"loai": "dropdown", "nhan": "Nghề", "lua_chon": "A, Công chức | B, Nông dân | XYZW, Khác"}}
+    ke, _, _ = C.ke_hoach_bien(tieu_de, tk, td, [{"bien": "*", "ma": "BTR", "nhan": "Bỏ trống"}])
+    b = {x["cot"]: x for x in ke}
+    assert b["ban_kham"]["thieu_chuoi"] == [""] and b["nghe"]["thieu_chuoi"] == ["", "BTR"]
+    assert b["nghe"]["ma_chu"] == {} and b["nghe"]["rong"] >= 4  # nhãn «XYZW» vừa độ rộng (Warning #4487)
+    s = C.cu_phap_nhan_bien(p, tmp_path / "d.sav", ke, ghi_chu=[])
+    assert "MISSING VALUES nghe ('', 'BTR')." in s and "'-9991'" not in s and "RECODE nghe" not in s
+
+
+def test_cot_ten_nghi_pii_bi_chan_ca_khi_khong_co_trong_tu_dien(tmp_path):
+    p = tmp_path / "d.csv"
+    p.write_text("cobhyt,so_dien_thoai\n1,0901\n", encoding="utf-8", newline="\n")
+    tieu_de, tk, _ = C.quet_csv(p)
+    with pytest.raises(C.TuChoi, match="so_dien_thoai"):
+        C.ke_hoach_bien(tieu_de, tk, {"cobhyt": {"loai": "yesno", "nhan": "Có BHYT"}}, [])
+    assert C._quet_pii_ten(["cobhyt"]) == []  # C1a: «có BHYT» (có/không) — luật bổ sung không bắt nhầm số thẻ
+
+
+def test_xuat_sav_chan_manifest_chua_khoa(tmp_path, monkeypatch):
+    d = _de_tai(tmp_path, monkeypatch)
+    man_p = d / "DATA_LOCK_manifest.json"
+    man = json.loads(man_p.read_text(encoding="utf-8"))
+    man["status"] = "DRAFT"
+    man_p.write_text(json.dumps(man), encoding="utf-8", newline="\n")
+    assert C.main(["xuat-sav", "--study", "THU"]) == C.MA_TU_CHOI
+    man["status"], man["sha256"] = "LOCKED_FOR_ANALYSIS", None  # thiếu SHA-256 ⇒ chặn (bản cũ bỏ qua kiểm)
+    man_p.write_text(json.dumps(man), encoding="utf-8", newline="\n")
+    assert C.main(["xuat-sav", "--study", "THU"]) == C.MA_TU_CHOI
+
+
+def test_cu_phap_phoi_nhiem_lien_tuc_thu_tu_c1a(tmp_path):
+    man = _man()
+    for b in man["bien"]:
+        if b["cot"] == "tuoi":
+            b["muc"] = None  # > 20 giá trị — vai «thời gian chờ»
+    dt = _dt(outcome="hai_long", group="tuoi", covariates=["gioitinh"], outcome_type="ordinal")
+    vb, cb, phu = C.cu_phap_phan_tich("THU", man, dt | {"don_vi_phoi_nhiem": 15}, tmp_path, sav="x.sav")
+    assert "oms_bang1" not in vb and any("phơi nhiễm liên tục" in c for c in cb)  # như Python: không Bảng 1
+    assert "COMPUTE Tuoi_dv = Tuoi / 15." in vb and phu == {"ten_phoi_nhiem_mo_hinh": "Tuoi_dv"}
+    assert "PLUM hai_long" in vb and "WITH Tuoi_dv GioiTinh" in vb
+    vb2, _, phu2 = C.cu_phap_phan_tich("THU", man, dt, tmp_path, sav="x.sav")  # không đơn vị ⇒ mỗi 1 đơn vị
+    assert "COMPUTE" not in vb2 and "WITH Tuoi GioiTinh" in vb2 and phu2 == {}
+    with pytest.raises(C.TuChoi, match="2 mức"):  # kết cục nhị phân vẫn đòi nhóm 2 mức
+        C.cu_phap_phan_tich("THU", man, _dt(outcome="kq_nhi", group="tuoi"), tmp_path, sav="x.sav")
+
+
+def test_doc_ket_qua_doi_ten_phoi_nhiem_chia_don_vi(tmp_path):
+    kq = C.doc_ket_qua(
+        _kq_tu_mau(tmp_path, "ordinal"),
+        _dt(outcome="hai_long", outcome_type="ordinal", ten_phoi_nhiem_mo_hinh="Nhom"),
+        {"bien": [b for b in _man()["bien"] if b["cot"] != "nhom"]},
+    )
+    assert "nhom" in kq["da_bien"]["he_so"]
+
+
+def test_dac_ta_doc_don_vi_phoi_nhiem(tmp_path, monkeypatch):
+    monkeypatch.setattr(C, "EXPORTS", tmp_path / "exports")
+    d = tmp_path / "exports" / "THU"
+    d.mkdir(parents=True)
+    ns = argparse.Namespace(study="THU", gate="G6", covariates=None)
+    (d / "G6_analysis_summary.json").write_text(
+        json.dumps({"dac_ta_phan_tich": _dt(outcome="g1"), "ordinal": {"don_vi_phoi_nhiem": {"don_vi": 15.0}}}),
+        encoding="utf-8",
+        newline="\n",
+    )
+    assert C.dac_ta(ns)["don_vi_phoi_nhiem"] == 15.0  # tóm tắt cũ: lấy từ khối ordinal
+    ns.don_vi_phoi_nhiem = 0
+    with pytest.raises(C.TuChoi):
+        C.dac_ta(ns)
+
+
+def test_so_mot_thang_log_va_nguong_p():
+    py = {"uoc_luong": 1.035, "ci": [0.80, 1.34], "p": 0.30}
+    assert C.so_mot("x", py, {"uoc_luong": 1.030, "ci": [0.80, 1.34], "p": 0.30}, ty_so=True)["trang_thai"] == "lech"
+    # bản cũ (±0,5 % trên thang OR) gọi cặp này là «khớp» dù β lệch 16 %
+    khop = C.so_mot("x", py, {"uoc_luong": 1.0352, "ci": [0.8001, 1.3402], "p": 0.3001}, ty_so=True, lam_tron=0.0005)
+    assert khop["trang_thai"] == "khop"  # lệch trong nửa đơn vị làm tròn của Python ⇒ khớp
+    # không có KTC: thang OR (±0,5 % của 1,035) gọi cặp này «khớp»; thang log (±0,5 % của β = 0,034) thì không
+    khong_ci = C.so_mot("x", {"uoc_luong": 1.035, "ci": None}, {"uoc_luong": 1.030, "ci": None}, ty_so=True)
+    assert khong_ci["trang_thai"] == "lech"
+    # KTC rất hẹp: SPSS 3,0776914 so Python 3,078 (đã làm tròn 3 chữ số) chỉ khớp nhờ nửa đơn vị làm tròn
+    hep_py = {"uoc_luong": 3.078, "ci": [3.070, 3.086], "p": 0.0001}
+    hep_sp = {"uoc_luong": 3.0776914, "ci": [3.0702, 3.0858], "p": 0.0001}
+    assert C.so_mot("x", hep_py, hep_sp, ty_so=True, lam_tron=0.0005)["trang_thai"] == "khop"
+    assert C.so_mot("x", hep_py, hep_sp, ty_so=True)["trang_thai"] == "lech"
+    p_doi = C.so_mot(
+        "x", {"uoc_luong": 2.0, "ci": [1.0, 4.0], "p": 0.048}, {"uoc_luong": 2.0, "ci": [1.0, 4.0], "p": 0.052}
+    )
+    assert p_doi["trang_thai"] == "lech" and "0,05" in p_doi["ghi_chu"]
+    cox = C.so_mot(
+        "x",
+        {"uoc_luong": 2.0, "ci": [1.0, 4.0], "p": 0.04},
+        {"uoc_luong": 2.02, "ci": [1.0, 4.1], "p": 0.04},
+        ty_so=True,
+        phuong_phap_khac="Breslow ≠ Efron",
+    )
+    assert cox["trang_thai"] == "lech_nho"
+    xa = C.so_mot(
+        "x",
+        {"uoc_luong": 2.0, "ci": [1.0, 4.0], "p": 0.04},
+        {"uoc_luong": 3.0, "ci": [1.5, 6.0], "p": 0.01},
+        ty_so=True,
+        phuong_phap_khac="Breslow ≠ Efron",
+    )
+    assert xa["trang_thai"] == "lech"  # khác phương pháp KHÔNG che lệch lớn
+
+
+def test_doi_chieu_khong_bo_dong_im_lang():
+    tom = _tom_nhi_phan()
+    tom["multivariate"] = {"error": "Pandas data cast to numpy dtype of object"}
+    tom["survival"] = {"crude": {"HR": 2.1, "CI_95": [1.2, 3.6], "p": 0.01}}
+    tom["dac_ta_phan_tich"]["cot_cum"] = None
+    dong = C.doi_chieu(tom, {})
+    tt = {x["muc"]: x for x in dong}
+    assert tt["Đa biến"]["trang_thai"] == "khong_so_duoc" and "Python" in tt["Đa biến"]["ghi_chu"]
+    assert tt["Kết cục chính"]["trang_thai"] == "khong_so_duoc"
+    assert any(x["muc"].startswith("Cox") and x["trang_thai"] == "khong_so_duoc" for x in dong)
+    tom = _tom_nhi_phan()
+    tom["dac_ta_phan_tich"]["cot_cum"] = "ban_kham"
+    kq = {"da_bien": {"thang": "OR", "he_so": {"nhom": {"uoc_luong": 3.273, "ci": [1.84, 5.81], "p": 0.0001}}}}
+    dong = C.doi_chieu(tom, kq)  # có cụm mà SPSS thiếu GENLIN ⇒ KHÔNG so với mô hình không hiệu chỉnh cụm
+    assert any("GENLIN" in x["ghi_chu"] and x["trang_thai"] == "khong_so_duoc" for x in dong)
+    assert not any(x["trang_thai"] == "khop" and "nhom" in x["muc"] and "Đa biến" in x["muc"] for x in dong)
+
+
+def test_he_so_khong_bo_bien_ten_bat_dau_bang_step():
+    bang = {
+        "o": [
+            {"hang": ["steps"], "cot": ["B"], "so": 0.5},
+            {"hang": ["steps"], "cot": ["Sig."], "so": 0.01},
+            {"hang": ["Step 0", "nhom"], "cot": ["B"], "so": 9.0},
+            {"hang": ["Step 1a", "nhom"], "cot": ["B"], "so": 1.2},
+        ]
+    }
+    hs = C.he_so(bang, mu=False)
+    assert hs["steps"]["uoc_luong"] == 0.5 and hs["nhom"]["uoc_luong"] == 1.2
+
+
+def test_mo_ta_thieu_khoang_lo_hi():
+    assert C.mo_ta_thieu([-2, "LO", -1.0, None]) == "LO THRU -1"
+    assert C.mo_ta_thieu([-3, -1.7976931348623157e308, -1.0, 99.0]) == "LO THRU -1, 99"
+    assert C.mo_ta_thieu([2, 8.0, 9.0, None]) == "8, 9"
+
+
+def test_nhap_sav_chan_moi_repo_git_khong_phan_biet_hoa_thuong(tmp_path):
+    repo = tmp_path / "RepoKhac"
+    (repo / ".git").mkdir(parents=True)
+    sav = tmp_path / "a.sav"
+    sav.write_bytes(b"$FL2")
+    assert C.main(["nhap-sav", "--sav", str(sav), "--ra", str(repo / "ra")]) == C.MA_TU_CHOI
+    assert C._trong_repo_git(Path(str(C.BASE).swapcase()) / "x") is not None or sys.platform not in ("darwin", "win32")
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="nhóm tiến trình POSIX")
+def test_chay_spss_het_han_dung_ca_tien_trinh_con(tmp_path, monkeypatch):
+    pid_p = tmp_path / "con.pid"
+    trinh = tmp_path / "gia_spss.py"
+    trinh.write_text(
+        "import subprocess, sys, time\n"
+        "c = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)'])\n"
+        f"open({str(pid_p)!r}, 'w').write(str(c.pid))\n"
+        "print('PHIEN_BAN=gia', flush=True)\n"
+        "time.sleep(60)\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    monkeypatch.setattr(C, "TRINH_CHAY", trinh)
+    import os
+    import time
+
+    t0 = time.monotonic()
+    ma, out, err = C.chay_spss(Path(sys.executable), [], thu_muc=tmp_path, thoi_han=3)
+    assert ma == 1 and "quá thời hạn" in err and "PHIEN_BAN=gia" in out and time.monotonic() - t0 < 20
+    time.sleep(0.5)
+    pid = int(pid_p.read_text())
+    with pytest.raises(ProcessLookupError):  # tiến trình con (vai lõi SPSS) KHÔNG mồ côi
+        os.kill(pid, 0)
+
+
+@pytest.mark.skipif(sys.platform == "win32", reason="nhóm tiến trình POSIX")
+def test_chay_spss_khong_treo_khi_con_giu_ong_ra(tmp_path, monkeypatch):
+    trinh = tmp_path / "gia_spss_loi.py"
+    trinh.write_text(
+        "import subprocess, sys\n"
+        "subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(60)'])\n"
+        "print('LOI_SPSS gia', file=sys.stderr)\n"
+        "sys.exit(1)\n",
+        encoding="utf-8",
+        newline="\n",
+    )
+    monkeypatch.setattr(C, "TRINH_CHAY", trinh)
+    import time
+
+    t0 = time.monotonic()
+    ma, _, err = C.chay_spss(Path(sys.executable), [], thu_muc=tmp_path, thoi_han=30)
+    assert ma == 1 and "LOI_SPSS gia" in err and time.monotonic() - t0 < 15  # bản cũ (ống dẫn) chờ hết 30 giây
+
+
+def test_trinh_chay_nen_tham_so_va_ma_thieu_khoang(capsys):
+    import spss_chay_nen as N  # chỉ import `spss` SAU khi kiểm tham số ⇒ chạy được không cần SPSS
+
+    assert N.main([]) == 2 and N.main(["--sai", "x"]) == 2 and "dùng:" in capsys.readouterr().err
+    assert N._thieu([-2, -1.7976931348623157e308, -1.0, None]) == [-2, "LO", -1.0, None]
+    assert N._thieu([-3, 5.0, 1.7976931348623157e308, 9.0]) == [-3, 5.0, "HI", 9.0]
+    assert C.mo_ta_thieu(N._thieu([-2, -1.7976931348623157e308, -1.0, None])) == "LO THRU -1"
