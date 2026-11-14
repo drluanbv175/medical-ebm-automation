@@ -93,13 +93,17 @@ _RUI_RO_RCT_THEO_LOAI = {
     "drug": [
         ("Tác dụng phụ của thuốc/sản phẩm thử nghiệm", "Trung bình–Cao", "Nhẹ–Trung bình",
          "Giám sát chặt AE/SAE; dừng nghiên cứu nếu xuất hiện SAE nghiêm trọng; DSMB/DMC giám sát"),
-        ("Lấy máu / xét nghiệm theo dõi ngoài chăm sóc thường quy (CHỈ khi đề cương có)", "Cao", "Nhẹ",
+        # Sửa sau thẩm định #248: lời dặn người soạn «(CHỈ khi đề cương có)» từng bị chép nguyên vào phiếu đồng thuận
+        # mà bộ đếm ô trống G2 không nhận ⇒ nay là nhãn [CẦN…] đếm được, PI trả lời rồi xoá nhãn (hoặc xoá cả dòng).
+        ("[CẦN PI XÁC NHẬN: đề cương có lấy máu/xét nghiệm ngoài chăm sóc thường quy? — không có thì xoá dòng này] "
+         "Lấy máu / xét nghiệm theo dõi ngoài chăm sóc thường quy", "Cao", "Nhẹ",
          "Nhân viên được đào tạo; vô trùng; gộp với lần lấy máu thường quy khi có thể"),
     ],
     "procedure": [
         ("Biến chứng của thủ thuật/phẫu thuật (đau, chảy máu, nhiễm trùng)", "Thấp–Trung bình", "Nhẹ–Nặng",
          "Người thực hiện đủ năng lực; quy trình vô khuẩn; theo dõi sau thủ thuật; báo cáo AE/SAE"),
-        ("Rủi ro của gây tê/gây mê (CHỈ khi thủ thuật có)", "Thấp", "Nhẹ–Nặng",
+        ("[CẦN PI XÁC NHẬN: thủ thuật có gây tê/gây mê? — không có thì xoá dòng này] Rủi ro của gây tê/gây mê",
+         "Thấp", "Nhẹ–Nặng",
          "Khám trước gây mê; người gây mê theo dõi; phương tiện cấp cứu sẵn sàng"),
     ],
     "device": [
@@ -119,19 +123,31 @@ _RUI_RO_RCT_THEO_LOAI = {
 }
 
 
-def _rui_ro_rct_chua_ro_loai() -> list:
-    """Bảng rủi ro khi CHƯA rõ loại can thiệp: dòng chung + mọi dòng theo loại, mỗi dòng gắn nhãn [CẦN PI CHỌN]."""
+def _rui_ro_rct_chua_ro_loai(may_suy: tuple = ()) -> list:
+    """Bảng rủi ro khi loại can thiệp CHƯA được PI chốt: dòng chung + MỌI dòng theo loại.
+
+    Dòng của loại máy SUY ra (nếu có) gắn «[CẦN PI XÁC NHẬN — máy suy: …]»; dòng của các loại khác gắn «[CẦN PI CHỌN …]».
+    Sửa sau thẩm định #248: bản đầu thu hẹp bảng theo loại máy suy ⇒ «giáo dục sức khoẻ kết hợp aspirin» bị suy thành
+    «hành vi» và tác dụng phụ của thuốc BIẾN MẤT khỏi Tài liệu 3. Máy suy chỉ được xếp thứ tự/gợi ý, không được bỏ dòng."""
     dong = list(_RUI_RO_RCT_CHUNG)
     for loai, mo_ta in LOAI_CAN_THIEP_RCT.items():
+        nhan = (f"[CẦN PI XÁC NHẬN — máy suy: {mo_ta}]" if loai in may_suy
+                else f"[CẦN PI CHỌN — chỉ giữ nếu can thiệp là {mo_ta}]")
         for ten, xs, md, bp in _RUI_RO_RCT_THEO_LOAI[loai]:
-            dong.append((f"[CẦN PI CHỌN — chỉ giữ nếu can thiệp là {mo_ta}] {ten}", xs, md, bp))
+            dong.append((f"{nhan} {ten}", xs, md, bp))
     return dong
 
 
-# Dòng duy nhất phiếu đồng thuận nhận thay cho rủi ro riêng khi loại can thiệp CHƯA rõ — không chép danh mục chọn (gồm cả
-# rủi ro lấy máu/thuốc) vào tài liệu cho người bệnh.
+# Dòng duy nhất phiếu đồng thuận nhận thay cho rủi ro riêng khi loại can thiệp CHƯA được PI chốt (kể cả khi máy SUY được
+# loại) — không chép danh mục chọn (gồm cả rủi ro lấy máu/thuốc) hay rủi ro của loại máy đoán vào tài liệu cho người bệnh.
 _DONG_ICF_CHUA_RO_LOAI = ("[CẦN PI XÁC NHẬN loại can thiệp]", "—", "—",
                           "Chép đúng rủi ro riêng của loại can thiệp đã chốt từ Tài liệu 3")
+
+
+def _dong_icf_may_suy(mo_ta: str) -> tuple:
+    """Ô [CẦN] của phiếu đồng thuận khi máy SUY được loại nhưng PI chưa chốt — vẫn một ô, chỉ thêm gợi ý loại máy suy."""
+    return (f"[CẦN PI XÁC NHẬN loại can thiệp — máy suy: {mo_ta}]", "—", "—",
+            "Chép đúng rủi ro riêng của loại can thiệp đã chốt từ Tài liệu 3")
 
 
 RISK_PROFILES = {
@@ -424,7 +440,18 @@ _BI_DANH_LOAI_CAN_THIEP = {
 # Từ khoá máy dùng để SUY loại can thiệp từ PICO I (chỉ là gợi ý — luôn gắn [CẦN PI XÁC NHẬN]).
 _TU_KHOA_LOAI_CAN_THIEP = {
     "drug": (r"thuốc", r"giả dược", r"\bliều\b", r"vắc[\s-]?xin", r"\bvaccin", r"\btiêm\b", r"kháng sinh",
-             r"\bplacebo\b", r"\bdrugs?\b", r"\bdos(?:e|es|ing)\b", r"\bmg\b", r"\btablets?\b", r"\bmedications?\b"),
+             r"\bplacebo\b", r"\bdrugs?\b", r"\bdos(?:e|es|ing)\b", r"\bmg\b", r"\btablets?\b", r"\bmedications?\b",
+             # Sửa sau thẩm định #248: thuốc gọi bằng TÊN HOẠT CHẤT («giáo dục … kết hợp aspirin», «tập luyện kết hợp
+             # metformin», «chế độ ăn và chlorthalidone», «tư vấn kèm bổ sung vitamin D») từng không khớp loại «thuốc»
+             # nên bị suy thành can thiệp hành vi. Tên riêng thường gặp + hậu tố INN (WHO) — vẫn chỉ là GỢI Ý.
+             r"hoạt chất", r"\bvitamin", r"thực phẩm (?:chức năng|bổ sung)", r"viên (?:uống|nén|nang|sủi|bổ sung)",
+             r"bổ sung (?:sắt|canxi|calci|kẽm|magie|acid folic|axit folic)", r"\bsupplement",
+             r"\b(?:aspirin|insulin|warfarin|heparin|digoxin|amiodarone|allopurinol|colchicine|levothyroxine|"
+             r"paracetamol|acetaminophen|morphine|prednisolone|statins?)\b",
+             r"\b[a-z]{2,}(?:pril|sartan|olol|statin|formin|gliptin|gliflozin|glutide|dipine|thiazide|thalidone|semide|"
+             r"parin|xaban|gatran|grel|prazole|tidine|cillin|mycin|cycline|floxacin|conazole|vir|mab|nib|lukast|"
+             r"buterol|moterol|meterol|sonide|metasone|olone|azepam|oxetine|aline|pramine|profen|fenac|coxib|caine|"
+             r"setron|triptan|dronate)s?\b"),
     "procedure": (r"phẫu thuật", r"thủ thuật", r"nội soi", r"đặt stent", r"can thiệp mạch", r"sinh thiết",
                   r"\bsurg", r"\bprocedur", r"endoscop", r"cathet", r"ablation", r"biops", r"\bstent"),
     "device": (r"thiết bị", r"máy đo", r"cảm biến", r"dụng cụ", r"máy thở", r"\bdevices?\b", r"wearable",
@@ -492,7 +519,9 @@ def phan_loai_can_thiep(meta: Optional[dict], topic: str = "") -> dict:
 def ap_loai_can_thiep(risk: dict, design_code: str, meta: Optional[dict], topic: str = "") -> dict:
     """Thu hẹp bảng rủi ro RCT theo loại can thiệp (K9). Chỉ áp cho design_code == "rct".
 
-    Đã rõ loại (PI chốt hoặc máy suy được) ⇒ dòng chung + dòng của đúng loại đó, cho cả Bảng rủi ro lẫn phiếu đồng thuận.
+    PI đã CHỐT loại ⇒ dòng chung + dòng của đúng loại đó, cho cả Bảng rủi ro lẫn phiếu đồng thuận.
+    Máy SUY được loại (PI chưa chốt) ⇒ Bảng vẫn liệt kê MỌI loại (loại máy suy gắn [CẦN PI XÁC NHẬN — máy suy], loại khác
+    [CẦN PI CHỌN]); phiếu đồng thuận một ô [CẦN] kèm gợi ý loại máy suy (sửa sau thẩm định #248).
     Chưa rõ ⇒ giữ mặc định an toàn (Bảng liệt kê mọi loại để PI chọn, phiếu đồng thuận một ô [CẦN]). Mức nguy cơ/lộ trình
     IRB CHỈ đổi khi PI đã chốt loại — máy suy không được hạ mức nguy cơ trình Hội đồng."""
     if design_code != "rct":
@@ -501,9 +530,17 @@ def ap_loai_can_thiep(risk: dict, design_code: str, meta: Optional[dict], topic:
     ra = dict(risk)
     loai = pl["loai"]
     if loai:
-        ra["risks"] = list(_RUI_RO_RCT_CHUNG) + [d for ma in loai for d in _RUI_RO_RCT_THEO_LOAI[ma]]
-        ra["risks_icf"] = list(ra["risks"])
         mo_ta = " + ".join(LOAI_CAN_THIEP_RCT[ma] for ma in loai)
+        if pl["da_chot"]:
+            # CHỈ khi PI đã chốt mới thu hẹp — cả Bảng rủi ro lẫn phiếu đồng thuận.
+            ra["risks"] = list(_RUI_RO_RCT_CHUNG) + [d for ma in loai for d in _RUI_RO_RCT_THEO_LOAI[ma]]
+            ra["risks_icf"] = list(ra["risks"])
+        else:
+            # Sửa sau thẩm định #248 (mục «cao»): máy SUY ⇒ KHÔNG thu hẹp. Tài liệu 3 giữ mọi loại (loại máy suy gắn
+            # [CẦN PI XÁC NHẬN], loại khác [CẦN PI CHỌN]); phiếu đồng thuận một ô [CẦN] để bộ đếm ô trống G2 bắt — không
+            # để phiếu cho người bệnh nói THIẾU nguy cơ chỉ vì bộ từ khoá đoán sai (vd «giáo dục … kết hợp aspirin»).
+            ra["risks"] = _rui_ro_rct_chua_ro_loai(tuple(loai))
+            ra["risks_icf"] = list(_RUI_RO_RCT_CHUNG) + [_dong_icf_may_suy(mo_ta)]
         if pl["da_chot"]:
             ghi_chu = f"Loại can thiệp: **{mo_ta}** ({pl['nguon']}); bảng chỉ gồm rủi ro chung và rủi ro của loại này."
             if set(loai) == {"behavioral"}:
@@ -516,8 +553,10 @@ def ap_loai_can_thiep(risk: dict, design_code: str, meta: Optional[dict], topic:
                                     "loại can thiệp)")
         else:
             ghi_chu = (f"Loại can thiệp máy SUY từ {pl['nguon'].removeprefix('máy suy từ ')}: **{mo_ta}** — "
-                       "`[CẦN PI XÁC NHẬN loại can thiệp: ghi gate_params.G2.intervention_type]`. Mức nguy cơ/lộ trình "
-                       "IRB giữ mặc định an toàn của thử nghiệm can thiệp tới khi PI chốt.")
+                       "`[CẦN PI XÁC NHẬN loại can thiệp: ghi gate_params.G2.intervention_type]`. Bảng dưới vẫn liệt kê "
+                       "rủi ro riêng của MỌI loại (máy chỉ gợi ý, không bỏ dòng); phiếu đồng thuận chỉ chép rủi ro riêng "
+                       "khi PI đã chốt. Mức nguy cơ/lộ trình IRB giữ mặc định an toàn của thử nghiệm can thiệp tới khi "
+                       "PI chốt.")
     else:
         ung = ", ".join(LOAI_CAN_THIEP_RCT[ma] for ma in pl["ung_vien"]) if pl["ung_vien"] else "không khớp loại nào"
         ghi_chu = ("`[CẦN PI XÁC NHẬN loại can thiệp: ghi gate_params.G2.intervention_type]` — máy CHƯA xác định được "
@@ -2208,7 +2247,11 @@ def main():
             cu_day_du_hon_theo_luat_cu=(ban_cu.count("[CẦN") < artifact_md.count("[CẦN") or tong_cu < tong_moi),
             chi_tiet_luat_cu=(f"{ban_cu.count('[CẦN')} vs {artifact_md.count('[CẦN')} nhãn [CẦN...]; "
                               f"{tong_cu} vs {tong_moi} ô trống theo hợp đồng chung"),
-            da_ky=lambda: GC.ledger_approved("G2", study, md_path, repo_root=_REPO_ROOT),
+            # «Không hạ cấp quyết định đã ký»: chữ ký xác minh được HOẶC (chiều bảo toàn, máy thiếu khoá/niêm phong
+            # hỏng) bản ghi APPROVED trùng SHA-256 nội dung hiện tại ⇒ GIỮ (sửa sau thẩm định #248).
+            da_ky=lambda: (GC.ledger_approved("G2", study, md_path, repo_root=_REPO_ROOT)
+                           or DMS.so_cai_co_duyet_trung_noi_dung(
+                               _REPO_ROOT / "exports" / study / "approval_ledger.json", "G2", md_path)),
             thiet_ke_cu_checkpoint=(_cp_g2_cu.get("design_code") if isinstance(_cp_g2_cu, dict) else None),
         )
         if quyet_dinh_de["giu"]:

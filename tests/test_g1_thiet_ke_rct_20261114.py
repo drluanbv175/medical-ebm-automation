@@ -211,3 +211,133 @@ def test_bang_thiet_ke_hop_le_mot_nguon():
     assert G1Q.thiet_ke_hop_le_theo_cau_hoi("therapy") == G1Q._THIET_KE_HOP_LE_THEO_CAU_HOI["treatment"]
     assert G1Q.thiet_ke_hop_le_theo_cau_hoi(None) == frozenset()
     assert G1Q.thiet_ke_hop_le_theo_cau_hoi("sr") == frozenset()
+
+
+# ── (6) Sửa theo thẩm định PR #246 ─────────────────────────────────────────────────────────────────────────────────
+# (6a) Phủ định có chữ chen giữa / một nhánh / non-RCT / Mendel: không dựng RCT im lặng.
+CHU_DE_KHONG_PHAN_BO = ("Hiệu quả của chương trình tư vấn dùng thuốc lên tỷ lệ kiểm soát huyết áp: thử nghiệm có nhóm "
+                        "chứng không phân bổ ngẫu nhiên")
+
+
+@pytest.mark.parametrize("chu_de", [
+    CHU_DE_KHONG_PHAN_BO,
+    "Thử nghiệm lâm sàng không được phân bổ ngẫu nhiên về hai phác đồ insulin",
+    "thu nghiem lam sang khong phan bo ngau nhien ve hai phac do insulin",
+    "A non-RCT comparison of two dressing strategies after surgery",
+    "Thử nghiệm lâm sàng pha II một nhánh thuốc X ở ung thư gan",
+    "A single-arm clinical trial of drug X in hepatocellular carcinoma",
+    "Thử nghiệm lâm sàng không có nhóm đối chứng về liệu pháp Y",
+    "Mendelian randomization: LDL cholesterol và bệnh mạch vành",
+    "Ngẫu nhiên hoá Mendel: chỉ số khối cơ thể và đái tháo đường",
+])
+@pytest.mark.parametrize("gaps", [_KHONG_BAO_HOA, {"n_sr": 27, "n_rct": 70}])
+def test_ps246_phu_dinh_rct_khong_dung_rct_im_lang(chu_de, gaps):
+    tl = chu_de.lower()
+    assert G1._khop_nhom_tu_khoa("rct", tl) is False, chu_de
+    d = G1.infer_study_design("treatment", gaps, chu_de, loai_cau_hoi_da_chot=True)
+    # Thiết kế thật ngoài 8 mã ⇒ mọi lựa chọn của máy chỉ là đoán: phải MƠ HỒ (G1-AUTO-04 REVIEW), kể cả khi nhánh
+    # «chưa có RCT» (0 SR/0 RCT) trả RCT.
+    assert d["ambiguous"] is True, (chu_de, gaps, d["internal_code"])
+    assert "KHÔNG ngẫu nhiên" in d["rationale"]
+    assert any("KHÔNG ngẫu nhiên" in w for w in G1.check_topic_design_consistency(chu_de, d["internal_code"]))
+
+
+@pytest.mark.parametrize("chu_de", [
+    # Không nói tới thử nghiệm ⇒ «không có nhóm chứng» không phải tín hiệu thiết kế.
+    "Tỷ lệ tăng huyết áp ở người cao tuổi: nghiên cứu cắt ngang không có nhóm chứng",
+    # «không chứng minh» không phải phủ định thiết kế.
+    "Thử nghiệm ngẫu nhiên có đối chứng: vì sao các nghiên cứu trước không chứng minh được lợi ích của thuốc X",
+])
+def test_ps246_phu_dinh_khong_bat_nham(chu_de):
+    tl = chu_de.lower()
+    assert G1._khai_thiet_ke_khong_ngau_nhien(tl) is False, chu_de
+    assert not [w for w in G1.check_topic_design_consistency(chu_de, "cross_sectional") if "KHÔNG ngẫu nhiên" in w]
+
+
+def test_ps246_main_de_tai_khong_phan_bo_ngau_nhien_khong_qua_im_lang(tmp_path, monkeypatch):
+    """Tái hiện đúng ca thẩm định qua main(): G0 treatment + «… không phân bổ ngẫu nhiên», nền 0 SR/0 RCT.
+
+    Trước: internal=rct, CONSORT, ambiguous=False, R6 im lặng. Sau: MƠ HỒ ⇒ G1-AUTO-04 REVIEW, R6 cảnh báo."""
+    d, cp = _chay_main(tmp_path, monkeypatch, meta_g0={"question_type": "treatment"},
+                       g0_ghi_de={"topic": CHU_DE_KHONG_PHAN_BO, "pubmed_results": _PM_TRONG})
+    assert cp["design"]["ambiguous"] is True, cp["design"]
+    r = G1Q.evaluate_study("TEST-G1-MAIN", d, write=False)
+    assert _row(r, "G1-AUTO-04")["status"] == "REVIEW", _row(r, "G1-AUTO-04")
+    a2 = (d / "G1_A2_PROTOCOL_DESIGN_TEST-G1-MAIN.md").read_text(encoding="utf-8")
+    canh_bao = G1.guardrail_check_g1(a2, [], topic=CHU_DE_KHONG_PHAN_BO,
+                                     internal_code=cp["design"]["internal_code"])["warnings"]
+    assert [w for w in canh_bao if w.startswith("R6 ⚠️") and "KHÔNG ngẫu nhiên" in w], canh_bao
+
+
+# (6b) Chỉ cụm CHUNG «thử nghiệm lâm sàng» ⇒ vẫn RCT nhưng MƠ HỒ; khai ngẫu nhiên (cụm hay «ngẫu nhiên» trơn) ⇒ rõ.
+@pytest.mark.parametrize("chu_de,mo_ho", [
+    ("Hiệu quả của thuốc X lên tỷ lệ tử vong ở bệnh nhân suy tim: thử nghiệm lâm sàng đa trung tâm", True),
+    ("Effect of drug X on mortality in heart failure: a controlled trial", True),
+    # «chọn mẫu ngẫu nhiên» là cách chọn mẫu, không phải phân bổ ⇒ vẫn chỉ là cụm chung.
+    ("Thử nghiệm lâm sàng thuốc X ở người suy tim, chọn mẫu ngẫu nhiên từ sổ đăng ký", True),
+    ("Hiệu quả của thuốc X lên tỷ lệ tử vong: thử nghiệm lâm sàng đa trung tâm, mù đôi, ngẫu nhiên", False),
+    (CHU_DE_GIA_LAP, False),
+    ("A randomized clinical trial of drug X in heart failure", False),
+])
+@pytest.mark.parametrize("gaps", [_KHONG_BAO_HOA, {"n_sr": 27, "n_rct": 70}])
+def test_ps246_rct_chi_cum_chung_thi_mo_ho(chu_de, mo_ho, gaps):
+    d = G1.infer_study_design("treatment", gaps, chu_de, loai_cau_hoi_da_chot=True)
+    assert d["internal_code"] == "rct", (chu_de, d["internal_code"])
+    assert d["ambiguous"] is mo_ho, (chu_de, gaps, d["ambiguous"])
+
+
+# (6c) G0 prediction_model: đối chiếu từ khoá theo ĐÚNG loại G1-AUTO-02d dùng, không theo «prognosis» đã hạ.
+CHU_DE_SR_MO_HINH = "Tổng quan hệ thống các mô hình dự đoán tái nhập viện ở bệnh nhân suy tim"
+
+
+def test_ps246_g0_prediction_model_kem_tong_quan_van_qua_02d(tmp_path, monkeypatch):
+    d, cp = _chay_main(tmp_path, monkeypatch, meta_g0={"question_type": "prediction_model"},
+                       g0_ghi_de={"topic": CHU_DE_SR_MO_HINH, "pubmed_results": _PM_TRONG})
+    assert cp["design"]["internal_code"] in G1Q.thiet_ke_hop_le_theo_cau_hoi("prediction_model"), cp["design"]
+    bo_qua = cp["design"].get("tu_khoa_bi_bo_qua") or []
+    assert bo_qua and "sr_ma" in bo_qua[0] and "prediction_model" in bo_qua[0], bo_qua
+    r = G1Q.evaluate_study("TEST-G1-MAIN", d, write=False)
+    assert _row(r, "G1-AUTO-02d")["status"] == "PASS", _row(r, "G1-AUTO-02d")
+
+
+def test_ps246_infer_loai_doi_chieu_tach_khoi_loai_dung_noi_dung():
+    d = G1.infer_study_design("prognosis", _KHONG_BAO_HOA, CHU_DE_SR_MO_HINH, loai_cau_hoi_da_chot=True,
+                              loai_cau_hoi_doi_chieu="prediction_model")
+    assert d["internal_code"] == "prediction", d["internal_code"]
+    # Vắng loại đối chiếu ⇒ như cũ (đối chiếu theo chính question_type).
+    assert G1.infer_study_design("prognosis", _KHONG_BAO_HOA, CHU_DE_SR_MO_HINH,
+                                 loai_cau_hoi_da_chot=True)["internal_code"] == "sr_ma"
+
+
+# (6d) Loại câu hỏi «sr» (không có bảng 02d): không còn cảnh báo giả viện dẫn G1-AUTO-02d.
+def test_ps246_sr_tong_quan_khong_ghi_tu_khoa_bi_bo_qua():
+    d = G1.infer_study_design("sr", _KHONG_BAO_HOA, "Tổng quan hệ thống hiệu quả của thuốc X lên tỷ lệ tử vong",
+                              loai_cau_hoi_da_chot=True)
+    assert d["internal_code"] == "sr_ma" and d["tu_khoa_bi_bo_qua"] == [], d["tu_khoa_bi_bo_qua"]
+
+
+def test_ps246_sr_nhom_khac_ghi_ly_do_khong_vien_dan_02d():
+    d = G1.infer_study_design("sr", _KHONG_BAO_HOA, "Tỷ lệ tăng huyết áp ở người cao tuổi", loai_cau_hoi_da_chot=True)
+    assert d["internal_code"] == "sr_ma"
+    assert len(d["tu_khoa_bi_bo_qua"]) == 1 and "G1-AUTO-02d" not in d["tu_khoa_bi_bo_qua"][0], d["tu_khoa_bi_bo_qua"]
+    assert "«sr»" in d["tu_khoa_bi_bo_qua"][0]
+
+
+def test_ps246_main_g0_sr_khong_ghi_tu_khoa_bi_bo_qua(tmp_path, monkeypatch):
+    d, cp = _chay_main(tmp_path, monkeypatch, meta_g0={"question_type": "sr"},
+                       g0_ghi_de={"topic": "Tổng quan hệ thống và phân tích gộp hiệu quả của statin",
+                                  "pubmed_results": _PM_TRONG})
+    assert cp["design"]["internal_code"] == "sr_ma"
+    assert "tu_khoa_bi_bo_qua" not in cp["design"], cp["design"].get("tu_khoa_bi_bo_qua")
+
+
+# (6e) Chốt CÓ CHỦ Ý hành vi khi G0 CHƯA chốt loại câu hỏi: nhóm "rct" mới đứng trước diagnosis/descriptive nên hai ca
+# dưới đổi so với trước bản vá (diagnostic → rct; cross_sectional → rct) — nhưng chỉ có cụm chung «thử nghiệm lâm
+# sàng» nên MƠ HỒ (G1-AUTO-04 REVIEW), cộng cờ mơ hồ «G0 chưa chốt» ở main() và G1-AUTO-01 giữ G1.
+@pytest.mark.parametrize("chu_de", [
+    "Giá trị NT-proBNP trong chẩn đoán suy tim: thử nghiệm lâm sàng",
+    "Khảo sát kiến thức của điều dưỡng về thử nghiệm lâm sàng",
+])
+def test_ps246_chua_chot_nhom_rct_doi_ket_qua_co_chu_y_va_mo_ho(chu_de):
+    d = G1.infer_study_design("treatment", _KHONG_BAO_HOA, chu_de)
+    assert d["internal_code"] == "rct" and d["ambiguous"] is True, (chu_de, d["internal_code"], d["ambiguous"])

@@ -1299,6 +1299,16 @@ def _nguon_lan_truoc(cp_cu: dict, ten: str):
     return goc or None
 
 
+def _con_ghim_g3(g3_pinned: dict, ten: str) -> bool:
+    """Tham số `ten` còn được GHIM trong study_meta.gate_params.G3 không (khoá có mặt, giá trị khác None/chuỗi rỗng).
+
+    cluster_cv nhận cả khoá chuẩn `cluster_size_cv` lẫn tên cũ `cluster_cv` (cùng luật đọc ở vòng khôi phục)."""
+    if not isinstance(g3_pinned, dict):
+        return False
+    khoa = ("cluster_size_cv", "cluster_cv") if ten == "cluster_cv" else (ten,)
+    return any(g3_pinned.get(k) is not None and str(g3_pinned.get(k)).strip() != "" for k in khoa)
+
+
 def _cung_gia_tri_tham_so(a, b) -> bool:
     """Hai giá trị tham số có bằng nhau không (số: sai khác ≤ 1e-9 tương đối; chuỗi: không phân biệt hoa thường)."""
     if a is None or b is None or isinstance(a, bool) or isinstance(b, bool):
@@ -1410,14 +1420,27 @@ def main():
         if _gia_tri_cli is None:
             continue
         _goc_cu = _nguon_lan_truoc(_cp_cu, _ten)
-        if _goc_cu is None or _nguon_la_nguoi(_goc_cu):
+        if _goc_cu is None:
+            continue
+        _khoa_meta = "cluster_size_cv" if _ten == "cluster_cv" else _ten
+        # Sửa sau thẩm định #248: lượt trước lấy từ bản GHIM study_meta, nay PI đã GỠ khoá đó khỏi gate_params.G3 mà
+        # dòng lệnh vẫn mang đúng giá trị checkpoint ⇒ đó là run_pipeline._recover_params truyền lại bản ghim cũ, không
+        # phải PI vừa quyết. Bản đầu tin «study_meta» là người ⇒ ghim lại ngay (đúng kịch bản K8 «xoá đi thì lại tự ghi»,
+        # đề tài sinh trước bản vá có precision/p_event/dropout do máy cũ ghim).
+        _go_ghim = _nhan_goc(_goc_cu) == "study_meta" and not _con_ghim_g3(_g3_pinned, _ten)
+        if _nguon_la_nguoi(_goc_cu) and not _go_ghim:
             continue
         if _cung_gia_tri_tham_so(_gia_tri_cli, _cp_cu.get(_KHOA_CHECKPOINT_THAM_SO.get(_ten, _ten))):
             _truyen_lai_may[_ten] = (_gia_tri_cli, _goc_cu)
             setattr(args, _ten, None)
-            print(f"  ⚠ {_ten}={_gia_tri_cli} qua dòng lệnh TRÙNG giá trị MÁY của lượt trước ({_goc_cu}) — coi như "
-                  "không truyền, KHÔNG ghim vào study_meta; nếu đây là quyết định của PI, ghi thẳng "
-                  f"gate_params.G3.{'cluster_size_cv' if _ten == 'cluster_cv' else _ten}.")
+            if _go_ghim:
+                print(f"  ⚠ {_ten}={_gia_tri_cli} qua dòng lệnh TRÙNG bản ghim study_meta của lượt trước mà PI đã GỠ "
+                      f"khỏi gate_params.G3 — coi là máy truyền lại (run_pipeline), KHÔNG ghim lại; nếu PI vẫn chọn giá "
+                      f"trị này, ghi lại gate_params.G3.{_khoa_meta}.")
+            else:
+                print(f"  ⚠ {_ten}={_gia_tri_cli} qua dòng lệnh TRÙNG giá trị MÁY của lượt trước ({_goc_cu}) — coi như "
+                      "không truyền, KHÔNG ghim vào study_meta; nếu đây là quyết định của PI, ghi thẳng "
+                      f"gate_params.G3.{_khoa_meta}.")
     _cli_da_truyen -= set(_truyen_lai_may)
     if args.effect_size is None and _g3_pinned.get("effect_size") is not None:
         args.effect_size = _coerce_pinned_float(_g3_pinned["effect_size"], "effect_size")

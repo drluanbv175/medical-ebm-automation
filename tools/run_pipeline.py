@@ -23,7 +23,12 @@ BÁO TRUNG THỰC THEO CHẤM SỐNG (14/11/2026, giả lập đề tài RCT —
     (nhat_quan_xuyen_cong) ⇒ DỪNG, in lý do — không dựng tiếp cổng sau trên nền lệch.
   - K7: phụ thuộc theo NỘI DUNG mà bảng mtime không bắt được — G1 (A2) và G2 (TRDS mục 17) CHÉP số N của G3 nhưng chạy
     trước G3. Bản chép khác N sống của G3 ⇒ cổng đó «cũ» và được chạy lại (G3 vừa đổi N giữa lượt ⇒ quay lại đồng bộ
-    MỘT lần). Báo cáo không in «TƯƠI» khi còn bản chép lệch hoặc còn lệch cứng xuyên cổng.
+    MỘT lần). Báo cáo không in «TƯƠI» khi còn bản chép lệch hoặc còn lệch cứng xuyên cổng; nhất quán xuyên cổng KHÔNG
+    ĐO ĐƯỢC ⇒ «⚪ CHƯA KẾT LUẬN ĐƯỢC», mã thoát ≠ 0 (không đo được ≠ tươi).
+  - Rào cổng ĐÃ KÝ (sửa sau thẩm định PR #247): cổng cứng chấm sống PASS KHÔNG bị sinh lại vì lý do TỰ ĐỘNG — dây
+    chuyền dirty từ cổng phía trước (kể cả `--from` sớm hơn), cũ/mồ côi theo mtime ở lượt sau, bản chép N lệch, nhánh
+    quay lại đồng bộ N. Trạng thái «giu_cong_da_ky» (không bật dirty, mã thoát ≠ 0, việc của PI/IRB); sinh lại CÓ CHỦ Ý
+    chỉ bằng `--from <đúng cổng đó>`. Luật mới không hạ cấp quyết định đã ký.
   - K5: dấu vân tay đầu vào của G0 = (chủ đề, query_en). query_en trong study_meta (gate_params.G0.query_en hoặc
     query_en cấp đầu) khác truy vấn G0 đã tra, hoặc --topic mới khác chủ đề đã tra ⇒ TRA LẠI PubMed (không chỉ chấm
     lại).
@@ -92,6 +97,11 @@ TRANG_THAI_DA_SINH = ("ok", "du_thao", "khong_do_duoc")
 # Trạng thái DỪNG chuỗi vì cần người / nền không dùng được (đếm vào «chặn», mã thoát 1).
 TRANG_THAI_DUNG = ("blocked_missing_input", "chan_song", "dung_lech_xuyen_cong", "dung_nen_bi_chan")
 KHONG_DO_DUOC = "KHONG_DO_DUOC"
+# Sửa sau thẩm định PR #247 — cổng CỨNG đã ký (chấm sống PASS) mà chuỗi muốn sinh lại vì lý do TỰ ĐỘNG (dây chuyền từ
+# cổng phía trước, cũ theo mtime, bản chép N lệch) ⇒ GIỮ NGUYÊN, không gọi cổng con. Không phải «đã sinh» (không bật
+# dirty cho phía sau), không phải «dừng» (chuỗi đi tiếp, lệch xuyên cổng vẫn chặn cổng sau), nhưng mã thoát ≠ 0: còn
+# việc của PI/IRB.
+TRANG_THAI_GIU_DA_KY = "giu_cong_da_ky"
 
 
 def _chuan_chuoi(v: Any) -> str:
@@ -225,8 +235,36 @@ def _cham_song(gate: str, study: str, out_dir: Path) -> Dict[str, Any]:
 
 def _cong_da_ky(gate: str, study: str, out_dir: Path) -> bool:
     """Cổng CỨNG (gate_contract) đã ký/khoá theo CHẤM SỐNG. Luật mới (K7) KHÔNG tự sinh lại cổng này — chỉ báo «bản chép
-    N lệch» để PI/IRB xử lý (sửa đổi đề cương) — giữ nguyên tắc «luật mới không hạ cấp quyết định đã ký»."""
+    N lệch» để PI/IRB xử lý (sửa đổi đề cương) — giữ nguyên tắc «luật mới không hạ cấp quyết định đã ký».
+
+    Rào áp ở HAI chỗ: (1) loại khỏi tập «bản chép N lệch tự chạy lại» (`_lech_co_mau_tu_chay_lai`); (2) trong vòng chạy
+    của `orchestrate`, TRƯỚC khi gọi cổng con: cổng cứng đã ký chỉ được sinh lại khi người gọi `--from` ĐÚNG cổng đó —
+    mọi lý do tự động khác (dây chuyền dirty từ cổng phía trước, cũ/mồ côi theo mtime ở lượt sau, nhánh quay lại đồng bộ
+    N) đều GIỮ NGUYÊN. Thẩm định PR #247 đo được (1) một mình bị vượt qua đường dây chuyền: A2 của G1 lệch cùng TRDS 17
+    ⇒ G1 chạy lại ⇒ dirty ⇒ run_g2_auto ghi đè hồ sơ G2 đã ký (run_g2_auto không tự kiểm sổ cái như run_g5_auto)."""
     return gate in GC._GATE_REQUIRED_STAKEHOLDERS and _cham_song(gate, study, out_dir).get("muc") == "PASS"
+
+
+def _ly_do_giu_da_ky(gate: str, study: str, out_dir: Path, *, nguon_dirty: Optional[str], tu_from: Optional[str],
+                     cu_mtime: Optional[str], blocked_cp: bool, ep_tu_dong: bool) -> str:
+    """Một dòng: vì sao chuỗi MUỐN sinh lại cổng đã ký `gate` + việc của PI/IRB. Không tự sinh lại — chỉ báo."""
+    ly: List[str] = []
+    if nguon_dirty:
+        ly.append(f"dây chuyền: {nguon_dirty} phía trước vừa sinh lại"
+                  + (f" (từ --from {tu_from})" if tu_from else ""))
+    if cu_mtime is not None:
+        ly.append("cũ/mồ côi theo mtime — " + (cu_mtime or "pipeline_freshness"))
+    lech = _lech_co_mau_g3(out_dir, study).get(gate)
+    if lech:
+        ly.append("bản chép N lệch — " + lech)
+    if blocked_cp:
+        ly.append("checkpoint đang ghi chặn")
+    if ep_tu_dong:
+        ly.append("nhánh quay lại đồng bộ N")
+    vi_sao = "; ".join(ly) or "chuỗi muốn chạy lại"
+    return (f"GIỮ {gate} — cổng ĐÃ KÝ (chấm sống PASS), hệ KHÔNG tự sinh lại: {vi_sao}. "
+            "Việc của PI/IRB: nếu thay đổi phía trước ảnh hưởng hồ sơ đã ký thì sửa đổi đề cương rồi ký lại — sinh lại "
+            f"CÓ CHỦ Ý bằng: python3 tools/run_pipeline.py --study {study} --from {gate}")
 
 
 def _lech_co_mau_tu_chay_lai(out_dir: Path, study: str) -> Tuple[Dict[str, str], Dict[str, str]]:
@@ -325,9 +363,14 @@ def _lech_cung_truoc(ket: Optional[Dict[str, Any]], idx: int) -> List[Dict[str, 
 
 
 def _do_tuoi_tong_hop(fresh: Dict[str, Any], lech_n: Dict[str, str], lech_g0: Optional[str],
-                      nq: Dict[str, Any]) -> Dict[str, Any]:
+                      nq: Dict[str, Any], giu_da_ky: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
     """Độ tươi TỔNG HỢP = mtime (pipeline_freshness) + bản chép N của G3 (K7) + đầu vào G0 (K5) + không lệch cứng xuyên
-    cổng. «TƯƠI» chỉ khi cả bốn sạch — cùng một báo cáo không được vừa «✅ TƯƠI» vừa «🔴 lệch cỡ mẫu»."""
+    cổng + không còn cổng ĐÃ KÝ bị giữ lại giữa chuỗi đã sinh lại. «TƯƠI» chỉ khi tất cả sạch VÀ đo được — cùng một báo
+    cáo không được vừa «✅ TƯƠI» vừa «🔴 lệch cỡ mẫu».
+
+    `ket_luan` ∈ {«tuoi», «chua_tuoi», «khong_ket_luan»}. Sửa sau thẩm định PR #247: nhất quán xuyên cổng KHÔNG ĐO ĐƯỢC
+    (nq có «loi») mà các trục khác sạch ⇒ «khong_ket_luan», fresh=False (mã thoát ≠ 0) — «không đo được» không bao giờ
+    là «tươi» (CLAUDE.md §0.2); cũng không thành một «vấn đề» (không báo đỏ giả), chỉ ⚪ CHƯA KẾT LUẬN ĐƯỢC."""
     issues: List[Dict[str, Any]] = [dict(i) for i in (fresh.get("issues") or []) if isinstance(i, dict)]
     for g in sorted(lech_n, key=_chi_so_cong):
         issues.append({"gate": g, "kind": "lech_noi_dung", "reason": f"{g} — {lech_n[g]}",
@@ -338,16 +381,22 @@ def _do_tuoi_tong_hop(fresh: Dict[str, Any], lech_n: Dict[str, str], lech_g0: Op
         if isinstance(k, dict) and k.get("muc") == "lech_cung":
             issues.append({"gate": "*", "kind": "lech_cung_xuyen_cong",
                            "reason": f"{k.get('ma')}: {str(k.get('ghi_chu') or '')[:140]}", "offending_upstream": []})
+    for g in sorted(giu_da_ky or {}, key=_chi_so_cong):
+        issues.append({"gate": g, "kind": TRANG_THAI_GIU_DA_KY,
+                       "reason": f"{g} ĐÃ KÝ được giữ nguyên dù chuỗi muốn sinh lại — việc của PI/IRB",
+                       "offending_upstream": []})
     if not issues and not fresh.get("fresh", True):
         # stale_report nói không tươi mà không kèm issues (dạng rút gọn) — giữ kết luận «không tươi».
         issues.append({"gate": "*", "kind": "stale", "reason": "pipeline_freshness báo chưa tươi",
                        "offending_upstream": []})
-    return {"fresh": not issues, "issues": issues, "n_issues": len(issues),
+    nq_loi = str((nq or {}).get("loi") or "") or None
+    ket_luan = "chua_tuoi" if issues else ("khong_ket_luan" if nq_loi else "tuoi")
+    return {"fresh": ket_luan == "tuoi", "ket_luan": ket_luan, "issues": issues, "n_issues": len(issues),
             "checkpoints_present": fresh.get("checkpoints_present") or [],
             "stale_gates": list(fresh.get("stale_gates") or []), "orphan_gates": list(fresh.get("orphan_gates") or []),
             "lech_noi_dung": sorted(lech_n, key=_chi_so_cong),
             "mtime_khong_tin_duoc": fresh.get("mtime_khong_tin_duoc"),
-            "nhat_quan_do_duoc": not (nq or {}).get("loi")}
+            "nhat_quan_do_duoc": not nq_loi, "nhat_quan_loi": nq_loi}
 
 
 def _hard_gates() -> List[str]:
@@ -770,6 +819,9 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
         ly_do_chay_lai["G0"] = "TRA LẠI PubMed vì đầu vào G0 đổi — " + lech_g0
     start_idx = GATE_ORDER.index(start_gate) if start_gate in GATE_ORDER else 0
     cong_ep = start_gate if start_gate in GATE_ORDER else None   # --from ÉP chạy lại từ cổng này (cascade)
+    # --from do NGƯỜI GỌI (khác `cong_ep` của nhánh quay lại đồng bộ N — tự động). Chỉ `--from` ĐÚNG một cổng cứng đã ký
+    # mới sinh lại cổng đó; dây chuyền từ `--from` sớm hơn vẫn giữ cổng đã ký (sửa sau thẩm định PR #247).
+    from_nguoi = start_gate if start_gate in GATE_ORDER else None
 
     gate_results: List[Dict[str, object]] = []
     total_runs = 0
@@ -786,6 +838,7 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
 
     while True:
         dirty = False   # một khi 1 cổng chạy lại, MỌI cổng sau phải chạy lại
+        nguon_dirty: Optional[str] = None   # cổng đầu tiên bật dirty trong lượt này (để báo lý do giữ cổng đã ký)
         quay_lai: Optional[str] = None
         cong_chan_truoc: Optional[str] = None   # cổng phía trước chấm sống BLOCKED (dù đã tươi)
         for idx, gate in enumerate(GATE_ORDER):
@@ -809,6 +862,23 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
                                      "detail": "đã tươi, bỏ qua", "song": song, "vong": vong})
                 if song.get("muc") == "BLOCKED" and cong_chan_truoc is None:
                     cong_chan_truoc = gate
+                continue
+
+            # Rào cổng ĐÃ KÝ (sửa sau thẩm định PR #247): cổng cứng chấm sống PASS chỉ được sinh lại khi người gọi
+            # `--from` ĐÚNG cổng đó. Dây chuyền dirty (kể cả từ `--from` sớm hơn), cũ/mồ côi theo mtime (lượt sau khi
+            # cổng phía trước đã sinh lại), nhánh quay lại đồng bộ N ⇒ GIỮ NGUYÊN, không gọi cổng con, không bật dirty.
+            ep_dung_cong = vong == 1 and from_nguoi == gate
+            if (gate in GC._GATE_REQUIRED_STAKEHOLDERS and cp_exists and not ep_dung_cong
+                    and _cong_da_ky(gate, study, out_dir)):
+                gate_results.append({
+                    "gate": gate, "status": TRANG_THAI_GIU_DA_KY, "attempts": 0,
+                    "guardrail": _read_guardrail(out_dir, gate), "vong": vong,
+                    "song": _cham_song(gate, study, out_dir),
+                    "detail": _ly_do_giu_da_ky(
+                        gate, study, out_dir, nguon_dirty=nguon_dirty if dirty else None,
+                        tu_from=from_nguoi if (dirty and vong == 1) else None,
+                        cu_mtime=(ly_do_chay_lai.get(gate, "") if gate in stale_set else None),
+                        blocked_cp=blocked_cp, ep_tu_dong=forced_start)})
                 continue
 
             # K2 — nền phía trước không dùng được thì KHÔNG dựng tiếp cổng này.
@@ -863,6 +933,7 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
 
             if res["status"] in TRANG_THAI_DA_SINH:
                 dirty = True   # cổng này mới → downstream phải chạy lại
+                nguon_dirty = nguon_dirty or gate
                 # K7 — G3 vừa sinh N: bản chép N ở cổng TRƯỚC (G1 A2, G2 TRDS 17) lệch ⇒ quay lại đồng bộ MỘT lần.
                 if gate == "G3" and not da_quay_lai_n:
                     lech_sau, _da_ky = _lech_co_mau_tu_chay_lai(out_dir, study)
@@ -915,6 +986,12 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
     ran = [r for r in gate_results if r["status"] in TRANG_THAI_DA_SINH]
     failed = [r for r in gate_results if r["status"] == "failed"]
     blocked = [r for r in gate_results if r["status"] in TRANG_THAI_DUNG]
+    # Cổng đã ký bị GIỮ — theo kết quả CUỐI của từng cổng (lượt quay lại đè lượt trước).
+    cuoi: Dict[str, Dict[str, object]] = {}
+    for r in gate_results:
+        if r.get("status") != "quay_lai_dong_bo_n":
+            cuoi[str(r["gate"])] = r
+    giu_da_ky = {g: str(r.get("detail") or "") for g, r in cuoi.items() if r.get("status") == TRANG_THAI_GIU_DA_KY}
 
     report = {
         "study": study,
@@ -928,6 +1005,9 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
         "n_du_thao": sum(1 for r in ran if r["status"] == "du_thao"),
         "n_failed": len(failed),
         "n_blocked": len(blocked),
+        # Cổng ĐÃ KÝ được giữ nguyên dù chuỗi muốn sinh lại (việc của PI/IRB) — mã thoát ≠ 0 khi > 0.
+        "n_giu_da_ky": len(giu_da_ky),
+        "giu_cong_da_ky": giu_da_ky,
         "total_gate_runs": total_runs,
         "converged_fresh": post.get("fresh", False),   # ghi đè bên dưới bằng độ tươi TỔNG HỢP
         "readiness": readiness,
@@ -938,7 +1018,8 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
         "g0_dau_vao_doi": lech_g0_sau,
     }
     # K7 — «tươi» chỉ khi mtime, bản chép N, đầu vào G0 và nhất quán xuyên cổng (không lệch cứng) đều sạch.
-    report["do_tuoi_tong_hop"] = _do_tuoi_tong_hop(post, lech_n_sau, lech_g0_sau, report["nhat_quan_xuyen_cong"])
+    report["do_tuoi_tong_hop"] = _do_tuoi_tong_hop(post, lech_n_sau, lech_g0_sau, report["nhat_quan_xuyen_cong"],
+                                                   giu_da_ky)
     report["converged_fresh"] = report["do_tuoi_tong_hop"]["fresh"]
     # Ghi report.
     (out_dir / "pipeline_run_report.json").write_text(
@@ -977,23 +1058,31 @@ def _nhan_cong(r: Dict[str, Any]) -> str:
         return f"⛔ {r['gate']}: KHÔNG CHẠY — lệch cứng xuyên cổng ở các cổng phía trước"
     if st == "dung_nen_bi_chan":
         return f"⛔ {r['gate']}: KHÔNG CHẠY — {str(r.get('detail') or '')[:140]}"
+    if st == TRANG_THAI_GIU_DA_KY:
+        return f"🔏 {r['gate']}: GIỮ — cổng ĐÃ KÝ (chấm sống {ma_song}), hệ không tự sinh lại"
     mark = {"blocked_missing_input": "🚧", "failed": "❌"}.get(str(st), "?")
     return f"{mark} {r['gate']}: {st}"
 
 
 def _in_do_tuoi(th: Dict[str, Any], nhan: str) -> None:
-    """In độ tươi TỔNG HỢP — không bao giờ «✅ TƯƠI» khi còn bản chép N lệch hay lệch cứng xuyên cổng (K7)."""
+    """In độ tươi TỔNG HỢP — không bao giờ «✅ TƯƠI» khi còn bản chép N lệch hay lệch cứng xuyên cổng (K7), cũng không
+    khi nhất quán xuyên cổng KHÔNG ĐO ĐƯỢC (⚪ CHƯA KẾT LUẬN ĐƯỢC — sửa sau thẩm định PR #247)."""
     if th.get("mtime_khong_tin_duoc"):
         print(f"  {nhan}: ⚪ KHÔNG ĐO ĐƯỢC — {str(th['mtime_khong_tin_duoc'])[:160]}")
         return
+    nq_loi = th.get("nhat_quan_loi") or ("không rõ lỗi" if th.get("nhat_quan_do_duoc") is False else None)
     if th.get("fresh"):
-        phu = ("" if th.get("nhat_quan_do_duoc", True)
-               else " — nhất quán xuyên cổng ⚪ KHÔNG ĐO ĐƯỢC (không kết luận phần này)")
-        print(f"  {nhan}: ✅ TƯƠI (mtime + bản chép N của G3 + đầu vào G0 + không lệch cứng xuyên cổng){phu}")
+        print(f"  {nhan}: ✅ TƯƠI (mtime + bản chép N của G3 + đầu vào G0 + không lệch cứng xuyên cổng)")
+        return
+    if th.get("ket_luan") == "khong_ket_luan":
+        print(f"  {nhan}: ⚪ CHƯA KẾT LUẬN ĐƯỢC — mtime, bản chép N của G3, đầu vào G0 sạch nhưng nhất quán xuyên cổng "
+              f"KHÔNG ĐO ĐƯỢC ({str(nq_loi)[:100]}) — không phải «tươi», cũng không phải «lệch»")
         return
     print(f"  {nhan}: ⚠ CHƯA TƯƠI / CHƯA NHẤT QUÁN — {th.get('n_issues', 0)} vấn đề:")
     for i in th.get("issues") or []:
         print(f"    ⚠ [{i.get('kind')}] {str(i.get('reason') or '')[:200]}")
+    if nq_loi:
+        print(f"    ⚪ nhất quán xuyên cổng KHÔNG ĐO ĐƯỢC ({str(nq_loi)[:100]}) — phần này chưa kết luận")
 
 
 def print_summary(report: Dict[str, object]) -> None:
@@ -1014,8 +1103,8 @@ def print_summary(report: Dict[str, object]) -> None:
         if r.get("ly_do_chay_lai"):
             print(f"        ↳ chạy lại vì: {str(r['ly_do_chay_lai'])[:200]}")
     print(f"  Đã chạy: {report['n_ran']} (đạt {report.get('n_dat', 0)} · dự thảo {report.get('n_du_thao', 0)}) · "
-          f"lỗi: {report['n_failed']} · dừng/chặn: {report['n_blocked']} · tổng lần chạy: "
-          f"{report['total_gate_runs']}")
+          f"lỗi: {report['n_failed']} · dừng/chặn: {report['n_blocked']} · giữ cổng đã ký: "
+          f"{report.get('n_giu_da_ky', 0)} · tổng lần chạy: {report['total_gate_runs']}")
 
     # DỪNG chờ input đời-thực: nêu CHÍNH XÁC 1 hành động bác sĩ cần làm.
     stops = [r for r in report["gate_results"]
@@ -1035,6 +1124,12 @@ def print_summary(report: Dict[str, object]) -> None:
                   "run_pipeline (--from <cổng sớm nhất cần dựng lại>).")
         elif r["status"] in ("chan_song", "dung_nen_bi_chan"):
             print(f"  ⛔ DỪNG ở {r['gate']}: {str(r.get('detail') or '')[:300]}")
+    # Cổng ĐÃ KÝ được giữ nguyên (sửa sau thẩm định PR #247) — hệ không tự sinh lại, không ký thay.
+    giu = report.get("giu_cong_da_ky") or {}
+    if giu:
+        print("  🔏 GIỮ cổng ĐÃ KÝ — hệ KHÔNG tự sinh lại, KHÔNG ký thay (việc của PI/IRB):")
+        for g in sorted(giu, key=_chi_so_cong):
+            print(f"    • {giu[g]}")   # không cắt: cuối dòng là lệnh sinh lại CÓ CHỦ Ý (--from <cổng>) cho PI
 
     _in_do_tuoi(report.get("do_tuoi_tong_hop") or report["freshness_after"], "Freshness sau")
 
@@ -1084,10 +1179,12 @@ def main() -> int:
     report = orchestrate(args.study, args.topic, args.max_attempts,
                          args.from_gate, args.check_only)
     print_summary(report)
-    # Mã thoát: 0 nếu không có cổng lỗi/chặn và đã hội tụ tươi (độ tươi TỔNG HỢP: mtime + nội dung — K7).
+    # Mã thoát: 0 nếu không có cổng lỗi/chặn/giữ-đã-ký và đã hội tụ tươi (độ tươi TỔNG HỢP: mtime + nội dung — K7).
+    # 1 = chưa kết luận «đạt/tươi» — gồm cả «không đo được» nhất quán xuyên cổng (⚪, không phải 🔴) và cổng đã ký bị
+    # giữ (việc của PI/IRB). Sửa sau thẩm định PR #247: «không đo được» không bao giờ cho mã 0.
     if report.get("mode") == "check_only":
         return 0 if (report.get("do_tuoi_tong_hop") or report["freshness_before"])["fresh"] else 1
-    ok = (report["n_failed"] == 0 and report["n_blocked"] == 0
+    ok = (report["n_failed"] == 0 and report["n_blocked"] == 0 and not report.get("n_giu_da_ky")
           and report["converged_fresh"])
     return 0 if ok else 1
 
