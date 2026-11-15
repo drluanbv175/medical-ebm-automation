@@ -921,10 +921,24 @@ def build_supporting_artifacts(
 > Cần bác sĩ kiểm chứng.
 """
 
+    # 15/11/2026 (giai đoạn «Tổng quan tài liệu»): bài chủ nhiệm đã LOẠI khỏi danh mục trích dẫn (không lấy được toàn
+    # văn, lệch đề tài — `DANH_MUC_TRICH_DAN_<mã>.json` → `loai_bo`) không còn là chứng cứ của đề tài. Sổ BTM dựng
+    # 28/10 vẫn liệt kê 19 bài loại ngày 25/10 như chứng cứ — tách ra mục riêng, giữ truy nguyên, không xoá.
+    import danh_muc_trich_dan as DMT  # noqa: PLC0415
+    loai = DMT.loai_bo(out_dir, study)
+    da_loai: List[str] = []
+
+    def _bi_loai(ma_hien: str, khoa: str) -> bool:
+        x = loai.get(khoa)
+        if not x:
+            return False
+        da_loai.append(f"{ma_hien} — {_text(x.get('ly_do') or x.get('nhom_ly_do'))} (loại ngày {x.get('ngay') or '?'})")
+        return True
+
     evidence_rows: List[str] = []
     for effect in effects:
         pmid = str(effect.get("pmid") or "").strip()
-        if not pmid:
+        if not pmid or _bi_loai(f"PMID:{pmid}", f"pmid:{pmid}"):
             continue
         evidence_rows.append(
             "| PMID:{pmid} | {title} | [CẦN TRÍCH XUẤT] | {effect} | "
@@ -942,10 +956,11 @@ def build_supporting_artifacts(
     sr_trong_so: List[str] = []
     dem_nguon: Dict[str, int] = {}
     bien_nhan, ngay_bn = _bien_nhan_rut_bai(out_dir)
-
     def _dong_ledger(ma_hien: str, khoa: str, tieu_de_md: Optional[str]) -> bool:
-        """Thêm một dòng sổ; False khi bài đã sàng là lạc đề (không vào bảng)."""
+        """Thêm một dòng sổ; False khi bài đã sàng là lạc đề hoặc chủ nhiệm đã loại (không vào bảng)."""
         nonlocal n_sang
+        if _bi_loai(ma_hien, khoa):
+            return False
         bai = sang_g0.get(khoa)
         if bai and bai.get("lien_quan") == "khong":
             lac_de.append(f"{ma_hien} — {_text(bai.get('ly_do') or bai.get('tom_tat'))}")
@@ -1026,6 +1041,10 @@ def build_supporting_artifacts(
                 if (out_dir / f"G0_TIM_BO_SUNG_PRISMA_S_{study}.md").exists() else "[CẦN XÁC NHẬN]")
     lac_de_md = ("\n## Đã sàng ở G0 — lạc đề (không vào sổ)\n" + "\n".join(f"- {x}" for x in lac_de) + "\n"
                  if lac_de else "")
+    da_loai_md = (f"\n## Đã loại khỏi danh mục trích dẫn của đề tài (không vào sổ)\n"
+                  f"> Quyết định của chủ nhiệm ở `{DMT.TEP.format(study=study)}` → `loai_bo` (lý do và ngày từng bài); "
+                  "khôi phục bài nào thì chuyển về `trich_dan` rồi dựng lại sổ (`run_g1_auto.py --dung-lai-ho-tro`).\n"
+                  + "\n".join(f"- {x}" for x in sorted(set(da_loai))) + "\n") if da_loai else ""
     ngay_tim = _ngay_tim_g0(out_dir) or "[CẦN — không đọc được `G0_pubmed_raw.json` → search_provenance.ngay_tra]"
     dong_ngay_tim = (f"- Ngày tìm cuối (PubMed, truy vấn G0): {ngay_tim} · lượt tìm bổ sung: theo tệp PRISMA-S ở "
                      f"dòng dưới · ngày sinh sổ: {generated_at[:10]}")
@@ -1046,7 +1065,7 @@ def build_supporting_artifacts(
 | PMID/DOI | Tiêu đề | Thiết kế/N | Hiệu ứng chính | RoB | Trạng thái nội dung |
 |---|---|---|---|---|---|
 {chr(10).join(evidence_rows)}
-{lac_de_md}
+{lac_de_md}{da_loai_md}
 ## Khoảng trống nghiên cứu
 {gap_text}
 

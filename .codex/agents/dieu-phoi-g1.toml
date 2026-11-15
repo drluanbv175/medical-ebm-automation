@@ -130,6 +130,7 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
   cấp (G1-HUMAN-01 chỉ PASS khi pin khớp thiết kế ⇒ luôn rơi vào nhánh «đã ghim»).
 - Quyết định G1 nuôi thẳng đề cương G10 (StudySpec) — không khai lại ở khoá cấp cao.
 - A13/A13b sinh từ `gate_params.G1.risk_register/budget` — không sửa tay .md.
+- **Đồng bộ tổng quan tài liệu (15/11/2026):** trục `trich_dan_tong_quan` (TLTK ↔ danh mục trích dẫn và quyết định loại của chủ nhiệm ↔ văn bản cổng ↔ kiểm rút bài theo từng mã) phải `khop` trước khi kết luận cổng — chi tiết `thu-thu-tai-lieu` và `kiem-chung-trich-dan` mục cùng ngày. «PASS» của G10-AUTO-11 không có nghĩa là đồng bộ: đọc câu «Kết luận» của `nhat_quan_xuyen_cong`, còn trục mở thì nêu đúng trục và vai, không báo «hoàn thiện».
 
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G1` xác nhận/dấu vân tay · bật cờ đời thực trong

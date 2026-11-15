@@ -113,6 +113,14 @@ def test_ky_thuat_phi_xac_suat_la_lech_cung_tru_phu_dinh_va_thuat_lai(tmp_path):
     _ghi(tmp_path, dc.name, DC_DUNG + thuat_lai)
     k = NQ._truc_ky_thuat_chon_mau(tmp_path, STUDY, _meta(), SAP_DUNG)
     assert k["muc"] == NQ.MUC_CAN_XEM and "thuật lại" in k["ghi_chu"]
+    # 15/11/2026: đoạn thuật lại TỰ giải trình (đổi + lý do — như đề cương C1a §4.4.3) ⇒ không «cần xem» mãi
+    co_ly_do = ("Thuyết minh đã nộp ghi phương pháp là chọn mẫu thuận tiện. Đề cương cụ thể hoá bằng khung phân tầng, "
+                "theo hướng chặt chẽ hơn vì thời gian chờ thay đổi theo giờ khám.\n")
+    _ghi(tmp_path, dc.name, DC_DUNG + co_ly_do)
+    k = NQ._truc_ky_thuat_chon_mau(tmp_path, STUDY, _meta(), SAP_DUNG)
+    assert k["muc"] == NQ.MUC_KHOP and "ĐÃ giải trình" in k["ghi_chu"]
+    _ghi(tmp_path, dc.name, DC_DUNG + co_ly_do.replace("cụ thể hoá", "cụ thể hóa"))  # cách bỏ dấu cũ (đề cương C1a)
+    assert NQ._truc_ky_thuat_chon_mau(tmp_path, STUDY, _meta(), SAP_DUNG)["muc"] == NQ.MUC_KHOP
 
 
 def test_ky_thuat_g1_chua_khai_la_chua_du(tmp_path):

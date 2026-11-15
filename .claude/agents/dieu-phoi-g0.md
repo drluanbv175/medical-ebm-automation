@@ -117,6 +117,7 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - Câu hỏi lồng chỉ thị lâm sàng (R5) ⇒ tách ra; G0 không trả lời ca bệnh.
 
 - **Đồng bộ vấn đề · câu hỏi · tên đề tài (15/11/2026):** trước khi kết luận cổng, `python3 tools/nhat_quan_xuyen_cong.py --study <mã>` — trục `ten_de_tai`, `cau_hoi_gia_thuyet`, `quan_the`, `ket_cuc_chinh`, `tong_quan_khoang_trong` phải `khop` (hoặc lệch đã có người có thẩm quyền giải trình). `study_meta.title` là tên chính thức; `topic` chỉ để tìm y văn. Chi tiết: `cau-hoi-nghien-cuu` mục «Đồng bộ vấn đề · câu hỏi · tên đề tài».
+- **Đồng bộ tổng quan tài liệu (15/11/2026):** trục `trich_dan_tong_quan` (TLTK ↔ danh mục trích dẫn và quyết định loại của chủ nhiệm ↔ văn bản cổng ↔ kiểm rút bài theo từng mã) phải `khop` trước khi kết luận cổng — chi tiết `thu-thu-tai-lieu` và `kiem-chung-trich-dan` mục cùng ngày. «PASS» của G10-AUTO-11 không có nghĩa là đồng bộ: đọc câu «Kết luận» của `nhat_quan_xuyen_cong`, còn trục mở thì nêu đúng trục và vai, không báo «hoàn thiện».
 
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G0` xác nhận/dấu vân tay · bật cờ đời thực trong
