@@ -225,7 +225,7 @@ def test_g5_auto_11_chuoi_day_du_pass_lech_cung_block_thieu_nguon_review(tmp_pat
     assert _auto11(report)["status"] == "PASS" and report["status"] == G5Q.STATUS_READY
     # bộ biến G3 khai thêm một biến mà từ điển không có ⇒ mẫu nhập sai ⇒ không được khoá
     g3 = out_dir / f"G3_BO_BIEN_SO_{STUDY}.md"
-    goc = g3.read_text(encoding="utf-8", newline="\n")
+    goc = g3.read_text(encoding="utf-8")
     g3.write_text(goc + "| hba1c | hba1c | Định lượng | 4–20 |\n", encoding="utf-8", newline="\n")
     report = G5Q.evaluate_study(STUDY, out_dir, repo_root=tmp_path, write=False)
     assert _auto11(report)["status"] == "BLOCK" and report["status"] == G5Q.STATUS_BLOCKED

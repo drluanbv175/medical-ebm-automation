@@ -112,6 +112,17 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 
 ## 7. Lưu ý riêng của cổng G1
 - Thiết kế ngoài 8 mã chuỗi ⇒ G1-AUTO-02c CHẶN — PI chọn lại hoặc dùng agent chuyên trách.
+- **Thứ tự ưu tiên thiết kế (14/11/2026, y khoa #246/#250 — đã gộp):** PI ghim `study_meta.design_code` > loại câu
+  hỏi PI chốt ở G0 (`gate_params.G0.question_type` hoặc `--question-type`) > từ khoá tên đề tài. Đã chốt loại câu
+  hỏi thì từ khoá chỉ tinh chỉnh TRONG nhóm thiết kế của loại đó; câu hỏi `treatment` chỉ nhận cụm KHAI thiết kế
+  (RCT, tổng quan, bệnh-chứng) — «tỷ lệ», «tử vong», «chẩn đoán» không đổi được thiết kế. Nhóm từ khoá bị bỏ qua
+  nằm ở `tu_khoa_bi_bo_qua` của `G1_checkpoint.json` (cũng in khi chạy) — trình nguyên văn cho PI, không tự áp.
+  Chỉ «thử nghiệm lâm sàng/clinical trial» mà không khai ngẫu nhiên hoá ⇒ RCT nhưng MƠ HỒ (G1-AUTO-04 REVIEW, PI
+  ghim); có cụm phủ định («không ngẫu nhiên», «một nhánh», «non-RCT», «ngẫu nhiên hoá Mendel») ⇒ ngoài 8 mã, MƠ HỒ.
+- **G1-AUTO-02d CHẶN** khi thiết kế do MÁY suy (PI chưa ghim) trái loại câu hỏi G0; PI đã ghim đúng thiết kế đang
+  dùng ⇒ chỉ REVIEW (PI giải trình nếu cố ý). Gỡ: chạy lại `run_g1_auto.py` (suy lại theo G0), hoặc PI sửa
+  `question_type` ở G0, hoặc PI ghim `design_code` — agent KHÔNG tự ghim để qua cổng. G1 đã xác nhận không bị hạ
+  cấp (G1-HUMAN-01 chỉ PASS khi pin khớp thiết kế ⇒ luôn rơi vào nhánh «đã ghim»).
 - Quyết định G1 nuôi thẳng đề cương G10 (StudySpec) — không khai lại ở khoá cấp cao.
 - A13/A13b sinh từ `gate_params.G1.risk_register/budget` — không sửa tay .md.
 
