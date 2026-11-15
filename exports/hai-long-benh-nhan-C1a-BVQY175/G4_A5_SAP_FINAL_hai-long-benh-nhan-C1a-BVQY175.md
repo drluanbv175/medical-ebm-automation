@@ -1,7 +1,7 @@
 # A5, SAP FINAL + SAP LOCK CERTIFICATE (DRAFT, CHỜ BÁC SĨ KÝ)
 **Đề tài:** Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175  
-**Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Phiên bản SAP:** 1.4 | **Ngày sinh:** 2026-07-31 | **Cập nhật:** 2026-10-26
-**Chuẩn báo cáo:** STROBE
+**Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Phiên bản SAP:** 1.5 | **Ngày sinh:** 2026-07-31 | **Cập nhật:** 2026-11-15
+**Chuẩn báo cáo:** STROBE + CROSS
 
 > LƯU Ý: **CỔNG G4, SAP LOCK:** SAP này ở trạng thái DRAFT. Bác sĩ phải đọc, điền [CẦN...], KÝ ở Phần 5.
 > Sau khi ký: KHÔNG thay đổi kết cục chính / mô hình chính. Phân tích thêm sau khi xem dữ liệu → ghi THĂM DÒ.
@@ -20,8 +20,8 @@
 |---|---|
 | Tên đề tài | Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175 |
 | Mã nghiên cứu | hai-long-benh-nhan-C1a-BVQY175 |
-| Thiết kế | Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence) |
-| Chuẩn báo cáo | STROBE |
+| Thiết kế | Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional) |
+| Chuẩn báo cáo | STROBE + CROSS |
 | Ngày soạn SAP | 2026-07-31 |
 | Phiên bản | 1.5 (sửa đổi sau khoá, TRƯỚC khi có số liệu — đồng bộ tên đề tài và trích dẫn với đề cương nộp, 15/11/2026; cần thống kê viên/PI ký lại G4) |
 
@@ -36,7 +36,7 @@
 | 1.2 | 2026-10-17 | Trợ lý tự động theo yêu cầu bác sĩ; thẩm định độc lập (tham-dinh-dau-ra) | Đồng bộ với đề cương nộp Hội đồng (bản gốc mới): N tối thiểu 808, DE 1,78, CV 1,0 (§1, §12); KTC Wilson trên n hiệu dụng (§3); quy tắc trọng số hậu phân tầng tách Mục tiêu 1/2 + gộp tầng nhỏ + thứ tự ưu tiên (§4); §9, §10, §11 đồng bộ |
 | 1.3 | 2026-10-17 | Trợ lý tự động theo biên bản hội đồng G0 DP-G0-1 (G0-TB-20261017T100650-107f4acb) | §12: thêm «Lực cho mục tiêu phụ» (Mục tiêu 2 — logistic thứ tự, Whitehead 1993, có hiệu chỉnh gom cụm) lấy từ G3 A4 PHẦN 2c; dòng Power ghi rõ kết cục chính không dùng power. Thống kê viên kiểm, PI quyết khi chốt G4 |
 | 1.4 | 2026-10-26 | Trợ lý tự động theo quyết định của bác sĩ 25/10/2026 (hội đồng G1: biên bản G1-TB-20261025T152106-1ac1bb54 và G1-TB-20261025T152307-267c5105; `hoi_dong/G1/quyet_dinh_bac_si.json`) | SAP AMENDMENT trước khi có số liệu: CV cỡ chùm 1,0 → 0,14 (ước của chủ nhiệm, phương án A; CV 1,0 giữ làm độ nhạy) ⇒ DE 1,78 → 1,39, N tối thiểu 808 → 630, n hiệu dụng mục tiêu 2 ≈ 478 → 612 (§1, §3, §12); quần thể ước lượng = người đã khám xong (§1, §4); phân tích giới hạn định trước cho người bỏ về (§9; DP-G1-1/DP-G1-2 phương án (i)); giả thuyết mục tiêu phụ MT2 H0/H1 (§12; DP-G1-2 phương án (i)); §1 tách luật loại PHIẾU (`PhieuHopLe`) khỏi tiêu chí loại NGƯỜI và ghi đúng tiêu chí «đã tham gia nghiên cứu trước đó» như mục 4.3.2 đề cương (biên bản G1-TB-20261025T152307-267c5105, việc sửa 4); §1/§12 ghi MỘT định nghĩa N = 1.000 phiếu hợp lệ, 850 là kịch bản thận trọng của lực MT2 (biên bản G1-DG-20261025T151536-2f1beb6d). Kết cục chính, mô hình chính, ngưỡng hài lòng KHÔNG đổi. Chờ thống kê viên ký lại G4 |
-| 1.5 | 2026-11-15 | Trợ lý tự động theo yêu cầu bác sĩ 15/11/2026 («C1a nếu không đạt sự đồng bộ hãy chỉnh sửa cho đồng bộ»; «nếu không lấy được hãy loại bỏ cho tôi») | (1) Tên đề tài = tên chính thức của đề cương nộp (study_meta.title), thay chuỗi chủ đề tìm y văn G0; (2) bỏ trích dẫn Dean & Pagano 2015 và Solon, Haider & Wooldridge 2015 — không lấy được toàn văn kể cả khi bác sĩ đăng nhập; giữ nguyên phương pháp (KTC Wilson trên cỡ mẫu hiệu dụng; mô hình có trọng số là phân tích độ nhạy); Lumley 2004 giữ và nay có trong TLTK đề cương nộp [50]. (3) §2 gọi đủ tên 6 biến điểm lĩnh vực (trước ghi gộp «A_Mean…F_Mean») cho khớp ma trận mục tiêu → biến. KHÔNG đổi kết cục, mô hình, tập biến hay N. |
+| 1.5 | 2026-11-15 | Trợ lý tự động theo yêu cầu bác sĩ 15/11/2026 («C1a nếu không đạt sự đồng bộ hãy chỉnh sửa cho đồng bộ»; «nếu không lấy được hãy loại bỏ cho tôi») | (1) Tên đề tài = tên chính thức của đề cương nộp (study_meta.title), thay chuỗi chủ đề tìm y văn G0; (2) bỏ trích dẫn Dean & Pagano 2015 và Solon, Haider & Wooldridge 2015 — không lấy được toàn văn kể cả khi bác sĩ đăng nhập; giữ nguyên phương pháp (KTC Wilson trên cỡ mẫu hiệu dụng; mô hình có trọng số là phân tích độ nhạy); Lumley 2004 giữ và nay có trong TLTK đề cương nộp [50]. (3) §2 gọi đủ tên 6 biến điểm lĩnh vực (trước ghi gộp «A_Mean…F_Mean») cho khớp ma trận mục tiêu → biến. (4) Giai đoạn thiết kế (đồng bộ với G1 và đề cương nộp): nhãn thiết kế «cắt ngang mô tả có phân tích» (MT2 là mục tiêu phân tích); chuẩn báo cáo STROBE + CROSS như đề cương nộp; §3 thêm báo cáo đáp ứng/người từ chối (G1 non_response_plan, đề cương 4.4.2) và đặc tính đo lường của bộ câu hỏi (chép đề cương 4.5.3; §10 thêm gói `psych`, `lavaan`); §5 thêm phân tích thăm dò định trước vai trò trung gian của kỳ vọng (đề cương 4.10, Phụ lục D.3) — phương pháp chờ thống kê viên chọn; tiêu đề ghi đúng phiên bản 1.5. KHÔNG đổi kết cục, mô hình, tập biến hay N. |
 
 ---
 
@@ -70,6 +70,8 @@
   - Báo kèm ICC thực tế, CV cỡ chùm thực tế (độ lệch chuẩn ÷ trung bình số phiếu mỗi bàn) và DE theo ICC = 1 + ((CV² + 1)·m − 1)·ICC (Eldridge 2006) để đối chiếu với giả định lập kế hoạch (G3: DE 1,39 với CV 0,14; độ nhạy CV 1,0: DE 1,78); báo cả KTC Wilson giả định độc lập để thấy mức nới rộng do gom cụm  
   - Khi áp trọng số hậu phân tầng (§4), tỷ lệ và DE lấy từ thiết kế CÓ trọng số (R `survey`, đường Python không hỗ trợ trọng số) nên DE đã gồm cả hiệu ứng trọng số  
 - Báo % đạt điểm sàn/trần mỗi lĩnh vực; > 15% (ngưỡng Terwee) → ghi là hạn chế đo lường, ưu tiên trung vị [IQR]  
+- **Đáp ứng và người từ chối (G1 `non_response_plan`; đề cương 4.4.2, Bảng 4.3, Bảng 5.6):** từ sổ theo dõi chọn mẫu và từ chối (không định danh) báo số người được mời, đồng ý, từ chối; tỷ lệ đồng ý, hoàn thành phiếu, phiếu hợp lệ và đáp ứng chung; so sánh người từ chối với người tham gia theo nhóm tuổi, giới, khung giờ — trình bày n (%) hai nhóm cạnh nhau, chỉ mô tả  
+- **Đặc tính đo lường của bộ câu hỏi trong mẫu (đề cương 4.5.3; G1 sai lệch «Sai lệch đo lường»):** (1) phân bố điểm từng lĩnh vực, G1 và điểm tổng hợp: TB ± ĐLC, trung vị [IQR], độ lệch, độ nhọn, biểu đồ; (2) độ tin cậy nội tại: Cronbach's alpha cho lĩnh vực A, B, C, D; lĩnh vực E báo kèm cảnh báo và hệ số tương quan Spearman giữa hai câu; lĩnh vực F không tính; alpha và omega cho cụm ba câu G1–G3; (3) hiệu ứng sàn – trần: tỷ lệ đạt điểm thấp nhất và cao nhất ở mỗi lĩnh vực và ở G1 (dòng «Báo % đạt điểm sàn/trần» ở trên); (4) giá trị cấu trúc: sau khi khoá dữ liệu chia ngẫu nhiên hai nửa mẫu, phân tầng theo khung giờ và bàn khám (seed §10); nửa thứ nhất — phân tích nhân tố khám phá trên 29 câu A–E (ma trận tương quan polychoric, số nhân tố theo phân tích song song, phép xoay xiên); nửa thứ hai — phân tích nhân tố khẳng định mô hình năm nhân tố A–E trên cùng 29 câu (ước lượng WLSMV); lĩnh vực F là chỉ số đơn câu. Phù hợp tốt khi CFI ≥ 0,95, TLI ≥ 0,95, RMSEA ≤ 0,06 và SRMR ≤ 0,08; chấp nhận được khi CFI và TLI ≥ 0,90 và RMSEA ≤ 0,08 (nguồn ngưỡng: đề cương 4.5.3). Mô hình không đạt ⇒ vẫn báo đủ, ưu tiên kết quả từng câu, trình bày cấu trúc nửa thứ nhất như phát hiện cần kiểm định thêm, KHÔNG sửa mô hình theo chỉ số hiệu chỉnh rồi báo như mô hình định trước. G1 là một câu độc lập nên kết quả này không ảnh hưởng hiệu lực hai mục tiêu  
 - Đơn biến (Bảng 5.3): t-test/ANOVA hoặc Pearson/Spearman (kết cục liên tục), χ²/Fisher (nhị phân thứ cấp), luôn kèm hiệu ứng + KTC 95% — **chỉ vai trò mô tả, KHÔNG phải bước lọc biến**  
 
 ### §4 PHÂN TÍCH CHÍNH
@@ -96,6 +98,8 @@ Ba nhóm biến đã KHÓA theo lập luận nhân quả trên DAG (Phụ lục 
 - **Biến sau-khám KHÔNG hiệu chỉnh:** `co_cls`, `so_quay_buoc` xảy ra sau khi gặp bác sĩ — chỉ dùng mô tả/thăm dò (mục 4.6.2 đề cương).  
 - **Phương pháp chọn biến:** đưa vào TOÀN BỘ tập forced-in đồng thời (không stepwise, không sàng lọc p đơn biến). Trần số tham số theo cỡ mẫu: n ≥ 104 + p (tuyến tính); ≥ 10 biến cố/tham số (logistic thứ cấp). Không có số hạng tương tác định trước (số hạng thời gian chờ × quân/dân đã gỡ bỏ, mục 4.6.2).  
 - **Giả định:** proportional odds (Brant/log-likelihood theo ranh giới cắt) — vi phạm → partial proportional odds/generalized ordered logit; đa cộng tuyến VIF/GVIF > 10 → xử lý; phi tuyến exposure (RCS 3 nút/phân vị); hiệu chuẩn; nhánh tuyến tính nhạy cảm: phần dư + robust HC3 + Cook's distance (không loại tùy tiện); nhánh logistic nhị phân thứ cấp: Box–Tidwell + calibration plot.  
+
+- **Phân tích thăm dò định trước — vai trò trung gian của kỳ vọng (đề cương 4.10 và Phụ lục D.3; G1 sai lệch «Nhiễu do tình trạng sức khỏe và kỳ vọng»):** biến trung gian `chenh_kyvong` (= `kyvong_thoigiancho` − `thoigian_cho`, `_bien-phai-sinh.csv`) và `xacnhan_kyvong` (câu 12, «so với mong đợi»); biến trước phơi nhiễm để thăm dò: `kyvong_thoigiancho`, `lydo_chon_theoyeucau`. KHÔNG đưa vào mô hình chính; trình bày riêng, không suy nhân quả. Phương pháp ước lượng: [CẦN THỐNG KÊ VIÊN CHỌN — đề cương 4.10 nêu phân tích này là thăm dò xác định trước nhưng chưa nêu phương pháp]  
 
 ### §6 DỮ LIỆU THIẾU
 
@@ -136,7 +140,7 @@ Ba nhóm biến đã KHÓA theo lập luận nhân quả trên DAG (Phụ lục 
 ### §10 PHẦN MỀM + SEED
 
 - **Phần mềm:** R ≥ 4.3 (đã khóa tại mục 4.10 đề cương)  
-- **Packages:** `stats`, `car`, `rms`, `logistf`, `mice` (mô hình phụ trợ); `MASS::polr` / `rms::orm` / `ordinal::clm` (mô hình chính — logistic thứ tự); `brant`, `VGAM`, `ordinal` (kiểm định & mở rộng proportional odds); `sandwich` + `lmtest` (sai số chuẩn vững theo chùm `vcovCL`); `survey` ≥ 4.5 (DE/n hiệu dụng `deff = "replace"`, hậu phân tầng `postStratify`, `svyolr`; phiên bản chính xác ghi bằng `sessionInfo()` khi chạy)  
+- **Packages:** `psych` (tương quan polychoric, phân tích song song, phân tích nhân tố khám phá) và `lavaan` (phân tích nhân tố khẳng định, WLSMV) cho đề cương 4.5.3 — đề xuất của bản nháp, thống kê viên xác nhận khi ký; `stats`, `car`, `rms`, `logistf`, `mice` (mô hình phụ trợ); `MASS::polr` / `rms::orm` / `ordinal::clm` (mô hình chính — logistic thứ tự); `brant`, `VGAM`, `ordinal` (kiểm định & mở rộng proportional odds); `sandwich` + `lmtest` (sai số chuẩn vững theo chùm `vcovCL`); `survey` ≥ 4.5 (DE/n hiệu dụng `deff = "replace"`, hậu phân tầng `postStratify`, `svyolr`; phiên bản chính xác ghi bằng `sessionInfo()` khi chạy)  
 - **Random seed:** `set.seed(20260830)` — giá trị ĐỀ XUẤT của bản nháp, dùng chung cho MICE/bootstrap/chia đôi mẫu EFA-CFA; chủ nhiệm/nhà thống kê xác nhận hoặc thay giá trị khi ký (A.6 mục 12 đề cương)  
 
 ### §11 DUMMY TABLES (Khung bảng kết quả)

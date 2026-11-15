@@ -1,5 +1,5 @@
 # A2 — THIẾT KẾ NGHIÊN CỨU & SAP SKELETON | hai-long-benh-nhan-C1a-BVQY175
-> Tạo tự động: 2026-10-28 15:08 | Rule-based; cỡ mẫu theo độ chính xác (G3) — không cần effect size cho kết cục chính
+> Tạo tự động: 2026-11-15 14:43 | Rule-based; cỡ mẫu theo độ chính xác (G3) — không cần effect size cho kết cục chính
 > [BẢN NHÁP TỰ ĐỘNG] — Bác sĩ xác nhận thiết kế chọn + điền [CẦN...] trước khi tiến G2/G4
 > Cần bác sĩ kiểm chứng.
 
@@ -15,11 +15,11 @@
 - Mã đề tài: `hai-long-benh-nhan-C1a-BVQY175`
 - Tên đề tài: Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
 - Phiên bản protocol: 1.0
-- Ngày tạo/cập nhật: 2026-10-28 15:08
+- Ngày tạo/cập nhật: 2026-11-15 14:43
 - Chủ nhiệm, nhà phương pháp, thống kê viên, quản lý dữ liệu: Theo đề cương §6.1 (bảng RACI): chủ nhiệm đề tài (A toàn đề tài — định hướng khoa học, duyệt đề cương/SAP/kinh phí, ký hồ sơ đạo đức); thư ký/điều phối (quản lý tài liệu, lịch, sổ tiến độ, Risk Register; quản lý dữ liệu lưu trữ/sao lưu theo §6.5); nhà thống kê/phân tích (R phân tích, A về tính đúng thống kê — cỡ mẫu Whitehead MT2, viết và khoá SAP; khuyến nghị độc lập với người thu thập); điều tra viên phát/thu phiếu (ngoài Khoa C1a); người nhập liệu (nhập đôi 100%, nên khác điều tra viên); giám sát chất lượng QC; tổ mở hòm phiếu 2 người và tổ mã hoá ý kiến mở 2 người + 1 phân xử (đều ngoài khoa; chủ nhiệm không tham gia); hội đồng chuyên gia I-CVI/S-CVI 6–10 người (≥ 2 đại diện người bệnh, ≤ 2 người thuộc C1a); bên thứ ba Phòng CNTT/QLCL trích HIS. Số người cụ thể mỗi vai do chủ nhiệm ấn định theo cỡ mẫu và lưu lượng khám.
 - Tài trợ, bảo hiểm, xung đột lợi ích và vai trò nhà tài trợ: [CẦN HOÀN THIỆN Ở G2/G9]
 - Chuẩn đề cương: Protocol định trước; đăng ký nếu cần minh bạch
-- Chuẩn báo cáo kết quả dự kiến: STROBE
+- Chuẩn báo cáo kết quả dự kiến: STROBE + CROSS
 
 ### 0.2 Cơ sở khoa học và khoảng trống
 - Vấn đề nghiên cứu và gánh nặng liên quan: Theo đề cương §1: hài lòng người bệnh là chỉ số cốt lõi của chất lượng khám chữa bệnh và là cấu phần bắt buộc trong khung quản lý chất lượng bệnh viện tại Việt Nam. Khối khám theo yêu cầu là mô hình đặc thù — người bệnh chi trả cao hơn, kỳ vọng cao hơn về phục vụ, thời gian chờ và tiện nghi; Khoa C1a giao thoa khối dịch vụ theo yêu cầu với vị trí tuyến cuối tại bệnh viện quân y đô thị lớn. Các «điểm đau» lặp lại trong y văn: thời gian chờ, thủ tục hành chính, thông tin, cơ sở vật chất, chi phí. Đơn vị cần dữ liệu nền tại chỗ để cải tiến chất lượng; đề tài không nhằm so sánh trực tiếp mô hình theo yêu cầu với khám thông thường.
@@ -34,7 +34,7 @@
 - Kết cục chính neo mục tiêu: G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_TrucTiep, Phần 3 phiếu)
 
 ### 0.4 Thiết kế, địa điểm và thời gian
-- Thiết kế đã chọn: Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)
+- Thiết kế đã chọn: Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)
 - Lý do chọn so với phương án thay thế: Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định thật, ưu tiên hơn suy luận tự động). Lý do của PI: Mô tả cắt ngang có phân tích. MT1 cần ước lượng tỷ lệ hiện mắc của một trạng thái (hài lòng) nên cắt ngang là thiết kế chuẩn; MT2 đo đồng thời phơi nhiễm và kết cục để ước lượng mối liên quan. Đã cân nhắc và loại đoàn hệ tiến cứu (vượt nhu cầu câu hỏi, không khả thi nguồn lực trong phạm vi một khoa) và bệnh chứng (không phù hợp cho câu hỏi ước lượng tỷ lệ). Không áp dụng khung estimand ICH E9(R1) vì là quan sát không can thiệp (mục 4.1 đề cương)
 - Địa điểm/bối cảnh: Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh — khối khám ngoại trú theo yêu cầu (dịch vụ) tại bệnh viện quân y tuyến cuối
 - Thời gian nghiên cứu: Dự kiến từ tháng 12/2026 đến tháng 12/2028. Thu thập mẫu chính chỉ bắt đầu sau T0 = ngày Hội đồng Đạo đức/lãnh đạo BVQY 175 phê duyệt, sau khi đã đăng ký OSF Registries, hoàn tất pha phát triển công cụ và dry-run F1–F5 (đề cương §4.9, §6.2).
@@ -103,14 +103,16 @@
 
 | Thiết kế | Phù hợp câu hỏi | Kiểm soát sai lệch | Khả thi | Lực | Chọn/Loại |
 |---|---|---|---|---|---|
-| **Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)** | ✅ Phù hợp nhất (Mô tả (cross-sectional)) | Cao (xem §2) | PI đã xác nhận (gate_params.G1.feasibility_confirmed) | theo G3 (`G3_A4_SAMPLE_SIZE`, G3_checkpoint) — N tối thiểu 630, hệ số thiết kế 1.39, N hiệu lực 1000 (số lấy từ G3_checkpoint lúc sinh tệp; G3 chốt hay chưa: đo sống `python3 tools/g3_quality_gate.py`) | **→ ƯU TIÊN** |
+| **Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)** | ✅ Phù hợp nhất (Mô tả (cross-sectional)) | Cao (xem §2) | PI đã xác nhận (gate_params.G1.feasibility_confirmed) | theo G3 (`G3_A4_SAMPLE_SIZE`, G3_checkpoint) — N tối thiểu 630, hệ số thiết kế 1.39, N hiệu lực 1000 (số lấy từ G3_checkpoint lúc sinh tệp; G3 chốt hay chưa: đo sống `python3 tools/g3_quality_gate.py`) | **→ ƯU TIÊN** |
 | [Đã pin bởi bác sĩ — không áp dụng bảng thiết kế thay thế tự động] | Phù hợp thay thế | Trung bình | — (thiết kế đã pin) | — (thiết kế đã pin) | Phương án 2 |
 | [Đã pin bởi bác sĩ — không áp dụng bảng thiết kế thay thế tự động] | Phù hợp trong điều kiện đặc biệt | Thấp hơn | — (thiết kế đã pin) | — (thiết kế đã pin) | Phương án 3 |
 
-**Lý do chọn ưu tiên `Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)`:**
+**Lý do chọn ưu tiên `Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)`:**
 Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định thật, ưu tiên hơn suy luận tự động). Lý do của PI: Mô tả cắt ngang có phân tích. MT1 cần ước lượng tỷ lệ hiện mắc của một trạng thái (hài lòng) nên cắt ngang là thiết kế chuẩn; MT2 đo đồng thời phơi nhiễm và kết cục để ước lượng mối liên quan. Đã cân nhắc và loại đoàn hệ tiến cứu (vượt nhu cầu câu hỏi, không khả thi nguồn lực trong phạm vi một khoa) và bệnh chứng (không phù hợp cho câu hỏi ước lượng tỷ lệ). Không áp dụng khung estimand ICH E9(R1) vì là quan sát không can thiệp (mục 4.1 đề cương)
 
-**Chuẩn báo cáo:** STROBE
+**Chuẩn báo cáo:** STROBE + CROSS
+> CROSS: thu mới bằng phiếu/bộ câu hỏi (nghiên cứu khảo sát).
+> ⚠ Cân nhắc RECORD: vừa thu mới vừa ghép dữ liệu thường quy có sẵn (HIS/bệnh án) — PI quyết có áp RECORD cho phần dữ liệu thường quy (mã/thuật toán phân loại, liên kết dữ liệu) và ghi `gate_params.G1.reporting_extensions`.
 **Chuẩn đề cương/protocol:** Protocol định trước; đăng ký nếu cần minh bạch
 
 ---
@@ -119,7 +121,7 @@ Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định thật, ưu 
 
 > Sai lệch RIÊNG của đề tài (`gate_params.G1.bias_controls`). Khuôn chung của thiết kế để đối chiếu: Selection bias, Information bias, Confounding, Prevalence-incidence bias, Non-response bias, Social desirability, Reporting bias.
 
-| Sai lệch | Biện pháp kiểm soát cho `Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)` |
+| Sai lệch | Biện pháp kiểm soát cho `Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)` |
 |---|---|
 | Sai lệch chọn mẫu | Chọn mẫu hệ thống phân tầng, điểm bắt đầu ngẫu nhiên; sổ theo dõi chọn mẫu và từ chối; báo cáo tỷ lệ đáp ứng (chiều lệch: Điều tra viên chọn người dễ tính; mẫu dồn vào một số khung giờ) — trạng thái: khống chế |
 | Sai lệch do người bỏ về trước khi khám | Định lượng nhóm bỏ về từ HIS (số lượt, tỷ lệ, thời gian chờ) và trình bày thành nhánh riêng trong sơ đồ tuyển chọn; SAP §9: phân tích giới hạn định trước cho MT1 (khoảng [p̂·(1−f); p̂·(1−f)+f], f = tỷ lệ bỏ về theo HIS) và so sánh trung vị thời gian chờ nhóm bỏ về với nhóm được khám cho MT2 — quyết định PI 25/10/2026, DP-G1-1 phương án (i) (chiều lệch: Người chờ lâu nhất bỏ về, không vào được mẫu, làm ước lượng thấp mối liên quan giữa thời gian chờ và hài lòng) — trạng thái: định lượng + hạn chế mở |
@@ -159,7 +161,7 @@ Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định thật, ưu 
 ```
 ═══════════════════════════════════════════════════════════════
 KHỐI THIẾT KẾ — hai-long-benh-nhan-C1a-BVQY175
-Loại thiết kế: Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)
+Loại thiết kế: Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)
 Mô tả thiết kế theo VIỆC ĐÃ LÀM (STROBE mục 1a + 4):
   ⚠ KHÔNG dán nhãn "tiến cứu"/"hồi cứu" làm mô tả chính — STROBE Explanation &
     Elaboration mục 4 nêu rõ hai nhãn này được dùng KHÔNG THỐNG NHẤT nên tự chúng
@@ -185,7 +187,7 @@ Cỡ mẫu dự kiến: theo G3 (`G3_A4_SAMPLE_SIZE`, G3_checkpoint) — N tối
 Nguồn tài trợ và vai trò của nhà tài trợ: [CẦN HOÀN THIỆN Ở G2/G9] (STROBE mục 22)
 Kiểm soát biến nhiễu chính: xem PHẦN 2 (sai lệch riêng của đề tài — gate_params.G1.bias_controls)
 Bước cỡ mẫu: G3 đã tính — xem dòng «Cỡ mẫu dự kiến» ở trên và G3_A4_SAMPLE_SIZE
-Chuẩn báo cáo: STROBE
+Chuẩn báo cáo: STROBE + CROSS
 Chuẩn đề cương/protocol: Protocol định trước; đăng ký nếu cần minh bạch
 ═══════════════════════════════════════════════════════════════
 ```
@@ -194,7 +196,7 @@ Chuẩn đề cương/protocol: Protocol định trước; đăng ký nếu cầ
 
 ## PHẦN 5 — SAP SKELETON (đã thay bằng SAP chính thức ở G4)
 
-> **SAP chính thức:** `G4_A5_SAP_FINAL_hai-long-benh-nhan-C1a-BVQY175.md` — phiên bản 1.4. Mọi mục §1–§12 (quần thể phân tích, kết cục, mô tả, phân tích
+> **SAP chính thức:** `G4_A5_SAP_FINAL_hai-long-benh-nhan-C1a-BVQY175.md` — phiên bản 1.5. Mọi mục §1–§12 (quần thể phân tích, kết cục, mô tả, phân tích
 > chính và đa biến, dữ liệu thiếu, nhóm nhỏ, đa so sánh, độ nhạy, phần mềm, bảng giả, cỡ mẫu) soạn và khoá ở G4 — khung
 > 12 mục của G1 không điền tiếp để SAP chỉ nằm ở MỘT nơi. Trạng thái sống:
 > `python3 tools/g4_quality_gate.py --study hai-long-benh-nhan-C1a-BVQY175`.
@@ -214,7 +216,7 @@ Chuẩn đề cương/protocol: Protocol định trước; đăng ký nếu cầ
 ☑ Loại thiết kế đã suy luận từ câu hỏi/topic + evidence landscape nếu có
 ☑ 2-3 thiết kế ứng viên đã so sánh
 ☑ 11 sai lệch đã phân tích với biện pháp kiểm soát
-☑ Khung SAP 12 mục của G1 đã thay bằng SAP chính thức G4 (phiên bản 1.4 — PHẦN 5)
+☑ Khung SAP 12 mục của G1 đã thay bằng SAP chính thức G4 (phiên bản 1.5 — PHẦN 5)
 ☑ Khối thiết kế + dummy tables sinh RIÊNG theo thiết kế `cross_sectional` (không dùng khuôn RCT chung)
 ☑ Kết cục chính ước lượng theo độ chính xác — không cần effect size (tham số + nguồn ở `G3_A4_SAMPLE_SIZE`)
 • PI/methodologist xác nhận thiết kế và toàn bộ đề cương lõi
@@ -229,6 +231,27 @@ Chuẩn đề cương/protocol: Protocol định trước; đăng ký nếu cầ
 1. Trạng thái sống của mọi cổng và việc còn treo (ai làm, lệnh nào): `python3 tools/study_readiness.py --study hai-long-benh-nhan-C1a-BVQY175`
 2. Sửa nội dung G1 = sửa `study_meta.json → gate_params.G1` rồi chạy lại G1 (tệp này được sinh lại); nội dung đổi thì xác nhận cũ của PI hết hiệu lực (dấu vân tay) — PI xác nhận lại
 3. G3: thống kê viên chốt cỡ mẫu (`python tools/run_g3_auto.py --study hai-long-benh-nhan-C1a-BVQY175`); G4: SAP khoá bằng chữ ký thống kê viên/PI (`tools/approve_gate.py`) — hệ không tự ký.
+
+---
+
+## PHẦN 8 — MÔ-ĐUN CHUYÊN BIỆT (phát hiện tín hiệu — cộng thêm, KHÔNG thay đổi thiết kế chính ở §1)
+
+> Đề tài có tín hiệu cần 1 năng lực chuyên biệt ngoài khung thiết kế/SAP chuẩn ở trên.
+> Đây là bổ sung PHƯƠNG PHÁP LUẬN — không thay cho §1–§7, chạy song song.
+
+### MÔ-ĐUN — Kiểm định công cụ đo lường (COSMIN)
+> Phát hiện tín hiệu: đề tài có cấu phần xây dựng/kiểm định thang đo/bộ câu hỏi (PROM).
+
+- Thiết kế item + miền nội dung: [CẦN nhóm nghiên cứu xác định + item pool]
+- Độ giá trị nội dung (content validity): [CẦN hội đồng chuyên gia + hệ số CVI]
+- Độ giá trị cấu trúc: ☐ EFA  ☐ CFA — [CẦN cỡ mẫu đủ, thường ≥5–10 người/item]
+- Dịch thuật & thích nghi văn hóa (nếu công cụ gốc nước ngoài): forward–back translation + hội đồng chuyên gia [CẦN]
+- Độ tin cậy: Cronbach's α (nội tại, ngưỡng thường ≥0.70) [CẦN] · Test–retest ICC [CẦN khoảng thời gian lặp lại]
+- Độ giá trị hội tụ/phân biệt: [CẦN công cụ tham chiếu đã kiểm định]
+- Độ đáp ứng & MCID (nếu đo thay đổi theo thời gian): [CẦN]
+- Sai số đo (SEM/SDC), floor/ceiling effect: [CẦN]
+- Chuẩn báo cáo: COSMIN Reporting Guideline.
+- → Cân nhắc mời agent `cong-cu-do-luong` hỗ trợ chi tiết từng bước.
 
 ---
 

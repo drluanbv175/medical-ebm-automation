@@ -29,6 +29,7 @@
 | 1.0 | 2026-10-28 | Máy soạn từ G1, G3 và codebook đã chốt; chờ chủ nhiệm và thống kê viên rà | Bản đầu tiên, viết riêng cho đề tài (thay khuôn mẫu chung của run_g4_auto) |
 | 1.0 (sửa nháp) | 2026-11-15 | Máy (chưa ký) | Gắn nhãn truy nguyên mục tiêu G1 cho từng kết cục và bảng (MT1: kết cục chính, phụ 1, phụ 2 · MT2: phụ 3 · MT3: phụ 4); §5 ghi mức tham chiếu HbA1c < 7% theo lựa chọn của chủ nhiệm (G3_BO_BIEN_SO_QUYET_DINH_20261115.md). Không đổi kết cục, mô hình hay tập biến. |
 | 1.0 (sửa nháp 2) | 2026-11-15 | Máy (chưa ký) | Đồng bộ trích dẫn với danh mục trích dẫn của đề tài (luật «chỉ giữ bài có toàn văn», bác sĩ 25/10 và 15/11/2026): bỏ Zou 2004 và Brown–Cai–DasGupta 2001 (không lấy được toàn văn kể cả khi bác sĩ đăng nhập; bác sĩ: «nếu không lấy được hãy loại bỏ cho tôi»); câu hồi quy Poisson giữ nguồn mở Barros & Hirakata 2003, câu KTC giữ tên phương pháp (khoảng điểm Wilson). White 2011 giữ (đã có toàn văn). Gọi đúng tên biến `nhom_g`, `nhom_a` (§2) và `thoi_gian_mac_dtd_5` (§5) cho khớp ma trận mục tiêu → biến. Không đổi phương pháp, kết cục hay tập biến. |
+| 1.0 (sửa nháp 3) | 2026-11-15 | Máy (chưa ký) | Giai đoạn thiết kế — đồng bộ với bảng kiểm soát sai lệch G1: §1 sơ đồ chọn thêm so sánh tuổi, giới, nhóm đối tượng giữa người bị loại vì chỉ 1 lượt khám và mẫu nghiên cứu (G1 đã hứa, SAP chưa có). Không đổi phương pháp, kết cục hay tập biến. |
 
 ---
 
@@ -46,7 +47,7 @@
   - Phụ 2 (BTM chưa ghi nhận): người có `phan_loai_btm` = 2;
   - Phụ 3a (ACEi/ARB): người có `chi_dinh_raasi` = 1, trừ người có `ccd_raasi` = 1 (báo cáo riêng);
   - Phụ 3b (SGLT2i): người có `chi_dinh_sglt2i` = 1, trừ người có `ccd_sglt2i` = 1 (báo cáo riêng).
-- **Sơ đồ chọn (STROBE, RECORD):** số người trong khung mẫu, số người chỉ có E14, số lượng hồ sơ đã mở, bị loại theo từng lý do (phần A của phiếu), hồ sơ tập và đưa vào phân tích.  
+- **Sơ đồ chọn (STROBE, RECORD):** số người trong khung mẫu, số người chỉ có E14, số lượng hồ sơ đã mở, bị loại theo từng lý do (phần A của phiếu), hồ sơ tập và đưa vào phân tích; đếm riêng người bị loại vì chỉ có 1 lượt khám và so sánh tuổi, giới, nhóm đối tượng khám của nhóm này với mẫu nghiên cứu (G1 sai lệch «Sai lệch chọn do tiêu chí từ 2 lượt khám») — trình bày n (%) hoặc trung vị [khoảng tứ phân vị] hai nhóm cạnh nhau, chỉ mô tả.  
 
 ### §2 KẾT CỤC
 

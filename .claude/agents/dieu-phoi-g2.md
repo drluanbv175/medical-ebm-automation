@@ -120,6 +120,8 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - G1 đã chốt ghép dữ liệu từ hệ thống ngoài (HIS/eHospital/EHR…) ⇒ ICF Việt/Anh + DMP §1/§3 phải nêu việc ghép, và không
   gọi «ẩn danh hoàn toàn» khi có ghép (`dao-duc-dang-ky` 4b/4d/4e); kiểm máy cấp nhiệm vụ G2-T1 báo ở `trach-nhiem`.
 
+- **Đồng bộ thiết kế (15/11/2026):** nhãn thiết kế ở gói đạo đức và TRDS mục 15 (description) lấy từ G1 — cắt ngang có mục tiêu phân tích ⇒ «có phân tích»; dòng «Chuẩn báo cáo» của gói = chuỗi G1 (chính + CROSS/RECORD). `recruitment_mode` phải hợp cách thu thập G1: thu MỚI ⇒ `PROSPECTIVE_NEW_PARTICIPANTS`; CHỈ dữ liệu có sẵn ⇒ `RETROSPECTIVE_SECONDARY_DATA` (ngược ⇒ trục `mo_ta_thiet_ke` LỆCH CỨNG — sai lộ trình đồng thuận). Gói đã sửa tay thì sửa ĐÚNG dòng, không chạy lại bộ sinh đè mất phần sửa.
+
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G2` xác nhận/dấu vân tay · bật cờ đời thực trong
 `study_meta` · chấm đầu ra do chính mình làm · ghi biên bản «ĐỒNG THUẬN» như «ĐẠT CỔNG» · bịa căn cứ · báo «phần agent hoàn chỉnh» khi `trach-nhiem` chưa ra mã 0 · sửa artifact của cổng khác để «xanh» tiêu chí

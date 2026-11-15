@@ -1,0 +1,12 @@
+sai_lech,can_phan_tich,sap_muc,sap_neo,noi_khac,ghi_chu
+Sai lệch chọn mẫu,co,§3,tỷ lệ đồng ý,,"Báo tỷ lệ đáp ứng + so sánh người từ chối (G1 non_response_plan, đề cương 4.4.2)"
+Sai lệch do người bỏ về trước khi khám,co,§9,Phân tích giới hạn cho người bỏ về,,"Quyết định PI 25/10/2026, DP-G1-1 phương án (i)"
+Sai lệch nhớ lại,khong,,,"đề cương 4.7 — khảo sát ngay sau lượt khám, trong cùng ngày","Biện pháp thủ tục, không cần phân tích"
+Sai lệch do điều tra viên,khong,,,"đề cương 4.7 + Bảng 4.6; G5 DMP — tập huấn, kịch bản, giám sát",Biện pháp thủ tục
+Sai lệch đo lường,co,§3,Đặc tính đo lường của bộ câu hỏi,,Chép đề cương 4.5.3 vào SAP 1.5
+Sai lệch đo thời gian chờ,co,§5,TÁCH BẠCH,,"Nguồn tự báo cáo phân tích tách bạch, không trộn với mốc HIS"
+Sai lệch do mong muốn xã hội,co,§3,sàn/trần,,Tỷ lệ điểm trần — ngưỡng 15% (Terwee)
+Nhiễu,co,§5,DAG,,Tập biến hiệu chỉnh khoá theo DAG (Phụ lục D đề cương)
+Nhiễu do tình trạng sức khỏe và kỳ vọng,co,§5,suckhoe_tudanhgia | vai trò trung gian của kỳ vọng,,Hiệu chỉnh tự đánh giá sức khỏe (forced-in) + thăm dò kỳ vọng — phương pháp chờ thống kê viên chọn
+Gom cụm theo bàn khám,co,§4,robust theo chùm | báo ICC,,Sai số chuẩn vững theo chùm ma_ban_kham; ICC cho G1 và A–F
+Dữ liệu thiếu,co,§6,MICE,,"Complete-case chính, MICE nhạy cảm"
