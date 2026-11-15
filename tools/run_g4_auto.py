@@ -260,6 +260,28 @@ def _bang_gia(design_code, loai12):
     ]
 
 
+_RE_MT_PHAN_TICH = re.compile(r"phân\s+tích|yếu\s+tố\s+liên\s+quan|so\s+sánh", re.I)
+
+
+def _bang_theo_muc_tieu(muc_tieu):
+    """§11 — MỖI mục tiêu G1 một bảng giả gắn nhãn «MTk» (15/11/2026, giai đoạn «Mục tiêu»; luật MT-11 của
+    ma_tran_muc_tieu_bien: mục tiêu không có đầu ra định trước là mục tiêu không được trả lời). Mục tiêu phân tích
+    («phân tích», «yếu tố liên quan», «so sánh») ⇒ bảng hiệu ứng thô/hiệu chỉnh (§5); còn lại ⇒ bảng ước lượng (§4).
+    Ô kết quả là [CẦN KẾT QUẢ THẬT] — không bịa số. Chưa chốt mục tiêu ⇒ không thêm gì."""
+    ob = muc_tieu if isinstance(muc_tieu, list) else ([muc_tieu] if muc_tieu else [])
+    ra = []
+    for k, o in enumerate((str(x) for x in ob if str(x).strip()), 1):
+        ten = re.sub(r"^\s*MT\s*\d+\s*(?:\([^)]*\))?\s*[:.]\s*", "", o).strip()
+        ten = ten if len(ten) <= 140 else ten[:139].rstrip() + "…"
+        ra += ["", f"**Bảng MT{k} — Kết quả trả lời Mục tiêu {k} (MT{k}): {ten}**"]
+        if _RE_MT_PHAN_TICH.search(o):
+            ra += ["| Yếu tố | Hiệu ứng thô (95%CI) | Hiệu ứng hiệu chỉnh (95%CI) |", "|---|---|---|",
+                   "| [CẦN KẾT QUẢ THẬT — theo §5] | | |"]
+        else:
+            ra += ["| Chỉ số | Ước lượng | 95%CI |", "|---|---|---|", "| [CẦN KẾT QUẢ THẬT — theo §4] | | |"]
+    return ra
+
+
 def _thong_ke_mo_ta(design_code, loai12):
     """§3 — mô tả theo thiết kế (VÁ 04/10/2026, G4-06: bản cũ «so sánh đặc điểm nền t-test…» cho MỌI thiết kế)."""
     chung = [
@@ -324,7 +346,7 @@ def generate(study, topic, design_code, design_primary, reporting_std,
              n_adjusted, alpha, power, effect_val, effect_type, run_date, sd=None,
              hypothesis_type="superiority", margin=None, n_statistical_min=None, *,
              g3=None, estimand=None, giai_trinh_thieu_luc=None, ket_cuc_chinh_da_chot=None, gia_thuyet_phu=None,
-             khung=None):
+             khung=None, muc_tieu=None):
     """Sinh SAP Final + chứng chỉ khoá (DRAFT — CHỜ KÝ).
 
     Tham số vị trí giữ nguyên hợp đồng cũ. Từ khoá mới (VÁ 04/10/2026, soát từng cổng):
@@ -336,6 +358,7 @@ def generate(study, topic, design_code, design_primary, reporting_std,
       khung — (15/11/2026, bác sĩ duyệt) khung đề tài ĐÃ CHỐT (_khung_sap): tiêu chí chọn/loại G1, kết cục chính 4 thành
             phần G1/G0 + biến của ma trận, kết cục phụ, biến phân tích §5/§6 từ ma trận mục tiêu–biến — điền sẵn ô mà bản
             cũ bắt thống kê viên gõ lại lần thứ ba (lý do lâm sàng/DAG vẫn là [CẦN …] của người).
+      muc_tieu — gate_params.G1.objectives (15/11/2026): §11 thêm MỖI mục tiêu một bảng giả gắn nhãn «MTk» (MT-11).
       gia_thuyet_phu — gate_params.G0.hypothesis_secondary: giả thuyết định trước của MỤC TIÊU PHỤ phân tích ở đề tài
             mô tả theo độ chính xác (25/10/2026, hội đồng G1 C1a DP-G1-2) — §12 không còn nói cả đề tài «không kiểm
             định giả thuyết».
@@ -755,6 +778,7 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "### §11 DUMMY TABLES (Khung bảng kết quả)",
         "",
         *_bang_gia(design_code, loai12),
+        *_bang_theo_muc_tieu(muc_tieu),
         "",
         tieu_de_12,
         "",
@@ -1113,6 +1137,8 @@ def main():
                         giai_trinh_thieu_luc=g3_meta.get("underpowered_acceptance_justification"),
                         ket_cuc_chinh_da_chot=_ket_cuc_chinh_da_chot(meta_cp),
                         khung=_khung_sap(out, meta_cp),
+                        muc_tieu=(((meta_cp.get("gate_params") or {}).get("G1") or {}).get("objectives")
+                                  if isinstance(meta_cp, dict) else None),
                         gia_thuyet_phu=(((meta_cp.get("gate_params") or {}).get("G0") or {}).get("hypothesis_secondary")
                                         if isinstance(meta_cp, dict) else None))
     md = out / f"G4_A5_SAP_FINAL_{study}.md"

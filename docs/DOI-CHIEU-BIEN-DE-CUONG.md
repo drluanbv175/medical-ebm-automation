@@ -44,7 +44,7 @@ Tên khác nhau có chủ đích (vd `ID` của đề cương ứng với `recor
 
 ## Nhất quán xuyên cổng cả chuỗi (15/11/2026)
 
-`python3 tools/nhat_quan_xuyen_cong.py --study <mã>` nay đo thêm 12 trục chuỗi ngoài 8 thông số cũ (15/11/2026: 3 trục cỡ mẫu & chọn mẫu — trục chùm còn đòi MỌI DE trong SAP hợp lệ và K × m = N; 2 trục vấn đề & câu hỏi; 1 trục tổng quan tài liệu):
+`python3 tools/nhat_quan_xuyen_cong.py --study <mã>` nay đo thêm 13 trục chuỗi ngoài 8 thông số cũ (15/11/2026: 3 trục cỡ mẫu & chọn mẫu — trục chùm còn đòi MỌI DE trong SAP hợp lệ và K × m = N; 2 trục vấn đề & câu hỏi; 1 trục tổng quan tài liệu; 1 trục mục tiêu):
 
 | Trục | Mức có thể ra | Cổng chịu |
 |---|---|---|
@@ -60,6 +60,7 @@ Tên khác nhau có chủ đích (vd `ID` của đề cương ứng với `recor
 | `ten_de_tai` — tên chính thức (`study_meta.title`) ↔ đề cương nộp, hồ sơ đạo đức, đăng ký WHO TRDS mục 10 (lệch mềm); SAP, đề cương thống nhất, G3, G5 do máy sinh (cần xem) | khớp · cần xem · lệch mềm · chưa đủ | G0 · G2 · G10 |
 | `cau_hoi_gia_thuyet` — loại câu hỏi G0 ↔ mục tiêu G1 ↔ giả thuyết: điều trị thiếu H0/H1 (lệch mềm); mục tiêu phân tích không có giả thuyết hay «thăm dò», câu hỏi không phủ mục tiêu yếu tố (cần xem) | khớp · cần xem · lệch mềm | G0 · G1 · G10 |
 | `trich_dan_tong_quan` — TLTK đề cương nộp ↔ trích dẫn trong thân (thiếu/không trích/sai thứ tự Vancouver/trùng) ↔ danh mục trích dẫn và quyết định LOẠI của chủ nhiệm ↔ văn bản cổng (A2, bộ biến, SAP, đề cương thống nhất, sổ A2b) ↔ bản ghi kiểm rút bài theo TỪNG mã (quá 30 ngày ⇒ cần xem) | khớp · cần xem · lệch mềm · chưa đủ | G0 · G1 · G10 |
+| `ma_tran_muc_tieu` — kết quả `ma_tran_muc_tieu_bien.kiem` (MT-01…MT-11: mục tiêu → biến → câu hỏi → mục SAP → bảng giả gắn nhãn «MTk»); chưa có ma trận ⇒ chưa đủ, có lỗi ⇒ lệch mềm, còn cảnh báo (công thức phái sinh chưa duyệt, SAP chưa gọi đúng tên biến) ⇒ cần xem | khớp · cần xem · lệch mềm · chưa đủ | G1 · G3 · G4 · G10 |
 
 `hoi_dong_cong.py trach-nhiem` đưa các trục thuộc cổng vào bảng trách nhiệm (lệch cứng ⇒ việc của điều phối cổng, lệch
 mềm ⇒ chờ PI) — lệch cứng thì cổng không thể ra «đạt»/«agent xong», lệch mềm thì không thể ra «đạt». `ho-so` mang cùng số đo để giám khảo chấm RQ4.
@@ -71,6 +72,12 @@ Kiểm rút bài theo từng mã (tệp riêng, không ghi đè biên nhận A12
 (PMID: chuỗi Retraction Watch → NCBI → Europe PMC; DOI không PMID: Crossref + Retraction Watch; mã không kết luận được
 giữ «không biết»). Sổ chứng cứ G1 (A2b) tách bài chủ nhiệm đã loại ra mục riêng — dựng lại bằng
 `python3 tools/run_g1_auto.py --study <mã> --dung-lai-ho-tro`.
+
+Ma trận mục tiêu → biến (`exports/<mã>/_ma-tran-muc-tieu-bien.csv`, dựng khung bằng
+`python3 tools/ma_tran_muc_tieu_bien.py mau --study <mã> --ghi`): MT-11 (15/11/2026) đòi mỗi mục tiêu G1 có ít nhất một
+bảng/hình giả gắn nhãn «Mục tiêu k»/«MTk» trong SAP §11 hoặc phần Dự kiến kết quả của đề cương nộp, và mọi mục SAP mà
+ma trận trỏ tới phải có thật; `run_g4_auto.py` nay tự thêm vào §11 mỗi mục tiêu một bảng giả «Bảng MTk». Biến phái sinh
+dùng quy ước lặp «_k» (`uacr_k_ngay` = `uacr_1_ngay` … theo cột `lap_k`) được nhận ở MT-08.
 
 Bản in kết thúc bằng một câu kết luận (`ket_luan_trung_thuc`): G10-AUTO-11 «PASS» không có nghĩa là đồng bộ hoàn toàn —
 còn trục cần xem/chưa đủ thì câu kết luận liệt kê đúng các trục đó.

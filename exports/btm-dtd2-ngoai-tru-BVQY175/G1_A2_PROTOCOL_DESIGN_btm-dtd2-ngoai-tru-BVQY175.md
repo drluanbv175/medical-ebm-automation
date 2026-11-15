@@ -1,5 +1,5 @@
 # A2 — THIẾT KẾ NGHIÊN CỨU & SAP SKELETON | btm-dtd2-ngoai-tru-BVQY175
-> Tạo tự động: 2026-10-28 15:29 | Rule-based; có ứng viên effect size truy nguyên từ PubMed
+> Tạo tự động: 2026-11-15 12:12 | Rule-based; có ứng viên effect size truy nguyên từ PubMed
 > [BẢN NHÁP TỰ ĐỘNG] — Bác sĩ xác nhận thiết kế chọn + điền [CẦN...] trước khi tiến G2/G4
 > Cần bác sĩ kiểm chứng.
 
@@ -15,7 +15,7 @@
 - Mã đề tài: `btm-dtd2-ngoai-tru-BVQY175`
 - Tên đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026
 - Phiên bản protocol: 1.0
-- Ngày tạo/cập nhật: 2026-10-28 15:29
+- Ngày tạo/cập nhật: 2026-11-15 12:12
 - Chủ nhiệm, nhà phương pháp, thống kê viên, quản lý dữ liệu: Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và SAP, ký hồ sơ đạo đức, lập khung mẫu và trích hồ sơ trên eHospital, giữ bảng nối mã, chịu trách nhiệm chung. Nhà phương pháp/thống kê: cỡ mẫu (G3), viết và khoá SAP (G4), phân tích (G6). Quản lý dữ liệu: codebook và phiếu thu thập, nhập liệu, kiểm tra chất lượng, khoá cơ sở dữ liệu (G5), lưu trữ tệp đã mã hoá. Người trích lại: trích lại độc lập 10% hồ sơ kiểm chứng. Người đảm nhận các vai ngoài chủ nhiệm do chủ nhiệm phân công (bảng RACI ở A13); một người có thể kiêm nhiều vai, riêng người trích lại phải khác chủ nhiệm.
 - Tài trợ, bảo hiểm, xung đột lợi ích và vai trò nhà tài trợ: [CẦN HOÀN THIỆN Ở G2/G9]
 - Chuẩn đề cương: Protocol định trước; đăng ký nếu cần minh bạch
@@ -63,10 +63,10 @@
 - Lịch theo dõi/đánh giá: N/A — cắt ngang hồi cứu, không theo dõi; mỗi người được quan sát một lần trên dữ liệu có sẵn trong cửa sổ 12 tháng.
 
 ### 0.8 Cỡ mẫu
-- Cỡ mẫu và power chính thức: [CẦN TÍNH Ở G3]
+- Cỡ mẫu và power chính thức: đã tính ở G3 — xem `G3_A4_SAMPLE_SIZE` (G3 chốt hay chưa: đo sống `python3 tools/g3_quality_gate.py`)
 - Effect size/MCID, alpha, power, tỷ lệ biến cố, mất theo dõi và design effect:
-  [CẦN NGUỒN PMID/DOI HOẶC PILOT — Ở G3]
-- Phân bổ theo nhóm/tầng/trung tâm nếu có: [CẦN TÍNH Ở G3]
+  không áp dụng effect size — cỡ mẫu theo độ chính xác; tham số và nguồn ghi ở `G3_A4_SAMPLE_SIZE`
+- Phân bổ theo nhóm/tầng/trung tâm nếu có: xem `G3_A4_SAMPLE_SIZE` (hệ số thiết kế, cụm)
 
 ### 0.9 Quản lý dữ liệu, bảo mật và chất lượng
 - CRF/data dictionary, nguồn dữ liệu và quy tắc kiểm tra: [CẦN HOÀN THIỆN G3/G5]
@@ -103,7 +103,7 @@
 
 | Thiết kế | Phù hợp câu hỏi | Kiểm soát sai lệch | Khả thi | Lực | Chọn/Loại |
 |---|---|---|---|---|---|
-| **Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)** | ✅ Phù hợp nhất (Mô tả (cross-sectional)) | Cao (xem §2) | [CẦN BÁC SĨ] | [CẦN cỡ mẫu] | **→ ƯU TIÊN** |
+| **Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)** | ✅ Phù hợp nhất (Mô tả (cross-sectional)) | Cao (xem §2) | PI đã xác nhận (gate_params.G1.feasibility_confirmed) | theo G3 (`G3_A4_SAMPLE_SIZE`, G3_checkpoint) — N tối thiểu 385 (số lấy từ G3_checkpoint lúc sinh tệp; G3 chốt hay chưa: đo sống `python3 tools/g3_quality_gate.py`) | **→ ƯU TIÊN** |
 | [Đã pin bởi bác sĩ — không áp dụng bảng thiết kế thay thế tự động] | Phù hợp thay thế | Trung bình | — (thiết kế đã pin) | — (thiết kế đã pin) | Phương án 2 |
 | [Đã pin bởi bác sĩ — không áp dụng bảng thiết kế thay thế tự động] | Phù hợp trong điều kiện đặc biệt | Thấp hơn | — (thiết kế đã pin) | — (thiết kế đã pin) | Phương án 3 |
 
@@ -173,8 +173,8 @@ Mô tả thiết kế theo VIỆC ĐÃ LÀM (STROBE mục 1a + 4):
 Bối cảnh, địa điểm, khoảng thời gian tuyển và theo dõi: Khoa Khám bệnh, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh — bệnh viện quân đội tuyến cuối; người bệnh gồm quân nhân, người có BHYT và người khám dịch vụ, theo dõi ĐTĐ ở phòng khám nội tiết hoặc nội chung. Nguồn dữ liệu: hồ sơ bệnh án điện tử trên phần mềm eHospital (HIS của BVQY175) — lượt khám, mã ICD-10, kết quả xét nghiệm, đơn thuốc ngoại trú. | Cửa sổ dữ liệu hồi cứu 01/01/2026–31/12/2026. Thời gian thực hiện dự kiến 11/2026–09/2027 theo sổ tiến độ đề tài. Trích xuất dữ liệu chỉ bắt đầu sau khi Hội đồng Đạo đức BVQY175 phê duyệt (T0), SAP đã khoá ở cổng G4 và cửa sổ đã khép (sớm nhất tháng 01/2027) — dự kiến 19/01–28/02/2027. (PI đã chốt — gate_params.G1.setting, gate_params.G1.study_period) (STROBE mục 5)
 Nguồn dân số + tiêu chuẩn chọn vào/loại ra + phương pháp chọn người: Người từ 18 tuổi, chẩn đoán đái tháo đường típ 2 (ICD-10 E11), quản lý ngoại trú tại Khoa Khám bệnh BVQY175, có ít nhất 2 lượt khám trong cửa sổ hồi cứu 01/01/2026–31/12/2026; loại trừ: lọc máu hoặc ghép thận, có thai, đái tháo đường típ 1 hoặc thể khác (PICO đã chốt ở G0). | Từ 18 tuổi trở lên tại lượt khám đầu tiên trong cửa sổ; Có mã ICD-10 E11 (chẩn đoán chính hoặc kèm theo) ở ít nhất một lượt khám ngoại trú tại Khoa Khám bệnh BVQY175 trong cửa sổ 01/01/2026–31/12/2026; Có ít nhất 2 lượt khám ngoại trú tại Khoa Khám bệnh trong cùng cửa sổ | Đang lọc máu (thận nhân tạo hoặc lọc màng bụng) hoặc đã ghép thận — nhận diện qua mã ICD-10 (ví dụ Z49, Z99.2, Z94.0; danh sách đầy đủ chốt cùng codebook) hoặc chỉ định lọc máu trong HIS; Có thai trong cửa sổ (mã chương O hoặc Z33); Có mã ĐTĐ típ 1 (E10) hoặc thể khác (E12, E13) ở bất kỳ lượt khám nào trong cửa sổ; người chỉ có mã E14 (không xác định típ) không vào mẫu và được đếm trong sơ đồ chọn | Chọn mẫu NGẪU NHIÊN ĐƠN ở cấp người bệnh: (1) lập khung mẫu là danh sách người bệnh (mỗi người một dòng, theo mã người bệnh) có mã ICD-10 E11 khám ngoại trú tại Khoa Khám bệnh trong năm 2026, lấy từ chức năng tra cứu/danh sách của eHospital — gộp các lượt khám của cùng một người trước khi chọn để người khám nhiều lần không có xác suất được chọn cao hơn; (2) xếp danh sách theo thứ tự ngẫu nhiên do máy tính sinh, ghi lại hạt giống (seed); (3) mở lần lượt từng hồ sơ theo đúng thứ tự đó, kiểm tiêu chuẩn chọn vào và loại trừ; hồ sơ không đủ tiêu chuẩn ghi lý do và chuyển sang hồ sơ kế tiếp, cho tới khi đủ cỡ mẫu tính ở G3 (hiệu chỉnh quần thể hữu hạn theo kích thước khung mẫu). Nếu eHospital không lập được danh sách khung mẫu thì dừng, chọn cách chọn mẫu khác và sửa đề cương trước khi trình Hội đồng. Sơ đồ chọn (STROBE, RECORD) báo số người trong khung mẫu, số lượng hồ sơ đã mở, số bị loại theo từng lý do và số đưa vào phân tích. (PI đã chốt — gate_params.G1.population, gate_params.G1.inclusion_criteria, gate_params.G1.exclusion_criteria, gate_params.G1.recruitment_strategy) (mục 6a)
 Định nghĩa vận hành: kết cục · phơi nhiễm · yếu tố nhiễu · yếu tố điều chỉnh hiệu
-  quả; nguồn dữ liệu và phương pháp đo cho TỪNG biến: [CẦN] (mục 7 + 8)
-Nỗ lực xử lý các nguồn sai lệch tiềm tàng: [CẦN] (mục 9 — xem bảng §2)
+  quả; nguồn dữ liệu và phương pháp đo cho TỪNG biến: `_bo-bien-rieng.csv` (từ điển dữ liệu REDCap: tên biến, kiểu, nhãn, mã hoá, kiểm tra hợp lệ cho từng biến) (trỏ tệp — chưa phải xác nhận của PI) (mục 7 + 8)
+Nỗ lực xử lý các nguồn sai lệch tiềm tàng: bảng kiểm soát sai lệch §2 — PI đã xác nhận (gate_params.G1.bias_controls_confirmed) (mục 9 — xem bảng §2)
   (Làm mù người ĐÁNH GIÁ KẾT CỤC với tình trạng phơi nhiễm vẫn là biện pháp hạn chế
    sai lệch chính đáng trong nghiên cứu quan sát — nêu ở đây nếu có áp dụng.)
 Thời điểm cắt ngang (một mốc hay một khoảng): Cửa sổ dữ liệu hồi cứu 01/01/2026–31/12/2026. Thời gian thực hiện dự kiến 11/2026–09/2027 theo sổ tiến độ đề tài. Trích xuất dữ liệu chỉ bắt đầu sau khi Hội đồng Đạo đức BVQY175 phê duyệt (T0), SAP đã khoá ở cổng G4 và cửa sổ đã khép (sớm nhất tháng 01/2027) — dự kiến 19/01–28/02/2027. (PI đã chốt — gate_params.G1.study_period)
@@ -182,12 +182,12 @@ Phơi nhiễm và kết cục đo CÙNG lúc → KHÔNG suy luận nhân quả, 
   nhân ("gây ra", "làm giảm") trong mục tiêu và kết luận
 Chọn mẫu: ☐ Toàn bộ  ☑ Ngẫu nhiên đơn  ☐ Hệ thống (bước nhảy k = N/n — KIỂM HƯỚNG
   công thức, không tính ngược)  ☐ Phân tầng  ☐ Cụm (khai design effect)  (PI đã chốt — gate_params.G1.sampling_design)
-Sai lệch KHÔNG ĐÁP ỨNG (non-response): tỷ lệ dự kiến + cách bàn luận: Không có không-đáp-ứng theo nghĩa khảo sát (dùng hồ sơ có sẵn, không mời tham gia). Thay vào đó: sơ đồ chọn báo số người trong khung mẫu, số lượng hồ sơ đã mở, số bị loại theo từng lý do (không đủ tiêu chuẩn, trùng, không mở được); với từng biến báo số và tỷ lệ thiếu dữ liệu; so sánh đặc điểm người thiếu với người đủ dữ liệu; cách xử lý dữ liệu thiếu chốt ở SAP (G4). (PI đã chốt — gate_params.G1.non_response_plan)
+Sai lệch KHÔNG ĐÁP ỨNG (non-response): tỷ lệ dự kiến + cách bàn luận: dự phòng 0% — Máy suy từ G1 đã chốt 28/10/2026 (dấu 91fc5cdaaa5a689c), chủ nhiệm xác nhận khi chốt G3 ngày 28/10/2026 («Chốt G3 với 385»): không có không-đáp-ứng theo nghĩa khảo sát (non_response_plan); hồ sơ không đủ tiêu chuẩn được ghi lý do và thay bằng hồ sơ kế tiếp trong danh sách ngẫu nhiên cho tới khi đủ cỡ mẫu (recruitment_strategy); kết cục chính XN_DU không thể thiếu (không có xét nghiệm ⇒ 0). Số hồ sơ phải MỞ sẽ lớn hơn cỡ mẫu. | Không có không-đáp-ứng theo nghĩa khảo sát (dùng hồ sơ có sẵn, không mời tham gia). Thay vào đó: sơ đồ chọn báo số người trong khung mẫu, số lượng hồ sơ đã mở, số bị loại theo từng lý do (không đủ tiêu chuẩn, trùng, không mở được); với từng biến báo số và tỷ lệ thiếu dữ liệu; so sánh đặc điểm người thiếu với người đủ dữ liệu; cách xử lý dữ liệu thiếu chốt ở SAP (G4). (PI đã chốt — gate_params.G3.dropout + dropout_source, gate_params.G1.non_response_plan)
 Thước đo kết hợp định trước: ☑ tỷ lệ hiện mắc (prevalence)  ☐ prevalence OR  ☑ PR  (PI đã chốt — gate_params.G1.association_measures)
-Cỡ mẫu dự kiến: [CẦN — xem SAP §12; giải trình theo STROBE mục 10]
+Cỡ mẫu dự kiến: theo G3 (`G3_A4_SAMPLE_SIZE`, G3_checkpoint) — N tối thiểu 385 (số lấy từ G3_checkpoint lúc sinh tệp; G3 chốt hay chưa: đo sống `python3 tools/g3_quality_gate.py`) — giải trình theo STROBE mục 10
 Nguồn tài trợ và vai trò của nhà tài trợ: [CẦN HOÀN THIỆN Ở G2/G9] (STROBE mục 22)
 Kiểm soát biến nhiễu chính: xem PHẦN 2 (sai lệch riêng của đề tài — gate_params.G1.bias_controls)
-Cỡ mẫu dự kiến: [CẦN → chạy run_g3_auto.py sau khi xác nhận effect size ở §3]
+Bước cỡ mẫu: G3 đã tính — xem dòng «Cỡ mẫu dự kiến» ở trên và G3_A4_SAMPLE_SIZE
 Chuẩn báo cáo: STROBE
 Chuẩn đề cương/protocol: Protocol định trước; đăng ký nếu cần minh bạch
 ═══════════════════════════════════════════════════════════════
@@ -195,216 +195,19 @@ Chuẩn đề cương/protocol: Protocol định trước; đăng ký nếu cầ
 
 ---
 
-## PHẦN 5 — SAP SKELETON (12 MỤC — bác sĩ điền [CẦN...])
+## PHẦN 5 — SAP SKELETON (đã thay bằng SAP chính thức ở G4)
 
-> SAP phải hoàn chỉnh và KHÓA TRƯỚC KHI XEM DỮ LIỆU THẬT (Cổng G4).
-> [CẦN...] = cần bác sĩ điền; mọi mục này KHÔNG thay đổi sau khi khóa.
-
-### SAP §1 — Quần thể phân tích
-```
-Toàn bộ người đủ tiêu chí (Complete case)
-Tiêu chí chọn vào: [CẦN — từ PICO P]
-Tiêu chí loại trừ: [CẦN BÁC SĨ ẤN ĐỊNH]
-Quần thể CHÍNH dùng báo cáo: [CẦN XÁC NHẬN]
-```
-
-### SAP §2 — Biến kết cục (định nghĩa vận hành)
-```
-KẾT CỤC CHÍNH (chỉ 1):
-  Tên: [CẦN — từ PICO O, kết cục chính BÁC SĨ ĐÃ ẤN ĐỊNH ở G0]
-  Định nghĩa vận hành: [CẦN — rõ ràng, đo được, cụ thể]
-  Đơn vị đo: [CẦN]
-  Thời điểm đo: [CẦN]
-  Thước đo: ☐ Liên tục  ☐ Nhị phân  ☐ Thứ tự  ☐ Thời gian đến sự kiện
-
-KẾT CỤC PHỤ (tối đa 3–5):
-  1. ___ | thời điểm: ___
-  2. ___ | thời điểm: ___
-  3. ___ | thời điểm: ___
-```
-
-### SAP §3 — Thống kê mô tả (Table 1)
-```
-Biến liên tục: xem histogram/Q-Q plot, ngoại lệ và bối cảnh đo; không tự chuyển
-  phương pháp chỉ theo một kiểm định normality.
-  Gần đối xứng: TB ± ĐLC  |  Lệch rõ: Trung vị [IQR Q1–Q3]
-Biến phân loại: n (%)
-RCT: mô tả cân bằng nền, không kiểm định ý nghĩa khác biệt baseline.
-Quan sát: mô tả khác biệt nền bằng độ lớn/standardized difference và bối cảnh;
-  không dùng p-value baseline để tự động chọn confounder.
-```
-
-### SAP §4 — Phân tích chính (Mục tiêu 1)
-```
-Phân tích chính: Logistic regression → OR (95%CI)
-Hoặc: Linear regression → β (95%CI) nếu kết cục liên tục
-VIF < 5 (kiểm đa cộng tuyến); Hosmer-Lemeshow (logistic)
-α (hai đuôi): 0.05 [CẦN XÁC NHẬN THEO GIẢ THUYẾT]
-Hiệu ứng trình bày: [OR/HR/RR/MD + 95%CI] — KHÔNG chỉ p-value
-Phần mềm: ☐ R  ☐ Stata  ☐ SPSS  | Seed ngẫu nhiên: 20261028 [CẦN BÁC SĨ XÁC NHẬN — gợi ý tự sinh từ ngày chạy]
-```
-
-### SAP §5 — Phân tích đa biến (Mục tiêu 2 — nếu có)
-```
-Mô hình: ☐ Logistic  ☐ Linear  ☐ Cox  ☐ Mixed-effects  ☐ GEE
-Covariates (định trước — KHÔNG thêm sau khi xem dữ liệu):
-  - [CẦN BÁC SĨ LIỆT KÊ với lý do cho từng biến + DAG nếu có]
-EPV ≥ 10 cho mô hình đa biến chỉ là kiểm tra sơ bộ, không phải bảo đảm (bằng chứng ủng hộ ngưỡng EPV cứng là yếu — van Smeden và cs. 2016, PMID 27881078); biện minh cỡ mẫu bằng phương pháp cỡ mẫu hiện hành
-Kiểm đa cộng tuyến: VIF < 5 cho mọi biến
-Đánh giá giả định và độ phù hợp phải khớp mô hình đã chọn; báo residual/influence diagnostics và calibration khi đó là mục tiêu hợp lệ.
-```
-
-### SAP §6 — Dữ liệu thiếu
-```
-Mô tả tỷ lệ và mẫu hình thiếu trước khi chọn phương pháp.
-Giả định chính: ☐ MCAR  ☐ MAR  ☐ MNAR — phải có lý do theo cơ chế thu thập.
-Phân tích chính: [CẦN ĐỊNH TRƯỚC; complete-case không phải mặc định vô điều kiện]
-Multiple imputation: mô hình biến, số bộ dữ liệu và diagnostics [CẦN]
-MNAR/sai lệch do mất theo dõi: phân tích nhạy cảm [CẦN]
-```
-
-### SAP §7 — Phân tích nhóm nhỏ (định trước — KHÔNG thêm sau)
-```
-Nhóm nhỏ 1: [CẦN — tiêu chí: ___] | Giả thuyết tương tác: ___
-Nhóm nhỏ 2: [CẦN]
-Ước lượng tương tác + 95%CI; không kết luận khác biệt nhóm chỉ vì một nhóm
-  có p<0,05 còn nhóm kia không.
-Kết quả nhóm nhỏ là THĂM DÒ nếu không định trước và không đủ lực; diễn giải
-  cùng tính hợp lý sinh học, tính nhất quán và kiểm soát đa bội.
-```
-
-### SAP §8 — Kiểm soát đa so sánh
-```
-Số kết cục phụ / nhóm / thời điểm: [CẦN ẤN ĐỊNH]
-Chiến lược:
-  ☐ Không điều chỉnh (1 kết cục chính rõ, phụ là thăm dò)
-  ☐ Bonferroni  ☐ Holm  ☐ FDR  ☐ Phương pháp khác: [CẦN]
-Khớp với giả thuyết, estimand và cỡ mẫu ở G3: [CẦN XÁC NHẬN]
-```
-
-### SAP §9 — Phân tích nhạy cảm
-```
-1. Dữ liệu thiếu/cơ chế thiếu: [CẦN]
-2. Định nghĩa quần thể/kết cục/mô hình thay thế có lý do: [CẦN]
-3. Per-protocol chỉ là nhạy cảm nếu estimand chính là treatment-policy/ITT.
-Mọi phân tích phải định trước hoặc gắn nhãn hậu nghiệm/thăm dò.
-```
-
-### SAP §10 — Phần mềm và seed
-```
-Phần mềm chính: ☐ R v___  ☐ Stata v___  ☐ SPSS v___
-R packages dự kiến: tableone, car [CẦN BÁC SĨ XÁC NHẬN — gợi ý theo thiết kế cross_sectional]
-Random seed: 20261028 [CẦN XÁC NHẬN nếu có bước ngẫu nhiên/mô phỏng]
-Script phân tích: lưu tại exports/btm-dtd2-ngoai-tru-BVQY175/scripts/ — versioned cùng protocol
-```
-
-### SAP §11 — Dummy Tables (Shells — điền sau khi có kết quả thật)
-
-> Bộ bảng dưới đây là bộ RIÊNG của thiết kế `cross_sectional`, khớp chuẩn báo cáo
-> STROBE. Vỏ rỗng — KHÔNG được điền số trước khi dữ liệu khóa.
-
-BẢNG 1 — DÒNG CHẢY NGƯỜI THAM GIA QUA TỪNG GIAI ĐOẠN (STROBE mục 13a–13c;
-cân nhắc trình bày thêm dạng sơ đồ)
-| Giai đoạn | Số người | Lý do không vào giai đoạn sau |
-|---|---|---|
-| Có khả năng đủ điều kiện | [n=___] | — |
-| Được xét tiêu chuẩn | [n=___] | [___] |
-| Xác nhận đủ điều kiện | [n=___] | [___] |
-| Đưa vào nghiên cứu | [n=___] | [___] |
-| Hoàn tất theo dõi | [n=___] | [___] |
-| Đưa vào phân tích | [n=___] | [___] |
-
-BẢNG 2 — ĐẶC ĐIỂM NGƯỜI THAM GIA, PHƠI NHIỄM VÀ YẾU TỐ NHIỄU, KÈM SỐ LIỆU THIẾU
-(STROBE mục 14a + 14b — trình bày RIÊNG theo nhóm, xem tiêu đề cột)
-| Biến | Có phơi nhiễm (n=___) | Không phơi nhiễm (n=___) | Số thiếu n (%) |
-|---|---|---|---|
-| Tuổi, TB±ĐLC (năm) | | | |
-| Giới nữ, n (%) | | | |
-| [Yếu tố nhiễu tiềm tàng 1] | | | |
-| [Yếu tố nhiễu tiềm tàng 2] | | | |
-| [Biến lâm sàng chính] | | | |
-
-BẢNG 3 — SỐ BIẾN CỐ KẾT CỤC / SỐ ĐO TÓM TẮT (STROBE mục 15, bản cắt ngang)
-| Nhóm | Số người | Số có kết cục | Tỷ lệ hiện mắc % (95%CI) |
-|---|---|---|---|
-| [Toàn mẫu] | | | |
-| [Có phơi nhiễm] | | | |
-| [Không phơi nhiễm] | | | |
-
-BẢNG 4 — KẾT QUẢ CHÍNH: ƯỚC LƯỢNG THÔ VÀ ƯỚC LƯỢNG HIỆU CHỈNH (STROBE mục 16a — chuẩn
-đòi báo cáo CẢ HAI, nói rõ hiệu chỉnh cho yếu tố nào và vì sao chọn các yếu tố đó)
-| Yếu tố | n đưa vào phân tích | Ước lượng THÔ (95%CI) | Ước lượng HIỆU CHỈNH (95%CI) | p |
-|---|---|---|---|---|
-| [Phơi nhiễm chính] | | | | |
-| [Yếu tố hiệu chỉnh 1] | | | | |
-| [Yếu tố hiệu chỉnh 2] | | | | |
-> Ghi rõ số người TRONG phân tích hiệu chỉnh (có thể khác tổng mẫu do thiếu biến hiệu chỉnh).
-> Nếu phân nhóm một biến liên tục: nêu ranh giới nhóm và lý do chọn (mục 16b).
-> Cân nhắc quy đổi nguy cơ tương đối sang nguy cơ TUYỆT ĐỐI cho một khoảng thời gian
-> có ý nghĩa lâm sàng (mục 16c).
-
-BẢNG 5 — CÁC PHÂN TÍCH KHÁC: NHÓM NHỎ · TƯƠNG TÁC · ĐỘ NHẠY (STROBE mục 17)
-| Phân tích | Lý do (định trước hay thăm dò) | Ước lượng (95%CI) | Nhận định tính vững |
-|---|---|---|---|
-| [Nhóm nhỏ 1] | | | |
-| [Kiểm tương tác] | | | |
-| [Phân tích độ nhạy 1] | | | |
-
-### SAP §12 — Cơ sở cỡ mẫu và ngưỡng ý nghĩa
-```
-KHÔNG có ô "power 80%" mặc định. Thiết kế quan sát phải GIẢI TRÌNH
-cỡ mẫu đã đến từ đâu (STROBE mục 10), chọn MỘT trong ba đường và ghi rõ giả định:
-
-(1) CỠ MẪU DO SẴN CÓ (hay gặp với dữ liệu hồi cứu và bệnh-chứng tại một cơ sở):
-    "Cỡ mẫu là toàn bộ [ca/hồ sơ] đủ tiêu chuẩn trong khoảng [từ ___ đến ___] tại
-    [địa điểm], ước tính N = [___]. Không chọn được cỡ mẫu nên không tính theo power."
-    → Bắt buộc bàn ĐỘ CHÍNH XÁC dự kiến (bề rộng 95%CI) với cỡ mẫu đó.
-(2) CỠ MẪU THEO ĐỘ CHÍNH XÁC: ước lượng cần đạt [tỷ lệ/trung bình] với nửa bề rộng
-    95%CI ≤ [CẦN]; tham số giả định + NGUỒN (PMID/DOI hoặc pilot): [CẦN]
-(3) CỠ MẪU THEO POWER — chỉ hợp lệ khi THẬT SỰ có giả thuyết định trước và có thể
-    chọn được cỡ mẫu: α = [CẦN], power = [CẦN]%, effect size giả định + NGUỒN [CẦN]
-
-Điều chỉnh: tỷ lệ không đáp ứng/mất dấu [CẦN]%; hệ số thiết kế nếu chọn mẫu cụm [CẦN]
-
-⚠ KHÔNG tính "power hồi cứu" sau khi đã có kết quả, và không biện minh cỡ mẫu theo kiểu
-  hậu định — STROBE Explanation & Elaboration mục 10 nói nguyên văn: "Do not bother
-  readers with post hoc justifications for study size or retrospective power calculations".
-⚠ Nếu nghiên cứu bị DỪNG SỚM khi đạt ý nghĩa thống kê, phải nói rõ điều đó cho người đọc.
-```
+> **SAP chính thức:** `G4_A5_SAP_FINAL_btm-dtd2-ngoai-tru-BVQY175.md` — phiên bản 1.0. Mọi mục §1–§12 (quần thể phân tích, kết cục, mô tả, phân tích
+> chính và đa biến, dữ liệu thiếu, nhóm nhỏ, đa so sánh, độ nhạy, phần mềm, bảng giả, cỡ mẫu) soạn và khoá ở G4 — khung
+> 12 mục của G1 không điền tiếp để SAP chỉ nằm ở MỘT nơi. Trạng thái sống:
+> `python3 tools/g4_quality_gate.py --study btm-dtd2-ngoai-tru-BVQY175`.
 
 ---
 
-## PHẦN 6 — SAP LOCK CERTIFICATE (CHỜ BÁC SĨ KÝ → MỞ G4)
+## PHẦN 6 — SAP LOCK CERTIFICATE (khoá ở G4)
 
-```
-╔══════════════════════════════════════════════════════════════╗
-║    BIÊN BẢN KHÓA KẾ HOẠCH PHÂN TÍCH THỐNG KÊ (SAP)        ║
-╠══════════════════════════════════════════════════════════════╣
-║  Đề tài: btm-dtd2-ngoai-tru-BVQY175                            ║
-║  Phiên bản SAP: 1.0                                         ║
-║  Ngày soạn SAP: 2026-10-28                                    ║
-║  Trạng thái dữ liệu lúc khóa: CHƯA CÓ / CHƯA XEM          ║
-║                                                              ║
-║  Kết cục chính (KHÔNG đổi sau khóa):                       ║
-║    [CẦN ĐIỀN — từ PICO O đã xác nhận ở G0]                 ║
-║  Quần thể phân tích chính:                                 ║
-║    [CẦN ĐIỀN — từ SAP §1]                                  ║
-║  Phương pháp phân tích chính:                              ║
-║    [CẦN ĐIỀN — từ SAP §4]                                  ║
-║  α/CI và power/cỡ mẫu: [CẦN CHỐT Ở G3/G4 THEO GIẢ THUYẾT CH║
-╠══════════════════════════════════════════════════════════════╣
-║  Người xác nhận: ___ (Chủ nhiệm đề tài)                     ║
-║  Ngày khóa chính thức: [CẦN ĐIỀN + KÝ TÊN]                 ║
-║                                                              ║
-║  Chữ ký: _______________  Ngày: ___/___/20__                ║
-╠══════════════════════════════════════════════════════════════╣
-║  SAU KHI KÝ: KHÔNG đổi kết cục chính / mô hình chính.      ║
-║  Phân tích bổ sung sau khi xem dữ liệu → ghi THĂM DÒ.     ║
-╚══════════════════════════════════════════════════════════════╝
-```
-
-**→ Để mở G4:** Bác sĩ xác nhận "SAP đã khóa ngày [DD/MM/YYYY]"
-  Agent ghi: G4_STATUS=LOCKED | G4_SAP_VERSION=1.0 | G4_LOCK_DATE=[date]
+> Chứng chỉ khoá SAP nằm trong `G4_A5_SAP_FINAL_btm-dtd2-ngoai-tru-BVQY175.md` (PHẦN 5) và chữ ký G4 ở sổ cái phê duyệt (vai thống kê viên/PI) — G1
+> không giữ bản khoá riêng.
 
 ---
 
@@ -414,7 +217,7 @@ cỡ mẫu đã đến từ đâu (STROBE mục 10), chọn MỘT trong ba đư�
 ☑ Loại thiết kế đã suy luận từ câu hỏi/topic + evidence landscape nếu có
 ☑ 2-3 thiết kế ứng viên đã so sánh
 ☑ 11 sai lệch đã phân tích với biện pháp kiểm soát
-☑ SAP skeleton 12 mục đã sinh
+☑ Khung SAP 12 mục của G1 đã thay bằng SAP chính thức G4 (phiên bản 1.0 — PHẦN 5)
 ☑ Khối thiết kế + dummy tables sinh RIÊNG theo thiết kế `cross_sectional` (không dùng khuôn RCT chung)
 ☑ Có ứng viên effect size từ PubMed; chưa được dùng trước khi đọc toàn văn
 • PI/methodologist xác nhận thiết kế và toàn bộ đề cương lõi

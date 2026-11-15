@@ -65,6 +65,21 @@ _MAU_HINH: dict[str, tuple[tuple[str, re.Pattern[str]], ...]] = {
 }
 
 
+# 15/11/2026: «số hồ sơ» chỉ là PII khi đi kèm GIÁ TRỊ định danh. Luật cũ của G0/G1 bắt mọi cụm «số hồ sơ» ⇒ câu
+# đếm «Số hồ sơ phải MỞ sẽ lớn hơn cỡ mẫu» (giải trình G3 BTM chủ nhiệm đã xác nhận) làm G1 BLOCKED khi dựng lại A2.
+_SO_HO_SO_NHAN = re.compile(r"số\s+hồ\s+sơ(?:\s+bệnh\s+án)?\s*[:：#]\s*\S", re.IGNORECASE)
+_SO_HO_SO_MA = re.compile(r"số\s+hồ\s+sơ[^.\n;]{0,25}?(?<![\d\w])(?!(?:19|20)\d{2}(?!\d))[a-z]{0,4}\d{4,}",
+                          re.IGNORECASE)
+
+
+def nhan_so_ho_so(van_ban: str) -> bool:
+    """True khi văn bản ghi MỘT số hồ sơ cụ thể: «số hồ sơ: …», «số hồ sơ #…», hoặc «số hồ sơ …» kèm mã có ≥ 4 chữ số
+    (không tính năm 19xx/20xx) trong 25 ký tự kế. Câu nói VỀ hồ sơ («số hồ sơ phải mở», «số hồ sơ đã trích») không phải
+    PII. Văn bản nên được chuẩn hoá NFC trước."""
+    t = unicodedata.normalize("NFC", str(van_ban or ""))
+    return bool(_SO_HO_SO_NHAN.search(t) or _SO_HO_SO_MA.search(t))
+
+
 @dataclass(frozen=True)
 class PhatHienPII:
     """Một chỗ nghi PII: loại + mẫu ĐÃ CHE (không in lại PII đầy đủ)."""
