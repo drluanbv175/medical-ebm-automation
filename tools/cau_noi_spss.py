@@ -1498,7 +1498,10 @@ def ap_thuoc_tinh_bien(d: Path, study: str, ke: list[dict], td: dict[str, dict],
                      # ── 11 thuộc tính Variable View của SPSS (cùng giá trị .rds mang theo) ──
                      "ten_spss": b["ten"], "kieu_du_lieu": "số" if b["so"] else "chuỗi", "do_rong": dd_tach[1],
                      "so_le": dd_tach[2], "nhan": _gop(b["nhan"]), "nhan_gia_tri": dict(b["nhan_gia_tri"]),
-                     "ma_thieu": [k for k, _ in b["ma_thieu"]], "cot_hien": cot_hien(b), "can_le": can_le(b),
+                     # Missing đúng như MISSING VALUES của .sav — biến chuỗi khai cả ô trống («trống»)
+                     "ma_thieu": ([k for k, _ in b["ma_thieu"]] if b["so"] else
+                                  ["«trống»" if x == "" else x for x in ky_vong_thieu(b)["roi"]]),
+                     "cot_hien": cot_hien(b), "can_le": can_le(b),
                      "muc_do": b["muc_do"], "vai_tro_spss": vai_tro_spss(b),
                      # ── thuộc tính của ma trận/từ điển (VARIABLE ATTRIBUTE / attr .rds) ──
                      "dinh_dang": dinh_dang_cuoi(b), "nguon_muc_do": b["nguon_muc_do"], "kieu_ma_tran": kieu or None,

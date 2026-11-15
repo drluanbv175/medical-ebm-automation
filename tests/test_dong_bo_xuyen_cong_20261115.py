@@ -1150,3 +1150,14 @@ def test_11_thuoc_tinh_bang_ghi_dung_trang_thai_tung_bien(tmp_path):
     md = S.ghi_bang_thuoc_tinh(tmp_path, STUDY, e5["bang"], ban_nhap=False, kiem=kiem).read_text(encoding="utf-8")
     dong_tuoi = next(x for x in md.splitlines() if x.startswith("| `tuoi` |"))
     assert dong_tuoi.rstrip(" |").endswith("✗ Role") and md.count("✓ 11/11") == len(e5["bang"]) - 1
+
+
+def test_11_thuoc_tinh_bang_ghi_ma_thieu_bien_chuoi(tmp_path):
+    """Cột Missing của bảng = MISSING VALUES thật của .sav: biến chuỗi khai cả ô trống."""
+    import cau_noi_spss as S  # noqa: PLC0415
+
+    d, td_p, p = _de_tai_e5(tmp_path)
+    _, ke, td = _ke_e5(d, td_p, p)
+    e5 = S.ap_va_chan_e5(d, STUDY, ke, td, p)
+    b = {x["bien"]: x for x in e5["bang"]}
+    assert b["record_id"]["ma_thieu"] == ["«trống»"] and b["tuoi"]["ma_thieu"] == ["-99"]
