@@ -1,6 +1,6 @@
 # Đề xuất bổ sung bộ biến G3 — btm-dtd2-ngoai-tru-BVQY175 (15/11/2026)
 
-> **TRẠNG THÁI: ĐỀ XUẤT CỦA AGENT, CHỜ CHỦ NHIỆM DUYỆT.** Chưa thêm vào `_bien-phai-sinh.csv`. Theo nguyên tắc bác sĩ đặt ngày 15/11/2026, biến phải đồng bộ với đề cương và bộ biến đã duyệt. Công cụ `tools/doi_chieu_bien_de_cuong.py` chặn mọi biến phái sinh nằm ngoài bộ biến khi phân tích. Cần bác sĩ kiểm chứng.
+> **TRẠNG THÁI: CHỦ NHIỆM ĐÃ DUYỆT 15/11/2026** (lựa chọn nguyên văn «Duyệt, tham chiếu < 7% (Khuyên dùng)» — `G3_BO_BIEN_SO_QUYET_DINH_20261115.md`). Đã thêm vào bộ biến §4, `_bien-phai-sinh.csv` (công thức CHƯA DUYỆT, chờ thống kê viên/PI) và đặc tả G6. **Khác bản đề xuất:** `hba1c_3muc` mã theo tham chiếu chủ nhiệm chọn — 1 = < 7% (tham chiếu) · 2 = ≥ 7% · 3 = không làm HbA1c; công thức `neu(co_hba1c == 0, 3, neu(hba1c_gt < 7, 1, 2))`. Bảng dưới giữ nguyên văn bản đề xuất để truy vết. Cần bác sĩ kiểm chứng.
 
 ## Vì sao cần
 

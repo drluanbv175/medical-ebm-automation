@@ -397,6 +397,14 @@
       "reviewed_by_role": null,
       "reviewed_at": null,
       "dau_van_tay_chot": null
+    },
+    "G10": {
+      "xac_nhan_ket_cuc_chinh": {
+        "giai_trinh": "Chủ nhiệm xác nhận 15/11/2026 (lựa chọn nguyên văn «Cùng một kết cục (Khuyên dùng)»): G0 «Tỷ lệ người ĐTĐ típ 2 ngoại trú được xét nghiệm đủ UACR + creatinin trong 12 tháng» và G1/SAP «Được xét nghiệm đủ UACR và creatinin huyết thanh trong cửa sổ 12 tháng (biến XN_DU)» là CÙNG MỘT kết cục — G0 ghi thước đo (tỷ lệ), G1/SAP ghi biến nhị phân xn_du; không đổi kết cục. Biên bản: G3_BO_BIEN_SO_QUYET_DINH_20261115.md.",
+        "reviewed_at": "2026-11-15T07:41:40+07:00",
+        "reviewed_by_role": "PI",
+        "dau_van_tay": "ea600fdb21d8a75e"
+      }
     }
   }
 }

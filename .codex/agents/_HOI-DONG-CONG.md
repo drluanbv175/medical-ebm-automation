@@ -128,7 +128,7 @@ cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ c�
 | RQ1 | Đúng hợp đồng cổng | thiếu tiêu chí AUTO/HUMAN liên quan, sai công cụ, sai tên artifact |
 | RQ2 | Đúng phương pháp theo thiết kế | sai công thức/công cụ RoB/chuẩn báo cáo cho thiết kế |
 | RQ3 | Truy nguyên nguồn | số liệu/PMID/DOI không truy được, lệch nguồn, nghi bịa — **tầng 0** |
-| RQ4 | Nhất quán xuyên cổng | mâu thuẫn quyết định đã chốt (N, α, thiết kế, kết cục chính…; `nhat_quan_xuyen_cong.py`) |
+| RQ4 | Nhất quán xuyên cổng | mâu thuẫn quyết định đã chốt (N, α, thiết kế, kết cục chính…) hoặc trục chuỗi `lech_cung` (biến ↔ đề cương, phiếu ↔ từ điển…) theo số đo máy `nhat_quan_xuyen_cong` (khoá cùng tên trong hồ sơ máy); `lech_mem`/`can_xem`/`chua_du` ⇒ tối đa `can_sua` |
 | RQ5 | Đầy đủ | ô trống ngoài nhãn hợp lệ; thiếu artifact theo thiết kế (`_KIEM-TOAN-DAY-DU-NGHIEN-CUU.md`) |
 | RQ6 | Ranh giới thẩm quyền | tự ký/xác nhận/bật cờ, vượt cổng — **tầng 0** |
 | RQ7 | Không PII / an toàn dữ liệu | có định danh — **tầng 0** |

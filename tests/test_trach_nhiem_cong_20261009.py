@@ -71,10 +71,11 @@ def test_phan_cong_phu_dung_tap_ma_bo_cham(gate):
 
 def test_tong_so_tieu_chi_da_gan():
     # 14/11/2026: 203 → 204 — thêm G6-AUTO-11 (SAP §4 gọi postStratify( ⇒ script chạy svydesign( + postStratify().
-    # 15/11/2026: 204 → 207 — thêm G3-AUTO-19 (ma trận mục tiêu → biến), G5-AUTO-12 (từ điển từ bộ biến riêng, phủ ma
-    # trận), G5-AUTO-13 (phiếu nộp Hội đồng Đạo đức khớp câu hỏi nhập liệu) — bác sĩ duyệt đồng bộ xuyên cổng; 207 →
-    # 208 — G0-AUTO-08 (truy vấn PubMed/ClinicalTrials.gov phủ khái niệm PICO đã chốt).
-    assert sum(len(v) for v in HD.PHAN_CONG.values()) == 208
+    # 15/11/2026: 204 → 205 — thêm G5-AUTO-11 (từ điển ↔ đề cương/bộ biến ↔ phiếu do MÁY đo, giao G5-T1; #266);
+    # 205 → 209 — thêm G3-AUTO-19 (ma trận mục tiêu → biến), G5-AUTO-12 (từ điển từ bộ biến riêng, phủ ma trận),
+    # G5-AUTO-13 (phiếu nộp Hội đồng Đạo đức khớp câu hỏi nhập liệu), G0-AUTO-08 (truy vấn PubMed/ClinicalTrials.gov phủ
+    # khái niệm PICO đã chốt) — bác sĩ duyệt đồng bộ xuyên cổng (#268).
+    assert sum(len(v) for v in HD.PHAN_CONG.values()) == 209
 
 
 @pytest.mark.parametrize("gate", HD.CONG)

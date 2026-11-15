@@ -12,6 +12,10 @@ Bác sĩ giao 14/11/2026 (gói tự động hoá A–D): «sau khi gộp hãy th
                      sau lượt kiểm chéo) · khớp · lệch nhỏ · LỆCH · lỗi. Hòm việc (repo gốc tools/tu_de_xuat_viec.py),
                      study_readiness.py và đài kiểm soát (audit_research_gates.py) đọc qua hàm `trang_thai`.
   C. Agent `dieu-phoi-g6` gọi `chay` sau bước phân tích của `phan-tich-thong-ke`.
+  E. (15/11/2026 — bác sĩ: «chú ý là phần mềm RStudio» và «đúng phần mềm SPSS đang chạy») `chay --trong-ung-dung` MỞ
+     cú pháp trong giao diện IBM SPSS Statistics (cùng bộ cài với cầu nối) và script trong RStudio để bác sĩ tự bấm
+     Run > All / Source và xem bảng; xong `nhan-ket-qua` đọc kết quả hai phần mềm vừa ghi, đối chiếu và ghi báo cáo
+     chung như `chay`.
 
 RANH GIỚI: kiểm chéo là TƯ VẤN kỹ thuật — không đổi trạng thái cổng G6, không thay G6-HUMAN-01 (thống kê viên), không
 ký, không ghi study_meta/approval_ledger. Phân tích chính vẫn là run_stats_analysis.py.
@@ -40,10 +44,18 @@ for _s in (sys.stdout, sys.stderr):  # Windows cp1252 (BH55/R4)
 TOOLS = Path(__file__).resolve().parent
 BASE = TOOLS.parent
 EXPORTS = BASE / "exports"
-TEP_JSON, TEP_MD = "G6_kiem_cheo.json", "G6_kiem_cheo.md"
+TEP_JSON, TEP_MD = "G6_kiem_cheo.json", "G6_kiem_cheo.md"  # tên của gate G6 (tương thích ngược)
+
+
+def tep_kiem_cheo(gate: str = "G6") -> tuple[str, str]:
+    """F3 (14/11/2026): tên tệp kết quả kiểm chéo THEO GATE — chạy trọn SAP (chay_sap_g6.py) kiểm chéo nhiều phân tích
+    (G6, G6_<mã>…); tên cố định cũ để lượt sau ghi đè kết quả lượt trước."""
+    return f"{gate}_kiem_cheo.json", f"{gate}_kiem_cheo.md"
 CAN_KIEM = "Cần bác sĩ kiểm chứng."
 
 KHONG_AP_DUNG, CHUA_CHAY, CU = "KHONG_AP_DUNG", "CHUA_CHAY", "CU"
+CHO_UNG_DUNG = "CHO_CHAY_TRONG_UNG_DUNG"
+TEN_HIEN = {"spss": "SPSS", "r": "R / RStudio"}  # tên hiển thị — khoá máy đọc vẫn là «spss»/«r»
 KHOP, LECH_NHO, LECH, LOI, TU_CHOI, KHONG_DO_DUOC = "KHOP", "LECH_NHO", "LECH", "LOI", "TU_CHOI", "KHONG_DO_DUOC"
 NHAN = {
     KHONG_AP_DUNG: "⚪ không áp dụng (chưa có kết quả Python G6)",
@@ -117,7 +129,7 @@ def trang_thai(d: Path, gate: str = "G6") -> dict:
     vt = van_tay(d, gate)
     if vt is None:
         return {"trang_thai": KHONG_AP_DUNG, "nhan": NHAN[KHONG_AP_DUNG], "ly_do": "chưa có kết quả Python G6"}
-    kc = _doc_json(d / TEP_JSON)
+    kc = _doc_json(d / tep_kiem_cheo(gate)[0])
     if not kc:
         return {"trang_thai": CHUA_CHAY, "nhan": NHAN[CHUA_CHAY], "ly_do": "có kết quả Python G6 nhưng chưa kiểm chéo"}
     if kc.get("van_tay") != vt:
@@ -157,7 +169,9 @@ def _tt_tu_ma(ma: int) -> str:
     return {2: KHONG_DO_DUOC, 3: TU_CHOI}.get(ma, LOI)
 
 
-def _chay_spss(study: str, gate: str, d: Path, vt: dict, args) -> dict:
+def _chay_spss(study: str, gate: str, d: Path, vt: dict, args, che_do: str = "nen") -> dict:
+    """che_do: «nen» chạy trọn ở chế độ nền · «mo» mở cú pháp trong giao diện SPSS · «nhan» đọc kết quả lượt
+    giao diện."""
     sys.path.insert(0, str(TOOLS))
     import cau_noi_spss as C  # noqa: PLC0415
 
@@ -166,6 +180,13 @@ def _chay_spss(study: str, gate: str, d: Path, vt: dict, args) -> dict:
     except C.KhongDoDuoc as e:
         return {"trang_thai": KHONG_DO_DUOC, "ly_do": str(e)}
     buoc: list[list] = []
+    if che_do == "nhan":
+        nk = ["nhan-ket-qua", "--study", study, "--gate", gate] + (["--khong-r"] if args.khong_r_tham_chieu else [])
+        ma = C.main(nk)
+        buoc.append(["nhan-ket-qua", ma])
+        if ma != 0:
+            return {"trang_thai": _tt_tu_ma(ma), "buoc": buoc, "ly_do": "nhan-ket-qua không thành công"}
+        return _doi_chieu_spss(C, study, gate, d, buoc)
     man = _doc_json(d / "spss" / f"{study}_khoa.sav.manifest.json")
     sav_ok = man.get("sav_da_tao") and Path(man.get("sav") or "").is_file()
     if not sav_ok or man.get("sha256_nguon") != vt.get("sha256_du_lieu"):
@@ -180,11 +201,19 @@ def _chay_spss(study: str, gate: str, d: Path, vt: dict, args) -> dict:
     cp += ["--khong-trong-so"] if args.khong_trong_so else []
     ch = ["chay", "--study", study, "--gate", gate, "--thoi-han", str(args.thoi_han)]
     ch += ["--khong-r"] if args.khong_r_tham_chieu else []
+    ch += ["--trong-spss"] if che_do == "mo" else []
     for lenh in (cp, ch):
         ma = C.main(lenh)
         buoc.append([lenh[0], ma])
         if ma != 0:
             return {"trang_thai": _tt_tu_ma(ma), "buoc": buoc, "ly_do": f"{lenh[0]} không thành công"}
+    if che_do == "mo":
+        return {"trang_thai": CHO_UNG_DUNG, "buoc": buoc,
+                "ly_do": "đã mở trong giao diện IBM SPSS Statistics — Run > All"}
+    return _doi_chieu_spss(C, study, gate, d, buoc)
+
+
+def _doi_chieu_spss(C, study: str, gate: str, d: Path, buoc: list) -> dict:
     ma = C.main(["doi-chieu", "--study", study, "--gate", gate])
     buoc.append(["doi-chieu", ma])
     dc = _doc_json(d / f"{gate}_spss_doi_chieu.json")
@@ -195,12 +224,14 @@ def _chay_spss(study: str, gate: str, d: Path, vt: dict, args) -> dict:
         "dem": dc.get("dem"),
         "buoc": buoc,
         "phien_ban": dc.get("spss_phien_ban"),
+        "chay_bang": _doc_json(d / f"{gate}_spss_ket_qua.json").get("chay_bang"),
         "r_tham_chieu": dc.get("r_phien_ban"),
         "bao_cao": f"{gate}_spss_doi_chieu.md",
     }
 
 
-def _chay_r(study: str, gate: str, d: Path, args) -> dict:
+def _chay_r(study: str, gate: str, d: Path, args, che_do: str = "nen") -> dict:
+    """che_do: «nen» Rscript --vanilla · «mo» mở script trong RStudio · «nhan» đọc kết quả lượt RStudio."""
     sys.path.insert(0, str(TOOLS))
     try:
         import cau_noi_r as R  # noqa: PLC0415
@@ -211,14 +242,19 @@ def _chay_r(study: str, gate: str, d: Path, args) -> dict:
     except R.KhongDoDuoc as e:
         return {"trang_thai": KHONG_DO_DUOC, "ly_do": str(e)}
     buoc: list[list] = []
-    for lenh in (
-        ["cu-phap", "--study", study, "--gate", gate],
-        ["chay", "--study", study, "--gate", gate, "--thoi-han", str(args.thoi_han)],
-    ):
+    if che_do == "nhan":
+        ds_lenh = [["nhan-ket-qua", "--study", study, "--gate", gate]]
+    else:
+        ds_lenh = [["cu-phap", "--study", study, "--gate", gate],
+                   ["chay", "--study", study, "--gate", gate, "--thoi-han", str(args.thoi_han)]
+                   + (["--trong-rstudio"] if che_do == "mo" else [])]  # fmt: skip
+    for lenh in ds_lenh:
         ma = R.main(lenh)
         buoc.append([lenh[0], ma])
         if ma != 0:
             return {"trang_thai": _tt_tu_ma(ma), "buoc": buoc, "ly_do": f"{lenh[0]} không thành công"}
+    if che_do == "mo":
+        return {"trang_thai": CHO_UNG_DUNG, "buoc": buoc, "ly_do": "đã mở trong RStudio — bấm Source"}
     ma = R.main(["doi-chieu", "--study", study, "--gate", gate])
     buoc.append(["doi-chieu", ma])
     dc = _doc_json(d / f"{gate}_r_doi_chieu.json")
@@ -229,6 +265,7 @@ def _chay_r(study: str, gate: str, d: Path, args) -> dict:
         "dem": dc.get("dem"),
         "buoc": buoc,
         "phien_ban": dc.get("r_phien_ban"),
+        "chay_bang": _doc_json(d / f"{gate}_r_ket_qua.json").get("chay_bang"),
         "bao_cao": f"{gate}_r_doi_chieu.md",
     }
 
@@ -243,15 +280,16 @@ def _md(study: str, ket: dict) -> str:
         f"khoá `{str((ket['van_tay'] or {}).get('sha256_du_lieu') or '?')[:16]}…` — đổi một trong hai ⇒ kết quả "
         "này «CŨ».",
         "",
-        "| Phần mềm | Trạng thái | Khớp | Lệch nhỏ | Lệch | Không so được | Phiên bản | Chi tiết |",
-        "|---|---|---|---|---|---|---|---|",
+        "| Phần mềm | Trạng thái | Khớp | Lệch nhỏ | Lệch | Không so được | Phiên bản | Chạy bằng | Chi tiết |",
+        "|---|---|---|---|---|---|---|---|---|",
     ]
     for ten, x in ket["phan_mem"].items():
         dem = x.get("dem") or {}
         dong.append(
-            f"| {ten.upper()} | {NHAN.get(x['trang_thai'], x['trang_thai'])} | {dem.get('khop', '—')} | "
+            f"| {TEN_HIEN.get(ten, ten.upper())} | {NHAN.get(x['trang_thai'], x['trang_thai'])} | "
+            f"{dem.get('khop', '—')} | "
             f"{dem.get('lech_nho', '—')} | {dem.get('lech', '—')} | {dem.get('khong_so_duoc', '—')} | "
-            f"{x.get('phien_ban') or '—'} | {x.get('bao_cao') or x.get('ly_do') or '—'} |"
+            f"{x.get('phien_ban') or '—'} | {x.get('chay_bang') or '—'} | {x.get('bao_cao') or x.get('ly_do') or '—'} |"
         )
     dong += [
         "",
@@ -274,13 +312,63 @@ def lenh_chay(args) -> int:
     if vt is None:
         print(f"⚪ chưa có {args.gate}_analysis_summary.json — chạy run_stats_analysis.py (phân tích chính) trước")
         return 2
+    dt = (_doc_json(d / f"{args.gate}_analysis_summary.json").get("dac_ta_phan_tich") or {})
+    if not dt.get("outcome") and not dt.get("time"):
+        # F3 (14/11/2026): lượt chỉ mô tả (vd tỷ lệ Wilson) — hai cầu nối CHƯA có bản kiểm chéo cho dạng này; ghi rõ
+        # «không áp dụng» kèm lý do (trước đây báo «từ chối/lỗi» như thể phân tích hỏng).
+        ket = {"study": args.study, "gate": args.gate, "luc": datetime.now().astimezone().isoformat(timespec="seconds"),
+               "van_tay": vt, "phan_mem": {}, "trang_thai": KHONG_AP_DUNG,
+               "ly_do": "phân tích chỉ mô tả (không có kết cục/thời gian) — chưa có bản kiểm chéo SPSS/R",
+               "disclaimer": CAN_KIEM}  # fmt: skip
+        tj, tm = tep_kiem_cheo(args.gate)
+        (d / tj).write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
+        (d / tm).write_text(_md(args.study, ket), encoding="utf-8", newline="\n")
+        print(f"⚪ {args.gate}: {ket['ly_do']}")
+        return 0
+    che_do = "mo" if getattr(args, "trong_ung_dung", False) else "nen"
     phan_mem: dict[str, dict] = {}
     if args.chi in (None, "spss"):
-        print("\n══════ SPSS ══════")
-        phan_mem["spss"] = _chay_spss(args.study, args.gate, d, vt, args)
+        print("\n══════ IBM SPSS Statistics" + (" (mở giao diện)" if che_do == "mo" else " (nền)") + " ══════")
+        phan_mem["spss"] = _chay_spss(args.study, args.gate, d, vt, args, che_do)
     if args.chi in (None, "r"):
-        print("\n══════ R ══════")
-        phan_mem["r"] = _chay_r(args.study, args.gate, d, args)
+        nhan_r = "RStudio (mở script)" if che_do == "mo" else "R — Rscript nền, cùng R với RStudio"
+        print(f"\n══════ {nhan_r} ══════")
+        phan_mem["r"] = _chay_r(args.study, args.gate, d, args, che_do)
+    if che_do == "mo":
+        mo = [k for k, x in phan_mem.items() if x["trang_thai"] == CHO_UNG_DUNG]
+        print(f"\n══════ ĐÃ MỞ: {', '.join(TEN_HIEN[k] for k in mo) or 'không phần mềm nào'} ══════")
+        if "spss" in mo:
+            print("  • IBM SPSS Statistics: menu Run > All (bảng hiện ở cửa sổ Viewer).")
+        if "r" in mo:
+            print("  • RStudio: bấm «Source» (⇧⌘S) — kết quả hiện ở Console.")
+        for k, x in phan_mem.items():
+            if x["trang_thai"] != CHO_UNG_DUNG:
+                print(f"  ⚪ {TEN_HIEN[k]}: {NHAN.get(x['trang_thai'], x['trang_thai'])} — {x.get('ly_do') or ''}")
+        print(f"  Xong: python3 tools/kiem_cheo_g6.py nhan-ket-qua --study {args.study} --gate {args.gate}"
+              + (f" --chi {args.chi}" if args.chi else "") + f"\n{CAN_KIEM}")  # fmt: skip
+        return 0 if mo and len(mo) == len(phan_mem) else 2
+    return _ghi_tong_hop(args, d, vt, phan_mem)
+
+
+def lenh_nhan_ket_qua(args) -> int:
+    """Sau khi bác sĩ chạy xong trong SPSS / RStudio: đọc kết quả, đối chiếu với Python, ghi báo cáo chung như
+    `chay`."""
+    d = thu_muc_de_tai(args.study)
+    vt = van_tay(d, args.gate)
+    if vt is None:
+        print(f"⚪ chưa có {args.gate}_analysis_summary.json — chạy run_stats_analysis.py (phân tích chính) trước")
+        return 2
+    phan_mem: dict[str, dict] = {}
+    if args.chi in (None, "spss"):
+        print("\n══════ IBM SPSS Statistics (kết quả lượt giao diện) ══════")
+        phan_mem["spss"] = _chay_spss(args.study, args.gate, d, vt, args, "nhan")
+    if args.chi in (None, "r"):
+        print("\n══════ RStudio (kết quả lượt Source) ══════")
+        phan_mem["r"] = _chay_r(args.study, args.gate, d, args, "nhan")
+    return _ghi_tong_hop(args, d, vt, phan_mem)
+
+
+def _ghi_tong_hop(args, d: Path, vt: dict, phan_mem: dict[str, dict]) -> int:
     ket = {
         "study": args.study,
         "gate": args.gate,
@@ -293,15 +381,16 @@ def lenh_chay(args) -> int:
     if van_tay(d, args.gate) != vt:  # tóm tắt Python bị ghi lại GIỮA lượt — kết quả không còn gắn với đầu vào nào
         ket["trang_thai"] = LOI
         ket["canh_bao"] = "kết quả Python G6 đổi trong lúc kiểm chéo — chạy lại"
-    (d / TEP_JSON).write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
-    (d / TEP_MD).write_text(_md(args.study, ket), encoding="utf-8", newline="\n")
+    tj, tm = tep_kiem_cheo(args.gate)
+    (d / tj).write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
+    (d / tm).write_text(_md(args.study, ket), encoding="utf-8", newline="\n")
     print(f"\n══════ KIỂM CHÉO G6 — {args.study}: {NHAN.get(ket['trang_thai'], ket['trang_thai'])} ══════")
     for ten, x in phan_mem.items():
         print(
-            f"  {ten.upper():5} {NHAN.get(x['trang_thai'], x['trang_thai'])}"
+            f"  {TEN_HIEN.get(ten, ten.upper()):12} {NHAN.get(x['trang_thai'], x['trang_thai'])}"
             + (f" — {x['ly_do']}" if x.get("ly_do") else "")
         )
-    print(f"✓ {d / TEP_MD}\n{CAN_KIEM}")
+    print(f"✓ {d / tm}\n{CAN_KIEM}")
     tt = ket["trang_thai"]
     return {LECH: 1, LOI: 1, TU_CHOI: 3, KHONG_DO_DUOC: 2}.get(tt, 0)
 
@@ -326,7 +415,9 @@ def lenh_trang_thai(args) -> int:
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(description="Kiểm chéo G6 bằng SPSS + R — một lệnh. " + CAN_KIEM)
+    ap = argparse.ArgumentParser(
+        description="Kiểm chéo G6 bằng IBM SPSS Statistics + R/RStudio — một lệnh. " + CAN_KIEM
+    )
     sub = ap.add_subparsers(dest="lenh", required=True)
     c = sub.add_parser("chay", help="chạy trọn chuỗi SPSS + R và ghi G6_kiem_cheo.json/.md")
     c.add_argument("--study", required=True)
@@ -337,6 +428,13 @@ def main(argv: list[str] | None = None) -> int:
     c.add_argument("--khong-trong-so", action="store_true", help="SPSS: bỏ Complex Samples có trọng số")
     c.add_argument("--khong-r-tham-chieu", action="store_true", help="SPSS: không chạy R làm tham chiếu khối bổ sung")
     c.add_argument("--thoi-han", type=int, default=1200, help="giây cho mỗi lượt SPSS/R (mặc định 1200)")
+    c.add_argument("--trong-ung-dung", action="store_true",
+                   help="MỞ trong giao diện IBM SPSS Statistics và RStudio để bác sĩ tự chạy; xong gọi nhan-ket-qua")
+    nk = sub.add_parser("nhan-ket-qua", help="đọc kết quả lượt chạy trong SPSS/RStudio, đối chiếu, ghi báo cáo chung")
+    nk.add_argument("--study", required=True)
+    nk.add_argument("--gate", default="G6")
+    nk.add_argument("--chi", choices=["spss", "r"], help="chỉ một phần mềm")
+    nk.add_argument("--khong-r-tham-chieu", action="store_true", help="SPSS: không chạy R làm tham chiếu khối bổ sung")
     t = sub.add_parser("trang-thai", help="đọc nhanh trạng thái kiểm chéo (không chạy SPSS/R)")
     g = t.add_mutually_exclusive_group(required=True)
     g.add_argument("--study")
@@ -345,7 +443,7 @@ def main(argv: list[str] | None = None) -> int:
     t.add_argument("--json", action="store_true")
     args = ap.parse_args(argv)
     try:
-        return lenh_chay(args) if args.lenh == "chay" else lenh_trang_thai(args)
+        return {"chay": lenh_chay, "nhan-ket-qua": lenh_nhan_ket_qua, "trang-thai": lenh_trang_thai}[args.lenh](args)
     except ValueError as e:
         print(f"⛔ {e}")
         return 3

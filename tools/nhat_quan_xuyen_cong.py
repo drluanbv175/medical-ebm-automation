@@ -717,10 +717,249 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
         ket.append(_so_bang_nhau("sai_so_d", "Sai số cho phép d", [n for n in nguon_d if _co_that(n["gia_tri"])],
                                  _ty_le))
 
+    ket += truc_chuoi(out_dir, study, meta, sap_text)  # 15/11/2026: chuỗi đầy đủ vấn đề → … → đề cương
     tong = {m: sum(1 for k in ket if k["muc"] == m) for m in _THU_TU_MUC}
     thiet_ke = next(iter(ma_tk)) if len(ma_tk) == 1 else None
     return {"study": study, "thiet_ke": thiet_ke, "thong_so": ket, "tong": tong,
             "muc_cao_nhat": _muc_cao_nhat(k["muc"] for k in ket)}
+
+
+# ─────────────── CHUỖI ĐẦY ĐỦ (15/11/2026) ───────────────
+# Bác sĩ 15/11/2026: «Phải đạt sự đồng bộ giữa các cổng, từ vấn đề nghiên cứu, câu hỏi, tổng quan, mục tiêu, thiết kế,
+# cỡ mẫu, chọn mẫu, biến, công cụ nghiên cứu và đề cương» — «đã có kiểm tra chéo, điều phối nhưng đã không thực hiện
+# được và được báo cáo hoàn thiện». 8 trục cũ không đo biến ↔ công cụ ↔ đề cương, mục tiêu ↔ SAP, chọn mẫu chùm ↔ cỡ
+# mẫu; hội đồng chấm RQ4 trên tập PMID vì không có báo cáo nào khác để chấm. Các trục dưới đây lấp đúng chỗ đó.
+# Nguyên tắc mức: lệch làm SAI NHẬP LIỆU hoặc làm thiết kế không chạy được ⇒ LỆCH CỨNG; cần chủ nhiệm quyết ⇒ LỆCH MỀM;
+# truy nguyên/văn phong ⇒ CẦN XEM; thiếu nguồn để so ⇒ CHƯA ĐỦ ĐỂ SO (không bao giờ là «khớp»).
+TRUC_CHUOI = ("bien_de_cuong", "cong_cu_tu_dien", "muc_tieu_phan_tich", "chon_mau_co_mau", "dac_ta_cho_bo_bien",
+              "tong_quan_khoang_trong")
+# Trục nào là trách nhiệm của cổng nào (hoi_dong_cong.trach_nhiem dùng — «hoàn thiện» của cổng phải qua trục của nó).
+TRUC_THEO_CONG = {
+    "co_mau": ("G3", "G4", "G10"), "alpha": ("G3", "G4", "G10"), "power": ("G3", "G4", "G10"),
+    "sai_so_d": ("G3", "G4", "G10"), "loai_gia_thuyet": ("G0", "G3", "G4", "G10"),
+    "thiet_ke": ("G1", "G2", "G3", "G4", "G10"),
+    "ket_cuc_chinh": ("G0", "G1", "G4", "G8", "G10"), "quan_the": ("G0", "G1", "G2", "G10"),
+    "co_mau_cho_ket_cuc": ("G3", "G4", "G10"),
+    "bien_de_cuong": ("G3", "G5", "G10"), "cong_cu_tu_dien": ("G3", "G5", "G10"),
+    "muc_tieu_phan_tich": ("G1", "G4", "G10"), "chon_mau_co_mau": ("G1", "G3", "G4", "G10"),
+    "dac_ta_cho_bo_bien": ("G4", "G6"), "tong_quan_khoang_trong": ("G0", "G1", "G10"),
+}
+
+
+def _tu_dien(out_dir: Path, study: str) -> Dict[str, Dict[str, str]]:
+    import csv  # noqa: PLC0415
+
+    for p in (out_dir / f"G5_REDCap_dictionary_{study}.csv", out_dir / "_bo-bien-rieng.csv"):
+        if p.is_file():
+            try:
+                with open(p, encoding="utf-8-sig", newline="") as f:
+                    return {(r.get("Variable / Field Name") or "").strip(): r for r in csv.DictReader(f)
+                            if (r.get("Variable / Field Name") or "").strip()}
+            except (OSError, ValueError):
+                return {}
+    return {}
+
+
+def _ma_lua_chon(r: Dict[str, str]) -> List[int]:
+    if (r.get("Field Type") or "").strip() in ("yesno", "truefalse"):
+        return [0, 1]
+    lua_chon = r.get("Choices, Calculations, OR Slider Labels") or ""
+    return sorted(int(x) for x in re.findall(r"(?:^|\|)\s*(-?\d+)\s*,", lua_chon))
+
+
+def _truc_bien_de_cuong(out_dir: Path, study: str) -> Dict[str, Any]:
+    ten = "Biến ↔ đề cương/bộ biến đã duyệt"
+    try:
+        import doi_chieu_bien_de_cuong as DCB  # noqa: PLC0415
+
+        kq = DCB.doi_chieu(out_dir, study)
+    except Exception as e:  # noqa: BLE001 — thiếu bộ đối chiếu / hỏng ⇒ chưa đủ để so, không phải khớp
+        return _ket("bien_de_cuong", ten, [], MUC_CHUA_DU, f"không đối chiếu được ({type(e).__name__})")
+    if kq.khong_do_duoc:
+        return _ket("bien_de_cuong", ten, [], MUC_CHUA_DU, kq.khong_do_duoc)
+    nguon = [{"cong": "G5" if p.pham_vi == DCB.PV_NHAP else "G6", "noi": f"{p.luat} {p.bien}", "gia_tri": p.chi_tiet}
+             for p in kq.phat_hien if p.muc == DCB.LECH][:12]
+    nhap, pt = kq.lech(DCB.PV_NHAP), kq.lech(DCB.PV_PHAN_TICH)
+    if nhap:
+        return _ket("bien_de_cuong", ten, nguon, MUC_LECH_CUNG,
+                    f"{len(nhap)} lệch NHẬP LIỆU (thiếu biến/sai mã/G3 ≠ G5) — mẫu nhập sẽ sai; sửa theo "
+                    f"{', '.join(kq.nguon_nguoi_duyet)}")  # fmt: skip
+    if pt:
+        return _ket("bien_de_cuong", ten, nguon, MUC_LECH_MEM,
+                    f"{len(pt)} lệch PHÂN TÍCH (biến phái sinh ngoài đề cương / calc chưa có công thức / đặc tả dùng "
+                    "biến lạ) — chủ nhiệm quyết bổ sung đề cương/bộ biến; G6 tự chặn")  # fmt: skip
+    return _ket("bien_de_cuong", ten, [], MUC_KHOP,
+                f"{kq.so_bien_nguon} biến của {', '.join(kq.nguon_nguoi_duyet)} khớp bản máy")
+
+
+def _truc_cong_cu(out_dir: Path, study: str, td: Dict[str, Dict[str, str]]) -> Dict[str, Any]:
+    ten = "Công cụ thu thập ↔ từ điển nhập liệu"
+    if not td:
+        return _ket("cong_cu_tu_dien", ten, [], MUC_CHUA_DU, "chưa có từ điển máy")
+    phieu = out_dir / f"PHIEU_THU_THAP_SO_LIEU_{study}.md"
+    if phieu.is_file():
+        tp = _doc_text(phieu)
+        vang = [k for k in td if k != "record_id"
+                and not re.search(rf"(?<![A-Za-z0-9_]){re.escape(k)}(?![A-Za-z0-9_])", tp)]
+        if vang:
+            return _ket("cong_cu_tu_dien", ten, [{"cong": "G3", "noi": phieu.name, "gia_tri": ", ".join(vang[:15])}],
+                        MUC_LECH_CUNG, f"{len(vang)} trường của từ điển không có trên phiếu thu thập")
+        return _ket("cong_cu_tu_dien", ten, [], MUC_KHOP, f"{len(td)} trường đều có trên {phieu.name}")
+    dc = _doc_text(out_dir / f"DE_CUONG_NOP_HOI_DONG_{study}.md")
+    a, b = dc.find("# PHỤ LỤC C"), dc.find("# PHỤ LỤC D")
+    e = dc.find("# PHỤ LỤC E")
+    if a < 0 or e < 0:
+        return _ket("cong_cu_tu_dien", ten, [], MUC_CHUA_DU,
+                    "không có phiếu thu thập (PHIEU_THU_THAP_SO_LIEU_<mã>.md) lẫn phiếu trong đề cương nộp "
+                    "(Phụ lục C + bảng biến số Phụ lục E)")  # fmt: skip
+    pc = dc[a:b if b > a else None]
+    p1 = pc[:pc.find("PHẦN 2")] if "PHẦN 2" in pc else pc
+    cau = {int(m[1]): m[2] for m in re.finditer(r"(?m)^(\d{1,2})\. (.+)$", p1)}
+    thap = {k.lower(): k for k in td}
+    lech, so = [], 0
+    for dong in dc[e:].splitlines():
+        m = re.search(r"Phiếu – câu (\d+)", dong)
+        if not m:
+            continue
+        o = [x.strip() for x in dong.strip().strip("|").split("|")]
+        k = thap.get(o[0].strip("`").lower())
+        q = cau.get(int(m[1]))
+        if k is None or q is None:
+            ly_do = "không có trong từ điển" if k is None else "không thấy câu trên phiếu"
+            lech.append(f"câu {m[1]} ({o[0]}): {ly_do}")
+            continue
+        if (td[k].get("Field Type") or "").strip() not in ("radio", "dropdown", "checkbox", "yesno", "truefalse"):
+            continue
+        so += 1
+        co_so = [int(x) for x in re.findall(r"☐\s*(\d+)\b", q)]
+        khong_so = q.count("☐") - len(co_so)
+        ma = _ma_lua_chon(td[k])
+        if set(co_so) - set(ma) or len([x for x in ma if x not in co_so]) != khong_so:
+            lech.append(f"câu {m[1]} ({k}): phiếu {co_so}+{khong_so} ô không số ≠ từ điển {ma}")
+    p2 = pc[pc.find("PHẦN 2"):pc.find("PHẦN 3")] if "PHẦN 2" in pc and "PHẦN 3" in pc else ""
+    hdr = next((d for d in p2.splitlines() if d.startswith("|") and "KSD" in d), "")
+    if hdr:
+        cot = [x.strip() for x in hdr.strip().strip("|").split("|")].index("KSD")
+        ksd = set()
+        for dong in p2.splitlines():
+            mm = re.match(r"\|\s*([A-F]\d{1,2})\b", dong)
+            if mm:
+                o = [x.strip() for x in dong.strip().strip("|").split("|")]
+                if len(o) > cot and o[cot] not in ("", "—", "-"):
+                    ksd.add(mm[1].lower())
+        co7 = {k.lower() for k in td if re.fullmatch(r"[a-fA-F]\d{1,2}", k) and 7 in _ma_lua_chon(td[k])}
+        if ksd != co7:
+            lech.append(f"ô KSD trên phiếu {sorted(ksd)} ≠ mục có mã 7 trong từ điển {sorted(co7)}")
+    if lech:
+        return _ket("cong_cu_tu_dien", ten, [{"cong": "G5", "noi": "phiếu ↔ từ điển", "gia_tri": x} for x in lech[:12]],
+                    MUC_LECH_CUNG, f"{len(lech)} chỗ phiếu (Phụ lục C) khác từ điển nhập liệu")
+    if not so:
+        return _ket("cong_cu_tu_dien", ten, [], MUC_CHUA_DU, "không đọc được câu nào của phiếu theo bảng biến số")
+    return _ket("cong_cu_tu_dien", ten, [], MUC_KHOP, f"{so} câu chọn đáp án của phiếu khớp mã từ điển (kể cả ô KSD)")
+
+
+def _truc_muc_tieu(meta: Dict[str, Any], sap_text: str) -> Optional[Dict[str, Any]]:
+    ob = _gp(meta, "G1").get("objectives") or []
+    if not ob or not sap_text:
+        return None
+    ten = "Mục tiêu (G1) ↔ phân tích (SAP)"
+    thieu = []
+    for o in ob:
+        m = re.match(r"\s*(MT\s*\d+)", str(o))
+        if not m:
+            continue
+        so = re.sub(r"\D", "", m[1])
+        if not re.search(rf"(MT\s*{so}\b|Mục tiêu\s*{so}\b)", sap_text):
+            thieu.append(str(o)[:90])
+    if thieu:
+        return _ket("muc_tieu_phan_tich", ten, [{"cong": "G1", "noi": "objectives", "gia_tri": x} for x in thieu],
+                    MUC_CAN_XEM, f"{len(thieu)}/{len(ob)} mục tiêu không được SAP gọi tên — ghi rõ phân tích nào "
+                    "trả lời mục tiêu nào (truy nguyên mục tiêu → phân tích)")  # fmt: skip
+    return _ket("muc_tieu_phan_tich", ten, [], MUC_KHOP, f"{len(ob)}/{len(ob)} mục tiêu có trong SAP")
+
+
+def _truc_chon_mau(meta: Dict[str, Any], sap_text: str, td: Dict[str, Dict[str, str]]) -> Optional[Dict[str, Any]]:
+    tk = _gp(meta, "G1").get("sampling_design") or []
+    tk = tk if isinstance(tk, list) else [tk]
+    co_chum = "cum" in tk or bool(re.search(r"chọn mẫu (theo )?(chùm|cụm)", sap_text or "", re.I))
+    if not co_chum:
+        return None
+    ten = "Chọn mẫu chùm ↔ cỡ mẫu ↔ biến chùm"
+    g3 = _gp(meta, "G3")
+    m, icc, k = _so_dau(g3.get("cluster_size")), _so_dau(g3.get("icc")), _so_dau(g3.get("n_clusters"))
+    if m is None or icc is None:
+        return _ket("chon_mau_co_mau", ten, [{"cong": "G1", "noi": "sampling_design", "gia_tri": tk}], MUC_LECH_CUNG,
+                    "chọn mẫu theo chùm nhưng G3 không có cỡ chùm/ICC — cỡ mẫu chưa hiệu chỉnh hiệu ứng thiết kế")
+    cv = _so_dau(g3.get("cluster_size_cv")) or 0.0
+    de = 1 + ((cv ** 2 + 1) * m - 1) * icc
+    gia_tri = f"m={m:g} CV={cv:g} ICC={icc:g} ⇒ DE={de:.2f}"
+    lech, nguon = [], [{"cong": "G3", "noi": "cluster_size·cv·icc", "gia_tri": gia_tri}]
+    sap_de = [float(x.replace(",", ".")) for x in re.findall(r"\bDE\s*[:=]?\s*(1[.,]\d+)", sap_text or "")]
+    if sap_de and not any(abs(x - de) < 0.015 for x in sap_de):
+        lech.append(f"SAP nêu DE {sap_de} ≠ DE tính từ G3 {de:.2f}")
+    n = _so_nguyen(_gp(meta, "G3").get("confirmed_n"))
+    if k and n and abs(k * m - n) > 0.5:
+        nguon.append({"cong": "G3", "noi": "K×m vs N", "gia_tri": f"{k:g}×{m:g} ≠ {n}"})
+    # định danh đứng sau «chùm» trong SAP: có thể là biến chùm (`ma_ban_kham`) hoặc tên hàm R (`vcovCL`) ⇒ chỉ cần MỘT
+    # định danh có trong từ điển; không tên nào có ⇒ biến chùm không nhập được.
+    ung_vien = sorted(set(re.findall(r"chùm\s*\(?\s*`([A-Za-z_][A-Za-z0-9_:]*)`", sap_text or "")))
+    thap = {x.lower() for x in td}
+    bien = [b for b in ung_vien if b.lower() in thap]
+    if td and not bien:
+        return _ket("chon_mau_co_mau", ten, nguon + [{"cong": "G5", "noi": "định danh sau «chùm» trong SAP",
+                                                         "gia_tri": ", ".join(ung_vien) or "(không có)"}],
+                    MUC_LECH_CUNG, "SAP không nêu biến chùm nào có trong từ điển — không nhập được thì không "
+                    "hiệu chỉnh chùm")  # fmt: skip
+    if lech:
+        return _ket("chon_mau_co_mau", ten, nguon, MUC_LECH_MEM, "; ".join(lech))
+    return _ket("chon_mau_co_mau", ten, nguon, MUC_KHOP, f"DE {de:.2f} khớp SAP; biến chùm {bien} có trong từ điển")
+
+
+def _truc_dac_ta(out_dir: Path) -> Optional[Dict[str, Any]]:
+    dt = _doc_json(out_dir / "G6_DAC_TA_SAP.json")
+    cho = [p.get("id") for p in dt.get("phan_tich") or []
+           if "BỔ SUNG BỘ BIẾN" in str(p.get("chua_tu_dong") or "").upper()]
+    if not cho:
+        return None
+    return _ket("dac_ta_cho_bo_bien", "Phân tích SAP chờ bổ sung bộ biến", [{"cong": "G4", "noi": "G6_DAC_TA_SAP.json",
+                "gia_tri": ", ".join(map(str, cho))}], MUC_LECH_MEM,
+                f"{len(cho)} phân tích SAP cần biến mà bộ biến G3 chưa có — chủ nhiệm duyệt bổ sung "
+                "bộ biến")  # fmt: skip
+
+
+def _truc_tong_quan(out_dir: Path, study: str, meta: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    # Không dùng `_co_that`: câu khoảng trống hay mở bằng «Chưa có nghiên cứu …» — đúng mẫu ô trống của `_O_TRONG`.
+    kg_raw = _gp(meta, "G1").get("knowledge_gap")
+    kg_raw = " ".join(map(str, kg_raw)) if isinstance(kg_raw, list) else str(kg_raw or "")
+    kg = (bool(re.search(r"\w{3}", kg_raw)) and "[CẦN" not in kg_raw.upper()) or (
+        out_dir / f"G0_KHOANG_TRONG_{study}.json").is_file()
+    dc = _doc_text(out_dir / f"DE_CUONG_NOP_HOI_DONG_{study}.md")
+    ten = "Tổng quan/khoảng trống ↔ đề cương"
+    if not dc:
+        return _ket("tong_quan_khoang_trong", ten, [], MUC_CHUA_DU, "chưa có đề cương nộp để so")
+    co = bool(re.search(r"(?im)^#+\s.*khoảng trống", dc))
+    if kg and not co:
+        return _ket("tong_quan_khoang_trong", ten, [], MUC_CAN_XEM,
+                    "G0/G1 có khoảng trống nghiên cứu nhưng đề cương nộp không có mục «khoảng trống»")
+    return _ket("tong_quan_khoang_trong", ten, [], MUC_KHOP if co else MUC_CHUA_DU,
+                "đề cương có mục khoảng trống (chỉ kiểm có mặt — nội dung do hội đồng chấm RQ3/RQ4)" if co
+                else "không có khoảng trống ở G0/G1 lẫn đề cương")
+
+
+def truc_chuoi(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -> List[Dict[str, Any]]:
+    """Sáu trục chuỗi đầy đủ (mỗi trục tự bắt lỗi của mình — một trục hỏng không làm mất các trục khác)."""
+    td = _tu_dien(out_dir, study)
+    ra: List[Dict[str, Any]] = []
+    for ham in (lambda: _truc_bien_de_cuong(out_dir, study), lambda: _truc_cong_cu(out_dir, study, td),
+                lambda: _truc_muc_tieu(meta, sap_text), lambda: _truc_chon_mau(meta, sap_text, td),
+                lambda: _truc_dac_ta(out_dir), lambda: _truc_tong_quan(out_dir, study, meta)):
+        try:
+            k = ham()
+        except Exception as e:  # noqa: BLE001
+            k = _ket("chuoi_loi", "Trục chuỗi lỗi", [], MUC_CHUA_DU, f"{type(e).__name__}: {str(e)[:120]}")
+        if k:
+            ra.append(k)
+    return ra
 
 
 def thong_so_bat_buoc(thiet_ke: Optional[str]) -> List[str]:

@@ -1248,6 +1248,46 @@ def evaluate_study(
         )
     )
 
+    # G5-AUTO-11 (15/11/2026 — bác sĩ: «biến xác định không đúng, nhập liệu không đúng thì không thể phân tích được»;
+    # «đã có kiểm tra chéo, điều phối nhưng đã không thực hiện được»). Trước đây đồng bộ từ điển ↔ phiếu ↔ đề cương CHỈ
+    # là ô người tự xác nhận (`dictionary_crf_aligned` lúc khoá) — không có phép đo máy. Nay đo bằng hai trục của
+    # nhat_quan_xuyen_cong: biến ↔ đề cương/bộ biến đã duyệt và công cụ thu thập ↔ từ điển. Lệch NHẬP LIỆU ⇒ BLOCK;
+    # lệch phân tích / chưa đủ để so ⇒ REVIEW (không ký khoá được khi chưa biết từ điển có đúng đề cương không).
+    try:
+        import nhat_quan_xuyen_cong as NQ  # noqa: PLC0415
+
+        tu_dien_nq = NQ._tu_dien(out_dir, study)
+        truc_nq = [NQ._truc_bien_de_cuong(out_dir, study), NQ._truc_cong_cu(out_dir, study, tu_dien_nq)]
+        # KHÔNG dùng `_muc_cao_nhat`: nó xếp «chưa đủ» dưới «khớp» (đúng cho một thông số có nhiều nơi khai), nên một
+        # trục không đo được sẽ ra PASS. Ở đây: có trục lệch cứng ⇒ BLOCK; mọi trục đạt mới PASS; còn lại REVIEW.
+        # G5 khoá DỮ LIỆU NHẬP: lệch PHÂN TÍCH của trục biến (biến phái sinh ngoài đề cương, calc chưa có công thức —
+        # mức `lech_mem`) không làm sai mẫu nhập; G6 tự chặn biến phái sinh chưa duyệt và bảng trách nhiệm G5 vẫn liệt
+        # kê nó ở việc chờ PI. Nên ở đây `lech_mem` của trục biến được coi là đạt CHO PHẠM VI NHẬP LIỆU (ghi rõ trong
+        # bằng chứng); mọi mức khác ngoài `khop` (chưa đủ / cần xem) vẫn REVIEW.
+        muc_nq = [t["muc"] for t in truc_nq]
+        dat_nhap = [m == NQ.MUC_KHOP or (t["ma"] == "bien_de_cuong" and m == NQ.MUC_LECH_MEM)
+                    for t, m in zip(truc_nq, muc_nq)]
+        if NQ.MUC_LECH_CUNG in muc_nq:
+            dong_bo_status = "BLOCK"
+        elif all(dat_nhap):
+            dong_bo_status = "PASS"
+        else:
+            dong_bo_status = "REVIEW"
+        dong_bo_bang_chung = "; ".join(f"{t['ten']}: {t['muc']} — {t['ghi_chu']}" for t in truc_nq)
+    except Exception as exc:  # noqa: BLE001 — không đo được ≠ đạt
+        dong_bo_status, dong_bo_bang_chung = "REVIEW", f"không đo được ({type(exc).__name__}: {str(exc)[:120]})"
+    automatic.append(
+        _criterion(
+            "G5-AUTO-11",
+            "Từ điển nhập liệu ↔ đề cương/bộ biến đã duyệt ↔ phiếu thu thập đồng bộ (máy đo, không chỉ người xác nhận)",
+            dong_bo_status,
+            dong_bo_bang_chung[:900],
+            "Chạy python3 tools/doi_chieu_bien_de_cuong.py --study <mã> và python3 tools/nhat_quan_xuyen_cong.py "
+            "--study <mã>; sửa bản máy theo đề cương/bộ biến đã duyệt (hoặc chủ nhiệm duyệt sửa đề cương/bộ biến "
+            "trước).",
+        )
+    )
+
     # ── G5-AUTO-12 / G5-AUTO-13 — đồng bộ biến xuyên cổng (bác sĩ duyệt 15/11/2026) ───────────────────────────────
     # Bản cũ chỉ kiểm dữ liệu ↔ từ điển (G5-AUTO-07b) — không kiểm từ điển có đúng MỤC TIÊU không: từ điển dựng từ bộ
     # mẫu chung vẫn qua, rồi SPSS/R báo «✓ khớp» trên bộ biến sai. REVIEW (không BLOCK): G5 chưa ký thì không READY,
