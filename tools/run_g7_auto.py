@@ -1017,6 +1017,96 @@ def kiem_so_trich_g6(van_ban_nhap: str, van_ban_json: str) -> list[str]:
     return sorted({s for s in _so_trong_van_ban(van_ban_nhap) if s not in co})
 
 
+def _tom_tat_g6_mot_tep(p: Path, ten: str, sha_khoa: str, moc_khoa: Any) -> tuple:
+    """(lý do KHÔNG dùng được | None, tóm tắt, văn bản) cho MỘT tệp tóm tắt G6 — cùng luật cho tóm tắt chính
+    (`doc_tom_tat_g6_hop_le`) và tóm tắt từng kết cục phụ (`dung_ket_cuc_phu_g6`): đọc được, là đối tượng JSON, sha256
+    trùng bản khoá (vắng thì thời điểm sinh sau locked_at), n_total nguyên dương."""
+    try:
+        van_ban = p.read_text(encoding="utf-8")
+        tt = json.loads(van_ban)
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return f"{ten} không đọc được — không dựng Kết quả", None, ""
+    if not isinstance(tt, dict):
+        return f"{ten} không phải đối tượng JSON — không dựng Kết quả", None, ""
+    dl = tt.get("data_lock") if isinstance(tt.get("data_lock"), dict) else {}
+    sha_tt = str(dl.get("sha256") or tt.get("locked_data_sha256") or "").strip().lower()
+    if sha_tt and sha_khoa:
+        if sha_tt != sha_khoa:
+            return (f"{ten} phân tích trên dataset KHÁC bản khoá hiện hành (sha256 lệch) — chạy lại phân tích, xoá tệp "
+                    "cũ; không dựng Kết quả"), None, ""
+    else:
+        sinh = G7Q._thoi_diem(tt.get("generated"))
+        if sinh is None or sinh < moc_khoa:
+            return (f"{ten} không chứng minh được sinh từ bản khoá (thiếu sha256 so được và thời điểm sinh sau "
+                    "locked_at) — không dựng Kết quả"), None, ""
+    n = tt.get("n_total")
+    if isinstance(n, bool) or not isinstance(n, int) or n <= 0:
+        return f"{ten} không có n_total là số nguyên dương — không dựng Kết quả", None, ""
+    return None, tt, van_ban
+
+
+TEP_SAP_KET_QUA_G6 = "G6_SAP_ket_qua.json"   # chỉ mục của tools/chay_sap_g6.py (chạy trọn SAP — F3)
+_GATE_PHAN_TICH_G6 = re.compile(r"G6(?:_[A-Za-z0-9_\-]+)?")
+
+
+def dung_ket_cuc_phu_g6(out_dir: Path) -> Optional[list[str]]:
+    """§4 Kết cục PHỤ từ chỉ mục chạy trọn SAP (`G6_SAP_ket_qua.json` của chay_sap_g6 — mỗi phân tích một tóm tắt
+    `<gate>_analysis_summary.json`). Giả lập lần 3 (15/11/2026): §4 luôn là ô trống dù G6 đã chạy các kết cục phụ SAP.
+
+    Mỗi phân tích vai «phu»: DA_CHAY ⇒ tóm tắt riêng phải đạt CÙNG luật với tóm tắt chính (`_tom_tat_g6_mot_tep`: sha256
+    trùng bản khoá…) và mọi số chép phải có NGUYÊN VĂN trong tóm tắt đó (`kiem_so_trich_g6`) — không đạt ⇒ ô [CẦN THỐNG
+    KÊ VIÊN] kèm lý do cho RIÊNG phân tích đó; CHUA_TU_DONG/LOI ⇒ ô [CẦN THỐNG KÊ VIÊN] kèm lý do G6 ghi. Chỉ mục chạy
+    trên dữ liệu khác bản khoá ⇒ không chép gì. None ⇒ không có chỉ mục hoặc không có phân tích phụ (giữ ô cũ)."""
+    out_dir = Path(out_dir)
+    cm = G7Q._read_json(out_dir / TEP_SAP_KET_QUA_G6)
+    phu = [x for x in (cm.get("phan_tich") or []) if isinstance(x, dict) and x.get("vai") == "phu"] \
+        if isinstance(cm, dict) else []
+    if not phu:
+        return None
+    manifest = G7Q._read_json(out_dir / "DATA_LOCK_manifest.json")
+    moc_khoa = G7Q._thoi_diem(manifest.get("locked_at"))
+    if manifest.get("status") != "LOCKED_FOR_ANALYSIS" or moc_khoa is None:
+        return ["[CẦN KẾT QUẢ THẬT — có chỉ mục SAP G6 nhưng dữ liệu chưa khoá (DATA_LOCK_manifest) — không chép kết cục "
+                "phụ]  "]
+    sha_khoa = str(manifest.get("sha256") or "").strip().lower()
+    dl = cm.get("du_lieu_khoa") if isinstance(cm.get("du_lieu_khoa"), dict) else {}
+    sha_cm = str(dl.get("sha256") or "").strip().lower()
+    if sha_cm and sha_khoa and sha_cm != sha_khoa:
+        return [f"[CẦN KẾT QUẢ THẬT — {TEP_SAP_KET_QUA_G6} chạy trên dữ liệu KHÁC bản khoá hiện hành (sha256 lệch) — "
+                "chạy lại `chay_sap_g6.py chay`; không chép kết cục phụ]  "]
+    dong = [f"*Kết cục phụ — chép từ chỉ mục SAP G6 (`{TEP_SAP_KET_QUA_G6}`), mỗi phân tích một tóm tắt riêng*  ", ""]
+    for x in phu:
+        tieu_de = f"**`{_mot_dong(x.get('id'), 60)}`** (SAP {_mot_dong(x.get('sap_muc') or '—', 20)})"
+        if x.get("mo_ta"):
+            tieu_de += f" — {_mot_dong(x['mo_ta'], 160)}"
+        trang_thai = x.get("trang_thai")
+        if trang_thai == "CHUA_TU_DONG":
+            dong += [f"{tieu_de}: [CẦN THỐNG KÊ VIÊN — SAP cam kết nhưng hệ chưa có công cụ, làm tay: "
+                     f"{_trong_o(x.get('ly_do'))}]  ", ""]
+            continue
+        if trang_thai != "DA_CHAY":
+            dong += [f"{tieu_de}: [CẦN THỐNG KÊ VIÊN — G6 chạy phân tích này LỖI: {_trong_o(x.get('ly_do'))}]  ", ""]
+            continue
+        gate = str(x.get("gate") or "")
+        ten = f"{gate}_analysis_summary.json"
+        if not _GATE_PHAN_TICH_G6.fullmatch(gate):
+            dong += [f"{tieu_de}: [CẦN THỐNG KÊ VIÊN — chỉ mục ghi gate lạ «{_trong_o(gate, 40)}»]  ", ""]
+            continue
+        ly_do, tt, van_ban = _tom_tat_g6_mot_tep(out_dir / ten, ten, sha_khoa, moc_khoa)
+        if ly_do:
+            dong += [f"{tieu_de}: [CẦN THỐNG KÊ VIÊN — {_trong_o(ly_do)}]  ", ""]
+            continue
+        khoi = _khoi_uoc_luong_g6(tt, ten)
+        lech = kiem_so_trich_g6("\n".join(khoi), van_ban)
+        if lech or not khoi:
+            ly = (f"tự kiểm: số không có nguyên văn trong {ten}: {', '.join(lech[:6])}" if lech
+                  else f"{ten} không mang ước lượng")
+            dong += [f"{tieu_de}: [CẦN THỐNG KÊ VIÊN — {_trong_o(ly)}]  ", ""]
+            continue
+        dong += [f"{tieu_de} — `{ten}`, n = {_so_g6(tt['n_total'])} {NHAN_DOI_CHIEU_G6}  ", *khoi]
+    return dong
+
+
 def doc_tom_tat_g6_hop_le(out_dir: Path) -> dict:
     """{hop_le, ly_do, nguon, tom_tat, van_ban} — tóm tắt G6 dùng được để dựng NHÁP Kết quả (N16).
 
@@ -1041,27 +1131,9 @@ def doc_tom_tat_g6_hop_le(out_dir: Path) -> dict:
     dat: list[tuple[str, dict, str]] = []
     for p in ung_vien:
         ten = p.relative_to(out_dir).as_posix()
-        try:
-            van_ban = p.read_text(encoding="utf-8")
-            tt = json.loads(van_ban)
-        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
-            return {"hop_le": False, "ly_do": f"{ten} không đọc được — không dựng Kết quả"}
-        if not isinstance(tt, dict):
-            return {"hop_le": False, "ly_do": f"{ten} không phải đối tượng JSON — không dựng Kết quả"}
-        dl = tt.get("data_lock") if isinstance(tt.get("data_lock"), dict) else {}
-        sha_tt = str(dl.get("sha256") or tt.get("locked_data_sha256") or "").strip().lower()
-        if sha_tt and sha_khoa:
-            if sha_tt != sha_khoa:
-                return {"hop_le": False, "ly_do": f"{ten} phân tích trên dataset KHÁC bản khoá hiện hành (sha256 "
-                                                  "lệch) — chạy lại phân tích, xoá tệp cũ; không dựng Kết quả"}
-        else:
-            sinh = G7Q._thoi_diem(tt.get("generated"))
-            if sinh is None or sinh < moc_khoa:
-                return {"hop_le": False, "ly_do": f"{ten} không chứng minh được sinh từ bản khoá (thiếu sha256 so "
-                                                  "được và thời điểm sinh sau locked_at) — không dựng Kết quả"}
-        n = tt.get("n_total")
-        if isinstance(n, bool) or not isinstance(n, int) or n <= 0:
-            return {"hop_le": False, "ly_do": f"{ten} không có n_total là số nguyên dương — không dựng Kết quả"}
+        ly_do, tt, van_ban = _tom_tat_g6_mot_tep(p, ten, sha_khoa, moc_khoa)
+        if ly_do:
+            return {"hop_le": False, "ly_do": ly_do}
         dat.append((ten, tt, van_ban))
     ten, tt, van_ban = next((d for d in dat if any(k in d[1] for k in _KHOA_UOC_LUONG_G6)), dat[0])
     return {"hop_le": True, "ly_do": "", "nguon": ten, "tom_tat": tt, "van_ban": van_ban}
@@ -1192,37 +1264,33 @@ def _khoi_ket_cuc_chinh_g6(po: dict) -> list[str]:
     return dong
 
 
-def dung_ket_qua_tu_g6(g6: dict) -> dict:
-    """NHÁP các khối mục Kết quả từ tóm tắt G6 hợp lệ (`doc_tom_tat_g6_hop_le`) — N16.
+def _bang1_tu_g6(t1: Any, n_theo_nhom: Optional[dict]) -> list:
+    """Tên biến của Bảng 1 G6 dùng được (table1.rows có giá trị cho ĐÚNG các nhóm của n_per_group) — [] nếu không."""
+    if not (isinstance(t1, dict) and n_theo_nhom and isinstance(t1.get("rows"), list) and t1["rows"]):
+        return []
+    nhom = set(n_theo_nhom)
+    for r in t1["rows"]:
+        if not (isinstance(r, dict) and r.get("variable") and isinstance(r.get("gia_tri"), dict)
+                and {_mot_dong(g) for g in r["gia_tri"]} == nhom):
+            return []
+    return [str(r["variable"]) for r in t1["rows"]]
 
-    Trả {da_dung: True, nguon, n_total_txt, n_theo_nhom, s1, s2, s3, s5} (mỗi s* là list dòng Markdown) hoặc
-    {da_dung: False, ly_do}. Chỉ CHÉP số có trong tóm tắt (`_so_g6`); cuối cùng TỰ KIỂM mọi số của bản nháp có nguyên
-    văn trong tệp G6 (`kiem_so_trich_g6`) — lệch dù một số ⇒ bỏ cả bản nháp, giữ khung [CẦN…] (fail-closed)."""
-    if not (g6 or {}).get("hop_le"):
-        return {"da_dung": False, "ly_do": (g6 or {}).get("ly_do") or "không có tóm tắt G6 hợp lệ"}
-    tt, nguon, N = g6["tom_tat"], g6["nguon"], NHAN_DOI_CHIEU_G6
-    # Hệ quả có chủ ý (thẩm định PR #261, mức thấp): chép N của G6 vào nháp làm vế «N phân tích có trong Tóm tắt/Kết
-    # quả» của G7-AUTO-03 (g7_quality_gate.doi_chieu_ket_qua_g6) khớp THEO CẤU TẠO — tiêu chí đó giảm sức phân biệt,
-    # không thành đường fail-open: results_final do bác sĩ đặt và G7-AUTO-05 ở REVIEW khi còn nhãn đối chiếu. Checkpoint
-    # ghi rõ điều này (sections_auto_filled) để người đọc báo cáo cổng không hiểu nhầm.
-    s1 = [f"Phân tích (G6): N = {_so_g6(tt['n_total'])} {N}  "]
-    md = tt.get("missing_data")
-    if isinstance(md, dict) and not md.get("error") and "n_complete_cases" in md:
-        s1.append(f"Đủ dữ liệu mọi biến (complete case): {_so_g6(md['n_complete_cases'])}/{_so_g6(md.get('n_total'))} "
-                  f"({_so_g6(md.get('pct_complete'))}%) {N}  ")
 
-    s2: list[str] = []
-    n_theo_nhom: Optional[dict] = None
-    t1 = tt.get("table1")
-    if isinstance(t1, dict) and t1.get("error"):
-        s2.append(f"[CẦN THỐNG KÊ VIÊN — G6 báo lỗi Bảng 1: {_trong_o(t1['error'])}]  ")
-    elif isinstance(t1, dict) and isinstance(t1.get("n_per_group"), dict) and t1["n_per_group"]:
-        n_theo_nhom = {_mot_dong(g): v for g, v in t1["n_per_group"].items()}
-        s2.append("Số người theo nhóm (G6): " + "; ".join(f"`{g}`: {_so_g6(v)}" for g, v in n_theo_nhom.items())
-                  + f" {N}  ")
-    s2.append("[CẦN KẾT QUẢ THẬT — giá trị từng biến: chép từ G6_table1_descriptive.txt (cùng lượt G6); tóm tắt JSON "
-              "của G6 chưa mang giá trị từng biến nên máy không chép]  ")
+def chu_giai_bang1_g6(redcap_vars: list, bien_bang1: list) -> str:
+    """Khối thay khung Bảng 1 khi bảng đã chép từ G6: chú giải tên biến ↔ nhãn từ điển G5 (ngoài khối tự kiểm số —
+    nhãn có thể chứa số) + nhắc biến của từ điển không vào Bảng 1 (G6 chọn biến nền theo SAP)."""
+    nhan = {str(v.get("variable")): str(v.get("label") or "") for v in redcap_vars or [] if isinstance(v, dict)}
+    dong = [f"`{b}` = {nhan[b].replace('|', '/')}" for b in bien_bang1 if nhan.get(b)]
+    ra = ["*Chú giải Bảng 1 (nhãn từ từ điển G5):* " + ("; ".join(dong) if dong else "—") + "  "]
+    ra.append("*Bảng 1 gồm đúng các biến nền G6 đã phân tích (theo SAP/đặc tả G6); biến kết cục/phơi nhiễm của từ điển "
+              "nằm ở Bảng 2/3.*")
+    return "\n".join(ra)
 
+
+def _khoi_uoc_luong_g6(tt: dict, nguon: str) -> list[str]:
+    """Các khối ƯỚC LƯỢNG của MỘT tóm tắt G6 (kết cục chính/tỷ lệ/thứ tự/sống còn/KM/đa biến) — dùng cho §3 kết
+    cục chính và (15/11/2026, giả lập lần 3) cho từng kết cục PHỤ do chay_sap_g6 chạy. Chỉ CHÉP số (`_so_g6`)."""
+    N = NHAN_DOI_CHIEU_G6
     s3: list[str] = []
     mh = tt.get("mo_hinh_chinh")
     if isinstance(mh, dict) and mh.get("da_chay") is False:
@@ -1301,6 +1369,58 @@ def dung_ket_qua_tu_g6(g6: dict) -> dict:
     if not any(k in tt for k in _KHOA_UOC_LUONG_G6):
         s3 = [f"[CẦN KẾT QUẢ THẬT — tóm tắt G6 ({nguon}) chỉ ghi N phân tích; ước lượng nằm ở bảng đầu ra của "
               "lượt phân tích (đường R: 06_phan_tich_R/output/) — chép số từ đó]  "]
+    return s3
+
+
+def dung_ket_qua_tu_g6(g6: dict) -> dict:
+    """NHÁP các khối mục Kết quả từ tóm tắt G6 hợp lệ (`doc_tom_tat_g6_hop_le`) — N16.
+
+    Trả {da_dung: True, nguon, n_total_txt, n_theo_nhom, s1, s2, s3, s5} (mỗi s* là list dòng Markdown) hoặc
+    {da_dung: False, ly_do}. Chỉ CHÉP số có trong tóm tắt (`_so_g6`); cuối cùng TỰ KIỂM mọi số của bản nháp có nguyên
+    văn trong tệp G6 (`kiem_so_trich_g6`) — lệch dù một số ⇒ bỏ cả bản nháp, giữ khung [CẦN…] (fail-closed)."""
+    if not (g6 or {}).get("hop_le"):
+        return {"da_dung": False, "ly_do": (g6 or {}).get("ly_do") or "không có tóm tắt G6 hợp lệ"}
+    tt, nguon, N = g6["tom_tat"], g6["nguon"], NHAN_DOI_CHIEU_G6
+    # Hệ quả có chủ ý (thẩm định PR #261, mức thấp): chép N của G6 vào nháp làm vế «N phân tích có trong Tóm tắt/Kết
+    # quả» của G7-AUTO-03 (g7_quality_gate.doi_chieu_ket_qua_g6) khớp THEO CẤU TẠO — tiêu chí đó giảm sức phân biệt,
+    # không thành đường fail-open: results_final do bác sĩ đặt và G7-AUTO-05 ở REVIEW khi còn nhãn đối chiếu. Checkpoint
+    # ghi rõ điều này (sections_auto_filled) để người đọc báo cáo cổng không hiểu nhầm.
+    s1 = [f"Phân tích (G6): N = {_so_g6(tt['n_total'])} {N}  "]
+    md = tt.get("missing_data")
+    if isinstance(md, dict) and not md.get("error") and "n_complete_cases" in md:
+        s1.append(f"Đủ dữ liệu mọi biến (complete case): {_so_g6(md['n_complete_cases'])}/{_so_g6(md.get('n_total'))} "
+                  f"({_so_g6(md.get('pct_complete'))}%) {N}  ")
+
+    s2: list[str] = []
+    n_theo_nhom: Optional[dict] = None
+    t1 = tt.get("table1")
+    if isinstance(t1, dict) and t1.get("error"):
+        s2.append(f"[CẦN THỐNG KÊ VIÊN — G6 báo lỗi Bảng 1: {_trong_o(t1['error'])}]  ")
+    elif isinstance(t1, dict) and isinstance(t1.get("n_per_group"), dict) and t1["n_per_group"]:
+        n_theo_nhom = {_mot_dong(g): v for g, v in t1["n_per_group"].items()}
+        s2.append("Số người theo nhóm (G6): " + "; ".join(f"`{g}`: {_so_g6(v)}" for g, v in n_theo_nhom.items())
+                  + f" {N}  ")
+    # 15/11/2026 (giả lập lần 3): G6 nay ghi giá trị từng biến của Bảng 1 vào tóm tắt (table1.rows —
+    # run_stats_analysis.bang1_cho_tom_tat) ⇒ chép NGUYÊN VĂN chuỗi G6 đã định dạng; tóm tắt cũ (chỉ n_per_group) ⇒ ô
+    # trống như trước. Chỉ tên biến trong bảng (nhãn có thể chứa số — «<140/90» — nằm ở chú giải ngoài khối tự kiểm).
+    bien_bang1 = _bang1_tu_g6(t1, n_theo_nhom)
+    if bien_bang1:
+        nhom = list(n_theo_nhom)
+        s2 += [f"*Giá trị từng biến chép nguyên văn từ tóm tắt G6 (`{nguon}`, table1 — cùng lượt với "
+               f"`G6_table1_descriptive.txt`)* {N}  ", "",
+               "| Biến | " + " | ".join(f"Nhóm `{g}` (N={_so_g6(n_theo_nhom[g])})" for g in nhom) + " | p / kiểm định |",
+               "|---|" + "---|" * len(nhom) + "---|"]
+        for r in t1["rows"]:
+            gt = r.get("gia_tri") or {}
+            p_o = _p_g6(r["p"]) if r.get("p") is not None else _mot_dong(r.get("test") or "—", 80)
+            s2.append(f"| `{_mot_dong(r.get('variable'), 60)}` | "
+                      + " | ".join(_mot_dong(gt.get(g, "N/A"), 120) for g in nhom) + f" | {p_o} |")
+        s2.append("")
+    else:
+        s2.append("[CẦN KẾT QUẢ THẬT — giá trị từng biến: chép từ G6_table1_descriptive.txt (cùng lượt G6); tóm tắt "
+                  "JSON của G6 chưa mang giá trị từng biến nên máy không chép]  ")
+
+    s3 = _khoi_uoc_luong_g6(tt, nguon)
 
     s5: list[str] = []
     mi = tt.get("multiple_imputation")
@@ -1317,7 +1437,7 @@ def dung_ket_qua_tu_g6(g6: dict) -> dict:
         s5 += _bang_mo_hinh_g6("Nhạy cảm OLS (G6, `G6_table6_sensitivity_linear.txt`)", tt["sensitivity_linear"])
 
     ket = {"da_dung": True, "nguon": nguon, "n_total_txt": _so_g6(tt["n_total"]), "n_theo_nhom": n_theo_nhom,
-           "s1": s1, "s2": s2, "s3": s3, "s5": s5}
+           "bien_bang1": bien_bang1, "s1": s1, "s2": s2, "s3": s3, "s5": s5}
     lech = kiem_so_trich_g6("\n".join(s1 + s2 + s3 + s5), g6.get("van_ban") or "")
     if lech:
         return {"da_dung": False, "ly_do": f"tự kiểm: số không có nguyên văn trong {nguon}: {', '.join(lech[:6])} "
@@ -1743,8 +1863,8 @@ def generate_manuscript(
             "biên tập; KẾT QUẢ THẬT chỉ được coi là chốt sau khi bác sĩ đối chiếu.  ",
             "> Mỗi dòng số mang nhãn «CẦN KẾT QUẢ THẬT — đối chiếu G6»: so với bảng G6 (`G6_table*.txt`) rồi xoá nhãn; "
             "xong toàn mục mới đặt `results_final=true` trong study_meta.json.  ",
-            "> Phần G6 không có (sàng lọc, giá trị từng biến Bảng 1, kết cục phụ) vẫn là ô trống — KHÔNG điền số "
-            "ước tính/giả định (KẾT QUẢ THẬT).  ",
+            "> Phần G6 không có (sàng lọc, kết cục phụ; giá trị từng biến Bảng 1 khi tóm tắt G6 chưa mang) vẫn là ô "
+            "trống — KHÔNG điền số ước tính/giả định (KẾT QUẢ THẬT).  ",
             "",
             f"**§1 Tuyển chọn — {flow_label}:**  ",
             "[CẦN KẾT QUẢ THẬT] Sàng lọc: N = ___; Đủ tiêu chí: N = ___.  ",
@@ -1764,7 +1884,7 @@ def generate_manuscript(
             "*(Xem file Table2.docx — từ G6 03_analysis.R)*",
             "",
             "**§4 Kết cục phụ — Bảng 3:**  ",
-            "[CẦN KẾT QUẢ THẬT — tóm tắt G6 không chứa kết cục phụ; phân tích theo SAP §2/§8]  ",
+            *(kq6.get("s4") or ["[CẦN KẾT QUẢ THẬT — tóm tắt G6 không chứa kết cục phụ; phân tích theo SAP §2/§8]  "]),
             "*(Xem file Table3.docx — từ G6)*",
             "",
             "**§5 Phân tích nhạy cảm:**  ",
@@ -2610,8 +2730,14 @@ def main() -> None:
     redcap_vars, ly_do_tu_dien = doc_tu_dien_redcap(redcap_csv)
     # N16 (15/11/2026): tóm tắt G6 HỢP LỆ (đúng dataset khoá) ⇒ nháp Kết quả chép nguyên văn số G6; không ⇒ khung trống.
     ket_qua_g6 = dung_ket_qua_tu_g6(doc_tom_tat_g6_hop_le(out_dir))
-    table1_shell = build_table1_shell(redcap_vars, ly_do_vang=ly_do_tu_dien,
-                                      n_theo_nhom=ket_qua_g6.get("n_theo_nhom") if ket_qua_g6.get("da_dung") else None)
+    if ket_qua_g6.get("da_dung"):
+        ket_qua_g6["s4"] = dung_ket_cuc_phu_g6(out_dir)   # kết cục phụ của chay_sap_g6 (giả lập lần 3)
+    if ket_qua_g6.get("da_dung") and ket_qua_g6.get("bien_bang1"):
+        table1_shell = chu_giai_bang1_g6(redcap_vars, ket_qua_g6["bien_bang1"])   # bảng đã chép từ G6 ở nháp §2
+    else:
+        table1_shell = build_table1_shell(
+            redcap_vars, ly_do_vang=ly_do_tu_dien,
+            n_theo_nhom=ket_qua_g6.get("n_theo_nhom") if ket_qua_g6.get("da_dung") else None)
     crf_blocks = build_exposure_outcome_blocks(redcap_vars)
     if redcap_vars:
         print(f"  → G5 REDCap: {len(redcap_vars)} biến đọc được từ {redcap_csv.name}")

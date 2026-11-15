@@ -56,6 +56,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import re
 import subprocess
 import sys
@@ -1850,20 +1851,42 @@ def generate_r_script_ordinal(study: str, gate: str, outcome_col: str, group_col
 # 7. ĐỊNH DẠNG ĐẦU RA CHO AGENT
 # ════════════════════════════════════════════════════════════════════════════
 
+def bang1_cho_tom_tat(t1: dict) -> dict:
+    """Bảng 1 dạng JSON cho G6_analysis_summary.json (15/11/2026, giả lập lần 3): trước đây tóm tắt chỉ mang
+    n_per_group ⇒ G7 không có giá trị từng biến để chép, Bảng 1 của bản thảo luôn là ô trống dù G6 đã tính. Khoá nhóm
+    là CHUỖI (khoá số numpy làm lệch tra cứu và không ghi được JSON); giá trị từng ô giữ NGUYÊN chuỗi G6 đã định dạng —
+    G7 chép nguyên văn, không tính lại."""
+    groups = [str(g) for g in t1.get("groups") or []]
+    n = {str(k): int(v) for k, v in (t1.get("n_per_group") or {}).items()}
+    rows = []
+    for r in t1.get("rows") or []:
+        p_val = r.get("p")
+        try:
+            p_val = float(p_val) if p_val is not None and math.isfinite(float(p_val)) else None
+        except (TypeError, ValueError):
+            p_val = None
+        rows.append({"variable": str(r.get("variable")), "type": r.get("type"),
+                     "gia_tri": {g: str(r.get(f"grp_{g}", "N/A")) for g in groups},
+                     "p": p_val, "test": r.get("test")})
+    return {"n_per_group": n, "groups": groups, "rows": rows}
+
+
 def format_table1_text(t1: dict) -> str:
-    groups = t1["groups"]
-    n = t1["n_per_group"]
+    groups = [str(g) for g in t1["groups"]]
+    # SỬA 15/11/2026 (giả lập lần 3): khoá n_per_group là giá trị nhóm GỐC (số) còn `groups` là chuỗi ⇒ tiêu đề luôn
+    # «n=-»; cột cố định 22 ký tự ⇒ ô phân loại dài («1: 47(43%); 2: 35(32%); …») dính liền sang cột nhóm kế tiếp.
+    n = {str(k): v for k, v in (t1.get("n_per_group") or {}).items()}
+    tieu_de_nhom = [f"Nhóm {g} (n={n.get(g, '-')})" for g in groups]
+    rong = {g: max([len(tieu_de_nhom[i])] + [len(str(r.get("grp_" + g, "N/A"))) for r in t1["rows"]]) + 2
+            for i, g in enumerate(groups)}
     header = "BẢNG 1 — ĐẶC ĐIỂM MẪU\n" + "=" * 70
-    group_headers = "".join(
-        f"{'Nhóm ' + str(g) + ' (n=' + str(n.get(g, '-')) + ')':<22}"
-        for g in groups
-    )
+    group_headers = "".join(f"{tieu_de_nhom[i]:<{rong[g]}}" for i, g in enumerate(groups))
     header += f"\n{'Biến số':<30}" + group_headers
     header += f"{'p':>10}  {'Kiểm định'}"
     lines = [header, "-" * 70]
     for row in t1["rows"]:
         var = row["variable"][:28]
-        grp_vals = "".join(f"{row.get('grp_' + g, 'N/A'):<22}" for g in groups)
+        grp_vals = "".join(f"{str(row.get('grp_' + g, 'N/A')):<{rong[g]}}" for g in groups)
         p = f"{row.get('p', '')}" if row.get("p") is not None else ""
         test = row.get("test", "")
         lines.append(f"{var:<30}{grp_vals}{p:>10}  {test}")
@@ -2805,7 +2828,7 @@ def main():
         try:
             t1 = table1_descriptive(df, args.group, vars_for_t1, kiem_dinh_nen=design_code != "rct")
             t1_txt = format_table1_text(t1)
-            summary["table1"] = {"n_per_group": t1["n_per_group"]}
+            summary["table1"] = bang1_cho_tom_tat(t1)
             print(f"✓ Bảng 1: {len(t1['rows'])} biến, {len(t1['groups'])} nhóm")
         except (ZeroDivisionError, ValueError) as exc:
             t1_txt = f"BẢNG 1 — ĐẶC ĐIỂM MẪU\nLỖI: {exc}\n[CẦN BIOSTATISTICIAN XÁC NHẬN]"
