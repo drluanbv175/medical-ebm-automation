@@ -1316,8 +1316,9 @@ def test_khoang_ma_thieu_khong_nuot_gia_tri_hop_le_va_bien_ngay_gan_co(tmp_path)
     S_, ke, td = _ke_e5(d, td_p, p)
     e5 = S.ap_va_chan_e5(d, STUDY, ke, td, p)
     k = {x["bien"]: x for x in e5["bang"]}
-    assert any("ngay_kham" in c and "CHUỖI ISO" in c for c in e5["canh_bao"])
-    assert "ngày lưu CHUỖI ISO" in k["ngay_kham"]["khai_bao_theo"]
+    # ngày ISO hợp lệ ⇒ lưu KIỂU NGÀY (không còn cảnh báo «lưu chuỗi»)
+    assert not any("ngay_kham" in c and "CHUỖI" in c for c in e5["canh_bao"])
+    assert k["ngay_kham"]["dinh_dang"] == "SDATE10" and "CHUỖI" not in k["ngay_kham"]["khai_bao_theo"]
     assert k["chenh"]["ma_thieu"][0].startswith("MISSING VALUES (") and "THRU" in k["chenh"]["ma_thieu"][0]
     assert k["tuoi"]["nhan_gia_tri"].get("-99") == "Không nhớ"  # Values gồm cả nhãn mã thiếu
 
@@ -1374,3 +1375,71 @@ def test_khai_du_ma_thieu_vuot_gioi_han_spss_lui_ve_ma_co_mat_va_canh_bao(tmp_pa
                                    {"bien": "*", "ma": "KDD", "nhan": "K"}])
     b = {x["cot"]: x for x in ke}["diem"]
     assert b["menh_de_thieu"] == "98, 99" and any("không khai ĐỦ mã thiếu" in c for c in canh)
+
+
+# ───────── Biến NGÀY lưu KIỂU NGÀY ở SPSS và R (15/11/2026) ─────────
+BIEN_NGAY = BIEN_E5 + [("ngay_pv", "text", "Ngày phỏng vấn", "", "date_dmy", ""),
+                       ("ngay_cd", "text", "Ngày chẩn đoán THA", "", "date_ymd", "")]
+DU_LIEU_NGAY = (DU_LIEU_E5.replace("trinh_do\n", "trinh_do,ngay_pv,ngay_cd\n")
+                .replace(",2\nS2", ",2,2026-01-15,2019-03-02\nS2").replace(",4\nS3", ",4,2026-01-16,\nS3")
+                .replace(",1,1\n", ",1,1,2026-01-17,2020-12-31\n"))
+MT_NGAY = "bien,ma,nhan\ntuoi,-99,Không nhớ\n*,BTR,Bỏ trống\n*,KDD,Không đọc được\n"
+
+
+def test_bien_ngay_luu_kieu_ngay_theo_dinh_nghia(tmp_path, monkeypatch):
+    import cau_noi_spss as S  # noqa: PLC0415
+    import nhap_lieu_excel as N  # noqa: PLC0415
+
+    d, td_p, p = _de_tai_e5(tmp_path, DU_LIEU_NGAY, bien=BIEN_NGAY, ma_thieu=MT_NGAY)
+    S_, ke, td = _ke_e5(d, td_p, p)
+    e5 = S.ap_va_chan_e5(d, STUDY, ke, td, p)
+    b = {x["cot"]: x for x in ke}
+    assert b["ngay_pv"]["ngay"] and b["ngay_pv"]["so"] and S.dinh_dang_cuoi(b["ngay_pv"]) == "EDATE10"
+    assert S.dinh_dang_cuoi(b["ngay_cd"]) == "SDATE10" and b["ngay_pv"]["muc_do"] == "SCALE"
+    assert b["ngay_pv"]["ma_thieu"] == [] and S.can_le(b["ngay_pv"]) == "RIGHT"
+    assert S.gia_tri_ky_vong(b["ngay_pv"], "2026-01-15") == 13987814400.0  # đo SPSS 31: giây từ 14/10/1582
+    assert S.gia_tri_ky_vong(b["ngay_pv"], "2026-01-15", ngay_r=True) == 20468.0  # đo R/haven: ngày từ 1970
+    assert S.gia_tri_ky_vong(b["ngay_cd"], "") is None
+    assert not any("CHUỖI" in c for c in e5["canh_bao"])
+    sps = S.cu_phap_nhan_bien(p, d / "x.sav", ke, ghi_chu=["thử"])
+    assert "ngay_pv SDATE10" in sps and "FORMATS ngay_pv (EDATE10)." in sps
+    # mẫu nhập SPSS: CÙNG định dạng, mức đo, căn lề, mã thiếu của biến ngày
+    monkeypatch.setattr(S, "EXPORTS", d.parent)
+    mt = S.doc_ma_thieu(d / "_ma-thieu-theo-bien.csv")
+    cot, _ = N.ke_hoach_cot(N.doc_tu_dien_day_du(td_p), mt)
+    mau = N.cu_phap_mau_sav(cot, mt, "x", tmp_path / "m.sav", S.dong_ma_tran_dat(d, STUDY))
+    a, c = _muc_do_va_thuoc_tinh(mau), _muc_do_va_thuoc_tinh(sps)
+    assert a["ngay_pv"] == c["ngay_pv"] and "(EDATE10)" in mau and "MISSING VALUES ngay_pv" not in mau
+
+
+def test_bien_ngay_du_lieu_khong_phai_ngay_bi_chan(tmp_path):
+    import cau_noi_spss as S  # noqa: PLC0415
+
+    d, td_p, p = _de_tai_e5(tmp_path, DU_LIEU_NGAY.replace("2026-01-16", "16/01/2026"), bien=BIEN_NGAY,
+                            ma_thieu=MT_NGAY)
+    S_, ke, td = _ke_e5(d, td_p, p)
+    with pytest.raises(S.TuChoi, match="định nghĩa là NGÀY"):
+        S.ap_va_chan_e5(d, STUDY, ke, td, p)
+
+
+@pytest.mark.skipif(not (_co_spss() and _co_rscript()), reason="cần cả SPSS lẫn Rscript")
+def test_bien_ngay_that_spss_va_r_khu_hoi_va_du_11_thuoc_tinh(tmp_path, monkeypatch):
+    """SPSS 31 + R THẬT: biến ngày lưu kiểu ngày ở .sav (EDATE10/SDATE10) và Date ở .rds; khứ hồi từng ô + 11/11."""
+    import argparse  # noqa: PLC0415
+
+    import cau_noi_r as R  # noqa: PLC0415
+    import cau_noi_spss as S  # noqa: PLC0415
+
+    d, td_p, p = _de_tai_e5(tmp_path, DU_LIEU_NGAY, bien=BIEN_NGAY, ma_thieu=MT_NGAY)
+    monkeypatch.setattr(S, "EXPORTS", d.parent)
+    ns = argparse.Namespace(study=STUDY, data=str(p), ban_nhap=True, dictionary=None, ma_thieu=None, gate="G6",
+                            thoi_han=300)
+    assert S.lenh_xuat_sav(ns) == S.MA_OK and R.lenh_xuat_rds(ns) == R.MA_OK
+    man_s = json.loads((d / "spss" / f"{STUDY}_BAN-NHAP.sav.manifest.json").read_text(encoding="utf-8"))
+    man_r = json.loads((d / "r" / f"{STUDY}_BAN-NHAP.rds.manifest.json").read_text(encoding="utf-8"))
+    assert man_s["khu_hoi"]["trang_thai"] == "KHOP" and man_r["khu_hoi"]["trang_thai"] == "KHOP"
+    for kt in (*man_s["kiem_tu_dien"]["theo_bien"].values(), *man_r["kiem_thuoc_tinh"]["theo_bien"].values()):
+        assert all(kt[a] is True for a in S.THUOC_TINH_11), kt
+    assert man_r["ba_chieu"]["sav_rds"] == "KHOP"
+    kh = {b["ten"]: b for b in man_r["ke_hoach"]}
+    assert kh["ngay_pv"]["ngay"] and kh["ngay_pv"]["dinh_dang"] == "EDATE10"

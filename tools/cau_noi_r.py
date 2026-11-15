@@ -1194,6 +1194,7 @@ def ke_cho_r(ke: list[dict]) -> list[dict]:
                 "cot_hien": S.cot_hien(b),
                 # E5 (15/11/2026) — cùng nguồn với VARIABLE LEVEL/ATTRIBUTE/ROLE của .sav (S.thuoc_tinh_ky_vong)
                 "do_luong": str(b["muc_do"]).lower(),
+                "ngay": bool(b.get("ngay")),  # biến NGÀY ⇒ class Date (như kiểu ngày của .sav)
                 "tt": thuoc_tinh_r(b),
                 "khoang": list(b["khoang_hop_le"]) if b.get("khoang_hop_le") else None,
             }
@@ -1238,6 +1239,7 @@ def _ke_r(kr: list[dict]) -> str:
             f"na_values = {_vec_r_u(b['na_values'], so=True)}",
             "na_range = " + (_vec_r_u(b["na_range"], so=True) if b["na_range"] else "NULL"),
             f"do_luong = {chuoi_r_u(b['do_luong'])}",
+            f"ngay = {'TRUE' if b['ngay'] else 'FALSE'}",
             f"cot_hien = {int(b['cot_hien'])}L",
             f"na_chuoi = {_vec_r_u(b['na_chuoi'], so=False)}",
             f"tt = stats::setNames({_vec_r_u(b['tt'].values(), so=False)}, {_vec_r_u(b['tt'].keys(), so=False)})",
@@ -1323,7 +1325,10 @@ chuyen_so <- function(x, ma_chu, ten) {
 .ra <- list()
 for (b in KE) {
   x <- .v[[b$cot]]
-  if (b$so) {
+  if (isTRUE(b$ngay)) {                                   # NGÀY ISO ⇒ Date (haven đọc ngày của .sav cũng thành Date)
+    t <- utf8(sub("[ \t\r\n\f\v]+$", "", sub("^[ \t\r\n\f\v]+", "", x, useBytes = TRUE), useBytes = TRUE))
+    x <- as.Date(ifelse(nzchar(t), t, NA_character_), format = "%Y-%m-%d")
+  } else if (b$so) {
     x <- chuyen_so(x, b$ma_chu, b$ten)
   } else {
     x <- utf8(sub(" +$", "", x, useBytes = TRUE))  # như SPSS: dấu cách CUỐI không có nghĩa
@@ -1334,7 +1339,9 @@ for (b in KE) {
   attr(x, "display_width") <- b$cot_hien                 # Columns — như VARIABLE WIDTH (khuôn haven)
   for (k in names(b$tt)) attr(x, k) <- unname(b$tt[[k]])  # role · align (Role/Align) + vai_tro · objective · item
   if (!is.null(b$khoang)) attr(x, "valid_range") <- b$khoang  # khoảng hợp lệ của từ điển (NA = đầu mở)
-  if (b$so) {
+  if (isTRUE(b$ngay)) {
+    # Date giữ lớp Date (không khuôn haven_labelled); ô trống = NA như SYSMIS của .sav
+  } else if (b$so) {
     if (length(b$gt)) attr(x, "labels") <- stats::setNames(b$gt, b$gt_nhan)
     if (length(b$na_values)) attr(x, "na_values") <- b$na_values
     if (!is.null(b$na_range)) attr(x, "na_range") <- b$na_range
@@ -1509,7 +1516,9 @@ def kiem_thuoc_tinh_rds(ke: list[dict], bien: list[str], tt: dict[str, dict]) ->
             continue
         kt["Name"] = vi < len(bien) and bien[vi] == b["ten"]
         co_nhan = bool(b["nhan_gia_tri"])
-        if b["so"]:
+        if b["ngay"]:
+            lop, kieu = ["Date"], "double"
+        elif b["so"]:
             lop = LOP_SO_NHAN if (co_nhan or b["na_values"] or b["na_range"]) else ["numeric"]
             kieu = "double"
         else:
@@ -1752,7 +1761,7 @@ def lenh_xuat_rds(args) -> int:
         haven_ver = S._gia_tri_dong(out, "HAVEN")
         b_r, ca_r, tt_r = doc_ban_xa_r(t["gt"], t["tt"])
         luc = datetime.now().astimezone().isoformat(timespec="seconds")
-        kh = S.so_sanh_gia_tri(csv_p, ke, b_r, ca_r)
+        kh = S.so_sanh_gia_tri(csv_p, ke, b_r, ca_r, ngay_r=True)  # ngày của R = số ngày từ 1970
         ktt = kiem_thuoc_tinh_rds(ke, b_r, tt_r)
         kh["luc"] = ktt["luc"] = luc
         if sav and haven_ver and t["sav_gt"].exists() and t["sav_tt"].exists():
