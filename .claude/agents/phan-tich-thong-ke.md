@@ -58,6 +58,27 @@ python medical-ebm-automation/tools/run_stats_analysis.py \
 → Đọc `exports/TEN-DE-TAI/G6_analysis_summary.json` → **điền số thật** trực tiếp vào MODULE 4 (Bảng kết quả).
 Cũng sinh `G6_table1_descriptive.txt`, `G6_table2_main_outcome.txt`, `G6_table4_multivariate.txt`, `G6_analysis_syntax.R`.
 
+**G4 theo TRẠNG THÁI SỐNG (14/11/2026, y khoa #255 — đã gộp, N1):** `run_stats_analysis.py`, `run_g6_auto.py` và script
+G6 sinh ra coi G4 đã khoá khi chữ ký sổ cái đúng vai khớp băm SAP HIỆN TẠI VÀ G4 chấm trực tiếp `PASS_G4_SAP_LOCKED`
+(cùng hàm cổng G6/G5-AUTO-05) — không còn đọc `g4_status` của checkpoint, nên G4 ký đúng quy trình KHÔNG cần
+`--i-confirm-sap-locked`. Cờ đó nay chỉ thay phần chấm sống G4/checkpoint G5, không bao giờ thay chữ ký sổ cái (sửa SAP
+sau khi ký ⇒ cờ không cứu); lượt dùng cờ bị ghi `khoa_g4.ghi_de_i_confirm_sap_locked = true` trong
+`G6_analysis_summary.json`. Agent KHÔNG tự thêm cờ; «không đo được» ⇒ chưa khoá.
+
+**Biến nhóm + hiệp biến theo SAP §5 (15/11/2026, y khoa #260 — đã gộp, N6 phần khuôn):** `run_g6_auto.py` lấy biến
+phân nhóm RCT từ mục «Ngẫu nhiên hoá/Phân bổ/Randomi…/Allocation» của dictionary G5, và hiệp biến mô hình CHÍNH từ SAP
+§5 đã khoá — chỉ khi MỌI mục là tên biến đã biết (dictionary/biến phái sinh); SAP viết văn xuôi thì GIỮ biến dò từ
+dictionary. Đọc mục «Log phát hiện biến» của A17b: dòng «⚠️ SAP §5 nêu hiệp biến có mục KHÔNG phải tên biến…», «…biến
+phân nhóm/phơi nhiễm … KHÔNG khớp đúng MỘT tên biến…» hay «…chỉ có danh sách hiệp biến của mô hình PHỤ…» ⇒ công thức
+chưa theo SAP: thống kê viên đối chiếu SAP §5 với dictionary rồi sửa công thức tay (hoặc thêm dòng «Biến phân nhóm:
+`…`» bằng SAP AMENDMENT) — agent không đoán tên biến, không sửa SAP đã khoá.
+
+**RCT kết cục nhị phân — thước đo chính (N6):** báo đúng thước đo SAP cam kết (RD/RR), không thay bằng OR. Tự động hiện
+có: RD thô + KTC 95% Wald trên ca đủ dữ liệu (`risk_diff`, KHÔNG phải ITT có MI); RR/PR Poisson SE vững chỉ có khi PR y
+khoa #254 được gộp (xem khối F2/F3 dưới); RD theo ITT gộp Rubin sau MI CHƯA tự động ⇒ SAP cam kết ITT/MI thì ghi
+[CẦN THỐNG KÊ VIÊN] và để người chạy tay — không gắn nhãn ITT cho RD ca đủ. Bảng 4/5 còn in p < 0,001 thành «0.0»
+(N15 chưa vá hết) ⇒ chép là «< 0,001», không bao giờ «p = 0».
+
 **Tóm tắt thứ tự 2 bước (không nhầm lẫn):** BƯỚC 0a (`run_g6_auto.py`) sinh SCRIPT phân tích + Table 1 shell + STROBE flowchart **TRƯỚC khi có dữ liệu** (ngay sau G5) → BƯỚC 0b (`run_stats_analysis.py`) chạy chính script đó **SAU khi có dữ liệu thật** để ra kết quả số.
 
 **Kết cục THỨ TỰ, dữ liệu GOM CỤM, tỷ lệ mô tả (thêm 2026-09-28):** chỉ bật khi SAP đã khoá khai TƯỜNG MINH — không tự đoán.
@@ -75,6 +96,29 @@ KHÔNG tự kết luận vi phạm; lệch nhiều ⇒ [CẦN THỐNG KÊ VIÊN]
 quả chính khi dữ liệu gom cụm, KTC giả định độc lập chỉ để đối chiếu (mô phỏng: độc lập phủ ~73% thay vì 95%); (3) số cụm ít ⇒ SE sandwich
 kém tin cậy, chép nguyên cảnh báo và để thống kê viên quyết; (4) ICC tính trên điểm số (xấp xỉ tuyến tính), không phải thang tiềm ẩn;
 (5) ngưỡng `--nguong-ty-le` lấy từ SAP, không chọn sau khi nhìn dữ liệu.
+
+**Poisson vững · hiệp biến phân loại · lọc quần thể · chạy trọn SAP (F2/F3, 14/11/2026):** chỉ khi SAP đã khoá khai TƯỜNG MINH.
+⚠️ **Phụ thuộc PR y khoa #254 — CHƯA gộp vào nền `feat/r1-1-2-design-gap-remediation` (đo 15/11/2026):** trên nền hiện
+hành `--outcome-type poisson_pr`, `--hiep-bien-phan-loai`, `--loc`, `tools/chay_sap_g6.py`, `docs/CHAY-SAP-G6.md` CHƯA
+có ⇒ lệnh báo cờ/tệp không tồn tại thì DỪNG, ghi [CẦN THỐNG KÊ VIÊN] — không lách bằng công cụ khác.
+Sau khi #254 gộp, `run_stats_analysis.py` (vẫn `--data <bản_khoá.csv> --outcome … --group … --study … --gate G6
+--kiem-cheo`) nhận thêm: `--outcome-type poisson_pr` (GLM Poisson log + SE vững HC0, Zou 2004, PMID 15033648 → PR, kết
+cục nhị phân phổ biến) · `--hiep-bien-phan-loai <cột>` (mã nguyên ≥ 0 → biến giả `<cột>_<mã>`, tham chiếu = mã nhỏ nhất)
+· `--loc "PhieuHopLe == 1"` (quần thể phân tích theo SAP — ngôn ngữ công thức biến phái sinh, giữ ca = 1). Chưa gộp thì
+KHÔNG đưa các cờ này vào lệnh (công cụ thoát ở argparse).
+SAP nhiều phân tích ⇒ đặc tả máy đọc `exports/<mã>/G6_DAC_TA_SAP.json` (agent SOẠN từ SAP đã khoá, gắn `sha256_sap`; thống
+kê viên/PI ghi `nguoi_duyet` — agent KHÔNG ghi) rồi `python3 medical-ebm-automation/tools/chay_sap_g6.py kiem|chay|ket-qua
+--study <mã>`: đúng một mục vai `chinh` (gate G6), mục khác gate `G6_<id>` nên không ghi đè nhau; phân tích SAP cam kết mà
+chưa có công cụ (spline RCS, partial PO, Firth…) khai `chua_tu_dong` để thống kê viên làm tay — KHÔNG lặng lẽ bỏ. Luật đọc:
+(1) phơi nhiễm liên tục/nhiều mức ⇒ Python, SPSS, R đều BỎ so thô hai nhóm có chủ đích (ước lượng nằm ở mô hình đa biến);
+(2) biến phái sinh/biểu thức lọc dùng biến CHƯA DUYỆT ⇒ công cụ dừng — không lách; (3) PR là tỷ số tỷ lệ hiện mắc, không viết
+thành OR/RR. Qua MCP `spss-r-ebm`: `phan_tich_g6` (nhận `poisson_pr`, `hiep_bien_phan_loai`, `loc`), `chay_sap_g6`,
+`bien_phai_sinh`, `kiem_cheo_g6`, `phan_tich_ket_qua` — chạy khô mặc định, chỉ trên dữ liệu ĐÃ KHOÁ, không có cờ ghi đè cổng.
+Hướng dẫn: `medical-ebm-automation/docs/CHAY-SAP-G6.md`, `docs/BIEN-PHAI-SINH.md`.
+**Biến phải đồng bộ đề cương (15/11/2026):** đặc tả SAP chỉ dùng biến có trong bộ biến/đề cương đã duyệt; biến phái sinh ngoài
+đề cương ⇒ `run_stats_analysis` từ chối tính (`docs/DOI-CHIEU-BIEN-DE-CUONG.md`). SAP cần cách mã hoá mới (vd HbA1c 3 mức,
+đơn vị 5 năm) ⇒ đề xuất bổ sung bộ biến cho chủ nhiệm duyệt, mục đặc tả để `chua_tu_dong` «chờ bổ sung bộ biến» — KHÔNG thêm
+thẳng vào `_bien-phai-sinh.csv`.
 
 ## 🔁 BƯỚC 0c — KIỂM CHÉO BẰNG SPSS (phần mềm thứ hai — thêm 14/11/2026, bác sĩ giao)
 

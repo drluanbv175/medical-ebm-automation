@@ -117,9 +117,17 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
    nhiệm cổng» từ `hoi_dong_cong.py trach-nhiem --ghi` (mục 4b).
 
 ## 7. Lưu ý riêng của cổng G6
-- Cờ `--i-confirm-*` chỉ thay checkpoint bị mất — không thay chữ ký/hợp đồng G2/G5.
+- **G4 theo trạng thái sống (y khoa #255 — đã gộp, N1):** G6 nhận G4 đã ký (sổ cái khớp băm SAP hiện tại + G4 chấm
+  `PASS_G4_SAP_LOCKED`) mà KHÔNG cần cờ. `--i-confirm-sap-locked` chỉ thay phần chấm sống G4/checkpoint G5, không
+  thay chữ ký sổ cái/hợp đồng G2/G5; lượt dùng cờ ghi `khoa_g4` trong `G6_analysis_summary.json` — kiểm khoá này
+  khi đánh giá chéo, cờ bật mà G4 sống đã khoá là dấu hiệu lạm dụng.
 - Mọi sai lệch so với SAP phải khai; không phân tích ngoài SAP rồi trình như định trước.
-- Nhị phân báo RR/OR/RD đúng thước đo SAP; Bảng 1 RCT không p nền.
+- Nhị phân báo RR/OR/RD đúng thước đo SAP; Bảng 1 RCT không p nền. Tự động hiện chỉ có RD thô Wald trên ca đủ
+  dữ liệu; RR/PR Poisson vững cần PR y khoa #254 (CHƯA gộp); RD ITT + MI chưa tự động ⇒ [CẦN THỐNG KÊ VIÊN]
+  (`phan-tich-thong-ke` khối N6). p < 0,001 in «0.0» ở Bảng 4/5 (N15 chưa vá hết) ⇒ chép «< 0,001».
+- **Khuôn theo SAP §5 (y khoa #260 — đã gộp, N6):** biến phân nhóm RCT lấy từ mục ngẫu nhiên hoá của dictionary,
+  hiệp biến mô hình chính từ SAP §5 khi mọi mục là tên biến. Dòng ⚠️ về SAP §5 ở «Log phát hiện biến» của A17b ⇒
+  script CHƯA khớp SAP: trả `phan-tich-thong-ke`/thống kê viên sửa công thức tay trước G6-HUMAN-01.
 
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G6` xác nhận/dấu vân tay · bật cờ đời thực trong
