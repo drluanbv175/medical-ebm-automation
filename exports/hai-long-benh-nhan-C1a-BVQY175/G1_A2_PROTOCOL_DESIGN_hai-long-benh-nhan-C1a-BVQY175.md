@@ -1,5 +1,5 @@
 # A2 — THIẾT KẾ NGHIÊN CỨU & SAP SKELETON | hai-long-benh-nhan-C1a-BVQY175
-> Tạo tự động: 2026-11-15 15:32 | Rule-based; cỡ mẫu theo độ chính xác (G3) — không cần effect size cho kết cục chính
+> Tạo tự động: 2026-11-15 18:39 | Rule-based; cỡ mẫu theo độ chính xác (G3) — không cần effect size cho kết cục chính
 > [BẢN NHÁP TỰ ĐỘNG] — Bác sĩ xác nhận thiết kế chọn + điền [CẦN...] trước khi tiến G2/G4
 > Cần bác sĩ kiểm chứng.
 
@@ -15,11 +15,11 @@
 - Mã đề tài: `hai-long-benh-nhan-C1a-BVQY175`
 - Tên đề tài: Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
 - Phiên bản protocol: 1.0
-- Ngày tạo/cập nhật: 2026-11-15 15:32
+- Ngày tạo/cập nhật: 2026-11-15 18:39
 - Chủ nhiệm, nhà phương pháp, thống kê viên, quản lý dữ liệu: Theo đề cương §6.1 (bảng RACI): chủ nhiệm đề tài (A toàn đề tài — định hướng khoa học, duyệt đề cương/SAP/kinh phí, ký hồ sơ đạo đức); thư ký/điều phối (quản lý tài liệu, lịch, sổ tiến độ, Risk Register; quản lý dữ liệu lưu trữ/sao lưu theo §6.5); nhà thống kê/phân tích (R phân tích, A về tính đúng thống kê — cỡ mẫu Whitehead MT2, viết và khoá SAP; khuyến nghị độc lập với người thu thập); điều tra viên phát/thu phiếu (ngoài Khoa C1a); người nhập liệu (nhập đôi 100%, nên khác điều tra viên); giám sát chất lượng QC; tổ mở hòm phiếu 2 người và tổ mã hoá ý kiến mở 2 người + 1 phân xử (đều ngoài khoa; chủ nhiệm không tham gia); hội đồng chuyên gia I-CVI/S-CVI 6–10 người (≥ 2 đại diện người bệnh, ≤ 2 người thuộc C1a); bên thứ ba Phòng CNTT/QLCL trích HIS. Số người cụ thể mỗi vai do chủ nhiệm ấn định theo cỡ mẫu và lưu lượng khám.
 - Tài trợ, bảo hiểm, xung đột lợi ích và vai trò nhà tài trợ: [CẦN HOÀN THIỆN Ở G2/G9]
 - Chuẩn đề cương: Protocol định trước; đăng ký nếu cần minh bạch
-- Chuẩn báo cáo kết quả dự kiến: STROBE + CROSS
+- Chuẩn báo cáo kết quả dự kiến: STROBE + CROSS + RECORD
 
 ### 0.2 Cơ sở khoa học và khoảng trống
 - Vấn đề nghiên cứu và gánh nặng liên quan: Theo đề cương §1: hài lòng người bệnh là chỉ số cốt lõi của chất lượng khám chữa bệnh và là cấu phần bắt buộc trong khung quản lý chất lượng bệnh viện tại Việt Nam. Khối khám theo yêu cầu là mô hình đặc thù — người bệnh chi trả cao hơn, kỳ vọng cao hơn về phục vụ, thời gian chờ và tiện nghi; Khoa C1a giao thoa khối dịch vụ theo yêu cầu với vị trí tuyến cuối tại bệnh viện quân y đô thị lớn. Các «điểm đau» lặp lại trong y văn: thời gian chờ, thủ tục hành chính, thông tin, cơ sở vật chất, chi phí. Đơn vị cần dữ liệu nền tại chỗ để cải tiến chất lượng; đề tài không nhằm so sánh trực tiếp mô hình theo yêu cầu với khám thông thường.
@@ -110,9 +110,9 @@
 **Lý do chọn ưu tiên `Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)`:**
 Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định thật, ưu tiên hơn suy luận tự động). Lý do của PI: Mô tả cắt ngang có phân tích. MT1 cần ước lượng tỷ lệ hiện mắc của một trạng thái (hài lòng) nên cắt ngang là thiết kế chuẩn; MT2 đo đồng thời phơi nhiễm và kết cục để ước lượng mối liên quan. Đã cân nhắc và loại đoàn hệ tiến cứu (vượt nhu cầu câu hỏi, không khả thi nguồn lực trong phạm vi một khoa) và bệnh chứng (không phù hợp cho câu hỏi ước lượng tỷ lệ). Không áp dụng khung estimand ICH E9(R1) vì là quan sát không can thiệp (mục 4.1 đề cương)
 
-**Chuẩn báo cáo:** STROBE + CROSS
-> CROSS: thu mới bằng phiếu/bộ câu hỏi (nghiên cứu khảo sát).
-> ⚠ Cân nhắc RECORD: vừa thu mới vừa ghép dữ liệu thường quy có sẵn (HIS/bệnh án) — PI quyết có áp RECORD cho phần dữ liệu thường quy (mã/thuật toán phân loại, liên kết dữ liệu) và ghi `gate_params.G1.reporting_extensions`.
+**Chuẩn báo cáo:** STROBE + CROSS + RECORD
+> CROSS: PI khai ở gate_params.G1.reporting_extensions.
+> RECORD: PI khai ở gate_params.G1.reporting_extensions.
 **Chuẩn đề cương/protocol:** Protocol định trước; đăng ký nếu cần minh bạch
 
 ---
@@ -187,7 +187,7 @@ Cỡ mẫu dự kiến: theo G3 (`G3_A4_SAMPLE_SIZE`, G3_checkpoint) — N tối
 Nguồn tài trợ và vai trò của nhà tài trợ: [CẦN HOÀN THIỆN Ở G2/G9] (STROBE mục 22)
 Kiểm soát biến nhiễu chính: xem PHẦN 2 (sai lệch riêng của đề tài — gate_params.G1.bias_controls)
 Bước cỡ mẫu: G3 đã tính — xem dòng «Cỡ mẫu dự kiến» ở trên và G3_A4_SAMPLE_SIZE
-Chuẩn báo cáo: STROBE + CROSS
+Chuẩn báo cáo: STROBE + CROSS + RECORD
 Chuẩn đề cương/protocol: Protocol định trước; đăng ký nếu cần minh bạch
 ═══════════════════════════════════════════════════════════════
 ```

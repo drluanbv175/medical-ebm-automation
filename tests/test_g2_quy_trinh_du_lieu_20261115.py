@@ -60,3 +60,31 @@ def test_ho_so_g2_tron_goi_khong_con_cau_viet_cung():
     assert "Không cần (không có PII)" not in md and "Lưu trữ 5 năm sau công bố" not in md
     assert "Quy trình dữ liệu đã chốt" in md
     assert "Mã hóa: Phiếu chỉ mang mã nghiên cứu" in md and "Kế hoạch hủy: [CẦN PI QUYẾT" in md
+
+
+QT_BANG_NOI = QT + [{"muc": "thu_thap", "gia_tri": "Trích hồ sơ eHospital theo quy tắc viết trước", "nguon": "SOP"}]
+
+
+def test_dieu_kien_mien_icf_mo_ta_gia_danh_hoa_khi_co_bang_noi():
+    dk, loai = G2.dieu_kien_mien_icf(QT_BANG_NOI)
+    assert "GIẢ DANH HOÁ" in dk and "Bảng nối lưu riêng" in dk and "không truy ngược cá nhân" not in dk
+    assert loai == "Trích hồ sơ eHospital theo quy tắc viết trước"
+    assert G2.dieu_kien_mien_icf([q for q in QT if q["muc"] != "huy_bang_noi"]) is None
+    assert G2.dieu_kien_mien_icf([]) is None
+
+
+def test_quyet_dinh_mien_icf_cua_pi_thay_o_can_xac_nhan():
+    risk = G2.ap_nguon_du_lieu(G2.get_risk_profile("cross_sectional"), "cross_sectional", META_HOI_CUU)
+
+    def ho_so(xin_mien):
+        meta = {"gate_params": {**META_HOI_CUU["gate_params"], "G2": {"icf_waiver_requested": xin_mien}}}
+        return G2.generate_g2_full_package(
+            topic="Chủ đề", study_name="ZZTEST-G2-QT", design_code="cross_sectional", design_primary="Cắt ngang",
+            reporting_std="STROBE", n_sr=0, n_rct=0, evidence_level="—", registry=None, risk=risk,
+            run_date="2026-11-15T10:00:00", meta=meta, quy_trinh=QT_BANG_NOI)
+
+    o_cho = "[CẦN BÁC SĨ XÁC NHẬN: nghiên cứu của tôi đủ điều kiện miễn ICF"
+    co = ho_so(True)
+    assert "PI đã chọn xin miễn ICF" in co and o_cho not in co
+    assert "GIẢ DANH HOÁ" in co
+    assert o_cho in ho_so(False)

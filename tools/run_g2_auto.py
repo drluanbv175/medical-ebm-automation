@@ -542,6 +542,26 @@ def dam_bao_bao_mat_mien_icf(quy_trinh: Optional[list]) -> tuple:
     )
 
 
+def dieu_kien_mien_icf(quy_trinh: Optional[list]) -> Optional[tuple]:
+    """(4 điều kiện miễn ICF, dòng «Loại dữ liệu») theo quy trình dữ liệu ĐÃ CHỐT; None ⇒ giữ khuôn chung.
+
+    SỬA 15/11/2026 (phiếu đề xuất BTM, mục B2): khuôn đánh dấu sẵn «☑ … không truy ngược cá nhân» và «dữ liệu đã ẩn
+    danh» cho mọi đề tài, trong khi BTM có BẢNG NỐI mã nghiên cứu ↔ mã người bệnh tới khi khoá dữ liệu — dữ liệu là
+    GIẢ DANH HOÁ. Hội đồng phải quyết miễn ICF trên mô tả đúng, nên điều kiện 1 và 3 lấy nguyên văn cam kết đã chốt.
+    """
+    if not quy_trinh or not _gia_tri_qt(quy_trinh, "huy_bang_noi"):
+        return None
+    cam_ket = "; ".join(_gia_tri_qt(quy_trinh, "an_danh", "huy_bang_noi"))
+    thu_thap = "; ".join(_gia_tri_qt(quy_trinh, "thu_thap"))
+    return (
+        f"☑ Dùng hồ sơ có sẵn, GIẢ DANH HOÁ (chưa ẩn danh hoàn toàn cho tới khi huỷ bảng nối): {cam_ket}\n"
+        "☑ Không có can thiệp/thủ thuật bổ sung lên người tham gia\n"
+        "☑ Rủi ro không vượt nguy cơ tối thiểu nhờ giả danh hoá và các biện pháp bảo mật nêu trên\n"
+        "☑ Không khả thi yêu cầu ICF đầy đủ (hồi cứu hồ sơ đã có sẵn, không tiếp xúc người bệnh)",
+        thu_thap or "[CẦN BÁC SĨ MÔ TẢ — nguồn hồ sơ có sẵn]",
+    )
+
+
 def khoi_quy_trinh_g2(quy_trinh: Optional[list]) -> str:
     """Khối quy trình dữ liệu ĐÃ CHỐT in đầu TÀI LIỆU 6 (DMP) — cùng nguồn với PHẦN 1B của DMP G5 (15/11/2026)."""
     if not quy_trinh:
@@ -1044,13 +1064,21 @@ def generate_g2_full_package(
                 "☑ Không khả thi/không cần thiết yêu cầu ICF đầy đủ (khảo sát nặc danh hoặc dữ liệu đã có sẵn)"
             )
             data_type_line = "[CẦN BÁC SĨ MÔ TẢ — dữ liệu thứ cấp/hồ sơ có sẵn hoặc khảo sát nặc danh]"
+            _dk = dieu_kien_mien_icf(quy_trinh)
+            if _dk:
+                waiver_criteria, data_type_line = _dk
+        _g2m = (((meta or {}).get("gate_params") or {}).get("G2") or {}) if isinstance(meta, dict) else {}
+        xac_nhan_mien_line = (
+            "PI đã chọn xin miễn ICF (`gate_params.G2.icf_waiver_requested` = true) — Hội đồng Đạo đức quyết định."
+            if _g2m.get("icf_waiver_requested") is True else
+            "`[CẦN BÁC SĨ XÁC NHẬN: nghiên cứu của tôi đủ điều kiện miễn ICF không?]`")
         waiver_section = """
 ---
 
 ## TÀI LIỆU 9 — ĐỀ NGHỊ MIỄN ICF (ICF Waiver — cho thiết kế đủ điều kiện)
 
 > {activation_note}
-> `[CẦN BÁC SĨ XÁC NHẬN: nghiên cứu của tôi đủ điều kiện miễn ICF không?]`
+> {xac_nhan_mien_line}
 
 ```
 YÊU CẦU MIỄN THỦ TỤC ĐỒNG THUẬN (ICF Waiver Request) — DRAFT Phiên bản 1.0
@@ -1080,7 +1108,8 @@ Chữ ký chủ nhiệm: [CẦN KÝ]   |   Ngày: ___/___/{year}
 """.format(
             ten_dt=ten_dt, run_date_short=run_date[:10], year=_YEAR,
             activation_note=activation_note, waiver_criteria=waiver_criteria,
-            data_type_line=data_type_line, ma_hoa_line=dam_bao_bao_mat_mien_icf(quy_trinh)[0],
+            data_type_line=data_type_line, xac_nhan_mien_line=xac_nhan_mien_line,
+            ma_hoa_line=dam_bao_bao_mat_mien_icf(quy_trinh)[0],
             ke_hoach_huy_line=dam_bao_bao_mat_mien_icf(quy_trinh)[1],
         )
 

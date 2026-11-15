@@ -53,7 +53,7 @@
       "id": "G2-AUTO-05",
       "label": "Không còn placeholder khoa học/vận hành trọng yếu",
       "status": "REVIEW",
-      "evidence": "còn 91 dòng [CẦN]/ô mẫu chung/ô trống phải điền TRƯỚC khi nộp IRB; 8 dòng chỉ điền được SAU phê duyệt/đăng ký (thông tin, chưa chặn nộp) — ngoài các ô chỉ chứa PII và chỗ ký/ngày điền tay",
+      "evidence": "còn 82 dòng [CẦN]/ô mẫu chung/ô trống phải điền TRƯỚC khi nộp IRB; 8 dòng chỉ điền được SAU phê duyệt/đăng ký (thông tin, chưa chặn nộp) — ngoài các ô chỉ chứa PII và chỗ ký/ngày điền tay",
       "action": "Điền nội dung thật; với PII dùng bản nộp ngoài hệ thống và giữ bản redacted. Ô sau phê duyệt (số IRB, ngày phê duyệt, mã/ngày đăng ký…) điền khi có quyết định, TRƯỚC khi ký khoá G2."
     },
     {
@@ -87,15 +87,15 @@
     {
       "id": "G2-AUTO-08b",
       "label": "Mục WHO TRDS tự điền đã được PI khai (9 tiêu đề công khai, 12 tình trạng sức khỏe, 15 masking của RCT)",
-      "status": "REVIEW",
-      "evidence": "chưa khai: #9 Public Title (đang chép tên đề tài — PI khai gate_params.G2.public_title); #12 Health Condition(s) (đang chép tên đề tài — PI khai gate_params.G2.health_condition)",
+      "status": "PASS",
+      "evidence": "mục 9/12 (và masking RCT) đã do PI khai",
       "action": "Khai gate_params.G2.public_title (ngôn ngữ đại chúng), gate_params.G2.health_condition và — với RCT — gate_params.G1.blinding, rồi chạy lại run_g2_auto.py để làm mới bản đăng ký."
     },
     {
       "id": "G2-AUTO-10",
       "label": "Phiên bản đề cương/ICF hiện hành do PI khai",
-      "status": "REVIEW",
-      "evidence": "chưa khai: protocol_version, icf_version",
+      "status": "PASS",
+      "evidence": "protocol_version=1.0; icf_version=Không áp dụng — đề nghị miễn ICF (TÀI LIỆU 9); «1.0» có thể là giá trị khuôn gieo trước 04/10/2026 — PI xác nhận",
       "action": "PI khai gate_params.G2.protocol_version và icf_version (đúng phiên bản trình Hội đồng)."
     },
     {
@@ -123,7 +123,6 @@
     }
   ],
   "unresolved_critical_placeholders": [
-    "| Đăng ký nghiên cứu | BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, trước NTG đầu tiên), TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp thuần túy, không khảo sát ai mới, loại hình thu thập [CẦN BỔ SUNG], ClinicalTrials.g",
     "[TÊN ĐƠN VỊ — CẦN BỔ SUNG]",
     "Từ: Chủ nhiệm đề tài: [CẦN BỔ SUNG]",
     "Chức vụ: [CẦN BỔ SUNG]",
@@ -179,8 +178,6 @@
     "[TO BE COMPLETED. Treatment/compensation policy for study-related injury and its funding source].",
     "Investigator: [TO BE COMPLETED] | Email: [TO BE COMPLETED]",
     "Ethics Committee: [TO BE COMPLETED]",
-    "- **Thời hạn lưu trữ:** [CẦN PI QUYẾT — thời hạn lưu trữ dữ liệu sau khi kết thúc nghiên cứu chưa được chốt ở G1/SOP] _(nguồn: —)_",
-    "- **Hủy dữ liệu:** [CẦN PI QUYẾT — cách hủy tệp dữ liệu khi hết thời hạn lưu trữ] _(nguồn: —)_",
     "[CẦN BÁC SĨ LIỆT KÊ CỤ THỂ theo đề tài]",
     "☐ [CẦN XÁC NHẬN]",
     "Nơi lưu: [CẦN, máy chủ nội bộ / OneDrive institutional",
@@ -199,11 +196,7 @@
     "Số hợp đồng (nếu có): [CẦN BỔ SUNG]",
     "Tên công cụ: Claude AI (EBM Copilot) · [CẦN BỔ SUNG thêm nếu có]",
     "Người kiểm tra đầu ra: [CẦN — tên nghiên cứu viên phụ trách]",
-    "> `[CẦN BÁC SĨ XÁC NHẬN: nghiên cứu của tôi đủ điều kiện miễn ICF không?]`",
     "Chủ nhiệm: [CẦN BỔ SUNG]",
-    "Loại dữ liệu: [CẦN BÁC SĨ MÔ TẢ — dữ liệu thứ cấp/hồ sơ có sẵn hoặc khảo sát nặc danh]",
-    "Kế hoạch hủy: [CẦN PI QUYẾT — thời hạn lưu trữ dữ liệu sau khi kết thúc nghiên cứu chưa được chốt ở G1/SOP]; [CẦN PI QUYẾT — cách hủy tệp dữ liệu khi hết thời hạn lưu trữ]",
-    "**Thời điểm:** BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, trước NTG đầu tiên), TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp thuần túy, không khảo sát ai mới, loại hình thu thập [CẦN BỔ SUNG]",
     "> hệ thống không tra được hai nguồn đầu vì không có API mở. [CẦN BÁC SĨ TỰ TRA]",
     "[CẦN — sẽ có sau khi đăng ký: NCT_______ / ANZCTR_____]",
     "[CẦN — ngày đăng ký thành công]",
@@ -212,9 +205,7 @@
     "[CẦN BỔ SUNG — tên tổ chức tài trợ hoặc \"None\"]",
     "[CẦN — tên pháp nhân/tổ chức chịu trách nhiệm]",
     "[CẦN BỔ SUNG]",
-    "Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026 [CẦN PI KHAI — tiêu đề công khai bằng ngôn ngữ đại chúng: gate_params.G2.public_title]",
     "Vietnam (VN) [CẦN BỔ SUNG tỉnh/tỉnh thành]",
-    "[CẦN PI KHAI — tình trạng sức khỏe nghiên cứu: gate_params.G2.health_condition]",
     "[CẦN — chỉ tuyển sau phê duyệt và đăng ký: ___/___/2026]",
     "Approval date: [CẦN sau quyết định IRB]",
     "Ethics committee: [CẦN mã/tên đơn vị; không lưu PII cá nhân]",
@@ -224,7 +215,6 @@
     "\"DRAFT, Điền trường còn [CẦN] trước khi gửi đăng ký.\""
   ],
   "pre_submission_placeholders": [
-    "| Đăng ký nghiên cứu | BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, trước NTG đầu tiên), TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp thuần túy, không khảo sát ai mới, loại hình thu thập [CẦN BỔ SUNG], ClinicalTrials.g",
     "[TÊN ĐƠN VỊ — CẦN BỔ SUNG]",
     "Từ: Chủ nhiệm đề tài: [CẦN BỔ SUNG]",
     "Chức vụ: [CẦN BỔ SUNG]",
@@ -279,8 +269,6 @@
     "[TO BE COMPLETED. Treatment/compensation policy for study-related injury and its funding source].",
     "Investigator: [TO BE COMPLETED] | Email: [TO BE COMPLETED]",
     "Ethics Committee: [TO BE COMPLETED]",
-    "- **Thời hạn lưu trữ:** [CẦN PI QUYẾT — thời hạn lưu trữ dữ liệu sau khi kết thúc nghiên cứu chưa được chốt ở G1/SOP] _(nguồn: —)_",
-    "- **Hủy dữ liệu:** [CẦN PI QUYẾT — cách hủy tệp dữ liệu khi hết thời hạn lưu trữ] _(nguồn: —)_",
     "[CẦN BÁC SĨ LIỆT KÊ CỤ THỂ theo đề tài]",
     "☐ [CẦN XÁC NHẬN]",
     "Nơi lưu: [CẦN, máy chủ nội bộ / OneDrive institutional",
@@ -299,19 +287,13 @@
     "Số hợp đồng (nếu có): [CẦN BỔ SUNG]",
     "Tên công cụ: Claude AI (EBM Copilot) · [CẦN BỔ SUNG thêm nếu có]",
     "Người kiểm tra đầu ra: [CẦN — tên nghiên cứu viên phụ trách]",
-    "> `[CẦN BÁC SĨ XÁC NHẬN: nghiên cứu của tôi đủ điều kiện miễn ICF không?]`",
     "Chủ nhiệm: [CẦN BỔ SUNG]",
-    "Loại dữ liệu: [CẦN BÁC SĨ MÔ TẢ — dữ liệu thứ cấp/hồ sơ có sẵn hoặc khảo sát nặc danh]",
-    "Kế hoạch hủy: [CẦN PI QUYẾT — thời hạn lưu trữ dữ liệu sau khi kết thúc nghiên cứu chưa được chốt ở G1/SOP]; [CẦN PI QUYẾT — cách hủy tệp dữ liệu khi hết thời hạn lưu trữ]",
-    "**Thời điểm:** BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, trước NTG đầu tiên), TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp thuần túy, không khảo sát ai mới, loại hình thu thập [CẦN BỔ SUNG]",
     "> hệ thống không tra được hai nguồn đầu vì không có API mở. [CẦN BÁC SĨ TỰ TRA]",
     "PROSPERO (nếu SR): [CẦN]",
     "[CẦN BỔ SUNG — tên tổ chức tài trợ hoặc \"None\"]",
     "[CẦN — tên pháp nhân/tổ chức chịu trách nhiệm]",
     "[CẦN BỔ SUNG]",
-    "Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026 [CẦN PI KHAI — tiêu đề công khai bằng ngôn ngữ đại chúng: gate_params.G2.public_title]",
     "Vietnam (VN) [CẦN BỔ SUNG tỉnh/tỉnh thành]",
-    "[CẦN PI KHAI — tình trạng sức khỏe nghiên cứu: gate_params.G2.health_condition]",
     "Ethics committee: [CẦN mã/tên đơn vị; không lưu PII cá nhân]",
     "Plan to share de-identified IPD: [CẦN — Yes/No]",
     "What/when/how/with whom/purpose: [CẦN — kế hoạch cụ thể]"
@@ -329,8 +311,6 @@
   "post_study_placeholders": [],
   "pending_actions": [
     "Điền nội dung thật; với PII dùng bản nộp ngoài hệ thống và giữ bản redacted. Ô sau phê duyệt (số IRB, ngày phê duyệt, mã/ngày đăng ký…) điền khi có quyết định, TRƯỚC khi ký khoá G2.",
-    "Khai gate_params.G2.public_title (ngôn ngữ đại chúng), gate_params.G2.health_condition và — với RCT — gate_params.G1.blinding, rồi chạy lại run_g2_auto.py để làm mới bản đăng ký.",
-    "PI khai gate_params.G2.protocol_version và icf_version (đúng phiên bản trình Hội đồng).",
     "Hội đồng/đầu mối được ủy quyền ghi quyết định bằng approve_gate.py.",
     "Người có thẩm quyền IRB tự ký; agent không được chạy lệnh phê duyệt."
   ],

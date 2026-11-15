@@ -340,19 +340,19 @@
       ]
     },
     "G2": {
-      "protocol_version": null,
-      "icf_version": null,
-      "public_title": null,
-      "health_condition": null,
+      "protocol_version": "1.0",
+      "icf_version": "Không áp dụng — đề nghị miễn ICF (TÀI LIỆU 9)",
+      "public_title": "Detection of chronic kidney disease and kidney-protective treatment among outpatients with type 2 diabetes at Military Hospital 175, Vietnam",
+      "health_condition": "Type 2 diabetes mellitus (ICD-10 E11); chronic kidney disease (ICD-10 N18)",
       "primary_purpose": null,
       "safety_plan_confirmed": false,
-      "recruitment_mode": null,
-      "registration_required": null,
+      "recruitment_mode": "RETROSPECTIVE_SECONDARY_DATA",
+      "registration_required": false,
       "registration_registry": null,
       "registration_id": null,
       "registration_date": null,
       "first_enrolment_date": null,
-      "icf_waiver_requested": false,
+      "icf_waiver_requested": true,
       "safety_plan_required": null
     },
     "G7": {
@@ -400,11 +400,12 @@
     },
     "G10": {
       "xac_nhan_ket_cuc_chinh": {
-        "giai_trinh": "Chủ nhiệm xác nhận 15/11/2026 (lựa chọn nguyên văn «Cùng một kết cục (Khuyên dùng)»): G0 «Tỷ lệ người ĐTĐ típ 2 ngoại trú được xét nghiệm đủ UACR + creatinin trong 12 tháng» và G1/SAP «Được xét nghiệm đủ UACR và creatinin huyết thanh trong cửa sổ 12 tháng (biến XN_DU)» là CÙNG MỘT kết cục — G0 ghi thước đo (tỷ lệ), G1/SAP ghi biến nhị phân xn_du; không đổi kết cục. Biên bản: G3_BO_BIEN_SO_QUYET_DINH_20261115.md.",
-        "reviewed_at": "2026-11-15T07:41:40+07:00",
+        "giai_trinh": "Chủ nhiệm xác nhận 15/11/2026 (phiếu đề xuất, mục B1 — lựa chọn nguyên văn «Cùng một kết cục (Khuyên dùng)»): G0 «Tỷ lệ người ĐTĐ típ 2 ngoại trú được xét nghiệm đủ UACR + creatinin trong 12 tháng», G1/TRDS 19 «Được xét nghiệm đủ UACR và creatinin huyết thanh trong cửa sổ 12 tháng (biến XN_DU)» và SAP §2 (cùng câu đó + định nghĩa thao tác biến xn_du) là CÙNG MỘT kết cục; không đổi kết cục. Thay xác nhận ngày 15/11/2026 07:41 (dấu ea600fdb21d8a75e — khi đó máy chưa đọc được SAP §2).",
+        "reviewed_at": "2026-11-15T18:36:17+07:00",
         "reviewed_by_role": "PI",
-        "dau_van_tay": "ea600fdb21d8a75e"
+        "dau_van_tay": "be7a10ba02e38f7d"
       }
     }
-  }
+  },
+  "design_code_tu_g1": "cross_sectional"
 }

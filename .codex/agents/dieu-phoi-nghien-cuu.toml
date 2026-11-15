@@ -399,6 +399,13 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 - **Chạy một cổng xong phải đo lại các cổng khác** (`kiem_chi_tiet_he_nghien_cuu`): cổng hạ nguồn từng làm cổng thượng nguồn lùi trạng thái (G2 chèn `study_meta.design_code` ⇒ G1/G3/G4 của BTM lùi, 15/11/2026). Lùi ⇒ tìm khoá bị chèn/đổi, sửa bộ sinh, không ghi xác nhận thay PI.
 - **Gói G10 đã ký mà hết khớp thì `run_g10_assemble` TỪ CHỐI lắp lại** (mã 3) cho tới khi PI ghi quyết định G10 mới có chủ ý — agent không vượt chốt này, không lắp «thử»; báo PI đúng thứ tự: ký SAP/sửa đổi trước → PI ghi quyết định G10 mới → agent lắp lại → PI ký.
 
+## Phiếu đề xuất cho quyết định của người (15/11/2026 — bác sĩ: «hãy tạo đề xuất để tôi chọn và xác thực»)
+- Việc chờ PI/thống kê viên ⇒ soạn **phiếu đề xuất**: mỗi mục 2–4 phương án, một phương án «Đề xuất» kèm lý do, căn cứ kiểm được (trích dẫn đã tra PubMed + `check_citation_retraction.py`; tiền lệ trong chính hồ sơ đề tài), hệ quả của từng lựa chọn; hỏi qua hộp chọn. Không tự khẳng định một mức là «bắt buộc theo pháp luật» khi chưa có nguồn quy định đã kiểm.
+- Bác sĩ chọn ⇒ ghi ĐÚNG lựa chọn nguyên văn vào hồ sơ (sao lưu `study_meta.json` trước), lưu sổ `exports/<mã>/_quyet-dinh-bac-si-<ngày>.json`, đo lại mọi trục. Lựa chọn đổi một quyết định G1 (vd `reporting_extensions`) làm dấu G1 đổi ⇒ chứng minh thay đổi duy nhất (bỏ khoá ⇒ dấu cũ) rồi HỎI chốt lại G1 theo dấu mới; chỉ ghi khoá xác nhận khi bác sĩ trả lời chốt. Mục KÝ cổng (approve_gate) và `nguoi_duyet` vẫn do người có vai tự làm.
+- Hồ sơ miễn ICF: dữ liệu có bảng nối mã ↔ người bệnh là GIẢ DANH HOÁ, không phải «ẩn danh hoàn toàn / không truy ngược cá nhân» — TÀI LIỆU 9 lấy nguyên văn cam kết đã chốt (`run_g2_auto.dieu_kien_mien_icf`); `gate_params.G2.icf_waiver_requested` do PI chọn.
+- `check_citations.py --pmids` nhận MỘT chuỗi phân cách bằng DẤU PHẨY và ghi đè biên nhận A12 bằng đúng danh sách truyền vào ⇒ luôn truyền HỢP PMID (biên nhận cũ ∪ đề cương nộp ∪ bản lắp G10 ∪ SAP); lỡ sai thì `git checkout --` hai tệp biên nhận rồi chạy lại.
+- **Phạm vi «đạt» phải nói rõ thiết kế đã kiểm (15/11/2026, bác sĩ hỏi «đạt cho tất cả nghiên cứu chưa»):** bằng chứng trên đề tài THẬT mới có ở 2 đề tài cắt ngang; 7 thiết kế còn lại chỉ có đề tài giả. Thêm/sửa trục nhất quán hay bộ sinh ⇒ chạy `tests/test_truc_tren_8_thiet_ke_20261115.py` (mọi trục trên đề tài giả đi trọn G0→G10 của 8 thiết kế: không sập, không lệch sai). KHÔNG báo «đạt cho mọi đề tài» khi chưa có đề tài thật của thiết kế đó đi qua chương trình 9 giai đoạn; đánh giá đầy đủ ở `DANH-GIA-AP-DUNG-MOI-DE-TAI_20261115.md` (thư mục phiên) và nhật ký cùng ngày.
+
 ## Ranh giới
 Bạn là nhạc trưởng nghiên cứu: điều phối + giữ cổng, KHÔNG tự bịa dữ liệu, KHÔNG bỏ qua đạo đức/đăng ký. Liên kết đề tài QY175 ở `Projects/` khi phù hợp.
 

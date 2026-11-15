@@ -1,0 +1,34 @@
+{
+ "study": "hai-long-benh-nhan-C1a-BVQY175",
+ "ngay": "2026-11-15",
+ "nguon": "Phiếu đề xuất PHIEU-DE-XUAT-C1A-BTM_20261115.md — bác sĩ chọn qua hộp hỏi đáp trong phiên Claude",
+ "quyet_dinh": [
+  {
+   "ma": "C1",
+   "lua_chon_nguyen_van": "A. Trung gian nhân quả (Khuyên dùng)",
+   "ap_dung": "SAP 1.5 §5 (phương pháp), §10 (gói mediation), lịch sử 1.5; đề cương nộp 4.10 (+4 TLTK [53]–[56]); đặc tả G6 TD_ky_vong",
+   "ghi_chu": "Thẩm quyền chọn phương pháp là của thống kê viên — xác nhận khi ký SAP (C2)"
+  },
+  {
+   "ma": "C3",
+   "lua_chon_nguyen_van": "Chưa nộp",
+   "ap_dung": "Gói ký 28/10 chưa nộp Hội đồng ⇒ sẽ nộp gói lắp lại sau C2 và C4; không cần thủ tục sửa đổi; đề cương nộp được cập nhật trực tiếp"
+  },
+  {
+   "ma": "C5",
+   "lua_chon_nguyen_van": "Có — STROBE + CROSS + RECORD (Khuyên dùng)",
+   "ap_dung": "gate_params.G1.reporting_extensions=[CROSS, RECORD]; G1 sinh lại; SAP, gói G2, đề cương nộp (+TLTK [33] Benchimol 2015)"
+  },
+  {
+   "ma": "G1",
+   "lua_chon_nguyen_van": "Chốt G1 (Khuyên dùng)",
+   "thoi_diem": "2026-11-15T18:45:10+07:00",
+   "ap_dung": "gate_params.G1 reviewed_at, reviewed_by_role=PI, dau_van_tay_chot=a1092035d7005539 (thay e7446048acc3b6a1 ngày 28/10; thay đổi duy nhất: reporting_extensions theo C5 — máy đã chứng minh)"
+  }
+ ],
+ "cho_nguoi": [
+  "C2 ký SAP 1.5",
+  "C4 PI ghi quyết định G10 mới",
+  "C6 duyệt đặc tả G6 (dấu 41c904db6807)"
+ ]
+}

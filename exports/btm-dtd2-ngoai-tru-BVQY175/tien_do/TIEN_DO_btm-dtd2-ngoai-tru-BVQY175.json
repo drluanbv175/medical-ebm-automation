@@ -219,7 +219,7 @@
    "trang_thai": "cho_bs",
    "ngay_xong": "",
    "do_song": "",
-   "ghi_chu": ""
+   "ghi_chu": "Bác sĩ chọn 15/11/2026 (B6): tạm dùng bố cục hồ sơ của C1a (cùng bệnh viện) cho tới khi có mẫu Hội đồng BVQY175."
   },
   {
    "id": "2.1",
@@ -365,8 +365,8 @@
    "han": "15/11/2026",
    "trang_thai": "cho_bs",
    "ngay_xong": "",
-   "do_song": "15/11/2026: run_g2_auto — g2_quality_gate DRAFT_NEEDS_HUMAN_COMPLETION (tự động FAIL 0; REVIEW: G2-AUTO-05 còn ô [CẦN] phải điền trước khi nộp, G2-AUTO-08b public_title/health_condition, G2-AUTO-10 protocol_version/icf_version; người: G2-HUMAN-01/02); ClinicalTrials.gov tra thật — 0 hồ sơ trùng; G1/G3 giữ PASS, G4 giữ READY_FOR_SIGNATURE",
-   "ghi_chu": "Bác sĩ «Chạy G2» (15/11/2026). Gói 8 tài liệu + TÀI LIỆU 9 đề nghị miễn ICF + WHO TRDS 24 mục. TL6 (DMP) và TL9 lấy nguyên quy trình dữ liệu đã chốt (_quy-trinh-du-lieu.csv); lưu trữ/hủy còn [CẦN PI QUYẾT]. Việc của bác sĩ: xác nhận đủ điều kiện miễn ICF (TL9), khai gate_params.G2 (public_title, health_condition, protocol_version, icf_version), điền ô [CẦN], chốt lưu trữ/hủy; chỉnh theo mẫu hồ sơ Hội đồng BVQY175 khi có (1.10)."
+   "do_song": "15/11/2026 (sau phiếu đề xuất): g2_quality_gate DRAFT_NEEDS_HUMAN_COMPLETION — tự động FAIL 0, REVIEW chỉ còn G2-AUTO-05 (ô [CẦN] trong hồ sơ); người: G2-HUMAN-01/02 (quyết định Hội đồng). G2-AUTO-08b, G2-AUTO-10 đạt. CT.gov 0 trùng. G1/G3 PASS, G4 READY_FOR_SIGNATURE",
+   "ghi_chu": "Bác sĩ chọn 15/11/2026 (phiếu đề xuất): B2 «Xin miễn (Khuyên dùng)»; B3 «2 năm, xoá an toàn có biên bản (Khuyên dùng)»; B4 «Dùng đề xuất (Khuyên dùng)». TÀI LIỆU 9 mô tả đúng giả danh hoá (bảng nối huỷ sau khi khoá dữ liệu). Còn: chủ nhiệm điền các ô [CẦN] (họ tên, chức danh…), chỉnh theo mẫu Hội đồng khi có (1.10)."
   },
   {
    "id": "3.2",
@@ -379,10 +379,10 @@
     "2.3"
    ],
    "han": "12/11/2026",
-   "trang_thai": "chua",
-   "ngay_xong": "",
-   "do_song": "",
-   "ghi_chu": ""
+   "trang_thai": "xong",
+   "ngay_xong": "15/11/2026",
+   "do_song": "gate_params.G2: registration_required=false, recruitment_mode=RETROSPECTIVE_SECONDARY_DATA; hồ sơ G2 ghi «TÙY CHỌN — hồi cứu dữ liệu thứ cấp (PI đã chốt)»",
+   "ghi_chu": "Bác sĩ chọn nguyên văn «Không đăng ký · bố cục C1a · viết sau G2 (Khuyên dùng)» (phiếu đề xuất B5, 15/11/2026)."
   },
   {
    "id": "3.3",
@@ -466,7 +466,7 @@
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "g10 readiness",
-   "ghi_chu": "Sửa 28/10 sau câu hỏi của bác sĩ về hình thức đề cương: tài liệu G1 (A2, A13…) là tài liệu làm việc của cổng, KHÔNG nộp; bản nộp viết lại như C1a. Mục lục dự kiến: DE_CUONG_NOP_MUC_LUC_DU_KIEN_20261028.md"
+   "ghi_chu": "Bác sĩ chọn 15/11/2026 (B9): viết đề cương nộp SAU khi G2 lên mức sẵn sàng (đúng trình tự sổ), dùng bố cục C1a nếu chưa có mẫu."
   },
   {
    "id": "3.8",
@@ -1207,6 +1207,10 @@
   {
    "ngay": "2026-11-15",
    "viec": "3.1 chờ bác sĩ: máy chạy G2 — gói đạo đức + TRDS + đề nghị miễn ICF; DRAFT_NEEDS_HUMAN_COMPLETION; CT.gov 0 trùng"
+  },
+  {
+   "ngay": "2026-11-15",
+   "viec": "Phiếu đề xuất: 3.2 xong (không đăng ký); 3.1 B2/B3/B4 đã ghi; 1.10 tạm bố cục C1a; 3.7 viết sau G2 sẵn sàng; B1 xác nhận lại kết cục chính (dấu be7a10ba02e38f7d)"
   }
  ]
 }

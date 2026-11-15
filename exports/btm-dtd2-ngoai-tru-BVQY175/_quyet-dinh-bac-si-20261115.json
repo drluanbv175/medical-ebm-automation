@@ -1,0 +1,36 @@
+{
+ "study": "btm-dtd2-ngoai-tru-BVQY175",
+ "ngay": "2026-11-15",
+ "nguon": "Phiếu đề xuất PHIEU-DE-XUAT-C1A-BTM_20261115.md — bác sĩ chọn qua hộp hỏi đáp trong phiên Claude",
+ "quyet_dinh": [
+  {
+   "ma": "B1",
+   "lua_chon_nguyen_van": "Cùng một kết cục (Khuyên dùng)",
+   "ap_dung": "gate_params.G10.xac_nhan_ket_cuc_chinh (dấu be7a10ba02e38f7d)"
+  },
+  {
+   "ma": "B2",
+   "lua_chon_nguyen_van": "Xin miễn (Khuyên dùng)",
+   "ap_dung": "gate_params.G2.icf_waiver_requested=true; TÀI LIỆU 9 mô tả giả danh hoá"
+  },
+  {
+   "ma": "B3",
+   "lua_chon_nguyen_van": "2 năm, xoá an toàn có biên bản (Khuyên dùng)",
+   "ap_dung": "_quy-trinh-du-lieu.csv luu_tru/huy_du_lieu; TL6/TL9 hồ sơ G2"
+  },
+  {
+   "ma": "B4",
+   "lua_chon_nguyen_van": "Dùng đề xuất (Khuyên dùng)",
+   "ap_dung": "gate_params.G2 public_title, health_condition, protocol_version=1.0, icf_version"
+  },
+  {
+   "ma": "B5+B6+B9",
+   "lua_chon_nguyen_van": "Không đăng ký · bố cục C1a · viết sau G2 (Khuyên dùng)",
+   "ap_dung": "gate_params.G2 registration_required=false, recruitment_mode=RETROSPECTIVE_SECONDARY_DATA; sổ tiến độ 3.2, 1.10, 3.7"
+  }
+ ],
+ "chua_lam_viec_ky": [
+  "B7 ký SAP (G4) — thống kê viên/PI tự chạy approve_gate.py",
+  "B8 duyệt đặc tả G6 (nguoi_duyet …:b23936640ab1)"
+ ]
+}
