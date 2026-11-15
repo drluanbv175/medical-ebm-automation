@@ -666,61 +666,17 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
 
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════ bộ biến + ma trận
-# Hồ sơ biến của 8 đề tài — việc nhóm nghiên cứu soạn ở G3 (G3-AUTO-19 đòi `_bo-bien-rieng.csv` + ma trận mục tiêu →
-# biến). Mỗi biến: (tên, Field Type REDCap, nhãn, lựa chọn, kiểu kiểm, mục). Mỗi dòng ma trận: (mục tiêu, khái niệm,
-# vai trò, biến, kiểu, câu hỏi/nguồn, công cụ, mục SAP). Biến đúng cái SAP §4/§5 dùng, không thừa không thiếu.
+# Hồ sơ biến của 6 đề tài mới — việc G3-T2 (agent bien-so-nghien-cuu) dựng ở G3 (G3-AUTO-19 đòi `_bo-bien-rieng.csv` +
+# ma trận mục tiêu → biến). Hai kịch bản đầu (RCT, cắt ngang) đã có `bien_so` ở gia_lap_dinh_ky (#281). Biến đúng cái
+# SAP §4/§5 dùng, không thừa không thiếu.
 _CO_KHONG = "0, Không | 1, Có"
 _GIOI = "0, Nữ | 1, Nam"
 
 
-def ho_so_bien() -> Dict[str, Dict[str, list]]:
-    """Bộ biến + ma trận của từng kịch bản (khoá = mã kịch bản của canary)."""
+def _ho_so_bien_6() -> Dict[str, Dict[str, list]]:
+    """Bộ biến (tên, loại, nhãn, lựa chọn, kiểm, mục) + ma trận của 6 kịch bản mới."""
     so = "integer"
     return {
-        "rct_nhi_phan": {
-            "bo_bien": [
-                ("record_id", "text", "Mã nghiên cứu", "", "", "Tuyển chọn"),
-                ("nhom", "radio", "Nhánh phân bổ ngẫu nhiên", "0, Chăm sóc thường quy | 1, Tin nhắn nhắc uống thuốc",
-                 "", "Ngẫu nhiên hoá"),
-                ("tuoi", "text", "Tuổi (năm)", "", so, "Ban đầu"),
-                ("gioi", "radio", "Giới", _GIOI, "", "Ban đầu"),
-                ("ha_tt_nen", "text", "Huyết áp tâm thu ban đầu (mmHg)", "", so, "Ban đầu"),
-                ("so_thuoc_nen", "text", "Số thuốc hạ áp đang dùng", "", so, "Ban đầu"),
-                ("dtd", "yesno", "Đái tháo đường", "", "", "Ban đầu"),
-                ("kiem_soat_t6", "radio", "Đạt kiểm soát huyết áp tại tháng 6 (KẾT CỤC CHÍNH)", _CO_KHONG, "",
-                 "Tháng 6"),
-                ("ha_tt_t6", "text", "Huyết áp tâm thu tháng 6 (mmHg)", "", so, "Tháng 6"),
-                ("diem_tuan_thu_t6", "text", "Điểm tuân thủ tự báo cáo tháng 6 (0–10)", "", so, "Tháng 6"),
-            ],
-            "ma_tran": [
-                ("1", "Tỷ lệ kiểm soát huyết áp tại tháng 6", "ket_cuc_chinh", "kiem_soat_t6", "nhi_phan", "HA1",
-                 "Đo huyết áp phòng khám chuẩn hoá", "§4"),
-                ("1", "Tin nhắn SMS nhắc uống thuốc", "phoi_nhiem", "nhom", "nhi_phan", "NN1", "Danh sách ngẫu nhiên",
-                 "§4"),
-                ("1", "Huyết áp tâm thu tháng 6", "ket_cuc_phu", "ha_tt_t6", "lien_tuc", "HA2",
-                 "Đo huyết áp phòng khám chuẩn hoá", "§4"),
-                ("1", "Tuổi", "hiep_bien", "tuoi", "lien_tuc", "B1", "Phiếu ban đầu", "§5"),
-                ("1", "Huyết áp tâm thu ban đầu", "hiep_bien", "ha_tt_nen", "lien_tuc", "B3", "Phiếu ban đầu", "§5"),
-            ],
-        },
-        "cat_ngang_mo_ta": {
-            "bo_bien": [
-                ("record_id", "text", "Mã nghiên cứu", "", "", "Phiếu khảo sát"),
-                ("tuoi", "text", "Tuổi (năm)", "", so, "Phiếu khảo sát"),
-                ("gioi", "radio", "Giới", _GIOI, "", "Phiếu khảo sát"),
-                ("ha_tt", "text", "Huyết áp tâm thu trung bình 2 lần đo (mmHg)", "", so, "Đo huyết áp"),
-                ("ha_ttr", "text", "Huyết áp tâm trương trung bình 2 lần đo (mmHg)", "", so, "Đo huyết áp"),
-                ("kiem_soat", "radio", "Đạt kiểm soát huyết áp <140/90 mmHg (KẾT CỤC CHÍNH)", _CO_KHONG, "",
-                 "Đo huyết áp"),
-                ("so_thuoc", "text", "Số thuốc hạ áp đang dùng", "", so, "Điều trị hiện tại"),
-            ],
-            "ma_tran": [
-                ("1", "Tỷ lệ kiểm soát huyết áp", "ket_cuc_chinh", "kiem_soat", "nhi_phan", "HA1",
-                 "Đo huyết áp phòng khám chuẩn hoá", "§4"),
-                ("1", "Số thuốc hạ áp đang dùng", "mo_ta", "so_thuoc", "dem", "DT1", "Hồ sơ khám", "§4"),
-                ("1", "Tuổi", "mo_ta", "tuoi", "lien_tuc", "C1", "Phiếu khảo sát", "§4"),
-            ],
-        },
         "thuan_tap_phoi_nhiem": {
             "bo_bien": [
                 ("record_id", "text", "Mã nghiên cứu", "", "", "Trích hồ sơ"),
@@ -931,3 +887,12 @@ def ho_so_tron_vong() -> Dict[str, Dict[str, Any]]:
             "ky_G2": _ky_g2(tien_cuu, "NOT_REQUIRED"),
         },
     }
+
+
+def bien_so_them() -> Dict[str, Dict[str, list]]:
+    """Bộ biến + ma trận của 6 kịch bản mới theo khuôn `bien_so` của canary.
+
+    Mỗi biến: (tên, loại, nhãn, lựa chọn, kiểm, min, max)."""
+    return {ma: {"bo_bien": [(t, k, n, lc, v, "", "") for t, k, n, lc, v, _muc in hs["bo_bien"]],
+                 "ma_tran": list(hs["ma_tran"])}
+            for ma, hs in _ho_so_bien_6().items()}

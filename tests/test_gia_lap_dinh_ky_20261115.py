@@ -660,28 +660,9 @@ def test_tu_chay_cong_khong_doi_tieu_chi_khong_tinh_la_loi_may_va_tieu_chi_ket_d
         kq["khiem_khuyet"]
 
 
-def test_pi_nop_bo_bien_va_ma_tran_cung_noi_dung_g3(tmp_path):
-    kb = dict(KB_THU, ho_so_bien={
-        "bo_bien": [("record_id", "text", "Mã", "", "", "Phiếu"), ("kc", "radio", "Kết cục", "0, Không | 1, Có", "",
-                                                                     "Phiếu")],
-        "ma_tran": [("1", "Kết cục", "ket_cuc_chinh", "kc", "nhi_phan", "C1", "Phiếu", "§4")]})
-    repo = tmp_path / "repo"
-    (repo / "exports").mkdir(parents=True)
-    tg = TheGioi(dich_lac=False, n4=False, kct_do=())
-    gl = GL.GiaLap("thu", kb, repo, True, chay=tg.chay, cham=tg.cham, nen_g0_dir=tmp_path / "nen")
-    out = repo / "exports" / kb["study"]
-    out.mkdir(parents=True)
-    assert not gl._noi_dung_da_dien("G3")
-    gl._dien_noi_dung("G3")
-    bo = (out / "_bo-bien-rieng.csv").read_text(encoding="utf-8").splitlines()
-    mt = (out / "_ma-tran-muc-tieu-bien.csv").read_text(encoding="utf-8").splitlines()
-    assert bo[0].startswith("Variable / Field Name,Form Name") and bo[2].startswith("kc,phieu,Phiếu,radio")
-    assert mt[0] == ",".join(GL.COT_MA_TRAN) and mt[1].startswith("1,Kết cục,ket_cuc_chinh,kc,nhi_phan")
-
-
-def test_moi_kich_ban_that_co_ho_so_bien_va_dung_mot_ket_cuc_chinh_tru_tong_quan():
+def test_moi_kich_ban_that_co_bo_bien_va_ma_tran_tro_dung_bien():
     for ma, kb in GL.KICH_BAN.items():
-        hs = kb.get("ho_so_bien")
+        hs = kb.get("bien_so")
         assert hs and hs["bo_bien"] and hs["ma_tran"], ma
         ten_bien = {b[0] for b in hs["bo_bien"]}
         assert all(d[3] in ten_bien for d in hs["ma_tran"]), ma  # ma trận chỉ trỏ biến có trong bộ biến

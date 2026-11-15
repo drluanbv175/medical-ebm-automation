@@ -263,11 +263,11 @@ def _bern(rng: random.Random, p: float) -> int:
     return 1 if rng.random() < max(0.0, min(1.0, p)) else 0
 
 
-def sinh_du_lieu(thiet_ke: str, ho_so_bien: Mapping[str, Any], g3: Mapping[str, Any], n: int,
+def sinh_du_lieu(thiet_ke: str, bien_so: Mapping[str, Any], g3: Mapping[str, Any], n: int,
                  seed: int = 20261115) -> List[Dict[str, Any]]:
     """Dữ liệu MÔ PHỎNG theo bộ biến + giả định G3 (đúng hướng hiệu ứng đã khai). Không dùng lâm sàng."""
     rng = random.Random(seed)
-    ma_tran = ho_so_bien["ma_tran"]
+    ma_tran = bien_so["ma_tran"]
     vai = {d[3]: d[2] for d in ma_tran}
     kc = next((d[3] for d in ma_tran if d[2] == "ket_cuc_chinh"), None)
     pn = next((d[3] for d in ma_tran if d[2] == "phoi_nhiem"), None)
@@ -286,7 +286,7 @@ def sinh_du_lieu(thiet_ke: str, ho_so_bien: Mapping[str, Any], g3: Mapping[str, 
     eff = float(g3.get("effect_size") or 1.0)
     for i in range(int(n)):
         r: Dict[str, Any] = {}
-        for ten, kieu, nhan, lua, val, _muc in ho_so_bien["bo_bien"]:
+        for ten, kieu, nhan, lua, val, _lo, _hi in bien_so["bo_bien"]:
             if ten in ("record_id", "ma_nguoi_tham_gia", "study_id"):
                 r[ten] = f"R{i + 1:04d}"
             elif kieu in ("yesno",) or (kieu == "radio" and lua.count("|") == 1):
@@ -520,7 +520,7 @@ class TronVong:
             return
         g3, cp3 = _gp(self._meta(), "G3"), self._cp("G3")
         n = float(cp3.get("confirmed_n") or cp3.get("n_adjusted") or 0)
-        so_bien = sum(1 for d in (self.kb.get("ho_so_bien") or {}).get("ma_tran", ())
+        so_bien = sum(1 for d in (self.kb.get("bien_so") or {}).get("ma_tran", ())
                       if d[2] in ("phoi_nhiem", "hiep_bien", "yeu_to"))
         p = float(g3.get("p0") or g3.get("prevalence") or 0.2)
         bien_co = n * min(p, 1 - p)

@@ -683,6 +683,46 @@ def ma_thiet_ke_chuoi(raw: Optional[str]) -> Optional[str]:
     return ma if ma in MA_THIET_KE_CHUOI else None
 
 
+#: Giá trị `study_meta.design_code_nguon` nói «chính PI ghi design_code cấp cao». Máy không bao giờ ghi giá trị này.
+NGUON_GHIM_PI = "PI"
+
+
+def ghim_thiet_ke(meta: Optional[Mapping[str, Any]]) -> Tuple[str, bool]:
+    """(giá trị thiết kế đang GHIM nguyên văn, có DẤU NGƯỜI hay không) — ('', False) nếu không ghim.
+
+    15/11/2026 (bác sĩ chọn «G2 thôi gieo + ghim cần dấu người», thẩm định #277): run_g2_auto từng gieo
+    `study_meta.design_code` = thiết kế G1 MÁY suy — đúng ô G1 hiểu là «bác sĩ ghim» ⇒ G1 chạy lại tự gỡ cờ thiết kế mơ
+    hồ (G1-AUTO-04/04b) và hạ G1-AUTO-02d CHẶN→XEM mà không ai bấm gì. Nay giá trị ghim chỉ là QUYẾT ĐỊNH CỦA PI khi có
+    dấu người:
+      - `gate_params.G1.design` (ô chỉ PI ghi) — dấu cho chính giá trị của nó;
+      - `design_code` cấp cao kèm `design_code_nguon == "PI"`, hoặc kèm `gate_params.G1.design_confirmed is True`,
+        hoặc TRÙNG `gate_params.G1.design` (so sau chuẩn hoá).
+    `design_code` cấp cao đứng một mình (vd đề tài cũ do G2 gieo) vẫn là thiết kế ĐANG DÙNG nhưng KHÔNG là quyết định
+    của PI.
+    Thẩm định #281 (Đ1): `gate_params.G1.design` LỆCH `design_code` cấp cao không mang nhãn PI ⇒ ô G1 (chỉ PI ghi) THẮNG
+    — trước đây giá trị máy gieo thắng lặng lẽ, rồi `design_confirmed=true` (gợi ý của G1-AUTO-04) «đóng dấu PI» luôn
+    cho chính giá trị máy. `design_confirmed` chỉ là dấu cho `design_code` khi không có G1.design lệch.
+    Cổng đã ký không bị hạ cấp: chữ ký G1 luôn đi kèm `design_confirmed is True` (G1-HUMAN-01); hai đề tài thật có
+    `design_code` trùng G1.design hoặc không có `design_code` (đo 15/11/2026)."""
+    if not isinstance(meta, Mapping):
+        return "", False
+    gp = meta.get("gate_params") if isinstance(meta.get("gate_params"), Mapping) else {}
+    g1 = gp.get("G1") if isinstance(gp.get("G1"), Mapping) else {}
+    cao = str(meta.get("design_code") or "").strip()
+    g1d = str(g1.get("design") or "").strip()
+    if not cao:
+        return g1d, bool(g1d)
+
+    def _chuan(x: str) -> str:
+        return ma_thiet_ke_chuoi(x) or x.casefold()
+
+    nguon_pi = str(meta.get("design_code_nguon") or "").strip().upper() == NGUON_GHIM_PI
+    if g1d and _chuan(g1d) != _chuan(cao) and not nguon_pi:
+        return g1d, True
+    co_dau = nguon_pi or g1.get("design_confirmed") is True or bool(g1d)
+    return cao, co_dau
+
+
 # CHUNG-F (soát từng cổng): đặc tả thiết kế từng bị SUY LẠI ở mỗi tầng với giá trị mặc định im lặng («treatment»,
 # «superiority», «Power 80%», Cox…). G1 ghi MỘT khối `dac_ta_thiet_ke` vào checkpoint; các tầng sau chỉ ĐỌC khối này
 # qua dac_ta_thiet_ke(out_dir). Giá trị chưa biết là None — KHÔNG BAO GIỜ thay bằng mặc định.

@@ -40,8 +40,11 @@ def _them(*dong: str) -> str:
 
 
 def test_ten_hop_dong_trung_hang_cua_g5():
-    # 15/11/2026 (bác sĩ duyệt): G3-T2 có thêm hợp đồng MA TRẬN mục tiêu → biến (tools/ma_tran_muc_tieu_bien.py).
-    assert HD._nhiem_vu("G3", "G3-T2")["dau_ra"] == [RG5.BO_BIEN_RIENG_TEN_FILE, "_ma-tran-muc-tieu-bien.csv"]
+    # 15/11/2026 (bác sĩ duyệt): G3-T2 có thêm hợp đồng MA TRẬN mục tiêu → biến (tools/ma_tran_muc_tieu_bien.py) và
+    # bảng bộ biến cho PI duyệt G3_BO_BIEN_SO_<mã>.md (tools/bang_bien_g3.py — nguồn người duyệt của G5-AUTO-11).
+    # Mục thứ ba là «A hoặc B»: bảng G3 cho PI duyệt, HOẶC đề cương nộp có bảng biến số (thẩm định #274, VÀNG 4).
+    assert HD._nhiem_vu("G3", "G3-T2")["dau_ra"] == [RG5.BO_BIEN_RIENG_TEN_FILE, "_ma-tran-muc-tieu-bien.csv",
+                                                     "G3_BO_BIEN_SO_<mã>.md hoặc DE_CUONG_NOP_HOI_DONG_<mã>.md"]
     assert HD._nhiem_vu("G3", "G3-T3")["dau_ra"] == [RG5.BO_BIEN_RIENG_TEN_FILE] == ["_bo-bien-rieng.csv"]
     assert {"G3-T2", "G3-T3"} <= set(HD.KIEM_NHIEM_VU), "G3-T2/T3 phải có kiểm máy cấp nhiệm vụ"
 

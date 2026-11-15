@@ -16,8 +16,8 @@ A. DÂY CHUYỀN THẬT TRÊN BẢN SAO TẠM. Chép `tools/ app/ config/ templa
    mọi đầu ra nằm trong thư mục tạm; `exports/` thật không bị đụng (cuối lượt còn kiểm lại: thư mục `ZZCANARY-*` mới
    xuất hiện trong `exports/` thật là khiếm khuyết `he:ro_ri_exports_that`).
    Mỗi KỊCH BẢN là một đề tài tổng hợp cho một thiết kế chính (`KICH_BAN`: RCT kết cục nhị phân, cắt ngang mô tả
-   và — từ 15/11/2026 — sáu thiết kế còn lại ở `gia_lap_kich_ban_them.py`; thêm thiết kế = thêm một mục). Một «PI GIẢ
-   LẬP» làm đúng việc PI làm: đọc cổng đang chờ gì, điền nội dung
+   và từ 15/11/2026 sáu thiết kế còn lại ở `gia_lap_kich_ban_them.py`; thêm thiết kế = thêm một mục).
+   Một «PI GIẢ LẬP» làm đúng việc PI làm: đọc cổng đang chờ gì, điền nội dung
    kịch bản vào `study_meta.json → gate_params`, chép dấu vân tay cổng in ra, chạy lại. Mỗi lần như vậy là một «can
    thiệp như PI». Can thiệp ĐÚNG THIẾT KẾ là điền nội dung và xác nhận dấu vân tay của G0/G1/G3, mỗi loại một lần.
    Mọi can thiệp khác (khai `query_en` vì máy dịch lạc đề — K4; tự chạy cổng vì pipeline không chạy lại — N4; điền
@@ -94,7 +94,7 @@ TOOLS = REPO_ROOT / "tools"
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
-from gia_lap_kich_ban_them import ho_so_bien, ho_so_tron_vong, kich_ban_them  # noqa: E402
+from gia_lap_kich_ban_them import bien_so_them, ho_so_tron_vong, kich_ban_them  # noqa: E402
 
 PHIEN_BAN = 1
 STATE_PATH = REPO_ROOT / "state" / "gia-lap-dinh-ky-gan-nhat.json"
@@ -113,13 +113,23 @@ CONG_MEM = ("G0", "G1", "G3")  # cổng PI xác nhận bằng dấu vân tay (kh
 CONG_CUNG_TRUOC_G5 = ("G2", "G4")  # cổng cứng chuỗi đi qua trước G5 — chưa ký thì KHÔNG được «đạt»
 TRANG_THAI_DUNG_PIPELINE = ("blocked_missing_input", "chan_song", "dung_lech_xuyen_cong", "dung_nen_bi_chan",
                             "failed")
-CAN_THIEP_DUNG_THIET_KE = ("dien_noi_dung", "xac_nhan_dau_van_tay")
+# 15/11/2026 (đồng bộ xuyên cổng, PR y khoa #268): G3-T2 — agent bien-so-nghien-cuu dựng `_bo-bien-rieng.csv` +
+# `_ma-tran-muc-tieu-bien.csv` (G3-AUTO-19) là việc ĐÚNG THIẾT KẾ của quy trình, không phải máy hỏng.
+# 15/11/2026 (bác sĩ chọn G3-T2 thêm bảng .md): agent soạn `G3_BO_BIEN_SO_<mã>.md` (tools/bang_bien_g3.py) rồi PI đọc
+# và ghi gate_params.G3.bo_bien_so_duyet — cũng là bước ĐÚNG THIẾT KẾ (nguồn người duyệt của G5-AUTO-11).
+CAN_THIEP_DUNG_THIET_KE = ("dien_noi_dung", "xac_nhan_dau_van_tay", "dung_bo_bien_ma_tran", "soan_bang_bien_g3",
+                           "duyet_bang_bien_g3")
 # PI tự chạy cổng mà tiêu chí máy chưa đạt KHÔNG đổi (15/11/2026, giả lập 8 thiết kế: G3-AUTO-19 thiếu bộ biến làm
-# canary
-# đếm «tự chạy G3» thành lỗi N4 ở 4/6 thiết kế): chạy lại không giúp gì ⇒ pipeline không có lỗi «không chạy lại»;
-# tiêu chí
-# còn kẹt mới là khiếm khuyết và đã có khoá `ket:` riêng. Ghi lại để thấy, không tính là can thiệp do máy.
+# canary đếm «tự chạy G3» thành lỗi N4 ở 4/6 thiết kế): chạy lại không giúp gì ⇒ pipeline không có lỗi «không chạy
+# lại»; tiêu chí còn kẹt mới là khiếm khuyết và đã có khoá `ket:` riêng. Ghi lại để thấy, không tính là can thiệp
+# do máy.
 CAN_THIEP_KHONG_DO_MAY = ("tu_chay_cong_khong_doi",)
+COT_BO_BIEN = ("Variable / Field Name", "Form Name", "Section Header", "Field Type", "Field Label",
+               "Choices, Calculations, OR Slider Labels", "Field Note", "Text Validation Type OR Show Slider Number",
+               "Text Validation Min", "Text Validation Max", "Identifier?", "Branching Logic (Show field only if...)",
+               "Required Field?", "Custom Alignment", "Question Number (surveys only)", "Matrix Group Name",
+               "Matrix Ranking?", "Field Annotation")
+COT_MA_TRAN = ("muc_tieu", "khai_niem", "vai_tro", "bien", "kieu", "cau_hoi", "cong_cu", "phan_tich_sap", "ghi_chu")
 NHAN = "GIẢ LẬP CANARY — dữ liệu tổng hợp, không PII"
 _DAU_VAN_TAY_RE = re.compile(r'dau_van_tay_chot="([0-9a-f]{8,64})"')
 _TRACEBACK = "Traceback (most recent call last)"
@@ -159,6 +169,26 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                      'AND (adherence[tiab] OR "Medication Adherence"[MeSH] OR "blood pressure control"[tiab] OR '
                      '"blood pressure"[tiab])'),
         "cong_dung_mong_doi": "G5",
+        # G3-T2 (agent bien-so-nghien-cuu): (tên, loại, nhãn, lựa chọn, kiểm, min, max) + ma trận mục tiêu–biến
+        "bien_so": {
+            "bo_bien": [
+                ("record_id", "text", "Mã nghiên cứu", "", "", "", ""),
+                ("ngay_ngau_nhien", "text", "Ngày ngẫu nhiên hoá", "", "date_dmy", "", ""),
+                ("nhom", "radio", "Nhóm phân bổ", "1, Tin nhắn SMS | 0, Chăm sóc thường quy", "", "", ""),
+                ("tuoi", "text", "Tuổi (năm)", "", "integer", "18", "100"),
+                ("gioi", "radio", "Giới", "1, Nam | 2, Nữ", "", "", ""),
+                ("ha_tt_t6", "text", "Huyết áp tâm thu tháng 6 (mmHg)", "", "integer", "60", "260"),
+                ("kiem_soat_t6", "radio", "Kiểm soát huyết áp tháng 6 (<140/90)", "0, Không | 1, Có", "", "", ""),
+            ],
+            "ma_tran": [
+                ("1", "tỷ lệ kiểm soát huyết áp tại tháng 6", "ket_cuc_chinh", "kiem_soat_t6", "nhi_phan", "C1",
+                 "đo huyết áp chuẩn hoá", "SAP §4 kết cục chính"),
+                ("1", "nhóm nhận tin nhắn SMS", "phoi_nhiem", "nhom", "nhi_phan", "R1", "danh sách ngẫu nhiên",
+                 "SAP §4 nhóm so sánh"),
+                ("1", "tuổi", "hiep_bien", "tuoi", "lien_tuc", "A1", "phiếu", "SAP §5 hiệp biến"),
+                ("1", "giới", "hiep_bien", "gioi", "nhi_phan", "A2", "phiếu", "SAP §5 hiệp biến"),
+            ],
+        },
         "pi": {
             "G0": {
                 "population": ("Người trưởng thành ≥18 tuổi tăng huyết áp đang dùng thuốc hạ áp, quản lý ngoại trú, "
@@ -272,6 +302,25 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                      'hypertension"[tiab] OR "hypertension control"[tiab]) AND (outpatient*[tiab] OR "primary '
                      'care"[tiab]) AND (prevalence[tiab] OR "cross-sectional"[tiab])'),
         "cong_dung_mong_doi": "G5",
+        "bien_so": {
+            "bo_bien": [
+                ("record_id", "text", "Mã nghiên cứu", "", "", "", ""),
+                ("ngay_kham", "text", "Ngày khám khảo sát", "", "date_dmy", "", ""),
+                ("tuoi", "text", "Tuổi (năm)", "", "integer", "18", "110"),
+                ("gioi", "radio", "Giới", "1, Nam | 2, Nữ", "", "", ""),
+                ("so_thuoc", "text", "Số thuốc hạ áp đang dùng", "", "integer", "0", "10"),
+                ("ha_tt_tb", "text", "Huyết áp tâm thu trung bình 2 lần đo (mmHg)", "", "integer", "60", "260"),
+                ("kiem_soat_ha", "radio", "Đạt kiểm soát huyết áp (<140/90)", "0, Không | 1, Có", "", "", ""),
+                ("thuoc_khac", "text", "Thuốc khác đang dùng, ghi rõ", "", "", "", ""),
+            ],
+            "ma_tran": [
+                ("1", "tỷ lệ kiểm soát huyết áp", "ket_cuc_chinh", "kiem_soat_ha", "nhi_phan", "C1",
+                 "đo huyết áp chuẩn hoá", "SAP §4 tỷ lệ + KTC 95%"),
+                ("1", "tuổi", "mo_ta", "tuoi", "lien_tuc", "A1", "phiếu", "SAP §3 mô tả"),
+                ("1", "giới", "mo_ta", "gioi", "nhi_phan", "A2", "phiếu", "SAP §3 mô tả"),
+                ("1", "số thuốc hạ áp", "mo_ta", "so_thuoc", "dem", "B1", "hồ sơ", "SAP §3 mô tả"),
+            ],
+        },
         "pi": {
             "G0": {
                 "population": ("Người trưởng thành ≥18 tuổi tăng huyết áp đang điều trị ngoại trú"),
@@ -362,23 +411,13 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
 
 # Sáu thiết kế còn lại (thuần tập, bệnh–chứng, chẩn đoán, dự báo, tổng quan/gộp, định tính) — 15/11/2026: canary phủ đủ
 # 8 thiết kế (bác sĩ: «giả lập hoàn thiện chi tiết 8 loại thiết kế rồi vá»). Nội dung + nguồn số ở
-# gia_lap_kich_ban_them.
+# gia_lap_kich_ban_them; bộ biến + ma trận theo cùng khuôn `bien_so` (G3-T2) của hai kịch bản đầu.
 KICH_BAN.update(kich_ban_them(_vi, TIEN_TO_DE_TAI))
-# Bộ biến + ma trận mục tiêu → biến của từng đề tài: nhóm nghiên cứu nộp cùng nội dung G3 (G3-AUTO-19, từ 15/11/2026).
-for _ma, _hs in ho_so_bien().items():
-    if _ma in KICH_BAN:
-        KICH_BAN[_ma]["ho_so_bien"] = _hs
+for _ma, _bs in bien_so_them().items():
+    KICH_BAN.get(_ma, {}).setdefault("bien_so", _bs)
 for _ma, _hs in ho_so_tron_vong().items():
     if _ma in KICH_BAN:
         KICH_BAN[_ma]["ho_so_tron_vong"] = _hs
-
-# Cột từ điển REDCap của `_bo-bien-rieng.csv` (cùng khuôn đồ gá chuỗi và mẫu nhập liệu G5).
-COT_REDCAP = ("Variable / Field Name", "Form Name", "Section Header", "Field Type", "Field Label",
-              "Choices, Calculations, OR Slider Labels", "Field Note", "Text Validation Type OR Show Slider Number",
-              "Text Validation Min", "Text Validation Max", "Identifier?", "Branching Logic (Show field only if...)",
-              "Required Field?", "Custom Alignment", "Question Number (surveys only)", "Matrix Group Name",
-              "Matrix Ranking?", "Field Annotation")
-COT_MA_TRAN = ("muc_tieu", "khai_niem", "vai_tro", "bien", "kieu", "cau_hoi", "cong_cu", "phan_tich_sap", "ghi_chu")
 
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════ tiện ích
@@ -648,34 +687,9 @@ class GiaLap:
     def _noi_dung_da_dien(self, gate: str) -> bool:
         gp = (self._meta().get("gate_params") or {}).get(gate) or {}
         mong = _thay_hom_nay(self.kb["pi"].get(gate) or {})
-        if gate == "G3" and self.kb.get("ho_so_bien") and not all(
-                (self.out / ten).is_file() for ten in ("_bo-bien-rieng.csv", "_ma-tran-muc-tieu-bien.csv")):
-            return False
         return all(gp.get(k) == v for k, v in mong.items())
 
-    def _ghi_ho_so_bien(self) -> None:
-        """Nhóm nghiên cứu nộp bộ biến (từ điển REDCap) + ma trận mục tiêu → biến cùng nội dung G3."""
-        import csv  # noqa: PLC0415
-
-        hs = self.kb.get("ho_so_bien") or {}
-        if not hs:
-            return
-        with (self.out / "_bo-bien-rieng.csv").open("w", encoding="utf-8", newline="") as fh:
-            w = csv.DictWriter(fh, fieldnames=list(COT_REDCAP), lineterminator="\n")
-            w.writeheader()
-            for ten, kieu, nhan, lua, val, muc in hs["bo_bien"]:
-                w.writerow({"Variable / Field Name": ten, "Form Name": "phieu", "Section Header": muc,
-                            "Field Type": kieu, "Field Label": nhan, "Choices, Calculations, OR Slider Labels": lua,
-                            "Text Validation Type OR Show Slider Number": val, "Required Field?": "y"})
-        with (self.out / "_ma-tran-muc-tieu-bien.csv").open("w", encoding="utf-8", newline="") as fh:
-            w = csv.writer(fh, lineterminator="\n")
-            w.writerow(COT_MA_TRAN)
-            for dong in hs["ma_tran"]:
-                w.writerow([*dong, ""])
-
     def _dien_noi_dung(self, gate: str) -> None:
-        if gate == "G3":
-            self._ghi_ho_so_bien()
         meta = self._meta()
         gp = meta.setdefault("gate_params", {}).setdefault(gate, {})
         gp.update(copy.deepcopy(_thay_hom_nay(self.kb["pi"][gate])))
@@ -713,6 +727,21 @@ class GiaLap:
         for gate in CONG_MEM:
             if gate not in self.kb["pi"]:
                 continue
+            if gate == "G3" and self.kb.get("bien_so") and self._cp("G3"):
+                if not ((self.out / "_bo-bien-rieng.csv").exists()
+                        and (self.out / "_ma-tran-muc-tieu-bien.csv").exists()):
+                    self._dung_bo_bien_ma_tran()
+                    self._ghi_can_thiep("G3", "dung_bo_bien_ma_tran", "G3-T2: agent bien-so-nghien-cuu dựng bộ biến "
+                                        "+ ma trận mục tiêu–biến (G3-AUTO-19)")
+                    return "G3"
+                if not (self.out / f"G3_BO_BIEN_SO_{self.study}.md").exists():
+                    self._chay("soan_bang_bien_g3", self._lenh("bang_bien_g3.py", "soan", "--study", self.study,
+                                                               "--ghi"))
+                    self._ghi_can_thiep("G3", "soan_bang_bien_g3", "G3-T2: agent bien-so-nghien-cuu soạn "
+                                        "G3_BO_BIEN_SO_<mã>.md cho PI duyệt (tools/bang_bien_g3.py)")
+                    return "G3"
+                if self._duyet_bang_bien_g3():
+                    return "G3"
             bao = self.cham(gate, self.study, self.out, self.repo)
             muc = _muc(bao.get("status"))
             if gate == "G1" and self.thiet_ke_may_suy is None and self._cp("G1"):
@@ -754,6 +783,41 @@ class GiaLap:
             self.ket = f"{gate}:{','.join(self._chua_dat(bao)) or bao.get('status')}"
             return None
         return None
+
+    def _duyet_bang_bien_g3(self) -> bool:
+        """PI GIẢ LẬP (đề tài tạm ZZCANARY-) đọc bảng G3 rồi ghi xác nhận gắn dấu nội dung — True khi vừa ghi."""
+        import bang_bien_g3 as BB  # noqa: PLC0415
+
+        st = BB.trang_thai(self.out, self.study, self._meta())
+        if st["la_nguon_nguoi_duyet"] or not st["dau_hien_tai"]:
+            return False
+        meta = self._meta()
+        meta.setdefault("gate_params", {}).setdefault("G3", {})[BB.KHOA_DUYET] = {
+            "reviewed_at": _bay_gio(), "dau_van_tay": st["dau_hien_tai"]}
+        meta.setdefault("gia_lap_pi_dien", []).append({"luc": _bay_gio(), "cong": "G3", "loai": "duyet_bang_bien_g3",
+                                                       "nhan": NHAN})
+        self._ghi_meta(meta)
+        self._ghi_can_thiep("G3", "duyet_bang_bien_g3", f"PI đọc G3_BO_BIEN_SO và ghi dấu {st['dau_hien_tai']}")
+        return True
+
+    def _dung_bo_bien_ma_tran(self) -> None:
+        """Ghi `_bo-bien-rieng.csv` (REDCap 18 cột) + `_ma-tran-muc-tieu-bien.csv` của kịch bản vào đề tài TẠM."""
+        import csv  # noqa: PLC0415
+
+        bs = self.kb["bien_so"]
+        with (self.out / "_bo-bien-rieng.csv").open("w", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=list(COT_BO_BIEN), lineterminator="\n")
+            w.writeheader()
+            for ten, loai, nhan, lua, kt, lo, hi in bs["bo_bien"]:
+                w.writerow({"Variable / Field Name": ten, "Form Name": "phieu", "Field Type": loai, "Field Label": nhan,
+                            "Choices, Calculations, OR Slider Labels": lua,
+                            "Text Validation Type OR Show Slider Number": kt, "Text Validation Min": lo,
+                            "Text Validation Max": hi, "Required Field?": "y"})
+        with (self.out / "_ma-tran-muc-tieu-bien.csv").open("w", encoding="utf-8", newline="") as f:
+            w = csv.writer(f, lineterminator="\n")
+            w.writerow(list(COT_MA_TRAN))
+            for r in bs["ma_tran"]:
+                w.writerow([*r, NHAN])
 
     @staticmethod
     def _chua_dat(bao: Dict[str, Any]) -> List[str]:

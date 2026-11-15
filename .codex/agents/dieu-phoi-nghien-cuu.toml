@@ -404,6 +404,7 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 - Bác sĩ chọn ⇒ ghi ĐÚNG lựa chọn nguyên văn vào hồ sơ (sao lưu `study_meta.json` trước), lưu sổ `exports/<mã>/_quyet-dinh-bac-si-<ngày>.json`, đo lại mọi trục. Lựa chọn đổi một quyết định G1 (vd `reporting_extensions`) làm dấu G1 đổi ⇒ chứng minh thay đổi duy nhất (bỏ khoá ⇒ dấu cũ) rồi HỎI chốt lại G1 theo dấu mới; chỉ ghi khoá xác nhận khi bác sĩ trả lời chốt. Mục KÝ cổng (approve_gate) và `nguoi_duyet` vẫn do người có vai tự làm.
 - Hồ sơ miễn ICF: dữ liệu có bảng nối mã ↔ người bệnh là GIẢ DANH HOÁ, không phải «ẩn danh hoàn toàn / không truy ngược cá nhân» — TÀI LIỆU 9 lấy nguyên văn cam kết đã chốt (`run_g2_auto.dieu_kien_mien_icf`); `gate_params.G2.icf_waiver_requested` do PI chọn.
 - `check_citations.py --pmids` nhận MỘT chuỗi phân cách bằng DẤU PHẨY và ghi đè biên nhận A12 bằng đúng danh sách truyền vào ⇒ luôn truyền HỢP PMID (biên nhận cũ ∪ đề cương nộp ∪ bản lắp G10 ∪ SAP); lỡ sai thì `git checkout --` hai tệp biên nhận rồi chạy lại.
+- **Giả lập phải như một đề tài THẬT, xuyên suốt và thống nhất (bác sĩ 15/11/2026):** canary `tools/gia_lap_dinh_ky.py` nay có đủ 8 thiết kế (6 kịch bản mới ở `tools/gia_lap_kich_ban_them.py`, nguồn số đã tra PubMed + kiểm rút bài). Mỗi kịch bản là MỘT hồ sơ đề tài: nội dung G0/G1/G3 + bộ biến `_bo-bien-rieng.csv` + ma trận mục tiêu → biến nộp CÙNG G3 (G3-AUTO-19). Khi giả lập: mọi vai mô phỏng chỉ điền từ hồ sơ; ô [CẦN] hỏi lại điều cổng trước đã chốt là KHIẾM KHUYẾT MÁY (cổng sau phải điền sẵn), không lấp bằng nhãn chung — lấp nhãn chung che mất lệch xuyên cổng. «Tự chạy cổng» chỉ tính lỗi máy khi lần chạy đổi được tiêu chí máy (pipeline lẽ ra phải tự chạy lại); không đổi gì ⇒ tiêu chí còn kẹt mới là khiếm khuyết. Nhật ký `audit/nhat-ky/2026-11-15-gia-lap-8-thiet-ke-dau-chuoi.md`.
 - **Phạm vi «đạt» phải nói rõ thiết kế đã kiểm (15/11/2026, bác sĩ hỏi «đạt cho tất cả nghiên cứu chưa»):** bằng chứng trên đề tài THẬT mới có ở 2 đề tài cắt ngang; 7 thiết kế còn lại chỉ có đề tài giả. Thêm/sửa trục nhất quán hay bộ sinh ⇒ chạy `tests/test_truc_tren_8_thiet_ke_20261115.py` (mọi trục trên đề tài giả đi trọn G0→G10 của 8 thiết kế: không sập, không lệch sai). KHÔNG báo «đạt cho mọi đề tài» khi chưa có đề tài thật của thiết kế đó đi qua chương trình 9 giai đoạn; đánh giá đầy đủ ở `DANH-GIA-AP-DUNG-MOI-DE-TAI_20261115.md` (thư mục phiên) và nhật ký cùng ngày.
 
 ## Ranh giới
@@ -453,6 +454,12 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."
+4. Ô QUYẾT ĐỊNH CỦA NGƯỜI — máy KHÔNG gieo (15/11/2026, sự cố G2 gieo `design_code` vào ô ghim của PI): ô chỉ
+   người ghi (ghim thiết kế `gate_params.Gx`/`design_code`, xác nhận/duyệt/ký, `decision`/`gradeLevel` của
+   dashboard, sổ `*-da-duyet.json`/`*-da-xet.json`/`rut-bai-da-xem-xet.json`) KHÔNG được ghi giá trị máy suy —
+   kể cả «chỉ điền khi còn trống». Bản sao của máy để ở checkpoint/tệp riêng (vd `.cho-ky.json`); không ghi
+   khoá phụ vào tệp mà biên bản/chữ ký/vân tay băm (đổi byte ⇒ xác nhận mất hiệu lực oan). Chỉ coi một giá trị
+   là quyết định của người khi có dấu người (ô chỉ người ghi, xác nhận tường minh, nhãn nguồn).
 
 <!-- EBM-WORKER-PLUGIN-2026-08-16 -->
 **Worker plugin aipoch — ĐÃ GỠ 24/10/2026 (bác sĩ quyết):** 8 planner đặc thù của plugin aipoch-medical-research (Mendelian randomization · FAERS · đơn tế bào · đa omics · tái định vị thuốc · QTL · độc chất mạng · biomarker tiên lượng) không còn trong registry (`tools/orchestrator/plugin_ownership_registry.json`) — đo 24/10: 0 lượt gọi trong mọi phiên. Đề tài thuộc các mảng đó: `thiet-ke-nghien-cuu` tự lập kế hoạch theo khung G0–G10 và ghi rõ «[CẦN CHUYÊN GIA <mảng>]» ở chỗ cần phương pháp chuyên sâu; không tự gọi plugin ngoài registry.

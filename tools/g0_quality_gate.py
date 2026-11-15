@@ -458,6 +458,12 @@ def _thuat_ngu_phu(van: str, tu_dien: Mapping[str, str]) -> List[str]:
     for vi, en in tu_dien.items():
         if vi and en and vi in t and en not in ra and en.lower() not in _THUAT_NGU_CHUNG:
             ra.append(en)
+    # Chữ viết tắt Latinh có sẵn trong mô tả tiếng Việt (SMS, HbA1c, BMI, COPD…) cũng là thuật ngữ tìm kiếm hợp lệ —
+    # giả lập canary 15/11/2026: can thiệp «Tin nhắn SMS nhắc uống thuốc hạ áp» chỉ rút được từ PHỤ «thuốc hạ áp»
+    # (khái niệm chính ngoài từ điển) ⇒ báo thiếu oan dù truy vấn PI có SMS[tiab].
+    for w in re.findall(r"\b[A-Za-z0-9]{2,}\b", str(van or "")):
+        if sum(1 for ch in w if ch.isupper()) >= 2 and w not in ra:
+            ra.append(w)
     return ra
 
 
@@ -558,16 +564,18 @@ def _tieu_chi_phu_pico(checkpoint: Mapping[str, Any], meta: Mapping[str, Any],
         van = str(van or "")
         if ma == "I" and (not van.strip() or _KHONG_CAN_THIEP.search(van)):
             continue
-        tn = _thuat_ngu_phu(van, tu_dien) + list(khai.get(ma) or [])
-        # Thuật ngữ Latin trong PICO chỉ là PHƯƠNG ÁN THAY THẾ: thêm khi khái niệm đã có thuật ngữ từ điển/PI khai,
-        # hoặc khi truy vấn do máy dịch. Không bao giờ tạo nghĩa vụ mới cho truy vấn PI tự viết (mã «I10» trong P không
-        # phải khái niệm tìm kiếm bắt buộc).
-        # Token có ở khái niệm KHÁC (vd «FIB-4» trong câu kết cục «độ chính xác của FIB-4») là khái niệm của chỗ kia —
-        # không được phủ hộ khái niệm này (chặn rò khái niệm I sang O).
+        rut = _thuat_ngu_phu(van, tu_dien)
+        tu_dien_en = {str(x).lower() for x in tu_dien.values()}
+        tn = [x for x in rut if str(x).lower() in tu_dien_en] + list(khai.get(ma) or [])
+        # Chữ viết tắt/thuật ngữ Latin PI viết sẵn trong PICO (SMS, FIB-4, HbA1c…) chỉ là PHƯƠNG ÁN THAY THẾ: thêm khi
+        # khái niệm đã có thuật ngữ từ điển/PI khai, hoặc khi truy vấn do máy dịch — không bao giờ tạo nghĩa vụ mới cho
+        # truy vấn PI tự viết («ICD-10 I10» trong P không phải khái niệm tìm kiếm bắt buộc). Token có ở khái niệm KHÁC
+        # (vd «FIB-4» trong câu kết cục «độ chính xác của FIB-4») là khái niệm của chỗ kia — không phủ hộ (chặn rò I→O).
         khac = " ".join(str(v or "") for k, v in thanh_phan.items() if k != ma).lower()
         if tn or not pi_viet:
-            tn += [x for x in _thuat_ngu_latin(van)
-                   if x.lower() not in (y.lower() for y in tn) and x.lower() not in khac]
+            for x in [y for y in rut if str(y).lower() not in tu_dien_en] + _thuat_ngu_latin(van):
+                if x.lower() not in (y.lower() for y in tn) and x.lower() not in khac:
+                    tn.append(x)
         if not tn:
             khong_kiem.append(ma)
             continue
@@ -938,6 +946,16 @@ def evaluate_g0_quality(
     # chồng lấn. Máy KHÔNG gọi thêm mạng ở đây.
     tra_tay = g0.get("registry_manual_checked") if isinstance(g0.get("registry_manual_checked"), Mapping) else {}
     can_prospero = _thiet_ke_ghim(meta) == "sr_ma"
+    if not can_prospero:
+        # Thẩm định #281 (X6): run_g2_auto thôi gieo study_meta.design_code ⇒ tổng quan hệ thống do G1 suy (chưa ghim)
+        # từng được đòi tra PROSPERO nhờ giá trị gieo; giữ nguyên chiều chặt bằng cách đọc thiết kế G1 đang dùng.
+        try:
+            _a1 = (artifact_paths or {}).get("A1")
+            _cp1 = json.loads((Path(_a1).parent / "G1_checkpoint.json").read_text(encoding="utf-8")) if _a1 else {}
+            _tk1 = (_cp1.get("design") or {}).get("internal_code") if isinstance(_cp1, dict) else None
+            can_prospero = S.ma_thiet_ke_chuoi(_tk1) == "sr_ma" if isinstance(_tk1, str) else False
+        except (OSError, ValueError, AttributeError):
+            can_prospero = False
     thieu_tra = []
     if not _valid_iso_time(tra_tay.get("ictrp")):
         thieu_tra.append("ictrp")

@@ -1732,6 +1732,18 @@ def _nguon_chuan_bao_cao(out_dir: Path, study: str, sap_text: str) -> List[Dict[
     return [{"cong": c, "noi": n, "gia_tri": str(v).strip()} for c, n, v in nguon if isinstance(v, str) and v.strip()]
 
 
+def _thiet_ke_dang_dung(out_dir: Path, meta: Dict[str, Any]) -> Optional[str]:
+    """Thiết kế ĐANG DÙNG cho các trục chuẩn báo cáo / mô tả thiết kế: G1.design → design_code → checkpoint G1.
+
+    Thẩm định #281 (V3): run_g2_auto thôi gieo study_meta.design_code ⇒ đề tài chưa ghim từng mất hai trục này IM LẶNG
+    (trả None, không vào báo cáo). Nay đọc thiết kế G1 đang dùng ở checkpoint — đúng giá trị G2 từng gieo."""
+    g1d = _gp(meta, "G1").get("design") or meta.get("design_code")
+    if g1d:
+        return g1d
+    tk = _doc_json(out_dir / "G1_checkpoint.json").get("design")
+    return tk.get("internal_code") if isinstance(tk, dict) else None
+
+
 def _truc_chuan_bao_cao(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -> Optional[Dict[str, Any]]:
     """Chuẩn báo cáo CỦA ĐỀ TÀI phải giống nhau ở mọi nơi khai và hợp với nguồn dữ liệu.
 
@@ -1742,7 +1754,7 @@ def _truc_chuan_bao_cao(out_dir: Path, study: str, meta: Dict[str, Any], sap_tex
     import skill_standards as SK  # noqa: PLC0415
 
     g1m = _gp(meta, "G1")
-    code = SK.canonical_design_code(g1m.get("design") or meta.get("design_code"))
+    code = SK.canonical_design_code(_thiet_ke_dang_dung(out_dir, meta))
     if not code:
         return None
     cb = SK.chuan_bao_cao_de_tai(code, g1m)
@@ -1799,7 +1811,7 @@ def _truc_mo_ta_thiet_ke(out_dir: Path, study: str, meta: Dict[str, Any], sap_te
     import skill_standards as SK  # noqa: PLC0415
 
     g1m = _gp(meta, "G1")
-    code = SK.canonical_design_code(g1m.get("design") or meta.get("design_code"))
+    code = SK.canonical_design_code(_thiet_ke_dang_dung(out_dir, meta))
     if not code:
         return None
     ten = "Mô tả thiết kế (nhãn theo mục tiêu · tuyển mẫu ↔ thu thập · phiên bản SAP)"

@@ -30,7 +30,7 @@ Cỡ mẫu/lực mẫu đúng công thức cho thiết kế, tham số có ngu�
 | Mã | Nhiệm vụ | Agent chuyên trách | Đầu ra (artifact/khoá — tên là HỢP ĐỒNG) | Chấm chéo chuyên môn + giám khảo |
 |---|---|---|---|---|
 | G3-T1 | Tính cỡ mẫu/lực mẫu theo thiết kế, nguồn tham số | `co-mau-nghien-cuu` | `G3_A4_SAMPLE_SIZE_<mã>.md`, `G3_checkpoint.json` | `phan-tich-thong-ke`, `thiet-ke-nghien-cuu` + `giam-khao-cong` |
-| G3-T2 | Đặc tả bộ biến số + ma trận mục tiêu–biến | `bien-so-nghien-cuu` | `_bo-bien-rieng.csv` + `_ma-tran-muc-tieu-bien.csv` | `quan-ly-du-lieu` + `thiet-ke-nghien-cuu` + `giam-khao-cong` |
+| G3-T2 | Đặc tả bộ biến số + ma trận mục tiêu–biến + bảng bộ biến cho PI duyệt | `bien-so-nghien-cuu` | `_bo-bien-rieng.csv` + `_ma-tran-muc-tieu-bien.csv` + (`G3_BO_BIEN_SO_<mã>.md` hoặc đề cương nộp có bảng «Mã biến») | `quan-ly-du-lieu` + `thiet-ke-nghien-cuu` + `giam-khao-cong` |
 | G3-T3 | CRF kỹ thuật, từ điển dữ liệu dự kiến, luật kiểm tra | `quan-ly-du-lieu` | `_bo-bien-rieng.csv` | `bien-so-nghien-cuu` + `giam-khao-cong` |
 
 Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý do ở khối bàn giao, không giao việc.
@@ -48,6 +48,8 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 - G3-AUTO-19 (ma trận mục tiêu → biến ĐẠT) thuộc G3-T2 `bien-so-nghien-cuu`; G3 KHÔNG PASS khi ma trận chưa đạt. Đề tài đã ký G4/G10 trước 15/11/2026 được miễn trừ HIỂN THỊ (không hạ cấp quyết định đã ký) nhưng bằng chứng ghi «VẪN THIẾU» — phải bổ sung trước khi khoá dữ liệu G5 (G5-AUTO-12).
 - Kiểm: `python tools/ma_tran_muc_tieu_bien.py kiem --study <mã>`; hội đồng G3-T2 kiểm máy chạy CÙNG bộ kiểm (đầu ra G3-T2 = bộ biến + ma trận).
 - Cỡ mẫu tính cho Mục tiêu 1 không tự chứng minh đủ cho mô hình đa biến của mục tiêu yếu tố liên quan — nhắc thống kê viên đối chiếu số biến trong ma trận với số biến cố (EPV) ở SAP §5.
+- **Giả lập 8 thiết kế (15/11/2026):** (1) định tính/tổng quan/dự báo (không dùng công thức lực mẫu) KHÔNG có khung độ chính xác — A4 ghi «Khung cỡ mẫu» thay thế (bão hoà · RIS/TSA · Riley 2020), không in α/lực/bảng Power×ES; trước đó khai `hypothesis_type` «descriptive_precision» làm khối dán đề cương chứa «α = 0.05, d = ±5%» ⇒ chính G3-AUTO-17 chặn đề tài định tính. (2) Ma trận của TỔNG QUAN/GỘP được khai NHIỀU dòng `ket_cuc_chinh` khi mỗi dòng là số liệu CẤP NGHIÊN CỨU của một nhánh (đếm/liên tục: số biến cố nhánh can thiệp + nhánh chứng); thiết kế khác vẫn đúng một dòng. Nhật ký `audit/nhat-ky/2026-11-15-gia-lap-8-thiet-ke-dau-chuoi.md`.
+- G3-T2 có BA đầu ra (15/11/2026, bác sĩ chọn): bộ biến + ma trận + `G3_BO_BIEN_SO_<mã>.md` (bảng cho PI duyệt, `tools/bang_bien_g3.py`) — HOẶC đề cương nộp đã có bảng biến số cột «Mã biến» (kiểm máy G3-T2 đòi bảng thật, không chỉ có tệp). MT-12 chỉ CẢNH BÁO, không đổi G3-AUTO-19: chưa có bảng (khi đề cương nộp chưa có bảng biến số) · bảng máy soạn chưa PI duyệt · bộ máy đổi sau khi duyệt. Điều phối nhắc PI duyệt TRƯỚC G5 — chặn thật nằm ở G5-AUTO-11; không ghi xác nhận thay PI.
 
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G3 (09/10/2026)
@@ -170,4 +172,10 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."
+4. Ô QUYẾT ĐỊNH CỦA NGƯỜI — máy KHÔNG gieo (15/11/2026, sự cố G2 gieo `design_code` vào ô ghim của PI): ô chỉ
+   người ghi (ghim thiết kế `gate_params.Gx`/`design_code`, xác nhận/duyệt/ký, `decision`/`gradeLevel` của
+   dashboard, sổ `*-da-duyet.json`/`*-da-xet.json`/`rut-bai-da-xem-xet.json`) KHÔNG được ghi giá trị máy suy —
+   kể cả «chỉ điền khi còn trống». Bản sao của máy để ở checkpoint/tệp riêng (vd `.cho-ky.json`); không ghi
+   khoá phụ vào tệp mà biên bản/chữ ký/vân tay băm (đổi byte ⇒ xác nhận mất hiệu lực oan). Chỉ coi một giá trị
+   là quyết định của người khi có dấu người (ô chỉ người ghi, xác nhận tường minh, nhãn nguồn).
 
