@@ -252,6 +252,10 @@ def _de_tai_truoc_irb(tmp_path: Path, monkeypatch, *, muc_dich: str = "ETHICS_SU
     dung_g0_g3_da_chot(out, study, thiet_ke="cohort", them_meta={
         "G1": {"secondary_outcomes": ["Tỷ lệ nhập viện trong 12 tuần"]},  # WHO TRDS mục 20
         "G2": dict(_meta_g2()["gate_params"]["G2"])})
+    # 15/11/2026: PI khai TÊN ĐỀ TÀI CHÍNH THỨC trước khi sinh hồ sơ đạo đức (đúng luồng thật). Trục ten_de_tai của
+    # nhat_quan_xuyen_cong đòi mọi văn bản cùng MỘT tên; trước đây G0 giả lập không có topic nên G2 in MÃ đề tài làm
+    # tên, rồi cổng sau mới gieo title khác — sửa fixture cho hợp lệ, không nới chốt (CLAUDE.md §0.8).
+    GC.ensure_study_meta(out, seed={"title": "Suy tim ngoại trú — đề tài thử G10"})
     monkeypatch.setattr(G2A, "_REPO_ROOT", goc)
     monkeypatch.chdir(goc)  # run_g2_auto ghi exports/<mã> theo thư mục làm việc
     monkeypatch.setattr(sys, "argv", ["run_g2_auto.py", "--study", study, "--design", "cohort", "--skip-registry"])

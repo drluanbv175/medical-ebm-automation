@@ -37,6 +37,7 @@ import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu �
 import g6_quality_gate as G6Q  # noqa: E402  (bộ đọc SAP + phép kiểm khoá G4 dùng CHUNG với bộ chấm — 04/10/2026)
 import g6_trong_so_survey as TSS  # noqa: E402  (trọng số hậu phân tầng + giới hạn người bỏ về theo SAP — 12/11/2026)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
+import ten_de_tai as TDT  # noqa: E402  (tên đề tài chính thức — 15/11/2026)
 
 # Kết cục NHỊ PHÂN (tỷ lệ tích luỹ, không có trục thời gian) — G3 cho rct/cohort tính cỡ mẫu bằng hai tỷ lệ với các
 # effect_type này. VÁ 04/10/2026 (soát từng cổng, G6-04): trước đây chúng rơi vào nhánh Cox + Kaplan–Meier.
@@ -3612,7 +3613,7 @@ def generate_artifact(study, topic, design_code, reporting_std,
 
     lines = [
         "# A7 — R ANALYSIS SCRIPTS + PYTHON CLI + SAP THỰC THI (DRAFT — SKELETON)",
-        f"**Đề tài:** {topic}  ",
+        f"**Đề tài:** {TDT.ten_chinh_thuc(BASE / 'exports' / study, topic)}  ",
         f"**Mã:** {study} | **Ngày sinh:** {run_date} | **Phiên bản:** 2.0 (Nâng cấp 75%)",
         f"**Thiết kế:** {design_code} | **Chuẩn báo cáo:** {reporting_std}",
         f"**Phân tích chính:** {analysis_name}",
