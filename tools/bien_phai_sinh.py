@@ -1428,6 +1428,93 @@ def lenh_kiem(args) -> int:
     return 1 if kq.loi else 0
 
 
+VAI_DUYET = ("PI", "THONG_KE_VIEN")
+
+
+def lenh_duyet(args) -> int:
+    """GHI DUYỆT công thức — lệnh của THỐNG KÊ VIÊN/PI (15/11/2026).
+
+    Bác sĩ: «C1a 10 biến, BTM 16 biến đã đồng bộ thì chốt cho tôi». Hợp đồng giữ nguyên «agent KHÔNG BAO GIỜ ghi cột
+    nguoi_duyet», nên lệnh này để NGƯỜI DUYỆT tự chạy thay vì sửa tay từng ô: ghi «<VAI>:<tham chiếu>:<hôm nay>:<dấu
+    công thức hiện tại>» cho biến được chọn (mặc định mọi biến tự tính; biến «@mô-đun khác» bỏ qua). Chạy khô mặc định
+    — `--ap-dung` mới ghi; còn công thức lỗi ⇒ từ chối toàn bộ (không duyệt công thức chưa chạy được); sao lưu tệp
+    trước khi ghi. Sửa công thức sau đó ⇒ dấu đổi ⇒ HET_HIEU_LUC (`kiem`)."""
+    import csv as _csv  # noqa: PLC0415
+    from datetime import date as _date  # noqa: PLC0415
+
+    vai = (args.vai or "").strip().upper()
+    ref = (args.tham_chieu or "").strip()
+    if vai not in VAI_DUYET:
+        raise TuChoi(f"--vai phải là một trong {', '.join(VAI_DUYET)}")
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{1,40}", ref):
+        raise TuChoi("--tham-chieu là mã người duyệt (chữ, số, «.», «_», «-»; không dấu «:») — vd TKV-C1A-01, "
+                     "PI-C1A-01")
+    d, bien, dm, kq = _nap(args.study)
+    if kq.loi:
+        print("✗ Còn công thức lỗi — không duyệt (sửa công thức rồi chạy lại):")
+        for t, loi in list(kq.loi.items())[:10]:
+            print(f"    {t}: {loi}")
+        return 1
+    p = d / TEP_DAC_TA
+    tho = p.read_bytes()
+    bom = tho.startswith(b"\xef\xbb\xbf")
+    dong = list(_csv.DictReader(tho.decode("utf-8-sig").splitlines()))
+    cot = list(dong[0].keys()) if dong else []
+    if "nguoi_duyet" not in cot:
+        cot.append("nguoi_duyet")
+    chon = {x.strip() for x in (args.bien or "").split(",") if x.strip()}
+    biet = {r.get("ten_bien", "").strip() for r in dong}
+    if chon - biet:
+        raise TuChoi(f"không có biến: {', '.join(sorted(chon - biet))}")
+    hom_nay = _date.today().isoformat()
+    ghi: list[tuple[str, str, str]] = []
+    giu: list[tuple[str, str]] = []
+    for r in dong:
+        ten = (r.get("ten_bien") or "").strip()
+        ct = (r.get("cong_thuc") or "").strip()
+        if not ten or not ct or ct.startswith("@") or (chon and ten not in chon):
+            continue
+        dau = dau_cong_thuc(ten, ct, r.get("lap_k") or "")
+        cu = (r.get("nguoi_duyet") or "").strip()
+        # 15/11/2026: đã chốt, CÒN hiệu lực (dấu = công thức hiện tại) và CÙNG người chốt ⇒ giữ nguyên — không đóng lại
+        # ngày, không báo «sẽ ghi» (bác sĩ chạy khô lại tệp đã chốt mà vẫn thấy «sẽ ghi duyệt 33 biến», dễ hiểu nhầm là
+        # chưa chốt), không sinh bản sao lưu thừa. Người chốt KHÁC (vd PI rồi thống kê viên) vẫn ghi đè, có báo «thay».
+        p_cu = [x.strip() for x in cu.split(":")]
+        if trang_thai_duyet(cu, dau) == "DA_DUYET" and p_cu[:2] == [vai, ref]:
+            giu.append((ten, cu))
+            continue
+        moi = f"{vai}:{ref}:{hom_nay}:{dau}"
+        ghi.append((ten, cu, moi))
+        r["nguoi_duyet"] = moi
+    print(f"{'GHI DUYỆT' if args.ap_dung else 'CHẠY KHÔ — sẽ ghi duyệt'} {len(ghi)} biến phái sinh — {args.study} "
+          f"({vai}:{ref}:{hom_nay})" + (f"; {len(giu)} biến đã chốt sẵn bởi {vai}:{ref}, còn hiệu lực — giữ nguyên"
+                                       if giu else ""))
+    for ten, cu, moi in ghi:
+        print(f"  {ten:24} {moi}" + (f"   (thay «{cu}»)" if cu and cu != moi else ""))
+    if not ghi:
+        print("Không có gì mới để ghi — mọi công thức được chọn đã chốt và còn hiệu lực. " + CAN_KIEM)
+        return 0
+    if not args.ap_dung:
+        print("Thêm --ap-dung để ghi. Lệnh dành cho THỐNG KÊ VIÊN/PI tự chạy — agent không chạy. " + CAN_KIEM)
+        return 0
+    from datetime import datetime as _dt  # noqa: PLC0415
+
+    sao = p.with_name(p.name + f".bak-{_dt.now().strftime('%Y%m%d-%H%M%S')}")
+    sao.write_bytes(tho)
+    import io  # noqa: PLC0415
+
+    buf = io.StringIO()
+    w = _csv.DictWriter(buf, fieldnames=cot, lineterminator="\n")
+    w.writeheader()
+    for r in dong:
+        w.writerow({c: r.get(c, "") for c in cot})
+    p.write_bytes((b"\xef\xbb\xbf" if bom else b"") + buf.getvalue().encode("utf-8"))
+    _, _, _, kq2 = _nap(args.study)
+    da = sum(1 for t, v in kq2.trang_thai.items() if v == "DA_DUYET")
+    print(f"✓ Đã ghi; sao lưu {sao.name}. Đo lại: {da} biến (kể cả bản lặp k) DA_DUYET. " + CAN_KIEM)
+    return 0
+
+
 def _trong_repo(p: Path) -> bool:
     try:
         p.resolve().relative_to(BASE.resolve())
@@ -1661,6 +1748,12 @@ def main(argv: list[str] | None = None) -> int:
     c.add_argument("--dang", choices=["spss", "r"], required=True)
     c.add_argument("--ra", default="")
     c.add_argument("--chi", default="")
+    dy = sp.add_parser("duyet", help="THỐNG KÊ VIÊN/PI ghi duyệt công thức (chạy khô mặc định)")
+    dy.add_argument("--study", required=True)
+    dy.add_argument("--vai", required=True, help="PI hoặc THONG_KE_VIEN")
+    dy.add_argument("--tham-chieu", required=True, help="mã người duyệt, vd TKV-C1A-01")
+    dy.add_argument("--bien", default="", help="danh sách tên biến, cách nhau dấu phẩy (mặc định: mọi biến tự tính)")
+    dy.add_argument("--ap-dung", action="store_true")
     dc = sp.add_parser("doi-chieu")
     dc.add_argument("--study", required=True)
     dc.add_argument("--data", required=True)
@@ -1669,7 +1762,8 @@ def main(argv: list[str] | None = None) -> int:
     dc.add_argument("--khong-r", action="store_true")
     args = ap.parse_args(argv)
     try:
-        return {"kiem": lenh_kiem, "tinh": lenh_tinh, "cu-phap": lenh_cu_phap, "doi-chieu": lenh_doi_chieu}[args.lenh](
+        return {"kiem": lenh_kiem, "tinh": lenh_tinh, "cu-phap": lenh_cu_phap, "doi-chieu": lenh_doi_chieu,
+                "duyet": lenh_duyet}[args.lenh](
             args
         )
     except LoiCongThuc as e:

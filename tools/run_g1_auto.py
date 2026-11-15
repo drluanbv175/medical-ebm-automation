@@ -501,6 +501,17 @@ def _raw_pinned_design(out_dir) -> str:
     return str(pin).strip() if pin else ""
 
 
+def _ghi_chu_chuan_bao_cao(design: dict) -> str:
+    """Dòng ghi chú dưới «Chuẩn báo cáo:» của A2: nguồn của chuẩn mở rộng + chuẩn CẦN PI QUYẾT (không gộp vào dòng
+    khai báo — trục `chuan_bao_cao` chỉ đọc đúng dòng «Chuẩn báo cáo:»)."""
+    dong = []
+    for chuan, ly in (design.get("reporting_extensions_nguon") or {}).items():
+        dong.append(f"> {chuan}: {ly}.")
+    for x in design.get("reporting_extensions_can_xem") or []:
+        dong.append(f"> ⚠ Cân nhắc {x.get('chuan')}: {x.get('ly_do')}.")
+    return ("\n".join(dong) + "\n") if dong else ""
+
+
 def _apply_design_pin(design: dict, pinned: str, meta: Optional[dict] = None) -> dict:
     """Ghi đè thiết kế bằng giá trị bác sĩ pin; giữ nguyên các trường khác.
 
@@ -521,6 +532,18 @@ def _apply_design_pin(design: dict, pinned: str, meta: Optional[dict] = None) ->
         standards = _S.reporting_standards_for(pinned)
         d["reporting_standard"] = standards["primary"]
         d["protocol_standard"] = standards["protocol"]
+        # Giai đoạn 4 «Thiết kế» (15/11/2026): nhãn theo mục tiêu (cắt ngang có mục tiêu phân tích ⇒ «có phân tích»)
+        # và chuẩn báo cáo CỦA ĐỀ TÀI = chuẩn chính + mở rộng theo nguồn dữ liệu (CROSS/RECORD) — một nguồn sự thật
+        # skill_standards.chuan_bao_cao_de_tai; G2/G4/G10 đọc lại chuỗi này, không tự suy riêng.
+        _g1m = (((meta or {}).get("gate_params") or {}).get("G1") or {}) if isinstance(meta, dict) else {}
+        _g1m = _g1m if isinstance(_g1m, dict) else {}
+        d["primary"] = _S.nhan_thiet_ke_theo_muc_tieu(pinned, _g1m.get("objectives"), d["primary"])
+        _cb = _S.chuan_bao_cao_de_tai(pinned, _g1m)
+        if _cb["chuoi"]:
+            d["reporting_standard"] = _cb["chuoi"]
+        d["reporting_extensions"] = list(_cb["mo_rong"])
+        d["reporting_extensions_nguon"] = dict(_cb["nguon"])
+        d["reporting_extensions_can_xem"] = [{"chuan": c, "ly_do": ly} for c, ly in _cb["can_xem"]]
     except Exception:  # noqa: BLE001
         pass
     # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 21, phát hiện HIGH):
@@ -1934,7 +1957,7 @@ Quần thể phân tích chính liên kết estimand (không phải thuộc tín
 {design["rationale"]}
 
 **Chuẩn báo cáo:** {design["reporting_standard"]}
-**Chuẩn đề cương/protocol:** {protocol_standard}
+{_ghi_chu_chuan_bao_cao(design)}**Chuẩn đề cương/protocol:** {protocol_standard}
 
 ---
 
@@ -2348,6 +2371,9 @@ def write_g1_checkpoint(study_name: str, out_dir: Path, question_type: str,
             "primary": design["primary"],
             "internal_code": design["internal_code"],
             "reporting_standard": design["reporting_standard"],
+            "reporting_extensions": design.get("reporting_extensions") or [],
+            "reporting_extensions_nguon": design.get("reporting_extensions_nguon") or {},
+            "reporting_extensions_can_xem": design.get("reporting_extensions_can_xem") or [],
             "protocol_standard": protocol_standard,
             "alternative_1": design["alternative_1"],
             "alternative_2": design.get("alternative_2"),

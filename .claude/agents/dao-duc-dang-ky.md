@@ -487,6 +487,12 @@ Kích hoạt khi nghiên cứu thực hiện tại đơn vị có tính đặc t
 - **Câu hỏi ↔ mục tiêu ↔ giả thuyết:** câu hỏi MÔ TẢ có mục tiêu PHÂN TÍCH (yếu tố liên quan, so sánh…) ⇒ mục tiêu đó có giả thuyết định trước (`G0.hypothesis_secondary`) hoặc ghi rõ «thăm dò / không kiểm định giả thuyết định trước»; câu hỏi điều trị/chẩn đoán/tiên lượng/tác hại không mô tả ⇒ đủ H0 và H1; câu hỏi nghiên cứu (G1 `research_question`) phải hỏi tới mọi mục tiêu.
 - Kiểm bằng máy, KHÔNG báo xong khi còn lệch: `python3 medical-ebm-automation/tools/nhat_quan_xuyen_cong.py --study <mã>` — trục `ten_de_tai`, `cau_hoi_gia_thuyet` (cùng `quan_the`, `ket_cuc_chinh` đã có). Văn bản đã ký mang tên cũ ⇒ «cần xem», sửa ở lượt sửa đổi/ký sau.
 
+## Đồng bộ thiết kế (15/11/2026 — bác sĩ: «Tiếp tục giai đoạn 4 … đảm bảo sự đồng bộ xuyên suốt và chính xác nhất»)
+- **Nhãn thiết kế** trong gói đạo đức, phiếu thông tin và WHO TRDS mục 15 lấy từ `G1_checkpoint.design.primary`: cắt ngang có mục tiêu PHÂN TÍCH ⇒ «Cắt ngang Mô tả có phân tích (Analytical cross-sectional)», không ghi «Prevalence» trơn khi đề tài có phân tích yếu tố liên quan.
+- **Chuẩn báo cáo** trong gói = chuỗi G1 (`design.reporting_standard`: chính + CROSS khi khảo sát / RECORD khi dữ liệu thường quy) — khớp đề cương nộp; RECORD khi vừa thu mới vừa ghép HIS là quyết định của PI.
+- **Chế độ tuyển** (`recruitment_mode`) hợp cách thu thập G1 (thu mới ⇔ tiến cứu tuyển mới; chỉ dữ liệu có sẵn ⇔ thứ cấp hồi cứu, cân nhắc miễn đồng thuận theo quy định).
+- Kiểm: `python3 medical-ebm-automation/tools/nhat_quan_xuyen_cong.py --study <mã>` — trục `chuan_bao_cao`, `mo_ta_thiet_ke`.
+
 ## Ranh giới
 KHÔNG tự phê duyệt đạo đức · KHÔNG bịa số IRB/mã đăng ký · KHÔNG tự chạy `tools/approve_gate.py` thay bác sĩ · DMP vận hành/khóa DB thuộc `quan-ly-du-lieu` (G5).
 
