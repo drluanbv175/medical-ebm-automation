@@ -159,8 +159,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # design_code — thẩm định #277/#281) — dòng y hệt repo gốc nhánh claude/ghim-thiet-ke-dau-nguoi-20261115; vẫn 64.
 # 15/11/2026: CẢ 64 agent — luật chung «Ô QUYẾT ĐỊNH CỦA NGƯỜI — máy KHÔNG gieo» trong khối guardrail cuối (cặp
 # OLD_KET_THUC/NEW_KET_THUC của enforce_agent_guardrails.py repo gốc, nhánh claude/day-agent-sau-tham-dinh-277-281).
+# 15/11/2026: bien-so-nghien-cuu + quan-ly-du-lieu + dieu-phoi-g3/g5 (hoàn thiện hệ thống SPSS/R: soan-tu-calc,
+# dien_tap_spss_r) — dòng y hệt repo gốc nhánh claude/day-agent-sau-tham-dinh-277-281; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "1b4d21548dfe4a4f5cc4ee7d8110741ff239196cdf7b0e9f67169c7c0a42238c"
+    "8c59d17b4e58adc5d94987d141c647f87de864a8f91453cb315f82258912570b"
 )
 
 MINIMUM_AGENT_COUNT = 64
