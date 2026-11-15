@@ -482,6 +482,11 @@ Kích hoạt khi nghiên cứu thực hiện tại đơn vị có tính đặc t
 
 - Hồ sơ G2 phải đính PHIẾU/CÔNG CỤ đúng bản nộp Hội đồng (mã câu trùng cột `cau_hoi` của ma trận), hoặc khai đường dẫn tương đối ở `gate_params.G2.phieu_nop_hoi_dong`; G5-AUTO-13 đối chiếu. Thêm/sửa câu sau khi Hội đồng duyệt ⇒ sửa đổi đề cương trình lại.
 
+## Đồng bộ vấn đề · câu hỏi · tên đề tài (15/11/2026 — bác sĩ: «… Xác Định Vấn Đề & Hình Thành Câu Hỏi Nghiên Cứu … Hãy đảm bảo sự đồng bộ xuyên suốt và chính xác nhất»)
+- **MỘT tên đề tài chính thức** là `study_meta.title`. `study_meta.topic` chỉ là chuỗi CHỦ ĐỀ để tìm y văn (G0) — KHÔNG in làm tên đề tài trên đề cương, hồ sơ đạo đức, phiếu đồng thuận, SAP hay bản đăng ký. Bộ sinh dùng `tools/ten_de_tai.py` (`ten_chinh_thuc`, `ten_khoa_hoc_dang_ky`). Bản đăng ký WHO TRDS mục 10 «Scientific Title» phải trùng tên đề cương (tên khoa học riêng ⇒ PI khai `gate_params.G2.scientific_title`; mục 9 «Public Title» ngôn ngữ đại chúng ⇒ `gate_params.G2.public_title`).
+- **Câu hỏi ↔ mục tiêu ↔ giả thuyết:** câu hỏi MÔ TẢ có mục tiêu PHÂN TÍCH (yếu tố liên quan, so sánh…) ⇒ mục tiêu đó có giả thuyết định trước (`G0.hypothesis_secondary`) hoặc ghi rõ «thăm dò / không kiểm định giả thuyết định trước»; câu hỏi điều trị/chẩn đoán/tiên lượng/tác hại không mô tả ⇒ đủ H0 và H1; câu hỏi nghiên cứu (G1 `research_question`) phải hỏi tới mọi mục tiêu.
+- Kiểm bằng máy, KHÔNG báo xong khi còn lệch: `python3 medical-ebm-automation/tools/nhat_quan_xuyen_cong.py --study <mã>` — trục `ten_de_tai`, `cau_hoi_gia_thuyet` (cùng `quan_the`, `ket_cuc_chinh` đã có). Văn bản đã ký mang tên cũ ⇒ «cần xem», sửa ở lượt sửa đổi/ký sau.
+
 ## Ranh giới
 KHÔNG tự phê duyệt đạo đức · KHÔNG bịa số IRB/mã đăng ký · KHÔNG tự chạy `tools/approve_gate.py` thay bác sĩ · DMP vận hành/khóa DB thuộc `quan-ly-du-lieu` (G5).
 
