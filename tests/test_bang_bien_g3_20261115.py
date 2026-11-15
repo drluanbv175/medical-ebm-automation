@@ -31,6 +31,8 @@ import hoi_dong_cong as HD  # noqa: E402
 import ma_tran_muc_tieu_bien as MT  # noqa: E402
 from test_dong_bo_xuyen_cong_20261115 import BIEN_E5, COT_TD, STUDY, _de_tai_e5  # noqa: E402
 
+DE_CUONG_CO_BANG_BIEN = ("| Mã biến | Tên biến | Loại | Mã hoá | Nguồn |\n|---|---|---|---|---|\n"
+                         "| tuoi | Tuổi | định lượng | 18 – 100 | x |\n")
 PS_COT = ["ten_bien", "nhan", "kieu", "dinh_nghia", "bien_nguon", "cong_thuc", "lap_k", "nhan_gia_tri", "nguoi_duyet"]
 
 
@@ -200,13 +202,28 @@ def test_thieu_bo_bien_thi_khong_soan(tmp_path):
 
 # ── ⑥ bảng người soạn (#266) ──────────────────────────────────────────────────────────────────────────────────────────
 def test_bang_nguoi_soan_khong_dau_may_van_la_nguon_nhu_266(tmp_path):
+    """Người soạn lại bảng (bỏ HẾT cấu trúc của máy: dòng dấu, khung trạng thái) ⇒ bảng người soạn như #266."""
     d, _, _ = _de_tai_e5(tmp_path)
     chu, _ = BB.soan(d, STUDY)
-    tay = "\n".join(x for x in chu.split("\n") if not x.startswith(BB.DAU_MAY))  # người chép lại, bỏ dấu máy
+    tay = "# Bộ biến số (người soạn lại)\n\n" + "\n".join(
+        x for x in BB.than_bang(chu).split("\n") if not x.startswith(BB.DAU_MAY))
     (d / BB.ten_tep(STUDY)).write_text(tay, encoding="utf-8", newline="\n")
     assert BB.trang_thai(d, STUDY)["trang_thai"] == BB.NGUOI_SOAN
     kq = DC.doi_chieu(d, STUDY)
     assert kq.trang_thai == "DONG_BO" and kq.nguon_nguoi_duyet == [BB.ten_tep(STUDY)]
+
+
+def test_go_rieng_dong_dau_may_van_la_ban_nhap_chua_duyet(tmp_path):
+    """Thẩm định #274, VÀNG 3: xoá MỘT dòng chú thích (hoặc chép qua bản xem trước Markdown làm rơi chú thích HTML) mà
+    khung trạng thái «[CẦN PI DUYỆT]» còn nguyên ⇒ vẫn là bản nháp máy chưa duyệt, không thành «người soạn»."""
+    d, _, _ = _de_tai_e5(tmp_path)
+    p, _, _ = BB.ghi(d, STUDY)
+    p.write_text("\n".join(x for x in p.read_text(encoding="utf-8").split("\n") if not x.startswith(BB.DAU_MAY)),
+                 encoding="utf-8", newline="\n")
+    st = BB.trang_thai(d, STUDY)
+    assert st["trang_thai"] == BB.CHUA_DUYET and "dấu máy đã bị gỡ" in st["ly_do"]
+    assert DC.doi_chieu(d, STUDY).trang_thai == "KHONG_DO_DUOC"
+    assert BB.ghi(d, STUDY)[0] is None, "bản đã bị sửa ⇒ không tự ghi đè"
 
 
 # ── ⑦ MT-11 ───────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -254,8 +271,20 @@ def test_truong_dinh_danh_duoc_neu_trong_bang_va_muc_xem_tay(tmp_path):
 
 
 # ── hội đồng + CLI ────────────────────────────────────────────────────────────────────────────────────────────────────
-def test_hoi_dong_g3_t2_doi_bang_bo_bien_cho_pi(tmp_path):
-    assert "G3_BO_BIEN_SO_<mã>.md" in HD._nhiem_vu("G3", "G3-T2")["dau_ra"]
+def test_hoi_dong_g3_t2_doi_bang_bo_bien_cho_pi_hoac_de_cuong_nop(tmp_path):
+    dau_ra = HD._nhiem_vu("G3", "G3-T2")["dau_ra"]
+    muc = next(d for d in dau_ra if "G3_BO_BIEN_SO_<mã>.md" in d)
+    assert HD.phuong_an_dau_ra(muc) == ["G3_BO_BIEN_SO_<mã>.md", "DE_CUONG_NOP_HOI_DONG_<mã>.md"]
+    d, _, _ = _de_tai_e5(tmp_path)
+    assert not HD.co_dau_ra(d, STUDY, muc)
+    (d / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md").write_text("# đề cương\n", encoding="utf-8", newline="\n")
+    assert HD.co_dau_ra(d, STUDY, muc), "có một trong hai tệp là đủ đầu ra"
+    loi = HD._kiem_bo_bien_so(d, STUDY)
+    assert any("chưa có nguồn người duyệt" in x for x in loi), "đề cương KHÔNG có bảng biến số ⇒ kiểm máy G3-T2 báo"
+    (d / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md").write_text(
+        DE_CUONG_CO_BANG_BIEN,
+        encoding="utf-8", newline="\n")
+    assert not any("nguồn người duyệt" in x for x in HD._kiem_bo_bien_so(d, STUDY))
 
 
 @pytest.mark.parametrize("buoc, ma", [("chua_co", 2), ("chua_duyet", 1), ("da_duyet", 0)])
@@ -286,3 +315,124 @@ def test_canary_pi_gia_lap_duyet_bang_g3_la_can_thiep_dung_thiet_ke(tmp_path):
     assert gl.can_thiep[-1]["loai"] == "duyet_bang_bien_g3" and gl.can_thiep[-1]["do_may"] is False
     assert {"soan_bang_bien_g3", "duyet_bang_bien_g3"} <= set(GL.CAN_THIEP_DUNG_THIET_KE)
     assert gl._duyet_bang_bien_g3() is False, "đã duyệt ⇒ không ghi lại"
+
+
+# ── sửa sau thẩm định đối kháng #274 ─────────────────────────────────────────────────────────────────────────────────
+def _duyet_roi_bo_may_them_ma(tmp_path):
+    """PI duyệt bảng; sau đó bộ máy thêm mã 5 cho trinh_do ⇒ đối chiếu phải LỆCH V2 theo bảng đã duyệt."""
+    d, _, _ = _de_tai_e5(tmp_path)
+    p, _, _ = BB.ghi(d, STUDY)
+    _duyet(d)
+    _ghi_bo_bien(d, _bien_e5(trinh_do=("trinh_do", "radio", "Trình độ học vấn",
+                                       "1, Tiểu học | 2, THCS | 3, THPT | 4, Đại học | 5, Sau đại học", "", "", "",
+                                       "")))
+    kq = DC.doi_chieu(d, STUDY)
+    assert any(x.luat == "V2" and x.bien == "trinh_do" for x in kq.lech()), "tiền đề: lệch thật bị bắt"
+    return d, p
+
+
+def test_chen_dong_trong_hoac_noi_hang_sau_khi_duyet_lam_mat_hieu_luc(tmp_path):
+    """Thẩm định #274, ĐỎ 1: dấu cũ gộp mọi khoảng trắng kể cả xuống dòng ⇒ chèn một dòng trống trước hàng trinh_do
+    (bộ đọc bảng tách bảng ⇒ hàng đó rơi khỏi bảng) giữ DA_DUYET và CHE lệch thật (G5-AUTO-11 BLOCK → PASS)."""
+    d, p = _duyet_roi_bo_may_them_ma(tmp_path)
+    goc = p.read_text(encoding="utf-8")
+    hang = next(x for x in goc.split("\n") if x.startswith("| `trinh_do`"))
+    for sua in (goc.replace(hang, "\n" + hang), goc.replace("\n" + hang, " " + hang)):
+        p.write_text(sua, encoding="utf-8", newline="\n")
+        st = BB.trang_thai(d, STUDY)
+        assert st["trang_thai"] == BB.XAC_NHAN_LECH, "đổi ranh giới dòng phải làm xác nhận mất hiệu lực"
+        assert DC.doi_chieu(d, STUDY).trang_thai == "KHONG_DO_DUOC"
+    p.write_text(goc, encoding="utf-8", newline="\n")
+    assert BB.trang_thai(d, STUDY)["trang_thai"] == BB.DA_DUYET
+
+
+def test_bang_chen_vao_khung_trang_thai_khong_duoc_doc_va_lam_mat_hieu_luc(tmp_path):
+    """Thẩm định #274, ĐỎ 2: vùng không tính dấu (tiêu đề, khung trạng thái) từng được bộ đọc G5-AUTO-11 đọc ⇒ chèn bảng
+    biến phái sinh vào đó che LỆCH V5 mà xác nhận vẫn còn."""
+    d, p = _duyet_roi_bo_may_them_ma(tmp_path)
+    goc = p.read_text(encoding="utf-8")
+    chen = "| Tên | Định nghĩa / công thức |\n|---|---|\n| `gia_70` | 1 nếu tuổi ≥ 70 |\n"
+    for sua in (goc.replace(BB.MOC_TT_KT, chen + BB.MOC_TT_KT), goc.replace(BB.MOC_TT_BD, chen + BB.MOC_TT_BD)):
+        p.write_text(sua, encoding="utf-8", newline="\n")
+        assert BB.trang_thai(d, STUDY)["trang_thai"] == BB.XAC_NHAN_LECH
+        assert "gia_70" not in {b.ten for b in DC.doc_bo_bien_g3(d, STUDY)[0]}, "bộ đọc chỉ đọc thân bảng"
+
+
+def test_slider_khu_hoi_khong_sinh_lech_gia_sau_khi_duyet(tmp_path):
+    """Thẩm định #274, VÀNG 5: nhãn thanh trượt «0 = … | 100 = …» trong ô Giá trị hợp lệ ⇒ LỆCH V2 «mã đặc biệt 100»."""
+    d, _, _ = _de_tai_e5(tmp_path)
+    _ghi_bo_bien(d, _bien_e5() + [("dau", "slider", "Mức đau", "0 = Không đau | 50 = Vừa | 100 = Đau nhất", "", "",
+                                   "", "")])
+    p, _, _ = BB.ghi(d, STUDY)
+    chu = p.read_text(encoding="utf-8")
+    hang = next(x for x in chu.split("\n") if x.startswith("| `dau`"))
+    assert "| 0 – 100 |" in hang and "nhãn thanh trượt: 0 = Không đau" in hang
+    _duyet(d)
+    kq = DC.doi_chieu(d, STUDY)
+    assert not [x for x in kq.lech() if x.bien == "dau"], [(x.luat, x.chi_tiet) for x in kq.lech()]
+
+
+def test_ghi_khong_xoa_ghi_chu_pi_trong_khung_trang_thai(tmp_path):
+    """Thẩm định #274, VÀNG 6: PI ghi chú vào khung của bản nháp, bộ máy đổi ⇒ `ghi` không được lặng lẽ xoá ghi chú."""
+    d, _, _ = _de_tai_e5(tmp_path)
+    p, _, _ = BB.ghi(d, STUDY)
+    p.write_text(p.read_text(encoding="utf-8").replace(BB.MOC_TT_KT, "> PI: KHÔNG duyệt bản này — chờ sửa nhãn.\n"
+                                                                        + BB.MOC_TT_KT), encoding="utf-8", newline="\n")
+    _ghi_bo_bien(d, _bien_e5(tuoi=("tuoi", "text", "Tuổi (năm)", "", "integer", "", "18", "95")))
+    tep, tb, ma = BB.ghi(d, STUDY)
+    assert tep is None and ma == 1 and "khung trạng thái" in tb
+    assert "KHÔNG duyệt bản này" in p.read_text(encoding="utf-8")
+    assert BB.ghi(d, STUDY, ghi_de=True)[0] == p, "--ghi-de vẫn mở được khi PI bảo soạn lại"
+
+
+def test_de_cuong_co_bang_bien_va_ban_nhap_chua_duyet_thi_chi_dung_de_cuong(tmp_path):
+    """Thẩm định #274, XÁM 7 (đột biến M-q lọt): có đề cương nộp + bảng G3 máy soạn chưa duyệt ⇒ bảng G3 bị loại, đề
+    cương vẫn là nguồn."""
+    d, _, _ = _de_tai_e5(tmp_path)
+    (d / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md").write_text(
+        DE_CUONG_CO_BANG_BIEN,
+        encoding="utf-8", newline="\n")
+    BB.ghi(d, STUDY)
+    kq = DC.doi_chieu(d, STUDY)
+    assert kq.nguon_nguoi_duyet == [f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md"]
+    assert kq.nguon_bi_loai and BB.ten_tep(STUDY) in kq.nguon_bi_loai[0]
+
+
+def test_tep_bang_khong_phai_utf8_khong_bi_ghi_de_va_khong_vang_loi(tmp_path):
+    """Thẩm định #274, XÁM 8: bảng lưu UTF-16 (Notepad «Unicode») ⇒ từ chối rõ ràng, không traceback, không ghi đè."""
+    d, _, _ = _de_tai_e5(tmp_path)
+    p = d / BB.ten_tep(STUDY)
+    p.write_bytes("| Tên biến | Nhãn | Loại | Giá trị hợp lệ |\n".encode("utf-16"))
+    st = BB.trang_thai(d, STUDY)
+    assert st["doc_duoc"] is False and not st["la_nguon_nguoi_duyet"]
+    tep, tb, ma = BB.ghi(d, STUDY, ghi_de=True)
+    assert tep is None and ma == 1 and "UTF-8" in tb
+    assert p.read_bytes().startswith(b"\xff\xfe") or p.read_bytes().startswith(b"\xfe\xff")
+
+
+def test_canary_mot_buoc_pi_soan_roi_duyet_bang_qua_duong_noi_that(tmp_path):
+    """Thẩm định #274, XÁM 7 (đột biến M-w lọt): đi qua ĐÚNG GiaLap.mot_buoc_pi — bước 1 gọi bang_bien_g3.py soan, bước
+    2 PI giả lập duyệt; cả hai là can thiệp đúng thiết kế."""
+    import gia_lap_dinh_ky as GL  # noqa: PLC0415
+    from test_gia_lap_dinh_ky_20261115 import KB_THU  # noqa: PLC0415
+
+    d, _, _ = _de_tai_e5(tmp_path)
+    (d / "G3_checkpoint.json").write_text(json.dumps({"gate": "G3", "n_adjusted": 120}), encoding="utf-8",
+                                         newline="\n")
+    lenh = []
+
+    def chay(cmd, *a, **k):
+        lenh.append([Path(x).name for x in cmd])
+        if any(str(x).endswith("bang_bien_g3.py") for x in cmd):
+            BB.ghi(d, STUDY)
+        return {"ma": 0, "ra": ""}
+
+    kb = {**KB_THU, "study": STUDY, "query_en": None, "pi": {"G3": {}},
+          "bien_so": {"bo_bien": [], "ma_tran": []}}
+    gl = GL.GiaLap("thu", kb, tmp_path, False, chay=chay, cham=lambda *a, **k: {"status": "PASS_G3_CONFIRMED"},
+                   nen_g0_dir=tmp_path / "nen")
+    assert gl.mot_buoc_pi() == "G3" and any("bang_bien_g3.py" in x for x in lenh[-1])
+    assert gl.can_thiep[-1]["loai"] == "soan_bang_bien_g3" and gl.can_thiep[-1]["do_may"] is False
+    assert gl.mot_buoc_pi() == "G3"
+    assert gl.can_thiep[-1]["loai"] == "duyet_bang_bien_g3"
+    assert BB.trang_thai(d, STUDY)["trang_thai"] == BB.DA_DUYET

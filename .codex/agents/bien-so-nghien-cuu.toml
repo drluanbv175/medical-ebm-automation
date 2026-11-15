@@ -266,7 +266,8 @@ Lưu ý: CLI thật của `run_g5_auto.py` **CHỈ nhận `--study STUDY`**, kh�
 - Định nghĩa trường quyết định khai báo SPSS/R: văn bản tự do = text KHÔNG kiểm; số = integer / number_Ndp (ghi rõ số lẻ); danh mục mã nhất quán (toàn số hoặc toàn chữ — lẫn lộn thì máy không tự quyết kiểu); mã thiếu chuỗi ≤ 8 byte.
 - **Bảng bộ biến cho PI duyệt (G3-T2, bác sĩ chọn 15/11/2026):** đầu ra G3-T2 có thêm `G3_BO_BIEN_SO_<mã>.md` — NGUỒN NGƯỜI DUYỆT mà G5-AUTO-11 dùng để đối chiếu từ điển · mẫu nhập · SPSS/R (khi đề cương nộp chưa có bảng biến số). Soạn bằng `python3 tools/bang_bien_g3.py soan --study <mã> --ghi` SAU khi bộ biến + ma trận đạt; đọc mục 6 «Điểm PI cần xem tay» của bảng và nêu từng điểm cho PI.
 - Bản MÁY soạn chỉ là nguồn người duyệt khi PI ghi `gate_params.G3.bo_bien_so_duyet = {"reviewed_at": "<ISO>", "dau_van_tay": "<dấu>"}`, dấu in bởi `python3 tools/bang_bien_g3.py trang-thai --study <mã>`. Agent CHÉP dấu cho PI nhìn — KHÔNG tự ghi xác nhận. Chưa duyệt ⇒ G5-AUTO-11 «không đo được», G5 không READY. Sửa bảng sau khi duyệt ⇒ xác nhận mất hiệu lực (sửa khung trạng thái thì không).
-- Không ghi đè bảng người soạn, bảng đã duyệt, bảng đã bị sửa tay — công cụ tự từ chối; `--ghi-de` chỉ dùng khi PI bảo soạn lại bản nháp. Bộ biến máy đổi sau khi PI duyệt ⇒ MT-11 cảnh báo và đối chiếu báo LỆCH theo bảng đã duyệt: sửa bộ máy theo bảng, hoặc soạn bảng mới để PI duyệt lại.
+- Mọi bảng biến nằm DƯỚI dòng dấu máy (`<!-- BANG-BIEN-G3: …`). Không chèn bảng vào tiêu đề/khung trạng thái (máy coi là sửa tay ⇒ xác nhận mất hiệu lực, bộ đọc bỏ qua), không gỡ dòng dấu máy (vẫn là bản nháp chưa duyệt), lưu tệp UTF-8. Dấu nội dung giữ nguyên ranh giới dòng: chèn/xoá một dòng trống sau khi duyệt cũng làm xác nhận mất hiệu lực.
+- Không ghi đè bảng người soạn, bảng đã duyệt, bảng đã bị sửa tay (kể cả ghi chú của PI trong khung trạng thái) — công cụ tự từ chối; `--ghi-de` chỉ dùng khi PI bảo soạn lại bản nháp. Bộ biến máy đổi sau khi PI duyệt ⇒ MT-11 cảnh báo và đối chiếu báo LỆCH theo bảng đã duyệt: sửa bộ máy theo bảng, hoặc soạn bảng mới để PI duyệt lại.
 
 ## Ranh giới
 KHÔNG dựng data dictionary kỹ thuật/CRF cuối/luật kiểm tra (→ `quan-ly-du-lieu`) · KHÔNG tính cỡ mẫu/khóa SAP (→ `thiet-ke-nghien-cuu`/`co-mau-nghien-cuu`) · KHÔNG chạy phân tích. Bạn là tầng **đặc tả biến số**, bản lề giữa câu hỏi và CRF/thống kê.
@@ -282,7 +283,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 
 | Nhiệm vụ | Bạn LÀM — đầu ra (tên là HỢP ĐỒNG) | Tiêu chí bạn phải đưa tới ĐẠT | Hồ sơ + lệnh bạn chuẩn bị cho NGƯỜI |
 |---|---|---|---|
-| `G3-T2` — Đặc tả bộ biến số + ma trận mục tiêu–biến + bảng bộ biến cho PI duyệt | `_bo-bien-rieng.csv`, `_ma-tran-muc-tieu-bien.csv`, `G3_BO_BIEN_SO_<mã>.md` | G3-AUTO-19 + kiểm máy cấp nhiệm vụ: bộ biến G5 nạp được + không biến định danh trực tiếp | — |
+| `G3-T2` — Đặc tả bộ biến số + ma trận mục tiêu–biến + bảng bộ biến cho PI duyệt | `_bo-bien-rieng.csv`, `_ma-tran-muc-tieu-bien.csv`, `G3_BO_BIEN_SO_<mã>.md` hoặc `DE_CUONG_NOP_HOI_DONG_<mã>.md` | G3-AUTO-19 + kiểm máy cấp nhiệm vụ: bộ biến G5 nạp được + không biến định danh trực tiếp + phủ mục tiêu (ma trận) + có nguồn người duyệt (bảng G3 hoặc bảng «Mã biến» của đề cương nộp) | — |
 
 Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G1-T4` (cong-cu-do-luong), `G3-T3` (quan-ly-du-lieu). Không bao giờ chấm đầu ra do chính bạn làm.
 

@@ -100,6 +100,21 @@ _VUOT_THAM_QUYEN_RE = re.compile(
     r"PASS_[A-Z0-9_]+|\b[A-Z0-9_]*_LOCKED\b|đã\s+(?:ký|phê\s+duyệt|khoá\s+cổng|khóa\s+cổng|mở\s+cổng)", re.IGNORECASE)
 
 
+#: Một mục đầu ra có thể là «A hoặc B» — đủ khi CÓ MỘT trong các tệp (15/11/2026, thẩm định #274 VÀNG 4: G3-T2 nhận
+#: bảng biến số của đề cương nộp thay cho G3_BO_BIEN_SO_<mã>.md — cùng luật với MT-11, không hạ cấp đề tài đã có).
+TACH_PHUONG_AN = " hoặc "
+
+
+def phuong_an_dau_ra(d: str) -> List[str]:
+    """Các tệp thay thế nhau của MỘT mục đầu ra («A hoặc B» ⇒ [A, B]; mục thường ⇒ [mục])."""
+    return [x.strip() for x in str(d).split(TACH_PHUONG_AN) if x.strip()]
+
+
+def co_dau_ra(out_dir: Path, study: str, d: str) -> bool:
+    """Mục đầu ra có mặt: ít nhất MỘT tệp thay thế tồn tại."""
+    return any((Path(out_dir) / x.replace("<mã>", study)).is_file() for x in phuong_an_dau_ra(d))
+
+
 def _nv(ma: str, viec: str, agent: str, dau_ra: Tuple[str, ...], cham: Tuple[str, ...],
         dieu_kien: Optional[str] = None) -> Dict[str, Any]:
     return {"ma": ma, "viec": viec, "agent": agent, "dau_ra": list(dau_ra), "cham_chuyen_mon": list(cham),
@@ -180,7 +195,8 @@ NHIEM_VU: Dict[str, List[Dict[str, Any]]] = {
         # (tools/bang_bien_g3.py). G5-AUTO-11 đòi bộ biến máy khớp một NGUỒN NGƯỜI DUYỆT; trước đây không ai sinh bảng
         # này nên đề tài mới kẹt ở G5. Bản máy soạn chỉ là nguồn người duyệt khi PI ghi gate_params.G3.bo_bien_so_duyet.
         _nv("G3-T2", "Đặc tả bộ biến số + ma trận mục tiêu–biến + bảng bộ biến cho PI duyệt", "bien-so-nghien-cuu",
-            ("_bo-bien-rieng.csv", "_ma-tran-muc-tieu-bien.csv", "G3_BO_BIEN_SO_<mã>.md"),
+            ("_bo-bien-rieng.csv", "_ma-tran-muc-tieu-bien.csv",
+             "G3_BO_BIEN_SO_<mã>.md" + TACH_PHUONG_AN + "DE_CUONG_NOP_HOI_DONG_<mã>.md"),
             ("quan-ly-du-lieu", "thiet-ke-nghien-cuu")),
         _nv("G3-T3", "CRF kỹ thuật, từ điển dữ liệu dự kiến, luật kiểm tra", "quan-ly-du-lieu",
             ("_bo-bien-rieng.csv",), ("bien-so-nghien-cuu",)),
@@ -1112,7 +1128,7 @@ def _nhiem_vu_chua_phu(gate: str, out_dir: Path, da_cham: set, cu_ma: set) -> Li
         ap = _ap_dung(nv, ma_tk, khai)
         if ap is False or nv["ma"] in da_cham:
             continue
-        if not all((Path(out_dir) / d.replace("<mã>", study)).is_file() for d in nv["dau_ra"]):
+        if not all(co_dau_ra(Path(out_dir), study, d) for d in nv["dau_ra"]):
             continue
         if ap is None:
             ra.append(f"{nv['ma']}: chưa xác định áp dụng — chưa đánh giá chéo")
@@ -1519,6 +1535,18 @@ def _kiem_bo_bien_so(out_dir: Path, study: str) -> List[str]:
                 f"ma trận mục tiêu–biến: {kq['trang_thai']}"]
     except Exception as exc:  # noqa: BLE001 — không đo được ⇒ báo, không im lặng như «đạt»
         loi.append(f"không chạy được bộ kiểm ma trận: {type(exc).__name__}")
+    # 15/11/2026 (thẩm định #274, VÀNG 4): đầu ra «G3_BO_BIEN_SO hoặc đề cương nộp» chỉ đủ khi đề cương THẬT có bảng
+    # biến số (cột «Mã biến») — cùng luật MT-11. Bảng G3 máy soạn mà PI chưa duyệt là việc của PI (MT-11 nhắc), không
+    # phải việc agent còn nợ.
+    try:
+        import doi_chieu_bien_de_cuong as DC  # noqa: PLC0415
+
+        if not (Path(out_dir) / f"G3_BO_BIEN_SO_{study}.md").is_file() and not DC.doc_de_cuong(Path(out_dir), study)[0]:
+            loi.append(f"chưa có nguồn người duyệt cho bộ biến: đề cương nộp chưa có bảng biến số (cột «Mã biến») và "
+                       f"chưa có G3_BO_BIEN_SO_{study}.md — soạn: python3 tools/bang_bien_g3.py soan --study {study} "
+                       "--ghi")
+    except Exception as exc:  # noqa: BLE001
+        loi.append(f"không kiểm được nguồn người duyệt của bộ biến: {type(exc).__name__}")
     return loi
 
 
@@ -2131,7 +2159,8 @@ KIEM_NHIEM_VU: Dict[str, Tuple[str, Any]] = {
               _kiem_thiet_ke_dinh_tinh),
     "G2-T1": ("hồ sơ G2 nêu việc ghép dữ liệu từ hệ thống ngoài mà G1 đã chốt (ICF Việt/Anh + DMP) và không gọi «ẩn "
               "danh hoàn toàn» khi có ghép (dao-duc-dang-ky 4b/4d)", _kiem_g2_ghep_ngoai),
-    "G3-T2": ("bộ biến G5 nạp được + không biến định danh trực tiếp", _kiem_bo_bien_so),
+    "G3-T2": ("bộ biến G5 nạp được + không biến định danh trực tiếp + phủ mục tiêu (ma trận) + có nguồn người duyệt "
+              "(bảng G3 hoặc bảng «Mã biến» của đề cương nộp)", _kiem_bo_bien_so),
     "G3-T3": ("luật kiểm tra CRF: lựa chọn · công thức calc · khoảng hợp lệ · trường bắt buộc", _kiem_crf),
     "G4-T2": ("SAP RCT §13 giữa kỳ/dừng · §14 DMC · §15 tổn hại có mặt và đã điền", _kiem_sap_rct),
     "G5-T2": ("bảng trích xuất SR/MA: cột study/year + (TE, seTE) hoặc 2x2; ≥ 2 nghiên cứu; số hợp lệ",
@@ -2233,7 +2262,7 @@ def trach_nhiem(study: str, gate: str, out_dir: Path) -> Dict[str, Any]:
     khai = doc_ap_dung(gate, out_dir)
     for nv in NHIEM_VU.get(gate, []):
         ap = _ap_dung(nv, ma_tk, khai)
-        thieu = [d for d in nv["dau_ra"] if not (out_dir / d.replace("<mã>", study)).is_file()] if ap else []
+        thieu = [d for d in nv["dau_ra"] if not co_dau_ra(out_dir, study, d)] if ap else []
         nhiem_vu.append({"ma": nv["ma"], "agent": nv["agent"], "ap_dung": ap, "dieu_kien": nv.get("dieu_kien"),
                          "dau_ra_thieu": thieu, "khai_ap_dung": khai.get(nv["ma"])})
         for d in thieu:
@@ -2574,7 +2603,7 @@ def ho_so_cong(study: str, gate: str, out_dir: Path, dp: Optional[List[str]] = N
     tai_lieu_cong: List[str] = []
     for nv in NHIEM_VU.get(gate, []):
         ap = _ap_dung(nv, ma_tk, khai)
-        tep = [d.replace("<mã>", study) for d in nv["dau_ra"]]
+        tep = [x.replace("<mã>", study) for d in nv["dau_ra"] for x in phuong_an_dau_ra(d)]
         co = [t for t in tep if (out_dir / t).is_file()]
         if ap is not False:
             tai_lieu_cong += [t for t in co if t not in tai_lieu_cong]

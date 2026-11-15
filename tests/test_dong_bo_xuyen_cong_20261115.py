@@ -329,6 +329,11 @@ def test_hoi_dong_g3_t2_bao_loi_ma_tran(tmp_path):
     _ghi_bo_bien(d)
     assert any("ma trận mục tiêu–biến" in x for x in HD._kiem_bo_bien_so(d, STUDY))
     _ghi_ma_tran(d)
+    assert any("nguồn người duyệt" in x for x in HD._kiem_bo_bien_so(d, STUDY)), \
+        "15/11/2026 (thẩm định #274): chưa có bảng G3 lẫn bảng biến số đề cương ⇒ G3-T2 còn nợ đầu ra"
+    import bang_bien_g3 as BB  # noqa: PLC0415
+
+    BB.ghi(d, STUDY)  # đồ gá hợp lệ: agent bien-so-nghien-cuu đã soạn bảng cho PI duyệt
     assert HD._kiem_bo_bien_so(d, STUDY) == []
 
 

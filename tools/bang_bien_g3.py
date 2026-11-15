@@ -36,6 +36,7 @@ Chỉ đọc bộ biến máy; không ký, không đổi cổng. Cần bác sĩ 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -70,7 +71,12 @@ LA_NGUON_NGUOI_DUYET = frozenset({NGUOI_SOAN, DA_DUYET})
 
 _DAU_NGUON_RE = re.compile(r"dau_nguon=([0-9a-f]{8,64})")
 _DAU_SOAN_RE = re.compile(r"dau_soan=([0-9a-f]{8,64})")
+_DAU_KHUNG_RE = re.compile(r"dau_khung=([0-9a-f]{8,64})")
 _CHO_DAU_SOAN = "dau_soan=0000000000000000"
+_CHO_DAU_KHUNG = "dau_khung=0000000000000000"
+#: Dấu CẤU TRÚC mà chỉ bộ soạn này đặt vào tệp — còn bất kỳ dấu nào mà mất dòng dấu máy ⇒ dấu máy bị gỡ (không phải
+#: bảng người soạn). KHÔNG dùng câu chữ («Máy soạn ngày…»): bảng btm người duyệt 28/10 có câu đó mà không có dấu nào.
+_DAU_CAU_TRUC_MAY = (MOC_TT_BD, MOC_TT_KT, NHAN_CHO_DUYET, "dau_soan=", "dau_nguon=")
 
 
 def ten_tep(study: str) -> str:
@@ -79,15 +85,36 @@ def ten_tep(study: str) -> str:
 
 # ───────────────────────────── dấu vân tay ─────────────────────────────
 def than_bang(chu: str) -> str:
-    """Phần tính dấu: sau khung trạng thái (nếu có), CRLF→LF, bỏ khoảng trắng cuối dòng và dòng trống cuối tệp."""
+    """Phần tính dấu: sau khung trạng thái (nếu có), CRLF→LF, bỏ khoảng trắng cuối dòng và dòng trống cuối tệp.
+    Bộ đọc G5-AUTO-11 (`doi_chieu_bien_de_cuong.doc_bo_bien_g3`) cũng CHỈ đọc phần này của bảng máy soạn — vùng không
+    tính dấu thì không được góp nội dung vào đối chiếu (thẩm định #274, ĐỎ 2)."""
     chu = chu.replace("\r\n", "\n")
     if MOC_TT_KT in chu:
         chu = chu.split(MOC_TT_KT, 1)[1]
     return "\n".join(d.rstrip() for d in chu.split("\n")).strip("\n")
 
 
+def _vung_ngoai_dau(chu: str) -> str:
+    """Phần TRƯỚC thân bảng (tiêu đề + khung trạng thái) — không tính dấu."""
+    chu = chu.replace("\r\n", "\n")
+    return chu.split(MOC_TT_KT, 1)[0] if MOC_TT_KT in chu else ""
+
+
+def _khung_trang_thai(chu: str) -> str:
+    chu = chu.replace("\r\n", "\n")
+    if MOC_TT_BD not in chu or MOC_TT_KT not in chu:
+        return ""
+    return "\n".join(d.rstrip() for d in chu.split(MOC_TT_BD, 1)[1].split(MOC_TT_KT, 1)[0].split("\n")).strip("\n")
+
+
+def _bam(van_ban: str) -> str:
+    """16 hex SHA-256 giữ NGUYÊN ranh giới dòng và từng ký tự (thẩm định #274, ĐỎ 1: cong_song.dau_van_tay gộp mọi
+    khoảng trắng kể cả xuống dòng + NFC ⇒ chèn một dòng trống/nối hàng làm bộ đọc bảng đọc khác mà dấu không đổi)."""
+    return hashlib.sha256(van_ban.encode("utf-8")).hexdigest()[:16]
+
+
 def dau_bang(chu: str) -> str:
-    return CS.dau_van_tay(than_bang(chu))
+    return _bam(than_bang(chu))
 
 
 def dau_nguon(out_dir: Path) -> str:
@@ -101,7 +128,12 @@ def _bo_dong_dau_may(than: str) -> str:
 
 def dau_noi_dung_khong_dau_may(chu: str) -> str:
     """Dấu phần thân trừ dòng dấu máy — so với `dau_soan` để biết bảng có bị sửa sau khi máy soạn không."""
-    return CS.dau_van_tay(_bo_dong_dau_may(than_bang(chu)))
+    return _bam(_bo_dong_dau_may(than_bang(chu)))
+
+
+def dau_khung(chu: str) -> str:
+    """Dấu khung trạng thái — so với `dau_khung` để biết PI/người đã ghi vào khung (thẩm định #274, VÀNG 6)."""
+    return _bam(_khung_trang_thai(chu))
 
 
 def _dau_trong_dong_may(chu: str, mau: "re.Pattern[str]") -> Optional[str]:
@@ -112,10 +144,12 @@ def _dau_trong_dong_may(chu: str, mau: "re.Pattern[str]") -> Optional[str]:
 
 
 def bi_sua_sau_khi_soan(chu: str) -> bool:
-    """True khi thân bảng khác lúc máy soạn (người đã sửa), hoặc dòng dấu máy thiếu dau_soan (không biết ⇒ coi là
-    có)."""
+    """True khi thân bảng HOẶC khung trạng thái khác lúc máy soạn (người đã sửa/ghi chú), hoặc dòng dấu máy thiếu
+    dau_soan/dau_khung (không biết ⇒ coi là có)."""
     goc = _dau_trong_dong_may(chu, _DAU_SOAN_RE)
-    return goc is None or goc != dau_noi_dung_khong_dau_may(chu)
+    goc_khung = _dau_trong_dong_may(chu, _DAU_KHUNG_RE)
+    return (goc is None or goc != dau_noi_dung_khong_dau_may(chu)
+            or goc_khung is None or goc_khung != dau_khung(chu))
 
 
 # ───────────────────────────── trạng thái duyệt ─────────────────────────────
@@ -126,12 +160,21 @@ def trang_thai(out_dir: Path, study: str, meta: Optional[Mapping[str, Any]] = No
                           "nguon_doi": None, "sua_sau_khi_soan": None, "la_nguon_nguoi_duyet": False}
     if not p.is_file():
         return ra
+    ra["doc_duoc"] = True
     try:
         chu = p.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as e:
-        ra.update(trang_thai=XAC_NHAN_LECH, ly_do=f"không đọc được {p.name}: {type(e).__name__}")
+        ra.update(trang_thai=XAC_NHAN_LECH, doc_duoc=False,
+                  ly_do=f"không đọc được {p.name} dạng UTF-8 ({type(e).__name__}) — lưu lại bằng UTF-8")
         return ra
     if DAU_MAY not in chu:
+        con = [x for x in _DAU_CAU_TRUC_MAY if x in chu]
+        if con:  # thẩm định #274, VÀNG 3: gỡ một dòng chú thích không biến bản nháp máy thành «người soạn»
+            ra.update(trang_thai=CHUA_DUYET,
+                      ly_do=(f"dòng dấu máy đã bị gỡ nhưng tệp còn dấu của bản máy soạn ({', '.join(con[:3])}) — vẫn "
+                             "là bản nháp máy CHƯA duyệt; soạn lại bằng bang_bien_g3.py rồi PI duyệt, hoặc người soạn "
+                             "lại bảng (bỏ hết khung trạng thái của máy)"))
+            return ra
         ra.update(trang_thai=NGUOI_SOAN, la_nguon_nguoi_duyet=True,
                   ly_do="bảng do người soạn (không có dấu máy soạn) — tính là nguồn người duyệt như trước")
         return ra
@@ -141,6 +184,12 @@ def trang_thai(out_dir: Path, study: str, meta: Optional[Mapping[str, Any]] = No
     if goc_nguon:
         ra["nguon_doi"] = goc_nguon != dau_nguon(out_dir)
     ra["sua_sau_khi_soan"] = bi_sua_sau_khi_soan(chu)
+    if any(d.lstrip().startswith("|") for d in _vung_ngoai_dau(chu).split("\n")):
+        # thẩm định #274, ĐỎ 2: bảng đặt ngoài vùng tính dấu không được lặng lẽ bỏ qua/được đọc — coi là sửa tay.
+        ra.update(trang_thai=XAC_NHAN_LECH,
+                  ly_do="có bảng nằm NGOÀI vùng tính dấu (tiêu đề/khung trạng thái) — mọi bảng biến phải nằm dưới "
+                        "dòng dấu máy; chuyển vào thân bảng rồi PI duyệt lại")
+        return ra
     meta = dict(meta) if meta is not None else MT.doc_meta(Path(out_dir))
     xn = MT._gp(meta, "G3").get(KHOA_DUYET)
     if not xn:
@@ -208,7 +257,11 @@ def gia_tri_hop_le(row: Mapping[str, str]) -> str:
     if ft == "calc":
         return "công thức: " + str(row.get("Choices, Calculations, OR Slider Labels") or "").strip()
     if ft == "slider":
-        return str(row.get("Choices, Calculations, OR Slider Labels") or "").strip() or "0 – 100"
+        # thẩm định #274, VÀNG 5: nhãn thanh trượt «0 = … | 100 = …» trong ô này làm G5-AUTO-11 đọc «100 =» thành mã đặc
+        # biệt chưa khai ⇒ LỆCH giả kéo dài sau khi PI duyệt. Ô chỉ ghi khoảng; nhãn sang cột Ghi chú.
+        lo = str(row.get("Text Validation Min") or "").strip() or "0"
+        hi = str(row.get("Text Validation Max") or "").strip() or "100"
+        return f"{lo} – {hi}"
     if ft == "text":
         val = str(row.get("Text Validation Type OR Show Slider Number") or "").strip().lower()
         lo = str(row.get("Text Validation Min") or "").strip()
@@ -251,6 +304,10 @@ def _tu_kiem_ma(ten: str, row: Mapping[str, str], o_gia_tri: str) -> Optional[st
     """Đọc lại ô «Giá trị hợp lệ» bằng CHÍNH bộ đọc của G5-AUTO-11; lệch mã ⇒ ghi để PI xem tay (không sửa nhãn)."""
     ft = str(row.get("Field Type") or "").strip().lower()
     if ft not in ("radio", "dropdown", "checkbox", "yesno", "truefalse"):
+        dac_biet = re.findall(r"(?<![\d.])(\d{3,})\s*=", o_gia_tri or "")
+        if dac_biet:  # cùng mẫu «mã đặc biệt» của G5-AUTO-11 cho ô không phải ô chọn
+            return (f"`{ten}`: ô «Giá trị hợp lệ» chứa «{dac_biet[0]} =» mà bộ đọc G5-AUTO-11 coi là mã đặc biệt — "
+                    "khai ở _ma-thieu-theo-bien.csv hoặc PI sửa ô")
         return None
     try:
         import doi_chieu_bien_de_cuong as DC  # noqa: PLC0415
@@ -307,7 +364,7 @@ def soan(out_dir: Path, study: str, *, meta: Optional[Mapping[str, Any]] = None,
         "PI có thể đổi dòng "
         f"«{NHAN_CHO_DUYET}» thành «ĐÃ DUYỆT <ngày>».",
         MOC_TT_KT, "",
-        f"{DAU_MAY} may-soan ngay={ngay} dau_nguon={dau_nguon(out_dir)} {_CHO_DAU_SOAN} -->", "",
+        f"{DAU_MAY} may-soan ngay={ngay} dau_nguon={dau_nguon(out_dir)} {_CHO_DAU_SOAN} {_CHO_DAU_KHUNG} -->", "",
         "## 1. Tóm tắt", "",
         f"- **{len(bo)} trường nhập** trong {len(theo_mau)} biểu mẫu: "
         + ", ".join(f"`{m}` ({len(v)})" for m, v in theo_mau.items()) + ".",
@@ -332,6 +389,9 @@ def soan(out_dir: Path, study: str, *, meta: Optional[Mapping[str, Any]] = None,
                 xem.append(loi_ma)
             ghi_chu = [x for x in (str(row.get("Field Note") or "").strip(),
                                    str(row.get("Field Annotation") or "").strip()) if x]
+            if str(row.get("Field Type") or "").strip().lower() == "slider" and str(
+                    row.get("Choices, Calculations, OR Slider Labels") or "").strip():
+                ghi_chu.append("nhãn thanh trượt: " + str(row["Choices, Calculations, OR Slider Labels"]).strip())
             if MT._chuan_thuoc_tinh("Identifier?", row.get("Identifier?")):
                 ghi_chu.insert(0, "ĐỊNH DANH")
                 xem.append(f"`{ten}`: gắn cờ định danh — G5-AUTO-02 sẽ chặn; bỏ hoặc thay bằng mã nghiên cứu")
@@ -379,7 +439,8 @@ def soan(out_dir: Path, study: str, *, meta: Optional[Mapping[str, Any]] = None,
     dl += [f"- {x}" for x in xem] or ["- Máy không thấy điểm nào cần xem tay (vẫn cần PI đọc toàn bảng)."]
     dl += ["", "Cần bác sĩ kiểm chứng.", ""]
     chu = "\n".join(dl)
-    return chu.replace(_CHO_DAU_SOAN, f"dau_soan={dau_noi_dung_khong_dau_may(chu)}", 1), xem
+    chu = chu.replace(_CHO_DAU_SOAN, f"dau_soan={dau_noi_dung_khong_dau_may(chu)}", 1)
+    return chu.replace(_CHO_DAU_KHUNG, f"dau_khung={dau_khung(chu)}", 1), xem
 
 
 def ghi(out_dir: Path, study: str, *, ghi_de: bool = False,
@@ -392,6 +453,8 @@ def ghi(out_dir: Path, study: str, *, ghi_de: bool = False,
         return None, xem[0], 2
     if p.is_file():
         st = trang_thai(out_dir, study, meta)
+        if not st.get("doc_duoc", True):  # thẩm định #274, XÁM 8: tệp không đọc được KHÔNG BAO GIỜ bị ghi đè
+            return None, f"{p.name} không đọc được dạng UTF-8 — không ghi đè; người lưu lại bằng UTF-8 rồi chạy lại", 1
         if st["trang_thai"] == NGUOI_SOAN:
             return None, f"{p.name} do người soạn — KHÔNG BAO GIỜ ghi đè nguồn người duyệt", 1
         if st["trang_thai"] == DA_DUYET:
@@ -400,7 +463,8 @@ def ghi(out_dir: Path, study: str, *, ghi_de: bool = False,
         cu = p.read_text(encoding="utf-8")
         sua_tay = bi_sua_sau_khi_soan(cu)
         if (sua_tay or st["trang_thai"] == XAC_NHAN_LECH) and not ghi_de:
-            ly = "bảng đã bị sửa sau khi máy soạn (PI/người sửa tay?)" if sua_tay else st["ly_do"]
+            ly = ("bảng hoặc khung trạng thái đã bị sửa sau khi máy soạn (PI/người sửa tay, ghi chú?)" if sua_tay
+                  else st["ly_do"])
             return None, f"{p.name}: {ly} — không ghi đè; xem lại rồi chạy với --ghi-de nếu chắc", 1
         if dau_noi_dung_khong_dau_may(cu) == dau_noi_dung_khong_dau_may(chu):
             return None, f"{p.name} đã đúng bản máy soạn hiện tại — không đổi", 0

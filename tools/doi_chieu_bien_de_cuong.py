@@ -227,7 +227,12 @@ def doc_bo_bien_g3(d: Path, study: str) -> tuple[list[BienNguon], str | None]:
     if not p.exists():
         return [], None
     ra: list[BienNguon] = []
-    for td, than in bang_md(p.read_text(encoding="utf-8")):
+    chu = p.read_text(encoding="utf-8")
+    if BB.DAU_MAY in chu:
+        # Bảng MÁY soạn: chỉ đọc phần TÍNH DẤU (sau khung trạng thái) — bảng chèn vào tiêu đề/khung trạng thái không
+        # được góp biến vào đối chiếu mà xác nhận PI vẫn còn hiệu lực (thẩm định #274, ĐỎ 2).
+        chu = BB.than_bang(chu)
+    for td, than in bang_md(chu):
         tdl = [x.lower() for x in td]
         if tdl and tdl[0] == "tên biến" and "giá trị hợp lệ" in tdl:
             il, ig = tdl.index("loại") if "loại" in tdl else 2, tdl.index("giá trị hợp lệ")
