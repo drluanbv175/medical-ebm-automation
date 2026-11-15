@@ -263,6 +263,11 @@ Lưu ý: CLI thật của `run_g5_auto.py` **CHỈ nhận `--study STUDY`**, kh�
 - Thiếu bộ biến riêng ⇒ G5 DỪNG (không còn rơi về bộ mẫu chung). `_GOI_Y_bo-bien-tu-bo-mau.csv` chỉ là GỢI Ý NHÁP — không chép thành bộ biến khi chưa đối chiếu từng mục tiêu.
 - `bhyt`/`co_bhyt` (có BHYT, loại thẻ) là biến tình trạng hợp lệ; SỐ/MÃ thẻ BHYT là định danh — không thu.
 - Mỗi biến mang ĐỦ thuộc tính và đi NGUYÊN VẸN tới SPSS/R (E5): `kieu` của ma trận ⇒ mức đo .sav / `measure` .rds (nhi_phan·danh_dinh→NOMINAL, thu_tu→ORDINAL, lien_tuc·dem·ngay→SCALE — biến thứ bậc PHẢI khai `thu_tu`, máy không đoán được từ nhãn); `vai_tro`·`muc_tieu`·`cau_hoi` ⇒ VARIABLE ATTRIBUTE + VARIABLE ROLE (.sav), attr role·objective·item (.rds); `Text Validation Min/Max` ⇒ khoảng hợp lệ (KhoangHopLe / valid_range). Khai min/max cho biến số, kiểm `integer` cho biến đếm.
+- Định nghĩa trường quyết định khai báo SPSS/R: văn bản tự do = text KHÔNG kiểm; số = integer / number_Ndp (ghi rõ số lẻ); danh mục mã nhất quán (toàn số hoặc toàn chữ — lẫn lộn thì máy không tự quyết kiểu); mã thiếu chuỗi ≤ 8 byte.
+- **Bảng bộ biến cho PI duyệt (G3-T2, bác sĩ chọn 15/11/2026):** đầu ra G3-T2 có thêm `G3_BO_BIEN_SO_<mã>.md` — NGUỒN NGƯỜI DUYỆT mà G5-AUTO-11 dùng để đối chiếu từ điển · mẫu nhập · SPSS/R (khi đề cương nộp chưa có bảng biến số). Soạn bằng `python3 tools/bang_bien_g3.py soan --study <mã> --ghi` SAU khi bộ biến + ma trận đạt; đọc mục 6 «Điểm PI cần xem tay» của bảng và nêu từng điểm cho PI.
+- Bản MÁY soạn chỉ là nguồn người duyệt khi PI ghi `gate_params.G3.bo_bien_so_duyet = {"reviewed_at": "<ISO>", "dau_van_tay": "<dấu>"}`, dấu in bởi `python3 tools/bang_bien_g3.py trang-thai --study <mã>`. Agent CHÉP dấu cho PI nhìn — KHÔNG tự ghi xác nhận. Chưa duyệt ⇒ G5-AUTO-11 «không đo được», G5 không READY. Sửa bảng sau khi duyệt ⇒ xác nhận mất hiệu lực (sửa khung trạng thái thì không).
+- Mọi bảng biến nằm DƯỚI dòng dấu máy (`<!-- BANG-BIEN-G3: …`). Không chèn bảng vào tiêu đề/khung trạng thái (máy coi là sửa tay ⇒ xác nhận mất hiệu lực, bộ đọc bỏ qua), không gỡ dòng dấu máy (vẫn là bản nháp chưa duyệt), lưu tệp UTF-8. Dấu nội dung giữ nguyên ranh giới dòng: chèn/xoá một dòng trống sau khi duyệt cũng làm xác nhận mất hiệu lực.
+- Không ghi đè bảng người soạn, bảng đã duyệt, bảng đã bị sửa tay (kể cả ghi chú của PI trong khung trạng thái) — công cụ tự từ chối; `--ghi-de` chỉ dùng khi PI bảo soạn lại bản nháp. Bộ biến máy đổi sau khi PI duyệt ⇒ MT-12 cảnh báo và đối chiếu báo LỆCH theo bảng đã duyệt: sửa bộ máy theo bảng, hoặc soạn bảng mới để PI duyệt lại.
 
 - **Giai đoạn mục tiêu (15/11/2026):** ma trận phải dùng ĐÚNG tên và kiểu trong bộ biến — trường REDCap `text` không khai `integer`/`number` (vd mã bàn khám) chỉ nhận `van_ban` (MT-07); biến nguồn dạng lặp «_k» (`uacr_k_ngay` = `uacr_1_ngay` … theo `lap_k`) được MT-08 nhận. MT-11: mục SAP ma trận trỏ tới phải có thật, và MỖI mục tiêu G1 phải có bảng/hình giả gắn nhãn «Mục tiêu k»/«MTk» (SAP §11 hoặc phần Dự kiến kết quả của đề cương nộp). Kiểm chung: trục `ma_tran_muc_tieu` của `nhat_quan_xuyen_cong` (C1a/BTM dựng 15/11 — `audit/nhat-ky/2026-11-15-muc-tieu-chua-noi-voi-bien-va-bang-gia.md`).
 ## Ranh giới
@@ -279,7 +284,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 
 | Nhiệm vụ | Bạn LÀM — đầu ra (tên là HỢP ĐỒNG) | Tiêu chí bạn phải đưa tới ĐẠT | Hồ sơ + lệnh bạn chuẩn bị cho NGƯỜI |
 |---|---|---|---|
-| `G3-T2` — Đặc tả bộ biến số + ma trận mục tiêu–biến | `_bo-bien-rieng.csv`, `_ma-tran-muc-tieu-bien.csv` | G3-AUTO-19 + kiểm máy cấp nhiệm vụ: bộ biến G5 nạp được + không biến định danh trực tiếp | — |
+| `G3-T2` — Đặc tả bộ biến số + ma trận mục tiêu–biến + bảng bộ biến cho PI duyệt | `_bo-bien-rieng.csv`, `_ma-tran-muc-tieu-bien.csv`, `G3_BO_BIEN_SO_<mã>.md` hoặc `DE_CUONG_NOP_HOI_DONG_<mã>.md` | G3-AUTO-19 + kiểm máy cấp nhiệm vụ: bộ biến G5 nạp được + không biến định danh trực tiếp + phủ mục tiêu (ma trận) + có nguồn người duyệt (bảng G3 hoặc bảng «Mã biến» của đề cương nộp) | — |
 
 Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G1-T4` (cong-cu-do-luong), `G3-T3` (quan-ly-du-lieu). Không bao giờ chấm đầu ra do chính bạn làm.
 
@@ -332,4 +337,10 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."
+4. Ô QUYẾT ĐỊNH CỦA NGƯỜI — máy KHÔNG gieo (15/11/2026, sự cố G2 gieo `design_code` vào ô ghim của PI): ô chỉ
+   người ghi (ghim thiết kế `gate_params.Gx`/`design_code`, xác nhận/duyệt/ký, `decision`/`gradeLevel` của
+   dashboard, sổ `*-da-duyet.json`/`*-da-xet.json`/`rut-bai-da-xem-xet.json`) KHÔNG được ghi giá trị máy suy —
+   kể cả «chỉ điền khi còn trống». Bản sao của máy để ở checkpoint/tệp riêng (vd `.cho-ky.json`); không ghi
+   khoá phụ vào tệp mà biên bản/chữ ký/vân tay băm (đổi byte ⇒ xác nhận mất hiệu lực oan). Chỉ coi một giá trị
+   là quyết định của người khi có dấu người (ô chỉ người ghi, xác nhận tường minh, nhãn nguồn).
 '''

@@ -155,8 +155,12 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # ma_tran_muc_tieu, MT-11) — cặp y hệt repo gốc nhánh claude/muc-tieu-20261115; vẫn 64.
 # 15/11/2026: dieu-phoi-g0/g1/g7 + thu-thu-tai-lieu + phan-tich-thong-ke + viet-ban-thao (R10 — K4 khái niệm chuẩn
 # G0, N4-G1, G7 Kết quả từ G6) — cặp y hệt repo gốc nhánh claude/r10-day-agent-20261115; vẫn 64.
+# 15/11/2026: dieu-phoi-g1 + dieu-phoi-g2 + thiet-ke-nghien-cuu (ghim thiết kế cần dấu người, G2 thôi gieo
+# design_code — thẩm định #277/#281) — dòng y hệt repo gốc nhánh claude/ghim-thiet-ke-dau-nguoi-20261115; vẫn 64.
+# 15/11/2026: CẢ 64 agent — luật chung «Ô QUYẾT ĐỊNH CỦA NGƯỜI — máy KHÔNG gieo» trong khối guardrail cuối (cặp
+# OLD_KET_THUC/NEW_KET_THUC của enforce_agent_guardrails.py repo gốc, nhánh claude/day-agent-sau-tham-dinh-277-281).
 MANIFEST_SELF_CHECK_SHA256 = (
-    "376a2da224abbcb93cee84105d4d3d9c92291abb55e60854d906edb197aab0eb"
+    "1b4d21548dfe4a4f5cc4ee7d8110741ff239196cdf7b0e9f67169c7c0a42238c"
 )
 
 MINIMUM_AGENT_COUNT = 64
