@@ -1457,3 +1457,17 @@ def test_g0_auto_08_khong_bao_thieu_oan_khi_khai_niem_chinh_la_chu_viet_tat():
     assert any(G0Q._co_trong_truy_van(t, q) for t in tn)
     assert G0Q._thuat_ngu_phu("đo HbA1c và BMI", {}) == ["HbA1c", "BMI"]
     assert G0Q._thuat_ngu_phu("người bệnh tăng huyết áp", {}) == []  # chữ thường không phải viết tắt
+
+
+def test_g5_auto_13_doc_cung_phieu_thu_thap_voi_g5_auto_11(tmp_path):
+    """Giả lập lần 3: G5-AUTO-11 (#266) đọc phiếu `PHIEU_THU_THAP_SO_LIEU_<mã>.md`; G5-AUTO-13 phải nhận CÙNG tệp đó
+    (không bắt PI khai thêm gate_params.G2.phieu_nop_hoi_dong cho cùng một phiếu)."""
+    d = _de_tai(tmp_path)
+    _ghi_bo_bien(d)
+    _ghi_ma_tran(d)
+    assert MT.kiem_phieu_hoi_dong(d, STUDY)["trang_thai"] == "KHONG_DO_DUOC"
+    (d / f"PHIEU_THU_THAP_SO_LIEU_{STUDY}.md").write_text(
+        "# Phiếu thu thập\n" + "\n".join(f"- {r[5]}. {r[1]} (`{r[3]}`)" for r in MA_TRAN_DUNG) + "\n",
+        encoding="utf-8", newline="\n")
+    kq = MT.kiem_phieu_hoi_dong(d, STUDY)
+    assert kq["trang_thai"] == "DAT" and f"PHIEU_THU_THAP_SO_LIEU_{STUDY}.md" in kq["nguon"]

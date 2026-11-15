@@ -600,8 +600,9 @@ def kiem_noi_dung_xuat(out_dir: Path, study: str, tu_dien: Path, cot_xuat: Itera
 # ───────────────────────────── phiếu nộp Hội đồng Đạo đức ↔ ma trận/từ điển ─────────────────────────────
 def kiem_phieu_hoi_dong(out_dir: Path, study: str, *, meta: Optional[Mapping[str, Any]] = None) -> Dict[str, Any]:
     """Mỗi mã câu hỏi của ma trận (cột cau_hoi dạng «C3», «TT1») phải có trong phiếu đã nộp Hội đồng Đạo đức:
-    hồ sơ G2 (`G2_A3_ETHICS_PACKAGE_<mã>.md`) + các tệp khai ở gate_params.G2.phieu_nop_hoi_dong (đường dẫn tương
-    đối thư mục đề tài). Trả {trang_thai: DAT|CHUA_DAT|KHONG_AP_DUNG|KHONG_DO_DUOC, loi[], nguon[]}."""
+    hồ sơ G2 (`G2_A3_ETHICS_PACKAGE_<mã>.md`) + phiếu thu thập `PHIEU_THU_THAP_SO_LIEU_<mã>.md` + đề cương nộp
+    `DE_CUONG_NOP_HOI_DONG_<mã>.md` + các tệp khai ở gate_params.G2.phieu_nop_hoi_dong (đường dẫn tương đối).
+    Trả {trang_thai: DAT|CHUA_DAT|KHONG_AP_DUNG|KHONG_DO_DUOC, loi[], nguon[]}."""
     out_dir = Path(out_dir)
     meta = dict(meta) if meta is not None else doc_meta(out_dir)
     dong, loi_ct = doc_ma_tran(out_dir)
@@ -612,7 +613,11 @@ def kiem_phieu_hoi_dong(out_dir: Path, study: str, *, meta: Optional[Mapping[str
     if not ma:
         return {"trang_thai": "KHONG_AP_DUNG", "loi": [], "nguon": [],
                 "ghi_chu": "ma trận không có mã câu hỏi (đề tài không dùng phiếu/công cụ có mã câu)"}
-    tep: List[Path] = [out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"]
+    # CÙNG nguồn phiếu với trục «công cụ thu thập ↔ từ điển» của G5-AUTO-11 (nhat_quan_xuyen_cong._truc_cong_cu):
+    # PHIEU_THU_THAP_SO_LIEU_<mã>.md (tên chuẩn) và đề cương nộp Hội đồng — giả lập lần 3 (15/11/2026) đo được hai luật
+    # đòi hai cách khai khác nhau cho CÙNG một phiếu.
+    tep: List[Path] = [out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md", out_dir / f"PHIEU_THU_THAP_SO_LIEU_{study}.md",
+                       out_dir / f"DE_CUONG_NOP_HOI_DONG_{study}.md"]
     khai = _gp(meta, "G2").get("phieu_nop_hoi_dong") or []
     if isinstance(khai, str):
         khai = [khai]
