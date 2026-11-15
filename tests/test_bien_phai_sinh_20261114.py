@@ -578,3 +578,27 @@ def test_duyet_chi_bien_chon_va_bo_qua_mo_dun_khac(tmp_path, monkeypatch, capsys
                    "--ap-dung"]) == 0
     nd = {b.ten: b.nguoi_duyet for b in B.doc_dac_ta(d)}
     assert nd["x"].startswith("PI:PI-DY-01:") and nd["y"] == "" and nd.get("t", "") == ""
+
+
+def test_duyet_lan_hai_cung_nguoi_giu_nguyen_khong_sao_luu_thua(tmp_path, monkeypatch, capsys):
+    # 15/11/2026: bác sĩ chạy khô lại tệp đã chốt vẫn thấy «sẽ ghi duyệt 33 biến»; chạy --ap-dung lần hai sinh thêm bản
+    # sao lưu. Đã chốt + còn hiệu lực + cùng người ⇒ giữ nguyên, báo «Không có gì mới», không sao lưu.
+    d = _dt_duyet(tmp_path, monkeypatch)
+    assert B.main(["duyet", "--study", "DY", "--vai", "PI", "--tham-chieu", "PI-DY-01", "--ap-dung"]) == 0
+    sau_lan_1 = (d / B.TEP_DAC_TA).read_bytes()
+    so_bak = len(list(d.glob(B.TEP_DAC_TA + ".bak-*")))
+    capsys.readouterr()
+    assert B.main(["duyet", "--study", "DY", "--vai", "PI", "--tham-chieu", "PI-DY-01", "--ap-dung"]) == 0
+    ra = capsys.readouterr().out
+    assert "Không có gì mới để ghi" in ra and "sẽ ghi duyệt 0" not in ra and "GHI DUYỆT 0" in ra
+    assert (d / B.TEP_DAC_TA).read_bytes() == sau_lan_1
+    assert len(list(d.glob(B.TEP_DAC_TA + ".bak-*"))) == so_bak
+
+
+def test_duyet_nguoi_khac_ghi_de_co_bao_thay(tmp_path, monkeypatch, capsys):
+    d = _dt_duyet(tmp_path, monkeypatch)
+    assert B.main(["duyet", "--study", "DY", "--vai", "PI", "--tham-chieu", "PI-DY-01", "--ap-dung"]) == 0
+    capsys.readouterr()
+    assert B.main(["duyet", "--study", "DY", "--vai", "THONG_KE_VIEN", "--tham-chieu", "TKV-DY-01", "--ap-dung"]) == 0
+    assert "(thay «PI:PI-DY-01:" in capsys.readouterr().out
+    assert all(b.nguoi_duyet.startswith("THONG_KE_VIEN:TKV-DY-01:") for b in B.doc_dac_ta(d))

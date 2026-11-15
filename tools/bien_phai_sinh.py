@@ -1468,19 +1468,32 @@ def lenh_duyet(args) -> int:
         raise TuChoi(f"không có biến: {', '.join(sorted(chon - biet))}")
     hom_nay = _date.today().isoformat()
     ghi: list[tuple[str, str, str]] = []
+    giu: list[tuple[str, str]] = []
     for r in dong:
         ten = (r.get("ten_bien") or "").strip()
         ct = (r.get("cong_thuc") or "").strip()
         if not ten or not ct or ct.startswith("@") or (chon and ten not in chon):
             continue
         dau = dau_cong_thuc(ten, ct, r.get("lap_k") or "")
+        cu = (r.get("nguoi_duyet") or "").strip()
+        # 15/11/2026: đã chốt, CÒN hiệu lực (dấu = công thức hiện tại) và CÙNG người chốt ⇒ giữ nguyên — không đóng lại
+        # ngày, không báo «sẽ ghi» (bác sĩ chạy khô lại tệp đã chốt mà vẫn thấy «sẽ ghi duyệt 33 biến», dễ hiểu nhầm là
+        # chưa chốt), không sinh bản sao lưu thừa. Người chốt KHÁC (vd PI rồi thống kê viên) vẫn ghi đè, có báo «thay».
+        p_cu = [x.strip() for x in cu.split(":")]
+        if trang_thai_duyet(cu, dau) == "DA_DUYET" and p_cu[:2] == [vai, ref]:
+            giu.append((ten, cu))
+            continue
         moi = f"{vai}:{ref}:{hom_nay}:{dau}"
-        ghi.append((ten, (r.get("nguoi_duyet") or "").strip(), moi))
+        ghi.append((ten, cu, moi))
         r["nguoi_duyet"] = moi
     print(f"{'GHI DUYỆT' if args.ap_dung else 'CHẠY KHÔ — sẽ ghi duyệt'} {len(ghi)} biến phái sinh — {args.study} "
-          f"({vai}:{ref}:{hom_nay})")
+          f"({vai}:{ref}:{hom_nay})" + (f"; {len(giu)} biến đã chốt sẵn bởi {vai}:{ref}, còn hiệu lực — giữ nguyên"
+                                       if giu else ""))
     for ten, cu, moi in ghi:
         print(f"  {ten:24} {moi}" + (f"   (thay «{cu}»)" if cu and cu != moi else ""))
+    if not ghi:
+        print("Không có gì mới để ghi — mọi công thức được chọn đã chốt và còn hiệu lực. " + CAN_KIEM)
+        return 0
     if not args.ap_dung:
         print("Thêm --ap-dung để ghi. Lệnh dành cho THỐNG KÊ VIÊN/PI tự chạy — agent không chạy. " + CAN_KIEM)
         return 0
