@@ -14,6 +14,8 @@
 
 **Đơn vị chủ trì:** Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
 
+**Phiên bản đề cương:** 1.0, ngày ……/……/2026
+
 **Thành phố Hồ Chí Minh – 2026**
 
 ---

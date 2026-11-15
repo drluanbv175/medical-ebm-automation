@@ -1929,6 +1929,37 @@ _SPECIALTY_LABELS = {
 }
 
 
+def _bang_quy_trinh(study: str) -> list:
+    """Quy trình thu thập/nhập liệu/lưu trữ ĐÃ CHỐT của đề tài (`exports/<mã>/_quy-trinh-du-lieu.csv`) — [] nếu chưa có."""
+    try:
+        import quy_trinh_du_lieu as QTD  # noqa: PLC0415
+        dong, _cot, loi = QTD.doc_bang(BASE / "exports" / study)
+    except Exception:  # noqa: BLE001
+        return []
+    return [] if loi or not dong else list(dong)
+
+
+def _khoi_quy_trinh(study: str) -> list:
+    """Giai đoạn 5 (15/11/2026): DMP in NGUYÊN quy trình đã chốt ở đề cương/G1/SOP (PHẦN 1B) thay vì chỉ khuôn chung —
+    đề cương C1a hứa «nhập kép», «hủy bảng đối chiếu trong 30 ngày», «lưu 2 năm», DMP từng không có điều nào."""
+    dong = _bang_quy_trinh(study)
+    if not dong:
+        return []
+    import quy_trinh_du_lieu as QTD  # noqa: PLC0415
+    return QTD.khoi_dmp(dong)
+
+
+def _dong_luu_tru_huy(study: str) -> str:
+    dong = _bang_quy_trinh(study)
+    if dong:
+        import quy_trinh_du_lieu as QTD  # noqa: PLC0415
+        da_chot = QTD.dong_luu_tru(dong)
+        if da_chot:
+            return da_chot
+    return ("- **Lưu trữ/hủy:** thời hạn, nơi lưu, quyền truy cập và thủ tục hủy theo IRB, pháp luật và chính sách "
+            "tài trợ/đơn vị; không dùng một thời hạn cứng cho mọi đề tài.")
+
+
 def generate_artifact(
     study: str, topic: str, design_code: str,
     n_adjusted: int, n_total: int, n_per_group: int,
@@ -2026,6 +2057,7 @@ def generate_artifact(
     lines += [
         "---",
         "",
+        *_khoi_quy_trinh(study),
         "## PHẦN 2 — REDCAP DATA DICTIONARY",
         "",
         f"File CSV: `G5_REDCap_dictionary_{study}.csv` (**{n_rows} dòng**)",
@@ -2137,8 +2169,7 @@ def generate_artifact(
         "- **Phân quyền:** least privilege theo vai trò; rà quyền định kỳ; người phân tích "
         "chỉ nhận dataset đã khóa và không nhận bảng ánh xạ.",
         "- **Sao lưu:** backup mã hóa theo quy định đơn vị và phải có bằng chứng thử phục hồi.",
-        "- **Lưu trữ/hủy:** thời hạn, nơi lưu, quyền truy cập và thủ tục hủy theo IRB, "
-        "pháp luật và chính sách tài trợ/đơn vị; không dùng một thời hạn cứng cho mọi đề tài.",
+        _dong_luu_tru_huy(study),
         "- **Sự cố:** ghi nhận vi phạm bảo mật, đánh giá ảnh hưởng và báo bên có thẩm quyền.",
         "",
         "Tham chiếu: ICH E6(R3) §4.2–4.3; FDA Electronic Systems/Records/Signatures 2024.",

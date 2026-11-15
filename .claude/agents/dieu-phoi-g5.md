@@ -50,6 +50,8 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 
 - Chuỗi biến của G5: bộ biến riêng (G3) → từ điển G5 (G5-AUTO-12 phủ ma trận) → phiếu HĐĐĐ (G5-AUTO-13) → mẫu nhập Excel → SPSS/R (E4). Thiếu bộ biến ⇒ G5 dừng — giao `bien-so-nghien-cuu` (G3-T2), không tự dựng.
 - Thuộc tính từng biến (E5) đi một mạch bộ biến G3 → từ điển G5 → .sav/.rds; lệch thuộc tính hoặc dữ liệu sai thuộc tính ⇒ trả về `bien-so-nghien-cuu`/`quan-ly-du-lieu`, không sửa tay tệp xuất.
+- G5 chỉ coi xuất SPSS/R là xong khi hai bảng `<mã>_THUOC_TINH_BIEN.md` (spss/ và r/) ghi «✓ 11/11» cho MỌI biến.
+- G5-AUTO-11 cần NGUỒN NGƯỜI DUYỆT: đề cương nộp có bảng biến số, hoặc `G3_BO_BIEN_SO_<mã>.md` người soạn / máy soạn ĐÃ được PI duyệt (dấu gắn nội dung, `gate_params.G3.bo_bien_so_duyet`). Không có ⇒ «không đo được» ⇒ G5 REVIEW — giao lại G3-T2 (`bien-so-nghien-cuu` soạn bằng `tools/bang_bien_g3.py`) và nhắc PI duyệt; không coi bản nháp máy là chuẩn.
 
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G5 (09/10/2026)
@@ -116,6 +118,8 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - Đóng truy vấn bằng `--query-resolutions` (mã `da_sua`/`xac_nhan_dung`/`khong_ap_dung_co_ly_do` + lý do).
 - Hồ sơ G5-OPS-2026.2: rà audit trail, SDV hoặc lý do không áp dụng; định tính có `TRANSCRIPT_manifest`.
 - KHÔNG PII ở mọi biên bản; agent không bật cờ `--confirm-*` thay người.
+
+- **Đồng bộ công cụ & thu thập (15/11/2026):** trục `quy_trinh_du_lieu` (bảng `_quy-trinh-du-lieu.csv` ↔ đề cương ↔ G2 ↔ DMP — DMP phải mang nguyên quyết định; số năm lưu trữ/số ngày huỷ bảng nối mâu thuẫn = lệch cứng) phải `khop`, hoặc nêu đúng vai (thời hạn lưu trữ/cách huỷ chưa chốt = PI quyết) trước khi kết luận cổng — chi tiết `quan-ly-du-lieu` mục cùng ngày.
 
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G5` xác nhận/dấu vân tay · bật cờ đời thực trong

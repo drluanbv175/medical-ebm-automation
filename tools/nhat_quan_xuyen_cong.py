@@ -739,7 +739,7 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
 TRUC_CHUOI = ("bien_de_cuong", "cong_cu_tu_dien", "muc_tieu_phan_tich", "chon_mau_co_mau", "dac_ta_cho_bo_bien",
               "tong_quan_khoang_trong", "co_mau_tinh_lai", "ky_thuat_chon_mau", "tai_lieu_nop_co_mau", "ten_de_tai",
               "cau_hoi_gia_thuyet", "trich_dan_tong_quan", "ma_tran_muc_tieu", "chuan_bao_cao", "mo_ta_thiet_ke",
-              "kiem_soat_sai_lech")
+              "kiem_soat_sai_lech", "quy_trinh_du_lieu", "cong_cu_do_luong", "de_cuong_nop")
 # Trục nào là trách nhiệm của cổng nào (hoi_dong_cong.trach_nhiem dùng — «hoàn thiện» của cổng phải qua trục của nó).
 TRUC_THEO_CONG = {
     "co_mau": ("G3", "G4", "G10"), "alpha": ("G3", "G4", "G10"), "power": ("G3", "G4", "G10"),
@@ -756,6 +756,8 @@ TRUC_THEO_CONG = {
     "ma_tran_muc_tieu": ("G1", "G3", "G4", "G10"),
     "chuan_bao_cao": ("G1", "G2", "G4", "G10"), "mo_ta_thiet_ke": ("G1", "G2", "G4", "G10"),
     "kiem_soat_sai_lech": ("G1", "G4", "G10"),
+    "quy_trinh_du_lieu": ("G1", "G2", "G5", "G10"), "cong_cu_do_luong": ("G1", "G3", "G10"),
+    "de_cuong_nop": ("G2", "G4", "G10"),
 }
 
 
@@ -1745,6 +1747,178 @@ def _truc_kiem_soat_sai_lech(out_dir: Path, study: str, meta: Dict[str, Any]) ->
     return _ket("kiem_soat_sai_lech", ten, nguon, MUC_KHOP, kq.get("tom_tat") or "đạt")
 
 
+# ─────────────── GIAI ĐOẠN 5 «CÔNG CỤ & PHƯƠNG PHÁP THU THẬP» (15/11/2026) ───────────────
+# Kiểm tay: (1) đề cương nộp C1a + phiếu thông tin G2 hứa «nhập kép», «hủy bảng đối chiếu trong 30 ngày», «lưu 2 năm»,
+# «hai người ngoài khoa mã hoá câu hỏi mở» nhưng DMP G5 chỉ có khuôn chung; (2) khối COSMIN của A2 ghi «[CẦN … CVI]»
+# trong khi đề cương 4.5 đã có CVI, EFA/CFA, Cronbach. Trục `cong_cu_tu_dien` cũ chỉ so phiếu ↔ từ điển nhập liệu.
+def _truc_quy_trinh_du_lieu(out_dir: Path, study: str, meta: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Quy trình thu thập/nhập liệu/lưu trữ đã chốt ↔ đề cương ↔ G2 ↔ DMP G5 (`quy_trinh_du_lieu.kiem`, QT-01…QT-07).
+    Số năm lưu trữ/số ngày hủy bảng nối mâu thuẫn ⇒ LỆCH CỨNG (hứa với người tham gia khác nhau); tài liệu không mang
+    quyết định ⇒ LỆCH MỀM; quyết định còn chờ PI ⇒ CẦN XEM; chưa có bảng ⇒ CHƯA ĐỦ ĐỂ SO. Chưa chốt G1 ⇒ None."""
+    import quy_trinh_du_lieu as QTD  # noqa: PLC0415
+
+    if not _co_that(_gp(meta, "G1").get("data_collection_method")):
+        return None
+    kq = QTD.kiem(out_dir, study, meta=meta)
+    ten = "Quy trình thu thập · nhập liệu · lưu trữ đã chốt ↔ đề cương ↔ G2 ↔ DMP G5"
+    nguon = [{"cong": "G1–G5", "noi": QTD.TEP, "gia_tri": kq.get("tom_tat")}]
+    if kq.get("trang_thai") == QTD.TRANG_THAI_KHONG_CO:
+        return _ket("quy_trinh_du_lieu", ten, nguon, MUC_CHUA_DU, kq.get("tom_tat") or "chưa có bảng quy trình")
+    if kq.get("mau_thuan"):
+        return _ket("quy_trinh_du_lieu", ten, nguon, MUC_LECH_CUNG,
+                    "; ".join(f"{x['ma']}: {x['noi_dung']}" for x in kq["mau_thuan"][:4]))
+    if kq.get("loi"):
+        return _ket("quy_trinh_du_lieu", ten, nguon, MUC_LECH_MEM,
+                    "; ".join(f"{x['ma']}: {x['noi_dung']}" for x in kq["loi"][:4]))
+    if kq.get("canh_bao"):
+        return _ket("quy_trinh_du_lieu", ten, nguon, MUC_CAN_XEM,
+                    "; ".join(f"{x['ma']}: {x['noi_dung']}" for x in kq["canh_bao"][:4]))
+    return _ket("quy_trinh_du_lieu", ten, nguon, MUC_KHOP, kq.get("tom_tat") or "đạt")
+
+
+def _truc_cong_cu_do_luong(out_dir: Path, study: str, meta: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Khối COSMIN của A2 (mô-đun «prom_tool») ↔ bảng truy nguyên dựng lại từ đề cương nộp + SAP
+    (`run_g1_auto._bang_cosmin`). A2 khác bảng dựng lại ⇒ CẦN XEM (dựng lại G1); còn ô «[CẦN …]» ⇒ CẦN XEM (đề cương
+    chưa nói tới đặc tính đó); khớp và không còn ô trống ⇒ KHỚP. Đề tài không có cấu phần công cụ đo ⇒ None."""
+    import run_g1_auto as G1A  # noqa: PLC0415
+
+    if "prom_tool" not in G1A.mo_dun_chuyen_biet(str(meta.get("topic") or study), meta, out_dir):
+        return None
+    ten = "Công cụ đo lường (COSMIN) ở A2 ↔ đề cương nộp ↔ SAP"
+    bang = G1A._bang_cosmin(out_dir, study)
+    if bang is None:
+        return _ket("cong_cu_do_luong", ten, [], MUC_CHUA_DU, "chưa có đề cương nộp để truy nguyên đặc tính đo lường")
+    a2 = unicodedata.normalize("NFC", _doc_text(out_dir / f"G1_A2_PROTOCOL_DESIGN_{study}.md"))
+    nguon = [{"cong": "G1", "noi": "A2 PHẦN 8 — MÔ-ĐUN COSMIN", "gia_tri": f"{len(bang)} đặc tính"}]
+    thieu = [d for d in bang if d not in a2]
+    con_can = [d.split(":")[0].lstrip("- ") for d in bang if "[CẦN" in d]
+    if thieu:
+        return _ket("cong_cu_do_luong", ten, nguon, MUC_CAN_XEM,
+                    f"A2 chưa mang bảng truy nguyên COSMIN mới ({len(thieu)}/{len(bang)} dòng khác) — dựng lại G1 "
+                    "(`run_g1_auto.py --khong-tra-pubmed`)")
+    if con_can:
+        return _ket("cong_cu_do_luong", ten, nguon, MUC_CAN_XEM,
+                    "đề cương chưa nói tới: " + "; ".join(con_can)
+                    + " — nhóm nghiên cứu bổ sung hoặc ghi «không áp dụng»")
+    return _ket("cong_cu_do_luong", ten, nguon, MUC_KHOP,
+                f"{len(bang)} đặc tính đều truy nguyên được về đề cương/SAP hoặc ghi rõ ngoài phạm vi")
+
+
+# ─────────────── GIAI ĐOẠN 6 «VIẾT ĐỀ CƯƠNG» (15/11/2026) ───────────────
+# Kiểm tay C1a: bìa đề cương nộp không ghi phiên bản/ngày (G1/G2 khai protocol_version 1.0; phiếu đồng ý có «Phiên bản
+# 1.0, ngày …»); đề cương trỏ «kế hoạch phân tích … phiên bản 1.4» khi SAP đã là 1.5. kiem_de_cuong_nop_hoi_dong (K1–K7)
+# chỉ kiểm HÌNH THỨC (đủ chương, Word khớp md, ký hiệu nội bộ, N, PMID, PII) — không đối chiếu phiên bản/thời gian/
+# kinh phí.
+_PB_SO = r"([0-9]+(?:\.[0-9]+)*)"
+_PB_BIA = re.compile(r"[Pp]hiên bản(?:\s+đề cương)?\s*:?\**\s*" + _PB_SO)
+_PB_TRONG_DONG = re.compile(r"phiên bản\s*" + _PB_SO, re.I)
+_THANG_NAM = re.compile(r"(?:tháng\s*)?(\d{1,2})/(20\d{2})")
+
+
+def _so_phien_ban(s: str) -> Tuple[int, ...]:
+    return tuple(int(x) for x in s.split(".") if x.isdigit())
+
+
+def _bang_hai_cot(van_ban: str, nhan: str) -> Optional[str]:
+    m = re.search(r"^\|\s*" + re.escape(nhan) + r"\s*\|([^|\n]*)\|", van_ban, re.M)
+    return m.group(1).strip() if m else None
+
+
+def _bang_sau(van_ban: str, moc: str) -> str:
+    """Bảng markdown ĐẦU TIÊN sau dòng chứa `moc` (các dòng «|…» liền nhau) — không tràn sang bảng của mục sau."""
+    i = van_ban.find(moc)
+    if i < 0:
+        return ""
+    dong, trong_bang = [], False
+    for d in van_ban[i:].splitlines()[1:]:
+        if d.lstrip().startswith("|"):
+            dong.append(d)
+            trong_bang = True
+        elif trong_bang:
+            break
+    return "\n".join(dong)
+
+
+def _truc_de_cuong_nop(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -> Optional[Dict[str, Any]]:
+    """Đề cương nộp ↔ quyết định đã chốt: (DC-01) bìa ghi phiên bản = protocol_version G1/G2; (DC-02) phiên bản kế hoạch
+    phân tích được đề cương trích = phiên bản ở tiêu đề SAP; (DC-03) phiên bản phiếu thông tin/đồng ý ở phụ lục = G2
+    icf_version; (DC-04) «Thời gian thực hiện» = G1 study_period; (DC-05) khoản chi bảng kinh phí = G1 budget.
+    Thiếu/lệch
+    phiên bản, thời gian ⇒ LỆCH MỀM; khoản chi khác ⇒ CẦN XEM. Chưa có đề cương nộp ⇒ CHƯA ĐỦ ĐỂ SO."""
+    dc = unicodedata.normalize("NFC", _doc_text(out_dir / f"DE_CUONG_NOP_HOI_DONG_{study}.md"))
+    ten = "Đề cương nộp ↔ phiên bản · SAP · phiếu đồng ý · thời gian · kinh phí đã chốt"
+    if not dc.strip():
+        return _ket("de_cuong_nop", ten, [], MUC_CHUA_DU, "chưa có đề cương nộp Hội đồng")
+    g1, g2 = _gp(meta, "G1"), _gp(meta, "G2")
+    nguon: List[Dict[str, Any]] = []
+    muc: List[str] = [MUC_KHOP]
+    ghi: List[str] = []
+    # DC-01
+    bia_dong = []
+    for d in dc.splitlines()[:40]:  # bìa = trước đường kẻ «---» đầu tiên; bỏ dòng nói về SAP/phiếu
+        if d.strip() == "---":
+            break
+        if not re.search(r"kế hoạch phân tích|phiếu", d, re.I):
+            bia_dong.append(d)
+    m = _PB_BIA.search("\n".join(bia_dong))
+    pv = {c: str(v).strip() for c, v in (("G1", g1.get("protocol_version")), ("G2", g2.get("protocol_version")))
+          if _co_that(v)}
+    nguon.append({"cong": "G10", "noi": "bìa đề cương nộp «Phiên bản»", "gia_tri": m.group(1) if m else None})
+    if not m:
+        muc.append(MUC_LECH_MEM)
+        ghi.append("bìa đề cương chưa ghi phiên bản/ngày (Hội đồng đòi trên mọi tài liệu nộp)"
+                   + (f"; G1/G2 khai {', '.join(sorted(set(pv.values())))}" if pv else ""))
+    elif pv and any(_so_phien_ban(v) != _so_phien_ban(m.group(1)) for v in pv.values()):
+        muc.append(MUC_LECH_MEM)
+        ghi.append(f"bìa ghi phiên bản {m.group(1)} nhưng " + ", ".join(f"{c} khai {v}" for c, v in pv.items()))
+    # DC-02
+    pb_sap = _dong_dau(_PHIEN_BAN_TIEU_DE, sap_text[:4000]) if sap_text else None
+    trich = [x for d in dc.splitlines() if re.search(r"kế hoạch phân tích", d, re.I)
+             for x in _PB_TRONG_DONG.findall(d)]
+    if pb_sap and trich:
+        cao = max(trich, key=_so_phien_ban)
+        nguon.append({"cong": "G4", "noi": "đề cương trích phiên bản kế hoạch phân tích / tiêu đề SAP",
+                      "gia_tri": f"{cao} / {pb_sap}"})
+        if _so_phien_ban(cao) != _so_phien_ban(pb_sap):
+            muc.append(MUC_LECH_MEM)
+            ghi.append(f"đề cương trích kế hoạch phân tích phiên bản {cao}, SAP hiện là {pb_sap} — sửa đề cương "
+                       "sau khi "
+                       "thống kê viên ký phiên bản SAP hiện hành")
+    # DC-03
+    i_icf = max(dc.find("ĐỒNG Ý THAM GIA"), dc.find("PHIẾU ĐỒNG Ý"))
+    icf_dc = _PB_TRONG_DONG.findall(dc[i_icf:i_icf + 1500]) if i_icf >= 0 else []
+    if icf_dc and _co_that(g2.get("icf_version")):
+        nguon.append({"cong": "G2", "noi": "phụ lục phiếu đồng ý «Phiên bản» / G2 icf_version",
+                      "gia_tri": f"{icf_dc[0]} / {g2.get('icf_version')}"})
+        if _so_phien_ban(icf_dc[0]) != _so_phien_ban(str(g2.get("icf_version"))):
+            muc.append(MUC_LECH_MEM)
+            ghi.append(f"phụ lục phiếu đồng ý ghi phiên bản {icf_dc[0]}, G2 khai icf_version {g2.get('icf_version')}")
+    # DC-04
+    tg = _bang_hai_cot(dc, "Thời gian thực hiện")
+    if tg and _co_that(g1.get("study_period")):
+        a, b = _THANG_NAM.findall(tg)[:2], _THANG_NAM.findall(str(g1.get("study_period")))[:2]
+        nguon.append({"cong": "G1", "noi": "«Thời gian thực hiện» đề cương / G1 study_period", "gia_tri": tg})
+        if a and b and [(int(t), n) for t, n in a] != [(int(t), n) for t, n in b]:
+            muc.append(MUC_LECH_MEM)
+            ghi.append(f"thời gian thực hiện ở đề cương «{tg}» khác G1 study_period")
+    # DC-05
+    ngan = g1.get("budget")
+    if isinstance(ngan, list) and ngan:
+        khoan_dc = {re.sub(r"\s+", " ", r.group(1)).strip().casefold()
+                    for r in re.finditer(r"^\|\s*\d+\s*\|([^|\n]+)\|", _bang_sau(dc, "Dự trù kinh phí"), re.M)}
+        khoan_g1 = {re.sub(r"\s+", " ", str(x.get("nhom", ""))).strip().casefold() for x in ngan if isinstance(x, dict)}
+        if khoan_dc:
+            lech = sorted(khoan_g1 ^ khoan_dc)
+            nguon.append({"cong": "G1", "noi": "khoản chi bảng kinh phí đề cương / G1 budget",
+                          "gia_tri": f"{len(khoan_dc)} / {len(khoan_g1)}"})
+            if lech:
+                muc.append(MUC_CAN_XEM)
+                ghi.append(f"{len(lech)} khoản chi chỉ có ở một bên (đề cương ↔ G1 budget): " + "; ".join(lech[:3]))
+    m_cao = _muc_cao_nhat(muc)
+    return _ket("de_cuong_nop", ten, nguon, m_cao,
+                "; ".join(ghi) if ghi else "phiên bản, kế hoạch phân tích, phiếu đồng ý, thời gian, kinh phí khớp")
+
+
 def truc_chuoi(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -> List[Dict[str, Any]]:
     """Các trục chuỗi đầy đủ (mỗi trục tự bắt lỗi của mình — một trục hỏng không làm mất các trục khác)."""
     td = _tu_dien(out_dir, study)
@@ -1760,7 +1934,10 @@ def truc_chuoi(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -
                 lambda: _truc_ma_tran_muc_tieu(out_dir, study, meta),
                 lambda: _truc_chuan_bao_cao(out_dir, study, meta, sap_text),
                 lambda: _truc_mo_ta_thiet_ke(out_dir, study, meta, sap_text),
-                lambda: _truc_kiem_soat_sai_lech(out_dir, study, meta)):
+                lambda: _truc_kiem_soat_sai_lech(out_dir, study, meta),
+                lambda: _truc_quy_trinh_du_lieu(out_dir, study, meta),
+                lambda: _truc_cong_cu_do_luong(out_dir, study, meta),
+                lambda: _truc_de_cuong_nop(out_dir, study, meta, sap_text)):
         try:
             k = ham()
         except Exception as e:  # noqa: BLE001

@@ -314,7 +314,95 @@ def mo_dun_chuyen_biet(topic: str, meta: Optional[dict] = None, out_dir: Optiona
     return ds + [m for m in dict.fromkeys(them) if m not in ds]
 
 
-def _specialist_module_section(module: str) -> str:
+# Giai đoạn 5 «Công cụ & thu thập» (15/11/2026): khối COSMIN của A2 từng là danh sách ô [CẦN] chung cho MỌI đề tài —
+# C1a có đủ CVI, EFA/CFA, Cronbach ở đề cương nộp 4.5 mà A2 vẫn ghi «[CẦN hội đồng chuyên gia + hệ số CVI]». Nay mỗi đặc
+# tính đo lường được truy nguyên: «đã có — đề cương mục x.y (+ SAP §k)» · «ngoài phạm vi (đề cương ghi rõ)» · [CẦN …].
+_COSMIN_MUC = (  # (nhãn, mẫu tìm, ô khi đề cương chưa nói, có tìm trong SAP không — chỉ đặc tính được PHÂN TÍCH)
+    ("Thiết kế item + miền nội dung", r"(?:xây dựng|phát triển)\s+(?:bộ câu hỏi|công cụ)|nguồn câu hỏi|miền nội dung|tự xây dựng",
+     "[CẦN nhóm nghiên cứu xác định + item pool]", False),
+    ("Độ giá trị nội dung (content validity)", r"\bCVI\b|giá trị nội dung", "[CẦN hội đồng chuyên gia + hệ số CVI]",
+     False),
+    ("Phỏng vấn nhận thức / thử nghiệm phiếu", r"phỏng vấn nhận thức|cognitive interview|thử nghiệm (?:phiếu|bộ câu hỏi)",
+     "[CẦN kế hoạch phỏng vấn nhận thức/thử nghiệm phiếu]", False),
+    ("Dịch thuật & thích nghi văn hóa (nếu công cụ gốc nước ngoài)", r"dịch xuôi|dịch ngược|thích nghi văn hóa|forward",
+     "[CẦN — hoặc ghi «không áp dụng» kèm lý do (công cụ tự xây dựng)]", False),
+    ("Độ giá trị cấu trúc (EFA/CFA)", r"nhân tố khám phá|nhân tố khẳng định|\bEFA\b|\bCFA\b",
+     "[CẦN cỡ mẫu đủ, thường ≥5–10 người/item]", True),
+    ("Độ tin cậy nội tại (Cronbach's α/ω)", r"Cronbach|\bomega\b", "[CẦN — ngưỡng thường ≥0,70]", True),
+    ("Độ tin cậy lặp lại (test–retest ICC)", r"tin cậy lặp lại|test[–-]retest", "[CẦN khoảng thời gian lặp lại]", True),
+    ("Độ giá trị hội tụ/phân biệt", r"hội tụ|giá trị phân biệt|convergent", "[CẦN công cụ tham chiếu đã kiểm định]", True),
+    ("Độ đáp ứng & MCID", r"mức thay đổi tối thiểu|\bMCID\b|độ đáp ứng", "[CẦN — nếu đo thay đổi theo thời gian]", True),
+    ("Sai số đo (SEM/SDC)", r"sai số đo lường|\bSEM\b|\bSDC\b", "[CẦN]", True),
+    ("Hiệu ứng sàn–trần", r"sàn\s*[–-]\s*trần|sàn/trần|floor|ceiling", "[CẦN]", True),
+)
+_NGOAI_PHAM_VI = re.compile(r"không thuộc phạm vi|ngoài phạm vi", re.I)
+_TU_XAY_DUNG = re.compile(r"tự xây dựng", re.I)
+_TIEU_DE_MUC = re.compile(r"^#{2,4}\s*(\d+(?:\.\d+)*)\.?\s+([^\n]*)", re.M)
+_MUC_CONG_CU = re.compile(r"công cụ (?:thu thập|nghiên cứu)|bộ câu hỏi|đặc tính đo lường", re.I)
+
+
+def _muc_cua(dc: str, vi_tri: int) -> Optional[str]:
+    ten = [h.group(1) for h in _TIEU_DE_MUC.finditer(dc[:vi_tri])]
+    return ten[-1] if ten else None
+
+
+def _bang_cosmin(out_dir: Optional[Path], study: Optional[str]) -> Optional[list]:
+    """Dòng truy nguyên từng đặc tính COSMIN từ đề cương nộp (+ SAP §k). Không có đề cương nộp ⇒ None (giữ khuôn [CẦN]).
+
+    Ưu tiên chỗ nằm trong mục CÔNG CỤ/ĐO LƯỜNG của đề cương (tiêu đề có «công cụ», «bộ câu hỏi», «thang đo», «đo lường»
+    và các mục con), rồi mới tới mục khác; chỗ trước tiêu đề đánh số đầu tiên (tóm tắt) không được trích."""
+    if not out_dir or not study:
+        return None
+    try:
+        dc = unicodedata.normalize("NFC", (Path(out_dir) / f"DE_CUONG_NOP_HOI_DONG_{study}.md").read_text(encoding="utf-8"))
+    except OSError:
+        return None
+    try:
+        sap = unicodedata.normalize("NFC", (Path(out_dir) / f"G4_A5_SAP_FINAL_{study}.md").read_text(encoding="utf-8"))
+    except OSError:
+        sap = ""
+    goc_cong_cu = [h.group(1) for h in _TIEU_DE_MUC.finditer(dc) if _MUC_CONG_CU.search(h.group(2))]
+
+    def _uu_tien(muc: Optional[str]) -> int:
+        if muc is None:
+            return 2
+        return 0 if any(muc == g or muc.startswith(g + ".") for g in goc_cong_cu) else 1
+
+    ra = []
+    for nhan, rx, can, tim_sap in _COSMIN_MUC:
+        cho = [(m.start(), _muc_cua(dc, m.start())) for m in re.finditer(rx, dc, re.I)]
+        cho = [c for c in cho if c[1] is not None]
+        ngoai = [c for c in cho if _NGOAI_PHAM_VI.search(dc[max(0, dc.rfind(".", 0, c[0]) + 1):dc.find(".", c[0]) + 1])]
+        if ngoai:
+            ra.append(f"- {nhan}: ngoài phạm vi đề tài (đề cương nộp mục {min(ngoai, key=lambda c: _uu_tien(c[1]))[1]} "
+                      "ghi rõ)")
+            continue
+        if not cho:
+            tu_xd = [c for c in ((m.start(), _muc_cua(dc, m.start())) for m in _TU_XAY_DUNG.finditer(dc)) if c[1]]
+            if nhan.startswith("Dịch thuật") and tu_xd:
+                ra.append(f"- {nhan}: không áp dụng — công cụ do nhóm tự xây dựng (đề cương nộp mục "
+                          f"{min(tu_xd, key=lambda c: (_uu_tien(c[1]), c[0]))[1]})")
+            else:
+                ra.append(f"- {nhan}: {can}")
+            continue
+        muc = min(cho, key=lambda c: (_uu_tien(c[1]), c[0]))[1]
+        muc_sap = sorted({h.group(1) for h in re.finditer(r"^###\s*§(\d+)[^\n]*\n((?:(?!^###).*\n?)*)", sap, re.M)
+                          if re.search(rx, h.group(2), re.I)}, key=int) if tim_sap else []
+        ra.append(f"- {nhan}: đã có — đề cương nộp mục {muc}" + (f"; SAP §{', §'.join(muc_sap)}" if muc_sap else ""))
+    return ra
+
+
+def _specialist_module_section(module: str, out_dir: Optional[Path] = None, study: Optional[str] = None) -> str:
+    if module == "prom_tool" and _bang_cosmin(out_dir, study) is not None:
+        dong = "\n".join(_bang_cosmin(out_dir, study) or [])
+        return f"""### MÔ-ĐUN — {_SPECIALIST_MODULE_LABEL[module]}
+> Phát hiện tín hiệu: đề tài có cấu phần xây dựng/kiểm định thang đo/bộ câu hỏi (PROM). Mỗi đặc tính truy nguyên về
+> đề cương nộp/SAP (giai đoạn 5, 15/11/2026) — ô [CẦN] chỉ còn ở đặc tính đề cương chưa nói tới.
+
+{dong}
+- Chuẩn báo cáo: COSMIN Reporting Guideline.
+- → Cân nhắc mời agent `cong-cu-do-luong` hỗ trợ chi tiết từng bước.
+"""
     if module == "prom_tool":
         return f"""### MÔ-ĐUN — {_SPECIALIST_MODULE_LABEL[module]}
 > Phát hiện tín hiệu: đề tài có cấu phần xây dựng/kiểm định thang đo/bộ câu hỏi (PROM).
@@ -378,12 +466,12 @@ def _specialist_module_section(module: str) -> str:
 """
 
 
-def specialist_modules_block(modules: list[str]) -> str:
+def specialist_modules_block(modules: list[str], out_dir: Optional[Path] = None, study: Optional[str] = None) -> str:
     """Ghép các mô-đun chuyên biệt được phát hiện thành 1 khối markdown.
     Trả về chuỗi RỖNG nếu không phát hiện tín hiệu nào (không thêm mục thừa)."""
     if not modules:
         return ""
-    sections = "\n".join(_specialist_module_section(m) for m in modules)
+    sections = "\n".join(_specialist_module_section(m, out_dir, study) for m in modules)
     return f"""
 ---
 
@@ -1418,7 +1506,7 @@ def generate_g1_artifact(
     es_section = _effect_size_section(effects)
     internal = design["internal_code"]
     specialist_modules = mo_dun_chuyen_biet(topic, meta, out_dir)
-    specialist_block = specialist_modules_block(specialist_modules)
+    specialist_block = specialist_modules_block(specialist_modules, out_dir, study_name)
     protocol_standard = (
         design.get("protocol_standard")
         or S.reporting_standards_for(internal)["protocol"]

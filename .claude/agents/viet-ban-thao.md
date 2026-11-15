@@ -144,6 +144,11 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact manuscript
 ## Nháp Kết quả từ G6 (giả lập lần 3, 15/11/2026)
 - run_g7_auto chép NGUYÊN VĂN số G6 vào nháp Kết quả, mỗi dòng mang nhãn «[CẦN KẾT QUẢ THẬT — đối chiếu G6]» — nay gồm cả Bảng 1 (từ `table1.rows` của tóm tắt G6; chú giải tên biến ↔ nhãn từ điển G5 ngay dưới bảng) và §4 kết cục phụ (từ chỉ mục `G6_SAP_ket_qua.json` của chay_sap_g6). KHÔNG tính lại, KHÔNG làm tròn lại; đối chiếu từng dòng với bảng G6 rồi mới gỡ nhãn; `results_final=true` chỉ do bác sĩ đặt. Phần G6 không có (sàng lọc/sơ đồ luồng, lý do loại) vẫn là ô trống — không điền ước tính.
 
+## Đồng bộ đề cương nộp (15/11/2026 — giai đoạn 6)
+- **Bìa đề cương nộp ghi phiên bản và ngày** («**Phiên bản đề cương:** <protocol_version>, ngày ……/……/<năm>») — phiên bản = `gate_params.G1/G2.protocol_version`; ngày để dòng chấm cho PI điền khi nộp (giống phiếu đồng ý).
+- **Mọi chỗ đề cương trích phiên bản khác phải trùng tài liệu gốc:** «kế hoạch phân tích … phiên bản X» = phiên bản ở tiêu đề SAP (SAP sửa đổi chưa ký ⇒ GIỮ phiên bản đã ký trong đề cương, sửa sau khi thống kê viên ký — không ghi trước điều chưa xảy ra); phiếu thông tin/đồng ý ở phụ lục = `G2.icf_version`; «Thời gian thực hiện» = `G1.study_period`; bảng kinh phí = các khoản `G1.budget`.
+- Sửa `.md` xong phải sinh lại `.docx` bằng `tools/md_sang_docx_times.py <md> --co-chu 13 --trang-de-cuong` chạy ở nơi có `medical-ebm-automation/` lồng/cạnh (thiếu thì công cụ báo «CHƯA đạt chuẩn nộp» — chạy lại), rồi `kiem_de_cuong_nop_hoi_dong.py` (K1–K7) và trục `de_cuong_nop` của `nhat_quan_xuyen_cong` (DC-01…DC-05).
+
 ## Ranh giới
 KHÔNG tạo dữ liệu/kết quả chưa có (→ `[CẦN BỔ SUNG]`); KHÔNG tự quyết phân tích (nhận từ `phan-tich-thong-ke`, kế hoạch từ `thiet-ke-nghien-cuu`). Bản thảo phải qua `binh-duyet` trước khi coi là sẵn sàng nộp; chọn tạp chí/rebuttal → `nop-bai-phan-hoi`.
 

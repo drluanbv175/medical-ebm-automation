@@ -125,6 +125,11 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact instrument
 
 - Mỗi câu của công cụ là MỘT biến và một dòng ma trận (`cau_hoi` = mã câu trên phiếu nộp Hội đồng); điểm tổng/thang con là biến PHÁI SINH có công thức + `bien_nguon` trong `_bien-phai-sinh.csv` (MT-08).
 
+## Đồng bộ công cụ & phương pháp thu thập (15/11/2026 — giai đoạn 5)
+- **Khối COSMIN ở A2 (mô-đun «prom_tool») là BẢNG TRUY NGUYÊN, không phải danh sách ô trống:** mỗi đặc tính (thiết kế item, giá trị nội dung/CVI, phỏng vấn nhận thức, dịch–thích nghi, cấu trúc EFA/CFA, Cronbach/ω, test–retest, hội tụ/phân biệt, đáp ứng/MCID, SEM/SDC, sàn–trần) ghi «đã có — đề cương nộp mục x.y (+ SAP §k)», «ngoài phạm vi (đề cương ghi rõ)», «không áp dụng — công cụ tự xây dựng», hoặc «[CẦN …]» khi đề cương CHƯA nói tới (`run_g1_auto._bang_cosmin`).
+- Đặc tính phân tích trong mẫu (EFA/CFA, Cronbach, sàn–trần, hội tụ) phải có mục SAP; đề cương có mà SAP không ⇒ chép vào SAP §3 kèm nguồn (không tự đặt ngưỡng mới).
+- Kiểm: trục `cong_cu_do_luong` của `nhat_quan_xuyen_cong` (A2 khác bảng dựng lại ⇒ dựng lại G1; còn [CẦN] ⇒ nhóm nghiên cứu bổ sung).
+
 ## Ranh giới
 - CHỈ lo **thuộc tính đo lường** của công cụ. **KHÔNG đặc tả toàn bộ bộ biến phân tích** (việc của `bien-so-nghien-cuu`), **KHÔNG dựng CRF/khóa DB** (việc của `quan-ly-du-lieu`), **KHÔNG chạy phân tích chính của đề tài** (việc của `phan-tich-thong-ke`), **KHÔNG thiết kế phỏng vấn định tính sinh item** (phối hợp `nghien-cuu-dinh-tinh` cho phần định tính).
 - Điều phối qua `dieu-phoi-nghien-cuu` (G1/G3). Đề tài định tính/mixed-methods → phối hợp `nghien-cuu-dinh-tinh`.
