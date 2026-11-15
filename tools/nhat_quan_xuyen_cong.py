@@ -1476,6 +1476,10 @@ def _truc_trich_dan(out_dir: Path, study: str, meta: Dict[str, Any]) -> Optional
         for g in _doc_json(out_dir / f"G0_KHOANG_TRONG_{study}.json").get("guideline_lien_quan") or []:
             if not isinstance(g, dict):
                 continue
+            # Dòng hồ sơ khoảng trống tự khai CHƯA dùng («PARTIAL — chưa đọc văn bản …», «chưa rà») không phải guideline
+            # làm căn cứ ⇒ không đòi trích (đo C1a 15/11/2026: dòng «Hướng dẫn quốc tế … PARTIAL» bị báo nhầm).
+            if re.search(r"^\s*PARTIAL\b|chưa\s+(?:đọc|rà)", f"{g.get('noi_dung') or ''} {g.get('muc') or ''}", re.I):
+                continue
             kg = DMT.dinh_danh(f"{g.get('nguon') or ''} {g.get('ten') or ''}")
             if kg and not (kg & tham_chieu):
                 can.append(f"guideline của khoảng trống «{str(g.get('ten') or '')[:50]}» chưa có trong {ten_tc}")

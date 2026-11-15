@@ -201,6 +201,11 @@ def test_nguon_g3_va_guideline_khoang_trong(tmp_path, monkeypatch):
         {"ten": "KDIGO 2024", "nguon": "PMID 38490803"}, {"ten": "Văn bản trong nước", "nguon": "không chỉ mục"}]})
     g = _truc(tmp_path)["ghi_chu"]
     assert "guideline của khoảng trống «KDIGO 2024»" in g and "Văn bản trong nước" not in g
+    # dòng tự khai CHƯA dùng (C1a: «PARTIAL — chưa đọc văn bản hướng dẫn quốc tế») không bị đòi trích
+    _ghi(tmp_path, f"G0_KHOANG_TRONG_{S}.json", {"guideline_lien_quan": [
+        {"ten": "Hướng dẫn quốc tế", "nguon": "NICE — xã luận PMID 22961881",
+         "noi_dung": "PARTIAL — chưa đọc văn bản"}]})
+    assert "guideline của khoảng trống" not in _truc(tmp_path)["ghi_chu"]
 
 
 def test_chua_toi_giai_doan_va_truc_trong_chuoi(tmp_path):
