@@ -158,6 +158,25 @@ Quy tắc gộp: biến cố ĐẦU TIÊN xảy ra
 ```
 *(SỬA 2026-07-26, vòng lặp kiểm tra-hoàn thiện vòng 26, phát hiện MEDIUM: bảng ví dụ MACE trước đây gắn mã ICD-10 I21–I22 [nhồi máu cơ tim cấp/tái phát] vào hàng "Tử vong tim mạch" — sai vị trí, vì I21–I22 là mã chẩn đoán NMCT chứ không phải mã nguyên nhân tử vong; đã chuyển 2 mã này sang đúng hàng "NMCT không tử vong" và ghi rõ tử vong tim mạch trong thử nghiệm lâm sàng thường là kết cục do HỘI ĐỒNG PHÁN ĐỊNH xác định, không suy ra thẳng từ ICD tử vong.)*
 
+**Biến phái sinh MÁY ĐỌC (F1, 14/11/2026):** mỗi biến tính toán của đề tài ghi vào `exports/<mã>/_bien-phai-sinh.csv`, cột
+`cong_thuc` viết bằng ngôn ngữ công thức (`medical-ebm-automation/docs/BIEN-PHAI-SINH.md` — tập con biểu thức Python + hàm
+`thieu`, `neu`, `trong`, `dem`, `tb_hop_le`, `ckd_epi_2021`…; logic ba trị: ô thiếu lan truyền, mã chữ «Không biết» → thiếu),
+`lap_k` khi lặp theo lần khám, `nhan_gia_tri`. Python, SPSS và R tính từ CÙNG công thức. Agent SOẠN công thức (ngưỡng phải có
+nguồn ở cột `nguon` — không bịa), KHÔNG ghi `nguoi_duyet`: thống kê viên/PI ghi `<VAI>:<tham chiếu>:<YYYY-MM-DD>:<dấu>`; sửa
+công thức ⇒ lần duyệt hết hiệu lực; biến CHƯA DUYỆT không được tính ở G6. Kiểm: `python3
+medical-ebm-automation/tools/bien_phai_sinh.py kiem --study <mã>` hoặc MCP `spss-r-ebm` → `bien_phai_sinh` (lenh=kiem).
+Hiệp biến PHÂN LOẠI (mã nguyên ≥ 0, vd khung giờ khám) khai riêng để G6 mở thành biến giả (`hiep_bien_phan_loai`), không để
+mô hình coi mã số là liên tục.
+
+**ĐỒNG BỘ VỚI ĐỀ CƯƠNG (15/11/2026, bác sĩ: «biến xác định không đúng, nhập liệu không đúng thì không thể phân tích được»):**
+nguồn chuẩn của biến là bảng biến số của đề cương nộp (cột «Mã biến») và bộ biến G3 ĐÃ DUYỆT; `_bo-bien-rieng.csv`, từ điển
+G5, `_bien-phai-sinh.csv` là BẢN MÁY phải khớp nguồn đó. KHÔNG thêm biến — kể cả biến phái sinh mà SAP cần — thẳng vào bản
+máy khi nguồn chuẩn chưa có: soạn đề xuất bổ sung bộ biến/đề cương để chủ nhiệm duyệt (khuôn
+`exports/btm-dtd2-ngoai-tru-BVQY175/DE-XUAT-BO-SUNG-BO-BIEN-G3_20261115.md`). Trường `calc` của REDCap phải có biến phái sinh
+CÙNG TÊN, đúng định nghĩa calc (nhập Excel/SPSS không tính calc ⇒ cột trống). Kiểm sau MỖI lần sửa bộ biến: `python3
+medical-ebm-automation/tools/doi_chieu_bien_de_cuong.py --study <mã>` hoặc MCP `spss-r-ebm` → `doi_chieu_bien`. Lệch nhập liệu
+chặn sinh mẫu/tiếp nhận; lệch phân tích chặn tính biến phái sinh ở G6 — sửa theo nguồn chuẩn, không lách.
+
 ---
 
 ### PHẦN 5 — CODEBOOK EDC-READY (REDCap/Castor)

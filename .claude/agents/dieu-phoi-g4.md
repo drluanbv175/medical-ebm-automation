@@ -39,7 +39,9 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
   Chạy lại khi SAP ĐÃ BIÊN TẬP ⇒ bộ sinh GIỮ NGUYÊN SAP từng byte (không đè `.docx` chuẩn), vẫn ghi lại
   `G4_checkpoint.json` theo thượng nguồn hiện hành (`sap_giu_ban_bien_tap: true`), thoát mã 2 — trạng thái ĐÚNG,
   không phải lỗi (11/10/2026, y khoa #122). `--regenerate-sap` ĐÈ SAP đã biên tập (vẫn `.bak-*`): chỉ khi bác sĩ
-  yêu cầu sinh lại có chủ đích — agent KHÔNG tự thêm cờ này.
+  yêu cầu sinh lại có chủ đích — agent KHÔNG tự thêm cờ này. «Đã biên tập» nhận bằng dấu SHA-256 bản máy ghi lần
+  trước (`tools/dau_may_sinh.py`, y khoa #248 — đã gộp): khớp ⇒ tự sinh lại (vd PI đổi cắt ngang → RCT); lệch ⇒
+  giữ; SAP cũ chưa có dấu ⇒ luật đếm nhãn cũ. Cờ có bí danh `--regenerate`/`--regenerate-artifact`.
 - Chấm (CLI có GHI báo cáo/checkpoint — chạy sau khi nhiệm vụ xong): `python3 tools/g4_quality_gate.py --study <mã>`;
   trạng thái: `DRAFT_NEEDS_HUMAN_CONTENT` → `READY_FOR_SIGNATURE` → `PASS_G4_SAP_LOCKED`.
 - **Người ký (CỔNG CỨNG):** STATISTICIAN hoặc PI TỰ chạy `python3 tools/approve_gate.py --study <mã> --gate G4 --artifact exports/<mã>/G4_A5_SAP_FINAL_<mã>.md --reviewer-role <vai>` (chỉ khi G3 = PASS_G3_CONFIRMED và chứng chỉ khoá hết ô trống). Agent KHÔNG ký, KHÔNG gọi lệnh này.
@@ -110,6 +112,11 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - Khoá được khi §1/§2/§4/§5/§9/§10 hết «[CẦN»; RCT bắt buộc §13–§15 (giữa kỳ & quy tắc dừng · DMC · tổn hại/ngừng/tuân thủ).
 - Khung §12 theo cách N được quyết định (power/chính xác/không power/định tính).
 - Ký sau `data_lock_date` phải có dòng «SAP AMENDMENT».
+- **G4-HUMAN-03 theo VAI (14/11/2026, y khoa #245 — đã gộp):** so `reviewer_ref` của bản ký G4 vai thống kê viên
+  (STATISTICIAN) với bản ký các VAI khác (PI đồng ký G4, IRB, quản lý dữ liệu, phản biện…); bản ký thống kê viên ở
+  cổng khác là cùng vai, không tính trùng. Chưa có bản ký G4 vai thống kê viên ⇒ REVIEW. G4 đã ký hợp lệ thì tiêu
+  chí CHỈ HIỂN THỊ (ra khỏi phần xác nhận người) — bản ký của cổng SAU không hạ cấp SAP đã khoá. Là chỉ dấu (HMAC
+  đối xứng): agent báo trùng người ký, không tuyên «độc lập», không đề xuất ký lại G4 chỉ vì cổng sau.
 
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G4` xác nhận/dấu vân tay · bật cờ đời thực trong
