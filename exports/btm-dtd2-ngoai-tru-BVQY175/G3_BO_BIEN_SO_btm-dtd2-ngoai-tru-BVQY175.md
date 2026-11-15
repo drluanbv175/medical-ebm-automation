@@ -1,10 +1,12 @@
 # Bộ biến số và codebook (mục 2.7) · btm-dtd2-ngoai-tru-BVQY175
 
+> **CHỦ NHIỆM ĐÃ DUYỆT THÊM 8 BIẾN PHÁI SINH Ở MỤC 4 (15/11/2026, lựa chọn «Duyệt, tham chiếu < 7%» — `G3_BO_BIEN_SO_QUYET_DINH_20261115.md`).**
+>
 > **CHỦ NHIỆM ĐÃ DUYỆT B1–B9 (28/10/2026, nguyên văn «Áp dụng B1–B9»).** Còn bảng ánh xạ tên xét nghiệm trên eHospital (mục 7), làm cùng quy trình trích ở mục 2.8. Máy soạn ngày 28/10/2026 từ các quyết định đã chốt: G0 (dấu 858fd91d6edbd8eb), G1 (dấu 91fc5cdaaa5a689c), G3 (dấu e86410f1846a5b43, N = 385). Không biến nào là định danh người bệnh. Cần bác sĩ kiểm chứng.
 
 ## 1. Cách dùng
 - **73 trường REDCap** (71 trường nhập tay, 2 trường máy tự tính) trong 5 phần: sàng lọc hồ sơ, thông tin chung, ĐTĐ và bệnh kèm, xét nghiệm thận, thuốc.
-- **23 biến phái sinh** tính ở bước phân tích (không nhập tay), trong đó có kết cục chính `xn_du`.
+- **31 biến phái sinh** (23 duyệt 28/10/2026 + 8 duyệt 15/11/2026) tính ở bước phân tích (không nhập tay), trong đó có kết cục chính `xn_du`.
 - Tệp máy đọc:
   - `_bo-bien-rieng.csv`: từ điển REDCap 18 cột; nhập thẳng vào REDCap, và là nguồn biến duy nhất của G5;
   - `_bien-phai-sinh.csv`: công thức các biến phái sinh;
@@ -131,7 +133,7 @@
 - 8. Kết cục: kết cục chính và kết cục phụ là biến phái sinh (mục 4) từ các trường nhóm 2, 4, 8; trường nhập tay thuộc nhóm này: `raasi`, `thuoc_ngoai_don`, `ccd_raasi`, `ccd_raasi_ly_do`, `ccd_sglt2i`, `ccd_sglt2i_ly_do`.
 - 9. Theo dõi, an toàn: không theo dõi dọc, không có biến cố bất lợi (không can thiệp); chỉ ghi mốc thời gian: `ngay_kham_dau`, `ngay_kham_cuoi`.
 
-## 4. Biến phái sinh (23 biến, tính ở bước phân tích)
+## 4. Biến phái sinh (31 biến, tính ở bước phân tích)
 
 | Tên | Nhãn | Kiểu | Định nghĩa / công thức | Biến nguồn | Quy tắc thiếu | Dùng ở | Nguồn |
 |---|---|---|---|---|---|---|---|
@@ -158,6 +160,14 @@
 | `tim_mach` | Bệnh tim mạch do xơ vữa hoặc suy tim | Nhị phân | 1 nếu ascvd = 1 hoặc suy_tim = 1 | ascvd suy_tim | — | MT3 | G0 («bệnh tim mạch do xơ vữa hoặc suy tim» là một biến) |
 | `thang_quan_sat` | Số tháng từ lượt khám đầu đến 31/12/2026 | Định lượng | (31/12/2026 − ngay_kham_dau) / 30,44 | ngay_kham_dau | — | Mô tả thời gian quan sát | Bảng sai lệch G1 |
 | `vao_truoc_0107` | Lượt khám đầu trước 01/07/2026 | Nhị phân | 1 nếu ngay_kham_dau < 01/07/2026 | ngay_kham_dau | — | Phân tích độ nhạy kết cục chính | Bảng sai lệch G1 |
+| `co_creat` | Có ít nhất một creatinin huyết thanh năm 2026 | Nhị phân | 1 khi so_lan_creat ≥ 1; 0 khi so_lan_creat = 0 | so_lan_creat | — | MT1 — thành phần của kết cục chính (SAP §4) | G0 kết cục chính (có CẢ HAI xét nghiệm); SAP §4; duyệt 15/11/2026 (G3_BO_BIEN_SO_QUYET_DINH_20261115.md) |
+| `co_uacr` | Có ít nhất một UACR dạng tỷ số năm 2026 | Nhị phân | 1 khi so_lan_uacr ≥ 1; 0 khi so_lan_uacr = 0 | so_lan_uacr | — | MT1 — thành phần của kết cục chính (SAP §4) | G0 kết cục chính (có CẢ HAI xét nghiệm); SAP §4; duyệt 15/11/2026 (G3_BO_BIEN_SO_QUYET_DINH_20261115.md) |
+| `hba1c_3muc` | HbA1c 3 mức | Phân loại | 1 = HbA1c gần nhất < 7%; 2 = HbA1c gần nhất ≥ 7%; 3 = không làm HbA1c năm 2026. Tham chiếu trong mô hình = 1 (< 7%), do chủ nhiệm chọn | co_hba1c hba1c_gt | co_hba1c = 1 mà hba1c_gt thiếu ⇒ thiếu (gán đa trị, SAP §6) | MT3 (SAP §5) | G0 «HbA1c gần nhất»; mục 5 cảnh báo 1 (HbA1c thiếu không ngẫu nhiên); SAP §5; duyệt 15/11/2026 (G3_BO_BIEN_SO_QUYET_DINH_20261115.md) |
+| `thoi_gian_mac_dtd_5` | Thời gian mắc ĐTĐ (đơn vị 5 năm) | Định lượng | thoi_gian_mac_dtd ÷ 5 — để PR tính cho mỗi 5 năm | thoi_gian_mac_dtd | thoi_gian_mac_dtd thiếu ⇒ thiếu | MT3 (SAP §5) | G0 «thời gian mắc ĐTĐ»; SAP §5; duyệt 15/11/2026 (G3_BO_BIEN_SO_QUYET_DINH_20261115.md) |
+| `bmi_5` | BMI (đơn vị 5 kg/m²) | Định lượng | bmi ÷ 5 — để PR tính cho mỗi 5 kg/m² | bmi | bmi thiếu ⇒ thiếu | MT3 (SAP §5) | G0 «BMI»; SAP §5; duyệt 15/11/2026 (G3_BO_BIEN_SO_QUYET_DINH_20261115.md) |
+| `nhom_tuoi_65` | Nhóm tuổi < 65 / ≥ 65 | Phân loại | 1 = dưới 65 tuổi; 2 = từ 65 tuổi trở lên | tuoi | tuoi thiếu ⇒ thiếu | Nhóm nhỏ của kết cục chính (SAP §7) | SAP §7; duyệt 15/11/2026 (G3_BO_BIEN_SO_QUYET_DINH_20261115.md) |
+| `btm_chua_ghi_nhan_mr` | BTM chưa ghi nhận — danh mục mã thận mở rộng | Nhị phân | Chỉ trên người phan_loai_btm = 2: 1 khi ma_btm_ghi_nhan = 0 VÀ ma_than_mo_rong = 0 (không có cả N18, E11.2, N08.3 lẫn N19, I12, I13, R80) | phan_loai_btm ma_btm_ghi_nhan ma_than_mo_rong | Chỉ tính trên người có phan_loai_btm = 2 | ĐN5 — độ nhạy của Phụ 2 (MT1) | Quyết định B3 (28/10/2026); SAP §9; duyệt 15/11/2026 (G3_BO_BIEN_SO_QUYET_DINH_20261115.md) |
+| `chi_dinh_raasi_1lan` | Chỉ định ACEi/ARB — albumin niệu chỉ cần một lần | Nhị phân | 1 khi tha = 1 và có ít nhất 1 kết quả UACR ≥ 30 mg/g năm 2026 | tha uacr_mg_g_k | — | ĐN6 — độ nhạy của Phụ 3a (MT2) | Quyết định B5 (28/10/2026); SAP §9; duyệt 15/11/2026 (G3_BO_BIEN_SO_QUYET_DINH_20261115.md) |
 
 ## 5. Vai trò biến ở MT3 và lưu ý cho kế hoạch phân tích (G4)
 - MT3 là phân tích **thăm dò**: không có một phơi nhiễm chính nên không dựng tập biến hiệu chỉnh tối thiểu theo DAG. Mọi biến giải thích G0 đã chốt cùng vào mô hình; kết quả diễn giải là mối liên quan, không phải nhân quả (G1).
