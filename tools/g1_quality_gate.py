@@ -27,6 +27,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 import annex2_quality_gate as A2X
 import cong_song as CS
 import g0_tong_hop as GT
+import khung_de_tai as KD
 import placeholder_contract as PC
 import skill_standards as S
 
@@ -295,6 +296,13 @@ def dau_van_tay_g1(meta: Mapping[str, Any], design: Mapping[str, Any]) -> str:
     đang dùng + pin. Sinh lại đề cương với quyết định khác ⇒ dấu đổi ⇒ xác nhận cũ hết hiệu lực (VÁ 04/10/2026,
     G1-09). Không băm văn bản A2 (có dấu thời gian sinh ⇒ đổi mỗi lần chạy)."""
     g1 = {k: v for k, v in _g1_meta(meta).items() if k not in _KHOA_XAC_NHAN_G1}
+    # 15/11/2026: giá trị G1 đang KẾ THỪA từ G0 (G1 bỏ trống) là nội dung PI chốt ở G1 ⇒ vào dấu vân tay (G0 đổi sau đó
+    # thì xác nhận G1 hết hiệu lực). Đề tài tự ghi đủ ở G1 ⇒ không có phần kế thừa ⇒ dấu KHÔNG đổi (không hạ cấp).
+    # Sửa theo thẩm định #268: xác nhận G1 ghi TRƯỚC mốc luật giữ CÁCH TÍNH CŨ (không hạ cấp xác nhận đã ghi khi đề
+    # tài để trống trường không bắt buộc); chỉ trường BẮT BUỘC (quần thể, can thiệp/so sánh, kết cục chính) vào dấu.
+    ke_thua = {} if KD.xac_nhan_truoc_moc(_g1_meta(meta).get("reviewed_at")) else KD.ke_thua_dang_dung(meta)
+    if ke_thua:
+        return CS.dau_van_tay(g1, str(design.get("internal_code") or ""), meta.get("design_code"), ke_thua)
     return CS.dau_van_tay(g1, str(design.get("internal_code") or ""), meta.get("design_code"))
 
 
@@ -343,48 +351,12 @@ def _list_complete(value: Any) -> bool:
 
 
 def _outcome_components(meta: Mapping[str, Any]) -> Dict[str, Any]:
-    """Chuẩn hóa kết cục chính thành bốn thành phần vận hành tối thiểu."""
-    outcome = _primary_outcome(meta)
-    g1 = _g1_meta(meta)
-    if isinstance(outcome, Mapping):
-        return {
-            "name": _first_present(
-                outcome.get("name"),
-                outcome.get("text"),
-                outcome.get("description"),
-            ),
-            "measure": _first_present(
-                outcome.get("measure"),
-                outcome.get("measurement"),
-                outcome.get("definition"),
-                outcome.get("unit"),
-            ),
-            "timepoint": _first_present(
-                outcome.get("timepoint"),
-                outcome.get("time_point"),
-                outcome.get("assessment_time"),
-            ),
-            "type": _first_present(
-                outcome.get("type"),
-                outcome.get("scale_type"),
-                outcome.get("data_type"),
-            ),
-        }
-    return {
-        "name": outcome,
-        "measure": _first_present(
-            meta.get("primary_outcome_measure"),
-            g1.get("primary_outcome_measure"),
-        ),
-        "timepoint": _first_present(
-            meta.get("primary_outcome_timepoint"),
-            g1.get("primary_outcome_timepoint"),
-        ),
-        "type": _first_present(
-            meta.get("primary_outcome_type"),
-            g1.get("primary_outcome_type"),
-        ),
-    }
+    """Chuẩn hóa kết cục chính thành bốn thành phần vận hành tối thiểu.
+
+    15/11/2026 (bác sĩ duyệt — đồng bộ xuyên cổng): thành phần G1 còn trống KẾ THỪA kết cục chính / công cụ đo / thời
+    điểm đã CHỐT ở G0 (khung_de_tai.ket_cuc_chinh) — PI không phải gõ lại; «loại dữ liệu» G0 không có ⇒ chốt ở G1."""
+    kc = KD.ket_cuc_chinh(meta)
+    return {k: kc.get(k) for k in ("name", "measure", "timepoint", "type")}
 
 
 def _estimand_complete(g1: Mapping[str, Any]) -> bool:
@@ -434,6 +406,15 @@ def build_protocol_core(
     else:
         gia_thuyet = "[CẦN CHỐT Ở G0 — hypothesis_h1/expected_direction/test_type]"
     outcome = _outcome_components(meta)
+    # 15/11/2026: trường G1 trống ⇒ kế thừa G0 đã chốt, có nhãn nguồn (khung_de_tai) — PI chỉ sửa khi cần.
+    _kd = {k: KD.gia_tri(meta, k) for k in ("research_question", "population", "intervention_or_exposure",
+                                            "comparator", "secondary_outcomes")}
+    rq_txt = _text(_kd["research_question"][0]) + KD.nhan_nguon(_kd["research_question"][1])
+    pop_txt = _text(_kd["population"][0]) + KD.nhan_nguon(_kd["population"][1])
+    ie_txt = _text(_kd["intervention_or_exposure"][0]) + KD.nhan_nguon(_kd["intervention_or_exposure"][1])
+    comp_txt = _text(_kd["comparator"][0]) + KD.nhan_nguon(_kd["comparator"][1])
+    kc_nguon = KD.ket_cuc_chinh(meta)["nguon"]
+    kc_nhan = {k: KD.nhan_nguon(kc_nguon.get(k)) for k in ("name", "measure", "timepoint")}
     reporting = str(design.get("reporting_standard") or "[CẦN BỔ SUNG]")
     protocol = str(design.get("protocol_standard") or "[CẦN BỔ SUNG]")
     estimand = g1.get("estimand")
@@ -518,7 +499,7 @@ def build_protocol_core(
 
 ### 0.3 Mục tiêu, câu hỏi và giả thuyết
 - Mục tiêu: {joined(_objectives(meta))}
-- Câu hỏi nghiên cứu/PICO-PECO-PIRD: {_text(g1.get("research_question"))}
+- Câu hỏi nghiên cứu/PICO-PECO-PIRD: {rq_txt}
 - Giả thuyết chính và hướng hiệu ứng: {gia_thuyet}
 - Kết cục chính neo mục tiêu: {_text(outcome["name"])}
 
@@ -530,25 +511,25 @@ def build_protocol_core(
 - Sơ đồ nghiên cứu và lịch tuyển-can thiệp-đánh giá: {_text(g1.get("study_schema_timeline"))}
 
 ### 0.5 Quần thể, tiêu chí chọn và tuyển mẫu
-- Quần thể đích/nguồn: {_text(_first_present(meta.get("population"), g1.get("population")))}
+- Quần thể đích/nguồn: {pop_txt}
 - Tiêu chí chọn vào: {joined(g1.get("inclusion_criteria"))}
 - Tiêu chí loại trừ: {joined(g1.get("exclusion_criteria"))}
 - Chiến lược tuyển/chọn mẫu và tránh thiên lệch chọn mẫu: {_text(g1.get("recruitment_strategy"))}
 - Đồng thuận tham gia và xử lý rút lui: [CẦN HOÀN THIỆN Ở G2]
 
 ### 0.6 Can thiệp/phơi nhiễm và đối chứng
-- Can thiệp, phơi nhiễm hoặc index test: {_text(g1.get("intervention_or_exposure"))}
-- Đối chứng/comparator hoặc lý do không áp dụng: {_text(g1.get("comparator"))}
+- Can thiệp, phơi nhiễm hoặc index test: {ie_txt}
+- Đối chứng/comparator hoặc lý do không áp dụng: {comp_txt}
 - Liều/cường độ, thời lượng, đồng can thiệp, tuân thủ hoặc cách đo phơi nhiễm: {lieu_tuan_thu}
 - Tiêu chí dừng/chuyển/điều trị cứu hộ nếu áp dụng: {_text(g1.get("stopping_rescue_rules"))}
 {design_specific_core}
 
 ### 0.7 Kết cục và lịch đánh giá
-- Kết cục chính: {_text(outcome["name"])}
-- Định nghĩa/công cụ/đơn vị đo: {_text(outcome["measure"])}
-- Thời điểm đánh giá chính: {_text(outcome["timepoint"])}
+- Kết cục chính: {_text(outcome["name"])}{kc_nhan["name"]}
+- Định nghĩa/công cụ/đơn vị đo: {_text(outcome["measure"])}{kc_nhan["measure"]}
+- Thời điểm đánh giá chính: {_text(outcome["timepoint"])}{kc_nhan["timepoint"]}
 - Loại dữ liệu/thước đo: {_text(outcome["type"])}
-- Kết cục phụ: {joined(g1.get("secondary_outcomes"))}
+- Kết cục phụ: {joined(_kd["secondary_outcomes"][0])}{KD.nhan_nguon(_kd["secondary_outcomes"][1])}
 - Lịch theo dõi/đánh giá: {_text(g1.get("follow_up_schedule"))}
 
 ### 0.8 Cỡ mẫu
@@ -891,7 +872,7 @@ def build_supporting_artifacts(
     g1 = _g1_meta(meta)
     objectives = _text(_objectives(meta))
     primary_outcome = _text(_primary_outcome(meta))
-    population = _text(_first_present(meta.get("population"), g1.get("population")))
+    population = _text(KD.gia_tri(meta, "population")[0])
     setting = _text(_first_present(meta.get("setting"), g1.get("setting")))
     study_period = _text(_first_present(meta.get("study_period"), g1.get("study_period")))
     identifiers = collect_evidence_identifiers(out_dir, g0_checkpoint, effects)
@@ -1721,9 +1702,9 @@ def evaluate_g1_quality(
     outcome_complete = all(_filled(value) for value in outcome.values()) and not _con_o_trong(
         _primary_outcome(meta)
     )
-    research_question = g1.get("research_question")
+    research_question = KD.gia_tri(meta, "research_question")[0]
     # Trường KHÔNG bắt buộc (vá 03/10/2026): đã khai thì không được còn ô trống/nhãn nháp.
-    optional_fields = [("secondary_outcomes", g1.get("secondary_outcomes"))]
+    optional_fields = [("secondary_outcomes", KD.gia_tri(meta, "secondary_outcomes")[0])]
     if internal not in ("qualitative", "sr_ma"):  # hai thiết kế này BẮT BUỘC research_question (chấm riêng)
         optional_fields.append(("research_question", research_question))
     optional_residue = [key for key, value in optional_fields if _con_o_trong(value)]
@@ -1787,7 +1768,7 @@ def evaluate_g1_quality(
         objective_action,
     ))
 
-    population = _first_present(meta.get("population"), g1.get("population"))
+    population = KD.gia_tri(meta, "population")[0]
     setting = _first_present(meta.get("setting"), g1.get("setting"))
     period = _first_present(meta.get("study_period"), g1.get("study_period"))
     inclusion = g1.get("inclusion_criteria")
@@ -1849,8 +1830,8 @@ def evaluate_g1_quality(
         frame_action,
     ))
 
-    intervention = g1.get("intervention_or_exposure")
-    comparator = g1.get("comparator")
+    intervention = KD.gia_tri(meta, "intervention_or_exposure")[0]
+    comparator = KD.gia_tri(meta, "comparator")[0]
     follow_up = g1.get("follow_up_schedule")
     if internal == "qualitative":
         treatment_frame_ok = all(

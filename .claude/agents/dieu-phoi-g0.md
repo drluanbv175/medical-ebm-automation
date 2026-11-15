@@ -44,17 +44,23 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 - **Dựng lại A1 ≠ tra lại PubMed (10/10/2026, biên bản DG G0-T3/T4):** công ĐỌC BÀI của G0-T3 (`G0_TONG_HOP_BANG_CHUNG_<mã>.json`) và G0-T4 (`G0_KHOANG_TRONG_<mã>.json`) nằm ở tệp riêng — khuôn + bộ kiểm `tools/g0_tong_hop.py`; agent cập nhật xong ⇒ `python3 tools/run_g0_auto.py --study <mã> --dung-lai-a1` (dựng lại A1/DOCX từ `G0_pubmed_raw.json`, giữ nguyên tập PMID PubMed; từ 11/10/2026 checkpoint ghi `danh_muc_doc_bo_sung` và dấu vân tay G0 BĂM danh mục này ⇒ danh mục đọc ĐỔI thì xác nhận cũ của PI hết hiệu lực — bàn giao PI chốt lại; sửa tệp G0-T3 mà chưa dựng lại A1 ⇒ G0-AUTO-05 REVIEW) rồi đo `hoi_dong_cong.py trach-nhiem --gate G0` — kiểm máy cấp nhiệm vụ G0-T3/T4 phải sạch trước khi xin đánh giá chéo lại.
 - **Xác nhận người (cổng mềm):** PI xác nhận ở `study_meta.gate_params.G0` (`pico_confirmed`, FINER có kết luận + lý do, `registry_manual_checked`, `dau_van_tay_chot` chép từ báo cáo G0). Agent CHÉP dấu cho người xác nhận nhìn — KHÔNG tự ghi.
 
+## Đồng bộ xuyên cổng (15/11/2026 — bác sĩ duyệt)
+
+> Vì sao: giả lập trung thực (hệ TỰ sinh từ G0/G1, không viết sẵn bộ biến/SAP) cho thấy mục tiêu ↔ biến ↔ công cụ ↔ từ điển ↔ SAP ↔ SPSS/R không có phép kiểm máy; SPSS/R báo «✓ khớp» trên bộ biến SAI. Báo cáo: `audit/kiem-dong-bo-xuyen-cong-20261115.md` (repo gốc). Công cụ chung: `tools/ma_tran_muc_tieu_bien.py` (repo y khoa). «Khớp khứ hồi/khớp từ điển» KHÔNG chứng minh biến đúng mục tiêu.
+
+- G0-AUTO-08 (G0-T2): truy vấn PubMed + ClinicalTrials.gov phủ P · I/E · O đã chốt; khái niệm ngoài từ điển VI→EN với truy vấn máy tự dịch ⇒ REVIEW — giao `thu-thu-tai-lieu` viết `query_en`/`khai_niem_tim_kiem` rồi chạy lại `run_g0_auto.py --query-en …`. PICO chốt ở G0 là NGUỒN cho G1/SAP/đề cương (kế thừa có nhãn).
+
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G0 (09/10/2026)
 Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối
-của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Mọi tiêu chí (16) của
+của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Mọi tiêu chí (17) của
 `tools/g0_quality_gate.py` đã gán ĐÚNG MỘT bên ở `hoi_dong_cong.PHAN_CONG`
 (bảng dưới chép lại; test đối chiếu):
 
 | Bên chịu trách nhiệm | Tiêu chí |
 |---|---|
 | `G0-T1` — agent `cau-hoi-nghien-cuu` | G0-AUTO-00, G0-AUTO-01, G0-AUTO-04, G0-AUTO-05 |
-| `G0-T2` — agent `thu-thu-tai-lieu` | G0-AUTO-02, G0-AUTO-03 |
+| `G0-T2` — agent `thu-thu-tai-lieu` | G0-AUTO-02, G0-AUTO-03, G0-AUTO-08 |
 | `G0-T4` — agent `khoang-trong-nghien-cuu` | G0-AUTO-06 |
 | `PI@G0-T1` — NGƯỜI PI quyết/ký; agent chuẩn bị hồ sơ + lệnh: `cau-hoi-nghien-cuu` | G0-AUTO-07, G0-HUMAN-01, G0-HUMAN-02, G0-HUMAN-03, G0-HUMAN-04, G0-HUMAN-07 |
 | `PI@G0-T3` — NGƯỜI PI quyết/ký; agent chuẩn bị hồ sơ + lệnh: `tong-quan-y-van` | G0-HUMAN-06 |

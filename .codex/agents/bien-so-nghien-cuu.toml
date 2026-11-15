@@ -253,6 +253,17 @@ python medical-ebm-automation/tools/run_g5_auto.py --study "MA-DE-TAI"
 ```
 Lưu ý: CLI thật của `run_g5_auto.py` **CHỈ nhận `--study STUDY`**, không có tham số khác — script **KHÔNG** nhận trực tiếp bộ biến vừa đặc tả ở đây làm input; nó **tự đọc topic từ G0 checkpoint** và **tự suy luận chuyên khoa/biến** để sinh CRF (số dòng biến động theo thiết kế/chuyên khoa nhận diện — KHÔNG cố định 55 dòng như docstring lịch sử của script ghi, đã kiểm chứng chạy thật 2026-07-11) + data dictionary + script Python. Vì vậy bộ biến do agent này soạn vẫn cần được bác sĩ đối chiếu thủ công với CRF do `run_g5_auto.py` sinh ra (cổng G5, agent `quan-ly-du-lieu`) để bảo đảm không thiếu/thừa biến so với bản đặc tả này.
 
+## Đồng bộ xuyên cổng (15/11/2026 — bác sĩ duyệt)
+
+> Vì sao: giả lập trung thực (hệ TỰ sinh từ G0/G1, không viết sẵn bộ biến/SAP) cho thấy mục tiêu ↔ biến ↔ công cụ ↔ từ điển ↔ SAP ↔ SPSS/R không có phép kiểm máy; SPSS/R báo «✓ khớp» trên bộ biến SAI. Báo cáo: `audit/kiem-dong-bo-xuyen-cong-20261115.md` (repo gốc). Công cụ chung: `tools/ma_tran_muc_tieu_bien.py` (repo y khoa). «Khớp khứ hồi/khớp từ điển» KHÔNG chứng minh biến đúng mục tiêu.
+
+- Đầu ra G3-T2 là HAI tệp: `_bo-bien-rieng.csv` + `_ma-tran-muc-tieu-bien.csv` (cột `muc_tieu, khai_niem, vai_tro, bien, kieu, cau_hoi, cong_cu, phan_tich_sap, ghi_chu`; `vai_tro` ∈ ket_cuc_chinh · ket_cuc_phu · phoi_nhiem · yeu_to · hiep_bien · phan_tang · thoi_gian · su_kien · mo_ta · cum · trong_so; `kieu` ∈ nhi_phan · danh_dinh · thu_tu · lien_tuc · dem · ngay · thoi_gian_den_su_kien · van_ban).
+- Dựng khung từ mục tiêu G1: `python tools/ma_tran_muc_tieu_bien.py mau --study <mã> --ghi` (mỗi yếu tố mục tiêu liệt kê một dòng, `bien = [CẦN]`), rồi điền. Luật máy: MỌI yếu tố mục tiêu nêu phải có biến (MT-04); ĐÚNG một `ket_cuc_chinh`, `kieu` khớp loại dữ liệu chốt ở G1 (MT-05); biến có trong bộ biến (MT-06); trường số phải có kiểm `integer/number`, nhị phân phải là radio/yesno 2 lựa chọn — không phải `text` (MT-07); biến phái sinh có `bien_nguon` thật + người duyệt (MT-08).
+- Xong chỉ khi `python tools/ma_tran_muc_tieu_bien.py kiem --study <mã>` mã 0 (G3-AUTO-19). Mã câu (`cau_hoi`) phải trùng mã trên phiếu nộp Hội đồng Đạo đức (G5-AUTO-13).
+- Thiếu bộ biến riêng ⇒ G5 DỪNG (không còn rơi về bộ mẫu chung). `_GOI_Y_bo-bien-tu-bo-mau.csv` chỉ là GỢI Ý NHÁP — không chép thành bộ biến khi chưa đối chiếu từng mục tiêu.
+- `bhyt`/`co_bhyt` (có BHYT, loại thẻ) là biến tình trạng hợp lệ; SỐ/MÃ thẻ BHYT là định danh — không thu.
+- Mỗi biến mang ĐỦ thuộc tính và đi NGUYÊN VẸN tới SPSS/R (E5): `kieu` của ma trận ⇒ mức đo .sav / `measure` .rds (nhi_phan·danh_dinh→NOMINAL, thu_tu→ORDINAL, lien_tuc·dem·ngay→SCALE — biến thứ bậc PHẢI khai `thu_tu`, máy không đoán được từ nhãn); `vai_tro`·`muc_tieu`·`cau_hoi` ⇒ VARIABLE ATTRIBUTE + VARIABLE ROLE (.sav), attr role·objective·item (.rds); `Text Validation Min/Max` ⇒ khoảng hợp lệ (KhoangHopLe / valid_range). Khai min/max cho biến số, kiểm `integer` cho biến đếm.
+
 ## Ranh giới
 KHÔNG dựng data dictionary kỹ thuật/CRF cuối/luật kiểm tra (→ `quan-ly-du-lieu`) · KHÔNG tính cỡ mẫu/khóa SAP (→ `thiet-ke-nghien-cuu`/`co-mau-nghien-cuu`) · KHÔNG chạy phân tích. Bạn là tầng **đặc tả biến số**, bản lề giữa câu hỏi và CRF/thống kê.
 
@@ -267,7 +278,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 
 | Nhiệm vụ | Bạn LÀM — đầu ra (tên là HỢP ĐỒNG) | Tiêu chí bạn phải đưa tới ĐẠT | Hồ sơ + lệnh bạn chuẩn bị cho NGƯỜI |
 |---|---|---|---|
-| `G3-T2` — Đặc tả bộ biến số | `_bo-bien-rieng.csv` | — (không có tiêu chí cổng; kiểm máy cấp nhiệm vụ: bộ biến G5 nạp được + không biến định danh trực tiếp; nội dung bảo đảm bằng đánh giá chéo) | — |
+| `G3-T2` — Đặc tả bộ biến số + ma trận mục tiêu–biến | `_bo-bien-rieng.csv`, `_ma-tran-muc-tieu-bien.csv` | G3-AUTO-19 + kiểm máy cấp nhiệm vụ: bộ biến G5 nạp được + không biến định danh trực tiếp | — |
 
 Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G1-T4` (cong-cu-do-luong), `G3-T3` (quan-ly-du-lieu). Không bao giờ chấm đầu ra do chính bạn làm.
 

@@ -475,6 +475,12 @@ Kích hoạt khi nghiên cứu thực hiện tại đơn vị có tính đặc t
 
 **Vá 2026-07-12 (audit toàn diện cổng G0-G9):** ghi `G2_STATUS: LOCKED` vào checkpoint KHÔNG còn tự mở cổng thật — kiểm định đối kháng xác nhận agent tự ghi dòng này từng đủ để các script phân tích dữ liệu thật (`run_stats_analysis.py`) chạy trót lọt, dù chưa hề có phê duyệt IRB thật. Cổng THẬT nay đòi `approval_ledger.json` có chữ ký (xem `tools/gate_contract.py::ledger_approved`). Việc CỦA AGENT khi có số IRB thật: nhắc bác sĩ **tự tay** chạy `python tools/approve_gate.py --study <tên> --gate G2 --artifact <hồ sơ đạo đức>` trong terminal riêng (không nhờ agent chạy hộ — nếu agent chạy hộ, chữ ký vẫn được tạo nhưng mất ý nghĩa "một người ngoài agent đã xác nhận"). Cần khóa ký đã thiết lập một lần bằng `tools/setup_gate_approval_key.py` (bác sĩ tự chạy).
 
+## Đồng bộ xuyên cổng (15/11/2026 — bác sĩ duyệt)
+
+> Vì sao: giả lập trung thực (hệ TỰ sinh từ G0/G1, không viết sẵn bộ biến/SAP) cho thấy mục tiêu ↔ biến ↔ công cụ ↔ từ điển ↔ SAP ↔ SPSS/R không có phép kiểm máy; SPSS/R báo «✓ khớp» trên bộ biến SAI. Báo cáo: `audit/kiem-dong-bo-xuyen-cong-20261115.md` (repo gốc). Công cụ chung: `tools/ma_tran_muc_tieu_bien.py` (repo y khoa). «Khớp khứ hồi/khớp từ điển» KHÔNG chứng minh biến đúng mục tiêu.
+
+- Hồ sơ G2 phải đính PHIẾU/CÔNG CỤ đúng bản nộp Hội đồng (mã câu trùng cột `cau_hoi` của ma trận), hoặc khai đường dẫn tương đối ở `gate_params.G2.phieu_nop_hoi_dong`; G5-AUTO-13 đối chiếu. Thêm/sửa câu sau khi Hội đồng duyệt ⇒ sửa đổi đề cương trình lại.
+
 ## Ranh giới
 KHÔNG tự phê duyệt đạo đức · KHÔNG bịa số IRB/mã đăng ký · KHÔNG tự chạy `tools/approve_gate.py` thay bác sĩ · DMP vận hành/khóa DB thuộc `quan-ly-du-lieu` (G5).
 

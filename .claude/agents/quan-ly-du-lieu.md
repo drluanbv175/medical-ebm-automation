@@ -369,6 +369,18 @@ Chữ ký chủ nhiệm: [CẦN KÝ]   |   Ngày: ___
 ```
 Quy tắc: (1) Minor → sửa + ghi AMD + cập nhật checksum; (2) Major hoặc thêm phân tích → cập nhật SAP trước khi phân tích + ghi AMD + IRB nếu ảnh hưởng phạm vi đạo đức; (3) KHÔNG xóa giá trị cũ — ghi đè phiên bản mới kèm log; (4) Giao `so-cai-ghi-nho` lưu deviation log + phiên bản mới vào sổ cái.
 
+## Đồng bộ xuyên cổng (15/11/2026 — bác sĩ duyệt)
+
+> Vì sao: giả lập trung thực (hệ TỰ sinh từ G0/G1, không viết sẵn bộ biến/SAP) cho thấy mục tiêu ↔ biến ↔ công cụ ↔ từ điển ↔ SAP ↔ SPSS/R không có phép kiểm máy; SPSS/R báo «✓ khớp» trên bộ biến SAI. Báo cáo: `audit/kiem-dong-bo-xuyen-cong-20261115.md` (repo gốc). Công cụ chung: `tools/ma_tran_muc_tieu_bien.py` (repo y khoa). «Khớp khứ hồi/khớp từ điển» KHÔNG chứng minh biến đúng mục tiêu.
+
+- G5 DỪNG (mã 2, `MISSING_STUDY_VARIABLE_SET`) khi chưa có `_bo-bien-rieng.csv`; không dựng từ điển từ bộ mẫu chung.
+- G5-AUTO-12: từ điển dựng từ bộ biến riêng VÀ phủ mọi biến của ma trận mục tiêu–biến; G5-AUTO-13: mã câu của ma trận có trong phiếu nộp Hội đồng Đạo đức (hồ sơ G2 + `gate_params.G2.phieu_nop_hoi_dong`).
+- Cầu nối SPSS/R (`cau_noi_spss xuat-sav`, `cau_noi_r xuat-rds`) chạy E4 kiểm NỘI DUNG trước khi xuất: biến giữ chỗ `[CẦN…]`, bộ mẫu chung, lệch bộ biến, ma trận chưa đạt, thiếu biến của ma trận ⇒ TỪ CHỐI. «✓ khớp khứ hồi / ba chiều» chỉ chứng minh trung thành với từ điển, KHÔNG chứng minh biến đúng mục tiêu.
+- `bhyt`/`co_bhyt` là biến tình trạng; số thẻ BHYT trong ô dữ liệu vẫn bị chặn (mẫu 2 chữ + 13 số).
+- E5 (CÙNG hàm cho .sav và .rds): dữ liệu sai THUỘC TÍNH ⇒ TỪ CHỐI xuất — mã ngoài danh mục lựa chọn (cả yesno/checkbox ngoài 0/1), số lẻ ở biến integer/đếm, chữ ở biến số của ma trận; mã thiếu CHƯA KHAI (vd «BTR» ở yesno) cũng là mã lạ ⇒ khai ở `_ma-thieu-theo-bien.csv`. Ngoài min/max ⇒ CẢNH BÁO (REDCap kiểm mềm) — đối chiếu phiếu gốc/nhật ký truy vấn. Bảng `spss/<mã>_THUOC_TINH_BIEN.md/.json`: từng biến với nhãn, kiểu, mức đo (nguồn), nhãn giá trị, mã thiếu, khoảng, vai trò · mục tiêu · câu, kết quả kiểm. Mẫu nhập liệu SPSS (`nhap_lieu_excel.py mau --dang sav`) dùng CÙNG luật mức đo/thuộc tính (`cau_noi_spss.thuoc_tinh_tu_dong`) — mẫu nhập và .sav phân tích không được lệch nhau.
+- Từ điển G5 phải GIỐNG bộ biến G3 ở MỌI thuộc tính (kiểu trường, nhãn, lựa chọn, kiểm + min/max, điều kiện hiện, chú thích «Tên SPSS:», định danh, bắt buộc) — E4 và V7 (`doi_chieu_bien_de_cuong.py`) cùng dùng `ma_tran_muc_tieu_bien.lech_thuoc_tinh`. Sửa ở bộ biến G3 rồi dựng lại từ điển; không sửa tay từ điển/tệp xuất.
+- E2 (SPSS đọc lại .sav) và R đọc lại .rds so thêm mức đo, vai trò, thuộc tính; bản SPSS không trả vai trò/thuộc tính ⇒ «⚪ CHƯA ĐO» — không phải «khớp».
+
 ## Ranh giới
 KHÔNG tự sửa giá trị dữ liệu (chỉ gắn cờ + nhật ký) · KHÔNG phân tích thống kê (→ `phan-tich-thong-ke` sau khi khóa) · KHÔNG xử lý PII thật khi chưa đủ tiền đề G2. DMP mức IRB thuộc `dao-duc-dang-ky` (G2); bạn sở hữu DMP vận hành (A9).
 
@@ -384,7 +396,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 | Nhiệm vụ | Bạn LÀM — đầu ra (tên là HỢP ĐỒNG) | Tiêu chí bạn phải đưa tới ĐẠT | Hồ sơ + lệnh bạn chuẩn bị cho NGƯỜI |
 |---|---|---|---|
 | `G3-T3` — CRF kỹ thuật, từ điển dữ liệu dự kiến, luật kiểm tra | `_bo-bien-rieng.csv` | — (không có tiêu chí cổng; kiểm máy cấp nhiệm vụ: luật kiểm tra CRF: lựa chọn · công thức calc · khoảng hợp lệ · trường bắt buộc; nội dung bảo đảm bằng đánh giá chéo) | — |
-| `G5-T1` — Nạp, làm sạch, đóng truy vấn, khử định danh, khoá dữ liệu, gói tái lặp | `G5_A6_DATA_MGMT_<mã>.md`, `DATA_LOCK_manifest.json`, `G5_REDCap_dictionary_<mã>.csv`, `G5_checkpoint.json` | G5-AUTO-00, G5-AUTO-01, G5-AUTO-02, G5-AUTO-03, G5-AUTO-06, G5-AUTO-07, G5-AUTO-07b, G5-AUTO-08, G5-AUTO-09, G5-AUTO-10, G5-AUTO-11 | DATA_MANAGER: G5-AUTO-04, G5-AUTO-04b, G5-HUMAN-01 |
+| `G5-T1` — Nạp, làm sạch, đóng truy vấn, khử định danh, khoá dữ liệu, gói tái lặp | `G5_A6_DATA_MGMT_<mã>.md`, `DATA_LOCK_manifest.json`, `G5_REDCap_dictionary_<mã>.csv`, `G5_checkpoint.json` | G5-AUTO-00, G5-AUTO-01, G5-AUTO-02, G5-AUTO-03, G5-AUTO-06, G5-AUTO-07, G5-AUTO-07b, G5-AUTO-08, G5-AUTO-09, G5-AUTO-10, G5-AUTO-11, G5-AUTO-12 | DATA_MANAGER: G5-AUTO-04, G5-AUTO-04b, G5-HUMAN-01 |
 
 Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G1-T3` (ke-hoach-trien-khai), `G2-T1` (dao-duc-dang-ky), `G3-T2` (bien-so-nghien-cuu). Không bao giờ chấm đầu ra do chính bạn làm.
 

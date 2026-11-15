@@ -1743,7 +1743,7 @@ def guardrail(artifact: str) -> tuple[list, list]:
 # GENERATE CSV
 # ---------------------------------------------------------------------------
 
-def generate_csv(study: str, out_dir: Path, rows: list) -> tuple[Path, int]:
+def generate_csv(study: str, out_dir: Path, rows: list, ten_tep: Optional[str] = None) -> tuple[Path, int]:
     """Sinh CSV data dictionary có thể import vào REDCap.
 
     Bản cũ chỉ nối trường bằng ``" / "`` nhưng vẫn đặt đuôi ``.csv``; REDCap và
@@ -1770,7 +1770,7 @@ def generate_csv(study: str, out_dir: Path, rows: list) -> tuple[Path, int]:
         "Matrix Ranking?",
         "Field Annotation",
     ]
-    csv_path = out_dir / f"G5_REDCap_dictionary_{study}.csv"
+    csv_path = out_dir / (ten_tep or f"G5_REDCap_dictionary_{study}.csv")
     with csv_path.open("w", encoding="utf-8", newline="") as handle:
         writer = csv.DictWriter(handle, fieldnames=headers)
         writer.writeheader()
@@ -2448,6 +2448,45 @@ def _du_lieu_da_khoa(out_dir: Path):
     return None
 
 
+TEN_TEP_GOI_Y_BO_MAU = "_GOI_Y_bo-bien-tu-bo-mau.csv"
+
+
+def _dung_thieu_bo_bien(study: str, out: Path, design_code: str, topic: str) -> int:
+    """G5 DỪNG khi đề tài chưa có `_bo-bien-rieng.csv` (15/11/2026). Ghi gợi ý nháp + checkpoint needs_input, mã 2."""
+    goi_y_rows, goi_y_spec = build_redcap_rows(design_code, topic)
+    goi_y_path, _ = generate_csv(study, out, goi_y_rows, ten_tep=TEN_TEP_GOI_Y_BO_MAU)
+    lenh = f"python tools/run_g5_auto.py --study {study}"
+    cp = {
+        "gate": "G5",
+        "study": study,
+        "run_date": datetime.now().strftime("%Y-%m-%d"),
+        "g5_status": "BLOCKED — CHƯA CÓ BỘ BIẾN RIÊNG CỦA ĐỀ TÀI",
+        "design_code": design_code,
+        "guardrail": GC.BLOCKED_GUARDRAIL_STR,
+        "goi_y_bo_mau": {"tep": goi_y_path.name, "chuyen_khoa": goi_y_spec, "so_truong": len(goi_y_rows),
+                         "ghi_chu": "GỢI Ý NHÁP từ bộ mẫu chung theo từ khoá — KHÔNG phải từ điển G5"},
+        "needs_input": GC.needs_input(
+            GC.REASON_MISSING_VARIABLE_SET,
+            "G5 DỪNG: đề tài chưa có BỘ BIẾN RIÊNG (_bo-bien-rieng.csv) — từ điển dữ liệu phải dựng từ biến của CHÍNH "
+            "mục tiêu/công cụ đề tài, không lấy bộ mẫu chung. Giao agent bien-so-nghien-cuu dựng bộ biến + ma trận "
+            "mục tiêu–biến (G3) rồi chạy lại G5.",
+            lenh,
+            must_not_fabricate=["biến kết cục chính", "biến yếu tố/hiệp biến", "câu hỏi công cụ"],
+            supplied_by="bien-so-nghien-cuu + PI",
+        ),
+    }
+    (out / "G5_checkpoint.json").write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8",
+                                            newline="\n")
+    print("🚧 G5 DỪNG: đề tài chưa có BỘ BIẾN RIÊNG (_bo-bien-rieng.csv).")
+    print("   Từ điển dữ liệu G5 KHÔNG dựng từ bộ mẫu chung nữa (bác sĩ duyệt 15/11/2026): bộ mẫu theo từ khoá chủ đề")
+    print("   thiếu biến của mục tiêu, thừa biến không liên quan — rồi Excel/SPSS/R dựng trung thành từ bộ sai.")
+    print(f"   Gợi ý NHÁP (chuyên khoa `{goi_y_spec}`, {len(goi_y_rows)} trường) để agent tham khảo: {goi_y_path.name}")
+    print("   Việc tiếp: agent bien-so-nghien-cuu dựng _bo-bien-rieng.csv + _ma-tran-muc-tieu-bien.csv (G3), kiểm")
+    print(f"   python tools/ma_tran_muc_tieu_bien.py kiem --study {study}, rồi chạy lại: {lenh}")
+    print("  Cần bác sĩ kiểm chứng.")
+    return GC.EXIT_BLOCKED
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="G5 NÂNG CẤP — Quản lý dữ liệu với 55-row CRF + Python scripts + STROBE flowchart"
@@ -2607,12 +2646,28 @@ def main():
     # bộ đó chứ không thay bằng template chuyên khoa. File hỏng → nap_bo_bien_
     # rieng tự DỪNG mã 2 (không âm thầm rơi về bundle).
     rows_rieng = nap_bo_bien_rieng(out, study)
-    if rows_rieng is not None:
-        rows, specialty = rows_rieng, "bo_bien_rieng"
-        print(f"  → CRF: dùng BỘ BIẾN RIÊNG của đề tài ({BO_BIEN_RIENG_TEN_FILE}, "
-              f"{len(rows)} biến) — KHÔNG dùng bundle chuyên khoa")
-    else:
-        rows, specialty = build_redcap_rows(design_code, topic)
+    if rows_rieng is None:
+        # ★★ 15/11/2026 (bác sĩ duyệt, kiểm đồng bộ xuyên cổng): G5 DỪNG HẲN khi chưa có bộ biến riêng. Bản cũ rơi về
+        # BỘ MẪU CHUNG theo từ khoá chủ đề (giả lập «tuân thủ thuốc hạ áp» ⇒ `generic`, 22 trường: thiếu 8 câu tuân
+        # thủ + 6/9 yếu tố Mục tiêu 2, thừa dân tộc/BMI/«thời gian theo dõi» cho nghiên cứu cắt ngang, kết cục chính là
+        # ô chữ giữ chỗ) — rồi mẫu nhập Excel, .sav, .rds đều dựng trung thành từ bộ SAI và báo «✓ khớp». Nay bộ mẫu
+        # chỉ là GỢI Ý NHÁP có nhãn cho agent bien-so-nghien-cuu, KHÔNG BAO GIỜ thành từ điển G5.
+        return _dung_thieu_bo_bien(study, out, design_code, topic)
+    rows, specialty = rows_rieng, "bo_bien_rieng"
+    print(f"  → CRF: dùng BỘ BIẾN RIÊNG của đề tài ({BO_BIEN_RIENG_TEN_FILE}, "
+          f"{len(rows)} biến) — KHÔNG dùng bundle chuyên khoa")
+    try:
+        import ma_tran_muc_tieu_bien as MT  # noqa: PLC0415
+
+        _kq_mt = MT.kiem(out, study)
+        if _kq_mt["trang_thai"] == MT.TRANG_THAI_DAT:
+            print(f"  → Ma trận mục tiêu–biến: ĐẠT ({_kq_mt['tom_tat']['so_dong']} dòng)")
+        else:
+            print(f"  ⚠️  Ma trận mục tiêu–biến: {_kq_mt['trang_thai']} — "
+                  + "; ".join(x["noi_dung"] for x in _kq_mt["loi"][:3])
+                  + " (G5-AUTO-12 giữ G5 ở REVIEW tới khi ĐẠT; KHÔNG khoá dữ liệu được)")
+    except Exception as _exc:  # noqa: BLE001 — chỉ thông báo; tiêu chí G5-AUTO-12 mới là chốt
+        print(f"  ⚠️  Không chạy được bộ kiểm ma trận: {type(_exc).__name__}")
 
     # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 20): "nối thêm, không
     # thay thế" — cùng khuôn run_g7_auto.py/run_g8_auto.py/run_g9_auto.py đã

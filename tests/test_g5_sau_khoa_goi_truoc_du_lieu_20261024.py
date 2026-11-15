@@ -89,6 +89,13 @@ def _de_tai_g5_cat_ngang(tmp_path: Path, monkeypatch, study: str, g3_them: dict)
     sap = d / f"G4_A5_SAP_FINAL_{study}.md"
     sap.write_text("SAP FINAL — nội dung đã khoá (giả lập test)", encoding="utf-8", newline="\n")
     _sign(d, "G4", sap, "METHODS_STATISTICS_REVIEWER", tmp_path)
+    # 15/11/2026: G5 DỪNG khi chưa có bộ biến riêng (không còn rơi về bộ mẫu chung) — đề tài kiểu C1a có bộ biến riêng.
+    _ghi(d / "_bo-bien-rieng.csv",
+         ",".join(f'"{c}"' for c in G5A._BO_BIEN_COT_BAT_BUOC) + "\n"
+         + ",".join(["record_id", "phieu", "", "text", "Mã phiếu"] + [""] * (len(G5A._BO_BIEN_COT_BAT_BUOC) - 5))
+         + "\n"
+         + ",".join(["hai_long_chung", "phieu", "", "radio", "Hài lòng chung", '"1, Không | 2, Có"']
+                    + [""] * (len(G5A._BO_BIEN_COT_BAT_BUOC) - 6)) + "\n")
     return d
 
 

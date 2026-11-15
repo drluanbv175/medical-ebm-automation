@@ -23,6 +23,15 @@ import cau_noi_r as R  # noqa: E402
 import cau_noi_spss as C  # noqa: E402
 import spss_chay_nen as N  # noqa: E402
 
+
+@pytest.fixture(autouse=True)
+def _co_lap_khoi_e4_noi_dung(monkeypatch):
+    """15/11/2026: tệp này kiểm CƠ CHẾ (khứ hồi/cú pháp) với từ điển ĐỒ GÁ dựng riêng — không phải đề tài có bộ biến +
+    ma trận. Phép E4 (nội dung biến ↔ mục tiêu, cau_noi_spss.kiem_noi_dung_bien) có test riêng, kể cả lời gọi thật:
+    tests/test_dong_bo_xuyen_cong_20261115.py. Cô lập ở đây KHÔNG nới assertion nào của tệp."""
+    monkeypatch.setattr(C, "kiem_noi_dung_bien", lambda *a, **k: None)
+
+
 FX = Path(__file__).resolve().parent / "fixtures" / "spss_khu_hoi"
 # biến môi trường EBM_SPSS_PYTHON/EBM_RSCRIPT được trả nguyên (không kiểm tồn tại) ⇒ tự kiểm tệp có thật
 CO_SPSS = any(p.is_file() for p in C.ung_vien_python_spss())
@@ -158,7 +167,8 @@ def test_quet_csv_do_rong_tinh_ca_khoang_trang_dau(tmp_path):
 def test_tu_dien_sav_that_khop_ke_hoach():
     _, ke = _ke()
     kq = C.kiem_tu_dien_sav(ke, _td())
-    assert kq == {"trang_thai": "KHOP", "so_lech": 0, "lech": []}
+    # chua_do (E5 15/11/2026): kế hoạch không mang vai trò/thuộc tính tuỳ biến ⇒ không có gì phải đo thêm
+    assert kq == {"trang_thai": "KHOP", "so_lech": 0, "lech": [], "chua_do": []}
 
 
 @pytest.mark.parametrize(

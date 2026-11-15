@@ -67,6 +67,8 @@ REASON_MISSING_PICO = "MISSING_PICO"                      # G0: PICO chưa đư�
 REASON_MISSING_IRB = "MISSING_IRB_APPROVAL"              # G2: chưa có phê duyệt thật
 REASON_MISSING_SAP_LOCK = "MISSING_SAP_SIGNATURE"        # G4: chưa ký khóa SAP
 REASON_MISSING_DATA = "MISSING_REAL_DATA"                # G5: chưa có dữ liệu thật
+# G5: chưa có bộ biến riêng (15/11/2026 — không còn rơi về bộ mẫu chung)
+REASON_MISSING_VARIABLE_SET = "MISSING_STUDY_VARIABLE_SET"
 REASON_MISSING_INTEGRITY = "MISSING_INTEGRITY_SIGNATURES"  # G9: chưa ký liêm chính
 REASON_MISSING_CITATION_VERIFICATION = "MISSING_CITATION_VERIFICATION"  # G10: A12 receipt chưa có/chưa sạch
 # G10 (14/11/2026): lời khai «Bằng chứng máy-kiểm» trong mô tả A12 (số PMID, thời điểm, all_clean) LỆCH biên nhận — chỉ

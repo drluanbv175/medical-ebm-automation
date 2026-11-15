@@ -1109,8 +1109,15 @@ def evaluate_g4_quality(
             g3s_evidence = f"G3 KHÔNG ĐO ĐƯỢC ({g3_song.get('ly_do')}) — không phải «đạt»"
         else:
             g3s_status = "REVIEW"
-            g3s_evidence = (f"G3 chấm sống={g3_song.get('status')} — cỡ mẫu chưa được thống kê viên/PI chốt "
-                            "(PASS_G3_CONFIRMED); SAP không được khoá trên N chưa chốt")
+            # Sửa theo thẩm định #268: nêu ĐÚNG tiêu chí G3 đang REVIEW — G3 có thể dừng vì ma trận mục tiêu–biến
+            # (G3-AUTO-19) dù N đã chốt; thông điệp cũ đổ sai cho «cỡ mẫu chưa chốt».
+            bao_cao_g3 = g3_song.get("bao_cao") if isinstance(g3_song.get("bao_cao"), Mapping) else {}
+            cho = [str(r.get("id")) for r in [*(bao_cao_g3.get("automatic_criteria") or []),
+                                              *(bao_cao_g3.get("human_criteria") or [])]
+                   if isinstance(r, Mapping) and r.get("status") not in ("PASS", None)]
+            g3s_evidence = (f"G3 chấm sống={g3_song.get('status')} — G3 chưa đạt PASS_G3_CONFIRMED; tiêu chí G3 còn "
+                            f"chờ: {', '.join(cho) or 'không rõ (xem G3_QUALITY_REPORT)'}; SAP không được khoá khi G3 "
+                            "chưa chốt")
     automatic.append(_criterion(
         "G4-AUTO-12",
         "G3 (cỡ mẫu) chấm sống đã chốt PASS_G3_CONFIRMED — không bị chặn",
