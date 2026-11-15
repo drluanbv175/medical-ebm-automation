@@ -119,6 +119,8 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - Hồ sơ G5-OPS-2026.2: rà audit trail, SDV hoặc lý do không áp dụng; định tính có `TRANSCRIPT_manifest`.
 - KHÔNG PII ở mọi biên bản; agent không bật cờ `--confirm-*` thay người.
 
+- **Đồng bộ công cụ & thu thập (15/11/2026):** trục `quy_trinh_du_lieu` (bảng `_quy-trinh-du-lieu.csv` ↔ đề cương ↔ G2 ↔ DMP — DMP phải mang nguyên quyết định; số năm lưu trữ/số ngày huỷ bảng nối mâu thuẫn = lệch cứng) phải `khop`, hoặc nêu đúng vai (thời hạn lưu trữ/cách huỷ chưa chốt = PI quyết) trước khi kết luận cổng — chi tiết `quan-ly-du-lieu` mục cùng ngày.
+
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G5` xác nhận/dấu vân tay · bật cờ đời thực trong
 `study_meta` · chấm đầu ra do chính mình làm · ghi biên bản «ĐỒNG THUẬN» như «ĐẠT CỔNG» · bịa căn cứ · báo «phần agent hoàn chỉnh» khi `trach-nhiem` chưa ra mã 0 · sửa artifact của cổng khác để «xanh» tiêu chí

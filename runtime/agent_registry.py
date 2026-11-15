@@ -154,7 +154,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 15/11/2026: bien-so-nghien-cuu + thiet-ke-nghien-cuu + dieu-phoi-g1/g4 (đồng bộ giai đoạn mục tiêu — trục
 # ma_tran_muc_tieu, MT-11) — cặp y hệt repo gốc nhánh claude/muc-tieu-20261115; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "0f47d6c8a37d122e9bf8bea1700294d966c2050475f4c18870484095e5926400"
+    "8e17efd6902e189d4d7cf560997fe133698e3fff64173a59dfb680c7dac7bede"
 )
 
 MINIMUM_AGENT_COUNT = 64

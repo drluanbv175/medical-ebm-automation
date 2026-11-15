@@ -1,0 +1,10 @@
+muc,gia_tri,nguon,neo_de_cuong,neo_g2,ghi_chu
+thu_thap,"Phiếu tự điền khuyết danh, bỏ vào hòm phiếu kín; điều tra viên không thuộc Khoa C1a phát và thu phiếu ngay trong lượt khám",đề cương nộp 4.7 + Bảng 4.6; G1 data_collection_method,hòm phiếu kín,điều tra viên không thuộc Khoa C1a,
+an_danh,"Phiếu khảo sát không ghi họ tên, số điện thoại, địa chỉ, số thẻ BHYT hay số hồ sơ; phiếu đồng ý cất giữ riêng, không gắn với phiếu khảo sát",đề cương nộp 6.5; phiếu thông tin G2,khuyết danh,"không ghi họ tên, số điện thoại, địa chỉ",
+nhap_lieu,"Nhập kép toàn bộ phiếu, người nhập không thuộc Khoa C1a, có luật kiểm tra khoảng giá trị và logic; phiếu đồng ý không nhập vào cơ sở dữ liệu phân tích",đề cương nộp 4.7 bước 11 + Bảng 4.6,nhập kép toàn bộ phiếu,,
+ghep_du_lieu,"Mốc thời gian chờ và số liệu tổng hợp người bỏ về do Phòng CNTT/QLCL trích xuất từ HIS/eHospital, ghép với phiếu qua mã bàn khám giả danh",đề cương nộp 4.6.3; G1 data_collection_method,mã bàn khám,mã bàn khám,
+huy_bang_noi,"Bảng đối chiếu do Phòng CNTT/QLCL giữ, hủy trong vòng 30 ngày sau khi hoàn tất đối chiếu và làm sạch số liệu, có biên bản hủy",đề cương nộp 4.6.3 bước 5; phiếu thông tin G2,hủy trong vòng 30 ngày,hủy trong vòng 30 ngày,
+luu_tru,Số liệu giấy và điện tử lưu 2 năm sau khi kết thúc nghiên cứu,đề cương nộp 6.5; phiếu thông tin G2,lưu 2 năm sau khi kết thúc nghiên cứu,lưu 2 năm sau khi kết thúc nghiên cứu,
+huy_du_lieu,"Phiếu giấy hủy bằng máy hủy tài liệu, tệp điện tử xóa an toàn, có biên bản",đề cương nộp 6.5,máy hủy tài liệu,,
+ma_hoa_cau_mo,Câu hỏi mở do hai người không thuộc Khoa C1a mã hóa độc lập; bất đồng do người thứ ba ngoài khoa phân xử; chủ nhiệm không tham gia,đề cương nộp 4.7 bước 11 + Bảng 4.6,mã hóa độc lập,,
+kiem_chung,"Mở hòm phiếu bằng tổ hai người (một điều tra viên ngoài khoa và một đại diện Phòng Kế hoạch tổng hợp hoặc Phòng QLCL), lập biên bản; kiểm tra ngẫu nhiên việc tuân thủ quy trình chọn mẫu, phát và thu phiếu",đề cương nộp 4.7 bước 10 + Bảng 4.6,Tổ hai người,,
