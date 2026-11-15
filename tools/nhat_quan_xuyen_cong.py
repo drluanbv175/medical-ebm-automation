@@ -188,8 +188,93 @@ def _ket_cuc_chinh_sap(text: str) -> str:
         than = G4Q._section_body(text, "§2")
     except Exception:  # noqa: BLE001
         than = ""
-    m = re.search(r"\*\*Kết cục chính:\*\*\s*(.+)", than)
+    # 15/11/2026: nhận cả nhãn mục tiêu trong ngoặc («**Kết cục chính (MT1):**», thêm từ giai đoạn 3 — MT-11).
+    # Bản cũ chỉ khớp «**Kết cục chính:**» ⇒ SAP BTM lặng lẽ rơi khỏi trục ket_cuc_chinh (chỉ còn G0/G1/G2 để so).
+    m = re.search(r"\*\*Kết cục chính(?:\s*\([^)]*\))?:\*\*\s*(.+)", than)
     return m.group(1).strip() if m else ""
+
+
+# --------------------------------------------------------------------- thời điểm đo kết cục chính (PICO-T)
+# THÊM 15/11/2026 (bác sĩ «Tiếp tục vấn đề còn lại» sau kiểm toàn hệ theo khung 12 bước): chữ T của PICO(T) là mục DUY
+# NHẤT của khung chưa có trục máy (lần kiểm trước chỉ soi tay). Đổi thời điểm đo kết cục chính là một dạng đổi kết cục.
+_KHOANG_TG_RE = re.compile(r"(?<![/\-\d])(\d+(?:[.,]\d+)?)\s*(ngày|tuần|tháng|năm|giờ|phút)\b",
+                           re.IGNORECASE)
+_NGAY_RE = re.compile(r"(?<!\d)(\d{1,2})/(\d{1,2})(?:/(\d{4}))?(?!\d)")
+
+
+def moc_thoi_gian(v: Any) -> Tuple[frozenset, frozenset]:
+    """(khoảng thời gian «12 tháng», mốc ngày «01/01», «31/12», «2026») trong một mô tả thời điểm đo."""
+    t = unicodedata.normalize("NFC", _van_ban(v)).lower()
+    khoang = frozenset(f"{so.replace(',', '.')} {dv}" for so, dv in _KHOANG_TG_RE.findall(t))
+    ngay = set()
+    for d, m, y in _NGAY_RE.findall(t):
+        if 1 <= int(d) <= 31 and 1 <= int(m) <= 12:
+            ngay.add(f"{int(d):02d}/{int(m):02d}")
+            if y:
+                ngay.add(y)
+    return khoang, frozenset(ngay)
+
+
+def _thoi_diem_sap(text: str) -> Tuple[str, bool]:
+    """(mô tả thời điểm đo kết cục chính trong SAP §2, SAP §2 có dòng kết cục chính?)."""
+    try:
+        import g4_quality_gate as G4Q  # noqa: PLC0415
+        than = G4Q._section_body(text, "§2")
+    except Exception:  # noqa: BLE001
+        than = ""
+    m = re.search(r"\*\*Thời điểm đo[^*]*:\*\*\s*(.+)", than)
+    if m:
+        return m.group(1).strip(), True
+    kc = _ket_cuc_chinh_sap(text)
+    m = re.search(r"thời điểm:\s*([^;]+)", kc, re.IGNORECASE)
+    if m:
+        return m.group(1).strip(), True
+    k, n = moc_thoi_gian(kc)
+    return (kc if (k or n) else ""), bool(kc)
+
+
+def truc_thoi_diem_ket_cuc(meta: Dict[str, Any], trds: Dict[str, Any], sap_text: str) -> Dict[str, Any]:
+    """Thời điểm đo kết cục chính G0 ↔ G1 ↔ TRDS mục 19 ↔ SAP §2."""
+    kc_g1 = _mo_repr(_gp(meta, "G1").get("primary_outcome"))
+    kc19 = _mo_repr(trds.get("19"))
+    tp_sap, co_kc_sap = _thoi_diem_sap(sap_text or "")
+    nguon = [n for n in (
+        {"cong": "G0", "noi": "study_meta.gate_params.G0.primary_outcome_timepoint",
+         "gia_tri": _van_ban(_gp(meta, "G0").get("primary_outcome_timepoint"))},
+        {"cong": "G1", "noi": "study_meta.gate_params.G1.primary_outcome.timepoint",
+         "gia_tri": _van_ban(kc_g1.get("timepoint")) if isinstance(kc_g1, dict) else ""},
+        {"cong": "G2", "noi": "đăng ký TRDS mục 19 (timepoint)",
+         "gia_tri": _van_ban(kc19.get("timepoint")) if isinstance(kc19, dict) else ""},
+        {"cong": "G4", "noi": "SAP §2 (thời điểm đo kết cục chính)", "gia_tri": tp_sap},
+    ) if _co_that(n["gia_tri"])]
+    ten = "Thời điểm đo kết cục chính (PICO-T)"
+    if len(nguon) < 2:
+        return _ket("thoi_diem_ket_cuc", ten, nguon, MUC_CHUA_DU, "chỉ có ≤ 1 nơi ghi thời điểm đo — chưa đủ để so")
+    moc = {n["cong"]: moc_thoi_gian(n["gia_tri"]) for n in nguon}
+    ghi: List[str] = []
+    muc = MUC_KHOP
+    for i, loai in ((0, "khoảng thời gian"), (1, "mốc ngày")):
+        tap = {c: m[i] for c, m in moc.items() if m[i]}
+        if len(set(tap.values())) > 1:
+            muc = MUC_LECH_MEM
+            ghi.append(f"{loai} khác nhau: " + "; ".join(f"{c} {sorted(v)}" for c, v in tap.items()))
+    co_moc = [c for c, m in moc.items() if m[0] or m[1]]
+    khong_moc = [c for c, m in moc.items() if not (m[0] or m[1])]
+    if muc == MUC_KHOP and co_moc and khong_moc:
+        muc = MUC_CAN_XEM
+        ghi.append(f"{', '.join(khong_moc)} không nêu mốc thời gian, {', '.join(co_moc)} có — chủ nhiệm đọc lại")
+    if muc == MUC_KHOP and not co_moc:
+        phu = min(_bao_ham(nguon[0]["gia_tri"], n["gia_tri"]) for n in nguon[1:])
+        if phu < 0.5:
+            muc = MUC_CAN_XEM
+            ghi.append(f"mô tả thời điểm đo trùng từ thấp ({phu:.2f}) giữa các nơi — chủ nhiệm đọc lại")
+    if co_kc_sap and not tp_sap:
+        muc = MUC_CAN_XEM if muc == MUC_KHOP else muc
+        ghi.append("SAP §2 chưa nêu thời điểm đo kết cục chính — thêm dòng «**Thời điểm đo:**» theo G1")
+    if not ghi:
+        tat_ca = sorted(set().union(*[m[0] | m[1] for m in moc.values()]))
+        ghi.append(f"{len(nguon)} nơi cùng một thời điểm đo" + (f" (mốc: {', '.join(tat_ca)})" if tat_ca else ""))
+    return _ket("thoi_diem_ket_cuc", ten, nguon, muc, " · ".join(ghi))
 
 
 # ----------------------------------------------------------------------------------------------- so
@@ -668,6 +753,9 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
             ket.append(_ket("ket_cuc_chinh", "Kết cục chính", nguon_kc, MUC_KHOP if muc_sd is None else MUC_CAN_XEM,
                             f"{len(nguon_kc)} nơi cùng chỉ một kết cục" + (f" — {ghi_sd}" if ghi_sd else "")))
 
+    # 4b) Thời điểm đo kết cục chính (PICO-T) — 15/11/2026.
+    ket.append(truc_thoi_diem_ket_cuc(meta, trds, sap_text))
+
     # 5) Quần thể (chỉ báo — văn bản tiêu chí dài ngắn khác nhau tự nhiên).
     tc = _mo_repr(trds.get("14"))
     # 15/11/2026 (chạy G2 cho BTM): WHO TRDS mục 14 là «Key Inclusion AND Exclusion Criteria» — trước đây chỉ đọc phần
@@ -781,6 +869,7 @@ TRUC_THEO_CONG = {
     "sai_so_d": ("G3", "G4", "G10"), "loai_gia_thuyet": ("G0", "G3", "G4", "G10"),
     "thiet_ke": ("G1", "G2", "G3", "G4", "G10"),
     "ket_cuc_chinh": ("G0", "G1", "G4", "G8", "G10"), "quan_the": ("G0", "G1", "G2", "G10"),
+    "thoi_diem_ket_cuc": ("G0", "G1", "G2", "G4", "G10"),
     "co_mau_cho_ket_cuc": ("G3", "G4", "G10"),
     "bien_de_cuong": ("G3", "G5", "G10"), "cong_cu_tu_dien": ("G3", "G5", "G10"),
     "muc_tieu_phan_tich": ("G1", "G4", "G10"), "chon_mau_co_mau": ("G1", "G3", "G4", "G10"),

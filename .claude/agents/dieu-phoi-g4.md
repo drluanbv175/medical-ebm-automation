@@ -128,6 +128,10 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 
 - **Đồng bộ phân tích số liệu (15/11/2026):** trục `dac_ta_phan_tich` (đặc tả G6 ↔ SAP hai chiều: SHA đúng phiên bản, mọi phân tích SAP §9 + mục phân tích nhãn đậm §1/§3/§5/§7 có neo, mọi neo còn trong SAP) phải `khop`, hoặc nêu đúng vai (đặc tả chưa duyệt = thống kê viên/PI ghi `nguoi_duyet`; SAP còn [CẦN] = thống kê viên chọn phương pháp) — chi tiết `phan-tich-thong-ke` mục cùng ngày.
 
+## Thời điểm đo kết cục chính — chữ T của PICO(T) (15/11/2026)
+- **Thời điểm đo kết cục chính phải ghi ở MỌI nơi và cùng mốc:** G0 `primary_outcome_timepoint` · G1 `primary_outcome.timepoint` · TRDS mục 19 (`timepoint`) · SAP §2 dòng «**Thời điểm đo:**» (chép NGUYÊN VĂN G1). Máy đo bằng trục `thoi_diem_ket_cuc` của `nhat_quan_xuyen_cong`: khoảng thời gian («12 tháng», «30 ngày») hoặc mốc ngày («01/01–31/12/2026») khác nhau giữa các nơi ⇒ LỆCH MỀM (đổi thời điểm là một dạng đổi kết cục — chủ nhiệm giải trình); nơi có mốc nơi không, hoặc SAP §2 thiếu thời điểm ⇒ CẦN XEM.
+- Nhãn mục tiêu trong ngoặc ở SAP («**Kết cục chính (MT1):**») nay được đọc; trước 15/11 máy bỏ sót SAP BTM ở trục kết cục chính — kiểm lại đúng tập nguồn trước khi xin chủ nhiệm xác nhận «cùng một kết cục» (xác nhận chỉ phủ tập nguồn lúc ký).
+
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G4` xác nhận/dấu vân tay · bật cờ đời thực trong
 `study_meta` · chấm đầu ra do chính mình làm · ghi biên bản «ĐỒNG THUẬN» như «ĐẠT CỔNG» · bịa căn cứ · báo «phần agent hoàn chỉnh» khi `trach-nhiem` chưa ra mã 0 · sửa artifact của cổng khác để «xanh» tiêu chí

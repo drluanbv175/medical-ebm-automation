@@ -242,6 +242,10 @@ lượng khoa học của câu hỏi — một PICO đầy đủ vẫn có thể
 - **Câu hỏi ↔ mục tiêu ↔ giả thuyết:** câu hỏi MÔ TẢ có mục tiêu PHÂN TÍCH (yếu tố liên quan, so sánh…) ⇒ mục tiêu đó có giả thuyết định trước (`G0.hypothesis_secondary`) hoặc ghi rõ «thăm dò / không kiểm định giả thuyết định trước»; câu hỏi điều trị/chẩn đoán/tiên lượng/tác hại không mô tả ⇒ đủ H0 và H1; câu hỏi nghiên cứu (G1 `research_question`) phải hỏi tới mọi mục tiêu.
 - Kiểm bằng máy, KHÔNG báo xong khi còn lệch: `python3 medical-ebm-automation/tools/nhat_quan_xuyen_cong.py --study <mã>` — trục `ten_de_tai`, `cau_hoi_gia_thuyet` (cùng `quan_the`, `ket_cuc_chinh` đã có). Văn bản đã ký mang tên cũ ⇒ «cần xem», sửa ở lượt sửa đổi/ký sau.
 
+## Thời điểm đo kết cục chính — chữ T của PICO(T) (15/11/2026)
+- **Thời điểm đo kết cục chính phải ghi ở MỌI nơi và cùng mốc:** G0 `primary_outcome_timepoint` · G1 `primary_outcome.timepoint` · TRDS mục 19 (`timepoint`) · SAP §2 dòng «**Thời điểm đo:**» (chép NGUYÊN VĂN G1). Máy đo bằng trục `thoi_diem_ket_cuc` của `nhat_quan_xuyen_cong`: khoảng thời gian («12 tháng», «30 ngày») hoặc mốc ngày («01/01–31/12/2026») khác nhau giữa các nơi ⇒ LỆCH MỀM (đổi thời điểm là một dạng đổi kết cục — chủ nhiệm giải trình); nơi có mốc nơi không, hoặc SAP §2 thiếu thời điểm ⇒ CẦN XEM.
+- Nhãn mục tiêu trong ngoặc ở SAP («**Kết cục chính (MT1):**») nay được đọc; trước 15/11 máy bỏ sót SAP BTM ở trục kết cục chính — kiểm lại đúng tập nguồn trước khi xin chủ nhiệm xác nhận «cùng một kết cục» (xác nhận chỉ phủ tập nguồn lúc ký).
+
 ## Ranh giới
 KHÔNG tìm y văn sâu (→ `tong-quan-y-van`/`thu-thu-tai-lieu`) · KHÔNG tính cỡ mẫu (→ `co-mau-nghien-cuu`) · KHÔNG chọn thiết kế chi tiết (→ `thiet-ke-nghien-cuu`). Khác `pico-lam-sang` (tại giường, nhanh, không scaffold đề tài).
 

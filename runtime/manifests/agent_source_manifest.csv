@@ -3,7 +3,7 @@ path,sha256,size_bytes
 .claude/agents/bien-so-nghien-cuu.md,354e579a05ebc71e77235d2abecb8159c2ec13e4be12de49a5fc5fb3d0a6e4e1,31711
 .claude/agents/binh-duyet.md,eb223c09a3639fcd31ac19a084927f30aa57313ed51cbe2a854fe9b03597f316,27232
 .claude/agents/cap-nhat-guideline.md,e9f023b43d4793217f747bd319507959fe0850360f79a012cd80cd0ea0fbee33,19594
-.claude/agents/cau-hoi-nghien-cuu.md,aed770c2c8c1abacf020f5562da02869387374fae14f6d04ba7930130732f33d,26247
+.claude/agents/cau-hoi-nghien-cuu.md,ffb78d6a7a1973339bcfe8a93cdf156e5a4eb6694b3d73c1fc52b3b7490a9d65,27294
 .claude/agents/cham-soc-giam-nhe.md,3a59acae8197c120052bc0129dc5055e7cf85675b88f2c3606296baa482ce4bb,26200
 .claude/agents/chan-doan-xac-suat.md,8fc93a1fd62fd01c0e3bfceabbdebec9f1fb570c4bd56026c25a45e5d10a052a,20662
 .claude/agents/co-mau-nghien-cuu.md,789a528da70e4e3afabb776cef6a6c19a5b2721a3f8c6c5d20cb5c08eb483deb,26280
@@ -17,7 +17,7 @@ path,sha256,size_bytes
 .claude/agents/dieu-phoi-g10.md,f7ed3ac391898af455370fa05cd4948454e553f2e709d80b7c0cd38b250b23c6,20594
 .claude/agents/dieu-phoi-g2.md,dc53e828b2bac731df3b2ed93d22177898450e80bad0b718734e0f551ca60a11,20154
 .claude/agents/dieu-phoi-g3.md,25506bc75337d53f00ecf28f3085514bc6183fddccce66a9e5b8782866fc6cb1,19091
-.claude/agents/dieu-phoi-g4.md,770354260006532ae37f6ed157437b317395aa3564a1493439449367a20b82c4,19378
+.claude/agents/dieu-phoi-g4.md,4cf3219e1d1c01fc0b4366b1abfa2eed361a9114c67ce22b022377ae65d96fdc,20425
 .claude/agents/dieu-phoi-g5.md,0c67fd43a188038f15cfc6bcf66591e89fe2cdfdd123516f8f739fcad1587cd5,18876
 .claude/agents/dieu-phoi-g6.md,22522f9b267e46dd35b0251523e4209474c9db0dd9aa13be8cf077ddc38e85aa,19950
 .claude/agents/dieu-phoi-g7.md,8d2f0d8d1c41d937024a658bb71b70d4c6324f325c719390b3c802666591c6ad,16284
@@ -55,7 +55,7 @@ path,sha256,size_bytes
 .claude/agents/tham-dinh-phe-binh.md,75c6f192c9594849da01c4e7bc0eaa6083f7489e356a4398af6306d10f7ac8ff,18753
 .claude/agents/thang-diem-nguy-co.md,a661435d5971aa345ec8fdb9dbcedc642d8315caf8f6f410a8bbacd79fb93f9d,21746
 .claude/agents/theo-doi-benh-man.md,04066e9916fd3b28d3ff112e81e78b189000a343a460ffa35b7fb2a6e729cc13,21829
-.claude/agents/thiet-ke-nghien-cuu.md,f5497087f9dce07df8897af8511e919fdce3ca89b10a9cb268bc5ea8ca1c8553,54504
+.claude/agents/thiet-ke-nghien-cuu.md,9c5039372f782ab1fb02f57cadce8ed53f5abd25d12c94540ac3e1ba45f977cc,55551
 .claude/agents/thu-thu-tai-lieu.md,7840cef1fcb17e80fa9cb1dca55ec14b847db4129523c7019bc7572e53a6a6fe,24285
 .claude/agents/tong-quan-y-van.md,08d6ab14a3fa5a94edad2041b0773096de2c7533e39c42bb7e19b1faacee6ad3,23986
 .claude/agents/tra-cuu-chung-cu.md,d012a59ddb156f0a7fa29b2b2ac832384eb21da8d34dcf9e6132a18142d8cafa,22596
