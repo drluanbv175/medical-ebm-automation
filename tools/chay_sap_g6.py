@@ -214,11 +214,69 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
             so_chinh += 1
     if so_chinh != 1:
         loi.append(f"cần ĐÚNG một phân tích vai «chinh» có tham_so (đang có {so_chinh})")
+    phu: dict = {}
+    if sap.is_file() and dt.get("nguon_sap"):
+        phu = kiem_phu_sap(dt, sap.read_text(encoding="utf-8"))
+        loi += [f"{pid}: SAP hiện tại không có cụm neo «{neo}» (sap_neo trỏ phân tích SAP không còn)"
+                for pid, neo in phu["neo_thieu"]]
+        loi += [f"SAP {muc} có phân tích chưa vào đặc tả: «{dong[:100]}»" for muc, dong in phu["muc_chua_phu"]]
+        canh_bao += [f"{pid}: chưa khai sap_neo (cụm chữ nguyên văn trong SAP) — không truy nguyên được"
+                     for pid in phu["chua_neo"]]
     dau = dau_dac_ta(dt)
     duyet = BPS.trang_thai_duyet(str(dt.get("nguoi_duyet") or ""), dau)
     if duyet != "DA_DUYET":
         canh_bao.append(f"đặc tả {duyet} — thống kê viên/PI ghi nguoi_duyet «<VAI>:<tham chiếu>:<YYYY-MM-DD>:{dau}»")
-    return {"loi": loi, "canh_bao": canh_bao, "dau": dau, "duyet": duyet, "sap_khop": sap_khop, "phan_tich": ds}
+    return {"loi": loi, "canh_bao": canh_bao, "dau": dau, "duyet": duyet, "sap_khop": sap_khop, "phan_tich": ds,
+            "phu_sap": phu}
+
+
+# ─────────── Giai đoạn 7 «Phân tích số liệu» (15/11/2026): đặc tả ↔ SAP HAI CHIỀU ───────────
+# Kiểm tay: SAP C1a 1.5 thêm báo cáo đáp ứng/người từ chối, đặc tính đo lường (§3), thăm dò kỳ vọng (§5); SAP BTM thêm
+# so sánh nhóm 1 lượt khám — đặc tả G6 soạn trước đó KHÔNG có, và không gì báo (chỉ có SHA lệch ⇒ «đặc tả cũ», không nói
+# thiếu phân tích nào). Nay: mỗi mục đặc tả neo vào SAP bằng `sap_neo` (cụm chữ nguyên văn, nhiều cụm cách « | » hoặc
+# danh sách); mọi gạch đầu dòng cấp 1 của §9 và mọi mục nhãn đậm là phân tích ở §1/§3/§5/§7 phải có ít nhất một neo.
+_MUC_SAP_RE = re.compile(r"^#{2,4}\s*§\s*(\d{1,2})\b[^\n]*\n(.*?)(?=^#{2,4}\s*§\s*\d|^#{1,2}\s|\Z)", re.M | re.S)
+_NHAN_PHAN_TICH = re.compile(r"phân tích|đặc tính đo lường|đáp ứng|nhóm nhỏ tiền định", re.I)
+
+
+def neo_cua(pt: dict) -> list[str]:
+    v = pt.get("sap_neo")
+    if isinstance(v, list):
+        return [str(x).strip() for x in v if str(x).strip()]
+    return [x.strip() for x in str(v or "").split("|") if x.strip()]
+
+
+def muc_sap_bat_buoc(sap_text: str) -> list[tuple[str, str]]:
+    """Phân tích SAP mà đặc tả BẮT BUỘC phải phủ: gạch đầu dòng cấp 1 của §9; mục nhãn đậm là phân tích ở §1/§3/§5/§7
+    (trừ mục ghi «KHÔNG CÓ»)."""
+    import unicodedata  # noqa: PLC0415
+
+    ra: list[tuple[str, str]] = []
+    for m in _MUC_SAP_RE.finditer(unicodedata.normalize("NFC", sap_text)):
+        muc, than = m.group(1), m.group(2)
+        for dong in than.splitlines():
+            if not dong.startswith("- "):
+                continue
+            if muc == "9":
+                ra.append((f"§{muc}", dong.strip()))
+            elif muc in ("1", "3", "5", "7"):
+                nhan = re.match(r"- \*\*(.+?)\*\*", dong)
+                if nhan and _NHAN_PHAN_TICH.search(nhan.group(1)) and "KHÔNG CÓ" not in dong.upper():
+                    ra.append((f"§{muc}", dong.strip()))
+    return ra
+
+
+def kiem_phu_sap(dt: dict, sap_text: str) -> dict:
+    """{neo_thieu: [(id, neo)], chua_neo: [id], muc_chua_phu: [(§k, dòng)]} — đặc tả ↔ SAP hai chiều."""
+    import unicodedata  # noqa: PLC0415
+
+    sap = unicodedata.normalize("NFC", sap_text).casefold()
+    ds = [pt for pt in dt.get("phan_tich") or [] if isinstance(pt, dict)]
+    neo = [(str(pt.get("id")), unicodedata.normalize("NFC", n)) for pt in ds for n in neo_cua(pt)]
+    return {"neo_thieu": [(pid, n) for pid, n in neo if n.casefold() not in sap],
+            "chua_neo": [str(pt.get("id")) for pt in ds if not neo_cua(pt)],
+            "muc_chua_phu": [(muc, dong) for muc, dong in muc_sap_bat_buoc(sap_text)
+                             if not any(n.casefold() in dong.casefold() for _, n in neo)]}
 
 
 def gate_cua(pt: dict) -> str:

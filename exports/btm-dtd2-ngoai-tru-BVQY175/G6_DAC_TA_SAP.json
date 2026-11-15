@@ -1,7 +1,7 @@
 {
  "nguon_sap": "G4_A5_SAP_FINAL_btm-dtd2-ngoai-tru-BVQY175.md",
- "sha256_sap": "9545bd10837ad471a8258f218ce84ce5bf7b065f592364d1044f9e68b3bca907",
- "trang_thai_de_xuat": "ĐỀ XUẤT CỦA AGENT 15/11/2026 — CHỜ thống kê viên/PI duyệt (ghi nguoi_duyet). SAP nguồn còn là bản DRAFT chưa ký: SAP sửa trước khi khoá ⇒ sha256_sap lệch, đặc tả bị coi là cũ và phải đồng bộ lại.",
+ "sha256_sap": "58a6d8cd07d53442345bede7e294647cb496620dc6d4b3a955fcc091f2224ad2",
+ "trang_thai_de_xuat": "ĐỀ XUẤT CỦA AGENT 15/11/2026 (đồng bộ lại theo SAP hiện tại, giai đoạn 7: neo từng phân tích vào SAP bằng sap_neo, thêm phân tích SAP mới bổ sung) — CHỜ thống kê viên/PI duyệt (ghi nguoi_duyet). SAP nguồn còn là bản DRAFT chưa ký: SAP sửa trước khi khoá ⇒ sha256_sap lệch, đặc tả bị coi là cũ và phải đồng bộ lại.",
  "can_thong_ke_vien_quyet": [
   "Đề tài CHƯA có từ điển G5 — tên biến lấy theo bộ biến G3 (_bo-bien-rieng.csv) và _bien-phai-sinh.csv; đối chiếu lại khi dựng từ điển G5.",
   "Quy tắc giảm tham số khi EPV < 10 (SAP §5 bước 1–3) là điều kiện — kiểm EPV trên dữ liệu, bước nào áp thì thêm mục với tập biến đã giảm.",
@@ -22,7 +22,10 @@
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1"
-   }
+   },
+   "sap_neo": [
+    "Kết cục chính (MT1)"
+   ]
   },
   {
    "id": "MT1_thanh_phan",
@@ -35,7 +38,10 @@
      "co_uacr"
     ],
     "loc": "du_tieu_chuan == 1"
-   }
+   },
+   "sap_neo": [
+    "thành phần"
+   ]
   },
   {
    "id": "MT3_poisson",
@@ -68,7 +74,11 @@
     "outcome_type": "poisson_pr",
     "n_imputations": 20,
     "loc": "du_tieu_chuan == 1"
-   }
+   },
+   "sap_neo": [
+    "hồi quy Poisson liên kết log",
+    "ĐN8 — dữ liệu thiếu"
+   ]
   },
   {
    "id": "P1_btm_xac_nhan",
@@ -81,7 +91,10 @@
     ],
     "nguong_ty_le": 2,
     "loc": "du_tieu_chuan == 1 and phan_loai_btm != 9"
-   }
+   },
+   "sap_neo": [
+    "Phụ 1"
+   ]
   },
   {
    "id": "P2_chua_ghi_nhan",
@@ -93,7 +106,10 @@
      "btm_chua_ghi_nhan"
     ],
     "loc": "du_tieu_chuan == 1 and phan_loai_btm == 2"
-   }
+   },
+   "sap_neo": [
+    "Phụ 2"
+   ]
   },
   {
    "id": "P3a_raasi",
@@ -105,7 +121,10 @@
      "dung_raasi"
     ],
     "loc": "du_tieu_chuan == 1 and chi_dinh_raasi == 1 and (la_thieu(ccd_raasi) or ccd_raasi != 1)"
-   }
+   },
+   "sap_neo": [
+    "Phụ 3a"
+   ]
   },
   {
    "id": "P3b_sglt2i",
@@ -117,7 +136,10 @@
      "dung_sglt2i"
     ],
     "loc": "du_tieu_chuan == 1 and chi_dinh_sglt2i == 1 and (la_thieu(ccd_sglt2i) or ccd_sglt2i != 1)"
-   }
+   },
+   "sap_neo": [
+    "Phụ 3b"
+   ]
   },
   {
    "id": "NC_pk1",
@@ -129,7 +151,10 @@
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and phong_kham_chinh == 1"
-   }
+   },
+   "sap_neo": [
+    "Nhóm nhỏ tiền định"
+   ]
   },
   {
    "id": "NC_pk2",
@@ -141,7 +166,10 @@
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and phong_kham_chinh == 2"
-   }
+   },
+   "sap_neo": [
+    "Nhóm nhỏ tiền định"
+   ]
   },
   {
    "id": "NC_pk3",
@@ -153,7 +181,10 @@
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and phong_kham_chinh == 3"
-   }
+   },
+   "sap_neo": [
+    "Nhóm nhỏ tiền định"
+   ]
   },
   {
    "id": "NC_dt1",
@@ -165,7 +196,10 @@
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and nhom_doi_tuong == 1"
-   }
+   },
+   "sap_neo": [
+    "Nhóm nhỏ tiền định"
+   ]
   },
   {
    "id": "NC_dt2",
@@ -177,7 +211,10 @@
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and nhom_doi_tuong == 2"
-   }
+   },
+   "sap_neo": [
+    "Nhóm nhỏ tiền định"
+   ]
   },
   {
    "id": "NC_dt3",
@@ -189,7 +226,10 @@
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and nhom_doi_tuong == 3"
-   }
+   },
+   "sap_neo": [
+    "Nhóm nhỏ tiền định"
+   ]
   },
   {
    "id": "NC_dt4",
@@ -201,7 +241,10 @@
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and nhom_doi_tuong == 4"
-   }
+   },
+   "sap_neo": [
+    "Nhóm nhỏ tiền định"
+   ]
   },
   {
    "id": "NC_tuoi1",
@@ -213,7 +256,10 @@
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and nhom_tuoi_65 == 1"
-   }
+   },
+   "sap_neo": [
+    "Nhóm nhỏ tiền định"
+   ]
   },
   {
    "id": "NC_tuoi2",
@@ -225,7 +271,10 @@
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and nhom_tuoi_65 == 2"
-   }
+   },
+   "sap_neo": [
+    "Nhóm nhỏ tiền định"
+   ]
   },
   {
    "id": "DN1_alb",
@@ -237,7 +286,10 @@
      "xn_du_nhay_alb"
     ],
     "loc": "du_tieu_chuan == 1"
-   }
+   },
+   "sap_neo": [
+    "ĐN1 —"
+   ]
   },
   {
    "id": "DN2_ngoai_vien",
@@ -249,7 +301,10 @@
      "xn_du_nhay_nv"
     ],
     "loc": "du_tieu_chuan == 1"
-   }
+   },
+   "sap_neo": [
+    "ĐN2 —"
+   ]
   },
   {
    "id": "DN3_quan_sat",
@@ -261,7 +316,10 @@
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and vao_truoc_0107 == 1"
-   }
+   },
+   "sap_neo": [
+    "ĐN3 —"
+   ]
   },
   {
    "id": "DN4_co_thuoc",
@@ -273,7 +331,10 @@
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and so_nhom_ha_glucose >= 1"
-   }
+   },
+   "sap_neo": [
+    "ĐN4 —"
+   ]
   },
   {
    "id": "DN5_ma_mo_rong",
@@ -285,7 +346,10 @@
      "btm_chua_ghi_nhan_mr"
     ],
     "loc": "du_tieu_chuan == 1 and phan_loai_btm == 2"
-   }
+   },
+   "sap_neo": [
+    "ĐN5 —"
+   ]
   },
   {
    "id": "DN6_raasi_1lan",
@@ -297,35 +361,60 @@
      "dung_raasi"
     ],
     "loc": "du_tieu_chuan == 1 and chi_dinh_raasi_1lan == 1 and (la_thieu(ccd_raasi) or ccd_raasi != 1)"
-   }
+   },
+   "sap_neo": [
+    "ĐN6 —"
+   ]
   },
   {
    "id": "DN7_ngoai_don",
    "vai": "do_nhay",
    "sap_muc": "§9",
    "mo_ta": "ĐN7 — Phụ 3 tính cả thuốc bệnh án ghi «đang dùng» ngoài đơn",
-   "chua_tu_dong": "cần biến phái sinh từ ô chọn thuoc_ngoai_don (mã nhóm thuốc chưa đối chiếu) — thống kê viên chốt công thức rồi thêm mục"
+   "chua_tu_dong": "cần biến phái sinh từ ô chọn thuoc_ngoai_don (mã nhóm thuốc chưa đối chiếu) — thống kê viên chốt công thức rồi thêm mục",
+   "sap_neo": [
+    "ĐN7 —"
+   ]
   },
   {
    "id": "DN9_chia_nhom",
    "vai": "do_nhay",
    "sap_muc": "§5, §9",
    "mo_ta": "ĐN9 — MT3 với biến liên tục chia nhóm",
-   "chua_tu_dong": "chỉ làm khi đồ thị phần dư lệch tuyến tính (điều kiện) — thống kê viên quyết điểm cắt"
+   "chua_tu_dong": "chỉ làm khi đồ thị phần dư lệch tuyến tính (điều kiện) — thống kê viên quyết điểm cắt",
+   "sap_neo": [
+    "ĐN9 —"
+   ]
   },
   {
    "id": "P1_bang_GxA",
    "vai": "phu",
    "sap_muc": "§2, §4",
    "mo_ta": "Bảng chéo nhóm G × nhóm A theo KDIGO 2024",
-   "chua_tu_dong": "bảng chéo G × A chưa có công cụ — nhom_g, nhom_a đã có công thức; thống kê viên lập bảng"
+   "chua_tu_dong": "bảng chéo G × A chưa có công cụ — nhom_g, nhom_a đã có công thức; thống kê viên lập bảng",
+   "sap_neo": [
+    "bảng chéo G1–G5 × A1–A3"
+   ]
   },
   {
    "id": "MT1_fpc",
    "vai": "mo_ta",
    "sap_muc": "§4",
    "mo_ta": "KTC có hiệu chỉnh quần thể hữu hạn (thông tin phụ, khi biết kích thước khung mẫu)",
-   "chua_tu_dong": "cần kích thước khung mẫu eHospital — tính tay"
+   "chua_tu_dong": "cần kích thước khung mẫu eHospital — tính tay",
+   "sap_neo": [
+    "quần thể hữu hạn"
+   ]
+  },
+  {
+   "id": "MO_loai_1_luot",
+   "vai": "mo_ta",
+   "sap_muc": "§1",
+   "sap_neo": [
+    "chỉ có 1 lượt khám"
+   ],
+   "mo_ta": "So sánh tuổi, giới, nhóm đối tượng giữa người bị loại vì chỉ có 1 lượt khám và mẫu nghiên cứu (n (%) / trung vị hai nhóm, chỉ mô tả)",
+   "chua_tu_dong": "Người bị loại không có trong bộ dữ liệu phân tích — cần danh sách khung mẫu kèm tuổi, giới, nhóm đối tượng; thống kê viên lập bảng"
   }
  ],
  "nguoi_duyet": ""
