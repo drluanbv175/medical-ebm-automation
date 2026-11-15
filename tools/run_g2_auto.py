@@ -517,17 +517,6 @@ def phan_loai_can_thiep(meta: Optional[dict], topic: str = "") -> dict:
             "ung_vien": ung_vien, "canh_bao": canh_bao}
 
 
-def hat_giong_meta_g2(topic: str) -> dict:
-    """Khoá G2 được phép GIEO vào study_meta.json khi còn thiếu (ensure_study_meta chỉ điền chỗ trống).
-
-    SỬA 15/11/2026 (kiểm toàn hệ, chạy G2 cho BTM): hạt giống cũ có cả `design_code`. Với đề tài chưa ghim khoá này,
-    G2 tự chèn `study_meta.design_code` — mà `g1_quality_gate.dau_van_tay_g1` tính dấu vân tay quyết định G1 có cả
-    khoá đó ⇒ xác nhận G1 của chủ nhiệm hết khớp (G1-HUMAN-08) ⇒ G3 (G3-AUTO-01) và G4 (G4-AUTO-12) lùi theo, dù thiết
-    kế KHÔNG đổi. `design_code` cấp cao là chỗ PI ghim thiết kế; G2 đọc thiết kế từ G1 checkpoint, không cần gieo.
-    """
-    return {"title": topic}
-
-
 _CAN_QT = "[CẦN"
 
 
@@ -2223,7 +2212,18 @@ def main():
     # ── Bước 2: Risk profile ──
     print("\n⚖️  Bước 2/7: Xác định mức nguy cơ và lộ trình IRB...")
     risk = get_risk_profile(design_code, design_primary)
-    _study_meta_for_g2 = GC.ensure_study_meta(out_dir, seed=hat_giong_meta_g2(topic))
+    # 15/11/2026 (bác sĩ chọn «G2 thôi gieo + ghim cần dấu người», thẩm định #277): KHÔNG gieo `design_code` nữa —
+    # đó là ô «bác sĩ ghim» của G1; thiết kế máy suy nằm ở đó làm G1 chạy lại tự gỡ cờ thiết kế mơ hồ mà không ai xác
+    # nhận. Bản sao của máy ghi vào khoá riêng `design_code_tu_g1` (chỉ để tra cứu, không ai coi là ghim; ghi đè mỗi
+    # lượt vì đây là khoá của máy, không phải quyết định của người).
+    _study_meta_for_g2 = GC.ensure_study_meta(
+        out_dir,
+        seed={"title": topic},
+    )
+    if design_code and _study_meta_for_g2.get("design_code_tu_g1") != design_code:
+        _study_meta_for_g2["design_code_tu_g1"] = design_code
+        (out_dir / "study_meta.json").write_text(
+            json.dumps(_study_meta_for_g2, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     risk = ap_quyet_dinh_dang_ky(risk, _study_meta_for_g2)
     risk = ap_loai_can_thiep(risk, design_code, _study_meta_for_g2, topic)
     risk = ap_nguon_du_lieu(risk, design_code, _study_meta_for_g2)
