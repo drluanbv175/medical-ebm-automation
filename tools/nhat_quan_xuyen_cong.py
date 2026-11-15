@@ -233,8 +233,13 @@ def _thoi_diem_sap(text: str) -> Tuple[str, bool]:
     return (kc if (k or n) else ""), bool(kc)
 
 
-def truc_thoi_diem_ket_cuc(meta: Dict[str, Any], trds: Dict[str, Any], sap_text: str) -> Dict[str, Any]:
-    """Thời điểm đo kết cục chính G0 ↔ G1 ↔ TRDS mục 19 ↔ SAP §2."""
+def truc_thoi_diem_ket_cuc(meta: Dict[str, Any], trds: Dict[str, Any], sap_text: str,
+                           thiet_ke: Optional[str] = None) -> Dict[str, Any]:
+    """Thời điểm đo kết cục chính G0 ↔ G1 ↔ TRDS mục 19 ↔ SAP §2.
+
+    Nghiên cứu ĐỊNH TÍNH (`thiet_ke == "qualitative"`): «kết cục chính» của SAP định tính là hiện tượng/câu hỏi nghiên
+    cứu, không có thời điểm đo kiểu định lượng ⇒ KHÔNG đòi SAP §2 nêu thời điểm (đo trên 8 thiết kế giả 15/11/2026: trục
+    từng báo «cần xem» sai cho định tính). Mốc thời gian nếu có ở các nơi vẫn được so như thường."""
     kc_g1 = _mo_repr(_gp(meta, "G1").get("primary_outcome"))
     kc19 = _mo_repr(trds.get("19"))
     tp_sap, co_kc_sap = _thoi_diem_sap(sap_text or "")
@@ -268,7 +273,7 @@ def truc_thoi_diem_ket_cuc(meta: Dict[str, Any], trds: Dict[str, Any], sap_text:
         if phu < 0.5:
             muc = MUC_CAN_XEM
             ghi.append(f"mô tả thời điểm đo trùng từ thấp ({phu:.2f}) giữa các nơi — chủ nhiệm đọc lại")
-    if co_kc_sap and not tp_sap:
+    if co_kc_sap and not tp_sap and thiet_ke != "qualitative":
         muc = MUC_CAN_XEM if muc == MUC_KHOP else muc
         ghi.append("SAP §2 chưa nêu thời điểm đo kết cục chính — thêm dòng «**Thời điểm đo:**» theo G1")
     if not ghi:
@@ -754,7 +759,7 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
                             f"{len(nguon_kc)} nơi cùng chỉ một kết cục" + (f" — {ghi_sd}" if ghi_sd else "")))
 
     # 4b) Thời điểm đo kết cục chính (PICO-T) — 15/11/2026.
-    ket.append(truc_thoi_diem_ket_cuc(meta, trds, sap_text))
+    ket.append(truc_thoi_diem_ket_cuc(meta, trds, sap_text, thiet_ke=next(iter(ma_tk)) if len(ma_tk) == 1 else None))
 
     # 5) Quần thể (chỉ báo — văn bản tiêu chí dài ngắn khác nhau tự nhiên).
     tc = _mo_repr(trds.get("14"))

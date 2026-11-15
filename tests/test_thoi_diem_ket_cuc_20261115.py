@@ -86,3 +86,10 @@ def test_truc_co_trong_doi_chieu_va_trach_nhiem_cong(tmp_path):
                               m["gate_params"]["G1"]["primary_outcome"].update({"timepoint": "90 ngày sau nhập viện"})))
     assert _muc(NQ.doi_chieu(out, STUDY), "thoi_diem_ket_cuc")["muc"] == NQ.MUC_LECH_MEM
     assert NQ.TRUC_THEO_CONG["thoi_diem_ket_cuc"] == ("G0", "G1", "G2", "G4", "G10")
+
+
+def test_dinh_tinh_khong_doi_sap_neu_thoi_diem():
+    g0 = "Phỏng vấn sâu một lần sau khi người bệnh kết thúc đợt điều trị"
+    sap = _sap("Trải nghiệm của người bệnh về quá trình điều trị (hiện tượng nghiên cứu)")
+    assert NQ.truc_thoi_diem_ket_cuc(_meta(g0, g0), {}, sap, thiet_ke="qualitative")["muc"] == NQ.MUC_KHOP
+    assert NQ.truc_thoi_diem_ket_cuc(_meta(g0, g0), {}, sap, thiet_ke="cohort")["muc"] == NQ.MUC_CAN_XEM
