@@ -738,7 +738,7 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
 # truy nguyên/văn phong ⇒ CẦN XEM; thiếu nguồn để so ⇒ CHƯA ĐỦ ĐỂ SO (không bao giờ là «khớp»).
 TRUC_CHUOI = ("bien_de_cuong", "cong_cu_tu_dien", "muc_tieu_phan_tich", "chon_mau_co_mau", "dac_ta_cho_bo_bien",
               "tong_quan_khoang_trong", "co_mau_tinh_lai", "ky_thuat_chon_mau", "tai_lieu_nop_co_mau", "ten_de_tai",
-              "cau_hoi_gia_thuyet")
+              "cau_hoi_gia_thuyet", "trich_dan_tong_quan")
 # Trục nào là trách nhiệm của cổng nào (hoi_dong_cong.trach_nhiem dùng — «hoàn thiện» của cổng phải qua trục của nó).
 TRUC_THEO_CONG = {
     "co_mau": ("G3", "G4", "G10"), "alpha": ("G3", "G4", "G10"), "power": ("G3", "G4", "G10"),
@@ -751,6 +751,7 @@ TRUC_THEO_CONG = {
     "dac_ta_cho_bo_bien": ("G4", "G6"), "tong_quan_khoang_trong": ("G0", "G1", "G10"),
     "co_mau_tinh_lai": ("G3", "G4", "G10"), "ky_thuat_chon_mau": ("G1", "G3", "G4", "G10"),
     "tai_lieu_nop_co_mau": ("G10",), "ten_de_tai": ("G0", "G2", "G10"), "cau_hoi_gia_thuyet": ("G0", "G1", "G10"),
+    "trich_dan_tong_quan": ("G0", "G1", "G10"),
 }
 
 
@@ -1271,6 +1272,222 @@ def _truc_cau_hoi_gia_thuyet(meta: Dict[str, Any]) -> Optional[Dict[str, Any]]:
                 "mục tiêu")
 
 
+# ── Giai đoạn «Tổng quan tài liệu» (15/11/2026) ─────────────────────────────────────────────────────────────────────
+# Bác sĩ 15/11/2026: «… Tổng Quan Tài Liệu … Hãy đảm bảo sự đồng bộ xuyên suốt và chính xác nhất» + «mỗi vấn đề … phải
+# được cập nhật vào hệ thống». Kiểm tay C1a: TLTK đề cương nộp sạch (52 mục, đúng Vancouver, biên nhận A12 phủ đủ 35
+# PMID + 14 DOI) nhưng biên nhận rút bài đã quá hạn 30 ngày. Kiểm tay BTM: danh mục trích dẫn mà chủ nhiệm đã loại
+# 19 bài (25/10) không được công cụ nào của repo y khoa đọc — sổ chứng cứ G1 (A2b, 28/10) vẫn liệt kê cả 19 bài đã
+# loại; 28/47 trích dẫn không có bản ghi kiểm rút bài theo từng mã; nguồn phương pháp dẫn ở SAP/G3/G1 chưa vào danh
+# mục. Trục dưới đây đo đúng các chỗ đó cho MỌI đề tài.
+_VAN_BAN_CONG_TRICH = (
+    ("G1", "G1_A2_PROTOCOL_DESIGN_{s}.md", "thiết kế G1 (A2)"),
+    ("G3", "G3_BO_BIEN_SO_{s}.md", "bộ biến G3"),
+    ("G4", "G4_A5_SAP_FINAL_{s}.md", "SAP"),
+    ("G10", "DE_CUONG_THONG_NHAT_{s}.md", "đề cương thống nhất G10"),
+)
+HAN_RUT_BAI_NGAY = 30  # cùng hạn trạng thái rút bài của sổ xác minh nguồn (CLAUDE.md §6.4)
+_MUC_A2B_NGOAI_SO = re.compile(r"^##\s*Đã (?:loại khỏi danh mục|sàng ở G0)", re.M)
+
+
+def _hom_nay() -> date:
+    return date.today()
+
+
+def _da_kiem_rut_bai(out_dir: Path, study: str) -> Tuple[Dict[str, Optional[str]], Dict[str, str]]:
+    """({khoá «pmid:/doi:» → ngày kiểm GẦN NHẤT có bản ghi theo TỪNG định danh}, {khoá → trạng thái DƯƠNG}).
+
+    Nguồn: `KIEM_RUT_BAI_TRICH_DAN_<mã>.json` (tools/kiem_rut_bai_trich_dan.py — chỉ mã có phán quyết), biên nhận A12
+    (`pmids_checked`) + bảng DOI của báo cáo A12, khoá `rut_bai` của tổng hợp G0 (chỉ mã được NÊU TÊN — câu «56 PMID
+    đã kiểm» không đối chiếu được từng mã), `G0_checkpoint.pmids_verified` (bước R1C của G0)."""
+    import danh_muc_trich_dan as DMT  # noqa: PLC0415
+    import kiem_rut_bai_trich_dan as KRB  # noqa: PLC0415
+
+    ngay: Dict[str, Optional[str]] = {}
+
+    def _them(khoa: Iterable[str], luc: Optional[str]) -> None:
+        for k in khoa:
+            cu = ngay.get(k)
+            ngay[k] = max(x for x in (cu, luc) if x) if (cu or luc) else None
+
+    rec = _doc_json(out_dir / "A12_RETRACTION_RECEIPT.json")
+    luc_a12 = str(rec.get("checked_at_utc") or "")[:10] or None
+    _them({f"pmid:{str(p).strip()}" for p in rec.get("pmids_checked") or []}, luc_a12)
+    _them(DMT.dinh_danh(_doc_text(out_dir / f"A12_CITATION_VERIFICATION_{study}.md")), luc_a12)
+    rb = _doc_json(out_dir / f"G0_TONG_HOP_BANG_CHUNG_{study}.json").get("rut_bai")
+    if isinstance(rb, dict):
+        chu = json.dumps(rb, ensure_ascii=False)
+        _them(DMT.dinh_danh(chu) | {f"pmid:{p}" for p in re.findall(r"(?<![\d./-])(\d{7,8})(?![\d./-])", chu)},
+              str(rb.get("ngay") or "")[:10] or None)
+    cp0 = _doc_json(out_dir / "G0_checkpoint.json")
+    _them({f"pmid:{str(p).strip()}" for p in cp0.get("pmids_verified") or []},
+          str(cp0.get("generated_at") or "")[:10] or None)
+    kq = KRB.doc_ket_qua(out_dir, study)
+    luc = str(kq.get("checked_at") or "")[:10] or None
+    duong: Dict[str, str] = {}
+    for k, v in (kq.get("ket_qua") or {}).items():
+        st = str((v or {}).get("status") or "")
+        if st in KRB.CO_PHAN_QUYET:
+            _them({k}, luc)
+        if st in KRB.DUONG_TINH:
+            duong[k] = st
+    return ngay, duong
+
+
+def _khong_lien_quan_g0(out_dir: Path, study: str) -> set:
+    """Khoá bài G0 sàng là LẠC ĐỀ (lien_quan «khong» hoặc nhánh không lọc)."""
+    import danh_muc_trich_dan as DMT  # noqa: PLC0415
+
+    th = _doc_json(out_dir / f"G0_TONG_HOP_BANG_CHUNG_{study}.json")
+    ra: set = set()
+    for x in th.get("sang_loc") or []:
+        if isinstance(x, dict) and x.get("lien_quan") == "khong":
+            ra |= DMT.khoa_cua(x)
+    for x in th.get("sang_loc_khong_loc") or []:
+        if isinstance(x, dict):
+            ra |= DMT.khoa_cua(x)
+    return ra
+
+
+def _ma_ngan(khoa: Iterable[str], n: int = 8) -> str:
+    ds = sorted(khoa)
+    return ", ".join(k.split(":", 1)[1] for k in ds[:n]) + (f" (+{len(ds) - n})" if len(ds) > n else "")
+
+
+def _truc_trich_dan(out_dir: Path, study: str, meta: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """TLTK đề cương nộp ↔ trích dẫn trong thân ↔ danh mục trích dẫn (gồm quyết định LOẠI của chủ nhiệm) ↔ văn bản
+    cổng ↔ bản ghi kiểm rút bài. LỆCH MỀM: số trích thiếu mục/mục không được trích/sai thứ tự Vancouver/trùng định danh;
+    dùng bài chủ nhiệm đã loại trong TLTK, danh mục hay văn bản cổng; mục TLTK có định danh mà chưa có bản ghi kiểm rút
+    bài. CẦN XEM: biên nhận rút bài quá 30 ngày; trích bài G0 sàng là lạc đề; nguồn dẫn ở SAP/G3/G1/khoảng trống chưa
+    vào TLTK (hay danh mục khi chưa có đề cương); sổ A2b còn liệt kê bài đã loại; mục danh mục chưa kiểm rút bài theo
+    từng mã. Không có cả đề cương nộp lẫn danh mục ⇒ None (chưa tới giai đoạn này)."""
+    import danh_muc_trich_dan as DMT  # noqa: PLC0415
+
+    ten = "Tổng quan tài liệu — TLTK ↔ danh mục trích dẫn ↔ kiểm rút bài"
+    dc = _doc_text(out_dir / f"DE_CUONG_NOP_HOI_DONG_{study}.md")
+    tach = DMT.tach_tltk(dc) if dc else None
+    td, lb = DMT.trich_dan(out_dir, study), DMT.loai_bo(out_dir, study)
+    if tach is None and not td and not lb:
+        return None if not dc else _ket("trich_dan_tong_quan", ten, [], MUC_CHUA_DU,
+                                        "đề cương nộp không có mục TÀI LIỆU THAM KHẢO đánh số — chưa đủ để so")
+    mem: List[str] = []
+    can: List[str] = []
+    nguon: List[Dict[str, Any]] = []
+    ngay_rb, duong = _da_kiem_rut_bai(out_dir, study)
+    da = set(ngay_rb)
+    lac_de = _khong_lien_quan_g0(out_dir, study)
+
+    def _ly_do_loai(k: str) -> str:
+        x = lb.get(k) or {}
+        return f"{k.split(':', 1)[1]} ({str(x.get('ly_do') or x.get('nhom_ly_do') or '')[:60]}; {x.get('ngay') or '?'})"
+
+    tltk_khoa: set = set()
+    if tach is not None:
+        muc, than = tach
+        so = DMT.so_trich_dan(than)
+        thieu, khong_trich = sorted(set(so) - set(muc)), sorted(set(muc) - set(so))
+        if thieu:
+            mem.append(f"thân đề cương trích số không có trong TLTK: {thieu[:10]}")
+        if khong_trich:
+            mem.append(f"TLTK có mục không được trích trong thân: {khong_trich[:10]}")
+        if sorted(muc) != list(range(1, len(muc) + 1)):
+            mem.append("TLTK đánh số không liên tục")
+        dau = list(dict.fromkeys(x for x in so if x in muc))
+        sai = next((i for i in range(1, len(dau)) if dau[i] < dau[i - 1]), None)
+        if sai is not None:
+            mem.append(f"thứ tự trích lần đầu không theo Vancouver: [{dau[sai]}] xuất hiện sau [{dau[sai - 1]}]")
+        theo_khoa: Dict[str, List[int]] = {}
+        chua_rb: List[int] = []
+        for n, dong in sorted(muc.items()):
+            k = DMT.dinh_danh(dong)
+            tltk_khoa |= k
+            for kk in k:
+                theo_khoa.setdefault(kk, []).append(n)
+            if k and not (k & da):
+                chua_rb.append(n)
+        trung = {kk: ns for kk, ns in theo_khoa.items() if len(ns) > 1}
+        if trung:
+            mem.append("TLTK trùng định danh: " + "; ".join(f"{kk.split(':', 1)[1]} ở số {ns}"
+                                                          for kk, ns in sorted(trung.items())[:5]))
+        if tltk_khoa & set(lb):
+            mem.append("TLTK dùng bài chủ nhiệm đã LOẠI khỏi danh mục trích dẫn: "
+                       + "; ".join(_ly_do_loai(k) for k in sorted(tltk_khoa & set(lb))[:5]))
+        if tltk_khoa & lac_de:
+            can.append(f"TLTK trích bài G0 đã sàng là lạc đề: {_ma_ngan(tltk_khoa & lac_de)} — chủ nhiệm xem lại")
+        if chua_rb:
+            mem.append(f"{len(chua_rb)} mục TLTK có PMID/DOI mà chưa có bản ghi kiểm rút bài theo từng định danh "
+                       f"(số {chua_rb[:12]}) — chạy python tools/kiem_rut_bai_trich_dan.py --study {study} --ghi")
+        cu: List[int] = []
+        for n, dong in sorted(muc.items()):
+            k = DMT.dinh_danh(dong) & da
+            luc = max((ngay_rb[x] for x in k if ngay_rb.get(x)), default=None)
+            try:
+                if k and (luc is None or (_hom_nay() - date.fromisoformat(luc)).days > HAN_RUT_BAI_NGAY):
+                    cu.append(n)
+            except ValueError:
+                cu.append(n)
+        if cu:
+            can.append(f"{len(cu)} mục TLTK có lần kiểm rút bài gần nhất quá {HAN_RUT_BAI_NGAY} ngày (số {cu[:12]}) — "
+                       f"kiểm lại trước khi nộp: python tools/kiem_rut_bai_trich_dan.py --study {study} --ghi (tệp "
+                       "riêng, không ghi đè biên nhận A12 đã băm trong gói G10)")
+        nguon.append({"cong": "G10", "noi": f"DE_CUONG_NOP_HOI_DONG_{study}.md — TÀI LIỆU THAM KHẢO",
+                      "gia_tri": f"{len(muc)} mục, {len(so)} lượt trích, {len(tltk_khoa)} định danh"})
+    if td or lb:
+        n_td = len({id(v) for v in td.values()})
+        n_lb = len({id(v) for v in lb.values()})
+        if set(td) & set(lb):
+            mem.append(f"mục vừa ở «trich_dan» vừa ở «loai_bo» của danh mục: {_ma_ngan(set(td) & set(lb))}")
+        if set(td) & lac_de:
+            can.append(f"danh mục trích dẫn giữ bài G0 đã sàng là lạc đề: {_ma_ngan(set(td) & lac_de)}")
+        if tach is None:
+            chua = {id(v): v for k, v in td.items() if not (DMT.khoa_cua(v) & da)}
+            if chua:
+                can.append(f"{len(chua)}/{n_td} mục danh mục trích dẫn chưa có bản ghi kiểm rút bài theo TỪNG định "
+                           "danh (bản ghi G0 chỉ ghi tổng số hoặc ghi «chưa kiểm») — chạy python "
+                           "tools/kiem_rut_bai_trich_dan.py "
+                           f"--study {study} --ghi trước khi đưa vào TLTK: "
+                           + _ma_ngan({sorted(DMT.khoa_cua(v))[0] for v in chua.values()}))
+        nguon.append({"cong": "G0", "noi": DMT.TEP.format(study=study),
+                      "gia_tri": f"{n_td} trích dẫn, {n_lb} đã loại"})
+    rut = {k: v for k, v in duong.items() if k in tltk_khoa or k in td}
+    if rut:
+        mem.append("trích dẫn có tín hiệu RÚT BÀI/expression of concern (KIEM_RUT_BAI_TRICH_DAN): "
+                   + "; ".join(f"{k.split(':', 1)[1]} {v}" for k, v in sorted(rut.items())[:5])
+                   + " — không dựa vào bài này; cổng A12 chặn ở G10")
+    tham_chieu, ten_tc = (tltk_khoa, "TLTK đề cương nộp") if tach is not None else (set(td), "danh mục trích dẫn")
+    for _g, mau, nhan in _VAN_BAN_CONG_TRICH:
+        k = DMT.dinh_danh(_doc_text(out_dir / mau.format(s=study)))
+        if k & set(lb):
+            mem.append(f"{nhan} dẫn bài chủ nhiệm đã LOẠI: "
+                       + "; ".join(_ly_do_loai(x) for x in sorted(k & set(lb))[:4]))
+        if tham_chieu and k - tham_chieu - set(lb):
+            can.append(f"{nhan} dẫn nguồn chưa có trong {ten_tc}: {_ma_ngan(k - tham_chieu - set(lb))}")
+    a2b = _doc_text(out_dir / f"G1_A2b_EVIDENCE_LEDGER_{study}.md")
+    m_ngoai = _MUC_A2B_NGOAI_SO.search(a2b)
+    trong_so = DMT.dinh_danh(a2b[:m_ngoai.start()] if m_ngoai else a2b) & set(lb)
+    if trong_so:
+        can.append(f"sổ chứng cứ G1 (A2b) còn liệt kê {len(trong_so)} bài đã loại như chứng cứ "
+                   f"({_ma_ngan(trong_so, 5)}) — dựng lại: python tools/run_g1_auto.py --study {study} "
+                   "--dung-lai-ho-tro")
+    if tham_chieu:
+        g3 = _gp(meta, "G3")
+        k3 = DMT.dinh_danh(" ".join(str(v) for kk, v in g3.items() if str(kk).endswith("_source")))
+        if k3 - tham_chieu:
+            can.append(f"nguồn tham số G3 (*_source) chưa có trong {ten_tc}: {_ma_ngan(k3 - tham_chieu)}")
+        for g in _doc_json(out_dir / f"G0_KHOANG_TRONG_{study}.json").get("guideline_lien_quan") or []:
+            if not isinstance(g, dict):
+                continue
+            kg = DMT.dinh_danh(f"{g.get('nguon') or ''} {g.get('ten') or ''}")
+            if kg and not (kg & tham_chieu):
+                can.append(f"guideline của khoảng trống «{str(g.get('ten') or '')[:50]}» chưa có trong {ten_tc}")
+    if mem:
+        return _ket("trich_dan_tong_quan", ten, nguon, MUC_LECH_MEM, "; ".join(mem + can))
+    if can:
+        return _ket("trich_dan_tong_quan", ten, nguon, MUC_CAN_XEM, "; ".join(can))
+    return _ket("trich_dan_tong_quan", ten, nguon, MUC_KHOP,
+                "TLTK/danh mục khớp trích dẫn trong thân, thứ tự Vancouver, quyết định loại của chủ nhiệm và bản ghi "
+                "kiểm rút bài; nguồn dẫn ở văn bản cổng đều có trong danh mục")
+
+
 def truc_chuoi(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -> List[Dict[str, Any]]:
     """Các trục chuỗi đầy đủ (mỗi trục tự bắt lỗi của mình — một trục hỏng không làm mất các trục khác)."""
     td = _tu_dien(out_dir, study)
@@ -1281,7 +1498,8 @@ def truc_chuoi(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -
                 lambda: _truc_tinh_lai_co_mau(out_dir, study, meta, sap_text),
                 lambda: _truc_ky_thuat_chon_mau(out_dir, study, meta, sap_text),
                 lambda: _truc_tai_lieu_nop(out_dir, study, meta),
-                lambda: _truc_ten_de_tai(out_dir, study, meta), lambda: _truc_cau_hoi_gia_thuyet(meta)):
+                lambda: _truc_ten_de_tai(out_dir, study, meta), lambda: _truc_cau_hoi_gia_thuyet(meta),
+                lambda: _truc_trich_dan(out_dir, study, meta)):
         try:
             k = ham()
         except Exception as e:  # noqa: BLE001
@@ -1321,6 +1539,20 @@ def tieu_chi_g10(ket: Dict[str, Any]) -> Tuple[str, str]:
     return "PASS", bang
 
 
+def ket_luan_trung_thuc(ket: Dict[str, Any]) -> str:
+    """Một câu kết luận KHÔNG được đọc «PASS» thành «đồng bộ hoàn toàn» (15/11/2026).
+
+    Bác sĩ 15/11/2026: «Hệ thống … đã kết luận về tính hoàn thiện nhưng kiểm lại thì không đạt được sự thống nhất, đồng
+    bộ» — G10-AUTO-11 chỉ chặn LỆCH CỨNG và giữ LỆCH MỀM; mục CẦN XEM và CHƯA ĐỦ ĐỂ SO không đổi trạng thái cổng nên
+    «PASS» vẫn đi cùng việc còn mở. Câu này buộc mọi bản in nêu đúng phần còn mở."""
+    mo = [k for k in ket["thong_so"] if k["muc"] in (MUC_LECH_CUNG, MUC_LECH_MEM, MUC_CAN_XEM, MUC_CHUA_DU)]
+    if not mo:
+        return f"Kết luận: {len(ket['thong_so'])}/{len(ket['thong_so'])} trục khớp — trong PHẠM VI các trục đã đo."
+    return (f"Kết luận: CHƯA đồng bộ hoàn toàn — còn {len(mo)}/{len(ket['thong_so'])} trục mở ("
+            + ", ".join(f"{k['ma']}={k['muc']}" for k in mo) + "); trạng thái cổng G10 không thay cho việc xử lý "
+            "các trục này. Không báo «hoàn thiện» khi còn trục mở.")
+
+
 def in_bang(ket: Dict[str, Any]) -> None:
     print(f"NHẤT QUÁN XUYÊN CỔNG — {ket['study']}")
     for k in ket["thong_so"]:
@@ -1333,6 +1565,7 @@ def in_bang(ket: Dict[str, Any]) -> None:
           f"🟢 {t[MUC_KHOP]} khớp · ⚪ {t[MUC_CHUA_DU]} chưa đủ để so")
     trang_thai, _ = tieu_chi_g10(ket)
     print(f"  Áp ở G10-AUTO-11: {trang_thai}")
+    print("  " + ket_luan_trung_thuc(ket))
     print("Chỉ ĐỌC và BÁO — không sửa artifact, không chọn giá trị thay chủ nhiệm. Cần bác sĩ kiểm chứng.")
 
 

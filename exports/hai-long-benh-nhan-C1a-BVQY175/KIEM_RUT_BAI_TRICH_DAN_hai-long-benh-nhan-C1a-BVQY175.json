@@ -1,0 +1,306 @@
+{
+  "schema": "de_tai/kiem_rut_bai_trich_dan/v1",
+  "study": "hai-long-benh-nhan-C1a-BVQY175",
+  "checked_at": "2026-11-15T03:51:48+00:00",
+  "cong_cu": "tools/kiem_rut_bai_trich_dan.py — PMID: RetractionChain (Retraction Watch → NCBI → Europe PMC); DOI không PMID: Crossref updated-by + Retraction Watch theo DOI",
+  "tong": {
+    "ok": 49
+  },
+  "ket_qua": {
+    "pmid:34017606": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 2"
+    },
+    "pmid:32584904": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 3"
+    },
+    "pmid:31703089": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 4"
+    },
+    "pmid:34445940": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 5"
+    },
+    "doi:10.51298/vmj.v540i1.10302": {
+      "status": "ok",
+      "source": "crossref",
+      "reason": "",
+      "nguon": "TLTK số 6"
+    },
+    "doi:10.52163/yhc.v64i6.841": {
+      "status": "ok",
+      "source": "crossref",
+      "reason": "",
+      "nguon": "TLTK số 7"
+    },
+    "doi:10.52163/yhc.v67icd5.5018": {
+      "status": "ok",
+      "source": "crossref",
+      "reason": "",
+      "nguon": "TLTK số 8"
+    },
+    "doi:10.52163/yhc.v64i1.573": {
+      "status": "ok",
+      "source": "crossref",
+      "reason": "",
+      "nguon": "TLTK số 9"
+    },
+    "doi:10.51298/vmj.v549i2.13771": {
+      "status": "ok",
+      "source": "crossref",
+      "reason": "",
+      "nguon": "TLTK số 10"
+    },
+    "doi:10.38148/jhds.0706skpt23-064": {
+      "status": "ok",
+      "source": "crossref",
+      "reason": "",
+      "nguon": "TLTK số 11"
+    },
+    "doi:10.51403/0868-2836/2021/78": {
+      "status": "ok",
+      "source": "crossref",
+      "reason": "",
+      "nguon": "TLTK số 12"
+    },
+    "doi:10.52163/yhc.v66i1.1940": {
+      "status": "ok",
+      "source": "crossref",
+      "reason": "",
+      "nguon": "TLTK số 13"
+    },
+    "pmid:31218671": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 14"
+    },
+    "pmid:42625778": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 16"
+    },
+    "pmid:36439278": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 17"
+    },
+    "pmid:36292392": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 18"
+    },
+    "pmid:42582692": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 19"
+    },
+    "pmid:41645935": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 20"
+    },
+    "pmid:34053882": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 21"
+    },
+    "pmid:23883565": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 22"
+    },
+    "pmid:32992600": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 23"
+    },
+    "pmid:40995744": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 24"
+    },
+    "pmid:40295132": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 25"
+    },
+    "pmid:39944421": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 26"
+    },
+    "pmid:32946537": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 27"
+    },
+    "pmid:28690831": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 28"
+    },
+    "doi:10.52163/yhc.v67i7.5934": {
+      "status": "ok",
+      "source": "crossref",
+      "reason": "",
+      "nguon": "TLTK số 29"
+    },
+    "pmid:40432693": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 30"
+    },
+    "pmid:18313558": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 31"
+    },
+    "pmid:33886027": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 32"
+    },
+    "doi:10.1093/ije/dyl129": {
+      "status": "ok",
+      "source": "crossref",
+      "reason": "",
+      "nguon": "TLTK số 34"
+    },
+    "pmid:15485730": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 35"
+    },
+    "pmid:16279131": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 36"
+    },
+    "pmid:8134732": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 37"
+    },
+    "pmid:8970487": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 38"
+    },
+    "pmid:27881078": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 39"
+    },
+    "pmid:26776715": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 40"
+    },
+    "pmid:17654487": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 41"
+    },
+    "pmid:20494804": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 42"
+    },
+    "pmid:29550964": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 43"
+    },
+    "pmid:17161752": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 44"
+    },
+    "doi:10.1080/10705519909540118": {
+      "status": "ok",
+      "source": "crossref",
+      "reason": "",
+      "nguon": "TLTK số 45"
+    },
+    "doi:10.1037/0033-2909.88.3.588": {
+      "status": "ok",
+      "source": "crossref",
+      "reason": "",
+      "nguon": "TLTK số 46"
+    },
+    "doi:10.1177/0049124192021002005": {
+      "status": "ok",
+      "source": "crossref",
+      "reason": "",
+      "nguon": "TLTK số 47"
+    },
+    "pmid:35155757": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 48"
+    },
+    "pmid:9762873": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 49"
+    },
+    "pmid:12210625": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 50"
+    },
+    "pmid:19564179": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 51"
+    },
+    "doi:10.1002/9780470316696": {
+      "status": "ok",
+      "source": "crossref",
+      "reason": "",
+      "nguon": "TLTK số 52"
+    }
+  },
+  "disclaimer": "Cần bác sĩ kiểm chứng. «ok» chỉ khi một nguồn ĐÃ lấy được bản ghi; mã không kết luận được giữ trạng thái không biết — KHÔNG phải «chưa bị rút»."
+}
