@@ -831,6 +831,112 @@ def reporting_standards_for(design_code: Optional[str]) -> Dict[str, str]:
     }
 
 
+# ─────────── GIAI ĐOẠN 4 «Thiết kế» (15/11/2026): chuẩn báo cáo mở rộng + nhãn thiết kế theo mục tiêu ───────────
+# Kiểm tay C1a/BTM: đề cương nộp ghi «STROBE và CROSS» nhưng G1/gói G2/SAP chỉ ghi «STROBE»; SAP BTM ghi «STROBE +
+# RECORD» nhưng G1 chỉ ghi «STROBE»; nhãn «Cắt ngang Mô tả (Prevalence)» ở G1/G2/SAP/đăng ký trong khi đề tài có
+# mục tiêu
+# PHÂN TÍCH yếu tố liên quan và đề cương ghi «mô tả cắt ngang có phân tích». Một nguồn sự thật cho mọi bộ sinh + trục
+# `chuan_bao_cao`/`mo_ta_thiet_ke` của nhat_quan_xuyen_cong.
+CHUAN_MO_RONG = ("CROSS", "RECORD")
+# Token chuẩn báo cáo đọc trên MỘT dòng khai báo (chữ in hoa, không ăn «Cross-sectional»).
+CHUAN_BAO_CAO_RE = re.compile(
+    r"(?<![A-Za-z])(STROBE|RECORD|CROSS|CHERRIES|COSMIN|CONSORT|SPIRIT|STARD|TRIPOD|PRISMA|COREQ|SRQR|CHEERS|"
+    r"SQUIRE|TREND|CARE|STREGA|MOOSE)(?![A-Za-z\-])")
+# «không thu mới» là PHỦ ĐỊNH (BTM: «Khai thác nguồn CÓ SẴN, không thu mới») — không được đọc thành thu mới.
+_THU_MOI_RE = re.compile(r"(?<!kh[ôo]ng\s)(?:thu\s+m[ớo]i|ph[ỏo]ng\s+v[ấa]n\s+m[ớo]i|tuy[ểe]n\s+m[ớo]i)", re.I)
+_KHAO_SAT_RE = re.compile(r"phi[ếe]u|b[ộo]\s+c[âa]u\s+h[ỏo]i|kh[ảa]o\s+s[áa]t|questionnaire|survey", re.I)
+_DU_LIEU_THUONG_QUY_RE = re.compile(
+    r"c[óo]\s+s[ẵa]n|h[ồo]\s+s[ơo]\s+b[ệe]nh\s+[áa]n|b[ệe]nh\s+[áa]n\s+[đd]i[ệe]n\s+t[ửu]|\bHIS\b|eHospital|\bEMR\b|"
+    r"\bEHR\b|th[ưu][ờo]ng\s+quy|registry|s[ổo]\s+[đd][ăa]ng\s+k[ýy]|c[ơo]\s+s[ởo]\s+d[ữu]\s+li[ệe]u\s+b[ảa]o\s+hi[ểe]m",
+    re.I)
+_MUC_TIEU_PHAN_TICH_RE = re.compile(
+    r"\(\s*ph[âa]n\s+t[íi]ch|^\s*(?:MT\s*\d+\s*[:.]\s*)?ph[âa]n\s+t[íi]ch|y[ếe]u\s+t[ốo]\s+li[êe]n\s+quan|"
+    r"m[ốo]i\s+li[êe]n\s+quan|li[êe]n\s+quan\s+(?:gi[ữu]a|v[ớo]i|[đd][ếe]n)|so\s+s[áa]nh|associat|factors?\s+associated",
+    re.I)
+# Chỉ cắt ngang cần thêm «có phân tích»; đoàn hệ/bệnh–chứng/RCT… vốn là thiết kế phân tích.
+_NHAN_PHAN_TICH = {
+    "cross_sectional": "Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)",
+}
+
+
+def co_muc_tieu_phan_tich(objectives: Any) -> bool:
+    """True khi ít nhất một mục tiêu G1 là PHÂN TÍCH (yếu tố/mối liên quan, so sánh) — dùng chung bộ sinh + trục."""
+    if isinstance(objectives, str):
+        objectives = [objectives]
+    if not isinstance(objectives, (list, tuple)):
+        return False
+    return any(isinstance(o, str) and _MUC_TIEU_PHAN_TICH_RE.search(unicodedata.normalize("NFC", o))
+               for o in objectives)
+
+
+def nhan_thiet_ke_theo_muc_tieu(design_code: Optional[str], objectives: Any, nhan_mac_dinh: str) -> str:
+    """Nhãn thiết kế in ở G1/G2/SAP/đăng ký: cắt ngang có mục tiêu phân tích ⇒ «… có phân tích (Analytical …)».
+
+    Không đổi nhãn của thiết kế khác (đoàn hệ, bệnh–chứng, RCT… vốn đã là phân tích)."""
+    code = canonical_design_code(design_code)
+    if code in _NHAN_PHAN_TICH and co_muc_tieu_phan_tich(objectives):
+        return _NHAN_PHAN_TICH[code]
+    return nhan_mac_dinh
+
+
+def nguon_du_lieu(data_collection_method: Any) -> Dict[str, bool]:
+    """Đọc `gate_params.G1.data_collection_method`: thu mới bằng phiếu/khảo sát? dùng dữ liệu thường quy có sẵn?"""
+    t = unicodedata.normalize("NFC", str(data_collection_method or ""))
+    thu_moi = bool(_THU_MOI_RE.search(t))
+    return {"co_thong_tin": bool(t.strip()), "thu_moi": thu_moi,
+            "khao_sat": thu_moi and bool(_KHAO_SAT_RE.search(t)),
+            "thuong_quy": bool(_DU_LIEU_THUONG_QUY_RE.search(t))}
+
+
+def chuan_trong_dong(dong: Any) -> List[str]:
+    """Các chuẩn báo cáo gọi tên trên MỘT dòng khai báo (thứ tự xuất hiện, không trùng)."""
+    ra: List[str] = []
+    for m in CHUAN_BAO_CAO_RE.finditer(unicodedata.normalize("NFC", str(dong or ""))):
+        if m.group(1) not in ra:
+            ra.append(m.group(1))
+    return ra
+
+
+def chuan_bao_cao_de_tai(design_code: Optional[str], g1: Optional[Mapping[str, Any]]) -> Dict[str, Any]:
+    """Chuẩn báo cáo CỦA ĐỀ TÀI = chuẩn chính theo thiết kế + chuẩn mở rộng theo nguồn dữ liệu.
+
+    - PI khai `gate_params.G1.reporting_extensions` (danh sách, kể cả rỗng) ⇒ dùng đúng danh sách đó, không suy.
+    - Không khai ⇒ suy TẤT ĐỊNH: thu mới bằng phiếu/khảo sát (cắt ngang) ⇒ CROSS; CHỈ dùng dữ liệu thường quy có sẵn
+      (quan sát) ⇒ RECORD. Vừa thu mới vừa ghép dữ liệu thường quy ⇒ RECORD vào `can_xem` (PI quyết) — máy không chọn.
+    Trả {primary, chinh (token), mo_rong, can_xem [(chuẩn, lý do)], nguon {chuẩn: lý do}, chuoi, pi_khai}."""
+    code = canonical_design_code(design_code)
+    primary = reporting_standards_for(code).get("primary", "")
+    chinh = chuan_trong_dong(primary)[:1]
+    g1 = g1 if isinstance(g1, Mapping) else {}
+    pi = g1.get("reporting_extensions")
+    mo_rong: List[str] = []
+    can_xem: List[Tuple[str, str]] = []
+    nguon: Dict[str, str] = {}
+    if isinstance(pi, (list, tuple)):
+        for x in pi:
+            for t in chuan_trong_dong(str(x).upper()):
+                if t not in mo_rong and t not in chinh:
+                    mo_rong.append(t)
+                    nguon[t] = "PI khai ở gate_params.G1.reporting_extensions"
+    else:
+        nd = nguon_du_lieu(g1.get("data_collection_method"))
+        quan_sat = code in ("cross_sectional", "cohort", "case_control")
+        if code == "cross_sectional" and nd["khao_sat"]:
+            mo_rong.append("CROSS")
+            nguon["CROSS"] = "thu mới bằng phiếu/bộ câu hỏi (nghiên cứu khảo sát)"
+        if quan_sat and nd["thuong_quy"]:
+            if nd["thu_moi"]:
+                can_xem.append(("RECORD", "vừa thu mới vừa ghép dữ liệu thường quy có sẵn (HIS/bệnh án) — PI quyết có "
+                                          "áp RECORD cho phần dữ liệu thường quy (mã/thuật toán phân loại, liên kết dữ "
+                                          "liệu) và ghi `gate_params.G1.reporting_extensions`"))
+            else:
+                mo_rong.append("RECORD")
+                nguon["RECORD"] = "chỉ dùng dữ liệu y tế thu thập thường quy có sẵn"
+    chuoi = " + ".join([primary] + mo_rong) if primary else " + ".join(mo_rong)
+    return {"primary": primary, "chinh": chinh, "mo_rong": mo_rong, "can_xem": can_xem, "nguon": nguon,
+            "chuoi": chuoi, "pi_khai": isinstance(pi, (list, tuple))}
+
+
 # ════════════════════════════════════════════════════════════════════════════
 # 5. QUY TẮC KẾT LUẬN "SẴN SÀNG" (SKILL.md §Kết luận trạng thái)
 # ════════════════════════════════════════════════════════════════════════════

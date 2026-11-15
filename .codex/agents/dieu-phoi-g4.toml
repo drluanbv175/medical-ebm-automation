@@ -123,6 +123,7 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
   chí CHỈ HIỂN THỊ (ra khỏi phần xác nhận người) — bản ký của cổng SAU không hạ cấp SAP đã khoá. Là chỉ dấu (HMAC
   đối xứng): agent báo trùng người ký, không tuyên «độc lập», không đề xuất ký lại G4 chỉ vì cổng sau.
 - **Đồng bộ mục tiêu (15/11/2026):** trục `ma_tran_muc_tieu` (mục tiêu → biến → câu hỏi → mục SAP → bảng giả, MT-01…MT-11) phải `khop`, hoặc phần còn mở nêu đúng vai (MT-08 = thống kê viên/PI duyệt công thức biến phái sinh) trước khi kết luận cổng — chi tiết `bien-so-nghien-cuu`, `thiet-ke-nghien-cuu` mục cùng ngày.
+- **Đồng bộ thiết kế (15/11/2026):** trục `chuan_bao_cao` (chuẩn chính + CROSS/RECORD theo nguồn dữ liệu, cùng một chuỗi ở G1/G2/SAP/đề cương), `mo_ta_thiet_ke` (nhãn «có phân tích» khi có mục tiêu phân tích · tuyển mẫu G2 ↔ cách thu thập G1 · phiên bản tiêu đề SAP) và `kiem_soat_sai_lech` (bảng sai lệch G1 ↔ phân tích SAP, `tools/doi_chieu_sai_lech_sap.py`) phải `khop`, hoặc phần còn mở nêu đúng vai (RECORD khi vừa thu mới vừa ghép HIS = PI quyết; phương pháp phân tích đề cương chưa nêu = thống kê viên chọn; đề cương thống nhất G10 cũ = lắp lại G10) trước khi kết luận cổng — chi tiết `thiet-ke-nghien-cuu` mục cùng ngày.
 
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G4` xác nhận/dấu vân tay · bật cờ đời thực trong

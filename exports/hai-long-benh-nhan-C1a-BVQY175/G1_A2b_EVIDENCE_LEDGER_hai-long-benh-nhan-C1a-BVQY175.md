@@ -6,7 +6,7 @@
 ## Chiến lược tìm kiếm
 - Nguồn tối thiểu: PubMed + ít nhất một nguồn phù hợp khác.
 - Truy vấn G0: `("Patient Satisfaction"[Mesh] OR satisf*[tiab] OR "patient experience"[tiab]) AND ("Outpatients"[Mesh] OR "Ambulatory Care"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND ("Vietnam"[Mesh] OR vietnam*[tiab] OR "viet nam"[tiab])`
-- Ngày tìm cuối (PubMed, truy vấn G0): 2026-10-14 · lượt tìm bổ sung: theo tệp PRISMA-S ở dòng dưới · ngày sinh sổ: 2026-10-28
+- Ngày tìm cuối (PubMed, truy vấn G0): 2026-10-14 · lượt tìm bổ sung: theo tệp PRISMA-S ở dòng dưới · ngày sinh sổ: 2026-11-15
 - Nguồn của các dòng trong sổ (khoá `cach_tim` của sàng lọc G0): PubMed — lượt bổ sung (14); Crossref (9); PubMed — truy vấn G0 (8); lượt tìm bổ sung (PRISMA-S) (5); Europe PMC (2)
 - Giới hạn truy xuất/recall: xem `G0_TIM_BO_SUNG_PRISMA_S_hai-long-benh-nhan-C1a-BVQY175.md` (nguồn, chuỗi, số hit, recall bài mốc, giới hạn — PRISMA-S)
 - Kiểm rút bài (G0, khoá `rut_bai` của `G0_TONG_HOP_BANG_CHUNG_hai-long-benh-nhan-C1a-BVQY175.json`): 2026-10-14 — 16/16 PMID nền (2026-10-14) + 11/11 PMID bổ sung (2026-10-14) không phát hiện rút bài/expression of concern theo PubMed; 9/9 DOI trong nước bổ sung 2026-10-11: Crossref không có thông báo rút (updated-by) và Retraction Watch ngoại tuyến không có bản ghi
