@@ -55,6 +55,9 @@ python medical-ebm-automation/tools/run_g1_auto.py \
 > loại câu hỏi G0 mà PI chưa ghim ⇒ G1-AUTO-02d CHẶN; «thử nghiệm lâm sàng» không khai ngẫu nhiên hoá ⇒ RCT MƠ HỒ
 > (PI ghim). Chi tiết và cách gỡ: `dieu-phoi-g1` §7. Agent KHÔNG tự ghim `design_code` thay PI.
 
+> **Ghim cần dấu người (15/11/2026, bác sĩ chọn sau thẩm định y khoa #277):** «PI ghim» chỉ tính khi có dấu người — `gate_params.G1.design`, `design_confirmed=true`, hoặc `design_code` kèm `design_code_nguon: "PI"`
+> (`skill_standards.ghim_thiet_ke`). `design_code` đứng một mình không gỡ cờ mơ hồ, không hạ G1-AUTO-02d; G2 không còn gieo ô này (`design_code_tu_g1` là bản sao máy, KHÔNG phải ghim). Agent không tự ghi các dấu đó.
+
 ## BƯỚC 0 — KIỂM TIỀN ĐỀ CỔNG (thủ công nếu không dùng run_g1_auto.py)
 
 1. Xác định đang ở **G1** (chọn thiết kế) hay **G4** (khóa SAP) hay cả hai.

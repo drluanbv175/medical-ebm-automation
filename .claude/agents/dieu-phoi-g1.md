@@ -51,6 +51,7 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 > Vì sao: giả lập trung thực (hệ TỰ sinh từ G0/G1, không viết sẵn bộ biến/SAP) cho thấy mục tiêu ↔ biến ↔ công cụ ↔ từ điển ↔ SAP ↔ SPSS/R không có phép kiểm máy; SPSS/R báo «✓ khớp» trên bộ biến SAI. Báo cáo: `audit/kiem-dong-bo-xuyen-cong-20261115.md` (repo gốc). Công cụ chung: `tools/ma_tran_muc_tieu_bien.py` (repo y khoa). «Khớp khứ hồi/khớp từ điển» KHÔNG chứng minh biến đúng mục tiêu.
 
 - A2 kế thừa PICO G0 đã chốt (có nhãn nguồn); giá trị kế thừa nằm trong dấu vân tay G1 — G0 đổi sau khi G1 chốt thì PI chốt lại G1. Đề tài đã tự ghi đủ ở G1: dấu không đổi. Tiêu chí chọn vào (`inclusion_criteria`) được so cùng quần thể ở `nhat_quan_xuyen_cong` (hai chiều).
+- **Ghim thiết kế cần dấu người (15/11/2026, bác sĩ chọn sau thẩm định y khoa #277):** G1 chỉ coi thiết kế là PI ghim (gỡ cờ mơ hồ G1-AUTO-04/04b, hạ G1-AUTO-02d CHẶN→XEM) khi có dấu người — `gate_params.G1.design`, `design_confirmed=true`, hoặc `study_meta.design_code` kèm `design_code_nguon: "PI"` (`skill_standards.ghim_thiet_ke`). `design_code` cấp cao đứng một mình vẫn là thiết kế đang dùng nhưng giữ cờ mơ hồ (checkpoint ghi `ghim_chua_co_dau_pi`, G1-AUTO-04 nói rõ) ⇒ trình PI xác nhận. G2 thôi gieo ô này; bản sao máy ở `design_code_tu_g1` KHÔNG phải ghim. Agent không tự ghi `design_code_nguon`/`gate_params.G1.design` thay PI.
 
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G1 (09/10/2026)
