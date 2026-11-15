@@ -35,8 +35,8 @@
 ## Manifest artifact
 | Artifact | Đường dẫn | SHA-256 |
 |---|---|---|
-| A1b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md | `bd01f24ff7c6e536095d889c1a4f1ac0fd7b512ab16cf3f43587e47a8c236f17` |
-| A2 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md | `a11cd71cc27474c5e63b4d6eea788a894bc9c15f2e38ac0def1dc986aa3c8362` |
+| A2 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md | `beebc2106921b123a7ac711686fe1790e3c98ae58137b0f9975be8e2a5944f01` |
+| A1b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md | `d4b55d502ce5e5890ef9ac1c584bebbe18b67987132e62d6a4d032fcfb063ef5` |
 | A2b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md | `a068525bf321d8100e3220b1fc3b686e3380f221bdfb813a4940d19f71c06272` |
 | A13 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md | `d533755ed3479bf47c125b1147a6a02e8bf3213d05efa6c8d75cfddbd211f2c2` |
 | A13b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13b_RISK_REGISTER_btm-dtd2-ngoai-tru-BVQY175.md | `aa398df7656c05ee5f285dc23e331a5d3ed283f4cf4a4eb7b438ba4f090ec7c4` |

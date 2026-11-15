@@ -151,8 +151,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # ten_de_tai, cau_hoi_gia_thuyet) — cặp y hệt repo gốc nhánh claude/van-de-cau-hoi-20261115; vẫn 64.
 # 15/11/2026: thu-thu-tai-lieu + kiem-chung-trich-dan + dieu-phoi-g0/g1 + dieu-phoi-nghien-cuu (đồng bộ tổng quan
 # tài liệu — trục trich_dan_tong_quan) — cặp y hệt repo gốc nhánh claude/tong-quan-tai-lieu-20261115; vẫn 64.
+# 15/11/2026: bien-so-nghien-cuu + thiet-ke-nghien-cuu + dieu-phoi-g1/g4 (đồng bộ giai đoạn mục tiêu — trục
+# ma_tran_muc_tieu, MT-11) — cặp y hệt repo gốc nhánh claude/muc-tieu-20261115; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "9fedbdae290fe1a047812834bb22b701a75471122174c20a36dd30f97f984f01"
+    "b8060855e3480ba7232ce8c6a0bcb5e0d867f4d29a2dd3bbe1e19f0406292d95"
 )
 
 MINIMUM_AGENT_COUNT = 64

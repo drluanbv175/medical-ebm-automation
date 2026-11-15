@@ -250,6 +250,21 @@ def _so_lua_chon(choices: str) -> int:
     return len([x for x in str(choices or "").split("|") if x.strip()])
 
 
+_GIU_CHO_K = re.compile(r"(?:(?<=_)|^)k(?=_|$)")
+
+
+def _co_bien_nguon(ten: str, bo_bien: Mapping[str, Any], phai_sinh: Mapping[str, Any]) -> bool:
+    """Biến nguồn có thật. Quy ước LẶP «_k» của `_bien-phai-sinh.csv` (cột lap_k — vd `uacr_k_ngay` = `uacr_1_ngay` …
+    `uacr_4_ngay`, `creat_k_gt`): đạt khi ít nhất một bản mở rộng k = 1…12 có trong bộ biến hoặc là biến phái sinh
+    (15/11/2026 — BTM `nhom_a` bị báo «biến không có» oan vì bộ kiểm đọc `uacr_k_ngay` như một tên trường)."""
+    if ten in bo_bien or ten in phai_sinh:
+        return True
+    if not _GIU_CHO_K.search(ten):
+        return False
+    return any(_GIU_CHO_K.sub(str(k), ten) in bo_bien or _GIU_CHO_K.sub(str(k), ten) in phai_sinh
+               for k in range(1, 13))
+
+
 def kieu_hop_le_cua_bien(row: Mapping[str, str], *, phai_sinh: bool = False) -> frozenset:
     """Các kiểu ma trận tương thích với một trường REDCap (hoặc biến phái sinh)."""
     if phai_sinh:
@@ -408,7 +423,7 @@ def kiem(out_dir: Path, study: str, *, meta: Optional[Mapping[str, Any]] = None,
                 vd.append(_van_de("MT-07", "loi", f"dòng {i}: biến phái sinh «{ten}» khai kiểu «{ps.get('kieu')}» — "
                                                   f"không khớp «{r['kieu']}»"))
             nguon = [x for x in re.split(r"[,;\s]+", ps.get("bien_nguon", "")) if x]
-            thieu = [x for x in nguon if x not in (bo_bien or {}) and x not in phai_sinh]
+            thieu = [x for x in nguon if not _co_bien_nguon(x, bo_bien or {}, phai_sinh)]
             if thieu:
                 vd.append(_van_de("MT-08", "loi", f"biến phái sinh «{ten}» lấy từ biến không có trong bộ biến: "
                                                   f"{', '.join(thieu[:8])}"))
@@ -446,8 +461,41 @@ def kiem(out_dir: Path, study: str, *, meta: Optional[Mapping[str, Any]] = None,
             if thieu:
                 vd.append(_van_de("MT-10", "loi", f"biến của ma trận vắng trong từ điển G5: {', '.join(thieu[:10])}"))
 
+    # MT-11 (15/11/2026, giai đoạn «Mục tiêu»): mục tiêu ↔ phân tích SAP ↔ bảng giả. (a) mục SAP mà ma trận trỏ tới phải
+    # CÓ trong SAP; (b) mỗi mục tiêu G1 phải có ít nhất một bảng/hình giả GẮN NHÃN mục tiêu đó («Mục tiêu k», «MTk»)
+    # trong SAP §11 hoặc phần «Dự kiến kết quả» của đề cương nộp — mục tiêu không có đầu ra định trước là mục tiêu không
+    # được trả lời. Đo C1a: SAP §11 trỏ sang Bảng 5.x đề cương (5.2 MT1, 5.3–5.4 MT2); BTM: SAP Bảng 2–6 gắn MT1–MT3.
+    vd += _mt11(out_dir, study, dong, mt, sap)
+
     loi = [x for x in vd if x["muc"] == "loi"]
     return _ket(TRANG_THAI_DAT if not loi else TRANG_THAI_CHUA_DAT, vd, dong, meta)
+
+
+_CHU_THICH_BANG = re.compile(r"^\s*[*_]{0,2}\s*(?:Bảng|Hình|Table|Figure)\s+[\w.]+[^\n]*",
+                             re.IGNORECASE | re.MULTILINE)
+_MUC_SAP = re.compile(r"§\s*(\d{1,2})")
+
+
+def _mt11(out_dir: Path, study: str, dong: Sequence[Mapping[str, str]], mt: Sequence[str],
+          sap: Optional[str]) -> List[Dict[str, str]]:
+    ra: List[Dict[str, str]] = []
+    if not sap:
+        return ra  # chưa có SAP ⇒ MT-09 đã nói; không đo được thì không báo «đạt» cũng không báo lỗi giả
+    co_muc = {int(x) for x in re.findall(r"(?m)^#{1,4}\s*§\s*(\d{1,2})\b", sap)}
+    tro = sorted({int(x) for r in dong for x in _MUC_SAP.findall(str(r.get("phan_tich_sap") or ""))})
+    thieu = [n for n in tro if co_muc and n not in co_muc]
+    if thieu:
+        ra.append(_van_de("MT-11", "loi", "ma trận trỏ tới mục SAP không có: " + ", ".join(f"§{n}" for n in thieu)))
+    dc = out_dir / f"DE_CUONG_NOP_HOI_DONG_{study}.md"
+    van_ban = sap + "\n" + (dc.read_text(encoding="utf-8") if dc.is_file() else "")
+    chu_thich = [m.group(0) for m in _CHU_THICH_BANG.finditer(van_ban)]
+    for k in range(1, len(mt) + 1):
+        nhan = re.compile(rf"(?:Mục\s+tiêu|MT)\s*{k}(?!\d)", re.IGNORECASE)
+        if not any(nhan.search(c) for c in chu_thich):
+            ra.append(_van_de("MT-11", "loi", f"Mục tiêu {k} chưa có bảng/hình giả nào gắn nhãn «Mục tiêu {k}»/«MT{k}» "
+                                              "trong SAP §11 hay phần Dự kiến kết quả của đề cương — đầu ra của "
+                                              "mục tiêu chưa được định trước"))
+    return ra
 
 
 def _ket(trang_thai: str, vd: List[Dict[str, str]], dong: Sequence[Mapping[str, str]],

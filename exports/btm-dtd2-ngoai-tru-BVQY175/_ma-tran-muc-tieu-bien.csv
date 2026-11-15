@@ -1,0 +1,23 @@
+muc_tieu,khai_niem,vai_tro,bien,kieu,cau_hoi,cong_cu,phan_tich_sap,ghi_chu
+1,tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh,ket_cuc_chinh,xn_du,nhi_phan,eHospital — mục D,Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),"§2, §4",kết cục chính đã chốt ở G1
+1,tỷ lệ bệnh thận mạn theo KDIGO 2024,ket_cuc_phu,phan_loai_btm,danh_dinh,eHospital — mục D,Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),"§2, §4",kết cục phụ 1
+1,nhóm eGFR theo KDIGO (G1–G5),mo_ta,nhom_g,thu_tu,eHospital — mục D,Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),§4,bảng chéo G × A
+1,nhóm albumin niệu theo KDIGO (A1–A3),mo_ta,nhom_a,thu_tu,eHospital — mục D,Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),§4,bảng chéo G × A
+1,tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán,ket_cuc_phu,btm_chua_ghi_nhan,nhi_phan,"eHospital — mục C, D",Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),"§2, §4",kết cục phụ 2
+2,điều trị bảo vệ thận — ACEi/ARB,ket_cuc_phu,dung_raasi,nhi_phan,eHospital — mục F,Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),"§2, §4",kết cục phụ 3a; mẫu số chi_dinh_raasi = 1
+2,điều trị bảo vệ thận — SGLT2i,ket_cuc_phu,dung_sglt2i,nhi_phan,eHospital — mục F,Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),"§2, §4",kết cục phụ 3b; mẫu số chi_dinh_sglt2i = 1
+2,người bệnh đủ chỉ định ACEi/ARB theo KDIGO 2022,mo_ta,chi_dinh_raasi,nhi_phan,"eHospital — mục C, D",Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),"§1, §4",quần thể con của kết cục phụ 3a
+2,người bệnh đủ chỉ định SGLT2i theo KDIGO 2022,mo_ta,chi_dinh_sglt2i,nhi_phan,eHospital — mục D,Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),"§1, §4",quần thể con của kết cục phụ 3b
+3,việc không được xét nghiệm đủ UACR và creatinin,ket_cuc_phu,khong_xn_du,nhi_phan,eHospital — mục D,Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),"§2, §5",kết cục phụ 4 — biến phụ thuộc của mô hình thăm dò
+3,tuổi,yeu_to,tuoi,lien_tuc,eHospital — mục B,Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),§5,mỗi 10 năm trong mô hình
+3,giới,yeu_to,gioi,nhi_phan,eHospital — mục B,Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),§5,
+3,nhóm đối tượng,yeu_to,nhom_doi_tuong,danh_dinh,eHospital — mục B,Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),§5,
+3,thời gian mắc đái tháo đường,yeu_to,thoi_gian_mac_dtd_5,lien_tuc,eHospital — mục C,Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),§5,đơn vị 5 năm
+3,HbA1c (3 mức),yeu_to,hba1c_3muc,danh_dinh,eHospital — mục C,Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),§5,tham chiếu < 7% (chủ nhiệm chọn 15/11/2026)
+3,đang dùng insulin,yeu_to,dung_insulin,nhi_phan,eHospital — mục F,Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),§5,
+3,số nhóm thuốc hạ glucose,yeu_to,so_nhom_ha_glucose,dem,eHospital — mục F,Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),§5,
+3,tăng huyết áp,yeu_to,tha,nhi_phan,eHospital — mục C,Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),§5,
+3,BMI,yeu_to,bmi_5,lien_tuc,eHospital — mục C,Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),§5,đơn vị 5 kg/m²
+3,bệnh tim mạch do xơ vữa hoặc suy tim,yeu_to,tim_mach,nhi_phan,eHospital — mục C,Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),§5,
+3,số lượt khám năm 2026,yeu_to,so_luot_kham,dem,eHospital — mục B,Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),§5,
+3,phòng khám theo dõi chính,yeu_to,phong_kham_chinh,danh_dinh,eHospital — mục B,Phiếu trích hồ sơ eHospital (SOP trích hồ sơ),§5,đồng thời là đơn vị cụm (SE vững)
