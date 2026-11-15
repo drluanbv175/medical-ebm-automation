@@ -381,7 +381,33 @@ def _iso_khong_tuong_lai(v: Any) -> bool:
     return t <= (datetime.now(tz=t.tzinfo) if t.tzinfo else datetime.now())
 
 
-def _xac_nhan_ket_cuc(meta: Dict[str, Any], dau: str) -> Tuple[bool, str]:
+def _gia_tri_chuan(n: Dict[str, Any]) -> str:
+    return " ".join(unicodedata.normalize("NFC", str(n.get("gia_tri"))).split())
+
+
+def ban_sao_nguyen_van_cua_tap_da_xac_nhan(nguon_kc: List[Dict[str, Any]], dau_xn: str) -> Optional[List[str]]:
+    """Các cổng chỉ CHÉP NGUYÊN VĂN một mô tả trong tập chủ nhiệm đã xác nhận (None nếu không có tập con khớp dấu).
+
+    THÊM 15/11/2026 (chạy G2 cho BTM): chủ nhiệm xác nhận {G0, G1} là cùng một kết cục (dấu ea600fdb…); G2 sinh ra
+    TRDS mục 19 chép NGUYÊN VĂN G1 ⇒ dấu cả tập đổi ⇒ xác nhận bị coi là hết hiệu lực dù TẬP MÔ TẢ không đổi. Hợp lệ khi
+    có tập con ≥ 2 nguồn mang đúng dấu đã xác nhận và mọi nguồn còn lại trùng nguyên văn (NFC, gộp khoảng trắng) một
+    mô tả trong tập con. Diễn đạt mới (khác dù một chữ) ⇒ None ⇒ vẫn phải xác nhận lại như cũ.
+    """
+    from itertools import combinations
+
+    for k in range(len(nguon_kc) - 1, 1, -1):
+        for tap in combinations(nguon_kc, k):
+            if dau_van_tay_ket_cuc(list(tap)) != dau_xn:
+                continue
+            da_xn = {_gia_tri_chuan(n) for n in tap}
+            them = [n for n in nguon_kc if n not in tap]
+            if all(_gia_tri_chuan(n) in da_xn for n in them):
+                return [n["cong"] for n in them]
+    return None
+
+
+def _xac_nhan_ket_cuc(meta: Dict[str, Any], dau: str,
+                      nguon_kc: Optional[List[Dict[str, Any]]] = None) -> Tuple[bool, str]:
     """(hợp lệ?, lý do) của `gate_params.G10.xac_nhan_ket_cuc_chinh` cho tập mô tả có dấu `dau`."""
     xn = _gp(meta, "G10").get("xac_nhan_ket_cuc_chinh")
     if not isinstance(xn, dict):
@@ -391,8 +417,12 @@ def _xac_nhan_ket_cuc(meta: Dict[str, Any], dau: str) -> Tuple[bool, str]:
         return False, "xác nhận thiếu `giai_trinh` có nội dung"
     if not _iso_khong_tuong_lai(xn.get("reviewed_at")):
         return False, "xác nhận thiếu `reviewed_at` ISO hợp lệ (không ở tương lai)"
-    if str(xn.get("dau_van_tay") or "").strip().lower() != dau:
-        return False, f"xác nhận gắn với tập mô tả KHÁC (dấu hiện tại {dau}) — mô tả đã đổi sau khi xác nhận"
+    dau_xn = str(xn.get("dau_van_tay") or "").strip().lower()
+    if dau_xn != dau:
+        sao = ban_sao_nguyen_van_cua_tap_da_xac_nhan(nguon_kc or [], dau_xn)
+        if sao is None:
+            return False, f"xác nhận gắn với tập mô tả KHÁC (dấu hiện tại {dau}) — mô tả đã đổi sau khi xác nhận"
+        return True, f"[{', '.join(sao)} chép nguyên văn mô tả đã xác nhận] {gt}"
     return True, gt
 
 
@@ -620,7 +650,7 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
             # Sửa đổi THẬT có kiểm chứng (06/10/2026, G10-07) — hiện ra cả khi mọi nơi đã thống nhất về kết cục mới.
             ket.append(_ket("ket_cuc_chinh", "Kết cục chính", nguon_kc, MUC_CAN_XEM, ghi_sd))
         elif lech:
-            ok, ly_do = _xac_nhan_ket_cuc(meta, dau)
+            ok, ly_do = _xac_nhan_ket_cuc(meta, dau, nguon_kc)
             noi_lech = ", ".join(n["cong"] + " (" + n["noi"] + ")" for n in lech)
             if ok:
                 ket.append(_ket("ket_cuc_chinh", "Kết cục chính", nguon_kc, MUC_CAN_XEM,
@@ -640,16 +670,20 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
 
     # 5) Quần thể (chỉ báo — văn bản tiêu chí dài ngắn khác nhau tự nhiên).
     tc = _mo_repr(trds.get("14"))
-    tc_txt = _van_ban(tc.get("inclusion")) if isinstance(tc, dict) else _van_ban(tc)
+    # 15/11/2026 (chạy G2 cho BTM): WHO TRDS mục 14 là «Key Inclusion AND Exclusion Criteria» — trước đây chỉ đọc phần
+    # chọn vào ⇒ quần thể G0 có câu «loại trừ: …» báo nhầm «G2 thiếu: lọc, máu, ghép, thai…» dù bản đăng ký đã có đủ.
+    tc_txt = ("; ".join(x for x in (_van_ban(tc.get("inclusion")), _van_ban(tc.get("exclusion"))) if x)
+              if isinstance(tc, dict) else _van_ban(tc))
     nguon_qt = [n for n in (
         {"cong": "G0", "noi": "study_meta.gate_params.G0.population",
          "gia_tri": _van_ban(_gp(meta, "G0").get("population"))},
         # 15/11/2026: phía G1 gồm cả tiêu chí chọn vào — G1 hay chuyển ngưỡng («≥18 tuổi») từ câu quần thể sang danh
         # sách tiêu chí; so riêng câu quần thể sẽ báo nhầm «mất ngưỡng» (phép so hai chiều).
-        {"cong": "G1", "noi": "study_meta.gate_params.G1.population + inclusion_criteria",
+        {"cong": "G1", "noi": "study_meta.gate_params.G1.population + inclusion_criteria + exclusion_criteria",
          "gia_tri": " ".join(x for x in (_van_ban(_gp(meta, "G1").get("population")),
-                                         _van_ban(_gp(meta, "G1").get("inclusion_criteria"))) if x)},
-        {"cong": "G2", "noi": "đăng ký TRDS mục 14 (tiêu chí chọn)", "gia_tri": tc_txt},
+                                         _van_ban(_gp(meta, "G1").get("inclusion_criteria")),
+                                         _van_ban(_gp(meta, "G1").get("exclusion_criteria"))) if x)},
+        {"cong": "G2", "noi": "đăng ký TRDS mục 14 (tiêu chí chọn + loại)", "gia_tri": tc_txt},
     ) if _co_that(n["gia_tri"])]
     if len(nguon_qt) < 2:
         ket.append(_ket("quan_the", "Quần thể nghiên cứu", nguon_qt, MUC_CHUA_DU, "chỉ có ≤ 1 nơi ghi — chưa đủ để so"))

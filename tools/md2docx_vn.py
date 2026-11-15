@@ -242,6 +242,8 @@ _GLYPH_SUBSTITUTE = {
     "☒": "■",    # U+2612 đã gạch chéo      -> ô vuông đặc
     "∎": "■",    # U+220E END OF PROOF      -> ô vuông đặc
     "✅": "■",    # U+2705 dấu tick đậm      -> ô vuông đặc (Times KHÔNG có glyph tick nào)
+    "✓": "■",    # U+2713 dấu tick (15/11/2026: cột «bắt buộc» của từ điển dữ liệu DMP G5) -> ô vuông đặc
+    "✔": "■",    # U+2714 dấu tick đậm      -> ô vuông đặc
     "⚠": "‼",    # U+26A0 biển cảnh báo     -> U+203C hai chấm than
     "ℹ": "►",    # U+2139 nguồn thông tin   -> U+25BA mũi trỏ (06/10/2026: biểu ngữ «GÓI CAPSTONE G10» của đề cương)
     "\ufe0f": "",  # VARIATION SELECTOR-16 — bộ chọn hiển thị emoji, vô nghĩa khi

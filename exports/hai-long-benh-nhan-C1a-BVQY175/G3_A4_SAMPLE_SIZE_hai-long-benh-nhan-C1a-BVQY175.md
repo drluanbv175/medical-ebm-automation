@@ -1,5 +1,5 @@
 # A4 — KẾ HOẠCH CỠ MẪU (DRAFT)
-**Đề tài:** Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối  
+**Đề tài:** Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175  
 **Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Ngày sinh:** 2026-10-28 | **Trạng thái:** DRAFT — CHỜ BÁC SĨ XÁC NHẬN
 
 ---
