@@ -557,7 +557,9 @@ def _canonicalize_pinned_design_code(raw: str) -> str:
 
 
 def _read_pinned_design(out_dir) -> str:
-    """Đọc study_meta.json['design_code'] (hoặc gate_params.G1.design). '' nếu không có."""
+    """Giá trị thiết kế đang ghim, đã chuẩn hoá — '' nếu không có.
+
+    skill_standards.ghim_thiet_ke: G1.design của PI thắng design_code không nhãn PI khi hai ô lệch."""
     import json as _json
     from pathlib import Path as _Path
     p = _Path(out_dir) / "study_meta.json"
@@ -567,7 +569,9 @@ def _read_pinned_design(out_dir) -> str:
         meta = _json.loads(p.read_text(encoding="utf-8"))
     except (ValueError, OSError):
         return ""
-    pin = meta.get("design_code") or (meta.get("gate_params", {}).get("G1", {}) or {}).get("design")
+    # Thẩm định #281: giá trị ghim lấy từ MỘT nguồn (skill_standards.ghim_thiet_ke) — G1.design của PI thắng
+    # design_code cấp cao không nhãn PI khi hai ô lệch; chuỗi toàn khoảng trắng coi như trống.
+    pin = S.ghim_thiet_ke(meta if isinstance(meta, dict) else {})[0]
     return _canonicalize_pinned_design_code(str(pin)) if pin else ""
 
 
@@ -585,7 +589,7 @@ def _raw_pinned_design(out_dir) -> str:
         meta = _json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
     except (ValueError, OSError):
         return ""
-    pin = meta.get("design_code") or (meta.get("gate_params", {}).get("G1", {}) or {}).get("design")
+    pin = S.ghim_thiet_ke(meta if isinstance(meta, dict) else {})[0]
     return str(pin).strip() if pin else ""
 
 
@@ -615,6 +619,24 @@ def _ghi_chu_chuan_bao_cao(design: dict) -> str:
     return ("\n".join(dong) + "\n") if dong else ""
 
 
+def _ap_chuan_bao_cao_de_tai(d: dict, code: str, meta: Optional[dict]) -> None:
+    """Giai đoạn 4 «Thiết kế» (15/11/2026): nhãn theo mục tiêu (cắt ngang có mục tiêu phân tích ⇒ «có phân tích») và
+    chuẩn báo cáo CỦA ĐỀ TÀI = chuẩn chính + mở rộng theo nguồn dữ liệu (CROSS/RECORD) — một nguồn sự thật
+    skill_standards.chuan_bao_cao_de_tai; G2/G4/G10 đọc lại chuỗi này, không tự suy riêng.
+
+    Thẩm định #281 (V4): dùng cho CẢ ghim có dấu lẫn ghim chưa có dấu — hai thứ này suy từ thiết kế + nội dung PI khai,
+    không phụ thuộc chuyện ai ghim (trước đây nhánh chưa có dấu làm mất CROSS/RECORD PI khai và nhãn «có phân tích»)."""
+    _g1m = (((meta or {}).get("gate_params") or {}).get("G1") or {}) if isinstance(meta, dict) else {}
+    _g1m = _g1m if isinstance(_g1m, dict) else {}
+    d["primary"] = S.nhan_thiet_ke_theo_muc_tieu(code, _g1m.get("objectives"), d["primary"])
+    _cb = S.chuan_bao_cao_de_tai(code, _g1m)
+    if _cb["chuoi"]:
+        d["reporting_standard"] = _cb["chuoi"]
+    d["reporting_extensions"] = list(_cb["mo_rong"])
+    d["reporting_extensions_nguon"] = dict(_cb["nguon"])
+    d["reporting_extensions_can_xem"] = [{"chuan": c, "ly_do": ly} for c, ly in _cb["can_xem"]]
+
+
 def _apply_design_pin(design: dict, pinned: str, meta: Optional[dict] = None, *, co_dau_nguoi: bool = True) -> dict:
     """Ghi đè thiết kế bằng giá trị bác sĩ pin; giữ nguyên các trường khác.
 
@@ -627,7 +649,7 @@ def _apply_design_pin(design: dict, pinned: str, meta: Optional[dict] = None, *,
     làm thiết kế ĐANG DÙNG (không đổi thiết kế của đề tài nào) nhưng KHÔNG gỡ cờ mơ hồ: trùng thiết kế suy luận ⇒ giữ
     cờ của suy luận; khác ⇒ bật cờ mơ hồ — PI xác nhận (gate_params.G1.design / design_confirmed) mới hết."""
     if not co_dau_nguoi:
-        return _apply_ghim_chua_co_dau(design, pinned)
+        return _apply_ghim_chua_co_dau(design, pinned, meta)
     d = dict(design)
     d["ambiguous"] = False
     # 14/11/2026: từ khoá bị bỏ qua là chuyện của SUY LUẬN — PI đã ghim thì không còn ý nghĩa, không in/ghi nữa.
@@ -642,18 +664,7 @@ def _apply_design_pin(design: dict, pinned: str, meta: Optional[dict] = None, *,
         standards = _S.reporting_standards_for(pinned)
         d["reporting_standard"] = standards["primary"]
         d["protocol_standard"] = standards["protocol"]
-        # Giai đoạn 4 «Thiết kế» (15/11/2026): nhãn theo mục tiêu (cắt ngang có mục tiêu phân tích ⇒ «có phân tích»)
-        # và chuẩn báo cáo CỦA ĐỀ TÀI = chuẩn chính + mở rộng theo nguồn dữ liệu (CROSS/RECORD) — một nguồn sự thật
-        # skill_standards.chuan_bao_cao_de_tai; G2/G4/G10 đọc lại chuỗi này, không tự suy riêng.
-        _g1m = (((meta or {}).get("gate_params") or {}).get("G1") or {}) if isinstance(meta, dict) else {}
-        _g1m = _g1m if isinstance(_g1m, dict) else {}
-        d["primary"] = _S.nhan_thiet_ke_theo_muc_tieu(pinned, _g1m.get("objectives"), d["primary"])
-        _cb = _S.chuan_bao_cao_de_tai(pinned, _g1m)
-        if _cb["chuoi"]:
-            d["reporting_standard"] = _cb["chuoi"]
-        d["reporting_extensions"] = list(_cb["mo_rong"])
-        d["reporting_extensions_nguon"] = dict(_cb["nguon"])
-        d["reporting_extensions_can_xem"] = [{"chuan": c, "ly_do": ly} for c, ly in _cb["can_xem"]]
+        _ap_chuan_bao_cao_de_tai(d, pinned, meta)
     except Exception:  # noqa: BLE001
         pass
     # SỬA 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 21, phát hiện HIGH):
@@ -683,7 +694,7 @@ _THAY_THE_GHIM_CHUA_DAU = ("[Thiết kế lấy từ study_meta.design_code, ch�
                            "không áp dụng]")
 
 
-def _apply_ghim_chua_co_dau(design: dict, pinned: str) -> dict:
+def _apply_ghim_chua_co_dau(design: dict, pinned: str, meta: Optional[dict] = None) -> dict:
     """Dùng giá trị ghim CHƯA có dấu người làm thiết kế đang dùng, KHÔNG gỡ cờ mơ hồ (15/11/2026, thẩm định #277).
 
     Trùng thiết kế suy luận ⇒ giữ nguyên mọi trường của suy luận (kể cả cờ mơ hồ, từ khoá bị bỏ qua) — đây đúng là ca
@@ -693,18 +704,19 @@ def _apply_ghim_chua_co_dau(design: dict, pinned: str) -> dict:
     d["ghim_chua_co_dau_pi"] = pinned
     suy = str(d.get("internal_code") or "")
     if pinned == suy:
+        try:
+            _ap_chuan_bao_cao_de_tai(d, pinned, meta)
+        except Exception:  # noqa: BLE001
+            pass
         return d
     d["ambiguous"] = True
     d["internal_code"] = pinned
     d["primary"] = _DESIGN_LABEL.get(pinned, f"Thiết kế: {pinned}")
     try:
-        import sys as _sys
-        from pathlib import Path as _Path
-        _sys.path.insert(0, str(_Path(__file__).resolve().parent))
-        import skill_standards as _S
-        standards = _S.reporting_standards_for(pinned)
+        standards = S.reporting_standards_for(pinned)
         d["reporting_standard"] = standards["primary"]
         d["protocol_standard"] = standards["protocol"]
+        _ap_chuan_bao_cao_de_tai(d, pinned, meta)
     except Exception:  # noqa: BLE001
         pass
     d["bias_controls"] = BIAS_CONTROLS.get(pinned, BIAS_CONTROLS["cohort"])
@@ -888,7 +900,7 @@ def _ly_do_bo_qua_tu_khoa(qt_da_chot: str, nhom: str) -> str:
     (vd «sr») thì nói đúng lý do — tránh cảnh báo giả «trái … (G1-AUTO-02d)» trên mọi đề tài SR (thẩm định PR #246)."""
     qt = S.chuan_hoa_question_type(qt_da_chot) or qt_da_chot
     dau = f"Tên đề tài có từ khoá gợi ý thiết kế «{_KEYWORD_TO_EXPECTED_INTERNAL[nhom]}» (nhóm {nhom}) — KHÔNG dùng để suy"
-    cuoi = "Muốn thiết kế khác thì PI sửa question_type ở G0 hoặc ghim study_meta.design_code."
+    cuoi = "Muốn thiết kế khác thì PI sửa question_type ở G0 hoặc ghim gate_params.G1.design."
     if G1Q.thiet_ke_hop_le_theo_cau_hoi(qt):
         return f"{dau} thiết kế vì trái loại câu hỏi PI đã chốt «{qt}» (G1-AUTO-02d). {cuoi}"
     return (f"{dau} thiết kế: loại câu hỏi PI đã chốt «{qt}» quyết định thiết kế, từ khoá tên đề tài không đổi được. "
@@ -932,7 +944,7 @@ def check_topic_design_consistency(topic: str, chosen_internal_code: str) -> lis
                 warns.append(
                     f"R6 ⚠️ Tên đề tài có từ khóa gợi ý thiết kế '{expected}' nhưng "
                     f"design_code đã chọn là '{chosen_internal_code}' — bác sĩ xác nhận "
-                    "đây đúng ý định, hay cần pin lại qua study_meta.json['design_code']."
+                    "đây đúng ý định, hay cần pin lại qua gate_params.G1.design."
                 )
     # THÊM 14/11/2026 (thẩm định PR #246): đề tài khai thử nghiệm KHÔNG ngẫu nhiên/một nhánh/non-RCT/ngẫu nhiên hoá
     # Mendel thì không mã nào trong 8 mã khớp đúng — trước, R6 im lặng (nhóm rct khớp và trùng thiết kế đã chọn).
@@ -940,7 +952,7 @@ def check_topic_design_consistency(topic: str, chosen_internal_code: str) -> lis
         warns.append(
             "R6 ⚠️ Tên đề tài khai thiết kế KHÔNG ngẫu nhiên/một nhánh/không nhóm chứng/ngẫu nhiên hoá Mendel nhưng "
             f"design_code đã chọn là '{chosen_internal_code}' (ngoài 8 mã chuỗi G0–G10 không có mã khớp) — bác sĩ "
-            "xác nhận đây đúng ý định, hay cần pin lại qua study_meta.json['design_code']."
+            "xác nhận đây đúng ý định, hay cần pin lại qua gate_params.G1.design."
         )
     return warns
 
@@ -1029,7 +1041,7 @@ def infer_study_design(question_type: str, gaps: dict, topic: str, loai_cau_hoi_
             alt1 = "Thử nghiệm không ngẫu nhiên/một nhánh (ngoài 8 mã chuỗi G0–G10 — PI ghim, chọn agent chuyên trách)"
             alt2 = "Cohort tiến cứu (nếu RCT không khả thi về đạo đức/nguồn lực)"
             rationale = ("Tên đề tài nói «thử nghiệm lâm sàng» nhưng KHÔNG khai ngẫu nhiên hoá/phân bổ — máy đề xuất RCT "
-                         "song song và đánh dấu MƠ HỒ: PI xác nhận có ngẫu nhiên hoá rồi ghim study_meta.design_code. "
+                         "song song và đánh dấu MƠ HỒ: PI xác nhận có ngẫu nhiên hoá rồi ghim gate_params.G1.design. "
                          f"Nền bằng chứng G0: {n_sr} SR/MA, {n_rct} RCT.")
         elif khai_rct:
             # 14/11/2026 (K1): tên đề tài TỰ KHAI thử nghiệm ngẫu nhiên ⇒ RCT là ý định thiết kế tường minh (như
@@ -1193,7 +1205,7 @@ def infer_study_design(question_type: str, gaps: dict, topic: str, loai_cau_hoi_
     if _khai_thiet_ke_khong_ngau_nhien(topic_lower):
         ambiguous = True
         rationale = (f"{rationale} ⚠️ Tên đề tài khai thiết kế KHÔNG ngẫu nhiên/một nhánh/không nhóm chứng/ngẫu nhiên hoá "
-                     "Mendel — nằm ngoài 8 mã chuỗi G0–G10: máy không tự chọn được, PI ghim study_meta.design_code hoặc "
+                     "Mendel — nằm ngoài 8 mã chuỗi G0–G10: máy không tự chọn được, PI ghim gate_params.G1.design hoặc "
                      "chuyển agent chuyên trách.")
 
     reporting = REPORTING_STANDARDS.get(

@@ -1411,7 +1411,8 @@ def evaluate_g1_quality(
         "BLOCK" if pin_tu_choi else "PASS",
         (f"pin «{pin_tu_choi}» ngoài 8 mã hỗ trợ; G1 đang dùng thiết kế suy luận «{internal}»"
          if pin_tu_choi else "không có pin bị từ chối"),
-        "PI ghim lại study_meta.design_code bằng một trong rct/cohort/case_control/cross_sectional/diagnostic/sr_ma/"
+        "PI ghim lại gate_params.G1.design (hoặc study_meta.design_code kèm design_code_nguon=\"PI\") bằng một trong "
+        "rct/cohort/case_control/cross_sectional/diagnostic/sr_ma/"
         "prediction/qualitative có chủ ý, hoặc dùng agent chuyên trách cho thiết kế này (vd quasi-experimental → "
         "TREND, cải tiến chất lượng → SQUIRE 2.0, ca lâm sàng → CARE).",
     ))
@@ -1449,8 +1450,8 @@ def evaluate_g1_quality(
         "Thiết kế hợp với loại câu hỏi đã chốt ở G0",
         tk_status,
         tk_evidence,
-        "Chạy lại G1 để suy lại theo loại câu hỏi G0; hoặc PI sửa question_type ở G0, hoặc ghim study_meta.design_code "
-        "(PI giải trình nếu cố ý chọn thiết kế ngoài nhóm).",
+        "Chạy lại G1 để suy lại theo loại câu hỏi G0; hoặc PI sửa question_type ở G0, hoặc ghim gate_params.G1.design "
+        "(hoặc study_meta.design_code kèm design_code_nguon=\"PI\") — PI giải trình nếu cố ý chọn thiết kế ngoài nhóm.",
     ))
 
     annex2 = A2X.evaluate(meta, internal, "G1")
@@ -1702,7 +1703,8 @@ def evaluate_g1_quality(
     ))
 
     g1 = _g1_meta(meta)
-    pinned_design = _first_present(meta.get("design_code"), g1.get("design"))
+    # Thẩm định #281: cùng MỘT nguồn giá trị ghim với run_g1_auto (G1.design của PI thắng design_code không nhãn PI).
+    pinned_design = S.ghim_thiet_ke(meta)[0] or None
     # VÁ 04/10/2026 (soát từng cổng, G1-12): so pin SAU KHI chuẩn hoá qua bảng bí danh dùng chung — ghim «RCT» hay
     # «systematic_review» từng bị REVIEW vĩnh viễn vì so chuỗi nguyên văn với mã đã chuẩn hoá.
     pin_matches = _present(pinned_design) and S.ma_thiet_ke_chuoi(str(pinned_design)) == internal
@@ -1718,7 +1720,7 @@ def evaluate_g1_quality(
         "PASS" if design_confirmed else "REVIEW",
         f"pin={pinned_design!r}; design_confirmed={g1.get('design_confirmed')!r}"
         + ("; design_rationale=còn ô trống/nhãn nháp" if rationale_residue else ""),
-        "Điền design_code/gate_params.G1.design và design_confirmed=true."
+        "Điền gate_params.G1.design (hoặc design_code kèm design_code_nguon=\"PI\") và design_confirmed=true."
         + (" Gỡ ô trống/nhãn nháp còn sót trong design_rationale." if rationale_residue else ""),
     ))
 

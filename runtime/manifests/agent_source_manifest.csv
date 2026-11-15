@@ -13,9 +13,9 @@ path,sha256,size_bytes
 .claude/agents/dien-giai-can-lam-sang.md,7c3eaa8bd57ba20e302cb0d4ea521b1c6b61f6a0e255813d50e160f11547cc72,18496
 .claude/agents/dien-giai-ket-qua.md,822c501c58c4615bb67787ea579bbbe2907fe21967038f7ad387290502004d72,18731
 .claude/agents/dieu-phoi-g0.md,e5430236a289ff0c19a02c8322f591c299739989fbe79f655ebb0350ce25b996,18081
-.claude/agents/dieu-phoi-g1.md,4324ae192076a3a69b2d7ba7769c366e460acb61140081537f18710c0046b74c,23252
+.claude/agents/dieu-phoi-g1.md,ae97568b55b20be4fee0916cb8712a82c5edf331bf2a085fdd42181a4f939592,23410
 .claude/agents/dieu-phoi-g10.md,8630cc9b3593baa6eea04ca8843b3327513574174e2687e72dadce8f0589d8dc,19801
-.claude/agents/dieu-phoi-g2.md,c19a6f6d114463015532f7fa833418415de8e14786a15c5aaec735e8b79adf70,17398
+.claude/agents/dieu-phoi-g2.md,70464baeb11bb9f6e65f65aad91ce3b14033e1eaf8e209a0326e097065e55fa1,17494
 .claude/agents/dieu-phoi-g3.md,20c0741f50621beb59a59514e4ef7cfc0e9a63e7c0f841c001e79ca01ae9d753,16819
 .claude/agents/dieu-phoi-g4.md,9ea7ab040e7c22fb7df55771a0b555218a4b319e4129825a4389c576302920e8,18585
 .claude/agents/dieu-phoi-g5.md,dcb74f490247b41dab136897ed595989d786d26a99becdee4d18ad8e4f8188d9,17340
@@ -55,7 +55,7 @@ path,sha256,size_bytes
 .claude/agents/tham-dinh-phe-binh.md,9c12038b9a161cf96fe1b9125291ae0d1b76f0dd17f26dbcb91815c5d99d08f2,17960
 .claude/agents/thang-diem-nguy-co.md,805cecc993af559d8f4f7a9409c3db420026ebe76bd632c09ab22ed9aa3b1fd3,20953
 .claude/agents/theo-doi-benh-man.md,3a8781ac3d82c0b29b3129fcd3111edc0de3b42f789d0069661e5f305130b056,21036
-.claude/agents/thiet-ke-nghien-cuu.md,77e06a8c6c0e7b5e9ec663b18eb37d4edb4fd40a31fd10068a815dd5b72a460c,52668
+.claude/agents/thiet-ke-nghien-cuu.md,40fe2d1715c15dcedfc767c5cc136b25cabf5b8db54848dfe0016559dd753551,52681
 .claude/agents/thu-thu-tai-lieu.md,0724897addbf3bb8ac0db0bfada3920e9765892cb97b81f6f24200bf62889a3f,22333
 .claude/agents/tong-quan-y-van.md,022b25e7bdf2db0181c252953b21a8fb1c39aa29eec61157b03ad352bb4df67d,23193
 .claude/agents/tra-cuu-chung-cu.md,23ae3d470bc891e373601d7ac08321383485d120867f71aa06284f5fb6ca94d9,21803

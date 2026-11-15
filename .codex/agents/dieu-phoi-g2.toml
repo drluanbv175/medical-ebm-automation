@@ -50,7 +50,7 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 > Vì sao: giả lập trung thực (hệ TỰ sinh từ G0/G1, không viết sẵn bộ biến/SAP) cho thấy mục tiêu ↔ biến ↔ công cụ ↔ từ điển ↔ SAP ↔ SPSS/R không có phép kiểm máy; SPSS/R báo «✓ khớp» trên bộ biến SAI. Báo cáo: `audit/kiem-dong-bo-xuyen-cong-20261115.md` (repo gốc). Công cụ chung: `tools/ma_tran_muc_tieu_bien.py` (repo y khoa). «Khớp khứ hồi/khớp từ điển» KHÔNG chứng minh biến đúng mục tiêu.
 
 - G5-AUTO-13 (phiếu nộp HĐĐĐ ↔ mã câu nhập liệu) đạt nhờ hồ sơ G2 (`^G2`): bảo đảm phiếu/công cụ nộp Hội đồng nằm trong hồ sơ hoặc được khai ở `gate_params.G2.phieu_nop_hoi_dong`.
-- **G2 không gieo ô ghim thiết kế (15/11/2026, thẩm định y khoa #277):** run_g2_auto ghi thiết kế G1 đang dùng vào `study_meta.design_code_tu_g1` (bản sao máy, ghi đè mỗi lượt), KHÔNG ghi `study_meta.design_code` (ô ghim của PI). Đề tài cũ có `design_code` cấp cao mà không có dấu người (do G2 bản trước gieo) ⇒ trình PI xác nhận (`gate_params.G1.design` / `design_confirmed=true` / `design_code_nguon: "PI"`), không tự ghi.
+- **G2 không gieo ô ghim thiết kế (15/11/2026, thẩm định y khoa #277/#281):** run_g2_auto KHÔNG ghi `study_meta.design_code` (ô ghim của PI) và không ghi khoá máy nào khác vào study_meta (đổi byte tệp này làm biên bản hội đồng băm study_meta thành «cũ»); thiết kế G2 dùng nằm ở `G2_checkpoint.design_code`. Đề tài cũ có `design_code` cấp cao mà không có dấu người (do G2 bản trước gieo) ⇒ trình PI xác nhận (`gate_params.G1.design` / `design_confirmed=true` / `design_code_nguon: "PI"`), không tự ghi.
 
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G2 (09/10/2026)

@@ -881,6 +881,16 @@ def evaluate_g0_quality(
     # chồng lấn. Máy KHÔNG gọi thêm mạng ở đây.
     tra_tay = g0.get("registry_manual_checked") if isinstance(g0.get("registry_manual_checked"), Mapping) else {}
     can_prospero = _thiet_ke_ghim(meta) == "sr_ma"
+    if not can_prospero:
+        # Thẩm định #281 (X6): run_g2_auto thôi gieo study_meta.design_code ⇒ tổng quan hệ thống do G1 suy (chưa ghim)
+        # từng được đòi tra PROSPERO nhờ giá trị gieo; giữ nguyên chiều chặt bằng cách đọc thiết kế G1 đang dùng.
+        try:
+            _a1 = (artifact_paths or {}).get("A1")
+            _cp1 = json.loads((Path(_a1).parent / "G1_checkpoint.json").read_text(encoding="utf-8")) if _a1 else {}
+            _tk1 = (_cp1.get("design") or {}).get("internal_code") if isinstance(_cp1, dict) else None
+            can_prospero = S.ma_thiet_ke_chuoi(_tk1) == "sr_ma" if isinstance(_tk1, str) else False
+        except (OSError, ValueError, AttributeError):
+            can_prospero = False
     thieu_tra = []
     if not _valid_iso_time(tra_tay.get("ictrp")):
         thieu_tra.append("ictrp")

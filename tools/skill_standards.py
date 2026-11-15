@@ -697,9 +697,13 @@ def ghim_thiet_ke(meta: Optional[Mapping[str, Any]]) -> Tuple[str, bool]:
       - `gate_params.G1.design` (ô chỉ PI ghi) — dấu cho chính giá trị của nó;
       - `design_code` cấp cao kèm `design_code_nguon == "PI"`, hoặc kèm `gate_params.G1.design_confirmed is True`,
         hoặc TRÙNG `gate_params.G1.design` (so sau chuẩn hoá).
-    `design_code` cấp cao đứng một mình (vd đề tài cũ do G2 gieo) vẫn là thiết kế ĐANG DÙNG — giữ nguyên thứ tự đọc cũ
-    (cấp cao trước, rồi G1.design) để không đổi thiết kế của đề tài nào — nhưng KHÔNG là quyết định của PI.
-    Cổng đã ký không bị hạ cấp: chữ ký G1 luôn đi kèm `design_confirmed is True` (G1-HUMAN-01)."""
+    `design_code` cấp cao đứng một mình (vd đề tài cũ do G2 gieo) vẫn là thiết kế ĐANG DÙNG nhưng KHÔNG là quyết định
+    của PI.
+    Thẩm định #281 (Đ1): `gate_params.G1.design` LỆCH `design_code` cấp cao không mang nhãn PI ⇒ ô G1 (chỉ PI ghi) THẮNG
+    — trước đây giá trị máy gieo thắng lặng lẽ, rồi `design_confirmed=true` (gợi ý của G1-AUTO-04) «đóng dấu PI» luôn
+    cho chính giá trị máy. `design_confirmed` chỉ là dấu cho `design_code` khi không có G1.design lệch.
+    Cổng đã ký không bị hạ cấp: chữ ký G1 luôn đi kèm `design_confirmed is True` (G1-HUMAN-01); hai đề tài thật có
+    `design_code` trùng G1.design hoặc không có `design_code` (đo 15/11/2026)."""
     if not isinstance(meta, Mapping):
         return "", False
     gp = meta.get("gate_params") if isinstance(meta.get("gate_params"), Mapping) else {}
@@ -712,11 +716,10 @@ def ghim_thiet_ke(meta: Optional[Mapping[str, Any]]) -> Tuple[str, bool]:
     def _chuan(x: str) -> str:
         return ma_thiet_ke_chuoi(x) or x.casefold()
 
-    co_dau = (
-        str(meta.get("design_code_nguon") or "").strip().upper() == NGUON_GHIM_PI
-        or g1.get("design_confirmed") is True
-        or (bool(g1d) and _chuan(g1d) == _chuan(cao))
-    )
+    nguon_pi = str(meta.get("design_code_nguon") or "").strip().upper() == NGUON_GHIM_PI
+    if g1d and _chuan(g1d) != _chuan(cao) and not nguon_pi:
+        return g1d, True
+    co_dau = nguon_pi or g1.get("design_confirmed") is True or bool(g1d)
     return cao, co_dau
 
 
