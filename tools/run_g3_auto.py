@@ -39,6 +39,12 @@ import ten_de_tai as TDT  # noqa: E402  (tên đề tài chính thức — 15/11
 # hard-block) và generate_artifact (không hiện nhầm thông báo "chưa tính
 # được — cần effect size").
 N_NOT_APPLICABLE_DESIGNS = {"sr_ma", "prediction", "qualitative"}
+# Khung cỡ mẫu THAY THẾ của 3 thiết kế trên — ghi ở bảng tham số A4 thay hàng α/lực (15/11/2026).
+KHUNG_CO_MAU_THAY_THE = {
+    "qualitative": "Bão hoà dữ liệu (lấy mẫu có chủ đích; không dùng công thức lực mẫu/độ chính xác)",
+    "sr_ma": "Cỡ thông tin cần thiết (RIS) / phân tích tuần tự (TSA) trên dữ liệu cộng dồn",
+    "prediction": "Tiêu chí Riley 2020 (pmsampsize; BMJ 2020;368:m441, PMID 32188600)",
+}
 
 # Hệ số z phổ biến (6 chữ số thập phân — khớp scipy.stats.norm.ppf để tránh
 # lệch 1 đơn vị ở biên math.ceil() khi phải dùng bảng dự phòng không scipy)
@@ -831,7 +837,11 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
     định. Thiết kế một nhóm/mô tả không có câu lực thống kê và chữ «mỗi nhóm»."""
     nguon_tham_so = nguon_tham_so or {}
     nguon_mo_ta = {k: v for k, v in (nguon_mo_ta or {}).items() if v}
-    mo_ta_chinh_xac = effect_type == "PREVALENCE" or hypothesis_type == "descriptive_precision"
+    # 15/11/2026 (giả lập trọn vòng — đề tài định tính khai hypothesis_type «descriptive_precision»): thiết kế không dùng
+    # công thức cỡ mẫu (N_NOT_APPLICABLE_DESIGNS) KHÔNG có khung độ chính xác/lực mẫu — trước đây khung độ chính xác vẫn
+    # in «Với độ tin cậy 95% (α = 0.05) và sai số d = ±5%» vào khối dán đề cương ⇒ chính G3-AUTO-17 của hệ chặn đề tài.
+    khong_dung_power = design_code in N_NOT_APPLICABLE_DESIGNS
+    mo_ta_chinh_xac = (effect_type == "PREVALENCE" or hypothesis_type == "descriptive_precision") and not khong_dung_power
     mot_nhom = design_code in ONE_GROUP_DESIGNS
 
     def _nguon(ten, mac_dinh="[CẦN XÁC NHẬN — mặc định máy]"):
@@ -845,7 +855,12 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
     # MỌI thiết kế trước đây sẽ sai/gây nhầm lẫn cho hypothesis_type khác
     # superiority.
     _alpha_sidedness = "one-sided" if hypothesis_type == "non_inferiority" else "two-sided"
-    if mo_ta_chinh_xac:
+    if khong_dung_power:
+        _hang_gia_thuyet = ("| Khung cỡ mẫu | " + KHUNG_CO_MAU_THAY_THE.get(design_code, "khung thay thế") +
+                            " | Theo thiết kế |")
+        _hang_alpha = "| Kiểm định giả thuyết | Không áp dụng cho thiết kế này | Theo thiết kế |"
+        _hang_luc = []
+    elif mo_ta_chinh_xac:
         _hang_gia_thuyet = ("| Khung cỡ mẫu | Ước lượng theo ĐỘ CHÍNH XÁC (không kiểm định giả thuyết) | "
                             f"{_nguon('hypothesis_type')} |")
         _hang_alpha = f"| Độ tin cậy | {int(round((1 - alpha) * 100))}% (α = {alpha}, hai phía) | Quy ước |"
@@ -1029,13 +1044,18 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
         "## PHẦN 3 — PHÂN TÍCH ĐỘ NHẠY (Sensitivity Analysis)",
         "",
     ]
+    if khong_dung_power:
+        lines += [f"Không áp dụng bảng lực mẫu × hiệu ứng — khung cỡ mẫu của thiết kế: "
+                  f"{KHUNG_CO_MAU_THAY_THE.get(design_code, 'khung thay thế')}.", ""]
     # SỬA 2026-07-31: bảng "Power × Effect size" vô nghĩa với thiết kế MÔ TẢ —
     # cỡ mẫu theo độ chính xác không phụ thuộc power (ba dòng power cho cùng một
     # số), và nhãn "ES" sai ngữ nghĩa vì tham số là tỷ lệ p chứ không phải effect
     # size. Bảng đúng cho thiết kế này là p × d, giống bảng mà đề cương mô tả nào
     # cũng phải có. Tiêu đề cũ còn tự khai "điều chỉnh N% dropout" trong khi các ô
     # là N TRƯỚC dropout (chính G3-AUTO-09 bắt được mâu thuẫn này).
-    if effect_type == "PREVALENCE":
+    if khong_dung_power:
+        pass
+    elif effect_type == "PREVALENCE":
         _d_list = [round(precision / 2, 4), precision, round(precision * 2, 4)]
         _p_list = sorted({0.10, 0.30, 0.50, round(float(effect_val), 4)})
         # VÁ 09/10/2026: mỗi ô đi CÙNG đường tính với N chính (n_prevalence → FPC → hiệu ứng thiết kế cụm), nên PHẢI

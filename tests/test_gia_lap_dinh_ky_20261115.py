@@ -556,7 +556,8 @@ def test_main_chay_tap_con_tra_ma_2_va_giu_khoa_kich_ban_khong_chay(main_gia, ca
     assert GL.main(tham) == 1  # mốc đầu, đủ kịch bản
     assert GL.main(tham + ["--kich-ban", "rct_nhi_phan"]) == 2
     bc = _doc(main_gia)
-    assert bc["da_het"] == [] and bc["khong_chay_luot_nay"] == ["cat_ngang_mo_ta"]
+    # 15/11/2026: KICH_BAN đủ 8 thiết kế — mọi kịch bản trừ rct_nhi_phan là «không chạy lượt này»
+    assert bc["da_het"] == [] and set(bc["khong_chay_luot_nay"]) == set(GL.KICH_BAN) - {"rct_nhi_phan"}
     assert "cat_ngang_mo_ta:k" in bc["theo_che_do"]["truc_tuyen"]["khiem_khuyet"]
     assert "cat_ngang_mo_ta (không chạy lượt này)" in capsys.readouterr().out
     assert GL.main(tham) == 0  # chạy đủ lại: không có gì «🆕»
@@ -633,3 +634,54 @@ def test_kich_ban_du_khung_va_dung_ma_thiet_ke():
         assert kb["study"].startswith(GL.TIEN_TO_DE_TAI), ma
         assert set(kb["pi"]) <= set(GL.CONG_MEM) and set(kb["xac_nhan"]) == set(kb["pi"]), ma
         assert "dau_van_tay_chot" not in json.dumps(kb["pi"]), "dấu vân tay phải chép từ cổng lúc chạy"
+
+
+# ─────────────────────────── giả lập 8 thiết kế (15/11/2026): tự chạy cổng không đổi gì · bộ biến nộp cùng G3
+class TheGioiTieuChiKet(TheGioi):
+    """G3 có một tiêu chí máy KHÔNG BAO GIỜ đạt (vd G3-AUTO-19 thiếu bộ biến): tự chạy cổng không đổi được gì."""
+
+    def cham(self, gate, study, out, repo):
+        bao = super().cham(gate, study, out, repo)
+        if gate == "G3" and (Path(out) / "G3_checkpoint.json").exists():
+            bao = dict(bao, status="DRAFT_READY_NEEDS_HUMAN_REVIEW",
+                       automatic_criteria=[*(bao.get("automatic_criteria") or []),
+                                           {"id": "G3-AUTO-19", "status": "REVIEW", "evidence": "thiếu ma trận",
+                                            "action": ""}])
+        return bao
+
+
+def test_tu_chay_cong_khong_doi_tieu_chi_khong_tinh_la_loi_may_va_tieu_chi_ket_duoc_ghi(tmp_path):
+    _gl, kq = _chay_kb(tmp_path, TheGioiTieuChiKet(dich_lac=False, n4=False, kct_do=()))
+    loai = _loai(kq)
+    assert ("G3", "tu_chay_cong_khong_doi") in loai and ("G3", "tu_chay_cong") not in loai, loai
+    assert not any(k.endswith(":G3:tu_chay_cong") or "tu_chay_cong_khong_doi" in k for k in kq["khiem_khuyet"]), \
+        kq["khiem_khuyet"]
+    assert "thu:ket:G3:G3-AUTO-19" in kq["khiem_khuyet"] or "thu:cong_mem_chua_dat:G3" in kq["khiem_khuyet"], \
+        kq["khiem_khuyet"]
+
+
+def test_pi_nop_bo_bien_va_ma_tran_cung_noi_dung_g3(tmp_path):
+    kb = dict(KB_THU, ho_so_bien={
+        "bo_bien": [("record_id", "text", "Mã", "", "", "Phiếu"), ("kc", "radio", "Kết cục", "0, Không | 1, Có", "",
+                                                                     "Phiếu")],
+        "ma_tran": [("1", "Kết cục", "ket_cuc_chinh", "kc", "nhi_phan", "C1", "Phiếu", "§4")]})
+    repo = tmp_path / "repo"
+    (repo / "exports").mkdir(parents=True)
+    tg = TheGioi(dich_lac=False, n4=False, kct_do=())
+    gl = GL.GiaLap("thu", kb, repo, True, chay=tg.chay, cham=tg.cham, nen_g0_dir=tmp_path / "nen")
+    out = repo / "exports" / kb["study"]
+    out.mkdir(parents=True)
+    assert not gl._noi_dung_da_dien("G3")
+    gl._dien_noi_dung("G3")
+    bo = (out / "_bo-bien-rieng.csv").read_text(encoding="utf-8").splitlines()
+    mt = (out / "_ma-tran-muc-tieu-bien.csv").read_text(encoding="utf-8").splitlines()
+    assert bo[0].startswith("Variable / Field Name,Form Name") and bo[2].startswith("kc,phieu,Phiếu,radio")
+    assert mt[0] == ",".join(GL.COT_MA_TRAN) and mt[1].startswith("1,Kết cục,ket_cuc_chinh,kc,nhi_phan")
+
+
+def test_moi_kich_ban_that_co_ho_so_bien_va_dung_mot_ket_cuc_chinh_tru_tong_quan():
+    for ma, kb in GL.KICH_BAN.items():
+        hs = kb.get("ho_so_bien")
+        assert hs and hs["bo_bien"] and hs["ma_tran"], ma
+        ten_bien = {b[0] for b in hs["bo_bien"]}
+        assert all(d[3] in ten_bien for d in hs["ma_tran"]), ma  # ma trận chỉ trỏ biến có trong bộ biến

@@ -599,6 +599,45 @@ def ap_nguon_du_lieu(risk: dict, design_code: str, meta: Optional[dict]) -> dict
     return ra
 
 
+def _pi_xin_mien_icf(design_code: str, meta: Optional[dict]) -> bool:
+    """PI đã chọn xin miễn phiếu đồng ý (`gate_params.G2.icf_waiver_requested` = true) — không bao giờ cho RCT."""
+    if design_code == "rct" or not isinstance(meta, dict):
+        return False
+    g2 = ((meta.get("gate_params") or {}).get("G2") or {}) if isinstance(meta.get("gate_params"), dict) else {}
+    return g2.get("icf_waiver_requested") is True
+
+
+def ap_xin_mien_icf(risk: dict, design_code: str, meta: Optional[dict]) -> dict:
+    """PI xin miễn ICF ⇒ đề tài có TÀI LIỆU 9 dù hồ sơ nguy cơ TĨNH của thiết kế không gắn cờ (15/11/2026).
+
+    Giả lập trọn vòng: thuần tập hồi cứu từ hồ sơ (PI khai RETROSPECTIVE_SECONDARY_DATA + xin miễn) không có đơn xin miễn
+    vì `icf_waiver_eligible` cố định theo thiết kế (chỉ cắt ngang/dự báo/tổng quan) — trong khi lại nhận phiếu đồng ý
+    đủ bước lấy máu/tái khám. Quyết định thuộc PI và Hội đồng; máy chỉ không chặn đường xin miễn."""
+    if not _pi_xin_mien_icf(design_code, meta) or risk.get("icf_waiver_eligible"):
+        return risk
+    return dict(risk, icf_waiver_eligible=True)
+
+
+def thu_gon_icf_khi_xin_mien(text: str, design_code: str, meta: Optional[dict]) -> str:
+    """PI xin miễn ICF ⇒ TÀI LIỆU 4/5 (phiếu đồng ý tiếng Việt/Anh) thành ghi chú «không áp dụng» (15/11/2026).
+
+    Trước đây hồ sơ của đề tài ĐÃ chọn xin miễn (BTM, mục B2 phiếu quyết định 15/11; thuần tập hồi cứu của giả lập) vẫn
+    in nguyên ~220 dòng phiếu đồng ý với hàng chục ô [CẦN] — bắt chủ nhiệm điền một văn bản chính họ đã xin miễn. Hội
+    đồng KHÔNG chấp thuận miễn ⇒ PI đặt `icf_waiver_requested` = false rồi chạy lại run_g2_auto để có phiếu đầy đủ."""
+    if not _pi_xin_mien_icf(design_code, meta):
+        return text
+    m = re.search(r"(## TÀI LIỆU 4\b[^\n]*\n)(.*?)(?=## TÀI LIỆU 6\b)", text, re.S)
+    if not m:
+        return text
+    m5 = re.search(r"## TÀI LIỆU 5\b[^\n]*", m.group(2))
+    tieu_de_5 = m5.group(0) if m5 else "## TÀI LIỆU 5 — ICF TIẾNG ANH"
+    thay = (f"{m.group(1)}\nKHÔNG ÁP DỤNG — chủ nhiệm xin MIỄN phiếu đồng ý (`gate_params.G2.icf_waiver_requested` = "
+            "true; đơn xin miễn ở TÀI LIỆU 9). Nếu Hội đồng Đạo đức KHÔNG chấp thuận miễn: đặt "
+            "`icf_waiver_requested` = false rồi chạy lại `run_g2_auto.py` để sinh phiếu đồng ý đầy đủ.\n\n---\n\n"
+            f"{tieu_de_5}\n\nNOT APPLICABLE — informed consent waiver requested (see Document 9).\n\n---\n\n")
+    return text[:m.start()] + thay + text[m.end():]
+
+
 def ap_loai_can_thiep(risk: dict, design_code: str, meta: Optional[dict], topic: str = "") -> dict:
     """Thu hẹp bảng rủi ro RCT theo loại can thiệp (K9). Chỉ áp cho design_code == "rct".
 
@@ -2256,6 +2295,7 @@ def main():
     risk = ap_quyet_dinh_dang_ky(risk, _study_meta_for_g2)
     risk = ap_loai_can_thiep(risk, design_code, _study_meta_for_g2, topic)
     risk = ap_nguon_du_lieu(risk, design_code, _study_meta_for_g2)
+    risk = ap_xin_mien_icf(risk, design_code, _study_meta_for_g2)
     print(f"  → Mức nguy cơ: {risk['risk_level']}")
     print(f"  → Lộ trình IRB: {risk['irb_route']}")
     print(f"  → Đăng ký: {risk['registration']}")
@@ -2297,6 +2337,7 @@ def main():
     # Hồ sơ này in ra để nộp Hội đồng, nên phải đọc như văn bản khoa học do
     # người viết: bỏ dấu ngắt kiểu máy và ký tự vẽ khung, GIỮ nguyên ô trống chờ
     # điền và mọi số liệu (tools/vn_prose_style.py).
+    artifact_md = thu_gon_icf_khi_xin_mien(artifact_md, design_code, _study_meta_for_g2)
     artifact_md = _VNSTYLE.clean_generated_prose(artifact_md)
     md_path = out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
     # ★ BẢN NHÁP ĐĂNG KÝ WHO TRDS DỰNG TRƯỚC RÀO CHỐNG ĐÈ (vá 27/09/2026): bản nháp sinh HOÀN TOÀN từ dữ kiện PI đã ghim

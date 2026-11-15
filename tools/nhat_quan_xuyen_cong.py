@@ -194,6 +194,20 @@ def _ket_cuc_chinh_sap(text: str) -> str:
     return m.group(1).strip() if m else ""
 
 
+def _ten_ket_cuc_sap(text: str) -> str:
+    """Phần TÊN kết cục chính ở SAP §2 — bỏ đuôi do CHÍNH MÁY điền sẵn (`run_g4_auto._dien_khung`: «tên; đo bằng …;
+    thời điểm: … — biến `x` *(điền sẵn từ quyết định đã chốt …)*»).
+
+    15/11/2026 (giả lập trọn vòng — đề tài thuần tập nhất quán từ G0): trục so NGUYÊN dòng điền sẵn với tên kết cục
+    G0 ⇒ báo lệch mềm, đòi PI xác nhận «cùng một kết cục» cho một §2 do máy chép từ G1 (BTM phải làm đúng bước này,
+    mục B1). Thước đo/thời điểm đã có trục riêng (`thoi_diem_ket_cuc`), nên trục kết cục chính chỉ so phần tên. §2
+    người viết không theo khuôn này giữ nguyên ⇒ dấu vân tay xác nhận cũ không đổi."""
+    kc = re.sub(r"\s*\*\(điền sẵn từ quyết định đã chốt[^)]*\)\*", "", _ket_cuc_chinh_sap(text)).strip()
+    # « — biến `x`» của khuôn, hoặc «. Biến `x`» sau khi bộ chuẩn trình bày đổi gạch dài thành dấu câu.
+    kc = re.sub(r"[\s.,;—–-]+[Bb]iến\s+`[^`]+`\s*$", "", kc)
+    return re.split(r";\s+(?:đo bằng|thời điểm:)\s", kc, maxsplit=1)[0].strip()
+
+
 # --------------------------------------------------------------------- thời điểm đo kết cục chính (PICO-T)
 # THÊM 15/11/2026 (bác sĩ «Tiếp tục vấn đề còn lại» sau kiểm toàn hệ theo khung 12 bước): chữ T của PICO(T) là mục DUY
 # NHẤT của khung chưa có trục máy (lần kiểm trước chỉ soi tay). Đổi thời điểm đo kết cục chính là một dạng đổi kết cục.
@@ -725,7 +739,7 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
                 {"cong": "G1", "noi": "study_meta.gate_params.G1.primary_outcome",
                  "gia_tri": _ten_ket_cuc(_gp(meta, "G1").get("primary_outcome"))},
                 {"cong": "G2", "noi": "đăng ký TRDS mục 19 (Primary Outcome)", "gia_tri": _ten_ket_cuc(trds.get("19"))},
-                {"cong": "G4", "noi": "SAP §2 «Kết cục chính»", "gia_tri": _ket_cuc_chinh_sap(sap_text)},
+                {"cong": "G4", "noi": "SAP §2 «Kết cục chính»", "gia_tri": _ten_ket_cuc_sap(sap_text)},
                 {"cong": "G8", "noi": "study_meta.gate_params.G8.primary_outcome",
                  "gia_tri": _ten_ket_cuc(_gp(meta, "G8").get("primary_outcome"))}]
     nguon_kc = [n for n in nguon_kc if _co_that(n["gia_tri"])]
