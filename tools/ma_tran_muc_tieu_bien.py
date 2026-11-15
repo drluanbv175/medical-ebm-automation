@@ -390,6 +390,18 @@ def kiem(out_dir: Path, study: str, *, meta: Optional[Mapping[str, Any]] = None,
         vd.append(_van_de("MT-05", "canh_bao", "G1 chưa ghi (hoặc ghi mơ hồ nhiều loại) loại dữ liệu kết cục chính "
                                                "(primary_outcome.type) — không đối chiếu được kiểu"))
 
+    # MT-07 (E5, 15/11/2026) — một biến ở nhiều dòng (vd mô tả ở MT1, yếu tố ở MT3) phải khai CÙNG một kiểu: mức đo
+    # SPSS/R của biến lấy từ kiểu này, khác nhau thì .sav/.rds phụ thuộc thứ tự dòng.
+    kieu_bien: Dict[str, set] = {}
+    for r in dong:
+        ten = str(r.get("bien") or "").strip()
+        if not _trong(ten) and r.get("kieu") in KIEU:
+            kieu_bien.setdefault(ten, set()).add(r["kieu"])
+    for ten, ks in kieu_bien.items():
+        if len(ks) > 1:
+            vd.append(_van_de("MT-07", "loi", f"biến «{ten}» khai kiểu KHÁC nhau ở các dòng ({', '.join(sorted(ks))}) "
+                                              "— một biến chỉ có một kiểu/mức đo"))
+
     # MT-06/07/08 — biến có thật, đúng kiểu; phái sinh có nguồn
     for i, r in enumerate(dong, 2):
         ten = str(r.get("bien") or "").strip()

@@ -1362,9 +1362,16 @@ def cu_phap_mau_sav(cot: list[Cot], mt: list[dict], dac_ta: str, ra_sav: Path,
     # nhập không được nói «danh định» cho một thang thứ bậc mà tệp phân tích nói «thứ bậc».
     tt_cot = {}
     for c in cot:
-        muc_cu = "SCALE" if c.kieu in ("so", "so_nguyen", "ngay", "ngay_gio", "gio") else "NOMINAL"
-        tt_cot[c.ten] = SP.thuoc_tinh_tu_dong((ma_tran or {}).get(c.truong) or {}, kieu_so=_kieu_spss(c)[0],
+        kieu_so = _kieu_spss(c)[0]
+        if c.kieu in ("so", "so_nguyen", "ngay", "ngay_gio", "gio"):
+            muc_cu = "SCALE"
+        elif c.kieu == "ma" and kieu_so:  # CÙNG luật suy thứ bậc với .sav (SP.muc_do_lua_chon)
+            muc_cu = SP.muc_do_lua_chon(c.lua_chon, {SP._ma_so_gon(m) for m in c.ma_thieu if _so_chat(m) is not None})
+        else:
+            muc_cu = "NOMINAL"
+        tt_cot[c.ten] = SP.thuoc_tinh_tu_dong((ma_tran or {}).get(c.truong) or {}, kieu_so=kieu_so,
                                               la_hop=c.kieu == "hop", lo=c.min, hi=c.max, muc_cu=muc_cu)
+        tt_cot[c.ten].update({"cot": c.ten, "so": kieu_so})  # cho SP.vai_tro_spss / SP.can_le (11 thuộc tính)
     for muc in ("SCALE", "ORDINAL", "NOMINAL"):
         ds = [c.ten for c in cot if tt_cot[c.ten]["muc_do"] == muc]
         if ds:
@@ -1373,10 +1380,14 @@ def cu_phap_mau_sav(cot: list[Cot], mt: list[dict], dac_ta: str, ra_sav: Path,
         tt = [f"{k}({SP.chuoi_spss(v)})" for k, v in SP.thuoc_tinh_ky_vong(tt_cot[c.ten]).items()]
         if tt:
             dong.append(f"VARIABLE ATTRIBUTE VARIABLES={c.ten} ATTRIBUTE={' '.join(tt)}.")
+    # 11 thuộc tính: Columns + Align + Role TƯỜNG MINH cho MỌI biến — cùng luật với .sav (SP.cot_hien_tu_dinh_dang,
+    # SP.can_le, SP.vai_tro_spss); Columns tính trên định dạng NHẬP của mẫu.
+    dong += SP.nhom_cu_phap("VARIABLE WIDTH", [(c.ten, str(SP.cot_hien_tu_dinh_dang(_kieu_spss(c)[1], c.ten)))
+                                               for c in cot])
+    dong += SP.nhom_cu_phap("VARIABLE ALIGNMENT", [(c.ten, SP.can_le(tt_cot[c.ten])) for c in cot])
     vai: dict[str, list[str]] = {}
     for c in cot:
-        if tt_cot[c.ten]["vai_tro"] in SP._VAI_TRO_SPSS:
-            vai.setdefault(SP._VAI_TRO_SPSS[tt_cot[c.ten]["vai_tro"]], []).append(c.ten)
+        vai.setdefault(SP.vai_tro_spss(tt_cot[c.ten]), []).append(c.ten)
     if vai:
         dong.append("VARIABLE ROLE " + " ".join(f"/{k} {SP.goi_ds(v)}" for k, v in vai.items()) + ".")
     dong.append(
