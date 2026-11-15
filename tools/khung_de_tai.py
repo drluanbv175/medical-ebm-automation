@@ -147,3 +147,36 @@ def danh_sach(v: Any) -> List[str]:
     if isinstance(v, (list, tuple)):
         return [str(x).strip() for x in v if _co(x)]
     return [str(v).strip()] if _co(v) else []
+
+
+# ───────────────────────────── K4 — truy vấn PubMed từ khái niệm PI khai ─────────────────────────────
+_THE_PUBMED = ("[", "]", "(", ")", '"', " AND ", " OR ", " NOT ")
+
+
+def _mot_thuat_ngu(t: str) -> str:
+    """Một thuật ngữ trong nhóm OR: cụm nhiều từ ⇒ đặt trong ngoặc kép (PubMed tìm đúng cụm); thuật ngữ PI đã viết cú
+    pháp PubMed (thẻ [mh]/[tiab], ngoặc, toán tử) ⇒ giữ NGUYÊN, bọc ngoặc đơn."""
+    t = " ".join(str(t).split())
+    if any(x in t for x in _THE_PUBMED):
+        return f"({t})"
+    return f'"{t}"' if " " in t else t
+
+
+def truy_van_tu_khai_niem(meta: Mapping[str, Any]) -> Optional[str]:
+    """Truy vấn PubMed dựng từ `gate_params.G0.khai_niem_tim_kiem = {"P": [...], "I": [...], "O": [...]}` (thuật ngữ
+    tiếng Anh PI khai): trong một khái niệm nối OR (từ đồng nghĩa), giữa các khái niệm nối AND. None khi PI chưa khai
+    khái niệm nào.
+
+    K4 (giả lập lần 3, 15/11/2026): G0-AUTO-08 hướng dẫn PI «viết query_en HOẶC khai khai_niem_tim_kiem», nhưng bộ dựng
+    truy vấn bỏ qua khai_niem_tim_kiem ⇒ PI khai xong G0 vẫn REVIEW (thuật ngữ PI khai không có trong truy vấn máy tự
+    dịch) và PI vẫn phải tự viết cả câu truy vấn. Không cần PICO đã chốt — khái niệm tìm kiếm phục vụ chính lượt tra
+    G0."""
+    khai = _gp(meta, "G0").get("khai_niem_tim_kiem")
+    if not isinstance(khai, Mapping):
+        return None
+    nhom: List[str] = []
+    for ma in ("P", "I", "O"):
+        tn = list(dict.fromkeys(danh_sach(khai.get(ma))))
+        if tn:
+            nhom.append("(" + " OR ".join(_mot_thuat_ngu(t) for t in tn) + ")")
+    return " AND ".join(nhom) or None

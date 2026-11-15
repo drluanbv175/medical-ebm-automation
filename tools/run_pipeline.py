@@ -154,6 +154,15 @@ def _g0_lech_dau_vao(out_dir: Path, topic: Optional[str], meta: dict) -> Optiona
         return None
     ly_do: List[str] = []
     q, noi = _query_en_mong_muon(meta)
+    if not q:
+        # K4 (15/11/2026): khái niệm tìm kiếm PI khai (gate_params.G0.khai_niem_tim_kiem) là ĐẦU VÀO của G0 như query_en
+        # — run_g0_auto dựng truy vấn từ đó bằng CÙNG hàm (khung_de_tai.truy_van_tu_khai_niem) ⇒ so được, hội tụ.
+        try:
+            import khung_de_tai as KD  # noqa: PLC0415
+
+            q, noi = KD.truy_van_tu_khai_niem(meta or {}), "study_meta.gate_params.G0.khai_niem_tim_kiem"
+        except Exception:  # noqa: BLE001 — không dựng được ⇒ không so (không tra lại vô cớ)
+            q = None
     da_dung = str(cp.get("base_query") or "").strip()
     if q and da_dung and _chuan_chuoi(q) != _chuan_chuoi(da_dung):
         ly_do.append(f"{noi} («{q[:70]}») khác truy vấn G0 đã tra («{da_dung[:70]}»)")

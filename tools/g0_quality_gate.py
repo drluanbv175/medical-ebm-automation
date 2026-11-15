@@ -502,8 +502,11 @@ def _tieu_chi_phu_pico(checkpoint: Mapping[str, Any], meta: Mapping[str, Any],
     rc = registry_check if isinstance(registry_check, Mapping) else checkpoint.get("registry_check")
     if isinstance(rc, Mapping) and rc.get("query"):
         truy_van["ClinicalTrials.gov"] = str(rc.get("query"))
-    pi_viet = bool(str(meta.get("query_en") or "").strip())
     khai = g0.get("khai_niem_tim_kiem") if isinstance(g0.get("khai_niem_tim_kiem"), Mapping) else {}
+    # K4 (15/11/2026): truy vấn run_g0_auto dựng từ khái niệm PI khai (khung_de_tai.truy_van_tu_khai_niem) cũng là truy
+    # vấn của PI — khái niệm PI không khai là lựa chọn của PI (vd đề tài mô tả không có can thiệp), không phải máy dịch.
+    pi_viet = bool(str(meta.get("query_en") or "").strip()) or any(
+        str(x).strip() for v in khai.values() for x in (v if isinstance(v, (list, tuple)) else [v]))
     thanh_phan = {"P": g0.get("population"), "I": g0.get("intervention"), "O": g0.get("primary_outcome")}
     thieu: List[str] = []
     khong_kiem: List[str] = []
