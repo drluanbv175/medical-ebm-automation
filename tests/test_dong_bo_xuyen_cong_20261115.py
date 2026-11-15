@@ -439,3 +439,39 @@ def test_g0_auto_08_khai_niem_ngoai_tu_dien():
     assert may["status"] == "REVIEW" and "MÁY tự dịch" in may["evidence"]
     pi = _g0("Người bệnh khoa khám bệnh", "Mức hài lòng", "satisf*", query_en="satisf*")
     assert pi["status"] == "PASS" and "PI tự viết" in pi["evidence"]
+
+
+# ───────────────────────────── G6 lấy vai trò biến từ ma trận/SAP ─────────────────────────────
+import run_g6_auto as RG6  # noqa: E402
+
+
+def _ten_goc(bien):
+    return {b[0].lower(): b[0] for b in bien}
+
+
+def test_g6_vai_tro_theo_ma_tran_thay_bien_do(tmp_path):
+    """Đo được: dò từ khoá chọn `primary_outcome`/`exposure` (không tồn tại), hiệp biến chỉ tuổi/giới."""
+    d = _de_tai(tmp_path)
+    _ghi_bo_bien(d)
+    _ghi_ma_tran(d)
+    v = {"outcome": "primary_outcome", "exposure": "exposure", "covariates": ["tuoi"], "detection_log": []}
+    assert RG6.ap_vai_tro_ma_tran(v, d, STUDY, _ten_goc(BIEN_DUNG)) is None
+    assert v["outcome"] == "tuan_thu"
+    assert v["exposure"] == "tuoi" and "so_lan_ngay" in v["covariates"] and "ho_tro_gd" in v["covariates"]
+
+
+def test_g6_khong_ma_tran_khong_doan_thi_dung(tmp_path):
+    d = _de_tai(tmp_path)
+    _ghi_bo_bien(d)
+    v = {"outcome": "primary_outcome", "exposure": "exposure", "covariates": [], "detection_log": []}
+    ly_do = RG6.ap_vai_tro_ma_tran(v, d, STUDY, _ten_goc(BIEN_DUNG))
+    assert ly_do and "không đoán" in ly_do and "primary_outcome" in ly_do
+
+
+def test_g6_sap_da_khoa_thang_ma_tran_khi_lech(tmp_path):
+    d = _de_tai(tmp_path)
+    _ghi_bo_bien(d)
+    _ghi_ma_tran(d)
+    v = {"outcome": "tt1", "exposure": "tuoi", "covariates": [], "detection_log": ["✅ Kết cục chính THEO SAP §2: tt1"]}
+    assert RG6.ap_vai_tro_ma_tran(v, d, STUDY, _ten_goc(BIEN_DUNG)) is None
+    assert v["outcome"] == "tt1" and any("LỆCH ma trận" in x for x in v["detection_log"])
