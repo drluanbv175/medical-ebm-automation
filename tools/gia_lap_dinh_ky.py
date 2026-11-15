@@ -110,7 +110,15 @@ CONG_MEM = ("G0", "G1", "G3")  # cổng PI xác nhận bằng dấu vân tay (kh
 CONG_CUNG_TRUOC_G5 = ("G2", "G4")  # cổng cứng chuỗi đi qua trước G5 — chưa ký thì KHÔNG được «đạt»
 TRANG_THAI_DUNG_PIPELINE = ("blocked_missing_input", "chan_song", "dung_lech_xuyen_cong", "dung_nen_bi_chan",
                             "failed")
-CAN_THIEP_DUNG_THIET_KE = ("dien_noi_dung", "xac_nhan_dau_van_tay")
+# 15/11/2026 (đồng bộ xuyên cổng, PR y khoa #268): G3-T2 — agent bien-so-nghien-cuu dựng `_bo-bien-rieng.csv` +
+# `_ma-tran-muc-tieu-bien.csv` (G3-AUTO-19) là việc ĐÚNG THIẾT KẾ của quy trình, không phải máy hỏng.
+CAN_THIEP_DUNG_THIET_KE = ("dien_noi_dung", "xac_nhan_dau_van_tay", "dung_bo_bien_ma_tran")
+COT_BO_BIEN = ("Variable / Field Name", "Form Name", "Section Header", "Field Type", "Field Label",
+               "Choices, Calculations, OR Slider Labels", "Field Note", "Text Validation Type OR Show Slider Number",
+               "Text Validation Min", "Text Validation Max", "Identifier?", "Branching Logic (Show field only if...)",
+               "Required Field?", "Custom Alignment", "Question Number (surveys only)", "Matrix Group Name",
+               "Matrix Ranking?", "Field Annotation")
+COT_MA_TRAN = ("muc_tieu", "khai_niem", "vai_tro", "bien", "kieu", "cau_hoi", "cong_cu", "phan_tich_sap", "ghi_chu")
 NHAN = "GIẢ LẬP CANARY — dữ liệu tổng hợp, không PII"
 _DAU_VAN_TAY_RE = re.compile(r'dau_van_tay_chot="([0-9a-f]{8,64})"')
 _TRACEBACK = "Traceback (most recent call last)"
@@ -150,6 +158,26 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                      'AND (adherence[tiab] OR "Medication Adherence"[MeSH] OR "blood pressure control"[tiab] OR '
                      '"blood pressure"[tiab])'),
         "cong_dung_mong_doi": "G5",
+        # G3-T2 (agent bien-so-nghien-cuu): (tên, loại, nhãn, lựa chọn, kiểm, min, max) + ma trận mục tiêu–biến
+        "bien_so": {
+            "bo_bien": [
+                ("record_id", "text", "Mã nghiên cứu", "", "", "", ""),
+                ("ngay_ngau_nhien", "text", "Ngày ngẫu nhiên hoá", "", "date_dmy", "", ""),
+                ("nhom", "radio", "Nhóm phân bổ", "1, Tin nhắn SMS | 0, Chăm sóc thường quy", "", "", ""),
+                ("tuoi", "text", "Tuổi (năm)", "", "integer", "18", "100"),
+                ("gioi", "radio", "Giới", "1, Nam | 2, Nữ", "", "", ""),
+                ("ha_tt_t6", "text", "Huyết áp tâm thu tháng 6 (mmHg)", "", "integer", "60", "260"),
+                ("kiem_soat_t6", "radio", "Kiểm soát huyết áp tháng 6 (<140/90)", "0, Không | 1, Có", "", "", ""),
+            ],
+            "ma_tran": [
+                ("1", "tỷ lệ kiểm soát huyết áp tại tháng 6", "ket_cuc_chinh", "kiem_soat_t6", "nhi_phan", "C1",
+                 "đo huyết áp chuẩn hoá", "SAP §4 kết cục chính"),
+                ("1", "nhóm nhận tin nhắn SMS", "phoi_nhiem", "nhom", "nhi_phan", "R1", "danh sách ngẫu nhiên",
+                 "SAP §4 nhóm so sánh"),
+                ("1", "tuổi", "hiep_bien", "tuoi", "lien_tuc", "A1", "phiếu", "SAP §5 hiệp biến"),
+                ("1", "giới", "hiep_bien", "gioi", "nhi_phan", "A2", "phiếu", "SAP §5 hiệp biến"),
+            ],
+        },
         "pi": {
             "G0": {
                 "population": _vi("Người trưởng thành ≥18 tuổi tăng huyết áp đang dùng thuốc hạ áp, quản lý ngoại trú, "
@@ -263,6 +291,25 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                      'hypertension"[tiab] OR "hypertension control"[tiab]) AND (outpatient*[tiab] OR "primary '
                      'care"[tiab]) AND (prevalence[tiab] OR "cross-sectional"[tiab])'),
         "cong_dung_mong_doi": "G5",
+        "bien_so": {
+            "bo_bien": [
+                ("record_id", "text", "Mã nghiên cứu", "", "", "", ""),
+                ("ngay_kham", "text", "Ngày khám khảo sát", "", "date_dmy", "", ""),
+                ("tuoi", "text", "Tuổi (năm)", "", "integer", "18", "110"),
+                ("gioi", "radio", "Giới", "1, Nam | 2, Nữ", "", "", ""),
+                ("so_thuoc", "text", "Số thuốc hạ áp đang dùng", "", "integer", "0", "10"),
+                ("ha_tt_tb", "text", "Huyết áp tâm thu trung bình 2 lần đo (mmHg)", "", "integer", "60", "260"),
+                ("kiem_soat_ha", "radio", "Đạt kiểm soát huyết áp (<140/90)", "0, Không | 1, Có", "", "", ""),
+                ("thuoc_khac", "text", "Thuốc khác đang dùng, ghi rõ", "", "", "", ""),
+            ],
+            "ma_tran": [
+                ("1", "tỷ lệ kiểm soát huyết áp", "ket_cuc_chinh", "kiem_soat_ha", "nhi_phan", "C1",
+                 "đo huyết áp chuẩn hoá", "SAP §4 tỷ lệ + KTC 95%"),
+                ("1", "tuổi", "mo_ta", "tuoi", "lien_tuc", "A1", "phiếu", "SAP §3 mô tả"),
+                ("1", "giới", "mo_ta", "gioi", "nhi_phan", "A2", "phiếu", "SAP §3 mô tả"),
+                ("1", "số thuốc hạ áp", "mo_ta", "so_thuoc", "dem", "B1", "hồ sơ", "SAP §3 mô tả"),
+            ],
+        },
         "pi": {
             "G0": {
                 "population": _vi("Người trưởng thành ≥18 tuổi tăng huyết áp đang điều trị ngoại trú"),
@@ -657,6 +704,12 @@ class GiaLap:
         for gate in CONG_MEM:
             if gate not in self.kb["pi"]:
                 continue
+            if gate == "G3" and self.kb.get("bien_so") and self._cp("G3") and not (
+                    (self.out / "_bo-bien-rieng.csv").exists() and (self.out / "_ma-tran-muc-tieu-bien.csv").exists()):
+                self._dung_bo_bien_ma_tran()
+                self._ghi_can_thiep("G3", "dung_bo_bien_ma_tran", "G3-T2: agent bien-so-nghien-cuu dựng bộ biến + ma "
+                                    "trận mục tiêu–biến (G3-AUTO-19)")
+                return "G3"
             bao = self.cham(gate, self.study, self.out, self.repo)
             muc = _muc(bao.get("status"))
             if gate == "G1" and self.thiet_ke_may_suy is None and self._cp("G1"):
@@ -692,6 +745,25 @@ class GiaLap:
             self.ket = f"{gate}:{','.join(self._chua_dat(bao)) or bao.get('status')}"
             return None
         return None
+
+    def _dung_bo_bien_ma_tran(self) -> None:
+        """Ghi `_bo-bien-rieng.csv` (REDCap 18 cột) + `_ma-tran-muc-tieu-bien.csv` của kịch bản vào đề tài TẠM."""
+        import csv  # noqa: PLC0415
+
+        bs = self.kb["bien_so"]
+        with (self.out / "_bo-bien-rieng.csv").open("w", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(f, fieldnames=list(COT_BO_BIEN), lineterminator="\n")
+            w.writeheader()
+            for ten, loai, nhan, lua, kt, lo, hi in bs["bo_bien"]:
+                w.writerow({"Variable / Field Name": ten, "Form Name": "phieu", "Field Type": loai, "Field Label": nhan,
+                            "Choices, Calculations, OR Slider Labels": lua,
+                            "Text Validation Type OR Show Slider Number": kt, "Text Validation Min": lo,
+                            "Text Validation Max": hi, "Required Field?": "y"})
+        with (self.out / "_ma-tran-muc-tieu-bien.csv").open("w", encoding="utf-8", newline="") as f:
+            w = csv.writer(f, lineterminator="\n")
+            w.writerow(list(COT_MA_TRAN))
+            for r in bs["ma_tran"]:
+                w.writerow([*r, NHAN])
 
     @staticmethod
     def _chua_dat(bao: Dict[str, Any]) -> List[str]:

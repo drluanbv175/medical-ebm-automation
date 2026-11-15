@@ -1443,3 +1443,17 @@ def test_bien_ngay_that_spss_va_r_khu_hoi_va_du_11_thuoc_tinh(tmp_path, monkeypa
     assert man_r["ba_chieu"]["sav_rds"] == "KHOP"
     kh = {b["ten"]: b for b in man_r["ke_hoach"]}
     assert kh["ngay_pv"]["ngay"] and kh["ngay_pv"]["dinh_dang"] == "EDATE10"
+
+
+def test_g0_auto_08_khong_bao_thieu_oan_khi_khai_niem_chinh_la_chu_viet_tat():
+    """Giả lập canary 15/11/2026 (RCT SMS): can thiệp «Tin nhắn SMS tự động nhắc uống thuốc hạ áp…» — truy vấn PI có
+    SMS[tiab] phải được nhận là phủ I (bản trước chỉ rút được «antihypertensive agents» ⇒ REVIEW oan)."""
+    import g0_quality_gate as G0Q  # noqa: PLC0415
+    import run_g0_auto as RG0  # noqa: PLC0415
+
+    tn = G0Q._thuat_ngu_phu("Tin nhắn SMS tự động nhắc uống thuốc hạ áp hằng ngày", dict(RG0.VI_EN_TERMS))
+    assert "SMS" in tn and "text messaging" in tn
+    q = '("text messaging"[tiab] OR SMS[tiab]) AND hypertension[MeSH] AND adherence[tiab]'
+    assert any(G0Q._co_trong_truy_van(t, q) for t in tn)
+    assert G0Q._thuat_ngu_phu("đo HbA1c và BMI", {}) == ["HbA1c", "BMI"]
+    assert G0Q._thuat_ngu_phu("người bệnh tăng huyết áp", {}) == []  # chữ thường không phải viết tắt

@@ -458,6 +458,12 @@ def _thuat_ngu_phu(van: str, tu_dien: Mapping[str, str]) -> List[str]:
     for vi, en in tu_dien.items():
         if vi and en and vi in t and en not in ra and en.lower() not in _THUAT_NGU_CHUNG:
             ra.append(en)
+    # Chữ viết tắt Latinh có sẵn trong mô tả tiếng Việt (SMS, HbA1c, BMI, COPD…) cũng là thuật ngữ tìm kiếm hợp lệ —
+    # giả lập canary 15/11/2026: can thiệp «Tin nhắn SMS nhắc uống thuốc hạ áp» chỉ rút được từ PHỤ «thuốc hạ áp»
+    # (khái niệm chính ngoài từ điển) ⇒ báo thiếu oan dù truy vấn PI có SMS[tiab].
+    for w in re.findall(r"\b[A-Za-z0-9]{2,}\b", str(van or "")):
+        if sum(1 for ch in w if ch.isupper()) >= 2 and w not in ra:
+            ra.append(w)
     return ra
 
 
