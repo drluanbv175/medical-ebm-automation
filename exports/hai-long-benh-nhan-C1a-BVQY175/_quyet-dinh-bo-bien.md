@@ -40,6 +40,22 @@ Mỗi lựa chọn dựa trên nguồn đã có trong đề cương nộp; khôn
 | Nhãn trường Phần 1 | Thêm «Câu N.» theo số câu ở Bảng E.1 | Nhập kép đối chiếu phiếu giấy; bộ dò vai trò biến của G6 cho kết quả GIỐNG HỆT trước/sau (đã đo) |
 | Con trỏ phụ lục | «Phụ lục A/C.5/C.6.2/C.4» của đề cương v1.0 ⇒ Bảng E.1, Phụ lục C/D, mục 4.5.1, 4.6.1 của đề cương nộp | Đối chiếu từng con trỏ |
 
+### 1c. Chủ nhiệm quyết 15/11/2026 (đồng bộ biến với Bảng 5.1 — MT1)
+
+Câu hỏi trình chủ nhiệm: Bảng 5.1 đề cương dùng nhóm tuổi 4 mức (< 30; 30–44; 45–59; ≥ 60) và học vấn 6 nhóm (gộp «mù
+chữ» với «tiểu học»), bản máy chưa có biến; có thêm 2 biến phái sinh chép đúng định nghĩa Bảng 5.1 không. Lựa chọn của
+chủ nhiệm (nguyên văn): **«Chỉ nhóm tuổi 4 mức»**.
+
+| Trường | Đã chọn | Căn cứ |
+|---|---|---|
+| `NhomTuoi_MoTa` | Thêm: 1 = dưới 30 · 2 = 30–44 · 3 = 45–59 · 4 = từ 60 trở lên, tính từ `Tuoi` | Bảng 5.1 đề cương; SAP §11 Bảng 1 «bản đầy đủ là Bảng 5.1 đề cương» (MT1) |
+| Học vấn ở Bảng 5.1 | KHÔNG thêm biến gộp; trình bày đủ 7 mức như phiếu (`TrinhDoHocVan`) | Chủ nhiệm chọn. Khi viết kết quả, dòng học vấn của Bảng 5.1 sẽ có 7 mức thay vì 6 nhóm như khung đề cương — ghi chú dưới bảng |
+| `NhomTuoi` (3 mức, 1b) | Giữ nguyên, chỉ dùng so sánh người từ chối với người tham gia (Bảng 5.6) | Không đổi |
+| Mô hình MT2 | Giữ `Tuoi` liên tục (SAP §5 đã ký) | Không đổi |
+
+Không sửa đề cương nộp, SAP hay gói G10 đã ký. Công thức `NhomTuoi_MoTa` vào `_bien-phai-sinh.csv` ở trạng thái CHƯA DUYỆT
+— thống kê viên/PI ghi `nguoi_duyet` như mọi biến phái sinh khác.
+
 ## 2. Còn chờ (phải xong TRƯỚC khi G5 nạp dữ liệu)
 
 | Việc | Ai | Ghi chú |

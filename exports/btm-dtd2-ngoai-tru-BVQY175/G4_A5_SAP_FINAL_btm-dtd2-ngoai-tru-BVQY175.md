@@ -27,6 +27,7 @@
 | Phiên bản | Ngày | Người soạn | Thay đổi chính |
 |---|---|---|---|
 | 1.0 | 2026-10-28 | Máy soạn từ G1, G3 và codebook đã chốt; chờ chủ nhiệm và thống kê viên rà | Bản đầu tiên, viết riêng cho đề tài (thay khuôn mẫu chung của run_g4_auto) |
+| 1.0 (sửa nháp) | 2026-11-15 | Máy (chưa ký) | Gắn nhãn truy nguyên mục tiêu G1 cho từng kết cục và bảng (MT1: kết cục chính, phụ 1, phụ 2 · MT2: phụ 3 · MT3: phụ 4); §5 ghi mức tham chiếu HbA1c < 7% theo lựa chọn của chủ nhiệm (G3_BO_BIEN_SO_QUYET_DINH_20261115.md). Không đổi kết cục, mô hình hay tập biến. |
 
 ---
 
@@ -48,11 +49,12 @@
 
 ### §2 KẾT CỤC
 
-- **Kết cục chính:** Được xét nghiệm đủ UACR và creatinin huyết thanh trong cửa sổ 12 tháng (biến XN_DU) — biến `xn_du` = 1 khi trong 01/01–31/12/2026 có ít nhất một kết quả UACR dạng tỷ số VÀ ít nhất một kết quả creatinin huyết thanh trong eHospital; = 0 khi thiếu một hoặc cả hai. Không thể thiếu dữ liệu (không có kết quả ⇒ 0).  
+- **Truy nguyên mục tiêu (G1):** MT1 = kết cục chính + kết cục phụ 1 + kết cục phụ 2 · MT2 = kết cục phụ 3 · MT3 = kết cục phụ 4. Mỗi kết cục dưới đây ghi rõ mục tiêu nó trả lời.  
+- **Kết cục chính (MT1):** Được xét nghiệm đủ UACR và creatinin huyết thanh trong cửa sổ 12 tháng (biến XN_DU) — biến `xn_du` = 1 khi trong 01/01–31/12/2026 có ít nhất một kết quả UACR dạng tỷ số VÀ ít nhất một kết quả creatinin huyết thanh trong eHospital; = 0 khi thiếu một hoặc cả hai. Không thể thiếu dữ liệu (không có kết quả ⇒ 0).  
 - **Đơn vị / ngưỡng:** tỷ lệ phần trăm (%) kèm KTC 95%; UACR ngưỡng 30 mg/g (3 mg/mmol); eGFR (CKD-EPI 2021 không hệ số chủng tộc, PMID 34554658) ngưỡng 60 mL/phút/1,73 m².  
-- **Kết cục phụ 1:** phân loại BTM theo KDIGO 2024 (PMID 38490803) — `phan_loai_btm`: BTM xác nhận (eGFR < 60 hoặc UACR ≥ 30 mg/g ở 2 lần đo cách nhau từ 90 ngày), nghi BTM (chỉ một lần bất thường), không BTM; phân bố nhóm G (G1–G5, theo eGFR gần nhất) × nhóm A (A1–A3, theo UACR gần nhất).  
-- **Kết cục phụ 2:** BTM chưa được ghi nhận — `btm_chua_ghi_nhan`: BTM xác nhận nhưng không có mã N18, E11.2, N08.3 ở bất kỳ lượt khám nào trong cửa sổ.  
-- **Kết cục phụ 3:** điều trị bảo vệ thận ở người đủ chỉ định theo KDIGO 2022 (PMID 36272764) — (a) `dung_raasi` ở người có tăng huyết áp và albumin niệu đã xác nhận; (b) `dung_sglt2i` ở người có BTM xác nhận và eGFR gần nhất từ 20. «Đang dùng» là có đơn tại lượt khám cuối năm 2026.  
+- **Kết cục phụ 1 (MT1):** phân loại BTM theo KDIGO 2024 (PMID 38490803) — `phan_loai_btm`: BTM xác nhận (eGFR < 60 hoặc UACR ≥ 30 mg/g ở 2 lần đo cách nhau từ 90 ngày), nghi BTM (chỉ một lần bất thường), không BTM; phân bố nhóm G (G1–G5, theo eGFR gần nhất) × nhóm A (A1–A3, theo UACR gần nhất).  
+- **Kết cục phụ 2 (MT1):** BTM chưa được ghi nhận — `btm_chua_ghi_nhan`: BTM xác nhận nhưng không có mã N18, E11.2, N08.3 ở bất kỳ lượt khám nào trong cửa sổ.  
+- **Kết cục phụ 3 (MT2):** điều trị bảo vệ thận ở người đủ chỉ định theo KDIGO 2022 (PMID 36272764) — (a) `dung_raasi` ở người có tăng huyết áp và albumin niệu đã xác nhận; (b) `dung_sglt2i` ở người có BTM xác nhận và eGFR gần nhất từ 20. «Đang dùng» là có đơn tại lượt khám cuối năm 2026.  
 - **Kết cục phụ 4 (MT3):** yếu tố liên quan với việc KHÔNG được xét nghiệm đủ — biến phụ thuộc `khong_xn_du` = 1 − `xn_du`.  
 - **Kết cục an toàn:** không áp dụng (không can thiệp, không tiếp xúc người bệnh).  
 
@@ -64,18 +66,18 @@
 - Báo cáo số và tỷ lệ thiếu dữ liệu của từng biến (Bảng 1).  
 - Mô tả thời gian quan sát: phân bố số tháng từ lượt khám đầu đến 31/12/2026 (`thang_quan_sat`).  
 
-### §4 PHÂN TÍCH CHÍNH
+### §4 PHÂN TÍCH CHÍNH (MT1 kết cục chính; kết cục phụ 1–2 cho MT1, phụ 3 cho MT2)
 
 - **Phương pháp:** ước lượng tỷ lệ `xn_du` trên toàn bộ N kèm KTC 95% Wilson; không kiểm định giả thuyết (thiết kế theo độ chính xác, G3). Không áp hiệu chỉnh quần thể hữu hạn ở phân tích chính, cho thống nhất với G3; nếu biết kích thước khung mẫu thì báo thêm KTC có hiệu chỉnh quần thể hữu hạn như một thông tin phụ.  
 - **Quần thể:** toàn bộ hồ sơ đủ tiêu chuẩn (§1).  
 - **Trình bày:** tỷ lệ (%) + KTC 95%; kèm hai thành phần: tỷ lệ có ít nhất một creatinin và tỷ lệ có ít nhất một UACR dạng tỷ số. Không báo p-value đơn độc.  
-- **Kết cục phụ 1–3:** tỷ lệ + KTC 95% Wilson trên đúng quần thể con ở §1; bảng chéo G × A theo KDIGO 2024.  
+- **Kết cục phụ 1–3 (phụ 1–2: MT1; phụ 3: MT2):** tỷ lệ + KTC 95% Wilson trên đúng quần thể con ở §1; bảng chéo G × A theo KDIGO 2024.  
 
 ### §5 PHÂN TÍCH ĐA BIẾN
 
 - **Mục tiêu:** MT3 — phân tích THĂM DÒ, không kiểm định giả thuyết định trước, không suy nhân quả (G1).  
 - **Mô hình:** hồi quy Poisson liên kết log với phương sai vững (sandwich) để ước lượng trực tiếp tỷ số tỷ lệ hiện mắc (PR) của `khong_xn_du` (Zou 2004, PMID 15033648; Barros và Hirakata 2003, PMID 14567763). Báo PR thô (từng biến) và PR hiệu chỉnh (mô hình đầy đủ), kèm KTC 95%. Không dùng hồi quy logistic vì kết cục phổ biến, OR sẽ phóng đại PR.  
-- **Biến độc lập đưa vào:** 12 biến giải thích đã chốt ở G0 — tuổi (mỗi 10 năm), giới, nhóm đối tượng (quân nhân / BHYT / dịch vụ / khác), thời gian mắc ĐTĐ (mỗi 5 năm), HbA1c dạng 3 mức (không làm HbA1c năm 2026 / < 7% / ≥ 7%), đang dùng insulin, số nhóm thuốc hạ glucose, tăng huyết áp, BMI (mỗi 5 kg/m²), bệnh tim mạch do xơ vữa hoặc suy tim (`tim_mach`), số lượt khám năm 2026, phòng khám theo dõi chính (nội tiết / nội chung / khác).  
+- **Biến độc lập đưa vào:** 12 biến giải thích đã chốt ở G0 — tuổi (mỗi 10 năm), giới, nhóm đối tượng (quân nhân / BHYT / dịch vụ / khác), thời gian mắc ĐTĐ (mỗi 5 năm), HbA1c dạng 3 mức (< 7% — mức tham chiếu / ≥ 7% / không làm HbA1c năm 2026; biến `hba1c_3muc`, chủ nhiệm chọn tham chiếu 15/11/2026), đang dùng insulin, số nhóm thuốc hạ glucose, tăng huyết áp, BMI (mỗi 5 kg/m²), bệnh tim mạch do xơ vữa hoặc suy tim (`tim_mach`), số lượt khám năm 2026, phòng khám theo dõi chính (nội tiết / nội chung / khác).  
 - **Lý do mã hoá HbA1c 3 mức:** người không làm HbA1c thiếu giá trị vì không được xét nghiệm (thiếu có cấu trúc, liên quan trực tiếp tới kết cục), nên không thay bằng giá trị gán; mức «không làm» giữ thông tin đó.  
 - **Phương pháp chọn biến:** đưa vào toàn bộ, không stepwise, không chọn theo p-value.  
 - **Số tham số và EPV:** mô hình đầy đủ có 16 tham số (biến phân loại k mức tính k−1). Nhóm kết cục ít hơn của `xn_du` chia cho số tham số cho số biến cố trên mỗi tham số (EPV); ngưỡng sơ bộ EPV ≥ 10 (Ogundimu 2016, PMID 26964707: EPV nên dựa vào dữ liệu, không phải quy tắc cứng). Nếu EPV < 10, giảm tham số theo thứ tự định trước, dừng ngay khi EPV ≥ 10: (1) gộp nhóm đối tượng thành 2 mức (quân nhân / khác); (2) gộp phòng khám thành 2 mức (nội tiết / khác); (3) bỏ số nhóm thuốc hạ glucose (giữ insulin). Báo cáo rõ mô hình nào được dùng và vì sao.  
@@ -143,7 +145,7 @@ Mỗi phân tích độ nhạy được định trước; không thay kết qu�
 | Số lượt khám năm 2026; phòng khám theo dõi chính | | |
 | Số tháng quan sát | | |
 
-**Bảng 2, Kết cục chính (ước lượng theo độ chính xác):**
+**Bảng 2, Kết cục chính — MT1 (ước lượng theo độ chính xác):**
 | Kết cục | n/N | Tỷ lệ (%) | KTC 95% (Wilson) |
 |---|---|---|---|
 | Có ít nhất một creatinin huyết thanh | | | |
@@ -151,11 +153,11 @@ Mỗi phân tích độ nhạy được định trước; không thay kết qu�
 | Được xét nghiệm đủ UACR và creatinin (`xn_du`) | | | |
 | Theo phòng khám / nhóm đối tượng / nhóm tuổi (§7) | | | |
 
-**Bảng 3, Phân loại BTM theo KDIGO 2024 (người đủ xét nghiệm để phân loại):** BTM xác nhận / nghi BTM / không BTM, n (%) + KTC 95%; bảng chéo G1–G5 × A1–A3.
+**Bảng 3, Phân loại BTM theo KDIGO 2024 — MT1 (người đủ xét nghiệm để phân loại):** BTM xác nhận / nghi BTM / không BTM, n (%) + KTC 95%; bảng chéo G1–G5 × A1–A3.
 
-**Bảng 4, BTM chưa được ghi nhận:** n/N (%) + KTC 95% trên người có BTM xác nhận; cột độ nhạy với danh mục mã mở rộng.
+**Bảng 4, BTM chưa được ghi nhận — MT1:** n/N (%) + KTC 95% trên người có BTM xác nhận; cột độ nhạy với danh mục mã mở rộng.
 
-**Bảng 5, Điều trị bảo vệ thận ở người đủ chỉ định (KDIGO 2022):**
+**Bảng 5, Điều trị bảo vệ thận ở người đủ chỉ định (KDIGO 2022) — MT2:**
 | Chỉ định | N đủ chỉ định | Loại vì chống chỉ định ghi trong hồ sơ | Đang dùng: n (%) | KTC 95% |
 |---|---|---|---|---|
 | ACEi/ARB (tăng huyết áp + albumin niệu xác nhận) | | | | |
