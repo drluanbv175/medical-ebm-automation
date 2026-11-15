@@ -128,6 +128,8 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - Kết cục chính khác diễn đạt giữa các cổng ⇒ CHỦ NHIỆM ghi `gate_params.G10.xac_nhan_ket_cuc_chinh`.
 - Kết cục chính ĐÃ ĐỔI THẬT (06/10/2026, G10-07) ⇒ CHỦ NHIỆM khai `gate_params.G10.sua_doi_ket_cuc_chinh` (danh sách theo thời gian; mỗi lần: `ket_cuc_cu` · `ket_cuc_moi` · `ly_do` ≥ 30 ký tự · `ma_sua_doi` · `ngay_sua_doi` · `irb_chap_thuan` · `dang_ky_cap_nhat` · `ngay_cap_nhat_dang_ky` · `reviewed_by_role`=PI · `reviewed_at`; lần cuối gắn `dau_van_tay` do CLI `nhat_quan_xuyen_cong.py` in; tới bản thảo thêm `cong_bo_trong_ban_thao`). Hợp lệ khi chuỗi nối tiếp, SAP §2 và khai báo G8 là kết cục mới (G0/G1/bản nháp đăng ký giữ kết cục cũ — không sửa ngược hồ sơ cổng), sửa TRƯỚC ngày khoá dữ liệu, bản thảo có câu báo cáo thay đổi (CONSORT 2025 mục 10, PMID 40228477; SPIRIT 2025 mục 31) ⇒ G10-AUTO-11 «cần xem», không chặn; đề cương G10 in bảng «Sửa đổi kết cục chính». Agent KHÔNG khai thay chủ nhiệm.
 
+- **Đồng bộ đề cương nộp (15/11/2026):** trục `de_cuong_nop` (bìa ghi phiên bản = protocol_version G1/G2 · phiên bản SAP được trích = tiêu đề SAP · phiếu đồng ý = icf_version · thời gian = study_period · kinh phí = G1 budget) phải `khop`, hoặc nêu đúng vai (SAP sửa đổi chưa ký ⇒ thống kê viên ký rồi agent sửa đề cương) trước khi lắp/khoá gói G10 — chi tiết `viet-ban-thao` mục cùng ngày. `kiem_de_cuong_nop_hoi_dong` (K1–K7) chỉ kiểm hình thức.
+
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G10` xác nhận/dấu vân tay · bật cờ đời thực trong
 `study_meta` · chấm đầu ra do chính mình làm · ghi biên bản «ĐỒNG THUẬN» như «ĐẠT CỔNG» · bịa căn cứ · báo «phần agent hoàn chỉnh» khi `trach-nhiem` chưa ra mã 0 · sửa artifact của cổng khác để «xanh» tiêu chí
