@@ -264,6 +264,7 @@ Lưu ý: CLI thật của `run_g5_auto.py` **CHỈ nhận `--study STUDY`**, kh�
 - Thiếu bộ biến riêng ⇒ G5 DỪNG (không còn rơi về bộ mẫu chung). `_GOI_Y_bo-bien-tu-bo-mau.csv` chỉ là GỢI Ý NHÁP — không chép thành bộ biến khi chưa đối chiếu từng mục tiêu.
 - `bhyt`/`co_bhyt` (có BHYT, loại thẻ) là biến tình trạng hợp lệ; SỐ/MÃ thẻ BHYT là định danh — không thu.
 - Mỗi biến mang ĐỦ thuộc tính và đi NGUYÊN VẸN tới SPSS/R (E5): `kieu` của ma trận ⇒ mức đo .sav / `measure` .rds (nhi_phan·danh_dinh→NOMINAL, thu_tu→ORDINAL, lien_tuc·dem·ngay→SCALE — biến thứ bậc PHẢI khai `thu_tu`, máy không đoán được từ nhãn); `vai_tro`·`muc_tieu`·`cau_hoi` ⇒ VARIABLE ATTRIBUTE + VARIABLE ROLE (.sav), attr role·objective·item (.rds); `Text Validation Min/Max` ⇒ khoảng hợp lệ (KhoangHopLe / valid_range). Khai min/max cho biến số, kiểm `integer` cho biến đếm.
+- Định nghĩa trường quyết định khai báo SPSS/R: văn bản tự do = text KHÔNG kiểm; số = integer / number_Ndp (ghi rõ số lẻ); danh mục mã nhất quán (toàn số hoặc toàn chữ — lẫn lộn thì máy không tự quyết kiểu); mã thiếu chuỗi ≤ 8 byte.
 
 ## Ranh giới
 KHÔNG dựng data dictionary kỹ thuật/CRF cuối/luật kiểm tra (→ `quan-ly-du-lieu`) · KHÔNG tính cỡ mẫu/khóa SAP (→ `thiet-ke-nghien-cuu`/`co-mau-nghien-cuu`) · KHÔNG chạy phân tích. Bạn là tầng **đặc tả biến số**, bản lề giữa câu hỏi và CRF/thống kê.

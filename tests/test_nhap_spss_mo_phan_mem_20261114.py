@@ -85,10 +85,11 @@ def test_cu_phap_mau_sav_du_bien_nhan_ma_thieu_va_dau_van_tay(de_tai, tmp_path):
     cot, mt = _cot(de_tai)
     sps = N.cu_phap_mau_sav(cot, mt, "abc123", tmp_path / "m.sav")
     assert "INPUT PROGRAM." in sps and "END FILE." in sps  # 0 phiếu
-    assert "STRING record_id (A50)" in sps and "(EDATE10)" in sps and "(A255)" in sps
+    # văn bản tự do: CÙNG độ rộng với .sav phân tích (cau_noi_spss.RONG_VAN_BAN_TU_DO)
+    assert "STRING record_id (A50)" in sps and "(EDATE10)" in sps and "(A500)" in sps
     assert "MISSING VALUES tuoi (-9991, -9992)." in sps  # BTR/KDD ⇒ số thay, khai thiếu
     assert "-9991 'BTR — Bỏ trống'" in sps and "1 'Nam'" in sps
-    assert "MISSING VALUES ghi_chu ('BTR', 'KDD')." in sps  # biến CHUỖI giữ mã chữ
+    assert "MISSING VALUES ghi_chu ('', 'BTR', 'KDD')." in sps  # biến CHUỖI: ô trống + mã chữ (như .sav phân tích)
     assert f"{N.TT_DAC_TA}('abc123')" in sps and '{"BTR": -9991, "KDD": -9992}' in sps
     assert N.ma_chu_so(mt) == {"BTR": -9991, "KDD": -9992}
 

@@ -1,4 +1,4 @@
-{"bien": ["ID", "Tuoi", "chi_so", "gioitinh", "hai_long", "hut_thuoc", "nghe", "ghi", "trieu_chung___1", "trieu_chung___2"], "kieu": [4, 0, 0, 0, 0, 0, 9, 39, 0, 0], "so_ca": 8, "ca": [
+{"bien": ["ID", "Tuoi", "chi_so", "gioitinh", "hai_long", "hut_thuoc", "nghe", "ghi", "trieu_chung___1", "trieu_chung___2"], "kieu": [4, 0, 0, 0, 0, 0, 9, 500, 0, 0], "so_ca": 8, "ca": [
 ["P001", 50.5, 0.4181721513707594, 1.0, 3.0, 0.0, "cong_chuc", "  Đau đầu nhẹ, buổi sáng", 1.0, 0.0],
 ["P002", 61.0, -906834.6387644876, 2.0, 9.0, -9991.0, "khac", "Nói \"không\" rõ", 0.0, 1.0],
 ["P003", null, 1000.0, 1.0, 1.0, 1.0, "nong_dan", "", 0.0, 0.0],
