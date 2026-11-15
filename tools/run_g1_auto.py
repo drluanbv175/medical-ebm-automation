@@ -589,6 +589,21 @@ def _raw_pinned_design(out_dir) -> str:
     return str(pin).strip() if pin else ""
 
 
+def _ghim_co_dau_nguoi(out_dir) -> bool:
+    """Giá trị thiết kế đang ghim trong study_meta.json có DẤU NGƯỜI không (skill_standards.ghim_thiet_ke).
+
+    15/11/2026 (thẩm định #277): `design_code` cấp cao đứng một mình — vd do run_g2_auto gieo ở đề tài cũ — KHÔNG phải
+    quyết định của PI. Không đọc được tệp ⇒ False (không gỡ cờ mơ hồ — chiều an toàn)."""
+    import json as _json
+    from pathlib import Path as _Path
+    p = _Path(out_dir) / "study_meta.json"
+    try:
+        meta = _json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
+    except (ValueError, OSError):
+        return False
+    return S.ghim_thiet_ke(meta if isinstance(meta, dict) else {})[1]
+
+
 def _ghi_chu_chuan_bao_cao(design: dict) -> str:
     """Dòng ghi chú dưới «Chuẩn báo cáo:» của A2: nguồn của chuẩn mở rộng + chuẩn CẦN PI QUYẾT (không gộp vào dòng
     khai báo — trục `chuan_bao_cao` chỉ đọc đúng dòng «Chuẩn báo cáo:»)."""
@@ -600,12 +615,19 @@ def _ghi_chu_chuan_bao_cao(design: dict) -> str:
     return ("\n".join(dong) + "\n") if dong else ""
 
 
-def _apply_design_pin(design: dict, pinned: str, meta: Optional[dict] = None) -> dict:
+def _apply_design_pin(design: dict, pinned: str, meta: Optional[dict] = None, *, co_dau_nguoi: bool = True) -> dict:
     """Ghi đè thiết kế bằng giá trị bác sĩ pin; giữ nguyên các trường khác.
 
     VÁ 04/10/2026 (soát từng cổng, G1-07): ghim SAU một lượt suy luận mơ hồ từng giữ nguyên cờ `ambiguous` và phần
     lý do suy luận cũ còn «[CẦN …]» ⇒ G1 không bao giờ PASS dù PI đã chốt. Ghim là quyết định TƯỜNG MINH: gỡ cờ mơ hồ,
-    lý do lấy từ gate_params.G1.design_rationale của PI (không có thì chỉ ghi câu «do BÁC SĨ pin»)."""
+    lý do lấy từ gate_params.G1.design_rationale của PI (không có thì chỉ ghi câu «do BÁC SĨ pin»).
+
+    15/11/2026 (bác sĩ chọn «ghim cần dấu người», thẩm định #277): `co_dau_nguoi=False` khi giá trị ghim KHÔNG có dấu
+    người (skill_standards.ghim_thiet_ke — vd `design_code` cấp cao do G2 gieo ở đề tài cũ). Khi đó vẫn dùng giá trị
+    làm thiết kế ĐANG DÙNG (không đổi thiết kế của đề tài nào) nhưng KHÔNG gỡ cờ mơ hồ: trùng thiết kế suy luận ⇒ giữ
+    cờ của suy luận; khác ⇒ bật cờ mơ hồ — PI xác nhận (gate_params.G1.design / design_confirmed) mới hết."""
+    if not co_dau_nguoi:
+        return _apply_ghim_chua_co_dau(design, pinned)
     d = dict(design)
     d["ambiguous"] = False
     # 14/11/2026: từ khoá bị bỏ qua là chuyện của SUY LUẬN — PI đã ghim thì không còn ý nghĩa, không in/ghi nữa.
@@ -653,6 +675,44 @@ def _apply_design_pin(design: dict, pinned: str, meta: Optional[dict] = None) ->
     d["rationale"] = ("Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định thật, ưu tiên hơn suy luận tự "
                       "động)." + (f" Lý do của PI: {str(ly_do_pi).strip()}" if ly_do_pi and str(ly_do_pi).strip()
                                    else ""))
+    return d
+
+
+#: Nội dung alternative_1/2 khi thiết kế lấy từ ô ghim CHƯA có dấu PI (khác thiết kế máy suy).
+_THAY_THE_GHIM_CHUA_DAU = ("[Thiết kế lấy từ study_meta.design_code, chưa có dấu PI — bảng thiết kế thay thế tự động "
+                           "không áp dụng]")
+
+
+def _apply_ghim_chua_co_dau(design: dict, pinned: str) -> dict:
+    """Dùng giá trị ghim CHƯA có dấu người làm thiết kế đang dùng, KHÔNG gỡ cờ mơ hồ (15/11/2026, thẩm định #277).
+
+    Trùng thiết kế suy luận ⇒ giữ nguyên mọi trường của suy luận (kể cả cờ mơ hồ, từ khoá bị bỏ qua) — đây đúng là ca
+    G2 từng gieo lại chính thiết kế G1 máy suy. Khác ⇒ đổi sang thiết kế ghim (để không đổi thiết kế của đề tài cũ),
+    bật cờ mơ hồ và ghi lý do «[CẦN PI XÁC NHẬN]» ⇒ G1-AUTO-04/04b còn REVIEW tới khi PI xác nhận."""
+    d = dict(design)
+    d["ghim_chua_co_dau_pi"] = pinned
+    suy = str(d.get("internal_code") or "")
+    if pinned == suy:
+        return d
+    d["ambiguous"] = True
+    d["internal_code"] = pinned
+    d["primary"] = _DESIGN_LABEL.get(pinned, f"Thiết kế: {pinned}")
+    try:
+        import sys as _sys
+        from pathlib import Path as _Path
+        _sys.path.insert(0, str(_Path(__file__).resolve().parent))
+        import skill_standards as _S
+        standards = _S.reporting_standards_for(pinned)
+        d["reporting_standard"] = standards["primary"]
+        d["protocol_standard"] = standards["protocol"]
+    except Exception:  # noqa: BLE001
+        pass
+    d["bias_controls"] = BIAS_CONTROLS.get(pinned, BIAS_CONTROLS["cohort"])
+    d["alternative_1"] = _THAY_THE_GHIM_CHUA_DAU
+    d["alternative_2"] = _THAY_THE_GHIM_CHUA_DAU
+    d["rationale"] = (f"[CẦN PI XÁC NHẬN] Thiết kế «{pinned}» lấy từ study_meta.design_code nhưng chưa có dấu PI "
+                      "(gate_params.G1.design, design_confirmed=true hoặc design_code_nguon=\"PI\"); máy suy "
+                      f"«{suy or '—'}».")
     return d
 
 
@@ -2477,6 +2537,9 @@ def write_g1_checkpoint(study_name: str, out_dir: Path, question_type: str,
             # 04/10/2026: pin thiết kế của bác sĩ bị từ chối (ngoài 8 mã) phải NẰM TRONG checkpoint — chấm lại G1 từ
             # checkpoint (chấm sống ở cổng sau) vẫn thấy và vẫn CHẶN (G1-AUTO-02c), không chỉ ở lượt chạy đầu.
             **({"pin_bi_tu_choi": design["pin_bi_tu_choi"]} if design.get("pin_bi_tu_choi") else {}),
+            # 15/11/2026 (thẩm định #277): thiết kế lấy từ ô ghim CHƯA có dấu PI — chấm lại từ checkpoint vẫn nói rõ vì
+            # sao cờ mơ hồ chưa gỡ (G1-AUTO-04).
+            **({"ghim_chua_co_dau_pi": design["ghim_chua_co_dau_pi"]} if design.get("ghim_chua_co_dau_pi") else {}),
             # 14/11/2026 (K1): từ khoá tên đề tài máy đã BỎ QUA vì trái loại câu hỏi PI chốt ở G0 (chỉ ghi khi có).
             **({"tu_khoa_bi_bo_qua": list(design["tu_khoa_bi_bo_qua"])} if design.get("tu_khoa_bi_bo_qua") else {}),
         },
@@ -2741,8 +2804,14 @@ def main():
     # THẬT của bác sĩ, hệ tôn trọng — không tự đổi.
     pinned = _read_pinned_design(out_dir)
     if pinned:
-        design = _apply_design_pin(design, pinned, meta)
-        print(f"  → 📌 Dùng THIẾT KẾ PIN từ study_meta.json: {pinned}")
+        # 15/11/2026 (thẩm định #277): chỉ ghim CÓ DẤU NGƯỜI mới gỡ cờ thiết kế mơ hồ (skill_standards.ghim_thiet_ke).
+        _ghim_co_dau = _ghim_co_dau_nguoi(out_dir)
+        design = _apply_design_pin(design, pinned, meta, co_dau_nguoi=_ghim_co_dau)
+        if _ghim_co_dau:
+            print(f"  → 📌 Dùng THIẾT KẾ PIN từ study_meta.json: {pinned}")
+        else:
+            print(f"  → ⚠️  study_meta.design_code=«{pinned}» CHƯA có dấu PI (gate_params.G1.design, "
+                  "design_confirmed=true hoặc design_code_nguon=\"PI\") — dùng làm thiết kế nhưng KHÔNG gỡ cờ mơ hồ.")
     else:
         raw_pin = _raw_pinned_design(out_dir)
         if raw_pin:

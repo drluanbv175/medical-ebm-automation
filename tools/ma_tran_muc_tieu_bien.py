@@ -394,6 +394,15 @@ def kiem(out_dir: Path, study: str, *, meta: Optional[Mapping[str, Any]] = None,
     # MT-05 — đúng một kết cục chính, kiểu khớp G1
     kc = [r for r in dong if r.get("vai_tro") == "ket_cuc_chinh"]
     thiet_ke = str(meta.get("design_code") or _gp(meta, "G1").get("design") or "").strip().lower()
+    if not thiet_ke:
+        # 15/11/2026 (thẩm định #277): run_g2_auto thôi gieo study_meta.design_code (ô ghim của PI) ⇒ đề tài chưa ghim
+        # đọc thiết kế G1 ĐANG DÙNG ở checkpoint — như trước kia đọc giá trị G2 gieo (cùng thiết kế G1 máy suy).
+        try:
+            _cp1 = json.loads((out_dir / "G1_checkpoint.json").read_text(encoding="utf-8"))
+            _tk1 = (_cp1.get("design") or {}).get("internal_code") if isinstance(_cp1, dict) else None
+            thiet_ke = str(_tk1 or "").strip().lower()
+        except (OSError, ValueError, AttributeError):
+            thiet_ke = ""
     khong_dinh_luong = thiet_ke in ("qualitative", "sr_ma")
     if len(kc) > 1 or (len(kc) == 0 and not khong_dinh_luong):
         vd.append(_van_de("MT-05", "loi", f"cần ĐÚNG một dòng vai_tro=ket_cuc_chinh (đang có {len(kc)})"))

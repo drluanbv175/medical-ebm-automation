@@ -2137,10 +2137,18 @@ def main():
     # ── Bước 2: Risk profile ──
     print("\n⚖️  Bước 2/7: Xác định mức nguy cơ và lộ trình IRB...")
     risk = get_risk_profile(design_code, design_primary)
+    # 15/11/2026 (bác sĩ chọn «G2 thôi gieo + ghim cần dấu người», thẩm định #277): KHÔNG gieo `design_code` nữa —
+    # đó là ô «bác sĩ ghim» của G1; thiết kế máy suy nằm ở đó làm G1 chạy lại tự gỡ cờ thiết kế mơ hồ mà không ai xác
+    # nhận. Bản sao của máy ghi vào khoá riêng `design_code_tu_g1` (chỉ để tra cứu, không ai coi là ghim; ghi đè mỗi
+    # lượt vì đây là khoá của máy, không phải quyết định của người).
     _study_meta_for_g2 = GC.ensure_study_meta(
         out_dir,
-        seed={"title": topic, "design_code": design_code},
+        seed={"title": topic},
     )
+    if design_code and _study_meta_for_g2.get("design_code_tu_g1") != design_code:
+        _study_meta_for_g2["design_code_tu_g1"] = design_code
+        (out_dir / "study_meta.json").write_text(
+            json.dumps(_study_meta_for_g2, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     risk = ap_quyet_dinh_dang_ky(risk, _study_meta_for_g2)
     risk = ap_loai_can_thiep(risk, design_code, _study_meta_for_g2, topic)
     print(f"  → Mức nguy cơ: {risk['risk_level']}")

@@ -88,6 +88,8 @@ def test_k1_ghim_cua_pi_van_thang_loai_cau_hoi_g0(tmp_path, monkeypatch):
                       g0_ghi_de={"topic": CHU_DE_KHONG_KHAI_RCT, "pubmed_results": _PM_GIA_LAP})
     meta = json.loads((d / "study_meta.json").read_text(encoding="utf-8"))
     meta["design_code"] = "rct"
+    # 15/11/2026 (ghim cần dấu người, thẩm định #277): design_code cấp cao chỉ là ghim CỦA PI khi có dấu người.
+    meta["design_code_nguon"] = "PI"
     (d / "study_meta.json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8", newline="\n")
     _, cp = _chay_main(tmp_path, monkeypatch)
     assert cp["design"]["internal_code"] == "rct" and not cp["design"].get("tu_khoa_bi_bo_qua")
@@ -191,7 +193,9 @@ def test_k1_02d_anh_chup_luot4_chua_ghim_la_block(tmp_path):
 
 def test_k1_02d_pi_da_ghim_thiet_ke_lech_thi_chi_review(tmp_path):
     """Quyết định tường minh của PI không bị hạ thành CHẶN (PI giải trình nếu cố ý)."""
-    meta = {"design_code": "cross_sectional", "gate_params": {"G0": {"question_type": "treatment"}}}
+    # 15/11/2026 (ghim cần dấu người, thẩm định #277): ghim của PI phải có dấu người (ở đây design_code_nguon="PI").
+    meta = {"design_code": "cross_sectional", "design_code_nguon": "PI",
+            "gate_params": {"G0": {"question_type": "treatment"}}}
     a2d = _row(_evaluate(_build_case(tmp_path, meta=meta, design_value=_thiet_ke_cat_ngang())), "G1-AUTO-02d")
     assert a2d["status"] == "REVIEW" and "PI đã ghim" in a2d["evidence"], a2d
 

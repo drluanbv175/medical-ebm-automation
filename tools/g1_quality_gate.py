@@ -1427,8 +1427,10 @@ def evaluate_g1_quality(
     # độ chính xác và SAP cắt ngang). Thiết kế đó là SUY LUẬN của máy, không phải quyết định của ai. PI đã ghim đúng
     # thiết kế đang dùng ⇒ vẫn REVIEW (quyết định tường minh, PI giải trình nếu cố ý). Không hạ cấp quyết định đã chốt:
     # G1-HUMAN-01 chỉ PASS khi pin khớp thiết kế, nên một G1 từng được xác nhận luôn rơi vào nhánh «đã ghim».
-    ghim_02d = _first_present(meta.get("design_code"), _g1_meta(meta).get("design"))
-    pi_da_ghim = _present(ghim_02d) and S.ma_thiet_ke_chuoi(str(ghim_02d)) == internal
+    # 15/11/2026 (bác sĩ chọn «ghim cần dấu người», thẩm định #277): chỉ ghim CÓ DẤU NGƯỜI mới là «PI đã ghim» —
+    # `design_code` cấp cao do run_g2_auto gieo (thiết kế máy suy) từng hạ BLOCK này xuống REVIEW không ai xác nhận.
+    ghim_02d, ghim_02d_co_dau = S.ghim_thiet_ke(meta)
+    pi_da_ghim = ghim_02d_co_dau and _present(ghim_02d) and S.ma_thiet_ke_chuoi(str(ghim_02d)) == internal
     if not hop_le:
         tk_status = "PASS"
         tk_evidence = "G0 chưa khai loại câu hỏi — không đối chiếu được (G1-AUTO-01 đã giữ G1 chờ G0 chốt)"
@@ -1504,12 +1506,18 @@ def evaluate_g1_quality(
     ))
 
     ambiguous = bool(design.get("ambiguous"))
+    # 15/11/2026 (thẩm định #277): thiết kế lấy từ ô ghim CHƯA có dấu PI (run_g1_auto._apply_ghim_chua_co_dau) — nói rõ
+    # để PI biết vì sao cờ mơ hồ chưa gỡ dù study_meta.design_code đã có giá trị.
+    ghim_chua_dau = str(design.get("ghim_chua_co_dau_pi") or "").strip()
     automatic.append(_criterion(
         "G1-AUTO-04",
         "Thiết kế không còn suy luận mơ hồ",
         "REVIEW" if ambiguous else "PASS",
-        "ambiguous=true" if ambiguous else "ambiguous=false",
-        "PI/methodologist phải pin thiết kế sau khi đọc lại khoảng trống.",
+        ("ambiguous=true" if ambiguous else "ambiguous=false")
+        + (f"; study_meta.design_code=«{ghim_chua_dau}» chưa có dấu PI" if ghim_chua_dau and ambiguous else ""),
+        "PI/methodologist phải pin thiết kế sau khi đọc lại khoảng trống"
+        + (" (ghi gate_params.G1.design, hoặc design_confirmed=true, hoặc design_code_nguon=\"PI\")."
+           if ghim_chua_dau and ambiguous else "."),
     ))
 
     # «[Đã pin bởi bác sĩ — …]» (run_g1_auto._apply_design_pin) là nội dung HỢP LỆ của alternative_1/2 —
