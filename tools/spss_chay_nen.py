@@ -63,6 +63,25 @@ def _thieu(mv):
     return ra
 
 
+def _vai_tro_thuoc_tinh(v):
+    """Vai trò (VARIABLE ROLE) + thuộc tính tuỳ biến (VARIABLE ATTRIBUTE) của một biến — E5 (15/11/2026).
+
+    API vắng/khác phiên bản ⇒ KHÔNG ghi khoá (Python coi là «chưa đo», không đoán là khớp)."""
+    ra = {}
+    try:
+        ra["vai_tro"] = str(v.role)
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        tt = v.attributes
+        tt = getattr(tt, "data", tt)
+        ra["thuoc_tinh"] = {str(k): ([str(x) for x in g] if isinstance(g, (list, tuple)) else str(g))
+                            for k, g in dict(tt).items()}
+    except Exception:  # noqa: BLE001
+        pass
+    return ra
+
+
 def _tu_dien(spss):
     """Từ điển biến của bộ dữ liệu đang mở (đọc trong một DataStep)."""
     bien = []
@@ -79,6 +98,7 @@ def _tu_dien(spss):
                     "dinh_dang": v.format,
                     "nhan_gia_tri": {str(k): val for k, val in v.valueLabels.data.items()},
                     "thieu": _thieu(v.missingValues),
+                    **_vai_tro_thuoc_tinh(v),
                 }
             )
     finally:

@@ -167,7 +167,8 @@ def test_quet_csv_do_rong_tinh_ca_khoang_trang_dau(tmp_path):
 def test_tu_dien_sav_that_khop_ke_hoach():
     _, ke = _ke()
     kq = C.kiem_tu_dien_sav(ke, _td())
-    assert kq == {"trang_thai": "KHOP", "so_lech": 0, "lech": []}
+    # chua_do (E5 15/11/2026): kế hoạch không mang vai trò/thuộc tính tuỳ biến ⇒ không có gì phải đo thêm
+    assert kq == {"trang_thai": "KHOP", "so_lech": 0, "lech": [], "chua_do": []}
 
 
 @pytest.mark.parametrize(

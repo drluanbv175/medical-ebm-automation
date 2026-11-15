@@ -46,6 +46,12 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
   trạng thái: `DRAFT_READY_NEEDS_HUMAN_REVIEW` → `PASS_G1_CONFIRMED`.
 - **Xác nhận người (cổng mềm):** PI/nhà phương pháp ghi quyết định vào `gate_params.G1` (đủ khoá theo thiết kế; RCT khai `annex2.applicable`; estimand 5 thuộc tính) và xác nhận gắn `dau_van_tay_chot`. Agent CHÉP dấu cho người xác nhận nhìn — KHÔNG tự ghi.
 
+## Đồng bộ xuyên cổng (15/11/2026 — bác sĩ duyệt)
+
+> Vì sao: giả lập trung thực (hệ TỰ sinh từ G0/G1, không viết sẵn bộ biến/SAP) cho thấy mục tiêu ↔ biến ↔ công cụ ↔ từ điển ↔ SAP ↔ SPSS/R không có phép kiểm máy; SPSS/R báo «✓ khớp» trên bộ biến SAI. Báo cáo: `audit/kiem-dong-bo-xuyen-cong-20261115.md` (repo gốc). Công cụ chung: `tools/ma_tran_muc_tieu_bien.py` (repo y khoa). «Khớp khứ hồi/khớp từ điển» KHÔNG chứng minh biến đúng mục tiêu.
+
+- A2 kế thừa PICO G0 đã chốt (có nhãn nguồn); giá trị kế thừa nằm trong dấu vân tay G1 — G0 đổi sau khi G1 chốt thì PI chốt lại G1. Đề tài đã tự ghi đủ ở G1: dấu không đổi. Tiêu chí chọn vào (`inclusion_criteria`) được so cùng quần thể ở `nhat_quan_xuyen_cong` (hai chiều).
+
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G1 (09/10/2026)
 Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối

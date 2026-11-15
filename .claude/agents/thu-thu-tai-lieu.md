@@ -89,6 +89,13 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 python tools/gen_research_docx.py --study "<TEN>" --artifact literature
 ```
 
+## Đồng bộ xuyên cổng (15/11/2026 — bác sĩ duyệt)
+
+> Vì sao: giả lập trung thực (hệ TỰ sinh từ G0/G1, không viết sẵn bộ biến/SAP) cho thấy mục tiêu ↔ biến ↔ công cụ ↔ từ điển ↔ SAP ↔ SPSS/R không có phép kiểm máy; SPSS/R báo «✓ khớp» trên bộ biến SAI. Báo cáo: `audit/kiem-dong-bo-xuyen-cong-20261115.md` (repo gốc). Công cụ chung: `tools/ma_tran_muc_tieu_bien.py` (repo y khoa). «Khớp khứ hồi/khớp từ điển» KHÔNG chứng minh biến đúng mục tiêu.
+
+- G0-AUTO-08: truy vấn PubMed VÀ ClinicalTrials.gov phải chứa khái niệm P · I/E · O đã chốt. Chủ đề tiếng Việt: viết `query_en` (MeSH + tiab) phủ đủ khái niệm, hoặc khai `gate_params.G0.khai_niem_tim_kiem = {"P": [...], "I": [...], "O": [...]}`. Bộ dịch từ khoá tự động có thể làm rơi khái niệm chính (đo: «tuân thủ dùng thuốc hạ áp» → `hypertension treatment`, 1/86 bài liên quan).
+- Số PMID nhiều và nhãn «MẠNH» theo bộ lọc KHÔNG chứng minh mức liên quan — đọc tiêu đề đối chiếu PICO trước khi báo nền chứng cứ.
+
 ## Ranh giới
 KHÔNG thẩm định GRADE/NNT (→ `tham-dinh-grade-nnt`), KHÔNG viết nội dung khoa học (→ `viet-ban-thao`), KHÔNG dựng bảng trích xuất chi tiết 1 bài (→ `trich-xuat-y-van`), KHÔNG làm tổng quan PRISMA đầy đủ (→ `tong-quan-y-van`). Cửa trước tiện dụng (tìm + dựng danh mục + soát nhanh); cổng cứng trích dẫn trước nộp vẫn là `kiem-chung-trich-dan`. **Phân vai với `tong-quan-y-van` (chống trùng chiến lược tìm):** agent này là **CỬA TRƯỚC** — dựng chiến lược tìm + danh mục đã-xác-minh; khi nâng lên **SR/PRISMA chính thức**, `tong-quan-y-van` **KẾ THỪA** chiến lược tìm này, KHÔNG dựng lại.
 
@@ -103,7 +110,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 
 | Nhiệm vụ | Bạn LÀM — đầu ra (tên là HỢP ĐỒNG) | Tiêu chí bạn phải đưa tới ĐẠT | Hồ sơ + lệnh bạn chuẩn bị cho NGƯỜI |
 |---|---|---|---|
-| `G0-T2` — Chiến lược tìm và danh mục y văn nền | `G0_pubmed_raw.json` | G0-AUTO-02, G0-AUTO-03 | — |
+| `G0-T2` — Chiến lược tìm và danh mục y văn nền | `G0_pubmed_raw.json` | G0-AUTO-02, G0-AUTO-03, G0-AUTO-08 | — |
 
 Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G7-T3` (kiem-chung-trich-dan), `G9-T2` (kiem-chung-trich-dan), `G10-T2` (kiem-chung-trich-dan). Không bao giờ chấm đầu ra do chính bạn làm.
 

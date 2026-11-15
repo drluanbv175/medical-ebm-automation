@@ -1186,9 +1186,22 @@ def ke_cho_r(ke: list[dict]) -> list[dict]:
                 "nhan_gia_tri": S.ky_vong_nhan_gia_tri(b),
                 "na_values": th["roi"] if b["so"] else [],
                 "na_range": th["khoang"] if b["so"] else None,
+                # E5 (15/11/2026) — cùng nguồn với VARIABLE LEVEL/ATTRIBUTE/ROLE của .sav (S.thuoc_tinh_ky_vong)
+                "do_luong": str(b["muc_do"]).lower(),
+                "tt": thuoc_tinh_r(b),
+                "khoang": list(b["khoang_hop_le"]) if b.get("khoang_hop_le") else None,
             }
         )
     return ra
+
+
+#: Thuộc tính tuỳ biến .sav ⇒ tên attr trong .rds (R/RStudio đọc bằng attr(x, "role")…).
+TT_SAV_SANG_R = {"VaiTro": "role", "MucTieu": "objective", "CauHoi": "item"}
+
+
+def thuoc_tinh_r(b: dict) -> dict[str, str]:
+    """attr role/objective/item của một biến — lấy từ S.thuoc_tinh_ky_vong (một nguồn với .sav)."""
+    return {TT_SAV_SANG_R[k]: v for k, v in S.thuoc_tinh_ky_vong(b).items() if k in TT_SAV_SANG_R}
 
 
 def _vec_r_u(ds, *, so: bool) -> str:
@@ -1214,6 +1227,10 @@ def _ke_r(kr: list[dict]) -> str:
             f"gt_nhan = {_vec_r_u(gt.values(), so=False)}",
             f"na_values = {_vec_r_u(b['na_values'], so=True)}",
             "na_range = " + (_vec_r_u(b["na_range"], so=True) if b["na_range"] else "NULL"),
+            f"do_luong = {chuoi_r_u(b['do_luong'])}",
+            f"tt = stats::setNames({_vec_r_u(b['tt'].values(), so=False)}, {_vec_r_u(b['tt'].keys(), so=False)})",
+            "khoang = " + ("c(" + ", ".join("NA_real_" if x is None else repr(float(x)) for x in b["khoang"]) + ")"
+                           if b["khoang"] else "NULL"),
         ]
         dong.append("  list(" + ", ".join(phan) + ")")
     return "list(\n" + ",\n".join(dong) + "\n)" if dong else "list()"
@@ -1300,6 +1317,9 @@ for (b in KE) {
   }
   attr(x, "label") <- b$nhan
   attr(x, "format.spss") <- b$dinh_dang
+  attr(x, "measure") <- b$do_luong                       # nominal / ordinal / scale — như VARIABLE LEVEL của .sav
+  for (k in names(b$tt)) attr(x, k) <- unname(b$tt[[k]])  # role / objective / item — như VARIABLE ATTRIBUTE
+  if (!is.null(b$khoang)) attr(x, "valid_range") <- b$khoang  # khoảng hợp lệ của từ điển (NA = đầu mở)
   if (b$so) {
     if (length(b$gt)) attr(x, "labels") <- stats::setNames(b$gt, b$gt_nhan)
     if (length(b$na_values)) attr(x, "na_values") <- b$na_values
@@ -1343,6 +1363,14 @@ ghi_thuoc_tinh <- function(d, tep) {
     for (v in attr(x, "na_values", exact = TRUE)) dong <- c(dong, paste("NA_VALUES", h, gia(v), sep = "\t"))
     nr <- attr(x, "na_range", exact = TRUE)
     if (!is.null(nr)) dong <- c(dong, paste("NA_RANGE", h, so17(nr[1]), so17(nr[2]), sep = "\t"))
+    ms <- attr(x, "measure", exact = TRUE)
+    if (!is.null(ms)) dong <- c(dong, paste("DO_LUONG", h, hex1(ms), sep = "\t"))
+    for (k in c("role", "objective", "item")) {
+      g <- attr(x, k, exact = TRUE)
+      if (!is.null(g)) dong <- c(dong, paste("TT", h, k, hex1(g), sep = "\t"))
+    }
+    vr <- attr(x, "valid_range", exact = TRUE)
+    if (!is.null(vr)) dong <- c(dong, paste("KHOANG", h, so17(vr[1]), so17(vr[2]), sep = "\t"))
   }
   writeLines(dong, tep, useBytes = TRUE)
 }
@@ -1409,7 +1437,7 @@ def doc_ban_xa_r(p_gt: Path, p_tt: Path) -> tuple[list[str], list[list], dict[st
         ten = _hex_chu(p[1])
         if p[0] == "BIEN":
             tt[ten] = {"typeof": p[2], "class": p[3].split(","), "nhan": None, "gt": {}, "na_values": [],
-                       "na_range": None}  # fmt: skip
+                       "na_range": None, "do_luong": None, "tt": {}, "khoang": None}  # fmt: skip
         elif p[0] == "NHAN":
             tt[ten]["nhan"] = None if p[2] == "NULL" else _hex_chu(p[2])
         elif p[0] == "GT_NHAN":
@@ -1418,6 +1446,12 @@ def doc_ban_xa_r(p_gt: Path, p_tt: Path) -> tuple[list[str], list[list], dict[st
             tt[ten]["na_values"].append(_gia_tri_tu_hex(p[2]))
         elif p[0] == "NA_RANGE":
             tt[ten]["na_range"] = [float(p[2]), float(p[3])]
+        elif p[0] == "DO_LUONG":
+            tt[ten]["do_luong"] = _hex_chu(p[2])
+        elif p[0] == "TT":
+            tt[ten]["tt"][p[2]] = _hex_chu(p[3])
+        elif p[0] == "KHOANG":
+            tt[ten]["khoang"] = [None if x == "NA" else float(x) for x in p[2:4]]
     return bien, ca, tt
 
 
@@ -1429,7 +1463,8 @@ def _khoang_r(k: list | None) -> list | None:
 
 def kiem_thuoc_tinh_rds(ke: list[dict], bien: list[str], tt: dict[str, dict]) -> dict:
     """Thuộc tính .rds đọc lại so với kế hoạch: tên + thứ tự, kiểu/lớp (khuôn haven), nhãn biến, nhãn giá trị (kể cả
-    nhãn mã thiếu), na_values/na_range (biến số). Trả {trang_thai, so_lech, lech}."""
+    nhãn mã thiếu), na_values/na_range (biến số), mức đo (measure), vai trò/mục tiêu/mã câu (role/objective/item),
+    khoảng hợp lệ (valid_range) — E5 15/11/2026. Trả {trang_thai, so_lech, lech}."""
     lech: list[str] = []
     kr = ke_cho_r(ke)
     if [b["ten"] for b in kr] != bien:
@@ -1456,6 +1491,12 @@ def kiem_thuoc_tinh_rds(ke: list[dict], bien: list[str], tt: dict[str, dict]) ->
                 lech.append(f"{b['ten']}: na_values {a['na_values']} — kỳ vọng {b['na_values']}")
             if a["na_range"] != _khoang_r(b["na_range"]):
                 lech.append(f"{b['ten']}: na_range {a['na_range']} — kỳ vọng {_khoang_r(b['na_range'])}")
+        if a.get("do_luong") != b["do_luong"]:
+            lech.append(f"{b['ten']}: mức đo (measure) {a.get('do_luong')} — kỳ vọng {b['do_luong']}")
+        if (a.get("tt") or {}) != b["tt"]:
+            lech.append(f"{b['ten']}: vai trò/mục tiêu/mã câu {a.get('tt')} — kỳ vọng {b['tt']}")
+        if a.get("khoang") != b["khoang"]:
+            lech.append(f"{b['ten']}: khoảng hợp lệ (valid_range) {a.get('khoang')} — kỳ vọng {b['khoang']}")
     return {"trang_thai": "KHOP" if not lech else "LECH", "so_lech": len(lech), "lech": lech}
 
 
@@ -1531,6 +1572,7 @@ def lenh_xuat_rds(args) -> int:
     tieu_de, tk, n = S.quet_csv(csv_p)
     ke, canh_bao, _ = S.ke_hoach_bien(tieu_de, tk, td, mt, giu_ghi_chu=getattr(args, "giu_ghi_chu", False))
     S.kiem_noi_dung_bien(d, args.study, td_p, ke)  # E4 — nội dung biến đúng mục tiêu (15/11/2026)
+    e5 = S.ap_va_chan_e5(d, args.study, ke, td, csv_p)  # E5 — thuộc tính từng biến, CÙNG hàm với .sav
     r_dir = d / "r"
     r_dir.mkdir(parents=True, exist_ok=True)
     hau_to = "_BAN-NHAP" if args.ban_nhap else "_khoa"
@@ -1561,6 +1603,7 @@ def lenh_xuat_rds(args) -> int:
         "rds": str(rds_p),
         "rds_da_tao": False,
         "ke_hoach": ke_cho_r(ke),
+        "thuoc_tinh_bien": {"canh_bao": e5["canh_bao"], "bang": e5["bang"]},
         "bien_bo": [b["cot"] for b in ke if b["bo"]],
         "canh_bao": canh_bao,
         "disclaimer": CAN_KIEM,

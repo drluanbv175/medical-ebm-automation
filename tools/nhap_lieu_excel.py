@@ -1300,7 +1300,8 @@ def _kieu_spss(c: Cot) -> tuple[bool, str]:
     return True, "F10.2" if c.kieu == "so" else "F8.0"
 
 
-def cu_phap_mau_sav(cot: list[Cot], mt: list[dict], dac_ta: str, ra_sav: Path) -> str:
+def cu_phap_mau_sav(cot: list[Cot], mt: list[dict], dac_ta: str, ra_sav: Path,
+                    ma_tran: dict[str, dict] | None = None) -> str:
     """Cú pháp SPSS dựng mẫu nhập 0 phiếu: biến · định dạng · nhãn biến · nhãn giá trị (kể cả mã thiếu) · MISSING
     VALUES ·
     mức đo · DATAFILE ATTRIBUTE (dấu vân tay đặc tả + bảng mã chữ ⇒ số) để lúc nhập biết tệp sinh từ từ điển nào."""
@@ -1357,12 +1358,27 @@ def cu_phap_mau_sav(cot: list[Cot], mt: list[dict], dac_ta: str, ra_sav: Path) -
             dong += gia_tri
         dong[-1] += "."
     dong += thieu
-    for muc, ds in (
-        ("SCALE", [c.ten for c in cot if c.kieu in ("so", "so_nguyen", "ngay", "ngay_gio", "gio")]),
-        ("NOMINAL", [c.ten for c in cot if c.kieu in ("id", "ma", "hop", "chu", "van_ban")]),
-    ):
+    # E5 (15/11/2026): mức đo + thuộc tính theo CÙNG luật với .sav/.rds xuất ra sau này (SP.thuoc_tinh_tu_dong) — mẫu
+    # nhập không được nói «danh định» cho một thang thứ bậc mà tệp phân tích nói «thứ bậc».
+    tt_cot = {}
+    for c in cot:
+        muc_cu = "SCALE" if c.kieu in ("so", "so_nguyen", "ngay", "ngay_gio", "gio") else "NOMINAL"
+        tt_cot[c.ten] = SP.thuoc_tinh_tu_dong((ma_tran or {}).get(c.truong) or {}, kieu_so=_kieu_spss(c)[0],
+                                              la_hop=c.kieu == "hop", lo=c.min, hi=c.max, muc_cu=muc_cu)
+    for muc in ("SCALE", "ORDINAL", "NOMINAL"):
+        ds = [c.ten for c in cot if tt_cot[c.ten]["muc_do"] == muc]
         if ds:
             dong.append(f"VARIABLE LEVEL {SP.goi_ds(ds)} ({muc}).")
+    for c in cot:
+        tt = [f"{k}({SP.chuoi_spss(v)})" for k, v in SP.thuoc_tinh_ky_vong(tt_cot[c.ten]).items()]
+        if tt:
+            dong.append(f"VARIABLE ATTRIBUTE VARIABLES={c.ten} ATTRIBUTE={' '.join(tt)}.")
+    vai: dict[str, list[str]] = {}
+    for c in cot:
+        if tt_cot[c.ten]["vai_tro"] in SP._VAI_TRO_SPSS:
+            vai.setdefault(SP._VAI_TRO_SPSS[tt_cot[c.ten]["vai_tro"]], []).append(c.ten)
+    if vai:
+        dong.append("VARIABLE ROLE " + " ".join(f"/{k} {SP.goi_ds(v)}" for k, v in vai.items()) + ".")
     dong.append(
         f"DATAFILE ATTRIBUTE ATTRIBUTE={TT_MAU}('nhap_lieu_excel.py') {TT_DAC_TA}('{dac_ta}') "
         f"{TT_MA_CHU}('{json.dumps(ma_chu, ensure_ascii=False)}')."
@@ -1375,19 +1391,21 @@ def tao_mau_sav(study: str, td_p: Path, mt_p: Path | None, ra: Path) -> dict:
     td = doc_tu_dien_day_du(td_p)
     mt = SP.doc_ma_thieu(mt_p) if mt_p else []
     cot, bo_qua = ke_hoach_cot(td, mt)
+    ma_tran = SP.dong_ma_tran_dat(SP.thu_muc_de_tai(study), study)  # E5: cùng nguồn thuộc tính với xuat-sav/xuat-rds
     py = SP.tim_spss()
     with SP.vung_tam() as tam_s:
         tam = Path(tam_s)
         (tam / "mau.sps").write_text(
-            cu_phap_mau_sav(cot, mt, dau_van_tay_dac_ta(cot), tam / "mau.sav"), encoding="utf-8", newline="\n"
+            cu_phap_mau_sav(cot, mt, dau_van_tay_dac_ta(cot), tam / "mau.sav", ma_tran), encoding="utf-8",
+            newline="\n"
         )
         ma, out, err = SP.chay_spss(py, ["--cu-phap", str(tam / "mau.sps")], thu_muc=tam)
         if ma != 0 or not (tam / "mau.sav").exists():
             raise TuChoi("SPSS không tạo được mẫu .sav — " + (err or out).strip()[-600:])
         ra.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(tam / "mau.sav", ra)
-    (ra.with_suffix(".sps")).write_text(cu_phap_mau_sav(cot, mt, dau_van_tay_dac_ta(cot), ra), encoding="utf-8",
-                                        newline="\n")  # fmt: skip
+    (ra.with_suffix(".sps")).write_text(cu_phap_mau_sav(cot, mt, dau_van_tay_dac_ta(cot), ra, ma_tran),
+                                        encoding="utf-8", newline="\n")  # fmt: skip
     return {"so_cot": len(cot), "bo_qua": bo_qua}
 
 

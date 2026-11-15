@@ -463,6 +463,14 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact sap
 
 **Đạt G4 khi:** 12 mục SAP đầy đủ (15 nếu RCT, +§13-15) + SAP Lock Certificate + dummy tables + kết cục chính không thay đổi sau ký + bác sĩ xác nhận ngày khóa.
 
+## Đồng bộ xuyên cổng (15/11/2026 — bác sĩ duyệt)
+
+> Vì sao: giả lập trung thực (hệ TỰ sinh từ G0/G1, không viết sẵn bộ biến/SAP) cho thấy mục tiêu ↔ biến ↔ công cụ ↔ từ điển ↔ SAP ↔ SPSS/R không có phép kiểm máy; SPSS/R báo «✓ khớp» trên bộ biến SAI. Báo cáo: `audit/kiem-dong-bo-xuyen-cong-20261115.md` (repo gốc). Công cụ chung: `tools/ma_tran_muc_tieu_bien.py` (repo y khoa). «Khớp khứ hồi/khớp từ điển» KHÔNG chứng minh biến đúng mục tiêu.
+
+- G1 (A2) KẾ THỪA PICO đã chốt ở G0 (quần thể, kết cục chính, công cụ đo, thời điểm, can thiệp/so sánh, kết cục phụ — nhãn «kế thừa G0 đã chốt»): KHÔNG bắt PI gõ lại; chỉ ghi `gate_params.G1` khi CỐ Ý sửa — sửa thì `nhat_quan_xuyen_cong` báo lệch mềm, PI giải trình. Loại dữ liệu kết cục chính vẫn chốt ở G1.
+- SAP do `run_g4_auto` điền sẵn tiêu chí nhận/loại, kết cục chính (+ biến của ma trận), kết cục phụ, biến §5/§6 từ ma trận; thống kê viên chỉ điền LÝ DO LÂM SÀNG/DAG (+ EPV/VIF) và mọi mục chưa có. SAP phải gọi ĐÚNG tên biến (MT-09); biến mới ngoài ma trận ⇒ sửa ma trận ở G3 trước.
+- Quần thể so HAI chiều giữa các cổng: bản sau bỏ ngưỡng của bản trước (vd «≥3 tháng») ⇒ lệch mềm.
+
 ## Ranh giới
 KHÔNG tự tính cỡ mẫu chi tiết (giao `co-mau-nghien-cuu`) · KHÔNG chạy phân tích trên dữ liệu thật (`phan-tich-thong-ke` sau G5) · KHÔNG viết Bàn luận (`viet-ban-thao`).
 
@@ -480,7 +488,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 | `G1-T1` — Chọn thiết kế, kiểm soát sai lệch, estimand, đề cương lõi | `G1_A2_PROTOCOL_DESIGN_<mã>.md`, `G1_checkpoint.json` | G1-AUTO-00, G1-AUTO-02, G1-AUTO-02b, G1-AUTO-02c, G1-AUTO-02d, G1-AUTO-03, G1-AUTO-03b, G1-AUTO-04, G1-AUTO-04b, G1-AUTO-04c, G1-AUTO-05, G1-AUTO-07 | PI: G1-HUMAN-01, G1-HUMAN-02, G1-HUMAN-03, G1-HUMAN-04, G1-HUMAN-05, G1-HUMAN-08 |
 | `G4-T1` — Kế hoạch phân tích thống kê (SAP) + khung bảng kết quả, khoá trước khi xem dữ liệu | `G4_A5_SAP_FINAL_<mã>.md`, `G4_checkpoint.json` | G4-AUTO-00, G4-AUTO-02, G4-AUTO-03, G4-AUTO-04, G4-AUTO-05, G4-AUTO-06, G4-AUTO-07, G4-AUTO-08, G4-AUTO-09, G4-AUTO-10, G4-AUTO-11, G4-AUTO-15 | PI: G4-AUTO-14; STATISTICIAN: G4-AUTO-13, G4-HUMAN-01, G4-HUMAN-02, G4-HUMAN-03, G4-HUMAN-04, G4-HUMAN-05, G4-HUMAN-06, G4-HUMAN-07, G4-HUMAN-08 |
 
-Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G0-T1` (cau-hoi-nghien-cuu), `G1-T5` (an-toan-nghien-cuu), `G1-T6` (mo-hinh-tien-luong), `G1-T7` (nghien-cuu-dinh-tinh), `G1-T8` (kinh-te-y-te), `G3-T1` (co-mau-nghien-cuu), `G6-T1` (phan-tich-thong-ke). Không bao giờ chấm đầu ra do chính bạn làm.
+Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G0-T1` (cau-hoi-nghien-cuu), `G1-T5` (an-toan-nghien-cuu), `G1-T6` (mo-hinh-tien-luong), `G1-T7` (nghien-cuu-dinh-tinh), `G1-T8` (kinh-te-y-te), `G3-T1` (co-mau-nghien-cuu), `G3-T2` (bien-so-nghien-cuu), `G6-T1` (phan-tich-thong-ke). Không bao giờ chấm đầu ra do chính bạn làm.
 
 Trước khi trả việc cho điều phối cổng: chạy lệnh đo của cổng đó — tiêu chí của bạn còn chưa đạt,
 đầu ra còn thiếu, hoặc biên bản đánh giá chéo «trả về sửa» ⇒ CHƯA xong. Không ký, không bật cờ, không

@@ -30,7 +30,7 @@ Cỡ mẫu/lực mẫu đúng công thức cho thiết kế, tham số có ngu�
 | Mã | Nhiệm vụ | Agent chuyên trách | Đầu ra (artifact/khoá — tên là HỢP ĐỒNG) | Chấm chéo chuyên môn + giám khảo |
 |---|---|---|---|---|
 | G3-T1 | Tính cỡ mẫu/lực mẫu theo thiết kế, nguồn tham số | `co-mau-nghien-cuu` | `G3_A4_SAMPLE_SIZE_<mã>.md`, `G3_checkpoint.json` | `phan-tich-thong-ke`, `thiet-ke-nghien-cuu` + `giam-khao-cong` |
-| G3-T2 | Đặc tả bộ biến số | `bien-so-nghien-cuu` | `_bo-bien-rieng.csv` | `quan-ly-du-lieu` + `giam-khao-cong` |
+| G3-T2 | Đặc tả bộ biến số + ma trận mục tiêu–biến | `bien-so-nghien-cuu` | `_bo-bien-rieng.csv` + `_ma-tran-muc-tieu-bien.csv` | `quan-ly-du-lieu` + `thiet-ke-nghien-cuu` + `giam-khao-cong` |
 | G3-T3 | CRF kỹ thuật, từ điển dữ liệu dự kiến, luật kiểm tra | `quan-ly-du-lieu` | `_bo-bien-rieng.csv` | `bien-so-nghien-cuu` + `giam-khao-cong` |
 
 Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý do ở khối bàn giao, không giao việc.
@@ -41,21 +41,30 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
   trạng thái: `DRAFT_NEEDS_HUMAN_PARAMETERS` → `DRAFT_READY_NEEDS_STATISTICIAN_REVIEW` → `PASS_G3_CONFIRMED`.
 - **Xác nhận người (cổng mềm):** Thống kê viên xác nhận ở `gate_params.G3` (nguồn tham số `*_source`, `*_confirmed`, `powered_for_outcome`, `dau_van_tay_chot`); N chốt < N tối thiểu ⇒ `underpowered_acceptance_justification` do người viết. Agent CHÉP dấu cho người xác nhận nhìn — KHÔNG tự ghi.
 
+## Đồng bộ xuyên cổng (15/11/2026 — bác sĩ duyệt)
+
+> Vì sao: giả lập trung thực (hệ TỰ sinh từ G0/G1, không viết sẵn bộ biến/SAP) cho thấy mục tiêu ↔ biến ↔ công cụ ↔ từ điển ↔ SAP ↔ SPSS/R không có phép kiểm máy; SPSS/R báo «✓ khớp» trên bộ biến SAI. Báo cáo: `audit/kiem-dong-bo-xuyen-cong-20261115.md` (repo gốc). Công cụ chung: `tools/ma_tran_muc_tieu_bien.py` (repo y khoa). «Khớp khứ hồi/khớp từ điển» KHÔNG chứng minh biến đúng mục tiêu.
+
+- G3-AUTO-19 (ma trận mục tiêu → biến ĐẠT) thuộc G3-T2 `bien-so-nghien-cuu`; G3 KHÔNG PASS khi ma trận chưa đạt. Đề tài đã ký G4/G10 trước 15/11/2026 được miễn trừ HIỂN THỊ (không hạ cấp quyết định đã ký) nhưng bằng chứng ghi «VẪN THIẾU» — phải bổ sung trước khi khoá dữ liệu G5 (G5-AUTO-12).
+- Kiểm: `python tools/ma_tran_muc_tieu_bien.py kiem --study <mã>`; hội đồng G3-T2 kiểm máy chạy CÙNG bộ kiểm (đầu ra G3-T2 = bộ biến + ma trận).
+- Cỡ mẫu tính cho Mục tiêu 1 không tự chứng minh đủ cho mô hình đa biến của mục tiêu yếu tố liên quan — nhắc thống kê viên đối chiếu số biến trong ma trận với số biến cố (EPV) ở SAP §5.
+
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G3 (09/10/2026)
 Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối
-của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Mọi tiêu chí (26) của
+của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Mọi tiêu chí (27) của
 `tools/g3_quality_gate.py` đã gán ĐÚNG MỘT bên ở `hoi_dong_cong.PHAN_CONG`
 (bảng dưới chép lại; test đối chiếu):
 
 | Bên chịu trách nhiệm | Tiêu chí |
 |---|---|
 | `G3-T1` — agent `co-mau-nghien-cuu` | G3-AUTO-00, G3-AUTO-02, G3-AUTO-03, G3-AUTO-04, G3-AUTO-05, G3-AUTO-06, G3-AUTO-07, G3-AUTO-08, G3-AUTO-09, G3-AUTO-10, G3-AUTO-11, G3-AUTO-12, G3-AUTO-14, G3-AUTO-15, G3-AUTO-16, G3-AUTO-17, G3-AUTO-18 |
+| `G3-T2` — agent `bien-so-nghien-cuu` | G3-AUTO-19 |
 | `PI@G3-T1` — NGƯỜI PI quyết/ký; agent chuẩn bị hồ sơ + lệnh: `co-mau-nghien-cuu` | G3-AUTO-13, G3-HUMAN-05 |
 | `STATISTICIAN@G3-T1` — NGƯỜI STATISTICIAN quyết/ký; agent chuẩn bị hồ sơ + lệnh: `co-mau-nghien-cuu` | G3-HUMAN-01, G3-HUMAN-02, G3-HUMAN-03, G3-HUMAN-04, G3-HUMAN-06, G3-HUMAN-07 |
 | `^G0,G1` — cổng tiền đề G0, G1 (điều phối cổng đó chịu trách nhiệm) | G3-AUTO-01 |
 
-Nhiệm vụ KHÔNG có tiêu chí máy (chất lượng CHỈ bảo đảm bằng đánh giá chéo): G3-T2 `bien-so-nghien-cuu` (kiểm máy cấp nhiệm vụ: bộ biến G5 nạp được + không biến định danh trực tiếp), G3-T3 `quan-ly-du-lieu` (kiểm máy cấp nhiệm vụ: luật kiểm tra CRF: lựa chọn · công thức calc · khoảng hợp lệ · trường bắt buộc) — chưa có biên bản
+Nhiệm vụ KHÔNG có tiêu chí máy (chất lượng CHỈ bảo đảm bằng đánh giá chéo): G3-T3 `quan-ly-du-lieu` (kiểm máy cấp nhiệm vụ: luật kiểm tra CRF: lựa chọn · công thức calc · khoảng hợp lệ · trường bắt buộc) — chưa có biên bản
 đánh giá chéo «qua» còn hiệu lực ⇒ khối bàn giao ghi «chất lượng chưa được bảo đảm» (lệnh đo liệt kê).
 
 1. **Thước đo duy nhất:** `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G3` — chỉ đọc; chấm sống,

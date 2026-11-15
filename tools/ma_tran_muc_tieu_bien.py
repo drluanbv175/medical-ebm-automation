@@ -209,6 +209,38 @@ def doc_bo_bien(out_dir: Path) -> Tuple[Optional[Dict[str, Dict[str, str]]], Opt
     return {r.get("Variable / Field Name", ""): r for r in dong if r.get("Variable / Field Name")}, None
 
 
+#: Thuộc tính một trường REDCap đi tới SPSS/R hoặc tới phiếu nhập (bác sĩ 15/11/2026: «mỗi biến đều có các thuộc tính
+#: … phải luôn đồng bộ và thống nhất»): kiểu trường, nhãn (→ nhãn biến), lựa chọn (→ nhãn giá trị), kiểu kiểm + min/max
+#: (→ khoảng hợp lệ), điều kiện hiện, chú thích («Tên SPSS:» → tên biến), cờ định danh, bắt buộc.
+COT_THUOC_TINH = (
+    "Field Type", "Field Label", "Choices, Calculations, OR Slider Labels",
+    "Text Validation Type OR Show Slider Number", "Text Validation Min", "Text Validation Max",
+    "Branching Logic (Show field only if...)", "Field Annotation", "Identifier?", "Required Field?",
+)
+
+
+def _chuan_thuoc_tinh(cot: str, v: Any) -> str:
+    """Chuẩn hoá ĐÚNG như run_g5_auto.nap_bo_bien_rieng (để phép so không báo lệch giả do G5 tự chuẩn hoá)."""
+    v = str(v or "").strip()
+    if cot == "Field Type":
+        return v.lower()
+    if cot == "Required Field?":
+        return "y" if v.lower() in ("y", "yes", "1", "true") else "n"
+    if cot == "Identifier?":
+        return "y" if v.lower() in ("y", "yes", "1", "true") else ""
+    return v
+
+
+_TEN_GON_COT = {"Choices, Calculations, OR Slider Labels": "Choices",
+                "Text Validation Type OR Show Slider Number": "Text Validation Type",
+                "Branching Logic (Show field only if...)": "Branching Logic"}
+
+
+def lech_thuoc_tinh(a: Mapping[str, Any], b: Mapping[str, Any]) -> List[str]:
+    """Các cột thuộc tính KHÁC nhau giữa hai dòng REDCap của CÙNG một biến (bộ biến G3 ↔ từ điển G5)."""
+    return [c for c in COT_THUOC_TINH if _chuan_thuoc_tinh(c, a.get(c)) != _chuan_thuoc_tinh(c, b.get(c))]
+
+
 def doc_phai_sinh(out_dir: Path) -> Dict[str, Dict[str, str]]:
     dong, _, _ = _doc_csv(Path(out_dir) / TEP_PHAI_SINH)
     return {r.get("ten_bien", ""): r for r in (dong or []) if r.get("ten_bien")}
@@ -527,6 +559,15 @@ def kiem_noi_dung_xuat(out_dir: Path, study: str, tu_dien: Path, cot_xuat: Itera
         lech = sorted({x.get("Variable / Field Name", "") for x in td} ^ set(bo_bien))
         if lech:
             loi.append(f"từ điển lệch bộ biến riêng ở {len(lech)} biến: {', '.join(lech[:8])}")
+        # Cùng TÊN chưa đủ (E5, 15/11/2026): từng thuộc tính của biến phải giống bộ biến đã duyệt ở G3.
+        lech_tt = []
+        for x in td:
+            ten = x.get("Variable / Field Name")
+            khac = lech_thuoc_tinh(bo_bien[ten], x) if ten in bo_bien else []
+            if khac:
+                lech_tt.append(f"{ten} ({', '.join(_TEN_GON_COT.get(c, c) for c in khac)})")
+        if lech_tt:
+            loi.append(f"từ điển khác bộ biến riêng ở THUỘC TÍNH của {len(lech_tt)} biến: {'; '.join(lech_tt[:6])}")
     kq = kiem(out_dir, study)
     if kq["trang_thai"] != TRANG_THAI_DAT:
         loi.append("ma trận mục tiêu–biến chưa ĐẠT: " + ("; ".join(x["noi_dung"] for x in kq["loi"][:4])

@@ -216,6 +216,9 @@ def _de_tai(tmp_path: Path, monkeypatch) -> Path:
         w.writeheader()
         for ten, x in td.items():
             w.writerow({cot["ten"]: ten, **{cot[k]: v for k, v in x.items()}})
+    # E5 (15/11/2026): «BTR» ở trường có/không (hut_thuoc) phải là mã thiếu ĐÃ KHAI — không khai thì cầu nối chặn
+    # (mã lạ ngoài danh mục là nhập sai). Fixture hợp lệ khai mã thiếu cấp dự án như đề tài thật.
+    (d / "_ma-thieu-theo-bien.csv").write_text("bien,ma,nhan\n*,BTR,Bỏ trống\n", encoding="utf-8", newline="\n")
     return d
 
 
