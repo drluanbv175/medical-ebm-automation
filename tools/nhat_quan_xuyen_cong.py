@@ -739,7 +739,8 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
 TRUC_CHUOI = ("bien_de_cuong", "cong_cu_tu_dien", "muc_tieu_phan_tich", "chon_mau_co_mau", "dac_ta_cho_bo_bien",
               "tong_quan_khoang_trong", "co_mau_tinh_lai", "ky_thuat_chon_mau", "tai_lieu_nop_co_mau", "ten_de_tai",
               "cau_hoi_gia_thuyet", "trich_dan_tong_quan", "ma_tran_muc_tieu", "chuan_bao_cao", "mo_ta_thiet_ke",
-              "kiem_soat_sai_lech", "quy_trinh_du_lieu", "cong_cu_do_luong", "de_cuong_nop")
+              "kiem_soat_sai_lech", "quy_trinh_du_lieu", "cong_cu_do_luong", "de_cuong_nop",
+              "dac_ta_phan_tich")
 # Trục nào là trách nhiệm của cổng nào (hoi_dong_cong.trach_nhiem dùng — «hoàn thiện» của cổng phải qua trục của nó).
 TRUC_THEO_CONG = {
     "co_mau": ("G3", "G4", "G10"), "alpha": ("G3", "G4", "G10"), "power": ("G3", "G4", "G10"),
@@ -757,7 +758,7 @@ TRUC_THEO_CONG = {
     "chuan_bao_cao": ("G1", "G2", "G4", "G10"), "mo_ta_thiet_ke": ("G1", "G2", "G4", "G10"),
     "kiem_soat_sai_lech": ("G1", "G4", "G10"),
     "quy_trinh_du_lieu": ("G1", "G2", "G5", "G10"), "cong_cu_do_luong": ("G1", "G3", "G10"),
-    "de_cuong_nop": ("G2", "G4", "G10"),
+    "de_cuong_nop": ("G2", "G4", "G10"), "dac_ta_phan_tich": ("G4", "G6", "G10"),
 }
 
 
@@ -1919,6 +1920,37 @@ def _truc_de_cuong_nop(out_dir: Path, study: str, meta: Dict[str, Any], sap_text
                 "; ".join(ghi) if ghi else "phiên bản, kế hoạch phân tích, phiếu đồng ý, thời gian, kinh phí khớp")
 
 
+# ─────────────── GIAI ĐOẠN 7 «PHÂN TÍCH SỐ LIỆU» — độ sẵn sàng (15/11/2026) ───────────────
+# Kiểm tay: đặc tả máy đọc G6 (`G6_DAC_TA_SAP.json`) của C1a/BTM soạn trên SAP cũ (SHA khác) và THIẾU các phân tích SAP
+# mới bổ sung (C1a: đáp ứng/người từ chối, đặc tính đo lường, thăm dò kỳ vọng; BTM: so sánh nhóm 1 lượt khám) — chưa
+# trục nào đo; `chay_sap_g6 kiem` chỉ báo «đặc tả cũ» khi có người chạy, không nói thiếu phân tích nào.
+def _truc_dac_ta_phan_tich(out_dir: Path, study: str, sap_text: str) -> Optional[Dict[str, Any]]:
+    """SAP ↔ đặc tả phân tích G6 HAI CHIỀU (`chay_sap_g6.kiem_dac_ta` + `kiem_phu_sap`): SHA SAP lệch, cụm neo không còn
+    trong SAP, phân tích SAP bắt buộc chưa vào đặc tả ⇒ LỆCH MỀM; mục chưa neo hoặc đặc tả chưa được thống kê viên/PI
+    duyệt ⇒ CẦN XEM; chưa có SAP ⇒ None; có SAP mà chưa có đặc tả ⇒ CHƯA ĐỦ ĐỂ SO."""
+    import chay_sap_g6 as CSG6  # noqa: PLC0415
+
+    if not sap_text:
+        return None
+    ten = "SAP ↔ đặc tả phân tích G6 (đủ phân tích, neo vào SAP, đúng phiên bản)"
+    p = out_dir / CSG6.TEP_DAC_TA
+    if not p.is_file():
+        return _ket("dac_ta_phan_tich", ten, [], MUC_CHUA_DU, f"chưa có {CSG6.TEP_DAC_TA}")
+    try:
+        k = CSG6.kiem_dac_ta(out_dir, json.loads(p.read_text(encoding="utf-8")))
+    except (OSError, ValueError) as e:
+        return _ket("dac_ta_phan_tich", ten, [], MUC_CHUA_DU, f"không đọc được đặc tả: {type(e).__name__}")
+    nguon = [{"cong": "G4–G6", "noi": CSG6.TEP_DAC_TA,
+              "gia_tri": f"{len(k['phan_tich'])} phân tích · duyệt: {k['duyet']} · SAP khớp: {k['sap_khop']}"}]
+    if k["loi"]:
+        return _ket("dac_ta_phan_tich", ten, nguon, MUC_LECH_MEM,
+                    f"{len(k['loi'])} lỗi: " + "; ".join(k["loi"][:4]))
+    if k["canh_bao"]:
+        return _ket("dac_ta_phan_tich", ten, nguon, MUC_CAN_XEM, "; ".join(k["canh_bao"][:3]))
+    return _ket("dac_ta_phan_tich", ten, nguon, MUC_KHOP,
+                f"{len(k['phan_tich'])} phân tích đều neo vào SAP hiện tại, phủ đủ, đã duyệt")
+
+
 def truc_chuoi(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -> List[Dict[str, Any]]:
     """Các trục chuỗi đầy đủ (mỗi trục tự bắt lỗi của mình — một trục hỏng không làm mất các trục khác)."""
     td = _tu_dien(out_dir, study)
@@ -1937,7 +1969,8 @@ def truc_chuoi(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -
                 lambda: _truc_kiem_soat_sai_lech(out_dir, study, meta),
                 lambda: _truc_quy_trinh_du_lieu(out_dir, study, meta),
                 lambda: _truc_cong_cu_do_luong(out_dir, study, meta),
-                lambda: _truc_de_cuong_nop(out_dir, study, meta, sap_text)):
+                lambda: _truc_de_cuong_nop(out_dir, study, meta, sap_text),
+                lambda: _truc_dac_ta_phan_tich(out_dir, study, sap_text)):
         try:
             k = ham()
         except Exception as e:  # noqa: BLE001
