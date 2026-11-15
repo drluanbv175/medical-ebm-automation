@@ -100,6 +100,7 @@ VI_EN_TERMS: dict[str, str] = {
     "chất lượng cuộc sống": "quality of life",
     "kiến thức": "knowledge",
     "thuốc hạ áp": "antihypertensive agents",
+    "tin nhắn": "text messaging",
     # Tim mạch
     "suy tim": "heart failure",
     "hfpef": "HFpEF",

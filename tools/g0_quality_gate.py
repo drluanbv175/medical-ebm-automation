@@ -458,6 +458,12 @@ def _thuat_ngu_phu(van: str, tu_dien: Mapping[str, str]) -> List[str]:
     for vi, en in tu_dien.items():
         if vi and en and vi in t and en not in ra and en.lower() not in _THUAT_NGU_CHUNG:
             ra.append(en)
+    # Chữ viết tắt Latinh có sẵn trong mô tả tiếng Việt (SMS, HbA1c, BMI, COPD…) cũng là thuật ngữ tìm kiếm hợp lệ —
+    # giả lập canary 15/11/2026: can thiệp «Tin nhắn SMS nhắc uống thuốc hạ áp» chỉ rút được từ PHỤ «thuốc hạ áp»
+    # (khái niệm chính ngoài từ điển) ⇒ báo thiếu oan dù truy vấn PI có SMS[tiab].
+    for w in re.findall(r"\b[A-Za-z0-9]{2,}\b", str(van or "")):
+        if sum(1 for ch in w if ch.isupper()) >= 2 and w not in ra:
+            ra.append(w)
     return ra
 
 
@@ -892,6 +898,16 @@ def evaluate_g0_quality(
     # chồng lấn. Máy KHÔNG gọi thêm mạng ở đây.
     tra_tay = g0.get("registry_manual_checked") if isinstance(g0.get("registry_manual_checked"), Mapping) else {}
     can_prospero = _thiet_ke_ghim(meta) == "sr_ma"
+    if not can_prospero:
+        # Thẩm định #281 (X6): run_g2_auto thôi gieo study_meta.design_code ⇒ tổng quan hệ thống do G1 suy (chưa ghim)
+        # từng được đòi tra PROSPERO nhờ giá trị gieo; giữ nguyên chiều chặt bằng cách đọc thiết kế G1 đang dùng.
+        try:
+            _a1 = (artifact_paths or {}).get("A1")
+            _cp1 = json.loads((Path(_a1).parent / "G1_checkpoint.json").read_text(encoding="utf-8")) if _a1 else {}
+            _tk1 = (_cp1.get("design") or {}).get("internal_code") if isinstance(_cp1, dict) else None
+            can_prospero = S.ma_thiet_ke_chuoi(_tk1) == "sr_ma" if isinstance(_tk1, str) else False
+        except (OSError, ValueError, AttributeError):
+            can_prospero = False
     thieu_tra = []
     if not _valid_iso_time(tra_tay.get("ictrp")):
         thieu_tra.append("ictrp")

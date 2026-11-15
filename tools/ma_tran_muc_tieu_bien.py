@@ -22,6 +22,9 @@ Tệp `exports/<mã>/_ma-tran-muc-tieu-bien.csv` (UTF-8, có/không BOM), mỗi 
   phan_tich_sap  mục SAP dùng biến (vd «§4», «§5»)
   ghi_chu        tự do
 
+MT-12 (cảnh báo): nguồn người duyệt của bộ biến — `G3_BO_BIEN_SO_<mã>.md` (tools/bang_bien_g3.py soạn, PI duyệt)
+hoặc bảng biến số của đề cương nộp.
+
 Mức: `loi` chặn (cổng giữ REVIEW / cầu nối từ chối xuất), `canh_bao` chỉ báo. Không đo được KHÔNG BAO GIỜ là «đạt».
 Chỉ ĐỌC và BÁO — không sửa tệp nào, trừ lệnh `mau --ghi` (dựng KHUNG khi chưa có tệp; không ghi đè).
 
@@ -394,6 +397,15 @@ def kiem(out_dir: Path, study: str, *, meta: Optional[Mapping[str, Any]] = None,
     # MT-05 — đúng một kết cục chính, kiểu khớp G1
     kc = [r for r in dong if r.get("vai_tro") == "ket_cuc_chinh"]
     thiet_ke = str(meta.get("design_code") or _gp(meta, "G1").get("design") or "").strip().lower()
+    if not thiet_ke:
+        # 15/11/2026 (thẩm định #277): run_g2_auto thôi gieo study_meta.design_code (ô ghim của PI) ⇒ đề tài chưa ghim
+        # đọc thiết kế G1 ĐANG DÙNG ở checkpoint — như trước kia đọc giá trị G2 gieo (cùng thiết kế G1 máy suy).
+        try:
+            _cp1 = json.loads((out_dir / "G1_checkpoint.json").read_text(encoding="utf-8"))
+            _tk1 = (_cp1.get("design") or {}).get("internal_code") if isinstance(_cp1, dict) else None
+            thiet_ke = str(_tk1 or "").strip().lower()
+        except (OSError, ValueError, AttributeError):
+            thiet_ke = ""
     khong_dinh_luong = thiet_ke in ("qualitative", "sr_ma")
     if len(kc) > 1 or (len(kc) == 0 and not khong_dinh_luong):
         vd.append(_van_de("MT-05", "loi", f"cần ĐÚNG một dòng vai_tro=ket_cuc_chinh (đang có {len(kc)})"))
@@ -404,6 +416,18 @@ def kiem(out_dir: Path, study: str, *, meta: Optional[Mapping[str, Any]] = None,
     elif kc and not kieu_g1 and not khong_dinh_luong:
         vd.append(_van_de("MT-05", "canh_bao", "G1 chưa ghi (hoặc ghi mơ hồ nhiều loại) loại dữ liệu kết cục chính "
                                                "(primary_outcome.type) — không đối chiếu được kiểu"))
+
+    # MT-07 (E5, 15/11/2026) — một biến ở nhiều dòng (vd mô tả ở MT1, yếu tố ở MT3) phải khai CÙNG một kiểu: mức đo
+    # SPSS/R của biến lấy từ kiểu này, khác nhau thì .sav/.rds phụ thuộc thứ tự dòng.
+    kieu_bien: Dict[str, set] = {}
+    for r in dong:
+        ten = str(r.get("bien") or "").strip()
+        if not _trong(ten) and r.get("kieu") in KIEU:
+            kieu_bien.setdefault(ten, set()).add(r["kieu"])
+    for ten, ks in kieu_bien.items():
+        if len(ks) > 1:
+            vd.append(_van_de("MT-07", "loi", f"biến «{ten}» khai kiểu KHÁC nhau ở các dòng ({', '.join(sorted(ks))}) "
+                                              "— một biến chỉ có một kiểu/mức đo"))
 
     # MT-06/07/08 — biến có thật, đúng kiểu; phái sinh có nguồn
     for i, r in enumerate(dong, 2):
@@ -478,9 +502,37 @@ def kiem(out_dir: Path, study: str, *, meta: Optional[Mapping[str, Any]] = None,
     # trong SAP §11 hoặc phần «Dự kiến kết quả» của đề cương nộp — mục tiêu không có đầu ra định trước là mục tiêu không
     # được trả lời. Đo C1a: SAP §11 trỏ sang Bảng 5.x đề cương (5.2 MT1, 5.3–5.4 MT2); BTM: SAP Bảng 2–6 gắn MT1–MT3.
     vd += _mt11(out_dir, study, dong, mt, sap)
-
+    vd += kiem_bang_bien_g3(out_dir, study, meta)   # MT-12 — nguồn người duyệt của bộ biến (G3-T2)
     loi = [x for x in vd if x["muc"] == "loi"]
     return _ket(TRANG_THAI_DAT if not loi else TRANG_THAI_CHUA_DAT, vd, dong, meta)
+
+
+def kiem_bang_bien_g3(out_dir: Path, study: str, meta: Mapping[str, Any]) -> List[Dict[str, str]]:
+    """MT-12 (CẢNH BÁO — G3-T2, bác sĩ chọn 15/11/2026): bộ biến phải có NGUỒN NGƯỜI DUYỆT để G5-AUTO-11 đối chiếu —
+    bảng biến số của đề cương nộp, hoặc `G3_BO_BIEN_SO_<mã>.md` (máy soạn bằng tools/bang_bien_g3.py + PI duyệt). Chỉ
+    cảnh báo ở G3: chặn thật nằm ở G5-AUTO-11 (không có nguồn người duyệt ⇒ không đo được ⇒ G5 không READY)."""
+    try:
+        import bang_bien_g3 as BB  # noqa: PLC0415
+        import doi_chieu_bien_de_cuong as DC  # noqa: PLC0415
+
+        st = BB.trang_thai(out_dir, study, meta)
+        co_de_cuong = bool(DC.doc_de_cuong(Path(out_dir), study)[0])
+    except Exception as e:  # noqa: BLE001 — không đo được ⇒ nói thật
+        return [_van_de("MT-12", "canh_bao", f"không đo được bảng bộ biến G3 cho PI duyệt: {type(e).__name__}")]
+    lenh = f"python3 tools/bang_bien_g3.py soan --study {study} --ghi"
+    if st["trang_thai"] == BB.KHONG_CO:
+        if co_de_cuong:
+            return []
+        return [_van_de("MT-12", "canh_bao", f"chưa có {st['tep']} cho PI duyệt, đề cương nộp cũng chưa có bảng "
+                                             "biến số — G5-AUTO-11 sẽ không có nguồn người duyệt để đối chiếu; agent "
+                                             f"bien-so-nghien-cuu soạn: {lenh}, rồi PI đọc và ghi xác nhận")]
+    if st["trang_thai"] in (BB.CHUA_DUYET, BB.XAC_NHAN_LECH):
+        return [_van_de("MT-12", "canh_bao", f"{st['tep']}: {st['ly_do']}")]
+    if st.get("nguon_doi"):
+        return [_van_de("MT-12", "canh_bao", f"{st['tep']}: bộ biến máy đã đổi sau khi soạn bảng — đối chiếu lại "
+                                             f"(python3 tools/doi_chieu_bien_de_cuong.py --study {study}); bảng PI đã "
+                                             "duyệt là chuẩn, bộ máy phải sửa theo, hoặc PI duyệt bảng mới")]
+    return []
 
 
 _CHU_THICH_BANG = re.compile(r"^\s*[*_]{0,2}\s*(?:Bảng|Hình|Table|Figure)\s+[\w.]+[^\n]*",
@@ -648,8 +700,9 @@ def kiem_noi_dung_xuat(out_dir: Path, study: str, tu_dien: Path, cot_xuat: Itera
 # ───────────────────────────── phiếu nộp Hội đồng Đạo đức ↔ ma trận/từ điển ─────────────────────────────
 def kiem_phieu_hoi_dong(out_dir: Path, study: str, *, meta: Optional[Mapping[str, Any]] = None) -> Dict[str, Any]:
     """Mỗi mã câu hỏi của ma trận (cột cau_hoi dạng «C3», «TT1») phải có trong phiếu đã nộp Hội đồng Đạo đức:
-    hồ sơ G2 (`G2_A3_ETHICS_PACKAGE_<mã>.md`) + các tệp khai ở gate_params.G2.phieu_nop_hoi_dong (đường dẫn tương
-    đối thư mục đề tài). Trả {trang_thai: DAT|CHUA_DAT|KHONG_AP_DUNG|KHONG_DO_DUOC, loi[], nguon[]}."""
+    hồ sơ G2 (`G2_A3_ETHICS_PACKAGE_<mã>.md`) + phiếu thu thập `PHIEU_THU_THAP_SO_LIEU_<mã>.md` + đề cương nộp
+    `DE_CUONG_NOP_HOI_DONG_<mã>.md` + các tệp khai ở gate_params.G2.phieu_nop_hoi_dong (đường dẫn tương đối).
+    Trả {trang_thai: DAT|CHUA_DAT|KHONG_AP_DUNG|KHONG_DO_DUOC, loi[], nguon[]}."""
     out_dir = Path(out_dir)
     meta = dict(meta) if meta is not None else doc_meta(out_dir)
     dong, loi_ct = doc_ma_tran(out_dir)
@@ -660,7 +713,11 @@ def kiem_phieu_hoi_dong(out_dir: Path, study: str, *, meta: Optional[Mapping[str
     if not ma:
         return {"trang_thai": "KHONG_AP_DUNG", "loi": [], "nguon": [],
                 "ghi_chu": "ma trận không có mã câu hỏi (đề tài không dùng phiếu/công cụ có mã câu)"}
-    tep: List[Path] = [out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"]
+    # CÙNG nguồn phiếu với trục «công cụ thu thập ↔ từ điển» của G5-AUTO-11 (nhat_quan_xuyen_cong._truc_cong_cu):
+    # PHIEU_THU_THAP_SO_LIEU_<mã>.md (tên chuẩn) và đề cương nộp Hội đồng — giả lập lần 3 (15/11/2026) đo được hai luật
+    # đòi hai cách khai khác nhau cho CÙNG một phiếu.
+    tep: List[Path] = [out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md", out_dir / f"PHIEU_THU_THAP_SO_LIEU_{study}.md",
+                       out_dir / f"DE_CUONG_NOP_HOI_DONG_{study}.md"]
     khai = _gp(meta, "G2").get("phieu_nop_hoi_dong") or []
     if isinstance(khai, str):
         khai = [khai]
