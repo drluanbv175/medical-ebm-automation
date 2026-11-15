@@ -9,12 +9,12 @@
 
 | Mục | Thông tin |
 |-----|-----------|
-| Thiết kế | Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence) |
+| Thiết kế | Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional) |
 | Mức nguy cơ | **TỐI THIỂU** |
 | Lộ trình IRB | **EXPEDITED REVIEW (hoặc EXEMPT nếu không có PII và rủi ro tối thiểu)** |
 | Đăng ký nghiên cứu | BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, trước NTG đầu tiên), TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp thuần túy, không khảo sát ai mới, loại hình thu thập: TIẾN CỨU — khảo sát nặc danh người tham gia mới tại điểm khám (đề cương §4.1–4.3), OSF Registries (https://osf.io/registries) (nếu tiến cứu tuyển mới) |
 | ICF bắt buộc |  Có |
-| Chuẩn báo cáo | STROBE |
+| Chuẩn báo cáo | STROBE + CROSS |
 
 ---
 
@@ -97,8 +97,8 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT, ngôn ngữ hành chính)
  Cỡ mẫu dự kiến: 1000
 
 4. PHƯƠNG PHÁP VÀ QUY TRÌNH:
- Thiết kế: Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)
- Chuẩn báo cáo: STROBE
+ Thiết kế: Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)
+ Chuẩn báo cáo: STROBE + CROSS
  Nơi thực hiện: Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh. Khối khám ngoại trú theo yêu cầu (dịch vụ) tại bệnh viện quân y tuyến cuối
  Quy trình: phát phiếu khảo sát NẶC DANH tự điền (30 mục Likert thuộc 6 lĩnh vực A–F + mục hài lòng chung G1) cho người bệnh ngoại trú ≥18 tuổi ngay sau khi hoàn tất lượt khám tại Khoa C1a; trả lời một lần ~15–20 phút; KHÔNG can thiệp y khoa, KHÔNG lấy mẫu sinh học
 

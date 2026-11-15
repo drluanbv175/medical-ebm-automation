@@ -1,5 +1,5 @@
 # A2 — THIẾT KẾ NGHIÊN CỨU & SAP SKELETON | btm-dtd2-ngoai-tru-BVQY175
-> Tạo tự động: 2026-11-15 12:12 | Rule-based; có ứng viên effect size truy nguyên từ PubMed
+> Tạo tự động: 2026-11-15 14:43 | Rule-based; có ứng viên effect size truy nguyên từ PubMed
 > [BẢN NHÁP TỰ ĐỘNG] — Bác sĩ xác nhận thiết kế chọn + điền [CẦN...] trước khi tiến G2/G4
 > Cần bác sĩ kiểm chứng.
 
@@ -15,11 +15,11 @@
 - Mã đề tài: `btm-dtd2-ngoai-tru-BVQY175`
 - Tên đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026
 - Phiên bản protocol: 1.0
-- Ngày tạo/cập nhật: 2026-11-15 12:12
+- Ngày tạo/cập nhật: 2026-11-15 14:43
 - Chủ nhiệm, nhà phương pháp, thống kê viên, quản lý dữ liệu: Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và SAP, ký hồ sơ đạo đức, lập khung mẫu và trích hồ sơ trên eHospital, giữ bảng nối mã, chịu trách nhiệm chung. Nhà phương pháp/thống kê: cỡ mẫu (G3), viết và khoá SAP (G4), phân tích (G6). Quản lý dữ liệu: codebook và phiếu thu thập, nhập liệu, kiểm tra chất lượng, khoá cơ sở dữ liệu (G5), lưu trữ tệp đã mã hoá. Người trích lại: trích lại độc lập 10% hồ sơ kiểm chứng. Người đảm nhận các vai ngoài chủ nhiệm do chủ nhiệm phân công (bảng RACI ở A13); một người có thể kiêm nhiều vai, riêng người trích lại phải khác chủ nhiệm.
 - Tài trợ, bảo hiểm, xung đột lợi ích và vai trò nhà tài trợ: [CẦN HOÀN THIỆN Ở G2/G9]
 - Chuẩn đề cương: Protocol định trước; đăng ký nếu cần minh bạch
-- Chuẩn báo cáo kết quả dự kiến: STROBE
+- Chuẩn báo cáo kết quả dự kiến: STROBE + RECORD
 
 ### 0.2 Cơ sở khoa học và khoảng trống
 - Vấn đề nghiên cứu và gánh nặng liên quan: Bệnh thận mạn thường gặp ở người ĐTĐ típ 2 (khoảng 32% đến 35% trong các mẫu chăm sóc ngoại trú đã tra, PMID 30238781, 41741270) và phát hiện sớm cần cả eGFR lẫn UACR. ADA 2026 khuyến cáo đánh giá UACR và eGFR ít nhất mỗi năm (PMID 41358881); KDIGO 2024 định nghĩa và phân loại bệnh thận mạn theo eGFR (G1–G5) và albumin niệu (A1–A3) (PMID 38490803). Không làm UACR thì bệnh thận mạn giai đoạn sớm bị bỏ sót và người bệnh mất cơ hội dùng các thuốc bảo vệ thận đã được khuyến cáo (SGLT2i, ACEi/ARB — KDIGO 2022, PMID 36272764). Tại Khoa Khám bệnh BVQY175 chưa có số liệu về mức độ được xét nghiệm, ghi nhận và điều trị bệnh thận mạn ở người ĐTĐ típ 2 ngoại trú.
@@ -34,7 +34,7 @@
 - Kết cục chính neo mục tiêu: Được xét nghiệm đủ UACR và creatinin huyết thanh trong cửa sổ 12 tháng (biến XN_DU)
 
 ### 0.4 Thiết kế, địa điểm và thời gian
-- Thiết kế đã chọn: Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)
+- Thiết kế đã chọn: Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)
 - Lý do chọn so với phương án thay thế: Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định thật, ưu tiên hơn suy luận tự động). Lý do của PI: Cắt ngang mô tả có phân tích trên dữ liệu y tế thu thập thường quy: chủ nhiệm mở và trích hồ sơ bệnh án điện tử trên phần mềm eHospital (HIS của BVQY175) của một mẫu ngẫu nhiên người ĐTĐ típ 2, đo tình trạng xét nghiệm, ghi nhận chẩn đoán và kê đơn trong cửa sổ 12 tháng (01/01/2026–31/12/2026). Câu hỏi đã chốt ở G0 là mô tả (question_type = descriptive) nên cắt ngang là thiết kế chuẩn; MT3 chỉ ước lượng mối liên quan (tỷ số tỷ lệ hiện mắc), không suy nhân quả. Đã cân nhắc và loại: (1) đoàn hệ hồi cứu theo dõi kết cục thận — vượt nhu cầu câu hỏi (đề tài đo khoảng trống chăm sóc, không đo tiến triển bệnh) và cần dữ liệu nhiều năm; (2) cắt ngang thu mới bằng phỏng vấn/khám — tốn nguồn lực và không đo được hành vi xét nghiệm, kê đơn thực tế; (3) trích xuất tự động toàn bộ quần thể từ HIS — không dùng vì dữ liệu do chủ nhiệm trích bằng cách mở từng hồ sơ (quyết định 28/10/2026), nên lấy một mẫu ngẫu nhiên đủ cỡ theo G3 thay cho lấy toàn bộ. Khung đo tương tự PMID 38922613 (cohort hồi cứu trên dữ liệu thường quy) và PMID 41741270 (cắt ngang, dùng hồi quy Poisson phương sai vững). Chuẩn báo cáo: STROBE kèm phần mở rộng RECORD cho nghiên cứu dùng dữ liệu y tế thu thập thường quy (Benchimol 2015, PMID 26440803, DOI 10.1371/journal.pmed.1001885).
 - Địa điểm/bối cảnh: Khoa Khám bệnh, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh — bệnh viện quân đội tuyến cuối; người bệnh gồm quân nhân, người có BHYT và người khám dịch vụ, theo dõi ĐTĐ ở phòng khám nội tiết hoặc nội chung. Nguồn dữ liệu: hồ sơ bệnh án điện tử trên phần mềm eHospital (HIS của BVQY175) — lượt khám, mã ICD-10, kết quả xét nghiệm, đơn thuốc ngoại trú.
 - Thời gian nghiên cứu: Cửa sổ dữ liệu hồi cứu 01/01/2026–31/12/2026. Thời gian thực hiện dự kiến 11/2026–09/2027 theo sổ tiến độ đề tài. Trích xuất dữ liệu chỉ bắt đầu sau khi Hội đồng Đạo đức BVQY175 phê duyệt (T0), SAP đã khoá ở cổng G4 và cửa sổ đã khép (sớm nhất tháng 01/2027) — dự kiến 19/01–28/02/2027.
@@ -103,14 +103,15 @@
 
 | Thiết kế | Phù hợp câu hỏi | Kiểm soát sai lệch | Khả thi | Lực | Chọn/Loại |
 |---|---|---|---|---|---|
-| **Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)** | ✅ Phù hợp nhất (Mô tả (cross-sectional)) | Cao (xem §2) | PI đã xác nhận (gate_params.G1.feasibility_confirmed) | theo G3 (`G3_A4_SAMPLE_SIZE`, G3_checkpoint) — N tối thiểu 385 (số lấy từ G3_checkpoint lúc sinh tệp; G3 chốt hay chưa: đo sống `python3 tools/g3_quality_gate.py`) | **→ ƯU TIÊN** |
+| **Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)** | ✅ Phù hợp nhất (Mô tả (cross-sectional)) | Cao (xem §2) | PI đã xác nhận (gate_params.G1.feasibility_confirmed) | theo G3 (`G3_A4_SAMPLE_SIZE`, G3_checkpoint) — N tối thiểu 385 (số lấy từ G3_checkpoint lúc sinh tệp; G3 chốt hay chưa: đo sống `python3 tools/g3_quality_gate.py`) | **→ ƯU TIÊN** |
 | [Đã pin bởi bác sĩ — không áp dụng bảng thiết kế thay thế tự động] | Phù hợp thay thế | Trung bình | — (thiết kế đã pin) | — (thiết kế đã pin) | Phương án 2 |
 | [Đã pin bởi bác sĩ — không áp dụng bảng thiết kế thay thế tự động] | Phù hợp trong điều kiện đặc biệt | Thấp hơn | — (thiết kế đã pin) | — (thiết kế đã pin) | Phương án 3 |
 
-**Lý do chọn ưu tiên `Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)`:**
+**Lý do chọn ưu tiên `Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)`:**
 Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định thật, ưu tiên hơn suy luận tự động). Lý do của PI: Cắt ngang mô tả có phân tích trên dữ liệu y tế thu thập thường quy: chủ nhiệm mở và trích hồ sơ bệnh án điện tử trên phần mềm eHospital (HIS của BVQY175) của một mẫu ngẫu nhiên người ĐTĐ típ 2, đo tình trạng xét nghiệm, ghi nhận chẩn đoán và kê đơn trong cửa sổ 12 tháng (01/01/2026–31/12/2026). Câu hỏi đã chốt ở G0 là mô tả (question_type = descriptive) nên cắt ngang là thiết kế chuẩn; MT3 chỉ ước lượng mối liên quan (tỷ số tỷ lệ hiện mắc), không suy nhân quả. Đã cân nhắc và loại: (1) đoàn hệ hồi cứu theo dõi kết cục thận — vượt nhu cầu câu hỏi (đề tài đo khoảng trống chăm sóc, không đo tiến triển bệnh) và cần dữ liệu nhiều năm; (2) cắt ngang thu mới bằng phỏng vấn/khám — tốn nguồn lực và không đo được hành vi xét nghiệm, kê đơn thực tế; (3) trích xuất tự động toàn bộ quần thể từ HIS — không dùng vì dữ liệu do chủ nhiệm trích bằng cách mở từng hồ sơ (quyết định 28/10/2026), nên lấy một mẫu ngẫu nhiên đủ cỡ theo G3 thay cho lấy toàn bộ. Khung đo tương tự PMID 38922613 (cohort hồi cứu trên dữ liệu thường quy) và PMID 41741270 (cắt ngang, dùng hồi quy Poisson phương sai vững). Chuẩn báo cáo: STROBE kèm phần mở rộng RECORD cho nghiên cứu dùng dữ liệu y tế thu thập thường quy (Benchimol 2015, PMID 26440803, DOI 10.1371/journal.pmed.1001885).
 
-**Chuẩn báo cáo:** STROBE
+**Chuẩn báo cáo:** STROBE + RECORD
+> RECORD: chỉ dùng dữ liệu y tế thu thập thường quy có sẵn.
 **Chuẩn đề cương/protocol:** Protocol định trước; đăng ký nếu cần minh bạch
 
 ---
@@ -119,7 +120,7 @@ Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định thật, ưu 
 
 > Sai lệch RIÊNG của đề tài (`gate_params.G1.bias_controls`). Khuôn chung của thiết kế để đối chiếu: Selection bias, Information bias, Confounding, Prevalence-incidence bias, Non-response bias, Social desirability, Reporting bias.
 
-| Sai lệch | Biện pháp kiểm soát cho `Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)` |
+| Sai lệch | Biện pháp kiểm soát cho `Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)` |
 |---|---|
 | Sai lệch chọn do tiêu chí từ 2 lượt khám | Sơ đồ chọn đếm hồ sơ bị loại vì chỉ 1 lượt khám và so sánh tuổi, giới, nhóm đối tượng với mẫu nghiên cứu (chiều lệch: Mẫu nghiêng về người theo dõi đều nên có thể ước lượng CAO tỷ lệ được xét nghiệm so với mọi người ĐTĐ típ 2 từng đến khám) — trạng thái: định lượng + hạn chế mở |
 | Sai lệch chọn mẫu | Khung mẫu ở cấp người bệnh (gộp lượt khám trùng); thứ tự ngẫu nhiên do máy tính sinh, ghi seed; mở hồ sơ đúng thứ tự; ghi lý do mọi hồ sơ bị loại; người trích không tự chọn hồ sơ (chiều lệch: Chọn theo lượt khám làm người khám nhiều lần (thường được theo dõi kỹ hơn) dễ vào mẫu ⇒ ước lượng CAO tỷ lệ được xét nghiệm) — trạng thái: khống chế |
@@ -162,7 +163,7 @@ Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định thật, ưu 
 ```
 ═══════════════════════════════════════════════════════════════
 KHỐI THIẾT KẾ — btm-dtd2-ngoai-tru-BVQY175
-Loại thiết kế: Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)
+Loại thiết kế: Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)
 Mô tả thiết kế theo VIỆC ĐÃ LÀM (STROBE mục 1a + 4):
   ⚠ KHÔNG dán nhãn "tiến cứu"/"hồi cứu" làm mô tả chính — STROBE Explanation &
     Elaboration mục 4 nêu rõ hai nhãn này được dùng KHÔNG THỐNG NHẤT nên tự chúng
@@ -188,7 +189,7 @@ Cỡ mẫu dự kiến: theo G3 (`G3_A4_SAMPLE_SIZE`, G3_checkpoint) — N tối
 Nguồn tài trợ và vai trò của nhà tài trợ: [CẦN HOÀN THIỆN Ở G2/G9] (STROBE mục 22)
 Kiểm soát biến nhiễu chính: xem PHẦN 2 (sai lệch riêng của đề tài — gate_params.G1.bias_controls)
 Bước cỡ mẫu: G3 đã tính — xem dòng «Cỡ mẫu dự kiến» ở trên và G3_A4_SAMPLE_SIZE
-Chuẩn báo cáo: STROBE
+Chuẩn báo cáo: STROBE + RECORD
 Chuẩn đề cương/protocol: Protocol định trước; đăng ký nếu cần minh bạch
 ═══════════════════════════════════════════════════════════════
 ```

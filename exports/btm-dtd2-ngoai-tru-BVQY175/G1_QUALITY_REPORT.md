@@ -11,7 +11,7 @@
 | G1-AUTO-02c | Thiết kế bác sĩ đã ghim được chuỗi G0–G10 hỗ trợ (không bị thay bằng suy luận) | PASS | không có pin bị từ chối |
 | G1-AUTO-02d | Thiết kế hợp với loại câu hỏi đã chốt ở G0 | PASS | thiết kế «cross_sectional» hợp với loại câu hỏi G0 «descriptive» |
 | G1-AUTO-02b | ICH E6(R3) Annex 2 Step 4: thiết kế phương pháp mới đủ fitness-for-purpose và giám sát | PASS | status=NOT_APPLICABLE; methods=không áp dụng |
-| G1-AUTO-03 | Chuẩn báo cáo khớp thiết kế | PASS | đã chọn='STROBE'; canon='STROBE' |
+| G1-AUTO-03 | Chuẩn báo cáo khớp thiết kế | PASS | đã chọn='STROBE + RECORD'; canon='STROBE' |
 | G1-AUTO-03b | Chuẩn đề cương/protocol khớp thiết kế | PASS | đã chọn='Protocol định trước; đăng ký nếu cần minh bạch'; canon='Protocol định trước; đăng ký nếu cần minh bạch' |
 | G1-AUTO-04 | Thiết kế không còn suy luận mơ hồ | PASS | ambiguous=false |
 | G1-AUTO-04b | So sánh ít nhất ba phương án và kiểm soát đủ nhóm sai lệch/trustworthiness theo thiết kế | PASS | primary_present=True; alternatives_complete=True; rationale_present=True; bias_controls=7 |
@@ -35,8 +35,8 @@
 ## Manifest artifact
 | Artifact | Đường dẫn | SHA-256 |
 |---|---|---|
-| A2 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md | `beebc2106921b123a7ac711686fe1790e3c98ae58137b0f9975be8e2a5944f01` |
-| A1b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md | `d4b55d502ce5e5890ef9ac1c584bebbe18b67987132e62d6a4d032fcfb063ef5` |
+| A2 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md | `2b5c2becdd8c911ca8090a05db6538727fbf79b16f6700a0185f7fcf951e58fa` |
+| A1b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md | `76f6af98967e40457902026d0d0b8e27e4be5f98cf3e48fa4d5686076d7fc720` |
 | A2b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md | `a068525bf321d8100e3220b1fc3b686e3380f221bdfb813a4940d19f71c06272` |
 | A13 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md | `d533755ed3479bf47c125b1147a6a02e8bf3213d05efa6c8d75cfddbd211f2c2` |
 | A13b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13b_RISK_REGISTER_btm-dtd2-ngoai-tru-BVQY175.md | `aa398df7656c05ee5f285dc23e331a5d3ed283f4cf4a4eb7b438ba4f090ec7c4` |

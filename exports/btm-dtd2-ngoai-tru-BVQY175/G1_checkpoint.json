@@ -3,12 +3,19 @@
   "gate": "G1",
   "gate_status": "PASS — G1 DESIGN + REPORTING MAP ĐÃ ĐƯỢC XÁC NHẬN",
   "automation_status": "AUTOMATED_CHECKS_PASS",
-  "generated_at": "2026-11-15T12:12:18.554506",
+  "generated_at": "2026-11-15T14:43:09.200505",
   "question_type": "descriptive",
   "design": {
-    "primary": "Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)",
+    "primary": "Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)",
     "internal_code": "cross_sectional",
-    "reporting_standard": "STROBE",
+    "reporting_standard": "STROBE + RECORD",
+    "reporting_extensions": [
+      "RECORD"
+    ],
+    "reporting_extensions_nguon": {
+      "RECORD": "chỉ dùng dữ liệu y tế thu thập thường quy có sẵn"
+    },
+    "reporting_extensions_can_xem": [],
     "protocol_standard": "Protocol định trước; đăng ký nếu cần minh bạch",
     "alternative_1": "[Đã pin bởi bác sĩ — không áp dụng bảng thiết kế thay thế tự động]",
     "alternative_2": "[Đã pin bởi bác sĩ — không áp dụng bảng thiết kế thay thế tự động]",
@@ -124,7 +131,7 @@
         "id": "G1-AUTO-03",
         "label": "Chuẩn báo cáo khớp thiết kế",
         "status": "PASS",
-        "evidence": "đã chọn='STROBE'; canon='STROBE'",
+        "evidence": "đã chọn='STROBE + RECORD'; canon='STROBE'",
         "action": "Sửa reporting map theo skill_standards.py."
       },
       {
@@ -239,11 +246,11 @@
     "artifact_manifest": {
       "A2": {
         "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md",
-        "sha256": "beebc2106921b123a7ac711686fe1790e3c98ae58137b0f9975be8e2a5944f01"
+        "sha256": "2b5c2becdd8c911ca8090a05db6538727fbf79b16f6700a0185f7fcf951e58fa"
       },
       "A1b": {
         "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md",
-        "sha256": "d4b55d502ce5e5890ef9ac1c584bebbe18b67987132e62d6a4d032fcfb063ef5"
+        "sha256": "76f6af98967e40457902026d0d0b8e27e4be5f98cf3e48fa4d5686076d7fc720"
       },
       "A2b": {
         "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md",
@@ -296,11 +303,11 @@
     "artifact_manifest_luc_sinh": {
       "A2": {
         "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md",
-        "sha256": "beebc2106921b123a7ac711686fe1790e3c98ae58137b0f9975be8e2a5944f01"
+        "sha256": "2b5c2becdd8c911ca8090a05db6538727fbf79b16f6700a0185f7fcf951e58fa"
       },
       "A1b": {
         "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md",
-        "sha256": "d4b55d502ce5e5890ef9ac1c584bebbe18b67987132e62d6a4d032fcfb063ef5"
+        "sha256": "76f6af98967e40457902026d0d0b8e27e4be5f98cf3e48fa4d5686076d7fc720"
       },
       "A2b": {
         "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md",
@@ -341,7 +348,7 @@
     "masking": null,
     "alpha_sidedness": null,
     "dau_van_tay": "6ba26632a4c46b44",
-    "ghi_luc": "2026-11-15T12:12:18"
+    "ghi_luc": "2026-11-15T14:43:09"
   },
   "dau_gate_params_g1": "91fc5cdaaa5a689c"
 }

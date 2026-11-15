@@ -442,7 +442,19 @@ def kiem(out_dir: Path, study: str, *, meta: Optional[Mapping[str, Any]] = None,
             if thieu:
                 vd.append(_van_de("MT-08", "loi", f"biến phái sinh «{ten}» lấy từ biến không có trong bộ biến: "
                                                   f"{', '.join(thieu[:8])}"))
-            if _trong(ps.get("nguoi_duyet")):
+            ct = str(ps.get("cong_thuc") or "").strip()
+            if ct.startswith("@"):
+                # 15/11/2026: «@mô-đun» = biến do mô-đun CHÍNH THỨC của SAP tính (vd `@g6_trong_so_survey` — tầng hậu
+                # phân tầng), bien_phai_sinh xếp NGOAI_TANG và lệnh `duyet` không ghi được ⇒ chốt qua chữ ký SAP G4,
+                # không qua `nguoi_duyet`. Trước đây MT-08 vẫn đòi `nguoi_duyet` ⇒ cảnh báo không bao giờ gỡ được.
+                # Còn kiểm: mô-đun phải có thật.
+                mo_dun = ct[1:].strip()
+                co_mo_dun = bool(re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", mo_dun)) and \
+                    (BASE / "tools" / f"{mo_dun}.py").is_file()
+                if not co_mo_dun:
+                    vd.append(_van_de("MT-08", "loi", f"biến phái sinh «{ten}» trỏ mô-đun «{ct}» không có trong "
+                                                      "tools/"))
+            elif _trong(ps.get("nguoi_duyet")):
                 vd.append(_van_de("MT-08", "canh_bao", f"công thức biến phái sinh «{ten}» chưa có người duyệt "
                                                        "(thống kê viên/PI)"))
         else:

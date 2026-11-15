@@ -505,6 +505,14 @@ def sec_muctieu(cps, meta) -> str:
     return "\n".join(lines)
 
 
+def _chuan_bao_cao_de_tai(cps, rs) -> str:
+    """Chuẩn báo cáo CỦA ĐỀ TÀI (giai đoạn 4, 15/11/2026): chuỗi G1 đã chốt — chuẩn chính + mở rộng theo nguồn dữ liệu
+    (CROSS/RECORD, skill_standards.chuan_bao_cao_de_tai) — thay vì chỉ chuẩn chính của bản đồ thiết kế (đề cương G10
+    từng ghi «STROBE» khi đề cương nộp ghi «STROBE và CROSS»). G1 chưa có ⇒ lùi về chuẩn chính."""
+    g1 = _g(cps["G1"], "design", "reporting_standard", default=None)
+    return str(g1) if RS.is_present(g1) else str(rs.get("primary") or TAG_BS)
+
+
 def sec_thietke(cps, meta) -> str:
     design = _g(cps["G1"], "design", "primary", default=TAG_BS)
     code = _g(cps["G1"], "design", "internal_code",
@@ -517,6 +525,7 @@ def sec_thietke(cps, meta) -> str:
         f"**Thiết kế (tự động từ G1):** {design}.\n",
         f"**Mã thiết kế nội bộ:** `{code}`.\n",
         f"**Chuẩn báo cáo chính:** {rs['primary']}.  ",
+        f"**Chuẩn báo cáo áp dụng:** {_chuan_bao_cao_de_tai(cps, rs)}.  ",
         f"**Protocol/đăng ký:** {rs['protocol']}.  ",
         f"**Công cụ/chuẩn bổ sung cần cân nhắc:** {rs['extra']}.\n",
     ]
@@ -1710,7 +1719,7 @@ def build_display_items(cps, meta=None) -> str:
     lines = [
         "# Danh mục bảng và hình chuẩn xuất bản\n",
         f"**Thiết kế chuẩn hoá:** `{code or TAG_BS}`.  ",
-        f"**Chuẩn báo cáo áp dụng:** {std['primary']}.\n",
+        f"**Chuẩn báo cáo áp dụng:** {_chuan_bao_cao_de_tai(cps, std)}.\n",
         "| Mã | Tên bảng/hình bắt buộc | Yêu cầu tối thiểu trước khi nộp |",
         "|---|---|---|",
     ]

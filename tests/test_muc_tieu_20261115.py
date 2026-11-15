@@ -19,7 +19,7 @@ for _p in (str(ROOT / "tools"), str(ROOT / "tests"), str(ROOT)):
 
 import ma_tran_muc_tieu_bien as MT  # noqa: E402
 import run_g1_auto as G1  # noqa: E402
-from test_dong_bo_xuyen_cong_20261115 import STUDY, _de_tai, _ghi_bo_bien, _ghi_ma_tran  # noqa: E402
+from test_dong_bo_xuyen_cong_20261115 import BIEN_DUNG, STUDY, _de_tai, _ghi_bo_bien, _ghi_ma_tran  # noqa: E402
 
 SAP_DU = """# SAP
 ### §4 PHÂN TÍCH CHÍNH
@@ -125,3 +125,35 @@ def test_truc_ma_tran_muc_tieu(tmp_path):
     assert k["muc"] in (NQ.MUC_KHOP, NQ.MUC_CAN_XEM)
     assert NQ._truc_ma_tran_muc_tieu(d, STUDY, {"gate_params": {}}) is None  # chưa chốt mục tiêu
     assert "ma_tran_muc_tieu" in NQ.TRUC_CHUOI and NQ.TRUC_THEO_CONG["ma_tran_muc_tieu"] == ("G1", "G3", "G4", "G10")
+
+
+# ── ⑤ MT-08 với biến do mô-đun chính thức của SAP tính («@mô-đun», 15/11/2026) ────────────────────────────────────
+def _phai_sinh_tuan_thu(d: Path, cong_thuc: str, nguoi_duyet: str = "") -> None:
+    _ghi_bo_bien(d, [b for b in BIEN_DUNG if b[0] != "tuan_thu"] + [("tt1", "text", "Câu 1", "", "integer", "")])
+    (d / MT.TEP_PHAI_SINH).write_text(
+        "ten_bien,nhan,kieu,bien_nguon,cong_thuc,nhan_gia_tri,nguoi_duyet\n"
+        f"tuan_thu,Tuân thủ,nhị phân,tt1,{cong_thuc},0=Không; 1=Có,{nguoi_duyet}\n", encoding="utf-8", newline="\n")
+    _ghi_ma_tran(d)
+
+
+def _mt08(kq) -> list:
+    return [(x["muc"], x["noi_dung"]) for x in kq["loi"] + kq["canh_bao"] if x["ma"] == "MT-08"]
+
+
+def test_mt08_mo_dun_chinh_thuc_khong_doi_nguoi_duyet(tmp_path):
+    # bien_phai_sinh xếp «@…» NGOAI_TANG, lệnh `duyet` không ghi được ⇒ chốt qua SAP G4, không qua nguoi_duyet.
+    d = _de_tai(tmp_path)
+    _phai_sinh_tuan_thu(d, "@g6_trong_so_survey")
+    assert _mt08(MT.kiem(d, STUDY)) == []
+
+
+def test_mt08_mo_dun_khong_co_that_la_loi(tmp_path):
+    d = _de_tai(tmp_path)
+    _phai_sinh_tuan_thu(d, "@mo_dun_khong_ton_tai")
+    assert [m for m, _ in _mt08(MT.kiem(d, STUDY))] == ["loi"]
+
+
+def test_mt08_cong_thuc_thuong_van_doi_nguoi_duyet(tmp_path):
+    d = _de_tai(tmp_path)
+    _phai_sinh_tuan_thu(d, "tt1 >= 1")
+    assert [m for m, _ in _mt08(MT.kiem(d, STUDY))] == ["canh_bao"]

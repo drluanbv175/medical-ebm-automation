@@ -738,7 +738,8 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
 # truy nguyên/văn phong ⇒ CẦN XEM; thiếu nguồn để so ⇒ CHƯA ĐỦ ĐỂ SO (không bao giờ là «khớp»).
 TRUC_CHUOI = ("bien_de_cuong", "cong_cu_tu_dien", "muc_tieu_phan_tich", "chon_mau_co_mau", "dac_ta_cho_bo_bien",
               "tong_quan_khoang_trong", "co_mau_tinh_lai", "ky_thuat_chon_mau", "tai_lieu_nop_co_mau", "ten_de_tai",
-              "cau_hoi_gia_thuyet", "trich_dan_tong_quan", "ma_tran_muc_tieu")
+              "cau_hoi_gia_thuyet", "trich_dan_tong_quan", "ma_tran_muc_tieu", "chuan_bao_cao", "mo_ta_thiet_ke",
+              "kiem_soat_sai_lech")
 # Trục nào là trách nhiệm của cổng nào (hoi_dong_cong.trach_nhiem dùng — «hoàn thiện» của cổng phải qua trục của nó).
 TRUC_THEO_CONG = {
     "co_mau": ("G3", "G4", "G10"), "alpha": ("G3", "G4", "G10"), "power": ("G3", "G4", "G10"),
@@ -753,6 +754,8 @@ TRUC_THEO_CONG = {
     "tai_lieu_nop_co_mau": ("G10",), "ten_de_tai": ("G0", "G2", "G10"), "cau_hoi_gia_thuyet": ("G0", "G1", "G10"),
     "trich_dan_tong_quan": ("G0", "G1", "G10"),
     "ma_tran_muc_tieu": ("G1", "G3", "G4", "G10"),
+    "chuan_bao_cao": ("G1", "G2", "G4", "G10"), "mo_ta_thiet_ke": ("G1", "G2", "G4", "G10"),
+    "kiem_soat_sai_lech": ("G1", "G4", "G10"),
 }
 
 
@@ -1541,6 +1544,207 @@ def _truc_ma_tran_muc_tieu(out_dir: Path, study: str, meta: Dict[str, Any]) -> O
     return _ket("ma_tran_muc_tieu", ten, nguon, MUC_KHOP, "ma trận đạt, không còn cảnh báo")
 
 
+# ─────────────── GIAI ĐOẠN 4 «THIẾT KẾ» (15/11/2026) ───────────────
+# Kiểm tay C1a/BTM: (1) chuẩn báo cáo — đề cương nộp C1a «STROBE và CROSS», G1/gói G2/SAP chỉ «STROBE»; SAP BTM
+# «STROBE +
+# RECORD», G1 chỉ «STROBE»; (2) nhãn thiết kế «Cắt ngang Mô tả (Prevalence)» ở G1/G2/SAP/đăng ký khi đề tài có mục tiêu
+# PHÂN TÍCH và đề cương ghi «có phân tích»; tiêu đề SAP C1a ghi phiên bản 1.4 khi bảng lịch sử đã có 1.5 (G10 in
+# phiên bản
+# từ tiêu đề); (3) bảng kiểm soát sai lệch G1 hứa phân tích SAP không có. Trục `thiet_ke` cũ chỉ so MÃ thiết kế.
+_DONG_CHUAN_BOLD = re.compile(r"^\*\*Chuẩn báo cáo(?: áp dụng)?:\*\*(.*)$", re.M)
+_DONG_CHUAN_BANG = re.compile(r"^\|\s*Chuẩn báo cáo(?: áp dụng)?\s*\|([^|\n]*)\|", re.M)
+_DONG_THIET_KE_BANG = re.compile(r"^\|\s*Thiết kế\s*\|([^|\n]*)\|", re.M)
+_DONG_THIET_KE_G10 = re.compile(r"^\*\*Thiết kế(?: \(tự động từ G1\))?:\*\*(.*)$", re.M)
+_CUM_CAT_NGANG_DC = re.compile(r"[Nn]ghiên cứu (?:mô tả )?cắt ngang[^.\n|]{0,60}")
+_CO_PHAN_TICH = re.compile(r"ph[âa]n\s+t[íi]ch|analytic", re.I)
+_KHONG_AP_DUNG_CHUAN = re.compile(r"\b(RECORD|CROSS)\b[^.\n]{0,80}kh[ôo]ng\s+[áa]p\s+d[ụu]ng", re.I)
+_PHIEN_BAN_TIEU_DE = re.compile(r"\*\*Phiên bản SAP:\*\*\s*([0-9]+(?:\.[0-9]+)*)")
+_DONG_LICH_SU = re.compile(r"^\|\s*([0-9]+(?:\.[0-9]+)*)\b[^|\n]*\|\s*\d{4}-\d{2}-\d{2}\s*\|", re.M)
+
+
+def _dong_dau(rx: "re.Pattern[str]", van_ban: str) -> Optional[str]:
+    m = rx.search(unicodedata.normalize("NFC", van_ban or ""))
+    return m.group(1).strip() if m else None
+
+
+def _nguon_chuan_bao_cao(out_dir: Path, study: str, sap_text: str) -> List[Dict[str, Any]]:
+    """Mỗi nơi khai chuẩn báo cáo một dòng (đọc đúng DÒNG khai báo, không cả tệp — bình luận cùng chữ không làm xanh
+    giả)."""
+    g1 = _doc_json(out_dir / "G1_checkpoint.json").get("design")
+    nguon = [("G1", "G1_checkpoint.design.reporting_standard",
+              g1.get("reporting_standard") if isinstance(g1, dict) else None),
+             ("G1", "A2 «Chuẩn báo cáo:»",
+              _dong_dau(_DONG_CHUAN_BOLD, _doc_text(out_dir / f"G1_A2_PROTOCOL_DESIGN_{study}.md"))),
+             ("G2", "gói đạo đức «| Chuẩn báo cáo |»",
+              _dong_dau(_DONG_CHUAN_BANG, _doc_text(out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"))),
+             ("G4", "SAP tiêu đề «Chuẩn báo cáo:»", _dong_dau(_DONG_CHUAN_BOLD, sap_text)),
+             ("G4", "SAP bảng «| Chuẩn báo cáo |»", _dong_dau(_DONG_CHUAN_BANG, sap_text)),
+             ("G10", "đề cương nộp «Chuẩn báo cáo áp dụng»",
+              _dong_dau(_DONG_CHUAN_BANG, _doc_text(out_dir / f"DE_CUONG_NOP_HOI_DONG_{study}.md"))),
+             ("G10", "đề cương thống nhất G10 «Chuẩn báo cáo áp dụng:»",
+              _dong_dau(re.compile(r"^\*\*Chuẩn báo cáo áp dụng:\*\*(.*)$", re.M),
+                        _doc_text(out_dir / f"DE_CUONG_THONG_NHAT_{study}.md")))]
+    return [{"cong": c, "noi": n, "gia_tri": str(v).strip()} for c, n, v in nguon if isinstance(v, str) and v.strip()]
+
+
+def _truc_chuan_bao_cao(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -> Optional[Dict[str, Any]]:
+    """Chuẩn báo cáo CỦA ĐỀ TÀI phải giống nhau ở mọi nơi khai và hợp với nguồn dữ liệu.
+
+    Chuẩn CHÍNH theo thiết kế thiếu ở một nơi ⇒ LỆCH CỨNG (sai checklist báo cáo). Chuẩn MỞ RỘNG (CROSS/RECORD…) có ở
+    nơi
+    này mà thiếu ở nơi khác ⇒ LỆCH MỀM. Nguồn dữ liệu đòi chuẩn mở rộng mà chưa nơi nào ghi, hoặc PI còn phải quyết
+    (vừa thu mới vừa ghép dữ liệu thường quy) ⇒ CẦN XEM. Chưa có thiết kế ⇒ None."""
+    import skill_standards as SK  # noqa: PLC0415
+
+    g1m = _gp(meta, "G1")
+    code = SK.canonical_design_code(g1m.get("design") or meta.get("design_code"))
+    if not code:
+        return None
+    cb = SK.chuan_bao_cao_de_tai(code, g1m)
+    nguon = _nguon_chuan_bao_cao(out_dir, study, sap_text)
+    ten = "Chuẩn báo cáo của đề tài (chính + mở rộng theo nguồn dữ liệu)"
+    if not nguon:
+        return _ket("chuan_bao_cao", ten, [], MUC_CHUA_DU, "chưa tài liệu nào khai chuẩn báo cáo")
+    token = {i: set(SK.chuan_trong_dong(n["gia_tri"])) for i, n in enumerate(nguon)}
+    chinh = set(cb["chinh"])
+    muc: List[str] = [MUC_KHOP]
+    ghi: List[str] = []
+    thieu_chinh = [nguon[i]["noi"] for i, t in token.items() if chinh and not chinh <= t]
+    if thieu_chinh:
+        muc.append(MUC_LECH_CUNG)
+        ghi.append(f"chuẩn chính {'/'.join(sorted(chinh))} (theo thiết kế {code}) thiếu ở: " + "; ".join(thieu_chinh))
+    da_khai = set().union(*token.values()) - chinh
+    if cb["pi_khai"]:
+        mong = set(cb["mo_rong"])
+        for i, t in token.items():
+            lech = sorted((mong - t) | ((t - chinh) - mong))
+            if lech:
+                muc.append(MUC_LECH_MEM)
+                ghi.append(f"{nguon[i]['noi']} lệch danh sách PI khai ({', '.join(sorted(mong)) or 'không mở rộng'}): "
+                           + ", ".join(lech))
+    else:
+        for i, t in token.items():
+            thieu = sorted(da_khai - t)
+            if thieu:
+                muc.append(MUC_LECH_MEM)
+                ghi.append(f"{nguon[i]['noi']} thiếu {', '.join(thieu)} (nơi khác đã ghi)")
+        chua_ai_ghi = [c for c in cb["mo_rong"] if c not in da_khai]
+        if chua_ai_ghi:
+            muc.append(MUC_CAN_XEM)
+            ghi.append("nguồn dữ liệu đòi " + ", ".join(f"{c} ({cb['nguon'].get(c, '')})" for c in chua_ai_ghi)
+                       + " nhưng chưa tài liệu nào ghi")
+        dc = unicodedata.normalize("NFC", _doc_text(out_dir / f"DE_CUONG_NOP_HOI_DONG_{study}.md"))
+        bo_qua = {m.group(1).upper() for m in _KHONG_AP_DUNG_CHUAN.finditer(dc)}
+        for c, ly in cb["can_xem"]:
+            if c not in da_khai and c not in bo_qua:
+                muc.append(MUC_CAN_XEM)
+                ghi.append(f"cân nhắc {c}: {ly}")
+    m = _muc_cao_nhat(muc)
+    if m == MUC_KHOP:
+        return _ket("chuan_bao_cao", ten, nguon, MUC_KHOP,
+                    f"{len(nguon)} nơi cùng khai {cb['chuoi'] or ', '.join(sorted(chinh | da_khai))}")
+    return _ket("chuan_bao_cao", ten, nguon, m, "; ".join(ghi))
+
+
+def _truc_mo_ta_thiet_ke(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -> Optional[Dict[str, Any]]:
+    """Mô tả thiết kế nhất quán: (TK-01) cắt ngang có mục tiêu phân tích ⇒ mọi nhãn ghi «có phân tích» (CẦN XEM nếu
+    không); (TK-02) thu mới ↔ G2 tuyển mới tiến cứu, chỉ dữ liệu có sẵn ↔ G2 dữ liệu thứ cấp hồi cứu (ngược ⇒ LỆCH CỨNG:
+    sai lộ trình đồng thuận/đạo đức); (TK-03) phiên bản ở tiêu đề SAP = dòng cuối bảng lịch sử (lệch ⇒ LỆCH MỀM: G10 in
+    phiên bản từ tiêu đề)."""
+    import skill_standards as SK  # noqa: PLC0415
+
+    g1m = _gp(meta, "G1")
+    code = SK.canonical_design_code(g1m.get("design") or meta.get("design_code"))
+    if not code:
+        return None
+    ten = "Mô tả thiết kế (nhãn theo mục tiêu · tuyển mẫu ↔ thu thập · phiên bản SAP)"
+    nguon: List[Dict[str, Any]] = []
+    muc: List[str] = []
+    ghi: List[str] = []
+    # TK-01
+    if code == "cross_sectional" and SK.co_muc_tieu_phan_tich(g1m.get("objectives")):
+        g1 = _doc_json(out_dir / "G1_checkpoint.json").get("design")
+        trds15 = _mo_repr(_trds(out_dir, study).get("15"))
+        nhan = [("G1", "G1_checkpoint.design.primary", g1.get("primary") if isinstance(g1, dict) else None),
+                ("G2", "gói đạo đức «| Thiết kế |»",
+                 _dong_dau(_DONG_THIET_KE_BANG, _doc_text(out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"))),
+                ("G2", "đăng ký TRDS mục 15 (description)",
+                 trds15.get("description") if isinstance(trds15, dict) else None),
+                ("G4", "SAP «| Thiết kế |»", _dong_dau(_DONG_THIET_KE_BANG, sap_text)),
+                ("G10", "đề cương thống nhất G10 «Thiết kế (tự động từ G1)»",
+                 _dong_dau(_DONG_THIET_KE_G10, _doc_text(out_dir / f"DE_CUONG_THONG_NHAT_{study}.md")))]
+        dc = unicodedata.normalize("NFC", _doc_text(out_dir / f"DE_CUONG_NOP_HOI_DONG_{study}.md"))
+        cum = [m.group(0) for m in _CUM_CAT_NGANG_DC.finditer(dc)]
+        if cum:
+            nhan.append(("G10", "đề cương nộp (cụm «nghiên cứu … cắt ngang …»)",
+                         next((c for c in cum if _CO_PHAN_TICH.search(c)), cum[0])))
+        thieu = []
+        for c, n, v in nhan:
+            if isinstance(v, str) and v.strip():
+                nguon.append({"cong": c, "noi": n, "gia_tri": v.strip()})
+                if not _CO_PHAN_TICH.search(v):
+                    thieu.append(n)
+        if thieu:
+            muc.append(MUC_CAN_XEM)
+            ghi.append("đề tài có mục tiêu PHÂN TÍCH nhưng nhãn thiết kế chưa ghi «có phân tích» ở: "
+                       + "; ".join(thieu))
+        elif nguon:
+            muc.append(MUC_KHOP)
+    # TK-02
+    nd = SK.nguon_du_lieu(g1m.get("data_collection_method"))
+    che_do = _gp(meta, "G2").get("recruitment_mode")
+    if nd["co_thong_tin"] and _co_that(che_do):
+        nguon.append({"cong": "G2", "noi": "gate_params.G2.recruitment_mode", "gia_tri": che_do})
+        if nd["thu_moi"] and che_do == "RETROSPECTIVE_SECONDARY_DATA":
+            muc.append(MUC_LECH_CUNG)
+            ghi.append("G1 thu MỚI từ người tham gia nhưng G2 khai dữ liệu thứ cấp hồi cứu — sai lộ trình đồng thuận")
+        elif not nd["thu_moi"] and nd["thuong_quy"] and che_do == "PROSPECTIVE_NEW_PARTICIPANTS":
+            muc.append(MUC_LECH_CUNG)
+            ghi.append("G1 chỉ dùng dữ liệu có sẵn nhưng G2 khai tuyển mới tiến cứu — sai lộ trình đồng thuận")
+        else:
+            muc.append(MUC_KHOP)
+    # TK-03
+    if sap_text:
+        tieu_de = _dong_dau(_PHIEN_BAN_TIEU_DE, sap_text[:4000])
+        ls = _DONG_LICH_SU.findall(unicodedata.normalize("NFC", sap_text))
+        if tieu_de and ls:
+            nguon.append({"cong": "G4", "noi": "SAP tiêu đề «Phiên bản SAP» / dòng cuối bảng lịch sử",
+                          "gia_tri": f"{tieu_de} / {ls[-1]}"})
+            if tieu_de != ls[-1]:
+                muc.append(MUC_LECH_MEM)
+                ghi.append(f"tiêu đề SAP ghi phiên bản {tieu_de} nhưng bảng lịch sử đã tới {ls[-1]} — G10 in phiên bản "
+                           "theo tiêu đề")
+            else:
+                muc.append(MUC_KHOP)
+    if not muc:
+        return _ket("mo_ta_thiet_ke", ten, nguon, MUC_CHUA_DU, "chưa đủ nguồn để so")
+    m = _muc_cao_nhat(muc)
+    return _ket("mo_ta_thiet_ke", ten, nguon, m,
+                "; ".join(ghi) if ghi else "nhãn, tuyển mẫu ↔ thu thập và phiên bản SAP nhất quán")
+
+
+def _truc_kiem_soat_sai_lech(out_dir: Path, study: str, meta: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Bảng kiểm soát sai lệch G1 ↔ phân tích SAP (`doi_chieu_sai_lech_sap.kiem`, SL-01…SL-08). Chưa có bảng ⇒ CHƯA ĐỦ
+    ĐỂ
+    SO; có lỗi (G1 hứa phân tích SAP không có) ⇒ LỆCH MỀM; chỉ cảnh báo ⇒ CẦN XEM. G1 chưa có bảng sai lệch ⇒ None."""
+    import doi_chieu_sai_lech_sap as DSL  # noqa: PLC0415
+
+    kq = DSL.kiem(out_dir, study, meta=meta)
+    if kq.get("khong_ap_dung"):
+        return None
+    ten = "Kiểm soát sai lệch G1 ↔ phân tích SAP"
+    nguon = [{"cong": "G1–G4", "noi": DSL.TEP, "gia_tri": kq.get("tom_tat")}]
+    loi = [f"{x['ma']}: {x['noi_dung']}" for x in kq.get("loi") or []]
+    cb = [f"{x['ma']}: {x['noi_dung']}" for x in kq.get("canh_bao") or []]
+    if kq.get("trang_thai") in (DSL.TRANG_THAI_KHONG_CO, DSL.TRANG_THAI_KHONG_DO):
+        return _ket("kiem_soat_sai_lech", ten, nguon, MUC_CHUA_DU, kq.get("tom_tat") or "chưa đối chiếu")
+    if loi:
+        return _ket("kiem_soat_sai_lech", ten, nguon, MUC_LECH_MEM, "; ".join(loi[:5]))
+    if cb:
+        return _ket("kiem_soat_sai_lech", ten, nguon, MUC_CAN_XEM, "; ".join(cb[:5]))
+    return _ket("kiem_soat_sai_lech", ten, nguon, MUC_KHOP, kq.get("tom_tat") or "đạt")
+
+
 def truc_chuoi(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -> List[Dict[str, Any]]:
     """Các trục chuỗi đầy đủ (mỗi trục tự bắt lỗi của mình — một trục hỏng không làm mất các trục khác)."""
     td = _tu_dien(out_dir, study)
@@ -1553,7 +1757,10 @@ def truc_chuoi(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -
                 lambda: _truc_tai_lieu_nop(out_dir, study, meta),
                 lambda: _truc_ten_de_tai(out_dir, study, meta), lambda: _truc_cau_hoi_gia_thuyet(meta),
                 lambda: _truc_trich_dan(out_dir, study, meta),
-                lambda: _truc_ma_tran_muc_tieu(out_dir, study, meta)):
+                lambda: _truc_ma_tran_muc_tieu(out_dir, study, meta),
+                lambda: _truc_chuan_bao_cao(out_dir, study, meta, sap_text),
+                lambda: _truc_mo_ta_thiet_ke(out_dir, study, meta, sap_text),
+                lambda: _truc_kiem_soat_sai_lech(out_dir, study, meta)):
         try:
             k = ham()
         except Exception as e:  # noqa: BLE001
