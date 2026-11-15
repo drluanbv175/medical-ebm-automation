@@ -116,6 +116,8 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - Chẩn đoán: AUC Hanley–McNeil 1982 (PMID 7063747) + tỷ lệ hiện mắc bắt buộc.
 - Loại giả thuyết G3 phải khớp G0 `test_type` và SAP §12.
 
+- **Đồng bộ cỡ mẫu & chọn mẫu (15/11/2026):** trước khi kết luận cổng, `python3 tools/nhat_quan_xuyen_cong.py --study <mã>` — trục `co_mau_tinh_lai`, `chon_mau_co_mau`, `ky_thuat_chon_mau`, `tai_lieu_nop_co_mau` phải `khop` (hoặc lệch đã có người có thẩm quyền giải trình). Bảng trách nhiệm (`hoi_dong_cong.py trach-nhiem --gate G3`) tự đưa lệch cứng thành việc của điều phối cổng. Chi tiết luật: `co-mau-nghien-cuu` mục «Đồng bộ cỡ mẫu & kỹ thuật chọn mẫu xuyên văn bản».
+
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G3` xác nhận/dấu vân tay · bật cờ đời thực trong
 `study_meta` · chấm đầu ra do chính mình làm · ghi biên bản «ĐỒNG THUẬN» như «ĐẠT CỔNG» · bịa căn cứ · báo «phần agent hoàn chỉnh» khi `trach-nhiem` chưa ra mã 0 · sửa artifact của cổng khác để «xanh» tiêu chí

@@ -44,7 +44,7 @@ Tên khác nhau có chủ đích (vd `ID` của đề cương ứng với `recor
 
 ## Nhất quán xuyên cổng cả chuỗi (15/11/2026)
 
-`python3 tools/nhat_quan_xuyen_cong.py --study <mã>` nay đo thêm 6 trục chuỗi ngoài 8 thông số cũ:
+`python3 tools/nhat_quan_xuyen_cong.py --study <mã>` nay đo thêm 9 trục chuỗi ngoài 8 thông số cũ (3 trục cỡ mẫu & chọn mẫu thêm 15/11/2026; trục chùm còn đòi MỌI DE trong SAP hợp lệ và K × m = N):
 
 | Trục | Mức có thể ra | Cổng chịu |
 |---|---|---|
@@ -54,6 +54,9 @@ Tên khác nhau có chủ đích (vd `ID` của đề cương ứng với `recor
 | `chon_mau_co_mau` — chùm ↔ DE ↔ biến chùm trong từ điển | khớp · lệch cứng · lệch mềm | G1 · G3 · G4 · G10 |
 | `dac_ta_cho_bo_bien` — phân tích SAP chờ bổ sung bộ biến | lệch mềm | G4 · G6 |
 | `tong_quan_khoang_trong` — khoảng trống G0/G1 ↔ mục trong đề cương | khớp · cần xem · chưa đủ | G0 · G1 · G10 |
+| `co_mau_tinh_lai` — tính lại n₀, DE, N cần (mô tả theo độ chính xác) ↔ checkpoint G3 ↔ «N tối thiểu» SAP/đề cương ↔ N chốt | khớp · lệch cứng · lệch mềm | G3 · G4 · G10 |
+| `ky_thuat_chon_mau` — mã G1 ↔ tuyển chọn ↔ đề cương ↔ SAP (phân tầng/chùm); phi xác suất ⇒ lệch cứng; thuật lại ⇒ cần xem | khớp · cần xem · lệch mềm · lệch cứng · chưa đủ | G1 · G3 · G4 · G10 |
+| `tai_lieu_nop_co_mau` — N chốt + DE hiện hành trong mọi tài liệu nộp; bản cũ cần dấu «BẢN CŨ — ĐÃ THAY BẰNG» | khớp · lệch mềm · chưa đủ | G10 |
 
 `hoi_dong_cong.py trach-nhiem` đưa các trục thuộc cổng vào bảng trách nhiệm (lệch cứng ⇒ việc của điều phối cổng, lệch
 mềm ⇒ chờ PI) — lệch cứng thì cổng không thể ra «đạt»/«agent xong», lệch mềm thì không thể ra «đạt». `ho-so` mang cùng số đo để giám khảo chấm RQ4.

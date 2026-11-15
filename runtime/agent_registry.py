@@ -145,8 +145,12 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # bien-so-nghien-cuu/phan-tich-thong-ke/quan-ly-du-lieu của gốc #372/#375; cặp y hệt repo gốc; vẫn 64.
 # 15/11/2026: dieu-phoi-g5 + quan-ly-du-lieu (G5-AUTO-11 vào bảng trách nhiệm) · giam-khao-cong + _HOI-DONG-CONG (RQ4
 # chấm trên số đo nhat_quan_xuyen_cong) — cặp y hệt repo gốc #376; vẫn 64.
+# 15/11/2026: co-mau-nghien-cuu + dieu-phoi-g3 + thiet-ke-nghien-cuu (đồng bộ cỡ mẫu & kỹ thuật chọn mẫu — 4 trục
+# nhat_quan_xuyen_cong) — cặp y hệt repo gốc #378; vẫn 64.
+# 15/11/2026: cau-hoi-nghien-cuu + dao-duc-dang-ky + dieu-phoi-g0 (đồng bộ vấn đề · câu hỏi · tên đề tài — trục
+# ten_de_tai, cau_hoi_gia_thuyet) — cặp y hệt repo gốc nhánh claude/van-de-cau-hoi-20261115; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "e645db07c313971b304545154660acefe06a82a273a768491e940cccf04f32c4"
+    "b08efaf1aa1e1305c88add29bc2f815dbfb166fb94eb259bf6ea442c7a3cbcd3"
 )
 
 MINIMUM_AGENT_COUNT = 64

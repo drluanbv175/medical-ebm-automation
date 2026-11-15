@@ -117,6 +117,14 @@ Báo cả **cỡ mẫu tối thiểu** (đủ lực) và **cỡ mẫu khuyến n
 ## Tiêu chí qua cổng G3
 **Đạt G3 (power) khi:** đã chọn đúng công thức theo thiết kế + giả thuyết; mọi tham số có nguồn hoặc đánh dấu cần ấn định; nêu công thức + phần mềm; báo cỡ mẫu tối thiểu **và** khuyến nghị (đã hiệu chỉnh dropout/cluster/FPC); có bảng độ nhạy; cảnh báo nếu thiếu lực. Thử nghiệm then chốt → nêu cần nhà thống kê độc lập.
 
+## Đồng bộ cỡ mẫu & kỹ thuật chọn mẫu xuyên văn bản (15/11/2026 — bác sĩ: «kiểm tra và đánh giá sự đồng bộ Tính Cỡ Mẫu & Kỹ Thuật Chọn Mẫu một cách trung thực nhất» + «mỗi vấn đề … phải được cập nhật vào hệ thống»)
+Sau MỖI lần chốt hay sửa G3 (tham số, N chốt, CV/ICC/m), chạy `python3 medical-ebm-automation/tools/nhat_quan_xuyen_cong.py --study <mã>` và đọc 4 trục — KHÔNG báo G3 «xong» khi còn trục lệch:
+- `co_mau_tinh_lai` (mô tả theo độ chính xác): máy TÍNH LẠI n₀ = z²p(1−p)/d², DE = 1 + ((CV²+1)·m − 1)·ICC, N cần = ⌈n₀·DE⌉ ÷ (1 − không đáp ứng) và so với `G3_checkpoint`, «N tối thiểu» của SAP/đề cương nộp, N chốt. Lệch số học ⇒ 🔴; N chốt < N cần ⇒ 🔴 (có `underpowered_acceptance_justification` ⇒ chờ PI).
+- `chon_mau_co_mau`: MỌI giá trị DE trong SAP phải là DE chính, DE độ nhạy CV 1,0 hoặc DE cỡ chùm đều; K × m phải bằng N chốt (m là cỡ chùm ỨNG VỚI N chốt).
+- `ky_thuat_chon_mau`: mỗi mã `gate_params.G1.sampling_design` phải hiện ở đề cương nộp; mã quyết định cách chọn ở `recruitment_strategy`; phân tầng/chùm ở SAP (trọng số, SE theo chùm). «Chọn mẫu <cách khác>» ⇒ lệch; phi xác suất trong khi G1 chốt xác suất ⇒ 🔴; câu thuật lại thuyết minh/bản cũ ⇒ cần xem và giải trình.
+- `tai_lieu_nop_co_mau`: mọi tài liệu nộp (`DE_CUONG_NOP_HOI_DONG_`, `DE_CUONG_THONG_NHAT_`, `De-cuong_`, `Bai-bao-giao-thuc_`) nói tới cỡ mẫu phải ghi đúng N chốt và DE hiện hành. Bản cũ không cập nhật nữa ⇒ đầu tệp ghi «> **BẢN CŨ — ĐÃ THAY BẰNG** <tệp> (<ngày>)» — KHÔNG xoá tệp.
+Đổi tham số sau khi SAP/G10 đã ký ⇒ sửa đổi theo thủ tục (SAP amendment, PI ký lại) — không sửa thẳng văn bản đã ký.
+
 ## Nguyên tắc nền & disclaimer
 Áp `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`: tuyệt đối không bịa effect size/tỷ lệ/SD; minh bạch công thức + giả định; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 

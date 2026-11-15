@@ -29,6 +29,7 @@ import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu �
 import g3_quality_gate as G3Q  # noqa: E402  (hợp đồng CHẤT LƯỢNG riêng G3)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 import skill_standards as S  # noqa: E402  (bản đồ chuẩn báo cáo theo thiết kế)
+import ten_de_tai as TDT  # noqa: E402  (tên đề tài chính thức — 15/11/2026)
 
 # THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG): 3 thiết kế KHÔNG dùng
 # công thức cỡ mẫu power/effect size truyền thống — n_adjusted=0 là CÓ CHỦ
@@ -855,7 +856,7 @@ def generate_artifact(study, topic, design_code, design_primary, alpha, power, e
         _hang_luc = [f"| Lực thống kê (1−β) | {int(power*100)}% | Quy ước |"]
     lines = [
         "# A4 — KẾ HOẠCH CỠ MẪU (DRAFT)",
-        f"**Đề tài:** {topic}  ",
+        f"**Đề tài:** {TDT.ten_chinh_thuc(BASE / 'exports' / study, topic)}  ",
         f"**Mã:** {study_safe} | **Ngày sinh:** {run_date} | **Trạng thái:** DRAFT — CHỜ BÁC SĨ XÁC NHẬN",
         "",
         "---",
