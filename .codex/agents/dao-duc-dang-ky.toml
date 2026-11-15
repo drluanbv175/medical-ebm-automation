@@ -492,6 +492,9 @@ Kích hoạt khi nghiên cứu thực hiện tại đơn vị có tính đặc t
 - **Chế độ tuyển** (`recruitment_mode`) hợp cách thu thập G1 (thu mới ⇔ tiến cứu tuyển mới; chỉ dữ liệu có sẵn ⇔ thứ cấp hồi cứu, cân nhắc miễn đồng thuận theo quy định).
 - Kiểm: `python3 medical-ebm-automation/tools/nhat_quan_xuyen_cong.py --study <mã>` — trục `chuan_bao_cao`, `mo_ta_thiet_ke`.
 
+## Đồng bộ quy trình dữ liệu (15/11/2026 — giai đoạn 5)
+- Điều hứa với người tham gia trong phiếu thông tin/đồng thuận — ẩn danh, thời hạn lưu trữ, huỷ bảng nối/đối chiếu — phải TRÙNG quyết định ở `exports/<mã>/_quy-trinh-du-lieu.csv` (cột `neo_g2` là cụm nguyên văn trong gói G2) và trùng đề cương + DMP G5. Số năm/số ngày khác nhau giữa các tài liệu ⇒ trục `quy_trinh_du_lieu` LỆCH CỨNG; sửa gói G2 theo quyết định đã chốt (sửa đúng dòng), không đổi quyết định.
+
 ## Ranh giới
 KHÔNG tự phê duyệt đạo đức · KHÔNG bịa số IRB/mã đăng ký · KHÔNG tự chạy `tools/approve_gate.py` thay bác sĩ · DMP vận hành/khóa DB thuộc `quan-ly-du-lieu` (G5).
 

@@ -739,7 +739,7 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
 TRUC_CHUOI = ("bien_de_cuong", "cong_cu_tu_dien", "muc_tieu_phan_tich", "chon_mau_co_mau", "dac_ta_cho_bo_bien",
               "tong_quan_khoang_trong", "co_mau_tinh_lai", "ky_thuat_chon_mau", "tai_lieu_nop_co_mau", "ten_de_tai",
               "cau_hoi_gia_thuyet", "trich_dan_tong_quan", "ma_tran_muc_tieu", "chuan_bao_cao", "mo_ta_thiet_ke",
-              "kiem_soat_sai_lech")
+              "kiem_soat_sai_lech", "quy_trinh_du_lieu", "cong_cu_do_luong")
 # Trục nào là trách nhiệm của cổng nào (hoi_dong_cong.trach_nhiem dùng — «hoàn thiện» của cổng phải qua trục của nó).
 TRUC_THEO_CONG = {
     "co_mau": ("G3", "G4", "G10"), "alpha": ("G3", "G4", "G10"), "power": ("G3", "G4", "G10"),
@@ -756,6 +756,7 @@ TRUC_THEO_CONG = {
     "ma_tran_muc_tieu": ("G1", "G3", "G4", "G10"),
     "chuan_bao_cao": ("G1", "G2", "G4", "G10"), "mo_ta_thiet_ke": ("G1", "G2", "G4", "G10"),
     "kiem_soat_sai_lech": ("G1", "G4", "G10"),
+    "quy_trinh_du_lieu": ("G1", "G2", "G5", "G10"), "cong_cu_do_luong": ("G1", "G3", "G10"),
 }
 
 
@@ -1745,6 +1746,63 @@ def _truc_kiem_soat_sai_lech(out_dir: Path, study: str, meta: Dict[str, Any]) ->
     return _ket("kiem_soat_sai_lech", ten, nguon, MUC_KHOP, kq.get("tom_tat") or "đạt")
 
 
+# ─────────────── GIAI ĐOẠN 5 «CÔNG CỤ & PHƯƠNG PHÁP THU THẬP» (15/11/2026) ───────────────
+# Kiểm tay: (1) đề cương nộp C1a + phiếu thông tin G2 hứa «nhập kép», «hủy bảng đối chiếu trong 30 ngày», «lưu 2 năm»,
+# «hai người ngoài khoa mã hoá câu hỏi mở» nhưng DMP G5 chỉ có khuôn chung; (2) khối COSMIN của A2 ghi «[CẦN … CVI]»
+# trong khi đề cương 4.5 đã có CVI, EFA/CFA, Cronbach. Trục `cong_cu_tu_dien` cũ chỉ so phiếu ↔ từ điển nhập liệu.
+def _truc_quy_trinh_du_lieu(out_dir: Path, study: str, meta: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Quy trình thu thập/nhập liệu/lưu trữ đã chốt ↔ đề cương ↔ G2 ↔ DMP G5 (`quy_trinh_du_lieu.kiem`, QT-01…QT-07).
+    Số năm lưu trữ/số ngày hủy bảng nối mâu thuẫn ⇒ LỆCH CỨNG (hứa với người tham gia khác nhau); tài liệu không mang
+    quyết định ⇒ LỆCH MỀM; quyết định còn chờ PI ⇒ CẦN XEM; chưa có bảng ⇒ CHƯA ĐỦ ĐỂ SO. Chưa chốt G1 ⇒ None."""
+    import quy_trinh_du_lieu as QTD  # noqa: PLC0415
+
+    if not _co_that(_gp(meta, "G1").get("data_collection_method")):
+        return None
+    kq = QTD.kiem(out_dir, study, meta=meta)
+    ten = "Quy trình thu thập · nhập liệu · lưu trữ đã chốt ↔ đề cương ↔ G2 ↔ DMP G5"
+    nguon = [{"cong": "G1–G5", "noi": QTD.TEP, "gia_tri": kq.get("tom_tat")}]
+    if kq.get("trang_thai") == QTD.TRANG_THAI_KHONG_CO:
+        return _ket("quy_trinh_du_lieu", ten, nguon, MUC_CHUA_DU, kq.get("tom_tat") or "chưa có bảng quy trình")
+    if kq.get("mau_thuan"):
+        return _ket("quy_trinh_du_lieu", ten, nguon, MUC_LECH_CUNG,
+                    "; ".join(f"{x['ma']}: {x['noi_dung']}" for x in kq["mau_thuan"][:4]))
+    if kq.get("loi"):
+        return _ket("quy_trinh_du_lieu", ten, nguon, MUC_LECH_MEM,
+                    "; ".join(f"{x['ma']}: {x['noi_dung']}" for x in kq["loi"][:4]))
+    if kq.get("canh_bao"):
+        return _ket("quy_trinh_du_lieu", ten, nguon, MUC_CAN_XEM,
+                    "; ".join(f"{x['ma']}: {x['noi_dung']}" for x in kq["canh_bao"][:4]))
+    return _ket("quy_trinh_du_lieu", ten, nguon, MUC_KHOP, kq.get("tom_tat") or "đạt")
+
+
+def _truc_cong_cu_do_luong(out_dir: Path, study: str, meta: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Khối COSMIN của A2 (mô-đun «prom_tool») ↔ bảng truy nguyên dựng lại từ đề cương nộp + SAP
+    (`run_g1_auto._bang_cosmin`). A2 khác bảng dựng lại ⇒ CẦN XEM (dựng lại G1); còn ô «[CẦN …]» ⇒ CẦN XEM (đề cương
+    chưa nói tới đặc tính đó); khớp và không còn ô trống ⇒ KHỚP. Đề tài không có cấu phần công cụ đo ⇒ None."""
+    import run_g1_auto as G1A  # noqa: PLC0415
+
+    if "prom_tool" not in G1A.mo_dun_chuyen_biet(str(meta.get("topic") or study), meta, out_dir):
+        return None
+    ten = "Công cụ đo lường (COSMIN) ở A2 ↔ đề cương nộp ↔ SAP"
+    bang = G1A._bang_cosmin(out_dir, study)
+    if bang is None:
+        return _ket("cong_cu_do_luong", ten, [], MUC_CHUA_DU, "chưa có đề cương nộp để truy nguyên đặc tính đo lường")
+    a2 = unicodedata.normalize("NFC", _doc_text(out_dir / f"G1_A2_PROTOCOL_DESIGN_{study}.md"))
+    nguon = [{"cong": "G1", "noi": "A2 PHẦN 8 — MÔ-ĐUN COSMIN", "gia_tri": f"{len(bang)} đặc tính"}]
+    thieu = [d for d in bang if d not in a2]
+    con_can = [d.split(":")[0].lstrip("- ") for d in bang if "[CẦN" in d]
+    if thieu:
+        return _ket("cong_cu_do_luong", ten, nguon, MUC_CAN_XEM,
+                    f"A2 chưa mang bảng truy nguyên COSMIN mới ({len(thieu)}/{len(bang)} dòng khác) — dựng lại G1 "
+                    "(`run_g1_auto.py --khong-tra-pubmed`)")
+    if con_can:
+        return _ket("cong_cu_do_luong", ten, nguon, MUC_CAN_XEM,
+                    "đề cương chưa nói tới: " + "; ".join(con_can)
+                    + " — nhóm nghiên cứu bổ sung hoặc ghi «không áp dụng»")
+    return _ket("cong_cu_do_luong", ten, nguon, MUC_KHOP,
+                f"{len(bang)} đặc tính đều truy nguyên được về đề cương/SAP hoặc ghi rõ ngoài phạm vi")
+
+
 def truc_chuoi(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -> List[Dict[str, Any]]:
     """Các trục chuỗi đầy đủ (mỗi trục tự bắt lỗi của mình — một trục hỏng không làm mất các trục khác)."""
     td = _tu_dien(out_dir, study)
@@ -1760,7 +1818,9 @@ def truc_chuoi(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -
                 lambda: _truc_ma_tran_muc_tieu(out_dir, study, meta),
                 lambda: _truc_chuan_bao_cao(out_dir, study, meta, sap_text),
                 lambda: _truc_mo_ta_thiet_ke(out_dir, study, meta, sap_text),
-                lambda: _truc_kiem_soat_sai_lech(out_dir, study, meta)):
+                lambda: _truc_kiem_soat_sai_lech(out_dir, study, meta),
+                lambda: _truc_quy_trinh_du_lieu(out_dir, study, meta),
+                lambda: _truc_cong_cu_do_luong(out_dir, study, meta)):
         try:
             k = ham()
         except Exception as e:  # noqa: BLE001
