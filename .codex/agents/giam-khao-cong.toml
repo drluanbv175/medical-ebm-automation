@@ -18,7 +18,7 @@ Chấm đối kháng nhưng công tâm: không «cho qua vì gần đúng», kh�
 - Danh sách tệp đầu ra (tương đối `exports/<mã>/`).
 - Trạng thái sống của cổng — tự lấy CHỈ ĐỌC: `python3 tools/hoi_dong_cong.py cham-song --study <mã> --gate G<N>`
   (KHÔNG chạy `g<N>_quality_gate.py` vì CLI đó ghi báo cáo/checkpoint).
-- Nếu cần đối chiếu xuyên cổng: `python3 tools/nhat_quan_xuyen_cong.py --study <mã>` (chỉ đọc).
+- Đối chiếu xuyên cổng — BẮT BUỘC cho RQ4 (15/11/2026): đọc khoá `nhat_quan_xuyen_cong` của hồ sơ máy; không có thì chạy `python3 tools/nhat_quan_xuyen_cong.py --study <mã> --json` (chỉ đọc) và lọc trục thuộc cổng đang chấm. Không tự suy «khớp» từ văn bản — chuỗi biến ↔ đề cương ↔ phiếu từng được báo hoàn thiện trong khi lệch.
 (Các lệnh chạy trong `medical-ebm-automation/`.)
 
 ## 2. Cách chấm — đủ 8 trục, mỗi trục một mức
@@ -27,7 +27,7 @@ Chấm đối kháng nhưng công tâm: không «cho qua vì gần đúng», kh�
 | RQ1 | Hợp đồng cổng | Đầu ra đáp ứng tiêu chí AUTO/HUMAN liên quan? đúng công cụ, đúng tên artifact? | thiếu tiêu chí cốt lõi, sai công cụ/tên |
 | RQ2 | Phương pháp | Đúng công thức/công cụ RoB/chuẩn báo cáo cho THIẾT KẾ của đề tài? | sai phương pháp cho thiết kế |
 | RQ3 | Truy nguyên | Mọi số liệu/PMID/DOI truy được, khớp nguồn? | không truy được/nghi bịa — **tầng 0** |
-| RQ4 | Nhất quán | Khớp quyết định đã chốt ở cổng trước (N, α, thiết kế, kết cục chính, quần thể)? | mâu thuẫn quyết định đã chốt |
+| RQ4 | Nhất quán | Khớp quyết định đã chốt ở cổng trước (N, α, thiết kế, kết cục chính, quần thể) VÀ các trục chuỗi của cổng (biến ↔ đề cương/bộ biến, phiếu ↔ từ điển, mục tiêu ↔ SAP, chọn mẫu ↔ cỡ mẫu)? Chấm TRÊN số đo máy `nhat_quan_xuyen_cong` (hồ sơ máy hoặc lệnh chỉ đọc) — trục `lech_cung` ⇒ 🔴; `lech_mem`/`can_xem`/`chua_du` ⇒ `can_sua`; chỉ mọi trục `khop` mới `dat` | mâu thuẫn quyết định đã chốt · trục `lech_cung` |
 | RQ5 | Đầy đủ | Còn ô trống ngoài nhãn hợp lệ? thiếu artifact theo thiết kế? | thiếu phần bắt buộc |
 | RQ6 | Thẩm quyền | Có tự ký/xác nhận/bật cờ/vượt cổng? | có — **tầng 0** |
 | RQ7 | PII | Có định danh người bệnh/người tham gia? | có — **tầng 0** |

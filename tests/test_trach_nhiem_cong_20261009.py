@@ -60,7 +60,8 @@ def test_phan_cong_phu_dung_tap_ma_bo_cham(gate):
 
 def test_tong_so_tieu_chi_da_gan():
     # 14/11/2026: 203 → 204 — thêm G6-AUTO-11 (SAP §4 gọi postStratify( ⇒ script chạy svydesign( + postStratify().
-    assert sum(len(v) for v in HD.PHAN_CONG.values()) == 204
+    # 15/11/2026: 204 → 205 — thêm G5-AUTO-11 (từ điển ↔ đề cương/bộ biến ↔ phiếu do MÁY đo, giao G5-T1).
+    assert sum(len(v) for v in HD.PHAN_CONG.values()) == 205
 
 
 @pytest.mark.parametrize("gate", HD.CONG)

@@ -38,6 +38,27 @@ Tên khác nhau có chủ đích (vd `ID` của đề cương ứng với `recor
 - **Phân tích G6:** `bien_phai_sinh.ap_dung_cho_phan_tich` (`run_stats_analysis` gọi tới) từ chối tính biến phái sinh nằm ngoài đề cương. Đề tài giả lập thì chỉ cảnh báo.
 - **Không có nguồn chuẩn:** báo «chưa đối chiếu được». Trường hợp này KHÔNG được coi là đồng bộ.
 - **Công cụ đối chiếu lỗi:** chặn (fail-closed).
+- **Khoá dữ liệu G5 (G5-AUTO-11, 15/11/2026):** máy đo hai trục của `nhat_quan_xuyen_cong` — biến ↔ đề cương/bộ biến và phiếu
+  thu thập ↔ từ điển — thay cho ô người tự xác nhận `dictionary_crf_aligned`. Lệch nhập liệu ⇒ BLOCK; chưa đủ để so ⇒
+  REVIEW (không bao giờ PASS); lệch phân tích không chặn khoá nhập liệu (G6 tự chặn) nhưng vẫn hiện ở việc chờ PI.
+
+## Nhất quán xuyên cổng cả chuỗi (15/11/2026)
+
+`python3 tools/nhat_quan_xuyen_cong.py --study <mã>` nay đo thêm 6 trục chuỗi ngoài 8 thông số cũ:
+
+| Trục | Mức có thể ra | Cổng chịu |
+|---|---|---|
+| `bien_de_cuong` — biến ↔ đề cương/bộ biến (công cụ này) | khớp · lệch cứng (nhập liệu) · lệch mềm (phân tích) · chưa đủ | G3 · G5 · G10 |
+| `cong_cu_tu_dien` — phiếu ↔ từ điển (mã từng câu, ô KSD = mã 7) | khớp · lệch cứng · chưa đủ | G3 · G5 · G10 |
+| `muc_tieu_phan_tich` — mục tiêu G1 có được SAP gọi tên | khớp · cần xem | G1 · G4 · G10 |
+| `chon_mau_co_mau` — chùm ↔ DE ↔ biến chùm trong từ điển | khớp · lệch cứng · lệch mềm | G1 · G3 · G4 · G10 |
+| `dac_ta_cho_bo_bien` — phân tích SAP chờ bổ sung bộ biến | lệch mềm | G4 · G6 |
+| `tong_quan_khoang_trong` — khoảng trống G0/G1 ↔ mục trong đề cương | khớp · cần xem · chưa đủ | G0 · G1 · G10 |
+
+`hoi_dong_cong.py trach-nhiem` đưa các trục thuộc cổng vào bảng trách nhiệm (lệch cứng ⇒ việc của điều phối cổng, lệch
+mềm ⇒ chờ PI) — lệch cứng thì cổng không thể ra «đạt»/«agent xong», lệch mềm thì không thể ra «đạt». `ho-so` mang cùng số đo để giám khảo chấm RQ4.
+Giới hạn: trục tổng quan chỉ kiểm CÓ MẶT mục khoảng trống; nội dung do hội đồng chấm. Trục «chưa đủ» không được tính là
+khớp ở bất kỳ đâu.
 
 ## Cách dùng
 
