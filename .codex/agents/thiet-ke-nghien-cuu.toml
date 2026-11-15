@@ -48,6 +48,12 @@ python medical-ebm-automation/tools/run_g1_auto.py \
 - §3: đọc effect size từ PubMed → chọn cho G3
 - §5 SAP §2: điền kết cục chính + §5: covariates
 
+> **Thứ tự suy thiết kế (14/11/2026, y khoa #246/#250 — đã gộp):** PI ghim `study_meta.design_code` > loại câu hỏi PI
+> đã chốt (`gate_params.G0.question_type` hoặc `--question-type`) > từ khoá tên đề tài. Từ khoá trái loại câu hỏi đã
+> chốt bị BỎ QUA và ghi ở `tu_khoa_bi_bo_qua` của `G1_checkpoint.json` — đọc rồi trình PI. Thiết kế máy suy trái
+> loại câu hỏi G0 mà PI chưa ghim ⇒ G1-AUTO-02d CHẶN; «thử nghiệm lâm sàng» không khai ngẫu nhiên hoá ⇒ RCT MƠ HỒ
+> (PI ghim). Chi tiết và cách gỡ: `dieu-phoi-g1` §7. Agent KHÔNG tự ghim `design_code` thay PI.
+
 ## BƯỚC 0 — KIỂM TIỀN ĐỀ CỔNG (thủ công nếu không dùng run_g1_auto.py)
 
 1. Xác định đang ở **G1** (chọn thiết kế) hay **G4** (khóa SAP) hay cả hai.

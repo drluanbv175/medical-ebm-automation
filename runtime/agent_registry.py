@@ -140,8 +140,11 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # vẫn 64.
 # 14/11/2026 (tầng 5, việc N): trich-xuat-y-van + tham-dinh-dau-ra — dạy đọc 🟠 kiểm chéo ngữ nghĩa ④-bis/④-ter
 # (K1–K4 + K3b/K4b, CẢNH BÁO), cặp y hệt repo gốc; vẫn 64.
+# 15/11/2026 (R10, việc D): dạy 6 agent luật mới của giả lập RCT (G1 thứ tự ưu tiên thiết kế + 02d, G4-HUMAN-03
+# theo vai, G6 nhận G4 sống — N1, khuôn theo SAP §5 — N6, Branching Logic khi làm sạch — N2) + bắt kịp
+# bien-so-nghien-cuu/phan-tich-thong-ke/quan-ly-du-lieu của gốc #372/#375; cặp y hệt repo gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "02dfa461c23ca1ba2a0e39da24091052ac85cbad28cedc7dd4da98732a389144"
+    "7d7ab98ea873c5f8d497f0a4ebaa40761249fe1357b4a60198488f363b57e4d8"
 )
 
 MINIMUM_AGENT_COUNT = 64
