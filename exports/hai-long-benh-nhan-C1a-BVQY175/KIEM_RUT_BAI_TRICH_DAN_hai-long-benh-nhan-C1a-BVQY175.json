@@ -1,10 +1,10 @@
 {
   "schema": "de_tai/kiem_rut_bai_trich_dan/v1",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "checked_at": "2026-11-15T03:51:48+00:00",
+  "checked_at": "2026-11-15T04:54:26+00:00",
   "cong_cu": "tools/kiem_rut_bai_trich_dan.py — PMID: RetractionChain (Retraction Watch → NCBI → Europe PMC); DOI không PMID: Crossref updated-by + Retraction Watch theo DOI",
   "tong": {
-    "ok": 49
+    "ok": 50
   },
   "ket_qua": {
     "pmid:34017606": {
@@ -283,23 +283,29 @@
       "reason": "",
       "nguon": "TLTK số 49"
     },
-    "pmid:12210625": {
+    "doi:10.18637/jss.v009.i08": {
       "status": "ok",
-      "source": "pubmed",
+      "source": "crossref",
       "reason": "",
       "nguon": "TLTK số 50"
     },
-    "pmid:19564179": {
+    "pmid:12210625": {
       "status": "ok",
       "source": "pubmed",
       "reason": "",
       "nguon": "TLTK số 51"
     },
+    "pmid:19564179": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "TLTK số 52"
+    },
     "doi:10.1002/9780470316696": {
       "status": "ok",
       "source": "crossref",
       "reason": "",
-      "nguon": "TLTK số 52"
+      "nguon": "TLTK số 53"
     }
   },
   "disclaimer": "Cần bác sĩ kiểm chứng. «ok» chỉ khi một nguồn ĐÃ lấy được bản ghi; mã không kết luận được giữ trạng thái không biết — KHÔNG phải «chưa bị rút»."
