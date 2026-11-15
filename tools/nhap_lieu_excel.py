@@ -272,7 +272,8 @@ def ke_hoach_cot(td: list[dict], mt: list[dict]) -> tuple[list[Cot], list[str]]:
         cot.append(c)
     for c in cot:
         if c.kieu not in ("id", "hop"):
-            c.ma_thieu = _ma_thieu_cho(c.ten, c.truong, mt, c.nomissing)
+            # biến NGÀY không mang mã thiếu cấp dự án (ô trống = thiếu) — như .sav phân tích
+            c.ma_thieu = _ma_thieu_cho(c.ten, c.truong, mt, c.nomissing or c.kieu == "ngay")
     return cot, bo_qua
 
 
@@ -1291,8 +1292,8 @@ def _kieu_spss(c: Cot) -> tuple[bool, str]:
         return False, f"A{SP.RONG_GHI_CHU}"
     if c.kieu == "ma" and any(_so_chat(m) is None for m in c.lua_chon):
         return False, "A20"  # danh mục mã chữ ⇒ biến chuỗi
-    if c.kieu == "ngay":
-        return True, {"date_mdy": "ADATE10", "date_ymd": "SDATE10"}.get(c.kiem_tra, "EDATE10")
+    if c.kieu == "ngay":  # CÙNG định dạng ngày với .sav phân tích (SP.dinh_dang_ngay)
+        return True, SP.dinh_dang_ngay(c.kiem_tra)
     if c.kieu == "ngay_gio":
         return True, "DATETIME20" if "seconds" in c.kiem_tra else "DATETIME17"
     if c.kieu == "gio":

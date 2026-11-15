@@ -490,7 +490,8 @@ def quet_csv(p: Path) -> tuple[list[str], list[dict], int]:
         if not tieu_de:
             raise TuChoi(f"{p.name}: tệp rỗng")
         tk = [
-            {"rong": 1, "le": 0, "nguyen": 1, "khong_so": set(), "gia_tri": set(), "nhieu_muc": False} for _ in tieu_de
+            {"rong": 1, "le": 0, "nguyen": 1, "khong_so": set(), "gia_tri": set(), "nhieu_muc": False, "co_so": False}
+            for _ in tieu_de
         ]
         n = 0
         for dong in r:
@@ -508,6 +509,7 @@ def quet_csv(p: Path) -> tuple[list[str], list[dict], int]:
                 if x is None:
                     t["khong_so"].add(v)
                 else:
+                    t["co_so"] = True
                     if "." in v and "e" not in v.lower():
                         t["le"] = max(t["le"], len(v.split(".")[1]))
                     t["nguyen"] = max(t["nguyen"], len(str(int(abs(x)))) + (1 if x < 0 else 0))
@@ -546,6 +548,29 @@ def la_thang_thu_tu(nhan_gt: dict[str, str], bo: set[str]) -> bool:
         return False
     dau = sum(1 for v in cap.values() if _DAU_THU_TU.search(v) or re.match(r"\s*[<>≤≥]?\s*\d", v))
     return dau * 2 >= len(cap)
+
+
+#: Ngày gốc của giá trị ngày SPSS (số giây tính từ 14/10/1582) và của Date R (số ngày tính từ 01/01/1970).
+NGAY_GOC_SPSS = __import__("datetime").date(1582, 10, 14)
+_NGAY_ISO = re.compile(r"\d{4}-\d{2}-\d{2}")
+
+
+def dinh_dang_ngay(kt: str) -> str:
+    """Định dạng HIỂN THỊ ngày của SPSS theo kiểu kiểm REDCap — DÙNG CHUNG với mẫu nhập SPSS (nhap_lieu_excel)."""
+    return {"date_mdy": "ADATE10", "date_ymd": "SDATE10"}.get(str(kt or "").lower(), "EDATE10")
+
+
+def ngay_iso(s: str):
+    """«YYYY-MM-DD» hợp lệ ⇒ date; còn lại ⇒ None (REDCap/nhap_lieu_excel luôn xuất ngày dạng ISO)."""
+    from datetime import date  # noqa: PLC0415
+
+    s = str(s or "").strip()
+    if not _NGAY_ISO.fullmatch(s):
+        return None
+    try:
+        return date(int(s[:4]), int(s[5:7]), int(s[8:]))
+    except ValueError:
+        return None
 
 
 #: Độ rộng chuỗi của biến VĂN BẢN TỰ DO («khác, ghi rõ», ghi chú…) — đủ chứa câu trả lời dù dữ liệu hiện trống/ngắn
@@ -687,6 +712,18 @@ def ke_hoach_bien(
         elif kdn == "so" and not la_so:
             lech_dinh_nghia = f"định nghĩa là biến SỐ nhưng dữ liệu có chữ: {', '.join(sorted(khong_so_con)[:5])}"
         tu_do = la_van_ban_tu_do(d, cot)
+        # NGÀY theo định nghĩa (date_ymd/dmy/mdy, không gồm datetime) và MỌI ô là ngày ISO hợp lệ, không mã chữ ⇒ lưu
+        # KIỂU NGÀY (SPSS: đọc SDATE10, hiển thị theo định nghĩa; R: Date) — như mẫu nhập SPSS. Ô không phải ngày ⇒ E5.
+        kt_d = str(d.get("kiem_tra") or "").lower() if d else ""
+        la_ngay = False
+        if kdn == "ngay" and kt_d.startswith("date") and not kt_d.startswith("datetime"):
+            sai_ngay = sorted(v for v in t["khong_so"] - {m["ma"] for m in chu_co_mat} if ngay_iso(v) is None)
+            if t["co_so"] or sai_ngay:
+                lech_dinh_nghia = ("định nghĩa là NGÀY nhưng dữ liệu có ô không phải ngày «YYYY-MM-DD»: "
+                                   + ", ".join(sorted(sai_ngay)[:5] or ["(ô số)"]))
+            elif not chu_co_mat:
+                la_ngay, la_so = True, True
+                ap = [m for m in ap if m["bien"] != "*"]  # ngày không mang mã thiếu cấp dự án (ô trống = thiếu)
         ma_so_ap: dict[str, str] = {}
         for m in ap:
             if _so(m["ma"]) is not None:
@@ -780,6 +817,8 @@ def ke_hoach_bien(
                 "la_ma_ban_ghi": i == 0 or cot.lower() == "record_id",  # REDCap: trường ĐẦU là mã bản ghi
                 "lech_dinh_nghia": lech_dinh_nghia,
                 "tu_do": tu_do,
+                "ngay": la_ngay,
+                "dinh_dang_ngay": dinh_dang_ngay(kt_d) if la_ngay else None,
                 "co_dinh_nghia": bool(d),
                 "nhan": cat_byte(nhan, TRAN_NHAN_BIEN),
                 "nhan_gia_tri": {k: cat_byte(v, TRAN_NHAN_GIA_TRI) for k, v in nhan_gt.items()},
@@ -816,6 +855,8 @@ def _rong_so(b: dict) -> int:
 
 
 def _dinh_dang(b: dict) -> str:
+    if b.get("ngay"):
+        return "SDATE10"  # đọc ngày ISO (đo SPSS 31: «2026-01-15» ⇒ đúng ngày)
     if b["so"] and not b["doc_chuoi_roi_doi"]:
         return f"F{_rong_so(b)}.{b['le']}"
     return f"A{max(1, b['rong'])}"
@@ -823,6 +864,8 @@ def _dinh_dang(b: dict) -> str:
 
 def dinh_dang_cuoi(b: dict) -> str:
     """Định dạng SPSS CUỐI CÙNG của biến trong .sav (sau ALTER TYPE nếu đọc chuỗi rồi đổi) — cho format.spss .rds."""
+    if b.get("ngay"):
+        return b.get("dinh_dang_ngay") or "SDATE10"
     if b["so"]:
         return f"F{_rong_so(b)}.{b['le']}"
     return f"A{max(1, b['rong'])}"
@@ -860,6 +903,9 @@ def cu_phap_nhan_bien(csv_p: Path, sav_p: Path, ke: list[dict], *, ghi_chu: list
     dong += [f"    {b['ten']} {_dinh_dang(b)}" for b in ke]
     dong[-1] += "."
     giu = [b for b in ke if not b["bo"]]
+    ngay_khac = [b for b in giu if b.get("ngay") and dinh_dang_cuoi(b) != "SDATE10"]
+    if ngay_khac:
+        dong.append("FORMATS " + " /".join(f"{b['ten']} ({dinh_dang_cuoi(b)})" for b in ngay_khac) + ".")
     for b in giu:
         if b["doc_chuoi_roi_doi"]:
             ma = " ".join(f"('{k}'='{v}')" for k, v in b["ma_chu"].items())
@@ -951,12 +997,19 @@ def doc_hang_csv(p: Path) -> tuple[list[str], list[list[str]]]:
         return next(r, []), list(r)
 
 
-def gia_tri_ky_vong(b: dict, o: str | None) -> float | str | None:
+def gia_tri_ky_vong(b: dict, o: str | None, *, ngay_r: bool = False) -> float | str | None:
     """Giá trị .sav/.rds PHẢI chứa cho ô nguồn `o` theo kế hoạch biến `b` (None = SYSMIS/NA).
 
     Biến số: ô rỗng/khoảng trắng ⇒ None; mã thiếu CHỮ (ma_chu) ⇒ mã số thay (−9991…); còn lại float(ô) — kế hoạch chỉ
     gọi một cột là SỐ khi MỌI giá trị (đã strip, như quet_csv) là số hữu hạn hoặc mã chữ đã khai. Biến chuỗi: ô gốc bỏ
     dấu cách CUỐI (SPSS đệm/bỏ dấu cách cuối; khoảng trắng đầu giữ nguyên); dòng thiếu ô ⇒ «»."""
+    if b.get("ngay"):  # SPSS: số giây từ 14/10/1582; R (ngay_r): số ngày từ 01/01/1970
+        dt = ngay_iso(o)
+        if dt is None:
+            return None
+        if ngay_r:
+            return float((dt - __import__("datetime").date(1970, 1, 1)).days)
+        return float((dt - NGAY_GOC_SPSS).days * 86400)
     if b["so"]:
         s = (o or "").strip()
         if s == "":
@@ -1051,7 +1104,8 @@ def _loai_lech(b: dict, ky_vong, nhan_duoc) -> str:
 
 
 def so_sanh_gia_tri(
-    csv_p: Path, ke: list[dict], bien: list[str], ca: list[list], *, tran_mau: int = TRAN_MAU_LECH
+    csv_p: Path, ke: list[dict], bien: list[str], ca: list[list], *, tran_mau: int = TRAN_MAU_LECH,
+    ngay_r: bool = False,
 ) -> dict:
     """So TỪNG biến giữ lại × TỪNG ca của bản đọc lại (.sav qua spss.Cursor, hoặc .rds qua R) với giá trị kỳ vọng suy từ
     CSV nguồn qua CÙNG kế hoạch biến `ke`. Ca i của bản đọc lại phải khớp dòng dữ liệu i của CSV (thứ tự giữ nguyên).
@@ -1088,12 +1142,13 @@ def so_sanh_gia_tri(
         for b in giu:
             ci = cot.get(b["cot"])
             o = dong[ci] if ci is not None and ci < len(dong) else None
-            kv = gia_tri_ky_vong(b, o)
+            kv = gia_tri_ky_vong(b, o, ngay_r=ngay_r)
             if hang_doc is None:
                 ghi(i, b, kv, None, "thiếu ca trong bản đọc lại")
             elif b["ten"] not in vi_tri:
                 ghi(i, b, kv, None, "thiếu biến trong bản đọc lại")
-            elif b["so"] and o is not None and o.strip() not in b.get("ma_chu", {}) and vuot_do_chinh_xac(o):
+            elif b["so"] and not b.get("ngay") and o is not None and o.strip() not in b.get("ma_chu", {}) \
+                    and vuot_do_chinh_xac(o):
                 ghi(i, b, kv, hang_doc[vi_tri[b["ten"]]], "vượt độ chính xác double (> 15 chữ số có nghĩa) — .sav/.rds "
                     "lưu giá trị KHÁC nguồn; nếu là MÃ, giữ dạng chữ ở nguồn")  # fmt: skip
             elif not khop_o(b, kv, hang_doc[vi_tri[b["ten"]]], o):
@@ -1119,7 +1174,7 @@ def so_sanh_gia_tri(
             b["ten"] in vi_tri
             and khop_o(
                 b,
-                gia_tri_ky_vong(b, d[cot[b["cot"]]] if cot[b["cot"]] < len(d) else None),
+                gia_tri_ky_vong(b, d[cot[b["cot"]]] if cot[b["cot"]] < len(d) else None, ngay_r=ngay_r),
                 ca[i_ca][vi_tri[b["ten"]]],
                 d[cot[b["cot"]]] if cot[b["cot"]] < len(d) else None,
             )
@@ -1631,9 +1686,10 @@ def ap_thuoc_tinh_bien(d: Path, study: str, ke: list[dict], td: dict[str, dict],
                 loi.append(f"{b['ten']} ({cot}): giá trị hợp lệ {', '.join(str(x) for x in nuot[:5])} rơi vào "
                            f"khoảng mã thiếu (≤ {tran}) — SPSS/R sẽ coi là thiếu")
         # Biến NGÀY: .sav/.rds lưu chuỗi ISO (chưa lưu kiểu ngày SPSS/R Date) — nói thẳng, không để ✓ che
-        if b.get("kieu_dinh_nghia") == "ngay":
-            canh_bao.append(f"{b['ten']} ({cot}): biến NGÀY theo định nghĩa nhưng .sav/.rds lưu CHUỖI ISO (chưa lưu "
-                            "kiểu ngày) — mẫu nhập SPSS lưu kiểu ngày; tính khoảng thời gian phải đổi kiểu trước")
+        if b.get("kieu_dinh_nghia") == "ngay" and not b.get("ngay"):  # ngày-giờ/giờ, hoặc ngày có mã thiếu chữ
+            canh_bao.append(f"{b['ten']} ({cot}): biến NGÀY/GIỜ theo định nghĩa nhưng .sav/.rds lưu CHUỖI (ngày-giờ, "
+                            "giờ, hoặc có mã thiếu chữ trong cột) — mẫu nhập SPSS lưu kiểu ngày; đổi kiểu trước khi "
+                            "tính khoảng thời gian")
         dd_tach = dinh_dang_tach(dinh_dang_cuoi(b)) or ("", 0, 0)
         bang.append({"bien": cot,
                      # ── 11 thuộc tính Variable View của SPSS (cùng giá trị .rds mang theo) ──
@@ -1652,7 +1708,8 @@ def ap_thuoc_tinh_bien(d: Path, study: str, ke: list[dict], td: dict[str, dict],
                      "khoang_hop_le": b["khoang_hop_le"], "vai_tro": b["vai_tro"] or None,
                      "muc_tieu": b["muc_tieu"] or None, "cau_hoi": b["cau_hoi"] or None,
                      "khai_bao_theo": ((f"định nghĩa ({dd.get('loai')}{'/' + kt if kt else ''})"
-                                        + (" — ⚠ ngày lưu CHUỖI ISO" if b.get("kieu_dinh_nghia") == "ngay" else ""))
+                                        + (" — ⚠ ngày lưu CHUỖI" if b.get("kieu_dinh_nghia") == "ngay"
+                                           and not b.get("ngay") else ""))
                                        if b.get("co_dinh_nghia", True) and dd
                                        else "⚠ suy luận từ dữ liệu (không có định nghĩa)"),
                      "kiem_du_lieu": kiem_dl or ["✓ đạt"]})
