@@ -153,8 +153,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # tài liệu — trục trich_dan_tong_quan) — cặp y hệt repo gốc nhánh claude/tong-quan-tai-lieu-20261115; vẫn 64.
 # 15/11/2026: bien-so-nghien-cuu + thiet-ke-nghien-cuu + dieu-phoi-g1/g4 (đồng bộ giai đoạn mục tiêu — trục
 # ma_tran_muc_tieu, MT-11) — cặp y hệt repo gốc nhánh claude/muc-tieu-20261115; vẫn 64.
+# 15/11/2026: dieu-phoi-g0/g1/g7 + thu-thu-tai-lieu + phan-tich-thong-ke + viet-ban-thao (R10 — K4 khái niệm chuẩn
+# G0, N4-G1, G7 Kết quả từ G6) — cặp y hệt repo gốc nhánh claude/r10-day-agent-20261115; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "9cfeb8263ed18138cdda9a26dd9f06e3c20ad177145961d6549f6ce6e67df8c5"
+    "18f1cfa47937c4465b303056e1cb312c43bf3b8002dc46bc5d237e247cb550fe"
 )
 
 MINIMUM_AGENT_COUNT = 64

@@ -82,6 +82,7 @@ import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu �
 import g0_quality_gate as G0Q  # noqa: E402  (hợp đồng CHẤT LƯỢNG riêng G0)
 import g0_tong_hop as GT  # noqa: E402  (phần ĐỌC BÀI do agent G0-T3/T4 soạn — 10/10/2026)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG + study_meta dùng chung)
+import khung_de_tai as KD  # noqa: E402  (K4: truy vấn từ khái niệm PI khai)
 import trial_registry as TR  # noqa: E402  (tra ClinicalTrials.gov — dùng chung với G2)
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -272,8 +273,14 @@ def _reject_empty_topic(topic: str) -> None:
         raise SystemExit(GC.EXIT_BLOCKED)
 
 
-def build_pubmed_query(topic: str, query_en: Optional[str] = None) -> dict[str, str]:
+def build_pubmed_query(topic: str, query_en: Optional[str] = None,
+                       meta: Optional[dict] = None) -> dict[str, str]:
     """Chuyển topic (VI hoặc EN) thành bộ truy vấn PubMed đa chiều.
+
+    Thứ tự nguồn truy vấn (15/11/2026, K4 giả lập lần 3): query_en PI viết > khái niệm PI khai
+    (gate_params.G0.khai_niem_tim_kiem — khung_de_tai.truy_van_tu_khai_niem: OR trong khái niệm, AND giữa các khái niệm)
+    > chủ đề tiếng Anh nguyên văn > từ điển VI→EN trên chủ đề VÀ các trường P · I/E · O của G0 (trước đây chỉ trên chủ
+    đề ⇒ khái niệm chỉ có ở PICO bị rơi). Khoá «nguon» của kết quả cho biết đã dùng nguồn nào.
 
     Trả về dict: {query_type: query_string}.
     DỪNG ngay nếu topic rỗng (xem _reject_empty_topic).
@@ -288,9 +295,14 @@ def build_pubmed_query(topic: str, query_en: Optional[str] = None) -> dict[str, 
     # test, script khác) với topic=None — coerce về "" để không crash tại
     # _is_vietnamese_topic()/re.search().
     topic = topic or ""
+    tu_khai_niem = KD.truy_van_tu_khai_niem(meta or {})
+    nguon = "query_en"
     if query_en:
         base = query_en
+    elif tu_khai_niem:
+        base, nguon = tu_khai_niem, "khai_niem_tim_kiem"
     elif not _is_vietnamese_topic(topic):
+        nguon = "chu_de_tieng_anh"
         # SỬA: trước đây topic tiếng Anh vẫn bị đưa qua vòng lặp trích từ khóa
         # VI_EN_TERMS — nếu dù chỉ 1 từ khóa khớp bừa (vd "statin" khớp
         # substring bên trong câu tiếng Anh), TOÀN BỘ câu hỏi bị rút gọn còn
@@ -299,14 +311,20 @@ def build_pubmed_query(topic: str, query_en: Optional[str] = None) -> dict[str, 
         # không cần dịch/trích xuất gì thêm.
         base = topic
     else:
-        # Tự động dịch từ VI → EN (có dedup)
-        topic_lower = topic.lower()
+        # Tự động dịch từ VI → EN (có dedup) — chủ đề TRƯỚC, rồi P · I/E · O của G0 (K4: khái niệm chỉ có ở PICO).
+        nguon = "tu_dien"
+        g0 = ((meta or {}).get("gate_params") or {}).get("G0") if isinstance(meta, dict) else None
+        g0 = g0 if isinstance(g0, dict) else {}
+        van_ban = [topic] + [str(g0.get(k) or "") for k in ("population", "intervention", "exposure",
+                                                          "primary_outcome")]
         seen_en: set[str] = set()
         english_terms = []
-        for vi, en in VI_EN_TERMS.items():
-            if vi in topic_lower and en and en not in seen_en:
-                english_terms.append(en)
-                seen_en.add(en)
+        for doan in van_ban:
+            doan_lower = doan.lower()
+            for vi, en in VI_EN_TERMS.items():
+                if vi in doan_lower and en and en not in seen_en:
+                    english_terms.append(en)
+                    seen_en.add(en)
         # Giữ lại từ tiếng Anh/viết tắt trong topic (ALL CAPS hoặc có số)
         for word in re.findall(r'\b[A-Z][A-Za-z0-9-]{2,}\b', topic):
             if word not in seen_en and len(word) <= 20:
@@ -329,7 +347,7 @@ def build_pubmed_query(topic: str, query_en: Optional[str] = None) -> dict[str, 
         "observational": base,
         "recent_5yr": f"{base} AND {this_year - 5}:{this_year}[dp]",
     }
-    return {"base": base, **queries}
+    return {"base": base, "nguon": nguon, **queries}
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -1782,8 +1800,8 @@ def main():
 
     # 1. Xây truy vấn
     print("📋 Bước 1/7: Xây dựng truy vấn PubMed...")
-    queries = build_pubmed_query(args.topic, args.query_en)
-    print(f"  Base query: {queries['base']}")
+    queries = build_pubmed_query(args.topic, args.query_en, meta=GC.load_study_meta(_thu_muc_de_tai(study)))
+    print(f"  Base query: {queries['base']}  (nguồn: {queries.get('nguon')})")
 
     # 2. Tìm kiếm PubMed thật
     print("\n🔍 Bước 2/8: Tìm kiếm PubMed thật (có thể mất 10-30 giây)...")
