@@ -156,7 +156,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 15/11/2026: dieu-phoi-g0/g1/g7 + thu-thu-tai-lieu + phan-tich-thong-ke + viet-ban-thao (R10 — K4 khái niệm chuẩn
 # G0, N4-G1, G7 Kết quả từ G6) — cặp y hệt repo gốc nhánh claude/r10-day-agent-20261115; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "d75606e8666cdcfc900b56e643efa74897f4f13d78f7398e21d3f3bac42cebee"
+    "50d30f204a0e37b447a4419227af6b9dc0d31e7c07041376ca3355001ce751db"
 )
 
 MINIMUM_AGENT_COUNT = 64
