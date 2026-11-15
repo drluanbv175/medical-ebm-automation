@@ -241,6 +241,8 @@ Ngưỡng thiếu được chấp nhận: < ___% (trên ngưỡng → phân tíc
 > giả định MAR hợp lý — không áp cho biến kết cục**; không nội suy trung bình cơ học
 > (mean substitution/LOCF) cho toàn bộ phiếu.
 
+> **SAP phải phản ánh thiết kế chọn mẫu (15/11/2026):** mã `phan_tang` ⇒ SAP nêu cách xử lý tầng (trọng số/hậu phân tầng, quy tắc kích hoạt, gộp tầng nhỏ); mã `cum` ⇒ SAP nêu biến chùm có trong từ điển và SE theo chùm; DE ghi trong SAP phải là DE chính hoặc DE độ nhạy của G3; «N tối thiểu» của SAP §1 = N cần do G3 tính. Máy kiểm bằng trục `ky_thuat_chon_mau`, `chon_mau_co_mau`, `co_mau_tinh_lai` của `nhat_quan_xuyen_cong.py`.
+
 ### SAP §7 — Phân tích nhóm nhỏ (định trước — KHÔNG thêm sau khi xem dữ liệu)
 ```
 Nhóm nhỏ 1: ___ (tiêu chí: ___) | Giả thuyết tương tác: ___

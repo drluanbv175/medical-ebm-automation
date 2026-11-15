@@ -670,7 +670,7 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
 # Nguyên tắc mức: lệch làm SAI NHẬP LIỆU hoặc làm thiết kế không chạy được ⇒ LỆCH CỨNG; cần chủ nhiệm quyết ⇒ LỆCH MỀM;
 # truy nguyên/văn phong ⇒ CẦN XEM; thiếu nguồn để so ⇒ CHƯA ĐỦ ĐỂ SO (không bao giờ là «khớp»).
 TRUC_CHUOI = ("bien_de_cuong", "cong_cu_tu_dien", "muc_tieu_phan_tich", "chon_mau_co_mau", "dac_ta_cho_bo_bien",
-              "tong_quan_khoang_trong")
+              "tong_quan_khoang_trong", "co_mau_tinh_lai", "ky_thuat_chon_mau", "tai_lieu_nop_co_mau")
 # Trục nào là trách nhiệm của cổng nào (hoi_dong_cong.trach_nhiem dùng — «hoàn thiện» của cổng phải qua trục của nó).
 TRUC_THEO_CONG = {
     "co_mau": ("G3", "G4", "G10"), "alpha": ("G3", "G4", "G10"), "power": ("G3", "G4", "G10"),
@@ -681,6 +681,8 @@ TRUC_THEO_CONG = {
     "bien_de_cuong": ("G3", "G5", "G10"), "cong_cu_tu_dien": ("G3", "G5", "G10"),
     "muc_tieu_phan_tich": ("G1", "G4", "G10"), "chon_mau_co_mau": ("G1", "G3", "G4", "G10"),
     "dac_ta_cho_bo_bien": ("G4", "G6"), "tong_quan_khoang_trong": ("G0", "G1", "G10"),
+    "co_mau_tinh_lai": ("G3", "G4", "G10"), "ky_thuat_chon_mau": ("G1", "G3", "G4", "G10"),
+    "tai_lieu_nop_co_mau": ("G10",),
 }
 
 
@@ -833,11 +835,16 @@ def _truc_chon_mau(meta: Dict[str, Any], sap_text: str, td: Dict[str, Dict[str, 
     gia_tri = f"m={m:g} CV={cv:g} ICC={icc:g} ⇒ DE={de:.2f}"
     lech, nguon = [], [{"cong": "G3", "noi": "cluster_size·cv·icc", "gia_tri": gia_tri}]
     sap_de = [float(x.replace(",", ".")) for x in re.findall(r"\bDE\s*[:=]?\s*(1[.,]\d+)", sap_text or "")]
-    if sap_de and not any(abs(x - de) < 0.015 for x in sap_de):
-        lech.append(f"SAP nêu DE {sap_de} ≠ DE tính từ G3 {de:.2f}")
+    # 15/11/2026: MỌI giá trị DE trong SAP phải là DE chính (CV G3), DE độ nhạy CV = 1,0 hoặc DE cỡ chùm đều (CV = 0);
+    # luật cũ «chỉ cần MỘT giá trị khớp» để lọt SAP vừa ghi DE đúng vừa ghi DE cũ ở chỗ khác.
+    hop_le = _de_hop_le(m, icc, cv)
+    la = sorted({round(x, 2) for x in sap_de if not any(abs(x - a) < 0.015 for a in hop_le)})
+    if la:
+        lech.append(f"SAP nêu DE {la} không thuộc DE hợp lệ từ G3 {sorted(round(a, 2) for a in hop_le)}")
     n = _so_nguyen(_gp(meta, "G3").get("confirmed_n"))
     if k and n and abs(k * m - n) > 0.5:
         nguon.append({"cong": "G3", "noi": "K×m vs N", "gia_tri": f"{k:g}×{m:g} ≠ {n}"})
+        lech.append(f"số chùm × cỡ chùm {k:g}×{m:g} = {k * m:g} ≠ N đã chốt {n} (DE tính với m sai)")
     # định danh đứng sau «chùm» trong SAP: có thể là biến chùm (`ma_ban_kham`) hoặc tên hàm R (`vcovCL`) ⇒ chỉ cần MỘT
     # định danh có trong từ điển; không tên nào có ⇒ biến chùm không nhập được.
     ung_vien = sorted(set(re.findall(r"chùm\s*\(?\s*`([A-Za-z_][A-Za-z0-9_:]*)`", sap_text or "")))
@@ -884,13 +891,213 @@ def _truc_tong_quan(out_dir: Path, study: str, meta: Dict[str, Any]) -> Optional
                 else "không có khoảng trống ở G0/G1 lẫn đề cương")
 
 
+def _de_hop_le(m: float, icc: float, cv: float) -> List[float]:
+    """DE chính (CV khai ở G3) + DE độ nhạy CV = 1,0 + DE cỡ chùm đều (CV = 0).
+
+    Eldridge 2006, doi:10.1093/ije/dyl129."""
+    return sorted({1 + ((c * c + 1) * m - 1) * icc for c in (cv, 1.0, 0.0)})
+
+
+def _mau_so(n: int) -> str:
+    """Mẫu nhận một số nguyên trong văn bản Việt: 1000 ⇒ «1000», «1.000», «1 000», «1,000»."""
+    s = str(n)
+    if n < 1000:
+        return rf"(?<![\d.,]){s}(?![\d]|[.,]\d)"
+    nghin = s[:-3] + r"[.,  ]?" + s[-3:]
+    return rf"(?<![\d.,]){nghin}(?![\d]|[.,]\d)"
+
+
+def _truc_tinh_lai_co_mau(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -> Optional[Dict[str, Any]]:
+    """15/11/2026 (bác sĩ: «kiểm tra và đánh giá sự đồng bộ Tính Cỡ Mẫu … trung thực nhất» + «mỗi vấn đề … phải được cập
+    nhật vào hệ thống»): TÍNH LẠI cỡ mẫu của nghiên cứu MÔ TẢ theo độ chính xác từ CHÍNH tham số G3 — n₀ = z²p(1−p)/d²,
+    DE = 1 + ((CV²+1)·m − 1)·ICC khi có gom cụm, N cần = ⌈n₀·DE⌉ ÷ (1 − tỷ lệ không đáp ứng) — rồi so với checkpoint G3,
+    «N tối thiểu» của SAP và đề cương nộp, và N đã chốt. Lệch số học ở G3 hoặc N chốt < N cần ⇒ LỆCH CỨNG; văn bản ghi N
+    tối thiểu khác ⇒ LỆCH MỀM. Thiết kế khác (so sánh, chẩn đoán…) ⇒ None — công thức riêng do run_g3_auto/G3 chấm."""
+    from math import ceil  # noqa: PLC0415
+    from statistics import NormalDist  # noqa: PLC0415
+
+    g3, cp = _gp(meta, "G3"), _doc_json(out_dir / "G3_checkpoint.json")
+    lay = lambda *k: next((v for v in (g3.get(x, cp.get(x)) for x in k) if v not in (None, "")), None)  # noqa: E731
+    if str(lay("hypothesis_type") or "") != "descriptive_precision":
+        return None
+    p, d = _so_dau(lay("prevalence")), _so_dau(lay("precision"))
+    if p is None or d is None or p <= 0 or d <= 0:
+        return None
+    p, d = (p / 100 if p > 1 else p), (d / 100 if d >= 1 else d)
+    alpha = _ty_le(lay("alpha")) or 0.05
+    z = NormalDist().inv_cdf(1 - alpha / 2)
+    n0 = ceil(z * z * p * (1 - p) / (d * d) - 1e-9)
+    icc, m = _so_dau(lay("icc")), _so_dau(lay("cluster_size"))
+    cv = _so_dau(lay("cluster_size_cv", "cluster_cv")) or 0.0
+    de = 1 + ((cv * cv + 1) * m - 1) * icc if icc and m else 1.0
+    n_de = ceil(n0 * de - 1e-9)
+    drop = _so_dau(lay("dropout")) or 0.0
+    drop = drop / 100 if drop >= 1 else drop
+    n_can = ceil(n_de / (1 - drop) - 1e-9)
+    ten = "Cỡ mẫu tính lại từ tham số G3 (mô tả theo độ chính xác)"
+    tinh = f"n₀={n0} · DE={de:.3f} · ⌈n₀·DE⌉={n_de} · ÷(1−{drop:g}) ⇒ N cần {n_can}"
+    nguon = [{"cong": "G3", "noi": "tính lại", "gia_tri": tinh}]
+    cung, mem = [], []
+    for khoa, dung, sai_so in (("n_total_truoc_de", n0, 1), ("n_total", n_de, 1), ("n_adjusted", n_can, 1)):
+        v = _so_nguyen(cp.get(khoa))
+        if v is not None and abs(v - dung) > sai_so:
+            cung.append(f"G3_checkpoint.{khoa} = {v} ≠ tính lại {dung}")
+    v = _so_dau(cp.get("design_effect"))
+    if v is not None and icc and m and abs(v - de) > 0.005:
+        cung.append(f"G3_checkpoint.design_effect = {v:g} ≠ tính lại {de:.4f}")
+    n_chot = _so_nguyen(lay("confirmed_n"))
+    if n_chot is not None and n_chot < n_can:
+        (mem if _co_that(g3.get("underpowered_acceptance_justification")) else cung).append(
+            f"N đã chốt {n_chot} < N cần {n_can}")
+    # «N tối thiểu» trong SAP / đề cương nộp: ít nhất MỘT lần nhắc phải chứa N cần (lần khác có thể là kịch bản
+    # độ nhạy).
+    for ten_vb, vb in (("SAP", sap_text), ("đề cương nộp", _doc_text(out_dir / f"DE_CUONG_NOP_HOI_DONG_{study}.md"))):
+        doan = [vb[x.end():x.end() + 90] for x in re.finditer(r"(?:\bN|cỡ\s+mẫu)\s+tối\s+thiểu", vb or "", re.I)]
+        if doan and not any(re.search(_mau_so(n_can), t) for t in doan):
+            mem.append(f"{ten_vb} ghi «N/cỡ mẫu tối thiểu» nhưng không lần nào là {n_can}")
+            nguon.append({"cong": "G4" if ten_vb == "SAP" else "G10", "noi": ten_vb, "gia_tri": doan[0].strip()[:80]})
+    if cung:
+        return _ket("co_mau_tinh_lai", ten, nguon, MUC_LECH_CUNG, "; ".join(cung + mem))
+    if mem:
+        return _ket("co_mau_tinh_lai", ten, nguon, MUC_LECH_MEM, "; ".join(mem))
+    return _ket("co_mau_tinh_lai", ten, nguon, MUC_KHOP,
+                f"{tinh}; khớp checkpoint G3" + (f", N chốt {n_chot} ≥ N cần" if n_chot else ""))
+
+
+# mã G1.sampling_design (g1_design_blocks._O_DANH_DAU) ⇒ dấu hiệu trong văn bản
+_KY_THUAT = {"toan_bo": r"toàn\s+bộ", "ngau_nhien_don": r"ngẫu\s+nhiên\s+đơn",
+             "he_thong": r"(?:chọn\s+mẫu|mẫu)\s+hệ\s+thống|systematic", "phan_tang": r"phân\s+tầng|stratif",
+             "cum": r"chùm|cụm|cluster"}
+_CUM_CHON_MAU = re.compile(r"chọn\s+mẫu\s+(ngẫu\s+nhiên\s+đơn|hệ\s+thống|phân\s+tầng|(?:theo\s+)?(?:chùm|cụm)|"
+                           r"thuận\s+tiện|chủ\s+đích|toàn\s+bộ)", re.I)
+_PHU_DINH = re.compile(r"(không|thay\s+vì|tránh|chứ\s+không|thay\s+cho|loại\s+bỏ)[^.;\n]{0,25}$", re.I)
+_PHI_XAC_SUAT = ("thuan_tien", "chu_dich")
+# câu THUẬT LẠI tài liệu khác (C1a §4.4.3: «Thuyết minh đề tài đã nộp Bệnh viện ghi phương pháp chọn mẫu là chọn mẫu
+# thuận tiện…») — không phải phương pháp của văn bản này, nhưng là chênh lệch giữa hai tài liệu nộp ⇒ CẦN XEM,
+# không LỆCH.
+_THUAT_LAI = re.compile(r"thuyết\s+minh|bản\s+(?:cũ|trước)|phiên\s+bản\s+trước|đề\s+cương\s+(?:cũ|trước)", re.I)
+
+
+def _ma_cum(t: str) -> str:
+    t = unicodedata.normalize("NFC", t.lower())
+    for ma, mau in (("ngau_nhien_don", "ngẫu nhiên đơn"), ("he_thong", "hệ thống"), ("phan_tang", "phân tầng"),
+                    ("thuan_tien", "thuận tiện"), ("chu_dich", "chủ đích"), ("toan_bo", "toàn bộ")):
+        if re.search(mau.replace(" ", r"\s+"), t):
+            return ma
+    return "cum"
+
+
+def _truc_ky_thuat_chon_mau(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -> Optional[Dict[str, Any]]:
+    """15/11/2026: kỹ thuật chọn mẫu G1 ↔ chiến lược tuyển chọn ↔ đề cương nộp ↔ SAP (mọi thiết kế, không chỉ chùm).
+    Mỗi mã G1 phải hiện ở đề cương nộp; mã quyết định CÁCH CHỌN (toàn bộ/ngẫu nhiên đơn/hệ thống/phân tầng) phải hiện ở
+    G1.recruitment_strategy; mã làm ĐỔI PHƯƠNG SAI (phân tầng, chùm) phải được SAP nhắc tới (trọng số/sai số chuẩn) —
+    thiếu ⇒ CẦN XEM. Văn bản tả «chọn mẫu <cách khác mã G1>» ⇒ LỆCH MỀM; cách phi xác suất (thuận tiện, chủ đích) trong
+    khi G1 chốt cách xác suất ⇒ LỆCH CỨNG (cỡ mẫu theo độ chính xác giả định mẫu xác suất). Câu phủ định («không…»,
+    «thay vì …») không tính; câu thuật lại tài liệu khác (thuyết minh, bản cũ) ⇒ CẦN XEM."""
+    g1 = _gp(meta, "G1")
+    tk = g1.get("sampling_design") or []
+    tk = [str(x) for x in (tk if isinstance(tk, list) else [tk]) if _co_that(x)]
+    ma = [x for x in tk if not x.startswith("khac")]
+    rs = unicodedata.normalize("NFC", str(g1.get("recruitment_strategy") or ""))
+    dc = unicodedata.normalize("NFC", _doc_text(out_dir / f"DE_CUONG_NOP_HOI_DONG_{study}.md"))
+    sap = unicodedata.normalize("NFC", sap_text or "")
+    if not ma and not rs and not dc:
+        return None
+    ten = "Kỹ thuật chọn mẫu G1 ↔ tuyển chọn ↔ đề cương ↔ SAP"
+    if not ma:
+        return _ket("ky_thuat_chon_mau", ten, [], MUC_CHUA_DU, "G1 chưa khai sampling_design — không có chuẩn để so")
+    can, cung, mem = [], [], []
+    for ten_vb, vb, can_ma in (("chiến lược tuyển chọn G1", rs, [x for x in ma if x in ("toan_bo", "ngau_nhien_don",
+                                                                                     "he_thong", "phan_tang")]),
+                               ("đề cương nộp", dc, ma), ("SAP", sap, [x for x in ma if x in ("phan_tang", "cum")])):
+        if not vb:
+            continue
+        thieu = [x for x in can_ma if x in _KY_THUAT and not re.search(_KY_THUAT[x], vb, re.I)]
+        if thieu:
+            can.append(f"{ten_vb} không nhắc {', '.join(thieu)}")
+        for mm in _CUM_CHON_MAU.finditer(vb):
+            if _PHU_DINH.search(vb[max(0, mm.start() - 40):mm.start()]):
+                continue
+            k = _ma_cum(mm.group(1))
+            if k in ma:
+                continue
+            dau_cau = max(vb.rfind(". ", 0, mm.start()), vb.rfind("\n", 0, mm.start())) + 1
+            if _THUAT_LAI.search(vb[dau_cau:mm.start()]):
+                can.append(f"{ten_vb} thuật lại tài liệu khác dùng «{mm.group(0)}» (khác mã G1 {', '.join(ma)}) — "
+                           "đối chiếu và giải trình chênh lệch giữa hai tài liệu")
+                continue
+            if k in _PHI_XAC_SUAT:
+                cung.append(f"{ten_vb} tả «{mm.group(0)}» (phi xác suất) trong khi G1 chốt {', '.join(ma)}")
+            else:
+                mem.append(f"{ten_vb} tả «{mm.group(0)}» — không thuộc mã G1 {', '.join(ma)}")
+    nguon = [{"cong": "G1", "noi": "sampling_design", "gia_tri": ", ".join(tk)}]
+    if cung:
+        return _ket("ky_thuat_chon_mau", ten, nguon, MUC_LECH_CUNG, "; ".join(dict.fromkeys(cung + mem)))
+    if mem:
+        return _ket("ky_thuat_chon_mau", ten, nguon, MUC_LECH_MEM, "; ".join(dict.fromkeys(mem)))
+    if can:
+        return _ket("ky_thuat_chon_mau", ten, nguon, MUC_CAN_XEM, "; ".join(can))
+    return _ket("ky_thuat_chon_mau", ten, nguon, MUC_KHOP,
+                f"{', '.join(ma)} hiện đúng ở " + ", ".join(t for t, v in (("tuyển chọn G1", rs), ("đề cương nộp", dc),
+                                                                         ("SAP", sap)) if v))
+
+
+TAI_LIEU_NOP_TIEN_TO = ("DE_CUONG_NOP_HOI_DONG_", "DE_CUONG_THONG_NHAT_", "De-cuong_", "Bai-bao-giao-thuc_")
+_BAN_CU = re.compile(r"BẢN\s+CŨ\s*[—–-]+\s*ĐÃ\s+THAY", re.I)
+
+
+def _truc_tai_lieu_nop(out_dir: Path, study: str, meta: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """15/11/2026: mọi TÀI LIỆU NỘP có bàn về cỡ mẫu phải ghi đúng N đã chốt và — khi có gom cụm — DE hiện hành của G3.
+    Bản cũ đã thay (C1a: De-cuong_ 04/10, Bai-bao-giao-thuc_ 03/08 giả định 8–20 bàn khám, DE thiếu CV) chỉ được bỏ qua
+    khi đầu tệp có dấu «BẢN CŨ — ĐÃ THAY BẰNG <tệp>»; không dấu mà số lệch ⇒ LỆCH MỀM (người đọc/Hội đồng có thể cầm
+    nhầm)."""
+    g3 = _gp(meta, "G3")
+    cp = _doc_json(out_dir / "G3_checkpoint.json")
+    n = _so_nguyen(g3.get("confirmed_n")) or _so_nguyen(cp.get("confirmed_n")) or _so_nguyen(cp.get("n_adjusted"))
+    icc, m = _so_dau(g3.get("icc")), _so_dau(g3.get("cluster_size"))
+    cv = _so_dau(g3.get("cluster_size_cv")) or 0.0
+    de = 1 + ((cv * cv + 1) * m - 1) * icc if icc and m else None
+    tep = sorted({p for t in TAI_LIEU_NOP_TIEN_TO for p in out_dir.glob(f"{t}*.md")})
+    if not tep or n is None:
+        return None
+    ten = "Tài liệu nộp ↔ cỡ mẫu và hiệu ứng thiết kế hiện hành"
+    lech, cu, xet = [], [], 0
+    for p in tep:
+        vb = unicodedata.normalize("NFC", _doc_text(p))
+        if _BAN_CU.search("\n".join(vb.splitlines()[:40])):
+            cu.append(p.name)
+            continue
+        if not re.search(r"cỡ\s+mẫu", vb, re.I):
+            continue
+        xet += 1
+        if not re.search(_mau_so(n), vb):
+            lech.append(f"{p.name}: không ghi N đã chốt {n}")
+        if de is not None and re.search(r"hiệu\s+ứng\s+thiết\s+kế|\bICC\b", vb, re.I):
+            dd = f"{de:.2f}"
+            if not re.search(dd.replace(".", "[.,]"), vb):
+                lech.append(f"{p.name}: bàn về gom cụm nhưng không ghi DE hiện hành {dd.replace('.', ',')}")
+    ghi_cu = f"; bỏ qua bản cũ đã đánh dấu: {', '.join(cu)}" if cu else ""
+    nguon = [{"cong": "G10", "noi": "tài liệu nộp", "gia_tri": x} for x in lech[:8]]
+    if lech:
+        return _ket("tai_lieu_nop_co_mau", ten, nguon, MUC_LECH_MEM,
+                    "; ".join(lech) + " — cập nhật theo đề cương nộp, hoặc đánh dấu đầu tệp «BẢN CŨ — ĐÃ THAY BẰNG …»"
+                    + ghi_cu)
+    if not xet:
+        return _ket("tai_lieu_nop_co_mau", ten, [], MUC_CHUA_DU, "không tài liệu nộp nào bàn về cỡ mẫu" + ghi_cu)
+    return _ket("tai_lieu_nop_co_mau", ten, [], MUC_KHOP,
+                f"{xet} tài liệu nộp ghi đúng N {n}" + (f" và DE {de:.2f}" if de else "") + ghi_cu)
+
+
 def truc_chuoi(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -> List[Dict[str, Any]]:
-    """Sáu trục chuỗi đầy đủ (mỗi trục tự bắt lỗi của mình — một trục hỏng không làm mất các trục khác)."""
+    """Các trục chuỗi đầy đủ (mỗi trục tự bắt lỗi của mình — một trục hỏng không làm mất các trục khác)."""
     td = _tu_dien(out_dir, study)
     ra: List[Dict[str, Any]] = []
     for ham in (lambda: _truc_bien_de_cuong(out_dir, study), lambda: _truc_cong_cu(out_dir, study, td),
                 lambda: _truc_muc_tieu(meta, sap_text), lambda: _truc_chon_mau(meta, sap_text, td),
-                lambda: _truc_dac_ta(out_dir), lambda: _truc_tong_quan(out_dir, study, meta)):
+                lambda: _truc_dac_ta(out_dir), lambda: _truc_tong_quan(out_dir, study, meta),
+                lambda: _truc_tinh_lai_co_mau(out_dir, study, meta, sap_text),
+                lambda: _truc_ky_thuat_chon_mau(out_dir, study, meta, sap_text),
+                lambda: _truc_tai_lieu_nop(out_dir, study, meta)):
         try:
             k = ham()
         except Exception as e:  # noqa: BLE001
