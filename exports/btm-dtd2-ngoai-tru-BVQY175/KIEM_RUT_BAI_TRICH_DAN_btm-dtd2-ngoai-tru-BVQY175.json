@@ -1,10 +1,10 @@
 {
   "schema": "de_tai/kiem_rut_bai_trich_dan/v1",
   "study": "btm-dtd2-ngoai-tru-BVQY175",
-  "checked_at": "2026-11-15T03:51:34+00:00",
+  "checked_at": "2026-11-15T04:49:50+00:00",
   "cong_cu": "tools/kiem_rut_bai_trich_dan.py — PMID: RetractionChain (Retraction Watch → NCBI → Europe PMC); DOI không PMID: Crossref updated-by + Retraction Watch theo DOI",
   "tong": {
-    "ok": 47
+    "ok": 54
   },
   "ket_qua": {
     "pmid:40902917": {
@@ -288,6 +288,48 @@
       "source": "pubmed",
       "reason": "",
       "nguon": "danh mục T66"
+    },
+    "pmid:26440803": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "danh mục T67"
+    },
+    "pmid:27881078": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "danh mục T68"
+    },
+    "pmid:34554658": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "danh mục T69"
+    },
+    "pmid:14567763": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "danh mục T70"
+    },
+    "pmid:19564179": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "danh mục T72"
+    },
+    "pmid:26964707": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "danh mục T74"
+    },
+    "pmid:21225900": {
+      "status": "ok",
+      "source": "pubmed",
+      "reason": "",
+      "nguon": "danh mục T73"
     }
   },
   "disclaimer": "Cần bác sĩ kiểm chứng. «ok» chỉ khi một nguồn ĐÃ lấy được bản ghi; mã không kết luận được giữ trạng thái không biết — KHÔNG phải «chưa bị rút»."

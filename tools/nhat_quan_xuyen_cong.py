@@ -1045,6 +1045,17 @@ _PHI_XAC_SUAT = ("thuan_tien", "chu_dich")
 # thuận tiện…») — không phải phương pháp của văn bản này, nhưng là chênh lệch giữa hai tài liệu nộp ⇒ CẦN XEM,
 # không LỆCH.
 _THUAT_LAI = re.compile(r"thuyết\s+minh|bản\s+(?:cũ|trước)|phiên\s+bản\s+trước|đề\s+cương\s+(?:cũ|trước)", re.I)
+# 15/11/2026: đoạn thuật lại mà CHÍNH NÓ giải trình chênh lệch (đề cương C1a §4.4.3: «… cụ thể hóa phương pháp đó … theo
+# hướng chặt chẽ hơn …») là đã giải trình — không báo «cần xem» mãi. Thuật lại KHÔNG kèm câu giải trình vẫn «cần xem».
+_GIAI_TRINH_DOI = re.compile(r"cụ\s+thể\s+h(?:óa|oá|oa)|thay\s+(?:bằng|thế)|điều\s+chỉnh\s+thành", re.I)
+_GIAI_TRINH_LY_DO = re.compile(r"chặt\s+chẽ\s+hơn|lý\s+do|\bvì\b|bởi\s+vì|nhằm|để\s+(?:tránh|bảo\s+đảm|phủ|giảm)", re.I)
+
+
+def _da_giai_trinh(doan: str) -> bool:
+    """Đoạn thuật lại có câu giải trình: «giải trình», hoặc CẢ động từ thay đổi lẫn lý do (một câu cụt «Đề cương cụ thể
+    hoá.» không đủ)."""
+    return bool(re.search(r"giải\s+trình", doan, re.I)
+                or (_GIAI_TRINH_DOI.search(doan) and _GIAI_TRINH_LY_DO.search(doan)))
 
 
 def _ma_cum(t: str) -> str:
@@ -1076,6 +1087,7 @@ def _truc_ky_thuat_chon_mau(out_dir: Path, study: str, meta: Dict[str, Any], sap
     if not ma:
         return _ket("ky_thuat_chon_mau", ten, [], MUC_CHUA_DU, "G1 chưa khai sampling_design — không có chuẩn để so")
     can, cung, mem = [], [], []
+    da_giai_trinh: List[str] = []
     for ten_vb, vb, can_ma in (("chiến lược tuyển chọn G1", rs, [x for x in ma if x in ("toan_bo", "ngau_nhien_don",
                                                                                      "he_thong", "phan_tang")]),
                                ("đề cương nộp", dc, ma), ("SAP", sap, [x for x in ma if x in ("phan_tang", "cum")])):
@@ -1092,6 +1104,11 @@ def _truc_ky_thuat_chon_mau(out_dir: Path, study: str, meta: Dict[str, Any], sap
                 continue
             dau_cau = max(vb.rfind(". ", 0, mm.start()), vb.rfind("\n", 0, mm.start())) + 1
             if _THUAT_LAI.search(vb[dau_cau:mm.start()]):
+                dau_doan = vb.rfind("\n\n", 0, mm.start()) + 1
+                cuoi_doan = vb.find("\n\n", mm.end())
+                if _da_giai_trinh(vb[dau_doan:cuoi_doan if cuoi_doan >= 0 else len(vb)]):
+                    da_giai_trinh.append(ten_vb)
+                    continue
                 can.append(f"{ten_vb} thuật lại tài liệu khác dùng «{mm.group(0)}» (khác mã G1 {', '.join(ma)}) — "
                            "đối chiếu và giải trình chênh lệch giữa hai tài liệu")
                 continue
@@ -1108,7 +1125,9 @@ def _truc_ky_thuat_chon_mau(out_dir: Path, study: str, meta: Dict[str, Any], sap
         return _ket("ky_thuat_chon_mau", ten, nguon, MUC_CAN_XEM, "; ".join(can))
     return _ket("ky_thuat_chon_mau", ten, nguon, MUC_KHOP,
                 f"{', '.join(ma)} hiện đúng ở " + ", ".join(t for t, v in (("tuyển chọn G1", rs), ("đề cương nộp", dc),
-                                                                         ("SAP", sap)) if v))
+                                                                         ("SAP", sap)) if v)
+                + (f"; {', '.join(dict.fromkeys(da_giai_trinh))} thuật lại tài liệu khác và ĐÃ giải trình chênh lệch"
+                   if da_giai_trinh else ""))
 
 
 TAI_LIEU_NOP_TIEN_TO = ("DE_CUONG_NOP_HOI_DONG_", "DE_CUONG_THONG_NHAT_", "De-cuong_", "Bai-bao-giao-thuc_")

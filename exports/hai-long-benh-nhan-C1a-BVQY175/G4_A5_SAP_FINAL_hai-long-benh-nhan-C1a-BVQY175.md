@@ -1,5 +1,5 @@
 # A5, SAP FINAL + SAP LOCK CERTIFICATE (DRAFT, CHỜ BÁC SĨ KÝ)
-**Đề tài:** Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối  
+**Đề tài:** Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175  
 **Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Phiên bản SAP:** 1.4 | **Ngày sinh:** 2026-07-31 | **Cập nhật:** 2026-10-26
 **Chuẩn báo cáo:** STROBE
 
@@ -18,12 +18,12 @@
 
 | Mục | Nội dung |
 |---|---|
-| Tên đề tài | Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối |
+| Tên đề tài | Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175 |
 | Mã nghiên cứu | hai-long-benh-nhan-C1a-BVQY175 |
 | Thiết kế | Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence) |
 | Chuẩn báo cáo | STROBE |
 | Ngày soạn SAP | 2026-07-31 |
-| Phiên bản | 1.4 (sửa đổi sau khoá, TRƯỚC khi có số liệu — quyết định của bác sĩ 25/10/2026 ở hội đồng G1; đồng bộ với đề cương nộp Hội đồng và G3 A4, 2026-10-26) |
+| Phiên bản | 1.5 (sửa đổi sau khoá, TRƯỚC khi có số liệu — đồng bộ tên đề tài và trích dẫn với đề cương nộp, 15/11/2026; cần thống kê viên/PI ký lại G4) |
 
 ---
 
@@ -36,6 +36,7 @@
 | 1.2 | 2026-10-17 | Trợ lý tự động theo yêu cầu bác sĩ; thẩm định độc lập (tham-dinh-dau-ra) | Đồng bộ với đề cương nộp Hội đồng (bản gốc mới): N tối thiểu 808, DE 1,78, CV 1,0 (§1, §12); KTC Wilson trên n hiệu dụng (§3); quy tắc trọng số hậu phân tầng tách Mục tiêu 1/2 + gộp tầng nhỏ + thứ tự ưu tiên (§4); §9, §10, §11 đồng bộ |
 | 1.3 | 2026-10-17 | Trợ lý tự động theo biên bản hội đồng G0 DP-G0-1 (G0-TB-20261017T100650-107f4acb) | §12: thêm «Lực cho mục tiêu phụ» (Mục tiêu 2 — logistic thứ tự, Whitehead 1993, có hiệu chỉnh gom cụm) lấy từ G3 A4 PHẦN 2c; dòng Power ghi rõ kết cục chính không dùng power. Thống kê viên kiểm, PI quyết khi chốt G4 |
 | 1.4 | 2026-10-26 | Trợ lý tự động theo quyết định của bác sĩ 25/10/2026 (hội đồng G1: biên bản G1-TB-20261025T152106-1ac1bb54 và G1-TB-20261025T152307-267c5105; `hoi_dong/G1/quyet_dinh_bac_si.json`) | SAP AMENDMENT trước khi có số liệu: CV cỡ chùm 1,0 → 0,14 (ước của chủ nhiệm, phương án A; CV 1,0 giữ làm độ nhạy) ⇒ DE 1,78 → 1,39, N tối thiểu 808 → 630, n hiệu dụng mục tiêu 2 ≈ 478 → 612 (§1, §3, §12); quần thể ước lượng = người đã khám xong (§1, §4); phân tích giới hạn định trước cho người bỏ về (§9; DP-G1-1/DP-G1-2 phương án (i)); giả thuyết mục tiêu phụ MT2 H0/H1 (§12; DP-G1-2 phương án (i)); §1 tách luật loại PHIẾU (`PhieuHopLe`) khỏi tiêu chí loại NGƯỜI và ghi đúng tiêu chí «đã tham gia nghiên cứu trước đó» như mục 4.3.2 đề cương (biên bản G1-TB-20261025T152307-267c5105, việc sửa 4); §1/§12 ghi MỘT định nghĩa N = 1.000 phiếu hợp lệ, 850 là kịch bản thận trọng của lực MT2 (biên bản G1-DG-20261025T151536-2f1beb6d). Kết cục chính, mô hình chính, ngưỡng hài lòng KHÔNG đổi. Chờ thống kê viên ký lại G4 |
+| 1.5 | 2026-11-15 | Trợ lý tự động theo yêu cầu bác sĩ 15/11/2026 («C1a nếu không đạt sự đồng bộ hãy chỉnh sửa cho đồng bộ»; «nếu không lấy được hãy loại bỏ cho tôi») | (1) Tên đề tài = tên chính thức của đề cương nộp (study_meta.title), thay chuỗi chủ đề tìm y văn G0; (2) bỏ trích dẫn Dean & Pagano 2015 và Solon, Haider & Wooldridge 2015 — không lấy được toàn văn kể cả khi bác sĩ đăng nhập; giữ nguyên phương pháp (KTC Wilson trên cỡ mẫu hiệu dụng; mô hình có trọng số là phân tích độ nhạy); Lumley 2004 giữ và nay có trong TLTK đề cương nộp [50]. KHÔNG đổi kết cục, mô hình, tập biến hay N. |
 
 ---
 
@@ -63,7 +64,7 @@
 
 - Biến liên tục: trung bình ± SD (phân phối chuẩn) hoặc trung vị [IQR] (lệch); điểm hài lòng trình bày CẢ HAI (A.2 đề cương)  
 - Biến phân loại: n (%)  
-- Tỷ lệ hài lòng chung và theo lĩnh vực (ngưỡng cố định ≥ 4/5) kèm KTC 95% **Wilson score trên cỡ mẫu hiệu dụng** n_hd = n ÷ DE (đề cương 4.10, Mục tiêu 1; Dean & Pagano 2015, doi:10.1093/jssam/smv024):  
+- Tỷ lệ hài lòng chung và theo lĩnh vực (ngưỡng cố định ≥ 4/5) kèm KTC 95% **Wilson score trên cỡ mẫu hiệu dụng** n_hd = n ÷ DE (đề cương 4.10, Mục tiêu 1):  
   - DE = hiệu ứng thiết kế của CHÍNH tỷ lệ đó, ước lượng từ số liệu bằng phương sai tuyến tính hoá theo chùm `ma_ban_kham` (`survey::svymean(..., deff = "replace")` — KHÔNG dùng `deff = TRUE`: thiết kế không trọng số cho Inf, có hiệu chỉnh quần thể hữu hạn sau `postStratify`; đường Python cho bản KHÔNG trọng số: `run_stats_analysis.py --ty-le g1 --nguong-ty-le 4 --cot-cum ma_ban_kham`), chặn dưới 1 — gom cụm không được làm KTC hẹp hơn giả định độc lập  
   - Hiệu chỉnh bậc tự do thiết kế: n_hd × (z₀,₉₇₅ ÷ t₀,₉₇₅; K−1)², K = số bàn khám có phiếu (K = 50 ⇒ ×≈0,95) (Dean & Pagano 2015)  
   - Báo kèm ICC thực tế, CV cỡ chùm thực tế (độ lệch chuẩn ÷ trung bình số phiếu mỗi bàn) và DE theo ICC = 1 + ((CV² + 1)·m − 1)·ICC (Eldridge 2006) để đối chiếu với giả định lập kế hoạch (G3: DE 1,39 với CV 0,14; độ nhạy CV 1,0: DE 1,78); báo cả KTC Wilson giả định độc lập để thấy mức nới rộng do gom cụm  
@@ -77,7 +78,7 @@
 - **Gom cụm theo bàn khám (bắt buộc, mọi kịch bản):** sai số chuẩn robust theo chùm `ma_ban_kham`; số bàn khám < 15 → mô hình thứ tự hệ số chặn ngẫu nhiên trở thành phân tích CHÍNH; báo ICC cho G1 và từng lĩnh vực A–F.  
 - **Trọng số theo thiết kế chọn mẫu (quy tắc định trước, đề cương 4.10):** tầng h = ngày trong tuần × khung giờ khám; Nₕ = số lượt khám của tầng trong kỳ thu thập (HIS), nₕ = số phiếu hợp lệ của tầng. Tầng có nₕ < 10 (hoặc trống) được gộp với khung giờ liền kề cùng ngày, chưa đủ thì gộp tiếp với cùng khung giờ của ngày liền kề, TRƯỚC khi tính trọng số. Mẫu phân bổ theo lưu lượng nên tự cân bằng ⇒ mặc định KHÔNG trọng số. Quy tắc kích hoạt: có BẤT KỲ tầng nào lệch quá 20% so với tỷ lệ lưu lượng thực, tức |(nₕ/n) ÷ (Nₕ/N) − 1| > 0,20; phép kiểm chỉ dùng nₕ, Nₕ — làm và ghi bảng nₕ · Nₕ · tỷ số TRƯỚC khi xem kết cục. Khi kích hoạt, trọng số hậu phân tầng wₕ = (Nₕ/N) ÷ (nₕ/n) áp như sau:  
   - **Mục tiêu 1 (tỷ lệ, phân bố mô tả):** bản CÓ trọng số là phân tích CHÍNH — `survey::svydesign(ids = ~ma_ban_kham, data = …)` rồi `postStratify(…, strata = ~tang, population = <Nₕ>)` (Lumley 2004, doi:10.18637/jss.v009.i08; `postStratify` chuẩn hoá Σw = N, ước lượng không đổi so với wₕ chuẩn hoá Σw = n); KTC Wilson trên n_hd với DE từ `deff = "replace"` (§3); bản không trọng số báo song song  
-  - **Mục tiêu 2 (mô hình chính):** giữ KHÔNG trọng số — ngày trong tuần và khung giờ (biến tạo tầng) đã nằm trong tập forced-in nên trọng số không cần cho ước lượng vững của cOR hiệu chỉnh; mô hình CÓ trọng số `survey::svyolr` (cùng thiết kế trên) là phân tích độ nhạy định trước (§9). Chênh lệch lớn giữa hai bản là tín hiệu hiệu ứng thay đổi theo tầng, được bàn luận, không chọn bản «đẹp hơn» (Solon, Haider & Wooldridge 2015, doi:10.3368/jhr.50.2.301)  
+  - **Mục tiêu 2 (mô hình chính):** giữ KHÔNG trọng số — ngày trong tuần và khung giờ (biến tạo tầng) đã nằm trong tập forced-in nên trọng số không cần cho ước lượng vững của cOR hiệu chỉnh; mô hình CÓ trọng số `survey::svyolr` (cùng thiết kế trên) là phân tích độ nhạy định trước (§9). Chênh lệch lớn giữa hai bản là tín hiệu hiệu ứng thay đổi theo tầng, được bàn luận, không chọn bản «đẹp hơn»  
   - Thứ tự ưu tiên: các quy tắc về giả định proportional odds và số bàn khám < 15 ở trên áp cho mô hình chính KHÔNG trọng số; `svyolr` chỉ ước lượng mô hình PO nên khi PO bị vi phạm, bản có trọng số vẫn chỉ là độ nhạy và được diễn giải là cOR trung bình hoá  
 - **Quần thể:** phân tích đầy đủ trên phiếu hợp lệ (`PhieuHopLe`, ba ngưỡng loại ở §1)  
 - **Quần thể ước lượng:** cOR của thời gian chờ diễn giải cho người bệnh đã khám xong (§1), không cho mọi lượt lấy số; sai lệch chọn lọc do người bỏ về đánh giá ở §9  

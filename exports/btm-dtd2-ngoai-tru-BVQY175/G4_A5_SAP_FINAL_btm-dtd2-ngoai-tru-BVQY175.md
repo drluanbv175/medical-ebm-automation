@@ -28,6 +28,7 @@
 |---|---|---|---|
 | 1.0 | 2026-10-28 | Máy soạn từ G1, G3 và codebook đã chốt; chờ chủ nhiệm và thống kê viên rà | Bản đầu tiên, viết riêng cho đề tài (thay khuôn mẫu chung của run_g4_auto) |
 | 1.0 (sửa nháp) | 2026-11-15 | Máy (chưa ký) | Gắn nhãn truy nguyên mục tiêu G1 cho từng kết cục và bảng (MT1: kết cục chính, phụ 1, phụ 2 · MT2: phụ 3 · MT3: phụ 4); §5 ghi mức tham chiếu HbA1c < 7% theo lựa chọn của chủ nhiệm (G3_BO_BIEN_SO_QUYET_DINH_20261115.md). Không đổi kết cục, mô hình hay tập biến. |
+| 1.0 (sửa nháp 2) | 2026-11-15 | Máy (chưa ký) | Đồng bộ trích dẫn với danh mục trích dẫn của đề tài (luật «chỉ giữ bài có toàn văn», bác sĩ 25/10 và 15/11/2026): bỏ Zou 2004 và Brown–Cai–DasGupta 2001 (không lấy được toàn văn kể cả khi bác sĩ đăng nhập; bác sĩ: «nếu không lấy được hãy loại bỏ cho tôi»); câu hồi quy Poisson giữ nguồn mở Barros & Hirakata 2003, câu KTC giữ tên phương pháp (khoảng điểm Wilson). White 2011 giữ (đã có toàn văn). Không đổi phương pháp, kết cục hay tập biến. |
 
 ---
 
@@ -62,7 +63,7 @@
 
 - Biến liên tục: trung bình ± SD nếu phân phối gần chuẩn, ngược lại trung vị [khoảng tứ phân vị]; quyết định theo biểu đồ và độ lệch, không theo kiểm định chuẩn.  
 - Biến phân loại: n (%), mẫu số ghi rõ ở từng dòng.  
-- Mọi tỷ lệ của kết cục (chính và phụ) trình bày kèm KTC 95% theo phương pháp Wilson (Brown, Cai, DasGupta 2001, DOI 10.1214/ss/1009213286).  
+- Mọi tỷ lệ của kết cục (chính và phụ) trình bày kèm KTC 95% theo phương pháp khoảng điểm Wilson (Wilson score interval).  
 - Báo cáo số và tỷ lệ thiếu dữ liệu của từng biến (Bảng 1).  
 - Mô tả thời gian quan sát: phân bố số tháng từ lượt khám đầu đến 31/12/2026 (`thang_quan_sat`).  
 
@@ -76,7 +77,7 @@
 ### §5 PHÂN TÍCH ĐA BIẾN
 
 - **Mục tiêu:** MT3 — phân tích THĂM DÒ, không kiểm định giả thuyết định trước, không suy nhân quả (G1).  
-- **Mô hình:** hồi quy Poisson liên kết log với phương sai vững (sandwich) để ước lượng trực tiếp tỷ số tỷ lệ hiện mắc (PR) của `khong_xn_du` (Zou 2004, PMID 15033648; Barros và Hirakata 2003, PMID 14567763). Báo PR thô (từng biến) và PR hiệu chỉnh (mô hình đầy đủ), kèm KTC 95%. Không dùng hồi quy logistic vì kết cục phổ biến, OR sẽ phóng đại PR.  
+- **Mô hình:** hồi quy Poisson liên kết log với phương sai vững (sandwich) để ước lượng trực tiếp tỷ số tỷ lệ hiện mắc (PR) của `khong_xn_du` (Barros và Hirakata 2003, PMID 14567763). Báo PR thô (từng biến) và PR hiệu chỉnh (mô hình đầy đủ), kèm KTC 95%. Không dùng hồi quy logistic vì kết cục phổ biến, OR sẽ phóng đại PR.  
 - **Biến độc lập đưa vào:** 12 biến giải thích đã chốt ở G0 — tuổi (mỗi 10 năm), giới, nhóm đối tượng (quân nhân / BHYT / dịch vụ / khác), thời gian mắc ĐTĐ (mỗi 5 năm), HbA1c dạng 3 mức (< 7% — mức tham chiếu / ≥ 7% / không làm HbA1c năm 2026; biến `hba1c_3muc`, chủ nhiệm chọn tham chiếu 15/11/2026), đang dùng insulin, số nhóm thuốc hạ glucose, tăng huyết áp, BMI (mỗi 5 kg/m²), bệnh tim mạch do xơ vữa hoặc suy tim (`tim_mach`), số lượt khám năm 2026, phòng khám theo dõi chính (nội tiết / nội chung / khác).  
 - **Lý do mã hoá HbA1c 3 mức:** người không làm HbA1c thiếu giá trị vì không được xét nghiệm (thiếu có cấu trúc, liên quan trực tiếp tới kết cục), nên không thay bằng giá trị gán; mức «không làm» giữ thông tin đó.  
 - **Phương pháp chọn biến:** đưa vào toàn bộ, không stepwise, không chọn theo p-value.  

@@ -2,7 +2,7 @@
  "schema": "de_tai/danh_muc_trich_dan/v1",
  "study": "btm-dtd2-ngoai-tru-BVQY175",
  "ngay": "2026-10-25",
- "nguon": "G0_TONG_HOP_BANG_CHUNG + G0_KHOANG_TRONG (bài liên quan trực tiếp/gián tiếp + guideline); bài lạc đề không đưa vào",
+ "nguon": "G0_TONG_HOP_BANG_CHUNG + G0_KHOANG_TRONG (bài liên quan trực tiếp/gián tiếp + guideline); bài lạc đề không đưa vào; từ 15/11/2026 thêm nguồn PHƯƠNG PHÁP mà văn bản cổng (thiết kế G1, bộ biến G3, SAP) dẫn (vai «phuong_phap»)",
  "trich_dan": [
   {
    "pmid": "40902917",
@@ -332,6 +332,63 @@
    "vai": "guideline",
    "lien_quan": "truc_tiep",
    "id": "T66"
+  },
+  {
+   "pmid": "26440803",
+   "doi": "10.1371/journal.pmed.1001885",
+   "vai": "phuong_phap",
+   "lien_quan": "phuong_phap",
+   "id": "T67",
+   "dung_o": "G1 A2 — chuẩn báo cáo RECORD (Benchimol 2015)"
+  },
+  {
+   "pmid": "27881078",
+   "doi": "10.1186/s12874-016-0267-3",
+   "vai": "phuong_phap",
+   "lien_quan": "phuong_phap",
+   "id": "T68",
+   "dung_o": "G1 A2 — ngưỡng EPV (van Smeden 2016)"
+  },
+  {
+   "pmid": "34554658",
+   "doi": "10.1056/NEJMoa2102953",
+   "vai": "phuong_phap",
+   "lien_quan": "phuong_phap",
+   "id": "T69",
+   "dung_o": "G3 bộ biến + SAP — eGFR CKD-EPI 2021 không hệ số chủng tộc (Inker 2021)"
+  },
+  {
+   "pmid": "14567763",
+   "doi": "10.1186/1471-2288-3-21",
+   "vai": "phuong_phap",
+   "lien_quan": "phuong_phap",
+   "id": "T70",
+   "dung_o": "SAP — hồi quy Poisson phương sai vững cho tỷ lệ hiện mắc (Barros & Hirakata 2003)"
+  },
+  {
+   "pmid": "19564179",
+   "doi": "10.1136/bmj.b2393",
+   "vai": "phuong_phap",
+   "lien_quan": "phuong_phap",
+   "id": "T72",
+   "dung_o": "SAP — đa quy gán dữ liệu thiếu (Sterne 2009)"
+  },
+  {
+   "pmid": "26964707",
+   "doi": "10.1016/j.jclinepi.2016.02.031",
+   "vai": "phuong_phap",
+   "lien_quan": "phuong_phap",
+   "id": "T74",
+   "dung_o": "SAP — EPV dựa vào dữ liệu (Ogundimu 2016)"
+  },
+  {
+   "pmid": "21225900",
+   "doi": "10.1002/sim.4067",
+   "vai": "phuong_phap",
+   "lien_quan": "phuong_phap",
+   "id": "T73",
+   "dung_o": "SAP — MICE (White 2011)",
+   "toan_van": "làn Chrome 15/11/2026 sau khi bác sĩ đăng nhập Wiley — PMID-21225900_CHR.html/.pdf"
   }
  ],
  "loai_bo": [
@@ -524,6 +581,28 @@
    "nhom_ly_do": "it_phu_hop_voi_de_tai",
    "ly_do": "Liên quan yếu tố nguy cơ tim mạch với ACR — không đo xét nghiệm, ghi nhận hay điều trị; trùng ý với T54/T62.",
    "ngay": "2026-10-25"
+  },
+  {
+   "pmid": "15033648",
+   "doi": "10.1093/aje/kwh090",
+   "vai": "phuong_phap",
+   "lien_quan": "phuong_phap",
+   "id": "T71",
+   "dung_o": "SAP — hồi quy Poisson hiệu chỉnh (Zou 2004)",
+   "nhom_ly_do": "khong_toan_van",
+   "ly_do": "Không lấy được toàn văn: Am J Epidemiol (OUP) — «Get access», gói tổ chức qua VPN không gồm tạp chí; Unpaywall closed (làn Chrome 15/11/2026, đã ghi sổ không truy cập). Câu SAP về hồi quy Poisson vững giữ nguồn mở Barros & Hirakata 2003 (T70). Bác sĩ đăng nhập lại 15/11/2026 vẫn không có quyền toàn văn; bác sĩ: «nếu không lấy được hãy loại bỏ cho tôi».",
+   "ngay": "2026-11-15"
+  },
+  {
+   "pmid": null,
+   "doi": "10.1214/ss/1009213286",
+   "vai": "phuong_phap",
+   "lien_quan": "phuong_phap",
+   "id": "T75",
+   "dung_o": "SAP — KTC 95% Wilson (Brown, Cai, DasGupta 2001, Statistical Science)",
+   "nhom_ly_do": "khong_toan_van",
+   "ly_do": "Không lấy được toàn văn: Statistical Science (IMS) — Unpaywall closed, NXB chưa có trong sổ uỷ quyền (15/11/2026). SAP giữ tên phương pháp (khoảng điểm Wilson), bỏ trích dẫn. Bác sĩ đăng nhập lại 15/11/2026 vẫn không có quyền toàn văn; bác sĩ: «nếu không lấy được hãy loại bỏ cho tôi».",
+   "ngay": "2026-11-15"
   }
  ],
  "quyet_dinh_loai_bo": {
@@ -533,5 +612,13 @@
   "nguoi_de_xuat": "Claude (phiên Code) — bác sĩ duyệt lại; khôi phục mục nào thì chuyển từ loai_bo về trich_dan",
   "ban_sao_truoc": "DANH_MUC_TRICH_DAN_btm-dtd2-ngoai-tru-BVQY175.bak-20261025-truoc-loai-bo.json",
   "ghi_chu_G0": "Hồ sơ sàng lọc G0 (G0_TONG_HOP_BANG_CHUNG, A1) GIỮ NGUYÊN — đó là nhật ký những gì đã sàng, cổng G0 đòi đủ mọi PMID đã sàng; danh mục này mới là danh sách trích dẫn dùng cho đề cương/bài báo."
+ },
+ "quyet_dinh_bo_sung_phuong_phap": {
+  "ngay": "2026-11-15",
+  "loi_bac_si": "BTM hãy hoàn thiện và nạp Endnote lại",
+  "boi_canh": "trục trich_dan_tong_quan (nhat_quan_xuyen_cong) báo nguồn phương pháp dẫn ở G1/G3/SAP chưa có trong danh mục",
+  "luat": "cùng luật đề tài 25/10/2026: chỉ giữ bài có toàn văn; không lấy được toàn văn ⇒ chuyển loai_bo kèm lý do",
+  "nguoi_de_xuat": "Claude (phiên Code) — bác sĩ duyệt lại",
+  "ket_qua": "7/9 nguồn phương pháp có toàn văn (6 bài PMC + White 2011 qua làn Chrome sau khi bác sĩ đăng nhập Wiley) ⇒ trich_dan T67–T70, T72–T74; 2 nguồn không lấy được toàn văn kể cả khi bác sĩ đăng nhập (Zou 2004 OUP, Brown 2001 IMS) ⇒ loai_bo theo lời bác sĩ «nếu không lấy được hãy loại bỏ cho tôi»; SAP bỏ trích dẫn hai bài này, giữ nguồn mở cùng nội dung."
  }
 }
