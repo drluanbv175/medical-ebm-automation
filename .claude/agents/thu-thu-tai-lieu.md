@@ -95,6 +95,7 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact literature
 
 - G0-AUTO-08: truy vấn PubMed VÀ ClinicalTrials.gov phải chứa khái niệm P · I/E · O đã chốt. Chủ đề tiếng Việt: viết `query_en` (MeSH + tiab) phủ đủ khái niệm, hoặc khai `gate_params.G0.khai_niem_tim_kiem = {"P": [...], "I": [...], "O": [...]}`. Bộ dịch từ khoá tự động có thể làm rơi khái niệm chính (đo: «tuân thủ dùng thuốc hạ áp» → `hypertension treatment`, 1/86 bài liên quan).
 - Số PMID nhiều và nhãn «MẠNH» theo bộ lọc KHÔNG chứng minh mức liên quan — đọc tiêu đề đối chiếu PICO trước khi báo nền chứng cứ.
+- K4 (giả lập lần 3, 15/11/2026): PI có HAI cách phủ khái niệm cho truy vấn G0 — viết `query_en`, HOẶC khai `gate_params.G0.khai_niem_tim_kiem = {"P": [...], "I": [...], "O": [...]}` (thuật ngữ tiếng Anh; cụm nhiều từ được đặt ngoặc kép, cú pháp PubMed như `"Hypertension"[mh]` giữ nguyên). Khai khái niệm ⇒ run_g0_auto TỰ dựng truy vấn (OR trong một khái niệm, AND giữa P · I · O) và run_pipeline tự tra lại PubMed; khái niệm PI không khai là lựa chọn của PI (G0-AUTO-08 chỉ ghi chú). Bộ dịch từ điển nay đọc cả population/intervention/exposure/primary_outcome, không chỉ chủ đề — khái niệm ngoài từ điển vẫn rơi ⇒ G0-AUTO-08 REVIEW, nhắc PI khai.
 
 ## Đồng bộ tổng quan tài liệu — TLTK ↔ danh mục ↔ văn bản cổng (15/11/2026)
 

@@ -452,6 +452,7 @@ python tools/gen_research_docx.py --study "<TEN>" --gate G6
 
 - Vai trò biến trong khuôn G6: SAP đã khoá nêu tường minh (§2 kết cục, §5 nhóm/hiệp biến) > ma trận mục tiêu–biến ĐẠT > KHÔNG đoán. Kết cục/phơi nhiễm không phải biến có thật trong từ điển ⇒ `run_g6_auto` DỪNG (mã 2). SAP lệch ma trận ⇒ giữ SAP, ghi ⚠️ — thống nhất ở G3/G4 (SAP AMENDMENT hoặc sửa ma trận), không sửa tay script cho khớp.
 - Mức đo trong .sav/.rds lấy từ `kieu` của ma trận (nguồn ghi ở `NguonMucDo`), không suy luận — chọn kiểm định theo mức đo đó. VARIABLE ROLE (.sav) / attr `role` (.rds) phản ánh ma trận, KHÔNG thay SAP đã khoá. Thấy mức đo/vai trò sai ⇒ báo điều phối G3/G4, không đổi tay trong SPSS/R.
+- Bảng 1 và kết cục phụ cho G7 (giả lập lần 3, 15/11/2026): run_stats_analysis ghi giá trị từng biến của Bảng 1 vào `G6_analysis_summary.json → table1.rows` (khoá nhóm là chuỗi, giá trị là chuỗi G6 đã định dạng, p/phép kiểm) để G7 chép NGUYÊN VĂN; bảng .txt in đúng n mỗi nhóm. Kết cục phụ của SAP chạy bằng `tools/chay_sap_g6.py chay` (mỗi phân tích một tóm tắt `G6_<id>_analysis_summary.json` + chỉ mục `G6_SAP_ket_qua.json`) — G7 §4 chỉ chép phân tích DA_CHAY có tóm tắt đúng bản khoá; CHUA_TU_DONG/LOI ⇒ ô [CẦN THỐNG KÊ VIÊN] kèm lý do.
 
 ## Ranh giới
 KHÔNG đổi/định nghĩa lại kế hoạch (→ `thiet-ke-nghien-cuu`) · KHÔNG viết Bàn luận (→ `viet-ban-thao`) · KHÔNG quyết định lâm sàng. Thử nghiệm then chốt → nêu cần nhà thống kê độc lập.

@@ -140,6 +140,9 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 python tools/gen_research_docx.py --study "<TEN>" --artifact manuscript
 ```
 
+## Nháp Kết quả từ G6 (giả lập lần 3, 15/11/2026)
+- run_g7_auto chép NGUYÊN VĂN số G6 vào nháp Kết quả, mỗi dòng mang nhãn «[CẦN KẾT QUẢ THẬT — đối chiếu G6]» — nay gồm cả Bảng 1 (từ `table1.rows` của tóm tắt G6; chú giải tên biến ↔ nhãn từ điển G5 ngay dưới bảng) và §4 kết cục phụ (từ chỉ mục `G6_SAP_ket_qua.json` của chay_sap_g6). KHÔNG tính lại, KHÔNG làm tròn lại; đối chiếu từng dòng với bảng G6 rồi mới gỡ nhãn; `results_final=true` chỉ do bác sĩ đặt. Phần G6 không có (sàng lọc/sơ đồ luồng, lý do loại) vẫn là ô trống — không điền ước tính.
+
 ## Ranh giới
 KHÔNG tạo dữ liệu/kết quả chưa có (→ `[CẦN BỔ SUNG]`); KHÔNG tự quyết phân tích (nhận từ `phan-tich-thong-ke`, kế hoạch từ `thiet-ke-nghien-cuu`). Bản thảo phải qua `binh-duyet` trước khi coi là sẵn sàng nộp; chọn tạp chí/rebuttal → `nop-bai-phan-hoi`.
 

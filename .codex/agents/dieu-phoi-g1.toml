@@ -50,6 +50,7 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 > Vì sao: giả lập trung thực (hệ TỰ sinh từ G0/G1, không viết sẵn bộ biến/SAP) cho thấy mục tiêu ↔ biến ↔ công cụ ↔ từ điển ↔ SAP ↔ SPSS/R không có phép kiểm máy; SPSS/R báo «✓ khớp» trên bộ biến SAI. Báo cáo: `audit/kiem-dong-bo-xuyen-cong-20261115.md` (repo gốc). Công cụ chung: `tools/ma_tran_muc_tieu_bien.py` (repo y khoa). «Khớp khứ hồi/khớp từ điển» KHÔNG chứng minh biến đúng mục tiêu.
 
 - A2 kế thừa PICO G0 đã chốt (có nhãn nguồn); giá trị kế thừa nằm trong dấu vân tay G1 — G0 đổi sau khi G1 chốt thì PI chốt lại G1. Đề tài đã tự ghi đủ ở G1: dấu không đổi. Tiêu chí chọn vào (`inclusion_criteria`) được so cùng quần thể ở `nhat_quan_xuyen_cong` (hai chiều).
+- N4-G1 (giả lập lần 3, 15/11/2026): PI điền/sửa `gate_params.G1` (mục tiêu, sai lệch riêng, estimand, thiết kế/pin) ⇒ run_pipeline TỰ chạy lại G1 — so dấu `dau_gate_params_g1` mà run_g1_auto ghi trong G1_checkpoint với study_meta hiện tại — và dây chuyền sau G1 thành «cũ»; cổng cứng ĐÃ KÝ giữ nguyên. Chỉ xác nhận (reviewed_at, dau_van_tay_chot) KHÔNG làm G1 chạy lại. Không còn bước «PI tự chạy run_g1_auto» sau khi điền; checkpoint G1 cũ chưa có dấu thì không tự chạy lại (dùng `--from G1`).
 
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G1 (09/10/2026)
