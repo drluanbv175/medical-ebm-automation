@@ -166,11 +166,11 @@
   "artifact_manifest": {
     "A2": {
       "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "28f96b83ed5be6ac7d7b44ae50750be970492456d2b04df7f411e0cec5239335"
+      "sha256": "ea0fedf879ad4227aa89c36cda279f559aa759110b78e8be0350ebf3b0e6e15a"
     },
     "A1b": {
       "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "4a2c3a5124181aab1e300a319acd46ed82bc7b001abd0ac7dc486901d8389908"
+      "sha256": "01285107de94cba3e238758b3a54caba8cc20963adb7ff5d697ad6b413dc7cd9"
     },
     "A2b": {
       "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",
@@ -223,11 +223,11 @@
   "artifact_manifest_luc_sinh": {
     "A2": {
       "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "28f96b83ed5be6ac7d7b44ae50750be970492456d2b04df7f411e0cec5239335"
+      "sha256": "ea0fedf879ad4227aa89c36cda279f559aa759110b78e8be0350ebf3b0e6e15a"
     },
     "A1b": {
       "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "4a2c3a5124181aab1e300a319acd46ed82bc7b001abd0ac7dc486901d8389908"
+      "sha256": "01285107de94cba3e238758b3a54caba8cc20963adb7ff5d697ad6b413dc7cd9"
     },
     "A2b": {
       "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",

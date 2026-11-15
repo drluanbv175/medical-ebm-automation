@@ -97,6 +97,22 @@ Thiết kế: **cross_sectional** | Chuyên khoa: **BỘ BIẾN RIÊNG của đ�
 
 ---
 
+## PHẦN 1B — QUY TRÌNH THU THẬP, NHẬP LIỆU VÀ LƯU TRỮ (đã chốt — `_quy-trinh-du-lieu.csv`)
+
+> Lấy nguyên văn quyết định đã chốt ở đề cương/G1/SOP; sửa quy trình thì sửa nguồn rồi sửa bảng, không sửa tay khối này.
+
+- **Cách thu thập:** Phiếu tự điền khuyết danh, bỏ vào hòm phiếu kín; điều tra viên không thuộc Khoa C1a phát và thu phiếu ngay trong lượt khám _(nguồn: đề cương nộp 4.7 + Bảng 4.6; G1 data_collection_method)_
+- **Ẩn danh / định danh:** Phiếu khảo sát không ghi họ tên, số điện thoại, địa chỉ, số thẻ BHYT hay số hồ sơ; phiếu đồng ý cất giữ riêng, không gắn với phiếu khảo sát _(nguồn: đề cương nộp 6.5; phiếu thông tin G2)_
+- **Nhập liệu:** Nhập kép toàn bộ phiếu, người nhập không thuộc Khoa C1a, có luật kiểm tra khoảng giá trị và logic; phiếu đồng ý không nhập vào cơ sở dữ liệu phân tích _(nguồn: đề cương nộp 4.7 bước 11 + Bảng 4.6)_
+- **Kiểm chứng chất lượng thu thập:** Mở hòm phiếu bằng tổ hai người (một điều tra viên ngoài khoa và một đại diện Phòng Kế hoạch tổng hợp hoặc Phòng QLCL), lập biên bản; kiểm tra ngẫu nhiên việc tuân thủ quy trình chọn mẫu, phát và thu phiếu _(nguồn: đề cương nộp 4.7 bước 10 + Bảng 4.6)_
+- **Ghép dữ liệu từ nguồn khác:** Mốc thời gian chờ và số liệu tổng hợp người bỏ về do Phòng CNTT/QLCL trích xuất từ HIS/eHospital, ghép với phiếu qua mã bàn khám giả danh _(nguồn: đề cương nộp 4.6.3; G1 data_collection_method)_
+- **Bảng nối / đối chiếu mã:** Bảng đối chiếu do Phòng CNTT/QLCL giữ, hủy trong vòng 30 ngày sau khi hoàn tất đối chiếu và làm sạch số liệu, có biên bản hủy _(nguồn: đề cương nộp 4.6.3 bước 5; phiếu thông tin G2)_
+- **Thời hạn lưu trữ:** Số liệu giấy và điện tử lưu 2 năm sau khi kết thúc nghiên cứu _(nguồn: đề cương nộp 6.5; phiếu thông tin G2)_
+- **Hủy dữ liệu:** Phiếu giấy hủy bằng máy hủy tài liệu, tệp điện tử xóa an toàn, có biên bản _(nguồn: đề cương nộp 6.5)_
+- **Mã hoá câu hỏi mở:** Câu hỏi mở do hai người không thuộc Khoa C1a mã hóa độc lập; bất đồng do người thứ ba ngoài khoa phân xử; chủ nhiệm không tham gia _(nguồn: đề cương nộp 4.7 bước 11 + Bảng 4.6)_
+
+---
+
 ## PHẦN 2 — REDCAP DATA DICTIONARY
 
 File CSV: `G5_REDCap_dictionary_hai-long-benh-nhan-C1a-BVQY175.csv` (**71 dòng**)
@@ -315,7 +331,7 @@ data/processed/
 - **Khử định danh:** tách bảng ánh xạ khỏi dataset phân tích; không đưa họ tên, ngày sinh đầy đủ, số hồ sơ, điện thoại, địa chỉ hoặc mã định danh trực tiếp vào G5.
 - **Phân quyền:** least privilege theo vai trò; rà quyền định kỳ; người phân tích chỉ nhận dataset đã khóa và không nhận bảng ánh xạ.
 - **Sao lưu:** backup mã hóa theo quy định đơn vị và phải có bằng chứng thử phục hồi.
-- **Lưu trữ/hủy:** thời hạn, nơi lưu, quyền truy cập và thủ tục hủy theo IRB, pháp luật và chính sách tài trợ/đơn vị; không dùng một thời hạn cứng cho mọi đề tài.
+- **Lưu trữ/hủy (đã chốt — `_quy-trinh-du-lieu.csv`):** Số liệu giấy và điện tử lưu 2 năm sau khi kết thúc nghiên cứu; Phiếu giấy hủy bằng máy hủy tài liệu, tệp điện tử xóa an toàn, có biên bản.
 - **Sự cố:** ghi nhận vi phạm bảo mật, đánh giá ảnh hưởng và báo bên có thẩm quyền.
 
 Tham chiếu: ICH E6(R3) §4.2–4.3; FDA Electronic Systems/Records/Signatures 2024.
