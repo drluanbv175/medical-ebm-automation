@@ -152,7 +152,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 15/11/2026: thu-thu-tai-lieu + kiem-chung-trich-dan + dieu-phoi-g0/g1 + dieu-phoi-nghien-cuu (đồng bộ tổng quan
 # tài liệu — trục trich_dan_tong_quan) — cặp y hệt repo gốc nhánh claude/tong-quan-tai-lieu-20261115; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "8f336ca4f4fc2b1896fc6119cc344d4ab240f19211cb0a954b42ba2bb0af8c0c"
+    "0dbd99024a454802086caa9b3c4461001fa5024a060c8286253b819412b6d0e2"
 )
 
 MINIMUM_AGENT_COUNT = 64
