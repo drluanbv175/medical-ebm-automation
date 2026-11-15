@@ -47,6 +47,7 @@ import dau_may_sinh as DMS  # noqa: E402  (dấu SHA-256 bản máy sinh — K6,
 import g2_quality_gate as G2Q  # noqa: E402  (hợp đồng chất lượng riêng G2)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 import pii_van_ban as PII  # noqa: E402  (bộ dò PII dùng chung — CHUNG-G)
+import ten_de_tai as TDT  # noqa: E402  (tên đề tài chính thức — 15/11/2026)
 import trial_registry as TR  # noqa: E402  (tra ClinicalTrials.gov — dùng chung với G0)
 import vn_prose_style as _VNSTYLE  # noqa: E402  (chuẩn hoá văn phong artifact)
 
@@ -658,6 +659,9 @@ def generate_g2_full_package(
     `trial_registry`), KHÔNG còn là list thử nghiệm như trước 2026-07-28: một list
     rỗng không nói được hệ đã tra hay chưa tra được. `None` = chưa tra.
     """
+    # 15/11/2026: TÊN ĐỀ TÀI in trên hồ sơ = tên chính thức (study_meta.title), không phải chuỗi chủ đề G0 hay MÃ đề tài
+    # (tools/ten_de_tai.py); chưa khai tên ⇒ chuỗi chủ đề như cũ.
+    ten_dt = TDT.ten_chinh_thuc(meta, topic)
 
     specialist_modules = specialist_modules or []
 
@@ -989,7 +993,7 @@ def generate_g2_full_package(
 YÊU CẦU MIỄN THỦ TỤC ĐỒNG THUẬN (ICF Waiver Request) — DRAFT Phiên bản 1.0
 ═══════════════════════════════════════════════════════════════
 Căn cứ: TT43/2024/TT-BYT Điều 15 · Helsinki (WMA, bản sửa 2024) §29
-Tên đề tài: {study_name}
+Tên đề tài: {ten_dt}
 Chủ nhiệm: [CẦN BỔ SUNG]
 Ngày: {run_date_short}
 
@@ -1011,7 +1015,7 @@ Chữ ký chủ nhiệm: [CẦN KÝ]   |   Ngày: ___/___/{year}
 ═══════════════════════════════════════════════════════════════
 ```
 """.format(
-            study_name=study_name, run_date_short=run_date[:10], year=_YEAR,
+            ten_dt=ten_dt, run_date_short=run_date[:10], year=_YEAR,
             activation_note=activation_note, waiver_criteria=waiver_criteria,
             data_type_line=data_type_line,
         )
@@ -1023,6 +1027,7 @@ Chữ ký chủ nhiệm: [CẦN KÝ]   |   Ngày: ___/___/{year}
     _trds = G2Q.render_who_trds_khoa_hoc(G2Q.who_trds_values(
         topic=topic, design_code=design_code, design_primary=design_primary,
         n_target=n_adjusted or None, meta=meta))
+    ten_kh = TDT.ten_khoa_hoc_dang_ky(meta, topic)
 
     # VÁ 2026-07-28: chuỗi cũ "[Không tìm được thử nghiệm tương tự]" in ra Y HỆT
     # nhau cho "đã tra, 0 hồ sơ" và "không tra được" — nay tách hẳn 2 câu.
@@ -1098,7 +1103,7 @@ Từ:  Chủ nhiệm đề tài: {_pi}
      Đơn vị: {_pi_unit}
      Điện thoại: {_pi_phone} | Email: {_pi_email}
 
-TÊN ĐỀ TÀI: {topic}
+TÊN ĐỀ TÀI: {ten_dt}
 
 THÔNG TIN TỔNG QUAN:
   Loại nghiên cứu: {design_primary}
@@ -1216,7 +1221,7 @@ Mọi rủi ro đều được giảm thiểu bằng biện pháp cụ thể.
    [Phiên bản phê duyệt sẽ có số IRB — CẦN BỔ SUNG]
 ══════════════════════════════════════════════════════════════
 
-TÊN ĐỀ TÀI: {topic}
+TÊN ĐỀ TÀI: {ten_dt}
 Đơn vị thực hiện: [CẦN BỔ SUNG]
 Chủ nhiệm đề tài: {_pi}
 
@@ -1398,7 +1403,7 @@ Investigator: _______________  Date: ___/___/{_YEAR}
 
 ```
 KẾ HOẠCH QUẢN LÝ DỮ LIỆU — Cấp IRB
-Đề tài: {study_name} | Phiên bản: 1.0 | Ngày: {run_date[:10]}
+Đề tài: {ten_dt} | Phiên bản: 1.0 | Ngày: {run_date[:10]}
 ─────────────────────────────────────────────────────────────
 
 1. LOẠI DỮ LIỆU THU THẬP:
@@ -1457,7 +1462,7 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU — Cấp IRB
 
 ```
 CHECKLIST HỒ SƠ NỘP HỘI ĐỒNG ĐẠO ĐỨC
-Đề tài: {study_name} | Ngày chuẩn bị: {run_date[:10]}
+Đề tài: {ten_dt} | Ngày chuẩn bị: {run_date[:10]}
 ─────────────────────────────────────────────────────────────
 
 HỒ SƠ BẮT BUỘC:
@@ -1594,7 +1599,7 @@ Trường 9  — Public title (tiêu đề công khai, dễ hiểu):
             {_trds[9]}
 
 Trường 10 — Scientific title (tiêu đề khoa học):
-            {topic}
+            {ten_kh}
 
 Trường 11 — Countries of recruitment:
             Vietnam (VN) [CẦN BỔ SUNG tỉnh/tỉnh thành]
@@ -1837,7 +1842,7 @@ def export_docx_g2(artifact_md: str, study_name: str, out_dir: Path) -> Optional
         # Cover page
         title = doc.add_heading("HỒ SƠ ĐẠO ĐỨC & ĐĂNG KÝ NGHIÊN CỨU", 0)
         title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        doc.add_paragraph(f"Đề tài: {study_name}").alignment = WD_ALIGN_PARAGRAPH.CENTER
+        doc.add_paragraph(f"Mã đề tài: {study_name}").alignment = WD_ALIGN_PARAGRAPH.CENTER
         doc.add_paragraph(f"[BẢN NHÁP TỰ ĐỘNG] | {datetime.now().strftime('%Y-%m-%d %H:%M')}").alignment = WD_ALIGN_PARAGRAPH.CENTER
         doc.add_paragraph("Cần bác sĩ/chủ nhiệm kiểm chứng, chỉnh sửa và ký trước khi nộp Hội đồng đạo đức.").alignment = WD_ALIGN_PARAGRAPH.CENTER
         doc.add_page_break()

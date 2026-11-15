@@ -31,6 +31,7 @@ import dau_may_sinh as DMS  # noqa: E402  (dấu SHA-256 bản máy sinh — K6,
 import g4_quality_gate as G4Q  # noqa: E402  (khung §12 dùng chung với bộ chấm — G4-06)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
 import skill_standards as S  # noqa: E402  (đặc tả thiết kế khoá ở G1, chuẩn báo cáo theo thiết kế)
+import ten_de_tai as TDT  # noqa: E402  (tên đề tài chính thức — 15/11/2026)
 import vn_prose_style as _VNSTYLE  # noqa: E402  (chuẩn hoá văn phong artifact)
 
 # THÊM 2026-07-19 (audit vòng 3, D1 — NGHIÊM TRỌNG, xác nhận bằng thực
@@ -689,7 +690,7 @@ def generate(study, topic, design_code, design_primary, reporting_std,
     vai_tro_ky = GC.required_reviewer_role_hint("G4")
     lines = [
         "# A5 — SAP FINAL + SAP LOCK CERTIFICATE (DRAFT — CHỜ BÁC SĨ KÝ)",
-        f"**Đề tài:** {topic}  ",
+        f"**Đề tài:** {TDT.ten_chinh_thuc(BASE / 'exports' / study, topic)}  ",
         f"**Mã:** {study} | **Phiên bản SAP:** 1.0 | **Ngày sinh:** {run_date}",
         f"**Chuẩn báo cáo:** {reporting_std}",
         "",
@@ -702,7 +703,7 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "",
         "| Mục | Nội dung |",
         "|---|---|",
-        f"| Tên đề tài | {topic} |",
+        f"| Tên đề tài | {TDT.ten_chinh_thuc(BASE / 'exports' / study, topic)} |",
         f"| Mã nghiên cứu | {study} |",
         f"| Thiết kế | {design_primary} |",
         f"| Chuẩn báo cáo | {reporting_std} |",

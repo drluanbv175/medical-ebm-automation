@@ -670,7 +670,8 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
 # Nguyên tắc mức: lệch làm SAI NHẬP LIỆU hoặc làm thiết kế không chạy được ⇒ LỆCH CỨNG; cần chủ nhiệm quyết ⇒ LỆCH MỀM;
 # truy nguyên/văn phong ⇒ CẦN XEM; thiếu nguồn để so ⇒ CHƯA ĐỦ ĐỂ SO (không bao giờ là «khớp»).
 TRUC_CHUOI = ("bien_de_cuong", "cong_cu_tu_dien", "muc_tieu_phan_tich", "chon_mau_co_mau", "dac_ta_cho_bo_bien",
-              "tong_quan_khoang_trong", "co_mau_tinh_lai", "ky_thuat_chon_mau", "tai_lieu_nop_co_mau")
+              "tong_quan_khoang_trong", "co_mau_tinh_lai", "ky_thuat_chon_mau", "tai_lieu_nop_co_mau", "ten_de_tai",
+              "cau_hoi_gia_thuyet")
 # Trục nào là trách nhiệm của cổng nào (hoi_dong_cong.trach_nhiem dùng — «hoàn thiện» của cổng phải qua trục của nó).
 TRUC_THEO_CONG = {
     "co_mau": ("G3", "G4", "G10"), "alpha": ("G3", "G4", "G10"), "power": ("G3", "G4", "G10"),
@@ -682,7 +683,7 @@ TRUC_THEO_CONG = {
     "muc_tieu_phan_tich": ("G1", "G4", "G10"), "chon_mau_co_mau": ("G1", "G3", "G4", "G10"),
     "dac_ta_cho_bo_bien": ("G4", "G6"), "tong_quan_khoang_trong": ("G0", "G1", "G10"),
     "co_mau_tinh_lai": ("G3", "G4", "G10"), "ky_thuat_chon_mau": ("G1", "G3", "G4", "G10"),
-    "tai_lieu_nop_co_mau": ("G10",),
+    "tai_lieu_nop_co_mau": ("G10",), "ten_de_tai": ("G0", "G2", "G10"), "cau_hoi_gia_thuyet": ("G0", "G1", "G10"),
 }
 
 
@@ -1088,6 +1089,121 @@ def _truc_tai_lieu_nop(out_dir: Path, study: str, meta: Dict[str, Any]) -> Optio
                 f"{xet} tài liệu nộp ghi đúng N {n}" + (f" và DE {de:.2f}" if de else "") + ghi_cu)
 
 
+_DONG_TEN = re.compile(r"(?im)^\s*(?:\*\*)?(?:TÊN\s+ĐỀ\s+TÀI|Tên\s+đề\s+tài|Đề\s+tài)(?:\*\*)?\s*[:：]\s*"
+                       r"(?:\*\*)?\s*(.+?)\s*$")
+
+
+def _chuan_ten(t: str) -> str:
+    # bỏ MỌI dấu câu: bộ chuẩn trình bày của G2 đổi «—» thành «,» — cùng một tên, chỉ khác dấu
+    t = unicodedata.normalize("NFC", str(t or "")).lower()
+    return re.sub(r"\s+", " ", re.sub(r"[^\w\s]|_", " ", t)).strip()
+
+
+def _ten_trong_van_ban(vb: str, tieu_de_h2: bool = False) -> List[str]:
+    dau = "\n".join((vb or "").splitlines()[:60])
+    # cắt phần đuôi cùng dòng kiểu «… | Phiên bản: 1.0 | Ngày: …» (hồ sơ đạo đức C1a)
+    ra = [re.split(r"\s+\|\s+", m.group(1))[0] for m in _DONG_TEN.finditer(vb or "")]
+    if not ra and tieu_de_h2:
+        m = re.search(r"(?m)^##\s+(.+)$", dau)
+        ra = [m.group(1)] if m else []
+    return ra
+
+
+def _truc_ten_de_tai(out_dir: Path, study: str, meta: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """15/11/2026 (giai đoạn «Xác định vấn đề & hình thành câu hỏi nghiên cứu»): MỘT tên đề tài chính thức
+    (`study_meta.title`) trên mọi văn bản. Đề cương nộp, bản đăng ký WHO TRDS mục 10 (Scientific Title — phải trùng tên
+    đề cương), hồ sơ đạo đức lệch ⇒ LỆCH MỀM. Văn bản do máy sinh (SAP, đề cương thống nhất G10, G3, G5) lệch ⇒ CẦN XEM:
+    bộ sinh nay in tên chính thức (tools/ten_de_tai.py) — văn bản đã ký chỉ đổi ở lượt sửa đổi/ký sau. Trước vá, các bộ
+    sinh in `topic` (chuỗi chủ đề tìm y văn của G0) làm tên đề tài."""
+    ten = str(meta.get("title") or "").strip()
+    nguon_vb = [("đề cương nộp", f"DE_CUONG_NOP_HOI_DONG_{study}.md", True, True),
+                ("hồ sơ đạo đức", f"G2_A3_ETHICS_PACKAGE_{study}.md", False, True),
+                ("SAP", f"G4_A5_SAP_FINAL_{study}.md", False, False),
+                ("đề cương thống nhất G10", f"DE_CUONG_THONG_NHAT_{study}.md", True, False),
+                ("G3", f"G3_A4_SAMPLE_SIZE_{study}.md", False, False),
+                ("G5", f"G5_A6_DATA_MGMT_{study}.md", False, False)]
+    co_vb = [x for x in nguon_vb if (out_dir / x[1]).is_file()]
+    reg = sorted(out_dir.glob("G2_REGISTRATION_DRAFT_*.json"))
+    if not co_vb and not reg:
+        return None
+    ten_dt = "Tên đề tài chính thức ↔ đề cương ↔ đăng ký ↔ hồ sơ đạo đức ↔ văn bản cổng"
+    if not _co_that(ten):
+        return _ket("ten_de_tai", ten_dt, [], MUC_CHUA_DU, "study_meta.title chưa có — không có tên chính thức để so")
+    chuan = _chuan_ten(ten)
+    mem, can, nguon, so = [], [], [], 0
+    for nhan, tep, h2, chinh in co_vb:
+        for t in _ten_trong_van_ban(_doc_text(out_dir / tep), h2):
+            so += 1
+            if _chuan_ten(t) != chuan:
+                (mem if chinh else can).append(f"{nhan}: «{t[:90]}»")
+                nguon.append({"cong": "G10" if chinh else "—", "noi": nhan, "gia_tri": t[:120]})
+    for p in reg:
+        d = _doc_json(p)
+        for it in d.get("items") or []:
+            if isinstance(it, dict) and it.get("number") == 10:
+                so += 1
+                if _chuan_ten(it.get("value")) != chuan:
+                    mem.append(f"bản đăng ký mục 10 (Scientific Title): «{str(it.get('value'))[:90]}»")
+                    nguon.append({"cong": "G2", "noi": p.name, "gia_tri": str(it.get("value"))[:120]})
+    if mem:
+        return _ket("ten_de_tai", ten_dt, nguon[:10], MUC_LECH_MEM,
+                    "khác tên chính thức — " + "; ".join(mem + can) + ". Sửa theo study_meta.title (G2: sinh lại bản "
+                    "đăng ký; tên khoa học riêng thì khai gate_params.G2.scientific_title)")
+    if can:
+        return _ket("ten_de_tai", ten_dt, nguon[:10], MUC_CAN_XEM,
+                    "văn bản do máy sinh còn mang tên chủ đề G0 — " + "; ".join(can)
+                    + " (bộ sinh đã sửa; cập nhật ở lượt sinh/sửa đổi/ký sau)")
+    if not so:
+        return _ket("ten_de_tai", ten_dt, [], MUC_CHUA_DU, "không đọc được dòng tên đề tài nào trong các văn bản")
+    return _ket("ten_de_tai", ten_dt, [], MUC_KHOP, f"{so} nơi ghi đúng tên chính thức")
+
+
+_MUC_TIEU_PHAN_TICH = re.compile(r"yếu\s+tố|mối\s+liên\s+quan|liên\s+quan\s+(?:đến|với|giữa)|so\s+sánh|ảnh\s+hưởng|"
+                                 r"hiệu\s+quả|nguy\s+cơ|tác\s+động", re.I)
+_THAM_DO = re.compile(r"thăm\s+dò|không\s+kiểm\s+định|exploratory", re.I)
+_LOAI_CO_GIA_THUYET = frozenset({"treatment", "diagnosis", "prognosis", "harm"})
+
+
+def _truc_cau_hoi_gia_thuyet(meta: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """15/11/2026: câu hỏi nghiên cứu (G0 loại câu hỏi · G1 research_question) ↔ mục tiêu G1 ↔ giả thuyết G0.
+    - Câu hỏi MÔ TẢ có mục tiêu PHÂN TÍCH (yếu tố liên quan, so sánh, ảnh hưởng…) ⇒ mục tiêu đó phải có giả thuyết định
+      trước (`G0.hypothesis_secondary`) hoặc tự ghi «thăm dò / không kiểm định» — thiếu ⇒ CẦN XEM (nguy cơ diễn giải p
+      như kiểm định khẳng định).
+    - Câu hỏi điều trị/chẩn đoán/tiên lượng/tác hại không khai mô tả ⇒ phải có H0 và H1 — thiếu ⇒ LỆCH MỀM.
+    - Mục tiêu nói «yếu tố…» mà câu hỏi nghiên cứu không hỏi ⇒ CẦN XEM (câu hỏi không phủ mục tiêu)."""
+    g0, g1 = _gp(meta, "G0"), _gp(meta, "G1")
+    ob = [str(x) for x in (g1.get("objectives") or []) if _co_that(x)]
+    rq = str(g1.get("research_question") or "")
+    if not ob and not _co_that(rq):
+        return None
+    ten = "Câu hỏi nghiên cứu ↔ mục tiêu ↔ giả thuyết"
+    qt = str(g0.get("question_type") or "").strip().lower()
+    mo_ta = str(g0.get("test_type") or "").strip().lower() in ("descriptive", "mô tả") or qt == "descriptive"
+    mem, can = [], []
+    if not _co_that(rq):
+        can.append("G1 chưa có research_question")
+    pt = [o for o in ob if _MUC_TIEU_PHAN_TICH.search(o)]
+    if mo_ta and pt and not _co_that(g0.get("hypothesis_secondary")):
+        thieu = [o[:70] for o in pt if not _THAM_DO.search(o)]
+        if thieu:
+            can.append(f"câu hỏi mô tả nhưng {len(thieu)} mục tiêu phân tích chưa có giả thuyết định trước "
+                       f"(G0.hypothesis_secondary) hay ghi «thăm dò»: {'; '.join(thieu)}")
+    if qt in _LOAI_CO_GIA_THUYET and not mo_ta and not (_co_that(g0.get("hypothesis_h0"))
+                                                         and _co_that(g0.get("hypothesis_h1"))):
+        mem.append(f"câu hỏi loại {qt} (không mô tả) nhưng G0 thiếu H0/H1")
+    if _co_that(rq) and any(re.search(r"yếu\s+tố", o, re.I) for o in ob) and not re.search(r"yếu\s+tố", rq, re.I):
+        can.append("mục tiêu có «yếu tố …» mà câu hỏi nghiên cứu không hỏi về yếu tố")
+    nguon = [{"cong": "G0", "noi": "question_type/test_type", "gia_tri": f"{qt or '—'} / {g0.get('test_type') or '—'}"},
+             {"cong": "G1", "noi": "objectives", "gia_tri": f"{len(ob)} mục tiêu, {len(pt)} phân tích"}]
+    if mem:
+        return _ket("cau_hoi_gia_thuyet", ten, nguon, MUC_LECH_MEM, "; ".join(mem + can))
+    if can:
+        return _ket("cau_hoi_gia_thuyet", ten, nguon, MUC_CAN_XEM, "; ".join(can))
+    return _ket("cau_hoi_gia_thuyet", ten, nguon, MUC_KHOP,
+                f"{len(ob)} mục tiêu ({len(pt)} phân tích) khớp loại câu hỏi và giả thuyết; câu hỏi nghiên cứu phủ "
+                "mục tiêu")
+
+
 def truc_chuoi(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -> List[Dict[str, Any]]:
     """Các trục chuỗi đầy đủ (mỗi trục tự bắt lỗi của mình — một trục hỏng không làm mất các trục khác)."""
     td = _tu_dien(out_dir, study)
@@ -1097,7 +1213,8 @@ def truc_chuoi(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -
                 lambda: _truc_dac_ta(out_dir), lambda: _truc_tong_quan(out_dir, study, meta),
                 lambda: _truc_tinh_lai_co_mau(out_dir, study, meta, sap_text),
                 lambda: _truc_ky_thuat_chon_mau(out_dir, study, meta, sap_text),
-                lambda: _truc_tai_lieu_nop(out_dir, study, meta)):
+                lambda: _truc_tai_lieu_nop(out_dir, study, meta),
+                lambda: _truc_ten_de_tai(out_dir, study, meta), lambda: _truc_cau_hoi_gia_thuyet(meta)):
         try:
             k = ham()
         except Exception as e:  # noqa: BLE001

@@ -344,7 +344,8 @@ def bo_sung_tu_nguon_da_chot(meta: dict, cps: Dict[str, dict], out_dir: Path) ->
 # ════════════════════════════════════════════════════════════════════════════
 
 def sec_tomtat(cps, meta) -> str:
-    topic = _g(cps["G0"], "topic", default=meta.get("title", TAG_BS))
+    # 15/11/2026: tên chính thức (study_meta.title) đứng trước chuỗi chủ đề tìm y văn của G0.
+    topic = meta.get("title") or _g(cps["G0"], "topic", default=TAG_BS)
     design = _g(cps["G1"], "design", "primary", default=TAG_BS)
     n_adj = _g(cps["G3"], "n_adjusted", default=TAG_BS)
     # THÊM 2026-07-17: nếu bác sĩ/chủ nhiệm đã CHỐT N thực tế (--confirmed-n ở

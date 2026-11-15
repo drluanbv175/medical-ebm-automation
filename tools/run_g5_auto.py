@@ -29,6 +29,7 @@ sys.path.insert(0, str(BASE / "tools"))
 import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
 import g5_quality_gate as G5Q  # noqa: E402
 import gate_contract as GC  # noqa: E402
+import ten_de_tai as TDT  # noqa: E402  (tên đề tài chính thức — 15/11/2026)
 
 # ---------------------------------------------------------------------------
 # CRF DEFINITIONS — 55 dòng, cụ thể theo loại thiết kế
@@ -1947,7 +1948,7 @@ def generate_artifact(
 
     lines = [
         "# A6 — KẾ HOẠCH QUẢN LÝ DỮ LIỆU (DRAFT)",
-        f"**Đề tài:** {topic}  ",
+        f"**Đề tài:** {TDT.ten_chinh_thuc(BASE / 'exports' / study, topic)}  ",
         f"**Mã:** {study} | **Ngày:** {run_date} | **Thiết kế:** {design_code} | **N dự kiến:** {n_hien}  ",
         "**Trạng thái:** DRAFT — CHỜ BÁC SĨ ĐIỀN CÁC [CẦN...] VÀ XÁC NHẬN",
         "",

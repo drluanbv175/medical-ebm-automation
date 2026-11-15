@@ -480,6 +480,18 @@ def extract_attestation(package_text: str) -> dict[str, Any]:
     return value if isinstance(value, dict) else {}
 
 
+def _ten_khoa_hoc_dang_ky(meta: Optional[Mapping[str, Any]], topic: str) -> str:
+    """Mục 10 (Scientific Title) = tên đề tài CHÍNH THỨC (gate_params.G2.scientific_title › study_meta.title › topic).
+
+    VÁ 15/11/2026: trước đây chép `topic` — chuỗi chủ đề tìm y văn của G0 — nên tên khoa học trên registry khác tên
+    đề cương nộp (C1a: «… bệnh viện quân y tuyến cuối» thay vì «… Khoa Khám bệnh C1a … Bệnh viện Quân y 175»)."""
+    try:
+        import ten_de_tai as TDT  # noqa: PLC0415
+        return TDT.ten_khoa_hoc_dang_ky(meta or {}, topic)
+    except Exception:  # noqa: BLE001 — thiếu mô-đun ⇒ hành vi cũ
+        return topic
+
+
 def who_trds_values(
     *,
     topic: str,
@@ -554,7 +566,7 @@ def who_trds_values(
         # tài khoa học. Nay ưu tiên gate_params.G2.public_title/health_condition do PI khai; chưa khai thì vẫn dùng tên
         # đề tài làm điểm khởi đầu NHƯNG G2-AUTO-08b giữ REVIEW (registration_pi_confirmation_gaps).
         9: _real_text(g2.get("public_title")) or topic,
-        10: topic,
+        10: _ten_khoa_hoc_dang_ky(meta, topic),
         11: "Vietnam",
         12: _real_text(g2.get("health_condition")) or topic,
         13: intervention_value,
