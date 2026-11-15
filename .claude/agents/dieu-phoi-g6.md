@@ -51,6 +51,12 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
   (cùng lệnh, chỉ tư vấn).
 - **Xác nhận người (cổng mềm):** Thống kê viên xác nhận ở `gate_params.G6` (`scripts_match_sap_confirmed`, `reviewed_by_role`, `reviewed_at`, `dau_van_tay_chot`). Agent CHÉP dấu cho người xác nhận nhìn — KHÔNG tự ghi.
 
+## Đồng bộ xuyên cổng (15/11/2026 — bác sĩ duyệt)
+
+> Vì sao: giả lập trung thực (hệ TỰ sinh từ G0/G1, không viết sẵn bộ biến/SAP) cho thấy mục tiêu ↔ biến ↔ công cụ ↔ từ điển ↔ SAP ↔ SPSS/R không có phép kiểm máy; SPSS/R báo «✓ khớp» trên bộ biến SAI. Báo cáo: `audit/kiem-dong-bo-xuyen-cong-20261115.md` (repo gốc). Công cụ chung: `tools/ma_tran_muc_tieu_bien.py` (repo y khoa). «Khớp khứ hồi/khớp từ điển» KHÔNG chứng minh biến đúng mục tiêu.
+
+- `run_g6_auto` lấy vai trò biến từ SAP/ma trận và DỪNG khi không xác định được (không còn rơi về tên `primary_outcome`/`exposure`/`follow_time`). Dòng ⚠️ «LỆCH ma trận» ở log phát hiện biến là việc của điều phối G3/G4.
+
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G6 (09/10/2026)
 Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối

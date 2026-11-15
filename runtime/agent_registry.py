@@ -148,7 +148,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 15/11/2026: co-mau-nghien-cuu + dieu-phoi-g3 + thiet-ke-nghien-cuu (đồng bộ cỡ mẫu & kỹ thuật chọn mẫu — 4 trục
 # nhat_quan_xuyen_cong) — cặp y hệt repo gốc #378; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "bb714ed84ab1996c806cc8c2ab4040d1f3788c91020646f2b3c850341bf3f79d"
+    "231e36f37a8472b7980684a6c6b110217468861470a5986aefa121e8a149dadd"
 )
 
 MINIMUM_AGENT_COUNT = 64

@@ -89,6 +89,16 @@ import trial_registry as TR  # noqa: E402  (tra ClinicalTrials.gov — dùng chu
 # ════════════════════════════════════════════════════════════════════════════
 
 VI_EN_TERMS: dict[str, str] = {
+    # 15/11/2026 (bác sĩ duyệt — đồng bộ xuyên cổng): khái niệm NGHIÊN CỨU phổ biến. Thiếu «tuân thủ» ⇒ chủ đề «tuân thủ
+    # dùng thuốc hạ áp…» rút còn `hypertension treatment` (1/86 bài liên quan) mà G0 vẫn PASS. Cụm dài đặt TRƯỚC cụm
+    # ngắn (dedup theo thứ tự). Đề tài có query_en do PI viết không bị ảnh hưởng (query_en thắng).
+    "tuân thủ dùng thuốc": "medication adherence",
+    "tuân thủ điều trị": "treatment adherence",
+    "tuân thủ": "adherence",
+    "hài lòng": "satisfaction",
+    "chất lượng cuộc sống": "quality of life",
+    "kiến thức": "knowledge",
+    "thuốc hạ áp": "antihypertensive agents",
     # Tim mạch
     "suy tim": "heart failure",
     "hfpef": "HFpEF",

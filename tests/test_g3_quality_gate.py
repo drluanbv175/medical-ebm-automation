@@ -133,7 +133,7 @@ def _full_meta(**g3_overrides) -> dict:
     g3.update(g3_overrides)
     return {
         "gate_params": {
-            "G1": {"primary_outcome": "Tử vong do mọi nguyên nhân trong 12 tháng"},
+            "G1": {"primary_outcome": "Tử vong do mọi nguyên nhân trong 12 tháng", "objectives": [_MUC_TIEU_THU]},
             "G3": g3,
         }
     }
@@ -188,8 +188,30 @@ def _chot(meta: dict, checkpoint: dict) -> dict:
     return meta
 
 
+_MUC_TIEU_THU = "Xác định hiệu quả lên tử vong do mọi nguyên nhân trong 12 tháng"
+
+
+def _ghi_ma_tran_dat(tmp_path: Path) -> None:
+    """15/11/2026 (G3-AUTO-19): đề tài thử «đã chốt» có bộ biến + ma trận mục tiêu → biến hợp lệ (dữ liệu tổng hợp)."""
+    import csv  # noqa: PLC0415
+
+    with (tmp_path / "_bo-bien-rieng.csv").open("w", encoding="utf-8", newline="") as fh:
+        w = csv.writer(fh, lineterminator="\n")
+        w.writerow(["Variable / Field Name", "Form Name", "Field Type", "Field Label",
+                    "Choices, Calculations, OR Slider Labels", "Text Validation Type OR Show Slider Number"])
+        w.writerow(["record_id", "phieu", "text", "Mã nghiên cứu", "", ""])
+        w.writerow(["tu_vong_12t", "phieu", "radio", "Tử vong mọi nguyên nhân 12 tháng", "0, Không | 1, Có", ""])
+    with (tmp_path / "_ma-tran-muc-tieu-bien.csv").open("w", encoding="utf-8", newline="") as fh:
+        w = csv.writer(fh, lineterminator="\n")
+        w.writerow(["muc_tieu", "khai_niem", "vai_tro", "bien", "kieu", "cau_hoi", "cong_cu", "phan_tich_sap",
+                    "ghi_chu"])
+        w.writerow(["1", "Tử vong do mọi nguyên nhân trong 12 tháng", "ket_cuc_chinh", "tu_vong_12t", "nhi_phan", "",
+                    "hồ sơ", "§4", ""])
+
+
 def _evaluate(tmp_path: Path, *, checkpoint=None, meta=None, artifact=None, g1=True, g0=True, chot=True):
     study = "TEST-G3"
+    _ghi_ma_tran_dat(tmp_path)
     artifact_path = tmp_path / f"G3_A4_SAMPLE_SIZE_{study}.md"
     artifact_path.write_text(
         _artifact() if artifact is None else artifact, encoding="utf-8", newline="\n"
@@ -1011,6 +1033,8 @@ def test_evaluate_study_chay_tron_ven_tren_thu_muc_that(tmp_path):
     sys.path.insert(0, str(Path(__file__).resolve().parent))
     from _chuoi_da_chot import dung_g0_g1_da_chot
     meta = dung_g0_g1_da_chot(tmp_path, study, mau_hieu_qua=[])
+    from _chuoi_da_chot import ghi_bo_bien_va_ma_tran
+    ghi_bo_bien_va_ma_tran(tmp_path)  # 15/11/2026: G3-AUTO-19 — đề tài chốt thật có bộ biến + ma trận
     g3 = _chot(_full_meta(powered_for_outcome=meta["gate_params"]["G1"]["primary_outcome"]["name"]),
                _checkpoint())["gate_params"]["G3"]
     meta["gate_params"]["G3"] = g3

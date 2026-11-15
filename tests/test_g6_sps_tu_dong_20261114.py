@@ -26,6 +26,16 @@ import cong_song as CS  # noqa: E402
 import g6_quality_gate as G6Q  # noqa: E402
 import run_g6_auto as G6A  # noqa: E402
 
+
+@pytest.fixture(autouse=True)
+def _co_lap_khoi_e4_noi_dung(monkeypatch):
+    """15/11/2026: tệp này kiểm CƠ CHẾ (khứ hồi/cú pháp) với từ điển ĐỒ GÁ dựng riêng — không phải đề tài có bộ biến +
+    ma trận. Phép E4 (nội dung biến ↔ mục tiêu, cau_noi_spss.kiem_noi_dung_bien) có test riêng, kể cả lời gọi thật:
+    tests/test_dong_bo_xuyen_cong_20261115.py. Cô lập ở đây KHÔNG nới assertion nào của tệp."""
+    monkeypatch.setattr(CNS, "kiem_noi_dung_bien", lambda *a, **k: None)
+
+
+
 from tests.g5_test_helpers import configure_test_signing_key, prepare_locked_g5_study  # noqa: E402
 
 

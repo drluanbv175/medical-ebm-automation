@@ -21,7 +21,7 @@ Dữ liệu thật được nạp/làm sạch/khử định danh, truy vấn đ�
 ## 2. Tiền đề — chấm sống, chỉ đọc
 - G2 đã duyệt (`g2_da_duyet`) và G4 khoá (`g4_quality_contract_satisfied`).
 <!-- TIEN-DE-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
-- **Tiêu chí tiền đề bộ chấm kiểm** (sinh từ `hoi_dong_cong.PHAN_CONG`; chưa đạt ⇒ `CHO_CONG_TRUOC`, điều phối cổng đó chịu trách nhiệm): `G5-AUTO-05` → G2, G4 · `G5-AUTO-05b` → G2, G4.
+- **Tiêu chí tiền đề bộ chấm kiểm** (sinh từ `hoi_dong_cong.PHAN_CONG`; chưa đạt ⇒ `CHO_CONG_TRUOC`, điều phối cổng đó chịu trách nhiệm): `G5-AUTO-05` → G2, G4 · `G5-AUTO-05b` → G2, G4 · `G5-AUTO-13` → G2.
 <!-- TIEN-DE-CONG:KET-THUC -->
 - Lệnh: `python3 tools/hoi_dong_cong.py cham-song --study <mã> --gate G5` (và cổng tiền đề). «Không đo được» KHÔNG
   phải «đạt»; tiền đề chưa đạt ⇒ dừng, báo điều phối tổng cổng nào chặn.
@@ -44,17 +44,25 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
   trạng thái: `DRAFT_READY_NEEDS_REAL_DATA` → `READY_FOR_CLEANING_NOT_LOCKED` → `READY_FOR_G5_APPROVAL` → `PASS_G5_DATA_LOCKED`.
 - **Người ký (CỔNG CỨNG):** DATA_MANAGER hoặc PI TỰ chạy `python3 tools/approve_gate.py --study <mã> --gate G5 --artifact exports/<mã>/G5_checkpoint.json --reviewer-role <vai>` (khi trạng thái READY_FOR_G5_APPROVAL). Agent KHÔNG ký, KHÔNG gọi lệnh này.
 
+## Đồng bộ xuyên cổng (15/11/2026 — bác sĩ duyệt)
+
+> Vì sao: giả lập trung thực (hệ TỰ sinh từ G0/G1, không viết sẵn bộ biến/SAP) cho thấy mục tiêu ↔ biến ↔ công cụ ↔ từ điển ↔ SAP ↔ SPSS/R không có phép kiểm máy; SPSS/R báo «✓ khớp» trên bộ biến SAI. Báo cáo: `audit/kiem-dong-bo-xuyen-cong-20261115.md` (repo gốc). Công cụ chung: `tools/ma_tran_muc_tieu_bien.py` (repo y khoa). «Khớp khứ hồi/khớp từ điển» KHÔNG chứng minh biến đúng mục tiêu.
+
+- Chuỗi biến của G5: bộ biến riêng (G3) → từ điển G5 (G5-AUTO-12 phủ ma trận) → phiếu HĐĐĐ (G5-AUTO-13) → mẫu nhập Excel → SPSS/R (E4). Thiếu bộ biến ⇒ G5 dừng — giao `bien-so-nghien-cuu` (G3-T2), không tự dựng.
+- Thuộc tính từng biến (E5) đi một mạch bộ biến G3 → từ điển G5 → .sav/.rds; lệch thuộc tính hoặc dữ liệu sai thuộc tính ⇒ trả về `bien-so-nghien-cuu`/`quan-ly-du-lieu`, không sửa tay tệp xuất.
+
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G5 (09/10/2026)
 Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối
-của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Mọi tiêu chí (16) của
+của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Mọi tiêu chí (18) của
 `tools/g5_quality_gate.py` đã gán ĐÚNG MỘT bên ở `hoi_dong_cong.PHAN_CONG`
 (bảng dưới chép lại; test đối chiếu):
 
 | Bên chịu trách nhiệm | Tiêu chí |
 |---|---|
-| `G5-T1` — agent `quan-ly-du-lieu` | G5-AUTO-00, G5-AUTO-01, G5-AUTO-02, G5-AUTO-03, G5-AUTO-06, G5-AUTO-07, G5-AUTO-07b, G5-AUTO-08, G5-AUTO-09, G5-AUTO-10, G5-AUTO-11 |
+| `G5-T1` — agent `quan-ly-du-lieu` | G5-AUTO-00, G5-AUTO-01, G5-AUTO-02, G5-AUTO-03, G5-AUTO-06, G5-AUTO-07, G5-AUTO-07b, G5-AUTO-08, G5-AUTO-09, G5-AUTO-10, G5-AUTO-11, G5-AUTO-12 |
 | `DATA_MANAGER@G5-T1` — NGƯỜI DATA_MANAGER quyết/ký; agent chuẩn bị hồ sơ + lệnh: `quan-ly-du-lieu` | G5-AUTO-04, G5-AUTO-04b, G5-HUMAN-01 |
+| `^G2` — cổng tiền đề G2 (điều phối cổng đó chịu trách nhiệm) | G5-AUTO-13 |
 | `^G2,G4` — cổng tiền đề G2, G4 (điều phối cổng đó chịu trách nhiệm) | G5-AUTO-05, G5-AUTO-05b |
 
 Nhiệm vụ KHÔNG có tiêu chí máy (chất lượng CHỈ bảo đảm bằng đánh giá chéo): G5-T2 `trich-xuat-y-van` (kiểm máy cấp nhiệm vụ: bảng trích xuất SR/MA: cột study/year + (TE, seTE) hoặc 2x2; ≥ 2 nghiên cứu; số hợp lệ) — chưa có biên bản

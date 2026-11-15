@@ -46,10 +46,14 @@ def _out(tmp_path: Path) -> Path:
 def test_dau_ra_co_ma_chua_cham_van_la_chat_luong_chua_bao_dam(monkeypatch, tmp_path):
     out = _out(tmp_path)
     (out / "_bo-bien-rieng.csv").write_text("bien,kieu\nx,text\n", encoding="utf-8", newline="\n")
+    # 15/11/2026: G3-T2 có thêm hợp đồng ma trận mục tiêu → biến — đủ tệp thì mới là «có đầu ra».
+    (out / "_ma-tran-muc-tieu-bien.csv").write_text("muc_tieu,bien\n1,x\n", encoding="utf-8", newline="\n")
     _song(monkeypatch, {})
     kq = HD.trach_nhiem(STUDY, "G3", out)
-    assert kq["chat_luong_chua_bao_dam"] == ["G3-T2", "G3-T3"] and kq["chat_luong_chua_toi_luot"] == []
-    assert "CHẤT LƯỢNG CHƯA ĐƯỢC BẢO ĐẢM: G3-T2, G3-T3" in HD.in_trach_nhiem(kq)
+    # 15/11/2026: G3-T2 sở hữu tiêu chí máy G3-AUTO-19 (ma trận mục tiêu → biến) ⇒ được CỔNG kiểm, không còn nằm trong
+    # nhóm «chỉ bảo đảm bằng đánh giá chéo»; G3-T3 vẫn ở nhóm đó.
+    assert kq["chat_luong_chua_bao_dam"] == ["G3-T3"] and kq["chat_luong_chua_toi_luot"] == []
+    assert "CHẤT LƯỢNG CHƯA ĐƯỢC BẢO ĐẢM: G3-T3" in HD.in_trach_nhiem(kq)
 
 
 def test_dau_ra_chua_co_la_chua_toi_luot_khong_phai_dat(monkeypatch, tmp_path):
@@ -57,10 +61,10 @@ def test_dau_ra_chua_co_la_chua_toi_luot_khong_phai_dat(monkeypatch, tmp_path):
     _song(monkeypatch, {})
     kq = HD.trach_nhiem(STUDY, "G3", out)
     assert kq["chat_luong_chua_bao_dam"] == []
-    assert [m["ma"] for m in kq["chat_luong_chua_toi_luot"]] == ["G3-T2", "G3-T3"]
+    assert [m["ma"] for m in kq["chat_luong_chua_toi_luot"]] == ["G3-T3"]  # G3-T2 do G3-AUTO-19 kiểm (15/11/2026)
     assert all("_bo-bien-rieng.csv" in m["ly_do"] for m in kq["chat_luong_chua_toi_luot"])
     van = HD.in_trach_nhiem(kq)
-    assert "⏳ CHƯA TỚI LƯỢT ĐÁNH GIÁ CHÉO (không phải «đạt»): G3-T2 — chưa có đầu ra" in van
+    assert "⏳ CHƯA TỚI LƯỢT ĐÁNH GIÁ CHÉO (không phải «đạt»): G3-T3 — chưa có đầu ra" in van
     assert "CHẤT LƯỢNG CHƯA ĐƯỢC BẢO ĐẢM" not in van
     assert all(m["danh_gia_cheo"] == "chua_danh_gia" for m in kq["chi_dam_bao_bang_danh_gia_cheo"]), \
         "trạng thái đánh giá chéo giữ nguyên — chỉ đổi nơi xếp"
@@ -80,4 +84,4 @@ def test_bang_all_in_dong_chua_toi_luot(monkeypatch, tmp_path):
     _song(monkeypatch, {})
     van = HD.in_tong_trach_nhiem(HD.tong_trach_nhiem(STUDY, out))
     dong = next(x for x in van.splitlines() if x.startswith("⏳ Chưa tới lượt đánh giá chéo"))
-    assert "G3-T2" in dong and "G3-T3" in dong
+    assert "G3-T3" in dong  # G3-T2 nay được cổng kiểm qua G3-AUTO-19 (15/11/2026)

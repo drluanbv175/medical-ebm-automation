@@ -68,19 +68,12 @@ for _s in (sys.stdout, sys.stderr):
 BASE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import bien_phai_sinh as BPS  # noqa: E402
+import ma_tran_muc_tieu_bien as MT  # noqa: E402
 
 CAN_KIEM = "Cần bác sĩ kiểm chứng."
 LECH, XEM = "LECH", "CAN_XEM"
 MA_OK, MA_LECH, MA_KHONG_DO, MA_THAM_SO = 0, 1, 2, 3
 BI_DANH = {"id": "record_id"}
-COT_TD = (
-    "Field Type",
-    "Choices, Calculations, OR Slider Labels",
-    "Text Validation Type OR Show Slider Number",
-    "Text Validation Min",
-    "Text Validation Max",
-    "Branching Logic (Show field only if...)",
-)
 LOAI_CHON = ("radio", "dropdown", "checkbox", "yesno", "truefalse")
 
 
@@ -420,7 +413,9 @@ def doi_chieu(study_dir: Path, study: str) -> KetQua:
         for k in sorted(set(td_rieng) ^ set(td_g5)):
             them(PhatHien(LECH, "V7", k, f"chỉ có ở {'_bo-bien-rieng.csv' if k in td_rieng else p_g5.name}"))
         for k in sorted(set(td_rieng) & set(td_g5)):
-            khac = [c for c in COT_TD if (td_rieng[k].get(c) or "").strip() != (td_g5[k].get(c) or "").strip()]
+            # 15/11/2026 (E5): so MỌI thuộc tính đi tới SPSS/R/phiếu (thêm nhãn, chú thích «Tên SPSS:», định danh, bắt
+            # buộc) — cùng hàm với cầu nối SPSS/R (ma_tran_muc_tieu_bien.lech_thuoc_tinh), chuẩn hoá như G5.
+            khac = MT.lech_thuoc_tinh(td_rieng[k], td_g5[k])
             if khac:
                 them(PhatHien(LECH, "V7", k, f"_bo-bien-rieng.csv ≠ từ điển G5 ở cột: {', '.join(khac)}"))
 

@@ -1,3 +1,5 @@
+> **BẢN CŨ — ĐÃ THAY BẰNG** `DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md` (bản nộp Hội đồng; PI ký lại gói G10 ngày 28/10/2026). Đánh dấu ngày 15/11/2026 khi kiểm đồng bộ cỡ mẫu & kỹ thuật chọn mẫu. Bản này (sửa lần cuối 04/10/2026) còn giả định Khoa có 8–20 bàn khám, hiệu ứng thiết kế 1 + (m − 1)·ICC (không tính CV cỡ chùm) và độ chính xác ±4–6%; đề cương nộp dựa trên 50 bàn khám, DE 1,39 (CV 0,14), N tối thiểu 630 và nửa độ rộng ±3,7%. **Không dùng để nộp hay trích số liệu.**
+
 # ĐỀ CƯƠNG NGHIÊN CỨU
 
 ## ĐÁNH GIÁ SỰ HÀI LÒNG CỦA BỆNH NHÂN TRONG HOẠT ĐỘNG KHÁM CHỮA BỆNH TẠI KHOA KHÁM BỆNH C1a, TRUNG TÂM KHÁM BỆNH VÀ ĐIỀU TRỊ THEO YÊU CẦU C1, BỆNH VIỆN QUÂN Y 175

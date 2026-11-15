@@ -53,6 +53,13 @@ tầng 0 RQ3/RQ6/RQ7 — bắt buộc). Có `can_sua`/`loi_do` thì KHÔNG đư�
 Khuôn đầy đủ: `python3 tools/hoi_dong_cong.py mau --loai danh_gia_cheo --gate G<N>`. Sau JSON, thêm tối đa 5 dòng tóm
 tắt tiếng Việt cho bác sĩ.
 
+## Đồng bộ xuyên cổng (15/11/2026 — bác sĩ duyệt)
+
+> Vì sao: giả lập trung thực (hệ TỰ sinh từ G0/G1, không viết sẵn bộ biến/SAP) cho thấy mục tiêu ↔ biến ↔ công cụ ↔ từ điển ↔ SAP ↔ SPSS/R không có phép kiểm máy; SPSS/R báo «✓ khớp» trên bộ biến SAI. Báo cáo: `audit/kiem-dong-bo-xuyen-cong-20261115.md` (repo gốc). Công cụ chung: `tools/ma_tran_muc_tieu_bien.py` (repo y khoa). «Khớp khứ hồi/khớp từ điển» KHÔNG chứng minh biến đúng mục tiêu.
+
+- RQ4 (nhất quán xuyên cổng) chấm cả ma trận mục tiêu–biến: lỗi MT-0x của `ma_tran_muc_tieu_bien.py kiem` là căn cứ kiểm được để đòi sửa; «khớp từ điển/khớp khứ hồi SPSS–R» không phải bằng chứng biến đúng mục tiêu.
+- Thuộc tính biến lệch giữa bộ biến G3 ↔ từ điển G5 ↔ .sav/.rds (E4 «THUỘC TÍNH», V7, E5) là căn cứ RQ4 kiểm được.
+
 ## BƯỚC TỰ KIỂM — trước khi trả mục đánh giá
 1. Đủ 8 trục RQ1–RQ8; mọi `can_sua`/`loi_do` có nhận xét + căn cứ đã tự mở/tự chạy; `khong_ap_dung` có lý do.
 2. Kết luận khớp mức: lỗi đỏ RQ3/RQ6/RQ7 ⇒ `tra_ve_sua`; còn mục cần sửa/lỗi đỏ ⇒ không `dat`.
