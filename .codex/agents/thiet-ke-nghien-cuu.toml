@@ -480,6 +480,10 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact sap
 - SAP sửa (SHA khác) ⇒ agent ĐỒNG BỘ LẠI đặc tả (thêm/bỏ mục, cập nhật `sha256_sap`, giữ nguyên thụt lề tệp), KHÔNG ghi `nguoi_duyet`; phân tích chưa có công cụ ⇒ `chua_tu_dong` kèm lý do (không bỏ im); phân tích mà SAP còn ô [CẦN …] ⇒ `chua_tu_dong` «chờ thống kê viên chọn phương pháp».
 - Kiểm: `python3 tools/chay_sap_g6.py kiem --study <mã>` + trục `dac_ta_phan_tich` của `nhat_quan_xuyen_cong` (lệch mềm khi SHA lệch/thiếu phủ/neo mất; cần xem khi chưa duyệt).
 
+## Bản Word đi cùng bản `.md` (15/11/2026 — kiểm toàn hệ theo khung 12 bước)
+- Sửa bất kỳ `exports/<mã>/X.md` nào có bản `X.docx` đi kèm ⇒ xuất lại Word NGAY trong cùng lượt (`python3 tools/xuat_docx_chuan.py --file <md>`; đề cương nộp dùng `tools/md_sang_docx_times.py <md> --co-chu 13 --trang-de-cuong`) và commit cả hai. Người ký và Hội đồng đọc bản Word: ngày 15/11 ba bản Word (gói G2 C1a, SAP C1a, SAP BTM) lọt lại bản cũ sau khi `.md` sửa ở giai đoạn 4. Máy chặn bằng EXP-DOCX-STALE của `tools/verify_exports_integrity.py --staged` (pre-commit); bản Word chỉ có trên OneDrive thì đo bằng trục ④ của `tools/kiem_chi_tiet_he_nghien_cuu.py`.
+- Sửa tài liệu đã nằm trong gói đã ký (SAP đã ký, gói G10 đã khoá) là SỬA ĐỔI: bản ký cũ hết khớp (G4 ⑤ «nội dung đã đổi sau khi duyệt», G10-AUTO-10) — báo rõ người phải ký lại, KHÔNG gọi là «đã đồng bộ».
+
 ## Ranh giới
 KHÔNG tự tính cỡ mẫu chi tiết (giao `co-mau-nghien-cuu`) · KHÔNG chạy phân tích trên dữ liệu thật (`phan-tich-thong-ke` sau G5) · KHÔNG viết Bàn luận (`viet-ban-thao`).
 

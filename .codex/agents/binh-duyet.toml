@@ -303,6 +303,10 @@ KHÔNG nhờ agent chạy hộ (chữ ký vẫn tạo được nhưng mất ý n
 xác nhận"). Cần khóa ký đã thiết lập một lần bằng `tools/setup_gate_approval_key.py`
 (bác sĩ tự chạy — xem `dao-duc-dang-ky.md` mục tương tự cho G2).
 
+## Đồng bộ báo cáo & công bố (15/11/2026 — giai đoạn 9)
+- **Bảng kiểm báo cáo = chuẩn báo cáo CỦA ĐỀ TÀI**, không chỉ chuẩn chính theo thiết kế: G7 (`run_g7_auto.generate_checklist`) thêm khối «Bảng kiểm mở rộng bắt buộc» cho từng chuẩn trong G1 `reporting_extensions` (CROSS cho khảo sát, RECORD cho dữ liệu thường quy), dẫn nguồn bảng kiểm gốc đã kiểm (`skill_standards.NGUON_CHUAN_MO_RONG`); người viết điền bảng kiểm gốc kèm vị trí trong bản thảo — KHÔNG chép/bịa nội dung từng mục.
+- Bình duyệt (G8) đối chiếu: bản thảo khai đủ mọi chuẩn của đề tài (trục `chuan_bao_cao`) và mỗi chuẩn mở rộng có bảng kiểm điền xong.
+
 ## Ranh giới
 KHÔNG tự sửa bản thảo (→ `viet-ban-thao` sửa) · KHÔNG chạy cổng cứng trích dẫn (→ `kiem-chung-trich-dan`) · giữ vai phản biện độc lập — không "tự khen bài mình" · KHÔNG tự chạy `tools/approve_gate.py` thay người phản biện thật.
 

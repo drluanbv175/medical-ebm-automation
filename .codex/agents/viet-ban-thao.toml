@@ -148,6 +148,14 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact manuscript
 - **Mọi chỗ đề cương trích phiên bản khác phải trùng tài liệu gốc:** «kế hoạch phân tích … phiên bản X» = phiên bản ở tiêu đề SAP (SAP sửa đổi chưa ký ⇒ GIỮ phiên bản đã ký trong đề cương, sửa sau khi thống kê viên ký — không ghi trước điều chưa xảy ra); phiếu thông tin/đồng ý ở phụ lục = `G2.icf_version`; «Thời gian thực hiện» = `G1.study_period`; bảng kinh phí = các khoản `G1.budget`.
 - Sửa `.md` xong phải sinh lại `.docx` bằng `tools/md_sang_docx_times.py <md> --co-chu 13 --trang-de-cuong` chạy ở nơi có `medical-ebm-automation/` lồng/cạnh (thiếu thì công cụ báo «CHƯA đạt chuẩn nộp» — chạy lại), rồi `kiem_de_cuong_nop_hoi_dong.py` (K1–K7) và trục `de_cuong_nop` của `nhat_quan_xuyen_cong` (DC-01…DC-05).
 
+## Đồng bộ bàn luận & hạn chế (15/11/2026 — giai đoạn 8)
+- **Hạn chế đã biết trước phải được thừa nhận:** mọi sai lệch G1 có `trang_thai` «… hạn chế mở» (vd nhiễu tồn dư, người bỏ về, mong muốn xã hội) PHẢI có mặt trong mục «Hạn chế» của đề cương nộp và của phần Bàn luận bản thảo — nêu chiều hướng sai lệch đã khai ở G1, không viết nhẹ đi. Máy kiểm: SL-09 của `tools/doi_chieu_sai_lech_sap.py` (cột `neo_han_che` = cụm nguyên văn trong mục «Hạn chế»).
+- Diễn giải theo đúng ràng buộc SAP: mối liên quan (không nhân quả) ở thiết kế cắt ngang; phân tích thăm dò trình bày là thăm dò; kết quả âm tính/không như kỳ vọng vẫn báo đủ.
+
+## Đồng bộ báo cáo & công bố (15/11/2026 — giai đoạn 9)
+- **Bảng kiểm báo cáo = chuẩn báo cáo CỦA ĐỀ TÀI**, không chỉ chuẩn chính theo thiết kế: G7 (`run_g7_auto.generate_checklist`) thêm khối «Bảng kiểm mở rộng bắt buộc» cho từng chuẩn trong G1 `reporting_extensions` (CROSS cho khảo sát, RECORD cho dữ liệu thường quy), dẫn nguồn bảng kiểm gốc đã kiểm (`skill_standards.NGUON_CHUAN_MO_RONG`); người viết điền bảng kiểm gốc kèm vị trí trong bản thảo — KHÔNG chép/bịa nội dung từng mục.
+- Bình duyệt (G8) đối chiếu: bản thảo khai đủ mọi chuẩn của đề tài (trục `chuan_bao_cao`) và mỗi chuẩn mở rộng có bảng kiểm điền xong.
+
 ## Ranh giới
 KHÔNG tạo dữ liệu/kết quả chưa có (→ `[CẦN BỔ SUNG]`); KHÔNG tự quyết phân tích (nhận từ `phan-tich-thong-ke`, kế hoạch từ `thiet-ke-nghien-cuu`). Bản thảo phải qua `binh-duyet` trước khi coi là sẵn sàng nộp; chọn tạp chí/rebuttal → `nop-bai-phan-hoi`.
 

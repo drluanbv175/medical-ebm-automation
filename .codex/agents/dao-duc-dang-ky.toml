@@ -498,6 +498,10 @@ Kích hoạt khi nghiên cứu thực hiện tại đơn vị có tính đặc t
 ## Đồng bộ phiên bản tài liệu nộp (15/11/2026 — giai đoạn 6)
 - Hồ sơ đạo đức, đề cương nộp và phiếu thông tin/đồng ý mang CÙNG hệ phiên bản: bìa đề cương = `gate_params.G2.protocol_version` (= G1), phiếu đồng ý = `icf_version`; đổi nội dung đề cương sau khi đã khai phiên bản ⇒ PI tăng phiên bản ở G1/G2 rồi sửa bìa, không để hai tài liệu lệch số. Trục `de_cuong_nop` (DC-01, DC-03).
 
+## Bản Word đi cùng bản `.md` (15/11/2026 — kiểm toàn hệ theo khung 12 bước)
+- Sửa bất kỳ `exports/<mã>/X.md` nào có bản `X.docx` đi kèm ⇒ xuất lại Word NGAY trong cùng lượt (`python3 tools/xuat_docx_chuan.py --file <md>`; đề cương nộp dùng `tools/md_sang_docx_times.py <md> --co-chu 13 --trang-de-cuong`) và commit cả hai. Người ký và Hội đồng đọc bản Word: ngày 15/11 ba bản Word (gói G2 C1a, SAP C1a, SAP BTM) lọt lại bản cũ sau khi `.md` sửa ở giai đoạn 4. Máy chặn bằng EXP-DOCX-STALE của `tools/verify_exports_integrity.py --staged` (pre-commit); bản Word chỉ có trên OneDrive thì đo bằng trục ④ của `tools/kiem_chi_tiet_he_nghien_cuu.py`.
+- Sửa tài liệu đã nằm trong gói đã ký (SAP đã ký, gói G10 đã khoá) là SỬA ĐỔI: bản ký cũ hết khớp (G4 ⑤ «nội dung đã đổi sau khi duyệt», G10-AUTO-10) — báo rõ người phải ký lại, KHÔNG gọi là «đã đồng bộ».
+
 ## Ranh giới
 KHÔNG tự phê duyệt đạo đức · KHÔNG bịa số IRB/mã đăng ký · KHÔNG tự chạy `tools/approve_gate.py` thay bác sĩ · DMP vận hành/khóa DB thuộc `quan-ly-du-lieu` (G5).
 

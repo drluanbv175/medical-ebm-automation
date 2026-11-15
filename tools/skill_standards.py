@@ -838,6 +838,14 @@ def reporting_standards_for(design_code: Optional[str]) -> Dict[str, str]:
 # PHÂN TÍCH yếu tố liên quan và đề cương ghi «mô tả cắt ngang có phân tích». Một nguồn sự thật cho mọi bộ sinh + trục
 # `chuan_bao_cao`/`mo_ta_thiet_ke` của nhat_quan_xuyen_cong.
 CHUAN_MO_RONG = ("CROSS", "RECORD")
+# Nguồn bảng kiểm gốc (giai đoạn 9, 15/11/2026) — CHỈ dùng trích dẫn đã có trong danh mục trích dẫn của đề tài và đã
+# kiểm rút bài (CROSS: đề cương nộp C1a; RECORD: T67 của BTM). Bảng kiểm G7 dẫn nguồn, KHÔNG chép nguyên văn từng mục.
+NGUON_CHUAN_MO_RONG = {
+    "CROSS": ("Sharma A, et al. A Consensus-Based Checklist for Reporting of Survey Studies (CROSS). J Gen Intern Med. "
+              "2021;36(10):3179-3187. doi:10.1007/s11606-021-06737-1. PMID: 33886027"),
+    "RECORD": ("Benchimol EI, et al. The RECORD statement. PLoS Med. 2015;12(10):e1001885. "
+               "doi:10.1371/journal.pmed.1001885. PMID: 26440803"),
+}
 # Token chuẩn báo cáo đọc trên MỘT dòng khai báo (chữ in hoa, không ăn «Cross-sectional»).
 CHUAN_BAO_CAO_RE = re.compile(
     r"(?<![A-Za-z])(STROBE|RECORD|CROSS|CHERRIES|COSMIN|CONSORT|SPIRIT|STARD|TRIPOD|PRISMA|COREQ|SRQR|CHEERS|"

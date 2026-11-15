@@ -235,3 +235,45 @@ def test_sai_lech_ghi_khong_ma_bien_phap_co_phan_tich_thi_canh_bao(tmp_path):
     kq = DSL.kiem(d, STUDY)
     assert kq["loi"] == [] and sorted(x["ma"] for x in kq["canh_bao"]) == ["SL-07", "SL-08"]
     assert _truc(d, "kiem_soat_sai_lech")["muc"] == NQ.MUC_CAN_XEM
+
+
+# ── ⑥ giai đoạn 8 «Bàn luận»: hạn chế mở ở G1 phải có trong mục «Hạn chế» của đề cương nộp (SL-09) ───────────────
+def _han_che_de_tai(tmp_path: Path, *, neo: str, han_che: str) -> Path:
+    bias = [dict(BIAS[0], trang_thai="khống chế"), dict(BIAS[1], trang_thai="khống chế"),
+            dict(BIAS[2], trang_thai="khống chế + hạn chế mở")]
+    d = _de_tai(tmp_path, bias=bias)
+    _bang_sai_lech(d, [r + ("",) for r in BANG_DUNG[:2]] + [BANG_DUNG[2] + (neo,)])
+    (d / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md").write_text(
+        "# 4. PHƯƠNG PHÁP\n## 4.12. Hạn chế của nghiên cứu\n" + han_che + "\n## 4.13. Khác\nGom cụm trong mục khác\n",
+        encoding="utf-8", newline="\n")
+    return d
+
+
+def test_sl09_han_che_mo_co_trong_muc_han_che(tmp_path):
+    d = _han_che_de_tai(tmp_path, neo="Gom cụm theo bàn khám", han_che="| Gom cụm theo bàn khám | KTC hẹp |")
+    assert DSL.kiem(d, STUDY)["loi"] == []
+
+
+def test_sl09_neo_chi_nam_ngoai_muc_han_che_la_loi(tmp_path):
+    d = _han_che_de_tai(tmp_path, neo="Gom cụm trong mục khác", han_che="| Thiết kế cắt ngang | … |")
+    assert [x["ma"] for x in DSL.kiem(d, STUDY)["loi"]] == ["SL-09"]
+
+
+def test_sl09_chua_khai_neo_va_chua_co_de_cuong(tmp_path):
+    d = _han_che_de_tai(tmp_path, neo="", han_che="| X | Y |")
+    assert [x["ma"] for x in DSL.kiem(d, STUDY)["loi"]] == ["SL-09"]
+    (d / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md").unlink()
+    assert DSL.kiem(d, STUDY)["loi"] == []  # chưa có đề cương ⇒ không đòi
+
+
+# ── ⑦ giai đoạn 9 «Báo cáo»: bảng kiểm G7 có bảng kiểm mở rộng của đề tài ─────────────────────────────────────────
+def test_g7_bang_kiem_co_khoi_mo_rong_va_nguon_da_kiem():
+    import run_g7_auto as G7
+
+    md = G7.generate_checklist("cross_sectional", "STROBE 2007", 22, "—", "—", 1000, 0.05, 0.8,
+                               reporting_extensions=["CROSS", "RECORD"])
+    assert "Bảng kiểm mở rộng bắt buộc: CROSS" in md and "PMID: 33886027" in md
+    assert "Bảng kiểm mở rộng bắt buộc: RECORD" in md and "PMID: 26440803" in md
+    assert "Bảng kiểm mở rộng bắt buộc" not in G7.generate_checklist("cross_sectional", "STROBE 2007", 22, "—", "—",
+                                                                   1000, 0.05, 0.8)
+    assert "CẦN KIỂM CHỨNG NGUỒN" in G7.khoi_bang_kiem_mo_rong(["CHERRIES"])
