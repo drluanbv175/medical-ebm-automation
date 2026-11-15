@@ -262,7 +262,10 @@ MA_TRAN_DO_GA = [
 
 
 def ghi_bo_bien_va_ma_tran(out_dir: Path) -> None:
-    """Ghi `_bo-bien-rieng.csv` + `_ma-tran-muc-tieu-bien.csv` hợp lệ cho đồ gá chuỗi (dữ liệu tổng hợp)."""
+    """Ghi `_bo-bien-rieng.csv` + `_ma-tran-muc-tieu-bien.csv` hợp lệ cho đồ gá chuỗi (dữ liệu tổng hợp).
+
+    Tệp ĐÃ CÓ thì giữ nguyên (đồ gá G5 ghi bộ biến TRÙNG từ điển của nó trước khi dựng chuỗi — ghi đè bằng bộ 3 biến sẽ
+    làm G5-AUTO-11 thấy G3 ≠ G5)."""
     import csv  # noqa: PLC0415
 
     cot = ["Variable / Field Name", "Form Name", "Section Header", "Field Type", "Field Label",
@@ -270,19 +273,23 @@ def ghi_bo_bien_va_ma_tran(out_dir: Path) -> None:
            "Text Validation Min", "Text Validation Max", "Identifier?", "Branching Logic (Show field only if...)",
            "Required Field?", "Custom Alignment", "Question Number (surveys only)", "Matrix Group Name",
            "Matrix Ranking?", "Field Annotation"]
-    with (Path(out_dir) / "_bo-bien-rieng.csv").open("w", encoding="utf-8", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=cot, lineterminator="\n")
-        w.writeheader()
-        for ten, kieu, nhan, lua, val in BO_BIEN_DO_GA:
-            w.writerow({"Variable / Field Name": ten, "Form Name": "phieu", "Field Type": kieu, "Field Label": nhan,
-                        "Choices, Calculations, OR Slider Labels": lua,
-                        "Text Validation Type OR Show Slider Number": val, "Required Field?": "y"})
-    with (Path(out_dir) / "_ma-tran-muc-tieu-bien.csv").open("w", encoding="utf-8", newline="") as fh:
-        w = csv.writer(fh, lineterminator="\n")
-        w.writerow(["muc_tieu", "khai_niem", "vai_tro", "bien", "kieu", "cau_hoi", "cong_cu", "phan_tich_sap",
-                    "ghi_chu"])
-        for dong in MA_TRAN_DO_GA:
-            w.writerow([*dong, ""])
+    bo_bien = Path(out_dir) / "_bo-bien-rieng.csv"
+    if not bo_bien.exists():
+        with bo_bien.open("w", encoding="utf-8", newline="") as fh:
+            w = csv.DictWriter(fh, fieldnames=cot, lineterminator="\n")
+            w.writeheader()
+            for ten, kieu, nhan, lua, val in BO_BIEN_DO_GA:
+                w.writerow({"Variable / Field Name": ten, "Form Name": "phieu", "Field Type": kieu, "Field Label": nhan,
+                            "Choices, Calculations, OR Slider Labels": lua,
+                            "Text Validation Type OR Show Slider Number": val, "Required Field?": "y"})
+    ma_tran = Path(out_dir) / "_ma-tran-muc-tieu-bien.csv"
+    if not ma_tran.exists():
+        with ma_tran.open("w", encoding="utf-8", newline="") as fh:
+            w = csv.writer(fh, lineterminator="\n")
+            w.writerow(["muc_tieu", "khai_niem", "vai_tro", "bien", "kieu", "cau_hoi", "cong_cu", "phan_tich_sap",
+                        "ghi_chu"])
+            for dong in MA_TRAN_DO_GA:
+                w.writerow([*dong, ""])
 
 
 def dung_g0_g3_da_chot(out_dir: Path, study: str, *, thiet_ke: str = "rct", g3_argv: Optional[list] = None,

@@ -39,6 +39,7 @@ import json
 import re
 import sys
 import unicodedata
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
@@ -118,48 +119,65 @@ def _gp(meta: Mapping[str, Any], cong: str) -> Dict[str, Any]:
 
 def muc_tieu_g1(meta: Mapping[str, Any]) -> List[str]:
     """Danh sách mục tiêu đã chốt (gate_params.G1.objectives, rồi study_meta.objectives)."""
-    ds = _gp(meta, "G1").get("objectives") or meta.get("objectives") or []
+    ds = meta.get("objectives") or _gp(meta, "G1").get("objectives") or []
     if isinstance(ds, str):
         ds = [ds]
     return [str(x).strip() for x in ds if isinstance(x, (str, int, float)) and str(x).strip() and not _trong(x)]
 
 
+_LOAI_KET_CUC = (
+    ("thu_tu", ("thu tu", "thu hang", "thu bac", "ordinal", "likert")),
+    ("thoi_gian_den_su_kien", ("thoi gian den", "time-to-event", "time to event", "song con")),
+    ("nhi_phan", ("nhi phan", "binary", "dichotom")),
+    ("dem", ("dem", "count")),
+    ("lien_tuc", ("lien tuc", "continuous")),
+    ("danh_dinh", ("danh dinh", "nominal", "categorical")),
+)
+
+
 def kieu_ket_cuc_g1(meta: Mapping[str, Any]) -> Optional[str]:
-    """Loại dữ liệu kết cục chính đã chốt ở G1 → mã kiểu của ma trận (None = không suy được)."""
+    """Loại dữ liệu kết cục chính đã chốt ở G1 → mã kiểu của ma trận (None = không suy được / mơ hồ).
+
+    Chỉ đọc MỆNH ĐỀ CHÍNH (trước «;», «—», «(»): «Thứ hạng (ordinal) 5 mức…; ngưỡng nhị phân thứ cấp» là THỨ BẬC,
+    không phải nhị phân (sửa theo thẩm định #268 — bản cũ khớp «nhị phân» trước, khiến C1a không bao giờ đạt ma trận).
+    Mệnh đề chính mang HAI loại trở lên ⇒ None (cảnh báo MT-05, không đoán)."""
     po = _gp(meta, "G1").get("primary_outcome")
     raw = ""
     if isinstance(po, Mapping):
         raw = str(po.get("type") or po.get("scale_type") or po.get("data_type") or "")
     raw = raw or str(_gp(meta, "G1").get("primary_outcome_type") or meta.get("primary_outcome_type") or "")
-    t = bo_dau(raw)
-    if not t:
+    if not bo_dau(raw):
         return None
-    for khoa, ma in (("nhi phan", "nhi_phan"), ("binary", "nhi_phan"), ("dichotom", "nhi_phan"),
-                     ("thoi gian den", "thoi_gian_den_su_kien"), ("time-to-event", "thoi_gian_den_su_kien"),
-                     ("time to event", "thoi_gian_den_su_kien"), ("song con", "thoi_gian_den_su_kien"),
-                     ("thu tu", "thu_tu"), ("ordinal", "thu_tu"), ("dem", "dem"), ("count", "dem"),
-                     ("lien tuc", "lien_tuc"), ("continuous", "lien_tuc"), ("danh dinh", "danh_dinh"),
-                     ("nominal", "danh_dinh"), ("categorical", "danh_dinh")):
-        if khoa in t:
-            return ma
+    chinh = bo_dau(re.split(r"[;—–]|\s-\s", raw, maxsplit=1)[0])
+    # «Thứ hạng (ordinal)» — ngoặc ngay sau tên loại là chú thích của chính nó, giữ lại
+    thay_the = [ma for ma, khoa in _LOAI_KET_CUC if any(re.search(rf"(?<![a-z]){re.escape(k)}(?![a-z])", chinh)
+                                                         for k in khoa)]
+    if len(thay_the) == 1:
+        return thay_the[0]
+    if "thu_tu" in thay_the and set(thay_the) <= {"thu_tu", "danh_dinh"}:
+        return "thu_tu"
     return None
 
 
-def tach_yeu_to(muc_tieu: str) -> List[str]:
-    """Các yếu tố/khái niệm mục tiêu LIỆT KÊ (phần sau dấu «:» cuối, hoặc sau «yếu tố/gồm/bao gồm/như»).
+_TU_BAO_DANH_SACH = re.compile(r"(?:các |một số )?(?:yếu tố|yếu tố liên quan|đặc điểm|biến|chỉ số|khía cạnh|lĩnh vực)"
+                               r"[^:]{0,80}:\s*|(?:bao gồm|gồm|gồm có)\s+", re.IGNORECASE)
 
-    Mục tiêu không liệt kê ⇒ [] (khi đó chỉ đòi mục tiêu có ≥ 1 dòng). Tách theo «,» «;» «và» «hoặc» «and» «or»."""
+
+def tach_yeu_to(muc_tieu: str) -> List[str]:
+    """Các yếu tố mục tiêu LIỆT KÊ TƯỜNG MINH — chỉ khi có TỪ BÁO danh sách («…yếu tố/đặc điểm/biến…:», «gồm», «bao
+    gồm»).
+
+    Sửa theo thẩm định #268: bản cũ cắt ở dấu «:» bất kỳ nên tiền tố «MT1 (mô tả): Xác định … tại Trung tâm Khám bệnh,
+    Điều trị theo yêu cầu C1, Bệnh viện Quân y 175» biến tên cơ sở thành «yếu tố» bắt buộc. Nay: bỏ tiền tố «MT1 (…):»
+    / «Mục tiêu 1:», chỉ tách phần sau từ báo, dừng ở «tại …», «(», «—». Không có từ báo ⇒ [] (mục tiêu chỉ cần ≥ 1
+    dòng). Tách theo «,» «;» «và» «hoặc» «and» «or»."""
     s = str(muc_tieu or "")
-    s = re.sub(r"^\s*m[ụu]c ti[êe]u\s*\d+\s*[:.\-–]\s*", "", s, flags=re.IGNORECASE)
-    phan = None
-    if ":" in s:
-        phan = s.rsplit(":", 1)[1]
-    else:
-        m = re.search(r"(?:c[áa]c y[ếe]u t[ốo]|bao g[ồo]m|g[ồo]m|nh[ưu] l[àa]|nh[ưu])\s+(.+)$", s, re.IGNORECASE)
-        if m and re.search(r"[,;]| v[àa] ", m.group(1)):
-            phan = m.group(1)
-    if not phan:
+    s = re.sub(r"^\s*(?:m[ụu]c ti[êe]u\s*\d+|mt\s*\d+)\s*(?:\([^)]{0,40}\))?\s*[:.\-–]\s*", "", s, flags=re.IGNORECASE)
+    m = _TU_BAO_DANH_SACH.search(s)
+    if not m:
         return []
+    phan = s[m.end():]
+    phan = re.split(r"\s+tại\s+|\(|\s[—–]\s|\.\s", phan, maxsplit=1)[0]
     ra = []
     for x in re.split(r"[,;]|\s+(?:và|hoặc|and|or)\s+", phan.strip().rstrip(".")):
         x = re.sub(r"^\s*(?:các|một số|mức độ)\s+", "", x.strip(), flags=re.IGNORECASE).strip(" .()")
@@ -169,15 +187,16 @@ def tach_yeu_to(muc_tieu: str) -> List[str]:
 
 
 def khop_khai_niem(yeu_to: str, khai_niem: str) -> bool:
-    """Yếu tố của mục tiêu có được một dòng ma trận phủ không (bỏ dấu; ≥ 60 % từ của yếu tố có trong khái niệm, hoặc
-    chuỗi con)."""
-    a, b = bo_dau(yeu_to), bo_dau(khai_niem)
-    if not a or not b:
+    """Yếu tố của mục tiêu có được MỘT dòng ma trận phủ đúng không (bỏ dấu, so HAI CHIỀU).
+
+    Sửa theo thẩm định #268: bản cũ nhận chuỗi con một chiều ⇒ khái niệm «thuốc» phủ cả «số loại thuốc», «tác dụng phụ
+    của thuốc»; khái niệm là NGUYÊN câu mục tiêu phủ mọi yếu tố (xanh giả). Nay đòi ≥ 60 % từ của yếu tố có trong khái
+    niệm VÀ ≥ 40 % từ của khái niệm thuộc yếu tố."""
+    ta, tb = set(_tu(yeu_to)), set(_tu(khai_niem))
+    if not ta or not tb:
         return False
-    if a in b or b in a:
-        return True
-    ta, tb = set(_tu(a)), set(_tu(b))
-    return bool(ta) and len(ta & tb) / len(ta) >= 0.6
+    chung = len(ta & tb)
+    return chung / len(ta) >= 0.6 and chung / len(tb) >= 0.4
 
 
 # ───────────────────────────── bộ biến & kiểu ─────────────────────────────
@@ -327,15 +346,17 @@ def kiem(out_dir: Path, study: str, *, meta: Optional[Mapping[str, Any]] = None,
 
     # MT-05 — đúng một kết cục chính, kiểu khớp G1
     kc = [r for r in dong if r.get("vai_tro") == "ket_cuc_chinh"]
-    if len(kc) != 1:
+    thiet_ke = str(meta.get("design_code") or _gp(meta, "G1").get("design") or "").strip().lower()
+    khong_dinh_luong = thiet_ke in ("qualitative", "sr_ma")
+    if len(kc) > 1 or (len(kc) == 0 and not khong_dinh_luong):
         vd.append(_van_de("MT-05", "loi", f"cần ĐÚNG một dòng vai_tro=ket_cuc_chinh (đang có {len(kc)})"))
-    kieu_g1 = kieu_ket_cuc_g1(meta)
+    kieu_g1 = None if khong_dinh_luong else kieu_ket_cuc_g1(meta)
     if kc and kieu_g1 and kc[0].get("kieu") and kc[0]["kieu"] != kieu_g1:
         vd.append(_van_de("MT-05", "loi", f"kết cục chính «{kc[0].get('bien')}» khai kiểu «{kc[0]['kieu']}» nhưng G1 "
                                           f"chốt loại dữ liệu «{kieu_g1}»"))
-    elif kc and not kieu_g1:
-        vd.append(_van_de("MT-05", "canh_bao", "G1 chưa ghi loại dữ liệu kết cục chính (primary_outcome.type) — "
-                                               "không đối chiếu được kiểu"))
+    elif kc and not kieu_g1 and not khong_dinh_luong:
+        vd.append(_van_de("MT-05", "canh_bao", "G1 chưa ghi (hoặc ghi mơ hồ nhiều loại) loại dữ liệu kết cục chính "
+                                               "(primary_outcome.type) — không đối chiếu được kiểu"))
 
     # MT-06/07/08 — biến có thật, đúng kiểu; phái sinh có nguồn
     for i, r in enumerate(dong, 2):
@@ -434,7 +455,13 @@ def vai_tro_bien(out_dir: Path, study: str) -> Optional[Dict[str, Any]]:
 # ───────────────────────────── miễn trừ cổng đã ký trước mốc ─────────────────────────────
 def da_ky_truoc_moc(out_dir: Path, study: str, *, repo_root: Optional[Path] = None,
                     cong: Sequence[str] = ("G4", "G10")) -> Tuple[bool, str]:
-    """(True, bằng chứng) khi sổ cái có phê duyệt APPROVED hợp lệ của một cổng trong `cong` ký TRƯỚC MOC_LUAT."""
+    """(True, bằng chứng) khi bản ghi CÓ THẨM QUYỀN đang hiệu lực của một cổng trong `cong` là APPROVED (không
+    synthetic) và ký TRƯỚC MOC_LUAT.
+
+    Sửa theo thẩm định #268: bản cũ miễn trừ G10 chỉ vì có một dòng APPROVED (không xác minh chữ ký, bỏ qua REJECTED
+    thu hồi về sau, timestamp rỗng coi là «trước mốc»), và lấy lần ký SỚM NHẤT của G4. Nay dùng chung
+    gate_contract._latest_authoritative_record (bất thường ⇒ None ⇒ không miễn trừ); thời điểm không parse được ⇒
+    không miễn trừ (fail-closed)."""
     root = Path(repo_root) if repo_root else BASE
     try:
         so = json.loads((Path(out_dir) / "approval_ledger.json").read_text(encoding="utf-8"))
@@ -447,22 +474,26 @@ def da_ky_truoc_moc(out_dir: Path, study: str, *, repo_root: Optional[Path] = No
         import gate_contract as GC  # noqa: PLC0415
     except Exception as e:  # noqa: BLE001 — không nạp được ⇒ không miễn trừ (fail-closed)
         return False, f"không nạp được gate_contract: {type(e).__name__}"
-    tep = {"G4": Path(out_dir) / f"G4_A5_SAP_FINAL_{study}.md",
-           "G10": Path(out_dir) / "G10_RELEASE_READINESS.json"}
+    moc = datetime.fromisoformat(MOC_LUAT + "T00:00:00+07:00")
     for g in cong:
-        moc = [str(r.get("timestamp_utc") or r.get("timestamp") or "")[:10] for r in so
-               if isinstance(r, dict) and (r.get("gate_id") or r.get("gate")) == g
-               and str(r.get("decision") or "").upper() == "APPROVED"]
-        if not moc or min(moc) >= MOC_LUAT:
-            continue
         try:
-            hop_le = GC.ledger_approved(g, study, tep.get(g, Path(out_dir) / "_"), repo_root=root)
+            rec = GC._latest_authoritative_record(so, g, study, root)
         except Exception:  # noqa: BLE001
-            hop_le = False
-        if hop_le or g == "G10":
-            # G10 ký trên gói (băm nhiều tệp) — sự có mặt phê duyệt APPROVED trước mốc là đủ để KHÔNG hạ cấp hiển thị.
-            return True, f"{g} đã ký {min(moc)} (trước mốc luật {MOC_LUAT})"
-    return False, f"không có G4/G10 ký trước mốc {MOC_LUAT}"
+            rec = None
+        if not isinstance(rec, Mapping) or str(rec.get("decision") or "").upper() != "APPROVED":
+            continue
+        if rec.get("is_synthetic") or rec.get("synthetic"):
+            continue
+        ts = str(rec.get("timestamp_utc") or rec.get("timestamp") or "").strip()
+        try:
+            luc = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        if luc.tzinfo is None:
+            continue
+        if luc < moc:
+            return True, f"{g} đã ký {luc.date().isoformat()} (bản ghi đang hiệu lực, trước mốc luật {MOC_LUAT})"
+    return False, f"không có G4/G10 đang hiệu lực ký trước mốc {MOC_LUAT}"
 
 
 # ───────────────────────────── kiểm nội dung trước khi xuất SPSS/R ─────────────────────────────
@@ -503,8 +534,10 @@ def kiem_noi_dung_xuat(out_dir: Path, study: str, tu_dien: Path, cot_xuat: Itera
     else:
         phai_sinh = doc_phai_sinh(out_dir)
         cot = set(cot_xuat)
+        # Checkbox REDCap xuất thành `<bien>___<mã>` (một cột mỗi lựa chọn) — có ít nhất một cột như vậy là CÓ biến.
+        cot_goc = cot | {c.split("___", 1)[0] for c in cot if "___" in c}
         thieu = sorted({r["bien"] for r in doc_ma_tran(out_dir)[0] or [] if r.get("bien")
-                        and r["bien"] not in phai_sinh and r["bien"] not in cot
+                        and r["bien"] not in phai_sinh and r["bien"] not in cot_goc
                         and r.get("kieu") != "van_ban"})
         if thieu:
             loi.append(f"biến của ma trận vắng trong tệp xuất: {', '.join(thieu[:10])}")
@@ -550,7 +583,7 @@ def kiem_phieu_hoi_dong(out_dir: Path, study: str, *, meta: Optional[Mapping[str
     if not van:
         return {"trang_thai": "KHONG_DO_DUOC", "loi": ["không đọc được hồ sơ G2/phiếu đã khai"], "nguon": []}
     # Ranh giới chặt: «G2_A3_ETHICS» (tên tệp) KHÔNG phải câu «A3»; «A3.», «A3)», «Câu A3:», «| A3 |» là câu.
-    vang = [m for m in ma if not re.search(rf"(?<![A-Za-z0-9_]){re.escape(m)}(?![0-9_])", van, re.IGNORECASE)]
+    vang = [m for m in ma if not re.search(rf"(?<![A-Za-z0-9_]){re.escape(m)}(?![A-Za-z0-9_])", van, re.IGNORECASE)]
     return {"trang_thai": "CHUA_DAT" if vang else "DAT",
             "loi": ([f"{len(vang)} mã câu hỏi của ma trận không có trong phiếu nộp Hội đồng: {', '.join(vang[:12])}"]
                     if vang else []),

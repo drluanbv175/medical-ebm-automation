@@ -333,6 +333,20 @@ def _ghi_nguon_bien_fixture(out_dir: Path, study: str, rows) -> None:
         + "\n".join(dong) + "\n",
         encoding="utf-8", newline="\n",
     )
+    # 15/11/2026 (#268): G3 của đề tài thật cũng ghi BỘ BIẾN RIÊNG (= nguồn từ điển G5) + MA TRẬN mục tiêu → biến
+    # (G5-AUTO-12) — đồ gá «đầy đủ» mang đủ cả hai, trùng từ điển, ma trận theo mục tiêu G1 của chuỗi đồ gá.
+    import shutil  # noqa: PLC0415
+
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from _chuoi_da_chot import MA_TRAN_DO_GA  # noqa: PLC0415
+
+    shutil.copyfile(out_dir / f"G5_REDCap_dictionary_{study}.csv", out_dir / "_bo-bien-rieng.csv")
+    with (out_dir / "_ma-tran-muc-tieu-bien.csv").open("w", encoding="utf-8", newline="") as fh:
+        w = csv.writer(fh, lineterminator="\n")
+        w.writerow(["muc_tieu", "khai_niem", "vai_tro", "bien", "kieu", "cau_hoi", "cong_cu", "phan_tich_sap",
+                    "ghi_chu"])
+        for dong_mt in MA_TRAN_DO_GA:
+            w.writerow([*dong_mt, ""])
     (out_dir / f"PHIEU_THU_THAP_SO_LIEU_{study}.md").write_text(
         f"# Phiếu thu thập số liệu — {study} (fixture)\n\n"
         + "\n".join(f"{i}. {name}: ______" for i, (name, *_) in enumerate(rows, 1)) + "\n",

@@ -298,7 +298,9 @@ def dau_van_tay_g1(meta: Mapping[str, Any], design: Mapping[str, Any]) -> str:
     g1 = {k: v for k, v in _g1_meta(meta).items() if k not in _KHOA_XAC_NHAN_G1}
     # 15/11/2026: giá trị G1 đang KẾ THỪA từ G0 (G1 bỏ trống) là nội dung PI chốt ở G1 ⇒ vào dấu vân tay (G0 đổi sau đó
     # thì xác nhận G1 hết hiệu lực). Đề tài tự ghi đủ ở G1 ⇒ không có phần kế thừa ⇒ dấu KHÔNG đổi (không hạ cấp).
-    ke_thua = KD.ke_thua_dang_dung(meta)
+    # Sửa theo thẩm định #268: xác nhận G1 ghi TRƯỚC mốc luật giữ CÁCH TÍNH CŨ (không hạ cấp xác nhận đã ghi khi đề
+    # tài để trống trường không bắt buộc); chỉ trường BẮT BUỘC (quần thể, can thiệp/so sánh, kết cục chính) vào dấu.
+    ke_thua = {} if KD.xac_nhan_truoc_moc(_g1_meta(meta).get("reviewed_at")) else KD.ke_thua_dang_dung(meta)
     if ke_thua:
         return CS.dau_van_tay(g1, str(design.get("internal_code") or ""), meta.get("design_code"), ke_thua)
     return CS.dau_van_tay(g1, str(design.get("internal_code") or ""), meta.get("design_code"))

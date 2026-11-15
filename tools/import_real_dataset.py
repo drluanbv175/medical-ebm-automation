@@ -82,6 +82,11 @@ PII_HEADER_TOKENS = {
 BHYT_TOKEN_DINH_DANH = frozenset({"so", "ma", "the", "number", "num", "no", "id", "code", "sothe", "mathe"})
 
 
+_BHYT_COT_RE = re.compile(r"bhyt|bhxh")
+#: Mã số BHXH (10 chữ số) hoặc mã thẻ BHYT (2 chữ + 8–13 số) đứng riêng trong ô.
+_BHYT_MA_RE = re.compile(r"^\s*(?:[A-Za-z]{2}\d{8,13}|\d{10,13})\s*$")
+
+
 def la_ten_bhyt_dinh_danh(norm: str) -> bool:
     """Tên cột đã chuẩn hoá có phải SỐ/MÃ thẻ BHYT không (chỉ khi «bhyt» đi cùng token số/mã/thẻ)."""
     tok = set(str(norm or "").split("_"))
@@ -241,6 +246,17 @@ def _scan_csv(path: Path, *, max_scan_rows: int = 5000,
                         if not text:
                             continue
                         col_is_exempt_date = _normalize_header(col) in exempt_date_columns
+                        # 15/11/2026 (thẩm định #268): cột tên «bhyt/bhxh» là biến TÌNH TRẠNG, nhưng nếu ô chứa MÃ số
+                        # (BHXH 10 chữ số, mã thẻ 10–15 ký tự) thì vẫn là định danh — tên cột không còn chặn nên giá trị
+                        # phải chặn.
+                        if _BHYT_COT_RE.search(_normalize_header(col)) and _BHYT_MA_RE.match(text):
+                            issues.append({
+                                "severity": "blocker",
+                                "type": "value_pii:ma_bhyt_bhxh",
+                                "column": col,
+                                "row": row_count,
+                                "detail": "Cột BHYT/BHXH chứa mã số định danh; không lưu giá trị trong manifest.",
+                            })
                         for label, pattern in VALUE_PATTERNS.items():
                             if label == "date" and col_is_exempt_date:
                                 continue

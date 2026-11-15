@@ -108,7 +108,9 @@ def ke_thua_dang_dung(meta: Mapping[str, Any]) -> Dict[str, Any]:
     """Các giá trị G1 đang KẾ THỪA từ G0 (G1 vắng) — đưa vào dấu vân tay G1 để G0 đổi sau khi G1 chốt thì xác nhận G1
     hết hiệu lực. Đề tài đã tự ghi đủ ở G1 ⇒ {} ⇒ dấu vân tay KHÔNG đổi (không hạ cấp xác nhận cũ)."""
     ra: Dict[str, Any] = {}
-    for k in ("population", "intervention_or_exposure", "comparator", "secondary_outcomes", "research_question"):
+    # Chỉ trường BẮT BUỘC của G1-HUMAN-02/03/04 (thẩm định #268): research_question/secondary_outcomes không bắt buộc ⇒
+    # kế thừa để HIỂN THỊ nhưng không làm đổi dấu xác nhận.
+    for k in ("population", "intervention_or_exposure", "comparator"):
         v, nguon = gia_tri(meta, k)
         if nguon == "G0":
             ra[k] = v
@@ -117,6 +119,24 @@ def ke_thua_dang_dung(meta: Mapping[str, Any]) -> Dict[str, Any]:
         if nguon == "G0":
             ra[f"primary_outcome.{k}"] = kc[k]
     return ra
+
+
+MOC_LUAT = "2026-11-15"
+
+
+def xac_nhan_truoc_moc(reviewed_at: Any) -> bool:
+    """reviewed_at (ISO) TRƯỚC mốc luật kế thừa — xác nhận G1 cũ giữ dấu vân tay cách tính cũ.
+
+    Không parse được ⇒ False (dùng cách tính mới)."""
+    from datetime import datetime  # noqa: PLC0415
+
+    try:
+        luc = datetime.fromisoformat(str(reviewed_at or "").strip().replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    if luc.tzinfo is None:
+        luc = luc.replace(tzinfo=datetime.fromisoformat(MOC_LUAT + "T00:00:00+07:00").tzinfo)
+    return luc < datetime.fromisoformat(MOC_LUAT + "T00:00:00+07:00")
 
 
 def nhan_nguon(nguon: Optional[str]) -> str:

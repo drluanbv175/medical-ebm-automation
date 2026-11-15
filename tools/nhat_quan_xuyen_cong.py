@@ -270,7 +270,12 @@ def _nguong_quan_the(s: Any) -> set:
     """Các NGƯỠNG tiêu chí chọn trong mô tả quần thể: con số đi kèm dấu so sánh («≥18», «từ 18») hoặc đơn vị
     («3 tháng», «60 tuổi»). Con số trơn (tên bệnh viện «175», số mục «4.3», mã khoa «C1») KHÔNG phải ngưỡng."""
     ra = set()
-    for so_sanh, so, don_vi in _NGUONG_RE.findall(unicodedata.normalize("NFC", _van_ban(s)).lower()):
+    van = unicodedata.normalize("NFC", _van_ban(s)).lower()
+    for m in _NGUONG_RE.finditer(van):
+        so_sanh, so, don_vi = m.group(1) or "", m.group(2), m.group(3) or ""
+        # Ngày/tháng/năm («01/2026», «1/2026», «2026-01») KHÔNG phải ngưỡng tiêu chí (sửa theo thẩm định #268).
+        if van[m.end(2):m.end(2) + 1] in ("/", "-") or van[max(0, m.start(2) - 1):m.start(2)] in ("/", "-"):
+            continue
         if not (so_sanh or don_vi):
             continue
         so_sanh = {">=": "≥", "<=": "≤", "từ": "≥", "đủ": "≥", "ít nhất": "≥", "tối thiểu": "≥", "trên": ">",

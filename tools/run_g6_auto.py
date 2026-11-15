@@ -692,7 +692,8 @@ def doc_bien_sap_5(sap: str, ten_goc: dict) -> dict:
 _VAI_KHAC_NHOM = (("outcome", "kết cục"), ("time_col", "biến thời gian"), ("cluster_col", "biến cụm (SE theo chùm)"))
 
 
-def ap_vai_tro_ma_tran(v: dict, out_dir: Path, study: str, ten_goc: dict) -> Optional[str]:
+def ap_vai_tro_ma_tran(v: dict, out_dir: Path, study: str, ten_goc: dict,
+                       design_code: Optional[str] = None) -> Optional[str]:
     """Vai trò biến THEO MA TRẬN mục tiêu–biến (bác sĩ duyệt 15/11/2026: «G6 lấy vai trò biến từ ma trận/SAP, không tự
     đoán»). Trả lý do DỪNG (chuỗi) khi kết cục/phơi nhiễm vẫn không phải biến có thật; None khi đi tiếp được.
 
@@ -726,14 +727,15 @@ def ap_vai_tro_ma_tran(v: dict, out_dir: Path, study: str, ten_goc: dict) -> Opt
                 log.append(f"⚠️  SAP §2 (`{v.get('outcome')}`) LỆCH ma trận mục tiêu–biến (`{vt['ket_cuc']}`) — giữ SAP "
                            "đã khoá; thống nhất ở G3/G4 (SAP AMENDMENT hoặc sửa ma trận)")
         pn = vt.get("phoi_nhiem") or []
-        if pn and not sap_nhom:
-            if str(v.get("exposure") or "") != pn[0]:
-                log.append(f"✅ Biến phơi nhiễm/phân nhóm THEO MA TRẬN: {pn[0]} (thay biến dò: {v.get('exposure')})")
-            v["exposure"] = pn[0]
-        elif not pn and str(v.get("exposure") or "").lower() not in co and vt.get("yeu_to"):
-            v["exposure"] = vt["yeu_to"][0]
-            log.append(f"⚠️  Ma trận không khai biến phơi nhiễm chính — khuôn dùng yếu tố đầu tiên `{v['exposure']}` cho "
-                       "bảng phân tích; thống kê viên xác nhận theo SAP §4/§5")
+        # Sửa theo thẩm định #268: ma trận ĐẠT thì phơi nhiễm CHỈ lấy từ ma trận (hoặc SAP) — không giữ tên dò từ khoá
+        # dù tên đó có trong từ điển (đo: `job_group` lọt vào mô hình dù không có trong ma trận).
+        if not sap_nhom:
+            moi = pn[0] if pn else ((vt.get("yeu_to") or [None])[0])
+            if moi and str(v.get("exposure") or "") != moi:
+                log.append(f"✅ Biến phơi nhiễm/phân nhóm THEO MA TRẬN: {moi} (thay biến dò: {v.get('exposure')})"
+                           + ("" if pn else " — ma trận không khai phơi nhiễm chính, dùng yếu tố đầu tiên; thống kê viên "
+                              "xác nhận theo SAP §4/§5"))
+            v["exposure"] = moi
         hb_mt = [b for b in [*(vt.get("hiep_bien") or []), *(vt.get("yeu_to") or [])]
                  if b not in {v.get("exposure"), v.get("outcome")}]
         if hb_mt and not sap_hb:
@@ -748,8 +750,14 @@ def ap_vai_tro_ma_tran(v: dict, out_dir: Path, study: str, ten_goc: dict) -> Opt
     else:
         log.append("⚠️  Đề tài CHƯA có ma trận mục tiêu–biến ĐẠT (_ma-tran-muc-tieu-bien.csv) — vai trò biến chỉ còn theo "
                    "SAP; vai trò SAP không nêu thì KHÔNG đoán")
-    thieu = [f"{vai} = `{v.get(k)}`" for vai, k in (("kết cục", "outcome"), ("phơi nhiễm/phân nhóm", "exposure"))
-             if str(v.get(k) or "").lower() not in co]
+    # Định tính / tổng quan hệ thống không mô hình hoá kết cục–phơi nhiễm (khuôn riêng) — không đòi. Thiết kế mô tả thuần
+    # mà ma trận ĐẠT không khai phơi nhiễm/yếu tố: không đòi phơi nhiễm (sửa theo thẩm định #268).
+    if str(design_code or "").lower() in ("qualitative", "sr_ma"):
+        return None
+    can = [("kết cục", "outcome")]
+    if not vt or vt.get("phoi_nhiem") or vt.get("yeu_to") or sap_nhom:
+        can.append(("phơi nhiễm/phân nhóm", "exposure"))
+    thieu = [f"{vai} = `{v.get(k)}`" for vai, k in can if str(v.get(k) or "").lower() not in co]
     if thieu:
         return ("vai trò biến chưa xác định từ ma trận/SAP — " + "; ".join(thieu) + " KHÔNG có trong từ điển G5 "
                 "(G6 không đoán tên biến). Việc tiếp: agent bien-so-nghien-cuu hoàn tất _ma-tran-muc-tieu-bien.csv "
@@ -3911,7 +3919,7 @@ def main():
     # THÊM 15/11/2026 (giả lập RCT lần 2, N6): biến phân nhóm + hiệp biến THEO SAP §5 đã khoá — script R, CLI Python
     # và cú pháp SPSS xem trước cùng đọc `v`. SAP chưa điền/viết văn xuôi ⇒ giữ biến dò từ dictionary (log A7 nói rõ).
     ap_bien_sap_5(v, sap_text, ten_goc)
-    _ly_do_vai_tro = ap_vai_tro_ma_tran(v, out, study, ten_goc)
+    _ly_do_vai_tro = ap_vai_tro_ma_tran(v, out, study, ten_goc, design_code)
     if _ly_do_vai_tro:
         print(f"\n🚧 G6 DỪNG: {_ly_do_vai_tro}")
         for _dong in v.get("detection_log") or []:

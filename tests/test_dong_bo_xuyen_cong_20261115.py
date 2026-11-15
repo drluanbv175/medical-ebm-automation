@@ -165,27 +165,38 @@ def test_g3_auto_19_review_khi_thieu_ma_tran_pass_khi_dat(tmp_path):
     assert G3Q._tieu_chi_ma_tran(STUDY, d, meta)["status"] == "PASS"
 
 
+def _so_cai_gia(d, monkeypatch, ban_ghi):
+    """Sổ cái tổng hợp + bản ghi «có thẩm quyền» giả (thay xác minh chữ ký) — ban_ghi=None ⇒ bất thường/không có."""
+    (d / "approval_ledger.json").write_text(json.dumps([{"gate_id": "G4"}]), encoding="utf-8", newline="\n")
+    monkeypatch.setattr(GC, "_latest_authoritative_record",
+                        lambda so, g, study, root: (ban_ghi if g == "G4" else None))
+
+
 def test_g3_auto_19_khong_ha_cap_de_tai_da_ky_g4_truoc_moc(tmp_path, monkeypatch):
-    """Luật mới không hạ cấp quyết định đã ký: G4 ký trước mốc ⇒ PASS kèm «MIỄN TRỪ … VẪN THIẾU»."""
+    """Luật mới không hạ cấp quyết định đã ký: G4 ký (bản ghi đang hiệu lực) trước mốc ⇒ PASS kèm «MIỄN TRỪ … VẪN
+    THIẾU»."""
     d = _de_tai(tmp_path)
-    (d / "approval_ledger.json").write_text(json.dumps([{"gate_id": "G4", "decision": "APPROVED",
-                                                          "timestamp_utc": "2026-10-17T03:00:00+00:00"}]),
-                                            encoding="utf-8", newline="\n")
-    monkeypatch.setattr(GC, "ledger_approved", lambda g, *a, **k: g == "G4")
+    _so_cai_gia(d, monkeypatch, {"decision": "APPROVED", "timestamp_utc": "2026-10-17T03:00:00+00:00"})
     c = G3Q._tieu_chi_ma_tran(STUDY, d, MT.doc_meta(d))
     assert c["status"] == "PASS" and "MIỄN TRỪ" in c["evidence"] and "VẪN THIẾU" in c["evidence"]
-    # chữ ký KHÔNG hợp lệ ⇒ không miễn trừ (fail-closed)
-    monkeypatch.setattr(GC, "ledger_approved", lambda g, *a, **k: False)
+    # bản ghi không xác minh được (bất thường) ⇒ không miễn trừ (fail-closed)
+    _so_cai_gia(d, monkeypatch, None)
     assert G3Q._tieu_chi_ma_tran(STUDY, d, MT.doc_meta(d))["status"] == "REVIEW"
 
 
-def test_g3_auto_19_ky_sau_moc_khong_mien_tru(tmp_path, monkeypatch):
+@pytest.mark.parametrize("ban_ghi", [
+    {"decision": "APPROVED", "timestamp_utc": "2026-11-20T03:00:00+00:00"},  # ký sau mốc
+    {"decision": "REJECTED", "timestamp_utc": "2026-10-17T03:00:00+00:00"},  # đã thu hồi
+    {"decision": "APPROVED", "timestamp_utc": ""},                            # không có thời điểm
+    {"decision": "APPROVED", "timestamp_utc": "2026-10-17"},                  # không có múi giờ
+    {"decision": "APPROVED", "timestamp_utc": "2026-10-17T03:00:00+00:00", "is_synthetic": True},
+])
+def test_mien_tru_fail_closed(tmp_path, monkeypatch, ban_ghi):
+    """Thẩm định #268: miễn trừ chỉ khi bản ghi ĐANG HIỆU LỰC là APPROVED, không synthetic, thời điểm hợp lệ trước
+    mốc."""
     d = _de_tai(tmp_path)
-    (d / "approval_ledger.json").write_text(json.dumps([{"gate_id": "G4", "decision": "APPROVED",
-                                                          "timestamp_utc": "2026-11-20T03:00:00+00:00"}]),
-                                            encoding="utf-8", newline="\n")
-    monkeypatch.setattr(GC, "ledger_approved", lambda g, *a, **k: g == "G4")
-    assert G3Q._tieu_chi_ma_tran(STUDY, d, MT.doc_meta(d))["status"] == "REVIEW"
+    _so_cai_gia(d, monkeypatch, ban_ghi)
+    assert MT.da_ky_truoc_moc(d, STUDY)[0] is False
 
 
 # ───────────────────────────── G5 ─────────────────────────────
@@ -475,3 +486,134 @@ def test_g6_sap_da_khoa_thang_ma_tran_khi_lech(tmp_path):
     v = {"outcome": "tt1", "exposure": "tuoi", "covariates": [], "detection_log": ["✅ Kết cục chính THEO SAP §2: tt1"]}
     assert RG6.ap_vai_tro_ma_tran(v, d, STUDY, _ten_goc(BIEN_DUNG)) is None
     assert v["outcome"] == "tt1" and any("LỆCH ma trận" in x for x in v["detection_log"])
+
+
+# ───────────────────────────── sửa theo thẩm định #268 ─────────────────────────────
+@pytest.mark.parametrize("loai,ma", [
+    ("Thứ hạng (ordinal) 5 mức Likert — GIỮ nguyên thứ hạng trong mô hình chính; ngưỡng nhị phân thứ cấp", "thu_tu"),
+    ("Liên tục (điểm 0–100); phân tích phụ nhị phân", "lien_tuc"),
+    ("Nhị phân (tuân thủ/không)", "nhi_phan"),
+    ("nhị phân hoặc liên tục", None),
+])
+def test_kieu_ket_cuc_doc_menh_de_chinh(loai, ma):
+    meta = {"gate_params": {"G1": {"primary_outcome": {"name": "x", "type": loai}}}}
+    assert MT.kieu_ket_cuc_g1(meta) == ma
+
+
+def test_tach_yeu_to_khong_lay_ten_co_so_va_tien_to_mt():
+    assert MT.tach_yeu_to("MT1 (mô tả): Xác định mức hài lòng tại Trung tâm Khám bệnh, Điều trị theo yêu cầu C1, "
+                          "Bệnh viện Quân y 175") == []
+    assert MT.tach_yeu_to("MT2 (phân tích): Đánh giá một số yếu tố liên quan đến hài lòng: tuổi, giới tại khoa A") \
+        == ["tuổi", "giới"]
+
+
+def test_khop_khai_niem_hai_chieu_khong_xanh_gia():
+    assert not MT.khop_khai_niem("số loại thuốc", "thuốc")
+    assert not MT.khop_khai_niem("tuổi", MUC_TIEU[1]), "khái niệm là nguyên câu mục tiêu không được phủ mọi yếu tố"
+    assert MT.khop_khai_niem("số lần dùng thuốc/ngày", "Số lần dùng thuốc mỗi ngày")
+
+
+def test_ma_tran_dinh_tinh_khong_doi_ket_cuc_chinh(tmp_path):
+    d = _de_tai(tmp_path)
+    m = MT.doc_meta(d)
+    m["design_code"] = "qualitative"
+    m["gate_params"]["G1"]["objectives"] = ["Khám phá trải nghiệm chờ khám của người bệnh"]
+    (d / "study_meta.json").write_text(json.dumps(m, ensure_ascii=False), encoding="utf-8", newline="\n")
+    _ghi_bo_bien(d, [("record_id", "text", "Mã", "", "", ""), ("ban_go_bang", "notes", "Bản gỡ băng", "", "", "")])
+    _ghi_ma_tran(d, [("1", "trải nghiệm chờ khám", "mo_ta", "ban_go_bang", "van_ban", "", "phỏng vấn sâu", "§4")])
+    assert MT.kiem(d, STUDY)["trang_thai"] == MT.TRANG_THAI_DAT
+
+
+def _xuat_dung(tmp_path):
+    d = _de_tai(tmp_path)
+    _ghi_bo_bien(d)
+    _ghi_ma_tran(d)
+    td = d / f"G5_REDCap_dictionary_{STUDY}.csv"
+    td.write_text((d / MT.TEP_BO_BIEN).read_text(encoding="utf-8"), encoding="utf-8", newline="\n")
+    return d, td, [b[0] for b in BIEN_DUNG]
+
+
+def test_e4_tu_dien_lech_bo_bien_bi_chan(tmp_path):
+    """Đột biến M1 của người duyệt sống sót — ghim: từ điển G5 ≠ bộ biến riêng ⇒ E4 từ chối."""
+    d, td, cot = _xuat_dung(tmp_path)
+    td.write_text(td.read_text(encoding="utf-8") + "bien_la,phieu,,text,Biến lạ\n", encoding="utf-8", newline="\n")
+    assert any("lệch bộ biến" in x for x in MT.kiem_noi_dung_xuat(d, STUDY, td, [*cot, "bien_la"]))
+
+
+def test_e4_bien_van_ban_va_checkbox_khong_bi_chan_oan(tmp_path):
+    """M6 (biến `van_ban` không vào .sav) + checkbox REDCap xuất thành `<bien>___<mã>`."""
+    d = _de_tai(tmp_path)
+    bien = [*BIEN_DUNG, ("y_kien", "notes", "Ý kiến đóng góp (văn bản tự do)", "", "", "")]
+    _ghi_bo_bien(d, bien)
+    _ghi_ma_tran(d, [*MA_TRAN_DUNG, ("2", "ý kiến đóng góp", "mo_ta", "y_kien", "van_ban", "", "phiếu", "")])
+    td = d / f"G5_REDCap_dictionary_{STUDY}.csv"
+    td.write_text((d / MT.TEP_BO_BIEN).read_text(encoding="utf-8"), encoding="utf-8", newline="\n")
+    # .sav bỏ biến notes (`y_kien`) và tách checkbox thành `ho_tro_gd___1` — không phải «thiếu biến».
+    cot = [b[0] for b in BIEN_DUNG if b[0] != "ho_tro_gd"] + ["ho_tro_gd___1"]
+    assert MT.kiem_noi_dung_xuat(d, STUDY, td, cot) == []
+
+
+def test_quan_the_bo_tu_khong_nguong_la_can_xem():
+    """Đột biến M5 (quay về phủ đối xứng) sống sót — ghim chiều cổng khi mất từ mà không mất ngưỡng số."""
+    nguon = [{"cong": "G0", "noi": "G0",
+              "gia_tri": "Người bệnh THA điều trị tại phòng khám nội tim mạch bệnh viện tỉnh"},
+             {"cong": "G1", "noi": "G1", "gia_tri": "Người bệnh THA"}]
+    assert NQ._so_quan_the_hai_chieu(nguon)["muc"] == NQ.MUC_CAN_XEM
+
+
+def test_quan_the_ngay_thang_khong_phai_nguong():
+    nguon = [{"cong": "G0", "noi": "G0", "gia_tri": "Người bệnh khám từ 01/2026 đến 06/2026"},
+             {"cong": "G1", "noi": "G1", "gia_tri": "Người bệnh khám từ tháng 1/2026 đến tháng 6/2026"}]
+    assert NQ._so_quan_the_hai_chieu(nguon)["muc"] != NQ.MUC_LECH_MEM
+
+
+def test_phieu_ma_c1_khong_khop_c1a(tmp_path):
+    d = _de_tai(tmp_path)
+    _ghi_bo_bien(d)
+    _ghi_ma_tran(d, [("1", "Tỷ lệ tuân thủ dùng thuốc hạ áp", "ket_cuc_chinh", "tuan_thu", "nhi_phan", "C1", "x",
+                      "§4")])
+    (d / f"G2_A3_ETHICS_PACKAGE_{STUDY}.md").write_text("Khoa C1a — câu hỏi khác\n", encoding="utf-8", newline="\n")
+    assert MT.kiem_phieu_hoi_dong(d, STUDY)["trang_thai"] == "CHUA_DAT"
+
+
+def test_g6_dinh_tinh_va_mo_ta_thuan_khong_doi_phoi_nhiem(tmp_path):
+    d = _de_tai(tmp_path)
+    v = {"outcome": "tuan_thu", "exposure": "exposure", "covariates": [], "detection_log": []}
+    assert RG6.ap_vai_tro_ma_tran(dict(v), d, STUDY, _ten_goc(BIEN_DUNG), "qualitative") is None
+    _ghi_bo_bien(d)
+    _ghi_ma_tran(d, [MA_TRAN_DUNG[0]])  # chỉ kết cục chính — mô tả thuần
+    m = MT.doc_meta(d)
+    m["gate_params"]["G1"]["objectives"] = ["Xác định tỷ lệ tuân thủ dùng thuốc hạ áp"]
+    (d / "study_meta.json").write_text(json.dumps(m, ensure_ascii=False), encoding="utf-8", newline="\n")
+    assert RG6.ap_vai_tro_ma_tran(dict(v), d, STUDY, _ten_goc(BIEN_DUNG), "cross_sectional") is None
+
+
+def test_g6_ma_tran_dat_khong_giu_phoi_nhiem_do_tu_khoa(tmp_path):
+    """Đo của người duyệt: `job_group` (dò từ khoá, có trong từ điển, KHÔNG có trong ma trận) lọt vào mô hình."""
+    d = _de_tai(tmp_path)
+    _ghi_bo_bien(d, [*BIEN_DUNG, ("job_group", "radio", "Nhóm nghề", "1, A | 2, B", "", "")])
+    _ghi_ma_tran(d)
+    v = {"outcome": "tuan_thu", "exposure": "job_group", "covariates": [], "detection_log": []}
+    tg = _ten_goc([*BIEN_DUNG, ("job_group",)])
+    assert RG6.ap_vai_tro_ma_tran(v, d, STUDY, tg, "cross_sectional") is None
+    assert v["exposure"] != "job_group" and v["exposure"] == "tuoi"
+
+
+def test_dau_van_tay_g1_xac_nhan_truoc_moc_giu_cach_tinh_cu():
+    import cong_song as CS  # noqa: PLC0415
+
+    g1 = {"population": "P", "primary_outcome": {"name": "O", "measure": "M", "timepoint": "T", "type": "x"},
+          "reviewed_at": "2026-10-20T09:00:00+07:00"}   # thiếu intervention/comparator ⇒ sẽ kế thừa G0
+    meta = {"design_code": "cross_sectional", "gate_params": {"G0": dict(G0_CHOT), "G1": g1}}
+    cu = CS.dau_van_tay({k: v for k, v in g1.items() if k not in G1Q._KHOA_XAC_NHAN_G1}, "cross_sectional",
+                        "cross_sectional")
+    assert G1Q.dau_van_tay_g1(meta, {"internal_code": "cross_sectional"}) == cu
+    g1["reviewed_at"] = "2026-11-20T09:00:00+07:00"
+    assert G1Q.dau_van_tay_g1(meta, {"internal_code": "cross_sectional"}) != cu
+
+
+def test_cot_bhyt_chua_ma_so_van_bi_chan(tmp_path):
+    p = tmp_path / "d.csv"
+    p.write_text("record_id,bhyt\nZ1,1234567890\nZ2,1\n", encoding="utf-8", newline="\n")
+    loai = {(i["type"], i["row"]) for i in RDI._scan_csv(p)["issues"]}
+    assert ("value_pii:ma_bhyt_bhxh", 1) in loai and not any(r == 2 for t, r in loai if t.startswith("value_pii"))
