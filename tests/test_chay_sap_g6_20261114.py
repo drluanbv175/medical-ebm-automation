@@ -155,6 +155,8 @@ def _vao_tien_trinh(monkeypatch, goc: Path, d: Path):
     monkeypatch.setattr(RSA, "BASE", goc)
     monkeypatch.setattr(RSA, "_load_checkpoint", lambda s, g: dict(locked))
     monkeypatch.setattr(RSA, "_ledger_approved", lambda *a, **k: True)
+    # N1 (14/11/2026, #255): G6 xác định G4 đã khoá theo TRẠNG THÁI SỐNG (_g4_khoa_song), không đọc g4_status.
+    monkeypatch.setattr(RSA, "_g4_khoa_song", lambda study: (True, "giả lập: G4 khoá sống"))
     monkeypatch.setattr(RSA.GC, "g2_quality_contract_satisfied", lambda *a, **k: True)
     monkeypatch.setattr(RSA.GC, "resolve_design_code", lambda *a, **k: ("cross_sectional", None))
     monkeypatch.setattr(RSA.G5Q, "evaluate_study", lambda *a, **k: {"status": RSA.G5Q.STATUS_LOCKED})
