@@ -20,6 +20,15 @@ import pytest
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "tools"))
 import cau_noi_spss as C  # noqa: E402
 
+
+@pytest.fixture(autouse=True)
+def _co_lap_khoi_e4_noi_dung(monkeypatch):
+    """15/11/2026: tệp này kiểm CƠ CHẾ (khứ hồi/cú pháp) với từ điển ĐỒ GÁ dựng riêng — không phải đề tài có bộ biến +
+    ma trận. Phép E4 (nội dung biến ↔ mục tiêu, cau_noi_spss.kiem_noi_dung_bien) có test riêng, kể cả lời gọi thật:
+    tests/test_dong_bo_xuyen_cong_20261115.py. Cô lập ở đây KHÔNG nới assertion nào của tệp."""
+    monkeypatch.setattr(C, "kiem_noi_dung_bien", lambda *a, **k: None)
+
+
 FX = Path(__file__).resolve().parent / "fixtures" / "spss_oxml"
 ANH_XA = {
     "record_id": "ID",

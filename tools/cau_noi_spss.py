@@ -1188,6 +1188,28 @@ def tim_du_lieu_khoa(study: str) -> tuple[Path, dict]:
     return p, man
 
 
+def kiem_noi_dung_bien(d: Path, study: str, td_p: Path, ke: list) -> None:
+    """E4 — kiểm NỘI DUNG biến trước khi xuất .sav/.rds (bác sĩ duyệt 15/11/2026).
+
+    E2/E3 chỉ chứng minh .sav/.rds trung thành với từ điển; giả lập trung thực «tuân thủ thuốc hạ áp» cho thấy cả ba
+    báo «✓ khớp» trên một từ điển SAI (bộ mẫu chung: thiếu 8 câu tuân thủ, 6/9 yếu tố mục tiêu, kết cục chính là ô chữ
+    giữ chỗ). Nay từ chối khi từ điển còn biến giữ chỗ, dựng từ bộ mẫu chung, lệch bộ biến riêng, ma trận mục
+    tiêu–biến chưa ĐẠT, hoặc biến của ma trận vắng trong tệp xuất (tools/ma_tran_muc_tieu_bien.py)."""
+    try:
+        import ma_tran_muc_tieu_bien as MT  # noqa: PLC0415
+    except Exception as e:  # noqa: BLE001 — không kiểm được nội dung thì không xuất (fail-closed)
+        raise KhongDoDuoc(f"không nạp được bộ kiểm ma trận: {type(e).__name__}") from e
+    loi = MT.kiem_noi_dung_xuat(Path(d), study, Path(td_p), [b["cot"] for b in ke if not b["bo"]])
+    if loi:
+        raise TuChoi(
+            "E4 — NỘI DUNG BIẾN chưa đúng mục tiêu đề tài (khớp từ điển KHÔNG đủ): "
+            + " · ".join(loi[:6])
+            + f". Sửa: agent bien-so-nghien-cuu hoàn tất bộ biến + ma trận; kiểm python tools/ma_tran_muc_tieu_bien.py "
+            f"kiem --study {study}"
+        )
+    print("✓ Nội dung biến (E4): từ điển từ bộ biến riêng, ma trận mục tiêu–biến ĐẠT, đủ biến của ma trận")
+
+
 def lenh_xuat_sav(args) -> int:
     d = thu_muc_de_tai(args.study)
     if args.data:
@@ -1223,6 +1245,7 @@ def lenh_xuat_sav(args) -> int:
             + ". Thay xuống dòng ở nguồn (nhap_lieu_excel báo «xuong_dong_trong_o») rồi chạy lại"
         )
     ke, canh_bao, de_xuat = ke_hoach_bien(tieu_de, tk, td, mt, giu_ghi_chu=getattr(args, "giu_ghi_chu", False))
+    kiem_noi_dung_bien(d, args.study, td_p, ke)
     ra = d / "spss"
     ra.mkdir(parents=True, exist_ok=True)
     hau_to = "_BAN-NHAP" if args.ban_nhap else "_khoa"

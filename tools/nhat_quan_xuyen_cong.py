@@ -256,6 +256,69 @@ def _bao_ham(con: Any, cha: Any) -> float:
     return (len(tc & _tu(cha)) / len(tc)) if tc else 0.0
 
 
+#: Ngưỡng phủ khi so quần thể theo CHIỀU CỔNG (bản trước → bản sau): dưới ngưỡng ⇒ cần xem.
+NGUONG_PHU_QUAN_THE = 0.7
+
+
+_NGUONG_RE = re.compile(
+    r"(?:(≥|≤|>=|<=|>|<|từ|đủ|trên|dưới|ít nhất|tối thiểu|tối đa|không quá|hơn)\s*)?(\d+(?:[.,]\d+)?)\s*"
+    r"(tuổi|tháng|năm|tuần|ngày|giờ|kg|mmhg|%|lần)?",
+    re.IGNORECASE)
+
+
+def _nguong_quan_the(s: Any) -> set:
+    """Các NGƯỠNG tiêu chí chọn trong mô tả quần thể: con số đi kèm dấu so sánh («≥18», «từ 18») hoặc đơn vị
+    («3 tháng», «60 tuổi»). Con số trơn (tên bệnh viện «175», số mục «4.3», mã khoa «C1») KHÔNG phải ngưỡng."""
+    ra = set()
+    for so_sanh, so, don_vi in _NGUONG_RE.findall(unicodedata.normalize("NFC", _van_ban(s)).lower()):
+        if not (so_sanh or don_vi):
+            continue
+        so_sanh = {">=": "≥", "<=": "≤", "từ": "≥", "đủ": "≥", "ít nhất": "≥", "tối thiểu": "≥", "trên": ">",
+                   "hơn": ">",
+                   "dưới": "<", "tối đa": "≤", "không quá": "≤"}.get(so_sanh, so_sanh)
+        ra.add(f"{so_sanh}{so.replace(',', '.')}{(' ' + don_vi) if don_vi else ''}".strip())
+    return ra
+
+
+def _so_quan_the_hai_chieu(nguon_qt: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """So quần thể THEO CẢ HAI CHIỀU (bác sĩ duyệt 15/11/2026, kiểm đồng bộ xuyên cổng).
+
+    Bản cũ lấy max(bao_hàm(a⊂b), bao_hàm(b⊂a)) cho mỗi cặp ⇒ bản sau CHỈ cần là tập con của bản trước là «khớp 1.00»:
+    G1 bỏ hẳn «đang điều trị ≥3 tháng… tại phòng khám nội tim mạch» của G0 vẫn 🟢 (đo trên giả lập
+    ZZSIM-DONGBO-TUANTHU-THA-20261115). Nay xét chiều CỔNG: từ của bản TRƯỚC có còn trong bản SAU không.
+      • mất NGƯỠNG SỐ (con số/so sánh ≥ ≤ của bản trước vắng ở bản sau) ⇒ LỆCH MỀM — đổi tiêu chí chọn là đổi quần thể,
+        chủ nhiệm giải trình như đổi kết cục (G10-AUTO-11 giữ REVIEW);
+      • phủ < NGUONG_PHU_QUAN_THE ⇒ CẦN XEM, kèm danh sách từ bị mất (không đổi trạng thái cổng — diễn đạt khác nhau tự
+        nhiên).
+    Nguồn đến theo thứ tự cổng (G0 → G1 → G2), nên cặp (i, j>i) đúng chiều trước → sau."""
+    mat_so: List[str] = []
+    ghi: List[str] = []
+    thap = 1.0
+    for i, a in enumerate(nguon_qt):
+        for b in nguon_qt[i + 1:]:
+            phu = _bao_ham(a["gia_tri"], b["gia_tri"])
+            thap = min(thap, phu)
+            thieu = sorted(_tu(a["gia_tri"]) - _tu(b["gia_tri"]))
+            # So theo CON SỐ của ngưỡng: «≥18» (G0) và «đủ 18 tuổi» (G1) là cùng ngưỡng — diễn đạt khác không phải mất;
+            # con số của ngưỡng bản trước VẮNG HẲN ở bản sau («≥3 tháng» bị bỏ) mới là mất ngưỡng.
+            so_b = set(re.findall(r"\d+(?:[.,]\d+)?", _van_ban(b["gia_tri"]).replace(",", ".")))
+            so_thieu = sorted(t for t in _nguong_quan_the(a["gia_tri"])
+                              if (re.search(r"\d+(?:\.\d+)?", t) or [None])[0] not in so_b)
+            if so_thieu:
+                mat_so.append(f"{b['cong']} mất ngưỡng của {a['cong']}: {', '.join(so_thieu)}")
+            if phu < NGUONG_PHU_QUAN_THE and thieu:
+                ghi.append(f"{b['cong']} thiếu so với {a['cong']} (phủ {phu:.2f}): {', '.join(thieu[:12])}")
+    if mat_so:
+        return _ket("quan_the", "Quần thể nghiên cứu", nguon_qt, MUC_LECH_MEM,
+                    "; ".join(mat_so + ghi) + " — tiêu chí chọn bị mất/đổi giữa các cổng; thống nhất tại cổng gốc "
+                    "hoặc chủ nhiệm giải trình")
+    if ghi:
+        return _ket("quan_the", "Quần thể nghiên cứu", nguon_qt, MUC_CAN_XEM,
+                    "; ".join(ghi) + " — chủ nhiệm đọc lại xem có tiêu chí nào bị mất")
+    return _ket("quan_the", "Quần thể nghiên cứu", nguon_qt, MUC_KHOP,
+                f"phủ theo chiều cổng thấp nhất {thap:.2f} (từ của bản trước còn trong bản sau)")
+
+
 def _muc_cao_nhat(muc: Iterable[str]) -> str:
     ds = list(muc)
     return max(ds, key=lambda m: _THU_TU_MUC[m]) if ds else MUC_CHUA_DU
@@ -576,18 +639,17 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
     nguon_qt = [n for n in (
         {"cong": "G0", "noi": "study_meta.gate_params.G0.population",
          "gia_tri": _van_ban(_gp(meta, "G0").get("population"))},
-        {"cong": "G1", "noi": "study_meta.gate_params.G1.population",
-         "gia_tri": _van_ban(_gp(meta, "G1").get("population"))},
+        # 15/11/2026: phía G1 gồm cả tiêu chí chọn vào — G1 hay chuyển ngưỡng («≥18 tuổi») từ câu quần thể sang danh
+        # sách tiêu chí; so riêng câu quần thể sẽ báo nhầm «mất ngưỡng» (phép so hai chiều).
+        {"cong": "G1", "noi": "study_meta.gate_params.G1.population + inclusion_criteria",
+         "gia_tri": " ".join(x for x in (_van_ban(_gp(meta, "G1").get("population")),
+                                         _van_ban(_gp(meta, "G1").get("inclusion_criteria"))) if x)},
         {"cong": "G2", "noi": "đăng ký TRDS mục 14 (tiêu chí chọn)", "gia_tri": tc_txt},
     ) if _co_that(n["gia_tri"])]
     if len(nguon_qt) < 2:
         ket.append(_ket("quan_the", "Quần thể nghiên cứu", nguon_qt, MUC_CHUA_DU, "chỉ có ≤ 1 nơi ghi — chưa đủ để so"))
     else:
-        thap = min(max(_bao_ham(a["gia_tri"], b["gia_tri"]), _bao_ham(b["gia_tri"], a["gia_tri"]))
-                   for i, a in enumerate(nguon_qt) for b in nguon_qt[i + 1:])
-        ket.append(_ket("quan_the", "Quần thể nghiên cứu", nguon_qt, MUC_KHOP if thap >= 0.5 else MUC_CAN_XEM,
-                        f"độ bao hàm thấp nhất giữa các bản {thap:.2f}" + ("" if thap >= 0.5 else
-                        " — các bản mô tả quần thể khác xa nhau, chủ nhiệm đọc lại cho thống nhất")))
+        ket.append(_so_quan_the_hai_chieu(nguon_qt))
 
     # 6) Cỡ mẫu tính cho kết cục nào (chỉ báo).
     powered = _van_ban(_gp(meta, "G3").get("powered_for_outcome"))

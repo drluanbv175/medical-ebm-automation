@@ -104,7 +104,8 @@ def test_chu_co_dieu_kien_theo_thiet_ke(thiet_ke, nhiem_vu):
 
 def test_nhiem_vu_khong_tieu_chi_tinh_ca_lua_chon_co_dieu_kien():
     assert "G2-T2" not in HD.nhiem_vu_khong_tieu_chi("G2"), "G2-T2 là lựa chọn của G2-AUTO-07"
-    assert HD.nhiem_vu_khong_tieu_chi("G3") == ["G3-T2", "G3-T3"]
+    # 15/11/2026: G3-T2 sở hữu G3-AUTO-19 (ma trận mục tiêu → biến) ⇒ không còn là nhiệm vụ không tiêu chí.
+    assert HD.nhiem_vu_khong_tieu_chi("G3") == ["G3-T3"]
 
 
 # ── ③ đánh giá chéo trong bảng trách nhiệm ───────────────────────────────────────────────────────────────────────────

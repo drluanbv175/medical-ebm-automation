@@ -700,6 +700,33 @@ def _cung_gia_tri(a: Any, b: Any) -> bool:
     return str(a).strip().casefold() == str(b).strip().casefold()
 
 
+def _tieu_chi_ma_tran(study: str, out_dir: Path, meta: Mapping[str, Any]) -> dict[str, str]:
+    """G3-AUTO-19 — ma trận mục tiêu–biến ĐẠT; không đo được ⇒ REVIEW (không bao giờ «đạt» im lặng)."""
+    nhan = "Ma trận mục tiêu → biến → câu hỏi → phân tích SAP đủ, khớp bộ biến và đúng kiểu"
+    hanh_dong = (f"Dựng khung: python tools/ma_tran_muc_tieu_bien.py mau --study {study} --ghi; agent "
+                 "bien-so-nghien-cuu điền biến/kiểu/câu hỏi/mục SAP cho TỪNG yếu tố mục tiêu nêu; kiểm: python "
+                 f"tools/ma_tran_muc_tieu_bien.py kiem --study {study}")
+    try:
+        import ma_tran_muc_tieu_bien as MT  # noqa: PLC0415
+
+        kq = MT.kiem(Path(out_dir), study, meta=meta)
+    except Exception as exc:  # noqa: BLE001 — bộ kiểm hỏng phải hiện ra
+        return _criterion("G3-AUTO-19", nhan, "REVIEW", f"không chạy được bộ kiểm ma trận: {type(exc).__name__}",
+                          hanh_dong)
+    if kq["trang_thai"] == MT.TRANG_THAI_DAT:
+        t = kq["tom_tat"]
+        return _criterion("G3-AUTO-19", nhan, "PASS",
+                          f"{t['so_dong']} dòng phủ {t['so_muc_tieu']} mục tiêu; {t['so_canh_bao']} cảnh báo",
+                          hanh_dong)
+    loi = "; ".join(x["noi_dung"] for x in kq["loi"][:4])
+    mien, ly_do = MT.da_ky_truoc_moc(Path(out_dir), study, repo_root=Path(out_dir).parent.parent)
+    if mien:
+        return _criterion("G3-AUTO-19", nhan, "PASS",
+                          f"MIỄN TRỪ ({ly_do} — luật mới không hạ cấp quyết định đã ký); VẪN THIẾU: {loi} — phải bổ "
+                          "sung trước khi khoá dữ liệu G5 (G5-AUTO-11)", hanh_dong)
+    return _criterion("G3-AUTO-19", nhan, "REVIEW", loi or kq["trang_thai"], hanh_dong)
+
+
 def evaluate_g3_quality(
     *,
     study: str,
@@ -1489,6 +1516,13 @@ def evaluate_g3_quality(
             "Nâng N, hoặc ghi rõ chấp nhận giảm lực kèm hệ quả; ghi confirmed_n_method cho thiết kế không dùng power.",
         )
     )
+
+    # ── G3-AUTO-19 — ma trận MỤC TIÊU → BIẾN → CÂU HỎI → PHÂN TÍCH (bác sĩ duyệt 15/11/2026) ────────────────────────
+    # G3 là cổng «Cỡ mẫu & bộ biến số» nhưng chưa từng đọc bộ biến: giả lập trung thực ZZSIM-DONGBO-TUANTHU-THA-20261115
+    # thiếu 2 yếu tố của Mục tiêu 2 + kết cục chính nhị phân khai kiểu text vẫn qua mọi cổng, rồi SPSS/R báo «✓ khớp»
+    # trên bộ biến sai. Nay G3 đòi ma trận ĐẠT (tools/ma_tran_muc_tieu_bien.py). Đề tài đã KÝ G4/G10 trước mốc luật
+    # không bị hạ cấp ở đây (luật mới không hạ cấp quyết định đã ký) — G5 vẫn đòi ma trận trước khi khoá dữ liệu.
+    automatic.append(_tieu_chi_ma_tran(study, artifact_path.parent, meta))
 
     # ── G3-AUTO-14 — tái lập được ──────────────────────────────────────────
     # audit_research_gates coi gate_params.G3.effect_size + p_event là metadata

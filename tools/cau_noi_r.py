@@ -1382,6 +1382,7 @@ def lenh_xuat_rds(args) -> int:
     td, mt = S.doc_tu_dien(td_p), S.doc_ma_thieu(mt_p)
     tieu_de, tk, n = S.quet_csv(csv_p)
     ke, canh_bao, _ = S.ke_hoach_bien(tieu_de, tk, td, mt, giu_ghi_chu=getattr(args, "giu_ghi_chu", False))
+    S.kiem_noi_dung_bien(d, args.study, td_p, ke)  # E4 — nội dung biến đúng mục tiêu (15/11/2026)
     r_dir = d / "r"
     r_dir.mkdir(parents=True, exist_ok=True)
     hau_to = "_BAN-NHAP" if args.ban_nhap else "_khoa"

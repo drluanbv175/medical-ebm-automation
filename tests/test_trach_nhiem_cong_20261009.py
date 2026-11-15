@@ -39,6 +39,17 @@ BO_BIEN_HOP_LE = "\n".join([
     'tuoi,f,,text,Tuổi,,,integer,18,120,,y',
     'gioi,f,,radio,Giới,"1, Nam | 2, Nữ",,,,,,y',
 ]) + "\n"
+# 15/11/2026 (G3-T2 có thêm hợp đồng ma trận mục tiêu → biến): ma trận hợp lệ cho đúng BO_BIEN_HOP_LE + mục tiêu đồ gá.
+MA_TRAN_HOP_LE = ("muc_tieu,khai_niem,vai_tro,bien,kieu,cau_hoi,cong_cu,phan_tich_sap,ghi_chu\n"
+                  "1,tỷ lệ theo giới,ket_cuc_chinh,gioi,nhi_phan,A2,phiếu,§4,\n"
+                  "1,tuổi,mo_ta,tuoi,lien_tuc,A1,phiếu,§3,\n")
+META_MUC_TIEU = {"gate_params": {"G1": {"objectives": ["Mô tả tỷ lệ theo giới và tuổi của người tham gia"]}}}
+
+
+def ghi_ma_tran_hop_le(out: Path) -> None:
+    (out / "_ma-tran-muc-tieu-bien.csv").write_text(MA_TRAN_HOP_LE, encoding="utf-8", newline="\n")
+    (out / "study_meta.json").write_text(json.dumps(META_MUC_TIEU, ensure_ascii=False), encoding="utf-8",
+                                         newline="\n")
 
 
 def _ma_bo_cham(gate: str) -> set:
@@ -60,7 +71,9 @@ def test_phan_cong_phu_dung_tap_ma_bo_cham(gate):
 
 def test_tong_so_tieu_chi_da_gan():
     # 14/11/2026: 203 → 204 — thêm G6-AUTO-11 (SAP §4 gọi postStratify( ⇒ script chạy svydesign( + postStratify().
-    assert sum(len(v) for v in HD.PHAN_CONG.values()) == 204
+    # 15/11/2026: 204 → 207 — thêm G3-AUTO-19 (ma trận mục tiêu → biến), G5-AUTO-11 (từ điển từ bộ biến riêng, phủ ma
+    # trận), G5-AUTO-12 (phiếu nộp Hội đồng Đạo đức khớp câu hỏi nhập liệu) — bác sĩ duyệt đồng bộ xuyên cổng.
+    assert sum(len(v) for v in HD.PHAN_CONG.values()) == 207
 
 
 @pytest.mark.parametrize("gate", HD.CONG)
@@ -148,6 +161,7 @@ def _de_tai(tmp_path: Path, du_dau_ra: bool = True) -> Path:
             (out / ten).write_text("{}\n", encoding="utf-8", newline="\n")
         # 10/10/2026: G3-T2/T3 có tệp hợp đồng `_bo-bien-rieng.csv` (+ kiểm máy cấp nhiệm vụ) — bộ biến hợp lệ.
         (out / "_bo-bien-rieng.csv").write_text(BO_BIEN_HOP_LE, encoding="utf-8", newline="\n")
+        ghi_ma_tran_hop_le(out)
     return out
 
 
@@ -173,7 +187,7 @@ def test_moi_tieu_chi_dat_va_du_dau_ra_la_dat_tieu_chi(monkeypatch, tmp_path):
     _song(monkeypatch, {"G3": ("PASS_G3_CONFIRMED", _g3())})
     kq = HD.trach_nhiem(STUDY, "G3", out)
     assert kq["ket_luan"] == "DAT_TIEU_CHI" and HD.ma_thoat_trach_nhiem(kq["ket_luan"]) == 0
-    assert kq["so_dat"] == kq["so_tieu_chi"] == 26 and kq["dieu_phoi"] == "dieu-phoi-g3"
+    assert kq["so_dat"] == kq["so_tieu_chi"] == 27 and kq["dieu_phoi"] == "dieu-phoi-g3"  # +G3-AUTO-19 (15/11)
 
 
 def test_chi_con_viec_cua_nguoi_la_agent_xong_va_neu_ai_chuan_bi(monkeypatch, tmp_path):

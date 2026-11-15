@@ -243,6 +243,45 @@ def xac_nhan_g3(out_dir: Path, checkpoint: Dict[str, Any]) -> None:
     _ghi(p, meta)
 
 
+# 15/11/2026 (bác sĩ duyệt — đồng bộ xuyên cổng): một đề tài «đã chốt tới G3» phải có BỘ BIẾN riêng + MA TRẬN mục tiêu →
+# biến (G3-AUTO-19; G5 dừng khi thiếu bộ biến). Đồ gá dựng đúng như đề tài làm đúng: mục tiêu G1 «So sánh hiệu quả X với
+# chăm sóc chuẩn trong 12 tuần» ⇒ kết cục chính liên tục (thang Y, kiểu khớp G1 «liên tục») + biến phân nhóm. Tên biến
+# giữ `primary_outcome`/`exposure` như bộ mẫu cũ để SAP/G6 của các test sau không phải đổi.
+BO_BIEN_DO_GA = [
+    ("record_id", "text", "Mã nghiên cứu", "", ""),
+    ("exposure", "radio", "Nhóm (can thiệp X / chăm sóc chuẩn)", "0, Chăm sóc chuẩn | 1, Can thiệp X", ""),
+    ("primary_outcome", "text", "Thay đổi điểm số Y (0–100) tại tuần 12", "", "integer"),
+]
+MA_TRAN_DO_GA = [
+    ("1", "Thay đổi điểm số Y", "ket_cuc_chinh", "primary_outcome", "lien_tuc", "", "Thang điểm Y", "§4"),
+    ("1", "hiệu quả X so với chăm sóc chuẩn", "phoi_nhiem", "exposure", "nhi_phan", "", "phân bổ nhóm", "§4"),
+]
+
+
+def ghi_bo_bien_va_ma_tran(out_dir: Path) -> None:
+    """Ghi `_bo-bien-rieng.csv` + `_ma-tran-muc-tieu-bien.csv` hợp lệ cho đồ gá chuỗi (dữ liệu tổng hợp)."""
+    import csv  # noqa: PLC0415
+
+    cot = ["Variable / Field Name", "Form Name", "Section Header", "Field Type", "Field Label",
+           "Choices, Calculations, OR Slider Labels", "Field Note", "Text Validation Type OR Show Slider Number",
+           "Text Validation Min", "Text Validation Max", "Identifier?", "Branching Logic (Show field only if...)",
+           "Required Field?", "Custom Alignment", "Question Number (surveys only)", "Matrix Group Name",
+           "Matrix Ranking?", "Field Annotation"]
+    with (Path(out_dir) / "_bo-bien-rieng.csv").open("w", encoding="utf-8", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=cot, lineterminator="\n")
+        w.writeheader()
+        for ten, kieu, nhan, lua, val in BO_BIEN_DO_GA:
+            w.writerow({"Variable / Field Name": ten, "Form Name": "phieu", "Field Type": kieu, "Field Label": nhan,
+                        "Choices, Calculations, OR Slider Labels": lua,
+                        "Text Validation Type OR Show Slider Number": val, "Required Field?": "y"})
+    with (Path(out_dir) / "_ma-tran-muc-tieu-bien.csv").open("w", encoding="utf-8", newline="") as fh:
+        w = csv.writer(fh, lineterminator="\n")
+        w.writerow(["muc_tieu", "khai_niem", "vai_tro", "bien", "kieu", "cau_hoi", "cong_cu", "phan_tich_sap",
+                    "ghi_chu"])
+        for dong in MA_TRAN_DO_GA:
+            w.writerow([*dong, ""])
+
+
 def dung_g0_g3_da_chot(out_dir: Path, study: str, *, thiet_ke: str = "rct", g3_argv: Optional[list] = None,
                        them_meta: Optional[Dict[str, Any]] = None, chot_g3: bool = True,
                        kiem: bool = True) -> Dict[str, Any]:
@@ -258,6 +297,7 @@ def dung_g0_g3_da_chot(out_dir: Path, study: str, *, thiet_ke: str = "rct", g3_a
         else:
             them[khoa] = gia_tri
     dung_g0_g1_da_chot(out_dir, study, thiet_ke=thiet_ke, mau_hieu_qua=[], them_meta=them, kiem=kiem)
+    ghi_bo_bien_va_ma_tran(out_dir)
     cp, rc = chay_g3_that(out_dir, study, g3_argv or argv_mac_dinh)
     if chot_g3:
         xac_nhan_g3(out_dir, cp)
