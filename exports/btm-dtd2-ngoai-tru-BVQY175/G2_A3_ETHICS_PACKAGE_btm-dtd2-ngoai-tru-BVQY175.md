@@ -1,5 +1,5 @@
 # A3, HỒ SƠ ĐẠO ĐỨC & ĐĂNG KÝ NGHIÊN CỨU | btm-dtd2-ngoai-tru-BVQY175
-> Tạo tự động: 2026-11-15 17:27 | Theo Helsinki (WMA, bản sửa 2024) · ICH-GCP E6(R3) · TT43/2024/TT-BYT · Luật 91/2025/QH15
+> Tạo tự động: 2026-11-15 18:37 | Theo Helsinki (WMA, bản sửa 2024) · ICH-GCP E6(R3) · TT43/2024/TT-BYT · Luật 91/2025/QH15
 > [BẢN NHÁP TỰ ĐỘNG — DRAFT Phiên bản 1.0 chờ phê duyệt]
 > Cần bác sĩ/chủ nhiệm kiểm chứng, chỉnh sửa và ký trước khi nộp Hội đồng đạo đức.
 
@@ -12,7 +12,7 @@
 | Thiết kế | Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional) |
 | Mức nguy cơ | **TỐI THIỂU** |
 | Lộ trình IRB | **EXPEDITED REVIEW (hoặc EXEMPT nếu không có PII và rủi ro tối thiểu)** |
-| Đăng ký nghiên cứu | BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, trước NTG đầu tiên), TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp thuần túy, không khảo sát ai mới, loại hình thu thập [CẦN BỔ SUNG], ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới) |
+| Đăng ký nghiên cứu | TÙY CHỌN, hồi cứu dữ liệu thứ cấp, không tuyển người tham gia mới (PI đã chốt, gate_params.G2.recruitment_mode), ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới) |
 | ICF bắt buộc |  Có |
 | Chuẩn báo cáo | STROBE + RECORD |
 
@@ -374,8 +374,8 @@ Investigator: _______________ Date: ___/___/2026
 - **Nhập liệu:** Nhập vào REDCap theo từ điển của đề tài; bản trích lại 10% nhập vào một dự án REDCap riêng dùng chung từ điển, giữ nguyên mã nghiên cứu _(nguồn: G3 bộ biến (nguoi_trich); phiếu thu thập)_
 - **Kiểm chứng chất lượng thu thập:** Người thứ hai độc lập với chủ nhiệm trích lại 10% hồ sơ chọn ngẫu nhiên (39 hồ sơ, hai đợt); tỷ lệ đồng thuận mọi biến, kappa cho biến phân loại chính; ngưỡng đồng thuận kết cục chính xn_du từ 95% _(nguồn: G1 data_collection_method; SOP trích hồ sơ §7)_
 - **Bảng nối / đối chiếu mã:** Bảng nối mã nghiên cứu với mã người bệnh lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ, huỷ sau khi khoá dữ liệu _(nguồn: G1 data_collection_method; SOP trích hồ sơ)_
-- **Thời hạn lưu trữ:** [CẦN PI QUYẾT — thời hạn lưu trữ dữ liệu sau khi kết thúc nghiên cứu chưa được chốt ở G1/SOP] _(nguồn: —)_
-- **Hủy dữ liệu:** [CẦN PI QUYẾT — cách hủy tệp dữ liệu khi hết thời hạn lưu trữ] _(nguồn: —)_
+- **Thời hạn lưu trữ:** Số liệu điện tử (và phiếu giấy nếu có) lưu 2 năm sau khi kết thúc nghiên cứu _(nguồn: PI chọn 15/11/2026 (phiếu đề xuất B3: «2 năm, xoá an toàn có biên bản (Khuyên dùng)»))_
+- **Hủy dữ liệu:** Hết thời hạn lưu trữ: tệp điện tử xoá an toàn, phiếu giấy (nếu có) huỷ bằng máy huỷ tài liệu, có biên bản _(nguồn: PI chọn 15/11/2026 (phiếu đề xuất B3: «2 năm, xoá an toàn có biên bản (Khuyên dùng)»))_
 
 ```
 KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
@@ -532,7 +532,7 @@ Chữ ký chủ nhiệm: _______________ Ngày: ___/___/2026
 ## TÀI LIỆU 9. ĐỀ NGHỊ MIỄN ICF (ICF Waiver, cho thiết kế đủ điều kiện)
 
 > Kích hoạt vì hồ sơ nguy cơ của thiết kế 'cross_sectional' được hệ thống đánh giá đủ điều kiện miễn ICF (dữ liệu thứ cấp/ẩn danh hoàn toàn, không can thiệp), BÁC SĨ PHẢI tự xác nhận nghiên cứu THẬT SỰ không thu thập dữ liệu định danh mới nào.
-> `[CẦN BÁC SĨ XÁC NHẬN: nghiên cứu của tôi đủ điều kiện miễn ICF không?]`
+> PI đã chọn xin miễn ICF (`gate_params.G2.icf_waiver_requested` = true), Hội đồng Đạo đức quyết định.
 
 ```
 YÊU CẦU MIỄN THỦ TỤC ĐỒNG THUẬN (ICF Waiver Request), DRAFT Phiên bản 1.0
@@ -543,16 +543,16 @@ Chủ nhiệm: [CẦN BỔ SUNG]
 Ngày: 2026-11-15
 
 CƠ SỞ XIN MIỄN (phải thỏa CẢ 4 điều kiện):
-☑ Dùng dữ liệu thứ cấp/hồ sơ có sẵn hoặc khảo sát ẩn danh hoàn toàn, không truy ngược cá nhân
+☑ Dùng hồ sơ có sẵn, GIẢ DANH HOÁ (chưa ẩn danh hoàn toàn cho tới khi huỷ bảng nối): Phiếu chỉ mang mã nghiên cứu, không ghi trường định danh nào của người bệnh; Bảng nối mã nghiên cứu với mã người bệnh lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ, huỷ sau khi khoá dữ liệu
 ☑ Không có can thiệp/thủ thuật bổ sung lên người tham gia
-☑ Rủi ro không vượt nguy cơ tối thiểu từ dữ liệu đã ẩn danh
-☑ Không khả thi/không cần thiết yêu cầu ICF đầy đủ (khảo sát nặc danh hoặc dữ liệu đã có sẵn)
+☑ Rủi ro không vượt nguy cơ tối thiểu nhờ giả danh hoá và các biện pháp bảo mật nêu trên
+☑ Không khả thi yêu cầu ICF đầy đủ (hồi cứu hồ sơ đã có sẵn, không tiếp xúc người bệnh)
 
 ĐẢM BẢO BẢO MẬT:
-Loại dữ liệu: [CẦN BÁC SĨ MÔ TẢ — dữ liệu thứ cấp/hồ sơ có sẵn hoặc khảo sát nặc danh]
+Loại dữ liệu: Chủ nhiệm mở từng hồ sơ được chọn trên eHospital và ghi vào phiếu thu thập dựng từ codebook, theo quy tắc trích viết trước
 Mã hóa: Phiếu chỉ mang mã nghiên cứu, không ghi trường định danh nào của người bệnh; Bảng nối mã nghiên cứu với mã người bệnh lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ, huỷ sau khi khoá dữ liệu
 Quyền truy cập: Chỉ nhóm nghiên cứu
-Kế hoạch hủy: [CẦN PI QUYẾT — thời hạn lưu trữ dữ liệu sau khi kết thúc nghiên cứu chưa được chốt ở G1/SOP]; [CẦN PI QUYẾT — cách hủy tệp dữ liệu khi hết thời hạn lưu trữ]
+Kế hoạch hủy: Số liệu điện tử (và phiếu giấy nếu có) lưu 2 năm sau khi kết thúc nghiên cứu; Hết thời hạn lưu trữ: tệp điện tử xoá an toàn, phiếu giấy (nếu có) huỷ bằng máy huỷ tài liệu, có biên bản
 
 CỜ ĐỎ (bất kỳ → PHẢI lấy ICF đầy đủ):
 ☐ Có dữ liệu cá nhân nhận dạng được → ICF bắt buộc
@@ -568,7 +568,7 @@ Chữ ký chủ nhiệm: [CẦN KÝ] | Ngày: ___/___/2026
 ## ĐĂNG KÝ NGHIÊN CỨU, 24 MỤC WHO TRIAL REGISTRATION DATA SET 1.3.1
 
 **Nơi đăng ký đề nghị:** ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới)
-**Thời điểm:** BẮT BUỘC nếu TIẾN CỨU khảo sát người tham gia mới (Helsinki §35, trước NTG đầu tiên), TÙY CHỌN chỉ khi HỒI CỨU hồ sơ/dữ liệu thứ cấp thuần túy, không khảo sát ai mới, loại hình thu thập [CẦN BỔ SUNG]
+**Thời điểm:** TÙY CHỌN. Hồi cứu dữ liệu thứ cấp, không tuyển người tham gia mới (PI đã chốt, gate_params.G2.recruitment_mode)
 
 **Nghiên cứu tương tự đã đăng ký (prior art, tra thật trên ClinicalTrials.gov API v2):**
 > **ĐÃ TRA THẬT ngày 2026-11-15** trên ClinicalTrials.gov API v2 với truy vấn `("Diabetes Mellitus, Type 2"[Mesh] OR "type 2 diabetes"[tiab]) AND ("Renal Insufficiency, Chronic"[Mesh] OR "Diabetic Nephropathies"[Mesh] OR "chronic kidney disease"[tiab] OR albuminuria[tiab]) AND ("Guideline Adherence"[Mesh] OR "Practice Patterns, Physicians'"[Mesh] OR "care gap"[tiab] OR "albuminuria testing"[tiab] OR "albuminuria screening"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR "Ambulatory Care"[Mesh] OR "Primary Health Care"[Mesh] OR "primary care"[tiab]) AND 2019:2026[dp]` — **0 hồ sơ khớp**, trong đó **0 đang/sắp tuyển**. Tra lại: https://clinicaltrials.gov/search?term=%28%22Diabetes+Mellitus%2C+Type+2%22+OR+%22type+2+diabetes%22+%29+AND+%28%22Renal+Insufficiency%2C+Chronic%22+OR+%22Diabetic+Nephropathies%22+OR+%22chronic+kidney+disease%22+OR+albuminuria+%29+AND+%28%22Guideline+Adherence%22+OR+%22Practice+Patterns%2C+Physicians%27%22+OR+%22care+gap%22+OR+%22albuminuria+testing%22+OR+%22albuminuria+screening%22+OR+undiagnosed+OR+underdiagnos%2A+OR+underuse+OR+underutili%2A+%29+AND+%28outpatient%2A+OR+%22Ambulatory+Care%22+OR+%22Primary+Health+Care%22+OR+%22primary+care%22+%29+AND+2019%3A2026
@@ -611,7 +611,7 @@ Trường 8, Contact for scientific queries:
  [ĐIỀN TRỰC TIẾP TRÊN REGISTRY, không lưu PII trong hệ thống]
 
 Trường 9, Public title (tiêu đề công khai, dễ hiểu):
- Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026 [CẦN PI KHAI — tiêu đề công khai bằng ngôn ngữ đại chúng: gate_params.G2.public_title]
+ Detection of chronic kidney disease and kidney-protective treatment among outpatients with type 2 diabetes at Military Hospital 175, Vietnam
 
 Trường 10, Scientific title (tiêu đề khoa học):
  Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026
@@ -620,7 +620,7 @@ Trường 11, Countries of recruitment:
  Vietnam (VN) [CẦN BỔ SUNG tỉnh/tỉnh thành]
 
 Trường 12, Health condition(s) studied:
- [CẦN PI KHAI — tình trạng sức khỏe nghiên cứu: gate_params.G2.health_condition]
+ Type 2 diabetes mellitus (ICD-10 E11); chronic kidney disease (ICD-10 N18)
 
 Trường 13, Intervention(s):
  Not applicable - no prospectively assigned intervention

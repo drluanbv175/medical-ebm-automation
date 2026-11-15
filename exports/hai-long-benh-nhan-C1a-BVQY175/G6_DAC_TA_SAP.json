@@ -1,6 +1,6 @@
 {
  "nguon_sap": "G4_A5_SAP_FINAL_hai-long-benh-nhan-C1a-BVQY175.md",
- "sha256_sap": "d495fc0008b7d86a0fa1c32a66e384490a1e14233b45343a6715acc8c87b6f14",
+ "sha256_sap": "4b9010eee502ffaafd1e15ab1f16a5a81c380ccc2e1181516291ff5c1221daac",
  "trang_thai_de_xuat": "ĐỀ XUẤT CỦA AGENT 15/11/2026 (đồng bộ lại theo SAP hiện tại, giai đoạn 7: neo từng phân tích vào SAP bằng sap_neo, thêm phân tích SAP mới bổ sung) — CHỜ thống kê viên/PI duyệt (ghi nguoi_duyet). SAP nguồn còn là bản DRAFT chưa ký: SAP sửa trước khi khoá ⇒ sha256_sap lệch, đặc tả bị coi là cũ và phải đồng bộ lại.",
  "can_thong_ke_vien_quyet": [
   "suckhoe_tudanhgia (5 mức thứ tự): đề xuất đưa vào dạng SỐ (1 tham số, giả định tuyến tính); SAP §5 chưa nói rõ số hay phân loại — chuyển vào hiep_bien_phan_loai nếu muốn 4 biến giả.",
@@ -281,7 +281,7 @@
     "vai trò trung gian của kỳ vọng"
    ],
    "mo_ta": "Phân tích thăm dò định trước vai trò trung gian của kỳ vọng (chenh_kyvong, xacnhan_kyvong) — trình bày riêng, không thay mô hình chính",
-   "chua_tu_dong": "Phương pháp ước lượng chờ thống kê viên chọn (SAP §5 còn ô [CẦN THỐNG KÊ VIÊN CHỌN]) — chưa thể đặc tả"
+   "chua_tu_dong": "Phương pháp đã chọn (SAP §5: trung gian nhân quả dựa trên hồi quy, gói R `mediation` — PI chọn phương án A 15/11/2026, thống kê viên xác nhận khi ký) — run_stats_analysis chưa hỗ trợ; thống kê viên chạy bằng R theo SAP §5/§10"
   }
  ],
  "nguoi_duyet": ""

@@ -1,6 +1,6 @@
 # BÁO CÁO CHẤT LƯỢNG G1 — hai-long-benh-nhan-C1a-BVQY175
 
-**Trạng thái:** `PASS_G1_CONFIRMED`
+**Trạng thái:** `DRAFT_READY_NEEDS_HUMAN_REVIEW`
 
 ## Kiểm tra tự động
 | Mã | Tiêu chí | Trạng thái | Bằng chứng |
@@ -11,7 +11,7 @@
 | G1-AUTO-02c | Thiết kế bác sĩ đã ghim được chuỗi G0–G10 hỗ trợ (không bị thay bằng suy luận) | PASS | không có pin bị từ chối |
 | G1-AUTO-02d | Thiết kế hợp với loại câu hỏi đã chốt ở G0 | PASS | thiết kế «cross_sectional» hợp với loại câu hỏi G0 «descriptive» |
 | G1-AUTO-02b | ICH E6(R3) Annex 2 Step 4: thiết kế phương pháp mới đủ fitness-for-purpose và giám sát | PASS | status=NOT_APPLICABLE; methods=không áp dụng |
-| G1-AUTO-03 | Chuẩn báo cáo khớp thiết kế | PASS | đã chọn='STROBE + CROSS'; canon='STROBE' |
+| G1-AUTO-03 | Chuẩn báo cáo khớp thiết kế | PASS | đã chọn='STROBE + CROSS + RECORD'; canon='STROBE' |
 | G1-AUTO-03b | Chuẩn đề cương/protocol khớp thiết kế | PASS | đã chọn='Protocol định trước; đăng ký nếu cần minh bạch'; canon='Protocol định trước; đăng ký nếu cần minh bạch' |
 | G1-AUTO-04 | Thiết kế không còn suy luận mơ hồ | PASS | ambiguous=false |
 | G1-AUTO-04b | So sánh ít nhất ba phương án và kiểm soát đủ nhóm sai lệch/trustworthiness theo thiết kế | PASS | primary_present=True; alternatives_complete=True; rationale_present=True; bias_controls=7 |
@@ -30,16 +30,16 @@
 | G1-HUMAN-05 | Estimand đủ 5 thuộc tính khi là RCT | PASS | N/A cho thiết kế không phải RCT |
 | G1-HUMAN-06 | Đề cương lõi, kiểm soát sai lệch và tính khả thi được xác nhận | PASS | protocol_core_confirmed=True; bias_controls_confirmed=True; feasibility_confirmed=True |
 | G1-HUMAN-07 | Khoảng trống và nội dung trích dẫn đã được người thật đọc lại | PASS | evidence_review_confirmed=True; identifiers=57 |
-| G1-HUMAN-08 | Có vai trò, thời điểm rà phương pháp và xác nhận gắn đúng nội dung | PASS | reviewed_by_role=pi; reviewed_at=2026-10-28T15:08:06+07:00; xác nhận gắn đúng nội dung hiện tại |
+| G1-HUMAN-08 | Có vai trò, thời điểm rà phương pháp và xác nhận gắn đúng nội dung | REVIEW | reviewed_by_role=pi; reviewed_at=2026-10-28T15:08:06+07:00; nội dung đã đổi sau khi xác nhận (dấu lúc xác nhận e7446048acc3b6a1 ≠ hiện tại a1092035d7005539) — chủ nhiệm đọc lại rồi xác nhận lại |
 
 ## Manifest artifact
 | Artifact | Đường dẫn | SHA-256 |
 |---|---|---|
-| A2 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md | `ea0fedf879ad4227aa89c36cda279f559aa759110b78e8be0350ebf3b0e6e15a` |
-| A1b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md | `01285107de94cba3e238758b3a54caba8cc20963adb7ff5d697ad6b413dc7cd9` |
-| A2b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md | `6faa1fff579af47db3011ec6bc35a569e4e02e067ce053e37bb1f3e3a60cc331` |
-| A13 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md | `b5447450de68773cb6885835d25b55247f24293ae6b1caf21890f6d667e99b9d` |
-| A13b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md | `ded3d82b9b4d6c7d68bfa57f703efcf29488998be89529fb247c0426afeee4ef` |
+| A2 | /Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md | `12764e83a4f37e7994dc9d1e35029b62b4edeaaef668fac5fb4e923a9f947bf6` |
+| A1b | /Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md | `b084ee1a0a9d41be32552fcbf03d1dc697c87986dd738f3fa6a646667048ec3e` |
+| A2b | /Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md | `6faa1fff579af47db3011ec6bc35a569e4e02e067ce053e37bb1f3e3a60cc331` |
+| A13 | /Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md | `b5447450de68773cb6885835d25b55247f24293ae6b1caf21890f6d667e99b9d` |
+| A13b | /Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md | `ded3d82b9b4d6c7d68bfa57f703efcf29488998be89529fb247c0426afeee4ef` |
 
 ## Nền chuẩn
 | Chuẩn | Phạm vi | PMID/DOI/URL |

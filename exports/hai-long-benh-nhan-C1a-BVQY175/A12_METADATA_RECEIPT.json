@@ -1,16 +1,20 @@
 {
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "checked_at_utc": "2026-10-15T14:00:46.392299+00:00",
+  "checked_at_utc": "2026-11-15T11:43:48.641303+00:00",
   "pmids_checked": [
     "12210625",
     "15485730",
     "16279131",
     "17161752",
+    "17402810",
     "17654487",
     "18313558",
     "19564179",
     "20494804",
+    "20954780",
     "23883565",
+    "26440803",
+    "26653405",
     "26776715",
     "27881078",
     "28690831",
@@ -24,6 +28,7 @@
     "34017606",
     "34053882",
     "34445940",
+    "34546296",
     "35155757",
     "36292392",
     "36439278",
@@ -38,7 +43,7 @@
     "8970487",
     "9762873"
   ],
-  "pmids_hash": "f35c8283af53dbcb9e2b3b4305a509d63f9999fca6a4068fd42cb1a087f20184",
+  "pmids_hash": "6ad2d7f7853fce769bd374a5a9911910e5ac8160666a392b8bafe353c3a7a841",
   "all_resolved": true,
   "metadata": {
     "12210625": {
@@ -73,6 +78,14 @@
       "year": "2007",
       "doi": "10.1016/j.jclinepi.2006.03.012"
     },
+    "17402810": {
+      "status": "resolved",
+      "title": "Bias in cross-sectional analyses of longitudinal mediation.",
+      "authors": "Maxwell SE, Cole DA",
+      "journal": "Psychological methods",
+      "year": "2007",
+      "doi": "10.1037/1082-989X.12.1.23"
+    },
     "17654487": {
       "status": "resolved",
       "title": "Is the CVI an acceptable indicator of content validity? Appraisal and recommendations.",
@@ -105,6 +118,14 @@
       "year": "2010",
       "doi": "10.1016/j.jclinepi.2010.02.006"
     },
+    "20954780": {
+      "status": "resolved",
+      "title": "A general approach to causal mediation analysis.",
+      "authors": "Imai K, Keele L, Tingley D",
+      "journal": "Psychological methods",
+      "year": "2010",
+      "doi": "10.1037/a0020761"
+    },
     "23883565": {
       "status": "resolved",
       "title": "The Patient Satisfaction Questionnaire Short Form (PSQ-18) as an adaptable, reliable, and validated tool for use in various settings.",
@@ -112,6 +133,22 @@
       "journal": "Medical education online",
       "year": "2013",
       "doi": "10.3402/meo.v18i0.21747"
+    },
+    "26440803": {
+      "status": "resolved",
+      "title": "The REporting of studies Conducted using Observational Routinely-collected health Data (RECORD) statement.",
+      "authors": "Benchimol EI, Smeeth L, Guttmann A, Harron K, Moher D",
+      "journal": "PLoS medicine",
+      "year": "2015",
+      "doi": "10.1371/journal.pmed.1001885"
+    },
+    "26653405": {
+      "status": "resolved",
+      "title": "Mediation Analysis: A Practitioner's Guide.",
+      "authors": "VanderWeele TJ",
+      "journal": "Annual review of public health",
+      "year": "2016",
+      "doi": "10.1146/annurev-publhealth-032315-021402"
     },
     "26776715": {
       "status": "resolved",
@@ -216,6 +253,14 @@
       "journal": "Hospital topics",
       "year": "2023",
       "doi": "10.1080/00185868.2021.1969871"
+    },
+    "34546296": {
+      "status": "resolved",
+      "title": "A Guideline for Reporting Mediation Analyses of Randomized Trials and Observational Studies: The AGReMA Statement.",
+      "authors": "Lee H, Cashin AG, Lamb SE, Hopewell S, Vansteelandt S",
+      "journal": "JAMA",
+      "year": "2021",
+      "doi": "10.1001/jama.2021.14075"
     },
     "35155757": {
       "status": "resolved",
@@ -322,5 +367,5 @@
       "doi": "10.1016/s0895-4356(98)00066-3"
     }
   },
-  "receipt_signature": "v4:shared:f3c82232daddabf3262c599538328ca3a10f6e3ca31965ea9242e33b16acefcf"
+  "receipt_signature": "v4:shared:8c4e6bf4adf462eafc066a51674a4e54e5eb254d07ee9fbe9e7b83a3bf2ec014"
 }

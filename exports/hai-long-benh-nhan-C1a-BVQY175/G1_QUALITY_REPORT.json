@@ -1,9 +1,9 @@
 {
   "schema_version": "1.1",
   "contract_version": "G1-2026.1",
-  "status": "PASS_G1_CONFIRMED",
+  "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
   "automated_checks_passed": true,
-  "human_confirmation_complete": true,
+  "human_confirmation_complete": false,
   "automatic_criteria": [
     {
       "id": "G1-AUTO-00",
@@ -51,7 +51,7 @@
       "id": "G1-AUTO-03",
       "label": "Chuẩn báo cáo khớp thiết kế",
       "status": "PASS",
-      "evidence": "đã chọn='STROBE + CROSS'; canon='STROBE'",
+      "evidence": "đã chọn='STROBE + CROSS + RECORD'; canon='STROBE'",
       "action": "Sửa reporting map theo skill_standards.py."
     },
     {
@@ -157,35 +157,37 @@
     {
       "id": "G1-HUMAN-08",
       "label": "Có vai trò, thời điểm rà phương pháp và xác nhận gắn đúng nội dung",
-      "status": "PASS",
-      "evidence": "reviewed_by_role=pi; reviewed_at=2026-10-28T15:08:06+07:00; xác nhận gắn đúng nội dung hiện tại",
-      "action": "Ghi reviewed_by_role, reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"e7446048acc3b6a1\" (dấu của các quyết định G1 đang chốt); không cần lưu danh tính."
+      "status": "REVIEW",
+      "evidence": "reviewed_by_role=pi; reviewed_at=2026-10-28T15:08:06+07:00; nội dung đã đổi sau khi xác nhận (dấu lúc xác nhận e7446048acc3b6a1 ≠ hiện tại a1092035d7005539) — chủ nhiệm đọc lại rồi xác nhận lại",
+      "action": "Ghi reviewed_by_role, reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"a1092035d7005539\" (dấu của các quyết định G1 đang chốt); không cần lưu danh tính."
     }
   ],
-  "pending_actions": [],
+  "pending_actions": [
+    "Ghi reviewed_by_role, reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"a1092035d7005539\" (dấu của các quyết định G1 đang chốt); không cần lưu danh tính."
+  ],
   "artifact_manifest": {
     "A2": {
-      "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "ea0fedf879ad4227aa89c36cda279f559aa759110b78e8be0350ebf3b0e6e15a"
+      "path": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
+      "sha256": "12764e83a4f37e7994dc9d1e35029b62b4edeaaef668fac5fb4e923a9f947bf6"
     },
     "A1b": {
-      "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "01285107de94cba3e238758b3a54caba8cc20963adb7ff5d697ad6b413dc7cd9"
+      "path": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
+      "sha256": "b084ee1a0a9d41be32552fcbf03d1dc697c87986dd738f3fa6a646667048ec3e"
     },
     "A2b": {
-      "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",
+      "path": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",
       "sha256": "6faa1fff579af47db3011ec6bc35a569e4e02e067ce053e37bb1f3e3a60cc331"
     },
     "A13": {
-      "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md",
+      "path": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md",
       "sha256": "b5447450de68773cb6885835d25b55247f24293ae6b1caf21890f6d667e99b9d"
     },
     "A13b": {
-      "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md",
+      "path": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md",
       "sha256": "ded3d82b9b4d6c7d68bfa57f703efcf29488998be89529fb247c0426afeee4ef"
     }
   },
-  "dau_van_tay_hien_tai": "e7446048acc3b6a1",
+  "dau_van_tay_hien_tai": "a1092035d7005539",
   "standards_basis": [
     {
       "standard": "EQUATOR Network",
@@ -222,23 +224,23 @@
   "scope_statement": "PASS_G1_CONFIRMED chỉ xác nhận thiết kế/reporting map và bộ artifact G1 theo bằng chứng đã ghi; không thay IRB, khóa SAP, dữ liệu thật hoặc thẩm định khoa học độc lập. Checklist báo cáo đánh giá tính đầy đủ của mô tả, không tự chứng minh chất lượng thiết kế hay thực hiện.",
   "artifact_manifest_luc_sinh": {
     "A2": {
-      "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "ea0fedf879ad4227aa89c36cda279f559aa759110b78e8be0350ebf3b0e6e15a"
+      "path": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
+      "sha256": "12764e83a4f37e7994dc9d1e35029b62b4edeaaef668fac5fb4e923a9f947bf6"
     },
     "A1b": {
-      "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "01285107de94cba3e238758b3a54caba8cc20963adb7ff5d697ad6b413dc7cd9"
+      "path": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
+      "sha256": "b084ee1a0a9d41be32552fcbf03d1dc697c87986dd738f3fa6a646667048ec3e"
     },
     "A2b": {
-      "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",
+      "path": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",
       "sha256": "6faa1fff579af47db3011ec6bc35a569e4e02e067ce053e37bb1f3e3a60cc331"
     },
     "A13": {
-      "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md",
+      "path": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md",
       "sha256": "b5447450de68773cb6885835d25b55247f24293ae6b1caf21890f6d667e99b9d"
     },
     "A13b": {
-      "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md",
+      "path": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md",
       "sha256": "ded3d82b9b4d6c7d68bfa57f703efcf29488998be89529fb247c0426afeee4ef"
     }
   }

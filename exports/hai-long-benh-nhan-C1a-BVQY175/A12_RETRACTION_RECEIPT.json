@@ -1,16 +1,20 @@
 {
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "checked_at_utc": "2026-10-15T14:00:46.390410+00:00",
+  "checked_at_utc": "2026-11-15T11:43:48.640312+00:00",
   "pmids_checked": [
     "12210625",
     "15485730",
     "16279131",
     "17161752",
+    "17402810",
     "17654487",
     "18313558",
     "19564179",
     "20494804",
+    "20954780",
     "23883565",
+    "26440803",
+    "26653405",
     "26776715",
     "27881078",
     "28690831",
@@ -24,6 +28,7 @@
     "34017606",
     "34053882",
     "34445940",
+    "34546296",
     "35155757",
     "36292392",
     "36439278",
@@ -38,114 +43,329 @@
     "8970487",
     "9762873"
   ],
-  "pmids_hash": "f35c8283af53dbcb9e2b3b4305a509d63f9999fca6a4068fd42cb1a087f20184",
+  "pmids_hash": "6ad2d7f7853fce769bd374a5a9911910e5ac8160666a392b8bafe353c3a7a841",
   "all_clean": true,
   "results": {
     "12210625": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "15485730": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "16279131": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "17161752": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "17402810": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "17654487": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "18313558": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "19564179": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "20494804": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "20954780": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "23883565": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "26440803": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "26653405": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "26776715": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "27881078": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "28690831": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "29550964": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "31218671": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "31703089": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "32584904": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "32946537": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "32992600": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "33886027": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "34017606": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "34053882": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "34445940": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "34546296": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "35155757": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "36292392": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "36439278": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "39944421": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "40295132": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "40432693": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "40995744": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "41645935": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "42582692": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "42625778": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "8134732": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "8970487": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     },
     "9762873": {
-      "status": "ok"
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
     }
   },
-  "receipt_signature": "v4:shared:acfb39db9c1c13c651403a83d92e05dd0ec2d60ff7bb850f6b8c0c26351757e1"
+  "receipt_signature": "v4:shared:d4fcf48de991b5147bf4ea79a3e52eb08b4ad3003775f6daa7f8d5ff29b4d8d4"
 }

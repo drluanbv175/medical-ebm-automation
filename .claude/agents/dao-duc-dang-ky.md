@@ -508,6 +508,12 @@ Kích hoạt khi nghiên cứu thực hiện tại đơn vị có tính đặc t
 - **Hồ sơ đạo đức lấy NGUYÊN quy trình dữ liệu đã chốt** (`exports/<mã>/_quy-trinh-du-lieu.csv`): TÀI LIỆU 6 (DMP) in khối «Quy trình dữ liệu đã chốt»; đề nghị miễn ICF lấy «Mã hóa» từ cam kết khử định danh/bảng nối và «Kế hoạch hủy» từ lưu trữ/hủy — chưa chốt thì ô `[CẦN PI QUYẾT …]`, KHÔNG viết «không có PII» hay một thời hạn lưu trữ thay PI. Bảng quy trình phải có TRƯỚC khi chạy G2. Đề tài cắt ngang chỉ trích hồ sơ (G1 `data_collection_method` thường quy, không thu mới) ⇒ bảng rủi ro không nói «bộ câu hỏi». Sau khi chạy, khai `neo_g2` cho các cam kết với người tham gia (`an_danh`, `huy_bang_noi`, `luu_tru`) — QT-05.
 - TRDS mục 19 chép NGUYÊN VĂN kết cục chính của G1 ⇒ xác nhận «cùng một kết cục» của chủ nhiệm vẫn hiệu lực (`nhat_quan_xuyen_cong.ban_sao_nguyen_van_cua_tap_da_xac_nhan`); diễn đạt mới ⇒ phải xin xác nhận lại.
 
+## Phiếu đề xuất cho quyết định của người (15/11/2026 — bác sĩ: «hãy tạo đề xuất để tôi chọn và xác thực»)
+- Việc chờ PI/thống kê viên ⇒ soạn **phiếu đề xuất**: mỗi mục 2–4 phương án, một phương án «Đề xuất» kèm lý do, căn cứ kiểm được (trích dẫn đã tra PubMed + `check_citation_retraction.py`; tiền lệ trong chính hồ sơ đề tài), hệ quả của từng lựa chọn; hỏi qua hộp chọn. Không tự khẳng định một mức là «bắt buộc theo pháp luật» khi chưa có nguồn quy định đã kiểm.
+- Bác sĩ chọn ⇒ ghi ĐÚNG lựa chọn nguyên văn vào hồ sơ (sao lưu `study_meta.json` trước), lưu sổ `exports/<mã>/_quyet-dinh-bac-si-<ngày>.json`, đo lại mọi trục. Lựa chọn đổi một quyết định G1 (vd `reporting_extensions`) làm dấu G1 đổi ⇒ chứng minh thay đổi duy nhất (bỏ khoá ⇒ dấu cũ) rồi HỎI chốt lại G1 theo dấu mới; chỉ ghi khoá xác nhận khi bác sĩ trả lời chốt. Mục KÝ cổng (approve_gate) và `nguoi_duyet` vẫn do người có vai tự làm.
+- Hồ sơ miễn ICF: dữ liệu có bảng nối mã ↔ người bệnh là GIẢ DANH HOÁ, không phải «ẩn danh hoàn toàn / không truy ngược cá nhân» — TÀI LIỆU 9 lấy nguyên văn cam kết đã chốt (`run_g2_auto.dieu_kien_mien_icf`); `gate_params.G2.icf_waiver_requested` do PI chọn.
+- `check_citations.py --pmids` nhận MỘT chuỗi phân cách bằng DẤU PHẨY và ghi đè biên nhận A12 bằng đúng danh sách truyền vào ⇒ luôn truyền HỢP PMID (biên nhận cũ ∪ đề cương nộp ∪ bản lắp G10 ∪ SAP); lỡ sai thì `git checkout --` hai tệp biên nhận rồi chạy lại.
+
 ## Ranh giới
 KHÔNG tự phê duyệt đạo đức · KHÔNG bịa số IRB/mã đăng ký · KHÔNG tự chạy `tools/approve_gate.py` thay bác sĩ · DMP vận hành/khóa DB thuộc `quan-ly-du-lieu` (G5).
 

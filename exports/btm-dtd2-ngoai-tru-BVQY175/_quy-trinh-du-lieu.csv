@@ -4,5 +4,5 @@ an_danh,"Phiếu chỉ mang mã nghiên cứu, không ghi trường định danh
 nhap_lieu,"Nhập vào REDCap theo từ điển của đề tài; bản trích lại 10% nhập vào một dự án REDCap riêng dùng chung từ điển, giữ nguyên mã nghiên cứu",G3 bộ biến (nguoi_trich); phiếu thu thập,,,
 kiem_chung,"Người thứ hai độc lập với chủ nhiệm trích lại 10% hồ sơ chọn ngẫu nhiên (39 hồ sơ, hai đợt); tỷ lệ đồng thuận mọi biến, kappa cho biến phân loại chính; ngưỡng đồng thuận kết cục chính xn_du từ 95%",G1 data_collection_method; SOP trích hồ sơ §7,,,
 huy_bang_noi,"Bảng nối mã nghiên cứu với mã người bệnh lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ, huỷ sau khi khoá dữ liệu",G1 data_collection_method; SOP trích hồ sơ,,Bảng nối mã nghiên cứu với mã người bệnh lưu riêng,
-luu_tru,[CẦN PI QUYẾT — thời hạn lưu trữ dữ liệu sau khi kết thúc nghiên cứu chưa được chốt ở G1/SOP],—,,,
-huy_du_lieu,[CẦN PI QUYẾT — cách hủy tệp dữ liệu khi hết thời hạn lưu trữ],—,,,
+luu_tru,Số liệu điện tử (và phiếu giấy nếu có) lưu 2 năm sau khi kết thúc nghiên cứu,"PI chọn 15/11/2026 (phiếu đề xuất B3: «2 năm, xoá an toàn có biên bản (Khuyên dùng)»)",,lưu 2 năm sau khi kết thúc nghiên cứu,
+huy_du_lieu,"Hết thời hạn lưu trữ: tệp điện tử xoá an toàn, phiếu giấy (nếu có) huỷ bằng máy huỷ tài liệu, có biên bản","PI chọn 15/11/2026 (phiếu đề xuất B3: «2 năm, xoá an toàn có biên bản (Khuyên dùng)»)",,,
