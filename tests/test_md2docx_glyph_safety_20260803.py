@@ -81,10 +81,10 @@ def test_cu_phap_chi_so_nhieu_ky_tu(tmp_path):
 
 
 def test_ky_tu_thieu_glyph_duoc_thay_the(tmp_path):
-    """☐ ☑ ⚠ ✅ -> ký tự có glyph; bộ chọn hiển thị emoji bị gỡ."""
-    doc, _ = _xuat("Ô ☐, đã ☑, cảnh báo ⚠️, đạt ✅", tmp_path)
+    """☐ ☑ ⚠ ✅ ✓ ✔ -> ký tự có glyph; bộ chọn hiển thị emoji bị gỡ (✓ ✔ thêm 15/11/2026 — từ điển dữ liệu DMP G5)."""
+    doc, _ = _xuat("Ô ☐, đã ☑, cảnh báo ⚠️, đạt ✅, bắt buộc ✓ ✔", tmp_path)
     toan_van = "".join(r.text for r in _cac_run(doc))
-    for ky_tu in "☐☑⚠✅️":
+    for ky_tu in "☐☑⚠✅✓✔️":
         assert ky_tu not in toan_van, f"{ky_tu!r} chưa được thay thế"
     assert "□" in toan_van and "■" in toan_van
 
@@ -97,7 +97,10 @@ def test_ky_tu_thieu_glyph_duoc_thay_the(tmp_path):
         ("Mũi tên → ↔ và chữ Hy Lạp α β Σ χ", False),   # Times CÓ glyph, không được kêu oan
         ("Ký tự lạ 🧪", True),
         ("Đồng hồ ⏱ ở khối Miscellaneous Technical", True),
-        ("Dấu tick ✓ mà Times không có", True),
+        # 15/11/2026: ✓ nay được THAY (→ ■) nên không còn là ví dụ «phải kêu»; giữ ca khối Dingbats bằng ✗ (U+2717) —
+        # Times thiếu glyph (đã đối chiếu cmap) và KHÔNG có trong _GLYPH_SUBSTITUTE.
+        ("Dấu gạch chéo ✗ mà Times không có", True),
+        ("Bắt buộc ✓ ✔ đã được thay", False),
     ],
 )
 def test_chot_canh_bao(md, phai_keu, tmp_path):

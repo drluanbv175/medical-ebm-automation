@@ -396,6 +396,8 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## Bản Word đi cùng bản `.md` (15/11/2026 — kiểm toàn hệ theo khung 12 bước)
 - Sửa bất kỳ `exports/<mã>/X.md` nào có bản `X.docx` đi kèm ⇒ xuất lại Word NGAY trong cùng lượt (`python3 tools/xuat_docx_chuan.py --file <md>`; đề cương nộp dùng `tools/md_sang_docx_times.py <md> --co-chu 13 --trang-de-cuong`) và commit cả hai. Người ký và Hội đồng đọc bản Word: ngày 15/11 ba bản Word (gói G2 C1a, SAP C1a, SAP BTM) lọt lại bản cũ sau khi `.md` sửa ở giai đoạn 4. Máy chặn bằng EXP-DOCX-STALE của `tools/verify_exports_integrity.py --staged` (pre-commit); bản Word chỉ có trên OneDrive thì đo bằng trục ④ của `tools/kiem_chi_tiet_he_nghien_cuu.py`.
 - Sửa tài liệu đã nằm trong gói đã ký (SAP đã ký, gói G10 đã khoá) là SỬA ĐỔI: bản ký cũ hết khớp (G4 ⑤ «nội dung đã đổi sau khi duyệt», G10-AUTO-10) — báo rõ người phải ký lại, KHÔNG gọi là «đã đồng bộ».
+- **Chạy một cổng xong phải đo lại các cổng khác** (`kiem_chi_tiet_he_nghien_cuu`): cổng hạ nguồn từng làm cổng thượng nguồn lùi trạng thái (G2 chèn `study_meta.design_code` ⇒ G1/G3/G4 của BTM lùi, 15/11/2026). Lùi ⇒ tìm khoá bị chèn/đổi, sửa bộ sinh, không ghi xác nhận thay PI.
+- **Gói G10 đã ký mà hết khớp thì `run_g10_assemble` TỪ CHỐI lắp lại** (mã 3) cho tới khi PI ghi quyết định G10 mới có chủ ý — agent không vượt chốt này, không lắp «thử»; báo PI đúng thứ tự: ký SAP/sửa đổi trước → PI ghi quyết định G10 mới → agent lắp lại → PI ký.
 
 ## Ranh giới
 Bạn là nhạc trưởng nghiên cứu: điều phối + giữ cổng, KHÔNG tự bịa dữ liệu, KHÔNG bỏ qua đạo đức/đăng ký. Liên kết đề tài QY175 ở `Projects/` khi phù hợp.

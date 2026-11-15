@@ -8,14 +8,14 @@ path,sha256,size_bytes
 .claude/agents/chan-doan-xac-suat.md,8b0701729896d49a7e4c5c857fb3ed3ef6cae3064703f033f86a98ae658eb2d1,19869
 .claude/agents/co-mau-nghien-cuu.md,d0e6a83aaf2b6144910f1339c50ed226485cd2abb4f268bbfc29435a884fe8ac,25487
 .claude/agents/cong-cu-do-luong.md,506564ce0372c0f4174ed7e3f0fe695beec9c83dbc024b68a0d90cfda908fe3c,32666
-.claude/agents/dao-duc-dang-ky.md,bfe43de5ff25345ecc362c4985292ffeb5539a5214ac01e196bfb919027ce768,52964
+.claude/agents/dao-duc-dang-ky.md,ace89c3339d912baa3b8fc854e23950779a45b459c97906fd4d4a3fff6915b89,54668
 .claude/agents/dau-man-tinh.md,4cbc047689a934c6624e63ad9ff9678fe897c649b5f45768d172d56937cd7b85,24667
 .claude/agents/dien-giai-can-lam-sang.md,7c3eaa8bd57ba20e302cb0d4ea521b1c6b61f6a0e255813d50e160f11547cc72,18496
 .claude/agents/dien-giai-ket-qua.md,b61ffae6c8e7f6143d00279a50dc5645c096d93547a8f7f9a801775a54d824be,19555
 .claude/agents/dieu-phoi-g0.md,e5430236a289ff0c19a02c8322f591c299739989fbe79f655ebb0350ce25b996,18081
 .claude/agents/dieu-phoi-g1.md,352c864476d98129b0abba8948f93be8b07893a924258784f0c02f1509fd0e5c,22515
 .claude/agents/dieu-phoi-g10.md,8630cc9b3593baa6eea04ca8843b3327513574174e2687e72dadce8f0589d8dc,19801
-.claude/agents/dieu-phoi-g2.md,99964183015cb86c79a41a32d58286bae6cabb01a81b6903cea4bda7dc4bb241,16911
+.claude/agents/dieu-phoi-g2.md,abd6f2ce8c3b99f142bbdf7a670a48072fed37d6d73d9848978c8356908d2004,18615
 .claude/agents/dieu-phoi-g3.md,20c0741f50621beb59a59514e4ef7cfc0e9a63e7c0f841c001e79ca01ae9d753,16819
 .claude/agents/dieu-phoi-g4.md,9ea7ab040e7c22fb7df55771a0b555218a4b319e4129825a4389c576302920e8,18585
 .claude/agents/dieu-phoi-g5.md,dcb74f490247b41dab136897ed595989d786d26a99becdee4d18ad8e4f8188d9,17340
@@ -24,7 +24,7 @@ path,sha256,size_bytes
 .claude/agents/dieu-phoi-g8.md,ec80abd40ab248b94cae249880f165ee190f6a7b311573dd2c4ddad13d91acae,13908
 .claude/agents/dieu-phoi-g9.md,7745604707ce833d664a38cac27ce206fd3353cc50025fb7a8b561d4135b9ef7,13808
 .claude/agents/dieu-phoi-lam-sang.md,fe459e751b9a7d671d00159b5bbc8b2620113a23da2421be02f1f67c27c3672e,35420
-.claude/agents/dieu-phoi-nghien-cuu.md,47a8b3af1e3a7da7347642d4bff5f7527d3e64bb60555f12448ce44238ecb4b0,71795
+.claude/agents/dieu-phoi-nghien-cuu.md,c4b4454b82b09994a536b116ac62e9ef4441be09251348932c42287ab7ab5589,72482
 .claude/agents/du-phong-tam-soat.md,84bfea8203194ebd5148dadb45f42dabba63e5878612a2f2eef192cc08045b6a,16886
 .claude/agents/giam-khao-cong.md,f2cd20ef2bca24783e816e5f53a0e0ff04548d2781f57d0b26168d740ad19bb9,9993
 .claude/agents/hieu-dinh-song-ngu.md,9b233e22e57f902711cabc80b3d8facb22d8f6c659b69aafb118b0f6392d1f4f,15492

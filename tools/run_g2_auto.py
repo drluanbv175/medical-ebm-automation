@@ -517,6 +517,79 @@ def phan_loai_can_thiep(meta: Optional[dict], topic: str = "") -> dict:
             "ung_vien": ung_vien, "canh_bao": canh_bao}
 
 
+def hat_giong_meta_g2(topic: str) -> dict:
+    """Khoá G2 được phép GIEO vào study_meta.json khi còn thiếu (ensure_study_meta chỉ điền chỗ trống).
+
+    SỬA 15/11/2026 (kiểm toàn hệ, chạy G2 cho BTM): hạt giống cũ có cả `design_code`. Với đề tài chưa ghim khoá này,
+    G2 tự chèn `study_meta.design_code` — mà `g1_quality_gate.dau_van_tay_g1` tính dấu vân tay quyết định G1 có cả
+    khoá đó ⇒ xác nhận G1 của chủ nhiệm hết khớp (G1-HUMAN-08) ⇒ G3 (G3-AUTO-01) và G4 (G4-AUTO-12) lùi theo, dù thiết
+    kế KHÔNG đổi. `design_code` cấp cao là chỗ PI ghim thiết kế; G2 đọc thiết kế từ G1 checkpoint, không cần gieo.
+    """
+    return {"title": topic}
+
+
+_CAN_QT = "[CẦN"
+
+
+def _gia_tri_qt(quy_trinh: Optional[list], *muc: str) -> list:
+    """Giá trị các dòng `_quy-trinh-du-lieu.csv` thuộc các mục đã cho (giữ thứ tự bảng)."""
+    return [str(r.get("gia_tri") or "").strip() for r in (quy_trinh or [])
+            if r.get("muc") in muc and str(r.get("gia_tri") or "").strip()]
+
+
+def dam_bao_bao_mat_mien_icf(quy_trinh: Optional[list]) -> tuple:
+    """(dòng «Mã hóa», dòng «Kế hoạch hủy») của đề nghị miễn ICF — lấy từ quy trình dữ liệu ĐÃ CHỐT.
+
+    SỬA 15/11/2026 (chạy G2 cho BTM): khuôn cũ in cứng «Mã hóa: Không cần (không có PII)» và «Kế hoạch hủy: Lưu trữ 5
+    năm sau công bố theo quy định» cho MỌI đề tài xin miễn ICF — BTM trích hồ sơ có bảng nối mã ↔ người bệnh (có dữ
+    liệu cá nhân cho tới khi khử định danh) và PI CHƯA quyết thời hạn lưu trữ. Chưa chốt ⇒ ô [CẦN…], không khẳng định.
+    """
+    ma_hoa = _gia_tri_qt(quy_trinh, "an_danh", "huy_bang_noi")
+    huy = _gia_tri_qt(quy_trinh, "luu_tru", "huy_du_lieu")
+    return (
+        "; ".join(ma_hoa) if ma_hoa else
+        "[CẦN BÁC SĨ MÔ TẢ — cách khử định danh/mã hóa; hồ sơ có sẵn vẫn là dữ liệu cá nhân cho tới khi khử định danh]",
+        "; ".join(huy) if huy else "[CẦN PI QUYẾT — thời hạn lưu trữ và cách hủy dữ liệu]",
+    )
+
+
+def khoi_quy_trinh_g2(quy_trinh: Optional[list]) -> str:
+    """Khối quy trình dữ liệu ĐÃ CHỐT in đầu TÀI LIỆU 6 (DMP) — cùng nguồn với PHẦN 1B của DMP G5 (15/11/2026)."""
+    if not quy_trinh:
+        return ""
+    import quy_trinh_du_lieu as QTD  # noqa: PLC0415
+
+    dong = [f"- **{QTD.NHAN[muc]}:** {r.get('gia_tri', '')} _(nguồn: {r.get('nguon', '') or '—'})_"
+            for muc in QTD.NHAN for r in quy_trinh if r.get("muc") == muc]
+    return ("**Quy trình dữ liệu đã chốt** (`_quy-trinh-du-lieu.csv` — nguyên văn quyết định ở đề cương/G1/SOP; khuôn "
+            "bên dưới chỉ là phần bổ sung, chỗ nào trái với khối này thì theo khối này):\n\n" + "\n".join(dong) + "\n\n")
+
+
+def ap_nguon_du_lieu(risk: dict, design_code: str, meta: Optional[dict]) -> dict:
+    """Bảng rủi ro cắt ngang CHỈ dùng dữ liệu thường quy có sẵn (hồi cứu hồ sơ) — không có «bộ câu hỏi» (15/11/2026).
+
+    Khuôn cắt ngang mặc định giả định khảo sát bằng phiếu («Rò rỉ thông tin từ bộ câu hỏi», «Gánh nặng thời gian —
+    bộ câu hỏi ngắn») — sai với đề tài chỉ trích hồ sơ (BTM). Nguồn dữ liệu đọc từ G1 `data_collection_method`.
+    """
+    if design_code != "cross_sectional" or not isinstance(meta, dict):
+        return risk
+    g1 = ((meta.get("gate_params") or {}).get("G1") or {}) if isinstance(meta.get("gate_params"), dict) else {}
+    import skill_standards as _S  # noqa: PLC0415
+
+    nguon = _S.nguon_du_lieu(g1.get("data_collection_method"))
+    if not (nguon["thuong_quy"] and not nguon["thu_moi"]):
+        return risk
+    ra = dict(risk)
+    ra["risks"] = [
+        ("Rò rỉ thông tin cá nhân từ dữ liệu trích hồ sơ", "Rất thấp", "Nhẹ",
+         "Phiếu trích chỉ mang mã nghiên cứu, không ghi trường định danh; bảng nối mã lưu riêng, chỉ nhóm nghiên cứu "
+         "được cấp quyền truy cập"),
+        ("Gánh nặng cho người bệnh", "Không có", "Không có",
+         "Không tiếp xúc người bệnh; chỉ trích hồ sơ có sẵn"),
+    ]
+    return ra
+
+
 def ap_loai_can_thiep(risk: dict, design_code: str, meta: Optional[dict], topic: str = "") -> dict:
     """Thu hẹp bảng rủi ro RCT theo loại can thiệp (K9). Chỉ áp cho design_code == "rct".
 
@@ -651,7 +724,8 @@ def generate_g2_full_package(
     topic: str, study_name: str, design_code: str, design_primary: str,
     reporting_std: str, n_sr: int, n_rct: int, evidence_level: str,
     registry: Optional[dict], risk: dict, run_date: str, n_adjusted: int = 0,
-    specialist_modules: Optional[list] = None, meta: Optional[dict] = None
+    specialist_modules: Optional[list] = None, meta: Optional[dict] = None,
+    quy_trinh: Optional[list] = None,
 ) -> str:
     """Sinh toàn bộ hồ sơ G2 — 8 tài liệu + 24 mục WHO TRDS 1.3.1.
 
@@ -1002,9 +1076,9 @@ CƠ SỞ XIN MIỄN (phải thỏa CẢ 4 điều kiện):
 
 ĐẢM BẢO BẢO MẬT:
 Loại dữ liệu: {data_type_line}
-Mã hóa: Không cần (không có PII)
+Mã hóa: {ma_hoa_line}
 Quyền truy cập: Chỉ nhóm nghiên cứu
-Kế hoạch hủy: Lưu trữ 5 năm sau công bố theo quy định
+Kế hoạch hủy: {ke_hoach_huy_line}
 
 CỜ ĐỎ (bất kỳ → PHẢI lấy ICF đầy đủ):
 ☐ Có dữ liệu cá nhân nhận dạng được → ICF bắt buộc
@@ -1017,7 +1091,8 @@ Chữ ký chủ nhiệm: [CẦN KÝ]   |   Ngày: ___/___/{year}
 """.format(
             ten_dt=ten_dt, run_date_short=run_date[:10], year=_YEAR,
             activation_note=activation_note, waiver_criteria=waiver_criteria,
-            data_type_line=data_type_line,
+            data_type_line=data_type_line, ma_hoa_line=dam_bao_bao_mat_mien_icf(quy_trinh)[0],
+            ke_hoach_huy_line=dam_bao_bao_mat_mien_icf(quy_trinh)[1],
         )
 
     # WHO Trial Registration Data Set 1.3.1 hiện có 24 mục. VÁ 04/10/2026 (soát từng cổng, G2-07): hai bảng
@@ -1067,6 +1142,7 @@ Link to protocol (pre-print): [sẽ bổ sung sau]
 ```
 """
 
+    khoi_quy_trinh_tl6 = khoi_quy_trinh_g2(quy_trinh)
     doc = f"""# A3 — HỒ SƠ ĐẠO ĐỨC & ĐĂNG KÝ NGHIÊN CỨU | {study_name}
 > Tạo tự động: {run_date} | Theo Helsinki (WMA, bản sửa 2024) · ICH-GCP E6(R3) · TT43/2024/TT-BYT · Luật 91/2025/QH15
 > [BẢN NHÁP TỰ ĐỘNG — DRAFT Phiên bản 1.0 chờ phê duyệt]
@@ -1401,7 +1477,7 @@ Investigator: _______________  Date: ___/___/{_YEAR}
 
 ## TÀI LIỆU 6 — KẾ HOẠCH QUẢN LÝ DỮ LIỆU (DMP — Luật 91/2025/QH15)
 
-```
+{khoi_quy_trinh_tl6}```
 KẾ HOẠCH QUẢN LÝ DỮ LIỆU — Cấp IRB
 Đề tài: {ten_dt} | Phiên bản: 1.0 | Ngày: {run_date[:10]}
 ─────────────────────────────────────────────────────────────
@@ -1970,6 +2046,16 @@ def write_g2_checkpoint(study_name: str, out_dir: Path, design_code: str,
 # 7. MAIN
 # ════════════════════════════════════════════════════════════════════════════
 
+def _quy_trinh_de_tai(out_dir: Path) -> list:
+    """Các dòng `_quy-trinh-du-lieu.csv` của đề tài ([] nếu chưa có hoặc đọc lỗi)."""
+    try:
+        import quy_trinh_du_lieu as QTD  # noqa: PLC0415
+        dong, _cot, loi = QTD.doc_bang(Path(out_dir))
+    except Exception:  # noqa: BLE001
+        return []
+    return [] if loi or not dong else list(dong)
+
+
 def _thu_muc_de_tai(study: str) -> Path:
     """Thư mục đề tài exports/<study>/ — neo theo GỐC REPO y khoa (_REPO_ROOT), KHÔNG theo thư mục đang đứng.
 
@@ -2137,12 +2223,10 @@ def main():
     # ── Bước 2: Risk profile ──
     print("\n⚖️  Bước 2/7: Xác định mức nguy cơ và lộ trình IRB...")
     risk = get_risk_profile(design_code, design_primary)
-    _study_meta_for_g2 = GC.ensure_study_meta(
-        out_dir,
-        seed={"title": topic, "design_code": design_code},
-    )
+    _study_meta_for_g2 = GC.ensure_study_meta(out_dir, seed=hat_giong_meta_g2(topic))
     risk = ap_quyet_dinh_dang_ky(risk, _study_meta_for_g2)
     risk = ap_loai_can_thiep(risk, design_code, _study_meta_for_g2, topic)
+    risk = ap_nguon_du_lieu(risk, design_code, _study_meta_for_g2)
     print(f"  → Mức nguy cơ: {risk['risk_level']}")
     print(f"  → Lộ trình IRB: {risk['irb_route']}")
     print(f"  → Đăng ký: {risk['registration']}")
@@ -2179,7 +2263,7 @@ def main():
         n_sr=n_sr, n_rct=n_rct, evidence_level=evidence_level,
         registry=registry, risk=risk, run_date=run_date,
         n_adjusted=n_adjusted, specialist_modules=specialist_modules,
-        meta=_study_meta_for_g2,
+        meta=_study_meta_for_g2, quy_trinh=_quy_trinh_de_tai(out_dir),
     )
     # Hồ sơ này in ra để nộp Hội đồng, nên phải đọc như văn bản khoa học do
     # người viết: bỏ dấu ngắt kiểu máy và ký tự vẽ khung, GIỮ nguyên ô trống chờ
