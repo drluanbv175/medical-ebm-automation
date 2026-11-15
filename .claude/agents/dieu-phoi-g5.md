@@ -52,6 +52,7 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 - Thuộc tính từng biến (E5) đi một mạch bộ biến G3 → từ điển G5 → .sav/.rds; lệch thuộc tính hoặc dữ liệu sai thuộc tính ⇒ trả về `bien-so-nghien-cuu`/`quan-ly-du-lieu`, không sửa tay tệp xuất.
 - G5 chỉ coi xuất SPSS/R là xong khi hai bảng `<mã>_THUOC_TINH_BIEN.md` (spss/ và r/) ghi «✓ 11/11» cho MỌI biến.
 - G5-AUTO-11 cần NGUỒN NGƯỜI DUYỆT: đề cương nộp có bảng biến số, hoặc `G3_BO_BIEN_SO_<mã>.md` người soạn / máy soạn ĐÃ được PI duyệt (dấu gắn nội dung, `gate_params.G3.bo_bien_so_duyet`). Không có ⇒ «không đo được» ⇒ G5 REVIEW — giao lại G3-T2 (`bien-so-nghien-cuu` soạn bằng `tools/bang_bien_g3.py`) và nhắc PI duyệt; không coi bản nháp máy là chuẩn.
+- **Diễn tập SPSS/R trước thu thập (15/11/2026, mọi đề tài):** có từ điển G5 (trước khi in phiếu/nhập liệu thật) ⇒ chạy `python tools/dien_tap_spss_r.py --study <mã>`: sinh dữ liệu GIẢ từ từ điển (mỗi mã lựa chọn + một ca mang mã thiếu), chạy `xuat-sav` + `xuat-rds` THẬT trên bản sao tạm ngoài repo, tính thử biến phái sinh. ĐẠT ⇒ nhãn, mức đo, mã thiếu, ngày, 11 thuộc tính đúng ở cả SPSS lẫn R; LỆCH ⇒ sửa từ điển/ma trận/công thức TRƯỚC khi thu thập; KHÔNG ĐO ĐƯỢC (chưa có từ điển G5 / SPSS / R) ≠ đạt. `--ghi` lưu `DIEN_TAP_SPSS_R_<mã>.md` (tệp riêng của máy, không đụng tệp băm).
 
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G5 (09/10/2026)

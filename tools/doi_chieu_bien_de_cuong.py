@@ -601,7 +601,8 @@ def doi_chieu(study_dir: Path, study: str) -> KetQua:
                 "V6",
                 k,
                 "trường calc của REDCap: nhập Excel/SPSS KHÔNG tính calc ⇒ cột này sẽ trống — khai công "
-                "thức CÙNG TÊN trong _bien-phai-sinh.csv (cùng định nghĩa với cột Choices/Calculations)",
+                "thức CÙNG TÊN trong _bien-phai-sinh.csv (cùng định nghĩa với cột Choices/Calculations) — soạn nháp tự "
+                f"động: python tools/bien_phai_sinh.py soan-tu-calc --study {study} --ghi (thống kê viên/PI duyệt)",
             )
         )
 
