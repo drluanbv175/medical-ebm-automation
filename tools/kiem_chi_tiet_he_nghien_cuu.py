@@ -775,7 +775,7 @@ def _kiem_chuan_bao_cao(study: str, out_dir: Path, cp: dict[str, Any]) -> list[M
     out: list[Muc] = []
     if SS.TAG_CAN_KIEM_CHUNG_NGUON in primary:
         out.append(Muc("G1", "②", VANG, "Chuẩn báo cáo theo thiết kế", f"thiết kế «{code}» chưa có trong bản đồ",
-                       "pin design_code hợp lệ trong study_meta.json"))
+                       "PI ghim gate_params.G1.design hợp lệ trong study_meta.json"))
         return out
     if ghi and ghi.split()[0] != primary.split()[0]:
         out.append(Muc("G1", "②", DO, "Checkpoint G1 ghi chuẩn báo cáo LỆCH bản đồ",

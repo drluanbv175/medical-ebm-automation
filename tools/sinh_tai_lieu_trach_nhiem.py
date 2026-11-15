@@ -208,7 +208,9 @@ def khoi_agent(agent: str) -> str:
                           "đánh giá chéo)" if kiem else
                           "— (không có tiêu chí máy: chất lượng chỉ bảo đảm bằng đánh giá chéo)")
             o_nguoi = "; ".join(f"{vai}: {', '.join(ds)}" for vai, ds in sorted(chuan_bi.items())) or "—"
-            dong.append(f"| {nhan} | {', '.join('`' + d + '`' for d in nv['dau_ra'])} | {o_chiu} | {o_nguoi} |")
+            dau_ra = ", ".join(HD.TACH_PHUONG_AN.join("`" + x + "`" for x in HD.phuong_an_dau_ra(d))
+                               for d in nv["dau_ra"])
+            dong.append(f"| {nhan} | {dau_ra} | {o_chiu} | {o_nguoi} |")
         dong.append("")
     if v["cham"]:
         dong.append("Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — "

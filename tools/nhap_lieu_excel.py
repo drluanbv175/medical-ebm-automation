@@ -272,7 +272,8 @@ def ke_hoach_cot(td: list[dict], mt: list[dict]) -> tuple[list[Cot], list[str]]:
         cot.append(c)
     for c in cot:
         if c.kieu not in ("id", "hop"):
-            c.ma_thieu = _ma_thieu_cho(c.ten, c.truong, mt, c.nomissing)
+            # biến NGÀY không mang mã thiếu cấp dự án (ô trống = thiếu) — như .sav phân tích
+            c.ma_thieu = _ma_thieu_cho(c.ten, c.truong, mt, c.nomissing or c.kieu == "ngay")
     return cot, bo_qua
 
 
@@ -1285,19 +1286,22 @@ def _kieu_spss(c: Cot) -> tuple[bool, str]:
     """(biến SỐ?, định dạng SPSS) của một cột nhập liệu."""
     if c.kieu == "id":
         return False, "A50"
-    if c.kieu == "chu":
-        return False, "A255"
+    if c.kieu == "chu":  # văn bản tự do — CÙNG độ rộng với .sav phân tích (SP.RONG_VAN_BAN_TU_DO)
+        return False, f"A{SP.RONG_VAN_BAN_TU_DO}"
     if c.kieu == "van_ban":
-        return False, "A1000"
+        return False, f"A{SP.RONG_GHI_CHU}"
     if c.kieu == "ma" and any(_so_chat(m) is None for m in c.lua_chon):
         return False, "A20"  # danh mục mã chữ ⇒ biến chuỗi
-    if c.kieu == "ngay":
-        return True, {"date_mdy": "ADATE10", "date_ymd": "SDATE10"}.get(c.kiem_tra, "EDATE10")
+    if c.kieu == "ngay":  # CÙNG định dạng ngày với .sav phân tích (SP.dinh_dang_ngay)
+        return True, SP.dinh_dang_ngay(c.kiem_tra)
     if c.kieu == "ngay_gio":
         return True, "DATETIME20" if "seconds" in c.kiem_tra else "DATETIME17"
     if c.kieu == "gio":
         return True, "TIME5"
-    return True, "F10.2" if c.kieu == "so" else "F8.0"
+    if c.kieu == "so":  # số lẻ THEO ĐỊNH NGHĨA (number_Ndp) như .sav; number không nói ⇒ 2 cho ô nhập
+        m = re.match(r"number_(\d)dp", c.kiem_tra or "")
+        return True, f"F10.{m[1] if m else 2}"
+    return True, "F8.0"
 
 
 def cu_phap_mau_sav(cot: list[Cot], mt: list[dict], dac_ta: str, ra_sav: Path,
@@ -1321,7 +1325,8 @@ def cu_phap_mau_sav(cot: list[Cot], mt: list[dict], dac_ta: str, ra_sav: Path,
         dong.append(f"{'NUMERIC' if so else 'STRING'} {SP.goi_ds(ten)} ({dd}).")
     dong += ["END FILE.", "END INPUT PROGRAM.", "VARIABLE LABELS"]
     for k, c in enumerate(cot):
-        nhan = c.nhan if c.kieu != "hop" else f"{c.nhan} — {c.lua_chon.get(c.ma_hop, c.ma_hop)}"
+        # CÙNG nhãn với .sav phân tích (cau_noi_spss.ke_hoach_bien): ô checkbox «<câu>: <lựa chọn>»
+        nhan = c.nhan if c.kieu != "hop" else f"{c.nhan}: {c.lua_chon.get(c.ma_hop, c.ma_hop)}"
         dong.append(f"  {'/' if k else ''}{c.ten} {SP.chuoi_spss(nhan or c.ten)}")
     dong[-1] += "."
     khoi_nhan, thieu = [], []
@@ -1329,7 +1334,7 @@ def cu_phap_mau_sav(cot: list[Cot], mt: list[dict], dac_ta: str, ra_sav: Path,
         so, _ = _kieu_spss(c)
         cap: list[tuple[str, str]] = []
         if c.kieu == "hop":
-            cap = [("0", "Không chọn"), ("1", "Có chọn")]
+            cap = [("1", "Có"), ("0", "Không")]  # như .sav phân tích
         elif c.kieu == "ma":
             cap = list(c.lua_chon.items())
         ma_so_thieu = [m for m in c.ma_thieu if _so_chat(m) is not None]
@@ -1341,12 +1346,14 @@ def cu_phap_mau_sav(cot: list[Cot], mt: list[dict], dac_ta: str, ra_sav: Path,
             if mde:
                 thieu.append(f"MISSING VALUES {c.ten} ({mde}).")
         else:
-            cap += [(m, f"{m} — {c.ma_thieu[m] or m}") for m in ma_chu_thieu]
-            gia = [m for m in c.ma_thieu if len(m.encode("utf-8")) <= 8][:3]
-            if gia:
-                thieu.append(
-                    f"MISSING VALUES {c.ten} (" + ", ".join("'" + g.replace("'", "''") + "'" for g in gia) + ")."
-                )
+            # Biến CHUỖI — như .sav phân tích: khai ô trống «» + mã thiếu (nhãn = nhãn mã), tối đa 3, mã ≤ 8 byte
+            cap += [(m, c.ma_thieu[m] or m) for m in ma_chu_thieu]
+            dai = [m for m in c.ma_thieu if len(m.encode("utf-8")) > 8]
+            if dai:
+                raise TuChoi(f"{c.ten}: mã thiếu chuỗi dài hơn 8 byte ({', '.join(dai)}) — SPSS không khai được; rút "
+                             "ngắn mã ở _ma-thieu-theo-bien.csv")
+            gia = ["", *c.ma_thieu][:3]
+            thieu.append(f"MISSING VALUES {c.ten} (" + ", ".join("'" + g.replace("'", "''") + "'" for g in gia) + ").")
         if cap:
             gia_tri = [f"    {m if so else chr(39) + m.replace(chr(39), chr(39) * 2) + chr(39)} {SP.chuoi_spss(n)}"
                        for m, n in cap]  # fmt: skip
@@ -1362,9 +1369,17 @@ def cu_phap_mau_sav(cot: list[Cot], mt: list[dict], dac_ta: str, ra_sav: Path,
     # nhập không được nói «danh định» cho một thang thứ bậc mà tệp phân tích nói «thứ bậc».
     tt_cot = {}
     for c in cot:
-        muc_cu = "SCALE" if c.kieu in ("so", "so_nguyen", "ngay", "ngay_gio", "gio") else "NOMINAL"
-        tt_cot[c.ten] = SP.thuoc_tinh_tu_dong((ma_tran or {}).get(c.truong) or {}, kieu_so=_kieu_spss(c)[0],
+        kieu_so = _kieu_spss(c)[0]
+        if c.kieu in ("so", "so_nguyen", "ngay", "ngay_gio", "gio"):
+            muc_cu = "SCALE"
+        elif c.kieu == "ma" and kieu_so:  # CÙNG luật suy thứ bậc với .sav (SP.muc_do_lua_chon)
+            muc_cu = SP.muc_do_lua_chon(c.lua_chon, {SP._ma_so_gon(m) for m in c.ma_thieu if _so_chat(m) is not None})
+        else:
+            muc_cu = "NOMINAL"
+        tt_cot[c.ten] = SP.thuoc_tinh_tu_dong((ma_tran or {}).get(c.truong) or {}, kieu_so=kieu_so,
                                               la_hop=c.kieu == "hop", lo=c.min, hi=c.max, muc_cu=muc_cu)
+        # cho SP.vai_tro_spss / SP.can_le (11 thuộc tính); văn bản tự do ⇒ Role NONE như .sav
+        tt_cot[c.ten].update({"cot": c.ten, "so": kieu_so, "tu_do": c.kieu in ("chu", "van_ban")})
     for muc in ("SCALE", "ORDINAL", "NOMINAL"):
         ds = [c.ten for c in cot if tt_cot[c.ten]["muc_do"] == muc]
         if ds:
@@ -1373,10 +1388,14 @@ def cu_phap_mau_sav(cot: list[Cot], mt: list[dict], dac_ta: str, ra_sav: Path,
         tt = [f"{k}({SP.chuoi_spss(v)})" for k, v in SP.thuoc_tinh_ky_vong(tt_cot[c.ten]).items()]
         if tt:
             dong.append(f"VARIABLE ATTRIBUTE VARIABLES={c.ten} ATTRIBUTE={' '.join(tt)}.")
+    # 11 thuộc tính: Columns + Align + Role TƯỜNG MINH cho MỌI biến — cùng luật với .sav (SP.cot_hien_tu_dinh_dang,
+    # SP.can_le, SP.vai_tro_spss); Columns tính trên định dạng NHẬP của mẫu.
+    dong += SP.nhom_cu_phap("VARIABLE WIDTH", [(c.ten, str(SP.cot_hien_tu_dinh_dang(_kieu_spss(c)[1], c.ten)))
+                                               for c in cot])
+    dong += SP.nhom_cu_phap("VARIABLE ALIGNMENT", [(c.ten, SP.can_le(tt_cot[c.ten])) for c in cot])
     vai: dict[str, list[str]] = {}
     for c in cot:
-        if tt_cot[c.ten]["vai_tro"] in SP._VAI_TRO_SPSS:
-            vai.setdefault(SP._VAI_TRO_SPSS[tt_cot[c.ten]["vai_tro"]], []).append(c.ten)
+        vai.setdefault(SP.vai_tro_spss(tt_cot[c.ten]), []).append(c.ten)
     if vai:
         dong.append("VARIABLE ROLE " + " ".join(f"/{k} {SP.goi_ds(v)}" for k, v in vai.items()) + ".")
     dong.append(

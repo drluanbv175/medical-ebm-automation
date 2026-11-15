@@ -1138,6 +1138,8 @@ def lenh_chay(args) -> int:
 
 LOP_SO_NHAN = ["haven_labelled_spss", "haven_labelled", "vctrs_vctr", "double"]
 LOP_CHU_NHAN = ["haven_labelled", "vctrs_vctr", "character"]
+#: Biến CHUỖI có mã thiếu khai (vd «», «BTR») — như MISSING VALUES chuỗi của .sav (11 thuộc tính, 15/11/2026).
+LOP_CHU_NHAN_SPSS = ["haven_labelled_spss", "haven_labelled", "vctrs_vctr", "character"]
 
 
 def chuoi_r_u(s) -> str:
@@ -1186,8 +1188,13 @@ def ke_cho_r(ke: list[dict]) -> list[dict]:
                 "nhan_gia_tri": S.ky_vong_nhan_gia_tri(b),
                 "na_values": th["roi"] if b["so"] else [],
                 "na_range": th["khoang"] if b["so"] else None,
+                # mã thiếu biến CHUỖI (Missing của .sav) — cùng tập SPSS khai ở MISSING VALUES
+                "na_chuoi": [] if b["so"] else list(th["roi"]),
+                # 11 thuộc tính: Columns · Align · Role của SPSS (S.cot_hien / S.can_le / S.vai_tro_spss)
+                "cot_hien": S.cot_hien(b),
                 # E5 (15/11/2026) — cùng nguồn với VARIABLE LEVEL/ATTRIBUTE/ROLE của .sav (S.thuoc_tinh_ky_vong)
                 "do_luong": str(b["muc_do"]).lower(),
+                "ngay": bool(b.get("ngay")),  # biến NGÀY ⇒ class Date (như kiểu ngày của .sav)
                 "tt": thuoc_tinh_r(b),
                 "khoang": list(b["khoang_hop_le"]) if b.get("khoang_hop_le") else None,
             }
@@ -1195,13 +1202,17 @@ def ke_cho_r(ke: list[dict]) -> list[dict]:
     return ra
 
 
-#: Thuộc tính tuỳ biến .sav ⇒ tên attr trong .rds (R/RStudio đọc bằng attr(x, "role")…).
-TT_SAV_SANG_R = {"VaiTro": "role", "MucTieu": "objective", "CauHoi": "item"}
+#: Thuộc tính tuỳ biến .sav ⇒ tên attr trong .rds. `role` của .rds = Role SPSS (thuộc tính thứ 11); vai trò của ma trận
+#: mang ở `vai_tro` (như VaiTro của .sav).
+TT_SAV_SANG_R = {"VaiTro": "vai_tro", "MucTieu": "objective", "CauHoi": "item"}
 
 
 def thuoc_tinh_r(b: dict) -> dict[str, str]:
-    """attr role/objective/item của một biến — lấy từ S.thuoc_tinh_ky_vong (một nguồn với .sav)."""
-    return {TT_SAV_SANG_R[k]: v for k, v in S.thuoc_tinh_ky_vong(b).items() if k in TT_SAV_SANG_R}
+    """attr chữ của một biến trong .rds: role + align (11 thuộc tính SPSS) + vai_tro/objective/item (ma trận) — lấy từ
+    CÙNG hàm với .sav (S.vai_tro_spss, S.can_le, S.thuoc_tinh_ky_vong)."""
+    tt = {"role": S.vai_tro_spss(b).lower(), "align": S.can_le(b).lower()}
+    tt.update({TT_SAV_SANG_R[k]: v for k, v in S.thuoc_tinh_ky_vong(b).items() if k in TT_SAV_SANG_R})
+    return tt
 
 
 def _vec_r_u(ds, *, so: bool) -> str:
@@ -1228,6 +1239,9 @@ def _ke_r(kr: list[dict]) -> str:
             f"na_values = {_vec_r_u(b['na_values'], so=True)}",
             "na_range = " + (_vec_r_u(b["na_range"], so=True) if b["na_range"] else "NULL"),
             f"do_luong = {chuoi_r_u(b['do_luong'])}",
+            f"ngay = {'TRUE' if b['ngay'] else 'FALSE'}",
+            f"cot_hien = {int(b['cot_hien'])}L",
+            f"na_chuoi = {_vec_r_u(b['na_chuoi'], so=False)}",
             f"tt = stats::setNames({_vec_r_u(b['tt'].values(), so=False)}, {_vec_r_u(b['tt'].keys(), so=False)})",
             "khoang = " + ("c(" + ", ".join("NA_real_" if x is None else repr(float(x)) for x in b["khoang"]) + ")"
                            if b["khoang"] else "NULL"),
@@ -1243,7 +1257,8 @@ MAU_RDS = r"""# ═════════════════════�
 # Chạy:    Rscript --vanilla <tệp này> [<CSV> [<tệp .rds ra>]]
 # RStudio: Source tệp này; đọc lại: d <- readRDS(TEP_RDS) — biến có nhãn theo khuôn haven (haven::as_factor,
 #          haven::zap_missing dùng được nếu đã cài haven). Mã thiếu chữ (BTR…) đã đổi về mã số như .sav (−9991…),
-#          khai ở na_values/na_range; chuỗi rỗng là «» (không phải NA). Cần bác sĩ kiểm chứng.
+#          khai ở na_values/na_range. Biến CHUỖI khai «» (ô trống) và mã chữ ở na_values như MISSING VALUES của .sav
+#          ⇒ is.na() trả TRUE cho các ô đó (lm/glm bỏ dòng) — đúng ngữ nghĩa SPSS. Cần bác sĩ kiểm chứng.
 # ══════════════════════════════════════════════════════════════════════════════════════════════════
 .a <- commandArgs(trailingOnly = TRUE)
 .lay <- function(i, mac_dinh) if (length(.a) >= i && nzchar(.a[i])) .a[i] else mac_dinh
@@ -1310,26 +1325,37 @@ chuyen_so <- function(x, ma_chu, ten) {
 .ra <- list()
 for (b in KE) {
   x <- .v[[b$cot]]
-  if (b$so) {
+  if (isTRUE(b$ngay)) {                                   # NGÀY ISO ⇒ Date (haven đọc ngày của .sav cũng thành Date)
+    t <- utf8(sub("[ \t\r\n\f\v]+$", "", sub("^[ \t\r\n\f\v]+", "", x, useBytes = TRUE), useBytes = TRUE))
+    x <- as.Date(ifelse(nzchar(t), t, NA_character_), format = "%Y-%m-%d")
+  } else if (b$so) {
     x <- chuyen_so(x, b$ma_chu, b$ten)
   } else {
     x <- utf8(sub(" +$", "", x, useBytes = TRUE))  # như SPSS: dấu cách CUỐI không có nghĩa
   }
   attr(x, "label") <- b$nhan
   attr(x, "format.spss") <- b$dinh_dang
-  attr(x, "measure") <- b$do_luong                       # nominal / ordinal / scale — như VARIABLE LEVEL của .sav
-  for (k in names(b$tt)) attr(x, k) <- unname(b$tt[[k]])  # role / objective / item — như VARIABLE ATTRIBUTE
+  attr(x, "measure") <- b$do_luong                       # Measure — như VARIABLE LEVEL của .sav
+  attr(x, "display_width") <- b$cot_hien                 # Columns — như VARIABLE WIDTH (khuôn haven)
+  for (k in names(b$tt)) attr(x, k) <- unname(b$tt[[k]])  # role · align (Role/Align) + vai_tro · objective · item
   if (!is.null(b$khoang)) attr(x, "valid_range") <- b$khoang  # khoảng hợp lệ của từ điển (NA = đầu mở)
-  if (b$so) {
+  if (isTRUE(b$ngay)) {
+    # Date giữ lớp Date (không khuôn haven_labelled); ô trống = NA như SYSMIS của .sav
+  } else if (b$so) {
     if (length(b$gt)) attr(x, "labels") <- stats::setNames(b$gt, b$gt_nhan)
     if (length(b$na_values)) attr(x, "na_values") <- b$na_values
     if (!is.null(b$na_range)) attr(x, "na_range") <- b$na_range
     if (length(b$gt) || length(b$na_values) || !is.null(b$na_range)) {
       class(x) <- c("haven_labelled_spss", "haven_labelled", "vctrs_vctr", "double")
     }
-  } else if (length(b$gt)) {
-    attr(x, "labels") <- stats::setNames(b$gt, b$gt_nhan)
-    class(x) <- c("haven_labelled", "vctrs_vctr", "character")
+  } else {
+    if (length(b$gt)) attr(x, "labels") <- stats::setNames(b$gt, b$gt_nhan)
+    if (length(b$na_chuoi)) {                            # Missing của biến chuỗi — như MISSING VALUES chuỗi .sav
+      attr(x, "na_values") <- b$na_chuoi
+      class(x) <- c("haven_labelled_spss", "haven_labelled", "vctrs_vctr", "character")
+    } else if (length(b$gt)) {
+      class(x) <- c("haven_labelled", "vctrs_vctr", "character")
+    }
   }
   .ra[[b$ten]] <- x
 }
@@ -1365,7 +1391,11 @@ ghi_thuoc_tinh <- function(d, tep) {
     if (!is.null(nr)) dong <- c(dong, paste("NA_RANGE", h, so17(nr[1]), so17(nr[2]), sep = "\t"))
     ms <- attr(x, "measure", exact = TRUE)
     if (!is.null(ms)) dong <- c(dong, paste("DO_LUONG", h, hex1(ms), sep = "\t"))
-    for (k in c("role", "objective", "item")) {
+    fm <- attr(x, "format.spss", exact = TRUE)
+    if (!is.null(fm)) dong <- c(dong, paste("DINH_DANG", h, hex1(fm), sep = "\t"))
+    dw <- attr(x, "display_width", exact = TRUE)
+    if (!is.null(dw)) dong <- c(dong, paste("COT_HIEN", h, so17(dw), sep = "\t"))
+    for (k in c("role", "align", "vai_tro", "objective", "item")) {
       g <- attr(x, k, exact = TRUE)
       if (!is.null(g)) dong <- c(dong, paste("TT", h, k, hex1(g), sep = "\t"))
     }
@@ -1437,7 +1467,8 @@ def doc_ban_xa_r(p_gt: Path, p_tt: Path) -> tuple[list[str], list[list], dict[st
         ten = _hex_chu(p[1])
         if p[0] == "BIEN":
             tt[ten] = {"typeof": p[2], "class": p[3].split(","), "nhan": None, "gt": {}, "na_values": [],
-                       "na_range": None, "do_luong": None, "tt": {}, "khoang": None}  # fmt: skip
+                       "na_range": None, "do_luong": None, "tt": {}, "khoang": None, "dinh_dang": None,
+                       "cot_hien": None}  # fmt: skip
         elif p[0] == "NHAN":
             tt[ten]["nhan"] = None if p[2] == "NULL" else _hex_chu(p[2])
         elif p[0] == "GT_NHAN":
@@ -1448,6 +1479,10 @@ def doc_ban_xa_r(p_gt: Path, p_tt: Path) -> tuple[list[str], list[list], dict[st
             tt[ten]["na_range"] = [float(p[2]), float(p[3])]
         elif p[0] == "DO_LUONG":
             tt[ten]["do_luong"] = _hex_chu(p[2])
+        elif p[0] == "DINH_DANG":
+            tt[ten]["dinh_dang"] = _hex_chu(p[2])
+        elif p[0] == "COT_HIEN":
+            tt[ten]["cot_hien"] = None if p[2] == "NA" else int(float(p[2]))
         elif p[0] == "TT":
             tt[ten]["tt"][p[2]] = _hex_chu(p[3])
         elif p[0] == "KHOANG":
@@ -1462,47 +1497,87 @@ def _khoang_r(k: list | None) -> list | None:
 
 
 def kiem_thuoc_tinh_rds(ke: list[dict], bien: list[str], tt: dict[str, dict]) -> dict:
-    """Thuộc tính .rds đọc lại so với kế hoạch: tên + thứ tự, kiểu/lớp (khuôn haven), nhãn biến, nhãn giá trị (kể cả
-    nhãn mã thiếu), na_values/na_range (biến số), mức đo (measure), vai trò/mục tiêu/mã câu (role/objective/item),
-    khoảng hợp lệ (valid_range) — E5 15/11/2026. Trả {trang_thai, so_lech, lech}."""
+    """Thuộc tính .rds đọc lại so với kế hoạch theo ĐỦ 11 thuộc tính của SPSS (bác sĩ 15/11/2026), mỗi thuộc tính một
+    attr R tương ứng (S.THUOC_TINH_11_R): Name (tên + thứ tự) · Type (typeof/lớp khuôn haven) · Width/Decimals
+    (format.spss) · Label · Values (labels, kể cả nhãn mã thiếu) · Missing (na_values/na_range; cả biến CHUỖI) · Columns
+    (display_width) · Align · Measure · Role — cộng vai_tro/objective/item/valid_range của ma trận (E5).
+    Trả {trang_thai, so_lech, lech, theo_bien{tên: {thuộc tính: True|False}}}."""
     lech: list[str] = []
+    theo_bien: dict[str, dict] = {}
     kr = ke_cho_r(ke)
     if [b["ten"] for b in kr] != bien:
         lech.append("tên/thứ tự biến .rds khác kế hoạch")
-    for b in kr:
+    for vi, b in enumerate(kr):
+        kt: dict[str, bool | None] = dict.fromkeys(S.THUOC_TINH_11)
+        theo_bien[b["ten"]] = kt
         a = tt.get(b["ten"])
         if a is None:
+            kt["Name"] = False
             continue
+        kt["Name"] = vi < len(bien) and bien[vi] == b["ten"]
         co_nhan = bool(b["nhan_gia_tri"])
-        if b["so"]:
+        if b["ngay"]:
+            lop, kieu = ["Date"], "double"
+        elif b["so"]:
             lop = LOP_SO_NHAN if (co_nhan or b["na_values"] or b["na_range"]) else ["numeric"]
             kieu = "double"
         else:
-            lop = LOP_CHU_NHAN if co_nhan else ["character"]
+            lop = LOP_CHU_NHAN_SPSS if b["na_chuoi"] else (LOP_CHU_NHAN if co_nhan else ["character"])
             kieu = "character"
-        if a["typeof"] != kieu or a["class"] != lop:
+        kt["Type"] = a["typeof"] == kieu and a["class"] == lop
+        if not kt["Type"]:
             lech.append(f"{b['ten']}: kiểu/lớp {a['typeof']}/{','.join(a['class'])} — kỳ vọng {kieu}/{','.join(lop)}")
-        if a["nhan"] != b["nhan"]:
+        ky_vong, co = S.dinh_dang_tach(b["dinh_dang"]), S.dinh_dang_tach(a.get("dinh_dang"))
+        kt["Width"] = co is not None and co[:2] == ky_vong[:2]
+        kt["Decimals"] = co is not None and co[2] == ky_vong[2]
+        if not (kt["Width"] and kt["Decimals"]):
+            lech.append(f"{b['ten']}: format.spss (Width/Decimals) {a.get('dinh_dang')} — kỳ vọng {b['dinh_dang']}")
+        kt["Label"] = a["nhan"] == b["nhan"]
+        if not kt["Label"]:
             lech.append(f"{b['ten']}: nhãn biến (label) khác kế hoạch")
-        if a["gt"] != b["nhan_gia_tri"]:
+        kt["Values"] = a["gt"] == b["nhan_gia_tri"]
+        if not kt["Values"]:
             lech.append(f"{b['ten']}: nhãn giá trị (labels) khác kế hoạch")
         if b["so"]:
-            if sorted(a["na_values"]) != sorted(b["na_values"]):
+            dung_roi = sorted(a["na_values"]) == sorted(b["na_values"])
+            dung_khoang = a["na_range"] == _khoang_r(b["na_range"])
+            if not dung_roi:
                 lech.append(f"{b['ten']}: na_values {a['na_values']} — kỳ vọng {b['na_values']}")
-            if a["na_range"] != _khoang_r(b["na_range"]):
+            if not dung_khoang:
                 lech.append(f"{b['ten']}: na_range {a['na_range']} — kỳ vọng {_khoang_r(b['na_range'])}")
-        if a.get("do_luong") != b["do_luong"]:
+            kt["Missing"] = dung_roi and dung_khoang
+        else:
+            kt["Missing"] = sorted(str(x) for x in a["na_values"]) == sorted(b["na_chuoi"])
+            if not kt["Missing"]:
+                lech.append(f"{b['ten']}: na_values chuỗi {a['na_values']} — kỳ vọng {b['na_chuoi']}")
+        kt["Columns"] = a.get("cot_hien") == b["cot_hien"]
+        if not kt["Columns"]:
+            lech.append(f"{b['ten']}: display_width (Columns) {a.get('cot_hien')} — kỳ vọng {b['cot_hien']}")
+        co_tt = a.get("tt") or {}
+        kt["Align"] = co_tt.get("align") == b["tt"]["align"]
+        if not kt["Align"]:
+            lech.append(f"{b['ten']}: align (Align) {co_tt.get('align')} — kỳ vọng {b['tt']['align']}")
+        kt["Measure"] = a.get("do_luong") == b["do_luong"]
+        if not kt["Measure"]:
             lech.append(f"{b['ten']}: mức đo (measure) {a.get('do_luong')} — kỳ vọng {b['do_luong']}")
-        if (a.get("tt") or {}) != b["tt"]:
-            lech.append(f"{b['ten']}: vai trò/mục tiêu/mã câu {a.get('tt')} — kỳ vọng {b['tt']}")
+        kt["Role"] = co_tt.get("role") == b["tt"]["role"]
+        if not kt["Role"]:
+            lech.append(f"{b['ten']}: role (Role) {co_tt.get('role')} — kỳ vọng {b['tt']['role']}")
+        tt_khac = {k: v for k, v in co_tt.items() if k not in ("role", "align")}
+        tt_ky_vong = {k: v for k, v in b["tt"].items() if k not in ("role", "align")}
+        kt["ThuocTinh"] = tt_khac == tt_ky_vong and a.get("khoang") == b["khoang"]
+        if tt_khac != tt_ky_vong:
+            lech.append(f"{b['ten']}: vai trò/mục tiêu/mã câu {tt_khac} — kỳ vọng {tt_ky_vong}")
         if a.get("khoang") != b["khoang"]:
             lech.append(f"{b['ten']}: khoảng hợp lệ (valid_range) {a.get('khoang')} — kỳ vọng {b['khoang']}")
-    return {"trang_thai": "KHOP" if not lech else "LECH", "so_lech": len(lech), "lech": lech}
+    return {"trang_thai": "KHOP" if not lech else "LECH", "so_lech": len(lech), "lech": lech, "theo_bien": theo_bien}
 
 
 def so_sav_rds(ke: list[dict], sav: tuple, rds: tuple) -> dict:
     """Chặng .sav (haven::read_sav, user_na=TRUE) ↔ .rds: tên, giá trị từng ô (số theo S.SAI_SO_ULP), nhãn biến, nhãn
-    giá trị, mã thiếu biến số. Mã thiếu biến CHUỖI («» và mã chữ) không mang sang .rds theo khuôn đã chọn ⇒ không so."""
+    giá trị, mã thiếu (cả biến CHUỖI, bỏ dấu cách đệm của SPSS), format.spss (Width/Decimals) và display_width
+    (Columns) khi haven đọc được. Measure/Align/Role/thuộc tính tuỳ biến haven KHÔNG đọc từ .sav ⇒ so qua bảng E5 của
+    manifest (lech_bang_thuoc_tinh) và E2 của SPSS."""
     (b_s, ca_s, tt_s), (b_r, ca_r, tt_r) = sav, rds
     lech: list[str] = []
     if b_s != b_r:
@@ -1529,14 +1604,45 @@ def so_sav_rds(ke: list[dict], sav: tuple, rds: tuple) -> dict:
             lech.append(f"{b['ten']}: nhãn biến .sav ≠ .rds")
         if (a.get("gt") or {}) != (c.get("gt") or {}):
             lech.append(f"{b['ten']}: nhãn giá trị .sav ≠ .rds")
-        na_s, na_r = sorted(a.get("na_values") or []), sorted(c.get("na_values") or [])
-        if b["so"] and (na_s != na_r or a.get("na_range") != c.get("na_range")):
+        if b["so"]:
+            na_s, na_r = sorted(a.get("na_values") or []), sorted(c.get("na_values") or [])
+        else:
+            na_s = sorted(str(x).rstrip(" ") for x in a.get("na_values") or [])
+            na_r = sorted(str(x).rstrip(" ") for x in c.get("na_values") or [])
+        if na_s != na_r or (b["so"] and a.get("na_range") != c.get("na_range")):
             lech.append(f"{b['ten']}: mã thiếu (na_values/na_range) .sav ≠ .rds")
+        ds, dr = S.dinh_dang_tach(a.get("dinh_dang")), S.dinh_dang_tach(c.get("dinh_dang"))
+        if ds and dr and ds != dr:
+            lech.append(f"{b['ten']}: format.spss .sav {a.get('dinh_dang')} ≠ .rds {c.get('dinh_dang')}")
+        if a.get("cot_hien") is not None and c.get("cot_hien") is not None and a["cot_hien"] != c["cot_hien"]:
+            lech.append(f"{b['ten']}: display_width (Columns) .sav {a['cot_hien']} ≠ .rds {c['cot_hien']}")
     return {"trang_thai": "KHOP" if not lech else "LECH", "so_o": so_o, "so_lech_o": so_lech_o, "lech": lech}
 
 
-def _sav_cung_ke(d: Path, study: str, hau_to: str, sha_nguon: str, sha_td: str) -> tuple[Path | None, dict, str]:
-    """.sav của CÙNG nguồn + CÙNG từ điển (manifest khớp SHA-256 cả hai, tệp còn và khớp SHA-256 .sav) hoặc lý do."""
+#: Thuộc tính một biến phải TRÙNG giữa .sav và .rds (E5) — haven không đọc được chúng từ .sav nên so qua manifest.
+_TT_SO_SAV_RDS = ("ten_spss", "kieu_du_lieu", "do_rong", "so_le", "nhan", "nhan_gia_tri", "ma_thieu", "cot_hien",
+                  "can_le", "muc_do", "vai_tro_spss", "nguon_muc_do", "vai_tro", "muc_tieu", "cau_hoi", "khoang_hop_le")
+
+
+def lech_bang_thuoc_tinh(bang_sav: list[dict] | None, bang_rds: list[dict]) -> list[str]:
+    """Biến có thuộc tính khác nhau giữa bảng E5 của lượt xuat-sav (manifest .sav) và của lượt xuat-rds này."""
+    if bang_sav is None:
+        return [".sav dựng trước E5 (manifest chưa có bảng thuộc tính) — chạy lại xuat-sav"]
+    a = {x.get("bien"): x for x in bang_sav}
+    lech = []
+    for x in bang_rds:
+        y = a.get(x.get("bien"))
+        khac = [k for k in _TT_SO_SAV_RDS if y is None or y.get(k) != x.get(k)]
+        if khac:
+            lech.append(f"{x.get('bien')} ({', '.join(khac)})")
+    lech += [f"{b} (chỉ có ở .sav)" for b in a if b not in {x.get("bien") for x in bang_rds}]
+    return lech
+
+
+def _sav_cung_ke(d: Path, study: str, hau_to: str, sha_nguon: str, sha_td: str,
+                 bang: list[dict] | None = None) -> tuple[Path | None, dict, str]:
+    """.sav của CÙNG nguồn + CÙNG từ điển (manifest khớp SHA-256 cả hai, tệp còn và khớp SHA-256 .sav) + CÙNG bảng
+    thuộc tính E5 (ma trận đổi giữa hai lượt xuất ⇒ .sav cũ không còn cùng kế hoạch) hoặc lý do."""
     man_p = d / "spss" / f"{study}{hau_to}.sav.manifest.json"
     man = S._doc_json(man_p)
     if not man:
@@ -1548,6 +1654,11 @@ def _sav_cung_ke(d: Path, study: str, hau_to: str, sha_nguon: str, sha_td: str) 
         return None, man, "lượt xuat-sav gần nhất không tạo được .sav"
     if S.sha256_tep(sav) != man.get("sha256_sav"):
         return None, man, "tệp .sav đã đổi sau khi tạo (SHA-256 khác manifest)"
+    if bang is not None:
+        lech = lech_bang_thuoc_tinh((man.get("thuoc_tinh_bien") or {}).get("bang"), bang)
+        if lech:
+            return None, man, ("thuộc tính biến của .sav KHÁC lượt này (ma trận/từ điển đổi sau xuat-sav?) — chạy lại "
+                               "xuat-sav: " + "; ".join(lech[:6]))
     return sav, man, ""
 
 
@@ -1573,6 +1684,10 @@ def lenh_xuat_rds(args) -> int:
     ke, canh_bao, _ = S.ke_hoach_bien(tieu_de, tk, td, mt, giu_ghi_chu=getattr(args, "giu_ghi_chu", False))
     S.kiem_noi_dung_bien(d, args.study, td_p, ke)  # E4 — nội dung biến đúng mục tiêu (15/11/2026)
     e5 = S.ap_va_chan_e5(d, args.study, ke, td, csv_p)  # E5 — thuộc tính từng biến, CÙNG hàm với .sav
+    # Bảng R ghi lại ĐẦU lượt («⚪ chưa đọc lại») — bảng «✓ 11/11» của lượt trước không được sống sót qua lượt hỏng
+    (d / "r").mkdir(parents=True, exist_ok=True)
+    S.ghi_bang_thuoc_tinh(d / "r", args.study, e5["bang"], ban_nhap=args.ban_nhap, kiem=None,
+                          nhan_kiem="R đọc lại .rds")
     r_dir = d / "r"
     r_dir.mkdir(parents=True, exist_ok=True)
     hau_to = "_BAN-NHAP" if args.ban_nhap else "_khoa"
@@ -1619,7 +1734,7 @@ def lenh_xuat_rds(args) -> int:
         man_p.write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
         print(f"⚪ {e}\n   Chạy {script_p.name} trong R/RStudio để tạo {rds_p.name}. KHÔNG phải «đạt».")
         return MA_KHONG_DO
-    sav, man_sav, ly_do_sav = _sav_cung_ke(d, args.study, hau_to, sha_nguon, sha_td)
+    sav, man_sav, ly_do_sav = _sav_cung_ke(d, args.study, hau_to, sha_nguon, sha_td, e5["bang"])
     with tempfile.TemporaryDirectory(prefix="ebm-r-rds-") as tam_s:
         tam = Path(tam_s)
         t = {k: tam / f"{k}.txt" for k in ("gt", "tt", "sav_gt", "sav_tt")}
@@ -1646,7 +1761,7 @@ def lenh_xuat_rds(args) -> int:
         haven_ver = S._gia_tri_dong(out, "HAVEN")
         b_r, ca_r, tt_r = doc_ban_xa_r(t["gt"], t["tt"])
         luc = datetime.now().astimezone().isoformat(timespec="seconds")
-        kh = S.so_sanh_gia_tri(csv_p, ke, b_r, ca_r)
+        kh = S.so_sanh_gia_tri(csv_p, ke, b_r, ca_r, ngay_r=True)  # ngày của R = số ngày từ 1970
         ktt = kiem_thuoc_tinh_rds(ke, b_r, tt_r)
         kh["luc"] = ktt["luc"] = luc
         if sav and haven_ver and t["sav_gt"].exists() and t["sav_tt"].exists():
@@ -1661,6 +1776,7 @@ def lenh_xuat_rds(args) -> int:
             "tu_dien_rds": ktt["trang_thai"],
             "khu_hoi_rds": kh["trang_thai"],
             "sav_rds": sr["trang_thai"],
+            "tu_dien_sav_chua_do": list((tdsav or {}).get("chua_do") or []),  # vd vai trò/thuộc tính SPSS không trả
         }
         ket.update(
             {"r_phien_ban": r_ver, "haven_phien_ban": haven_ver or None, "khu_hoi": kh, "kiem_thuoc_tinh": ktt,
@@ -1671,6 +1787,9 @@ def lenh_xuat_rds(args) -> int:
             shutil.move(str(tam_rds), rds_p)
     if not tot:
         man_p.write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
+        if ktt.get("theo_bien") is not None:
+            S.ghi_bang_thuoc_tinh(r_dir, args.study, e5["bang"], ban_nhap=args.ban_nhap, kiem=ktt["theo_bien"],
+                                  nhan_kiem="R đọc lại .rds (lượt HỎNG)")
         print("🔴 .rds KHÔNG khớp — đã bỏ tệp, không dùng (chi tiết trong manifest):")
         if kh["trang_thai"] != "KHOP":
             print("\n".join(S.bao_cao_lech(kh, tieu_de="  Khứ hồi từng ô .rds")))
@@ -1680,13 +1799,19 @@ def lenh_xuat_rds(args) -> int:
         return MA_LECH
     os.chmod(rds_p, stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
     ket.update({"rds_da_tao": True, "sha256_rds": S.sha256_tep(rds_p)})
+    bang_r = S.ghi_bang_thuoc_tinh(r_dir, args.study, e5["bang"], ban_nhap=args.ban_nhap,
+                                   kiem=ktt.get("theo_bien") or {}, nhan_kiem="R đọc lại .rds")
     man_p.write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
     nhan = {"KHOP": "✓ khớp", "LECH": "✗ LỆCH", "CHUA_DO": "⚪ chưa đo", "LOI": "✗ lỗi"}
     print(f"✓ {rds_p} — {n} ca · {kh['so_bien']} biến (chỉ đọc) · {r_ver}")
     print(f"  Khứ hồi từng ô .rds: {kh['so_o']} ô khớp nguồn")
+    so_du = sum(1 for kt in (ktt.get("theo_bien") or {}).values() if all(kt.get(k) is True for k in S.THUOC_TINH_11))
+    print(f"  11 thuộc tính .rds đọc lại đủ ở {so_du}/{len(e5['bang'])} biến — bảng {bang_r.name}")
     print("  Ba chiều (từ điển ↔ .sav ↔ .rds):")
     print(f"    từ điển ↔ .sav : {nhan.get(ba_chieu['tu_dien_sav'], ba_chieu['tu_dien_sav'])}" + (
-        f" — {ly_do_sav}" if ba_chieu["tu_dien_sav"] == "CHUA_DO" and ly_do_sav else ""))  # fmt: skip
+        f" — {ly_do_sav}" if ba_chieu["tu_dien_sav"] == "CHUA_DO" and ly_do_sav else "") + (
+        f" (⚪ CHƯA ĐO: {', '.join(ba_chieu['tu_dien_sav_chua_do'])})"
+        if ba_chieu["tu_dien_sav_chua_do"] else ""))  # fmt: skip
     print(f"    từ điển ↔ .rds : {nhan[ba_chieu['tu_dien_rds']]}")
     print(f"    .sav ↔ .rds    : {nhan.get(ba_chieu['sav_rds'], ba_chieu['sav_rds'])}" + (
         f" — {sr.get('ly_do')}" if sr.get("ly_do") else ""))  # fmt: skip

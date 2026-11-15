@@ -1411,7 +1411,8 @@ def evaluate_g1_quality(
         "BLOCK" if pin_tu_choi else "PASS",
         (f"pin «{pin_tu_choi}» ngoài 8 mã hỗ trợ; G1 đang dùng thiết kế suy luận «{internal}»"
          if pin_tu_choi else "không có pin bị từ chối"),
-        "PI ghim lại study_meta.design_code bằng một trong rct/cohort/case_control/cross_sectional/diagnostic/sr_ma/"
+        "PI ghim lại gate_params.G1.design (hoặc study_meta.design_code kèm design_code_nguon=\"PI\") bằng một trong "
+        "rct/cohort/case_control/cross_sectional/diagnostic/sr_ma/"
         "prediction/qualitative có chủ ý, hoặc dùng agent chuyên trách cho thiết kế này (vd quasi-experimental → "
         "TREND, cải tiến chất lượng → SQUIRE 2.0, ca lâm sàng → CARE).",
     ))
@@ -1427,8 +1428,10 @@ def evaluate_g1_quality(
     # độ chính xác và SAP cắt ngang). Thiết kế đó là SUY LUẬN của máy, không phải quyết định của ai. PI đã ghim đúng
     # thiết kế đang dùng ⇒ vẫn REVIEW (quyết định tường minh, PI giải trình nếu cố ý). Không hạ cấp quyết định đã chốt:
     # G1-HUMAN-01 chỉ PASS khi pin khớp thiết kế, nên một G1 từng được xác nhận luôn rơi vào nhánh «đã ghim».
-    ghim_02d = _first_present(meta.get("design_code"), _g1_meta(meta).get("design"))
-    pi_da_ghim = _present(ghim_02d) and S.ma_thiet_ke_chuoi(str(ghim_02d)) == internal
+    # 15/11/2026 (bác sĩ chọn «ghim cần dấu người», thẩm định #277): chỉ ghim CÓ DẤU NGƯỜI mới là «PI đã ghim» —
+    # `design_code` cấp cao do run_g2_auto gieo (thiết kế máy suy) từng hạ BLOCK này xuống REVIEW không ai xác nhận.
+    ghim_02d, ghim_02d_co_dau = S.ghim_thiet_ke(meta)
+    pi_da_ghim = ghim_02d_co_dau and _present(ghim_02d) and S.ma_thiet_ke_chuoi(str(ghim_02d)) == internal
     if not hop_le:
         tk_status = "PASS"
         tk_evidence = "G0 chưa khai loại câu hỏi — không đối chiếu được (G1-AUTO-01 đã giữ G1 chờ G0 chốt)"
@@ -1447,8 +1450,8 @@ def evaluate_g1_quality(
         "Thiết kế hợp với loại câu hỏi đã chốt ở G0",
         tk_status,
         tk_evidence,
-        "Chạy lại G1 để suy lại theo loại câu hỏi G0; hoặc PI sửa question_type ở G0, hoặc ghim study_meta.design_code "
-        "(PI giải trình nếu cố ý chọn thiết kế ngoài nhóm).",
+        "Chạy lại G1 để suy lại theo loại câu hỏi G0; hoặc PI sửa question_type ở G0, hoặc ghim gate_params.G1.design "
+        "(hoặc study_meta.design_code kèm design_code_nguon=\"PI\") — PI giải trình nếu cố ý chọn thiết kế ngoài nhóm.",
     ))
 
     annex2 = A2X.evaluate(meta, internal, "G1")
@@ -1504,12 +1507,18 @@ def evaluate_g1_quality(
     ))
 
     ambiguous = bool(design.get("ambiguous"))
+    # 15/11/2026 (thẩm định #277): thiết kế lấy từ ô ghim CHƯA có dấu PI (run_g1_auto._apply_ghim_chua_co_dau) — nói rõ
+    # để PI biết vì sao cờ mơ hồ chưa gỡ dù study_meta.design_code đã có giá trị.
+    ghim_chua_dau = str(design.get("ghim_chua_co_dau_pi") or "").strip()
     automatic.append(_criterion(
         "G1-AUTO-04",
         "Thiết kế không còn suy luận mơ hồ",
         "REVIEW" if ambiguous else "PASS",
-        "ambiguous=true" if ambiguous else "ambiguous=false",
-        "PI/methodologist phải pin thiết kế sau khi đọc lại khoảng trống.",
+        ("ambiguous=true" if ambiguous else "ambiguous=false")
+        + (f"; study_meta.design_code=«{ghim_chua_dau}» chưa có dấu PI" if ghim_chua_dau and ambiguous else ""),
+        "PI/methodologist phải pin thiết kế sau khi đọc lại khoảng trống"
+        + (" (ghi gate_params.G1.design, hoặc design_confirmed=true, hoặc design_code_nguon=\"PI\")."
+           if ghim_chua_dau and ambiguous else "."),
     ))
 
     # «[Đã pin bởi bác sĩ — …]» (run_g1_auto._apply_design_pin) là nội dung HỢP LỆ của alternative_1/2 —
@@ -1694,7 +1703,8 @@ def evaluate_g1_quality(
     ))
 
     g1 = _g1_meta(meta)
-    pinned_design = _first_present(meta.get("design_code"), g1.get("design"))
+    # Thẩm định #281: cùng MỘT nguồn giá trị ghim với run_g1_auto (G1.design của PI thắng design_code không nhãn PI).
+    pinned_design = S.ghim_thiet_ke(meta)[0] or None
     # VÁ 04/10/2026 (soát từng cổng, G1-12): so pin SAU KHI chuẩn hoá qua bảng bí danh dùng chung — ghim «RCT» hay
     # «systematic_review» từng bị REVIEW vĩnh viễn vì so chuỗi nguyên văn với mã đã chuẩn hoá.
     pin_matches = _present(pinned_design) and S.ma_thiet_ke_chuoi(str(pinned_design)) == internal
@@ -1710,7 +1720,7 @@ def evaluate_g1_quality(
         "PASS" if design_confirmed else "REVIEW",
         f"pin={pinned_design!r}; design_confirmed={g1.get('design_confirmed')!r}"
         + ("; design_rationale=còn ô trống/nhãn nháp" if rationale_residue else ""),
-        "Điền design_code/gate_params.G1.design và design_confirmed=true."
+        "Điền gate_params.G1.design (hoặc design_code kèm design_code_nguon=\"PI\") và design_confirmed=true."
         + (" Gỡ ô trống/nhãn nháp còn sót trong design_rationale." if rationale_residue else ""),
     ))
 
