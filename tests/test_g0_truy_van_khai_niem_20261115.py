@@ -101,3 +101,50 @@ def test_g0_auto_08_khai_niem_pi_khai_mot_phan_la_truy_van_cua_pi():
                 primary_outcome="Điểm số Y")
     c2 = G0Q._tieu_chi_phu_pico({"base_query": "outpatients"}, may, {"query": "outpatients"}, {})
     assert c2["status"] == "REVIEW" and "MÁY tự dịch" in c2["evidence"]
+
+
+# ── sửa sau thẩm định đối kháng #277 ─────────────────────────────────────────────────────────────────────────────────
+def _g0_mo_ta(khai):
+    return _meta(pico_confirmed=True, population="Người bệnh khoa khám bệnh", intervention="Không can thiệp — mô tả",
+                 primary_outcome="Điểm số Y", khai_niem_tim_kiem=khai)
+
+
+def test_g0_auto_08_khoa_la_o_mau_khong_phai_pi_viet():
+    """Đ2: khoá lạ (C, ghi chú) hay ô mẫu từng làm G0-AUTO-08 coi truy vấn MÁY dịch là «PI tự viết» (xanh giả)."""
+    for khai in ({"C": ["usual care"]}, {"ghi_chu": "sẽ khai sau"}, {"I": ["[CẦN PI ĐIỀN]"]}, {"O": ["N/A"]}):
+        meta = _g0_mo_ta(khai)
+        q = R0.build_pubmed_query("Điểm số Y ở người bệnh khoa khám bệnh", None, meta=meta)
+        assert q["nguon"] == "tu_dien", khai
+        c = G0Q._tieu_chi_phu_pico({"base_query": q["base"]}, meta, {"query": q["base"]}, {})
+        assert c["status"] == "REVIEW" and "MÁY tự dịch" in c["evidence"], (khai, c["evidence"])
+
+
+def test_khoa_viet_thuong_va_e_cua_peco_duoc_nhan():
+    q = KD.truy_van_tu_khai_niem(_meta(khai_niem_tim_kiem={"p": ["smokers"], "E": "cigarette smoking", "o": ["COPD"]}))
+    assert q == "(smokers) AND (\"cigarette smoking\") AND (COPD)"
+
+
+def test_thuat_ngu_rac_bi_loai_va_bao_trong_g0_auto_08():
+    """V6: ô mẫu/«N/A»/ngoặc lệch/chữ có dấu không gửi lên PubMed; chuỗi tách theo «;» (KHÔNG theo dấu phẩy — MeSH)."""
+    khai = {"P": "hypertension; high blood pressure",
+            "O": ["N/A", "<thuật ngữ tiếng Anh>", "heart failure (HFpEF", '5" catheter', "huyết áp",
+                  '"Heart Failure, Diastolic"[mh]']}
+    nhom, loai = KD.khai_niem_chuan(_meta(khai_niem_tim_kiem=khai))
+    assert nhom == {"P": ["hypertension", "high blood pressure"], "O": ['"Heart Failure, Diastolic"[mh]']}
+    assert len(loai) == 5
+    q = KD.truy_van_tu_khai_niem(_meta(khai_niem_tim_kiem=khai))
+    assert q.count('"') % 2 == 0 and q.count("(") == q.count(")") and "N/A" not in q and "huyết" not in q
+    meta = _g0_mo_ta(khai) | {}
+    c = G0Q._tieu_chi_phu_pico({"base_query": q}, meta, {"query": q}, {})
+    assert "bị loại" in c["evidence"]
+
+
+def test_g0_auto_08_khai_dang_chuoi_khong_duyet_tung_ky_tu():
+    """V7: khai dạng chuỗi từng bị duyệt TỪNG KÝ TỰ («o» luôn có trong truy vấn) ⇒ thiếu khái niệm vẫn PASS."""
+    for o in ("adherence", ["adherence"]):
+        meta = _meta(pico_confirmed=True, population="Người bệnh khoa khám bệnh",
+                     intervention="Không can thiệp — mô tả", primary_outcome="Điểm số Y",
+                     khai_niem_tim_kiem={"O": o})
+        meta["query_en"] = "outpatients[tiab]"
+        c = G0Q._tieu_chi_phu_pico({"base_query": "outpatients[tiab]"}, meta, {"query": "outpatients[tiab]"}, {})
+        assert c["status"] == "REVIEW" and "adherence" in c["evidence"], (o, c["evidence"])

@@ -1061,7 +1061,18 @@ def dung_ket_cuc_phu_g6(out_dir: Path) -> Optional[list[str]]:
     cm = G7Q._read_json(out_dir / TEP_SAP_KET_QUA_G6)
     phu = [x for x in (cm.get("phan_tich") or []) if isinstance(x, dict) and x.get("vai") == "phu"] \
         if isinstance(cm, dict) else []
-    if not phu:
+    # Thẩm định #277 (V4): đối chiếu với ĐẶC TẢ SAP G6 (G6_DAC_TA_SAP.json) — chỉ mục bị `chay --chi` ghi đè làm kết
+    # cục phụ khác biến mất im lặng; đặc tả/SAP đổi sau lượt chạy; tóm tắt chạy lại tay với kết cục khác.
+    try:
+        import chay_sap_g6 as CSG  # noqa: PLC0415
+
+        dac_ta = CSG.doc_dac_ta(out_dir)
+        kiem_dt = CSG.kiem_dac_ta(out_dir, dac_ta)
+    except Exception:  # noqa: BLE001 — chưa có/không đọc được đặc tả ⇒ chỉ dựa chỉ mục (như trước)
+        CSG, dac_ta, kiem_dt = None, None, None
+    phu_dac_ta = {str(pt.get("id")): pt for pt in ((dac_ta or {}).get("phan_tich") or [])
+                  if isinstance(pt, dict) and pt.get("vai") == "phu" and pt.get("id")}
+    if not phu and not phu_dac_ta:
         return None
     manifest = G7Q._read_json(out_dir / "DATA_LOCK_manifest.json")
     moc_khoa = G7Q._thoi_diem(manifest.get("locked_at"))
@@ -1074,6 +1085,14 @@ def dung_ket_cuc_phu_g6(out_dir: Path) -> Optional[list[str]]:
     if sha_cm and sha_khoa and sha_cm != sha_khoa:
         return [f"[CẦN KẾT QUẢ THẬT — {TEP_SAP_KET_QUA_G6} chạy trên dữ liệu KHÁC bản khoá hiện hành (sha256 lệch) — "
                 "chạy lại `chay_sap_g6.py chay`; không chép kết cục phụ]  "]
+    if kiem_dt is not None:
+        if kiem_dt.get("sap_khop") is False:
+            return ["[CẦN THỐNG KÊ VIÊN — SAP đã ĐỔI sau khi soạn đặc tả G6 (G6_DAC_TA_SAP.json) — soạn lại đặc tả, chạy "
+                    "lại chay_sap_g6; không chép kết cục phụ]  "]
+        dau_cm = str((cm.get("dac_ta") or {}).get("dau") or "") if isinstance(cm.get("dac_ta"), dict) else ""
+        if dau_cm and kiem_dt.get("dau") and dau_cm != kiem_dt.get("dau"):
+            return [f"[CẦN THỐNG KÊ VIÊN — {TEP_SAP_KET_QUA_G6} chạy theo đặc tả CŨ (dấu {_trong_o(dau_cm, 20)} ≠ "
+                    f"{_trong_o(kiem_dt.get('dau'), 20)}) — chạy lại `chay_sap_g6.py chay`; không chép kết cục phụ]  "]
     dong = [f"*Kết cục phụ — chép từ chỉ mục SAP G6 (`{TEP_SAP_KET_QUA_G6}`), mỗi phân tích một tóm tắt riêng*  ", ""]
     for x in phu:
         tieu_de = f"**`{_mot_dong(x.get('id'), 60)}`** (SAP {_mot_dong(x.get('sap_muc') or '—', 20)})"
@@ -1096,7 +1115,19 @@ def dung_ket_cuc_phu_g6(out_dir: Path) -> Optional[list[str]]:
         if ly_do:
             dong += [f"{tieu_de}: [CẦN THỐNG KÊ VIÊN — {_trong_o(ly_do)}]  ", ""]
             continue
-        khoi = _khoi_uoc_luong_g6(tt, ten)
+        dt_pt = phu_dac_ta.get(str(x.get("id"))) or {}
+        kc_dt = str((dt_pt.get("tham_so") or {}).get("outcome") or "")
+        kc_tt = str((tt.get("dac_ta_phan_tich") or {}).get("outcome") or "") \
+            if isinstance(tt.get("dac_ta_phan_tich"), dict) else ""
+        if kc_dt and kc_tt and kc_dt != kc_tt:
+            dong += [f"{tieu_de}: [CẦN THỐNG KÊ VIÊN — {ten} phân tích kết cục «{_trong_o(kc_tt, 40)}» nhưng đặc tả SAP "
+                     f"là «{_trong_o(kc_dt, 40)}» — chạy lại đúng đặc tả]  ", ""]
+            continue
+        if CSG is not None and isinstance(x.get("uoc_luong"), dict) and CSG._tom_tat_uoc_luong(tt) != x["uoc_luong"]:
+            dong += [f"{tieu_de}: [CẦN THỐNG KÊ VIÊN — {ten} đã đổi sau khi lập chỉ mục (ước lượng khác chỉ mục) — "
+                     "chạy lại `chay_sap_g6.py chay`]  ", ""]
+            continue
+        khoi = _khoi_uoc_luong_g6(tt, ten, tien_to=gate)
         lech = kiem_so_trich_g6("\n".join(khoi), van_ban)
         if lech or not khoi:
             ly = (f"tự kiểm: số không có nguyên văn trong {ten}: {', '.join(lech[:6])}" if lech
@@ -1104,6 +1135,12 @@ def dung_ket_cuc_phu_g6(out_dir: Path) -> Optional[list[str]]:
             dong += [f"{tieu_de}: [CẦN THỐNG KÊ VIÊN — {_trong_o(ly)}]  ", ""]
             continue
         dong += [f"{tieu_de} — `{ten}`, n = {_so_g6(tt['n_total'])} {NHAN_DOI_CHIEU_G6}  ", *khoi]
+    da_co = {str(x.get("id")) for x in phu}
+    for id_ in [i for i in phu_dac_ta if i not in da_co]:
+        pt = phu_dac_ta[id_]
+        dong += [f"**`{_mot_dong(id_, 60)}`** (SAP {_mot_dong(pt.get('sap_muc') or '—', 20)}): [CẦN THỐNG KÊ VIÊN — SAP "
+                 f"cam kết kết cục phụ này nhưng {TEP_SAP_KET_QUA_G6} chưa có — chạy `chay_sap_g6.py chay` đủ đặc tả "
+                 "(không `--chi`)]  ", ""]
     return dong
 
 
@@ -1265,15 +1302,31 @@ def _khoi_ket_cuc_chinh_g6(po: dict) -> list[str]:
 
 
 def _bang1_tu_g6(t1: Any, n_theo_nhom: Optional[dict]) -> list:
-    """Tên biến của Bảng 1 G6 dùng được (table1.rows có giá trị cho ĐÚNG các nhóm của n_per_group) — [] nếu không."""
-    if not (isinstance(t1, dict) and n_theo_nhom and isinstance(t1.get("rows"), list) and t1["rows"]):
+    """Tên biến của Bảng 1 G6 dùng được (table1.rows có giá trị cho ĐÚNG các nhóm GỐC của n_per_group) — [] nếu không."""
+    if not (isinstance(t1, dict) and n_theo_nhom and isinstance(t1.get("rows"), list) and t1["rows"]
+            and isinstance(t1.get("n_per_group"), dict)):
         return []
-    nhom = set(n_theo_nhom)
+    nhom = {str(g) for g in t1["n_per_group"]}
     for r in t1["rows"]:
         if not (isinstance(r, dict) and r.get("variable") and isinstance(r.get("gia_tri"), dict)
-                and {_mot_dong(g) for g in r["gia_tri"]} == nhom):
+                and {str(g) for g in r["gia_tri"]} == nhom):
             return []
     return [str(r["variable"]) for r in t1["rows"]]
+
+
+def _o_bang1(v: Any) -> str:
+    """Một ô Bảng 1 chép NGUYÊN VĂN chuỗi G6 (thẩm định #277): KHÔNG cắt (Đ3 — cắt ở 120 ký tự từng cắt giữa số mà tự
+    kiểm vẫn sạch), giữ ngoặc vuông khi cân («2.00 [1.00–9.75]», X2), chỉ «|» → «/» (cột Markdown). Ô rỗng/vắng ⇒ ô
+    [CẦN THỐNG KÊ VIÊN] (V2 — không im lặng); chuỗi G6 có ô chờ người thật ⇒ bọc nguyên văn trong ô chờ."""
+    t = _gop_mot_dong(v)
+    if not t.strip():
+        return "[CẦN THỐNG KÊ VIÊN — G6 không ghi giá trị ô này]"
+    if _O_CHO_G6_RE.search(t):
+        return f"[CẦN THỐNG KÊ VIÊN — G6 ghi kèm ô chờ người thật: {_nguyen_van_trong_o(t)}]"
+    t = t.replace("|", "/")
+    if t.count("[") != t.count("]"):
+        t = t.replace("[", "(").replace("]", ")")
+    return t
 
 
 def chu_giai_bang1_g6(redcap_vars: list, bien_bang1: list) -> str:
@@ -1287,7 +1340,7 @@ def chu_giai_bang1_g6(redcap_vars: list, bien_bang1: list) -> str:
     return "\n".join(ra)
 
 
-def _khoi_uoc_luong_g6(tt: dict, nguon: str) -> list[str]:
+def _khoi_uoc_luong_g6(tt: dict, nguon: str, tien_to: str = "G6") -> list[str]:
     """Các khối ƯỚC LƯỢNG của MỘT tóm tắt G6 (kết cục chính/tỷ lệ/thứ tự/sống còn/KM/đa biến) — dùng cho §3 kết
     cục chính và (15/11/2026, giả lập lần 3) cho từng kết cục PHỤ do chay_sap_g6 chạy. Chỉ CHÉP số (`_so_g6`)."""
     N = NHAN_DOI_CHIEU_G6
@@ -1322,7 +1375,7 @@ def _khoi_uoc_luong_g6(tt: dict, nguon: str) -> list[str]:
                   f"{_mot_dong(ty.get('phuong_phap') or 'phương pháp: xem G6')}) {N}  ")
         s3 += _dong_canh_bao_g6(ty.get("canh_bao"))
     if isinstance(tt.get("ordinal"), dict):
-        s3 += _bang_mo_hinh_g6("Hồi quy thứ tự (G6, `G6_table4_ordinal.txt`)", tt["ordinal"])
+        s3 += _bang_mo_hinh_g6(f"Hồi quy thứ tự (G6, `{tien_to}_table4_ordinal.txt`)", tt["ordinal"])
         dvi = (tt["ordinal"].get("don_vi_phoi_nhiem") or {}) if isinstance(tt["ordinal"].get("don_vi_phoi_nhiem"),
                                                                              dict) else {}
         if dvi.get("dien_giai"):
@@ -1354,7 +1407,8 @@ def _khoi_uoc_luong_g6(tt: dict, nguon: str) -> list[str]:
         s3.append("")
     km = tt.get("kaplan_meier")
     if isinstance(km, dict) and isinstance(km.get("groups"), dict) and km["groups"]:
-        s3 += [f"*Kaplan–Meier (G6, `G6_table3_survival.txt`)* {N}  ", "", "| Nhóm | n | Số biến cố | Trung vị sống còn |",
+        s3 += [f"*Kaplan–Meier (G6, `{tien_to}_table3_survival.txt`)* {N}  ", "",
+               "| Nhóm | n | Số biến cố | Trung vị sống còn |",
                "|---|---|---|---|"]
         for g, v in km["groups"].items():
             v = v if isinstance(v, dict) else {}
@@ -1365,7 +1419,7 @@ def _khoi_uoc_luong_g6(tt: dict, nguon: str) -> list[str]:
         if "logrank_p" in km:
             s3 += [f"Log-rank: p = {_p_g6(km['logrank_p'])} {N}  ", ""]
     if isinstance(tt.get("multivariate"), dict):
-        s3 += _bang_mo_hinh_g6("Mô hình đa biến (G6, `G6_table4_multivariate.txt`)", tt["multivariate"])
+        s3 += _bang_mo_hinh_g6(f"Mô hình đa biến (G6, `{tien_to}_table4_multivariate.txt`)", tt["multivariate"])
     if not any(k in tt for k in _KHOA_UOC_LUONG_G6):
         s3 = [f"[CẦN KẾT QUẢ THẬT — tóm tắt G6 ({nguon}) chỉ ghi N phân tích; ước lượng nằm ở bảng đầu ra của "
               "lượt phân tích (đường R: 06_phan_tich_R/output/) — chép số từ đó]  "]
@@ -1405,16 +1459,19 @@ def dung_ket_qua_tu_g6(g6: dict) -> dict:
     # trống như trước. Chỉ tên biến trong bảng (nhãn có thể chứa số — «<140/90» — nằm ở chú giải ngoài khối tự kiểm).
     bien_bang1 = _bang1_tu_g6(t1, n_theo_nhom)
     if bien_bang1:
-        nhom = list(n_theo_nhom)
+        # Thẩm định #277 (V1): tra ô theo khoá nhóm GỐC của G6 (nhãn có khoảng trắng cuối/NFD/«|» từng làm khoá đã chuẩn
+        # hoá trượt ⇒ ô «N/A» thay giá trị); chỉ chuẩn hoá khi HIỂN THỊ.
+        nhom_goc = list(t1["n_per_group"])
         s2 += [f"*Giá trị từng biến chép nguyên văn từ tóm tắt G6 (`{nguon}`, table1 — cùng lượt với "
                f"`G6_table1_descriptive.txt`)* {N}  ", "",
-               "| Biến | " + " | ".join(f"Nhóm `{g}` (N={_so_g6(n_theo_nhom[g])})" for g in nhom) + " | p / kiểm định |",
-               "|---|" + "---|" * len(nhom) + "---|"]
+               "| Biến | " + " | ".join(f"Nhóm `{_mot_dong(g)}` (N={_so_g6(t1['n_per_group'][g])})" for g in nhom_goc)
+               + " | p / kiểm định |",
+               "|---|" + "---|" * len(nhom_goc) + "---|"]
         for r in t1["rows"]:
             gt = r.get("gia_tri") or {}
             p_o = _p_g6(r["p"]) if r.get("p") is not None else _mot_dong(r.get("test") or "—", 80)
             s2.append(f"| `{_mot_dong(r.get('variable'), 60)}` | "
-                      + " | ".join(_mot_dong(gt.get(g, "N/A"), 120) for g in nhom) + f" | {p_o} |")
+                      + " | ".join(_o_bang1(gt.get(g)) for g in nhom_goc) + f" | {p_o} |")
         s2.append("")
     else:
         s2.append("[CẦN KẾT QUẢ THẬT — giá trị từng biến: chép từ G6_table1_descriptive.txt (cùng lượt G6); tóm tắt "

@@ -176,3 +176,30 @@ def test_g1_hoi_tu_voi_run_g1_auto_that(tmp_path):
     assert RP._g1_lech_dau_vao(out, RP._load_meta(out)) is None, "G1 chạy lại mà vẫn lệch ⇒ sẽ chạy lại mãi"
     _g1_that(tmp_path, out)
     assert RP._g1_lech_dau_vao(out, RP._load_meta(out)) is None, "lượt kế tiếp lệch lại"
+
+
+# ── sửa sau thẩm định đối kháng #277 ─────────────────────────────────────────────────────────────────────────────────
+def test_g2_gieo_design_code_trung_thiet_ke_g1_khong_lam_g1_chay_lai(tmp_path):
+    """Đ1: run_g2_auto gieo study_meta.design_code = thiết kế G1 MÁY suy ⇒ dấu đổi dù PI không làm gì; chạy lại G1 khi
+    đó còn đọc giá trị gieo như pin bác sĩ và gỡ cờ thiết kế mơ hồ. Trùng thiết kế G1 ⇒ không chạy lại; KHÁC ⇒ PI
+    đổi."""
+    out = _thu_muc(tmp_path)
+    meta = {k: v for k, v in copy.deepcopy(META_CU).items() if k != "design_code"}
+    _cp_g1(out, meta)
+    assert RP._g1_lech_dau_vao(out, {**meta, "design_code": "cross_sectional"}) is None, "G2 gieo đúng thiết kế G1"
+    assert RP._g1_lech_dau_vao(out, {**meta, "design_code": "cohort"}), "PI ghim thiết kế KHÁC ⇒ vẫn chạy lại"
+
+
+def test_pi_chi_xac_nhan_lai_khi_g1_ke_thua_g0_khong_lam_g1_chay_lai(tmp_path):
+    """V5: reviewed_at (khoá xác nhận) chọn CÁCH tính dấu (có/không phần kế thừa G0) ⇒ PI chỉ xác nhận lại cũng từng
+    làm dấu đổi và G1 + dây chuyền chạy lại."""
+    out = _thu_muc(tmp_path)
+    g0 = {"pico_confirmed": True, "population": "Người bệnh tăng huyết áp", "primary_outcome": "Tỷ lệ tuân thủ"}
+    meta = {"gate_params": {"G0": g0, "G1": {"objectives": ["Mô tả tỷ lệ tuân thủ"],
+                                             "reviewed_at": "2026-10-01T09:00:00+07:00"}}}
+    _cp_g1(out, meta)
+    xn = copy.deepcopy(meta)
+    xn["gate_params"]["G1"].update(reviewed_at="2026-11-16T09:00:00+07:00", dau_van_tay_chot="abc")
+    assert RP._g1_lech_dau_vao(out, xn) is None
+    xn["gate_params"]["G1"]["objectives"] = ["Mô tả tỷ lệ tuân thủ và yếu tố liên quan"]
+    assert RP._g1_lech_dau_vao(out, xn), "đổi nội dung thật vẫn phải chạy lại"

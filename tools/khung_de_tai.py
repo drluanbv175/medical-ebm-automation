@@ -16,6 +16,7 @@ Không ghi tệp nào. Cần bác sĩ kiểm chứng.
 """
 from __future__ import annotations
 
+import re
 from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 _KHONG_CO = ("", None)
@@ -162,21 +163,63 @@ def _mot_thuat_ngu(t: str) -> str:
     return f'"{t}"' if " " in t else t
 
 
+_O_MAU_KHAI_NIEM = re.compile(r"^\s*(?:<.*>|\[.*\]|n/?a|none|null|tbd|todo|chưa|—|-|\?+)\s*$", re.IGNORECASE)
+_KHOA_KHAI_NIEM = {"P": "P", "I": "I", "E": "I", "O": "O"}   # PECO: E (phơi nhiễm) là khái niệm I
+
+
+def _ly_do_loai_thuat_ngu(t: str) -> Optional[str]:
+    """Lý do thuật ngữ PI khai KHÔNG được gửi lên PubMed/ClinicalTrials.gov (thẩm định #277, V6); None = dùng được."""
+    if not _co(t) or _O_MAU_KHAI_NIEM.match(t):
+        return "ô mẫu/chưa điền"
+    if any(ord(c) > 127 for c in t):
+        return "có ký tự ngoài ASCII — PubMed tìm theo thuật ngữ tiếng Anh"
+    if t.count('"') % 2:
+        return "ngoặc kép không cân"
+    if t.count("(") != t.count(")") or t.count("[") != t.count("]"):
+        return "ngoặc không cân"
+    return None
+
+
+def khai_niem_chuan(meta: Mapping[str, Any]) -> Tuple[Dict[str, List[str]], List[str]]:
+    """({P|I|O: [thuật ngữ dùng được]}, [lý do loại]) từ gate_params.G0.khai_niem_tim_kiem — MỘT bộ chuẩn hoá cho cả bộ
+    dựng truy vấn (truy_van_tu_khai_niem) và G0-AUTO-08 (thẩm định #277: Đ2 G0-AUTO-08 đếm khoá/giá trị bất kỳ là «PI
+    viết»; V7 khai dạng chuỗi bị duyệt TỪNG KÝ TỰ; V6 ô mẫu/«N/A»/ngoặc lệch/tiếng Việt gửi thẳng lên PubMed).
+    Khoá không phân biệt hoa thường; «E» là I; khoá khác (C, ghi chú…) bị bỏ kèm lý do; chuỗi tách theo «;» (không theo
+    dấu phẩy — tiêu đề MeSH có dấu phẩy, vd «Heart Failure, Diastolic»)."""
+    khai = _gp(meta, "G0").get("khai_niem_tim_kiem")
+    if not isinstance(khai, Mapping):
+        return {}, []
+    nhom: Dict[str, List[str]] = {"P": [], "I": [], "O": []}
+    loai: List[str] = []
+    for khoa, v in khai.items():
+        kk = str(khoa).strip().upper()
+        dich = _KHOA_KHAI_NIEM.get(kk)
+        if dich is None:
+            loai.append(f"khoá «{khoa}» không dùng (chỉ P · I/E · O)")
+            continue
+        muc = v if isinstance(v, (list, tuple)) else [v]
+        for x in muc:
+            for t in str("" if x is None else x).split(";"):
+                t = " ".join(t.split())
+                if not t:
+                    continue
+                ly = _ly_do_loai_thuat_ngu(t)
+                if ly:
+                    loai.append(f"{kk}: «{t}» bị loại ({ly})")
+                elif t not in nhom[dich]:
+                    nhom[dich].append(t)
+    return {k: v for k, v in nhom.items() if v}, loai
+
+
 def truy_van_tu_khai_niem(meta: Mapping[str, Any]) -> Optional[str]:
     """Truy vấn PubMed dựng từ `gate_params.G0.khai_niem_tim_kiem = {"P": [...], "I": [...], "O": [...]}` (thuật ngữ
-    tiếng Anh PI khai): trong một khái niệm nối OR (từ đồng nghĩa), giữa các khái niệm nối AND. None khi PI chưa khai
-    khái niệm nào.
+    tiếng Anh PI khai, đã qua khai_niem_chuan): trong một khái niệm nối OR (từ đồng nghĩa), giữa các khái niệm nối AND.
+    None khi không còn thuật ngữ dùng được.
 
     K4 (giả lập lần 3, 15/11/2026): G0-AUTO-08 hướng dẫn PI «viết query_en HOẶC khai khai_niem_tim_kiem», nhưng bộ dựng
     truy vấn bỏ qua khai_niem_tim_kiem ⇒ PI khai xong G0 vẫn REVIEW (thuật ngữ PI khai không có trong truy vấn máy tự
     dịch) và PI vẫn phải tự viết cả câu truy vấn. Không cần PICO đã chốt — khái niệm tìm kiếm phục vụ chính lượt tra
     G0."""
-    khai = _gp(meta, "G0").get("khai_niem_tim_kiem")
-    if not isinstance(khai, Mapping):
-        return None
-    nhom: List[str] = []
-    for ma in ("P", "I", "O"):
-        tn = list(dict.fromkeys(danh_sach(khai.get(ma))))
-        if tn:
-            nhom.append("(" + " OR ".join(_mot_thuat_ngu(t) for t in tn) + ")")
-    return " AND ".join(nhom) or None
+    nhom, _loai = khai_niem_chuan(meta)
+    phan = ["(" + " OR ".join(_mot_thuat_ngu(t) for t in nhom[ma]) + ")" for ma in ("P", "I", "O") if nhom.get(ma)]
+    return " AND ".join(phan) or None

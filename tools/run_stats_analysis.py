@@ -435,6 +435,9 @@ def table1_descriptive(df: pd.DataFrame, group_col: str, vars_: list, kiem_dinh_
                     n1 = int((s == max(s.dropna().unique())).sum())
                     row[f"grp_{g}"] = f"{n1} ({n1/len(s)*100:.1f}%)"
                 else:
+                    if s.empty:  # thẩm định #277 (V2): nhóm thiếu toàn bộ biến này — ghi rõ như nhánh nhị phân/liên tục
+                        row[f"grp_{g}"] = "N/A (0 quan sát)"
+                        continue
                     counts = s.value_counts()
                     row[f"grp_{g}"] = "; ".join(f"{k}: {v}({v/len(s)*100:.0f}%)" for k, v in counts.items())
             if not kiem_dinh_nen:

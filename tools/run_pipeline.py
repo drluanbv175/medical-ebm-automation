@@ -429,6 +429,39 @@ def _g3_lech_dau_vao(out_dir: Path, meta: dict) -> Optional[str]:
     return "; ".join(d["ly_do"] for d in _g3_lech_dau_vao_chi_tiet(out_dir, meta)) or None
 
 
+def _g1_dau_cach_tinh_khac(meta: dict, thiet_ke: dict, G1Q: Any) -> set:
+    """Dấu G1 của CÙNG nội dung theo các cách tính hợp lệ khác — thẩm định #277:
+      • V5: `reviewed_at` (khoá xác nhận, không vào dấu) lại chọn CÁCH tính (có/không phần kế thừa G0 —
+        khung_de_tai.xac_nhan_truoc_moc) ⇒ PI chỉ xác nhận lại cũng làm dấu đổi; checkpoint ghi theo cách tính cũ
+        (trước #268) cũng vậy. Thử cả hai cách.
+      • Đ1: run_g2_auto gieo `study_meta.design_code` = thiết kế G1 MÁY suy (ensure_study_meta) ⇒ dấu đổi dù PI không
+        làm gì; chạy lại G1 khi đó còn đọc giá trị gieo như pin của bác sĩ và gỡ cờ thiết kế mơ hồ. design_code TRÙNG
+        thiết kế G1 đã dùng ⇒ thử thêm dấu khi bỏ design_code. design_code KHÁC thiết kế G1 ⇒ không miễn (PI đổi
+        thật)."""
+    import copy  # noqa: PLC0415
+
+    bien_the = [meta]
+    tk = str(thiet_ke.get("internal_code") or "").strip().lower()
+    if tk and str(meta.get("design_code") or "").strip().lower() == tk:
+        m = copy.deepcopy(meta)
+        m.pop("design_code", None)
+        bien_the.append(m)
+    ra: set = set()
+    for m in bien_the:
+        for moc in ("2000-01-01T00:00:00", None):   # trước mốc luật (không kế thừa) · không ghi (có kế thừa)
+            m2 = copy.deepcopy(m)
+            g1 = (m2.setdefault("gate_params", {}).setdefault("G1", {}) if isinstance(m2.get("gate_params"), dict)
+                  else None)
+            if not isinstance(g1, dict):
+                continue
+            if moc is None:
+                g1.pop("reviewed_at", None)
+            else:
+                g1["reviewed_at"] = moc
+            ra.add(G1Q.dau_van_tay_g1(m2, thiet_ke))
+    return ra
+
+
 def _g1_lech_dau_vao(out_dir: Path, meta: dict) -> Optional[str]:
     """N4-G1 (giả lập lần 3, 15/11/2026) — lý do G1 phải CHẠY LẠI vì PI đã điền/sửa gate_params.G1 sau lượt G1 trước;
     None nếu khớp hoặc KHÔNG so được (chưa có G1_checkpoint, checkpoint cũ chưa ghi `dau_gate_params_g1`, checkpoint
@@ -453,6 +486,8 @@ def _g1_lech_dau_vao(out_dir: Path, meta: dict) -> Optional[str]:
 
         thiet_ke = cp.get("design") if isinstance(cp.get("design"), dict) else {}
         hien = G1Q.dau_van_tay_g1(meta or {}, thiet_ke)
+        if hien != goc and goc in _g1_dau_cach_tinh_khac(meta or {}, thiet_ke, G1Q):
+            return None
     except Exception:  # noqa: BLE001 — không tính được dấu ⇒ không so (không chạy lại vô cớ)
         return None
     if hien == goc:
