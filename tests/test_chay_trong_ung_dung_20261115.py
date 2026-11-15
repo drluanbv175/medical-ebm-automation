@@ -119,6 +119,25 @@ def test_spss_mo_dung_bo_cai_roi_nhan_ket_qua_run_all(tmp_path, monkeypatch):
     assert _im(C.main, ["doi-chieu", "--study", "THU"]) == C.MA_OK  # đối chiếu như chế độ nền
 
 
+def test_spss_bo_cai_windows_mo_stats_exe_cung_bo_cai(tmp_path, monkeypatch):
+    # Windows: stats.exe nằm cạnh thư mục Python3 của CHÍNH bộ cài; dò theo bố cục nên chạy được trên mọi máy CI.
+    TS._de_tai_co_sav(tmp_path, monkeypatch)
+    goc = tmp_path / "IBM" / "SPSS Statistics"
+    py = goc / "Python3" / "python.exe"
+    py.parent.mkdir(parents=True)
+    py.write_text("", encoding="utf-8", newline="\n")
+    (goc / "stats.exe").write_text("", encoding="utf-8", newline="\n")
+    khac = tmp_path / "IBM" / "SPSS Statistics 29" / "stats.exe"  # bộ cài KHÁC — không được mở
+    khac.parent.mkdir(parents=True)
+    khac.write_text("", encoding="utf-8", newline="\n")
+    monkeypatch.setattr(C, "tim_spss", lambda: py)
+    assert C.ung_dung_spss(py) == goc / "stats.exe"
+    mo: list = []
+    monkeypatch.setattr(C, "mo_trong_ung_dung", lambda a, t: mo.append(a) or True)
+    assert _im(C.main, ["chay", "--study", "THU", "--trong-spss", "--khong-r"]) == C.MA_OK
+    assert mo == [goc / "stats.exe"]
+
+
 def test_spss_khong_co_ung_dung_cung_bo_cai_thi_khong_mo_ban_khac(tmp_path, monkeypatch):
     TS._de_tai_co_sav(tmp_path, monkeypatch)
     _spss_cung_bo_cai(tmp_path, monkeypatch, co_app=False)

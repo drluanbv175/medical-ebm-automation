@@ -1988,10 +1988,14 @@ TEP_DAU_CHO = ".cho_giao_dien_{gate}.json"
 def ung_dung_spss(py: Path) -> Path | None:
     """Ứng dụng IBM SPSS Statistics CÙNG BỘ CÀI với Python mà cầu nối dùng (macOS: thư mục gốc chứa
     Resources/Python3 — vd /Applications/IBM SPSS Statistics/IBM SPSS Statistics.app; Windows: stats.exe cạnh Python3).
-    Không tìm thấy ⇒ None — KHÔNG mở một bản SPSS khác (bác sĩ đòi đúng phần mềm đang dùng)."""
-    if os.name == "nt":
-        p = py.parent.parent / "stats.exe"
-        return p if p.is_file() else None
+    Không tìm thấy ⇒ None — KHÔNG mở một bản SPSS khác (bác sĩ đòi đúng phần mềm đang dùng).
+
+    Dò theo BỐ CỤC bộ cài, không theo hệ điều hành (15/11/2026 — CI Windows của #254: phép thử dựng bố cục macOS bị
+    nhánh `os.name == "nt"` bỏ qua). Bộ cài Windows thật không có `.app`, bộ cài macOS thật không có `stats.exe` ⇒
+    hành vi thật không đổi, còn cùng một phép thử chạy được trên cả hai máy."""
+    p = py.parent.parent / "stats.exe"
+    if p.is_file():
+        return p
     try:
         goc = py.resolve().parents[3]
     except IndexError:
