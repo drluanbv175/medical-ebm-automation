@@ -371,3 +371,9 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."
+4. Ô QUYẾT ĐỊNH CỦA NGƯỜI — máy KHÔNG gieo (15/11/2026, sự cố G2 gieo `design_code` vào ô ghim của PI): ô chỉ
+   người ghi (ghim thiết kế `gate_params.Gx`/`design_code`, xác nhận/duyệt/ký, `decision`/`gradeLevel` của
+   dashboard, sổ `*-da-duyet.json`/`*-da-xet.json`/`rut-bai-da-xem-xet.json`) KHÔNG được ghi giá trị máy suy —
+   kể cả «chỉ điền khi còn trống». Bản sao của máy để ở checkpoint/tệp riêng (vd `.cho-ky.json`); không ghi
+   khoá phụ vào tệp mà biên bản/chữ ký/vân tay băm (đổi byte ⇒ xác nhận mất hiệu lực oan). Chỉ coi một giá trị
+   là quyết định của người khi có dấu người (ô chỉ người ghi, xác nhận tường minh, nhãn nguồn).
