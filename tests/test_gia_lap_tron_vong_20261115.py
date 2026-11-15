@@ -7,6 +7,11 @@ so sánh giữa các lần. Test chỉ đỏ khi: chạm khoá thật, rò sang 
 
 Chạy: GIA_LAP_TRON_VONG=1 python -B -m pytest -q -s -p no:cacheprovider tests/test_gia_lap_tron_vong_20261115.py -k
 cohort
+
+Chạy TIẾP từ một cổng (đề tài dài, mỗi lượt từ đầu mất nhiều phút): đặt GIA_LAP_TRON_VONG_DIR=<thư mục bền NGOÀI repo>
+— bản sao + khoá GIẢ của đề tài nằm ở <thư mục>/<mã kịch bản>/{repo, khoa-gia} và được dùng lại giữa các lượt —, rồi
+GIA_LAP_TU_CONG=G6 (hoặc G6_5 · G7 · G8 · G9 · G10) để bỏ qua các cổng đã đi. Khoá vẫn là khoá GIẢ sinh bằng
+`tao_khoa_gia`, chỉ dùng dưới pytest; đường dẫn chứa «ebm-secrets» bị từ chối.
 """
 from __future__ import annotations
 
@@ -28,10 +33,28 @@ pytestmark = pytest.mark.skipif(not os.environ.get("GIA_LAP_TRON_VONG"),
 
 
 @pytest.mark.parametrize("ma", list(GL.KICH_BAN), ids=[GL.KICH_BAN[m]["thiet_ke"] for m in GL.KICH_BAN])
-def test_gia_lap_tron_vong(ma, tmp_path):
+def test_gia_lap_tron_vong(ma, tmp_path, monkeypatch):
+    from tests import canh_bi_mat_that as CBM  # noqa: PLC0415
+
     truoc = set(GL._de_tai_canary_trong_exports(ROOT))
-    repo = TV.dung_ban_sao_tron_vong(ROOT, tmp_path)
-    bc = TV.chay_mot(ma, repo)
+    ben = os.environ.get("GIA_LAP_TRON_VONG_DIR")
+    goc = Path(ben).expanduser() / ma if ben else tmp_path
+    if ben:
+        assert "ebm-secrets" not in str(goc) and not goc.resolve().is_relative_to(ROOT.resolve()), \
+            "thư mục bền phải ở NGOÀI repo và ngoài kho bí mật"
+        khoa = goc / "khoa-gia" / CBM.TEN_KHOA_GIA
+        if not khoa.is_file():
+            CBM.tao_khoa_gia(khoa.parent)
+        monkeypatch.setenv("EBM_GATE_KEY_PATH", str(khoa))
+    repo = goc / "repo"
+    if not repo.is_dir():
+        repo = TV.dung_ban_sao_tron_vong(ROOT, goc)
+    elif os.environ.get("GIA_LAP_TU_CONG"):  # chạy tiếp: mã công cụ lấy bản MỚI của worktree (bản vá giữa hai lượt)
+        import shutil  # noqa: PLC0415
+
+        shutil.copytree(ROOT / "tools", repo / "tools", ignore=GL.BO_QUA_KHI_CHEP, dirs_exist_ok=True)
+    bc = TV.chay_mot(ma, repo, tu_cong=os.environ.get("GIA_LAP_TU_CONG") or None,
+                     den_cong=os.environ.get("GIA_LAP_DEN_CONG") or None)
     dich = ROOT / "state" / "gia-lap-tron-vong" / f"{ma}.json"
     dich.parent.mkdir(parents=True, exist_ok=True)
     dich.write_text(json.dumps(bc, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")

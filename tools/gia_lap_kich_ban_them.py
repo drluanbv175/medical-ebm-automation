@@ -22,7 +22,7 @@ Cần bác sĩ kiểm chứng.
 """
 from __future__ import annotations
 
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, List, Tuple
 
 _XAC_NHAN = {
     "G0": {"pico_confirmed": True, "reviewed_by_role": "PI"},
@@ -832,7 +832,7 @@ def ho_so_tron_vong() -> Dict[str, Dict[str, Any]]:
     """gate_params.G2 + tham số ký G2 + câu trả lời riêng của các vai theo từng kịch bản."""
     chung = {"protocol_version": "1.0", "icf_version": "1.0"}
     tien_cuu = "PROSPECTIVE_NEW_PARTICIPANTS"
-    return {
+    hs: Dict[str, Dict[str, Any]] = {
         "rct_nhi_phan": {
             "G2": {**chung, "public_title": "Tin nhắn nhắc uống thuốc giúp kiểm soát huyết áp (giả lập)",
                    "health_condition": "Tăng huyết áp nguyên phát (ICD-10 I10)", "primary_purpose": "treatment",
@@ -887,6 +887,9 @@ def ho_so_tron_vong() -> Dict[str, Dict[str, Any]]:
             "ky_G2": _ky_g2(tien_cuu, "NOT_REQUIRED"),
         },
     }
+    for ma, them in sap_g6_tron_vong().items():
+        hs.setdefault(ma, {}).update(them)
+    return hs
 
 
 def bien_so_them() -> Dict[str, Dict[str, list]]:
@@ -896,3 +899,258 @@ def bien_so_them() -> Dict[str, Dict[str, list]]:
     return {ma: {"bo_bien": [(t, k, n, lc, v, "", "") for t, k, n, lc, v, _muc in hs["bo_bien"]],
                  "ma_tran": list(hs["ma_tran"])}
             for ma, hs in _ho_so_bien_6().items()}
+
+
+# ── Quyết định SAP (G4) + đặc tả phân tích (G6) mà thống kê viên/PI của TỪNG đề tài viết ──────────────────────────
+# Giả lập như đề tài thật: ô «[CẦN …]» của SAP do người đúng vai điền TỪ hồ sơ này (không lấp bằng nhãn chung), và
+# đặc tả G6 bám đúng cụm chữ trong SAP đã khoá (`sap_neo`). Mục G6 `ke_thua` lấy tham số của phân tích chính rồi đè
+# phần khai (giá trị None = bỏ tham số đó). Thiết kế mà engine phân tích chưa hỗ trợ (chẩn đoán, dự báo, gộp, định tính)
+# không có `g6` — bộ giả lập ghi khoảng trống đó thay vì ép một phân tích sai phương pháp.
+_DIEU_CHINH_1_KC = "Không điều chỉnh — một kết cục chính; kết cục phụ và nhóm nhỏ chỉ diễn giải thăm dò"
+_CC_MI = {"id": "DN_ca_day_du", "vai": "do_nhay", "sap_muc": "§9", "sap_neo": "Complete case vs MI",
+          "mo_ta": "Phân tích ca đầy đủ (không impute) đối chiếu với phân tích chính", "ke_thua": True,
+          "tham_so": {"n_imputations": 0}}
+
+
+def _tra_loi_sap(an_toan: str, dag: str, gia_dinh: str, nhom_nho: str, kich_ban: str) -> List[Tuple[str, str]]:
+    return [(r"ket cuc an toan", an_toan), (r"dag|ly do lam sang", dag), (r"^gia dinh", gia_dinh),
+            (r"nhom nho tien dinh", nhom_nho), (r"^dieu chinh", _DIEU_CHINH_1_KC), (r"kich ban cu the", kich_ban)]
+
+
+def _nhom_gioi(ma_nam: int, ma_nu: int) -> List[Dict[str, Any]]:
+    return [{"id": f"NC_{ten}", "vai": "nhom_con", "sap_muc": "§7", "sap_neo": "Giới (nam/nữ)",
+             "mo_ta": f"Nhóm nhỏ tiền định: {nhan}", "ke_thua": True, "tham_so": {"loc": f"gioi == {ma}"}}
+            for ten, nhan, ma in (("nam", "nam", ma_nam), ("nu", "nữ", ma_nu))]
+
+
+def _sd_khong_ap_dung(ly_do: str) -> Dict[str, Any]:
+    return {"id": "DN_dinh_nghia_1SD", "vai": "do_nhay", "sap_muc": "§9",
+            "sap_neo": "Thay đổi định nghĩa phơi nhiễm/kết cục ±1 SD",
+            "mo_ta": "Đổi định nghĩa phơi nhiễm/kết cục ±1 SD", "chua_tu_dong": ly_do}
+
+
+# Bản diễn giải (G6.5) do người diễn giải viết TỪ tệp kết quả thật: số trong bảng lấy từ tóm tắt phân tích (bộ giả lập
+# chép, không gõ tay); lời văn dưới đây dùng {chỗ giữ} điền bằng chính các số đó. Y văn đối chiếu đã tra PubMed:
+# Zhou 2016, Osteoporos Int — gộp quan sát, gãy xương mọi vị trí RR 1,33 (1,15–1,54) (PMID 26462494).
+_DIEN_GIAI_THUAN_TAP: Dict[str, Any] = {
+    "bang": [
+        {"ket_cuc": "Gãy xương mọi vị trí trong 3 năm", "thuoc_do": "RR hiệu chỉnh (Poisson, sai số robust)",
+         "lay": "pr_hieu_chinh", "gate": "G6",
+         "y_nghia": "Tăng nguy cơ tương đối khoảng một phần ba; hiệu số tuyệt đối nhỏ (dòng 2)"},
+        {"ket_cuc": "Gãy xương mọi vị trí trong 3 năm", "thuoc_do": "Hiệu số nguy cơ thô",
+         "lay": "hieu_so_nguy_co", "gate": "G6",
+         "y_nghia": "Khoảng 3 ca gãy xương thêm trên 100 người dùng PPI kéo dài trong 3 năm"},
+        {"ket_cuc": "Nhóm nhỏ: nữ", "thuoc_do": "RR hiệu chỉnh", "lay": "pr_hieu_chinh", "gate": "G6_NC_nu",
+         "y_nghia": "Cùng chiều phân tích chính; thăm dò"},
+        {"ket_cuc": "Nhóm nhỏ: nam", "thuoc_do": "RR hiệu chỉnh", "lay": "pr_hieu_chinh", "gate": "G6_NC_nam",
+         "y_nghia": "Cùng chiều, KTC rộng do ít biến cố; thăm dò"},
+        {"ket_cuc": "Độ nhạy: theo dõi ≥ 12 tháng", "thuoc_do": "RR hiệu chỉnh", "lay": "pr_hieu_chinh",
+         "gate": "G6_DN_theo_doi_12t", "y_nghia": "Kết quả không đổi chiều khi loại người theo dõi ngắn"},
+    ],
+    "muc_2": ("Phơi nhiễm PPI kéo dài đi kèm nguy cơ gãy xương cao hơn có ý nghĩa thống kê (RR hiệu chỉnh "
+              "{rr}; KTC 95% {rr_duoi}–{rr_tren}). Về ý nghĩa lâm sàng, hiệu số nguy cơ tuyệt đối khoảng "
+              "{rd_phan_tram} điểm phần trăm trong 3 năm ({pct1}% so với {pct0}%), tức số người cần dùng PPI kéo "
+              "dài để thêm một ca gãy xương vào khoảng {nnh}. Hai trục được báo tách riêng: ý nghĩa thống kê không "
+              "đồng nghĩa với độ lớn lâm sàng."),
+    "muc_3": ("Ước lượng tương đồng với phân tích gộp các nghiên cứu quan sát của Zhou và cộng sự (2016): gãy xương "
+              "mọi vị trí RR 1,33 (KTC 95% 1,15–1,54) ở người dùng PPI (PMID 26462494). Phân tích gộp đó có "
+              "không đồng nhất đáng kể giữa các nghiên cứu, nên mức tương đồng chỉ là đối chiếu chiều và độ lớn."),
+    "muc_4": ("Điểm mạnh: cỡ mẫu {n} người với {bien_co} biến cố, phân tích theo SAP đã khoá, kiểm chéo SPSS và R "
+              "khớp. Hạn chế: thiết kế hồi cứu có thể còn nhiễu tồn dư (chỉ định PPI, thể trạng, té ngã), phân loại "
+              "phơi nhiễm từ đơn thuốc cấp phát, kết cục dựa trên mã chẩn đoán và phim X-quang trong hồ sơ, và kết quả "
+              "chỉ khái quát cho người từ 60 tuổi khám ngoại trú. Đây là dữ liệu mô phỏng của bộ giả lập."),
+    "muc_5": ("Hàm ý cho thực hành giới hạn ở mức liên quan, không phải quan hệ nhân quả: rà lại chỉ định khi kê PPI "
+              "kéo dài cho người cao tuổi có nguy cơ gãy xương. Hướng tiếp: nghiên cứu có đo liều và thời gian dùng "
+              "PPI theo tháng, và phân tích thời gian đến gãy xương."),
+}
+
+
+# Tác giả (vai trò mã hoá, KHÔNG tên người thật) + khai báo ICMJE cho bản thảo G7 của đề tài tổng hợp.
+_TAC_GIA_G7: Dict[str, Any] = {
+    "authors": "Tác giả giả lập 1 (PI-REF-01, chủ nhiệm) · Tác giả giả lập 2 (thống kê viên) — Phòng khám ngoại trú "
+               "bệnh viện (giả lập)",
+    "author_contributions": "Tác giả 1: ý tưởng, thiết kế, thu thập dữ liệu, viết bản thảo; Tác giả 2: kế hoạch phân "
+                            "tích, phân tích số liệu, duyệt bản thảo (CRediT, giả lập)",
+    "coi_declared": "Các tác giả không có xung đột lợi ích liên quan đề tài (giả lập)",
+    "funding_declared": "Không có tài trợ bên ngoài (giả lập)",
+    "data_sharing_statement": "Dữ liệu mô phỏng của bộ giả lập — không chia sẻ ra ngoài; kịch bản phân tích kèm gói "
+                              "phát hành",
+    "ai_use_declared": "Bản nháp do công cụ hỗ trợ của hệ thống sinh; tác giả đã đọc lại, đối chiếu số liệu và chịu "
+                       "trách nhiệm toàn văn (giả lập)",
+    "ai_manuscript_statement": ("Bản nháp được soạn với hỗ trợ của công cụ trí tuệ nhân tạo (bộ giả lập trọn vòng "
+                                "của hệ EBM) để dựng khung và chép số liệu từ tệp kết quả; các tác giả đã đọc lại toàn "
+                                "văn, đối chiếu số liệu và chịu trách nhiệm nội dung. Công cụ không phải tác giả "
+                                "(giả lập)."),
+}
+# Ô bản thảo G7 mà hồ sơ trả lời (mẫu so trên nhãn/nội dung ô đã bỏ dấu). Chỗ giữ {…} lấy số từ tệp kết quả G6 và lời
+# văn của bản diễn giải G6.5 — không gõ tay con số.
+_TRA_LOI_G7_THUAN_TAP: List[Tuple[str, str]] = [
+    (r"khong dien truoc khi phan tich", "Trong {n} người ({bien_co} biến cố), dùng PPI kéo dài đi kèm nguy cơ gãy "
+     "xương "
+     "3 năm cao hơn: RR hiệu chỉnh {rr} (KTC 95% {rr_duoi}–{rr_tren}); hiệu số nguy cơ {rd_phan_tram} điểm phần trăm "
+     "({pct1}% so với {pct0}%)."),
+    (r"^conclusions?$|2.3 cau tom tat", "Ở người từ 60 tuổi khám ngoại trú, dùng PPI kéo dài liên quan với nguy cơ gãy "
+     "xương cao hơn khoảng một phần ba; hiệu số tuyệt đối nhỏ. Cần rà chỉ định khi kê PPI kéo dài (dữ liệu mô phỏng)."),
+    (r"khong chua ket cuc phu", "Kết cục phụ (gãy cổ xương đùi; thời gian đến gãy xương đầu tiên) chưa phân tích ở đợt "
+     "này — báo cáo riêng theo SAP §2"),
+    (r"khong chay gan da tri", "Không có dữ liệu thiếu ở 5 biến phân tích nên không gán đa trị; phân tích ca đầy đủ "
+     "là phân tích chính (khớp SAP §6)"),
+    (r"dien sau khi co section iii|tom tat phat hien chinh", "{muc_2}"),
+    (r"giai thich sinh hoc", "Một giả thuyết được nêu trong y văn là PPI làm giảm hấp thu canxi; nghiên cứu này không "
+     "đánh giá cơ chế"),
+    (r"diem manh khac", "Kết quả được kiểm chéo độc lập bằng SPSS và R, khớp với engine phân tích chính"),
+    (r"liet ke han che", "{muc_4}"),
+    (r"tac dong voi thuc hanh|khuyen cao", "{muc_5}"),
+    (r"phan tich so sanh khi co ket qua", "Đối chiếu chi tiết ở đoạn so sánh với phân tích gộp Zhou 2016 (PMID "
+     "26462494); tác giả chưa đọc toàn văn bài này (giả lập)"),
+    (r"mesh terms", "Proton Pump Inhibitors; Fractures, Bone; Aged; Cohort Studies"),
+    (r"dinh dang khi da chon tap chi", "Định dạng theo hướng dẫn tác giả của tạp chí đích (giả lập)"),
+    (r"tac gia lien lac", "Tác giả giả lập 1 (PI-REF-01) — liên hệ qua đơn vị (giả lập)"),
+    (r"ho ten", "Tác giả giả lập 1 (PI-REF-01) · Tác giả giả lập 2 (thống kê viên)"),
+    (r"don vi thu 2", "Không có"),
+    (r"icmje form|xem tai lieu 8", "Các tác giả không có xung đột lợi ích liên quan đề tài (giả lập)"),
+]
+
+
+# Bản nhận xét của người phản biện ĐỘC LẬP mô phỏng (G8) — góp ý là điều đo được thật trên bản thảo đề tài này.
+_PHAN_BIEN_THUAN_TAP: Dict[str, Any] = {
+    "ten_bai": "PPI kéo dài và gãy xương ở người từ 60 tuổi (giả lập)", "thiet_ke": "Thuần tập hồi cứu",
+    "ly_do": ("Thiết kế, cỡ mẫu và phân tích theo SAP đã khoá; RR hiệu chỉnh {rr} (KTC 95% {rr_duoi}–{rr_tren}) được "
+              "kiểm chéo SPSS/R khớp. Còn vài điểm trình bày và hai phân tích độ nhạy chờ làm tay."),
+    "gop_y_nho": [
+        ("Từ khoá (trang đầu)", "Dòng từ khoá do máy tách từng chữ của tiêu đề — thay bằng thuật ngữ MeSH"),
+        ("Bảng Poisson (06 kết quả)", "Engine ghi «PR — tỷ lệ hiện mắc» cho thiết kế thuần tập; bản thảo nên gọi "
+                                      "đúng RR (nguy cơ tích luỹ)"),
+        ("Kết quả — kết cục phụ", "Hai kết cục phụ SAP §2 chưa phân tích; ghi rõ là báo cáo riêng"),
+        ("Độ nhạy SAP §9", "Mục «±1 SD» không áp cho biến nhị phân — cần SAP sửa đổi hoặc ghi lý do"),
+    ],
+    "cau_hoi": ["Tỷ lệ mất theo dõi trước 3 năm là bao nhiêu và có khác giữa hai nhóm không?",
+                "Phơi nhiễm PPI được xác định thế nào khi người bệnh dùng ngắt quãng?"],
+    "checklist": "STROBE (cohort)", "checklist_dat": "20/22 mục (91%)",
+    "checklist_thieu": "mục 13 (sơ đồ dòng người tham gia), mục 16c (nguy cơ tuyệt đối theo thời gian)",
+}
+
+
+def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
+    nhom_gioi = "Giới (nam/nữ) — ghi trước khi xem dữ liệu"
+    gia_dinh_poisson = "Kiểm quá phân tán (Pearson χ²/df), dạng tuyến tính của tuổi, VIF < 5"
+    return {
+        "rct_nhi_phan": {
+            "tra_loi_G4": _tra_loi_sap(
+                "Biến cố bất lợi do tin nhắn (phàn nàn, lo âu) ghi theo phiếu biến cố", "tuổi và giới là yếu tố "
+                "tiên lượng mạnh của kiểm soát huyết áp, hiệu chỉnh để tăng độ chính xác (không phải gây nhiễu do "
+                "đã ngẫu nhiên hoá)", "Kiểm dạng tuyến tính của tuổi; VIF < 5", nhom_gioi,
+                "Mô hình không hiệu chỉnh hiệp biến (so sánh thô hai nhóm)"),
+            "g6": [{"id": "MT1_chinh", "vai": "chinh", "sap_muc": "§4", "sap_neo": "<§4>",
+                    "mo_ta": "Kiểm soát huyết áp tháng 6: tin nhắn SMS so với chăm sóc thường quy",
+                    "tham_so": {"outcome": "kiem_soat_t6", "group": "nhom", "covariates": ["tuoi", "gioi"],
+                                "hiep_bien_phan_loai": ["gioi"]}},
+                   *_nhom_gioi(1, 2), _CC_MI,
+                   _sd_khong_ap_dung("kết cục và nhóm so sánh đều nhị phân — ±1 SD không áp dụng; thống kê viên "
+                                     "sửa mục này trong SAP sửa đổi"),
+                   {"id": "DN_tho", "vai": "do_nhay", "sap_muc": "§9",
+                    "sap_neo": "Mô hình không hiệu chỉnh hiệp biến", "mo_ta": "So sánh thô hai nhóm",
+                    "ke_thua": True, "tham_so": {"covariates": None, "hiep_bien_phan_loai": None}}],
+        },
+        "cat_ngang_mo_ta": {
+            "tra_loi_G4": _tra_loi_sap(
+                "Không áp dụng — nghiên cứu cắt ngang mô tả, không có can thiệp", "Không áp dụng — mục tiêu mô tả tỷ "
+                "lệ, không ước lượng hiệu ứng nhân quả", "Tỷ lệ theo khoảng tin cậy Wilson", nhom_gioi,
+                "Tỷ lệ kiểm soát theo từng giới"),
+            "g6": [{"id": "MT1_ty_le", "vai": "chinh", "sap_muc": "§4", "sap_neo": "<§4>",
+                    "mo_ta": "Tỷ lệ kiểm soát huyết áp + KTC 95%", "tham_so": {"ty_le": ["kiem_soat_ha"]}},
+                   *_nhom_gioi(1, 2), _CC_MI,
+                   _sd_khong_ap_dung("kết cục nhị phân — ±1 SD không áp dụng"),
+                   {"id": "DN_theo_gioi", "vai": "do_nhay", "sap_muc": "§9",
+                    "sap_neo": "Tỷ lệ kiểm soát theo từng giới", "mo_ta": "Tỷ lệ kiểm soát theo giới",
+                    "tham_so": {"ty_le": ["kiem_soat_ha"], "loc": "gioi == 2"}}],
+        },
+        "thuan_tap_phoi_nhiem": {
+            "tra_loi_G4": _tra_loi_sap(
+                "Không áp dụng — nghiên cứu quan sát hồi cứu, không có can thiệp do nghiên cứu chỉ định",
+                "tuổi, corticoid toàn thân và loãng xương trước đó liên quan cả chỉ định PPI lẫn nguy cơ gãy xương "
+                "(gây nhiễu trên DAG); không đưa biến trung gian", gia_dinh_poisson, nhom_gioi,
+                "Loại người theo dõi dưới 12 tháng"),
+            "g6": [{"id": "MT1_chinh", "vai": "chinh", "sap_muc": "§4", "sap_neo": "<§4>",
+                    "mo_ta": "Nguy cơ gãy xương 3 năm: PPI kéo dài so với không dùng (RR hiệu chỉnh)",
+                    "tham_so": {"outcome": "gay_xuong_3nam", "group": "ppi_dai_han",
+                                "covariates": ["tuoi", "corticoid", "loang_xuong"]}},
+                   *_nhom_gioi(1, 0), _CC_MI,
+                   _sd_khong_ap_dung("phơi nhiễm và kết cục đều nhị phân — ±1 SD không áp dụng; định nghĩa thay thế "
+                                     "cần số tháng dùng PPI (chưa có trong bộ biến)"),
+                   {"id": "DN_theo_doi_12t", "vai": "do_nhay", "sap_muc": "§9",
+                    "sap_neo": "Loại người theo dõi dưới 12 tháng", "mo_ta": "Chỉ người theo dõi ≥ 12 tháng",
+                    "ke_thua": True, "tham_so": {"loc": "thoi_gian_theo_doi >= 12"}}],
+            "dien_giai": _DIEN_GIAI_THUAN_TAP,
+            "tac_gia_G7": _TAC_GIA_G7,
+            "tra_loi_G7": _TRA_LOI_G7_THUAN_TAP,
+            "phan_bien_G8": _PHAN_BIEN_THUAN_TAP,
+            "dac_ta_G10": {
+                "bias_risks": "Nhiễu do chỉ định PPI; sai lệch phân loại phơi nhiễm từ đơn cấp phát; mất theo dõi",
+                "bias_controls": "Hiệu chỉnh đa biến theo DAG; định nghĩa phơi nhiễm ≥12 tháng liên tục; độ nhạy loại "
+                                 "người theo dõi dưới 12 tháng",
+                "timeline": "18 tháng: chuẩn bị và đạo đức 3 tháng; trích hồ sơ 6 tháng; phân tích 3 tháng; viết và "
+                            "công bố 6 tháng (giả lập)",
+                "team": "Chủ nhiệm (PI-REF-01), thống kê viên, quản lý dữ liệu, 2 người trích hồ sơ (giả lập)",
+                "budget": "Kinh phí đơn vị cấp cho trích hồ sơ và phân tích (giả lập)",
+                "literature_review": "Phân tích gộp quan sát (Zhou 2016, PMID 26462494) ghi nhận nguy cơ gãy xương "
+                                     "tăng ở người dùng PPI; dữ liệu ở người cao tuổi ngoại trú Việt Nam còn thiếu",
+                "theoretical_framework_not_applicable": ("Nghiên cứu dịch tễ học quan sát về phơi nhiễm thuốc — "
+                                                         "không dựa khung lý thuyết hành vi; mô hình nhân quả trình "
+                                                         "bày bằng DAG"),
+                "literature_consensus": "Các nghiên cứu quan sát cùng chiều: dùng PPI đi kèm nguy cơ gãy xương tăng "
+                                        "nhẹ–vừa; mức không đồng nhất giữa nghiên cứu còn lớn",
+                "summary": ("Bối cảnh: PPI được kê kéo dài phổ biến ở người cao tuổi. Mục tiêu: so sánh nguy cơ "
+                            "gãy xương 3 năm giữa người dùng PPI kéo dài và không dùng. Phương pháp: thuần tập hồi cứu "
+                            "từ hồ sơ ngoại trú, hồi quy Poisson sai số robust ước lượng RR hiệu chỉnh (giả lập)."),
+                "org_lines": ["Phòng khám ngoại trú bệnh viện (giả lập)"],
+                "place_year": "TP. Hồ Chí Minh – 2026",
+                "literature_disagreements": "Độ lớn liên quan khác nhau theo vị trí gãy và thời gian dùng; nhiễu do "
+                                            "chỉ định có thể giải thích một phần",
+                "pilot": "Thử phiếu trích trên 20 hồ sơ ngoài mẫu nghiên cứu; chỉnh định nghĩa biến trước khi trích "
+                         "chính thức (giả lập)",
+                "safety_plan": ("Không có can thiệp nên không phát sinh biến cố do nghiên cứu; sự cố bảo mật dữ "
+                                "liệu báo cáo theo quy trình đơn vị"),
+                "dissemination_plan": "Báo cáo tại đơn vị và nộp tạp chí đích (giả lập)",
+                "limitations": "Một cơ sở ngoại trú; phơi nhiễm từ đơn cấp phát (không đo tuân thủ); không có liều "
+                               "PPI theo tháng; kết cục dựa hồ sơ có phim — có thể bỏ sót gãy không đi khám",
+                "vietnamese_references_not_applicable": "PubMed không có nghiên cứu trong nước cùng câu hỏi; chưa tra "
+                                                        "tay tạp chí trong nước (giả lập — ghi để bác sĩ bổ sung)",
+            },
+            "tham_so_G8": {"primary_outcome": "Gãy xương mọi vị trí trong 3 năm (gay_xuong_3nam)",
+                           "ai_use_declared": True, "ai_tools": "bộ giả lập trọn vòng của hệ (giả lập)",
+                           "ai_purpose": "soạn nháp và kiểm dây chuyền; tác giả đọc lại toàn văn",
+                           "ai_declared_in_cover_letter": True, "ipd_sharing": False,
+                           **{k: True for k in ("cover_letter_no_duplicate_submission", "cover_letter_coi_declared",
+                                                "cover_letter_all_authors_approved",
+                                                "cover_letter_corresponding_contact", "cover_letter_preprint_status")}},
+        },
+        "benh_chung": {
+            "tra_loi_G4": _tra_loi_sap(
+                "Không áp dụng — nghiên cứu bệnh–chứng, không có can thiệp", "thuốc chống đông/chống kết tập và "
+                "tiền sử loét liên quan cả việc dùng NSAID lẫn xuất huyết (gây nhiễu)",
+                "Kiểm dạng tuyến tính của tuổi; VIF < 5", nhom_gioi, "Loại người dùng thuốc chống đông"),
+            "g6": [{"id": "MT1_chinh", "vai": "chinh", "sap_muc": "§4", "sap_neo": "<§4>",
+                    "mo_ta": "NSAID 30 ngày và xuất huyết tiêu hoá trên (OR hiệu chỉnh)",
+                    "tham_so": {"outcome": "nhom_ca", "group": "nsaid_30ngay",
+                                "covariates": ["chong_dong", "tien_su_loet"]}},
+                   *_nhom_gioi(1, 0), _CC_MI,
+                   _sd_khong_ap_dung("phơi nhiễm và kết cục nhị phân — ±1 SD không áp dụng"),
+                   {"id": "DN_khong_chong_dong", "vai": "do_nhay", "sap_muc": "§9",
+                    "sap_neo": "Loại người dùng thuốc chống đông", "mo_ta": "Chỉ người không dùng chống đông",
+                    "ke_thua": True, "tham_so": {"loc": "chong_dong == 0", "covariates": ["tien_su_loet"]}}],
+        },
+        "chan_doan": {"tra_loi_G4": _tra_loi_sap(
+            "Không áp dụng — nghiên cứu chẩn đoán, chỉ lấy máu xét nghiệm thường quy", "Không áp dụng — mục tiêu "
+            "độ chính xác chẩn đoán", "Ngưỡng FIB-4 1,3 và 2,67 định trước", nhom_gioi, "Loại người ALT > 5 lần ULN")},
+        "mo_hinh_du_bao": {"tra_loi_G4": _tra_loi_sap(
+            "Không áp dụng — nghiên cứu quan sát", "yếu tố dự báo chọn theo y văn trước khi xem dữ liệu, không chọn "
+            "theo p", "Dạng tuyến tính kiểm bằng spline; hiệu chuẩn bằng biểu đồ", nhom_gioi,
+            "Bootstrap 500 lần để hiệu chỉnh lạc quan")},
+        "tong_quan_gop": {"tra_loi_G4": _tra_loi_sap(
+            "Không áp dụng — tổng quan hệ thống", "Không áp dụng — gộp ở cấp nghiên cứu", "Mô hình hiệu ứng ngẫu "
+            "nhiên REML, Hartung-Knapp", "Loại thuốc SGLT2", "Loại nghiên cứu nguy cơ sai lệch cao")},
+        "dinh_tinh": {"tra_loi_G4": _tra_loi_sap(
+            "Không áp dụng — nghiên cứu định tính", "Không áp dụng — phân tích chủ đề", "Bão hoà dữ liệu sau 3 cuộc "
+            "phỏng vấn liên tiếp không có mã mới", "Đã/chưa bắt đầu insulin", "Mã hoá độc lập bởi 2 người")},
+    }

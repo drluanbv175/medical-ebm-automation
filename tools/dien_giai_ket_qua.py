@@ -49,6 +49,12 @@ MUC = ("## 1. Kết quả chính", "## 2. Ý nghĩa thống kê và ý nghĩa l�
 COT_BANG_CHINH = ("Kết cục", "Thước đo", "Ước lượng điểm", "KTC 95%", "p", "Ý nghĩa lâm sàng", "Nguồn kết quả")
 # Thư mục kết quả phân tích — CÙNG bộ mà g6_quality_gate dùng (_THU_MUC_KET_QUA).
 THU_MUC_KET_QUA = ("06_ket_qua", "06_phan_tich_R/output")
+# SỬA 15/11/2026 (giả lập trọn vòng đề tài thuần tập): run_stats_analysis.py — engine DUY NHẤT, cũng là đường của
+# chay_sap_g6.py — ghi kết quả ở GỐC thư mục đề tài (`G6_table4_poisson_pr.txt`, `G6_<id>_analysis_summary.json`…);
+# g6_quality_gate đọc cả gốc (`_THU_MUC_KET_QUA` có ""), riêng bản diễn giải từ chối ⇒ người diễn giải dẫn ĐÚNG tệp kết
+# quả thật bị báo sai và phải chép số sang 06_ket_qua/ cho vừa luật. Nay nhận thêm tệp kết quả của engine ở gốc — chỉ
+# đúng khuôn tên engine ghi, không nhận mọi tệp ở gốc (G6_DIEN_GIAI, SAP… không phải tệp kết quả).
+TEP_KET_QUA_GOC = re.compile(r"G6[A-Za-z0-9_-]*_(?:table\w+|analysis_summary|missing_data_summary)\.(?:txt|json|csv)")
 DUOI_VAN_BAN = (".txt", ".csv", ".tsv", ".json", ".md", ".log")
 THIET_KE_KHONG_CAN_THIEP = ("cross_sectional", "case_control", "cohort", "diagnostic", "prediction", "qualitative")
 
@@ -215,9 +221,11 @@ def _kiem_bang_chinh(out_dir: Path, bang: List[List[str]], ra: List[str]) -> Non
                     ra.append(f"{nhan}: p «{p_val}» < 0,001 — ghi «< 0,001»")
         duong = nguon.strip().strip("`").strip()
         dp = Path(duong)
+        o_goc = len(dp.parts) == 1 and bool(TEP_KET_QUA_GOC.fullmatch(duong))
         if (not duong or dp.is_absolute() or ".." in dp.parts
-                or not any(duong.startswith(t + "/") for t in THU_MUC_KET_QUA)):
-            ra.append(f"{nhan}: «Nguồn kết quả» phải là tệp trong {' hoặc '.join(THU_MUC_KET_QUA)}/ của đề tài")
+                or not (o_goc or any(duong.startswith(t + "/") for t in THU_MUC_KET_QUA))):
+            ra.append(f"{nhan}: «Nguồn kết quả» phải là tệp trong {' hoặc '.join(THU_MUC_KET_QUA)}/ của đề tài, "
+                      "hoặc tệp kết quả engine ghi ở gốc đề tài (G6…_table…/_analysis_summary.json)")
             continue
         tep = Path(out_dir) / dp
         if not tep.is_file():

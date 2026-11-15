@@ -1981,7 +1981,8 @@ def generate_artifact(
         "# A6 — KẾ HOẠCH QUẢN LÝ DỮ LIỆU (DRAFT)",
         f"**Đề tài:** {TDT.ten_chinh_thuc(BASE / 'exports' / study, topic)}  ",
         f"**Mã:** {study} | **Ngày:** {run_date} | **Thiết kế:** {design_code} | **N dự kiến:** {n_hien}  ",
-        "**Trạng thái:** DRAFT — CHỜ BÁC SĨ ĐIỀN CÁC [CẦN...] VÀ XÁC NHẬN",
+        # 15/11/2026: dòng trạng thái nằm trong phần sống của DMP — không chứa ký hiệu ô trống (G5-AUTO-03 đếm nó).
+        "**Trạng thái:** DRAFT — CHỜ BÁC SĨ ĐIỀN CÁC Ô CÒN TRỐNG VÀ XÁC NHẬN",
         "",
         "> **BẢO MẬT:** KHÔNG đưa PII vào pipeline. Chỉ xử lý bản đã khử định danh trong "
         "môi trường cục bộ được đơn vị cho phép; dữ liệu không được gửi tới mô hình AI.",
@@ -2220,7 +2221,9 @@ def generate_artifact(
         "",
         "## PHẦN 9 — TIÊU CHÍ QUA CỔNG G5",
         "",
-        "- [ ] **[CẦN BÁC SĨ]** Điền tất cả [CẦN...] trong CRF (biến phơi nhiễm/kết cục cụ thể)",
+        # 15/11/2026 (giả lập trọn vòng): chữ hướng dẫn KHÔNG được chứa ký hiệu ô trống «[CẦN...]» — sau khi khoá, G5-AUTO-03
+        # (dmp_o_trong_muc_song) đếm nó là ô chưa điền dù việc đã làm và đã đánh dấu ⇒ quản lý dữ liệu phải sửa câu hướng dẫn.
+        "- [ ] **[CẦN BÁC SĨ]** Điền tất cả ô còn trống trong CRF (biến phơi nhiễm/kết cục cụ thể)",
         "- [ ] **[CẦN BÁC SĨ]** Import REDCap dictionary CSV vào REDCap cơ sở",
         "- [ ] **[CẦN BÁC SĨ + ĐỘI NC]** Thu thập dữ liệu thật (chỉ sau G2 = LOCKED)",
         "- [ ] **[CẦN BÁC SĨ]** Spot-check 10% phiếu CRF",
@@ -2824,7 +2827,7 @@ def main():
         "guardrail": status,
         "automation_level": "DRAFT_AUTOMATED_HUMAN_CONTROLLED",
         "pending_doctor_actions": [
-            "Điền tất cả [CẦN...] trong CRF (biến phơi nhiễm/kết cục cụ thể)",
+            "Điền tất cả ô còn trống trong CRF (biến phơi nhiễm/kết cục cụ thể)",
             "Import REDCap dictionary CSV vào REDCap cơ sở",
             # VÁ 04/10/2026 (G5-07): hồ sơ G5-OPS-2026.2 gồm cả rà audit trail và đối chiếu dữ liệu nguồn (SDV).
             f"Hoàn tất {G5Q.OPERATIONAL_READINESS_JSON} ({G5Q.OPERATIONAL_SCHEMA_VERSION}) bằng bằng chứng tại "
