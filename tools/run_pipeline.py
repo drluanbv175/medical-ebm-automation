@@ -41,6 +41,10 @@ BÁO TRUNG THỰC THEO CHẤM SỐNG (14/11/2026, giả lập đề tài RCT —
     thành «cũ» (rào cổng ĐÃ KÝ giữ nguyên). Gỡ ghim KHÔNG tự chạy lại (như K5). Chống lặp: giá trị ghim mà G3 đã chạy
     lại vẫn không áp được ⇒ ghi vào pipeline_run_report (gắn SHA-256 phần PHÉP TÍNH của G3_checkpoint + bộ ghim) và
     chỉ BÁO ở các lượt sau (bộ chấm ghi kết quả chấm vào checkpoint không làm bản ghi mất hiệu lực).
+  - N4-G1 (15/11/2026, giả lập lần 3): dấu vân tay đầu vào của G1 = `g1_quality_gate.dau_van_tay_g1` (mọi quyết định
+    PI khai ở gate_params.G1 trừ khoá xác nhận + thiết kế + pin + phần kế thừa G0) — run_g1_auto đã ghi dấu này vào
+    G1_checkpoint (`dau_gate_params_g1`) lúc chạy. PI điền/sửa gate_params.G1 ⇒ dấu lệch ⇒ G1 chạy lại và dây chuyền sau
+    G1 thành «cũ» (rào cổng ĐÃ KÝ giữ nguyên). Checkpoint cũ chưa ghi dấu ⇒ không so (không tự chạy lại — như gỡ ghim).
 
 Dùng:
   python3 tools/run_pipeline.py --study <MÃ> [--topic "<chủ đề>"] [--check-only]
@@ -150,6 +154,15 @@ def _g0_lech_dau_vao(out_dir: Path, topic: Optional[str], meta: dict) -> Optiona
         return None
     ly_do: List[str] = []
     q, noi = _query_en_mong_muon(meta)
+    if not q:
+        # K4 (15/11/2026): khái niệm tìm kiếm PI khai (gate_params.G0.khai_niem_tim_kiem) là ĐẦU VÀO của G0 như query_en
+        # — run_g0_auto dựng truy vấn từ đó bằng CÙNG hàm (khung_de_tai.truy_van_tu_khai_niem) ⇒ so được, hội tụ.
+        try:
+            import khung_de_tai as KD  # noqa: PLC0415
+
+            q, noi = KD.truy_van_tu_khai_niem(meta or {}), "study_meta.gate_params.G0.khai_niem_tim_kiem"
+        except Exception:  # noqa: BLE001 — không dựng được ⇒ không so (không tra lại vô cớ)
+            q = None
     da_dung = str(cp.get("base_query") or "").strip()
     if q and da_dung and _chuan_chuoi(q) != _chuan_chuoi(da_dung):
         ly_do.append(f"{noi} («{q[:70]}») khác truy vấn G0 đã tra («{da_dung[:70]}»)")
@@ -414,6 +427,73 @@ def _phan_cau_hinh_luc(kq: Dict[str, Any]) -> str:
 def _g3_lech_dau_vao(out_dir: Path, meta: dict) -> Optional[str]:
     """N4 — một dòng lý do G3 phải CHẠY LẠI vì đầu vào đã đổi; None nếu khớp/không so được."""
     return "; ".join(d["ly_do"] for d in _g3_lech_dau_vao_chi_tiet(out_dir, meta)) or None
+
+
+def _g1_dau_cach_tinh_khac(meta: dict, thiet_ke: dict, G1Q: Any) -> set:
+    """Dấu G1 của CÙNG nội dung theo các cách tính hợp lệ khác — thẩm định #277:
+      • V5: `reviewed_at` (khoá xác nhận, không vào dấu) lại chọn CÁCH tính (có/không phần kế thừa G0 —
+        khung_de_tai.xac_nhan_truoc_moc) ⇒ PI chỉ xác nhận lại cũng làm dấu đổi; checkpoint ghi theo cách tính cũ
+        (trước #268) cũng vậy. Thử cả hai cách.
+      • Đ1: run_g2_auto gieo `study_meta.design_code` = thiết kế G1 MÁY suy (ensure_study_meta) ⇒ dấu đổi dù PI không
+        làm gì; chạy lại G1 khi đó còn đọc giá trị gieo như pin của bác sĩ và gỡ cờ thiết kế mơ hồ. design_code TRÙNG
+        thiết kế G1 đã dùng ⇒ thử thêm dấu khi bỏ design_code. design_code KHÁC thiết kế G1 ⇒ không miễn (PI đổi
+        thật)."""
+    import copy  # noqa: PLC0415
+
+    bien_the = [meta]
+    tk = str(thiet_ke.get("internal_code") or "").strip().lower()
+    if tk and str(meta.get("design_code") or "").strip().lower() == tk:
+        m = copy.deepcopy(meta)
+        m.pop("design_code", None)
+        bien_the.append(m)
+    ra: set = set()
+    for m in bien_the:
+        for moc in ("2000-01-01T00:00:00", None):   # trước mốc luật (không kế thừa) · không ghi (có kế thừa)
+            m2 = copy.deepcopy(m)
+            g1 = (m2.setdefault("gate_params", {}).setdefault("G1", {}) if isinstance(m2.get("gate_params"), dict)
+                  else None)
+            if not isinstance(g1, dict):
+                continue
+            if moc is None:
+                g1.pop("reviewed_at", None)
+            else:
+                g1["reviewed_at"] = moc
+            ra.add(G1Q.dau_van_tay_g1(m2, thiet_ke))
+    return ra
+
+
+def _g1_lech_dau_vao(out_dir: Path, meta: dict) -> Optional[str]:
+    """N4-G1 (giả lập lần 3, 15/11/2026) — lý do G1 phải CHẠY LẠI vì PI đã điền/sửa gate_params.G1 sau lượt G1 trước;
+    None nếu khớp hoặc KHÔNG so được (chưa có G1_checkpoint, checkpoint cũ chưa ghi `dau_gate_params_g1`, checkpoint
+    G1 đang chặn — nhánh chặn tự chạy lại riêng, bộ dấu lỗi).
+
+    Mỗi kịch bản giả lập phải một lần «PI tự chạy run_g1_auto» vì bảng mtime chỉ nhìn checkpoint, không nhìn
+    study_meta: PI điền mục tiêu/sai lệch/estimand mà A2 vẫn giữ ô trống. Dấu so là ĐÚNG hàm run_g1_auto ghi
+    (g1_quality_gate.dau_van_tay_g1) — không tự chế phép băm thứ hai ⇒ G1 chạy lại xong là KHỚP (hội tụ). Khoá xác
+    nhận (reviewed_at, dau_van_tay_chot…) không vào dấu ⇒ PI xác nhận không làm G1 + dây chuyền sinh lại."""
+    p = out_dir / "G1_checkpoint.json"
+    try:
+        cp = json.loads(p.read_text(encoding="utf-8")) if p.is_file() else None
+    except (OSError, ValueError):
+        return None
+    if not isinstance(cp, dict) or _checkpoint_blocked(out_dir, "G1"):
+        return None
+    goc = str(cp.get("dau_gate_params_g1") or "").strip()
+    if not goc:
+        return None
+    try:
+        import g1_quality_gate as G1Q  # noqa: PLC0415
+
+        thiet_ke = cp.get("design") if isinstance(cp.get("design"), dict) else {}
+        hien = G1Q.dau_van_tay_g1(meta or {}, thiet_ke)
+        if hien != goc and goc in _g1_dau_cach_tinh_khac(meta or {}, thiet_ke, G1Q):
+            return None
+    except Exception:  # noqa: BLE001 — không tính được dấu ⇒ không so (không chạy lại vô cớ)
+        return None
+    if hien == goc:
+        return None
+    return (f"gate_params.G1 (hoặc thiết kế/pin/phần kế thừa G0) đổi sau lượt G1 trước — dấu lúc chạy {goc[:12]} ≠ "
+            f"hiện tại {hien[:12]}")
 
 
 # Khoá gate_params.G3 mà run_g3_auto đem vào phép tính (bộ so ở trên đọc đúng các khoá này).
@@ -718,7 +798,8 @@ def _lech_cung_truoc(ket: Optional[Dict[str, Any]], idx: int) -> List[Dict[str, 
 
 def _do_tuoi_tong_hop(fresh: Dict[str, Any], lech_n: Dict[str, str], lech_g0: Optional[str],
                       nq: Dict[str, Any], giu_da_ky: Optional[Dict[str, str]] = None,
-                      lech_g3: Optional[List[Dict[str, Any]]] = None) -> Dict[str, Any]:
+                      lech_g3: Optional[List[Dict[str, Any]]] = None,
+                      lech_g1: Optional[str] = None) -> Dict[str, Any]:
     """Độ tươi TỔNG HỢP = mtime (pipeline_freshness) + bản chép N của G3 (K7) + đầu vào G0 (K5) + đầu vào G3 (N4) +
     không lệch cứng xuyên cổng + không còn cổng ĐÃ KÝ bị giữ lại giữa chuỗi đã sinh lại. «TƯƠI» chỉ khi tất cả sạch VÀ
     đo được — cùng một báo cáo không được vừa «✅ TƯƠI» vừa «🔴 lệch cỡ mẫu».
@@ -734,6 +815,9 @@ def _do_tuoi_tong_hop(fresh: Dict[str, Any], lech_n: Dict[str, str], lech_g0: Op
                        "offending_upstream": ["G3"]})
     if lech_g0:
         issues.append({"gate": "G0", "kind": "dau_vao_g0_doi", "reason": f"G0 — {lech_g0}", "offending_upstream": []})
+    if lech_g1:
+        issues.append({"gate": "G1", "kind": "dau_vao_g1_doi", "offending_upstream": [],
+                       "reason": f"G1 — {lech_g1} — run_pipeline thường tự chạy lại G1 (hoặc --from G1)"})
     g3_doi = [d for d in lech_g3 or [] if isinstance(d, dict) and not d.get("khong_ap")]
     g3_khong_ap = [d for d in lech_g3 or [] if isinstance(d, dict) and d.get("khong_ap")]
     if g3_doi:
@@ -1190,12 +1274,13 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
     # lại G3 vẫn không áp được (cùng G3_checkpoint) thì chỉ báo — không chạy lại nữa (hội tụ, không vòng lặp).
     khong_ap_da_ghi = _g3_khong_ap_da_ghi(out_dir, meta)
     lech_g3, lech_g3_khong_ap = _tach_khong_ap(_g3_lech_dau_vao_chi_tiet(out_dir, meta), khong_ap_da_ghi)
+    lech_g1 = _g1_lech_dau_vao(out_dir, meta)   # N4-G1 — PI điền/sửa gate_params.G1
 
     if check_only:
         nq = _nhat_quan_tom_tat(out_dir, study)
         return {"study": study, "mode": "check_only", "freshness_before": pre,
                 "do_tuoi_tong_hop": _do_tuoi_tong_hop(pre, {**lech_n, **lech_n_da_ky}, lech_g0, nq,
-                                                      lech_g3=lech_g3 + lech_g3_khong_ap),
+                                                      lech_g3=lech_g3 + lech_g3_khong_ap, lech_g1=lech_g1),
                 "nhat_quan_xuyen_cong": nq, "gate_results": [], "note": "Chỉ kiểm, không chạy."}
 
     # Sửa sau thẩm định PR #262 — ẢNH CHỤP cổng cứng đã ký TRƯỚC khi chạy bất kỳ cổng nào: rào «không tự sinh lại cổng
@@ -1214,6 +1299,10 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
     if lech_g0:
         stale_set.add("G0")
         ly_do_chay_lai["G0"] = "TRA LẠI PubMed vì đầu vào G0 đổi — " + lech_g0
+    if lech_g1:
+        stale_set.add("G1")
+        cu = ly_do_chay_lai.get("G1")
+        ly_do_chay_lai["G1"] = "CHẠY LẠI G1 vì đầu vào G1 đổi — " + lech_g1 + (f" | {cu}" if cu else "")
     if lech_g3:
         stale_set.add("G3")
         cu = ly_do_chay_lai.get("G3")
@@ -1372,6 +1461,7 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
     lech_n_sau = {k: v for d in _lech_co_mau_tu_chay_lai(out_dir, study, da_ky_truoc) for k, v in d.items()}
     meta_sau = _load_meta(out_dir)
     lech_g0_sau = _g0_lech_dau_vao(out_dir, topic, meta_sau)
+    lech_g1_sau = _g1_lech_dau_vao(out_dir, meta_sau)
     # N4 — sau lượt: G3 đã chạy (sinh lại checkpoint) mà đầu vào VẪN lệch ⇒ G3 không áp được giá trị ghim đó; ghi lại
     # (gắn chữ ký lượt G3 mới) để lượt sau chỉ BÁO, không chạy lại G3 mãi. G3 không chạy ⇒ giữ bản ghi cũ còn hiệu
     # lực (cùng checkpoint, cùng giá trị ghim).
@@ -1438,6 +1528,7 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
         "nhat_quan_xuyen_cong": _nhat_quan_tom_tat(out_dir, study),
         "lech_co_mau_g3": lech_n_sau,
         "g0_dau_vao_doi": lech_g0_sau,
+        "g1_dau_vao_doi": lech_g1_sau,
         "g3_dau_vao_doi": [d["ly_do"] for d in lech_g3_sau if not d["khong_ap"]],
         "g3_dau_vao_khong_ap": ({"chu_ky": _g3_chu_ky_checkpoint(out_dir),
                                  "dau_van_tay_ghim": _g3_dau_van_tay_ghim(out_dir, meta_sau), "khoa": khong_ap_moi,
@@ -1447,7 +1538,7 @@ def orchestrate(study: str, topic: Optional[str], max_attempts: int,
     # K7 — «tươi» chỉ khi mtime, bản chép N, đầu vào G0, đầu vào G3 (N4) và nhất quán xuyên cổng (không lệch cứng) đều
     # sạch.
     report["do_tuoi_tong_hop"] = _do_tuoi_tong_hop(post, lech_n_sau, lech_g0_sau, report["nhat_quan_xuyen_cong"],
-                                                   giu_da_ky, lech_g3=lech_g3_sau)
+                                                   giu_da_ky, lech_g3=lech_g3_sau, lech_g1=lech_g1_sau)
     report["converged_fresh"] = report["do_tuoi_tong_hop"]["fresh"]
     # Ghi report.
     (out_dir / "pipeline_run_report.json").write_text(

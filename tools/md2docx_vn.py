@@ -815,7 +815,9 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
         if stripped.startswith("> "):
             p = doc.add_paragraph()
             _spacing(p, before=6, after=10, line=1.3, align=A.JUSTIFY)
-            _add_inline_runs(p, stripped[2:], size=TABLE_PT, italic=True)
+            # 15/11/2026 (giả lập lần 3): ghi chú là ĐOẠN THÂN BÀI (chuẩn chuan_trinh_bay: thân 13pt, chỉ bảng 11pt)
+            # — cỡ bảng cũ làm tài liệu nhiều ghi chú (A13b) đo ra «cỡ thân bài 11pt». size=None ⇒ cỡ thân của hồ sơ.
+            _add_inline_runs(p, stripped[2:], size=None, italic=True)
             ppr = p._element.get_or_add_pPr()
             ind = OxmlElement("w:ind")
             ind.set(qn("w:left"), "567")
