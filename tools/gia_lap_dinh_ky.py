@@ -112,7 +112,10 @@ TRANG_THAI_DUNG_PIPELINE = ("blocked_missing_input", "chan_song", "dung_lech_xuy
                             "failed")
 # 15/11/2026 (đồng bộ xuyên cổng, PR y khoa #268): G3-T2 — agent bien-so-nghien-cuu dựng `_bo-bien-rieng.csv` +
 # `_ma-tran-muc-tieu-bien.csv` (G3-AUTO-19) là việc ĐÚNG THIẾT KẾ của quy trình, không phải máy hỏng.
-CAN_THIEP_DUNG_THIET_KE = ("dien_noi_dung", "xac_nhan_dau_van_tay", "dung_bo_bien_ma_tran")
+# 15/11/2026 (bác sĩ chọn G3-T2 thêm bảng .md): agent soạn `G3_BO_BIEN_SO_<mã>.md` (tools/bang_bien_g3.py) rồi PI đọc
+# và ghi gate_params.G3.bo_bien_so_duyet — cũng là bước ĐÚNG THIẾT KẾ (nguồn người duyệt của G5-AUTO-11).
+CAN_THIEP_DUNG_THIET_KE = ("dien_noi_dung", "xac_nhan_dau_van_tay", "dung_bo_bien_ma_tran", "soan_bang_bien_g3",
+                           "duyet_bang_bien_g3")
 COT_BO_BIEN = ("Variable / Field Name", "Form Name", "Section Header", "Field Type", "Field Label",
                "Choices, Calculations, OR Slider Labels", "Field Note", "Text Validation Type OR Show Slider Number",
                "Text Validation Min", "Text Validation Max", "Identifier?", "Branching Logic (Show field only if...)",
@@ -704,12 +707,21 @@ class GiaLap:
         for gate in CONG_MEM:
             if gate not in self.kb["pi"]:
                 continue
-            if gate == "G3" and self.kb.get("bien_so") and self._cp("G3") and not (
-                    (self.out / "_bo-bien-rieng.csv").exists() and (self.out / "_ma-tran-muc-tieu-bien.csv").exists()):
-                self._dung_bo_bien_ma_tran()
-                self._ghi_can_thiep("G3", "dung_bo_bien_ma_tran", "G3-T2: agent bien-so-nghien-cuu dựng bộ biến + ma "
-                                    "trận mục tiêu–biến (G3-AUTO-19)")
-                return "G3"
+            if gate == "G3" and self.kb.get("bien_so") and self._cp("G3"):
+                if not ((self.out / "_bo-bien-rieng.csv").exists()
+                        and (self.out / "_ma-tran-muc-tieu-bien.csv").exists()):
+                    self._dung_bo_bien_ma_tran()
+                    self._ghi_can_thiep("G3", "dung_bo_bien_ma_tran", "G3-T2: agent bien-so-nghien-cuu dựng bộ biến "
+                                        "+ ma trận mục tiêu–biến (G3-AUTO-19)")
+                    return "G3"
+                if not (self.out / f"G3_BO_BIEN_SO_{self.study}.md").exists():
+                    self._chay("soan_bang_bien_g3", self._lenh("bang_bien_g3.py", "soan", "--study", self.study,
+                                                               "--ghi"))
+                    self._ghi_can_thiep("G3", "soan_bang_bien_g3", "G3-T2: agent bien-so-nghien-cuu soạn "
+                                        "G3_BO_BIEN_SO_<mã>.md cho PI duyệt (tools/bang_bien_g3.py)")
+                    return "G3"
+                if self._duyet_bang_bien_g3():
+                    return "G3"
             bao = self.cham(gate, self.study, self.out, self.repo)
             muc = _muc(bao.get("status"))
             if gate == "G1" and self.thiet_ke_may_suy is None and self._cp("G1"):
@@ -745,6 +757,22 @@ class GiaLap:
             self.ket = f"{gate}:{','.join(self._chua_dat(bao)) or bao.get('status')}"
             return None
         return None
+
+    def _duyet_bang_bien_g3(self) -> bool:
+        """PI GIẢ LẬP (đề tài tạm ZZCANARY-) đọc bảng G3 rồi ghi xác nhận gắn dấu nội dung — True khi vừa ghi."""
+        import bang_bien_g3 as BB  # noqa: PLC0415
+
+        st = BB.trang_thai(self.out, self.study, self._meta())
+        if st["la_nguon_nguoi_duyet"] or not st["dau_hien_tai"]:
+            return False
+        meta = self._meta()
+        meta.setdefault("gate_params", {}).setdefault("G3", {})[BB.KHOA_DUYET] = {
+            "reviewed_at": _bay_gio(), "dau_van_tay": st["dau_hien_tai"]}
+        meta.setdefault("gia_lap_pi_dien", []).append({"luc": _bay_gio(), "cong": "G3", "loai": "duyet_bang_bien_g3",
+                                                       "nhan": NHAN})
+        self._ghi_meta(meta)
+        self._ghi_can_thiep("G3", "duyet_bang_bien_g3", f"PI đọc G3_BO_BIEN_SO và ghi dấu {st['dau_hien_tai']}")
+        return True
 
     def _dung_bo_bien_ma_tran(self) -> None:
         """Ghi `_bo-bien-rieng.csv` (REDCap 18 cột) + `_ma-tran-muc-tieu-bien.csv` của kịch bản vào đề tài TẠM."""

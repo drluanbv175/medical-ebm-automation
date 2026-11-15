@@ -16,7 +16,9 @@ NGUỒN NGƯỜI DUYỆT (chuẩn — máy phải khớp nguồn này, không ng
   • đề cương nộp Hội đồng `DE_CUONG_NOP_HOI_DONG_<mã>.md`: bảng biến số có cột đầu «Mã biến» (vd Bảng E.1);
   • bộ biến G3 đã duyệt `G3_BO_BIEN_SO_<mã>.md`: bảng trường «Tên biến | Nhãn | Loại | Giá trị hợp lệ …» và bảng biến
     phái
-    sinh «Tên | … | Định nghĩa / công thức …».
+    sinh «Tên | … | Định nghĩa / công thức …». Bảng do MÁY soạn (`tools/bang_bien_g3.py`, có dấu `<!-- BANG-BIEN-G3:`)
+    chỉ là nguồn người duyệt khi PI đã ghi `gate_params.G3.bo_bien_so_duyet` gắn đúng nội dung (15/11/2026) — bản nháp
+    chưa duyệt bị loại (`nguon_bi_loai`), không thì máy so với chính nó.
 BẢN MÁY: `_bo-bien-rieng.csv` (nguồn duy nhất của G5) · `G5_REDCap_dictionary_<mã>.csv` · `_bien-phai-sinh.csv` ·
 `_ma-thieu-theo-bien.csv` · `G6_DAC_TA_SAP.json`. Ánh xạ tên khác nhau có chủ đích: `_anh-xa-ten-bien.csv`
 (ten_nguon,ten_may).
@@ -67,6 +69,7 @@ for _s in (sys.stdout, sys.stderr):
 
 BASE = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import bang_bien_g3 as BB  # noqa: E402
 import bien_phai_sinh as BPS  # noqa: E402
 import ma_tran_muc_tieu_bien as MT  # noqa: E402
 
@@ -128,6 +131,7 @@ class KetQua:
     phat_hien: list[PhatHien] = field(default_factory=list)
     khong_do_duoc: str | None = None
     dat_canh: list[dict] = field(default_factory=list)  # định nghĩa nguồn ↔ công thức (để người đối chiếu)
+    nguon_bi_loai: list[str] = field(default_factory=list)  # bảng có mà KHÔNG tính là nguồn người duyệt (+ lý do)
 
     @property
     def so_lech(self) -> int:
@@ -152,6 +156,7 @@ class KetQua:
             "so_lech": self.so_lech,
             "so_can_xem": len(self.phat_hien) - self.so_lech,
             "nguon_nguoi_duyet": self.nguon_nguoi_duyet,
+            "nguon_bi_loai": self.nguon_bi_loai,
             "ban_may": self.ban_may,
             "so_bien_nguon": self.so_bien_nguon,
             "khong_do_duoc": self.khong_do_duoc,
@@ -374,6 +379,14 @@ def doi_chieu(study_dir: Path, study: str) -> KetQua:
     kq = KetQua(study)
     dc, ten_dc = doc_de_cuong(d, study)
     g3, ten_g3 = doc_bo_bien_g3(d, study)
+    # 15/11/2026 (G3-T2 — bác sĩ chọn bảng .md cho PI duyệt): bảng G3 do MÁY soạn (bang_bien_g3.py) chỉ là nguồn
+    # người duyệt khi PI đã ghi xác nhận gắn đúng nội dung; bản nháp chưa duyệt mà vẫn tính thì máy so với chính nó
+    # (vòng tròn, «đồng bộ» giả — giả lập lần 3 đo được). Bảng người soạn (không có dấu máy soạn) giữ luật #266.
+    if g3:
+        st_g3 = BB.trang_thai(d, study)
+        if not st_g3["la_nguon_nguoi_duyet"]:
+            kq.nguon_bi_loai.append(f"{ten_g3}: {st_g3['ly_do']}")
+            g3, ten_g3 = [], None
     kq.nguon_nguoi_duyet = [x for x in (ten_dc, ten_g3) if x]
     nguon = dc + g3
     kq.so_bien_nguon = len({b.ten.lower() for b in nguon})
@@ -382,6 +395,11 @@ def doi_chieu(study_dir: Path, study: str) -> KetQua:
             "chưa có bảng biến số trong đề cương nộp (DE_CUONG_NOP_HOI_DONG_<mã>.md, cột «Mã biến») lẫn bộ "
             "biến G3 (G3_BO_BIEN_SO_<mã>.md) — không có chuẩn để đối chiếu"
         )
+        if kq.nguon_bi_loai:
+            kq.khong_do_duoc = (
+                "chưa có nguồn người duyệt: " + "; ".join(kq.nguon_bi_loai)
+                + " — bản nháp máy chưa duyệt không phải chuẩn để đối chiếu"
+            )
         return kq
     p_rieng, p_g5 = d / "_bo-bien-rieng.csv", d / f"G5_REDCap_dictionary_{study}.csv"
     try:
@@ -636,6 +654,7 @@ def markdown(kq: KetQua) -> str:
         f"- Nguồn người duyệt: {', '.join(kq.nguon_nguoi_duyet) or '—'} ({kq.so_bien_nguon} biến)",
         f"- Bản máy: {', '.join(kq.ban_may) or '—'}",
     ]
+    d += [f"- Không tính là nguồn người duyệt: {x}" for x in kq.nguon_bi_loai]
     if kq.khong_do_duoc:
         d += ["", f"⚪ KHÔNG ĐO ĐƯỢC — {kq.khong_do_duoc}. Không đo được ≠ đồng bộ."]
     if kq.phat_hien:

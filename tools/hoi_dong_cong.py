@@ -176,8 +176,12 @@ NHIEM_VU: Dict[str, List[Dict[str, Any]]] = {
         # `_bo-bien-rieng.csv` (REDCap 18 cột) mà run_g5_auto.nap_bo_bien_rieng nạp làm nguồn biến DUY NHẤT của G5.
         # 15/11/2026 (bác sĩ duyệt): đầu ra thêm MA TRẬN mục tiêu → biến → câu hỏi → phân tích SAP — bộ biến không có
         # ma trận thì không ai chứng minh được nó phủ đủ mục tiêu (G3-AUTO-19/G5-AUTO-12 dùng cùng bộ kiểm).
-        _nv("G3-T2", "Đặc tả bộ biến số + ma trận mục tiêu–biến", "bien-so-nghien-cuu",
-            ("_bo-bien-rieng.csv", "_ma-tran-muc-tieu-bien.csv"), ("quan-ly-du-lieu", "thiet-ke-nghien-cuu")),
+        # 15/11/2026 (bác sĩ chọn — giả lập lần 3): thêm bảng `G3_BO_BIEN_SO_<mã>.md` cho PI đọc và duyệt
+        # (tools/bang_bien_g3.py). G5-AUTO-11 đòi bộ biến máy khớp một NGUỒN NGƯỜI DUYỆT; trước đây không ai sinh bảng
+        # này nên đề tài mới kẹt ở G5. Bản máy soạn chỉ là nguồn người duyệt khi PI ghi gate_params.G3.bo_bien_so_duyet.
+        _nv("G3-T2", "Đặc tả bộ biến số + ma trận mục tiêu–biến + bảng bộ biến cho PI duyệt", "bien-so-nghien-cuu",
+            ("_bo-bien-rieng.csv", "_ma-tran-muc-tieu-bien.csv", "G3_BO_BIEN_SO_<mã>.md"),
+            ("quan-ly-du-lieu", "thiet-ke-nghien-cuu")),
         _nv("G3-T3", "CRF kỹ thuật, từ điển dữ liệu dự kiến, luật kiểm tra", "quan-ly-du-lieu",
             ("_bo-bien-rieng.csv",), ("bien-so-nghien-cuu",)),
     ],

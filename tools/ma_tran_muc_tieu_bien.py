@@ -22,6 +22,9 @@ Tệp `exports/<mã>/_ma-tran-muc-tieu-bien.csv` (UTF-8, có/không BOM), mỗi 
   phan_tich_sap  mục SAP dùng biến (vd «§4», «§5»)
   ghi_chu        tự do
 
+MT-11 (cảnh báo): nguồn người duyệt của bộ biến — `G3_BO_BIEN_SO_<mã>.md` (tools/bang_bien_g3.py soạn, PI duyệt)
+hoặc bảng biến số của đề cương nộp.
+
 Mức: `loi` chặn (cổng giữ REVIEW / cầu nối từ chối xuất), `canh_bao` chỉ báo. Không đo được KHÔNG BAO GIỜ là «đạt».
 Chỉ ĐỌC và BÁO — không sửa tệp nào, trừ lệnh `mau --ghi` (dựng KHUNG khi chưa có tệp; không ghi đè).
 
@@ -458,8 +461,37 @@ def kiem(out_dir: Path, study: str, *, meta: Optional[Mapping[str, Any]] = None,
             if thieu:
                 vd.append(_van_de("MT-10", "loi", f"biến của ma trận vắng trong từ điển G5: {', '.join(thieu[:10])}"))
 
+    vd += kiem_bang_bien_g3(out_dir, study, meta)
     loi = [x for x in vd if x["muc"] == "loi"]
     return _ket(TRANG_THAI_DAT if not loi else TRANG_THAI_CHUA_DAT, vd, dong, meta)
+
+
+def kiem_bang_bien_g3(out_dir: Path, study: str, meta: Mapping[str, Any]) -> List[Dict[str, str]]:
+    """MT-11 (CẢNH BÁO — G3-T2, bác sĩ chọn 15/11/2026): bộ biến phải có NGUỒN NGƯỜI DUYỆT để G5-AUTO-11 đối chiếu —
+    bảng biến số của đề cương nộp, hoặc `G3_BO_BIEN_SO_<mã>.md` (máy soạn bằng tools/bang_bien_g3.py + PI duyệt). Chỉ
+    cảnh báo ở G3: chặn thật nằm ở G5-AUTO-11 (không có nguồn người duyệt ⇒ không đo được ⇒ G5 không READY)."""
+    try:
+        import bang_bien_g3 as BB  # noqa: PLC0415
+        import doi_chieu_bien_de_cuong as DC  # noqa: PLC0415
+
+        st = BB.trang_thai(out_dir, study, meta)
+        co_de_cuong = bool(DC.doc_de_cuong(Path(out_dir), study)[0])
+    except Exception as e:  # noqa: BLE001 — không đo được ⇒ nói thật
+        return [_van_de("MT-11", "canh_bao", f"không đo được bảng bộ biến G3 cho PI duyệt: {type(e).__name__}")]
+    lenh = f"python3 tools/bang_bien_g3.py soan --study {study} --ghi"
+    if st["trang_thai"] == BB.KHONG_CO:
+        if co_de_cuong:
+            return []
+        return [_van_de("MT-11", "canh_bao", f"chưa có {st['tep']} cho PI duyệt, đề cương nộp cũng chưa có bảng "
+                                             "biến số — G5-AUTO-11 sẽ không có nguồn người duyệt để đối chiếu; agent "
+                                             f"bien-so-nghien-cuu soạn: {lenh}, rồi PI đọc và ghi xác nhận")]
+    if st["trang_thai"] in (BB.CHUA_DUYET, BB.XAC_NHAN_LECH):
+        return [_van_de("MT-11", "canh_bao", f"{st['tep']}: {st['ly_do']}")]
+    if st.get("nguon_doi"):
+        return [_van_de("MT-11", "canh_bao", f"{st['tep']}: bộ biến máy đã đổi sau khi soạn bảng — đối chiếu lại "
+                                             f"(python3 tools/doi_chieu_bien_de_cuong.py --study {study}); bảng PI đã "
+                                             "duyệt là chuẩn, bộ máy phải sửa theo, hoặc PI duyệt bảng mới")]
+    return []
 
 
 def _ket(trang_thai: str, vd: List[Dict[str, str]], dong: Sequence[Mapping[str, str]],
