@@ -126,6 +126,8 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - **Đồng bộ mục tiêu (15/11/2026):** trục `ma_tran_muc_tieu` (mục tiêu → biến → câu hỏi → mục SAP → bảng giả, MT-01…MT-11) phải `khop`, hoặc phần còn mở nêu đúng vai (MT-08 = thống kê viên/PI duyệt công thức biến phái sinh) trước khi kết luận cổng — chi tiết `bien-so-nghien-cuu`, `thiet-ke-nghien-cuu` mục cùng ngày.
 - **Đồng bộ thiết kế (15/11/2026):** trục `chuan_bao_cao` (chuẩn chính + CROSS/RECORD theo nguồn dữ liệu, cùng một chuỗi ở G1/G2/SAP/đề cương), `mo_ta_thiet_ke` (nhãn «có phân tích» khi có mục tiêu phân tích · tuyển mẫu G2 ↔ cách thu thập G1 · phiên bản tiêu đề SAP) và `kiem_soat_sai_lech` (bảng sai lệch G1 ↔ phân tích SAP, `tools/doi_chieu_sai_lech_sap.py`) phải `khop`, hoặc phần còn mở nêu đúng vai (RECORD khi vừa thu mới vừa ghép HIS = PI quyết; phương pháp phân tích đề cương chưa nêu = thống kê viên chọn; đề cương thống nhất G10 cũ = lắp lại G10) trước khi kết luận cổng — chi tiết `thiet-ke-nghien-cuu` mục cùng ngày.
 
+- **Đồng bộ phân tích số liệu (15/11/2026):** trục `dac_ta_phan_tich` (đặc tả G6 ↔ SAP hai chiều: SHA đúng phiên bản, mọi phân tích SAP §9 + mục phân tích nhãn đậm §1/§3/§5/§7 có neo, mọi neo còn trong SAP) phải `khop`, hoặc nêu đúng vai (đặc tả chưa duyệt = thống kê viên/PI ghi `nguoi_duyet`; SAP còn [CẦN] = thống kê viên chọn phương pháp) — chi tiết `phan-tich-thong-ke` mục cùng ngày.
+
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G4` xác nhận/dấu vân tay · bật cờ đời thực trong
 `study_meta` · chấm đầu ra do chính mình làm · ghi biên bản «ĐỒNG THUẬN» như «ĐẠT CỔNG» · bịa căn cứ · báo «phần agent hoàn chỉnh» khi `trach-nhiem` chưa ra mã 0 · sửa artifact của cổng khác để «xanh» tiêu chí
