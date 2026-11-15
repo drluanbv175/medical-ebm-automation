@@ -167,8 +167,9 @@ def test_quet_csv_do_rong_tinh_ca_khoang_trang_dau(tmp_path):
 def test_tu_dien_sav_that_khop_ke_hoach():
     _, ke = _ke()
     kq = C.kiem_tu_dien_sav(ke, _td())
-    # chua_do (E5 15/11/2026): kế hoạch không mang vai trò/thuộc tính tuỳ biến ⇒ không có gì phải đo thêm
-    assert kq == {"trang_thai": "KHOP", "so_lech": 0, "lech": [], "chua_do": []}
+    # spss_tu_dien.json ghi bằng SPSS 31 THẬT (15/11/2026): đủ 11 thuộc tính Variable View đọc lại được và khớp
+    assert (kq["trang_thai"], kq["so_lech"], kq["lech"], kq["chua_do"]) == ("KHOP", 0, [], [])
+    assert all(all(kt[a] is True for a in C.THUOC_TINH_11) for kt in kq["theo_bien"].values())
 
 
 @pytest.mark.parametrize(
@@ -348,15 +349,19 @@ def test_doc_ban_xa_r_that():
     assert ca[2][b.index("ghi")] == ""  # «» khác NA
     assert tt["hai_long"]["class"] == R.LOP_SO_NHAN and tt["hai_long"]["na_values"] == [9.0]
     assert tt["hut_thuoc"]["gt"][-9991.0] == "BTR — Bỏ trống"
-    assert tt["nghe"]["class"] == R.LOP_CHU_NHAN and tt["nghe"]["gt"]["khac"] == "Khác"
-    assert tt["Tuoi"]["class"] == ["numeric"] and tt["ghi"]["class"] == ["character"]
+    # biến CHUỖI mang mã thiếu như MISSING VALUES chuỗi của .sav (11 thuộc tính, 15/11/2026)
+    assert tt["nghe"]["class"] == R.LOP_CHU_NHAN_SPSS and tt["nghe"]["gt"]["khac"] == "Khác"
+    assert tt["Tuoi"]["class"] == ["numeric"] and tt["ghi"]["class"] == R.LOP_CHU_NHAN_SPSS
+    assert tt["ID"]["na_values"] == [""] and tt["ID"]["tt"]["role"] == "none" and tt["Tuoi"]["tt"]["align"] == "right"
 
 
 def test_khu_hoi_va_thuoc_tinh_rds_that_khop():
     p, ke = _ke()
     b, ca, tt = R.doc_ban_xa_r(FX / "r_gia_tri.txt", FX / "r_thuoc_tinh.txt")
     assert C.so_sanh_gia_tri(p, ke, b, ca)["trang_thai"] == "KHOP"
-    assert R.kiem_thuoc_tinh_rds(ke, b, tt) == {"trang_thai": "KHOP", "so_lech": 0, "lech": []}
+    ktt = R.kiem_thuoc_tinh_rds(ke, b, tt)
+    assert (ktt["trang_thai"], ktt["so_lech"], ktt["lech"]) == ("KHOP", 0, [])
+    assert all(all(kt[a] is True for a in C.THUOC_TINH_11) for kt in ktt["theo_bien"].values())
     sav = R.doc_ban_xa_r(FX / "sav_gia_tri.txt", FX / "sav_thuoc_tinh.txt")
     assert R.so_sav_rds(ke, sav, (b, ca, tt))["trang_thai"] == "KHOP"
 
@@ -390,8 +395,12 @@ def test_ba_chieu_sav_rds_bat_lech_gia_tri_va_nhan():
     assert kq["trang_thai"] == "LECH" and kq["so_lech_o"] == 1
     assert any("Tuoi: 1 ô" in x for x in kq["lech"]) and any("gioitinh: nhãn giá trị" in x for x in kq["lech"])
     b2, ca2, tt2 = copy.deepcopy(R.doc_ban_xa_r(FX / "sav_gia_tri.txt", FX / "sav_thuoc_tinh.txt"))
-    tt2["ID"]["na_values"] = ["", "x"]  # mã thiếu CHUỖI không mang sang .rds ⇒ không so (đã ghi trong tài liệu)
-    assert R.so_sav_rds(ke, (b2, ca2, tt2), rds)["trang_thai"] == "KHOP"
+    tt2["ID"]["na_values"] = ["", "x"]  # 15/11/2026: mã thiếu CHUỖI nay mang sang .rds ⇒ lệch phải bị bắt
+    kq2 = R.so_sav_rds(ke, (b2, ca2, tt2), rds)
+    assert kq2["trang_thai"] == "LECH" and any("ID: mã thiếu" in x for x in kq2["lech"])
+    b3, ca3, tt3 = copy.deepcopy(R.doc_ban_xa_r(FX / "sav_gia_tri.txt", FX / "sav_thuoc_tinh.txt"))
+    tt3["ID"]["na_values"] = ["    "]  # SPSS đệm mã thiếu chuỗi tới 8 byte — đệm không phải lệch
+    assert R.so_sav_rds(ke, (b3, ca3, tt3), rds)["trang_thai"] == "KHOP"
 
 
 # ───────────── xuat-rds: luồng đầy đủ với R giả lập (tệp xả thật) ─────────────
@@ -439,7 +448,7 @@ def test_xuat_rds_khop_khong_co_sav_chang_ba_chua_do(tmp_path, monkeypatch, caps
     assert rds.is_file() and man["rds_da_tao"] and man["sha256_rds"] == C.sha256_tep(rds)
     assert man["sha256_nguon"] == C.sha256_tep(FX / "du_lieu.csv") and man["r_phien_ban"].startswith("R version")
     assert man["ba_chieu"] == {"tu_dien_sav": "CHUA_DO", "tu_dien_rds": "KHOP", "khu_hoi_rds": "KHOP",
-                               "sav_rds": "CHUA_DO"}  # fmt: skip
+                               "sav_rds": "CHUA_DO", "tu_dien_sav_chua_do": []}  # fmt: skip
     assert man["khu_hoi"]["so_o"] == 80 and len(man["ke_hoach"]) == 10
     assert (d / "r" / "THU_xuat_rds_ban-nhap.R").is_file() and "chưa đo" in capsys.readouterr().out
 
@@ -452,7 +461,9 @@ def test_xuat_rds_ba_chieu_dung_sav_cung_ke_hoach(tmp_path, monkeypatch):
     assert R.main(_ns_r()) == R.MA_OK
     assert goi[0][5] == str(d / "spss" / "THU_BAN-NHAP.sav").replace("\\", "/")
     man = json.loads((d / "r" / "THU_BAN-NHAP.rds.manifest.json").read_text(encoding="utf-8"))
-    assert man["ba_chieu"] == {"tu_dien_sav": "KHOP", "tu_dien_rds": "KHOP", "khu_hoi_rds": "KHOP", "sav_rds": "KHOP"}
+    # spss_tu_dien.json ghi bằng SPSS 31 THẬT (15/11/2026) có vai trò + thuộc tính ⇒ E2 đo được hết, không «chưa đo»
+    assert man["ba_chieu"] == {"tu_dien_sav": "KHOP", "tu_dien_rds": "KHOP", "khu_hoi_rds": "KHOP", "sav_rds": "KHOP",
+                               "tu_dien_sav_chua_do": []}  # fmt: skip
     assert man["haven_phien_ban"] == "2.5.5"
     _r_gia(monkeypatch, haven=False)  # máy không có haven ⇒ chặng .sav ↔ .rds «chưa đo», không phải «khớp»
     assert R.main(_ns_r()) == R.MA_OK

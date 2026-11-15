@@ -548,6 +548,12 @@ def la_thang_thu_tu(nhan_gt: dict[str, str], bo: set[str]) -> bool:
     return dau * 2 >= len(cap)
 
 
+def muc_do_lua_chon(nhan_gt: dict[str, str], ma_so_thieu: set[str]) -> str:
+    """Mức đo SUY LUẬN của biến chọn một (radio/dropdown, mã số) — DÙNG CHUNG cho .sav và mẫu nhập SPSS (E5)."""
+    giong_thieu = {k for k, v in nhan_gt.items() if _NHAN_GIONG_THIEU.search(v)}
+    return "ORDINAL" if la_thang_thu_tu(nhan_gt, giong_thieu | set(ma_so_thieu)) else "NOMINAL"
+
+
 def menh_de_thieu_so(ten: str, ma_so: list[str], ma_chu_so: list[int]) -> str | None:
     """Phần trong ngoặc của MISSING VALUES cho biến SỐ.
 
@@ -632,7 +638,7 @@ def ke_hoach_bien(
             if not la_so:
                 muc = "NOMINAL"
             elif loai in ("radio", "dropdown"):
-                muc = "ORDINAL" if la_thang_thu_tu(nhan_gt, giong_thieu | set(ma_so_ap)) else "NOMINAL"
+                muc = muc_do_lua_chon(nhan_gt, set(ma_so_ap))
             elif loai in ("yesno", "truefalse", "checkbox"):
                 muc = "NOMINAL"
             elif not d and not t["nhieu_muc"] and len(t["gia_tri"]) <= 2:
@@ -719,6 +725,16 @@ def dinh_dang_cuoi(b: dict) -> str:
     return f"A{max(1, b['rong'])}"
 
 
+def nhom_cu_phap(lenh: str, cap: list[tuple[str, str]]) -> list[str]:
+    """«VARIABLE WIDTH a b (8) /c (12).» — gom biến cùng giá trị (thứ tự xuất hiện), mỗi nhóm một mệnh đề."""
+    nhom: dict[str, list[str]] = {}
+    for ten, gt in cap:
+        nhom.setdefault(gt, []).append(ten)
+    if not nhom:
+        return []
+    return [f"{lenh} " + " /".join(f"{goi_ds(ds)} ({gt})" for gt, ds in nhom.items()) + "."]
+
+
 def _chu_thich(s: str) -> str:
     """Một dòng chú thích SPSS. PHẢI kết thúc bằng dấu chấm: chú thích không có dấu chấm nuốt luôn lệnh kế tiếp (đo
     14/11/2026 — `SET UNICODE=ON.` của bản cũ không bao giờ chạy)."""
@@ -776,10 +792,12 @@ def cu_phap_nhan_bien(csv_p: Path, sav_p: Path, ke: list[dict], *, ghi_chu: list
         tt = [f"{k}({chuoi_spss(v)})" for k, v in thuoc_tinh_ky_vong(b).items()]
         if tt:
             dong.append(f"VARIABLE ATTRIBUTE VARIABLES={b['ten']} ATTRIBUTE={' '.join(tt)}.")
-    vai = {}
+    # 11 thuộc tính (15/11/2026): Columns + Align + Role đặt TƯỜNG MINH cho MỌI biến (không để mặc định ngầm).
+    dong += nhom_cu_phap("VARIABLE WIDTH", [(b["ten"], str(cot_hien(b))) for b in giu])
+    dong += nhom_cu_phap("VARIABLE ALIGNMENT", [(b["ten"], can_le(b)) for b in giu])
+    vai: dict[str, list[str]] = {}
     for b in giu:
-        if b.get("vai_tro") in _VAI_TRO_SPSS:
-            vai.setdefault(_VAI_TRO_SPSS[b["vai_tro"]], []).append(b["ten"])
+        vai.setdefault(vai_tro_spss(b), []).append(b["ten"])
     if vai:
         dong.append("VARIABLE ROLE " + " ".join(f"/{k} {goi_ds(v)}" for k, v in vai.items()) + ".")
     for b in giu:
@@ -1103,12 +1121,18 @@ def thieu_tu_spss(th: list | None, so: bool) -> dict:
 
 
 def kiem_tu_dien_sav(ke: list[dict], td: dict) -> dict:
-    """Từ điển .sav (dump `--tu-dien`) so với kế hoạch: tên + thứ tự biến, số/chuỗi (và độ rộng A), nhãn biến, nhãn giá
-    trị (cả nhãn mã thiếu), MISSING VALUES, mức đo. Trả {trang_thai KHOP|LECH, so_lech, lech[...]}."""
+    """Từ điển .sav (dump `--tu-dien`, đọc bằng SPSS) so với kế hoạch theo ĐỦ 11 thuộc tính Variable View của SPSS
+    (bác sĩ 15/11/2026) — Name (tên + thứ tự) · Type (số/chuỗi) · Width · Decimals · Label · Values (cả nhãn mã thiếu) ·
+    Missing · Columns · Align · Measure · Role — cộng thuộc tính tuỳ biến (VaiTro · MucTieu · CauHoi · KhoangHopLe ·
+    NguonMucDo).
+
+    Trả {trang_thai KHOP|LECH, so_lech, lech[...], chua_do[...], theo_bien{tên: {thuộc tính: True|False|None}}};
+    None = bản SPSS/dump không trả thuộc tính đó (CHƯA ĐO — không phải khớp)."""
     giu = [b for b in ke if not b["bo"]]
     ds = td.get("bien") or []
     lech: list[str] = []
     chua_do: set[str] = set()
+    theo_bien: dict[str, dict] = {}
     ten_ke, ten_sav = [b["ten"] for b in giu], [v.get("ten") for v in ds]
     if ten_ke != ten_sav:
         thieu = [t for t in ten_ke if t not in ten_sav]
@@ -1120,23 +1144,44 @@ def kiem_tu_dien_sav(ke: list[dict], td: dict) -> dict:
             + (" — cùng tập biến nhưng KHÁC thứ tự" if not thieu and not thua else "")
         )
     theo_ten = {v.get("ten"): v for v in ds}
-    for b in giu:
+    for vi, b in enumerate(giu):
         v = theo_ten.get(b["ten"])
+        kt: dict[str, bool | None] = dict.fromkeys(THUOC_TINH_11)
+        theo_bien[b["ten"]] = kt
         if v is None:
+            kt["Name"] = False
             continue
+        kt["Name"] = vi < len(ten_sav) and ten_sav[vi] == b["ten"]
         kieu = v.get("kieu")
         if b["so"] and kieu != 0:
             lech.append(f"{b['ten']}: kế hoạch là biến SỐ nhưng .sav là chuỗi (A{kieu})")
+            kt["Type"] = False
             continue
+        kt["Type"] = True
         if not b["so"] and kieu != max(1, b["rong"]):
             lech.append(f"{b['ten']}: kế hoạch là chuỗi A{max(1, b['rong'])} nhưng .sav có kiểu {kieu}")
-        if (v.get("nhan") or "") != _gop(b["nhan"]):
+            kt["Width"] = False
+        # Width + Decimals từ định dạng SPSS trả về (SPSS ghi «F8» khi 0 số lẻ — so theo số, không so chuỗi)
+        if "dinh_dang" in v:
+            ky_vong, co = dinh_dang_tach(dinh_dang_cuoi(b)), dinh_dang_tach(v.get("dinh_dang"))
+            if kt["Width"] is None:
+                kt["Width"] = co is not None and co[:2] == ky_vong[:2]
+                if not kt["Width"]:
+                    lech.append(f"{b['ten']}: định dạng (Width) {v.get('dinh_dang')} — kỳ vọng {dinh_dang_cuoi(b)}")
+            kt["Decimals"] = co is not None and co[2] == ky_vong[2]
+            if not kt["Decimals"]:
+                lech.append(f"{b['ten']}: số lẻ (Decimals) {v.get('dinh_dang')} — kỳ vọng {dinh_dang_cuoi(b)}")
+        else:
+            chua_do.add("Width/Decimals (định dạng)")
+        kt["Label"] = (v.get("nhan") or "") == _gop(b["nhan"])
+        if not kt["Label"]:
             lech.append(f"{b['ten']}: nhãn biến khác kế hoạch")
         ngt = {}
         for k, nhan in (v.get("nhan_gia_tri") or {}).items():
             ngt[float(k) if b["so"] else str(k).rstrip(" ")] = nhan
         kv = ky_vong_nhan_gia_tri(b)
-        if ngt != kv:
+        kt["Values"] = ngt == kv
+        if not kt["Values"]:
             thieu = sorted(str(k) for k in set(kv) - set(ngt))
             thua = sorted(str(k) for k in set(ngt) - set(kv))
             sai = sorted(str(k) for k in set(kv) & set(ngt) if kv[k] != ngt[k])
@@ -1146,31 +1191,47 @@ def kiem_tu_dien_sav(ke: list[dict], td: dict) -> dict:
                 + (f" — thừa mã {', '.join(thua[:8])}" if thua else "")
                 + (f" — sai nhãn mã {', '.join(sai[:8])}" if sai else "")
             )
-        if thieu_tu_spss(v.get("thieu"), b["so"]) != ky_vong_thieu(b):
+        kt["Missing"] = thieu_tu_spss(v.get("thieu"), b["so"]) == ky_vong_thieu(b)
+        if not kt["Missing"]:
             lech.append(
                 f"{b['ten']}: MISSING VALUES khác kế hoạch (kỳ vọng {ky_vong_thieu(b)} — .sav "
                 f"{thieu_tu_spss(v.get('thieu'), b['so'])})"
             )
-        if str(v.get("muc_do") or "").upper() != b["muc_do"]:
+        if "cot_hien" in v:
+            kt["Columns"] = int(v.get("cot_hien") or 0) == cot_hien(b)
+            if not kt["Columns"]:
+                lech.append(f"{b['ten']}: cột hiển thị (Columns) {v.get('cot_hien')} — kỳ vọng {cot_hien(b)}")
+        else:
+            chua_do.add("Columns (độ rộng cột hiển thị)")
+        if "can_le" in v:
+            kt["Align"] = can_le_spss(v.get("can_le")) == can_le(b)
+            if not kt["Align"]:
+                lech.append(f"{b['ten']}: căn lề (Align) {v.get('can_le')} — kỳ vọng {can_le(b)}")
+        else:
+            chua_do.add("Align (căn lề)")
+        kt["Measure"] = str(v.get("muc_do") or "").upper() == b["muc_do"]
+        if not kt["Measure"]:
             lech.append(f"{b['ten']}: mức đo {v.get('muc_do')} khác kế hoạch {b['muc_do']}")
-        # E5 (15/11/2026): vai trò + thuộc tính tuỳ biến. Bản dump cũ / SPSS không có API ⇒ khoá vắng ⇒ CHƯA ĐO (ghi
-        # rõ), không coi là khớp và không coi là lệch.
+        vt = vai_tro_spss(b)
+        if "vai_tro" in v:
+            kt["Role"] = str(v.get("vai_tro") or "").strip().upper() == vt
+            if not kt["Role"]:
+                lech.append(f"{b['ten']}: vai trò SPSS (Role) {v.get('vai_tro')} — kỳ vọng {vt.title()}")
+        else:
+            chua_do.add("Role (vai trò SPSS)")
+        # Thuộc tính tuỳ biến (E5). Bản dump cũ / SPSS không có API ⇒ khoá vắng ⇒ CHƯA ĐO (ghi rõ).
         kv_tt = thuoc_tinh_ky_vong(b)
         if "thuoc_tinh" in v and isinstance(v.get("thuoc_tinh"), dict):
             co_tt = {k: (x[0] if isinstance(x, list) and x else x) for k, x in v["thuoc_tinh"].items()}
             sai_tt = [k for k, x in kv_tt.items() if str(co_tt.get(k, "")).rstrip(" ") != x]
+            kt["ThuocTinh"] = not sai_tt
             if sai_tt:
                 lech.append(f"{b['ten']}: thuộc tính biến khác kế hoạch ở {', '.join(sai_tt)}")
         elif kv_tt:
+            kt["ThuocTinh"] = None
             chua_do.add("thuộc tính tuỳ biến (VARIABLE ATTRIBUTE)")
-        vt = VAI_TRO_SPSS_DOC.get(_VAI_TRO_SPSS.get(b.get("vai_tro") or "", ""))
-        if vt and "vai_tro" in v:
-            if str(v.get("vai_tro") or "").strip().lower() != vt:
-                lech.append(f"{b['ten']}: vai trò SPSS {v.get('vai_tro')} — kỳ vọng {vt.title()}")
-        elif vt:
-            chua_do.add("vai trò (VARIABLE ROLE)")
     return {"trang_thai": "KHOP" if not lech else "LECH", "so_lech": len(lech), "lech": lech,
-            "chua_do": sorted(chua_do)}
+            "chua_do": sorted(chua_do), "theo_bien": theo_bien}
 
 
 def doc_lai_sav(py: Path, thu_muc: Path, sav: Path, csv_p: Path, ke: list[dict]) -> dict:
@@ -1225,8 +1286,11 @@ def tim_du_lieu_khoa(study: str) -> tuple[Path, dict]:
 #: Kiểu biến đã chốt ở ma trận mục tiêu–biến ⇒ mức đo SPSS (thay suy luận từ nhãn lựa chọn).
 KIEU_SANG_MUC_DO = {"nhi_phan": "NOMINAL", "danh_dinh": "NOMINAL", "thu_tu": "ORDINAL", "lien_tuc": "SCALE",
                     "dem": "SCALE", "thoi_gian_den_su_kien": "SCALE", "ngay": "SCALE"}
-_VAI_TRO_SPSS = {"ket_cuc_chinh": "TARGET", "ket_cuc_phu": "TARGET", "phoi_nhiem": "INPUT", "yeu_to": "INPUT",
-                 "hiep_bien": "INPUT", "phan_tang": "INPUT", "cum": "SPLIT"}
+#: Vai trò ma trận ⇒ Role SPSS. Kết cục (cả thời gian/biến cố của sống còn) ⇒ TARGET; biến giải thích/mô tả ⇒ INPUT;
+#: cụm/trọng số ⇒ NONE (SPLIT của SPSS chỉ là nhãn tương thích Modeler, không phải split-file — dễ hiểu nhầm).
+_VAI_TRO_SPSS = {"ket_cuc_chinh": "TARGET", "ket_cuc_phu": "TARGET", "thoi_gian": "TARGET", "su_kien": "TARGET",
+                 "phoi_nhiem": "INPUT", "yeu_to": "INPUT", "hiep_bien": "INPUT", "phan_tang": "INPUT",
+                 "mo_ta": "INPUT", "cum": "NONE", "trong_so": "NONE"}
 
 
 def _so_hay_none(x) -> float | None:
@@ -1241,23 +1305,82 @@ def khoang_chu(kh: list | None) -> str:
     return "–".join("…" if v is None else (str(int(v)) if float(v).is_integer() else str(v)) for v in kh)
 
 
+#: 11 thuộc tính một biến trong Variable View của SPSS (bác sĩ 15/11/2026: «biến nhập liệu vào spss phải đảm bảo hoàn
+#: thiện đúng, đồng bộ với 11 thuộc tính của biến, với R cũng phải hoàn thiện và đồng bộ»). Mọi biến .sav đặt TƯỜNG MINH
+#: cả 11, SPSS đọc lại kiểm cả 11 (E2), .rds mang 11 thuộc tính tương ứng (THUOC_TINH_11_R) và R đọc lại kiểm.
+THUOC_TINH_11 = ("Name", "Type", "Width", "Decimals", "Label", "Values", "Missing", "Columns", "Align", "Measure",
+                 "Role")
+#: Thuộc tính R tương ứng (haven + attr) — bảng dùng cho tài liệu và bảng thuộc tính từng biến.
+THUOC_TINH_11_R = {"Name": "tên cột", "Type": "typeof/class", "Width": "format.spss (độ rộng)",
+                   "Decimals": "format.spss (số lẻ)", "Label": "label", "Values": "labels",
+                   "Missing": "na_values / na_range", "Columns": "display_width", "Align": "align",
+                   "Measure": "measure", "Role": "role"}
 #: VARIABLE ROLE ⇒ giá trị `Variable.role` SPSS trả khi đọc lại (so không phân biệt hoa thường).
-VAI_TRO_SPSS_DOC = {"TARGET": "target", "INPUT": "input", "SPLIT": "split"}
+VAI_TRO_SPSS_DOC = {"TARGET": "target", "INPUT": "input", "SPLIT": "split", "NONE": "none", "BOTH": "both"}
+_CAN_LE_SO = {0: "LEFT", 1: "RIGHT", 2: "CENTER"}
+
+
+def dinh_dang_tach(fmt) -> tuple[str, int, int] | None:
+    """«F8.2» ⇒ ("F", 8, 2); «F8» ⇒ ("F", 8, 0); «A10» ⇒ ("A", 10, 0); không đọc được ⇒ None."""
+    m = re.fullmatch(r"\s*([A-Za-z]+)(\d+)(?:\.(\d+))?\s*", str(fmt or ""))
+    return (m[1].upper(), int(m[2]), int(m[3] or 0)) if m else None
+
+
+def cot_hien_tu_dinh_dang(fmt, ten: str) -> int:
+    """Columns (độ rộng cột hiển thị) — đủ thấy cả tên lẫn giá trị: max(8, độ rộng định dạng, độ dài tên), trần 40."""
+    tach = dinh_dang_tach(fmt)
+    return min(40, max(8, tach[1] if tach else 8, len(str(ten or ""))))
+
+
+def cot_hien(b: dict) -> int:
+    """Columns của một biến trong kế hoạch .sav/.rds (cùng luật với mẫu nhập: cot_hien_tu_dinh_dang)."""
+    return cot_hien_tu_dinh_dang(dinh_dang_cuoi(b), b.get("ten"))
+
+
+def can_le(b: dict) -> str:
+    """Align — như mặc định SPSS: biến số căn PHẢI, biến chuỗi căn TRÁI (đặt tường minh để đọc lại kiểm được)."""
+    return "RIGHT" if b["so"] else "LEFT"
+
+
+def can_le_spss(x) -> str:
+    """`Variable.alignment` SPSS trả (0/1/2 hoặc chữ) ⇒ LEFT/RIGHT/CENTER."""
+    if isinstance(x, int) or str(x).strip().isdigit():
+        return _CAN_LE_SO.get(int(x), str(x))
+    return str(x or "").strip().upper()
 
 
 def thuoc_tinh_ky_vong(b: dict) -> dict[str, str]:
     """Thuộc tính tuỳ biến (VARIABLE ATTRIBUTE) một biến PHẢI mang trong .sav — MỘT nguồn cho cú pháp, E2 đọc lại và R
     (`role`/`objective`/`item`/`valid_range`). Chỉ khoá có giá trị."""
-    tt = {"VaiTro": b.get("vai_tro") or "", "MucTieu": f"MT{b['muc_tieu']}" if b.get("muc_tieu") else "",
-          "CauHoi": b.get("cau_hoi") or "", "KhoangHopLe": khoang_chu(b["khoang_hop_le"]) if b.get("khoang_hop_le")
-          else "", "NguonMucDo": b.get("nguon_muc_do") or ""}
-    return {k: v for k, v in tt.items() if v}
+    muc_tieu = ";".join(f"MT{x.strip()}" for x in str(b.get("muc_tieu") or "").split(";") if x.strip())
+    tt = {"VaiTro": b.get("vai_tro") or "", "MucTieu": muc_tieu, "CauHoi": b.get("cau_hoi") or "",
+          "KhoangHopLe": khoang_chu(b["khoang_hop_le"]) if b.get("khoang_hop_le") else "",
+          "NguonMucDo": b.get("nguon_muc_do") or ""}
+    # gộp khoảng trắng ĐÚNG như SPSS nhận qua chuoi_spss() — .sav, E2 đọc lại và .rds phải cùng một chuỗi
+    return {k: _gop(v) for k, v in tt.items() if _gop(v)}
+
+
+#: Một biến có thể nằm ở nhiều dòng ma trận (vd tuổi: mô tả ở MT1, yếu tố ở MT3) ⇒ vai trò gộp theo thứ tự ưu tiên;
+#: vai trò ĐẦU quyết định VARIABLE ROLE.
+UU_TIEN_VAI_TRO = ("ket_cuc_chinh", "ket_cuc_phu", "phoi_nhiem", "yeu_to", "hiep_bien", "phan_tang", "cum",
+                   "thoi_gian", "su_kien", "trong_so", "mo_ta")
+
+
+def vai_tro_spss(b: dict) -> str:
+    """Role SPSS của MỌI biến (11 thuộc tính): theo vai trò ưu tiên nhất trong ma trận; mã bản ghi (record_id) ⇒ NONE;
+    còn lại ⇒ INPUT (mặc định của SPSS, ghi tường minh để đọc lại kiểm được)."""
+    vt = _VAI_TRO_SPSS.get(str(b.get("vai_tro") or "").split(";")[0].strip())
+    if vt:
+        return vt
+    return "NONE" if str(b.get("cot") or b.get("ten") or "").lower() == "record_id" else "INPUT"
 
 
 def dong_ma_tran_dat(d: Path, study: str) -> dict[str, dict]:
-    """{biến: dòng ma trận} khi ma trận mục tiêu–biến ĐẠT (dòng đầu của mỗi biến); chưa đạt/không đọc được ⇒ {}.
+    """{biến: dòng ma trận GỘP} khi ma trận mục tiêu–biến ĐẠT; chưa đạt/không đọc được ⇒ {}.
 
-    MỘT nguồn thuộc tính cho .sav (xuat-sav), .rds (xuat-rds) và mẫu nhập SPSS (nhap_lieu_excel mau --dang sav)."""
+    Biến nằm ở nhiều dòng: vai_tro gộp theo UU_TIEN_VAI_TRO («ket_cuc_chinh;mo_ta»), muc_tieu «1;3», cau_hoi gộp; kieu
+    khác nhau giữa các dòng ⇒ `kieu` rỗng + `kieu_xung_dot` (E5 chặn; ma trận cũng không ĐẠT — MT-07). MỘT nguồn thuộc
+    tính cho .sav (xuat-sav), .rds (xuat-rds) và mẫu nhập SPSS (nhap_lieu_excel mau --dang sav)."""
     try:
         import ma_tran_muc_tieu_bien as MT  # noqa: PLC0415
 
@@ -1266,9 +1389,25 @@ def dong_ma_tran_dat(d: Path, study: str) -> dict[str, dict]:
         dong = MT.doc_ma_tran(Path(d))[0] or []
     except Exception:  # noqa: BLE001 — E4 chặn riêng khi ma trận không dùng được
         return {}
-    ra: dict[str, dict] = {}
+    nhom: dict[str, list[dict]] = {}
     for r in dong:
-        ra.setdefault(str(r.get("bien") or "").strip(), r)
+        ten = str(r.get("bien") or "").strip()
+        if ten:
+            nhom.setdefault(ten, []).append(r)
+    ra: dict[str, dict] = {}
+    for ten, ds in nhom.items():
+        def gop(cot: str, *, thu_tu=None) -> str:
+            gt = list(dict.fromkeys(str(r.get(cot) or "").strip() for r in ds if str(r.get(cot) or "").strip()))
+            if thu_tu:
+                gt.sort(key=lambda v: thu_tu.index(v) if v in thu_tu else len(thu_tu))
+            elif all(v.isdigit() for v in gt):
+                gt.sort(key=int)  # mục tiêu theo số thứ tự — không phụ thuộc thứ tự dòng của ma trận
+            return ";".join(gt)
+
+        kieu = sorted({str(r.get("kieu") or "").strip() for r in ds} - {""})
+        ra[ten] = {"bien": ten, "vai_tro": gop("vai_tro", thu_tu=UU_TIEN_VAI_TRO), "muc_tieu": gop("muc_tieu"),
+                   "cau_hoi": gop("cau_hoi"), "kieu": kieu[0] if len(kieu) == 1 else "",
+                   "kieu_xung_dot": kieu if len(kieu) > 1 else []}
     return ra
 
 
@@ -1276,7 +1415,8 @@ def thuoc_tinh_tu_dong(r: dict, *, kieu_so: bool, la_hop: bool, lo, hi, muc_cu: 
     """Thuộc tính một cột từ dòng ma trận + min/max từ điển: {muc_do, nguon_muc_do, vai_tro, muc_tieu, cau_hoi,
     khoang_hop_le} — luật CHUNG của kế hoạch .sav/.rds và mẫu nhập SPSS (để hai tệp không lệch mức đo/thuộc tính)."""
     kieu = str(r.get("kieu") or "")
-    if not la_hop and kieu in KIEU_SANG_MUC_DO and kieu_so:
+    # Chỉ SCALE đòi biến SỐ; thứ bậc/danh định mã chữ (nhe|vua|nang) vẫn mang mức đo của ma trận (SPSS/R đều nhận).
+    if not la_hop and kieu in KIEU_SANG_MUC_DO and (kieu_so or KIEU_SANG_MUC_DO[kieu] != "SCALE"):
         muc, nguon = KIEU_SANG_MUC_DO[kieu], "ma_tran"
     else:
         muc, nguon = muc_cu, "suy_luan"
@@ -1309,16 +1449,21 @@ def ap_thuoc_tinh_bien(d: Path, study: str, ke: list[dict], td: dict[str, dict],
         r = theo_bien.get(goc) or {}
         kieu = str(r.get("kieu") or "")
         muc_cu = b["muc_do"]
-        b.update(thuoc_tinh_tu_dong(r, kieu_so=b["so"], la_hop=cot != goc, lo=dd.get("min"), hi=dd.get("max"),
-                                    muc_cu=muc_cu))
+        lo_td, hi_td = dd.get("min"), dd.get("max")
+        if str(dd.get("loai") or "").lower() == "slider":  # REDCap: thanh trượt không khai ⇒ 0–100 (như mẫu nhập)
+            lo_td, hi_td = lo_td or "0", hi_td or "100"
+        b.update(thuoc_tinh_tu_dong(r, kieu_so=b["so"], la_hop=cot != goc, lo=lo_td, hi=hi_td, muc_cu=muc_cu))
         if muc_cu != b["muc_do"]:
             canh_bao.append(f"{b['ten']}: mức đo theo ma trận «{kieu}» ⇒ {b['muc_do']} (suy luận cũ: {muc_cu})")
         lo, hi = b["khoang_hop_le"] or (None, None)
         ma_so = {_ma_so_gon(str(x)) for x in b.get("ma_thieu_so") or []}
-        ma_chu = set((b.get("ma_chu") or {}).keys())
+        # mã thiếu ĐÃ KHAI: mã chữ của biến số (ma_chu) và mọi mã thiếu của biến CHUỖI (thieu_chuoi: BTR, 99…)
+        ma_chu = set((b.get("ma_chu") or {}).keys()) | {x for x in b.get("thieu_chuoi") or [] if x}
         gia_tri = [str(h[vi_tri[cot]]).strip() for h in hang if cot in vi_tri and vi_tri[cot] < len(h)]
         gia_tri = [g for g in gia_tri if g and g not in ma_chu and not (_so(g) is not None and _ma_so_gon(g) in ma_so)]
         van_de: list[str] = []
+        if r.get("kieu_xung_dot"):
+            van_de.append(f"ma trận khai kiểu KHÁC nhau ở các dòng ({', '.join(r['kieu_xung_dot'])}) — sửa ở G3")
         kt = str(dd.get("kiem_tra") or "").lower()
         can_so = kieu in ("lien_tuc", "dem") or (kieu == "thoi_gian_den_su_kien" and not kt.startswith("date"))
         if not b["so"] and can_so:
@@ -1337,7 +1482,7 @@ def ap_thuoc_tinh_bien(d: Path, study: str, ke: list[dict], td: dict[str, dict],
         else:
             ngoai_kh = ""
         if cot != goc:
-            sai = sorted({g for g in gia_tri if g not in ("0", "1")})
+            sai = sorted({g for g in gia_tri if _ma_so_gon(g) not in ("0", "1")})
             if sai:
                 van_de.append(f"checkbox nhận giá trị ngoài 0/1: {', '.join(sai[:5])}")
         elif str(dd.get("loai") or "").lower() in ("radio", "dropdown", "yesno", "truefalse") and b["nhan_gia_tri"]:
@@ -1348,12 +1493,18 @@ def ap_thuoc_tinh_bien(d: Path, study: str, ke: list[dict], td: dict[str, dict],
         for v in van_de:
             loi.append(f"{b['ten']} ({cot}): {v}")
         kiem_dl = [f"✗ {v}" for v in van_de] + ([ngoai_kh] if ngoai_kh else [])
-        bang.append({"bien": cot, "ten_spss": b["ten"], "nhan": b["nhan"], "kieu_du_lieu": "số" if b["so"] else "chuỗi",
-                     "dinh_dang": dinh_dang_cuoi(b), "muc_do": b["muc_do"], "nguon_muc_do": b["nguon_muc_do"],
-                     "kieu_ma_tran": kieu or None, "nhan_gia_tri": dict(b["nhan_gia_tri"]),
-                     "ma_thieu": [k for k, _ in b["ma_thieu"]], "khoang_hop_le": b["khoang_hop_le"],
-                     "vai_tro": b["vai_tro"] or None, "muc_tieu": b["muc_tieu"] or None,
-                     "cau_hoi": b["cau_hoi"] or None, "kiem_du_lieu": kiem_dl or ["✓ đạt"]})
+        dd_tach = dinh_dang_tach(dinh_dang_cuoi(b)) or ("", 0, 0)
+        bang.append({"bien": cot,
+                     # ── 11 thuộc tính Variable View của SPSS (cùng giá trị .rds mang theo) ──
+                     "ten_spss": b["ten"], "kieu_du_lieu": "số" if b["so"] else "chuỗi", "do_rong": dd_tach[1],
+                     "so_le": dd_tach[2], "nhan": _gop(b["nhan"]), "nhan_gia_tri": dict(b["nhan_gia_tri"]),
+                     "ma_thieu": [k for k, _ in b["ma_thieu"]], "cot_hien": cot_hien(b), "can_le": can_le(b),
+                     "muc_do": b["muc_do"], "vai_tro_spss": vai_tro_spss(b),
+                     # ── thuộc tính của ma trận/từ điển (VARIABLE ATTRIBUTE / attr .rds) ──
+                     "dinh_dang": dinh_dang_cuoi(b), "nguon_muc_do": b["nguon_muc_do"], "kieu_ma_tran": kieu or None,
+                     "khoang_hop_le": b["khoang_hop_le"], "vai_tro": b["vai_tro"] or None,
+                     "muc_tieu": b["muc_tieu"] or None, "cau_hoi": b["cau_hoi"] or None,
+                     "kiem_du_lieu": kiem_dl or ["✓ đạt"]})
     return {"loi": loi, "canh_bao": canh_bao, "bang": bang}
 
 
@@ -1370,25 +1521,44 @@ def ap_va_chan_e5(d: Path, study: str, ke: list[dict], td: dict[str, dict], csv_
     return e5
 
 
-def ghi_bang_thuoc_tinh(ra: Path, study: str, bang: list[dict], *, ban_nhap: bool) -> Path:
-    """Bảng thuộc tính từng biến (E5) — .md cho bác sĩ đọc + .json cho máy."""
+def trang_thai_11(kt: dict | None) -> str:
+    """{thuộc tính: True|False|None} của một biến ⇒ «✓ 11/11» · «✗ Role, Missing» · «⚪ chưa đo: Columns»."""
+    if not kt:
+        return "⚪ chưa đọc lại"
+    sai = [k for k, v in kt.items() if v is False]
+    chua = [k for k in THUOC_TINH_11 if kt.get(k) is None]
+    if sai:
+        return "✗ " + ", ".join(sai)
+    dat = sum(1 for k in THUOC_TINH_11 if kt.get(k) is True)
+    return f"✓ {dat}/11" + (f" · ⚪ chưa đo: {', '.join(chua)}" if chua else "")
+
+
+def ghi_bang_thuoc_tinh(ra: Path, study: str, bang: list[dict], *, ban_nhap: bool,
+                        kiem: dict | None = None, nhan_kiem: str = "SPSS đọc lại") -> Path:
+    """Bảng 11 thuộc tính × từng biến (+ thuộc tính ma trận) — .md cho bác sĩ đọc + .json cho máy. `kiem` = theo_bien
+    của phép đọc lại (E2 cho .sav, kiem_thuoc_tinh_rds cho .rds) ⇒ thêm cột trạng thái từng biến."""
     hau = "_ban-nhap" if ban_nhap else ""
     js = ra / f"{study}_THUOC_TINH_BIEN{hau}.json"
-    js.write_text(json.dumps(bang, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
-    dong = [f"# Thuộc tính từng biến — {study}{' (BẢN NHÁP)' if ban_nhap else ''}", "",
-            "Nguồn: bộ biến riêng (G3) + ma trận mục tiêu–biến + từ điển G5 + mã thiếu ⇒ kế hoạch biến dùng CHUNG "
-            "cho .sav và .rds. E2 đọc lại .sav (tên, nhãn, nhãn giá trị, mã thiếu, mức đo); R đọc lại .rds (nhãn, "
-            "nhãn giá trị, mã thiếu, mức đo, vai trò, khoảng hợp lệ). Cần bác sĩ kiểm chứng.", "",
-            "| Biến | Tên SPSS | Nhãn | Kiểu · định dạng | Mức đo (nguồn) | Nhãn giá trị | Mã thiếu | Khoảng hợp lệ | "
-            "Vai trò · mục tiêu · câu | Kiểm dữ liệu |",
-            "|---|---|---|---|---|---|---|---|---|---|"]
+    ra_js = [dict(x, **({"doc_lai": (kiem or {}).get(x["ten_spss"])} if kiem is not None else {})) for x in bang]
+    js.write_text(json.dumps(ra_js, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
+    dong = [f"# 11 thuộc tính từng biến — {study}{' (BẢN NHÁP)' if ban_nhap else ''}", "",
+            "Kế hoạch biến DÙNG CHUNG cho .sav (SPSS) và .rds (R): bộ biến riêng (G3) + ma trận mục tiêu–biến + từ "
+            "điển G5 + mã thiếu. 11 thuộc tính Variable View của SPSS ↔ attr R: "
+            + " · ".join(f"{k} ↔ {v}" for k, v in THUOC_TINH_11_R.items())
+            + ". Cột cuối: kết quả ĐỌC LẠI bằng chính phần mềm (" + nhan_kiem + "). Cần bác sĩ kiểm chứng.", "",
+            "| Biến | Name | Type | Width | Decimals | Label | Values | Missing | Columns | Align | Measure (nguồn) | "
+            "Role | Vai trò · mục tiêu · câu (ma trận) | Khoảng hợp lệ | Kiểm dữ liệu | " + nhan_kiem + " |",
+            "|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for x in bang:
-        gt = "; ".join(f"{k}={v}" for k, v in list(x["nhan_gia_tri"].items())[:6]) or "—"
-        kh = khoang_chu(x["khoang_hop_le"])
-        vt = " · ".join(str(v) for v in (x["vai_tro"], x["muc_tieu"] and f"MT{x['muc_tieu']}", x["cau_hoi"]) if v)
-        dong.append(f"| `{x['bien']}` | `{x['ten_spss']}` | {x['nhan']} | {x['kieu_du_lieu']} · {x['dinh_dang']} | "
-                    f"{x['muc_do']} ({x['nguon_muc_do']}) | {gt} | {', '.join(x['ma_thieu']) or '—'} | {kh} | "
-                    f"{vt or '—'} | {'; '.join(x['kiem_du_lieu'])} |")
+        gt = "; ".join(f"{k}={v}" for k, v in list(x["nhan_gia_tri"].items())[:6]) + (
+            " …" if len(x["nhan_gia_tri"]) > 6 else "") or "—"
+        mt = x["muc_tieu"] and "MT" + str(x["muc_tieu"]).replace(";", ";MT")
+        vt = " · ".join(str(v) for v in (x["vai_tro"], mt, x["cau_hoi"]) if v)
+        trang = trang_thai_11((kiem or {}).get(x["ten_spss"])) if kiem is not None else "⚪ chưa đọc lại"
+        dong.append(f"| `{x['bien']}` | `{x['ten_spss']}` | {x['kieu_du_lieu']} | {x['do_rong']} | {x['so_le']} | "
+                    f"{x['nhan']} | {gt or '—'} | {', '.join(x['ma_thieu']) or '—'} | {x['cot_hien']} | "
+                    f"{x['can_le']} | {x['muc_do']} ({x['nguon_muc_do']}) | {x['vai_tro_spss']} | {vt or '—'} | "
+                    f"{khoang_chu(x['khoang_hop_le'])} | {'; '.join(x['kiem_du_lieu'])} | {trang} |")
     md = ra / f"{study}_THUOC_TINH_BIEN{hau}.md"
     md.write_text("\n".join(dong) + "\n", encoding="utf-8", newline="\n")
     return md
@@ -1570,11 +1740,16 @@ def lenh_xuat_sav(args) -> int:
     man_sav.write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
     kh = doc_lai["khu_hoi"]
     print(f"✓ {sav_p} — {so_ca} ca · {len(ket['bien'])} biến (chỉ đọc) · manifest {man_sav.name}")
-    print(
-        f"✓ Khứ hồi từng ô (E3): {kh['so_o']} ô khớp nguồn · từ điển .sav khớp kế hoạch (E2: tên, nhãn biến, nhãn giá "
-        "trị, MISSING VALUES, mức đo, vai trò, thuộc tính biến)"
-    )
-    for g in doc_lai["kiem_tu_dien"].get("chua_do") or []:
+    ghi_bang_thuoc_tinh(ra, args.study, e5["bang"], ban_nhap=args.ban_nhap,
+                        kiem=doc_lai["kiem_tu_dien"].get("theo_bien") or {})
+    chua_do = doc_lai["kiem_tu_dien"].get("chua_do") or []
+    da_do = ("đủ 11 thuộc tính Name…Role + thuộc tính tuỳ biến" if not chua_do
+             else "các thuộc tính đo được — xem dòng ⚪ CHƯA ĐO")
+    print(f"✓ Khứ hồi từng ô (E3): {kh['so_o']} ô khớp nguồn · từ điển .sav khớp kế hoạch (E2: {da_do})")
+    so_du = sum(1 for kt in (doc_lai["kiem_tu_dien"].get("theo_bien") or {}).values()
+                if all(kt.get(k) is True for k in THUOC_TINH_11))
+    print(f"✓ 11 thuộc tính SPSS đọc lại đủ ở {so_du}/{len(e5['bang'])} biến — bảng {args.study}_THUOC_TINH_BIEN*.md")
+    for g in chua_do:
         print(f"  ⚪ E2 CHƯA ĐO {g}: bản SPSS này không trả thông tin đó khi đọc lại — đã ghi cú pháp, chưa xác minh")
     for g in kh.get("ghi_chu") or []:
         print(f"  ⚠ {g}")

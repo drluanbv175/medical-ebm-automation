@@ -13,7 +13,15 @@
     "    ",
     null,
     null
-   ]
+   ],
+   "vai_tro": "None",
+   "cot_hien": 8,
+   "can_le": 0,
+   "thuoc_tinh": {
+    "NguonMucDo": [
+     "suy_luan"
+    ]
+   }
   },
   {
    "ten": "Tuoi",
@@ -27,7 +35,15 @@
     null,
     null,
     null
-   ]
+   ],
+   "vai_tro": "Input",
+   "cot_hien": 8,
+   "can_le": 1,
+   "thuoc_tinh": {
+    "NguonMucDo": [
+     "suy_luan"
+    ]
+   }
   },
   {
    "ten": "chi_so",
@@ -41,7 +57,15 @@
     null,
     null,
     null
-   ]
+   ],
+   "vai_tro": "Input",
+   "cot_hien": 22,
+   "can_le": 1,
+   "thuoc_tinh": {
+    "NguonMucDo": [
+     "suy_luan"
+    ]
+   }
   },
   {
    "ten": "gioitinh",
@@ -58,7 +82,15 @@
     null,
     null,
     null
-   ]
+   ],
+   "vai_tro": "Input",
+   "cot_hien": 8,
+   "can_le": 1,
+   "thuoc_tinh": {
+    "NguonMucDo": [
+     "suy_luan"
+    ]
+   }
   },
   {
    "ten": "hai_long",
@@ -79,7 +111,15 @@
     9.0,
     null,
     null
-   ]
+   ],
+   "vai_tro": "Input",
+   "cot_hien": 8,
+   "can_le": 1,
+   "thuoc_tinh": {
+    "NguonMucDo": [
+     "suy_luan"
+    ]
+   }
   },
   {
    "ten": "hut_thuoc",
@@ -97,7 +137,15 @@
     -9991.0,
     null,
     null
-   ]
+   ],
+   "vai_tro": "Input",
+   "cot_hien": 9,
+   "can_le": 1,
+   "thuoc_tinh": {
+    "NguonMucDo": [
+     "suy_luan"
+    ]
+   }
   },
   {
    "ten": "nghe",
@@ -115,7 +163,15 @@
     "        ",
     null,
     null
-   ]
+   ],
+   "vai_tro": "Input",
+   "cot_hien": 9,
+   "can_le": 0,
+   "thuoc_tinh": {
+    "NguonMucDo": [
+     "suy_luan"
+    ]
+   }
   },
   {
    "ten": "ghi",
@@ -129,7 +185,15 @@
     "        ",
     null,
     null
-   ]
+   ],
+   "vai_tro": "Input",
+   "cot_hien": 39,
+   "can_le": 0,
+   "thuoc_tinh": {
+    "NguonMucDo": [
+     "suy_luan"
+    ]
+   }
   },
   {
    "ten": "trieu_chung___1",
@@ -146,7 +210,15 @@
     null,
     null,
     null
-   ]
+   ],
+   "vai_tro": "Input",
+   "cot_hien": 15,
+   "can_le": 1,
+   "thuoc_tinh": {
+    "NguonMucDo": [
+     "suy_luan"
+    ]
+   }
   },
   {
    "ten": "trieu_chung___2",
@@ -163,7 +235,31 @@
     null,
     null,
     null
-   ]
+   ],
+   "vai_tro": "Input",
+   "cot_hien": 15,
+   "can_le": 1,
+   "thuoc_tinh": {
+    "NguonMucDo": [
+     "suy_luan"
+    ]
+   }
   }
- ]
+ ],
+ "thuoc_tinh_tep": {
+  "$VariableView2": [
+   "name",
+   "type",
+   "width",
+   "decimals",
+   "label",
+   "values",
+   "missing",
+   "columns",
+   "alignment",
+   "measure",
+   "role",
+   "@NguonMucDo"
+  ]
+ }
 }

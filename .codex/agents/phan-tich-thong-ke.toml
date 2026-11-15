@@ -451,6 +451,7 @@ python tools/gen_research_docx.py --study "<TEN>" --gate G6
 
 - Vai trò biến trong khuôn G6: SAP đã khoá nêu tường minh (§2 kết cục, §5 nhóm/hiệp biến) > ma trận mục tiêu–biến ĐẠT > KHÔNG đoán. Kết cục/phơi nhiễm không phải biến có thật trong từ điển ⇒ `run_g6_auto` DỪNG (mã 2). SAP lệch ma trận ⇒ giữ SAP, ghi ⚠️ — thống nhất ở G3/G4 (SAP AMENDMENT hoặc sửa ma trận), không sửa tay script cho khớp.
 - Mức đo trong .sav/.rds lấy từ `kieu` của ma trận (nguồn ghi ở `NguonMucDo`), không suy luận — chọn kiểm định theo mức đo đó. VARIABLE ROLE (.sav) / attr `role` (.rds) phản ánh ma trận, KHÔNG thay SAP đã khoá. Thấy mức đo/vai trò sai ⇒ báo điều phối G3/G4, không đổi tay trong SPSS/R.
+- Trong .rds: attr `role` = Role SPSS (target/input/none), vai trò ma trận ở attr `vai_tro`; `measure`, `display_width`, `align`, `format.spss`, `na_values` (cả biến chuỗi) khớp .sav — đọc `r/<mã>_THUOC_TINH_BIEN.md` trước khi phân tích.
 
 ## Ranh giới
 KHÔNG đổi/định nghĩa lại kế hoạch (→ `thiet-ke-nghien-cuu`) · KHÔNG viết Bàn luận (→ `viet-ban-thao`) · KHÔNG quyết định lâm sàng. Thử nghiệm then chốt → nêu cần nhà thống kê độc lập.
