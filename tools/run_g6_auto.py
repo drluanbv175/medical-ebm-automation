@@ -16,6 +16,7 @@ import sys
 
 # Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
 import sys as _sys_r4
+import unicodedata
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -117,12 +118,15 @@ def bien_phai_sinh_da_biet(out: Path, study: str) -> tuple[dict[str, str], Optio
     return {t: kq.trang_thai[t] for t in kq.thu_tu}, None
 
 
-def detect_variables_from_redcap(csv_path: Path) -> dict:
+def detect_variables_from_redcap(csv_path: Path, design_code: Optional[str] = None) -> dict:
     """
     Đọc G5 REDCap dictionary → phát hiện tên biến theo vai trò.
     Hỗ trợ 2 định dạng:
       - Chuẩn CSV (dấu phẩy): "Variable Name","Form Name",...
       - Định dạng / delimiter: record_id / Admin / ... / text / label / ...
+    `design_code` (THÊM 15/11/2026, sửa theo thẩm định PR #260): thiết kế đã giải quyết của đề tài — chỉ dùng để
+    bật/tắt đường dò biến phân nhóm theo mục ngẫu nhiên hoá (`_bien_phan_nhom_tu_muc`); None = không biết (gọi trực
+    tiếp, test cũ) ⇒ chỉ nhận tiêu đề mục ngẫu nhiên hoá KHÔNG mơ hồ.
     Trả về dict: exposure, outcome, time_col, covariates, all_vars.
     """
     result = {
@@ -328,10 +332,18 @@ def detect_variables_from_redcap(csv_path: Path) -> dict:
     # «Phơi nhiễm SGLT2i», «Phơi nhiễm/Can thiệp (…)»; bộ biến C1a «Phơi nhiễm thời gian chờ …»). Khớp CHỨA từng lấy
     # nhầm biến kỳ vọng có tiêu đề «… là biến TRƯỚC phơi nhiễm …» (đứng trước) làm phơi nhiễm chính.
     section_exp = [v for v, _label, s in all_vars if s.strip().lower().startswith(("phơi nhiễm", "exposure"))]
+    # THÊM 15/11/2026 (giả lập RCT lần 2, N6): RCT ghi biến PHÂN NHÓM dưới mục «Ngẫu nhiên hoá»/«Phân bổ»/
+    # «Randomisation» — không bắt đầu bằng «Phơi nhiễm», tên tiếng Việt («nhom») không khớp từ khoá tiếng Anh ⇒ khuôn
+    # từng rơi về tên dự phòng 'exposure'. Tín hiệu CẤU TRÚC thắng từ khoá, cùng lý lẽ với mục «Phơi nhiễm».
+    bien_phan_nhom = None if section_exp else _bien_phan_nhom_tu_muc(all_vars, type_by_var, design_code)
     if section_exp:
         best_exp = section_exp[0]
         result["exposure"] = best_exp
         result["detection_log"].append(f"✅ Phơi nhiễm (từ Section Header): {best_exp}")
+    elif bien_phan_nhom:
+        result["exposure"] = bien_phan_nhom
+        result["detection_log"].append(
+            f"✅ Biến phân nhóm (từ Section Header ngẫu nhiên hoá/phân bổ): {bien_phan_nhom}")
     else:
         best_exp, best_score = None, 0
         for var, label, _sec in all_vars:
@@ -489,6 +501,262 @@ def detect_variables_from_redcap(csv_path: Path) -> dict:
             break
 
     return result
+
+
+def _bd(s: str) -> str:
+    """Bỏ dấu + chữ thường + «đ»→«d» (NFD không tách «đ» nên bộ bỏ dấu của g6_quality_gate giữ nguyên «đ»)."""
+    return G6Q._bo_dau(s).replace("đ", "d")
+
+
+#: Tiêu đề mục (đã bỏ dấu, chữ thường) BẮT ĐẦU bằng các cụm này ⇒ mục ngẫu nhiên hoá KHÔNG mơ hồ (15/11/2026).
+_MUC_PHAN_NHOM = ("ngau nhien", "randomi", "allocation")
+#: «Phân bổ» (allocation) chỉ nhận khi CÒN dấu: bỏ dấu thì «Phân bố» (distribution — «Phân bố theo nhóm tuổi» của đề
+#: tài quan sát) cũng thành «phan bo» (sửa theo thẩm định PR #260). So trên chuỗi NFC, chữ thường.
+_MUC_PHAN_BO_CON_DAU = unicodedata.normalize("NFC", "phân bổ")
+#: Tiêu đề mơ hồ — «Phân nhóm nguy cơ», «phan bo» viết không dấu — CHỈ nhận khi thiết kế đã giải quyết là RCT.
+_MUC_PHAN_NHOM_CHI_RCT = ("phan nhom", "phan bo")
+#: Gợi ý trong tên/nhãn biến (token) ⇒ đúng biến nhánh, không phải ngày/khối/tầng ngẫu nhiên hoá cùng mục.
+_GOI_Y_BIEN_NHOM = ("nhanh", "nhom", "arm", "phan bo", "allocation", "group")
+
+
+def _la_muc_phan_nhom(muc: str, design_code: Optional[str]) -> bool:
+    """Tiêu đề mục có phải mục ngẫu nhiên hoá/phân bổ không (khớp theo ĐẦU tiêu đề).
+
+    Sửa theo thẩm định PR #260: «Phân bổ» chỉ khớp khi còn dấu (bỏ dấu thì trùng «Phân bố»); «Phân nhóm …» và «phan bo»
+    không dấu là mơ hồ ⇒ chỉ nhận khi `design_code == "rct"`."""
+    bd = _bd(muc).strip()
+    if bd.startswith(_MUC_PHAN_NHOM):
+        return True
+    if unicodedata.normalize("NFC", muc or "").strip().lower().startswith(_MUC_PHAN_BO_CON_DAU):
+        return True
+    return design_code == "rct" and bd.startswith(_MUC_PHAN_NHOM_CHI_RCT)
+
+
+def _bien_phan_nhom_tu_muc(all_vars, type_by_var: dict, design_code: Optional[str] = None) -> Optional[str]:
+    """Biến phân nhóm của RCT từ mục «Ngẫu nhiên hoá»/«Phân bổ»/«Randomi…»/«Allocation» của dictionary G5 (N6).
+
+    Chỉ nhận biến CHỌN MỘT (radio/dropdown/yesno) — ngày, mã khối, tầng ngẫu nhiên hoá cùng mục không phải nhóm; ưu
+    tiên biến có tên/nhãn gợi ý nhánh («nhánh», «nhóm», «arm», «allocation»…). Mục khớp theo ĐẦU tiêu đề (bỏ dấu) để
+    «Đặc điểm nền (trước ngẫu nhiên hoá)» không bị nhận nhầm. Không có ⇒ None (giữ đường dò cũ).
+    Sửa theo thẩm định PR #260: thiết kế đã giải quyết KHÁC RCT (cohort, cắt ngang…) ⇒ tắt hẳn đường này — đề tài quan
+    sát không có biến phân bổ ngẫu nhiên, mục «Phân bố…/Phân nhóm nguy cơ» của chúng không được đổi phơi nhiễm."""
+    if design_code is not None and design_code != "rct":
+        return None
+    chon_mot = [(bien, nhan) for bien, nhan, muc in all_vars
+                if _la_muc_phan_nhom(muc, design_code)
+                and type_by_var.get(bien) in ("radio", "dropdown", "yesno")]
+    for bien, nhan in chon_mot:
+        chuoi = _bd(f"{bien} {nhan}")
+        if any(re.search(rf"(?<![a-z0-9]){re.escape(g)}(?![a-z0-9])", chuoi) for g in _GOI_Y_BIEN_NHOM):
+            return bien
+    return chon_mot[0][0] if chon_mot else None
+
+
+# ─────────────────────────────────────────────
+# BIẾN PHÂN NHÓM + HIỆP BIẾN THEO SAP §5 ĐÃ KHOÁ — THÊM 15/11/2026 (giả lập RCT lần 2, N6)
+# ─────────────────────────────────────────────
+# Lượt giả lập 14/11: SAP §5 khoá «nhom + tuoi, gioi, ha_tt_nen, so_thuoc_nen» nhưng khuôn G6 sinh mô hình trên biến
+# dự phòng 'exposure' với hiệp biến dò từ từ khoá `tuoi, gioi` (bỏ `ha_tt_nen, so_thuoc_nen`). SAP đã ký là thẩm
+# quyền; dictionary chỉ cho TÊN biến. Bộ đọc dưới đây CHỈ nhận danh sách mà MỌI mục đều là tên biến đã biết — SAP viết
+# văn xuôi («tuổi (mỗi 10 năm), giới, …») thì KHÔNG đoán, giữ biến dò từ dictionary và ghi rõ vì sao.
+
+#: Nhãn dòng (đã bỏ dấu) khai danh sách hiệp biến của mô hình chính.
+_NHAN_HIEP_BIEN_SAP5 = ("bien doc lap dua vao", "bien dua vao mo hinh", "bien dieu chinh bat buoc", "forced-in",
+                        "forced in", "hiep bien hieu chinh", "independent variables", "covariates")
+#: Nhãn GỒM CẢ biến phân nhóm (biến độc lập của mô hình) — CHỈ ở các nhãn này dạng «<nhóm> + a, b» mới coi mục trước
+#: «+» là biến nhóm; nhãn chỉ-hiệp-biến («forced-in», «Hiệp biến hiệu chỉnh: tuoi + gioi + bmi») thì mọi mục là hiệp
+#: biến, không mục nào được suy thành biến nhóm (sửa theo thẩm định PR #260).
+_NHAN_GOM_NHOM_SAP5 = ("bien doc lap dua vao", "bien dua vao mo hinh", "independent variables")
+#: Nhãn dòng (đã bỏ dấu) khai biến phân nhóm/phơi nhiễm chính.
+_NHAN_NHOM_SAP5 = ("exposure chinh", "phoi nhiem chinh", "bien phan nhom", "bien nhom", "main exposure")
+#: Nhãn mang phủ định («KHÔNG hiệu chỉnh», «không đưa vào») — không bao giờ là danh sách hiệp biến.
+_PHU_DINH_SAP5 = re.compile(r"\bkhong\b|\bnot\b|\bexclud")
+#: Nhãn của mô hình PHỤ (độ nhạy, thăm dò, nhóm con, post-hoc). Xét trên nhãn ĐỦ — CÒN chú thích trong ngoặc — vì chú
+#: thích «(mô hình độ nhạy)» chính là chỗ phân biệt với mô hình chính; bóc ngoặc trước thì dòng mô hình phụ đứng trước
+#: bị nhận làm mô hình CHÍNH (sửa theo thẩm định PR #260). «phụ» chỉ khớp trong «mô hình/phân tích phụ» để «Phụ lục»,
+#: «biến phụ thuộc» không bị loại.
+_MO_HINH_PHU_SAP5 = re.compile(r"do nhay|sensitivity|secondary|\b(?:mo hinh|phan tich) phu\b|tham do|exploratory"
+                               r"|nhom con|nhom nho|subgroup|post[- ]?hoc")
+_TEN_BIEN_TRAN = re.compile(r"[A-Za-z_][A-Za-z0-9_.]*")
+
+
+def _bo_ngoac_tron(s: str) -> str:
+    """Bóc mọi cụm «( … )» (lặp tới hết ngoặc lồng) — chú thích như «(giữ liên tục)», «(PI xác nhận: `x` loại …)»."""
+    truoc = None
+    while truoc != s:
+        truoc, s = s, re.sub(r"\([^()]*\)", " ", s)
+    return s
+
+
+def _cac_dong_sap5(sec5: str):
+    """(nhãn ĐỦ đã bỏ dấu — CÒN chú thích trong ngoặc, nhãn đã bóc ngoặc + bỏ dấu, giá trị nguyên văn) của từng dòng
+    «- **Nhãn:** giá trị» trong §5 (đã bóc nhãn chưa điền). Khoảng trắng trong nhãn gộp về một dấu cách."""
+    for dong in G6Q._bo_nhan_chua_dien(sec5).splitlines():
+        than = dong.strip().lstrip("-•").strip()
+        if ":" not in than:
+            continue
+        nhan, gia_tri = than.split(":", 1)
+        nhan = nhan.replace("*", "")
+        yield (re.sub(r"\s+", " ", _bd(nhan)).strip(), re.sub(r"\s+", " ", _bd(_bo_ngoac_tron(nhan))).strip(),
+               gia_tri.replace("*", " ").strip())
+
+
+def _danh_sach_ten(gia_tri: str, ten_goc: dict) -> tuple[list, list]:
+    """Tách «a, b và c» (đã bóc ngoặc, dừng ở hết câu đầu) ⇒ (tên biến đã biết theo đúng chữ hoa/thường, mục KHÔNG
+    phải tên biến đã biết)."""
+    s = _bo_ngoac_tron(gia_tri).replace("`", " ")
+    s = re.split(r"\.(?:\s|$)|;", s, maxsplit=1)[0]
+    muc = [m.strip() for m in re.split(r",|\+|\s(?:và|and)\s", s) if m.strip()]
+    biet, la = [], []
+    for m in muc:
+        ten = ten_goc.get(m.lower()) if _TEN_BIEN_TRAN.fullmatch(m) else None
+        if ten and _VALID_R_IDENTIFIER.match(ten):
+            if ten not in biet:
+                biet.append(ten)
+        else:
+            la.append(m)
+    return biet, la
+
+
+def doc_bien_sap_5(sap: str, ten_goc: dict) -> dict:
+    """Biến phân nhóm + hiệp biến của mô hình CHÍNH khai ở SAP §5 đã khoá (N6, 15/11/2026).
+
+    `ten_goc`: {tên chữ thường: tên gốc} của mọi biến ĐÃ BIẾT (dictionary G5 + biến phái sinh có công thức hợp lệ).
+    - Dòng «Biến độc lập đưa vào / Biến điều chỉnh bắt buộc (forced-in) / Hiệp biến hiệu chỉnh: …» ⇒ hiệp biến; RIÊNG
+      nhãn gồm cả biến nhóm («Biến độc lập đưa vào», «Biến đưa vào mô hình») dạng «<nhóm> + a, b, c» ⇒ mục trước dấu
+      «+» được SUY là biến phân nhóm (`nguon_nhom = "dang_cong"`).
+    - Dòng «Exposure chính / Phơi nhiễm chính / Biến phân nhóm: `x`» ⇒ biến phân nhóm TƯỜNG MINH (đúng MỘT tên;
+      `nguon_nhom = "tuong_minh"`) — thắng biến suy từ dạng «+» (mục đó trả về danh sách biến độc lập).
+    - Danh sách chỉ được nhận khi MỌI mục là tên biến đã biết — KỂ CẢ mục trước «+»; có mục lạ (văn xuôi, tên chưa có
+      trong dictionary) ⇒ `hiep_bien = None` + `mo_ho` liệt kê mục lạ — khuôn giữ biến dò, KHÔNG đoán thay thống kê viên.
+    - Biến nhóm SAP nêu mà không khớp đúng MỘT tên biến đã biết ⇒ `nhom_khong_nhan` (khuôn ghi cảnh báo, không im lặng
+      bỏ — sửa theo thẩm định PR #260: SAP khoá ở G4 trước dictionary ở G5 nên lệch tên là chuyện dễ gặp).
+    - Dòng của mô hình PHỤ (độ nhạy/thăm dò/nhóm con) bị bỏ qua, ghi vào `bo_qua_phu`.
+    Trả {"bien_phan_nhom", "nguon_nhom", "hiep_bien", "mo_ho", "nhom_khong_nhan", "bo_qua_phu", "nguon"}."""
+    kq: dict = {"bien_phan_nhom": None, "nguon_nhom": None, "hiep_bien": None, "mo_ho": [], "nhom_khong_nhan": [],
+                "bo_qua_phu": [], "nguon": None}
+    nhom_tm = None      # biến nhóm từ dòng TƯỜNG MINH
+    la_tm: list = []    # mục của dòng tường minh không khớp đúng một tên biến đã biết
+    nhom_cong = None    # biến nhóm SUY từ dạng «<nhóm> + a, b»
+    for nhan_du, nhan, gia_tri in _cac_dong_sap5(G6Q._sec(sap or "", 5)):
+        if _PHU_DINH_SAP5.search(nhan):
+            continue
+        la_hiep = any(n in nhan for n in _NHAN_HIEP_BIEN_SAP5)
+        la_nhom = not la_hiep and any(n in nhan for n in _NHAN_NHOM_SAP5)
+        if not (la_hiep or la_nhom):
+            continue
+        if _MO_HINH_PHU_SAP5.search(nhan_du):
+            kq["bo_qua_phu"].append(nhan_du[:60])
+            continue
+        if la_hiep:
+            if kq["hiep_bien"] is not None or kq["mo_ho"]:
+                continue
+            phan = _bo_ngoac_tron(gia_tri)
+            la_nhom_cong: list = []
+            m_nhom = (re.match(r"\s*`?([A-Za-z_][A-Za-z0-9_.]*)`?\s*\+", phan)
+                      if any(n in nhan for n in _NHAN_GOM_NHOM_SAP5) else None)
+            if m_nhom:
+                ten = ten_goc.get(m_nhom.group(1).lower())
+                if ten and _VALID_R_IDENTIFIER.match(ten):
+                    nhom_cong = ten
+                else:
+                    # Tên nhóm lạ là một mục KHÔNG phải tên biến đã biết ⇒ cả danh sách không được nhận (fail-closed).
+                    la_nhom_cong = [m_nhom.group(1)]
+                    kq["nhom_khong_nhan"].append(m_nhom.group(1))
+                phan = phan[m_nhom.end():]
+            biet, la = _danh_sach_ten(phan, ten_goc)
+            la = la_nhom_cong + la
+            if la:
+                kq["mo_ho"] = la
+            elif biet:
+                kq["hiep_bien"], kq["nguon"] = biet, nhan
+        elif nhom_tm is None:
+            biet, la = _danh_sach_ten(gia_tri, ten_goc)
+            if len(biet) == 1 and not la:
+                nhom_tm = biet[0]
+            elif biet or la:
+                la_tm.extend(la + biet)
+    if nhom_tm:
+        kq["bien_phan_nhom"], kq["nguon_nhom"] = nhom_tm, "tuong_minh"
+        if nhom_cong and nhom_cong != nhom_tm and kq["hiep_bien"] is not None:
+            # Dòng tường minh là thẩm quyền: mục trước «+» KHÔNG phải biến nhóm ⇒ trả về danh sách biến độc lập.
+            kq["hiep_bien"] = [nhom_cong] + [b for b in kq["hiep_bien"] if b != nhom_cong]
+    else:
+        kq["nhom_khong_nhan"].extend(la_tm)
+        if nhom_cong:
+            kq["bien_phan_nhom"], kq["nguon_nhom"] = nhom_cong, "dang_cong"
+    return kq
+
+
+#: Vai trò khác của khuôn mà biến nhóm SAP không được chiếm (sửa theo thẩm định PR #260).
+_VAI_KHAC_NHOM = (("outcome", "kết cục"), ("time_col", "biến thời gian"), ("cluster_col", "biến cụm (SE theo chùm)"))
+
+
+def ap_bien_sap_5(v: dict, sap: str, ten_goc: dict) -> dict:
+    """Áp biến phân nhóm + hiệp biến THEO SAP §5 vào `v` (SAP thắng biến dò từ dictionary; mỗi lần thay ghi log A7).
+
+    Hiệp biến = danh sách §5 trừ biến nhóm/kết cục; biến cụm (SE theo chùm) vẫn không đồng thời là hiệp biến cố định
+    (giữ bất biến cũ, ghi cảnh báo để thống kê viên quyết). SAP chưa điền/viết văn xuôi ⇒ giữ nguyên `v`.
+    Sửa theo thẩm định PR #260:
+    - Biến nhóm SAP trùng kết cục/biến thời gian/biến cụm ⇒ KHÔNG thay, cảnh báo.
+    - Biến nhóm chỉ SUY từ dạng «X + …» mà dictionary đã cho biến nhóm THẬT khác ⇒ không đoán: giữ cả biến nhóm lẫn
+      hiệp biến dò được, cảnh báo (vai trò của X trong danh sách chưa rõ).
+    - Thay biến nhóm ⇒ bỏ biến đó khỏi hiệp biến dò được (không để công thức trùng số hạng).
+    - SAP nêu biến nhóm không khớp tên biến nào ⇒ cảnh báo, không im lặng."""
+    dt = doc_bien_sap_5(sap, ten_goc)
+    v["bien_sap_5"] = dt
+    log = v["detection_log"]
+    nhom, hien = dt["bien_phan_nhom"], v.get("exposure")
+    ap_hiep_bien = True
+    if nhom and nhom != hien:
+        vai = next((ten for khoa, ten in _VAI_KHAC_NHOM if v.get(khoa) == nhom), None)
+        if vai:
+            log.append(f"⚠️  SAP §5 nêu `{nhom}` là biến phân nhóm nhưng khuôn đang dùng nó làm {vai} — GIỮ biến nhóm dò "
+                       f"được `{hien}`; thống kê viên đối chiếu SAP §2/§5 với dictionary rồi sửa công thức mô hình")
+        elif dt["nguon_nhom"] == "dang_cong" and str(hien or "").lower() in ten_goc:
+            ap_hiep_bien = False
+            log.append(f"⚠️  SAP §5 dạng «{nhom} + …» GỢI Ý `{nhom}` là biến phân nhóm nhưng dictionary G5 cho biến nhóm "
+                       f"`{hien}` — không đoán: GIỮ `{hien}` và hiệp biến dò được (vai trò của `{nhom}` chưa rõ); "
+                       "thống kê viên ghi dòng «Biến phân nhóm: `…`» ở SAP §5 (SAP AMENDMENT) hoặc sửa công thức")
+        else:
+            log.append(f"✅ Biến phân nhóm THEO SAP §5: {nhom} (thay biến dò được: {hien})")
+            v["exposure"] = nhom
+            if nhom in (v.get("covariates") or []):
+                v["covariates"] = [b for b in v["covariates"] if b != nhom]
+                log.append(f"   ↳ bỏ `{nhom}` khỏi hiệp biến dò được — nay là biến phân nhóm (tránh trùng số hạng)")
+    if dt["nhom_khong_nhan"]:
+        log.append("⚠️  SAP §5 nêu biến phân nhóm/phơi nhiễm ("
+                   + ", ".join(f"«{m[:40]}»" for m in dt["nhom_khong_nhan"][:3])
+                   + ") KHÔNG khớp đúng MỘT tên biến trong dictionary G5/biến phái sinh — biến nhóm của khuôn hiện là "
+                   f"`{v.get('exposure')}`; thống kê viên đối chiếu SAP §5 với dictionary rồi sửa công thức mô hình")
+    if dt["hiep_bien"] and ap_hiep_bien:
+        hb = [b for b in dt["hiep_bien"] if b not in {v.get("exposure"), v.get("outcome")}]
+        cum = v.get("cluster_col")
+        if cum and cum in hb:
+            hb = [b for b in hb if b != cum]
+            log.append(f"⚠️  SAP §5 đưa `{cum}` vào mô hình như hiệp biến nhưng khuôn đang dùng nó làm "
+                       "biến CỤM (SE theo chùm) — thống kê viên quyết một trong hai rồi sửa script")
+        if not hb:
+            # Khuôn rơi về «age + sex + bmi» khi danh sách rỗng — không được ghi đè biến dò bằng danh sách rỗng.
+            log.append("⚠️  SAP §5 không nêu hiệp biến nào ngoài biến nhóm/kết cục — khuôn GIỮ hiệp biến "
+                       "dò từ dictionary; mô hình không hiệu chỉnh thì thống kê viên bỏ khỏi công thức")
+        elif set(hb) == set(v.get("covariates") or []):
+            # Cùng TẬP biến ⇒ giữ thứ tự cũ: thứ tự số hạng không đổi ước lượng, đổi vô cớ chỉ làm script đã duyệt lệch dấu.
+            log.append(f"✅ Hiệp biến dò từ dictionary KHỚP SAP §5 ({len(hb)} biến)")
+        else:
+            log.append(f"✅ Hiệp biến THEO SAP §5: {', '.join(hb)} "
+                       f"(thay biến dò được: {', '.join(v.get('covariates') or []) or 'không có'})")
+            v["covariates"] = hb
+    elif dt["mo_ho"]:
+        log.append(
+            "⚠️  SAP §5 nêu hiệp biến có mục KHÔNG phải tên biến trong dictionary/biến phái sinh ("
+            + ", ".join(f"«{m[:40]}»" for m in dt["mo_ho"][:4]) + (" …" if len(dt["mo_ho"]) > 4 else "")
+            + ") — khuôn GIỮ hiệp biến dò từ dictionary; thống kê viên đối chiếu SAP §5 và sửa công thức mô hình")
+    elif not dt["hiep_bien"] and dt["bo_qua_phu"]:
+        log.append("⚠️  SAP §5 chỉ có danh sách hiệp biến của mô hình PHỤ ("
+                   + ", ".join(f"«{m}»" for m in dt["bo_qua_phu"][:2])
+                   + ") — không dùng cho mô hình chính; khuôn GIỮ hiệp biến dò từ dictionary, thống kê viên đối chiếu")
+    return dt
 
 
 def _sap_declares_ordinal(out_dir: Path, study: str) -> bool:
@@ -1149,10 +1417,14 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
         return {}
 
     g2 = _load_cp("G2")
-    g4 = _load_cp("G4")
     g5 = _load_cp("G5")
     g2_checkpoint_locked = _is_locked(g2.get("g2_status", g2.get("G2_STATUS")))
-    g4_checkpoint_locked = _is_locked(g4.get("g4_status", g4.get("G4_STATUS")))
+    # VÁ 14/11/2026 (N1): G4 theo TRẠNG THÁI SỐNG — G4 chấm trực tiếp PASS_G4_SAP_LOCKED (cùng hàm G5-AUTO-05 và cổng
+    # G6 dùng), KHÔNG đọc g4_status (approve_gate không bao giờ ghi trường đó). Không đo được ⇒ chưa khoá.
+    try:
+        g4_song = _GC.g4_quality_contract_satisfied("__STUDY__") is True
+    except Exception:
+        g4_song = False
     g5_checkpoint_locked = _is_locked(g5.get("g5_status", g5.get("G5_STATUS")))
     g2_ledger_ok = _GC.ledger_approved(
         "G2", "__STUDY__", Path("exports") / "__STUDY__" / "G2_A3_ETHICS_PACKAGE___STUDY__.md")
@@ -1172,7 +1444,8 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
         and g2_ledger_ok
         and g2_quality_ok
     )
-    g4_locked = (g4_checkpoint_locked or i_confirm_sap) and g4_ledger_ok
+    # Cờ --i-confirm-sap-locked chỉ thay phần chấm sống G4 — chữ ký sổ cái khớp băm SAP hiện tại LUÔN bắt buộc.
+    g4_locked = (g4_song or i_confirm_sap) and g4_ledger_ok
     g5_quality_ok = _GC.g5_quality_contract_satisfied("__STUDY__")
     g5_locked = (
         (g5_checkpoint_locked or i_confirm_sap)
@@ -1189,14 +1462,17 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
         sys.exit(1)
     if not (g4_locked and g5_locked):
         print("✗ DỪNG: G4 (SAP) hoặc G5 (khóa DB) chưa xác nhận LOCKED bằng phê duyệt thật cho đề tài __STUDY__.")
-        print(f"   G4 checkpoint: {'✅ LOCKED' if g4_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
+        print(f"   G4 trạng thái sống: {'✅ ĐÃ KHOÁ' if g4_song else '⚠️ CHƯA khoá/không đo được'}"
               f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g4_ledger_ok else '⚠️ thiếu/không khớp'}")
         print(f"   G5 checkpoint: {'✅ LOCKED' if g5_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
               f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g5_ledger_ok else '⚠️ thiếu/không khớp'}")
         print("   Không chạy phân tích xác nhận trên dữ liệu chưa khóa (chống p-hacking/HARKing).")
         print("   Cần bác sĩ TỰ TAY ghi phê duyệt thật bằng tools/approve_gate.py (không nhờ agent chạy hộ).")
-        print("   --i-confirm-sap-locked chỉ thay được checkpoint-file bị mất — KHÔNG thay được ledger.")
+        print("   --i-confirm-sap-locked chỉ thay phần chấm sống G4/checkpoint G5 — KHÔNG thay được ledger.")
         sys.exit(1)
+    if i_confirm_sap and not g4_song:
+        print("⚠️  GHI ĐÈ CÓ CHỦ Ý (--i-confirm-sap-locked): G4 KHÔNG được xác nhận khoá theo trạng thái sống; "
+              "chạy tiếp nhờ chữ ký sổ cái G4 khớp băm SAP hiện tại — người truyền cờ chịu trách nhiệm.")
 
 
 
@@ -1646,10 +1922,14 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
         return {}
 
     g2 = _load_cp("G2")
-    g4 = _load_cp("G4")
     g5 = _load_cp("G5")
     g2_checkpoint_locked = _is_locked(g2.get("g2_status", g2.get("G2_STATUS")))
-    g4_checkpoint_locked = _is_locked(g4.get("g4_status", g4.get("G4_STATUS")))
+    # VÁ 14/11/2026 (N1): G4 theo TRẠNG THÁI SỐNG — G4 chấm trực tiếp PASS_G4_SAP_LOCKED (cùng hàm G5-AUTO-05 và cổng
+    # G6 dùng), KHÔNG đọc g4_status (approve_gate không bao giờ ghi trường đó). Không đo được ⇒ chưa khoá.
+    try:
+        g4_song = _GC.g4_quality_contract_satisfied("__STUDY__") is True
+    except Exception:
+        g4_song = False
     g5_checkpoint_locked = _is_locked(g5.get("g5_status", g5.get("G5_STATUS")))
     g2_ledger_ok = _GC.ledger_approved(
         "G2", "__STUDY__", Path("exports") / "__STUDY__" / "G2_A3_ETHICS_PACKAGE___STUDY__.md")
@@ -1669,7 +1949,8 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
         and g2_ledger_ok
         and g2_quality_ok
     )
-    g4_locked = (g4_checkpoint_locked or i_confirm_sap) and g4_ledger_ok
+    # Cờ --i-confirm-sap-locked chỉ thay phần chấm sống G4 — chữ ký sổ cái khớp băm SAP hiện tại LUÔN bắt buộc.
+    g4_locked = (g4_song or i_confirm_sap) and g4_ledger_ok
     g5_quality_ok = _GC.g5_quality_contract_satisfied("__STUDY__")
     g5_locked = (
         (g5_checkpoint_locked or i_confirm_sap)
@@ -1686,14 +1967,17 @@ def _check_sap_db_locked(i_confirm_sap: bool, i_confirm_irb: bool = False) -> No
         sys.exit(1)
     if not (g4_locked and g5_locked):
         print("✗ DỪNG: G4 (SAP) hoặc G5 (khóa DB) chưa xác nhận LOCKED bằng phê duyệt thật cho đề tài __STUDY__.")
-        print(f"   G4 checkpoint: {'✅ LOCKED' if g4_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
+        print(f"   G4 trạng thái sống: {'✅ ĐÃ KHOÁ' if g4_song else '⚠️ CHƯA khoá/không đo được'}"
               f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g4_ledger_ok else '⚠️ thiếu/không khớp'}")
         print(f"   G5 checkpoint: {'✅ LOCKED' if g5_checkpoint_locked else '⚠️ chưa LOCKED/không tìm thấy'}"
               f"  |  approval_ledger (chữ ký thật): {'✅ khớp' if g5_ledger_ok else '⚠️ thiếu/không khớp'}")
         print("   Không chạy phân tích xác nhận trên dữ liệu chưa khóa (chống p-hacking/HARKing).")
         print("   Cần bác sĩ TỰ TAY ghi phê duyệt thật bằng tools/approve_gate.py (không nhờ agent chạy hộ).")
-        print("   --i-confirm-sap-locked chỉ thay được checkpoint-file bị mất — KHÔNG thay được ledger.")
+        print("   --i-confirm-sap-locked chỉ thay phần chấm sống G4/checkpoint G5 — KHÔNG thay được ledger.")
         sys.exit(1)
+    if i_confirm_sap and not g4_song:
+        print("⚠️  GHI ĐÈ CÓ CHỦ Ý (--i-confirm-sap-locked): G4 KHÔNG được xác nhận khoá theo trạng thái sống; "
+              "chạy tiếp nhờ chữ ký sổ cái G4 khớp băm SAP hiện tại — người truyền cờ chịu trách nhiệm.")
 
 
 
@@ -2102,7 +2386,9 @@ def make_run_analysis_cli(v: dict, n_adjusted: int, study: str, design_code: str
     return code
 
 
-
+# SỬA 15/11/2026 (giả lập RCT lần 2, N15): cột p của bảng độ nhạy/nhóm con (cả hai khuôn sensitivity dưới đây) ghi
+# bằng fmt_pval(pv) — `round(pv, 3)` in «0.0» cho p rất nhỏ (đọc như «p = 0»); nay «<0.001», cùng định dạng dòng in
+# console của chính script.
 _SENSITIVITY_TEMPLATE = (
     "#!/usr/bin/env python3\n"
     "# sensitivity_analysis.py -- Phan tich do nhay\n"
@@ -2162,9 +2448,14 @@ _SENSITIVITY_TEMPLATE = (
     "            except (ValueError, OSError):\n"
     "                return {}\n"
     "        return {}\n"
-    "    g2 = _load_cp(\'G2\'); g4 = _load_cp(\'G4\'); g5 = _load_cp(\'G5\')\n"
+    "    g2 = _load_cp(\'G2\'); g5 = _load_cp(\'G5\')\n"
     "    g2_cp = _is_locked(g2.get(\'g2_status\', g2.get(\'G2_STATUS\')))\n"
-    "    g4_cp = _is_locked(g4.get(\'g4_status\', g4.get(\'G4_STATUS\')))\n"
+    "    # Va 14/11/2026 (N1): G4 theo TRANG THAI SONG (G4 cham truc tiep PASS_G4_SAP_LOCKED), KHONG doc g4_status\n"
+    "    # (approve_gate khong bao gio ghi). Khong do duoc => chua khoa.\n"
+    "    try:\n"
+    "        g4_song = _GC.g4_quality_contract_satisfied('__STUDY__') is True\n"
+    "    except Exception:\n"
+    "        g4_song = False\n"
     "    g5_cp = _is_locked(g5.get(\'g5_status\', g5.get(\'G5_STATUS\')))\n"
     "    g2_ledger = _GC.ledger_approved(\n"
     "        \"G2\", \"__STUDY__\", _Path(\'exports\') / \'__STUDY__\' / \'G2_A3_ETHICS_PACKAGE___STUDY__.md\')\n"
@@ -2176,7 +2467,7 @@ _SENSITIVITY_TEMPLATE = (
     "        g2, _GC.load_study_meta(_Path('exports') / '__STUDY__'),\n"
     "        study='__STUDY__', out_dir=_Path('exports') / '__STUDY__')\n"
     "    g2_locked = (g2_cp or i_confirm_irb) and g2_ledger and g2_quality\n"
-    "    g4_locked = (g4_cp or i_confirm_sap) and g4_ledger\n"
+    "    g4_locked = (g4_song or i_confirm_sap) and g4_ledger\n"
     "    g5_quality = _GC.g5_quality_contract_satisfied('__STUDY__')\n"
     "    g5_locked = (g5_cp or i_confirm_sap) and g5_ledger and g5_quality\n"
     "    if not g2_locked:\n"
@@ -2184,7 +2475,10 @@ _SENSITIVITY_TEMPLATE = (
     "                         \'--i-confirm-irb-approved chi thay checkpoint-file, KHONG thay duoc ledger.\')\n"
     "    if not (g4_locked and g5_locked):\n"
     "        raise SystemExit(\'DUNG: G4 (SAP) hoac G5 (khoa DB) chua xac nhan LOCKED bang phe duyet that (chu ky). \'\n"
-    "                         \'--i-confirm-sap-locked chi thay checkpoint-file, KHONG thay duoc ledger.\')\n"
+    "                         \'--i-confirm-sap-locked chi thay phan cham song G4/checkpoint G5, KHONG thay duoc ledger.\')\n"
+    "    if i_confirm_sap and not g4_song:\n"
+    "        print(\'CANH BAO - GHI DE CO CHU Y (--i-confirm-sap-locked): G4 KHONG duoc xac nhan khoa theo trang thai \'\n"
+    "              \'song; chay tiep nho chu ky so cai G4 khop bam SAP hien tai.\')\n"
     "\n"
     "\n"
     "def _require_locked_dataset(data_arg):\n"
@@ -2254,7 +2548,7 @@ _SENSITIVITY_TEMPLATE = (
     "    # Complete-case\n"
     "    try:\n"
     "        hr,clo,chi,pv,n,ev = run_cox_sub(df,time_col,outcome,exposure,avail)\n"
-    "        sens_rows.append(dict(method=\'Complete-case\',HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=round(pv,3),N=n,Events=ev))\n"
+    "        sens_rows.append(dict(method=\'Complete-case\',HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=fmt_pval(pv),N=n,Events=ev))\n"
     "        print(f\'   CC: HR={hr:.2f} ({clo:.2f}-{chi:.2f}), p={fmt_pval(pv)}\')\n"
     "    except Exception as e:\n"
     "        print(f\'   CC loi: {e}\')\n"
@@ -2269,7 +2563,7 @@ _SENSITIVITY_TEMPLATE = (
     "                df2[col]=df2[col].fillna(fill)\n"
     "        df2=df2.dropna()\n"
     "        hr,clo,chi,pv,n,ev = run_cox_sub(df2,time_col,outcome,exposure,avail)\n"
-    "        sens_rows.append(dict(method=\'Dien trung binh/mode (KHONG phai MI; MI that: R mice m=20)\',HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=round(pv,3),N=n,Events=ev))\n"
+    "        sens_rows.append(dict(method=\'Dien trung binh/mode (KHONG phai MI; MI that: R mice m=20)\',HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=fmt_pval(pv),N=n,Events=ev))\n"
     "        print(f\'   MI: HR={hr:.2f} ({clo:.2f}-{chi:.2f}), p={fmt_pval(pv)}\')\n"
     "    except Exception as e:\n"
     "        print(f\'   MI loi: {e}\')\n"
@@ -2283,12 +2577,12 @@ _SENSITIVITY_TEMPLATE = (
     "            sub_covars = pick_subgroup_covars(sub, outcome, avail, exclude=sg)\n"
     "            try:\n"
     "                hr,clo,chi,pv,n,ev = run_cox_sub(sub,time_col,outcome,exposure,sub_covars)\n"
-    "                sub_rows.append(dict(Subgroup=sg,Value=str(val),HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=round(pv,3),N=n,Events=ev,Covars_used=len(sub_covars)))\n"
+    "                sub_rows.append(dict(Subgroup=sg,Value=str(val),HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=fmt_pval(pv),N=n,Events=ev,Covars_used=len(sub_covars)))\n"
     "                print(f\'   {sg}={val}: HR={hr:.2f} ({clo:.2f}-{chi:.2f}), p={fmt_pval(pv)} [adj {len(sub_covars)} bien]\')\n"
     "            except Exception as e:\n"
     "                try:\n"
     "                    hr,clo,chi,pv,n,ev = run_cox_sub(sub,time_col,outcome,exposure,[])\n"
-    "                    sub_rows.append(dict(Subgroup=sg,Value=str(val),HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=round(pv,3),N=n,Events=ev,Covars_used=0))\n"
+    "                    sub_rows.append(dict(Subgroup=sg,Value=str(val),HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=fmt_pval(pv),N=n,Events=ev,Covars_used=0))\n"
     "                    print(f\'   {sg}={val}: HR tho={hr:.2f} ({clo:.2f}-{chi:.2f}), p={fmt_pval(pv)} [khong hoi tu voi covariates, dung mo hinh tho]\')\n"
     "                except Exception as e2:\n"
     "                    print(f\'   {sg}={val} loi: {e2}\')\n"
@@ -2301,11 +2595,11 @@ _SENSITIVITY_TEMPLATE = (
     "            sub_covars = pick_subgroup_covars(sub, outcome, avail, exclude=\'age\')\n"
     "            try:\n"
     "                hr,clo,chi,pv,n,ev=run_cox_sub(sub,time_col,outcome,exposure,sub_covars)\n"
-    "                sub_rows.append(dict(Subgroup=\'age_group\',Value=val,HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=round(pv,3),N=n,Events=ev,Covars_used=len(sub_covars)))\n"
+    "                sub_rows.append(dict(Subgroup=\'age_group\',Value=val,HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=fmt_pval(pv),N=n,Events=ev,Covars_used=len(sub_covars)))\n"
     "            except Exception:\n"
     "                try:\n"
     "                    hr,clo,chi,pv,n,ev=run_cox_sub(sub,time_col,outcome,exposure,[])\n"
-    "                    sub_rows.append(dict(Subgroup=\'age_group\',Value=val,HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=round(pv,3),N=n,Events=ev,Covars_used=0))\n"
+    "                    sub_rows.append(dict(Subgroup=\'age_group\',Value=val,HR=round(hr,3),CI_lo=round(clo,3),CI_hi=round(chi,3),p=fmt_pval(pv),N=n,Events=ev,Covars_used=0))\n"
     "                except Exception: pass\n"
     "    # E-value\n"
     "    if sens_rows:\n"
@@ -2414,10 +2708,14 @@ def _check_sap_db_locked(i_confirm_sap, i_confirm_irb=False):
         return {}
 
     g2 = _load_cp('G2')
-    g4 = _load_cp('G4')
     g5 = _load_cp('G5')
     g2_cp = _is_locked(g2.get('g2_status', g2.get('G2_STATUS')))
-    g4_cp = _is_locked(g4.get('g4_status', g4.get('G4_STATUS')))
+    # Va 14/11/2026 (N1): G4 theo TRANG THAI SONG (G4 cham truc tiep PASS_G4_SAP_LOCKED), KHONG doc g4_status
+    # (approve_gate khong bao gio ghi). Khong do duoc => chua khoa.
+    try:
+        g4_song = _GC.g4_quality_contract_satisfied("__STUDY__") is True
+    except Exception:
+        g4_song = False
     g5_cp = _is_locked(g5.get('g5_status', g5.get('G5_STATUS')))
     g2_ledger = _GC.ledger_approved(
         "G2", "__STUDY__", _Path('exports') / '__STUDY__' / 'G2_A3_ETHICS_PACKAGE___STUDY__.md')
@@ -2429,7 +2727,7 @@ def _check_sap_db_locked(i_confirm_sap, i_confirm_irb=False):
         g2, _GC.load_study_meta(_Path('exports') / '__STUDY__'),
         study='__STUDY__', out_dir=_Path('exports') / '__STUDY__')
     g2_locked = (g2_cp or i_confirm_irb) and g2_ledger and g2_quality
-    g4_locked = (g4_cp or i_confirm_sap) and g4_ledger
+    g4_locked = (g4_song or i_confirm_sap) and g4_ledger
     g5_quality = _GC.g5_quality_contract_satisfied("__STUDY__")
     g5_locked = (g5_cp or i_confirm_sap) and g5_ledger and g5_quality
     if not g2_locked:
@@ -2437,7 +2735,10 @@ def _check_sap_db_locked(i_confirm_sap, i_confirm_irb=False):
                           '--i-confirm-irb-approved chi thay checkpoint-file, KHONG thay duoc ledger.')
     if not (g4_locked and g5_locked):
         raise SystemExit('DUNG: G4 (SAP) hoac G5 (khoa DB) chua xac nhan LOCKED bang phe duyet that (chu ky). '
-                          '--i-confirm-sap-locked chi thay checkpoint-file, KHONG thay duoc ledger.')
+                          '--i-confirm-sap-locked chi thay phan cham song G4/checkpoint G5, KHONG thay duoc ledger.')
+    if i_confirm_sap and not g4_song:
+        print('CANH BAO - GHI DE CO CHU Y (--i-confirm-sap-locked): G4 KHONG duoc xac nhan khoa theo trang thai '
+              'song; chay tiep nho chu ky so cai G4 khop bam SAP hien tai.')
 
 
 
@@ -2525,7 +2826,7 @@ def main():
     # Complete-case
     try:
         or_, clo, chi, pv, n, ev = run_logistic_sub(df, outcome, exposure, avail)
-        sens_rows.append(dict(method='Complete-case', OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=round(pv, 3), N=n, Ca=ev))
+        sens_rows.append(dict(method='Complete-case', OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=fmt_pval(pv), N=n, Ca=ev))
         print(f'   CC: OR={or_:.2f} ({clo:.2f}-{chi:.2f}), p={fmt_pval(pv)}')
     except Exception as e:
         print(f'   CC loi: {e}')
@@ -2540,7 +2841,7 @@ def main():
                 df2[col] = df2[col].fillna(fill)
         df2 = df2.dropna()
         or_, clo, chi, pv, n, ev = run_logistic_sub(df2, outcome, exposure, avail)
-        sens_rows.append(dict(method='Dien trung binh/mode (KHONG phai MI; MI that: R mice m=20)', OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=round(pv, 3), N=n, Ca=ev))
+        sens_rows.append(dict(method='Dien trung binh/mode (KHONG phai MI; MI that: R mice m=20)', OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=fmt_pval(pv), N=n, Ca=ev))
         print(f'   MI: OR={or_:.2f} ({clo:.2f}-{chi:.2f}), p={fmt_pval(pv)}')
     except Exception as e:
         print(f'   MI loi: {e}')
@@ -2556,12 +2857,12 @@ def main():
             sub_covars = pick_subgroup_covars(sub, outcome, avail, exclude=sg)
             try:
                 or_, clo, chi, pv, n, ev = run_logistic_sub(sub, outcome, exposure, sub_covars)
-                sub_rows.append(dict(Subgroup=sg, Value=str(val), OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=round(pv, 3), N=n, Ca=ev, Covars_used=len(sub_covars)))
+                sub_rows.append(dict(Subgroup=sg, Value=str(val), OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=fmt_pval(pv), N=n, Ca=ev, Covars_used=len(sub_covars)))
                 print(f'   {sg}={val}: OR={or_:.2f} ({clo:.2f}-{chi:.2f}), p={fmt_pval(pv)} [adj {len(sub_covars)} bien]')
             except Exception:
                 try:
                     or_, clo, chi, pv, n, ev = run_logistic_sub(sub, outcome, exposure, [])
-                    sub_rows.append(dict(Subgroup=sg, Value=str(val), OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=round(pv, 3), N=n, Ca=ev, Covars_used=0))
+                    sub_rows.append(dict(Subgroup=sg, Value=str(val), OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=fmt_pval(pv), N=n, Ca=ev, Covars_used=0))
                     print(f'   {sg}={val}: OR tho={or_:.2f} ({clo:.2f}-{chi:.2f}), p={fmt_pval(pv)} [khong hoi tu voi covariates, dung mo hinh tho]')
                 except Exception as e2:
                     print(f'   {sg}={val} loi: {e2}')
@@ -2575,11 +2876,11 @@ def main():
             sub_covars = pick_subgroup_covars(sub, outcome, avail, exclude='age')
             try:
                 or_, clo, chi, pv, n, ev = run_logistic_sub(sub, outcome, exposure, sub_covars)
-                sub_rows.append(dict(Subgroup='age_group', Value=val, OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=round(pv, 3), N=n, Ca=ev, Covars_used=len(sub_covars)))
+                sub_rows.append(dict(Subgroup='age_group', Value=val, OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=fmt_pval(pv), N=n, Ca=ev, Covars_used=len(sub_covars)))
             except Exception:
                 try:
                     or_, clo, chi, pv, n, ev = run_logistic_sub(sub, outcome, exposure, [])
-                    sub_rows.append(dict(Subgroup='age_group', Value=val, OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=round(pv, 3), N=n, Ca=ev, Covars_used=0))
+                    sub_rows.append(dict(Subgroup='age_group', Value=val, OR=round(or_, 3), CI_lo=round(clo, 3), CI_hi=round(chi, 3), p=fmt_pval(pv), N=n, Ca=ev, Covars_used=0))
                 except Exception:
                     pass
     # E-value
@@ -3504,7 +3805,8 @@ def main():
     # ─── Đọc REDCap dictionary → phát hiện biến ───
     redcap_csv = out / f"G5_REDCap_dictionary_{study}.csv"
     print(f"\n  📂 Đọc REDCap dictionary: {redcap_csv.name}")
-    v = detect_variables_from_redcap(redcap_csv)
+    # Sửa theo thẩm định PR #260: truyền thiết kế đã giải quyết — đường dò biến nhóm theo mục ngẫu nhiên hoá chỉ cho RCT.
+    v = detect_variables_from_redcap(redcap_csv, design_code)
     _reject_if_variable_names_invalid(v)
 
     # THÊM 2026-09-01: cờ kết cục THỨ BẬC — thẩm quyền là SAP đã khoá (G4),
@@ -3541,6 +3843,10 @@ def main():
                                   "nếu SAP ghi sai tên: sửa SAP bằng dòng SAP AMENDMENT và ký lại G4")
     v["nhom_con_sap"] = tham_so_sap["nhom_con"]
     v["nguong_tuoi_sap"] = tham_so_sap["nguong_tuoi"]
+    # THÊM 15/11/2026 (giả lập RCT lần 2, N6): biến phân nhóm + hiệp biến THEO SAP §5 đã khoá — script R, CLI Python
+    # và cú pháp SPSS xem trước cùng đọc `v`. SAP chưa điền/viết văn xuôi ⇒ giữ biến dò từ dictionary (log A7 nói rõ).
+    ap_bien_sap_5(v, sap_text, ten_goc)
+    _reject_if_variable_names_invalid(v)
     if v["outcome_ordinal"] and design_code == "cross_sectional":
         print("  → Kết cục    : THỨ BẬC theo SAP đã khoá → 03_analysis.R dùng "
               "proportional odds (cOR), không gộp nhị phân ở phân tích chính")
@@ -3680,6 +3986,8 @@ def main():
         "g4_lock_source":    g4_nguon,
         "g4_status":         g4_status,
         "tham_so_sap":       tham_so_sap,
+        # THÊM 15/11/2026 (N6): biến phân nhóm + hiệp biến rút từ SAP §5 (None = SAP chưa điền/văn xuôi, giữ biến dò)
+        "bien_sap_5":        v.get("bien_sap_5"),
         "redcap_csv":        str(redcap_csv),
         "variables_detected": {
             "exposure":   v["exposure"],

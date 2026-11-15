@@ -1714,8 +1714,52 @@ def _ngoai_repo(ra: Path) -> None:
         )
 
 
+def kiem_dong_bo_de_cuong(study: str, chan: bool) -> None:
+    """Bộ biến máy phải ĐỒNG BỘ với đề cương/bộ biến đã duyệt trước khi sinh mẫu nhập hay tiếp nhận (15/11/2026 — bác
+    sĩ:
+    «biến xác định không đúng, nhập liệu không đúng thì không thể phân tích được»). Dùng
+    tools/doi_chieu_bien_de_cuong.py.
+    LỆCH ⇒ `chan` thì TuChoi, không thì cảnh báo. Không có nguồn để đối chiếu (đề tài thử nghiệm không có đề cương/bộ
+      biến
+    G3) ⇒ cảnh báo «chưa đối chiếu được» — KHÔNG coi là đồng bộ. Công cụ đối chiếu lỗi ⇒ `chan` thì TuChoi
+    (fail-closed)."""
+    try:
+        import doi_chieu_bien_de_cuong as DCB  # noqa: PLC0415
+
+        kq = DCB.doi_chieu(SP.thu_muc_de_tai(study), study)
+    except Exception as e:  # noqa: BLE001 — lỗi bất kỳ của phép đối chiếu = không đo được
+        if chan:
+            raise TuChoi(f"không đối chiếu được biến với đề cương ({type(e).__name__}: {e}) — không sinh mẫu/tiếp nhận "
+                         "khi chưa biết biến có đúng đề cương không") from e  # fmt: skip
+        print(f"⚠ Chưa đối chiếu được biến với đề cương ({type(e).__name__}).")
+        return
+    if kq.khong_do_duoc:
+        print(f"⚠ Chưa đối chiếu được biến với đề cương: {kq.khong_do_duoc}. Không đo được ≠ đồng bộ.")
+        return
+    lech = kq.lech(DCB.PV_NHAP)
+    # lệch của biến tính toán/đặc tả không làm sai nhập liệu — chỉ cảnh báo ở đây, chặn ở bước phân tích G6
+    for p in kq.lech(DCB.PV_PHAN_TICH)[:10]:
+        print(f"⚠ [{p.luat}] {p.bien}: {p.chi_tiet} (chặn ở bước phân tích, không chặn nhập liệu)")
+    if lech:
+        dong = "\n".join(f"   ✗ [{p.luat}] {p.bien}: {p.chi_tiet}" for p in lech[:10])
+        them = f"\n   … và {len(lech) - 10} lệch nữa" if len(lech) > 10 else ""
+        loi = (
+            f"bộ biến máy CHƯA đồng bộ với đề cương/bộ biến đã duyệt ({len(lech)} lệch):\n{dong}{them}\n"
+            f"   Chi tiết: {_py()} tools/doi_chieu_bien_de_cuong.py --study {study}  — sửa bản máy cho khớp đề "
+            "cương, hoặc chủ nhiệm duyệt sửa đề cương/bộ biến trước."
+        )
+        if chan:
+            raise TuChoi(loi)
+        print("⚠ " + loi)
+        return
+    xem = len(kq.phat_hien)
+    them_xem = f" ({xem} mục cần người xem — doi_chieu_bien_de_cuong.py)" if xem else ""
+    print(f"✓ Biến đồng bộ với {', '.join(kq.nguon_nguoi_duyet)}{them_xem}")
+
+
 def lenh_mau(args) -> int:
     td_p, mt_p = tim_tu_dien(args.study, args.dictionary, args.ma_thieu)
+    kiem_dong_bo_de_cuong(args.study, chan=True)
     d = SP.thu_muc_de_tai(args.study)
     duoi = ".sav" if args.dang == "sav" else ".xlsx"
     ra = Path(args.ra).expanduser().resolve() if args.ra else d / "nhap_lieu" / f"MAU_NHAP_LIEU_{args.study}{duoi}"
@@ -1830,6 +1874,7 @@ def _ghi_bao_cao(ra: Path, ten: str, bang: Bang, tom: dict) -> None:
 
 
 def lenh_nhap(args) -> int:
+    kiem_dong_bo_de_cuong(args.study, chan=bool(args.tiep_nhan))  # lệch đề cương ⇒ từ chối TRƯỚC khi đọc tệp
     p = Path(args.excel).expanduser().resolve()
     ra = Path(args.ra).expanduser().resolve() if args.ra else p.parent / f"{p.stem}_csv"
     _ngoai_repo(ra)

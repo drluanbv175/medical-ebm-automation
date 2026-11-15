@@ -1226,6 +1226,27 @@ def ap_dung_cho_phan_tich(df, study_dir: Path, study: str, ten_can: list[str]):
     if [t for t in ds if kq.trang_thai.get(t) in ("LOI", "CHUA_CO_CONG_THUC", "NGOAI_TANG")]:
         tinh_df(df, kq, dm, can)  # ném TuChoi kèm lý do cụ thể
     canh_bao: list[str] = []
+    # 15/11/2026 (bác sĩ: biến phải đồng bộ đề cương): biến phái sinh dùng tới phải có trong đề cương/bộ biến đã duyệt.
+    try:
+        import doi_chieu_bien_de_cuong as DCB  # noqa: PLC0415 — nạp trễ (DCB nạp lại module này)
+
+        ngoai, khong_do = DCB.bien_phai_sinh_ngoai_de_cuong(study_dir, study, {theo_ten[t].goc for t in ds})
+    except Exception as e:  # noqa: BLE001
+        ngoai, khong_do = [], f"đối chiếu lỗi: {type(e).__name__}: {e}"[:200]
+        if not gia_lap:
+            raise TuChoi(
+                "không đối chiếu được biến phái sinh với đề cương (" + khong_do + ") — không phân tích khi "
+                "chưa biết biến có đúng đề cương không"
+            ) from e
+    if ngoai:
+        ly_do_dc = ", ".join(ngoai)
+        if not gia_lap:
+            raise TuChoi(
+                "biến phái sinh dùng trong phân tích NGOÀI đề cương/bộ biến đã duyệt (" + ly_do_dc + ") — bổ "
+                "sung vào đề cương/bộ biến (chủ nhiệm duyệt) rồi mới phân tích; chi tiết: `python "
+                "tools/doi_chieu_bien_de_cuong.py --study " + study + "`"
+            )
+        canh_bao.append("ĐỀ TÀI GIẢ LẬP — biến phái sinh ngoài đề cương: " + ly_do_dc)
     if chua:
         ly_do = "; ".join(f"{t}: {kq.trang_thai[t]}" for t in chua)
         if not gia_lap:
@@ -1235,6 +1256,8 @@ def ap_dung_cho_phan_tich(df, study_dir: Path, study: str, ten_can: list[str]):
                 "kèm dấu công thức"
             )
         canh_bao.append("ĐỀ TÀI GIẢ LẬP — dùng công thức CHƯA DUYỆT: " + ly_do)
+    if khong_do and not ngoai:
+        canh_bao.append("chưa đối chiếu được biến phái sinh với đề cương: " + khong_do)
     moi = tinh_df(df, kq, dm, can)
     df2 = df.copy()
     for c in moi.columns:

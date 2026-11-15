@@ -416,10 +416,12 @@ def _main_run_stats(tmp_path: Path, monkeypatch, duyet: bool) -> tuple[dict | No
     pytest.importorskip("statsmodels")
     import run_stats_analysis as RSA
 
-    locked = {"g2_status": "LOCKED", "g4_status": "LOCKED", "g5_status": "LOCKED"}
+    locked = {"g2_status": "LOCKED", "g5_status": "LOCKED"}
     monkeypatch.setattr(RSA, "BASE", tmp_path)
     monkeypatch.setattr(RSA, "_load_checkpoint", lambda study, gate: dict(locked))
     monkeypatch.setattr(RSA, "_ledger_approved", lambda *a, **k: True)
+    # N1 (14/11/2026): G6 xác định G4 đã khoá theo TRẠNG THÁI SỐNG (_g4_khoa_song), không đọc g4_status.
+    monkeypatch.setattr(RSA, "_g4_khoa_song", lambda study: (True, "giả lập: G4 khoá sống"))
     monkeypatch.setattr(RSA.GC, "g2_quality_contract_satisfied", lambda *a, **k: True)
     monkeypatch.setattr(RSA.GC, "resolve_design_code", lambda *a, **k: ("cross_sectional", None))
     monkeypatch.setattr(RSA.G5Q, "evaluate_study", lambda *a, **k: {"status": RSA.G5Q.STATUS_LOCKED})
@@ -455,9 +457,25 @@ def test_run_stats_ket_cuc_phai_sinh_da_duyet_chay_va_ghi_tom_tat(tmp_path, monk
 
 
 def test_run_stats_ket_cuc_phai_sinh_chua_duyet_dung(tmp_path, monkeypatch):
+    # Ghi lại ngoại lệ của khâu biến phái sinh: SystemExit(1) phải đến TỪ công thức chưa duyệt, không từ một cổng
+    # phía trước (15/11/2026 — với fixture cũ đòi g4_status, test này xanh giả vì thoát sớm ở cổng G4).
+    import run_stats_analysis as RSA
+
+    goc = RSA.BPS.ap_dung_cho_phan_tich
+    bat: list[BaseException] = []
+
+    def _ghi_lai(*a, **k):
+        try:
+            return goc(*a, **k)
+        except Exception as loi:  # noqa: BLE001 — chỉ ghi lại rồi ném tiếp nguyên vẹn
+            bat.append(loi)
+            raise
+
+    monkeypatch.setattr(RSA.BPS, "ap_dung_cho_phan_tich", _ghi_lai)
     with pytest.raises(SystemExit) as e:
         _main_run_stats(tmp_path, monkeypatch, duyet=False)
     assert e.value.code == 1
+    assert len(bat) == 1 and isinstance(bat[0], RSA.BPS.TuChoi), bat
     assert not (tmp_path / "exports" / "RS" / "G6_analysis_summary.json").exists()
 
 
