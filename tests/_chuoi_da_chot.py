@@ -129,6 +129,9 @@ def dung_g0_g1_da_chot(out_dir: Path, study: str, *, them_meta: Optional[Dict[st
     })
     g0["dau_van_tay_chot"] = G0Q.dau_van_tay_g0(cp0, {"gate_params": {"G0": g0}})
     meta["gate_params"]["G0"] = g0
+    # 15/11/2026 (G0-AUTO-08): PICO đồ gá («bệnh Z», «Can thiệp X», «điểm số Y») không có trong từ điển VI→EN ⇒ một G0
+    # chốt hợp lệ phải có truy vấn do PI viết (query_en) — PI chịu trách nhiệm phủ khái niệm.
+    meta.setdefault("query_en", cp0.get("base_query"))
     for khoa, gia_tri in (them_meta or {}).items():
         if khoa.startswith("G") and khoa[1:].isdigit():
             meta["gate_params"].setdefault(khoa, {}).update(gia_tri)
@@ -355,6 +358,10 @@ def dien_sap_g4(text: str) -> str:
     dinh_tinh = "CHIẾN LƯỢC MÃ HÓA" in text
     for nhan, gia_tri in _DIEN_THEO_NHAN:
         text = re.sub(rf"(- \*\*{re.escape(nhan)}:\*\*) \[CẦN[^\]]*\]", lambda m, g=gia_tri: f"{m.group(1)} {g}", text)
+    # 15/11/2026: SAP điền sẵn biến §5 từ ma trận mục tiêu–biến; thống kê viên chỉ còn điền ô LÝ DO LÂM SÀNG/DAG (kèm
+    # EPV/VIF mà G4-AUTO-04 kiểm) — như người thật làm trên SAP mới.
+    text = re.sub(r"(lý do lâm sàng/DAG cho từng biến:) \[CẦN[^\]]*\]",
+                  lambda m: f"{m.group(1)} tuổi, điểm Y nền là yếu tố tiên lượng — EPV=15 cho 8 biến, VIF<5", text)
     phan_mem = "NVivo v14" if dinh_tinh else "R v4.3.1"
     text = re.sub(r"(- \*\*Phần mềm:\*\*) \[CẦN[^\]]*\]", lambda m: f"{m.group(1)} {phan_mem}", text)
     if "### §13" in text:

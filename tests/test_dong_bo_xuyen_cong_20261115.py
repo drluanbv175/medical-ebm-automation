@@ -329,3 +329,113 @@ def test_phieu_hoi_dong_ten_tep_khong_phai_ma_cau(tmp_path):
         "Hồ sơ G2_A3_ETHICS_PACKAGE: A1. … B1) … Câu B3: … TT1 … | C1 |\n", encoding="utf-8", newline="\n")
     kq = MT.kiem_phieu_hoi_dong(d, STUDY)
     assert kq["trang_thai"] == "CHUA_DAT" and "A3" in kq["loi"][0]
+
+
+# ───────────────────────────── khung đề tài: G0 đã chốt → G1 · SAP · G10 ─────────────────────────────
+import g0_quality_gate as G0Q  # noqa: E402
+import g1_quality_gate as G1Q  # noqa: E402
+import khung_de_tai as KD  # noqa: E402
+import run_g4_auto as RG4  # noqa: E402
+import run_g10_assemble as RG10  # noqa: E402
+
+G0_CHOT = {"pico_confirmed": True, "population": "Người bệnh ≥18 tuổi THA điều trị ngoại trú ≥3 tháng",
+           "intervention": "Không can thiệp — phơi nhiễm là các yếu tố liên quan",
+           "comparison": "Không có nhóm so sánh — mô tả", "outcomes": ["Tỷ lệ tuân thủ", "Yếu tố liên quan"],
+           "primary_outcome": "Tỷ lệ tuân thủ", "primary_outcome_measure": "Bộ câu hỏi 8 mục",
+           "primary_outcome_timepoint": "Khi phỏng vấn"}
+
+
+def test_khung_ke_thua_g0_chi_khi_da_chot_va_g1_thang():
+    meta = {"gate_params": {"G0": dict(G0_CHOT), "G1": {}}}
+    assert KD.gia_tri(meta, "population") == (G0_CHOT["population"], "G0")
+    kc = KD.ket_cuc_chinh(meta)
+    assert (kc["name"], kc["measure"], kc["timepoint"], kc["type"]) == ("Tỷ lệ tuân thủ", "Bộ câu hỏi 8 mục",
+                                                                        "Khi phỏng vấn", None)
+    assert KD.gia_tri(meta, "secondary_outcomes")[0] == ["Yếu tố liên quan"]
+    meta["gate_params"]["G1"]["population"] = "Bản G1"
+    assert KD.gia_tri(meta, "population") == ("Bản G1", "G1")
+    meta["gate_params"]["G0"]["pico_confirmed"] = False
+    assert KD.gia_tri(meta, "comparator") == (None, None), "G0 chưa chốt ⇒ không đem nháp đi xa hơn cổng"
+
+
+def test_a2_g1_dien_san_tu_g0_co_nhan_nguon():
+    meta = {"gate_params": {"G0": dict(G0_CHOT), "G1": {}}}
+    a2 = G1Q.build_protocol_core(study=STUDY, topic="t", design={"primary": "Cắt ngang", "internal_code":
+                                 "cross_sectional"}, meta=meta, generated_at="2026-11-15T07:00:00+07:00")
+    dong = next(x for x in a2.splitlines() if x.startswith("- Quần thể đích/nguồn:"))
+    assert G0_CHOT["population"] in dong and "kế thừa G0 đã chốt" in dong
+    assert "- Định nghĩa/công cụ/đơn vị đo: Bộ câu hỏi 8 mục" in a2
+
+
+def test_dau_van_tay_g1_khong_doi_khi_g1_tu_ghi_du():
+    """Đề tài đã tự ghi đủ ở G1 (C1a, btm) ⇒ dấu vân tay G1 giữ nguyên — không hạ cấp xác nhận cũ."""
+    import cong_song as CS  # noqa: PLC0415
+
+    g1 = {"population": "P", "intervention_or_exposure": "I", "comparator": "C", "secondary_outcomes": ["S"],
+          "research_question": "RQ", "primary_outcome": {"name": "O", "measure": "M", "timepoint": "T", "type": "x"}}
+    meta = {"design_code": "cross_sectional", "gate_params": {"G0": dict(G0_CHOT), "G1": g1}}
+    design = {"internal_code": "cross_sectional"}
+    assert KD.ke_thua_dang_dung(meta) == {}
+    assert G1Q.dau_van_tay_g1(meta, design) == CS.dau_van_tay(g1, "cross_sectional", "cross_sectional")
+    del meta["gate_params"]["G1"]["population"]
+    assert G1Q.dau_van_tay_g1(meta, design) != CS.dau_van_tay(meta["gate_params"]["G1"], "cross_sectional",
+                                                             "cross_sectional"), "kế thừa ⇒ vào dấu vân tay"
+
+
+def test_sap_dien_san_tu_khung_va_ma_tran(tmp_path):
+    d = _de_tai(tmp_path)
+    _ghi_bo_bien(d)
+    _ghi_ma_tran(d)
+    meta = MT.doc_meta(d)
+    meta["gate_params"]["G1"].update({"inclusion_criteria": ["≥18 tuổi", "Đồng ý"], "exclusion_criteria": ["Có thai"]})
+    khung = RG4._khung_sap(d, meta)
+    sap = RG4._dien_khung("\n".join([
+        "- **Tiêu chí nhận:** [CẦN BÁC SĨ ĐIỀN — từ đề cương]  ",
+        "- **Kết cục chính:** [CẦN BÁC SĨ ĐIỀN — ví dụ: tỷ lệ nhập viện tim mạch trong 12 tháng]  ",
+        "- **Biến độc lập đưa vào:** [CẦN BÁC SĨ LIỆT KÊ — kèm lý do lâm sàng / DAG]  "]), khung, "cross_sectional")
+    assert "≥18 tuổi; Đồng ý" in sap
+    assert "Tỷ lệ tuân thủ dùng thuốc hạ áp" in sap and "biến `tuan_thu`" in sap
+    assert "`so_lan_ngay` (số lần dùng thuốc/ngày)" in sap and "[CẦN THỐNG KÊ VIÊN/PI]" in sap, \
+        "biến lấy từ ma trận; lý do lâm sàng/DAG vẫn là việc của người"
+
+
+def test_g10_ma_tran_truy_xuat_dung_ma_tran_khi_dat(tmp_path):
+    d = _de_tai(tmp_path)
+    _ghi_bo_bien(d)
+    _ghi_ma_tran(d)
+    meta = {**MT.doc_meta(d), "objectives": MUC_TIEU, "_g10": {"out_dir": str(d)}}
+    txt = RG10.build_traceability_matrix({}, meta)
+    dong2 = next(x for x in txt.splitlines() if x.startswith("| Mục tiêu cụ thể 2"))
+    assert "`ho_tro_gd` (nhi_phan, yeu_to)" in dong2 and RG10.TAG_MANUAL not in dong2
+
+
+# ───────────────────────────── G0-AUTO-08 ─────────────────────────────
+def _g0(population, outcome, base_query, *, query_en=None, intervention="Không can thiệp — mô tả"):
+    meta = {"gate_params": {"G0": {"pico_confirmed": True, "population": population, "intervention": intervention,
+                                   "primary_outcome": outcome}}}
+    if query_en:
+        meta["query_en"] = query_en
+    return G0Q._tieu_chi_phu_pico({"base_query": base_query}, meta, {"query": base_query}, {})
+
+
+def test_g0_auto_08_bat_truy_van_mat_khai_niem_ket_cuc():
+    """Lỗi đo được: «tuân thủ dùng thuốc hạ áp…» ⇒ `hypertension treatment` mà G0 vẫn PASS."""
+    c = _g0("Người bệnh tăng huyết áp", "Tỷ lệ tuân thủ dùng thuốc hạ áp", "hypertension treatment")
+    assert c["status"] == "REVIEW" and "PubMed" in c["evidence"] and "ClinicalTrials.gov" in c["evidence"]
+
+
+def test_g0_auto_08_nhan_cum_cat_cut_va_bo_thuat_ngu_chung():
+    c = _g0("Người bệnh tăng huyết áp đang điều trị", "Tỷ lệ tuân thủ dùng thuốc",
+            '"Hypertension"[Mesh] AND adheren*[tiab]', query_en='"Hypertension"[Mesh] AND adheren*[tiab]')
+    assert c["status"] == "PASS", c["evidence"]
+    # Quần thể CHỈ có thuật ngữ chung («điều trị» → treatment) ⇒ không đòi truy vấn chứa «treatment» (báo nhầm C1a).
+    c2 = _g0("Người bệnh đang điều trị ngoại trú", "Tỷ lệ tuân thủ dùng thuốc", "adherence[tiab]",
+             query_en="adherence[tiab]")
+    assert c2["status"] == "PASS" and "vắng" not in c2["evidence"], c2["evidence"]
+
+
+def test_g0_auto_08_khai_niem_ngoai_tu_dien():
+    may = _g0("Người bệnh khoa khám bệnh", "Mức hài lòng", "satisfaction")
+    assert may["status"] == "REVIEW" and "MÁY tự dịch" in may["evidence"]
+    pi = _g0("Người bệnh khoa khám bệnh", "Mức hài lòng", "satisf*", query_en="satisf*")
+    assert pi["status"] == "PASS" and "PI tự viết" in pi["evidence"]

@@ -310,6 +310,8 @@ PHAN_CONG: Dict[str, Dict[str, str]] = {
     "G0": {
         "G0-AUTO-00": "G0-T1", "G0-AUTO-01": "G0-T1", "G0-AUTO-02": "G0-T2", "G0-AUTO-03": "G0-T2",
         "G0-AUTO-04": "G0-T1", "G0-AUTO-05": "G0-T1", "G0-AUTO-06": "G0-T4", "G0-AUTO-07": "PI@G0-T1",
+        # 15/11/2026: truy vấn tìm chứng cứ phủ khái niệm PICO đã chốt (nhiệm vụ tìm/tổng hợp bằng chứng G0).
+        "G0-AUTO-08": "G0-T2",
         "G0-HUMAN-01": "PI@G0-T1", "G0-HUMAN-02": "PI@G0-T1", "G0-HUMAN-03": "PI@G0-T1", "G0-HUMAN-04": "PI@G0-T1",
         "G0-HUMAN-05": "PI@G0-T4", "G0-HUMAN-06": "PI@G0-T3", "G0-HUMAN-07": "PI@G0-T1", "G0-HUMAN-08": "PI@G0-T4",
     },
