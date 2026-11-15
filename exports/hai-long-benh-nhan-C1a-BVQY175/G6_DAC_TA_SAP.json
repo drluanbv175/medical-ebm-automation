@@ -1,6 +1,6 @@
 {
  "nguon_sap": "G4_A5_SAP_FINAL_hai-long-benh-nhan-C1a-BVQY175.md",
- "sha256_sap": "c10c93ca290c8256f4e866fea32dd9fad8ad385587a6d4cc7f0a9f95a942c4b3",
+ "sha256_sap": "d495fc0008b7d86a0fa1c32a66e384490a1e14233b45343a6715acc8c87b6f14",
  "trang_thai_de_xuat": "ĐỀ XUẤT CỦA AGENT 15/11/2026 (đồng bộ lại theo SAP hiện tại, giai đoạn 7: neo từng phân tích vào SAP bằng sap_neo, thêm phân tích SAP mới bổ sung) — CHỜ thống kê viên/PI duyệt (ghi nguoi_duyet). SAP nguồn còn là bản DRAFT chưa ký: SAP sửa trước khi khoá ⇒ sha256_sap lệch, đặc tả bị coi là cũ và phải đồng bộ lại.",
  "can_thong_ke_vien_quyet": [
   "suckhoe_tudanhgia (5 mức thứ tự): đề xuất đưa vào dạng SỐ (1 tham số, giả định tuyến tính); SAP §5 chưa nói rõ số hay phân loại — chuyển vào hiep_bien_phan_loai nếu muốn 4 biến giả.",

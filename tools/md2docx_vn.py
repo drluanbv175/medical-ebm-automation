@@ -232,7 +232,7 @@ _SUBSCRIPT_MAP = {
     "₆": "6", "₇": "7", "₈": "8", "₉": "9",
     "₊": "+", "₋": "−", "₌": "=", "₍": "(", "₎": ")",
     "ₐ": "a", "ₑ": "e", "ₒ": "o", "ₓ": "x", "ᵢ": "i", "ⱼ": "j",
-    "ₖ": "k", "ₗ": "l", "ₘ": "m", "ₙ": "n", "ₚ": "p", "ₛ": "s", "ₜ": "t",
+    "ₕ": "h", "ₖ": "k", "ₗ": "l", "ₘ": "m", "ₙ": "n", "ₚ": "p", "ₛ": "s", "ₜ": "t",
 }
 # Ký tự không thuộc chỉ số nhưng Times New Roman vẫn thiếu glyph -> thay bằng
 # ký tự tương đương thị giác CÓ glyph (đã đối chiếu trực tiếp bảng cmap của font).

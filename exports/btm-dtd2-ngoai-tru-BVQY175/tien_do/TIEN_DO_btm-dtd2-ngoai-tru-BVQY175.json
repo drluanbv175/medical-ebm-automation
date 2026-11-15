@@ -3,7 +3,7 @@
  "study": "btm-dtd2-ngoai-tru-BVQY175",
  "ten_de_tai": "Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026",
  "tap_chi_dich": "Tạp chí Y Dược Thực hành 175",
- "cap_nhat": "2026-10-28",
+ "cap_nhat": "15/11/2026",
  "cach_dung": "Nguồn sự thật của bảng theo dõi tiến độ. Trạng thái: xong · dang · cho_bs · chua (máy tự suy «khoa» khi việc trước chưa xong). Mục gắn cổng đo sống bằng công cụ ở `do_song` mỗi lần cập nhật — không tự đánh «xong» khi cổng chưa đạt. Hạn là ƯỚC TÍNH, chủ nhiệm chỉnh.",
  "ai": {
   "may": "Máy",
@@ -363,10 +363,10 @@
     "1.10"
    ],
    "han": "15/11/2026",
-   "trang_thai": "chua",
+   "trang_thai": "cho_bs",
    "ngay_xong": "",
-   "do_song": "",
-   "ghi_chu": ""
+   "do_song": "15/11/2026: run_g2_auto — g2_quality_gate DRAFT_NEEDS_HUMAN_COMPLETION (tự động FAIL 0; REVIEW: G2-AUTO-05 còn ô [CẦN] phải điền trước khi nộp, G2-AUTO-08b public_title/health_condition, G2-AUTO-10 protocol_version/icf_version; người: G2-HUMAN-01/02); ClinicalTrials.gov tra thật — 0 hồ sơ trùng; G1/G3 giữ PASS, G4 giữ READY_FOR_SIGNATURE",
+   "ghi_chu": "Bác sĩ «Chạy G2» (15/11/2026). Gói 8 tài liệu + TÀI LIỆU 9 đề nghị miễn ICF + WHO TRDS 24 mục. TL6 (DMP) và TL9 lấy nguyên quy trình dữ liệu đã chốt (_quy-trinh-du-lieu.csv); lưu trữ/hủy còn [CẦN PI QUYẾT]. Việc của bác sĩ: xác nhận đủ điều kiện miễn ICF (TL9), khai gate_params.G2 (public_title, health_condition, protocol_version, icf_version), điền ô [CẦN], chốt lưu trữ/hủy; chỉnh theo mẫu hồ sơ Hội đồng BVQY175 khi có (1.10)."
   },
   {
    "id": "3.2",
@@ -1203,6 +1203,10 @@
   {
    "ngay": "2026-10-28",
    "viec": "3.4 chờ bác sĩ: máy viết SAP riêng cho đề tài; g4_quality_gate READY_FOR_SIGNATURE (16/16 tự động); còn S1–S7"
+  },
+  {
+   "ngay": "2026-11-15",
+   "viec": "3.1 chờ bác sĩ: máy chạy G2 — gói đạo đức + TRDS + đề nghị miễn ICF; DRAFT_NEEDS_HUMAN_COMPLETION; CT.gov 0 trùng"
   }
  ]
 }

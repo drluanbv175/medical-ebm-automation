@@ -484,6 +484,10 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact sap
 - Sửa bất kỳ `exports/<mã>/X.md` nào có bản `X.docx` đi kèm ⇒ xuất lại Word NGAY trong cùng lượt (`python3 tools/xuat_docx_chuan.py --file <md>`; đề cương nộp dùng `tools/md_sang_docx_times.py <md> --co-chu 13 --trang-de-cuong`) và commit cả hai. Người ký và Hội đồng đọc bản Word: ngày 15/11 ba bản Word (gói G2 C1a, SAP C1a, SAP BTM) lọt lại bản cũ sau khi `.md` sửa ở giai đoạn 4. Máy chặn bằng EXP-DOCX-STALE của `tools/verify_exports_integrity.py --staged` (pre-commit); bản Word chỉ có trên OneDrive thì đo bằng trục ④ của `tools/kiem_chi_tiet_he_nghien_cuu.py`.
 - Sửa tài liệu đã nằm trong gói đã ký (SAP đã ký, gói G10 đã khoá) là SỬA ĐỔI: bản ký cũ hết khớp (G4 ⑤ «nội dung đã đổi sau khi duyệt», G10-AUTO-10) — báo rõ người phải ký lại, KHÔNG gọi là «đã đồng bộ».
 
+## Thời điểm đo kết cục chính — chữ T của PICO(T) (15/11/2026)
+- **Thời điểm đo kết cục chính phải ghi ở MỌI nơi và cùng mốc:** G0 `primary_outcome_timepoint` · G1 `primary_outcome.timepoint` · TRDS mục 19 (`timepoint`) · SAP §2 dòng «**Thời điểm đo:**» (chép NGUYÊN VĂN G1). Máy đo bằng trục `thoi_diem_ket_cuc` của `nhat_quan_xuyen_cong`: khoảng thời gian («12 tháng», «30 ngày») hoặc mốc ngày («01/01–31/12/2026») khác nhau giữa các nơi ⇒ LỆCH MỀM (đổi thời điểm là một dạng đổi kết cục — chủ nhiệm giải trình); nơi có mốc nơi không, hoặc SAP §2 thiếu thời điểm ⇒ CẦN XEM.
+- Nhãn mục tiêu trong ngoặc ở SAP («**Kết cục chính (MT1):**») nay được đọc; trước 15/11 máy bỏ sót SAP BTM ở trục kết cục chính — kiểm lại đúng tập nguồn trước khi xin chủ nhiệm xác nhận «cùng một kết cục» (xác nhận chỉ phủ tập nguồn lúc ký).
+
 ## Ranh giới
 KHÔNG tự tính cỡ mẫu chi tiết (giao `co-mau-nghien-cuu`) · KHÔNG chạy phân tích trên dữ liệu thật (`phan-tich-thong-ke` sau G5) · KHÔNG viết Bàn luận (`viet-ban-thao`).
 
