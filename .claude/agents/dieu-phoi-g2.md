@@ -46,6 +46,12 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 - Từ 07/10/2026 (bác sĩ quyết): G2 ký SAU 28/07/2026 mà gói không có attestation KHÔNG được G5–G10 nhận
   (`gate_contract.g2_ky_truoc_moc_hop_dong`) — luôn ký kèm phụ lục quyết định có cấu trúc, không dựa checkpoint.
 
+## Đồng bộ xuyên cổng (15/11/2026 — bác sĩ duyệt)
+
+> Vì sao: giả lập trung thực (hệ TỰ sinh từ G0/G1, không viết sẵn bộ biến/SAP) cho thấy mục tiêu ↔ biến ↔ công cụ ↔ từ điển ↔ SAP ↔ SPSS/R không có phép kiểm máy; SPSS/R báo «✓ khớp» trên bộ biến SAI. Báo cáo: `audit/kiem-dong-bo-xuyen-cong-20261115.md` (repo gốc). Công cụ chung: `tools/ma_tran_muc_tieu_bien.py` (repo y khoa). «Khớp khứ hồi/khớp từ điển» KHÔNG chứng minh biến đúng mục tiêu.
+
+- G5-AUTO-13 (phiếu nộp HĐĐĐ ↔ mã câu nhập liệu) đạt nhờ hồ sơ G2 (`^G2`): bảo đảm phiếu/công cụ nộp Hội đồng nằm trong hồ sơ hoặc được khai ở `gate_params.G2.phieu_nop_hoi_dong`.
+
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G2 (09/10/2026)
 Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối

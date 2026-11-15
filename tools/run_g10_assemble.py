@@ -1577,6 +1577,20 @@ def build_phuluc() -> str:
     return "\n".join(lines)
 
 
+def _dong_ma_tran_dat(out_dir) -> list:
+    """Các dòng của ma trận mục tiêu → biến khi ma trận ĐẠT; không có/chưa đạt/không đo được ⇒ [] (nhánh thủ công)."""
+    if not out_dir:
+        return []
+    try:
+        import ma_tran_muc_tieu_bien as MT  # noqa: PLC0415
+
+        if MT.kiem(Path(out_dir), Path(out_dir).name)["trang_thai"] != MT.TRANG_THAI_DAT:
+            return []
+        return MT.doc_ma_tran(Path(out_dir))[0] or []
+    except Exception:  # noqa: BLE001 — bộ kiểm hỏng ⇒ không khẳng định ánh xạ
+        return []
+
+
 def build_traceability_matrix(cps, meta=None) -> str:
     """Ma trận mục tiêu-biến-công cụ-phân tích-bảng để kiểm đồng bộ hồ sơ."""
     meta = meta or {}
@@ -1635,7 +1649,20 @@ def build_traceability_matrix(cps, meta=None) -> str:
         "Bảng 2, Hình 1, Hình 2 | G0/G1/G4/G5 |",
     ]
 
-    if objectives:
+    dong_mt = _dong_ma_tran_dat(out_dir_g10)
+    if objectives and dong_mt:
+        # 15/11/2026 (bác sĩ duyệt — đồng bộ xuyên cổng): đề tài có MA TRẬN mục tiêu → biến ĐẠT
+        # (_ma-tran-muc-tieu-bien.csv, tools/ma_tran_muc_tieu_bien.py) ⇒ ánh xạ là DỮ KIỆN máy kiểm được, không còn
+        # «đối chiếu thủ công». Mỗi mục tiêu một hàng: biến (kiểu, vai trò) · câu hỏi/công cụ · mục SAP.
+        for idx, objective in enumerate(objectives, 1):
+            cua = [r for r in dong_mt if str(r.get("muc_tieu") or "").strip() == str(idx)]
+            bien = "; ".join(f"`{r.get('bien')}` ({r.get('kieu')}, {r.get('vai_tro')})" for r in cua) or TAG_BS
+            cong_cu = "; ".join(sorted({f"{r.get('cong_cu') or '—'}" + (f" — câu {r.get('cau_hoi')}"
+                                                                        if r.get("cau_hoi") else "") for r in cua}))
+            sap = ", ".join(sorted({str(r.get("phan_tich_sap")) for r in cua if r.get("phan_tich_sap")})) or TAG_BS
+            lines.append(f"| Mục tiêu cụ thể {idx}: {objective} | {bien} | {cong_cu or TAG_BS} | SAP {sap} | "
+                         f"Bảng/Hình tương ứng mục tiêu {idx} | G1/G3/G4/G5 (ma trận mục tiêu–biến) |")
+    elif objectives:
         # {objective} là văn bản tự do — hệ KHÔNG có cách tự động map sang tên
         # biến CRF cụ thể (đòi phán đoán con người) dù chính mục tiêu đã có
         # thật; dùng TAG_MANUAL thay TAG_BS vì đây không phải dữ liệu thiếu,

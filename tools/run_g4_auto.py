@@ -323,7 +323,8 @@ def _dong_muc_2(design_code, ket_cuc_chinh_da_chot=None):
 def generate(study, topic, design_code, design_primary, reporting_std,
              n_adjusted, alpha, power, effect_val, effect_type, run_date, sd=None,
              hypothesis_type="superiority", margin=None, n_statistical_min=None, *,
-             g3=None, estimand=None, giai_trinh_thieu_luc=None, ket_cuc_chinh_da_chot=None, gia_thuyet_phu=None):
+             g3=None, estimand=None, giai_trinh_thieu_luc=None, ket_cuc_chinh_da_chot=None, gia_thuyet_phu=None,
+             khung=None):
     """Sinh SAP Final + chứng chỉ khoá (DRAFT — CHỜ KÝ).
 
     Tham số vị trí giữ nguyên hợp đồng cũ. Từ khoá mới (VÁ 04/10/2026, soát từng cổng):
@@ -332,6 +333,9 @@ def generate(study, topic, design_code, design_primary, reporting_std,
       estimand — gate_params.G1.estimand (5 thuộc tính ICH E9(R1)) cho §4 của RCT — G4-03; vắng ⇒ ô [CẦN].
       giai_trinh_thieu_luc — gate_params.G3.underpowered_acceptance_justification khi N kế hoạch < N tối thiểu — G4-05.
       ket_cuc_chinh_da_chot — kết cục chính ĐÃ CHỐT ở G1 (rồi G0); thiết kế ĐỊNH TÍNH điền sẵn vào §2 (06/10/2026).
+      khung — (15/11/2026, bác sĩ duyệt) khung đề tài ĐÃ CHỐT (_khung_sap): tiêu chí chọn/loại G1, kết cục chính 4 thành
+            phần G1/G0 + biến của ma trận, kết cục phụ, biến phân tích §5/§6 từ ma trận mục tiêu–biến — điền sẵn ô mà bản
+            cũ bắt thống kê viên gõ lại lần thứ ba (lý do lâm sàng/DAG vẫn là [CẦN …] của người).
       gia_thuyet_phu — gate_params.G0.hypothesis_secondary: giả thuyết định trước của MỤC TIÊU PHỤ phân tích ở đề tài
             mô tả theo độ chính xác (25/10/2026, hội đồng G1 C1a DP-G1-2) — §12 không còn nói cả đề tài «không kiểm
             định giả thuyết».
@@ -820,7 +824,74 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "---",
         "*Cần bác sĩ kiểm chứng. SAP này chỉ có hiệu lực pháp lý sau khi được ký.*",
     ]
-    return "\n".join(lines)
+    return _dien_khung("\n".join(lines), khung, design_code)
+
+
+def _dien_khung(sap: str, khung, design_code) -> str:
+    """Điền ô [CẦN …] của SAP bằng khung đề tài ĐÃ CHỐT (15/11/2026). Chỉ thay đúng các dòng khuôn; vắng dữ kiện ⇒ giữ
+    nguyên [CẦN …]. Không đụng §2 của thiết kế định tính (đã có nhánh riêng)."""
+    if not khung:
+        return sap
+    nhan = " *(điền sẵn từ quyết định đã chốt — thống kê viên/PI sửa nếu cần)*"
+    thay = {}
+    if khung.get("tieu_chi_nhan"):
+        thay["- **Tiêu chí nhận:** [CẦN BÁC SĨ ĐIỀN — từ đề cương]  "] = (
+            f"- **Tiêu chí nhận:** {'; '.join(khung['tieu_chi_nhan'])}{nhan}  ")
+    if khung.get("tieu_chi_loai"):
+        thay["- **Tiêu chí loại:** [CẦN BÁC SĨ ĐIỀN]  "] = (
+            f"- **Tiêu chí loại:** {'; '.join(khung['tieu_chi_loai'])}{nhan}  ")
+    kc = khung.get("ket_cuc") or {}
+    if design_code != "qualitative" and kc.get("name"):
+        phan = [str(kc["name"])]
+        if kc.get("measure"):
+            phan.append(f"đo bằng {kc['measure']}")
+        if kc.get("timepoint"):
+            phan.append(f"thời điểm: {kc['timepoint']}")
+        bien = f" — biến `{khung['ket_cuc_bien']}`" if khung.get("ket_cuc_bien") else ""
+        thay["- **Kết cục chính:** [CẦN BÁC SĨ ĐIỀN — ví dụ: tỷ lệ nhập viện tim mạch trong 12 tháng]  "] = (
+            f"- **Kết cục chính:** {'; '.join(phan)}{bien}{nhan}  ")
+        if kc.get("type"):
+            thay["- **Đơn vị / ngưỡng:** [CẦN]  "] = (
+                f"- **Đơn vị / ngưỡng:** {kc['type']}" + (f" — {kc['measure']}" if kc.get("measure") else "") + "  ")
+    phu = list(khung.get("ket_cuc_phu") or [])
+    for i, dong in enumerate(("- **Kết cục phụ 1:** [CẦN]  ", "- **Kết cục phụ 2:** [CẦN]  ")):
+        if i < len(phu):
+            thay[dong] = f"- **Kết cục phụ {i + 1}:** {phu[i]}{nhan}  "
+    if khung.get("bien_phan_tich"):
+        thay["- **Biến độc lập đưa vào:** [CẦN BÁC SĨ LIỆT KÊ — kèm lý do lâm sàng / DAG]  "] = (
+            f"- **Biến độc lập đưa vào:** {', '.join(khung['bien_phan_tich'])} *(từ ma trận mục tiêu–biến)* — lý do "
+            "lâm sàng/DAG cho từng biến: [CẦN THỐNG KÊ VIÊN/PI]  ")
+    if khung.get("bien_imputation"):
+        thay["- **Biến đưa vào mô hình imputation:** [CẦN BÁC SĨ ĐIỀN]  "] = (
+            f"- **Biến đưa vào mô hình imputation:** {', '.join(f'`{b}`' for b in khung['bien_imputation'])} *(mọi "
+            "biến phân tích của ma trận — thống kê viên xác nhận)*  ")
+    for cu, moi in thay.items():
+        sap = sap.replace(cu, moi)
+    return sap
+
+
+def _khung_sap(out, meta):
+    """Khung đề tài cho SAP: G1/G0 đã chốt (khung_de_tai) + ma trận mục tiêu–biến ĐẠT (ma_tran_muc_tieu_bien)."""
+    try:
+        import khung_de_tai as KD  # noqa: PLC0415
+        import ma_tran_muc_tieu_bien as MT  # noqa: PLC0415
+    except Exception:  # noqa: BLE001 — thiếu mô-đun ⇒ SAP giữ ô [CẦN …] như cũ
+        return None
+    meta = meta if isinstance(meta, dict) else {}
+    g1 = (meta.get("gate_params") or {}).get("G1") or {}
+    vt = MT.vai_tro_bien(Path(out), Path(out).name) or {}
+    dong_mt = (MT.doc_ma_tran(Path(out))[0] or []) if vt else []
+    khai = {r.get("bien"): r.get("khai_niem") for r in dong_mt}
+    phan_tich = [*vt.get("phoi_nhiem", []), *vt.get("yeu_to", []), *vt.get("hiep_bien", [])]
+    return {
+        "tieu_chi_nhan": KD.danh_sach(g1.get("inclusion_criteria")),
+        "tieu_chi_loai": KD.danh_sach(g1.get("exclusion_criteria")),
+        "ket_cuc": KD.ket_cuc_chinh(meta), "ket_cuc_bien": vt.get("ket_cuc"),
+        "ket_cuc_phu": KD.danh_sach(KD.gia_tri(meta, "secondary_outcomes")[0]),
+        "bien_phan_tich": [f"`{b}` ({khai.get(b) or b})" for b in phan_tich],
+        "bien_imputation": [b for b in ([vt.get("ket_cuc")] + phan_tich) if b],
+    }
+
 
 def _ket_cuc_chinh_da_chot(meta):
     """Kết cục chính đã chốt — G1 (ghim có cấu trúc {name,…}) rồi G0; CÙNG cách G4-AUTO-11 đọc để đối chiếu §2."""
@@ -1041,6 +1112,7 @@ def main():
                         g3=g3, estimand=S.dac_ta_thiet_ke(out).get("estimand"),
                         giai_trinh_thieu_luc=g3_meta.get("underpowered_acceptance_justification"),
                         ket_cuc_chinh_da_chot=_ket_cuc_chinh_da_chot(meta_cp),
+                        khung=_khung_sap(out, meta_cp),
                         gia_thuyet_phu=(((meta_cp.get("gate_params") or {}).get("G0") or {}).get("hypothesis_secondary")
                                         if isinstance(meta_cp, dict) else None))
     md = out / f"G4_A5_SAP_FINAL_{study}.md"

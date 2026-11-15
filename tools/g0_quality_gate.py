@@ -444,6 +444,103 @@ def expected_reporting_standard(design_hint: Optional[str], meta: Optional[Mappi
 # Đánh giá
 # ════════════════════════════════════════════════════════════════════════════
 
+_KHONG_CAN_THIEP = re.compile(r"không (?:có )?can thiệp|không áp dụng|^\s*n/?a\b|không có nhóm so sánh|mô tả", re.I)
+
+
+#: Thuật ngữ CHUNG không đặc trưng khái niệm («điều trị» → treatment): không bắt truy vấn phải chứa (báo nhầm C1a).
+_THUAT_NGU_CHUNG = frozenset({"treatment", "therapy", "management", "patients"})
+
+
+def _thuat_ngu_phu(van: str, tu_dien: Mapping[str, str]) -> List[str]:
+    """Thuật ngữ tiếng Anh đặc trưng mà khái niệm PICO (tiếng Việt) ánh xạ được qua từ điển VI→EN của G0."""
+    t = str(van or "").lower()
+    ra: List[str] = []
+    for vi, en in tu_dien.items():
+        if vi and en and vi in t and en not in ra and en.lower() not in _THUAT_NGU_CHUNG:
+            ra.append(en)
+    return ra
+
+
+def _co_trong_truy_van(thuat_ngu: str, truy_van: str) -> bool:
+    """Thuật ngữ có trong truy vấn (không phân biệt hoa thường; nhận cụm cắt cụt kiểu «satisf*», «adheren*»)."""
+    q = truy_van.lower()
+    tt = thuat_ngu.lower().strip()
+    if tt and tt in q:
+        return True
+    tu = [w for w in re.findall(r"[a-z0-9-]+", tt) if len(w) > 3]
+    goc = re.findall(r"([a-z0-9-]{4,})\*", q)
+    return bool(tu) and all(w in q or any(w.startswith(g) for g in goc) for w in tu)
+
+
+def _tieu_chi_phu_pico(checkpoint: Mapping[str, Any], meta: Mapping[str, Any],
+                       registry_check: Optional[Mapping[str, Any]],
+                       artifact_paths: Mapping[str, Path]) -> Dict[str, str]:
+    """G0-AUTO-08 — truy vấn PubMed VÀ ClinicalTrials.gov phủ khái niệm P · I/E · O đã CHỐT.
+
+    Đo 15/11/2026 (giả lập ZZSIM-DONGBO-TUANTHU-THA-20261115): chủ đề «tuân thủ dùng thuốc hạ áp…» bị bộ dịch rút còn
+    `hypertension treatment` ⇒ 1/86 bài nói về tuân thủ, nhãn chứng cứ «MẠNH», 2.413 «thử nghiệm trùng» — G0 vẫn
+    PASS_G0_CONFIRMED vì không phép kiểm nào đối chiếu truy vấn với câu hỏi. Luật:
+      • khái niệm ánh xạ được qua từ điển VI→EN (hoặc PI khai gate_params.G0.khai_niem_tim_kiem.{P,I,O}) ⇒ BẮT BUỘC có
+        trong cả hai truy vấn, thiếu ⇒ REVIEW;
+      • khái niệm không ánh xạ được: truy vấn MÁY tự dịch ⇒ REVIEW (không kiểm được không phải «đạt»); truy vấn PI tự
+        viết (query_en) ⇒ ghi chú, không chặn (PI chịu trách nhiệm phủ khái niệm);
+      • PICO chưa chốt ⇒ chưa kiểm (PASS kèm ghi chú — chốt rồi mới đối chiếu).
+    Đề tài đã ký G4/G10 trước mốc luật được miễn trừ hiển thị (không hạ cấp quyết định đã ký)."""
+    nhan = "Truy vấn PubMed và ClinicalTrials.gov phủ khái niệm PICO đã chốt (P · I/E · O)"
+    hanh = ("Viết query_en (PubMed, MeSH) phủ đủ P · I/E · O rồi chạy lại run_g0_auto.py --query-en …; hoặc khai "
+            "gate_params.G0.khai_niem_tim_kiem = {\"P\": [...], \"I\": [...], \"O\": [...]} (thuật ngữ tiếng Anh).")
+    g0 = _g0_meta(meta)
+    if g0.get("pico_confirmed") is not True:
+        return _criterion("G0-AUTO-08", nhan, "PASS", "PICO chưa chốt — đối chiếu khi PI chốt PICO", hanh)
+    try:
+        import run_g0_auto as RG0  # noqa: PLC0415 — nạp muộn (run_g0_auto nhập module này)
+
+        tu_dien = dict(RG0.VI_EN_TERMS)
+    except Exception as exc:  # noqa: BLE001
+        return _criterion("G0-AUTO-08", nhan, "REVIEW", f"không nạp được từ điển VI→EN: {type(exc).__name__}", hanh)
+    truy_van = {"PubMed": str(checkpoint.get("base_query") or "")}
+    rc = registry_check if isinstance(registry_check, Mapping) else checkpoint.get("registry_check")
+    if isinstance(rc, Mapping) and rc.get("query"):
+        truy_van["ClinicalTrials.gov"] = str(rc.get("query"))
+    pi_viet = bool(str(meta.get("query_en") or "").strip())
+    khai = g0.get("khai_niem_tim_kiem") if isinstance(g0.get("khai_niem_tim_kiem"), Mapping) else {}
+    thanh_phan = {"P": g0.get("population"), "I": g0.get("intervention"), "O": g0.get("primary_outcome")}
+    thieu: List[str] = []
+    khong_kiem: List[str] = []
+    for ma, van in thanh_phan.items():
+        van = str(van or "")
+        if ma == "I" and (not van.strip() or _KHONG_CAN_THIEP.search(van)):
+            continue
+        tn = _thuat_ngu_phu(van, tu_dien) + [str(x) for x in (khai.get(ma) or []) if str(x).strip()]
+        if not tn:
+            khong_kiem.append(ma)
+            continue
+        for nguon, q in truy_van.items():
+            if q and not any(_co_trong_truy_van(t, q) for t in tn):
+                thieu.append(f"{ma} ({', '.join(tn[:3])}) vắng trong truy vấn {nguon}")
+    van_de = list(thieu)
+    if khong_kiem and not pi_viet:
+        van_de.append(f"không đối chiếu được {', '.join(khong_kiem)} — truy vấn do MÁY tự dịch từ chủ đề, PI chưa viết "
+                      "query_en/khai_niem_tim_kiem")
+    if not van_de:
+        ghi = ("đủ khái niệm" + (f"; {', '.join(khong_kiem)} không có trong từ điển — truy vấn PI tự viết (query_en), "
+                                 "PI chịu trách nhiệm phủ" if khong_kiem else ""))
+        return _criterion("G0-AUTO-08", nhan, "PASS", ghi, hanh)
+    try:
+        import ma_tran_muc_tieu_bien as MT  # noqa: PLC0415
+
+        a1 = (artifact_paths or {}).get("A1")
+        out_dir = Path(a1).parent if a1 else None
+        mien, ly_do = MT.da_ky_truoc_moc(out_dir, out_dir.name) if out_dir else (False, "")
+    except Exception:  # noqa: BLE001
+        mien, ly_do = False, ""
+    if mien:
+        return _criterion("G0-AUTO-08", nhan, "PASS",
+                          f"MIỄN TRỪ ({ly_do} — luật mới không hạ cấp quyết định đã ký); VẪN THIẾU: "
+                          f"{'; '.join(van_de)}", hanh)
+    return _criterion("G0-AUTO-08", nhan, "REVIEW", "; ".join(van_de), hanh)
+
+
 def evaluate_g0_quality(
     *,
     checkpoint: Mapping[str, Any],
@@ -622,6 +719,9 @@ def evaluate_g0_quality(
         "Xoá thông tin định danh khỏi các khoá đã nêu (tên, SĐT, CCCD, BHYT, ngày sinh, email) — chỉ mô tả quần thể ở "
         "mức nhóm.",
     ))
+
+    # ── G0-AUTO-08 — truy vấn tìm chứng cứ PHỦ khái niệm PICO đã chốt (bác sĩ duyệt 15/11/2026) ───────────────────
+    automatic.append(_tieu_chi_phu_pico(checkpoint, meta, registry_check, artifact_paths))
 
     # ── Tầng HUMAN — đọc study_meta.json → gate_params.G0 ─────────────────────
     g0 = _g0_meta(meta)

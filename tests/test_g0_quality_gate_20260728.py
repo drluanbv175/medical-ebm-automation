@@ -92,6 +92,8 @@ def _confirmed_g0_meta() -> dict:
         "registry_manual_checked": {"ictrp": "2026-07-28", "prospero": None},
         "registry_overlap_assessment": ("16 thử nghiệm đang tuyển đều ở HFrEF hoặc kết cục khác — không chồng lấn "
                                         "trực tiếp"),
+        # 15/11/2026 (G0-AUTO-08): thuốc can thiệp không có trong từ điển VI→EN ⇒ PI khai thuật ngữ tìm kiếm.
+        "khai_niem_tim_kiem": {"I": ["dapagliflozin"]},
     }
     g0["dau_van_tay_chot"] = G0Q.dau_van_tay_g0(_checkpoint(), {"gate_params": {"G0": g0}})
     return g0
@@ -101,7 +103,9 @@ def _checkpoint(**over) -> dict:
     """Checkpoint G0 hợp lệ tối thiểu (đủ mọi khoá hợp đồng)."""
     cp = {
         "study": "S", "gate": "G0", "topic": "heart failure",
-        "base_query": "heart failure",
+        # 15/11/2026 (G0-AUTO-08): truy vấn của một G0 chốt HỢP LỆ phải phủ khái niệm PICO — fixture cũ «heart failure»
+        # thiếu hẳn can thiệp dapagliflozin (đúng loại lỗi giả lập «tuân thủ thuốc hạ áp» lộ ra).
+        "base_query": "heart failure preserved ejection fraction dapagliflozin",
         "evidence_level": "MẠNH — có SR/MA", "research_gaps": ["g"],
         "design_suggestion": "RCT ngẫu nhiên có đối chứng HOẶC Cohort tiến cứu",
         "pubmed_results": {

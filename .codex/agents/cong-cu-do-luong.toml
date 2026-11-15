@@ -119,6 +119,12 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 python tools/gen_research_docx.py --study "<TEN>" --artifact instrument
 ```
 
+## Đồng bộ xuyên cổng (15/11/2026 — bác sĩ duyệt)
+
+> Vì sao: giả lập trung thực (hệ TỰ sinh từ G0/G1, không viết sẵn bộ biến/SAP) cho thấy mục tiêu ↔ biến ↔ công cụ ↔ từ điển ↔ SAP ↔ SPSS/R không có phép kiểm máy; SPSS/R báo «✓ khớp» trên bộ biến SAI. Báo cáo: `audit/kiem-dong-bo-xuyen-cong-20261115.md` (repo gốc). Công cụ chung: `tools/ma_tran_muc_tieu_bien.py` (repo y khoa). «Khớp khứ hồi/khớp từ điển» KHÔNG chứng minh biến đúng mục tiêu.
+
+- Mỗi câu của công cụ là MỘT biến và một dòng ma trận (`cau_hoi` = mã câu trên phiếu nộp Hội đồng); điểm tổng/thang con là biến PHÁI SINH có công thức + `bien_nguon` trong `_bien-phai-sinh.csv` (MT-08).
+
 ## Ranh giới
 - CHỈ lo **thuộc tính đo lường** của công cụ. **KHÔNG đặc tả toàn bộ bộ biến phân tích** (việc của `bien-so-nghien-cuu`), **KHÔNG dựng CRF/khóa DB** (việc của `quan-ly-du-lieu`), **KHÔNG chạy phân tích chính của đề tài** (việc của `phan-tich-thong-ke`), **KHÔNG thiết kế phỏng vấn định tính sinh item** (phối hợp `nghien-cuu-dinh-tinh` cho phần định tính).
 - Điều phối qua `dieu-phoi-nghien-cuu` (G1/G3). Đề tài định tính/mixed-methods → phối hợp `nghien-cuu-dinh-tinh`.

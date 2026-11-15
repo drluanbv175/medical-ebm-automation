@@ -23,7 +23,7 @@ import cong_song as CS  # noqa: E402
 import hoi_dong_cong as HD  # noqa: E402
 import run_g5_auto as RG5  # noqa: E402
 import skill_standards as SK  # noqa: E402
-from test_trach_nhiem_cong_20261009 import _COT, BO_BIEN_HOP_LE  # noqa: E402
+from test_trach_nhiem_cong_20261009 import _COT, BO_BIEN_HOP_LE, ghi_ma_tran_hop_le  # noqa: E402
 
 STUDY = "BB-THU"
 
@@ -40,13 +40,15 @@ def _them(*dong: str) -> str:
 
 
 def test_ten_hop_dong_trung_hang_cua_g5():
-    for ma in ("G3-T2", "G3-T3"):
-        assert HD._nhiem_vu("G3", ma)["dau_ra"] == [RG5.BO_BIEN_RIENG_TEN_FILE] == ["_bo-bien-rieng.csv"]
+    # 15/11/2026 (bác sĩ duyệt): G3-T2 có thêm hợp đồng MA TRẬN mục tiêu → biến (tools/ma_tran_muc_tieu_bien.py).
+    assert HD._nhiem_vu("G3", "G3-T2")["dau_ra"] == [RG5.BO_BIEN_RIENG_TEN_FILE, "_ma-tran-muc-tieu-bien.csv"]
+    assert HD._nhiem_vu("G3", "G3-T3")["dau_ra"] == [RG5.BO_BIEN_RIENG_TEN_FILE] == ["_bo-bien-rieng.csv"]
     assert {"G3-T2", "G3-T3"} <= set(HD.KIEM_NHIEM_VU), "G3-T2/T3 phải có kiểm máy cấp nhiệm vụ"
 
 
 def test_bo_bien_hop_le_qua_ca_hai_kiem(tmp_path):
     out = _bo_bien(tmp_path, BO_BIEN_HOP_LE)
+    ghi_ma_tran_hop_le(out)  # 15/11/2026: bộ biến hợp lệ phải PHỦ mục tiêu qua ma trận
     assert HD._kiem_bo_bien_so(out, STUDY) == [] and HD._kiem_crf(out, STUDY) == []
 
 
@@ -78,6 +80,7 @@ def test_crf_khong_truong_bat_buoc_bi_bat(tmp_path):
 
 def test_loi_kiem_may_la_viec_cua_dung_agent_trong_bang_trach_nhiem(monkeypatch, tmp_path):
     out = _bo_bien(tmp_path, _them("hai_long,f,,radio,Hài lòng,,,,,,,y", "ho_ten,f,,text,Họ tên,,,,,,,y"))
+    ghi_ma_tran_hop_le(out)  # đủ tệp hợp đồng G3-T2 ⇒ lỗi rơi vào KIỂM MÁY (không phải «thiếu đầu ra»)
     for ten in (f"G3_A4_SAMPLE_SIZE_{STUDY}.md", "G3_checkpoint.json"):
         (out / ten).write_text("{}\n", encoding="utf-8", newline="\n")
     hang = [{"id": ma, "status": "PASS"} for ma in HD.PHAN_CONG["G3"]]

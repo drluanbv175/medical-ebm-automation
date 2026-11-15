@@ -54,7 +54,13 @@ PII_HEADER_EXACT = {
     "dob", "date_of_birth", "dateofbirth", "birth_date", "birthdate", "ngay_sinh",
     "cccd", "cmnd", "citizen_id", "national_id", "passport",
     "mrn", "medical_record_number", "hospital_number", "patient_id",
-    "bhyt", "insurance_number", "health_insurance_number", "ssn",
+    "insurance_number", "health_insurance_number", "ssn",
+    # 15/11/2026 (kiểm đồng bộ xuyên cổng, bác sĩ duyệt): «bhyt» ĐỨNG MỘT MÌNH là biến TÌNH TRẠNG (có/không BHYT,
+    # loại thẻ) — hiệp biến phổ biến của đề tài Việt Nam, KHÔNG phải định danh. Chỉ SỐ/MÃ thẻ mới là định danh ⇒
+    # khai tường minh ở đây + luật tổ hợp trong la_ten_bhyt_dinh_danh(); số thẻ thật trong ô dữ liệu do mẫu giá trị
+    # «bhyt_the» bắt ở mọi cột.
+    "so_bhyt", "ma_bhyt", "so_the_bhyt", "ma_the_bhyt", "the_bhyt", "bhyt_number", "bhyt_no", "bhyt_id",
+    "sothebhyt", "mathebhyt",
 }
 PII_HEADER_CONTAINS = (
     "so_dien_thoai", "dien_thoai", "phone_number", "email_address",
@@ -68,9 +74,25 @@ PII_HEADER_CONTAINS = (
 # substring vì không khớp nhầm từ tiếng Việt chứa chuỗi con trùng (vd "tuyen_giap" không có
 # token nào == "ten").
 PII_HEADER_TOKENS = {
-    "phone", "cccd", "cmnd", "ten", "email", "dob", "mrn", "bhyt", "ssn",
+    "phone", "cccd", "cmnd", "ten", "email", "dob", "mrn", "ssn",
     "address", "name", "sdt",
 }
+#: Token đi kèm «bhyt» biến tên cột thành SỐ/MÃ thẻ (định danh). «bhyt», «co_bhyt», «loai_bhyt», «muc_huong_bhyt»
+#: là biến tình trạng — không chặn (15/11/2026).
+BHYT_TOKEN_DINH_DANH = frozenset({"so", "ma", "the", "number", "num", "no", "id", "code", "sothe", "mathe"})
+
+
+_BHYT_COT_RE = re.compile(r"bhyt|bhxh")
+#: Mã số BHXH (10 chữ số) hoặc mã thẻ BHYT (2 chữ + 8–13 số) đứng riêng trong ô.
+_BHYT_MA_RE = re.compile(r"^\s*(?:[A-Za-z]{2}\d{8,13}|\d{10,13})\s*$")
+
+
+def la_ten_bhyt_dinh_danh(norm: str) -> bool:
+    """Tên cột đã chuẩn hoá có phải SỐ/MÃ thẻ BHYT không (chỉ khi «bhyt» đi cùng token số/mã/thẻ)."""
+    tok = set(str(norm or "").split("_"))
+    if "sothebhyt" in str(norm) or "mathebhyt" in str(norm):
+        return True
+    return bool(any("bhyt" in t for t in tok) and tok & BHYT_TOKEN_DINH_DANH)
 VALUE_PATTERNS = {
     "email": re.compile(r"\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b", re.I),
     # THÊM 2026-09-04 (Workflow đối kháng đa-agent vòng 3, CRITICAL): NGÀY THÁNG.
@@ -105,6 +127,9 @@ VALUE_PATTERNS = {
     # SĐT VN: cho phép khoảng trắng/chấm/gạch/NGOẶC ĐƠN xen giữa các chữ số (vd
     # "(090) 123 4567") — {0,3} vì có thể có NHIỀU ký tự phân cách liền nhau (")" + " ").
     "phone_vn": re.compile(r"(?<!\d)\(?(?:\+?84|0)\)?(?:[\s.\-()]{0,3}\d){8,10}(?!\d)"),
+    # 15/11/2026: mã thẻ BHYT Việt Nam = 2 chữ cái (đối tượng) + 13 chữ số (vd «DN4797915123456») — bù cho việc tên
+    # cột «bhyt» không còn bị coi là định danh: số thẻ thật nằm ở bất kỳ cột nào vẫn bị chặn/ẩn.
+    "bhyt_the": re.compile(r"(?<![A-Za-z0-9])[A-Za-z]{2}\d{13}(?![A-Za-z0-9])"),
 }
 
 
@@ -156,6 +181,8 @@ def _header_issue(column: str) -> Optional[str]:
     if any(token in norm for token in PII_HEADER_CONTAINS):
         return f"header_pii:{norm}"
     if set(norm.split("_")) & PII_HEADER_TOKENS:
+        return f"header_pii:{norm}"
+    if la_ten_bhyt_dinh_danh(norm):
         return f"header_pii:{norm}"
     return None
 
@@ -219,6 +246,17 @@ def _scan_csv(path: Path, *, max_scan_rows: int = 5000,
                         if not text:
                             continue
                         col_is_exempt_date = _normalize_header(col) in exempt_date_columns
+                        # 15/11/2026 (thẩm định #268): cột tên «bhyt/bhxh» là biến TÌNH TRẠNG, nhưng nếu ô chứa MÃ số
+                        # (BHXH 10 chữ số, mã thẻ 10–15 ký tự) thì vẫn là định danh — tên cột không còn chặn nên giá trị
+                        # phải chặn.
+                        if _BHYT_COT_RE.search(_normalize_header(col)) and _BHYT_MA_RE.match(text):
+                            issues.append({
+                                "severity": "blocker",
+                                "type": "value_pii:ma_bhyt_bhxh",
+                                "column": col,
+                                "row": row_count,
+                                "detail": "Cột BHYT/BHXH chứa mã số định danh; không lưu giá trị trong manifest.",
+                            })
                         for label, pattern in VALUE_PATTERNS.items():
                             if label == "date" and col_is_exempt_date:
                                 continue

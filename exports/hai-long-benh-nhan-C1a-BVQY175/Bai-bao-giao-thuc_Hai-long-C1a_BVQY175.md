@@ -1,3 +1,5 @@
+> **BẢN CŨ — ĐÃ THAY BẰNG** `DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md` (bản nộp Hội đồng; PI ký lại gói G10 ngày 28/10/2026). Đánh dấu ngày 15/11/2026 khi kiểm đồng bộ cỡ mẫu & kỹ thuật chọn mẫu. Bản thảo này (sửa lần cuối 03/08/2026) biện minh N = 1.000 bằng d = 0,031, chưa có hiệu chỉnh gom cụm theo CV và ước độ chính xác ±4–6%; đề cương nộp tính N tối thiểu 630 (DE 1,39, CV 0,14) và nửa độ rộng ±3,7%. **Trước khi gửi tạp chí, dựng lại bài báo giao thức từ đề cương nộp** (SPIRIT 2025); không trích số liệu từ bản này.
+
 # GIAO THỨC NGHIÊN CỨU
 
 ## Đánh giá sự hài lòng của người bệnh trong hoạt động khám chữa bệnh tại một khoa khám theo yêu cầu của bệnh viện quân y tuyến cuối: giao thức nghiên cứu cắt ngang có phân tích

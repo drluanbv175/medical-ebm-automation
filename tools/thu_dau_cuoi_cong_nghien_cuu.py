@@ -162,13 +162,28 @@ def _g3_full_meta(**g3_overrides) -> Dict[str, Any]:
     g3.update(g3_overrides)
     return {
         "gate_params": {
-            "G1": {"primary_outcome": "Kết cục tổng hợp canary"},
+            "G1": {"primary_outcome": "Kết cục tổng hợp canary",
+                   "objectives": ["Xác định kết cục tổng hợp canary ở quần thể tổng hợp"]},
             "G3": g3,
         }
     }
 
 
+def _ghi_bo_bien_ma_tran_g3(tmp_path: Path) -> None:
+    """Gói TỐT có bộ biến + ma trận mục tiêu → biến hợp lệ (G3-AUTO-19, 15/11/2026) — như một đề tài làm đúng."""
+    (tmp_path / "_bo-bien-rieng.csv").write_text(
+        'Variable / Field Name,Form Name,Field Type,Field Label,"Choices, Calculations, OR Slider Labels"\n'
+        "record_id,phieu,text,Mã nghiên cứu,\n"
+        'ket_cuc_canary,phieu,radio,Kết cục tổng hợp canary,"0, Không | 1, Có"\n',
+        encoding="utf-8", newline="\n")
+    (tmp_path / "_ma-tran-muc-tieu-bien.csv").write_text(
+        "muc_tieu,khai_niem,vai_tro,bien,kieu,cau_hoi,cong_cu,phan_tich_sap,ghi_chu\n"
+        "1,Kết cục tổng hợp canary,ket_cuc_chinh,ket_cuc_canary,nhi_phan,,hồ sơ,§4,\n",
+        encoding="utf-8", newline="\n")
+
+
 def _evaluate_g3(tmp_path: Path, *, checkpoint=None, meta=None, artifact=None) -> Dict[str, Any]:
+    _ghi_bo_bien_ma_tran_g3(tmp_path)
     artifact_path = tmp_path / f"G3_A4_SAMPLE_SIZE_{STUDY}.md"
     artifact_path.write_text(
         _g3_artifact() if artifact is None else artifact, encoding="utf-8", newline="\n"

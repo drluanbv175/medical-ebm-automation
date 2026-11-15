@@ -693,6 +693,79 @@ def doc_bien_sap_5(sap: str, ten_goc: dict) -> dict:
 _VAI_KHAC_NHOM = (("outcome", "kết cục"), ("time_col", "biến thời gian"), ("cluster_col", "biến cụm (SE theo chùm)"))
 
 
+def ap_vai_tro_ma_tran(v: dict, out_dir: Path, study: str, ten_goc: dict,
+                       design_code: Optional[str] = None) -> Optional[str]:
+    """Vai trò biến THEO MA TRẬN mục tiêu–biến (bác sĩ duyệt 15/11/2026: «G6 lấy vai trò biến từ ma trận/SAP, không tự
+    đoán»). Trả lý do DỪNG (chuỗi) khi kết cục/phơi nhiễm vẫn không phải biến có thật; None khi đi tiếp được.
+
+    Thứ tự thẩm quyền: SAP đã khoá nêu TƯỜNG MINH (§2 kết cục, §5 biến nhóm/hiệp biến) > ma trận ĐẠT (G3) > dò từ khoá
+    dictionary. Đo 15/11 trên giả lập «tuân thủ thuốc hạ áp»: dò từ khoá chọn `primary_outcome`/`exposure`/`follow_time`
+    — cả ba KHÔNG tồn tại trong từ điển (biến thật `tuan_thu`), hiệp biến chỉ `tuoi`, `gioi` ⇒ script sinh ra sai biến.
+    SAP và ma trận lệch nhau ⇒ giữ SAP (hợp đồng đã khoá) và ghi ⚠️ để thống kê viên/PI thống nhất (đồng bộ xuyên cổng)."""
+    log = v.setdefault("detection_log", [])
+    try:
+        import ma_tran_muc_tieu_bien as MT  # noqa: PLC0415
+
+        vt = MT.vai_tro_bien(Path(out_dir), study)
+    except Exception as exc:  # noqa: BLE001 — bộ kiểm hỏng ⇒ coi như không có ma trận (không đoán thay)
+        log.append(f"⚠️  Không chạy được bộ kiểm ma trận mục tiêu–biến: {type(exc).__name__}")
+        vt = None
+    co = {k.lower() for k in ten_goc}
+    sap5 = v.get("bien_sap_5") or {}
+    sap_kc = any("THEO SAP §2" in str(x) for x in log)
+    sap_nhom = bool(sap5.get("bien_phan_nhom")) and str(v.get("exposure") or "").lower() == str(
+        sap5.get("bien_phan_nhom")).lower()
+    sap_hb = bool(sap5.get("hiep_bien"))
+    if vt:
+        v["vai_tro_ma_tran"] = vt
+        if vt.get("ket_cuc"):
+            if not sap_kc:
+                if str(v.get("outcome") or "") != vt["ket_cuc"]:
+                    log.append(f"✅ Kết cục chính THEO MA TRẬN mục tiêu–biến: {vt['ket_cuc']} (thay biến dò: "
+                               f"{v.get('outcome')})")
+                v["outcome"] = vt["ket_cuc"]
+            elif str(v.get("outcome") or "").lower() != vt["ket_cuc"].lower():
+                log.append(f"⚠️  SAP §2 (`{v.get('outcome')}`) LỆCH ma trận mục tiêu–biến (`{vt['ket_cuc']}`) — giữ SAP "
+                           "đã khoá; thống nhất ở G3/G4 (SAP AMENDMENT hoặc sửa ma trận)")
+        pn = vt.get("phoi_nhiem") or []
+        # Sửa theo thẩm định #268: ma trận ĐẠT thì phơi nhiễm CHỈ lấy từ ma trận (hoặc SAP) — không giữ tên dò từ khoá
+        # dù tên đó có trong từ điển (đo: `job_group` lọt vào mô hình dù không có trong ma trận).
+        if not sap_nhom:
+            moi = pn[0] if pn else ((vt.get("yeu_to") or [None])[0])
+            if moi and str(v.get("exposure") or "") != moi:
+                log.append(f"✅ Biến phơi nhiễm/phân nhóm THEO MA TRẬN: {moi} (thay biến dò: {v.get('exposure')})"
+                           + ("" if pn else " — ma trận không khai phơi nhiễm chính, dùng yếu tố đầu tiên; thống kê viên "
+                              "xác nhận theo SAP §4/§5"))
+            v["exposure"] = moi
+        hb_mt = [b for b in [*(vt.get("hiep_bien") or []), *(vt.get("yeu_to") or [])]
+                 if b not in {v.get("exposure"), v.get("outcome")}]
+        if hb_mt and not sap_hb:
+            v["covariates"] = hb_mt
+            log.append(f"✅ Hiệp biến/yếu tố THEO MA TRẬN: {', '.join(hb_mt)}")
+        elif hb_mt and sap_hb and set(map(str.lower, v.get("covariates") or [])) != set(map(str.lower, hb_mt)):
+            log.append("⚠️  Hiệp biến SAP §5 LỆCH ma trận mục tiêu–biến — giữ SAP đã khoá; thống nhất ở G3/G4")
+        if vt.get("thoi_gian"):
+            v["time_col"] = vt["thoi_gian"]
+        if vt.get("cum"):
+            v["cluster_col"] = vt["cum"]
+    else:
+        log.append("⚠️  Đề tài CHƯA có ma trận mục tiêu–biến ĐẠT (_ma-tran-muc-tieu-bien.csv) — vai trò biến chỉ còn theo "
+                   "SAP; vai trò SAP không nêu thì KHÔNG đoán")
+    # Định tính / tổng quan hệ thống không mô hình hoá kết cục–phơi nhiễm (khuôn riêng) — không đòi. Thiết kế mô tả thuần
+    # mà ma trận ĐẠT không khai phơi nhiễm/yếu tố: không đòi phơi nhiễm (sửa theo thẩm định #268).
+    if str(design_code or "").lower() in ("qualitative", "sr_ma"):
+        return None
+    can = [("kết cục", "outcome")]
+    if not vt or vt.get("phoi_nhiem") or vt.get("yeu_to") or sap_nhom:
+        can.append(("phơi nhiễm/phân nhóm", "exposure"))
+    thieu = [f"{vai} = `{v.get(k)}`" for vai, k in can if str(v.get(k) or "").lower() not in co]
+    if thieu:
+        return ("vai trò biến chưa xác định từ ma trận/SAP — " + "; ".join(thieu) + " KHÔNG có trong từ điển G5 "
+                "(G6 không đoán tên biến). Việc tiếp: agent bien-so-nghien-cuu hoàn tất _ma-tran-muc-tieu-bien.csv "
+                f"(python tools/ma_tran_muc_tieu_bien.py kiem --study {study}) hoặc SAP §2/§5 ghi đúng tên biến")
+    return None
+
+
 def ap_bien_sap_5(v: dict, sap: str, ten_goc: dict) -> dict:
     """Áp biến phân nhóm + hiệp biến THEO SAP §5 vào `v` (SAP thắng biến dò từ dictionary; mỗi lần thay ghi log A7).
 
@@ -3847,6 +3920,13 @@ def main():
     # THÊM 15/11/2026 (giả lập RCT lần 2, N6): biến phân nhóm + hiệp biến THEO SAP §5 đã khoá — script R, CLI Python
     # và cú pháp SPSS xem trước cùng đọc `v`. SAP chưa điền/viết văn xuôi ⇒ giữ biến dò từ dictionary (log A7 nói rõ).
     ap_bien_sap_5(v, sap_text, ten_goc)
+    _ly_do_vai_tro = ap_vai_tro_ma_tran(v, out, study, ten_goc, design_code)
+    if _ly_do_vai_tro:
+        print(f"\n🚧 G6 DỪNG: {_ly_do_vai_tro}")
+        for _dong in v.get("detection_log") or []:
+            print(f"     {_dong}")
+        print("  Cần bác sĩ kiểm chứng.")
+        raise SystemExit(GC.EXIT_BLOCKED)
     _reject_if_variable_names_invalid(v)
     if v["outcome_ordinal"] and design_code == "cross_sectional":
         print("  → Kết cục    : THỨ BẬC theo SAP đã khoá → 03_analysis.R dùng "
