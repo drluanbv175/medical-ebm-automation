@@ -140,8 +140,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # vẫn 64.
 # 14/11/2026 (tầng 5, việc N): trich-xuat-y-van + tham-dinh-dau-ra — dạy đọc 🟠 kiểm chéo ngữ nghĩa ④-bis/④-ter
 # (K1–K4 + K3b/K4b, CẢNH BÁO), cặp y hệt repo gốc; vẫn 64.
+# 15/11/2026: dieu-phoi-g5 + quan-ly-du-lieu (G5-AUTO-11 vào bảng trách nhiệm) · giam-khao-cong + _HOI-DONG-CONG (RQ4
+# chấm trên số đo nhat_quan_xuyen_cong) — cặp y hệt repo gốc; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "02dfa461c23ca1ba2a0e39da24091052ac85cbad28cedc7dd4da98732a389144"
+    "bcb4f74290e2fb99008a16f5c8332ff724aa5daa3ac21d4b3d7efc3542fae622"
 )
 
 MINIMUM_AGENT_COUNT = 64

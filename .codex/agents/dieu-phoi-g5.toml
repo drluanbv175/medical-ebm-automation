@@ -46,13 +46,13 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G5 (09/10/2026)
 Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối
-của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Mọi tiêu chí (15) của
+của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Mọi tiêu chí (16) của
 `tools/g5_quality_gate.py` đã gán ĐÚNG MỘT bên ở `hoi_dong_cong.PHAN_CONG`
 (bảng dưới chép lại; test đối chiếu):
 
 | Bên chịu trách nhiệm | Tiêu chí |
 |---|---|
-| `G5-T1` — agent `quan-ly-du-lieu` | G5-AUTO-00, G5-AUTO-01, G5-AUTO-02, G5-AUTO-03, G5-AUTO-06, G5-AUTO-07, G5-AUTO-07b, G5-AUTO-08, G5-AUTO-09, G5-AUTO-10 |
+| `G5-T1` — agent `quan-ly-du-lieu` | G5-AUTO-00, G5-AUTO-01, G5-AUTO-02, G5-AUTO-03, G5-AUTO-06, G5-AUTO-07, G5-AUTO-07b, G5-AUTO-08, G5-AUTO-09, G5-AUTO-10, G5-AUTO-11 |
 | `DATA_MANAGER@G5-T1` — NGƯỜI DATA_MANAGER quyết/ký; agent chuẩn bị hồ sơ + lệnh: `quan-ly-du-lieu` | G5-AUTO-04, G5-AUTO-04b, G5-HUMAN-01 |
 | `^G2,G4` — cổng tiền đề G2, G4 (điều phối cổng đó chịu trách nhiệm) | G5-AUTO-05, G5-AUTO-05b |
 

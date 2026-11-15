@@ -349,7 +349,7 @@ PHAN_CONG: Dict[str, Dict[str, str]] = {
         "G5-AUTO-00": "G5-T1", "G5-AUTO-01": "G5-T1", "G5-AUTO-02": "G5-T1", "G5-AUTO-03": "G5-T1",
         "G5-AUTO-04": "DATA_MANAGER@G5-T1", "G5-AUTO-04b": "DATA_MANAGER@G5-T1", "G5-AUTO-05": "^G2,G4",
         "G5-AUTO-05b": "^G2,G4", "G5-AUTO-06": "G5-T1", "G5-AUTO-07": "G5-T1", "G5-AUTO-07b": "G5-T1",
-        "G5-AUTO-08": "G5-T1", "G5-AUTO-09": "G5-T1", "G5-AUTO-10": "G5-T1",
+        "G5-AUTO-08": "G5-T1", "G5-AUTO-09": "G5-T1", "G5-AUTO-10": "G5-T1", "G5-AUTO-11": "G5-T1",
         "G5-HUMAN-01": "DATA_MANAGER@G5-T1",
     },
     # 10/10/2026: G6-AUTO-09 (mô hình phân tích chính ↔ SAP §4) theo thiết kế — tổng quan hệ thống có gộp ⇒ G6-T2
@@ -2259,6 +2259,19 @@ def trach_nhiem(study: str, gate: str, out_dir: Path) -> Dict[str, Any]:
         else:
             con_lai.append(m)
     agent_con = con_lai
+    # 15/11/2026 (bác sĩ: «đã có kiểm tra chéo, điều phối nhưng đã không thực hiện được và được báo cáo hoàn thiện»):
+    # «hoàn thiện» của một cổng PHẢI qua các trục nhất quán xuyên cổng thuộc cổng đó (TRUC_THEO_CONG
+    # — gồm biến ↔ đề cương, công cụ ↔ từ điển, mục tiêu ↔ SAP, chọn mẫu ↔ cỡ mẫu). Lệch cứng ⇒ việc của điều phối cổng
+    # (không bao giờ DAT_TIEU_CHI); lệch mềm ⇒ chờ chủ nhiệm quyết; chưa đủ để so ⇒ liệt kê, không quy là khớp.
+    nq_cong = nhat_quan_cua_cong(study, gate, out_dir)
+    for k in nq_cong:
+        muc_nq = {"id": f"{gate}:nhat-quan-{k['ma']}", "label": f"nhất quán xuyên cổng — {k['ten']}",
+                  "viec": k["ghi_chu"]}  # fmt: skip
+        if k["muc"] == "lech_cung":
+            agent_con.append({**muc_nq, "status": "BLOCK", "nhiem_vu": None, "agent": dieu_phoi_cong(gate)})
+        elif k["muc"] == "lech_mem":
+            cho_nguoi.append({**muc_nq, "status": "REVIEW", "vai": "PI", "chuan_bi": None,
+                              "agent_chuan_bi": dieu_phoi_cong(gate)})
     import cong_song as CS  # noqa: PLC0415
 
     bi_chan = CS.muc_cua_trang_thai(song.get("status")) == "BLOCKED"
@@ -2304,7 +2317,7 @@ def trach_nhiem(study: str, gate: str, out_dir: Path) -> Dict[str, Any]:
             "trang_thai_song": song.get("status"), "nguon": song.get("nguon"), "ly_do_khong_do": song.get("ly_do"),
             "thiet_ke": ma_tk, "ket_luan": ket, "so_tieu_chi": len(rows), "so_dat": len(dat),
             "agent_con_viec": agent_con, "cho_nguoi": cho_nguoi, "cho_cong_truoc": cho_truoc,
-            "chua_phan_cong": chua_gan, "nhiem_vu": nhiem_vu, "chua_cham": chua_cham,
+            "chua_phan_cong": chua_gan, "nhiem_vu": nhiem_vu, "chua_cham": chua_cham, "nhat_quan_xuyen_cong": nq_cong,
             "chi_dam_bao_bang_danh_gia_cheo": chi_danh_gia,
             "chat_luong_chua_bao_dam": [m["ma"] for m in chi_danh_gia
                                         if m["danh_gia_cheo"] != "qua" and not m["dau_ra_chua_co"]],
@@ -2485,6 +2498,23 @@ def _tranh_bien_hieu_luc(gate: str, out_dir: Path) -> Dict[str, Dict[str, Any]]:
                  "xu_ly": tom.get("xu_ly")} for dp, (bb, tom) in moi.items()}
 
 
+def nhat_quan_cua_cong(study: str, gate: str, out_dir: Path) -> List[Dict[str, Any]]:
+    """Các trục nhất quán xuyên cổng THUỘC cổng `gate` (15/11/2026) — một nguồn cho `trach_nhiem` và `ho_so_cong`.
+
+    Đọc `nhat_quan_xuyen_cong.doi_chieu` (chỉ đọc) và lọc theo `TRUC_THEO_CONG`. Mỗi mục {ma, ten, muc, ghi_chu} với
+    `muc` ∈ khop · lech_cung · lech_mem · can_xem · chua_du. Bộ đo hỏng ⇒ MỘT mục `chua_du` ghi rõ lỗi (không đo được ≠
+    khớp — không bao giờ trả danh sách rỗng như thể không có gì để so)."""
+    try:
+        import nhat_quan_xuyen_cong as NQ  # noqa: PLC0415
+
+        return [{"ma": k["ma"], "ten": k["ten"], "muc": k["muc"], "ghi_chu": k["ghi_chu"]}
+                for k in NQ.doi_chieu(Path(out_dir), study)["thong_so"]
+                if gate in NQ.TRUC_THEO_CONG.get(k["ma"], ())]  # fmt: skip
+    except Exception as e:  # noqa: BLE001 — không đo được ≠ khớp: ghi rõ, không im lặng
+        return [{"ma": "nhat_quan", "ten": "nhất quán xuyên cổng", "muc": "chua_du",
+                 "ghi_chu": f"không đo được ({type(e).__name__}: {str(e)[:120]})"}]
+
+
 def ho_so_cong(study: str, gate: str, out_dir: Path, dp: Optional[List[str]] = None,
                tat_ca: bool = False, song_cache: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """HỒ SƠ CỔNG do máy lập (0 agent, chỉ đọc) — đầu vào `args.ho_so` của workflow `hoi-dong-cong.js`.
@@ -2601,6 +2631,8 @@ def ho_so_cong(study: str, gate: str, out_dir: Path, dp: Optional[List[str]] = N
             "trang_thai_song": song.get("status"), "thiet_ke": ma_tk, "tat_ca": bool(tat_ca),
             "nhiem_vu": nhiem_vu, "dp": dp_ra, "bat_dong_treo": bat_dong, "tai_lieu_cong": tai_lieu_cong,
             "cho_bac_si": cho_bac_si, "cho_thuc_hien": cho_thuc_hien, "cong_truoc_chua_dat": cong_truoc,
+            # 15/11/2026: giám khảo chấm RQ4 TRÊN số đo này (không tự suy từ văn bản); lệch cứng ⇒ RQ4 loi_do.
+            "nhat_quan_xuyen_cong": nhat_quan_cua_cong(study, gate, out_dir),
             "can_hop": can_hop,
             "khuyen_nghi": "khong_can_hop" if not can_hop else ("nen_cho_cong_truoc" if cong_truoc else "hop_duoc")}
 

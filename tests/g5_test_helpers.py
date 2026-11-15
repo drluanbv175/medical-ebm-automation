@@ -231,6 +231,7 @@ def write_g5_toolkit(
                     "Required Field?": "y" if name == id_field else "n",
                 }
             )
+    _ghi_nguon_bien_fixture(out_dir, study, rows)
     scripts = out_dir / "scripts"
     scripts.mkdir(exist_ok=True)
     # Đầu tệp mang ĐÚNG dòng mô tả bộ sinh G5 (run_g5_auto) như script thật — G6 nhận diện script làm sạch của G5
@@ -304,6 +305,39 @@ def write_g5_toolkit(
         encoding="utf-8", newline="\n"
     )
     return dictionary_path
+
+
+def _ghi_nguon_bien_fixture(out_dir: Path, study: str, rows) -> None:
+    """Bộ biến G3 + phiếu thu thập KHỚP từ điển fixture (15/11/2026).
+
+    Từ G5-AUTO-11, cổng G5 đo bằng máy rằng từ điển nhập liệu khớp bộ biến đã duyệt và phiếu thu thập; thiếu nguồn
+    chuẩn ⇒ «chưa đủ để so» ⇒ REVIEW (không bao giờ PASS). Chuỗi fixture «đầy đủ» vì vậy phải mang đủ hai nguồn này,
+    đúng như một đề tài thật đi qua G3 — sửa fixture cho hợp lệ, không nới chốt (CLAUDE.md §0.8).
+    """
+    loai = {"radio": "Phân loại", "dropdown": "Phân loại", "text": "Chữ"}
+    dong = []
+    for name, field_type, choices, validation, minimum, maximum in rows:
+        if validation == "number":
+            kieu = "Định lượng"
+        else:
+            kieu = "Ngày" if validation.startswith("date") else loai[field_type]
+        if choices:
+            hop_le = "; ".join(x.strip() for x in choices.split("|"))
+        elif minimum or maximum:
+            hop_le = f"{minimum or '…'}–{maximum or '…'}"
+        else:
+            hop_le = "—"
+        dong.append(f"| {name} | {name} | {kieu} | {hop_le} |")
+    (out_dir / f"G3_BO_BIEN_SO_{study}.md").write_text(
+        f"# Bộ biến số G3 — {study} (fixture)\n\n| Tên biến | Nhãn | Loại | Giá trị hợp lệ |\n|---|---|---|---|\n"
+        + "\n".join(dong) + "\n",
+        encoding="utf-8", newline="\n",
+    )
+    (out_dir / f"PHIEU_THU_THAP_SO_LIEU_{study}.md").write_text(
+        f"# Phiếu thu thập số liệu — {study} (fixture)\n\n"
+        + "\n".join(f"{i}. {name}: ______" for i, (name, *_) in enumerate(rows, 1)) + "\n",
+        encoding="utf-8", newline="\n",
+    )
 
 
 def _doc_json(path: Path) -> dict:
