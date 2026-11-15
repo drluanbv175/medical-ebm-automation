@@ -36,8 +36,9 @@ DE_CUONG_CO_BANG_BIEN = ("| Mã biến | Tên biến | Loại | Mã hoá | Ngu�
 PS_COT = ["ten_bien", "nhan", "kieu", "dinh_nghia", "bien_nguon", "cong_thuc", "lap_k", "nhan_gia_tri", "nguoi_duyet"]
 
 
-def _duyet(d: Path, dau: str | None = None, luc: str = "2026-11-15T10:00:00") -> None:
-    """PI GIẢ LẬP ghi xác nhận (đề tài giả trong tmp) — agent thật KHÔNG ghi khoá này."""
+def _duyet(d: Path, dau: str | None = None, luc: str = "2026-01-01T08:00:00+07:00") -> None:
+    """PI GIẢ LẬP ghi xác nhận (đề tài giả trong tmp) — agent thật KHÔNG ghi khoá này. Mốc ở QUÁ KHỨ có múi giờ: mốc
+    không múi «hôm nay 10:00» nằm ở tương lai trên máy CI chạy UTC buổi sáng ⇒ xác nhận bị loại đúng luật (CI #274)."""
     m = json.loads((d / "study_meta.json").read_text(encoding="utf-8"))
     dau = dau or BB.trang_thai(d, STUDY)["dau_hien_tai"]
     m.setdefault("gate_params", {}).setdefault("G3", {})[BB.KHOA_DUYET] = {"reviewed_at": luc, "dau_van_tay": dau}
