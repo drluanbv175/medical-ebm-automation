@@ -53,6 +53,7 @@ Lệnh
   tinh      --study <mã> --data <csv> --ra <thư mục NGOÀI repo> [--chi a,b]   tính thử (vd dữ liệu giả lập)
   cu-phap   --study <mã> --dang spss|r [--ra <tệp>]                      mã SPSS/R để đọc/chạy tay
   doi-chieu --study <mã> --data <csv> [--khong-spss] [--khong-r]          Python ↔ R ↔ SPSS từng ô
+  soan-tu-calc --study <mã> [--ghi]          trường calc REDCap ⇒ công thức NHÁP (chưa duyệt; không dịch ⇒ không ghi)
 Mã thoát: 0 đạt · 1 lỗi công thức/lệch · 2 không đo được (thiếu tệp, thiếu SPSS/R) · 3 từ chối (tham số, thư mục ra
 trong repo). Cần bác sĩ kiểm chứng.
 """
@@ -445,6 +446,9 @@ class DanhMuc:
     ngay: set[str]
     calc: set[str] = field(default_factory=set)
     nguon: str = ""
+    # 15/11/2026 (soan-tu-calc): biểu thức «Choices, Calculations» và nhãn của từng trường calc, theo thứ tự từ điển.
+    calc_bt: dict[str, str] = field(default_factory=dict)
+    calc_nhan: dict[str, str] = field(default_factory=dict)
 
 
 def doc_danh_muc_tu_dien(study_dir: Path, study: str) -> DanhMuc:
@@ -468,15 +472,20 @@ def doc_danh_muc_tu_dien(study_dir: Path, study: str) -> DanhMuc:
 
     c_ten, c_loai = tim("Variable / Field Name", "Variable"), tim("Field Type")
     c_lc, c_kt = tim("Choices, Calculations", "Choices"), tim("Text Validation Type")
+    c_nhan = next((c for c in k if "field label" in c.lower()), None)
     cot: set[str] = set()
     ngay: set[str] = set()
     calc: set[str] = set()
+    calc_bt: dict[str, str] = {}
+    calc_nhan: dict[str, str] = {}
     for r in hang:
         ten, loai = r[c_ten].strip(), r[c_loai].strip().lower()
         if not ten or loai == "descriptive":
             continue
         if loai == "calc":
             calc.add(ten)
+            calc_bt[ten] = (r.get(c_lc) or "").strip()
+            calc_nhan[ten] = (r.get(c_nhan) or "").strip() if c_nhan else ""
             continue
         if loai == "checkbox":
             for phan in r[c_lc].split("|"):
@@ -486,7 +495,7 @@ def doc_danh_muc_tu_dien(study_dir: Path, study: str) -> DanhMuc:
         cot.add(ten)
         if r[c_kt].strip().lower().startswith("date"):
             ngay.add(ten)
-    return DanhMuc(cot=cot, ngay=ngay, calc=calc, nguon=p.name)
+    return DanhMuc(cot=cot, ngay=ngay, calc=calc, nguon=p.name, calc_bt=calc_bt, calc_nhan=calc_nhan)
 
 
 # ─────────────────────────────── kiểm toàn bộ đặc tả ───────────────────────────────
@@ -1382,6 +1391,168 @@ def khoi_loc_cau_noi(
 # ─────────────────────────────── dòng lệnh ───────────────────────────────
 
 
+# ─────────────────────────────── soạn nháp từ trường calc REDCap ───────────────────────────────
+# 15/11/2026 (bác sĩ: «hoàn thiện hệ thống nghiên cứu, không chỉ riêng 2 đề tài»): V6 của doi_chieu_bien_de_cuong chỉ
+# PHÁT HIỆN trường calc thiếu công thức (nhập Excel/SPSS không tính calc ⇒ cột trống) — đề tài nào cũng phải viết tay
+# (BTM: bmi, du_tieu_chuan). Lệnh `soan-tu-calc` dịch biểu thức REDCap sang ngôn ngữ công thức của tệp này và GHI NHÁP:
+#   • KHÔNG ghi `nguoi_duyet` (thống kê viên/PI duyệt bằng `duyet`; chưa duyệt ⇒ phân tích dừng như mọi biến khác);
+#   • trường KHÔNG dịch được ⇒ KHÔNG ghi dòng nào (một dòng cùng tên mà công thức trống sẽ làm V6 xanh giả);
+#   • giữ ngữ nghĩa REDCap ở so sánh `=`/`<>` với hằng: ô trống ⇒ «khác» (REDCap so chuỗi rỗng), không phải «thiếu»;
+#   • `round(x, n)` của REDCap là làm tròn HIỂN THỊ ⇒ bỏ, ghi chú để người duyệt quyết.
+
+_CHU_THICH_ROUND = ("bỏ round(…) của REDCap (làm tròn hiển thị) — phân tích dùng giá trị chưa làm tròn; thống kê "
+                    "viên giữ hay bỏ khi duyệt")
+_CHU_THICH_TRONG = ("so sánh =/<> giữ ngữ nghĩa REDCap: ô trống ⇒ «khác» (neu(la_thieu(x), …)), không phải thiếu")
+
+
+class _DichCalc(ast.NodeTransformer):
+    """Biến cây biểu thức REDCap (đã thay cú pháp) thành cây của ngôn ngữ công thức."""
+
+    def __init__(self) -> None:
+        self.ghi: list[str] = []
+
+    def _ghi(self, s: str) -> None:
+        if s not in self.ghi:
+            self.ghi.append(s)
+
+    def visit_Constant(self, n: ast.Constant) -> ast.AST:
+        if isinstance(n.value, str):
+            s = n.value.strip()
+            if re.fullmatch(r"-?\d+(\.\d+)?", s):
+                return ast.copy_location(ast.Constant(float(s) if "." in s else int(s)), n)
+            raise LoiCongThuc(f"so sánh với chuỗi «{n.value}» — ngôn ngữ công thức chỉ so số")
+        return n
+
+    def visit_Call(self, n: ast.Call) -> ast.AST:
+        ten = n.func.id if isinstance(n.func, ast.Name) else None
+        if ten == "round" and 1 <= len(n.args) <= 2 and not n.keywords:
+            self._ghi(_CHU_THICH_ROUND)
+            return self.visit(n.args[0])
+        if ten != "neu":
+            raise LoiCongThuc(f"hàm REDCap «{ten or '?'}» chưa có trong ngôn ngữ công thức")
+        self.generic_visit(n)
+        return n
+
+    def visit_Compare(self, n: ast.Compare) -> ast.AST:
+        self.generic_visit(n)
+        if len(n.ops) == 1 and isinstance(n.ops[0], (ast.Eq, ast.NotEq)):
+            ve = [n.left, n.comparators[0]]
+            ten = [x for x in ve if isinstance(x, ast.Name)]
+            hang = [x for x in ve if isinstance(x, ast.Constant)]
+            if len(ten) == 1 and len(hang) == 1:
+                self._ghi(_CHU_THICH_TRONG)
+                khi_trong = ast.Constant(0 if isinstance(n.ops[0], ast.Eq) else 1)
+                return ast.copy_location(ast.Call(
+                    func=ast.Name("neu", ast.Load()),
+                    args=[ast.Call(func=ast.Name("la_thieu", ast.Load()), args=[ast.Name(ten[0].id, ast.Load())],
+                                   keywords=[]), khi_trong, n],
+                    keywords=[]), n)
+        return n
+
+
+def dich_calc_redcap(bt: str) -> tuple[str | None, list[str]]:
+    """Biểu thức calc REDCap ⇒ (công thức hoặc None, ghi chú/lý do). Công thức trả về đã qua `phan_tich` (hợp lệ)."""
+    s = (bt or "").strip()
+    if not s:
+        return None, ["biểu thức calc trống trong từ điển"]
+    if re.search(r"\]\s*\[", s):
+        return None, ["tham chiếu kiểu [sự kiện][biến] (dự án dọc) — máy chưa dịch, viết tay"]
+    s = re.sub(r"\[([A-Za-z][A-Za-z0-9_]*)\(([A-Za-z0-9_-]+)\)\]", r"\1___\2", s)  # checkbox [x(2)] ⇒ x___2
+    s = re.sub(r"\[([A-Za-z][A-Za-z0-9_]*)\]", r"\1", s)
+    if "[" in s or "]" in s:
+        return None, ["còn tham chiếu [...] không dịch được (smart variable/sự kiện) — viết tay"]
+    s = s.replace("<>", "!=")
+    s = re.sub(r"(?<![<>!=])=(?!=)", "==", s)
+    s = s.replace("^", "**")
+    s = re.sub(r"\b(and|or|not)\b", lambda m: m.group(1).lower(), s, flags=re.I)
+    s = re.sub(r"\bif\s*\(", "neu(", s, flags=re.I)
+    try:
+        cay = ast.parse(s, mode="eval")
+    except SyntaxError as e:
+        return None, [f"cú pháp không dịch được ({e.msg})"]
+    dich = _DichCalc()
+    try:
+        moi = ast.fix_missing_locations(dich.visit(cay))
+        ct = ast.unparse(moi.body)
+        phan_tich(ct)
+    except LoiCongThuc as e:
+        return None, [str(e)]
+    return ct, dich.ghi
+
+
+#: Cột chuẩn khi `_bien-phai-sinh.csv` chưa có (đúng thứ tự của các tệp đề tài hiện có).
+COT_DAC_TA_CHUAN = ["ten_bien", "nhan", "kieu", "dinh_nghia", "bien_nguon", "quy_tac_ma_thieu", "dung_o", "nguon",
+                    "cong_thuc", "lap_k", "nhan_gia_tri", "nguoi_duyet"]
+
+
+def soan_tu_calc(d: Path, study: str) -> list[dict]:
+    """Mọi trường calc của từ điển ⇒ [{ten, bt, cong_thuc|None, ghi[], da_co}] theo thứ tự từ điển."""
+    dm = doc_danh_muc_tu_dien(d, study)
+    da_co = {b.goc.lower() for b in doc_dac_ta(d)} if (d / TEP_DAC_TA).exists() else set()
+    ra = []
+    for ten, bt in dm.calc_bt.items():
+        ct, ghi = (None, []) if ten.lower() in da_co else dich_calc_redcap(bt)
+        ra.append({"ten": ten, "nhan": dm.calc_nhan.get(ten, ""), "bt": bt, "cong_thuc": ct, "ghi": ghi,
+                   "da_co": ten.lower() in da_co})
+    return ra
+
+
+def lenh_soan_tu_calc(args) -> int:
+    d = _study_dir(args.study)
+    kq = soan_tu_calc(d, args.study)
+    if not kq:
+        print("✓ Từ điển không có trường calc — không cần soạn.")
+        return 0
+    moi = [r for r in kq if not r["da_co"] and r["cong_thuc"]]
+    khong_dich = [r for r in kq if not r["da_co"] and not r["cong_thuc"]]
+    for r in kq:
+        if r["da_co"]:
+            print(f"  · {r['ten']}: đã có trong {TEP_DAC_TA} — giữ nguyên")
+        elif r["cong_thuc"]:
+            print(f"  ✓ {r['ten']}: {r['cong_thuc']}")
+            for g in r["ghi"]:
+                print(f"      ↳ {g}")
+        else:
+            print(f"  ✗ {r['ten']}: KHÔNG dịch được — {'; '.join(r['ghi'])} · REDCap: {r['bt']}")
+    if moi and args.ghi:
+        p = d / TEP_DAC_TA
+        if p.exists():
+            with open(p, encoding="utf-8-sig", newline="") as f:
+                rd = csv.DictReader(f)
+                cot = list(rd.fieldnames or [])
+                cu = list(rd)
+            bak = p.with_name(f"{p.name}.bak-{datetime.now().strftime('%Y%m%d-%H%M%S')}")
+            bak.write_bytes(p.read_bytes())
+        else:
+            cot, cu, bak = list(COT_DAC_TA_CHUAN), [], None
+        for c in COT_DAC_TA_CHUAN:
+            if c not in cot:
+                cot.append(c)
+        hom_nay = date.today().isoformat()
+        for r in moi:
+            cu.append({
+                "ten_bien": r["ten"], "nhan": r["nhan"], "kieu": "",
+                "dinh_nghia": f"REDCap calc: {r['bt']}" + (f" — {'; '.join(r['ghi'])}" if r["ghi"] else ""),
+                "bien_nguon": " ".join(cot_cua_cay(phan_tich(r["cong_thuc"]))),
+                "quy_tac_ma_thieu": "", "dung_o": "",
+                "nguon": f"REDCap calc — máy dịch {hom_nay}, CHỜ thống kê viên/PI duyệt",
+                "cong_thuc": r["cong_thuc"], "lap_k": "", "nhan_gia_tri": "", "nguoi_duyet": "",
+            })
+        with open(p, "w", encoding="utf-8", newline="") as f:
+            w = csv.DictWriter(f, cot, lineterminator="\n", extrasaction="ignore")
+            w.writeheader()
+            w.writerows(cu)
+        print(f"✓ Đã ghi NHÁP {len(moi)} biến vào {p.name}" + (f" (sao lưu {bak.name})" if bak else "")
+              + f" — chưa duyệt: python tools/bien_phai_sinh.py duyet --study {args.study} --vai … --tham-chieu …")
+    elif moi:
+        print(f"Chạy khô — thêm --ghi để ghi nháp {len(moi)} biến (KHÔNG ghi người duyệt).")
+    if khong_dich:
+        print(f"⚠ {len(khong_dich)} trường calc phải viết công thức tay (V6 vẫn LỆCH tới khi có): "
+              + ", ".join(r["ten"] for r in khong_dich))
+    print(CAN_KIEM)
+    return 1 if khong_dich else 0
+
+
 def _study_dir(study: str) -> Path:
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", study or ""):
         raise TuChoi(f"mã đề tài không hợp lệ: {study!r}")
@@ -1754,6 +1925,9 @@ def main(argv: list[str] | None = None) -> int:
     dy.add_argument("--tham-chieu", required=True, help="mã người duyệt, vd TKV-C1A-01")
     dy.add_argument("--bien", default="", help="danh sách tên biến, cách nhau dấu phẩy (mặc định: mọi biến tự tính)")
     dy.add_argument("--ap-dung", action="store_true")
+    sc = sp.add_parser("soan-tu-calc", help="dịch trường calc REDCap thành công thức NHÁP (chạy khô mặc định)")
+    sc.add_argument("--study", required=True)
+    sc.add_argument("--ghi", action="store_true", help="ghi nháp vào _bien-phai-sinh.csv (không ghi người duyệt)")
     dc = sp.add_parser("doi-chieu")
     dc.add_argument("--study", required=True)
     dc.add_argument("--data", required=True)
@@ -1763,7 +1937,7 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     try:
         return {"kiem": lenh_kiem, "tinh": lenh_tinh, "cu-phap": lenh_cu_phap, "doi-chieu": lenh_doi_chieu,
-                "duyet": lenh_duyet}[args.lenh](
+                "duyet": lenh_duyet, "soan-tu-calc": lenh_soan_tu_calc}[args.lenh](
             args
         )
     except LoiCongThuc as e:

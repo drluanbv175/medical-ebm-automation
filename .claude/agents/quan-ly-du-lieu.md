@@ -391,6 +391,8 @@ Quy tắc: (1) Minor → sửa + ghi AMD + cập nhật checksum; (2) Major ho�
 
 ## Ranh giới
 KHÔNG tự sửa giá trị dữ liệu (chỉ gắn cờ + nhật ký) · KHÔNG phân tích thống kê (→ `phan-tich-thong-ke` sau khi khóa) · KHÔNG xử lý PII thật khi chưa đủ tiền đề G2. DMP mức IRB thuộc `dao-duc-dang-ky` (G2); bạn sở hữu DMP vận hành (A9).
+- **Trường calc REDCap → công thức (15/11/2026, hoàn thiện hệ thống — mọi đề tài):** mỗi trường `calc` của từ điển G5/bộ biến PHẢI có biến phái sinh CÙNG TÊN trong `_bien-phai-sinh.csv` (nhập Excel/SPSS không tính calc ⇒ cột trống; V6 báo LỆCH). Soạn nháp tự động: `python tools/bien_phai_sinh.py soan-tu-calc --study <mã>` (chạy khô) → `--ghi`. Bộ dịch giữ ngữ nghĩa REDCap (ô trống ⇒ «khác» ở `=`/`<>`), bỏ `round()` hiển thị (có ghi chú), TỪ CHỐI hàm chưa hỗ trợ (datediff, sum, so chuỗi, dự án dọc) ⇒ trường đó viết tay. Không ghi `nguoi_duyet` — thống kê viên/PI duyệt bằng `bien_phai_sinh.py duyet`.
+- **Diễn tập SPSS/R trước thu thập (15/11/2026, mọi đề tài):** có từ điển G5 (trước khi in phiếu/nhập liệu thật) ⇒ chạy `python tools/dien_tap_spss_r.py --study <mã>`: sinh dữ liệu GIẢ từ từ điển (mỗi mã lựa chọn + một ca mang mã thiếu), chạy `xuat-sav` + `xuat-rds` THẬT trên bản sao tạm ngoài repo, tính thử biến phái sinh. ĐẠT ⇒ nhãn, mức đo, mã thiếu, ngày, 11 thuộc tính đúng ở cả SPSS lẫn R; LỆCH ⇒ sửa từ điển/ma trận/công thức TRƯỚC khi thu thập; KHÔNG ĐO ĐƯỢC (chưa có từ điển G5 / SPSS / R) ≠ đạt. `--ghi` lưu `DIEN_TAP_SPSS_R_<mã>.md` (tệp riêng của máy, không đụng tệp băm).
 
 
 <!-- TRACH-NHIEM-AGENT:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
