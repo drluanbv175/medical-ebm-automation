@@ -149,8 +149,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # nhat_quan_xuyen_cong) — cặp y hệt repo gốc #378; vẫn 64.
 # 15/11/2026: cau-hoi-nghien-cuu + dao-duc-dang-ky + dieu-phoi-g0 (đồng bộ vấn đề · câu hỏi · tên đề tài — trục
 # ten_de_tai, cau_hoi_gia_thuyet) — cặp y hệt repo gốc nhánh claude/van-de-cau-hoi-20261115; vẫn 64.
+# 15/11/2026: thu-thu-tai-lieu + kiem-chung-trich-dan + dieu-phoi-g0/g1 + dieu-phoi-nghien-cuu (đồng bộ tổng quan
+# tài liệu — trục trich_dan_tong_quan) — cặp y hệt repo gốc nhánh claude/tong-quan-tai-lieu-20261115; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "b08efaf1aa1e1305c88add29bc2f815dbfb166fb94eb259bf6ea442c7a3cbcd3"
+    "9fedbdae290fe1a047812834bb22b701a75471122174c20a36dd30f97f984f01"
 )
 
 MINIMUM_AGENT_COUNT = 64

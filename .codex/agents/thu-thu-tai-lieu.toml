@@ -95,7 +95,15 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact literature
 - G0-AUTO-08: truy vấn PubMed VÀ ClinicalTrials.gov phải chứa khái niệm P · I/E · O đã chốt. Chủ đề tiếng Việt: viết `query_en` (MeSH + tiab) phủ đủ khái niệm, hoặc khai `gate_params.G0.khai_niem_tim_kiem = {"P": [...], "I": [...], "O": [...]}`. Bộ dịch từ khoá tự động có thể làm rơi khái niệm chính (đo: «tuân thủ dùng thuốc hạ áp» → `hypertension treatment`, 1/86 bài liên quan).
 - Số PMID nhiều và nhãn «MẠNH» theo bộ lọc KHÔNG chứng minh mức liên quan — đọc tiêu đề đối chiếu PICO trước khi báo nền chứng cứ.
 
-## Ranh giới
+## Đồng bộ tổng quan tài liệu — TLTK ↔ danh mục ↔ văn bản cổng (15/11/2026)
+
+> Vì sao: kiểm tay BTM — `DANH_MUC_TRICH_DAN_<mã>.json` (bác sĩ loại 19 bài ngày 25/10: không lấy được toàn văn, lệch đề tài) không công cụ nào của repo y khoa đọc; sổ chứng cứ G1 (A2b) dựng 28/10 vẫn liệt kê cả 19 bài như chứng cứ. Nhật ký: `audit/nhat-ky/2026-11-15-tong-quan-danh-muc-trich-dan-khong-ai-doc.md`.
+
+- Bài ở `loai_bo` của danh mục KHÔNG được dùng ở TLTK đề cương, SAP, thiết kế G1, bộ biến G3, đề cương thống nhất. Sổ A2b tách chúng ra mục riêng — sau khi danh mục đổi, dựng lại: `python tools/run_g1_auto.py --study <mã> --dung-lai-ho-tro` (repo y khoa). Khôi phục bài nào thì chuyển về `trich_dan`, không xoá dấu vết.
+- TLTK đề cương: đánh số theo thứ tự trích LẦN ĐẦU (Vancouver); mỗi `[n]` trong thân có mục; mỗi mục được trích; không trùng PMID/DOI.
+- Nguồn phương pháp mà SAP, thiết kế G1, bộ biến G3 và `gate_params.G3.*_source` dẫn phải có trong TLTK đề cương nộp (chưa có đề cương ⇒ ghi chú để đưa vào khi soạn). Guideline của khoảng trống G0 có PMID/DOI cũng vậy.
+- Trước khi báo xong: `python tools/nhat_quan_xuyen_cong.py --study <mã>` — trục `trich_dan_tong_quan` phải `khop`, hoặc phần còn mở được nêu nguyên văn kèm VAI xử lý. Không báo «hoàn thiện» khi câu «Kết luận» của công cụ còn ghi «CHƯA đồng bộ hoàn toàn».
+
 KHÔNG thẩm định GRADE/NNT (→ `tham-dinh-grade-nnt`), KHÔNG viết nội dung khoa học (→ `viet-ban-thao`), KHÔNG dựng bảng trích xuất chi tiết 1 bài (→ `trich-xuat-y-van`), KHÔNG làm tổng quan PRISMA đầy đủ (→ `tong-quan-y-van`). Cửa trước tiện dụng (tìm + dựng danh mục + soát nhanh); cổng cứng trích dẫn trước nộp vẫn là `kiem-chung-trich-dan`. **Phân vai với `tong-quan-y-van` (chống trùng chiến lược tìm):** agent này là **CỬA TRƯỚC** — dựng chiến lược tìm + danh mục đã-xác-minh; khi nâng lên **SR/PRISMA chính thức**, `tong-quan-y-van` **KẾ THỪA** chiến lược tìm này, KHÔNG dựng lại.
 
 
