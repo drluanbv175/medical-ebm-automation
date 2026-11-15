@@ -38,7 +38,7 @@
       "label": "Thiết kế hợp với loại câu hỏi đã chốt ở G0",
       "status": "PASS",
       "evidence": "thiết kế «cross_sectional» hợp với loại câu hỏi G0 «descriptive»",
-      "action": "Đổi thiết kế cho khớp câu hỏi, hoặc sửa question_type ở G0 rồi chạy lại G1 (PI giải trình nếu cố ý)."
+      "action": "Chạy lại G1 để suy lại theo loại câu hỏi G0; hoặc PI sửa question_type ở G0, hoặc ghim study_meta.design_code (PI giải trình nếu cố ý chọn thiết kế ngoài nhóm)."
     },
     {
       "id": "G1-AUTO-02b",
@@ -166,7 +166,7 @@
   "artifact_manifest": {
     "A1b": {
       "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md",
-      "sha256": "b4425e627d6b43b478fc90e68c726306f231bf09fde626d42c4f6f52df4dbd4b"
+      "sha256": "bd01f24ff7c6e536095d889c1a4f1ac0fd7b512ab16cf3f43587e47a8c236f17"
     },
     "A2": {
       "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md",
@@ -174,7 +174,7 @@
     },
     "A2b": {
       "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md",
-      "sha256": "ca4ac49548deba8d829d4a72d55749be33dcbe7e9167a9855c85c62cf833e573"
+      "sha256": "a068525bf321d8100e3220b1fc3b686e3380f221bdfb813a4940d19f71c06272"
     },
     "A13": {
       "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md",
