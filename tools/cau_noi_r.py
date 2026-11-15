@@ -1255,7 +1255,8 @@ MAU_RDS = r"""# ═════════════════════�
 # Chạy:    Rscript --vanilla <tệp này> [<CSV> [<tệp .rds ra>]]
 # RStudio: Source tệp này; đọc lại: d <- readRDS(TEP_RDS) — biến có nhãn theo khuôn haven (haven::as_factor,
 #          haven::zap_missing dùng được nếu đã cài haven). Mã thiếu chữ (BTR…) đã đổi về mã số như .sav (−9991…),
-#          khai ở na_values/na_range; chuỗi rỗng là «» (không phải NA). Cần bác sĩ kiểm chứng.
+#          khai ở na_values/na_range. Biến CHUỖI khai «» (ô trống) và mã chữ ở na_values như MISSING VALUES của .sav
+#          ⇒ is.na() trả TRUE cho các ô đó (lm/glm bỏ dòng) — đúng ngữ nghĩa SPSS. Cần bác sĩ kiểm chứng.
 # ══════════════════════════════════════════════════════════════════════════════════════════════════
 .a <- commandArgs(trailingOnly = TRUE)
 .lay <- function(i, mac_dinh) if (length(.a) >= i && nzchar(.a[i])) .a[i] else mac_dinh
@@ -1674,6 +1675,10 @@ def lenh_xuat_rds(args) -> int:
     ke, canh_bao, _ = S.ke_hoach_bien(tieu_de, tk, td, mt, giu_ghi_chu=getattr(args, "giu_ghi_chu", False))
     S.kiem_noi_dung_bien(d, args.study, td_p, ke)  # E4 — nội dung biến đúng mục tiêu (15/11/2026)
     e5 = S.ap_va_chan_e5(d, args.study, ke, td, csv_p)  # E5 — thuộc tính từng biến, CÙNG hàm với .sav
+    # Bảng R ghi lại ĐẦU lượt («⚪ chưa đọc lại») — bảng «✓ 11/11» của lượt trước không được sống sót qua lượt hỏng
+    (d / "r").mkdir(parents=True, exist_ok=True)
+    S.ghi_bang_thuoc_tinh(d / "r", args.study, e5["bang"], ban_nhap=args.ban_nhap, kiem=None,
+                          nhan_kiem="R đọc lại .rds")
     r_dir = d / "r"
     r_dir.mkdir(parents=True, exist_ok=True)
     hau_to = "_BAN-NHAP" if args.ban_nhap else "_khoa"
@@ -1773,6 +1778,9 @@ def lenh_xuat_rds(args) -> int:
             shutil.move(str(tam_rds), rds_p)
     if not tot:
         man_p.write_text(json.dumps(ket, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
+        if ktt.get("theo_bien") is not None:
+            S.ghi_bang_thuoc_tinh(r_dir, args.study, e5["bang"], ban_nhap=args.ban_nhap, kiem=ktt["theo_bien"],
+                                  nhan_kiem="R đọc lại .rds (lượt HỎNG)")
         print("🔴 .rds KHÔNG khớp — đã bỏ tệp, không dùng (chi tiết trong manifest):")
         if kh["trang_thai"] != "KHOP":
             print("\n".join(S.bao_cao_lech(kh, tieu_de="  Khứ hồi từng ô .rds")))

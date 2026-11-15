@@ -182,7 +182,7 @@ def test_tu_dien_sav_that_khop_ke_hoach():
         (lambda td: td["bien"][4].update({"muc_do": "NOMINAL"}), "mức đo"),
         (lambda td: td["bien"][1].update({"nhan": "Tuổi"}), "nhãn biến"),
         (lambda td: td["bien"][2].update({"kieu": 8}), "biến SỐ"),
-        (lambda td: td["bien"][7].update({"kieu": 20}), "chuỗi A39"),
+        (lambda td: td["bien"][7].update({"kieu": 20}), "chuỗi A500"),  # «ghi» văn bản tự do ⇒ A500 theo định nghĩa
         (lambda td: td["bien"].insert(0, td["bien"].pop(3)), "thứ tự"),
         (lambda td: td["bien"][6]["nhan_gia_tri"].pop("khac     "), "thiếu mã khac"),
     ],
@@ -347,11 +347,14 @@ def test_doc_ban_xa_r_that():
     assert b[0] == "ID" and len(ca) == 8 and ca[0][b.index("ghi")] == "  Đau đầu nhẹ, buổi sáng"
     assert ca[1][b.index("hut_thuoc")] == -9991.0 and ca[6][b.index("trieu_chung___1")] is None
     assert ca[2][b.index("ghi")] == ""  # «» khác NA
-    assert tt["hai_long"]["class"] == R.LOP_SO_NHAN and tt["hai_long"]["na_values"] == [9.0]
+    # Missing khai ĐỦ: mã 9 của biến + BTR (−9991) cấp dự án dù dữ liệu chưa có ô BTR (khai báo theo định nghĩa)
+    assert tt["hai_long"]["class"] == R.LOP_SO_NHAN and tt["hai_long"]["na_values"] == [-9991.0, 9.0]
     assert tt["hut_thuoc"]["gt"][-9991.0] == "BTR — Bỏ trống"
     # biến CHUỖI mang mã thiếu như MISSING VALUES chuỗi của .sav (11 thuộc tính, 15/11/2026)
     assert tt["nghe"]["class"] == R.LOP_CHU_NHAN_SPSS and tt["nghe"]["gt"]["khac"] == "Khác"
-    assert tt["Tuoi"]["class"] == ["numeric"] and tt["ghi"]["class"] == R.LOP_CHU_NHAN_SPSS
+    # Tuổi khai mã thiếu BTR (−9991) theo định nghĩa ⇒ khuôn haven_labelled_spss (như MISSING VALUES của .sav)
+    assert tt["Tuoi"]["class"] == R.LOP_SO_NHAN and tt["Tuoi"]["na_values"] == [-9991.0]
+    assert tt["ghi"]["class"] == R.LOP_CHU_NHAN_SPSS and tt["ghi"]["dinh_dang"] == "A500"
     assert tt["ID"]["na_values"] == [""] and tt["ID"]["tt"]["role"] == "none" and tt["Tuoi"]["tt"]["align"] == "right"
 
 
@@ -526,7 +529,10 @@ def _de_tai_hong(tmp_path: Path) -> Path:
     p = tmp_path / "hong.csv"
     p.write_text(DU_LIEU_HONG, encoding="utf-8", newline="\n")
     (tmp_path / "td.csv").write_text(
-        "Variable / Field Name,Field Type,Field Label,Identifier?\nma,text,Mã,\nso_do,text,Số đo,\n",
+        # 15/11/2026: khai báo theo ĐỊNH NGHĨA — «Số đo» là trường SỐ (number); để «text» trơn thì nó là văn bản tự do
+        # ⇒ chuỗi, SPSS/R giữ nguyên «1_000» và không còn gì để khứ hồi bắt.
+        "Variable / Field Name,Field Type,Field Label,Text Validation Type OR Show Slider Number,Identifier?\n"
+        "ma,text,Mã,,\nso_do,text,Số đo,number,\n",
         encoding="utf-8",
         newline="\n",
     )

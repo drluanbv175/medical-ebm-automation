@@ -681,12 +681,12 @@ def test_e5_thuoc_tinh_tu_ma_tran_va_tu_dien_vao_ke_hoach_va_cu_phap(tmp_path):
     assert ("VARIABLE ATTRIBUTE VARIABLES=tuan_thu ATTRIBUTE=VaiTro('ket_cuc_chinh') MucTieu('MT1') CauHoi('TT1')"
             in sps)
     assert "KhoangHopLe('18–100')" in sps
-    vai = next(x for x in sps.splitlines() if x.startswith("VARIABLE ROLE"))
+    vai = _lenh(sps, "VARIABLE ROLE")
     # 11 thuộc tính: Role TƯỜNG MINH cho MỌI biến — kết cục TARGET, mã bản ghi NONE, còn lại INPUT (mặc định SPSS)
     assert "/TARGET tuan_thu" in vai and "/NONE record_id" in vai
     assert re.search(r"/INPUT [^/]*\btuoi\b[^/]*\btt1\b[^/]*\btrinh_do\b", vai)
     for lenh in ("VARIABLE WIDTH", "VARIABLE ALIGNMENT"):  # Columns + Align cho MỌI biến
-        dong_lenh = next(x for x in sps.splitlines() if x.startswith(lenh))
+        dong_lenh = _lenh(sps, lenh)
         assert all(re.search(rf"\b{b[0]}\b", dong_lenh) for b in BIEN_E5), (lenh, dong_lenh)
     assert "tuan_thu" in re.search(r"VARIABLE ALIGNMENT[^.]*\(RIGHT\)", sps)[0]
     assert re.search(r"VARIABLE LEVEL[^.]*\btrinh_do\b[^.]*\(ORDINAL\)\.", sps), "trinh_do phải là ORDINAL trong .sps"
@@ -805,6 +805,13 @@ def test_e5_r_ke_hoach_va_doc_lai_bat_lech(tmp_path):
         sua(h)
         kq = R.kiem_thuoc_tinh_rds(ke, ten, h)
         assert kq["trang_thai"] == "LECH" and any(phai_co in x for x in kq["lech"]), kq["lech"]
+
+
+def _lenh(sps: str, ten: str) -> str:
+    """Trọn MỘT câu lệnh SPSS (có thể nhiều dòng vật lý) bắt đầu bằng `ten`, gộp về một dòng."""
+    m = re.search(rf"^{re.escape(ten)}\b[^.]*\.", sps, re.M)
+    assert m, ten
+    return re.sub(r"\s+", " ", m[0])
 
 
 def _ke_theo(ke, cot):
@@ -935,10 +942,10 @@ def test_e5_mau_nhap_spss_cung_muc_do_va_thuoc_tinh_voi_sav_xuat(tmp_path, monke
     lech = {t: (a[t], b[t]) for t in chung if a[t] != b[t]}
     assert not lech, lech
     assert a["trinh_do"][0] == "ORDINAL" and "KhoangHopLe('18–100')" in a["tuoi"][1]
-    vai_mau = next(x for x in mau.splitlines() if x.startswith("VARIABLE ROLE"))
-    vai_sav = next(x for x in sav.splitlines() if x.startswith("VARIABLE ROLE"))
+    vai_mau = _lenh(mau, "VARIABLE ROLE")
+    vai_sav = _lenh(sav, "VARIABLE ROLE")
     assert "/TARGET tuan_thu" in vai_mau and "/NONE record_id" in vai_mau
-    assert sorted(vai_mau.split("/")) == sorted(vai_sav.split("/"))  # Role của MỌI biến giống nhau
+    assert sorted(x.strip(" .") for x in vai_mau.split("/")) == sorted(x.strip(" .") for x in vai_sav.split("/"))
     assert "VARIABLE WIDTH" in mau and "VARIABLE ALIGNMENT" in mau
     # không có ma trận ĐẠT ⇒ không bịa vai trò ma trận: không TARGET, không VaiTro
     mau0 = N.cu_phap_mau_sav(cot, mt, "x", tmp_path / "m.sav")
@@ -976,7 +983,7 @@ def test_e5_bien_nhieu_dong_ma_tran_gop_vai_tro_khong_phu_thuoc_thu_tu(tmp_path)
     assert b["vai_tro"] == "ket_cuc_chinh;mo_ta" and S.thuoc_tinh_ky_vong(b)["MucTieu"] == "MT1;MT2"
     assert S.vai_tro_spss(b) == "TARGET"
     sps = S.cu_phap_nhan_bien(p, d / "x.sav", ke, ghi_chu=["thử"])
-    assert "/TARGET tuan_thu" in next(x for x in sps.splitlines() if x.startswith("VARIABLE ROLE"))
+    assert "/TARGET tuan_thu" in _lenh(sps, "VARIABLE ROLE")
 
 
 def test_e5_ma_tran_khai_hai_kieu_cho_mot_bien_khong_dat(tmp_path):
@@ -1161,3 +1168,209 @@ def test_11_thuoc_tinh_bang_ghi_ma_thieu_bien_chuoi(tmp_path):
     e5 = S.ap_va_chan_e5(d, STUDY, ke, td, p)
     b = {x["bien"]: x for x in e5["bang"]}
     assert b["record_id"]["ma_thieu"] == ["«trống»"] and b["tuoi"]["ma_thieu"] == ["-99"]
+
+
+# ───────── Khai báo biến THEO ĐỊNH NGHĨA (bác sĩ 15/11/2026, ảnh Variable View) ─────────
+# «Phần định nghĩa biến, khai báo biến phải đảm bảo sự hoàn thiện cả ở spss và R» — ảnh cho thấy «Nghề nghiệp khác, ghi
+# rõ» khai Numeric 2 số lẻ, biến mã hoá 2 số lẻ («1.00»), Missing «None» ở mọi biến, ô «khác» String rộng 8.
+BIEN_DN = BIEN_E5 + [
+    ("doi_tuong", "radio", "Người trả lời", "1, Người bệnh | 2, Người nhà", "", ""),
+    ("nghe_nghiep", "radio", "Nghề nghiệp", "1, Cán bộ | 2, Nông dân | 6, Khác", "", ""),
+    ("nghe_nghiep_khac", "text", "Nghề nghiệp khác, ghi rõ", "", "", ""),
+    ("can_nang", "text", "Cân nặng (kg)", "", "number_1dp", ""),
+    ("ma_his", "text", "Mã HIS", "", "integer", "@NOMISSING"),
+]
+DU_LIEU_DN = ("record_id,tuoi,so_thuoc,so_lan_ngay,ho_tro_gd,tuan_thu,tt1,trinh_do,doi_tuong,nghe_nghiep,"
+              "nghe_nghiep_khac,can_nang,ma_his\n"
+              "S1,45,2,1,1,1,1,2,1.00,1,,55.5,101\nS2,67,3,2,0,0,0,4,2.00,2,,61.0,102\n"
+              "S3,-99,1,1,1,1,1,1,1.00,1,,70.2,103\n")
+MT_DN = "bien,ma,nhan\ntuoi,-99,Không nhớ\n*,BTR,Bỏ trống\n*,KDD,Không đọc được\n"
+
+
+def test_khai_bao_theo_dinh_nghia_cac_loi_trong_anh(tmp_path):
+    d, td_p, p = _de_tai_e5(tmp_path, DU_LIEU_DN, bien=BIEN_DN, ma_thieu=MT_DN)
+    S, ke, td = _ke_e5(d, td_p, p)
+    e5 = S.ap_va_chan_e5(d, STUDY, ke, td, p)
+    b = {x["cot"]: x for x in ke}
+    k = {x["bien"]: x for x in e5["bang"]}
+    # «khác, ghi rõ» đang TRỐNG: String theo định nghĩa (không phải Numeric 2 số lẻ), đủ rộng, Role NONE
+    assert not b["nghe_nghiep_khac"]["so"] and S.dinh_dang_cuoi(b["nghe_nghiep_khac"]) == "A500"
+    assert S.vai_tro_spss(b["nghe_nghiep_khac"]) == "NONE"
+    assert k["nghe_nghiep_khac"]["khai_bao_theo"] == "định nghĩa (text)"
+    # biến mã hoá gõ «1.00»: Decimals 0 theo định nghĩa, nhãn giá trị theo mã nguyên
+    assert S.dinh_dang_cuoi(b["doi_tuong"]).endswith(".0") and k["doi_tuong"]["so_le"] == 0
+    # number_1dp ⇒ 1 số lẻ
+    assert k["can_nang"]["so_le"] == 1
+    # Missing khai ĐỦ mọi mã áp cho biến (BTR, KDD) dù dữ liệu chưa có — không còn «None»
+    assert {"-9991", "-9992"} <= {m for m, _ in b["so_thuoc"]["ma_thieu"]}
+    assert b["nghe_nghiep_khac"]["thieu_chuoi"] == ["", "BTR", "KDD"]
+    # @NOMISSING: trường HIS không nhận mã thiếu cấp dự án
+    assert b["ma_his"]["ma_thieu"] == [] and not b["ma_his"]["menh_de_thieu"]
+
+
+@pytest.mark.parametrize("sua, phai_co", [
+    ((",55.5,101\n", ",55.55,101\n"), "định nghĩa 1 số lẻ"),            # number_1dp mà có 2 số lẻ
+    ((",55.5,101\n", ",năm lăm,101\n"), "định nghĩa là biến SỐ"),  # định nghĩa số mà có chữ ⇒ CHẶN (trước: cảnh báo)
+])
+def test_khai_bao_theo_dinh_nghia_du_lieu_trai_dinh_nghia_bi_chan(tmp_path, sua, phai_co):
+    d, td_p, p = _de_tai_e5(tmp_path, DU_LIEU_DN.replace(*sua), bien=BIEN_DN, ma_thieu=MT_DN)
+    S, ke, td = _ke_e5(d, td_p, p)
+    with pytest.raises(S.TuChoi, match="E5") as e:
+        S.ap_va_chan_e5(d, STUDY, ke, td, p)
+    assert phai_co in str(e.value)
+
+
+def test_khai_bao_cot_khong_co_dinh_nghia_duoc_ghi_ro_la_suy_luan(tmp_path):
+    du = (DU_LIEU_E5.replace("trinh_do\n", "trinh_do,lac\n").replace(",2\nS2", ",2,x\nS2")
+          .replace(",4\nS3", ",4,y\nS3").replace(",1,1\n", ",1,1,z\n"))
+    d, td_p, p = _de_tai_e5(tmp_path, du)
+    S, ke, td = _ke_e5(d, td_p, p)
+    e5 = S.ap_va_chan_e5(d, STUDY, ke, td, p)
+    assert any("lac" in c and "KHÔNG có định nghĩa" in c for c in e5["canh_bao"])
+    assert next(x for x in e5["bang"] if x["bien"] == "lac")["khai_bao_theo"].startswith("⚠ suy luận")
+
+
+@pytest.mark.skipif(not (_co_spss() and _co_rscript()), reason="cần cả SPSS lẫn Rscript")
+def test_khai_bao_theo_dinh_nghia_that_spss_va_r_du_11_thuoc_tinh(tmp_path, monkeypatch):
+    """Tình huống trong ảnh, chạy SPSS 31 + R THẬT: .sav và .rds khai đúng định nghĩa và đủ 11 thuộc tính ở mọi biến."""
+    import argparse  # noqa: PLC0415
+
+    import cau_noi_r as R  # noqa: PLC0415
+    import cau_noi_spss as S  # noqa: PLC0415
+
+    d, td_p, p = _de_tai_e5(tmp_path, DU_LIEU_DN, bien=BIEN_DN, ma_thieu=MT_DN)
+    monkeypatch.setattr(S, "EXPORTS", d.parent)
+    ns = argparse.Namespace(study=STUDY, data=str(p), ban_nhap=True, dictionary=None, ma_thieu=None, gate="G6",
+                            thoi_han=300)
+    assert S.lenh_xuat_sav(ns) == S.MA_OK and R.lenh_xuat_rds(ns) == R.MA_OK
+    man_s = json.loads((d / "spss" / f"{STUDY}_BAN-NHAP.sav.manifest.json").read_text(encoding="utf-8"))
+    man_r = json.loads((d / "r" / f"{STUDY}_BAN-NHAP.rds.manifest.json").read_text(encoding="utf-8"))
+    for kt in (*man_s["kiem_tu_dien"]["theo_bien"].values(), *man_r["kiem_thuoc_tinh"]["theo_bien"].values()):
+        assert all(kt[a] is True for a in S.THUOC_TINH_11), kt
+    assert man_r["ba_chieu"]["sav_rds"] == "KHOP" and man_r["ba_chieu"]["tu_dien_sav_chua_do"] == []
+    bang = {x["bien"]: x for x in man_s["thuoc_tinh_bien"]["bang"]}
+    assert (bang["nghe_nghiep_khac"]["kieu_du_lieu"], bang["nghe_nghiep_khac"]["do_rong"],
+            bang["nghe_nghiep_khac"]["vai_tro_spss"]) == ("chuỗi", 500, "NONE")
+    assert bang["doi_tuong"]["so_le"] == 0 and {"-9991", "-9992"} <= set(bang["so_thuoc"]["ma_thieu"])
+
+
+# ───────── sửa theo thẩm định đối kháng lần 2 (11 thuộc tính) ─────────
+def test_cu_phap_khong_dong_nao_vuot_1024_byte_voi_nhieu_bien(tmp_path):
+    """ĐỎ #1: 80 biến tên dài (cỡ C1a) — VARIABLE WIDTH/ALIGNMENT/ROLE mỗi nhóm một dòng, không dòng nào > 1024 byte."""
+    import cau_noi_spss as S  # noqa: PLC0415
+
+    ten = [f"bien_rat_dai_so_{i:02d}_{'x' * (i % 17)}" for i in range(80)]
+    p = tmp_path / "d.csv"
+    p.write_text(",".join(["record_id", *ten]) + "\n" + ",".join(["A1", *(str(i % 5) for i in range(80))]) + "\n"
+                 + ",".join(["A2", *("x" * (i % 30 + 1) if i % 3 == 0 else str(i * 1.5) for i in range(80))]) + "\n",
+                 encoding="utf-8", newline="\n")
+    tieu_de, tk, _ = S.quet_csv(p)
+    ke, _, _ = S.ke_hoach_bien(tieu_de, tk, {}, [])
+    sps = S.cu_phap_nhan_bien(p, tmp_path / "d.sav", ke, ghi_chu=["thử"])
+    assert max(len(x.encode("utf-8")) for x in sps.splitlines()) <= 1024
+    assert sps.count("VARIABLE WIDTH") == 1 and "\n  /" in sps
+
+
+def test_bang_r_khong_song_sot_qua_luot_hong_va_ma_thieu_chuoi_dai(tmp_path, monkeypatch):
+    """ĐỎ #2: bảng R ghi lại ĐẦU lượt («chưa đọc lại»); VÀNG #7: mã thiếu chuỗi > 8 byte bị chặn rõ ràng."""
+    import argparse  # noqa: PLC0415
+
+    import cau_noi_r as R  # noqa: PLC0415
+    import cau_noi_spss as S  # noqa: PLC0415
+
+    d, td_p, p = _de_tai_e5(tmp_path)
+    monkeypatch.setattr(S, "EXPORTS", d.parent)
+    bang = d / "r" / f"{STUDY}_THUOC_TINH_BIEN_ban-nhap.md"
+    bang.parent.mkdir(parents=True)
+    bang.write_text("| `tuoi` | ✓ 11/11 |\n", encoding="utf-8", newline="\n")  # bảng «đạt» của lượt trước
+    monkeypatch.setattr(R, "tim_r", lambda: (_ for _ in ()).throw(S.KhongDoDuoc("không có R")))
+    ns = argparse.Namespace(study=STUDY, data=str(p), ban_nhap=True, dictionary=None, ma_thieu=None, thoi_han=60)
+    assert R.lenh_xuat_rds(ns) == R.MA_KHONG_DO
+    md = bang.read_text(encoding="utf-8")
+    assert "✓ 11/11" not in md and "⚪ chưa đọc lại" in md
+    q = tmp_path / "ghi.csv"
+    q.write_text("record_id,ghi\nA1,abc\nA2,KHONGBIET\n", encoding="utf-8", newline="\n")
+    tieu_de, tk, _ = S.quet_csv(q)
+    with pytest.raises(S.TuChoi, match="8 byte"):
+        S.ke_hoach_bien(tieu_de, tk, {"ghi": {"loai": "text", "nhan": "Ghi"}},
+                        [{"bien": "*", "ma": "KHONGBIET", "nhan": "Không biết"}])
+
+
+def test_khoang_ma_thieu_khong_nuot_gia_tri_hop_le_va_bien_ngay_gan_co(tmp_path):
+    """VÀNG #6: «LO THRU −9991» nuốt giá trị hợp lệ ⇒ chặn; ĐỎ #3: biến ngày lưu chuỗi ISO ⇒ nói thẳng (cảnh báo,
+    bảng)."""
+    import cau_noi_spss as S  # noqa: PLC0415
+
+    bien = BIEN_E5 + [("ngay_kham", "text", "Ngày khám", "", "date_ymd", ""),
+                      ("chenh", "text", "Chênh lệch", "", "number", "")]
+    du = (DU_LIEU_E5.replace("trinh_do\n", "trinh_do,ngay_kham,chenh\n").replace(",2\nS2", ",2,2026-01-02,5\nS2")
+          .replace(",4\nS3", ",4,2026-02-03,-20000\nS3").replace(",1,1\n", ",1,1,2026-03-04,3\n"))
+    mt = "bien,ma,nhan\ntuoi,-99,Không nhớ\n*,BTR,Bỏ trống\n*,KDD,Không đọc\n*,KTL,Không trả lời\nchenh,98,A\n"
+    d, td_p, p = _de_tai_e5(tmp_path, du, bien=bien, ma_thieu=mt)
+    S_, ke, td = _ke_e5(d, td_p, p)
+    b = {x["cot"]: x for x in ke}
+    assert "THRU" in b["chenh"]["menh_de_thieu"]  # 98 + 3 mã chữ ⇒ khoảng LO THRU −9991 + 98
+    with pytest.raises(S.TuChoi, match="rơi vào khoảng mã thiếu"):
+        S.ap_va_chan_e5(d, STUDY, ke, td, p)
+    p.write_text(du.replace("-20000", "-2"), encoding="utf-8", newline="\n")
+    S_, ke, td = _ke_e5(d, td_p, p)
+    e5 = S.ap_va_chan_e5(d, STUDY, ke, td, p)
+    k = {x["bien"]: x for x in e5["bang"]}
+    assert any("ngay_kham" in c and "CHUỖI ISO" in c for c in e5["canh_bao"])
+    assert "ngày lưu CHUỖI ISO" in k["ngay_kham"]["khai_bao_theo"]
+    assert k["chenh"]["ma_thieu"][0].startswith("MISSING VALUES (") and "THRU" in k["chenh"]["ma_thieu"][0]
+    assert k["tuoi"]["nhan_gia_tri"].get("-99") == "Không nhớ"  # Values gồm cả nhãn mã thiếu
+
+
+def test_gop_ma_tran_giu_cap_vai_tro_muc_tieu_va_ma_ban_ghi_theo_vi_tri(tmp_path):
+    """VÀNG #10: «yeu_to» thuộc MT2, «mo_ta» thuộc MT1 ⇒ VaiTro/MucTieu cùng thứ tự cặp. VÀNG #9: trường ĐẦU là mã
+    bản ghi."""
+    import cau_noi_spss as S  # noqa: PLC0415
+
+    ma_tran = MA_TRAN_E5 + [("1", "tuổi mô tả", "mo_ta", "tuoi", "lien_tuc", "A1", "phiếu", "§3")]
+    d, td_p, p = _de_tai_e5(tmp_path, ma_tran=ma_tran)
+    r = S.dong_ma_tran_dat(d, STUDY)["tuoi"]
+    assert (r["vai_tro"], r["muc_tieu"]) == ("yeu_to;mo_ta", "2;1")
+    _, ke, td = _ke_e5(d, td_p, p)
+    assert ke[0]["la_ma_ban_ghi"] and S.vai_tro_spss({"cot": "study_id", "la_ma_ban_ghi": True}) == "NONE"
+
+
+@pytest.mark.skipif(not _co_spss(), reason="máy không có SPSS")
+def test_spss_that_80_bien_ten_dai_khong_loi_cu_phap(tmp_path, monkeypatch):
+    """ĐỎ #1 đo bằng SPSS THẬT: 80 biến tên dài ⇒ xuat-sav qua, đủ 11 thuộc tính mọi biến."""
+    import argparse  # noqa: PLC0415
+
+    import cau_noi_spss as S  # noqa: PLC0415
+
+    d = _de_tai(tmp_path)
+    ten = [f"bien_rat_dai_so_{i:02d}_{'x' * (i % 17)}" for i in range(80)]
+    p = d / "d.csv"
+    p.write_text(",".join(["record_id", *ten]) + "\n" + ",".join(["A1", *(str(i % 5) for i in range(80))]) + "\n"
+                 + ",".join(["A2", *(str(i % 3) for i in range(80))]) + "\n", encoding="utf-8", newline="\n")
+    td = d / "td.csv"
+    td.write_text("Variable / Field Name,Field Type,Field Label,Text Validation Type OR Show Slider Number\n"
+                  "record_id,text,Mã,\n" + "".join(f"{t},text,Biến {t},integer\n" for t in ten),
+                  encoding="utf-8", newline="\n")
+    monkeypatch.setattr(S, "EXPORTS", d.parent)
+    monkeypatch.setattr(S, "kiem_noi_dung_bien", lambda *a, **k: None)  # đo cú pháp/11 thuộc tính, không đo E4
+    ns = argparse.Namespace(study=STUDY, data=str(p), ban_nhap=True, dictionary=str(td), ma_thieu=None, gate="G6")
+    assert S.lenh_xuat_sav(ns) == S.MA_OK
+    man = json.loads((d / "spss" / f"{STUDY}_BAN-NHAP.sav.manifest.json").read_text(encoding="utf-8"))
+    assert len(man["kiem_tu_dien"]["theo_bien"]) == 81
+    assert all(all(kt[a] is True for a in S.THUOC_TINH_11) for kt in man["kiem_tu_dien"]["theo_bien"].values())
+
+
+def test_khai_du_ma_thieu_vuot_gioi_han_spss_lui_ve_ma_co_mat_va_canh_bao(tmp_path):
+    """Khai ĐỦ mã thiếu mà vượt giới hạn MISSING VALUES của SPSS (2 mã số riêng + mã chữ) ⇒ không chặn cả lượt:
+    khai mã có mặt (như trước) và CẢNH BÁO rõ phần không khai được."""
+    import cau_noi_spss as S  # noqa: PLC0415
+
+    q = tmp_path / "d.csv"
+    q.write_text("record_id,diem\nA1,3\nA2,98\nA3,99\n", encoding="utf-8", newline="\n")
+    tieu_de, tk, _ = S.quet_csv(q)
+    ke, canh, _ = S.ke_hoach_bien(tieu_de, tk, {"diem": {"loai": "text", "nhan": "Điểm", "kiem_tra": "integer"}},
+                                  [{"bien": "diem", "ma": "98", "nhan": "A"}, {"bien": "diem", "ma": "99", "nhan": "B"},
+                                   {"bien": "*", "ma": "BTR", "nhan": "Bỏ trống"},
+                                   {"bien": "*", "ma": "KDD", "nhan": "K"}])
+    b = {x["cot"]: x for x in ke}["diem"]
+    assert b["menh_de_thieu"] == "98, 99" and any("không khai ĐỦ mã thiếu" in c for c in canh)

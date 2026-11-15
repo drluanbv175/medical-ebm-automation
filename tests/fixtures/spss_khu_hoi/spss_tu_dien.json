@@ -29,10 +29,12 @@
    "muc_do": "SCALE",
    "kieu": 0,
    "dinh_dang": "F8.2",
-   "nhan_gia_tri": {},
+   "nhan_gia_tri": {
+    "-9991.0": "BTR — Bỏ trống"
+   },
    "thieu": [
-    0,
-    null,
+    1,
+    -9991.0,
     null,
     null
    ],
@@ -51,10 +53,12 @@
    "muc_do": "SCALE",
    "kieu": 0,
    "dinh_dang": "F22.8",
-   "nhan_gia_tri": {},
+   "nhan_gia_tri": {
+    "-9991.0": "BTR — Bỏ trống"
+   },
    "thieu": [
-    0,
-    null,
+    1,
+    -9991.0,
     null,
     null
    ],
@@ -74,12 +78,13 @@
    "kieu": 0,
    "dinh_dang": "F8",
    "nhan_gia_tri": {
+    "-9991.0": "BTR — Bỏ trống",
     "1.0": "Nam",
     "2.0": "Nữ"
    },
    "thieu": [
-    0,
-    null,
+    1,
+    -9991.0,
     null,
     null
    ],
@@ -99,6 +104,7 @@
    "kieu": 0,
    "dinh_dang": "F8",
    "nhan_gia_tri": {
+    "-9991.0": "BTR — Bỏ trống",
     "1.0": "Rất không hài lòng",
     "2.0": "Không hài lòng",
     "3.0": "Bình thường",
@@ -107,9 +113,9 @@
     "9.0": "Không biết"
    },
    "thieu": [
-    1,
+    2,
     9.0,
-    null,
+    -9991.0,
     null
    ],
    "vai_tro": "Input",
@@ -154,14 +160,15 @@
    "kieu": 9,
    "dinh_dang": "A9",
    "nhan_gia_tri": {
+    "BTR      ": "Bỏ trống",
     "khac     ": "Khác",
     "nong_dan ": "Nông dân",
     "cong_chuc": "Công chức"
    },
    "thieu": [
-    1,
+    2,
     "        ",
-    null,
+    "BTR     ",
     null
    ],
    "vai_tro": "Input",
@@ -177,17 +184,19 @@
    "ten": "ghi",
    "nhan": "Ghi chú ngắn của điều tra viên",
    "muc_do": "NOMINAL",
-   "kieu": 39,
-   "dinh_dang": "A39",
-   "nhan_gia_tri": {},
+   "kieu": 500,
+   "dinh_dang": "A500",
+   "nhan_gia_tri": {
+    "BTR                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 ": "Bỏ trống"
+   },
    "thieu": [
-    1,
+    2,
     "        ",
-    null,
+    "BTR     ",
     null
    ],
-   "vai_tro": "Input",
-   "cot_hien": 39,
+   "vai_tro": "None",
+   "cot_hien": 40,
    "can_le": 0,
    "thuoc_tinh": {
     "NguonMucDo": [
