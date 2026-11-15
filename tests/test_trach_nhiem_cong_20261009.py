@@ -71,8 +71,8 @@ def test_phan_cong_phu_dung_tap_ma_bo_cham(gate):
 
 def test_tong_so_tieu_chi_da_gan():
     # 14/11/2026: 203 → 204 — thêm G6-AUTO-11 (SAP §4 gọi postStratify( ⇒ script chạy svydesign( + postStratify().
-    # 15/11/2026: 204 → 207 — thêm G3-AUTO-19 (ma trận mục tiêu → biến), G5-AUTO-11 (từ điển từ bộ biến riêng, phủ ma
-    # trận), G5-AUTO-12 (phiếu nộp Hội đồng Đạo đức khớp câu hỏi nhập liệu) — bác sĩ duyệt đồng bộ xuyên cổng; 207 →
+    # 15/11/2026: 204 → 207 — thêm G3-AUTO-19 (ma trận mục tiêu → biến), G5-AUTO-12 (từ điển từ bộ biến riêng, phủ ma
+    # trận), G5-AUTO-13 (phiếu nộp Hội đồng Đạo đức khớp câu hỏi nhập liệu) — bác sĩ duyệt đồng bộ xuyên cổng; 207 →
     # 208 — G0-AUTO-08 (truy vấn PubMed/ClinicalTrials.gov phủ khái niệm PICO đã chốt).
     assert sum(len(v) for v in HD.PHAN_CONG.values()) == 208
 

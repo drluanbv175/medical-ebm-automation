@@ -763,7 +763,7 @@ def _write_markdown(path: Path, report: Mapping[str, Any]) -> None:
 
 def _tieu_chi_tu_dien_ma_tran(study: str, out_dir: Path, checkpoint: Mapping[str, Any], dictionary_path: Path,
                               meta: Mapping[str, Any]) -> Dict[str, str]:
-    """G5-AUTO-11 — từ điển G5 dựng từ BỘ BIẾN RIÊNG và phủ đủ ma trận mục tiêu–biến ĐẠT."""
+    """G5-AUTO-12 — từ điển G5 dựng từ BỘ BIẾN RIÊNG và phủ đủ ma trận mục tiêu–biến ĐẠT."""
     nhan = "Từ điển G5 dựng từ bộ biến riêng và phủ đủ ma trận mục tiêu–biến (không từ bộ mẫu chung)"
     hanh = (f"agent bien-so-nghien-cuu hoàn tất _bo-bien-rieng.csv + _ma-tran-muc-tieu-bien.csv; kiểm python "
             f"tools/ma_tran_muc_tieu_bien.py kiem --study {study}; rồi chạy lại run_g5_auto.py (trước khi nạp dữ liệu)")
@@ -777,19 +777,19 @@ def _tieu_chi_tu_dien_ma_tran(study: str, out_dir: Path, checkpoint: Mapping[str
         kq = MT.kiem(Path(out_dir), study, meta=meta,
                      tu_dien=dictionary_path if Path(dictionary_path).is_file() else None)
     except Exception as exc:  # noqa: BLE001
-        return _criterion("G5-AUTO-11", nhan, "REVIEW", f"không chạy được bộ kiểm ma trận: {type(exc).__name__}", hanh)
+        return _criterion("G5-AUTO-12", nhan, "REVIEW", f"không chạy được bộ kiểm ma trận: {type(exc).__name__}", hanh)
     if kq["trang_thai"] != MT.TRANG_THAI_DAT:
         van_de += [x["noi_dung"] for x in kq["loi"][:4]] or [kq["trang_thai"]]
     if not Path(dictionary_path).is_file():
         van_de.append("chưa có từ điển G5")
-    return _criterion("G5-AUTO-11", nhan, "REVIEW" if van_de else "PASS",
+    return _criterion("G5-AUTO-12", nhan, "REVIEW" if van_de else "PASS",
                       "; ".join(van_de) if van_de else
                       f"từ điển từ bộ biến riêng; ma trận ĐẠT ({kq['tom_tat']['so_dong']} dòng, "
                       f"{kq['tom_tat']['so_muc_tieu']} mục tiêu) và mọi biến ma trận có trong từ điển", hanh)
 
 
 def _tieu_chi_phieu_hoi_dong(study: str, out_dir: Path, meta: Mapping[str, Any]) -> Dict[str, str]:
-    """G5-AUTO-12 — mã câu hỏi của ma trận có trong phiếu đã nộp Hội đồng Đạo đức (hồ sơ G2 + tệp khai)."""
+    """G5-AUTO-13 — mã câu hỏi của ma trận có trong phiếu đã nộp Hội đồng Đạo đức (hồ sơ G2 + tệp khai)."""
     nhan = "Phiếu nộp Hội đồng Đạo đức (G2) khớp các câu hỏi dùng để nhập liệu"
     hanh = ("Đính phiếu/công cụ đúng bản nộp Hội đồng vào hồ sơ G2 hoặc khai đường dẫn ở "
             "gate_params.G2.phieu_nop_hoi_dong; câu hỏi thêm/sửa sau khi Hội đồng duyệt ⇒ sửa đổi đề cương trình lại.")
@@ -798,14 +798,14 @@ def _tieu_chi_phieu_hoi_dong(study: str, out_dir: Path, meta: Mapping[str, Any])
 
         kq = MT.kiem_phieu_hoi_dong(Path(out_dir), study, meta=meta)
     except Exception as exc:  # noqa: BLE001
-        return _criterion("G5-AUTO-12", nhan, "REVIEW", f"không chạy được bộ đối chiếu phiếu: {type(exc).__name__}",
+        return _criterion("G5-AUTO-13", nhan, "REVIEW", f"không chạy được bộ đối chiếu phiếu: {type(exc).__name__}",
                           hanh)
     if kq["trang_thai"] == "DAT":
-        return _criterion("G5-AUTO-12", nhan, "PASS", f"{kq.get('so_ma')} mã câu hỏi có trong {', '.join(kq['nguon'])}",
+        return _criterion("G5-AUTO-13", nhan, "PASS", f"{kq.get('so_ma')} mã câu hỏi có trong {', '.join(kq['nguon'])}",
                           hanh)
     if kq["trang_thai"] == "KHONG_AP_DUNG":
-        return _criterion("G5-AUTO-12", nhan, "PASS", kq.get("ghi_chu", "không áp dụng"), hanh)
-    return _criterion("G5-AUTO-12", nhan, "REVIEW", "; ".join(kq["loi"]) or kq["trang_thai"], hanh)
+        return _criterion("G5-AUTO-13", nhan, "PASS", kq.get("ghi_chu", "không áp dụng"), hanh)
+    return _criterion("G5-AUTO-13", nhan, "REVIEW", "; ".join(kq["loi"]) or kq["trang_thai"], hanh)
 
 
 def evaluate_study(
@@ -1248,7 +1248,7 @@ def evaluate_study(
         )
     )
 
-    # ── G5-AUTO-11 / G5-AUTO-12 — đồng bộ biến xuyên cổng (bác sĩ duyệt 15/11/2026) ───────────────────────────────
+    # ── G5-AUTO-12 / G5-AUTO-13 — đồng bộ biến xuyên cổng (bác sĩ duyệt 15/11/2026) ───────────────────────────────
     # Bản cũ chỉ kiểm dữ liệu ↔ từ điển (G5-AUTO-07b) — không kiểm từ điển có đúng MỤC TIÊU không: từ điển dựng từ bộ
     # mẫu chung vẫn qua, rồi SPSS/R báo «✓ khớp» trên bộ biến sai. REVIEW (không BLOCK): G5 chưa ký thì không READY,
     # G5 đã ký trước luật không bị hạ cấp (trạng thái LOCKED giữ nguyên).

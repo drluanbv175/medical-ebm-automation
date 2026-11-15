@@ -2665,8 +2665,8 @@ def main():
         else:
             print(f"  ⚠️  Ma trận mục tiêu–biến: {_kq_mt['trang_thai']} — "
                   + "; ".join(x["noi_dung"] for x in _kq_mt["loi"][:3])
-                  + " (G5-AUTO-11 giữ G5 ở REVIEW tới khi ĐẠT; KHÔNG khoá dữ liệu được)")
-    except Exception as _exc:  # noqa: BLE001 — chỉ thông báo; tiêu chí G5-AUTO-11 mới là chốt
+                  + " (G5-AUTO-12 giữ G5 ở REVIEW tới khi ĐẠT; KHÔNG khoá dữ liệu được)")
+    except Exception as _exc:  # noqa: BLE001 — chỉ thông báo; tiêu chí G5-AUTO-12 mới là chốt
         print(f"  ⚠️  Không chạy được bộ kiểm ma trận: {type(_exc).__name__}")
 
     # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 20): "nối thêm, không

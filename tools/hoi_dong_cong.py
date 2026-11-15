@@ -175,7 +175,7 @@ NHIEM_VU: Dict[str, List[Dict[str, Any]]] = {
         # 5 phần đều về cỡ mẫu) ⇒ hai nhiệm vụ «có đầu ra» chỉ vì tệp cỡ mẫu tồn tại. Hợp đồng THẬT từ 01/09/2026 là
         # `_bo-bien-rieng.csv` (REDCap 18 cột) mà run_g5_auto.nap_bo_bien_rieng nạp làm nguồn biến DUY NHẤT của G5.
         # 15/11/2026 (bác sĩ duyệt): đầu ra thêm MA TRẬN mục tiêu → biến → câu hỏi → phân tích SAP — bộ biến không có
-        # ma trận thì không ai chứng minh được nó phủ đủ mục tiêu (G3-AUTO-19/G5-AUTO-11 dùng cùng bộ kiểm).
+        # ma trận thì không ai chứng minh được nó phủ đủ mục tiêu (G3-AUTO-19/G5-AUTO-12 dùng cùng bộ kiểm).
         _nv("G3-T2", "Đặc tả bộ biến số + ma trận mục tiêu–biến", "bien-so-nghien-cuu",
             ("_bo-bien-rieng.csv", "_ma-tran-muc-tieu-bien.csv"), ("quan-ly-du-lieu", "thiet-ke-nghien-cuu")),
         _nv("G3-T3", "CRF kỹ thuật, từ điển dữ liệu dự kiến, luật kiểm tra", "quan-ly-du-lieu",
@@ -358,7 +358,7 @@ PHAN_CONG: Dict[str, Dict[str, str]] = {
         "G5-AUTO-08": "G5-T1", "G5-AUTO-09": "G5-T1", "G5-AUTO-10": "G5-T1",
         # 15/11/2026: từ điển G5 từ bộ biến riêng + phủ ma trận (quan-ly-du-lieu dựng từ điển); phiếu nộp Hội đồng
         # Đạo đức khớp câu hỏi nhập liệu — đạt nhờ hồ sơ G2 (điều phối G2 chịu trách nhiệm đính đúng phiếu).
-        "G5-AUTO-11": "G5-T1", "G5-AUTO-12": "^G2",
+        "G5-AUTO-12": "G5-T1", "G5-AUTO-13": "^G2",
         "G5-HUMAN-01": "DATA_MANAGER@G5-T1",
     },
     # 10/10/2026: G6-AUTO-09 (mô hình phân tích chính ↔ SAP §4) theo thiết kế — tổng quan hệ thống có gộp ⇒ G6-T2
@@ -1505,7 +1505,7 @@ def _kiem_bo_bien_so(out_dir: Path, study: str) -> List[str]:
     except Exception as exc:  # noqa: BLE001
         return [f"không kiểm được biến định danh: {type(exc).__name__}"]
     loi = [f"biến định danh trực tiếp (G5-AUTO-02 sẽ chặn): {', '.join(pii[:10])}"] if pii else []
-    # 15/11/2026 (bác sĩ duyệt): bộ biến phải PHỦ mục tiêu — cùng bộ kiểm ma trận G3-AUTO-19/G5-AUTO-11 dùng.
+    # 15/11/2026 (bác sĩ duyệt): bộ biến phải PHỦ mục tiêu — cùng bộ kiểm ma trận G3-AUTO-19/G5-AUTO-12 dùng.
     try:
         import ma_tran_muc_tieu_bien as MT  # noqa: PLC0415
 

@@ -723,7 +723,7 @@ def _tieu_chi_ma_tran(study: str, out_dir: Path, meta: Mapping[str, Any]) -> dic
     if mien:
         return _criterion("G3-AUTO-19", nhan, "PASS",
                           f"MIỄN TRỪ ({ly_do} — luật mới không hạ cấp quyết định đã ký); VẪN THIẾU: {loi} — phải bổ "
-                          "sung trước khi khoá dữ liệu G5 (G5-AUTO-11)", hanh_dong)
+                          "sung trước khi khoá dữ liệu G5 (G5-AUTO-12)", hanh_dong)
     return _criterion("G3-AUTO-19", nhan, "REVIEW", loi or kq["trang_thai"], hanh_dong)
 
 
