@@ -152,7 +152,11 @@ def test_ke_hoach_bien_ten_muc_do_ma_thieu_checkbox(tmp_path):
     assert b["trieu_chung___2"]["nhan"] == "Triệu chứng: Khó thở"
     assert b["trieu_chung___2"]["nhan_gia_tri"] == {"1": "Có", "0": "Không"}
     assert not b["nghe"]["so"] and not canh_bao and not de_xuat
-    assert b["nghe"]["thieu_chuoi"] == [""]  # biến chuỗi: ô rỗng khai là thiếu (pandas đọc là NaN)
+    # biến chuỗi: ô rỗng khai là thiếu (pandas đọc là NaN) + MỌI mã thiếu áp cho biến (BTR) dù chưa có trong dữ liệu
+    assert b["nghe"]["thieu_chuoi"] == ["", "BTR"]
+    # 15/11/2026 — khai đủ: biến SỐ cũng khai BTR (−9991) ở Missing/Values dù dữ liệu chưa có ô BTR
+    assert ("-9991", "BTR — Bỏ trống") in b["tuoi"]["ma_thieu"] and "-9991" in (b["tuoi"]["menh_de_thieu"] or "")
+    assert not b["tuoi"]["doc_chuoi_roi_doi"]  # không có ô BTR ⇒ vẫn đọc thẳng số, không RECODE
 
 
 def test_cot_dinh_danh_bi_chan(tmp_path):
@@ -175,7 +179,7 @@ def test_cu_phap_nhan_bien(tmp_path):
     assert "'cong_chuc' 'Công chức'" in s  # mã chữ của biến chuỗi được trích dẫn
     assert "'X'" not in s  # mã chữ «X» không gắn được vào biến số GioiTinh ⇒ bỏ, không làm SPSS lỗi
     assert "VARIABLE LEVEL hai_long (ORDINAL)." in s and s.rstrip().endswith("/COMPRESSED.")
-    assert "MISSING VALUES nghe ('')." in s
+    assert "MISSING VALUES nghe ('', 'BTR')." in s
     assert "* thử." in s  # chú thích kết thúc bằng dấu chấm — không nuốt lệnh kế tiếp
 
 
@@ -634,7 +638,7 @@ def test_bien_chuoi_ma_chu_giu_nguyen_va_nhan_vua_do_rong(tmp_path):
     td = {"nghe": {"loai": "dropdown", "nhan": "Nghề", "lua_chon": "A, Công chức | B, Nông dân | XYZW, Khác"}}
     ke, _, _ = C.ke_hoach_bien(tieu_de, tk, td, [{"bien": "*", "ma": "BTR", "nhan": "Bỏ trống"}])
     b = {x["cot"]: x for x in ke}
-    assert b["ban_kham"]["thieu_chuoi"] == [""] and b["nghe"]["thieu_chuoi"] == ["", "BTR"]
+    assert b["ban_kham"]["thieu_chuoi"] == ["", "BTR"] and b["nghe"]["thieu_chuoi"] == ["", "BTR"]  # «*» áp mọi biến
     assert b["nghe"]["ma_chu"] == {} and b["nghe"]["rong"] >= 4  # nhãn «XYZW» vừa độ rộng (Warning #4487)
     s = C.cu_phap_nhan_bien(p, tmp_path / "d.sav", ke, ghi_chu=[])
     assert "MISSING VALUES nghe ('', 'BTR')." in s and "'-9991'" not in s and "RECODE nghe" not in s

@@ -46,8 +46,18 @@ MA_TRAN_HOP_LE = ("muc_tieu,khai_niem,vai_tro,bien,kieu,cau_hoi,cong_cu,phan_tic
 META_MUC_TIEU = {"gate_params": {"G1": {"objectives": ["Mô tả tỷ lệ theo giới và tuổi của người tham gia"]}}}
 
 
+# 15/11/2026 (G3-T2 có thêm bảng bộ biến cho PI duyệt — tools/bang_bien_g3.py): bảng NGƯỜI SOẠN khớp BO_BIEN_HOP_LE.
+BANG_BIEN_G3_HOP_LE = (
+    "# Bộ biến số (đồ gá)\n\n| Tên biến | Nhãn | Loại | Giá trị hợp lệ |\n|---|---|---|---|\n"
+    "| `record_id` | Mã phiếu | chữ tự do | chữ tự do |\n| `tuoi` | Tuổi | số nguyên | 18 – 120 |\n"
+    "| `gioi` | Giới | chọn một | 1, Nam; 2, Nữ |\n"
+)
+
+
 def ghi_ma_tran_hop_le(out: Path) -> None:
+    """Đủ tệp hợp đồng G3-T2 ngoài bộ biến: ma trận + bảng bộ biến cho PI duyệt + mục tiêu G1."""
     (out / "_ma-tran-muc-tieu-bien.csv").write_text(MA_TRAN_HOP_LE, encoding="utf-8", newline="\n")
+    (out / f"G3_BO_BIEN_SO_{out.name}.md").write_text(BANG_BIEN_G3_HOP_LE, encoding="utf-8", newline="\n")
     (out / "study_meta.json").write_text(json.dumps(META_MUC_TIEU, ensure_ascii=False), encoding="utf-8",
                                          newline="\n")
 
@@ -275,7 +285,9 @@ def test_ghi_trach_nhiem_o_thu_muc_con_khong_bi_doc_thanh_bien_ban_hong(monkeypa
     assert p.parent == out / "hoi_dong" / "G3" / "trach_nhiem"
     ban = json.loads(p.read_text(encoding="utf-8"))
     assert ban["ket_luan"] == "AGENT_XONG_CHO_NGUOI" and "dieu-phoi-g3 chịu trách nhiệm" in ban["cam_ket"]
-    assert set(ban["tai_lieu_luc_ghi"]) == {f"G3_A4_SAMPLE_SIZE_{STUDY}.md", "G3_checkpoint.json"}
+    # 15/11/2026: G3-T2 có thêm đầu ra G3_BO_BIEN_SO_<mã>.md ⇒ được ghi dấu lúc bàn giao như mọi tài liệu cổng.
+    assert set(ban["tai_lieu_luc_ghi"]) == {f"G3_A4_SAMPLE_SIZE_{STUDY}.md", "G3_checkpoint.json",
+                                            f"G3_BO_BIEN_SO_{STUDY}.md"}
     assert HD.doc_bien_ban(out, "G3") == [] and HD.tom_tat_cong("G3", out)["trang_thai"] == "CHƯA HỌP"
 
 

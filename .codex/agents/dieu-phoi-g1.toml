@@ -51,6 +51,7 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 
 - A2 kế thừa PICO G0 đã chốt (có nhãn nguồn); giá trị kế thừa nằm trong dấu vân tay G1 — G0 đổi sau khi G1 chốt thì PI chốt lại G1. Đề tài đã tự ghi đủ ở G1: dấu không đổi. Tiêu chí chọn vào (`inclusion_criteria`) được so cùng quần thể ở `nhat_quan_xuyen_cong` (hai chiều).
 - N4-G1 (giả lập lần 3, 15/11/2026): PI điền/sửa `gate_params.G1` (mục tiêu, sai lệch riêng, estimand, thiết kế/pin) ⇒ run_pipeline TỰ chạy lại G1 — so dấu `dau_gate_params_g1` mà run_g1_auto ghi trong G1_checkpoint với study_meta hiện tại — và dây chuyền sau G1 thành «cũ»; cổng cứng ĐÃ KÝ giữ nguyên. Chỉ xác nhận (reviewed_at, dau_van_tay_chot) KHÔNG làm G1 chạy lại. Không còn bước «PI tự chạy run_g1_auto» sau khi điền; checkpoint G1 cũ chưa có dấu thì không tự chạy lại (dùng `--from G1`). `study_meta.design_code` do G2 gieo TRÙNG thiết kế G1 đã dùng không làm G1 chạy lại; PI muốn đổi thiết kế thì ghim giá trị KHÁC (G1 chạy lại).
+- **Ghim thiết kế cần dấu người (15/11/2026, bác sĩ chọn sau thẩm định y khoa #277):** G1 chỉ coi thiết kế là PI ghim (gỡ cờ mơ hồ G1-AUTO-04/04b, hạ G1-AUTO-02d CHẶN→XEM) khi có dấu người — `gate_params.G1.design`, `design_confirmed=true`, hoặc `study_meta.design_code` kèm `design_code_nguon: "PI"` (`skill_standards.ghim_thiet_ke` — MỘT nguồn cho run_g1_auto và bộ chấm). `G1.design` lệch `design_code` không nhãn PI ⇒ `G1.design` thắng. `design_code` cấp cao đứng một mình vẫn là thiết kế đang dùng nhưng giữ cờ mơ hồ (checkpoint ghi `ghim_chua_co_dau_pi`, G1-AUTO-04 nói rõ) ⇒ trình PI xác nhận bằng `gate_params.G1.design`. G2 thôi gieo ô này (thiết kế G2 dùng nằm ở `G2_checkpoint.design_code`). Agent không tự ghi `design_code_nguon`/`gate_params.G1.design` thay PI.
 
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G1 (09/10/2026)
@@ -187,4 +188,10 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
 2. Nếu còn lỗi đỏ, thiếu nguồn, nghi sai guideline, thiếu cảnh báo nguy cơ hại, hoặc có PII:
    không phát hành như khuyến cáo; trả về dạng `[CẦN BÁC SĨ PHÁN ĐỊNH]` / `[CẦN KIỂM CHỨNG]`.
 3. Kết thúc mọi đầu ra y khoa bằng: "Cần bác sĩ kiểm chứng."
+4. Ô QUYẾT ĐỊNH CỦA NGƯỜI — máy KHÔNG gieo (15/11/2026, sự cố G2 gieo `design_code` vào ô ghim của PI): ô chỉ
+   người ghi (ghim thiết kế `gate_params.Gx`/`design_code`, xác nhận/duyệt/ký, `decision`/`gradeLevel` của
+   dashboard, sổ `*-da-duyet.json`/`*-da-xet.json`/`rut-bai-da-xem-xet.json`) KHÔNG được ghi giá trị máy suy —
+   kể cả «chỉ điền khi còn trống». Bản sao của máy để ở checkpoint/tệp riêng (vd `.cho-ky.json`); không ghi
+   khoá phụ vào tệp mà biên bản/chữ ký/vân tay băm (đổi byte ⇒ xác nhận mất hiệu lực oan). Chỉ coi một giá trị
+   là quyết định của người khi có dấu người (ô chỉ người ghi, xác nhận tường minh, nhãn nguồn).
 '''
