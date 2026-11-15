@@ -502,8 +502,18 @@ def _tieu_chi_phu_pico(checkpoint: Mapping[str, Any], meta: Mapping[str, Any],
     rc = registry_check if isinstance(registry_check, Mapping) else checkpoint.get("registry_check")
     if isinstance(rc, Mapping) and rc.get("query"):
         truy_van["ClinicalTrials.gov"] = str(rc.get("query"))
-    pi_viet = bool(str(meta.get("query_en") or "").strip())
-    khai = g0.get("khai_niem_tim_kiem") if isinstance(g0.get("khai_niem_tim_kiem"), Mapping) else {}
+    # K4 (15/11/2026): truy vấn run_g0_auto dựng từ khái niệm PI khai (khung_de_tai.truy_van_tu_khai_niem) cũng là truy
+    # vấn của PI — khái niệm PI không khai là lựa chọn của PI (vd đề tài mô tả không có can thiệp), không phải máy dịch.
+    # Thẩm định #277: dùng CHUNG bộ chuẩn hoá với bộ dựng truy vấn (khai_niem_chuan) — trước đó khoá lạ/ô mẫu cũng được
+    # coi là «PI viết» (Đ2) và khai dạng chuỗi bị duyệt TỪNG KÝ TỰ (V7).
+    try:
+        import khung_de_tai as KD  # noqa: PLC0415
+
+        khai, loai_kn = KD.khai_niem_chuan(meta)
+        pi_khai = bool(KD.truy_van_tu_khai_niem(meta))
+    except Exception:  # noqa: BLE001 — không chuẩn hoá được ⇒ coi như chưa khai (không xanh giả)
+        khai, loai_kn, pi_khai = {}, [], False
+    pi_viet = bool(str(meta.get("query_en") or "").strip()) or pi_khai
     thanh_phan = {"P": g0.get("population"), "I": g0.get("intervention"), "O": g0.get("primary_outcome")}
     thieu: List[str] = []
     khong_kiem: List[str] = []
@@ -511,7 +521,7 @@ def _tieu_chi_phu_pico(checkpoint: Mapping[str, Any], meta: Mapping[str, Any],
         van = str(van or "")
         if ma == "I" and (not van.strip() or _KHONG_CAN_THIEP.search(van)):
             continue
-        tn = _thuat_ngu_phu(van, tu_dien) + [str(x) for x in (khai.get(ma) or []) if str(x).strip()]
+        tn = _thuat_ngu_phu(van, tu_dien) + list(khai.get(ma) or [])
         if not tn:
             khong_kiem.append(ma)
             continue
@@ -522,9 +532,10 @@ def _tieu_chi_phu_pico(checkpoint: Mapping[str, Any], meta: Mapping[str, Any],
     if khong_kiem and not pi_viet:
         van_de.append(f"không đối chiếu được {', '.join(khong_kiem)} — truy vấn do MÁY tự dịch từ chủ đề, PI chưa viết "
                       "query_en/khai_niem_tim_kiem")
+    ghi_loai = (f"; khái niệm PI khai bị loại: {'; '.join(loai_kn[:4])}" if loai_kn else "")
     if not van_de:
         ghi = ("đủ khái niệm" + (f"; {', '.join(khong_kiem)} không có trong từ điển — truy vấn PI tự viết (query_en), "
-                                 "PI chịu trách nhiệm phủ" if khong_kiem else ""))
+                                 "PI chịu trách nhiệm phủ" if khong_kiem else "") + ghi_loai)
         return _criterion("G0-AUTO-08", nhan, "PASS", ghi, hanh)
     try:
         import ma_tran_muc_tieu_bien as MT  # noqa: PLC0415
@@ -538,7 +549,7 @@ def _tieu_chi_phu_pico(checkpoint: Mapping[str, Any], meta: Mapping[str, Any],
         return _criterion("G0-AUTO-08", nhan, "PASS",
                           f"MIỄN TRỪ ({ly_do} — luật mới không hạ cấp quyết định đã ký); VẪN THIẾU: "
                           f"{'; '.join(van_de)}", hanh)
-    return _criterion("G0-AUTO-08", nhan, "REVIEW", "; ".join(van_de), hanh)
+    return _criterion("G0-AUTO-08", nhan, "REVIEW", "; ".join(van_de) + ghi_loai, hanh)
 
 
 def evaluate_g0_quality(
