@@ -29,6 +29,12 @@ Dùng:
     python3 tools/verify_exports_integrity.py --path F   # kiểm một file
 
 Mã thoát: 0 = đạt (có thể kèm cảnh báo) · 1 = có lỗi CHẶN.
+
+THÊM 15/11/2026 — EXP-DOCX-STALE (chỉ ở `--staged`): kiểm toàn hệ theo khung 12 bước phát hiện ba bản Word (gói G2
+C1a, SAP C1a, SAP BTM) KHÔNG được xuất lại sau khi `.md` sửa ở giai đoạn 4 — người ký/Hội đồng đọc bản Word nên đọc
+bản cũ. Luật: `exports/…/X.md` đổi trong commit mà `X.docx` cùng tên ĐANG được git theo dõi lại KHÔNG đổi cùng commit
+⇒ CHẶN, kèm lệnh xuất lại. Bản Word không được theo dõi (chỉ nằm trên OneDrive) thì không xét ở đây — trục ④ của
+`kiem_chi_tiet_he_nghien_cuu.py` đo theo mtime.
 """
 
 from __future__ import annotations
@@ -261,6 +267,46 @@ def _staged_md_files() -> list[Path]:
     return files
 
 
+def docx_chua_xuat_lai(staged: set[str], tracked: set[str]) -> list[str]:
+    """Các `exports/…/X.md` trong tập stage mà `X.docx` được theo dõi nhưng KHÔNG nằm trong tập stage (EXP-DOCX-STALE).
+
+    Hàm thuần (chỉ nhận tên tệp tương đối gốc repo) để test không cần git.
+    """
+    ra = []
+    for name in sorted(staged):
+        if not (name.startswith("exports/") and name.endswith(".md")):
+            continue
+        docx = name[: -len(".md")] + ".docx"
+        if docx in tracked and docx not in staged:
+            ra.append(name)
+    return ra
+
+
+def _git_names(*args: str) -> set[str]:
+    try:
+        out = subprocess.run(["git", *args], cwd=REPO, capture_output=True, text=True, check=True).stdout
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return set()
+    return {x for x in out.splitlines() if x}
+
+
+def _check_docx_staged(rep: Report) -> None:
+    staged = _git_names("diff", "--cached", "--name-only", "--diff-filter=ACM")
+    tracked = _git_names("ls-files", "--", "exports")
+    for name in docx_chua_xuat_lai(staged, tracked):
+        lenh = (
+            "python3 tools/md_sang_docx_times.py <md> --co-chu 13 --trang-de-cuong (đề cương nộp, chạy ở repo gốc)"
+            if Path(name).name.startswith("DE_CUONG_NOP_HOI_DONG_")
+            else f"python3 tools/xuat_docx_chuan.py --file {name}"
+        )
+        rep.findings.append(Finding(
+            file=str(REPO / name), line=1, code="EXP-DOCX-STALE",
+            message=("Bản .md đổi nhưng bản Word cùng tên không được xuất lại trong cùng commit — "
+                     "người ký đọc bản Word cũ."),
+            evidence=f"xuất lại rồi stage cả hai: {lenh}",
+        ))
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(
         description="Kiểm liêm chính nội dung tài liệu nghiên cứu trong exports/."
@@ -284,6 +330,8 @@ def main() -> int:
     rep = Report()
     for path in targets:
         check_file(path, rep)
+    if args.staged and not args.path:
+        _check_docx_staged(rep)
 
     print("=" * 78)
     print(" KIỂM LIÊM CHÍNH NỘI DUNG — exports/")

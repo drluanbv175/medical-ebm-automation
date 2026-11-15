@@ -23,6 +23,8 @@ Luật (mức `loi` ⇒ trục `kiem_soat_sai_lech` LỆCH MỀM; `canh_bao` ⇒
   SL-04 `can_phan_tich` ngoài co/khong · SL-05 `co` mà mục SAP trống/không có trong SAP
   SL-06 `co` mà neo trống/không tìm thấy trong mục SAP đã khai
   SL-07 (cảnh báo) `khong` nhưng biện pháp có từ khoá phân tích · SL-08 (cảnh báo) `khong` mà `noi_khac` trống
+  SL-09 (giai đoạn 8, 15/11/2026) sai lệch G1 ghi «hạn chế mở» mà đề cương nộp đã có: cột `neo_han_che` (cụm chữ
+  NGUYÊN VĂN) phải nằm trong mục «Hạn chế» của đề cương — hạn chế đã biết trước phải được nêu cho Hội đồng/bàn luận
 Chỉ ĐỌC và BÁO — không sửa tệp nào, trừ `mau --ghi` (dựng KHUNG khi chưa có tệp; không ghi đè).
 
 Lệnh:
@@ -50,7 +52,7 @@ except (AttributeError, ValueError):
 BASE = Path(__file__).resolve().parent.parent
 
 TEP = "_doi-chieu-sai-lech-sap.csv"
-COT = ("sai_lech", "can_phan_tich", "sap_muc", "sap_neo", "noi_khac", "ghi_chu")
+COT = ("sai_lech", "can_phan_tich", "sap_muc", "sap_neo", "noi_khac", "ghi_chu", "neo_han_che")
 COT_BAT_BUOC = ("sai_lech", "can_phan_tich", "sap_muc", "sap_neo")
 
 TRANG_THAI_DAT = "DAT"
@@ -89,7 +91,8 @@ def sai_lech_g1(meta: Mapping[str, Any]) -> List[Dict[str, str]]:
     ra: List[Dict[str, str]] = []
     for x in ds if isinstance(ds, list) else []:
         if isinstance(x, Mapping) and _nfc(x.get("sai_lech")):
-            ra.append({"sai_lech": _nfc(x.get("sai_lech")), "bien_phap": _nfc(x.get("bien_phap"))})
+            ra.append({"sai_lech": _nfc(x.get("sai_lech")), "bien_phap": _nfc(x.get("bien_phap")),
+                       "trang_thai": _nfc(x.get("trang_thai"))})
     return ra
 
 
@@ -105,6 +108,21 @@ def muc_sap(out_dir: Path, study: str) -> Dict[str, str]:
         ra.setdefault(m.group(1), "")
         ra[m.group(1)] += m.group(2)
     return ra
+
+
+def muc_han_che_de_cuong(out_dir: Path, study: str) -> Optional[str]:
+    """Văn bản mục «Hạn chế…» của đề cương nộp (tới tiêu đề cùng cấp hoặc cao hơn kế tiếp); None nếu chưa có đề
+    cương."""
+    try:
+        dc = unicodedata.normalize("NFC", (out_dir / f"DE_CUONG_NOP_HOI_DONG_{study}.md").read_text(encoding="utf-8"))
+    except OSError:
+        return None
+    m = re.search(r"^(#{1,4})\s[^\n]*[Hh]ạn chế[^\n]*\n", dc, re.M)
+    if not m:
+        return ""
+    cap = len(m.group(1))
+    sau = re.search(r"^#{1,%d}\s" % cap, dc[m.end():], re.M)
+    return dc[m.start():m.end() + (sau.start() if sau else len(dc))]
 
 
 def doc_bang(out_dir: Path) -> Tuple[Optional[List[Dict[str, str]]], Optional[List[str]], Optional[str]]:
@@ -188,6 +206,18 @@ def kiem(out_dir: Path, study: str, *, meta: Optional[Mapping[str, Any]] = None)
     for k, x in theo_ten.items():
         if k not in da_co:
             loi.append(_vd("SL-02", "loi", f"sai lệch G1 «{x['sai_lech']}» chưa có dòng đối chiếu"))
+    han_che = muc_han_che_de_cuong(out_dir, study)
+    if han_che is not None:
+        theo_dong = {_khoa(r.get("sai_lech")): r for r in dong}
+        for k, x in theo_ten.items():
+            if "hạn chế mở" not in x.get("trang_thai", "").casefold() or k not in theo_dong:
+                continue
+            neo = theo_dong[k].get("neo_han_che", "")
+            if not neo:
+                loi.append(_vd("SL-09", "loi", f"«{x['sai_lech']}» là hạn chế mở (G1) nhưng chưa khai neo_han_che"))
+            elif neo.casefold() not in han_che.casefold():
+                loi.append(_vd("SL-09", "loi", f"«{x['sai_lech']}» là hạn chế mở (G1) nhưng mục «Hạn chế» của đề cương "
+                                               f"nộp không có «{neo}»"))
     return _ket(loi, cb, dong, g1)
 
 

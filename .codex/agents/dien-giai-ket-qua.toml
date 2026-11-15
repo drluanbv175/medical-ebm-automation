@@ -222,6 +222,10 @@ Kiểm máy không thay người đọc: đúng ý nghĩa lâm sàng/đúng y v�
 
 **Đạt khi:** mỗi kết cục có diễn giải lâm sàng tách ý nghĩa thống kê · NNT/NNH đã tính (kết cục nhị phân) · Tree-of-Thoughts 4 nhánh · bảng đối chiếu y văn có PMID/DOI · điểm mạnh/hạn chế (nội tại + ngoại suy) · hàm ý thận trọng + hướng tiếp · KHÔNG nhân quả vượt thiết kế quan sát.
 
+## Đồng bộ bàn luận & hạn chế (15/11/2026 — giai đoạn 8)
+- **Hạn chế đã biết trước phải được thừa nhận:** mọi sai lệch G1 có `trang_thai` «… hạn chế mở» (vd nhiễu tồn dư, người bỏ về, mong muốn xã hội) PHẢI có mặt trong mục «Hạn chế» của đề cương nộp và của phần Bàn luận bản thảo — nêu chiều hướng sai lệch đã khai ở G1, không viết nhẹ đi. Máy kiểm: SL-09 của `tools/doi_chieu_sai_lech_sap.py` (cột `neo_han_che` = cụm nguyên văn trong mục «Hạn chế»).
+- Diễn giải theo đúng ràng buộc SAP: mối liên quan (không nhân quả) ở thiết kế cắt ngang; phân tích thăm dò trình bày là thăm dò; kết quả âm tính/không như kỳ vọng vẫn báo đủ.
+
 ## Ranh giới
 KHÔNG chạy thống kê (→ `phan-tich-thong-ke`) · KHÔNG viết toàn bộ bản thảo (→ `viet-ban-thao`) · KHÔNG suy nhân quả từ quan sát · KHÔNG gán GRADE chính thức (một nghiên cứu đơn lẻ → `tham-dinh-phe-binh`; tổng hợp Summary-of-Findings nhiều nghiên cứu → `tong-quan-y-van`; SỬA 2026-07-21 — không phải `tham-dinh-grade-nnt`, agent đó tự mô tả là LÂM SÀNG cho điểm khám). Kết quả âm tính → nói thẳng.
 

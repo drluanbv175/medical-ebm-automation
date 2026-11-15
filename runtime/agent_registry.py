@@ -160,7 +160,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 15/11/2026: CẢ 64 agent — luật chung «Ô QUYẾT ĐỊNH CỦA NGƯỜI — máy KHÔNG gieo» trong khối guardrail cuối (cặp
 # OLD_KET_THUC/NEW_KET_THUC của enforce_agent_guardrails.py repo gốc, nhánh claude/day-agent-sau-tham-dinh-277-281).
 MANIFEST_SELF_CHECK_SHA256 = (
-    "14e5d754ac5100e161ef25d2334d387ab2e6c4cd14886d69d186e0ba294b8789"
+    "2bde01c776c4519d9a588cb355fa063aa41a843820fd7cdf5d9bd85035985b8a"
 )
 
 MINIMUM_AGENT_COUNT = 64

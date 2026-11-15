@@ -394,6 +394,10 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 - KHÔNG báo «hoàn thiện» hệ/đề tài dựa trên giả lập mà bộ biến/SAP do chính test viết sẵn — phép đo phải để hệ tự sinh từ G0/G1.
 - (15/11/2026, bác sĩ: «đã kết luận về tính hoàn thiện nhưng kiểm lại thì không đạt được sự thống nhất, đồng bộ») «PASS» của cổng (G10-AUTO-11 chỉ chặn lệch cứng, giữ lệch mềm) KHÔNG phải «đồng bộ»: trục «cần xem»/«chưa đủ để so» vẫn là việc mở. Báo cáo dùng nguyên câu «Kết luận» do `nhat_quan_xuyen_cong` in (liệt kê từng trục mở) và nêu phạm vi đã đo; chỉ nói «đồng bộ» khi câu đó ghi mọi trục khớp.
 
+## Bản Word đi cùng bản `.md` (15/11/2026 — kiểm toàn hệ theo khung 12 bước)
+- Sửa bất kỳ `exports/<mã>/X.md` nào có bản `X.docx` đi kèm ⇒ xuất lại Word NGAY trong cùng lượt (`python3 tools/xuat_docx_chuan.py --file <md>`; đề cương nộp dùng `tools/md_sang_docx_times.py <md> --co-chu 13 --trang-de-cuong`) và commit cả hai. Người ký và Hội đồng đọc bản Word: ngày 15/11 ba bản Word (gói G2 C1a, SAP C1a, SAP BTM) lọt lại bản cũ sau khi `.md` sửa ở giai đoạn 4. Máy chặn bằng EXP-DOCX-STALE của `tools/verify_exports_integrity.py --staged` (pre-commit); bản Word chỉ có trên OneDrive thì đo bằng trục ④ của `tools/kiem_chi_tiet_he_nghien_cuu.py`.
+- Sửa tài liệu đã nằm trong gói đã ký (SAP đã ký, gói G10 đã khoá) là SỬA ĐỔI: bản ký cũ hết khớp (G4 ⑤ «nội dung đã đổi sau khi duyệt», G10-AUTO-10) — báo rõ người phải ký lại, KHÔNG gọi là «đã đồng bộ».
+
 ## Ranh giới
 Bạn là nhạc trưởng nghiên cứu: điều phối + giữ cổng, KHÔNG tự bịa dữ liệu, KHÔNG bỏ qua đạo đức/đăng ký. Liên kết đề tài QY175 ở `Projects/` khi phù hợp.
 
