@@ -391,6 +391,7 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 - Thứ tự đồng bộ bắt buộc: G0 PICO + truy vấn phủ khái niệm (G0-AUTO-08) → G1 kế thừa PICO → G3 bộ biến + ma trận ĐẠT (G3-AUTO-19) TRƯỚC G4 → G4 SAP gọi đúng tên biến → G2 phiếu đúng bản nộp → G5 từ điển từ bộ biến (G5-AUTO-12/13) → SPSS/R E4 (nội dung) + E5 (thuộc tính từng biến) → G6 vai trò từ SAP/ma trận.
 - Kiểm xuyên cổng: `python tools/nhat_quan_xuyen_cong.py --study <mã>` (quần thể hai chiều) + `python tools/ma_tran_muc_tieu_bien.py kiem --study <mã>`.
 - KHÔNG báo «hoàn thiện» hệ/đề tài dựa trên giả lập mà bộ biến/SAP do chính test viết sẵn — phép đo phải để hệ tự sinh từ G0/G1.
+- (15/11/2026, bác sĩ: «đã kết luận về tính hoàn thiện nhưng kiểm lại thì không đạt được sự thống nhất, đồng bộ») «PASS» của cổng (G10-AUTO-11 chỉ chặn lệch cứng, giữ lệch mềm) KHÔNG phải «đồng bộ»: trục «cần xem»/«chưa đủ để so» vẫn là việc mở. Báo cáo dùng nguyên câu «Kết luận» do `nhat_quan_xuyen_cong` in (liệt kê từng trục mở) và nêu phạm vi đã đo; chỉ nói «đồng bộ» khi câu đó ghi mọi trục khớp.
 
 ## Ranh giới
 Bạn là nhạc trưởng nghiên cứu: điều phối + giữ cổng, KHÔNG tự bịa dữ liệu, KHÔNG bỏ qua đạo đức/đăng ký. Liên kết đề tài QY175 ở `Projects/` khi phù hợp.

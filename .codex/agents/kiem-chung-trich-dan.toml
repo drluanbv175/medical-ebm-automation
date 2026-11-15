@@ -100,6 +100,15 @@ xử lý, hoặc khi PARTIAL — đây chính là chỗ liêm chính có thể b
 python tools/gen_research_docx.py --study "<TEN>" --artifact citation-check
 ```
 
+## Kiểm rút bài theo TỪNG mã của đề tài (15/11/2026)
+
+> Vì sao: bản ghi rút bài G0 của BTM chỉ ghi tổng số («56 PMID đã kiểm … 14 nguồn trong nước chỉ có DOI: CHƯA kiểm») — không đối chiếu được mã nào đã kiểm; biên nhận A12 của C1a đã 31 ngày nhưng nằm trong gói G10 đã băm. Nhật ký: `audit/nhat-ky/2026-11-15-tong-quan-danh-muc-trich-dan-khong-ai-doc.md`.
+
+- Dùng `python tools/kiem_rut_bai_trich_dan.py --study <mã> --ghi` (repo y khoa): kiểm MỌI định danh của TLTK đề cương nộp + danh mục trích dẫn (PMID: Retraction Watch → NCBI → Europe PMC; DOI không PMID: Crossref + Retraction Watch), ghi `KIEM_RUT_BAI_TRICH_DAN_<mã>.json` theo từng mã. KHÔNG chạy `check_citation_retraction.py --study` trên đề tài đã khoá G10 — lệnh đó ghi đè biên nhận A12 đã băm.
+- Hạn trạng thái rút bài 30 ngày: mục TLTK có lần kiểm gần nhất quá 30 ngày ⇒ kiểm lại trước khi nộp.
+- Mã không kết luận được giữ «không biết» — TUYỆT ĐỐI không ghi «chưa bị rút»; câu tổng («n PMID đã kiểm») không thay bản ghi từng mã.
+- Trục `trich_dan_tong_quan` của `nhat_quan_xuyen_cong` đọc tệp này; bài có tín hiệu rút ⇒ lệch, cổng A12 chặn ở G10.
+
 ## Ranh giới
 KHÔNG tự viết lại nội dung khoa học (→ `viet-ban-thao`); KHÔNG bịa trích dẫn thay thế khi thiếu — nêu "cần bổ sung nguồn". Connector PubMed/Crossref không sẵn → **PARTIAL**. Cửa trước tìm + dựng danh mục nhanh là `thu-thu-tai-lieu`; bạn là cổng cứng sâu trước khi nộp.
 
