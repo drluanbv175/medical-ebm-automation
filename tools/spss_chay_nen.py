@@ -64,12 +64,21 @@ def _thieu(mv):
 
 
 def _vai_tro_thuoc_tinh(v):
-    """Vai trò (VARIABLE ROLE) + thuộc tính tuỳ biến (VARIABLE ATTRIBUTE) của một biến — E5 (15/11/2026).
+    """Vai trò (Role) + Columns + Align + thuộc tính tuỳ biến (VARIABLE ATTRIBUTE) của một biến — E5 (15/11/2026).
 
     API vắng/khác phiên bản ⇒ KHÔNG ghi khoá (Python coi là «chưa đo», không đoán là khớp)."""
     ra = {}
     try:
         ra["vai_tro"] = str(v.role)
+    except Exception:  # noqa: BLE001
+        pass
+    # 11 thuộc tính (15/11/2026): Columns + Align (đo SPSS 31: alignment 0=trái · 1=phải · 2=giữa)
+    try:
+        ra["cot_hien"] = int(v.columnWidth)
+    except Exception:  # noqa: BLE001
+        pass
+    try:
+        ra["can_le"] = v.alignment
     except Exception:  # noqa: BLE001
         pass
     try:

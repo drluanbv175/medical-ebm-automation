@@ -1,6 +1,6 @@
 path,sha256,size_bytes
 .claude/agents/an-toan-nghien-cuu.md,2687fd8dd97789dc23f0608c753be4f740bef1f4e47e996b10c405b5ad65a8f7,22506
-.claude/agents/bien-so-nghien-cuu.md,11ba7451be73ce65d80b2fb20f9539612b10dede72d6853af40c6a10a27df5f1,27051
+.claude/agents/bien-so-nghien-cuu.md,dad5943b89f0f59b1ec90d48a34ae930ceb688fa6d9397e828aefa8cd474b1d9,29431
 .claude/agents/binh-duyet.md,4415d1b6550c5aa53f1ad86b75e8e82b1d42732c842e3e282edb3b87ed19f79e,25652
 .claude/agents/cap-nhat-guideline.md,a7a2b0198b2d0fd0188e818394ed8548f05409e0034e1b7e0baeba2f2bc2dd54,18801
 .claude/agents/cau-hoi-nghien-cuu.md,cb4fef21d536068f87332e2be0f27c86acdcc8d4791f4dcd65a7edeb9f057f4e,25454
@@ -16,7 +16,7 @@ path,sha256,size_bytes
 .claude/agents/dieu-phoi-g1.md,301c96fc890b43702311a255b957a096cac8f62c39d8c034210cf284e62417c3,24180
 .claude/agents/dieu-phoi-g10.md,8630cc9b3593baa6eea04ca8843b3327513574174e2687e72dadce8f0589d8dc,19801
 .claude/agents/dieu-phoi-g2.md,70464baeb11bb9f6e65f65aad91ce3b14033e1eaf8e209a0326e097065e55fa1,17494
-.claude/agents/dieu-phoi-g3.md,20c0741f50621beb59a59514e4ef7cfc0e9a63e7c0f841c001e79ca01ae9d753,16819
+.claude/agents/dieu-phoi-g3.md,6173542d5b0851077f688cbfd296b7973a8eafb14ed05da68d5bdddace4ed0ff,17554
 .claude/agents/dieu-phoi-g4.md,9ea7ab040e7c22fb7df55771a0b555218a4b319e4129825a4389c576302920e8,18585
 .claude/agents/dieu-phoi-g5.md,dcb74f490247b41dab136897ed595989d786d26a99becdee4d18ad8e4f8188d9,17340
 .claude/agents/dieu-phoi-g6.md,912ce85db5deddc827ea6bf8073b82718061d5725c8369318a9d566b60e18433,19157

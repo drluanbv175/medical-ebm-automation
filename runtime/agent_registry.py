@@ -158,7 +158,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 15/11/2026: dieu-phoi-g1 + dieu-phoi-g2 + thiet-ke-nghien-cuu (ghim thiết kế cần dấu người, G2 thôi gieo
 # design_code — thẩm định #277/#281) — dòng y hệt repo gốc nhánh claude/ghim-thiet-ke-dau-nguoi-20261115; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "1f2f42fe37d7a9eb06e99989869880a06ca9173c4ebff275bbf18d1993bed2a1"
+    "24274ddd42cf14cd185f0e882c1505764086a603764545542c39f4abe398275a"
 )
 
 MINIMUM_AGENT_COUNT = 64
