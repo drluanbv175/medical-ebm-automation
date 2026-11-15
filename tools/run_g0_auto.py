@@ -100,7 +100,10 @@ VI_EN_TERMS: dict[str, str] = {
     "chất lượng cuộc sống": "quality of life",
     "kiến thức": "knowledge",
     "thuốc hạ áp": "antihypertensive agents",
+    # 15/11/2026 (giả lập 8 thiết kế): can thiệp «tin nhắn nhắc uống thuốc» chỉ ánh xạ được «antihypertensive agents»
+    # (thuốc được nhắc, không phải can thiệp) ⇒ G0-AUTO-08 báo thiếu I dù truy vấn PI phủ đúng SMS/text messaging.
     "tin nhắn": "text messaging",
+    "nhắn tin": "text messaging",
     # Tim mạch
     "suy tim": "heart failure",
     "hfpef": "HFpEF",

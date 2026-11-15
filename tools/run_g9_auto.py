@@ -1454,7 +1454,9 @@ def main():
         "",
         "> ⚠️ **CẢNH BÁO:** Gói này CHƯA CÓ HIỆU LỰC cho đến khi TẤT CẢ tác giả ký.",
         "> KHÔNG nộp bản thảo ra bên ngoài trước khi G9 PASSED.",
-        "> Mọi ô [CẦN...] phải được điền bởi bác sĩ/tác giả trước khi nộp.",
+        # 15/11/2026 (giả lập trọn vòng): lời hướng dẫn KHÔNG chứa ký hiệu ô trống «[CẦN...]» — G9-AUTO-05
+        # (_documents_clean) đếm nó là ô chưa điền ⇒ gói đã khai đủ vẫn không qua, tác giả phải sửa câu hướng dẫn.
+        "> Mọi ô còn trống phải được điền bởi bác sĩ/tác giả trước khi nộp.",
         "> Cần bác sĩ kiểm chứng toàn bộ nội dung.",
         "",
         "---",

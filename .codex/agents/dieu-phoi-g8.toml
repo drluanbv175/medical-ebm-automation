@@ -102,6 +102,10 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - A9 nhúng băm bản thảo + bản nhận xét; sửa bản thảo sau G8 ⇒ G8 hết hiệu lực.
 - Nhãn đạt KHÔNG mang chữ «ĐỘC LẬP» (HMAC đối xứng).
 
+**Giả lập trọn vòng như đề tài thật (15/11/2026):**
+- `gate_params.G8.primary_outcome` phải là ĐÚNG tên kết cục chính đã chốt ở G1/SAP §2 (G8-AUTO-05 so chuỗi con với dòng «Kết cục chính» của SAP — diễn đạt lại sẽ bị chặn là báo cáo chọn lọc).
+- Bản nhận xét phản biện phải có TRƯỚC khi sinh A9 (A9 nhúng băm bản nhận xét — G8-AUTO-12b); đủ 5 cờ cover letter ICMJE §IV.B.
+
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G8` xác nhận/dấu vân tay · bật cờ đời thực trong
 `study_meta` · chấm đầu ra do chính mình làm · ghi biên bản «ĐỒNG THUẬN» như «ĐẠT CỔNG» · bịa căn cứ · báo «phần agent hoàn chỉnh» khi `trach-nhiem` chưa ra mã 0 · sửa artifact của cổng khác để «xanh» tiêu chí

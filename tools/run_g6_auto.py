@@ -693,6 +693,25 @@ def doc_bien_sap_5(sap: str, ten_goc: dict) -> dict:
 _VAI_KHAC_NHOM = (("outcome", "kết cục"), ("time_col", "biến thời gian"), ("cluster_col", "biến cụm (SE theo chùm)"))
 
 
+# SỬA 15/11/2026 (giả lập trọn vòng đề tài thuần tập, G6): dò từ khoá dictionary ghi «⚠️  Không tự phát hiện exposure →
+# dùng 'exposure' (fallback)» TRƯỚC khi SAP §5/ma trận thay đúng biến (`ppi_dai_han`); dòng cũ vẫn nằm trong A7 nên
+# G6-AUTO-07 đếm là «tham số chưa điền» dù script đã dùng biến thật ⇒ thống kê viên phải sửa tay một dòng nhật ký.
+# Nay: biến đã giải thành tên CÓ trong từ điển ⇒ thay dòng dự phòng bằng dòng ghi nguồn; chưa giải ⇒ giữ nguyên cảnh báo.
+_DONG_DU_PHONG = (("exposure", "exposure", "phơi nhiễm/phân nhóm"), ("outcome", "outcome", "kết cục"),
+                  ("time_col", "time", "thời gian"))
+
+
+def _thay_dong_du_phong_da_giai(v: dict, co: set) -> None:
+    log = v.get("detection_log") or []
+    for khoa, chu, nhan in _DONG_DU_PHONG:
+        ten = str(v.get(khoa) or "")
+        if not ten or ten.lower() not in co:
+            continue
+        for i, dong in enumerate(log):
+            if str(dong).lstrip("⚠️ ").startswith(f"Không tự phát hiện {chu} "):
+                log[i] = f"ℹ️  Dò từ khoá dictionary không ra biến {nhan} — đã dùng `{ten}` theo SAP/ma trận"
+
+
 def ap_vai_tro_ma_tran(v: dict, out_dir: Path, study: str, ten_goc: dict,
                        design_code: Optional[str] = None) -> Optional[str]:
     """Vai trò biến THEO MA TRẬN mục tiêu–biến (bác sĩ duyệt 15/11/2026: «G6 lấy vai trò biến từ ma trận/SAP, không tự
@@ -751,6 +770,7 @@ def ap_vai_tro_ma_tran(v: dict, out_dir: Path, study: str, ten_goc: dict,
     else:
         log.append("⚠️  Đề tài CHƯA có ma trận mục tiêu–biến ĐẠT (_ma-tran-muc-tieu-bien.csv) — vai trò biến chỉ còn theo "
                    "SAP; vai trò SAP không nêu thì KHÔNG đoán")
+    _thay_dong_du_phong_da_giai(v, co)
     # Định tính / tổng quan hệ thống không mô hình hoá kết cục–phơi nhiễm (khuôn riêng) — không đòi. Thiết kế mô tả thuần
     # mà ma trận ĐẠT không khai phơi nhiễm/yếu tố: không đòi phơi nhiễm (sửa theo thẩm định #268).
     if str(design_code or "").lower() in ("qualitative", "sr_ma"):

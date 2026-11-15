@@ -467,15 +467,52 @@ def _thuat_ngu_phu(van: str, tu_dien: Mapping[str, str]) -> List[str]:
     return ra
 
 
+# Thuật ngữ Latin PI viết SẴN trong PICO tiếng Việt (SMS, FIB-4, PPI, NSAID, SGLT2, HbA1c, NT-proBNP…): là khái niệm
+# PI chọn, không cần từ điển dịch. Chỉ nhận token có ≥2 chữ hoa hoặc có chữ số, dài ≥3, trừ nhãn chuẩn/khung.
+_LATIN_PICO_RE = re.compile(r"(?<![A-Za-z0-9])([A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*)(?![A-Za-z0-9])")
+_LATIN_KHONG_PHAI_KHAI_NIEM = frozenset({"pico", "peco", "finer", "icd", "icd-10", "rct", "strobe", "consort", "prisma",
+                                         "stard", "tripod", "coreq", "who", "bmi", "ci", "or", "rr", "hr"})
+
+
+def _thuat_ngu_latin(van: str) -> List[str]:
+    """Token Latin đặc trưng trong khái niệm PICO (15/11/2026 — giả lập 8 thiết kế, đề tài RCT «Tin nhắn SMS…»)."""
+    ra: List[str] = []
+    for tok in _LATIN_PICO_RE.findall(str(van or "")):
+        if len(tok) < 3 or tok.lower() in _LATIN_KHONG_PHAI_KHAI_NIEM:
+            continue
+        if sum(c.isupper() for c in tok) >= 2 or any(c.isdigit() for c in tok):
+            if tok.lower() not in (x.lower() for x in ra):
+                ra.append(tok)
+    return ra
+
+
 def _co_trong_truy_van(thuat_ngu: str, truy_van: str) -> bool:
-    """Thuật ngữ có trong truy vấn (không phân biệt hoa thường; nhận cụm cắt cụt kiểu «satisf*», «adheren*»)."""
+    """Thuật ngữ có trong truy vấn (không phân biệt hoa thường; nhận cụm cắt cụt kiểu «satisf*», «adheren*»).
+
+    15/11/2026 (giả lập 8 thiết kế — đề tài chẩn đoán và định tính kẹt G0 dù truy vấn PI viết đúng chuẩn):
+      • chữ CHUNG (`_THUAT_NGU_CHUNG`) trong cụm dịch máy không phải khái niệm — «insulin therapy» được phủ bởi
+        `insulin[tiab]`; cụm chỉ gồm chữ chung thì vẫn đòi đủ (không bao giờ «đạt» vì rỗng);
+      • biến thể hình thái của từ ≥6 ký tự: so phần gốc (bỏ tối đa 3 ký tự cuối, giữ ≥5) với ĐẦU một từ của truy
+        vấn — «diagnosis» được phủ bởi «diagnostic accuracy»[tiab]; «diagnosis» KHÔNG khớp «diabetes».
+    """
     q = truy_van.lower()
     tt = thuat_ngu.lower().strip()
     if tt and tt in q:
         return True
     tu = [w for w in re.findall(r"[a-z0-9-]+", tt) if len(w) > 3]
+    dac_trung = [w for w in tu if w not in _THUAT_NGU_CHUNG] or tu
     goc = re.findall(r"([a-z0-9-]{4,})\*", q)
-    return bool(tu) and all(w in q or any(w.startswith(g) for g in goc) for w in tu)
+    tu_truy_van = re.findall(r"[a-z0-9-]+", q)
+
+    def _co(w: str) -> bool:
+        if w in q or any(w.startswith(g) for g in goc):
+            return True
+        if len(w) < 6:
+            return False
+        than = w[:max(5, len(w) - 3)]
+        return any(t.startswith(than) for t in tu_truy_van)
+
+    return bool(dac_trung) and all(_co(w) for w in dac_trung)
 
 
 def _tieu_chi_phu_pico(checkpoint: Mapping[str, Any], meta: Mapping[str, Any],
@@ -527,7 +564,18 @@ def _tieu_chi_phu_pico(checkpoint: Mapping[str, Any], meta: Mapping[str, Any],
         van = str(van or "")
         if ma == "I" and (not van.strip() or _KHONG_CAN_THIEP.search(van)):
             continue
-        tn = _thuat_ngu_phu(van, tu_dien) + list(khai.get(ma) or [])
+        rut = _thuat_ngu_phu(van, tu_dien)
+        tu_dien_en = {str(x).lower() for x in tu_dien.values()}
+        tn = [x for x in rut if str(x).lower() in tu_dien_en] + list(khai.get(ma) or [])
+        # Chữ viết tắt/thuật ngữ Latin PI viết sẵn trong PICO (SMS, FIB-4, HbA1c…) chỉ là PHƯƠNG ÁN THAY THẾ: thêm khi
+        # khái niệm đã có thuật ngữ từ điển/PI khai, hoặc khi truy vấn do máy dịch — không bao giờ tạo nghĩa vụ mới cho
+        # truy vấn PI tự viết («ICD-10 I10» trong P không phải khái niệm tìm kiếm bắt buộc). Token có ở khái niệm KHÁC
+        # (vd «FIB-4» trong câu kết cục «độ chính xác của FIB-4») là khái niệm của chỗ kia — không phủ hộ (chặn rò I→O).
+        khac = " ".join(str(v or "") for k, v in thanh_phan.items() if k != ma).lower()
+        if tn or not pi_viet:
+            for x in [y for y in rut if str(y).lower() not in tu_dien_en] + _thuat_ngu_latin(van):
+                if x.lower() not in (y.lower() for y in tn) and x.lower() not in khac:
+                    tn.append(x)
         if not tn:
             khong_kiem.append(ma)
             continue

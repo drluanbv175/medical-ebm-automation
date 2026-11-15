@@ -407,7 +407,11 @@ def kiem(out_dir: Path, study: str, *, meta: Optional[Mapping[str, Any]] = None,
         except (OSError, ValueError, AttributeError):
             thiet_ke = ""
     khong_dinh_luong = thiet_ke in ("qualitative", "sr_ma")
-    if len(kc) > 1 or (len(kc) == 0 and not khong_dinh_luong):
+    # 15/11/2026 (giả lập trọn vòng — đề tài tổng quan/gộp): kết cục chính của phân tích gộp được TRÍCH XUẤT ở cấp
+    # nghiên cứu theo từng nhánh (số biến cố nhánh can thiệp + nhánh chứng, hoặc trung bình/SD mỗi nhánh) ⇒ nhiều dòng
+    # ket_cuc_chinh kiểu đếm/liên tục là ĐÚNG khuôn. Trước đây «cần ĐÚNG một dòng» chặn mọi phiếu trích xuất hợp lệ.
+    du_lieu_cap_nghien_cuu = thiet_ke == "sr_ma" and kc and all(r.get("kieu") in ("dem", "lien_tuc") for r in kc)
+    if (len(kc) > 1 and not du_lieu_cap_nghien_cuu) or (len(kc) == 0 and not khong_dinh_luong):
         vd.append(_van_de("MT-05", "loi", f"cần ĐÚNG một dòng vai_tro=ket_cuc_chinh (đang có {len(kc)})"))
     kieu_g1 = None if khong_dinh_luong else kieu_ket_cuc_g1(meta)
     if kc and kieu_g1 and kc[0].get("kieu") and kc[0]["kieu"] != kieu_g1:

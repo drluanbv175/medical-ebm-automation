@@ -130,6 +130,9 @@ _PACKAGE_MARKERS = (
     "NGUỒN TÀI TRỢ VÀ XUNG ĐỘT LỢI ÍCH",
 )
 
+# Mục chỉ có trong phiếu đồng ý (TÀI LIỆU 4) — không đòi khi PI xin miễn ICF (15/11/2026).
+_MARKER_CHI_ICF = frozenset({"BỒI THƯỜNG KHI CÓ TỔN HẠI", "NGUỒN TÀI TRỢ VÀ XUNG ĐỘT LỢI ÍCH"})
+
 _PII_ONLY_HINTS = (
     "HỌ TÊN",
     "TÊN CHỦ NHIỆM",
@@ -1304,12 +1307,21 @@ def evaluate_g2_quality(
     # KHÔNG phải "nội dung khoa học đã đủ/đúng cho đề tài này" — xem G2-AUTO-
     # 05 (unresolved_critical_placeholders) và G2-F4 cho khoảng trống nội
     # dung mà tiêu chí NÀY không phủ.
+    # 15/11/2026: PI xin miễn ICF (không áp cho RCT) ⇒ hai mục chỉ có trong PHIẾU ĐỒNG Ý (bồi thường cho người tham
+    # gia; tài trợ/COI nói với người tham gia) không đòi — tài trợ/COI vẫn khai ở TÀI LIỆU 8.
+    _mien_icf = design_code != "rct" and _g2_meta(meta).get("icf_waiver_requested") is True
     missing_markers = [
         marker for marker in _PACKAGE_MARKERS
         if marker.casefold() not in package_text.casefold()
+        and not (_mien_icf and marker in _MARKER_CHI_ICF)
     ]
     # VÁ 04/10/2026 (G2-04/G2-10): ICF tiếng Việt phải có đủ nhãn mục bắt buộc THEO THIẾT KẾ, khớp ở đầu dòng.
     icf_thieu, icf_lech = kiem_icf(package_text, design_code)
+    # 15/11/2026: PI xin miễn ICF (không áp cho RCT) ⇒ TÀI LIỆU 4/5 là ghi chú «không áp dụng» (run_g2_auto
+    # .thu_gon_icf_khi_xin_mien) — mục ICF bắt buộc không đòi; Hội đồng quyết ở TÀI LIỆU 9 và lúc ký
+    # (--g2-icf-waiver-approved).
+    if _mien_icf:
+        icf_thieu, icf_lech = [], []
     automatic.append(_criterion(
         "G2-AUTO-03",
         "Bộ hồ sơ IRB/ICF/DMP có đủ cấu trúc bắt buộc (ICF đủ mục theo thiết kế)",

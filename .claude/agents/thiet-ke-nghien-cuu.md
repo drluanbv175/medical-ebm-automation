@@ -55,6 +55,8 @@ python medical-ebm-automation/tools/run_g1_auto.py \
 > loại câu hỏi G0 mà PI chưa ghim ⇒ G1-AUTO-02d CHẶN; «thử nghiệm lâm sàng» không khai ngẫu nhiên hoá ⇒ RCT MƠ HỒ
 > (PI ghim). Chi tiết và cách gỡ: `dieu-phoi-g1` §7. Agent KHÔNG tự ghim `design_code` thay PI.
 
+> **Từ khoá «thuần tập» (15/11/2026, giả lập 8 thiết kế):** tên đề tài khai «thuần tập/đoàn hệ/cohort» nay là cụm KHAI THIẾT KẾ → cohort (nhận «hồi cứu»/«tiến cứu»), giữ nguyên loại câu hỏi PI chốt (`harm`/`treatment`). Trước đó câu hỏi tác hại luôn thành bệnh–chứng dù tên đề tài ghi «nghiên cứu thuần tập hồi cứu». Thứ tự: bệnh–chứng thắng thuần tập (bệnh–chứng lồng trong thuần tập); chẩn đoán/mô hình dự báo/tổng quan lấy mẫu kiểu thuần tập vẫn là thiết kế đó (R6 không cảnh báo). Tên đề tài gõ «bệnh–chứng» bằng gạch ngang dài hay dạng NFD nay khớp như gạch nối. Đây chỉ là ĐỀ XUẤT — thiết kế vẫn do PI ghim.
+
 > **Ghim cần dấu người (15/11/2026, bác sĩ chọn sau thẩm định y khoa #277):** «PI ghim» chỉ tính khi có dấu người — `gate_params.G1.design`, `design_confirmed=true`, hoặc `design_code` kèm `design_code_nguon: "PI"`
 > (`skill_standards.ghim_thiet_ke`); `G1.design` lệch `design_code` không nhãn PI ⇒ `G1.design` thắng. `design_code` đứng một mình không gỡ cờ mơ hồ, không hạ G1-AUTO-02d; G2 không còn gieo ô này. Agent không tự ghi các dấu đó.
 

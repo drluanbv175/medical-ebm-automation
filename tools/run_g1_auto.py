@@ -201,12 +201,20 @@ BIAS_CONTROLS = {
 # 2. SUY LOẠI THIẾT KẾ (Tree-of-Thoughts)
 # ════════════════════════════════════════════════════════════════════════════
 
+_GACH_RE = re.compile(r"[\u2010-\u2015\u2212]")
+
+
 def _kw_in(keywords, text):
     """
     Khớp từ khóa theo ranh giới token (không phải substring thô) — tránh
     false-positive kiểu "auc" khớp nhầm bên trong 1 từ dài hơn, cùng loại
     bug substring-match đã sửa ở G6/G7 (_score()/_TABLE1_OUTCOME_KW).
+
+    15/11/2026 (giả lập 8 thiết kế): chuẩn hoá NFC và mọi loại gạch (– — ‐ ‑ ‒ ―) về «-» trước khi so — tên đề tài
+    gõ «bệnh–chứng» (gạch ngang dài, Word tự đổi) từng không khớp cụm «bệnh-chứng» nên đề tài «bệnh–chứng lồng trong
+    thuần tập» bị nhận thành thuần tập; tên đề tài dán từ tệp NFD (chữ Việt tổ hợp) cũng trượt mọi cụm có dấu.
     """
+    text = _GACH_RE.sub("-", unicodedata.normalize("NFC", str(text or "")))
     for kw in keywords:
         if re.search(r'(?<![a-z0-9])' + re.escape(kw) + r'(?![a-z0-9])', text):
             return True
@@ -787,6 +795,11 @@ DESIGN_KEYWORD_HINTS = {
             "ngau nhien co nhom chung", "phân bổ ngẫu nhiên", "phan bo ngau nhien", "phân nhóm ngẫu nhiên",
             "phan nhom ngau nhien", "ngẫu nhiên hóa", "ngẫu nhiên hoá", "ngau nhien hoa", "randomized",
             "randomised", "randomization", "randomisation", "rct", "clinical trial", "controlled trial"],
+    # THÊM 15/11/2026 (giả lập 8 thiết kế — «Sử dụng PPI kéo dài và nguy cơ gãy xương…: nghiên cứu THUẦN TẬP hồi cứu»
+    # bị máy đề xuất bệnh–chứng): bảng KHÔNG có nhóm nào nhận cụm khai thiết kế thuần tập/đoàn hệ, nên câu hỏi tác hại
+    # luôn rơi vào nhánh "harm" ⇒ case_control dù tên đề tài tự khai thuần tập. Chỉ cụm khai THIẾT KẾ, không dùng
+    # «theo dõi» trơn (trùng lịch theo dõi của RCT/cắt ngang).
+    "cohort": ["thuần tập", "thuan tap", "đoàn hệ", "doan he", "cohort"],
 }
 
 # Cụm PHỦ ĐỊNH làm nhóm "rct" KHÔNG khớp dù chứa cụm của nhóm (vd «thử nghiệm lâm sàng KHÔNG ngẫu nhiên»,
@@ -820,6 +833,7 @@ _CHON_MAU_NGAU_NHIEN_RE = re.compile(r"(?<!\w)(?:chọn|lấy|chon|lay)\s+(?:m�
 # cho guardrail đối chiếu ngược (không dùng để suy luận — suy luận vẫn qua
 # infer_study_design, có logic chọn giữa case_control/cohort tùy ngữ cảnh).
 _KEYWORD_TO_EXPECTED_INTERNAL = {
+    "cohort": "cohort",
     "sr": "sr_ma",
     "diagnosis": "diagnostic",
     "prediction_model": "prediction",
@@ -834,11 +848,14 @@ _KEYWORD_TO_EXPECTED_INTERNAL = {
 # THIẾT KẾ nên đứng TRƯỚC các nhóm CHỦ ĐỀ/KẾT CỤC (diagnosis/prognosis/descriptive — «tỷ lệ tử vong», «chiến lược
 # chẩn đoán» là kết cục/đối tượng của thử nghiệm, không phải thiết kế), sau sr/qualitative/prediction_model (tổng
 # quan CÁC thử nghiệm, định tính lồng trong thử nghiệm, mô hình dự đoán dựng từ dữ liệu thử nghiệm vẫn là thiết kế đó).
-_THU_TU_NHOM_TU_KHOA = ("sr", "qualitative", "prediction_model", "rct", "diagnosis", "prognosis", "harm",
+# 15/11/2026: "cohort" đứng SAU "harm" (bệnh–chứng lồng trong thuần tập là bệnh–chứng) và SAU "diagnosis"/
+# "prediction_model" (nghiên cứu chẩn đoán/mô hình dự báo lấy mẫu kiểu thuần tập vẫn là thiết kế đó), TRƯỚC
+# "descriptive" (tỷ lệ mắc mới trong thuần tập là thuần tập, không phải cắt ngang).
+_THU_TU_NHOM_TU_KHOA = ("sr", "qualitative", "prediction_model", "rct", "diagnosis", "prognosis", "harm", "cohort",
                         "descriptive")
 
 # Nhóm từ khoá KHAI THIẾT KẾ tường minh (khác nhóm chủ đề/kết cục diagnosis/prognosis/descriptive).
-_NHOM_KHAI_THIET_KE = frozenset({"sr", "qualitative", "prediction_model", "rct", "harm"})
+_NHOM_KHAI_THIET_KE = frozenset({"sr", "qualitative", "prediction_model", "rct", "harm", "cohort"})
 
 
 def _rct_phu_dinh(topic_lower: str) -> bool:
@@ -935,6 +952,10 @@ def check_topic_design_consistency(topic: str, chosen_internal_code: str) -> lis
     # sr…) vẫn đối chiếu — RCT kèm «bệnh-chứng» là mâu thuẫn thật.
     if _khop_nhom_tu_khoa("rct", topic_lower):
         _skip_qtypes |= {"descriptive", "prognosis", "diagnosis"}
+    # 15/11/2026: nghiên cứu chẩn đoán, mô hình dự báo và tổng quan (các nghiên cứu thuần tập) thường nêu «thuần tập»
+    # như KHUNG LẤY MẪU/loại nghiên cứu được tổng hợp — không phải mâu thuẫn thiết kế.
+    if chosen_internal_code in ("diagnostic", "prediction", "sr_ma"):
+        _skip_qtypes |= {"cohort"}
     for qtype in DESIGN_KEYWORD_HINTS:
         if qtype in _skip_qtypes:
             continue
@@ -1026,10 +1047,23 @@ def infer_study_design(question_type: str, gaps: dict, topic: str, loai_cau_hoi_
             break
         tu_khoa_bi_bo_qua.append(_ly_do_bo_qua_tu_khoa(qt_da_chot, nhom))
     khai_rct = nhom_ap_dung == "rct"
-    if nhom_ap_dung:
+    # 15/11/2026: nhóm "cohort" là cụm khai THIẾT KẾ, không phải loại câu hỏi — giữ nguyên loại câu hỏi (PI chốt hoặc
+    # mặc định), vì `resolved_question_type` đi tiếp vào checkpoint và G1-AUTO-02d đối chiếu nó với thiết kế.
+    khai_cohort = nhom_ap_dung == "cohort"
+    if nhom_ap_dung and not khai_cohort:
         question_type = "treatment" if khai_rct else nhom_ap_dung
 
-    if question_type == "treatment":
+    if khai_cohort:
+        hoi_cuu = _kw_in(["hồi cứu", "hoi cuu", "retrospective"], topic_lower)
+        primary = "Cohort Hồi cứu (Retrospective Cohort)" if hoi_cuu else "Cohort Tiến cứu (Prospective Cohort)"
+        internal = "cohort"
+        alt1 = "Case-control (nếu kết cục hiếm hoặc cần đánh giá nhiều phơi nhiễm)"
+        alt2 = ("Cohort tiến cứu (đo phơi nhiễm và kết cục chuẩn hoá, ít sai lệch thông tin hơn)" if hoi_cuu
+                else "Cohort hồi cứu (nếu hồ sơ sẵn có đủ chất lượng)")
+        rationale = ("Tên đề tài khai TƯỜNG MINH thiết kế thuần tập/đoàn hệ → cohort"
+                     + (" hồi cứu từ dữ liệu có sẵn" if hoi_cuu else "") + ": theo dõi nhóm có và không phơi nhiễm "
+                     "đến kết cục; báo cáo theo STROBE. PI ghim study_meta.design_code nếu ý định khác.")
+    elif question_type == "treatment":
         if khai_rct and _rct_chi_cum_chung(topic_lower):
             # SỬA 14/11/2026 (thẩm định PR #246): chỉ có cụm CHUNG «thử nghiệm lâm sàng/clinical trial» — tên đề tài
             # KHÔNG khai ngẫu nhiên hoá (có thể là thử nghiệm không ngẫu nhiên/một nhánh). Vẫn đề xuất RCT (đúng nhóm

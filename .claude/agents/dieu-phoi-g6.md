@@ -138,6 +138,12 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 
 - **Đồng bộ phân tích số liệu (15/11/2026):** trục `dac_ta_phan_tich` (đặc tả G6 ↔ SAP hai chiều: SHA đúng phiên bản, mọi phân tích SAP §9 + mục phân tích nhãn đậm §1/§3/§5/§7 có neo, mọi neo còn trong SAP) phải `khop`, hoặc nêu đúng vai (đặc tả chưa duyệt = thống kê viên/PI ghi `nguoi_duyet`; SAP còn [CẦN] = thống kê viên chọn phương pháp) — chi tiết `phan-tich-thong-ke` mục cùng ngày.
 
+**Giả lập trọn vòng như đề tài thật (15/11/2026):**
+- `run_g6_auto.py` nay thay dòng nhật ký «Không tự phát hiện exposure/outcome» khi SAP §5/ma trận đã giải đúng biến — G6-AUTO-07 không còn đỏ oan. Dòng «Không tự phát hiện time» vẫn giữ khi chưa giải được.
+- G6-AUTO-09: sau khi đối chiếu SAP §4, thống kê viên BẬT các dòng mẫu đang chú thích trong `03_analysis.R` (nạp RDS khoá + kiểm dấu, công thức mô hình chính, ước lượng robust) — chỉ dòng thi hành mới tính.
+- `G6_DAC_TA_SAP.json`: mọi gạch đầu dòng §9 và mục nhóm nhỏ §7 phải có `sap_neo` đúng chữ trong SAP; mục SAP không áp dụng được (vd «±1 SD» cho biến nhị phân) khai `chua_tu_dong` kèm lý do và đề xuất SAP sửa đổi — không bỏ im.
+- Engine ghi bảng Poisson là «PR — tỷ lệ hiện mắc» cả với thuần tập; khi diễn giải/viết bài gọi đúng RR (nguy cơ tích luỹ).
+
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G6` xác nhận/dấu vân tay · bật cờ đời thực trong
 `study_meta` · chấm đầu ra do chính mình làm · ghi biên bản «ĐỒNG THUẬN» như «ĐẠT CỔNG» · bịa căn cứ · báo «phần agent hoàn chỉnh» khi `trach-nhiem` chưa ra mã 0 · sửa artifact của cổng khác để «xanh» tiêu chí

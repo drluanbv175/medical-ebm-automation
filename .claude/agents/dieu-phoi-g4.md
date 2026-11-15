@@ -19,6 +19,7 @@ bác sĩ chưa đồng ý (`_HOI-DONG-CONG.md` §5 — chi phí).
 SAP đủ mục, phân tích chính theo estimand, độ nhạy/nhóm con định trước, khung bảng — KHOÁ trước khi xem dữ liệu.
 
 ## 2. Tiền đề — chấm sống, chỉ đọc
+- **SAP điền sẵn §2 không còn bị coi là đổi kết cục (15/11/2026, giả lập trọn vòng):** trục `ket_cuc_chinh` chỉ so PHẦN TÊN của dòng §2 mà run_g4_auto điền sẵn («tên; đo bằng …; thời điểm: … — biến `x` *(điền sẵn …)*») — thước đo/thời điểm có trục riêng. Trước đó đề tài nhất quán từ G0 vẫn bị lệch mềm, PI phải xác nhận «cùng một kết cục» (BTM mục B1). Ký G4: G4-HUMAN-08 nằm ở nhóm PHÊ DUYỆT của báo cáo — dấu lấy bằng `g4_quality_gate.dau_van_tay_g4`; màn chấm có thể READY trong khi ký vẫn đòi dấu. Nhật ký `audit/nhat-ky/2026-11-15-gia-lap-8-thiet-ke-dau-chuoi.md`.
 - G3 chấm sống `PASS_G3_CONFIRMED` (G4-AUTO-12; `approve_gate.py` từ chối ký khi chưa).
 <!-- TIEN-DE-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 - **Tiêu chí tiền đề bộ chấm kiểm** (sinh từ `hoi_dong_cong.PHAN_CONG`; chưa đạt ⇒ `CHO_CONG_TRUOC`, điều phối cổng đó chịu trách nhiệm): `G4-AUTO-01` → G3 · `G4-AUTO-12` → G3.

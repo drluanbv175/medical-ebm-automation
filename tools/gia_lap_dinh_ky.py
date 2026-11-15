@@ -15,8 +15,9 @@ A. DÂY CHUYỀN THẬT TRÊN BẢN SAO TẠM. Chép `tools/ app/ config/ templa
    rỗng ở đó rồi chạy `run_pipeline.py` của BẢN SAO. `run_pipeline` neo `exports/` theo vị trí tệp của chính nó, nên
    mọi đầu ra nằm trong thư mục tạm; `exports/` thật không bị đụng (cuối lượt còn kiểm lại: thư mục `ZZCANARY-*` mới
    xuất hiện trong `exports/` thật là khiếm khuyết `he:ro_ri_exports_that`).
-   Mỗi KỊCH BẢN là một đề tài tổng hợp cho một thiết kế chính (`KICH_BAN`, hiện có RCT kết cục nhị phân và cắt ngang
-   mô tả; thêm thiết kế = thêm một mục). Một «PI GIẢ LẬP» làm đúng việc PI làm: đọc cổng đang chờ gì, điền nội dung
+   Mỗi KỊCH BẢN là một đề tài tổng hợp cho một thiết kế chính (`KICH_BAN`: RCT kết cục nhị phân, cắt ngang mô tả
+   và từ 15/11/2026 sáu thiết kế còn lại ở `gia_lap_kich_ban_them.py`; thêm thiết kế = thêm một mục).
+   Một «PI GIẢ LẬP» làm đúng việc PI làm: đọc cổng đang chờ gì, điền nội dung
    kịch bản vào `study_meta.json → gate_params`, chép dấu vân tay cổng in ra, chạy lại. Mỗi lần như vậy là một «can
    thiệp như PI». Can thiệp ĐÚNG THIẾT KẾ là điền nội dung và xác nhận dấu vân tay của G0/G1/G3, mỗi loại một lần.
    Mọi can thiệp khác (khai `query_en` vì máy dịch lạc đề — K4; tự chạy cổng vì pipeline không chạy lại — N4; điền
@@ -93,6 +94,8 @@ TOOLS = REPO_ROOT / "tools"
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
+from gia_lap_kich_ban_them import bien_so_them, ho_so_tron_vong, kich_ban_them  # noqa: E402
+
 PHIEN_BAN = 1
 STATE_PATH = REPO_ROOT / "state" / "gia-lap-dinh-ky-gan-nhat.json"
 NEN_G0_DIR = REPO_ROOT / "state" / "gia-lap-dinh-ky" / "nen-g0"
@@ -116,6 +119,11 @@ TRANG_THAI_DUNG_PIPELINE = ("blocked_missing_input", "chan_song", "dung_lech_xuy
 # và ghi gate_params.G3.bo_bien_so_duyet — cũng là bước ĐÚNG THIẾT KẾ (nguồn người duyệt của G5-AUTO-11).
 CAN_THIEP_DUNG_THIET_KE = ("dien_noi_dung", "xac_nhan_dau_van_tay", "dung_bo_bien_ma_tran", "soan_bang_bien_g3",
                            "duyet_bang_bien_g3")
+# PI tự chạy cổng mà tiêu chí máy chưa đạt KHÔNG đổi (15/11/2026, giả lập 8 thiết kế: G3-AUTO-19 thiếu bộ biến làm
+# canary đếm «tự chạy G3» thành lỗi N4 ở 4/6 thiết kế): chạy lại không giúp gì ⇒ pipeline không có lỗi «không chạy
+# lại»; tiêu chí còn kẹt mới là khiếm khuyết và đã có khoá `ket:` riêng. Ghi lại để thấy, không tính là can thiệp
+# do máy.
+CAN_THIEP_KHONG_DO_MAY = ("tu_chay_cong_khong_doi",)
 COT_BO_BIEN = ("Variable / Field Name", "Form Name", "Section Header", "Field Type", "Field Label",
                "Choices, Calculations, OR Slider Labels", "Field Note", "Text Validation Type OR Show Slider Number",
                "Text Validation Min", "Text Validation Max", "Identifier?", "Branching Logic (Show field only if...)",
@@ -183,7 +191,7 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
         },
         "pi": {
             "G0": {
-                "population": _vi("Người trưởng thành ≥18 tuổi tăng huyết áp đang dùng thuốc hạ áp, quản lý ngoại trú, "
+                "population": ("Người trưởng thành ≥18 tuổi tăng huyết áp đang dùng thuốc hạ áp, quản lý ngoại trú, "
                                   "có điện thoại di động nhận tin nhắn"),
                 "intervention": ("Tin nhắn SMS tự động nhắc uống thuốc hạ áp hằng ngày kèm chăm sóc thường quy trong "
                                  "6 tháng"),
@@ -220,7 +228,7 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                                     "timepoint": "Tháng thứ 6 sau ngẫu nhiên hoá", "type": "nhị phân"},
                 "secondary_outcomes": ["Thay đổi huyết áp tâm thu tại tháng 6",
                                        "Tuân thủ dùng thuốc tự báo cáo tại tháng 6"],
-                "population": _vi("Người trưởng thành ≥18 tuổi tăng huyết áp đang dùng thuốc hạ áp, quản lý ngoại trú, "
+                "population": ("Người trưởng thành ≥18 tuổi tăng huyết áp đang dùng thuốc hạ áp, quản lý ngoại trú, "
                                   "có điện thoại di động"),
                 "inclusion_criteria": ["Tuổi ≥18", "Chẩn đoán tăng huyết áp, đang dùng ≥1 thuốc hạ áp",
                                        "Có điện thoại di động nhận được tin nhắn"],
@@ -315,7 +323,7 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
         },
         "pi": {
             "G0": {
-                "population": _vi("Người trưởng thành ≥18 tuổi tăng huyết áp đang điều trị ngoại trú"),
+                "population": ("Người trưởng thành ≥18 tuổi tăng huyết áp đang điều trị ngoại trú"),
                 "intervention": "Không áp dụng — nghiên cứu mô tả (yếu tố khảo sát: đặc điểm điều trị hiện tại)",
                 "comparison": "Không áp dụng — nghiên cứu mô tả một nhóm",
                 "outcomes": ["Tỷ lệ kiểm soát huyết áp (<140/90 mmHg) tại thời điểm khảo sát",
@@ -348,7 +356,7 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                                     "measure": "Huyết áp phòng khám trung bình 2 lần đo <140/90 mmHg",
                                     "timepoint": "Tại lần khám khảo sát", "type": "nhị phân"},
                 "secondary_outcomes": ["Đặc điểm điều trị hạ áp hiện tại"],
-                "population": _vi("Người trưởng thành ≥18 tuổi tăng huyết áp đang điều trị ngoại trú"),
+                "population": ("Người trưởng thành ≥18 tuổi tăng huyết áp đang điều trị ngoại trú"),
                 "inclusion_criteria": ["Tuổi ≥18", "Chẩn đoán tăng huyết áp, đang điều trị ngoại trú ≥3 tháng"],
                 "exclusion_criteria": ["Đang mang thai", "Không đồng ý tham gia"],
                 "setting": "Phòng khám ngoại trú bệnh viện (giả lập)",
@@ -399,6 +407,17 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
         },
     },
 }
+
+
+# Sáu thiết kế còn lại (thuần tập, bệnh–chứng, chẩn đoán, dự báo, tổng quan/gộp, định tính) — 15/11/2026: canary phủ đủ
+# 8 thiết kế (bác sĩ: «giả lập hoàn thiện chi tiết 8 loại thiết kế rồi vá»). Nội dung + nguồn số ở
+# gia_lap_kich_ban_them; bộ biến + ma trận theo cùng khuôn `bien_so` (G3-T2) của hai kịch bản đầu.
+KICH_BAN.update(kich_ban_them(_vi, TIEN_TO_DE_TAI))
+for _ma, _bs in bien_so_them().items():
+    KICH_BAN.get(_ma, {}).setdefault("bien_so", _bs)
+for _ma, _hs in ho_so_tron_vong().items():
+    if _ma in KICH_BAN:
+        KICH_BAN[_ma]["ho_so_tron_vong"] = _hs
 
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════ tiện ích
@@ -582,7 +601,8 @@ class GiaLap:
 
     def _ghi_can_thiep(self, cong: str, loai: str, ghi_chu: str) -> None:
         self.can_thiep.append({"vong": len(self.buoc), "cong": cong, "loai": loai,
-                               "do_may": loai not in CAN_THIEP_DUNG_THIET_KE, "ghi_chu": ghi_chu})
+                               "do_may": loai not in CAN_THIEP_DUNG_THIET_KE + CAN_THIEP_KHONG_DO_MAY,
+                               "ghi_chu": ghi_chu})
 
     def _lenh(self, ten: str, *tham: str) -> List[str]:
         return [sys.executable, "-B", str(self.repo / "tools" / ten), *tham]
@@ -745,8 +765,14 @@ class GiaLap:
             if auto_chua_dat and gate != "G0" and gate not in self._da_tu_chay:
                 self._da_tu_chay.add(gate)
                 self._tu_chay_cong(gate)
-                self._ghi_can_thiep(gate, "tu_chay_cong", "pipeline không chạy lại cổng dù đầu vào đã đổi; tiêu "
-                                    f"chí máy chưa đạt: {', '.join(auto_chua_dat[:4])}")
+                sau = [r["id"] for r in _tieu_chi(self.cham(gate, self.study, self.out, self.repo),
+                                                  "automatic_criteria") if r.get("status") != "PASS"]
+                if sorted(sau) != sorted(auto_chua_dat):
+                    self._ghi_can_thiep(gate, "tu_chay_cong", "pipeline không chạy lại cổng dù đầu vào đã đổi; tiêu "
+                                        f"chí máy chưa đạt: {', '.join(auto_chua_dat[:4])}")
+                else:
+                    self._ghi_can_thiep(gate, "tu_chay_cong_khong_doi", "tự chạy cổng KHÔNG đổi tiêu chí máy chưa "
+                                        f"đạt ({', '.join(auto_chua_dat[:4])}) — không phải lỗi «không chạy lại»")
                 return gate
             dau = _dau_van_tay_yeu_cau(bao)
             gp = (self._meta().get("gate_params") or {}).get(gate) or {}
