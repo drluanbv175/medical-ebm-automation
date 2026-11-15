@@ -2224,9 +2224,15 @@ def generate_checklist(
     specialist_modules: Optional[list] = None,
     hypothesis_type: str = "superiority",
     margin: Optional[float] = None,
+    reporting_extensions: Optional[list] = None,
 ) -> str:
     """
     Sinh bảng checklist đầy đủ theo chuẩn báo cáo chính của design_code.
+
+    THÊM 15/11/2026 (giai đoạn 9 «Báo cáo & công bố»): chuẩn báo cáo CỦA ĐỀ TÀI (G1 `reporting_extensions`, vd STROBE +
+    CROSS cho khảo sát, STROBE + RECORD cho dữ liệu thường quy) từng bị bỏ — bảng kiểm chỉ có «STROBE 2007, 22 mục».
+    Nay mỗi chuẩn mở rộng có khối «Bảng kiểm mở rộng bắt buộc» dẫn nguồn bảng kiểm gốc (skill_standards.
+    NGUON_CHUAN_MO_RONG — trích dẫn đã kiểm); không chép nguyên văn mục.
 
     THÊM 2026-07-23 (vòng lặp kiểm tra-hoàn thiện vòng 11, dimension
     g6_g7_depth_and_artifact_map): khi run_g1_auto.py::detect_specialist_modules()
@@ -2277,7 +2283,28 @@ def generate_checklist(
         )
         block += ni_block
 
+    block += khoi_bang_kiem_mo_rong(reporting_extensions or [])
     return block
+
+
+def khoi_bang_kiem_mo_rong(reporting_extensions: list) -> str:
+    """Khối «Bảng kiểm mở rộng bắt buộc» cho từng chuẩn mở rộng của đề tài (giai đoạn 9, 15/11/2026)."""
+    import skill_standards as _S  # noqa: PLC0415
+
+    ra = ""
+    for chuan in reporting_extensions:
+        nguon = _S.NGUON_CHUAN_MO_RONG.get(str(chuan).upper())
+        ra += (
+            "\n---\n"
+            f"\n### 📋 Bảng kiểm mở rộng bắt buộc: {chuan}\n"
+            "\n> Chuẩn báo cáo CỦA ĐỀ TÀI (G1 `reporting_extensions`) — điền BẢNG KIỂM GỐC của "
+            f"{chuan} kèm vị trí (mục/trang bản thảo) cho từng mục; KHÔNG thay checklist chính ở trên.\n"
+            f"> Nguồn: {nguon or '[CẦN KIỂM CHỨNG NGUỒN CHÍNH THỨC — chưa có trích dẫn đã kiểm cho chuẩn này]'}\n"
+            f"\n| Mục bảng kiểm {chuan} (theo bảng kiểm gốc) | Vị trí trong bản thảo | Trạng thái |\n"
+            "|---|---|---|\n"
+            "| [CẦN điền theo bảng kiểm gốc] | [CẦN] | ☐ |\n"
+        )
+    return ra
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -2798,6 +2825,7 @@ def main() -> None:
         specialist_modules=g1.get("specialist_modules") or [],
         hypothesis_type=hypothesis_type,
         margin=margin,
+        reporting_extensions=(g1.get("design") or {}).get("reporting_extensions") or [],
     )
 
     # Ghép toàn bộ artifact

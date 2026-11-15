@@ -40,6 +40,9 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
   trạng thái: `DRAFT_READY_NEEDS_HUMAN_REVIEW` → `PASS_G7_CONFIRMED`.
 - **Xác nhận người (cổng mềm):** Tác giả/PI ghi `gate_params.G7` (tiêu đề, tác giả, 5 khai báo ICMJE, tạp chí đích là CHUỖI thật) + xác nhận đọc lại gắn `dau_van_tay_chot`. Agent CHÉP dấu cho người xác nhận nhìn — KHÔNG tự ghi.
 
+## Nháp Kết quả từ G6 (15/11/2026, giả lập lần 3)
+- Bảng 1 và kết cục phụ của nháp Kết quả nay chép từ G6 (`table1.rows`; chỉ mục chay_sap_g6). Ô nào còn «[CẦN …]» là phần G6 không có, hoặc tóm tắt không đạt luật hợp lệ (sai bản khoá, tự kiểm số lệch) — giao lại `phan-tich-thong-ke` (G6), không để `viet-ban-thao` tự điền số.
+
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G7 (09/10/2026)
 Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối
@@ -109,6 +112,8 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - `results_final` phải là bool `true` mới gỡ banner DRAFT; gỡ hết «[TRÍCH DẪN CHƯA XÁC MINH]».
 - Định tính → COREQ/SRQR; không dùng checklist STROBE thay chuẩn đúng thiết kế.
 - PMID do hệ chèn (SPIRIT/PRISMA-P/Hanley–McNeil) cũng phải vào A12.
+
+- **Đồng bộ bàn luận & báo cáo (15/11/2026):** bản thảo nêu đủ hạn chế mở của G1 (SL-09) và có bảng kiểm mở rộng cho mọi chuẩn của đề tài (CROSS/RECORD…) — chi tiết `viet-ban-thao` mục cùng ngày.
 
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G7` xác nhận/dấu vân tay · bật cờ đời thực trong

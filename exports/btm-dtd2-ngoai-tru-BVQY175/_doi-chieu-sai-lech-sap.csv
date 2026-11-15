@@ -1,12 +1,12 @@
-sai_lech,can_phan_tich,sap_muc,sap_neo,noi_khac,ghi_chu
-Sai lệch chọn do tiêu chí từ 2 lượt khám,co,§1,chỉ có 1 lượt khám,,So sánh nhóm bị loại vì 1 lượt khám với mẫu (thêm ở SAP sửa nháp 3)
-Sai lệch chọn mẫu,co,§1,bị loại theo từng lý do,,Sơ đồ chọn báo lý do mọi hồ sơ bị loại
-Sai lệch phân loại quần thể do mã ICD-10,co,§1; §9,E14 | ĐN4,,Đếm riêng E14 (§1) + độ nhạy giới hạn người có đơn thuốc hạ glucose (§9 ĐN4)
-Sai lệch thông tin — xét nghiệm làm ngoài BVQY175 không có trong eHospital,co,§9,ĐN2,,Độ nhạy tính cả xét nghiệm ngoài viện
-Sai lệch phân loại kết cục — UACR với nồng độ microalbumin niệu hoặc que nhúng,co,§9,ĐN1,,Độ nhạy tính cả dạng albumin niệu khác
-Sai lệch phân loại bệnh thận mạn khi chỉ có 1 lần đo,co,§2,nghi BTM,,Nhóm «nghi BTM» báo riêng
-Sai lệch thông tin — thuốc kê hoặc mua ngoài BVQY175,co,§9,ĐN7,,Độ nhạy tính cả thuốc ngoài đơn
-Thời gian quan sát không đều trong cửa sổ,co,§3; §9,thang_quan_sat | ĐN3,,Phân bố thời gian quan sát (§3) + độ nhạy lượt khám đầu trước 01/07/2026 (§9 ĐN3)
-Nhiễu và tương quan trong cụm ở phân tích yếu tố liên quan (MT3),co,§5,phương sai vững | phòng khám theo dõi,,Poisson phương sai vững; phòng khám theo dõi chính là biến trong mô hình
-Sai lệch báo cáo và phân tích có chọn lọc,khong,,,G4 khoá SAP trước khi nhận dữ liệu; G2 quyết đăng ký; G7/G9 báo cáo đủ kết cục theo STROBE + RECORD,Biện pháp quy trình
-Sai lệch người trích (chủ nhiệm vừa trích dữ liệu vừa là bác sĩ của khoa được đánh giá),khong,,,G5 DMP + codebook — quy tắc trích và định nghĩa biến viết trước,Biện pháp quy trình thu thập
+sai_lech,can_phan_tich,sap_muc,sap_neo,noi_khac,ghi_chu,neo_han_che
+Sai lệch chọn do tiêu chí từ 2 lượt khám,co,§1,chỉ có 1 lượt khám,,So sánh nhóm bị loại vì 1 lượt khám với mẫu (thêm ở SAP sửa nháp 3),
+Sai lệch chọn mẫu,co,§1,bị loại theo từng lý do,,Sơ đồ chọn báo lý do mọi hồ sơ bị loại,
+Sai lệch phân loại quần thể do mã ICD-10,co,§1; §9,E14 | ĐN4,,Đếm riêng E14 (§1) + độ nhạy giới hạn người có đơn thuốc hạ glucose (§9 ĐN4),
+Sai lệch thông tin — xét nghiệm làm ngoài BVQY175 không có trong eHospital,co,§9,ĐN2,,Độ nhạy tính cả xét nghiệm ngoài viện,
+Sai lệch phân loại kết cục — UACR với nồng độ microalbumin niệu hoặc que nhúng,co,§9,ĐN1,,Độ nhạy tính cả dạng albumin niệu khác,
+Sai lệch phân loại bệnh thận mạn khi chỉ có 1 lần đo,co,§2,nghi BTM,,Nhóm «nghi BTM» báo riêng,
+Sai lệch thông tin — thuốc kê hoặc mua ngoài BVQY175,co,§9,ĐN7,,Độ nhạy tính cả thuốc ngoài đơn,
+Thời gian quan sát không đều trong cửa sổ,co,§3; §9,thang_quan_sat | ĐN3,,Phân bố thời gian quan sát (§3) + độ nhạy lượt khám đầu trước 01/07/2026 (§9 ĐN3),
+Nhiễu và tương quan trong cụm ở phân tích yếu tố liên quan (MT3),co,§5,phương sai vững | phòng khám theo dõi,,Poisson phương sai vững; phòng khám theo dõi chính là biến trong mô hình,
+Sai lệch báo cáo và phân tích có chọn lọc,khong,,,G4 khoá SAP trước khi nhận dữ liệu; G2 quyết đăng ký; G7/G9 báo cáo đủ kết cục theo STROBE + RECORD,Biện pháp quy trình,
+Sai lệch người trích (chủ nhiệm vừa trích dữ liệu vừa là bác sĩ của khoa được đánh giá),khong,,,G5 DMP + codebook — quy tắc trích và định nghĩa biến viết trước,Biện pháp quy trình thu thập,
