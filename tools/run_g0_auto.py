@@ -1219,9 +1219,13 @@ def guardrail_check_g0(artifact: str, results: dict) -> dict:
     # cả HÌNH DẠNG dữ liệu, không chỉ nhãn.
     artifact_normalized = unicodedata.normalize("NFC", artifact).lower()
     pii_patterns = ["tên bệnh nhân", "họ tên", "ngày sinh", "cccd", "cmnd",
-                    "căn cước", "số hồ sơ", "số bhyt", "bảo hiểm y tế số",
+                    "căn cước", "số bhyt", "bảo hiểm y tế số",
                     "địa chỉ nhà", "số điện thoại"]
     pii_hits = [p for p in pii_patterns if p in artifact_normalized]
+    # 15/11/2026: «số hồ sơ» chỉ là PII khi kèm giá trị — cùng luật với G1 (pii_van_ban.nhan_so_ho_so).
+    import pii_van_ban as _PV  # noqa: PLC0415
+    if _PV.nhan_so_ho_so(artifact_normalized):
+        pii_hits.append("số hồ sơ")
 
     # Hình dạng dữ liệu định danh. Cố ý KHÔNG khớp PMID (5-9 số đứng sau "PMID:")
     # hay NCT (chữ + 8 số) — đã kiểm bằng chính đầu ra của G0.

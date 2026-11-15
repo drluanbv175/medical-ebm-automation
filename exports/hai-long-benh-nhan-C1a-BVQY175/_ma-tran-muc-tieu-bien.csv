@@ -1,0 +1,38 @@
+muc_tieu,khai_niem,vai_tro,bien,kieu,cau_hoi,cong_cu,phan_tich_sap,ghi_chu
+1,"mức độ hài lòng chung (G1, hỏi trực tiếp)",ket_cuc_chinh,g1,thu_tu,G1,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),"§2, §3, §4",kết cục chính đã chốt ở G1; giữ 5 mức
+1,tỷ lệ hài lòng chung (G1 ≥ 4/5),ket_cuc_phu,SHLNBChung_NhiPhan,nhi_phan,G1,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),"§2, §3",kết cục phụ 1; KTC Wilson trên cỡ mẫu hiệu dụng
+1,điểm hài lòng tổng hợp 30 mục A1–F1,ket_cuc_phu,SHLNBChung_TinhToan,lien_tuc,A1,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),"§2, §3",kết cục phụ 2 — đối chiếu hội tụ với G1
+1,mức độ hài lòng lĩnh vực A — khả năng tiếp cận,mo_ta,A_Mean,lien_tuc,A1,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),"§2, §3",
+1,mức độ hài lòng lĩnh vực B — cơ sở vật chất,mo_ta,B_Mean,lien_tuc,B1,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),"§2, §3",
+1,"mức độ hài lòng lĩnh vực C — thái độ ứng xử, năng lực chuyên môn",mo_ta,C_Mean,lien_tuc,C1,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),"§2, §3",
+1,mức độ hài lòng lĩnh vực D — minh bạch thông tin và thủ tục,mo_ta,D_Mean,lien_tuc,D1,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),"§2, §3",
+1,mức độ hài lòng lĩnh vực E — kết quả cung cấp dịch vụ,mo_ta,E_Mean,lien_tuc,E1,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),"§2, §3",
+1,mức độ hài lòng lĩnh vực F — chi phí dịch vụ,mo_ta,F_Mean,lien_tuc,F1,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),"§2, §3",
+1,ý định quay lại khoa khám,ket_cuc_phu,g2,thu_tu,G2,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),"§2, §3",kết cục thứ cấp định trước
+1,ý định giới thiệu cho người thân/bạn bè,ket_cuc_phu,g3,thu_tu,G3,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),"§2, §3",kết cục thứ cấp định trước
+1,tầng hậu phân tầng (ngày trong tuần × khung giờ),trong_so,tang,danh_dinh,HIS,Lớp dữ liệu HIS/eHospital (giả danh),"§3, §4",trọng số hậu phân tầng — phân tích CHÍNH của MT1
+1,bàn khám (đơn vị gom cụm),cum,ma_ban_kham,van_ban,HIS,Lớp dữ liệu HIS/eHospital (giả danh),"§3, §4",DE và KTC theo chùm
+2,thời gian chờ khám (mốc HIS),phoi_nhiem,thoigian_cho,lien_tuc,HIS,Lớp dữ liệu HIS/eHospital (giả danh),"§4, §5",exposure chính — hiệu ứng mỗi 15 phút
+2,tuổi,hiep_bien,tuoi,lien_tuc,Câu 2,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,forced-in theo DAG
+2,giới tính,hiep_bien,gioitinh,nhi_phan,Câu 3,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,forced-in
+2,nơi cư trú,hiep_bien,noicutru,nhi_phan,Câu 7,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,forced-in
+2,có thẻ BHYT,hiep_bien,cobhyt,nhi_phan,Câu 9,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,forced-in
+2,lý do khám,hiep_bien,lydokham,danh_dinh,Câu 10,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,forced-in
+2,khung giờ khám,hiep_bien,khunggio_kham,danh_dinh,HIS,Lớp dữ liệu HIS/eHospital (giả danh),§5,forced-in (biến tạo tầng)
+2,ngày trong tuần khám,hiep_bien,ngay_trong_tuan,danh_dinh,HIS,Lớp dữ liệu HIS/eHospital (giả danh),§5,forced-in (biến tạo tầng)
+2,tự đánh giá sức khỏe,hiep_bien,suckhoe_tudanhgia,thu_tu,Câu 23,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,forced-in
+2,được khám đúng bác sĩ đã yêu cầu,hiep_bien,duoc_dung_bacsi,danh_dinh,Câu 15,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,forced-in
+2,trình độ học vấn,yeu_to,trinhdohocvan,thu_tu,Câu 4,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,thăm dò định trước
+2,nghề nghiệp,yeu_to,nghenghiep,danh_dinh,Câu 5,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,thăm dò định trước
+2,thu nhập hộ gia đình,yeu_to,thunhaphogd,thu_tu,Câu 8,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,thăm dò định trước
+2,khoảng cách nhà–viện,yeu_to,khoangcachnhabv,thu_tu,Câu 20,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,thăm dò định trước
+2,phương tiện di chuyển,yeu_to,phuongtiendichuyen,danh_dinh,Câu 21,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,thăm dò định trước
+2,nguồn thông tin biết đến viện,yeu_to,nguonthongtinbv,danh_dinh,Câu 22,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,thăm dò định trước
+2,kênh đăng ký khám,yeu_to,kenh_datlich,danh_dinh,Câu 16,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,thăm dò định trước
+2,sử dụng gói khám,yeu_to,co_goikham,danh_dinh,Câu 17,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,thăm dò định trước
+2,mức riêng tư khi trao đổi với bác sĩ,yeu_to,rieng_tu,thu_tu,Câu 18,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,thăm dò định trước
+2,có làm cận lâm sàng,yeu_to,co_cls,nhi_phan,HIS,Lớp dữ liệu HIS/eHospital (giả danh),§5,"sau khám — chỉ mô tả/thăm dò, không hiệu chỉnh"
+2,số bước/quầy phải qua,yeu_to,so_quay_buoc,dem,HIS,Lớp dữ liệu HIS/eHospital (giả danh),§5,"sau khám — chỉ mô tả/thăm dò, không hiệu chỉnh"
+2,chênh lệch thời gian chờ dự kiến – thực tế,yeu_to,chenh_kyvong,lien_tuc,Câu 11,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,trung gian — không hiệu chỉnh mô hình chính; thăm dò định trước
+2,đánh giá so với mong đợi,yeu_to,xacnhan_kyvong,thu_tu,Câu 12,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,trung gian — không hiệu chỉnh mô hình chính
+2,bàn khám (đơn vị gom cụm),cum,ma_ban_kham,van_ban,HIS,Lớp dữ liệu HIS/eHospital (giả danh),§4,SE robust theo chùm

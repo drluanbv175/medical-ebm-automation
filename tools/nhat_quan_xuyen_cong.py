@@ -738,7 +738,7 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
 # truy nguyên/văn phong ⇒ CẦN XEM; thiếu nguồn để so ⇒ CHƯA ĐỦ ĐỂ SO (không bao giờ là «khớp»).
 TRUC_CHUOI = ("bien_de_cuong", "cong_cu_tu_dien", "muc_tieu_phan_tich", "chon_mau_co_mau", "dac_ta_cho_bo_bien",
               "tong_quan_khoang_trong", "co_mau_tinh_lai", "ky_thuat_chon_mau", "tai_lieu_nop_co_mau", "ten_de_tai",
-              "cau_hoi_gia_thuyet", "trich_dan_tong_quan")
+              "cau_hoi_gia_thuyet", "trich_dan_tong_quan", "ma_tran_muc_tieu")
 # Trục nào là trách nhiệm của cổng nào (hoi_dong_cong.trach_nhiem dùng — «hoàn thiện» của cổng phải qua trục của nó).
 TRUC_THEO_CONG = {
     "co_mau": ("G3", "G4", "G10"), "alpha": ("G3", "G4", "G10"), "power": ("G3", "G4", "G10"),
@@ -752,6 +752,7 @@ TRUC_THEO_CONG = {
     "co_mau_tinh_lai": ("G3", "G4", "G10"), "ky_thuat_chon_mau": ("G1", "G3", "G4", "G10"),
     "tai_lieu_nop_co_mau": ("G10",), "ten_de_tai": ("G0", "G2", "G10"), "cau_hoi_gia_thuyet": ("G0", "G1", "G10"),
     "trich_dan_tong_quan": ("G0", "G1", "G10"),
+    "ma_tran_muc_tieu": ("G1", "G3", "G4", "G10"),
 }
 
 
@@ -1511,6 +1512,35 @@ def _truc_trich_dan(out_dir: Path, study: str, meta: Dict[str, Any]) -> Optional
                 "kiểm rút bài; nguồn dẫn ở văn bản cổng đều có trong danh mục")
 
 
+def _truc_ma_tran_muc_tieu(out_dir: Path, study: str, meta: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Giai đoạn «Mục tiêu» (15/11/2026): đọc kết quả `ma_tran_muc_tieu_bien.kiem` (MT-01…MT-11 — mục tiêu → biến →
+    câu hỏi → phân tích SAP → bảng giả) vào cùng bảng đồng bộ. Chưa có ma trận ⇒ CHƯA ĐỦ ĐỂ SO (không bao giờ «khớp»);
+    có lỗi ⇒ LỆCH MỀM; đạt nhưng còn cảnh báo (công thức biến phái sinh chưa duyệt, SAP chưa gọi đúng tên biến) ⇒ CẦN
+    XEM. Chưa chốt mục tiêu ở G1 ⇒ None (chưa tới giai đoạn)."""
+    import ma_tran_muc_tieu_bien as MTB  # noqa: PLC0415
+
+    if not MTB.muc_tieu_g1(meta):
+        return None
+    kq = MTB.kiem(out_dir, study, meta=meta)
+    ten = "Mục tiêu → biến → câu hỏi → phân tích SAP → bảng giả (ma trận MT)"
+    nguon = [{"cong": "G1–G4", "noi": MTB.TEP_MA_TRAN, "gia_tri": kq.get("tom_tat") or kq.get("trang_thai")}]
+    loi = [f"{x['ma']}: {x['noi_dung']}" for x in kq.get("loi") or []]
+    cb = kq.get("canh_bao") or []
+    if kq.get("trang_thai") == MTB.TRANG_THAI_KHONG_CO:
+        return _ket("ma_tran_muc_tieu", ten, nguon, MUC_CHUA_DU, "; ".join(loi) or "chưa có ma trận mục tiêu → biến")
+    if loi:
+        return _ket("ma_tran_muc_tieu", ten, nguon, MUC_LECH_MEM, "; ".join(loi[:5]))
+    if cb:
+        dem: Dict[str, int] = {}
+        for x in cb:
+            dem[x["ma"]] = dem.get(x["ma"], 0) + 1
+        return _ket("ma_tran_muc_tieu", ten, nguon, MUC_CAN_XEM,
+                    "ma trận đạt; còn cảnh báo " + ", ".join(f"{k} ×{v}" for k, v in sorted(dem.items()))
+                    + " (MT-08 = công thức biến phái sinh chờ thống kê viên/PI duyệt; MT-09 = SAP chưa gọi đúng tên "
+                      "biến)")
+    return _ket("ma_tran_muc_tieu", ten, nguon, MUC_KHOP, "ma trận đạt, không còn cảnh báo")
+
+
 def truc_chuoi(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -> List[Dict[str, Any]]:
     """Các trục chuỗi đầy đủ (mỗi trục tự bắt lỗi của mình — một trục hỏng không làm mất các trục khác)."""
     td = _tu_dien(out_dir, study)
@@ -1522,7 +1552,8 @@ def truc_chuoi(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -
                 lambda: _truc_ky_thuat_chon_mau(out_dir, study, meta, sap_text),
                 lambda: _truc_tai_lieu_nop(out_dir, study, meta),
                 lambda: _truc_ten_de_tai(out_dir, study, meta), lambda: _truc_cau_hoi_gia_thuyet(meta),
-                lambda: _truc_trich_dan(out_dir, study, meta)):
+                lambda: _truc_trich_dan(out_dir, study, meta),
+                lambda: _truc_ma_tran_muc_tieu(out_dir, study, meta)):
         try:
             k = ham()
         except Exception as e:  # noqa: BLE001

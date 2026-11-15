@@ -32,7 +32,7 @@ import time
 import unicodedata
 from datetime import datetime
 from pathlib import Path
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Tuple
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
@@ -1351,6 +1351,23 @@ def _thay_khung_sap_bang_sap_g4(artifact: str, out_dir: Optional[Path], study_na
     return artifact[:bat_dau] + khoi + phan_sau
 
 
+_RE_MT_PHAN_TICH = re.compile(r"phân\s+tích|yếu\s+tố\s+liên\s+quan|so\s+sánh", re.I)
+
+
+def _nhan_muc_tieu_sap(meta: Optional[dict]) -> Tuple[str, str]:
+    """Nhãn mục tiêu cho khung SAP §4/§5 theo ĐÚNG mục tiêu G1 đã chốt (15/11/2026 — giai đoạn «Mục tiêu»: khung ghi
+    cứng «Mục tiêu 1» / «Mục tiêu 2 — nếu có» trong khi BTM có MT1–MT2 mô tả và MT3 mới là phân tích yếu tố).
+    §4 = mục tiêu 1; §5 = mục tiêu phân tích ĐẦU TIÊN («phân tích», «yếu tố liên quan», «so sánh»), không có ⇒ «không
+    có mục tiêu phân tích — bỏ trống»; chưa chốt mục tiêu ⇒ nhãn chung, không đoán số."""
+    g1 = (((meta or {}).get("gate_params") or {}).get("G1") or {}) if isinstance(meta, dict) else {}
+    ob = g1.get("objectives")
+    ob = [str(x) for x in ob] if isinstance(ob, list) else ([str(ob)] if ob else [])
+    if not ob:
+        return "mục tiêu chính", "mục tiêu phân tích — nếu có"
+    pt = next((i for i, x in enumerate(ob, 1) if _RE_MT_PHAN_TICH.search(x)), None)
+    return "MT1", (f"MT{pt}" if pt else "không có mục tiêu phân tích — bỏ trống")
+
+
 def generate_g1_artifact(
     topic: str,
     study_name: str,
@@ -1895,6 +1912,7 @@ Quần thể phân tích chính liên kết estimand (không phải thuộc tín
 ```
 """
 
+    nhan_sap4, nhan_sap5 = _nhan_muc_tieu_sap(meta)
     artifact = f"""# A2 — THIẾT KẾ NGHIÊN CỨU & SAP SKELETON | {study_name}
 > Tạo tự động: {run_date} | Rule-based; {effect_source_note}
 > [BẢN NHÁP TỰ ĐỘNG] — Bác sĩ xác nhận thiết kế chọn + điền [CẦN...] trước khi tiến G2/G4
@@ -1984,14 +2002,14 @@ Chuẩn đề cương/protocol: {protocol_standard}
 {sap_descriptive_detail}
 ```
 
-### SAP §4 — Phân tích chính (Mục tiêu 1)
+### SAP §4 — Phân tích chính ({nhan_sap4})
 ```
 {sap_analysis_note}
 {inference_note}
 Phần mềm: ☐ R  ☐ Stata  ☐ SPSS  | Seed ngẫu nhiên: {suggested_seed} [CẦN BÁC SĨ XÁC NHẬN — gợi ý tự sinh từ ngày chạy]
 ```
 
-### SAP §5 — Phân tích đa biến (Mục tiêu 2 — nếu có)
+### SAP §5 — Phân tích đa biến ({nhan_sap5})
 ```
 {sap_multivariable_detail}
 ```
@@ -2119,11 +2137,14 @@ def guardrail_check_g1(artifact: str, effects: list, topic: str = "", internal_c
     # đã coi đủ nghiêm trọng để chặn cứng R2). Cùng nội dung lẫn vào artifact
     # G1 (topic bác sĩ tự sửa tay) sẽ bị G0 CHẶN nhưng G1 lại PASS êm — lỗ
     # hổng bất đối xứng giữa 2 cổng liền kề trong cùng pipeline.
-    pii_keywords = ["tên bệnh nhân", "họ tên", "ngày sinh", "cccd", "số hồ sơ"]
-    for p in pii_keywords:
-        if p in artifact_normalized:
-            errors.append(f"R2 🔴 PII phát hiện: '{p}'")
-            break
+    # 15/11/2026: «số hồ sơ» chỉ là PII khi kèm giá trị (pii_van_ban.nhan_so_ho_so) — câu đếm hồ sơ không phải PII.
+    import pii_van_ban as _PV  # noqa: PLC0415
+    pii_keywords = ["tên bệnh nhân", "họ tên", "ngày sinh", "cccd"]
+    hit = next((p for p in pii_keywords if p in artifact_normalized), None)
+    if hit is None and _PV.nhan_so_ho_so(artifact_normalized):
+        hit = "số hồ sơ"
+    if hit:
+        errors.append(f"R2 🔴 PII phát hiện: '{hit}'")
     else:
         warnings.append("R2 ✅ Không có PII")
 

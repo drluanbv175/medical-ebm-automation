@@ -122,6 +122,7 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
   cổng khác là cùng vai, không tính trùng. Chưa có bản ký G4 vai thống kê viên ⇒ REVIEW. G4 đã ký hợp lệ thì tiêu
   chí CHỈ HIỂN THỊ (ra khỏi phần xác nhận người) — bản ký của cổng SAU không hạ cấp SAP đã khoá. Là chỉ dấu (HMAC
   đối xứng): agent báo trùng người ký, không tuyên «độc lập», không đề xuất ký lại G4 chỉ vì cổng sau.
+- **Đồng bộ mục tiêu (15/11/2026):** trục `ma_tran_muc_tieu` (mục tiêu → biến → câu hỏi → mục SAP → bảng giả, MT-01…MT-11) phải `khop`, hoặc phần còn mở nêu đúng vai (MT-08 = thống kê viên/PI duyệt công thức biến phái sinh) trước khi kết luận cổng — chi tiết `bien-so-nghien-cuu`, `thiet-ke-nghien-cuu` mục cùng ngày.
 
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G4` xác nhận/dấu vân tay · bật cờ đời thực trong

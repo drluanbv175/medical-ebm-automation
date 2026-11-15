@@ -101,7 +101,7 @@ _VUOT_THAM_QUYEN_RE = re.compile(
 
 
 #: Một mục đầu ra có thể là «A hoặc B» — đủ khi CÓ MỘT trong các tệp (15/11/2026, thẩm định #274 VÀNG 4: G3-T2 nhận
-#: bảng biến số của đề cương nộp thay cho G3_BO_BIEN_SO_<mã>.md — cùng luật với MT-11, không hạ cấp đề tài đã có).
+#: bảng biến số của đề cương nộp thay cho G3_BO_BIEN_SO_<mã>.md — cùng luật với MT-12, không hạ cấp đề tài đã có).
 TACH_PHUONG_AN = " hoặc "
 
 
@@ -1536,7 +1536,7 @@ def _kiem_bo_bien_so(out_dir: Path, study: str) -> List[str]:
     except Exception as exc:  # noqa: BLE001 — không đo được ⇒ báo, không im lặng như «đạt»
         loi.append(f"không chạy được bộ kiểm ma trận: {type(exc).__name__}")
     # 15/11/2026 (thẩm định #274, VÀNG 4): đầu ra «G3_BO_BIEN_SO hoặc đề cương nộp» chỉ đủ khi đề cương THẬT có bảng
-    # biến số (cột «Mã biến») — cùng luật MT-11. Bảng G3 máy soạn mà PI chưa duyệt là việc của PI (MT-11 nhắc), không
+    # biến số (cột «Mã biến») — cùng luật MT-12. Bảng G3 máy soạn mà PI chưa duyệt là việc của PI (MT-12 nhắc), không
     # phải việc agent còn nợ.
     try:
         import doi_chieu_bien_de_cuong as DC  # noqa: PLC0415

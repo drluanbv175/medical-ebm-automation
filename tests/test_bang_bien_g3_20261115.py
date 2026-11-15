@@ -8,7 +8,7 @@ Test chốt: ① bảng máy soạn đọc được bằng CHÍNH bộ đọc c�
 phát hiện; ② bản nháp CHƯA duyệt KHÔNG phải nguồn người duyệt (lỗi vòng tròn: máy so với chính nó vẫn ra «đồng bộ»);
 ③ sửa bảng sau khi duyệt ⇒ xác nhận mất hiệu lực, còn sửa khung trạng thái thì không; ④ bộ máy đổi sau khi PI duyệt ⇒
 đối chiếu báo LỆCH theo bảng đã duyệt; ⑤ không bao giờ ghi đè bảng người soạn / đã duyệt / đã bị sửa tay; ⑥ bảng người
-soạn (#266) vẫn là nguồn; ⑦ MT-11 cảnh báo sớm ở G3, không đổi trạng thái ma trận. Ngoại tuyến, đề tài giả, không PII.
+soạn (#266) vẫn là nguồn; ⑦ MT-12 cảnh báo sớm ở G3, không đổi trạng thái ma trận. Ngoại tuyến, đề tài giả, không PII.
 """
 from __future__ import annotations
 
@@ -163,7 +163,7 @@ def test_bo_may_doi_sau_khi_pi_duyet_thi_doi_chieu_bao_lech_theo_bang_da_duyet(t
     assert st["trang_thai"] == BB.DA_DUYET and st["nguon_doi"] is True
     kq = DC.doi_chieu(d, STUDY)
     assert any(x.luat == "V2" and x.bien == "tuoi" and x.muc == DC.LECH for x in kq.lech()), kq.to_dict()
-    canh = [x["noi_dung"] for x in MT.kiem(d, STUDY)["canh_bao"] if x["ma"] == "MT-11"]
+    canh = [x["noi_dung"] for x in MT.kiem(d, STUDY)["canh_bao"] if x["ma"] == "MT-12"]
     assert canh and "đã đổi sau khi soạn" in canh[0]
 
 
@@ -226,11 +226,11 @@ def test_go_rieng_dong_dau_may_van_la_ban_nhap_chua_duyet(tmp_path):
     assert BB.ghi(d, STUDY)[0] is None, "bản đã bị sửa ⇒ không tự ghi đè"
 
 
-# ── ⑦ MT-11 ───────────────────────────────────────────────────────────────────────────────────────────────────────────
+# ── ⑦ MT-12 ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 def _mt11(d: Path) -> list[str]:
     kq = MT.kiem(d, STUDY)
-    assert kq["trang_thai"] == MT.TRANG_THAI_DAT, "MT-11 chỉ cảnh báo — không đổi trạng thái ma trận"
-    return [x["noi_dung"] for x in kq["canh_bao"] if x["ma"] == "MT-11"]
+    assert kq["trang_thai"] == MT.TRANG_THAI_DAT, "MT-12 chỉ cảnh báo — không đổi trạng thái ma trận"
+    return [x["noi_dung"] for x in kq["canh_bao"] if x["ma"] == "MT-12"]
 
 
 def test_mt11_canh_bao_khi_chua_co_hoac_chua_duyet_im_khi_da_duyet(tmp_path):
