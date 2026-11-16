@@ -1,0 +1,343 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""quyet_dinh_da_chot.py — RÚT quyết định ĐÃ CHỐT ở cổng trước để cổng sau (G7 · G9 · G10) không hỏi lại.
+
+Vì sao (bác sĩ 16/11/2026, «Hãy hoàn thiện vấn đề giả lập»): giả lập trọn vòng đề tài thuần tập đo được lỗi lớn nhất còn
+lại không phải cổng chặn sai mà là cổng sau HỎI LẠI điều đã chốt — G10 bắt PI khai lại 21 khoá (phân tích chính SAP §4,
+dữ liệu thiếu §6, khung bảng §11, miễn ICF và phiên bản đề cương ở G2, quản trị dữ liệu G5, tác giả G7, phơi nhiễm/hiệp
+biến/nguồn đo của ma trận…), G7 để trống 14 ô có sẵn ở G1/SAP. Bộ dựng mỗi cổng chỉ đọc khoá cấp cao của study_meta.
+
+Nguyên tắc:
+  • chỉ ĐỌC; không ghi study_meta.json, không ghi checkpoint;
+  • chỉ LẤP khoá còn TRỐNG — khoá PI đã khai (kể cả để ghi đè có chủ ý) luôn thắng;
+  • giá trị còn ô trống («[CẦN…]», ô gạch dưới…) ⇒ bỏ, không chép ô trống sang cổng sau;
+  • văn bản mang nhãn nguồn «(… — đã chốt ở …)» để người đọc truy ngược; nguồn từng khoá ở `nguon`.
+
+Nguồn: SAP G4 (§2/§4/§6/§7/§9/§10/§11) · gate_params.G1/G2/G7 · G5 (khoá dữ liệu, hồ sơ vận hành, nhập kép) ·
+`_ma-tran-muc-tieu-bien.csv` (G3) · `_quy-trinh-du-lieu.csv` (quy trình dữ liệu đã chốt ở giai đoạn 5).
+
+Dùng:
+  python3 tools/quyet_dinh_da_chot.py --study <mã> [--json]     # xem khoá sẽ được lấp + nguồn (không ghi gì)
+Cần bác sĩ kiểm chứng.
+"""
+from __future__ import annotations
+
+import argparse
+import csv
+import json
+import re
+import sys
+from pathlib import Path
+from typing import Any, Dict, List, Mapping, Optional, Tuple
+
+for _s in (sys.stdout, sys.stderr):
+    try:
+        _s.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass
+
+TOOLS = Path(__file__).resolve().parent
+BASE = TOOLS.parent
+if str(TOOLS) not in sys.path:
+    sys.path.insert(0, str(TOOLS))
+
+KHOA_NGUON = "_nguon_quyet_dinh_da_chot"
+# Chú thích soạn thảo mà run_g4_auto gắn sau dòng SAP điền sẵn («*(điền sẵn từ quyết định đã chốt — thống kê viên/PI
+# sửa nếu cần)*»). Không phải nội dung kết cục: G7 không chép vào bản nộp, G8 và nhất quán xuyên cổng bỏ khi so — MỘT
+# mẫu dùng chung (16/11/2026: G7 bỏ còn G8 so nguyên dòng ⇒ G8-AUTO-05 chặn nhầm «kết cục chính vắng trong bản thảo»).
+GHI_CHU_DIEN_SAN_RE = re.compile(r"\s*\*\(điền sẵn từ quyết định đã chốt[^)]*\)\*")
+
+
+# ─────────────────────────────── tiện ích đọc ───────────────────────────────
+def _doc(p: Path) -> str:
+    try:
+        return p.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return ""
+
+
+def _json(p: Path) -> Dict[str, Any]:
+    try:
+        d = json.loads(_doc(p) or "{}")
+    except ValueError:
+        return {}
+    return d if isinstance(d, dict) else {}
+
+
+def _gp(meta: Mapping[str, Any], cong: str) -> Dict[str, Any]:
+    gp = meta.get("gate_params") if isinstance(meta.get("gate_params"), Mapping) else {}
+    v = gp.get(cong) if isinstance(gp, Mapping) else None
+    return dict(v) if isinstance(v, Mapping) else {}
+
+
+def co_noi_dung(v: Any) -> bool:
+    """Giá trị THẬT: không rỗng, không còn ô trống theo hợp đồng chung (placeholder_contract)."""
+    if v is None or v is False:
+        return False
+    if isinstance(v, (list, tuple)):
+        return any(co_noi_dung(x) for x in v)
+    if isinstance(v, Mapping):
+        return any(co_noi_dung(x) for x in v.values())
+    t = str(v).strip()
+    if not t:
+        return False
+    try:
+        import placeholder_contract as PC  # noqa: PLC0415
+
+        return not PC.co_o_trong(t)
+    except ImportError:  # pragma: no cover - lưới an toàn
+        return "[CẦN" not in t.upper() and "___" not in t
+
+
+def _sap(out_dir: Path, study: str) -> str:
+    p = Path(out_dir) / f"G4_A5_SAP_FINAL_{study}.md"
+    return _doc(p)
+
+
+def muc_sap(sap: str, so: int) -> str:
+    """Thân §so của SAP (tới § kế tiếp / «## PHẦN»)."""
+    m = re.search(rf"^#{{2,4}}\s*§\s*{so}\b[^\n]*\n(.*?)(?=^#{{2,4}}\s*§\s*\d|^#{{1,2}}\s|\Z)", sap, re.M | re.S)
+    return m.group(1) if m else ""
+
+
+def nhan_sap(sap: str, so: int, nhan: str) -> str:
+    """Giá trị sau «**<nhãn>:**» trong §so — chỉ khi đã điền (không còn ô trống)."""
+    m = re.search(rf"\*\*{re.escape(nhan)}:\*\*\s*([^\n]+)", muc_sap(sap, so))
+    v = m.group(1).strip().rstrip() if m else ""
+    v = GHI_CHU_DIEN_SAN_RE.sub("", v).strip()
+    return v if co_noi_dung(v) else ""
+
+
+def gach_sap(sap: str, so: int) -> List[str]:
+    """Các gạch đầu dòng cấp 1 đã điền của §so."""
+    return [d[2:].strip() for d in muc_sap(sap, so).splitlines() if d.startswith("- ") and co_noi_dung(d[2:])]
+
+
+def bang_sap(sap: str) -> List[str]:
+    """Tên các bảng khung của SAP §11 («**Bảng …:**»)."""
+    return [re.sub(r"^\*\*|\*\*:?$|:$", "", d.strip()).strip(" *:") for d in muc_sap(sap, 11).splitlines()
+            if d.strip().startswith("**Bảng")]
+
+
+def ma_tran(out_dir: Path, study: str) -> List[Dict[str, str]]:
+    """Dòng của ma trận mục tiêu–biến — CHỈ khi ma trận ĐẠT (G3 đã duyệt); vắng/chưa đạt ⇒ []."""
+    try:
+        import ma_tran_muc_tieu_bien as MT  # noqa: PLC0415
+
+        if MT.vai_tro_bien(Path(out_dir), study) is None:
+            return []
+        p = Path(out_dir) / MT.TEP_MA_TRAN
+    except Exception:  # noqa: BLE001 — bộ kiểm hỏng ⇒ coi như chưa có ma trận (không đoán)
+        return []
+    try:
+        with p.open(encoding="utf-8-sig", newline="") as f:
+            return [dict(r) for r in csv.DictReader(f)]
+    except OSError:
+        return []
+
+
+def ngay_duyet(out_dir: Path, cong: str) -> Optional[str]:
+    """Ngày (YYYY-MM-DD) của bản ghi APPROVED mới nhất của `cong` trong sổ cái — chỉ ĐỌC, không xác minh chữ ký (đó là
+    việc của gate_contract); dùng làm NGÀY hiển thị, không làm bằng chứng phê duyệt."""
+    try:
+        so = json.loads(_doc(Path(out_dir) / "approval_ledger.json") or "[]")
+    except ValueError:
+        return None
+    ngay = [str(r.get("timestamp_utc") or "")[:10] for r in so if isinstance(r, Mapping)
+            and r.get("gate_id") == cong and r.get("decision") == "APPROVED"]
+    ngay = [n for n in ngay if re.fullmatch(r"\d{4}-\d{2}-\d{2}", n)]
+    return max(ngay) if ngay else None
+
+
+def quy_trinh(out_dir: Path) -> Dict[str, List[str]]:
+    """Quyết định quy trình dữ liệu đã chốt theo mục (`_quy-trinh-du-lieu.csv`); chỉ giá trị không còn ô trống."""
+    try:
+        import quy_trinh_du_lieu as QT  # noqa: PLC0415
+
+        dong, _loi, _ = QT.doc_bang(Path(out_dir))
+    except Exception:  # noqa: BLE001
+        return {}
+    ra: Dict[str, List[str]] = {}
+    for d in dong or []:
+        v = str(d.get("gia_tri") or "").strip()
+        if co_noi_dung(v):
+            ra.setdefault(str(d.get("muc") or "").strip(), []).append(v)
+    return ra
+
+
+# ─────────────────────────────── rút quyết định ───────────────────────────────
+def rut(out_dir: Path, study: str, meta: Mapping[str, Any]) -> Dict[str, Tuple[Any, str]]:
+    """{khoá study_meta cấp cao: (giá trị, nguồn)} — mọi quyết định đã chốt rút được (chưa so với khoá PI đã khai)."""
+    out_dir = Path(out_dir)
+    sap = _sap(out_dir, study)
+    g1, g2, g7 = _gp(meta, "G1"), _gp(meta, "G2"), _gp(meta, "G7")
+    mt = ma_tran(out_dir, study)
+    qt = quy_trinh(out_dir)
+    ops = _json(out_dir / "G5_OPERATIONAL_READINESS.json")
+    khoa_dl = _json(out_dir / "DATA_LOCK_manifest.json")
+    ra: Dict[str, Tuple[Any, str]] = {}
+
+    def dat(khoa: str, v: Any, nguon: str) -> None:
+        if co_noi_dung(v) and khoa not in ra:
+            ra[khoa] = (v, nguon)
+
+    # ── ma trận mục tiêu–biến (G3): kết cục chính (nguồn đo, tên biến) · phơi nhiễm · hiệp biến
+    kc = next((r for r in mt if r.get("vai_tro") == "ket_cuc_chinh"), None)
+    po = g1.get("primary_outcome") if isinstance(g1.get("primary_outcome"), Mapping) else None
+    if po and kc and co_noi_dung(po.get("name")):
+        dat("primary_outcome", {**dict(po), "source": kc.get("cong_cu") or po.get("source"),
+                                "variable_name": kc.get("bien") or po.get("variable_name")},
+            "G1 (kết cục chính) + ma trận G3 (nguồn đo, tên biến)")
+    pn = [r for r in mt if r.get("vai_tro") == "phoi_nhiem"]
+    if pn:
+        dat("exposure", "; ".join(f"{r.get('khai_niem')} (`{r.get('bien')}`)" for r in pn),
+            "ma trận mục tiêu–biến G3 (phơi nhiễm)")
+    hb = [r.get("khai_niem") for r in mt if r.get("vai_tro") == "hiep_bien" and r.get("khai_niem")]
+    if hb:
+        dat("confounders", hb, "ma trận mục tiêu–biến G3 (hiệp biến)")
+    cong_cu = list(dict.fromkeys(str(r.get("cong_cu") or "").strip() for r in mt if co_noi_dung(r.get("cong_cu"))))
+    if cong_cu:
+        dat("data_source", "; ".join(cong_cu) + " (nguồn đo từng biến — ma trận mục tiêu–biến G3)",
+            "ma trận mục tiêu–biến G3 (cột công cụ)")
+        # Mọi nguồn là hồ sơ/đơn thuốc/xét nghiệm (không thang đo, bộ câu hỏi, phỏng vấn) ⇒ công cụ = phiếu trích hồ sơ
+        # dựng từ bộ biến G3; đề tài có thang đo/PROM thì PI khai công cụ ĐÃ KIỂM ĐỊNH — máy không điền thay.
+        if not any(re.search(r"thang|bộ câu hỏi|câu hỏi|phỏng vấn|questionnaire|scale|prom|tự điền|tự báo cáo",
+                             c, re.I) for c in cong_cu):
+            dat("instrument", {"name": "Phiếu trích hồ sơ (CRF) dựng từ bộ biến đã duyệt ở G3 — từ điển dữ liệu G5",
+                               "source": "; ".join(cong_cu),
+                               "note": "Không phải thang đo/PROM nên không cần kiểm định COSMIN (ma trận G3)."},
+                "ma trận G3 (nguồn đo đều là hồ sơ)")
+
+    # ── SAP G4: phân tích chính · dữ liệu thiếu · khung bảng · câu hỏi sẽ trả lời
+    pp = nhan_sap(sap, 4, "Phương pháp")
+    dat("primary_analysis", f"{pp} (SAP §4 — đã chốt ở G4)" if pp else None, "SAP §4")
+    cl = nhan_sap(sap, 6, "Chiến lược")
+    dat("missing_data_analysis", f"{cl} (SAP §6 — đã chốt ở G4)" if cl else None, "SAP §6")
+    dat("table_shells", bang_sap(sap) or None, "SAP §11")
+    if pp:
+        cau = [f"ước lượng chính theo SAP §4 ({pp})"]
+        nn = nhan_sap(sap, 7, "Nhóm nhỏ tiền định")
+        if nn:
+            cau.append(f"nhóm nhỏ tiền định: {nn}")
+        dn = gach_sap(sap, 9)
+        if dn:
+            cau.append("độ nhạy: " + "; ".join(dn))
+        dat("expected_results", "Câu hỏi sẽ trả lời (không số): " + " · ".join(cau) + " (SAP đã chốt ở G4)",
+            "SAP §4/§7/§9")
+
+    # ── G1: mục tiêu
+    muc_tieu = g1.get("objectives")
+    if isinstance(muc_tieu, list) and len(muc_tieu) == 1:
+        dat("aim", f"{muc_tieu[0]} (G1 — đã chốt)", "G1 (mục tiêu duy nhất)")
+
+    # ── G2: phiên bản đề cương · đồng thuận/miễn · đăng ký · nguy cơ–lợi ích
+    dat("protocol_version", g2.get("protocol_version"), "G2 (gate_params.G2.protocol_version)")
+    if g2.get("icf_waiver_requested") is True:
+        cam = "; ".join(qt.get("an_danh", []) + qt.get("huy_bang_noi", []))
+        dat("consent_plan", "Xin miễn phiếu đồng ý (Tài liệu 9 hồ sơ G2)" + (f" — {cam}" if cam else "")
+            + " (G2 — PI đã chốt)", "G2 (icf_waiver_requested)")
+    elif g2:
+        dat("consent_plan", "Phiếu thông tin và đồng ý tham gia theo Tài liệu 4–5 hồ sơ G2 (G2 — đã chốt)",
+            "G2 (hồ sơ phiếu đồng ý)")
+    ngay_g2 = ngay_duyet(out_dir, "G2")
+    if ngay_g2 and co_noi_dung(g2.get("protocol_version")):
+        dat("version_date", ngay_g2, "sổ cái phê duyệt (ngày Hội đồng duyệt G2)")
+    muc_nguy_co = _json(out_dir / "G2_checkpoint.json").get("risk_level")
+    if co_noi_dung(muc_nguy_co):
+        tl3 = "Bảng rủi ro–lợi ích" in "".join(_doc(p) for p in out_dir.glob("G2_A3_ETHICS_PACKAGE_*.md")
+                                                 if ".bak-" not in p.name)
+        dat("risk_benefit", f"Nguy cơ {str(muc_nguy_co).lower()} (G2 — mức nguy cơ đã chốt)"
+            + ("; chi tiết rủi ro–lợi ích ở Tài liệu 3 hồ sơ G2" if tl3 else ""), "G2 (risk_level)")
+    if g2.get("registration_required") is False:
+        dat("registration_plan", "Không bắt buộc đăng ký (PI chốt ở G2)", "G2 (registration_required)")
+    elif g2.get("registration_required") is True and co_noi_dung(g2.get("registration_registry")):
+        dat("registration_plan", f"Đăng ký trên {g2['registration_registry']} trước khi tuyển người tham gia đầu tiên "
+                                 "(G2 — đã chốt)", "G2 (registration_registry)")
+
+    # ── G5: thu thập · kiểm soát chất lượng · khử định danh · quản trị dữ liệu
+    thu = qt.get("thu_thap", []) + qt.get("nhap_lieu", [])
+    if thu:
+        dat("data_collection_procedure", "; ".join(thu) + " (quy trình dữ liệu đã chốt)", "_quy-trinh-du-lieu.csv")
+    sdv = (ops.get("source_data_verification") or {}) if isinstance(ops.get("source_data_verification"), Mapping) \
+        else {}
+    if co_noi_dung(sdv.get("method")):
+        dat("data_collection_procedure", f"{sdv['method']} (hồ sơ vận hành G5)", "G5_OPERATIONAL_READINESS")
+    qc = qt.get("kiem_chung", [])
+    if qc or co_noi_dung(sdv.get("method")) or khoa_dl.get("status") == "LOCKED_FOR_ANALYSIS":
+        phan = list(qc) + ([str(sdv["method"])] if co_noi_dung(sdv.get("method")) and not qc else [])
+        if khoa_dl.get("status") == "LOCKED_FOR_ANALYSIS":
+            phan.append("luật kiểm phạm vi/logic khi làm sạch; khoá dữ liệu có manifest SHA-256")
+        dat("quality_control", "; ".join(phan) + " (G5 — đã chốt)", "G5 (quy trình kiểm chứng, làm sạch, khoá)")
+    khu = qt.get("an_danh", []) + qt.get("huy_bang_noi", [])
+    if khu:
+        dat("deidentification_plan", "; ".join(khu) + " (quy trình dữ liệu đã chốt)", "_quy-trinh-du-lieu.csv")
+    elif khoa_dl.get("status") == "LOCKED_FOR_ANALYSIS":
+        dat("deidentification_plan", "Khử định danh trước khi phân tích; bộ dữ liệu khoá không chứa thông tin định "
+                                     "danh (xác nhận lúc khoá G5)", "G5 (DATA_LOCK_manifest)")
+    luu = qt.get("luu_tru", []) + qt.get("huy_du_lieu", [])
+    ret = (ops.get("retention_plan") or {}).get("retention_rule") if isinstance(ops.get("retention_plan"), Mapping) \
+        else None
+    acc = ops.get("access_control_review") if isinstance(ops.get("access_control_review"), Mapping) else {}
+    bak = ops.get("backup_restore_test") if isinstance(ops.get("backup_restore_test"), Mapping) else {}
+    if ops or luu:
+        dg = {}
+        if luu or co_noi_dung(ret):
+            dg["retention"] = "; ".join(luu) if luu else str(ret)
+        if acc.get("least_privilege_confirmed"):
+            dg["access"] = "Phân quyền tối thiểu theo vai trò, đã rà soát (hồ sơ vận hành G5)"
+        if bak.get("restore_verified"):
+            dg["storage"] = "Lưu có sao lưu, đã thử phục hồi và kiểm checksum (hồ sơ vận hành G5)"
+        if dg:
+            dg["plan"] = f"Kế hoạch quản lý dữ liệu G5 (G5_A6_DATA_MGMT_{study}.md)"
+            dat("data_governance", dg, "G5 (hồ sơ vận hành + quy trình dữ liệu)")
+    if khu or khoa_dl.get("status") == "LOCKED_FOR_ANALYSIS":
+        dat("privacy_plan", (("; ".join(khu) + "; ") if khu else "")
+            + "chỉ phân tích bộ dữ liệu đã khử định danh (G5 — đã chốt)", "G5 / quy trình dữ liệu")
+
+    # ── G7: tác giả
+    dat("authors", g7.get("authors"), "G7 (gate_params.G7.authors)")
+    return ra
+
+
+def lop_phu(meta: Mapping[str, Any], out_dir: Path,
+            study: Optional[str] = None) -> Tuple[Dict[str, Any], Dict[str, str]]:
+    """(bản SAO study_meta đã lấp khoá TRỐNG bằng quyết định đã chốt, {khoá: nguồn}). Không đổi `meta` gốc."""
+    out_dir = Path(out_dir)
+    study = study or out_dir.name
+    moi = dict(meta)
+    nguon: Dict[str, str] = {}
+    for khoa, (v, ng) in rut(out_dir, study, meta).items():
+        cu = moi.get(khoa)
+        if not co_noi_dung(cu):
+            moi[khoa] = v
+            nguon[khoa] = ng
+        elif isinstance(cu, Mapping) and isinstance(v, Mapping):  # khối PI khai thiếu trường ⇒ chỉ bổ sung trường trống
+            them = {k: x for k, x in v.items() if not co_noi_dung(cu.get(k)) and co_noi_dung(x)}
+            if them:
+                moi[khoa] = {**dict(cu), **them}
+                nguon[khoa] = f"{ng} (bổ sung {', '.join(sorted(them))})"
+    if nguon:
+        moi[KHOA_NGUON] = nguon
+    return moi, nguon
+
+
+def main(argv: Optional[List[str]] = None) -> int:
+    ap = argparse.ArgumentParser(description="Xem quyết định đã chốt mà G7/G9/G10 lấy thay vì hỏi lại (chỉ đọc).")
+    ap.add_argument("--study", required=True)
+    ap.add_argument("--json", action="store_true")
+    a = ap.parse_args(argv)
+    out_dir = BASE / "exports" / a.study
+    meta = _json(out_dir / "study_meta.json")
+    _moi, nguon = lop_phu(meta, out_dir, a.study)
+    if a.json:
+        print(json.dumps(nguon, ensure_ascii=False, indent=1))
+    else:
+        print(f"Quyết định đã chốt sẽ được lấp cho {a.study} ({len(nguon)} khoá còn trống trong study_meta):")
+        for k, v in nguon.items():
+            print(f"  - {k} ← {v}")
+        print("Cần bác sĩ kiểm chứng.")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

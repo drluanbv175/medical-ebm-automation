@@ -1669,6 +1669,97 @@ def _cite_range(start: int, end: int) -> str:
     return "".join(f"[{i}]" for i in range(start, end + 1))
 
 
+def lap_o_da_chot_g7(van: str, out_dir: Path, study: str) -> tuple[str, list[str]]:
+    """Thay ô «[CẦN …]» hỏi lại điều ĐÃ CHỐT bằng chính quyết định đó; ô chưa có quyết định giữ nguyên.
+
+    16/11/2026 (giả lập trọn vòng đề tài thuần tập — bác sĩ: «Hãy hoàn thiện vấn đề giả lập»): 14 ô bản thảo hỏi lại G1
+    (mục tiêu, cơ sở, thời gian, tiêu chí nhận/loại, phơi nhiễm, kết cục chính/phụ, định nghĩa biến cố) và SAP (phương
+    pháp chính §4, dữ liệu thiếu §6, phần mềm §10), cộng G2 (đăng ký) và G0 (giả thuyết). Nguồn chung với G10:
+    `tools/quyet_dinh_da_chot.py`. Văn bản nộp tạp chí KHÔNG mang nhãn nguồn — nguồn ghi ở checkpoint
+    (`o_lay_tu_quyet_dinh_da_chot`). Trả (văn bản mới, danh sách ô đã lấp)."""
+    import quyet_dinh_da_chot as QD  # noqa: PLC0415
+
+    try:
+        meta = json.loads((Path(out_dir) / "study_meta.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        meta = {}
+    gp = meta.get("gate_params") if isinstance(meta.get("gate_params"), dict) else {}
+    g0, g1, g2 = (gp.get(g) if isinstance(gp.get(g), dict) else {} for g in ("G0", "G1", "G2"))
+    sap = QD._sap(Path(out_dir), study)
+    mt = QD.ma_tran(Path(out_dir), study)
+
+    def ds(v: Any) -> str:
+        if isinstance(v, (list, tuple)):
+            return "; ".join(str(x).strip() for x in v if QD.co_noi_dung(x))
+        return str(v).strip() if QD.co_noi_dung(v) else ""
+
+    po = g1.get("primary_outcome") if isinstance(g1.get("primary_outcome"), dict) else {}
+    muc_tieu = ds(g1.get("objectives"))
+    co_so = ds(g1.get("setting"))
+    thoi_gian = ds(g1.get("study_period"))
+    phoi = ds(g1.get("intervention_or_exposure")) or "; ".join(
+        f"{r.get('khai_niem')} (`{r.get('bien')}`)" for r in mt if r.get("vai_tro") == "phoi_nhiem")
+    kc_sap = QD.nhan_sap(sap, 2, "Kết cục chính")
+    kc_sap = QD.GHI_CHU_DIEN_SAN_RE.sub("", kc_sap).strip()
+    kc_phu = ds(g1.get("secondary_outcomes")) or "; ".join(
+        v for v in (QD.nhan_sap(sap, 2, "Kết cục phụ 1"), QD.nhan_sap(sap, 2, "Kết cục phụ 2")) if v)
+    dinh_nghia = ds(po.get("measure"))
+    bien_kc = next((r.get("bien") for r in mt if r.get("vai_tro") == "ket_cuc_chinh"), None)
+    dong_phoi = "\n".join(f"- `{r.get('bien')}` — {r.get('khai_niem')} (nguồn: {r.get('cong_cu')})"
+                          for r in mt if r.get("vai_tro") == "phoi_nhiem")
+    dong_kc = (f"- `{bien_kc}` — {ds(po.get('name'))}; định nghĩa: {dinh_nghia}; thời điểm: {ds(po.get('timepoint'))}"
+               if bien_kc and ds(po.get("name")) else "")
+    gia_thuyet = ds(g0.get("hypothesis_h1"))
+    dang_ky = ""
+    if g2.get("registration_required") is False:
+        dang_ky = "Không đăng ký — không bắt buộc với nghiên cứu này (đã chốt ở hồ sơ đạo đức)"
+    elif QD.co_noi_dung(g2.get("registration_id")):
+        dang_ky = f"{g2.get('registration_registry') or ''} {g2['registration_id']}".strip()
+    cap = [
+        ("tieu_de", "[CẦN — tiêu đề ngắn gọn ≤120 ký tự, chứa thiết kế + dân số + kết cục chính]",
+         ds(meta.get("title"))),
+        ("muc_tieu", "[CẦN — câu hỏi PICO chính một câu]", muc_tieu),
+        ("co_so", "[CẦN — đơn vị/bệnh viện, tỉnh/thành, thời gian nghiên cứu]",
+         "; ".join(x for x in (co_so, thoi_gian) if x)),
+        ("tieu_chi_nhan", "[CẦN tiêu chí nhận: …]",
+         f"tiêu chí nhận: {ds(g1.get('inclusion_criteria'))}" if ds(g1.get("inclusion_criteria")) else ""),
+        ("tieu_chi_loai", "[CẦN tiêu chí loại: …]",
+         f"tiêu chí loại: {ds(g1.get('exclusion_criteria'))}" if ds(g1.get("exclusion_criteria")) else ""),
+        ("phoi_nhiem", "[CẦN — từ PICO I: tên/liều/thời gian can thiệp hoặc phơi nhiễm]", phoi),
+        ("ket_cuc_chinh", "[CẦN — từ SAP §2, tiêu định nghĩa rõ]", kc_sap or ds(po.get("name"))),
+        ("cau_hoi", "[CẦN câu hỏi PICO chính]", muc_tieu[:1].lower() + muc_tieu[1:] if muc_tieu else ""),
+        ("gia_thuyet", "[CẦN nêu chiều hướng kỳ vọng của mối liên quan/hiệu quả]", gia_thuyet),
+        ("tieu_chi_nhan_pp", "[CẦN liệt kê cụ thể theo PICO P và SAP §1]", ds(g1.get("inclusion_criteria"))),
+        ("tieu_chi_loai_pp", "*Tiêu chí loại:* [CẦN]",
+         f"*Tiêu chí loại:* {ds(g1.get('exclusion_criteria'))}" if ds(g1.get("exclusion_criteria")) else ""),
+        ("co_so_pp", "[CẦN — tên bệnh viện/phòng khám, tuyến, địa bàn]", co_so),
+        ("thoi_gian", "[CẦN — từ tháng/năm đến tháng/năm]", thoi_gian),
+        ("phoi_nhiem_bien", "[CẦN mô tả chi tiết từ PICO I — chưa tìm thấy biến form 'Exposure' trong REDCap "
+                            "dictionary G5]", dong_phoi),
+        ("ket_cuc_bien", "[CẦN — từ SAP §2: tên biến, cách đo, đơn vị, thời điểm đo (REDCap dictionary G5 chưa gắn "
+                         "Section Header 'Kết cục chính' cho biến nào)]", dong_kc),
+        ("ket_cuc_phu", "[CẦN — liệt kê từ SAP §2]", kc_phu),
+        ("dinh_nghia_bien_co", "[CẦN — ICD-10 hoặc tiêu chí lâm sàng cụ thể cho từng biến cố trên]", dinh_nghia),
+        ("phan_mem", "[CẦN — R/Stata/SPSS phiên bản]", QD.nhan_sap(sap, 10, "Phần mềm")),
+        ("du_lieu_thieu", "[CẦN — multiple imputation m=20 hoặc complete case]", QD.nhan_sap(sap, 6, "Chiến lược")),
+        ("dang_ky", "[CẦN SỐ ĐĂNG KÝ CLINICALTRIALS.GOV/PROSPERO]", dang_ky),
+    ]
+    da: list[str] = []
+    for ten, o, gia_tri in cap:
+        if gia_tri and o in van:
+            van = van.replace(o, gia_tri)
+            da.append(ten)
+    if "Kết cục phụ: [CẦN]" in van and kc_phu:
+        van = van.replace("Kết cục phụ: [CẦN]", f"Kết cục phụ: {kc_phu}")
+        da.append("ket_cuc_phu_tom_tat")
+    pp = QD.nhan_sap(sap, 4, "Phương pháp")
+    if pp:
+        van, n = re.subn(r"\[CẦN — từ SAP §4;[^\]]*\]", pp, van)
+        if n:
+            da.append("phuong_phap_chinh")
+    return van, da
+
+
 def generate_manuscript(
     study: str,
     topic: str,
@@ -2060,9 +2151,9 @@ def generate_manuscript(
         "",
         f"**Registration:** {registration}  ",
         "",
-        "**Keywords:** " + (
-            " · ".join(topic.split()[:5]) + " · [CẦN 3–5 MeSH terms chính thức]"
-        ),
+        # SỬA 16/11/2026 (giả lập trọn vòng): bản cũ ghép 5 chữ đầu của chủ đề thành «từ khoá» («Sử · dụng · thuốc ·
+        # ức · chế») — rác mà người phản biện mô phỏng đã chỉ ra; từ khoá MeSH là việc của tác giả.
+        "**Keywords:** [CẦN 3–5 MeSH terms chính thức]",
         "",
         "---",
         "",
@@ -2993,6 +3084,12 @@ def main() -> None:
         ket_qua_g6=ket_qua_g6,
     )
 
+    # SỬA 16/11/2026: ô hỏi lại điều ĐÃ CHỐT (mục tiêu, cơ sở, tiêu chí, phơi nhiễm, kết cục, phần mềm SAP §10…) lấy
+    # thẳng từ quyết định đã chốt thay vì để tác giả gõ lại.
+    manuscript, da_lap_g7 = lap_o_da_chot_g7(manuscript, out_dir, study)
+    if da_lap_g7:
+        print(f"  → Lấy từ quyết định đã chốt (không hỏi lại): {', '.join(da_lap_g7)}")
+
     # ── Bước 5: Bảng số từ + checklist ──
     print("  → Sinh bảng số từ và checklist...")
     word_table   = word_count_table(args.word_limit)
@@ -3097,6 +3194,7 @@ def main() -> None:
         _cp = json.loads(cp_path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         _cp = {}
+    _cp["o_lay_tu_quyet_dinh_da_chot"] = da_lap_g7  # ô bản thảo lấy từ quyết định đã chốt (nguồn: quyet_dinh_da_chot)
     _cp["quality_gate"] = {
         "status": quality["status"],
         "contract_version": quality.get("contract_version"),

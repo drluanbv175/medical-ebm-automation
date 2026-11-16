@@ -113,15 +113,29 @@ def load_checkpoints(out_dir: Path) -> Dict[str, dict]:
     return cps
 
 
-def load_meta(out_dir: Path) -> dict:
-    """Đọc study_meta.json (tuỳ chọn) do bác sĩ/agent cung cấp."""
+def load_meta(out_dir: Path, lop_phu: bool = True) -> dict:
+    """Đọc study_meta.json (tuỳ chọn) do bác sĩ/agent cung cấp.
+
+    SỬA 16/11/2026 (giả lập trọn vòng — bác sĩ: «Hãy hoàn thiện vấn đề giả lập»): StudySpec và bộ dựng đề cương chỉ đọc
+    khoá cấp cao của study_meta ⇒ PI phải khai lại 21 khoá đã chốt ở SAP G4, G2, G5, G7, ma trận G3 (đo trên đề tài
+    thuần tập). `lop_phu=True` lấp các khoá còn TRỐNG bằng quyết định đã chốt (`tools/quyet_dinh_da_chot.py`) — không
+    ghi đè khoá PI đã khai, không ghi đĩa. Bộ lắp và cổng G10 cùng gọi hàm này nên StudySpec lưu và StudySpec tính lại
+    vẫn khớp."""
     p = out_dir / "study_meta.json"
+    meta: dict = {}
     if p.exists():
         try:
-            return json.loads(p.read_text(encoding="utf-8"))
+            meta = json.loads(p.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
-            return {}
-    return {}
+            meta = {}
+    if lop_phu and isinstance(meta, dict):
+        try:
+            import quyet_dinh_da_chot as QD  # noqa: PLC0415
+
+            meta, _ = QD.lop_phu(meta, out_dir)
+        except Exception as exc:  # noqa: BLE001 — không rút được ⇒ giữ nguyên study_meta (cổng vẫn báo ô thiếu)
+            print(f"  ⚠ Không rút được quyết định đã chốt: {type(exc).__name__}: {exc}", file=sys.stderr)
+    return meta if isinstance(meta, dict) else {}
 
 
 def _rel(path: Optional[Path]) -> Optional[str]:

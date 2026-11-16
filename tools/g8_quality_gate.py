@@ -610,13 +610,17 @@ def _la_dinh_tinh(design_code: Optional[str]) -> bool:
 
 def ket_cuc_sap(sap_text: str) -> tuple[list[str], list[str]]:
     """(các kết cục CHÍNH, các kết cục PHỤ) mà SAP khai — phần sau nhãn, bỏ đuôi «— biến `x`», đã chuẩn hoá."""
+    import quyet_dinh_da_chot as QD  # noqa: PLC0415 — mẫu chú thích điền sẵn dùng chung với G7/nhất quán xuyên cổng
+
     chinh: list[str] = []
     phu: list[str] = []
     for line in _nfc(sap_text).splitlines():
         m = _DONG_KHAI_KET_CUC_RE.match(line)
         if not m:
             continue
-        gia_tri = re.split(r"\s+[—–-]\s+(?:biến|variable)\b", m.group(3), flags=re.IGNORECASE)[0]
+        # 16/11/2026: bỏ chú thích soạn thảo «*(điền sẵn từ quyết định đã chốt …)*» — không phải nội dung kết cục
+        gia_tri = re.split(r"\s+[—–-]\s+(?:biến|variable)\b", QD.GHI_CHU_DIEN_SAN_RE.sub("", m.group(3)),
+                           flags=re.IGNORECASE)[0]
         gia_tri = _chuan_kc(gia_tri)
         if len(gia_tri) < 4:
             continue

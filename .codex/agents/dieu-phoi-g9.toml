@@ -106,7 +106,7 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - A12 phải phủ HỢP mọi PMID của gói (bản thảo, diễn giải, đề cương G10) TRƯỚC khi khoá G9: ghi lại receipt sau đó làm vỡ manifest SHA-256 đã khoá của G9 và G10 báo G9 «chưa ký».
 - Khai `G9_PUBLICATION_READINESS.json` xong thì chấm lại G9 (cập nhật manifest) rồi mới ký trên `G9_checkpoint.json` (approve_gate từ chối artifact khác). Tách bảng checklist chuẩn báo cáo thành tệp riêng cho `final_package.reporting_checklist_path`.
 - Lời hướng dẫn đầu gói A10 không còn chứa «[CẦN...]» (G9-AUTO-05 từng đếm).
-- Bộ sinh G9 hỏi lặp cùng một điều ở nhiều chỗ (53 ô trên đề tài thuần tập — form từng tác giả, cover letter); điền một lần rồi chép, không soạn khác nhau.
+- ĐÃ VÁ 16/11/2026: A10 Phần 6 chỉ TRỎ tới `G9_COVER_LETTER_<mã>.md` (không chép lại thư); `run_g9_auto` (`lap_o_da_chot_g9`) lấp từ `G9_PUBLICATION_READINESS.json` (CRediT, người truy cập dữ liệu, tài trợ, AI, chia sẻ dữ liệu, guarantor) + `gate_params.G7/G8` (COI, tài trợ, AI) + khoá G5 (N phân tích) + G2 (IRB, đăng ký) + tiêu đề/kết quả bản thảo. Quy trình đúng: tác giả khai phiếu readiness TRƯỚC → chạy lại `run_g9_auto.py` (sinh lại gói) → điền phần còn lại → chấm lại G9 → PI ký. Danh tính tác giả chỉ ghi trên form ICMJE chính thức của tạp chí; gói lưu mã `AUTHOR-xx` (không PII). Danh sách phản biện đề xuất là mục TUỲ CHỌN. Đo thuần tập: 53 → 4 ô (4 ô còn lại là phản hồi từng nhận xét trong khuôn thư phản biện — mỗi nhận xét một câu trả lời riêng, dùng sau khi tạp chí phản biện).
 
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G9` xác nhận/dấu vân tay · bật cờ đời thực trong

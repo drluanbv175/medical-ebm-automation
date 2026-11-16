@@ -25,6 +25,8 @@ python medical-ebm-automation/tools/run_g9_auto.py \
 ```
 **Sau khi chạy**, đối chiếu với G9 PHẦN 1–4 bên dưới; chờ bác sĩ ký 3 xác nhận trước khi mở khóa G9 thật.
 
+**Không hỏi lại điều đã chốt (16/11/2026):** tác giả khai `G9_PUBLICATION_READINESS.json` TRƯỚC rồi chạy lại `run_g9_auto.py` — bộ sinh (`lap_o_da_chot_g9`) lấp CRediT, người truy cập dữ liệu, tài trợ, AI, chia sẻ dữ liệu, guarantor từ phiếu; COI/tài trợ/AI từ `gate_params.G7/G8`; N phân tích từ khoá G5; IRB/đăng ký từ G2; tiêu đề/kết quả từ bản thảo. A10 Phần 6 chỉ trỏ tới `G9_COVER_LETTER_<mã>.md` (thư là MỘT tệp — sửa ở đó). Danh tính tác giả chỉ ghi trên form ICMJE chính thức của tạp chí (gói lưu mã `AUTHOR-xx`, không PII); phản biện đề xuất là mục tuỳ chọn. Ô nào không có quyết định đã chốt vẫn [CẦN…] — tác giả điền, agent không lấp bằng nhãn chung.
+
 ## CHẾ ĐỘ TỰ ĐỘNG — NỘP BÀI & LIÊM CHÍNH TÁC GIẢ (G9)
 
 Agent này chạy **tự động, không hỏi xác nhận**. Nhận yêu cầu G9 → kiểm tiền đề → soạn bộ khai báo liêm chính → chọn tạp chí → cover letter → dừng tại cổng cứng G9 chờ bác sĩ ký.

@@ -117,9 +117,9 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - **Đồng bộ bàn luận & báo cáo (15/11/2026):** bản thảo nêu đủ hạn chế mở của G1 (SL-09) và có bảng kiểm mở rộng cho mọi chuẩn của đề tài (CROSS/RECORD…) — chi tiết `viet-ban-thao` mục cùng ngày.
 
 **Giả lập trọn vòng như đề tài thật (15/11/2026):**
-- Bản nháp G7 mang ~40 dòng KHUNG (biểu ngữ DRAFT, khối «> …», chú thích ước tính số từ, bảng ước tính số từ) mà hệ chưa có lệnh gỡ — tác giả gỡ trước khi đặt `manuscript_reviewed_confirmed` (G7-AUTO-05 dùng chung bộ quét G8).
+- Bản nháp G7 mang ~40–50 dòng KHUNG (biểu ngữ DRAFT, khối «> …», chú thích ước tính số từ, bảng ước tính số từ). Gỡ bằng `python3 tools/go_khung_ban_thao_g7.py --study <mã>` (chạy khô) rồi `--ap-dung` (sao lưu `.bak-…`; CHỈ gỡ khung — ô [CẦN…], số liệu, trích dẫn giữ nguyên; mã 1 = còn ô chưa soạn, liệt kê) TRƯỚC khi tác giả đặt `manuscript_reviewed_confirmed`; bản thảo đổi ⇒ chốt lại dấu xác nhận G7 (16/11/2026; G7-AUTO-05 dùng chung bộ quét G8).
 - Khai sử dụng trí tuệ nhân tạo NGAY TRONG bản thảo (ICMJE V.A — G8-AUTO-06), không chỉ ở gate_params.
-- Đo trên đề tài thuần tập (lượt sạch): 14 ô G7 hỏi lại điều đã chốt + 3 ô hỏi lặp (mục tiêu, cơ sở, tiêu chí nhận/loại, phơi nhiễm, kết cục, phần mềm SAP §10, số đăng ký) — khoảng trống của bộ sinh, chưa vá; điền theo quyết định đã chốt, không soạn mới.
+- ĐÃ VÁ 16/11/2026 (bác sĩ: «Hãy hoàn thiện vấn đề giả lập»): `run_g7_auto` lấp ô hỏi lại điều đã chốt — G1 (mục tiêu, cơ sở, thời gian, tiêu chí nhận/loại, phơi nhiễm, kết cục chính/phụ, định nghĩa biến cố), SAP (§2, §4, §6, §10), G2 (đăng ký), G0 (giả thuyết) — qua MỘT nguồn `tools/quyet_dinh_da_chot.py`; checkpoint ghi `o_lay_tu_quyet_dinh_da_chot`. Đo lại thuần tập: 14 → 1 ô (ô còn lại là nhận định tính đại diện sau khi có dữ liệu — nội dung MỚI của tác giả). Ô KẾT QUẢ THẬT, bàn luận, hạn chế vẫn là việc tác giả; ô không có quyết định đã chốt vẫn [CẦN…] — không lấp bằng nhãn chung. Dòng Keywords để «[CẦN 3–5 MeSH terms chính thức]» (bộ sinh thôi đoán từ khoá từ tiêu đề).
 
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G7` xác nhận/dấu vân tay · bật cờ đời thực trong
