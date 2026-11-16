@@ -327,3 +327,39 @@ def test_dinh_tinh_hien_tuong_trung_tam_va_huong_dan_phong_van_tu_g1(tmp_path):
     assert "Trải nghiệm bắt đầu insulin" in ra["exposure"][0]
     cc = ra["instrument"][0]
     assert "Phỏng vấn sâu bán cấu trúc" in cc["name"] and "COSMIN" in cc["note"]
+
+
+# ── 13. Kịch bản R tái lặp G6 chạy được trên máy bác sĩ ────────────────────────────────────────────────────────
+def test_kich_ban_r_tai_lap_bo_cot_ma_bien_hang_va_goi_tuy_chon():
+    """Bảng 1 từng đưa record_id (168 mức) + biến hằng sau lọc nhóm con vào CreateTableOne ⇒ R treo > 600 giây;
+    Hosmer–Lemeshow gọi thẳng library(ResourceSelection) ⇒ máy chưa cài gói thì cả kịch bản dừng."""
+    import inspect
+
+    r = RSA.generate_r_script("S", "G6_NC_nam", "nhom_ca", "nsaid_30ngay", ["chong_dong"], "binary")
+    assert 'vars_all <- setdiff(vars_all, c("record_id", "study_id"' in r
+    assert "length(unique(stats::na.omit(x))) > 1" in r
+    assert 'requireNamespace("ResourceSelection", quietly = TRUE)' in r and "\nlibrary(ResourceSelection)" not in r
+    assert "length(unique(stats::na.omit(x))) > 1" in inspect.getsource(RSA._generate_r_script_survival)
+
+
+# ── 14. .sav giữ trường văn bản là BIẾN PHÂN TÍCH của đặc tả G6 (mã chủ đề định tính) ────────────────────────
+def test_xuat_sav_giu_truong_van_ban_la_bien_phan_tich(tmp_path):
+    import cau_noi_spss as CS
+
+    (tmp_path / "G6_DAC_TA_SAP.json").write_text(json.dumps({"phan_tich": [
+        {"id": "MT1", "vai": "chinh", "tham_so": {"loai_dac_thu": "dinh_tinh", "chu_de": "chu_de"}},
+        {"id": "NC", "vai": "nhom_con", "tham_so": {"loc": "a == 1", "covariates": ["tuoi"]}}]}), encoding="utf-8",
+                                                 newline="\n")
+    giu = CS.bien_phan_tich_g6(tmp_path)
+    assert {"chu_de", "tuoi", "dinh_tinh"} <= giu and "a == 1" not in giu
+    csv_p = tmp_path / "dl.csv"
+    csv_p.write_text("chu_de,ghi_chu\nSợ kim tiêm,ghi chú tự do\nChi phí,khác\n", encoding="utf-8", newline="\n")
+    tieu_de, tk, _n = CS.quet_csv(csv_p)
+    td = {"chu_de": {"loai": "notes"}, "ghi_chu": {"loai": "notes"}}
+    ke, canh_bao, _ = CS.ke_hoach_bien(tieu_de, tk, td, [], giu_cot=giu)
+    bo = {k["cot"]: k.get("bo") for k in ke}
+    assert bo == {"chu_de": False, "ghi_chu": True}, bo
+    assert any("chu_de" in c and "BIẾN PHÂN TÍCH" in c for c in canh_bao)
+    ke0, _cb, _ = CS.ke_hoach_bien(tieu_de, tk, td, [])  # không có đặc tả G6 ⇒ hành vi cũ: bỏ cả hai trường notes
+    assert {k["cot"]: k.get("bo") for k in ke0} == {"chu_de": True, "ghi_chu": True}
+    assert CS.bien_phan_tich_g6(tmp_path / "khong_co") == set()

@@ -655,8 +655,28 @@ def menh_de_thieu_so(ten: str, ma_so: list[str], ma_chu_so: list[int]) -> str | 
     )
 
 
+def bien_phan_tich_g6(out_dir: Path) -> set[str]:
+    """Tên cột mà đặc tả G6 đã duyệt dùng làm biến PHÂN TÍCH (mọi giá trị chuỗi trong `tham_so`).
+
+    16/11/2026 (giả lập trọn vòng — định tính): mã chủ đề `chu_de` khai là trường notes nên bị bỏ khỏi .sav ⇒ gói SPSS
+    không tái lặp được phân tích (R chạy trên cột rỗng vẫn «xong»). Trường văn bản là biến phân tích thì GIỮ (đã khử
+    định danh ở G5), các trường ghi chú khác vẫn bỏ như cũ."""
+    try:
+        dac_ta = json.loads((Path(out_dir) / "G6_DAC_TA_SAP.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return set()
+    ra: set[str] = set()
+    for pt in dac_ta.get("phan_tich") or []:
+        for v in (pt.get("tham_so") or {}).values():
+            for x in (v if isinstance(v, list) else [v]):
+                if isinstance(x, str) and re.fullmatch(r"[A-Za-z][A-Za-z0-9_]*", x):
+                    ra.add(x)
+    return ra
+
+
 def ke_hoach_bien(
-    tieu_de: list[str], tk: list[dict], td: dict[str, dict], ma_thieu: list[dict], *, giu_ghi_chu: bool = False
+    tieu_de: list[str], tk: list[dict], td: dict[str, dict], ma_thieu: list[dict], *, giu_ghi_chu: bool = False,
+    giu_cot: set[str] | None = None,
 ) -> tuple[list[dict], list[str], list[dict]]:
     """Mỗi cột CSV ⇒ một biến SPSS. Trả (kế hoạch, cảnh báo, đề xuất mã thiếu).
 
@@ -680,7 +700,10 @@ def ke_hoach_bien(
                 "bộ dữ liệu xuất SPSS phải khử định danh"
             )
         loai = d.get("loai", "").lower()
-        bo_cot = loai == "notes" and not giu_ghi_chu
+        bo_cot = loai == "notes" and not giu_ghi_chu and cot not in (giu_cot or set())
+        if loai == "notes" and not giu_ghi_chu and cot in (giu_cot or set()):
+            canh_bao.append(f"cột «{cot}» là văn bản tự do nhưng là BIẾN PHÂN TÍCH của đặc tả G6 — GIỮ trong .sav "
+                            "(đã khử định danh ở G5; rà lại không có PII trước khi chia sẻ)")
         ten = ten_spss_tu_chu_thich(d) if d and cot == goc else None
         if ten and not ten_hop_le(ten):
             canh_bao.append(f"«Tên SPSS: {ten}» của {cot} không hợp lệ — dùng tên gốc")
@@ -1837,7 +1860,8 @@ def lenh_xuat_sav(args) -> int:
             + (" …" if len(nhieu_dong) > 10 else "")
             + ". Thay xuống dòng ở nguồn (nhap_lieu_excel báo «xuong_dong_trong_o») rồi chạy lại"
         )
-    ke, canh_bao, de_xuat = ke_hoach_bien(tieu_de, tk, td, mt, giu_ghi_chu=getattr(args, "giu_ghi_chu", False))
+    ke, canh_bao, de_xuat = ke_hoach_bien(tieu_de, tk, td, mt, giu_ghi_chu=getattr(args, "giu_ghi_chu", False),
+                                          giu_cot=bien_phan_tich_g6(d))
     kiem_noi_dung_bien(d, args.study, td_p, ke)
     e5 = ap_va_chan_e5(d, args.study, ke, td, csv_p)
     ra = d / "spss"

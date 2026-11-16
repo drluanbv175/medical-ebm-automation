@@ -2181,6 +2181,11 @@ def _generate_r_script_survival(study: str, gate: str, time_col: str, event_col:
         'data <- read.csv("data.csv")  # hoặc read.xlsx\n\n'
         "# 2. Bảng 1\n"
         f'vars_all <- setdiff(names(data), c("{group_col}", "{event_col}", "{time_col}"))\n'
+        '# Bỏ cột MÃ và biến HẰNG (vd giới sau lọc nhóm con): CreateTableOne treo với mã nhiều mức (16/11/2026)\n'
+        'vars_all <- setdiff(vars_all, c("record_id", "study_id", "ma_nguoi_tham_gia", "participant_id",'
+        ' "transcript_id"))\n'
+        'vars_all <- vars_all[vapply(data[vars_all], function(x) length(unique(stats::na.omit(x))) > 1,'
+        ' logical(1))]\n'
         f'tab1 <- CreateTableOne(vars = vars_all, strata = "{group_col}", data = data)\n'
         "print(tab1, showAllLevels = TRUE, smd = TRUE)\n\n"
         f'# 3. Kaplan-Meier + log-rank\n'
@@ -2273,8 +2278,10 @@ def generate_r_script(study: str, gate: str, outcome_col: str, group_col: str,
                  else "cbind(beta = coef(model_adj), confint(model_adj))")
     hosmer_block = (
         "# Hosmer-Lemeshow (logistic)\n"
-        "library(ResourceSelection)\n"
-        f"hoslem.test(data${outcome_col}, fitted(model_adj))"
+        # 16/11/2026: gói tuỳ chọn — thiếu thì báo cách cài, KHÔNG dừng cả kịch bản tái lặp (máy bác sĩ chưa cài)
+        'if (requireNamespace("ResourceSelection", quietly = TRUE)) {\n'
+        f"  print(ResourceSelection::hoslem.test(data${outcome_col}, fitted(model_adj)))\n"
+        "} else message(\"Chưa cài gói ResourceSelection (Hosmer-Lemeshow): install.packages('ResourceSelection')\")"
         if family == "binomial" else ""
     )
     if cluster_col:
@@ -2318,6 +2325,11 @@ def generate_r_script(study: str, gate: str, outcome_col: str, group_col: str,
         'data <- read.csv("data.csv")  # hoặc read.xlsx\n\n'
         "# 2. Bảng 1\n"
         f'vars_all <- setdiff(names(data), c("{group_col}", "{outcome_col}"))\n'
+        '# Bỏ cột MÃ và biến HẰNG (vd giới sau lọc nhóm con): CreateTableOne treo với mã nhiều mức (16/11/2026)\n'
+        'vars_all <- setdiff(vars_all, c("record_id", "study_id", "ma_nguoi_tham_gia", "participant_id",'
+        ' "transcript_id"))\n'
+        'vars_all <- vars_all[vapply(data[vars_all], function(x) length(unique(stats::na.omit(x))) > 1,'
+        ' logical(1))]\n'
         f'tab1 <- CreateTableOne(vars = vars_all, strata = "{group_col}", data = data)\n'
         "print(tab1, showAllLevels = TRUE, smd = TRUE)\n\n"
         f"# 3. Kết cục chính\n{model_comment}\n"

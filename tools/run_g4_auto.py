@@ -578,7 +578,8 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             "",
             "- **Phần mềm:** [CẦN — R v4.x (metafor/meta) / Stata v18 (meta) / RevMan 5.4]  ",
             "- **Packages:** [CẦN — metafor, meta...]  ",
-            "- **Random seed:** KHÔNG ÁP DỤNG — phân tích gộp không có bước ngẫu nhiên (trừ khi dùng bootstrap/Bayes)  ",
+            "- **Random seed:** [CẦN BÁC SĨ ẤN ĐỊNH — ví dụ: set.seed(2026); cần cho bootstrap/hoán vị/Bayes của phân "
+            "tích gộp]  ",
             "",
         ]
     else:
