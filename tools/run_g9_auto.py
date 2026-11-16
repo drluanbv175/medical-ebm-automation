@@ -30,7 +30,7 @@ import sys
 import sys as _sys_r4
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
@@ -235,9 +235,10 @@ def build_part2_coi(n_authors: int, study: str) -> str:
             f"Đề tài: {study} | Ngày khai báo: {_TODAY}",
             "═══════════════════════════════════════════════════════════════",
             "",
-            "Họ tên tác giả: [CẦN ĐIỀN]",
-            "Đơn vị: [CẦN ĐIỀN]",
-            "Mã tác giả nội bộ (không PII): [CẦN ĐIỀN]",
+            # SỬA 16/11/2026 (giả lập trọn vòng): mã tác giả đã cấp ở Phần 1 (AUTHOR-NN) — không hỏi lại; họ tên/đơn vị
+            # chỉ ghi trên form ICMJE chính thức (chính sách không lưu PII trong A10 — dòng ngay dưới).
+            "Họ tên tác giả / Đơn vị: (chỉ ghi trên form ICMJE chính thức của tạp chí — không lưu tại đây)",
+            f"Mã tác giả nội bộ (không PII): AUTHOR-{i:02d}",
             "ORCID/tên/email chỉ điền trong hệ thống nộp bài được kiểm soát, không lưu tại đây.",
             "",
             "I. HỖ TRỢ CHO CHÍNH BẢN THẢO (không giới hạn thời gian)",
@@ -622,13 +623,10 @@ def build_part6_cover_letter(cps: dict, study: str, target_journal: str) -> str:
             "khác, ghi đúng tool/provider/version/purpose và khớp Phần 4."
         ),
         "",
-        "SUGGESTED REVIEWERS (khuyến nghị, không bắt buộc):",
-        "  1. [CẦN — Tên | Institution | Email | Lý do]",
-        "  2. [CẦN — Tên | Institution | Email | Lý do]",
-        "  3. [CẦN — Tên | Institution | Email | Lý do]",
+        # SỬA 16/11/2026: mục TUỲ CHỌN không còn là ô «[CẦN]» — ô bắt buộc chặn G9-AUTO-05 cho một mục không bắt buộc.
+        "SUGGESTED REVIEWERS (khuyến nghị, không bắt buộc): (tác giả thêm nếu tạp chí cho phép — có thể bỏ trống)",
         "",
-        "EXCLUDED REVIEWERS (nếu cần):",
-        "  [CẦN — Tên | Lý do loại trừ]",
+        "EXCLUDED REVIEWERS (nếu cần): (không có)",
         "",
         "Thank you for considering our manuscript.",
         "",
@@ -649,6 +647,180 @@ def build_part6_cover_letter(cps: dict, study: str, target_journal: str) -> str:
 # ════════════════════════════════════════════════════════════════════════════
 # 8. SINH PHẦN 7 — BẢN MẪU PHẢN HỒI PHẢN BIỆN
 # ════════════════════════════════════════════════════════════════════════════
+
+def build_part6_pointer(study: str) -> str:
+    """Phần 6 trong A10 — TRỎ tới tệp cover letter riêng (16/11/2026, giả lập trọn vòng).
+
+    Bản cũ chép NGUYÊN thư gửi tạp chí vào A10 VÀ ghi thêm `G9_COVER_LETTER_<mã>.md` ⇒ ~25 ô hỏi lặp cùng một nội dung ở
+    hai tệp (đo trên đề tài thuần tập), sửa một nơi thì nơi kia lệch. Nay một nguồn duy nhất là tệp cover letter (đã
+    nằm trong manifest G9 — `final_package.cover_letter_path`)."""
+    return "\n".join([
+        "## PHẦN 6 — THƯ GỬI TẠP CHÍ (tệp riêng)",
+        "",
+        f"> Thư gửi tạp chí nằm ở `G9_COVER_LETTER_{study}.md` (một nguồn duy nhất, có trong manifest G9). Khai báo xung",
+        "> đột lợi ích, tài trợ, chia sẻ dữ liệu và AI trong thư phải khớp Phần 2–4.",
+        "",
+        "---",
+        "",
+    ])
+
+
+def lap_o_da_chot_g9(a10: str, thu: str, out_dir: Path, study: str) -> tuple[str, str, list[str]]:
+    """Thay ô hỏi lại điều ĐÃ CHỐT trong gói A10 và cover letter bằng chính quyết định đó (16/11/2026).
+
+    Nguồn: `G9_PUBLICATION_READINESS.json` (tác giả tự khai — CRediT, người truy cập dữ liệu, tài trợ, AI, chia sẻ dữ
+    liệu), gate_params.G7 (COI, tài trợ, chia sẻ dữ liệu, tác giả, tạp chí), gate_params.G8 (AI), G2 (đăng ký, số IRB),
+    G5 (N đã khoá), bản thảo G7 (tóm tắt kết quả, số từ/bảng/tài liệu tham khảo), bản diễn giải G6.5 (hàm ý). Ô chưa có
+    quyết định giữ nguyên. Trả (A10 mới, thư mới, danh sách ô đã lấp)."""
+    import quyet_dinh_da_chot as QD  # noqa: PLC0415
+
+    od = Path(out_dir)
+    meta = QD._json(od / "study_meta.json")
+    g1, g2p, g7, g8 = (QD._gp(meta, g) for g in ("G1", "G2", "G7", "G8"))
+    rs = QD._json(od / "G9_PUBLICATION_READINESS.json")
+    cp2 = QD._json(od / "G2_checkpoint.json")
+    khoa = QD._json(od / "DATA_LOCK_manifest.json")
+    a8 = QD._doc(od / f"G7_A8_MANUSCRIPT_{study}.md")
+    dg = QD._doc(od / f"G6_DIEN_GIAI_{study}.md")
+    da: list[str] = []
+
+    def thay(van: str, o: str, gia_tri: Any, ten: str) -> str:
+        if QD.co_noi_dung(gia_tri) and o in van:
+            da.append(ten)
+            return van.replace(o, str(gia_tri))
+        return van
+
+    # ── A10 · Phần 1: CRediT từng tác giả, người truy cập dữ liệu, mã hợp đồng tài trợ
+    tac_gia = [a for a in (rs.get("authors") or []) if isinstance(a, dict)]
+    vai = iter(", ".join(a.get("credit_roles") or []) for a in tac_gia)
+    o_credit = "- Đóng góp cụ thể (CRediT): [CẦN — ví dụ: Conceptualization, Methodology, Writing – original draft]"
+
+    def _credit(_m: "re.Match[str]") -> str:
+        v = next(vai, "")
+        if v:
+            da.append("credit")
+            return f"- Đóng góp cụ thể (CRediT): {v}"
+        return o_credit
+
+    a10 = re.sub(re.escape(o_credit), _credit, a10)
+    gov = rs.get("data_access_governance") if isinstance(rs.get("data_access_governance"), dict) else {}
+    a10 = thay(a10, "[CẦN — AUTHOR-__]", gov.get("primary_data_access_author_ref"), "nguoi_truy_cap_du_lieu")
+    if gov.get("sponsored_research") is False:
+        a10 = thay(a10, "[CẦN — EVIDENCE-REF]", "Không áp dụng — không có nhà tài trợ", "hop_dong_tai_tro")
+    else:
+        a10 = thay(a10, "[CẦN — EVIDENCE-REF]", gov.get("sponsor_agreement_evidence_ref"), "hop_dong_tai_tro")
+
+    # ── A10 · Phần 2: tuyên bố COI tập thể đã khai ở G7
+    coi = str(g7.get("coi_declared") or (rs.get("coi_funding") or {}).get("collective_coi_statement") or "")
+    if QD.co_noi_dung(coi) and re.search(r"\bkhông\b|\bno\b|none", coi, re.I) and "[CẦN CHỌN MỘT TRONG HAI]" in a10:
+        a10 = re.sub(r"\[CẦN CHỌN MỘT TRONG HAI\]\n", f"Đã chọn Option A — khai ở G7: «{coi}»\n", a10)
+        a10 = re.sub(r"\nOption B \(Có COI phải khai báo\):\n[^\n]*\n[^\n]*\n", "\n", a10)
+        da.append("coi_tap_the")
+
+    # ── A10 · Phần 3: lựa chọn chia sẻ dữ liệu đã khai (G8 ipd_sharing + phiếu sẵn sàng)
+    dav = rs.get("data_availability") if isinstance(rs.get("data_availability"), dict) else {}
+    quyet = str(dav.get("decision") or "").upper() or ("NOT_SHARED_WITH_JUSTIFICATION"
+                                                        if g8.get("ipd_sharing") is False else "")
+    chon = {"NOT_SHARED_WITH_JUSTIFICATION": "C", "CONTROLLED_ACCESS": "A", "OPEN": "B"}.get(quyet)
+    if chon and "### ☐ Lựa chọn A" in a10:
+        khoi = re.split(r"(?=^### ☐ Lựa chọn [ABC])", a10, flags=re.M)
+        giu = []
+        for k in khoi:
+            m = re.match(r"### ☐ Lựa chọn ([ABC])", k)
+            if m and m.group(1) != chon:
+                tail = re.search(r"\n\*\*\[CẦN BÁC SĨ XÁC NHẬN[^\n]*\n", k)
+                if tail:  # khối cuối mang luôn phần sau (phụ lục thử nghiệm…) ⇒ giữ phần sau
+                    giu.append(k[tail.start():])
+                continue
+            giu.append(k.replace(f"### ☐ Lựa chọn {chon}", f"### ☑ Lựa chọn {chon}") if m else k)
+        a10 = "".join(giu)
+        a10 = a10.replace("> **[CẦN BÁC SĨ CHỌN MỘT TRONG BA LỰA CHỌN VÀ XÓA HAI LỰA CHỌN CÒN LẠI]**\n\n", "")
+        a10 = a10.replace("**[CẦN BÁC SĨ XÁC NHẬN lựa chọn trước khi nộp bài]**",
+                          f"**Đã chọn Lựa chọn {chon} (G8 `ipd_sharing` + phiếu sẵn sàng công bố)**")
+        da.append("chia_se_du_lieu")
+    if dav.get("clinical_trial") is False:
+        a10 = re.sub(r"(### Phụ lục bắt buộc nếu là thử nghiệm lâm sàng\n)(.*?)(?=\n---)",
+                     r"\1\nKhông áp dụng — nghiên cứu không phải thử nghiệm lâm sàng (phiếu sẵn sàng công bố).\n",
+                     a10, flags=re.S)
+        da.append("phu_luc_thu_nghiem")
+
+    # ── A10 · Phần 4: AI đã khai (phiếu sẵn sàng / G8)
+    ai = rs.get("ai_disclosure") if isinstance(rs.get("ai_disclosure"), dict) else {}
+    cong_cu = "; ".join(ai.get("tools") or []) or str(g8.get("ai_tools") or "")
+    muc_dich = "; ".join(ai.get("purposes") or []) or str(g8.get("ai_purpose") or "")
+    if ai.get("ai_used") is True or g8.get("ai_use_declared") is True:
+        a10 = thay(a10, "AI used: ☐ No  ☐ Yes", "AI used: ☐ No  ☑ Yes", "ai_dung")
+        a10 = thay(a10, "Tool/provider/model/version/date accessed: [CẦN XÁC NHẬN]",
+                   f"Tool/provider/model/version/date accessed: {cong_cu}" if cong_cu else None, "ai_cong_cu")
+        a10 = thay(a10, "Other tools/purposes: [CẦN XÁC NHẬN]",
+                   f"Other tools/purposes: {muc_dich}" if muc_dich else None, "ai_muc_dich")
+        a10 = thay(a10, "[CẦN — TOOL, PROVIDER, VERSION]", cong_cu, "ai_mau_cong_cu")
+        a10 = thay(a10, "[CẦN — PURPOSE AND SECTION]", muc_dich, "ai_mau_muc_dich")
+    nguoi_kiem = (rs.get("authorship") or {}).get("guarantor_author_ref") if isinstance(rs.get("authorship"), dict) \
+        else None
+    a10 = thay(a10, "Human reviewer reference (no PII): [CẦN XÁC NHẬN]",
+               f"Human reviewer reference (no PII): {nguoi_kiem}" if QD.co_noi_dung(nguoi_kiem) else None,
+               "ai_nguoi_kiem")
+
+    # ── Cover letter
+    thu = thay(thu, "[CẦN — TIÊU ĐỀ ĐẦY ĐỦ KHÔNG QUÁ 120 KÝ TỰ]", meta.get("title"), "thu_tieu_de")
+    if khoa.get("row_count"):
+        thu = thay(thu, "N thực tế enroll = [CẦN — sau khi khóa CSDL (G5) + phân tích (G6)].",
+                   f"N phân tích (bộ dữ liệu khoá G5) = {khoa['row_count']}.", "thu_n_khoa")
+        thu = thay(thu, "N = [CẦN — cỡ mẫu thực tế từ kết quả G6].",  # G3 không có N kế hoạch
+                   f"N phân tích (bộ dữ liệu khoá G5) = {khoa['row_count']}.", "thu_n_khoa")
+    if g2p.get("registration_required") is False:
+        thu, n = re.subn(r"  The study was registered at [^\n]*\n",
+                         "  Trial registration was not required for this observational study (decided at ethics "
+                         "review).\n", thu)
+        if n:
+            da.append("thu_dang_ky")
+    thu = thay(thu, "[CẦN SỐ IRB từ G2]", cp2.get("g2_irb_number"), "thu_so_irb")
+    m_kq = re.search(r"^\*\*Results:\*\*\s*([^\n]+)", a8, re.M)
+    if m_kq and QD.co_noi_dung(m_kq.group(1)):
+        thu = thay(thu, "  [CẦN — 2-3 câu tóm tắt kết quả chính từ G6/G7]", f"  {m_kq.group(1).strip()}", "thu_ket_qua")
+        thu = thu.replace("  [CẦN — điền sau khi hoàn tất phân tích và có kết quả thật]\n", "")
+    m_hy = re.search(r"## 5\. Hàm ý thực hành và hướng nghiên cứu tiếp\s*\n\n([^\n]+)", dg)
+    if m_hy:
+        thu = thay(thu, "  [CẦN — ý nghĩa lâm sàng + chính sách + hướng nghiên cứu tiếp]", f"  {m_hy.group(1).strip()}",
+                   "thu_ham_y")
+    muc_tieu = g1.get("objectives")
+    if isinstance(muc_tieu, list) and muc_tieu:
+        thu = thay(thu, "[CẦN — đóng góp chính của bài]", "; ".join(str(x) for x in muc_tieu), "thu_dong_gop")
+    if a8:
+        than = re.split(r"^## (?:TÀI LIỆU THAM KHẢO|REFERENCES)", a8, flags=re.M)[0]
+        so_tu = len(re.findall(r"\w+", than))
+        so_tltk = len(set(re.findall(r"PMID[:\s]*(\d{6,9})", a8)))
+        so_bang = len(re.findall(r"^\*\*Bảng \d", a8, re.M))
+        so_hinh = len(re.findall(r"^\*\*Hình \d", a8, re.M))
+        thu, n = re.subn(r"Word count \(excluding refs/tables\): \[CẦN[^\]]*\]",
+                         f"Word count (excluding refs/tables): ~{so_tu} (đếm máy trên bản thảo G7 — đối chiếu giới hạn "
+                         "của tạp chí)", thu)
+        if n:
+            da.append("thu_so_tu")
+        thu = thay(thu, "☐ References: [CẦN]   ☐ Tables: [CẦN]   ☐ Figures: [CẦN]",
+                   f"☐ References: {so_tltk}   ☐ Tables: {so_bang}   ☐ Figures: {so_hinh}", "thu_dem")
+    thu = thay(thu, "Conflicts of interest: [CẦN — 'None declared' hoặc liệt kê từ Phần 2]",
+               f"Conflicts of interest: {g7['coi_declared']}" if QD.co_noi_dung(g7.get("coi_declared")) else None,
+               "thu_coi")
+    thu = thay(thu, "Funding: [CẦN]", f"Funding: {g7['funding_declared']}"
+               if QD.co_noi_dung(g7.get("funding_declared")) else None, "thu_tai_tro")
+    thu = thay(thu, "Data availability: [CẦN — lựa chọn từ Phần 3]", f"Data availability: {g7['data_sharing_statement']}"
+               if QD.co_noi_dung(g7.get("data_sharing_statement")) else None, "thu_chia_se")
+    if g8.get("ai_use_declared") is True and cong_cu:
+        thu, n = re.subn(r"\[CẦN XÁC NHẬN Yes/No\]\. Nếu có dùng[^\n]*Phần 4\.",
+                         f"Yes — {cong_cu}; {muc_dich} (khớp Phần 4).", thu)
+        if n:
+            da.append("thu_ai")
+    elif g8.get("ai_use_declared") is False:
+        thu, n = re.subn(r"\[CẦN XÁC NHẬN Yes/No\]\. Nếu có dùng[^\n]*Phần 4\.", "No.", thu)
+        if n:
+            da.append("thu_ai")
+    tg = g7.get("authors")
+    thu = thay(thu, "On behalf of all authors: [CẦN — liệt kê tên tất cả đồng tác giả]",
+               f"On behalf of all authors: {tg}" if QD.co_noi_dung(tg) else None, "thu_tac_gia")
+    return a10, thu, da
+
 
 def build_part7_pointer(study: str) -> str:
     """Phần 7 trong A10 — chỉ TRỎ tới tệp mẫu phản hồi phản biện riêng (05/10/2026, soát từng cổng G9-03).
@@ -1513,11 +1685,14 @@ def main():
         f"*[BẢN NHÁP TỰ ĐỘNG — DRAFT] · Cần bác sĩ kiểm chứng. · {run_date}*",
     ])
 
-    # Ghép toàn bộ artifact
+    # Ghép toàn bộ artifact — Phần 6 chỉ TRỎ tới tệp cover letter (một nguồn, 16/11/2026)
     artifact = "\n".join([
         header, part1, part2, part3, part4,
-        part5, part6, part7, part8, footer,
+        part5, build_part6_pointer(study), part7, part8, footer,
     ])
+    artifact, part6, da_lap_g9 = lap_o_da_chot_g9(artifact, part6, out_dir, study)
+    if da_lap_g9:
+        print(f"  → Lấy từ quyết định đã chốt (không hỏi lại): {', '.join(sorted(set(da_lap_g9)))}")
 
     # ── Bước 3: Lưu Markdown ──
     print("\n💾 Bước 3/6: Lưu A10 Markdown...")

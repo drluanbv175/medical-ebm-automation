@@ -202,7 +202,9 @@ def _ten_ket_cuc_sap(text: str) -> str:
     G0 ⇒ báo lệch mềm, đòi PI xác nhận «cùng một kết cục» cho một §2 do máy chép từ G1 (BTM phải làm đúng bước này,
     mục B1). Thước đo/thời điểm đã có trục riêng (`thoi_diem_ket_cuc`), nên trục kết cục chính chỉ so phần tên. §2
     người viết không theo khuôn này giữ nguyên ⇒ dấu vân tay xác nhận cũ không đổi."""
-    kc = re.sub(r"\s*\*\(điền sẵn từ quyết định đã chốt[^)]*\)\*", "", _ket_cuc_chinh_sap(text)).strip()
+    import quyet_dinh_da_chot as QD  # noqa: PLC0415 — mẫu chú thích điền sẵn dùng chung (16/11/2026)
+
+    kc = QD.GHI_CHU_DIEN_SAN_RE.sub("", _ket_cuc_chinh_sap(text)).strip()
     # « — biến `x`» của khuôn, hoặc «. Biến `x`» sau khi bộ chuẩn trình bày đổi gạch dài thành dấu câu.
     kc = re.sub(r"[\s.,;—–-]+[Bb]iến\s+`[^`]+`\s*$", "", kc)
     return re.split(r";\s+(?:đo bằng|thời điểm:)\s", kc, maxsplit=1)[0].strip()

@@ -203,9 +203,11 @@ O_DA_DONG_RE = re.compile(
 DIEN_CHUA_CO_HO_SO = "(GIẢ LẬP — hồ sơ chưa có)"
 
 
-def ly_do_giu_nguyen(o_txt: str, dong: str, cong: str = "") -> Optional[str]:
+def ly_do_giu_nguyen(o_txt: str, dong: str, cong: str = "", tep: str = "") -> Optional[str]:
     """Ô KHÔNG thuộc vai đang điền — giữ nguyên chữ: lời hướng dẫn «[CẦN...]» của khuôn; ô KẾT QUẢ của bảng khung (điền
     sau phân tích, G6.5); ô gạch dưới trong dòng bảng (ô kết quả/chữ ký người tham gia — không phải ô người soạn)."""
+    if cong == "G9" and tep.startswith("G9_A10") and re.fullmatch(r"_{3,}(?:\s*/\s*_{2,}\s*/\s*\S*)?", o_txt.strip()):
+        return "ô ký/ngày điền tay trên bản in — người thật ký (G9 không đếm «___» của gói A10)"
     if cong and cong not in ("G4", "G6", "G7"):  # hồ sơ G2/G5/G8/G9: cổng đếm MỌI ô, kể cả ô bảng ⇒ vai điền hết
         return None
     gon = o_txt.strip()
@@ -238,7 +240,7 @@ def phan_loai_o(tep_text: str, cong: str, tep: str, meta: Mapping[str, Any], cps
             nhan = trong_o[:80] or nhan  # nhãn trước ô lẫn đuôi ô khác ⇒ dùng nội dung trong ô
         k = bo_dau(nhan)
         o = {"cong": cong, "tep": tep, "dong": so, "nhan": nhan, "o": o_txt, "vi_tri": m.start()}
-        giu = ly_do_giu_nguyen(o_txt, dong, cong)
+        giu = ly_do_giu_nguyen(o_txt, dong, cong, tep)
         if giu:  # không phải ô của vai này: lời hướng dẫn khuôn, ô kết quả của bảng khung — để nguyên
             ra.append({**o, "loai": "khong_ap_dung", "dien": o_txt, "ly_do": giu})
             continue
@@ -254,7 +256,10 @@ def phan_loai_o(tep_text: str, cong: str, tep: str, meta: Mapping[str, Any], cps
             continue
         ly_do = khong_ap_dung(nhan, dong + " " + o_txt, thiet_ke, meta)
         # ô KẾT QUẢ không hỏi điều đã chốt (tên kết cục ≠ kết quả của kết cục) ⇒ không lấy bảng đã chốt
-        chot = None if "ket qua that" in trong_o else next(((v, ten) for mau, v, ten in bang if mau.search(k)), None)
+        # (16/11/2026) cùng lẽ: ô đòi nhận định «sau khi có dữ liệu thật» (vd tính đại diện quần thể) là nội dung
+        # MỚI của tác giả — dòng có chữ «cỡ mẫu» không biến nó thành câu hỏi lại G3.n
+        chot = None if re.search(r"ket qua that|sau khi co du lieu", trong_o) else next(
+            ((v, ten) for mau, v, ten in bang if mau.search(k)), None)
         tl = next((v for mau, v in tra_loi if k and re.search(mau, k)), None)
         if tl is None:  # nhãn không khớp mẫu nào ⇒ mới so nội dung trong ô
             tl = next((v for mau, v in tra_loi if re.search(mau, trong_o)), None)
@@ -576,7 +581,7 @@ class TronVong:
                 p.write_text(secrets.token_hex(32), encoding="utf-8", newline="\n")
 
     def hoan_thien_tep(self, g: str, tep: Path, tra_loi: Sequence[Tuple[str, str]], da_hoi: Dict[str, str]) -> None:
-        if not tep.is_file():
+        if not tep.is_file() or ".bak-" in tep.name:  # bản sao lưu do bộ sinh để lại khi chạy lại — không phải hồ sơ
             return
         s = tep.read_text(encoding="utf-8")
         cps: Dict[str, Any] = {x: self._cp(x) for x in ("G0", "G1", "G3")}
@@ -1062,36 +1067,23 @@ class TronVong:
         self.du_lieu["a12"] = {"pmid": pmid, "sach": sach}
 
     def _bien_tap_ban_nop(self, a8: Path) -> None:
-        """Tác giả biên tập bản nháp G7 thành bản NỘP: gỡ biểu ngữ DRAFT, khối hướng dẫn «> …», chú thích ước tính số từ
-        ở tiêu đề mục, bảng ước tính số từ, dòng «*(Xem …)*». Hệ CHƯA có lệnh làm việc này (khoảng trống đo được) — bộ
-        giả lập ghi số dòng đã gỡ và phần còn lại mà bộ quét G8 vẫn coi là chưa soạn."""
+        """Tác giả chốt bản NỘP: gỡ khung bản nháp bằng công cụ của hệ (`go_khung_ban_thao_g7.py --ap-dung`, thêm
+        16/11/2026 — trước đó tác giả phải xoá tay ~40 dòng) rồi tự viết câu khai báo AI trong bản thảo (ICMJE V.A)."""
         if not a8.is_file():
             return
         import g8_quality_gate as G8Q  # noqa: PLC0415
 
-        meta = self._meta()
-        dong = a8.read_text(encoding="utf-8").splitlines()
-        ra: List[str] = []
-        bo = 0
-        bo_muc = False
-        for d in dong:
-            if d.startswith("## "):
-                bo_muc = "BẢNG ƯỚC TÍNH SỐ TỪ" in d
-            if (bo_muc or d.lstrip().startswith(">") or re.fullmatch(r"\s*\*[(\[][^\n]*[)\]]\*\s*", d)
-                    or "BẢN NHÁP TỰ ĐỘNG — DRAFT G7" in d):
-                bo += 1
-                continue
-            if d.startswith("# A8"):
-                d = f"# {meta.get('title') or meta.get('topic') or self.study}"
-            d = re.sub(r"\s*\*\((?:ước tính|điền thủ công|Bảng chép số)[^)]*\)\*", "", d)
-            ra.append(d)
+        r = self.chay("G7 gỡ khung bản nháp (công cụ hệ)", "go_khung_ban_thao_g7.py", "--study", self.study,
+                      "--ap-dung")
+        go = next((int(m.group(1)) for d in r["dong"] for m in [re.search(r"Đã gỡ (\d+) dòng", d)] if m), 0)
+        van = a8.read_text(encoding="utf-8")
         ai = ((self.kb.get("ho_so_tron_vong") or {}).get("tac_gia_G7") or {}).get("ai_manuscript_statement")
-        if ai and not any(t in "\n".join(ra).casefold() for t in ("trí tuệ nhân tạo", "artificial intelligence")):
-            ra += ["", "**Khai báo sử dụng trí tuệ nhân tạo:** " + ai]
-        van = re.sub(r"\n{3,}", "\n\n", "\n".join(ra)).rstrip() + "\n\nCần bác sĩ kiểm chứng.\n"
-        a8.write_text(van, encoding="utf-8", newline="\n")
+        if ai and not any(t in van.casefold() for t in ("trí tuệ nhân tạo", "artificial intelligence")):
+            van = van.replace("\nCần bác sĩ kiểm chứng.\n", "") .rstrip() + (
+                "\n\n**Khai báo sử dụng trí tuệ nhân tạo:** " + ai + "\n\nCần bác sĩ kiểm chứng.\n")
+            a8.write_text(van, encoding="utf-8", newline="\n")
         con = G8Q.manuscript_residues(van) + [f"vệt: {v}" for v in G8Q.scan_internal_traces(van)]
-        self.du_lieu["g7_bien_tap"] = {"dong_khung_da_go": bo, "con_lai": [x[:120] for x in con][:20]}
+        self.du_lieu["g7_bien_tap"] = {"dong_khung_da_go_boi_cong_cu_he": go, "con_lai": [x[:120] for x in con][:20]}
 
     def g7(self) -> None:
         hs = self.kb.get("ho_so_tron_vong") or {}
@@ -1214,9 +1206,14 @@ Kết luận tổng thể: sẵn sàng nộp (sau khi xử lý các góp ý nh�
         tap_chi = (hs.get("tac_gia_G7") or {}).get("target_journal") or "Tạp chí Y học Việt Nam (giả lập)"
         self.chay("G9 sinh bộ khai báo liêm chính", "run_g9_auto.py", "--study", self.study, "--n-authors", "2",
                   "--target-journal", tap_chi)
-        self._dien_cong("G9", f"G9_*{self.study}*.md", hs.get("tra_loi_G9", []))
         self._khai_g9()
         self._vao_meta("G9", {**(hs.get("tham_so_G9") or {}), "reviewed_by_role": "PI", "reviewed_at": GL._bay_gio()})
+        # Quy trình thật: tác giả khai phiếu có cấu trúc rồi sinh lại gói — A10/cover letter lấy CRediT, người truy cập
+        # dữ liệu, COI, tài trợ, AI, chia sẻ dữ liệu từ phiếu và từ quyết định đã chốt (run_g9_auto 16/11/2026).
+        self.chay("G9 sinh lại gói sau khi tác giả khai phiếu", "run_g9_auto.py", "--study", self.study, "--n-authors",
+                  "2", "--target-journal", tap_chi)
+        self._dien_cong("G9", f"G9_*{self.study}*.md", hs.get("tra_loi_G9", []))
+        self._checklist_bao_cao()
         # chấm lại SAU khi khai ⇒ manifest SHA-256 của gói ghi vào checkpoint đúng bản đã khai (G9-AUTO-07)
         self.chay("G9 chấm lại sau khai báo (manifest gói)", "g9_quality_gate.py", "--study", self.study)
         self.cong["G9_truoc_ky"] = {"trang_thai": self.cham("G9"),
@@ -1310,79 +1307,16 @@ Kết luận tổng thể: sẵn sàng nộp (sau khi xử lý các góp ý nh�
         _ghi_json(p, d)
 
     def _khai_dac_ta_g10(self) -> None:
-        """PI khai bù các thành phần đề cương mà StudySpec CHƯA đọc từ quyết định đã chốt (khoảng trống đo được
-        15/11/2026:
-        StudySpec chỉ đọc gate_params.G0/G1 — không đọc SAP §4/§6/§11 đã khoá, quyết định miễn ICF của G2, nguồn đo của
-        ma trận). Mỗi khoá ghi kèm nguồn trong `du_lieu.g10_khai_lai` để báo cáo phân biệt «hỏi lại điều đã chốt» với
-        «thông tin mới đúng vai»."""
-        sap = self.out / f"G4_A5_SAP_FINAL_{self.study}.md"
-        st = sap.read_text(encoding="utf-8") if sap.is_file() else ""
+        """PI khai các thành phần đề cương MỚI (sai lệch, tiến độ–nhân lực–kinh phí, tổng quan, pilot…). Điều ĐÃ CHỐT ở
+        SAP/G2/G5/G7/ma trận nay HỆ tự lấp (`quyet_dinh_da_chot`, 16/11/2026) — bộ giả lập ghi khoá hệ đã lấp vào
+        `du_lieu.g10_he_tu_lap` để đo, không khai lại thay hệ."""
+        import quyet_dinh_da_chot as QD  # noqa: PLC0415
+
         meta = self._meta()
-        g1 = _gp(meta, "G1")
-        po = dict(g1.get("primary_outcome") or {}) if isinstance(g1.get("primary_outcome"), Mapping) else {}
-        mt = next((r for r in (self.kb.get("bien_so") or {}).get("ma_tran", []) if r[2] == "ket_cuc_chinh"), None)
         hs = (self.kb.get("ho_so_tron_vong") or {}).get("dac_ta_G10") or {}
-
-        def _muc(so: str, nhan: str) -> str:
-            m = re.search(rf"\*\*{nhan}:\*\*\s*([^\n]+)", _than_muc_sap(st, so))
-            return m.group(1).strip() if m else ""
-
-        bang = [ln.strip("* ").rstrip(":") for ln in _than_muc_sap(st, "11").splitlines() if ln.startswith("**Bảng")]
-        da_chot = {
-            "primary_outcome": ({**po, "source": mt[6], "variable_name": mt[3]} if po and mt else None,
-                                "G1 + ma trận (nguồn đo, tên biến)"),
-            "exposure": (next((f"{r[1]} (`{r[3]}`)" for r in (self.kb.get("bien_so") or {}).get("ma_tran", [])
-                               if r[2] == "phoi_nhiem"), None), "ma trận mục tiêu–biến (G3)"),
-            "primary_analysis": (_muc("4", "Phương pháp"), "SAP §4 đã khoá"),
-            "missing_data_analysis": (_muc("6", "Chiến lược"), "SAP §6 đã khoá"),
-            "table_shells": (bang or None, "SAP §11 đã khoá"),
-            "consent_plan": ("Xin miễn phiếu đồng ý — Hội đồng Đạo đức chấp thuận (hồi cứu, dữ liệu đã khử định danh)"
-                             if _gp(meta, "G2").get("icf_waiver_requested") else None, "G2 đã ký"),
-            "data_source": ("Trích hồ sơ bệnh án theo phiếu thu thập số liệu (hồ sơ G2)"
-                            if (self.out / f"PHIEU_THU_THAP_SO_LIEU_{self.study}.md").is_file() else None,
-                            "G2 phiếu thu thập"),
-            "protocol_version": (_gp(meta, "G2").get("protocol_version"), "G2 đã ký (gate_params.G2)"),
-            "version_date": (self.hom_nay.isoformat() if _gp(meta, "G2").get("protocol_version") else None,
-                             "G2 đã ký (ngày phiên bản đề cương)"),
-            "authors": (_gp(meta, "G7").get("authors"), "G7 đã chốt (tác giả)"),
-            "deidentification_plan": ("Khử định danh trước khi phân tích; mã nghiên cứu thay định danh, khoá nối giữ "
-                                      "ngoài bộ dữ liệu" if (self.out / "DATA_LOCK_manifest.json").is_file() else None,
-                                      "G5 khoá dữ liệu"),
-            "data_governance": ({"plan": f"DMP G5 đã khoá (G5_A6_DATA_MGMT_{self.study}.md)",
-                                 "storage": "Máy chủ nội bộ có mã hoá, phân quyền theo vai trò",
-                                 "access": "Phân quyền theo vai trò; nhật ký truy cập được rà",
-                                 "retention": "2 năm sau công bố rồi huỷ theo quy định đơn vị"}
-                                if (self.out / "G5_OPERATIONAL_READINESS.json").is_file() else None, "G5 DMP đã khoá"),
-            "privacy_plan": ("Khử định danh trước phân tích; bộ dữ liệu khoá không chứa thông tin định danh"
-                             if (self.out / "DATA_LOCK_manifest.json").is_file() else None, "G5 khoá dữ liệu"),
-            "aim": ((g1.get("objectives") or [None])[0] if isinstance(g1.get("objectives"), list)
-                    else g1.get("objectives"), "G1 đã chốt (mục tiêu)"),
-            "confounders": ([r[1] for r in (self.kb.get("bien_so") or {}).get("ma_tran", []) if r[2] == "hiep_bien"]
-                            or None, "ma trận mục tiêu–biến (G3)"),
-            "registration_plan": ("Không bắt buộc đăng ký — nghiên cứu quan sát hồi cứu (PI chốt ở G2)"
-                                  if _gp(meta, "G2").get("registration_required") is False else None, "G2 đã ký"),
-            "instrument": ({"name": "Phiếu thu thập số liệu trích hồ sơ", "source": "hồ sơ bệnh án ngoại trú",
-                            "note": "Phiếu soạn từ bộ biến đã duyệt ở G3 — không phải thang đo/PROM."}
-                           if (self.out / f"PHIEU_THU_THAP_SO_LIEU_{self.study}.md").is_file() else None,
-                           "G2 phiếu thu thập"),
-            "data_collection_procedure": ("Hai người trích hồ sơ độc lập theo phiếu thu thập; nhập kép Excel và SPSS"
-                                          if (self.out / "DATA_INTAKE_manifest.json").is_file() else None,
-                                          "G5 tiếp nhận dữ liệu"),
-            "quality_control": ("So nhập kép, đối chiếu phiếu gốc từng ô lệch; luật kiểm phạm vi/logic khi làm sạch; "
-                                "khoá dữ liệu có manifest SHA-256" if (self.out / "DATA_LOCK_manifest.json").is_file()
-                                else None, "G5 làm sạch + khoá"),
-            "expected_results": ("Câu hỏi sẽ trả lời: RR hiệu chỉnh của gãy xương 3 năm theo phơi nhiễm PPI kéo dài; "
-                                 "hiệu số nguy cơ; nhóm nhỏ theo giới; độ nhạy theo thời gian theo dõi"
-                                 if st else None, "SAP §4/§7/§9 đã khoá"),
-            "risk_benefit": (f"Nguy cơ {str(_gp(meta, 'G2').get('risk_level') or 'tối thiểu').lower()} — chỉ trích "
-                             "hồ sơ; lợi ích: bằng chứng cho kê đơn PPI an toàn hơn ở người cao tuổi",
-                             "G2 đã ký (mức nguy cơ)"),
-        }
+        _moi, he_lap = QD.lop_phu(meta, self.out, self.study)
+        self.du_lieu["g10_he_tu_lap"] = he_lap
         ghi: Dict[str, str] = {}
-        for k, (v, nguon) in da_chot.items():
-            if v:  # rút từ quyết định đã chốt ⇒ luôn ghi lại (chạy tiếp không giữ bản cũ thiếu trường)
-                meta[k] = v
-                ghi[k] = f"hỏi lại điều đã chốt ← {nguon}"
         for k, v in hs.items():
             if v and not meta.get(k):
                 meta[k] = v

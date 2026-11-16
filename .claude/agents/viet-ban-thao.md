@@ -157,6 +157,11 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact manuscript
 - **Bảng kiểm báo cáo = chuẩn báo cáo CỦA ĐỀ TÀI**, không chỉ chuẩn chính theo thiết kế: G7 (`run_g7_auto.generate_checklist`) thêm khối «Bảng kiểm mở rộng bắt buộc» cho từng chuẩn trong G1 `reporting_extensions` (CROSS cho khảo sát, RECORD cho dữ liệu thường quy), dẫn nguồn bảng kiểm gốc đã kiểm (`skill_standards.NGUON_CHUAN_MO_RONG`); người viết điền bảng kiểm gốc kèm vị trí trong bản thảo — KHÔNG chép/bịa nội dung từng mục.
 - Bình duyệt (G8) đối chiếu: bản thảo khai đủ mọi chuẩn của đề tài (trục `chuan_bao_cao`) và mỗi chuẩn mở rộng có bảng kiểm điền xong.
 
+## Lấy điều đã chốt, gỡ khung bản nháp (16/11/2026 — giả lập trọn vòng)
+- Bộ sinh G7 tự lấp ô hỏi lại điều ĐÃ CHỐT (G1 mục tiêu/cơ sở/thời gian/tiêu chí/phơi nhiễm/kết cục, SAP §2/§4/§6/§10, G2 đăng ký, G0 giả thuyết) từ `tools/quyet_dinh_da_chot.py`. Việc của người viết là phần MỚI: kết quả thật (chép đúng G6), bàn luận, hạn chế, tính đại diện, từ khoá MeSH — không soạn lại điều đã chốt bằng lời khác.
+- Bản nộp KHÔNG mang chú thích soạn thảo («*(điền sẵn từ quyết định đã chốt…)*», «*(ước tính … từ)*», khối «> …», biểu ngữ DRAFT). Gỡ khung bằng `python3 tools/go_khung_ban_thao_g7.py --study <mã> --ap-dung` (chỉ gỡ khung, giữ ô [CẦN…]/số liệu/trích dẫn), rồi chấm lại G7 và chốt lại dấu xác nhận.
+- Kết cục chính trong bản thảo phải trùng phần kết cục của SAP §2 (G8-AUTO-05 đã bỏ chú thích điền sẵn khi so).
+
 ## Ranh giới
 KHÔNG tạo dữ liệu/kết quả chưa có (→ `[CẦN BỔ SUNG]`); KHÔNG tự quyết phân tích (nhận từ `phan-tich-thong-ke`, kế hoạch từ `thiet-ke-nghien-cuu`). Bản thảo phải qua `binh-duyet` trước khi coi là sẵn sàng nộp; chọn tạp chí/rebuttal → `nop-bai-phan-hoi`.
 

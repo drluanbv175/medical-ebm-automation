@@ -410,7 +410,7 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## Giả lập trọn vòng như đề tài thật — bài học 15/11/2026
 - Bộ giả lập `tools/gia_lap_tron_vong.py` chạy một đề tài tổng hợp G0→G10 (thuần tập PPI → gãy xương: mọi cổng cứng PASS bằng khoá GIẢ). Chạy tiếp từ một cổng bằng `GIA_LAP_TRON_VONG_DIR` + `GIA_LAP_TU_CONG`.
 - Bước TRA MẠNG (A12) cần cấu hình nguồn thật ⇒ chạy ngoài biến pytest, nhưng KHÔNG được ghi receipt có chữ ký ở bước đó (sẽ ký bằng khoá thật). Tách: tra không `--study`, ghi receipt bằng đúng hàm của `check_citations` trong môi trường khoá giả.
-- Hỏi lại/hỏi lặp là khiếm khuyết máy lớn nhất còn lại: G7 14 ô hỏi lại + 3 hỏi lặp, G9 53 ô hỏi lặp, G10 21 khoá đã chốt phải khai lại — báo bác sĩ, không lấp bằng nhãn chung.
+- Hỏi lại/hỏi lặp — ĐÃ VÁ 16/11/2026 (bác sĩ: «Hãy hoàn thiện vấn đề giả lập»): MỘT nguồn `tools/quyet_dinh_da_chot.py` cho G7/G9/G10; gỡ khung bản nháp `tools/go_khung_ban_thao_g7.py`; G8-AUTO-05 và `nhat_quan_xuyen_cong` bỏ chú thích «*(điền sẵn từ quyết định đã chốt…)*» bằng cùng hằng `GHI_CHU_DIEN_SAN_RE` (G7 không chép chú thích vào bản nộp — G8 so nguyên dòng từng chặn nhầm cả 8 thiết kế). Đo lại CHỈ trên đề tài thuần tập (7 thiết kế còn lại chưa chạy trọn vòng G2→G10 trong bộ giả lập): G7 14→1, G9 53→4, G10 21→0, mọi cổng G2–G10 vẫn PASS (khoá giả). Ô không có quyết định đã chốt vẫn [CẦN…] — không lấp bằng nhãn chung.
 
 ## Ranh giới
 Bạn là nhạc trưởng nghiên cứu: điều phối + giữ cổng, KHÔNG tự bịa dữ liệu, KHÔNG bỏ qua đạo đức/đăng ký. Liên kết đề tài QY175 ở `Projects/` khi phù hợp.

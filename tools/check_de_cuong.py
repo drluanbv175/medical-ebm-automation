@@ -153,6 +153,18 @@ _TRACEABILITY_REQUIRED_TERMS = (
 )
 
 
+def _meta_co_lop_phu(out_dir: Path, meta: Dict) -> Dict:
+    """study_meta + quyết định đã chốt ở cổng trước (chỉ lấp khoá trống) — cùng hàm bộ lắp/cổng G10 dùng."""
+    try:
+        import quyet_dinh_da_chot as QD  # noqa: PLC0415
+
+        moi, _ = QD.lop_phu(meta if isinstance(meta, dict) else {}, out_dir)
+        return moi
+    except Exception as exc:  # noqa: BLE001 — không rút được ⇒ chấm trên study_meta thô (cổng vẫn báo ô thiếu)
+        print(f"  ⚠ Không rút được quyết định đã chốt: {type(exc).__name__}: {exc}", file=sys.stderr)
+        return meta if isinstance(meta, dict) else {}
+
+
 def _load_json(path: Path) -> Dict:
     try:
         if path.exists():
@@ -660,8 +672,12 @@ def validate(md_path, out_dir) -> Dict:
         checks["R14_protocol_core_coverage"] = f"PASS (đủ P01-{last_item_id})"
 
     # R15 — kiểm mâu thuẫn ngữ nghĩa từ cùng StudySpec mà assembler sử dụng.
-    spec = RS.build_study_spec(md_path.stem, cps, meta)
-    spec_evaluation = RS.evaluate_study_spec(spec, cps, meta)
+    # SỬA 16/11/2026: bộ lắp và cổng G10 dựng StudySpec từ study_meta + lớp phủ quyết định đã chốt
+    # (`quyet_dinh_da_chot.lop_phu`); bản kiểm này từng đọc study_meta THÔ ⇒ giả lập trọn vòng thấy R16/R17 chặn
+    # D08/D11/D12/D13/D15/D18 trên đề cương mà bộ lắp đã lấp đúng từ SAP/G2/G5. Ba nơi phải cùng một nguồn.
+    meta_spec = _meta_co_lop_phu(out_dir, meta)
+    spec = RS.build_study_spec(md_path.stem, cps, meta_spec)
+    spec_evaluation = RS.evaluate_study_spec(spec, cps, meta_spec)
     semantic_errors = [
         issue for issue in spec_evaluation["semantic_issues"]
         if issue["severity"] == "ERROR"
