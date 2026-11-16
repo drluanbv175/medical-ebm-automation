@@ -861,6 +861,37 @@ def sap_declares_ordinal(out_dir: Path, study: str) -> bool:
         sap, re.I))
 
 
+# Phương pháp chính là ƯỚC LƯỢNG TỶ LỆ (đề tài MÔ TẢ theo độ chính xác) — chỉ đọc dòng «Phương pháp» của SAP §4.
+PHUONG_PHAP_TY_LE_RE = re.compile(r"ư[ớo]c\s+l[ưượ]+ng\s+t[ỷỉy]\s+l[ệe]|wilson|t[ỷỉy]\s+l[ệe]\s+hi[ệe]n\s+m[ắa]c|"
+                                  r"\bprevalence\b|\bproportion\s+estimat", re.I)
+
+
+def phuong_phap_la_ty_le(dong_phuong_phap: str) -> bool:
+    """Dòng «Phương pháp» khai ước lượng tỷ lệ (Wilson/tỷ lệ hiện mắc) và KHÔNG khai mô hình hồi quy làm phân tích
+    chính. Dùng chung cho G4 (khuôn §4), G6 (sinh 03_analysis.R) và cổng G6 (G6-AUTO-09) — 16/11/2026."""
+    t = str(dong_phuong_phap or "")
+    return bool(PHUONG_PHAP_TY_LE_RE.search(t)) and not re.search(r"h[ồo]i\s+quy|regression|logistic|poisson|cox",
+                                                                    t, re.I)
+
+
+def sap_declares_proportion(out_dir: Path, study: str) -> bool:
+    """SAP đã khoá khai phân tích CHÍNH là ước lượng tỷ lệ + KTC (cắt ngang MÔ TẢ)?
+
+    Cùng nguyên tắc sap_declares_ordinal: SAP là thẩm quyền, thiếu SAP/không đọc được ⇒ False (giữ hành vi mặc định),
+    không đoán. Chỉ xét dòng «Phương pháp» của §4 — chữ «Wilson» ở mục khác (vd KTC trên n hiệu dụng của mô hình có
+    trọng số) không biến SAP thành mô tả."""
+    sap_path = Path(out_dir) / f"G4_A5_SAP_FINAL_{study}.md"
+    try:
+        sap = sap_path.read_text(encoding="utf-8")
+    except OSError:
+        return False
+    m4 = re.search(r"^#{2,4}\s*§\s*4\b[^\n]*\n(.*?)(?=^#{2,4}\s*§\s*\d|^#{1,2}\s|\Z)", sap, re.M | re.S)
+    if not m4:
+        return False
+    m = re.search(r"\*\*Phương pháp:\*\*\s*([^\n]+)", m4.group(1))
+    return bool(m) and phuong_phap_la_ty_le(m.group(1))
+
+
 def load_study_meta(out_dir: Path) -> Dict[str, Any]:
     """Đọc study_meta.json (dict rỗng nếu không có/lỗi)."""
     p = Path(out_dir) / "study_meta.json"

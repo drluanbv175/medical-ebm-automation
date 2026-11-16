@@ -791,6 +791,8 @@ def _ho_so_bien_6() -> Dict[str, Dict[str, list]]:
         "dinh_tinh": {
             "bo_bien": [
                 ("ma_nguoi_tham_gia", "text", "Mã người tham gia", "", "", "Đặc điểm người tham gia"),
+                # 16/11/2026: nối người tham gia ↔ bản gỡ băng đã khử định danh (G5-AUTO-10 đòi cột này lúc khoá)
+                ("transcript_id", "text", "Mã bản gỡ băng (đã khử định danh)", "", "", "Đặc điểm người tham gia"),
                 ("tuoi", "text", "Tuổi (năm)", "", so, "Đặc điểm người tham gia"),
                 ("gioi", "radio", "Giới", _GIOI, "", "Đặc điểm người tham gia"),
                 ("da_bat_dau_insulin", "yesno", "Đã bắt đầu tiêm insulin", "", "", "Đặc điểm người tham gia"),
@@ -829,7 +831,11 @@ def _ky_g2(che_do: str, dang_ky: str, *, mien_icf: bool = False, quyet_dinh: str
 
 
 def ho_so_tron_vong() -> Dict[str, Dict[str, Any]]:
-    """gate_params.G2 + tham số ký G2 + câu trả lời riêng của các vai theo từng kịch bản."""
+    """gate_params.G2 + tham số ký G2 + câu trả lời riêng của các vai theo từng kịch bản.
+
+    16/11/2026: đề tài TIẾN CỨU tuyển người mới phải đăng ký trước người tham gia đầu tiên (Helsinki §35 — cùng quy
+    tắc approve_gate/G2-AUTO-11) ⇒ PI chốt registration_required=true + ClinicalTrials.gov, mã NCT giả riêng từng đề
+    tài. Trước đó hồ sơ giả lập ghim «không bắt buộc» cho 5 đề tài tiến cứu ⇒ ký G2 bị từ chối."""
     chung = {"protocol_version": "1.0", "icf_version": "1.0"}
     tien_cuu = "PROSPECTIVE_NEW_PARTICIPANTS"
     hs: Dict[str, Dict[str, Any]] = {
@@ -843,8 +849,9 @@ def ho_so_tron_vong() -> Dict[str, Dict[str, Any]]:
         "cat_ngang_mo_ta": {
             "G2": {**chung, "public_title": "Tỷ lệ kiểm soát huyết áp ở người điều trị ngoại trú (giả lập)",
                    "health_condition": "Tăng huyết áp nguyên phát (ICD-10 I10)", "recruitment_mode": tien_cuu,
-                   "registration_required": False},
-            "ky_G2": _ky_g2(tien_cuu, "NOT_REQUIRED"),
+                   "registration_required": True,
+                   "registration_registry": "ClinicalTrials.gov"},
+            "ky_G2": _ky_g2(tien_cuu, "REGISTERED", registry="ClinicalTrials.gov", ma_dk="NCT99999991"),
         },
         "thuan_tap_phoi_nhiem": {
             "G2": {**chung, "public_title": "PPI kéo dài và gãy xương ở người cao tuổi (giả lập)",
@@ -856,20 +863,23 @@ def ho_so_tron_vong() -> Dict[str, Dict[str, Any]]:
         "benh_chung": {
             "G2": {**chung, "public_title": "NSAID và xuất huyết tiêu hoá trên ở người cao tuổi (giả lập)",
                    "health_condition": "Xuất huyết tiêu hoá trên (ICD-10 K92.2)", "recruitment_mode": tien_cuu,
-                   "registration_required": False},
-            "ky_G2": _ky_g2(tien_cuu, "NOT_REQUIRED"),
+                   "registration_required": True,
+                   "registration_registry": "ClinicalTrials.gov"},
+            "ky_G2": _ky_g2(tien_cuu, "REGISTERED", registry="ClinicalTrials.gov", ma_dk="NCT99999992"),
         },
         "chan_doan": {
             "G2": {**chung, "public_title": "FIB-4 phát hiện xơ hoá gan tiến triển (giả lập)",
                    "health_condition": "Gan nhiễm mỡ liên quan chuyển hoá (ICD-10 K76.0)",
-                   "recruitment_mode": tien_cuu, "registration_required": False},
-            "ky_G2": _ky_g2(tien_cuu, "NOT_REQUIRED"),
+                   "recruitment_mode": tien_cuu, "registration_required": True,
+                   "registration_registry": "ClinicalTrials.gov"},
+            "ky_G2": _ky_g2(tien_cuu, "REGISTERED", registry="ClinicalTrials.gov", ma_dk="NCT99999993"),
         },
         "mo_hinh_du_bao": {
             "G2": {**chung, "public_title": "Mô hình dự báo nhập viện ở người suy tim ngoại trú (giả lập)",
                    "health_condition": "Suy tim (ICD-10 I50)", "recruitment_mode": tien_cuu,
-                   "registration_required": False},
-            "ky_G2": _ky_g2(tien_cuu, "NOT_REQUIRED"),
+                   "registration_required": True,
+                   "registration_registry": "ClinicalTrials.gov"},
+            "ky_G2": _ky_g2(tien_cuu, "REGISTERED", registry="ClinicalTrials.gov", ma_dk="NCT99999994"),
         },
         "tong_quan_gop": {
             "G2": {"protocol_version": "1.0", "public_title": "SGLT2 và nhập viện vì suy tim ở ĐTĐ típ 2 (giả lập)",
@@ -883,8 +893,9 @@ def ho_so_tron_vong() -> Dict[str, Dict[str, Any]]:
         "dinh_tinh": {
             "G2": {**chung, "public_title": "Trải nghiệm bắt đầu tiêm insulin (giả lập)",
                    "health_condition": "Đái tháo đường típ 2 (ICD-10 E11)", "recruitment_mode": tien_cuu,
-                   "registration_required": False},
-            "ky_G2": _ky_g2(tien_cuu, "NOT_REQUIRED"),
+                   "registration_required": True,
+                   "registration_registry": "ClinicalTrials.gov"},
+            "ky_G2": _ky_g2(tien_cuu, "REGISTERED", registry="ClinicalTrials.gov", ma_dk="NCT99999995"),
         },
     }
     for ma, them in sap_g6_tron_vong().items():

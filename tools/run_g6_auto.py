@@ -1065,6 +1065,19 @@ def _cohort_style_wrong_method_warning(design_code: str, script_name: str) -> st
     )
 
 
+def _nhan_hiep_bien(covars, design_code: str) -> str:
+    """Nhãn hiệp biến trong script/A7 (16/11/2026): tổng hợp cấp nghiên cứu và định tính KHÔNG có hiệp biến cấp cá
+    nhân — ghi «không áp dụng» thay ô «[xem SAP §5]» (G6-AUTO-07 từng đếm là tham số chờ điền)."""
+    if covars:
+        return ", ".join(covars)
+    if design_code == "sr_ma":
+        return "Không áp dụng — tổng hợp cấp nghiên cứu (yếu tố điều chỉnh là moderator của meta-regression nếu SAP §7 "\
+               "khai)"
+    if design_code == "qualitative":
+        return "Không áp dụng — định tính (không mô hình hồi quy)"
+    return "[xem SAP §5]"
+
+
 def make_r01_cleaning(v: dict, design_code: str = "cohort") -> str:
     """Sinh 01_cleaning.R với tên biến thật từ REDCap dictionary."""
     exposure  = v["exposure"]
@@ -1102,7 +1115,7 @@ def make_r01_cleaning(v: dict, design_code: str = "cohort") -> str:
 # Biến phơi nhiễm: {exposure}
 # Biến kết cục  : {outcome}
 # Thời gian TD  : {time_col}
-# Covariates    : {", ".join(covars) if covars else "[xem SAP §5]"}
+# Covariates    : {_nhan_hiep_bien(covars, design_code)}
 # KHÔNG đọc dữ liệu thô, KHÔNG làm sạch lại (làm sạch đã xong và khoá ở G5) —
 # chỉ chuyển kiểu biến xác định; mọi thay đổi giá trị phải quay lại G5 + khoá lại.
 # ============================================================
@@ -1216,7 +1229,7 @@ def make_r02_tables(v: dict, design_code: str = "cohort") -> str:
 # ============================================================
 # 02_tables.R — Bảng đặc điểm nền (Table 1) và thống kê mô tả
 # Biến phân nhóm: {group_note}
-# Covariates    : {", ".join(covars) if covars else "[xem SAP §5]"}
+# Covariates    : {_nhan_hiep_bien(covars, design_code)}
 # ============================================================
 
 source(here::here("scripts", "00_setup.R"))
@@ -3652,7 +3665,7 @@ def generate_artifact(study, topic, design_code, reporting_std,
         f"| Phơi nhiễm (exposure) | `{exposure}` | Từ G5 REDCap dictionary |",
         f"| Kết cục chính (outcome) | `{outcome}` | 1=biến cố, 0=censored |",
         f"| Thời gian theo dõi | `{time_col}` | Đơn vị: tháng |",
-        f"| Covariates | `{', '.join(covars) if covars else '[xem SAP §5]'}` | Nhân khẩu + lab + bệnh nền |",
+        f"| Covariates | `{_nhan_hiep_bien(covars, design_code)}` | Nhân khẩu + lab + bệnh nền |",
         "",
         "**Log phát hiện biến:**",
         det_log,
@@ -3907,6 +3920,14 @@ def main():
     # không suy từ mã số mức trong dictionary. Đặt TRƯỚC R_ANALYSIS_MAP_FUNC
     # và generate_artifact để script + artifact rẽ nhánh CÙNG một cờ.
     v["outcome_ordinal"] = _sap_declares_ordinal(out, study)
+    # 16/11/2026: cắt ngang MÔ TẢ — SAP §4 khai ước lượng tỷ lệ ⇒ 03_analysis.R ước lượng tỷ lệ + KTC Wilson; thiết kế
+    # không có phơi nhiễm nên dòng «không tự phát hiện exposure» không phải tham số chờ điền (G6-AUTO-07).
+    v["mo_ta_ty_le"] = (design_code == "cross_sectional" and not v["outcome_ordinal"]
+                        and GC.sap_declares_proportion(out, study))
+    if v["mo_ta_ty_le"] or design_code in ("sr_ma", "qualitative"):
+        v["detection_log"] = [("ℹ️  Thiết kế không có biến phơi nhiễm cấp cá nhân (mô tả/tổng hợp/định tính)"
+                               if str(d).lstrip("⚠️ ").startswith("Không tự phát hiện exposure ") else d)
+                              for d in v.get("detection_log") or []]
 
     # VÁ 04/10/2026 (G6-08/G6-09): kết cục chính, nhóm con, ngưỡng tuổi THEO SAP — dictionary chỉ cho tên biến.
     tham_so_sap = doc_tham_so_sap(sap_text, v.get("all_vars") or [])
@@ -4183,6 +4204,8 @@ def R_ANALYSIS_MAP_FUNC(design_code: str, v: dict, n_adjusted: int,
         # mã số mức (điều kiện cần chứ không đủ, xem docstring hàm đó).
         if v.get("outcome_ordinal"):
             return _r03_cross_ordinal_with_vars(v)
+        if v.get("mo_ta_ty_le"):
+            return _r03_cross_ty_le_with_vars(v)
         return _r03_cross_with_vars(v)
     # THÊM 2026-07-19 (audit vòng 3, D2_prediction_dta_gate_coverage — NGHIÊM
     # TRỌNG): "diagnostic"/"prediction"/"sr_ma" trước đây rơi vào else →
@@ -4305,12 +4328,12 @@ source(here::here("scripts", "00_setup.R"))
 
 # NẾU có bắt cặp (matched case-control, vd theo tuổi/giới/site) — dùng
 # conditional logistic regression, cần biến strata (vd "match_id"):
-# clogit_adj <- survival::clogit({outcome} ~ {exposure} + {cov_fml} + strata(match_id), data=df)
+# clogit_adj <- survival::clogit({outcome} ~ {exposure} + {cov_fml} + strata(match_id), data=df)  # ◇ thay dòng ◆ khi CÓ bắt cặp (cần match_id)
 # broom::tidy(clogit_adj, exponentiate=TRUE, conf.int=TRUE) %>% filter(term=="{exposure}")
 
 # NẾU KHÔNG bắt cặp (unmatched case-control) — logistic thường là đủ:
 # glm_crude <- glm({outcome} ~ {exposure}, data=df, family=binomial())
-# glm_adj   <- glm({outcome} ~ {exposure} + {cov_fml}, data=df, family=binomial())
+# glm_adj   <- glm({outcome} ~ {exposure} + {cov_fml}, data=df, family=binomial())  # ◆ MÔ HÌNH CHÍNH (SAP §4) — không bắt cặp
 #
 # Kiểm đa cộng tuyến (SAP §5: "VIF < 5 cho mọi biến"; thêm 2026-07-29 — trước
 # đây chỉ có trong checklist văn bản, không có dòng code nào thực sự tính).
@@ -4387,6 +4410,27 @@ source(here::here("scripts", "00_setup.R"))
 # broom::tidy(glm_adj, exponentiate=TRUE, conf.int=TRUE) %>% filter(term=="{exposure}")
 
 message("03_analysis.R (Cross-sectional) — Biến: {exposure}/{outcome} | [CẦN DỮ LIỆU THẬT]")
+"""
+
+
+def _r03_cross_ty_le_with_vars(v: dict) -> str:
+    """THÊM 16/11/2026: cắt ngang MÔ TẢ — ước lượng tỷ lệ + KTC 95% Wilson (SAP §4), không có phơi nhiễm/hồi quy.
+
+    Giả lập trọn vòng đề tài «tỷ lệ kiểm soát huyết áp»: khuôn logistic sinh mô hình `kết cục ~ exposure` với biến
+    phơi nhiễm không tồn tại; cổng G6-AUTO-09 không đối chiếu được với SAP. Lệnh để dạng chú thích theo khuôn chung —
+    thống kê viên bật khi đã có dữ liệu khoá (G5). Tỷ lệ theo phân nhóm tiền định do chay_sap_g6 chạy theo đặc tả SAP."""
+    outcome = v["outcome"]
+    return f"""\
+# 03_analysis.R — Cắt ngang MÔ TẢ: ước lượng tỷ lệ + KTC 95% Wilson (SAP §4)
+# Biến kết cục: {outcome} (1 = có)
+source(here::here("scripts", "00_setup.R"))
+# df <- readRDS(file.path(DATA_PROC, "df_clean.rds"))
+
+# Tỷ lệ chính + KTC Wilson (độ tin cậy = 1 - ALPHA theo SAP §12):
+# fit_ty_le <- DescTools::BinomCI(x = sum(df${outcome} == 1, na.rm = TRUE), n = sum(!is.na(df${outcome})), conf.level = 1 - ALPHA, method = "wilson")  # ◆ MÔ HÌNH CHÍNH (SAP §4)
+# print(fit_ty_le)
+
+message("03_analysis.R (Cắt ngang mô tả) — kết cục: {outcome} | [CẦN DỮ LIỆU THẬT]")
 """
 
 
@@ -4512,7 +4556,7 @@ source(here::here("scripts", "00_setup.R"))
 # library(pROC)
 # df <- readRDS(file.path(DATA_PROC, "df_clean.rds"))
 
-# roc_obj <- pROC::roc(response = df${ref_standard}, predictor = df${index_test}, ci = TRUE)
+# roc_obj <- pROC::roc(response = df${ref_standard}, predictor = df${index_test}, ci = TRUE)  # ◆ MÔ HÌNH CHÍNH (SAP §4)
 # roc_obj$auc; ci(roc_obj)  # AUC + 95% CI
 
 # Ngưỡng tối ưu theo Youden index (Se+Sp-1 lớn nhất) — [CẦN BÁC SĨ XÁC NHẬN
@@ -4589,7 +4633,7 @@ source(here::here("scripts", "00_setup.R"))
 
 # 1) PHÁT TRIỂN mô hình đa biến (logistic nếu kết cục nhị phân; Cox nếu
 #    time-to-event {time_col} có ý nghĩa — [CẦN BÁC SĨ XÁC NHẬN loại kết cục]):
-# model_full <- glm({outcome} ~ {cov_fml}, data = df, family = binomial())
+# model_full <- glm({outcome} ~ {cov_fml}, data = df, family = binomial())  # ◆ MÔ HÌNH CHÍNH (SAP §4)
 # # HOẶC: model_full <- coxph(Surv({time_col}, {outcome}) ~ {cov_fml}, data = df)
 #
 # Kiểm đa cộng tuyến TRƯỚC khi shrinkage (SAP §5: "VIF < 5 cho mọi biến"; thêm
@@ -4659,6 +4703,7 @@ source(here::here("scripts", "00_setup.R"))
 # tích độ nhạy, để thống kê viên tự quyết định thay vì thấy một tham số ẩn:
 
 # Kết cục NHỊ PHÂN (OR/RR) — [CẦN XÁC NHẬN loại effect size từ PICO]:
+# m_chinh <- meta::metabin(event.e, n.e, event.c, n.c, studlab = study, data = extracted, sm = "RR", method = "MH", random = TRUE, common = FALSE)  # ◆ MÔ HÌNH CHÍNH (SAP §4)
 # m_bin <- meta::metabin(event.e, n.e, event.c, n.c, studlab = study,
 #                         data = extracted, sm = "OR",        # hoặc "RR"
 #                         method = "MH", random = TRUE, common = FALSE)

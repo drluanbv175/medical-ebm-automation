@@ -348,6 +348,7 @@ PHAN_CONG: Dict[str, Dict[str, str]] = {
         "G2-AUTO-03b": "G2-T1", "G2-AUTO-04": "G2-T1", "G2-AUTO-05": "PI@G2-T1", "G2-AUTO-06": "G2-T1",
         "G2-AUTO-06b": "G2-T1", "G2-AUTO-07": "G2-T2|G2-T1", "G2-AUTO-08": "G2-T1", "G2-AUTO-08b": "PI@G2-T1",
         "G2-AUTO-09": "IRB@G2-T1", "G2-AUTO-10": "PI@G2-T1",
+        "G2-AUTO-11": "PI@G2-T1",  # 16/11/2026: quyết định đăng ký khớp nghĩa vụ (tiến cứu/SR-MA) — PI quyết
         "G2-HUMAN-01": "IRB@G2-T1", "G2-HUMAN-02": "IRB@G2-T1",
     },
     "G3": {

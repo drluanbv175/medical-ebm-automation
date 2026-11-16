@@ -278,11 +278,15 @@ def _read_redcap_dictionary(path: Path) -> Dict[str, Any]:
     duplicates = sorted({name for name in names if name and names.count(name) > 1})
     pii_names = sorted({name for name in names if name and _la_ten_bien_dinh_danh(name)})
     required_header = headers.get("required_field?")
+    # 16/11/2026: trường TÍNH TOÁN («calc») tính SAU khi khoá (bien_phai_sinh → G6) — không thuộc «biến bắt buộc phải có
+    # trong bộ dữ liệu khoá» (cùng quy tắc bộ làm sạch); giả lập đề tài chẩn đoán bị chặn G5-AUTO-07b vì thiếu FIB-4.
+    loai_header = headers.get("field_type")
     required_names = [
         str(row.get(name_header) or "").strip()
         for row in rows
         if required_header and str(row.get(required_header) or "").strip().casefold() in {"1", "true", "y", "yes"}
         and str(row.get(name_header) or "").strip()
+        and not (loai_header and str(row.get(loai_header) or "").strip().casefold() == "calc")
     ]
     identifier_header = headers.get("identifier?")
     flagged_identifiers = [

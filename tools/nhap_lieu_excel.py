@@ -2022,7 +2022,10 @@ def lenh_nhap(args) -> int:
         print(f"✓ CSV: {csv_p} (tự kiểm đọc lại, khớp từng ô: {' · '.join(da_kiem)})")
     if trang_thai == "LOI":
         return MA_LOI
-    lenh_cong = [sys.executable, str(TOOLS / "import_real_dataset.py"), "--study", args.study, "--data", str(csv_p)]
+    # 16/11/2026: truyền ĐÚNG từ điển đã dựng mẫu nhập liệu ⇒ cổng tiếp nhận miễn mẫu «date» cho cột khai kiểu ngày
+    # (như bộ làm sạch/khoá), vẫn quét mọi mẫu PII khác.
+    lenh_cong = [sys.executable, str(TOOLS / "import_real_dataset.py"), "--study", args.study, "--data", str(csv_p),
+                 "--dictionary", str(td_p)]
     if args.tiep_nhan:
         if chua_du and not tv:
             print("⛔ --tiep-nhan: còn phần CHƯA KIỂM/ĐỌC ĐƯỢC (xem trên) — không chạy cổng tiếp nhận.")

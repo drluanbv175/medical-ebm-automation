@@ -85,7 +85,8 @@ def test_tong_so_tieu_chi_da_gan():
     # 205 → 209 — thêm G3-AUTO-19 (ma trận mục tiêu → biến), G5-AUTO-12 (từ điển từ bộ biến riêng, phủ ma trận),
     # G5-AUTO-13 (phiếu nộp Hội đồng Đạo đức khớp câu hỏi nhập liệu), G0-AUTO-08 (truy vấn PubMed/ClinicalTrials.gov phủ
     # khái niệm PICO đã chốt) — bác sĩ duyệt đồng bộ xuyên cổng (#268).
-    assert sum(len(v) for v in HD.PHAN_CONG.values()) == 209
+    # 16/11/2026: 209 → 210 — thêm G2-AUTO-11 (quyết định đăng ký của PI khớp nghĩa vụ đăng ký — giả lập 8 thiết kế).
+    assert sum(len(v) for v in HD.PHAN_CONG.values()) == 210
 
 
 @pytest.mark.parametrize("gate", HD.CONG)

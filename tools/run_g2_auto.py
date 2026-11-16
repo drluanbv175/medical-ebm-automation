@@ -30,7 +30,7 @@ import sys
 import sys as _sys_r4
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
@@ -768,6 +768,74 @@ def _meta_or_blank(meta: Optional[dict], *path: str, blank: str = "[CẦN BỔ S
     return str(cur)
 
 
+
+def _khoi_prospero(meta: Optional[dict]) -> str:
+    """Phụ lục bản đăng ký PROSPERO (SR/MA) lấy từ PICO/đề cương ĐÃ CHỐT ở G0/G1 (16/11/2026).
+
+    Trước đây khối này là khuôn tĩnh: hỏi lại câu hỏi/PICO/kết cục/nguồn tìm/thời gian đã chốt ở G0/G1 và để 4 ô mẫu
+    chung («[topic in English]», «[RCT / Observational…]», «[RoB 2 / ROBINS-I…]», «[sẽ bổ sung sau]») ⇒ approve_gate từ
+    chối ký G2 của MỌI đề tài SR/MA. Nay: lấy điều đã chốt; điều chưa có (tiêu đề tiếng Anh, họ tên đồng nghiên cứu,
+    tài trợ, xung đột lợi ích) là ô [CẦN …] rõ ràng; công cụ đánh giá sai lệch suy từ loại nghiên cứu được đưa vào."""
+    gp = ((meta or {}).get("gate_params") or {}) if isinstance(meta, dict) else {}
+    g0 = gp.get("G0") if isinstance(gp.get("G0"), dict) else {}
+    g1 = gp.get("G1") if isinstance(gp.get("G1"), dict) else {}
+
+    def co(v: Any) -> bool:
+        return bool(v) and not str(v).strip().upper().startswith(("[CẦN", "NONE"))
+
+    def ds(v: Any, mac_dinh: str) -> str:
+        if isinstance(v, (list, tuple)):
+            v = "; ".join(str(x).strip() for x in v if co(x))
+        return str(v).strip() if co(v) else mac_dinh
+
+    po = g1.get("primary_outcome") if isinstance(g1.get("primary_outcome"), dict) else {}
+    tieu_chi = g1.get("inclusion_criteria") if isinstance(g1.get("inclusion_criteria"), list) else []
+    loai = next((str(x) for x in tieu_chi if re.search(r"thử nghiệm|ngẫu nhiên|\bRCT\b|thuần tập|bệnh chứng|"
+                                                       r"quan sát|cắt ngang|chẩn đoán", str(x), re.I)), "")
+    if re.search(r"ngẫu nhiên|\bRCT\b", loai, re.I):
+        rob = "RoB 2 (Cochrane) cho thử nghiệm ngẫu nhiên"
+    elif re.search(r"chẩn đoán", loai, re.I):
+        rob = "QUADAS-3"
+    elif re.search(r"thuần tập|bệnh chứng|quan sát|cắt ngang", loai, re.I):
+        rob = "ROBINS-I (can thiệp) / ROBINS-E (phơi nhiễm)"
+    else:
+        rob = "[CẦN — công cụ đánh giá nguy cơ sai lệch theo loại nghiên cứu được đưa vào]"
+    ky = str(g1.get("study_period") or "")
+    bat_dau, _, ket_thuc = ky.partition(" đến ")
+    nguon = ds(g1.get("information_sources"), "PubMed, Cochrane CENTRAL, Embase, Web of Science, grey literature")
+    return f"""
+---
+
+## PHỤ LỤC — BẢN ĐĂNG KÝ PROSPERO (SR/MA — bắt buộc)
+
+> PROSPERO: https://www.crd.york.ac.uk/prospero/ | Đăng ký TRƯỚC khi bắt đầu tìm kiếm. Nội dung lấy từ PICO/đề cương
+> đã chốt ở G0/G1; ô còn trống là thông tin chưa có trong hồ sơ.
+
+```
+PROSPERO Registration Draft
+═══════════════════════════
+Tiêu đề (tiếng Anh): [CẦN — tiêu đề tiếng Anh của tổng quan]
+Ngôn ngữ cung cấp: English
+
+Review question: {ds(g1.get("research_question"), "[CẦN — từ PICO G0]")}
+Searches: {nguon}
+Types of study included: {loai or "[CẦN — loại nghiên cứu được đưa vào]"}
+Population: {ds(g1.get("population") or g0.get("population"), "[CẦN — PICO P]")}
+Intervention/Exposure: {ds(g1.get("intervention_or_exposure") or g0.get("intervention"), "[CẦN — PICO I/E]")}
+Comparator: {ds(g1.get("comparator") or g0.get("comparison"), "[CẦN — PICO C]")}
+Outcomes: Primary — {ds(po.get("name") or g0.get("primary_outcome"), "[CẦN — PICO O]")} | Secondary — \
+{ds(g1.get("secondary_outcomes"), "[CẦN]")}
+Risk of bias: {rob}
+Reporting standard: PRISMA 2020
+Start date: {bat_dau.strip() if co(bat_dau) else "[CẦN]"}
+Expected completion: {ket_thuc.strip() if co(ket_thuc) else "[CẦN]"}
+Co-investigators: [CẦN — họ tên đồng nghiên cứu (chỉ khai trên PROSPERO)]
+Funding: [CẦN]
+Conflicts of interest: [CẦN]
+Link to protocol (pre-print): Chưa có — cập nhật trên PROSPERO khi đăng pre-print
+```
+"""
+
 def generate_g2_full_package(
     topic: str, study_name: str, design_code: str, design_primary: str,
     reporting_std: str, n_sr: int, n_rct: int, evidence_level: str,
@@ -807,6 +875,10 @@ def generate_g2_full_package(
     _objectives = (meta or {}).get("gate_params", {}).get("G1", {}).get("objectives") or []
     _obj1 = str(_objectives[0]) if len(_objectives) > 0 else "[CẦN — Mục tiêu 1, từ PICO G0]"
     _obj2 = str(_objectives[1]) if len(_objectives) > 1 else "[CẦN — Mục tiêu 2 nếu có]"
+    # 16/11/2026: câu «Nghiên cứu do [đơn vị] thực hiện … tại [nơi thực hiện]» của ICF lấy đơn vị/nơi thực hiện ĐÃ CHỐT
+    # (administrative.pi_unit, G1.setting) — trước là ô mẫu chung không nhãn, PI phải gõ lại điều G1 đã có.
+    _don_vi_icf = (f"Nghiên cứu do {_pi_unit} thực hiện tại {_setting}" if not _pi_unit.startswith("[")
+                   else f"Nghiên cứu được thực hiện tại {_setting}")
     risk_table_str = _risk_table(risk["risks"])
     # K9 (14/11/2026): phiếu đồng thuận (tài liệu cho NGƯỜI BỆNH) dùng danh sách riêng — khi loại can thiệp RCT chưa rõ,
     # không chép danh mục chọn (gồm rủi ro lấy máu/thuốc) vào ICF; ghi chú loại can thiệp in ngay dưới Bảng rủi ro.
@@ -941,7 +1013,7 @@ def generate_g2_full_package(
         icf_6d = """
 6d. CHĂM SÓC BỔ TRỢ VÀ SAU NGHIÊN CỨU
    [CẦN CHỦ NHIỆM XÁC NHẬN]: Sau khi kết thúc tham gia/kết thúc nghiên cứu,
-   anh/chị [sẽ/sẽ không] tiếp tục được tiếp cận can thiệp đang thử nghiệm
+   anh/chị [CẦN CHỦ NHIỆM CHỌN — sẽ / sẽ không] tiếp tục được tiếp cận can thiệp đang thử nghiệm
    (nếu chứng minh có lợi); các vấn đề sức khỏe phát sinh cần chăm sóc thêm
    ngoài phạm vi nghiên cứu sẽ được [CẦN — mô tả, vd chuyển tuyến điều trị
    theo phác đồ chuẩn]."""
@@ -949,19 +1021,27 @@ def generate_g2_full_package(
         icf_6b = ""
         icf_6d = ""
 
-    icf_6c = """
+    # SỬA 16/11/2026 (giả lập trọn vòng 8 thiết kế): bộ sinh BIẾT thiết kế và có thủ thuật hay không ⇒ viết luôn bản
+    # đúng, không để lời dặn soạn thảo «mục này có thể rút gọn… KHÔNG được bỏ hẳn» cho PI tự cắt (G2-AUTO-05 và
+    # approve_gate đếm nó là ô mẫu chưa xử lý ⇒ mọi thiết kế có ICF bị từ chối ký G2).
+    if design_code == "rct" or co_thu_thuat:
+        icf_6c = """
 6c. BỒI THƯỜNG KHI CÓ TỔN HẠI
    Nếu xảy ra tổn hại liên quan trực tiếp đến việc tham gia nghiên cứu,
    [CẦN — đơn vị/chủ nhiệm] sẽ [CẦN CHỦ NHIỆM XÁC NHẬN — mô tả chính sách
-   chi trả điều trị/bồi thường cụ thể và nguồn kinh phí]. Với nghiên cứu
-   quan sát nguy cơ tối thiểu (không can thiệp), mục này có thể rút gọn
-   thành xác nhận không phát sinh thủ thuật/can thiệp ngoài thực hành
-   thường quy — nhưng KHÔNG được bỏ hẳn."""
+   chi trả điều trị/bồi thường cụ thể và nguồn kinh phí]."""
+    else:
+        icf_6c = """
+6c. BỒI THƯỜNG KHI CÓ TỔN HẠI
+   Nghiên cứu không thực hiện thủ thuật hay can thiệp nào ngoài thực hành
+   thường quy. Nếu vẫn xảy ra tổn hại liên quan trực tiếp đến việc tham gia
+   nghiên cứu, [CẦN — đơn vị/chủ nhiệm] sẽ [CẦN CHỦ NHIỆM XÁC NHẬN — mô tả
+   cách chi trả điều trị/bồi thường và nguồn kinh phí]."""
 
     if co_thu_thuat:
         icf_6e = """
-6e. ĐỒNG THUẬN THU THẬP/SỬ DỤNG MẪU SINH HỌC (chỉ áp dụng nếu có lấy mẫu
-    máu/mô/dịch cơ thể — XÓA mục này nếu không áp dụng)
+6e. ĐỒNG THUẬN THU THẬP/SỬ DỤNG MẪU SINH HỌC (đề tài có lấy mẫu máu/mô/dịch
+    cơ thể)
    [CẦN CHỦ NHIỆM XÁC NHẬN]: Mẫu sinh học thu thập sẽ được dùng cho: [CẦN —
    mục đích cụ thể trong đề tài này].
    ☐ Mẫu sẽ được hủy sau khi phân tích xong.
@@ -1166,38 +1246,7 @@ Chữ ký chủ nhiệm: [CẦN KÝ]   |   Ngày: ___/___/{year}
     ncts_for_ref = TR.format_prior_art_refs(registry)
 
     # PROSPERO template (chỉ SR/MA)
-    prospero_section = ""
-    if design_code == "sr_ma":
-        prospero_section = """
----
-
-## PHỤ LỤC — BẢN ĐĂNG KÝ PROSPERO (SR/MA — bắt buộc)
-
-> PROSPERO: https://www.crd.york.ac.uk/prospero/ | Điền TRƯỚC khi bắt đầu tìm kiếm.
-
-```
-PROSPERO Registration Draft
-═══════════════════════════
-Tiêu đề: A systematic review and meta-analysis of [topic in English]
-Ngôn ngữ cung cấp: English
-
-Review question: [CẦN — từ PICO G0]
-Searches: PubMed, Cochrane CENTRAL, Embase, Web of Science, grey literature
-Types of study included: [RCT / Observational — tùy câu hỏi]
-Population: [CẦN — PICO P]
-Intervention/Exposure: [CẦN — PICO I/E]
-Comparator: [CẦN — PICO C]
-Outcomes: Primary — [CẦN — PICO O] | Secondary — [CẦN]
-Risk of bias: [RoB 2 / ROBINS-I / QUADAS-3 hiện hành; QUADAS-2 chỉ tương thích ngược]
-Reporting standard: PRISMA 2020
-Start date: [CẦN]
-Expected completion: [CẦN]
-Co-investigators: [CẦN]
-Funding: [CẦN]
-Conflicts of interest: [CẦN]
-Link to protocol (pre-print): [sẽ bổ sung sau]
-```
-"""
+    prospero_section = _khoi_prospero(meta) if design_code == "sr_ma" else ""
 
     khoi_quy_trinh_tl6 = khoi_quy_trinh_g2(quy_trinh)
     doc = f"""# A3 — HỒ SƠ ĐẠO ĐỨC & ĐĂNG KÝ NGHIÊN CỨU | {study_name}
@@ -1365,13 +1414,10 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 
 1. MỤC ĐÍCH NGHIÊN CỨU
    Chúng tôi kính mời anh/chị tham gia nghiên cứu nhằm:
-   [CẦN MÔ TẢ bằng ngôn ngữ đơn giản — không dùng thuật ngữ khó; viết xong thì XOÁ dòng ví dụ dưới]
-   Ví dụ: "Tìm hiểu xem thuốc/can thiệp X có giúp cải thiện tình
-   trạng [bệnh] ở người bệnh như anh/chị không."
+   [CẦN MÔ TẢ bằng ngôn ngữ đơn giản, không dùng thuật ngữ khó — vd «Tìm hiểu xem … có giúp cải thiện … ở người bệnh như anh/chị không»]
 
-   Nghiên cứu do [đơn vị] thực hiện với sự hỗ trợ của [tài trợ
-   nếu có]. Cỡ mẫu dự kiến: khoảng {n_display_inline} người tham gia
-   tại [nơi thực hiện].
+   {_don_vi_icf}. Cỡ mẫu dự kiến: khoảng {n_display_inline} người tham gia
+   (nguồn tài trợ: mục 4b).
 
    THAM GIA LÀ HOÀN TOÀN TỰ NGUYỆN. Quyết định không tham gia
    KHÔNG ảnh hưởng đến chất lượng chăm sóc y tế của anh/chị.
@@ -1561,7 +1607,7 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU — Cấp IRB
 
 4. LƯU TRỮ:
    Nơi lưu: [CẦN — máy chủ nội bộ / OneDrive institutional
-             / ổ cứng mã hóa tại [đơn vị]]
+             / ổ cứng mã hóa tại đơn vị]
    Bảo mật: AES-256 · mật khẩu cấp người dùng · VPN (nếu từ xa)
    Sao lưu: [CẦN — ví dụ: hàng ngày/tuần, 2 bản độc lập]
    Thời gian lưu: ___ năm sau kết thúc nghiên cứu

@@ -935,6 +935,10 @@ def _range_lines_tu_rows(rows: list, da_co: set, nhay: str = '"') -> list:
     return lines
 
 
+# Khoá bản ghi hợp lệ ở TRƯỜNG ĐẦU của bộ biến đã duyệt (REDCap lấy trường đầu làm mã bản ghi, tên tuỳ đề tài).
+KHOA_BAN_GHI_DA_DUYET = ("record_id", "study_id", "ma_nguoi_tham_gia", "participant_id")
+
+
 def gen_data_cleaning_script(study: str, design_code: str, rows: list,
                              ma_thieu: Optional[Dict[str, List[str]]] = None) -> str:
     """Sinh data_cleaning.py đọc REDCap export và làm sạch theo CRF dictionary."""
@@ -995,6 +999,8 @@ def gen_data_cleaning_script(study: str, design_code: str, rows: list,
         'from datetime import datetime\n\n'
         '# Danh sach bien theo CRF dictionary (sinh tu dong)\n'
         'EXPECTED_COLUMNS = __COLS__\n\n'
+        '# Ma ban ghi = truong DAU cua tu dien (REDCap) — record_id hoac khoa da duyet (vd study_id)\n'
+        'ID_COL = __IDCOL__\n\n'
         '# Bien so can ep kieu numeric\n'
         'NUMERIC_COLS = __NUMERIC__\n\n'
         '# Bien ngay thang\n'
@@ -1060,12 +1066,12 @@ def gen_data_cleaning_script(study: str, design_code: str, rows: list,
         '            if bad.sum() > 0:\n'
         '                print(f"[LOGIC] {d2} truoc {d1}: {bad.sum()} dong")\n\n\n'
         'def check_duplicates(df: pd.DataFrame) -> None:\n'
-        '    """Phat hien record_id trung."""\n'
-        '    if "record_id" in df.columns:\n'
-        '        dups = df["record_id"].duplicated(keep=False)\n'
+        '    """Phat hien ma ban ghi (ID_COL) trung."""\n'
+        '    if ID_COL in df.columns:\n'
+        '        dups = df[ID_COL].duplicated(keep=False)\n'
         '        if dups.sum() > 0:\n'
-        '            dup_ids = df.loc[dups, "record_id"].unique()\n'
-        '            print(f"[ERROR] record_id TRUNG: {dup_ids}")\n\n\n'
+        '            dup_ids = df.loc[dups, ID_COL].unique()\n'
+        '            print(f"[ERROR] {ID_COL} TRUNG: {dup_ids}")\n\n\n'
         'def save_clean(df: pd.DataFrame, out_dir: Path) -> None:\n'
         '    """Luu dataset da lam sach."""\n'
         '    out_dir.mkdir(parents=True, exist_ok=True)\n'
@@ -1076,7 +1082,7 @@ def gen_data_cleaning_script(study: str, design_code: str, rows: list,
         '    print(f"[SAVE] Dataset lam sach -> {out_path} ({len(df_clean)} dong)")\n'
         '    if flag_cols:\n'
         '        flag_path = out_dir / "df_flags.csv"\n'
-        '        df[["record_id"] + flag_cols].to_csv(flag_path, index=False, encoding="utf-8-sig")\n'
+        '        df[[ID_COL] + flag_cols].to_csv(flag_path, index=False, encoding="utf-8-sig")\n'
         '        print(f"[SAVE] Co kiem tra -> {flag_path}")\n\n\n'
         'def main():\n'
         '    parser = argparse.ArgumentParser(description="Lam sach du lieu REDCap — __STUDY__")\n'
@@ -1108,6 +1114,7 @@ def gen_data_cleaning_script(study: str, design_code: str, rows: list,
               .replace("__DESIGN__", design_code)
               .replace("__NVAR__", str(len(col_names)))
               .replace("__COLS__", repr(col_names))
+              .replace("__IDCOL__", repr(col_names[0] if col_names else "record_id"))
               .replace("__NUMERIC__", repr(numeric_cols))
               .replace("__DATES__", repr(date_cols))
               .replace("__REQUIRED__", repr(required_cols))
@@ -1162,6 +1169,8 @@ def gen_data_quality_report_script(study: str, design_code: str, rows: list,
         'import pandas as pd\n'
         'from pathlib import Path\n'
         'from datetime import datetime\n\n\n'
+        '# Ma ban ghi = truong DAU cua tu dien (REDCap) — record_id hoac khoa da duyet (vd study_id)\n'
+        'ID_COL = __IDCOL__\n\n'
         'RANGE_CHECKS = [\n'
         '__RANGES__\n'
         ']\n\n'
@@ -1182,12 +1191,12 @@ def gen_data_quality_report_script(study: str, design_code: str, rows: list,
         '        f"  So bien      : {len(df.columns)}",\n'
         '        "",\n'
         '    ]\n\n'
-        '    if "record_id" in df.columns:\n'
-        '        n_dup = int(df["record_id"].duplicated(keep=False).sum())\n'
+        '    if ID_COL in df.columns:\n'
+        '        n_dup = int(df[ID_COL].duplicated(keep=False).sum())\n'
         '        suffix = "  CANH BAO: CAN XU LY" if n_dup > 0 else "  OK"\n'
-        '        lines.append(f"TRUNG record_id: {n_dup} dong{suffix}")\n'
+        '        lines.append(f"TRUNG {ID_COL}: {n_dup} dong{suffix}")\n'
         '    else:\n'
-        '        lines.append("TRUNG record_id: khong tim thay cot record_id")\n\n'
+        '        lines.append(f"TRUNG {ID_COL}: khong tim thay cot {ID_COL}")\n\n'
         '    lines.append("")\n'
         '    lines.append("% DU LIEU DAY DU (Completeness) theo bien:")\n'
         '    lines.append("  " + "-" * 50)\n'
@@ -1216,8 +1225,8 @@ def gen_data_quality_report_script(study: str, design_code: str, rows: list,
         '        lines.append("  Khong phat hien vi pham pham vi trong dataset nay.")\n\n'
         '    lines += ["", "=" * 60, "KET LUAN:"]\n'
         '    issues = []\n'
-        '    if "record_id" in df.columns and df["record_id"].duplicated(keep=False).sum() > 0:\n'
-        '        issues.append("Co record_id trung — can xu ly truoc khi phan tich")\n'
+        '    if ID_COL in df.columns and df[ID_COL].duplicated(keep=False).sum() > 0:\n'
+        '        issues.append(f"Co {ID_COL} trung — can xu ly truoc khi phan tich")\n'
         '    high_missing = missing[missing > 30]\n'
         '    if not high_missing.empty:\n'
         '        issues.append(f"{len(high_missing)} bien thieu >30%: {list(high_missing.index)}")\n'
@@ -1235,7 +1244,7 @@ def gen_data_quality_report_script(study: str, design_code: str, rows: list,
         '        "=" * 60,\n'
         '    ]\n'
         '    report_text = "\\n".join(lines)\n'
-        '    out_path.write_text(report_text, encoding="utf-8", newline="\n")\n'
+        '    out_path.write_text(report_text, encoding="utf-8", newline="\\n")\n'
         '    print(report_text)\n'
         '    print(f"\\n-> Da luu bao cao: {out_path}")\n\n\n'
         'def main():\n'
@@ -1254,6 +1263,7 @@ def gen_data_quality_report_script(study: str, design_code: str, rows: list,
               .replace("__STUDY__", study)
               .replace("__DESIGN__", design_code)
               .replace("__RANGES__", range_checks_str)
+              .replace("__IDCOL__", repr(col_names[0] if col_names else "record_id"))
               .replace("__MISSING__", _ma_thieu_so(ma_thieu)))
     return script
 
@@ -2457,8 +2467,10 @@ def nap_bo_bien_rieng(out_dir: Path, study: str):
             f"bundle (rơi im lặng là bác sĩ nhận dictionary SAI biến mà không biết):\n{chi_tiet}")
     if not rows:
         raise SystemExit(f"⛔ {BO_BIEN_RIENG_TEN_FILE} không có dòng biến hợp lệ nào — DỪNG.")
-    if rows[0][0] != "record_id":
-        # REDCap đòi record_id là trường ĐẦU TIÊN — thiếu thì import gãy ngay.
+    if rows[0][0] not in KHOA_BAN_GHI_DA_DUYET:
+        # REDCap lấy TRƯỜNG ĐẦU làm mã bản ghi — bộ biến chưa mở đầu bằng một khoá thì thêm record_id.
+        # SỬA 16/11/2026 (giả lập trọn vòng 8 thiết kế): tổng quan–gộp mở đầu bằng khoá ĐÃ DUYỆT `study_id` (mỗi dòng
+        # một thử nghiệm) — chèn thêm record_id làm từ điển lệch bộ biến G3 (V7) ⇒ G5-AUTO-11 chặn, mẫu nhập không dựng.
         rows.insert(0, ("record_id", rows[0][1], "", "text", "Mã bản ghi (tự sinh)",
                         "", "", "", "", "", "y", "", "", ""))
     return rows

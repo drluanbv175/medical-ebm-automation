@@ -219,6 +219,8 @@ _HO_SAP = (
     ("meta", ("meta-analysis", "meta analysis", "phan tich gop", "random effects", "random-effects", "reml")),
     ("roc", ("roc", "auc", "do nhay", "do dac hieu")),
     ("qualitative", ("chu de", "thematic", "dinh tinh")),
+    # 16/11/2026: cắt ngang MÔ TẢ — ước lượng tỷ lệ + KTC (khoá chặt: cụm từ riêng, không «tỷ lệ» trần)
+    ("proportion", ("uoc luong ty le", "wilson", "ty le hien mac", "prevalence")),
 )
 _HO_SCRIPT = (
     ("cox", re.compile(r"\bcoxph\s*\(|coxphfitter|\bsurv\s*\(", re.I)),
@@ -230,6 +232,8 @@ _HO_SCRIPT = (
     ("meta", re.compile(r"\bmetagen\s*\(|\bmetabin\s*\(|\brma\s*\(", re.I)),
     ("roc", re.compile(r"\broc\s*\(|\bauc\s*\(", re.I)),
     ("qualitative", re.compile(r"thematic|ma hoa chu de|mã hóa chủ đề", re.I)),
+    ("proportion", re.compile(r"\bBinomCI\s*\(|\bbinom\.confint\s*\(|\bbinconf\s*\(|\bsvyciprop\s*\(|\bepi\.prev\s*\(",
+                              re.I)),
 )
 
 

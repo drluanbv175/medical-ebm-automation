@@ -1462,6 +1462,26 @@ def evaluate_g2_quality(
             if "1.0" in (str(g2m.get("protocol_version")), str(g2m.get("icf_version"))) else "")),
         "PI khai gate_params.G2.protocol_version và icf_version (đúng phiên bản trình Hội đồng).",
     ))
+    # THÊM 16/11/2026 (giả lập trọn vòng 8 thiết kế): 5 đề tài tiến cứu có PI ghim registration_required=false ⇒ cổng
+    # báo READY_FOR_IRB_SUBMISSION nhưng approve_gate TỪ CHỐI ký («phải có trạng thái REGISTERED») — mâu thuẫn chỉ lộ ra
+    # lúc ký. Cùng quy tắc với approve_gate: tuyển người mới tiến cứu hoặc SR/MA ⇒ đăng ký BẮT BUỘC (Helsinki §35;
+    # PROSPERO với SR/MA); PI khai «không bắt buộc» không hạ được nghĩa vụ.
+    che_do_tuyen = str(g2m.get("recruitment_mode") or "").strip().upper()
+    phai_dang_ky = che_do_tuyen == "PROSPECTIVE_NEW_PARTICIPANTS" or design_code == "sr_ma"
+    mau_thuan_dk = phai_dang_ky and g2m.get("registration_required") is False
+    ly_do_dk = ("recruitment_mode=PROSPECTIVE_NEW_PARTICIPANTS" if che_do_tuyen == "PROSPECTIVE_NEW_PARTICIPANTS"
+                else "thiết kế SR/MA")
+    automatic.append(_criterion(
+        "G2-AUTO-11",
+        "Quyết định đăng ký của PI khớp nghĩa vụ đăng ký (tiến cứu/SR-MA ⇒ đăng ký trước người tham gia đầu tiên)",
+        "BLOCK" if mau_thuan_dk else "PASS",
+        (f"gate_params.G2.registration_required=false nhưng {ly_do_dk} ⇒ approve_gate sẽ từ chối ký G2"
+         if mau_thuan_dk else
+         ("đăng ký bắt buộc và PI không khai ngược lại" if phai_dang_ky else "không thuộc diện bắt buộc đăng ký")),
+        "PI sửa gate_params.G2: registration_required=true + registration_registry (ClinicalTrials.gov/WHO ICTRP; "
+        "PROSPERO với SR/MA), đăng ký rồi mới tuyển — hoặc sửa recruitment_mode nếu thật ra là hồi cứu dữ liệu thứ "
+        "cấp.",
+    ))
 
     attestation_errors = validate_attestation(
         attestation=attestation,

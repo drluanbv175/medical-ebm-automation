@@ -491,6 +491,24 @@ def import_dataset(study: str, data_path: Path, *,
     return manifest
 
 
+def cot_ngay_tu_dien(duong_dan: Path) -> frozenset:
+    """Tên cột (đã chuẩn hoá) khai kiểu ngày trong từ điển dữ liệu — dùng ĐÚNG bộ đọc của clean_research_dataset.
+
+    THÊM 16/11/2026 (giả lập trọn vòng 8 thiết kế): RCT nhập phiếu qua mẫu Excel/SPSS của hệ (dựng từ chính từ điển G5)
+    có biến ngày ngẫu nhiên hoá khai kiểu ngày ⇒ cổng tiếp nhận chặn cả 218 ô là «PII ngày», trong khi bộ làm sạch, bộ
+    khoá và công cụ giả danh đều miễn đúng các cột này. Từ điển hỏng/thiếu ⇒ rỗng (quét nghiêm ngặt như cũ)."""
+    try:
+        import clean_research_dataset as CRD  # noqa: PLC0415 — CRD nhập module này; nhập trễ để tránh vòng
+
+        tu_dien = CRD._load_dictionary(Path(duong_dan))
+    except Exception:  # noqa: BLE001 — không đọc được từ điển ⇒ không miễn gì (fail-closed)
+        return frozenset()
+    if tu_dien.get("blocker"):
+        return frozenset()
+    return frozenset(_normalize_header(str(r["name"])) for r in (tu_dien.get("variables") or [])
+                     if isinstance(r, dict) and r.get("type") == "date" and r.get("name"))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Nhập CSV dữ liệu thật đã khử định danh vào hồ sơ nghiên cứu.")
@@ -498,12 +516,16 @@ def main() -> int:
     parser.add_argument("--data", required=True, help="Đường dẫn CSV đã khử định danh")
     parser.add_argument("--max-scan-rows", type=int, default=5000,
                         help="Số dòng tối đa quét PII giá trị (mặc định 5000)")
+    parser.add_argument("--dictionary", default=None,
+                        help="Từ điển dữ liệu G5 đã duyệt: cột khai kiểu ngày được miễn RIÊNG mẫu «date» (vẫn quét "
+                             "email/SĐT/CCCD) — cùng quy tắc bộ làm sạch/khoá dữ liệu")
     args = parser.parse_args()
 
     manifest = import_dataset(
         args.study,
         Path(args.data),
         max_scan_rows=args.max_scan_rows,
+        exempt_date_columns=cot_ngay_tu_dien(Path(args.dictionary)) if args.dictionary else frozenset(),
     )
     print(f"DATA_INTAKE: {manifest['status']}")
     print(f"rows={manifest['row_count']} columns={manifest['column_count']}")
