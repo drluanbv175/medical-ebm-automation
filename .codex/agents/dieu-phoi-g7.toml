@@ -120,6 +120,12 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - Khai sử dụng trí tuệ nhân tạo NGAY TRONG bản thảo (ICMJE V.A — G8-AUTO-06), không chỉ ở gate_params.
 - ĐÃ VÁ 16/11/2026 (bác sĩ: «Hãy hoàn thiện vấn đề giả lập»): `run_g7_auto` lấp ô hỏi lại điều đã chốt — G1 (mục tiêu, cơ sở, thời gian, tiêu chí nhận/loại, phơi nhiễm, kết cục chính/phụ, định nghĩa biến cố), SAP (§2, §4, §6, §10), G2 (đăng ký), G0 (giả thuyết) — qua MỘT nguồn `tools/quyet_dinh_da_chot.py`; checkpoint ghi `o_lay_tu_quyet_dinh_da_chot`. Đo lại thuần tập: 14 → 1 ô (ô còn lại là nhận định tính đại diện sau khi có dữ liệu — nội dung MỚI của tác giả). Ô KẾT QUẢ THẬT, bàn luận, hạn chế vẫn là việc tác giả; ô không có quyết định đã chốt vẫn [CẦN…] — không lấp bằng nhãn chung. Dòng Keywords để «[CẦN 3–5 MeSH terms chính thức]» (bộ sinh thôi đoán từ khoá từ tiêu đề).
 
+## A12 phủ mọi PMID gói phát hành TRƯỚC khi G9 khoá — giả lập trọn vòng 8 thiết kế (16/11/2026)
+- Đề cương G10 trích thêm PMID ngoài bản thảo (nguồn cỡ mẫu G3, chuẩn báo cáo, PMID chuẩn đề cương
+  `protocol_checklist_items.pmid_tai_lieu_chuan(<thiết kế>)`: SPIRIT 2025 cho RCT, PRISMA-P 2015 cho tổng quan). Kiểm
+  muộn ở G10 thì ghi lại biên nhận A12 làm vỡ manifest G9 ⇒ G9 phải ký lại. Ở G7: dựng nháp
+  `run_g10_assemble.py --study <mã>` (bản nháp, bỏ qua mã thoát) ⇒ A12 kiểm PMID của bản thảo + diễn giải + đề cương.
+
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G7` xác nhận/dấu vân tay · bật cờ đời thực trong
 `study_meta` · chấm đầu ra do chính mình làm · ghi biên bản «ĐỒNG THUẬN» như «ĐẠT CỔNG» · bịa căn cứ · báo «phần agent hoàn chỉnh» khi `trach-nhiem` chưa ra mã 0 · sửa artifact của cổng khác để «xanh» tiêu chí

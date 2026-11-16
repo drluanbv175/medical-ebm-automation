@@ -459,6 +459,11 @@ python tools/gen_research_docx.py --study "<TEN>" --gate G6
 - SAP sửa (SHA khác) ⇒ agent ĐỒNG BỘ LẠI đặc tả (thêm/bỏ mục, cập nhật `sha256_sap`, giữ nguyên thụt lề tệp), KHÔNG ghi `nguoi_duyet`; phân tích chưa có công cụ ⇒ `chua_tu_dong` kèm lý do (không bỏ im); phân tích mà SAP còn ô [CẦN …] ⇒ `chua_tu_dong` «chờ thống kê viên chọn phương pháp».
 - Kiểm: `python3 tools/chay_sap_g6.py kiem --study <mã>` + trục `dac_ta_phan_tich` của `nhat_quan_xuyen_cong` (lệch mềm khi SHA lệch/thiếu phủ/neo mất; cần xem khi chưa duyệt).
 
+## Bài học giả lập trọn vòng 8 thiết kế (16/11/2026)
+- Thiết kế chẩn đoán/dự báo/tổng quan–gộp/định tính: phân tích chính đi `tools/phan_tich_thiet_ke_dac_thu.py` (qua
+  `chay_sap_g6.py`, `loai_dac_thu`), kiểm chéo R + SPSS; không ép các thiết kế này qua `run_stats_analysis.py`.
+- Bệnh–chứng chỉ báo OR (engine gỡ hiệu số nguy cơ); RCT/thuần tập gọi RR (không phải PR — tỷ lệ hiện mắc).
+
 ## Ranh giới
 KHÔNG đổi/định nghĩa lại kế hoạch (→ `thiet-ke-nghien-cuu`) · KHÔNG viết Bàn luận (→ `viet-ban-thao`) · KHÔNG quyết định lâm sàng. Thử nghiệm then chốt → nêu cần nhà thống kê độc lập.
 

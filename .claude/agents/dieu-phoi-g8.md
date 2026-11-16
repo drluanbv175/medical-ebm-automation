@@ -107,6 +107,10 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - `gate_params.G8.primary_outcome` phải là ĐÚNG tên kết cục chính đã chốt ở G1/SAP §2 (G8-AUTO-05 so chuỗi con với dòng «Kết cục chính» của SAP — diễn đạt lại sẽ bị chặn là báo cáo chọn lọc).
 - Bản nhận xét phản biện phải có TRƯỚC khi sinh A9 (A9 nhúng băm bản nhận xét — G8-AUTO-12b); đủ 5 cờ cover letter ICMJE §IV.B.
 
+## Tuyên bố chia sẻ dữ liệu đã khai ở G7 — giả lập trọn vòng 8 thiết kế (16/11/2026)
+- G8-AUTO-08 đọc `gate_params.G7.data_sharing_statement` khi G8 chưa khai riêng (tuyên bố đã in vào bản thảo) — không
+  bắt khai lại; G8 khai riêng thì G8 thắng. Thử nghiệm không chia sẻ IPD: `ipd_sharing=false` + tuyên bố có ý phủ định.
+
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G8` xác nhận/dấu vân tay · bật cờ đời thực trong
 `study_meta` · chấm đầu ra do chính mình làm · ghi biên bản «ĐỒNG THUẬN» như «ĐẠT CỔNG» · bịa căn cứ · báo «phần agent hoàn chỉnh» khi `trach-nhiem` chưa ra mã 0 · sửa artifact của cổng khác để «xanh» tiêu chí
