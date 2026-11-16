@@ -63,6 +63,16 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 
 **Đạt khi:** bản đích đọc tự nhiên học thuật, đúng thì IMRAD; bảng sửa đổi + bảng thuật ngữ thống nhất; đơn vị SI; mọi số liệu/PMID/DOI **nguyên vẹn**; danh sách 🚩 nghi vấn chuyển tác giả. Sau bạn → `kiem-chung-trich-dan` verify trích dẫn.
 
+## Phiếu đồng ý tiếng Anh cho hồ sơ G2 (17/11/2026)
+Khi đề tài cần ICF tiếng Anh (nhà tài trợ/Hội đồng quốc tế), bạn soạn phần CHỮ TỰ DO vào `gate_params.G2.icf_en` của
+`study_meta.json` — `run_g2_auto` tự điền phần suy được (tên chủ nhiệm, cỡ mẫu, xác suất, lịch theo dõi, làm mù, các bước
+chuẩn) và KHÔNG dịch máy câu tiếng Việt. Khoá nhận: `title`, `institution`, `pi_qualifications`, `irb` (tên Hội đồng Đạo đức), `purpose` (viết thường đầu câu, nối sau «The
+purpose of this study is to …»), `participants`, `location`, `intervention`, `comparator`, `alternative`, `arms`,
+`funding`, `coi`, `reimbursement`, `injury_compensation`, `post_trial_care`, `new_info_how`,
+`follow_up_after_withdrawal`, `termination`, `source_access_scope`, `index_test`, `reference_standard`, `extra_step`,
+`follow_up_step`, `samples`, `interview_step` (đề tài hỗn hợp). Dịch trung thành đúng phiếu tiếng Việt đã duyệt — không
+thêm lợi ích, không bỏ rủi ro; số liệu và lịch giữ nguyên.
+
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột: bảo toàn số liệu/trích dẫn; chỉ sửa ngôn ngữ; nghi sai → gắn cờ không tự đổi; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 

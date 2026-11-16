@@ -305,6 +305,80 @@ def kich_ban_kho() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
     hs["dien_giai"] = dg
     hs["phan_bien_G8"] = {**hs["phan_bien_G8"], "checklist": "CONSORT 2025 + CHEERS 2022 (PMID 35017145)"}
     kb["rct_kinh_te"] = kt
+
+    # ══ 8. HỖN HỢP GIẢI THÍCH TUẦN TỰ — RCT gốc + phỏng vấn sâu giải thích kết quả (GRAMMS, PMID 18416914) ═════════
+    # Đề tài giữ mã thiết kế «rct» (cấu phần định lượng); cấu phần định tính + tích hợp khai ở G1.mixed_methods
+    # (tools/hon_hop.py). Phỏng vấn sau khi khoá phân tích định lượng, chọn có chủ đích theo kết quả (đạt/không đạt
+    # kiểm soát) — đúng mô hình giải thích tuần tự của Creswell & Plano Clark.
+    # Giữ mã đề tài của RCT gốc ⇒ dùng chung nền G0 đã lưu (giả lập ngoại tuyến), như «kinh tế», «trích dẫn đã rút».
+    hh = _sao(rct, id_test="rct_hon_hop", goc="rct_nhi_phan",
+              mo_ta="RCT gốc + cấu phần định tính giải thích tuần tự (thiết kế hỗn hợp; GRAMMS + COREQ)")
+    g1 = hh["pi"]["G1"]
+    g1["objectives"] = list(g1["objectives"]) + [
+        "Tìm hiểu trải nghiệm của người bệnh với chương trình tin nhắn và lý do đạt hoặc không đạt kiểm soát huyết áp "
+        "sau 6 tháng, nhằm giải thích kết quả của thử nghiệm"]
+    g1["aim"] = ("Đánh giá hiệu quả của chương trình tin nhắn nhắc uống thuốc lên kiểm soát huyết áp và tìm hiểu trải "
+                 "nghiệm của người bệnh để giải thích kết quả, ở người tăng huyết áp điều trị ngoại trú")
+    g1["mixed_methods"] = {
+        "thiet_ke": "giai_thich_tuan_tu",
+        "ly_do": vi("Thử nghiệm trả lời chương trình tin nhắn có cải thiện kiểm soát huyết áp hay không, nhưng không "
+                    "cho biết vì sao một số người vẫn không đạt kiểm soát dù nhận tin nhắn; phỏng vấn sâu sau thử "
+                    "nghiệm giúp giải thích kết quả và gợi ý cách điều chỉnh chương trình trước khi triển khai rộng"),
+        "uu_tien": "dinh_luong",
+        "cau_phan_dinh_tinh": {
+            "muc_tieu": [len(g1["objectives"])],  # mục tiêu vừa thêm ở trên — cấu phần định tính trả lời
+            "central_phenomenon": vi("Trải nghiệm nhận tin nhắn nhắc uống thuốc và các yếu tố giúp hoặc cản trở việc "
+                                     "uống thuốc đều đặn"),
+            "qualitative_approach": "Phân tích chủ đề (thematic analysis) theo Braun và Clarke",
+            "chon_mau": vi("Chọn mẫu có chủ đích trong nhóm can thiệp theo kết quả tháng 6 (đạt và không đạt kiểm "
+                           "soát huyết áp), đa dạng về giới và nhóm tuổi"),
+            "co_mau_du_kien": "Khoảng 16–20 người (8–10 người mỗi nhóm kết quả), dừng khi đạt bão hoà",
+            "data_collection_method": vi("Phỏng vấn sâu bán cấu trúc 30–45 phút tại phòng khám hoặc qua điện thoại, "
+                                         "ghi âm khi người tham gia đồng ý, gỡ băng nguyên văn"),
+            "saturation_criterion": "Ba cuộc phỏng vấn liên tiếp không xuất hiện mã mới",
+            "phan_tich": vi("Hai nghiên cứu viên mã hoá độc lập theo bộ mã xây dựng từ 3 bản gỡ băng đầu, thảo luận "
+                            "đồng thuận; người thứ ba phân xử khi bất đồng"),
+            "interview_guide": [
+                {"chu_de": "Mở đầu", "cau_hoi": "Anh/chị có thể kể lại những tháng nhận tin nhắn nhắc uống thuốc?",
+                 "goi_mo": ["Tin nhắn thường đến vào lúc nào trong ngày?",
+                            "Anh/chị thường làm gì khi nhận được tin nhắn?"]},
+                {"chu_de": "Việc uống thuốc hằng ngày", "cau_hoi": vi("Điều gì giúp anh/chị uống thuốc huyết áp đều "
+                                                                     "đặn, và điều gì khiến anh/chị đôi khi quên "
+                                                                     "hoặc bỏ thuốc?"),
+                 "goi_mo": ["Anh/chị có thể cho một ví dụ cụ thể không?",
+                            "Gia đình có vai trò gì trong việc này?"]},
+                {"chu_de": "Đánh giá chương trình", "cau_hoi": vi("Theo anh/chị, tin nhắn có ích ở điểm nào và "
+                                                                  "chưa phù hợp ở điểm nào?"),
+                 "goi_mo": ["Nội dung, giờ gửi hoặc số lần gửi nên thay đổi thế nào?"]},
+                {"chu_de": "Kết thúc", "cau_hoi": "Còn điều gì anh/chị muốn chia sẻ thêm mà chúng tôi chưa hỏi?",
+                 "goi_mo": []}]},
+        "tich_hop": {
+            "thoi_diem": vi("Sau khi khoá phân tích định lượng: kết quả tháng 6 dùng để chọn người phỏng vấn, và hai "
+                            "bộ kết quả được hợp nhất ở giai đoạn diễn giải"),
+            "cach": vi("Kết nối theo chọn mẫu (kết quả định lượng xác định nhóm được mời phỏng vấn) và hợp nhất bằng "
+                       "bảng tích hợp, đối chiếu từng kết quả định lượng với chủ đề định tính tương ứng"),
+            "nguoi": vi("Chủ nhiệm đề tài cùng nghiên cứu viên định tính; thống kê viên tham gia đối chiếu kết quả "
+                        "định lượng"),
+            "chu_de": [
+                {"chu_de": "Hiệu quả của chương trình tin nhắn",
+                 "dinh_luong": "Tỷ lệ kiểm soát huyết áp tháng 6 theo nhóm (kết cục chính)",
+                 "dinh_tinh": "Trải nghiệm nhận tin nhắn và cách người bệnh phản hồi"},
+                {"chu_de": "Người không đạt kiểm soát dù nhận tin nhắn",
+                 "dinh_luong": "Tỷ lệ không đạt kiểm soát trong nhóm can thiệp",
+                 "dinh_tinh": "Rào cản uống thuốc đều đặn"},
+                {"chu_de": "Khả năng áp dụng rộng",
+                 "dinh_luong": "Điểm tuân thủ thuốc tháng 6",
+                 "dinh_tinh": "Đề xuất điều chỉnh nội dung và giờ gửi tin nhắn"}]}}
+    hs = hh["ho_so_tron_vong"]
+    dg = copy.deepcopy(hs["dien_giai"])
+    dg["muc_4"] = dg["muc_4"] + (
+        " Cấu phần định tính giải thích (phỏng vấn sâu người nhóm can thiệp đạt và không đạt kiểm soát) được thực "
+        "hiện sau khi khoá phân tích định lượng theo SAP §17; kết quả tích hợp trình bày bằng bảng tích hợp và báo "
+        "cáo theo GRAMMS.")
+    hs["dien_giai"] = dg
+    hs["phan_bien_G8"] = {**hs["phan_bien_G8"],
+                          "checklist": "CONSORT 2025 + GRAMMS (PMID 18416914) + COREQ (PMID 17872937)"}
+    kb["rct_hon_hop"] = hh
     return kb
 
 
@@ -352,8 +426,7 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
                   "toàn văn bài này."),
         "muc_4": ("Điểm mạnh: ngẫu nhiên hoá, biên định trước trong SAP, cỡ mẫu {n} người, kiểm chéo SPSS–R khớp. Hạn "
                   "chế: phân tích theo đề cương chưa làm được do thiếu biến tuân thủ — với thiết kế không kém hơn, "
-                  "phân tích ITT có thể thiên về kết luận không kém hơn; không làm mù người tham gia; một cơ sở. "
-                  "Đây là dữ liệu mô phỏng của bộ giả lập."),
+                  "phân tích ITT có thể thiên về kết luận không kém hơn; không làm mù người tham gia; một cơ sở."),
         "muc_5": ("Hàm ý cho thực hành: nếu kết luận vững ở cả ITT và per-protocol, tái khám qua điện thoại có thể "
                   "thay một phần tái khám trực tiếp cho người tăng huyết áp ổn định. Hướng tiếp: đo tuân thủ đề cương, "
                   "đánh giá chi phí và sự hài lòng."),
@@ -364,7 +437,7 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
                                                    "{hieu_so_duoi_pt} đến {hieu_so_tren_pt}); so với biên −{bien_ni} "
                                                    "điểm %: {ni_ket_luan}."),
                r"^conclusions?$|2.3 cau tom tat": ("Tái khám qua điện thoại được so với tái khám trực tiếp theo biên "
-                                                   "không kém hơn 10 điểm %: {ni_ket_luan} (dữ liệu mô phỏng)."),
+                                                   "không kém hơn 10 điểm %: {ni_ket_luan}."),
                r"phan tich so sanh khi co ket qua": ("Đối chiếu tỷ lệ nền với TEXT4BP (PMID 35342691); tác giả "
                                                      "chưa đọc toàn văn bài này"),
                r"mesh terms": "Hypertension; Telemedicine; Equivalence Trial; Blood Pressure",
@@ -418,7 +491,7 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
     hs["dien_giai"]["muc_4"] = (
         "Điểm mạnh: ngẫu nhiên hoá theo cụm tránh nhiễm chéo giữa người bệnh cùng phòng khám, phân tích tính ICC, cỡ "
         "mẫu {n} người, kiểm chéo SPSS–R khớp. Hạn chế: số cụm ít làm KTC theo cụm kém ổn định, người bệnh trong cùng "
-        "phòng khám không độc lập, không làm mù. Đây là dữ liệu mô phỏng của bộ giả lập.")
+        "phòng khám không độc lập, không làm mù.")
     hs["phan_bien_G8"].update({"thiet_ke": "Thử nghiệm ngẫu nhiên theo cụm",
                                "ten_bai": "Chương trình tin nhắn theo phòng khám và kiểm soát huyết áp",
                                "checklist": "CONSORT 2010 mở rộng thử nghiệm cụm (PMID 22951546)"})
@@ -466,13 +539,13 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
     hs["dien_giai"]["muc_4"] = (
         "Điểm mạnh: dùng trọn thông tin thời gian và kiểm duyệt, cỡ mẫu {n} người, kiểm chéo SPSS–R khớp. Hạn chế: "
         "giả định nguy cơ tương xứng cần kiểm bằng phần dư Schoenfeld, tử vong là biến cố cạnh tranh chưa mô hình hoá, "
-        "nhiễu tồn dư của thiết kế hồi cứu. Đây là dữ liệu mô phỏng của bộ giả lập.")
+        "nhiễu tồn dư của thiết kế hồi cứu.")
     tl = dict(hs["tra_loi_G7"])
     tl.update({r"khong dien truoc khi phan tich": ("Trong {n} người ({bien_co_sc} biến cố), dùng PPI kéo dài đi kèm "
                                                    "nguy cơ tức thời gãy xương cao hơn: HR hiệu chỉnh {hr_hieu_chinh} "
                                                    "(KTC 95% {hr_hieu_chinh_duoi}–{hr_hieu_chinh_tren})."),
                r"^conclusions?$|2.3 cau tom tat": ("Ở người từ 60 tuổi khám ngoại trú, dùng PPI kéo dài liên quan với "
-                                                   "nguy cơ tức thời gãy xương cao hơn (dữ liệu mô phỏng)."),
+                                                   "nguy cơ tức thời gãy xương cao hơn."),
                r"khong chua ket cuc phu": "Kết cục phụ (gãy cổ xương đùi) chưa phân tích ở đợt này — báo cáo riêng"})
     hs["tra_loi_G7"] = list(tl.items())
     hs["phan_bien_G8"].update({"ten_bai": "PPI kéo dài và thời gian đến gãy xương",

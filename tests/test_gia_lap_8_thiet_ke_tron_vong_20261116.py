@@ -312,9 +312,11 @@ def _bo_doc(tmp_path, tom: dict):
         _so_vn = staticmethod(TV.TronVong._so_vn)
         _uoc_luong = TV.TronVong._uoc_luong
         _gia_tri_ket_qua = TV.TronVong._gia_tri_ket_qua
+        _gia_tri_kinh_te = TV.TronVong._gia_tri_kinh_te  # 16/11/2026: _gia_tri_ket_qua gộp khoá lời văn kinh tế
 
     o = _O()
     o.out = tmp_path
+    o.kb = {}  # kịch bản không có phân tích kinh tế ⇒ _gia_tri_kinh_te trả {}
     (tmp_path / "G6_analysis_summary.json").write_text(json.dumps(tom), encoding="utf-8", newline="\n")
     return o
 

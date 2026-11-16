@@ -267,6 +267,32 @@ def test_sinh_de_cuong_qua_k1_k7_va_khong_con_ky_hieu_noi_bo(tmp_path):
     assert "tuổi; giới" not in van  # dòng liệt kê nhãn của khung bảng máy không thành hàng bảng
 
 
+def test_ban_nop_khong_dau_vet_may_dau_may_nam_ngoai_va_khong_ghi_de_ban_da_sua(tmp_path):
+    """17/11/2026 (bác sĩ: loại mọi dấu vết soạn thảo/máy khỏi văn bản): dấu bản máy nằm ở _dau_may_sinh/, không trong
+    văn bản; bản máy CHƯA sửa được sinh lại; bản đã có người sửa (lệch sha256) thì giữ nguyên."""
+    d = _de_tai(tmp_path)
+    assert SDC.sinh(d, MA, ghi=True)["ma"] == 0
+    p = d / f"DE_CUONG_NOP_HOI_DONG_{MA}.md"
+    van = p.read_text(encoding="utf-8")
+    assert "<!--" not in van and "bản máy" not in van and "giả lập" not in van.lower()
+    assert (d / "_dau_may_sinh" / f"{p.name}.json").is_file()
+    assert SDC.sinh(d, MA, ghi=True)["ma"] == 0  # chưa ai sửa ⇒ sinh lại được
+    p.write_text(van.replace("# 1. ĐẶT VẤN ĐỀ", "# 1. ĐẶT VẤN ĐỀ\n\nĐoạn chủ nhiệm viết thêm."), encoding="utf-8",
+                 newline="\n")
+    sua = p.read_text(encoding="utf-8")
+    assert SDC.sinh(d, MA, ghi=True)["ma"] == 4 and p.read_text(encoding="utf-8") == sua
+
+
+def test_k8_chan_dau_vet_soan_thao(tmp_path):
+    d = _de_tai(tmp_path)
+    assert SDC.sinh(d, MA, ghi=True)["ma"] == 0
+    p = d / f"DE_CUONG_NOP_HOI_DONG_{MA}.md"
+    for cam in ("DRAFT phiên bản 1", "Bản nháp do AI hỗ trợ soạn thảo", "Cần bác sĩ kiểm chứng.", "<!-- máy -->"):
+        van = p.read_text(encoding="utf-8").replace("# 2. MỤC TIÊU NGHIÊN CỨU", f"{cam}\n\n# 2. MỤC TIÊU NGHIÊN CỨU", 1)
+        p.write_text(van, encoding="utf-8", newline="\n")
+        assert any(x.startswith("K8") for x in KDN.kiem(d, MA)), cam
+
+
 def test_khong_ghi_de_ban_viet_tay(tmp_path):
     d = _de_tai(tmp_path)
     p = d / f"DE_CUONG_NOP_HOI_DONG_{MA}.md"

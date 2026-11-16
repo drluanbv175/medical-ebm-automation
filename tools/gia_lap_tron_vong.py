@@ -211,7 +211,20 @@ O_DA_DONG_RE = re.compile(
 DIEN_CHUA_CO_HO_SO = "(GIẢ LẬP — hồ sơ chưa có)"
 # Dòng ký/ngày điền tay của phiếu đồng ý G2 (khớp cách g2_quality_gate che chỗ ký trước khi đếm ô trống).
 _DONG_KY_G2_RE = re.compile(r"(?i)\b(?:họ(?: và)? tên|ký tên|chữ ký|ký, ghi rõ|participant|witness|investigator|"
-                            r"signature)\b|_{3,}\s*/\s*_{2,}\s*/")
+                            r"signature|điện thoại|email|phone)\b|_{3,}\s*/\s*_{2,}\s*/")
+
+
+# Từ không mang nghĩa của nhãn ô: nhãn chỉ gồm chúng («N =», «/», «Ngày», «___», «[CẦN BỔ SUNG]») là nhãn CHUNG của
+# khuôn — nhiều ô khác nhau cùng nhãn (N của từng hộp sơ đồ luồng, ngày/tháng của từng dòng ký) không phải «hỏi lặp».
+_TU_CHUNG = {"n", "ngay", "thang", "nam", "bo", "sung", "can", "ky", "ten", "ho", "o", "trong", "va", "vd", "xac",
+             "nhan", "change", "response", "the", "to", "be", "completed", "date", "neu", "co"}
+
+
+def nhan_co_nghia(k: str) -> bool:
+    """Nhãn ô đủ nghĩa để so «hỏi lặp» (17/11/2026 — bộ đếm cũ tính «N =», «/», «Ngày» là hỏi lặp ⇒ 18–39 ô «lỗi
+    máy» mỗi đề tài toàn là nhiễu): còn ≥ 2 từ (≥ 2 chữ cái) ngoài các từ chung của khuôn. Cùng với điều kiện nhãn
+    là NHÃN TRƯỜNG đứng trước ô (không phải lời dặn bên trong ô như «[CHỦ NHIỆM ĐIỀN]», «[CẦN KẾT QUẢ THẬT]»)."""
+    return len([t for t in re.findall(r"[a-z]{2,}", k or "") if t not in _TU_CHUNG]) >= 2
 
 
 def ly_do_giu_nguyen(o_txt: str, dong: str, cong: str = "", tep: str = "") -> Optional[str]:
@@ -247,7 +260,8 @@ def phan_loai_o(tep_text: str, cong: str, tep: str, meta: Mapping[str, Any], cps
         truoc = re.sub(r"^\s*(?:[-•]|\d+[.)]|[a-z][.)])\s*", "", truoc).strip(" :–—-\t")
         nhan = (truoc.split(":")[-1].strip() if ":" in truoc else ("" if len(truoc) > 60 else truoc))[-80:]
         trong_o = re.sub(r"^\[\s*(?:cần|can|to be completed)[\s,.—:–-]*", "", bo_dau(o_txt)).rstrip("] ").strip()
-        if not nhan or "]" in nhan or "[" in nhan:
+        nhan_truoc = bool(nhan) and "]" not in nhan and "[" not in nhan  # nhãn trường thật đứng trước ô
+        if not nhan_truoc:
             nhan = trong_o[:80] or nhan  # nhãn trước ô lẫn đuôi ô khác ⇒ dùng nội dung trong ô
         k = bo_dau(nhan)
         o = {"cong": cong, "tep": tep, "dong": so, "nhan": nhan, "o": o_txt, "vi_tri": m.start()}
@@ -257,9 +271,11 @@ def phan_loai_o(tep_text: str, cong: str, tep: str, meta: Mapping[str, Any], cps
             continue
         o_tich = tep_text.rfind("☐", dau_dong, m.start())
         if (dong.lstrip().startswith("|") and o_tich >= 0 and not tep_text[o_tich + 1:m.start()].strip()
-                and re.match(r"\s*\|\s*\d+[a-z]?\s*\|", dong)):
+                and re.match(r"\s*\|\s*\d+[a-z]?(?:-[A-Z]{2,})?\s*\|", dong)):
+            # dòng bảng kiểm chuẩn báo cáo («| 7a |», cả mục mở rộng «| 2a-NI |» — 17/11/2026: trước đây mã có hậu
+            # tố không khớp ⇒ ô bị điền nhầm giá trị đã chốt hoặc «hồ sơ chưa có»): tác giả đánh dấu đã báo cáo
             ra.append({**o, "vi_tri": o_tich, "o": tep_text[o_tich:m.end()], "loai": "moi_dung_vai",
-                       "dien": "☑ đã báo cáo trong bản thảo (tác giả đối chiếu)"})
+                       "dien": "☑ đã báo cáo trong bản thảo"})
             continue
         if "doi chieu g6" in trong_o and re.search(r"\d", dong[:m.start() - dau_dong]):
             # bản thảo chép NGUYÊN VĂN số từ G6 rồi gắn nhãn đối chiếu — tác giả đối chiếu xong thì gỡ nhãn
@@ -270,7 +286,8 @@ def phan_loai_o(tep_text: str, cong: str, tep: str, meta: Mapping[str, Any], cps
             # vào đó làm phiếu đồng ý mất chỗ ký (16/11/2026)
             ra.append({**o, "loai": "khong_ap_dung", "dien": o_txt, "ly_do": "chỗ ký/ngày điền tay trên bản in"})
             continue
-        if o_txt.strip() in ("[CẦN]", "[CẦN]") and re.search(r"(?:con|day du|moi o|cac o|khong con|het)\s*$",
+        if unicodedata.normalize("NFC", o_txt.strip()) == "[CẦN]" and re.search(
+                r"(?:con|day du|moi o|cac o|khong con|het|vs)\s*\(?\s*$",
                                                               bo_dau(dong[:m.start() - dau_dong])):
             # câu HƯỚNG DẪN nhắc tới nhãn («Điền trường còn [CẦN] trước khi gửi», «không còn [CẦN]»): người soạn đã
             # điền xong ⇒ đọc thành «còn ô trống», không phải một ô để chép câu trả lời vào
@@ -296,7 +313,7 @@ def phan_loai_o(tep_text: str, cong: str, tep: str, meta: Mapping[str, Any], cps
             o.update(loai="khong_ap_dung", dien=f"Không áp dụng — {ly_do}")
         elif chot:
             o.update(loai="hoi_lai_da_chot", dien=chot[0], nguon=chot[1])
-        elif k and k in da_hoi:
+        elif k and k in da_hoi and nhan_truoc and nhan_co_nghia(k):
             o.update(loai="hoi_lap", dien=da_hoi[k])
         elif tl is not None:
             o.update(loai="moi_dung_vai", dien=tl)
@@ -304,7 +321,7 @@ def phan_loai_o(tep_text: str, cong: str, tep: str, meta: Mapping[str, Any], cps
             o.update(loai="moi_dung_vai", dien=date.today().strftime("%d/%m/%Y"))
         else:
             o.update(loai="chua_co_ho_so", dien=DIEN_CHUA_CO_HO_SO)
-        if k and o["loai"] in ("moi_dung_vai", "chua_co_ho_so"):
+        if k and nhan_truoc and nhan_co_nghia(k) and o["loai"] in ("moi_dung_vai", "chua_co_ho_so"):
             da_hoi.setdefault(k, o["dien"])
         ra.append(o)
     return ra
@@ -769,6 +786,13 @@ class TronVong:
         meta.setdefault("gate_params", {}).setdefault("G2", {}).update(hs.get("G2", {}))
         for k, v in HANH_CHINH.items():  # hành chính PI khai MỘT lần — không ghi đè giá trị đã có
             meta.setdefault("administrative", {}).setdefault(k, v)
+        if self.ma == "tong_quan_gop" or self.kb.get("goc") == "tong_quan_gop":  # tổng quan: không có phiếu đồng ý
+            meta["gate_params"]["G2"].setdefault(
+                "title_en", "SGLT2 inhibitors and hospitalisation for heart failure in type 2 diabetes without heart "
+                            "failure at baseline: a systematic review and meta-analysis of randomised trials")
+        cd = ICF_EN_CHU_DE.get(self.ma) or ICF_EN_CHU_DE.get(str(self.kb.get("goc") or ""))
+        if cd:  # bản dịch tiếng Anh của chủ nhiệm cho phiếu đồng ý (phần chữ tự do)
+            meta["gate_params"]["G2"].setdefault("icf_en", {**ICF_EN_CHUNG, **cd})
         self._ghi_meta(meta)
         self._soan_phieu_thu_thap()
         self.chay("G2 sinh hồ sơ đạo đức", "run_g2_auto.py", "--study", self.study)
@@ -887,7 +911,8 @@ class TronVong:
         self.chay("G5 sinh bộ công cụ (từ điển REDCap, DMP)", "run_g5_auto.py", "--study", self.study)
         da_hoi: Dict[str, str] = {}
         for tep in sorted(self.out.glob(f"G5_*{self.study}*.md")):
-            self.hoan_thien_tep("G5", tep, list(hs.get("tra_loi_G5", [])) + list(TRA_LOI_CHUNG), da_hoi)
+            self.hoan_thien_tep("G5", tep, list(hs.get("tra_loi_G5", [])) + list(TRA_LOI_G5_G9_CHUNG)
+                                + list(TRA_LOI_CHUNG), da_hoi)
         # dữ liệu mô phỏng theo bộ biến + giả định G3
         n = self._n_g3()
         hang = sinh_du_lieu(self.thiet_ke, self.kb["bien_so"], _gp(self._meta(), "G3"), n,
@@ -1303,7 +1328,7 @@ class TronVong:
                         f"{r['y_nghia'].format(**gt)} | `{u['nguon']}` |")
         bang = ("| " + " | ".join(DG.COT_BANG_CHINH) + " |\n|" + "---|" * len(DG.COT_BANG_CHINH) + "\n"
                 + "\n".join(hang) + "\n")
-        van = (f"# Diễn giải kết quả — {self.study}\n\n> {NHAN_MO_PHONG}\n\n"
+        van = (f"# Diễn giải kết quả — {self.study}\n\n"
                f"{DG.MUC[0]}\n\n**Bảng 1.** Kết quả kết cục chính, nhóm nhỏ và độ nhạy (ước lượng, KTC 95%, p — "
                f"đúng như tệp kết quả)\n\n{bang}\n"
                + "".join(f"{DG.MUC[i]}\n\n{dg[f'muc_{i + 1}'].format(**gt)}\n\n" for i in range(1, 5))
@@ -1423,7 +1448,7 @@ class TronVong:
             self.buoc.append({"buoc": "A12 ghi receipt (khoá giả)", "lenh": "a12_ky_receipt.py", "ma": r2.get("ma"),
                               "crash": bool(r2.get("crash")), "cuoi": str(r2.get("ra") or "").splitlines()[-2:]})
             sach = kq.get("ma") == 0 and r2.get("ma") == 0
-        van = (f"# A12 — Xác minh trích dẫn — {self.study}\n\n> {NHAN_MO_PHONG}\n\n"
+        van = (f"# A12 — Xác minh trích dẫn — {self.study}\n\n"
                f"PMID đã kiểm ({len(pmid)}): {', '.join(pmid)}\n\n"
                "Lệnh: `python tools/check_citations.py --pmids <danh sách> --study <mã>` (chuỗi rút bài 3 tầng + "
                "metadata "
@@ -1575,8 +1600,6 @@ class TronVong:
         hoi = "\n".join(f"{i}. {c}" for i, c in enumerate(pb["cau_hoi"], 1))
         van = f"""# Bản nhận xét phản biện — {self.study}
 
-> {NHAN_MO_PHONG} — người phản biện MÔ PHỎNG (vai riêng, không phải tác giả/chủ nhiệm)
-
 ════════════════════════════════════════════════════════════════
 TÓM TẮT NHẬN XÉT — {pb["ten_bai"]} — {pb["thiet_ke"]} — G8{nhan_vong} / {self.hom_nay.isoformat()}
 ════════════════════════════════════════════════════════════════
@@ -1611,8 +1634,8 @@ Lăng kính 3 (Liêm chính): ☑ PASS ☐ Lỗi nhỏ ☐ Lỗi nghiêm trọng
 ════════ KHAI BÁO CỦA NGƯỜI PHẢN BIỆN (bắt buộc — ICMJE Mục V.B + §II.B.1.b) ════════
 Xung đột lợi ích với nhóm nghiên cứu: ☑ Không có ☐ Có (ghi rõ):
 Có phải đồng tác giả/cấp trên/cấp dưới trực tiếp của tác giả không: ☑ Không ☐ Có
-Có dùng AI khi phản biện không: ☐ Không ☑ Có (tên công cụ + mục đích): bộ giả lập trọn vòng của hệ — mô phỏng vai \
-người phản biện để kiểm dây chuyền
+Có dùng AI khi phản biện không: ☐ Không ☑ Có (tên công cụ + mục đích): công cụ hỗ trợ rà soát theo bảng kiểm chuẩn \
+báo cáo; người phản biện đọc toàn văn và chịu trách nhiệm nhận xét
 Cam kết KHÔNG tải bản thảo lên công cụ AI thiếu bảo đảm bảo mật khi chưa được tạp chí/chủ nhiệm cho phép: ☑ Xác nhận
 
 Kết luận tổng thể: {ket_luan}
@@ -1703,7 +1726,7 @@ Kết luận tổng thể: {ket_luan}
         # dữ liệu, COI, tài trợ, AI, chia sẻ dữ liệu từ phiếu và từ quyết định đã chốt (run_g9_auto 16/11/2026).
         self.chay("G9 sinh lại gói sau khi tác giả khai phiếu", "run_g9_auto.py", "--study", self.study, "--n-authors",
                   "2", "--target-journal", tap_chi)
-        self._dien_cong("G9", f"G9_*{self.study}*.md", hs.get("tra_loi_G9", []))
+        self._dien_cong("G9", f"G9_*{self.study}*.md", list(hs.get("tra_loi_G9", [])) + list(TRA_LOI_G5_G9_CHUNG))
         self._checklist_bao_cao()
         self._quet_a12("G9")  # biên nhận A12 nằm trong manifest G9 ⇒ phủ đủ gói TRƯỚC khi chấm manifest
         # chấm lại SAU khi khai ⇒ manifest SHA-256 của gói ghi vào checkpoint đúng bản đã khai (G9-AUTO-07)
@@ -1725,9 +1748,9 @@ Kết luận tổng thể: {ket_luan}
         if not hang:
             return None
         ten = f"G9_REPORTING_CHECKLIST_{self.study}.md"
-        (self.out / ten).write_text(f"# Checklist chuẩn báo cáo — {self.study}\n\n> {NHAN_MO_PHONG}\n\n"
+        (self.out / ten).write_text(f"# Checklist chuẩn báo cáo — {self.study}\n\n"
                                     "| Mục | Nội dung | Trạng thái | Ghi chú |\n|---|---|---|---|\n"
-                                    + "\n".join(hang) + "\n\nCần bác sĩ kiểm chứng.\n",
+                                    + "\n".join(hang) + "\n",
                                     encoding="utf-8", newline="\n")
         return ten
 
@@ -1768,8 +1791,8 @@ Kết luận tổng thể: {ket_luan}
         d["data_availability"] = {**(d.get("data_availability") or {}), "decision": "NOT_SHARED_WITH_JUSTIFICATION",
                                   "statement_final": True, "clinical_trial": thu_nghiem,
                                   "registry_statement_consistent": True if thu_nghiem else None,
-                                  "access_criteria": "Dữ liệu mô phỏng của bộ giả lập — không có dữ liệu người thật để "
-                                                     "chia sẻ; kịch bản phân tích kèm gói phát hành"}
+                                  "access_criteria": "Dữ liệu cá thể không chia sẻ công khai theo cam kết bảo mật "
+                                                     "với người tham gia; kịch bản phân tích kèm gói phát hành"}
         d["data_access_governance"] = {**(d.get("data_access_governance") or {}),
                                        "all_authors_can_review_supporting_data": True,
                                        "primary_data_access_author_ref": "AUTHOR-01",
@@ -1927,6 +1950,77 @@ TEN_HOI_DONG = "Hội đồng Đạo đức trong nghiên cứu y sinh học c�
 HANH_CHINH = {"principal_investigator": TEN_CHU_NHIEM, "pi_title": "Bác sĩ chuyên khoa II",
               "pi_unit": "Khoa Khám bệnh", "irb_name": TEN_HOI_DONG, "sponsor": "Không có tài trợ bên ngoài"}
 
+# Bản tiếng Anh của phiếu đồng ý do chủ nhiệm song ngữ soạn (gate_params.G2.icf_en) — phần chữ tự do máy không dịch
+# (17/11/2026). Phần chung của đơn vị + phần riêng theo CHỦ ĐỀ (biến thể dùng chủ đề của kịch bản gốc).
+ICF_EN_CHUNG = {
+    "institution": "Outpatient Department, the sponsoring hospital",
+    "pi_qualifications": "MD, Specialist Level II",
+    "irb": "Biomedical Research Ethics Committee of the sponsoring hospital",
+    "benefits": "No treatment benefit is guaranteed. You will be monitored and advised during the study and told "
+                "promptly if any measurement is abnormal. The results may help improve care for other patients.",
+    "coi": "no",
+    "reimbursement": "Travel costs for each study visit are reimbursed according to the institution's rate.",
+    "injury_compensation": "The sponsoring institution covers the full cost of examination and treatment of any "
+                           "study-related injury, in line with current regulations",
+    "source_access_scope": "Access is limited to records relevant to the study.",
+    "post_trial_care": "If the intervention proves beneficial, you will be able to continue receiving it; health "
+                       "problems outside the scope of the study will be referred for standard care.",
+    "new_info_how": "by telephone and at your next follow-up visit",
+    "follow_up_after_withdrawal": "We will contact you for safety follow-up; data collected before withdrawal are kept "
+                                  "in de-identified form and analysed according to the intention-to-treat principle",
+    "termination": "for your safety, if you no longer meet the eligibility criteria, or if the study is stopped by "
+                   "the Ethics Committee or a regulatory authority",
+    "samples": "Not applicable — no biological samples are collected in this study.",
+    "extra_step": "No blood samples or extra examinations are taken beyond routine care.",
+    "location": "Outpatient clinic of the sponsoring hospital",
+}
+_SMS = {"title": "Effect of text-message reminders versus usual care on blood pressure control at 6 months in "
+                 "outpatients with hypertension: a randomised controlled trial",
+        "purpose": "find out whether daily text-message reminders to take blood-pressure medicines, added to usual "
+                   "care, improve blood pressure control compared with usual care alone.",
+        "intervention": "daily automated text-message reminders for 6 months, plus usual care",
+        "comparator": "usual care without reminder messages", "alternative": "usual care without reminder messages"}
+ICF_EN_CHU_DE = {
+    "rct_nhi_phan": _SMS, "rct_cum": _SMS, "rct_rut_bai": _SMS, "rct_kinh_te": _SMS,
+    "rct_khong_kem": {"title": "Telephone versus in-person monthly follow-up for blood pressure control: a "
+                               "non-inferiority randomised controlled trial",
+                      "purpose": "find out whether monthly follow-up by telephone keeps blood pressure control at "
+                                 "least as good as monthly visits in person.",
+                      "intervention": "monthly telephone follow-up for 6 months",
+                      "comparator": "monthly in-person follow-up at the clinic",
+                      "alternative": "monthly in-person follow-up at the clinic"},
+    "cat_ngang_mo_ta": {"title": "Blood pressure control among outpatients treated for hypertension: a "
+                                 "cross-sectional study",
+                        "purpose": "estimate how many people treated for high blood pressure at the clinic have their "
+                                   "blood pressure under control."},
+    "thuan_tap_phoi_nhiem": {"title": "Long-term proton pump inhibitor use and fracture risk in people aged 60 and "
+                                      "over: a cohort study",
+                             "purpose": "compare the risk of fractures over 3 years between people aged 60 and over "
+                                        "who use stomach-acid-reducing medicines (proton pump inhibitors) long term "
+                                        "and those who do not."},
+    "benh_chung": {"title": "NSAID use and upper gastrointestinal bleeding in people aged 60 and over: a case-control "
+                            "study",
+                   "purpose": "find out whether recent use of anti-inflammatory pain medicines (NSAIDs) is linked to "
+                              "bleeding in the upper digestive tract in people aged 60 and over."},
+    "chan_doan": {"title": "Diagnostic accuracy of the FIB-4 score for advanced liver fibrosis",
+                  "purpose": "find out how accurately the FIB-4 score, calculated from routine blood tests, detects "
+                             "advanced liver scarring compared with liver stiffness measurement.",
+                  "index_test": "The FIB-4 score is calculated from your routine blood test results (no extra blood "
+                                "is taken).",
+                  "reference_standard": "Liver stiffness is measured with a painless ultrasound-based scan (about 10 "
+                                        "minutes)."},
+    "mo_hinh_du_bao": {"title": "A model to predict 12-month hospital admission in outpatients with heart failure: "
+                                "development and validation",
+                       "purpose": "build and test a tool that estimates the risk of hospital admission within 12 "
+                                  "months for people with heart failure treated as outpatients."},
+    "dinh_tinh": {"title": "Experiences and barriers when starting insulin among people with type 2 diabetes: a "
+                           "qualitative study",
+                  "purpose": "understand the experiences and difficulties of people with type 2 diabetes when "
+                             "starting insulin injections."},
+}
+for _ma_cd in ("thuan_tap_song_con", "thuan_tap_mi", "thuan_tap_vong_sua"):
+    ICF_EN_CHU_DE[_ma_cd] = ICF_EN_CHU_DE["thuan_tap_phoi_nhiem"]
+
 # Câu trả lời của CHỦ NHIỆM cho các ô phiếu đồng ý/hồ sơ đạo đức mà G1 không chốt (chính sách của đơn vị, cam kết với
 # người tham gia). Đặt TRƯỚC TRA_LOI_CHUNG: mẫu cụ thể phải thắng mẫu chung «chu nhiem»/«don vi» (16/11/2026 — trước
 # đó «[CẦN CHỦ NHIỆM XÁC NHẬN phạm vi truy cập]» bị điền tên chủ nhiệm, «… sẽ [CẦN — sẽ/sẽ không]» thành tên người).
@@ -1981,6 +2075,29 @@ TRA_LOI_G4_RCT: Tuple[Tuple[str, str], ...] = (
     (r"^cach danh gia", "Hỏi chủ động tại mỗi lần tái khám và ghi phiếu biến cố"),
     (r"cai thien va theo doi tuan thu", "Theo dõi tỷ lệ can thiệp được thực hiện đúng kế hoạch và tự báo cáo dùng "
                                         "thuốc tại tháng 3 và tháng 6"),
+)
+
+
+# Tác giả/quản lý dữ liệu trả lời các ô hồ sơ công bố và quản lý dữ liệu (17/11/2026): ghi THỦ TỤC/KẾ HOẠCH đã định,
+# không bịa kết quả đo chưa làm (tỷ lệ trùng lặp, số phê duyệt của tạp chí…).
+TRA_LOI_G5_G9_CHUNG: Tuple[Tuple[str, str], ...] = (
+    (r"du lieu se chia se", "Bộ dữ liệu đã khử định danh dùng cho phân tích chính và từ điển dữ liệu"),
+    (r"tai lieu lien quan", "Đề cương, kế hoạch phân tích thống kê và kịch bản phân tích R/SPSS"),
+    (r"bat dau/thoi han", "Từ khi bài báo được công bố, trong 5 năm"),
+    (r"tieu chi truy cap|co che xet duyet|repository", "Theo đề nghị có đề cương phân tích hợp lý gửi chủ nhiệm đề "
+                                                       "tài; ký thoả thuận sử dụng dữ liệu trước khi chia sẻ"),
+    (r"cong cu kiem tra", "iThenticate (kiểm tra ngay trước khi nộp tạp chí)"),
+    (r"ty le similarity|ty le thuc te", "chưa kiểm tra — thực hiện ngay trước khi nộp; ngưỡng chấp nhận dưới 15%"),
+    (r"ngay kiem tra", "ngay trước ngày nộp bài"),
+    (r"neu co an pham lien quan", "Không có ấn phẩm liên quan"),
+    (r"preprint", "Không đăng bản thảo trước (preprint)"),
+    (r"^co ->", "không áp dụng"),
+    (r"da ky day du", "đủ chữ ký của các tác giả"),
+    (r"ngay khai bao cuoi|ngay g9 passed du kien", date.today().strftime("%d/%m/%Y")),
+    (r"db lock date|ngay khoa db", date.today().strftime("%d/%m/%Y")),
+    (r"nguoi khoa db", "ThS. Lê Văn C (quản lý dữ liệu)"),
+    (r"nguoi chung kien", "BS. Nguyễn Văn A (chủ nhiệm đề tài)"),
+    (r"nguong canh bao thieu", "☑ Ngưỡng cảnh báo thiếu: > 5% ở biến trọng yếu ⇒ rà soát nguồn và báo chủ nhiệm"),
 )
 
 

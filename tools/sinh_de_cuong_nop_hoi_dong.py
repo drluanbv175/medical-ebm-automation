@@ -12,7 +12,9 @@ biên nhận trích dẫn A12. Không bịa: thiếu dữ kiện ⇒ dòng chấ
 Lớp làm sạch `lam_sach()` gỡ mọi dấu vết nội bộ (chú thích nguồn, mã cổng, «§», nhãn giả lập, mã vai trò, tên biến
 trong ngoặc, cảnh báo ⚠). Văn bản ra phải qua `kiem_de_cuong_nop_hoi_dong.kiem()` (K1–K7) — công cụ tự chạy và báo.
 
-KHÔNG GHI ĐÈ bản viết tay: tệp đã có mà không mang dấu máy `DAU_MAY` ⇒ từ chối (mã 4). Bản máy là BẢN THẢO cho chủ
+KHÔNG GHI ĐÈ bản người đã sửa: dấu bản máy sinh nằm NGOÀI văn bản (`_dau_may_sinh/<tệp>.json`, sha256 — công cụ
+`dau_may_sinh`); tệp hiện có khớp dấu ⇒ chưa ai sửa, được sinh lại; lệch dấu hoặc không có dấu ⇒ bản người viết/sửa ⇒
+từ chối (mã 4). Văn bản nộp KHÔNG mang dấu vết máy/bản nháp nào (bác sĩ 17/11/2026; luật K8). Bản sinh ra là bản cho chủ
 nhiệm biên tập — không phải văn bản đã duyệt.
 
 Lệnh:  python3 tools/sinh_de_cuong_nop_hoi_dong.py --study <mã> [--ghi] [--json]
@@ -320,6 +322,9 @@ def _doc_csv(p: Path) -> List[Dict[str, str]]:
         return []
 
 
+_TIEU_DE_CHUAN = {"GRAMMS": "QUALITY OF MIXED METHODS STUDIES"}
+
+
 class Nguon:
     """Gom dữ kiện đã chốt của một đề tài (chỉ đọc)."""
 
@@ -341,6 +346,7 @@ class Nguon:
         self.thiet_ke = str(self.g1.get("design") or (self.spec.get("design") or {}).get("code") or
                             self.g3cp.get("design_code") or "").strip()
         self.sap_text = self._doc(f"G4_A5_SAP_FINAL_{study}.md")
+        self.g0raw = _doc_json(self.out / "G0_pubmed_raw.json")
         self.g2_text = self._doc(f"G2_A3_ETHICS_PACKAGE_{study}.md")
         tu_dien = self.out / f"G5_REDCap_dictionary_{study}.csv"
         self.tu_dien = _doc_csv(tu_dien) if tu_dien.is_file() else _doc_csv(self.out / "_bo-bien-rieng.csv")
@@ -359,6 +365,8 @@ class Nguon:
         van = [self.sap_text, self._doc(f"DE_CUONG_THONG_NHAT_{self.study}.md"),
                " ".join(str(v) for k, v in self.g3.items() if str(k).endswith("_source"))]
         ds = [str(x) for x in (self.s("references", "pmids") or [])]
+        if _hh().khoi(self.meta):
+            ds += list(_hh().PMID_CHUAN)  # GRAMMS + COREQ — vẫn chỉ giữ khi A12 đã xác nhận sạch (lọc ở cuối hàm)
         for t in van:
             ds += re.findall(r"PMID:?\s*(\d{5,9})", t)
         try:
@@ -384,9 +392,11 @@ class Nguon:
         return [p for p in dict.fromkeys(ds) if p in self.td.cho_phep and p not in loai]
 
     def chuan(self, ten: str) -> str:
-        """« [k]» cho chuẩn báo cáo tên `ten` (vd «SPIRIT 2025») khi nó là nguồn đã kiểm chứng của đề tài."""
+        """« [k]» cho chuẩn báo cáo tên `ten` (vd «SPIRIT 2025») khi nó là nguồn đã kiểm chứng của đề tài. Chuẩn mà
+        tiêu đề bài gốc không mang tên viết tắt (GRAMMS — O'Cathain 2008) khớp qua `_TIEU_DE_CHUAN`."""
+        khoa = _TIEU_DE_CHUAN.get(ten.upper(), ten.upper())
         for p in self.ung_vien:
-            if ten.upper() in str((self.td.md.get(p) or {}).get("title") or "").upper():
+            if khoa in str((self.td.md.get(p) or {}).get("title") or "").upper():
                 k = self.td.so(p)
                 return f" [{k}]" if k else ""
         return ""
@@ -770,6 +780,12 @@ _VIET_TAT = {
 }
 
 
+def _hh():
+    import hon_hop  # noqa: PLC0415 — thiết kế hỗn hợp (17/11/2026)
+
+    return hon_hop
+
+
 def _danh_sach(x: Any) -> List[str]:
     if isinstance(x, (list, tuple)):
         return [lam_sach(v) for v in x if _co(v)]
@@ -825,31 +841,159 @@ def chuong_muc_tieu(n: Nguon) -> List[str]:
     return [d for d in dong if d is not None]
 
 
+_LOAI_BAI = (("sr_ma", "Tổng quan hệ thống/phân tích gộp"), ("guideline", "Hướng dẫn thực hành"),
+             ("rct", "Thử nghiệm ngẫu nhiên"), ("observational", "Nghiên cứu quan sát"))
+
+
+def _loai_bai(n: Nguon, pmid: str) -> str:
+    """Loại tài liệu theo nhánh tìm của G0 (lọc publication type của PubMed); ngoài các nhánh ⇒ suy từ tiêu đề."""
+    for k, nhan in _LOAI_BAI:
+        if any(isinstance(x, dict) and str(x.get("pmid")) == pmid for x in n.g0raw.get(k) or []):
+            return nhan
+    t = str((n.td.md.get(pmid) or {}).get("title") or "").lower()
+    if re.search(r"systematic review|meta-analys|umbrella review", t):
+        return _LOAI_BAI[0][1]
+    if re.search(r"guideline|consensus statement|recommendation", t):
+        return _LOAI_BAI[1][1]
+    if re.search(r"randomi[sz]ed|randomi[sz]ation|\btrial\b", t):
+        return _LOAI_BAI[2][1]
+    if re.search(r"cohort|case-control|cross-sectional|observational", t):
+        return _LOAI_BAI[3][1]
+    return "Nghiên cứu khác"
+
+
+def _ngay_vn(x: Any) -> str:
+    m = re.match(r"(\d{4})-(\d{2})-(\d{2})", str(x or ""))
+    return f"{m.group(3)}/{m.group(2)}/{m.group(1)}" if m else ""
+
+
 def chuong_tong_quan(n: Nguon, con_lai: Sequence[str] = ()) -> List[str]:
+    """Tổng quan: chiến lược tìm kiếm (nguồn, ngày, truy vấn, số kết quả theo loại — PRISMA-S), các bằng chứng hiện có
+    + bảng tài liệu chính (tổng quan hệ thống, hướng dẫn, thử nghiệm đã kiểm chứng), khoảng trống + đối chiếu sổ đăng
+    ký thử nghiệm, khung lý thuyết. Mọi dữ kiện lấy từ G0/G1 đã chạy — không viết thêm điều nguồn không nói."""
     td = n.td
     dong = ["# 3. TỔNG QUAN TÀI LIỆU", ""]
+    so = [0]
+
+    def muc(ten: str) -> None:
+        so[0] += 1
+        dong.extend([f"## 3.{so[0]}. {ten}", ""])
+
+    prov = n.g0raw.get("search_provenance") or {}
+    if _co(prov.get("truy_van_goc")):
+        muc("Chiến lược tìm kiếm tài liệu")
+        dong += [f"Tài liệu được tìm trên {lam_sach(prov.get('co_so_du_lieu')) or 'PubMed'} ngày "
+                 f"{_ngay_vn(prov.get('ngay_tra')) or CHAM} với chiến lược tìm kiếm:", "",
+                 f"> {str(prov.get('truy_van_goc')).strip()}", ""]
+        dem = n.g0raw.get("true_counts") or {}
+        phan = [f"{int(dem[k])} {nhan.lower()}" for k, nhan in _LOAI_BAI if isinstance(dem.get(k), (int, float))
+                and int(dem[k]) > 0]
+        if phan:
+            khong = [nhan.lower() for k, nhan in _LOAI_BAI if dem.get(k) == 0]
+            dong += [f"Kết quả gồm {', '.join(phan)}" + (f"; không có {', '.join(khong)} được PubMed đánh chỉ mục"
+                                                         if khong else "") + ".", ""]
+        dong += ["Mọi tài liệu được trích dẫn trong đề cương đã được đối chiếu thông tin thư mục với PubMed và kiểm "
+                 "tra tình trạng rút bài trước khi sử dụng.", ""]
     if _co(n.s("rationale", "local_context")):
-        dong += ["## 3.1. Bối cảnh của vấn đề nghiên cứu", "", _cau(td.thay(str(n.s("rationale", "local_context")))),
-                 ""]
-    dong += [f"## 3.{2 if _co(n.s('rationale', 'local_context')) else 1}. Các bằng chứng hiện có", ""]
+        muc("Bối cảnh của vấn đề nghiên cứu")
+        dong += [_cau(td.thay(str(n.s("rationale", "local_context")))), ""]
+    muc("Các bằng chứng hiện có")
     for x in (n.g1.get("evidence_summary") or n.s("literature", "summary"), n.s("literature", "disagreements")):
         if _co(x):
             dong += [_cau(td.thay(str(x))), ""]
+    chinh = [p for p in n.ung_vien if _loai_bai(n, p) in [x for _, x in _LOAI_BAI[:3]]]
+    chinh.sort(key=lambda p: ([x for _, x in _LOAI_BAI].index(_loai_bai(n, p)),
+                              -int(str((td.md.get(p) or {}).get("year") or "0")[:4] or 0)))
+    if chinh:
+        dong += ["**Bảng 3.1. Các tổng quan hệ thống, hướng dẫn và thử nghiệm chính liên quan đến đề tài**", "",
+                 "| Tài liệu | Năm | Loại nghiên cứu | Tên bài (nguyên văn) |", "|---|---|---|---|"]
+        tran = {_LOAI_BAI[0][1]: 5, _LOAI_BAI[1][1]: 3, _LOAI_BAI[2][1]: 4}  # bảng cân đối các loại bằng chứng
+        dem_loai: Dict[str, int] = {}
+        chon = []
+        for p in chinh:
+            lb = _loai_bai(n, p)
+            if dem_loai.get(lb, 0) < tran.get(lb, 0):
+                dem_loai[lb] = dem_loai.get(lb, 0) + 1
+                chon.append(p)
+        for p in chon:
+            m = td.md.get(p) or {}
+            tg = str(m.get("authors") or "").split(",")[0].strip()
+            ho = tg.split(" ")[0] if tg else "Tác giả"
+            k = td.so(p)
+            dong.append(f"| {ho} và cộng sự [{k}] | {str(m.get('year') or '')[:4]} | {_loai_bai(n, p)} | "
+                        f"{lam_sach(str(m.get('title') or '')).rstrip('.')} |")
+        dong.append("")
     if con_lai:
         k = [x for x in (n.td.so(p) for p in con_lai) if x]
+        k = sorted(set(k))
         cum = (f"{k[0]}–{k[-1]}" if len(k) > 2 and k == list(range(k[0], k[-1] + 1)) else ", ".join(map(str, k)))
         if k:
             dong += [f"Các tổng quan, nghiên cứu và hướng dẫn liên quan khác đã được rà soát khi xây dựng đề cương "
                      f"này [{cum}].", ""]
-    so = 3 if _co(n.s("rationale", "local_context")) else 2
-    dong += [f"## 3.{so}. Khoảng trống nghiên cứu và đóng góp của đề tài", ""]
+    muc("Khoảng trống nghiên cứu và đóng góp của đề tài")
     moi = n.g0.get("novelty_justification")
     for x in ((moi,) if _co(moi) else (n.g1.get("knowledge_gap") or n.s("rationale", "evidence_gap"),)):
         if _co(x):
             dong += [_cau(td.thay(str(x))), ""]
+    rc = (n.cps.get("G0") or {}).get("registry_check") or {}
+    if rc.get("checked") and isinstance(rc.get("n_trials"), int):
+        dong += [f"Tra cứu {rc.get('registry') or 'ClinicalTrials.gov'} ngày {_ngay_vn(rc.get('checked_at')) or CHAM} "
+                 f"với cùng chiến lược ghi nhận {_n(rc['n_trials'])} hồ sơ đăng ký, trong đó "
+                 f"{_n(rc.get('n_active') or 0)} nghiên cứu đang hoặc sắp tuyển người tham gia."
+                 + (f" {_cau(n.g0.get('registry_overlap_assessment'))}" if _co(n.g0.get("registry_overlap_assessment"))
+                    else ""), ""]
     ly_thuyet = n.s("theory", "framework") or n.s("theory", "not_applicable_rationale")
     if _co(ly_thuyet):
-        dong += [f"## 3.{so + 1}. Khung lý thuyết của nghiên cứu", "", _cau(td.thay(str(ly_thuyet))), ""]
+        muc("Khung lý thuyết của nghiên cứu")
+        dong += [_cau(td.thay(str(ly_thuyet))), ""]
+    return dong
+
+
+def huong_dan_phong_van(n: Nguon, g: Optional[Dict[str, Any]] = None) -> List[str]:
+    """Hướng dẫn phỏng vấn sâu bán cấu trúc (COREQ mục 14). Nguồn: `gate_params.G1` (đề tài định tính) hoặc
+    `gate_params.G1.mixed_methods.cau_phan_dinh_tinh` (cấu phần định tính của đề tài hỗn hợp), truyền qua `g`.
+    Chủ nhiệm khai `interview_guide` (danh sách {chu_de, cau_hoi, goi_mo[]}) ⇒ in đúng bộ câu hỏi đó; chưa khai ⇒ bộ
+    câu hỏi dựng từ hiện tượng trung tâm (mỗi khía cạnh nối bằng «và» thành một câu hỏi chính). Văn bản nộp không
+    mang nhãn «bản nháp» — chủ nhiệm sửa trực tiếp; nguồn gốc máy ghi ở dấu `_dau_may_sinh/`."""
+    g = n.g1 if g is None else g
+    khai = g.get("interview_guide")
+    cau: List[Dict[str, Any]] = []
+    if isinstance(khai, list):
+        for x in khai:
+            if isinstance(x, dict) and _co(x.get("cau_hoi")):
+                cau.append({"chu_de": lam_sach(x.get("chu_de")), "cau_hoi": _cau(x.get("cau_hoi")),
+                            "goi_mo": [_cau(g) for g in (x.get("goi_mo") or []) if _co(g)]})
+            elif isinstance(x, str) and _co(x):
+                cau.append({"chu_de": "", "cau_hoi": _cau(x), "goi_mo": []})
+    nhap = not cau
+    if nhap:
+        ht = lam_sach(g.get("central_phenomenon") or n.s("outcomes", "primary", "name"))
+        m = re.match(r"(.+?)\s+(khi|trong|ở|của)\s+(.+)$", ht)
+        khia, boi = ((m.group(1), f"{m.group(2)} {m.group(3)}") if m else (ht, ""))
+        mo_dau = f"Anh/chị có thể kể lại câu chuyện của mình {boi}?".replace("  ", " ").replace(" ?", "?")
+        cau.append({"chu_de": "Mở đầu", "cau_hoi": mo_dau, "goi_mo": ["Lúc đó anh/chị nghĩ gì, cảm thấy thế nào?"]})
+        for k in [x.strip() for x in re.split(r"\s+và\s+|,\s*", khia) if x.strip()]:
+            cau.append({"chu_de": k[:1].upper() + k[1:], "cau_hoi": f"Anh/chị có thể chia sẻ về {_thuong(k)} {boi}?",
+                        "goi_mo": ["Anh/chị có thể cho một ví dụ cụ thể không?",
+                                   "Điều gì khiến anh/chị cảm thấy như vậy?"]})
+        cau.append({"chu_de": "Kết thúc", "cau_hoi": "Còn điều gì anh/chị muốn chia sẻ thêm mà chúng tôi chưa hỏi?",
+                    "goi_mo": []})
+    tl = re.search(r"(\d+\s*[–-]\s*\d+|\d+)\s*phút", lam_sach(g.get("data_collection_method")))
+    dong = ["**HƯỚNG DẪN PHỎNG VẤN SÂU BÁN CẤU TRÚC**", ""]
+    dong += ["**A. Mở đầu buổi phỏng vấn**", "",
+             "- Giới thiệu người phỏng vấn, mục đích nghiên cứu và thời lượng dự kiến"
+             + (f" ({tl.group(1)} phút)." if tl else "."),
+             "- Nhắc lại quyền từ chối trả lời bất kỳ câu hỏi nào và dừng phỏng vấn bất kỳ lúc nào.",
+             "- Xin phép ghi âm; chỉ ghi âm khi người tham gia đồng ý.", "",
+             "**B. Câu hỏi chính và câu hỏi gợi mở**", ""]
+    for i, c in enumerate(cau, 1):
+        dong.append(f"{i}. " + (f"*{c['chu_de']}.* " if c["chu_de"] else "") + c["cau_hoi"])
+        dong += [f"   - Gợi mở: {g}" for g in c["goi_mo"]]
+    dong += ["", "**C. Kết thúc**", "", "- Tóm tắt lại các ý chính để người tham gia xác nhận hoặc bổ sung.",
+             "- Cảm ơn người tham gia; nhắc cách liên hệ nhóm nghiên cứu khi cần.", ""]
+    pilot = n.s("data_collection", "pilot") or n.meta.get("pilot")
+    if _co(pilot):
+        dong += [f"Bộ câu hỏi được thử nghiệm trước: {_thuong(pilot)}.", ""]
     return dong
 
 
@@ -984,6 +1128,15 @@ def chuong_phuong_phap(n: Nguon) -> List[str]:
         cau += (f" Đề cương được xây dựng theo hướng dẫn {de_cuong}{n.chuan(de_cuong)}; kết quả sẽ được báo cáo theo "
                 f"{bao_cao}{n.chuan(bao_cao)}." if de_cuong != bao_cao else
                 f" Đề cương và báo cáo kết quả tuân theo hướng dẫn {bao_cao}{n.chuan(bao_cao)}.")
+    HH = _hh()
+    hon_hop = bool(HH.khoi(n.meta))
+    if hon_hop:
+        mt = HH.mo_ta(n.meta)
+        ly = _cau(HH.khoi(n.meta).get("ly_do"))
+        cau += (f" Nghiên cứu sử dụng thiết kế hỗn hợp định lượng – định tính theo mô hình {mt['ten']}: "
+                f"{mt['mo_ta']}; {mt['uu_tien']}." + (f" {ly}" if ly else "")
+                + f" Cấu phần định tính được báo cáo theo COREQ{n.chuan('COREQ')} và toàn bộ nghiên cứu hỗn hợp theo "
+                  f"GRAMMS{n.chuan('GRAMMS')}.")
     dong += [cau, ""]
     # Địa điểm, thời gian
     muc("Địa điểm và thời gian nghiên cứu")
@@ -1066,6 +1219,20 @@ def chuong_phuong_phap(n: Nguon) -> List[str]:
                         ("Tiêu chí bão hoà", "saturation_criterion")):
             dong.append(f"- {nhan}: {_cau(n.g1.get(k)) or CHAM}")
         dong.append("")
+    if hon_hop:
+        muc("Cấu phần định tính và tích hợp dữ liệu")
+        dt, th = HH.dinh_tinh(n.meta), HH.tich_hop(n.meta)
+        for nhan, k in (("Hiện tượng trung tâm", "central_phenomenon"), ("Cách tiếp cận", "qualitative_approach"),
+                        ("Chọn người tham gia", "chon_mau"), ("Cỡ mẫu dự kiến", "co_mau_du_kien"),
+                        ("Phương pháp thu thập", "data_collection_method"),
+                        ("Tiêu chí bão hoà", "saturation_criterion"), ("Phân tích dữ liệu định tính", "phan_tich")):
+            if _co(dt.get(k)):
+                dong.append(f"- {nhan}: {_cau(dt.get(k))}")
+        for nhan, k in (("Thời điểm tích hợp", "thoi_diem"), ("Cách tích hợp", "cach"),
+                        ("Người thực hiện tích hợp", "nguoi")):
+            if _co(th.get(k)):
+                dong.append(f"- {nhan}: {_cau(th.get(k))}")
+        dong += ["- Hướng dẫn phỏng vấn trình bày ở Phụ lục C; khung bảng tích hợp kết quả trình bày ở mục 5.", ""]
     # Biến số
     muc("Biến số và chỉ số nghiên cứu")
     kc = n.g1.get("primary_outcome") if isinstance(n.g1.get("primary_outcome"), dict) else {}
@@ -1277,6 +1444,17 @@ def chuong_du_kien(n: Nguon) -> List[str]:
                 o[0] = "…"
             dong.append("| " + " | ".join(x or "…" for x in o) + " |")
         dong.append("")
+    HH = _hh()
+    if HH.khoi(n.meta):
+        so_bang = sum(1 for x in dong if x.startswith("**Bảng 5.")) + 1
+        dong += [f"**Bảng 5.{so_bang}. Khung bảng tích hợp kết quả định lượng và định tính (joint display)**", "",
+                 "| Nội dung tích hợp | Kết quả định lượng | Kết quả định tính | Nhận định tích hợp |",
+                 "|---|---|---|---|"]
+        for r in HH.chu_de_tich_hop(n.meta):
+            dong.append(f"| {_hoa_dau(lam_sach(r['chu_de']))} | {_hoa_dau(lam_sach(r['dinh_luong'])) or '…'} | "
+                        f"{_hoa_dau(lam_sach(r['dinh_tinh'])) or '…'} | Hội tụ / bổ sung / bất đồng |")
+        dong += ["", "Mỗi nội dung được đối chiếu kết quả của hai cấu phần và kết luận là hội tụ, bổ sung cho nhau "
+                     "hoặc bất đồng; trường hợp bất đồng được phân tích và trình bày trong phần bàn luận.", ""]
     dong += ["Kết quả sẽ được trình bày và bàn luận theo từng mục tiêu nghiên cứu"
              + (f" ({len(muc)} mục tiêu)" if len(muc) > 1 else "")
              + ", đối chiếu với các nghiên cứu đã công bố và nêu rõ ý nghĩa thực hành cũng như hạn chế của nghiên "
@@ -1357,11 +1535,8 @@ def thong_tin_chung(n: Nguon) -> List[str]:
                        flags=re.IGNORECASE)
     nam = (re.findall(r"20\d{2}", lam_sach(n.s("document", "date"))) or ["……"])[0]
     # lệ «Đồng bộ đề cương nộp» (viet-ban-thao, 15/11/2026): phiên bản = protocol_version; ngày để dòng chấm cho PI điền
-    dong = [DAU_MAY, "", "# ĐỀ CƯƠNG NGHIÊN CỨU KHOA HỌC", "", f"## {ten.upper()}", "",
+    dong = ["# ĐỀ CƯƠNG NGHIÊN CỨU KHOA HỌC", "", f"## {ten.upper()}", "",
             f"**Phiên bản đề cương:** {phien_ban or '1.0'}, ngày ……/……/{nam}", ""]
-    if n.tong_hop:
-        dong += ["*Đề tài giả lập dùng để kiểm thử hệ thống nghiên cứu: mọi dữ liệu là dữ liệu tổng hợp, không có "
-                 "người tham gia thật; tên người trong văn bản là tên ví dụ.*", ""]
     dong += ["## THÔNG TIN CHUNG VỀ ĐỀ TÀI", "", "| Mục | Nội dung |", "|---|---|",
              f"| Tên đề tài | {ten} |",
              f"| Chủ nhiệm đề tài | {pi}{', ' + pi_cd if pi_cd else ''} |",
@@ -1412,10 +1587,19 @@ def dung_de_cuong(n: Nguon) -> str:
             than += ["# PHỤ LỤC B. ĐƠN ĐỀ NGHỊ MIỄN ĐỒNG THUẬN THAM GIA NGHIÊN CỨU", ""] + don_mien_dong_thuan(n) + [""]
         else:
             than += ["# PHỤ LỤC B. BẢN THÔNG TIN VÀ PHIẾU ĐỒNG Ý THAM GIA NGHIÊN CỨU", ""] + phieu_dong_y(n) + [""]
+    hon_hop = bool(_hh().khoi(n.meta))
     ten_c = ("PHIẾU TRÍCH XUẤT DỮ LIỆU" if n.thiet_ke == "sr_ma" else
              "BỘ CÂU HỎI PHỎNG VẤN VÀ PHIẾU THU THẬP THÔNG TIN" if n.thiet_ke == "qualitative" else
+             "PHIẾU THU THẬP SỐ LIỆU VÀ HƯỚNG DẪN PHỎNG VẤN" if hon_hop else
              "PHIẾU THU THẬP SỐ LIỆU")
-    than += [f"# PHỤ LỤC C. {ten_c}", ""] + phieu_thu_thap(n) + [""]
+    than += [f"# PHỤ LỤC C. {ten_c}", ""]
+    if n.thiet_ke == "qualitative":
+        than += huong_dan_phong_van(n) + ["**PHIẾU THÔNG TIN NGƯỜI THAM GIA**", ""]
+    if hon_hop:
+        than += ["**C1. PHIẾU THU THẬP SỐ LIỆU (CẤU PHẦN ĐỊNH LƯỢNG)**", ""]
+    than += phieu_thu_thap(n) + [""]
+    if hon_hop:
+        than += ["**C2. CẤU PHẦN ĐỊNH TÍNH**", ""] + huong_dan_phong_van(n, _hh().dinh_tinh(n.meta))
     than += ["# PHỤ LỤC D. BẢNG BIẾN SỐ VÀ MÃ HOÁ", ""] + bang_bien_so(n) + [""]
     dau = thong_tin_chung(n) + tom_tat(n)
     van = "\n".join(dau + viet_tat("\n".join(than)) + than)
@@ -1425,10 +1609,18 @@ def dung_de_cuong(n: Nguon) -> str:
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════════ ghi + kiểm
 def la_ban_may(p: Path) -> bool:
+    """Tệp hiện có là bản máy CHƯA ai sửa: nội dung khớp sha256 trong dấu `_dau_may_sinh/` (hoặc còn dòng dấu cũ
+    `DAU_MAY` trong văn bản — bản sinh trước 17/11/2026)."""
     try:
-        return DAU_MAY in p.read_text(encoding="utf-8")[:2000]
+        noi = p.read_text(encoding="utf-8")
     except OSError:
         return False
+    if DAU_MAY in noi[:2000]:
+        return True
+    import dau_may_sinh as DMS  # noqa: PLC0415
+
+    dau = DMS.doc_dau(p)
+    return bool(dau) and dau.get("sha256") == DMS.bam_noi_dung(noi)
 
 
 def sinh(out_dir: Path, study: str, ghi: bool = False) -> Dict[str, Any]:
@@ -1445,6 +1637,9 @@ def sinh(out_dir: Path, study: str, ghi: bool = False) -> Dict[str, Any]:
         kq["ma"] = 0
         return kq
     md_p.write_text(van, encoding="utf-8", newline="\n")
+    import dau_may_sinh as DMS  # noqa: PLC0415 — dấu bản máy NGOÀI văn bản (văn bản nộp không mang dấu vết máy)
+
+    DMS.ghi_dau(md_p, van, {"study": study}, "sinh_de_cuong_nop_hoi_dong.py")
     docx_p = md_p.with_suffix(".docx")
     try:
         import md2docx_vn  # noqa: PLC0415
@@ -1455,8 +1650,7 @@ def sinh(out_dir: Path, study: str, ghi: bool = False) -> Dict[str, Any]:
                      "doc_type": "ĐỀ CƯƠNG NGHIÊN CỨU KHOA HỌC", "title": tieu_de,
                      "meta_lines": [f"Chủ nhiệm đề tài: {chu_nhiem or CHAM}"],
                      "place_year": lam_sach(n.meta.get("place_year")) or ""}
-        than_docx = re.sub(r"^<!--.*?-->\s*\n", "", van, flags=re.DOTALL)
-        md2docx_vn.markdown_to_docx(than_docx, docx_p, title_page=trang_bia)
+        md2docx_vn.markdown_to_docx(van, docx_p, title_page=trang_bia)
         kq["docx"] = str(docx_p)
     except ImportError:
         kq["docx"] = None

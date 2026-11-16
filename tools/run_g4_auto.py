@@ -30,6 +30,7 @@ import cong_song as CS  # noqa: E402  (chấm sống G3 trước khi sinh SAP �
 import dau_may_sinh as DMS  # noqa: E402  (dấu SHA-256 bản máy sinh — K6, 14/11/2026)
 import g4_quality_gate as G4Q  # noqa: E402  (khung §12 dùng chung với bộ chấm — G4-06)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
+import hon_hop as HH  # noqa: E402  (thiết kế hỗn hợp — §17, 17/11/2026)
 import skill_standards as S  # noqa: E402  (đặc tả thiết kế khoá ở G1, chuẩn báo cáo theo thiết kế)
 import ten_de_tai as TDT  # noqa: E402  (tên đề tài chính thức — 15/11/2026)
 import vn_prose_style as _VNSTYLE  # noqa: E402  (chuẩn hoá văn phong artifact)
@@ -263,7 +264,7 @@ def _bang_gia(design_code, loai12):
 _RE_MT_PHAN_TICH = re.compile(r"phân\s+tích|yếu\s+tố\s+liên\s+quan|so\s+sánh", re.I)
 
 
-def _bang_theo_muc_tieu(muc_tieu):
+def _bang_theo_muc_tieu(muc_tieu, dinh_tinh=frozenset()):
     """§11 — MỖI mục tiêu G1 một bảng giả gắn nhãn «MTk» (15/11/2026, giai đoạn «Mục tiêu»; luật MT-11 của
     ma_tran_muc_tieu_bien: mục tiêu không có đầu ra định trước là mục tiêu không được trả lời). Mục tiêu phân tích
     («phân tích», «yếu tố liên quan», «so sánh») ⇒ bảng hiệu ứng thô/hiệu chỉnh (§5); còn lại ⇒ bảng ước lượng (§4).
@@ -274,7 +275,10 @@ def _bang_theo_muc_tieu(muc_tieu):
         ten = re.sub(r"^\s*MT\s*\d+\s*(?:\([^)]*\))?\s*[:.]\s*", "", o).strip()
         ten = ten if len(ten) <= 140 else ten[:139].rstrip() + "…"
         ra += ["", f"**Bảng MT{k} — Kết quả trả lời Mục tiêu {k} (MT{k}): {ten}**"]
-        if _RE_MT_PHAN_TICH.search(o):
+        if k in dinh_tinh:  # mục tiêu của cấu phần định tính (đề tài hỗn hợp, 17/11/2026) — bảng chủ đề, theo §17
+            ra += ["| Chủ đề | Mô tả chủ đề | Trích dẫn minh hoạ (đã khử định danh) |", "|---|---|---|",
+                   "| [CẦN KẾT QUẢ THẬT — theo §17] | | |"]
+        elif _RE_MT_PHAN_TICH.search(o):
             ra += ["| Yếu tố | Hiệu ứng thô (95%CI) | Hiệu ứng hiệu chỉnh (95%CI) |", "|---|---|---|",
                    "| [CẦN KẾT QUẢ THẬT — theo §5] | | |"]
         else:
@@ -382,11 +386,42 @@ def muc_kinh_te(kt) -> list:
     return dong
 
 
+def muc_hon_hop(meta) -> list:
+    """§17 CẤU PHẦN ĐỊNH TÍNH VÀ TÍCH HỢP (17/11/2026) — [] khi đề tài không khai gate_params.G1.mixed_methods.
+
+    SAP của đề tài hỗn hợp khoá luôn kế hoạch phân tích cấu phần định tính và cách tích hợp (GRAMMS mục 3–4) để phần
+    tích hợp ở báo cáo truy nguyên được về kế hoạch đã khoá, không dựng sau khi xem kết quả. Khối G1 đã qua
+    G1-AUTO-02d nên mọi ô có giá trị; ô vắng ⇒ [CẦN …] của chủ nhiệm."""
+    if not HH.khoi(meta):
+        return []
+    mt, dt, th = HH.mo_ta(meta), HH.dinh_tinh(meta), HH.tich_hop(meta)
+
+    def _o(d, k, goi_y):
+        v = d.get(k)
+        return v if v not in (None, "", []) else f"[CẦN BÁC SĨ — {goi_y}; khai ở gate_params.G1.mixed_methods]"
+
+    dong = ["", "### §17 CẤU PHẦN ĐỊNH TÍNH VÀ TÍCH HỢP DỮ LIỆU (THIẾT KẾ HỖN HỢP — GRAMMS, PMID 18416914)", "",
+            f"- **Mô hình thiết kế:** {mt['ten'] or '[CẦN BÁC SĨ — thiet_ke]'} — {mt['mo_ta']}; {mt['uu_tien']}  ",
+            f"- **Cách tiếp cận định tính:** {_o(dt, 'qualitative_approach', 'cách tiếp cận')}  ",
+            f"- **Chọn người tham gia và cỡ mẫu:** {_o(dt, 'chon_mau', 'chiến lược chọn mẫu')}; "
+            f"{_o(dt, 'co_mau_du_kien', 'cỡ mẫu dự kiến')}  ",
+            f"- **Tiêu chí bão hoà:** {_o(dt, 'saturation_criterion', 'tiêu chí bão hoà')}  ",
+            f"- **Phân tích dữ liệu định tính:** {_o(dt, 'phan_tich', 'phương pháp phân tích')}  ",
+            f"- **Thời điểm tích hợp:** {_o(th, 'thoi_diem', 'thời điểm tích hợp')}  ",
+            f"- **Cách tích hợp:** {_o(th, 'cach', 'cách tích hợp')}  ",
+            f"- **Người thực hiện tích hợp:** {_o(th, 'nguoi', 'người thực hiện')}  ",
+            "- **Trình bày tích hợp:** bảng tích hợp (joint display) theo từng nội dung; mỗi nội dung kết luận hội tụ, "
+            "bổ sung hoặc bất đồng — bất đồng được phân tích, không loại bỏ  ",
+            "- **Chuẩn báo cáo:** GRAMMS cho toàn nghiên cứu; COREQ (PMID 17872937) cho cấu phần định tính, kèm chuẩn "
+            "của cấu phần định lượng  ", ""]
+    return dong
+
+
 def generate(study, topic, design_code, design_primary, reporting_std,
              n_adjusted, alpha, power, effect_val, effect_type, run_date, sd=None,
              hypothesis_type="superiority", margin=None, n_statistical_min=None, *,
              g3=None, estimand=None, giai_trinh_thieu_luc=None, ket_cuc_chinh_da_chot=None, gia_thuyet_phu=None,
-             khung=None, muc_tieu=None, kinh_te=None):
+             khung=None, muc_tieu=None, kinh_te=None, hon_hop=None):
     """Sinh SAP Final + chứng chỉ khoá (DRAFT — CHỜ KÝ).
 
     Tham số vị trí giữ nguyên hợp đồng cũ. Từ khoá mới (VÁ 04/10/2026, soát từng cổng):
@@ -873,13 +908,14 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "### §11 DUMMY TABLES (Khung bảng kết quả)",
         "",
         *_bang_gia(design_code, loai12),
-        *_bang_theo_muc_tieu(muc_tieu),
+        *_bang_theo_muc_tieu(muc_tieu, HH.muc_tieu_dinh_tinh(hon_hop) if HH.khoi(hon_hop) else frozenset()),
         "",
         tieu_de_12,
         "",
         *muc_12,
         *(sap_sections_13_to_15 if design_code == "rct" else []),
         *muc_kinh_te(kinh_te),
+        *muc_hon_hop(hon_hop),
         "",
         "---",
         "",
@@ -1290,6 +1326,7 @@ def main():
                                   if isinstance(meta_cp, dict) else None),
                         kinh_te=(((meta_cp.get("gate_params") or {}).get("G1") or {}).get("economic_evaluation")
                                  if isinstance(meta_cp, dict) else None),
+                        hon_hop=meta_cp if isinstance(meta_cp, dict) else None,
                         gia_thuyet_phu=(((meta_cp.get("gate_params") or {}).get("G0") or {}).get("hypothesis_secondary")
                                         if isinstance(meta_cp, dict) else None))
     md = out / f"G4_A5_SAP_FINAL_{study}.md"

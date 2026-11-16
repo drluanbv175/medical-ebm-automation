@@ -27,6 +27,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 import annex2_quality_gate as A2X
 import cong_song as CS
 import g0_tong_hop as GT
+import hon_hop as _HH
 import khung_de_tai as KD
 import placeholder_contract as PC
 import skill_standards as S
@@ -1414,8 +1415,25 @@ def evaluate_g1_quality(
         "PI ghim lại gate_params.G1.design (hoặc study_meta.design_code kèm design_code_nguon=\"PI\") bằng một trong "
         "rct/cohort/case_control/cross_sectional/diagnostic/sr_ma/"
         "prediction/qualitative có chủ ý, hoặc dùng agent chuyên trách cho thiết kế này (vd quasi-experimental → "
-        "TREND, cải tiến chất lượng → SQUIRE 2.0, ca lâm sàng → CARE).",
+        "TREND, cải tiến chất lượng → SQUIRE 2.0, ca lâm sàng → CARE). Thiết kế HỖN HỢP định lượng–định tính: ghim "
+        "mã của cấu phần định lượng và khai cấu phần định tính + kế hoạch tích hợp ở gate_params.G1.mixed_methods "
+        "(kiểm bằng tools/hon_hop.py, báo cáo GRAMMS).",
     ))
+
+    # THÊM 17/11/2026: đề tài HỖN HỢP chạy chuỗi trên mã của cấu phần định lượng; khối gate_params.G1.mixed_methods
+    # phải đủ mục GRAMMS (lý do, thiết kế + ưu tiên, cấu phần định tính, tích hợp) — thiếu thì đề cương nộp không
+    # mô tả được cấu phần định tính.
+    if _HH.khoi(meta):
+        loi_hh = _HH.kiem(meta)
+        automatic.append(_criterion(
+            "G1-AUTO-02e",
+            "Thiết kế hỗn hợp khai đủ cấu phần định tính và kế hoạch tích hợp (GRAMMS)",
+            "BLOCK" if loi_hh else "PASS",
+            "; ".join(loi_hh) if loi_hh else
+            f"mixed_methods.thiet_ke={_HH.khoi(meta).get('thiet_ke')!r}, cấu phần định lượng «{internal}»",
+            "Bổ sung gate_params.G1.mixed_methods theo docstring tools/hon_hop.py (thiet_ke, ly_do, uu_tien, "
+            "cau_phan_dinh_tinh, tich_hop).",
+        ))
 
     # VÁ 04/10/2026 (soát từng cổng, G1-06): thiết kế cuối phải hợp với loại câu hỏi bác sĩ đã chốt ở G0 — bản cũ
     # bỏ qua G0 nên đề tài phân tích yếu tố liên quan bị dựng thành RCT mà không ai báo.

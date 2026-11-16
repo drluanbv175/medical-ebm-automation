@@ -46,6 +46,7 @@ import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu �
 import dau_may_sinh as DMS  # noqa: E402  (dấu SHA-256 bản máy sinh — K6, 14/11/2026)
 import g2_quality_gate as G2Q  # noqa: E402  (hợp đồng chất lượng riêng G2)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
+import hon_hop as HH  # noqa: E402  (thiết kế hỗn hợp — cấu phần định tính, 17/11/2026)
 import pii_van_ban as PII  # noqa: E402  (bộ dò PII dùng chung — CHUNG-G)
 import ten_de_tai as TDT  # noqa: E402  (tên đề tài chính thức — 15/11/2026)
 import trial_registry as TR  # noqa: E402  (tra ClinicalTrials.gov — dùng chung với G0)
@@ -798,6 +799,9 @@ def _khoi_prospero(meta: Optional[dict]) -> str:
     ky = str(g1.get("study_period") or "")
     bat_dau, _, ket_thuc = ky.partition(" đến ")
     nguon = ds(g1.get("information_sources"), "PubMed, Cochrane CENTRAL, Embase, Web of Science, grey literature")
+    # 17/11/2026: tiêu đề tiếng Anh khai MỘT lần ở G2 (title_en, hoặc icf_en.title) — không hỏi lại ở từng tài liệu
+    g2 = gp.get("G2") if isinstance(gp.get("G2"), dict) else {}
+    ten_en = next((str(x).strip() for x in (g2.get("title_en"), (g2.get("icf_en") or {}).get("title")) if co(x)), "")
     return f"""
 ---
 
@@ -809,7 +813,7 @@ def _khoi_prospero(meta: Optional[dict]) -> str:
 ```
 PROSPERO Registration Draft
 ═══════════════════════════
-Tiêu đề (tiếng Anh): [CẦN — tiêu đề tiếng Anh của tổng quan]
+Tiêu đề (tiếng Anh): {ten_en or "[CẦN — tiêu đề tiếng Anh của tổng quan]"}
 Ngôn ngữ cung cấp: English
 
 Review question: {ds(g1.get("research_question"), "[CẦN — từ PICO G0]")}
@@ -918,6 +922,30 @@ def _icf_tu_g1(meta: Optional[dict], design_code: str) -> Dict[str, str]:
     return ra
 
 
+def _buoc_phong_van_hon_hop(meta: Optional[dict], en: bool = False) -> str:
+    """Bước phỏng vấn sâu của đề tài HỖN HỢP (17/11/2026): chỉ một số người được mời, chỉ ghi âm khi đồng ý, từ chối
+    phần phỏng vấn vẫn tiếp tục tham gia. Thời lượng lấy từ phương pháp thu thập đã chốt; rỗng khi đề tài không khai
+    `gate_params.G1.mixed_methods`."""
+    if not HH.khoi(meta):
+        return ""
+    dt = HH.dinh_tinh(meta)
+    tl = re.search(r"(\d+\s*[–-]\s*\d+|\d+)\s*phút", str(dt.get("data_collection_method") or ""))
+    if en:
+        g2 = ((meta or {}).get("gate_params") or {}).get("G2") or {}
+        rieng = str(((g2.get("icf_en") or {}) if isinstance(g2.get("icf_en"), dict) else {}).get("interview_step") or "")
+        return rieng.strip() or (
+            "Some participants will be invited to one additional in-depth interview"
+            + (f" (about {tl.group(1).replace('–', '-')} minutes)" if tl else "")
+            + ". The interview is audio-recorded only with your permission, and you may decline the interview and "
+              "still take part in the study.")
+    ht = str(dt.get("central_phenomenon") or "").strip().rstrip(".")
+    return ("Một số anh/chị sẽ được mời tham gia thêm một buổi phỏng vấn sâu"
+            + (f" khoảng {tl.group(1)} phút" if tl else "")
+            + (f" về {ht[:1].lower() + ht[1:]}" if ht else "")
+            + "; buổi phỏng vấn chỉ được ghi âm khi anh/chị đồng ý, và anh/chị có thể từ chối phần phỏng vấn mà vẫn "
+              "tiếp tục tham gia nghiên cứu.")
+
+
 def _dong_rui_ro(risks: list, en: bool = False) -> str:
     """Dòng rủi ro của phiếu đồng ý — ngắt dòng theo TỪ (trước đây cắt cứng 80 ký tự ⇒ «quy trình vi» giữa chữ)."""
     import textwrap  # noqa: PLC0415
@@ -931,6 +959,86 @@ def _dong_rui_ro(risks: list, en: bool = False) -> str:
             continue
         ra.extend(textwrap.wrap(dong, width=96, subsequent_indent="     ", break_long_words=False) or [dau])
     return "\n   ".join(ra)
+
+
+_MOC_EN = ((r"\bban đầu\b|\bnền\b|\blúc vào\b", "baseline"), (r"\btháng(?: thứ)?\s*(\d+)", r"month \1"),
+           (r"\btuần(?: thứ)?\s*(\d+)", r"week \1"), (r"\bnăm(?: thứ)?\s*(\d+)", r"year \1"), (r"\s+và\s+", " and "))
+
+
+def _lich_en(lich: str) -> str:
+    """Lịch theo dõi dạng danh sách mốc → tiếng Anh bằng bảng từ cố định (không dịch máy câu tự do)."""
+    s = str(lich or "").strip().rstrip(".")
+    for mau, thay_the in _MOC_EN:
+        s = re.sub(mau, thay_the, s, flags=re.IGNORECASE)
+    return s
+
+
+def _icf_en(meta: Optional[dict], design_code: str, n_display: str) -> Dict[str, str]:
+    """Nội dung ICF TIẾNG ANH (17/11/2026): phần SUY ĐƯỢC không cần dịch (tên chủ nhiệm, số người tham gia, xác suất vào
+    nhóm, lịch/tổng thời gian/số lần đến bằng bảng từ cố định, làm mù, bước chuẩn theo thiết kế, «no external
+    funding») + phần CHỮ TỰ DO lấy từ `gate_params.G2.icf_en` (bản dịch do chủ nhiệm hoặc agent `hieu-dinh-song-ngu`
+    soạn — máy KHÔNG dịch máy câu tiếng Việt). Khoá vắng ⇒ khuôn giữ ô [TO BE COMPLETED]."""
+    gp = ((meta or {}).get("gate_params") or {}) if isinstance(meta, dict) else {}
+    g1, g2 = gp.get("G1") or {}, gp.get("G2") or {}
+    adm = ((meta or {}).get("administrative") or {}) if isinstance(meta, dict) else {}
+    en = {k: str(v).strip() for k, v in (g2.get("icf_en") or {}).items()
+          if isinstance(v, (str, int, float)) and str(v).strip() and "[" not in str(v)}
+    vi = _icf_tu_g1(meta, design_code)
+    ra: Dict[str, str] = dict(en)
+    if str(adm.get("principal_investigator") or "").strip() and "[" not in str(adm.get("principal_investigator")):
+        ra.setdefault("pi", str(adm["principal_investigator"]).strip())
+    if n_display and str(n_display).isdigit():
+        ra.setdefault("participants", f"about {n_display}")
+    if str(adm.get("sponsor") or "").strip().lower() in ("không có tài trợ bên ngoài", "không có tài trợ ngoài",
+                                                         "no external funding"):
+        ra.setdefault("funding", "no external funding")
+    tl = re.search(r"(\d+)\s*:\s*(\d+)", str(g1.get("randomisation") or ""))
+    if design_code == "rct" and tl:
+        a, b = int(tl.group(1)), int(tl.group(2))
+        ra.setdefault("probability", "1 in 2 (50%) for each group" if a == b else
+                      f"{a} in {a + b} for the intervention group and {b} in {a + b} for the control group")
+    if vi.get("so_lan_den"):
+        lich = _lich_en(str(g1.get("follow_up_schedule") or ""))
+        n_lan = vi["so_lan_den"].split(" ", 1)[0]
+        ra.setdefault("visits", f"{n_lan} visits ({lich})")
+        ra.setdefault("follow_up_step", f"Return for follow-up visits and outcome measurements at: {lich}.")
+    if vi.get("tong_thoi_gian"):
+        ra.setdefault("time", "about " + re.sub(r"khoảng\s*(\d+)\s*tháng", r"\1 months", vi["tong_thoi_gian"]))
+    if vi.get("biet_nhom"):
+        ra.setdefault("blinding", "will know your group; the people measuring outcomes and analysing the data will "
+                                  "not" if vi["biet_nhom"].startswith("sẽ biết") else
+                      "will not know your group until the end of the study")
+    buoc2 = {
+        "rct": "Answer a baseline interview and have measurements taken using the case report form, then be "
+               "randomly assigned to a group (section 2b).",
+        "cohort": "Answer an interview and have examinations and measurements taken using the case report form at the "
+                  "first visit.",
+        "cross_sectional": "Answer the questionnaire once.",
+        "case_control": "Answer an interview about your medical history and allow the study team to extract "
+                        "information from your medical records.",
+        "diagnostic": "Answer an interview and allow the study team to extract test results from your medical records.",
+        "prediction": "Allow the study team to extract information from your medical records and follow your outcomes.",
+        "qualitative": "Take part in one in-depth interview with a researcher; the interview is audio-recorded only "
+                       "with your agreement.",
+    }.get(design_code)
+    if buoc2:
+        ra.setdefault("step1", "Sign this consent form after a full explanation and time to ask questions.")
+        ra.setdefault("step2", buoc2)
+    return ra
+
+
+def _icf_en_cho_khoi(meta: Optional[dict], design_code: str) -> Dict[str, str]:
+    """Khoá dùng cho các khối en_* (1b/2b/4b/4c/5b/6b–6h): _icf_en + câu ghép sẵn (chủ nhiệm + đơn vị, nhóm, làm mù)."""
+    e = _icf_en(meta, design_code, "")
+    if e.get("pi"):
+        e.setdefault("pi_line", e["pi"] + (f", {e['pi_qualifications']}" if e.get("pi_qualifications") else "")
+                     + (f", {e['institution']}" if e.get("institution") else ""))
+    if e.get("intervention") and e.get("comparator"):
+        e.setdefault("arms", f"the intervention group ({e['intervention']}) or the control group ({e['comparator']})")
+    if e.get("blinding"):
+        e.setdefault("blinding_choice", e["blinding"].split(";")[0].replace("will know your group", "will")
+                     .replace("will not know your group until the end of the study", "will not"))
+    return e
 
 
 def generate_g2_full_package(
@@ -956,8 +1064,10 @@ def generate_g2_full_package(
     _pi        = _meta_or_blank(meta, "administrative", "principal_investigator")
     _pi_title  = _meta_or_blank(meta, "administrative", "pi_title")
     _pi_unit   = _meta_or_blank(meta, "administrative", "pi_unit")
-    _pi_phone  = _meta_or_blank(meta, "administrative", "pi_phone")
-    _pi_email  = _meta_or_blank(meta, "administrative", "pi_email")
+    # 17/11/2026: số điện thoại/email là PII liên lạc — không đưa vào hồ sơ trong git (doctrine G10: dòng để PI điền tay
+    # trên bản in). Chưa khai ⇒ dòng gạch điền tay (g2_quality_gate che như chỗ ký), không phải ô [CẦN] hỏi đi hỏi lại.
+    _pi_phone  = _meta_or_blank(meta, "administrative", "pi_phone", blank="_______________")
+    _pi_email  = _meta_or_blank(meta, "administrative", "pi_email", blank="_______________")
     _irb_name  = _meta_or_blank(meta, "administrative", "irb_name", blank="[TÊN ĐƠN VỊ — CẦN BỔ SUNG]")
     _sponsor   = _meta_or_blank(meta, "administrative", "sponsor",
                                 blank='[CẦN BỔ SUNG / "Không có tài trợ bên ngoài"]')
@@ -987,6 +1097,8 @@ def generate_g2_full_package(
     # không chép danh mục chọn (gồm rủi ro lấy máu/thuốc) vào ICF; ghi chú loại can thiệp in ngay dưới Bảng rủi ro.
     _risks_icf = risk.get("risks_icf") or risk["risks"]
     _icf = _icf_tu_g1(meta, design_code)
+    _ien = _icf_en(meta, design_code, str(n_adjusted) if n_adjusted and n_adjusted > 0 else "")
+    _gp2 = (((meta or {}).get("gate_params") or {}).get("G2") or {}) if isinstance(meta, dict) else {}
     # 16/11/2026: sơ đồ tiến trình đã chốt ở G1 (study_schema_timeline) là «quy trình» của bản tóm tắt cho Hội đồng.
     _quy_trinh_g1 = _meta_or_blank(meta, "gate_params", "G1", "study_schema_timeline", blank="")
     _quy_trinh_g1 = "" if "[CẦN" in _quy_trinh_g1.upper() else _quy_trinh_g1
@@ -1079,6 +1191,10 @@ def generate_g2_full_package(
             "chất lượng dịch vụ — KHÔNG có can thiệp/thủ thuật y khoa nào thực hiện "
             "thêm ngoài quy trình khám/chăm sóc thường quy]"
         )
+
+    _pv_hh = _buoc_phong_van_hon_hop(meta)
+    if _pv_hh:  # đề tài hỗn hợp: bước phỏng vấn sâu riêng cho người được mời
+        icf_extra_steps += f"   ☐ Phỏng vấn sâu (chỉ những người được mời): {_pv_hh}\n"
 
     # SỬA 15/10/2026 (C1a): câu «cố gắng lên lịch hẹn trùng với lần tái khám thường quy» chỉ đúng khi có tiếp xúc
     # NHIỀU lần (thủ thuật/tái khám/theo dõi) — khảo sát một lần (cắt ngang…) chép nó vào ICF là sai bối cảnh.
@@ -1277,10 +1393,47 @@ def generate_g2_full_package(
    eligible, study stopped by the Ethics Committee/sponsor/regulator]."""
     else:
         en_2b = en_5b = en_6b = en_6d = en_6fgh = ""
+    _e = _icf_en_cho_khoi(meta, design_code)
+    for _khoa, _mau in (("pi_line", "principal investigator, qualifications, institution"),
+                        ("funding", 'funder or "no external funding"'), ("coi", "yes/no, matching Document 8"),
+                        ("reimbursement", "none beyond routine care / description of reasonable, non-coercive "
+                                          "reimbursement"),
+                        ("injury_compensation", "treatment/compensation policy for study-related injury and its "
+                                                "funding source"),
+                        ("arms", "study arms"), ("probability", "e.g. 1 in 2"), ("blinding_choice", "will/will not"),
+                        ("source_access_scope", "scope confirmed by the investigator"),
+                        ("alternative", "available alternatives"),
+                        ("post_trial_care", "post-trial access to the intervention and care for problems arising "
+                                            "outside the study"),
+                        ("new_info_how", "how"),
+                        ("follow_up_after_withdrawal", "whether follow-up contact for safety will occur and how "
+                                                       "collected data are handled"),
+                        ("termination", "e.g. safety reasons, no longer\n   eligible, study stopped by the Ethics "
+                                        "Committee/sponsor/regulator")):
+        if _e.get(_khoa):
+            _mau_re = re.escape("[TO BE COMPLETED — " + _mau.replace("\\n", "\n") + "]").replace("\\\n", "\\s+")
+            en_1b, en_4bc, en_6c, en_2b, en_5b, en_6b, en_6d, en_6fgh = (
+                re.sub(_mau_re, lambda _m: _e[_khoa], x)
+                for x in (en_1b, en_4bc, en_6c, en_2b, en_5b, en_6b, en_6d, en_6fgh))
+    if _e.get("follow_up_step") and "Step 4: [TO BE COMPLETED — e.g. follow-up visits" in en_steps:
+        en_steps = re.sub(r"\[TO BE COMPLETED — e\.g\. follow-up visits; DELETE if single contact\]",
+                          lambda _m: _e["follow_up_step"], en_steps)
+    for _khoa, _mau_s in (("index_test", r"\[TO BE COMPLETED — index test being evaluated\]"),
+                          ("reference_standard", r"\[TO BE COMPLETED — reference standard; DELETE if only routine "
+                                                 r"results are used\]")):
+        if _e.get(_khoa):
+            en_steps = re.sub(_mau_s, lambda _m, _k=_khoa: _e[_k], en_steps)
+    if _e.get("extra_step"):
+        en_steps = re.sub(r"\[TO BE COMPLETED — e\.g\. blood sample/extra examination; DELETE if none\]",
+                          lambda _m: _e["extra_step"], en_steps)
+    if HH.khoi(meta):
+        en_steps += f"   ☐ In-depth interview (invited participants only): {_buoc_phong_van_hon_hop(meta, en=True)}\n"
     en_6e = """
 6e. BIOLOGICAL SAMPLES (DELETE this section if no samples are collected)
    [TO BE COMPLETED — purpose of samples; destroyed after analysis or stored for future research with SEPARATE
    consent]""" if co_thu_thuat else ""
+    if en_6e and _e.get("samples"):
+        en_6e = re.sub(r"\[TO BE COMPLETED — purpose of samples;[^\]]*\]", lambda _m: _e["samples"], en_6e)
 
     # ICF waiver flag
     # SỬA 2026-07-21 (vòng lặp kiểm tra-hoàn thiện vòng 2, phát hiện MEDIUM):
@@ -1616,11 +1769,11 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
    ┌─────────────────────────────────────────────────────────┐
    │ Thắc mắc về nghiên cứu:                                │
    │   Chủ nhiệm đề tài: {_pi}                     │
-   │   Điện thoại: [CẦN BỔ SUNG]  Email: [CẦN BỔ SUNG]     │
+   │   Điện thoại: {_pi_phone}  Email: {_pi_email}     │
    │                                                        │
    │ Thắc mắc về quyền của người tham gia:                  │
    │   Hội đồng Đạo đức: {_irb_name if not _irb_name.startswith('[') else '[CẦN — Tên HĐ cơ sở]'}              │
-   │   Điện thoại: [CẦN BỔ SUNG]                           │
+   │   Điện thoại: _______________                           │
    └─────────────────────────────────────────────────────────┘
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1654,29 +1807,30 @@ Ký tên: _______________  Ngày: ___/___/{_YEAR}
    "English translation of Vietnamese ICF — for journal submission only."
 ══════════════════════════════════════════════════════════════
 
-STUDY TITLE: {topic}
-Institution: [TO BE COMPLETED]
-Principal Investigator: [TO BE COMPLETED]
+STUDY TITLE: {_ien.get('title') or _gp2.get('title_en') or topic}
+Institution: {_ien.get('institution') or '[TO BE COMPLETED]'}
+Principal Investigator: {_ien.get('pi') or '[TO BE COMPLETED]'}
 
 1. PURPOSE
    You are invited to participate in a study that aims to:
-   [TO BE COMPLETED — plain language, no jargon]
-   Estimated participants: [TO BE COMPLETED — from G3]
-   Location: [TO BE COMPLETED]
+   {_ien.get('purpose') or '[TO BE COMPLETED — plain language, no jargon]'}
+   Estimated participants: {_ien.get('participants') or '[TO BE COMPLETED — from G3]'}
+   Location: {_ien.get('location') or '[TO BE COMPLETED]'}
    PARTICIPATION IS ENTIRELY VOLUNTARY.
 {en_1b}
 
 2. PROCEDURES
-   ☐ Step 1: [TO BE COMPLETED]
-   ☐ Step 2: [TO BE COMPLETED]
-{en_steps}   Estimated time commitment: [TO BE COMPLETED]
+   ☐ Step 1: {_ien.get('step1') or '[TO BE COMPLETED]'}
+   ☐ Step 2: {_ien.get('step2') or '[TO BE COMPLETED]'}
+{en_steps}   Estimated time commitment: {_ien.get('time') or '[TO BE COMPLETED]'}
+   Number of visits: {_ien.get('visits') or '[TO BE COMPLETED]'}
 {en_2b}
 
 3. RISKS AND DISCOMFORTS
    {_rui_ro_en}
 
 4. POTENTIAL BENEFITS
-   [TO BE COMPLETED — include both direct and community benefits]
+   {_ien.get('benefits') or '[TO BE COMPLETED — include both direct and community benefits]'}
 {en_4bc}
 
 5. CONFIDENTIALITY
@@ -1694,8 +1848,8 @@ Principal Investigator: [TO BE COMPLETED]
 {en_6fgh}
 
 7. CONTACTS
-   Investigator: [TO BE COMPLETED] | Email: [TO BE COMPLETED]
-   Ethics Committee: [TO BE COMPLETED]
+   Investigator: {_ien.get("pi") or "[TO BE COMPLETED]"} | Phone: _______________ | Email: _______________
+   Ethics Committee: {_ien.get("irb") or "[TO BE COMPLETED]"}
 
 ──────────────────────────────────────────────────────────────
 CONSENT SIGNATURE (PARTICIPANT'S COPY)
@@ -1795,7 +1949,7 @@ HỒ SƠ BỔ SUNG (theo loại NC):
     ICF người giám hộ + biện pháp bảo vệ đặc biệt
 ☐ [Dùng dữ liệu di truyền/nhạy cảm]: ICF đặc biệt
 
-SỐ BẢN NỘP: ___ [CẦN XÁC NHẬN tại Hội đồng đạo đức cơ sở]
+SỐ BẢN NỘP: [CẦN XÁC NHẬN tại Hội đồng đạo đức cơ sở]
 HÌNH THỨC: ☐ Bản cứng ☐ Điện tử ☐ Cả hai
 
 LỘ TRÌNH XÉT DUYỆT DỰ KIẾN: {risk["irb_route"]}

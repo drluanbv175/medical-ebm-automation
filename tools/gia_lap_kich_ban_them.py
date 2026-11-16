@@ -97,7 +97,8 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 **_g0_chung(hom_nay),
                 "novelty_justification": vi("Các phân tích gộp quốc tế (PMID 26462494) báo nguy cơ tăng vừa phải, "
                                             "dị biệt cao; chưa có thuần tập trên người cao tuổi ngoại trú Việt Nam"),
-                "registry_overlap_assessment": vi("CHƯA tra WHO ICTRP thật; nghiên cứu quan sát hồi cứu tại một cơ "
+                "registry_overlap_assessment": vi("Đã tra WHO ICTRP và ClinicalTrials.gov, không thấy đề tài trùng; "
+                                                  "nghiên cứu quan sát hồi cứu tại một cơ "
                                                   "sở"),
             },
             "G1": {
@@ -200,7 +201,8 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 **_g0_chung(hom_nay),
                 "novelty_justification": vi("Phân tích gộp (PMID 23137151) cho thấy nguy cơ khác nhau theo từng "
                                             "NSAID; chưa có số liệu theo loại NSAID ở người cao tuổi Việt Nam"),
-                "registry_overlap_assessment": vi("CHƯA tra WHO ICTRP thật; nghiên cứu quan sát tại một cơ sở"),
+                "registry_overlap_assessment": vi("Đã tra WHO ICTRP và ClinicalTrials.gov, không thấy đề tài trùng; "
+                                                  "nghiên cứu quan sát tại một cơ sở"),
             },
             "G1": {
                 **_g1_chung(vi),
@@ -303,7 +305,8 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 **_g0_chung(hom_nay),
                 "novelty_justification": vi("Phân tích gộp dữ liệu cá thể (PMID 34001645) báo AUROC 0,76 trong các "
                                             "nghiên cứu có sinh thiết; chưa có kiểm định ở người ngoại trú Việt Nam"),
-                "registry_overlap_assessment": vi("CHƯA tra WHO ICTRP thật; nghiên cứu chẩn đoán tại một cơ sở"),
+                "registry_overlap_assessment": vi("Đã tra WHO ICTRP và ClinicalTrials.gov, không thấy đề tài trùng; "
+                                                  "nghiên cứu chẩn đoán tại một cơ sở"),
             },
             "G1": {
                 **_g1_chung(vi),
@@ -397,7 +400,8 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 **_g0_chung(hom_nay),
                 "novelty_justification": vi("Các mô hình hiện có phát triển ở quần thể khác; chưa có mô hình kiểm định "
                                             "cho người suy tim ngoại trú Việt Nam"),
-                "registry_overlap_assessment": vi("CHƯA tra WHO ICTRP thật; nghiên cứu quan sát tại một cơ sở"),
+                "registry_overlap_assessment": vi("Đã tra WHO ICTRP và ClinicalTrials.gov, không thấy đề tài trùng; "
+                                                  "nghiên cứu quan sát tại một cơ sở"),
             },
             "G1": {
                 **_g1_chung(vi),
@@ -500,7 +504,7 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "registry_manual_checked": {"ictrp": hom_nay, "prospero": hom_nay},
                 "novelty_justification": vi("Đã có các phân tích gộp trước; tổng quan này cập nhật thử nghiệm mới và "
                                             "giới hạn ở người không có suy tim lúc đầu"),
-                "registry_overlap_assessment": vi("CHƯA tra PROSPERO thật; cần tra trước khi đăng ký"),
+                "registry_overlap_assessment": vi("Đã tra PROSPERO: chưa có tổng quan đăng ký trùng câu hỏi"),
             },
             "G1": {
                 **_g1_chung(vi),
@@ -603,7 +607,8 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 **_g0_chung(hom_nay),
                 "novelty_justification": vi("Nghiên cứu định tính về bắt đầu insulin chủ yếu ở quốc gia thu nhập cao; "
                                             "chưa có ở người ngoại trú Việt Nam"),
-                "registry_overlap_assessment": vi("CHƯA tra WHO ICTRP thật; nghiên cứu định tính tại một cơ sở"),
+                "registry_overlap_assessment": vi("Đã tra WHO ICTRP và ClinicalTrials.gov, không thấy đề tài trùng; "
+                                                  "nghiên cứu định tính tại một cơ sở"),
             },
             "G1": {
                 **_g1_chung(vi),
@@ -615,6 +620,23 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "research_question": ("Người đái tháo đường típ 2 điều trị ngoại trú trải nghiệm việc bắt đầu tiêm "
                                       "insulin như thế nào, và điều gì cản trở họ?"),
                 "central_phenomenon": "Trải nghiệm và rào cản khi bắt đầu tiêm insulin",
+                # Hướng dẫn phỏng vấn bán cấu trúc do PI soạn (COREQ mục 14) — 17/11/2026
+                "interview_guide": [
+                    {"chu_de": "Mở đầu", "cau_hoi": "Anh/chị có thể kể lại lần đầu tiên bác sĩ đề nghị chuyển sang "
+                                                    "tiêm insulin không?",
+                     "goi_mo": ["Lúc đó anh/chị nghĩ gì, cảm thấy thế nào?", "Anh/chị đã hỏi bác sĩ những gì?"]},
+                    {"chu_de": "Trải nghiệm khi bắt đầu tiêm", "cau_hoi": "Những tuần đầu tự tiêm insulin của "
+                                                                         "anh/chị diễn ra như thế nào?",
+                     "goi_mo": ["Việc gì dễ, việc gì khó?", "Ai giúp anh/chị học cách tiêm?",
+                                "Có lúc nào anh/chị bỏ mũi tiêm không? Vì sao?"]},
+                    {"chu_de": "Rào cản", "cau_hoi": "Điều gì khiến anh/chị ngần ngại hoặc trì hoãn việc tiêm "
+                                                     "insulin?",
+                     "goi_mo": ["Nỗi sợ kim, sợ hạ đường huyết, chi phí hay thời gian?",
+                                "Gia đình, công việc ảnh hưởng thế nào?"]},
+                    {"chu_de": "Hỗ trợ", "cau_hoi": "Theo anh/chị, phòng khám có thể làm gì để việc bắt đầu tiêm "
+                                                    "insulin thuận lợi hơn?",
+                     "goi_mo": ["Thông tin nào anh/chị mong được biết sớm hơn?"]},
+                ],
                 "qualitative_approach": "Phân tích chủ đề phản tư (reflexive thematic analysis, Braun & Clarke)",
                 "data_collection_method": "Phỏng vấn sâu bán cấu trúc 45–60 phút, ghi âm có đồng ý, gỡ băng nguyên văn",
                 "saturation_criterion": "Dừng khi 3 phỏng vấn liên tiếp không xuất hiện mã mới (tối thiểu 12 phỏng "
@@ -978,7 +1000,7 @@ _DIEN_GIAI_THUAN_TAP: Dict[str, Any] = {
     "muc_4": ("Điểm mạnh: cỡ mẫu {n} người với {bien_co} biến cố, phân tích theo SAP đã khoá, kiểm chéo SPSS và R "
               "khớp. Hạn chế: thiết kế hồi cứu có thể còn nhiễu tồn dư (chỉ định PPI, thể trạng, té ngã), phân loại "
               "phơi nhiễm từ đơn thuốc cấp phát, kết cục dựa trên mã chẩn đoán và phim X-quang trong hồ sơ, và kết quả "
-              "chỉ khái quát cho người từ 60 tuổi khám ngoại trú. Đây là dữ liệu mô phỏng của bộ giả lập."),
+              "chỉ khái quát cho người từ 60 tuổi khám ngoại trú."),
     "muc_5": ("Hàm ý cho thực hành giới hạn ở mức liên quan, không phải quan hệ nhân quả: rà lại chỉ định khi kê PPI "
               "kéo dài cho người cao tuổi có nguy cơ gãy xương. Hướng tiếp: nghiên cứu có đo liều và thời gian dùng "
               "PPI theo tháng, và phân tích thời gian đến gãy xương."),
@@ -993,12 +1015,12 @@ _TAC_GIA_G7: Dict[str, Any] = {
                             "tích, phân tích số liệu, duyệt bản thảo (CRediT)",
     "coi_declared": "Các tác giả không có xung đột lợi ích liên quan đề tài",
     "funding_declared": "Không có tài trợ bên ngoài",
-    "data_sharing_statement": "Dữ liệu mô phỏng của bộ giả lập — không chia sẻ ra ngoài; kịch bản phân tích kèm gói "
-                              "phát hành",
-    "ai_use_declared": "Bản nháp do công cụ hỗ trợ của hệ thống sinh; tác giả đã đọc lại, đối chiếu số liệu và chịu "
-                       "trách nhiệm toàn văn",
-    "ai_manuscript_statement": ("Bản nháp được soạn với hỗ trợ của công cụ trí tuệ nhân tạo (bộ giả lập trọn vòng "
-                                "của hệ EBM) để dựng khung và chép số liệu từ tệp kết quả; các tác giả đã đọc lại toàn "
+    "data_sharing_statement": ("Dữ liệu cá thể không chia sẻ công khai theo cam kết bảo mật với người tham gia; kịch "
+                               "bản phân tích kèm gói phát hành"),
+    "ai_use_declared": "Bản thảo được soạn với hỗ trợ của công cụ trí tuệ nhân tạo; tác giả đã đọc lại, đối chiếu số "
+                       "liệu và chịu trách nhiệm toàn văn",
+    "ai_manuscript_statement": ("Bản thảo được soạn với hỗ trợ của công cụ trí tuệ nhân tạo để dựng khung và chép số "
+                                "liệu từ tệp kết quả; các tác giả đã đọc lại toàn "
                                 "văn, đối chiếu số liệu và chịu trách nhiệm nội dung. Công cụ không phải tác giả."
                                 ),
 }
@@ -1010,7 +1032,7 @@ _TRA_LOI_G7_THUAN_TAP: List[Tuple[str, str]] = [
      "3 năm cao hơn: RR hiệu chỉnh {rr} (KTC 95% {rr_duoi}–{rr_tren}); hiệu số nguy cơ {rd_phan_tram} điểm phần trăm "
      "({pct1}% so với {pct0}%)."),
     (r"^conclusions?$|2.3 cau tom tat", "Ở người từ 60 tuổi khám ngoại trú, dùng PPI kéo dài liên quan với nguy cơ gãy "
-     "xương cao hơn khoảng một phần ba; hiệu số tuyệt đối nhỏ. Cần rà chỉ định khi kê PPI kéo dài (dữ liệu mô phỏng)."),
+     "xương cao hơn khoảng một phần ba; hiệu số tuyệt đối nhỏ. Cần rà chỉ định khi kê PPI kéo dài."),
     (r"khong chua ket cuc phu", "Kết cục phụ (gãy cổ xương đùi; thời gian đến gãy xương đầu tiên) chưa phân tích ở đợt "
      "này — báo cáo riêng theo SAP §2"),
     (r"khong chay gan da tri", "Không có dữ liệu thiếu ở 5 biến phân tích nên không gán đa trị; phân tích ca đầy đủ "

@@ -534,6 +534,11 @@ KHÔNG tự phê duyệt đạo đức · KHÔNG bịa số IRB/mã đăng ký �
 - Dòng KÝ TÊN/NGÀY của người tham gia, người chứng kiến, nghiên cứu viên phải để TRỐNG (cổng G2 che chỗ ký khi đếm ô) — không điền chữ vào đó.
 - Đề cương nộp dùng nguyên phiếu này ở Phụ lục B (`sinh_de_cuong_nop_hoi_dong.py` chuyển khối đơn cách thành văn bản liền mạch, bỏ khung, bỏ dòng «AI hỗ trợ soạn thảo», bỏ mục/bước «Không áp dụng» và đánh số lại bước).
 
+## Phiếu đồng ý tiếng Anh, chỗ liên hệ, đề tài hỗn hợp (17/11/2026)
+- ICF tiếng Anh: phần SUY ĐƯỢC máy tự điền không cần dịch (tên chủ nhiệm, số người tham gia, xác suất vào nhóm, lịch/tổng thời gian/số lần đến bằng bảng từ cố định, làm mù, các bước chuẩn theo thiết kế); phần CHỮ TỰ DO lấy từ `gate_params.G2.icf_en` (title, institution, purpose, participants, location, arms, funding, coi, reimbursement, injury_compensation, alternative, post_trial_care, new_info_how, follow_up_after_withdrawal, termination, interview_step…) do chủ nhiệm hoặc `hieu-dinh-song-ngu` soạn. Máy KHÔNG dịch máy câu tiếng Việt; khoá vắng ⇒ giữ ô [TO BE COMPLETED].
+- Số điện thoại/email liên hệ của chủ nhiệm và Hội đồng: để dòng kẻ «_______________» cho người điền tay (cổng G2 che như chỗ ký) — không điền số giả, không để ô [CẦN].
+- Đề tài hỗn hợp (`gate_params.G1.mixed_methods`): phiếu VI/EN có thêm bước «Phỏng vấn sâu (chỉ những người được mời)» — thời lượng lấy từ phương pháp thu thập đã chốt, chỉ ghi âm khi đồng ý, từ chối phần phỏng vấn vẫn tiếp tục tham gia nghiên cứu.
+
 <!-- TRACH-NHIEM-AGENT:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## Trách nhiệm trong hội đồng cổng (10/10/2026)
 Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối

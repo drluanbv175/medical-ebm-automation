@@ -86,7 +86,8 @@ def test_tong_so_tieu_chi_da_gan():
     # G5-AUTO-13 (phiếu nộp Hội đồng Đạo đức khớp câu hỏi nhập liệu), G0-AUTO-08 (truy vấn PubMed/ClinicalTrials.gov phủ
     # khái niệm PICO đã chốt) — bác sĩ duyệt đồng bộ xuyên cổng (#268).
     # 16/11/2026: 209 → 210 — thêm G2-AUTO-11 (quyết định đăng ký của PI khớp nghĩa vụ đăng ký — giả lập 8 thiết kế).
-    assert sum(len(v) for v in HD.PHAN_CONG.values()) == 210
+    # 17/11/2026: 210 → 211 — thêm G1-AUTO-02e (khối thiết kế hỗn hợp đủ mục GRAMMS, giao G1-T1).
+    assert sum(len(v) for v in HD.PHAN_CONG.values()) == 211
 
 
 @pytest.mark.parametrize("gate", HD.CONG)

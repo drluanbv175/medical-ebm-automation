@@ -18,6 +18,8 @@ Luật (mỗi lỗi một dòng; rỗng = đạt):
   K6  mọi PMID nằm trong biên nhận rút bài A12 (`A12_RETRACTION_RECEIPT.json`) đã kiểm và sạch;
   K7  không email/số điện thoại (bỏ DOI/URL trước khi dò), không nhãn ô trống [CẦN…] (dòng chấm «………» để PI điền tay
       là hợp lệ).
+  K8  không dấu vết soạn thảo/máy (bác sĩ 17/11/2026): «DRAFT», «bản nháp», «do AI/trí tuệ nhân tạo soạn», «máy soạn/
+      máy sinh», «Cần bác sĩ kiểm chứng», «Mức tự động», chú thích HTML, nhãn «(giả lập)»/«GIẢ LẬP», «hồ sơ chưa có».
 
 Lệnh:  python3 tools/kiem_de_cuong_nop_hoi_dong.py --study <mã> [--json]
 Mã thoát: 0 đạt · 1 có lỗi · 2 thiếu tệp đề cương nộp.
@@ -80,6 +82,17 @@ _KY_HIEU_NOI_BO = (
     (re.compile(r"\b(?:checkpoint|study_meta|pipeline|StudySpec|dry-run|forced-in|complete-case)\b",
                 re.IGNORECASE), "thuật ngữ nội bộ hệ thống"),
     (re.compile(r"\bagent\b", re.IGNORECASE), "«agent»"),
+)
+# K8 (17/11/2026): văn bản nộp đọc như văn bản do nhóm nghiên cứu viết — không còn dấu vết khuôn/máy/bản nháp.
+_DAU_VET_MAY = (
+    (re.compile(r"\bDRAFT\b"), "«DRAFT»"),
+    (re.compile(r"bản\s+nháp", re.IGNORECASE), "«bản nháp»"),
+    (re.compile(r"(?:do|bằng|với hỗ trợ của)\s+(?:AI|trí tuệ nhân tạo)\b|\bAI\s+hỗ trợ soạn", re.IGNORECASE),
+     "«AI soạn»"),
+    (re.compile(r"máy\s+(?:soạn|sinh|tự điền)|tự động sinh", re.IGNORECASE), "«máy soạn/sinh»"),
+    (re.compile(r"cần bác sĩ kiểm chứng|mức tự động", re.IGNORECASE), "lời dặn của hệ"),
+    (re.compile(r"<!--"), "chú thích HTML"),
+    (re.compile(r"GIẢ LẬP|\(giả lập\)|hồ sơ chưa có"), "nhãn giả lập/ô chưa điền"),
 )
 _TEN_BIEN_RE = re.compile(r"(?<![\w./-])[a-z][a-z0-9]*_[a-z0-9_]+\b")
 _DE_MUC_RE = re.compile(r"^(#{1,4})\s+(.*\S)\s*$", re.MULTILINE)
@@ -202,6 +215,11 @@ def kiem(out_dir: Path, study: str) -> List[str]:
     for so, dong in enumerate(md.splitlines(), 1):
         if G10._PLACEHOLDER_RE.search(dong):
             loi.append(f"K7 dòng {so}: nhãn ô trống [CẦN…]/<…>")
+    for so, dong in enumerate(md.splitlines(), 1):
+        for bt, nhan in _DAU_VET_MAY:
+            if bt.search(dong):
+                loi.append(f"K8 dòng {so}: dấu vết soạn thảo/máy ({nhan})")
+                break
     if G10._co_lien_lac_ca_nhan(md) or (docx_chu is not None and G10._co_lien_lac_ca_nhan(docx_chu)):
         loi.append("K7 có email/số điện thoại — PII liên lạc để dòng chấm cho PI điền tay ngoài hệ thống")
     return loi

@@ -56,13 +56,13 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G1 (09/10/2026)
 Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối
-của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Mọi tiêu chí (22) của
+của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Mọi tiêu chí (23) của
 `tools/g1_quality_gate.py` đã gán ĐÚNG MỘT bên ở `hoi_dong_cong.PHAN_CONG`
 (bảng dưới chép lại; test đối chiếu):
 
 | Bên chịu trách nhiệm | Tiêu chí |
 |---|---|
-| `G1-T1` — agent `thiet-ke-nghien-cuu` | G1-AUTO-00, G1-AUTO-02, G1-AUTO-02b, G1-AUTO-02c, G1-AUTO-02d, G1-AUTO-03, G1-AUTO-03b, G1-AUTO-04, G1-AUTO-04b, G1-AUTO-04c, G1-AUTO-05, G1-AUTO-07 |
+| `G1-T1` — agent `thiet-ke-nghien-cuu` | G1-AUTO-00, G1-AUTO-02, G1-AUTO-02b, G1-AUTO-02c, G1-AUTO-02d, G1-AUTO-02e, G1-AUTO-03, G1-AUTO-03b, G1-AUTO-04, G1-AUTO-04b, G1-AUTO-04c, G1-AUTO-05, G1-AUTO-07 |
 | `G1-T2` — agent `tong-quan-y-van` | G1-AUTO-06 |
 | `PI@G1-T1` — NGƯỜI PI quyết/ký; agent chuẩn bị hồ sơ + lệnh: `thiet-ke-nghien-cuu` | G1-HUMAN-01, G1-HUMAN-02, G1-HUMAN-03, G1-HUMAN-04, G1-HUMAN-05, G1-HUMAN-08 |
 | `PI@G1-T2` — NGƯỜI PI quyết/ký; agent chuẩn bị hồ sơ + lệnh: `tong-quan-y-van` | G1-HUMAN-07 |

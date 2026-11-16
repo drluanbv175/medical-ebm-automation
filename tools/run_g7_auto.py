@@ -65,6 +65,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import g7_quality_gate as G7Q  # noqa: E402  (hợp đồng CHẤT LƯỢNG riêng G7)
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung)
+import hon_hop as HH  # noqa: E402  (thiết kế hỗn hợp, 17/11/2026)
 import skill_standards as S  # noqa: E402  (hằng chuẩn dùng chung — Helsinki, 04/10/2026)
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -1780,6 +1781,79 @@ _N_THEO_THIET_KE = {
 }
 
 
+def _sap_tom_tat(out_dir: Path, study: str) -> dict:
+    """Điều đã KHOÁ ở SAP mà bản thảo §6 cần (17/11/2026 — G7 từng để ô «Phân tích độ nhạy: [CẦN — từ SAP]», «Phần mềm:
+    [CẦN …]», «Dữ liệu thiếu: [CẦN …]» dù SAP đã khoá đủ ba mục): §9 độ nhạy, §10 phần mềm, §6 chiến lược dữ liệu thiếu."""
+    try:
+        t = (Path(out_dir) / f"G4_A5_SAP_FINAL_{study}.md").read_text(encoding="utf-8")
+    except OSError:
+        return {}
+
+    def muc(so: int) -> str:
+        m = re.search(rf"^###\s*§\s*{so}\b[^\n]*\n(.*?)(?=^###\s*§|^##\s|\Z)", t, re.MULTILINE | re.DOTALL)
+        return m.group(1) if m else ""
+
+    def sach(x: str) -> str:
+        x = re.sub(r"\s*\*\([^)]*\)\*", "", x)
+        x = re.sub(r"`([^`]*)`", r"\1", x)
+        return x.strip().rstrip(".")
+
+    ra = {}
+    nhay = [sach(m.group(1)) for m in re.finditer(r"^-\s+(?!\*\*)(.+)$", muc(9), re.MULTILINE)]
+    if nhay and not any("[CẦN" in x.upper() for x in nhay):
+        ra["do_nhay"] = "; ".join(x[:1].lower() + x[1:] for x in nhay)
+    pm = re.search(r"\*\*Phần mềm:\*\*\s*(.+)", muc(10))
+    if pm and "[CẦN" not in pm.group(1).upper():
+        ra["phan_mem"] = sach(pm.group(1))
+    ct = re.search(r"\*\*Chiến lược:\*\*\s*(.+)", muc(6))
+    if ct and "[CẦN" not in ct.group(1).upper():
+        ra["du_lieu_thieu"] = sach(ct.group(1))
+    return ra
+
+
+def _hon_hop_g7(out_dir: Path) -> Optional[str]:
+    """Câu mô tả thiết kế HỖN HỢP cho Phương pháp §1 (17/11/2026): mô hình (Creswell & Plano Clark), cấu phần định tính,
+    thời điểm và cách tích hợp; chuẩn báo cáo GRAMMS + COREQ kèm PMID (đã tra PubMed 17/11/2026) để A12 kiểm rút bài
+    trước khi đề cương nộp dẫn hai chuẩn này. Đề tài không khai `gate_params.G1.mixed_methods` ⇒ None."""
+    try:
+        meta = json.loads((Path(out_dir) / "study_meta.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not HH.khoi(meta):
+        return None
+    mt, dt, th = HH.mo_ta(meta), HH.dinh_tinh(meta), HH.tich_hop(meta)
+
+    def _c(x: Any) -> str:
+        x = str(x or "").strip().rstrip(".")
+        return x[:1].lower() + x[1:] if x else ""
+
+    cau = f"Thiết kế hỗn hợp định lượng – định tính theo mô hình {mt['ten']}: {mt['mo_ta']}; {mt['uu_tien']}."
+    if dt.get("central_phenomenon"):
+        cau += (f" Cấu phần định tính tìm hiểu {_c(dt.get('central_phenomenon'))} bằng "
+                f"{_c(dt.get('data_collection_method'))}; phân tích {_c(dt.get('phan_tich'))}.")
+    if th.get("cach"):
+        cau += f" Tích hợp: {_c(th.get('thoi_diem'))}; {_c(th.get('cach'))}."
+    return cau + (" Báo cáo theo GRAMMS (O'Cathain 2008, PMID 18416914) và COREQ cho cấu phần định tính "
+                  "(Tong 2007, PMID 17872937).")
+
+
+def _boi_canh_vn(out_dir: Path) -> Optional[str]:
+    """Lý do cần nghiên cứu tại bối cảnh này = biện minh tính mới PI đã chốt ở G0 (novelty_justification)."""
+    try:
+        g0 = (json.loads((Path(out_dir) / "study_meta.json").read_text(encoding="utf-8")).get("gate_params") or {}
+              ).get("G0") or {}
+    except (OSError, ValueError, AttributeError):
+        return None
+    v = str(g0.get("novelty_justification") or "").strip()
+    v = re.sub(r"\s*\((?:GIẢ LẬP|giả lập)[^)]*\)", "", v)
+    return v if v and "[CẦN" not in v.upper() else None
+
+
+def _ha_dau(x: str) -> str:
+    x = str(x or "").strip()
+    return x[0].lower() + x[1:] if len(x) > 1 and x[0].isupper() and not x[1].isupper() else x
+
+
 def generate_manuscript(
     study: str,
     topic: str,
@@ -1813,7 +1887,10 @@ def generate_manuscript(
     outcome_ordinal: bool = False,
     mien_dong_thuan: bool = False,
     ket_qua_g6: Optional[dict] = None,
-    g3_n_chot: Optional[int] = None,  # 16/11/2026: N PI đã chốt ở G3 (thiết kế không tính theo lực)
+    g3_n_chot: Optional[int] = None,  # 16/11/2026: N PI đã chốt ở G3 (thiết kế không tính theo lực),
+    sap_tom_tat: Optional[dict] = None,
+    boi_canh_vn: Optional[str] = None,
+    hon_hop_cau: Optional[str] = None,
 ) -> str:
     """
     Sinh toàn bộ bản thảo IMRAD skeleton A8.
@@ -2191,9 +2268,10 @@ def generate_manuscript(
         "",
         "**§2 Khoảng trống nghiên cứu:**  ",
         f"Mặc dù có bằng chứng đáng kể trên thế giới{cite_intro_2}, "
-        f"{gaps_text}. "
-        "[CẦN bổ sung: lý do cụ thể vì sao cần nghiên cứu thêm tại bối cảnh này "
-        "(quần thể Việt Nam, hệ thống y tế, gene/lối sống đặc thù…)].  ",
+        f"{_ha_dau(gaps_text)}. "
+        + (f"{boi_canh_vn.rstrip('.')}.  " if boi_canh_vn else
+           "[CẦN bổ sung: lý do cụ thể vì sao cần nghiên cứu thêm tại bối cảnh này "
+           "(quần thể Việt Nam, hệ thống y tế, gene/lối sống đặc thù…)].  "),
         "",
         "**§3 Mục tiêu và giả thuyết:**  ",
         f"Nghiên cứu này sử dụng thiết kế {design_primary} nhằm [CẦN câu hỏi PICO chính]. "
@@ -2207,6 +2285,7 @@ def generate_manuscript(
         "**§1 Loại nghiên cứu và chuẩn báo cáo:**  ",
         f"Đây là nghiên cứu {design_primary}, báo cáo theo chuẩn {reporting_std} "
         f"(xem Phụ lục — Checklist {reporting_std}).  ",
+        *([hon_hop_cau + "  "] if hon_hop_cau else []),
         "",
         "**§2 Đối tượng nghiên cứu:**  ",
         "*Tiêu chí nhận:* [CẦN liệt kê cụ thể theo PICO P và SAP §1]  ",
@@ -2251,10 +2330,10 @@ def generate_manuscript(
         "",
         "**§6 Phân tích thống kê:**  ",
         f"Phân tích theo {sap_lock_text}. "
-        "Phần mềm: [CẦN — R/Stata/SPSS phiên bản]. "
+        f"Phần mềm: {(sap_tom_tat or {}).get('phan_mem') or '[CẦN — R/Stata/SPSS phiên bản]'}. "
         + _method_line +
-        "Phân tích độ nhạy: [CẦN — từ SAP]. "
-        "Dữ liệu thiếu: [CẦN — multiple imputation m=20 hoặc complete case]. "
+        f"Phân tích độ nhạy: {(sap_tom_tat or {}).get('do_nhay') or '[CẦN — từ SAP]'}. "
+        f"Dữ liệu thiếu: {(sap_tom_tat or {}).get('du_lieu_thieu') or '[CẦN — multiple imputation m=20 hoặc complete case]'}. "
         "Ngưỡng ý nghĩa thống kê: α = " + str(alpha) + " (two-sided); "
         "mọi ước lượng kèm 95%CI.  ",
         "",
@@ -3095,6 +3174,9 @@ def main() -> None:
         effect_val=effect_val,
         effect_type=effect_type,
         formula_used=formula_used,
+        sap_tom_tat=_sap_tom_tat(out_dir, study),
+        boi_canh_vn=_boi_canh_vn(out_dir),
+        hon_hop_cau=_hon_hop_g7(out_dir),
         g3_n_chot=g3.get("confirmed_n"),
         g4_status=g4_status,
         g4_lock_date=g4_lock_date,

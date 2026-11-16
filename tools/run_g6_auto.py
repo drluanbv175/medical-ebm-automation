@@ -3079,19 +3079,19 @@ def make_sensitivity_analysis(v: dict, study: str, design_code: str = "cohort", 
 TABLE_SHELLS = {
     "rct": [
         ("Bảng 1 — Đặc điểm nền", [
-            ("Biến", "Can thiệp (N=[CẦN])", "Chứng (N=[CẦN])", "SMD"),
-            ("Tuổi (năm), TB±SD", "[CẦN]", "[CẦN]", "[CẦN]"),
-            ("Giới nữ, n (%)", "[CẦN]", "[CẦN]", "[CẦN]"),
+            ("Biến", "Can thiệp (N=…)", "Chứng (N=…)", "SMD"),
+            ("Tuổi (năm), TB±SD", "…", "…", "…"),
+            ("Giới nữ, n (%)", "…", "…", "…"),
         ]),
         ("Bảng 2 — Kết cục chính (ITT)", [
             ("Phân tích", "Ước lượng", "95%CI", "p"),
-            ("RR/OR thô", "[CẦN]", "[CẦN]", "[CẦN]"),
-            ("RR/OR hiệu chỉnh", "[CẦN]", "[CẦN]", "[CẦN]"),
+            ("RR/OR thô", "…", "…", "…"),
+            ("RR/OR hiệu chỉnh", "…", "…", "…"),
         ]),
     ],
     "cohort": [
         ("Bảng 1 — Đặc điểm nền (tên biến thật từ REDCap — xem scripts/02_tables.R)", [
-            ("Biến", "Phơi nhiễm+ (N=[CẦN])", "Phơi nhiễm- (N=[CẦN])", "SMD / p"),
+            ("Biến", "Phơi nhiễm+ (N=…)", "Phơi nhiễm- (N=…)", "SMD / p"),
             ("Tuổi (năm), TB±SD", "[chạy 02_tables.R]", "[chạy 02_tables.R]", "[chạy]"),
             ("Giới nữ, n (%)", "[chạy 02_tables.R]", "[chạy 02_tables.R]", "[chạy]"),
             ("ĐTĐ, n (%)", "[chạy 02_tables.R]", "[chạy 02_tables.R]", "[chạy]"),
@@ -3122,7 +3122,7 @@ TABLE_SHELLS = {
     # nội tại, guardrail vẫn PASS. Thêm bảng đúng cho từng thiết kế.
     "cross_sectional": [
         ("Bảng 1 — Đặc điểm nền", [
-            ("Biến", "Phơi nhiễm+ (N=[CẦN])", "Phơi nhiễm- (N=[CẦN])", "SMD / p"),
+            ("Biến", "Phơi nhiễm+ (N=…)", "Phơi nhiễm- (N=…)", "SMD / p"),
             ("Tuổi (năm), TB±SD", "[chạy 02_tables.R]", "[chạy 02_tables.R]", "[chạy]"),
             ("Giới nữ, n (%)", "[chạy 02_tables.R]", "[chạy 02_tables.R]", "[chạy]"),
         ]),
@@ -3134,7 +3134,7 @@ TABLE_SHELLS = {
     ],
     "case_control": [
         ("Bảng 1 — Đặc điểm nền (Ca/Chứng)", [
-            ("Biến", "Ca (N=[CẦN])", "Chứng (N=[CẦN])", "p"),
+            ("Biến", "Ca (N=…)", "Chứng (N=…)", "p"),
             ("Tuổi (năm), TB±SD", "[chạy 02_tables.R]", "[chạy 02_tables.R]", "[chạy]"),
             ("Giới nữ, n (%)", "[chạy 02_tables.R]", "[chạy 02_tables.R]", "[chạy]"),
         ]),
@@ -3146,7 +3146,7 @@ TABLE_SHELLS = {
     ],
     "diagnostic": [
         ("Bảng 1 — Đặc điểm nền", [
-            ("Biến", "Bệnh (+) (N=[CẦN])", "Bệnh (-) (N=[CẦN])", "p"),
+            ("Biến", "Bệnh (+) (N=…)", "Bệnh (-) (N=…)", "p"),
             ("Tuổi (năm), TB±SD", "[chạy 02_tables.R]", "[chạy 02_tables.R]", "[chạy]"),
         ]),
         ("Bảng 2 — Độ chính xác chẩn đoán (ROC/AUC)", [
@@ -3164,7 +3164,7 @@ TABLE_SHELLS = {
     "sr_ma": [
         ("Bảng 1 — Đặc điểm nghiên cứu đưa vào", [
             ("Nghiên cứu", "Năm", "Thiết kế", "N", "Hiệu ứng (95%CI)"),
-            ("[trích xuất từ REDCap Extraction]", "[CẦN]", "[CẦN]", "[CẦN]", "[CẦN]"),
+            ("[trích xuất từ REDCap Extraction]", "…", "…", "…", "…"),
         ]),
         ("Bảng 2 — Kết quả gộp (Random-effects)", [
             ("Chỉ số", "Giá trị", "95%CI", "Ghi chú"),
@@ -3181,7 +3181,7 @@ TABLE_SHELLS = {
     # KHÔNG có công thức/số liệu nào được tính sẵn.
     "prediction": [
         ("Bảng 1 — Đặc điểm quần thể phát triển/đánh giá mô hình", [
-            ("Biến", "Phát triển (N=[CẦN])", "Đánh giá (N=[CẦN])", "p"),
+            ("Biến", "Phát triển (N=…)", "Đánh giá (N=…)", "p"),
             ("Tuổi (năm), TB±SD", "[chạy 02_tables.R]", "[chạy 02_tables.R]", "[chạy]"),
             ("Tỷ lệ biến cố/kết cục, n (%)", "[chạy 02_tables.R]", "[chạy 02_tables.R]", "[chạy]"),
         ]),
@@ -3208,15 +3208,15 @@ TABLE_SHELLS = {
     "qualitative": [
         ("Bảng 1 — Đặc điểm người tham gia & bão hòa dữ liệu", [
             ("Biến", "Giá trị", "Ghi chú"),
-            ("Số người tham gia (N)", "[CẦN]", "Đến khi bão hòa dữ liệu"),
-            ("Tuổi (năm), TB±SD hoặc khoảng", "[CẦN]", ""),
-            ("Giới nữ, n (%)", "[CẦN]", ""),
-            ("Phương pháp lấy mẫu", "[CẦN]", "Có chủ đích/lý thuyết"),
-            ("Tiêu chí dừng thu thập", "[CẦN]", "Bão hòa chủ đề — ghi rõ căn cứ"),
+            ("Số người tham gia (N)", "…", "Đến khi bão hòa dữ liệu"),
+            ("Tuổi (năm), TB±SD hoặc khoảng", "…", ""),
+            ("Giới nữ, n (%)", "…", ""),
+            ("Phương pháp lấy mẫu", "…", "Có chủ đích/lý thuyết"),
+            ("Tiêu chí dừng thu thập", "…", "Bão hòa chủ đề — ghi rõ căn cứ"),
         ]),
         ("Bảng 2 — Chủ đề & trích dẫn minh họa (Thematic Analysis)", [
             ("Chủ đề chính", "Chủ đề phụ", "Trích dẫn minh họa (ẩn danh)", "Số người tham gia nhắc đến"),
-            ("[CẦN — mã hóa từ dữ liệu thật]", "[CẦN]", "[CẦN — KHÔNG bịa trích dẫn]", "[CẦN]"),
+            ("[CẦN — mã hóa từ dữ liệu thật]", "…", "[CẦN — KHÔNG bịa trích dẫn]", "…"),
         ]),
     ],
 }
@@ -3720,9 +3720,9 @@ def generate_artifact(study, topic, design_code, reporting_std,
         lines.append("")
 
     _sensitivity_line = (
-        "- [ ] **Sensitivity** (CC vs MI + E-value) nhất quán [CẦN]"
+        "- [ ] **Sensitivity** (CC vs MI + E-value) nhất quán"
         if design_code in ("rct", "cohort", "cross_sectional", "case_control")
-        else f"- [ ] **Đối chiếu độ nhạy** phù hợp thiết kế '{design_code}' (xem PHẦN 5) [CẦN]"
+        else f"- [ ] **Đối chiếu độ nhạy** phù hợp thiết kế '{design_code}' (xem PHẦN 5)"
     )
     lines += [
         "---",
@@ -3746,10 +3746,10 @@ def generate_artifact(study, topic, design_code, reporting_std,
         f"- [{'x' if g4_locked else ' '}] **G4 = LOCKED** trước khi xem dữ liệu"
         + ("" if g4_locked else " [CẦN BÁC SĨ XÁC NHẬN]"),
         "- [ ] **Chạy 01_cleaning.R** — log không lỗi [CẦN BÁC SĨ]",
-        f"- [ ] **Table 1 hoàn chỉnh** theo nhóm `{exposure}` — SMD < 0.2 [CẦN]",
-        f"- [ ] **Kết quả phân tích chính** ({analysis_name}) điền Bảng 2 [CẦN]",
+        f"- [ ] **Table 1 hoàn chỉnh** theo nhóm `{exposure}` — SMD < 0.2",
+        f"- [ ] **Kết quả phân tích chính** ({analysis_name}) điền Bảng 2",
         _sensitivity_line,
-        "- [ ] **Bác sĩ duyệt** kết quả trước khi viết G7 [CẦN]",
+        "- [ ] **Bác sĩ duyệt** kết quả trước khi viết G7",
         "",
         "---",
         "",

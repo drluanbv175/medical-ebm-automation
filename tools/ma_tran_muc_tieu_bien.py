@@ -384,8 +384,13 @@ def kiem(out_dir: Path, study: str, *, meta: Optional[Mapping[str, Any]] = None,
     if not mt:
         vd.append(_van_de("MT-03", "loi", "G1 chưa chốt danh sách mục tiêu (gate_params.G1.objectives) — không đối "
                                           "chiếu được ma trận"))
+    import hon_hop as _HH  # noqa: PLC0415 — thiết kế hỗn hợp (17/11/2026)
+
+    mt_dinh_tinh = _HH.muc_tieu_dinh_tinh(meta) if _HH.khoi(meta) else frozenset()
     for k, muc in enumerate(mt, 1):
         cua = [r for r in dong if str(r.get("muc_tieu") or "").strip() == str(k)]
+        if k in mt_dinh_tinh and not cua:
+            continue  # mục tiêu của cấu phần định tính (đề tài hỗn hợp) — phủ bởi G1.mixed_methods + SAP §17
         if not cua:
             vd.append(_van_de("MT-03", "loi", f"Mục tiêu {k} chưa có dòng nào trong ma trận: «{muc[:120]}»"))
             continue

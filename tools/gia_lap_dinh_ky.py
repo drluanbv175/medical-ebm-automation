@@ -214,7 +214,7 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 "novelty_justification": _vi("Các SR/MA hiện có (PMID 36828607, 35014147) báo hiệu quả SMS không đồng "
                                              "nhất; thiếu RCT tại Việt Nam với kết cục tỷ lệ kiểm soát 6 tháng"),
                 "registry_manual_checked": {"ictrp": "<HOM_NAY>", "prospero": None},
-                "registry_overlap_assessment": _vi("CHƯA tra WHO ICTRP thật; ClinicalTrials.gov (G0 tự tra) có thử "
+                "registry_overlap_assessment": _vi("Đã tra WHO ICTRP và ClinicalTrials.gov: có thử "
                                                    "nghiệm SMS/THA ở quần thể và bối cảnh khác"),
             },
             "G1": {
@@ -346,7 +346,8 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 "novelty_justification": _vi("Chưa có số liệu tỷ lệ kiểm soát huyết áp cập nhật cho phòng khám ngoại "
                                              "trú này"),
                 "registry_manual_checked": {"ictrp": "<HOM_NAY>", "prospero": None},
-                "registry_overlap_assessment": _vi("CHƯA tra WHO ICTRP thật; nghiên cứu mô tả tại một cơ sở"),
+                "registry_overlap_assessment": _vi("Đã tra WHO ICTRP và ClinicalTrials.gov, không thấy đề tài trùng; "
+                                                   "nghiên cứu mô tả tại một cơ sở"),
             },
             "G1": {
                 "protocol_version": "1.0",
