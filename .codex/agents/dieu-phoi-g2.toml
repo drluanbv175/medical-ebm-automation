@@ -128,6 +128,15 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - **Hồ sơ đạo đức lấy NGUYÊN quy trình dữ liệu đã chốt** (`exports/<mã>/_quy-trinh-du-lieu.csv`): TÀI LIỆU 6 (DMP) in khối «Quy trình dữ liệu đã chốt»; đề nghị miễn ICF lấy «Mã hóa» từ cam kết khử định danh/bảng nối và «Kế hoạch hủy» từ lưu trữ/hủy — chưa chốt thì ô `[CẦN PI QUYẾT …]`, KHÔNG viết «không có PII» hay một thời hạn lưu trữ thay PI. Bảng quy trình phải có TRƯỚC khi chạy G2. Đề tài cắt ngang chỉ trích hồ sơ (G1 `data_collection_method` thường quy, không thu mới) ⇒ bảng rủi ro không nói «bộ câu hỏi». Sau khi chạy, khai `neo_g2` cho các cam kết với người tham gia (`an_danh`, `huy_bang_noi`, `luu_tru`) — QT-05.
 - TRDS mục 19 chép NGUYÊN VĂN kết cục chính của G1 ⇒ xác nhận «cùng một kết cục» của chủ nhiệm vẫn hiệu lực (`nhat_quan_xuyen_cong.ban_sao_nguyen_van_cua_tap_da_xac_nhan`); diễn đạt mới ⇒ phải xin xác nhận lại.
 
+## Đề tài tiến cứu và tổng quan phải đăng ký; ICF/PROSPERO không để ô mẫu chung — giả lập trọn vòng 8 thiết kế (16/11/2026)
+- **G2-AUTO-11** chặn sớm khi PI ghim `registration_required=false` cho đề tài TIẾN CỨU tuyển người mới hoặc tổng quan
+  hệ thống (Helsinki §35 — cùng luật `approve_gate`): trước đây cổng báo READY rồi `approve_gate` mới từ chối ký. Tiêu chí
+  gán `PI@G2-T1`.
+- Bộ sinh G2 tự xử lý ô mẫu chung của ICF (đơn vị, nơi thực hiện, dòng ví dụ, lời dặn 6c/6e); lựa chọn THẬT của PI
+  (mục đích, «sẽ/sẽ không» lưu mẫu…) thành ô `[CẦN …]`. Phụ lục PROSPERO lấy PICO đã chốt ở G0/G1; công cụ RoB suy từ loại
+  nghiên cứu được đưa vào (`tools/quyet_dinh_da_chot.py::cong_cu_rob` — RCT ⇒ RoB 2, chẩn đoán ⇒ QUADAS-3, quan sát ⇒
+  ROBINS-I/E; không suy được ⇒ PI chọn).
+
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G2` xác nhận/dấu vân tay · bật cờ đời thực trong
 `study_meta` · chấm đầu ra do chính mình làm · ghi biên bản «ĐỒNG THUẬN» như «ĐẠT CỔNG» · bịa căn cứ · báo «phần agent hoàn chỉnh» khi `trach-nhiem` chưa ra mã 0 · sửa artifact của cổng khác để «xanh» tiêu chí

@@ -457,6 +457,27 @@ def table1_descriptive(df: pd.DataFrame, group_col: str, vars_: list, kiem_dinh_
 # 5. KẾT CỤC CHÍNH — So sánh 2 nhóm
 # ════════════════════════════════════════════════════════════════════════════
 
+# 16/11/2026 (giả lập trọn vòng 8 thiết kế — bệnh–chứng): lấy mẫu THEO tình trạng bệnh ⇒ tỷ lệ «ca» trong từng nhóm
+# phơi nhiễm do người nghiên cứu ấn định (tỷ lệ ca:chứng), nên hiệu số/tỷ số nguy cơ KHÔNG ước lượng được — chỉ OR có
+# nghĩa. Engine từng ghi «Risk difference» vào Bảng 2 của đề tài bệnh–chứng và người diễn giải có thể chép nó như nguy
+# cơ tuyệt đối.
+HIEU_SO_KHONG_AP_DUNG_BENH_CHUNG = (
+    "Thiết kế bệnh–chứng: lấy mẫu theo tình trạng bệnh nên hiệu số nguy cơ KHÔNG ước lượng được — chỉ báo OR "
+    "(odds phơi nhiễm ở nhóm bệnh so với nhóm chứng)")
+
+
+def bo_hieu_so_benh_chung(res: dict) -> dict:
+    """Gỡ hiệu số nguy cơ (kể cả bản hiệu chỉnh cụm) khỏi kết quả kết cục chính của đề tài bệnh–chứng, ghi lý do."""
+    if not isinstance(res, dict) or res.get("error") or res.get("outcome_type") != "binary":
+        return res
+    ra = {k: v for k, v in res.items() if k not in ("risk_diff", "risk_diff_ci_95")}
+    if isinstance(ra.get("cum"), dict):
+        ra["cum"] = {k: v for k, v in ra["cum"].items()
+                     if k not in ("risk_diff_cum", "risk_diff_ci_95_cum", "p_rd_cum")}
+    ra["hieu_so_khong_ap_dung"] = HIEU_SO_KHONG_AP_DUNG_BENH_CHUNG
+    return ra
+
+
 def compare_primary_outcome(df: pd.DataFrame, outcome_col: str,
                              group_col: str, outcome_type: str = "auto",
                              cluster_col: str | None = None) -> dict:
@@ -2008,15 +2029,25 @@ def format_multivariate_text(mv: dict) -> str:
     return "\n".join(lines)
 
 
-def format_poisson_text(pr: dict) -> str:
-    """Bảng PR thô + hiệu chỉnh (Poisson log-link, SE vững HC0)."""
+# 16/11/2026 (giả lập trọn vòng — RCT/thuần tập): cùng mô hình Poisson vững nhưng kết cục của thử nghiệm/thuần tập là
+# nguy cơ TÍCH LUỸ ⇒ tỷ số là nguy cơ tương đối (RR), không phải «tỷ lệ hiện mắc». Bảng cũ in «PR — tỷ lệ hiện mắc» cho
+# mọi thiết kế; người phản biện giả lập phải góp ý gọi đúng RR. Khoá JSON (PR/PR_adj) giữ nguyên — hợp đồng dữ liệu.
+THIET_KE_NGUY_CO_TICH_LUY = ("rct", "cohort")
+
+
+def format_poisson_text(pr: dict, design_code: str | None = None) -> str:
+    """Bảng PR/RR thô + hiệu chỉnh (Poisson log-link, SE vững HC0)."""
     if pr.get("error"):
         return f"POISSON VỮNG (PR) — LỖI: {pr['error']}\n{pr.get('note', '')}\nCần bác sĩ kiểm chứng.\n"
-    dong = ["BẢNG 4 — HỒI QUY POISSON LIÊN KẾT LOG, PHƯƠNG SAI VỮNG HC0 (tỷ số tỷ lệ hiện mắc, PR)",
+    rr = design_code in THIET_KE_NGUY_CO_TICH_LUY
+    ty_so = "RR" if rr else "PR"
+    tieu_de = (f"tỷ số nguy cơ — nguy cơ tương đối, RR (thiết kế {design_code}: nguy cơ tích luỹ)" if rr
+               else "tỷ số tỷ lệ hiện mắc, PR")
+    dong = [f"BẢNG 4 — HỒI QUY POISSON LIÊN KẾT LOG, PHƯƠNG SAI VỮNG HC0 ({tieu_de})",
             f"Zou 2004 (PMID 15033648) · n = {pr['n']} ca đầy đủ dữ liệu · {pr['n_bien_co']} biến cố",
-            "PR thô và hiệu chỉnh trên CÙNG tập ca. Biến phân loại: <cột>_<mã> so với mã tham chiếu.", ""]
-    for nhan, ds, khoa in (("PR THÔ (từng biến)", pr.get("tho") or [], "PR"),
-                           ("PR HIỆU CHỈNH (mô hình đầy đủ)", pr.get("results") or [], "PR_adj")):
+            f"{ty_so} thô và hiệu chỉnh trên CÙNG tập ca. Biến phân loại: <cột>_<mã> so với mã tham chiếu.", ""]
+    for nhan, ds, khoa in ((f"{ty_so} THÔ (từng biến)", pr.get("tho") or [], "PR"),
+                           (f"{ty_so} HIỆU CHỈNH (mô hình đầy đủ)", pr.get("results") or [], "PR_adj")):
         dong.append(nhan)
         for r in ds:
             ci = r.get("CI_95") or [None, None]
@@ -2150,6 +2181,11 @@ def _generate_r_script_survival(study: str, gate: str, time_col: str, event_col:
         'data <- read.csv("data.csv")  # hoặc read.xlsx\n\n'
         "# 2. Bảng 1\n"
         f'vars_all <- setdiff(names(data), c("{group_col}", "{event_col}", "{time_col}"))\n'
+        '# Bỏ cột MÃ và biến HẰNG (vd giới sau lọc nhóm con): CreateTableOne treo với mã nhiều mức (16/11/2026)\n'
+        'vars_all <- setdiff(vars_all, c("record_id", "study_id", "ma_nguoi_tham_gia", "participant_id",'
+        ' "transcript_id"))\n'
+        'vars_all <- vars_all[vapply(data[vars_all], function(x) length(unique(stats::na.omit(x))) > 1,'
+        ' logical(1))]\n'
         f'tab1 <- CreateTableOne(vars = vars_all, strata = "{group_col}", data = data)\n'
         "print(tab1, showAllLevels = TRUE, smd = TRUE)\n\n"
         f'# 3. Kaplan-Meier + log-rank\n'
@@ -2242,8 +2278,10 @@ def generate_r_script(study: str, gate: str, outcome_col: str, group_col: str,
                  else "cbind(beta = coef(model_adj), confint(model_adj))")
     hosmer_block = (
         "# Hosmer-Lemeshow (logistic)\n"
-        "library(ResourceSelection)\n"
-        f"hoslem.test(data${outcome_col}, fitted(model_adj))"
+        # 16/11/2026: gói tuỳ chọn — thiếu thì báo cách cài, KHÔNG dừng cả kịch bản tái lặp (máy bác sĩ chưa cài)
+        'if (requireNamespace("ResourceSelection", quietly = TRUE)) {\n'
+        f"  print(ResourceSelection::hoslem.test(data${outcome_col}, fitted(model_adj)))\n"
+        "} else message(\"Chưa cài gói ResourceSelection (Hosmer-Lemeshow): install.packages('ResourceSelection')\")"
         if family == "binomial" else ""
     )
     if cluster_col:
@@ -2287,6 +2325,11 @@ def generate_r_script(study: str, gate: str, outcome_col: str, group_col: str,
         'data <- read.csv("data.csv")  # hoặc read.xlsx\n\n'
         "# 2. Bảng 1\n"
         f'vars_all <- setdiff(names(data), c("{group_col}", "{outcome_col}"))\n'
+        '# Bỏ cột MÃ và biến HẰNG (vd giới sau lọc nhóm con): CreateTableOne treo với mã nhiều mức (16/11/2026)\n'
+        'vars_all <- setdiff(vars_all, c("record_id", "study_id", "ma_nguoi_tham_gia", "participant_id",'
+        ' "transcript_id"))\n'
+        'vars_all <- vars_all[vapply(data[vars_all], function(x) length(unique(stats::na.omit(x))) > 1,'
+        ' logical(1))]\n'
         f'tab1 <- CreateTableOne(vars = vars_all, strata = "{group_col}", data = data)\n'
         "print(tab1, showAllLevels = TRUE, smd = TRUE)\n\n"
         f"# 3. Kết cục chính\n{model_comment}\n"
@@ -2922,11 +2965,15 @@ def main():
             else:
                 res = compare_primary_outcome(df, args.outcome, args.group,
                                               "binary" if poisson else args.outcome_type, cot_cum)
+                if design_code == "case_control":
+                    res = bo_hieu_so_benh_chung(res)
         except (ZeroDivisionError, ValueError) as exc:
             res = {"error": f"Lỗi tính kết cục chính: {exc}",
                    "note": "[CẦN BIOSTATISTICIAN — kiểm tra dữ liệu]"}
         hypothesis_interp = interpret_hypothesis_type(res, hypothesis_type, hypothesis_margin)
         res_txt = format_outcome_text(res, args.outcome, hypothesis_interp)
+        if res.get("hieu_so_khong_ap_dung"):
+            res_txt = res_txt.rstrip("\n") + f"\n  Hiệu số nguy cơ: không báo — {res['hieu_so_khong_ap_dung']}\n"
         (prefix.parent / f"{args.gate}_table2_main_outcome.txt").write_text(res_txt, encoding="utf-8", newline="\n")
         summary["primary_outcome"] = res
         if hypothesis_interp:
@@ -2946,7 +2993,7 @@ def main():
         if poisson:
             mv = poisson_pr_model(df, args.outcome, args.group, covariates, bien_gia, cot_cum)
             (prefix.parent / f"{args.gate}_table4_poisson_pr.txt").write_text(
-                format_poisson_text(mv), encoding="utf-8", newline="\n")
+                format_poisson_text(mv, design_code), encoding="utf-8", newline="\n")
             summary["poisson_pr"] = mv
         else:
             mv = multivariate_model(df, args.outcome, args.group, covariates_mh, args.outcome_type, cot_cum)

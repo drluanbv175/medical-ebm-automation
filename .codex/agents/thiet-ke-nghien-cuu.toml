@@ -493,6 +493,11 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact sap
 - **Thời điểm đo kết cục chính phải ghi ở MỌI nơi và cùng mốc:** G0 `primary_outcome_timepoint` · G1 `primary_outcome.timepoint` · TRDS mục 19 (`timepoint`) · SAP §2 dòng «**Thời điểm đo:**» (chép NGUYÊN VĂN G1). Máy đo bằng trục `thoi_diem_ket_cuc` của `nhat_quan_xuyen_cong`: khoảng thời gian («12 tháng», «30 ngày») hoặc mốc ngày («01/01–31/12/2026») khác nhau giữa các nơi ⇒ LỆCH MỀM (đổi thời điểm là một dạng đổi kết cục — chủ nhiệm giải trình); nơi có mốc nơi không, hoặc SAP §2 thiếu thời điểm ⇒ CẦN XEM.
 - Nhãn mục tiêu trong ngoặc ở SAP («**Kết cục chính (MT1):**») nay được đọc; trước 15/11 máy bỏ sót SAP BTM ở trục kết cục chính — kiểm lại đúng tập nguồn trước khi xin chủ nhiệm xác nhận «cùng một kết cục» (xác nhận chỉ phủ tập nguồn lúc ký).
 
+## Bài học giả lập trọn vòng 8 thiết kế (16/11/2026)
+- SAP tổng quan–gộp có khung riêng (gộp cấp nghiên cứu): không đưa EPV/VIF, gán đa trị MI, «±1 SD», mice vào SAP
+  `sr_ma` — đó là khuôn nghiên cứu cá thể; dữ liệu thiếu xử lý ở CẤP NGHIÊN CỨU (liên hệ tác giả, ghi lại, độ nhạy).
+- SAP định tính lấy cách tiếp cận, tiêu chí bão hoà, chiến lược chọn mẫu đã chốt ở G1; khung Lincoln & Guba ở §9.
+
 ## Ranh giới
 KHÔNG tự tính cỡ mẫu chi tiết (giao `co-mau-nghien-cuu`) · KHÔNG chạy phân tích trên dữ liệu thật (`phan-tich-thong-ke` sau G5) · KHÔNG viết Bàn luận (`viet-ban-thao`).
 

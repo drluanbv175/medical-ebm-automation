@@ -907,6 +907,11 @@ class TronVong:
         if not sap.is_file():
             return
         s = sap.read_text(encoding="utf-8")
+        # 16/11/2026: §5 của định tính (chiến lược mã hoá) và tổng quan–gộp (tổng hợp cấp nghiên cứu) không có mô hình
+        # hồi quy cá thể — G4-AUTO-04 miễn; thống kê viên không chèn EPV/VIF (bản cũ chèn «EPV ≈ 4 biến cố» vào SAP
+        # định tính)
+        if re.search(r"### §5 (?:CHIẾN LƯỢC MÃ HÓA|TỔNG HỢP ĐỊNH LƯỢNG)", s):
+            return
         than5 = re.search(r"(### §5[^\n]*\n)(.*?)(?=\n### §6|\Z)", s, re.S)
         if not than5 or re.search(r"\b(EPV|EPP|VIF|pmsampsize)\b", than5.group(2)):
             return
@@ -937,7 +942,7 @@ class TronVong:
         text = sap.read_text(encoding="utf-8")
         chinh = next(x for x in mau if x.get("vai") == "chinh")
         ts_chinh = dict(chinh["tham_so"])
-        if ts_chinh.get("outcome") and "outcome_type" not in ts_chinh:
+        if ts_chinh.get("outcome") and "outcome_type" not in ts_chinh and not ts_chinh.get("loai_dac_thu"):
             ts_chinh["outcome_type"] = loai_kc_tu_sap(text)
         ds: List[Dict[str, Any]] = []
         for x in mau:
@@ -968,6 +973,18 @@ class TronVong:
     DONG_MO_HINH_CHINH = re.compile(r"^# ((?:df <- readRDS|extracted <- read\.csv|stopifnot\(identical\(attr\(df|"
                                     r"fit_\w+ <- |lmtest::coeftest\(fit_|(?=[^\n]*◆ MÔ HÌNH CHÍNH))[^\n]*)$", re.M)
 
+    def _cong_thuc_phai_sinh(self) -> None:
+        """Thống kê viên soạn công thức biến PHÁI SINH từ trường calc của từ điển (vd FIB-4) rồi ghi duyệt — đúng quy
+        trình bien_phai_sinh (soan-tu-calc → duyet), CHỈ trên đề tài tổng hợp trong thư mục tạm (16/11/2026)."""
+        td = self.out / f"G5_REDCap_dictionary_{self.study}.csv"
+        if not td.is_file() or ",calc," not in td.read_text(encoding="utf-8"):
+            return
+        self.chay("G6 soạn công thức phái sinh từ calc", "bien_phai_sinh.py", "soan-tu-calc", "--study", self.study,
+                  "--ghi")
+        r = self.chay("G6 thống kê viên duyệt công thức phái sinh", "bien_phai_sinh.py", "duyet", "--study",
+                      self.study, "--vai", "THONG_KE_VIEN", "--tham-chieu", "GIA-LAP-TKV", "--ap-dung")
+        self.du_lieu["phai_sinh"] = {"ma": r.get("ma"), "cuoi": r["dong"][-2:]}
+
     def _bat_mo_hinh_chinh(self) -> None:
         p = self.out / "scripts" / "03_analysis.R"
         if p.is_file():
@@ -982,6 +999,7 @@ class TronVong:
         self.chay("G6 sinh script phân tích", "run_g6_auto.py", "--study", self.study)
         a7 = self.out / f"G6_A7_ANALYSIS_SCRIPTS_{self.study}.md"
         self.hoan_thien_tep("G6", a7, list(TRA_LOI_CHUNG), {})
+        self._cong_thuc_phai_sinh()
         dt = self._dac_ta_g6()
         if dt:
             self.chay("G6 kiểm đặc tả SAP", "chay_sap_g6.py", "kiem", "--study", self.study)
@@ -1009,18 +1027,57 @@ class TronVong:
         self.do_truc("sau_G6")
 
     # ── G6.5: bản diễn giải — người diễn giải chép số TỪ tóm tắt phân tích, dẫn đúng tệp kết quả engine ghi
+    # Thước đo người diễn giải có thể chép (16/11/2026 — mở rộng từ thuần tập ra 8 thiết kế): mỗi thước đo đọc ĐÚNG khoá
+    # engine ghi và dẫn ĐÚNG tệp kết quả chứa số đó (bản diễn giải đối chiếu số với tệp nguồn).
+    THUOC_DO = ("pr_hieu_chinh", "pr_tho", "hieu_so_nguy_co", "or_hieu_chinh", "or_tho", "ty_le", "auc", "do_nhay",
+                "do_dac_hieu", "ppv", "npv", "c_statistic", "rr_gop", "rr_gop_co_dinh", "chu_de_1")
+
     def _uoc_luong(self, lay: str, gate: str) -> Optional[Dict[str, Any]]:
         tom = _doc_json(self.out / f"{gate}_analysis_summary.json")
         nhom = (tom.get("dac_ta_phan_tich") or {}).get("group")
-        if lay == "pr_hieu_chinh":
-            r = next((x for x in (tom.get("poisson_pr") or {}).get("results") or [] if x.get("variable") == nhom), None)
-            return r and {"uoc": r["PR_adj"], "ci": r["CI_95"], "p": r.get("p"),
-                          "nguon": f"{gate}_table4_poisson_pr.txt", "so_le": 2}
+        dt = tom.get("dac_thu") or {}
+        tep_tom = f"{gate}_analysis_summary.json"
+
+        def kq(uoc: Any, ci: Any, p: Any, nguon: str, so_le: int, he: float = 1.0) -> Optional[Dict[str, Any]]:
+            if uoc is None or not ci or None in ci:
+                return None
+            return {"uoc": he * uoc, "ci": [he * ci[0], he * ci[1]], "p": p, "nguon": nguon, "so_le": so_le}
+
+        def theo_bien(ds: Any, khoa: str) -> Optional[Dict[str, Any]]:
+            return next((x for x in ds or [] if x.get("variable") == nhom and x.get(khoa) is not None), None)
+
+        if lay in ("pr_hieu_chinh", "pr_tho"):
+            khoi = tom.get("poisson_pr") or {}
+            r = theo_bien(khoi.get("results" if lay == "pr_hieu_chinh" else "tho"),
+                          "PR_adj" if lay == "pr_hieu_chinh" else "PR")
+            return r and kq(r.get("PR_adj", r.get("PR")), r.get("CI_95"), r.get("p"),
+                            f"{gate}_table4_poisson_pr.txt", 2)
         if lay == "hieu_so_nguy_co":
             pc = tom.get("primary_outcome") or {}
-            return pc.get("risk_diff") is not None and {
-                "uoc": pc["risk_diff"], "ci": pc["risk_diff_ci_95"], "p": pc.get("p_value"),
-                "nguon": f"{gate}_table2_main_outcome.txt", "so_le": 3} or None
+            return kq(pc.get("risk_diff"), pc.get("risk_diff_ci_95"), pc.get("p_value"),
+                      f"{gate}_table2_main_outcome.txt", 3)
+        if lay == "or_hieu_chinh":
+            r = theo_bien((tom.get("multivariate") or {}).get("results"), "OR_adj")
+            return r and kq(r["OR_adj"], r.get("CI_95"), r.get("p"), f"{gate}_table4_multivariate.txt", 2)
+        if lay == "or_tho":
+            pc = tom.get("primary_outcome") or {}
+            return kq(pc.get("or_crude"), pc.get("ci_95"), pc.get("p_value"), f"{gate}_table2_main_outcome.txt", 2)
+        if lay == "ty_le":
+            t = next(iter(tom.get("ty_le") or []), None) or {}
+            return kq(t.get("ty_le"), t.get("CI_95_wilson_doc_lap"), None, f"{gate}_table1b_proportions.txt", 1, 100.0)
+        if lay in ("do_nhay", "do_dac_hieu", "ppv", "npv"):
+            t = dt.get(lay) or {}
+            return kq(t.get("uoc_luong"), t.get("ci_95_wilson"), None, tep_tom, 2)
+        if lay in ("auc", "c_statistic"):
+            t = dt.get(lay) or {}
+            return kq(t.get("auc"), t.get("ci_95"), None, tep_tom, 2)
+        if lay == "rr_gop":
+            return kq(dt.get("rr_gop_ngau_nhien"), dt.get("ci_95"), None, tep_tom, 2)
+        if lay == "rr_gop_co_dinh":
+            return kq(dt.get("rr_gop_co_dinh"), dt.get("ci_95_co_dinh"), None, tep_tom, 2)
+        if lay == "chu_de_1":
+            t = next(iter(dt.get("chu_de") or []), None) or {}
+            return kq(t.get("ty_le"), t.get("ci_95_wilson"), None, tep_tom, 2)
         return None
 
     @staticmethod
@@ -1035,6 +1092,7 @@ class TronVong:
         import dien_giai_ket_qua as DG  # noqa: PLC0415
 
         hang = []
+        gt = self._gia_tri_ket_qua()
         for r in dg["bang"]:
             u = self._uoc_luong(r["lay"], r["gate"])
             if not u:
@@ -1042,10 +1100,9 @@ class TronVong:
                 continue
             p = u["p"]
             p_txt = "—" if p is None else ("< 0,001" if p < 0.001 else self._so_vn(p, 3))
-            hang.append(f"| {r['ket_cuc']} | {r['thuoc_do']} | {self._so_vn(u['uoc'], u['so_le'])} | "
+            hang.append(f"| {r['ket_cuc'].format(**gt)} | {r['thuoc_do']} | {self._so_vn(u['uoc'], u['so_le'])} | "
                         f"{self._so_vn(u['ci'][0], u['so_le'])}–{self._so_vn(u['ci'][1], u['so_le'])} | {p_txt} | "
-                        f"{r['y_nghia']} | `{u['nguon']}` |")
-        gt = self._gia_tri_ket_qua()
+                        f"{r['y_nghia'].format(**gt)} | `{u['nguon']}` |")
         bang = ("| " + " | ".join(DG.COT_BANG_CHINH) + " |\n|" + "---|" * len(DG.COT_BANG_CHINH) + "\n"
                 + "\n".join(hang) + "\n")
         van = (f"# Diễn giải kết quả — {self.study}\n\n> {NHAN_MO_PHONG}\n\n"
@@ -1059,19 +1116,56 @@ class TronVong:
                              "loi": [d for d in r["dong"] if d.lstrip().startswith(("✗", "-", "•"))][:12]}
 
     def _gia_tri_ket_qua(self) -> Dict[str, Any]:
-        """Số của phân tích chính để điền lời văn (G6.5, G7…) — luôn đọc lại tệp kết quả, không giữ trong bộ nhớ."""
-        chinh = self._uoc_luong("pr_hieu_chinh", "G6") or {}
-        rd = self._uoc_luong("hieu_so_nguy_co", "G6") or {}
+        """Số của phân tích chính để điền lời văn (G6.5, G7…) — luôn đọc lại tệp kết quả, không giữ trong bộ nhớ.
+
+        Mỗi thước đo có trong tóm tắt G6 cho bốn khoá «{ten}», «{ten}_duoi», «{ten}_tren», «{ten}_p» (định dạng Việt,
+        đúng số lẻ bản diễn giải dùng) — lời văn của hồ sơ từng thiết kế chỉ dùng chỗ giữ của thước đo thiết kế đó có;
+        chỗ giữ không có ⇒ KeyError (lộ ngay, không điền rỗng)."""
         tom = _doc_json(self.out / "G6_analysis_summary.json")
         pc = tom.get("primary_outcome") or {}
+        dt = tom.get("dac_thu") or {}
+        gt: Dict[str, Any] = {"n": tom.get("n_total")}
+        for ten in self.THUOC_DO:
+            u = self._uoc_luong(ten, "G6")
+            if not u:
+                continue
+            le = u["so_le"]
+            gt.update({ten: self._so_vn(u["uoc"], le), f"{ten}_duoi": self._so_vn(u["ci"][0], le),
+                       f"{ten}_tren": self._so_vn(u["ci"][1], le),
+                       f"{ten}_p": "—" if u["p"] is None else ("< 0,001" if u["p"] < 0.001
+                                                                else self._so_vn(u["p"], 3))})
+        # Khoá cũ của thuần tập (hồ sơ 15/11/2026) — giữ nguyên nghĩa
+        chinh = self._uoc_luong("pr_hieu_chinh", "G6") or {}
+        rd = self._uoc_luong("hieu_so_nguy_co", "G6") or {}
         ci = chinh.get("ci") or [0, 0]
-        return {"rr": self._so_vn(chinh.get("uoc", 0), 2), "rr_duoi": self._so_vn(ci[0], 2),
-                "rr_tren": self._so_vn(ci[1], 2), "rd_phan_tram": self._so_vn(100 * rd.get("uoc", 0), 1),
-                "pct1": self._so_vn((pc.get("group_1") or {}).get("pct", 0), 1),
-                "pct0": self._so_vn((pc.get("group_0") or {}).get("pct", 0), 1),
-                "nnh": round(1 / rd["uoc"]) if rd.get("uoc") else "—", "n": tom.get("n_total"),
-                "bien_co": (tom.get("poisson_pr") or {}).get("n_bien_co"),
-                "p": "< 0,001" if (chinh.get("p") or 1) < 0.001 else self._so_vn(chinh.get("p") or 0, 3)}
+        gt.update({"rr": self._so_vn(chinh.get("uoc", 0), 2), "rr_duoi": self._so_vn(ci[0], 2),
+                   "rr_tren": self._so_vn(ci[1], 2), "rd_phan_tram": self._so_vn(100 * rd.get("uoc", 0), 1),
+                   "pct1": self._so_vn((pc.get("group_1") or {}).get("pct", 0), 1),
+                   "pct0": self._so_vn((pc.get("group_0") or {}).get("pct", 0), 1),
+                   "nnh": round(1 / rd["uoc"]) if rd.get("uoc") else "—",
+                   "bien_co": (tom.get("poisson_pr") or {}).get("n_bien_co"),
+                   "p": "< 0,001" if (chinh.get("p") or 1) < 0.001 else self._so_vn(chinh.get("p") or 0, 3)})
+        # Số đếm/thống kê phụ của phân tích đặc thù (đọc thẳng khoá engine ghi)
+        bang = dt.get("bang_2x2") or {}
+        gt.update({f"so_{k}": v for k, v in bang.items() if k != "nguong"})
+        if "nguong" in bang:
+            gt["nguong"] = self._so_vn(bang["nguong"], 2)
+        for k in ("lr_duong", "lr_am", "brier", "i2_pct", "tau2"):
+            if isinstance(dt.get(k), (int, float)):
+                gt[k] = self._so_vn(dt[k], 3 if k in ("brier", "tau2") else (1 if k == "i2_pct" else 2))
+        for k in ("k", "epv", "n_ban_go_bang", "so_chu_de"):
+            if dt.get(k) is not None:
+                gt[k] = dt[k]
+        for i, cd in enumerate(dt.get("chu_de") or [], 1):
+            gt[f"chu_de_{i}_ten"] = cd.get("chu_de")
+            gt[f"chu_de_{i}_n"] = cd.get("n")
+        t = next(iter(tom.get("ty_le") or []), None) or {}
+        if t:
+            gt.update({"so_su_kien": t.get("so_su_kien"), "n_ty_le": t.get("n")})
+        if pc.get("group_1"):
+            gt.update({"n1": pc["group_1"].get("n"), "n0": (pc.get("group_0") or {}).get("n"),
+                       "su_kien1": pc["group_1"].get("events"), "su_kien0": (pc.get("group_0") or {}).get("events")})
+        return gt
 
     def _env_mang(self) -> Dict[str, str]:
         """Môi trường cho bước TRA CỨU mạng (kiểm trích dẫn): như phần A — bỏ biến pytest và khoá giả (bước này không
@@ -1079,11 +1173,11 @@ class TronVong:
         return {k: v for k, v in self.env.items()
                 if not k.startswith("PYTEST_") and k not in ("EBM_GATE_KEY_PATH", "USE_MOCK_SOURCES")}
 
-    def _a12(self, *tep: Path) -> None:
-        """Người kiểm trích dẫn: mọi PMID trong các tệp ⇒ check_citations (rút bài 3 tầng + metadata, ghi receipt) ⇒
-        A12 chỉ ghi dòng «đã xác minh» khi lệnh trả 0."""
+    def _a12(self, *tep: Path, them: Sequence[str] = ()) -> None:
+        """Người kiểm trích dẫn: mọi PMID trong các tệp (+ `them`: PMID chuẩn đề cương G10 sẽ chèn) ⇒ check_citations
+        (rút bài 3 tầng + metadata, ghi receipt) ⇒ A12 chỉ ghi dòng «đã xác minh» khi lệnh trả 0."""
         pmid = sorted({x for t in tep if t.is_file() for x in re.findall(r"PMID[:\s]*(\d{6,9})",
-                                                                         t.read_text(encoding="utf-8"))})
+                                                                         t.read_text(encoding="utf-8"))} | set(them))
         if not pmid:
             return
         # Hai bước TÁCH: (1) tra mạng KHÔNG --study ⇒ không ký gì, dùng cấu hình nguồn thật (dưới pytest app.config
@@ -1152,7 +1246,16 @@ class TronVong:
         tl = [(m, v.format(**gt)) for m, v in hs.get("tra_loi_G7", [])]
         self.hoan_thien_tep("G7", a8, tl + list(TRA_LOI_CHUNG), {})
         self._bien_tap_ban_nop(a8)
-        self._a12(a8, self.out / f"G6_DIEN_GIAI_{self.study}.md")
+        import protocol_checklist_items as PCI  # noqa: PLC0415
+
+        # 16/11/2026: người kiểm trích dẫn phủ MỌI PMID mà gói phát hành sẽ trích TRƯỚC khi G9 khoá — gồm đề cương G10
+        # (nguồn cỡ mẫu G3, chuẩn báo cáo, PMID chuẩn đề cương SPIRIT 2025 / PRISMA-P 2015). Kiểm muộn ở G10 thì ghi lại
+        # biên nhận A12 làm vỡ manifest G9 đã khoá (RCT: 20332511, 35342691; tổng quan: 25554246). Bản nháp đề cương
+        # dựng ở đây chỉ để đọc PMID — G10 dựng lại sau G9.
+        self.chay("G7 dựng nháp đề cương G10 (liệt kê PMID gói sẽ trích)", "run_g10_assemble.py", "--study", self.study)
+        self._a12(a8, self.out / f"G6_DIEN_GIAI_{self.study}.md", self.out / f"DE_CUONG_THONG_NHAT_{self.study}.md",
+                  them=sorted(PCI.pmid_tai_lieu_chuan(self._cp("G1").get("design", {}).get("internal_code")
+                                                      or self._cp("G3").get("design_code") or "")))
         import cong_song as CS  # noqa: PLC0415
 
         meta = self._meta()
@@ -1327,8 +1430,10 @@ Kết luận tổng thể: sẵn sàng nộp (sau khi xử lý các góp ý nh�
                               "human_verification_confirmed": True, "sensitive_or_confidential_data_uploaded": False,
                               "ai_not_author_confirmed": True, "manuscript_statement_final": True,
                               "cover_letter_statement_final": True, "confirmed_at": nay}
+        thu_nghiem = self.kb.get("design_code") == "rct" or "rct" in str(self.ma)
         d["data_availability"] = {**(d.get("data_availability") or {}), "decision": "NOT_SHARED_WITH_JUSTIFICATION",
-                                  "statement_final": True, "clinical_trial": False,
+                                  "statement_final": True, "clinical_trial": thu_nghiem,
+                                  "registry_statement_consistent": True if thu_nghiem else None,
                                   "access_criteria": "Dữ liệu mô phỏng của bộ giả lập — không có dữ liệu người thật để "
                                                      "chia sẻ; kịch bản phân tích kèm gói phát hành"}
         d["data_access_governance"] = {**(d.get("data_access_governance") or {}),

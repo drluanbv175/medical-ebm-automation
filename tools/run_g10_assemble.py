@@ -397,7 +397,18 @@ def sec_datvande(cps, meta) -> str:
     ev = _g(cps["G0"], "evidence_level", default=TAG_BS)
     n_sr = _g(cps["G0"], "pubmed_results", "n_pmids", default="?")
     gaps = _g(cps["G0"], "research_gaps", default=[]) or []
-    gap_txt = "\n".join(f"- {x}" for x in gaps) if gaps else f"- {TAG_BS}"
+    # SỬA 16/11/2026 (giả lập trọn vòng — tổng quan/định tính): StudySpec đã ưu tiên khoảng trống do NGƯỜI viết từ
+    # 10/10/2026 nhưng mục Đặt vấn đề vẫn in danh sách máy suy từ số hit (kể cả câu «hệ không suy ra được» kèm nhãn
+    # chờ điền) dù PI đã viết khoảng trống ở G1 ⇒ G10-AUTO-09 chặn đề cương. Cùng thứ tự với StudySpec.
+    gap_nguoi = next((v for v in (meta.get("evidence_gap"), meta.get("research_gap"),
+                                  _gp(meta, "G1").get("knowledge_gap"), _gp(meta, "G0").get("novelty_justification"))
+                      if RS.is_present(v)), None)
+    if gap_nguoi is not None:
+        tin_hieu = [x for x in gaps if "[CẦN" not in str(x)]
+        gap_txt = (f"- {_text(gap_nguoi)} *(chủ nhiệm xác định — đã chốt ở G0/G1)*"
+                   + "".join(f"\n- Tín hiệu máy từ số hit PubMed (tham khảo): {x}" for x in tin_hieu))
+    else:
+        gap_txt = "\n".join(f"- {x}" for x in gaps) if gaps else f"- {TAG_BS}"
     background = (
         meta.get("problem_statement")
         or meta.get("background")
@@ -412,8 +423,8 @@ def sec_datvande(cps, meta) -> str:
         f"{S.de_cuong_heading('datvande')}\n\n"
         f"Mức độ chứng cứ hiện có (tự động từ G0): **{ev}**, dựa trên "
         f"{n_sr} tài liệu PubMed liên quan đã truy hồi.\n\n"
-        "Khoảng trống nghiên cứu (tự động từ G0):\n\n"
-        f"{gap_txt}\n"
+        + ("Khoảng trống nghiên cứu:\n\n" if gap_nguoi is not None else "Khoảng trống nghiên cứu (tự động từ G0):\n\n")
+        + f"{gap_txt}\n"
         f"{background_txt}\n"
         # 05/10/2026: nhãn CHỈ khi chưa có văn xuôi — bản cũ in VÔ ĐIỀU KIỆN nên đề cương đã có phần đặt vấn đề vẫn mang
         # «[CẦN BỔ SUNG]» ⇒ G10-AUTO-09 không bao giờ đạt.

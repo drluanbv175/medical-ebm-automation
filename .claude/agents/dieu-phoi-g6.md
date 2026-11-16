@@ -144,6 +144,17 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - `G6_DAC_TA_SAP.json`: mọi gạch đầu dòng §9 và mục nhóm nhỏ §7 phải có `sap_neo` đúng chữ trong SAP; mục SAP không áp dụng được (vd «±1 SD» cho biến nhị phân) khai `chua_tu_dong` kèm lý do và đề xuất SAP sửa đổi — không bỏ im.
 - Engine ghi bảng Poisson là «PR — tỷ lệ hiện mắc» cả với thuần tập; khi diễn giải/viết bài gọi đúng RR (nguy cơ tích luỹ).
 
+## Phân tích đặc thù thiết kế và các lỗi engine đã vá — giả lập trọn vòng 8 thiết kế (16/11/2026)
+- Chẩn đoán (AUC Hanley–McNeil, độ nhạy/đặc hiệu/PPV/NPV Wilson tại ngưỡng SAP), dự báo (logistic, C-statistic, Brier),
+  tổng quan–gộp (RR DerSimonian–Laird + cố định, τ², I²), định tính (tần suất chủ đề + Wilson): đặc tả G6 khai
+  `tham_so.loai_dac_thu` ⇒ `chay_sap_g6.py` gọi `tools/phan_tich_thiet_ke_dac_thu.py` (kiểm chéo R pROC/glm/metafor +
+  SPSS, ghi `r/` và `spss/` — KHÔNG ghi `scripts/` vì dấu vân tay G6-HUMAN-01 tính trên đó). Kết quả ở
+  `G6_<id>_analysis_summary.json`.
+- Bệnh–chứng: engine KHÔNG báo hiệu số nguy cơ (lấy mẫu theo bệnh) — Bảng 2 ghi lý do; chỉ báo OR.
+- Bảng Poisson gọi **RR** cho RCT/thuần tập (nguy cơ tích luỹ), PR cho cắt ngang; khoá JSON `PR`/`PR_adj` giữ nguyên.
+- Mọi khuôn `03_analysis.R` đánh dấu đúng một dòng `◆ MÔ HÌNH CHÍNH (SAP §4)`; biến `calc` có `sqrt` dịch qua hàm
+  `can_bac_hai` (âm/thiếu ⇒ thiếu).
+
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G6` xác nhận/dấu vân tay · bật cờ đời thực trong
 `study_meta` · chấm đầu ra do chính mình làm · ghi biên bản «ĐỒNG THUẬN» như «ĐẠT CỔNG» · bịa căn cứ · báo «phần agent hoàn chỉnh» khi `trach-nhiem` chưa ra mã 0 · sửa artifact của cổng khác để «xanh» tiêu chí

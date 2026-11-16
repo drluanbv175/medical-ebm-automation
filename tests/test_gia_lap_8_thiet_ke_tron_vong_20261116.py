@@ -268,3 +268,95 @@ def test_bo_may_loai_hiep_bien_hang_sau_loc_nhom_con(tmp_path, monkeypatch):
     khoi = src[i:src.index("# 1c. HIỆP BIẾN PHÂN LOẠI", i)]
     assert "if args.loc.strip():" in khoi and "nunique() <= 1" in khoi
     assert '"hiep_bien_hang_sau_loc": hang_sau_loc' in src
+
+
+# ── G6.5 → G10: bộ giả lập đọc ĐÚNG thước đo của từng thiết kế (16/11/2026 — trước chỉ thuần tập đi hết G10) ──────────
+def _tom_tat_theo_thiet_ke() -> dict:
+    """Tóm tắt G6 tổng hợp theo đúng khoá engine ghi — phần đặc thù dựng bằng chính hàm của mô-đun phân tích."""
+    import phan_tich_thiet_ke_dac_thu as P
+
+    nhi_phan = {"outcome_type": "binary", "group_1": {"n": 100, "events": 67, "pct": 67.0},
+                "group_0": {"n": 118, "events": 57, "pct": 48.3}, "or_crude": 2.173, "ci_95": [1.252, 3.772],
+                "risk_diff": 0.1869, "risk_diff_ci_95": [0.058, 0.3159], "p_value": 0.0083}
+    chan = P.chan_doan([{"y": y, "x": x} for y, x in ((1, 3.0), (1, 2.9), (1, 1.0), (0, 2.8), (0, 1.0), (0, 0.5),
+                                                      (0, 0.2), (1, 2.7))], "y", "x", 2.67)
+    du_bao = P.du_bao([{"y": int(i % 3 == 0 or i > 25), "t": float(i), "u": float((i * 7) % 11)} for i in range(40)],
+                      "y", ["t", "u"])
+    gop = P.gop([{"s": "A", "a": 10, "n1": 100, "c": 20, "n0": 100},
+                 {"s": "B", "a": 15, "n1": 200, "c": 30, "n0": 200}], "s", "a", "n1", "c", "n0")
+    dinh_tinh = P.dinh_tinh([{"c": "Gia đình hỗ trợ"}] * 3 + [{"c": "Sợ hạ đường huyết"}] * 2, "c")
+    return {
+        "rct_nhi_phan": {"n_total": 218, "dac_ta_phan_tich": {"group": "nhom"}, "primary_outcome": nhi_phan,
+                         "poisson_pr": {"n_bien_co": 124,
+                                        "tho": [{"variable": "nhom", "PR": 1.387, "CI_95": [1.1, 1.749], "p": 0.0057}],
+                                        "results": [{"variable": "nhom", "PR_adj": 1.39, "CI_95": [1.103, 1.751],
+                                                     "p": 0.0053}]}},
+        "cat_ngang_mo_ta": {"n_total": 428, "ty_le": [{"ty_le": 0.486, "CI_95_wilson_doc_lap": [0.439, 0.5332],
+                                                       "so_su_kien": 208, "n": 428}]},
+        "benh_chung": {"n_total": 577, "dac_ta_phan_tich": {"group": "nsaid"},
+                       "primary_outcome": {k: v for k, v in nhi_phan.items() if not k.startswith("risk_diff")},
+                       "multivariate": {"results": [{"variable": "nsaid", "OR_adj": 1.667, "CI_95": [1.087, 2.557],
+                                                     "p": 0.0192}]}},
+        "chan_doan": {"n_total": 8, "dac_thu": chan},
+        "mo_hinh_du_bao": {"n_total": 40, "dac_thu": du_bao},
+        "tong_quan_gop": {"n_total": 2, "dac_thu": gop},
+        "dinh_tinh": {"n_total": 5, "dac_thu": dinh_tinh},
+    }
+
+
+def _bo_doc(tmp_path, tom: dict):
+    import gia_lap_tron_vong as TV
+
+    class _O:  # chỉ các thuộc tính _uoc_luong/_gia_tri_ket_qua dùng — không dựng sandbox repo
+        THUOC_DO = TV.TronVong.THUOC_DO
+        _so_vn = staticmethod(TV.TronVong._so_vn)
+        _uoc_luong = TV.TronVong._uoc_luong
+        _gia_tri_ket_qua = TV.TronVong._gia_tri_ket_qua
+
+    o = _O()
+    o.out = tmp_path
+    (tmp_path / "G6_analysis_summary.json").write_text(json.dumps(tom), encoding="utf-8", newline="\n")
+    return o
+
+
+@pytest.mark.parametrize("ma, lay, uoc, nguon", [
+    ("rct_nhi_phan", "pr_hieu_chinh", 1.39, "G6_table4_poisson_pr.txt"),
+    ("rct_nhi_phan", "hieu_so_nguy_co", 0.1869, "G6_table2_main_outcome.txt"),
+    ("cat_ngang_mo_ta", "ty_le", 48.6, "G6_table1b_proportions.txt"),
+    ("benh_chung", "or_hieu_chinh", 1.667, "G6_table4_multivariate.txt"),
+    ("chan_doan", "do_nhay", 0.75, "G6_analysis_summary.json"),
+    ("tong_quan_gop", "rr_gop", None, "G6_analysis_summary.json"),
+    ("dinh_tinh", "chu_de_1", 0.6, "G6_analysis_summary.json"),
+])
+def test_bo_doc_uoc_luong_dung_khoa_va_tep_nguon_tung_thiet_ke(tmp_path, ma, lay, uoc, nguon):
+    o = _bo_doc(tmp_path, _tom_tat_theo_thiet_ke()[ma])
+    u = o._uoc_luong(lay, "G6")
+    assert u and u["nguon"] == nguon and u["ci"][0] <= u["uoc"] <= u["ci"][1]
+    if uoc is not None:
+        assert abs(u["uoc"] - uoc) < 1e-9
+    assert o._uoc_luong("hieu_so_nguy_co", "G6") is None or ma == "rct_nhi_phan"  # bệnh–chứng KHÔNG có hiệu số
+
+
+def test_moi_cho_giu_trong_ho_so_sau_g6_deu_co_gia_tri(tmp_path):
+    """Lời văn hồ sơ 7 thiết kế chỉ dùng chỗ giữ mà bộ đọc SINH RA cho đúng thiết kế đó (chỗ giữ sai ⇒ KeyError giữa
+    lượt chạy, tức hồ sơ không bao giờ tới G7)."""
+    import string
+
+    import gia_lap_ho_so_sau_g6 as HS
+
+    tom = _tom_tat_theo_thiet_ke()
+    for ma, hs in HS.ho_so_sau_g6().items():
+        d = tmp_path / ma
+        d.mkdir()
+        gt = _bo_doc(d, tom[ma])._gia_tri_ket_qua()
+        dg = hs["dien_giai"]
+        gt.update({f"muc_{i}": dg[f"muc_{i}"].format(**gt) for i in range(2, 6)})
+        van = ([dg[f"muc_{i}"] for i in range(2, 6)] + [hs["phan_bien_G8"]["ly_do"]]
+               + [v for _m, v in hs["tra_loi_G7"]] + [r[k] for r in dg["bang"] for k in ("ket_cuc", "y_nghia")])
+        for t in van:
+            thieu = {f for _l, f, _s, _c in string.Formatter().parse(t) if f} - set(gt)
+            assert not thieu, f"{ma}: chỗ giữ không có giá trị {thieu} trong «{t[:60]}…»"
+        for r in dg["bang"]:  # mọi dòng bảng diễn giải đọc được ước lượng từ tóm tắt cùng khuôn
+            if r["gate"] == "G6":
+                assert _bo_doc(d, tom[ma])._uoc_luong(r["lay"], "G6"), f"{ma}: {r['lay']}"
+        assert hs["tac_gia_G7"] and hs["dac_ta_G10"]["summary"] and hs["tham_so_G8"]["ai_use_declared"] is True

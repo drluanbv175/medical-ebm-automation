@@ -135,6 +135,20 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - Luật độ tươi: G3 đọc G2 ⇒ hồ sơ G2 sinh lại sau G3 làm G3/G4 «cũ» và G10 chặn — chạy lại G3 rồi G4 sau G2.
 - Không chạy lại A12 ở G10 nếu bộ PMID của gói không đổi (vỡ manifest G9).
 
+## Đề cương G10 tự lấp quyết định đặc thù thiết kế — giả lập trọn vòng 8 thiết kế (16/11/2026)
+- `quyet_dinh_da_chot.py` (lớp phủ dùng chung bộ lắp, cổng G10, `check_de_cuong`) nay lấp thêm: ngưỡng chẩn đoán (SAP),
+  tiêu chuẩn chọn + công cụ RoB + «không tính cỡ mẫu» của tổng quan, chọn mẫu/audit trail/hiện tượng trung tâm/hướng
+  dẫn phỏng vấn của định tính, kiểm định/hiệu chuẩn/phân biệt + yếu tố dự báo của dự báo, phần mềm SAP §10; «yếu tố
+  nhiễu» = «Không áp dụng» cho chẩn đoán/dự báo/tổng quan/định tính/cắt ngang mô tả. StudySpec D10 đọc
+  `prevalence_source`/`confirmed_n_method` của G3.
+- Mục Đặt vấn đề dùng khoảng trống PI đã viết ở G1 (`knowledge_gap`) trước câu máy suy; nhãn khoảng trống của G0 theo
+  quy ước `[CẦN — …]` (qua R3).
+- G10-AUTO-09 bỏ DOI/URL và quét TỪNG DÒNG khi dò số điện thoại (DOI «…-026-10477-5» và ô «1.0» + ngày giờ của bảng
+  phiên bản từng bị nhận là số điện thoại).
+- PI vẫn khai thông tin MỚI ở G10: chi tiết SPIRIT của RCT (`comparator_rationale`, `concomitant_care_policy`,
+  `randomization_type`, `allocation_access_control`, `unblinding_procedure`, `ppi_plan`), phản tư của định tính
+  (`reflexivity_statement`), công cụ khi nguồn đo là phỏng vấn/bộ câu hỏi (`instrument`).
+
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G10` xác nhận/dấu vân tay · bật cờ đời thực trong
 `study_meta` · chấm đầu ra do chính mình làm · ghi biên bản «ĐỒNG THUẬN» như «ĐẠT CỔNG» · bịa căn cứ · báo «phần agent hoàn chỉnh» khi `trach-nhiem` chưa ra mã 0 · sửa artifact của cổng khác để «xanh» tiêu chí

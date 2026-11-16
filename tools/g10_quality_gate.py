@@ -306,9 +306,13 @@ _DOI_URL_RE = re.compile(r"(?:\bdoi:\s*)?\b10\.\d{4,9}/\S+|https?://\S+", re.IGN
 
 
 def _co_lien_lac_ca_nhan(van: str) -> bool:
-    """Văn bản có email/số điện thoại (sau khi bỏ DOI/URL) — dùng cho bản nộp Hội đồng."""
+    """Văn bản có email/số điện thoại (sau khi bỏ DOI/URL) — dùng cho bản nộp Hội đồng và đề cương lắp G10.
+
+    16/11/2026: dò số điện thoại TỪNG DÒNG — chữ hiển thị của .docx nối các ô bảng bằng xuống dòng, nên ô «1.0» rồi ô
+    «2026-11-16 17:34» của bảng Lịch sử phiên bản ghép thành «0⏎2026-11-16 17» khớp mẫu số điện thoại. Số điện thoại
+    thật không vắt qua hai ô/hai dòng."""
     sach = _DOI_URL_RE.sub(" ", van)
-    return bool(_EMAIL_RE.search(sach) or _PHONE_RE.search(sach))
+    return bool(_EMAIL_RE.search(sach) or any(_PHONE_RE.search(dong) for dong in sach.splitlines()))
 
 
 def _criterion(
@@ -767,7 +771,10 @@ def _documents_clean(
             placeholder_lines.extend(f"{key}:{item}" for item in found[:3])
         if _INTERNAL_TRACE_RE.search(text):
             trace_hits.append(key)
-        if _EMAIL_RE.search(text) or _PHONE_RE.search(text):
+        # SỬA 16/11/2026 (giả lập trọn vòng 8 thiết kế): DOI trong danh mục tham khảo («doi:10.1007/s11606-026-10477-5»)
+        # bị _PHONE_RE đọc thành số điện thoại ⇒ G10-AUTO-09 chặn mọi đề cương trích DOI có cụm «0dd-ddddd-d». Bỏ
+        # DOI/URL trước khi dò — cùng luật đã áp cho bản nộp Hội đồng từ 15/10/2026 (_co_lien_lac_ca_nhan).
+        if _co_lien_lac_ca_nhan(text):
             contact_pii_hits.append(key)
     docx_path = files["final_protocol_docx"]
     try:
@@ -786,7 +793,7 @@ def _documents_clean(
         placeholder_lines.extend(f"final_protocol_docx:{item}" for item in found[:3])
     if _INTERNAL_TRACE_RE.search(docx_text):
         trace_hits.append("final_protocol_docx")
-    if _EMAIL_RE.search(docx_text) or _PHONE_RE.search(docx_text):
+    if _co_lien_lac_ca_nhan(docx_visible):  # chữ HIỂN THỊ: DOI có thể bị tách qua nhiều thẻ w:t trong XML thô
         contact_pii_hits.append("final_protocol_docx")
     if "irb_protocol_md" in files:
         # Bản nộp Hội đồng: quét chữ HIỂN THỊ của .docx (DOI có thể bị tách qua nhiều thẻ w:t trong XML thô, làm hỏng

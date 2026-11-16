@@ -403,6 +403,13 @@ def _g8_meta(meta: Mapping[str, Any]) -> Mapping[str, Any]:
     return value if isinstance(value, Mapping) else {}
 
 
+def _gp_cong(meta: Mapping[str, Any], cong: str) -> Mapping[str, Any]:
+    """gate_params.<cong> (rỗng nếu vắng/sai kiểu)."""
+    params = meta.get("gate_params")
+    value = params.get(cong) if isinstance(params, Mapping) else None
+    return value if isinstance(value, Mapping) else {}
+
+
 def _present(value: Any) -> bool:
     """Giá trị gate_params.G8 có nội dung thật không.
 
@@ -832,6 +839,16 @@ def registration_issues(design_code: str, g8: Mapping[str, Any], g2: Mapping[str
 
 
 _PHU_DINH_RE = re.compile(r"(?<!\w)(?:không|not|no|none)(?!\w)", re.IGNORECASE)
+
+
+def g8_kem_tuyen_bo_g7(meta: Mapping[str, Any], g8: Mapping[str, Any]) -> Mapping[str, Any]:
+    """gate_params.G8 kèm tuyên bố chia sẻ dữ liệu tác giả ĐÃ khai ở G7 khi G8 chưa khai riêng (16/11/2026 — giả lập
+    trọn vòng RCT: tuyên bố có trong G7 và in vào bản thảo nhưng G8-AUTO-08 đòi khai lại). G8 đã khai ⇒ G8 thắng (bản
+    cuối trước nộp)."""
+    g7_tuyen_bo = _gp_cong(meta, "G7").get("data_sharing_statement")
+    if _present(str(g8.get("data_sharing_statement") or "")) or not _present(str(g7_tuyen_bo or "")):
+        return g8
+    return {**dict(g8), "data_sharing_statement": g7_tuyen_bo}
 
 
 def data_sharing_issues(design_code: str, g8: Mapping[str, Any]) -> tuple[str, list[str]]:
@@ -1375,7 +1392,7 @@ def evaluate_g8_quality(
     ))
 
     # ── G8-AUTO-08 — chia sẻ dữ liệu ───────────────────────────────────────
-    ds_status, ds_problems = data_sharing_issues(design_code, g8)
+    ds_status, ds_problems = data_sharing_issues(design_code, g8_kem_tuyen_bo_g7(meta, g8))
     automatic.append(_criterion(
         "G8-AUTO-08",
         "Tuyên bố chia sẻ dữ liệu đủ 5 trường (thử nghiệm lâm sàng)",

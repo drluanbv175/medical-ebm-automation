@@ -818,6 +818,8 @@ def evaluate_g4_quality(
     # ── G4-AUTO-04 — EPV/VIF ở §5 (thiết kế hồi quy đa biến) ───────────────
     if design_code == "qualitative":
         epv_status, epv_evidence = "PASS", "qualitative — §5 là CHIẾN LƯỢC MÃ HÓA, không áp dụng EPV/VIF"
+    elif design_code == "sr_ma":  # 16/11/2026: gộp ở cấp nghiên cứu — không có mô hình hồi quy cá thể
+        epv_status, epv_evidence = "PASS", "sr_ma — §5 là TỔNG HỢP ĐỊNH LƯỢNG cấp nghiên cứu, không áp dụng EPV/VIF"
     else:
         body5 = _section_body(artifact_text, "§5")
         has_epv_terms = bool(re.search(r"\b(EPV|EPP|pmsampsize|VIF)\b", body5, re.IGNORECASE))
@@ -844,6 +846,11 @@ def evaluate_g4_quality(
     if design_code == "qualitative":
         missing_status = "PASS"
         missing_evidence = "qualitative — §6 là BÃO HÒA DỮ LIỆU, không áp dụng cơ chế MCAR/MAR/MNAR"
+    elif design_code == "sr_ma":  # 16/11/2026: dữ liệu thiếu CẤP NGHIÊN CỨU — không gán đa trị cá thể
+        body6 = _section_body(artifact_text, "§6")
+        missing_status = "REVIEW" if (PC.co_o_trong(body6) or not body6.strip()) else "PASS"
+        missing_evidence = ("§6 còn ô trống hoặc rỗng" if missing_status == "REVIEW"
+                            else "sr_ma — §6 nêu cách xử lý dữ liệu thiếu cấp nghiên cứu")
     else:
         body6 = _section_body(artifact_text, "§6")
         if PC.co_o_trong(body6):
@@ -950,7 +957,7 @@ def evaluate_g4_quality(
     dong_seed = m_seed.group(1) if m_seed else body10
     has_seed = bool(re.search(r"seed\D{0,20}(\d+)", dong_seed, re.IGNORECASE)) or bool(
         m_seed and re.fullmatch(r"\s*(?:set\.seed\()?\s*\d+\s*\)?\s*", dong_seed))
-    if design_code == "qualitative" and re.search(r"KHÔNG ÁP DỤNG", dong_seed):
+    if design_code in ("qualitative", "sr_ma") and re.search(r"KHÔNG ÁP DỤNG", dong_seed):
         has_seed = True
     if PC.co_o_trong(body10):
         software_status, software_evidence = "REVIEW", "§10 còn placeholder '[CẦN' — chưa điền phần mềm/seed"

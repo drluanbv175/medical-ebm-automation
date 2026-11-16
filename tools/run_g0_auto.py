@@ -645,9 +645,12 @@ def analyze_evidence_gaps(results: dict, topic: str,
         # Nam, khu vực châu Á)" là một khoảng trống BỊA — hệ không tra gì về Việt Nam,
         # không tra gì về châu Á, mà lại in nó dưới tiêu đề "PHÂN TÍCH KHOẢNG TRỐNG (tự
         # động từ evidence thật)". Đúng kiểu khẳng định vô căn cứ mà cổng này phải cấm.
+        # SỬA 16/11/2026 (giả lập trọn vòng — tổng quan/định tính): nhãn cũ «[CẦN BÁC SĨ TỰ XÁC ĐỊNH …]» không thuộc
+        # bộ nhãn skill ⇒ check_de_cuong R3 chặn G10 của MỌI đề tài mà G0 không thấy khoảng trống; nay dùng quy ước chú
+        # thích tự do «[CẦN — …]».
         gaps.append(
             "KHÔNG phát hiện khoảng trống nào từ dữ liệu PubMed đã tra "
-            "(đã có SR/MA, RCT, guideline và nghiên cứu mới) — [CẦN BÁC SĨ TỰ XÁC ĐỊNH "
+            "(đã có SR/MA, RCT, guideline và nghiên cứu mới) — [CẦN — bác sĩ tự xác định "
             "khoảng trống, ví dụ quần thể/bối cảnh chưa được phủ; hệ KHÔNG suy ra được]"
         )
 

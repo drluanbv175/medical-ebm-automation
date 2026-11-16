@@ -365,6 +365,16 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
         ("stopping_rules", ("stopping_rules",)),
         ("schedule", ("schedule_description",)),
         ("ppi_plan", ("ppi_plan",)),
+        # 16/11/2026: khoá đặc thù chẩn đoán/tổng quan/định tính/dự báo — PI có thể khai tên phẳng ở study_meta
+        ("threshold", ("index_test_threshold", "threshold")),
+        ("eligibility", ("eligibility_criteria",)),
+        ("risk_of_bias", ("risk_of_bias_tool",)),
+        ("reflexivity", ("reflexivity_statement", "reflexivity")),
+        ("audit_trail", ("audit_trail",)),
+        ("qda_software", ("qda_software",)),
+        ("validation", ("validation_plan",)),
+        ("calibration", ("calibration_plan",)),
+        ("discrimination", ("discrimination_measures",)),
     ):
         if is_present(design_specific.get(_key)):
             continue
@@ -541,6 +551,11 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
                 # dùng schema phẳng sample_size_assumption_source).
                 _get(raw, "gate_params", "G3", "effect_source"),
                 _get(raw, "gate_params", "G3", "assumption_source"),
+                # 16/11/2026 (giả lập trọn vòng): cắt ngang theo độ chính xác chốt NGUỒN p ước lượng
+                # (prevalence_source), mô hình dự báo chốt PHƯƠNG PHÁP cỡ mẫu (pmsampsize — confirmed_n_method) ở G3;
+                # D10 từng báo thiếu dù G3 đã chốt.
+                _get(raw, "gate_params", "G3", "prevalence_source"),
+                _get(raw, "gate_params", "G3", "confirmed_n_method"),
                 g3.get("effect_source"),
                 g3.get("assumption_source"),
             ),

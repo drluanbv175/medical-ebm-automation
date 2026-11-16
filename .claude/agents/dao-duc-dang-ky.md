@@ -515,6 +515,12 @@ Kích hoạt khi nghiên cứu thực hiện tại đơn vị có tính đặc t
 - Hồ sơ miễn ICF: dữ liệu có bảng nối mã ↔ người bệnh là GIẢ DANH HOÁ, không phải «ẩn danh hoàn toàn / không truy ngược cá nhân» — TÀI LIỆU 9 lấy nguyên văn cam kết đã chốt (`run_g2_auto.dieu_kien_mien_icf`); `gate_params.G2.icf_waiver_requested` do PI chọn.
 - `check_citations.py --pmids` nhận MỘT chuỗi phân cách bằng DẤU PHẨY và ghi đè biên nhận A12 bằng đúng danh sách truyền vào ⇒ luôn truyền HỢP PMID (biên nhận cũ ∪ đề cương nộp ∪ bản lắp G10 ∪ SAP); lỡ sai thì `git checkout --` hai tệp biên nhận rồi chạy lại.
 
+## Bài học giả lập trọn vòng 8 thiết kế (16/11/2026)
+- Đề tài TIẾN CỨU tuyển người mới và tổng quan hệ thống: `registration_required` phải là true + sổ đăng ký trước người
+  tham gia đầu tiên (Helsinki §35). Ghim false ⇒ **G2-AUTO-11** chặn (trách nhiệm `PI@G2-T1`).
+- Phụ lục PROSPERO và ICF do bộ sinh dựng từ quyết định đã chốt — agent KHÔNG điền lại PICO, KHÔNG bịa lựa chọn của PI:
+  ô `[CẦN …]` còn lại là quyết định thật của chủ nhiệm.
+
 ## Ranh giới
 KHÔNG tự phê duyệt đạo đức · KHÔNG bịa số IRB/mã đăng ký · KHÔNG tự chạy `tools/approve_gate.py` thay bác sĩ · DMP vận hành/khóa DB thuộc `quan-ly-du-lieu` (G5).
 

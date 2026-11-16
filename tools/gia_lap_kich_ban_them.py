@@ -900,6 +900,11 @@ def ho_so_tron_vong() -> Dict[str, Dict[str, Any]]:
     }
     for ma, them in sap_g6_tron_vong().items():
         hs.setdefault(ma, {}).update(them)
+    # 16/11/2026: hồ sơ vai G6.5→G10 cho 7 thiết kế ngoài thuần tập (trước chỉ thuần tập đi hết G10)
+    from gia_lap_ho_so_sau_g6 import ho_so_sau_g6  # noqa: PLC0415 — mô-đun đó nhập _TAC_GIA_G7 từ đây
+
+    for ma, them in ho_so_sau_g6().items():
+        hs.setdefault(ma, {}).update(them)
     return hs
 
 
@@ -918,6 +923,10 @@ def bien_so_them() -> Dict[str, Dict[str, list]]:
 # phần khai (giá trị None = bỏ tham số đó). Thiết kế mà engine phân tích chưa hỗ trợ (chẩn đoán, dự báo, gộp, định tính)
 # không có `g6` — bộ giả lập ghi khoảng trống đó thay vì ép một phân tích sai phương pháp.
 _DIEU_CHINH_1_KC = "Không điều chỉnh — một kết cục chính; kết cục phụ và nhóm nhỏ chỉ diễn giải thăm dò"
+# Phân tích ĐẶC THÙ (chẩn đoán/dự báo) không gán đa trị — «ca đầy đủ» trùng phân tích chính (ghi rõ, vẫn chạy)
+_CC_DAC_THU = {"id": "DN_ca_day_du", "vai": "do_nhay", "sap_muc": "§9", "sap_neo": "Complete case vs MI",
+               "mo_ta": "Ca đầy đủ — phân tích đặc thù không gán đa trị (trùng phân tích chính)", "ke_thua": True,
+               "tham_so": {}}
 _CC_MI = {"id": "DN_ca_day_du", "vai": "do_nhay", "sap_muc": "§9", "sap_neo": "Complete case vs MI",
           "mo_ta": "Phân tích ca đầy đủ (không impute) đối chiếu với phân tích chính", "ke_thua": True,
           "tham_so": {"n_imputations": 0}}
@@ -1030,8 +1039,8 @@ _PHAN_BIEN_THUAN_TAP: Dict[str, Any] = {
               "kiểm chéo SPSS/R khớp. Còn vài điểm trình bày và hai phân tích độ nhạy chờ làm tay."),
     "gop_y_nho": [
         ("Từ khoá (trang đầu)", "Dòng từ khoá do máy tách từng chữ của tiêu đề — thay bằng thuật ngữ MeSH"),
-        ("Bảng Poisson (06 kết quả)", "Engine ghi «PR — tỷ lệ hiện mắc» cho thiết kế thuần tập; bản thảo nên gọi "
-                                      "đúng RR (nguy cơ tích luỹ)"),
+        ("Phương pháp — phơi nhiễm", "Mô tả cách xác định dùng PPI liên tục ≥ 12 tháng từ đơn cấp phát (STROBE "
+                                     "mục 7)"),
         ("Kết quả — kết cục phụ", "Hai kết cục phụ SAP §2 chưa phân tích; ghi rõ là báo cáo riêng"),
         ("Độ nhạy SAP §9", "Mục «±1 SD» không áp cho biến nhị phân — cần SAP sửa đổi hoặc ghi lý do"),
     ],
@@ -1153,15 +1162,91 @@ def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
         },
         "chan_doan": {"tra_loi_G4": _tra_loi_sap(
             "Không áp dụng — nghiên cứu chẩn đoán, chỉ lấy máu xét nghiệm thường quy", "Không áp dụng — mục tiêu "
-            "độ chính xác chẩn đoán", "Ngưỡng FIB-4 1,3 và 2,67 định trước", nhom_gioi, "Loại người ALT > 5 lần ULN")},
+            "độ chính xác chẩn đoán", "Ngưỡng FIB-4 1,3 và 2,67 định trước", nhom_gioi, "Loại người ALT > 5 lần ULN"),
+            # 16/11/2026: phân tích đặc thù (AUC + độ nhạy/đặc hiệu tại ngưỡng SAP) — phan_tich_thiet_ke_dac_thu.py
+            "g6": [{"id": "MT1_chinh", "vai": "chinh", "sap_muc": "§4", "sap_neo": "<§4>",
+                    "mo_ta": "Độ chính xác FIB-4 phát hiện xơ hoá tiến triển: AUC + độ nhạy/đặc hiệu tại ngưỡng 2,67",
+                    "tham_so": {"loai_dac_thu": "chan_doan", "tham_chieu": "xo_hoa_tien_trien", "chi_so": "fib4",
+                                "nguong": 2.67}},
+                   *_nhom_gioi(1, 0), _CC_DAC_THU,
+                   _sd_khong_ap_dung("độ chính xác chẩn đoán — ±1 SD không áp dụng; ngưỡng thứ hai 1,3 ở §5"),
+                   {"id": "DN_alt", "vai": "do_nhay", "sap_muc": "§9", "sap_neo": "Loại người ALT > 5 lần ULN",
+                    "mo_ta": "Loại người ALT > 200 U/L (5 lần ULN 40 U/L)", "ke_thua": True,
+                    "tham_so": {"loc": "alt <= 200"}}]},
         "mo_hinh_du_bao": {"tra_loi_G4": _tra_loi_sap(
             "Không áp dụng — nghiên cứu quan sát", "yếu tố dự báo chọn theo y văn trước khi xem dữ liệu, không chọn "
             "theo p", "Dạng tuyến tính kiểm bằng spline; hiệu chuẩn bằng biểu đồ", nhom_gioi,
-            "Bootstrap 500 lần để hiệu chỉnh lạc quan")},
-        "tong_quan_gop": {"tra_loi_G4": _tra_loi_sap(
+            "Bootstrap 500 lần để hiệu chỉnh lạc quan"),
+            "g6": [{"id": "MT1_chinh", "vai": "chinh", "sap_muc": "§4", "sap_neo": "<§4>",
+                    "mo_ta": "Mô hình logistic dự báo nhập viện 12 tháng: OR, C-statistic, Brier",
+                    "tham_so": {"loai_dac_thu": "du_bao", "outcome": "nhap_vien_12t",
+                                "covariates": ["tuoi", "lvef", "ntprobnp", "egfr"]}},
+                   *_nhom_gioi(1, 0), _CC_DAC_THU,
+                   _sd_khong_ap_dung("mô hình dự báo — ±1 SD không áp dụng"),
+                   {"id": "DN_bootstrap", "vai": "do_nhay", "sap_muc": "§9",
+                    "sap_neo": "Bootstrap 500 lần để hiệu chỉnh lạc quan",
+                    "mo_ta": "Hiệu chỉnh lạc quan bằng bootstrap",
+                    "chua_tu_dong": "chạy rms::validate trong kịch bản R đã sinh (r/G6_du_bao.R, B tuỳ SAP) — "
+                                    "engine Python báo C-statistic trong mẫu"}]},
+        "tong_quan_gop": {"tra_loi_G4": [
+            # 16/11/2026: SAP tổng quan–gộp có khung riêng (§5 tổng hợp, §6 thiếu cấp nghiên cứu, §10 metafor)
+            (r"thuoc do hieu ung", "RR (nguy cơ tương đối) — kết cục nhị phân nhập viện vì suy tim"),
+            (r"phan mem", "R 4.6 (metafor 4.6); kiểm chéo SPSS 31"),
+            (r"packages", "metafor 4.6, meta 8.0"),
+        ] + _tra_loi_sap(
             "Không áp dụng — tổng quan hệ thống", "Không áp dụng — gộp ở cấp nghiên cứu", "Mô hình hiệu ứng ngẫu "
-            "nhiên REML, Hartung-Knapp", "Loại thuốc SGLT2", "Loại nghiên cứu nguy cơ sai lệch cao")},
+            "nhiên DerSimonian–Laird; độ nhạy: hiệu ứng cố định", "Loại thuốc SGLT2",
+            "Loại nghiên cứu nguy cơ sai lệch cao"),
+            "g6": [{"id": "MT1_chinh", "vai": "chinh", "sap_muc": "§4", "sap_neo": "<§4>",
+                    "mo_ta": "RR gộp nhập viện vì suy tim (ngẫu nhiên DL) + RR cố định, τ², I²",
+                    "tham_so": {"loai_dac_thu": "gop", "nhan_nghien_cuu": "study_id",
+                                "su_kien_can_thiep": "bien_co_can_thiep", "n_can_thiep": "n_can_thiep",
+                                "su_kien_chung": "bien_co_chung", "n_chung": "n_chung"}},
+                   {"id": "NC_thuoc", "vai": "nhom_con", "sap_muc": "§7", "sap_neo": "Loại thuốc SGLT2",
+                    "mo_ta": "Phân nhóm theo thuốc SGLT2",
+                    "chua_tu_dong": "phân nhóm theo thuốc (một số thuốc chỉ có 1 thử nghiệm) — meta-regression "
+                                    "metafor::rma(mods = ~ factor(thuoc_sglt2)) do thống kê viên chạy"},
+                   {"id": "DN_co_dinh", "vai": "do_nhay", "sap_muc": "§9",
+                    "sap_neo": "Hiệu ứng cố định so với hiệu ứng ngẫu nhiên",
+                    "mo_ta": "RR gộp hiệu ứng cố định (nghịch đảo phương sai)",
+                    "chua_tu_dong": "đã tính cùng phân tích chính — khoá rr_gop_co_dinh/ci_95_co_dinh trong "
+                                    "G6_analysis_summary.json, kiểm chéo metafor method=\"FE\" trong r/G6_gop.R"},
+                   {"id": "DN_rob_thap", "vai": "do_nhay", "sap_muc": "§9",
+                    "sap_neo": "Loại nghiên cứu nguy cơ sai lệch cao", "mo_ta": "Loại thử nghiệm RoB 2 «cao»",
+                    "ke_thua": True, "tham_so": {"loc": "rob2_tong != 3"}}]},
         "dinh_tinh": {"tra_loi_G4": _tra_loi_sap(
             "Không áp dụng — nghiên cứu định tính", "Không áp dụng — phân tích chủ đề", "Bão hoà dữ liệu sau 3 cuộc "
-            "phỏng vấn liên tiếp không có mã mới", "Đã/chưa bắt đầu insulin", "Mã hoá độc lập bởi 2 người")},
+            "phỏng vấn liên tiếp không có mã mới", "Đã/chưa bắt đầu insulin", "Mã hoá độc lập bởi 2 người") + [
+            # 16/11/2026: SAP ĐỊNH TÍNH có khung riêng (§7 chọn mẫu đa dạng, §9 trustworthiness Lincoln & Guba)
+            (r"chien luoc chon mau", "Chọn mẫu có chủ đích theo đã/chưa bắt đầu insulin, giới và thời gian mắc ĐTĐ"),
+            # 16/11/2026: ô §5/§10 SAP định tính — trước rơi vào câu trả lời chung «R 4.6 …» (khớp chữ «phần mềm»)
+            (r"so nguoi ma hoa", "2 người mã hoá độc lập theo bộ mã (codebook) trên bảng tính có kiểm soát phiên bản; "
+                                 "không dùng phần mềm QDA thương mại"),
+            (r"lien.nguoi.ma", "Thảo luận đồng thuận sau mỗi 5 bản gỡ băng; bất đồng do người thứ ba phân xử"),
+            (r"phan mem phan tich dinh tinh", "Bảng tính LibreOffice Calc 24.8 (mã tay theo codebook) — không dùng "
+                                              "phần mềm QDA"),
+            (r"tieu chi da dang", "Đã/chưa bắt đầu insulin; nam/nữ; mắc ĐTĐ dưới/từ 10 năm"),
+            (r"credibility", "Kiểm tra lại với người tham gia (member checking) trên tóm tắt chủ đề"),
+            (r"transferability", "Mô tả dày bối cảnh phòng khám và đặc điểm người tham gia"),
+            (r"dependability", "Nhật ký quyết định mã hoá (audit trail) lưu cùng bộ mã"),
+            (r"confirmability", "Mã hoá độc lập bởi 2 người; bất đồng giải quyết bằng thảo luận, có người thứ ba"),
+        ],
+            "g6": [{"id": "MT1_chinh", "vai": "chinh", "sap_muc": "§4", "sap_neo": "<§4>",
+                    "mo_ta": "Tần suất các chủ đề đã mã hoá (mô tả)",
+                    "tham_so": {"loai_dac_thu": "dinh_tinh", "chu_de": "chu_de"}},
+                   {"id": "NC_da_tiem", "vai": "nhom_con", "sap_muc": "§7", "sap_neo": "Tiêu chí đa dạng",
+                    "mo_ta": "Chủ đề ở người ĐÃ bắt đầu insulin", "ke_thua": True,
+                    "tham_so": {"loc": "da_bat_dau_insulin == 1"}},
+                   {"id": "NC_chua_tiem", "vai": "nhom_con", "sap_muc": "§7", "sap_neo": "Tiêu chí đa dạng",
+                    "mo_ta": "Chủ đề ở người CHƯA bắt đầu insulin", "ke_thua": True,
+                    "tham_so": {"loc": "da_bat_dau_insulin == 0"}},
+                   *[{"id": f"TT_{ma}", "vai": "do_nhay", "sap_muc": "§9", "sap_neo": neo, "mo_ta": neo,
+                      "chua_tu_dong": ly_do} for ma, neo, ly_do in (
+                       ("credibility", "Credibility",
+                        "kiểm tra lại với người tham gia — quy trình của nhóm nghiên cứu, không phải phép tính"),
+                       ("transferability", "Transferability", "mô tả dày bối cảnh — viết trong bản thảo"),
+                       ("dependability", "Dependability", "nhật ký quyết định mã hoá — lưu cùng bộ mã"))],
+                   {"id": "DN_hai_nguoi_ma", "vai": "do_nhay", "sap_muc": "§9", "sap_neo": "Confirmability",
+                    "mo_ta": "Độ thống nhất mã hoá giữa hai người",
+                    "chua_tu_dong": "cần bộ mã của người mã hoá thứ hai để tính kappa — nhóm nghiên cứu làm"}]},
     }

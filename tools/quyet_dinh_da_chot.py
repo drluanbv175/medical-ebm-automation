@@ -166,6 +166,136 @@ def quy_trinh(out_dir: Path) -> Dict[str, List[str]]:
 
 
 # ─────────────────────────────── rút quyết định ───────────────────────────────
+def cong_cu_rob(tieu_chi_chon: Any) -> Optional[str]:
+    """Công cụ nguy cơ sai lệch theo LOẠI nghiên cứu được đưa vào tổng quan (tiêu chuẩn chọn G1) — chuẩn Cochrane: RCT
+    ⇒ RoB 2, chẩn đoán ⇒ QUADAS-3, quan sát ⇒ ROBINS-I/E. Không suy được ⇒ None (để PI chọn). Dùng chung cho phụ lục
+    PROSPERO G2 và đề cương G10 (16/11/2026)."""
+    ds = tieu_chi_chon if isinstance(tieu_chi_chon, (list, tuple)) else [tieu_chi_chon]
+    loai = next((str(x) for x in ds if re.search(r"thử nghiệm|ngẫu nhiên|\bRCT\b|thuần tập|bệnh chứng|quan sát|"
+                                                 r"cắt ngang|chẩn đoán", str(x or ""), re.I)), "")
+    if re.search(r"ngẫu nhiên|\bRCT\b", loai, re.I):
+        return "RoB 2 (Cochrane) cho thử nghiệm ngẫu nhiên"
+    if re.search(r"chẩn đoán", loai, re.I):
+        return "QUADAS-3"
+    if re.search(r"thuần tập|bệnh chứng|quan sát|cắt ngang", loai, re.I):
+        return "ROBINS-I (can thiệp) / ROBINS-E (phơi nhiễm)"
+    return None
+
+
+def ma_thiet_ke(out_dir: Path, meta: Mapping[str, Any]) -> Optional[str]:
+    """Mã thiết kế chuẩn hoá (cùng bộ giải của StudySpec): khoá PI ghim → G1 → G3 checkpoint."""
+    import skill_standards as S  # noqa: PLC0415
+
+    g1 = _json(Path(out_dir) / "G1_checkpoint.json")
+    thiet_ke = g1.get("design") if isinstance(g1.get("design"), Mapping) else {}
+    tho = (meta.get("design_code") or thiet_ke.get("internal_code") or g1.get("design_code")
+           or _json(Path(out_dir) / "G3_checkpoint.json").get("design_code"))
+    return S.canonical_design_code(tho) if tho else None
+
+
+# Thiết kế KHÔNG ước lượng hiệu ứng nhân quả ⇒ «yếu tố nhiễu» không áp dụng (sự thật cấu trúc theo thiết kế, cùng khuôn
+# design_specific.not_applicable_rationale của StudySpec). Đề cương G10 từng in «Yếu tố nhiễu: [CẦN BỔ SUNG]» cho chẩn
+# đoán/dự báo/tổng quan/định tính/cắt ngang mô tả ⇒ G10-AUTO-09 chặn mà PI không có gì đúng để điền (16/11/2026).
+KHONG_NHIEU = {
+    "diagnostic": "Không áp dụng — nghiên cứu độ chính xác chẩn đoán không ước lượng hiệu ứng nhân quả; nguồn sai lệch "
+                  "(phổ bệnh, xác minh, đọc không mù) trình bày ở mục sai lệch theo QUADAS",
+    "prediction": "Không áp dụng — mô hình dự báo dùng yếu tố dự báo định trước, không hiệu chỉnh nhiễu",
+    "systematic_review": "Không áp dụng — gộp ở cấp nghiên cứu; nguy cơ sai lệch của từng nghiên cứu đánh giá bằng "
+                         "công cụ RoB đã chốt",
+    "qualitative": "Không áp dụng — nghiên cứu định tính không ước lượng hiệu ứng",
+}
+
+
+def _dong_sap_co(sap: str, cac_muc: Tuple[int, ...], mau: str) -> str:
+    """Dòng gạch đầu dòng đầu tiên (đã điền) của các mục SAP chứa mẫu `mau` — bỏ định dạng đậm."""
+    for so in cac_muc:
+        for d in muc_sap(sap, so).splitlines():
+            t = d.strip()
+            if t.startswith("- ") and re.search(mau, t, re.I) and co_noi_dung(t[2:]):
+                return re.sub(r"\*\*", "", t[2:]).strip().rstrip(" ")
+    return ""
+
+
+def _theo_thiet_ke(out_dir: Path, study: str, meta: Mapping[str, Any], sap: str,
+                   dat: Any) -> None:
+    """Quyết định ĐẶC THÙ thiết kế đã chốt ở G1/G4 ⇒ khoá StudySpec đòi (X01 · S01 · Q01/Q02 · M01 · D10 · D13) và dòng
+    yếu tố nhiễu — PI không khai lại ở G10 (16/11/2026, giả lập trọn vòng 8 thiết kế)."""
+    import gate_contract as GC  # noqa: PLC0415
+
+    ma = ma_thiet_ke(out_dir, meta)
+    g1 = _gp(meta, "G1")
+    mt = ma_tran(out_dir, study)
+    if ma == "prediction":
+        yt = [r for r in mt if r.get("vai_tro") in ("yeu_to", "hiep_bien") and r.get("khai_niem")]
+        dat("confounders", [KHONG_NHIEU[ma] + (f" (yếu tố dự báo: {', '.join(r['khai_niem'] for r in yt)})"
+                                               if yt else "")], "thiết kế dự báo (sự thật cấu trúc) + ma trận G3")
+        if yt:  # ma trận truy xuất G10: «phơi nhiễm/yếu tố chính» của mô hình dự báo là bộ yếu tố dự báo
+            dat("exposure", "Yếu tố dự báo: " + "; ".join(f"{r['khai_niem']} (`{r.get('bien')}`)" for r in yt),
+                "ma trận mục tiêu–biến G3 (yếu tố dự báo)")
+    elif ma in KHONG_NHIEU:
+        dat("confounders", [KHONG_NHIEU[ma]], f"thiết kế {ma} (sự thật cấu trúc)")
+    elif ma == "cross_sectional" and GC.sap_declares_proportion(out_dir, study):
+        dat("confounders", ["Không áp dụng — mục tiêu mô tả tỷ lệ (SAP §4), không so sánh nhóm"],
+            "SAP §4 (ước lượng tỷ lệ — cắt ngang mô tả)")
+        mo_ta = [r.get("khai_niem") for r in mt if r.get("vai_tro") == "mo_ta" and r.get("khai_niem")]
+        dat("exposure", "Không áp dụng — mục tiêu mô tả tỷ lệ, không có phơi nhiễm so sánh"
+            + (f" (biến mô tả: {', '.join(mo_ta)})" if mo_ta else ""), "SAP §4 + ma trận G3 (biến mô tả)")
+    ds: Dict[str, str] = {}
+    if ma == "diagnostic":
+        ng = _dong_sap_co(sap, (4, 5), r"ngưỡng|threshold|cut-?off")
+        if ng and re.search(r"\d", ng):
+            ds["threshold"] = f"{ng} (SAP — đã chốt ở G4)"
+    if ma == "systematic_review":
+        chon, loai = g1.get("inclusion_criteria"), g1.get("exclusion_criteria")
+        if co_noi_dung(chon):
+            ds["eligibility"] = ("Tiêu chuẩn chọn: " + "; ".join(map(str, chon if isinstance(chon, list) else [chon]))
+                                 + (("; tiêu chuẩn loại: " + "; ".join(map(str, loai if isinstance(loai, list)
+                                                                            else [loai]))) if co_noi_dung(loai) else "")
+                                 + " (G1 — đã chốt)")
+        rob = cong_cu_rob(chon)
+        if rob:
+            ds["risk_of_bias"] = f"{rob} — suy từ loại nghiên cứu được đưa vào (G1)"
+        dat("sampling_sufficiency", "Không tính cỡ mẫu — số nghiên cứu do tìm kiếm hệ thống quyết định (PRISMA 2020); "
+                                    "chỉ gộp khi đủ nghiên cứu đồng nhất về lâm sàng–phương pháp",
+            "thiết kế tổng quan hệ thống (sự thật cấu trúc)")
+    if ma == "qualitative":
+        ht = g1.get("central_phenomenon")
+        if co_noi_dung(ht):
+            dat("exposure", f"Hiện tượng trung tâm: {ht} (G1 — đã chốt; định tính không có phơi nhiễm)",
+                "G1 (central_phenomenon)")
+        pp_thu = g1.get("data_collection_method")
+        if co_noi_dung(pp_thu):
+            dat("instrument", {"name": f"Hướng dẫn phỏng vấn theo phương pháp đã chốt ở G1: {pp_thu}",
+                               "source": "Bản ghi âm và bản gỡ băng phỏng vấn",
+                               "note": "Công cụ định tính (hướng dẫn phỏng vấn), không phải thang đo/PROM — không áp "
+                                       "dụng kiểm định COSMIN; câu hỏi cụ thể do nhóm nghiên cứu soạn và thử trước"},
+                "G1 (data_collection_method)")
+        cm = nhan_sap(sap, 7, "Chiến lược chọn mẫu")
+        if cm:
+            dat("sampling_strategy", f"{cm} (SAP §7 — đã chốt ở G4)", "SAP §7 (chọn mẫu)")
+        at = nhan_sap(sap, 9, "Dependability")
+        if at:
+            ds["audit_trail"] = f"{at} (SAP §9 — đã chốt ở G4)"
+        dat("missing_data_analysis", "Không áp dụng — dữ liệu là bản gỡ băng phỏng vấn, không có biến thiếu cần "
+                                     "gán; SAP §6 thay bằng tiêu chí bão hoà dữ liệu",
+            "thiết kế định tính (sự thật cấu trúc)")
+    if ma == "prediction":
+        pp = nhan_sap(sap, 4, "Phương pháp")
+        if re.search(r"c-?statistic|discrimination|auc", pp, re.I):
+            ds["discrimination"] = "C-statistic (AUC) + KTC 95% (SAP §4 — đã chốt ở G4)"
+        hc = _dong_sap_co(sap, (4, 5, 9), r"calibration|hiệu chuẩn")
+        if hc:
+            ds["calibration"] = f"{hc} (SAP — đã chốt ở G4)"
+        kd = _dong_sap_co(sap, (9, 4), r"bootstrap|validation|kiểm định nội")
+        if kd:
+            ds["validation"] = f"{kd} (SAP — đã chốt ở G4)"
+    pm = nhan_sap(sap, 10, "Phần mềm")
+    if pm:
+        dat("analysis_software", f"{pm} (SAP §10 — đã chốt ở G4)", "SAP §10")
+    if ds:
+        dat("design_specific", ds, "G1/SAP G4 (quyết định đặc thù thiết kế)")
+
+
 def rut(out_dir: Path, study: str, meta: Mapping[str, Any]) -> Dict[str, Tuple[Any, str]]:
     """{khoá study_meta cấp cao: (giá trị, nguồn)} — mọi quyết định đã chốt rút được (chưa so với khoá PI đã khai)."""
     out_dir = Path(out_dir)
@@ -180,6 +310,9 @@ def rut(out_dir: Path, study: str, meta: Mapping[str, Any]) -> Dict[str, Tuple[A
     def dat(khoa: str, v: Any, nguon: str) -> None:
         if co_noi_dung(v) and khoa not in ra:
             ra[khoa] = (v, nguon)
+
+    # ── đặc thù thiết kế (đi TRƯỚC ma trận: dự báo không gọi yếu tố dự báo là «yếu tố nhiễu»)
+    _theo_thiet_ke(out_dir, study, meta, sap, dat)
 
     # ── ma trận mục tiêu–biến (G3): kết cục chính (nguồn đo, tên biến) · phơi nhiễm · hiệp biến
     kc = next((r for r in mt if r.get("vai_tro") == "ket_cuc_chinh"), None)
