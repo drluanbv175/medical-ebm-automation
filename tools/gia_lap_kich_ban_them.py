@@ -900,6 +900,11 @@ def ho_so_tron_vong() -> Dict[str, Dict[str, Any]]:
     }
     for ma, them in sap_g6_tron_vong().items():
         hs.setdefault(ma, {}).update(them)
+    # 16/11/2026: hồ sơ vai G6.5→G10 cho 7 thiết kế ngoài thuần tập (trước chỉ thuần tập đi hết G10)
+    from gia_lap_ho_so_sau_g6 import ho_so_sau_g6  # noqa: PLC0415 — mô-đun đó nhập _TAC_GIA_G7 từ đây
+
+    for ma, them in ho_so_sau_g6().items():
+        hs.setdefault(ma, {}).update(them)
     return hs
 
 
@@ -1034,8 +1039,8 @@ _PHAN_BIEN_THUAN_TAP: Dict[str, Any] = {
               "kiểm chéo SPSS/R khớp. Còn vài điểm trình bày và hai phân tích độ nhạy chờ làm tay."),
     "gop_y_nho": [
         ("Từ khoá (trang đầu)", "Dòng từ khoá do máy tách từng chữ của tiêu đề — thay bằng thuật ngữ MeSH"),
-        ("Bảng Poisson (06 kết quả)", "Engine ghi «PR — tỷ lệ hiện mắc» cho thiết kế thuần tập; bản thảo nên gọi "
-                                      "đúng RR (nguy cơ tích luỹ)"),
+        ("Phương pháp — phơi nhiễm", "Mô tả cách xác định dùng PPI liên tục ≥ 12 tháng từ đơn cấp phát (STROBE "
+                                     "mục 7)"),
         ("Kết quả — kết cục phụ", "Hai kết cục phụ SAP §2 chưa phân tích; ghi rõ là báo cáo riêng"),
         ("Độ nhạy SAP §9", "Mục «±1 SD» không áp cho biến nhị phân — cần SAP sửa đổi hoặc ghi lý do"),
     ],
@@ -1183,7 +1188,12 @@ def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
                     "mo_ta": "Hiệu chỉnh lạc quan bằng bootstrap",
                     "chua_tu_dong": "chạy rms::validate trong kịch bản R đã sinh (r/G6_du_bao.R, B tuỳ SAP) — "
                                     "engine Python báo C-statistic trong mẫu"}]},
-        "tong_quan_gop": {"tra_loi_G4": _tra_loi_sap(
+        "tong_quan_gop": {"tra_loi_G4": [
+            # 16/11/2026: SAP tổng quan–gộp có khung riêng (§5 tổng hợp, §6 thiếu cấp nghiên cứu, §10 metafor)
+            (r"thuoc do hieu ung", "RR (nguy cơ tương đối) — kết cục nhị phân nhập viện vì suy tim"),
+            (r"phan mem", "R 4.6 (metafor 4.6); kiểm chéo SPSS 31"),
+            (r"packages", "metafor 4.6, meta 8.0"),
+        ] + _tra_loi_sap(
             "Không áp dụng — tổng quan hệ thống", "Không áp dụng — gộp ở cấp nghiên cứu", "Mô hình hiệu ứng ngẫu "
             "nhiên DerSimonian–Laird; độ nhạy: hiệu ứng cố định", "Loại thuốc SGLT2",
             "Loại nghiên cứu nguy cơ sai lệch cao"),
@@ -1196,10 +1206,11 @@ def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
                     "mo_ta": "Phân nhóm theo thuốc SGLT2",
                     "chua_tu_dong": "phân nhóm theo thuốc (một số thuốc chỉ có 1 thử nghiệm) — meta-regression "
                                     "metafor::rma(mods = ~ factor(thuoc_sglt2)) do thống kê viên chạy"},
-                   {"id": "DN_ca_day_du", "vai": "do_nhay", "sap_muc": "§9", "sap_neo": "Complete case vs MI",
-                    "mo_ta": "Không áp dụng",
-                    "chua_tu_dong": "gộp cấp nghiên cứu — không có dữ liệu thiếu cấp cá nhân"},
-                   _sd_khong_ap_dung("gộp RR — ±1 SD không áp dụng"),
+                   {"id": "DN_co_dinh", "vai": "do_nhay", "sap_muc": "§9",
+                    "sap_neo": "Hiệu ứng cố định so với hiệu ứng ngẫu nhiên",
+                    "mo_ta": "RR gộp hiệu ứng cố định (nghịch đảo phương sai)",
+                    "chua_tu_dong": "đã tính cùng phân tích chính — khoá rr_gop_co_dinh/ci_95_co_dinh trong "
+                                    "G6_analysis_summary.json, kiểm chéo metafor method=\"FE\" trong r/G6_gop.R"},
                    {"id": "DN_rob_thap", "vai": "do_nhay", "sap_muc": "§9",
                     "sap_neo": "Loại nghiên cứu nguy cơ sai lệch cao", "mo_ta": "Loại thử nghiệm RoB 2 «cao»",
                     "ke_thua": True, "tham_so": {"loc": "rob2_tong != 3"}}]},
@@ -1208,6 +1219,12 @@ def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
             "phỏng vấn liên tiếp không có mã mới", "Đã/chưa bắt đầu insulin", "Mã hoá độc lập bởi 2 người") + [
             # 16/11/2026: SAP ĐỊNH TÍNH có khung riêng (§7 chọn mẫu đa dạng, §9 trustworthiness Lincoln & Guba)
             (r"chien luoc chon mau", "Chọn mẫu có chủ đích theo đã/chưa bắt đầu insulin, giới và thời gian mắc ĐTĐ"),
+            # 16/11/2026: ô §5/§10 SAP định tính — trước rơi vào câu trả lời chung «R 4.6 …» (khớp chữ «phần mềm»)
+            (r"so nguoi ma hoa", "2 người mã hoá độc lập theo bộ mã (codebook) trên bảng tính có kiểm soát phiên bản; "
+                                 "không dùng phần mềm QDA thương mại"),
+            (r"lien.nguoi.ma", "Thảo luận đồng thuận sau mỗi 5 bản gỡ băng; bất đồng do người thứ ba phân xử"),
+            (r"phan mem phan tich dinh tinh", "Bảng tính LibreOffice Calc 24.8 (mã tay theo codebook) — không dùng "
+                                              "phần mềm QDA"),
             (r"tieu chi da dang", "Đã/chưa bắt đầu insulin; nam/nữ; mắc ĐTĐ dưới/từ 10 năm"),
             (r"credibility", "Kiểm tra lại với người tham gia (member checking) trên tóm tắt chủ đề"),
             (r"transferability", "Mô tả dày bối cảnh phòng khám và đặc điểm người tham gia"),

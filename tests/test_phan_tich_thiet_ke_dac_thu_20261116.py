@@ -71,7 +71,9 @@ def test_du_bao_c_statistic_la_auc_cua_xac_suat_du_doan_va_brier():
 
 def test_dinh_tinh_dem_chu_de_bo_o_trong():
     kq = P.dinh_tinh([{"c": "Sợ kim"}, {"c": "Sợ kim"}, {"c": "Chi phí"}, {"c": ""}], "c")
-    assert kq["n_ban_go_bang"] == 3 and kq["chu_de"][0] == {"chu_de": "Sợ kim", "n": 2, "pct": 200 / 3}
+    dau = kq["chu_de"][0]
+    assert kq["n_ban_go_bang"] == 3 and (dau["chu_de"], dau["n"], dau["pct"]) == ("Sợ kim", 2, 200 / 3)
+    assert dau["ci_95_wilson"] == P.wilson(2, 3) and dau["ci_95_wilson"][0] < dau["ty_le"] < dau["ci_95_wilson"][1]
 
 
 def test_so_khop_chi_so_dai_luong_phan_mem_xuat_duoc():

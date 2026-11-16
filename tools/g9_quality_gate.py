@@ -595,7 +595,13 @@ def _data_availability_ok(payload: Mapping[str, Any]) -> tuple[bool, str]:
         and value.get("clinical_trial") in {True, False}
     )
     trial_ok = True
-    if value.get("clinical_trial") is True:
+    if value.get("clinical_trial") is True and decision == "NOT_SHARED_WITH_JUSTIFICATION":
+        # SỬA 16/11/2026 (giả lập trọn vòng — RCT): thử nghiệm KHÔNG chia sẻ dữ liệu cá thể là câu trả lời HỢP LỆ của
+        # ICMJE (bài ICMJE 2017, PLoS Med, PMID 28582414, Bảng 1 Ví dụ 4: «No», các mục còn lại «Not available/Not
+        # applicable») — G8-AUTO-08 đã nhận từ 05/10/2026, riêng G9 vẫn đòi đủ «dữ liệu gì/khi nào/cơ chế» ⇒ gói thử
+        # nghiệm không chia sẻ IPD không bao giờ READY. Vẫn đòi lý do (access_criteria) và tuyên bố khớp bản đăng ký.
+        trial_ok = bool(_real_text(value.get("access_criteria")) and value.get("registry_statement_consistent") is True)
+    elif value.get("clinical_trial") is True:
         related = value.get("related_documents")
         trial_ok = all(
             (

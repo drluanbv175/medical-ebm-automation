@@ -326,7 +326,17 @@ def test_khong_bia_khoang_trong_viet_nam():
     gaps = G0.analyze_evidence_gaps(_results(), "x")
     joined = " ".join(gaps["gaps"])
     assert "Việt Nam" not in joined and "châu Á" not in joined
-    assert "[CẦN BÁC SĨ" in joined, "phải gắn nhãn cần người thật thay vì tự bịa"
+    # 16/11/2026: nhãn «[CẦN BÁC SĨ …]» không thuộc bộ nhãn skill ⇒ check_de_cuong R3 chặn G10 của mọi đề tài G0 không
+    # thấy khoảng trống (giả lập tổng quan/định tính). Nay dùng quy ước chú thích tự do «[CẦN — bác sĩ …]» — vẫn đòi
+    # NGƯỜI THẬT xác định, và nhãn phải qua R3.
+    import re
+
+    import check_de_cuong as CDC
+    import skill_standards as S
+
+    assert "[CẦN — bác sĩ tự xác định" in joined, "phải gắn nhãn cần người thật thay vì tự bịa"
+    for nhan in re.findall(r"\[CẦN[^\]]*\]", joined):
+        assert S.is_valid_status_tag(nhan) or CDC._FREEFORM_CAN_RE.match(nhan), nhan
 
 
 def test_nhan_nghien_cuu_gan_day_noi_dung_pham_vi():

@@ -534,6 +534,53 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             "- **Random seed:** KHÔNG ÁP DỤNG — định tính không có bước ngẫu nhiên trong phân tích  ",
             "",
         ]
+    elif design_code == "sr_ma":
+        # THÊM 16/11/2026 (giả lập trọn vòng — tổng quan + gộp): gộp ở CẤP NGHIÊN CỨU. Khuôn cá thể in sẵn «EPV/VIF»,
+        # «Multiple Imputation (MI, m=20)», «±1 SD», «Complete case vs MI», «mice» — vô nghĩa cho phân tích gộp và
+        # chảy thẳng vào đề cương G10 thành kế hoạch gán đa trị cho dữ liệu cấp nghiên cứu.
+        sap_sections_5_to_9 = [
+            "### §5 TỔNG HỢP ĐỊNH LƯỢNG (thay Phân tích đa biến — gộp ở cấp nghiên cứu)",
+            "",
+            "- **Thước đo hiệu ứng:** [CẦN THỐNG KÊ VIÊN — RR/OR/HR cho kết cục nhị phân/sống còn; MD/SMD cho liên "
+            "tục]  ",
+            "- **Mô hình gộp:** hiệu ứng ngẫu nhiên (REML hoặc DerSimonian–Laird) là chính; hiệu ứng cố định ở độ "
+            "nhạy  ",
+            "- **Không đồng nhất:** I², τ², kiểm định Q và khoảng dự báo 95%  ",
+            "- **Sai lệch công bố / hiệu ứng nghiên cứu nhỏ:** biểu đồ phễu + kiểm định Egger khi ≥ 10 nghiên cứu  ",
+            "- **Mức chắc chắn:** GRADE cho từng kết cục (bảng tóm tắt phát hiện)  ",
+            "",
+            "### §6 DỮ LIỆU THIẾU CẤP NGHIÊN CỨU (thay Dữ liệu thiếu cá thể — không gán đa trị)",
+            "",
+            "- **Chiến lược:** liên hệ tác giả xin dữ liệu thiếu; nghiên cứu không đủ dữ liệu kết cục được ghi lại và "
+            "không đưa vào gộp (phân tích trên dữ liệu có sẵn)  ",
+            "- **Giả định:** dữ liệu thiếu cấp nghiên cứu không liên quan kết quả — kiểm bằng phân tích độ nhạy  ",
+            "",
+            "### §7 PHÂN NHÓM (Subgroup / meta-regression)",
+            "",
+            "- **Nhóm nhỏ tiền định:** [CẦN BÁC SĨ — phải ghi TRƯỚC khi xem dữ liệu]  ",
+            "- **Kiểm định tương tác:** kiểm định khác biệt giữa phân nhóm (Q giữa nhóm) hoặc meta-regression khi đủ "
+            "nghiên cứu  ",
+            "- **Cảnh báo:** Phân tích nhóm nhỏ chỉ diễn giải thăm dò  ",
+            "",
+            "### §8 ĐA SO SÁNH",
+            "",
+            "- **Điều chỉnh:** [CẦN — Bonferroni / FDR nếu >3 kết cục chính]  ",
+            "- **Kết cục được coi là kết cục chính:** chỉ 1  ",
+            "",
+            "### §9 PHÂN TÍCH ĐỘ NHẠY",
+            "",
+            "- Hiệu ứng cố định so với hiệu ứng ngẫu nhiên  ",
+            "- [CẦN BÁC SĨ thêm kịch bản cụ thể]  ",
+            "",
+        ]
+        muc_10 = [
+            "### §10 PHẦN MỀM + SEED",
+            "",
+            "- **Phần mềm:** [CẦN — R v4.x (metafor/meta) / Stata v18 (meta) / RevMan 5.4]  ",
+            "- **Packages:** [CẦN — metafor, meta...]  ",
+            "- **Random seed:** KHÔNG ÁP DỤNG — phân tích gộp không có bước ngẫu nhiên (trừ khi dùng bootstrap/Bayes)  ",
+            "",
+        ]
     else:
         sap_sections_5_to_9 = [
             "### §5 PHÂN TÍCH ĐA BIẾN",
@@ -914,6 +961,15 @@ def _dien_khung(sap: str, khung, design_code) -> str:
         thay["- **Biến đưa vào mô hình imputation:** [CẦN BÁC SĨ ĐIỀN]  "] = (
             f"- **Biến đưa vào mô hình imputation:** {', '.join(f'`{b}`' for b in khung['bien_imputation'])} *(mọi "
             "biến phân tích của ma trận — thống kê viên xác nhận)*  ")
+    if design_code == "qualitative":
+        for nhan_o, khoa, mau in (
+                ("Tiếp cận", "tiep_can", "- **Tiếp cận:** [CẦN BÁC SĨ — quy nạp (inductive)/diễn dịch (deductive)/hỗn hợp]  "),
+                ("Tiêu chí bão hòa", "bao_hoa",
+                 "- **Tiêu chí bão hòa:** [CẦN BÁC SĨ — vd không còn mã/chủ đề mới sau N cuộc phỏng vấn liên tiếp]  "),
+                ("Chiến lược chọn mẫu", "chon_mau",
+                 "- **Chiến lược chọn mẫu:** [CẦN BÁC SĨ — purposive/maximum variation/theoretical sampling]  ")):
+            if str(khung.get(khoa) or "").strip() and "[CẦN" not in str(khung[khoa]):
+                thay[mau] = f"- **{nhan_o}:** {khung[khoa]}{nhan}  "
     for cu, moi in thay.items():
         sap = sap.replace(cu, moi)
     return sap
@@ -939,6 +995,10 @@ def _khung_sap(out, meta):
         "ket_cuc_phu": KD.danh_sach(KD.gia_tri(meta, "secondary_outcomes")[0]),
         "bien_phan_tich": [f"`{b}` ({khai.get(b) or b})" for b in phan_tich],
         "bien_imputation": [b for b in ([vt.get("ket_cuc")] + phan_tich) if b],
+        # 16/11/2026 (giả lập trọn vòng — định tính): G1 đã chốt cách tiếp cận, tiêu chí bão hoà và chiến lược chọn mẫu
+        # ⇒ SAP định tính không hỏi lại
+        "tiep_can": g1.get("qualitative_approach"), "bao_hoa": g1.get("saturation_criterion"),
+        "chon_mau": g1.get("recruitment_strategy") if str(g1.get("recruitment_strategy") or "").strip() else None,
     }
 
 

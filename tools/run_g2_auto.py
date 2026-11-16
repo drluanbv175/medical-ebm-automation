@@ -790,16 +790,11 @@ def _khoi_prospero(meta: Optional[dict]) -> str:
 
     po = g1.get("primary_outcome") if isinstance(g1.get("primary_outcome"), dict) else {}
     tieu_chi = g1.get("inclusion_criteria") if isinstance(g1.get("inclusion_criteria"), list) else []
+    import quyet_dinh_da_chot as QD  # noqa: PLC0415 — cùng luật suy công cụ RoB với đề cương G10
+
     loai = next((str(x) for x in tieu_chi if re.search(r"thử nghiệm|ngẫu nhiên|\bRCT\b|thuần tập|bệnh chứng|"
                                                        r"quan sát|cắt ngang|chẩn đoán", str(x), re.I)), "")
-    if re.search(r"ngẫu nhiên|\bRCT\b", loai, re.I):
-        rob = "RoB 2 (Cochrane) cho thử nghiệm ngẫu nhiên"
-    elif re.search(r"chẩn đoán", loai, re.I):
-        rob = "QUADAS-3"
-    elif re.search(r"thuần tập|bệnh chứng|quan sát|cắt ngang", loai, re.I):
-        rob = "ROBINS-I (can thiệp) / ROBINS-E (phơi nhiễm)"
-    else:
-        rob = "[CẦN — công cụ đánh giá nguy cơ sai lệch theo loại nghiên cứu được đưa vào]"
+    rob = QD.cong_cu_rob(tieu_chi) or "[CẦN — công cụ đánh giá nguy cơ sai lệch theo loại nghiên cứu được đưa vào]"
     ky = str(g1.get("study_period") or "")
     bat_dau, _, ket_thuc = ky.partition(" đến ")
     nguon = ds(g1.get("information_sources"), "PubMed, Cochrane CENTRAL, Embase, Web of Science, grey literature")

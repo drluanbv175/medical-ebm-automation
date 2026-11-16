@@ -158,15 +158,24 @@ assert all(S.canonical_design_code(k) == k for k in _PROTOCOL_CHECKLIST_BY_DESIG
 assert all(S.canonical_design_code(k) == k for k in _NO_ITEM_LIST_REASON)
 
 
-def pmid_tai_lieu_chuan() -> frozenset:
+def pmid_tai_lieu_chuan(design_code: str | None = None) -> frozenset:
     """PMID của bài CHUẨN ĐỀ CƯƠNG mà chính hệ thống chèn vào đề cương (SPIRIT 2025, PRISMA-P 2015 — nguồn đã xác minh
     ghi ở *_PROVENANCE). Bộ kiểm đề cương (check_de_cuong R4) dùng tập này để KHÔNG gắn «nghi bịa» cho trích dẫn do hệ
     chèn (06/10/2026 — chuỗi thật SR/MA tới G10 bị chặn «nghi bịa: 25554246»). Không miễn kiểm rút bài: G10-AUTO-05
-    vẫn đòi A12 phủ các PMID này trước khi phát hành."""
+    vẫn đòi A12 phủ các PMID này trước khi phát hành.
+
+    `design_code` (16/11/2026): chỉ PMID chuẩn đề cương mà G10 SẼ chèn cho thiết kế đó (RCT ⇒ SPIRIT 2025, tổng quan ⇒
+    PRISMA-P 2015; thiết kế khác ⇒ rỗng). Người kiểm trích dẫn đưa tập này vào A12 NGAY ở G7 — kiểm muộn ở G10 thì
+    ghi lại biên nhận A12 làm vỡ manifest G9 đã khoá (giả lập trọn vòng: tổng quan bị chặn G10 vì PMID 25554246)."""
     import re
 
     tap = set()
-    for nguon in (SPIRIT_2025_PROVENANCE, PRISMA_P_2015_PROVENANCE):
+    if design_code is not None:
+        muc = _PROTOCOL_CHECKLIST_BY_DESIGN.get(S.canonical_design_code(design_code))
+        nguon_chon = (muc[2],) if muc else ()
+    else:
+        nguon_chon = (SPIRIT_2025_PROVENANCE, PRISMA_P_2015_PROVENANCE)
+    for nguon in nguon_chon:
         for gia_tri in nguon.values():
             if isinstance(gia_tri, str):
                 tap.update(re.findall(r"PMID (\d{6,9})", gia_tri))

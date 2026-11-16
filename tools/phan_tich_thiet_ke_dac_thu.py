@@ -181,7 +181,8 @@ def dinh_tinh(hang: List[Dict[str, Any]], chu_de: str) -> Dict[str, Any]:
             dem[v] = dem.get(v, 0) + 1
     n = sum(dem.values())
     return {"n_ban_go_bang": n, "so_chu_de": len(dem),
-            "chu_de": [{"chu_de": k, "n": v, "pct": 100 * v / n} for k, v in sorted(dem.items(), key=lambda x: -x[1])],
+            "chu_de": [{"chu_de": k, "n": v, "pct": 100 * v / n, "ty_le": v / n, "ci_95_wilson": wilson(v, n)}
+                       for k, v in sorted(dem.items(), key=lambda x: -x[1])],
             "ghi_chu": "Tần suất mô tả các mã đã gán — không thay phân tích chủ đề của nhóm nghiên cứu (COREQ/SRQR)"}
 
 
