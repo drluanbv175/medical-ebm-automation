@@ -2732,6 +2732,20 @@ def main():
             print("✗ DỪNG: lọc quần thể không còn ca nào")
             sys.exit(1)
 
+    # 1b'. (16/11/2026 — giả lập trọn vòng 8 thiết kế) Phân tích NHÓM CON lọc theo một hiệp biến («gioi == 1») làm
+    # biến đó HẰNG trong quần thể đã lọc ⇒ không ước lượng được hệ số (RCT: «gioi» 1 mức ⇒ DỪNG cả hai nhóm con).
+    # Thông lệ chuẩn: loại khỏi mô hình CỦA phân tích nhóm con đó và ghi lại; tóm tắt lưu danh sách đã loại nên SPSS/R
+    # kiểm chéo cùng mô hình. Không lọc ⇒ không đổi gì (hiệp biến hằng trên toàn bộ dữ liệu vẫn DỪNG như cũ).
+    hang_sau_loc: list = []
+    if args.loc.strip():
+        hang_sau_loc = [c for c in covariates if c in df.columns and df[c].dropna().nunique() <= 1]
+        if hang_sau_loc:
+            covariates = [c for c in covariates if c not in hang_sau_loc]
+            args.hiep_bien_phan_loai = ",".join(c.strip() for c in args.hiep_bien_phan_loai.split(",")
+                                                if c.strip() and c.strip() not in hang_sau_loc)
+            print(f"ℹ️  Hiệp biến hằng định sau lọc «{args.loc}» — loại khỏi mô hình nhóm con: "
+                  f"{', '.join(hang_sau_loc)}")
+
     # 1c. HIỆP BIẾN PHÂN LOẠI (F2, 14/11/2026): cột mã số khai phân loại ⇒ biến giả tường minh <cột>_<mã> (tham chiếu =
     # mã nhỏ nhất) dùng cho MỌI mô hình complete-case; MI nhận cột gốc + C(). Cầu nối SPSS/R dựng đúng các biến giả này.
     cot_phan_loai = [c.strip() for c in args.hiep_bien_phan_loai.split(",") if c.strip()]
@@ -2789,6 +2803,7 @@ def main():
         # F3: quần thể phân tích — cầu nối lọc y hệt (cùng biểu thức, cùng cột ngày)
         "loc": args.loc.strip() or None,
         "loc_cot_ngay": loc_cot_ngay,
+        "hiep_bien_hang_sau_loc": hang_sau_loc,  # 16/11/2026: đã loại khỏi mô hình nhóm con (hằng sau lọc)
     }
     if args.loc.strip():
         summary["loc"] = {"bieu_thuc": args.loc.strip(), "n_truoc": n_truoc_loc, "n_sau": len(df)}

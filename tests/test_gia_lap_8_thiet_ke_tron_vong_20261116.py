@@ -228,3 +228,43 @@ def test_g4_generate_chung_chi_khoa_dong_bo_voi_par_2():
                       khung={"ket_cuc": {"name": "Gãy xương", "measure": "phim X-quang", "timepoint": "3 năm"}})
     assert "║ KQ chính  : Gãy xương; đo bằng phim X-quang; thời điểm: 3 năm ║" in sap
     assert "[CẦN BÁC SĨ ĐIỀN — từ SAP §2]" not in sap
+
+
+# ── G6: quy ước «◆ MÔ HÌNH CHÍNH (SAP §4)» + nhóm con lọc theo hiệp biến ─────────────────────────────────────────────
+
+
+@pytest.mark.parametrize("thiet_ke, v_them", [
+    ("case_control", {}), ("diagnostic", {"ref_standard": "xo_hoa", "index_test": "fib4"}), ("prediction", {}),
+    ("sr_ma", {}), ("cross_sectional", {"mo_ta_ty_le": True}),
+])
+def test_g6_moi_khuon_danh_dau_dung_mot_dong_mo_hinh_chinh(thiet_ke, v_them):
+    import gia_lap_tron_vong as TV
+    import run_g6_auto as G6
+
+    v = {"exposure": "phoi", "outcome": "kc", "covariates": ["tuoi"], "time_col": "t", **v_them}
+    r03 = G6.R_ANALYSIS_MAP_FUNC(thiet_ke, v, 400, 0.05, 0.8, 1.5, "OR")
+    dong = [d for d in r03.splitlines() if "◆ MÔ HÌNH CHÍNH (SAP §4)" in d]
+    assert len(dong) == 1 and dong[0].startswith("# "), dong
+    bat = TV.TronVong.DONG_MO_HINH_CHINH.sub(r"\1", r03)  # vai thống kê viên bật đúng dòng có dấu
+    assert any("◆ MÔ HÌNH CHÍNH" in d and not d.startswith("#") for d in bat.splitlines())
+
+
+def test_g6_nhan_hiep_bien_khong_ap_dung_cho_tong_hop_va_dinh_tinh():
+    import run_g6_auto as G6
+
+    assert G6._nhan_hiep_bien([], "sr_ma").startswith("Không áp dụng")
+    assert G6._nhan_hiep_bien([], "qualitative").startswith("Không áp dụng")
+    assert G6._nhan_hiep_bien([], "cohort") == "[xem SAP §5]"
+    assert G6._nhan_hiep_bien(["tuoi", "gioi"], "sr_ma") == "tuoi, gioi"
+
+
+def test_bo_may_loai_hiep_bien_hang_sau_loc_nhom_con(tmp_path, monkeypatch):
+    """Nhóm con «gioi == 1» với hiệp biến phân loại «gioi»: trước đây DỪNG («chỉ có 1 mức»); nay loại khỏi mô hình nhóm
+    con và ghi vào đặc tả (SPSS/R kiểm chéo cùng mô hình). Không lọc thì giữ nguyên hành vi cũ."""
+    import run_stats_analysis as RSA
+
+    src = Path(RSA.__file__).read_text(encoding="utf-8")
+    i = src.index("hang_sau_loc: list = []")
+    khoi = src[i:src.index("# 1c. HIỆP BIẾN PHÂN LOẠI", i)]
+    assert "if args.loc.strip():" in khoi and "nunique() <= 1" in khoi
+    assert '"hiep_bien_hang_sau_loc": hang_sau_loc' in src

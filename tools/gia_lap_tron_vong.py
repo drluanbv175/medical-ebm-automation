@@ -963,8 +963,10 @@ class TronVong:
     # Dòng mẫu do run_g6_auto để dạng chú thích: nạp RDS khoá + kiểm dấu, công thức mô hình chính, lời gọi ước lượng
     # robust. Thống kê viên đối chiếu với SAP §4 rồi BẬT (G6-AUTO-09: chỉ dòng thi hành mới chứng minh script chạy
     # mô hình).
-    DONG_MO_HINH_CHINH = re.compile(r"^# ((?:df <- readRDS|stopifnot\(identical\(attr\(df|fit_\w+ <- |"
-                                    r"lmtest::coeftest\(fit_)[^\n]*)$", re.M)
+    # 16/11/2026: khuôn mọi thiết kế đánh dấu dòng mô hình chính «◆ MÔ HÌNH CHÍNH (SAP §4)» — thống kê viên bật đúng
+    # dòng đó (bệnh chứng/chẩn đoán/dự báo/tổng hợp/cắt ngang mô tả), không chỉ dòng «fit_…» của khuôn thuần tập.
+    DONG_MO_HINH_CHINH = re.compile(r"^# ((?:df <- readRDS|extracted <- read\.csv|stopifnot\(identical\(attr\(df|"
+                                    r"fit_\w+ <- |lmtest::coeftest\(fit_|(?=[^\n]*◆ MÔ HÌNH CHÍNH))[^\n]*)$", re.M)
 
     def _bat_mo_hinh_chinh(self) -> None:
         p = self.out / "scripts" / "03_analysis.R"
