@@ -937,7 +937,7 @@ class TronVong:
         text = sap.read_text(encoding="utf-8")
         chinh = next(x for x in mau if x.get("vai") == "chinh")
         ts_chinh = dict(chinh["tham_so"])
-        if ts_chinh.get("outcome") and "outcome_type" not in ts_chinh:
+        if ts_chinh.get("outcome") and "outcome_type" not in ts_chinh and not ts_chinh.get("loai_dac_thu"):
             ts_chinh["outcome_type"] = loai_kc_tu_sap(text)
         ds: List[Dict[str, Any]] = []
         for x in mau:
@@ -968,6 +968,18 @@ class TronVong:
     DONG_MO_HINH_CHINH = re.compile(r"^# ((?:df <- readRDS|extracted <- read\.csv|stopifnot\(identical\(attr\(df|"
                                     r"fit_\w+ <- |lmtest::coeftest\(fit_|(?=[^\n]*◆ MÔ HÌNH CHÍNH))[^\n]*)$", re.M)
 
+    def _cong_thuc_phai_sinh(self) -> None:
+        """Thống kê viên soạn công thức biến PHÁI SINH từ trường calc của từ điển (vd FIB-4) rồi ghi duyệt — đúng quy
+        trình bien_phai_sinh (soan-tu-calc → duyet), CHỈ trên đề tài tổng hợp trong thư mục tạm (16/11/2026)."""
+        td = self.out / f"G5_REDCap_dictionary_{self.study}.csv"
+        if not td.is_file() or ",calc," not in td.read_text(encoding="utf-8"):
+            return
+        self.chay("G6 soạn công thức phái sinh từ calc", "bien_phai_sinh.py", "soan-tu-calc", "--study", self.study,
+                  "--ghi")
+        r = self.chay("G6 thống kê viên duyệt công thức phái sinh", "bien_phai_sinh.py", "duyet", "--study",
+                      self.study, "--vai", "THONG_KE_VIEN", "--tham-chieu", "GIA-LAP-TKV", "--ap-dung")
+        self.du_lieu["phai_sinh"] = {"ma": r.get("ma"), "cuoi": r["dong"][-2:]}
+
     def _bat_mo_hinh_chinh(self) -> None:
         p = self.out / "scripts" / "03_analysis.R"
         if p.is_file():
@@ -982,6 +994,7 @@ class TronVong:
         self.chay("G6 sinh script phân tích", "run_g6_auto.py", "--study", self.study)
         a7 = self.out / f"G6_A7_ANALYSIS_SCRIPTS_{self.study}.md"
         self.hoan_thien_tep("G6", a7, list(TRA_LOI_CHUNG), {})
+        self._cong_thuc_phai_sinh()
         dt = self._dac_ta_g6()
         if dt:
             self.chay("G6 kiểm đặc tả SAP", "chay_sap_g6.py", "kiem", "--study", self.study)

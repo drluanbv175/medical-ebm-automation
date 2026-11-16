@@ -81,7 +81,20 @@ THAM_SO = {
     "event": ("--event", "s"),
     "n_imputations": ("--n-imputations", "nguyen"),
     "loc": ("--loc", "bt"),
+    # 16/11/2026 (giả lập 8 thiết kế): phân tích ĐẶC THÙ — chẩn đoán · dự báo · tổng quan–gộp · định tính — chạy bằng
+    # phan_tich_thiet_ke_dac_thu.py (run_stats_analysis chưa có đường); cùng nhật ký/tóm tắt/kiểm chéo SPSS–R.
+    "loai_dac_thu": ("--loai", "loai"),
+    "tham_chieu": ("--tham-chieu", "s"),
+    "chi_so": ("--chi-so", "s"),
+    "nguong": ("--nguong", "so"),
+    "nhan_nghien_cuu": ("--nhan-nghien-cuu", "s"),
+    "su_kien_can_thiep": ("--su-kien-can-thiep", "s"),
+    "n_can_thiep": ("--n-can-thiep", "s"),
+    "su_kien_chung": ("--su-kien-chung", "s"),
+    "n_chung": ("--n-chung", "s"),
+    "chu_de": ("--chu-de", "s"),
 }
+DAC_THU = ("chan_doan", "du_bao", "gop", "dinh_tinh")
 LOAI_KC = ("auto", "binary", "continuous", "ordinal", "poisson_pr")
 TEN_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
 
@@ -144,6 +157,9 @@ def _kiem_gia_tri(ten: str, kieu: str, v) -> list[str]:
     elif kieu == "nguyen":
         if isinstance(v, bool) or not isinstance(v, int) or not 0 <= v <= 200:
             return [f"{ten}: cần số nguyên 0–200"]
+    elif kieu == "loai":
+        if v not in DAC_THU:
+            return [f"{ten}: phải thuộc {DAC_THU}"]
     elif kieu == "bt":
         if not chuoi_an_toan(v):
             return [f"{ten}: cần biểu thức (không bắt đầu bằng «-»)"]
@@ -206,7 +222,16 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
         for k, v in ts.items():
             if k in THAM_SO:
                 loi += [f"{pid}: {x}" for x in _kiem_gia_tri(k, THAM_SO[k][1], v)]
-        if not ts.get("outcome") and not ts.get("time") and not ts.get("ty_le"):
+        if ts.get("loai_dac_thu"):
+            import phan_tich_thiet_ke_dac_thu as PTD  # noqa: PLC0415
+
+            thieu = [x for x in PTD.LOAI.get(ts["loai_dac_thu"], ()) if ts.get(x) in (None, "", [])]
+            if thieu:
+                loi.append(f"{pid}: phân tích {ts['loai_dac_thu']} thiếu tham số: {', '.join(thieu)}")
+            thua = [x for x in ts if x not in (*PTD.LOAI.get(ts["loai_dac_thu"], ()), "loai_dac_thu", "loc")]
+            if thua:  # tham số của run_stats_analysis không có nghĩa với phân tích đặc thù — báo ngay khi kiểm
+                loi.append(f"{pid}: tham số không áp dụng cho phân tích {ts['loai_dac_thu']}: {', '.join(thua)}")
+        elif not ts.get("outcome") and not ts.get("time") and not ts.get("ty_le"):
             loi.append(f"{pid}: cần outcome, hoặc time+event, hoặc ty_le")
         if bool(ts.get("time")) != bool(ts.get("event")):
             loi.append(f"{pid}: time và event phải đi cùng nhau")
@@ -323,6 +348,17 @@ def _tom_tat_uoc_luong(tom: dict) -> dict:
     if tom.get("ty_le"):
         ra["ty_le"] = [{k: x.get(k) for k in ("cot", "ty_le", "ci_95", "n", "ci_wilson_hieu_dung") if k in x}
                        for x in tom["ty_le"]][:6]  # fmt: skip
+    if tom.get("dac_thu"):  # 16/11/2026: phân tích đặc thù — vài ước lượng chính theo loại
+        dt_, loai = tom["dac_thu"], tom.get("loai_dac_thu")
+        if loai == "chan_doan":
+            ra["chan_doan"] = {"auc": dt_["auc"]["auc"], "ci_95": dt_["auc"]["ci_95"],
+                               "do_nhay": dt_["do_nhay"]["uoc_luong"], "do_dac_hieu": dt_["do_dac_hieu"]["uoc_luong"]}
+        elif loai == "du_bao":
+            ra["du_bao"] = {"c_statistic": dt_["c_statistic"]["auc"], "brier": dt_["brier"]}
+        elif loai == "gop":
+            ra["gop"] = {"rr": dt_["rr_gop_ngau_nhien"], "ci_95": dt_["ci_95"], "i2": dt_["i2_pct"], "k": dt_["k"]}
+        else:
+            ra["dinh_tinh"] = {"so_chu_de": dt_["so_chu_de"], "n": dt_["n_ban_go_bang"]}
     sv = tom.get("survival") or {}
     if (sv.get("adjusted") or {}).get("HR") is not None:
         ra["hr_hieu_chinh"] = {k: sv["adjusted"].get(k) for k in ("HR", "CI_95", "p")}
@@ -390,7 +426,9 @@ def lenh_chay(args) -> int:
             print(f"⏸  {pt['id']}: CHỜ thống kê viên làm tay — {pt['chua_tu_dong']}")
             continue
         gate = gate_cua(pt)
-        lenh = [sys.executable, str(TOOLS / "run_stats_analysis.py"), "--data", str(csv_khoa), "--study", args.study,
+        cong_cu = "phan_tich_thiet_ke_dac_thu.py" if (pt.get("tham_so") or {}).get("loai_dac_thu") else \
+            "run_stats_analysis.py"
+        lenh = [sys.executable, str(TOOLS / cong_cu), "--data", str(csv_khoa), "--study", args.study,
                 "--gate", gate, *doi_so_run_stats(pt), *(["--kiem-cheo"] if args.kiem_cheo else [])]  # fmt: skip
         print(f"▶  {pt['id']} ({pt['vai']}, {pt.get('sap_muc')}) — gate {gate}", flush=True)
         try:

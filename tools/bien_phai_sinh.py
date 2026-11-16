@@ -29,6 +29,7 @@ Ngôn ngữ công thức — tập con của biểu thức Python, chỉ hàm tr
     neu(dk, a, b)                      dk ≠ 0 ⇒ a, = 0 ⇒ b, thiếu ⇒ thiếu
     bo_ma(x, [998])                    giá trị thuộc danh sách ⇒ thiếu
     la_thieu(x)                        1 nếu thiếu, 0 nếu không (không bao giờ thiếu)
+    can_bac_hai(x)                     căn bậc hai; x âm hoặc thiếu ⇒ thiếu (REDCap sqrt — vd FIB-4; 16/11/2026)
     trong(x, [1, 2, 3])                1/0; thiếu nếu x thiếu
     nhom(x, [40, 60], [1, 2, 3])       x < 40 ⇒ 1 · 40 ≤ x < 60 ⇒ 2 · x ≥ 60 ⇒ 3
     tb_hop_le(ds, hop_le=[1, 5], khong_ap_dung=[7], ty_le_toi_thieu=0.8)
@@ -112,6 +113,7 @@ HAM: dict[str, dict] = {
     "neu": {"vt": ["bt", "bt", "bt"], "kw": {}},
     "bo_ma": {"vt": ["bt", "so_ds"], "kw": {}},
     "la_thieu": {"vt": ["bt"], "kw": {}},
+    "can_bac_hai": {"vt": ["bt"], "kw": {}},
     "trong": {"vt": ["bt", "so_ds"], "kw": {}},
     "nhom": {"vt": ["bt", "so_ds", "so_ds"], "kw": {}},
     "tb_hop_le": {
@@ -723,6 +725,9 @@ def _ham_py(cay: dict, cot: dict, idx):
         return x.where(~x.isin(a[1]))
     if ten == "la_thieu":
         return tinh_cay(a[0], cot, idx).isna().astype("float64")
+    if ten == "can_bac_hai":
+        x = tinh_cay(a[0], cot, idx)
+        return np.sqrt(x.where(x >= 0))
     if ten == "trong":
         x = tinh_cay(a[0], cot, idx)
         return x.isin(a[1]).astype("float64").where(x.notna())
@@ -914,6 +919,11 @@ class SinhSpss:
             return t
         if ten == "la_thieu":
             return f"SYSMIS({self.bt(a[0], ps)})"
+        if ten == "can_bac_hai":  # âm ⇒ thiếu (không để SQRT của SPSS cảnh báo rồi trả SYSMIS ngầm)
+            x = self.bt(a[0], ps)
+            t = self._tam()
+            d += [f"COMPUTE {t} = $SYSMIS.", f"IF ({x} >= 0) {t} = SQRT({x})."]
+            return t
         if ten == "trong":
             return f"ANY({self.bt(a[0], ps)}, {', '.join(so_spss(v) for v in a[1])})"
         if ten == "nhom":
@@ -1141,6 +1151,8 @@ class SinhR:
                 return f"(function(x) {{ x[!is.na(x) & x %in% {_vec_r(a[1])}] <- NA_real_; x }})({x})"
             if ten == "la_thieu":
                 return f"as.numeric(is.na({self.bt(a[0], ps)}))"
+            if ten == "can_bac_hai":
+                return f"(function(x) {{ x[!is.na(x) & x < 0] <- NA_real_; sqrt(x) }})({self.bt(a[0], ps)})"
             if ten == "trong":
                 x = self.bt(a[0], ps)
                 return f"(function(x) ifelse(is.na(x), NA_real_, as.numeric(x %in% {_vec_r(a[1])})))({x})"
@@ -1428,6 +1440,9 @@ class _DichCalc(ast.NodeTransformer):
         if ten == "round" and 1 <= len(n.args) <= 2 and not n.keywords:
             self._ghi(_CHU_THICH_ROUND)
             return self.visit(n.args[0])
+        if ten == "sqrt" and len(n.args) == 1 and not n.keywords:  # 16/11/2026: FIB-4 = tuổi·AST/(tiểu cầu·√ALT)
+            return ast.copy_location(ast.Call(func=ast.Name("can_bac_hai", ast.Load()), args=[self.visit(n.args[0])],
+                                              keywords=[]), n)
         if ten != "neu":
             raise LoiCongThuc(f"hàm REDCap «{ten or '?'}» chưa có trong ngôn ngữ công thức")
         self.generic_visit(n)
