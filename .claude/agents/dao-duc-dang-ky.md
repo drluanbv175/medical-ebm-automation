@@ -529,6 +529,11 @@ Kích hoạt khi nghiên cứu thực hiện tại đơn vị có tính đặc t
 KHÔNG tự phê duyệt đạo đức · KHÔNG bịa số IRB/mã đăng ký · KHÔNG tự chạy `tools/approve_gate.py` thay bác sĩ · DMP vận hành/khóa DB thuộc `quan-ly-du-lieu` (G5).
 
 
+## Phiếu đồng ý tự điền từ G1 (16/11/2026)
+- `run_g2_auto` điền thẳng vào ICF tiếng Việt những gì G1 ĐÃ CHỐT: đơn vị thực hiện (`G1.setting`), mục đích bằng lời thường (RCT: «tìm hiểu xem <can thiệp> có giúp cải thiện <kết cục> … so với <đối chứng>»; thử nghiệm không kém hơn/tương đương KHÔNG hứa «cải thiện»), các bước theo thiết kế, tổng thời gian và số lần đến (chỉ khi `follow_up_schedule` là danh sách mốc), tên nhóm, xác suất vào nhóm từ tỷ lệ ngẫu nhiên, ai biết nhóm (từ `G1.blinding`), lựa chọn thay thế = đối chứng; người thực hiện từ `administrative` (họ tên, chức danh, đơn vị); «Quy trình» của bản tóm tắt cho Hội đồng = `G1.study_schema_timeline`. Dòng rủi ro ngắt theo từ (không cắt giữa chữ). Ô còn lại (chi phí điều trị biến cố, hỗ trợ đi lại, chính sách dữ liệu khi rút lui, bồi thường…) vẫn là quyết định của chủ nhiệm — không điền thay.
+- Dòng KÝ TÊN/NGÀY của người tham gia, người chứng kiến, nghiên cứu viên phải để TRỐNG (cổng G2 che chỗ ký khi đếm ô) — không điền chữ vào đó.
+- Đề cương nộp dùng nguyên phiếu này ở Phụ lục B (`sinh_de_cuong_nop_hoi_dong.py` chuyển khối đơn cách thành văn bản liền mạch, bỏ khung, bỏ dòng «AI hỗ trợ soạn thảo», bỏ mục/bước «Không áp dụng» và đánh số lại bước).
+
 <!-- TRACH-NHIEM-AGENT:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## Trách nhiệm trong hội đồng cổng (10/10/2026)
 Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối

@@ -242,7 +242,7 @@ def kich_ban_kho() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
 
     # ══ 7. KINH TẾ Y TẾ — chi phí–hiệu quả đi kèm RCT gốc (CHEERS 2022, PMID 35017145) ═════════════════════════════
     # Chi phí MÔ PHỎNG (VND): nền 1,8 triệu ± 0,4 triệu/6 tháng; chương trình tin nhắn +600 nghìn/người; người đạt kiểm
-    # soát tiết kiệm 150 nghìn (ít khám ngoài kế hoạch). Ngưỡng WTP do chủ nhiệm ấn định cho đơn vị tự nhiên (giả lập).
+    # soát tiết kiệm 150 nghìn (ít khám ngoài kế hoạch). Ngưỡng WTP do chủ nhiệm ấn định cho đơn vị tự nhiên.
     kt = _sao(rct, id_test="rct_kinh_te", goc="rct_nhi_phan",
               mo_ta="RCT gốc + đánh giá chi phí–hiệu quả đi kèm thử nghiệm (ICER, bootstrap, CEAC; CHEERS 2022)",
               bien_the={"kinh_te": {"cot": "chi_phi_6t", "nen": 1_800_000, "sd": 400_000, "chuong_trinh": 600_000,
@@ -315,7 +315,7 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
 
     # ── 1. không kém hơn
     hs = copy.deepcopy(rct["ho_so_tron_vong"])
-    hs["G2"].update({"public_title": "Tái khám qua điện thoại so với trực tiếp trong kiểm soát huyết áp (giả lập)",
+    hs["G2"].update({"public_title": "Tái khám qua điện thoại so với trực tiếp trong kiểm soát huyết áp",
                      "intervention_type": "other"})
     hs["ky_G2"] = _ky_g2(TIEN_CUU, "REGISTERED", registry="ClinicalTrials.gov", ma_dk="NCT99999981")
     hs["tra_loi_G4"] = _tra_loi_sap(
@@ -349,7 +349,7 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
         "muc_3": ("Thử nghiệm TEXT4BP (PMID 35342691) báo tỷ lệ đạt đích huyết áp 70% ở nhóm nhắn tin so với 48% ở "
                   "nhóm chứng sau 3 tháng; số liệu đó dùng để giả định tỷ lệ kiểm soát khoảng 60% khi tính cỡ mẫu. "
                   "Can thiệp và thiết kế khác (vượt trội, nhắn tin) nên chỉ đối chiếu mức tỷ lệ nền; tác giả chưa đọc "
-                  "toàn văn bài này (giả lập)."),
+                  "toàn văn bài này."),
         "muc_4": ("Điểm mạnh: ngẫu nhiên hoá, biên định trước trong SAP, cỡ mẫu {n} người, kiểm chéo SPSS–R khớp. Hạn "
                   "chế: phân tích theo đề cương chưa làm được do thiếu biến tuân thủ — với thiết kế không kém hơn, "
                   "phân tích ITT có thể thiên về kết luận không kém hơn; không làm mù người tham gia; một cơ sở. "
@@ -366,7 +366,7 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
                r"^conclusions?$|2.3 cau tom tat": ("Tái khám qua điện thoại được so với tái khám trực tiếp theo biên "
                                                    "không kém hơn 10 điểm %: {ni_ket_luan} (dữ liệu mô phỏng)."),
                r"phan tich so sanh khi co ket qua": ("Đối chiếu tỷ lệ nền với TEXT4BP (PMID 35342691); tác giả "
-                                                     "chưa đọc toàn văn bài này (giả lập)"),
+                                                     "chưa đọc toàn văn bài này"),
                r"mesh terms": "Hypertension; Telemedicine; Equivalence Trial; Blood Pressure",
                # thống kê viên viết lại đoạn diễn giải NI của G6 (chiều nhóm là quyết định người — engine không đoán)
                r"dien giai non.?inferiority": ("Nhóm 1 (tái khám qua điện thoại) là nhóm THỬ NGHIỆM, nhóm 0 (tái khám "
@@ -376,7 +376,7 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
                                                "luận dựa trên vị trí cận dưới KTC, không dựa trên p vượt trội.")})
     hs["tra_loi_G7"] = list(tl.items())
     hs["phan_bien_G8"].update({
-        "ten_bai": "Tái khám qua điện thoại so với trực tiếp trong kiểm soát huyết áp (giả lập)",
+        "ten_bai": "Tái khám qua điện thoại so với trực tiếp trong kiểm soát huyết áp",
         "thiet_ke": "Thử nghiệm ngẫu nhiên không kém hơn",
         "ly_do": ("Biên không kém hơn định trước, hiệu số tỷ lệ {hieu_so_phan_tram} điểm % (KTC 95% "
                   "{hieu_so_duoi_pt} đến {hieu_so_tren_pt}); cần bổ sung phân tích theo đề cương."),
@@ -389,7 +389,7 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
     hs["dac_ta_G10"].update({
         "summary": ("Bối cảnh: tái khám từ xa có thể giảm gánh nặng đi lại. Mục tiêu: đánh giá tái khám qua điện thoại "
                     "có không kém hơn tái khám trực tiếp về kiểm soát huyết áp 6 tháng. Phương pháp: RCT không kém "
-                    "hơn, biên hiệu số tỷ lệ −10 điểm % (giả lập)."),
+                    "hơn, biên hiệu số tỷ lệ −10 điểm %."),
         "comparator_rationale": "Tái khám trực tiếp là chuẩn chăm sóc hiện tại — so sánh không kém hơn (SPIRIT 9b)",
         "literature_review": "TEXT4BP (PMID 35342691) cho tỷ lệ đạt đích HA nền; chưa có thử nghiệm không kém hơn "
                              "tương tự tại Việt Nam"})
@@ -397,7 +397,7 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
 
     # ── 2. cụm
     hs = copy.deepcopy(rct["ho_so_tron_vong"])
-    hs["G2"].update({"public_title": "Chương trình tin nhắn theo phòng khám và kiểm soát huyết áp (giả lập)"})
+    hs["G2"].update({"public_title": "Chương trình tin nhắn theo phòng khám và kiểm soát huyết áp"})
     hs["ky_G2"] = _ky_g2(TIEN_CUU, "REGISTERED", registry="ClinicalTrials.gov", ma_dk="NCT99999982")
     for pt in hs["g6"]:  # phân tích không kế thừa (chính, nhóm con) khai cột cụm; kế thừa thì nhận từ chính
         if pt.get("tham_so") and not pt.get("chua_tu_dong") and not pt.get("ke_thua"):
@@ -420,7 +420,7 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
         "mẫu {n} người, kiểm chéo SPSS–R khớp. Hạn chế: số cụm ít làm KTC theo cụm kém ổn định, người bệnh trong cùng "
         "phòng khám không độc lập, không làm mù. Đây là dữ liệu mô phỏng của bộ giả lập.")
     hs["phan_bien_G8"].update({"thiet_ke": "Thử nghiệm ngẫu nhiên theo cụm",
-                               "ten_bai": "Chương trình tin nhắn theo phòng khám và kiểm soát huyết áp (giả lập)",
+                               "ten_bai": "Chương trình tin nhắn theo phòng khám và kiểm soát huyết áp",
                                "checklist": "CONSORT 2010 mở rộng thử nghiệm cụm (PMID 22951546)"})
     hs["dac_ta_G10"].update({"randomization_type": "Ngẫu nhiên theo cụm (phòng khám) tỷ lệ 1:1, phân tầng theo quy "
                                                    "mô (SPIRIT 21b)"})
@@ -428,7 +428,7 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
 
     # ── 3. sống còn
     hs = copy.deepcopy(coh["ho_so_tron_vong"])
-    hs["G2"].update({"public_title": "PPI kéo dài và thời gian đến gãy xương ở người cao tuổi (giả lập)"})
+    hs["G2"].update({"public_title": "PPI kéo dài và thời gian đến gãy xương ở người cao tuổi"})
     hs["tra_loi_G4"] = _tra_loi_sap(
         "Không áp dụng — nghiên cứu quan sát hồi cứu, không có can thiệp do nghiên cứu chỉ định",
         "tuổi, corticoid toàn thân và loãng xương trước đó liên quan cả chỉ định PPI lẫn nguy cơ gãy xương (gây nhiễu "
@@ -462,7 +462,7 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
     hs["dien_giai"]["muc_3"] = (
         "Ước lượng cùng chiều với phân tích gộp quan sát của Zhou và cộng sự (2016): gãy xương mọi vị trí RR 1,33 (KTC "
         "95% 1,15–1,54) ở người dùng PPI (PMID 26462494). Thước đo khác (RR so với HR) nên chỉ đối chiếu chiều và độ "
-        "lớn; tác giả chưa đọc toàn văn bài này (giả lập).")
+        "lớn; tác giả chưa đọc toàn văn bài này.")
     hs["dien_giai"]["muc_4"] = (
         "Điểm mạnh: dùng trọn thông tin thời gian và kiểm duyệt, cỡ mẫu {n} người, kiểm chéo SPSS–R khớp. Hạn chế: "
         "giả định nguy cơ tương xứng cần kiểm bằng phần dư Schoenfeld, tử vong là biến cố cạnh tranh chưa mô hình hoá, "
@@ -475,7 +475,7 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
                                                    "nguy cơ tức thời gãy xương cao hơn (dữ liệu mô phỏng)."),
                r"khong chua ket cuc phu": "Kết cục phụ (gãy cổ xương đùi) chưa phân tích ở đợt này — báo cáo riêng"})
     hs["tra_loi_G7"] = list(tl.items())
-    hs["phan_bien_G8"].update({"ten_bai": "PPI kéo dài và thời gian đến gãy xương (giả lập)",
+    hs["phan_bien_G8"].update({"ten_bai": "PPI kéo dài và thời gian đến gãy xương",
                                "ly_do": ("Phân tích sống còn theo SAP, HR hiệu chỉnh {hr_hieu_chinh} (KTC 95% "
                                          "{hr_hieu_chinh_duoi}–{hr_hieu_chinh_tren}); cần báo kiểm định nguy cơ tương "
                                          "xứng và biến cố cạnh tranh."),

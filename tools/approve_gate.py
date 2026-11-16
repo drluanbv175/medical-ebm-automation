@@ -279,6 +279,15 @@ def _thiet_ke_cho_g2(study_dir: Path) -> tuple[str, list[str]]:
     return (pin or cong or ""), loi
 
 
+def _hom_nay_muon_nhat() -> str:
+    """Ngày «hôm nay» muộn nhất giữa giờ UTC và giờ máy (ISO) — mốc so «ngày không được ở tương lai».
+
+    17/11/2026 (giả lập 15 kịch bản chạy qua nửa đêm): bác sĩ ở UTC+7 ký lúc 00:00–07:00 ghi ngày địa phương (17/11)
+    trong khi ngày UTC vẫn là 16/11 ⇒ cổng từ chối «ngày phê duyệt ở tương lai» một quyết định ký đúng hôm nay. So với
+    ngày muộn hơn của hai đồng hồ: vẫn chặn ngày thật sự ở tương lai, không chặn ngày hôm nay theo giờ địa phương."""
+    return max(datetime.now(timezone.utc).date(), datetime.now().astimezone().date()).isoformat()
+
+
 def _prepare_g2_attestation(
     args: argparse.Namespace,
     artifact_path: Path,
@@ -338,7 +347,7 @@ def _prepare_g2_attestation(
         errors.append("--g2-approval-date phải theo YYYY-MM-DD")
     elif (
         args.g2_approval_date
-        and args.g2_approval_date > datetime.now(timezone.utc).date().isoformat()
+        and args.g2_approval_date > _hom_nay_muon_nhat()
     ):
         errors.append("--g2-approval-date không được ở tương lai")
     if args.g2_valid_until and not _valid_iso_date(args.g2_valid_until):
@@ -402,7 +411,7 @@ def _prepare_g2_attestation(
         elif (
             args.g2_registration_date
             and args.g2_registration_date
-            > datetime.now(timezone.utc).date().isoformat()
+            > _hom_nay_muon_nhat()
         ):
             errors.append("--g2-registration-date không được ở tương lai")
     elif args.g2_registration_status != "NOT_REQUIRED":

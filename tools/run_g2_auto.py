@@ -30,7 +30,7 @@ import sys
 import sys as _sys_r4
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
@@ -831,6 +831,108 @@ Link to protocol (pre-print): Chưa có — cập nhật trên PROSPERO khi đă
 ```
 """
 
+def _chu_thuong_dau(x: str) -> str:
+    """Hạ chữ cái đầu (để lồng cụm đã chốt vào giữa câu) — giữ nguyên từ viết tắt toàn hoa (SMS, HbA1c…)."""
+    x = str(x or "").strip().rstrip(".")
+    if len(x) > 1 and x[0].isupper() and not x[1].isupper():
+        return x[0].lower() + x[1:]
+    return x
+
+
+def _icf_tu_g1(meta: Optional[dict], design_code: str) -> Dict[str, str]:
+    """Nội dung phiếu đồng ý suy THẲNG từ quyết định đã chốt ở G1 (16/11/2026, giả lập 15 kịch bản).
+
+    Trước đây mục đích, các bước, tổng thời gian, số lần đến, tên nhóm, xác suất vào mỗi nhóm, làm mù và lựa chọn thay
+    thế đều để ô [CẦN …] dù G1 đã chốt can thiệp/đối chứng, tỷ lệ ngẫu nhiên, làm mù và lịch theo dõi — PI phải gõ lại
+    (và gõ lại là cơ hội lệch giữa đề cương với phiếu). Chỉ trả khoá khi G1 có giá trị THẬT (không phải ô [CẦN …]);
+    khoá vắng ⇒ khuôn giữ ô cho PI. Lời cuối vẫn do chủ nhiệm và Hội đồng duyệt."""
+    g1 = (((meta or {}).get("gate_params") or {}).get("G1") or {}) if isinstance(meta, dict) else {}
+
+    def _that(v: Any) -> str:
+        v = "; ".join(map(str, v)) if isinstance(v, list) else str(v or "")
+        v = v.strip()
+        return "" if (not v or "[CẦN" in v.upper() or v.upper().startswith("[TO BE")) else v
+
+    ra: Dict[str, str] = {}
+    can_thiep, doi_chung = _that(g1.get("intervention_or_exposure")), _that(g1.get("comparator"))
+    ket_cuc = g1.get("primary_outcome")
+    ket_cuc = _that(ket_cuc.get("name") if isinstance(ket_cuc, dict) else ket_cuc)
+    muc_tieu = g1.get("objectives") or []
+    muc_tieu = _that(muc_tieu[0] if isinstance(muc_tieu, list) and muc_tieu else muc_tieu)
+    g3 = (((meta or {}).get("gate_params") or {}).get("G3") or {}) if isinstance(meta, dict) else {}
+    gia_thuyet = str(g3.get("hypothesis_type") or "").lower()
+    if design_code == "rct" and can_thiep and ket_cuc and doi_chung:
+        if gia_thuyet in ("non_inferiority", "noninferiority", "equivalence"):
+            # không kém hơn/tương đương: KHÔNG hứa «cải thiện» — câu hỏi là có giữ được hiệu quả như cách đang làm
+            ra["muc_dich"] = (f"tìm hiểu xem {_chu_thuong_dau(can_thiep)} có cho {_chu_thuong_dau(ket_cuc)} "
+                              f"không kém so với {_chu_thuong_dau(doi_chung)} hay không.")
+        else:
+            ra["muc_dich"] = (f"tìm hiểu xem {_chu_thuong_dau(can_thiep)} có giúp cải thiện "
+                              f"{_chu_thuong_dau(ket_cuc)} hay không, so với {_chu_thuong_dau(doi_chung)}.")
+    elif muc_tieu:
+        ra["muc_dich"] = _chu_thuong_dau(muc_tieu) + "."
+    lich = _that(g1.get("follow_up_schedule"))
+    # Chỉ đếm «số lần đến» khi lịch là DANH SÁCH MỐC thời gian («Ban đầu, tháng 3 và tháng 6»); lịch viết thành câu
+    # («theo dõi qua hồ sơ tới biến cố hoặc 3 năm», «một cuộc phỏng vấn») không phải các lần đến cơ sở y tế.
+    moc = [x.strip() for x in re.split(r"[,;]|\s+và\s+", lich) if x.strip()]
+    _MOC = re.compile(r"(?:thời điểm\s+)?(?:ban đầu|nền|lúc vào|(?:tuần|tháng|năm)(?: thứ)? \d+|\d+ (?:tuần|tháng|năm))",
+                      re.IGNORECASE)
+    if len(moc) >= 2 and all(_MOC.fullmatch(x) for x in moc):
+        ra["so_lan_den"] = f"{len(moc)} lần ({_chu_thuong_dau(lich)})"
+        ra["buoc_tai_kham"] = f"Quay lại tái khám và đo kết quả theo lịch: {_chu_thuong_dau(lich)}."
+        thang = [int(x) for x in re.findall(r"(\d+)", " ".join(m for m in moc if "tháng" in m.lower()))]
+        if thang:
+            ra["tong_thoi_gian"] = f"khoảng {max(thang)} tháng"
+    if design_code == "rct" and can_thiep and doi_chung:
+        def _phang(x: str) -> str:  # ngoặc trong tên nhánh thành dấu phẩy — tránh ngoặc lồng ngoặc
+            return re.sub(r"\s*\(([^()]*)\)", r", \1", _chu_thuong_dau(x))
+
+        ra["nhom"] = f"nhóm can thiệp ({_phang(can_thiep)}) hoặc nhóm đối chứng ({_phang(doi_chung)})"
+        ra["thay_the"] = _chu_thuong_dau(doi_chung)
+        tl = re.search(r"(\d+)\s*:\s*(\d+)", _that(g1.get("randomisation")))
+        if tl:
+            a, b = int(tl.group(1)), int(tl.group(2))
+            ra["xac_suat"] = ("1/2 (50%) mỗi nhóm" if a == b else
+                              f"{a}/{a + b} vào nhóm can thiệp và {b}/{a + b} vào nhóm đối chứng")
+        mu = _that(g1.get("blinding")).lower()
+        if re.search(r"không (?:làm |được làm )?mù được|nhãn mở|open[- ]label|người tham gia không", mu):
+            ra["biet_nhom"] = "sẽ biết anh/chị ở nhóm nào"
+            if re.search(r"người đo|đánh giá|thống kê viên", mu):
+                ra["biet_nhom"] += "; người đo kết quả và người phân tích số liệu thì không được biết"
+        elif re.search(r"mù đôi|mù ba|double[- ]blind|triple[- ]blind", mu):
+            ra["biet_nhom"] = "sẽ không biết anh/chị ở nhóm nào cho tới khi kết thúc nghiên cứu"
+    buoc2 = {
+        "rct": "Trả lời phỏng vấn ban đầu và được đo các chỉ số theo phiếu thu thập số liệu, sau đó được phân nhóm "
+               "ngẫu nhiên (mục 2b).",
+        "cohort": "Trả lời phỏng vấn và được khám, đo các chỉ số theo phiếu thu thập số liệu ở lần đầu.",
+        "cross_sectional": "Trả lời một lần bộ câu hỏi theo phiếu thu thập số liệu.",
+        "case_control": "Trả lời phỏng vấn về tiền sử và cho phép nhóm nghiên cứu trích thông tin từ hồ sơ bệnh án.",
+        "diagnostic": "Trả lời phỏng vấn và cho phép nhóm nghiên cứu trích kết quả xét nghiệm từ hồ sơ bệnh án.",
+        "prediction": "Cho phép nhóm nghiên cứu trích thông tin từ hồ sơ bệnh án và theo dõi kết cục sau đó.",
+        "qualitative": "Tham gia một buổi phỏng vấn sâu với nghiên cứu viên; buổi phỏng vấn chỉ được ghi âm khi "
+                       "anh/chị đồng ý.",
+    }.get(design_code)
+    if buoc2:
+        ra["buoc_1"] = "Ký phiếu đồng ý này sau khi được giải thích đầy đủ và có thời gian đặt câu hỏi."
+        ra["buoc_2"] = buoc2
+    return ra
+
+
+def _dong_rui_ro(risks: list, en: bool = False) -> str:
+    """Dòng rủi ro của phiếu đồng ý — ngắt dòng theo TỪ (trước đây cắt cứng 80 ký tự ⇒ «quy trình vi» giữa chữ)."""
+    import textwrap  # noqa: PLC0415
+
+    ra = []
+    for r in risks:
+        dau = (f"• {r[0]} ({r[1]} probability / {r[2]} severity): " if en else f"• {r[0]}: {r[2]} → ")
+        dong = dau + str(r[3])
+        if "[" in dong:  # ô [CẦN …] phải nằm trọn một dòng — bộ đếm ô trống G2 đọc theo dòng
+            ra.append(dong)
+            continue
+        ra.extend(textwrap.wrap(dong, width=96, subsequent_indent="     ", break_long_words=False) or [dau])
+    return "\n   ".join(ra)
+
+
 def generate_g2_full_package(
     topic: str, study_name: str, design_code: str, design_primary: str,
     reporting_std: str, n_sr: int, n_rct: int, evidence_level: str,
@@ -884,6 +986,11 @@ def generate_g2_full_package(
     # K9 (14/11/2026): phiếu đồng thuận (tài liệu cho NGƯỜI BỆNH) dùng danh sách riêng — khi loại can thiệp RCT chưa rõ,
     # không chép danh mục chọn (gồm rủi ro lấy máu/thuốc) vào ICF; ghi chú loại can thiệp in ngay dưới Bảng rủi ro.
     _risks_icf = risk.get("risks_icf") or risk["risks"]
+    _icf = _icf_tu_g1(meta, design_code)
+    # 16/11/2026: sơ đồ tiến trình đã chốt ở G1 (study_schema_timeline) là «quy trình» của bản tóm tắt cho Hội đồng.
+    _quy_trinh_g1 = _meta_or_blank(meta, "gate_params", "G1", "study_schema_timeline", blank="")
+    _quy_trinh_g1 = "" if "[CẦN" in _quy_trinh_g1.upper() else _quy_trinh_g1
+    _rui_ro_vi, _rui_ro_en = _dong_rui_ro(_risks_icf), _dong_rui_ro(_risks_icf, en=True)
     ghi_chu_can_thiep = f"\n\n{risk['_ghi_chu_can_thiep']}" if risk.get("_ghi_chu_can_thiep") else ""
     ct_table_str   = _ct_table(registry)
 
@@ -941,6 +1048,7 @@ def generate_g2_full_package(
     _g2_meta_icf = ((meta or {}).get("gate_params") or {}).get("G2") or {} if isinstance(meta, dict) else {}
     _tuyen_moi = str((_g2_meta_icf or {}).get("recruitment_mode") or "").upper() == "PROSPECTIVE_NEW_PARTICIPANTS"
     co_thu_thuat = design_code in ("rct", "cohort", "diagnostic") or (design_code == "prediction" and _tuyen_moi)
+    _icf_buoc4 = _icf_tu_g1(meta, design_code).get("buoc_tai_kham")
     if design_code == "diagnostic":
         icf_extra_steps = (
             "   ☐ Bước 3: [CẦN — xét nghiệm/kỹ thuật chẩn đoán đang đánh giá (index test): mô tả cách làm, "
@@ -956,8 +1064,9 @@ def generate_g2_full_package(
         icf_extra_steps = (
             "   ☐ Bước 3: [CẦN — ví dụ: lấy 5 mL máu tĩnh mạch/khám lâm sàng bổ sung "
             "— XÓA dòng này nếu nghiên cứu không lấy mẫu sinh học]\n"
-            "   ☐ Bước 4: [CẦN — ví dụ: tái khám sau 3 tháng / 6 tháng — XÓA dòng này "
-            "nếu chỉ có MỘT lần tiếp xúc với người tham gia]\n"
+            + ("   ☐ Bước 4: " + _icf_buoc4 + "\n" if _icf_buoc4 else
+               "   ☐ Bước 4: [CẦN — ví dụ: tái khám sau 3 tháng / 6 tháng — XÓA dòng này "
+               "nếu chỉ có MỘT lần tiếp xúc với người tham gia]\n")
         )
         icf_benefit_direct = (
             "[CẦN — ví dụ: được theo dõi sức khỏe sát hơn, được tiếp cận thuốc/can "
@@ -993,6 +1102,16 @@ def generate_g2_full_package(
    môn, vd Bác sĩ CKII/Thạc sĩ Y học], công tác tại [CẦN — đơn vị], chủ trì
    thực hiện."""
 
+    # 16/11/2026: hành chính PI đã khai (administrative) điền thẳng — trước đây khuôn luôn để ba ô [CẦN].
+    if not _pi.startswith("["):
+        icf_1b = icf_1b.replace("[CẦN — họ tên chủ nhiệm]", _pi)
+    if not _pi_title.startswith("["):
+        icf_1b = re.sub(r"\[CẦN — chức danh/trình độ chuyên\s+môn, vd Bác sĩ CKII/Thạc sĩ Y học\]",
+                        lambda _m: _pi_title, icf_1b)
+    _noi_lam = _pi_unit if not _pi_unit.startswith("[") else (_setting if not _setting.startswith("[") else "")
+    if _noi_lam:
+        icf_1b = icf_1b.replace("công tác tại [CẦN — đơn vị]", f"công tác tại {_noi_lam}")
+
     icf_4bc = """
 4b. NGUỒN TÀI TRỢ VÀ XUNG ĐỘT LỢI ÍCH
    Nghiên cứu này được tài trợ bởi: [CẦN — tên nguồn tài trợ, hoặc "không có
@@ -1011,6 +1130,10 @@ def generate_g2_full_package(
    chuẩn hiện có: [CẦN — mô tả phương pháp/điều trị thay thế sẵn có ngoài
    nghiên cứu]. Quyết định tham gia hay không không làm mất đi lựa chọn
    điều trị chuẩn này."""
+        _tt = _icf_tu_g1(meta, design_code).get("thay_the")
+        if _tt:
+            icf_6b = re.sub(r"\[CẦN — mô tả phương pháp/điều trị thay thế sẵn có ngoài\s+nghiên cứu\]",
+                            lambda _m: _tt, icf_6b)
         icf_6d = """
 6d. CHĂM SÓC BỔ TRỢ VÀ SAU NGHIÊN CỨU
    [CẦN CHỦ NHIỆM XÁC NHẬN]: Sau khi kết thúc tham gia/kết thúc nghiên cứu,
@@ -1064,6 +1187,13 @@ def generate_g2_full_package(
    thiệp/đối chứng] một cách NGẪU NHIÊN (như rút thăm), không do anh/chị
    hay bác sĩ chọn. Khả năng vào mỗi nhóm: [CẦN — vd 1/2 (50%) mỗi nhóm].
    Anh/chị và bác sĩ điều trị [CẦN — có/không] biết anh/chị ở nhóm nào."""
+        _g = _icf_tu_g1(meta, design_code)
+        if _g.get("nhom"):
+            icf_2b = re.sub(r"\[CẦN — tên các nhóm can\s+thiệp/đối chứng\]", lambda _m: _g["nhom"], icf_2b)
+        if _g.get("xac_suat"):
+            icf_2b = icf_2b.replace("[CẦN — vd 1/2 (50%) mỗi nhóm]", _g["xac_suat"])
+        if _g.get("biet_nhom"):
+            icf_2b = icf_2b.replace("[CẦN — có/không] biết anh/chị ở nhóm nào", _g["biet_nhom"])
         icf_truy_cap = (
             "   ✅ Chỉ nhóm nghiên cứu được phép truy cập dữ liệu danh tính — NGOẠI LỆ ở mục 5b\n"
             "      (giám sát viên, kiểm tra viên, Hội đồng Đạo đức, cơ quan quản lý)"
@@ -1352,7 +1482,7 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT — ngôn ngữ hành chính)
    Thiết kế: {design_primary}
    Chuẩn báo cáo: {reporting_std}
    Nơi thực hiện: {_setting}
-   Quy trình: [CẦN MÔ TẢ ngắn gọn theo PICO]
+   Quy trình: {_quy_trinh_g1 or '[CẦN MÔ TẢ ngắn gọn theo PICO]'}
 
 5. RỦI RO TIỀM TÀNG VÀ BIỆN PHÁP BẢO VỆ:
    Mức nguy cơ tổng thể: {risk["risk_level"]}
@@ -1405,7 +1535,7 @@ Mọi rủi ro đều được giảm thiểu bằng biện pháp cụ thể.
 ══════════════════════════════════════════════════════════════
 
 TÊN ĐỀ TÀI: {ten_dt}
-Đơn vị thực hiện: [CẦN BỔ SUNG]
+Đơn vị thực hiện: {_setting if not _setting.startswith('[') else '[CẦN BỔ SUNG]'}
 Chủ nhiệm đề tài: {_pi}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -1415,7 +1545,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 
 1. MỤC ĐÍCH NGHIÊN CỨU
    Chúng tôi kính mời anh/chị tham gia nghiên cứu nhằm:
-   [CẦN MÔ TẢ bằng ngôn ngữ đơn giản, không dùng thuật ngữ khó — vd «Tìm hiểu xem … có giúp cải thiện … ở người bệnh như anh/chị không»]
+   {_icf.get('muc_dich') or '[CẦN MÔ TẢ bằng ngôn ngữ đơn giản, không dùng thuật ngữ khó — vd «Tìm hiểu xem … có giúp cải thiện … ở người bệnh như anh/chị không»]'}
 
    {_don_vi_icf}. Cỡ mẫu dự kiến: khoảng {n_display_inline} người tham gia
    (nguồn tài trợ: mục 4b).
@@ -1426,17 +1556,17 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 
 2. QUY TRÌNH THỰC HIỆN NẾU ĐỒNG Ý THAM GIA
    Nếu anh/chị đồng ý, chúng tôi sẽ yêu cầu:
-   ☐ Bước 1: [CẦN MÔ TẢ — ví dụ: ký phiếu đồng thuận này]
-   ☐ Bước 2: [CẦN — ví dụ: trả lời bộ câu hỏi ~20 phút]
+   ☐ Bước 1: {_icf.get('buoc_1') or '[CẦN MÔ TẢ — ví dụ: ký phiếu đồng thuận này]'}
+   ☐ Bước 2: {_icf.get('buoc_2') or '[CẦN — ví dụ: trả lời bộ câu hỏi ~20 phút]'}
 {icf_extra_steps}
 
-   Tổng thời gian tham gia ước tính: [CẦN — ví dụ: 12 tháng]
-   Số lần đến cơ sở y tế: [CẦN — ví dụ: 3 lần]
+   Tổng thời gian tham gia ước tính: {_icf.get('tong_thoi_gian') or '[CẦN — ví dụ: 12 tháng]'}
+   Số lần đến cơ sở y tế: {_icf.get('so_lan_den') or '[CẦN — ví dụ: 3 lần]'}
 
 {icf_lich_hen}{icf_2b}
 
 3. RỦI RO VÀ BẤT TIỆN CÓ THỂ XẢY RA
-   {chr(10).join('   • ' + r[0] + ': ' + r[2] + ' → ' + r[3][:80] for r in _risks_icf)}
+   {_rui_ro_vi}
 
    Nếu có bất kỳ vấn đề sức khỏe nào liên quan đến nghiên cứu,
    xin liên hệ ngay chủ nhiệm đề tài (số điện thoại bên dưới).
@@ -1489,7 +1619,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
    │   Điện thoại: [CẦN BỔ SUNG]  Email: [CẦN BỔ SUNG]     │
    │                                                        │
    │ Thắc mắc về quyền của người tham gia:                  │
-   │   Hội đồng Đạo đức: [CẦN — Tên HĐ cơ sở]              │
+   │   Hội đồng Đạo đức: {_irb_name if not _irb_name.startswith('[') else '[CẦN — Tên HĐ cơ sở]'}              │
    │   Điện thoại: [CẦN BỔ SUNG]                           │
    └─────────────────────────────────────────────────────────┘
 
@@ -1543,7 +1673,7 @@ Principal Investigator: [TO BE COMPLETED]
 {en_2b}
 
 3. RISKS AND DISCOMFORTS
-   {chr(10).join('   • ' + r[0] + ' (' + r[1] + ' probability / ' + r[2] + ' severity): ' + r[3][:80] for r in _risks_icf)}
+   {_rui_ro_en}
 
 4. POTENTIAL BENEFITS
    [TO BE COMPLETED — include both direct and community benefits]

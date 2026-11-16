@@ -209,6 +209,9 @@ O_DA_DONG_RE = re.compile(
 
 
 DIEN_CHUA_CO_HO_SO = "(GIẢ LẬP — hồ sơ chưa có)"
+# Dòng ký/ngày điền tay của phiếu đồng ý G2 (khớp cách g2_quality_gate che chỗ ký trước khi đếm ô trống).
+_DONG_KY_G2_RE = re.compile(r"(?i)\b(?:họ(?: và)? tên|ký tên|chữ ký|ký, ghi rõ|participant|witness|investigator|"
+                            r"signature)\b|_{3,}\s*/\s*_{2,}\s*/")
 
 
 def ly_do_giu_nguyen(o_txt: str, dong: str, cong: str = "", tep: str = "") -> Optional[str]:
@@ -261,6 +264,23 @@ def phan_loai_o(tep_text: str, cong: str, tep: str, meta: Mapping[str, Any], cps
         if "doi chieu g6" in trong_o and re.search(r"\d", dong[:m.start() - dau_dong]):
             # bản thảo chép NGUYÊN VĂN số từ G6 rồi gắn nhãn đối chiếu — tác giả đối chiếu xong thì gỡ nhãn
             ra.append({**o, "loai": "moi_dung_vai", "dien": ""})
+            continue
+        if cong == "G2" and re.fullmatch(r"_{3,}", o_txt.strip()) and _DONG_KY_G2_RE.search(dong):
+            # chỗ ký/ngày điền tay của người tham gia/người chứng kiến/nghiên cứu viên — cổng G2 che khi đếm; điền chữ
+            # vào đó làm phiếu đồng ý mất chỗ ký (16/11/2026)
+            ra.append({**o, "loai": "khong_ap_dung", "dien": o_txt, "ly_do": "chỗ ký/ngày điền tay trên bản in"})
+            continue
+        if o_txt.strip() in ("[CẦN]", "[CẦN]") and re.search(r"(?:con|day du|moi o|cac o|khong con|het)\s*$",
+                                                              bo_dau(dong[:m.start() - dau_dong])):
+            # câu HƯỚNG DẪN nhắc tới nhãn («Điền trường còn [CẦN] trước khi gửi», «không còn [CẦN]»): người soạn đã
+            # điền xong ⇒ đọc thành «còn ô trống», không phải một ô để chép câu trả lời vào
+            ra.append({**o, "loai": "moi_dung_vai", "dien": "ô trống"})
+            continue
+        if re.fullmatch(r"\[\s*(?:CẦN|CẦN)\s+(?:CHỦ NHIỆM|BÁC SĨ|PI)\s+XÁC NHẬN\s*\]", o_txt.strip()) \
+                and tep_text[m.end():m.end() + 1] == ":":
+            # dấu nhắc «[CẦN CHỦ NHIỆM XÁC NHẬN]: <câu>» — chủ nhiệm đã xác nhận ⇒ gỡ cả dấu nhắc lẫn dấu hai chấm
+            duoi = re.match(r":\s*", tep_text[m.end():]).group(0)
+            ra.append({**o, "o": o_txt + duoi, "loai": "moi_dung_vai", "dien": ""})
             continue
         ly_do = khong_ap_dung(nhan, dong + " " + o_txt, thiet_ke, meta)
         # ô KẾT QUẢ không hỏi điều đã chốt (tên kết cục ≠ kết quả của kết cục) ⇒ không lấy bảng đã chốt
@@ -747,11 +767,13 @@ class TronVong:
         hs = self.kb.get("ho_so_tron_vong") or {}
         meta = self._meta()
         meta.setdefault("gate_params", {}).setdefault("G2", {}).update(hs.get("G2", {}))
+        for k, v in HANH_CHINH.items():  # hành chính PI khai MỘT lần — không ghi đè giá trị đã có
+            meta.setdefault("administrative", {}).setdefault(k, v)
         self._ghi_meta(meta)
         self._soan_phieu_thu_thap()
         self.chay("G2 sinh hồ sơ đạo đức", "run_g2_auto.py", "--study", self.study)
         da_hoi: Dict[str, str] = {}
-        tra = list(hs.get("tra_loi_G2", [])) + list(TRA_LOI_CHUNG)
+        tra = list(hs.get("tra_loi_G2", [])) + list(TRA_LOI_G2_CHUNG) + list(TRA_LOI_CHUNG)
         for tep in sorted(self.out.glob(f"G2_*{self.study}*.md")):
             self.hoan_thien_tep("G2", tep, tra, da_hoi)
         self.cong["G2_truoc_ky"] = {"trang_thai": self.cham("G2")}
@@ -785,7 +807,8 @@ class TronVong:
         them_bien = "; ".join(r[1] for r in (self.kb.get("bien_so") or {}).get("ma_tran", [])
                               if r[2] in ("hiep_bien", "mo_ta", "yeu_to"))
         tl = list(hs.get("tra_loi_G4", [])) + ([(r"them bien", them_bien)] if them_bien else [])
-        self.hoan_thien_tep("G4", sap, tl + list(TRA_LOI_CHUNG), da_hoi)
+        rct = list(TRA_LOI_G4_RCT) if self.thiet_ke == "rct" else []
+        self.hoan_thien_tep("G4", sap, tl + rct + list(TRA_LOI_CHUNG), da_hoi)
         self._bo_sung_epv(sap)
         meta = self._meta()
         meta.setdefault("gate_params", {}).setdefault("G4", {}).update({
@@ -1033,7 +1056,7 @@ class TronVong:
                                               "evidence_ref": "GIA-LAP-ACCESS"},
                     "backup_restore_test": {"completed": True, "tested_at": nay, "restore_verified": True,
                                             "checksum_verified": True, "evidence_ref": "GIA-LAP-BACKUP"},
-                    "retention_plan": {"confirmed": True, "retention_rule": "2 năm sau khi kết thúc (giả lập)"},
+                    "retention_plan": {"confirmed": True, "retention_rule": "2 năm sau khi kết thúc nghiên cứu"},
                     "protocol_deviations": {"reconciled": True, "open_count": 0, "log_ref": "GIA-LAP-DEV"},
                     "audit_trail_review": {"completed": True, "reviewed_at": nay, "evidence_ref": "GIA-LAP-AUDIT"},
                     "source_data_verification": {"method": "Nhập kép độc lập 100% phiếu (Excel + SPSS) + đối chiếu "
@@ -1474,7 +1497,7 @@ class TronVong:
     def g7(self) -> None:
         hs = self.kb.get("ho_so_tron_vong") or {}
         tg = hs.get("tac_gia_G7") or {}
-        tap_chi = tg.get("target_journal") or "Tạp chí Y học Việt Nam (giả lập)"
+        tap_chi = tg.get("target_journal") or "Tạp chí Y học Việt Nam"
         self.chay("G7 sinh bản thảo", "run_g7_auto.py", "--study", self.study, "--target-journal", tap_chi)
         a8 = self.out / f"G7_A8_MANUSCRIPT_{self.study}.md"
         gt = self._gia_tri_ket_qua()
@@ -1645,7 +1668,7 @@ Kết luận tổng thể: {ket_luan}
 
     def g8(self) -> None:
         hs = self.kb.get("ho_so_tron_vong") or {}
-        tap_chi = (hs.get("tac_gia_G7") or {}).get("target_journal") or "Tạp chí Y học Việt Nam (giả lập)"
+        tap_chi = (hs.get("tac_gia_G7") or {}).get("target_journal") or "Tạp chí Y học Việt Nam"
         vs = hs.get("vong_sua_G8")
         if vs:
             self._vong_1_g8(vs, tap_chi)
@@ -1671,7 +1694,7 @@ Kết luận tổng thể: {ket_luan}
 
     def g9(self) -> None:
         hs = self.kb.get("ho_so_tron_vong") or {}
-        tap_chi = (hs.get("tac_gia_G7") or {}).get("target_journal") or "Tạp chí Y học Việt Nam (giả lập)"
+        tap_chi = (hs.get("tac_gia_G7") or {}).get("target_journal") or "Tạp chí Y học Việt Nam"
         self.chay("G9 sinh bộ khai báo liêm chính", "run_g9_auto.py", "--study", self.study, "--n-authors", "2",
                   "--target-journal", tap_chi)
         self._khai_g9()
@@ -1734,9 +1757,9 @@ Kết luận tổng thể: {ket_luan}
                             "collective_coi_statement": tg.get("coi_declared") or "Không có xung đột lợi ích",
                             "funding_statement": tg.get("funding_declared") or "Không có tài trợ bên ngoài",
                             "sponsor_role_statement": ("Không có nhà tài trợ; không bên nào tác động thiết kế, "
-                                                       "phân tích hay quyết định công bố (giả lập)"),
+                                                       "phân tích hay quyết định công bố"),
                             "sponsor_no_publication_restriction_confirmed": True}
-        d["ai_disclosure"] = {"ai_used": True, "tools": ["Bộ giả lập trọn vòng của hệ EBM (giả lập)"],
+        d["ai_disclosure"] = {"ai_used": True, "tools": ["Bộ giả lập trọn vòng của hệ EBM"],
                               "purposes": ["soạn nháp và kiểm dây chuyền; tác giả đọc lại, đối chiếu số liệu"],
                               "human_verification_confirmed": True, "sensitive_or_confidential_data_uploaded": False,
                               "ai_not_author_confirmed": True, "manuscript_statement_final": True,
@@ -1756,7 +1779,7 @@ Kết luận tổng thể: {ket_luan}
         d["publication_integrity"] = {"original_work_confirmed": True, "duplicate_submission_absent": True,
                                       "overlap_disclosed": True, "preprint_status_declared": True,
                                       "plagiarism_review_completed": True, "plagiarism_report_ref": "GIA-LAP-SIM-01",
-                                      "journal_or_institution_criterion": "trùng lặp < 15% (tiêu chí đơn vị, giả lập)",
+                                      "journal_or_institution_criterion": "trùng lặp < 15% (tiêu chí đơn vị)",
                                       "human_similarity_review_confirmed": True, "image_integrity_reviewed": True,
                                       "results_match_locked_analysis": True, "analysis_deviations_disclosed": True}
         d["venue_due_diligence"] = {**(d.get("venue_due_diligence") or {}),
@@ -1815,6 +1838,21 @@ Kết luận tổng thể: {ket_luan}
             "audit_trail_preserved": True, "responsible_owner_ref": "GIA-LAP-PI"}
         _ghi_json(p, d)
 
+    def _de_cuong_nop(self) -> None:
+        """PI dùng công cụ soạn ĐỀ CƯƠNG NỘP HỘI ĐỒNG (bản đọc được, không ký hiệu nội bộ) từ quyết định đã chốt rồi
+        để G10 ràng buộc vào gói (16/11/2026 — bác sĩ chê bản lắp DE_CUONG_THONG_NHAT có câu chữ không phù hợp với
+        một đề cương hoàn chỉnh). Kết quả K1–K7 ghi vào du_lieu để phép thử trọn vòng đòi sạch."""
+        kq = self.chay("PI soạn đề cương nộp Hội đồng", "sinh_de_cuong_nop_hoi_dong.py", "--study", self.study,
+                       "--ghi", "--json")
+        dong = kq.get("dong") or []
+        dau = next((i for i, d in enumerate(dong) if d.strip() == "{"), None)  # bỏ dòng cảnh báo font của md2docx
+        try:
+            ra = json.loads("\n".join(dong[dau:])) if dau is not None else {}
+        except ValueError:
+            ra = {"ma": kq.get("ma"), "loi": ["không đọc được kết quả JSON của bộ sinh"]}
+        self.du_lieu["de_cuong_nop"] = {"ma": ra.get("ma"), "loi": ra.get("loi") or [],
+                                        "trich_dan": ra.get("trich_dan"), "so_dong": ra.get("so_dong")}
+
     def g10(self) -> None:
         hs = self.kb.get("ho_so_tron_vong") or {}
         self._khai_dac_ta_g10()
@@ -1825,6 +1863,7 @@ Kết luận tổng thể: {ket_luan}
         # manifest G9 đã khoá ⇒ chỉ chạy khi còn PMID CHƯA kiểm (G8/G9 đã quét — lượt này thường không có gì mới)
         self._quet_a12("G10")
         self._khai_g10()
+        self._de_cuong_nop()
         self.chay("G10 lắp lại gói sau khi PI khai", "run_g10_assemble.py", "--study", self.study)
         self.cong["G10_truoc_ky"] = {"trang_thai": self.cham("G10"),
                                      "chua_dat": GL.GiaLap._chua_dat(GL.cham_song("G10", self.study, self.out,
@@ -1880,31 +1919,96 @@ Kết luận tổng thể: {ket_luan}
         return self.bao_cao()
 
 
+# Tên VÍ DỤ theo lệ văn bản mẫu tiếng Việt («Nguyễn Văn A») — không phải người thật; trước 16/11/2026 dùng mã vai trò
+# «PI-REF-01 (chủ nhiệm — mã vai trò, giả lập)» chèn giữa câu, làm phiếu đồng ý/đề cương đọc như văn bản lỗi.
+TEN_CHU_NHIEM = "BS. Nguyễn Văn A"
+TEN_HOI_DONG = "Hội đồng Đạo đức trong nghiên cứu y sinh học của bệnh viện chủ trì"
+# Hành chính đã chốt của chủ nhiệm (study_meta.administrative) — run_g2_auto điền thẳng vào hồ sơ thay vì để ô.
+HANH_CHINH = {"principal_investigator": TEN_CHU_NHIEM, "pi_title": "Bác sĩ chuyên khoa II",
+              "pi_unit": "Khoa Khám bệnh", "irb_name": TEN_HOI_DONG, "sponsor": "Không có tài trợ bên ngoài"}
+
+# Câu trả lời của CHỦ NHIỆM cho các ô phiếu đồng ý/hồ sơ đạo đức mà G1 không chốt (chính sách của đơn vị, cam kết với
+# người tham gia). Đặt TRƯỚC TRA_LOI_CHUNG: mẫu cụ thể phải thắng mẫu chung «chu nhiem»/«don vi» (16/11/2026 — trước
+# đó «[CẦN CHỦ NHIỆM XÁC NHẬN phạm vi truy cập]» bị điền tên chủ nhiệm, «… sẽ [CẦN — sẽ/sẽ không]» thành tên người).
+TRA_LOI_G2_CHUNG: Tuple[Tuple[str, str], ...] = (
+    (r"chi phi dieu tri bien co", "đơn vị chủ trì chi trả toàn bộ chi phí khám và điều trị biến cố liên quan đến "
+                                  "nghiên cứu"),
+    (r"loi ich truc tiep|truc tiep voi ntg|xac dinh xem co loi ich truc tiep",
+     "Không có lợi ích điều trị nào được bảo đảm; người tham gia được theo dõi, tư vấn và được báo ngay khi kết quả "
+     "đo có bất thường"),
+    (r"^nhom nghien cuu$", "không"),
+    (r"^co ho tro", "hỗ trợ chi phí đi lại cho mỗi lần tái khám theo định mức của đơn vị chủ trì"),
+    (r"ghi ro chinh sach", "Dữ liệu đã thu thập trước khi rút lui được giữ ở dạng đã khử định danh và vẫn được phân "
+                           "tích, trừ khi anh/chị yêu cầu xoá."),
+    (r"xac nhan pham vi truy cap", "Phạm vi truy cập chỉ gồm hồ sơ liên quan đến nghiên cứu."),
+    (r"nha tai tro/don vi", "đơn vị chủ trì"),
+    (r"^co/khong$", "không"),
+    (r"^don vi/chu nhiem", "Đơn vị chủ trì"),
+    (r"mo ta chinh sach chi tra|cach chi tra", "chi trả toàn bộ chi phí khám và điều trị tổn hại đó theo quy định "
+                                               "hiện hành"),
+    (r"chu nhiem chon.*se.*se khong|^se\s*/\s*se khong", "sẽ"),
+    (r"vd chuyen tuyen dieu tri", "chuyển tuyến điều trị theo phác đồ chuẩn"),
+    (r"cach thong bao", "qua điện thoại và tại lần tái khám kế tiếp"),
+    (r"xu ly the nao", "giữ lại ở dạng đã khử định danh để phân tích theo nguyên tắc ý định điều trị"),
+    (r"vi ly do an toan, khong con du tieu chuan", "vì lý do an toàn của anh/chị, khi anh/chị không còn đủ tiêu "
+                                                   "chuẩn tham gia, hoặc khi nghiên cứu bị dừng theo quyết định của "
+                                                   "Hội đồng Đạo đức hay cơ quan quản lý"),
+    (r"bang rui ro phu hop voi de tai", "Chủ nhiệm đã rà và xác nhận bảng rủi ro phù hợp với đề tài."),
+    (r"se co so irb", "Số phê duyệt của Hội đồng: HĐĐĐ-GL-2026/01"),
+    (r"dang ky nghien cuu", "theo kế hoạch ở mục Đăng ký nghiên cứu; số đăng ký bổ sung khi được cấp"),
+    (r"quy trinh cu the cua don vi", "Theo quy trình ứng phó sự cố an toàn thông tin của bệnh viện chủ trì"),
+    (r"so hop dong", "Không có hợp đồng tài trợ"),
+    (r"bo sung them neu co", "không dùng công cụ nào khác"),
+)
+
+
+# Thống kê viên trả lời §13–§15 của SAP thử nghiệm (giữa kỳ, hội đồng theo dõi dữ liệu, tổn hại/tuân thủ) — chung cho
+# các thử nghiệm can thiệp hành vi nguy cơ tối thiểu của bộ giả lập (16/11/2026: trước đó ba mục này còn nguyên
+# «(GIẢ LẬP — hồ sơ chưa có)» trong SAP đã khoá của mọi kịch bản RCT).
+TRA_LOI_G4_RCT: Tuple[Tuple[str, str], ...] = (
+    (r"^co phan tich giua ky", "Không"),
+    (r"quy tac dung", "Không dừng sớm vì hiệu quả; chỉ dừng khi Hội đồng Đạo đức yêu cầu vì lý do an toàn"),
+    (r"ai xem ket qua giua ky", "Không áp dụng — không có phân tích giữa kỳ"),
+    (r"neu khong co phan tich giua ky", "Can thiệp hành vi nguy cơ tối thiểu, theo dõi ngắn; phân tích giữa kỳ không "
+                                        "đem lại lợi ích cho người tham gia"),
+    (r"neu khong can dmc", "Can thiệp nguy cơ tối thiểu; chủ nhiệm theo dõi an toàn qua báo cáo biến cố hằng tháng "
+                           "và báo Hội đồng Đạo đức theo quy định"),
+    (r"^co dmc|^co dsmb", "Không"),
+    (r"thanh phan va vai tro", "Không áp dụng — không lập hội đồng theo dõi dữ liệu"),
+    (r"dieu le|charter", "Không áp dụng"),
+    (r"dinh nghia ton hai|harms", "Biến cố bất lợi liên quan can thiệp: phàn nàn, lo âu, cơn tăng huyết áp từ "
+                                  "180/110 mmHg trở lên"),
+    (r"^cach danh gia", "Hỏi chủ động tại mỗi lần tái khám và ghi phiếu biến cố"),
+    (r"cai thien va theo doi tuan thu", "Theo dõi tỷ lệ can thiệp được thực hiện đúng kế hoạch và tự báo cáo dùng "
+                                        "thuốc tại tháng 3 và tháng 6"),
+)
+
+
 # Câu trả lời CHUNG của các vai (thông tin hành chính, không PII thật): mẫu nhãn đã bỏ dấu → giá trị.
 TRA_LOI_CHUNG: Tuple[Tuple[str, str], ...] = (
-    (r"^bac si( \+ doi nc)?$", "Bác sĩ/nhóm nghiên cứu (giả lập)"),  # thẻ NGƯỜI PHỤ TRÁCH ở danh sách việc của DMP
+    (r"^bac si( \+ doi nc)?$", "Bác sĩ/nhóm nghiên cứu"),  # thẻ NGƯỜI PHỤ TRÁCH ở danh sách việc của DMP
     (r"chu nhiem|ho ten chu nhiem|ten chu nhiem|nghien cuu vien chinh|principal investigator",
-     "PI-REF-01 (chủ nhiệm — mã vai trò, giả lập)"),
-    (r"chuc vu|chuc danh|trinh do", "Bác sĩ điều trị (giả lập)"),
-    (r"^don vi|don vi thuc hien|co quan|institution", "Phòng khám ngoại trú bệnh viện (giả lập)"),
+     TEN_CHU_NHIEM),
+    (r"chuc vu|chuc danh|trinh do", "Bác sĩ chuyên khoa II"),
+    (r"^don vi|don vi thuc hien|co quan|institution", "Khoa Khám bệnh, bệnh viện chủ trì"),
     (r"dien thoai|phone", "—"), (r"email", "—"),
     (r"tai tro|funding|sponsor", "Không có tài trợ bên ngoài"),
     (r"xung dot loi ich|coi\b|conflict", "Không có xung đột lợi ích"),
-    (r"hoi dong dao duc|ethics committee", "Hội đồng Đạo đức cơ sở (giả lập)"),
-    (r"tinh|tinh thanh|province", "TP. Hồ Chí Minh"),
+    (r"hoi dong dao duc|ethics committee", TEN_HOI_DONG),
+    (r"^tinh$|tinh/thanh|tinh thanh|province", "TP. Hồ Chí Minh"),
     (r"noi luu|luu tai|may chu", "Máy chủ nội bộ có mã hoá, phân quyền theo vai trò"),
     (r"sao luu|backup", "Sao lưu hằng ngày, 2 bản độc lập"),
     (r"thoi gian luu|nam\]?$|xoa/an danh", "2"),
-    (r"ten tac gia|tac gia", "Thống kê viên (vai trò — giả lập)"),
+    (r"ten tac gia|tac gia", "ThS. Trần Thị B"),
     (r"phan mem", "R 4.6 (phân tích chính); kiểm chéo SPSS 31"),
     (r"packages", "stats, sandwich, lmtest, mice"),
     (r"random seed|seed", "20261115"),
-    (r"tap chi|hoi nghi", "Tạp chí Y học Việt Nam (giả lập)"),
-    (r"nguoi kiem tra dau ra", "PI-REF-01"),
+    (r"tap chi|hoi nghi", "Tạp chí Y học Việt Nam"),
+    (r"nguoi kiem tra dau ra", TEN_CHU_NHIEM),
     (r"so ban nop", "3"),
     (r"thoi gian luu", "2"),
     (r"xoa/huy|huy vat ly|trong\s*$", "6"),
-    (r"ten don vi", "Phòng khám ngoại trú bệnh viện (giả lập)"),
+    (r"ten don vi", "Khoa Khám bệnh, bệnh viện chủ trì"),
 )
 
 

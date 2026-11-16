@@ -1762,6 +1762,16 @@ def lap_o_da_chot_g7(van: str, out_dir: Path, study: str) -> tuple[str, list[str
     return van, da
 
 
+
+def _cong_thuc_g3_sach(f: str) -> str:
+    """Mô tả công thức G3 dùng được trong bản thảo (16/11/2026, giả lập 15 kịch bản): `formula_used` của G3 mang lời dặn
+    người chạy lệnh «[CẦN — --p0 ở đây là …, dùng --effect-type HR …]» và tên kỹ thuật «Two-proportion (rct, …)» — chép
+    nguyên vào mục cỡ mẫu của bản thảo. Bỏ lời dặn, dịch tên công thức; công thức chỉ là lời dặn ⇒ giữ nguyên để cổng
+    còn thấy chỗ thiếu."""
+    s = re.sub(r"\s*\[CẦN[^\]]*\]\.?", "", str(f or ""))
+    s = re.sub(r"^Two-proportion \([a-z_]+, ", "công thức so sánh hai tỷ lệ (", s).replace(" vs ", " so với ")
+    return s.strip() or str(f or "")
+
 # Câu mô tả cỡ mẫu đã chốt cho thiết kế không dùng công thức lực (G3 ghi confirmed_n, formula_used là lời hướng dẫn)
 _N_THEO_THIET_KE = {
     "sr_ma": "tổng số người tham gia cộng dồn dự kiến từ các nghiên cứu đưa vào; RIS/TSA tính sau bước trích xuất",
@@ -3032,7 +3042,7 @@ def main() -> None:
     power      = g3.get("power") or 0.80
     effect_val  = g3.get("effect_val")
     effect_type = g3.get("effect_type") or "HR"
-    formula_used = g3.get("formula_used") or ""
+    formula_used = _cong_thuc_g3_sach(g3.get("formula_used") or "")
     # THÊM 2026-07-24 (vòng lặp kiểm tra-hoàn thiện vòng 17, phát hiện HIGH):
     # đọc lại hypothesis_type/margin đã ghim ở G3 (vòng 15) để nối phụ lục
     # CONSORT-NI/Equivalence (Piaggio 2012) vào checklist khi cần.

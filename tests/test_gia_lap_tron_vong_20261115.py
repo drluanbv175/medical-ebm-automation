@@ -81,5 +81,14 @@ def _chay_tron_vong(ma, tmp_path, monkeypatch):
               f"{t['chua_co_ho_so']}")
     print("  Cổng:", {g: v.get("trang_thai") for g, v in bc["cong"].items()})
     print("  Trục:", {k: v.get("dem") or v.get("loi") for k, v in bc["truc"].items()})
+    dc = bc["du_lieu"].get("de_cuong_nop") or {}
+    print("  Đề cương nộp:", {k: dc.get(k) for k in ("ma", "so_dong", "trich_dan")}, dc.get("loi") or "K1–K7 đạt")
     assert set(GL._de_tai_canary_trong_exports(ROOT)) == truoc, "rò thư mục ZZCANARY sang exports/ thật"
     assert dich.is_file()
+    # 16/11/2026 (bác sĩ: đề cương giả lập phải là đề cương hoàn chỉnh, câu chữ phù hợp): đề tài đi hết tới G10 thì bản
+    # đề cương nộp Hội đồng do công cụ soạn phải qua K1–K7 (không ký hiệu nội bộ, đủ chương, cỡ mẫu khớp G3…)
+    # 17/11/2026: lượt chạy qua nửa đêm làm G2 bị từ chối ký ⇒ G6.5 sập (KeyError) mà phép thử vẫn «passed» vì sập chỉ
+    # nằm trong báo cáo. Sập bước nội bộ là lỗi của bộ giả lập/hệ — phải đỏ.
+    assert not bc["crash"], f"bước sập: {bc['crash']} — dừng tại {bc['dung']}"
+    if not bc["dung"] and not os.environ.get("GIA_LAP_DEN_CONG"):
+        assert dc and not dc.get("loi"), f"đề cương nộp còn lỗi: {dc.get('loi') or 'chưa sinh'}"

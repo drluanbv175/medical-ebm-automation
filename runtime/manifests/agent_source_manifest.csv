@@ -8,13 +8,13 @@ path,sha256,size_bytes
 .claude/agents/chan-doan-xac-suat.md,8fc93a1fd62fd01c0e3bfceabbdebec9f1fb570c4bd56026c25a45e5d10a052a,20662
 .claude/agents/co-mau-nghien-cuu.md,41f156cf49cceae1da91a56eb1b9cb118ce7b56767741588c18d7ff3a724978e,26789
 .claude/agents/cong-cu-do-luong.md,da465fa6080127d5891551f584a23d1792d2393e7260476911b6c713089a5ab4,33459
-.claude/agents/dao-duc-dang-ky.md,1e38b069be8dfe1997328ff382fc692b2018ccba05ae06c96d69ca85cf73ff3e,59398
+.claude/agents/dao-duc-dang-ky.md,61f32463f063166c908cab73128b1893ff4cd4dfcdc6f6cf7ce7db087b53dccb,60993
 .claude/agents/dau-man-tinh.md,cb009940cca1e78c940d27470a8cb6e8694e2056d4461522c277ee3a519b115d,25460
 .claude/agents/dien-giai-can-lam-sang.md,d2c4884ce0ec4ed0db68e0589ed3a1199de0044b044a2b1867fe7fe5754e2f51,19289
 .claude/agents/dien-giai-ket-qua.md,4defb38b6e4dd6ab2ccb60f927a74cd933e6c3ac04de5410e355eb532c818d09,22129
 .claude/agents/dieu-phoi-g0.md,4644d0cd44118adaba949b3ec78b401413c7915b8331cd7bd1f6a5407416ada0,21148
 .claude/agents/dieu-phoi-g1.md,7f2b73e0633c96060a1959af3fcf6acb077c37dd15cca2b45a5c296b47967f87,25229
-.claude/agents/dieu-phoi-g10.md,7a482ec866a1de79fb2e0f26edbff83645467cad5e1d57661bdfc432b760f44b,23775
+.claude/agents/dieu-phoi-g10.md,a8ae6bc0f47555ead6a917ee63221edc349f70cd8f9b55e6e97e32bca4874cf5,24292
 .claude/agents/dieu-phoi-g2.md,46934d6e0cfea4e5a8eb60bf148513b439f2b3060c9c14987d6317d4a1aadbb1,22079
 .claude/agents/dieu-phoi-g3.md,d9010775bcbdc234b53f47e59b2502be2e9d639b9a49a3ced1d0ed9a2f0becc6,19896
 .claude/agents/dieu-phoi-g4.md,7ee50013a01fc4f68452b932da66af0a29b91e7646b0f9dd5b9077b3f333d5a0,22143
@@ -62,4 +62,4 @@ path,sha256,size_bytes
 .claude/agents/tram-cam-lo-au.md,207df856a95e1c64bc3288254233cdb948bd06b1cd9727e49b5dc59c59e3c050,20710
 .claude/agents/trich-xuat-y-van.md,ff455c96ab01e49e249990ff7e2372e19db1b0eb06432185bc9db1af0eac1c77,16435
 .claude/agents/trong-tai-tranh-bien.md,cc77f12a93f6a6da46947a5e03c2c4fd718d62d2f52523289eeeb0728c58f427,10395
-.claude/agents/viet-ban-thao.md,8523cb6353d199fb5527034a406fdf05ce55f7c1eb199104e39f248c48c6fdde,31345
+.claude/agents/viet-ban-thao.md,ecb3b9af95915c8f0f47c4f5d2982b10c299399a33ef44a5f3a841e864948c95,33354
