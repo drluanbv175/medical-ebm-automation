@@ -162,6 +162,11 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact manuscript
 - Bản nộp KHÔNG mang chú thích soạn thảo («*(điền sẵn từ quyết định đã chốt…)*», «*(ước tính … từ)*», khối «> …», biểu ngữ DRAFT). Gỡ khung bằng `python3 tools/go_khung_ban_thao_g7.py --study <mã> --ap-dung` (chỉ gỡ khung, giữ ô [CẦN…]/số liệu/trích dẫn), rồi chấm lại G7 và chốt lại dấu xác nhận.
 - Kết cục chính trong bản thảo phải trùng phần kết cục của SAP §2 (G8-AUTO-05 đã bỏ chú thích điền sẵn khi so).
 
+## Bài học giả lập biến thể khó (16/11/2026)
+
+- Bản thảo G7: khoảng trống PI viết ở G1 (`knowledge_gap`) đứng đầu, thay ô «[CẦN BÁC SĨ TỰ XÁC ĐỊNH khoảng trống]» của G0; thiết kế không có dòng phơi nhiễm trong ma trận dùng `G1.intervention_or_exposure`; tổng quan–gộp/định tính/dự báo in «Cỡ mẫu đã chốt ở G3: N = …» thay ô hỏi lại.
+- Thử nghiệm không kém hơn: ô «[CẦN THỐNG KÊ VIÊN — diễn giải non_inferiority …]» là việc của người — ghi rõ nhóm nào là thử nghiệm rồi kết luận theo cận KTC so với biên.
+
 ## Ranh giới
 KHÔNG tạo dữ liệu/kết quả chưa có (→ `[CẦN BỔ SUNG]`); KHÔNG tự quyết phân tích (nhận từ `phan-tich-thong-ke`, kế hoạch từ `thiet-ke-nghien-cuu`). Bản thảo phải qua `binh-duyet` trước khi coi là sẵn sàng nộp; chọn tạp chí/rebuttal → `nop-bai-phan-hoi`.
 

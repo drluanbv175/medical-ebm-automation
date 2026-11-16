@@ -1327,10 +1327,7 @@ source(here::here("scripts", "00_setup.R"))
 # ----------------------------------------------------------
 # ĐỐI TƯỢNG SỐNG CÒN
 # ----------------------------------------------------------
-# surv_obj <- survival::Surv(
-#   time  = df${time_col},
-#   event = df${outcome}
-# )
+# surv_obj <- survival::Surv(time = df${time_col}, event = df${outcome})  # ◆ MÔ HÌNH CHÍNH (SAP §4) — đối tượng sống còn
 
 # ----------------------------------------------------------
 # KAPLAN-MEIER — theo nhóm {exposure}
@@ -1361,10 +1358,7 @@ source(here::here("scripts", "00_setup.R"))
 # ----------------------------------------------------------
 # COX REGRESSION — Mô hình hiệu chỉnh (covariates từ SAP §5)
 # ----------------------------------------------------------
-# cox_adj <- survival::coxph(
-#   surv_obj ~ {exposure} + {cov_formula},
-#   data = df
-# )
+# cox_adj <- survival::coxph(surv_obj ~ {exposure} + {cov_formula}, data = df)  # ◆ MÔ HÌNH CHÍNH (SAP §4)
 # summary(cox_adj)
 #
 # Kiểm định Proportional Hazards
@@ -4262,8 +4256,9 @@ def _r03_binary_with_vars(v: dict, design_code: str = "rct", effect_type: str = 
     else:
         than = f"""\
 # Hiệu nguy cơ (ARR%) — chênh lệch tỷ lệ + 95%CI; không-kém-hơn: so cận KTC với biên Δ của SAP:
-# bang <- table(df${exposure}, df${outcome})
-# hieu_nguy_co <- prop.test(bang[, "1"], rowSums(bang), correct = FALSE)   # 95%CI hiệu hai tỷ lệ
+# bang <- table(df${exposure}, df${outcome})  # ◆ MÔ HÌNH CHÍNH (SAP §4)
+# hieu_nguy_co <- prop.test(bang[c("1", "0"), "1"], rowSums(bang)[c("1", "0")], correct = FALSE)  # ◆ MÔ HÌNH CHÍNH (SAP §4) — 95%CI hiệu tỷ lệ nhóm 1 trừ nhóm 0, CÙNG chiều engine
+# KHÔNG viết prop.test(bang[, "1"], rowSums(bang)): hàng theo thứ tự 0, 1 ⇒ ra p0 − p1 (ngược dấu, đảo kết luận NI)
 # Hiệu chỉnh đồng biến: glm({outcome} ~ {exposure} + {cov_fml}, family = binomial(link = "identity"), data = df)"""
     return f"""\
 # 03_analysis.R — {label} kết cục NHỊ PHÂN ({effect_type}) — KHÔNG dùng Cox/Kaplan–Meier
@@ -4362,8 +4357,8 @@ source(here::here("scripts", "00_setup.R"))
 # df_itt <- df %>% filter(!is.na({exposure}))
 
 # Kết cục thời gian đến biến cố (Time-to-event)
-# surv_obj <- Surv({time_col}, {outcome})
-# cox_itt  <- coxph(surv_obj ~ {exposure} + {cov_fml}, data=df_itt)
+# surv_obj <- Surv({time_col}, {outcome})  # ◆ MÔ HÌNH CHÍNH (SAP §4) — đối tượng sống còn
+# cox_itt  <- coxph(surv_obj ~ {exposure} + {cov_fml}, data=df_itt)  # ◆ MÔ HÌNH CHÍNH (SAP §4)
 # summary(cox_itt)
 #
 # SỬA 2026-07-29 (soi cổng G6): trước đây nhánh RCT dùng coxph() nhưng KHÔNG

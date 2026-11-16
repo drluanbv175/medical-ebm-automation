@@ -1707,6 +1707,8 @@ def lap_o_da_chot_g7(van: str, out_dir: Path, study: str) -> tuple[str, list[str
     bien_kc = next((r.get("bien") for r in mt if r.get("vai_tro") == "ket_cuc_chinh"), None)
     dong_phoi = "\n".join(f"- `{r.get('bien')}` — {r.get('khai_niem')} (nguồn: {r.get('cong_cu')})"
                           for r in mt if r.get("vai_tro") == "phoi_nhiem")
+    if not dong_phoi and phoi:  # 16/11/2026: ma trận không có dòng phơi nhiễm (mô tả/dự báo/định tính) ⇒ dùng G1 đã chốt
+        dong_phoi = f"- {phoi} *(G1 — đã chốt)*"
     dong_kc = (f"- `{bien_kc}` — {ds(po.get('name'))}; định nghĩa: {dinh_nghia}; thời điểm: {ds(po.get('timepoint'))}"
                if bien_kc and ds(po.get("name")) else "")
     gia_thuyet = ds(g0.get("hypothesis_h1"))
@@ -1760,6 +1762,14 @@ def lap_o_da_chot_g7(van: str, out_dir: Path, study: str) -> tuple[str, list[str
     return van, da
 
 
+# Câu mô tả cỡ mẫu đã chốt cho thiết kế không dùng công thức lực (G3 ghi confirmed_n, formula_used là lời hướng dẫn)
+_N_THEO_THIET_KE = {
+    "sr_ma": "tổng số người tham gia cộng dồn dự kiến từ các nghiên cứu đưa vào; RIS/TSA tính sau bước trích xuất",
+    "qualitative": "số người tham gia dự kiến; dừng phỏng vấn khi đạt bão hoà dữ liệu theo tiêu chí đã chốt ở G1",
+    "prediction": "cỡ mẫu phát triển mô hình theo Riley 2020 (BMJ, PMID 32188600; pmsampsize)",
+}
+
+
 def generate_manuscript(
     study: str,
     topic: str,
@@ -1793,6 +1803,7 @@ def generate_manuscript(
     outcome_ordinal: bool = False,
     mien_dong_thuan: bool = False,
     ket_qua_g6: Optional[dict] = None,
+    g3_n_chot: Optional[int] = None,  # 16/11/2026: N PI đã chốt ở G3 (thiết kế không tính theo lực)
 ) -> str:
     """
     Sinh toàn bộ bản thảo IMRAD skeleton A8.
@@ -2220,6 +2231,9 @@ def generate_manuscript(
             f"Cỡ mẫu được tính theo {formula_used}, {sample_size_detail}, {effect_text}. "
             f"Cần {n_adjusted} người tham gia (chi tiết xem Bảng S1 — G3 checkpoint).  "
             if (formula_used and n_adjusted)
+            # 16/11/2026: thiết kế KHÔNG tính N theo lực (tổng quan–gộp, định tính, dự báo) có N PI đã chốt ở G3
+            else (f"Cỡ mẫu đã chốt ở G3: N = {g3_n_chot} — {_N_THEO_THIET_KE.get(design_code, 'xem G3')} (chi tiết "
+                  "xem G3 checkpoint).  ") if g3_n_chot
             else "[CẦN CỠ MẪU TỪ G3 — chưa có kết quả tính cỡ mẫu cho đề tài này. "
                  "KHÔNG viết 'cỡ mẫu được tính theo…' khi G3 chưa chạy; chạy "
                  "`python tools/run_g3_auto.py --study <mã>` rồi sinh lại bản thảo.]  "
@@ -2942,7 +2956,10 @@ def main() -> None:
     n_sr          = pub_results.get("n_sr", 0)
     n_rct         = pub_results.get("n_rct", 0)
     n_guideline   = pub_results.get("n_guideline", 0)
-    research_gaps = g0.get("research_gaps") or []
+    import quyet_dinh_da_chot as QD  # noqa: PLC0415
+
+    # 16/11/2026: khoảng trống PI đã viết ở G1 đứng đầu, thay ô chờ điền của G0 (tổng quan/định tính từng bị hỏi lại)
+    research_gaps = QD.khoang_trong_cho_van_ban(QD._json(out_dir / "study_meta.json"), g0.get("research_gaps") or [])
     # Lấy PMIDs từ pubmed_raw (toàn bộ các loại)
     pmids: list[str] = []
     for cat_articles in pubmed_raw.values():
@@ -3068,6 +3085,7 @@ def main() -> None:
         effect_val=effect_val,
         effect_type=effect_type,
         formula_used=formula_used,
+        g3_n_chot=g3.get("confirmed_n"),
         g4_status=g4_status,
         g4_lock_date=g4_lock_date,
         target_journal=args.target_journal,

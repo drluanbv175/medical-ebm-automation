@@ -1025,7 +1025,9 @@ def evaluate_study(
     try:
         import run_g10_assemble as G10  # noqa: PLC0415
 
-        citation_ok, citation_reason = G10.citation_verification_ok(study, out_dir)
+        # 16/11/2026: mục đích đầy đủ ⇒ phủ cả tệp gói (bản thảo, bản nhận xét, SAP…) — hồ sơ trước dữ liệu chỉ đề cương
+        citation_ok, citation_reason = G10.citation_verification_ok(
+            study, out_dir, cong=None if purpose in MUC_DICH_TRUOC_DU_LIEU else "G10")
         # G10-05: trạng thái rút bài phải còn hạn 30 ngày lúc PI khoá gói; đã khoá thì chỉ cảnh báo (chạy lại A12 đổi
         # manifest ⇒ ghi quyết định G10 mới có chủ ý), không tự huỷ khoá.
         if citation_ok:

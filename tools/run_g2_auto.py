@@ -868,6 +868,12 @@ def generate_g2_full_package(
     _excl       = _meta_or_blank(meta, "gate_params", "G1", "exclusion_criteria",
                                  blank="[CẦN — từ G1 SAP §1]")
     _objectives = (meta or {}).get("gate_params", {}).get("G1", {}).get("objectives") or []
+    # 16/11/2026 (giả lập 15 kịch bản: hai ô G2 hỏi lại điều G1 ĐÃ CHỐT ở MỌI đề tài) — thời gian nghiên cứu và khoảng
+    # trống/lý do nghiên cứu tại Việt Nam lấy từ G1; vắng mới để ô [CẦN …] cho PI.
+    _study_period = _meta_or_blank(meta, "gate_params", "G1", "study_period",
+                                   blank=f"[CẦN — từ ___/___/{_YEAR} đến ___/___/____]")
+    _gap_vn = _meta_or_blank(meta, "gate_params", "G1", "knowledge_gap",
+                             blank="[CẦN BỔ SUNG: lý do cần nghiên cứu thêm tại bối cảnh Việt Nam]")
     _obj1 = str(_objectives[0]) if len(_objectives) > 0 else "[CẦN — Mục tiêu 1, từ PICO G0]"
     _obj2 = str(_objectives[1]) if len(_objectives) > 1 else "[CẦN — Mục tiêu 2 nếu có]"
     # 16/11/2026: câu «Nghiên cứu do [đơn vị] thực hiện … tại [nơi thực hiện]» của ICF lấy đơn vị/nơi thực hiện ĐÃ CHỐT
@@ -1288,7 +1294,7 @@ THÔNG TIN TỔNG QUAN:
   Lộ trình xét duyệt đề nghị: {risk["irb_route"]}
   Dân số tham gia: {_population}
   Cỡ mẫu dự kiến: {n_display}
-  Thời gian nghiên cứu: [CẦN — từ ___/___/{_YEAR} đến ___/___/____]
+  Thời gian nghiên cứu: {_study_period}
   Nguồn tài trợ: {_sponsor}
   Xung đột lợi ích (COI): [CẦN KHAI BÁO — xem Tài liệu 8]
   Đăng ký nghiên cứu: [CẦN — {risk["register_where"]}]
@@ -1331,7 +1337,7 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT — ngôn ngữ hành chính)
 1. VẤN ĐỀ NGHIÊN CỨU VÀ LÝ DO CẦN THIẾT:
    {topic}
    Bằng chứng hiện có (từ PubMed): {n_sr} SR/MA · {n_rct} RCT (mức: {evidence_level}).
-   [CẦN BỔ SUNG: lý do cần nghiên cứu thêm tại bối cảnh Việt Nam]
+   Lý do cần nghiên cứu tại bối cảnh Việt Nam: {_gap_vn}
 
 2. MỤC TIÊU CỤ THỂ:
    2.1 {_obj1}

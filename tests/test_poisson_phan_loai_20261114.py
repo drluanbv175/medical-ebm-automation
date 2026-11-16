@@ -103,9 +103,13 @@ def test_pr_bien_phan_loai_cac_bien_gia_chung_mot_mo_hinh_tho():
     assert pr["nhom_bien"] == {"g": ["g"], "tuoi": ["tuoi"], "kg": ["kg_2", "kg_3"]}
 
 
-def test_pr_tu_choi_cum_va_ket_cuc_khong_nhi_phan():
+def test_pr_theo_cum_va_tu_choi_ket_cuc_khong_nhi_phan():
+    """16/11/2026 (giả lập biến thể RCT cụm): cụm nay ĐƯỢC hỗ trợ — sandwich theo cụm CR1 + t(G−1); số khớp R ở
+    tests/test_bien_the_kho_he_thong_20261116.py. Bản cũ khẳng định «từ chối cụm» (khi engine chưa làm được)."""
     df = _du_lieu_pr()
-    assert "cụm" in RSA.poisson_pr_model(df, "y", "g", ["tuoi"], cluster_col="kg")["error"]
+    cum = RSA.poisson_pr_model(df, "y", "g", ["tuoi"], cluster_col="kg")
+    assert cum["model"] == "poisson_robust_cluster" and cum["cluster"] == {"cot": "kg", "so_cum": 3}
+    assert "theo cụm" in cum["phuong_sai"] and "error" not in cum
     df["y"] = df["y"] * 2
     assert "0/1" in RSA.poisson_pr_model(df, "y", "g", ["tuoi"])["error"]
 

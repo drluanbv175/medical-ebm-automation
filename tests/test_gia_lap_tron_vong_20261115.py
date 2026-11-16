@@ -25,6 +25,7 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
 
+import gia_lap_bien_the_kho as BTK  # noqa: E402
 import gia_lap_dinh_ky as GL  # noqa: E402
 import gia_lap_tron_vong as TV  # noqa: E402
 
@@ -34,6 +35,20 @@ pytestmark = pytest.mark.skipif(not os.environ.get("GIA_LAP_TRON_VONG"),
 
 @pytest.mark.parametrize("ma", list(GL.KICH_BAN), ids=[GL.KICH_BAN[m]["thiet_ke"] for m in GL.KICH_BAN])
 def test_gia_lap_tron_vong(ma, tmp_path, monkeypatch):
+    _chay_tron_vong(ma, tmp_path, monkeypatch)
+
+
+# 16/11/2026 — biến thể KHÓ (không kém hơn · cụm · sống còn · dữ liệu thiếu…): sổ riêng `gia_lap_bien_the_kho`, cùng
+# thân chạy. Chạy đích danh: …::test_gia_lap_bien_the_kho[rct_ni] (lọc -k «rct» sẽ khớp cả biến thể).
+_KHO = BTK.danh_sach()
+
+
+@pytest.mark.parametrize("ma", [m for m, _i in _KHO], ids=[i for _m, i in _KHO])
+def test_gia_lap_bien_the_kho(ma, tmp_path, monkeypatch):
+    _chay_tron_vong(ma, tmp_path, monkeypatch)
+
+
+def _chay_tron_vong(ma, tmp_path, monkeypatch):
     from tests import canh_bi_mat_that as CBM  # noqa: PLC0415
 
     truoc = set(GL._de_tai_canary_trong_exports(ROOT))

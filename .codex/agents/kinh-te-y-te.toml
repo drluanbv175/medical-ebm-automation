@@ -113,6 +113,13 @@ Luật kiểm: mọi trường đã điền (không «[CẦN»); «Loại đánh
 python tools/gen_research_docx.py --study "<TEN>" --artifact health-economics
 ```
 
+## Bài học giả lập biến thể khó (16/11/2026)
+
+- Đề tài có cấu phần kinh tế ĐI KÈM thử nghiệm: khai `gate_params.G1.economic_evaluation` (loai_phan_tich, perspective, comparator, time_horizon, discounting, currency_year, cost_items, effect_measure, wtp, wtp_source, patient_involvement + bien_nhom/bien_chi_phi/bien_hieu_qua) ⇒ SAP sinh §16 «ĐÁNH GIÁ KINH TẾ Y TẾ (CHEERS 2022 — PMID 35017145)»; §16 BẮT BUỘC khi ký G4 (ô vắng là [CẦN BÁC SĨ …]).
+- G6: phân tích `loai_dac_thu: "kinh_te"` (nhom, chi_phi, hieu_qua, nguong_wtp; sap_neo «ICER = ΔC/ΔE») ⇒ chi phí/hiệu quả từng nhánh, ΔC, ΔE, ICER + góc phần tư, NMB tại WTP, bootstrap phân tầng B = 2000 seed 20261115, CEAC 0–3 × WTP. Kiểm chéo R/SPSS chỉ so đại lượng TẤT ĐỊNH (bootstrap phụ thuộc bộ sinh số của từng phần mềm).
+- WTP cho đơn vị tự nhiên do CHỦ NHIỆM ấn định — ghi rõ không phải chuẩn quốc gia và báo CEAC đủ dải; CEAC là tần suất NMB > 0 trong mẫu bootstrap, không phải xác suất Bayes; ICER âm đọc cùng góc phần tư.
+- Giới hạn còn lại: chưa tự sinh bảng kiểm CHEERS 28 mục; CEA dựa mô hình (Markov/cây quyết định) và BIA độc lập vẫn ngoài chuỗi G0–G10 (`economic` không phải mã thiết kế chuỗi — G1-AUTO-02c chặn) ⇒ dùng health_econ_calc.py.
+
 ## Ranh giới
 - CHỈ làm phân tích kinh tế. **KHÔNG tạo ra số hiệu quả lâm sàng** (nhận từ `tham-dinh-grade-nnt`/`meta-phan-tich`/`tong-quan-y-van`), **KHÔNG chạy thống kê chính của thử nghiệm** (việc của `phan-tich-thong-ke`), **KHÔNG ra khuyến cáo chi trả chính sách** (chỉ cung cấp bằng chứng — quyết định thuộc cơ quan/chủ nhiệm).
 - Điều phối qua `dieu-phoi-nghien-cuu` (G1 thiết kế cấu phần kinh tế · G7 báo cáo CHEERS).

@@ -521,6 +521,10 @@ Kích hoạt khi nghiên cứu thực hiện tại đơn vị có tính đặc t
 - Phụ lục PROSPERO và ICF do bộ sinh dựng từ quyết định đã chốt — agent KHÔNG điền lại PICO, KHÔNG bịa lựa chọn của PI:
   ô `[CẦN …]` còn lại là quyết định thật của chủ nhiệm.
 
+## Bài học giả lập biến thể khó (16/11/2026)
+
+- Hồ sơ G2 nay tự lấy «Thời gian nghiên cứu» từ `gate_params.G1.study_period` và «Lý do cần nghiên cứu tại bối cảnh Việt Nam» từ `G1.knowledge_gap` (đo: hai ô này hỏi lại ở cả 15 kịch bản giả lập) — chốt hai khoá ở G1 thì PI không gõ lại; phiếu đồng thuận tiếng Anh vẫn là việc DỊCH của người.
+
 ## Ranh giới
 KHÔNG tự phê duyệt đạo đức · KHÔNG bịa số IRB/mã đăng ký · KHÔNG tự chạy `tools/approve_gate.py` thay bác sĩ · DMP vận hành/khóa DB thuộc `quan-ly-du-lieu` (G5).
 

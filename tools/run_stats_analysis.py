@@ -987,17 +987,27 @@ def poisson_pr_model(df: pd.DataFrame, outcome_col: str, group_col: str, covaria
 
     PR THÔ từng biến (biến phân loại: các biến giả của nó cùng một mô hình) và PR HIỆU CHỈNH (mô hình đầy đủ) — CÙNG
     tập ca đầy đủ mọi biến của mô hình đầy đủ (để thô và hiệu chỉnh so được với nhau; SPSS/R lọc y hệt). Hiệu chỉnh
-    cụm chưa hỗ trợ (SAP BTM đưa phòng khám vào mô hình làm biến) ⇒ trả lỗi, không chạy âm thầm sai."""
+    cụm: 16/11/2026 (giả lập biến thể «RCT theo cụm») — có ``cluster_col`` ⇒ sai số chuẩn sandwich THEO CỤM
+    (``cov_type='cluster'``, hiệu chỉnh mẫu nhỏ G/(G−1)·(N−1)/(N−K) = R ``vcovCL(type="HC1")``; Zou & Donner, PMID
+    22072596) + suy luận t(G−1) — cùng quy ước logistic/tuyến tính theo cụm (N11). Bản cũ trả lỗi ⇒ thử nghiệm cụm
+    không có ước lượng PR nào. Dòng thiếu mã cụm bị loại cùng complete-case."""
     if not HAS_STATSMODELS:
         return {"error": "statsmodels chưa cài. Chạy: pip install statsmodels"}
-    if cluster_col:
-        return {"error": "Poisson vững chưa hỗ trợ hiệu chỉnh cụm — đưa biến cụm vào mô hình như SAP, hoặc bỏ cụm",
-                "note": "[CẦN THỐNG KÊ VIÊN]"}
     bien_gia = bien_gia or {}
     goc = [group_col] + [c for c in covariates if c in df.columns]
     nhom_bien = [(b, bien_gia[b]["ten"] if b in bien_gia else [b]) for b in goc]
     cot = [outcome_col] + [t for _b, ds in nhom_bien for t in ds]
-    data = df[cot].apply(pd.to_numeric, errors="coerce").dropna()
+    if cluster_col:
+        data = df[cot].apply(pd.to_numeric, errors="coerce").assign(_cum_=df[cluster_col]).dropna()
+        so_cum = int(data["_cum_"].nunique())
+        if so_cum < 2:
+            return {"error": f"Cột cụm «{cluster_col}» chỉ có {so_cum} giá trị — không hiệu chỉnh cụm được.",
+                    "note": "[CẦN THỐNG KÊ VIÊN]"}
+        fit_kw = {"cov_type": "cluster", "cov_kwds": {"groups": pd.factorize(data["_cum_"])[0]}, "use_t": True}
+        data = data.drop(columns="_cum_")
+    else:
+        data = df[cot].apply(pd.to_numeric, errors="coerce").dropna()
+        fit_kw = {"cov_type": "HC0"}
     y = data[outcome_col].astype(float)
     if not set(y.unique()) <= {0.0, 1.0}:
         return {"error": f"Poisson vững cho PR cần kết cục 0/1 — «{outcome_col}» có {sorted(set(y.unique()))[:5]}"}
@@ -1007,7 +1017,7 @@ def poisson_pr_model(df: pd.DataFrame, outcome_col: str, group_col: str, covaria
     def khop(ds: list) -> tuple:
         X = sm.add_constant(data[ds].astype(float), has_constant="add")
         m, caught = _chay_fit_bat_canh_bao(
-            lambda: sm.GLM(y, X, family=sm.families.Poisson()).fit(cov_type="HC0", maxiter=200))
+            lambda: sm.GLM(y, X, family=sm.families.Poisson()).fit(maxiter=200, **fit_kw))
         ly_do = _ly_do_tu_canh_bao(caught)
         if not getattr(m, "converged", True):
             ly_do.append("statsmodels GLM converged = False")
@@ -1034,10 +1044,14 @@ def poisson_pr_model(df: pd.DataFrame, outcome_col: str, group_col: str, covaria
             tho += dong(m, conf, ly_do, ds, "PR")
         tat_ca = [t for _b, ds in nhom_bien for t in ds]
         m, conf, ly_do = khop(tat_ca)
-        out = {"model": "poisson_robust_hc0", "n": len(data), "n_bien_co": int(y.sum()),
-               "phuong_sai": "HC0 (sandwich) — Zou 2004 PMID 15033648",
+        out = {"model": "poisson_robust_cluster" if cluster_col else "poisson_robust_hc0", "n": len(data),
+               "n_bien_co": int(y.sum()),
+               "phuong_sai": (f"sandwich theo cụm «{cluster_col}» (CR1: G/(G−1)·(N−1)/(N−K), suy luận t(G−1)) — Zou & "
+                              "Donner, PMID 22072596" if cluster_col else "HC0 (sandwich) — Zou 2004 PMID 15033648"),
                "tho": tho, "results": dong(m, conf, ly_do, tat_ca, "PR_adj"),
                "nhom_bien": {b: ds for b, ds in nhom_bien}}
+        if cluster_col:
+            out.update(cov_type="cluster", cluster={"cot": cluster_col, "so_cum": so_cum})
         if ly_do:
             out["khong_hoi_tu"] = True
             out["ly_do"] = ly_do
@@ -2081,7 +2095,11 @@ def format_mi_text(mi: dict, mv: dict = None) -> str:
         lines.append(f"  {GHI_CHU_KHONG_HOI_TU}")
         for ld in mi.get("ly_do", [])[:6]:
             lines.append(f"    - {ld}")
-    lines.append(f"\n  {'Biến số':<22} {'OR/β (MI)':>14}  {'95%CI (MI)':>18}  {'p':>7}   {'so complete-case'}")
+    # 16/11/2026 (giả lập biến thể «dữ liệu thiếu»): MI Poisson ghi PR_adj — bản cũ chỉ đọc OR_adj/beta ⇒ cột ước
+    # lượng in «?» (cả cột complete-case), tiêu đề ghi «OR/β» cho mô hình PR; người diễn giải không chép được số.
+    poisson_mi = any("PR_adj" in r for r in mi.get("results", []))
+    nhan_uoc = "PR (MI)" if poisson_mi else "OR/β (MI)"
+    lines.append(f"\n  {'Biến số':<22} {nhan_uoc:>14}  {'95%CI (MI)':>18}  {'p':>7}   {'so complete-case'}")
     lines.append("  " + "-" * 90)
     mv_lookup = {r["variable"]: r for r in (mv.get("results", []) if mv else [])}
     for r in mi.get("results", []):
@@ -2090,12 +2108,12 @@ def format_mi_text(mi: dict, mv: dict = None) -> str:
         if cc and (cc.get("khong_hoi_tu") or "CI_95" not in cc):
             cc_str = "complete-case: " + DONG_KHONG_HOI_TU
         elif cc:
-            cc_est = cc.get("OR_adj", cc.get("beta", "?"))
+            cc_est = cc.get("PR_adj", cc.get("OR_adj", cc.get("beta", "?")))
             cc_str = f"{cc_est} ({cc['CI_95'][0]}–{cc['CI_95'][1]}, p={cc['p']})"
         if r.get("khong_hoi_tu") or "CI_95" not in r:
             lines.append(f"  {r['variable'][:20]:<22} {DONG_KHONG_HOI_TU}   {cc_str}")
             continue
-        est = r.get("OR_adj", r.get("beta", "?"))
+        est = r.get("PR_adj", r.get("OR_adj", r.get("beta", "?")))
         ci = r["CI_95"]
         p = r["p"]
         star = "*" if p < 0.05 else " "
@@ -2262,14 +2280,22 @@ def generate_r_script(study: str, gate: str, outcome_col: str, group_col: str,
     pl = set(phan_loai or [])
     formula = " + ".join([group_col] + [f"factor({c})" if c in pl else c for c in covariates])
     if outcome_type == "poisson_pr":
-        return (f"# Script R tái lặp G6 — {study} ({gate}) — Poisson log-link, SE vững HC0 (Zou 2004).\n"
+        if cluster_col:
+            vc_dong = (f"vc <- vcovCL(model_adj, cluster = ~ {cluster_col}, type = 'HC1')  # = cov_type='cluster'\n"
+                       f"df_cum <- length(unique(na.omit(data${cluster_col}))) - 1  # t(G−1), như Python (N11)\n"
+                       "print(coeftest(model_adj, vcov. = vc, df = df_cum))\n"
+                       "print(exp(cbind(PR = coef(model_adj), coefci(model_adj, vcov. = vc, df = df_cum))))\n")
+        else:
+            vc_dong = ("vc <- vcovHC(model_adj, type = 'HC0')\n"
+                       "print(coeftest(model_adj, vcov. = vc))\n"
+                       "print(exp(cbind(PR = coef(model_adj), coefci(model_adj, vcov. = vc))))\n")
+        return (f"# Script R tái lặp G6 — {study} ({gate}) — Poisson log-link, SE vững "
+                f"{'theo cụm' if cluster_col else 'HC0'} (Zou 2004).\n"
                 "# Cần bác sĩ kiểm chứng.\n"
                 "library(sandwich); library(lmtest)\n"
                 "data <- read.csv('<CSV đã khoá>', check.names = FALSE)\n"
                 f"model_adj <- glm({outcome_col} ~ {formula}, family = poisson(link = 'log'), data = data)\n"
-                "vc <- vcovHC(model_adj, type = 'HC0')\n"
-                "print(coeftest(model_adj, vcov. = vc))\n"
-                "print(exp(cbind(PR = coef(model_adj), coefci(model_adj, vcov. = vc))))\n")
+                + vc_dong)
     family = "binomial" if outcome_type == "binary" else "gaussian"
     # Pre-compute conditionals to avoid backslash-in-f-string (Python < 3.12)
     model_comment = "# Logistic regression" if family == "binomial" else "# Linear regression"

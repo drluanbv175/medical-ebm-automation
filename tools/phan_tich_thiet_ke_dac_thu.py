@@ -11,6 +11,10 @@ qua G6 mà KHÔNG có một con số nào (chay_sap_g6 ghi «không tự động
   gop        RR gộp hiệu ứng ngẫu nhiên DerSimonian–Laird + RR hiệu ứng cố định (nghịch đảo phương sai), τ², Q, I²;
              ô 0 ⇒ cộng 0,5 vào cả bốn ô của nghiên cứu đó (cùng quy ước metafor «only0»).
   dinh_tinh  tần suất từng chủ đề đã mã hoá (mô tả — phân tích chủ đề vẫn là việc của nhóm nghiên cứu).
+  kinh_te    (16/11/2026, biến thể khó) đánh giá chi phí–hiệu quả ĐI KÈM thử nghiệm trên dữ liệu cá thể: chi phí và
+             hiệu quả trung bình từng nhánh, ΔC, ΔE, ICER + góc phần tư (dùng health_econ_calc.icer), bootstrap phi
+             tham số PHÂN TẦNG theo nhánh (B = 2000, seed cố định) cho KTC 95% của ΔC/ΔE/NMB, mặt phẳng chi phí–hiệu
+             quả và đường CEAC tại các bội số của ngưỡng WTP SAP khai. Báo cáo theo CHEERS 2022 (PMID 35017145).
 
 Mỗi lượt: đọc dữ liệu ĐÃ KHOÁ (G5, đúng hàm kiểm khoá của cổng) khi G4 đã khoá → ghi `<gate>_analysis_summary.json`
 (ước lượng + đặc tả), `<gate>_ket_qua.md`, và — với `--kiem-cheo` — chạy CÙNG phép tính bằng R (pROC/glm/metafor) và
@@ -55,7 +59,12 @@ LOAI = {
     "du_bao": ("outcome", "covariates"),
     "gop": ("nhan_nghien_cuu", "su_kien_can_thiep", "n_can_thiep", "su_kien_chung", "n_chung"),
     "dinh_tinh": ("chu_de",),
+    "kinh_te": ("nhom", "chi_phi", "hieu_qua", "nguong_wtp"),
 }
+SO_LAP_KT, HAT_GIONG_KT = 2000, 20261115  # bootstrap kinh tế: số lần lặp + seed (ghi vào kết quả, R dùng cùng seed)
+BOI_SO_WTP = (0.0, 0.25, 0.5, 1.0, 1.5, 2.0, 3.0)  # CEAC: λ = bội số × ngưỡng WTP SAP khai
+NHAN_GOC = {"dong_bac": "Đông Bắc (tốn hơn, hiệu quả hơn)", "dong_nam": "Đông Nam (rẻ hơn, hiệu quả hơn)",
+            "tay_bac": "Tây Bắc (tốn hơn, kém hiệu quả hơn)", "tay_nam": "Tây Nam (rẻ hơn, kém hiệu quả hơn)"}
 SAI_SO = {"mac_dinh": 1e-6, "brier": 1e-5, "or": 1e-4}
 
 
@@ -186,6 +195,62 @@ def dinh_tinh(hang: List[Dict[str, Any]], chu_de: str) -> Dict[str, Any]:
             "ghi_chu": "Tần suất mô tả các mã đã gán — không thay phân tích chủ đề của nhóm nghiên cứu (COREQ/SRQR)"}
 
 
+def _phan_vi(xs: Sequence[float], q: float) -> float:
+    """Phân vị kiểu 7 (nội suy tuyến tính — mặc định của R `quantile`)."""
+    s = sorted(xs)
+    h = (len(s) - 1) * q
+    lo = math.floor(h)
+    return s[lo] + (h - lo) * (s[min(lo + 1, len(s) - 1)] - s[lo])
+
+
+def kinh_te(hang: List[Dict[str, Any]], nhom: str, chi_phi: str, hieu_qua: str, wtp: float,
+            so_lap: int = SO_LAP_KT, hat_giong: int = HAT_GIONG_KT) -> Dict[str, Any]:
+    """CEA đi kèm thử nghiệm: nhánh 1 = can thiệp, 0 = so sánh. ICER = ΔC/ΔE (đơn vị tiền trên một đơn vị hiệu quả).
+    Bất định: bootstrap phân tầng (lấy lại có hoàn lại TRONG từng nhánh), KTC phân vị; CEAC = tỷ lệ lần lặp có
+    NMB = λ·ΔE − ΔC > 0 — KHÔNG phải xác suất Bayes, là tần suất trong mẫu bootstrap."""
+    import random  # noqa: PLC0415
+
+    import health_econ_calc as HEC  # noqa: PLC0415
+
+    if wtp is None or float(wtp) < 0:
+        raise TuChoi("ngưỡng WTP phải là số không âm (SAP khai)")
+    c = {g: [float(r[chi_phi]) for r in hang if int(float(r[nhom])) == g] for g in (0, 1)}
+    e = {g: [float(r[hieu_qua]) for r in hang if int(float(r[nhom])) == g] for g in (0, 1)}
+    if min(len(c[0]), len(c[1])) < 2:
+        raise TuChoi("cần ≥ 2 người mỗi nhánh (nhóm mã 0/1)")
+    tb = {k: {g: sum(v[g]) / len(v[g]) for g in (0, 1)} for k, v in (("c", c), ("e", e))}
+    co_so = HEC.icer(tb["c"][0], tb["e"][0], tb["c"][1], tb["e"][1], wtp=float(wtp))
+    rng = random.Random(hat_giong)
+    n0, n1 = len(c[0]), len(c[1])
+    lap = []
+    for _ in range(so_lap):
+        i1 = [rng.randrange(n1) for _ in range(n1)]
+        i0 = [rng.randrange(n0) for _ in range(n0)]
+        dc = sum(c[1][i] for i in i1) / n1 - sum(c[0][i] for i in i0) / n0
+        de = sum(e[1][i] for i in i1) / n1 - sum(e[0][i] for i in i0) / n0
+        lap.append((dc, de))
+    goc = {"dong_bac": sum(dc > 0 and de > 0 for dc, de in lap), "dong_nam": sum(dc <= 0 and de > 0 for dc, de in lap),
+           "tay_bac": sum(dc > 0 and de <= 0 for dc, de in lap), "tay_nam": sum(dc <= 0 and de <= 0 for dc, de in lap)}
+    nmb = [float(wtp) * de - dc for dc, de in lap]
+    ceac = [{"boi_so": b, "wtp": b * float(wtp), "ty_le_chi_phi_hieu_qua": sum(b * float(wtp) * de - dc > 0
+                                                                              for dc, de in lap) / so_lap}
+            for b in BOI_SO_WTP]
+    return {"n": {"can_thiep": n1, "so_sanh": n0},
+            "chi_phi_tb": {"can_thiep": tb["c"][1], "so_sanh": tb["c"][0]},
+            "hieu_qua_tb": {"can_thiep": tb["e"][1], "so_sanh": tb["e"][0]},
+            "delta_c": co_so["delta_cost"], "delta_e": co_so["delta_effect"], "icer": co_so["icer"],
+            "goc_phan_tu": co_so["quadrant"], "nguong_wtp": float(wtp),
+            "nmb_tai_wtp": co_so["nmb_incremental_at_wtp"],
+            "ci_95_delta_c": [_phan_vi([x[0] for x in lap], 0.025), _phan_vi([x[0] for x in lap], 0.975)],
+            "ci_95_delta_e": [_phan_vi([x[1] for x in lap], 0.025), _phan_vi([x[1] for x in lap], 0.975)],
+            "ci_95_nmb": [_phan_vi(nmb, 0.025), _phan_vi(nmb, 0.975)],
+            "mat_phang_bootstrap_pct": {k: 100 * v / so_lap for k, v in goc.items()}, "ceac": ceac,
+            "bootstrap": {"so_lap": so_lap, "hat_giong": hat_giong, "kieu": "phi tham số, phân tầng theo nhánh"},
+            "chuan_bao_cao": "CHEERS 2022 (PMID 35017145)",
+            "ghi_chu": "CEAC là tần suất NMB > 0 trong mẫu bootstrap — không phải xác suất Bayes; ICER âm phải đọc "
+                       "cùng góc phần tư (thống trị/bị thống trị), không xếp hạng như ICER dương."}
+
+
 def tinh(loai: str, hang: List[Dict[str, Any]], ts: Dict[str, Any]) -> Dict[str, Any]:
     if loai == "chan_doan":
         return chan_doan(hang, ts["tham_chieu"], ts["chi_so"], float(ts["nguong"]))
@@ -194,6 +259,8 @@ def tinh(loai: str, hang: List[Dict[str, Any]], ts: Dict[str, Any]) -> Dict[str,
     if loai == "gop":
         return gop(hang, ts["nhan_nghien_cuu"], ts["su_kien_can_thiep"], ts["n_can_thiep"], ts["su_kien_chung"],
                    ts["n_chung"])
+    if loai == "kinh_te":
+        return kinh_te(hang, ts["nhom"], ts["chi_phi"], ts["hieu_qua"], float(ts["nguong_wtp"]))
     return dinh_tinh(hang, ts["chu_de"])
 
 
@@ -208,6 +275,11 @@ def cac_so_doi_chieu(loai: str, kq: Dict[str, Any]) -> Dict[str, float]:
     if loai == "gop":
         return {"rr_gop": kq["rr_gop_ngau_nhien"], "ci_duoi": kq["ci_95"][0], "ci_tren": kq["ci_95"][1],
                 "tau2": kq["tau2"], "i2": kq["i2_pct"]}
+    if loai == "kinh_te":  # đại lượng TẤT ĐỊNH — bootstrap phụ thuộc bộ sinh số ngẫu nhiên của từng phần mềm, không so
+        ra = {"chi_phi_tb_1": kq["chi_phi_tb"]["can_thiep"], "chi_phi_tb_0": kq["chi_phi_tb"]["so_sanh"],
+              "hieu_qua_tb_1": kq["hieu_qua_tb"]["can_thiep"], "hieu_qua_tb_0": kq["hieu_qua_tb"]["so_sanh"],
+              "delta_c": kq["delta_c"], "delta_e": kq["delta_e"]}
+        return ra | ({"icer": kq["icer"]} if kq["icer"] is not None else {})
     return {f"n_{i}": c["n"] for i, c in enumerate(kq["chu_de"])}
 
 
@@ -292,6 +364,22 @@ def kich_ban_r(loai: str, ts: Dict[str, Any], csv_p: Path, ra: Path) -> str:
                 'ghi("rr_gop", exp(as.numeric(m$b))); ghi("ci_duoi", exp(m$ci.lb)); ghi("ci_tren", exp(m$ci.ub))\n'
                 'ghi("tau2", m$tau2); ghi("i2", m$I2)\nprint(m)\n'
                 '# metafor::forest(m, atransf = exp)  # biểu đồ rừng\n')
+    elif loai == "kinh_te":
+        g, cc, ee, lam = ts["nhom"], ts["chi_phi"], ts["hieu_qua"], float(ts["nguong_wtp"])
+        boi = ", ".join(repr(b) for b in BOI_SO_WTP)
+        than = (f'g <- df[["{g}"]]; cc <- df[["{cc}"]]; ee <- df[["{ee}"]]\n'
+                'c1 <- mean(cc[g == 1]); c0 <- mean(cc[g == 0]); e1 <- mean(ee[g == 1]); e0 <- mean(ee[g == 0])\n'
+                'ghi("chi_phi_tb_1", c1); ghi("chi_phi_tb_0", c0); ghi("hieu_qua_tb_1", e1); ghi("hieu_qua_tb_0", e0)\n'
+                'ghi("delta_c", c1 - c0); ghi("delta_e", e1 - e0); ghi("icer", (c1 - c0) / (e1 - e0))\n'
+                '# Bootstrap phân tầng theo nhánh (tham khảo: bộ sinh số của R khác Python nên KTC/CEAC lệch nhỏ)\n'
+                f'set.seed({HAT_GIONG_KT}); B <- {SO_LAP_KT}\n'
+                'bt <- replicate(B, { i1 <- sample(which(g == 1), replace = TRUE); '
+                'i0 <- sample(which(g == 0), replace = TRUE)\n'
+                '  c(mean(cc[i1]) - mean(cc[i0]), mean(ee[i1]) - mean(ee[i0])) })\n'
+                'print(quantile(bt[1, ], c(0.025, 0.975))); print(quantile(bt[2, ], c(0.025, 0.975)))\n'
+                f'for (b in c({boi})) cat(sprintf("CEAC WTP=%.0f: %.3f\\n", b * {lam!r}, '
+                f'mean(b * {lam!r} * bt[2, ] - bt[1, ] > 0)))\n'
+                '# plot(bt[2, ], bt[1, ], xlab = "ΔE", ylab = "ΔC")  # mặt phẳng chi phí–hiệu quả\n')
     else:
         cd = ts["chu_de"]
         than = (f'bang <- sort(table(df[["{cd}"]][df[["{cd}"]] != ""]), decreasing = TRUE)\n'
@@ -306,6 +394,8 @@ def _gia_tri_spss(loai: str, ts: Dict[str, Any]) -> List[tuple[str, str]]:
         return [(ts["outcome"], "F8.0"), *[(c, "F20.10") for c in ts["covariates"]]]
     if loai == "gop":
         return [(ts["nhan_nghien_cuu"], "A60"), *[(ts[k], "F20.6") for k in LOAI["gop"][1:]]]
+    if loai == "kinh_te":
+        return [(ts["nhom"], "F8.0"), (ts["chi_phi"], "F20.4"), (ts["hieu_qua"], "F20.10")]
     return [(ts["chu_de"], "A400")]
 
 
@@ -358,6 +448,18 @@ def kich_ban_spss(loai: str, ts: Dict[str, Any], csv_p: Path, ra: Path) -> str:
                 "SELECT IF $CASENUM = 1.", "FORMATS rr_gop ci_duoi ci_tren tau2 i2 (F24.15).",
                 f"SAVE TRANSLATE /OUTFILE='{ra}' /TYPE=CSV /ENCODING='UTF8' /FIELDNAMES /CELLS=VALUES /REPLACE "
                 "/KEEP=rr_gop ci_duoi ci_tren tau2 i2."]
+    elif loai == "kinh_te":
+        g, cc, ee = ts["nhom"], ts["chi_phi"], ts["hieu_qua"]
+        than = [f"COMPUTE cc1 = {cc} * ({g} = 1).", f"COMPUTE ee1 = {ee} * ({g} = 1).",
+                f"AGGREGATE /OUTFILE=* MODE=ADDVARIABLES /n1=SUM({g}) /nn=N({g}) /sc=SUM({cc}) /sc1=SUM(cc1) "
+                f"/se=SUM({ee}) /se1=SUM(ee1).",
+                "COMPUTE chi_phi_tb_1 = sc1 / n1.", "COMPUTE chi_phi_tb_0 = (sc - sc1) / (nn - n1).",
+                "COMPUTE hieu_qua_tb_1 = se1 / n1.", "COMPUTE hieu_qua_tb_0 = (se - se1) / (nn - n1).",
+                "COMPUTE delta_c = chi_phi_tb_1 - chi_phi_tb_0.", "COMPUTE delta_e = hieu_qua_tb_1 - hieu_qua_tb_0.",
+                "COMPUTE icer = delta_c / delta_e.", "SELECT IF $CASENUM = 1.",
+                "FORMATS chi_phi_tb_1 chi_phi_tb_0 delta_c icer (F24.6) hieu_qua_tb_1 hieu_qua_tb_0 delta_e (F24.15).",
+                f"SAVE TRANSLATE /OUTFILE='{ra}' /TYPE=CSV /ENCODING='UTF8' /FIELDNAMES /CELLS=VALUES /REPLACE "
+                "/KEEP=chi_phi_tb_1 chi_phi_tb_0 hieu_qua_tb_1 hieu_qua_tb_0 delta_c delta_e icer."]
     else:
         cd = ts["chu_de"]
         than = [f"SELECT IF ({cd} <> '').", f"AGGREGATE /OUTFILE=* /BREAK={cd} /n=N.", "SORT CASES BY n (D).",
@@ -380,7 +482,13 @@ def _doc_kq_spss(p: Path, loai: str) -> Dict[str, float]:
         dong = list(csv.DictReader(f))
     if loai == "dinh_tinh":
         return {f"n_{i}": float(r["n"]) for i, r in enumerate(dong)}
-    return {k.strip(): float(v) for k, v in dong[0].items()}
+    ra: Dict[str, float] = {}
+    for k, v in dong[0].items():  # ô trống (giá trị thiếu hệ thống, vd ICER khi ΔE = 0) ⇒ không có khoá, không gán 0
+        try:
+            ra[k.strip()] = float(v)
+        except (TypeError, ValueError):
+            continue
+    return ra
 
 
 # SPSS chỉ xuất các đại lượng tính được bằng RANK/AGGREGATE (dự báo: C-statistic + Brier — hai số này đã phụ thuộc mọi
@@ -485,6 +593,26 @@ def md_ket_qua(study: str, gate: str, loai: str, kq: Dict[str, Any], kc: Optiona
                "| Nghiên cứu | RR | KTC 95% | Trọng số (%) |", "|---|---|---|---|"]
         dl += [f"| {t['nghien_cuu']} | {so(t['rr'])} | {so(t['ci_95'][0])}–{so(t['ci_95'][1])} | "
                f"{so(t['trong_so_ngau_nhien_pct'], 1)} |" for t in kq["tung_nghien_cuu"]]
+    elif loai == "kinh_te":
+        def tien(v):
+            return "—" if v is None else f"{v:,.0f}".replace(",", ".")
+
+        dl += [f"- Chi phí trung bình: can thiệp {tien(kq['chi_phi_tb']['can_thiep'])} · so sánh "
+               f"{tien(kq['chi_phi_tb']['so_sanh'])}; hiệu quả trung bình: can thiệp "
+               f"{so(kq['hieu_qua_tb']['can_thiep'])} · so sánh {so(kq['hieu_qua_tb']['so_sanh'])} "
+               f"(n = {kq['n']['can_thiep']} / {kq['n']['so_sanh']})",
+               f"- ΔC = {tien(kq['delta_c'])} (KTC 95% bootstrap {tien(kq['ci_95_delta_c'][0])} đến "
+               f"{tien(kq['ci_95_delta_c'][1])}); ΔE = {so(kq['delta_e'])} (KTC 95% {so(kq['ci_95_delta_e'][0])} đến "
+               f"{so(kq['ci_95_delta_e'][1])})",
+               f"- ICER = {tien(kq['icer'])} trên một đơn vị hiệu quả — {kq['goc_phan_tu']}",
+               f"- NMB tại ngưỡng WTP {tien(kq['nguong_wtp'])} = {tien(kq['nmb_tai_wtp'])} (KTC 95% "
+               f"{tien(kq['ci_95_nmb'][0])} đến {tien(kq['ci_95_nmb'][1])})",
+               "- Mặt phẳng chi phí–hiệu quả (% lần lặp bootstrap): " + "; ".join(
+                   f"{NHAN_GOC.get(k, k)} {so(v, 1)}%" for k, v in kq["mat_phang_bootstrap_pct"].items()), "",
+               "| Ngưỡng WTP (bội số) | WTP | Tỷ lệ lần lặp chi phí–hiệu quả |", "|---|---|---|"]
+        dl += [f"| ×{so(x['boi_so'], 2)} | {tien(x['wtp'])} | {so(x['ty_le_chi_phi_hieu_qua'])} |" for x in kq["ceac"]]
+        dl += ["", f"_Bootstrap {kq['bootstrap']['kieu']}, B = {kq['bootstrap']['so_lap']}, seed "
+                   f"{kq['bootstrap']['hat_giong']}. Báo cáo theo {kq['chuan_bao_cao']}. {kq['ghi_chu']}_"]
     else:
         dl += [f"- {kq['n_ban_go_bang']} bản gỡ băng, {kq['so_chu_de']} chủ đề", "", "| Chủ đề | n | % |",
                "|---|---|---|"]
@@ -502,7 +630,8 @@ def chay(study: str, gate: str, loai: str, ts: Dict[str, Any], kiem_cheo_bat: bo
     if thieu:
         raise TuChoi(f"thiếu tham số: {', '.join(thieu)}")
     _g4_da_khoa(study)
-    can = ([ts[k] for k in LOAI[loai] if k not in ("nguong", "covariates")] + list(ts.get("covariates") or []))
+    can = ([ts[k] for k in LOAI[loai] if k not in ("nguong", "covariates", "nguong_wtp")]
+           + list(ts.get("covariates") or []))
     hang, csv_khoa, bo = doc_du_lieu(study, can, ts.get("loc"))
     print(f"✓ Đọc dữ liệu khoá {csv_khoa.name}: {len(hang)} ca dùng được (loại {bo} ca thiếu dữ liệu)")
     kq = tinh(loai, hang, ts)
@@ -526,15 +655,18 @@ def chay(study: str, gate: str, loai: str, ts: Dict[str, Any], kiem_cheo_bat: bo
 
 
 def main(argv: Optional[List[str]] = None) -> int:
-    ap = argparse.ArgumentParser(description="Phân tích chính + kiểm chéo SPSS/R: chẩn đoán · dự báo · gộp · định tính")
+    ap = argparse.ArgumentParser(description="Phân tích chính + kiểm chéo SPSS/R: chẩn đoán · dự báo · gộp · định tính "
+                                             "· kinh tế")
     ap.add_argument("--study", required=True)
     ap.add_argument("--gate", default="G6")
     ap.add_argument("--data", default=None, help="(bỏ qua — luôn dùng dữ liệu ĐÃ KHOÁ của đề tài)")
     ap.add_argument("--loai", required=True, choices=sorted(LOAI))
     for k in ("tham_chieu", "chi_so", "outcome", "nhan_nghien_cuu", "su_kien_can_thiep", "n_can_thiep",
-              "su_kien_chung", "n_chung", "chu_de"):
+              "su_kien_chung", "n_chung", "chu_de", "nhom", "chi_phi", "hieu_qua"):
         ap.add_argument("--" + k.replace("_", "-"), dest=k, default=None)
     ap.add_argument("--nguong", type=float, default=None)
+    ap.add_argument("--nguong-wtp", dest="nguong_wtp", type=float, default=None,
+                    help="kinh_te: ngưỡng sẵn lòng chi trả cho một đơn vị hiệu quả (SAP khai)")
     ap.add_argument("--covariates", default="")
     ap.add_argument("--loc", default=None, help="biểu thức lọc quần thể (nhóm con/độ nhạy) — như run_stats_analysis")
     ap.add_argument("--kiem-cheo", action="store_true")

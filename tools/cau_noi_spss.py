@@ -2282,6 +2282,11 @@ def cu_phap_phan_tich(
             dk = "\n    AND ".join(f"NOT MISSING({v})" for v in [y, *tat])
 
             def genlin(ds: list[str]) -> list[str]:
+                if cum:  # 16/11/2026: thử nghiệm cụm — GEE độc lập SE robust theo cụm (Python: sandwich CR1 + t)
+                    return [f"GENLIN {y} WITH {goi_ds(ds)}",
+                            f"  /MODEL {goi_ds(ds)}\n    INTERCEPT=YES DISTRIBUTION=POISSON LINK=LOG",
+                            f"  /REPEATED SUBJECT={cum} CORRTYPE=INDEPENDENT ADJUSTCORR=NO COVB=ROBUST",
+                            "  /PRINT SOLUTION (EXPONENTIATED)."]  # fmt: skip
                 return [f"GENLIN {y} WITH {goi_ds(ds)}",
                         f"  /MODEL {goi_ds(ds)}\n    INTERCEPT=YES DISTRIBUTION=POISSON LINK=LOG",
                         "  /CRITERIA COVB=ROBUST", "  /PRINT SOLUTION (EXPONENTIATED)."]  # fmt: skip
@@ -2293,7 +2298,8 @@ def cu_phap_phan_tich(
         else:
             raise TuChoi(f"outcome_type không hỗ trợ: {loai}")
         if cum and loai == "poisson_pr":
-            canh_bao.append("Poisson vững: hiệu chỉnh cụm chưa hỗ trợ (Python cũng từ chối) — bỏ khối GENLIN cụm")
+            canh_bao.append("Poisson vững theo cụm: GENLIN (GEE độc lập, SE robust theo cụm) — Python dùng sandwich "
+                            "CR1 + phân phối t(G−1) ⇒ PR phải trùng, KTC/p có thể lệch nhẹ")
         elif cum:
             phan_phoi = {
                 "binary": "DISTRIBUTION=BINOMIAL LINK=LOGIT",
@@ -2976,11 +2982,14 @@ def doi_chieu(tom: dict, kq: dict) -> list[dict]:
                     dong.append(_khong_so(f"Poisson — {nhan} — {v}", "SPSS không có hệ số cùng tên",
                                           py={"uoc_luong": r.get(khoa_py)}))  # fmt: skip
                     continue
+                pr_cum = pr.get("cov_type") == "cluster"
                 dong.append(
                     so_mot(
-                        f"Poisson HC0 — {nhan} — {v}",
+                        f"Poisson {'theo cụm' if pr_cum else 'HC0'} — {nhan} — {v}",
                         {"uoc_luong": r.get(khoa_py), "ci": r.get("CI_95"), "p": r.get("p")},
                         {"uoc_luong": sp["uoc_luong"], "ci": sp["ci"], "p": sp["p"]},
+                        phuong_phap_khac=("hiệu chỉnh cụm: GEE robust (SPSS) ≠ sandwich CR1 + t(G−1) (Python)"
+                                          if pr_cum else None),
                         ty_so=True,
                         lam_tron=LAM_TRON["ty_so"],
                     )

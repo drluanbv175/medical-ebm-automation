@@ -128,18 +128,36 @@ _G4_REQUIRED_SECTIONS_RCT = {
 }
 
 
-def _g4_muc_bat_buoc(content: str, design_code: str | None = None) -> dict[str, str]:
+# 16/11/2026 (giả lập biến thể khó «kinh tế y tế»): đề tài khai cấu phần đánh giá kinh tế (gate_params.G1.
+# economic_evaluation) ⇒ §16 của SAP BẮT BUỘC; SAP mang §16 thì cũng phải điền (như §13–§15).
+_G4_REQUIRED_SECTIONS_KINH_TE = {"§16": "Đánh giá kinh tế y tế (CHEERS 2022)"}
+
+
+def _g4_muc_bat_buoc(content: str, design_code: str | None = None, co_kinh_te: bool = False) -> dict[str, str]:
     """Tập mục bắt buộc của MỘT SAP: 6 mục lõi; thêm §13–§15 khi thiết kế là RCT HOẶC chính văn bản đã có các mục đó
-    (SAP mang §13–§15 thì phải điền chúng — không cần biết thiết kế mới chặn được ô trống)."""
+    (SAP mang §13–§15 thì phải điền chúng — không cần biết thiết kế mới chặn được ô trống); thêm §16 khi G1 khai đánh
+    giá kinh tế (`co_kinh_te`) HOẶC văn bản đã có §16."""
     muc = dict(_G4_REQUIRED_SECTIONS)
     co_muc_rct = any(re.search(rf"^#{{2,3}}\s+{re.escape(so)}\b", content, re.MULTILINE)
                      for so in _G4_REQUIRED_SECTIONS_RCT)
     if str(design_code or "").strip().lower() == "rct" or co_muc_rct:
         muc.update(_G4_REQUIRED_SECTIONS_RCT)
+    if co_kinh_te or re.search(r"^#{2,3}\s+§16\b", content, re.MULTILINE):
+        muc.update(_G4_REQUIRED_SECTIONS_KINH_TE)
     return muc
 
 
-def _g4_sections_still_draft(content: str, design_code: str | None = None) -> list[str]:
+def _co_kinh_te_g1(study_dir: Path) -> bool:
+    """G1 khai cấu phần đánh giá kinh tế (gate_params.G1.economic_evaluation không rỗng)?"""
+    try:
+        meta = json.loads((Path(study_dir) / "study_meta.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return False
+    g1 = ((meta.get("gate_params") or {}).get("G1") or {}) if isinstance(meta, dict) else {}
+    return bool(isinstance(g1, dict) and g1.get("economic_evaluation"))
+
+
+def _g4_sections_still_draft(content: str, design_code: str | None = None, co_kinh_te: bool = False) -> list[str]:
     """Trả về danh sách mục §N BẮT BUỘC của SAP còn ô trống chưa điền HOẶC vắng hẳn.
 
     VÁ 04/10/2026 (soát từng cổng, G4-01): bản cũ `if start is None: continue` cho qua MỤC BẮT BUỘC VẮNG HẲN với lý do
@@ -155,7 +173,7 @@ def _g4_sections_still_draft(content: str, design_code: str | None = None) -> li
     import placeholder_contract as PC  # noqa: PLC0415 — import lười, giữ thời gian nạp approve_gate
 
     lines = content.splitlines()
-    muc_bat_buoc = _g4_muc_bat_buoc(content, design_code)
+    muc_bat_buoc = _g4_muc_bat_buoc(content, design_code, co_kinh_te)
     ket_qua: list[str] = []
     tim_thay = 0
     for section_num, label in muc_bat_buoc.items():
@@ -761,7 +779,8 @@ def _ky(args: argparse.Namespace) -> int:
             print("   Không cho dùng file tự chọn để thay thế SAP thật đã khóa.")
             return 1
 
-        still_draft = _g4_sections_still_draft(evidence_content, _thiet_ke_g4(study_dir))
+        kt = {"co_kinh_te": True} if _co_kinh_te_g1(study_dir) else {}  # §16 bắt buộc khi G1 khai kinh tế
+        still_draft = _g4_sections_still_draft(evidence_content, _thiet_ke_g4(study_dir), **kt)
         if still_draft:
             print("✗ TỪ CHỐI ký G4 — SAP còn ô trống hoặc VẮNG ở mục bắt buộc:")
             for item in still_draft:

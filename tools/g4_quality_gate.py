@@ -1017,8 +1017,10 @@ def evaluate_g4_quality(
     # ── G4-AUTO-10 — placeholder ở mục bắt buộc (tái dùng approve_gate) ────
     try:
         import approve_gate as AG  # noqa: PLC0415 — import lười, tránh vòng import khi approve_gate nạp module này
-        still_draft = AG._g4_sections_still_draft(artifact_text, design_code)
-        muc_bat_buoc = list(AG._g4_muc_bat_buoc(artifact_text, design_code))
+        # §16 bắt buộc khi G1 khai kinh tế — chỉ truyền cờ khi có (giữ chữ ký gọi cũ cho mọi đề tài khác)
+        kt = {"co_kinh_te": True} if _gate_params(meta, "G1").get("economic_evaluation") else {}
+        still_draft = AG._g4_sections_still_draft(artifact_text, design_code, **kt)
+        muc_bat_buoc = list(AG._g4_muc_bat_buoc(artifact_text, design_code, **kt))
     except ImportError:  # pragma: no cover - lưới an toàn
         still_draft = None
         muc_bat_buoc = []
@@ -1047,7 +1049,8 @@ def evaluate_g4_quality(
         placeholder_evidence = "không còn ô trống ở " + "/".join(muc_bat_buoc)
     automatic.append(_criterion(
         "G4-AUTO-10",
-        "Mục bắt buộc có mặt và không còn ô trống (§1/§2/§4/§5/§9/§10; RCT thêm §13/§14/§15)",
+        "Mục bắt buộc có mặt và không còn ô trống (§1/§2/§4/§5/§9/§10; RCT thêm §13/§14/§15; đánh giá kinh tế "
+        "thêm §16)",
         placeholder_status,
         placeholder_evidence,
         "Điền đủ (và khôi phục nếu đã xoá) §1/§2/§4/§5/§9/§10, RCT thêm §13/§14/§15 — approve_gate.py cũng từ chối "

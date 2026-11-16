@@ -342,11 +342,51 @@ def _dong_muc_2(design_code, ket_cuc_chinh_da_chot=None):
     ]
 
 
+# 16/11/2026 (giả lập biến thể khó «kinh tế y tế»): đề tài có cấu phần đánh giá kinh tế (gate_params.G1.
+# economic_evaluation) mà SAP KHÔNG có mục nào cho nó ⇒ ICER/bootstrap/CEAC chạy ở G6 không truy nguyên được về kế hoạch
+# đã khoá (CHEERS 2022 mục 6 «health economic analysis plan»). Mục §16 nối SAU §12/§15, chỉ sinh khi G1 khai; ô vắng là
+# [CẦN …] của người — approve_gate chặn ký khi §16 còn ô trống.
+KINH_TE_O = (
+    ("loai_phan_tich", "Loại phân tích", "CEA/CUA/CBA — tác động ngân sách (BIA) theo ISPOR BIA GPP II, không theo CHEERS"),
+    ("perspective", "Góc nhìn (perspective)", "cơ sở y tế/người chi trả/xã hội"),
+    ("comparator", "So sánh (comparator)", "phương án so sánh và lý do chọn"),
+    ("time_horizon", "Khung thời gian", "bằng thời gian theo dõi hay ngoại suy (mô hình)"),
+    ("discounting", "Chiết khấu", "tỷ lệ + nguồn; khung ≤ 1 năm thường không chiết khấu — ghi rõ"),
+    ("currency_year", "Đơn vị tiền tệ và năm giá", "vd VND, giá năm 2026"),
+    ("cost_items", "Hạng mục chi phí và nguồn đơn giá", "nhân công, thuốc, xét nghiệm, chương trình… + nguồn giá"),
+    ("effect_measure", "Đơn vị hiệu quả", "đơn vị tự nhiên hoặc QALY/DALY tránh được"),
+    ("wtp", "Ngưỡng sẵn lòng chi trả (WTP)", "số tiền cho một đơn vị hiệu quả"),
+    ("wtp_source", "Nguồn/biện minh ngưỡng WTP", "nguồn PMID/DOI hoặc quyết định của chủ nhiệm — không tự đặt"),
+    ("patient_involvement", "Sự tham gia của người bệnh/bên liên quan (CHEERS 2022 mục 21)", "có/không và cách nào"),
+)
+
+
+def muc_kinh_te(kt) -> list:
+    """§16 ĐÁNH GIÁ KINH TẾ Y TẾ — [] khi G1 không khai economic_evaluation."""
+    if not isinstance(kt, dict) or not kt:
+        return []
+    dong = ["", "### §16 ĐÁNH GIÁ KINH TẾ Y TẾ (CHEERS 2022 — PMID 35017145)", ""]
+    for khoa, nhan, goi_y in KINH_TE_O:
+        v = kt.get(khoa)
+        dong.append(f"- **{nhan}:** {v}  " if v not in (None, "", []) else
+                    f"- **{nhan}:** [CẦN BÁC SĨ — {goi_y}; khai ở gate_params.G1.economic_evaluation.{khoa}]  ")
+    bien = [kt.get(k) for k in ("bien_nhom", "bien_chi_phi", "bien_hieu_qua")]
+    dong.append("- **Biến phân tích:** " + (f"nhánh `{bien[0]}`, chi phí `{bien[1]}`, hiệu quả `{bien[2]}`  "
+                                           if all(bien) else "[CẦN BÁC SĨ — biến nhánh/chi phí/hiệu quả trong bộ biến "
+                                           "G3; khai bien_nhom/bien_chi_phi/bien_hieu_qua]  "))
+    dong += ["- **Phân tích chính:** ICER = ΔC/ΔE (chi phí gia tăng trên một đơn vị hiệu quả gia tăng), đọc cùng góc "
+             "phần tư của mặt phẳng chi phí–hiệu quả; lợi ích ròng gia tăng NMB = WTP × ΔE − ΔC tại ngưỡng WTP  ",
+             "- **Bất định:** bootstrap phi tham số phân tầng theo nhánh (B = 2000, seed 20261115 cố định trong công cụ "
+             "phan_tich_thiet_ke_dac_thu.py), KTC 95% phân vị cho ΔC, ΔE và NMB; đường CEAC tại 0–3 × WTP  ",
+             "- **Chuẩn báo cáo:** CHEERS 2022 (28 mục) kèm chuẩn báo cáo của thiết kế chính  ", ""]
+    return dong
+
+
 def generate(study, topic, design_code, design_primary, reporting_std,
              n_adjusted, alpha, power, effect_val, effect_type, run_date, sd=None,
              hypothesis_type="superiority", margin=None, n_statistical_min=None, *,
              g3=None, estimand=None, giai_trinh_thieu_luc=None, ket_cuc_chinh_da_chot=None, gia_thuyet_phu=None,
-             khung=None, muc_tieu=None):
+             khung=None, muc_tieu=None, kinh_te=None):
     """Sinh SAP Final + chứng chỉ khoá (DRAFT — CHỜ KÝ).
 
     Tham số vị trí giữ nguyên hợp đồng cũ. Từ khoá mới (VÁ 04/10/2026, soát từng cổng):
@@ -839,6 +879,7 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "",
         *muc_12,
         *(sap_sections_13_to_15 if design_code == "rct" else []),
+        *muc_kinh_te(kinh_te),
         "",
         "---",
         "",
@@ -954,6 +995,23 @@ def _dien_khung(sap: str, khung, design_code) -> str:
     for i, dong in enumerate(("- **Kết cục phụ 1:** [CẦN]  ", "- **Kết cục phụ 2:** [CẦN]  ")):
         if i < len(phu):
             thay[dong] = f"- **Kết cục phụ {i + 1}:** {phu[i]}{nhan}  "
+        elif khung.get("phu_da_khai"):  # 16/11/2026: G1 đã chốt ÍT kết cục phụ hơn số ô ⇒ ô dư ghi «không có»
+            thay[dong] = f"- **Kết cục phụ {i + 1}:** Không có — G1 chốt {len(phu)} kết cục phụ{nhan}  "
+    if khung.get("phu_da_khai") and not phu:
+        thay["- **Kết cục phụ 2:** [CẦN — câu hỏi/chủ đề nghiên cứu phụ, hoặc KHÔNG ÁP DỤNG]  "] = (
+            f"- **Kết cục phụ 2:** Không áp dụng — G1 không chốt kết cục/chủ đề phụ{nhan}  ")
+    # 16/11/2026: tiêu chí ngừng/cứu trợ cho TỪNG người tham gia (SPIRIT 15b) G1 đã chốt ⇒ §15 không hỏi lại
+    if str(khung.get("ngung_mot_nguoi") or "").strip():
+        thay["- **Tiêu chí ngừng/đổi can thiệp cho MỘT người tham gia:** [CẦN — vd đổi liều khi có tác "
+             "dụng phụ, tiêu chí rút khỏi nghiên cứu — khác quy tắc dừng CẢ nghiên cứu ở §13]  "] = (
+            f"- **Tiêu chí ngừng/đổi can thiệp cho MỘT người tham gia:** {khung['ngung_mot_nguoi']}{nhan}  ")
+    # quần thể phân tích CHÍNH suy từ chiến lược biến cố xen ngang của estimand G1 (treatment-policy ⇒ ITT)
+    if khung.get("itt_tu_estimand"):
+        thay["- **Quần thể phân tích CHÍNH:** [CẦN THỐNG KÊ VIÊN/PI CHỐT — phải khớp chiến lược biến cố xen ngang của "
+             "estimand (vd treatment-policy ⇒ ITT); quần thể khác (vd per-protocol) chỉ là phân tích độ nhạy ở §9]  "] = (
+            "- **Quần thể phân tích CHÍNH:** ITT — mọi người được ngẫu nhiên hoá, phân tích theo nhóm được phân bổ "
+            "(suy từ chiến lược treatment-policy của estimand G1); per-protocol chỉ là phân tích độ nhạy ở §9"
+            f"{nhan}  ")
     if khung.get("bien_phan_tich"):
         thay["- **Biến độc lập đưa vào:** [CẦN BÁC SĨ LIỆT KÊ — kèm lý do lâm sàng / DAG]  "] = (
             f"- **Biến độc lập đưa vào:** {', '.join(khung['bien_phan_tich'])} *(từ ma trận mục tiêu–biến)* — lý do "
@@ -994,6 +1052,11 @@ def _khung_sap(out, meta):
         "tieu_chi_loai": KD.danh_sach(g1.get("exclusion_criteria")),
         "ket_cuc": KD.ket_cuc_chinh(meta), "ket_cuc_bien": vt.get("ket_cuc"),
         "ket_cuc_phu": KD.danh_sach(KD.gia_tri(meta, "secondary_outcomes")[0]),
+        "phu_da_khai": isinstance(g1.get("secondary_outcomes"), list),
+        "ngung_mot_nguoi": g1.get("stopping_rescue_rules"),
+        "itt_tu_estimand": bool(re.search(r"treatment[\s-]*policy", str(
+            ((g1.get("estimand") or {}) if isinstance(g1.get("estimand"), dict) else {}).get(
+                "intercurrent_events_strategy") or ""), re.I)),
         "bien_phan_tich": [f"`{b}` ({khai.get(b) or b})" for b in phan_tich],
         "bien_imputation": [b for b in ([vt.get("ket_cuc")] + phan_tich) if b],
         # 16/11/2026 (giả lập trọn vòng — định tính): G1 đã chốt cách tiếp cận, tiêu chí bão hoà và chiến lược chọn mẫu
@@ -1225,6 +1288,8 @@ def main():
                         khung=_khung_sap(out, meta_cp),
                         muc_tieu=(((meta_cp.get("gate_params") or {}).get("G1") or {}).get("objectives")
                                   if isinstance(meta_cp, dict) else None),
+                        kinh_te=(((meta_cp.get("gate_params") or {}).get("G1") or {}).get("economic_evaluation")
+                                 if isinstance(meta_cp, dict) else None),
                         gia_thuyet_phu=(((meta_cp.get("gate_params") or {}).get("G0") or {}).get("hypothesis_secondary")
                                         if isinstance(meta_cp, dict) else None))
     md = out / f"G4_A5_SAP_FINAL_{study}.md"

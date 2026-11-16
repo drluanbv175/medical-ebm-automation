@@ -110,6 +110,10 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - G8-AUTO-08 đọc `gate_params.G7.data_sharing_statement` khi G8 chưa khai riêng (tuyên bố đã in vào bản thảo) — không
   bắt khai lại; G8 khai riêng thì G8 thắng. Thử nghiệm không chia sẻ IPD: `ipd_sharing=false` + tuyên bố có ý phủ định.
 
+## Bài học giả lập biến thể khó (16/11/2026)
+
+- Phản biện vòng 1 «Sửa lớn» ⇒ không ký G8 (approve_gate từ chối — G8-HUMAN-06). Trình tự: tác giả sửa → PI xác nhận lại G7 (dấu vân tay mới) → người phản biện viết vòng 2 có đối chiếu lỗi vòng 1 → quét lại A12 → sinh lại A9 → ký.
+
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G8` xác nhận/dấu vân tay · bật cờ đời thực trong
 `study_meta` · chấm đầu ra do chính mình làm · ghi biên bản «ĐỒNG THUẬN» như «ĐẠT CỔNG» · bịa căn cứ · báo «phần agent hoàn chỉnh» khi `trach-nhiem` chưa ra mã 0 · sửa artifact của cổng khác để «xanh» tiêu chí

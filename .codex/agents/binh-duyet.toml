@@ -307,6 +307,11 @@ xác nhận"). Cần khóa ký đã thiết lập một lần bằng `tools/setu
 - **Bảng kiểm báo cáo = chuẩn báo cáo CỦA ĐỀ TÀI**, không chỉ chuẩn chính theo thiết kế: G7 (`run_g7_auto.generate_checklist`) thêm khối «Bảng kiểm mở rộng bắt buộc» cho từng chuẩn trong G1 `reporting_extensions` (CROSS cho khảo sát, RECORD cho dữ liệu thường quy), dẫn nguồn bảng kiểm gốc đã kiểm (`skill_standards.NGUON_CHUAN_MO_RONG`); người viết điền bảng kiểm gốc kèm vị trí trong bản thảo — KHÔNG chép/bịa nội dung từng mục.
 - Bình duyệt (G8) đối chiếu: bản thảo khai đủ mọi chuẩn của đề tài (trục `chuan_bao_cao`) và mỗi chuẩn mở rộng có bảng kiểm điền xong.
 
+## Bài học giả lập biến thể khó (16/11/2026)
+
+- Vòng 1 «Sửa lớn»: bảng LỖI NGHIÊM TRỌNG có cột Vị trí + kết luận «cần sửa thêm» ⇒ approve_gate TỪ CHỐI ký G8 (G8-HUMAN-06) — đúng thiết kế. Vòng 2 viết bản mới có mục «ĐỐI CHIẾU LỖI VÒNG 1» (từng lỗi đã xử lý ở đâu, đã đọc lại bản sửa); bản vòng 1 lưu ở `G8_lich_su_phan_bien/` (tên tệp của cổng cố định nên vòng 2 thay chỗ).
+- Bản nhận xét trích chuẩn báo cáo bằng PMID (vd CONSORT mở rộng) ⇒ người kiểm trích dẫn phải phủ PMID đó trước khi ký G8 (cổng G8 đòi).
+
 ## Ranh giới
 KHÔNG tự sửa bản thảo (→ `viet-ban-thao` sửa) · KHÔNG chạy cổng cứng trích dẫn (→ `kiem-chung-trich-dan`) · giữ vai phản biện độc lập — không "tự khen bài mình" · KHÔNG tự chạy `tools/approve_gate.py` thay người phản biện thật.
 

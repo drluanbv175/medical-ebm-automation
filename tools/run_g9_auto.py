@@ -520,7 +520,7 @@ def build_part5_integrity(cps: dict, study: str) -> str:
 # 7. SINH PHẦN 6 — THƯ GỬI TẠP CHÍ (COVER LETTER SHELL)
 # ════════════════════════════════════════════════════════════════════════════
 
-def build_part6_cover_letter(cps: dict, study: str, target_journal: str) -> str:
+def build_part6_cover_letter(cps: dict, study: str, target_journal: str, meta: Optional[dict] = None) -> str:
     """
     Sinh thư gửi tạp chí chuyên nghiệp.
     Tự điền từ checkpoints: topic, design, reporting_std, registration, IRB, research gaps.
@@ -551,6 +551,10 @@ def build_part6_cover_letter(cps: dict, study: str, target_journal: str) -> str:
 
     # Lấy research gaps từ G0 nếu có
     research_gaps = g0.get("research_gaps", "")
+    if meta:  # 16/11/2026: khoảng trống PI đã viết ở G1 thay ô chờ điền của G0
+        import quyet_dinh_da_chot as QD  # noqa: PLC0415
+
+        research_gaps = QD.khoang_trong_cho_van_ban(meta, research_gaps)
     if isinstance(research_gaps, list):
         research_gaps = "; ".join(str(x) for x in research_gaps[:2])
     if not research_gaps:
@@ -1651,7 +1655,8 @@ def main():
     part5 = build_part5_integrity(cps, study)
 
     print("  -> Phần 6: Cover Letter Shell")
-    part6 = build_part6_cover_letter(cps, study, target_journal)
+    part6 = build_part6_cover_letter(cps, study, target_journal,
+                                     meta=load_cp(out_dir / "study_meta.json") or None)
 
     print("  -> Phần 7: Response-to-Reviewers Template (tệp riêng)")
     part7 = build_part7_pointer(study)

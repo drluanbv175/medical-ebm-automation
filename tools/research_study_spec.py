@@ -261,7 +261,9 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
     objectives_raw = _first(raw.get("objectives"), _get(raw, "objectives", "specific"),
                             g1_quyet.get("objectives"))
     objectives = _as_list(objectives_raw)
-    aim = _first(raw.get("aim"), _get(raw, "objectives", "general"))
+    # 16/11/2026 (giả lập biến thể «kinh tế y tế», 2 mục tiêu): mục tiêu chung PI khai ở G1 (gate_params.G1.aim) — bản
+    # cũ chỉ đọc khoá cấp cao ⇒ đề tài nhiều mục tiêu bị hỏi lại ở đề cương G10 dù PI đã chốt từ G1.
+    aim = _first(raw.get("aim"), _get(raw, "objectives", "general"), g1_quyet.get("aim"))
 
     outcomes_input = _as_list(raw.get("outcomes"))
     # Cả KHỐI theo đúng thứ tự bộ chấm G1 đọc (g1_quality_gate._primary_outcome: cấp cao → G1) rồi G0 — một định nghĩa

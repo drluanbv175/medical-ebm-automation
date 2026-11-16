@@ -2712,7 +2712,26 @@ def _safe_compare(a, b) -> bool:
         return False
 
 
-def citation_verification_ok(study: str, out_dir: Path, *, kiem_ban_g10: bool = True) -> tuple[bool, str]:
+def tep_phu_a12(study: str, out_dir: Path, cong: str) -> list:
+    """Tệp của gói mà MỌI PMID phải nằm trong biên nhận A12 khi chấm cổng `cong` (16/11/2026 — giả lập biến thể khó).
+
+    Vì sao: bản cũ chỉ đối chiếu PMID do CHÍNH mô tả A12 liệt kê ⇒ (1) PMID nằm trong bản thảo/bản nhận xét/SAP mà
+    người kiểm quên ghi vào A12 vẫn qua G7–G9 (lỗ «trích dẫn ma»); (2) PMID xuất hiện SAU G7 (CONSORT mở rộng cụm trong
+    bản nhận xét G8, CHEERS 2022 ở SAP §16) chỉ lộ ra ở G10 ⇒ chạy lại A12 làm vỡ manifest G9 đã khoá. Nay mỗi cổng đòi
+    phủ đúng các tệp đã có tới cổng đó; G9 đòi đủ tập mà G10 mục đích đầy đủ sẽ đòi (trừ đề cương G10 —
+    kiem_ban_g10)."""
+    so = {"G7": 7, "G8": 8, "G9": 9}.get(str(cong).upper(), 10)
+    tep = [out_dir / f"G7_A8_MANUSCRIPT_{study}.md", out_dir / f"G6_DIEN_GIAI_{study}.md"]
+    if so >= 8:
+        tep.append(out_dir / f"G8_PEER_REVIEW_REPORT_{study}.md")
+    if so >= 9:
+        tep += [out_dir / f"G8_A9_PRESUBMISSION_{study}.md", out_dir / f"G4_A5_SAP_FINAL_{study}.md",
+                *sorted(out_dir.glob(f"G9_*_{study}.md"))]
+    return [t for t in tep if t.is_file()]
+
+
+def citation_verification_ok(study: str, out_dir: Path, *, kiem_ban_g10: bool = True,
+                             cong: str | None = None) -> tuple[bool, str]:
     """Cổng A12 (kiem-chung-trich-dan) — trước 2026-07-15, run_g7_auto.py chỉ IN
     RA một dòng nhắc bác sĩ tự chạy agent kiểm trích dẫn (không gì ép buộc); đề
     tài có thể march thẳng G7→G8→G9→G10 mà chưa ai xác minh PMID/DOI có thật/
@@ -2877,6 +2896,19 @@ def citation_verification_ok(study: str, out_dir: Path, *, kiem_ban_g10: bool = 
             "(chưa được `check_citation_retraction.py` kiểm rút bài trước khi phát hành): "
             + ", ".join(missing_final)
         )
+    # 16/11/2026: PMID trong CÁC TỆP CỦA GÓI tới cổng `cong` (bản thảo, diễn giải, bản nhận xét G8, A9, SAP, tệp G9)
+    goi_pmids: set = set()
+    for tep in (tep_phu_a12(study, out_dir, cong) if cong else []):
+        try:
+            goi_pmids |= _pmids_from_text(tep.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError):
+            continue
+    missing_goi = sorted(goi_pmids - checked_set)
+    if missing_goi:
+        return False, (
+            f"tệp của gói (tới {cong}) nhắc tới PMID chưa có trong receipt máy-kiểm A12 — chạy lại check_citations.py "
+            "trên TOÀN BỘ PMID của gói trước khi ký: " + ", ".join(missing_goi)
+        )
     # (e) Điều kiện metadata (vá 2026-07-18): khâu ĐỐI CHIẾU tác giả/tiêu đề/tạp chí
     # (Bước 1-2 kiem-chung-trich-dan) trước đây KHÔNG có bằng chứng máy-kiểm — chỉ
     # bảng agent tự gõ. Nay đòi THÊM receipt A12_METADATA_RECEIPT.json (do
@@ -2884,7 +2916,7 @@ def citation_verification_ok(study: str, out_dir: Path, *, kiem_ban_g10: bool = 
     # metadata gốc. Bắt buộc (fail-closed) cho đề tài THẬT (denylist); validate khi
     # có mặt cho mọi đề tài; bỏ qua khi vắng cho đề tài synthetic (không phá test).
     meta_ok, meta_reason = metadata_verification_ok(
-        study, out_dir, artifact_pmids | final_doc_pmids
+        study, out_dir, artifact_pmids | final_doc_pmids | goi_pmids
     )
     if not meta_ok:
         return False, meta_reason

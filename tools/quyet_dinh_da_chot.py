@@ -56,6 +56,27 @@ def _doc(p: Path) -> str:
         return ""
 
 
+def khoang_trong_da_chot(meta: Dict[str, Any]) -> Optional[str]:
+    """Khoảng trống nghiên cứu do NGƯỜI viết — cùng thứ tự StudySpec/đề cương G10 (evidence_gap · research_gap ·
+    G1.knowledge_gap · G0.novelty_justification); None khi chưa ai viết hoặc chỉ còn ô [CẦN …]."""
+    gp = meta.get("gate_params") if isinstance(meta.get("gate_params"), dict) else {}
+    for v in (meta.get("evidence_gap"), meta.get("research_gap"), (gp.get("G1") or {}).get("knowledge_gap"),
+              (gp.get("G0") or {}).get("novelty_justification")):
+        if isinstance(v, str) and v.strip() and "[CẦN" not in v:
+            return v.strip()
+    return None
+
+
+def khoang_trong_cho_van_ban(meta: Dict[str, Any], khoang_trong_g0: Any) -> List[str]:
+    """Danh sách khoảng trống để in vào bản thảo/thư ngỏ (16/11/2026, giả lập 15 kịch bản): khoảng trống NGƯỜI viết
+    đứng đầu; khi đã có nó thì bỏ dòng máy suy còn ô chờ điền (vd «hệ KHÔNG suy ra được [CẦN BÁC SĨ TỰ XÁC ĐỊNH …]»),
+    giữ tín hiệu máy sạch làm tham khảo. Chưa ai viết ⇒ giữ nguyên danh sách G0 (ô [CẦN …] vẫn hỏi PI)."""
+    may = [str(x) for x in (khoang_trong_g0 if isinstance(khoang_trong_g0, list) else [khoang_trong_g0])
+           if str(x or "").strip()]
+    nguoi = khoang_trong_da_chot(meta)
+    return may if nguoi is None else [nguoi] + [x for x in may if "[CẦN" not in x]
+
+
 def _json(p: Path) -> Dict[str, Any]:
     try:
         d = json.loads(_doc(p) or "{}")

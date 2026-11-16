@@ -93,8 +93,13 @@ THAM_SO = {
     "su_kien_chung": ("--su-kien-chung", "s"),
     "n_chung": ("--n-chung", "s"),
     "chu_de": ("--chu-de", "s"),
+    # 16/11/2026 (biến thể khó): đánh giá chi phí–hiệu quả đi kèm thử nghiệm — CHEERS 2022
+    "nhom": ("--nhom", "s"),
+    "chi_phi": ("--chi-phi", "s"),
+    "hieu_qua": ("--hieu-qua", "s"),
+    "nguong_wtp": ("--nguong-wtp", "so"),
 }
-DAC_THU = ("chan_doan", "du_bao", "gop", "dinh_tinh")
+DAC_THU = ("chan_doan", "du_bao", "gop", "dinh_tinh", "kinh_te")
 LOAI_KC = ("auto", "binary", "continuous", "ordinal", "poisson_pr")
 TEN_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
 
@@ -357,6 +362,9 @@ def _tom_tat_uoc_luong(tom: dict) -> dict:
             ra["du_bao"] = {"c_statistic": dt_["c_statistic"]["auc"], "brier": dt_["brier"]}
         elif loai == "gop":
             ra["gop"] = {"rr": dt_["rr_gop_ngau_nhien"], "ci_95": dt_["ci_95"], "i2": dt_["i2_pct"], "k": dt_["k"]}
+        elif loai == "kinh_te":
+            ra["kinh_te"] = {"icer": dt_["icer"], "delta_c": dt_["delta_c"], "delta_e": dt_["delta_e"],
+                             "goc_phan_tu": dt_["goc_phan_tu"], "nmb_tai_wtp": dt_["nmb_tai_wtp"]}
         else:
             ra["dinh_tinh"] = {"so_chu_de": dt_["so_chu_de"], "n": dt_["n_ban_go_bang"]}
     sv = tom.get("survival") or {}
