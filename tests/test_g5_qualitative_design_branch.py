@@ -63,7 +63,9 @@ class TestQualitativeCRFIsNotQuantitativeClinicalForm:
     def test_qualitative_generated_cleaning_script_checks_duplicates(self):
         rows, _ = build_redcap_rows("qualitative", _TOPIC)
         script = gen_data_cleaning_script("STUDY-X", "qualitative", rows)
-        assert '"record_id" in df.columns' in script
+        # 16/11/2026: mã bản ghi = TRƯỜNG ĐẦU của từ điển (hằng ID_COL) — vẫn kiểm trùng, và kịch bản phải chạy được
+        assert "ID_COL = 'record_id'" in script and "if ID_COL in df.columns" in script
+        compile(script, "data_cleaning.py", "exec")
 
 
 class TestQualitativeFlowchartIsNotStrobeExposureBased:

@@ -3907,6 +3907,14 @@ def main():
     # không suy từ mã số mức trong dictionary. Đặt TRƯỚC R_ANALYSIS_MAP_FUNC
     # và generate_artifact để script + artifact rẽ nhánh CÙNG một cờ.
     v["outcome_ordinal"] = _sap_declares_ordinal(out, study)
+    # 16/11/2026: cắt ngang MÔ TẢ — SAP §4 khai ước lượng tỷ lệ ⇒ 03_analysis.R ước lượng tỷ lệ + KTC Wilson; thiết kế
+    # không có phơi nhiễm nên dòng «không tự phát hiện exposure» không phải tham số chờ điền (G6-AUTO-07).
+    v["mo_ta_ty_le"] = (design_code == "cross_sectional" and not v["outcome_ordinal"]
+                        and GC.sap_declares_proportion(out, study))
+    if v["mo_ta_ty_le"]:
+        v["detection_log"] = [("ℹ️  Thiết kế MÔ TẢ (SAP §4: ước lượng tỷ lệ) — không có biến phơi nhiễm"
+                               if str(d).lstrip("⚠️ ").startswith("Không tự phát hiện exposure ") else d)
+                              for d in v.get("detection_log") or []]
 
     # VÁ 04/10/2026 (G6-08/G6-09): kết cục chính, nhóm con, ngưỡng tuổi THEO SAP — dictionary chỉ cho tên biến.
     tham_so_sap = doc_tham_so_sap(sap_text, v.get("all_vars") or [])
@@ -4183,6 +4191,8 @@ def R_ANALYSIS_MAP_FUNC(design_code: str, v: dict, n_adjusted: int,
         # mã số mức (điều kiện cần chứ không đủ, xem docstring hàm đó).
         if v.get("outcome_ordinal"):
             return _r03_cross_ordinal_with_vars(v)
+        if v.get("mo_ta_ty_le"):
+            return _r03_cross_ty_le_with_vars(v)
         return _r03_cross_with_vars(v)
     # THÊM 2026-07-19 (audit vòng 3, D2_prediction_dta_gate_coverage — NGHIÊM
     # TRỌNG): "diagnostic"/"prediction"/"sr_ma" trước đây rơi vào else →
@@ -4387,6 +4397,27 @@ source(here::here("scripts", "00_setup.R"))
 # broom::tidy(glm_adj, exponentiate=TRUE, conf.int=TRUE) %>% filter(term=="{exposure}")
 
 message("03_analysis.R (Cross-sectional) — Biến: {exposure}/{outcome} | [CẦN DỮ LIỆU THẬT]")
+"""
+
+
+def _r03_cross_ty_le_with_vars(v: dict) -> str:
+    """THÊM 16/11/2026: cắt ngang MÔ TẢ — ước lượng tỷ lệ + KTC 95% Wilson (SAP §4), không có phơi nhiễm/hồi quy.
+
+    Giả lập trọn vòng đề tài «tỷ lệ kiểm soát huyết áp»: khuôn logistic sinh mô hình `kết cục ~ exposure` với biến
+    phơi nhiễm không tồn tại; cổng G6-AUTO-09 không đối chiếu được với SAP. Lệnh để dạng chú thích theo khuôn chung —
+    thống kê viên bật khi đã có dữ liệu khoá (G5). Tỷ lệ theo phân nhóm tiền định do chay_sap_g6 chạy theo đặc tả SAP."""
+    outcome = v["outcome"]
+    return f"""\
+# 03_analysis.R — Cắt ngang MÔ TẢ: ước lượng tỷ lệ + KTC 95% Wilson (SAP §4)
+# Biến kết cục: {outcome} (1 = có)
+source(here::here("scripts", "00_setup.R"))
+# df <- readRDS(file.path(DATA_PROC, "df_clean.rds"))
+
+# Tỷ lệ chính + KTC Wilson (độ tin cậy = 1 - ALPHA theo SAP §12):
+# fit_ty_le <- DescTools::BinomCI(x = sum(df${outcome} == 1, na.rm = TRUE), n = sum(!is.na(df${outcome})), conf.level = 1 - ALPHA, method = "wilson")
+# print(fit_ty_le)
+
+message("03_analysis.R (Cắt ngang mô tả) — kết cục: {outcome} | [CẦN DỮ LIỆU THẬT]")
 """
 
 

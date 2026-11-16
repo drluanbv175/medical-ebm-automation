@@ -162,7 +162,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 15/11/2026: bien-so-nghien-cuu + quan-ly-du-lieu + dieu-phoi-g3/g5 (hoàn thiện hệ thống SPSS/R: soan-tu-calc,
 # dien_tap_spss_r) — dòng y hệt repo gốc nhánh claude/day-agent-sau-tham-dinh-277-281; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "395c95e92c86ddacae89d8fac7c8a44b1ead7d255e76c3561e4c19da16e8da29"
+    "ca7bb4f5442dcde07bd56e4adccd87b7b1b727f6f1c1c8df5ead901edf8a2f91"
 )
 
 MINIMUM_AGENT_COUNT = 64

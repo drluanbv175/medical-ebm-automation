@@ -856,9 +856,12 @@ def clean_dataset(study: str, data_path: Path, *,
             if isinstance(rule, dict) and rule.get("name")
         }
         cli_required = required_columns or []
+        # 16/11/2026 (giả lập trọn vòng 8 thiết kế): trường TÍNH TOÁN (REDCap «calc», vd FIB-4) không nhập tay — mẫu
+        # nhập liệu không có cột này, biến phái sinh tính SAU khi khoá G5 (bien_phai_sinh → G6). Đòi nó «bắt buộc» lúc
+        # làm sạch mở truy vấn không đóng được ⇒ khoá G5 bị chặn. Cột calc CÓ mặt vẫn được kiểm như mọi cột.
         dict_required = [
             rule["name"] for rule in rules.values()
-            if rule.get("required")
+            if rule.get("required") and rule.get("type") != "calc"
         ]
         merged_required = sorted(set(cli_required + dict_required))
         detected_id_column = _detect_id_column(

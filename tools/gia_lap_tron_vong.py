@@ -328,9 +328,11 @@ def sinh_du_lieu(thiet_ke: str, bien_so: Mapping[str, Any], g3: Mapping[str, Any
     eff = float(g3.get("effect_size") or 1.0)
     for i in range(int(n)):
         r: Dict[str, Any] = {}
-        for ten, kieu, nhan, lua, val, _lo, _hi in bien_so["bo_bien"]:
+        for ten, kieu, nhan, lua, val, lo_kb, hi_kb in bien_so["bo_bien"]:
             if ten in ("record_id", "ma_nguoi_tham_gia", "study_id"):
                 r[ten] = f"R{i + 1:04d}"
+            elif ten == "transcript_id":
+                r[ten] = f"GB{i + 1:02d}"
             elif kieu == "yesno":
                 r[ten] = _bern(rng, 0.3)
             elif kieu in ("radio", "dropdown"):
@@ -349,8 +351,16 @@ def sinh_du_lieu(thiet_ke: str, bien_so: Mapping[str, Any], g3: Mapping[str, Any
                           "ast": (15, 120), "alt": (12, 140), "tieu_cau": (90, 350), "lsm_kpa": (3, 25),
                           "ntprobnp": (100, 6000), "thoi_gian_theo_doi": (6, 36), "so_thuoc_nen": (1, 4),
                           "so_thuoc": (1, 4), "thoi_gian_dtd": (3, 25), "diem_tuan_thu_t6": (0, 10),
-                          "ha_tt_t6": (110, 170)}.get(ten, (0, 100))
+                          "ha_tt_t6": (110, 170), "ha_tt_tb": (110, 175)}.get(ten)
+                # 16/11/2026: biến chưa có khoảng lâm sàng ở bảng trên ⇒ dùng khoảng KHAI trong bộ biến (từ điển G5);
+                # luôn ép vào khoảng đã khai — từng sinh ha_tt_tb trong 0–100 ⇒ 217 ô ngoài khoảng, cổng tiếp nhận chặn
+                lo_khai = float(lo_kb) if str(lo_kb).strip() else None
+                hi_khai = float(hi_kb) if str(hi_kb).strip() else None
+                lo, hi = (lo, hi) if lo is not None else (lo_khai if lo_khai is not None else 0,
+                                                          hi_khai if hi_khai is not None else 100)
                 x = rng.uniform(lo, hi)
+                x = max(x, lo_khai) if lo_khai is not None else x
+                x = min(x, hi_khai) if hi_khai is not None else x
                 r[ten] = round(x, 1) if val == "number" else int(round(x))
             else:
                 r[ten] = f"{ten}-{i + 1}"
@@ -365,6 +375,8 @@ def sinh_du_lieu(thiet_ke: str, bien_so: Mapping[str, Any], g3: Mapping[str, Any
             r[pn] = _bern(rng, p_exp)
         elif thiet_ke == "cross_sectional" and kc:
             r[kc] = _bern(rng, p0)
+            if "ha_tt_tb" in r:  # kiểm soát huyết áp phải khớp trị số đo (< 140 mmHg) — dữ liệu không tự mâu thuẫn
+                r["ha_tt_tb"] = rng.randint(110, 139) if r[kc] else rng.randint(140, 175)
         elif thiet_ke == "diagnostic" and kc:
             r[kc] = _bern(rng, float(g3.get("prevalence") or 0.3))
             d = math.sqrt(2) * _phi_nguoc(eff)
@@ -376,7 +388,9 @@ def sinh_du_lieu(thiet_ke: str, bien_so: Mapping[str, Any], g3: Mapping[str, Any
             lp = -1.6 + 0.03 * (r["tuoi"] - 65) - 0.02 * (r["lvef"] - 40) + 0.0002 * (r["ntprobnp"] - 1500)
             r[kc] = _bern(rng, 1 / (1 + math.exp(-lp)))
         if "ha_tt_t6" in r and kc and pn and thiet_ke == "rct":
-            r["ha_tt_t6"] = int(round(r.get("ha_tt_nen", 150) - (12 if r[pn] else 6) + rng.gauss(0, 10)))
+            # huyết áp tháng 6 khớp kết cục «kiểm soát» (< 140 mmHg); nhóm can thiệp thấp hơn ~5 mmHg trong cùng tầng
+            r["ha_tt_t6"] = (rng.randint(112, 139) if r[kc] else rng.randint(140, 172)) - (3 if r[pn] else 0)
+            r["ha_tt_t6"] = min(r["ha_tt_t6"], 139) if r[kc] else max(r["ha_tt_t6"], 140)
         _ = vai
         rows.append(r)
     return rows
@@ -780,6 +794,8 @@ class TronVong:
                 "--confirm-protocol-deviations-reconciled", "--confirm-audit-trail-reviewed"]
         if bc.get("query_log"):
             tham += ["--query-log", str(self.out / str(bc["query_log"]))]
+        if self.thiet_ke == "qualitative":
+            self._ban_go_bang(hang)
         self.chay("G5 khoá dữ liệu (quản lý dữ liệu)", "lock_analysis_dataset.py", *tham)
         self.cong["G5_truoc_ky"] = {"trang_thai": self.cham("G5"),
                                     "chua_dat": GL.GiaLap._chua_dat(GL.cham_song("G5", self.study, self.out,
@@ -788,6 +804,43 @@ class TronVong:
         self._ky("G5", "G5_checkpoint.json", "PI", "GIA-LAP-PI")
         self.cong["G5"] = {"trang_thai": self.cham("G5")}
         self.do_truc("sau_G5")
+
+    def _ban_go_bang(self, hang: Sequence[Mapping[str, Any]]) -> None:
+        """Đề tài ĐỊNH TÍNH: quản lý dữ liệu nộp bản gỡ băng ĐÃ KHỬ ĐỊNH DANH (mỗi người tham gia một tệp .txt, chỉ
+        đọc) và khai TRANSCRIPT_manifest (băm SHA-256, deidentified, mã người rà) — việc ĐÚNG VAI trước khi khoá
+        (G5-AUTO-10). Nội dung là lời mô phỏng theo chủ đề đã mã hoá, không chứa mẫu PII (ngày, số điện thoại, email,
+        số định danh)."""
+        import hashlib  # noqa: PLC0415
+        import stat  # noqa: PLC0415
+
+        import g5_quality_gate as G5Q  # noqa: PLC0415
+
+        thu = self.out / "transcripts"
+        thu.mkdir(exist_ok=True)
+        muc = []
+        for r in hang:
+            tid = str(r.get("transcript_id") or "").strip()
+            if not tid:
+                continue
+            tep = thu / f"{tid}.txt"
+            if tep.exists():
+                tep.chmod(stat.S_IWUSR | stat.S_IRUSR)
+            noi_dung = (f"BẢN GỠ BĂNG ĐÃ KHỬ ĐỊNH DANH — {tid} ({GL.NHAN})\n\n"
+                        "Người phỏng vấn: Anh/chị cảm thấy thế nào khi được bác sĩ đề nghị bắt đầu tiêm insulin?\n"
+                        f"Người tham gia: {r.get('chu_de') or 'Tôi còn nhiều băn khoăn lúc đầu'}. "
+                        "Lúc đầu tôi ngại, nhưng được hướng dẫn kỹ thì yên tâm hơn.\n"
+                        "Người phỏng vấn: Điều gì giúp anh/chị duy trì việc tiêm?\n"
+                        "Người tham gia: Gia đình nhắc nhở và nhân viên y tế giải thích rõ cách tiêm.\n")
+            tep.write_text(noi_dung, encoding="utf-8", newline="\n")
+            tep.chmod(stat.S_IRUSR | stat.S_IRGRP | stat.S_IROTH)
+            muc.append({"transcript_id": tid, "file": f"transcripts/{tep.name}",
+                        "sha256": hashlib.sha256(tep.read_bytes()).hexdigest(), "deidentified": True,
+                        "reviewer_ref": "GIA-LAP-DM"})
+        mf = self.out / G5Q.TRANSCRIPT_MANIFEST_JSON
+        du = _doc_json(mf) or {"schema_version": "G5-TRANSCRIPT-2026.1", "disclaimer": "Cần bác sĩ kiểm chứng."}
+        du["transcripts"] = muc
+        mf.write_text(json.dumps(du, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+        self.du_lieu["ban_go_bang"] = len(muc)
 
     def _soan_phieu_thu_thap(self) -> None:
         """PI soạn PHIẾU THU THẬP SỐ LIỆU nộp Hội đồng (G2) từ bộ biến + mã câu hỏi của ma trận — việc ĐÚNG VAI

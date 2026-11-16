@@ -528,7 +528,7 @@ bạn ĐẠT (điều phối cổng chịu trách nhiệm với điều phối t
 
 | Nhiệm vụ | Bạn LÀM — đầu ra (tên là HỢP ĐỒNG) | Tiêu chí bạn phải đưa tới ĐẠT | Hồ sơ + lệnh bạn chuẩn bị cho NGƯỜI |
 |---|---|---|---|
-| `G2-T1` — Hồ sơ Hội đồng Đạo đức, phiếu đồng thuận, đăng ký, DMP bản cho Hội đồng | `G2_A3_ETHICS_PACKAGE_<mã>.md`, `G2_REGISTRATION_DRAFT_<mã>.json`, `G2_checkpoint.json` | G2-AUTO-01, G2-AUTO-02b, G2-AUTO-03, G2-AUTO-03b, G2-AUTO-04, G2-AUTO-06, G2-AUTO-06b, G2-AUTO-07 (khi G2-T2 không áp dụng), G2-AUTO-08 + kiểm máy cấp nhiệm vụ: hồ sơ G2 nêu việc ghép dữ liệu từ hệ thống ngoài mà G1 đã chốt (ICF Việt/Anh + DMP) và không gọi «ẩn danh hoàn toàn» khi có ghép (dao-duc-dang-ky 4b/4d) | IRB: G2-AUTO-09, G2-HUMAN-01, G2-HUMAN-02; PI: G2-AUTO-05, G2-AUTO-08b, G2-AUTO-10 |
+| `G2-T1` — Hồ sơ Hội đồng Đạo đức, phiếu đồng thuận, đăng ký, DMP bản cho Hội đồng | `G2_A3_ETHICS_PACKAGE_<mã>.md`, `G2_REGISTRATION_DRAFT_<mã>.json`, `G2_checkpoint.json` | G2-AUTO-01, G2-AUTO-02b, G2-AUTO-03, G2-AUTO-03b, G2-AUTO-04, G2-AUTO-06, G2-AUTO-06b, G2-AUTO-07 (khi G2-T2 không áp dụng), G2-AUTO-08 + kiểm máy cấp nhiệm vụ: hồ sơ G2 nêu việc ghép dữ liệu từ hệ thống ngoài mà G1 đã chốt (ICF Việt/Anh + DMP) và không gọi «ẩn danh hoàn toàn» khi có ghép (dao-duc-dang-ky 4b/4d) | IRB: G2-AUTO-09, G2-HUMAN-01, G2-HUMAN-02; PI: G2-AUTO-05, G2-AUTO-08b, G2-AUTO-10, G2-AUTO-11 |
 
 Bạn CHẤM CHÉO (người chấm chuyên môn, rubric RQ1–RQ8 — `hoi_dong_cong.py mau --loai danh_gia_cheo`): `G2-T2` (an-toan-nghien-cuu), `G5-T1` (quan-ly-du-lieu). Không bao giờ chấm đầu ra do chính bạn làm.
 

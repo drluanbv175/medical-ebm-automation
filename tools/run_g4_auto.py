@@ -403,6 +403,13 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             "MD": "t-test hoặc Mann-Whitney; ANCOVA/hồi quy tuyến tính hiệu chỉnh giá trị nền",
         }.get(str(effect_type or "").upper().replace("ARR", "ARR%").replace("%%", "%"), main_method)
 
+    # THÊM 16/11/2026 (giả lập trọn vòng 8 thiết kế): cắt ngang MÔ TẢ (G3 «descriptive…» hoặc cỡ mẫu theo độ chính xác
+    # của tỷ lệ, không thước đo hiệu ứng) — phân tích chính là ƯỚC LƯỢNG TỶ LỆ + KTC, không phải hồi quy. Khuôn cũ in
+    # «Hồi quy logistic/tuyến tính» ⇒ G6 sinh script logistic trái mục tiêu đã chốt và G6-AUTO-09 không đối chiếu được.
+    if design_code == "cross_sectional" and (str(hypothesis_type or "").lower().startswith("descriptive")
+                                             or (g3.get("precision") and not effect_type)):
+        main_method = "Ước lượng tỷ lệ + KTC 95% (Wilson); tỷ lệ theo phân nhóm tiền định ở §7"
+
     # THÊM 2026-07-24 (vòng 18): nhãn một/hai phía theo hypothesis_type — non_inferiority dùng z MỘT PHÍA.
     _alpha_sidedness = "one-sided" if hypothesis_type == "non_inferiority" else "two-sided"
 
@@ -848,7 +855,25 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "---",
         "*Cần bác sĩ kiểm chứng. SAP này chỉ có hiệu lực pháp lý sau khi được ký.*",
     ]
-    return _dien_khung("\n".join(lines), khung, design_code)
+    return _dong_bo_chung_chi(_dien_khung("\n".join(lines), khung, design_code))
+
+
+def _dong_bo_chung_chi(sap: str) -> str:
+    """Ô «KQ chính» của chứng chỉ khoá (PHẦN 5) = ĐÚNG dòng «Kết cục chính» của §2 khi §2 đã có nội dung (16/11/2026).
+
+    Giả lập trọn vòng: ô này luôn sinh «[CẦN BÁC SĨ ĐIỀN — từ SAP §2]» ⇒ người điền chép lại §2 bằng lời khác (thêm
+    cách đo, thời điểm) và G4-AUTO-13 chặn vì «KQ chính» khác §2 (đề tài định tính). Chép đúng chuỗi §2 (bỏ chú thích
+    điền sẵn); §2 còn ô trống ⇒ giữ nguyên ô [CẦN …] cho người điền. Ô «Phân tích» (quần thể phân tích) không đổi."""
+    import placeholder_contract as PC  # noqa: PLC0415
+    import quyet_dinh_da_chot as QD  # noqa: PLC0415 — mẫu chú thích điền sẵn dùng chung
+
+    m = re.search(r"^- \*\*Kết cục chính:\*\*\s*([^\n]+?)\s*$", sap, re.M)
+    if not m:
+        return sap
+    kc = QD.GHI_CHU_DIEN_SAN_RE.sub("", m.group(1)).strip()
+    if not kc or PC.co_o_trong(kc):
+        return sap
+    return sap.replace("║ KQ chính  : [CẦN BÁC SĨ ĐIỀN — từ SAP §2]                 ║", f"║ KQ chính  : {kc} ║", 1)
 
 
 def _dien_khung(sap: str, khung, design_code) -> str:

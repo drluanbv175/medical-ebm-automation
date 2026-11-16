@@ -56,7 +56,7 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G2 (09/10/2026)
 Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối
-của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Mọi tiêu chí (16) của
+của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Mọi tiêu chí (17) của
 `tools/g2_quality_gate.py` đã gán ĐÚNG MỘT bên ở `hoi_dong_cong.PHAN_CONG`
 (bảng dưới chép lại; test đối chiếu):
 
@@ -65,7 +65,7 @@ của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm v
 | `G2-T1` — agent `dao-duc-dang-ky` | G2-AUTO-01, G2-AUTO-02b, G2-AUTO-03, G2-AUTO-03b, G2-AUTO-04, G2-AUTO-06, G2-AUTO-06b, G2-AUTO-08 |
 | `G2-T2\|G2-T1` — agent `an-toan-nghien-cuu` (thiết kế can thiệp (RCT)), ngược lại `dao-duc-dang-ky` | G2-AUTO-07 |
 | `IRB@G2-T1` — NGƯỜI IRB quyết/ký; agent chuẩn bị hồ sơ + lệnh: `dao-duc-dang-ky` | G2-AUTO-09, G2-HUMAN-01, G2-HUMAN-02 |
-| `PI@G2-T1` — NGƯỜI PI quyết/ký; agent chuẩn bị hồ sơ + lệnh: `dao-duc-dang-ky` | G2-AUTO-05, G2-AUTO-08b, G2-AUTO-10 |
+| `PI@G2-T1` — NGƯỜI PI quyết/ký; agent chuẩn bị hồ sơ + lệnh: `dao-duc-dang-ky` | G2-AUTO-05, G2-AUTO-08b, G2-AUTO-10, G2-AUTO-11 |
 | `^G1` — cổng tiền đề G1 (điều phối cổng đó chịu trách nhiệm) | G2-AUTO-02 |
 
 1. **Thước đo duy nhất:** `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G2` — chỉ đọc; chấm sống,

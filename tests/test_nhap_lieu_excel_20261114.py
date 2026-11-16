@@ -475,7 +475,11 @@ def test_tiep_nhan_chi_chay_cong_khi_sach(tmp_path, de_tai, monkeypatch):
     assert _nhap(ban, ra, "--tiep-nhan") == N.MA_LOI and goi == []
     sach = _dien(mau, tmp_path / "ngoai" / "sach.xlsx", [_hop_le("P01")], [{"record_id": "P01", "thoigian": 1}])
     assert _nhap(sach, ra, "--tiep-nhan") == 0
-    assert goi and goi[0][1].endswith("import_real_dataset.py") and goi[0][-1] == str(ra / "sach.csv")
+    assert goi and goi[0][1].endswith("import_real_dataset.py")
+    lenh = goi[0]
+    assert lenh[lenh.index("--data") + 1] == str(ra / "sach.csv")
+    # 16/11/2026: truyền ĐÚNG từ điển đã dựng mẫu ⇒ cổng tiếp nhận miễn mẫu «date» cho cột khai kiểu ngày
+    assert lenh[lenh.index("--dictionary") + 1].endswith(f"G5_REDCap_dictionary_{STUDY}.csv")
 
 
 # ───────────────────────────── nhập kép ─────────────────────────────
