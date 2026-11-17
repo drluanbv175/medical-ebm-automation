@@ -173,7 +173,7 @@ def _study_spec_song(study: str, out_dir: Path,
     meta = G10A.load_meta(out_dir)
     spec = RS.build_study_spec(study, checkpoint_theo_muc_dich(cps, purpose), meta,
                                sap=RS.sap_song(study, out_dir, repo_root=G10A.BASE))
-    danh_gia = RS.evaluate_study_spec(spec, cps, meta)
+    danh_gia = RS.evaluate_study_spec(spec, cps, meta, thu_muc=out_dir)
     luu = _read_json(Path(out_dir) / f"STUDY_SPEC_{study}.json")
     luu = {k: v for k, v in luu.items() if k != "_evaluation"}
     lech = None if luu == json.loads(json.dumps(spec, ensure_ascii=False, default=str)) else (

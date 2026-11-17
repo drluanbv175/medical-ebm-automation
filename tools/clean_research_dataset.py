@@ -248,6 +248,9 @@ def _normalise_rule(raw: Dict[str, Any]) -> Optional[Dict[str, Any]]:
             normalized.get("branching"),
         ) or "").strip(),
     }
+    if field_type == "calc":
+        # 17/11/2026: giữ NGUYÊN công thức để tính lại giá trị calc cho Branching Logic (xem `_tinh_calc_cho_logic`).
+        rule["cong_thuc_calc"] = str(allowed or "").strip()
     return rule
 
 
@@ -436,6 +439,38 @@ def _dong_cho_logic(row: Dict[str, Any], columns: List[str]) -> Dict[str, str]:
     return dong
 
 
+def _tinh_calc_cho_logic(logic_rows: List[Dict[str, str]], rules: Dict[str, Dict[str, Any]],
+                         branching_stats: Dict[str, Any]) -> List[Dict[str, str]]:
+    """Thêm giá trị trường calc (REDCap tự tính khi lưu biểu mẫu) vào hàng logic, bằng `nhap_lieu_excel.dong_kem_calc`
+    — cùng bộ tính với công cụ nhập Excel.
+
+    VÁ 17/11/2026 (giả lập dữ liệu chân thực trên khung BTM): trường calc không nhập tay ⇒ tệp nhập Excel/SPSS không có
+    cột calc ⇒ mọi Branching Logic dựa trên nó («[du_tieu_chuan] = '1'») «không đánh giá được» ở mọi hàng ⇒ hồ sơ bị
+    loại ở bước sàng lọc bị đòi đủ các câu bắt buộc phía sau (≈ 20.000 query oan / 464 hồ sơ). Giá trị tính lại CHỈ
+    dùng cho logic — không ghi vào dữ liệu sạch (biến phái sinh tính lại ở G6). Ô calc đã có giá trị (bản xuất REDCap)
+    giữ nguyên. Công thức ngoài tập con (round, datediff…) ⇒ không tính, nhánh dựa trên nó về hành vi cũ + cảnh báo."""
+    ds_calc = [(r["name"], r.get("cong_thuc_calc") or "") for r in rules.values()
+               if r.get("type") == "calc" and (r.get("cong_thuc_calc") or "").strip()]
+    if not ds_calc:
+        return logic_rows
+    try:
+        import nhap_lieu_excel as NLE  # noqa: PLC0415
+    except Exception:  # noqa: BLE001 — nạp hỏng ⇒ không tính, giữ hành vi cũ (nhánh «không đánh giá được»)
+        return logic_rows
+    ds_calc = NLE.calc_can_cho_logic(ds_calc, [str(r.get("branching") or "") for r in rules.values()])
+    if not ds_calc:
+        return logic_rows
+    loi_calc: Dict[str, Dict[str, Any]] = branching_stats.setdefault("calc_khong_tinh_duoc", {})
+    ra = []
+    for dong in logic_rows:
+        moi, loi = NLE.dong_kem_calc(dong, ds_calc)
+        for ten, ly_do in loi.items():
+            loi_calc.setdefault(ten, {"ly_do": ly_do, "so_hang": 0})["so_hang"] += 1
+        ra.append(moi)
+    branching_stats["calc_tinh_lai"] = [ten for ten, _ in ds_calc if ten not in loi_calc]
+    return ra
+
+
 def _validate_rows(columns: List[str], rows: List[Dict[str, str]],
                    rules: Dict[str, Dict[str, Any]],
                    id_column: Optional[str],
@@ -485,6 +520,11 @@ def _validate_rows(columns: List[str], rows: List[Dict[str, str]],
             ))
 
     for required in required_columns:
+        # 17/11/2026 (giả lập BTM): trường checkbox REDCap xuất thành các cột `<biến>___<mã>`, KHÔNG bao giờ có cột
+        # tên gốc ⇒ bản cũ mở «missing_required_column» không đóng được cho mọi câu chọn nhiều bắt buộc.
+        # So trên tên THÔ: `_normalize_header` gộp «___» thành «_» nên không phân biệt được cột con checkbox.
+        if any(str(c).strip().casefold().startswith(str(required).strip().casefold() + "___") for c in columns):
+            continue
         if required not in columns and RDI._normalize_header(required) not in normalised_columns:
             issues.append(_issue(
                 "missing_required_column",
@@ -674,10 +714,16 @@ def _tom_tat_nhanh(stats: Dict[str, Any], row_count: int) -> Dict[str, Any]:
         "required_missing_coded": int(stats.get("required_missing_coded") or 0),
         "value_when_hidden_queries": int(stats.get("value_when_hidden") or 0),
         "khong_danh_gia_duoc": khong,
+        "calc_tinh_lai": list(stats.get("calc_tinh_lai") or []),
+        "calc_khong_tinh_duoc": dict(stats.get("calc_khong_tinh_duoc") or {}),
         "canh_bao": [
             f"{col}: Branching Logic không đánh giá được ở {muc['so_hang']}/{row_count} hàng ({muc['ly_do']}) — giữ "
             "hành vi cũ: trường bắt buộc trống vẫn sinh query, không kiểm «có giá trị khi nhánh ẩn»."
             for col, muc in khong.items()
+        ] + [
+            f"{ten}: trường calc không tính lại được ở {muc['so_hang']}/{row_count} hàng ({muc['ly_do']}) — nhánh dựa "
+            "trên trường này giữ hành vi cũ."
+            for ten, muc in (stats.get("calc_khong_tinh_duoc") or {}).items()
         ],
     }
 
@@ -884,7 +930,7 @@ def clean_dataset(study: str, data_path: Path, *,
             columns, rules, id_column or dictionary.get("id_column"))
         validation_issues = _validate_rows(
             columns, clean_rows, rules, detected_id_column, merged_required,
-            logic_rows=[_dong_cho_logic(row, columns) for row in rows],
+            logic_rows=_tinh_calc_cho_logic([_dong_cho_logic(row, columns) for row in rows], rules, branching_stats),
             branching_stats=branching_stats, ma_thieu_khai=ma_thieu_cot, ma_thieu_chung_khai=ma_thieu_chung)
         giai_quyet, loi_giai_quyet = _nap_giai_quyet(query_resolutions_path)
         for item in validation_issues:

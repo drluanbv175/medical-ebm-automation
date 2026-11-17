@@ -12,6 +12,7 @@ Module không tự tạo dữ kiện khoa học hoặc phê duyệt. Trường c
 from __future__ import annotations
 
 import re
+from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import placeholder_contract as PC
@@ -1078,9 +1079,26 @@ def missing_requirements(spec: dict) -> List[dict]:
     return missing
 
 
+def ten_bien_phai_sinh(thu_muc: Any) -> set:
+    """Tên biến phái sinh đã khai ở `_bien-phai-sinh.csv` của đề tài (cột `ten_bien`); không có tệp ⇒ tập rỗng."""
+    import csv  # noqa: PLC0415
+
+    tep = Path(thu_muc) / "_bien-phai-sinh.csv" if thu_muc else None
+    if not tep or not tep.is_file():
+        return set()
+    with tep.open(encoding="utf-8-sig", newline="") as fh:
+        ten = (str(r.get("ten_bien") or "").strip() for r in csv.DictReader(fh))
+        return {t for t in ten if t}
+
+
 def semantic_issues(spec: dict, checkpoints: Dict[str, dict],
-                    meta: Optional[dict] = None) -> List[dict]:
-    """Phát hiện mâu thuẫn khoa học có cấu trúc giữa meta và checkpoint."""
+                    meta: Optional[dict] = None, *, thu_muc: Any = None) -> List[dict]:
+    """Phát hiện mâu thuẫn khoa học có cấu trúc giữa meta và checkpoint.
+
+    thu_muc (17/11/2026): thư mục đề tài — biến kết cục chính là BIẾN PHÁI SINH đã khai (vd `xn_du` của BTM = có ≥ 1
+    UACR và ≥ 1 creatinin) thì đo được từ CRF dù không phải một cột CRF. Bản cũ báo PRIMARY_OUTCOME_VARIABLE_NOT_IN_CRF
+    ngay khi đề tài có G5 (giả lập dữ liệu trên khung BTM: chặn lắp gói G10). Không ghi vào StudySpec (giữ nguyên cấu
+    trúc gói đã lắp — G10-AUTO-06 so StudySpec tính lại với bản lưu)."""
     raw = _canonical_meta(meta)
     issues: List[dict] = []
 
@@ -1133,6 +1151,8 @@ def semantic_issues(spec: dict, checkpoints: Dict[str, dict],
         str(item).strip() for item in _get(spec, "variables", "items", default=[])
         if is_present(item)
     }
+    if crf_variables:
+        crf_variables |= ten_bien_phai_sinh(thu_muc)
     if is_present(primary_variable) and crf_variables and primary_variable not in crf_variables:
         issues.append({
             "severity": "ERROR",
@@ -1174,11 +1194,11 @@ def semantic_issues(spec: dict, checkpoints: Dict[str, dict],
 
 
 def evaluate_study_spec(spec: dict, checkpoints: Dict[str, dict],
-                        meta: Optional[dict] = None) -> dict:
-    """Tổng hợp độ đầy đủ, lỗi ngữ nghĩa và mức sẵn sàng của StudySpec."""
+                        meta: Optional[dict] = None, *, thu_muc: Any = None) -> dict:
+    """Tổng hợp độ đầy đủ, lỗi ngữ nghĩa và mức sẵn sàng của StudySpec (thu_muc: xem `semantic_issues`)."""
     coverage = protocol_coverage(spec)
     missing = missing_requirements(spec)
-    issues = semantic_issues(spec, checkpoints, meta)
+    issues = semantic_issues(spec, checkpoints, meta, thu_muc=thu_muc)
     errors = [issue for issue in issues if issue["severity"] == "ERROR"]
     complete_items = sum(row["status"] == "ĐỦ DỮ LIỆU DỰ THẢO" for row in coverage)
     scientific_complete = not missing and not errors

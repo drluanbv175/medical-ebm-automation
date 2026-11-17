@@ -252,6 +252,16 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
         loi += [f"SAP {muc} có phân tích chưa vào đặc tả: «{dong[:100]}»" for muc, dong in phu["muc_chua_phu"]]
         canh_bao += [f"{pid}: chưa khai sap_neo (cụm chữ nguyên văn trong SAP) — không truy nguyên được"
                      for pid in phu["chua_neo"]]
+        qt = quan_the_chinh_sap(sap.read_text(encoding="utf-8"))
+        for pt in ds:
+            if not qt or not isinstance(pt, dict) or not isinstance(pt.get("tham_so"), dict):
+                continue
+            bien, gia = qt
+            if re.search(rf"\b{re.escape(bien)}\b", str(pt["tham_so"].get("loc") or "")):
+                continue
+            (loi if pt.get("vai") == "chinh" else canh_bao).append(
+                f"{pt.get('id')}: SAP §1 khoanh quần thể chính «`{bien}` = {gia}» nhưng tham_so.loc không lọc theo "
+                f"`{bien}` — kết quả (kể cả Bảng 1) sẽ tính cả bản ghi ngoài quần thể")
     dau = dau_dac_ta(dt)
     duyet = BPS.trang_thai_duyet(str(dt.get("nguoi_duyet") or ""), dau)
     if duyet != "DA_DUYET":
@@ -294,6 +304,28 @@ def muc_sap_bat_buoc(sap_text: str) -> list[tuple[str, str]]:
                 if nhan and _NHAN_PHAN_TICH.search(nhan.group(1)) and "KHÔNG CÓ" not in dong.upper():
                     ra.append((f"§{muc}", dong.strip()))
     return ra
+
+
+_BIEN_BANG_RE = re.compile(r"`([A-Za-z_][A-Za-z0-9_]*)`\s*={1,2}\s*'?([A-Za-z0-9_.-]+)'?")
+
+
+def quan_the_chinh_sap(sap_text: str) -> tuple[str, str] | None:
+    """(biến, giá trị) SAP §1 dùng khoanh «Quần thể chính» (vd «mọi hồ sơ có `du_tieu_chuan` = 1»); không thấy ⇒ None.
+
+    17/11/2026 (giả lập dữ liệu trên khung BTM): bộ dữ liệu BTM ghi CẢ hồ sơ bị loại ở bước sàng lọc (phiếu phần A);
+    thống kê viên mô phỏng quên `loc` ⇒ Bảng 1 tính trên 458 hồ sơ đã mở (gồm 73 hồ sơ loại và biến sàng lọc) thay vì
+    385 người của quần thể phân tích, G7 chép N = 458 vào bản thảo. Hệ đã có `tham_so.loc` nhưng không gì nhắc."""
+    import unicodedata  # noqa: PLC0415
+
+    for m in _MUC_SAP_RE.finditer(unicodedata.normalize("NFC", sap_text)):
+        if m.group(1) != "1":
+            continue
+        for dong in m.group(2).splitlines():
+            if "quần thể chính" in dong.casefold():
+                k = _BIEN_BANG_RE.search(dong)
+                if k:
+                    return k.group(1), k.group(2)
+    return None
 
 
 def kiem_phu_sap(dt: dict, sap_text: str) -> dict:

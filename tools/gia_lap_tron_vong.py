@@ -141,7 +141,10 @@ def gia_tri_da_chot(meta: Mapping[str, Any], cps: Mapping[str, Mapping[str, Any]
         (r"ket cuc chinh|kq chinh|primary outcome",
          " — ".join(_text(po.get(k)) for k in ("name", "measure", "timepoint") if po.get(k)), "G1.primary_outcome"),
         (r"ket cuc phu|secondary outcome", g1.get("secondary_outcomes"), "G1.secondary_outcomes"),
-        (r"^muc tieu|^objective|muc tieu 1", g1.get("objectives"), "G1.objectives"),
+        # 17/11/2026 (diễn tập BTM): «Mục tiêu chung» là G1.aim — quyết định KHÁC danh sách mục tiêu cụ thể; bản cũ
+        # khớp mọi nhãn «mục tiêu…» với G1.objectives ⇒ ô mục tiêu chung của đề tài chưa khai aim bị đếm «hỏi lại».
+        (r"^muc tieu chung|^aim\b|^general objective", g1.get("aim"), "G1.aim"),
+        (r"^muc tieu(?! chung)|^objective|muc tieu 1", g1.get("objectives"), "G1.objectives"),
         (r"doi tuong nghien cuu|quan the nghien cuu|^population", g1.get("population"), "G1.population"),
         (r"dia diem|noi (nghien cuu|thuc hien)|co so nghien cuu|setting", g1.get("setting"), "G1.setting"),
         (r"thoi gian nghien cuu|thoi gian thu thap|study period", g1.get("study_period"), "G1.study_period"),
@@ -915,21 +918,27 @@ class TronVong:
 
     def _ghi_excel(self, mau: Path, ra: Path, hang: Sequence[Mapping[str, Any]],
                    sai: Mapping[Tuple[str, str], Any]) -> None:
-        """Người nhập lần 1 gõ phiếu vào mẫu Excel của hệ (trang đầu, tên biến dòng 1, dữ liệu từ dòng 4)."""
+        """Người nhập lần 1 gõ phiếu vào mẫu Excel của hệ (mỗi biểu mẫu một trang, tên biến dòng 1, dữ liệu từ dòng 4).
+
+        VÁ 17/11/2026 (diễn tập trên khung BTM, 6 biểu mẫu): bản cũ chỉ ghi trang PHIẾU đầu tiên ⇒ năm trang còn lại
+        trống ⇒ so nhập kép báo 25.556 ô lệch giả (lỗi của bộ giả lập, không phải của công cụ). Nay ghi MỌI trang có cột
+        mã nghiên cứu ở dòng 1; mỗi mã một hàng ở mọi trang (công cụ nhập đòi vậy — `kiem_trang_thieu`), câu bị nhánh
+        ẩn để trống."""
         import openpyxl  # noqa: PLC0415
 
         wb = openpyxl.load_workbook(mau)
         khoa = ten_khoa_ban_ghi(hang)
         # trang PHIẾU là trang có cột mã nghiên cứu ở dòng 1 (mẫu còn HUONG_DAN, _DANH_MUC, TU_DIEN, _META)
-        ws = next((w for w in wb.worksheets if khoa in [c.value for c in w[1]]), wb.worksheets[0])
-        ten = [c.value for c in ws[1]]
-        for i, r in enumerate(hang):
-            for j, t in enumerate(ten):
-                if t:
-                    v = sai.get((str(r.get(khoa)), t), r.get(t))
-                    if isinstance(v, str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", v):
-                        v = date.fromisoformat(v)
-                    ws.cell(row=4 + i, column=j + 1, value=v)
+        trang = [w for w in wb.worksheets if khoa in [c.value for c in w[1]]] or [wb.worksheets[0]]
+        for ws in trang:
+            ten = [c.value for c in ws[1]]
+            for i, r in enumerate(hang):
+                for j, t in enumerate(ten):
+                    if t:
+                        v = sai.get((str(r.get(khoa)), t), r.get(t))
+                        if isinstance(v, str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", v):
+                            v = date.fromisoformat(v)
+                        ws.cell(row=4 + i, column=j + 1, value=v)
         wb.save(ra)
 
     def _ghi_sav(self, mau: Path, ra: Path, hang: Sequence[Mapping[str, Any]],
@@ -966,8 +975,20 @@ class TronVong:
                                 + list(TRA_LOI_CHUNG), da_hoi)
         # dữ liệu mô phỏng theo bộ biến + giả định G3
         n = self._n_g3()
-        hang = sinh_du_lieu(self.thiet_ke, self.kb["bien_so"], _gp(self._meta(), "G3"), n,
-                            bien_the=self.kb.get("bien_the"))
+        dl_redcap = self.kb.get("du_lieu_redcap")
+        tu_dien_g5 = self.out / f"G5_REDCap_dictionary_{self.study}.csv"
+        if dl_redcap and tu_dien_g5.is_file():
+            # 17/11/2026 (diễn tập trên khung THẬT): sinh theo đúng từ điển G5 — logic nhánh, calc, khoảng, thứ tự
+            # ngày — để dữ liệu mô phỏng đi qua đúng cổng tiếp nhận mà dữ liệu thật sẽ đi qua.
+            import sinh_du_lieu_redcap as SR  # noqa: PLC0415
+
+            hm = getattr(SR, dl_redcap["hinh_mau"]) if isinstance(dl_redcap.get("hinh_mau"), str) else dl_redcap.get(
+                "hinh_mau")
+            hang = SR.sinh(SR.doc_tu_dien(tu_dien_g5), int(dl_redcap.get("so_ho_so") or n), hm,
+                           dung_khi=dl_redcap.get("dung_khi"))
+        else:
+            hang = sinh_du_lieu(self.thiet_ke, self.kb["bien_so"], _gp(self._meta(), "G3"), n,
+                                bien_the=self.kb.get("bien_the"))
         nl = self.repo.parent / "nhap_lieu"
         nl.mkdir(parents=True, exist_ok=True)
         # biến thể «dữ liệu thiếu» (16/11/2026): PI khai mã thiếu cho cột hồi cứu hay trống TRƯỚC khi dựng mẫu nhập —
@@ -1103,7 +1124,13 @@ class TronVong:
 
     def _soan_phieu_thu_thap(self) -> None:
         """PI soạn PHIẾU THU THẬP SỐ LIỆU nộp Hội đồng (G2) từ bộ biến + mã câu hỏi của ma trận — việc ĐÚNG VAI
-        (hệ chưa có lệnh sinh khung phiếu; G5-AUTO-11/13 đối chiếu phiếu này với từ điển nhập liệu)."""
+        (hệ chưa có lệnh sinh khung phiếu; G5-AUTO-11/13 đối chiếu phiếu này với từ điển nhập liệu).
+
+        17/11/2026 (diễn tập trên khung THẬT BTM): phiếu đã có mà không do bộ giả lập sinh (không mang nhãn giả lập) là
+        phiếu chủ nhiệm soạn — KHÔNG ghi đè (bản cũ thay phiếu 6 phần của BTM bằng danh sách biến phẳng)."""
+        tep = self.out / f"PHIEU_THU_THAP_SO_LIEU_{self.study}.md"
+        if tep.is_file() and GL.NHAN not in tep.read_text(encoding="utf-8"):
+            return
         bs = self.kb.get("bien_so") or {}
         ma_cau = {d[3]: d[5] for d in bs.get("ma_tran", ()) if len(d) > 5 and d[5]}
         dong = [f"# PHIẾU THU THẬP SỐ LIỆU — {self._meta().get('title') or self.kb.get('topic')}", "",

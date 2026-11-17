@@ -74,6 +74,14 @@ python medical-ebm-automation/tools/run_g5_auto.py --study "MA-DE-TAI"
 > đánh giá được ⇒ giữ hành vi cũ (trống vẫn sinh query) + một dòng trong `branching_logic.canh_bao`. Đọc `canh_bao`
 > TRƯỚC khi đóng query thiếu ở trường đó (có thể là thiếu giả do nhánh): người quản lý dữ liệu/PI quyết và ghi lý
 > do — agent không đóng query thay người.
+> **Nhánh dựa trên trường calc (17/11/2026, giả lập dữ liệu trên khung BTM):** trường `calc` không nhập tay nên tệp
+> Excel/SPSS không có cột đó; công cụ nhập Excel và bộ làm sạch TÍNH LẠI calc theo đúng công thức từ điển
+> (`nhap_lieu_excel.tinh_calc`: if(), so sánh, + − × ÷) CHỈ để đánh giá nhánh — không ghi vào dữ liệu (biến phái sinh
+> tính lại ở G6); chỉ tính calc mà nhánh/luật DQ tham chiếu (`branching_logic.calc_tinh_lai`). Ô calc đã có giá trị
+> (bản xuất REDCap) được giữ nguyên. Công thức ngoài tập con (round, datediff, sum…) mà nhánh dựa vào ⇒
+> `branching_logic.calc_khong_tinh_duoc` + cảnh báo: viết lại calc đó trong tập con hoặc để PI quyết từng query —
+> KHÔNG coi là ẩn. Câu chọn nhiều BẮT BUỘC xuất thành `<biến>___<mã>`: có ít nhất một cột con là đủ biến (bộ làm sạch
+> và G5-AUTO-07b), không mở «missing_required_column».
 > Chỉ khi query log không còn `open` mới được chạy:
 > ```bash
 > python medical-ebm-automation/tools/lock_analysis_dataset.py --study "MA-DE-TAI" \

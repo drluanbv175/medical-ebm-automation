@@ -380,6 +380,12 @@ def danh_gia_logic(bt: str, dong: dict[str, str]) -> bool:
     """Đánh giá biểu thức REDCap tập con: [biến], [biến(mã)] (checkbox), '…', số, + - * / (toán hạng không phải số
     ⇒ NaN ⇒ so sánh sai, như REDCap), = <> != > < >= <=, and/or, ngoặc. Ngoài tập con hoặc biến không có trong
     dòng ⇒ LogicKhongHo (không bao giờ âm thầm coi là đúng/sai)."""
+    return _phan_tich(bt, dong, che_do_so=False)
+
+
+def _phan_tich(bt: str, dong: dict[str, str], *, che_do_so: bool):
+    """Bộ phân tích chung: che_do_so=False ⇒ biểu thức logic (trả bool); True ⇒ biểu thức SỐ (trả float hoặc chuỗi
+    hằng; None = NaN của REDCap) — dùng cho nhánh của if() trong trường calc."""
     tk = _tach_token(bt)
     vt = 0
 
@@ -470,10 +476,118 @@ def danh_gia_logic(bt: str, dong: dict[str, str]) -> bool:
             kq = kq or rhs
         return kq
 
-    kq = hoac()
+    if not tk:
+        raise LogicKhongHo("biểu thức rỗng")
+    kq = bieu_thuc_so() if che_do_so else hoac()
     if vt != len(tk):
         raise LogicKhongHo(f"thừa «{tk[vt][1]}»")
     return kq
+
+
+def _tach_doi_so(trong: str) -> list[str]:
+    """Tách đối số của if(…) tại dấu phẩy CẤP NGOÀI (bỏ qua phẩy trong ngoặc, ngoặc vuông, chuỗi '…'/"…")."""
+    ra, sau, sau_ngoac, nhay = [], 0, 0, ""
+    for i, ch in enumerate(trong):
+        if nhay:
+            if ch == nhay:
+                nhay = ""
+        elif ch in "'\"":
+            nhay = ch
+        elif ch in "([":
+            sau_ngoac += 1
+        elif ch in ")]":
+            sau_ngoac -= 1
+        elif ch == "," and sau_ngoac == 0:
+            ra.append(trong[sau:i])
+            sau = i + 1
+    ra.append(trong[sau:])
+    return [x.strip() for x in ra]
+
+
+def _dinh_dang_calc(x) -> str:
+    """Giá trị calc như REDCap lưu: NaN ⇒ ô trống; số nguyên không kèm «.0»; chuỗi hằng giữ nguyên."""
+    if x is None:
+        return ""
+    if isinstance(x, str):
+        return x
+    if float(x).is_integer():
+        return str(int(x))
+    return repr(float(x))
+
+
+def tinh_calc(cong_thuc: str, dong: dict[str, str]) -> str:
+    """Giá trị của trường calc REDCap trên một hàng — tập con: biểu thức số của bộ đánh giá nhánh và
+    if(điều kiện, nếu đúng, nếu sai) lồng nhau. Hàm khác (round, datediff, sum…) hoặc biến vắng ⇒ LogicKhongHo,
+    KHÔNG BAO GIỜ đoán giá trị.
+
+    VÁ 17/11/2026 (giả lập dữ liệu chân thực trên khung BTM): phiếu BTM ẩn toàn bộ phần B–F sau
+    «[du_tieu_chuan] = '1'» — một trường calc. Trường calc không nhập tay nên tệp Excel/SPSS không có cột đó ⇒ mọi
+    nhánh dựa trên nó «không đánh giá được» ở 464/464 hàng ⇒ hồ sơ bị loại ở bước sàng lọc bị đòi đủ 59 câu bắt buộc
+    (≈ 20.000 truy vấn oan), còn công cụ nhập Excel thì bỏ qua câu bắt buộc trống. REDCap tự tính trường calc khi lưu
+    biểu mẫu; công cụ tính lại đúng công thức của từ điển để đánh giá nhánh — giá trị này chỉ dùng cho logic, không
+    ghi vào tệp dữ liệu."""
+    bt = (cong_thuc or "").strip()
+    m = re.match(r"if\s*\(", bt, re.I)
+    if m:
+        sau_ngoac, nhay = 1, ""
+        for i in range(m.end(), len(bt)):
+            ch = bt[i]
+            if nhay:
+                if ch == nhay:
+                    nhay = ""
+                continue
+            if ch in "'\"":
+                nhay = ch
+            elif ch == "(":
+                sau_ngoac += 1
+            elif ch == ")":
+                sau_ngoac -= 1
+                if sau_ngoac == 0:
+                    if bt[i + 1 :].strip():
+                        raise LogicKhongHo(f"thừa sau if(…): «{bt[i + 1 : i + 21].strip()}»")
+                    ds = _tach_doi_so(bt[m.end() : i])
+                    if len(ds) != 3 or not all(ds):
+                        raise LogicKhongHo("if() cần đúng 3 đối số")
+                    return tinh_calc(ds[1] if danh_gia_logic(ds[0], dong) else ds[2], dong)
+        raise LogicKhongHo("if( thiếu ngoặc đóng")
+    if re.match(r"[A-Za-z_]\w*\s*\(", bt):
+        raise LogicKhongHo(f"hàm «{bt.split('(', 1)[0].strip()}» chưa hỗ trợ")
+    return _dinh_dang_calc(_phan_tich(bt, dong, che_do_so=True))
+
+
+def truong_calc_tu_dien(td: list[dict]) -> list[tuple[str, str]]:
+    """(tên, công thức) của các trường calc theo ĐÚNG thứ tự từ điển (calc sau có thể dùng calc trước)."""
+    return [(t["ten"], t.get("lua_chon", "")) for t in td if (t.get("loai") or "").lower() == "calc"]
+
+
+def calc_can_cho_logic(ds_calc: list[tuple[str, str]], bieu_thuc: list[str]) -> list[tuple[str, str]]:
+    """Chỉ giữ trường calc mà các biểu thức (nhánh, luật DQ) tham chiếu — trực tiếp hoặc qua calc khác — theo thứ tự
+    từ điển. Calc không ai tham chiếu (vd BMI có round()) không cần tính ⇒ không sinh cảnh báo nhiễu."""
+    cong_thuc = dict(ds_calc)
+    can: set[str] = set()
+    hang_doi = [m for bt in bieu_thuc for m in re.findall(r"\[([A-Za-z0-9_]+)", bt or "")]
+    while hang_doi:
+        ten = hang_doi.pop()
+        if ten in cong_thuc and ten not in can:
+            can.add(ten)
+            hang_doi.extend(re.findall(r"\[([A-Za-z0-9_]+)", cong_thuc[ten]))
+    return [(t, ct) for t, ct in ds_calc if t in can]
+
+
+def dong_kem_calc(dong: dict[str, str], ds_calc: list[tuple[str, str]]) -> tuple[dict[str, str], dict[str, str]]:
+    """Bản sao hàng có thêm giá trị trường calc để đánh giá nhánh/luật DQ. Ô calc ĐÃ có giá trị (bản xuất REDCap)
+    được giữ nguyên; chỉ tính khi cột vắng hoặc trống. Trả (hàng, {trường calc: lý do không tính được})."""
+    if not ds_calc:
+        return dong, {}
+    ra, loi = dict(dong), {}
+    for ten, ct in ds_calc:
+        if str(ra.get(ten) or "").strip():
+            continue
+        try:
+            ra[ten] = tinh_calc(ct, ra)
+        except LogicKhongHo as e:
+            loi[ten] = str(e)
+    return ra, loi
 
 
 def doc_luat_dq(p: Path | None) -> list[dict]:
@@ -1567,9 +1681,16 @@ def doc_sav(
 # ───────────────────────────── kiểm giá trị ─────────────────────────────
 
 
-def kiem_gia_tri(bang: Bang, luat_dq: list[dict]) -> None:
+def kiem_gia_tri(bang: Bang, luat_dq: list[dict], ds_calc: list[tuple[str, str]] | None = None) -> None:
     """Kiểm từng giá trị như REDCap kiểm lúc nhập (danh mục, khoảng, bắt buộc, logic nhánh, @MAXCHECKED,
-    @NOMISSING) + luật DQ. Kết quả là TRUY VẤN — đối chiếu phiếu gốc, không tự sửa."""
+    @NOMISSING) + luật DQ. Kết quả là TRUY VẤN — đối chiếu phiếu gốc, không tự sửa.
+
+    ds_calc (17/11/2026): trường calc của từ điển (`truong_calc_tu_dien`) — tính lại như REDCap để nhánh/luật DQ
+    tham chiếu trường calc đánh giá được (xem `tinh_calc`)."""
+    calc_khong_ho: dict[str, list] = {}
+    ds_calc = calc_can_cho_logic(
+        ds_calc or [], [c.nhanh for c in bang.cot] + [luat.get("bieu_thuc_redcap", "") for luat in luat_dq]
+    )
     co = set(bang.cot_co)
     cot = [c for c in bang.cot if c.ten in co]
     nhanh_khong_ho: dict[str, list] = {}  # cột → [lý do đầu tiên, số hàng]
@@ -1578,8 +1699,11 @@ def kiem_gia_tri(bang: Bang, luat_dq: list[dict]) -> None:
     for c in cot:
         if c.kieu == "hop":
             nhom_hop.setdefault(c.truong, []).append(c)
-    for ma_nc, dong in bang.hang.items():
+    for ma_nc, dong_nhap in bang.hang.items():
         vt = bang.vi_tri.get(ma_nc, {})
+        dong, loi_calc = dong_kem_calc(dong_nhap, ds_calc or [])
+        for ten, ly_do in loi_calc.items():
+            calc_khong_ho.setdefault(ten, [ly_do, 0])[1] += 1
 
         def tv(ma: str, c: Cot, chi_tiet: str, gia: str = "", *, _vt=vt, _ma=ma_nc) -> None:
             noi = _vt.get(c.ten, "")
@@ -1642,6 +1766,10 @@ def kiem_gia_tri(bang: Bang, luat_dq: list[dict]) -> None:
             except LogicKhongHo as e:
                 dq_khong_ho.setdefault(luat["ma_luat"], [str(e), 0])[1] += 1
     n = len(bang.hang)
+    for ten, (ly_do, k) in calc_khong_ho.items():
+        bang.phat_hien.append(
+            PhatHien(CANH_BAO, "calc_khong_tinh_duoc", "", "", ten, "", f"{k}/{n} hàng: {ly_do}")
+        )
     for ten, (ly_do, k) in nhanh_khong_ho.items():
         bang.phat_hien.append(
             PhatHien(CANH_BAO, "logic_nhanh_khong_danh_gia_duoc", "", "", ten, "", f"{k}/{n} hàng: {ly_do}")
@@ -1920,7 +2048,7 @@ def lenh_nhap(args) -> int:
     luat_p = Path(args.luat_dq).expanduser() if args.luat_dq else d / "_luat-dq.csv"
     luat = doc_luat_dq(luat_p)
     if not bang.loi():
-        kiem_gia_tri(bang, luat)
+        kiem_gia_tri(bang, luat, truong_calc_tu_dien(doc_tu_dien_day_du(td_p)))
     kiem_trang_thieu(bang)
     form_co = {c.form for c in cot if c.ten in bang.cot_co and c.kieu != "id"}
     for ma, muc, cung_form in (
