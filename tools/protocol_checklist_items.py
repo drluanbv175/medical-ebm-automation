@@ -197,6 +197,28 @@ def cap_doi_pmid_tai_lieu_chuan() -> dict:
     return cap
 
 
+def cap_doi_pmid_he_thong() -> dict:
+    """{DOI → PMID} của MỌI tài liệu chuẩn/phương pháp hệ chèn vào văn bản cổng: cặp chuẩn đề cương
+    (`cap_doi_pmid_tai_lieu_chuan`) + cặp của bảng căn cứ cỡ mẫu G3 (g3_quality_gate.STANDARDS_BASIS — Piaggio 2012, van
+    Smeden 2016, Ogundimu 2016, Riley 2020…; đối chiếu PubMed 17/11/2026).
+
+    Thêm 17/11/2026: hệ chèn các DOI của bảng G3 vào đề cương lắp G10 / bản thảo G7 nhiều chỗ KHÔNG kèm PMID ⇒ TLTK đề
+    cương nộp không nhận ra là nguồn, trục trich_dan_tong_quan báo «dẫn nguồn chưa có trong TLTK». Tách hàm riêng để
+    `cap_doi_pmid_tai_lieu_chuan` giữ bất biến «⊆ pmid_tai_lieu_chuan()» mà check_de_cuong R4 dựa vào."""
+    import re
+
+    cap = dict(cap_doi_pmid_tai_lieu_chuan())
+    try:
+        import g3_quality_gate as G3Q  # noqa: PLC0415 — nạp trễ: g3_quality_gate kéo theo cổng/độ tươi
+    except ImportError:
+        return cap
+    for muc in getattr(G3Q, "STANDARDS_BASIS", ()) or ():
+        doi, pmid = str(muc.get("doi") or "").strip(), str(muc.get("pmid") or "").strip()
+        if doi and re.fullmatch(r"\d{6,9}", pmid):
+            cap.setdefault(doi.rstrip(".,;").lower(), pmid)
+    return cap
+
+
 def items_for_design(design_code: Optional[str]):
     """(tên chuẩn, tuple item, provenance) cho thiết kế có checklist protocol theo mục; None nếu không.
 

@@ -573,7 +573,10 @@ def who_trds_values(
         11: "Vietnam",
         12: _real_text(g2.get("health_condition")) or topic,
         13: intervention_value,
+        # 17/11/2026: kèm câu QUẦN THỂ G1 đã chốt — bản đăng ký chỉ liệt kê tiêu chí nên mất bối cảnh («quản lý
+        # ngoại trú», «người trưởng thành») và trục quan_the báo «G2 thiếu so với G0» ở 13/16 đề tài giả lập
         14: {
+            **({"population": _real_text(g1.get("population"))} if _real_text(g1.get("population")) else {}),
             "inclusion": inclusion or None,
             "exclusion": exclusion or None,
         },
@@ -634,7 +637,8 @@ def render_who_trds_khoa_hoc(values: Mapping[int, Any]) -> dict[int, str]:
         12: (v12 if v12 and v12 != v10 else
              "[CẦN PI KHAI — tình trạng sức khỏe nghiên cứu: gate_params.G2.health_condition]"),
         13: d13,
-        14: f"Inclusion: {nhan}\n            Exclusion: {loai}",
+        14: ((f"Population: {_real_text(v14.get('population'))}\n            "
+              if _real_text(v14.get("population")) else "") + f"Inclusion: {nhan}\n            Exclusion: {loai}"),
         15: (f"{v15.get('design') or 'Other'} · {v15.get('primary_purpose') or 'Other'} · "
              f"{v15.get('allocation') or 'Non-randomized'} · {v15.get('masking') or MASKING_CAN_KHAI}"),
         19: d19,

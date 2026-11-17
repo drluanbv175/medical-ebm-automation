@@ -76,6 +76,48 @@ def loai_bo(out_dir: Path, study: str) -> Dict[str, Dict[str, Any]]:
     return _theo_khoa(doc(out_dir, study).get("loai_bo"))
 
 
+# 17/11/2026: văn bản cổng có nguồn dẫn phải nằm trong TLTK đề cương nộp. MỘT danh sách dùng chung cho trục
+# trich_dan_tong_quan (nhat_quan_xuyen_cong), bộ sinh đề cương nộp (ứng viên TLTK) và người kiểm trích dẫn A12 (bộ giả
+# lập). Trước đó bộ sinh không đọc thiết kế G1 (A2) và bộ biến G3, A12 không quét chúng ⇒ trục báo «dẫn nguồn chưa
+# có trong TLTK» ở 7/16 đề tài giả lập (EPV van Smeden ở A2, ICC Adams ở G3, Piaggio ở đề cương G10).
+VAN_BAN_CONG_TRICH = (
+    ("G1", "G1_A2_PROTOCOL_DESIGN_{s}.md", "thiết kế G1 (A2)"),
+    ("G3", "G3_BO_BIEN_SO_{s}.md", "bộ biến G3"),
+    ("G4", "G4_A5_SAP_FINAL_{s}.md", "SAP"),
+    ("G10", "DE_CUONG_THONG_NHAT_{s}.md", "đề cương thống nhất G10"),
+)
+
+
+def van_ban_nguon_cong(out_dir: Path, study: str, meta: Optional[Mapping[str, Any]] = None) -> List[str]:
+    """Văn bản các tệp `VAN_BAN_CONG_TRICH` đang có + chuỗi tham số G3 `*_source` của study_meta (tệp vắng ⇒ bỏ)."""
+    ra: List[str] = []
+    for _g, mau, _nhan in VAN_BAN_CONG_TRICH:
+        try:
+            ra.append((Path(out_dir) / mau.format(s=study)).read_text(encoding="utf-8"))
+        except OSError:
+            continue
+    g3 = ((meta or {}).get("gate_params") or {}).get("G3") or {}
+    if isinstance(g3, Mapping):
+        ra.append(" ".join(str(v) for k, v in g3.items() if str(k).endswith("_source")))
+    return ra
+
+
+def pmid_cua_van_ban(*van: str) -> List[str]:
+    """PMID nêu trong các văn bản, kể cả DOI tài liệu chuẩn quy về PMID qua cặp đã xác minh
+    (protocol_checklist_items.cap_doi_pmid_he_thong). Thứ tự xuất hiện, không trùng."""
+    try:
+        import protocol_checklist_items as PCI  # noqa: PLC0415
+
+        cap = PCI.cap_doi_pmid_he_thong()
+    except ImportError:
+        cap = {}
+    ra: List[str] = []
+    for t in van:
+        ra += _PMID.findall(str(t or ""))
+        ra += [cap[_doi_sach(d)] for d in _DOI.findall(str(t or "")) if _doi_sach(d) in cap]
+    return list(dict.fromkeys(ra))
+
+
 def tach_tltk(text: str) -> Optional[Tuple[Dict[int, str], str]]:
     """({số: dòng TLTK}, phần thân không gồm mục TLTK) — None khi văn bản không có mục TÀI LIỆU THAM KHẢO.
 

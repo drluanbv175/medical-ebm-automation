@@ -363,26 +363,16 @@ class Nguon:
         """PMID mà TLTK đề cương nộp phải phủ: tài liệu của đề tài (StudySpec), nguồn dẫn ở SAP, đề cương lắp G10, tham
         số G3 (*_source) và danh mục trích dẫn — trừ bài chủ nhiệm đã LOẠI; DOI tài liệu chuẩn quy về PMID. Chỉ giữ
         PMID đã phân giải và sạch rút bài (A12) — nguồn chưa kiểm chứng không vào đề cương nộp."""
-        van = [self.sap_text, self._doc(f"DE_CUONG_THONG_NHAT_{self.study}.md"),
-               " ".join(str(v) for k, v in self.g3.items() if str(k).endswith("_source"))]
+        import danh_muc_trich_dan as DMT  # noqa: PLC0415
+
         ds = [str(x) for x in (self.s("references", "pmids") or [])]
         if _hh().khoi(self.meta):
             ds += list(_hh().PMID_CHUAN)  # GRAMMS + COREQ — vẫn chỉ giữ khi A12 đã xác nhận sạch (lọc ở cuối hàm)
-        for t in van:
-            ds += re.findall(r"PMID:?\s*(\d{5,9})", t)
-        try:
-            import protocol_checklist_items as PCI  # noqa: PLC0415
-
-            cap = PCI.cap_doi_pmid_tai_lieu_chuan()
-            for t in van:
-                ds += [cap[d.lower().rstrip(".")] for d in re.findall(r"10\.\d{4,9}/[^\s)\];,]+", t)
-                       if d.lower().rstrip(".") in cap]
-        except ImportError:
-            pass
+        # 17/11/2026: văn bản cổng dùng CHUNG với trục trich_dan_tong_quan (thêm thiết kế G1 A2 + bộ biến G3 — trước chỉ
+        # SAP, đề cương lắp G10 và G3 *_source); DOI tài liệu chuẩn quy về PMID qua cặp đã xác minh.
+        ds += DMT.pmid_cua_van_ban(*DMT.van_ban_nguon_cong(self.out, self.study, self.meta))
         loai: set = set()
         try:
-            import danh_muc_trich_dan as DMT  # noqa: PLC0415
-
             for k, v in (DMT.trich_dan(self.out, self.study) or {}).items():
                 if str(k).startswith("pmid:"):
                     ds.append(str(k).split(":", 1)[1])
@@ -1154,7 +1144,7 @@ def chuong_phuong_phap(n: Nguon) -> List[str]:
     dong.append("")
     # Cỡ mẫu
     muc("Cỡ mẫu và phương pháp chọn mẫu")
-    dong += [f"### 4.{so[0]}.1. Cỡ mẫu", ""] + doan_co_mau(n) + [""]
+    dong += [f"### 4.{so[0]}.1. Cỡ mẫu", ""] + doan_co_mau(n) + [""] + _cau_phuong_phap_hoc(n)
     chon = "" if tk == "sr_ma" else _cau(n.g1.get("recruitment_strategy") or n.s("population", "recruitment")
                                          or n.s("population", "sampling"))
     if tk == "rct":
@@ -1564,6 +1554,27 @@ def viet_tat(than: str) -> List[str]:
         f"| {k} | {v} |" for k, v in sorted(co)] + [""]
 
 
+def _pmid_phuong_phap_hoc() -> set:
+    """PMID tài liệu phương pháp/chuẩn mà hệ chèn (protocol_checklist_items.cap_doi_pmid_he_thong)."""
+    try:
+        import protocol_checklist_items as PCI  # noqa: PLC0415
+
+        return set(PCI.cap_doi_pmid_he_thong().values())
+    except ImportError:
+        return set()
+
+
+def _cau_phuong_phap_hoc(n: Nguon) -> List[str]:
+    """Một câu dẫn tài liệu PHƯƠNG PHÁP (cỡ mẫu, chuẩn báo cáo…) mà văn bản cổng dẫn nhưng thân đề cương chưa nhắc tự
+    nhiên — đặt ở mục cỡ mẫu thay vì dồn vào phần tổng quan bằng chứng (17/11/2026)."""
+    k = sorted({x for x in (n.td.so(p) for p in getattr(n, "pp_con_lai", ()) or ()) if x})
+    if not k:
+        return []
+    cum = (f"{k[0]}–{k[-1]}" if len(k) > 2 and k == list(range(k[0], k[-1] + 1)) else ", ".join(map(str, k)))
+    return [f"Việc xác định cỡ mẫu và lập kế hoạch phân tích tham khảo các hướng dẫn phương pháp học liên quan "
+            f"[{cum}].", ""]
+
+
 def _than(n: Nguon, con_lai: Sequence[str]) -> List[str]:
     return (chuong_dat_van_de(n) + chuong_muc_tieu(n) + chuong_tong_quan(n, con_lai) + chuong_phuong_phap(n)
             + chuong_du_kien(n) + chuong_ke_hoach(n))
@@ -1576,10 +1587,14 @@ def dung_de_cuong(n: Nguon) -> str:
     G3, danh mục trích dẫn) được dẫn MỘT câu cuối phần bằng chứng ở lượt 2 — số Vancouver theo thứ tự xuất hiện."""
     nhap = TrichDan(n.td.md, n.td.cho_phep)
     that, n.td = n.td, nhap
+    n.pp_con_lai = ()
     _than(n, ())
     tu_nhien = set(nhap.thu_tu)
     n.td = TrichDan(that.md, that.cho_phep)
-    than = _than(n, [p for p in n.ung_vien if p not in tu_nhien])
+    con_lai = [p for p in n.ung_vien if p not in tu_nhien]
+    pp = _pmid_phuong_phap_hoc()
+    n.pp_con_lai = [p for p in con_lai if p in pp]  # tài liệu phương pháp ⇒ mục cỡ mẫu (chương 4)
+    than = _than(n, [p for p in con_lai if p not in pp])
     tltk = n.td.danh_muc()
     than += ["# 7. TÀI LIỆU THAM KHẢO", ""] + (tltk or [f"Danh mục tài liệu tham khảo: {CHAM}"]) + [""]
     than += phu_luc_a(n)

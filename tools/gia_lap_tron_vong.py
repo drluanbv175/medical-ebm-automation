@@ -802,8 +802,37 @@ class TronVong:
         return True
 
     # ── G2
+    def _ghi_quy_trinh_du_lieu(self) -> None:
+        """PI chốt quy trình thu thập · nhập liệu · lưu trữ (`_quy-trinh-du-lieu.csv`, khuôn tools/quy_trinh_du_lieu.py)
+        TRƯỚC khi soạn G2 — như đề tài thật BTM (17/11/2026). Neo G2 của ba điều hứa với người tham gia là cụm nguyên
+        văn mà G2 in lại từ chính bảng này. Tổng quan (không thu số liệu trên người) và bảng đã có ⇒ không ghi."""
+        tep = self.out / "_quy-trinh-du-lieu.csv"
+        tt = str(self._meta().get("gate_params", {}).get("G1", {}).get("data_collection_method") or "").strip()
+        if tep.is_file() or not tt or "[" in tt:
+            return
+        nguon = "G1 data_collection_method; quyết định chủ nhiệm"
+        dong = [
+            ("thu_thap", tt, "G1 data_collection_method", ""),
+            ("an_danh", "Phiếu chỉ mang mã nghiên cứu, không ghi họ tên hay số hồ sơ của người tham gia", nguon,
+             "Phiếu chỉ mang mã nghiên cứu"),
+            ("nhap_lieu", "Nhập vào REDCap theo từ điển dữ liệu của đề tài, hai lượt nhập độc lập", nguon, ""),
+            ("kiem_chung", "Đối chiếu hai lượt nhập; khác biệt được giải quyết theo phiếu gốc", nguon, ""),
+            ("huy_bang_noi", "Bảng nối mã nghiên cứu với danh tính lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ, huỷ "
+                             "sau khi khoá dữ liệu", nguon, "huỷ sau khi khoá dữ liệu"),
+            ("luu_tru", "Số liệu điện tử và phiếu giấy lưu 5 năm sau khi kết thúc nghiên cứu", nguon,
+             "lưu 5 năm sau khi kết thúc nghiên cứu"),
+            ("huy_du_lieu", "Hết thời hạn lưu trữ, tệp điện tử được xoá an toàn và phiếu giấy được huỷ, có biên bản",
+             nguon, ""),
+        ]
+        with tep.open("w", encoding="utf-8", newline="") as fh:  # da-nen: bo-qua (CSV RFC 4180 — khuôn QTD)
+            w = csv.writer(fh, lineterminator="\n")
+            w.writerow(["muc", "gia_tri", "nguon", "neo_de_cuong", "neo_g2", "ghi_chu"])
+            for muc, gt, ng, neo in dong:
+                w.writerow([muc, gt, ng, "", neo, ""])
+
     def g2(self) -> None:
         hs = self.kb.get("ho_so_tron_vong") or {}
+        self._ghi_quy_trinh_du_lieu()
         meta = self._meta()
         meta.setdefault("gate_params", {}).setdefault("G2", {}).update(hs.get("G2", {}))
         for k, v in HANH_CHINH.items():  # hành chính PI khai MỘT lần — không ghi đè giá trị đã có
@@ -959,6 +988,7 @@ class TronVong:
             self.buoc.append({"buoc": f"PI khai mã thiếu {th['ma']} cho {', '.join(th['cot'])}",
                               "lenh": "_ma-thieu-theo-bien.csv", "ma": 0, "crash": False,
                               "cuoi": [f"mã số thay trong SPSS: {so}"]})
+            self._cap_nhat_bang_bien_g3("PI khai mã thiếu theo biến")
         (nl / "PHIEU_GOC_mo_phong.json").write_text(json.dumps(hang, ensure_ascii=False, indent=1), encoding="utf-8",
                                                     newline="\n")
         self.chay("Nhập liệu — mẫu Excel", "nhap_lieu_excel.py", "mau", "--study", self.study, "--ra",
@@ -1195,6 +1225,7 @@ class TronVong:
         r = self.chay("G6 thống kê viên duyệt công thức phái sinh", "bien_phai_sinh.py", "duyet", "--study",
                       self.study, "--vai", "THONG_KE_VIEN", "--tham-chieu", "GIA-LAP-TKV", "--ap-dung")
         self.du_lieu["phai_sinh"] = {"ma": r.get("ma"), "cuoi": r["dong"][-2:]}
+        self._cap_nhat_bang_bien_g3("công thức biến phái sinh soạn từ trường calc")
 
     def _bat_mo_hinh_chinh(self) -> None:
         p = self.out / "scripts" / "03_analysis.R"
@@ -1494,11 +1525,18 @@ class TronVong:
         """Người kiểm trích dẫn quét lại TRƯỚC khi ký `cong` (16/11/2026): PMID trong mọi tệp gói cổng đó đòi
         (run_g10_assemble.tep_phu_a12) + đề cương G10 đã lắp mà biên nhận A12 chưa có ⇒ chạy lại A12 trên HỢP, giữ mọi
         PMID đã kiểm (phạm vi chỉ tăng). Quét ở G8/G9 để G10 không phải ghi lại biên nhận nằm trong manifest G9."""
+        import danh_muc_trich_dan as DMT  # noqa: PLC0415
         import run_g10_assemble as G10A  # noqa: PLC0415
 
         tep = [*G10A.tep_phu_a12(self.study, self.out, cong),
                *[t for t in (self.out / f"DE_CUONG_THONG_NHAT_{self.study}.md",) if t.is_file()]]
-        pmid = {x for t in tep for x in G10A._pmids_from_text(t.read_text(encoding="utf-8"))}
+        van = [t.read_text(encoding="utf-8") for t in tep]
+        pmid = {x for v in van for x in G10A._pmids_from_text(v)}
+        # 17/11/2026: + nguồn mà đề cương nộp sẽ dẫn (thiết kế G1 A2, bộ biến G3, SAP, đề cương G10, G3 *_source) và DOI
+        # tài liệu chuẩn quy về PMID (Piaggio ở bản thảo G7 chỉ có DOI) — cùng phạm vi trục trich_dan_tong_quan; trước
+        # đó A12 không kiểm chúng nên bộ sinh đề cương (chỉ nhận PMID đã kiểm) bỏ khỏi TLTK.
+        pmid |= set(DMT.pmid_cua_van_ban(*van, *DMT.van_ban_nguon_cong(
+            self.out, self.study, _doc_json(self.out / "study_meta.json"))))
         da_kiem = set(_doc_json(self.out / "A12_RETRACTION_RECEIPT.json").get("pmids_checked") or [])
         moi = sorted(pmid - da_kiem)
         if not moi:
@@ -1589,6 +1627,29 @@ class TronVong:
         for tep in sorted(self.out.glob(mau_tep)):
             if "PEER_REVIEW_REPORT" not in tep.name:
                 self.hoan_thien_tep(g, tep, list(tra_loi) + list(TRA_LOI_CHUNG), da_hoi)
+
+    def _cap_nhat_bang_bien_g3(self, ly_do: str) -> None:
+        """PI cập nhật bảng bộ biến G3 khi bộ biến máy đổi SAU khi bảng đã duyệt (mã thiếu khai lúc nhập liệu, công
+        thức phái sinh soạn từ calc ở G6) — 17/11/2026, MT-12 «bộ biến máy đã đổi sau khi soạn bảng». Như nhóm thật:
+        PI gỡ xác nhận cũ → agent soạn lại bằng bang_bien_g3 → PI đọc và ghi xác nhận gắn dấu nội dung mới. Bảng do
+        người soạn hoặc nguồn không đổi ⇒ không làm gì (công cụ cũng không bao giờ ghi đè bảng người soạn)."""
+        import bang_bien_g3 as BB  # noqa: PLC0415
+
+        st = BB.trang_thai(self.out, self.study, self._meta())
+        if not st.get("nguon_doi") or st.get("trang_thai") == BB.NGUOI_SOAN:
+            return
+        meta = self._meta()
+        cu = meta.setdefault("gate_params", {}).setdefault("G3", {}).pop(BB.KHOA_DUYET, None)
+        self._ghi_meta(meta)
+        r = self.chay(f"PI soạn lại bảng bộ biến G3 ({ly_do})", "bang_bien_g3.py", "soan", "--study", self.study,
+                      "--ghi")
+        st = BB.trang_thai(self.out, self.study, self._meta())
+        if r.get("ma") == 0 and st.get("dau_hien_tai") and not st.get("nguon_doi"):
+            self._vao_meta("G3", {BB.KHOA_DUYET: {"reviewed_at": GL._bay_gio(), "dau_van_tay": st["dau_hien_tai"]}})
+            self.buoc.append({"buoc": f"PI đọc bảng bộ biến G3 soạn lại và ghi dấu {st['dau_hien_tai']}",
+                              "lenh": "(PI duyệt bảng G3)", "ma": 0, "crash": False, "cuoi": [ly_do]})
+        elif cu is not None:  # công cụ từ chối soạn lại (bảng đã sửa tay…) ⇒ giữ xác nhận cũ, MT-12 còn cảnh báo
+            self._vao_meta("G3", {BB.KHOA_DUYET: cu})
 
     def _vao_meta(self, g: str, gia_tri: Mapping[str, Any]) -> None:
         meta = self._meta()

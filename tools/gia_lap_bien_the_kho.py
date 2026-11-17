@@ -132,6 +132,7 @@ def kich_ban_kho() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                "confirmed_n_method": vi("40 phòng khám cố định của chương trình × 8 người mỗi phòng khám"),
                "icc_source": ("PMID: 15485730 (Adams 2004, J Clin Epidemiol) — ICC huyết áp tâm thu 0–0,052 trong 4 bộ "
                               "dữ liệu chăm sóc ban đầu; chọn 0,05 (cận trên, bảo thủ)")})
+    cum["pi"]["G1"]["sampling_design"] = ["cum", "khac:chọn mẫu liên tiếp trong từng phòng khám"]
     kb["rct_cum"] = cum
 
     # ══ 3. THUẦN TẬP SỐNG CÒN — thời gian đến gãy xương (Cox) ════════════════════════════════════════════════════

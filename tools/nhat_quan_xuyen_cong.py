@@ -80,8 +80,11 @@ _KHONG_CO_CO_MAU = frozenset({"qualitative", "sr_ma", "systematic_review"})
 _KHONG_CO_KET_CUC = frozenset({"qualitative"})
 # Thông số không áp dụng theo khung §12 (g4_quality_gate.loai_muc_12): độ chính xác / SR–dự báo không có power; định
 # tính không có alpha lẫn power.
-_KHONG_AP_DUNG_THEO_MUC_12 = {"chinh_xac": frozenset({"power"}), "khong_power": frozenset({"power"}),
-                              "dinh_tinh": frozenset({"alpha", "power"})}
+# 17/11/2026: thêm «loai_gia_thuyet» cho định tính và N theo phương pháp riêng (tổng quan–gộp, mô hình dự báo) — không
+# kiểm định giả thuyết theo lực nên chỉ có ≤ 1 nơi ghi (mặc định của G0) ⇒ «chưa đủ» vĩnh viễn; hai nơi LỆCH vẫn báo.
+_KHONG_AP_DUNG_THEO_MUC_12 = {"chinh_xac": frozenset({"power"}),
+                              "khong_power": frozenset({"power", "loai_gia_thuyet"}),
+                              "dinh_tinh": frozenset({"alpha", "power", "loai_gia_thuyet"})}
 
 _DINH_DANH = re.compile(r"\b[A-Za-z][A-Za-z0-9]*_[A-Za-z0-9_]+\b")
 _TU = re.compile(r"[0-9]+/[0-9]+|>=|<=|≥|≤|\w+", re.UNICODE)
@@ -781,7 +784,8 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
     tc = _mo_repr(trds.get("14"))
     # 15/11/2026 (chạy G2 cho BTM): WHO TRDS mục 14 là «Key Inclusion AND Exclusion Criteria» — trước đây chỉ đọc phần
     # chọn vào ⇒ quần thể G0 có câu «loại trừ: …» báo nhầm «G2 thiếu: lọc, máu, ghép, thai…» dù bản đăng ký đã có đủ.
-    tc_txt = ("; ".join(x for x in (_van_ban(tc.get("inclusion")), _van_ban(tc.get("exclusion"))) if x)
+    tc_txt = ("; ".join(x for x in (_van_ban(tc.get("population")), _van_ban(tc.get("inclusion")),
+                                    _van_ban(tc.get("exclusion"))) if x)
               if isinstance(tc, dict) else _van_ban(tc))
     nguon_qt = [n for n in (
         {"cong": "G0", "noi": "study_meta.gate_params.G0.population",
@@ -792,7 +796,7 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
          "gia_tri": " ".join(x for x in (_van_ban(_gp(meta, "G1").get("population")),
                                          _van_ban(_gp(meta, "G1").get("inclusion_criteria")),
                                          _van_ban(_gp(meta, "G1").get("exclusion_criteria"))) if x)},
-        {"cong": "G2", "noi": "đăng ký TRDS mục 14 (tiêu chí chọn + loại)", "gia_tri": tc_txt},
+        {"cong": "G2", "noi": "đăng ký TRDS mục 14 (quần thể + tiêu chí chọn + loại)", "gia_tri": tc_txt},
     ) if _co_that(n["gia_tri"])]
     if len(nguon_qt) < 2:
         ket.append(_ket("quan_the", "Quần thể nghiên cứu", nguon_qt, MUC_CHUA_DU, "chỉ có ≤ 1 nơi ghi — chưa đủ để so"))
@@ -842,7 +846,6 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
     # kiem_chi_tiet ⚪ «Power» không bao giờ hết). Bỏ trục đó khi nó «chưa đủ để so» — cùng cách trục «sai số d» chỉ
     # có ở thiết kế độ chính xác. Hai nơi ghi mà LỆCH nhau thì vẫn báo (cố ý bi quan).
     khong_ap_dung = _KHONG_AP_DUNG_THEO_MUC_12.get(loai12, frozenset())
-    ket = [k for k in ket if not (k["ma"] in khong_ap_dung and k["muc"] == MUC_CHUA_DU)]
     nguon_gt = [
         {"cong": "G0", "noi": "study_meta.gate_params.G0.test_type", "gia_tri": _gp(meta, "G0").get("test_type")},
         {"cong": "G3", "noi": "G3_checkpoint.hypothesis_type" + (" (N theo độ chính xác ⇒ mô tả)"
@@ -854,6 +857,7 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
     if nguon_gt:
         ket.append(_so_bang_nhau("loai_gia_thuyet", "Loại giả thuyết", nguon_gt,
                                  lambda v: chuan_gt(v) if isinstance(v, str) else None))
+    ket = [k for k in ket if not (k["ma"] in khong_ap_dung and k["muc"] == MUC_CHUA_DU)]
 
     # 8) Sai số cho phép d của thiết kế tính theo độ chính xác — THÊM 06/10/2026 (G4 → G10): N do d quyết định; G3 tính
     # và SAP §12 ký phải cùng một d.
@@ -1067,7 +1071,10 @@ def _truc_chon_mau(meta: Dict[str, Any], sap_text: str, td: Dict[str, Dict[str, 
         lech.append(f"số chùm × cỡ chùm {k:g}×{m:g} = {k * m:g} ≠ N đã chốt {n} (DE tính với m sai)")
     # định danh đứng sau «chùm» trong SAP: có thể là biến chùm (`ma_ban_kham`) hoặc tên hàm R (`vcovCL`) ⇒ chỉ cần MỘT
     # định danh có trong từ điển; không tên nào có ⇒ biến chùm không nhập được.
-    ung_vien = sorted(set(re.findall(r"chùm\s*\(?\s*`([A-Za-z_][A-Za-z0-9_:]*)`", sap_text or "")))
+    # 17/11/2026: nhận cả «cụm» (cùng nghĩa; SAP dùng «Hiệu chỉnh cụm», run_g4_auto ghi «biến cụm `…`») — trục
+    # _KY_THUAT cạnh đây vốn đã nhận «chùm|cụm|cluster».
+    ung_vien = sorted(set(re.findall(r"(?:chùm|cụm|cluster)\s*\(?\s*`([A-Za-z_][A-Za-z0-9_:]*)`", sap_text or "",
+                                     re.I)))
     thap = {x.lower() for x in td}
     bien = [b for b in ung_vien if b.lower() in thap]
     if td and not bien:
@@ -1187,7 +1194,12 @@ def _truc_tinh_lai_co_mau(out_dir: Path, study: str, meta: Dict[str, Any], sap_t
 # mã G1.sampling_design (g1_design_blocks._O_DANH_DAU) ⇒ dấu hiệu trong văn bản
 _KY_THUAT = {"toan_bo": r"toàn\s+bộ", "ngau_nhien_don": r"ngẫu\s+nhiên\s+đơn",
              "he_thong": r"(?:chọn\s+mẫu|mẫu)\s+hệ\s+thống|systematic", "phan_tang": r"phân\s+tầng|stratif",
-             "cum": r"chùm|cụm|cluster"}
+             "cum": r"chùm|cụm|cluster", "lien_tiep": r"liên\s+tiếp|consecutive", "chu_dich": r"chủ\s+đích|purposive",
+             "thuan_tien": r"thuận\s+tiện|convenience"}
+# 17/11/2026: G1 khai cách phi xác suất qua «khac:<mô tả>» (từ vựng g1_design_blocks chỉ có 5 mã xác suất/toàn bộ) —
+# trục từng coi «khác» là CHƯA KHAI ⇒ ⚪ mãi với mọi đề tài tuyển liên tiếp/chủ đích. Nay nhận ra ba cách hay gặp.
+_KHAC_MA = {"lien_tiep": r"liên\s+tiếp|consecutive", "chu_dich": r"chủ\s+đích|purposive",
+            "thuan_tien": r"thuận\s+tiện|convenience"}
 _CUM_CHON_MAU = re.compile(r"chọn\s+mẫu\s+(ngẫu\s+nhiên\s+đơn|hệ\s+thống|phân\s+tầng|(?:theo\s+)?(?:chùm|cụm)|"
                            r"thuận\s+tiện|chủ\s+đích|toàn\s+bộ)", re.I)
 _PHU_DINH = re.compile(r"(không|thay\s+vì|tránh|chứ\s+không|thay\s+cho|loại\s+bỏ)[^.;\n]{0,25}$", re.I)
@@ -1229,6 +1241,10 @@ def _truc_ky_thuat_chon_mau(out_dir: Path, study: str, meta: Dict[str, Any], sap
     tk = g1.get("sampling_design") or []
     tk = [str(x) for x in (tk if isinstance(tk, list) else [tk]) if _co_that(x)]
     ma = [x for x in tk if not x.startswith("khac")]
+    khac = [unicodedata.normalize("NFC", x.split(":", 1)[1]) for x in tk if x.startswith("khac") and ":" in x]
+    if not ma and khac and all(re.search(r"không\s+áp\s+dụng", k, re.I) for k in khac):
+        return None  # vd tổng quan hệ thống: dữ liệu đã công bố, không chọn mẫu người tham gia
+    ma += [ma_k for k in khac for ma_k, rx in _KHAC_MA.items() if re.search(rx, k, re.I) and ma_k not in ma]
     rs = unicodedata.normalize("NFC", str(g1.get("recruitment_strategy") or ""))
     dc = unicodedata.normalize("NFC", _doc_text(out_dir / f"DE_CUONG_NOP_HOI_DONG_{study}.md"))
     sap = unicodedata.normalize("NFC", sap_text or "")
@@ -1399,6 +1415,8 @@ def _truc_ten_de_tai(out_dir: Path, study: str, meta: Dict[str, Any]) -> Optiona
 _MUC_TIEU_PHAN_TICH = re.compile(r"yếu\s+tố|mối\s+liên\s+quan|liên\s+quan\s+(?:đến|với|giữa)|so\s+sánh|ảnh\s+hưởng|"
                                  r"hiệu\s+quả|nguy\s+cơ|tác\s+động", re.I)
 _THAM_DO = re.compile(r"thăm\s+dò|không\s+kiểm\s+định|exploratory", re.I)
+_MUC_TIEU_MO_HINH = re.compile(r"(?:phát\s+triển|xây\s+dựng|kiểm\s+định)\b.{0,40}mô\s+hình\s+(?:dự\s+báo|tiên\s+lượng)",
+                               re.I)
 _LOAI_CO_GIA_THUYET = frozenset({"treatment", "diagnosis", "prognosis", "harm"})
 
 
@@ -1420,7 +1438,9 @@ def _truc_cau_hoi_gia_thuyet(meta: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     mem, can = [], []
     if not _co_that(rq):
         can.append("G1 chưa có research_question")
-    pt = [o for o in ob if _MUC_TIEU_PHAN_TICH.search(o)]
+    # 17/11/2026: mục tiêu PHÁT TRIỂN/KIỂM ĐỊNH MÔ HÌNH dự báo (TRIPOD+AI) đánh giá hiệu năng mô hình, không kiểm định
+    # giả thuyết — chữ «nguy cơ» trong tên mô hình từng xếp nó là mục tiêu phân tích cần giả thuyết định trước.
+    pt = [o for o in ob if _MUC_TIEU_PHAN_TICH.search(o) and not _MUC_TIEU_MO_HINH.search(o)]
     if mo_ta and pt and not _co_that(g0.get("hypothesis_secondary")):
         thieu = [o[:70] for o in pt if not _THAM_DO.search(o)]
         if thieu:
@@ -1449,12 +1469,7 @@ def _truc_cau_hoi_gia_thuyet(meta: Dict[str, Any]) -> Optional[Dict[str, Any]]:
 # 19 bài (25/10) không được công cụ nào của repo y khoa đọc — sổ chứng cứ G1 (A2b, 28/10) vẫn liệt kê cả 19 bài đã
 # loại; 28/47 trích dẫn không có bản ghi kiểm rút bài theo từng mã; nguồn phương pháp dẫn ở SAP/G3/G1 chưa vào danh
 # mục. Trục dưới đây đo đúng các chỗ đó cho MỌI đề tài.
-_VAN_BAN_CONG_TRICH = (
-    ("G1", "G1_A2_PROTOCOL_DESIGN_{s}.md", "thiết kế G1 (A2)"),
-    ("G3", "G3_BO_BIEN_SO_{s}.md", "bộ biến G3"),
-    ("G4", "G4_A5_SAP_FINAL_{s}.md", "SAP"),
-    ("G10", "DE_CUONG_THONG_NHAT_{s}.md", "đề cương thống nhất G10"),
-)
+# Văn bản cổng soi nguồn dẫn: danh_muc_trich_dan.VAN_BAN_CONG_TRICH (dùng chung với bộ sinh đề cương và A12).
 HAN_RUT_BAI_NGAY = 30  # cùng hạn trạng thái rút bài của sổ xác minh nguồn (CLAUDE.md §6.4)
 _MUC_A2B_NGOAI_SO = re.compile(r"^##\s*Đã (?:loại khỏi danh mục|sàng ở G0)", re.M)
 
@@ -1624,7 +1639,7 @@ def _truc_trich_dan(out_dir: Path, study: str, meta: Dict[str, Any]) -> Optional
                    + "; ".join(f"{k.split(':', 1)[1]} {v}" for k, v in sorted(rut.items())[:5])
                    + " — không dựa vào bài này; cổng A12 chặn ở G10")
     tham_chieu, ten_tc = (tltk_khoa, "TLTK đề cương nộp") if tach is not None else (set(td), "danh mục trích dẫn")
-    for _g, mau, nhan in _VAN_BAN_CONG_TRICH:
+    for _g, mau, nhan in DMT.VAN_BAN_CONG_TRICH:
         k = DMT.dinh_danh(_doc_text(out_dir / mau.format(s=study)))
         if k & set(lb):
             mem.append(f"{nhan} dẫn bài chủ nhiệm đã LOẠI: "

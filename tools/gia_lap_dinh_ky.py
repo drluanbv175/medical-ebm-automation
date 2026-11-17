@@ -422,6 +422,34 @@ for _ma, _bs in bien_so_them().items():
 for _ma, _hs in ho_so_tron_vong().items():
     if _ma in KICH_BAN:
         KICH_BAN[_ma]["ho_so_tron_vong"] = _hs
+# 17/11/2026: kỹ thuật chọn mẫu PI khai ở G1 (mã g1_design_blocks hoặc «khac:<mô tả>») — trục ky_thuat_chon_mau của
+# nhat_quan_xuyen_cong báo «chưa đủ» ở cả 16 kịch bản vì không kịch bản nào khai. Khai đúng cách tuyển đã viết.
+_CHON_MAU = {"rct_nhi_phan": ["khac:chọn mẫu liên tiếp"], "cat_ngang_mo_ta": ["khac:chọn mẫu liên tiếp"],
+             "thuan_tap_phoi_nhiem": ["toan_bo"], "benh_chung": ["khac:chọn mẫu liên tiếp"],
+             "chan_doan": ["khac:chọn mẫu liên tiếp"], "mo_hinh_du_bao": ["khac:chọn mẫu liên tiếp"],
+             "tong_quan_gop": ["khac:không áp dụng — tổng quan dùng dữ liệu đã công bố"],
+             "dinh_tinh": ["khac:chọn mẫu có chủ đích"]}
+for _ma, _cm in _CHON_MAU.items():
+    if _ma in KICH_BAN:
+        KICH_BAN[_ma]["pi"]["G1"].setdefault("sampling_design", _cm)
+# 17/11/2026: cách thu thập PI chốt ở G1 (bật trục quy_trinh_du_lieu như đề tài thật BTM); tổng quan dùng dữ liệu đã
+# công bố — không có quy trình thu thập trên người tham gia.
+_THU_THAP = {
+    "rct_nhi_phan": "Nghiên cứu viên đo huyết áp chuẩn hoá và ghi phiếu thu thập tại các lần khám theo lịch",
+    "cat_ngang_mo_ta": "Phỏng vấn và đo huyết áp một lần tại phòng khám, ghi vào phiếu thu thập",
+    "thuan_tap_phoi_nhiem": "Trích hồ sơ bệnh án điện tử theo phiếu trích dựng từ từ điển dữ liệu",
+    # ba kịch bản dưới tuyển MỚI có phiếu đồng ý (G2 PROSPECTIVE_NEW_PARTICIPANTS) ⇒ khai theo quy ước «Thu mới: …» như
+    # đề tài thật; bản đầu ghi «trích hồ sơ bệnh án» ⇒ trục mo_ta_thiet_ke TK-02 bắt đúng «sai lộ trình đồng thuận».
+    "benh_chung": "Thu mới: phỏng vấn trực tiếp tiền sử dùng thuốc theo bộ câu hỏi chuẩn hoá cho cả nhóm bệnh và nhóm "
+                  "chứng",
+    "chan_doan": "Thu mới: người tham gia được lấy máu xét nghiệm AST, ALT, tiểu cầu và đo độ đàn hồi gan trong cùng "
+                 "lần khám; nghiên cứu viên ghi phiếu thu thập",
+    "mo_hinh_du_bao": "Thu mới: phỏng vấn và khám lúc vào nghiên cứu theo phiếu thu thập; theo dõi kết cục 12 tháng "
+                      "qua các lần tái khám định kỳ",
+}
+for _ma, _tt in _THU_THAP.items():
+    if _ma in KICH_BAN:
+        KICH_BAN[_ma]["pi"]["G1"].setdefault("data_collection_method", _tt)
 
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════ tiện ích
