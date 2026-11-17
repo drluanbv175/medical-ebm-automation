@@ -288,7 +288,14 @@ def _read_redcap_dictionary(path: Path) -> Dict[str, Any]:
     names = [str(row.get(name_header) or "").strip() for row in rows]
     empty = [idx + 2 for idx, name in enumerate(names) if not name]
     duplicates = sorted({name for name in names if name and names.count(name) > 1})
-    pii_names = sorted({name for name in names if name and _la_ten_bien_dinh_danh(name)})
+    # 17/11/2026 (giả lập chân thực, RCT): trường PHÂN LOẠI có mã (yesno/radio/dropdown/checkbox — vd «tc_dien_thoai»
+    # = «có điện thoại nhận tin nhắn — Có/Không») không phải biến định danh theo tên — cùng quy tắc cổng nạp
+    # (`import_real_dataset.cot_phan_loai_tu_dien`); giá trị ô vẫn được quét PII khi nạp/làm sạch/khoá.
+    _loai_h = headers.get("field_type")
+    phan_loai = {str(row.get(name_header) or "").strip() for row in rows
+                 if _loai_h and str(row.get(_loai_h) or "").strip().casefold()
+                 in {"yesno", "truefalse", "radio", "dropdown", "checkbox"}}
+    pii_names = sorted({name for name in names if name and name not in phan_loai and _la_ten_bien_dinh_danh(name)})
     required_header = headers.get("required_field?")
     # 16/11/2026: trường TÍNH TOÁN («calc») tính SAU khi khoá (bien_phai_sinh → G6) — không thuộc «biến bắt buộc phải có
     # trong bộ dữ liệu khoá» (cùng quy tắc bộ làm sạch); giả lập đề tài chẩn đoán bị chặn G5-AUTO-07b vì thiếu FIB-4.

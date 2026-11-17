@@ -649,6 +649,7 @@ def lock_dataset(
             clean_data,
             max_scan_rows=max_scan_rows,
             exempt_date_columns=_lock_exempt_date_columns,
+            exempt_header_columns=RDI.cot_phan_loai_tu_variables(_lock_dictionary.get("variables")),
         )
         if clean_data.exists() and clean_data.suffix.lower() in RDI.SUPPORTED_SUFFIXES
         else {"rows": 0, "columns": [], "issues": []}

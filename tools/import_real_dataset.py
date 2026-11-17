@@ -188,7 +188,8 @@ def _header_issue(column: str) -> Optional[str]:
 
 
 def _scan_csv(path: Path, *, max_scan_rows: int = 5000,
-              exempt_date_columns: frozenset = frozenset()) -> Dict[str, Any]:
+              exempt_date_columns: frozenset = frozenset(),
+              exempt_header_columns: frozenset = frozenset()) -> Dict[str, Any]:
     """Quét CSV tìm PII. `exempt_date_columns` (tên cột đã CHUẨN HOÁ qua
     `_normalize_header`) là NGOẠI LỆ CÓ CHỦ Ý, TẮT theo mặc định: chỉ bỏ qua mẫu
     "date" — vẫn quét đủ mọi mẫu khác (email/SĐT/CCCD) — cho đúng những cột mà một
@@ -228,7 +229,10 @@ def _scan_csv(path: Path, *, max_scan_rows: int = 5000,
                     return {"rows": 0, "columns": [], "issues": issues}
 
                 for col in columns:
-                    reason = _header_issue(col)
+                    # 17/11/2026 (giả lập chân thực, RCT): cột PHÂN LOẠI có mã đã khai trong từ điển (vd «tc_dien_thoai»
+                    # = «có điện thoại nhận tin nhắn — Có/Không») không phải cột số điện thoại — tên cột không chặn;
+                    # GIÁ TRỊ ô vẫn quét đủ mẫu SĐT/CCCD/email/BHYT bên dưới.
+                    reason = None if _normalize_header(col) in exempt_header_columns else _header_issue(col)
                     if reason:
                         issues.append({
                             "severity": "blocker",
@@ -360,7 +364,8 @@ def _update_study_meta(out_dir: Path, manifest: Dict[str, Any], manifest_path: P
 def import_dataset(study: str, data_path: Path, *,
                    exports_root: Optional[Path] = None,
                    max_scan_rows: int = 5000,
-                   exempt_date_columns: frozenset = frozenset()) -> Dict[str, Any]:
+                   exempt_date_columns: frozenset = frozenset(),
+                   exempt_header_columns: frozenset = frozenset()) -> Dict[str, Any]:
     """Nhập 1 CSV đã khử định danh. Trả manifest máy-đọc-được.
 
     `exempt_date_columns`: xem docstring `_scan_csv`. RỖNG theo mặc định — file
@@ -399,7 +404,8 @@ def import_dataset(study: str, data_path: Path, *,
         profile = {"rows": 0, "columns": [], "issues": issues}
     else:
         profile = _scan_csv(data_path, max_scan_rows=max_scan_rows,
-                            exempt_date_columns=exempt_date_columns)
+                            exempt_date_columns=exempt_date_columns,
+                            exempt_header_columns=exempt_header_columns)
         issues = list(profile["issues"])
 
     # VÁ 04/10/2026 (soát từng cổng, G5-02): dữ liệu thật chỉ được NẠP sau khi SAP (G4) đã khoá hợp lệ — mục đích của
@@ -509,6 +515,24 @@ def cot_ngay_tu_dien(duong_dan: Path) -> frozenset:
                      if isinstance(r, dict) and r.get("type") == "date" and r.get("name"))
 
 
+def cot_phan_loai_tu_variables(variables: Any) -> frozenset:
+    """Tên cột (chuẩn hoá) PHÂN LOẠI CÓ MÃ trong luật từ điển đã đọc (radio/dropdown/yesno/truefalse/checkbox và cột
+    con `___` của checkbox) — được miễn RIÊNG phép chặn theo tên cột (xem `_scan_csv`)."""
+    return frozenset(_normalize_header(str(r["name"])) for r in (variables or [])
+                     if isinstance(r, dict) and r.get("type") == "category" and r.get("allowed") and r.get("name"))
+
+
+def cot_phan_loai_tu_dien(duong_dan: Path) -> frozenset:
+    """Như `cot_phan_loai_tu_variables`, đọc thẳng tệp từ điển (đúng bộ đọc của clean_research_dataset); hỏng ⇒ rỗng."""
+    try:
+        import clean_research_dataset as CRD  # noqa: PLC0415
+
+        tu_dien = CRD._load_dictionary(Path(duong_dan))
+    except Exception:  # noqa: BLE001 — không đọc được từ điển ⇒ không miễn gì (fail-closed)
+        return frozenset()
+    return frozenset() if tu_dien.get("blocker") else cot_phan_loai_tu_variables(tu_dien.get("variables"))
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Nhập CSV dữ liệu thật đã khử định danh vào hồ sơ nghiên cứu.")
@@ -526,6 +550,7 @@ def main() -> int:
         Path(args.data),
         max_scan_rows=args.max_scan_rows,
         exempt_date_columns=cot_ngay_tu_dien(Path(args.dictionary)) if args.dictionary else frozenset(),
+        exempt_header_columns=cot_phan_loai_tu_dien(Path(args.dictionary)) if args.dictionary else frozenset(),
     )
     print(f"DATA_INTAKE: {manifest['status']}")
     print(f"rows={manifest['row_count']} columns={manifest['column_count']}")

@@ -280,6 +280,13 @@ Lưu ý: CLI thật của `run_g5_auto.py` **CHỈ nhận `--study STUDY`**, kh�
 ## Ranh giới
 KHÔNG dựng data dictionary kỹ thuật/CRF cuối/luật kiểm tra (→ `quan-ly-du-lieu`) · KHÔNG tính cỡ mẫu/khóa SAP (→ `thiet-ke-nghien-cuu`/`co-mau-nghien-cuu`) · KHÔNG chạy phân tích. Bạn là tầng **đặc tả biến số**, bản lề giữa câu hỏi và CRF/thống kê.
 - **Trường calc REDCap → công thức (15/11/2026, hoàn thiện hệ thống — mọi đề tài):** mỗi trường `calc` của từ điển G5/bộ biến PHẢI có biến phái sinh CÙNG TÊN trong `_bien-phai-sinh.csv` (nhập Excel/SPSS không tính calc ⇒ cột trống; V6 báo LỆCH). Soạn nháp tự động: `python tools/bien_phai_sinh.py soan-tu-calc --study <mã>` (chạy khô) → `--ghi`. Bộ dịch giữ ngữ nghĩa REDCap (ô trống ⇒ «khác» ở `=`/`<>`), bỏ `round()` hiển thị (có ghi chú), TỪ CHỐI hàm chưa hỗ trợ (datediff, sum, so chuỗi, dự án dọc) ⇒ trường đó viết tay. Không ghi `nguoi_duyet` — thống kê viên/PI duyệt bằng `bien_phai_sinh.py duyet`.
+- **Phiếu như đề tài thật (17/11/2026, giả lập chân thực 8 thiết kế — `tools/gia_lap_chan_thuc.py`):** (1) phần SÀNG
+  LỌC ghi MỌI người/hồ sơ đã xét (kể cả bị loại) kèm trường calc `du_tieu_chuan` làm cổng nhánh cho các phần sau — SAP §1
+  khoanh quần thể bằng đúng biến đó và đặc tả G6 lọc `tham_so.loc` (thiếu ⇒ Bảng 1 lẫn hồ sơ bị loại); (2) kết cục theo
+  dõi có câu TRẠNG THÁI (đến khám/mất dấu/rút lui/tử vong) làm nhánh cho kết cục — trống đúng nghĩa, đa trị đúng chỗ;
+  (3) câu chọn nhiều có ô «Không …» khai là ô loại trừ; (4) MỌI trường số/ngày khai đủ min/max; (5) mã câu đánh theo phần
+  (A1, A2…, B1…) và cột «câu hỏi» của ma trận dùng đúng mã đó; (6) câu có phỏng vấn thì chủ nhiệm khai công cụ ở G10 (hệ
+  chỉ tự điền «phiếu trích hồ sơ» khi mọi nguồn đo là hồ sơ/xét nghiệm).
 - **Diễn tập SPSS/R trước thu thập (15/11/2026, mọi đề tài):** có từ điển G5 (trước khi in phiếu/nhập liệu thật) ⇒ chạy `python tools/dien_tap_spss_r.py --study <mã>`: sinh dữ liệu GIẢ từ từ điển (mỗi mã lựa chọn + một ca mang mã thiếu), chạy `xuat-sav` + `xuat-rds` THẬT trên bản sao tạm ngoài repo, tính thử biến phái sinh. ĐẠT ⇒ nhãn, mức đo, mã thiếu, ngày, 11 thuộc tính đúng ở cả SPSS lẫn R; LỆCH ⇒ sửa từ điển/ma trận/công thức TRƯỚC khi thu thập; KHÔNG ĐO ĐƯỢC (chưa có từ điển G5 / SPSS / R) ≠ đạt. `--ghi` lưu `DIEN_TAP_SPSS_R_<mã>.md` (tệp riêng của máy, không đụng tệp băm).
 
 
