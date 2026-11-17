@@ -1,0 +1,7 @@
+{
+  "luc": "2026-11-15T20:08:50+07:00",
+  "study": "ZZCANARY-DINH-TINH",
+  "topic": "Trải nghiệm và rào cản khi bắt đầu tiêm insulin của người đái tháo đường típ 2 điều trị ngoại trú: nghiên cứu định tính",
+  "query_en": "(\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (insulin[tiab]) AND (\"psychological insulin resistance\"[tiab] OR barrier*[tiab] OR experience*[tiab]) AND (\"Qualitative Research\"[MeSH] OR qualitative[tiab] OR interview*[tiab])",
+  "base_query": "(\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (insulin[tiab]) AND (\"psychological insulin resistance\"[tiab] OR barrier*[tiab] OR experience*[tiab]) AND (\"Qualitative Research\"[MeSH] OR qualitative[tiab] OR interview*[tiab])"
+}

@@ -1,0 +1,834 @@
+{
+  "sr_ma": [
+    {
+      "pmid": "42283624",
+      "title": "Clinical effectiveness of telepharmacy services in patients with non-communicable diseases in ambulatory care settings.",
+      "year": "2026",
+      "journal": "The Cochrane database of systematic reviews",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42283624/",
+      "authors": "Sugita H, Sato MT, Yamaji N, Maeda M, Ichimura T"
+    },
+    {
+      "pmid": "40929717",
+      "title": "eHealth and Hypertensive Disorders of Pregnancy: Systematic Review.",
+      "year": "2025",
+      "journal": "Journal of medical Internet research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40929717/",
+      "authors": "Hu H, Noori N, Lee V, Chow C, Cheung NW"
+    },
+    {
+      "pmid": "40123081",
+      "title": "Postpartum remote blood pressure monitoring and risk of hypertensive-related readmission: systematic review and meta-analysis of randomized controlled trials.",
+      "year": "2025",
+      "journal": "Journal of perinatal medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40123081/",
+      "authors": "Zullo F, Di Mascio D, Amro FH, Sorrenti S, D'Alberti E"
+    },
+    {
+      "pmid": "39611763",
+      "title": "Remote blood pressure monitoring in women at risk of or with hypertensive disorders of pregnancy: A systematic review and meta-analysis.",
+      "year": "2025",
+      "journal": "International journal of gynaecology and obstetrics: the official organ of the International Federation of Gynaecology and Obstetrics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39611763/",
+      "authors": "Rajkumar T, Hennessy A, Makris A"
+    },
+    {
+      "pmid": "39194352",
+      "title": "Managing cardiovascular risk factors with telemedicine in primary care: A systematic review and meta-analysis of patients with arterial hypertension and type 2 diabetes.",
+      "year": "2025",
+      "journal": "Chronic illness",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39194352/",
+      "authors": "Mihevc M, Virtič Potočnik T, Zavrnik Č, Klemenc-Ketiš Z, Poplas Susič A"
+    },
+    {
+      "pmid": "38977877",
+      "title": "Effectiveness of digital health interventions for telemedicine/telehealth for managing blood pressure in adults: a systematic review and meta-analysis.",
+      "year": "2025",
+      "journal": "Hypertension research : official journal of the Japanese Society of Hypertension",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38977877/",
+      "authors": "Sakima A, Akagi Y, Akasaki Y, Fujii T, Haze T"
+    },
+    {
+      "pmid": "39719284",
+      "title": "Effectiveness and compliance of telemedicine on blood pressure management in poststroke patients: a systematic review and meta-analysis of randomised controlled trials.",
+      "year": "2024",
+      "journal": "BMJ open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39719284/",
+      "authors": "Yang Y, Xu H, Chang W, Li C, Cao P"
+    },
+    {
+      "pmid": "39357612",
+      "title": "Telemedical strategies for improving systolic blood pressure control in secondary prevention of cerebrovascular events-a systematic review and meta-analysis.",
+      "year": "2024",
+      "journal": "Journal of stroke and cerebrovascular diseases : the official journal of National Stroke Association",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39357612/",
+      "authors": "Munir A, Farooqi HA, Nabi R, Hasnain U, Khan M"
+    },
+    {
+      "pmid": "37311173",
+      "title": "Postpartum Home Blood Pressure Monitoring: A Systematic Review.",
+      "year": "2023",
+      "journal": "Obstetrics and gynecology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37311173/",
+      "authors": "Steele DW, Adam GP, Saldanha IJ, Kanaan G, Zahradnik ML"
+    },
+    {
+      "pmid": "36322107",
+      "title": "Nurse-led Telehealth Intervention for Rehabilitation (Telerehabilitation) Among Community-Dwelling Patients With Chronic Diseases: Systematic Review and Meta-analysis.",
+      "year": "2022",
+      "journal": "Journal of medical Internet research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36322107/",
+      "authors": "Lee AYL, Wong AKC, Hung TTM, Yan J, Yang S"
+    },
+    {
+      "pmid": "34929044",
+      "title": "Success factors in high-effect, low-cost eHealth programs for patients with hypertension: a systematic review and meta-analysis.",
+      "year": "2021",
+      "journal": "European journal of preventive cardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/34929044/",
+      "authors": "Blok S, van der Linden EL, Somsen GA, Tulevski II, Winter MM"
+    },
+    {
+      "pmid": "33051232",
+      "title": "Digital telemedicine interventions for patients with multimorbidity: a systematic review and meta-analysis.",
+      "year": "2020",
+      "journal": "BMJ open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/33051232/",
+      "authors": "Kraef C, van der Meirschen M, Free C"
+    },
+    {
+      "pmid": "31855113",
+      "title": "Understanding Moderators of Home Blood Pressure Telemonitoring Systems in Urban Hypertensive Patients: A Systematic Review and Meta-Analysis.",
+      "year": "2020",
+      "journal": "Telemedicine journal and e-health : the official journal of the American Telemedicine Association",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/31855113/",
+      "authors": "Choi WS, Shin IS, Yang JS"
+    },
+    {
+      "pmid": "27492293",
+      "title": "[The Use of Telemedicine Interventions to Improve Hypertension Management Among Racial Ethnic Minorities: A Systematic Review].",
+      "year": "2016",
+      "journal": "Hu li za zhi The journal of nursing",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/27492293/",
+      "authors": "Li WW, Lai WS"
+    },
+    {
+      "pmid": "26343551",
+      "title": "Interactive telemedicine: effects on professional practice and health care outcomes.",
+      "year": "2015",
+      "journal": "The Cochrane database of systematic reviews",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/26343551/",
+      "authors": "Flodgren G, Rachas A, Farmer AJ, Inzitari M, Shepperd S"
+    }
+  ],
+  "rct": [
+    {
+      "pmid": "42053330",
+      "title": "A Remote Chronic Disease Management Program to Improve Cardiovascular and Metabolic Outcomes in a Diverse Community-Based Diabetic Population: Study Design of the TAMIS Trial.",
+      "year": "2026",
+      "journal": "Journal of evaluation in clinical practice",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42053330/",
+      "authors": "Barros RC, Stephanus A, Filho JAB, Mariana E, Botelho Y"
+    },
+    {
+      "pmid": "42025715",
+      "title": "A randomized controlled trial comparing remote blood pressure monitoring with office-based blood pressure monitoring for women at high risk of preeclampsia.",
+      "year": "2026",
+      "journal": "American journal of obstetrics and gynecology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42025715/",
+      "authors": "Rajkumar T, Hennessy A, Shanmugalingam R, You W, Canty A"
+    },
+    {
+      "pmid": "41595894",
+      "title": "Women's Postpartum Experiences of Hypertensive Disorders of Pregnancy: A Qualitative Study of Barriers and Enablers to Healthy Lifestyle Behaviours.",
+      "year": "2026",
+      "journal": "International journal of environmental research and public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41595894/",
+      "authors": "Roberts L, Rossiter C, Denney-Wilson E, Gow M, Henry A"
+    },
+    {
+      "pmid": "40273398",
+      "title": "Targeting better hypertension control with the usage of the ESH smartphone application.",
+      "year": "2026",
+      "journal": "European journal of preventive cardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40273398/",
+      "authors": "Konstantinidis D, Siafi E, Iliakis P, Mihas C, Tatakis F"
+    },
+    {
+      "pmid": "40764960",
+      "title": "Efficiency of remote monitoring and guidance in blood pressure management: a randomized controlled trial : The role of remote monitoring in improving hypertension management.",
+      "year": "2025",
+      "journal": "BMC medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40764960/",
+      "authors": "Teng TQ, Sun GX, Yu ZY, Liu ZS, Wang T"
+    },
+    {
+      "pmid": "40622370",
+      "title": "A prospective cohort study of the SEARCH integrated HIV/hypertension community health worker-led intervention in rural Kenya and Uganda.",
+      "year": "2025",
+      "journal": "Journal of the International AIDS Society",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40622370/",
+      "authors": "Hickey MD, Owaraganise A, Ogachi S, Sunday H, Aoko C"
+    },
+    {
+      "pmid": "40440692",
+      "title": "Impact of 12-Month mHealth Home Telemonitoring on Clinical Outcomes in Older Individuals With Hypertension and Type 2 Diabetes: Multicenter Randomized Controlled Trial.",
+      "year": "2025",
+      "journal": "JMIR mHealth and uHealth",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40440692/",
+      "authors": "Mihevc M, Mori Lukančič M, Zavrnik Č, Virtič Potočnik T, Ružić Gorenjec N"
+    },
+    {
+      "pmid": "39819096",
+      "title": "Long-Term Effect of Intensive vs Standard Blood Pressure Control on Mild Cognitive Impairment and Probable Dementia in SPRINT.",
+      "year": "2025",
+      "journal": "Neurology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39819096/",
+      "authors": "Reboussin DM, Gaussoin SA, Pajewski NM, Jaeger BC, Sachs B"
+    },
+    {
+      "pmid": "39695330",
+      "title": "Phone-based telemonitoring of arterial hypertension versus usual care: the HOROSCOPE study.",
+      "year": "2025",
+      "journal": "Hypertension research : official journal of the Japanese Society of Hypertension",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39695330/",
+      "authors": "Saafi M, Bel Haj Ali K, Dhaoui R, Toumia M, Sassi S"
+    },
+    {
+      "pmid": "38842799",
+      "title": "Home Blood Pressure Telemonitoring and Nurse Case Management in Black and Hispanic Patients With Stroke: A Randomized Clinical Trial.",
+      "year": "2024",
+      "journal": "JAMA",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38842799/",
+      "authors": "Ogedegbe G, Teresi JA, Williams SK, Ogunlade A, Izeogu C"
+    },
+    {
+      "pmid": "38441897",
+      "title": "Nurse-Led Strategy to Improve Blood Pressure and Cholesterol Level Among People With HIV: A Randomized Clinical Trial.",
+      "year": "2024",
+      "journal": "JAMA network open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38441897/",
+      "authors": "Longenecker CT, Jones KA, Hileman CO, Okeke NL, Gripshover BM"
+    },
+    {
+      "pmid": "37424245",
+      "title": "Effect of Home Blood Pressure Telemonitoring Plus Additional Support on Blood Pressure Control: A Randomized Clinical Trial.",
+      "year": "2023",
+      "journal": "Biomedical and environmental sciences : BES",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37424245/",
+      "authors": "Meng WW, Bai YY, Yan L, Zheng W, Zeng Q"
+    },
+    {
+      "pmid": "37147930",
+      "title": "Urinary proteomics combined with home blood pressure telemonitoring for health care reform trial-First progress report.",
+      "year": "2023",
+      "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37147930/",
+      "authors": "Chori BS, An DW, Martens DS, Yu YL, Gilis-Malinowska N"
+    },
+    {
+      "pmid": "36477479",
+      "title": "Effect of a Multicomponent Intervention Delivered on a Web-Based Platform on Hypertension Control: A Cluster Randomized Clinical Trial.",
+      "year": "2022",
+      "journal": "JAMA network open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36477479/",
+      "authors": "Zhou H, Wang X, Yang Y, Chen Z, Zhang L"
+    },
+    {
+      "pmid": "36281763",
+      "title": "Comparing Pharmacist-Led Telehealth Care and Clinic-Based Care for Uncontrolled High Blood Pressure: The Hyperlink 3 Pragmatic Cluster-Randomized Trial.",
+      "year": "2022",
+      "journal": "Hypertension (Dallas, Tex. : 1979)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36281763/",
+      "authors": "Margolis KL, Bergdall AR, Crain AL, JaKa MM, Anderson JP"
+    }
+  ],
+  "guideline": [
+    {
+      "pmid": "35588550",
+      "title": "[Optimizing blood pressure control through telemedicine in Primary Care in Spain (Iniciativa Óptima): Results from a Delphi study].",
+      "year": "2022",
+      "journal": "Atencion primaria",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35588550/",
+      "authors": "Sánchez Peinador C, Torras Borrell J, Castillo Moraga MJ, Egocheaga Cabello MI, Rodríguez Villalón X"
+    }
+  ],
+  "recent": [
+    {
+      "pmid": "33888438",
+      "title": "2021 Spanish Society of Hypertension position statement about telemedicine.",
+      "year": "2021",
+      "journal": "Hipertension y riesgo vascular",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/33888438/",
+      "authors": "Gijón-Conde T, Rubio E, Gorostidi M, Vinyoles E, Armario P"
+    },
+    {
+      "pmid": "35588550",
+      "title": "[Optimizing blood pressure control through telemedicine in Primary Care in Spain (Iniciativa Óptima): Results from a Delphi study].",
+      "year": "2022",
+      "journal": "Atencion primaria",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35588550/",
+      "authors": "Sánchez Peinador C, Torras Borrell J, Castillo Moraga MJ, Egocheaga Cabello MI, Rodríguez Villalón X"
+    },
+    {
+      "pmid": "42283624",
+      "title": "Clinical effectiveness of telepharmacy services in patients with non-communicable diseases in ambulatory care settings.",
+      "year": "2026",
+      "journal": "The Cochrane database of systematic reviews",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42283624/",
+      "authors": "Sugita H, Sato MT, Yamaji N, Maeda M, Ichimura T"
+    },
+    {
+      "pmid": "40929717",
+      "title": "eHealth and Hypertensive Disorders of Pregnancy: Systematic Review.",
+      "year": "2025",
+      "journal": "Journal of medical Internet research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40929717/",
+      "authors": "Hu H, Noori N, Lee V, Chow C, Cheung NW"
+    },
+    {
+      "pmid": "40123081",
+      "title": "Postpartum remote blood pressure monitoring and risk of hypertensive-related readmission: systematic review and meta-analysis of randomized controlled trials.",
+      "year": "2025",
+      "journal": "Journal of perinatal medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40123081/",
+      "authors": "Zullo F, Di Mascio D, Amro FH, Sorrenti S, D'Alberti E"
+    },
+    {
+      "pmid": "39611763",
+      "title": "Remote blood pressure monitoring in women at risk of or with hypertensive disorders of pregnancy: A systematic review and meta-analysis.",
+      "year": "2025",
+      "journal": "International journal of gynaecology and obstetrics: the official organ of the International Federation of Gynaecology and Obstetrics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39611763/",
+      "authors": "Rajkumar T, Hennessy A, Makris A"
+    },
+    {
+      "pmid": "39194352",
+      "title": "Managing cardiovascular risk factors with telemedicine in primary care: A systematic review and meta-analysis of patients with arterial hypertension and type 2 diabetes.",
+      "year": "2025",
+      "journal": "Chronic illness",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39194352/",
+      "authors": "Mihevc M, Virtič Potočnik T, Zavrnik Č, Klemenc-Ketiš Z, Poplas Susič A"
+    },
+    {
+      "pmid": "38977877",
+      "title": "Effectiveness of digital health interventions for telemedicine/telehealth for managing blood pressure in adults: a systematic review and meta-analysis.",
+      "year": "2025",
+      "journal": "Hypertension research : official journal of the Japanese Society of Hypertension",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38977877/",
+      "authors": "Sakima A, Akagi Y, Akasaki Y, Fujii T, Haze T"
+    },
+    {
+      "pmid": "39719284",
+      "title": "Effectiveness and compliance of telemedicine on blood pressure management in poststroke patients: a systematic review and meta-analysis of randomised controlled trials.",
+      "year": "2024",
+      "journal": "BMJ open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39719284/",
+      "authors": "Yang Y, Xu H, Chang W, Li C, Cao P"
+    },
+    {
+      "pmid": "39357612",
+      "title": "Telemedical strategies for improving systolic blood pressure control in secondary prevention of cerebrovascular events-a systematic review and meta-analysis.",
+      "year": "2024",
+      "journal": "Journal of stroke and cerebrovascular diseases : the official journal of National Stroke Association",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39357612/",
+      "authors": "Munir A, Farooqi HA, Nabi R, Hasnain U, Khan M"
+    }
+  ],
+  "observational": [
+    {
+      "pmid": "42970781",
+      "title": "Outcomes Associated With a WhatsApp-Based Telehealth Education Program and Remote Follow-Up on Blood Pressure, Medication Adherence, and Self-Care: Formative Quasi-Experimental Pilot Study.",
+      "year": "2026",
+      "journal": "JMIR formative research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42970781/",
+      "authors": "Salhab D, AlALi NM, Al-Naamani ZY, AlJarrah A"
+    },
+    {
+      "pmid": "42560143",
+      "title": "Health system competence and care continuity in patients with hypertension: electronic cohort in Uruguay.",
+      "year": "2026",
+      "journal": "Blood pressure",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42560143/",
+      "authors": "Guglielmino M, Roberti J, Mazzoni A, Prado C, Gutiérrez L"
+    },
+    {
+      "pmid": "41927288",
+      "title": "First population-based study on non-communicable diseases and risk factors in northeastern Iran: Sabzevar cohort profile.",
+      "year": "2026",
+      "journal": "BMJ open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41927288/",
+      "authors": "Ghorat F, Chaman R, Javadinia SA, Rad M, Mohammadzadeh M"
+    },
+    {
+      "pmid": "41741627",
+      "title": "The association between pro-inflammatory diet and incidence of hypertension: a prospective cohort study.",
+      "year": "2026",
+      "journal": "Hypertension research : official journal of the Japanese Society of Hypertension",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41741627/",
+      "authors": "Nikpour A, Pourmontaseri H, Sepehrinia M, Vahid F, Farjam M"
+    },
+    {
+      "pmid": "41729538",
+      "title": "Dietary Patterns and Indicators of Cognitive Function.",
+      "year": "2026",
+      "journal": "JAMA neurology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41729538/",
+      "authors": "Chen H, Cortese M, Flores-Torres MH, Tessier AJ, Wang DD"
+    },
+    {
+      "pmid": "41541610",
+      "title": "Home Blood Pressure Telemonitoring and Hypertension Management in Kenya: A Feasibility Study (HBPT-K).",
+      "year": "2026",
+      "journal": "Global heart",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41541610/",
+      "authors": "van Steenkiste J, Mbau L, Nguchu H, Okinda K, de Neef R"
+    },
+    {
+      "pmid": "41454226",
+      "title": "Development and internal validation of the goliat score to predict 48-hour complications after minor/moderate traumatic brain injury in the emergency department: a single-center cohort study.",
+      "year": "2025",
+      "journal": "BMC emergency medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41454226/",
+      "authors": "Yuguero O, López-Vena I, Martinez-Alonso M, Vena A, Bernal M"
+    },
+    {
+      "pmid": "41197208",
+      "title": "Safety and impact of self-monitoring blood pressure through a digital platform in high-risk pregnancies in 11 hospitals: The multicenter before-after SAFE@home II study.",
+      "year": "2025",
+      "journal": "Pregnancy hypertension",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41197208/",
+      "authors": "Moes SL, Depmann M, Kvamme I, Schuit E, In 't Anker E"
+    },
+    {
+      "pmid": "41188792",
+      "title": "Factors influencing pregnant women's use of antenatal and emergency care services covered by social security: findings from the maternal eCohort in Mexico.",
+      "year": "2025",
+      "journal": "BMC pregnancy and childbirth",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41188792/",
+      "authors": "Doubova SV, Cruz MP, Perez-Moran D, Cortes LRG, Anrubio GE"
+    },
+    {
+      "pmid": "41022548",
+      "title": "Telecardiology Management of Hypertension in Brazilian Remote Populations.",
+      "year": "2026",
+      "journal": "Telemedicine journal and e-health : the official journal of the American Telemedicine Association",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41022548/",
+      "authors": "Accorsi TAD, Geovanini GR, Eduardo AA, Amaral BDR, Moreira FT"
+    },
+    {
+      "pmid": "40262175",
+      "title": "Telemedicine Booths for Screening Cardiovascular Risk Factors: Prospective Multicenter Study.",
+      "year": "2025",
+      "journal": "JMIR human factors",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40262175/",
+      "authors": "Decambron M, Tchikladze Merand C"
+    },
+    {
+      "pmid": "39503965",
+      "title": "Patient-specific multifactorial mortality risk assessment using classification and regression tree analysis in the context of ambulatory blood pressure monitoring.",
+      "year": "2025",
+      "journal": "Journal of nephrology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39503965/",
+      "authors": "Çetin BT, Hasbal NB, Cevik E, Sahin OE, Akyol M"
+    }
+  ],
+  "khong_loc": [
+    {
+      "pmid": "43033983",
+      "title": "Impact of a multi-site, multidisciplinary self-measured blood pressure monitoring program.",
+      "year": "2026",
+      "journal": "Journal of the American Pharmacists Association : JAPhA",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/43033983/"
+    },
+    {
+      "pmid": "43016914",
+      "title": "Blood pressure changes across pregnancy and postpartum: from physiological adaptations to pathological deviations.",
+      "year": "2026",
+      "journal": "Frontiers in cardiovascular medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/43016914/"
+    },
+    {
+      "pmid": "42970781",
+      "title": "Outcomes Associated With a WhatsApp-Based Telehealth Education Program and Remote Follow-Up on Blood Pressure, Medication Adherence, and Self-Care: Formative Quasi-Experimental Pilot Study.",
+      "year": "2026",
+      "journal": "JMIR formative research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42970781/"
+    },
+    {
+      "pmid": "42928248",
+      "title": "Nurses' role in the management of patients living with hypertension in a district hospital in Ghana: a qualitative study.",
+      "year": "2026",
+      "journal": "BMC nursing",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42928248/"
+    },
+    {
+      "pmid": "42762427",
+      "title": "Pilot Randomised Controlled Trial Comparing Two Digital Solutions in the Management of Hypertensive Patients.",
+      "year": "2026",
+      "journal": "High blood pressure & cardiovascular prevention : the official journal of the Italian Society of Hypertension",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42762427/"
+    },
+    {
+      "pmid": "42733409",
+      "title": "Integrating telemedicine into dental workflows for medically complex patients: An exploratory pilot feasibility and care coordination study.",
+      "year": "2026",
+      "journal": "Digital health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42733409/"
+    },
+    {
+      "pmid": "42659643",
+      "title": "Community-Based Hypertension Screening to Prevent Stroke in Underserved Urban Neighborhoods in French Guiana: Protocol for a Quasi-Experimental Study.",
+      "year": "2026",
+      "journal": "JMIR research protocols",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42659643/"
+    },
+    {
+      "pmid": "42560143",
+      "title": "Health system competence and care continuity in patients with hypertension: electronic cohort in Uruguay.",
+      "year": "2026",
+      "journal": "Blood pressure",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42560143/"
+    },
+    {
+      "pmid": "42491589",
+      "title": "Systems-Based Approaches to Cardiometabolic and Chronic Disease Management in Adult Clinical Practice: A Systematic Review.",
+      "year": "2026",
+      "journal": "Cureus",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42491589/"
+    },
+    {
+      "pmid": "42465949",
+      "title": "Effect of Intensive vs Standard Blood Pressure Control According to APOE ε4 Genotype: A Secondary Analysis of SPRINT.",
+      "year": "2026",
+      "journal": "medRxiv : the preprint server for health sciences",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42465949/"
+    },
+    {
+      "pmid": "42283624",
+      "title": "Clinical effectiveness of telepharmacy services in patients with non-communicable diseases in ambulatory care settings.",
+      "year": "2026",
+      "journal": "The Cochrane database of systematic reviews",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42283624/"
+    },
+    {
+      "pmid": "42205622",
+      "title": "Blood pressure telemonitoring and the incidence of cardiovascular events: a records based, matched patient analysis.",
+      "year": "2026",
+      "journal": "European heart journal. Digital health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42205622/"
+    },
+    {
+      "pmid": "42145904",
+      "title": "Co-creation of a mobile health program (MumCare) for preventing maternal cardiovascular disease after pregnancy complications.",
+      "year": "2026",
+      "journal": "Frontiers in global women's health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42145904/"
+    },
+    {
+      "pmid": "42053330",
+      "title": "A Remote Chronic Disease Management Program to Improve Cardiovascular and Metabolic Outcomes in a Diverse Community-Based Diabetic Population: Study Design of the TAMIS Trial.",
+      "year": "2026",
+      "journal": "Journal of evaluation in clinical practice",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42053330/"
+    },
+    {
+      "pmid": "42025715",
+      "title": "A randomized controlled trial comparing remote blood pressure monitoring with office-based blood pressure monitoring for women at high risk of preeclampsia.",
+      "year": "2026",
+      "journal": "American journal of obstetrics and gynecology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42025715/"
+    },
+    {
+      "pmid": "41962739",
+      "title": "Impact of a multicomponent digital health and telemonitoring intervention on hypertension and diabetes control in cardiac patients: A randomized controlled trial.",
+      "year": "2026",
+      "journal": "Indian heart journal",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41962739/"
+    },
+    {
+      "pmid": "41927288",
+      "title": "First population-based study on non-communicable diseases and risk factors in northeastern Iran: Sabzevar cohort profile.",
+      "year": "2026",
+      "journal": "BMJ open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41927288/"
+    },
+    {
+      "pmid": "41741627",
+      "title": "The association between pro-inflammatory diet and incidence of hypertension: a prospective cohort study.",
+      "year": "2026",
+      "journal": "Hypertension research : official journal of the Japanese Society of Hypertension",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41741627/"
+    },
+    {
+      "pmid": "41729538",
+      "title": "Dietary Patterns and Indicators of Cognitive Function.",
+      "year": "2026",
+      "journal": "JAMA neurology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41729538/"
+    },
+    {
+      "pmid": "41608669",
+      "title": "Impact of remote monitoring on well-being, therapeutic adherence, and organ damage evaluation in hypertensive patients: the PROSIT study.",
+      "year": "2026",
+      "journal": "European heart journal. Digital health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41608669/"
+    },
+    {
+      "pmid": "41595894",
+      "title": "Women's Postpartum Experiences of Hypertensive Disorders of Pregnancy: A Qualitative Study of Barriers and Enablers to Healthy Lifestyle Behaviours.",
+      "year": "2026",
+      "journal": "International journal of environmental research and public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41595894/"
+    },
+    {
+      "pmid": "41589543",
+      "title": "Hypertensive disorders of pregnancy: The use of eHealth technologies in postpartum follow-up strategies to reduce cardiovascular risk - A scoping review.",
+      "year": "2026",
+      "journal": "Health informatics journal",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41589543/"
+    },
+    {
+      "pmid": "41541610",
+      "title": "Home Blood Pressure Telemonitoring and Hypertension Management in Kenya: A Feasibility Study (HBPT-K).",
+      "year": "2026",
+      "journal": "Global heart",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41541610/"
+    },
+    {
+      "pmid": "41454226",
+      "title": "Development and internal validation of the goliat score to predict 48-hour complications after minor/moderate traumatic brain injury in the emergency department: a single-center cohort study.",
+      "year": "2025",
+      "journal": "BMC emergency medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41454226/"
+    },
+    {
+      "pmid": "41365582",
+      "title": "Non-pharmacological and psychosocial interventions for comorbid hypertension and depression: a scoping review.",
+      "year": "2025",
+      "journal": "BMJ open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41365582/"
+    },
+    {
+      "pmid": "41361824",
+      "title": "Can TElemedicine system replace doctor consultations to Achieve non-inferior blood pressure in patients with Controlled Hypertension (TEACH)? Study protocol for a randomised controlled trial.",
+      "year": "2025",
+      "journal": "Trials",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41361824/"
+    },
+    {
+      "pmid": "41197208",
+      "title": "Safety and impact of self-monitoring blood pressure through a digital platform in high-risk pregnancies in 11 hospitals: The multicenter before-after SAFE@home II study.",
+      "year": "2025",
+      "journal": "Pregnancy hypertension",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41197208/"
+    },
+    {
+      "pmid": "41188792",
+      "title": "Factors influencing pregnant women's use of antenatal and emergency care services covered by social security: findings from the maternal eCohort in Mexico.",
+      "year": "2025",
+      "journal": "BMC pregnancy and childbirth",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41188792/"
+    },
+    {
+      "pmid": "41092347",
+      "title": "Evaluation of an Email Blood Pressure Measurement Outreach Program.",
+      "year": "2026",
+      "journal": "American journal of hypertension",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41092347/"
+    }
+  ],
+  "true_counts": {
+    "sr_ma": 17,
+    "rct": 85,
+    "guideline": 1,
+    "observational": 105,
+    "recent": 39
+  },
+  "search_provenance": {
+    "co_so_du_lieu": "PubMed (MEDLINE và phần còn lại của PubMed)",
+    "giao_dien": "NCBI E-utilities (esearch/efetch) qua app.sources.pubmed.PubMedClient",
+    "ngay_tra": "2026-11-16T18:36:22",
+    "truy_van_goc": "(telephone[tiab] OR telemedicine[tiab] OR \"remote consultation\"[tiab] OR telemonitoring[tiab]) AND (hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (non-inferiority[tiab] OR noninferiority[tiab] OR follow-up[tiab])",
+    "query_en_do_nguoi_cung_cap": true,
+    "nhanh": {
+      "sr_ma": {
+        "nhom_ket_qua": "sr_ma",
+        "truy_van": "(telephone[tiab] OR telemedicine[tiab] OR \"remote consultation\"[tiab] OR telemonitoring[tiab]) AND (hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (non-inferiority[tiab] OR noninferiority[tiab] OR follow-up[tiab]) AND (systematic review[pt] OR meta-analysis[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((telephone[tiab] OR telemedicine[tiab] OR \"remote consultation\"[tiab] OR telemonitoring[tiab]) AND (hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (non-inferiority[tiab] OR noninferiority[tiab] OR follow-up[tiab]) AND (systematic review[pt] OR meta-analysis[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 17,
+        "so_bai_lay_ve": 15,
+        "pmid_lay_ve": [
+          "42283624",
+          "40929717",
+          "40123081",
+          "39611763",
+          "39194352",
+          "38977877",
+          "39719284",
+          "39357612",
+          "37311173",
+          "36322107",
+          "34929044",
+          "33051232",
+          "31855113",
+          "27492293",
+          "26343551"
+        ]
+      },
+      "rct": {
+        "nhom_ket_qua": "rct",
+        "truy_van": "(telephone[tiab] OR telemedicine[tiab] OR \"remote consultation\"[tiab] OR telemonitoring[tiab]) AND (hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (non-inferiority[tiab] OR noninferiority[tiab] OR follow-up[tiab]) AND randomized controlled trial[pt]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((telephone[tiab] OR telemedicine[tiab] OR \"remote consultation\"[tiab] OR telemonitoring[tiab]) AND (hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (non-inferiority[tiab] OR noninferiority[tiab] OR follow-up[tiab]) AND randomized controlled trial[pt]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 85,
+        "so_bai_lay_ve": 15,
+        "pmid_lay_ve": [
+          "42053330",
+          "42025715",
+          "41595894",
+          "40273398",
+          "40764960",
+          "40622370",
+          "40440692",
+          "39819096",
+          "39695330",
+          "38842799",
+          "38441897",
+          "37424245",
+          "37147930",
+          "36477479",
+          "36281763"
+        ]
+      },
+      "guideline": {
+        "nhom_ket_qua": "guideline",
+        "truy_van": "(telephone[tiab] OR telemedicine[tiab] OR \"remote consultation\"[tiab] OR telemonitoring[tiab]) AND (hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (non-inferiority[tiab] OR noninferiority[tiab] OR follow-up[tiab]) AND (guideline[pt] OR practice guideline[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((telephone[tiab] OR telemedicine[tiab] OR \"remote consultation\"[tiab] OR telemonitoring[tiab]) AND (hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (non-inferiority[tiab] OR noninferiority[tiab] OR follow-up[tiab]) AND (guideline[pt] OR practice guideline[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 5,
+        "loai_trung_pmid": true,
+        "so_hit_that": 1,
+        "so_bai_lay_ve": 1,
+        "pmid_lay_ve": [
+          "35588550"
+        ]
+      },
+      "observational": {
+        "nhom_ket_qua": "observational",
+        "truy_van": "(telephone[tiab] OR telemedicine[tiab] OR \"remote consultation\"[tiab] OR telemonitoring[tiab]) AND (hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (non-inferiority[tiab] OR noninferiority[tiab] OR follow-up[tiab])",
+        "bo_loc": "(\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "chuoi_hieu_luc": "((telephone[tiab] OR telemedicine[tiab] OR \"remote consultation\"[tiab] OR telemonitoring[tiab]) AND (hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (non-inferiority[tiab] OR noninferiority[tiab] OR follow-up[tiab])) AND (\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 105,
+        "so_bai_lay_ve": 15,
+        "pmid_lay_ve": [
+          "42970781",
+          "42560143",
+          "41927288",
+          "41741627",
+          "41729538",
+          "41541610",
+          "41454226",
+          "41197208",
+          "41188792",
+          "41022548",
+          "40622370",
+          "40262175",
+          "39819096",
+          "39695330",
+          "39503965"
+        ]
+      },
+      "recent_5yr": {
+        "nhom_ket_qua": "recent",
+        "truy_van": "(telephone[tiab] OR telemedicine[tiab] OR \"remote consultation\"[tiab] OR telemonitoring[tiab]) AND (hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (non-inferiority[tiab] OR noninferiority[tiab] OR follow-up[tiab]) AND 2021:2026[dp]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((telephone[tiab] OR telemedicine[tiab] OR \"remote consultation\"[tiab] OR telemonitoring[tiab]) AND (hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (non-inferiority[tiab] OR noninferiority[tiab] OR follow-up[tiab]) AND 2021:2026[dp]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 10,
+        "loai_trung_pmid": false,
+        "so_hit_that": 39,
+        "so_bai_lay_ve": 10,
+        "pmid_lay_ve": [
+          "33888438",
+          "35588550",
+          "42283624",
+          "40929717",
+          "40123081",
+          "39611763",
+          "39194352",
+          "38977877",
+          "39719284",
+          "39357612"
+        ]
+      },
+      "khong_loc": {
+        "nhom_ket_qua": null,
+        "truy_van": "(telephone[tiab] OR telemedicine[tiab] OR \"remote consultation\"[tiab] OR telemonitoring[tiab]) AND (hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (non-inferiority[tiab] OR noninferiority[tiab] OR follow-up[tiab])",
+        "bo_loc": null,
+        "chuoi_hieu_luc": "((telephone[tiab] OR telemedicine[tiab] OR \"remote consultation\"[tiab] OR telemonitoring[tiab]) AND (hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (non-inferiority[tiab] OR noninferiority[tiab] OR follow-up[tiab]))",
+        "tran_so_bai": 30,
+        "loai_trung_pmid": false,
+        "chi_ghi_lai": true,
+        "so_hit_that": 299,
+        "so_bai_lay_ve": 29,
+        "pmid_lay_ve": [
+          "43033983",
+          "43016914",
+          "42970781",
+          "42928248",
+          "42762427",
+          "42733409",
+          "42659643",
+          "42560143",
+          "42491589",
+          "42465949",
+          "42283624",
+          "42205622",
+          "42145904",
+          "42053330",
+          "42025715",
+          "41962739",
+          "41927288",
+          "41741627",
+          "41729538",
+          "41608669",
+          "41595894",
+          "41589543",
+          "41541610",
+          "41454226",
+          "41365582",
+          "41361824",
+          "41197208",
+          "41188792",
+          "41092347"
+        ],
+        "pmid_bo_loc_da_loai": [
+          "43033983",
+          "43016914",
+          "42928248",
+          "42762427",
+          "42733409",
+          "42659643",
+          "42491589",
+          "42465949",
+          "42205622",
+          "42145904",
+          "41962739",
+          "41608669",
+          "41589543",
+          "41365582",
+          "41361824",
+          "41092347"
+        ]
+      }
+    },
+    "loi_nhanh": {}
+  }
+}

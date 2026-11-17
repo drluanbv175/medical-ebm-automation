@@ -144,7 +144,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ("Phương pháp — ngẫu nhiên hoá", "Nêu người tạo và người giữ danh sách ngẫu nhiên (CONSORT 2025 mục "
                                              "10–11)"),
             ("Kết quả — kết cục phụ", "Hai kết cục phụ SAP §2 chưa phân tích; ghi rõ là báo cáo riêng"),
-            ("Độ nhạy SAP §9", "Mục «±1 SD» không áp cho kết cục nhị phân — cần SAP sửa đổi hoặc ghi lý do"),
+            ("Độ nhạy SAP §9", "Mục định nghĩa thay thế ở SAP §9 chưa khai cụ thể — cần SAP sửa đổi hoặc ghi lý do"),
         ],
         cau_hoi=["Bao nhiêu người mất theo dõi trước tháng 6 ở mỗi nhánh và đã xử lý thế nào?",
                  "Tin nhắn được gửi với tần suất nào và có ghi nhận người tham gia đọc tin không?"],

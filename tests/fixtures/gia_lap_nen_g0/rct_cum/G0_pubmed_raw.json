@@ -1,0 +1,842 @@
+{
+  "sr_ma": [
+    {
+      "pmid": "42263266",
+      "title": "Effectiveness of Digital Health Interventions to Improve Self-Care in Patients With Chronic Diseases: Systematic Review and Meta-Analysis of Randomized Controlled Trials.",
+      "year": "2026",
+      "journal": "Journal of medical Internet research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42263266/",
+      "authors": "Longhini J, Pedrotti D, Foladori F, Stedile M, Stefani F"
+    },
+    {
+      "pmid": "41101281",
+      "title": "Effectiveness of mobile health interventions on physical activity management in adults with hypertension: A systematic review and meta-analysis.",
+      "year": "2025",
+      "journal": "International journal of nursing studies",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41101281/",
+      "authors": "Liu Y, Qin Y, Chen Q, Liu Y, Wang Z"
+    },
+    {
+      "pmid": "40929717",
+      "title": "eHealth and Hypertensive Disorders of Pregnancy: Systematic Review.",
+      "year": "2025",
+      "journal": "Journal of medical Internet research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40929717/",
+      "authors": "Hu H, Noori N, Lee V, Chow C, Cheung NW"
+    },
+    {
+      "pmid": "40764400",
+      "title": "A systematic review and meta-analysis of digital interventions targeting lifestyle factors in patients with hypertension.",
+      "year": "2025",
+      "journal": "Journal of human hypertension",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40764400/",
+      "authors": "Lindsay-Perez A, Jurdon R, King T, Koffman L, Roberts N"
+    },
+    {
+      "pmid": "40725928",
+      "title": "The effectiveness of the chronic disease management for hypertension: A systematic review and meta-analysis.",
+      "year": "2025",
+      "journal": "Medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40725928/",
+      "authors": "Li Z, Wu J, Yuan W, Lan D, Chang R"
+    },
+    {
+      "pmid": "39657401",
+      "title": "The digital prescription: A systematic review and meta-analysis of smartphone apps for blood pressure control.",
+      "year": "2025",
+      "journal": "International journal of medical informatics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39657401/",
+      "authors": "Motta-Yanac E, Riley V, Ellis NJ, Mankoo A, Gidlow CJ"
+    },
+    {
+      "pmid": "39635965",
+      "title": "The Effectiveness of Telemedicine in Hypertension Management of Adults in Rural Communities: A Systematic Review and Meta-Analysis.",
+      "year": "2025",
+      "journal": "Physiotherapy research international : the journal for researchers and clinicians in physical therapy",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39635965/",
+      "authors": "Dones V, Velasquez AAG, Dacuya MG, Ignacio KET, Cavite ETM"
+    },
+    {
+      "pmid": "39332937",
+      "title": "Mobile phone interventions to improve health outcomes among patients with chronic diseases: an umbrella review and evidence synthesis from 34 meta-analyses.",
+      "year": "2024",
+      "journal": "The Lancet. Digital health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39332937/",
+      "authors": "Sun S, Simonsson O, McGarvey S, Torous J, Goldberg SB"
+    },
+    {
+      "pmid": "38924296",
+      "title": "Intervention strategies to improve adherence to treatment for selected chronic conditions in sub-Saharan Africa: a systematic review.",
+      "year": "2024",
+      "journal": "Journal of the International AIDS Society",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38924296/",
+      "authors": "Gumede SB, de Wit JBF, Venter WDF, Wensing AMJ, Lalla-Edward ST"
+    },
+    {
+      "pmid": "38366854",
+      "title": "The impact of non-pharmacological interventions on adherence to medication and persistence in dyslipidaemia and hypertension: a systematic review.",
+      "year": "2024",
+      "journal": "Expert review of pharmacoeconomics & outcomes research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38366854/",
+      "authors": "Kengne AP, Brière JB, Gudiña IA, Jiang X, Kodjamanova P"
+    },
+    {
+      "pmid": "37311173",
+      "title": "Postpartum Home Blood Pressure Monitoring: A Systematic Review.",
+      "year": "2023",
+      "journal": "Obstetrics and gynecology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37311173/",
+      "authors": "Steele DW, Adam GP, Saldanha IJ, Kanaan G, Zahradnik ML"
+    },
+    {
+      "pmid": "37097263",
+      "title": "Impact of mHealth Interventions on Supporting Dietary Adherence in Cardiovascular Disease: A Systematic Review.",
+      "year": "2023",
+      "journal": "Journal of nutrition education and behavior",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37097263/",
+      "authors": "Thom SJM, Sivakumar B, Ayodele T, Tan MC, Brown JM"
+    },
+    {
+      "pmid": "36828607",
+      "title": "Effectiveness, reach, uptake, and feasibility of digital health interventions for adults with hypertension: a systematic review and meta-analysis of randomised controlled trials.",
+      "year": "2023",
+      "journal": "The Lancet. Digital health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36828607/",
+      "authors": "Siopis G, Moschonis G, Eweka E, Jung J, Kwasnicka D"
+    },
+    {
+      "pmid": "35383086",
+      "title": "Use of technology to prevent, detect, manage and control hypertension in sub-Saharan Africa: a systematic review.",
+      "year": "2022",
+      "journal": "BMJ open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35383086/",
+      "authors": "Stokes K, Oronti B, Cappuccio FP, Pecchia L"
+    },
+    {
+      "pmid": "35014147",
+      "title": "Integration of text messaging interventions into hypertension management among older adults: A systematic review and meta-analysis.",
+      "year": "2022",
+      "journal": "Worldviews on evidence-based nursing",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35014147/",
+      "authors": "Tam HL, Leung LYL, Wong EML, Cheung K, Chan ASW"
+    }
+  ],
+  "rct": [
+    {
+      "pmid": "41975054",
+      "title": "Health-Related Quality of Life in People Living with HIV andHypertension: Effects of a Short Message Service-Based Mobile HealthIntervention (MOPHADHIV Trial).",
+      "year": "2026",
+      "journal": "AIDS and behavior",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41975054/",
+      "authors": "Hongoro DJ, Kengne AP, Peer N, Nguyen K, Alaba OA"
+    },
+    {
+      "pmid": "41956556",
+      "title": "Effect of a mobile health intervention optimised with artificial intelligence on blood pressure and other cardiovascular risk factors in adults with high blood pressure: rationale and design of My Intelligent Cardiac Assistant (MICArdiac) randomised controlled trial.",
+      "year": "2026",
+      "journal": "Open heart",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41956556/",
+      "authors": "Laranjo L, O'Hagan ET, Klimis H, Marschner S, Chow CK"
+    },
+    {
+      "pmid": "41379039",
+      "title": "Behavioral Economics and Medication Adherence for Hypertension: A Randomized Clinical Trial.",
+      "year": "2026",
+      "journal": "Journal of the American College of Cardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41379039/",
+      "authors": "Dodson JA, Adhikari S, Schoenthaler AM, Shimbo D, Berman AN"
+    },
+    {
+      "pmid": "41258999",
+      "title": "Testing Optical Character Recognition of Home Blood Pressure Measurements, a Randomized Trial.",
+      "year": "2026",
+      "journal": "American journal of hypertension",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41258999/",
+      "authors": "Strom AJ, Khader E, Polgreen PM, Francis SL, Segre AM"
+    },
+    {
+      "pmid": "41191358",
+      "title": "Text Messaging and Video Stories to Support Hypertension Self-Management in Black Veterans: A Randomized Clinical Trial.",
+      "year": "2025",
+      "journal": "JAMA network open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41191358/",
+      "authors": "Cutrona SL, McDannold SE, DeLaughter KL, Fix GM, Shimada SL"
+    },
+    {
+      "pmid": "41188444",
+      "title": "Impact of behavioral economics to improve antihypertensive therapy adherence, a pilot randomized controlled trial in Los Angeles.",
+      "year": "2025",
+      "journal": "Scientific reports",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41188444/",
+      "authors": "Linnemayr S, Ghai I, Palimaru A, Barajas D, Vallejo R"
+    },
+    {
+      "pmid": "40892409",
+      "title": "Behavioral Economic Framing for Enrollment and Retention of Patients in Remote Blood Pressure Monitoring: A Randomized Clinical Trial.",
+      "year": "2025",
+      "journal": "JAMA network open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40892409/",
+      "authors": "Mehta SJ, Teel J, Okorie E, Reitz C, Purcell A"
+    },
+    {
+      "pmid": "40108568",
+      "title": "Efficacy of short message service (SMS) intervention on medication adherence and knowledge of stroke prevention among clinic attendees at risk of stroke: a randomized controlled trial.",
+      "year": "2025",
+      "journal": "BMC public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40108568/",
+      "authors": "Aigbonoga D, Adewale B, Igwilo J, Adeyeye V, Olajide T"
+    },
+    {
+      "pmid": "39937817",
+      "title": "Health-promoting text messages to patients with hypertension-A randomized controlled trial in Swedish primary healthcare.",
+      "year": "2025",
+      "journal": "PloS one",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39937817/",
+      "authors": "Borgström Bolmsjö B, Bredfelt J, Calling S, Glock H, Nymberg VM"
+    },
+    {
+      "pmid": "39633105",
+      "title": "Automated Text Message-Based Program to Improve Uncontrolled Blood Pressure in Primary Care Patients: A Randomized Clinical Trial.",
+      "year": "2025",
+      "journal": "Journal of general internal medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39633105/",
+      "authors": "Bressman E, Profka K, Norton L, Clark K, Mahraj K"
+    },
+    {
+      "pmid": "39582112",
+      "title": "The Influence of Commonly-Encountered Participant Behaviors on Cardiovascular Indices During Testing.",
+      "year": "2025",
+      "journal": "American journal of hypertension",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39582112/",
+      "authors": "McLaurin NN, Alhalimi T, Ramos A, Trevino G, Tanaka H"
+    },
+    {
+      "pmid": "39775770",
+      "title": "Use of text messages to promote medication adherence and reduce blood pressure in patients with hypertension: the ESSENCE study.",
+      "year": "2024",
+      "journal": "Cadernos de saude publica",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39775770/",
+      "authors": "Canguçu E, Castro PR, Moreira PM, Bandeira P, Almeida K"
+    },
+    {
+      "pmid": "38829618",
+      "title": "Remote Blood Pressure Monitoring With Social Support for Patients With Hypertension: A Randomized Clinical Trial.",
+      "year": "2024",
+      "journal": "JAMA network open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38829618/",
+      "authors": "Mehta SJ, Volpp KG, Troxel AB, Teel J, Reitz CR"
+    },
+    {
+      "pmid": "37295501",
+      "title": "Educational Program with Text Messaging for Community-Dwelling Patients with Hypertension: A Pilot Randomized Controlled Trial.",
+      "year": "2023",
+      "journal": "Asian nursing research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37295501/",
+      "authors": "Tam HL, Wong EML, Cheung K"
+    },
+    {
+      "pmid": "37192282",
+      "title": "Reach Out Emergency Department: A Randomized Factorial Trial to Determine the Optimal Mobile Health Components to Reduce Blood Pressure.",
+      "year": "2023",
+      "journal": "Circulation. Cardiovascular quality and outcomes",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37192282/",
+      "authors": "Skolarus LE, Dinh M, Kidwell KM, Lin CC, Buis LR"
+    }
+  ],
+  "guideline": [],
+  "recent": [
+    {
+      "pmid": "42263266",
+      "title": "Effectiveness of Digital Health Interventions to Improve Self-Care in Patients With Chronic Diseases: Systematic Review and Meta-Analysis of Randomized Controlled Trials.",
+      "year": "2026",
+      "journal": "Journal of medical Internet research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42263266/",
+      "authors": "Longhini J, Pedrotti D, Foladori F, Stedile M, Stefani F"
+    },
+    {
+      "pmid": "41101281",
+      "title": "Effectiveness of mobile health interventions on physical activity management in adults with hypertension: A systematic review and meta-analysis.",
+      "year": "2025",
+      "journal": "International journal of nursing studies",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41101281/",
+      "authors": "Liu Y, Qin Y, Chen Q, Liu Y, Wang Z"
+    },
+    {
+      "pmid": "40929717",
+      "title": "eHealth and Hypertensive Disorders of Pregnancy: Systematic Review.",
+      "year": "2025",
+      "journal": "Journal of medical Internet research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40929717/",
+      "authors": "Hu H, Noori N, Lee V, Chow C, Cheung NW"
+    },
+    {
+      "pmid": "40764400",
+      "title": "A systematic review and meta-analysis of digital interventions targeting lifestyle factors in patients with hypertension.",
+      "year": "2025",
+      "journal": "Journal of human hypertension",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40764400/",
+      "authors": "Lindsay-Perez A, Jurdon R, King T, Koffman L, Roberts N"
+    },
+    {
+      "pmid": "40725928",
+      "title": "The effectiveness of the chronic disease management for hypertension: A systematic review and meta-analysis.",
+      "year": "2025",
+      "journal": "Medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40725928/",
+      "authors": "Li Z, Wu J, Yuan W, Lan D, Chang R"
+    },
+    {
+      "pmid": "39657401",
+      "title": "The digital prescription: A systematic review and meta-analysis of smartphone apps for blood pressure control.",
+      "year": "2025",
+      "journal": "International journal of medical informatics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39657401/",
+      "authors": "Motta-Yanac E, Riley V, Ellis NJ, Mankoo A, Gidlow CJ"
+    },
+    {
+      "pmid": "39635965",
+      "title": "The Effectiveness of Telemedicine in Hypertension Management of Adults in Rural Communities: A Systematic Review and Meta-Analysis.",
+      "year": "2025",
+      "journal": "Physiotherapy research international : the journal for researchers and clinicians in physical therapy",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39635965/",
+      "authors": "Dones V, Velasquez AAG, Dacuya MG, Ignacio KET, Cavite ETM"
+    },
+    {
+      "pmid": "39332937",
+      "title": "Mobile phone interventions to improve health outcomes among patients with chronic diseases: an umbrella review and evidence synthesis from 34 meta-analyses.",
+      "year": "2024",
+      "journal": "The Lancet. Digital health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39332937/",
+      "authors": "Sun S, Simonsson O, McGarvey S, Torous J, Goldberg SB"
+    },
+    {
+      "pmid": "38924296",
+      "title": "Intervention strategies to improve adherence to treatment for selected chronic conditions in sub-Saharan Africa: a systematic review.",
+      "year": "2024",
+      "journal": "Journal of the International AIDS Society",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38924296/",
+      "authors": "Gumede SB, de Wit JBF, Venter WDF, Wensing AMJ, Lalla-Edward ST"
+    },
+    {
+      "pmid": "38366854",
+      "title": "The impact of non-pharmacological interventions on adherence to medication and persistence in dyslipidaemia and hypertension: a systematic review.",
+      "year": "2024",
+      "journal": "Expert review of pharmacoeconomics & outcomes research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38366854/",
+      "authors": "Kengne AP, Brière JB, Gudiña IA, Jiang X, Kodjamanova P"
+    }
+  ],
+  "observational": [
+    {
+      "pmid": "42394059",
+      "title": "Patient Empowerment and Digital Health Readiness for Diabetes and Hypertension Care in Rwanda.",
+      "year": "2026",
+      "journal": "Studies in health technology and informatics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42394059/",
+      "authors": "Ntakirutimana I, Uwase M, Kayiranga D, Mugisha E, Twizere C"
+    },
+    {
+      "pmid": "41980662",
+      "title": "Effectiveness of text messaging intervention for blood pressure control and medication adherence among patients with uncontrolled hypertension in India: Design and rationale of the SMS4BP randomized controlled trial.",
+      "year": "2026",
+      "journal": "Contemporary clinical trials",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41980662/",
+      "authors": "Longkumer I, Bhatia R, Subramanian SV, Sharma G, Singh MB"
+    },
+    {
+      "pmid": "39578837",
+      "title": "Intention to use mobile text message reminders for medication adherence among hypertensive patients in North West Ethiopia: a cross-sectional study.",
+      "year": "2024",
+      "journal": "BMC health services research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39578837/",
+      "authors": "Zewdu EM, Demessie A, Nigatu AM, Baykemagn ND"
+    },
+    {
+      "pmid": "38741137",
+      "title": "Lipidomic studies revealing serological markers associated with the occurrence of retinopathy in type 2 diabetes.",
+      "year": "2024",
+      "journal": "Journal of translational medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38741137/",
+      "authors": "He M, Hou G, Liu M, Peng Z, Guo H"
+    },
+    {
+      "pmid": "38702619",
+      "title": "Report from a text-based blood pressure monitoring prospective cohort trial among postpartum women with hypertensive disorders of pregnancy.",
+      "year": "2024",
+      "journal": "BMC pregnancy and childbirth",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38702619/",
+      "authors": "Moustafa ASZ, Yimer W, Perry A, Solis L, Belk S"
+    },
+    {
+      "pmid": "38628013",
+      "title": "Effect of Weekly Text Messaging Reminders on Medication Adherence in Hypertension and Type 2 Diabetes Mellitus at a Tertiary Care Center in Eastern Nepal.",
+      "year": "2023",
+      "journal": "Kathmandu University medical journal (KUMJ)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38628013/",
+      "authors": "Sarraf DP, Rauniar GP, Gupta PP, Maskey R, Kattel V"
+    },
+    {
+      "pmid": "38311068",
+      "title": "Associations of Contemporary Screen Time Modalities With Early Adolescent Nutrition.",
+      "year": "2024",
+      "journal": "Academic pediatrics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38311068/",
+      "authors": "Nagata JM, Weinstein S, Bashir A, Lee S, Al-Shoaibi AAA"
+    },
+    {
+      "pmid": "37753512",
+      "title": "Joint Modeling of Blood Pressure Measurements and Survival Time to Cardiovascular Disease Complication among Hypertension Patients Follow-up at DebreTabor Hospital, Ethiopia.",
+      "year": "2023",
+      "journal": "Vascular health and risk management",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37753512/",
+      "authors": "Zelelew AN, Workie DL"
+    },
+    {
+      "pmid": "36287598",
+      "title": "Quality Assessment of Hypertension Treatment-Related Information on WeChat: Cross-sectional Study.",
+      "year": "2022",
+      "journal": "Journal of medical Internet research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36287598/",
+      "authors": "Yang Y, Hou M, Gong X, Guo R, Feng XL"
+    },
+    {
+      "pmid": "35767327",
+      "title": "Identifying Medication-Related Intents From a Bidirectional Text Messaging Platform for Hypertension Management Using an Unsupervised Learning Approach: Retrospective Observational Pilot Study.",
+      "year": "2022",
+      "journal": "Journal of medical Internet research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35767327/",
+      "authors": "Davoudi A, Lee NS, Luong T, Delaney T, Asch E"
+    },
+    {
+      "pmid": "35072647",
+      "title": "Predictors of Smartphone and Tablet Use Among Patients With Hypertension: Secondary Analysis of Health Information National Trends Survey Data.",
+      "year": "2022",
+      "journal": "Journal of medical Internet research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35072647/",
+      "authors": "Eze CE, West BT, Dorsch MP, Coe AB, Lester CA"
+    },
+    {
+      "pmid": "34819115",
+      "title": "Supplement study update for Reach Out: a multi-arm randomized trial of behavioral interventions for hypertension initiated in the emergency department: Reach Out Cognition.",
+      "year": "2021",
+      "journal": "Trials",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/34819115/",
+      "authors": "Skolarus LE, Dinh M, Kidwell KM, Farhan Z, Whitfield C"
+    },
+    {
+      "pmid": "34329800",
+      "title": "Implementation of a text-based postpartum blood pressure monitoring program at 3 different academic sites.",
+      "year": "2021",
+      "journal": "American journal of obstetrics & gynecology MFM",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/34329800/",
+      "authors": "Janssen MK, Demers S, Srinivas SK, Bailey SC, Boggess KA"
+    },
+    {
+      "pmid": "33284129",
+      "title": "Awareness Development and Usage of Mobile Health Technology Among Individuals With Hypertension in a Rural Community of Bangladesh: Randomized Controlled Trial.",
+      "year": "2020",
+      "journal": "Journal of medical Internet research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/33284129/",
+      "authors": "Jahan Y, Rahman MM, Faruque ASG, Chisti MJ, Kazawa K"
+    }
+  ],
+  "khong_loc": [
+    {
+      "pmid": "42999812",
+      "title": "A systematic review and meta-analysis of the effect of mobile health (mHealth) interventions vs. usual care on self-management, medication adherence, and blood pressure in adults with primary hypertension.",
+      "year": "2026",
+      "journal": "mHealth",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42999812/"
+    },
+    {
+      "pmid": "42993434",
+      "title": "Digital Health Interventions in Cardiovascular Prevention: Medication Adherence, Risk Factor Management, and Patient Engagement.",
+      "year": "2026",
+      "journal": "Current atherosclerosis reports",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42993434/"
+    },
+    {
+      "pmid": "42910463",
+      "title": "Nurse-Led Instant Message-Delivered Dyadic Intervention in Sodium Intake Reduction Knowledge, Attitude and Practice in Hypertensive Stroke Survivors: Randomised Controlled Trial Protocol.",
+      "year": "2026",
+      "journal": "Nursing open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42910463/"
+    },
+    {
+      "pmid": "42814674",
+      "title": "Erratum.",
+      "year": "2026",
+      "journal": "Kidney & blood pressure research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42814674/"
+    },
+    {
+      "pmid": "42773923",
+      "title": "Development and Preliminary Feasibility Testing of PACERS, a Physical Activity-Centered Intervention for Rural Older Adults With Hypertension.",
+      "year": "2026",
+      "journal": "Journal of the American Geriatrics Society",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42773923/"
+    },
+    {
+      "pmid": "42666424",
+      "title": "Digital Health Delivery Models for Hypertension Self-Care in Asia: A Systematic Review.",
+      "year": "2026",
+      "journal": "Journal of multidisciplinary healthcare",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42666424/"
+    },
+    {
+      "pmid": "42394059",
+      "title": "Patient Empowerment and Digital Health Readiness for Diabetes and Hypertension Care in Rwanda.",
+      "year": "2026",
+      "journal": "Studies in health technology and informatics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42394059/"
+    },
+    {
+      "pmid": "42326515",
+      "title": "The Role of Behavioral Friction for Patients and Clinicians in a Text-Based Home Blood Pressure Monitoring Program: A Realist Evaluation.",
+      "year": "2026",
+      "journal": "Research square",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42326515/"
+    },
+    {
+      "pmid": "42288547",
+      "title": "Effect of multicomponent support intervention on medication adherence and self-efficacy levels in hypertension patients.",
+      "year": "2026",
+      "journal": "Scientific reports",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42288547/"
+    },
+    {
+      "pmid": "42263266",
+      "title": "Effectiveness of Digital Health Interventions to Improve Self-Care in Patients With Chronic Diseases: Systematic Review and Meta-Analysis of Randomized Controlled Trials.",
+      "year": "2026",
+      "journal": "Journal of medical Internet research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42263266/"
+    },
+    {
+      "pmid": "42254366",
+      "title": "Impact of health-promoting text messages on cardiovascular risk: findings from a randomized controlled trial in primary care.",
+      "year": "2026",
+      "journal": "Frontiers in medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42254366/"
+    },
+    {
+      "pmid": "42004219",
+      "title": "Randomised controlled trial of a very brief nurse-delivered intervention followed by a digital intervention to support medication adherence and reduce blood pressure in people prescribed treatment for hypertension in primary care: protocol for the Programme on Adherence to Medication (PAM) trial.",
+      "year": "2026",
+      "journal": "NIHR open research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42004219/"
+    },
+    {
+      "pmid": "41980662",
+      "title": "Effectiveness of text messaging intervention for blood pressure control and medication adherence among patients with uncontrolled hypertension in India: Design and rationale of the SMS4BP randomized controlled trial.",
+      "year": "2026",
+      "journal": "Contemporary clinical trials",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41980662/"
+    },
+    {
+      "pmid": "41975054",
+      "title": "Health-Related Quality of Life in People Living with HIV andHypertension: Effects of a Short Message Service-Based Mobile HealthIntervention (MOPHADHIV Trial).",
+      "year": "2026",
+      "journal": "AIDS and behavior",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41975054/"
+    },
+    {
+      "pmid": "41956556",
+      "title": "Effect of a mobile health intervention optimised with artificial intelligence on blood pressure and other cardiovascular risk factors in adults with high blood pressure: rationale and design of My Intelligent Cardiac Assistant (MICArdiac) randomised controlled trial.",
+      "year": "2026",
+      "journal": "Open heart",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41956556/"
+    },
+    {
+      "pmid": "41721367",
+      "title": "Using artificially intelligent text messaging to improve health behaviors to reduce cardiovascular risk: study protocol for a pragmatic randomized control trial.",
+      "year": "2026",
+      "journal": "Trials",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41721367/"
+    },
+    {
+      "pmid": "41684610",
+      "title": "Efficacy of an e-education program based on the Health Belief Model on exercise management in women with gestational hypertension: A randomized controlled clinical trial.",
+      "year": "2026",
+      "journal": "International journal of nursing sciences",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41684610/"
+    },
+    {
+      "pmid": "41407287",
+      "title": "Piloting a Novel eHealth Technology for the Control and Management of Elevated Blood Pressure in Rwanda (HeartCare@Home Project): Protocol for a 2-Phase Crossover Study.",
+      "year": "2025",
+      "journal": "JMIR research protocols",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41407287/"
+    },
+    {
+      "pmid": "41379039",
+      "title": "Behavioral Economics and Medication Adherence for Hypertension: A Randomized Clinical Trial.",
+      "year": "2026",
+      "journal": "Journal of the American College of Cardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41379039/"
+    },
+    {
+      "pmid": "41364803",
+      "title": "Effectiveness of a Cardiovascular Management System on Triple Risk Factor Control in High-Risk Older Adults: Protocol for a Randomized Controlled Trial.",
+      "year": "2025",
+      "journal": "JMIR research protocols",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41364803/"
+    },
+    {
+      "pmid": "41262488",
+      "title": "Digital Health and Telemedicine Interventions for Hypertension Management in Adults: A Systematic Review.",
+      "year": "2025",
+      "journal": "Cureus",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41262488/"
+    },
+    {
+      "pmid": "41258999",
+      "title": "Testing Optical Character Recognition of Home Blood Pressure Measurements, a Randomized Trial.",
+      "year": "2026",
+      "journal": "American journal of hypertension",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41258999/"
+    },
+    {
+      "pmid": "41191358",
+      "title": "Text Messaging and Video Stories to Support Hypertension Self-Management in Black Veterans: A Randomized Clinical Trial.",
+      "year": "2025",
+      "journal": "JAMA network open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41191358/"
+    },
+    {
+      "pmid": "41188444",
+      "title": "Impact of behavioral economics to improve antihypertensive therapy adherence, a pilot randomized controlled trial in Los Angeles.",
+      "year": "2025",
+      "journal": "Scientific reports",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41188444/"
+    },
+    {
+      "pmid": "41166313",
+      "title": "Predicting hypertension and identifying most important factors among married women in Bangladesh using machine learning approach.",
+      "year": "2025",
+      "journal": "PloS one",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41166313/"
+    },
+    {
+      "pmid": "41139061",
+      "title": "Protocol for a type 1 hybrid effectiveness implementation trial to evaluate whether a technology-based collaborative care model is non-inferior to remote blood pressure monitoring on persistent hypertension and preventive care attendance among postpartum people with hypertension.",
+      "year": "2025",
+      "journal": "Contemporary clinical trials",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41139061/"
+    },
+    {
+      "pmid": "41101281",
+      "title": "Effectiveness of mobile health interventions on physical activity management in adults with hypertension: A systematic review and meta-analysis.",
+      "year": "2025",
+      "journal": "International journal of nursing studies",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41101281/"
+    },
+    {
+      "pmid": "41073105",
+      "title": "Digital health tools in hypertension management in sub-Saharan Africa: a scoping review of barriers and facilitators of adoption into mainstream healthcare.",
+      "year": "2025",
+      "journal": "BMJ health & care informatics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41073105/"
+    },
+    {
+      "pmid": "41057081",
+      "title": "Implementation Strategies for Self-Measured Blood Pressure Monitoring in Racially and Ethnically Diverse Populations (InSPIRED): A study protocol.",
+      "year": "2025",
+      "journal": "Contemporary clinical trials",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41057081/"
+    }
+  ],
+  "true_counts": {
+    "sr_ma": 27,
+    "rct": 70,
+    "guideline": 0,
+    "observational": 31,
+    "recent": 44
+  },
+  "search_provenance": {
+    "co_so_du_lieu": "PubMed (MEDLINE và phần còn lại của PubMed)",
+    "giao_dien": "NCBI E-utilities (esearch/efetch) qua app.sources.pubmed.PubMedClient",
+    "ngay_tra": "2026-11-16T18:39:15",
+    "truy_van_goc": "(\"text messaging\"[tiab] OR \"text message\"[tiab] OR SMS[tiab] OR \"short message\"[tiab] OR \"Text Messaging\"[MeSH]) AND (hypertension[MeSH] OR hypertension[tiab] OR hypertensive[tiab]) AND (adherence[tiab] OR \"Medication Adherence\"[MeSH] OR \"blood pressure control\"[tiab] OR \"blood pressure\"[tiab])",
+    "query_en_do_nguoi_cung_cap": true,
+    "nhanh": {
+      "sr_ma": {
+        "nhom_ket_qua": "sr_ma",
+        "truy_van": "(\"text messaging\"[tiab] OR \"text message\"[tiab] OR SMS[tiab] OR \"short message\"[tiab] OR \"Text Messaging\"[MeSH]) AND (hypertension[MeSH] OR hypertension[tiab] OR hypertensive[tiab]) AND (adherence[tiab] OR \"Medication Adherence\"[MeSH] OR \"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (systematic review[pt] OR meta-analysis[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"text messaging\"[tiab] OR \"text message\"[tiab] OR SMS[tiab] OR \"short message\"[tiab] OR \"Text Messaging\"[MeSH]) AND (hypertension[MeSH] OR hypertension[tiab] OR hypertensive[tiab]) AND (adherence[tiab] OR \"Medication Adherence\"[MeSH] OR \"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (systematic review[pt] OR meta-analysis[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 27,
+        "so_bai_lay_ve": 15,
+        "pmid_lay_ve": [
+          "42263266",
+          "41101281",
+          "40929717",
+          "40764400",
+          "40725928",
+          "39657401",
+          "39635965",
+          "39332937",
+          "38924296",
+          "38366854",
+          "37311173",
+          "37097263",
+          "36828607",
+          "35383086",
+          "35014147"
+        ]
+      },
+      "rct": {
+        "nhom_ket_qua": "rct",
+        "truy_van": "(\"text messaging\"[tiab] OR \"text message\"[tiab] OR SMS[tiab] OR \"short message\"[tiab] OR \"Text Messaging\"[MeSH]) AND (hypertension[MeSH] OR hypertension[tiab] OR hypertensive[tiab]) AND (adherence[tiab] OR \"Medication Adherence\"[MeSH] OR \"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND randomized controlled trial[pt]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"text messaging\"[tiab] OR \"text message\"[tiab] OR SMS[tiab] OR \"short message\"[tiab] OR \"Text Messaging\"[MeSH]) AND (hypertension[MeSH] OR hypertension[tiab] OR hypertensive[tiab]) AND (adherence[tiab] OR \"Medication Adherence\"[MeSH] OR \"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND randomized controlled trial[pt]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 70,
+        "so_bai_lay_ve": 15,
+        "pmid_lay_ve": [
+          "41975054",
+          "41956556",
+          "41379039",
+          "41258999",
+          "41191358",
+          "41188444",
+          "40892409",
+          "40108568",
+          "39937817",
+          "39633105",
+          "39582112",
+          "39775770",
+          "38829618",
+          "37295501",
+          "37192282"
+        ]
+      },
+      "guideline": {
+        "nhom_ket_qua": "guideline",
+        "truy_van": "(\"text messaging\"[tiab] OR \"text message\"[tiab] OR SMS[tiab] OR \"short message\"[tiab] OR \"Text Messaging\"[MeSH]) AND (hypertension[MeSH] OR hypertension[tiab] OR hypertensive[tiab]) AND (adherence[tiab] OR \"Medication Adherence\"[MeSH] OR \"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (guideline[pt] OR practice guideline[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"text messaging\"[tiab] OR \"text message\"[tiab] OR SMS[tiab] OR \"short message\"[tiab] OR \"Text Messaging\"[MeSH]) AND (hypertension[MeSH] OR hypertension[tiab] OR hypertensive[tiab]) AND (adherence[tiab] OR \"Medication Adherence\"[MeSH] OR \"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (guideline[pt] OR practice guideline[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 5,
+        "loai_trung_pmid": true,
+        "so_hit_that": 0,
+        "so_bai_lay_ve": 0,
+        "pmid_lay_ve": []
+      },
+      "observational": {
+        "nhom_ket_qua": "observational",
+        "truy_van": "(\"text messaging\"[tiab] OR \"text message\"[tiab] OR SMS[tiab] OR \"short message\"[tiab] OR \"Text Messaging\"[MeSH]) AND (hypertension[MeSH] OR hypertension[tiab] OR hypertensive[tiab]) AND (adherence[tiab] OR \"Medication Adherence\"[MeSH] OR \"blood pressure control\"[tiab] OR \"blood pressure\"[tiab])",
+        "bo_loc": "(\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "chuoi_hieu_luc": "((\"text messaging\"[tiab] OR \"text message\"[tiab] OR SMS[tiab] OR \"short message\"[tiab] OR \"Text Messaging\"[MeSH]) AND (hypertension[MeSH] OR hypertension[tiab] OR hypertensive[tiab]) AND (adherence[tiab] OR \"Medication Adherence\"[MeSH] OR \"blood pressure control\"[tiab] OR \"blood pressure\"[tiab])) AND (\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 31,
+        "so_bai_lay_ve": 15,
+        "pmid_lay_ve": [
+          "42394059",
+          "41980662",
+          "41956556",
+          "39578837",
+          "38741137",
+          "38702619",
+          "38628013",
+          "38311068",
+          "37753512",
+          "36287598",
+          "35767327",
+          "35072647",
+          "34819115",
+          "34329800",
+          "33284129"
+        ]
+      },
+      "recent_5yr": {
+        "nhom_ket_qua": "recent",
+        "truy_van": "(\"text messaging\"[tiab] OR \"text message\"[tiab] OR SMS[tiab] OR \"short message\"[tiab] OR \"Text Messaging\"[MeSH]) AND (hypertension[MeSH] OR hypertension[tiab] OR hypertensive[tiab]) AND (adherence[tiab] OR \"Medication Adherence\"[MeSH] OR \"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND 2021:2026[dp]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"text messaging\"[tiab] OR \"text message\"[tiab] OR SMS[tiab] OR \"short message\"[tiab] OR \"Text Messaging\"[MeSH]) AND (hypertension[MeSH] OR hypertension[tiab] OR hypertensive[tiab]) AND (adherence[tiab] OR \"Medication Adherence\"[MeSH] OR \"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND 2021:2026[dp]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 10,
+        "loai_trung_pmid": false,
+        "so_hit_that": 44,
+        "so_bai_lay_ve": 10,
+        "pmid_lay_ve": [
+          "42263266",
+          "41101281",
+          "40929717",
+          "40764400",
+          "40725928",
+          "39657401",
+          "39635965",
+          "39332937",
+          "38924296",
+          "38366854"
+        ]
+      },
+      "khong_loc": {
+        "nhom_ket_qua": null,
+        "truy_van": "(\"text messaging\"[tiab] OR \"text message\"[tiab] OR SMS[tiab] OR \"short message\"[tiab] OR \"Text Messaging\"[MeSH]) AND (hypertension[MeSH] OR hypertension[tiab] OR hypertensive[tiab]) AND (adherence[tiab] OR \"Medication Adherence\"[MeSH] OR \"blood pressure control\"[tiab] OR \"blood pressure\"[tiab])",
+        "bo_loc": null,
+        "chuoi_hieu_luc": "((\"text messaging\"[tiab] OR \"text message\"[tiab] OR SMS[tiab] OR \"short message\"[tiab] OR \"Text Messaging\"[MeSH]) AND (hypertension[MeSH] OR hypertension[tiab] OR hypertensive[tiab]) AND (adherence[tiab] OR \"Medication Adherence\"[MeSH] OR \"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]))",
+        "tran_so_bai": 30,
+        "loai_trung_pmid": false,
+        "chi_ghi_lai": true,
+        "so_hit_that": 280,
+        "so_bai_lay_ve": 29,
+        "pmid_lay_ve": [
+          "42999812",
+          "42993434",
+          "42910463",
+          "42814674",
+          "42773923",
+          "42666424",
+          "42394059",
+          "42326515",
+          "42288547",
+          "42263266",
+          "42254366",
+          "42004219",
+          "41980662",
+          "41975054",
+          "41956556",
+          "41721367",
+          "41684610",
+          "41407287",
+          "41379039",
+          "41364803",
+          "41262488",
+          "41258999",
+          "41191358",
+          "41188444",
+          "41166313",
+          "41139061",
+          "41101281",
+          "41073105",
+          "41057081"
+        ],
+        "pmid_bo_loc_da_loai": [
+          "42999812",
+          "42993434",
+          "42910463",
+          "42814674",
+          "42773923",
+          "42666424",
+          "42326515",
+          "42288547",
+          "42254366",
+          "42004219",
+          "41721367",
+          "41684610",
+          "41407287",
+          "41364803",
+          "41262488",
+          "41166313",
+          "41139061",
+          "41073105",
+          "41057081"
+        ]
+      }
+    },
+    "loi_nhanh": {}
+  }
+}

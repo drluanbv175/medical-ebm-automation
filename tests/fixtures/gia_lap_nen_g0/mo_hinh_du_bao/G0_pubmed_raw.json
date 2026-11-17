@@ -1,0 +1,602 @@
+{
+  "sr_ma": [
+    {
+      "pmid": "35427812",
+      "title": "Prognostic significance of addition of electrocardiographic findings to the MAGGIC heart failure risk score.",
+      "year": "2022",
+      "journal": "Journal of electrocardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35427812/",
+      "authors": "Ikitimur B, Barman HA, Dogan O, Atıcı A, Meriç BK"
+    },
+    {
+      "pmid": "32853471",
+      "title": "Mortality risk in dilated cardiomyopathy: the accuracy of heart failure prognostic models and dilated cardiomyopathy-tailored prognostic model.",
+      "year": "2020",
+      "journal": "ESC heart failure",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/32853471/",
+      "authors": "Dziewięcka E, Gliniak M, Winiarczyk M, Karapetyan A, Wiśniowska-Śmiałek S"
+    }
+  ],
+  "rct": [
+    {
+      "pmid": "41528277",
+      "title": "Lactate Dehydrogenase and Outcomes in Patients With HF and Reduced Ejection Fraction: Insights From GALACTIC-HF.",
+      "year": "2026",
+      "journal": "JACC. Heart failure",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41528277/",
+      "authors": "Ono R, Chimura M, Docherty KF, Jhund PS, Yang M"
+    },
+    {
+      "pmid": "38739123",
+      "title": "Titration of Medications After Acute Heart Failure Is Safe, Tolerated, and Effective Regardless of Risk.",
+      "year": "2024",
+      "journal": "JACC. Heart failure",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38739123/",
+      "authors": "Ambrosy AP, Chang AJ, Davison B, Voors A, Cohen-Solal A"
+    },
+    {
+      "pmid": "31820546",
+      "title": "Baseline features of the VICTORIA (Vericiguat Global Study in Subjects with Heart Failure with Reduced Ejection Fraction) trial.",
+      "year": "2019",
+      "journal": "European journal of heart failure",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/31820546/",
+      "authors": "Pieske B, Patel MJ, Westerhout CM, Anstrom KJ, Butler J"
+    },
+    {
+      "pmid": "24846373",
+      "title": "A novel algorithm to assess risk of heart failure exacerbation using ICD diagnostics: validation from RAFT.",
+      "year": "2014",
+      "journal": "Heart rhythm",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/24846373/",
+      "authors": "Gula LJ, Wells GA, Yee R, Koehler J, Sarkar S"
+    },
+    {
+      "pmid": "23929781",
+      "title": "Anemia and associated clinical outcomes in patients with heart failure due to reduced left ventricular systolic function.",
+      "year": "2013",
+      "journal": "Clinical cardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/23929781/",
+      "authors": "McCullough PA, Barnard D, Clare R, Ellis SJ, Fleg JL"
+    },
+    {
+      "pmid": "23279139",
+      "title": "Characterization and prediction of natriuretic peptide \"nonresponse\" during heart failure management: results from the ProBNP Outpatient Tailored Chronic Heart Failure (PROTECT) and the NT-proBNP-Assisted Treatment to Lessen Serial Cardiac Readmissions and Death (BATTLESCARRED) study.",
+      "year": "2013",
+      "journal": "Congestive heart failure (Greenwich, Conn.)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/23279139/",
+      "authors": "Gaggin HK, Truong QA, Rehman SU, Mohammed AA, Bhardwaj A"
+    },
+    {
+      "pmid": "22114101",
+      "title": "Factors related to morbidity and mortality in patients with chronic heart failure with systolic dysfunction: the HF-ACTION predictive risk score model.",
+      "year": "2012",
+      "journal": "Circulation. Heart failure",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/22114101/",
+      "authors": "O'Connor CM, Whellan DJ, Wojdyla D, Leifer E, Clare RM"
+    },
+    {
+      "pmid": "22137073",
+      "title": "Benefit of exercise therapy for systolic heart failure in relation to disease severity and etiology-findings from the Heart Failure and A Controlled Trial Investigating Outcomes of Exercise Training study.",
+      "year": "2011",
+      "journal": "American heart journal",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/22137073/",
+      "authors": "Whellan DJ, Nigam A, Arnold M, Starr AZ, Hill J"
+    },
+    {
+      "pmid": "20102876",
+      "title": "Safety and feasibility of early hospital discharge in ST-segment elevation myocardial infarction--a prospective and randomized trial in low-risk primary percutaneous coronary intervention patients (the Safe-Depart Trial).",
+      "year": "2010",
+      "journal": "American heart journal",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/20102876/",
+      "authors": "Kotowycz MA, Cosman TL, Tartaglia C, Afzal R, Syal RP"
+    }
+  ],
+  "guideline": [],
+  "recent": [
+    {
+      "pmid": "35427812",
+      "title": "Prognostic significance of addition of electrocardiographic findings to the MAGGIC heart failure risk score.",
+      "year": "2022",
+      "journal": "Journal of electrocardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35427812/",
+      "authors": "Ikitimur B, Barman HA, Dogan O, Atıcı A, Meriç BK"
+    },
+    {
+      "pmid": "41528277",
+      "title": "Lactate Dehydrogenase and Outcomes in Patients With HF and Reduced Ejection Fraction: Insights From GALACTIC-HF.",
+      "year": "2026",
+      "journal": "JACC. Heart failure",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41528277/",
+      "authors": "Ono R, Chimura M, Docherty KF, Jhund PS, Yang M"
+    },
+    {
+      "pmid": "38739123",
+      "title": "Titration of Medications After Acute Heart Failure Is Safe, Tolerated, and Effective Regardless of Risk.",
+      "year": "2024",
+      "journal": "JACC. Heart failure",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38739123/",
+      "authors": "Ambrosy AP, Chang AJ, Davison B, Voors A, Cohen-Solal A"
+    }
+  ],
+  "observational": [
+    {
+      "pmid": "42667938",
+      "title": "Ambulatory outpatient management of acute decompensated heart failure in a heart failure specialist nurse delivered unit.",
+      "year": "2026",
+      "journal": "Current problems in cardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42667938/",
+      "authors": "Rasoul D, Essa H, Salmon T, Jackson C, Nyjo S"
+    },
+    {
+      "pmid": "41913566",
+      "title": "Efficacy and workload implications of the Triage-HF™ algorithm in a nurse- and allied professional-led heart failure care pathway.",
+      "year": "2026",
+      "journal": "European journal of cardiovascular nursing",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41913566/",
+      "authors": "Zwaenepoel BAC, Aslan U, Kirchhof B, Gelderblom S, De Jong van der Linden A"
+    },
+    {
+      "pmid": "41475581",
+      "title": "The 2025 Echocardiographic Diastolic Function Algorithm is Associated with Improved Risk Stratification in Hospitalized Patients with Heart Failure.",
+      "year": "2026",
+      "journal": "Journal of the American Society of Echocardiography : official publication of the American Society of Echocardiography",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41475581/",
+      "authors": "Kusunose K, Ooka S, Yamada H, Sata M"
+    },
+    {
+      "pmid": "40983571",
+      "title": "Utilisation of ambulatory ECG monitoring for prediction of heart failure and stroke events and healthcare expenditure in treated and untreated patients: a retrospective cohort study.",
+      "year": "2025",
+      "journal": "BMJ open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40983571/",
+      "authors": "Schwennesen H, Li Z, Hammill BG, Clark AG, Pokorney SD"
+    },
+    {
+      "pmid": "40812809",
+      "title": "Frailty, quality of life and nutritional status for the prediction of morbidity and mortality in individuals with chronic heart failure in southern Brazil (FPROHEART): a cohort study protocol.",
+      "year": "2025",
+      "journal": "BMJ open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40812809/",
+      "authors": "Nascimento DMD, Wolffenbüttel PI, Goldraich LA, Schaan B, Clausell N"
+    },
+    {
+      "pmid": "40592217",
+      "title": "Development of the Anesthesia Risk Assessment Score (ARAS) for postoperative mortality and adverse discharge to a nursing facility.",
+      "year": "2025",
+      "journal": "Journal of clinical anesthesia",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40592217/",
+      "authors": "Khandaker R, Wongtangman K, Frank M, Borngaesser F, Smith RV"
+    },
+    {
+      "pmid": "40228649",
+      "title": "Echocardiographic Estimate of Pulmonary Capillary Wedge Pressure Improves Outcome Prediction in Heart Failure Patients With Reduced and Mildly Reduced Ejection Fraction.",
+      "year": "2025",
+      "journal": "Journal of the American Society of Echocardiography : official publication of the American Society of Echocardiography",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40228649/",
+      "authors": "Bazan L, Gentile F, Sciarrone P, Buoncristiani F, Panichella G"
+    },
+    {
+      "pmid": "40023206",
+      "title": "Identifying low-risk in patients with worsening heart failure with short hospital stay: A comparison of risk scores in predicting 30-day risk events.",
+      "year": "2025",
+      "journal": "Current problems in cardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40023206/",
+      "authors": "Burgos LM, Baro Vila RC, de Bortoli MA, Arias R, Malano D"
+    },
+    {
+      "pmid": "39960078",
+      "title": "Prognostic value of liver fibrosis scores in ambulatory patients with heart failure.",
+      "year": "2025",
+      "journal": "Postgraduate medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39960078/",
+      "authors": "Varela-Cancelo A, Barge-Caballero E, Barge-Caballero G, Couto-Mallón D, Paniagua-Martín MJ"
+    },
+    {
+      "pmid": "39304675",
+      "title": "Cardiovascular outcomes in Parkinson's disease patients from a retrospective cohort study.",
+      "year": "2024",
+      "journal": "Scientific reports",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39304675/",
+      "authors": "Lim S, Yum YJ, Kim JH, Lee CN, Joo HJ"
+    },
+    {
+      "pmid": "37257517",
+      "title": "WATCH-DM risk score predicts the prognosis of diabetic phenotype patients with heart failure and preserved ejection fraction.",
+      "year": "2023",
+      "journal": "International journal of cardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37257517/",
+      "authors": "Zhang X, Lv X, Wang N, Yu S, Si J"
+    },
+    {
+      "pmid": "35068257",
+      "title": "Utilization of an Electronic Health Record Integrated Risk Score to Predict Hospitalization Among COVID-19 Patients.",
+      "year": "2022",
+      "journal": "Journal of primary care & community health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35068257/",
+      "authors": "Nyman MA, Jose T, Croghan IT, Parkulo MA, Burger CD"
+    },
+    {
+      "pmid": "33413363",
+      "title": "Prognostic value of non-alcoholic fatty liver disease for predicting cardiovascular events in patients with diabetes mellitus with suspected coronary artery disease: a prospective cohort study.",
+      "year": "2021",
+      "journal": "Cardiovascular diabetology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/33413363/",
+      "authors": "Ichikawa K, Miyoshi T, Osawa K, Miki T, Toda H"
+    }
+  ],
+  "khong_loc": [
+    {
+      "pmid": "42954690",
+      "title": "Incidence of Dementia and Subsequent Outcomes in Patients With Heart Failure.",
+      "year": "2026",
+      "journal": "JACC. Advances",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42954690/"
+    },
+    {
+      "pmid": "42667938",
+      "title": "Ambulatory outpatient management of acute decompensated heart failure in a heart failure specialist nurse delivered unit.",
+      "year": "2026",
+      "journal": "Current problems in cardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42667938/"
+    },
+    {
+      "pmid": "42524449",
+      "title": "Non-Biomarker Bedside Risk Scores for One-Year Mortality After Acute Heart Failure Hospitalization.",
+      "year": "2026",
+      "journal": "Cardiology research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42524449/"
+    },
+    {
+      "pmid": "41913566",
+      "title": "Efficacy and workload implications of the Triage-HF™ algorithm in a nurse- and allied professional-led heart failure care pathway.",
+      "year": "2026",
+      "journal": "European journal of cardiovascular nursing",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41913566/"
+    },
+    {
+      "pmid": "41884313",
+      "title": "The WATCH-DM integer-based risk score identifies risk of all-cause mortality in patients with type 2 diabetes: a retrospective cohort study.",
+      "year": "2026",
+      "journal": "Therapeutic advances in endocrinology and metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41884313/"
+    },
+    {
+      "pmid": "41827461",
+      "title": "Cardiovascular Prognosis in Stable Patients with Cardiac Amyloidosis: A Novel and Simple Risk Score.",
+      "year": "2026",
+      "journal": "Journal of clinical medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41827461/"
+    },
+    {
+      "pmid": "41528277",
+      "title": "Lactate Dehydrogenase and Outcomes in Patients With HF and Reduced Ejection Fraction: Insights From GALACTIC-HF.",
+      "year": "2026",
+      "journal": "JACC. Heart failure",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41528277/"
+    },
+    {
+      "pmid": "41475581",
+      "title": "The 2025 Echocardiographic Diastolic Function Algorithm is Associated with Improved Risk Stratification in Hospitalized Patients with Heart Failure.",
+      "year": "2026",
+      "journal": "Journal of the American Society of Echocardiography : official publication of the American Society of Echocardiography",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41475581/"
+    },
+    {
+      "pmid": "40983571",
+      "title": "Utilisation of ambulatory ECG monitoring for prediction of heart failure and stroke events and healthcare expenditure in treated and untreated patients: a retrospective cohort study.",
+      "year": "2025",
+      "journal": "BMJ open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40983571/"
+    },
+    {
+      "pmid": "40812809",
+      "title": "Frailty, quality of life and nutritional status for the prediction of morbidity and mortality in individuals with chronic heart failure in southern Brazil (FPROHEART): a cohort study protocol.",
+      "year": "2025",
+      "journal": "BMJ open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40812809/"
+    },
+    {
+      "pmid": "40592217",
+      "title": "Development of the Anesthesia Risk Assessment Score (ARAS) for postoperative mortality and adverse discharge to a nursing facility.",
+      "year": "2025",
+      "journal": "Journal of clinical anesthesia",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40592217/"
+    },
+    {
+      "pmid": "40228649",
+      "title": "Echocardiographic Estimate of Pulmonary Capillary Wedge Pressure Improves Outcome Prediction in Heart Failure Patients With Reduced and Mildly Reduced Ejection Fraction.",
+      "year": "2025",
+      "journal": "Journal of the American Society of Echocardiography : official publication of the American Society of Echocardiography",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40228649/"
+    },
+    {
+      "pmid": "40023206",
+      "title": "Identifying low-risk in patients with worsening heart failure with short hospital stay: A comparison of risk scores in predicting 30-day risk events.",
+      "year": "2025",
+      "journal": "Current problems in cardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40023206/"
+    },
+    {
+      "pmid": "39960078",
+      "title": "Prognostic value of liver fibrosis scores in ambulatory patients with heart failure.",
+      "year": "2025",
+      "journal": "Postgraduate medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39960078/"
+    },
+    {
+      "pmid": "39736919",
+      "title": "Comparison of Physical Frailty Assessments in Heart Failure With Preserved Ejection Fraction.",
+      "year": "2024",
+      "journal": "JACC. Advances",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39736919/"
+    },
+    {
+      "pmid": "39304675",
+      "title": "Cardiovascular outcomes in Parkinson's disease patients from a retrospective cohort study.",
+      "year": "2024",
+      "journal": "Scientific reports",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39304675/"
+    },
+    {
+      "pmid": "38739123",
+      "title": "Titration of Medications After Acute Heart Failure Is Safe, Tolerated, and Effective Regardless of Risk.",
+      "year": "2024",
+      "journal": "JACC. Heart failure",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38739123/"
+    },
+    {
+      "pmid": "38416125",
+      "title": "Development and validation of the Aortic valve Stenosis Guarded by Amplified Risk Determination (ASGARD) risk score for safe monitoring in asymptomatic non-severe aortic valve stenosis.",
+      "year": "2025",
+      "journal": "European journal of preventive cardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38416125/"
+    },
+    {
+      "pmid": "37943225",
+      "title": "A Novel Heart Failure Diagnostic Risk Score Using a Minimally Invasive Subcutaneous Insertable Cardiac Monitor.",
+      "year": "2024",
+      "journal": "JACC. Heart failure",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37943225/"
+    },
+    {
+      "pmid": "37706670",
+      "title": "Malnutrition in heart failure with preserved ejection fraction.",
+      "year": "2023",
+      "journal": "Journal of the American Geriatrics Society",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37706670/"
+    },
+    {
+      "pmid": "37456933",
+      "title": "The Relationship between the MAGGIC Score and Cardiorenal Syndrome in Patients with Acute Decompensated Heart Failure with Reduced Ejection Fraction.",
+      "year": "2023",
+      "journal": "Acta Cardiologica Sinica",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37456933/"
+    },
+    {
+      "pmid": "37257517",
+      "title": "WATCH-DM risk score predicts the prognosis of diabetic phenotype patients with heart failure and preserved ejection fraction.",
+      "year": "2023",
+      "journal": "International journal of cardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37257517/"
+    },
+    {
+      "pmid": "36354767",
+      "title": "Cardio-Ankle Vascular Index as an Arterial Stiffness Marker Improves the Prediction of Cardiovascular Events in Patients without Cardiovascular Diseases.",
+      "year": "2022",
+      "journal": "Journal of cardiovascular development and disease",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36354767/"
+    },
+    {
+      "pmid": "35545655",
+      "title": "Performance assessment across different care settings of a heart failure hospitalisation risk-score for type 2 diabetes using administrative claims.",
+      "year": "2022",
+      "journal": "Scientific reports",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35545655/"
+    },
+    {
+      "pmid": "35427812",
+      "title": "Prognostic significance of addition of electrocardiographic findings to the MAGGIC heart failure risk score.",
+      "year": "2022",
+      "journal": "Journal of electrocardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35427812/"
+    },
+    {
+      "pmid": "35068257",
+      "title": "Utilization of an Electronic Health Record Integrated Risk Score to Predict Hospitalization Among COVID-19 Patients.",
+      "year": "2022",
+      "journal": "Journal of primary care & community health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35068257/"
+    },
+    {
+      "pmid": "33489725",
+      "title": "Fast track triage for COVID-19 based on a population study: The soda score.",
+      "year": "2021",
+      "journal": "Preventive medicine reports",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/33489725/"
+    },
+    {
+      "pmid": "33413363",
+      "title": "Prognostic value of non-alcoholic fatty liver disease for predicting cardiovascular events in patients with diabetes mellitus with suspected coronary artery disease: a prospective cohort study.",
+      "year": "2021",
+      "journal": "Cardiovascular diabetology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/33413363/"
+    },
+    {
+      "pmid": "32853471",
+      "title": "Mortality risk in dilated cardiomyopathy: the accuracy of heart failure prognostic models and dilated cardiomyopathy-tailored prognostic model.",
+      "year": "2020",
+      "journal": "ESC heart failure",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/32853471/"
+    },
+    {
+      "pmid": "32056359",
+      "title": "Predictors of unplanned hospitalisation in the older population: The role of polypharmacy and other medication and chronic disease-related factors.",
+      "year": "2020",
+      "journal": "Australasian journal on ageing",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/32056359/"
+    }
+  ],
+  "true_counts": {
+    "sr_ma": 2,
+    "rct": 9,
+    "guideline": 0,
+    "observational": 29,
+    "recent": 3
+  },
+  "search_provenance": {
+    "co_so_du_lieu": "PubMed (MEDLINE và phần còn lại của PubMed)",
+    "giao_dien": "NCBI E-utilities (esearch/efetch) qua app.sources.pubmed.PubMedClient",
+    "ngay_tra": "2026-11-15T20:02:20",
+    "truy_van_goc": "(\"Heart Failure\"[MeSH] OR \"heart failure\"[tiab]) AND (outpatient*[tiab] OR ambulatory[tiab]) AND (\"prediction model\"[tiab] OR \"risk score\"[tiab] OR \"prognostic model\"[tiab]) AND (hospitalization[tiab] OR hospitalisation[tiab] OR \"Hospitalization\"[MeSH])",
+    "query_en_do_nguoi_cung_cap": true,
+    "nhanh": {
+      "sr_ma": {
+        "nhom_ket_qua": "sr_ma",
+        "truy_van": "(\"Heart Failure\"[MeSH] OR \"heart failure\"[tiab]) AND (outpatient*[tiab] OR ambulatory[tiab]) AND (\"prediction model\"[tiab] OR \"risk score\"[tiab] OR \"prognostic model\"[tiab]) AND (hospitalization[tiab] OR hospitalisation[tiab] OR \"Hospitalization\"[MeSH]) AND (systematic review[pt] OR meta-analysis[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Heart Failure\"[MeSH] OR \"heart failure\"[tiab]) AND (outpatient*[tiab] OR ambulatory[tiab]) AND (\"prediction model\"[tiab] OR \"risk score\"[tiab] OR \"prognostic model\"[tiab]) AND (hospitalization[tiab] OR hospitalisation[tiab] OR \"Hospitalization\"[MeSH]) AND (systematic review[pt] OR meta-analysis[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 2,
+        "so_bai_lay_ve": 2,
+        "pmid_lay_ve": [
+          "35427812",
+          "32853471"
+        ]
+      },
+      "rct": {
+        "nhom_ket_qua": "rct",
+        "truy_van": "(\"Heart Failure\"[MeSH] OR \"heart failure\"[tiab]) AND (outpatient*[tiab] OR ambulatory[tiab]) AND (\"prediction model\"[tiab] OR \"risk score\"[tiab] OR \"prognostic model\"[tiab]) AND (hospitalization[tiab] OR hospitalisation[tiab] OR \"Hospitalization\"[MeSH]) AND randomized controlled trial[pt]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Heart Failure\"[MeSH] OR \"heart failure\"[tiab]) AND (outpatient*[tiab] OR ambulatory[tiab]) AND (\"prediction model\"[tiab] OR \"risk score\"[tiab] OR \"prognostic model\"[tiab]) AND (hospitalization[tiab] OR hospitalisation[tiab] OR \"Hospitalization\"[MeSH]) AND randomized controlled trial[pt]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 9,
+        "so_bai_lay_ve": 9,
+        "pmid_lay_ve": [
+          "41528277",
+          "38739123",
+          "31820546",
+          "24846373",
+          "23929781",
+          "23279139",
+          "22114101",
+          "22137073",
+          "20102876"
+        ]
+      },
+      "guideline": {
+        "nhom_ket_qua": "guideline",
+        "truy_van": "(\"Heart Failure\"[MeSH] OR \"heart failure\"[tiab]) AND (outpatient*[tiab] OR ambulatory[tiab]) AND (\"prediction model\"[tiab] OR \"risk score\"[tiab] OR \"prognostic model\"[tiab]) AND (hospitalization[tiab] OR hospitalisation[tiab] OR \"Hospitalization\"[MeSH]) AND (guideline[pt] OR practice guideline[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Heart Failure\"[MeSH] OR \"heart failure\"[tiab]) AND (outpatient*[tiab] OR ambulatory[tiab]) AND (\"prediction model\"[tiab] OR \"risk score\"[tiab] OR \"prognostic model\"[tiab]) AND (hospitalization[tiab] OR hospitalisation[tiab] OR \"Hospitalization\"[MeSH]) AND (guideline[pt] OR practice guideline[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 5,
+        "loai_trung_pmid": true,
+        "so_hit_that": 0,
+        "so_bai_lay_ve": 0,
+        "pmid_lay_ve": []
+      },
+      "observational": {
+        "nhom_ket_qua": "observational",
+        "truy_van": "(\"Heart Failure\"[MeSH] OR \"heart failure\"[tiab]) AND (outpatient*[tiab] OR ambulatory[tiab]) AND (\"prediction model\"[tiab] OR \"risk score\"[tiab] OR \"prognostic model\"[tiab]) AND (hospitalization[tiab] OR hospitalisation[tiab] OR \"Hospitalization\"[MeSH])",
+        "bo_loc": "(\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "chuoi_hieu_luc": "((\"Heart Failure\"[MeSH] OR \"heart failure\"[tiab]) AND (outpatient*[tiab] OR ambulatory[tiab]) AND (\"prediction model\"[tiab] OR \"risk score\"[tiab] OR \"prognostic model\"[tiab]) AND (hospitalization[tiab] OR hospitalisation[tiab] OR \"Hospitalization\"[MeSH])) AND (\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 29,
+        "so_bai_lay_ve": 15,
+        "pmid_lay_ve": [
+          "42667938",
+          "41913566",
+          "41475581",
+          "40983571",
+          "40812809",
+          "40592217",
+          "40228649",
+          "40023206",
+          "39960078",
+          "39304675",
+          "37257517",
+          "35068257",
+          "33413363",
+          "32853471",
+          "31820546"
+        ]
+      },
+      "recent_5yr": {
+        "nhom_ket_qua": "recent",
+        "truy_van": "(\"Heart Failure\"[MeSH] OR \"heart failure\"[tiab]) AND (outpatient*[tiab] OR ambulatory[tiab]) AND (\"prediction model\"[tiab] OR \"risk score\"[tiab] OR \"prognostic model\"[tiab]) AND (hospitalization[tiab] OR hospitalisation[tiab] OR \"Hospitalization\"[MeSH]) AND 2021:2026[dp]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Heart Failure\"[MeSH] OR \"heart failure\"[tiab]) AND (outpatient*[tiab] OR ambulatory[tiab]) AND (\"prediction model\"[tiab] OR \"risk score\"[tiab] OR \"prognostic model\"[tiab]) AND (hospitalization[tiab] OR hospitalisation[tiab] OR \"Hospitalization\"[MeSH]) AND 2021:2026[dp]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 10,
+        "loai_trung_pmid": false,
+        "so_hit_that": 3,
+        "so_bai_lay_ve": 3,
+        "pmid_lay_ve": [
+          "35427812",
+          "41528277",
+          "38739123"
+        ]
+      },
+      "khong_loc": {
+        "nhom_ket_qua": null,
+        "truy_van": "(\"Heart Failure\"[MeSH] OR \"heart failure\"[tiab]) AND (outpatient*[tiab] OR ambulatory[tiab]) AND (\"prediction model\"[tiab] OR \"risk score\"[tiab] OR \"prognostic model\"[tiab]) AND (hospitalization[tiab] OR hospitalisation[tiab] OR \"Hospitalization\"[MeSH])",
+        "bo_loc": null,
+        "chuoi_hieu_luc": "((\"Heart Failure\"[MeSH] OR \"heart failure\"[tiab]) AND (outpatient*[tiab] OR ambulatory[tiab]) AND (\"prediction model\"[tiab] OR \"risk score\"[tiab] OR \"prognostic model\"[tiab]) AND (hospitalization[tiab] OR hospitalisation[tiab] OR \"Hospitalization\"[MeSH]))",
+        "tran_so_bai": 30,
+        "loai_trung_pmid": false,
+        "chi_ghi_lai": true,
+        "so_hit_that": 53,
+        "so_bai_lay_ve": 30,
+        "pmid_lay_ve": [
+          "42954690",
+          "42667938",
+          "42524449",
+          "41913566",
+          "41884313",
+          "41827461",
+          "41528277",
+          "41475581",
+          "40983571",
+          "40812809",
+          "40592217",
+          "40228649",
+          "40023206",
+          "39960078",
+          "39736919",
+          "39304675",
+          "38739123",
+          "38416125",
+          "37943225",
+          "37706670",
+          "37456933",
+          "37257517",
+          "36354767",
+          "35545655",
+          "35427812",
+          "35068257",
+          "33489725",
+          "33413363",
+          "32853471",
+          "32056359"
+        ],
+        "pmid_bo_loc_da_loai": [
+          "42954690",
+          "42524449",
+          "41884313",
+          "41827461",
+          "39736919",
+          "38416125",
+          "37943225",
+          "37706670",
+          "37456933",
+          "36354767",
+          "35545655",
+          "33489725",
+          "32056359"
+        ]
+      }
+    },
+    "loi_nhanh": {}
+  }
+}

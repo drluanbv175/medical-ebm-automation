@@ -967,8 +967,9 @@ def _nhom_gioi(ma_nam: int, ma_nu: int) -> List[Dict[str, Any]]:
 
 def _sd_khong_ap_dung(ly_do: str) -> Dict[str, Any]:
     return {"id": "DN_dinh_nghia_1SD", "vai": "do_nhay", "sap_muc": "§9",
-            "sap_neo": "Thay đổi định nghĩa phơi nhiễm/kết cục ±1 SD",
-            "mo_ta": "Đổi định nghĩa phơi nhiễm/kết cục ±1 SD", "chua_tu_dong": ly_do}
+            # 17/11/2026: khuôn SAP §9 bỏ «±1 SD» (vô nghĩa với biến nhị phân) — neo theo câu mới
+            "sap_neo": "Định nghĩa thay thế của phơi nhiễm/kết cục, khai trước khi xem dữ liệu",
+            "mo_ta": "Định nghĩa thay thế của phơi nhiễm/kết cục", "chua_tu_dong": ly_do}
 
 
 # Bản diễn giải (G6.5) do người diễn giải viết TỪ tệp kết quả thật: số trong bảng lấy từ tóm tắt phân tích (bộ giả lập
@@ -1064,7 +1065,7 @@ _PHAN_BIEN_THUAN_TAP: Dict[str, Any] = {
         ("Phương pháp — phơi nhiễm", "Mô tả cách xác định dùng PPI liên tục ≥ 12 tháng từ đơn cấp phát (STROBE "
                                      "mục 7)"),
         ("Kết quả — kết cục phụ", "Hai kết cục phụ SAP §2 chưa phân tích; ghi rõ là báo cáo riêng"),
-        ("Độ nhạy SAP §9", "Mục «±1 SD» không áp cho biến nhị phân — cần SAP sửa đổi hoặc ghi lý do"),
+        ("Độ nhạy SAP §9", "Mục định nghĩa thay thế ở SAP §9 chưa khai cụ thể — cần SAP sửa đổi hoặc ghi lý do"),
     ],
     "cau_hoi": ["Tỷ lệ mất theo dõi trước 3 năm là bao nhiêu và có khác giữa hai nhóm không?",
                 "Phơi nhiễm PPI được xác định thế nào khi người bệnh dùng ngắt quãng?"],
@@ -1088,7 +1089,8 @@ def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
                     "tham_so": {"outcome": "kiem_soat_t6", "group": "nhom", "covariates": ["tuoi", "gioi"],
                                 "hiep_bien_phan_loai": ["gioi"]}},
                    *_nhom_gioi(1, 2), _CC_MI,
-                   _sd_khong_ap_dung("kết cục và nhóm so sánh đều nhị phân — ±1 SD không áp dụng; thống kê viên "
+                   _sd_khong_ap_dung("kết cục và nhóm so sánh đều nhị phân — định nghĩa thay thế chưa khai cụ thể; "
+                                     "thống kê viên "
                                      "sửa mục này trong SAP sửa đổi"),
                    {"id": "DN_tho", "vai": "do_nhay", "sap_muc": "§9",
                     "sap_neo": "Mô hình không hiệu chỉnh hiệp biến", "mo_ta": "So sánh thô hai nhóm",
@@ -1102,7 +1104,7 @@ def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
             "g6": [{"id": "MT1_ty_le", "vai": "chinh", "sap_muc": "§4", "sap_neo": "<§4>",
                     "mo_ta": "Tỷ lệ kiểm soát huyết áp + KTC 95%", "tham_so": {"ty_le": ["kiem_soat_ha"]}},
                    *_nhom_gioi(1, 2), _CC_MI,
-                   _sd_khong_ap_dung("kết cục nhị phân — ±1 SD không áp dụng"),
+                   _sd_khong_ap_dung("kết cục nhị phân — định nghĩa thay thế chưa khai cụ thể"),
                    {"id": "DN_theo_gioi", "vai": "do_nhay", "sap_muc": "§9",
                     "sap_neo": "Tỷ lệ kiểm soát theo từng giới", "mo_ta": "Tỷ lệ kiểm soát theo giới",
                     "tham_so": {"ty_le": ["kiem_soat_ha"], "loc": "gioi == 2"}}],
@@ -1118,7 +1120,8 @@ def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
                     "tham_so": {"outcome": "gay_xuong_3nam", "group": "ppi_dai_han",
                                 "covariates": ["tuoi", "corticoid", "loang_xuong"]}},
                    *_nhom_gioi(1, 0), _CC_MI,
-                   _sd_khong_ap_dung("phơi nhiễm và kết cục đều nhị phân — ±1 SD không áp dụng; định nghĩa thay thế "
+                   _sd_khong_ap_dung("phơi nhiễm và kết cục đều nhị phân — định nghĩa thay thế chưa khai cụ thể; "
+                                     "định nghĩa thay thế "
                                      "cần số tháng dùng PPI (chưa có trong bộ biến)"),
                    {"id": "DN_theo_doi_12t", "vai": "do_nhay", "sap_muc": "§9",
                     "sap_neo": "Loại người theo dõi dưới 12 tháng", "mo_ta": "Chỉ người theo dõi ≥ 12 tháng",
@@ -1177,7 +1180,7 @@ def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
                     "tham_so": {"outcome": "nhom_ca", "group": "nsaid_30ngay",
                                 "covariates": ["chong_dong", "tien_su_loet"]}},
                    *_nhom_gioi(1, 0), _CC_MI,
-                   _sd_khong_ap_dung("phơi nhiễm và kết cục nhị phân — ±1 SD không áp dụng"),
+                   _sd_khong_ap_dung("phơi nhiễm và kết cục nhị phân — định nghĩa thay thế chưa khai cụ thể"),
                    {"id": "DN_khong_chong_dong", "vai": "do_nhay", "sap_muc": "§9",
                     "sap_neo": "Loại người dùng thuốc chống đông", "mo_ta": "Chỉ người không dùng chống đông",
                     "ke_thua": True, "tham_so": {"loc": "chong_dong == 0", "covariates": ["tien_su_loet"]}}],
@@ -1191,7 +1194,8 @@ def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
                     "tham_so": {"loai_dac_thu": "chan_doan", "tham_chieu": "xo_hoa_tien_trien", "chi_so": "fib4",
                                 "nguong": 2.67}},
                    *_nhom_gioi(1, 0), _CC_DAC_THU,
-                   _sd_khong_ap_dung("độ chính xác chẩn đoán — ±1 SD không áp dụng; ngưỡng thứ hai 1,3 ở §5"),
+                   _sd_khong_ap_dung("độ chính xác chẩn đoán — định nghĩa thay thế chưa khai cụ thể; "
+                                     "ngưỡng thứ hai 1,3 ở §5"),
                    {"id": "DN_alt", "vai": "do_nhay", "sap_muc": "§9", "sap_neo": "Loại người ALT > 5 lần ULN",
                     "mo_ta": "Loại người ALT > 200 U/L (5 lần ULN 40 U/L)", "ke_thua": True,
                     "tham_so": {"loc": "alt <= 200"}}]},
@@ -1204,7 +1208,7 @@ def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
                     "tham_so": {"loai_dac_thu": "du_bao", "outcome": "nhap_vien_12t",
                                 "covariates": ["tuoi", "lvef", "ntprobnp", "egfr"]}},
                    *_nhom_gioi(1, 0), _CC_DAC_THU,
-                   _sd_khong_ap_dung("mô hình dự báo — ±1 SD không áp dụng"),
+                   _sd_khong_ap_dung("mô hình dự báo — định nghĩa thay thế chưa khai cụ thể"),
                    {"id": "DN_bootstrap", "vai": "do_nhay", "sap_muc": "§9",
                     "sap_neo": "Bootstrap 500 lần để hiệu chỉnh lạc quan",
                     "mo_ta": "Hiệu chỉnh lạc quan bằng bootstrap",

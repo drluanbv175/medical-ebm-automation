@@ -1,0 +1,799 @@
+{
+  "sr_ma": [
+    {
+      "pmid": "41358893",
+      "title": "2. Diagnosis and Classification of Diabetes: Standards of Care in Diabetes-2026.",
+      "year": "2026",
+      "journal": "Diabetes care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41358893/",
+      "authors": null
+    },
+    {
+      "pmid": "41358900",
+      "title": "9. Pharmacologic Approaches to Glycemic Treatment: Standards of Care in Diabetes-2026.",
+      "year": "2026",
+      "journal": "Diabetes care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41358900/",
+      "authors": null
+    },
+    {
+      "pmid": "40062731",
+      "title": "Neuropathological links between T2DM and LOAD: systematic review and meta-analysis.",
+      "year": "2025",
+      "journal": "Physiological reviews",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40062731/",
+      "authors": "Lemche E, Hortobágyi T, Kiecker C, Turkheimer F"
+    },
+    {
+      "pmid": "37551735",
+      "title": "Patient experiences of continuous glucose monitoring and sensor-augmented insulin pump therapy for diabetes: A systematic review of qualitative studies.",
+      "year": "2023",
+      "journal": "Journal of diabetes",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37551735/",
+      "authors": "Natale P, Chen S, Chow CK, Cheung NW, Martinez-Martin D"
+    },
+    {
+      "pmid": "36089508",
+      "title": "The experiences of insulin use among older people with Type 2 diabetes mellitus: A thematic synthesis.",
+      "year": "2022",
+      "journal": "Primary care diabetes",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36089508/",
+      "authors": "Langerman C, Forbes A, Robert G"
+    },
+    {
+      "pmid": "34432914",
+      "title": "Individual, healthcare professional and system-level barriers and facilitators to initiation and adherence to injectable therapies for type 2 diabetes: A systematic review and meta-ethnography.",
+      "year": "2022",
+      "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/34432914/",
+      "authors": "Byrne J, Willis A, Dunkley A, Fitzpatrick C, Campbell S"
+    },
+    {
+      "pmid": "33176659",
+      "title": "Perceived Barriers, Benefits, Facilitators, and Attitudes of Health Professionals Towards Multidisciplinary Team Care in Type 2 Diabetes Management: A Systematic Review.",
+      "year": "2021",
+      "journal": "Current diabetes reviews",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/33176659/",
+      "authors": "Dankoly US, Vissers D, El Farkouch Z, Kolasa E, Ziyyat A"
+    },
+    {
+      "pmid": "26823263",
+      "title": "Barriers to effective management of type 2 diabetes in primary care: qualitative systematic review.",
+      "year": "2016",
+      "journal": "The British journal of general practice : the journal of the Royal College of General Practitioners",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/26823263/",
+      "authors": "Rushforth B, McCrorie C, Glidewell L, Midgley E, Foy R"
+    },
+    {
+      "pmid": "26147376",
+      "title": "Barriers and facilitators to starting insulin in patients with type 2 diabetes: a systematic review.",
+      "year": "2015",
+      "journal": "International journal of clinical practice",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/26147376/",
+      "authors": "Ng CJ, Lai PS, Lee YK, Azmi SA, Teo CH"
+    }
+  ],
+  "rct": [
+    {
+      "pmid": "40907093",
+      "title": "Effects of a nurse-led diabetes self-management programme for people with type 2 diabetes receiving insulin injection therapy: A randomised controlled trial with qualitative process evaluation.",
+      "year": "2025",
+      "journal": "International journal of nursing studies",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40907093/",
+      "authors": "Liang W, Chow KM, Ni X, Tola YO, Lo SHS"
+    },
+    {
+      "pmid": "40884258",
+      "title": "A Randomised Controlled Trial Testing a Behavioural Intervention Program for the Prevention of Type 2 Diabetes Among American Indian Youth: The Tribal Turning Point Study.",
+      "year": "2025",
+      "journal": "Pediatric obesity",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40884258/",
+      "authors": "Cohen CC, Dabelea D, Sinha M, Delamater AM, Glueck DH"
+    },
+    {
+      "pmid": "40576167",
+      "title": "The Role of Social Support on Self-Management of Gestational Diabetes Mellitus: A Qualitative Analysis.",
+      "year": "2025",
+      "journal": "Journal of midwifery & women's health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40576167/",
+      "authors": "Merchant T, DiTosto JD, Gomez-Roas M, Williams BR, Niznik CM"
+    },
+    {
+      "pmid": "32706738",
+      "title": "User Engagement Among Diverse Adults in a 12-Month Text Message-Delivered Diabetes Support Intervention: Results from a Randomized Controlled Trial.",
+      "year": "2020",
+      "journal": "JMIR mHealth and uHealth",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/32706738/",
+      "authors": "Nelson LA, Spieker A, Greevy R, LeStourgeon LM, Wallston KA"
+    },
+    {
+      "pmid": "32079327",
+      "title": "A Delayed Morning and Earlier Evening Time-Restricted Feeding Protocol for Improving Glycemic Control and Dietary Adherence in Men with Overweight/Obesity: A Randomized Controlled Trial.",
+      "year": "2020",
+      "journal": "Nutrients",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/32079327/",
+      "authors": "Parr EB, Devlin BL, Radford BE, Hawley JA"
+    },
+    {
+      "pmid": "29845932",
+      "title": "Managing with Learning Disability and Diabetes: OK-Diabetes - a case-finding study and feasibility randomised controlled trial.",
+      "year": "2018",
+      "journal": "Health technology assessment (Winchester, England)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/29845932/",
+      "authors": "House A, Bryant L, Russell AM, Wright-Hughes A, Graham L"
+    },
+    {
+      "pmid": "29530385",
+      "title": "A qualitative evaluation of a physician-delivered pedometer-based step count prescription strategy with insight from participants and treating physicians.",
+      "year": "2018",
+      "journal": "Diabetes research and clinical practice",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/29530385/",
+      "authors": "Cooke AB, Pace R, Chan D, Rosenberg E, Dasgupta K"
+    },
+    {
+      "pmid": "21851643",
+      "title": "Study protocol: a pragmatic randomised controlled trial of a 12-week physical activity and nutritional education program for overweight Aboriginal and Torres Strait Islander women.",
+      "year": "2011",
+      "journal": "BMC public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/21851643/",
+      "authors": "Canuto KJ, McDermott RA, Cargo M, Esterman AJ"
+    },
+    {
+      "pmid": "21542916",
+      "title": "Challenges of maintaining research protocol fidelity in a clinical care setting: a qualitative study of the experiences and views of patients and staff participating in a randomized controlled trial.",
+      "year": "2011",
+      "journal": "Trials",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/21542916/",
+      "authors": "Lawton J, Jenkins N, Darbyshire JL, Holman RR, Farmer AJ"
+    },
+    {
+      "pmid": "20592050",
+      "title": "Initiating insulin as part of the Treating To Target in Type 2 Diabetes (4-T) trial: an interview study of patients' and health professionals' experiences.",
+      "year": "2010",
+      "journal": "Diabetes care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/20592050/",
+      "authors": "Jenkins N, Hallowell N, Farmer AJ, Holman RR, Lawton J"
+    },
+    {
+      "pmid": "19228402",
+      "title": "Community based yoga classes for type 2 diabetes: an exploratory randomised controlled trial.",
+      "year": "2009",
+      "journal": "BMC health services research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/19228402/",
+      "authors": "Skoro-Kondza L, Tai SS, Gadelrab R, Drincevic D, Greenhalgh T"
+    },
+    {
+      "pmid": "15220018",
+      "title": "Metabolic effects of pioglitazone and rosiglitazone in patients with diabetes and metabolic syndrome treated with glimepiride: a twelve-month, multicenter, double-blind, randomized, controlled, parallel-group trial.",
+      "year": "2004",
+      "journal": "Clinical therapeutics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/15220018/",
+      "authors": "Derosa G, Cicero AF, Gaddi A, Ragonesi PD, Fogari E"
+    },
+    {
+      "pmid": "2649340",
+      "title": "The influence of different insulin regimens on quality of life and metabolic control in insulin-dependent diabetics.",
+      "year": "1989",
+      "journal": "Diabetes research and clinical practice",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/2649340/",
+      "authors": "Tallroth G, Karlson B, Nilsson A, Agardh CD"
+    }
+  ],
+  "guideline": [
+    {
+      "pmid": "26118939",
+      "title": "Position Statement on the management of continuous subcutaneous insulin infusion (CSII): The Italian Lazio experience.",
+      "year": "2016",
+      "journal": "Journal of diabetes",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/26118939/",
+      "authors": "Maurizi AR, Suraci C, Pitocco D, Schiaffini R, Tubili C"
+    }
+  ],
+  "recent": [
+    {
+      "pmid": "41358893",
+      "title": "2. Diagnosis and Classification of Diabetes: Standards of Care in Diabetes-2026.",
+      "year": "2026",
+      "journal": "Diabetes care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41358893/",
+      "authors": null
+    },
+    {
+      "pmid": "41358900",
+      "title": "9. Pharmacologic Approaches to Glycemic Treatment: Standards of Care in Diabetes-2026.",
+      "year": "2026",
+      "journal": "Diabetes care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41358900/",
+      "authors": null
+    },
+    {
+      "pmid": "40062731",
+      "title": "Neuropathological links between T2DM and LOAD: systematic review and meta-analysis.",
+      "year": "2025",
+      "journal": "Physiological reviews",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40062731/",
+      "authors": "Lemche E, Hortobágyi T, Kiecker C, Turkheimer F"
+    },
+    {
+      "pmid": "37551735",
+      "title": "Patient experiences of continuous glucose monitoring and sensor-augmented insulin pump therapy for diabetes: A systematic review of qualitative studies.",
+      "year": "2023",
+      "journal": "Journal of diabetes",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37551735/",
+      "authors": "Natale P, Chen S, Chow CK, Cheung NW, Martinez-Martin D"
+    },
+    {
+      "pmid": "36089508",
+      "title": "The experiences of insulin use among older people with Type 2 diabetes mellitus: A thematic synthesis.",
+      "year": "2022",
+      "journal": "Primary care diabetes",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36089508/",
+      "authors": "Langerman C, Forbes A, Robert G"
+    },
+    {
+      "pmid": "34432914",
+      "title": "Individual, healthcare professional and system-level barriers and facilitators to initiation and adherence to injectable therapies for type 2 diabetes: A systematic review and meta-ethnography.",
+      "year": "2022",
+      "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/34432914/",
+      "authors": "Byrne J, Willis A, Dunkley A, Fitzpatrick C, Campbell S"
+    },
+    {
+      "pmid": "33176659",
+      "title": "Perceived Barriers, Benefits, Facilitators, and Attitudes of Health Professionals Towards Multidisciplinary Team Care in Type 2 Diabetes Management: A Systematic Review.",
+      "year": "2021",
+      "journal": "Current diabetes reviews",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/33176659/",
+      "authors": "Dankoly US, Vissers D, El Farkouch Z, Kolasa E, Ziyyat A"
+    },
+    {
+      "pmid": "40907093",
+      "title": "Effects of a nurse-led diabetes self-management programme for people with type 2 diabetes receiving insulin injection therapy: A randomised controlled trial with qualitative process evaluation.",
+      "year": "2025",
+      "journal": "International journal of nursing studies",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40907093/",
+      "authors": "Liang W, Chow KM, Ni X, Tola YO, Lo SHS"
+    },
+    {
+      "pmid": "40884258",
+      "title": "A Randomised Controlled Trial Testing a Behavioural Intervention Program for the Prevention of Type 2 Diabetes Among American Indian Youth: The Tribal Turning Point Study.",
+      "year": "2025",
+      "journal": "Pediatric obesity",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40884258/",
+      "authors": "Cohen CC, Dabelea D, Sinha M, Delamater AM, Glueck DH"
+    },
+    {
+      "pmid": "40576167",
+      "title": "The Role of Social Support on Self-Management of Gestational Diabetes Mellitus: A Qualitative Analysis.",
+      "year": "2025",
+      "journal": "Journal of midwifery & women's health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40576167/",
+      "authors": "Merchant T, DiTosto JD, Gomez-Roas M, Williams BR, Niznik CM"
+    }
+  ],
+  "observational": [
+    {
+      "pmid": "42387496",
+      "title": "Barriers to glycemic control among youth with diabetes in Ghana: a mixed-methods cross-sectional study.",
+      "year": "2026",
+      "journal": "BMC endocrine disorders",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42387496/",
+      "authors": "Asafo-Agyei SB, Ameyaw E, Nguah SB, Kwarteng Owusu S, Adutwum LM"
+    },
+    {
+      "pmid": "41638420",
+      "title": "Quantifying the Basal Insulin Treatment Preferences of People Living in Canada With Type 2 Diabetes When Glycemic Management and Cost Are Held Constant: A Discrete Choice Experiment.",
+      "year": "2026",
+      "journal": "Canadian journal of diabetes",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41638420/",
+      "authors": "Hallworth P, Tatlock S, Wallace S, Tute E, Bell B"
+    },
+    {
+      "pmid": "41527077",
+      "title": "Level of physical activity and its predictors among adult diabetic men who were on follow-up at health facilities in Bale Zone, Southeast Ethiopia: institution-based cross-sectional study.",
+      "year": "2026",
+      "journal": "BMC research notes",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41527077/",
+      "authors": "Tadesse TM, Zenbaba D, Ejigu N, Sahiledengle B, Gomora D"
+    },
+    {
+      "pmid": "41360624",
+      "title": "Identifying interhospital variation in hyperosmolar hyperglycemic syndrome (HHS) care: development and outcomes of the DEKODE HHS model.",
+      "year": "2025",
+      "journal": "BMJ open diabetes research & care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41360624/",
+      "authors": "Kew TM, Manta A, Sawlani JP, Ling Jie Yee A, Mann A"
+    },
+    {
+      "pmid": "41102072",
+      "title": "Understanding the benefits and psychological burdens of using continuous glucose monitoring for lifestyle change: A mixed-methods cross-sectional study.",
+      "year": "2025",
+      "journal": "Obesity research & clinical practice",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41102072/",
+      "authors": "Richardson KM, Jospe MR, Somerville J, Felrice J, Schembre SM"
+    },
+    {
+      "pmid": "40893590",
+      "title": "A Comparative Multicenter Cross-Sectional Study on Hypoglycemia in Young Adults and Older Adults With Type 2 Diabetes Mellitus in an Outpatient Setting in Sri Lanka.",
+      "year": "2025",
+      "journal": "Journal of diabetes research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40893590/",
+      "authors": "Jayasekera PT, Senaratne T, Lamabadusuriya D, Sathischandra H, Matthias AT"
+    },
+    {
+      "pmid": "40712439",
+      "title": "Diabetes, obesity, and economic social exclusion (DOSE) syndemic among a nationally representative sample in the United States.",
+      "year": "2025",
+      "journal": "Social science & medicine (1982)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40712439/",
+      "authors": "Campbell J"
+    },
+    {
+      "pmid": "39854487",
+      "title": "Insulin therapy adherence and its associated factors among diabetic patients in a Ghanaian primary care hospital.",
+      "year": "2025",
+      "journal": "PloS one",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39854487/",
+      "authors": "Sefah IA, Mensah M, Hutton-Nyameaye AA, Sarkodie E, Meyer JC"
+    },
+    {
+      "pmid": "38243951",
+      "title": "Factors Influencing Hypoglycemia in Type 2 Diabetes Mellitus Outpatients with State Health Insurance at Regional General Hospitals in Jakarta, Indonesia.",
+      "year": "2024",
+      "journal": "Current diabetes reviews",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38243951/",
+      "authors": "Veryanti PR, Sauriasari R, Sartika RAD, Elya B"
+    },
+    {
+      "pmid": "37782644",
+      "title": "[Assessment of the progression dynamics of chronic kidney disease in elderly patients with type 2 diabetes mellitus.].",
+      "year": "2023",
+      "journal": "Advances in gerontology = Uspekhi gerontologii",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37782644/",
+      "authors": "Pervyshin NA, Bulgakova SV, Komarova MV, Treneva EV, Kurmaev DP"
+    },
+    {
+      "pmid": "37624794",
+      "title": "The magnitude of chronic diabetes complications and its associated factors among diabetic patients attending the general hospitals in Tigray region, Northern Ethiopia.",
+      "year": "2023",
+      "journal": "PloS one",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37624794/",
+      "authors": "Berhe KK, Mselle LT, Gebru HB"
+    },
+    {
+      "pmid": "36253034",
+      "title": "Supporting self-management in women with pre-existing diabetes in pregnancy: a protocol for a mixed-methods sequential comparative case study.",
+      "year": "2022",
+      "journal": "BMJ open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36253034/",
+      "authors": "Sushko K, Sherifali D, Nerenberg K, Strachan PH, Butt M"
+    },
+    {
+      "pmid": "35583602",
+      "title": "Major osteoporosis fracture prediction in type 2 diabetes: a derivation and comparison study.",
+      "year": "2022",
+      "journal": "Osteoporosis international : a journal established as result of cooperation between the European Foundation for Osteoporosis and the National Osteoporosis Foundation of the USA",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35583602/",
+      "authors": "Kong XK, Zhao ZY, Zhang D, Xie R, Sun LH"
+    },
+    {
+      "pmid": "35105572",
+      "title": "Investigating the day-to-day impact of hypoglycaemia in adults with type 1 or type 2 diabetes: design and validation protocol of the Hypo-METRICS application.",
+      "year": "2022",
+      "journal": "BMJ open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35105572/",
+      "authors": "Søholm U, Broadley M, Zaremba N, Divilly P, Nefs G"
+    }
+  ],
+  "khong_loc": [
+    {
+      "pmid": "42858479",
+      "title": "The transition from pre- to early pregnancy for women with type 2 diabetes - a qualitative study.",
+      "year": "2026",
+      "journal": "Midwifery",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42858479/"
+    },
+    {
+      "pmid": "42815716",
+      "title": "Exploring Diabetes Management Behaviours With FreeStyle Libre 2: Insights From Adults With Type 2 Diabetes in Quebec.",
+      "year": "2026",
+      "journal": "Canadian journal of diabetes",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42815716/"
+    },
+    {
+      "pmid": "42703470",
+      "title": "Quinary Prevention in Patients With Type 2 Diabetes Mellitus Included in the Family Adoption Programme of a Medical College in Jaipur: A Qualitative Study.",
+      "year": "2026",
+      "journal": "Cureus",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42703470/"
+    },
+    {
+      "pmid": "42698185",
+      "title": "Participant and physician perspectives on the use of SGLT2 inhibitors in type 1 diabetes.",
+      "year": "2026",
+      "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42698185/"
+    },
+    {
+      "pmid": "42550210",
+      "title": "A technology-blended exercise intervention for cognitive risk reduction and brain health in middle-aged and older adults with type 2 diabetes in Singapore: a mixed-methods study.",
+      "year": "2026",
+      "journal": "The journals of gerontology. Series A, Biological sciences and medical sciences",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42550210/"
+    },
+    {
+      "pmid": "42458379",
+      "title": "Escalating diabetes prevalence in pakistan: a qualitative study of endocrinologists' perspectives on contributing factors, management barriers, and strategies.",
+      "year": "2026",
+      "journal": "BMC endocrine disorders",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42458379/"
+    },
+    {
+      "pmid": "42417094",
+      "title": "Implementing Patient Decision Aids for Insulin Initiation in China: What are the Barriers and Facilitators? A TDF-Based Qualitative Study.",
+      "year": "2026",
+      "journal": "Journal of diabetes research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42417094/"
+    },
+    {
+      "pmid": "42387496",
+      "title": "Barriers to glycemic control among youth with diabetes in Ghana: a mixed-methods cross-sectional study.",
+      "year": "2026",
+      "journal": "BMC endocrine disorders",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42387496/"
+    },
+    {
+      "pmid": "42374016",
+      "title": "Experiences of People with Type 2 Diabetes and Healthcare Professionals with Once-Weekly Insulin Efsitora Alfa in QWINT Phase 3 Trials: Qualitative In-Trial Interviews.",
+      "year": "2026",
+      "journal": "The patient",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42374016/"
+    },
+    {
+      "pmid": "42207173",
+      "title": "Experiences of People With Poorly Controlled Type 2 Diabetes Using Telemonitoring: Qualitative Study Embedded in a Feasibility Trial.",
+      "year": "2026",
+      "journal": "JMIR formative research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42207173/"
+    },
+    {
+      "pmid": "42175345",
+      "title": "Nurses' Perspectives on a Telemonitoring Intervention for Type 2 Diabetes: Findings from a Feasibility Study.",
+      "year": "2026",
+      "journal": "Studies in health technology and informatics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42175345/"
+    },
+    {
+      "pmid": "42175242",
+      "title": "Patient Perspectives on Telemonitoring in Insulin-Treated Type 2 Diabetes: Preliminary Findings from a Qualitative Study.",
+      "year": "2026",
+      "journal": "Studies in health technology and informatics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42175242/"
+    },
+    {
+      "pmid": "42141826",
+      "title": "What barriers need to be removed to incorporate resistance exercise into the lives of older adults with long-term diabetes and prefrailty? A deductive framework analysis using the Capability, Opportunity, Motivation and Behaviour (COM-B) behavioural science model.",
+      "year": "2026",
+      "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42141826/"
+    },
+    {
+      "pmid": "42137973",
+      "title": "How Continuous Glucose Monitoring Reports Inform Clinical Decision-Making for Older Adults With Type 2 Diabetes: Mapping Clinical Workflow to Situation Awareness.",
+      "year": "2026",
+      "journal": "Journal of diabetes science and technology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42137973/"
+    },
+    {
+      "pmid": "41917833",
+      "title": "Healthcare professionals' experiences with the use of continuous glucose monitoring in nursing homes and home healthcare services: a qualitative study.",
+      "year": "2026",
+      "journal": "BMC geriatrics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41917833/"
+    },
+    {
+      "pmid": "41657351",
+      "title": "Sleep in adolescents with or at risk for type 2 diabetes: perspectives from adolescents and parents.",
+      "year": "2026",
+      "journal": "Journal of pediatric psychology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41657351/"
+    },
+    {
+      "pmid": "41638420",
+      "title": "Quantifying the Basal Insulin Treatment Preferences of People Living in Canada With Type 2 Diabetes When Glycemic Management and Cost Are Held Constant: A Discrete Choice Experiment.",
+      "year": "2026",
+      "journal": "Canadian journal of diabetes",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41638420/"
+    },
+    {
+      "pmid": "41555588",
+      "title": "Preferences for basal insulin treatments in adults with type 2 diabetes: A discrete choice experiment in France and Spain.",
+      "year": "2026",
+      "journal": "Diabetes, obesity & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41555588/"
+    },
+    {
+      "pmid": "41527077",
+      "title": "Level of physical activity and its predictors among adult diabetic men who were on follow-up at health facilities in Bale Zone, Southeast Ethiopia: institution-based cross-sectional study.",
+      "year": "2026",
+      "journal": "BMC research notes",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41527077/"
+    },
+    {
+      "pmid": "41512489",
+      "title": "'It's very hard, it's very very difficult ….' Exploring the lived experiences of managing diabetes among young people living with type 1 diabetes in underserved communities in Ghana.",
+      "year": "2026",
+      "journal": "Social science & medicine (1982)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41512489/"
+    },
+    {
+      "pmid": "41360624",
+      "title": "Identifying interhospital variation in hyperosmolar hyperglycemic syndrome (HHS) care: development and outcomes of the DEKODE HHS model.",
+      "year": "2025",
+      "journal": "BMJ open diabetes research & care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41360624/"
+    },
+    {
+      "pmid": "41358572",
+      "title": "'Why, Can I Not Have Control of My Own Insulin?': Qualitative Exploration Amongst Older Adults With Diabetes With Lived Experience of Surgical Hospital Admission.",
+      "year": "2025",
+      "journal": "Health expectations : an international journal of public participation in health care and health policy",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41358572/"
+    },
+    {
+      "pmid": "41245606",
+      "title": "Barriers to the Prevention of Insulin Injection-Associated Lipohypertrophy for Individuals with Diabetes.",
+      "year": "2025",
+      "journal": "Patient preference and adherence",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41245606/"
+    },
+    {
+      "pmid": "41177160",
+      "title": "Exploring insulin rejection through photo-elicitation among informal caregivers and patients with type 2 diabetes mellitus.",
+      "year": "2026",
+      "journal": "Korean journal of family medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41177160/"
+    },
+    {
+      "pmid": "41160893",
+      "title": "Feasibility and outcomes of a collaborative pharmacy and general practice service for people with type 2 diabetes with high HbA1c: a mixed methods study.",
+      "year": "2026",
+      "journal": "Journal of primary health care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41160893/"
+    },
+    {
+      "pmid": "41102072",
+      "title": "Understanding the benefits and psychological burdens of using continuous glucose monitoring for lifestyle change: A mixed-methods cross-sectional study.",
+      "year": "2025",
+      "journal": "Obesity research & clinical practice",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41102072/"
+    },
+    {
+      "pmid": "41096023",
+      "title": "Patient Experience with Continuous Glucose Monitoring During Dialysis in Type 2 Diabetes: A Qualitative Study.",
+      "year": "2025",
+      "journal": "Journal of clinical medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41096023/"
+    },
+    {
+      "pmid": "41093335",
+      "title": "Who is using continuous glucose monitoring for type 2 diabetes management? A scoping review protocol.",
+      "year": "2025",
+      "journal": "BMJ open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41093335/"
+    },
+    {
+      "pmid": "41030722",
+      "title": "Prevalence and Predictors of Post-coital Hypoglycemia in Diabetes Mellitus.",
+      "year": "2025",
+      "journal": "Cureus",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41030722/"
+    },
+    {
+      "pmid": "40926927",
+      "title": "Prevalence and Associated Factors of Hypoglycemia Among Patients With Type 2 Diabetes Mellitus: A Cross-Sectional Study.",
+      "year": "2025",
+      "journal": "Cureus",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40926927/"
+    }
+  ],
+  "true_counts": {
+    "sr_ma": 7,
+    "rct": 13,
+    "guideline": 1,
+    "observational": 43,
+    "recent": 8
+  },
+  "search_provenance": {
+    "co_so_du_lieu": "PubMed (MEDLINE và phần còn lại của PubMed)",
+    "giao_dien": "NCBI E-utilities (esearch/efetch) qua app.sources.pubmed.PubMedClient",
+    "ngay_tra": "2026-11-15T20:08:11",
+    "truy_van_goc": "(\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (insulin[tiab]) AND (\"psychological insulin resistance\"[tiab] OR barrier*[tiab] OR experience*[tiab]) AND (\"Qualitative Research\"[MeSH] OR qualitative[tiab] OR interview*[tiab])",
+    "query_en_do_nguoi_cung_cap": true,
+    "nhanh": {
+      "sr_ma": {
+        "nhom_ket_qua": "sr_ma",
+        "truy_van": "(\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (insulin[tiab]) AND (\"psychological insulin resistance\"[tiab] OR barrier*[tiab] OR experience*[tiab]) AND (\"Qualitative Research\"[MeSH] OR qualitative[tiab] OR interview*[tiab]) AND (systematic review[pt] OR meta-analysis[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (insulin[tiab]) AND (\"psychological insulin resistance\"[tiab] OR barrier*[tiab] OR experience*[tiab]) AND (\"Qualitative Research\"[MeSH] OR qualitative[tiab] OR interview*[tiab]) AND (systematic review[pt] OR meta-analysis[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 7,
+        "so_bai_lay_ve": 9,
+        "pmid_lay_ve": [
+          "41358893",
+          "41358900",
+          "40062731",
+          "37551735",
+          "36089508",
+          "34432914",
+          "33176659",
+          "26823263",
+          "26147376"
+        ]
+      },
+      "rct": {
+        "nhom_ket_qua": "rct",
+        "truy_van": "(\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (insulin[tiab]) AND (\"psychological insulin resistance\"[tiab] OR barrier*[tiab] OR experience*[tiab]) AND (\"Qualitative Research\"[MeSH] OR qualitative[tiab] OR interview*[tiab]) AND randomized controlled trial[pt]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (insulin[tiab]) AND (\"psychological insulin resistance\"[tiab] OR barrier*[tiab] OR experience*[tiab]) AND (\"Qualitative Research\"[MeSH] OR qualitative[tiab] OR interview*[tiab]) AND randomized controlled trial[pt]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 13,
+        "so_bai_lay_ve": 15,
+        "pmid_lay_ve": [
+          "41358893",
+          "41358900",
+          "40907093",
+          "40884258",
+          "40576167",
+          "32706738",
+          "32079327",
+          "29845932",
+          "29530385",
+          "21851643",
+          "21542916",
+          "20592050",
+          "19228402",
+          "15220018",
+          "2649340"
+        ]
+      },
+      "guideline": {
+        "nhom_ket_qua": "guideline",
+        "truy_van": "(\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (insulin[tiab]) AND (\"psychological insulin resistance\"[tiab] OR barrier*[tiab] OR experience*[tiab]) AND (\"Qualitative Research\"[MeSH] OR qualitative[tiab] OR interview*[tiab]) AND (guideline[pt] OR practice guideline[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (insulin[tiab]) AND (\"psychological insulin resistance\"[tiab] OR barrier*[tiab] OR experience*[tiab]) AND (\"Qualitative Research\"[MeSH] OR qualitative[tiab] OR interview*[tiab]) AND (guideline[pt] OR practice guideline[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 5,
+        "loai_trung_pmid": true,
+        "so_hit_that": 1,
+        "so_bai_lay_ve": 3,
+        "pmid_lay_ve": [
+          "41358893",
+          "41358900",
+          "26118939"
+        ]
+      },
+      "observational": {
+        "nhom_ket_qua": "observational",
+        "truy_van": "(\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (insulin[tiab]) AND (\"psychological insulin resistance\"[tiab] OR barrier*[tiab] OR experience*[tiab]) AND (\"Qualitative Research\"[MeSH] OR qualitative[tiab] OR interview*[tiab])",
+        "bo_loc": "(\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "chuoi_hieu_luc": "((\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (insulin[tiab]) AND (\"psychological insulin resistance\"[tiab] OR barrier*[tiab] OR experience*[tiab]) AND (\"Qualitative Research\"[MeSH] OR qualitative[tiab] OR interview*[tiab])) AND (\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 43,
+        "so_bai_lay_ve": 15,
+        "pmid_lay_ve": [
+          "42387496",
+          "41638420",
+          "41527077",
+          "41360624",
+          "41102072",
+          "40907093",
+          "40893590",
+          "40712439",
+          "39854487",
+          "38243951",
+          "37782644",
+          "37624794",
+          "36253034",
+          "35583602",
+          "35105572"
+        ]
+      },
+      "recent_5yr": {
+        "nhom_ket_qua": "recent",
+        "truy_van": "(\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (insulin[tiab]) AND (\"psychological insulin resistance\"[tiab] OR barrier*[tiab] OR experience*[tiab]) AND (\"Qualitative Research\"[MeSH] OR qualitative[tiab] OR interview*[tiab]) AND 2021:2026[dp]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (insulin[tiab]) AND (\"psychological insulin resistance\"[tiab] OR barrier*[tiab] OR experience*[tiab]) AND (\"Qualitative Research\"[MeSH] OR qualitative[tiab] OR interview*[tiab]) AND 2021:2026[dp]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 10,
+        "loai_trung_pmid": false,
+        "so_hit_that": 8,
+        "so_bai_lay_ve": 10,
+        "pmid_lay_ve": [
+          "41358893",
+          "41358900",
+          "40062731",
+          "37551735",
+          "36089508",
+          "34432914",
+          "33176659",
+          "40907093",
+          "40884258",
+          "40576167"
+        ]
+      },
+      "khong_loc": {
+        "nhom_ket_qua": null,
+        "truy_van": "(\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (insulin[tiab]) AND (\"psychological insulin resistance\"[tiab] OR barrier*[tiab] OR experience*[tiab]) AND (\"Qualitative Research\"[MeSH] OR qualitative[tiab] OR interview*[tiab])",
+        "bo_loc": null,
+        "chuoi_hieu_luc": "((\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (insulin[tiab]) AND (\"psychological insulin resistance\"[tiab] OR barrier*[tiab] OR experience*[tiab]) AND (\"Qualitative Research\"[MeSH] OR qualitative[tiab] OR interview*[tiab]))",
+        "tran_so_bai": 30,
+        "loai_trung_pmid": false,
+        "chi_ghi_lai": true,
+        "so_hit_that": 281,
+        "so_bai_lay_ve": 30,
+        "pmid_lay_ve": [
+          "42858479",
+          "42815716",
+          "42703470",
+          "42698185",
+          "42550210",
+          "42458379",
+          "42417094",
+          "42387496",
+          "42374016",
+          "42207173",
+          "42175345",
+          "42175242",
+          "42141826",
+          "42137973",
+          "41917833",
+          "41657351",
+          "41638420",
+          "41555588",
+          "41527077",
+          "41512489",
+          "41360624",
+          "41358572",
+          "41245606",
+          "41177160",
+          "41160893",
+          "41102072",
+          "41096023",
+          "41093335",
+          "41030722",
+          "40926927"
+        ],
+        "pmid_bo_loc_da_loai": [
+          "42858479",
+          "42815716",
+          "42703470",
+          "42698185",
+          "42550210",
+          "42458379",
+          "42417094",
+          "42374016",
+          "42207173",
+          "42175345",
+          "42175242",
+          "42141826",
+          "42137973",
+          "41917833",
+          "41657351",
+          "41555588",
+          "41512489",
+          "41358572",
+          "41245606",
+          "41177160",
+          "41160893",
+          "41096023",
+          "41093335",
+          "41030722",
+          "40926927"
+        ]
+      }
+    },
+    "loi_nhanh": {}
+  }
+}

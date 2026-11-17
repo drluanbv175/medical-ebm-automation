@@ -1,0 +1,7 @@
+{
+  "luc": "2026-11-16T18:37:10+07:00",
+  "study": "ZZCANARY-RCT-KHONG-KEM",
+  "topic": "Tái khám qua điện thoại so với tái khám trực tiếp trong kiểm soát huyết áp sau 6 tháng ở người tăng huyết áp điều trị ngoại trú: thử nghiệm ngẫu nhiên không kém hơn",
+  "query_en": "(telephone[tiab] OR telemedicine[tiab] OR \"remote consultation\"[tiab] OR telemonitoring[tiab]) AND (hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (non-inferiority[tiab] OR noninferiority[tiab] OR follow-up[tiab])",
+  "base_query": "(telephone[tiab] OR telemedicine[tiab] OR \"remote consultation\"[tiab] OR telemonitoring[tiab]) AND (hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (non-inferiority[tiab] OR noninferiority[tiab] OR follow-up[tiab])"
+}

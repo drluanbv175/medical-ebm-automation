@@ -1,0 +1,7 @@
+{
+  "luc": "2026-11-16T18:42:15+07:00",
+  "study": "ZZCANARY-SONG-CON",
+  "topic": "Sử dụng thuốc ức chế bơm proton kéo dài và thời gian đến gãy xương ở người từ 60 tuổi điều trị ngoại trú: nghiên cứu thuần tập hồi cứu phân tích sống còn",
+  "query_en": "(\"Proton Pump Inhibitors\"[MeSH] OR \"proton pump inhibitor*\"[tiab] OR omeprazole[tiab] OR esomeprazole[tiab] OR pantoprazole[tiab]) AND (\"Fractures, Bone\"[MeSH] OR fracture*[tiab]) AND (aged[MeSH] OR elderly[tiab] OR \"older adults\"[tiab])",
+  "base_query": "(\"Proton Pump Inhibitors\"[MeSH] OR \"proton pump inhibitor*\"[tiab] OR omeprazole[tiab] OR esomeprazole[tiab] OR pantoprazole[tiab]) AND (\"Fractures, Bone\"[MeSH] OR fracture*[tiab]) AND (aged[MeSH] OR elderly[tiab] OR \"older adults\"[tiab])"
+}

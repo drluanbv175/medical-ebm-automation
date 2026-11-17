@@ -1,0 +1,263 @@
+{
+  "study": "ZZCANARY-RCT-KHONG-KEM",
+  "gate": "G0",
+  "gate_status": "DRAFT — CHỜ BÁC SĨ: G0-HUMAN-01, G0-HUMAN-02, G0-HUMAN-03, G0-HUMAN-04, G0-HUMAN-05, G0-HUMAN-06, G0-HUMAN-07, G0-HUMAN-08",
+  "generated_at": "2026-11-16T18:36:22.466211",
+  "topic": "Tái khám qua điện thoại so với tái khám trực tiếp trong kiểm soát huyết áp sau 6 tháng ở người tăng huyết áp điều trị ngoại trú: thử nghiệm ngẫu nhiên không kém hơn",
+  "base_query": "(telephone[tiab] OR telemedicine[tiab] OR \"remote consultation\"[tiab] OR telemonitoring[tiab]) AND (hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (non-inferiority[tiab] OR noninferiority[tiab] OR follow-up[tiab])",
+  "pubmed_results": {
+    "total_found": 44,
+    "n_pmids": 44,
+    "all_pmids": [
+      "42560143",
+      "31855113",
+      "40622370",
+      "36477479",
+      "41197208",
+      "40262175",
+      "40440692",
+      "41541610",
+      "37311173",
+      "39819096",
+      "41741627",
+      "36322107",
+      "33051232",
+      "42970781",
+      "38441897",
+      "41022548",
+      "37147930",
+      "40929717",
+      "39695330",
+      "41729538",
+      "41595894",
+      "38842799",
+      "36281763",
+      "39719284",
+      "42025715",
+      "42053330",
+      "40273398",
+      "35588550",
+      "41454226",
+      "38977877",
+      "27492293",
+      "33888438",
+      "34929044",
+      "42283624",
+      "40123081",
+      "39357612",
+      "39611763",
+      "26343551",
+      "41188792",
+      "39194352",
+      "39503965",
+      "40764960",
+      "41927288",
+      "37424245"
+    ],
+    "n_sr": 17,
+    "n_rct": 85,
+    "n_guideline": 1,
+    "n_observational": 105,
+    "n_recent": 39,
+    "most_recent_year": 2026,
+    "counts_are_real": true,
+    "counts_unavailable": [],
+    "query_errors": {}
+  },
+  "n_sr": 17,
+  "n_rct": 85,
+  "n_pmids": 44,
+  "pmids_verified": [
+    "42560143",
+    "31855113",
+    "40622370",
+    "36477479",
+    "41197208",
+    "40262175",
+    "40440692",
+    "41541610",
+    "37311173",
+    "39819096",
+    "41741627",
+    "36322107",
+    "33051232",
+    "42970781",
+    "38441897",
+    "41022548",
+    "37147930",
+    "40929717",
+    "39695330",
+    "41729538",
+    "41595894",
+    "38842799",
+    "36281763",
+    "39719284",
+    "42025715",
+    "42053330",
+    "40273398",
+    "35588550",
+    "41454226",
+    "38977877",
+    "27492293",
+    "33888438",
+    "34929044",
+    "42283624",
+    "40123081",
+    "39357612",
+    "39611763",
+    "26343551",
+    "41188792",
+    "39194352",
+    "39503965",
+    "40764960",
+    "41927288",
+    "37424245"
+  ],
+  "evidence_note": "MẠNH — có SR/MA (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)",
+  "evidence_level": "MẠNH — có SR/MA (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)",
+  "research_gaps": [
+    "KHÔNG phát hiện khoảng trống nào từ dữ liệu PubMed đã tra (đã có SR/MA, RCT, guideline và nghiên cứu mới) — [CẦN — bác sĩ tự xác định khoảng trống, ví dụ quần thể/bối cảnh chưa được phủ; hệ KHÔNG suy ra được]",
+    "Có 93 nghiên cứu đang/sắp tuyển trên ClinicalTrials.gov — cần đối chiếu để tránh trùng lặp (xem §3.6 của G0_A1)"
+  ],
+  "design_suggestion": "Nghiên cứu phân tích dưới nhóm / quần thể đặc thù / pragmatic trial",
+  "novelty_concern": "⚠ Chủ đề đã có nhiều SR/MA → cần biện minh tính mới rõ ràng | ⚠ ClinicalTrials.gov: 93 nghiên cứu ĐANG/SẮP TUYỂN cho truy vấn này (tổng 380 hồ sơ đăng ký). 'Chưa công bố' KHÔNG có nghĩa 'chưa ai làm' — đọc các hồ sơ ở §3.6 trước khi biện minh tính mới; nguy cơ trùng đề tài thật.",
+  "registry_check": {
+    "registry": "ClinicalTrials.gov",
+    "query": "(telephone[tiab] OR telemedicine[tiab] OR \"remote consultation\"[tiab] OR telemonitoring[tiab]) AND (hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (non-inferiority[tiab] OR noninferiority[tiab] OR follow-up[tiab])",
+    "checked": true,
+    "n_trials": 380,
+    "n_active": 93,
+    "trials": [
+      {
+        "nct_id": "NCT07680478",
+        "title": "Nutrition Intervention Combined With Resmetirom for MASH",
+        "status": "NOT_YET_RECRUITING",
+        "start_date": "2026-10-01",
+        "phases": [
+          "PHASE4"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Metabolic Dysfunction-Associated Steatohepatitis (MASH)",
+        "enrollment": 120,
+        "url": "https://clinicaltrials.gov/study/NCT07680478"
+      },
+      {
+        "nct_id": "NCT01790906",
+        "title": "Renal Sympathetic Denervation for Patients With Chronic Heart Failure",
+        "status": "UNKNOWN",
+        "start_date": "2013-01",
+        "phases": [
+          "NA"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Chronic Heart Failure",
+        "enrollment": 200,
+        "url": "https://clinicaltrials.gov/study/NCT01790906"
+      },
+      {
+        "nct_id": "NCT05393232",
+        "title": "Groceries for Black Residents of Boston to Stop Hypertension Among Adults With Treated Hypertension",
+        "status": "COMPLETED",
+        "start_date": "2022-10-13",
+        "phases": [
+          "NA"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Hypertension",
+        "enrollment": 176,
+        "url": "https://clinicaltrials.gov/study/NCT05393232"
+      },
+      {
+        "nct_id": "NCT01935349",
+        "title": "Evaluation of Quality of Care - Patient Empowerment Programme, HA",
+        "status": "COMPLETED",
+        "start_date": "2010-09",
+        "phases": null,
+        "study_type": "OBSERVATIONAL",
+        "conditions": "Diabetes Mellitus, Hypertension",
+        "enrollment": 2496,
+        "url": "https://clinicaltrials.gov/study/NCT01935349"
+      },
+      {
+        "nct_id": "NCT07634068",
+        "title": "Vertebrobasilar Dolichoectasia Treatment With Amiloride",
+        "status": "NOT_YET_RECRUITING",
+        "start_date": "2026-06",
+        "phases": [
+          "PHASE2"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Vertebrobasilar Dolichoectasia",
+        "enrollment": 6,
+        "url": "https://clinicaltrials.gov/study/NCT07634068"
+      }
+    ],
+    "error": null,
+    "checked_at": "2026-11-16T18:36:19",
+    "query_gui_ctgov": "(telephone OR telemedicine OR \"remote consultation\" OR telemonitoring ) AND (hypertension OR hypertension ) AND (\"blood pressure control\" OR \"blood pressure\" ) AND (non-inferiority OR noninferiority OR follow-up )"
+  },
+  "guardrail": {
+    "passed": true,
+    "n_errors": 0,
+    "errors": []
+  },
+  "artifacts": {
+    "A1_markdown": "exports/ZZCANARY-RCT-KHONG-KEM/G0_A1_PICO_FINER_ZZCANARY-RCT-KHONG-KEM.md",
+    "A1_docx": "exports/ZZCANARY-RCT-KHONG-KEM/G0_A1_PICO_FINER_ZZCANARY-RCT-KHONG-KEM.docx"
+  },
+  "pending_doctor_actions": [
+    "Điền gate_params.G0.population/intervention/comparison/outcomes trong study_meta.json (ghi 'không có nhóm so sánh — mô tả' nếu đúng vậy).",
+    "Điền primary_outcome (1 kết cục) + primary_outcome_measure + primary_outcome_timepoint.",
+    "Điền test_type (superiority/non_inferiority/equivalence/descriptive); nếu không phải nghiên cứu mô tả thì điền cả hypothesis_h0/h1 và expected_direction.",
+    "Điền question_type: treatment (≡ therapy)/diagnosis/prognosis/harm/descriptive/qualitative/prediction_model.",
+    "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận.",
+    "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification.",
+    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"ae8b36e2c347ab58\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+    "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn).",
+    "Chạy: python tools/g0_quality_gate.py --study ZZCANARY-RCT-KHONG-KEM"
+  ],
+  "next_gate": "G1 — Thiết kế nghiên cứu (CHỈ sau khi G0 đạt PASS_G0_CONFIRMED)",
+  "disclaimer": "Cần bác sĩ kiểm chứng.",
+  "danh_muc_doc_bo_sung": [],
+  "quality_contract_version": "G0-2026.1",
+  "quality_gate": {
+    "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
+    "contract_version": "G0-2026.1",
+    "automated_checks_passed": true,
+    "human_confirmation_complete": false,
+    "pending_actions": [
+      "Điền gate_params.G0.population/intervention/comparison/outcomes trong study_meta.json (ghi 'không có nhóm so sánh — mô tả' nếu đúng vậy).",
+      "Điền primary_outcome (1 kết cục) + primary_outcome_measure + primary_outcome_timepoint.",
+      "Điền test_type (superiority/non_inferiority/equivalence/descriptive); nếu không phải nghiên cứu mô tả thì điền cả hypothesis_h0/h1 và expected_direction.",
+      "Điền question_type: treatment (≡ therapy)/diagnosis/prognosis/harm/descriptive/qualitative/prediction_model.",
+      "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận.",
+      "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification.",
+      "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"ae8b36e2c347ab58\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+      "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn)."
+    ],
+    "dau_van_tay_luc_cham": "ae8b36e2c347ab58"
+  },
+  "needs_input": {
+    "blocked": true,
+    "reason_code": "MISSING_PICO",
+    "human_message": "G0 đã dựng xong NỀN BẰNG CHỨNG nhưng CÂU HỎI NGHIÊN CỨU chưa được bác sĩ chốt (còn chờ: G0-HUMAN-01, G0-HUMAN-02, G0-HUMAN-03, G0-HUMAN-04, G0-HUMAN-05, G0-HUMAN-06, G0-HUMAN-07, G0-HUMAN-08). Hệ KHÔNG tự viết PICO thay bác sĩ.",
+    "remediation": {
+      "action": "rerun_with_real_input",
+      "command": "sửa exports/<study>/study_meta.json → gate_params.G0 rồi chạy: python tools/g0_quality_gate.py --study <study>",
+      "study_meta_patch": {
+        "gate_params": {
+          "G0": {
+            "pico_confirmed": true
+          }
+        }
+      },
+      "must_not_fabricate": [
+        "PICO",
+        "primary_outcome",
+        "FINER",
+        "hypothesis"
+      ]
+    },
+    "supplied_by": "doctor"
+  }
+}

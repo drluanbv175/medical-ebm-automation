@@ -1,0 +1,7 @@
+{
+  "luc": "2026-11-15T20:05:51+07:00",
+  "study": "ZZCANARY-TONG-QUAN-GOP",
+  "topic": "Hiệu quả của thuốc ức chế SGLT2 lên nhập viện vì suy tim ở người đái tháo đường típ 2 không có suy tim lúc đầu: tổng quan hệ thống và phân tích gộp các thử nghiệm ngẫu nhiên",
+  "query_en": "(\"Sodium-Glucose Transporter 2 Inhibitors\"[MeSH] OR \"SGLT2 inhibitor*\"[tiab] OR empagliflozin[tiab] OR dapagliflozin[tiab] OR canagliflozin[tiab]) AND (\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (\"heart failure\"[tiab] OR \"Heart Failure\"[MeSH]) AND (\"randomized controlled trial\"[pt] OR randomi*[tiab])",
+  "base_query": "(\"Sodium-Glucose Transporter 2 Inhibitors\"[MeSH] OR \"SGLT2 inhibitor*\"[tiab] OR empagliflozin[tiab] OR dapagliflozin[tiab] OR canagliflozin[tiab]) AND (\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (\"heart failure\"[tiab] OR \"Heart Failure\"[MeSH]) AND (\"randomized controlled trial\"[pt] OR randomi*[tiab])"
+}

@@ -273,7 +273,7 @@ def _bang_theo_muc_tieu(muc_tieu, dinh_tinh=frozenset()):
     ra = []
     for k, o in enumerate((str(x) for x in ob if str(x).strip()), 1):
         ten = re.sub(r"^\s*MT\s*\d+\s*(?:\([^)]*\))?\s*[:.]\s*", "", o).strip()
-        ten = ten if len(ten) <= 140 else ten[:139].rstrip() + "…"
+        # 17/11/2026 (phản biện máy): cắt ở 140 ký tự giữa chữ («nhằm giải thích k…») — tiêu đề giữ trọn mục tiêu.
         ra += ["", f"**Bảng MT{k} — Kết quả trả lời Mục tiêu {k} (MT{k}): {ten}**"]
         if k in dinh_tinh:  # mục tiêu của cấu phần định tính (đề tài hỗn hợp, 17/11/2026) — bảng chủ đề, theo §17
             ra += ["| Chủ đề | Mô tả chủ đề | Trích dẫn minh hoạ (đã khử định danh) |", "|---|---|---|",
@@ -685,7 +685,8 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             "",
             "### §9 PHÂN TÍCH ĐỘ NHẠY",
             "",
-            "- Thay đổi định nghĩa phơi nhiễm/kết cục ±1 SD  ",
+            # 17/11/2026 (phản biện máy, 9/16 đề tài): «±1 SD» vô nghĩa với phơi nhiễm/kết cục nhị phân.
+            "- Định nghĩa thay thế của phơi nhiễm/kết cục, khai trước khi xem dữ liệu  ",
             "- Complete case vs MI  ",
             "- [CẦN BÁC SĨ thêm kịch bản cụ thể]  ",
             "",

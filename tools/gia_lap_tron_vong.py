@@ -1472,6 +1472,58 @@ class TronVong:
         return {k: v for k, v in self.env.items()
                 if not k.startswith("PYTEST_") and k not in ("EBM_GATE_KEY_PATH", "USE_MOCK_SOURCES")}
 
+    def _tra_a12(self, pmid: Sequence[str]) -> Dict[str, Any]:
+        """Tra rút bài + metadata cho tập PMID (bước mạng DUY NHẤT của giả lập).
+
+        17/11/2026 (bác sĩ: «đưa 16 kịch bản vào CI»): CI không có mạng ổn định lẫn khoá NCBI. `GIA_LAP_A12_KHO=<tệp
+        .json>` là kho kết quả THEO TỪNG PMID: đủ mọi PMID trong kho ⇒ dựng lại đúng JSON của `check_citations --json`
+        và mã thoát theo CÙNG luật «sạch» (`la_van_de`, metadata «resolved») — không gọi mạng. Lượt có mạng thì ghi
+        thêm vào kho các PMID có kết luận dứt khoát (bỏ «unknown_*» — lỗi mạng không được thành dữ kiện).
+        `GIA_LAP_A12_CHI_KHO=1` ⇒ thiếu PMID trong kho là LỖI nói rõ cách bổ sung, không lặng lẽ gọi mạng."""
+        kho = os.environ.get("GIA_LAP_A12_KHO", "").strip()
+        d_kho: Dict[str, Dict[str, Any]] = {"retraction": {}, "metadata": {}}
+        if kho and Path(kho).is_file():
+            try:
+                d_kho = json.loads(Path(kho).read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                d_kho = {"retraction": {}, "metadata": {}}
+        if kho:
+            thieu = [x for x in pmid if x not in d_kho.get("retraction", {}) or x not in d_kho.get("metadata", {})]
+            if not thieu:
+                import check_citation_retraction as CCR  # noqa: PLC0415
+
+                r = {x: d_kho["retraction"][x] for x in pmid}
+                m = {x: d_kho["metadata"][x] for x in pmid}
+                van_de = any(CCR.la_van_de(r.get(x)) for x in pmid) or any(
+                    not isinstance(m.get(x), dict) or m[x].get("status") != "resolved" for x in pmid)
+                return {"ma": 1 if van_de else 0, "crash": False, "tu_kho": True,
+                        "ra": json.dumps({"retraction": r, "metadata": m}, ensure_ascii=False, indent=2)}
+            if os.environ.get("GIA_LAP_A12_CHI_KHO") == "1":
+                return {"ma": 9, "crash": False, "ra": (
+                    f"Kho A12 ghi sẵn thiếu {len(thieu)} PMID ({', '.join(thieu[:8])}) — chạy giả lập CÓ MẠNG một lần "
+                    f"với GIA_LAP_A12_KHO={kho} để bổ sung kho rồi commit tệp kho.")}
+        kq = self.chay_lenh(self._lenh("check_citations.py", "--pmids", ",".join(pmid), "--json"),
+                            self.repo, self._env_mang(), 900)
+        m_json = re.search(r"^\{.*^\}", str(kq.get("ra") or ""), re.S | re.M)
+        if kho and m_json:
+            try:
+                moi = json.loads(m_json.group(0))
+            except ValueError:
+                moi = {}
+            doi = False
+            for x in pmid:
+                r, mt = (moi.get("retraction") or {}).get(x), (moi.get("metadata") or {}).get(x)
+                if (isinstance(r, dict) and isinstance(mt, dict) and not str(r.get("status")).startswith("unknown")
+                        and not str(mt.get("status")).startswith("unknown")):
+                    d_kho.setdefault("retraction", {})[x] = r
+                    d_kho.setdefault("metadata", {})[x] = mt
+                    doi = True
+            if doi:
+                Path(kho).parent.mkdir(parents=True, exist_ok=True)
+                Path(kho).write_text(json.dumps({k: dict(sorted(v.items())) for k, v in d_kho.items()},
+                                                ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
+        return kq
+
     def _a12(self, *tep: Path, them: Sequence[str] = ()) -> None:
         """Người kiểm trích dẫn: mọi PMID trong các tệp (+ `them`: PMID chuẩn đề cương G10 sẽ chèn) ⇒ check_citations
         (rút bài 3 tầng + metadata, ghi receipt) ⇒ A12 chỉ ghi dòng «đã xác minh» khi lệnh trả 0."""
@@ -1483,8 +1535,7 @@ class TronVong:
         # không nạp cấu hình ⇒ nguồn giả); (2) ghi receipt bằng ĐÚNG hàm của check_citations trong môi trường KHOÁ GIẢ.
         # Bản đầu
         # gọi thẳng `--study` ngoài biến pytest ⇒ receipt của thư mục giả lập bị ký bằng khoá THẬT (sửa 15/11/2026).
-        kq = self.chay_lenh(self._lenh("check_citations.py", "--pmids", ",".join(pmid), "--json"),
-                            self.repo, self._env_mang(), 900)
+        kq = self._tra_a12(pmid)
         ra = str(kq.get("ra") or "")
         dong = [x for x in ra.splitlines() if x.strip() and "| INFO" not in x]
         self.buoc.append({"buoc": "A12 tra rút bài + metadata (mạng, không ký)", "lenh": "check_citations.py",

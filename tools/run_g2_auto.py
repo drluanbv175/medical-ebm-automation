@@ -164,7 +164,10 @@ RISK_PROFILES = {
         # ap_loai_can_thiep() thu hẹp theo loại khi PI đã chốt hoặc máy suy được từ PICO I.
         "risks": _rui_ro_rct_chua_ro_loai(),
         "risks_icf": list(_RUI_RO_RCT_CHUNG) + [_DONG_ICF_CHUA_RO_LOAI],
-        "benefits": "Phát sinh bằng chứng RCT cấp độ cao nhất; cải thiện thực hành điều trị; NTG có thể hưởng lợi trực tiếp từ can thiệp mới",
+        # 17/11/2026 (phản biện máy, 5/16 đề tài): lời lợi ích quá đà («cấp độ cao nhất», «hưởng lợi trực tiếp») mâu thuẫn
+        # với «không bảo đảm lợi ích» của phiếu đồng ý.
+        "benefits": ("Góp phần tạo bằng chứng cho thực hành điều trị; người tham gia có thể có hoặc không có lợi ích "
+                     "trực tiếp từ can thiệp"),
     },
     "cohort": {
         "risk_level": "TỐI THIỂU",
@@ -1815,8 +1818,8 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
    ✅ Anh/chị có thể KHÔNG ĐỒNG Ý tham gia mà KHÔNG ảnh hưởng
       đến dịch vụ y tế đang nhận
    ✅ Anh/chị có thể RÚT LUI bất kỳ lúc nào, không cần giải thích
-   ✅ Nếu rút lui, dữ liệu đã thu thập: ☐ sẽ bị xóa ☐ vẫn dùng
-      (do tính ẩn danh — ghi rõ chính sách) [CẦN XÁC NHẬN]
+   ✅ Nếu rút lui, dữ liệu đã thu thập: ☐ sẽ bị xóa ☐ vẫn được dùng ở dạng đã ẩn danh
+      [CẦN XÁC NHẬN]
 {icf_6b}
 {icf_6c}
 {icf_6d}

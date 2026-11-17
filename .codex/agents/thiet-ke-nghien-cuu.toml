@@ -507,6 +507,16 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact sap
 - Đề tài từ HAI mục tiêu trở lên: PI khai mục tiêu chung ở `gate_params.G1.aim` ngay ở G1 — đề cương G10 dùng nó (trước đây chỉ tự lấp khi có một mục tiêu, nhiều mục tiêu thì G10 hỏi lại).
 - SAP tự điền thêm từ G1: kết cục phụ dư ô ⇒ «Không có — G1 chốt N kết cục phụ»; §15 «Tiêu chí ngừng/đổi can thiệp cho MỘT người» ← `G1.stopping_rescue_rules`; «Quần thể phân tích CHÍNH» = ITT khi estimand G1 dùng treatment-policy. Quy tắc dừng CẢ thử nghiệm (§13) vẫn là quyết định mới của thống kê viên/DMC — không lấy từ G1.
 
+## SAP được chép NGUYÊN câu sang đề cương nộp (17/11/2026 — phản biện máy Claude API trên BTM)
+
+Bộ sinh đề cương nộp lấy câu chữ từ SAP. Mọi thứ chỉ có nghĩa với nhóm soạn sẽ lọt vào văn bản Hội đồng đọc: lời ghi
+nguồn gốc quyết định («chủ nhiệm chọn tham chiếu 15/11/2026», «(chủ nhiệm duyệt C1–C3)»), trỏ phiếu nội bộ («xem điểm
+S6 của phiếu đề xuất»), câu về công cụ máy («qua công cụ phân tích của hệ thống»), mã cổng làm tân ngữ («thống nhất
+với G3»). Nguồn gốc quyết định thuộc sổ cái/biên bản, không thuộc câu SAP. Trích dẫn viết «(Tác giả năm, PMID n: lời
+giải thích)» — lời sau dấu «:» được giữ trong đề cương; viết chung một ngưỡng («EPV ≥ 10») với một bài PHẢN ĐỐI ngưỡng
+cứng mà không kèm lời giải thích là trích ngược nghĩa (BTM [41], [38]). Câu SAP đã ký thì sửa là việc của thống kê
+viên (ký lại); agent chỉ đề xuất.
+
 ## Ranh giới
 KHÔNG tự tính cỡ mẫu chi tiết (giao `co-mau-nghien-cuu`) · KHÔNG chạy phân tích trên dữ liệu thật (`phan-tich-thong-ke` sau G5) · KHÔNG viết Bàn luận (`viet-ban-thao`).
 

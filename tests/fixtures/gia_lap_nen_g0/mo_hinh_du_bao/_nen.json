@@ -1,0 +1,7 @@
+{
+  "luc": "2026-11-15T20:02:37+07:00",
+  "study": "ZZCANARY-DU-BAO",
+  "topic": "Phát triển mô hình dự báo nguy cơ nhập viện trong 12 tháng ở người suy tim điều trị ngoại trú",
+  "query_en": "(\"Heart Failure\"[MeSH] OR \"heart failure\"[tiab]) AND (outpatient*[tiab] OR ambulatory[tiab]) AND (\"prediction model\"[tiab] OR \"risk score\"[tiab] OR \"prognostic model\"[tiab]) AND (hospitalization[tiab] OR hospitalisation[tiab] OR \"Hospitalization\"[MeSH])",
+  "base_query": "(\"Heart Failure\"[MeSH] OR \"heart failure\"[tiab]) AND (outpatient*[tiab] OR ambulatory[tiab]) AND (\"prediction model\"[tiab] OR \"risk score\"[tiab] OR \"prognostic model\"[tiab]) AND (hospitalization[tiab] OR hospitalisation[tiab] OR \"Hospitalization\"[MeSH])"
+}

@@ -20,14 +20,28 @@
 
 | Viết tắt | Nghĩa |
 |---|---|
+| ACEi | Thuốc ức chế men chuyển angiotensin |
+| ADA | Hiệp hội Đái tháo đường Hoa Kỳ (American Diabetes Association) |
+| ARB | Thuốc chẹn thụ thể angiotensin II |
+| BHYT | Bảo hiểm y tế |
+| BMI | Chỉ số khối cơ thể (body mass index) |
+| BTM | Bệnh thận mạn |
+| EPV | Số biến cố trên mỗi tham số (events per variable) |
+| HIS | Hệ thống thông tin bệnh viện (hospital information system) |
+| HbA1c | Huyết sắc tố gắn glucose (glycated haemoglobin) |
 | IQR | Khoảng tứ phân vị |
+| KDIGO | Kidney Disease: Improving Global Outcomes |
 | KTC | Khoảng tin cậy |
 | MAR | Thiếu ngẫu nhiên (missing at random) |
 | MI | Gán đa trị (multiple imputation) |
 | OR | Tỷ số chênh (odds ratio) |
+| PR | Tỷ số tỷ lệ hiện mắc (prevalence ratio) |
+| RAASi | Thuốc ức chế hệ renin–angiotensin–aldosteron |
 | SD | Độ lệch chuẩn |
 | SGLT2 | Đồng vận chuyển natri–glucose 2 |
+| UACR | Tỷ số albumin/creatinin niệu (urine albumin-to-creatinine ratio) |
 | VIF | Hệ số phóng đại phương sai |
+| eGFR | Mức lọc cầu thận ước tính (estimated glomerular filtration rate) |
 | ĐTĐ | Đái tháo đường |
 
 # 1. ĐẶT VẤN ĐỀ
@@ -74,21 +88,22 @@ Mọi tài liệu được trích dẫn trong đề cương đã được đối
 
 Ở các hệ thống có dữ liệu thường quy, chuỗi chăm sóc thận cho người ĐTĐ típ 2 hụt ở mọi bước. Xét nghiệm: chỉ 24,9% được làm cả creatinin lẫn UACR [5]; UACR 43,3% trong khi creatinin 84,8% [6]; phân tích gộp ước tỷ lệ xét nghiệm uACR khoảng 22% theo mô hình cố định, dao động rất rộng [7]. Ghi nhận: 54% bệnh thận mạn theo xét nghiệm chưa được chẩn đoán [8]; chẩn đoán chỉ được ghi ở 46,9% người có xét nghiệm bất thường lặp lại [9]. Điều trị: khoảng trống kê SGLT2i 80,3% và RAASi 42,0% ở bệnh thận ĐTĐ [10]. Trong nước: các nghiên cứu tìm được đo tỷ lệ bệnh thận mạn trong mẫu ĐTĐ típ 2 ngoại trú (15,32% đến 31,1%) hoặc mô tả kê đơn ở người đã có bệnh thận mạn; chỉ một nghiên cứu đo tỷ lệ làm UACR, ở người tăng huyết áp nội trú [11]. Giới hạn: gần như toàn bộ là nghiên cứu quan sát trên dữ liệu thường quy, đa số ở Âu–Mỹ–Úc; chưa đọc toàn văn và không chấm GRADE cho tập này.
 
-**Bảng 3.1. Các tổng quan hệ thống, hướng dẫn và thử nghiệm chính liên quan đến đề tài**
+**Bảng 3.1. Các tổng quan hệ thống, hướng dẫn, đồng thuận chuyên môn và thử nghiệm chính liên quan đến đề tài**
 
 | Tài liệu | Năm | Loại nghiên cứu | Tên bài (nguyên văn) |
 |---|---|---|---|
 | Albekery và cộng sự [7] | 2025 | Tổng quan hệ thống/phân tích gộp | Underutilization of albuminuria screening in adults with diabetes mellitus or hypertension: a systematic review and meta-analysis |
 | Hiệp hội Đái tháo đường Hoa Kỳ (ADA) [2] | 2026 | Hướng dẫn thực hành | 11. Chronic Kidney Disease and Risk Management: Standards of Care in Diabetes-2026 |
-| Li và cộng sự [12] | 2025 | Hướng dẫn thực hành | Kidney Disease: Improving Global Outcomes Summit Recommendations on Implementation of Diabetes Management in CKD: From Primary to Data-Driven Collaborative Care |
 | KDIGO [3] | 2024 | Hướng dẫn thực hành | KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease |
-| Goldhaber và cộng sự [13] | 2026 | Thử nghiệm ngẫu nhiên | Electronic alert-based computerized decision support for detection of chronic kidney disease in type 2 diabetes mellitus: CKD-DETECT |
+| Li và cộng sự [12] | 2025 | Đồng thuận chuyên môn/báo cáo hội nghị | Kidney Disease: Improving Global Outcomes Summit Recommendations on Implementation of Diabetes Management in CKD: From Primary to Data-Driven Collaborative Care |
+| Liew và cộng sự [13] | 2023 | Đồng thuận chuyên môn/báo cáo hội nghị | Practical considerations for the use of SGLT-2 inhibitors in the Asia-Pacific countries-An expert consensus statement |
+| Goldhaber và cộng sự [14] | 2026 | Thử nghiệm ngẫu nhiên | Electronic alert-based computerized decision support for detection of chronic kidney disease in type 2 diabetes mellitus: CKD-DETECT |
 
-Các tổng quan, nghiên cứu và hướng dẫn liên quan khác đã được rà soát khi xây dựng đề cương này [14–36].
+Các tổng quan, nghiên cứu và hướng dẫn liên quan khác đã được rà soát khi xây dựng đề cương này [15–36].
 
 ## 3.3. Khoảng trống nghiên cứu và đóng góp của đề tài
 
-Mở rộng bối cảnh: đo trọn chuỗi chăm sóc thận (xét nghiệm, ghi nhận chẩn đoán, điều trị theo chỉ định) ở người ĐTĐ típ 2 ngoại trú một bệnh viện quân đội tuyến cuối; các nghiên cứu trong nước tìm được chỉ đo tỷ lệ BTM trong mẫu đã xét nghiệm hoặc mô tả kê đơn ở người đã có BTM (xem G0_KHOANG_TRONG). Phạm vi tra: PubMed và Crossref; chưa tra Google Scholar và thư viện luận văn.
+Mở rộng bối cảnh: đo trọn chuỗi chăm sóc thận (xét nghiệm, ghi nhận chẩn đoán, điều trị theo chỉ định) ở người ĐTĐ típ 2 ngoại trú một bệnh viện quân đội tuyến cuối; các nghiên cứu trong nước tìm được chỉ đo tỷ lệ BTM trong mẫu đã xét nghiệm hoặc mô tả kê đơn ở người đã có BTM. Phạm vi tra: PubMed và Crossref; chưa tra Google Scholar và thư viện luận văn.
 
 Tra cứu ClinicalTrials.gov ngày 25/10/2026 với cùng chiến lược ghi nhận 0 hồ sơ đăng ký, trong đó 0 nghiên cứu đang hoặc sắp tuyển người tham gia.
 
@@ -101,7 +116,7 @@ Nghiên cứu được thiết kế theo phương pháp nghiên cứu cắt ngan
 ## 4.2. Địa điểm và thời gian nghiên cứu
 
 - Địa điểm: Khoa Khám bệnh, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh — bệnh viện quân đội tuyến cuối; người bệnh gồm quân nhân, người có BHYT và người khám dịch vụ, theo dõi ĐTĐ ở phòng khám nội tiết hoặc nội chung. Nguồn dữ liệu: hồ sơ bệnh án điện tử trên phần mềm eHospital (HIS của BVQY175) — lượt khám, mã ICD-10, kết quả xét nghiệm, đơn thuốc ngoại trú.
-- Thời gian: Cửa sổ dữ liệu hồi cứu 01/01/2026–31/12/2026. Thời gian thực hiện dự kiến 11/2026–09/2027 theo sổ tiến độ đề tài. Trích xuất dữ liệu chỉ bắt đầu sau khi Hội đồng Đạo đức BVQY175 phê duyệt (T0), kế hoạch phân tích thống kê đã khoá và cửa sổ đã khép (sớm nhất tháng 01/2027) — dự kiến 19/01–28/02/2027..
+- Thời gian: Cửa sổ dữ liệu hồi cứu 01/01/2026–31/12/2026. Thời gian thực hiện dự kiến 11/2026–09/2027 theo sổ tiến độ đề tài. Trích xuất dữ liệu chỉ bắt đầu sau khi Hội đồng Đạo đức BVQY175 phê duyệt (T0), kế hoạch phân tích thống kê đã khoá và cửa sổ đã khép (sớm nhất tháng 01/2027) — dự kiến 19/01–28/02/2027.
 
 ## 4.3. Đối tượng nghiên cứu
 
@@ -125,7 +140,7 @@ Người từ 18 tuổi, chẩn đoán đái tháo đường típ 2 (ICD-10 E11)
 
 Cỡ mẫu được tính theo công thức ước lượng một tỷ lệ: n = Z²(1−α/2) × p(1 − p) / d², với độ tin cậy 95%, tỷ lệ ước tính p = 0,5 (chọn p = 0,5 để có cỡ mẫu lớn nhất khi chưa có số liệu tại cơ sở) và sai số tuyệt đối cho phép d = 0,05. Cỡ mẫu tính được là 385 người.
 
-Việc xác định cỡ mẫu và lập kế hoạch phân tích tham khảo các hướng dẫn phương pháp học liên quan [38].
+Việc xác định cỡ mẫu, lập kế hoạch phân tích và trình bày đề cương tham khảo các hướng dẫn phương pháp học và chuẩn báo cáo liên quan [38].
 
 ### 4.4.2. Phương pháp chọn mẫu
 
@@ -134,7 +149,7 @@ Chọn mẫu ngẫu nhiên đơn ở cấp người bệnh: (1) lập khung mẫ
 ## 4.5. Biến số và chỉ số nghiên cứu
 
 - Kết cục chính: Được xét nghiệm đủ UACR và creatinin huyết thanh trong cửa sổ 12 tháng, xác định bằng biến nhị phân trích từ hồ sơ trên eHospital: bằng 1 khi trong 01/01–31/12/2026 người bệnh có ít nhất một kết quả UACR (tỷ số albumin/creatinin niệu, mg/g hoặc mg/mmol) và ít nhất một kết quả creatinin huyết thanh (để tính eGFR) trong eHospital; bằng 0 khi thiếu một hoặc cả hai. Xét nghiệm albumin niệu không ở dạng tỷ số (nồng độ microalbumin niệu đơn thuần, que nhúng protein niệu) không tính là UACR ở phân tích chính — ghi riêng và đưa vào phân tích độ nhạy. Kết quả làm ở cơ sở khác chỉ được tính ở phân tích độ nhạy, và chỉ khi bệnh án ghi rõ ngày và kết quả, đánh giá tại một khoảng cắt ngang: cửa sổ hồi cứu 12 tháng 01/01/2026–31/12/2026 [2]; không theo dõi dọc.
-- Kết cục phụ: phụ 1 — bệnh thận mạn theo KDIGO 2024 [3]: eGFR dưới 60 mL/phút/1,73 m² và/hoặc UACR từ 30 mg/g (3 mg/mmol), bất thường ở 2 lần đo cách nhau từ 90 ngày; chỉ 1 lần bất thường thì xếp nhóm «nghi bệnh thận mạn», báo cáo riêng. eGFR tính từ creatinin bằng phương trình CKD-EPI 2021 không hệ số chủng tộc [39]. Mẫu số là người có đủ xét nghiệm để phân loại; báo cáo phân bố theo nhóm và A1–A3; phụ 2 — bệnh thận mạn chưa được ghi nhận: người thoả định nghĩa bệnh thận mạn theo xét nghiệm (Phụ 1) nhưng không có mã ICD-10 của bệnh thận mạn hoặc biến chứng thận do ĐTĐ ở bất kỳ lượt khám nào trong cửa sổ (danh sách mã chốt cùng codebook); mẫu số là người có bệnh thận mạn theo xét nghiệm; phụ 3 — điều trị bảo vệ thận ở người đủ chỉ định theo KDIGO 2022 [4]: (a) ACEi hoặc ARB ở người có tăng huyết áp và albumin niệu (UACR từ 30 mg/g); (b) SGLT2i ở người có bệnh thận mạn và eGFR từ 20. «Đang dùng» là có đơn kê thuốc nhóm đó tại lượt khám cuối cùng trong cửa sổ; người có chống chỉ định ghi trong hồ sơ được loại khỏi mẫu số và báo cáo riêng; phụ 4 — yếu tố liên quan với việc không được xét nghiệm đủ: hồi quy Poisson phương sai vững, báo cáo tỷ số tỷ lệ hiện mắc (PR) kèm KTC 95%; biến giải thích như.intervention; phân tích thăm dò.
+- Kết cục phụ: phụ 1 — bệnh thận mạn theo KDIGO 2024 [3]: eGFR dưới 60 mL/phút/1,73 m² và/hoặc UACR từ 30 mg/g (3 mg/mmol), bất thường ở 2 lần đo cách nhau từ 90 ngày; chỉ 1 lần bất thường thì xếp nhóm «nghi bệnh thận mạn», báo cáo riêng. eGFR tính từ creatinin bằng phương trình CKD-EPI 2021 không hệ số chủng tộc [39]. Mẫu số là người có đủ xét nghiệm để phân loại; báo cáo phân bố theo nhóm và A1–A3; phụ 2 — bệnh thận mạn chưa được ghi nhận: người thoả định nghĩa bệnh thận mạn theo xét nghiệm (Phụ 1) nhưng không có mã ICD-10 của bệnh thận mạn hoặc biến chứng thận do ĐTĐ ở bất kỳ lượt khám nào trong cửa sổ (danh sách mã chốt cùng codebook); mẫu số là người có bệnh thận mạn theo xét nghiệm; phụ 3 — điều trị bảo vệ thận ở người đủ chỉ định theo KDIGO 2022 [4]: (a) ACEi hoặc ARB ở người có tăng huyết áp và albumin niệu (UACR từ 30 mg/g); (b) SGLT2i ở người có bệnh thận mạn và eGFR từ 20. «Đang dùng» là có đơn kê thuốc nhóm đó tại lượt khám cuối cùng trong cửa sổ; người có chống chỉ định ghi trong hồ sơ được loại khỏi mẫu số và báo cáo riêng; phụ 4 — yếu tố liên quan với việc không được xét nghiệm đủ: hồi quy Poisson phương sai vững, báo cáo tỷ số tỷ lệ hiện mắc (PR) kèm KTC 95%; biến giải thích như các yếu tố khảo sát nêu ở mục 4.5; phân tích thăm dò.
 - Các biến khác (đặc điểm chung, biến hiệu chỉnh): nhóm eGFR theo KDIGO; nhóm albumin niệu theo KDIGO (A1–A3); người bệnh đủ chỉ định ACEi/ARB theo KDIGO 2022; người bệnh đủ chỉ định SGLT2i theo KDIGO 2022.
 - Định nghĩa, loại biến và cách mã hoá của từng biến trình bày ở Phụ lục D.
 
@@ -171,7 +186,7 @@ Chọn mẫu ngẫu nhiên đơn ở cấp người bệnh: (1) lập khung mẫ
 | Sai lệch thông tin — thuốc kê hoặc mua ngoài BVQY175 | Ước lượng thấp tỷ lệ đang dùng ACEi/ARB và SGLT2i. | Ghi riêng thuốc đang dùng mà bệnh án có ghi nhưng không có đơn trong eHospital; nêu rõ trong hạn chế. |
 | Thời gian quan sát không đều trong cửa sổ | Người bắt đầu khám muộn có ít thời gian được xét nghiệm nên kéo tỷ lệ xuống thấp. | Báo phân bố số tháng từ lượt khám đầu đến hết cửa sổ; phân tích độ nhạy giới hạn người có lượt khám đầu trước 01/07/2026. |
 | Nhiễu và tương quan trong cụm ở phân tích yếu tố liên quan (MT3) | Không xác định trước; chỉ ảnh hưởng MT3, không ảnh hưởng ước lượng tỷ lệ của MT1–MT2. | Mô hình đa biến với tập biến đã chốt; phòng khám theo dõi chính là biến trong mô hình; sai số chuẩn vững; diễn giải là mối liên quan, không nhân quả. |
-| Sai lệch báo cáo và phân tích có chọn lọc | Chỉ báo các chỉ số «đẹp» hoặc đổi định nghĩa sau khi thấy số liệu. | Khoá kế hoạch phân tích thống kê trước khi nhận dữ liệu; báo cáo đủ mọi kết cục đã định trước theo STROBE và RECORD; cân nhắc đăng ký công khai đề cương (quyết). |
+| Sai lệch báo cáo và phân tích có chọn lọc | Chỉ báo các chỉ số «đẹp» hoặc đổi định nghĩa sau khi thấy số liệu. | Khoá kế hoạch phân tích thống kê trước khi nhận dữ liệu; báo cáo đủ mọi kết cục đã định trước theo STROBE và RECORD; cân nhắc đăng ký công khai đề cương. |
 | Sai lệch người trích (chủ nhiệm vừa trích dữ liệu vừa là bác sĩ của khoa được đánh giá) | Có thể ghi nhận xét nghiệm hoặc thuốc ở chỗ không rõ ràng → ước lượng CAO chất lượng chăm sóc. | Quy tắc trích và định nghĩa từng biến viết trước; chỉ ghi dữ kiện khách quan có trong hồ sơ (kết quả xét nghiệm, mã, đơn thuốc), không diễn giải; người thứ hai độc lập trích lại 10% hồ sơ chọn ngẫu nhiên, báo mức đồng thuận (kappa) ở từng biến chính. |
 
 ## 4.9. Xử lý và phân tích số liệu
@@ -180,7 +195,7 @@ Kế hoạch phân tích thống kê (phiên bản 1.0) được khoá trước 
 
 **Quần thể phân tích.**
 
-- Quần thể chính: Mọi hồ sơ có đủ tiêu chuẩn — đưa vào mẫu = 1, chọn theo thứ tự ngẫu nhiên từ khung mẫu eHospital (SOP-TR-01). Không tính 10 hồ sơ tập trích.
+- Quần thể chính: Mọi hồ sơ có đủ tiêu chuẩn — đưa vào mẫu = 1, chọn theo thứ tự ngẫu nhiên từ khung mẫu eHospital (theo quy trình chuẩn SOP-TR-01 của đề tài). Không tính 10 hồ sơ tập trích.
 - Quần thể con theo từng kết cục:
   - Kết cục chính và MT3: toàn bộ N.
   - Phụ 1 (phân loại BTM): người có phân loại bệnh thận mạn theo xét nghiệm khác 9 (đủ xét nghiệm để phân loại).
@@ -199,7 +214,7 @@ Kế hoạch phân tích thống kê (phiên bản 1.0) được khoá trước 
 
 **Phân tích chính.**
 
-- Phương pháp: Ước lượng tỷ lệ được xét nghiệm đủ UACR và creatinin năm 2026 trên toàn bộ N kèm KTC 95% Wilson; không kiểm định giả thuyết (thiết kế theo độ chính xác). Không áp hiệu chỉnh quần thể hữu hạn ở phân tích chính, cho thống nhất với; nếu biết kích thước khung mẫu thì báo thêm KTC có hiệu chỉnh quần thể hữu hạn như một thông tin phụ.
+- Phương pháp: Ước lượng tỷ lệ được xét nghiệm đủ UACR và creatinin năm 2026 trên toàn bộ N kèm KTC 95% Wilson; không kiểm định giả thuyết (thiết kế theo độ chính xác). Không áp hiệu chỉnh quần thể hữu hạn ở phân tích chính, cho thống nhất với cách tính cỡ mẫu; nếu biết kích thước khung mẫu thì báo thêm KTC có hiệu chỉnh quần thể hữu hạn như một thông tin phụ.
 - Quần thể: Toàn bộ hồ sơ đủ tiêu chuẩn.
 - Trình bày: Tỷ lệ (%) và KTC 95%; kèm hai thành phần: tỷ lệ có ít nhất một creatinin và tỷ lệ có ít nhất một UACR dạng tỷ số. Không báo giá trị p đơn độc.
 - Kết cục phụ 1–3 (phụ 1–2: MT1; phụ 3: MT2): Tỷ lệ và KTC 95% Wilson trên đúng quần thể con; bảng chéo G × A theo KDIGO 2024.
@@ -208,10 +223,10 @@ Kế hoạch phân tích thống kê (phiên bản 1.0) được khoá trước 
 
 - Mục tiêu: MT3 — phân tích thăm dò, không kiểm định giả thuyết định trước, không suy nhân quả.
 - Mô hình: Hồi quy Poisson liên kết log với phương sai vững (sandwich) để ước lượng trực tiếp tỷ số tỷ lệ hiện mắc (PR) của không được xét nghiệm đủ (biến phụ thuộc của MT3) [40]. Báo PR thô (từng biến) và PR hiệu chỉnh (mô hình đầy đủ), kèm KTC 95%. Không dùng hồi quy logistic vì kết cục phổ biến, OR sẽ phóng đại PR.
-- Biến độc lập đưa vào: 12 biến giải thích đã chốt — tuổi (mỗi 10 năm), giới, nhóm đối tượng (quân nhân / BHYT / dịch vụ / khác), thời gian mắc ĐTĐ (mỗi 5 năm; thời gian mắc ĐTĐ (đơn vị 5 năm)), HbA1c dạng 3 mức (< 7% — mức tham chiếu / ≥ 7% / không làm HbA1c năm 2026; biến hbA1c 3 mức, chủ nhiệm chọn tham chiếu 15/11/2026), đang dùng insulin, số nhóm thuốc hạ glucose, tăng huyết áp, BMI (mỗi 5 kg/m²), bệnh tim mạch do xơ vữa hoặc suy tim, số lượt khám năm 2026, phòng khám theo dõi chính (nội tiết / nội chung / khác).
+- Biến độc lập đưa vào: 12 biến giải thích đã chốt — tuổi (mỗi 10 năm), giới, nhóm đối tượng (quân nhân / BHYT / dịch vụ / khác), thời gian mắc ĐTĐ (mỗi 5 năm; thời gian mắc ĐTĐ (đơn vị 5 năm)), HbA1c dạng 3 mức (< 7% — mức tham chiếu / ≥ 7% / không làm HbA1c năm 2026; biến hbA1c 3 mức), đang dùng insulin, số nhóm thuốc hạ glucose, tăng huyết áp, BMI (mỗi 5 kg/m²), bệnh tim mạch do xơ vữa hoặc suy tim, số lượt khám năm 2026, phòng khám theo dõi chính (nội tiết / nội chung / khác).
 - Lý do mã hoá HbA1c 3 mức: Người không làm HbA1c thiếu giá trị vì không được xét nghiệm (thiếu có cấu trúc, liên quan trực tiếp tới kết cục), nên không thay bằng giá trị gán; mức «không làm» giữ thông tin đó.
 - Phương pháp chọn biến: Đưa vào toàn bộ, không stepwise, không chọn theo giá trị p.
-- Số tham số và EPV: Mô hình đầy đủ có 16 tham số (biến phân loại k mức tính k−1). Nhóm kết cục ít hơn của được xét nghiệm đủ UACR và creatinin năm 2026 chia cho số tham số cho số biến cố trên mỗi tham số (EPV); ngưỡng sơ bộ EPV ≥ 10 [41]. Nếu EPV < 10, giảm tham số theo thứ tự định trước, dừng ngay khi EPV ≥ 10: (1) gộp nhóm đối tượng thành 2 mức (quân nhân / khác); (2) gộp phòng khám thành 2 mức (nội tiết / khác); (3) bỏ số nhóm thuốc hạ glucose (giữ insulin). Báo cáo rõ mô hình nào được dùng và vì sao.
+- Số tham số và EPV: Mô hình đầy đủ có 16 tham số (biến phân loại k mức tính k−1). Nhóm kết cục ít hơn của được xét nghiệm đủ UACR và creatinin năm 2026 chia cho số tham số cho số biến cố trên mỗi tham số (EPV); ngưỡng sơ bộ EPV ≥ 10 (EPV nên dựa vào dữ liệu, không phải quy tắc cứng [41]). Nếu EPV < 10, giảm tham số theo thứ tự định trước, dừng ngay khi EPV ≥ 10: (1) gộp nhóm đối tượng thành 2 mức (quân nhân / khác); (2) gộp phòng khám thành 2 mức (nội tiết / khác); (3) bỏ số nhóm thuốc hạ glucose (giữ insulin). Báo cáo rõ mô hình nào được dùng và vì sao.
 - Đa cộng tuyến: Tính VIF cho mọi biến; VIF > 5 được báo cáo, và cặp insulin – số nhóm thuốc được xử lý theo bước (3) ở trên.
 - Giả định: Dạng tuyến tính của biến liên tục (tuổi, thời gian mắc, BMI, số lượt khám) được xem bằng đồ thị phần dư; nếu lệch rõ thì báo thêm mô hình với biến chia nhóm như phân tích độ nhạy, không đổi mô hình chính.
 - Cụm: Phòng khám theo dõi chính là biến trong mô hình; sai số chuẩn vững.
@@ -242,7 +257,7 @@ Kế hoạch phân tích thống kê (phiên bản 1.0) được khoá trước 
 - Đn1 — dạng albumin niệu: Kết cục chính tính cả albumin hoặc protein niệu dạng khác.
 - Đn2 — xét nghiệm ngoài viện: Kết cục chính tính cả kết quả ngoài BVQY175 mà bệnh án ghi rõ ngày và kết quả.
 - Đn3 — thời gian quan sát: Kết cục chính chỉ trên người có lượt khám đầu trước 01/07/2026 (lượt khám đầu trước 01/07/2026 = 1).
-- Đn4 — định nghĩa quần thể: Kết cục chính chỉ trên người có đơn thuốc hạ glucose (cách đo xem điểm S6 của phiếu đề xuất).
+- Đn4 — định nghĩa quần thể: Kết cục chính chỉ trên người có đơn thuốc hạ glucose.
 - Đn5 — BTM chưa ghi nhận: Phụ 2 với danh mục mã thận mở rộng (thêm N19, I12, I13, R80).
 - Đn6 — chỉ định ACEi/ARB: Phụ 3a với albumin niệu chỉ cần một lần UACR ≥ 30 mg/g.
 - Đn7 — thuốc ngoài đơn: Phụ 3 tính cả thuốc bệnh án ghi «đang dùng» nhưng không có trong đơn eHospital.
@@ -251,17 +266,17 @@ Kế hoạch phân tích thống kê (phiên bản 1.0) được khoá trước 
 
 **Phần mềm.**
 
-- Phần mềm: Python 3.14.6 (statsmodels 0.14.6, pandas 2.3.3, numpy 2.4.6) qua công cụ phân tích của hệ thống và script phân tích lưu cùng gói tái lặp; ghi lại phiên bản thật lúc chạy vào nhật ký phân tích.
+- Phần mềm: Python 3.14.6 (statsmodels 0.14.6, pandas 2.3.3, numpy 2.4.6) và script phân tích lưu cùng gói tái lặp; ghi lại phiên bản thật lúc chạy vào nhật ký phân tích.
 
 ## 4.10. Đạo đức trong nghiên cứu
 
 Nghiên cứu tuân thủ Tuyên bố Helsinki và các quy định hiện hành của Việt Nam về đạo đức trong nghiên cứu y sinh học; đề cương được trình Hội đồng Đạo đức xét duyệt và chỉ triển khai sau khi được chấp thuận.
 
 - Mức nguy cơ: Nguy cơ tối thiểu; Hội đồng Đạo đức quyết định mức nguy cơ cuối cùng.
-- Hình thức xét duyệt: Đề nghị Hội đồng xem xét miễn xét duyệt.
+- Hình thức xét duyệt: Đề nghị xét duyệt theo quy trình rút gọn.
 - Quy trình đồng thuận: đề nghị miễn thủ tục đồng thuận (Phụ lục B).
 - Bảo mật thông tin: phiếu chỉ mang mã nghiên cứu, không ghi trường định danh nào của người bệnh; Bảng nối mã nghiên cứu với mã người bệnh lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ, huỷ sau khi khoá dữ liệu; chỉ phân tích bộ dữ liệu đã khử định danh.
-- Đăng ký nghiên cứu: không bắt buộc đăng ký (chủ nhiệm đề tài chốt).
+- Đăng ký nghiên cứu: không bắt buộc đăng ký.
 - Xung đột lợi ích: nhóm nghiên cứu cam kết không có xung đột lợi ích liên quan đến đề tài; mọi thay đổi sẽ được khai báo với Hội đồng.
 
 # 5. DỰ KIẾN KẾT QUẢ
@@ -305,7 +320,7 @@ Kết quả sẽ được trình bày và bàn luận theo từng mục tiêu ng
 
 ## 6.1. Nhân lực và phân công nhiệm vụ
 
-Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và kế hoạch phân tích thống kê, ký hồ sơ đạo đức, lập khung mẫu và trích hồ sơ trên eHospital, giữ bảng nối mã, chịu trách nhiệm chung. Nhà phương pháp/thống kê: cỡ mẫu, viết và khoá kế hoạch phân tích thống kê, phân tích. Quản lý dữ liệu: codebook và phiếu thu thập, nhập liệu, kiểm tra chất lượng, khoá cơ sở dữ liệu, lưu trữ tệp đã mã hoá. Người trích lại: trích lại độc lập 10% hồ sơ kiểm chứng. Người đảm nhận các vai ngoài chủ nhiệm do chủ nhiệm phân công (bảng RACI ở A13); một người có thể kiêm nhiều vai, riêng người trích lại phải khác chủ nhiệm.
+Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và kế hoạch phân tích thống kê, ký hồ sơ đạo đức, lập khung mẫu và trích hồ sơ trên eHospital, giữ bảng nối mã, chịu trách nhiệm chung. Nhà phương pháp/thống kê: cỡ mẫu, viết và khoá kế hoạch phân tích thống kê, phân tích. Quản lý dữ liệu: codebook và phiếu thu thập, nhập liệu, kiểm tra chất lượng, khoá cơ sở dữ liệu, lưu trữ tệp đã mã hoá. Người trích lại: trích lại độc lập 10% hồ sơ kiểm chứng. Người đảm nhận các vai ngoài chủ nhiệm do chủ nhiệm phân công (mục 6.1); một người có thể kiêm nhiều vai, riêng người trích lại phải khác chủ nhiệm.
 
 ## 6.2. Tiến độ thực hiện
 
@@ -329,7 +344,7 @@ Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và 
 
 ## 6.5. Đăng ký nghiên cứu và phổ biến kết quả
 
-- Không bắt buộc đăng ký (chủ nhiệm đề tài chốt).
+- Không bắt buộc đăng ký.
 
 # 7. TÀI LIỆU THAM KHẢO
 
@@ -345,29 +360,29 @@ Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và 
 10. Rikin S, Deccy S, Zhang C, Crandall J, Deng Y. Care Gaps in Sodium-Glucose Cotransporter-2 Inhibitor and Renin Angiotensin System Inhibitor Prescriptions for Patients with Diabetic Kidney Disease. Journal of general internal medicine. 2023. doi:10.1007/s11606-022-07863-0. PMID: 36352203.
 11. Bui TD, Le PT, Dinh LNT, Nguyen THN, Doan TPT. Diagnostic Testing Patterns Influence the Detected Burden of Hypertension-Mediated Organ Damage in Hospitalized Hypertensive Patients. Journal of clinical hypertension (Greenwich, Conn.). 2026. doi:10.1111/jch.70241. PMID: 41916900.
 12. Li PK, Cheung M, Chow KM, Leung MKW, Lim LL. Kidney Disease: Improving Global Outcomes Summit Recommendations on Implementation of Diabetes Management in CKD: From Primary to Data-Driven Collaborative Care. Kidney international reports. 2025. doi:10.1016/j.ekir.2025.06.010. PMID: 40814615.
-13. Goldhaber SZ, Rashedi S, Pfeferman M, Leyva H, Bacare B. Electronic alert-based computerized decision support for detection of chronic kidney disease in type 2 diabetes mellitus: CKD-DETECT. The American journal of medicine. 2026. doi:10.1016/j.amjmed.2026.04.022. PMID: 42031191.
-14. White IR, Royston P, Wood AM. Multiple imputation using chained equations: Issues and guidance for practice. Statistics in medicine. 2011. doi:10.1002/sim.4067. PMID: 21225900.
-15. Santana R, Umana CD, Oo ZT, Kolli ST, Bejugam VR. Optimizing guideline-directed medical therapy in chronic kidney disease and type 2 diabetes mellitus patients in primary care. The American journal of medicine. 2026. doi:10.1016/j.amjmed.2025.08.029. PMID: 40902917.
-16. Otieno FCF, Ogola EN, Kimando MW, Mutai K. The burden of unrecognised chronic kidney disease in patients with type 2 diabetes at a county hospital clinic in Kenya: implications to care and need for screening. BMC nephrology. 2020. doi:10.1186/s12882-020-1705-3. PMID: 32111192.
-17. Wallace H, Wick J, Neuen BL, Buizen L, Badve SV. Prevalence of SGLT2 inhibitor and GLP1 receptor agonist prescriptions in type 2 diabetes patients with and without chronic kidney disease: Analysis of an Australian primary care dataset. Diabetes, obesity & metabolism. 2025. doi:10.1111/dom.16608. PMID: 40667713.
-18. Raat W, Mamouris P, Mathieu C, Goderis G, Vaes B. Trends in type 2 diabetes medication use and guideline adherence in Belgian primary care (2019-2023). Primary care diabetes. 2025. doi:10.1016/j.pcd.2024.10.007. PMID: 39487060.
-19. Arzuaga A, García-Casanovas A, Mas-Morán A, Megia-Colet A, Adam-Ruiz D. A cross-regional initiative for improving type 2 diabetes mellitus care quality measurement in Spain - The Diabetes Lighthouse project. Primary care diabetes. 2026. doi:10.1016/j.pcd.2026.07.013. PMID: 42575755.
-20. Pasea L, Mohamed M, Dashtban A, Bhuva A, Mizani MA. Missed opportunities to manage complex comorbidity of heart failure, type 2 diabetes mellitus and chronic kidney disease: a retrospective cohort study. Heart (British Cardiac Society). 2025. doi:10.1136/heartjnl-2024-325046. PMID: 40037768.
-21. Awiphan R, Kowatcharakul W, Ruengorn C, Noppakun K, Thavorn K. Temporal trend in quality indicators of diabetes care performance among persons with type 2 diabetes in primary care practice: a serial cross-sectional analytical study, 2013/14 to 2021/22. Frontiers in endocrinology. 2024. doi:10.3389/fendo.2024.1359904. PMID: 39507052.
-22. 9. Pharmacologic Approaches to Glycemic Treatment: Standards of Care in Diabetes-2026. Diabetes care. 2026. doi:10.2337/dc26-S009. PMID: 41358900.
-23. Hao R, Myroniuk T, McGuckin T, Manca D, Campbell-Scherer D. Underuse of cardiorenal protective agents in high-risk diabetes patients in primary care: a cross-sectional study. BMC primary care. 2022. doi:10.1186/s12875-022-01731-w. PMID: 35606699.
-24. Barrot-de la Puente J, Lopez Arpí C, Ramon Granes M, Escribà Planes M, Fernandez-Camins B. Chronic kidney disease screening in primary care: a descriptive analysis of the Girona Sud health region. BMC primary care. 2025. doi:10.1186/s12875-025-03117-0. PMID: 41276836.
-25. Jones JL, Lumsden NG, Simons K, Ta'eed A, de Courten MP. Using electronic medical record data to assess chronic kidney disease, type 2 diabetes and cardiovascular disease testing, recognition and management as documented in Australian general practice: a cross-sectional analysis. Family medicine and community health. 2022. doi:10.1136/fmch-2021-001006. PMID: 35177470.
-26. 2. Diagnosis and Classification of Diabetes: Standards of Care in Diabetes-2026. Diabetes care. 2026. doi:10.2337/dc26-S002. PMID: 41358893.
-27. Zahradka I, Petr V, Tichanek F, Chroma A, Neskudla T. Prevalence, risk factors and renoprotective treatment of chronic kidney disease among internal medicine outpatients at a Central European tertiary care centre: a cross-sectional study. BMJ open. 2026. doi:10.1136/bmjopen-2026-121190. PMID: 42838586.
-28. Stefanska C, Chung R, Ramjaun S, Jin D, Doherty C. The SGLT2i Treatment Gap in UK Primary Care: A Cross-Sectional RWE Study of Prescribing in Clinical Practice. Diabetes, obesity & metabolism. 2026. doi:10.1111/dom.71298. PMID: 42723263.
-29. Miyamoto Y, Xu F, Zaganjor I, Pavkov ME, Koyama AK. Current attitudes of primary care providers toward albuminuria testing in patients with diabetes in the United States. Preventive medicine reports. 2026. doi:10.1016/j.pmedr.2026.103581. PMID: 42541306.
-30. Fernandez-Fernandez B, Gorriz JL, Cebrian-Cuenca A, Fácila L, Fernandez Rodriguez JM. From Evidence to Action: Advancing Timely Implementation of Triple Therapy in Type 2 Diabetes Mellitus and CKD. Kidney international reports. 2026. doi:10.1016/j.ekir.2025.09.027. PMID: 41541781.
-31. Charles MH, Schousboe K, Thybo T, Hall-Andersen EK, Knudsen ST. Evaluating risk stratification according to Type 2 diabetes guidelines in primary care - Insights from the Danish DIAGRAM project. Primary care diabetes. 2025. doi:10.1016/j.pcd.2025.05.002. PMID: 40335370.
-32. Mahadevappa K, Nayak SB, Maharaj RG, Bhaktha G. Using eGFR and Albumin Creatinine Ratio as an Initial Screening Tool in Trinidadian Primary Care to Identify High-risk Population for CKD: A Cross-Sectional Study. Indian journal of nephrology. 2024. doi:10.25259/ijn_451_23. PMID: 39156845.
-33. Kam S, Angaramo S, Antoun J, Bhatta MR, Bonds PD. Improving annual albuminuria testing for individuals with diabetes. BMJ open quality. 2022. doi:10.1136/bmjoq-2021-001591. PMID: 35101868.
-34. Tangri N, Alvarez CS, Arnold M, Barone S, Cebrián A. Suboptimal monitoring and management in patients with unrecorded stage 3 chronic kidney disease in real-world settings: Insights from REVEAL-CKD. European journal of clinical investigation. 2024. doi:10.1111/eci.14282. PMID: 39023418.
-35. Liew A, Lydia A, Matawaran BJ, Susantitaphong P, Tran HTB. Practical considerations for the use of SGLT-2 inhibitors in the Asia-Pacific countries-An expert consensus statement. Nephrology (Carlton, Vic.). 2023. doi:10.1111/nep.14167. PMID: 37153973.
+13. Liew A, Lydia A, Matawaran BJ, Susantitaphong P, Tran HTB. Practical considerations for the use of SGLT-2 inhibitors in the Asia-Pacific countries-An expert consensus statement. Nephrology (Carlton, Vic.). 2023. doi:10.1111/nep.14167. PMID: 37153973.
+14. Goldhaber SZ, Rashedi S, Pfeferman M, Leyva H, Bacare B. Electronic alert-based computerized decision support for detection of chronic kidney disease in type 2 diabetes mellitus: CKD-DETECT. The American journal of medicine. 2026. doi:10.1016/j.amjmed.2026.04.022. PMID: 42031191.
+15. White IR, Royston P, Wood AM. Multiple imputation using chained equations: Issues and guidance for practice. Statistics in medicine. 2011. doi:10.1002/sim.4067. PMID: 21225900.
+16. Santana R, Umana CD, Oo ZT, Kolli ST, Bejugam VR. Optimizing guideline-directed medical therapy in chronic kidney disease and type 2 diabetes mellitus patients in primary care. The American journal of medicine. 2026. doi:10.1016/j.amjmed.2025.08.029. PMID: 40902917.
+17. Otieno FCF, Ogola EN, Kimando MW, Mutai K. The burden of unrecognised chronic kidney disease in patients with type 2 diabetes at a county hospital clinic in Kenya: implications to care and need for screening. BMC nephrology. 2020. doi:10.1186/s12882-020-1705-3. PMID: 32111192.
+18. Wallace H, Wick J, Neuen BL, Buizen L, Badve SV. Prevalence of SGLT2 inhibitor and GLP1 receptor agonist prescriptions in type 2 diabetes patients with and without chronic kidney disease: Analysis of an Australian primary care dataset. Diabetes, obesity & metabolism. 2025. doi:10.1111/dom.16608. PMID: 40667713.
+19. Raat W, Mamouris P, Mathieu C, Goderis G, Vaes B. Trends in type 2 diabetes medication use and guideline adherence in Belgian primary care (2019-2023). Primary care diabetes. 2025. doi:10.1016/j.pcd.2024.10.007. PMID: 39487060.
+20. Arzuaga A, García-Casanovas A, Mas-Morán A, Megia-Colet A, Adam-Ruiz D. A cross-regional initiative for improving type 2 diabetes mellitus care quality measurement in Spain - The Diabetes Lighthouse project. Primary care diabetes. 2026. doi:10.1016/j.pcd.2026.07.013. PMID: 42575755.
+21. Pasea L, Mohamed M, Dashtban A, Bhuva A, Mizani MA. Missed opportunities to manage complex comorbidity of heart failure, type 2 diabetes mellitus and chronic kidney disease: a retrospective cohort study. Heart (British Cardiac Society). 2025. doi:10.1136/heartjnl-2024-325046. PMID: 40037768.
+22. Awiphan R, Kowatcharakul W, Ruengorn C, Noppakun K, Thavorn K. Temporal trend in quality indicators of diabetes care performance among persons with type 2 diabetes in primary care practice: a serial cross-sectional analytical study, 2013/14 to 2021/22. Frontiers in endocrinology. 2024. doi:10.3389/fendo.2024.1359904. PMID: 39507052.
+23. 9. Pharmacologic Approaches to Glycemic Treatment: Standards of Care in Diabetes-2026. Diabetes care. 2026. doi:10.2337/dc26-S009. PMID: 41358900.
+24. Hao R, Myroniuk T, McGuckin T, Manca D, Campbell-Scherer D. Underuse of cardiorenal protective agents in high-risk diabetes patients in primary care: a cross-sectional study. BMC primary care. 2022. doi:10.1186/s12875-022-01731-w. PMID: 35606699.
+25. Barrot-de la Puente J, Lopez Arpí C, Ramon Granes M, Escribà Planes M, Fernandez-Camins B. Chronic kidney disease screening in primary care: a descriptive analysis of the Girona Sud health region. BMC primary care. 2025. doi:10.1186/s12875-025-03117-0. PMID: 41276836.
+26. Jones JL, Lumsden NG, Simons K, Ta'eed A, de Courten MP. Using electronic medical record data to assess chronic kidney disease, type 2 diabetes and cardiovascular disease testing, recognition and management as documented in Australian general practice: a cross-sectional analysis. Family medicine and community health. 2022. doi:10.1136/fmch-2021-001006. PMID: 35177470.
+27. 2. Diagnosis and Classification of Diabetes: Standards of Care in Diabetes-2026. Diabetes care. 2026. doi:10.2337/dc26-S002. PMID: 41358893.
+28. Zahradka I, Petr V, Tichanek F, Chroma A, Neskudla T. Prevalence, risk factors and renoprotective treatment of chronic kidney disease among internal medicine outpatients at a Central European tertiary care centre: a cross-sectional study. BMJ open. 2026. doi:10.1136/bmjopen-2026-121190. PMID: 42838586.
+29. Stefanska C, Chung R, Ramjaun S, Jin D, Doherty C. The SGLT2i Treatment Gap in UK Primary Care: A Cross-Sectional RWE Study of Prescribing in Clinical Practice. Diabetes, obesity & metabolism. 2026. doi:10.1111/dom.71298. PMID: 42723263.
+30. Miyamoto Y, Xu F, Zaganjor I, Pavkov ME, Koyama AK. Current attitudes of primary care providers toward albuminuria testing in patients with diabetes in the United States. Preventive medicine reports. 2026. doi:10.1016/j.pmedr.2026.103581. PMID: 42541306.
+31. Fernandez-Fernandez B, Gorriz JL, Cebrian-Cuenca A, Fácila L, Fernandez Rodriguez JM. From Evidence to Action: Advancing Timely Implementation of Triple Therapy in Type 2 Diabetes Mellitus and CKD. Kidney international reports. 2026. doi:10.1016/j.ekir.2025.09.027. PMID: 41541781.
+32. Charles MH, Schousboe K, Thybo T, Hall-Andersen EK, Knudsen ST. Evaluating risk stratification according to Type 2 diabetes guidelines in primary care - Insights from the Danish DIAGRAM project. Primary care diabetes. 2025. doi:10.1016/j.pcd.2025.05.002. PMID: 40335370.
+33. Mahadevappa K, Nayak SB, Maharaj RG, Bhaktha G. Using eGFR and Albumin Creatinine Ratio as an Initial Screening Tool in Trinidadian Primary Care to Identify High-risk Population for CKD: A Cross-Sectional Study. Indian journal of nephrology. 2024. doi:10.25259/ijn_451_23. PMID: 39156845.
+34. Kam S, Angaramo S, Antoun J, Bhatta MR, Bonds PD. Improving annual albuminuria testing for individuals with diabetes. BMJ open quality. 2022. doi:10.1136/bmjoq-2021-001591. PMID: 35101868.
+35. Tangri N, Alvarez CS, Arnold M, Barone S, Cebrián A. Suboptimal monitoring and management in patients with unrecorded stage 3 chronic kidney disease in real-world settings: Insights from REVEAL-CKD. European journal of clinical investigation. 2024. doi:10.1111/eci.14282. PMID: 39023418.
 36. Dang KD, Nguyen HMT, Phung YP, Le TQN. Optimising antidiabetic medication management for type 2 diabetes and renal dysfunction in Can Tho City, Vietnam. Przeglad menopauzalny = Menopause review. 2024. doi:10.5114/pm.2024.141090. PMID: 39391521.
 37. Benchimol EI, Smeeth L, Guttmann A, Harron K, Moher D. The REporting of studies Conducted using Observational Routinely-collected health Data (RECORD) statement. PLoS medicine. 2015. doi:10.1371/journal.pmed.1001885. PMID: 26440803.
 38. van Smeden M, de Groot JA, Moons KG, Collins GS, Altman DG. No rationale for 1 variable per 10 events criterion for binary logistic regression analysis. BMC medical research methodology. 2016. doi:10.1186/s12874-016-0267-3. PMID: 27881078.
@@ -380,28 +395,28 @@ Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và 
 
 | Mục tiêu | Biến | Vai trò | Cách phân tích |
 |---|---|---|---|
-| 1 | tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh | Kết cục chính | ước lượng tỷ lệ được xét nghiệm đủ UACR và creatinin năm 2026 trên toàn bộ N kèm KTC 95% Wilson; không kiểm định giả thuyết (thiết kế theo độ chính xác). Không áp hiệu chỉnh quần thể hữu hạn ở phân tích chính, cho thống nhất với; nếu biết kích thước khung mẫu thì báo thêm KTC có hiệu chỉnh quần thể hữu hạn như một thông tin phụ |
-| 1 | tỷ lệ bệnh thận mạn theo KDIGO 2024 | Kết cục phụ | Mô hình phù hợp kiểu biến, diễn giải thăm dò |
+| 1 | tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh | Kết cục chính | ước lượng tỷ lệ được xét nghiệm đủ UACR và creatinin năm 2026 trên toàn bộ N kèm KTC 95% Wilson; không kiểm định giả thuyết (thiết kế theo độ chính xác). Không áp hiệu chỉnh quần thể hữu hạn ở phân tích chính, cho thống nhất với cách tính cỡ mẫu; nếu biết kích thước khung mẫu thì báo thêm KTC có hiệu chỉnh quần thể hữu hạn như một thông tin phụ |
+| 1 | tỷ lệ bệnh thận mạn theo KDIGO 2024 | Kết cục phụ | Theo mục 4.9; diễn giải thăm dò |
 | 1 | nhóm eGFR theo KDIGO | Biến mô tả | Thống kê mô tả |
 | 1 | nhóm albumin niệu theo KDIGO (A1–A3) | Biến mô tả | Thống kê mô tả |
-| 1 | tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán | Kết cục phụ | Mô hình phù hợp kiểu biến, diễn giải thăm dò |
-| 2 | điều trị bảo vệ thận — ACEi/ARB | Kết cục phụ | Mô hình phù hợp kiểu biến, diễn giải thăm dò |
-| 2 | điều trị bảo vệ thận — SGLT2i | Kết cục phụ | Mô hình phù hợp kiểu biến, diễn giải thăm dò |
+| 1 | tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán | Kết cục phụ | Theo mục 4.9; diễn giải thăm dò |
+| 2 | điều trị bảo vệ thận — ACEi/ARB | Kết cục phụ | Theo mục 4.9; diễn giải thăm dò |
+| 2 | điều trị bảo vệ thận — SGLT2i | Kết cục phụ | Theo mục 4.9; diễn giải thăm dò |
 | 2 | người bệnh đủ chỉ định ACEi/ARB theo KDIGO 2022 | Biến mô tả | Thống kê mô tả |
 | 2 | người bệnh đủ chỉ định SGLT2i theo KDIGO 2022 | Biến mô tả | Thống kê mô tả |
-| 3 | việc không được xét nghiệm đủ UACR và creatinin | Kết cục phụ | Mô hình phù hợp kiểu biến, diễn giải thăm dò |
-| 3 | tuổi | yeu to | Theo kế hoạch phân tích |
-| 3 | giới | yeu to | Theo kế hoạch phân tích |
-| 3 | nhóm đối tượng | yeu to | Theo kế hoạch phân tích |
-| 3 | thời gian mắc đái tháo đường | yeu to | Theo kế hoạch phân tích |
-| 3 | HbA1c (3 mức) | yeu to | Theo kế hoạch phân tích |
-| 3 | đang dùng insulin | yeu to | Theo kế hoạch phân tích |
-| 3 | số nhóm thuốc hạ glucose | yeu to | Theo kế hoạch phân tích |
-| 3 | tăng huyết áp | yeu to | Theo kế hoạch phân tích |
-| 3 | BMI | yeu to | Theo kế hoạch phân tích |
-| 3 | bệnh tim mạch do xơ vữa hoặc suy tim | yeu to | Theo kế hoạch phân tích |
-| 3 | số lượt khám năm 2026 | yeu to | Theo kế hoạch phân tích |
-| 3 | phòng khám theo dõi chính | yeu to | Theo kế hoạch phân tích |
+| 3 | việc không được xét nghiệm đủ UACR và creatinin | Kết cục phụ | Theo mục 4.9; diễn giải thăm dò |
+| 3 | tuổi | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
+| 3 | giới | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
+| 3 | nhóm đối tượng | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
+| 3 | thời gian mắc đái tháo đường | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
+| 3 | HbA1c (3 mức) | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
+| 3 | đang dùng insulin | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
+| 3 | số nhóm thuốc hạ glucose | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
+| 3 | tăng huyết áp | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
+| 3 | BMI | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
+| 3 | bệnh tim mạch do xơ vữa hoặc suy tim | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
+| 3 | số lượt khám năm 2026 | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
+| 3 | phòng khám theo dõi chính | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
 
 # PHỤ LỤC B. ĐƠN ĐỀ NGHỊ MIỄN ĐỒNG THUẬN THAM GIA NGHIÊN CỨU
 
@@ -419,89 +434,89 @@ Chủ nhiệm đề tài (ký, ghi rõ họ tên): ………………………�
 
 | Câu | Nội dung | Trả lời | Mã biến |
 |---|---|---|---|
-| 1 | Mã nghiên cứu | ……… | `record_id` |
-| 2 | Ngày trích hồ sơ | …… /…… /………… | `ngay_trich` |
-| 3 | Ngày lượt khám đầu tiên tại Khoa Khám bệnh năm 2026 | …… /…… /………… | `ngay_kham_dau` |
-| 4 | Ngày lượt khám cuối cùng tại Khoa Khám bệnh năm 2026 | …… /…… /………… | `ngay_kham_cuoi` |
+| 1 | Mã nghiên cứu | ……… | record_id |
+| 2 | Ngày trích hồ sơ | …… /…… /………… | ngay_trich |
+| 3 | Ngày lượt khám đầu tiên tại Khoa Khám bệnh năm 2026 | …… /…… /………… | ngay_kham_dau |
+| 4 | Ngày lượt khám cuối cùng tại Khoa Khám bệnh năm 2026 | …… /…… /………… | ngay_kham_cuoi |
 
 **PHẦN 2. ĐẶC ĐIỂM CHUNG CỦA ĐỐI TƯỢNG**
 
 | Câu | Nội dung | Trả lời | Mã biến |
 |---|---|---|---|
-| 5 | Số thứ tự của hồ sơ trong danh sách đã xếp ngẫu nhiên | ……… (từ 1 đến 100000) | `thu_tu_ngau_nhien` |
-| 6 | Người trích | ☐ 1. Chủ nhiệm  ☐ 2. Người trích lại (kiểm chứng 10%) | `nguoi_trich` |
-| 7 | Thời gian trích hồ sơ này (phút) | ……… (từ 1 đến 240) | `thoi_gian_trich_phut` |
-| 8 | Mở được hồ sơ trên eHospital | ☐ 1. Có  ☐ 0. Không | `ho_so_mo_duoc` |
-| 9 | Đang lọc máu hoặc đã ghép thận (mã Z49, Z99.2, Z94.0, T86.1 hoặc chỉ định lọc máu trên eHospital) | ☐ 1. Có  ☐ 0. Không | `lt_loc_ghep` |
-| 10 | Người bệnh này đã có trong mẫu dưới một mã nghiên cứu khác | ☐ 1. Có  ☐ 0. Không | `trung_nguoi` |
-| 11 | Đủ tiêu chuẩn — đưa vào mẫu (máy tự tính) | (tính từ các câu trên) | `du_tieu_chuan` |
-| 12 | Tuổi (năm) tại lượt khám đầu tiên trong năm 2026 | ……… (từ 18 đến 110) | `tuoi` |
-| 13 | Giới | ☐ 1. Nam  ☐ 2. Nữ | `gioi` |
-| 14 | Nhóm đối tượng khám tại lượt khám đầu tiên trong năm 2026 | ☐ 1. Quân nhân  ☐ 2. Bảo hiểm y tế  ☐ 3. Dịch vụ  ☐ 4. Khác | `nhom_doi_tuong` |
-| 15 | Số lượt khám ngoại trú tại Khoa Khám bệnh năm 2026 | ……… (từ 2 đến 200) | `so_luot_kham` |
-| 16 | Phòng khám theo dõi chính | ☐ 1. Nội tiết  ☐ 2. Nội chung (nội tổng hợp)  ☐ 3. Khác | `phong_kham_chinh` |
-| 17 | Năm được chẩn đoán đái tháo đường (theo bệnh án) | ……… (từ 1950 đến 2026) | `nam_chan_doan_dtd` |
-| 18 | Tăng huyết áp: có mã I10–I15 ở ít nhất một lượt khám năm 2026 | ☐ 1. Có  ☐ 0. Không | `tha` |
-| 19 | Cân nặng (kg) tại lượt khám gần nhất có ghi cả cân nặng và chiều cao | ……… (từ 25 đến 250) | `can_nang` |
-| 20 | Chiều cao (cm) tại cùng lượt khám đó | ……… (từ 120 đến 220) | `chieu_cao` |
-| 21 | BMI (kg/m², máy tự tính) | (tính từ các câu trên) | `bmi` |
-| 22 | Ngày làm HbA1c gần nhất | …… /…… /………… | `hba1c_ngay` |
-| 23 | Đơn vị creatinin trên eHospital | ☐ 1. µmol/L  ☐ 2. mg/dL | `creat_don_vi` |
-| 24 | Creatinin — kết quả thứ 1: ngày | …… /…… /………… | `creat_1_ngay` |
-| 25 | Creatinin — kết quả thứ 1: giá trị | ……… (từ 0.1 đến 2000) | `creat_1_gt` |
-| 26 | Creatinin — kết quả thứ 2: ngày | …… /…… /………… | `creat_2_ngay` |
-| 27 | Creatinin — kết quả thứ 2: giá trị | ……… (từ 0.1 đến 2000) | `creat_2_gt` |
-| 28 | Creatinin — kết quả thứ 3: ngày | …… /…… /………… | `creat_3_ngay` |
-| 29 | Creatinin — kết quả thứ 3: giá trị | ……… (từ 0.1 đến 2000) | `creat_3_gt` |
-| 30 | Creatinin — kết quả thứ 4: ngày | …… /…… /………… | `creat_4_ngay` |
-| 31 | Creatinin — kết quả thứ 4: giá trị | ……… (từ 0.1 đến 2000) | `creat_4_gt` |
-| 32 | Creatinin — kết quả thứ 5: ngày | …… /…… /………… | `creat_5_ngay` |
-| 33 | Creatinin — kết quả thứ 5: giá trị | ……… (từ 0.1 đến 2000) | `creat_5_gt` |
-| 34 | Creatinin — kết quả thứ 6: ngày | …… /…… /………… | `creat_6_ngay` |
-| 35 | Creatinin — kết quả thứ 6: giá trị | ……… (từ 0.1 đến 2000) | `creat_6_gt` |
-| 36 | Đơn vị UACR trên eHospital | ☐ 1. mg/g  ☐ 2. mg/mmol | `uacr_don_vi` |
-| 37 | UACR — kết quả thứ 1: ngày | …… /…… /………… | `uacr_1_ngay` |
-| 38 | UACR — kết quả thứ 1: giá trị | ……… (từ 0 đến 10000) | `uacr_1_gt` |
-| 39 | UACR — kết quả thứ 2: ngày | …… /…… /………… | `uacr_2_ngay` |
-| 40 | UACR — kết quả thứ 2: giá trị | ……… (từ 0 đến 10000) | `uacr_2_gt` |
-| 41 | UACR — kết quả thứ 3: ngày | …… /…… /………… | `uacr_3_ngay` |
-| 42 | UACR — kết quả thứ 3: giá trị | ……… (từ 0 đến 10000) | `uacr_3_gt` |
-| 43 | UACR — kết quả thứ 4: ngày | …… /…… /………… | `uacr_4_ngay` |
-| 44 | UACR — kết quả thứ 4: giá trị | ……… (từ 0 đến 10000) | `uacr_4_gt` |
-| 45 | Loại xét nghiệm albumin/protein niệu dạng khác | ☐ 1. Nồng độ microalbumin niệu  ☐ 2. Que nhúng protein niệu  ☐ 3. Protein niệu 24 giờ hoặc tỷ số protein/creatinin  ☐ 4. Khác | `alb_khac_loai` |
-| 46 | Có ít nhất một kết quả dạng khác vượt giới hạn tham chiếu của phòng xét nghiệm | ☐ 1. Có  ☐ 0. Không | `alb_khac_bat_thuong` |
-| 47 | Creatinin ngoài viện gần nhất: ngày | …… /…… /………… | `creat_nv_ngay` |
-| 48 | Creatinin ngoài viện gần nhất: giá trị (cùng đơn vị với đơn vị creatinin trên eHospital) | ……… (từ 0.1 đến 2000) | `creat_nv_gt` |
-| 49 | UACR ngoài viện gần nhất: ngày | …… /…… /………… | `uacr_nv_ngay` |
-| 50 | UACR ngoài viện gần nhất: giá trị (cùng đơn vị với đơn vị UACR trên eHospital) | ……… (từ 0 đến 10000) | `uacr_nv_gt` |
-| 51 | Bệnh án ghi người bệnh đang dùng nhưng KHÔNG có trong đơn eHospital (thuốc kê hoặc mua ngoài) | ☐ 1. ACEi hoặc ARB  ☐ 2. Ức chế SGLT2  ☐ 0. Không có | `thuoc_ngoai_don` |
-| 52 | Hồ sơ ghi rõ chống chỉ định hoặc không dung nạp ACEi/ARB | ☐ 1. Có  ☐ 0. Không | `ccd_raasi` |
-| 53 | Lý do được ghi | ☐ 1. Tăng kali máu  ☐ 2. Phù mạch  ☐ 3. Hạ huyết áp  ☐ 4. Tăng creatinin hoặc tổn thương thận cấp  ☐ 5. Có thai hoặc dự định có thai  ☐ 6. Khác | `ccd_raasi_ly_do` |
-| 54 | Hồ sơ ghi rõ chống chỉ định hoặc không dung nạp thuốc ức chế SGLT2 | ☐ 1. Có  ☐ 0. Không | `ccd_sglt2i` |
-| 55 | Lý do được ghi | ☐ 1. Nhiễm toan ceton  ☐ 2. Nhiễm khuẩn tiết niệu – sinh dục tái diễn  ☐ 3. eGFR dưới ngưỡng dùng thuốc  ☐ 4. Giảm thể tích hoặc hạ huyết áp  ☐ 5. Khác | `ccd_sglt2i_ly_do` |
+| 5 | Số thứ tự của hồ sơ trong danh sách đã xếp ngẫu nhiên | ……… (từ 1 đến 100000) | thu_tu_ngau_nhien |
+| 6 | Người trích | ☐ 1. Chủ nhiệm  ☐ 2. Người trích lại (kiểm chứng 10%) | nguoi_trich |
+| 7 | Thời gian trích hồ sơ này (phút) | ……… (từ 1 đến 240) | thoi_gian_trich_phut |
+| 8 | Mở được hồ sơ trên eHospital | ☐ 1. Có  ☐ 0. Không | ho_so_mo_duoc |
+| 9 | Đang lọc máu hoặc đã ghép thận (mã Z49, Z99.2, Z94.0, T86.1 hoặc chỉ định lọc máu trên eHospital) | ☐ 1. Có  ☐ 0. Không | lt_loc_ghep |
+| 10 | Người bệnh này đã có trong mẫu dưới một mã nghiên cứu khác | ☐ 1. Có  ☐ 0. Không | trung_nguoi |
+| 11 | Đủ tiêu chuẩn — đưa vào mẫu (máy tự tính) | (tính từ các câu trên) | du_tieu_chuan |
+| 12 | Tuổi (năm) tại lượt khám đầu tiên trong năm 2026 | ……… (từ 18 đến 110) | tuoi |
+| 13 | Giới | ☐ 1. Nam  ☐ 2. Nữ | gioi |
+| 14 | Nhóm đối tượng khám tại lượt khám đầu tiên trong năm 2026 | ☐ 1. Quân nhân  ☐ 2. Bảo hiểm y tế  ☐ 3. Dịch vụ  ☐ 4. Khác | nhom_doi_tuong |
+| 15 | Số lượt khám ngoại trú tại Khoa Khám bệnh năm 2026 | ……… (từ 2 đến 200) | so_luot_kham |
+| 16 | Phòng khám theo dõi chính | ☐ 1. Nội tiết  ☐ 2. Nội chung (nội tổng hợp)  ☐ 3. Khác | phong_kham_chinh |
+| 17 | Năm được chẩn đoán đái tháo đường (theo bệnh án) | ……… (từ 1950 đến 2026) | nam_chan_doan_dtd |
+| 18 | Tăng huyết áp: có mã I10–I15 ở ít nhất một lượt khám năm 2026 | ☐ 1. Có  ☐ 0. Không | tha |
+| 19 | Cân nặng (kg) tại lượt khám gần nhất có ghi cả cân nặng và chiều cao | ……… (từ 25 đến 250) | can_nang |
+| 20 | Chiều cao (cm) tại cùng lượt khám đó | ……… (từ 120 đến 220) | chieu_cao |
+| 21 | BMI (kg/m², máy tự tính) | (tính từ các câu trên) | bmi |
+| 22 | Ngày làm HbA1c gần nhất | …… /…… /………… | hba1c_ngay |
+| 23 | Đơn vị creatinin trên eHospital | ☐ 1. µmol/L  ☐ 2. mg/dL | creat_don_vi |
+| 24 | Creatinin — kết quả thứ 1: ngày | …… /…… /………… | creat_1_ngay |
+| 25 | Creatinin — kết quả thứ 1: giá trị | ……… (từ 0.1 đến 2000) | creat_1_gt |
+| 26 | Creatinin — kết quả thứ 2: ngày | …… /…… /………… | creat_2_ngay |
+| 27 | Creatinin — kết quả thứ 2: giá trị | ……… (từ 0.1 đến 2000) | creat_2_gt |
+| 28 | Creatinin — kết quả thứ 3: ngày | …… /…… /………… | creat_3_ngay |
+| 29 | Creatinin — kết quả thứ 3: giá trị | ……… (từ 0.1 đến 2000) | creat_3_gt |
+| 30 | Creatinin — kết quả thứ 4: ngày | …… /…… /………… | creat_4_ngay |
+| 31 | Creatinin — kết quả thứ 4: giá trị | ……… (từ 0.1 đến 2000) | creat_4_gt |
+| 32 | Creatinin — kết quả thứ 5: ngày | …… /…… /………… | creat_5_ngay |
+| 33 | Creatinin — kết quả thứ 5: giá trị | ……… (từ 0.1 đến 2000) | creat_5_gt |
+| 34 | Creatinin — kết quả thứ 6: ngày | …… /…… /………… | creat_6_ngay |
+| 35 | Creatinin — kết quả thứ 6: giá trị | ……… (từ 0.1 đến 2000) | creat_6_gt |
+| 36 | Đơn vị UACR trên eHospital | ☐ 1. mg/g  ☐ 2. mg/mmol | uacr_don_vi |
+| 37 | UACR — kết quả thứ 1: ngày | …… /…… /………… | uacr_1_ngay |
+| 38 | UACR — kết quả thứ 1: giá trị | ……… (từ 0 đến 10000) | uacr_1_gt |
+| 39 | UACR — kết quả thứ 2: ngày | …… /…… /………… | uacr_2_ngay |
+| 40 | UACR — kết quả thứ 2: giá trị | ……… (từ 0 đến 10000) | uacr_2_gt |
+| 41 | UACR — kết quả thứ 3: ngày | …… /…… /………… | uacr_3_ngay |
+| 42 | UACR — kết quả thứ 3: giá trị | ……… (từ 0 đến 10000) | uacr_3_gt |
+| 43 | UACR — kết quả thứ 4: ngày | …… /…… /………… | uacr_4_ngay |
+| 44 | UACR — kết quả thứ 4: giá trị | ……… (từ 0 đến 10000) | uacr_4_gt |
+| 45 | Loại xét nghiệm albumin/protein niệu dạng khác | ☐ 1. Nồng độ microalbumin niệu  ☐ 2. Que nhúng protein niệu  ☐ 3. Protein niệu 24 giờ hoặc tỷ số protein/creatinin  ☐ 4. Khác | alb_khac_loai |
+| 46 | Có ít nhất một kết quả dạng khác vượt giới hạn tham chiếu của phòng xét nghiệm | ☐ 1. Có  ☐ 0. Không | alb_khac_bat_thuong |
+| 47 | Creatinin ngoài viện gần nhất: ngày | …… /…… /………… | creat_nv_ngay |
+| 48 | Creatinin ngoài viện gần nhất: giá trị (cùng đơn vị với đơn vị creatinin trên eHospital) | ……… (từ 0.1 đến 2000) | creat_nv_gt |
+| 49 | UACR ngoài viện gần nhất: ngày | …… /…… /………… | uacr_nv_ngay |
+| 50 | UACR ngoài viện gần nhất: giá trị (cùng đơn vị với đơn vị UACR trên eHospital) | ……… (từ 0 đến 10000) | uacr_nv_gt |
+| 51 | Bệnh án ghi người bệnh đang dùng nhưng KHÔNG có trong đơn eHospital (thuốc kê hoặc mua ngoài) | ☐ 1. ACEi hoặc ARB  ☐ 2. Ức chế SGLT2  ☐ 0. Không có | thuoc_ngoai_don |
+| 52 | Hồ sơ ghi rõ chống chỉ định hoặc không dung nạp ACEi/ARB | ☐ 1. Có  ☐ 0. Không | ccd_raasi |
+| 53 | Lý do được ghi | ☐ 1. Tăng kali máu  ☐ 2. Phù mạch  ☐ 3. Hạ huyết áp  ☐ 4. Tăng creatinin hoặc tổn thương thận cấp  ☐ 5. Có thai hoặc dự định có thai  ☐ 6. Khác | ccd_raasi_ly_do |
+| 54 | Hồ sơ ghi rõ chống chỉ định hoặc không dung nạp thuốc ức chế SGLT2 | ☐ 1. Có  ☐ 0. Không | ccd_sglt2i |
+| 55 | Lý do được ghi | ☐ 1. Nhiễm toan ceton  ☐ 2. Nhiễm khuẩn tiết niệu – sinh dục tái diễn  ☐ 3. eGFR dưới ngưỡng dùng thuốc  ☐ 4. Giảm thể tích hoặc hạ huyết áp  ☐ 5. Khác | ccd_sglt2i_ly_do |
 
-**PHẦN 4. KẾT CỤC**
+**PHẦN 3. KẾT CỤC**
 
 | Câu | Nội dung | Trả lời | Mã biến |
 |---|---|---|---|
-| 56 | Từ 18 tuổi trở lên tại lượt khám đầu tiên trong năm 2026 | ☐ 1. Có  ☐ 0. Không | `tc_tuoi18` |
-| 57 | Có mã E11 (chẩn đoán chính hoặc kèm theo) ở ít nhất một lượt khám ngoại trú tại Khoa Khám bệnh năm 2026 | ☐ 1. Có  ☐ 0. Không | `tc_e11` |
-| 58 | Có từ 2 lượt khám ngoại trú tại Khoa Khám bệnh năm 2026 | ☐ 1. Có  ☐ 0. Không | `tc_2luot` |
-| 59 | Có thai trong năm 2026 (mã chương O hoặc Z33) | ☐ 1. Có  ☐ 0. Không | `lt_thai` |
-| 60 | Có mã E10, E12 hoặc E13 ở bất kỳ lượt khám nào năm 2026 | ☐ 1. Có  ☐ 0. Không | `lt_dtd_khac` |
-| 61 | Bệnh tim mạch do xơ vữa: có mã I20–I25, I63–I66, G45, I70, I73.9, Z95.1 hoặc Z95.5 ở ít nhất một lượt khám năm 2026 | ☐ 1. Có  ☐ 0. Không | `ascvd` |
-| 62 | Suy tim: có mã I50, I11.0, I13.0 hoặc I13.2 ở ít nhất một lượt khám năm 2026 | ☐ 1. Có  ☐ 0. Không | `suy_tim` |
-| 63 | Có mã bệnh thận mạn hoặc biến chứng thận do ĐTĐ (N18, E11.2, N08.3) ở ít nhất một lượt khám năm 2026 | ☐ 1. Có  ☐ 0. Không | `ma_btm_ghi_nhan` |
-| 64 | Có mã thận khác (N19, I12, I13, R80) ở ít nhất một lượt khám năm 2026 | ☐ 1. Có  ☐ 0. Không | `ma_than_mo_rong` |
-| 65 | Có kết quả HbA1c trong eHospital năm 2026 | ☐ 1. Có  ☐ 0. Không | `co_hba1c` |
-| 66 | HbA1c gần nhất năm 2026 (%) | ……… (từ 3 đến 20) | `hba1c_gt` |
-| 67 | Số kết quả creatinin huyết thanh trong eHospital năm 2026 | ……… (từ 0 đến 100) | `so_lan_creat` |
-| 68 | Số kết quả UACR (tỷ số albumin/creatinin niệu) trong eHospital năm 2026 | ……… (từ 0 đến 60) | `so_lan_uacr` |
-| 69 | Có xét nghiệm albumin hoặc protein niệu dạng KHÁC trong eHospital năm 2026 (nồng độ microalbumin niệu, que nhúng…) | ☐ 1. Có  ☐ 0. Không | `alb_khac` |
-| 70 | Bệnh án ghi kết quả creatinin làm NGOÀI BVQY175 năm 2026 (có ghi rõ ngày và kết quả) | ☐ 1. Có  ☐ 0. Không | `creat_ngoai_vien` |
-| 71 | Bệnh án ghi kết quả UACR làm NGOÀI BVQY175 năm 2026 (có ghi rõ ngày và kết quả) | ☐ 1. Có  ☐ 0. Không | `uacr_ngoai_vien` |
-| 72 | Nhóm thuốc hạ glucose có trong đơn tại lượt khám cuối năm 2026 | ☐ 1. Metformin  ☐ 2. Sulfonylurea  ☐ 3. Ức chế DPP-4  ☐ 4. Ức chế SGLT2  ☐ 5. Đồng vận thụ thể GLP-1  ☐ 6. Thiazolidinedion  ☐ 7. Ức chế alpha-glucosidase  ☐ 8. Insulin  ☐ 9. Nhóm khác  ☐ 0. Không có thuốc hạ glucose | `thuoc_ha_glucose` |
-| 73 | ACEi hoặc ARB có trong đơn tại lượt khám cuối năm 2026 | ☐ 0. Không  ☐ 1. ACEi  ☐ 2. ARB  ☐ 3. Cả ACEi và ARB | `raasi` |
+| 56 | Từ 18 tuổi trở lên tại lượt khám đầu tiên trong năm 2026 | ☐ 1. Có  ☐ 0. Không | tc_tuoi18 |
+| 57 | Có mã E11 (chẩn đoán chính hoặc kèm theo) ở ít nhất một lượt khám ngoại trú tại Khoa Khám bệnh năm 2026 | ☐ 1. Có  ☐ 0. Không | tc_e11 |
+| 58 | Có từ 2 lượt khám ngoại trú tại Khoa Khám bệnh năm 2026 | ☐ 1. Có  ☐ 0. Không | tc_2luot |
+| 59 | Có thai trong năm 2026 (mã chương O hoặc Z33) | ☐ 1. Có  ☐ 0. Không | lt_thai |
+| 60 | Có mã E10, E12 hoặc E13 ở bất kỳ lượt khám nào năm 2026 | ☐ 1. Có  ☐ 0. Không | lt_dtd_khac |
+| 61 | Bệnh tim mạch do xơ vữa: có mã I20–I25, I63–I66, G45, I70, I73.9, Z95.1 hoặc Z95.5 ở ít nhất một lượt khám năm 2026 | ☐ 1. Có  ☐ 0. Không | ascvd |
+| 62 | Suy tim: có mã I50, I11.0, I13.0 hoặc I13.2 ở ít nhất một lượt khám năm 2026 | ☐ 1. Có  ☐ 0. Không | suy_tim |
+| 63 | Có mã bệnh thận mạn hoặc biến chứng thận do ĐTĐ (N18, E11.2, N08.3) ở ít nhất một lượt khám năm 2026 | ☐ 1. Có  ☐ 0. Không | ma_btm_ghi_nhan |
+| 64 | Có mã thận khác (N19, I12, I13, R80) ở ít nhất một lượt khám năm 2026 | ☐ 1. Có  ☐ 0. Không | ma_than_mo_rong |
+| 65 | Có kết quả HbA1c trong eHospital năm 2026 | ☐ 1. Có  ☐ 0. Không | co_hba1c |
+| 66 | HbA1c gần nhất năm 2026 (%) | ……… (từ 3 đến 20) | hba1c_gt |
+| 67 | Số kết quả creatinin huyết thanh trong eHospital năm 2026 | ……… (từ 0 đến 100) | so_lan_creat |
+| 68 | Số kết quả UACR (tỷ số albumin/creatinin niệu) trong eHospital năm 2026 | ……… (từ 0 đến 60) | so_lan_uacr |
+| 69 | Có xét nghiệm albumin hoặc protein niệu dạng KHÁC trong eHospital năm 2026 (nồng độ microalbumin niệu, que nhúng…) | ☐ 1. Có  ☐ 0. Không | alb_khac |
+| 70 | Bệnh án ghi kết quả creatinin làm NGOÀI BVQY175 năm 2026 (có ghi rõ ngày và kết quả) | ☐ 1. Có  ☐ 0. Không | creat_ngoai_vien |
+| 71 | Bệnh án ghi kết quả UACR làm NGOÀI BVQY175 năm 2026 (có ghi rõ ngày và kết quả) | ☐ 1. Có  ☐ 0. Không | uacr_ngoai_vien |
+| 72 | Nhóm thuốc hạ glucose có trong đơn tại lượt khám cuối năm 2026 | ☐ 1. Metformin  ☐ 2. Sulfonylurea  ☐ 3. Ức chế DPP-4  ☐ 4. Ức chế SGLT2  ☐ 5. Đồng vận thụ thể GLP-1  ☐ 6. Thiazolidinedion  ☐ 7. Ức chế alpha-glucosidase  ☐ 8. Insulin  ☐ 9. Nhóm khác  ☐ 0. Không có thuốc hạ glucose | thuoc_ha_glucose |
+| 73 | ACEi hoặc ARB có trong đơn tại lượt khám cuối năm 2026 | ☐ 0. Không  ☐ 1. ACEi  ☐ 2. ARB  ☐ 3. Cả ACEi và ARB | raasi |
 
 Người thu thập: ……………………………   Ngày thu thập: …… /…… /…………
 

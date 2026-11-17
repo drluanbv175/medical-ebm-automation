@@ -1,0 +1,682 @@
+{
+  "sr_ma": [
+    {
+      "pmid": "42755179",
+      "title": "Non-Invasive Fibrosis Testing in Adults With Obesity and MASLD: A Systematic Review and Meta-Analysis.",
+      "year": "2026",
+      "journal": "Diabetes, obesity & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42755179/",
+      "authors": "Ortega PM, Sabatella L, Manousou P, Arregui A, Ahmed AR"
+    },
+    {
+      "pmid": "41533456",
+      "title": "Imaging-Based Modalities for Identifying At Risk MASH. A Diagnostic Test Meta-Analysis.",
+      "year": "2026",
+      "journal": "The American journal of gastroenterology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41533456/",
+      "authors": "Gunalan SZ, Law MSN, Kua YX, Yu Z, Lim RYZ"
+    },
+    {
+      "pmid": "39703127",
+      "title": "Diagnostic accuracy of Agile-4 score for liver cirrhosis in patients with metabolic dysfunction-associated steatotic liver disease. A systematic review and meta-analysis of diagnostic test accuracy studies.",
+      "year": "2025",
+      "journal": "Diabetes, obesity & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39703127/",
+      "authors": "Malandris K, Katsoula A, Liakos A, Karagiannis T, Sinakos E"
+    },
+    {
+      "pmid": "38573034",
+      "title": "Diagnostic accuracy of non-invasive tests to screen for at-risk MASH-An individual participant data meta-analysis.",
+      "year": "2024",
+      "journal": "Liver international : official journal of the International Association for the Study of the Liver",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38573034/",
+      "authors": "Mózes FE, Lee JA, Vali Y, Selvaraj EA, Jayaswal ANA"
+    },
+    {
+      "pmid": "37900994",
+      "title": "Diagnostic role of transient elastography in patients with autoimmune liver diseases: A systematic review and meta-analysis.",
+      "year": "2023",
+      "journal": "World journal of gastroenterology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37900994/",
+      "authors": "Chen H, Shen Y, Wu SD, Zhu Q, Weng CZ"
+    },
+    {
+      "pmid": "37290471",
+      "title": "Performance of non-invasive tests and histology for the prediction of clinical outcomes in patients with non-alcoholic fatty liver disease: an individual participant data meta-analysis.",
+      "year": "2023",
+      "journal": "The lancet. Gastroenterology & hepatology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37290471/",
+      "authors": "Mózes FE, Lee JA, Vali Y, Alzoubi O, Staufer K"
+    },
+    {
+      "pmid": "36924031",
+      "title": "Noninvasive assessment of liver disease severity in patients with nonalcoholic fatty liver disease (NAFLD) and type 2 diabetes.",
+      "year": "2023",
+      "journal": "Hepatology (Baltimore, Md.)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36924031/",
+      "authors": "Pennisi G, Enea M, Falco V, Aithal GP, Palaniyappan N"
+    },
+    {
+      "pmid": "34001645",
+      "title": "Diagnostic accuracy of non-invasive tests for advanced fibrosis in patients with NAFLD: an individual patient data meta-analysis.",
+      "year": "2022",
+      "journal": "Gut",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/34001645/",
+      "authors": "Mózes FE, Lee JA, Selvaraj EA, Jayaswal ANA, Trauner M"
+    },
+    {
+      "pmid": "33780219",
+      "title": "Identifying Advanced Fibrosis in NAFLD Using Noninvasive Tests: A Systematic Review of Sequential Algorithms.",
+      "year": "2022",
+      "journal": "Journal of clinical gastroenterology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/33780219/",
+      "authors": "Noorian S, Patel A, Ashkar C, Saab S"
+    },
+    {
+      "pmid": "28586172",
+      "title": "Comparison of laboratory tests, ultrasound, or magnetic resonance elastography to detect fibrosis in patients with nonalcoholic fatty liver disease: A meta-analysis.",
+      "year": "2017",
+      "journal": "Hepatology (Baltimore, Md.)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/28586172/",
+      "authors": "Xiao G, Zhu S, Xiao X, Yan L, Yang J"
+    }
+  ],
+  "rct": [
+    {
+      "pmid": "37203233",
+      "title": "Magnetic resonance elastography-based prediction model for hepatic decompensation in NAFLD: A multicenter cohort study.",
+      "year": "2023",
+      "journal": "Hepatology (Baltimore, Md.)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37203233/",
+      "authors": "Kim BK, Bergstrom J, Loomba R, Tamaki N, Izumi N"
+    }
+  ],
+  "guideline": [],
+  "recent": [
+    {
+      "pmid": "42755179",
+      "title": "Non-Invasive Fibrosis Testing in Adults With Obesity and MASLD: A Systematic Review and Meta-Analysis.",
+      "year": "2026",
+      "journal": "Diabetes, obesity & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42755179/",
+      "authors": "Ortega PM, Sabatella L, Manousou P, Arregui A, Ahmed AR"
+    },
+    {
+      "pmid": "41533456",
+      "title": "Imaging-Based Modalities for Identifying At Risk MASH. A Diagnostic Test Meta-Analysis.",
+      "year": "2026",
+      "journal": "The American journal of gastroenterology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41533456/",
+      "authors": "Gunalan SZ, Law MSN, Kua YX, Yu Z, Lim RYZ"
+    },
+    {
+      "pmid": "39703127",
+      "title": "Diagnostic accuracy of Agile-4 score for liver cirrhosis in patients with metabolic dysfunction-associated steatotic liver disease. A systematic review and meta-analysis of diagnostic test accuracy studies.",
+      "year": "2025",
+      "journal": "Diabetes, obesity & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39703127/",
+      "authors": "Malandris K, Katsoula A, Liakos A, Karagiannis T, Sinakos E"
+    },
+    {
+      "pmid": "38573034",
+      "title": "Diagnostic accuracy of non-invasive tests to screen for at-risk MASH-An individual participant data meta-analysis.",
+      "year": "2024",
+      "journal": "Liver international : official journal of the International Association for the Study of the Liver",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38573034/",
+      "authors": "Mózes FE, Lee JA, Vali Y, Selvaraj EA, Jayaswal ANA"
+    },
+    {
+      "pmid": "37900994",
+      "title": "Diagnostic role of transient elastography in patients with autoimmune liver diseases: A systematic review and meta-analysis.",
+      "year": "2023",
+      "journal": "World journal of gastroenterology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37900994/",
+      "authors": "Chen H, Shen Y, Wu SD, Zhu Q, Weng CZ"
+    },
+    {
+      "pmid": "37290471",
+      "title": "Performance of non-invasive tests and histology for the prediction of clinical outcomes in patients with non-alcoholic fatty liver disease: an individual participant data meta-analysis.",
+      "year": "2023",
+      "journal": "The lancet. Gastroenterology & hepatology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37290471/",
+      "authors": "Mózes FE, Lee JA, Vali Y, Alzoubi O, Staufer K"
+    },
+    {
+      "pmid": "36924031",
+      "title": "Noninvasive assessment of liver disease severity in patients with nonalcoholic fatty liver disease (NAFLD) and type 2 diabetes.",
+      "year": "2023",
+      "journal": "Hepatology (Baltimore, Md.)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36924031/",
+      "authors": "Pennisi G, Enea M, Falco V, Aithal GP, Palaniyappan N"
+    },
+    {
+      "pmid": "34001645",
+      "title": "Diagnostic accuracy of non-invasive tests for advanced fibrosis in patients with NAFLD: an individual patient data meta-analysis.",
+      "year": "2022",
+      "journal": "Gut",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/34001645/",
+      "authors": "Mózes FE, Lee JA, Selvaraj EA, Jayaswal ANA, Trauner M"
+    },
+    {
+      "pmid": "33780219",
+      "title": "Identifying Advanced Fibrosis in NAFLD Using Noninvasive Tests: A Systematic Review of Sequential Algorithms.",
+      "year": "2022",
+      "journal": "Journal of clinical gastroenterology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/33780219/",
+      "authors": "Noorian S, Patel A, Ashkar C, Saab S"
+    },
+    {
+      "pmid": "37203233",
+      "title": "Magnetic resonance elastography-based prediction model for hepatic decompensation in NAFLD: A multicenter cohort study.",
+      "year": "2023",
+      "journal": "Hepatology (Baltimore, Md.)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37203233/",
+      "authors": "Kim BK, Bergstrom J, Loomba R, Tamaki N, Izumi N"
+    }
+  ],
+  "observational": [
+    {
+      "pmid": "42902667",
+      "title": "Comprehensive Approach to Detect Liver Fibrosis by Indirect Serum Biomarkers.",
+      "year": "2026",
+      "journal": "The Journal of the Association of Physicians of India",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42902667/",
+      "authors": "Garg H, Sharma D, Tiwari H, Bishnoi D"
+    },
+    {
+      "pmid": "42845069",
+      "title": "Diagnostic Performance of Non-Invasive Tests in Assessing Liver Fibrosis Among Type 2 Diabetes Mellitus.",
+      "year": "2026",
+      "journal": "Acta medica Indonesiana",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42845069/",
+      "authors": "Mufida AZ, Hidayat AA, Alfaray RI, Kholili U, Wibisono S"
+    },
+    {
+      "pmid": "42827235",
+      "title": "Diagnostic performance of FIB-6 for identifying FibroScan-defined advanced fibrosis in Metabolic Dysfunction-Associated Steatotic Liver Disease (MASLD): a cross-sectional diagnostic accuracy study.",
+      "year": "2026",
+      "journal": "BMC gastroenterology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42827235/",
+      "authors": "Bagheri H, Seighali N, Gholami-Chahkand MS, Bakhtiyari M, Seighali F"
+    },
+    {
+      "pmid": "42802126",
+      "title": "[Noninvasive scores for predicting liver-related events in patients with metabolic dysfunction-associated fatty liver disease].",
+      "year": "2026",
+      "journal": "Zhonghua gan zang bing za zhi = Zhonghua ganzangbing zazhi = Chinese journal of hepatology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42802126/",
+      "authors": "Gao YK, Chen SY, Han X, Sun CL, Wu XN"
+    },
+    {
+      "pmid": "42654424",
+      "title": "Noninvasive Detection of Clinically Significant Fibrosis in Biopsy-Proven MASLD: A Retrospective Cross-Sectional Diagnostic Accuracy Study.",
+      "year": "2026",
+      "journal": "Medicina (Kaunas, Lithuania)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42654424/",
+      "authors": "Eksi O, Atay K, Eskazan T, Abishov E, Canbakan M"
+    },
+    {
+      "pmid": "42581304",
+      "title": "Emerging Indices Outperform Traditional Fibrosis Scores in Young Metabolic Dysfunction-Associated Steatotic Liver Disease Across Divergent Screening Goals.",
+      "year": "2026",
+      "journal": "Journal of gastroenterology and hepatology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42581304/",
+      "authors": "Lee A, Han CI, Yang K, Yang H, Sung PS"
+    },
+    {
+      "pmid": "42579768",
+      "title": "Simplified definition and imaging-based stratification of at-risk MASH using magnetic resonance elastography.",
+      "year": "2026",
+      "journal": "Hepatology communications",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42579768/",
+      "authors": "Li J, Wu H, Glaser KJ, Ou FS, Manduca A"
+    },
+    {
+      "pmid": "42566274",
+      "title": "Sequential FIB-4-based testing limits detection of fibrotic MASLD despite optimized ELF thresholds.",
+      "year": "2026",
+      "journal": "Hepatology communications",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42566274/",
+      "authors": "Allen AM, Bobek OJ, Canning RE, Eslami M, Benson J"
+    },
+    {
+      "pmid": "42467953",
+      "title": "Metabolic-dysfunction associated steatotic liver disease: clinical features and noninvasive methods of detection in young adults with obesity.",
+      "year": "2026",
+      "journal": "European journal of gastroenterology & hepatology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42467953/",
+      "authors": "Sommese P, Boccia F, Mugione P, De Rosa I, Guerriero L"
+    },
+    {
+      "pmid": "42394207",
+      "title": "Enhanced Liver Fibrosis Test, FIB-4 and FibroScan: Real-World Prognostic Accuracy for MASLD in a Biopsy-Controlled Cohort.",
+      "year": "2026",
+      "journal": "Liver international : official journal of the International Association for the Study of the Liver",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42394207/",
+      "authors": "Liguori A, D'Ambrosio F, Angelini G, Cefalo C, Galletti S"
+    },
+    {
+      "pmid": "42392311",
+      "title": "Evaluating performance of non-invasive tests for fibrosis detection in MASLD with Type 2 Diabetes Mellitus: Insights from VCTE-Based assessment.",
+      "year": "2026",
+      "journal": "Clinics and research in hepatology and gastroenterology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42392311/",
+      "authors": "Kagzi Y, Asif A, Wang Y, Fischer J, Dhillon S"
+    },
+    {
+      "pmid": "41911049",
+      "title": "Two-step clinical care pathway to predict MASLD-related advanced fibrosis and long-term outcomes in type 2 diabetes.",
+      "year": "2026",
+      "journal": "Gut",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41911049/",
+      "authors": "Chen Y, Dong B, Jin X, Liu C, Zheng MH"
+    },
+    {
+      "pmid": "41870956",
+      "title": "Diagnostic and prognostic performance of the fibrotic nonalcoholic steatohepatitis index in patients with metabolic dysfunction-associated steatotic liver disease.",
+      "year": "2026",
+      "journal": "European journal of gastroenterology & hepatology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41870956/",
+      "authors": "Zhang W, Li M, Luo Y, Wen Z, Huang J"
+    },
+    {
+      "pmid": "41784418",
+      "title": "SAFE vs. FIB-4: diagnostic accuracy for clinically significant fibrosis in U.S. adults with cardiometabolic risk factors - a NHANES 2017-2020 analysis.",
+      "year": "2026",
+      "journal": "European journal of gastroenterology & hepatology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41784418/",
+      "authors": "Aydin A, Aydin Y, Borz-Baba CI"
+    },
+    {
+      "pmid": "41742207",
+      "title": "Metabolic dysfunction-associated steatotic liver disease is associated with vascular dysfunction in type 1 diabetes.",
+      "year": "2026",
+      "journal": "Cardiovascular diabetology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41742207/",
+      "authors": "Mertens J, Stoop T, Dirinck E, Francque S, Heuten H"
+    }
+  ],
+  "khong_loc": [
+    {
+      "pmid": "42992694",
+      "title": "Developing and Externally Validating Explainable Machine Learning for Elastography-Defined Steatotic Liver Disease.",
+      "year": "2026",
+      "journal": "Journal of visualized experiments : JoVE",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42992694/"
+    },
+    {
+      "pmid": "42985628",
+      "title": "Diagnostic Performance of Triglyceride-Glucose Body Mass Index (TyG-BMI), Fibrosis-4 Index (FIB-4), and Their Combined Model for Clinically Significant Liver Fibrosis in Type 2 Diabetes Mellitus.",
+      "year": "2026",
+      "journal": "Cureus",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42985628/"
+    },
+    {
+      "pmid": "42971355",
+      "title": "New CLA3+/4 scores predict outcomes in MASLD.",
+      "year": "2026",
+      "journal": "JHEP reports : innovation in hepatology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42971355/"
+    },
+    {
+      "pmid": "42902667",
+      "title": "Comprehensive Approach to Detect Liver Fibrosis by Indirect Serum Biomarkers.",
+      "year": "2026",
+      "journal": "The Journal of the Association of Physicians of India",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42902667/"
+    },
+    {
+      "pmid": "42845069",
+      "title": "Diagnostic Performance of Non-Invasive Tests in Assessing Liver Fibrosis Among Type 2 Diabetes Mellitus.",
+      "year": "2026",
+      "journal": "Acta medica Indonesiana",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42845069/"
+    },
+    {
+      "pmid": "42827235",
+      "title": "Diagnostic performance of FIB-6 for identifying FibroScan-defined advanced fibrosis in Metabolic Dysfunction-Associated Steatotic Liver Disease (MASLD): a cross-sectional diagnostic accuracy study.",
+      "year": "2026",
+      "journal": "BMC gastroenterology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42827235/"
+    },
+    {
+      "pmid": "42802126",
+      "title": "[Noninvasive scores for predicting liver-related events in patients with metabolic dysfunction-associated fatty liver disease].",
+      "year": "2026",
+      "journal": "Zhonghua gan zang bing za zhi = Zhonghua ganzangbing zazhi = Chinese journal of hepatology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42802126/"
+    },
+    {
+      "pmid": "42781769",
+      "title": "Diagnostic Accuracy of Serum-Based Fibrosis Scores for Clinically Significant Liver Fibrosis in an East Asian Cohort.",
+      "year": "2026",
+      "journal": "The Kaohsiung journal of medical sciences",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42781769/"
+    },
+    {
+      "pmid": "42767245",
+      "title": "Device-Specific Cut-Offs of Canon Aplio i800 2D Shear Wave Elastography for Advanced Fibrosis in MASLD: A Histologically Validated Study.",
+      "year": "2026",
+      "journal": "Ultraschall in der Medizin (Stuttgart, Germany : 1980)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42767245/"
+    },
+    {
+      "pmid": "42759697",
+      "title": "Aligned ELF and VCTE cut-offs facilitate risk staging in patients with metabolic dysfunction-associated steatohepatitis.",
+      "year": "2026",
+      "journal": "JHEP reports : innovation in hepatology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42759697/"
+    },
+    {
+      "pmid": "42755179",
+      "title": "Non-Invasive Fibrosis Testing in Adults With Obesity and MASLD: A Systematic Review and Meta-Analysis.",
+      "year": "2026",
+      "journal": "Diabetes, obesity & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42755179/"
+    },
+    {
+      "pmid": "42722220",
+      "title": "Assessing Strategies to Mitigate the Effect of Age When Using Fibrosis-4 Index to Screen for Metabolic Dysfunction-Associated Steatotic Liver Disease-Related Liver Fibrosis.",
+      "year": "2026",
+      "journal": "Clinical gastroenterology and hepatology : the official clinical practice journal of the American Gastroenterological Association",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42722220/"
+    },
+    {
+      "pmid": "42654424",
+      "title": "Noninvasive Detection of Clinically Significant Fibrosis in Biopsy-Proven MASLD: A Retrospective Cross-Sectional Diagnostic Accuracy Study.",
+      "year": "2026",
+      "journal": "Medicina (Kaunas, Lithuania)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42654424/"
+    },
+    {
+      "pmid": "42602073",
+      "title": "Discriminative performance of non-invasive scoring systems for VCTE-defined steatosis and fibrosis in patients with psoriasis.",
+      "year": "2026",
+      "journal": "Hepatology forum",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42602073/"
+    },
+    {
+      "pmid": "42581304",
+      "title": "Emerging Indices Outperform Traditional Fibrosis Scores in Young Metabolic Dysfunction-Associated Steatotic Liver Disease Across Divergent Screening Goals.",
+      "year": "2026",
+      "journal": "Journal of gastroenterology and hepatology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42581304/"
+    },
+    {
+      "pmid": "42579768",
+      "title": "Simplified definition and imaging-based stratification of at-risk MASH using magnetic resonance elastography.",
+      "year": "2026",
+      "journal": "Hepatology communications",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42579768/"
+    },
+    {
+      "pmid": "42566274",
+      "title": "Sequential FIB-4-based testing limits detection of fibrotic MASLD despite optimized ELF thresholds.",
+      "year": "2026",
+      "journal": "Hepatology communications",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42566274/"
+    },
+    {
+      "pmid": "42467953",
+      "title": "Metabolic-dysfunction associated steatotic liver disease: clinical features and noninvasive methods of detection in young adults with obesity.",
+      "year": "2026",
+      "journal": "European journal of gastroenterology & hepatology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42467953/"
+    },
+    {
+      "pmid": "42394207",
+      "title": "Enhanced Liver Fibrosis Test, FIB-4 and FibroScan: Real-World Prognostic Accuracy for MASLD in a Biopsy-Controlled Cohort.",
+      "year": "2026",
+      "journal": "Liver international : official journal of the International Association for the Study of the Liver",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42394207/"
+    },
+    {
+      "pmid": "42392311",
+      "title": "Evaluating performance of non-invasive tests for fibrosis detection in MASLD with Type 2 Diabetes Mellitus: Insights from VCTE-Based assessment.",
+      "year": "2026",
+      "journal": "Clinics and research in hepatology and gastroenterology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42392311/"
+    },
+    {
+      "pmid": "42367551",
+      "title": "A Cross-Sectional Observational Study of Non-alcoholic Fatty Liver Disease Assessed by Fibrosis Index in Patients With Type 2 Diabetes Mellitus Presenting to a Tertiary Care Centre in Southwestern Maharashtra.",
+      "year": "2026",
+      "journal": "Cureus",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42367551/"
+    },
+    {
+      "pmid": "42294564",
+      "title": "Prevalence of Steatotic Liver Disease with Fibrosis and Diagnostic Screening Tools in Patients with Psoriasis.",
+      "year": "2026",
+      "journal": "Acta dermato-venereologica",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42294564/"
+    },
+    {
+      "pmid": "42291159",
+      "title": "FibroX: a machine learning model for detecting and prognosticating advanced fibrosis in metabolic dysfunction-associated steatotic liver disease.",
+      "year": "2026",
+      "journal": "Translational gastroenterology and hepatology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42291159/"
+    },
+    {
+      "pmid": "42065895",
+      "title": "FIB-4 fails to identify significant liver fibrosis in people with HIV: A large multinational screening study.",
+      "year": "2026",
+      "journal": "Hepatology (Baltimore, Md.)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42065895/"
+    },
+    {
+      "pmid": "42001012",
+      "title": "Blood-based non-invasive tests show comparable accuracy in MetALD and MASLD for MRE-defined advanced fibrosis.",
+      "year": "2026",
+      "journal": "BMC gastroenterology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42001012/"
+    },
+    {
+      "pmid": "41911049",
+      "title": "Two-step clinical care pathway to predict MASLD-related advanced fibrosis and long-term outcomes in type 2 diabetes.",
+      "year": "2026",
+      "journal": "Gut",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41911049/"
+    },
+    {
+      "pmid": "41870956",
+      "title": "Diagnostic and prognostic performance of the fibrotic nonalcoholic steatohepatitis index in patients with metabolic dysfunction-associated steatotic liver disease.",
+      "year": "2026",
+      "journal": "European journal of gastroenterology & hepatology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41870956/"
+    },
+    {
+      "pmid": "41784418",
+      "title": "SAFE vs. FIB-4: diagnostic accuracy for clinically significant fibrosis in U.S. adults with cardiometabolic risk factors - a NHANES 2017-2020 analysis.",
+      "year": "2026",
+      "journal": "European journal of gastroenterology & hepatology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41784418/"
+    },
+    {
+      "pmid": "41742207",
+      "title": "Metabolic dysfunction-associated steatotic liver disease is associated with vascular dysfunction in type 1 diabetes.",
+      "year": "2026",
+      "journal": "Cardiovascular diabetology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41742207/"
+    },
+    {
+      "pmid": "41698414",
+      "title": "A Novel Fibroblast Activation Protein-Based Algorithm to Assess Fibrosis in Metabolic Dysfunction-Associated Steatotic Liver Disease.",
+      "year": "2026",
+      "journal": "Journal of gastroenterology and hepatology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41698414/"
+    }
+  ],
+  "true_counts": {
+    "sr_ma": 10,
+    "rct": 1,
+    "guideline": 0,
+    "observational": 100,
+    "recent": 10
+  },
+  "search_provenance": {
+    "co_so_du_lieu": "PubMed (MEDLINE và phần còn lại của PubMed)",
+    "giao_dien": "NCBI E-utilities (esearch/efetch) qua app.sources.pubmed.PubMedClient",
+    "ngay_tra": "2026-11-15T20:00:04",
+    "truy_van_goc": "(\"FIB-4\"[tiab] OR \"fibrosis-4\"[tiab]) AND (\"Non-alcoholic Fatty Liver Disease\"[MeSH] OR NAFLD[tiab] OR MASLD[tiab]) AND (\"Elasticity Imaging Techniques\"[MeSH] OR elastography[tiab]) AND (\"Sensitivity and Specificity\"[MeSH] OR \"diagnostic accuracy\"[tiab] OR AUROC[tiab])",
+    "query_en_do_nguoi_cung_cap": true,
+    "nhanh": {
+      "sr_ma": {
+        "nhom_ket_qua": "sr_ma",
+        "truy_van": "(\"FIB-4\"[tiab] OR \"fibrosis-4\"[tiab]) AND (\"Non-alcoholic Fatty Liver Disease\"[MeSH] OR NAFLD[tiab] OR MASLD[tiab]) AND (\"Elasticity Imaging Techniques\"[MeSH] OR elastography[tiab]) AND (\"Sensitivity and Specificity\"[MeSH] OR \"diagnostic accuracy\"[tiab] OR AUROC[tiab]) AND (systematic review[pt] OR meta-analysis[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"FIB-4\"[tiab] OR \"fibrosis-4\"[tiab]) AND (\"Non-alcoholic Fatty Liver Disease\"[MeSH] OR NAFLD[tiab] OR MASLD[tiab]) AND (\"Elasticity Imaging Techniques\"[MeSH] OR elastography[tiab]) AND (\"Sensitivity and Specificity\"[MeSH] OR \"diagnostic accuracy\"[tiab] OR AUROC[tiab]) AND (systematic review[pt] OR meta-analysis[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 10,
+        "so_bai_lay_ve": 10,
+        "pmid_lay_ve": [
+          "42755179",
+          "41533456",
+          "39703127",
+          "38573034",
+          "37900994",
+          "37290471",
+          "36924031",
+          "34001645",
+          "33780219",
+          "28586172"
+        ]
+      },
+      "rct": {
+        "nhom_ket_qua": "rct",
+        "truy_van": "(\"FIB-4\"[tiab] OR \"fibrosis-4\"[tiab]) AND (\"Non-alcoholic Fatty Liver Disease\"[MeSH] OR NAFLD[tiab] OR MASLD[tiab]) AND (\"Elasticity Imaging Techniques\"[MeSH] OR elastography[tiab]) AND (\"Sensitivity and Specificity\"[MeSH] OR \"diagnostic accuracy\"[tiab] OR AUROC[tiab]) AND randomized controlled trial[pt]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"FIB-4\"[tiab] OR \"fibrosis-4\"[tiab]) AND (\"Non-alcoholic Fatty Liver Disease\"[MeSH] OR NAFLD[tiab] OR MASLD[tiab]) AND (\"Elasticity Imaging Techniques\"[MeSH] OR elastography[tiab]) AND (\"Sensitivity and Specificity\"[MeSH] OR \"diagnostic accuracy\"[tiab] OR AUROC[tiab]) AND randomized controlled trial[pt]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 1,
+        "so_bai_lay_ve": 1,
+        "pmid_lay_ve": [
+          "37203233"
+        ]
+      },
+      "guideline": {
+        "nhom_ket_qua": "guideline",
+        "truy_van": "(\"FIB-4\"[tiab] OR \"fibrosis-4\"[tiab]) AND (\"Non-alcoholic Fatty Liver Disease\"[MeSH] OR NAFLD[tiab] OR MASLD[tiab]) AND (\"Elasticity Imaging Techniques\"[MeSH] OR elastography[tiab]) AND (\"Sensitivity and Specificity\"[MeSH] OR \"diagnostic accuracy\"[tiab] OR AUROC[tiab]) AND (guideline[pt] OR practice guideline[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"FIB-4\"[tiab] OR \"fibrosis-4\"[tiab]) AND (\"Non-alcoholic Fatty Liver Disease\"[MeSH] OR NAFLD[tiab] OR MASLD[tiab]) AND (\"Elasticity Imaging Techniques\"[MeSH] OR elastography[tiab]) AND (\"Sensitivity and Specificity\"[MeSH] OR \"diagnostic accuracy\"[tiab] OR AUROC[tiab]) AND (guideline[pt] OR practice guideline[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 5,
+        "loai_trung_pmid": true,
+        "so_hit_that": 0,
+        "so_bai_lay_ve": 0,
+        "pmid_lay_ve": []
+      },
+      "observational": {
+        "nhom_ket_qua": "observational",
+        "truy_van": "(\"FIB-4\"[tiab] OR \"fibrosis-4\"[tiab]) AND (\"Non-alcoholic Fatty Liver Disease\"[MeSH] OR NAFLD[tiab] OR MASLD[tiab]) AND (\"Elasticity Imaging Techniques\"[MeSH] OR elastography[tiab]) AND (\"Sensitivity and Specificity\"[MeSH] OR \"diagnostic accuracy\"[tiab] OR AUROC[tiab])",
+        "bo_loc": "(\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "chuoi_hieu_luc": "((\"FIB-4\"[tiab] OR \"fibrosis-4\"[tiab]) AND (\"Non-alcoholic Fatty Liver Disease\"[MeSH] OR NAFLD[tiab] OR MASLD[tiab]) AND (\"Elasticity Imaging Techniques\"[MeSH] OR elastography[tiab]) AND (\"Sensitivity and Specificity\"[MeSH] OR \"diagnostic accuracy\"[tiab] OR AUROC[tiab])) AND (\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 100,
+        "so_bai_lay_ve": 15,
+        "pmid_lay_ve": [
+          "42902667",
+          "42845069",
+          "42827235",
+          "42802126",
+          "42654424",
+          "42581304",
+          "42579768",
+          "42566274",
+          "42467953",
+          "42394207",
+          "42392311",
+          "41911049",
+          "41870956",
+          "41784418",
+          "41742207"
+        ]
+      },
+      "recent_5yr": {
+        "nhom_ket_qua": "recent",
+        "truy_van": "(\"FIB-4\"[tiab] OR \"fibrosis-4\"[tiab]) AND (\"Non-alcoholic Fatty Liver Disease\"[MeSH] OR NAFLD[tiab] OR MASLD[tiab]) AND (\"Elasticity Imaging Techniques\"[MeSH] OR elastography[tiab]) AND (\"Sensitivity and Specificity\"[MeSH] OR \"diagnostic accuracy\"[tiab] OR AUROC[tiab]) AND 2021:2026[dp]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"FIB-4\"[tiab] OR \"fibrosis-4\"[tiab]) AND (\"Non-alcoholic Fatty Liver Disease\"[MeSH] OR NAFLD[tiab] OR MASLD[tiab]) AND (\"Elasticity Imaging Techniques\"[MeSH] OR elastography[tiab]) AND (\"Sensitivity and Specificity\"[MeSH] OR \"diagnostic accuracy\"[tiab] OR AUROC[tiab]) AND 2021:2026[dp]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 10,
+        "loai_trung_pmid": false,
+        "so_hit_that": 10,
+        "so_bai_lay_ve": 10,
+        "pmid_lay_ve": [
+          "42755179",
+          "41533456",
+          "39703127",
+          "38573034",
+          "37900994",
+          "37290471",
+          "36924031",
+          "34001645",
+          "33780219",
+          "37203233"
+        ]
+      },
+      "khong_loc": {
+        "nhom_ket_qua": null,
+        "truy_van": "(\"FIB-4\"[tiab] OR \"fibrosis-4\"[tiab]) AND (\"Non-alcoholic Fatty Liver Disease\"[MeSH] OR NAFLD[tiab] OR MASLD[tiab]) AND (\"Elasticity Imaging Techniques\"[MeSH] OR elastography[tiab]) AND (\"Sensitivity and Specificity\"[MeSH] OR \"diagnostic accuracy\"[tiab] OR AUROC[tiab])",
+        "bo_loc": null,
+        "chuoi_hieu_luc": "((\"FIB-4\"[tiab] OR \"fibrosis-4\"[tiab]) AND (\"Non-alcoholic Fatty Liver Disease\"[MeSH] OR NAFLD[tiab] OR MASLD[tiab]) AND (\"Elasticity Imaging Techniques\"[MeSH] OR elastography[tiab]) AND (\"Sensitivity and Specificity\"[MeSH] OR \"diagnostic accuracy\"[tiab] OR AUROC[tiab]))",
+        "tran_so_bai": 30,
+        "loai_trung_pmid": false,
+        "chi_ghi_lai": true,
+        "so_hit_that": 213,
+        "so_bai_lay_ve": 30,
+        "pmid_lay_ve": [
+          "42992694",
+          "42985628",
+          "42971355",
+          "42902667",
+          "42845069",
+          "42827235",
+          "42802126",
+          "42781769",
+          "42767245",
+          "42759697",
+          "42755179",
+          "42722220",
+          "42654424",
+          "42602073",
+          "42581304",
+          "42579768",
+          "42566274",
+          "42467953",
+          "42394207",
+          "42392311",
+          "42367551",
+          "42294564",
+          "42291159",
+          "42065895",
+          "42001012",
+          "41911049",
+          "41870956",
+          "41784418",
+          "41742207",
+          "41698414"
+        ],
+        "pmid_bo_loc_da_loai": [
+          "42992694",
+          "42985628",
+          "42971355",
+          "42781769",
+          "42767245",
+          "42759697",
+          "42722220",
+          "42602073",
+          "42367551",
+          "42294564",
+          "42291159",
+          "42065895",
+          "42001012",
+          "41698414"
+        ]
+      }
+    },
+    "loi_nhanh": {}
+  }
+}
