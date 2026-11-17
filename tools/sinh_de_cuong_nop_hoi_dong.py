@@ -830,6 +830,24 @@ def phieu_dong_y(n: Nguon) -> List[str]:
     return gon
 
 
+def _luc_huy_bang_noi(out_dir: Path) -> str:
+    """Thời điểm huỷ bảng nối mã theo quy trình dữ liệu ĐÃ CHỐT (`_quy-trinh-du-lieu.csv`, mục huy_bang_noi) — vd «sau
+    khi khoá dữ liệu». Chưa chốt ⇒ câu khuôn chung «sau khi kết thúc nghiên cứu».
+
+    17/11/2026 (giả lập dữ liệu trên khung BTM): đơn miễn đồng thuận ghi cứng «huỷ sau khi kết thúc nghiên cứu» trong
+    khi mục bảo mật và DMP của CÙNG đề cương in quy trình đã chốt «huỷ sau khi khoá dữ liệu» ⇒ hai thời điểm khác
+    nhau."""
+    import quy_trinh_du_lieu as QT  # noqa: PLC0415
+
+    dong, _, _ = QT.doc_bang(Path(out_dir))
+    for r in dong or []:
+        if r.get("muc") == "huy_bang_noi":
+            m = re.search(r"h(?:uỷ|ủy)\s+(sau khi [^;.,]+)", unicodedata.normalize("NFC", r.get("gia_tri") or ""))
+            if m:
+                return m.group(1).strip()
+    return "sau khi kết thúc nghiên cứu"
+
+
 def don_mien_dong_thuan(n: Nguon) -> List[str]:
     hoi_cuu = "RETRO" in str(n.g2.get("recruitment_mode") or "").upper() or "hồi cứu" in lam_sach(
         n.g1.get("design_rationale")).lower()
@@ -839,7 +857,7 @@ def don_mien_dong_thuan(n: Nguon) -> List[str]:
     return [ly_do, "",
             "Nhóm nghiên cứu cam kết: chỉ trích những thông tin cần cho mục tiêu nghiên cứu; không ghi họ tên, địa "
             "chỉ, số điện thoại của người bệnh vào phiếu; bảng đối chiếu mã nghiên cứu với hồ sơ được lưu riêng, có "
-            "phân quyền và huỷ sau khi kết thúc nghiên cứu; kết quả chỉ công bố ở dạng tổng hợp.", "",
+            f"phân quyền và huỷ {_luc_huy_bang_noi(n.out)}; kết quả chỉ công bố ở dạng tổng hợp.", "",
             "Kính đề nghị Hội đồng Đạo đức xem xét cho phép miễn thủ tục đồng thuận tham gia nghiên cứu.", "",
             "Chủ nhiệm đề tài (ký, ghi rõ họ tên): ……………………………   Ngày: …… /…… /…………"]
 

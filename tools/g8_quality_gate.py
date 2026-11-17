@@ -595,9 +595,11 @@ def _chuan_kc(text: Any) -> str:
 
 # Dòng KHAI kết cục trong SAP: nhãn đứng ĐẦU dòng (sau gạch đầu dòng/chữ đậm) — «- **Kết cục chính:** …», «Kết cục
 # phụ 2: …», «Primary outcome: …». «Kết cục được coi là kết cục chính: chỉ 1», «Bảng 2, Kết cục chính:» KHÔNG phải dòng
-# khai.
+# khai. 17/11/2026 (giả lập dữ liệu trên khung BTM): nhận cả ngoặc gắn mục tiêu sau nhãn — «- **Kết cục chính (MT1):**»
+# của SAP BTM; bản cũ không rút được dòng nào ⇒ G8-AUTO-05 mãi REVIEW «kiểm tay SAP §2».
 _DONG_KHAI_KET_CUC_RE = re.compile(
-    r"^\s*(?:[-*•]\s*)?(?:\*\*)?\s*(kết\s*cục\s*(chính|phụ)(?:\s*\d+)?|primary\s+outcome|secondary\s+outcomes?(?:\s*\d+)?)"
+    r"^\s*(?:[-*•]\s*)?(?:\*\*)?\s*(kết\s*cục\s*(chính|phụ)(?:\s*\d+)?(?:\s*\([^)\n]{1,40}\))?|primary\s+outcome"
+    r"|secondary\s+outcomes?(?:\s*\d+)?)"
     r"\s*(?:\*\*)?\s*[:：]\s*(?:\*\*)?\s*(.+)$",
     re.IGNORECASE,
 )

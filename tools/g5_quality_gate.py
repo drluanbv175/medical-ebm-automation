@@ -24,7 +24,7 @@ import re
 import stat
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Iterable, Mapping, Optional
+from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 import gate_contract as GC
 import import_real_dataset as RDI
@@ -236,6 +236,18 @@ def _la_ten_bien_dinh_danh(name: Any) -> bool:
     # 15/11/2026: «bhyt»/«co_bhyt» là biến tình trạng; chỉ SỐ/MÃ thẻ BHYT là định danh (luật chung với cổng nạp).
     return (norm in RDI.PII_HEADER_EXACT or any(tok in norm for tok in RDI.PII_HEADER_CONTAINS)
             or RDI.la_ten_bhyt_dinh_danh(norm))
+
+
+def _bien_bat_buoc_vang(required_names: List[str], header: List[str]) -> List[str]:
+    """Biến Required=y của dictionary KHÔNG có mặt trong header bộ dữ liệu (G5-AUTO-07b).
+
+    17/11/2026 (giả lập dữ liệu trên khung BTM): câu chọn nhiều BẮT BUỘC xuất thành `<biến>___<mã>`, không bao giờ có
+    cột tên gốc ⇒ bản cũ chặn G5-AUTO-07b mãi với mọi checkbox Required=y (BTM có 5 câu như vậy). Có ít nhất một cột
+    con ⇒ biến có mặt. So tên THÔ: `_normalise_key` có thể gộp «___»."""
+    ten_cot = {_normalise_key(c) for c in header}
+    con_checkbox = {str(c).strip().casefold().split("___", 1)[0] for c in header if "___" in str(c)}
+    return [n for n in required_names
+            if _normalise_key(n) not in ten_cot and str(n).strip().casefold() not in con_checkbox]
 
 
 def _read_redcap_dictionary(path: Path) -> Dict[str, Any]:
@@ -1099,9 +1111,8 @@ def evaluate_study(
     du_lieu_path = locked_path if (locked_path and locked_path.exists()) else clean_path
     header = _doc_header_csv(du_lieu_path)
     ten_dict = {_normalise_key(n) for n in (dictionary.get("export_names") or dictionary.get("names") or []) if n}
-    ten_cot = {_normalise_key(c) for c in header}
     ngoai_dict = [c for c in header if _normalise_key(c) not in ten_dict]
-    thieu_bat_buoc = [n for n in dictionary.get("required_names") or [] if _normalise_key(n) not in ten_cot]
+    thieu_bat_buoc = _bien_bat_buoc_vang(dictionary.get("required_names") or [], header)
     if not header:
         phu_status = "BLOCK" if has_real_data and cleaning else "REVIEW" if has_real_data else "PASS"
         phu_bang_chung = "chưa có bộ dữ liệu sạch/khoá để đối chiếu" if has_real_data else "chưa có dữ liệu"

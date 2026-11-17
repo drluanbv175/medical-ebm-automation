@@ -279,6 +279,23 @@ def _a12_pmids(out_dir: Path) -> Set[str]:
             if isinstance(v, dict) and v.get("status") == "resolved" and re.fullmatch(r"\d{5,9}", str(k))}
 
 
+def _a12_chua_tra_duoc(out_dir: Path) -> Set[str]:
+    """PMID mà lượt A12 gần nhất KHÔNG tra được (trạng thái «unknown_*»: lỗi gọi PubMed, chế độ giả, thiếu email).
+
+    17/11/2026 (giả lập trên khung BTM): mạng tới NCBI không thông lúc chạy A12 ⇒ biên nhận ghi «unknown» cho cả 26 PMID
+    nhưng R4 vẫn gắn 6 PMID thật (KDIGO 2022/2024, ADA 2026…) là «nghi bịa». «Không đo được» khác «có vấn đề»: nhóm này
+    vẫn CHẶN (chưa xác minh) nhưng thông điệp nói đúng nguyên nhân và cách gỡ (chạy lại A12)."""
+    try:
+        data = json.loads((out_dir / "A12_METADATA_RECEIPT.json").read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return set()
+    md = data.get("metadata") if isinstance(data, dict) else None
+    if not isinstance(md, dict):
+        return set()
+    return {str(k) for k, v in md.items()
+            if isinstance(v, dict) and str(v.get("status") or "").startswith("unknown")}
+
+
 def _harvest_pmids_from_obj(obj) -> Set[str]:
     """Đệ quy gom mọi chuỗi số 5-9 chữ số nằm ở key/giá trị liên quan 'pmid'."""
     out: Set[str] = set()
@@ -377,7 +394,9 @@ def validate(md_path, out_dir) -> Dict:
     # 06/10/2026 (CHUNG-H): bài chuẩn đề cương do HỆ chèn (SPIRIT 2025/PRISMA-P 2015) có nguồn — không phải «nghi bịa».
     chuan_he_thong = PCI.pmid_tai_lieu_chuan() if PCI is not None else frozenset()
     he_thong = sorted((doc_pmids & chuan_he_thong) - raw - seed - receipt)
-    fabricated = sorted(doc_pmids - raw - seed - receipt - set(he_thong))  # không ở đâu cả → bịa
+    khong_nguon = doc_pmids - raw - seed - receipt - set(he_thong)
+    chua_tra = sorted(khong_nguon & _a12_chua_tra_duoc(out_dir))  # A12 lỗi gọi — chưa đo được, KHÔNG phải bịa
+    fabricated = sorted(khong_nguon - set(chua_tra))  # không ở đâu cả, A12 cũng không báo lỗi gọi → nghi bịa
     seed_only = sorted((doc_pmids & seed) - raw)  # ở seed nhưng KHÔNG ở raw
     receipt_only = sorted((doc_pmids & receipt) - raw - seed)  # chỉ biên nhận
     expired_hit = sorted((doc_pmids & receipt_expired) - raw - seed - receipt)
@@ -395,34 +414,41 @@ def validate(md_path, out_dir) -> Dict:
             f"R4 PMID KHÔNG TRUY ĐƯỢC VỀ BẤT KỲ NGUỒN NÀO (nghi bịa): "
             f"{', '.join(fabricated[:10])}.{_exp_note}")
         checks["R4_pmid_traceable"] = f"FAIL ({len(fabricated)} PMID không nguồn)"
-    elif seed_only or receipt_only or he_thong:
-        if he_thong:
-            warnings.append(
-                f"R4 GHI CHÚ: {len(he_thong)} PMID là bài chuẩn đề cương do hệ thống chèn (SPIRIT 2025/PRISMA-P 2015 "
-                f"— nguồn đã xác minh trong protocol_checklist_items): {', '.join(he_thong)}. Vẫn phải chạy A12 (kiểm "
-                "rút bài + metadata) trên các PMID này trước khi phát hành (G10-AUTO-05).")
-        # KHÔNG fail, nhưng PHẢI cảnh báo rõ từng mức bảo đảm — không được báo
-        # 'đều truy được' như cũ (bug tự-chứng-nhận).
-        if seed_only:
-            warnings.append(
-                f"R4 CẢNH BÁO: {len(seed_only)}/{len(doc_pmids)} PMID chỉ có trong "
-                f"'seed' checkpoint, CHƯA đối chiếu PubMed raw ({len(raw)} PMID raw "
-                f"thật): {', '.join(seed_only[:10])}. Có thể là seed MỒ CÔI từ đề tài "
-                "khác — bác sĩ PHẢI kiểm chứng từng PMID (nối `kiem-chung-trich-dan`) "
-                "trước khi đưa vào TLTK.")
-        if receipt_only:
-            warnings.append(
-                f"R4 CẢNH BÁO: {len(receipt_only)}/{len(doc_pmids)} PMID truy được "
-                f"qua BIÊN NHẬN ngoài-pipeline ({BIEN_NHAN_XAC_MINH}) — mức bảo đảm "
-                "TỰ KHAI CÓ DẤU VẾT (khác raw-PubMed), và biên nhận KHÔNG bảo đảm "
-                "trạng thái rút bài (kiểm chuỗi 3 tầng riêng): "
-                f"{', '.join(receipt_only[:10])}.")
-        checks["R4_pmid_traceable"] = (
-            f"WARN ({len(raw_verified)} đối chiếu raw, {len(seed_only)} chỉ-seed, "
-            f"{len(receipt_only)} biên-nhận cần bác sĩ kiểm, {len(he_thong)} chuẩn đề cương của hệ thống)")
-    else:
-        checks["R4_pmid_traceable"] = (
-            f"PASS ({len(raw_verified)}/{len(doc_pmids)} PMID đối chiếu PubMed raw)")
+    if chua_tra:
+        errors.append(
+            f"R4 PMID CHƯA XÁC MINH ĐƯỢC — lượt A12 gần nhất không tra được PubMed (lỗi mạng/khoá/chế độ giả), chưa "
+            f"thể kết luận bịa: {', '.join(chua_tra[:10])}. Chạy lại A12 khi có mạng rồi kiểm lại.")
+        checks["R4_pmid_traceable"] = (checks.get("R4_pmid_traceable", "") + " · " if fabricated else "") + (
+            f"FAIL ({len(chua_tra)} PMID chưa xác minh được — A12 lỗi gọi)")
+    if not (fabricated or chua_tra):
+        if seed_only or receipt_only or he_thong:
+            if he_thong:
+                warnings.append(
+                    f"R4 GHI CHÚ: {len(he_thong)} PMID là bài chuẩn đề cương do hệ thống chèn (SPIRIT 2025/"
+                    f"PRISMA-P 2015 — nguồn đã xác minh trong protocol_checklist_items): {', '.join(he_thong)}. Vẫn "
+                    "phải chạy A12 (kiểm rút bài + metadata) trên các PMID này trước khi phát hành (G10-AUTO-05).")
+            # KHÔNG fail, nhưng PHẢI cảnh báo rõ từng mức bảo đảm — không được báo
+            # 'đều truy được' như cũ (bug tự-chứng-nhận).
+            if seed_only:
+                warnings.append(
+                    f"R4 CẢNH BÁO: {len(seed_only)}/{len(doc_pmids)} PMID chỉ có trong "
+                    f"'seed' checkpoint, CHƯA đối chiếu PubMed raw ({len(raw)} PMID raw "
+                    f"thật): {', '.join(seed_only[:10])}. Có thể là seed MỒ CÔI từ đề tài "
+                    "khác — bác sĩ PHẢI kiểm chứng từng PMID (nối `kiem-chung-trich-dan`) "
+                    "trước khi đưa vào TLTK.")
+            if receipt_only:
+                warnings.append(
+                    f"R4 CẢNH BÁO: {len(receipt_only)}/{len(doc_pmids)} PMID truy được "
+                    f"qua BIÊN NHẬN ngoài-pipeline ({BIEN_NHAN_XAC_MINH}) — mức bảo đảm "
+                    "TỰ KHAI CÓ DẤU VẾT (khác raw-PubMed), và biên nhận KHÔNG bảo đảm "
+                    "trạng thái rút bài (kiểm chuỗi 3 tầng riêng): "
+                    f"{', '.join(receipt_only[:10])}.")
+            checks["R4_pmid_traceable"] = (
+                f"WARN ({len(raw_verified)} đối chiếu raw, {len(seed_only)} chỉ-seed, "
+                f"{len(receipt_only)} biên-nhận cần bác sĩ kiểm, {len(he_thong)} chuẩn đề cương của hệ thống)")
+        else:
+            checks["R4_pmid_traceable"] = (
+                f"PASS ({len(raw_verified)}/{len(doc_pmids)} PMID đối chiếu PubMed raw)")
 
     # R5 — disclaimer.
     if "kiểm chứng" not in text.lower():
@@ -677,7 +703,7 @@ def validate(md_path, out_dir) -> Dict:
     # D08/D11/D12/D13/D15/D18 trên đề cương mà bộ lắp đã lấp đúng từ SAP/G2/G5. Ba nơi phải cùng một nguồn.
     meta_spec = _meta_co_lop_phu(out_dir, meta)
     spec = RS.build_study_spec(md_path.stem, cps, meta_spec)
-    spec_evaluation = RS.evaluate_study_spec(spec, cps, meta_spec)
+    spec_evaluation = RS.evaluate_study_spec(spec, cps, meta_spec, thu_muc=out_dir)
     semantic_errors = [
         issue for issue in spec_evaluation["semantic_issues"]
         if issue["severity"] == "ERROR"

@@ -2319,7 +2319,7 @@ def assemble(study: str, out_dir: Path) -> Dict[str, object]:
     # 24/10/2026: dựng từ cổng của mục đích phát hành — đúng phép G10-AUTO-06 tính lại (G10Q.checkpoint_theo_muc_dich).
     muc_dich_goi = G10Q.muc_dich_phat_hanh(G10Q._read_json(out_dir / G10Q.READINESS_JSON))
     study_spec = RS.build_study_spec(study, G10Q.checkpoint_theo_muc_dich(cps, muc_dich_goi), raw_meta, sap=sap)
-    spec_evaluation = RS.evaluate_study_spec(study_spec, cps, raw_meta)
+    spec_evaluation = RS.evaluate_study_spec(study_spec, cps, raw_meta, thu_muc=out_dir)
     meta = RS.meta_for_render(raw_meta, study_spec)
     da_lap = bo_sung_tu_nguon_da_chot(meta, cps, out_dir)
     # Bản đồ nghiên cứu đọc StudySpec — dựng trên BẢN SAO có nguồn dữ liệu vừa lấp (15/10/2026: «Dữ liệu hiện có» in câu

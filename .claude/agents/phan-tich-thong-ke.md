@@ -106,6 +106,11 @@ Sau khi #254 gộp, `run_stats_analysis.py` (vẫn `--data <bản_khoá.csv> --o
 cục nhị phân phổ biến) · `--hiep-bien-phan-loai <cột>` (mã nguyên ≥ 0 → biến giả `<cột>_<mã>`, tham chiếu = mã nhỏ nhất)
 · `--loc "PhieuHopLe == 1"` (quần thể phân tích theo SAP — ngôn ngữ công thức biến phái sinh, giữ ca = 1). Chưa gộp thì
 KHÔNG đưa các cờ này vào lệnh (công cụ thoát ở argparse).
+**Quần thể phân tích (17/11/2026, giả lập dữ liệu trên khung BTM):** SAP §1 khoanh «Quần thể chính» bằng một biến
+(«mọi hồ sơ có `du_tieu_chuan` = 1») ⇒ mọi phân tích có `tham_so` trong đặc tả G6 PHẢI có `tham_so.loc` lọc theo biến đó
+(phân tích chính thiếu ⇒ `chay_sap_g6.py kiem` báo LỖI; phân tích khác ⇒ cảnh báo). Bộ dữ liệu ghi cả bản ghi bị loại ở
+bước sàng lọc (phiếu phần A) — thiếu `loc` thì Bảng 1 và N của bản thảo tính cả hồ sơ ngoài quần thể (lượt diễn tập:
+458 thay vì 385).
 SAP nhiều phân tích ⇒ đặc tả máy đọc `exports/<mã>/G6_DAC_TA_SAP.json` (agent SOẠN từ SAP đã khoá, gắn `sha256_sap`; thống
 kê viên/PI ghi `nguoi_duyet` — agent KHÔNG ghi) rồi `python3 medical-ebm-automation/tools/chay_sap_g6.py kiem|chay|ket-qua
 --study <mã>`: đúng một mục vai `chinh` (gate G6), mục khác gate `G6_<id>` nên không ghi đè nhau; phân tích SAP cam kết mà
