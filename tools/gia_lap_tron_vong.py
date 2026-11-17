@@ -280,6 +280,14 @@ def phan_loai_o(tep_text: str, cong: str, tep: str, meta: Mapping[str, Any], cps
             ra.append({**o, "vi_tri": o_tich, "o": tep_text[o_tich:m.end()], "loai": "moi_dung_vai",
                        "dien": "☑ đã báo cáo trong bản thảo"})
             continue
+        so_0 = re.search(r"(?<![\d.])0(?:\.0+)?\s*$", tep_text[dau_dong:m.start()])
+        if "lam tron ve 0" in trong_o and so_0:
+            # p mà G6 làm tròn về 0 kèm ô «báo cáo p < 0,001 theo chuẩn tạp chí» (17/11/2026): tác giả viết lại
+            # ĐÚNG ngưỡng báo cáo thay cả «0.0 [ô]» — trước đây chữ «tạp chí» trong ô khớp câu trả lời tạp chí đích
+            # ⇒ bảng ghi «0.0 Tạp chí Y học Việt Nam» ở cột p
+            a0 = dau_dong + so_0.start()
+            ra.append({**o, "vi_tri": a0, "o": tep_text[a0:m.end()], "loai": "moi_dung_vai", "dien": "< 0,001"})
+            continue
         if "doi chieu g6" in trong_o and re.search(r"\d", dong[:m.start() - dau_dong]):
             # bản thảo chép NGUYÊN VĂN số từ G6 rồi gắn nhãn đối chiếu — tác giả đối chiếu xong thì gỡ nhãn
             ra.append({**o, "loai": "moi_dung_vai", "dien": ""})

@@ -176,3 +176,14 @@ def test_run_stats_thiet_ke_mo_ta_co_bang1_mot_nhom_va_loc_bien():
     tom = RSA.bang1_cho_tom_tat(t1)
     assert tom["groups"] == [RSA.NHOM_TOAN_BO] and tom["n_per_group"] == {RSA.NHOM_TOAN_BO: 30}
     assert G7._bang1_tu_g6(tom, {RSA.NHOM_TOAN_BO: 30})
+
+
+def test_gia_lap_o_p_lam_tron_ve_0_thanh_nguong_bao_cao_khong_phai_ten_tap_chi():
+    """Bảng 1 có kiểm định (dự báo/chẩn đoán): ô «0.0 [… làm tròn về 0; … theo chuẩn tạp chí]» từng bị điền câu trả lời
+    tạp chí đích ⇒ «0.0 Tạp chí Y học Việt Nam» ở cột p."""
+    import gia_lap_tron_vong as TV
+
+    t = ("| `tuoi` | 62.00 | 72.00 | 0.0 [CẦN KẾT QUẢ THẬT — G6 làm tròn về 0; báo cáo «p < 0,001» theo chuẩn "
+         "tạp chí] |\n")
+    o = TV.phan_loai_o(t, "G7", "x.md", {}, {}, "prediction", [(r"tap chi|hoi nghi", "Tạp chí Y học Việt Nam")], {})
+    assert TV.dien_o(t, o) == "| `tuoi` | 62.00 | 72.00 | < 0,001 |\n"
