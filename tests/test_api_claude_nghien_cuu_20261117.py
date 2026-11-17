@@ -86,7 +86,8 @@ def test_goi_model_hien_hanh_qua_beta_du_phong():
     assert goi["fallbacks"] == "default" and goi["output_config"] == {"effort": "medium"} and goi["system"] == "vai"
 
 
-def test_goi_model_khac_khong_them_tham_so_moi():
+def test_goi_model_khac_khong_them_tham_so_moi(monkeypatch):
+    monkeypatch.setitem(API.GIA_USD_TRIEU_TOKEN, "claude-cu-1", {"vao": 1.0, "ra": 1.0})  # có giá ⇒ qua trần
     kh = KhachGia("ok")
     API.goi("x", model="claude-cu-1", client=kh)
     assert "output_config" not in kh.messages.goi[0] and "fallbacks" not in kh.messages.goi[0]
@@ -148,7 +149,8 @@ def test_co_nguyen_van_chuan_hoa():
 
 def test_chi_phi_chi_cho_model_da_ghi_gia():
     assert API.uoc_chi_phi(1_000_000, 0, "claude-sonnet-5-5", batch=True) == pytest.approx(1.0)
-    assert API.uoc_chi_phi(1, 1, "claude-opus-5-5") is None
+    assert API.uoc_chi_phi(1_000_000, 1_000_000, "claude-opus-5-5") == pytest.approx(24.0)
+    assert API.uoc_chi_phi(1, 1, "claude-chua-co-gia") is None
 
 
 # ── Kiểm nội dung trích dẫn ──────────────────────────────────────────────────────────────────────────────────────
@@ -493,7 +495,9 @@ def test_yeu_cau_dung_vai_he_thong_va_tep_danh_so(tmp_path):
     nhan = sorted((n["loai"], n.get("vai") or n.get("buoc")) for _, _, n in yc)
     assert nhan == [("cham", "chuyen_mon"), ("cham", "giam_khao"), ("tranh", "de_xuat")]
     p = next(p for c, p, _ in yc if c.startswith("gk"))
-    assert "CHẾ ĐỘ BATCH API" in p["system"] and "RQ1" in p["system"]
+    he = API.van_ban_he_thong(p)
+    assert "CHẾ ĐỘ BATCH API" in he and "RQ1" in he
+    assert p["system"][0]["cache_control"] == {"type": "ephemeral"}  # tệp agent lặp lại ⇒ đánh dấu cache
     assert f"### TỆP: {TEP} (3 dòng)\n1| # Cỡ mẫu\n2| N = 420" in p["messages"][0]["content"]
 
 

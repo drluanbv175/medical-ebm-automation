@@ -127,6 +127,11 @@ Sau khi A12 máy-kiểm sạch (PMID có thật, chưa rút, đúng metadata), p
 chạy được bằng máy ở mức ABSTRACT: `python3 tools/kiem_noi_dung_trich_dan.py --study <mã>` (repo y khoa). Mặc định
 CHẠY KHÔ — in số đoạn, số lượt gọi, ước chi phí, không mạng, không ghi. Gọi thật (`--goi-api`) là quyết định tốn tiền
 của bác sĩ: hỏi trước, đưa con số ước tính. Kết quả ở `exports/<mã>/kiem_may_api/A12_KIEM_NOI_DUNG_<mã>.md`.
+- (18/11/2026) Báo cáo mang `tep_sha256` của đề cương: `python3 tools/duyet_kiem_may_api.py tinh-trang --study <mã>`
+  báo «CŨ» khi đề cương đổi sau lượt kiểm ⇒ không dựa vào báo cáo cũ; hỏi bác sĩ có chạy lại (tính phí). Độ đúng của máy
+  CHƯA đo cho tới khi bác sĩ duyệt: `phieu --study <mã>` dựng phiếu đánh số → bác sĩ trả lời «1-3 đúng, 4 sai…» →
+  `ghi --loi "<nguyên văn>" --ap-dung` → `do`. Agent KHÔNG tự gắn nhãn đúng/sai. Lượt gọi đi qua trần chi phí tháng
+  của cầu nối (chạm trần ⇒ ⛔, không tự nâng trần).
 - Máy đã tự kiểm lại câu trả lời của model: căn cứ «trích» phải có NGUYÊN VĂN trong abstract (không có ⇒ «máy không
   xác minh được căn cứ»), số liệu % / thập phân trong đoạn phải có trong abstract (không có ⇒ cờ «số không thấy»).
 - `khong_ho_tro` / `ho_tro_mot_phan` / cờ ⇒ agent ĐỌC LẠI abstract hoặc toàn văn rồi sửa câu hoặc thay nguồn; không
