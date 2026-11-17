@@ -1,0 +1,614 @@
+"""Kịch bản BIẾN THỂ KHÓ cho bộ giả lập trọn vòng (16/11/2026 — bác sĩ: «Làm tiếp giả lập thêm các biến thể khó, mỗi
+biến thể một kịch bản»).
+
+Mỗi biến thể KẾ THỪA một kịch bản gốc của `gia_lap_dinh_ky.KICH_BAN` (sao sâu) rồi ghi đè phần khác — không chép lặp.
+Sổ RIÊNG (không nhập vào KICH_BAN) để lượt giả lập định kỳ hằng ngày không phình thêm 8 đề tài nặng; chỉ bộ giả lập
+trọn vòng (`tests/test_gia_lap_bien_the_kho_20261116.py`, cần GIA_LAP_TRON_VONG=1) chạy chúng.
+
+Khoá `bien_the` (đọc bởi `gia_lap_tron_vong.sinh_du_lieu`) mô tả cách sinh dữ liệu đặc thù: không kém hơn (p_test /
+p_control), cụm (mã cụm + hiệu ứng ngẫu nhiên cụm), sống còn (thời gian–biến cố có kiểm duyệt), thiếu dữ liệu MAR.
+Mọi số liệu là MÔ PHỎNG; nguồn giả định có PMID đã tra PubMed (ghi ở từng chỗ).
+"""
+from __future__ import annotations
+
+import copy
+from typing import Any, Callable, Dict, List, Tuple
+
+TIEN_CUU = "PROSPECTIVE_NEW_PARTICIPANTS"
+
+
+def _sao(nguon: Dict[str, Any], **ghi_de: Any) -> Dict[str, Any]:
+    kb = copy.deepcopy(nguon)
+    kb.update(ghi_de)
+    return kb
+
+
+def _dong(ket_cuc: str, thuoc_do: str, lay: str, gate: str, y_nghia: str) -> Dict[str, str]:
+    return {"ket_cuc": ket_cuc, "thuoc_do": thuoc_do, "lay": lay, "gate": gate, "y_nghia": y_nghia}
+
+
+def _thay_ma_tran(ma_tran: List[tuple], bien: str, moi: tuple) -> List[tuple]:
+    return [moi if d[3] == bien else d for d in ma_tran]
+
+
+def kich_ban_kho() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệu kịch bản
+    import gia_lap_dinh_ky as GL  # noqa: PLC0415 — tránh nhập vòng (GL nhập kich_ban_them)
+    from gia_lap_kich_ban_them import _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_loi_sap  # noqa: PLC0415
+
+    vi: Callable[[str], str] = GL._vi
+    tt = GL.TIEN_TO_DE_TAI
+    rct, coh = GL.KICH_BAN["rct_nhi_phan"], GL.KICH_BAN["thuan_tap_phoi_nhiem"]
+    kb: Dict[str, Dict[str, Any]] = {}
+
+    # ══ 1. RCT KHÔNG KÉM HƠN — tái khám qua điện thoại so với trực tiếp ═════════════════════════════════════════
+    # Biên 10 điểm %: mức PI chấp nhận đổi lấy tiện lợi (giả lập — cần biện minh lâm sàng thật). p_test = p_control =
+    # 60%: tỷ lệ đạt đích HA nhóm chứng TEXT4BP sau 3 tháng 48% và nhóm can thiệp 70% (PMID 35342691) — chọn giữa.
+    ni = _sao(rct, study=f"{tt}RCT-KHONG-KEM", id_test="rct_ni", goc="rct_nhi_phan",
+              mo_ta="RCT không kém hơn (biên hiệu số tỷ lệ −10 điểm %)",
+              topic=("Tái khám qua điện thoại so với tái khám trực tiếp trong kiểm soát huyết áp sau 6 tháng ở người "
+                     "tăng huyết áp điều trị ngoại trú: thử nghiệm ngẫu nhiên không kém hơn"),
+              query_en=('(telephone[tiab] OR telemedicine[tiab] OR "remote consultation"[tiab] OR '
+                        'telemonitoring[tiab]) AND (hypertension[MeSH] OR hypertension[tiab]) AND ("blood pressure '
+                        'control"[tiab] OR "blood pressure"[tiab]) AND (non-inferiority[tiab] OR noninferiority[tiab] '
+                        'OR follow-up[tiab])'),
+              bien_the={"khong_kem": True})
+    bs = ni["bien_so"]
+    bs["bo_bien"] = [("nhom", "radio", "Nhóm phân bổ", "1, Tái khám qua điện thoại | 0, Tái khám trực tiếp", "", "",
+                      "") if d[0] == "nhom" else d for d in bs["bo_bien"]]
+    bs["ma_tran"] = _thay_ma_tran(bs["ma_tran"], "nhom", (
+        "1", "nhóm tái khám qua điện thoại", "phoi_nhiem", "nhom", "nhi_phan", "R1", "danh sách ngẫu nhiên",
+        "SAP §4 nhóm so sánh"))
+    g0, g1, g3 = ni["pi"]["G0"], ni["pi"]["G1"], ni["pi"]["G3"]
+    g0.update({"intervention": "Tái khám định kỳ qua điện thoại (gọi video/thoại) mỗi tháng trong 6 tháng",
+               "comparison": "Tái khám trực tiếp tại phòng khám mỗi tháng",
+               "hypothesis_h0": "Tỷ lệ kiểm soát nhóm điện thoại thấp hơn nhóm trực tiếp từ 10 điểm % trở lên",
+               "hypothesis_h1": "Tỷ lệ kiểm soát nhóm điện thoại thấp hơn nhóm trực tiếp không quá 10 điểm %",
+               "expected_direction": "Tỷ lệ kiểm soát hai nhóm tương đương (không kém hơn quá biên 10 điểm %)",
+               "test_type": "non_inferiority",
+               "novelty_justification": vi("Thử nghiệm tái khám từ xa ở nước thu nhập cao; thiếu thử nghiệm không kém "
+                                           "hơn tại phòng khám ngoại trú Việt Nam")})
+    g1.update({"objectives": ["Đánh giá tái khám qua điện thoại có không kém hơn tái khám trực tiếp về tỷ lệ kiểm soát "
+                              "huyết áp tại tháng 6 (biên −10 điểm %)"],
+               "research_question": ("Ở người tăng huyết áp điều trị ngoại trú, tái khám qua điện thoại có không kém "
+                                     "hơn tái khám trực tiếp về tỷ lệ kiểm soát huyết áp sau 6 tháng không?"),
+               "design_rationale": vi("Câu hỏi điều trị dạng KHÔNG KÉM HƠN — RCT song song 2 nhánh tỷ lệ 1:1, biên "
+                                      "hiệu số tỷ lệ −10 điểm %"),
+               "intervention_or_exposure": "Tái khám định kỳ qua điện thoại mỗi tháng trong 6 tháng",
+               "comparator": "Tái khám trực tiếp tại phòng khám mỗi tháng",
+               "intervention_dose_adherence": "6 lần tái khám qua điện thoại; tuân thủ = số lần gọi thành công",
+               "evidence_summary": vi("TEXT4BP (PMID 35342691) báo tỷ lệ đạt đích HA 48–70% sau 3 tháng ở nhóm can "
+                                      "thiệp nhắn tin; chưa có thử nghiệm không kém hơn về tái khám qua điện thoại"),
+               "knowledge_gap": vi("Thiếu thử nghiệm không kém hơn về tái khám qua điện thoại tại Việt Nam")})
+    g1["estimand"] = {**g1["estimand"], "treatment_condition": "Tái khám qua điện thoại so với trực tiếp",
+                      "population_summary_measure": "Hiệu số tỷ lệ (điện thoại − trực tiếp); biên không kém hơn −10 "
+                                                    "điểm %"}
+    g3.clear()
+    g3.update({"effect_size": 0.60, "effect_type": "NI_PROPORTION", "p0": 0.60, "dropout": 0.15, "alpha": 0.025,
+               "power": 0.8, "hypothesis_type": "non_inferiority", "margin": 0.10,
+               "outcome_direction": "higher_better", "ni_regulatory_framework": "FDA",
+               "margin_justification": vi("Cách biên cố định M1/M2: M1 ≈ 22 điểm % — hiệu ứng của hỗ trợ theo dõi "
+                                          "có cấu trúc so với chăm sóc thường quy (TEXT4BP: 70% so với 48% sau 3 "
+                                          "tháng); giữ ≥ 50% hiệu ứng ⇒ M2 ≤ 11 điểm %; PI chọn 10 điểm %"),
+               "effect_source": ("PMID: 35342691 (TEXT4BP) — tỷ lệ đạt đích HA 48% (chứng) và 70% (can thiệp) sau 3 "
+                                 "tháng; giả định p_test = p_control = 60% (giữa hai giá trị)"),
+               "p0_source": "PMID: 35342691 — giả định tỷ lệ kiểm soát tái khám trực tiếp 60%",
+               "margin_source": ("PMID: 35342691 (TEXT4BP) — tỷ lệ đạt đích HA 70% (can thiệp) so với 48% (chứng) "
+                                 "sau 3 tháng ⇒ M1 ≈ 22 điểm %"),
+               "dropout_source": vi("Giả định 15% mất theo dõi — chưa có nguồn y văn"),
+               "effect_source_confirmed": True, "assumptions_confirmed": True, "hypothesis_confirmed": True,
+               "powered_for_outcome": "Tỷ lệ người bệnh đạt kiểm soát huyết áp",
+               "recruitment_feasibility_confirmed": True,
+               "software": "run_g3_auto.py (hai tỷ lệ, không kém hơn — Chow 2008)"})
+    kb["rct_khong_kem"] = ni
+
+    # ══ 2. RCT THEO CỤM — chương trình nhắc thuốc ngẫu nhiên theo phòng khám ════════════════════════════════════
+    # ICC 0,05 cho kết cục kiểm soát HA giữa phòng khám: giả định (PMID 35342691 không báo ICC) — cần nguồn thật.
+    cum = _sao(rct, study=f"{tt}RCT-CUM", id_test="rct_cum", goc="rct_nhi_phan",
+               mo_ta="RCT theo cụm (phòng khám), ICC 0,05",
+               topic=("Chương trình tin nhắn nhắc uống thuốc triển khai theo phòng khám và tỷ lệ kiểm soát huyết áp "
+                      "sau 6 tháng ở người tăng huyết áp ngoại trú: thử nghiệm ngẫu nhiên theo cụm"),
+               bien_the={"cum": {"cot": "ma_phong_kham", "co_cum": 8, "sd_cum": 0.35}})
+    bs = cum["bien_so"]
+    bs["bo_bien"] = list(bs["bo_bien"]) + [("ma_phong_kham", "text", "Mã phòng khám (cụm ngẫu nhiên hoá)", "",
+                                            "integer", "1", "60")]
+    bs["ma_tran"] = list(bs["ma_tran"]) + [("1", "phòng khám (cụm ngẫu nhiên hoá)", "cum", "ma_phong_kham",
+                                            "lien_tuc", "K1", "danh sách phòng khám", "SAP §4 hiệu chỉnh cụm")]
+    g1, g3 = cum["pi"]["G1"], cum["pi"]["G3"]
+    g1.update({"design_rationale": vi("Can thiệp triển khai ở cấp PHÒNG KHÁM (nhiễm chéo nếu ngẫu nhiên cá nhân) — RCT "
+                                      "theo cụm, ngẫu nhiên phòng khám tỷ lệ 1:1"),
+               "objectives": ["So sánh tỷ lệ kiểm soát huyết áp tại tháng 6 giữa phòng khám triển khai chương trình "
+                              "tin nhắn và phòng khám chăm sóc thường quy"],
+               "research_question": ("Ở người tăng huyết áp điều trị ngoại trú, chương trình tin nhắn nhắc thuốc triển "
+                                     "khai theo phòng khám có làm tăng tỷ lệ kiểm soát huyết áp sau 6 tháng không?"),
+               "randomisation": vi("Ngẫu nhiên hoá theo CỤM: danh sách phòng khám ngẫu nhiên tỷ lệ 1:1, phân tầng "
+                                   "theo quy mô phòng khám"),
+               "recruitment_strategy": "Tuyển liên tiếp ĐÚNG 8 người bệnh đủ tiêu chuẩn mỗi phòng khám (40 phòng "
+                                       "khám — cỡ chùm đều)",
+               "allocation_concealment": "Phòng khám được phân bổ trước khi tuyển người bệnh, do thống kê viên độc "
+                                         "lập"})
+    # ICC: Adams 2004 (PMID 15485730) — ICC huyết áp tâm thu 0–0,052 ở 4 bộ dữ liệu chăm sóc ban đầu ⇒ 0,05 là cận
+    # trên (bảo thủ). 40 phòng khám CỐ ĐỊNH (≥ 40 chùm: không cần hiệu chỉnh mẫu nhỏ — Kahan 2016) × 8 người = 320.
+    g3.update({"icc": 0.05, "cluster_size": 8, "n_clusters": 40, "confirmed_n": 320, "equal_cluster_sizes": True,
+               "confirmed_n_method": vi("40 phòng khám cố định của chương trình × 8 người mỗi phòng khám"),
+               "icc_source": ("PMID: 15485730 (Adams 2004, J Clin Epidemiol) — ICC huyết áp tâm thu 0–0,052 trong 4 bộ "
+                              "dữ liệu chăm sóc ban đầu; chọn 0,05 (cận trên, bảo thủ)")})
+    kb["rct_cum"] = cum
+
+    # ══ 3. THUẦN TẬP SỐNG CÒN — thời gian đến gãy xương (Cox) ════════════════════════════════════════════════════
+    kc_sc = {"name": "Thời gian đến gãy xương đầu tiên",
+             "measure": "Số tháng từ ngày bắt đầu theo dõi đến gãy xương mới có phim xác nhận; kiểm duyệt khi tử vong, "
+                        "mất dấu hoặc hết 36 tháng",
+             "timepoint": "Theo dõi tối đa 36 tháng", "type": "thời gian đến sự kiện"}
+    sc = _sao(coh, study=f"{tt}SONG-CON", id_test="cohort_cox", goc="thuan_tap_phoi_nhiem",
+              mo_ta="Thuần tập hồi cứu, thời gian đến biến cố (Cox, HR)",
+              topic=("Sử dụng thuốc ức chế bơm proton kéo dài và thời gian đến gãy xương ở người từ 60 tuổi điều trị "
+                     "ngoại trú: nghiên cứu thuần tập hồi cứu phân tích sống còn"),
+              bien_the={"song_con": {"thoi_gian": "thoi_gian_den_gay", "bien_co": "gay_xuong", "toi_da": 36}})
+    bs = sc["bien_so"]
+    bs["bo_bien"] = [d for d in bs["bo_bien"] if d[0] not in ("gay_xuong_3nam", "thoi_gian_theo_doi")] + [
+        ("gay_xuong", "radio", "Gãy xương mới trong thời gian theo dõi (BIẾN CỐ)", "0, Không | 1, Có", "", "", ""),
+        ("thoi_gian_den_gay", "text", "Thời gian đến gãy xương hoặc kiểm duyệt (tháng)", "", "number", "0", "36")]
+    bs["ma_tran"] = [d for d in bs["ma_tran"] if d[3] != "gay_xuong_3nam"] + [
+        ("1", "Thời gian đến gãy xương đầu tiên (kiểm duyệt khi tử vong/mất dấu/hết 36 tháng)", "ket_cuc_chinh",
+         "thoi_gian_den_gay", "thoi_gian_den_su_kien", "KC1", "Hồ sơ (ngày biến cố/kiểm duyệt)", "§4"),
+        ("1", "Gãy xương mới (chỉ báo biến cố: 1 = gãy, 0 = kiểm duyệt)", "su_kien", "gay_xuong", "nhi_phan", "SK1",
+         "Hồ sơ + phim X-quang", "§4")]
+    g0, g1, g3 = sc["pi"]["G0"], sc["pi"]["G1"], sc["pi"]["G3"]
+    g0.update({"primary_outcome": kc_sc["name"], "primary_outcome_measure": kc_sc["measure"],
+               "primary_outcome_timepoint": kc_sc["timepoint"],
+               "outcomes": ["Thời gian đến gãy xương đầu tiên", "Gãy cổ xương đùi trong thời gian theo dõi"],
+               "hypothesis_h0": "Nguy cơ tức thời gãy xương ở nhóm dùng PPI kéo dài bằng nhóm không dùng (HR = 1)",
+               "hypothesis_h1": "Nguy cơ tức thời gãy xương ở nhóm dùng PPI kéo dài khác nhóm không dùng (HR ≠ 1)"})
+    g1.update({"primary_outcome": dict(kc_sc),
+               "objectives": ["So sánh thời gian đến gãy xương giữa người từ 60 tuổi dùng thuốc ức chế bơm proton kéo "
+                              "dài và người không dùng"],
+               "research_question": ("Ở người từ 60 tuổi điều trị ngoại trú, dùng PPI ≥12 tháng có làm tăng nguy cơ "
+                                     "tức thời gãy xương (HR) so với không dùng không?"),
+               "secondary_outcomes": ["Gãy cổ xương đùi trong thời gian theo dõi"]})
+    g1["estimand"] = {**g1["estimand"], "variable": "Thời gian đến gãy xương đầu tiên",
+                      "population_summary_measure": "Tỷ số nguy cơ tức thời (HR) hiệu chỉnh"}
+    g3.update({"effect_size": 1.33, "effect_type": "HR", "p_event": 0.10,
+               "effect_source": ("PMID: 26462494 (Zhou 2016, Osteoporos Int) — PPI và gãy xương mọi vị trí RR 1,33 "
+                                 "(KTC 95% 1,15–1,54); dùng làm HR giả định (biến cố hiếm)"),
+               "p_event_source": vi("Giả định 10% có biến cố trong 36 tháng — chưa có số liệu tại cơ sở"),
+               "powered_for_outcome": kc_sc["name"], "software": "run_g3_auto.py (log-rank — Schoenfeld)"})
+    g3.pop("p0", None)
+    g3.pop("p0_source", None)
+    kb["thuan_tap_song_con"] = sc
+
+    # ══ 4. THUẦN TẬP CÓ DỮ LIỆU THIẾU — gán đa trị (MI m=20) là phân tích chính ═════════════════════════════════
+    mi = _sao(coh, study=f"{tt}THIEU-MI", id_test="cohort_mi", goc="thuan_tap_phoi_nhiem",
+              mo_ta="Thuần tập hồi cứu, hiệp biến thiếu 15% theo MAR (gán đa trị)",
+              topic=("Sử dụng thuốc ức chế bơm proton kéo dài và nguy cơ gãy xương ở người từ 60 tuổi điều trị ngoại "
+                     "trú khi hồ sơ thiếu dữ liệu hiệp biến: nghiên cứu thuần tập hồi cứu có gán đa trị"),
+              bien_the={"thieu": {"cot": ["corticoid", "loang_xuong"], "ty_le": 0.15, "phu_thuoc": "tuoi",
+                                  "ma": "KDD", "nhan": "Không có dữ liệu — hồ sơ hồi cứu không ghi"}})
+    mi["pi"]["G1"].update({"critical_to_quality": vi("Hồ sơ hồi cứu thiếu ghi chép corticoid/loãng xương ~15% — kế "
+                                                     "hoạch gán đa trị định trước ở SAP §6"),
+                           "monitoring_plan": vi("Báo cáo tỷ lệ thiếu từng biến sau mỗi 500 hồ sơ")})
+    kb["thuan_tap_mi"] = mi
+
+    _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_loi_sap)
+
+    # Hai biến thể dưới đây GIỮ NGUYÊN mã đề tài + G0–G6 của kịch bản gốc (khác ở G7/G8) ⇒ dùng chung nền G0 của gốc.
+    # ══ 5. TRÍCH DẪN ĐÃ RÚT — tác giả trích nhầm một bài đã rút; A12 phải chặn, tác giả thay nguồn rồi kiểm lại ══════
+    # PMID 18453793 (Morisky 2008, J Clin Hypertens) mang loại xuất bản «Retracted Publication» trên PubMed (tra
+    # 16/11/2026); nguồn thay: Morisky 1986 (PMID 3945130, Med Care) — tóm tắt: 75% người điểm tuân thủ cao ở năm 2 đạt
+    # kiểm soát HA ở năm 5 so với 47% người điểm thấp (P < 0,01).
+    rb = _sao(rct, id_test="rct_rut_bai", goc="rct_nhi_phan",
+              mo_ta="RCT gốc — bản thảo trích một bài ĐÃ RÚT; A12 phải chặn, tác giả thay nguồn rồi kiểm lại")
+    rb["ho_so_tron_vong"]["rut_bai"] = {
+        "pmid_rut": "18453793", "pmid_thay": "3945130", "muc": "## I. GIỚI THIỆU",
+        "cau_rut": ("Tuân thủ dùng thuốc kém là nguyên nhân thường gặp của huyết áp không kiểm soát; thang tự "
+                    "báo cáo 8 câu được báo có giá trị dự báo kiểm soát huyết áp ở người tăng huyết áp ngoại trú "
+                    "(PMID 18453793)."),
+        "tltk_rut": ("Morisky DE, Ang A, Krousel-Wood M, Ward HJ. Predictive validity of a medication adherence "
+                     "measure in an outpatient setting. J Clin Hypertens (Greenwich). 2008;10(5):348-54. "
+                     "PMID:18453793"),
+        "cau_thay": ("Tuân thủ dùng thuốc kém là nguyên nhân thường gặp của huyết áp không kiểm soát: ở người tăng "
+                     "huyết áp tham gia chương trình giáo dục ngoại trú, 75% người có điểm tuân thủ cao ở năm thứ 2 "
+                     "đạt kiểm soát huyết áp ở năm thứ 5, so với 47% người có điểm thấp (PMID 3945130)."),
+        "tltk_thay": ("Morisky DE, Green LW, Levine DM. Concurrent and predictive validity of a self-reported "
+                      "measure of medication adherence. Med Care. 1986;24(1):67-74. PMID:3945130")}
+    kb["rct_rut_bai"] = rb
+
+    # ══ 6. VÒNG SỬA SAU PHẢN BIỆN — vòng 1 «Sửa lớn», tác giả sửa, PI xác nhận lại bản thảo, vòng 2 cho nộp ═══════════
+    vs = _sao(coh, id_test="cohort_vong_sua", goc="thuan_tap_phoi_nhiem",
+              mo_ta="Thuần tập gốc — phản biện vòng 1 «Sửa lớn» (2 lỗi nghiêm trọng), tác giả sửa, vòng 2 cho nộp")
+    them_han_che = (
+        "Hạn chế về nhiễu chưa đo: hồ sơ ngoại trú không ghi mật độ xương, chỉ số khối cơ thể, hút thuốc và nguy "
+        "cơ té ngã — các yếu tố liên quan cả chỉ định PPI lẫn gãy xương. Nhiễu tồn dư này thường làm ước lượng lệch "
+        "XA giá trị 1, nên RR quan sát được có thể phóng đại mối liên quan; kết quả cần được kiểm chứng bằng thiết kế "
+        "kiểm soát nhiễu mạnh hơn.")
+    them_ket_luan = ("Đây là mối LIÊN QUAN trong một nghiên cứu quan sát hồi cứu, không đủ để kết luận PPI gây gãy "
+                     "xương; quyết định ngừng hay duy trì PPI vẫn dựa trên chỉ định lâm sàng của từng người bệnh.")
+    vs["ho_so_tron_vong"]["vong_sua_G8"] = {
+        "vong_1": {
+            "ly_do": ("Phương pháp và phân tích theo SAP, nhưng Bàn luận chưa nêu nhiễu chưa đo quan trọng và Kết luận "
+                      "có thể đọc thành quan hệ nhân quả cho một thiết kế quan sát."),
+            "loi": [("IV. BÀN LUẬN — hạn chế",
+                     "Chưa thảo luận nhiễu chưa đo (mật độ xương, chỉ số khối cơ thể, hút thuốc, nguy cơ té ngã) và "
+                     "hướng lệch của nó", "Thêm đoạn hạn chế về nhiễu chưa đo và hướng ảnh hưởng lên RR"),
+                    ("V. KẾT LUẬN", "Kết luận chưa nói rõ đây là mối liên quan quan sát — dễ đọc thành nhân quả",
+                     "Ghi rõ «liên quan», không suy nhân quả; nêu quyết định lâm sàng vẫn theo chỉ định")]},
+        "sua": [("## IV. BÀN LUẬN", them_han_che), ("## V. KẾT LUẬN", them_ket_luan)],
+        "vong_2": {
+            "ly_do": ("Vòng 2: tác giả đã thêm đoạn nhiễu chưa đo ở Bàn luận và sửa Kết luận theo ngôn ngữ «liên "
+                      "quan»; hai lỗi nghiêm trọng của vòng 1 đã được xử lý."),
+            "doi_chieu": ["IV. BÀN LUẬN — hạn chế: đã thêm đoạn «Hạn chế về nhiễu chưa đo» (đã đọc lại bản sửa)",
+                          "V. KẾT LUẬN: đã thêm câu nói rõ mối liên quan quan sát (đã đọc lại bản sửa)"],
+            "kiem_co": [them_han_che[:60], them_ket_luan[:60]]}}
+    kb["thuan_tap_vong_sua"] = vs
+
+    # ══ 7. KINH TẾ Y TẾ — chi phí–hiệu quả đi kèm RCT gốc (CHEERS 2022, PMID 35017145) ═════════════════════════════
+    # Chi phí MÔ PHỎNG (VND): nền 1,8 triệu ± 0,4 triệu/6 tháng; chương trình tin nhắn +600 nghìn/người; người đạt kiểm
+    # soát tiết kiệm 150 nghìn (ít khám ngoài kế hoạch). Ngưỡng WTP do chủ nhiệm ấn định cho đơn vị tự nhiên.
+    kt = _sao(rct, id_test="rct_kinh_te", goc="rct_nhi_phan",
+              mo_ta="RCT gốc + đánh giá chi phí–hiệu quả đi kèm thử nghiệm (ICER, bootstrap, CEAC; CHEERS 2022)",
+              bien_the={"kinh_te": {"cot": "chi_phi_6t", "nen": 1_800_000, "sd": 400_000, "chuong_trinh": 600_000,
+                                    "tiet_kiem": 150_000}})
+    bs = kt["bien_so"]
+    bs["bo_bien"] = list(bs["bo_bien"]) + [("chi_phi_6t", "text", "Tổng chi phí y tế trực tiếp 6 tháng (VND, góc nhìn "
+                                            "cơ sở y tế)", "", "integer", "0", "20000000")]
+    bs["ma_tran"] = list(bs["ma_tran"]) + [
+        ("2", "chi phí y tế trực tiếp 6 tháng (góc nhìn cơ sở y tế)", "ket_cuc_phu", "chi_phi_6t", "lien_tuc", "KT1",
+         "phiếu chi phí + biểu giá dịch vụ", "SAP §16 chi phí"),
+        ("2", "kiểm soát huyết áp tháng 6 (đơn vị hiệu quả)", "ket_cuc_phu", "kiem_soat_t6", "nhi_phan", "C1",
+         "đo huyết áp chuẩn hoá", "SAP §16 hiệu quả"),
+        ("2", "nhóm nhận tin nhắn SMS", "phoi_nhiem", "nhom", "nhi_phan", "R1", "danh sách ngẫu nhiên",
+         "SAP §16 nhánh")]
+    g1 = kt["pi"]["G1"]
+    g1["objectives"] = list(g1["objectives"]) + [
+        "Đánh giá chi phí–hiệu quả của chương trình tin nhắn so với chăm sóc thường quy trong 6 tháng (ICER: chi phí "
+        "cho thêm một người đạt kiểm soát huyết áp, góc nhìn cơ sở y tế)"]
+    g1["aim"] = ("Đánh giá hiệu quả và chi phí–hiệu quả của chương trình tin nhắn nhắc uống thuốc so với chăm sóc "
+                 "thường quy ở người tăng huyết áp điều trị ngoại trú")
+    g1["secondary_outcomes"] = list(g1.get("secondary_outcomes") or []) + [
+        "Chi phí y tế trực tiếp 6 tháng (VND) và tỷ số chi phí–hiệu quả gia tăng (ICER)"]
+    g1["economic_evaluation"] = {
+        "loai_phan_tich": "Phân tích chi phí–hiệu quả (CEA) đi kèm thử nghiệm, trên dữ liệu cá thể",
+        "perspective": "Cơ sở y tế (chi phí trực tiếp y tế do phòng khám chi trả)",
+        "comparator": "Chăm sóc thường quy — nhánh chứng của thử nghiệm",
+        "time_horizon": "6 tháng, bằng thời gian theo dõi (không ngoại suy)",
+        "discounting": "Không chiết khấu — khung thời gian ≤ 1 năm",
+        "currency_year": "VND, giá năm 2026",
+        "cost_items": vi("Khám, thuốc hạ áp, xét nghiệm theo dõi (biểu giá dịch vụ của bệnh viện) và chi phí vận hành "
+                         "chương trình tin nhắn (hợp đồng nhà mạng, nhân lực)"),
+        "effect_measure": "Thêm một người đạt kiểm soát huyết áp tại tháng 6 (đơn vị tự nhiên)",
+        "wtp": "5.000.000 VND cho thêm một người đạt kiểm soát huyết áp",
+        "wtp_source": vi("Chủ nhiệm ấn định cho đơn vị tự nhiên — chưa có ngưỡng chuẩn quốc gia; báo CEAC 0–3 × "
+                         "ngưỡng để người đọc tự đặt ngưỡng"),
+        "patient_involvement": ("Không có người bệnh tham gia thiết kế phân tích kinh tế (ghi rõ theo CHEERS 2022 mục "
+                                "21)"),
+        "bien_nhom": "nhom", "bien_chi_phi": "chi_phi_6t", "bien_hieu_qua": "kiem_soat_t6"}
+    hs = kt["ho_so_tron_vong"]
+    hs["g6"] = list(hs["g6"]) + [{
+        "id": "KT_chi_phi_hieu_qua", "vai": "phu", "sap_muc": "§16", "sap_neo": "ICER = ΔC/ΔE",
+        "mo_ta": "Chi phí–hiệu quả 6 tháng: ICER, NMB, bootstrap 2000 lần, CEAC (CHEERS 2022)",
+        "tham_so": {"loai_dac_thu": "kinh_te", "nhom": "nhom", "chi_phi": "chi_phi_6t", "hieu_qua": "kiem_soat_t6",
+                    "nguong_wtp": 5000000}}]
+    dg = copy.deepcopy(hs["dien_giai"])
+    dg["bang"] = list(dg["bang"]) + [
+        _dong("Chi phí y tế trực tiếp 6 tháng", "Chi phí gia tăng ΔC (VND, KTC 95% bootstrap)", "delta_c",
+              "G6_KT_chi_phi_hieu_qua", "ICER {icer} VND cho thêm một người đạt kiểm soát ({goc_phan_tu})"),
+        _dong("Chi phí–hiệu quả tại ngưỡng WTP {wtp} VND", "Lợi ích ròng gia tăng NMB (VND, KTC 95% bootstrap)", "nmb",
+              "G6_KT_chi_phi_hieu_qua", "{ceac_wtp}% lần lặp bootstrap cho thấy chi phí–hiệu quả tại ngưỡng")]
+    dg["muc_2"] = dg["muc_2"] + (
+        " Về kinh tế (SAP §16), chương trình tin nhắn tốn thêm {delta_c} VND mỗi người trong 6 tháng "
+        "(KTC 95% bootstrap {delta_c_duoi} đến {delta_c_tren}); ICER {icer} VND cho thêm một người đạt "
+        "kiểm soát huyết áp. Tại ngưỡng {wtp} VND do chủ nhiệm ấn định, NMB là {nmb} VND (KTC 95% "
+        "{nmb_duoi} đến {nmb_tren}) và {ceac_wtp}% lần lặp bootstrap cho thấy chi phí–hiệu quả; ngưỡng "
+        "không phải chuẩn quốc gia nên đường CEAC được báo đủ 0–3 lần ngưỡng.")
+    dg["muc_4"] = dg["muc_4"] + (
+        " Hạn chế của phần kinh tế: góc nhìn cơ sở y tế bỏ qua chi phí của người bệnh (đi lại, mất ngày công); khung 6 "
+        "tháng không gồm biến cố tim mạch dài hạn mà kiểm soát huyết áp phòng được.")
+    hs["dien_giai"] = dg
+    hs["phan_bien_G8"] = {**hs["phan_bien_G8"], "checklist": "CONSORT 2025 + CHEERS 2022 (PMID 35017145)"}
+    kb["rct_kinh_te"] = kt
+
+    # ══ 8. HỖN HỢP GIẢI THÍCH TUẦN TỰ — RCT gốc + phỏng vấn sâu giải thích kết quả (GRAMMS, PMID 18416914) ═════════
+    # Đề tài giữ mã thiết kế «rct» (cấu phần định lượng); cấu phần định tính + tích hợp khai ở G1.mixed_methods
+    # (tools/hon_hop.py). Phỏng vấn sau khi khoá phân tích định lượng, chọn có chủ đích theo kết quả (đạt/không đạt
+    # kiểm soát) — đúng mô hình giải thích tuần tự của Creswell & Plano Clark.
+    # Giữ mã đề tài của RCT gốc ⇒ dùng chung nền G0 đã lưu (giả lập ngoại tuyến), như «kinh tế», «trích dẫn đã rút».
+    hh = _sao(rct, id_test="rct_hon_hop", goc="rct_nhi_phan",
+              mo_ta="RCT gốc + cấu phần định tính giải thích tuần tự (thiết kế hỗn hợp; GRAMMS + COREQ)")
+    g1 = hh["pi"]["G1"]
+    g1["objectives"] = list(g1["objectives"]) + [
+        "Tìm hiểu trải nghiệm của người bệnh với chương trình tin nhắn và lý do đạt hoặc không đạt kiểm soát huyết áp "
+        "sau 6 tháng, nhằm giải thích kết quả của thử nghiệm"]
+    g1["aim"] = ("Đánh giá hiệu quả của chương trình tin nhắn nhắc uống thuốc lên kiểm soát huyết áp và tìm hiểu trải "
+                 "nghiệm của người bệnh để giải thích kết quả, ở người tăng huyết áp điều trị ngoại trú")
+    g1["mixed_methods"] = {
+        "thiet_ke": "giai_thich_tuan_tu",
+        "ly_do": vi("Thử nghiệm trả lời chương trình tin nhắn có cải thiện kiểm soát huyết áp hay không, nhưng không "
+                    "cho biết vì sao một số người vẫn không đạt kiểm soát dù nhận tin nhắn; phỏng vấn sâu sau thử "
+                    "nghiệm giúp giải thích kết quả và gợi ý cách điều chỉnh chương trình trước khi triển khai rộng"),
+        "uu_tien": "dinh_luong",
+        "cau_phan_dinh_tinh": {
+            "muc_tieu": [len(g1["objectives"])],  # mục tiêu vừa thêm ở trên — cấu phần định tính trả lời
+            "central_phenomenon": vi("Trải nghiệm nhận tin nhắn nhắc uống thuốc và các yếu tố giúp hoặc cản trở việc "
+                                     "uống thuốc đều đặn"),
+            "qualitative_approach": "Phân tích chủ đề (thematic analysis) theo Braun và Clarke",
+            "chon_mau": vi("Chọn mẫu có chủ đích trong nhóm can thiệp theo kết quả tháng 6 (đạt và không đạt kiểm "
+                           "soát huyết áp), đa dạng về giới và nhóm tuổi"),
+            "co_mau_du_kien": "Khoảng 16–20 người (8–10 người mỗi nhóm kết quả), dừng khi đạt bão hoà",
+            "data_collection_method": vi("Phỏng vấn sâu bán cấu trúc 30–45 phút tại phòng khám hoặc qua điện thoại, "
+                                         "ghi âm khi người tham gia đồng ý, gỡ băng nguyên văn"),
+            "saturation_criterion": "Ba cuộc phỏng vấn liên tiếp không xuất hiện mã mới",
+            "phan_tich": vi("Hai nghiên cứu viên mã hoá độc lập theo bộ mã xây dựng từ 3 bản gỡ băng đầu, thảo luận "
+                            "đồng thuận; người thứ ba phân xử khi bất đồng"),
+            "interview_guide": [
+                {"chu_de": "Mở đầu", "cau_hoi": "Anh/chị có thể kể lại những tháng nhận tin nhắn nhắc uống thuốc?",
+                 "goi_mo": ["Tin nhắn thường đến vào lúc nào trong ngày?",
+                            "Anh/chị thường làm gì khi nhận được tin nhắn?"]},
+                {"chu_de": "Việc uống thuốc hằng ngày", "cau_hoi": vi("Điều gì giúp anh/chị uống thuốc huyết áp đều "
+                                                                     "đặn, và điều gì khiến anh/chị đôi khi quên "
+                                                                     "hoặc bỏ thuốc?"),
+                 "goi_mo": ["Anh/chị có thể cho một ví dụ cụ thể không?",
+                            "Gia đình có vai trò gì trong việc này?"]},
+                {"chu_de": "Đánh giá chương trình", "cau_hoi": vi("Theo anh/chị, tin nhắn có ích ở điểm nào và "
+                                                                  "chưa phù hợp ở điểm nào?"),
+                 "goi_mo": ["Nội dung, giờ gửi hoặc số lần gửi nên thay đổi thế nào?"]},
+                {"chu_de": "Kết thúc", "cau_hoi": "Còn điều gì anh/chị muốn chia sẻ thêm mà chúng tôi chưa hỏi?",
+                 "goi_mo": []}]},
+        "tich_hop": {
+            "thoi_diem": vi("Sau khi khoá phân tích định lượng: kết quả tháng 6 dùng để chọn người phỏng vấn, và hai "
+                            "bộ kết quả được hợp nhất ở giai đoạn diễn giải"),
+            "cach": vi("Kết nối theo chọn mẫu (kết quả định lượng xác định nhóm được mời phỏng vấn) và hợp nhất bằng "
+                       "bảng tích hợp, đối chiếu từng kết quả định lượng với chủ đề định tính tương ứng"),
+            "nguoi": vi("Chủ nhiệm đề tài cùng nghiên cứu viên định tính; thống kê viên tham gia đối chiếu kết quả "
+                        "định lượng"),
+            "chu_de": [
+                {"chu_de": "Hiệu quả của chương trình tin nhắn",
+                 "dinh_luong": "Tỷ lệ kiểm soát huyết áp tháng 6 theo nhóm (kết cục chính)",
+                 "dinh_tinh": "Trải nghiệm nhận tin nhắn và cách người bệnh phản hồi"},
+                {"chu_de": "Người không đạt kiểm soát dù nhận tin nhắn",
+                 "dinh_luong": "Tỷ lệ không đạt kiểm soát trong nhóm can thiệp",
+                 "dinh_tinh": "Rào cản uống thuốc đều đặn"},
+                {"chu_de": "Khả năng áp dụng rộng",
+                 "dinh_luong": "Điểm tuân thủ thuốc tháng 6",
+                 "dinh_tinh": "Đề xuất điều chỉnh nội dung và giờ gửi tin nhắn"}]}}
+    hs = hh["ho_so_tron_vong"]
+    dg = copy.deepcopy(hs["dien_giai"])
+    dg["muc_4"] = dg["muc_4"] + (
+        " Cấu phần định tính giải thích (phỏng vấn sâu người nhóm can thiệp đạt và không đạt kiểm soát) được thực "
+        "hiện sau khi khoá phân tích định lượng theo SAP §17; kết quả tích hợp trình bày bằng bảng tích hợp và báo "
+        "cáo theo GRAMMS.")
+    hs["dien_giai"] = dg
+    hs["phan_bien_G8"] = {**hs["phan_bien_G8"],
+                          "checklist": "CONSORT 2025 + GRAMMS (PMID 18416914) + COREQ (PMID 17872937)"}
+    kb["rct_hon_hop"] = hh
+    return kb
+
+
+def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_loi_sap) -> None:  # noqa: PLR0913
+    """Hồ sơ trọn vòng (G2 → G10) của từng biến thể — sao từ kịch bản gốc, ghi đè phần khác."""
+    gia_dinh_poisson = "Kiểm quá phân tán (Pearson χ²/df), dạng tuyến tính của tuổi, VIF < 5"
+    nhom_gioi = "Giới (nam/nữ) — ghi trước khi xem dữ liệu"
+
+    # ── 1. không kém hơn
+    hs = copy.deepcopy(rct["ho_so_tron_vong"])
+    hs["G2"].update({"public_title": "Tái khám qua điện thoại so với trực tiếp trong kiểm soát huyết áp",
+                     "intervention_type": "other"})
+    hs["ky_G2"] = _ky_g2(TIEN_CUU, "REGISTERED", registry="ClinicalTrials.gov", ma_dk="NCT99999981")
+    hs["tra_loi_G4"] = _tra_loi_sap(
+        "Biến cố do trì hoãn khám trực tiếp (HA ≥180/110 mmHg, nhập viện) ghi theo phiếu biến cố",
+        "tuổi và giới là yếu tố tiên lượng mạnh của kiểm soát huyết áp, hiệu chỉnh để tăng độ chính xác",
+        "Kiểm dạng tuyến tính của tuổi; VIF < 5", nhom_gioi, "Phân tích theo đề cương (per-protocol)")
+    hs["g6"] = [{"id": "MT1_chinh", "vai": "chinh", "sap_muc": "§4", "sap_neo": "<§4>",
+                 "mo_ta": "Kiểm soát HA tháng 6: hiệu số tỷ lệ điện thoại − trực tiếp so với biên −10 điểm %",
+                 "tham_so": {"outcome": "kiem_soat_t6", "group": "nhom", "covariates": ["tuoi", "gioi"],
+                             "hiep_bien_phan_loai": ["gioi"]}},
+                *_nhom_gioi(1, 2),
+                {"id": "DN_ca_day_du", "vai": "do_nhay", "sap_muc": "§9", "sap_neo": "Complete case vs MI",
+                 "mo_ta": "Phân tích ca đầy đủ (không impute) đối chiếu với phân tích chính", "ke_thua": True,
+                 "tham_so": {"n_imputations": 0}},
+                _sd_khong_ap_dung("kết cục và nhóm so sánh đều nhị phân — ±1 SD không áp dụng"),
+                {"id": "DN_theo_de_cuong", "vai": "do_nhay", "sap_muc": "§9",
+                 "sap_neo": "Phân tích theo đề cương (per-protocol)", "mo_ta": "Phân tích theo đề cương",
+                 "chua_tu_dong": "cần biến tuân thủ đề cương (số lần tái khám đúng nhánh) — chưa có trong bộ biến; "
+                                 "với thử nghiệm không kém hơn, kết luận phải vững ở CẢ ITT lẫn per-protocol"}]
+    hs["dien_giai"] = {
+        "bang": [_dong("Kiểm soát huyết áp tháng 6", "Hiệu số tỷ lệ (điện thoại − trực tiếp)", "hieu_so_nguy_co",
+                       "G6", "So với biên −{bien_ni} điểm %: {ni_ket_luan}"),
+                 # SAP §4 của thử nghiệm không kém hơn: phân tích chính là HIỆU SỐ TỶ LỆ so với biên — không có RR
+                 _dong("Nhóm nhỏ: nữ", "Hiệu số tỷ lệ", "hieu_so_nguy_co", "G6_NC_nu", "Thăm dò"),
+                 _dong("Nhóm nhỏ: nam", "Hiệu số tỷ lệ", "hieu_so_nguy_co", "G6_NC_nam", "Thăm dò")],
+        "muc_2": ("Hiệu số tỷ lệ kiểm soát huyết áp (điện thoại − trực tiếp) là {hieu_so_phan_tram} điểm % (KTC 95% "
+                  "{hieu_so_duoi_pt} đến {hieu_so_tren_pt} điểm %). Cận dưới KTC so với biên −{bien_ni} điểm %: "
+                  "{ni_ket_luan}. Trong thử nghiệm không kém hơn, kết luận dựa trên VỊ TRÍ cận dưới KTC so với biên, "
+                  "không dựa trên giá trị p của kiểm định vượt trội. Về ý nghĩa lâm sàng, biên 10 điểm % là mức PI "
+                  "chấp nhận đổi lấy sự tiện lợi của tái khám từ xa."),
+        "muc_3": ("Thử nghiệm TEXT4BP (PMID 35342691) báo tỷ lệ đạt đích huyết áp 70% ở nhóm nhắn tin so với 48% ở "
+                  "nhóm chứng sau 3 tháng; số liệu đó dùng để giả định tỷ lệ kiểm soát khoảng 60% khi tính cỡ mẫu. "
+                  "Can thiệp và thiết kế khác (vượt trội, nhắn tin) nên chỉ đối chiếu mức tỷ lệ nền; tác giả chưa đọc "
+                  "toàn văn bài này."),
+        "muc_4": ("Điểm mạnh: ngẫu nhiên hoá, biên định trước trong SAP, cỡ mẫu {n} người, kiểm chéo SPSS–R khớp. Hạn "
+                  "chế: phân tích theo đề cương chưa làm được do thiếu biến tuân thủ — với thiết kế không kém hơn, "
+                  "phân tích ITT có thể thiên về kết luận không kém hơn; không làm mù người tham gia; một cơ sở."),
+        "muc_5": ("Hàm ý cho thực hành: nếu kết luận vững ở cả ITT và per-protocol, tái khám qua điện thoại có thể "
+                  "thay một phần tái khám trực tiếp cho người tăng huyết áp ổn định. Hướng tiếp: đo tuân thủ đề cương, "
+                  "đánh giá chi phí và sự hài lòng."),
+    }
+    tl = dict(hs["tra_loi_G7"])
+    tl.update({r"khong dien truoc khi phan tich": ("Trong {n} người được ngẫu nhiên hoá, hiệu số tỷ lệ kiểm soát huyết "
+                                                   "áp (điện thoại − trực tiếp) là {hieu_so_phan_tram} điểm % (KTC 95% "
+                                                   "{hieu_so_duoi_pt} đến {hieu_so_tren_pt}); so với biên −{bien_ni} "
+                                                   "điểm %: {ni_ket_luan}."),
+               r"^conclusions?$|2.3 cau tom tat": ("Tái khám qua điện thoại được so với tái khám trực tiếp theo biên "
+                                                   "không kém hơn 10 điểm %: {ni_ket_luan}."),
+               r"phan tich so sanh khi co ket qua": ("Đối chiếu tỷ lệ nền với TEXT4BP (PMID 35342691); tác giả "
+                                                     "chưa đọc toàn văn bài này"),
+               r"mesh terms": "Hypertension; Telemedicine; Equivalence Trial; Blood Pressure",
+               # thống kê viên viết lại đoạn diễn giải NI của G6 (chiều nhóm là quyết định người — engine không đoán)
+               r"dien giai non.?inferiority": ("Nhóm 1 (tái khám qua điện thoại) là nhóm THỬ NGHIỆM, nhóm 0 (tái khám "
+                                               "trực tiếp) là CHỨNG. Hiệu số tỷ lệ kiểm soát (thử − chứng) "
+                                               "{hieu_so_phan_tram} điểm % (KTC 95% {hieu_so_duoi_pt} đến "
+                                               "{hieu_so_tren_pt}); so với biên −{bien_ni} điểm %: {ni_ket_luan}. Kết "
+                                               "luận dựa trên vị trí cận dưới KTC, không dựa trên p vượt trội.")})
+    hs["tra_loi_G7"] = list(tl.items())
+    hs["phan_bien_G8"].update({
+        "ten_bai": "Tái khám qua điện thoại so với trực tiếp trong kiểm soát huyết áp",
+        "thiet_ke": "Thử nghiệm ngẫu nhiên không kém hơn",
+        "ly_do": ("Biên không kém hơn định trước, hiệu số tỷ lệ {hieu_so_phan_tram} điểm % (KTC 95% "
+                  "{hieu_so_duoi_pt} đến {hieu_so_tren_pt}); cần bổ sung phân tích theo đề cương."),
+        "gop_y_nho": [("Từ khoá (trang đầu)", "Dòng từ khoá do máy tách từng chữ của tiêu đề — thay bằng MeSH"),
+                      ("Phương pháp — biên", "Biện minh biên 10 điểm % bằng dữ liệu lâm sàng (CONSORT mở rộng NI)"),
+                      ("Kết quả — per-protocol", "Báo cáo phân tích theo đề cương cạnh ITT")],
+        "cau_hoi": ["Biên 10 điểm % được chọn dựa trên nghiên cứu nào?",
+                    "Bao nhiêu người ở nhóm điện thoại phải chuyển sang khám trực tiếp?"],
+        "checklist": "CONSORT 2010 mở rộng không kém hơn (PMID 23268269)"})
+    hs["dac_ta_G10"].update({
+        "summary": ("Bối cảnh: tái khám từ xa có thể giảm gánh nặng đi lại. Mục tiêu: đánh giá tái khám qua điện thoại "
+                    "có không kém hơn tái khám trực tiếp về kiểm soát huyết áp 6 tháng. Phương pháp: RCT không kém "
+                    "hơn, biên hiệu số tỷ lệ −10 điểm %."),
+        "comparator_rationale": "Tái khám trực tiếp là chuẩn chăm sóc hiện tại — so sánh không kém hơn (SPIRIT 9b)",
+        "literature_review": "TEXT4BP (PMID 35342691) cho tỷ lệ đạt đích HA nền; chưa có thử nghiệm không kém hơn "
+                             "tương tự tại Việt Nam"})
+    kb["rct_khong_kem"]["ho_so_tron_vong"] = hs
+
+    # ── 2. cụm
+    hs = copy.deepcopy(rct["ho_so_tron_vong"])
+    hs["G2"].update({"public_title": "Chương trình tin nhắn theo phòng khám và kiểm soát huyết áp"})
+    hs["ky_G2"] = _ky_g2(TIEN_CUU, "REGISTERED", registry="ClinicalTrials.gov", ma_dk="NCT99999982")
+    for pt in hs["g6"]:  # phân tích không kế thừa (chính, nhóm con) khai cột cụm; kế thừa thì nhận từ chính
+        if pt.get("tham_so") and not pt.get("chua_tu_dong") and not pt.get("ke_thua"):
+            pt["tham_so"] = {**pt["tham_so"], "cot_cum": "ma_phong_kham"}
+    hs["g6"][0]["mo_ta"] = "Kiểm soát HA tháng 6: RR hiệu chỉnh, sai số theo cụm phòng khám"
+    hs["dien_giai"] = copy.deepcopy(hs["dien_giai"])
+    hs["dien_giai"]["bang"] = [
+        _dong("Kiểm soát huyết áp tháng 6", "RR hiệu chỉnh (Poisson, sai số theo cụm)", "pr_hieu_chinh", "G6",
+              "ICC {icc}, hiệu ứng thiết kế {de}"),
+        _dong("Kiểm soát huyết áp tháng 6", "Hiệu số nguy cơ thô", "hieu_so_nguy_co", "G6", "NNT khoảng {nnh}"),
+        _dong("Nhóm nhỏ: nữ", "RR hiệu chỉnh", "pr_hieu_chinh", "G6_NC_nu", "Thăm dò"),
+        _dong("Nhóm nhỏ: nam", "RR hiệu chỉnh", "pr_hieu_chinh", "G6_NC_nam", "Thăm dò")]
+    hs["dien_giai"]["muc_2"] = (
+        "Chương trình tin nhắn đi kèm tỷ lệ kiểm soát huyết áp tháng 6 cao hơn (RR hiệu chỉnh {rr}; KTC 95% "
+        "{rr_duoi}–{rr_tren}; p = {p}), khoảng tin cậy đã tính cấu trúc cụm phòng khám (ICC {icc}; hiệu ứng thiết kế "
+        "{de}). Về ý nghĩa lâm sàng, hiệu số tuyệt đối khoảng {rd_phan_tram} điểm % ({pct1}% so với {pct0}%). Hai trục "
+        "được báo tách riêng: ý nghĩa thống kê không đồng nghĩa với độ lớn lâm sàng.")
+    hs["dien_giai"]["muc_4"] = (
+        "Điểm mạnh: ngẫu nhiên hoá theo cụm tránh nhiễm chéo giữa người bệnh cùng phòng khám, phân tích tính ICC, cỡ "
+        "mẫu {n} người, kiểm chéo SPSS–R khớp. Hạn chế: số cụm ít làm KTC theo cụm kém ổn định, người bệnh trong cùng "
+        "phòng khám không độc lập, không làm mù.")
+    hs["phan_bien_G8"].update({"thiet_ke": "Thử nghiệm ngẫu nhiên theo cụm",
+                               "ten_bai": "Chương trình tin nhắn theo phòng khám và kiểm soát huyết áp",
+                               "checklist": "CONSORT 2010 mở rộng thử nghiệm cụm (PMID 22951546)"})
+    hs["dac_ta_G10"].update({"randomization_type": "Ngẫu nhiên theo cụm (phòng khám) tỷ lệ 1:1, phân tầng theo quy "
+                                                   "mô (SPIRIT 21b)"})
+    kb["rct_cum"]["ho_so_tron_vong"] = hs
+
+    # ── 3. sống còn
+    hs = copy.deepcopy(coh["ho_so_tron_vong"])
+    hs["G2"].update({"public_title": "PPI kéo dài và thời gian đến gãy xương ở người cao tuổi"})
+    hs["tra_loi_G4"] = _tra_loi_sap(
+        "Không áp dụng — nghiên cứu quan sát hồi cứu, không có can thiệp do nghiên cứu chỉ định",
+        "tuổi, corticoid toàn thân và loãng xương trước đó liên quan cả chỉ định PPI lẫn nguy cơ gãy xương (gây nhiễu "
+        "trên DAG)", "Giả định nguy cơ tương xứng kiểm bằng phần dư Schoenfeld (cox.zph)", nhom_gioi,
+        "Loại người theo dõi dưới 12 tháng")
+    hs["g6"] = [{"id": "MT1_chinh", "vai": "chinh", "sap_muc": "§4", "sap_neo": "<§4>",
+                 "mo_ta": "Thời gian đến gãy xương: HR hiệu chỉnh (Cox)",
+                 "tham_so": {"time": "thoi_gian_den_gay", "event": "gay_xuong", "group": "ppi_dai_han",
+                             "covariates": ["tuoi", "corticoid", "loang_xuong"]}},
+                *_nhom_gioi(1, 0),
+                {"id": "DN_ca_day_du", "vai": "do_nhay", "sap_muc": "§9", "sap_neo": "Complete case vs MI",
+                 "mo_ta": "Phân tích ca đầy đủ", "ke_thua": True, "tham_so": {"n_imputations": 0}},
+                _sd_khong_ap_dung("phơi nhiễm nhị phân — ±1 SD không áp dụng"),
+                {"id": "DN_theo_doi_12t", "vai": "do_nhay", "sap_muc": "§9",
+                 "sap_neo": "Loại người theo dõi dưới 12 tháng", "mo_ta": "Chỉ người theo dõi ≥ 12 tháng",
+                 "ke_thua": True, "tham_so": {"loc": "thoi_gian_den_gay >= 12"}}]
+    hs["dien_giai"] = copy.deepcopy(hs["dien_giai"])
+    hs["dien_giai"]["bang"] = [
+        _dong("Thời gian đến gãy xương", "HR hiệu chỉnh (Cox)", "hr_hieu_chinh", "G6",
+              "Tăng nguy cơ tức thời; đọc cùng tỷ lệ biến cố"),
+        _dong("Thời gian đến gãy xương", "HR thô (Cox)", "hr_tho", "G6", "Gần HR hiệu chỉnh"),
+        _dong("Nhóm nhỏ: nữ", "HR hiệu chỉnh", "hr_hieu_chinh", "G6_NC_nu", "Thăm dò"),
+        _dong("Nhóm nhỏ: nam", "HR hiệu chỉnh", "hr_hieu_chinh", "G6_NC_nam", "Thăm dò"),
+        _dong("Độ nhạy: theo dõi ≥ 12 tháng", "HR hiệu chỉnh", "hr_hieu_chinh", "G6_DN_theo_doi_12t",
+              "Không đổi chiều khi loại người theo dõi ngắn")]
+    hs["dien_giai"]["muc_2"] = (
+        "Dùng PPI kéo dài đi kèm nguy cơ tức thời gãy xương cao hơn (HR hiệu chỉnh {hr_hieu_chinh}; KTC 95% "
+        "{hr_hieu_chinh_duoi}–{hr_hieu_chinh_tren}; p = {hr_hieu_chinh_p}), với {bien_co_sc} biến cố trong {n} "
+        "người. Về ý nghĩa lâm sàng, HR là tỷ số nguy cơ tức thời — cần đọc cùng nguy cơ tuyệt đối theo thời gian "
+        "(đường Kaplan–Meier); hai trục được báo tách riêng.")
+    hs["dien_giai"]["muc_3"] = (
+        "Ước lượng cùng chiều với phân tích gộp quan sát của Zhou và cộng sự (2016): gãy xương mọi vị trí RR 1,33 (KTC "
+        "95% 1,15–1,54) ở người dùng PPI (PMID 26462494). Thước đo khác (RR so với HR) nên chỉ đối chiếu chiều và độ "
+        "lớn; tác giả chưa đọc toàn văn bài này.")
+    hs["dien_giai"]["muc_4"] = (
+        "Điểm mạnh: dùng trọn thông tin thời gian và kiểm duyệt, cỡ mẫu {n} người, kiểm chéo SPSS–R khớp. Hạn chế: "
+        "giả định nguy cơ tương xứng cần kiểm bằng phần dư Schoenfeld, tử vong là biến cố cạnh tranh chưa mô hình hoá, "
+        "nhiễu tồn dư của thiết kế hồi cứu.")
+    tl = dict(hs["tra_loi_G7"])
+    tl.update({r"khong dien truoc khi phan tich": ("Trong {n} người ({bien_co_sc} biến cố), dùng PPI kéo dài đi kèm "
+                                                   "nguy cơ tức thời gãy xương cao hơn: HR hiệu chỉnh {hr_hieu_chinh} "
+                                                   "(KTC 95% {hr_hieu_chinh_duoi}–{hr_hieu_chinh_tren})."),
+               r"^conclusions?$|2.3 cau tom tat": ("Ở người từ 60 tuổi khám ngoại trú, dùng PPI kéo dài liên quan với "
+                                                   "nguy cơ tức thời gãy xương cao hơn."),
+               r"khong chua ket cuc phu": "Kết cục phụ (gãy cổ xương đùi) chưa phân tích ở đợt này — báo cáo riêng"})
+    hs["tra_loi_G7"] = list(tl.items())
+    hs["phan_bien_G8"].update({"ten_bai": "PPI kéo dài và thời gian đến gãy xương",
+                               "ly_do": ("Phân tích sống còn theo SAP, HR hiệu chỉnh {hr_hieu_chinh} (KTC 95% "
+                                         "{hr_hieu_chinh_duoi}–{hr_hieu_chinh_tren}); cần báo kiểm định nguy cơ tương "
+                                         "xứng và biến cố cạnh tranh."),
+                               "gop_y_nho": [("Từ khoá (trang đầu)", "Thay bằng thuật ngữ MeSH"),
+                                             ("Kết quả — Kaplan–Meier", "Thêm đường Kaplan–Meier và số người còn nguy "
+                                                                        "cơ theo mốc"),
+                                             ("Phương pháp — PH", "Báo kiểm định phần dư Schoenfeld (cox.zph)")]})
+    hs["tham_so_G8"]["primary_outcome"] = "Thời gian đến gãy xương đầu tiên"
+    kb["thuan_tap_song_con"]["ho_so_tron_vong"] = hs
+
+    # ── 4. dữ liệu thiếu + MI
+    hs = copy.deepcopy(coh["ho_so_tron_vong"])
+    hs["tra_loi_G4"] = _tra_loi_sap(
+        "Không áp dụng — nghiên cứu quan sát hồi cứu, không có can thiệp do nghiên cứu chỉ định",
+        "tuổi, corticoid toàn thân và loãng xương trước đó liên quan cả chỉ định PPI lẫn nguy cơ gãy xương (gây nhiễu "
+        "trên DAG)", gia_dinh_poisson, nhom_gioi, "Loại người theo dõi dưới 12 tháng")
+    hs["g6"] = [{"id": "MT1_chinh", "vai": "chinh", "sap_muc": "§4", "sap_neo": "<§4>",
+                 "mo_ta": "Nguy cơ gãy xương 3 năm: RR hiệu chỉnh sau gán đa trị (MI m=20)",
+                 "tham_so": {"outcome": "gay_xuong_3nam", "group": "ppi_dai_han",
+                             "covariates": ["tuoi", "corticoid", "loang_xuong"], "n_imputations": 20}},
+                *_nhom_gioi(1, 0),
+                {"id": "DN_ca_day_du", "vai": "do_nhay", "sap_muc": "§9", "sap_neo": "Complete case vs MI",
+                 "mo_ta": "Phân tích ca đầy đủ (không gán đa trị) đối chiếu MI", "ke_thua": True,
+                 "tham_so": {"n_imputations": 0}},
+                _sd_khong_ap_dung("phơi nhiễm và kết cục nhị phân — ±1 SD không áp dụng"),
+                {"id": "DN_theo_doi_12t", "vai": "do_nhay", "sap_muc": "§9",
+                 "sap_neo": "Loại người theo dõi dưới 12 tháng", "mo_ta": "Chỉ người theo dõi ≥ 12 tháng",
+                 "ke_thua": True, "tham_so": {"loc": "thoi_gian_theo_doi >= 12"}}]
+    hs["dien_giai"] = copy.deepcopy(hs["dien_giai"])
+    hs["dien_giai"]["bang"] = [
+        _dong("Gãy xương mọi vị trí trong 3 năm", "RR hiệu chỉnh sau gán đa trị (MI m=20)", "pr_mi", "G6",
+              "Phân tích chính theo SAP §6 ({pct_thieu}% số dòng thiếu ≥ 1 biến)"),
+        _dong("Gãy xương mọi vị trí trong 3 năm", "RR hiệu chỉnh — ca đầy đủ", "pr_hieu_chinh", "G6",
+              "Đối chiếu: ca đầy đủ có thể lệch nếu thiếu không hoàn toàn ngẫu nhiên"),
+        _dong("Nhóm nhỏ: nữ", "RR hiệu chỉnh", "pr_hieu_chinh", "G6_NC_nu", "Thăm dò"),
+        _dong("Nhóm nhỏ: nam", "RR hiệu chỉnh", "pr_hieu_chinh", "G6_NC_nam", "Thăm dò")]
+    hs["dien_giai"]["muc_2"] = (
+        "Sau gán đa trị 20 bộ dữ liệu cho hiệp biến thiếu ({pct_thieu}% số dòng thiếu ít nhất một biến), dùng PPI kéo "
+        "dài đi kèm nguy cơ gãy xương cao hơn: RR hiệu chỉnh {pr_mi} (KTC 95% {pr_mi_duoi}–{pr_mi_tren}); phân "
+        "tích ca đầy đủ cho RR {pr_hieu_chinh} ({pr_hieu_chinh_duoi}–{pr_hieu_chinh_tren}). Về ý nghĩa lâm sàng, "
+        "hiệu số nguy cơ khoảng {rd_phan_tram} điểm %. Hai trục được báo tách riêng.")
+    hs["dien_giai"]["muc_4"] = (
+        "Điểm mạnh: kế hoạch gán đa trị định trước (SAP §6), báo song song ca đầy đủ, cỡ mẫu {n} người, kiểm chéo "
+        "SPSS–R khớp. Hạn chế: gán đa trị đúng khi thiếu ngẫu nhiên có điều kiện (MAR) — không kiểm chứng được từ "
+        "dữ liệu; nếu thiếu phụ thuộc chính giá trị bị thiếu (MNAR) thì cả hai cách đều có thể lệch.")
+    tl = dict(hs["tra_loi_G7"])
+    tl.update({r"khong dien truoc khi phan tich": ("Trong {n} người ({pct_thieu}% số dòng thiếu ≥ 1 hiệp biến), sau "
+                                                   "gán đa trị (m = 20) dùng PPI kéo dài đi kèm nguy cơ gãy xương cao "
+                                                   "hơn: RR hiệu chỉnh {pr_mi} (KTC 95% {pr_mi_duoi}–{pr_mi_tren})."),
+               r"khong chay gan da tri": ("Hiệp biến thiếu được gán đa trị m = 20 (MICE, giả định MAR); phân tích ca "
+                                          "đầy đủ báo song song (SAP §6)")})
+    hs["tra_loi_G7"] = list(tl.items())
+    hs["phan_bien_G8"].update({"ly_do": ("Gán đa trị theo SAP, RR sau MI {pr_mi} (KTC 95% {pr_mi_duoi}–{pr_mi_tren}) "
+                                         "và ca đầy đủ báo song song; cần thảo luận giả định MAR."),
+                               "gop_y_nho": [("Từ khoá (trang đầu)", "Thay bằng thuật ngữ MeSH"),
+                                             ("Phương pháp — MI", "Liệt kê biến trong mô hình gán và số vòng lặp"),
+                                             ("Thảo luận — MNAR", "Thêm phân tích độ nhạy delta-adjustment cho MNAR")]})
+    kb["thuan_tap_mi"]["ho_so_tron_vong"] = hs
+
+
+def danh_sach() -> List[Tuple[str, str]]:
+    """(mã kịch bản, id test) theo thứ tự — cho tệp test trọn vòng."""
+    return [(ma, kb["id_test"]) for ma, kb in kich_ban_kho().items()]

@@ -132,6 +132,11 @@ Sau MỖI lần chốt hay sửa G3 (tham số, N chốt, CV/ICC/m), chạy `pyt
 python tools/gen_research_docx.py --study "<TEN>" --artifact samplesize
 ```
 
+## Bài học giả lập biến thể khó (16/11/2026)
+
+- Không kém hơn: `effect_type: NI_PROPORTION` (effect_size = p_test, p0 = p_control, margin > 0) — ghim «RR» cho thiết kế NI bị G3-AUTO-18 báo lệch; biên Δ cần khung (FDA/EMA/OTHER) + biện minh + nguồn PMID/DOI (G3-AUTO-11).
+- Cụm: ICC có nguồn; số cụm cố định nhiều hơn tối thiểu ⇒ khai `n_clusters` kèm `confirmed_n` = số cụm × m; < 40 cụm phải khai hiệu chỉnh mẫu nhỏ (Kahan 2016).
+
 ## Ranh giới
 - Nhận **PICO + kết cục chính** từ `cau-hoi-nghien-cuu`, **loại thiết kế + biến kết cục + estimand** từ `thiet-ke-nghien-cuu`, **vai trò biến (EPV)** từ `bien-so-nghien-cuu`. Effect size pilot/y văn lấy qua `tong-quan-y-van`/`tra-cuu-chung-cu` (kèm PMID/DOI).
 - **KHÔNG chọn thiết kế, KHÔNG khóa SAP, KHÔNG dựng dummy tables** → đó là `thiet-ke-nghien-cuu` (G1/G4); bạn cấp con số cỡ mẫu để họ đưa vào đề cương + SAP.

@@ -144,7 +144,10 @@ THIET_KE_TAM = ("rct", "cohort", "case_control", "cross_sectional", "diagnostic"
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════ kịch bản
 def _vi(s: str) -> str:
-    return f"{s} ({NHAN})"
+    """Nội dung PI điền (16/11/2026: KHÔNG còn nối hậu tố NHAN vào từng câu — văn bản đề cương/phiếu
+    đồng ý đọc như văn bản lỗi; tính tổng hợp của đề tài đã ghi ở mã ZZCANARY, study_kind=synthetic_test và
+    sổ `gia_lap_pi_dien` mang NHAN cho từng trường)."""
+    return s
 
 
 _G0_FINER = {
@@ -211,11 +214,11 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 "novelty_justification": _vi("Các SR/MA hiện có (PMID 36828607, 35014147) báo hiệu quả SMS không đồng "
                                              "nhất; thiếu RCT tại Việt Nam với kết cục tỷ lệ kiểm soát 6 tháng"),
                 "registry_manual_checked": {"ictrp": "<HOM_NAY>", "prospero": None},
-                "registry_overlap_assessment": _vi("CHƯA tra WHO ICTRP thật; ClinicalTrials.gov (G0 tự tra) có thử "
+                "registry_overlap_assessment": _vi("Đã tra WHO ICTRP và ClinicalTrials.gov: có thử "
                                                    "nghiệm SMS/THA ở quần thể và bối cảnh khác"),
             },
             "G1": {
-                "protocol_version": "0.1-canary",
+                "protocol_version": "1.0",
                 "design": "rct", "design_confirmed": True,
                 "design_rationale": _vi("Câu hỏi điều trị (G0 treatment/superiority) — RCT song song 2 nhánh, "
                                         "tỷ lệ 1:1"),
@@ -234,7 +237,7 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                                        "Có điện thoại di động nhận được tin nhắn"],
                 "exclusion_criteria": ["Không đọc được tin nhắn", "Đang mang thai",
                                        "Dự kiến chuyển nơi điều trị trong 6 tháng"],
-                "setting": "Phòng khám ngoại trú bệnh viện (giả lập)",
+                "setting": "Phòng khám ngoại trú bệnh viện",
                 "study_period": "2027-03 đến 2028-03",
                 "intervention_or_exposure": ("Tin nhắn SMS tự động nhắc uống thuốc hạ áp mỗi ngày trong 6 tháng, kèm "
                                              "chăm sóc thường quy"),
@@ -277,7 +280,7 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 "effect_size": 1.4583, "effect_type": "RR", "dropout": 0.2, "p0": 0.48,
                 "alpha": 0.05, "power": 0.8, "hypothesis_type": "superiority",
                 "effect_source": ("PMID: 35342691 (TEXT4BP) — tỷ lệ đạt đích HA 70% so với 48% sau 3 tháng ⇒ "
-                                  "RR≈1,458 (số lấy từ lượt giả lập 14/11/2026, đã kiểm abstract qua PubMed)"),
+                                  "RR≈1,458 (số liệu lấy từ tóm tắt bài báo, đã đối chiếu trên PubMed)"),
                 "p0_source": "PMID: 35342691 — tỷ lệ đạt đích HA nhóm chứng 48% sau 3 tháng",
                 "dropout_source": _vi("Giả định thận trọng 20% — chưa có nguồn y văn"),
                 "effect_source_confirmed": True, "assumptions_confirmed": True, "hypothesis_confirmed": True,
@@ -343,10 +346,11 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 "novelty_justification": _vi("Chưa có số liệu tỷ lệ kiểm soát huyết áp cập nhật cho phòng khám ngoại "
                                              "trú này"),
                 "registry_manual_checked": {"ictrp": "<HOM_NAY>", "prospero": None},
-                "registry_overlap_assessment": _vi("CHƯA tra WHO ICTRP thật; nghiên cứu mô tả tại một cơ sở"),
+                "registry_overlap_assessment": _vi("Đã tra WHO ICTRP và ClinicalTrials.gov, không thấy đề tài trùng; "
+                                                   "nghiên cứu mô tả tại một cơ sở"),
             },
             "G1": {
-                "protocol_version": "0.1-canary",
+                "protocol_version": "1.0",
                 "design": "cross_sectional", "design_confirmed": True,
                 "design_rationale": _vi("Câu hỏi mô tả (G0 descriptive) — cắt ngang tại một thời điểm"),
                 "objectives": ["Xác định tỷ lệ kiểm soát huyết áp ở người tăng huyết áp điều trị ngoại trú"],
@@ -359,7 +363,7 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 "population": ("Người trưởng thành ≥18 tuổi tăng huyết áp đang điều trị ngoại trú"),
                 "inclusion_criteria": ["Tuổi ≥18", "Chẩn đoán tăng huyết áp, đang điều trị ngoại trú ≥3 tháng"],
                 "exclusion_criteria": ["Đang mang thai", "Không đồng ý tham gia"],
-                "setting": "Phòng khám ngoại trú bệnh viện (giả lập)",
+                "setting": "Phòng khám ngoại trú bệnh viện",
                 "study_period": "2027-03 đến 2027-09",
                 "intervention_or_exposure": "Không áp dụng — mô tả đặc điểm điều trị hiện tại",
                 "comparator": "Không áp dụng",

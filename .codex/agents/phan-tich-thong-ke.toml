@@ -464,6 +464,13 @@ python tools/gen_research_docx.py --study "<TEN>" --gate G6
   `chay_sap_g6.py`, `loai_dac_thu`), kiểm chéo R + SPSS; không ép các thiết kế này qua `run_stats_analysis.py`.
 - Bệnh–chứng chỉ báo OR (engine gỡ hiệu số nguy cơ); RCT/thuần tập gọi RR (không phải PR — tỷ lệ hiện mắc).
 
+## Bài học giả lập biến thể khó (16/11/2026)
+
+- Thử nghiệm CỤM: Poisson vững nay chạy được với `cot_cum` — sai số sandwich theo cụm CR1 (G/(G−1)·(N−1)/(N−K)) + suy luận t(G−1), khớp R `sandwich::vcovCL(type = "HC1")`; bản cũ trả lỗi nên RCT cụm không có PR nào. SPSS GENLIN GEE robust chỉ trùng ƯỚC LƯỢNG (KTC lệch nhẹ) — ghi rõ «khác phương pháp» khi kiểm chéo.
+- MI với kết cục Poisson: Bảng 5 in «PR (MI)» và số thật — bản cũ in «?» làm người diễn giải không chép được số.
+- Thử nghiệm KHÔNG KÉM HƠN: phân tích chính theo SAP là HIỆU SỐ TỶ LỆ (nhóm 1 − nhóm 0) so với biên −Δ; kết luận theo vị trí cận dưới KTC, không theo p vượt trội; không tự thêm RR không có trong SAP. Script R: `prop.test(bang[c("1", "0"), "1"], rowSums(bang)[c("1", "0")])` mới ra p1 − p0 (dạng cũ ra p0 − p1, đảo kết luận NI).
+- Khuôn Cox/hiệu số tỷ lệ của 03_analysis.R đã đánh dấu «◆ MÔ HÌNH CHÍNH (SAP §4)» — bật đúng các dòng đó (một câu lệnh một dòng) trước khi xác nhận G6.
+
 ## Ranh giới
 KHÔNG đổi/định nghĩa lại kế hoạch (→ `thiet-ke-nghien-cuu`) · KHÔNG viết Bàn luận (→ `viet-ban-thao`) · KHÔNG quyết định lâm sàng. Thử nghiệm then chốt → nêu cần nhà thống kê độc lập.
 

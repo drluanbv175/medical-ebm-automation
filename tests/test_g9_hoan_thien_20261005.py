@@ -111,11 +111,15 @@ def _de_tai_g9_that(tmp_path: Path, monkeypatch, thiet_ke: str = "cohort",
     ghi_checklist_bao_cao(out, study)
     # A12 metadata: chạy check_citation_metadata như bước thật (chuỗi G7 đã có receipt rút bài cho PMID gốc).
     monkeypatch.setattr(CCM, "REPO_ROOT", goc)
-    if tuple(pmid_a12) != ("12345678",):
-        import check_citation_retraction as CCR  # noqa: PLC0415
+    # 16/11/2026: A12 phủ MỌI PMID của tệp gói tới G9 (bản thảo, bản nhận xét, A9, SAP, tệp G9 — vd bảng kiểm chuẩn báo
+    # cáo trích PMID) như người kiểm trích dẫn thật quét gói trước khi PI ký; cổng nay đòi đủ tập này.
+    import check_citation_retraction as CCR  # noqa: PLC0415
+    import run_g10_assemble as G10A  # noqa: PLC0415
 
-        monkeypatch.setattr(CCR, "REPO_ROOT", goc)
-        CCR.write_retraction_receipt(study, list(pmid_a12), {p: {"status": "ok"} for p in pmid_a12})
+    pmid_a12 = tuple(sorted(set(pmid_a12) | {x for t in G10A.tep_phu_a12(study, out, "G9")
+                                             for x in G10A._pmids_from_text(t.read_text(encoding="utf-8"))}))
+    monkeypatch.setattr(CCR, "REPO_ROOT", goc)
+    CCR.write_retraction_receipt(study, list(pmid_a12), {p: {"status": "ok"} for p in pmid_a12})
     CCM.write_metadata_receipt(study, list(pmid_a12), {p: {"status": "resolved", **_METADATA_THU} for p in pmid_a12})
     readiness = _complete_readiness(study, 2)
     readiness["ai_disclosure"].update({"ai_used": True, "tools": ["Claude (Anthropic)"],

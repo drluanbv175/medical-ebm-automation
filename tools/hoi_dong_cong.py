@@ -337,7 +337,8 @@ PHAN_CONG: Dict[str, Dict[str, str]] = {
     },
     "G1": {
         "G1-AUTO-00": "G1-T1", "G1-AUTO-01": "^G0", "G1-AUTO-02": "G1-T1", "G1-AUTO-02b": "G1-T1",
-        "G1-AUTO-02c": "G1-T1", "G1-AUTO-02d": "G1-T1", "G1-AUTO-03": "G1-T1", "G1-AUTO-03b": "G1-T1",
+        "G1-AUTO-02c": "G1-T1", "G1-AUTO-02d": "G1-T1", "G1-AUTO-02e": "G1-T1", "G1-AUTO-03": "G1-T1",
+        "G1-AUTO-03b": "G1-T1",
         "G1-AUTO-04": "G1-T1", "G1-AUTO-04b": "G1-T1", "G1-AUTO-04c": "G1-T1", "G1-AUTO-05": "G1-T1",
         "G1-AUTO-06": "G1-T2", "G1-AUTO-07": "G1-T1",
         "G1-HUMAN-01": "PI@G1-T1", "G1-HUMAN-02": "PI@G1-T1", "G1-HUMAN-03": "PI@G1-T1", "G1-HUMAN-04": "PI@G1-T1",

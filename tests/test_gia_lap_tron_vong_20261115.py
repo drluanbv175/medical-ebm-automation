@@ -25,6 +25,7 @@ import pytest
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
 
+import gia_lap_bien_the_kho as BTK  # noqa: E402
 import gia_lap_dinh_ky as GL  # noqa: E402
 import gia_lap_tron_vong as TV  # noqa: E402
 
@@ -34,6 +35,20 @@ pytestmark = pytest.mark.skipif(not os.environ.get("GIA_LAP_TRON_VONG"),
 
 @pytest.mark.parametrize("ma", list(GL.KICH_BAN), ids=[GL.KICH_BAN[m]["thiet_ke"] for m in GL.KICH_BAN])
 def test_gia_lap_tron_vong(ma, tmp_path, monkeypatch):
+    _chay_tron_vong(ma, tmp_path, monkeypatch)
+
+
+# 16/11/2026 — biến thể KHÓ (không kém hơn · cụm · sống còn · dữ liệu thiếu…): sổ riêng `gia_lap_bien_the_kho`, cùng
+# thân chạy. Chạy đích danh: …::test_gia_lap_bien_the_kho[rct_ni] (lọc -k «rct» sẽ khớp cả biến thể).
+_KHO = BTK.danh_sach()
+
+
+@pytest.mark.parametrize("ma", [m for m, _i in _KHO], ids=[i for _m, i in _KHO])
+def test_gia_lap_bien_the_kho(ma, tmp_path, monkeypatch):
+    _chay_tron_vong(ma, tmp_path, monkeypatch)
+
+
+def _chay_tron_vong(ma, tmp_path, monkeypatch):
     from tests import canh_bi_mat_that as CBM  # noqa: PLC0415
 
     truoc = set(GL._de_tai_canary_trong_exports(ROOT))
@@ -66,5 +81,14 @@ def test_gia_lap_tron_vong(ma, tmp_path, monkeypatch):
               f"{t['chua_co_ho_so']}")
     print("  Cổng:", {g: v.get("trang_thai") for g, v in bc["cong"].items()})
     print("  Trục:", {k: v.get("dem") or v.get("loi") for k, v in bc["truc"].items()})
+    dc = bc["du_lieu"].get("de_cuong_nop") or {}
+    print("  Đề cương nộp:", {k: dc.get(k) for k in ("ma", "so_dong", "trich_dan")}, dc.get("loi") or "K1–K7 đạt")
     assert set(GL._de_tai_canary_trong_exports(ROOT)) == truoc, "rò thư mục ZZCANARY sang exports/ thật"
     assert dich.is_file()
+    # 16/11/2026 (bác sĩ: đề cương giả lập phải là đề cương hoàn chỉnh, câu chữ phù hợp): đề tài đi hết tới G10 thì bản
+    # đề cương nộp Hội đồng do công cụ soạn phải qua K1–K7 (không ký hiệu nội bộ, đủ chương, cỡ mẫu khớp G3…)
+    # 17/11/2026: lượt chạy qua nửa đêm làm G2 bị từ chối ký ⇒ G6.5 sập (KeyError) mà phép thử vẫn «passed» vì sập chỉ
+    # nằm trong báo cáo. Sập bước nội bộ là lỗi của bộ giả lập/hệ — phải đỏ.
+    assert not bc["crash"], f"bước sập: {bc['crash']} — dừng tại {bc['dung']}"
+    if not bc["dung"] and not os.environ.get("GIA_LAP_DEN_CONG"):
+        assert dc and not dc.get("loi"), f"đề cương nộp còn lỗi: {dc.get('loi') or 'chưa sinh'}"

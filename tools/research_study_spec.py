@@ -83,6 +83,13 @@ def _get(obj: Optional[dict], *keys: str, default=None):
     return cur if cur is not None else default
 
 
+def _ten_tep(v: Any) -> Any:
+    """Tên tệp (bỏ thư mục) của một đường dẫn artifact — giá trị không phải chuỗi giữ nguyên."""
+    if isinstance(v, str) and is_present(v) and ("/" in v or "\\" in v):
+        return v.replace("\\", "/").rsplit("/", 1)[-1]
+    return v
+
+
 def _first(*values):
     for value in values:
         if is_present(value):
@@ -261,7 +268,9 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
     objectives_raw = _first(raw.get("objectives"), _get(raw, "objectives", "specific"),
                             g1_quyet.get("objectives"))
     objectives = _as_list(objectives_raw)
-    aim = _first(raw.get("aim"), _get(raw, "objectives", "general"))
+    # 16/11/2026 (giả lập biến thể «kinh tế y tế», 2 mục tiêu): mục tiêu chung PI khai ở G1 (gate_params.G1.aim) — bản
+    # cũ chỉ đọc khoá cấp cao ⇒ đề tài nhiều mục tiêu bị hỏi lại ở đề cương G10 dù PI đã chốt từ G1.
+    aim = _first(raw.get("aim"), _get(raw, "objectives", "general"), g1_quyet.get("aim"))
 
     outcomes_input = _as_list(raw.get("outcomes"))
     # Cả KHỐI theo đúng thứ tự bộ chấm G1 đọc (g1_quality_gate._primary_outcome: cấp cao → G1) rồi G0 — một định nghĩa
@@ -285,12 +294,18 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
     ))
     exposure_intervention = dict(exposure)
     exposure_intervention.update(intervention)
+    # 16/11/2026 (giả lập 15 kịch bản): `main_predictor` là NHÃN BIẾN của bộ biến G3 («nhóm nhận tin nhắn SMS (`nhom`)»)
+    # — đứng trước can thiệp ĐÃ CHỐT ở G1 thì đề cương mô tả can thiệp bằng tên biến. Thứ tự mới: can thiệp khai riêng →
+    # can thiệp/phơi nhiễm đã chốt ở G1 → PICO I/E → nhãn biến phơi nhiễm (chỉ khi không còn gì khác).
+    _g1_ie = "; ".join(str(x) for x in (g1_quyet.get("intervention_or_exposure"),
+                                        g1_quyet.get("intervention_dose_adherence")) if is_present(x)) or None
     exposure_intervention["description"] = _first(
         intervention.get("description"),
         intervention.get("name"),
+        _g1_ie,
+        pico.get("i_e"),
         exposure.get("description"),
         exposure.get("name"),
-        pico.get("i_e"),
     )
     exposure_intervention["comparator"] = _first(
         raw.get("comparator"),
@@ -639,11 +654,12 @@ def build_study_spec(study: str, checkpoints: Dict[str, dict],
             "novelty": _first(raw.get("novelty"), raw.get("differentiation"),
                               _get(raw, "literature", "novelty"),
                               g0.get("novelty_concern")),
-            "ledger_artifact": _first(
+            # 16/11/2026: chỉ TÊN tệp — checkpoint G1 lưu đường dẫn tuyệt đối của máy chạy, lọt nguyên văn vào đề cương.
+            "ledger_artifact": _ten_tep(_first(
                 _get(g1, "artifacts", "A2b_evidence_ledger"),
                 _get(g1, "artifacts", "A2b_markdown"),
                 _get(g1, "artifacts", "A2b"),
-            ),
+            )),
         },
         "theory": {
             "framework": _first(raw.get("theoretical_framework"),

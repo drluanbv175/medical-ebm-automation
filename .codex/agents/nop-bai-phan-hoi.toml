@@ -403,6 +403,10 @@ minh ghi đè pin cũ.
 
 **Mở khóa thật (human side):** tác giả/PI hoàn tất `G9_PUBLICATION_READINESS.json` + A10 + cover letter + checklist chuẩn báo cáo → `g9_quality_gate.py` READY → PI TỰ ký `approve_gate.py --gate G9` → bộ chấm trả `PASS_G9_PUBLICATION_INTEGRITY_LOCKED`. Agent KHÔNG ghi `G9=LOCKED` (trường tự ghi không mở cổng, chỉ làm sai lệch hồ sơ).
 
+## Bài học giả lập biến thể khó (16/11/2026)
+
+- Thư ngỏ G9 dùng khoảng trống PI đã viết ở G1 thay ô chờ điền của G0 (đo: tổng quan–gộp, định tính).
+
 ## Ranh giới
 KHÔNG tự nộp bài (bác sĩ nộp qua hệ thống tạp chí) · KHÔNG khẳng định IF khi chưa kiểm · KHÔNG sửa nội dung khoa học (`viet-ban-thao`) · mọi thay đổi hứa trong rebuttal phải khớp bản thảo sửa thật.
 

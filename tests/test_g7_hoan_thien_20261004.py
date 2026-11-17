@@ -179,7 +179,13 @@ def _ghi_a12_that(out: Path, study: str, goc: Path, monkeypatch) -> None:
     _ghi(out / f"A12_CITATION_VERIFICATION_{study}.md",
          "KẾT QUẢ CỔNG A12: ĐÃ XÁC MINH TOÀN BỘ TRÍCH DẪN — KHÔNG CÒN 🔴\n")
     monkeypatch.setattr(CCR, "REPO_ROOT", goc)
-    CCR.write_retraction_receipt(study, ["12345678"], {"12345678": {"status": "ok"}})
+    # 16/11/2026: người kiểm trích dẫn quét MỌI tệp gói tới G7 (bản thảo + diễn giải) — cổng nay đòi phủ cả PMID máy
+    # sinh trong bản thảo (vd Hanley–McNeil 7063747 của thiết kế chẩn đoán), không chỉ PMID mô tả A12 tự liệt kê.
+    import run_g10_assemble as G10A  # noqa: PLC0415
+
+    pmid = sorted({"12345678"} | {x for t in G10A.tep_phu_a12(study, out, "G7")
+                                  for x in G10A._pmids_from_text(t.read_text(encoding="utf-8"))})
+    CCR.write_retraction_receipt(study, pmid, {x: {"status": "ok"} for x in pmid})
 
 
 def _chot_g7(out: Path, text: str) -> None:

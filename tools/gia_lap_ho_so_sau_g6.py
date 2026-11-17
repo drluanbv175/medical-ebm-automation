@@ -14,16 +14,16 @@ from __future__ import annotations
 
 from typing import Any, Dict, List, Tuple
 
-TAP_CHI = "Tạp chí Y học Việt Nam (giả lập)"
-_DON_VI = ["Phòng khám ngoại trú bệnh viện (giả lập)"]
+TAP_CHI = "Tạp chí Y học Việt Nam"
+_DON_VI = ["Phòng khám ngoại trú bệnh viện"]
 _NOI_NAM = "TP. Hồ Chí Minh – 2026"
-_PHO_BIEN = "Báo cáo tại đơn vị và nộp tạp chí đích (giả lập)"
+_PHO_BIEN = "Báo cáo tại đơn vị và nộp tạp chí đích"
 _KHONG_TV = ("PubMed không có nghiên cứu trong nước cùng câu hỏi; chưa tra tay tạp chí trong nước (giả lập — ghi để "
              "bác sĩ bổ sung)")
 
 # Khai báo dùng AI + thư ngỏ của G8 — chung mọi thiết kế; kết cục chính lấy từ quyết định đã chốt (bộ giả lập đọc G1).
 _THAM_SO_G8: Dict[str, Any] = {
-    "ai_use_declared": True, "ai_tools": "bộ giả lập trọn vòng của hệ (giả lập)",
+    "ai_use_declared": True, "ai_tools": "bộ giả lập trọn vòng của hệ",
     "ai_purpose": "soạn nháp và kiểm dây chuyền; tác giả đọc lại toàn văn",
     "ai_declared_in_cover_letter": True, "ipd_sharing": False,
     **{k: True for k in ("cover_letter_no_duplicate_submission", "cover_letter_coi_declared",
@@ -50,18 +50,18 @@ def _tra_loi_g7(*, ket_qua: str, ket_luan: str, ket_cuc_phu: str, du_lieu_thieu:
         (r"tac dong voi thuc hanh|khuyen cao", "{muc_5}"),
         (r"phan tich so sanh khi co ket qua", so_sanh),
         (r"mesh terms", mesh),
-        (r"dinh dang khi da chon tap chi", "Định dạng theo hướng dẫn tác giả của tạp chí đích (giả lập)"),
-        (r"tac gia lien lac", "Tác giả giả lập 1 (PI-REF-01) — liên hệ qua đơn vị (giả lập)"),
-        (r"ho ten", "Tác giả giả lập 1 (PI-REF-01) · Tác giả giả lập 2 (thống kê viên)"),
+        (r"dinh dang khi da chon tap chi", "Định dạng theo hướng dẫn tác giả của tạp chí đích"),
+        (r"tac gia lien lac", "BS. Nguyễn Văn A — liên hệ qua đơn vị chủ trì"),
+        (r"ho ten", "BS. Nguyễn Văn A · ThS. Trần Thị B (thống kê viên)"),
         (r"don vi thu 2", "Không có"),
-        (r"icmje form|xem tai lieu 8", "Các tác giả không có xung đột lợi ích liên quan đề tài (giả lập)"),
+        (r"icmje form|xem tai lieu 8", "Các tác giả không có xung đột lợi ích liên quan đề tài"),
     ]
 
 
 def _dac_ta_g10(**rieng: str) -> Dict[str, Any]:
     """Thành phần đề cương MỚI PI khai ở G10 — phần chung + phần riêng từng đề tài."""
-    return {"team": "Chủ nhiệm (PI-REF-01), thống kê viên, quản lý dữ liệu, 2 điều tra viên (giả lập)",
-            "budget": "Kinh phí đơn vị cấp cho thu thập và phân tích (giả lập)", "org_lines": _DON_VI,
+    return {"team": "Chủ nhiệm đề tài (BS. Nguyễn Văn A), thống kê viên, quản lý dữ liệu, 2 điều tra viên",
+            "budget": "Kinh phí đơn vị cấp cho thu thập và phân tích", "org_lines": _DON_VI,
             "place_year": _NOI_NAM, "dissemination_plan": _PHO_BIEN, "vietnamese_references_not_applicable": _KHONG_TV,
             **rieng}
 
@@ -80,7 +80,7 @@ def _ho_so(*, ten_bai: str, thiet_ke: str, bang: List[Dict[str, str]], muc: Tupl
 
 
 _GIOI = "Nhóm nhỏ: {gioi}"
-_KC_TRUNG = "chưa đọc toàn văn bài này (giả lập)"
+_KC_TRUNG = "chưa đọc toàn văn bài này"
 
 
 def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệu hồ sơ, không phải logic
@@ -90,7 +90,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
     # Thakkar 2016, JAMA Intern Med — gộp 16 RCT: tin nhắn tăng tuân thủ thuốc OR 2,11 (1,52–2,93), I² 62%; kết cục là
     # TUÂN THỦ (đa số tự khai), không phải kiểm soát huyết áp (PMID 26831740).
     hs["rct_nhi_phan"] = _ho_so(
-        ten_bai="Tin nhắn nhắc uống thuốc và kiểm soát huyết áp sau 6 tháng (giả lập)",
+        ten_bai="Tin nhắn nhắc uống thuốc và kiểm soát huyết áp sau 6 tháng",
         thiet_ke="Thử nghiệm ngẫu nhiên có đối chứng, hai nhánh song song",
         bang=[
             _dong("Kiểm soát huyết áp tháng 6", "RR hiệu chỉnh (Poisson, sai số robust)", "pr_hieu_chinh", "G6",
@@ -115,7 +115,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ("Điểm mạnh: ngẫu nhiên hoá, kết cục đo khách quan tại phòng khám, cỡ mẫu {n} người, phân tích theo SAP "
              "đã khoá và kiểm chéo SPSS–R khớp. Hạn chế: không làm mù người tham gia (bản chất can thiệp), một cơ sở, "
              "theo dõi 6 tháng nên chưa biết hiệu quả có duy trì, và kết quả chỉ khái quát cho người tăng huyết áp có "
-             "điện thoại nhận tin nhắn. Đây là dữ liệu mô phỏng của bộ giả lập."),
+             "điện thoại nhận tin nhắn."),
             ("Hàm ý cho thực hành: có thể cân nhắc tin nhắn nhắc thuốc như biện pháp bổ trợ chi phí thấp cho người "
              "tăng huyết áp ngoại trú, kèm đánh giá chi phí triển khai. Hướng tiếp: thử nghiệm đa trung tâm theo dõi "
              "≥ 12 tháng, đo tuân thủ khách quan và biến cố tim mạch."),
@@ -125,7 +125,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                      "{pct1}% so với {pct0}% (RR hiệu chỉnh {rr}; KTC 95% {rr_duoi}–{rr_tren}); hiệu số "
                      "{rd_phan_tram} điểm phần trăm, NNT khoảng {nnh}."),
             ket_luan=("Ở người tăng huyết áp điều trị ngoại trú, tin nhắn nhắc uống thuốc làm tăng tỷ lệ kiểm soát "
-                      "huyết áp sau 6 tháng so với chăm sóc thường quy (dữ liệu mô phỏng)."),
+                      "huyết áp sau 6 tháng so với chăm sóc thường quy."),
             ket_cuc_phu=("Kết cục phụ (huyết áp tâm thu trung bình tháng 6; tuân thủ tự khai) chưa phân tích ở đợt này "
                          "— báo cáo riêng theo SAP §2"),
             du_lieu_thieu=("Không có dữ liệu thiếu ở các biến phân tích nên không gán đa trị; phân tích ca đầy đủ là "
@@ -155,18 +155,18 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             bias_controls=("Ngẫu nhiên hoá theo khối, giấu phân bổ; người đo huyết áp không biết nhánh; phân tích "
                            "theo ý định điều trị"),
             timeline=("18 tháng: chuẩn bị, đạo đức, đăng ký 3 tháng; tuyển và can thiệp 9 tháng; phân tích 2 tháng; "
-                      "viết và công bố 4 tháng (giả lập)"),
+                      "viết và công bố 4 tháng"),
             literature_review=("Phân tích gộp 16 thử nghiệm (Thakkar 2016, PMID 26831740) ghi nhận tin nhắn tăng tuân "
                                "thủ thuốc; dữ liệu về kiểm soát huyết áp ở người Việt Nam ngoại trú còn thiếu"),
-            theoretical_framework_not_applicable=("Thử nghiệm hiệu quả can thiệp hành vi đơn giản — không xây dựa "
-                                                  "khung lý thuyết hành vi; logic can thiệp trình bày theo TIDieR"),
+            theoretical_framework_not_applicable=("Thử nghiệm hiệu quả can thiệp hành vi đơn giản — không dựa trên "
+                                                  "khung lý thuyết hành vi; logic can thiệp mô tả theo TIDieR"),
             literature_consensus="Các thử nghiệm cùng chiều: tin nhắn tăng tuân thủ dùng thuốc ở bệnh mạn",
             literature_disagreements=("Độ lớn tác động khác nhau theo cách đo tuân thủ; ít thử nghiệm đo kết cục "
                                       "lâm sàng như kiểm soát huyết áp"),
             summary=("Bối cảnh: tuân thủ thuốc hạ áp còn thấp. Mục tiêu: so sánh tỷ lệ kiểm soát huyết áp tháng 6 "
                      "giữa nhóm nhận tin nhắn nhắc thuốc và chăm sóc thường quy. Phương pháp: thử nghiệm ngẫu nhiên "
-                     "hai nhánh, hồi quy Poisson sai số robust ước lượng RR hiệu chỉnh (giả lập)."),
-            pilot="Thử nội dung tin nhắn trên 10 người ngoài mẫu nghiên cứu; chỉnh lời văn trước khi tuyển (giả lập)",
+                     "hai nhánh, hồi quy Poisson sai số robust ước lượng RR hiệu chỉnh."),
+            pilot="Thử nội dung tin nhắn trên 10 người ngoài mẫu nghiên cứu; chỉnh lời văn trước khi tuyển",
             safety_plan=("Ghi biến cố bất lợi liên quan tin nhắn (phàn nàn, lo âu); người tham gia rút khỏi nghiên "
                          "cứu bất kỳ lúc nào; huyết áp ≥ 180/110 mmHg chuyển khám ngay"),
             limitations=("Một cơ sở; không làm mù người tham gia; theo dõi 6 tháng; chỉ người có điện thoại nhận tin "
@@ -190,7 +190,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
     # NCD-RisC 2021, Lancet — 2019 toàn cầu: tỷ lệ kiểm soát trong số người tăng huyết áp 23% (nữ, KTC 20–27) và 18%
     # (nam, 16–21); mẫu số là MỌI người tăng huyết áp, kể cả chưa chẩn đoán/chưa điều trị (PMID 34450083).
     hs["cat_ngang_mo_ta"] = _ho_so(
-        ten_bai="Tỷ lệ kiểm soát huyết áp ở người tăng huyết áp điều trị ngoại trú (giả lập)",
+        ten_bai="Tỷ lệ kiểm soát huyết áp ở người tăng huyết áp điều trị ngoại trú",
         thiet_ke="Cắt ngang mô tả",
         bang=[
             _dong("Kiểm soát huyết áp (< 140/90 mmHg)", "Tỷ lệ % (KTC 95% Wilson)", "ty_le", "G6",
@@ -209,8 +209,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
              "trực tiếp được; tác giả " + _KC_TRUNG + "."),
             ("Điểm mạnh: cỡ mẫu {n} người theo tính toán G3, đo huyết áp chuẩn hoá, phân tích theo SAP đã khoá và "
              "kiểm chéo SPSS–R khớp. Hạn chế: một lần đo tại một thời điểm, lấy mẫu tại một cơ sở nên có thể sai lệch "
-             "chọn, không đo tuân thủ thuốc, và thiết kế cắt ngang không cho biết chiều thời gian. Đây là dữ liệu mô "
-             "phỏng của bộ giả lập."),
+             "chọn, không đo tuân thủ thuốc, và thiết kế cắt ngang không cho biết chiều thời gian."),
             ("Hàm ý cho thực hành: rà soát điều trị cho người chưa đạt đích (điều chỉnh liều, phối hợp thuốc, tuân "
              "thủ) là việc có thể làm ngay tại phòng khám. Hướng tiếp: nghiên cứu phân tích yếu tố liên quan và theo "
              "dõi dọc tỷ lệ kiểm soát sau can thiệp."),
@@ -219,7 +218,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ket_qua=("Trong {n_ty_le} người tăng huyết áp điều trị ngoại trú, {so_su_kien} người đạt kiểm soát huyết "
                      "áp: tỷ lệ {ty_le}% (KTC 95% {ty_le_duoi}–{ty_le_tren}%)."),
             ket_luan=("Khoảng một nửa người tăng huyết áp điều trị ngoại trú đạt kiểm soát huyết áp; cần rà soát điều "
-                      "trị cho nhóm chưa đạt đích (dữ liệu mô phỏng)."),
+                      "trị cho nhóm chưa đạt đích."),
             ket_cuc_phu=("Kết cục phụ (yếu tố liên quan kiểm soát huyết áp) chưa phân tích ở đợt này — báo cáo riêng "
                          "theo SAP §2"),
             du_lieu_thieu="Không có dữ liệu thiếu ở biến kết cục nên không gán đa trị (khớp SAP §6)",
@@ -243,18 +242,18 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             bias_risks="Sai lệch chọn (một cơ sở, người đến khám thường xuyên hơn); sai số đo huyết áp",
             bias_controls="Chọn liên tiếp theo danh sách khám; đo huyết áp chuẩn hoá hai lần, lấy trung bình",
             timeline=("12 tháng: chuẩn bị và đạo đức 3 tháng; thu thập 4 tháng; phân tích 2 tháng; viết và công bố "
-                      "3 tháng (giả lập)"),
+                      "3 tháng"),
             literature_review=("NCD-RisC 2021 (PMID 34450083) ước tính tỷ lệ kiểm soát huyết áp toàn cầu còn thấp; "
                                "số liệu ở người đang điều trị ngoại trú tại Việt Nam còn ít"),
-            theoretical_framework_not_applicable=("Nghiên cứu dịch tễ mô tả — không dựa khung lý thuyết; mục tiêu "
+            theoretical_framework_not_applicable=("Nghiên cứu dịch tễ mô tả — không dựa trên khung lý thuyết; mục tiêu "
                                                   "là ước lượng tỷ lệ"),
             literature_consensus="Tỷ lệ kiểm soát huyết áp thấp ở hầu hết các nước thu nhập thấp–trung bình",
             literature_disagreements="Con số khác nhau theo định nghĩa mẫu số (mọi người tăng huyết áp hay người "
                                      "đang điều trị) và đích huyết áp",
             summary=("Bối cảnh: kiểm soát huyết áp ở người điều trị ngoại trú chưa được đo thường quy. Mục tiêu: ước "
-                     "lượng tỷ lệ kiểm soát huyết áp. Phương pháp: cắt ngang mô tả, tỷ lệ và KTC 95% Wilson "
-                     "(giả lập)."),
-            pilot="Thử phiếu thu thập trên 15 người ngoài mẫu nghiên cứu (giả lập)",
+                     "lượng tỷ lệ kiểm soát huyết áp. Phương pháp: cắt ngang mô tả, tỷ lệ và KTC 95% Wilson."
+                     ),
+            pilot="Thử phiếu thu thập trên 15 người ngoài mẫu nghiên cứu",
             safety_plan=("Không có can thiệp; người có huyết áp ≥ 180/110 mmHg khi đo được chuyển khám ngay theo quy "
                          "trình phòng khám"),
             limitations="Một cơ sở; một thời điểm đo; không đo tuân thủ thuốc",
@@ -265,7 +264,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
     # Masclee 2014, Gastroenterology — chuỗi ca tự đối chứng, 7 cơ sở dữ liệu châu Âu: NSAID không chọn lọc đơn trị IRR
     # 4,3 cho xuất huyết tiêu hoá trên (PMID 24937265). Thiết kế khác (không phải bệnh–chứng).
     hs["benh_chung"] = _ho_so(
-        ten_bai="NSAID và xuất huyết tiêu hoá trên ở người từ 60 tuổi (giả lập)",
+        ten_bai="NSAID và xuất huyết tiêu hoá trên ở người từ 60 tuổi",
         thiet_ke="Bệnh–chứng",
         bang=[
             _dong("Xuất huyết tiêu hoá trên", "OR hiệu chỉnh (hồi quy logistic)", "or_hieu_chinh", "G6",
@@ -288,7 +287,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ("Điểm mạnh: ca bệnh được xác định bằng nội soi, cỡ mẫu {n} người, phân tích theo SAP đã khoá và kiểm "
              "chéo SPSS–R khớp. Hạn chế: sai lệch nhớ lại về phơi nhiễm, nhiễu tồn dư (rượu, Helicobacter pylori, "
              "aspirin liều thấp), chọn nhóm chứng tại bệnh viện có thể không đại diện, và chỉ khái quát cho người từ "
-             "60 tuổi. Đây là dữ liệu mô phỏng của bộ giả lập."),
+             "60 tuổi."),
             ("Hàm ý cho thực hành: cân nhắc kỹ chỉ định NSAID ở người cao tuổi, ưu tiên liều thấp nhất trong thời gian "
              "ngắn nhất và bảo vệ dạ dày khi có yếu tố nguy cơ. Hướng tiếp: nghiên cứu thuần tập có đo liều, thời gian "
              "dùng và thuốc phối hợp."),
@@ -298,7 +297,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                      "ngày đi kèm odds xuất huyết tiêu hoá trên cao hơn: OR hiệu chỉnh {or_hieu_chinh} (KTC 95% "
                      "{or_hieu_chinh_duoi}–{or_hieu_chinh_tren})."),
             ket_luan=("Ở người từ 60 tuổi, dùng NSAID trong 30 ngày trước liên quan với odds xuất huyết tiêu hoá trên "
-                      "cao hơn; cần cân nhắc chỉ định và bảo vệ dạ dày (dữ liệu mô phỏng)."),
+                      "cao hơn; cần cân nhắc chỉ định và bảo vệ dạ dày."),
             ket_cuc_phu=("Kết cục phụ (mức độ nặng của xuất huyết) chưa phân tích ở đợt này — báo cáo riêng theo SAP "
                          "§2"),
             du_lieu_thieu=("Không có dữ liệu thiếu ở các biến phân tích nên không gán đa trị; phân tích ca đầy đủ là "
@@ -325,7 +324,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             bias_controls=("Phơi nhiễm lấy từ hồ sơ kê đơn; hiệu chỉnh chống đông và tiền sử loét theo DAG; độ nhạy "
                            "loại người dùng chống đông"),
             timeline=("15 tháng: chuẩn bị và đạo đức 3 tháng; thu thập 6 tháng; phân tích 2 tháng; viết và công bố "
-                      "4 tháng (giả lập)"),
+                      "4 tháng"),
             literature_review=("Masclee 2014 (PMID 24937265) ghi nhận NSAID tăng nguy cơ xuất huyết tiêu hoá trên; "
                                "dữ liệu ở người cao tuổi Việt Nam còn ít"),
             theoretical_framework_not_applicable=("Nghiên cứu dịch tễ học quan sát về phơi nhiễm thuốc — mô hình "
@@ -334,15 +333,15 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             literature_disagreements="Độ lớn khác nhau theo loại NSAID, liều và thuốc dùng kèm",
             summary=("Bối cảnh: NSAID dùng phổ biến ở người cao tuổi. Mục tiêu: đánh giá liên quan giữa dùng NSAID "
                      "30 ngày và xuất huyết tiêu hoá trên. Phương pháp: bệnh–chứng, hồi quy logistic ước lượng OR "
-                     "hiệu chỉnh (giả lập)."),
-            pilot="Thử phiếu trích hồ sơ trên 20 hồ sơ ngoài mẫu nghiên cứu (giả lập)",
+                     "hiệu chỉnh."),
+            pilot="Thử phiếu trích hồ sơ trên 20 hồ sơ ngoài mẫu nghiên cứu",
             safety_plan="Không có can thiệp; sự cố bảo mật dữ liệu báo cáo theo quy trình đơn vị",
             limitations="Chọn nhóm chứng tại bệnh viện; không đo liều NSAID; nhiễu tồn dư",
             instrument={"name": "Bộ câu hỏi phỏng vấn cấu trúc về thuốc dùng trong 30 ngày, có kèm hình ảnh thuốc, "
                                 "đối chiếu hồ sơ kê đơn (soạn cho đề tài)",
                         "source": "Phỏng vấn trực tiếp + hồ sơ bệnh án (ma trận G3)",
                         "note": "Không phải thang đo/PROM — bộ câu hỏi sự kiện dùng thuốc; thử trên 10 người ngoài "
-                                "mẫu trước khi thu thập (giả lập)"},
+                                "mẫu trước khi thu thập"},
         ),
     )
 
@@ -350,7 +349,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
     # Shah 2009, Clin Gastroenterol Hepatol — 541 người NAFLD: AUROC FIB-4 0,802 (0,758–0,847); FIB-4 ≥ 2,67 có PPV
     # 80% (PMID 19523535).
     hs["chan_doan"] = _ho_so(
-        ten_bai="Giá trị chẩn đoán của FIB-4 phát hiện xơ hoá gan tiến triển (giả lập)",
+        ten_bai="Giá trị chẩn đoán của FIB-4 phát hiện xơ hoá gan tiến triển",
         thiet_ke="Nghiên cứu độ chính xác chẩn đoán, cắt ngang",
         bang=[
             _dong("Xơ hoá tiến triển", "AUC (Hanley–McNeil)", "auc", "G6", "Khả năng phân biệt thấp"),
@@ -372,8 +371,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
              + "."),
             ("Điểm mạnh: chuẩn tham chiếu đo trên mọi người tham gia, ngưỡng định trước trong SAP, kiểm chéo SPSS–R "
              "khớp. Hạn chế: cỡ mẫu {n} người với {so_tp} + {so_fn} người có bệnh nên KTC rộng, một cơ sở, chưa đánh "
-             "giá ngưỡng thứ hai 1,3 (SAP §5), và phổ bệnh có thể khác cộng đồng. Đây là dữ liệu mô phỏng của bộ giả "
-             "lập."),
+             "giá ngưỡng thứ hai 1,3 (SAP §5), và phổ bệnh có thể khác cộng đồng."),
             ("Hàm ý cho thực hành: tại ngưỡng {nguong}, FIB-4 không đủ để loại trừ xơ hoá tiến triển; nên phối hợp "
              "ngưỡng thấp và đo độ đàn hồi gan theo hướng dẫn hiện hành. Hướng tiếp: nghiên cứu cỡ mẫu lớn hơn, đánh "
              "giá chiến lược hai ngưỡng."),
@@ -382,7 +380,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ket_qua=("Trong {n} người, AUC của FIB-4 là {auc} (KTC 95% {auc_duoi}–{auc_tren}); tại ngưỡng {nguong} độ "
                      "nhạy {do_nhay} và độ đặc hiệu {do_dac_hieu}."),
             ket_luan=("Ở người gan nhiễm mỡ liên quan chuyển hoá điều trị ngoại trú, FIB-4 tại ngưỡng 2,67 có độ nhạy "
-                      "thấp, không đủ để loại trừ xơ hoá tiến triển (dữ liệu mô phỏng)."),
+                      "thấp, không đủ để loại trừ xơ hoá tiến triển."),
             ket_cuc_phu="Độ chính xác tại ngưỡng 1,3 chưa phân tích ở đợt này — báo cáo riêng theo SAP §5",
             du_lieu_thieu=("Không có dữ liệu thiếu ở chỉ số và chuẩn tham chiếu nên không gán đa trị (khớp SAP §6)"),
             giai_thich="Không áp dụng — nghiên cứu độ chính xác chẩn đoán, không đánh giá cơ chế",
@@ -406,16 +404,16 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             bias_controls=("Chọn liên tiếp; chuẩn tham chiếu trên mọi người tham gia; người đọc chuẩn tham chiếu "
                            "không biết FIB-4; ngưỡng định trước"),
             timeline=("12 tháng: chuẩn bị và đạo đức 3 tháng; thu thập 5 tháng; phân tích 1 tháng; viết và công bố "
-                      "3 tháng (giả lập)"),
+                      "3 tháng"),
             literature_review=("FIB-4 được Shah 2009 (PMID 19523535) đánh giá ở người NAFLD với AUROC khoảng 0,8; "
                                "dữ liệu ở người ngoại trú Việt Nam còn thiếu"),
-            theoretical_framework_not_applicable="Nghiên cứu độ chính xác chẩn đoán — không dựa khung lý thuyết",
+            theoretical_framework_not_applicable="Nghiên cứu độ chính xác chẩn đoán — không dựa trên khung lý thuyết",
             literature_consensus="FIB-4 có giá trị dự đoán âm cao ở ngưỡng thấp, giá trị dự đoán dương vừa phải",
             literature_disagreements="Độ chính xác khác nhau theo tuổi và phổ bệnh của quần thể",
             summary=("Bối cảnh: cần công cụ đơn giản phát hiện xơ hoá gan tiến triển. Mục tiêu: đánh giá độ chính "
                      "xác của FIB-4. Phương pháp: nghiên cứu độ chính xác chẩn đoán, AUC và độ nhạy/đặc hiệu tại "
-                     "ngưỡng định trước (giả lập)."),
-            pilot="Thử quy trình lấy mẫu và đo chuẩn tham chiếu trên 5 người ngoài mẫu (giả lập)",
+                     "ngưỡng định trước."),
+            pilot="Thử quy trình lấy mẫu và đo chuẩn tham chiếu trên 5 người ngoài mẫu",
             safety_plan="Chỉ lấy máu xét nghiệm thường quy; không có can thiệp do nghiên cứu",
             limitations="Cỡ mẫu nhỏ; một cơ sở; chưa đánh giá ngưỡng 1,3",
         ),
@@ -425,7 +423,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
     # Ouwerkerk 2014, JACC Heart Fail — tổng quan 117 mô hình: C-statistic trung bình 0,68 cho mô hình dự báo nhập
     # viện vì suy tim (PMID 25194294).
     hs["mo_hinh_du_bao"] = _ho_so(
-        ten_bai="Mô hình dự báo nguy cơ nhập viện 12 tháng ở người suy tim ngoại trú (giả lập)",
+        ten_bai="Mô hình dự báo nguy cơ nhập viện 12 tháng ở người suy tim ngoại trú",
         thiet_ke="Phát triển mô hình dự báo, thuần tập",
         bang=[
             _dong("Nhập viện trong 12 tháng", "C-statistic (trong mẫu)", "c_statistic", "G6",
@@ -444,7 +442,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ("Điểm mạnh: yếu tố dự báo chọn theo y văn trước khi xem dữ liệu, số biến cố trên mỗi yếu tố đủ lớn, cỡ "
              "mẫu {n} người, kiểm chéo SPSS–R khớp. Hạn chế: C-statistic trong mẫu (bootstrap hiệu chỉnh lạc quan chạy "
              "trong kịch bản R, chưa báo ở đây), chưa kiểm định ngoài, một cơ sở, và chưa có biểu đồ hiệu chuẩn trong "
-             "bản này. Đây là dữ liệu mô phỏng của bộ giả lập."),
+             "bản này."),
             ("Hàm ý cho thực hành: chưa dùng mô hình cho quyết định cá nhân trước khi kiểm định ngoài; có thể dùng để "
              "thử phân tầng theo dõi. Hướng tiếp: kiểm định ngoài ở cơ sở khác, báo hiệu chuẩn và lợi ích ròng "
              "(decision curve)."),
@@ -453,7 +451,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ket_qua=("Trong {n} người suy tim, mô hình gồm tuổi, LVEF, NT-proBNP và eGFR có C-statistic trong mẫu "
                      "{c_statistic} (KTC 95% {c_statistic_duoi}–{c_statistic_tren}) và Brier {brier}."),
             ket_luan=("Mô hình bốn yếu tố dự báo nhập viện 12 tháng ở người suy tim ngoại trú có khả năng phân biệt "
-                      "mức vừa; cần kiểm định ngoài trước khi dùng (dữ liệu mô phỏng)."),
+                      "mức vừa; cần kiểm định ngoài trước khi dùng."),
             ket_cuc_phu="Hiệu chuẩn và hiệu chỉnh lạc quan báo riêng theo SAP §9 (kịch bản R đã sinh)",
             du_lieu_thieu=("Không có dữ liệu thiếu ở các yếu tố dự báo nên không gán đa trị (khớp SAP §6)"),
             giai_thich="Không áp dụng — mô hình dự báo, không ước lượng hiệu ứng nhân quả",
@@ -477,16 +475,16 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             bias_controls=("Yếu tố dự báo định trước theo y văn; EPV ≥ 10; bootstrap hiệu chỉnh lạc quan; báo cáo "
                            "theo TRIPOD+AI"),
             timeline=("15 tháng: chuẩn bị và đạo đức 3 tháng; thu thập và theo dõi 6 tháng; phân tích 2 tháng; viết "
-                      "và công bố 4 tháng (giả lập)"),
+                      "và công bố 4 tháng"),
             literature_review=("Tổng quan 117 mô hình (Ouwerkerk 2014, PMID 25194294) cho thấy dự báo nhập viện vì "
                                "suy tim chỉ đạt mức vừa; chưa có mô hình kiểm định ở người Việt Nam ngoại trú"),
-            theoretical_framework_not_applicable="Nghiên cứu mô hình dự báo — không dựa khung lý thuyết",
+            theoretical_framework_not_applicable="Nghiên cứu mô hình dự báo — không dựa trên khung lý thuyết",
             literature_consensus="Dự báo nhập viện vì suy tim khó hơn dự báo tử vong; C-statistic thường 0,6–0,7",
             literature_disagreements="Yếu tố dự báo mạnh nhất khác nhau giữa các mô hình",
             summary=("Bối cảnh: người suy tim ngoại trú có nguy cơ nhập viện cao. Mục tiêu: phát triển mô hình dự "
                      "báo nhập viện 12 tháng. Phương pháp: thuần tập, hồi quy logistic với yếu tố dự báo định trước, "
-                     "C-statistic và Brier (giả lập)."),
-            pilot="Thử phiếu thu thập trên 10 hồ sơ ngoài mẫu (giả lập)",
+                     "C-statistic và Brier."),
+            pilot="Thử phiếu thu thập trên 10 hồ sơ ngoài mẫu",
             safety_plan="Không có can thiệp; sự cố bảo mật dữ liệu báo cáo theo quy trình đơn vị",
             limitations="Chưa kiểm định ngoài; một cơ sở; C-statistic trong mẫu",
         ),
@@ -497,7 +495,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
     # HR 0,77 (0,71–0,84), lợi ích tương tự dù có hay không tiền sử suy tim (PMID 30424892).
     hs["tong_quan_gop"] = _ho_so(
         ten_bai="Thuốc ức chế SGLT2 và nhập viện vì suy tim ở người đái tháo đường típ 2: tổng quan hệ thống và phân "
-                "tích gộp (giả lập)",
+                "tích gộp",
         thiet_ke="Tổng quan hệ thống và phân tích gộp",
         bang=[
             _dong("Nhập viện vì suy tim", "RR gộp (ngẫu nhiên, DerSimonian–Laird)", "rr_gop", "G6",
@@ -519,7 +517,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ("Điểm mạnh: chiến lược tìm theo PRISMA-S, đánh giá RoB 2 cho từng thử nghiệm, độ nhạy loại thử nghiệm "
              "nguy cơ sai lệch cao, kiểm chéo R (metafor) và SPSS khớp. Hạn chế: không đồng nhất có thể bị ước lượng "
              "thấp khi ít thử nghiệm lớn chi phối, chưa đánh giá sai lệch công bố (cần ≥ 10 thử nghiệm và biểu đồ "
-             "phễu), và chưa phân nhóm theo thuốc. Đây là dữ liệu mô phỏng của bộ giả lập."),
+             "phễu), và chưa phân nhóm theo thuốc."),
             ("Hàm ý cho thực hành: chứng cứ gộp ủng hộ cân nhắc SGLT2i ở người đái tháo đường típ 2 có nguy cơ tim "
              "mạch để giảm nhập viện vì suy tim, theo hướng dẫn hiện hành. Hướng tiếp: phân nhóm theo thuốc và chức "
              "năng thận, đánh giá mức chắc chắn GRADE."),
@@ -528,7 +526,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ket_qua=("Gộp {k} thử nghiệm: SGLT2i giảm nhập viện vì suy tim với RR {rr_gop} (KTC 95% {rr_gop_duoi}–"
                      "{rr_gop_tren}); I² {i2_pct}%."),
             ket_luan=("Ở người đái tháo đường típ 2 không có suy tim lúc đầu, SGLT2i giảm nhập viện vì suy tim khoảng "
-                      "một phần ba (dữ liệu mô phỏng)."),
+                      "một phần ba."),
             ket_cuc_phu=("Kết cục phụ (tử vong tim mạch; biến cố thận) chưa gộp ở đợt này — báo cáo riêng theo "
                          "đề cương PROSPERO"),
             du_lieu_thieu="Gộp ở cấp nghiên cứu — không có dữ liệu thiếu cấp cá nhân (khớp SAP §6)",
@@ -550,22 +548,23 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
         checklist=("PRISMA 2020", "24/27 mục (89%)",
                    "mục 21 (sai lệch công bố), mục 22 (mức chắc chắn), mục 24c (sửa đổi đề cương)"),
         dac_ta=_dac_ta_g10(
-            team="Chủ nhiệm (PI-REF-01), thống kê viên, 2 người sàng lọc và trích dữ liệu độc lập (giả lập)",
-            budget="Kinh phí đơn vị cấp cho truy cập toàn văn và phân tích (giả lập)",
+            team="Chủ nhiệm đề tài (BS. Nguyễn Văn A), thống kê viên, 2 người sàng lọc và trích dữ liệu độc lập",
+            budget="Kinh phí đơn vị cấp cho truy cập toàn văn và phân tích",
             bias_risks="Sai lệch công bố; sai lệch chọn nghiên cứu; không đồng nhất định nghĩa kết cục",
             bias_controls=("Tìm nhiều nguồn theo PRISMA-S; hai người sàng lọc và trích độc lập; RoB 2; độ nhạy loại "
                            "thử nghiệm nguy cơ sai lệch cao"),
             timeline=("10 tháng: đăng ký PROSPERO và tìm 2 tháng; sàng lọc và trích 3 tháng; phân tích 2 tháng; viết "
-                      "và công bố 3 tháng (giả lập)"),
+                      "và công bố 3 tháng"),
             literature_review=("Zelniker 2019 (PMID 30424892) gộp 3 thử nghiệm kết cục tim mạch; cần cập nhật với các "
                                "thử nghiệm mới và tập trung riêng nhập viện vì suy tim"),
-            theoretical_framework_not_applicable="Tổng quan hệ thống chứng cứ can thiệp — không dựa khung lý thuyết",
+            theoretical_framework_not_applicable=("Tổng quan hệ thống chứng cứ can thiệp — không dựa trên khung lý "
+                                                  "thuyết"),
             literature_consensus="SGLT2i giảm nhập viện vì suy tim nhất quán qua các thử nghiệm lớn",
             literature_disagreements="Độ lớn lợi ích trên biến cố xơ vữa khác nhau theo bệnh tim mạch nền",
             summary=("Bối cảnh: SGLT2i có thể giảm nhập viện vì suy tim. Mục tiêu: gộp hiệu quả trên nhập viện vì "
                      "suy tim ở người đái tháo đường típ 2. Phương pháp: tổng quan hệ thống theo PRISMA 2020, gộp RR "
-                     "bằng mô hình ngẫu nhiên DerSimonian–Laird (giả lập)."),
-            pilot="Thử chiến lược tìm và phiếu trích trên 3 thử nghiệm đã biết (giả lập)",
+                     "bằng mô hình ngẫu nhiên DerSimonian–Laird."),
+            pilot="Thử chiến lược tìm và phiếu trích trên 3 thử nghiệm đã biết",
             safety_plan="Không có người tham gia — tổng quan dữ liệu đã công bố",
             limitations="Ít thử nghiệm lớn chi phối; chưa đánh giá sai lệch công bố; chưa phân nhóm theo thuốc",
         ),
@@ -576,7 +575,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
     # sàng, 34,7% phân vân (PMID 21469914). Polonsky 2019, J Diabetes Complications — người bệnh đánh giá việc
     # «hướng dẫn cách tiêm» là hữu ích và đi kèm ít trì hoãn bắt đầu insulin hơn (PMID 30709604).
     hs["dinh_tinh"] = _ho_so(
-        ten_bai="Trải nghiệm và rào cản khi bắt đầu tiêm insulin ở người đái tháo đường típ 2 (giả lập)",
+        ten_bai="Trải nghiệm và rào cản khi bắt đầu tiêm insulin ở người đái tháo đường típ 2",
         thiet_ke="Nghiên cứu định tính, phân tích chủ đề",
         bang=[
             _dong("Chủ đề phổ biến nhất: {chu_de_1_ten}", "Tỷ lệ bản gỡ băng có chủ đề (Wilson, mô tả)", "chu_de_1",
@@ -599,7 +598,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ("Điểm mạnh: chọn mẫu có chủ đích theo tiêu chí đa dạng định trước, hai người mã hoá, nhật ký quyết định "
              "mã hoá, kiểm tra lại với người tham gia. Hạn chế: một cơ sở, người đồng ý phỏng vấn có thể cởi mở hơn, "
              "vai trò của người phỏng vấn (nhân viên y tế) có thể ảnh hưởng câu trả lời, và kết quả không suy rộng "
-             "thống kê. Đây là dữ liệu mô phỏng của bộ giả lập."),
+             "thống kê."),
             ("Hàm ý cho thực hành: khi đề xuất insulin, mời người nhà cùng học cách tiêm và trao đổi kế hoạch phòng hạ "
              "đường huyết khi đi làm. Hướng tiếp: xây dựng và thử nghiệm can thiệp giáo dục có người nhà tham gia."),
         ),
@@ -607,7 +606,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ket_qua=("Từ {n_ban_go_bang} bản gỡ băng, {so_chu_de} chủ đề được xác định; phổ biến nhất là "
                      "«{chu_de_1_ten}» ({chu_de_1_n}/{n_ban_go_bang} bản) và «{chu_de_2_ten}»."),
             ket_luan=("Hỗ trợ của gia đình và nỗi lo hạ đường huyết khi đi làm định hình trải nghiệm bắt đầu insulin "
-                      "của người đái tháo đường típ 2 ngoại trú (dữ liệu mô phỏng)."),
+                      "của người đái tháo đường típ 2 ngoại trú."),
             ket_cuc_phu="Không áp dụng — nghiên cứu định tính không có kết cục phụ định lượng",
             du_lieu_thieu="Không áp dụng — dữ liệu là bản gỡ băng phỏng vấn, không có biến thiếu cần gán",
             giai_thich="Không áp dụng — nghiên cứu định tính mô tả trải nghiệm, không đánh giá cơ chế sinh học",
@@ -627,12 +626,12 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
         checklist=("COREQ", "29/32 mục (91%)",
                    "mục 1–8 (phản tư người nghiên cứu), mục 22 (bão hoà dữ liệu), mục 28 (người tham gia kiểm tra)"),
         dac_ta=_dac_ta_g10(
-            team="Chủ nhiệm (PI-REF-01), 2 người phỏng vấn và mã hoá được tập huấn, người thứ ba phân xử (giả lập)",
+            team="Chủ nhiệm đề tài (BS. Nguyễn Văn A), 2 người phỏng vấn và mã hoá được tập huấn, người thứ ba phân xử",
             bias_risks="Ảnh hưởng của người phỏng vấn; người tham gia trả lời theo mong đợi xã hội",
             bias_controls=("Người phỏng vấn không phải bác sĩ điều trị; hai người mã hoá độc lập; nhật ký phản tư; "
                            "kiểm tra lại với người tham gia"),
             timeline=("10 tháng: chuẩn bị và đạo đức 3 tháng; phỏng vấn và gỡ băng 3 tháng; mã hoá và phân tích 2 "
-                      "tháng; viết và công bố 2 tháng (giả lập)"),
+                      "tháng; viết và công bố 2 tháng"),
             literature_review=("Polonsky 2011 (PMID 21469914) ghi nhận tỷ lệ đáng kể người bệnh không sẵn sàng bắt "
                                "đầu insulin; dữ liệu định tính ở người Việt Nam ngoại trú còn thiếu"),
             theoretical_framework=("Mô hình niềm tin sức khoẻ (Health Belief Model) định hướng câu hỏi phỏng vấn về "
@@ -641,15 +640,14 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             literature_disagreements="Mức độ rào cản khác nhau rõ giữa các nước và bối cảnh văn hoá",
             summary=("Bối cảnh: nhiều người đái tháo đường típ 2 trì hoãn bắt đầu insulin. Mục tiêu: tìm hiểu trải "
                      "nghiệm và rào cản khi bắt đầu tiêm insulin. Phương pháp: phỏng vấn sâu bán cấu trúc, phân tích "
-                     "chủ đề, báo cáo theo COREQ (giả lập)."),
-            pilot="Thử bộ câu hỏi phỏng vấn trên 2 người ngoài mẫu; chỉnh câu hỏi trước khi phỏng vấn chính thức "
-                  "(giả lập)",
+                     "chủ đề, báo cáo theo COREQ."),
+            pilot="Thử bộ câu hỏi phỏng vấn trên 2 người ngoài mẫu; chỉnh câu hỏi trước khi phỏng vấn chính thức",
             safety_plan=("Người tham gia có thể dừng phỏng vấn bất kỳ lúc nào; người bộc lộ lo âu nặng được giới "
                          "thiệu tư vấn theo quy trình phòng khám"),
             limitations="Một cơ sở; không suy rộng thống kê; ảnh hưởng của người phỏng vấn",
             reflexivity_statement=("Người phỏng vấn là điều dưỡng được tập huấn, không điều trị người tham gia; nhóm "
                                    "ghi nhật ký phản tư sau mỗi cuộc phỏng vấn và thảo luận ảnh hưởng của vai trò "
-                                   "nhân viên y tế lên câu trả lời (giả lập)"),
+                                   "nhân viên y tế lên câu trả lời"),
         ),
     )
     return hs

@@ -878,9 +878,11 @@ _CAN_GIUA_NGOAC_RE = re.compile(
 # tên ngay sau nhãn ký; dòng gạch dưới mở đầu bằng «Ký, ghi rõ họ tên». Chúng được CHE trước khi dò họ TRONG.
 _NGAY_TRONG_RE = re.compile(r"_{2,}\s*/\s*_{2,}\s*/\s*(?:\d{2,4}|_{2,})")
 _NHAN_KY_RE = re.compile(
-    r"\b(?:họ(?: và)? tên|ký tên|chữ ký|participant|witness|investigator|signature)\b[^:\n]{0,40}:\s*(_{3,})",
+    r"\b(?:họ(?: và)? tên|ký tên|chữ ký|participant|witness|investigator|signature|điện thoại|email|phone)\b"
+    r"[^:\n]{0,40}:\s*(_{3,})",
     re.IGNORECASE,
 )
+# 17/11/2026: số điện thoại/email liên lạc là chỗ điền tay trên bản in (PII không vào git — cùng lẽ với chỗ ký).
 _DONG_KY_RE = re.compile(r"^\s*(_{3,})(?=\s*(?:ký|chữ ký|signature)\b)", re.IGNORECASE)
 # Khối HƯỚNG DẪN tĩnh cuối hồ sơ (không thuộc tài liệu nộp): «[CHỜ BÁC SĨ]» ở đó là danh sách sự kiện sau khi nộp —
 # chỉ dấu hiệu CŨ được dò trong khối này (như trước), họ mới thì không.

@@ -271,6 +271,12 @@ Lưu ý: CLI thật của `run_g5_auto.py` **CHỈ nhận `--study STUDY`**, kh�
 - Không ghi đè bảng người soạn, bảng đã duyệt, bảng đã bị sửa tay (kể cả ghi chú của PI trong khung trạng thái) — công cụ tự từ chối; `--ghi-de` chỉ dùng khi PI bảo soạn lại bản nháp. Bộ biến máy đổi sau khi PI duyệt ⇒ MT-12 cảnh báo và đối chiếu báo LỆCH theo bảng đã duyệt: sửa bộ máy theo bảng, hoặc soạn bảng mới để PI duyệt lại.
 
 - **Giai đoạn mục tiêu (15/11/2026):** ma trận phải dùng ĐÚNG tên và kiểu trong bộ biến — trường REDCap `text` không khai `integer`/`number` (vd mã bàn khám) chỉ nhận `van_ban` (MT-07); biến nguồn dạng lặp «_k» (`uacr_k_ngay` = `uacr_1_ngay` … theo `lap_k`) được MT-08 nhận. MT-11: mục SAP ma trận trỏ tới phải có thật, và MỖI mục tiêu G1 phải có bảng/hình giả gắn nhãn «Mục tiêu k»/«MTk» (SAP §11 hoặc phần Dự kiến kết quả của đề cương nộp). Kiểm chung: trục `ma_tran_muc_tieu` của `nhat_quan_xuyen_cong` (C1a/BTM dựng 15/11 — `audit/nhat-ky/2026-11-15-muc-tieu-chua-noi-voi-bien-va-bang-gia.md`).
+## Bài học giả lập biến thể khó (16/11/2026)
+
+- Kết cục SỐNG CÒN: ma trận khai kết cục chính là BIẾN THỜI GIAN kiểu `thoi_gian_den_su_kien`, chỉ báo biến cố vai `su_kien` kiểu `nhi_phan` — khai biến cố nhị phân làm kết cục chính bị G3-AUTO-19 chặn (lệch loại G1 đã chốt).
+- Mục tiêu kinh tế: dòng ma trận riêng cho biến chi phí (`ket_cuc_phu`, liên tục), biến hiệu quả và nhánh, trỏ SAP §16.
+- Hiệp biến hồi cứu hay thiếu: báo quan-ly-du-lieu khai mã thiếu (`_ma-thieu-theo-bien.csv`) trước khi dựng mẫu nhập.
+
 ## Ranh giới
 KHÔNG dựng data dictionary kỹ thuật/CRF cuối/luật kiểm tra (→ `quan-ly-du-lieu`) · KHÔNG tính cỡ mẫu/khóa SAP (→ `thiet-ke-nghien-cuu`/`co-mau-nghien-cuu`) · KHÔNG chạy phân tích. Bạn là tầng **đặc tả biến số**, bản lề giữa câu hỏi và CRF/thống kê.
 - **Trường calc REDCap → công thức (15/11/2026, hoàn thiện hệ thống — mọi đề tài):** mỗi trường `calc` của từ điển G5/bộ biến PHẢI có biến phái sinh CÙNG TÊN trong `_bien-phai-sinh.csv` (nhập Excel/SPSS không tính calc ⇒ cột trống; V6 báo LỆCH). Soạn nháp tự động: `python tools/bien_phai_sinh.py soan-tu-calc --study <mã>` (chạy khô) → `--ghi`. Bộ dịch giữ ngữ nghĩa REDCap (ô trống ⇒ «khác» ở `=`/`<>`), bỏ `round()` hiển thị (có ghi chú), TỪ CHỐI hàm chưa hỗ trợ (datediff, sum, so chuỗi, dự án dọc) ⇒ trường đó viết tay. Không ghi `nguoi_duyet` — thống kê viên/PI duyệt bằng `bien_phai_sinh.py duyet`.

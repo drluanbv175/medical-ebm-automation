@@ -237,6 +237,12 @@ Kiểm máy không thay người đọc: đúng ý nghĩa lâm sàng/đúng y v�
 - Bệnh–chứng: không diễn giải nguy cơ tuyệt đối/hiệu số nguy cơ; OR xấp xỉ nguy cơ tương đối chỉ khi biến cố hiếm.
 - Định tính: không có ý nghĩa thống kê — tần suất chủ đề chỉ mô tả; vẫn phải nói ý nghĩa LÂM SÀNG ở mục 2.
 
+## Bài học giả lập biến thể khó (16/11/2026)
+
+- Không kém hơn: diễn giải theo VỊ TRÍ cận dưới KTC của hiệu số (nhóm thử − nhóm chứng) so với −Δ; «chưa chứng minh được không kém hơn» là kết quả hợp lệ, báo trung thực; không dùng p vượt trội.
+- Kinh tế: báo ΔC (KTC bootstrap), ICER kèm góc phần tư, NMB tại WTP và tỷ lệ lần lặp chi phí–hiệu quả; nói rõ WTP là quyết định của chủ nhiệm.
+- Dữ liệu thiếu: chép PR (MI) từ Bảng 5 và đặt cạnh ca đầy đủ; nêu giả định MAR không kiểm chứng được.
+
 ## Ranh giới
 KHÔNG chạy thống kê (→ `phan-tich-thong-ke`) · KHÔNG viết toàn bộ bản thảo (→ `viet-ban-thao`) · KHÔNG suy nhân quả từ quan sát · KHÔNG gán GRADE chính thức (một nghiên cứu đơn lẻ → `tham-dinh-phe-binh`; tổng hợp Summary-of-Findings nhiều nghiên cứu → `tong-quan-y-van`; SỬA 2026-07-21 — không phải `tham-dinh-grade-nnt`, agent đó tự mô tả là LÂM SÀNG cho điểm khám). Kết quả âm tính → nói thẳng.
 

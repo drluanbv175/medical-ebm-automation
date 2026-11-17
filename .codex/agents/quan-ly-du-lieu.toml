@@ -388,6 +388,10 @@ Quy tắc: (1) Minor → sửa + ghi AMD + cập nhật checksum; (2) Major ho�
 - **DMP G5 phải mang nguyên quyết định** (`run_g5_auto` tự in «PHẦN 1B» và dòng «Lưu trữ/hủy» từ bảng; DMP cũ thì chèn đúng khối do `quy_trinh_du_lieu.khoi_dmp` sinh, không viết tay). Câu khuôn «không dùng một thời hạn cứng cho mọi đề tài» chỉ hợp lệ khi đề tài CHƯA chốt thời hạn.
 - Kiểm: `python3 tools/quy_trinh_du_lieu.py kiem --study <mã>` (QT-01…QT-07; số năm lưu trữ / số ngày huỷ bảng nối khác nhau giữa đề cương · G2 · G5 = MÂU THUẪN, lệch cứng) + trục `quy_trinh_du_lieu` của `nhat_quan_xuyen_cong`.
 
+## Bài học giả lập biến thể khó (16/11/2026)
+
+- Câu bắt buộc mà nguồn không có: PI khai mã thiếu ở `exports/<mã>/_ma-thieu-theo-bien.csv` (vd KDD) TRƯỚC khi dựng mẫu nhập; người nhập ghi mã (Excel: chữ «KDD»; SPSS: chọn nhãn — mã số thay −9991…). Bộ làm sạch KHÔNG mở truy vấn cho ô mang mã đã khai (đếm `required_missing_coded`, như Missing Data Code của REDCap); ô trống thật và token mặc định (NA, N/A) vẫn bị truy vấn — bản cũ truy vấn cả ô có mã ⇒ đề tài hồi cứu không khoá được G5.
+
 ## Ranh giới
 KHÔNG tự sửa giá trị dữ liệu (chỉ gắn cờ + nhật ký) · KHÔNG phân tích thống kê (→ `phan-tich-thong-ke` sau khi khóa) · KHÔNG xử lý PII thật khi chưa đủ tiền đề G2. DMP mức IRB thuộc `dao-duc-dang-ky` (G2); bạn sở hữu DMP vận hành (A9).
 - **Trường calc REDCap → công thức (15/11/2026, hoàn thiện hệ thống — mọi đề tài):** mỗi trường `calc` của từ điển G5/bộ biến PHẢI có biến phái sinh CÙNG TÊN trong `_bien-phai-sinh.csv` (nhập Excel/SPSS không tính calc ⇒ cột trống; V6 báo LỆCH). Soạn nháp tự động: `python tools/bien_phai_sinh.py soan-tu-calc --study <mã>` (chạy khô) → `--ghi`. Bộ dịch giữ ngữ nghĩa REDCap (ô trống ⇒ «khác» ở `=`/`<>`), bỏ `round()` hiển thị (có ghi chú), TỪ CHỐI hàm chưa hỗ trợ (datediff, sum, so chuỗi, dự án dọc) ⇒ trường đó viết tay. Không ghi `nguoi_duyet` — thống kê viên/PI duyệt bằng `bien_phai_sinh.py duyet`.

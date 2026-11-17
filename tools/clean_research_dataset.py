@@ -442,8 +442,16 @@ def _validate_rows(columns: List[str], rows: List[Dict[str, str]],
                    required_columns: List[str],
                    *,
                    logic_rows: Optional[List[Dict[str, str]]] = None,
-                   branching_stats: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+                   branching_stats: Optional[Dict[str, Any]] = None,
+                   ma_thieu_khai: Optional[Dict[str, List[str]]] = None,
+                   ma_thieu_chung_khai: Optional[List[str]] = None) -> List[Dict[str, Any]]:
     """Sinh query từ luật dictionary.
+
+    ma_thieu_khai / ma_thieu_chung_khai (16/11/2026, giả lập biến thể «dữ liệu thiếu»): mã thiếu PI ĐÃ KHAI ở
+    `_ma-thieu-theo-bien.csv` (theo biến / cấp dự án). Hướng dẫn nhập liệu dạy «câu bắt buộc mà nguồn không có thì ghi
+    mã thiếu của dự án (BTR, KDD…), không để trống» — ô mang mã đó là THIẾU CÓ GHI NHẬN (người nhập đã đối chiếu nguồn),
+    như REDCap không tính ô có Missing Data Code là ô trống. Bản cũ vẫn mở «missing_required_value» cho từng ô ⇒ đề tài
+    hồi cứu có hiệp biến thiếu không bao giờ khoá được G5. Ô TRỐNG thật và token mặc định (NA, N/A…) vẫn bị truy vấn.
 
     logic_rows (N2, 15/11/2026): hàng dùng đánh giá Branching Logic (xem `_dong_cho_logic`); vắng ⇒ dùng `rows`.
     branching_stats: dict do người gọi truyền vào để nhận thống kê nhánh (trường có logic, số ô bắt buộc trống không
@@ -453,7 +461,10 @@ def _validate_rows(columns: List[str], rows: List[Dict[str, str]],
     thong_ke: Dict[str, Any] = branching_stats if branching_stats is not None else {}
     thong_ke.setdefault("fields_with_logic", [])
     thong_ke.setdefault("required_missing_suppressed", 0)
+    thong_ke.setdefault("required_missing_coded", 0)
     thong_ke.setdefault("value_when_hidden", 0)
+    khai_chung = {_missing_key(t) for t in (ma_thieu_chung_khai or [])}
+    khai_cot = {c: {_missing_key(t) for t in ds} for c, ds in (ma_thieu_khai or {}).items()}
     thong_ke.setdefault("khong_danh_gia_duoc", {})
     co_logic = any(str(r.get("branching") or "").strip() for r in rules.values())
     danh_gia, loi_khong_ho, ly_do_khong_nap = _bo_danh_gia_nhanh() if co_logic else (None, (), None)
@@ -527,6 +538,10 @@ def _validate_rows(columns: List[str], rows: List[Dict[str, str]],
                     if hien_thi is False:
                         # Trường bị nhánh ẩn: trống là ĐÚNG (REDCap không cho nhập) — không phải dữ liệu thiếu.
                         thong_ke["required_missing_suppressed"] += 1
+                        continue
+                    goc = str(logic_row.get(col) or "").strip()
+                    if goc and _missing_key(goc) in (khai_chung | khai_cot.get(col, set())):
+                        thong_ke["required_missing_coded"] += 1  # thiếu CÓ GHI NHẬN bằng mã đã khai — không query
                         continue
                     issues.append(_issue(
                         "missing_required_value",
@@ -656,6 +671,7 @@ def _tom_tat_nhanh(stats: Dict[str, Any], row_count: int) -> Dict[str, Any]:
         "evaluator": BO_DANH_GIA_NHANH,
         "fields_with_logic": list(stats.get("fields_with_logic") or []),
         "required_missing_suppressed": int(stats.get("required_missing_suppressed") or 0),
+        "required_missing_coded": int(stats.get("required_missing_coded") or 0),
         "value_when_hidden_queries": int(stats.get("value_when_hidden") or 0),
         "khong_danh_gia_duoc": khong,
         "canh_bao": [
@@ -869,7 +885,7 @@ def clean_dataset(study: str, data_path: Path, *,
         validation_issues = _validate_rows(
             columns, clean_rows, rules, detected_id_column, merged_required,
             logic_rows=[_dong_cho_logic(row, columns) for row in rows],
-            branching_stats=branching_stats)
+            branching_stats=branching_stats, ma_thieu_khai=ma_thieu_cot, ma_thieu_chung_khai=ma_thieu_chung)
         giai_quyet, loi_giai_quyet = _nap_giai_quyet(query_resolutions_path)
         for item in validation_issues:
             r = giai_quyet.get((item["type"], item.get("column") or "", str(item.get("row") or "")))

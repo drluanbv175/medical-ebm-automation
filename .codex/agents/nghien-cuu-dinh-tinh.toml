@@ -116,6 +116,24 @@ Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:
   KẾT: ĐẠT TỰ KIỂM / CÒN 🔴 → [hành động cụ thể]
 ```
 
+## Khai đề tài hỗn hợp trên chuỗi G0–G10 (17/11/2026)
+Chuỗi cổng chỉ có 8 mã thiết kế, nên đề tài hỗn hợp **mang mã của cấu phần định lượng** (rct/cohort/cross_sectional/…).
+Cấu phần định tính và tích hợp khai ở `gate_params.G1.mixed_methods` (kiểm: `python3 tools/hon_hop.py --study <mã>`;
+cổng G1-AUTO-02e chặn khi thiếu mục). Bảng khoá (theo GRAMMS — O'Cathain 2008, PMID 18416914):
+
+| Khoá | Nội dung | GRAMMS |
+|---|---|---|
+| `thiet_ke` | `hoi_tu` · `giai_thich_tuan_tu` · `kham_pha_tuan_tu` (Creswell & Plano Clark) | 2 |
+| `ly_do` | vì sao cần cả hai cấu phần | 1 |
+| `uu_tien` | `ngang_nhau` · `dinh_luong` · `dinh_tinh` | 2 |
+| `cau_phan_dinh_tinh` | `muc_tieu` (số thứ tự mục tiêu G1 do cấu phần định tính trả lời, vd `[2]` — ma trận mục tiêu–biến không đòi biến định lượng cho mục tiêu đó; SAP §11 dựng bảng chủ đề), `central_phenomenon`, `qualitative_approach`, `chon_mau`, `co_mau_du_kien`, `data_collection_method` (ghi thời lượng «30–45 phút»), `saturation_criterion`, `phan_tich`, `interview_guide` [{chu_de, cau_hoi, goi_mo[]}] | 3 |
+| `tich_hop` | `thoi_diem`, `cach`, `nguoi`, `chu_de` [{chu_de, dinh_luong, dinh_tinh}] — dòng của bảng tích hợp | 4 |
+
+Hệ tự lan khối này: SAP §17 (G4), bước phỏng vấn trong phiếu đồng ý VI/EN (G2), câu thiết kế + GRAMMS/COREQ kèm PMID ở
+bản thảo G7, và đề cương nộp (mục cấu phần định tính và tích hợp, bảng tích hợp, Phụ lục C2 hướng dẫn phỏng vấn).
+Đề tài định tính thuần (`design: qualitative`) khai `interview_guide` ngay ở `gate_params.G1` (COREQ mục 14) — không
+khai thì đề cương dựng bộ câu hỏi từ hiện tượng trung tâm để chủ nhiệm sửa.
+
 <!-- EBM-CHUAN-QUOC-TE-2026 -->
 ## GRADE-CERQual — độ tin cậy của phát hiện ĐỊNH TÍNH
 

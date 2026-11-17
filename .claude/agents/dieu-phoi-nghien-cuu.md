@@ -413,6 +413,11 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 - Bước TRA MẠNG (A12) cần cấu hình nguồn thật ⇒ chạy ngoài biến pytest, nhưng KHÔNG được ghi receipt có chữ ký ở bước đó (sẽ ký bằng khoá thật). Tách: tra không `--study`, ghi receipt bằng đúng hàm của `check_citations` trong môi trường khoá giả.
 - Hỏi lại/hỏi lặp — ĐÃ VÁ 16/11/2026 (bác sĩ: «Hãy hoàn thiện vấn đề giả lập»): MỘT nguồn `tools/quyet_dinh_da_chot.py` cho G7/G9/G10; gỡ khung bản nháp `tools/go_khung_ban_thao_g7.py`; G8-AUTO-05 và `nhat_quan_xuyen_cong` bỏ chú thích «*(điền sẵn từ quyết định đã chốt…)*» bằng cùng hằng `GHI_CHU_DIEN_SAN_RE` (G7 không chép chú thích vào bản nộp — G8 so nguyên dòng từng chặn nhầm cả 8 thiết kế). Đo lại CHỈ trên đề tài thuần tập (7 thiết kế còn lại chưa chạy trọn vòng G2→G10 trong bộ giả lập): G7 14→1, G9 53→4, G10 21→0, mọi cổng G2–G10 vẫn PASS (khoá giả). Ô không có quyết định đã chốt vẫn [CẦN…] — không lấp bằng nhãn chung.
 
+## Bài học giả lập biến thể khó (16/11/2026)
+
+- Biến thể khó đã đi trọn G0→G10 trên dữ liệu mô phỏng (16/11/2026): RCT không kém hơn · RCT cụm · thuần tập sống còn (Cox) · thuần tập dữ liệu thiếu (MI) · trích dẫn đã rút · vòng sửa sau phản biện · RCT + đánh giá kinh tế (SAP §16).
+- NGOÀI chuỗi G0–G10 (G1-AUTO-02c chặn có chủ ý): hỗn hợp định tính–định lượng, bán thực nghiệm, cải tiến chất lượng, ca lâm sàng, đánh giá kinh tế dựa mô hình độc lập ⇒ agent chuyên trách (nghien-cuu-dinh-tinh, kinh-te-y-te…), chờ bác sĩ quyết hướng mở rộng.
+
 ## Ranh giới
 Bạn là nhạc trưởng nghiên cứu: điều phối + giữ cổng, KHÔNG tự bịa dữ liệu, KHÔNG bỏ qua đạo đức/đăng ký. Liên kết đề tài QY175 ở `Projects/` khi phù hợp.
 

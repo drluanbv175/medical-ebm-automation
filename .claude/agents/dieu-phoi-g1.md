@@ -57,13 +57,13 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G1 (09/10/2026)
 Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối
-của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Mọi tiêu chí (22) của
+của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Mọi tiêu chí (23) của
 `tools/g1_quality_gate.py` đã gán ĐÚNG MỘT bên ở `hoi_dong_cong.PHAN_CONG`
 (bảng dưới chép lại; test đối chiếu):
 
 | Bên chịu trách nhiệm | Tiêu chí |
 |---|---|
-| `G1-T1` — agent `thiet-ke-nghien-cuu` | G1-AUTO-00, G1-AUTO-02, G1-AUTO-02b, G1-AUTO-02c, G1-AUTO-02d, G1-AUTO-03, G1-AUTO-03b, G1-AUTO-04, G1-AUTO-04b, G1-AUTO-04c, G1-AUTO-05, G1-AUTO-07 |
+| `G1-T1` — agent `thiet-ke-nghien-cuu` | G1-AUTO-00, G1-AUTO-02, G1-AUTO-02b, G1-AUTO-02c, G1-AUTO-02d, G1-AUTO-02e, G1-AUTO-03, G1-AUTO-03b, G1-AUTO-04, G1-AUTO-04b, G1-AUTO-04c, G1-AUTO-05, G1-AUTO-07 |
 | `G1-T2` — agent `tong-quan-y-van` | G1-AUTO-06 |
 | `PI@G1-T1` — NGƯỜI PI quyết/ký; agent chuẩn bị hồ sơ + lệnh: `thiet-ke-nghien-cuu` | G1-HUMAN-01, G1-HUMAN-02, G1-HUMAN-03, G1-HUMAN-04, G1-HUMAN-05, G1-HUMAN-08 |
 | `PI@G1-T2` — NGƯỜI PI quyết/ký; agent chuẩn bị hồ sơ + lệnh: `tong-quan-y-van` | G1-HUMAN-07 |
@@ -137,6 +137,10 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - **Đồng bộ mục tiêu (15/11/2026):** trục `ma_tran_muc_tieu` (mục tiêu → biến → câu hỏi → mục SAP → bảng giả, MT-01…MT-11) phải `khop`, hoặc phần còn mở nêu đúng vai (MT-08 = thống kê viên/PI duyệt công thức biến phái sinh) trước khi kết luận cổng — chi tiết `bien-so-nghien-cuu`, `thiet-ke-nghien-cuu` mục cùng ngày.
 - **Đồng bộ thiết kế (15/11/2026):** trục `chuan_bao_cao` (chuẩn chính + CROSS/RECORD theo nguồn dữ liệu, cùng một chuỗi ở G1/G2/SAP/đề cương), `mo_ta_thiet_ke` (nhãn «có phân tích» khi có mục tiêu phân tích · tuyển mẫu G2 ↔ cách thu thập G1 · phiên bản tiêu đề SAP) và `kiem_soat_sai_lech` (bảng sai lệch G1 ↔ phân tích SAP, `tools/doi_chieu_sai_lech_sap.py`) phải `khop`, hoặc phần còn mở nêu đúng vai (RECORD khi vừa thu mới vừa ghép HIS = PI quyết; phương pháp phân tích đề cương chưa nêu = thống kê viên chọn; đề cương thống nhất G10 cũ = lắp lại G10) trước khi kết luận cổng — chi tiết `thiet-ke-nghien-cuu` mục cùng ngày.
 - **Đồng bộ công cụ đo lường (15/11/2026):** trục `cong_cu_do_luong` (khối COSMIN ở A2 = bảng truy nguyên về đề cương/SAP, `run_g1_auto._bang_cosmin`) và `quy_trinh_du_lieu` phải `khop`, hoặc nêu đúng vai trước khi kết luận cổng — chi tiết `cong-cu-do-luong`, `quan-ly-du-lieu` mục cùng ngày.
+
+## Bài học giả lập biến thể khó (16/11/2026)
+
+- Từ hai mục tiêu cụ thể trở lên: chốt mục tiêu chung ở `gate_params.G1.aim` cùng lúc với `objectives` — đề cương G10 lấy từ đây, không hỏi lại PI ở G10.
 
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G1` xác nhận/dấu vân tay · bật cờ đời thực trong

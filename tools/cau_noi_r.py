@@ -691,19 +691,22 @@ if (co(KET_CUC) && co(NHOM) && LOAI %in% c("binary", "continuous")) {
 if (co(KET_CUC) && co(NHOM) && POISSON) {
   .kp <- khoi("poisson", {
     tat <- unlist(NHOM_BIEN)
-    dm <- ca_du(D, c(KET_CUC, tat))  # CÙNG tập ca cho PR thô và hiệu chỉnh — như Python
+    dm <- ca_du(D, c(KET_CUC, tat, if (co(CUM)) CUM))  # CÙNG tập ca cho PR thô và hiệu chỉnh — như Python
     y <- as.numeric(dm[[KET_CUC]])
+    mh <- if (co(CUM)) "poisson_robust_cluster" else "poisson_robust_hc0"
     mot <- function(ds) {
       k <- khung(y, stats::setNames(lapply(ds, function(b) as.numeric(dm[[b]])), ds))
       fit <- stats::glm(stats::as.formula(paste(".y ~", k$ve_phai)), data = k$df, family = stats::poisson(link = "log"),
                         control = stats::glm.control(1e-10, 200))
       if (!fit$converged) CANH_BAO <<- c(CANH_BAO, "poisson: glm không hội tụ")
-      bang_he_so(coef(fit), sandwich::vcovHC(fit, type = "HC0"), k$ten, Inf, TRUE)
+      # cụm (16/11/2026): sandwich theo cụm HC1 + t(G−1) — như Python cov_type="cluster", use_t=True
+      if (co(CUM)) bang_he_so(coef(fit), vc_cum(fit, dm[[CUM]]), k$ten, df_cum(dm[[CUM]]), TRUE)
+      else bang_he_so(coef(fit), sandwich::vcovHC(fit, type = "HC0"), k$ten, Inf, TRUE)
     }
     tho <- list()
     for (ds in NHOM_BIEN) tho <- c(tho, mot(ds))
-    list(tho = list(mo_hinh = "poisson_robust_hc0", thang = "PR", n = nrow(dm), he_so = tho),
-         hieu_chinh = list(mo_hinh = "poisson_robust_hc0", thang = "PR", n = nrow(dm), he_so = mot(tat)))
+    list(tho = list(mo_hinh = mh, thang = "PR", n = nrow(dm), he_so = tho),
+         hieu_chinh = list(mo_hinh = mh, thang = "PR", n = nrow(dm), he_so = mot(tat)))
   })
   KET$poisson_tho <- .kp$tho
   KET$poisson_hieu_chinh <- .kp$hieu_chinh

@@ -127,6 +127,11 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
   muộn ở G10 thì ghi lại biên nhận A12 làm vỡ manifest G9 ⇒ G9 phải ký lại. Ở G7: dựng nháp
   `run_g10_assemble.py --study <mã>` (bản nháp, bỏ qua mã thoát) ⇒ A12 kiểm PMID của bản thảo + diễn giải + đề cương.
 
+## Bài học giả lập biến thể khó (16/11/2026)
+
+- Vòng sửa sau phản biện: sửa bản thảo SAU khi PI xác nhận G7 ⇒ G7-HUMAN-04 phát hiện dấu vân tay đổi (G7 về «chờ người»); PI đọc lại bản sửa và ghi `dau_van_tay_chot` mới trước khi phản biện vòng 2 — không bỏ qua bước này.
+- Trích dẫn đã rút trong bản thảo: A12 lần 1 chặn ⇒ thay nguồn ⇒ A12 lần 2; G7 chỉ xong khi A12 sạch.
+
 ## 8. Cấm
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G7` xác nhận/dấu vân tay · bật cờ đời thực trong
 `study_meta` · chấm đầu ra do chính mình làm · ghi biên bản «ĐỒNG THUẬN» như «ĐẠT CỔNG» · bịa căn cứ · báo «phần agent hoàn chỉnh» khi `trach-nhiem` chưa ra mã 0 · sửa artifact của cổng khác để «xanh» tiêu chí
