@@ -217,3 +217,24 @@ def test_sap_bang_mt_cua_muc_tieu_dinh_tinh_la_bang_chu_de():
     ra = "\n".join(G4._bang_theo_muc_tieu(["So sánh tỷ lệ kiểm soát", "Tìm hiểu trải nghiệm"], frozenset({2})))
     assert "Bảng MT2" in ra and "| Chủ đề | Mô tả chủ đề |" in ra and "theo §17" in ra
     assert "Hiệu ứng thô" in ra.split("Bảng MT2")[0]
+
+
+def test_g10_ma_tran_truy_xuat_co_hang_cua_muc_tieu_dinh_tinh(tmp_path, monkeypatch):
+    """Đề cương lắp G10 từng in «[CẦN BỔ SUNG]» cho mục tiêu định tính (không có biến CRF) ⇒ G10-AUTO-09 chặn."""
+    import run_g10_assemble as G10A
+
+    d = _de_tai_hh(tmp_path)
+    meta = json.loads((d / "study_meta.json").read_text(encoding="utf-8"))
+    mt = ["So sánh tỷ lệ kiểm soát huyết áp", "Tìm hiểu trải nghiệm nhận tin nhắn"]
+    meta["gate_params"]["G1"]["objectives"] = mt
+    (d / "study_meta.json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8", newline="\n")
+    monkeypatch.setattr(G10A, "_dong_ma_tran_dat", lambda _o: [
+        {"muc_tieu": "1", "bien": "kiem_soat", "kieu": "nhi_phan", "vai_tro": "ket_cuc_chinh", "cong_cu": "đo HA",
+         "cau_hoi": "C1", "phan_tich_sap": "§4"}])
+    van = G10A.build_traceability_matrix({}, {"objectives": mt, "aim": "Mục tiêu chung", "_g10": {"out_dir": str(d)}})
+    hang = next(x for x in van.splitlines() if x.startswith("| Mục tiêu cụ thể 2"))
+    assert "Chủ đề định tính: Trải nghiệm nhận tin nhắn" in hang and "SAP §17" in hang and "[CẦN" not in hang
+    meta["gate_params"]["G1"].pop("mixed_methods")
+    (d / "study_meta.json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8", newline="\n")
+    van = G10A.build_traceability_matrix({}, {"objectives": mt, "aim": "Mục tiêu chung", "_g10": {"out_dir": str(d)}})
+    assert "[CẦN" in next(x for x in van.splitlines() if x.startswith("| Mục tiêu cụ thể 2"))

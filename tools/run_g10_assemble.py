@@ -55,6 +55,7 @@ import g8_quality_gate as G8Q  # noqa: E402
 import g9_quality_gate as G9Q  # noqa: E402
 import g10_quality_gate as G10Q  # noqa: E402
 import gate_contract as GC  # noqa: E402  (hợp đồng DỪNG dùng chung — 4 mã thoát)
+import hon_hop as HH  # noqa: E402  (thiết kế hỗn hợp — hàng ma trận của cấu phần định tính, 17/11/2026)
 import kiem_a12_khop_bien_nhan as KA12  # noqa: E402  (mô tả A12 ↔ biên nhận — 12/11/2026)
 import research_study_spec as RS  # noqa: E402
 import skill_standards as S  # noqa: E402
@@ -1688,8 +1689,22 @@ def build_traceability_matrix(cps, meta=None) -> str:
         # 15/11/2026 (bác sĩ duyệt — đồng bộ xuyên cổng): đề tài có MA TRẬN mục tiêu → biến ĐẠT
         # (_ma-tran-muc-tieu-bien.csv, tools/ma_tran_muc_tieu_bien.py) ⇒ ánh xạ là DỮ KIỆN máy kiểm được, không còn
         # «đối chiếu thủ công». Mỗi mục tiêu một hàng: biến (kiểu, vai trò) · câu hỏi/công cụ · mục SAP.
+        try:
+            _sm = json.loads((Path(out_dir_g10) / "study_meta.json").read_text(encoding="utf-8"))
+        except (OSError, ValueError, TypeError):
+            _sm = {}
+        mt_dinh_tinh = HH.muc_tieu_dinh_tinh(_sm) if HH.khoi(_sm) else frozenset()
         for idx, objective in enumerate(objectives, 1):
             cua = [r for r in dong_mt if str(r.get("muc_tieu") or "").strip() == str(idx)]
+            if not cua and idx in mt_dinh_tinh:
+                # 17/11/2026: mục tiêu của CẤU PHẦN ĐỊNH TÍNH (đề tài hỗn hợp) — không có biến CRF; truy xuất về khối
+                # gate_params.G1.mixed_methods (hiện tượng, thu thập, phân tích) + SAP §17 + bảng chủ đề MTk
+                dt = HH.dinh_tinh(_sm)
+                lines.append(f"| Mục tiêu cụ thể {idx}: {objective} | Chủ đề định tính: "
+                             f"{_text(dt.get('central_phenomenon'))} | {_text(dt.get('data_collection_method'))} "
+                             f"(hướng dẫn phỏng vấn — phụ lục) | SAP §17 — {_text(dt.get('phan_tich'))} | Bảng MT{idx} "
+                             "(chủ đề) và bảng tích hợp | G1/G4 (thiết kế hỗn hợp) |")
+                continue
             bien = "; ".join(f"`{r.get('bien')}` ({r.get('kieu')}, {r.get('vai_tro')})" for r in cua) or TAG_BS
             cong_cu = "; ".join(sorted({f"{r.get('cong_cu') or '—'}" + (f" — câu {r.get('cau_hoi')}"
                                                                         if r.get("cau_hoi") else "") for r in cua}))
