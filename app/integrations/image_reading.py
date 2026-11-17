@@ -119,13 +119,35 @@ class ImageReading:
     impression: str = ""
     red_flags: str = ""
     raw: str = ""
+    # Đoạn mô hình viết TRƯỚC nhãn đầu tiên — thường là định danh trên ảnh + GIỚI HẠN của ảnh (1 chuyển đạo, lưới
+    # không chuẩn, số đo chỉ ước lượng). Trước 17/11/2026 đoạn này bị bỏ âm thầm.
+    ghi_chu: str = ""
+
+    @property
+    def tach_duoc(self) -> bool:
+        """False khi mô hình có trả lời (raw) mà không tách được mục nào — bản nháp KHÔNG được coi là «đọc xong»."""
+        return bool(self.description or self.impression or self.red_flags) or not self.raw.strip()
 
     def to_markdown(self) -> str:
+        # AN TOÀN (17/11/2026): «Không thấy trên ảnh» CHỈ khi mô hình tự ghi như vậy. Mục cờ đỏ vắng — do mô hình bỏ
+        # mục hay do không tách được — là CHƯA BIẾT, không phải «không có cờ đỏ».
+        if not self.tach_duoc:
+            return (
+                f"# Đọc ảnh ({self.modality.upper()}) — nháp\n\n"
+                "⚠️ **KHÔNG TÁCH ĐƯỢC câu trả lời theo khung MÔ TẢ / GỢI Ý / CỜ ĐỎ** — cờ đỏ CHƯA BIẾT. "
+                "Bác sĩ đọc toàn bộ bản gốc dưới đây và đọc lại ảnh.\n\n"
+                f"## Bản gốc của mô hình\n{self.raw.strip()}\n\n"
+                f"---\n{DISCLAIMER}\n"
+            )
+        ghi_chu = f"## Giới hạn / ghi chú của bản đọc\n{self.ghi_chu}\n\n" if self.ghi_chu else ""
+        co_do = self.red_flags or ("⚠️ [mô hình KHÔNG ghi mục cờ đỏ — CHƯA BIẾT, không phải «không có»; "
+                                   "cần bác sĩ đọc lại ảnh]")
         return (
             f"# Đọc ảnh ({self.modality.upper()}) — nháp\n\n"
+            f"{ghi_chu}"
             f"## Mô tả có hệ thống\n{self.description or '[trống]'}\n\n"
             f"## Gợi ý (cần đối chiếu lâm sàng)\n{self.impression or '[trống]'}\n\n"
-            f"## 🚩 Cờ đỏ\n{self.red_flags or 'Không thấy trên ảnh'}\n\n"
+            f"## 🚩 Cờ đỏ\n{co_do}\n\n"
             f"---\n{DISCLAIMER}\n"
         )
 
@@ -133,12 +155,17 @@ class ImageReading:
 def parse_reading(modality: str, text: str) -> ImageReading:
     """Tách văn bản vision thành MÔ TẢ / GỢI Ý / CỜ ĐỎ (chịu nhiều biến thể nhãn)."""
     buckets = {"description": [], "impression": [], "red_flags": []}
+    # Nhãn có thể mang trang trí markdown: «**MÔ TẢ:**», «**MÔ TẢ**:», «## Mô tả», «1. MÔ TẢ:». Chạy thật 17/11/2026
+    # (Opus 5.5) trả «**MÔ TẢ:**» — bộ tách cũ chỉ nhận nhãn trơn nên mọi mục rỗng và bản nháp hiện «Cờ đỏ: Không thấy».
+    dau = r"^\s*(?:[#>]+\s*|[-+]\s+|\d+[.)]\s+)*(?:\*\*|__)?\s*"
+    cuoi = r"\b(?:\s*(?:\*\*|__)?\s*[:：]\s*(?:\*\*|__)?|\s*(?:\*\*|__)|\s|$)"
     key_map = [
-        (re.compile(r"^\s*(?:#+\s*)?(?:mô tả|description|mo ta)\b[:\s]", re.IGNORECASE), "description"),
-        (re.compile(r"^\s*(?:#+\s*)?(?:gợi ý|impression|an tuong|ấn tượng)\b[:\s]", re.IGNORECASE), "impression"),
-        (re.compile(r"^\s*(?:#+\s*)?(?:cờ đỏ|red flags?|co do)\b[:\s]", re.IGNORECASE), "red_flags"),
+        (re.compile(dau + r"(?:mô tả|description|mo ta)" + cuoi, re.IGNORECASE), "description"),
+        (re.compile(dau + r"(?:gợi ý|impression|an tuong|ấn tượng)" + cuoi, re.IGNORECASE), "impression"),
+        (re.compile(dau + r"(?:cờ đỏ|red flags?|co do)" + cuoi, re.IGNORECASE), "red_flags"),
     ]
     current: Optional[str] = None
+    truoc_nhan: List[str] = []
     for line in text.splitlines():
         matched = None
         for pat, key in key_map:
@@ -153,12 +180,15 @@ def parse_reading(modality: str, text: str) -> ImageReading:
             continue
         if current:
             buckets[current].append(line.rstrip())
+        elif line.strip() != "---" and not re.match(r"^\s*#\s", line):
+            truoc_nhan.append(line.rstrip())   # bỏ gạch ngang, tiêu đề cấp 1; giữ dòng trống giữa các đoạn
     return ImageReading(
         modality=modality,
         description="\n".join(buckets["description"]).strip(),
         impression="\n".join(buckets["impression"]).strip(),
         red_flags="\n".join(buckets["red_flags"]).strip(),
         raw=text,
+        ghi_chu="\n".join(truoc_nhan).strip(),
     )
 
 
