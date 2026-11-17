@@ -405,3 +405,23 @@ def test_a12_so_khong_thay_trong_abstract_la_muc_can_duyet():
     }
     muc = DKM.muc_can_duyet("A12", bc)
     assert [m["khoa"] for m in muc] == ["A12|C007|12"] and "15,32" in muc[0]["chi_tiet"][0]
+
+
+def test_tran_doc_tu_kho_bi_mat_khi_moi_truong_trong(tmp_path, monkeypatch):
+    """18/11/2026: bác sĩ đặt trần trong kho bí mật — bản đầu chỉ đọc biến môi trường nên lặng lẽ dùng 20 USD."""
+    kho = tmp_path / "kho.env"
+    kho.write_text(
+        "EBM_API_CLAUDE_TRAN_USD_THANG=5\nEBM_API_CLAUDE_TRAN_USD_THANG=7,5\n", encoding="utf-8", newline="\n"
+    )
+    monkeypatch.delenv("EBM_API_CLAUDE_TRAN_USD_THANG", raising=False)
+    assert API.tran_usd_thang_nguon(str(kho)) == (7.5, "kho bí mật")  # dòng cuối thắng
+    monkeypatch.setenv("EBM_API_CLAUDE_TRAN_USD_THANG", "3")
+    assert API.tran_usd_thang_nguon(str(kho)) == (3.0, "biến môi trường")  # biến môi trường đè kho
+    monkeypatch.delenv("EBM_API_CLAUDE_TRAN_USD_THANG")
+    assert API.tran_usd_thang_nguon(str(tmp_path / "khong-co.env")) == (API.TRAN_USD_THANG_MAC_DINH, "mặc định")
+
+
+def test_tran_khong_doc_kho_that_duoi_pytest(monkeypatch):
+    monkeypatch.delenv("EBM_API_CLAUDE_TRAN_USD_THANG", raising=False)
+    monkeypatch.delenv("EBM_KIEM_API_THAT", raising=False)
+    assert API.tran_usd_thang_nguon() == (API.TRAN_USD_THANG_MAC_DINH, "mặc định")

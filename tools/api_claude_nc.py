@@ -129,6 +129,11 @@ def khoa_api(ten: str = "ANTHROPIC_API_KEY", kho: Optional[str] = None) -> str:
         if os.environ.get("PYTEST_CURRENT_TEST") and os.environ.get("EBM_KIEM_API_THAT") != "1":
             return ""  # dưới pytest không dùng khoá thật của môi trường máy bác sĩ
         return os.environ[ten].strip()
+    return _gia_tri_kho(ten, kho)
+
+
+def _gia_tri_kho(ten: str, kho: Optional[str] = None) -> str:
+    """Giá trị `ten` trong kho bí mật (DÒNG CUỐI thắng). Dưới pytest không đọc kho THẬT. Mọi lỗi đọc đều nuốt."""
     duong = kho or KHO_BI_MAT
     if _duoi_pytest_cham_that(duong, _KHO_THAT):
         return ""
@@ -361,16 +366,26 @@ def uoc_toi_da(p: Dict[str, Any], batch: bool = False) -> Optional[float]:
     return uoc_chi_phi(uoc_token(chu) + anh * TOKEN_UOC_MOI_ANH, int(p.get("max_tokens") or 0), p["model"], batch)
 
 
-def tran_usd_thang() -> float:
-    """Trần USD tháng: biến môi trường EBM_API_CLAUDE_TRAN_USD_THANG > mặc định. Giá trị không đọc được ⇒ 0 (khoá —
-    fail-closed: gõ nhầm không được thành «không giới hạn»)."""
-    v = os.environ.get("EBM_API_CLAUDE_TRAN_USD_THANG", "").strip()
+def tran_usd_thang_nguon(kho: Optional[str] = None) -> Tuple[float, str]:
+    """(trần USD tháng, nơi đặt). Thứ tự §5 của hệ: biến môi trường OS → kho bí mật
+    `~/.ebm-secrets/medical-ebm-automation.env` (bác sĩ hay đặt cấu hình ở đây — 18/11/2026: trần bác sĩ «đã cài đặt»
+    không nằm trong môi trường shell, bản đầu chỉ đọc biến môi trường nên lặng lẽ dùng mặc định) → mặc định. Giá trị
+    không đọc được ⇒ 0 (khoá — fail-closed: gõ nhầm không được thành «không giới hạn»).
+    Con số trần không phải bí mật."""
+    ten = "EBM_API_CLAUDE_TRAN_USD_THANG"
+    v, nguon = os.environ.get(ten, "").strip(), "biến môi trường"
     if not v:
-        return TRAN_USD_THANG_MAC_DINH
+        v, nguon = _gia_tri_kho(ten, kho).strip(), "kho bí mật"
+    if not v:
+        return TRAN_USD_THANG_MAC_DINH, "mặc định"
     try:
-        return float(v.replace(",", "."))
+        return float(v.replace(",", ".")), nguon
     except ValueError:
-        return 0.0
+        return 0.0, f"{nguon} (giá trị không đọc được ⇒ khoá)"
+
+
+def tran_usd_thang() -> float:
+    return tran_usd_thang_nguon()[0]
 
 
 def _thang_nay() -> str:
@@ -407,11 +422,11 @@ def doc_so_chi_phi(duong: Optional[str] = None) -> Dict[str, Any]:
 
 def kiem_ngan_sach(uoc_usd: Optional[float], model: str, nguon: str = "", duong: Optional[str] = None) -> None:
     """Chặn TRƯỚC khi gửi: trần ≤ 0, model chưa ghi giá, sổ hỏng, hay đã tiêu + ước tối đa > trần ⇒ HetNganSach."""
-    tran = tran_usd_thang()
+    tran, noi_dat = tran_usd_thang_nguon()
     if tran <= 0:
         raise HetNganSach(
-            "Trần chi phí Claude API tháng đang = 0 (khoá hẳn, hoặc EBM_API_CLAUDE_TRAN_USD_THANG không đọc được) — "
-            "không gọi. Mở lại là quyết định của bác sĩ."
+            f"Trần chi phí Claude API tháng đang = 0 ({noi_dat}; khoá hẳn, hoặc EBM_API_CLAUDE_TRAN_USD_THANG không "
+            "đọc được) — không gọi. Mở lại là quyết định của bác sĩ."
         )
     if uoc_usd is None:
         raise HetNganSach(f"Chưa ghi giá model «{model}» — không kiểm được trần chi phí ⇒ không gọi.")
@@ -420,8 +435,8 @@ def kiem_ngan_sach(uoc_usd: Optional[float], model: str, nguon: str = "", duong:
     if da + uoc_usd > tran:
         raise HetNganSach(
             f"Trần chi phí Claude API tháng {so['thang']}: đã dùng {da:.2f}/{tran:.2f} USD; lượt «{nguon or '?'}» ước "
-            f"tối đa {uoc_usd:.2f} USD ⇒ vượt trần, KHÔNG gửi. Nâng trần là quyết định của bác sĩ "
-            "(biến môi trường EBM_API_CLAUDE_TRAN_USD_THANG)."
+            f"tối đa {uoc_usd:.2f} USD ⇒ vượt trần ({noi_dat}), KHÔNG gửi. Nâng trần là quyết định của bác sĩ "
+            "(EBM_API_CLAUDE_TRAN_USD_THANG — biến môi trường hoặc kho bí mật)."
         )
 
 
