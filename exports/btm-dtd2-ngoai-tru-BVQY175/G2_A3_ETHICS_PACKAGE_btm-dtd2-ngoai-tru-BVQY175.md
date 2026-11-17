@@ -1,5 +1,5 @@
 # A3, HỒ SƠ ĐẠO ĐỨC & ĐĂNG KÝ NGHIÊN CỨU | btm-dtd2-ngoai-tru-BVQY175
-> Tạo tự động: 2026-11-15 18:37 | Theo Helsinki (WMA, bản sửa 2024) · ICH-GCP E6(R3) · TT43/2024/TT-BYT · Luật 91/2025/QH15
+> Tạo tự động: 2026-11-17 13:53 | Theo Helsinki (WMA, bản sửa 2024) · ICH-GCP E6(R3) · TT43/2024/TT-BYT · Luật 91/2025/QH15
 > [BẢN NHÁP TỰ ĐỘNG — DRAFT Phiên bản 1.0 chờ phê duyệt]
 > Cần bác sĩ/chủ nhiệm kiểm chứng, chỉnh sửa và ký trước khi nộp Hội đồng đạo đức.
 
@@ -23,7 +23,7 @@
 ```
 ---
  ĐƠN XIN PHÊ DUYỆT NGHIÊN CỨU Y SINH HỌC
- (DRAFT Phiên bản 1.0 — 2026-11-15)
+ (DRAFT Phiên bản 1.0 — 2026-11-17)
 ---
 
 Kính gửi: Hội đồng Đạo đức Nghiên cứu Y sinh
@@ -32,7 +32,7 @@ Kính gửi: Hội đồng Đạo đức Nghiên cứu Y sinh
 Từ: Chủ nhiệm đề tài: [CẦN BỔ SUNG]
  Chức vụ: [CẦN BỔ SUNG]
  Đơn vị: [CẦN BỔ SUNG]
- Điện thoại: [CẦN BỔ SUNG] | Email: [CẦN BỔ SUNG]
+ Điện thoại: _______________ | Email: _______________
 
 TÊN ĐỀ TÀI: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026
 
@@ -42,10 +42,10 @@ THÔNG TIN TỔNG QUAN:
  Lộ trình xét duyệt đề nghị: EXPEDITED REVIEW (hoặc EXEMPT nếu không có PII và rủi ro tối thiểu)
  Dân số tham gia: Người từ 18 tuổi, chẩn đoán đái tháo đường típ 2 (ICD-10 E11), quản lý ngoại trú tại Khoa Khám bệnh BVQY175, có ít nhất 2 lượt khám trong cửa sổ hồi cứu 01/01/2026–31/12/2026; loại trừ: lọc máu hoặc ghép thận, có thai, đái tháo đường típ 1 hoặc thể khác.
  Cỡ mẫu dự kiến: 385
- Thời gian nghiên cứu: [CẦN — từ ___/___/2026 đến ___/___/____]
+ Thời gian nghiên cứu: Cửa sổ dữ liệu hồi cứu 01/01/2026–31/12/2026. Thời gian thực hiện dự kiến 11/2026–09/2027 theo sổ tiến độ đề tài. Trích xuất dữ liệu chỉ bắt đầu sau khi Hội đồng Đạo đức BVQY175 phê duyệt (T0), SAP đã khoá ở cổng G4 và cửa sổ đã khép (sớm nhất tháng 01/2027), dự kiến 19/01–28/02/2027.
  Nguồn tài trợ: [CẦN BỔ SUNG / "Không có tài trợ bên ngoài"]
  Xung đột lợi ích (COI): [CẦN KHAI BÁO — xem Tài liệu 8]
- Đăng ký nghiên cứu: [CẦN — ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới)]
+ Đăng ký nghiên cứu: Không bắt buộc đăng ký thử nghiệm. Nghiên cứu hồi cứu trên dữ liệu thứ cấp, không tuyển mới người tham gia
 
 CAM KẾT:
  Chúng tôi cam kết thực hiện nghiên cứu theo Tuyên ngôn Helsinki
@@ -85,7 +85,7 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT, ngôn ngữ hành chính)
 1. VẤN ĐỀ NGHIÊN CỨU VÀ LÝ DO CẦN THIẾT:
  Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026
  Bằng chứng hiện có (từ PubMed): 0 SR/MA · 1 RCT (mức: YẾU, mới 1 RCT (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)).
- [CẦN BỔ SUNG: lý do cần nghiên cứu thêm tại bối cảnh Việt Nam]
+ Lý do cần nghiên cứu tại bối cảnh Việt Nam: Theo G0_KHOANG_TRONG (25/10/2026): ở Việt Nam chưa thấy nghiên cứu đo đồng thời cả chuỗi xét nghiệm → phát hiện → ghi nhận → điều trị ở người ĐTĐ típ 2 ngoại trú tại bệnh viện quân đội; các nghiên cứu tìm được chủ yếu đo tỷ lệ bệnh thận mạn trong mẫu đã xét nghiệm hoặc mô tả kê đơn ở người đã có bệnh thận mạn. Mức tính mới: mở rộng bối cảnh. Không mới trên thế giới. Phạm vi tra: PubMed + Crossref; chưa tra Google Scholar và thư viện luận văn.
 
 2. MỤC TIÊU CỤ THỂ:
  2.1 MT1: Mô tả thực trạng phát hiện bệnh thận mạn ở người bệnh đái tháo đường típ 2 điều trị ngoại trú tại Khoa Khám bệnh, Bệnh viện Quân y 175 năm 2026. Tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh (kết cục chính), tỷ lệ bệnh thận mạn theo KDIGO 2024 và tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán.
@@ -100,7 +100,7 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT, ngôn ngữ hành chính)
  Thiết kế: Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)
  Chuẩn báo cáo: STROBE + RECORD
  Nơi thực hiện: Khoa Khám bệnh, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh. Bệnh viện quân đội tuyến cuối; người bệnh gồm quân nhân, người có BHYT và người khám dịch vụ, theo dõi ĐTĐ ở phòng khám nội tiết hoặc nội chung. Nguồn dữ liệu: hồ sơ bệnh án điện tử trên phần mềm eHospital (HIS của BVQY175), lượt khám, mã ICD-10, kết quả xét nghiệm, đơn thuốc ngoại trú.
- Quy trình: [CẦN MÔ TẢ ngắn gọn theo PICO]
+ Quy trình: T0 = ngày Hội đồng Đạo đức BVQY175 phê duyệt. Trình tự: chốt G1, cỡ mẫu G3 và codebook (11/2026) → hồ sơ đạo đức G2 và SAP sẵn sàng G4 (09–22/11/2026) → Hội đồng Khoa học, Đạo đức xét duyệt (23/11/2026–18/01/2027) → khoá SAP trước khi trích hồ sơ → cửa sổ dữ liệu khép 31/12/2026 → lập khung mẫu, chọn ngẫu nhiên, chủ nhiệm trích hồ sơ trên eHospital, người thứ hai trích lại mẫu kiểm chứng, khoá dữ liệu G5 (19/01–28/02/2027) → phân tích G6 (01–14/03/2027) → bản thảo G7 (15/03–07/04/2027) → bình duyệt và liêm chính G8–G9 (08–28/04/2027) → nộp Tạp chí Y Dược Thực hành 175 (G10, từ 29/04/2027).
 
 5. RỦI RO TIỀM TÀNG VÀ BIỆN PHÁP BẢO VỆ:
  Mức nguy cơ tổng thể: TỐI THIỂU
@@ -148,220 +148,13 @@ Mọi rủi ro đều được giảm thiểu bằng biện pháp cụ thể.
 
 ## TÀI LIỆU 4. PHIẾU ĐỒNG Ý THAM GIA NGHIÊN CỨU (ICF, Tiếng Việt)
 
-```
----
- PHIẾU ĐỒNG Ý THAM GIA NGHIÊN CỨU
- DRAFT Phiên bản 1.0, Ngày soạn: 2026-11-15
- [Phiên bản phê duyệt sẽ có số IRB, CẦN BỔ SUNG]
----
-
-TÊN ĐỀ TÀI: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026
-Đơn vị thực hiện: [CẦN BỔ SUNG]
-Chủ nhiệm đề tài: [CẦN BỔ SUNG]
-
----
-PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
-(Xin đọc kỹ trước khi quyết định tham gia)
----
-
-1. MỤC ĐÍCH NGHIÊN CỨU
- Chúng tôi kính mời anh/chị tham gia nghiên cứu nhằm:
- [CẦN MÔ TẢ bằng ngôn ngữ đơn giản — không dùng thuật ngữ khó; viết xong thì XOÁ dòng ví dụ dưới]
- Ví dụ: "Tìm hiểu xem thuốc/can thiệp X có giúp cải thiện tình
- trạng [bệnh] ở người bệnh như anh/chị không."
-
- Nghiên cứu do [đơn vị] thực hiện với sự hỗ trợ của [tài trợ
- nếu có]. Cỡ mẫu dự kiến: khoảng 385 người tham gia
- tại [nơi thực hiện].
-
- THAM GIA LÀ HOÀN TOÀN TỰ NGUYỆN. Quyết định không tham gia
- KHÔNG ảnh hưởng đến chất lượng chăm sóc y tế của anh/chị.
-
-1b. NGƯỜI THỰC HIỆN NGHIÊN CỨU
- Nghiên cứu do [CẦN — họ tên chủ nhiệm], [CẦN, chức danh/trình độ chuyên
- môn, vd Bác sĩ CKII/Thạc sĩ Y học], công tác tại [CẦN — đơn vị], chủ trì
- thực hiện.
-
-2. QUY TRÌNH THỰC HIỆN NẾU ĐỒNG Ý THAM GIA
- Nếu anh/chị đồng ý, chúng tôi sẽ yêu cầu:
- ☐ Bước 1: [CẦN MÔ TẢ — ví dụ: ký phiếu đồng thuận này]
- ☐ Bước 2: [CẦN — ví dụ: trả lời bộ câu hỏi ~20 phút]
-
-
- Tổng thời gian tham gia ước tính: [CẦN — ví dụ: 12 tháng]
- Số lần đến cơ sở y tế: [CẦN — ví dụ: 3 lần]
-
-
-
-3. RỦI RO VÀ BẤT TIỆN CÓ THỂ XẢY RA
- • Rò rỉ thông tin cá nhân từ dữ liệu trích hồ sơ: Nhẹ → Phiếu trích chỉ mang mã nghiên cứu, không ghi trường định danh; bảng nối mã lưu 
- • Gánh nặng cho người bệnh: Không có → Không tiếp xúc người bệnh; chỉ trích hồ sơ có sẵn
-
- Nếu có bất kỳ vấn đề sức khỏe nào liên quan đến nghiên cứu,
- xin liên hệ ngay chủ nhiệm đề tài (số điện thoại bên dưới).
- Chi phí điều trị biến cố liên quan nghiên cứu: [CẦN XÁC NHẬN].
-
-4. LỢI ÍCH KỲ VỌNG
- Lợi ích trực tiếp: [CẦN — ví dụ: không có lợi ích y khoa trực tiếp; góp ý giúp cải thiện chất lượng dịch vụ — KHÔNG có can thiệp/thủ thuật y khoa nào thực hiện thêm ngoài quy trình khám/chăm sóc thường quy]
- Lợi ích cộng đồng: Cung cấp dữ liệu tỷ lệ hiện mắc/tỷ lệ các yếu tố liên quan tại địa phương; chi phí thấp
-
- Chúng tôi KHÔNG đảm bảo lợi ích cá nhân từ việc tham gia.
- Anh/chị sẽ nhận được tóm tắt kết quả nghiên cứu khi hoàn tất.
-
-4b. NGUỒN TÀI TRỢ VÀ XUNG ĐỘT LỢI ÍCH
- Nghiên cứu này được tài trợ bởi: [CẦN, tên nguồn tài trợ, hoặc "không có
- tài trợ ngoài" nếu đúng]. Nhóm nghiên cứu [CẦN — có/không] có xung đột
- lợi ích liên quan đến chủ đề nghiên cứu (khớp khai báo COI ở Tài liệu 8).
-
-4c. HỖ TRỢ/BỒI DƯỠNG KHI THAM GIA
- ☐ Không có hỗ trợ/bồi dưỡng nào ngoài chăm sóc y tế thường quy.
- ☐ Có hỗ trợ: [CẦN, mô tả cụ thể, vd hỗ trợ chi phí đi lại/thời gian;
- PHẢI ở mức hợp lý, không mang tính ép buộc/dụ dỗ tham gia].
-
-5. BẢO MẬT THÔNG TIN CÁ NHÂN
- Thông tin cá nhân của anh/chị được bảo vệ theo
- Luật BVDLCN 91/2025/QH15:
-
- Dữ liệu được mã hóa và lưu tại [CẦN, máy chủ bảo mật/
- ổ cứng mã hóa tại đơn vị]
- Chỉ nhóm nghiên cứu được phép truy cập dữ liệu danh tính
- Kết quả công bố dùng dữ liệu TỔNG HỢP, KHÔNG tiết lộ danh tính
- Dữ liệu nhận dạng được xóa/ẩn danh hóa trong vòng [CẦN] năm
- sau khi kết thúc nghiên cứu theo quy định lưu trữ y tế
- Trong trường hợp rò rỉ, anh/chị sẽ được thông báo NGAY KHI XÁC NHẬN
- (cơ quan bảo vệ dữ liệu được báo trong 72 giờ theo NĐ 356/2025/NĐ-CP, 
- mốc này áp cho cơ quan quản lý, không phải mốc cam kết với anh/chị)
-
- Với dữ liệu còn liên kết được với anh/chị, anh/chị có quyền yêu cầu xem,
- sửa hoặc xóa (trước khi chúng tôi tiến hành phân tích); với phiếu không
- ghi tên, sau khi đã nộp thì không thể tìm lại phiếu của từng người.
-
-
-6. QUYỀN TỰ NGUYỆN VÀ RÚT LUI
- Tham gia là HOÀN TOÀN TỰ NGUYỆN
- Anh/chị có thể KHÔNG ĐỒNG Ý tham gia mà KHÔNG ảnh hưởng
- đến dịch vụ y tế đang nhận
- Anh/chị có thể RÚT LUI bất kỳ lúc nào, không cần giải thích
- Nếu rút lui, dữ liệu đã thu thập: ☐ sẽ bị xóa ☐ vẫn dùng
- (do tính ẩn danh, ghi rõ chính sách) [CẦN XÁC NHẬN]
-
-
-6c. BỒI THƯỜNG KHI CÓ TỔN HẠI
- Nếu xảy ra tổn hại liên quan trực tiếp đến việc tham gia nghiên cứu,
- [CẦN — đơn vị/chủ nhiệm] sẽ [CẦN CHỦ NHIỆM XÁC NHẬN, mô tả chính sách
- chi trả điều trị/bồi thường cụ thể và nguồn kinh phí]. Với nghiên cứu
- quan sát nguy cơ tối thiểu (không can thiệp), mục này có thể rút gọn
- thành xác nhận không phát sinh thủ thuật/can thiệp ngoài thực hành
- thường quy, nhưng KHÔNG được bỏ hẳn.
-
-
-
-
-7. THÔNG TIN LIÊN HỆ
- ─────────────────────────────────────────────────────────
- Thắc mắc về nghiên cứu:                                
- Chủ nhiệm đề tài: [CẦN BỔ SUNG]                     
- Điện thoại: [CẦN BỔ SUNG] Email: [CẦN BỔ SUNG]     
-                                                           
- Thắc mắc về quyền của người tham gia:                  
- Hội đồng Đạo đức: [CẦN — Tên HĐ cơ sở]              
- Điện thoại: [CẦN BỔ SUNG]                           
- ─────────────────────────────────────────────────────────
-
----
-PHẦN KÝ, BẢN NÀY DÀNH CHO NGƯỜI THAM GIA (GIỮ LẠI)
----
-Tôi đã đọc / được giải thích thông tin bên trên và có đủ thời
-gian để đặt câu hỏi. Tôi ĐỒNG Ý TỰ NGUYỆN tham gia nghiên cứu.
-
-Họ tên người tham gia: _______________
-Ký tên: _______________ Ngày: ___/___/2026
-
-Họ tên người chứng kiến (nếu cần): _______________
-Ký tên: _______________ Ngày: ___/___/2026
-
-Họ tên nghiên cứu viên: _______________
-Ký tên: _______________ Ngày: ___/___/2026
-
-"Tài liệu này do AI hỗ trợ soạn thảo [DRAFT Phiên bản 1.0].
- Cần chủ nhiệm kiểm chứng và HĐ đạo đức phê duyệt trước khi dùng."
----
-```
+KHÔNG ÁP DỤNG. Chủ nhiệm xin MIỄN phiếu đồng ý (`gate_params.G2.icf_waiver_requested` = true; đơn xin miễn ở TÀI LIỆU 9). Nếu Hội đồng Đạo đức KHÔNG chấp thuận miễn: đặt `icf_waiver_requested` = false rồi chạy lại `run_g2_auto.py` để sinh phiếu đồng ý đầy đủ.
 
 ---
 
 ## TÀI LIỆU 5. ICF TIẾNG ANH (English Translation, for journal submission)
 
-```
----
- INFORMED CONSENT FORM (ENGLISH TRANSLATION)
- DRAFT Version 1.0, Date: 2026-11-15
- "English translation of Vietnamese ICF, for journal submission only."
----
-
-STUDY TITLE: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026
-Institution: [TO BE COMPLETED]
-Principal Investigator: [TO BE COMPLETED]
-
-1. PURPOSE
- You are invited to participate in a study that aims to:
- [TO BE COMPLETED, plain language, no jargon]
- Estimated participants: [TO BE COMPLETED, from G3]
- Location: [TO BE COMPLETED]
- PARTICIPATION IS ENTIRELY VOLUNTARY.
-
-1b. INVESTIGATORS
- The study is led by [TO BE COMPLETED, principal investigator, qualifications, institution].
-
-2. PROCEDURES
- ☐ Step 1: [TO BE COMPLETED]
- ☐ Step 2: [TO BE COMPLETED]
- Estimated time commitment: [TO BE COMPLETED]
-
-
-3. RISKS AND DISCOMFORTS
- • Rò rỉ thông tin cá nhân từ dữ liệu trích hồ sơ (Rất thấp probability / Nhẹ severity): Phiếu trích chỉ mang mã nghiên cứu, không ghi trường định danh; bảng nối mã lưu 
- • Gánh nặng cho người bệnh (Không có probability / Không có severity): Không tiếp xúc người bệnh; chỉ trích hồ sơ có sẵn
-
-4. POTENTIAL BENEFITS
- [TO BE COMPLETED, include both direct and community benefits]
-
-4b. FUNDING AND CONFLICTS OF INTEREST
- Funding: [TO BE COMPLETED. Funder or "no external funding"]. Conflicts of interest of the study team:
- [TO BE COMPLETED, yes/no, matching Document 8].
-
-4c. PAYMENT OR REIMBURSEMENT
- [TO BE COMPLETED. None beyond routine care / description of reasonable, non-coercive reimbursement].
-
-5. CONFIDENTIALITY
- Data encrypted per Vietnamese Personal Data Protection Law
- No. 91/2025/QH15. Results published in aggregate form only.
-
-
-6. VOLUNTARY PARTICIPATION AND WITHDRAWAL
- Participation is voluntary. You may withdraw at any time
- without affecting your medical care.
-
-
-6c. COMPENSATION FOR INJURY
- [TO BE COMPLETED. Treatment/compensation policy for study-related injury and its funding source].
-
-
-
-
-7. CONTACTS
- Investigator: [TO BE COMPLETED] | Email: [TO BE COMPLETED]
- Ethics Committee: [TO BE COMPLETED]
-
----
-CONSENT SIGNATURE (PARTICIPANT'S COPY)
-I have read the above and agree to participate voluntarily.
-
-Participant: _______________ Date: ___/___/2026
-Witness (if applicable): _______________ Date: ___/___/2026
-Investigator: _______________ Date: ___/___/2026
----
-```
+NOT APPLICABLE, informed consent waiver requested (see Document 9).
 
 ---
 
@@ -379,7 +172,7 @@ Investigator: _______________ Date: ___/___/2026
 
 ```
 KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
-Đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026 | Phiên bản: 1.0 | Ngày: 2026-11-15
+Đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026 | Phiên bản: 1.0 | Ngày: 2026-11-17
 ---
 
 1. LOẠI DỮ LIỆU THU THẬP:
@@ -404,10 +197,10 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
 
 4. LƯU TRỮ:
  Nơi lưu: [CẦN, máy chủ nội bộ / OneDrive institutional
- / ổ cứng mã hóa tại [đơn vị]]
+ / ổ cứng mã hóa tại đơn vị]
  Bảo mật: AES-256 · mật khẩu cấp người dùng · VPN (nếu từ xa)
  Sao lưu: [CẦN — ví dụ: hàng ngày/tuần, 2 bản độc lập]
- Thời gian lưu: ___ năm sau kết thúc nghiên cứu
+ Thời gian lưu: 2 năm sau kết thúc nghiên cứu
  (theo TT38/2018/TT-BYT về lưu trữ hồ sơ y tế)
 
 5. CHIA SẺ / MỞ DỮ LIỆU:
@@ -425,7 +218,7 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
  Quy trình: [CẦN BỔ SUNG quy trình cụ thể của đơn vị]
 
 7. CUỐI NGHIÊN CỨU:
- ∎ Dữ liệu nhận dạng: xóa/hủy vật lý trong ___ tháng
+ ∎ Dữ liệu nhận dạng: Bảng nối mã nghiên cứu với mã người bệnh lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ, huỷ sau khi khoá dữ liệu.
  ∎ Dữ liệu ẩn danh hóa: lưu theo quy định lưu trữ y tế
  ∎ Backup: xóa an toàn (overwrite 3 lần tiêu chuẩn DoD)
 ---
@@ -438,7 +231,7 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
 
 ```
 CHECKLIST HỒ SƠ NỘP HỘI ĐỒNG ĐẠO ĐỨC
-Đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026 | Ngày chuẩn bị: 2026-11-15
+Đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026 | Ngày chuẩn bị: 2026-11-17
 ---
 
 HỒ SƠ BẮT BUỘC:
@@ -461,7 +254,7 @@ HỒ SƠ BỔ SUNG (theo loại NC):
  ICF người giám hộ + biện pháp bảo vệ đặc biệt
 ☐ [Dùng dữ liệu di truyền/nhạy cảm]: ICF đặc biệt
 
-SỐ BẢN NỘP: ___ [CẦN XÁC NHẬN tại Hội đồng đạo đức cơ sở]
+SỐ BẢN NỘP: [CẦN XÁC NHẬN tại Hội đồng đạo đức cơ sở]
 HÌNH THỨC: ☐ Bản cứng ☐ Điện tử ☐ Cả hai
 
 LỘ TRÌNH XÉT DUYỆT DỰ KIẾN: EXPEDITED REVIEW (hoặc EXEMPT nếu không có PII và rủi ro tối thiểu)
@@ -486,7 +279,7 @@ KHAI BÁO XUNG ĐỘT LỢI ÍCH, TÀI TRỢ VÀ SỬ DỤNG AI
 ---
 Tên chủ nhiệm: [CẦN BỔ SUNG]
 Chức vụ: [CẦN BỔ SUNG] | Đơn vị: [CẦN BỔ SUNG]
-Ngày khai báo: 15/11/2026
+Ngày khai báo: 17/11/2026
 
 A. XUNG ĐỘT LỢI ÍCH TÀI CHÍNH (12 tháng gần nhất):
 ☐ Không có
@@ -540,7 +333,7 @@ YÊU CẦU MIỄN THỦ TỤC ĐỒNG THUẬN (ICF Waiver Request), DRAFT Phiên
 Căn cứ: TT43/2024/TT-BYT Điều 15 · Helsinki (WMA, bản sửa 2024) §29
 Tên đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026
 Chủ nhiệm: [CẦN BỔ SUNG]
-Ngày: 2026-11-15
+Ngày: 2026-11-17
 
 CƠ SỞ XIN MIỄN (phải thỏa CẢ 4 điều kiện):
 ☑ Dùng hồ sơ có sẵn, GIẢ DANH HOÁ (chưa ẩn danh hoàn toàn cho tới khi huỷ bảng nối): Phiếu chỉ mang mã nghiên cứu, không ghi trường định danh nào của người bệnh; Bảng nối mã nghiên cứu với mã người bệnh lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ, huỷ sau khi khoá dữ liệu
@@ -571,7 +364,7 @@ Chữ ký chủ nhiệm: [CẦN KÝ] | Ngày: ___/___/2026
 **Thời điểm:** TÙY CHỌN. Hồi cứu dữ liệu thứ cấp, không tuyển người tham gia mới (PI đã chốt, gate_params.G2.recruitment_mode)
 
 **Nghiên cứu tương tự đã đăng ký (prior art, tra thật trên ClinicalTrials.gov API v2):**
-> **ĐÃ TRA THẬT ngày 2026-11-15** trên ClinicalTrials.gov API v2 với truy vấn `("Diabetes Mellitus, Type 2"[Mesh] OR "type 2 diabetes"[tiab]) AND ("Renal Insufficiency, Chronic"[Mesh] OR "Diabetic Nephropathies"[Mesh] OR "chronic kidney disease"[tiab] OR albuminuria[tiab]) AND ("Guideline Adherence"[Mesh] OR "Practice Patterns, Physicians'"[Mesh] OR "care gap"[tiab] OR "albuminuria testing"[tiab] OR "albuminuria screening"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR "Ambulatory Care"[Mesh] OR "Primary Health Care"[Mesh] OR "primary care"[tiab]) AND 2019:2026[dp]` — **0 hồ sơ khớp**, trong đó **0 đang/sắp tuyển**. Tra lại: https://clinicaltrials.gov/search?term=%28%22Diabetes+Mellitus%2C+Type+2%22+OR+%22type+2+diabetes%22+%29+AND+%28%22Renal+Insufficiency%2C+Chronic%22+OR+%22Diabetic+Nephropathies%22+OR+%22chronic+kidney+disease%22+OR+albuminuria+%29+AND+%28%22Guideline+Adherence%22+OR+%22Practice+Patterns%2C+Physicians%27%22+OR+%22care+gap%22+OR+%22albuminuria+testing%22+OR+%22albuminuria+screening%22+OR+undiagnosed+OR+underdiagnos%2A+OR+underuse+OR+underutili%2A+%29+AND+%28outpatient%2A+OR+%22Ambulatory+Care%22+OR+%22Primary+Health+Care%22+OR+%22primary+care%22+%29+AND+2019%3A2026
+> **ĐÃ TRA THẬT ngày 2026-11-17** trên ClinicalTrials.gov API v2 với truy vấn `("Diabetes Mellitus, Type 2"[Mesh] OR "type 2 diabetes"[tiab]) AND ("Renal Insufficiency, Chronic"[Mesh] OR "Diabetic Nephropathies"[Mesh] OR "chronic kidney disease"[tiab] OR albuminuria[tiab]) AND ("Guideline Adherence"[Mesh] OR "Practice Patterns, Physicians'"[Mesh] OR "care gap"[tiab] OR "albuminuria testing"[tiab] OR "albuminuria screening"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR "Ambulatory Care"[Mesh] OR "Primary Health Care"[Mesh] OR "primary care"[tiab]) AND 2019:2026[dp]` — **0 hồ sơ khớp**, trong đó **0 đang/sắp tuyển**. Tra lại: https://clinicaltrials.gov/search?term=%28%22Diabetes+Mellitus%2C+Type+2%22+OR+%22type+2+diabetes%22+%29+AND+%28%22Renal+Insufficiency%2C+Chronic%22+OR+%22Diabetic+Nephropathies%22+OR+%22chronic+kidney+disease%22+OR+albuminuria+%29+AND+%28%22Guideline+Adherence%22+OR+%22Practice+Patterns%2C+Physicians%27%22+OR+%22care+gap%22+OR+%22albuminuria+testing%22+OR+%22albuminuria+screening%22+OR+undiagnosed+OR+underdiagnos%2A+OR+underuse+OR+underutili%2A+%29+AND+%28outpatient%2A+OR+%22Ambulatory+Care%22+OR+%22Primary+Health+Care%22+OR+%22primary+care%22+%29+AND+2019%3A2026
 > Đây là kết quả tra THẬT (khác hẳn "CHƯA TRA ĐƯỢC"): không có hồ sơ đăng ký nào khớp truy vấn này.
 > Lưu ý: ClinicalTrials.gov không bao phủ mọi đăng ký. WHO ICTRP, PROSPERO (nếu SR/MA) và đăng ký trong nước vẫn cần bác sĩ tự tra.
 
@@ -627,6 +420,7 @@ Trường 13, Intervention(s):
  Exposure/index test: Không can thiệp. Biến giải thích cho MT3: tuổi, giới, nhóm đối tượng khám (quân nhân / BHYT / dịch vụ); thời gian mắc ĐTĐ, HbA1c gần nhất, đang dùng insulin, số thuốc hạ glucose; tăng huyết áp, BMI, bệnh tim mạch do xơ vữa hoặc suy tim; số lượt khám trong cửa sổ, phòng khám theo dõi chính (nội tiết / nội chung), đã chốt ở gate_params.G0.intervention; định nghĩa vận hành từng biến ở codebook (mục 2.7 sổ tiến độ).
 
 Trường 14, Key inclusion and exclusion criteria:
+ Population: Người từ 18 tuổi, chẩn đoán đái tháo đường típ 2 (ICD-10 E11), quản lý ngoại trú tại Khoa Khám bệnh BVQY175, có ít nhất 2 lượt khám trong cửa sổ hồi cứu 01/01/2026–31/12/2026; loại trừ: lọc máu hoặc ghép thận, có thai, đái tháo đường típ 1 hoặc thể khác (PICO đã chốt ở G0).
  Inclusion: Từ 18 tuổi trở lên tại lượt khám đầu tiên trong cửa sổ; Có mã ICD-10 E11 (chẩn đoán chính hoặc kèm theo) ở ít nhất một lượt khám ngoại trú tại Khoa Khám bệnh BVQY175 trong cửa sổ 01/01/2026–31/12/2026; Có ít nhất 2 lượt khám ngoại trú tại Khoa Khám bệnh trong cùng cửa sổ
  Exclusion: Đang lọc máu (thận nhân tạo hoặc lọc màng bụng) hoặc đã ghép thận. Nhận diện qua mã ICD-10 (ví dụ Z49, Z99.2, Z94.0; danh sách đầy đủ chốt cùng codebook) hoặc chỉ định lọc máu trong HIS; Có thai trong cửa sổ (mã chương O hoặc Z33); Có mã ĐTĐ típ 1 (E10) hoặc thể khác (E12, E13) ở bất kỳ lượt khám nào trong cửa sổ; người chỉ có mã E14 (không xác định típ) không vào mẫu và được đếm trong sơ đồ chọn
 
@@ -730,7 +524,7 @@ tiêu đề, kết quả kiểm THẬT của lần chạy này nằm ở G2_QUAL
 
 **Bước tiếp theo:**
 1. In hồ sơ, ký → nộp Hội đồng Đạo đức (lộ trình: EXPEDITED REVIEW (hoặc EXEMPT nếu không có PII và rủi ro tối thiểu))
-2. Đăng ký nghiên cứu: ClinicalTrials.gov hoặc WHO ICTRP primary registry (nếu tiến cứu tuyển mới)
+2. Đăng ký nghiên cứu: Không bắt buộc đăng ký thử nghiệm. Nghiên cứu hồi cứu trên dữ liệu thứ cấp, không tuyển mới người tham gia
 3. Khi nhận quyết định IRB/IEC → người có thẩm quyền tự ghi ledger; hệ thống
  kiểm số/ngày/hiệu lực/phiên bản/đăng ký rồi mới có thể ghi G2 LOCKED
 4. Chạy G3 song song: `python tools/run_g3_auto.py --study btm-dtd2-ngoai-tru-BVQY175`
