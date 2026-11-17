@@ -425,6 +425,7 @@ def pseudonymize_dataset(study: str, data_path: Path, *,
     source_hash = RDI._sha256_file(data_path) if data_path.exists() else "missing"
     mapping_dir = mapping_root / study_id / source_hash[:12]
     date_columns = _declared_date_columns(dictionary_path)
+    cot_phan_loai = RDI.cot_phan_loai_tu_dien(Path(dictionary_path)) if dictionary_path else frozenset()
 
     blocker = _readable_blocker(data_path, output_path, mapping_root, exports_root)
     process: Dict[str, Any] = {
@@ -473,7 +474,7 @@ def pseudonymize_dataset(study: str, data_path: Path, *,
     output_sha256: Optional[str] = None
     if blocker is None and output_path.exists():
         scan = RDI._scan_csv(output_path, max_scan_rows=max_scan_rows,
-                            exempt_date_columns=date_columns)
+                            exempt_date_columns=date_columns, exempt_header_columns=cot_phan_loai)
         issues = list(scan.get("issues") or [])
         output_scan = {
             "passed": not issues,
@@ -564,6 +565,7 @@ def pseudonymize_dataset(study: str, data_path: Path, *,
             exports_root=exports_root,
             max_scan_rows=max_scan_rows,
             exempt_date_columns=date_columns,
+            exempt_header_columns=cot_phan_loai,
         )
         report["then_import"] = {
             "status": intake["status"],

@@ -18,7 +18,7 @@ import random
 import re
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Any, Dict, List, Mapping, Optional, Sequence
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 COT_TEN, COT_KIEU = "Variable / Field Name", "Field Type"
 COT_LUA, COT_KIEM = "Choices, Calculations, OR Slider Labels", "Text Validation Type OR Show Slider Number"
@@ -73,13 +73,118 @@ def _ngay(s: str, mac_dinh: date) -> date:
         return mac_dinh
 
 
-def _gia_tri(r: Mapping[str, str], spec: Mapping[str, Any], rng: random.Random, i: int, hang: Dict[str, Any]) -> Any:
+def _so(v: Any) -> float:
+    """Giá trị số của một ô đã sinh (trống/không phải số ⇒ KhongSinhDuoc: mô hình không đoán)."""
+    try:
+        return float(v)
+    except (TypeError, ValueError) as e:
+        raise KhongSinhDuoc(f"mô hình dùng ô không phải số: {v!r}") from e
+
+
+def _tong_tuyen_tinh(md: Mapping[str, Any], hang: Mapping[str, Any], rng: random.Random,
+                     cum: Dict[Tuple[str, str], float]) -> float:
+    """chan + Σ hệ số × (giá trị biến số | 1/0 của điều kiện REDCap) + hiệu ứng ngẫu nhiên cụm (nếu khai).
+
+    `he_so` là danh sách [số hạng, hệ số]: số hạng là TÊN biến (lấy giá trị số) hoặc biểu thức REDCap (đúng ⇒ 1).
+    `hieu_ung_cum` = {"bien": <biến cụm>, "sd": σ}: mỗi cụm một độ lệch N(0, σ) rút MỘT lần (mô hình hỗn hợp)."""
+    x = float(md.get("chan", 0.0))
+    for so_hang, he in md.get("he_so") or []:
+        so_hang = str(so_hang)
+        gia = _so(hang.get(so_hang)) if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", so_hang) else (
+            1.0 if hien_thi(so_hang, hang) else 0.0)
+        x += float(he) * gia
+    hcs = md.get("hieu_ung_cum") or []
+    for hc in [hcs] if isinstance(hcs, Mapping) else hcs:
+        # «ten» tách hai hiệu ứng trên CÙNG biến cụm (vd nguy cơ nền của thử nghiệm và dị biệt hiệu ứng điều trị)
+        khoa = (str(hc.get("ten") or hc["bien"]), _chuoi(hang.get(hc["bien"])))
+        if khoa not in cum:
+            cum[khoa] = rng.gauss(0.0, float(hc["sd"]))
+        x += cum[khoa]
+    return x
+
+
+def _ep_khoang(x: float, kiem: str, lo_s: str, hi_s: str, so_le: int = 1) -> Any:
+    lo = float(lo_s) if lo_s else None
+    hi = float(hi_s) if hi_s else None
+    if lo is not None:
+        x = max(x, lo)
+    if hi is not None:
+        x = min(x, hi)
+    return int(round(x)) if kiem == "integer" else round(x, so_le)
+
+
+def _song_con(md: Mapping[str, Any], hang: Dict[str, Any], rng: random.Random,
+              cum: Dict[Tuple[str, str], float]) -> Any:
+    """Thời gian (tháng, nguyên ≥ 1) tới sự kiện hoặc kiểm duyệt; ghi THÊM mã kết thúc vào `md["bien_trang_thai"]`.
+
+    Nguy cơ mỗi tháng của sự kiện chính λ = exp(chan + Σ hệ số × biến) (nguy cơ tỷ lệ — HR = exp(hệ số)); rủi ro cạnh
+    tranh tử vong và mất dấu là hằng số mỗi tháng; hết `toi_da` tháng ⇒ kiểm duyệt hành chính. Mã trạng thái theo
+    `ma` = {su_kien, tu_vong, mat_dau, het}. Trường trạng thái đã được ĐẶT nên khi tới lượt nó bộ sinh giữ nguyên."""
+    lam = math.exp(_tong_tuyen_tinh(md, hang, rng, cum))
+    nguy_co = {"su_kien": lam, "tu_vong": float(md.get("tu_vong_moi_thang", 0.0)),
+               "mat_dau": float(md.get("mat_dau_moi_thang", 0.0))}
+    tong = sum(nguy_co.values())
+    t = rng.expovariate(tong) if tong > 0 else float("inf")
+    toi_da = float(md["toi_da"])
+    if t >= toi_da:
+        loai, t = "het", toi_da
+    else:
+        u, tich = rng.random() * tong, 0.0
+        loai = "mat_dau"
+        for k, v in nguy_co.items():
+            tich += v
+            if u <= tich:
+                loai = k
+                break
+    hang[str(md["bien_trang_thai"])] = int(md["ma"][loai])
+    return max(1, int(math.ceil(t)))
+
+
+def _gia_tri(r: Mapping[str, str], spec: Mapping[str, Any], rng: random.Random, i: int, hang: Dict[str, Any],
+             cum: Optional[Dict[Tuple[str, str], float]] = None) -> Any:
     ten, kieu, kiem = r[COT_TEN], r[COT_KIEU], str(r.get(COT_KIEM) or "")
     lo_s, hi_s = str(r.get(COT_MIN) or "").strip(), str(r.get(COT_MAX) or "").strip()
+    cum = {} if cum is None else cum
+    if "cong_thuc" in spec:  # giá trị TẤT ĐỊNH theo công thức REDCap (vd kết luận «kiểm soát» khớp trị số đo)
+        NLE = _nle()
+        try:
+            v = NLE.tinh_calc(str(spec["cong_thuc"]), {k: _chuoi(x) for k, x in hang.items()})
+        except NLE.LogicKhongHo as e:
+            raise KhongSinhDuoc(f"{ten}: công thức «{spec['cong_thuc']}»: {e}") from e
+        if v and "lam_tron" in spec:  # vd trung bình 2 lần đo ghi số nguyên
+            return _ep_khoang(float(v), "integer" if int(spec["lam_tron"]) == 0 else "number", lo_s, hi_s,
+                              int(spec["lam_tron"]))
+        return int(v) if re.fullmatch(r"-?\d+", v) else (float(v) if v else None)
+    if "chon_chu" in spec:  # chữ tự do: chọn một câu có sẵn («» = để trống — câu không bắt buộc)
+        return rng.choice(list(spec["chon_chu"])) or None
+    if "ngay_cong_thang" in spec:  # ngày = ngày gốc + số tháng (biến khác) × 30,44 ngày
+        goc, bien_thang = spec["ngay_cong_thang"]
+        if not hang.get(goc) or hang.get(bien_thang) in (None, ""):
+            raise KhongSinhDuoc(f"{ten}: thiếu «{goc}» hoặc «{bien_thang}» (đặt sau chúng trong từ điển)")
+        return (date.fromisoformat(str(hang[goc])) + timedelta(days=round(_so(hang[bien_thang]) * 30.44))).isoformat()
+    if "nhi_thuc" in spec:  # số biến cố ~ Nhị thức(n = biến khác, p = exp(tổng tuyến tính)) — vd số ca trong một nhánh
+        md = spec["nhi_thuc"]
+        n_thu = int(_so(hang.get(md["n"])))
+        p = min(max(math.exp(_tong_tuyen_tinh(md["log_p"], hang, rng, cum)), 0.0), 1.0)
+        return sum(1 for _ in range(n_thu) if rng.random() < p)
+    if "song_con" in spec:  # thời gian–biến cố có kiểm duyệt (mô hình mũ, nguy cơ tỷ lệ) — xem _song_con
+        return _song_con(spec["song_con"], hang, rng, cum)
+    if "ngay_sau" in spec:  # ngày = ngày của biến khác + [từ, đến] ngày (sàng lọc → ngẫu nhiên → tái khám)
+        goc, tu, den = spec["ngay_sau"]
+        if not hang.get(goc):
+            raise KhongSinhDuoc(f"{ten}: ngày gốc «{goc}» chưa có (đặt sau nó trong từ điển)")
+        return (date.fromisoformat(str(hang[goc])) + timedelta(days=rng.randint(int(tu), int(den)))).isoformat()
+    if "tuyen_tinh" in spec:  # biến số liên tục theo mô hình tuyến tính + sai số chuẩn
+        md = spec["tuyen_tinh"]
+        x = _tong_tuyen_tinh(md, hang, rng, cum) + rng.gauss(0.0, float(md.get("sd", 0.0)))
+        return _ep_khoang(x, kiem or "number", lo_s, hi_s, int(spec.get("so_le", 1)))
+    if "logit" in spec:  # biến nhị phân theo mô hình logistic: P(=1) = expit(tổng tuyến tính)
+        p = 1.0 / (1.0 + math.exp(-_tong_tuyen_tinh(spec["logit"], hang, rng, cum)))
+        return 1 if rng.random() < p else 0
     if "theo_dieu_kien" in spec:  # phân bố phụ thuộc câu trước: [[biểu thức REDCap, spec], …] — nhánh đúng đầu tiên
         for dk, con in spec["theo_dieu_kien"]:
             if hien_thi(dk, hang):
-                return _gia_tri(r, con, rng, i, hang)
+                return _gia_tri(r, con, rng, i, hang, cum)
         raise KhongSinhDuoc(f"{ten}: không nhánh nào của theo_dieu_kien đúng — thêm nhánh cuối với điều kiện rỗng")
     if "co_dinh" in spec:
         return spec["co_dinh"].format(i=i + 1) if isinstance(spec["co_dinh"], str) else spec["co_dinh"]
@@ -129,6 +234,7 @@ def sinh(tu_dien: Sequence[Mapping[str, str]], n: int, hinh_mau: Optional[Mappin
     rng = random.Random(seed)
     ra: List[Dict[str, Any]] = []
     dat = 0
+    cum: Dict[Tuple[str, str], float] = {}
     for i in range(int(n)):
         if dung_khi and dat >= int(dung_khi[1]):
             break
@@ -145,6 +251,10 @@ def sinh(tu_dien: Sequence[Mapping[str, str]], n: int, hinh_mau: Optional[Mappin
                     else:
                         p = (spec.get("p") or {}).get(ma, 0.3)
                         h[f"{ten}___{ma}"] = 1 if rng.random() < p else 0
+                dq = str(spec.get("doc_quyen") or "")  # ô loại trừ (vd «0, Không dùng thuốc nào»)
+                if hien and dq:
+                    khac = any(h.get(f"{ten}___{m}") for m in _lua_chon(r) if m != dq)
+                    h[f"{ten}___{dq}"] = 0 if khac else 1
                 if hien and spec.get("it_nhat_mot", True) and not any(h.get(f"{ten}___{m}") for m in _lua_chon(r)):
                     h[f"{ten}___{_lua_chon(r)[0]}"] = 1  # câu bắt buộc chọn ít nhất một ô
                 continue
@@ -161,7 +271,14 @@ def sinh(tu_dien: Sequence[Mapping[str, str]], n: int, hinh_mau: Optional[Mappin
                 continue
             if kieu in ("descriptive",):
                 continue
-            h[ten] = _gia_tri(r, hm.get(ten) or {}, rng, i, h) if hien else None
+            if ten in h:  # đã được trường khác đặt sẵn (vd trạng thái kết thúc do mô hình sống còn ghi)
+                h[ten] = h[ten] if hien else None
+                continue
+            h[ten] = _gia_tri(r, hm.get(ten) or {}, rng, i, h, cum) if hien else None
+            ma_thieu = (hm.get(ten) or {}).get("ma_thieu")  # thiếu CÓ GHI NHẬN: ô bắt buộc mà nguồn không có
+            if hien and ma_thieu and (not ma_thieu.get("khi") or hien_thi(ma_thieu["khi"], h)) and \
+                    rng.random() < float(ma_thieu["p"]):
+                h[ten] = ma_thieu["ma"]
         _xep_ngay(h, hm.get("_cap_ngay") or [])
         if dung_khi and hien_thi(str(dung_khi[0]), {**h, **tinh}):
             dat += 1
