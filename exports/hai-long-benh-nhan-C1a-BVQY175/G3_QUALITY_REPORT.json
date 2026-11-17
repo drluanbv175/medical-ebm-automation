@@ -128,6 +128,13 @@
       "action": "Nâng N, hoặc ghi rõ chấp nhận giảm lực kèm hệ quả; ghi confirmed_n_method cho thiết kế không dùng power."
     },
     {
+      "id": "G3-AUTO-19",
+      "label": "Ma trận mục tiêu → biến → câu hỏi → phân tích SAP đủ, khớp bộ biến và đúng kiểu",
+      "status": "PASS",
+      "evidence": "37 dòng phủ 2 mục tiêu; 0 cảnh báo",
+      "action": "Dựng khung: python tools/ma_tran_muc_tieu_bien.py mau --study hai-long-benh-nhan-C1a-BVQY175 --ghi; agent bien-so-nghien-cuu điền biến/kiểu/câu hỏi/mục SAP cho TỪNG yếu tố mục tiêu nêu; kiểm: python tools/ma_tran_muc_tieu_bien.py kiem --study hai-long-benh-nhan-C1a-BVQY175"
+    },
+    {
       "id": "G3-AUTO-14",
       "label": "Tham số đã ghim đủ để chạy lại ra cùng một N",
       "status": "PASS",
@@ -197,8 +204,8 @@
   "dau_van_tay_hien_tai": "c57c765a4f74b34c",
   "artifact_manifest": {
     "A4_SAMPLE_SIZE": {
-      "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md",
-      "sha256": "5b9bfa37b4ef7caabcf8df17ffc652759caead149acd8e5084ee424ab8b9020f"
+      "path": "/Users/nguyenluan/.ebm-worktrees/c1a-g2-g3-g10-20261117/exports/hai-long-benh-nhan-C1a-BVQY175/G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md",
+      "sha256": "aac3bd1764152811f35d970803476b435371f0f3084c4d3ca70d9ba898bcf36a"
     }
   },
   "sensitivity_table": {

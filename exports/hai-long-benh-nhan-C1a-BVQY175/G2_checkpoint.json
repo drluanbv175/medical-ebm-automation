@@ -2,7 +2,7 @@
   "study": "hai-long-benh-nhan-C1a-BVQY175",
   "gate": "G2",
   "gate_status": "READY_FOR_IRB_SUBMISSION — G2 CHƯA ĐƯỢC KHÓA",
-  "generated_at": "2026-10-28T17:06:41.580695",
+  "generated_at": "2026-11-17T16:04:48.109994",
   "quality_contract_version": "G2-2026.1",
   "g2_status": "PENDING",
   "design_ambiguous": false,
@@ -19,21 +19,21 @@
     "n_trials": 5,
     "n_active": 3,
     "error": null,
-    "checked_at": "2026-10-28T17:06:41",
+    "checked_at": "2026-11-17T16:04:47",
     "search_url": "https://clinicaltrials.gov/search?term=%28%22Patient+Satisfaction%22+OR+satisf%2A+OR+%22patient+experience%22+%29+AND+%28%22Outpatients%22+OR+%22Ambulatory+Care%22+OR+outpatient%2A+OR+ambulatory+%29+AND+%28%22Vietnam%22+OR+vietnam%2A+OR+%22viet+nam%22+%29",
     "pending_action": null,
     "samples": [
+      {
+        "nct_id": "NCT01102764",
+        "title": "Prolonged Exposure (PE) for Post Traumatic Stress Disorder (PTSD): Telemedicine ",
+        "status": "COMPLETED",
+        "url": "https://clinicaltrials.gov/study/NCT01102764"
+      },
       {
         "nct_id": "NCT07555704",
         "title": "Remote App-based Rehabilitation After Rotator Cuff Repair",
         "status": "NOT_YET_RECRUITING",
         "url": "https://clinicaltrials.gov/study/NCT07555704"
-      },
-      {
-        "nct_id": "NCT07540637",
-        "title": "Assessment of Treatment Adherence and Associated Factors in Chronic HepB Patient",
-        "status": "RECRUITING",
-        "url": "https://clinicaltrials.gov/study/NCT07540637"
       },
       {
         "nct_id": "NCT07602231",
@@ -48,10 +48,10 @@
         "url": "https://clinicaltrials.gov/study/NCT02069301"
       },
       {
-        "nct_id": "NCT01102764",
-        "title": "Prolonged Exposure (PE) for Post Traumatic Stress Disorder (PTSD): Telemedicine ",
-        "status": "COMPLETED",
-        "url": "https://clinicaltrials.gov/study/NCT01102764"
+        "nct_id": "NCT07540637",
+        "title": "Assessment of Treatment Adherence and Associated Factors in Chronic HepB Patient",
+        "status": "RECRUITING",
+        "url": "https://clinicaltrials.gov/study/NCT07540637"
       }
     ]
   },
@@ -59,14 +59,14 @@
   "clinicaltrials_checked": true,
   "clinicaltrials_samples": [
     {
+      "nct_id": "NCT01102764",
+      "title": "Prolonged Exposure (PE) for Post Traumatic Stress Disorder (PTSD): Telemedicine ",
+      "url": "https://clinicaltrials.gov/study/NCT01102764"
+    },
+    {
       "nct_id": "NCT07555704",
       "title": "Remote App-based Rehabilitation After Rotator Cuff Repair",
       "url": "https://clinicaltrials.gov/study/NCT07555704"
-    },
-    {
-      "nct_id": "NCT07540637",
-      "title": "Assessment of Treatment Adherence and Associated Factors in Chronic HepB Patient",
-      "url": "https://clinicaltrials.gov/study/NCT07540637"
     },
     {
       "nct_id": "NCT07602231",
@@ -79,9 +79,9 @@
       "url": "https://clinicaltrials.gov/study/NCT02069301"
     },
     {
-      "nct_id": "NCT01102764",
-      "title": "Prolonged Exposure (PE) for Post Traumatic Stress Disorder (PTSD): Telemedicine ",
-      "url": "https://clinicaltrials.gov/study/NCT01102764"
+      "nct_id": "NCT07540637",
+      "title": "Assessment of Treatment Adherence and Associated Factors in Chronic HepB Patient",
+      "url": "https://clinicaltrials.gov/study/NCT07540637"
     }
   ],
   "guardrail": {
@@ -89,9 +89,9 @@
     "errors": []
   },
   "artifacts": {
-    "A3_markdown": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G2_A3_ETHICS_PACKAGE_hai-long-benh-nhan-C1a-BVQY175.md",
-    "A3_docx": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G2_A3_ETHICS_PACKAGE_hai-long-benh-nhan-C1a-BVQY175.docx",
-    "registration_draft": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G2_REGISTRATION_DRAFT_hai-long-benh-nhan-C1a-BVQY175.json",
+    "A3_markdown": "/Users/nguyenluan/.ebm-worktrees/c1a-g2-g3-g10-20261117/exports/hai-long-benh-nhan-C1a-BVQY175/G2_A3_ETHICS_PACKAGE_hai-long-benh-nhan-C1a-BVQY175.md",
+    "A3_docx": "/Users/nguyenluan/.ebm-worktrees/c1a-g2-g3-g10-20261117/exports/hai-long-benh-nhan-C1a-BVQY175/G2_A3_ETHICS_PACKAGE_hai-long-benh-nhan-C1a-BVQY175.docx",
+    "registration_draft": "/Users/nguyenluan/.ebm-worktrees/c1a-g2-g3-g10-20261117/exports/hai-long-benh-nhan-C1a-BVQY175/G2_REGISTRATION_DRAFT_hai-long-benh-nhan-C1a-BVQY175.json",
     "quality_report": "exports/hai-long-benh-nhan-C1a-BVQY175/G2_QUALITY_REPORT.md"
   },
   "documents_generated": [
@@ -113,6 +113,17 @@
   "next_gate": "G3 (Cỡ mẫu) — chạy SONG SONG với G2 (không cần chờ G2 LOCKED)",
   "note": "G5 (thu thập dữ liệu THẬT) chỉ mở sau khi G2 LOCKED",
   "disclaimer": "Cần bác sĩ kiểm chứng.",
+  "sinh_lai": {
+    "giu_ban_bien_tap": true,
+    "trang_thai_dau": "KHONG_CO_DAU",
+    "ly_do": "chưa có dấu bản máy sinh (hồ sơ sinh trước 14/11/2026) và bản đang có ít ô trống hơn bản máy sắp sinh (8 vs 52 nhãn [CẦN...]; 55 vs 108 ô trống theo hợp đồng chung) — coi như đã biên tập",
+    "dau_vao_doi": "",
+    "dau_vao_hien_hanh": {
+      "design_code": "cross_sectional",
+      "n": 1000
+    },
+    "co_sinh_lai": "--regenerate"
+  },
   "quality_gate": {
     "contract_version": "G2-2026.1",
     "study": "hai-long-benh-nhan-C1a-BVQY175",
@@ -212,6 +223,13 @@
         "status": "PASS",
         "evidence": "protocol_version=1.0; icf_version=1.0; «1.0» có thể là giá trị khuôn gieo trước 04/10/2026 — PI xác nhận",
         "action": "PI khai gate_params.G2.protocol_version và icf_version (đúng phiên bản trình Hội đồng)."
+      },
+      {
+        "id": "G2-AUTO-11",
+        "label": "Quyết định đăng ký của PI khớp nghĩa vụ đăng ký (tiến cứu/SR-MA ⇒ đăng ký trước người tham gia đầu tiên)",
+        "status": "PASS",
+        "evidence": "đăng ký bắt buộc và PI không khai ngược lại",
+        "action": "PI sửa gate_params.G2: registration_required=true + registration_registry (ClinicalTrials.gov/WHO ICTRP; PROSPERO với SR/MA), đăng ký rồi mới tuyển — hoặc sửa recruitment_mode nếu thật ra là hồi cứu dữ liệu thứ cấp."
       },
       {
         "id": "G2-AUTO-09",

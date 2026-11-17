@@ -1,8 +1,8 @@
 {
   "gate": "G10",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "generated_at": "2026-10-28T19:19:08.041909",
-  "gate_status": "READY_FOR_G10_PI_RELEASE_APPROVAL",
+  "generated_at": "2026-11-17T16:06:07.607696",
+  "gate_status": "BLOCKED — chờ input đời-thực",
   "quality_contract_version": "G10-2026.1",
   "guardrail": {
     "passed": true,
@@ -56,7 +56,7 @@
   },
   "real_world_signals": {
     "irb_approved": false,
-    "sap_locked": true,
+    "sap_locked": false,
     "db_locked": false,
     "results_final": false,
     "peer_review_approved": false,
@@ -76,7 +76,7 @@
   "skill_gate_states": {
     "G0": "DỰ THẢO (ĐẠT guardrail)",
     "G1": "DỰ THẢO (ĐẠT guardrail)",
-    "G2": "KHOÁ",
+    "G2": "DỰ THẢO (ĐẠT guardrail)",
     "G3": "DỰ THẢO (ĐẠT guardrail)",
     "G4": "DỰ THẢO (ĐẠT guardrail)",
     "G5": "DỰ THẢO (ĐẠT guardrail)",
@@ -99,7 +99,7 @@
     {
       "moc": "Sẵn sàng phân tích chính",
       "dat": "CHƯA ĐẠT",
-      "chi_tiet": "BẮT BUỘC SAP đã ký khoá (sap_locked) VÀ dữ liệu đã khoá thật (db_locked) — khớp SKILL.md §Kết luận | Chặn bởi: thiếu dữ liệu đã khoá thật; cổng skill G6 (Dữ liệu): THIẾU"
+      "chi_tiet": "BẮT BUỘC SAP đã ký khoá (sap_locked) VÀ dữ liệu đã khoá thật (db_locked) — khớp SKILL.md §Kết luận | Chặn bởi: thiếu SAP đã ký khoá; thiếu dữ liệu đã khoá thật; cổng skill G6 (Dữ liệu): THIẾU"
     },
     {
       "moc": "Sẵn sàng nộp công bố/nghiệm thu",
@@ -113,17 +113,17 @@
     "study_spec_json": "exports/hai-long-benh-nhan-C1a-BVQY175/STUDY_SPEC_hai-long-benh-nhan-C1a-BVQY175.json",
     "decision_package_md": "exports/hai-long-benh-nhan-C1a-BVQY175/GOI_QUYET_DINH_hai-long-benh-nhan-C1a-BVQY175.md",
     "release_readiness_json": "exports/hai-long-benh-nhan-C1a-BVQY175/G10_RELEASE_READINESS.json",
-    "de_cuong_md_sha256": "47f17b2ff8e789e573ec8d14a452cdb341f331ff63a6511f1df28e1061ed842c",
-    "de_cuong_docx_sha256": "541c2e9fbb3d1d3d57b33fc72e4726f8c4df1084afa2d16ce6f81ff781bc173d"
+    "de_cuong_md_sha256": "b1b45e53bc8eb80a6551adb35451ba4ba1680624ac67228508af5ba8771711ef",
+    "de_cuong_docx_sha256": "9880626e83974d9efe55577b7316d2e32147c151f15cefbaf49f2caefce0b7aa"
   },
   "quality_gate": {
-    "status": "READY_FOR_G10_PI_RELEASE_APPROVAL",
+    "status": "DRAFT_ASSEMBLED_NEEDS_COMPLETION",
     "report": "G10_QUALITY_REPORT.json",
-    "package_sha256": "8c7a0c92cc78b4c6596ede8139e7756fa303b4e687cae0498525f8e6c95b6ed6",
+    "package_sha256": "43e0856d723e6d9a7810c6c373c9e402d56214ebdbe073f4ded9ebc39ad9d3a1",
     "human_approval_valid": false,
     "external_submission_state": "NOT_PERFORMED_OR_PROVEN_BY_G10"
   },
-  "release_package_ready": true,
+  "release_package_ready": false,
   "release_package_locked": false,
   "n_de_cuong_sections": 18,
   "n_protocol_core_items": 24,
@@ -133,15 +133,15 @@
     "files": {
       "final_protocol_md": {
         "path": "DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "47f17b2ff8e789e573ec8d14a452cdb341f331ff63a6511f1df28e1061ed842c"
+        "sha256": "b1b45e53bc8eb80a6551adb35451ba4ba1680624ac67228508af5ba8771711ef"
       },
       "final_protocol_docx": {
         "path": "DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.docx",
-        "sha256": "541c2e9fbb3d1d3d57b33fc72e4726f8c4df1084afa2d16ce6f81ff781bc173d"
+        "sha256": "9880626e83974d9efe55577b7316d2e32147c151f15cefbaf49f2caefce0b7aa"
       },
       "study_spec": {
         "path": "STUDY_SPEC_hai-long-benh-nhan-C1a-BVQY175.json",
-        "sha256": "8311115ad4a4255d073e8eba4c1fd18bf57dcfbcd1bf137371d21bbbf88aaca5"
+        "sha256": "c2a6cc1f34b9ffadc6f7b13c67571a0a0a3f7fe42d9a8bfc4a5e3c3305a6289b"
       },
       "decision_package": {
         "path": "GOI_QUYET_DINH_hai-long-benh-nhan-C1a-BVQY175.md",
@@ -153,23 +153,23 @@
       },
       "citation_verification": {
         "path": "A12_CITATION_VERIFICATION_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "3b254899119e0cd7b19e5ac9c3ace850de2f3db2c6d031976205c95f3a2f7cff"
+        "sha256": "9c433b325dc77080b88b099d1e6cef138dbd5fea469f05e38abfe987ed7cea05"
       },
       "citation_retraction_receipt": {
         "path": "A12_RETRACTION_RECEIPT.json",
-        "sha256": "9518793b5d1f9794ce30e67a138d74b62b936602502ddbed281e9d7f41ff4cc8"
+        "sha256": "288656b2adc2217205728b28c29f73ddff54b57f8e0637e4fecb98d14b79f81f"
       },
       "citation_metadata_receipt": {
         "path": "A12_METADATA_RECEIPT.json",
-        "sha256": "b7ab7e064904786fefe30e698ab91d4987c870154f0df91161632f0f23297152"
+        "sha256": "dc3e0087ff7fd91638c731bb0830b61dcf674cc3b6d04fb1f5ddb2d24c1e3254"
       },
       "g2_ethics_package": {
         "path": "G2_A3_ETHICS_PACKAGE_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "d6c02fa7d94d416a58a3f7fb0121afdac07917b371336f25bb2d30b4fd7a8fa3"
+        "sha256": "56244b3d41a26354f9d0d9158caaa9b764c8bd55861fde0041f70e8855ed944e"
       },
       "g4_sap_final": {
         "path": "G4_A5_SAP_FINAL_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "1754cb4ad785cef70d341ac8a927159f4c347b1d4d654a9cdb55c2a8e5734bc2"
+        "sha256": "4b9010eee502ffaafd1e15ab1f16a5a81c380ccc2e1181516291ff5c1221daac"
       },
       "checkpoint_g0": {
         "path": "G0_checkpoint.json",
@@ -177,41 +177,59 @@
       },
       "checkpoint_g1": {
         "path": "G1_checkpoint.json",
-        "sha256": "ec111c42f3281933406a0b5e2c27b7de9d3abedb8c9b43d61cfb7a958d4643fc"
+        "sha256": "06b8d3f16c57fc1217e27b2e1987c03a7c75857ccf8f179c7d645d74fadb5e65"
       },
       "checkpoint_g2": {
         "path": "G2_checkpoint.json",
-        "sha256": "015378131283e203dde5b63f3380d52a2fd5a2b5a170db0152bad56171fbdc58"
+        "sha256": "48996f44a10abec0e0f244a2f49e93fd28627d57850a988d46d174d385f0b71b"
       },
       "checkpoint_g3": {
         "path": "G3_checkpoint.json",
-        "sha256": "36b7a3e6b5dfa7cd258f51b45ec5ed5fc8a1a41d0bca20a1eb86547b28be7717"
+        "sha256": "f6804ff8921a9df0920ca840705f619c2551f3fdfe6a4cf77e6aac8a3ba586ca"
       },
       "checkpoint_g4": {
         "path": "G4_checkpoint.json",
-        "sha256": "51a1ffe5dfb676b1867ddc92b86712474d69f96cd9163d8ca694bc9aa68a0934"
+        "sha256": "33ccde79ee80db02cc15c057e774f27b8454a09218a99540814c7520d32747be"
       },
       "g1_protocol_design": {
         "path": "G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "12ea13d68357105443ccef0d1320bceb27107b0024101c29687bfe993ab88767"
+        "sha256": "12764e83a4f37e7994dc9d1e35029b62b4edeaaef668fac5fb4e923a9f947bf6"
       },
       "g2_registration_draft": {
         "path": "G2_REGISTRATION_DRAFT_hai-long-benh-nhan-C1a-BVQY175.json",
-        "sha256": "935277b768e9fd08a736a9656ad5a7f1cca937772d0e8f28c86cd03abe6e985b"
+        "sha256": "2838ce294170ba40fe3443bfc2a51273e84c5c5a7d2a285f5b032eb86e93c313"
       },
       "g3_sample_size": {
         "path": "G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "5b9bfa37b4ef7caabcf8df17ffc652759caead149acd8e5084ee424ab8b9020f"
+        "sha256": "aac3bd1764152811f35d970803476b435371f0f3084c4d3ca70d9ba898bcf36a"
       },
       "irb_protocol_md": {
         "path": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "adb1be741485f3a94c712d6e6210f8519e2c82702e37bfc59022c57b806fcff9"
+        "sha256": "963e1bdd7fcc64c8b15d0b49b01e5be6041119c114160ab8d79135c69f80a445"
       },
       "irb_protocol_docx": {
         "path": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.docx",
-        "sha256": "b28af3e5d2e3bb22f3fed559f7080fc74684473b596e8aa3ac8bc53f1f0b40ab"
+        "sha256": "566c9abe201a453ac25add87e099bc85db5af69fb7f81238eb23d4823b2c2bfe"
       }
     },
-    "package_sha256": "8c7a0c92cc78b4c6596ede8139e7756fa303b4e687cae0498525f8e6c95b6ed6"
+    "package_sha256": "43e0856d723e6d9a7810c6c373c9e402d56214ebdbe073f4ded9ebc39ad9d3a1"
+  },
+  "needs_input": {
+    "blocked": true,
+    "reason_code": "MISSING_G10_RELEASE_READINESS",
+    "human_message": "Gói G10 chưa đạt hợp đồng release-readiness/nhất quán/toàn vẹn.",
+    "remediation": {
+      "action": "rerun_with_real_input",
+      "command": "Hoàn tất exports/hai-long-benh-nhan-C1a-BVQY175/G10_RELEASE_READINESS.json rồi chạy python tools/g10_quality_gate.py --study hai-long-benh-nhan-C1a-BVQY175",
+      "study_meta_patch": {},
+      "must_not_fabricate": [
+        "approval_ledger.json",
+        "A12_RETRACTION_RECEIPT.json",
+        "A12_METADATA_RECEIPT.json",
+        "G10_RELEASE_READINESS.json",
+        "G10_checkpoint.json"
+      ]
+    },
+    "supplied_by": "doctor"
   }
 }

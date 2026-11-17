@@ -3,7 +3,7 @@
   "who_trds_version": "1.3.1",
   "item_count": 24,
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "generated_at": "2026-10-28T17:06:41.568712",
+  "generated_at": "2026-11-17T16:04:48.096741",
   "status": "DRAFT",
   "registration_requirement": "BẮT BUỘC — tiến cứu, tuyển người tham gia mới: đăng ký TRƯỚC người tham gia đầu tiên (Helsinki §35) (PI đã chốt — gate_params.G2.recruitment_mode)",
   "suggested_registry": "OSF Registries (https://osf.io/registries) (PI đã chốt — gate_params.G2.registration_registry)",
@@ -80,6 +80,7 @@
       "number": 14,
       "label": "Key Inclusion and Exclusion Criteria",
       "value": {
+        "population": "Người bệnh ngoại trú từ đủ 18 tuổi trở lên (kể cả phụ nữ mang thai), đủ sức khỏe và năng lực nhận thức/ngôn ngữ để trả lời, đã cơ bản hoàn thành quy trình khám tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, và đồng ý tham gia tự nguyện (mục 4.3.1 đề cương)",
         "inclusion": [
           "Người bệnh ngoại trú từ đủ 18 tuổi trở lên (bao gồm cả phụ nữ mang thai)",
           "Đủ sức khỏe, tỉnh táo và đủ năng lực nhận thức/ngôn ngữ để trả lời",

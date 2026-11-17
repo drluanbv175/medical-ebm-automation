@@ -23,6 +23,7 @@
 | G3-AUTO-17 | Thiết kế không dùng power đã dùng đúng khung thay thế | PASS | thiết kế dùng công thức power thông thường |
 | G3-AUTO-18 | Tham số đã ghim trong study_meta khớp giá trị thật sự đem vào phép tính | PASS | các tham số đã ghim khớp checkpoint |
 | G3-AUTO-13 | N thực tế đã chốt đủ lực và có phương pháp | PASS | N chốt=1000 ≥ N tối thiểu=630 |
+| G3-AUTO-19 | Ma trận mục tiêu → biến → câu hỏi → phân tích SAP đủ, khớp bộ biến và đúng kiểu | PASS | 37 dòng phủ 2 mục tiêu; 0 cảnh báo |
 | G3-AUTO-14 | Tham số đã ghim đủ để chạy lại ra cùng một N | PASS | tham số quyết định đã ghim trong study_meta |
 | G3-AUTO-15 | Khai rõ công thức đã dùng và phần mềm/phiên bản | PASS | formula=có; software=Python 3.14 (scipy.stats, statsmodels 0.14); đối chiếu chéo bằng nửa rộng KTC 95% |
 

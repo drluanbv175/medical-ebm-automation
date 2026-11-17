@@ -20,6 +20,7 @@
 | G2-AUTO-08 | Mục khoa học WHO TRDS (can thiệp/tiêu chí/kết cục) đã có nội dung thật | PASS | mục 13/14/19/20 đã có nội dung |
 | G2-AUTO-08b | Mục WHO TRDS tự điền đã được PI khai (9 tiêu đề công khai, 12 tình trạng sức khỏe, 15 masking của RCT) | PASS | mục 9/12 (và masking RCT) đã do PI khai |
 | G2-AUTO-10 | Phiên bản đề cương/ICF hiện hành do PI khai | PASS | protocol_version=1.0; icf_version=1.0; «1.0» có thể là giá trị khuôn gieo trước 04/10/2026 — PI xác nhận |
+| G2-AUTO-11 | Quyết định đăng ký của PI khớp nghĩa vụ đăng ký (tiến cứu/SR-MA ⇒ đăng ký trước người tham gia đầu tiên) | PASS | đăng ký bắt buộc và PI không khai ngược lại |
 | G2-AUTO-09 | Mã Hội đồng Đạo đức tách biệt khỏi định danh người duyệt chung | PASS | ethics_committee_ref_source=chưa có attestation |
 
 ## Phê duyệt người thật
