@@ -99,6 +99,13 @@
       "action": "PI khai gate_params.G2.protocol_version và icf_version (đúng phiên bản trình Hội đồng)."
     },
     {
+      "id": "G2-AUTO-11",
+      "label": "Quyết định đăng ký của PI khớp nghĩa vụ đăng ký (tiến cứu/SR-MA ⇒ đăng ký trước người tham gia đầu tiên)",
+      "status": "PASS",
+      "evidence": "đăng ký bắt buộc và PI không khai ngược lại",
+      "action": "PI sửa gate_params.G2: registration_required=true + registration_registry (ClinicalTrials.gov/WHO ICTRP; PROSPERO với SR/MA), đăng ký rồi mới tuyển — hoặc sửa recruitment_mode nếu thật ra là hồi cứu dữ liệu thứ cấp."
+    },
+    {
       "id": "G2-AUTO-09",
       "label": "Mã Hội đồng Đạo đức tách biệt khỏi định danh người duyệt chung",
       "status": "PASS",

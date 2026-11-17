@@ -1,6 +1,6 @@
 # A4 — KẾ HOẠCH CỠ MẪU (DRAFT)
 **Đề tài:** Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175  
-**Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Ngày sinh:** 2026-10-28 | **Trạng thái:** DRAFT — CHỜ BÁC SĨ XÁC NHẬN
+**Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Ngày sinh:** 2026-11-17 | **Trạng thái:** DRAFT — CHỜ BÁC SĨ XÁC NHẬN
 
 ---
 
@@ -14,7 +14,7 @@
 | Tỷ lệ ước lượng p | 0.50 | ghim trong study_meta; nguồn: Quy ước thận trọng p = 0,50 — giá trị làm phương sai p(1-p) lớn nhất nên cho cỡ mẫu lớn nhất; dùng khi chưa có ước lượng tỷ lệ hài lòng tại chính Khoa C1a. Nguồn công thức: Lwanga SK, Lemeshow S. Sample size determination in health studies: a practical manual. WHO, 1991 (mục 4.4.1 đề cương) |
 | Sai số tuyệt đối cho phép d | ±5% | ghim trong study_meta |
 
-> **Thiết kế:** Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence)  
+> **Thiết kế:** Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)  
 > **Công thức:** Cỡ mẫu ước lượng một tỷ lệ theo độ chính xác (Lwanga & Lemeshow/Cochran, xấp xỉ chuẩn): tỷ lệ hiện mắc ước lượng p=0.50, sai số cho phép d=0.05, alpha=0.05 Đã áp design effect cụm (DE=1+((CV²+1)m-1)×ICC, CV=0.14 — Eldridge 2006=1.39, m=20, ICC=0.02): n 385→535 (~27 cụm).
 
 ---
