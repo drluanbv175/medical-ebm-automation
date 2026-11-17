@@ -672,6 +672,12 @@ _GHI_CHU_MIEN_ICF_RE = re.compile(r"KHÔNG ÁP DỤNG\W+chủ nhiệm xin MIỄN
 _TAI_LIEU_9_MIEN_ICF = re.compile(r"^## TÀI LIỆU 9\b[^\n]*MIỄN ICF", re.M)
 
 
+def la_ho_so_xin_mien_icf(van: str) -> bool:
+    """Hồ sơ G2 đã thay phiếu đồng ý bằng ghi chú xin miễn VÀ có đơn xin miễn (TÀI LIỆU 9) — dùng CHUNG cho guardrail
+    R6/R6b và bộ kiểm máy G2-T1 của hội đồng cổng (17/11/2026: cả hai từng đòi nội dung phiếu đồng ý ở đề tài xin miễn)."""
+    return bool(_GHI_CHU_MIEN_ICF_RE.search(van or "") and _TAI_LIEU_9_MIEN_ICF.search(van or ""))
+
+
 def thu_gon_icf_khi_xin_mien(text: str, design_code: str, meta: Optional[dict]) -> str:
     """PI xin miễn ICF ⇒ TÀI LIỆU 4/5 (phiếu đồng ý tiếng Việt/Anh) thành ghi chú «không áp dụng» (15/11/2026).
 
@@ -2306,7 +2312,7 @@ def guardrail_check_g2(artifact: str) -> dict:
     # nhưng R6/R6b vẫn đòi đủ mục ⇒ MỌI đề tài xin miễn bị báo đỏ giả (đo trên BTM sinh lại 17/11). Có ghi chú miễn VÀ
     # có đơn xin miễn (TÀI LIỆU 9) ⇒ R6/R6b không áp dụng; ghi chú miễn mà KHÔNG có đơn ⇒ lỗi (phiếu bị bỏ không lý do).
     if _GHI_CHU_MIEN_ICF_RE.search(artifact):
-        if _TAI_LIEU_9_MIEN_ICF.search(artifact):
+        if la_ho_so_xin_mien_icf(artifact):
             warnings.append("R6/R6b ℹ️ không áp dụng — chủ nhiệm xin miễn phiếu đồng ý (đơn xin miễn ở TÀI LIỆU 9; Hội "
                             "đồng Đạo đức quyết định)")
         else:

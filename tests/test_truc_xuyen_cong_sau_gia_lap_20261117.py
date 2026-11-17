@@ -425,3 +425,34 @@ def test_bang_sai_lech_tu_so_g1():
     assert bang[0].startswith("| Nguồn sai lệch |") and len(bang) == 4
     assert bang[2] == "| Sai lệch chọn mẫu | Ước lượng cao. | Khung mẫu cấp người bệnh. |"
     assert SD.bang_sai_lech("chuỗi tự do") == [] and SD.bang_sai_lech(None) == []
+
+
+# ── bộ kiểm máy G2-T1 (hội đồng cổng): đề tài xin miễn phiếu đồng ý ─────────────────────────────────────────────────
+def _ho_so_g2(d: Path, tai_lieu_4: str, dmp: str, don_mien: bool) -> None:
+    _ghi(d, "study_meta.json", json.dumps({"gate_params": {"G1": {"data_collection_method": "trích eHospital"}}}))
+    van = (f"## TÀI LIỆU 4. PHIẾU ĐỒNG Ý (ICF, Tiếng Việt)\n\n{tai_lieu_4}\n\n"
+           f"## TÀI LIỆU 6. KẾ HOẠCH QUẢN LÝ DỮ LIỆU\n\n{dmp}\n\n")
+    if don_mien:
+        van += "## TÀI LIỆU 9. ĐỀ NGHỊ MIỄN ICF (ICF Waiver)\n\nYÊU CẦU MIỄN THỦ TỤC ĐỒNG THUẬN\n"
+    _ghi(d, f"G2_A3_ETHICS_PACKAGE_{S}.md", van)
+
+
+def test_kiem_g2_ghep_ngoai_bo_qua_phieu_khi_xin_mien(tmp_path):
+    import hoi_dong_cong as H
+
+    _ho_so_g2(tmp_path, "KHÔNG ÁP DỤNG. Chủ nhiệm xin MIỄN phiếu đồng ý (…).", "Trích eHospital, bảng nối mã…", True)
+    assert H._kiem_g2_ghep_ngoai(tmp_path, S) == []
+
+
+def test_kiem_g2_ghep_ngoai_van_doi_dmp_khi_xin_mien(tmp_path):
+    import hoi_dong_cong as H
+
+    _ho_so_g2(tmp_path, "KHÔNG ÁP DỤNG. Chủ nhiệm xin MIỄN phiếu đồng ý (…).", "Lưu máy chủ nội bộ.", True)
+    assert any("DMP (Tài liệu 6)" in x for x in H._kiem_g2_ghep_ngoai(tmp_path, S))
+
+
+def test_kiem_g2_ghep_ngoai_phieu_day_du_van_bi_doi(tmp_path):
+    import hoi_dong_cong as H
+
+    _ho_so_g2(tmp_path, "Anh/chị được mời tham gia… dữ liệu được bảo mật.", "Trích eHospital…", False)
+    assert any("ICF tiếng Việt (Tài liệu 4)" in x for x in H._kiem_g2_ghep_ngoai(tmp_path, S))
