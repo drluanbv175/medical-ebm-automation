@@ -1583,10 +1583,20 @@ def _kiem_g2_ghep_ngoai(out_dir: Path, study: str) -> List[str]:
     tep = Path(out_dir) / f"G2_A3_ETHICS_PACKAGE_{study}.md"
     if not tep.is_file():
         return [f"G1 đã chốt ghép dữ liệu từ hệ thống ngoài nhưng chưa có hồ sơ {tep.name}"]
-    tl = _tai_lieu_g2(tep.read_text(encoding="utf-8"))
+    van = tep.read_text(encoding="utf-8")
+    tl = _tai_lieu_g2(van)
     ra = []
-    for so, ten in (("4", "ICF tiếng Việt (Tài liệu 4)"), ("5", "ICF tiếng Anh (Tài liệu 5)"),
-                    ("6", "DMP (Tài liệu 6)")):
+    try:
+        import run_g2_auto as G2A  # noqa: PLC0415
+
+        xin_mien = G2A.la_ho_so_xin_mien_icf(van)
+    except Exception:  # noqa: BLE001 — không nạp được ⇒ kiểm như có phiếu (bi quan)
+        xin_mien = False
+    # 17/11/2026 (BTM): chủ nhiệm xin miễn phiếu đồng ý ⇒ Tài liệu 4/5 là ghi chú «không áp dụng», không người tham
+    # gia nào đọc phiếu để biết về việc ghép ⇒ chỉ DMP (Tài liệu 6) phải nêu.
+    tai_lieu = (("6", "DMP (Tài liệu 6)"),) if xin_mien else (
+        ("4", "ICF tiếng Việt (Tài liệu 4)"), ("5", "ICF tiếng Anh (Tài liệu 5)"), ("6", "DMP (Tài liệu 6)"))
+    for so, ten in tai_lieu:
         if so not in tl:
             if so != "5":
                 ra.append(f"{ten}: không tìm thấy tiêu đề «## TÀI LIỆU {so}.»")
