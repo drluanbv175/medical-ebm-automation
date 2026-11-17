@@ -891,7 +891,7 @@ def build_pmid_meta(pubmed_raw: dict) -> dict:
 # ước lượng): số đã là số THẬT của G6 nhưng bác sĩ CHƯA đối chiếu — đối chiếu xong mới xoá nhãn và đặt results_final.
 NHAN_DOI_CHIEU_G6 = "[CẦN KẾT QUẢ THẬT — đối chiếu G6]"
 # Khoá của tóm tắt Python CLI (run_stats_analysis.py) mang ước lượng; tóm tắt khối cuối 03_analysis.R chỉ có n_total.
-_KHOA_UOC_LUONG_G6 = ("primary_outcome", "ordinal", "survival", "multivariate", "ty_le")
+_KHOA_UOC_LUONG_G6 = ("primary_outcome", "ordinal", "survival", "multivariate", "ty_le", "dac_thu")
 # Một số trong văn bản: không dính chữ/số phía trước (G6, sha256, q1_…), không dính chữ phía sau; dấu chấm cuối câu
 # không làm số «biến mất» («N = 218.» vẫn tách được 218).
 _SO_RE = re.compile(r"(?<!\w)(?<!\d\.)-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?(?!\w)(?!\.\d)")
@@ -1341,6 +1341,59 @@ def chu_giai_bang1_g6(redcap_vars: list, bien_bang1: list) -> str:
     return "\n".join(ra)
 
 
+def _khoi_dac_thu_g6(loai: Any, kq: Any, nguon: str) -> list[str]:
+    """Khối ƯỚC LƯỢNG của phân tích ĐẶC THÙ (phan_tich_thiet_ke_dac_thu.py — 17/11/2026): trước đây G7 không đọc
+    `dac_thu` nên bản thảo định tính · dự báo · tổng quan–gộp · chẩn đoán chỉ có khung trống. Chỉ CHÉP số (`_so_g6`,
+    `_ci_g6`, `_p_g6`) — bộ tự kiểm `kiem_so_trich_g6` bỏ cả bản nháp nếu một số không có nguyên văn trong tóm tắt."""
+    N = NHAN_DOI_CHIEU_G6
+    if not isinstance(kq, dict):
+        return []
+    ra: list[str] = []
+    if loai == "dinh_tinh":
+        ra += [f"Phân tích chủ đề (G6, `{nguon}`): {_so_g6(kq.get('n_ban_go_bang'))} bản gỡ băng, "
+               f"{_so_g6(kq.get('so_chu_de'))} chủ đề; tần suất chỉ mô tả độ phổ biến, không kiểm định {N}  ", "",
+               "| Chủ đề | Số bản gỡ băng | Tỷ lệ | 95% CI (Wilson) |", "|---|---|---|---|"]
+        for c in kq.get("chu_de") or []:
+            if isinstance(c, dict):
+                ra.append(f"| {_mot_dong(c.get('chu_de'), 120)} | {_so_g6(c.get('n'))} | {_so_g6(c.get('ty_le'))} | "
+                          f"{_ci_g6(c.get('ci_95_wilson'))} |")
+    elif loai == "du_bao":
+        cs = kq.get("c_statistic") if isinstance(kq.get("c_statistic"), dict) else {}
+        ra += [f"Mô hình dự báo (G6, `{nguon}`): n = {_so_g6(kq.get('n'))}, số biến cố = {_so_g6(kq.get('n_bien_co'))}, "
+               f"EPV = {_so_g6(kq.get('epv'))} {N}  ",
+               f"C-statistic (AUC trong mẫu) = {_so_g6(cs.get('auc'))} (95% CI {_ci_g6(cs.get('ci_95'))}); điểm Brier "
+               f"= {_so_g6(kq.get('brier'))} {N}  ", "",
+               "| Yếu tố dự báo | OR | 95% CI | p |", "|---|---|---|---|"]
+        for h in kq.get("he_so") or []:
+            if isinstance(h, dict) and h.get("bien") != "(hằng số)":
+                ra.append(f"| `{_mot_dong(h.get('bien'), 60)}` | {_so_g6(h.get('or'))} | {_ci_g6(h.get('ci_95'))} | "
+                          f"{_p_g6(h.get('p'))} |")
+    elif loai == "gop":
+        ra += [f"Phân tích gộp (G6, `{nguon}`): k = {_so_g6(kq.get('k'))} nghiên cứu; RR gộp (hiệu ứng ngẫu nhiên) = "
+               f"{_so_g6(kq.get('rr_gop_ngau_nhien'))} (95% CI {_ci_g6(kq.get('ci_95'))}); RR gộp (hiệu ứng cố định) = "
+               f"{_so_g6(kq.get('rr_gop_co_dinh'))} (95% CI {_ci_g6(kq.get('ci_95_co_dinh'))}) {N}  ",
+               f"Không đồng nhất: Q = {_so_g6(kq.get('q'))} (df = {_so_g6(kq.get('df'))}), I² = "
+               f"{_so_g6(kq.get('i2_pct'))}%, τ² = {_so_g6(kq.get('tau2'))} {N}  ", "",
+               "| Nghiên cứu | RR | 95% CI |", "|---|---|---|"]
+        for t in kq.get("tung_nghien_cuu") or []:
+            if isinstance(t, dict):
+                ra.append(f"| {_mot_dong(t.get('nghien_cuu'), 60)} | {_so_g6(t.get('rr'))} | {_ci_g6(t.get('ci_95'))} |")
+    elif loai == "chan_doan":
+        au = kq.get("auc") if isinstance(kq.get("auc"), dict) else {}
+        ra += [f"Độ chính xác chẩn đoán (G6, `{nguon}`): AUC = {_so_g6(au.get('auc'))} (95% CI {_ci_g6(au.get('ci_95'))}) "
+               f"{N}  ", "", "| Chỉ số | Ước lượng | 95% CI (Wilson) | k/n |", "|---|---|---|---|"]
+        for khoa, ten in (("do_nhay", "Độ nhạy"), ("do_dac_hieu", "Độ đặc hiệu"), ("ppv", "Giá trị tiên đoán dương"),
+                          ("npv", "Giá trị tiên đoán âm")):
+            v = kq.get(khoa) if isinstance(kq.get(khoa), dict) else {}
+            ra.append(f"| {ten} | {_so_g6(v.get('uoc_luong'))} | {_ci_g6(v.get('ci_95_wilson'))} | "
+                      f"{_so_g6(v.get('k'))}/{_so_g6(v.get('n'))} |")
+        if kq.get("lr_duong") is not None:
+            ra += ["", f"Tỷ số khả dĩ: LR+ = {_so_g6(kq.get('lr_duong'))}; LR− = {_so_g6(kq.get('lr_am'))} {N}  "]
+    else:
+        return []
+    return ra + [""]
+
+
 def _khoi_uoc_luong_g6(tt: dict, nguon: str, tien_to: str = "G6") -> list[str]:
     """Các khối ƯỚC LƯỢNG của MỘT tóm tắt G6 (kết cục chính/tỷ lệ/thứ tự/sống còn/KM/đa biến) — dùng cho §3 kết
     cục chính và (15/11/2026, giả lập lần 3) cho từng kết cục PHỤ do chay_sap_g6 chạy. Chỉ CHÉP số (`_so_g6`)."""
@@ -1421,6 +1474,7 @@ def _khoi_uoc_luong_g6(tt: dict, nguon: str, tien_to: str = "G6") -> list[str]:
             s3 += [f"Log-rank: p = {_p_g6(km['logrank_p'])} {N}  ", ""]
     if isinstance(tt.get("multivariate"), dict):
         s3 += _bang_mo_hinh_g6(f"Mô hình đa biến (G6, `{tien_to}_table4_multivariate.txt`)", tt["multivariate"])
+    s3 += _khoi_dac_thu_g6(tt.get("loai_dac_thu"), tt.get("dac_thu"), nguon)
     if not any(k in tt for k in _KHOA_UOC_LUONG_G6):
         s3 = [f"[CẦN KẾT QUẢ THẬT — tóm tắt G6 ({nguon}) chỉ ghi N phân tích; ước lượng nằm ở bảng đầu ra của "
               "lượt phân tích (đường R: 06_phan_tich_R/output/) — chép số từ đó]  "]
@@ -2099,6 +2153,9 @@ def generate_manuscript(
     # dòng số kèm nhãn đối chiếu; không có ⇒ khung trống y như cũ. Dòng chỉ dẫn mang cụm «KẾT QUẢ THẬT» để bộ quét ô
     # mẫu dùng chung G7/G8 (G8Q._G7_TEMPLATE_PATTERNS) bắt nếu tác giả quên gỡ.
     kq6 = ket_qua_g6 if (ket_qua_g6 or {}).get("da_dung") else None
+    # 17/11/2026: thiết kế không tính cỡ mẫu theo lực (định tính, tổng quan–gộp, dự báo) có n_adjusted = 0 — dùng N PI
+    # đã chốt ở G3 (confirmed_n); trước đây bản thảo định tính in «Cỡ mẫu kế hoạch (G3): N = 0».
+    n_ke_hoach = n_adjusted or g3_n_chot or n_adjusted
     if kq6:
         results_lines: list[str] = [
             "## III. KẾT QUẢ  *(ước tính: ~700 từ | nháp chép số từ G6 — CHỜ ĐỐI CHIẾU, CẦN KẾT QUẢ THẬT)*",
@@ -2115,7 +2172,7 @@ def generate_manuscript(
             f"**§1 Tuyển chọn — {flow_label}:**  ",
             "[CẦN KẾT QUẢ THẬT] Sàng lọc: N = ___; Đủ tiêu chí: N = ___.  ",
             *kq6["s1"],
-            f"Cỡ mẫu kế hoạch (G3): N = {n_adjusted}.  ",
+            f"Cỡ mẫu kế hoạch (G3): N = {n_ke_hoach}.  ",
             "*Lý do loại trừ chính:* [CẦN KẾT QUẢ THẬT — liệt kê số/lý do]  ",
             f"*(Xem {flow_label} — sinh từ kết quả thật)*",
             "",
@@ -2148,7 +2205,7 @@ def generate_manuscript(
             "",
             f"**§1 Tuyển chọn — {flow_label}:**  ",
             f"[CẦN KẾT QUẢ THẬT] Sàng lọc: N = ___; Đủ tiêu chí: N = ___; "
-            f"Phân tích cuối: N = {n_adjusted} (kế hoạch).  ",
+            f"Phân tích cuối: N = {n_ke_hoach} (kế hoạch).  ",
             "*Lý do loại trừ chính:* [CẦN KẾT QUẢ THẬT — liệt kê số/lý do]  ",
             f"*(Xem {flow_label} — sinh từ kết quả thật)*",
             "",

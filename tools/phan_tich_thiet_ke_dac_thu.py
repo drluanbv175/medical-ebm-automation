@@ -290,16 +290,15 @@ def thu_muc_de_tai(study: str) -> Path:
     return Path(RSA._thu_muc_de_tai(study))
 
 
-def doc_du_lieu(study: str, can: Sequence[str], loc: Optional[str] = None) -> tuple[List[Dict[str, Any]], Path, int]:
-    """Bộ dữ liệu ĐÃ KHOÁ (G5) — đúng hàm kiểm khoá của cổng; biến PHÁI SINH (vd FIB-4, trường «calc») tính bằng ĐÚNG
-    công thức đã duyệt của `_bien-phai-sinh.csv` như run_stats_analysis; giữ ca ĐỦ mọi cột cần (listwise, ghi số bị
-    loại). `loc` = biểu thức lọc quần thể (nhóm con/độ nhạy) — ĐÚNG bộ lọc của run_stats_analysis (BPS.loc_python)."""
+def _doc_df_khoa(study: str, can: Sequence[str], loc: Optional[str] = None) -> tuple[Any, Path, Dict[str, Any]]:
+    """(DataFrame ĐÃ KHOÁ sau phái sinh + lọc quần thể, đường dẫn bản khoá, manifest khoá) — dùng chung cho phân tích
+    chính (`doc_du_lieu`) và Bảng 1 (`bang1_dac_thu`, 17/11/2026) để hai bảng tính trên CÙNG quần thể."""
     import bien_phai_sinh as BPS  # noqa: PLC0415
     import cau_noi_spss as S  # noqa: PLC0415
     import pandas as pd  # noqa: PLC0415
 
     try:
-        csv_khoa, _ = S.tim_du_lieu_khoa(study)
+        csv_khoa, manifest = S.tim_du_lieu_khoa(study)
     except Exception as e:  # noqa: BLE001
         raise TuChoi(f"chưa có dữ liệu ĐÃ KHOÁ (G5) dùng được: {e}") from e
     df = pd.read_csv(csv_khoa, encoding="utf-8-sig")
@@ -313,11 +312,98 @@ def doc_du_lieu(study: str, can: Sequence[str], loc: Optional[str] = None) -> tu
                 raise TuChoi(f"lọc quần thể «{loc}» không còn ca nào")
     except (BPS.TuChoi, BPS.LoiCongThuc) as e:
         raise TuChoi(f"biến phái sinh/lọc — {e}") from e
+    return df, csv_khoa, (manifest if isinstance(manifest, dict) else {})
+
+
+def doc_du_lieu(study: str, can: Sequence[str], loc: Optional[str] = None) -> tuple[List[Dict[str, Any]], Path, int]:
+    """Bộ dữ liệu ĐÃ KHOÁ (G5) — đúng hàm kiểm khoá của cổng; biến PHÁI SINH (vd FIB-4, trường «calc») tính bằng ĐÚNG
+    công thức đã duyệt của `_bien-phai-sinh.csv` như run_stats_analysis; giữ ca ĐỦ mọi cột cần (listwise, ghi số bị
+    loại). `loc` = biểu thức lọc quần thể (nhóm con/độ nhạy) — ĐÚNG bộ lọc của run_stats_analysis (BPS.loc_python)."""
+    import pandas as pd  # noqa: PLC0415
+
+    df, csv_khoa, _man = _doc_df_khoa(study, can, loc)
     thieu = [c for c in can if c not in df.columns]
     if thieu:
         raise TuChoi(f"dữ liệu khoá thiếu cột (không có công thức phái sinh đã duyệt): {', '.join(thieu)}")
     du = df[list(can)].replace("", pd.NA).dropna()
     return du.to_dict("records"), csv_khoa, len(df) - len(du)
+
+
+# Bảng 1 theo thiết kế (17/11/2026 — giả lập trọn vòng: tóm tắt G6 của 4 thiết kế đặc thù KHÔNG có `table1` ⇒ G7 không
+# chép được Bảng 1, bản thảo chỉ còn ô trống mà nhãn của bộ giả lập che thành «đạt»). Biến chia nhóm theo đúng bảng đặc
+# điểm mẫu của chuẩn báo cáo: dự báo — theo có/không kết cục (TRIPOD+AI mục 23a); chẩn đoán — theo chuẩn tham chiếu
+# (STARD mục 20); định tính — mô tả người tham gia (COREQ mục 16); tổng quan–gộp — đặc điểm các nghiên cứu đưa vào
+# (PRISMA 2020 mục 17). Một nhóm ⇒ không kiểm định.
+NHOM_TOAN_BO = "Toàn bộ"
+_COT_DINH_DANH = {"record_id", "ma_nguoi_tham_gia", "study_id", "transcript_id", "ma_phieu"}
+
+
+def _bien_bang1(df: Any, loai: str, ts: Dict[str, Any], nhom: Optional[str]) -> List[str]:
+    """Biến mô tả của Bảng 1: bỏ cột định danh, nhãn nghiên cứu, ngày, văn bản tự do (nhiều giá trị chữ), cột chia
+    nhóm, và chính kết cục định tính (chủ đề) — kết cục trình bày ở bảng kết quả, không ở Bảng 1."""
+    import pandas as pd  # noqa: PLC0415
+
+    bo = set(_COT_DINH_DANH) | {nhom or ""}
+    bo |= {str(ts.get(k) or "") for k in ("nhan_nghien_cuu", "chu_de")}
+    ra = []
+    for c in df.columns:
+        if c in bo or c.startswith("ngay"):
+            continue
+        cot = df[c].dropna()
+        if cot.empty:
+            continue
+        if not pd.api.types.is_numeric_dtype(cot):
+            chu = cot.astype(str)
+            if chu.str.match(r"^\d{4}-\d{2}-\d{2}").mean() > 0.5 or chu.nunique() > max(10, len(chu) // 2):
+                continue  # ngày hoặc văn bản tự do/định danh
+        ra.append(c)
+    return ra
+
+
+def _nhan_lua_chon(study: str) -> Dict[str, Dict[str, str]]:
+    """{biến: {mã: nhãn}} của trường radio/dropdown ≥ 3 lựa chọn trong từ điển G5 (hoặc bộ biến riêng G3) — biến mã hoá
+    nhiều mức (loại thuốc, NYHA) phải là biến PHÂN LOẠI ở Bảng 1, không phải «2.00 [1.00–3.00]»."""
+    d = thu_muc_de_tai(study)
+    tep = next((x for x in (d / f"G5_REDCap_dictionary_{study}.csv", d / "_bo-bien-rieng.csv") if x.is_file()), None)
+    if tep is None:
+        return {}
+    ra: Dict[str, Dict[str, str]] = {}
+    with tep.open(encoding="utf-8-sig", newline="") as fh:
+        for r in csv.DictReader(fh):
+            if (r.get("Field Type") or "").strip() not in ("radio", "dropdown"):
+                continue
+            lua = {}
+            for muc in str(r.get("Choices, Calculations, OR Slider Labels") or "").split("|"):
+                ma, _, nhan = muc.partition(",")
+                if ma.strip() and nhan.strip():
+                    lua[ma.strip()] = nhan.strip()
+            if len(lua) >= 3:
+                ra[str(r.get("Variable / Field Name") or "").strip()] = lua
+    return ra
+
+
+def bang1_dac_thu(study: str, loai: str, ts: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Bảng 1 THÔ (khuôn `run_stats_analysis.table1_descriptive` — `chay` đổi sang `bang1_cho_tom_tat` cho tóm tắt mà G7
+    chép và `format_table1_text` cho `<gate>_table1_descriptive.txt`) của thiết kế đặc thù; None với loại không có bảng
+    đặc điểm mẫu riêng (kinh tế — đi kèm thử nghiệm đã có Bảng 1). Lỗi tính ⇒ {"error": …}, không im lặng."""
+    import run_stats_analysis as RSA  # noqa: PLC0415
+
+    nhom = {"du_bao": ts.get("outcome"), "chan_doan": ts.get("tham_chieu")}.get(loai)
+    if loai not in ("du_bao", "chan_doan", "dinh_tinh", "gop"):
+        return None
+    can = [str(x) for x in (ts.get(k) for k in LOAI[loai] if k not in ("nguong", "covariates")) if x]
+    try:
+        df, _csv, _man = _doc_df_khoa(study, can, ts.get("loc"))
+        if not nhom:
+            df = df.assign(_nhom_bang1=NHOM_TOAN_BO)
+            nhom = "_nhom_bang1"
+        for bien, lua in _nhan_lua_chon(study).items():
+            if bien in df.columns and bien != nhom:
+                df[bien] = df[bien].map(lambda v, _l=lua: None if v is None or v != v else _l.get(
+                    str(int(v)) if isinstance(v, float) and v.is_integer() else str(v), str(v)))
+        return RSA.table1_descriptive(df, nhom, _bien_bang1(df, loai, ts, nhom), kiem_dinh_nen=True)
+    except (TuChoi, ValueError, ZeroDivisionError, KeyError) as e:
+        return {"error": f"không dựng được Bảng 1: {e}"}
 
 
 def _g4_da_khoa(study: str) -> None:
@@ -638,10 +724,30 @@ def chay(study: str, gate: str, loai: str, ts: Dict[str, Any], kiem_cheo_bat: bo
     d = thu_muc_de_tai(study)
     py = cac_so_doi_chieu(loai, kq)
     kc = kiem_cheo(loai, ts, hang, d, gate, py) if kiem_cheo_bat else None
+    import cau_noi_spss as S  # noqa: PLC0415
+
+    man = S.tim_du_lieu_khoa(study)[1] or {}  # cùng hàm kiểm khoá đã dùng khi đọc dữ liệu ở trên
+    luc = datetime.now().isoformat(timespec="seconds")
     tom = {"gate": gate, "study": study, "loai_dac_thu": loai, "n_total": len(hang), "n_loai_thieu": bo,
            "dac_thu": kq, "dac_ta_phan_tich": {"loai_dac_thu": loai, **ts},
-           "du_lieu_khoa": csv_khoa.name, "chay_luc": datetime.now().isoformat(timespec="seconds"),
+           "du_lieu_khoa": csv_khoa.name, "chay_luc": luc,
+           # 17/11/2026: cùng khoá nguồn gốc với tóm tắt run_stats_analysis — G7 (doc_tom_tat_g6_hop_le) chỉ dựng Kết
+           # quả từ tóm tắt chứng minh được sinh từ ĐÚNG bản khoá (sha256 trùng manifest); thiếu khoá này G7 fail-closed
+           # và bản thảo 4 thiết kế đặc thù luôn là khung trống.
+           "generated": luc,
+           "data_lock": {"locked_dataset_path": man.get("locked_dataset_path"), "sha256": man.get("sha256"),
+                         "lock_date": man.get("lock_date"), "approved_by": man.get("approved_by"),
+                         "sap_version": man.get("sap_version")},
            "disclaimer": CAN_KIEM}
+    t1 = bang1_dac_thu(study, loai, ts)
+    if t1 is not None:
+        import run_stats_analysis as RSA  # noqa: PLC0415
+
+        loi_t1 = t1.get("error")
+        tom["table1"] = {"error": loi_t1} if loi_t1 else RSA.bang1_cho_tom_tat(t1)
+        (d / f"{gate}_table1_descriptive.txt").write_text(
+            f"BẢNG 1 — ĐẶC ĐIỂM MẪU\nLỖI: {loi_t1}\n" if loi_t1 else RSA.format_table1_text(t1) + "\n",
+            encoding="utf-8", newline="\n")
     (d / f"{gate}_analysis_summary.json").write_text(json.dumps(tom, ensure_ascii=False, indent=1), encoding="utf-8",
                                                     newline="\n")
     (d / f"{gate}_ket_qua.md").write_text(md_ket_qua(study, gate, loai, kq, kc), encoding="utf-8", newline="\n")
