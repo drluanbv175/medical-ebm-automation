@@ -238,3 +238,20 @@ def test_g10_ma_tran_truy_xuat_co_hang_cua_muc_tieu_dinh_tinh(tmp_path, monkeypa
     (d / "study_meta.json").write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8", newline="\n")
     van = G10A.build_traceability_matrix({}, {"objectives": mt, "aim": "Mục tiêu chung", "_g10": {"out_dir": str(d)}})
     assert "[CẦN" in next(x for x in van.splitlines() if x.startswith("| Mục tiêu cụ thể 2"))
+
+
+# ─────────────────────────────────────────────────────────────────────────────────────── G2 đọc quyết định đã chốt
+def test_g2_dang_ky_va_luu_tru_doc_quyet_dinh_da_chot():
+    """G2 BTM (17/11/2026): PI chốt không đăng ký + quy trình lưu 2 năm/huỷ bảng nối mà khuôn vẫn hỏi lại."""
+    risk = {"register_where": "ClinicalTrials.gov"}
+    meta = {"gate_params": {"G2": {"registration_required": False,
+                                   "recruitment_mode": "RETROSPECTIVE_SECONDARY_DATA"}}}
+    assert G2._dang_ky_tom_tat(meta, risk).startswith("Không bắt buộc đăng ký thử nghiệm — nghiên cứu hồi cứu")
+    meta["gate_params"]["G2"] = {"registration_registry": "ClinicalTrials.gov", "registration_id": "NCT00000001"}
+    assert G2._dang_ky_tom_tat(meta, risk) == "ClinicalTrials.gov — NCT00000001"
+    assert G2._dang_ky_tom_tat({}, risk) == "[CẦN — ClinicalTrials.gov]"
+    qt = [{"muc": "luu_tru", "gia_tri": "Số liệu điện tử lưu 2 năm sau khi kết thúc nghiên cứu"},
+          {"muc": "huy_bang_noi", "gia_tri": "Bảng nối mã huỷ sau khi khoá dữ liệu"}]
+    assert G2._thoi_gian_luu(qt) == "2 năm sau kết thúc nghiên cứu"
+    assert G2._huy_dinh_danh(qt) == "Bảng nối mã huỷ sau khi khoá dữ liệu."
+    assert "___" in G2._thoi_gian_luu([]) and "___" in G2._huy_dinh_danh([])

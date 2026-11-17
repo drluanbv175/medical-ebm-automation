@@ -175,6 +175,13 @@ def gia_tri_da_chot(meta: Mapping[str, Any], cps: Mapping[str, Mapping[str, Any]
         (r"phien ban de cuong|protocol version", g1.get("protocol_version"), "G1.protocol_version"),
         (r"loi ich.*nguy co|benefit.?risk", g1.get("benefit_risk_rationale"), "G1.benefit_risk_rationale"),
         (r"khoang trong|ly do can nghien cuu", g1.get("knowledge_gap"), "G1.knowledge_gap"),
+        # 17/11/2026 (G2 BTM thật): PI đã chốt KHÔNG bắt buộc đăng ký / quy trình lưu trữ–huỷ trong
+        # _quy-trinh-du-lieu.csv mà khuôn G2 vẫn hỏi lại — bộ giả lập trước đây không biết hai nguồn này nên không đếm
+        # là lỗi máy
+        (r"^dang ky nghien cuu", "Không bắt buộc đăng ký" if _gp(meta, "G2").get("registration_required") is False
+         else None, "G2.registration_required"),
+        (r"^thoi gian luu", (cps.get("_QT") or {}).get("luu_tru"), "quy_trinh.luu_tru"),
+        (r"^du lieu nhan dang", (cps.get("_QT") or {}).get("huy_bang_noi"), "quy_trinh.huy_bang_noi"),
     ]
     return [(re.compile(m), _text(v), ten) for m, v, ten in bang if _text(v)]
 
@@ -751,6 +758,10 @@ class TronVong:
             pm = re.search(r"\*\*Phần mềm:\*\*\s*([^\n]+)", _than_muc_sap(sap.read_text(encoding="utf-8"), "10"))
             if pm and not O_RE.search(pm.group(1)):
                 cps["_SAP"] = {"phan_mem": pm.group(1).strip()}
+        qt = self.out / "_quy-trinh-du-lieu.csv"  # quy trình dữ liệu đã chốt (G1/G5) — nguồn đã chốt cho G2/G5
+        if qt.is_file():
+            with qt.open(encoding="utf-8-sig", newline="") as fh:
+                cps["_QT"] = {r.get("muc"): r.get("gia_tri") for r in csv.DictReader(fh) if r.get("gia_tri")}
         cac_o = phan_loai_o(s, g, tep.name, self._meta(), cps, self.thiet_ke, tra_loi, da_hoi)
         self.o.extend(cac_o)
         s = dien_o(s, cac_o)

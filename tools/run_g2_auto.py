@@ -527,6 +527,36 @@ def _gia_tri_qt(quy_trinh: Optional[list], *muc: str) -> list:
             if r.get("muc") in muc and str(r.get("gia_tri") or "").strip()]
 
 
+def _dang_ky_tom_tat(meta: Optional[dict], risk: dict) -> str:
+    """Dòng «Đăng ký nghiên cứu» của đơn trình Hội đồng (17/11/2026 — G2 BTM): PI đã chốt KHÔNG bắt buộc đăng ký
+    (`gate_params.G2.registration_required=false`, vd hồi cứu dữ liệu thứ cấp) mà khuôn vẫn hỏi «[CẦN — ClinicalTrials.gov
+    …]»; đã có sổ đăng ký + mã ⇒ in đúng; chưa quyết ⇒ giữ ô cho PI."""
+    g2 = (((meta or {}).get("gate_params") or {}).get("G2") or {}) if isinstance(meta, dict) else {}
+    if g2.get("registration_required") is False:
+        ly_do = {"RETROSPECTIVE_SECONDARY_DATA": "nghiên cứu hồi cứu trên dữ liệu thứ cấp, không tuyển mới người tham gia"}
+        return ("Không bắt buộc đăng ký thử nghiệm — "
+                + ly_do.get(str(g2.get("recruitment_mode") or "").upper(), "chủ nhiệm đã quyết định không đăng ký"))
+    so, ma = str(g2.get("registration_registry") or "").strip(), str(g2.get("registration_id") or "").strip()
+    if so and ma and "[" not in so + ma:
+        return f"{so} — {ma}"
+    return f"[CẦN — {risk['register_where']}]"
+
+
+def _thoi_gian_luu(quy_trinh: Optional[list]) -> str:
+    """«Thời gian lưu» của kế hoạch quản lý dữ liệu từ quy trình đã chốt (`_quy-trinh-du-lieu.csv` mục luu_tru)."""
+    import re as _re  # noqa: PLC0415
+
+    luu = " ".join(_gia_tri_qt(quy_trinh, "luu_tru"))
+    m = _re.search(r"(\d+)\s*năm", luu)
+    return f"{m.group(1)} năm sau kết thúc nghiên cứu" if m else "___ năm sau kết thúc nghiên cứu"
+
+
+def _huy_dinh_danh(quy_trinh: Optional[list]) -> str:
+    """Cách huỷ dữ liệu nhận dạng (bảng nối mã) từ quy trình đã chốt (mục huy_bang_noi); chưa chốt ⇒ ô cho PI."""
+    huy = "; ".join(_gia_tri_qt(quy_trinh, "huy_bang_noi"))
+    return huy.rstrip(".") + "." if huy else "xóa/hủy vật lý trong ___ tháng"
+
+
 def dam_bao_bao_mat_mien_icf(quy_trinh: Optional[list]) -> tuple:
     """(dòng «Mã hóa», dòng «Kế hoạch hủy») của đề nghị miễn ICF — lấy từ quy trình dữ liệu ĐÃ CHỐT.
 
@@ -1580,7 +1610,7 @@ THÔNG TIN TỔNG QUAN:
   Thời gian nghiên cứu: {_study_period}
   Nguồn tài trợ: {_sponsor}
   Xung đột lợi ích (COI): [CẦN KHAI BÁO — xem Tài liệu 8]
-  Đăng ký nghiên cứu: [CẦN — {risk["register_where"]}]
+  Đăng ký nghiên cứu: {_dang_ky_tom_tat(meta, risk)}
 
 CAM KẾT:
   Chúng tôi cam kết thực hiện nghiên cứu theo Tuyên ngôn Helsinki
@@ -1895,7 +1925,7 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU — Cấp IRB
              / ổ cứng mã hóa tại đơn vị]
    Bảo mật: AES-256 · mật khẩu cấp người dùng · VPN (nếu từ xa)
    Sao lưu: [CẦN — ví dụ: hàng ngày/tuần, 2 bản độc lập]
-   Thời gian lưu: ___ năm sau kết thúc nghiên cứu
+   Thời gian lưu: {_thoi_gian_luu(quy_trinh)}
                   (theo TT38/2018/TT-BYT về lưu trữ hồ sơ y tế)
 
 5. CHIA SẺ / MỞ DỮ LIỆU:
@@ -1913,7 +1943,7 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU — Cấp IRB
    Quy trình: [CẦN BỔ SUNG quy trình cụ thể của đơn vị]
 
 7. CUỐI NGHIÊN CỨU:
-   ∎ Dữ liệu nhận dạng: xóa/hủy vật lý trong ___ tháng
+   ∎ Dữ liệu nhận dạng: {_huy_dinh_danh(quy_trinh)}
    ∎ Dữ liệu ẩn danh hóa: lưu theo quy định lưu trữ y tế
    ∎ Backup: xóa an toàn (overwrite 3 lần tiêu chuẩn DoD)
 ─────────────────────────────────────────────────────────────
@@ -2177,7 +2207,7 @@ tiêu đề — kết quả kiểm THẬT của lần chạy này nằm ở G2_Q
 
 **Bước tiếp theo:**
 1. In hồ sơ, ký → nộp Hội đồng Đạo đức (lộ trình: {risk["irb_route"]})
-2. Đăng ký nghiên cứu: {risk["register_where"]}
+2. Đăng ký nghiên cứu: {_dang_ky_tom_tat(meta, risk).replace("[CẦN — ", "").rstrip("]")}
 3. Khi nhận quyết định IRB/IEC → người có thẩm quyền tự ghi ledger; hệ thống
    kiểm số/ngày/hiệu lực/phiên bản/đăng ký rồi mới có thể ghi G2 LOCKED
 4. Chạy G3 song song: `python tools/run_g3_auto.py --study {study_name}`
