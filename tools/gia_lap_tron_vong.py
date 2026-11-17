@@ -789,6 +789,8 @@ class TronVong:
         ⇒ G0 trùng hệt ⇒ dùng chung nền G0 đã lưu của gốc. Khác mã đề tài thì không chép (nền phải tra riêng)."""
         goc = self.kb.get("goc")
         dich, nguon = self.nen_g0_dir / self.ma, self.nen_g0_dir / str(goc)
+        if self.kb.get("nen_g0_tu"):  # kịch bản kế thừa ĐỌC thẳng nền gốc (GiaLap._nen_g0) — không chép bản trùng
+            return
         if not goc or goc == self.ma or (dich / "_nen.json").is_file() or not (nguon / "_nen.json").is_file():
             return
         if (GL.KICH_BAN.get(goc) or {}).get("study") == self.kb.get("study"):

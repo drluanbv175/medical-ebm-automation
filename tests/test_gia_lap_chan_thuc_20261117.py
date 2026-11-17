@@ -231,6 +231,19 @@ def test_kich_ban_ke_thua_khong_ghi_nen_g0_rieng(tmp_path):
     assert not (tmp_path / "rct_chan_thuc").exists()
 
 
+def test_bo_chay_tron_vong_khong_chep_nen_g0_cho_kich_ban_ke_thua(tmp_path):
+    """`_nen_g0_tu_goc` chép nền gốc sang thư mục riêng cho biến thể cùng đề tài — kịch bản kế thừa thì không."""
+    import gia_lap_tron_vong as TV  # noqa: PLC0415
+
+    goc = tmp_path / "rct_nhi_phan"
+    goc.mkdir()
+    (goc / "_nen.json").write_text("{}", encoding="utf-8", newline="\n")
+    tv = object.__new__(TV.TronVong)
+    tv.kb, tv.ma, tv.nen_g0_dir = KB["rct_chan_thuc"], "rct_chan_thuc", tmp_path
+    tv._nen_g0_tu_goc()
+    assert not (tmp_path / "rct_chan_thuc").exists()
+
+
 def test_moi_phan_tich_g6_loc_quan_the():
     for ma, kb in KB.items():
         for pt in kb["ho_so_tron_vong"]["g6"]:
