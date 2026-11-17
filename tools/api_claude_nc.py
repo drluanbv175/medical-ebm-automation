@@ -257,29 +257,69 @@ def in_chi_phi(token_vao: int, token_ra: int, model: str, batch: bool = False) -
     return f"~{token_vao:,} token vào + ~{token_ra:,} token ra ≈ {usd:.2f} USD ({model}, {duong})"
 
 
+_TRUONG_LUOT = ("luc", "trang_thai", "ly_do", "so_muc")
+
+
+def gop_theo_nguon(duong: str, ban_ghi: Dict[str, Any]) -> Dict[str, Any]:
+    """Trộn lượt mới vào nhật ký đã có: «theo_nguon» giữ lượt gần nhất của TỪNG công cụ; khoá cấp cao = lượt mới.
+
+    VÌ SAO (17/11/2026, bác sĩ duyệt «mục 2»): tệp trước chỉ giữ MỘT lượt — 8 công cụ (5 ở repo này, 3 ở repo gốc) ghi
+    chung một ô nên lượt sau xoá lượt trước; công cụ A lỗi 401 rồi công cụ B chạy ổn ngay sau thì lỗi của A biến mất
+    trước khi hòm việc kịp đọc. Khoá cấp cao vẫn là lượt gần nhất để bản đọc cũ đọc như trước. Nhật ký kiểu cũ (chưa
+    có «theo_nguon») được giữ làm mục của nguồn đã ghi nó. Khuôn trộn có ở BA nơi ghi — đây · repo gốc
+    `tools/nhat_ky_api_claude.py` · cổng skill `check_topic_relevance.py` (mỗi nơi phải tự đứng, không nhập chung
+    được) — sửa một nơi phải sửa cả ba; repo gốc có chốt đối chiếu khuôn khi hai repo nằm cạnh nhau."""
+    try:
+        with open(duong, "r", encoding="utf-8") as fh:
+            cu = json.load(fh)
+    except (OSError, ValueError):
+        cu = None
+    theo: Dict[str, Any] = {}
+    if isinstance(cu, dict):
+        tn = cu.get("theo_nguon")
+        if isinstance(tn, dict):
+            theo = {str(k): v for k, v in tn.items() if isinstance(v, dict)}
+        elif cu.get("trang_thai"):
+            theo[str(cu.get("nguon") or "")] = {k: cu.get(k) for k in _TRUONG_LUOT}
+    theo[str(ban_ghi.get("nguon") or "")] = {k: ban_ghi.get(k) for k in _TRUONG_LUOT}
+    return dict(ban_ghi, theo_nguon=theo)
+
+
+def _ghi_nguyen_tu(duong: str, du_lieu: Dict[str, Any]) -> None:
+    """Ghi qua tệp tạm rồi đổi tên: hai công cụ ghi cùng lúc không bao giờ để lại tệp cụt nửa chừng."""
+    tam = f"{duong}.{os.getpid()}.tmp"
+    try:
+        with open(tam, "w", encoding="utf-8", newline="\n") as fh:
+            json.dump(du_lieu, fh, ensure_ascii=False, indent=1)
+        os.replace(tam, duong)
+    finally:
+        if os.path.exists(tam):
+            try:
+                os.remove(tam)
+            except OSError:
+                pass
+
+
 def ghi_nhat_ky_api(
     trang_thai: str, ly_do: str = "", so_muc: int = 0, nguon: str = "", tep: Optional[str] = None
 ) -> None:
-    """Ghi kết quả lượt gọi gần nhất cho giác quan hòm việc. Lỗi ghi đều nuốt; dưới pytest không đụng tệp THẬT."""
+    """Ghi kết quả lượt gọi gần nhất (theo từng công cụ — `gop_theo_nguon`) cho giác quan hòm việc.
+
+    Lỗi ghi đều nuốt; dưới pytest không đụng tệp THẬT."""
     duong = tep or NHAT_KY_API
     if _duoi_pytest_cham_that(duong, _NK_THAT):
         return
     try:
         import datetime as _dt
 
-        with open(duong, "w", encoding="utf-8", newline="\n") as fh:
-            json.dump(
-                {
-                    "luc": _dt.datetime.now().isoformat(timespec="seconds"),
-                    "trang_thai": str(trang_thai),
-                    "ly_do": str(ly_do)[:200],
-                    "so_muc": int(so_muc),
-                    "nguon": str(nguon)[:80],
-                },
-                fh,
-                ensure_ascii=False,
-                indent=1,
-            )
+        ban_ghi = {
+            "luc": _dt.datetime.now().isoformat(timespec="seconds"),
+            "trang_thai": str(trang_thai),
+            "ly_do": str(ly_do)[:200],
+            "so_muc": int(so_muc),
+            "nguon": str(nguon)[:80],
+        }
+        _ghi_nguyen_tu(duong, gop_theo_nguon(duong, ban_ghi))
     except (OSError, TypeError, ValueError):
         pass
 
