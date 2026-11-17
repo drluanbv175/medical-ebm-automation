@@ -140,7 +140,8 @@ def lam_sach(x: Any) -> str:
     s = re.sub(r"(?:,\s*){2,}", ", ", s)
     for bt, moi in _THAY:
         s = bt.sub(moi, s)
-    s = s.replace("(GIẢ LẬP — hồ sơ chưa có)", CHAM)
+    for cu in ("(GIẢ LẬP — hồ sơ chưa có)", "chưa có thông tin"):  # ô hồ sơ chưa có ⇒ dòng chấm điền tay
+        s = s.replace(cu, CHAM)
     s = re.sub(r"(?<![\w./`-])([a-z][a-z0-9]*_[a-z0-9_]+)(?![\w`])",
                lambda m: NHAN_BIEN.get(m.group(1), "").lower(), s)
     s = re.sub(r"\(\s*\)", "", s)
@@ -651,7 +652,7 @@ def phieu_dong_y(n: Nguon) -> List[str]:
             t = re.sub(r"\bDRAFT\s*", "", t).strip(" ,—")
         if re.search(r"số IRB|Số phê duyệt", t, re.IGNORECASE):
             t = f"Số phê duyệt của Hội đồng Đạo đức: {CHAM}"
-        t = t.replace("(GIẢ LẬP — hồ sơ chưa có)", CHAM)
+        t = t.replace("(GIẢ LẬP — hồ sơ chưa có)", CHAM).replace("chưa có thông tin", CHAM)
         mt = re.match(r"^(\d+[a-h]?)\.\s+(.+)$", t)
         if mt:
             tu = mt.group(2).split()

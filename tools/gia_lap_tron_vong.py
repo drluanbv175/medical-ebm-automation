@@ -208,7 +208,10 @@ O_DA_DONG_RE = re.compile(
     re.S)
 
 
-DIEN_CHUA_CO_HO_SO = "(GIẢ LẬP — hồ sơ chưa có)"
+# 17/11/2026 (bác sĩ: văn bản không mang dấu vết máy): ô mà hồ sơ giả lập KHÔNG có câu trả lời (số phê duyệt, chữ ký,
+# ORCID, số đếm từ dữ liệu thật…) điền lời trung tính của biểu mẫu thật — không bịa giá trị, không nhãn «GIẢ LẬP».
+# Loại ô vẫn được đếm là «chua_co_ho_so» trong báo cáo giả lập.
+DIEN_CHUA_CO_HO_SO = "chưa có thông tin"
 # Dòng ký/ngày điền tay của phiếu đồng ý G2 (khớp cách g2_quality_gate che chỗ ký trước khi đếm ô trống).
 _DONG_KY_G2_RE = re.compile(r"(?i)\b(?:họ(?: và)? tên|ký tên|chữ ký|ký, ghi rõ|participant|witness|investigator|"
                             r"signature|điện thoại|email|phone)\b|_{3,}\s*/\s*_{2,}\s*/")

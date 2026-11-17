@@ -115,7 +115,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ("Điểm mạnh: ngẫu nhiên hoá, kết cục đo khách quan tại phòng khám, cỡ mẫu {n} người, phân tích theo SAP "
              "đã khoá và kiểm chéo SPSS–R khớp. Hạn chế: không làm mù người tham gia (bản chất can thiệp), một cơ sở, "
              "theo dõi 6 tháng nên chưa biết hiệu quả có duy trì, và kết quả chỉ khái quát cho người tăng huyết áp có "
-             "điện thoại nhận tin nhắn. Đây là dữ liệu mô phỏng của bộ giả lập."),
+             "điện thoại nhận tin nhắn."),
             ("Hàm ý cho thực hành: có thể cân nhắc tin nhắn nhắc thuốc như biện pháp bổ trợ chi phí thấp cho người "
              "tăng huyết áp ngoại trú, kèm đánh giá chi phí triển khai. Hướng tiếp: thử nghiệm đa trung tâm theo dõi "
              "≥ 12 tháng, đo tuân thủ khách quan và biến cố tim mạch."),
@@ -125,7 +125,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                      "{pct1}% so với {pct0}% (RR hiệu chỉnh {rr}; KTC 95% {rr_duoi}–{rr_tren}); hiệu số "
                      "{rd_phan_tram} điểm phần trăm, NNT khoảng {nnh}."),
             ket_luan=("Ở người tăng huyết áp điều trị ngoại trú, tin nhắn nhắc uống thuốc làm tăng tỷ lệ kiểm soát "
-                      "huyết áp sau 6 tháng so với chăm sóc thường quy (dữ liệu mô phỏng)."),
+                      "huyết áp sau 6 tháng so với chăm sóc thường quy."),
             ket_cuc_phu=("Kết cục phụ (huyết áp tâm thu trung bình tháng 6; tuân thủ tự khai) chưa phân tích ở đợt này "
                          "— báo cáo riêng theo SAP §2"),
             du_lieu_thieu=("Không có dữ liệu thiếu ở các biến phân tích nên không gán đa trị; phân tích ca đầy đủ là "
@@ -219,7 +219,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ket_qua=("Trong {n_ty_le} người tăng huyết áp điều trị ngoại trú, {so_su_kien} người đạt kiểm soát huyết "
                      "áp: tỷ lệ {ty_le}% (KTC 95% {ty_le_duoi}–{ty_le_tren}%)."),
             ket_luan=("Khoảng một nửa người tăng huyết áp điều trị ngoại trú đạt kiểm soát huyết áp; cần rà soát điều "
-                      "trị cho nhóm chưa đạt đích (dữ liệu mô phỏng)."),
+                      "trị cho nhóm chưa đạt đích."),
             ket_cuc_phu=("Kết cục phụ (yếu tố liên quan kiểm soát huyết áp) chưa phân tích ở đợt này — báo cáo riêng "
                          "theo SAP §2"),
             du_lieu_thieu="Không có dữ liệu thiếu ở biến kết cục nên không gán đa trị (khớp SAP §6)",
@@ -288,7 +288,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ("Điểm mạnh: ca bệnh được xác định bằng nội soi, cỡ mẫu {n} người, phân tích theo SAP đã khoá và kiểm "
              "chéo SPSS–R khớp. Hạn chế: sai lệch nhớ lại về phơi nhiễm, nhiễu tồn dư (rượu, Helicobacter pylori, "
              "aspirin liều thấp), chọn nhóm chứng tại bệnh viện có thể không đại diện, và chỉ khái quát cho người từ "
-             "60 tuổi. Đây là dữ liệu mô phỏng của bộ giả lập."),
+             "60 tuổi."),
             ("Hàm ý cho thực hành: cân nhắc kỹ chỉ định NSAID ở người cao tuổi, ưu tiên liều thấp nhất trong thời gian "
              "ngắn nhất và bảo vệ dạ dày khi có yếu tố nguy cơ. Hướng tiếp: nghiên cứu thuần tập có đo liều, thời gian "
              "dùng và thuốc phối hợp."),
@@ -298,7 +298,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                      "ngày đi kèm odds xuất huyết tiêu hoá trên cao hơn: OR hiệu chỉnh {or_hieu_chinh} (KTC 95% "
                      "{or_hieu_chinh_duoi}–{or_hieu_chinh_tren})."),
             ket_luan=("Ở người từ 60 tuổi, dùng NSAID trong 30 ngày trước liên quan với odds xuất huyết tiêu hoá trên "
-                      "cao hơn; cần cân nhắc chỉ định và bảo vệ dạ dày (dữ liệu mô phỏng)."),
+                      "cao hơn; cần cân nhắc chỉ định và bảo vệ dạ dày."),
             ket_cuc_phu=("Kết cục phụ (mức độ nặng của xuất huyết) chưa phân tích ở đợt này — báo cáo riêng theo SAP "
                          "§2"),
             du_lieu_thieu=("Không có dữ liệu thiếu ở các biến phân tích nên không gán đa trị; phân tích ca đầy đủ là "
@@ -372,8 +372,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
              + "."),
             ("Điểm mạnh: chuẩn tham chiếu đo trên mọi người tham gia, ngưỡng định trước trong SAP, kiểm chéo SPSS–R "
              "khớp. Hạn chế: cỡ mẫu {n} người với {so_tp} + {so_fn} người có bệnh nên KTC rộng, một cơ sở, chưa đánh "
-             "giá ngưỡng thứ hai 1,3 (SAP §5), và phổ bệnh có thể khác cộng đồng. Đây là dữ liệu mô phỏng của bộ giả "
-             "lập."),
+             "giá ngưỡng thứ hai 1,3 (SAP §5), và phổ bệnh có thể khác cộng đồng."),
             ("Hàm ý cho thực hành: tại ngưỡng {nguong}, FIB-4 không đủ để loại trừ xơ hoá tiến triển; nên phối hợp "
              "ngưỡng thấp và đo độ đàn hồi gan theo hướng dẫn hiện hành. Hướng tiếp: nghiên cứu cỡ mẫu lớn hơn, đánh "
              "giá chiến lược hai ngưỡng."),
@@ -382,7 +381,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ket_qua=("Trong {n} người, AUC của FIB-4 là {auc} (KTC 95% {auc_duoi}–{auc_tren}); tại ngưỡng {nguong} độ "
                      "nhạy {do_nhay} và độ đặc hiệu {do_dac_hieu}."),
             ket_luan=("Ở người gan nhiễm mỡ liên quan chuyển hoá điều trị ngoại trú, FIB-4 tại ngưỡng 2,67 có độ nhạy "
-                      "thấp, không đủ để loại trừ xơ hoá tiến triển (dữ liệu mô phỏng)."),
+                      "thấp, không đủ để loại trừ xơ hoá tiến triển."),
             ket_cuc_phu="Độ chính xác tại ngưỡng 1,3 chưa phân tích ở đợt này — báo cáo riêng theo SAP §5",
             du_lieu_thieu=("Không có dữ liệu thiếu ở chỉ số và chuẩn tham chiếu nên không gán đa trị (khớp SAP §6)"),
             giai_thich="Không áp dụng — nghiên cứu độ chính xác chẩn đoán, không đánh giá cơ chế",
@@ -444,7 +443,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ("Điểm mạnh: yếu tố dự báo chọn theo y văn trước khi xem dữ liệu, số biến cố trên mỗi yếu tố đủ lớn, cỡ "
              "mẫu {n} người, kiểm chéo SPSS–R khớp. Hạn chế: C-statistic trong mẫu (bootstrap hiệu chỉnh lạc quan chạy "
              "trong kịch bản R, chưa báo ở đây), chưa kiểm định ngoài, một cơ sở, và chưa có biểu đồ hiệu chuẩn trong "
-             "bản này. Đây là dữ liệu mô phỏng của bộ giả lập."),
+             "bản này."),
             ("Hàm ý cho thực hành: chưa dùng mô hình cho quyết định cá nhân trước khi kiểm định ngoài; có thể dùng để "
              "thử phân tầng theo dõi. Hướng tiếp: kiểm định ngoài ở cơ sở khác, báo hiệu chuẩn và lợi ích ròng "
              "(decision curve)."),
@@ -453,7 +452,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ket_qua=("Trong {n} người suy tim, mô hình gồm tuổi, LVEF, NT-proBNP và eGFR có C-statistic trong mẫu "
                      "{c_statistic} (KTC 95% {c_statistic_duoi}–{c_statistic_tren}) và Brier {brier}."),
             ket_luan=("Mô hình bốn yếu tố dự báo nhập viện 12 tháng ở người suy tim ngoại trú có khả năng phân biệt "
-                      "mức vừa; cần kiểm định ngoài trước khi dùng (dữ liệu mô phỏng)."),
+                      "mức vừa; cần kiểm định ngoài trước khi dùng."),
             ket_cuc_phu="Hiệu chuẩn và hiệu chỉnh lạc quan báo riêng theo SAP §9 (kịch bản R đã sinh)",
             du_lieu_thieu=("Không có dữ liệu thiếu ở các yếu tố dự báo nên không gán đa trị (khớp SAP §6)"),
             giai_thich="Không áp dụng — mô hình dự báo, không ước lượng hiệu ứng nhân quả",
@@ -519,7 +518,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ("Điểm mạnh: chiến lược tìm theo PRISMA-S, đánh giá RoB 2 cho từng thử nghiệm, độ nhạy loại thử nghiệm "
              "nguy cơ sai lệch cao, kiểm chéo R (metafor) và SPSS khớp. Hạn chế: không đồng nhất có thể bị ước lượng "
              "thấp khi ít thử nghiệm lớn chi phối, chưa đánh giá sai lệch công bố (cần ≥ 10 thử nghiệm và biểu đồ "
-             "phễu), và chưa phân nhóm theo thuốc. Đây là dữ liệu mô phỏng của bộ giả lập."),
+             "phễu), và chưa phân nhóm theo thuốc."),
             ("Hàm ý cho thực hành: chứng cứ gộp ủng hộ cân nhắc SGLT2i ở người đái tháo đường típ 2 có nguy cơ tim "
              "mạch để giảm nhập viện vì suy tim, theo hướng dẫn hiện hành. Hướng tiếp: phân nhóm theo thuốc và chức "
              "năng thận, đánh giá mức chắc chắn GRADE."),
@@ -528,7 +527,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ket_qua=("Gộp {k} thử nghiệm: SGLT2i giảm nhập viện vì suy tim với RR {rr_gop} (KTC 95% {rr_gop_duoi}–"
                      "{rr_gop_tren}); I² {i2_pct}%."),
             ket_luan=("Ở người đái tháo đường típ 2 không có suy tim lúc đầu, SGLT2i giảm nhập viện vì suy tim khoảng "
-                      "một phần ba (dữ liệu mô phỏng)."),
+                      "một phần ba."),
             ket_cuc_phu=("Kết cục phụ (tử vong tim mạch; biến cố thận) chưa gộp ở đợt này — báo cáo riêng theo "
                          "đề cương PROSPERO"),
             du_lieu_thieu="Gộp ở cấp nghiên cứu — không có dữ liệu thiếu cấp cá nhân (khớp SAP §6)",
@@ -600,7 +599,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ("Điểm mạnh: chọn mẫu có chủ đích theo tiêu chí đa dạng định trước, hai người mã hoá, nhật ký quyết định "
              "mã hoá, kiểm tra lại với người tham gia. Hạn chế: một cơ sở, người đồng ý phỏng vấn có thể cởi mở hơn, "
              "vai trò của người phỏng vấn (nhân viên y tế) có thể ảnh hưởng câu trả lời, và kết quả không suy rộng "
-             "thống kê. Đây là dữ liệu mô phỏng của bộ giả lập."),
+             "thống kê."),
             ("Hàm ý cho thực hành: khi đề xuất insulin, mời người nhà cùng học cách tiêm và trao đổi kế hoạch phòng hạ "
              "đường huyết khi đi làm. Hướng tiếp: xây dựng và thử nghiệm can thiệp giáo dục có người nhà tham gia."),
         ),
@@ -608,7 +607,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ket_qua=("Từ {n_ban_go_bang} bản gỡ băng, {so_chu_de} chủ đề được xác định; phổ biến nhất là "
                      "«{chu_de_1_ten}» ({chu_de_1_n}/{n_ban_go_bang} bản) và «{chu_de_2_ten}»."),
             ket_luan=("Hỗ trợ của gia đình và nỗi lo hạ đường huyết khi đi làm định hình trải nghiệm bắt đầu insulin "
-                      "của người đái tháo đường típ 2 ngoại trú (dữ liệu mô phỏng)."),
+                      "của người đái tháo đường típ 2 ngoại trú."),
             ket_cuc_phu="Không áp dụng — nghiên cứu định tính không có kết cục phụ định lượng",
             du_lieu_thieu="Không áp dụng — dữ liệu là bản gỡ băng phỏng vấn, không có biến thiếu cần gán",
             giai_thich="Không áp dụng — nghiên cứu định tính mô tả trải nghiệm, không đánh giá cơ chế sinh học",
