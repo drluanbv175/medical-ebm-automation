@@ -1,0 +1,389 @@
+{
+  "study": "btm-dtd2-ngoai-tru-BVQY175",
+  "checked_at_utc": "2026-11-17T06:57:42.774914+00:00",
+  "pmids_checked": [
+    "14567763",
+    "19564179",
+    "21225900",
+    "26440803",
+    "26964707",
+    "27881078",
+    "30238781",
+    "32111192",
+    "33722396",
+    "34554658",
+    "35101868",
+    "35177470",
+    "35606699",
+    "36272764",
+    "36352203",
+    "37153973",
+    "38490803",
+    "38922613",
+    "39023418",
+    "39156845",
+    "39391521",
+    "39487060",
+    "39507052",
+    "40037768",
+    "40335370",
+    "40428801",
+    "40667713",
+    "40814615",
+    "40902917",
+    "41276836",
+    "41345917",
+    "41358881",
+    "41358893",
+    "41358900",
+    "41541781",
+    "41741270",
+    "41916900",
+    "42031191",
+    "42541306",
+    "42575755",
+    "42723263",
+    "42838586"
+  ],
+  "pmids_hash": "882fd204f7427d95e28fa60d843c678fd1b9ab4d192bd3f91944e837cbbebf3e",
+  "all_clean": true,
+  "results": {
+    "30238781": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "41358881": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "38490803": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "36272764": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "38922613": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "33722396": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "41345917": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "41741270": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "40428801": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "36352203": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "41916900": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "42031191": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "26440803": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "34554658": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "14567763": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "26964707": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "19564179": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "21225900": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "40902917": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "32111192": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "40667713": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "39487060": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "42575755": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "40037768": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "39507052": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "41358900": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "35606699": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "41276836": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "35177470": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "41358893": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "42838586": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "42723263": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "42541306": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "41541781": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "40335370": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "39156845": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "35101868": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "39023418": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "37153973": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "39391521": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "40814615": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "27881078": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    }
+  },
+  "receipt_signature": "v4:shared:5f9157c79ea73453611690a51d911e1c3665f2f84c70e7ef803544c6b2fa4676"
+}
