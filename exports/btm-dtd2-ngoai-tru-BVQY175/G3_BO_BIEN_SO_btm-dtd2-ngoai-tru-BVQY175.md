@@ -174,9 +174,9 @@
 - Biến giải thích (12, theo G0): tuổi, giới, nhóm đối tượng, thời gian mắc ĐTĐ, HbA1c gần nhất, insulin, số nhóm thuốc hạ glucose, tăng huyết áp, BMI, tim mạch (xơ vữa hoặc suy tim), số lượt khám, phòng khám theo dõi chính.
 - **Cảnh báo 1 — HbA1c thiếu không ngẫu nhiên:** người không được làm HbA1c nhiều khả năng cũng không được làm UACR. Vì vậy codebook ghi riêng `co_hba1c`. SAP (G4) cần quyết cách xử lý: biến chỉ báo, hoặc phân tích trên người có HbA1c. Không nên chỉ phân tích trên những người có đủ dữ liệu.
 - **Cảnh báo 2 — số lượt khám:** số lượt khám nhiều làm tăng cơ hội được xét nghiệm, nên mối liên quan một phần là do cấu trúc. Cần diễn giải thận trọng.
-- **Đếm tham số của mô hình đa biến (bàn giao cho G3/G4):** khoảng 15 tham số. Một biến phân loại k mức tính k−1 tham số: nhóm đối tượng 4 mức ⇒ 3, phòng khám 3 mức ⇒ 2, mỗi biến còn lại ⇒ 1.
-  - Nếu tỷ lệ xét nghiệm đủ là 25%, nhóm kết cục ít hơn có khoảng 96 người, tức khoảng 6,4 người cho mỗi tham số.
-  - Nếu tỷ lệ xét nghiệm đủ là 50%, nhóm kết cục ít hơn có khoảng 192 người, tức khoảng 12,8 người cho mỗi tham số.
+- **Đếm tham số của mô hình đa biến (bàn giao cho G3/G4):** 16 tham số, khớp SAP và đề cương mục 4.9. Một biến phân loại k mức tính k−1 tham số: nhóm đối tượng 4 mức ⇒ 3, HbA1c gần nhất 3 mức ⇒ 2, phòng khám 3 mức ⇒ 2, mỗi biến còn lại ⇒ 1.
+  - Nếu tỷ lệ xét nghiệm đủ là 25%, nhóm kết cục ít hơn có khoảng 96 người, tức 6,0 người cho mỗi tham số — dưới ngưỡng 10, nên SAP giảm tham số theo thứ tự định trước (đề cương mục 4.9).
+  - Nếu tỷ lệ xét nghiệm đủ là 50%, nhóm kết cục ít hơn có khoảng 192 người, tức 12,0 người cho mỗi tham số.
   - Ngưỡng «10 biến cố mỗi tham số» chỉ là kiểm tra sơ bộ. SAP (G4) quyết có cần gộp mức hay giảm biến hay không.
 
 ## 6. Kiểm chống thiếu và chống thừa
@@ -185,7 +185,8 @@
 - [x] Đủ biến cho mọi kết cục phụ: BTM xác nhận hoặc nghi; nhóm G và A; BTM chưa ghi nhận; chỉ định và sử dụng ACEi/ARB, SGLT2i; chống chỉ định.
 - [x] Đủ 12 biến giải thích MT3 mà G0 đã chốt.
 - [x] Biến chọn mẫu và «không đáp ứng»: phần A ghi cho mọi hồ sơ đã mở, nên dựng được sơ đồ chọn STROBE/RECORD.
-- [x] Biến cho mọi phân tích độ nhạy G1 đã nêu: albumin niệu dạng khác; xét nghiệm và thuốc ngoài viện; lượt khám đầu trước 01/07; danh mục mã thận mở rộng.
+- [x] Biến cho các phân tích độ nhạy G1: albumin niệu dạng khác; xét nghiệm và thuốc ngoài viện; lượt khám đầu trước 01/07; danh mục mã thận mở rộng.
+- [ ] **Chưa có:** biến nguồn cho ĐN4 (kết cục chính chỉ trên người có đơn thuốc hạ glucose). `thuoc_ha_glucose` chỉ ghi đơn của lượt khám cuối, nên chưa xác định được «có đơn thuốc hạ glucose trong năm 2026». Chủ nhiệm quyết ở B10 (mục 10).
 - [x] Biến kiểm soát chất lượng: người trích, ngày trích, thời gian trích.
 - [ ] **Chưa có:** tên xét nghiệm đúng như trên eHospital (mục 7). Chủ nhiệm điền; hai người duyệt trước khi trích (làm cùng quy trình trích, mục 2.8).
 
@@ -252,6 +253,12 @@ Mã ICD-10 theo bảng WHO mà eHospital đang dùng. Mã LOINC ghi ở bảng b
 | B7 | Tuổi dùng cho eGFR | Tuổi tại lượt khám đầu (sai lệch tối đa 1 tuổi) | Ghi năm sinh để tính tuổi tại từng lần xét nghiệm (tăng dữ kiện gần định danh) |
 | B8 | Ghi ngày lượt khám và ngày xét nghiệm | Ghi, rồi đổi thành «ngày thứ trong năm» trước khi chia sẻ tệp | Chỉ ghi tháng (không áp được quy tắc 90 ngày chính xác) |
 | B9 | Mã thiếu | KGHS (hồ sơ không ghi), KDD (không đọc được hoặc mâu thuẫn) | Chủ nhiệm ấn định |
+
+**Chờ chủ nhiệm quyết (18/11/2026):**
+
+| Mã | Câu hỏi | Đề xuất | Lựa chọn khác |
+|---|---|---|---|
+| B10 | Biến nguồn cho ĐN4 (kết cục chính chỉ trên người có đơn thuốc hạ glucose) | Thêm một trường chọn một «Có đơn thuốc hạ glucose ở bất kỳ lượt khám nào năm 2026» (1, Có; 0, Không) và biến phái sinh cờ ĐN4; chỉ ghi có/không, không ghi nhóm thuốc, nên khối lượng trích tăng ít | Đổi định nghĩa ĐN4 trong đề cương và SAP thành «có thuốc hạ glucose tại lượt khám cuối» (dùng ngay `thuoc_ha_glucose`, không thêm trường) |
 
 Đổi một quyết định ở trên về sau thì sửa codebook, chạy lại bộ nạp G5 và ghi lời chủ nhiệm vào phiếu quyết định.
 
