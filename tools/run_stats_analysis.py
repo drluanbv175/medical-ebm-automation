@@ -874,7 +874,10 @@ def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
     elif len(data) < len(predictors) * 10:
         return {"warning": f"Cỡ mẫu {len(data)} có thể không đủ cho {len(predictors)} biến dự báo."}
 
-    X = pd.get_dummies(data[predictors], drop_first=True)
+    # 17/11/2026 (việc treo từ 14/11): hiệp biến CHỮ (vd nghề: cong_chuc/nong_dan/khac) được get_dummies mã hoá nhưng
+    # pandas 3 trả cột giả kiểu bool ⇒ trộn với cột số thành mảng object ⇒ statsmodels từ chối («Pandas data cast to
+    # numpy dtype of object») và mô hình bị báo nhầm «không hội tụ». Ép float — cùng cách nhánh Poisson đã làm.
+    X = pd.get_dummies(data[predictors], drop_first=True).astype(float)
     X = sm.add_constant(X)
     y = data[outcome_col].astype(float)
 
@@ -929,7 +932,9 @@ def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
             return _gan_thong_tin_cum({"model": "linear", "n": len(data), "r_squared": round(model.rsquared, 4),
                                        "results": results}, data, cluster_col)
     except Exception as e:
-        return {"error": str(e), "note": "[CẦN BIOSTATISTICIAN — mô hình không hội tụ]"}
+        # Lỗi ở đây gồm cả lỗi DỮ LIỆU (kiểu biến, ma trận suy biến) — không chỉ không hội tụ; ghi đúng bản chất.
+        return {"error": str(e), "note": "[CẦN BIOSTATISTICIAN — mô hình không chạy được (dữ liệu đầu vào, ma trận "
+                                         "suy biến hoặc không hội tụ): xem «error»]"}
 
 
 # ════════════════════════════════════════════════════════════════════════════
