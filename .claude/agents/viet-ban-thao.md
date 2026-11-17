@@ -159,6 +159,12 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact manuscript
 - Đề cương nộp, phiếu đồng ý trong phụ lục, bản Word và mọi văn bản người đọc đều đọc như văn bản hoàn chỉnh của nhóm nghiên cứu: KHÔNG «bản nháp/DRAFT», «do AI/máy soạn», «tự động sinh», «cần bác sĩ kiểm chứng», chú thích HTML `<!-- … -->`, nhãn «(giả lập)»/«(GIẢ LẬP — hồ sơ chưa có)», dòng «mức tự động». K8 của `kiem_de_cuong_nop_hoi_dong.py` chặn các cụm này theo từng dòng.
 - Lời nhắc kiểm chứng và nguồn gốc máy KHÔNG biến mất mà chuyển chỗ: dấu `_dau_may_sinh/`, README/HƯỚNG DẪN của gói bàn giao (đề tài tổng hợp ghi một lần ở đó), và lời báo trong khung chat. Không chép chúng ngược vào văn bản nộp.
 - Hướng dẫn phỏng vấn dựng khi chủ nhiệm chưa khai `interview_guide` không mang nhãn «bản nháp» — chủ nhiệm sửa trực tiếp trên văn bản.
+- Đo trên đề cương BTM thật (17/11/2026) — bộ sinh nay tự xử lý, agent KHÔNG vá tay bản máy:
+  - trích dẫn liền trong trường G1 («KDIGO 2024 (PMID 38490803)», «PMID n, DOI …») đổi thành số Vancouver khi PMID đã qua A12, bỏ khi chưa (lớp bọc `_TruongTrichDan`);
+  - cụm dẫn tệp nội bộ («Theo G0 §3.0:», «Theo G0_KHOANG_TRONG (…):»), «(biến XN_DU)», «G8–G9», «N/A» bị gỡ khỏi văn xuôi; nhãn biến phái sinh lấy từ `_bien-phai-sinh.csv`, giữ chữ viết tắt (ACEi/ARB, KDIGO, UACR);
+  - Bảng 3.1: loại tài liệu ưu tiên dấu hiệu hướng dẫn MẠNH ở tiêu đề («Standards of Care», «Clinical Practice Guideline»), bài không tác giả cá nhân ghi tên tổ chức (ADA, KDIGO), mỗi tổ chức một dòng;
+  - cắt ngang có mục tiêu phân tích ⇒ «cắt ngang mô tả có phân tích»; mục sai số dựng bảng từ `gate_params.G1.bias_controls`; biến tính toán ghi công thức đọc được, không cú pháp REDCap.
+  K1–K8 ĐẠT không có nghĩa văn bản đã sạch: đọc lại như người phản biện, lỗi nào lặp lại thì sửa ở bộ sinh + thêm phép thử.
 
 ## Đề tài hỗn hợp định lượng–định tính (17/11/2026)
 - Đề tài mang mã thiết kế của CẤU PHẦN ĐỊNH LƯỢNG; cấu phần định tính + tích hợp khai ở `gate_params.G1.mixed_methods` (xem `nghien-cuu-dinh-tinh`). Đề cương nộp tự có: câu thiết kế hỗn hợp (mô hình Creswell & Plano Clark, mức ưu tiên, lý do) + báo cáo theo GRAMMS và COREQ; mục «Cấu phần định tính và tích hợp dữ liệu»; «Khung bảng tích hợp kết quả định lượng và định tính (joint display)» ở mục 5 với cột nhận định hội tụ/bổ sung/bất đồng; Phụ lục C gồm C1 phiếu thu thập số liệu và C2 hướng dẫn phỏng vấn.

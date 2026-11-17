@@ -665,6 +665,13 @@ def ap_xin_mien_icf(risk: dict, design_code: str, meta: Optional[dict]) -> dict:
     return dict(risk, icf_waiver_eligible=True)
 
 
+# Dấu mà `thu_gon_icf_khi_xin_mien` để lại thay cho phiếu đồng ý — guardrail R6/R6b đọc nó (17/11/2026).
+GHI_CHU_MIEN_ICF = "KHÔNG ÁP DỤNG — chủ nhiệm xin MIỄN phiếu đồng ý"
+# bước làm sạch văn bản đổi «— chủ nhiệm» thành «. Chủ nhiệm» trước khi guardrail đọc ⇒ so bằng mẫu, không so nguyên văn
+_GHI_CHU_MIEN_ICF_RE = re.compile(r"KHÔNG ÁP DỤNG\W+chủ nhiệm xin MIỄN phiếu đồng ý", re.I)
+_TAI_LIEU_9_MIEN_ICF = re.compile(r"^## TÀI LIỆU 9\b[^\n]*MIỄN ICF", re.M)
+
+
 def thu_gon_icf_khi_xin_mien(text: str, design_code: str, meta: Optional[dict]) -> str:
     """PI xin miễn ICF ⇒ TÀI LIỆU 4/5 (phiếu đồng ý tiếng Việt/Anh) thành ghi chú «không áp dụng» (15/11/2026).
 
@@ -678,7 +685,7 @@ def thu_gon_icf_khi_xin_mien(text: str, design_code: str, meta: Optional[dict]) 
         return text
     m5 = re.search(r"## TÀI LIỆU 5\b[^\n]*", m.group(2))
     tieu_de_5 = m5.group(0) if m5 else "## TÀI LIỆU 5 — ICF TIẾNG ANH"
-    thay = (f"{m.group(1)}\nKHÔNG ÁP DỤNG — chủ nhiệm xin MIỄN phiếu đồng ý (`gate_params.G2.icf_waiver_requested` = "
+    thay = (f"{m.group(1)}\n{GHI_CHU_MIEN_ICF} (`gate_params.G2.icf_waiver_requested` = "
             "true; đơn xin miễn ở TÀI LIỆU 9). Nếu Hội đồng Đạo đức KHÔNG chấp thuận miễn: đặt "
             "`icf_waiver_requested` = false rồi chạy lại `run_g2_auto.py` để sinh phiếu đồng ý đầy đủ.\n\n---\n\n"
             f"{tieu_de_5}\n\nNOT APPLICABLE — informed consent waiver requested (see Document 9).\n\n---\n\n")
@@ -2295,9 +2302,23 @@ def guardrail_check_g2(artifact: str) -> dict:
     warnings.append(f"R5 ℹ️ còn {can_count} ô [CẦN...] chờ dữ kiện thật (thông tin — độ sẵn sàng do g2_quality_gate chấm)")
 
     # R6 — 7 mục ICF gốc đủ
-    icf_sections = ["MỤC ĐÍCH", "QUY TRÌNH", "RỦI RO", "LỢI ÍCH", "BẢO MẬT", "TỰ NGUYỆN", "LIÊN HỆ"]
+    # 17/11/2026: đề tài XIN MIỄN phiếu đồng ý — thu_gon_icf_khi_xin_mien (15/11) thay phiếu bằng ghi chú «không áp dụng»
+    # nhưng R6/R6b vẫn đòi đủ mục ⇒ MỌI đề tài xin miễn bị báo đỏ giả (đo trên BTM sinh lại 17/11). Có ghi chú miễn VÀ
+    # có đơn xin miễn (TÀI LIỆU 9) ⇒ R6/R6b không áp dụng; ghi chú miễn mà KHÔNG có đơn ⇒ lỗi (phiếu bị bỏ không lý do).
+    if _GHI_CHU_MIEN_ICF_RE.search(artifact):
+        if _TAI_LIEU_9_MIEN_ICF.search(artifact):
+            warnings.append("R6/R6b ℹ️ không áp dụng — chủ nhiệm xin miễn phiếu đồng ý (đơn xin miễn ở TÀI LIỆU 9; Hội "
+                            "đồng Đạo đức quyết định)")
+        else:
+            errors.append("R6 🔴 Phiếu đồng ý được thay bằng ghi chú xin miễn nhưng hồ sơ KHÔNG có đơn xin miễn "
+                          "(TÀI LIỆU 9)")
+        icf_sections = []
+    else:
+        icf_sections = ["MỤC ĐÍCH", "QUY TRÌNH", "RỦI RO", "LỢI ÍCH", "BẢO MẬT", "TỰ NGUYỆN", "LIÊN HỆ"]
     missing = [s for s in icf_sections if s not in artifact.upper()]
-    if missing:
+    if not icf_sections:
+        pass
+    elif missing:
         errors.append(f"R6 🔴 ICF thiếu mục: {', '.join(missing)}")
     else:
         warnings.append("R6 ✅ ICF đủ 7 mục Helsinki")
@@ -2315,7 +2336,9 @@ def guardrail_check_g2(artifact: str) -> dict:
         "6c. BỒI THƯỜNG KHI CÓ TỔN HẠI": "bồi thường tổn hại (Helsinki §26)",
     }
     missing_sub = [label for marker, label in icf_subsections.items() if marker not in artifact]
-    if missing_sub:
+    if _GHI_CHU_MIEN_ICF_RE.search(artifact):
+        pass  # xin miễn phiếu đồng ý — đã xử lý ở R6
+    elif missing_sub:
         errors.append(f"R6b 🔴 ICF thiếu mục con bắt buộc (Helsinki §26): {', '.join(missing_sub)}")
     else:
         warnings.append("R6b ✅ ICF đủ 4 mục con bắt buộc Helsinki §26 (1b/4b/4c/6c)")

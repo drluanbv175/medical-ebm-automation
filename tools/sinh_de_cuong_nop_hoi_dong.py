@@ -66,6 +66,11 @@ _BO_HAN = [re.compile(x, re.IGNORECASE) for x in (
     r"\s*\(`[^`()]+`\)",                                                      # (`nhom`)
     r"⚠️?\s*",
     r"\s*\(DRAFT[^()]*\)",
+    # 17/11/2026 (đề cương BTM): cụm dẫn TỆP NỘI BỘ mở đầu câu «Theo G0 §3.0:», «Theo G0_KHOANG_TRONG (25/10/2026):»
+    # — từng thành «Theo:» hoặc lộ nguyên tên tệp; tên biến trong ngoặc «(biến XN_DU)» thuộc bảng biến số, không thuộc
+    # văn xuôi.
+    r"\bTheo\s+(?:G\d{1,2}(?:\s*§\s*[\d.]*\d)?|[A-Z][A-Z0-9]*_[A-Z0-9_]+)(?:\s*\([^()]*\))?\s*:\s*",
+    r"\s*\(biến\s+[A-Za-z][A-Za-z0-9]*_[A-Za-z0-9_]+\)",
 )]
 # Thay cụm nội bộ bằng cách nói của văn bản nộp.
 _THAY = [(re.compile(a, re.IGNORECASE), b) for a, b in (
@@ -81,6 +86,8 @@ _THAY = [(re.compile(a, re.IGNORECASE), b) for a, b in (
     (r"\bSAP\b", "kế hoạch phân tích thống kê"),
     (r"\bPI-REF-\d+\b", "chủ nhiệm đề tài"),
     (r"\bmã vai trò\b", ""),
+    (r"\s*\bG\d{1,2}\s*[–-]\s*G\d{1,2}\b", ""),  # «liêm chính G8–G9 (…)» (17/11/2026, lịch trình BTM)
+    (r"\bN/A\b", "Không áp dụng"),
     (r"\s+(?:ở|tại|theo)\s+(?:cổng\s+)?G\d{1,2}\b", ""),
     (r"\bcổng\s+G\d{1,2}\b", "bước thẩm định"),
     (r"\bG(?:0|[1-9]|10)\b(?!\s*[–-]\s*G)", ""),
@@ -121,6 +128,15 @@ NHAN_BIEN: Dict[str, str] = {}  # tên biến → nhãn (Nguon nạp từ từ �
 _TEN_BIEN_TRAN = re.compile(r"`([a-z][a-z0-9_]*)`")
 
 
+def _nhan_giua_cau(nhan: str) -> str:
+    """Nhãn biến lồng vào giữa câu: hạ chữ đầu thường, GIỮ từ viết tắt (17/11/2026 — bản cũ `.lower()` cả nhãn ⇒
+    «acei/arb theo kdigo 2022», «uacr», «mt3» trong đề cương BTM)."""
+    nhan = str(nhan or "").strip()
+    if len(nhan) > 1 and nhan[0].isupper() and not nhan[1].isupper():
+        return nhan[0].lower() + nhan[1:]
+    return nhan
+
+
 def lam_sach(x: Any) -> str:
     """Chuỗi sạch dấu vết nội bộ — dùng cho MỌI giá trị đi vào văn xuôi của đề cương nộp."""
     if x is None:
@@ -134,7 +150,7 @@ def lam_sach(x: Any) -> str:
         for bt in _BO_HAN:
             s = bt.sub("", s)
     s = _TEN_BIEN_TRONG_NGOAC.sub(lambda m: m.group(2), s)
-    s = _TEN_BIEN_TRAN.sub(lambda m: NHAN_BIEN.get(m.group(1), "").lower(), s)
+    s = _TEN_BIEN_TRAN.sub(lambda m: _nhan_giua_cau(NHAN_BIEN.get(m.group(1), "")), s)
     # định danh máy dạng ten_bien còn trần trong câu (vd «chiều kết cục higher_better» của SAP): nhãn biến nếu có
     # trong từ điển, không thì bỏ — tên biến chỉ được ở bảng/phụ lục (K4)
     s = re.sub(r"(?:,\s*){2,}", ", ", s)
@@ -143,8 +159,11 @@ def lam_sach(x: Any) -> str:
     for cu in ("(GIẢ LẬP — hồ sơ chưa có)", "chưa có thông tin"):  # ô hồ sơ chưa có ⇒ dòng chấm điền tay
         s = s.replace(cu, CHAM)
     s = re.sub(r"(?<![\w./`-])([a-z][a-z0-9]*_[a-z0-9_]+)(?![\w`])",
-               lambda m: NHAN_BIEN.get(m.group(1), "").lower(), s)
+               lambda m: _nhan_giua_cau(NHAN_BIEN.get(m.group(1), "")), s)
     s = re.sub(r"\(\s*\)", "", s)
+    s = re.sub(r"\(\s*[,;]\s*", "(", s)  # «(G10, từ 29/04/2027)» sau khi bỏ ký hiệu cổng
+    s = re.sub(r"\s*[,;]\s*\)", ")", s)  # «(thiết kế theo độ chính xác,)» sau khi bỏ tham chiếu mục
+    s = re.sub(r"\s*\(\s*\)", "", s)
     s = re.sub(r"\s+([,;.:)])", r"\1", s)
     s = re.sub(r"\(\s+", "(", s)
     s = re.sub(r"([,;])\1+", r"\1", s)
@@ -262,7 +281,15 @@ class TrichDan:
             k = self.so(m.group(1))
             return f"[{k}]" if k else ""
 
-        return re.sub(r"PMID:?\s*(\d{5,9})", _tran, text)
+        # 17/11/2026 (đề cương BTM): «PMID n, DOI 10.x/…» — DOI đi kèm cùng một bài ⇒ thay/bỏ cả cụm; bỏ PMID chưa kiểm
+        # để lại khoảng trắng trước dấu câu ⇒ dọn (chỉ khi thực sự có PMID bị thay, không đụng văn bản khác).
+        moi = re.sub(r"PMID:?\s*(\d{5,9})(?:\s*[,;]?\s*(?:DOI|doi)\s*:?\s*10\.\d{4,9}/[^\s,;)]*[^\s,;).])?", _tran,
+                     text)
+        if moi != text:
+            moi = re.sub(r"[ \t]+([,.;:)])", r"\1", moi)
+            moi = re.sub(r"\([ \t]+", "(", moi)
+            moi = re.sub(r"[ \t]{2,}", " ", moi)
+        return moi
 
     def nguon(self, s: Any) -> Tuple[str, str]:
         """Tách chuỗi nguồn «PMID: n (Nhãn) — mô tả» thành (cụm nhắc nguồn có số [k], mô tả đã sạch)."""
@@ -326,6 +353,33 @@ def _doc_csv(p: Path) -> List[Dict[str, str]]:
 _TIEU_DE_CHUAN = {"GRAMMS": "QUALITY OF MIXED METHODS STUDIES"}
 
 
+def nap_nhan_bien_phai_sinh(out_dir: Path) -> None:
+    """Nhãn biến PHÁI SINH (xn_du, phan_loai_btm…) từ `_bien-phai-sinh.csv` vào NHAN_BIEN (không đè nhãn từ điển thô).
+
+    17/11/2026 (đề cương BTM): biến phái sinh không có trong từ điển thô ⇒ tên biến trong văn xuôi bị xoá trơn
+    («người có khác 9»). Bỏ tiền tố vai trò «KẾT CỤC CHÍNH —» của nhãn."""
+    for r in _doc_csv(Path(out_dir) / "_bien-phai-sinh.csv"):
+        ten, nhan = str(r.get("ten_bien") or "").strip(), str(r.get("nhan") or "").strip()
+        if ten and nhan:
+            NHAN_BIEN.setdefault(ten, re.sub(r"^\s*kết\s+cục\s+(?:chính|phụ)[^—–]*[—–]\s*", "", nhan, flags=re.I))
+
+
+class _TruongTrichDan(dict):
+    """Trường G1 do PI viết: `.get` đổi trích dẫn liền «PMID n» thành số Vancouver (PMID đã qua A12) hoặc bỏ (chưa
+    qua) NGAY lúc đọc — tức theo đúng thứ tự xuất hiện trong văn bản như mọi trích dẫn khác (17/11/2026). Đo trên BTM:
+    22 chỗ in trường G1 tự do (lý do thiết kế, thời điểm kết cục…) từng in PMID thô vào văn bản nộp (K6). Chuỗi không
+    có «PMID» và giá trị không phải chuỗi giữ nguyên."""
+
+    def __init__(self, goc: Any, nguon: "Nguon") -> None:
+        super().__init__(goc if isinstance(goc, dict) else {})
+        self._nguon = nguon
+
+    def get(self, k: Any, mac_dinh: Any = None) -> Any:
+        v = super().get(k, mac_dinh)
+        td = getattr(self._nguon, "td", None)
+        return td.thay(v) if isinstance(v, str) and td is not None and "PMID" in v else v
+
+
 class Nguon:
     """Gom dữ kiện đã chốt của một đề tài (chỉ đọc)."""
 
@@ -343,6 +397,7 @@ class Nguon:
         self.spec = RS.build_study_spec(study, self.cps, self.meta, sap=sap)
         gp = self.meta.get("gate_params") or {}
         self.g0, self.g1, self.g2, self.g3 = (gp.get(g) or {} for g in ("G0", "G1", "G2", "G3"))
+        self.g1 = _TruongTrichDan(self.g1, self)
         self.g3cp = self.cps.get("G3") or {}
         self.thiet_ke = str(self.g1.get("design") or (self.spec.get("design") or {}).get("code") or
                             self.g3cp.get("design_code") or "").strip()
@@ -355,6 +410,7 @@ class Nguon:
         NHAN_BIEN.clear()
         NHAN_BIEN.update({r.get("Variable / Field Name", ""): re.sub(r"\s*\([^()]*\)$", "", r.get("Field Label") or "")
                           for r in self.tu_dien if r.get("Variable / Field Name")})
+        nap_nhan_bien_phai_sinh(self.out)
         md, sach = _trich_dan(self.out)
         self.td = TrichDan(md, sach)
         self.ung_vien = self._ung_vien()
@@ -567,6 +623,22 @@ def phieu_thu_thap(n: Nguon) -> List[str]:
     return dong
 
 
+def cong_thuc_doc(calc: Any) -> str:
+    """Công thức biến tính toán (trường calc REDCap) dạng người đọc: bỏ ngoặc vuông tên biến, tách round(…, k) thành
+    «làm tròn k chữ số thập phân», mũ 2 ⇒ «²». 17/11/2026: trước đó công thức đi qua bộ tách lựa chọn «mã, nhãn» ⇒
+    dấu phẩy của round() bị cắt thành «round(([tuoi]*[ast])/(…)) = 2)» (FIB-4 giả lập, BMI của BTM)."""
+    t = re.sub(r"\s+", " ", str(calc or "")).strip()
+    lam_tron = None
+    m = re.fullmatch(r"round\((.*),\s*(\d+)\s*\)", t, re.I)
+    if m:
+        t, lam_tron = m.group(1).strip(), m.group(2)
+    t = re.sub(r"\[([A-Za-z_][A-Za-z0-9_]*)\]", r"\1", t)
+    t = re.sub(r"\s*\^\s*2\b", "²", t)
+    if not t:
+        return "Tính toán từ các biến khác"
+    return f"= {t}" + (f" (làm tròn {lam_tron} chữ số thập phân)" if lam_tron else "")
+
+
 def bang_bien_so(n: Nguon) -> List[str]:
     if not n.tu_dien:
         return [f"Bảng biến số: {CHAM}"]
@@ -574,8 +646,11 @@ def bang_bien_so(n: Nguon) -> List[str]:
     dong = ["| Mã biến | Tên biến | Loại biến | Giá trị/cách mã hoá | Nguồn thu thập |", "|---|---|---|---|---|"]
     for r in n.tu_dien:
         ten = r.get("Variable / Field Name") or ""
-        lc = _lua_chon(r.get("Choices, Calculations, OR Slider Labels"))
-        if lc:
+        la_calc = (r.get("Field Type") or "").strip() == "calc"
+        lc = [] if la_calc else _lua_chon(r.get("Choices, Calculations, OR Slider Labels"))
+        if la_calc:
+            ma = cong_thuc_doc(r.get("Choices, Calculations, OR Slider Labels"))
+        elif lc:
             ma = "; ".join(f"{a} = {lam_sach(b)}" for a, b in lc)
         elif (r.get("Field Type") or "") in ("yesno", "truefalse"):
             ma = "1 = Có; 0 = Không"
@@ -746,6 +821,17 @@ _TEN_THIET_KE = {
     "sr_ma": "tổng quan hệ thống và phân tích gộp",
     "qualitative": "nghiên cứu định tính",
 }
+def ten_thiet_ke(n: "Nguon") -> str:
+    """Tên thiết kế cho văn xuôi: cắt ngang có mục tiêu PHÂN TÍCH ⇒ «cắt ngang mô tả có phân tích» (17/11/2026 — trục
+    mo_ta_thiet_ke TK-01 báo đề cương BTM ghi «cắt ngang mô tả» dù MT3 phân tích yếu tố liên quan)."""
+    import skill_standards as SK  # noqa: PLC0415
+
+    ten = _TEN_THIET_KE.get(n.thiet_ke, "")
+    if n.thiet_ke == "cross_sectional" and SK.co_muc_tieu_phan_tich(n.g1.get("objectives")):
+        ten = "nghiên cứu cắt ngang mô tả có phân tích"
+    return ten
+
+
 _CHUAN = {
     "rct": ("SPIRIT 2025", "CONSORT 2025"), "cohort": ("STROBE", "STROBE"), "case_control": ("STROBE", "STROBE"),
     "cross_sectional": ("STROBE", "STROBE"), "diagnostic": ("STARD 2015", "STARD 2015"),
@@ -836,21 +922,41 @@ _LOAI_BAI = (("sr_ma", "Tổng quan hệ thống/phân tích gộp"), ("guidelin
              ("rct", "Thử nghiệm ngẫu nhiên"), ("observational", "Nghiên cứu quan sát"))
 
 
+# Dấu hiệu MẠNH của văn bản hướng dẫn/đồng thuận ở tiêu đề (17/11/2026, đề cương BTM): ADA «Standards of Care» nằm ở
+# nhánh tổng quan của G0 (PubMed gắn «Review») mà vẫn là hướng dẫn; ngược lại một nghiên cứu quan sát «… according to
+# … guidelines …» KHÔNG phải hướng dẫn — chỉ nhắc chữ «guideline» không đủ.
+_HUONG_DAN_MANH = re.compile(r"standards of (?:medical )?care|clinical practice guideline|\bguidelines? (?:for|on)\b|"
+                             r"consensus (?:statement|report)|position statement|recommendations? (?:for|on)\b|"
+                             r"summit recommendations", re.I)
+
+
 def _loai_bai(n: Nguon, pmid: str) -> str:
-    """Loại tài liệu theo nhánh tìm của G0 (lọc publication type của PubMed); ngoài các nhánh ⇒ suy từ tiêu đề."""
+    """Loại tài liệu: dấu hiệu hướng dẫn MẠNH ở tiêu đề trước, rồi nhánh tìm của G0 (lọc publication type của PubMed);
+    ngoài các nhánh ⇒ suy từ tiêu đề."""
+    if _HUONG_DAN_MANH.search(str((n.td.md.get(pmid) or {}).get("title") or "")):
+        return _LOAI_BAI[1][1]
     for k, nhan in _LOAI_BAI:
         if any(isinstance(x, dict) and str(x.get("pmid")) == pmid for x in n.g0raw.get(k) or []):
             return nhan
     t = str((n.td.md.get(pmid) or {}).get("title") or "").lower()
     if re.search(r"systematic review|meta-analys|umbrella review", t):
         return _LOAI_BAI[0][1]
-    if re.search(r"guideline|consensus statement|recommendation", t):
+    if _HUONG_DAN_MANH.search(t):
         return _LOAI_BAI[1][1]
     if re.search(r"randomi[sz]ed|randomi[sz]ation|\btrial\b", t):
         return _LOAI_BAI[2][1]
     if re.search(r"cohort|case-control|cross-sectional|observational", t):
         return _LOAI_BAI[3][1]
     return "Nghiên cứu khác"
+
+
+def _tac_gia_to_chuc(tieu_de: str) -> str:
+    """Tác giả TỔ CHỨC khi metadata PubMed không có tác giả cá nhân (17/11/2026 — bảng 3.1 từng ghi «Tác giả và cộng
+    sự» cho ADA/KDIGO): suy từ tiêu đề; không suy được ⇒ «Nhóm tác giả»."""
+    if re.search(r"standards of (?:medical )?care in diabetes", tieu_de, re.I):
+        return "Hiệp hội Đái tháo đường Hoa Kỳ (ADA)"
+    m = re.match(r"\s*([A-Z]{3,}(?:/[A-Z]{2,})?)\b", tieu_de)
+    return m.group(1) if m else "Nhóm tác giả"
 
 
 def _ngay_vn(x: Any) -> str:
@@ -901,17 +1007,26 @@ def chuong_tong_quan(n: Nguon, con_lai: Sequence[str] = ()) -> List[str]:
         tran = {_LOAI_BAI[0][1]: 5, _LOAI_BAI[1][1]: 3, _LOAI_BAI[2][1]: 4}  # bảng cân đối các loại bằng chứng
         dem_loai: Dict[str, int] = {}
         chon = []
+        to_chuc_da_co: set = set()
         for p in chinh:
             lb = _loai_bai(n, p)
+            m = td.md.get(p) or {}
+            # 17/11/2026: mỗi tổ chức tác giả một dòng — ba chương ADA Standards từng chiếm cả ba suất «hướng dẫn», đẩy
+            # KDIGO 2024 (hướng dẫn trung tâm của đề tài BTM) ra khỏi bảng
+            to_chuc = "" if str(m.get("authors") or "").strip() else _tac_gia_to_chuc(str(m.get("title") or ""))
+            if to_chuc and to_chuc != "Nhóm tác giả" and to_chuc in to_chuc_da_co:
+                continue
             if dem_loai.get(lb, 0) < tran.get(lb, 0):
+                if to_chuc:
+                    to_chuc_da_co.add(to_chuc)
                 dem_loai[lb] = dem_loai.get(lb, 0) + 1
                 chon.append(p)
         for p in chon:
             m = td.md.get(p) or {}
             tg = str(m.get("authors") or "").split(",")[0].strip()
-            ho = tg.split(" ")[0] if tg else "Tác giả"
             k = td.so(p)
-            dong.append(f"| {ho} và cộng sự [{k}] | {str(m.get('year') or '')[:4]} | {_loai_bai(n, p)} | "
+            ten_tg = f"{tg.split(' ')[0]} và cộng sự" if tg else _tac_gia_to_chuc(str(m.get("title") or ""))
+            dong.append(f"| {ten_tg} [{k}] | {str(m.get('year') or '')[:4]} | {_loai_bai(n, p)} | "
                         f"{lam_sach(str(m.get('title') or '')).rstrip('.')} |")
         dong.append("")
     if con_lai:
@@ -1090,8 +1205,25 @@ def doan_co_mau(n: Nguon) -> List[str]:
     return [" ".join(dong)]
 
 
+def bang_sai_lech(ds: Any) -> List[str]:
+    """Bảng «nguồn sai lệch · chiều ảnh hưởng · biện pháp khống chế» từ sổ kiểm soát sai lệch G1 đã chốt
+    (`gate_params.G1.bias_controls` = [{sai_lech, bien_phap, chieu, …}]). 17/11/2026: bộ sinh chỉ đọc khoá cấp ngoài
+    cùng của study_meta ⇒ mục sai số của đề cương BTM để trống dù PI đã chốt 11 nguồn sai lệch. Không có sổ ⇒ []."""
+    hang = [x for x in (ds if isinstance(ds, list) else []) if isinstance(x, dict) and _co(x.get("sai_lech"))]
+    if not hang:
+        return []
+    ra = ["| Nguồn sai lệch | Chiều ảnh hưởng dự kiến | Biện pháp khống chế |", "|---|---|---|"]
+    for x in hang:
+        ra.append(f"| {_cau(x.get('sai_lech')).rstrip('.')} | {_cau(x.get('chieu')) or CHAM} | "
+                  f"{_cau(x.get('bien_phap')) or CHAM} |")
+    return ra + [""]
+
+
 def _g1(n: Nguon, k: str) -> str:
-    return lam_sach(n.g1.get(k))
+    # 17/11/2026: trường G1 do PI viết có thể chứa trích dẫn liền («KDIGO 2024 (PMID 38490803)») ⇒ đổi thành số
+    # Vancouver khi PMID đã qua A12, bỏ khi chưa (đề cương nộp không in PMID thô — K6, đo trên BTM).
+    v = n.g1.get(k)
+    return lam_sach(n.td.thay(str(v)) if isinstance(v, str) else v)
 
 
 def chuong_phuong_phap(n: Nguon) -> List[str]:
@@ -1110,7 +1242,7 @@ def chuong_phuong_phap(n: Nguon) -> List[str]:
     ly_do = re.sub(r"^.*?Lý do của PI:\s*", "", ly_do)
     ly_do = re.sub(r"^Câu hỏi [^—]*—\s*", "", ly_do)
     de_cuong, bao_cao = _CHUAN.get(tk, ("", ""))
-    cau = f"Nghiên cứu được thiết kế theo phương pháp {_TEN_THIET_KE.get(tk, lam_sach(n.s('design', 'label')))}."
+    cau = f"Nghiên cứu được thiết kế theo phương pháp {ten_thiet_ke(n) or lam_sach(n.s('design', 'label'))}."
     tu_tk = set(re.findall(r"\w+", cau.lower()))
     tu_ld = re.findall(r"\w+", ly_do.lower())
     if ly_do and sum(t in tu_tk for t in tu_ld) < 0.6 * len(tu_ld):
@@ -1227,9 +1359,9 @@ def chuong_phuong_phap(n: Nguon) -> List[str]:
     # Biến số
     muc("Biến số và chỉ số nghiên cứu")
     kc = n.g1.get("primary_outcome") if isinstance(n.g1.get("primary_outcome"), dict) else {}
-    ten_kc = lam_sach(kc.get("name") or n.s("outcomes", "primary", "name"))
-    do_kc = lam_sach(kc.get("measure") or n.s("outcomes", "primary", "definition"))
-    tg_kc = lam_sach(kc.get("timepoint") or n.s("outcomes", "primary", "timepoint"))
+    ten_kc = lam_sach(n.td.thay(str(kc.get("name") or n.s("outcomes", "primary", "name") or "")))
+    do_kc = lam_sach(n.td.thay(str(kc.get("measure") or n.s("outcomes", "primary", "definition") or "")))
+    tg_kc = lam_sach(n.td.thay(str(kc.get("timepoint") or n.s("outcomes", "primary", "timepoint") or "")))
     nhan_kc = "Hiện tượng nghiên cứu" if tk == "qualitative" else "Kết cục chính"
     tg = _thuong(tg_kc)
     tg = tg if re.match(r"(?:tại|trong|sau|vào|lúc|khi|ở)\b", tg) else f"tại {tg}"  # không «tại trong 3 tháng»
@@ -1237,6 +1369,7 @@ def chuong_phuong_phap(n: Nguon) -> List[str]:
                 + (f", đánh giá {tg}" if tg_kc else "") + ".")
     phu = _danh_sach(n.g1.get("secondary_outcomes")) or [lam_sach((x or {}).get("name")) for x in
                                                           (n.s("outcomes", "secondary") or []) if isinstance(x, dict)]
+    phu = [lam_sach(n.td.thay(str(x))) for x in phu]
     if phu:
         dong.append("- Kết cục phụ: " + "; ".join(_thuong(x) for x in phu if x) + ".")
     hiep = [lam_sach(r.get("khai_niem")) for r in n.ma_tran if r.get("vai_tro") in ("hiep_bien", "nhieu", "mo_ta")]
@@ -1267,10 +1400,14 @@ def chuong_phuong_phap(n: Nguon) -> List[str]:
         dong += ([f"{i}. {_cau(b)}" for i, b in enumerate(buoc, 1)] if len(buoc) > 1 else [_cau(so_do)]) + [""]
     # Sai số
     muc("Sai số và biện pháp khống chế sai số")
-    rui = n.meta.get("bias_risks") or n.s("bias", "risks")
-    kiem = n.meta.get("bias_controls") or n.s("bias", "mitigations")
-    dong += [f"- Nguồn sai số có thể gặp: {_thuong(rui)}." if _co(rui) else f"- Nguồn sai số: {CHAM}",
-             f"- Biện pháp khống chế: {_thuong(kiem)}." if _co(kiem) else f"- Biện pháp khống chế: {CHAM}", ""]
+    bang_sl = bang_sai_lech(n.g1.get("bias_controls"))
+    if bang_sl:
+        dong += bang_sl
+    else:
+        rui = n.meta.get("bias_risks") or n.s("bias", "risks")
+        kiem = n.meta.get("bias_controls") or n.s("bias", "mitigations")
+        dong += [f"- Nguồn sai số có thể gặp: {_thuong(rui)}." if _co(rui) else f"- Nguồn sai số: {CHAM}",
+                 f"- Biện pháp khống chế: {_thuong(kiem)}." if _co(kiem) else f"- Biện pháp khống chế: {CHAM}", ""]
     # Phân tích
     muc("Xử lý và phân tích số liệu")
     dong += phan_tich(n) + [""]
@@ -1532,7 +1669,7 @@ def thong_tin_chung(n: Nguon) -> List[str]:
              f"| Tên đề tài | {ten} |",
              f"| Chủ nhiệm đề tài | {pi}{', ' + pi_cd if pi_cd else ''} |",
              f"| Đơn vị thực hiện | {lam_sach(n.g1.get('setting') or n.s('design', 'setting')) or CHAM} |",
-             f"| Thiết kế | {_TEN_THIET_KE.get(n.thiet_ke, '').capitalize() or CHAM} |",
+             f"| Thiết kế | {ten_thiet_ke(n).capitalize() or CHAM} |",
              f"| Thời gian thực hiện | {thoi_gian or CHAM} |",
              f"| Kinh phí | {lam_sach(n.meta.get('budget') or n.s('resources', 'budget')) or CHAM} |",
              f"| Phiên bản đề cương | {phien_ban or '1.0'} |", ""]

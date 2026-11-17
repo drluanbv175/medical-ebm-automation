@@ -272,3 +272,156 @@ def test_icf_dong_du_lieu_nhan_dang_la_cau_hoan_chinh():
     assert "✅ Dữ liệu nhận dạng: Bảng nối mã nghiên cứu với danh tính huỷ sau khi khoá dữ liệu." in ra
     assert "lưu 5 năm sau kết thúc nghiên cứu" in ra and "trong vòng" not in ra and "[CẦN" not in ra
     assert "trong vòng [CẦN] năm" in G2A._icf_du_lieu_nhan_dang(None)  # chưa chốt ⇒ ô cho PI
+
+
+# ── guardrail G2 R6/R6b: đề tài xin miễn phiếu đồng ý ───────────────────────────────────────────────────────────────
+def _r6(chu: str) -> list:
+    import run_g2_auto as G2A
+
+    kq = G2A.guardrail_check_g2(chu)
+    return [e for e in kq["errors"] if e.startswith(("R6 ", "R6b "))]
+
+
+def test_guardrail_xin_mien_co_don_khong_bao_r6():
+    import run_g2_auto as G2A
+
+    chu = (f"## TÀI LIỆU 4 — ICF\n\n{G2A.GHI_CHU_MIEN_ICF} (…)\n\n## TÀI LIỆU 9 — ĐỀ NGHỊ MIỄN ICF (ICF Waiver)\n"
+           "YÊU CẦU MIỄN THỦ TỤC ĐỒNG THUẬN\n")
+    assert _r6(chu) == []
+
+
+def test_guardrail_nhan_dang_sau_buoc_lam_sach_van_ban():
+    """Dạng thật trong hồ sơ G2 sinh ra (bước làm sạch đổi «— chủ nhiệm» thành «. Chủ nhiệm») — đo trên BTM 17/11."""
+    chu = ("## TÀI LIỆU 4. PHIẾU ĐỒNG Ý (ICF, Tiếng Việt)\n\nKHÔNG ÁP DỤNG. Chủ nhiệm xin MIỄN phiếu đồng ý "
+           "(`gate_params.G2.icf_waiver_requested` = true).\n\n## TÀI LIỆU 9. ĐỀ NGHỊ MIỄN ICF (ICF Waiver)\n")
+    assert _r6(chu) == []
+
+
+def test_guardrail_bo_phieu_khong_co_don_mien_la_loi():
+    import run_g2_auto as G2A
+
+    assert any("KHÔNG có đơn xin miễn" in e for e in _r6(f"## TÀI LIỆU 4\n\n{G2A.GHI_CHU_MIEN_ICF}\n"))
+
+
+def test_guardrail_phieu_day_du_thieu_muc_van_bao():
+    assert any(e.startswith("R6 ") for e in _r6("PHIẾU ĐỒNG Ý: MỤC ĐÍCH, QUY TRÌNH, RỦI RO, LỢI ÍCH, BẢO MẬT"))
+
+
+# ── đề cương nộp: biến tính toán và PMID liền trong trường G1 (đo trên BTM) ─────────────────────────────────────────
+def test_cong_thuc_bien_tinh_toan_doc_duoc():
+    assert SD.cong_thuc_doc("round([can_nang] / (([chieu_cao] / 100) ^ 2), 1)") == \
+        "= can_nang / ((chieu_cao / 100)²) (làm tròn 1 chữ số thập phân)"
+    assert SD.cong_thuc_doc("round(([tuoi]*[ast])/([tieu_cau]*sqrt([alt])),2)") == \
+        "= (tuoi*ast)/(tieu_cau*sqrt(alt)) (làm tròn 2 chữ số thập phân)"
+
+
+def test_bang_bien_so_khong_tach_cong_thuc_calc():
+    n = SimpleNamespace(tu_dien=[{"Variable / Field Name": "bmi", "Field Type": "calc", "Field Label": "BMI",
+                                  "Choices, Calculations, OR Slider Labels": "round([cn] / (([cc] / 100) ^ 2), 1)"}],
+                        ma_tran=[], g1={}, meta={})
+    dong = SD.bang_bien_so(n)[-1]
+    assert "= cn / ((cc / 100)²) (làm tròn 1 chữ số thập phân)" in dong and "[cn]" not in dong
+
+
+def test_pmid_kem_doi_doi_thanh_so_hoac_bo_sach():
+    da_kiem = SD.TrichDan({"38922613": {}, "26440803": {}}, {"38922613", "26440803"})
+    assert da_kiem.thay("tham khảo PMID 38922613 (cohort) và PMID 26440803, DOI 10.1371/journal.pmed.1001885.") == \
+        "tham khảo [1] (cohort) và [2]."
+    chua_kiem = SD.TrichDan({"38490803": {}}, set())
+    assert chua_kiem.thay("theo KDIGO 2024 (PMID 38490803): eGFR dưới 60") == "theo KDIGO 2024: eGFR dưới 60"
+    assert chua_kiem.thay("theo hướng dẫn PMID 38490803, cập nhật 2024") == "theo hướng dẫn, cập nhật 2024"
+    assert chua_kiem.thay("Văn bản  không có PMID ( giữ nguyên ) .") == "Văn bản  không có PMID ( giữ nguyên ) ."
+
+
+def test_truong_g1_khong_in_pmid_tho():
+    n = SimpleNamespace(g1={"design_rationale": "Theo RECORD (PMID 26440803) cho dữ liệu thường quy"},
+                        td=SD.TrichDan({}, set()))
+    assert "PMID" not in SD._g1(n, "design_rationale")
+
+
+def test_moi_truong_g1_doc_qua_bo_doi_trich_dan():
+    n = SimpleNamespace(td=SD.TrichDan({"41358881": {}}, {"41358881"}))
+    g1 = SD._TruongTrichDan({"timepoint": "mỗi năm (ADA 2026, PMID 41358881)", "design": "cross_sectional",
+                             "objectives": ["a"]}, n)
+    assert g1.get("timepoint") == "mỗi năm [1]"
+    assert g1.get("design") == "cross_sectional" and g1.get("objectives") == ["a"]
+    assert SD._TruongTrichDan({"x": "PMID 1"}, SimpleNamespace()).get("x") == "PMID 1"  # chưa có td ⇒ giữ nguyên
+
+
+# ── đề cương nộp: dấu vết tệp nội bộ, phân loại tài liệu, tác giả tổ chức (đề cương BTM 17/11) ───────────────────────
+def test_cum_dan_tep_noi_bo_bi_xoa_khoi_van_xuoi():
+    assert SD._cau("Theo G0 §3.0: ở các hệ thống có dữ liệu thường quy") == "Ở các hệ thống có dữ liệu thường quy."
+    assert SD._cau("Theo G0_KHOANG_TRONG (25/10/2026): ở Việt Nam chưa thấy") == "Ở Việt Nam chưa thấy."
+    assert SD.lam_sach("Được xét nghiệm đủ UACR (biến XN_DU), xác định") == "Được xét nghiệm đủ UACR, xác định"
+    assert SD.lam_sach("theo hướng dẫn hiện hành") == "theo hướng dẫn hiện hành"
+
+
+def test_phan_loai_tai_lieu_theo_dau_hieu_huong_dan_manh():
+    md = {"1": {"title": "9. Pharmacologic Approaches: Standards of Care in Diabetes-2026"},
+          "2": {"title": "Evaluating risk stratification according to Type 2 diabetes guidelines in primary care"},
+          "3": {"title": "KDIGO 2024 Clinical Practice Guideline for the Evaluation of CKD"}}
+    n = SimpleNamespace(td=SD.TrichDan(md, set(md)), g0raw={"sr_ma": [{"pmid": "1"}], "khong_loc": [{"pmid": "2"}]})
+    assert SD._loai_bai(n, "1") == "Hướng dẫn thực hành"   # nhánh tổng quan của G0 nhưng là hướng dẫn
+    assert SD._loai_bai(n, "2") != "Hướng dẫn thực hành"   # chỉ nhắc chữ «guidelines»
+    assert SD._loai_bai(n, "3") == "Hướng dẫn thực hành"
+
+
+def test_tac_gia_to_chuc_khi_khong_co_tac_gia_ca_nhan():
+    assert SD._tac_gia_to_chuc("11. Chronic Kidney Disease: Standards of Care in Diabetes-2026") == \
+        "Hiệp hội Đái tháo đường Hoa Kỳ (ADA)"
+    assert SD._tac_gia_to_chuc("KDIGO 2024 Clinical Practice Guideline") == "KDIGO"
+    assert SD._tac_gia_to_chuc("A survey of practice") == "Nhóm tác giả"
+
+
+def test_bang_3_1_moi_to_chuc_mot_dong():
+    md = {"11": {"title": "11. CKD: Standards of Care in Diabetes-2026", "year": "2026"},
+          "12": {"title": "9. Glycemic Treatment: Standards of Care in Diabetes-2026", "year": "2026"},
+          "13": {"title": "2. Classification: Standards of Care in Diabetes-2026", "year": "2026"},
+          "14": {"title": "KDIGO 2024 Clinical Practice Guideline for CKD", "year": "2024"}}
+    n = SimpleNamespace(td=SD.TrichDan(md, set(md)), g0raw={}, g1={}, g0={}, cps={}, meta={},
+                        s=lambda *_a: None, ung_vien=list(md), thiet_ke="cross_sectional")
+    bang = [d for d in SD.chuong_tong_quan(n) if d.startswith("| ") and "Hướng dẫn" in d]
+    assert sum("ADA" in d for d in bang) == 1 and any(d.startswith("| KDIGO [") for d in bang), bang
+
+
+def test_ky_hieu_cong_va_na_trong_lich_trinh():
+    assert SD.lam_sach("liêm chính G8–G9 (08–28/04/2027) → nộp tạp chí (G10, từ 29/04/2027).") == \
+        "liêm chính (08–28/04/2027) → nộp tạp chí (từ 29/04/2027)."
+    assert SD.lam_sach("N/A — cắt ngang hồi cứu") == "Không áp dụng — cắt ngang hồi cứu"
+
+
+def test_nhan_bien_phai_sinh_thay_ten_bien_trong_van_xuoi(tmp_path):
+    _ghi(tmp_path, "_bien-phai-sinh.csv", "ten_bien,nhan\nxn_du,KẾT CỤC CHÍNH — được xét nghiệm đủ UACR\n"
+                                          "phan_loai_btm,Phân loại bệnh thận mạn\n")
+    _ghi(tmp_path, "study_meta.json", json.dumps({"gate_params": {}}))
+    SD.NHAN_BIEN.clear()
+    SD.Nguon(tmp_path, S)  # đúng đường nạp của bộ sinh (không gọi thẳng hàm con)
+    assert SD.lam_sach("người có `phan_loai_btm` khác 9") == "người có phân loại bệnh thận mạn khác 9"
+    assert SD.NHAN_BIEN["xn_du"] == "được xét nghiệm đủ UACR"
+
+
+def test_nhan_bien_giua_cau_giu_tu_viet_tat_va_don_dau_phay_truoc_ngoac():
+    SD.NHAN_BIEN.clear()
+    SD.NHAN_BIEN.update({"du_cd_acei": "Đủ chỉ định ACEi/ARB theo KDIGO 2022", "xn_du": "UACR và creatinin đủ"})
+    assert SD.lam_sach("người có `du_cd_acei` = 1") == "người có đủ chỉ định ACEi/ARB theo KDIGO 2022 = 1"
+    assert SD.lam_sach("tỷ lệ `xn_du`") == "tỷ lệ UACR và creatinin đủ"
+    assert SD.lam_sach("không kiểm định (thiết kế theo độ chính xác, §12)") == \
+        "không kiểm định (thiết kế theo độ chính xác)"
+    assert SD.lam_sach("so sánh với người đủ dữ liệu (§6)") == "so sánh với người đủ dữ liệu"
+
+
+def test_ten_thiet_ke_cat_ngang_co_muc_tieu_phan_tich():
+    n = SimpleNamespace(thiet_ke="cross_sectional",
+                        g1={"objectives": ["Mô tả tỷ lệ", "Phân tích một số yếu tố liên quan với việc xét nghiệm"]})
+    assert SD.ten_thiet_ke(n) == "nghiên cứu cắt ngang mô tả có phân tích"
+    n.g1 = {"objectives": ["Xác định tỷ lệ kiểm soát huyết áp"]}
+    assert SD.ten_thiet_ke(n) == "nghiên cứu cắt ngang mô tả"
+
+
+def test_bang_sai_lech_tu_so_g1():
+    ds = [{"sai_lech": "Sai lệch chọn mẫu", "bien_phap": "khung mẫu cấp người bệnh", "chieu": "ước lượng cao"},
+          {"bien_phap": "thiếu tên sai lệch — bỏ"}]
+    bang = SD.bang_sai_lech(ds)
+    assert bang[0].startswith("| Nguồn sai lệch |") and len(bang) == 4
+    assert bang[2] == "| Sai lệch chọn mẫu | Ước lượng cao. | Khung mẫu cấp người bệnh. |"
+    assert SD.bang_sai_lech("chuỗi tự do") == [] and SD.bang_sai_lech(None) == []
