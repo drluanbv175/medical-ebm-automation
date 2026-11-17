@@ -2691,7 +2691,7 @@ def _doi_co_pmid_da_kiem(dois: set, checked_pmids: set, out_dir: Path) -> set:
                 cap[_chuan_doi(info["doi"])] = str(pmid)
     try:
         import protocol_checklist_items as PCI  # noqa: PLC0415
-        for doi, pmid in PCI.cap_doi_pmid_tai_lieu_chuan().items():
+        for doi, pmid in PCI.cap_doi_pmid_he_thong().items():  # 17/11/2026: + bảng căn cứ cỡ mẫu G3
             cap.setdefault(doi, pmid)
     except ImportError:
         pass

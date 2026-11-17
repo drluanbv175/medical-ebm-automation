@@ -412,6 +412,9 @@ def loai_muc_12(design_code: Any, g3_checkpoint: Mapping[str, Any]) -> str:
       • "chinh_xac"   — G3 tính theo độ chính xác (effect_type PREVALENCE): alpha → độ tin cậy, p ước lượng, sai số d.
       • "power"       — còn lại (so sánh/kiểm định): alpha, power, effect size (+ margin/SD/cụm/chẩn đoán)."""
     ma = str(design_code or "").strip().lower()
+    # 17/11/2026: skill_standards.canonical_design_code đổi «sr_ma» thành «systematic_review» ⇒ nơi gọi truyền mã chuẩn
+    # hoá (nhat_quan_xuyen_cong) rơi vào nhánh «power» — trục Power của tổng quan–gộp bị coi là áp dụng (⚪ mãi).
+    ma = {"systematic_review": "sr_ma", "meta_analysis": "sr_ma"}.get(ma, ma)
     if ma == "qualitative":
         return "dinh_tinh"
     if ma in N_NOT_APPLICABLE_DESIGNS:

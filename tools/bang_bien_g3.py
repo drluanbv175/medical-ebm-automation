@@ -117,7 +117,51 @@ def dau_bang(chu: str) -> str:
     return _bam(than_bang(chu))
 
 
+# Cột của _bien-phai-sinh.csv KHÔNG thuộc định nghĩa biến: dấu ký duyệt công thức của thống kê viên (bien_phai_sinh
+# duyet). Ký duyệt sau khi khoá G5 là đúng quy trình (SPSS/R: khoá G5 → bien_phai_sinh kiem → G6) nên không được làm
+# MT-12 báo «bộ biến máy đã đổi sau khi soạn bảng» (đo 17/11/2026 trên giả lập chẩn đoán: chỉ cột này đổi).
+_COT_KY_DUYET_PHAI_SINH = ("nguoi_duyet",)
+
+
+def _sha_csv_bo_cot(p: Path, bo: Sequence[str]) -> str:
+    """SHA-256 nội dung CSV sau khi bỏ các cột `bo` (CRLF→LF như cong_song.dau_van_tay_tep); vắng ⇒ «<vắng>»."""
+    import csv  # noqa: PLC0415
+    import io  # noqa: PLC0415
+
+    try:
+        chu = Path(p).read_bytes().replace(b"\r\n", b"\n").decode("utf-8-sig")
+    except (OSError, UnicodeDecodeError):
+        try:
+            return hashlib.sha256(Path(p).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+        except OSError:
+            return "<vắng>"
+    dong = list(csv.reader(io.StringIO(chu)))
+    if not dong:
+        return hashlib.sha256(b"").hexdigest()
+    giu = [i for i, c in enumerate(dong[0]) if c.strip() not in bo]
+    ra = io.StringIO()
+    csv.writer(ra, lineterminator="\n").writerows([[r[i] if i < len(r) else "" for i in giu] for r in dong])
+    return hashlib.sha256(ra.getvalue().encode("utf-8")).hexdigest()
+
+
 def dau_nguon(out_dir: Path) -> str:
+    """Dấu nguồn của bảng (từ 17/11/2026 bỏ cột ký duyệt công thức phái sinh — `_COT_KY_DUYET_PHAI_SINH`)."""
+    d = Path(out_dir)
+    phan = []
+    for p in (d / MT.TEP_BO_BIEN, d / MT.TEP_PHAI_SINH, d / MT.TEP_MA_TRAN, d / TEP_MA_THIEU):
+        if p.name == MT.TEP_PHAI_SINH:
+            phan.append(_sha_csv_bo_cot(p, _COT_KY_DUYET_PHAI_SINH))
+            continue
+        try:
+            phan.append(hashlib.sha256(p.read_bytes().replace(b"\r\n", b"\n")).hexdigest())
+        except OSError:
+            phan.append("<vắng>")
+    return CS.dau_van_tay(*phan)
+
+
+def _dau_nguon_v1(out_dir: Path) -> str:
+    """Dấu nguồn kiểu trước 17/11/2026 (băm nguyên tệp) — bảng đã soạn trước đó ghi dấu này, vẫn nhận để không báo đỏ
+    giả cho bảng cũ."""
     d = Path(out_dir)
     return CS.dau_van_tay_tep(d / MT.TEP_BO_BIEN, d / MT.TEP_PHAI_SINH, d / MT.TEP_MA_TRAN, d / TEP_MA_THIEU)
 
@@ -182,7 +226,7 @@ def trang_thai(out_dir: Path, study: str, meta: Optional[Mapping[str, Any]] = No
     ra["dau_hien_tai"] = dau
     goc_nguon = _dau_trong_dong_may(chu, _DAU_NGUON_RE)
     if goc_nguon:
-        ra["nguon_doi"] = goc_nguon != dau_nguon(out_dir)
+        ra["nguon_doi"] = goc_nguon not in (dau_nguon(out_dir), _dau_nguon_v1(out_dir))
     ra["sua_sau_khi_soan"] = bi_sua_sau_khi_soan(chu)
     if any(d.lstrip().startswith("|") for d in _vung_ngoai_dau(chu).split("\n")):
         # thẩm định #274, ĐỎ 2: bảng đặt ngoài vùng tính dấu không được lặng lẽ bỏ qua/được đọc — coi là sửa tay.

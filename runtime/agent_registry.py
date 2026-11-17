@@ -161,8 +161,11 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # OLD_KET_THUC/NEW_KET_THUC của enforce_agent_guardrails.py repo gốc, nhánh claude/day-agent-sau-tham-dinh-277-281).
 # 15/11/2026: bien-so-nghien-cuu + quan-ly-du-lieu + dieu-phoi-g3/g5 (hoàn thiện hệ thống SPSS/R: soan-tu-calc,
 # dien_tap_spss_r) — dòng y hệt repo gốc nhánh claude/day-agent-sau-tham-dinh-277-281; vẫn 64.
+# 17/11/2026: viet-ban-thao, kiem-chung-trich-dan, bien-so-nghien-cuu, thiet-ke-nghien-cuu, co-mau-nghien-cuu,
+# dao-duc-dang-ky (trục xuyên cổng sau giả lập 16 đề tài) — y hệt repo gốc nhánh
+# claude/truc-xuyen-cong-sau-gia-lap-20261117; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "7bfbbbb881008c6ee71a76ee72a560ce85c368bbfaa664790703ccd6d8fee5cc"
+    "b43ca782a066523983876d33dd2631b2559fc5b92bc72d3e727eb31f4605595c"
 )
 
 MINIMUM_AGENT_COUNT = 64

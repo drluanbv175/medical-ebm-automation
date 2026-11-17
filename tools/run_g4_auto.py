@@ -1067,6 +1067,39 @@ def _dien_khung(sap: str, khung, design_code) -> str:
                 thay[mau] = f"- **{nhan_o}:** {khung[khoa]}{nhan}  "
     for cu, moi in thay.items():
         sap = sap.replace(cu, moi)
+    return _them_bien_vai_tro(sap, khung)
+
+
+_NHAN_VAI_TRO_CAU_TRUC = (("cum", "biến cụm"), ("thoi_gian", "biến thời gian theo dõi"), ("su_kien", "biến sự kiện"),
+                          ("trong_so", "biến trọng số"))
+
+
+def _them_bien_vai_tro(sap: str, khung) -> str:
+    """Gọi đúng TÊN biến của các vai trò cấu trúc (cụm, thời gian, sự kiện, trọng số) ở §4 và biến mô tả đặc điểm mẫu
+    ở §3, lấy từ ma trận mục tiêu–biến ĐẠT (17/11/2026). Trước đó SAP chỉ nêu biến độc lập + kết cục ⇒ MT-09 cảnh báo
+    «SAP chưa gọi đúng tên biến» ở RCT cụm (`ma_phong_kham`), thuần tập sống còn (biến sự kiện) và định tính (biến
+    mô tả người tham gia). Biến SAP đã nhắc thì không lặp lại; khuôn §3/§4 không thấy ⇒ giữ nguyên."""
+    khai = khung.get("khai_niem") or {}
+
+    def _chua_nhac(b):
+        return b and not re.search(rf"(?<![A-Za-z0-9_]){re.escape(b)}(?![A-Za-z0-9_])", sap)
+
+    cau_truc = [f"{nhan} `{b}` ({khai.get(b) or b})" for k, nhan in _NHAN_VAI_TRO_CAU_TRUC
+                for b in [(khung.get("bien_cau_truc") or {}).get(k)] if _chua_nhac(b)]
+    m4 = re.search(r"^### §4[^\n]*\n", sap, re.M)
+    if cau_truc and m4:
+        tb = re.compile(r"^- \*\*Trình bày:\*\*", re.M).search(sap, m4.end())
+        if tb:
+            sap = (sap[:tb.start()] + f"- **Biến cấu trúc của phân tích:** {'; '.join(cau_truc)} *(từ ma trận mục "
+                   "tiêu–biến)*  \n" + sap[tb.start():])
+    mo_ta = [f"`{b}` ({khai.get(b) or b})" for b in (khung.get("bien_mo_ta") or []) if _chua_nhac(b)]
+    m3 = re.search(r"^### §3[^\n]*\n", sap, re.M)
+    if mo_ta and m3:
+        m4 = re.compile(r"^### §4", re.M).search(sap, m3.end())
+        if m4:
+            cuoi = sap[:m4.start()].rstrip("\n")
+            sap = (cuoi + f"\n- **Biến mô tả đặc điểm mẫu:** {', '.join(mo_ta)} *(từ ma trận mục tiêu–biến)*  \n\n"
+                   + sap[m4.start():])
     return sap
 
 
@@ -1095,6 +1128,9 @@ def _khung_sap(out, meta):
                 "intercurrent_events_strategy") or ""), re.I)),
         "bien_phan_tich": [f"`{b}` ({khai.get(b) or b})" for b in phan_tich],
         "bien_imputation": [b for b in ([vt.get("ket_cuc")] + phan_tich) if b],
+        "khai_niem": khai,
+        "bien_cau_truc": {k: vt.get(k) for k in ("cum", "thoi_gian", "su_kien", "trong_so")},
+        "bien_mo_ta": list(vt.get("mo_ta") or []),
         # 16/11/2026 (giả lập trọn vòng — định tính): G1 đã chốt cách tiếp cận, tiêu chí bão hoà và chiến lược chọn mẫu
         # ⇒ SAP định tính không hỏi lại
         "tiep_can": g1.get("qualitative_approach"), "bao_hoa": g1.get("saturation_criterion"),

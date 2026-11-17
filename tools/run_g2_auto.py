@@ -557,6 +557,22 @@ def _huy_dinh_danh(quy_trinh: Optional[list]) -> str:
     return huy.rstrip(".") + "." if huy else "xóa/hủy vật lý trong ___ tháng"
 
 
+def _icf_du_lieu_nhan_dang(quy_trinh: Optional[list]) -> str:
+    """Dòng «dữ liệu nhận dạng» của phiếu đồng ý (mục 5) từ quy trình đã chốt (huy_bang_noi + luu_tru).
+
+    17/11/2026: khuôn cũ chỉ có ô «trong vòng [CẦN] năm» ⇒ PI phải viết lại điều quy trình dữ liệu đã chốt, và người
+    điền theo quy trình đã nhét cả câu huỷ bảng nối vào ô số năm («… trong vòng Bảng nối … huỷ sau khi khoá dữ liệu năm
+    sau khi kết thúc nghiên cứu» — câu vỡ trong văn bản cho người bệnh, 11/16 đề tài giả lập). Chưa chốt ⇒ giữ ô cho PI."""
+    huy = "; ".join(_gia_tri_qt(quy_trinh, "huy_bang_noi")).strip().rstrip(".")
+    if not huy:
+        return ("   ✅ Dữ liệu nhận dạng được xóa/ẩn danh hóa trong vòng [CẦN] năm\n"
+                "      sau khi kết thúc nghiên cứu theo quy định lưu trữ y tế")
+    dong = [f"   ✅ Dữ liệu nhận dạng: {huy[0].upper() + huy[1:]}."]
+    if _gia_tri_qt(quy_trinh, "luu_tru"):
+        dong.append(f"   ✅ Số liệu nghiên cứu được lưu {_thoi_gian_luu(quy_trinh)}, theo quy định lưu trữ y tế")
+    return "\n".join(dong)
+
+
 def dam_bao_bao_mat_mien_icf(quy_trinh: Optional[list]) -> tuple:
     """(dòng «Mã hóa», dòng «Kế hoạch hủy») của đề nghị miễn ICF — lấy từ quy trình dữ liệu ĐÃ CHỐT.
 
@@ -1771,8 +1787,7 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
       ổ cứng mã hóa tại đơn vị]
 {icf_truy_cap}
    ✅ Kết quả công bố dùng dữ liệu TỔNG HỢP — KHÔNG tiết lộ danh tính
-   ✅ Dữ liệu nhận dạng được xóa/ẩn danh hóa trong vòng [CẦN] năm
-      sau khi kết thúc nghiên cứu theo quy định lưu trữ y tế
+{_icf_du_lieu_nhan_dang(quy_trinh)}
    ✅ Trong trường hợp rò rỉ, anh/chị sẽ được thông báo NGAY KHI XÁC NHẬN
       (cơ quan bảo vệ dữ liệu được báo trong 72 giờ theo NĐ 356/2025/NĐ-CP —
       mốc này áp cho cơ quan quản lý, không phải mốc cam kết với anh/chị)

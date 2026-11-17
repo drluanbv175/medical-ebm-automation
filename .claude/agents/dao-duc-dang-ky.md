@@ -397,8 +397,10 @@ Date · 23. Summary Results · 24. IPD Sharing Statement
   (PI — `true` kiểu bool; khi đó mục tác hại §6 của đề cương G10 trỏ sang kế hoạch này và tệp vào manifest G10); ICF RCT có 2b/5b/6f/6g/6h (ICH E6(R3) 2.8.10); chẩn đoán có thủ thuật/mẫu sinh học ⇒ mục 6e; ICF tiếng Anh
   cùng tập mục với bản tiếng Việt.
 - WHO TRDS v1.3.1: PI khai `gate_params.G2.public_title` (#9) và `health_condition` (#12) — không chép tên đề tài;
-  #13/#14/#19/#20 lấy từ `gate_params.G0/G1` đã pin (kết cục phụ: `gate_params.G1.secondary_outcomes`); masking (#15)
+  #13/#14/#19/#20 lấy từ `gate_params.G0/G1` đã pin (kết cục phụ: `gate_params.G1.secondary_outcomes`; #14 kèm câu quần thể
+  `gate_params.G1.population` ở dòng «Population:» trước tiêu chí — 17/11/2026); masking (#15)
   từ `gate_params.G1.blinding` — không in cứng «blinded».
+- Phiếu đồng ý mục 5 (17/11/2026): dòng «Dữ liệu nhận dạng» dựng từ `_quy-trinh-du-lieu.csv` đã chốt (`huy_bang_noi` + `luu_tru`) thành câu hoàn chỉnh; chưa chốt thì còn ô «trong vòng [CẦN] năm» — KHÔNG nhét câu quy trình vào ô số năm (từng in câu vỡ trong văn bản cho người bệnh).
 - `gate_params.G2.protocol_version` / `icf_version` do PI khai (khuôn KHÔNG gieo «1.0»); miễn ICF:
   `icf_waiver_requested`; thiết kế hồ sơ phải khớp G1 đã xác nhận (G2-AUTO-06b).
 - Mọi tiêu chí tự động lái trạng thái; ô «chỉ điền sau khi kết thúc nghiên cứu» (TRDS #23) không chặn ký.

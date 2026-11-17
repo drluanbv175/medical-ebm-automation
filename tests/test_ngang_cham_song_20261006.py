@@ -220,8 +220,10 @@ def test_truc_gia_thuyet_bo_qua_g3_khi_n_khong_tinh_theo_gia_thuyet(tmp_path, mo
     configure_test_signing_key(tmp_path, monkeypatch)
     out = tmp_path / "exports" / "S-QL"
     dung_g0_g3_da_chot(out, "S-QL", thiet_ke="qualitative")
-    gt = _truc(out, "S-QL", "loai_gia_thuyet")
-    assert gt["muc"] != NQ.MUC_LECH_CUNG and all(n["cong"] != "G3" for n in gt["nguon"]), gt
+    # 17/11/2026: định tính không kiểm định giả thuyết ⇒ trục «loai_gia_thuyet» chỉ còn khi ≥ 2 nơi ghi để so (vắng khi
+    # chưa đủ); ý của phép thử giữ nguyên: không đem G3 ra so, không báo lệch oan.
+    gt = next((k for k in NQ.doi_chieu(out, "S-QL")["thong_so"] if k["ma"] == "loai_gia_thuyet"), None)
+    assert gt is None or (gt["muc"] != NQ.MUC_LECH_CUNG and all(n["cong"] != "G3" for n in gt["nguon"])), gt
 
 
 def test_g10_cham_lai_de_cuong_khong_de_quy_qua_tin_hieu_doi_thuc(tmp_path, monkeypatch):
