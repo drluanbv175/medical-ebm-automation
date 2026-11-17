@@ -593,8 +593,7 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
     hs["dien_giai"]["muc_4"] = (
         "Điểm mạnh: kế hoạch gán đa trị định trước (SAP §6), báo song song ca đầy đủ, cỡ mẫu {n} người, kiểm chéo "
         "SPSS–R khớp. Hạn chế: gán đa trị đúng khi thiếu ngẫu nhiên có điều kiện (MAR) — không kiểm chứng được từ "
-        "dữ liệu; nếu thiếu phụ thuộc chính giá trị bị thiếu (MNAR) thì cả hai cách đều có thể lệch. Đây là dữ liệu mô "
-        "phỏng.")
+        "dữ liệu; nếu thiếu phụ thuộc chính giá trị bị thiếu (MNAR) thì cả hai cách đều có thể lệch.")
     tl = dict(hs["tra_loi_G7"])
     tl.update({r"khong dien truoc khi phan tich": ("Trong {n} người ({pct_thieu}% số dòng thiếu ≥ 1 hiệp biến), sau "
                                                    "gán đa trị (m = 20) dùng PPI kéo dài đi kèm nguy cơ gãy xương cao "

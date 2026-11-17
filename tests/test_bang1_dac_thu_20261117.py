@@ -68,7 +68,7 @@ def test_dinh_tinh_mot_nhom_khong_kiem_dinh_va_bo_ket_cuc_chu_de(gia_khoa):
                        "gioi": [i % 2 for i in range(12)], "chu_de": ["A", "B", "C"] * 4})
     gia_khoa(df)
     t1 = P.bang1_dac_thu("X", "dinh_tinh", {"chu_de": "chu_de"})
-    assert t1["groups"] == [P.NHOM_TOAN_BO] and [r["variable"] for r in t1["rows"]] == ["tuoi", "gioi"]
+    assert t1["groups"] == [RSA.NHOM_TOAN_BO] and [r["variable"] for r in t1["rows"]] == ["tuoi", "gioi"]
     assert not any(r.get("p") is not None or r.get("test") for r in t1["rows"])
 
 
@@ -78,7 +78,7 @@ def test_gop_dac_diem_nghien_cuu_bo_nhan_nghien_cuu(gia_khoa):
     gia_khoa(df)
     t1 = P.bang1_dac_thu("X", "gop", {"nhan_nghien_cuu": "study_id"})
     assert [r["variable"] for r in t1["rows"]] == ["n_can_thiep", "theo_doi_thang"] and t1["n_per_group"] == {
-        P.NHOM_TOAN_BO: 6}
+        RSA.NHOM_TOAN_BO: 6}
 
 
 def test_kinh_te_khong_co_bang1_rieng():
@@ -163,3 +163,16 @@ def test_g7_co_mau_ke_hoach_lay_n_chot_g3_khi_khong_tinh_theo_luc():
     assert "Phân tích cuối: N = 20 (kế hoạch)" in m and "N = 0 (kế hoạch)" not in m
     kw.update(n_adjusted=218, g3_n_chot=None)
     assert "Phân tích cuối: N = 218 (kế hoạch)" in G7.generate_manuscript(**kw)
+
+
+def test_run_stats_thiet_ke_mo_ta_co_bang1_mot_nhom_va_loc_bien():
+    df = pd.DataFrame({"record_id": [f"R{i}" for i in range(30)], "ngay_kham": ["2027-03-01"] * 30,
+                       "tuoi": list(range(40, 70)), "gioi": [i % 2 for i in range(30)],
+                       "thuoc_khac": [f"thuốc ghi tay {i}" for i in range(30)],
+                       "kiem_soat": [i % 3 == 0 for i in range(30)]})
+    bien = RSA.bien_bang1_mo_ta(df, list(df.columns), ("kiem_soat",))
+    assert bien == ["tuoi", "gioi"]  # bỏ định danh, ngày, văn bản tự do, kết cục
+    t1 = RSA.table1_descriptive(df.assign(_n=RSA.NHOM_TOAN_BO), "_n", bien)
+    tom = RSA.bang1_cho_tom_tat(t1)
+    assert tom["groups"] == [RSA.NHOM_TOAN_BO] and tom["n_per_group"] == {RSA.NHOM_TOAN_BO: 30}
+    assert G7._bang1_tu_g6(tom, {RSA.NHOM_TOAN_BO: 30})

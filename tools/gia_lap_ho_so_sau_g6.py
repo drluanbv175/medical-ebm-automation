@@ -209,8 +209,7 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
              "trực tiếp được; tác giả " + _KC_TRUNG + "."),
             ("Điểm mạnh: cỡ mẫu {n} người theo tính toán G3, đo huyết áp chuẩn hoá, phân tích theo SAP đã khoá và "
              "kiểm chéo SPSS–R khớp. Hạn chế: một lần đo tại một thời điểm, lấy mẫu tại một cơ sở nên có thể sai lệch "
-             "chọn, không đo tuân thủ thuốc, và thiết kế cắt ngang không cho biết chiều thời gian. Đây là dữ liệu mô "
-             "phỏng của bộ giả lập."),
+             "chọn, không đo tuân thủ thuốc, và thiết kế cắt ngang không cho biết chiều thời gian."),
             ("Hàm ý cho thực hành: rà soát điều trị cho người chưa đạt đích (điều chỉnh liều, phối hợp thuốc, tuân "
              "thủ) là việc có thể làm ngay tại phòng khám. Hướng tiếp: nghiên cứu phân tích yếu tố liên quan và theo "
              "dõi dọc tỷ lệ kiểm soát sau can thiệp."),

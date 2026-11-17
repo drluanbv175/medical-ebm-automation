@@ -334,30 +334,12 @@ def doc_du_lieu(study: str, can: Sequence[str], loc: Optional[str] = None) -> tu
 # điểm mẫu của chuẩn báo cáo: dự báo — theo có/không kết cục (TRIPOD+AI mục 23a); chẩn đoán — theo chuẩn tham chiếu
 # (STARD mục 20); định tính — mô tả người tham gia (COREQ mục 16); tổng quan–gộp — đặc điểm các nghiên cứu đưa vào
 # (PRISMA 2020 mục 17). Một nhóm ⇒ không kiểm định.
-NHOM_TOAN_BO = "Toàn bộ"
-_COT_DINH_DANH = {"record_id", "ma_nguoi_tham_gia", "study_id", "transcript_id", "ma_phieu"}
-
-
 def _bien_bang1(df: Any, loai: str, ts: Dict[str, Any], nhom: Optional[str]) -> List[str]:
-    """Biến mô tả của Bảng 1: bỏ cột định danh, nhãn nghiên cứu, ngày, văn bản tự do (nhiều giá trị chữ), cột chia
-    nhóm, và chính kết cục định tính (chủ đề) — kết cục trình bày ở bảng kết quả, không ở Bảng 1."""
-    import pandas as pd  # noqa: PLC0415
+    """Biến mô tả của Bảng 1 — bộ lọc chung `run_stats_analysis.bien_bang1_mo_ta`; bỏ thêm biến chia nhóm, nhãn nghiên
+    cứu (gộp) và chính kết cục định tính (chủ đề) — kết cục trình bày ở bảng kết quả, không ở Bảng 1."""
+    import run_stats_analysis as RSA  # noqa: PLC0415
 
-    bo = set(_COT_DINH_DANH) | {nhom or ""}
-    bo |= {str(ts.get(k) or "") for k in ("nhan_nghien_cuu", "chu_de")}
-    ra = []
-    for c in df.columns:
-        if c in bo or c.startswith("ngay"):
-            continue
-        cot = df[c].dropna()
-        if cot.empty:
-            continue
-        if not pd.api.types.is_numeric_dtype(cot):
-            chu = cot.astype(str)
-            if chu.str.match(r"^\d{4}-\d{2}-\d{2}").mean() > 0.5 or chu.nunique() > max(10, len(chu) // 2):
-                continue  # ngày hoặc văn bản tự do/định danh
-        ra.append(c)
-    return ra
+    return RSA.bien_bang1_mo_ta(df, list(df.columns), (nhom, ts.get("nhan_nghien_cuu"), ts.get("chu_de")))
 
 
 def _nhan_lua_chon(study: str) -> Dict[str, Dict[str, str]]:
@@ -395,7 +377,7 @@ def bang1_dac_thu(study: str, loai: str, ts: Dict[str, Any]) -> Optional[Dict[st
     try:
         df, _csv, _man = _doc_df_khoa(study, can, ts.get("loc"))
         if not nhom:
-            df = df.assign(_nhom_bang1=NHOM_TOAN_BO)
+            df = df.assign(_nhom_bang1=RSA.NHOM_TOAN_BO)
             nhom = "_nhom_bang1"
         for bien, lua in _nhan_lua_chon(study).items():
             if bien in df.columns and bien != nhom:

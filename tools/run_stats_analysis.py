@@ -1889,6 +1889,30 @@ def generate_r_script_ordinal(study: str, gate: str, outcome_col: str, group_col
 # 7. ĐỊNH DẠNG ĐẦU RA CHO AGENT
 # ════════════════════════════════════════════════════════════════════════════
 
+NHOM_TOAN_BO = "Toàn bộ"
+_COT_DINH_DANH_BANG1 = frozenset({"record_id", "ma_nguoi_tham_gia", "study_id", "transcript_id", "ma_phieu"})
+
+
+def bien_bang1_mo_ta(df: pd.DataFrame, ung_vien: list, bo: tuple = ()) -> list:
+    """Biến mô tả của Bảng 1 (17/11/2026, dùng chung với phan_tich_thiet_ke_dac_thu): bỏ cột định danh, ngày, văn bản
+    tự do (chữ có nhiều giá trị), cột rỗng và các cột `bo` (biến chia nhóm, kết cục trình bày ở bảng khác). Bảng 1 của
+    tóm tắt từng chép cả «R0001: 1(0%); R0002: …» khi đưa nguyên mọi cột vào."""
+    loai = set(_COT_DINH_DANH_BANG1) | {str(b) for b in bo if b}
+    ra = []
+    for c in ung_vien:
+        if c in loai or c not in df.columns or str(c).startswith("ngay"):
+            continue
+        cot = df[c].dropna()
+        if cot.empty:
+            continue
+        if not pd.api.types.is_numeric_dtype(cot):
+            chu = cot.astype(str)
+            if chu.str.match(r"^\d{4}-\d{2}-\d{2}").mean() > 0.5 or chu.nunique() > max(10, len(chu) // 2):
+                continue
+        ra.append(c)
+    return ra
+
+
 def bang1_cho_tom_tat(t1: dict) -> dict:
     """Bảng 1 dạng JSON cho G6_analysis_summary.json (15/11/2026, giả lập lần 3): trước đây tóm tắt chỉ mang
     n_per_group ⇒ G7 không có giá trị từng biến để chép, Bảng 1 của bản thảo luôn là ô trống dù G6 đã tính. Khoá nhóm
@@ -2917,6 +2941,20 @@ def main():
             t1_txt = format_table1_text(t1)
             summary["table1"] = bang1_cho_tom_tat(t1)
             print(f"✓ Bảng 1: {len(t1['rows'])} biến, {len(t1['groups'])} nhóm")
+        except (ZeroDivisionError, ValueError) as exc:
+            t1_txt = f"BẢNG 1 — ĐẶC ĐIỂM MẪU\nLỖI: {exc}\n[CẦN BIOSTATISTICIAN XÁC NHẬN]"
+            summary["table1"] = {"error": str(exc)}
+            print(f"✗ Bảng 1 THẤT BẠI: {exc}")
+        (prefix.parent / f"{args.gate}_table1_descriptive.txt").write_text(t1_txt, encoding="utf-8", newline="\n")
+    elif not args.group:
+        # 17/11/2026: thiết kế MÔ TẢ (không có nhóm so sánh — vd cắt ngang ước lượng tỷ lệ) từng không có Bảng 1 nào ⇒
+        # G7 không chép được đặc điểm mẫu, bản thảo chỉ còn ô trống. Nay một nhóm «Toàn bộ», không kiểm định.
+        try:
+            df_t1 = df.assign(_nhom_bang1=NHOM_TOAN_BO)
+            t1 = table1_descriptive(df_t1, "_nhom_bang1", bien_bang1_mo_ta(df, vars_for_t1, (args.outcome,)))
+            t1_txt = format_table1_text(t1)
+            summary["table1"] = bang1_cho_tom_tat(t1)
+            print(f"✓ Bảng 1 (mô tả, một nhóm): {len(t1['rows'])} biến")
         except (ZeroDivisionError, ValueError) as exc:
             t1_txt = f"BẢNG 1 — ĐẶC ĐIỂM MẪU\nLỖI: {exc}\n[CẦN BIOSTATISTICIAN XÁC NHẬN]"
             summary["table1"] = {"error": str(exc)}
