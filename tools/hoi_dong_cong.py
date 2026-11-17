@@ -86,7 +86,9 @@ GIAM_KHAO = "giam-khao-cong"
 PHAN_BIEN = "phan-bien-tranh-bien"
 TRONG_TAI = "trong-tai-tranh-bien"
 TRONG_TAI_CODEX = "codex:trong-tai-tranh-bien"
-CHE_DO = ("subagent", "codex", "cung_phien")
+# 17/11/2026: «batch_api» = hội đồng qua Claude Batch API (`tools/hoi_dong_cong_batch.py`) — cùng ba vai, trọng tài
+# là trong-tai-tranh-bien; biên bản mang thêm `nguon_may` (công cụ, model, id batch).
+CHE_DO = ("subagent", "codex", "cung_phien", "batch_api")
 KET_QUA_TRANH_BIEN = ("giu_ket_luan", "sua_ket_luan", "chuyen_bac_si")
 PHAN_QUYET = ("chap_nhan", "bac", "chua_du_can_cu")
 THAM_QUYEN = ("PI", "IRB", "STATISTICIAN", "DATA_MANAGER", "INDEPENDENT_PEER_REVIEWER")
@@ -1227,6 +1229,10 @@ def _markdown(bb: Dict[str, Any]) -> str:
             f"- Đề tài: `{bb['study']}` · Loại: {bb['loai']} · Thời điểm: {bb.get('thoi_diem')}",
             "- Tài liệu được xét (SHA-256): " + "; ".join(f"`{t['duong_dan']}` {t['sha256'][:12]}…"
                                                          for t in bb.get("tai_lieu_xet", [])), ""]
+    nm = bb.get("nguon_may") if isinstance(bb.get("nguon_may"), dict) else None
+    if nm:  # 17/11/2026: biên bản do Claude API đóng vai các agent hội đồng — nói rõ để người đọc không nhầm nguồn
+        dong[-1:-1] = [f"- Nguồn: Claude API ({nm.get('cong_cu')}) · model `{nm.get('model')}` · batch "
+                       f"{', '.join(nm.get('batch') or []) or '—'} — tư vấn của máy, cần bác sĩ kiểm chứng"]
     if bb["loai"] == "danh_gia_cheo":
         dr = bb.get("dau_ra") or {}
         dong += [f"## Đầu ra {dr.get('ma_nhiem_vu')} — tác giả `{dr.get('tac_gia')}`", "",
@@ -1298,7 +1304,7 @@ def mau_bien_ban(loai: str, gate: str) -> Dict[str, Any]:
                               "ket_luan": "dat|dat_co_luu_y|tra_ve_sua"}]}
     dp = DIEM_QUYET_DINH[gate][0]
     cc = [{"loai": "tep|tieu_chi|pmid|doi|lenh", "gia_tri": ""}]
-    return {"loai": "tranh_bien", "che_do": "subagent|codex|cung_phien",
+    return {"loai": "tranh_bien", "che_do": "subagent|codex|cung_phien|batch_api",
             "diem_quyet_dinh": {"ma": dp["ma"], "cau_hoi": dp["cau_hoi"]},
             "nguon_bat_dong": "(id biên bản đánh giá chéo bất đồng, nếu có)",
             "tai_lieu_xet": ["<tệp trong thư mục đề tài>"], "ket_luan_de_xuat": "",

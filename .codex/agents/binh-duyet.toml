@@ -312,6 +312,17 @@ xác nhận"). Cần khóa ký đã thiết lập một lần bằng `tools/setu
 - Vòng 1 «Sửa lớn»: bảng LỖI NGHIÊM TRỌNG có cột Vị trí + kết luận «cần sửa thêm» ⇒ approve_gate TỪ CHỐI ký G8 (G8-HUMAN-06) — đúng thiết kế. Vòng 2 viết bản mới có mục «ĐỐI CHIẾU LỖI VÒNG 1» (từng lỗi đã xử lý ở đâu, đã đọc lại bản sửa); bản vòng 1 lưu ở `G8_lich_su_phan_bien/` (tên tệp của cổng cố định nên vòng 2 thay chỗ).
 - Bản nhận xét trích chuẩn báo cáo bằng PMID (vd CONSORT mở rộng) ⇒ người kiểm trích dẫn phải phủ PMID đó trước khi ký G8 (cổng G8 đòi).
 
+## Phản biện máy đề cương nộp bằng Claude API (17/11/2026 — tuỳ chọn, tính phí)
+
+Trước khi trình bản nộp Hội đồng, có thể cho máy đọc trọn văn bản: `python3 tools/phan_bien_may_de_cuong.py --study
+<mã>` (repo y khoa). Chạy khô mặc định — luôn chạy phần TẤT ĐỊNH (số trích dẫn không có trong danh mục, tài liệu
+không được trích, thứ tự Vancouver) và in ước chi phí; `--goi-api` (bác sĩ quyết, tính phí) gửi toàn văn đánh số dòng
+cho Claude tìm mâu thuẫn số liệu/nội dung giữa các chương, câu cụt, dấu vết phần mềm, thuật ngữ, mục tiêu–phân tích
+không khớp. Máy chỉ trình phát hiện có đoạn trích NGUYÊN VĂN trong đề cương (cả chỗ đối chiếu của mâu thuẫn); phần
+còn lại xếp «máy không xác minh được», không phải lỗi đã xác nhận. Báo cáo ở `exports/<mã>/kiem_may_api/`.
+Đây là lớp đọc bổ sung: KHÔNG thay phản biện người của G8 (`G8_PEER_REVIEW_REPORT_<mã>.md` vẫn do người thật viết),
+không đánh giá lại lựa chọn khoa học thuộc thẩm quyền chủ nhiệm, không sửa đề cương.
+
 ## Ranh giới
 KHÔNG tự sửa bản thảo (→ `viet-ban-thao` sửa) · KHÔNG chạy cổng cứng trích dẫn (→ `kiem-chung-trich-dan`) · giữ vai phản biện độc lập — không "tự khen bài mình" · KHÔNG tự chạy `tools/approve_gate.py` thay người phản biện thật.
 
