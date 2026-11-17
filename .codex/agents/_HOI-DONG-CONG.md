@@ -254,6 +254,15 @@ hiện biên bản; nếu bác sĩ muốn kiểm độc lập thì chỉ chấm 
 
 Vòng này KHÔNG gộp PR, không ký, không ghi cờ/`gate_params`, không đụng sổ cái — mọi PR chờ bác sĩ gộp.
 
+**Họp qua Claude Batch API (17/11/2026; bác sĩ chọn khi kết nối API Claude):** đường thay workflow khi không muốn
+tốn token phiên — `python3 tools/hoi_dong_cong_batch.py uoc-tinh --study <mã> --gate GN` (0 gọi API: số yêu cầu,
+token, USD — đo BTM 17/11: G0 ≈ 0,73 · G3 ≈ 0,59 · G4 ≈ 0,30 USD) → `buoc --goi-api` lặp tới khi «xong» (mỗi lượt một
+batch: chấm chuyên môn + giám khảo + đề xuất DP → phản biện → trọng tài) → `ghi` (chạy khô: kiểm luật biên bản) →
+`ghi --ap-dung`. Cùng vai (system prompt là chính tệp agent), cùng rubric, cùng `hoi_dong_cong.ghi_bien_ban`; khác:
+model không có công cụ (tệp dán kèm đánh số dòng, `cham-song` + nhất quán xuyên cổng chạy sẵn là nguồn duy nhất cho căn
+cứ «lenh»), tranh biện MỘT vòng, biên bản mang `nguon_may` và tranh biện `che_do: batch_api`; tài liệu đổi sau khi
+khởi tạo ⇒ phần đó không ghi. Triệu tập vẫn phải hỏi bác sĩ (tính phí) — chỉ khác là rẻ hơn và không cần phiên mở.
+
 ## 6. Khối bàn giao (bắt buộc ở cuối mỗi hội đồng cổng)
 
 ```

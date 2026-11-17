@@ -803,6 +803,76 @@ class PubMedClient(SourceClient):
             }
         return self._parse_metadata_xml(xml_text, pmids)
 
+    def fetch_abstracts(self, pmids: List[str]) -> Dict[str, dict]:
+        """Lấy TIÊU ĐỀ + ABSTRACT (giữ nhãn mục có cấu trúc) + loại xuất bản + cờ rút bài cho danh sách PMID.
+
+        Thêm 17/11/2026 cho `tools/kiem_noi_dung_trich_dan.py` (kiểm câu khẳng định ↔ bài được trích qua Claude API).
+        Cùng ba trạng thái với `fetch_metadata()` — «unknown_*» KHÔNG được hiểu là «không có abstract»:
+          "resolved"                          — có bản ghi (abstract có thể rỗng: bài không có tóm tắt)
+          "unresolved"                        — PubMed không trả bản ghi
+          "unknown_mock_or_no_email"/"unknown_fetch_error" — không tra thật được
+        """
+        if not pmids:
+            return {}
+        if self.use_mock or not settings.ncbi_email:
+            reason = ("USE_MOCK_SOURCES=true" if self.use_mock else "thiếu NCBI_EMAIL")
+            return {pmid: {"status": "unknown_mock_or_no_email",
+                           "reason": f"{reason} — KHÔNG tra cứu PubMed thật"} for pmid in pmids}
+        params = {"db": "pubmed", "id": ",".join(pmids), "retmode": "xml", "email": settings.ncbi_email}
+        if settings.ncbi_api_key:
+            params["api_key"] = settings.ncbi_api_key
+        try:
+            xml_text = self.http.get_text(EFETCH, params=params)
+        except Exception as exc:  # pragma: no cover - lỗi mạng thực tế
+            logger.warning("[pubmed] fetch_abstracts lỗi gọi thật: %s", exc)
+            return {pmid: {"status": "unknown_fetch_error", "reason": f"lỗi gọi PubMed: {exc}"} for pmid in pmids}
+        return self._parse_abstract_xml(xml_text, pmids)
+
+    @staticmethod
+    def _parse_abstract_xml(xml_text: str, requested_pmids: List[str]) -> Dict[str, dict]:
+        if _trang_chan_ncbi(xml_text):
+            return {pmid: {"status": "unknown_fetch_error", "reason": _LY_DO_NCBI_CHAN} for pmid in requested_pmids}
+        try:
+            root = _safe_fromstring(xml_text)
+        except (ET.ParseError, ValueError) as exc:
+            return {pmid: {"status": "unknown_fetch_error",
+                           "reason": f"không đọc được phản hồi PubMed ({exc})"} for pmid in requested_pmids}
+
+        def _abstract(goc: ET.Element) -> str:
+            phan = []
+            for t in goc.findall(".//Abstract/AbstractText"):
+                nhan = (t.get("Label") or "").strip()
+                chu = _full_text(t).strip()
+                if chu:
+                    phan.append(f"{nhan}: {chu}" if nhan else chu)
+            return "\n".join(phan)
+
+        results: Dict[str, dict] = {}
+        for art in root.findall(".//PubmedArticle"):
+            pmid = _own_article_pmid(art)
+            if not pmid:
+                continue
+            rut_bai, thong_bao = _trang_thai_rut_bai(art)
+            results[pmid] = {"status": "resolved", "title": _full_text(art.find(".//ArticleTitle")).strip(),
+                             "abstract": _abstract(art),
+                             "year": (art.findtext(".//PubDate/Year") or art.findtext(".//PubDate/MedlineDate")
+                                      or "").strip() or None,
+                             "publication_types": [pt.text for pt in art.findall(".//PublicationType") if pt.text],
+                             # "retracted" | "eoc" (bày tỏ quan ngại) | None — None KHÔNG có nghĩa «đã kiểm, chưa rút»
+                             "rut_bai": rut_bai, "thong_bao_rut_bai": thong_bao or None}
+        for book in root.findall(".//PubmedBookArticle"):
+            pmid = _own_book_pmid(book)
+            if not pmid or pmid in results:
+                continue
+            tieu_de = (_full_text(book.find(".//BookDocument/ArticleTitle")).strip()
+                       or _full_text(book.find(".//BookDocument/Book/BookTitle")).strip())
+            results[pmid] = {"status": "resolved", "title": tieu_de, "abstract": _abstract(book), "year": None,
+                             "publication_types": [pt.text for pt in book.findall(".//PublicationType") if pt.text],
+                             "rut_bai": None, "thong_bao_rut_bai": None}
+        for pmid in requested_pmids:
+            results.setdefault(pmid, {"status": "unresolved", "reason": "PubMed không trả bản ghi cho PMID này"})
+        return results
+
     @staticmethod
     def _parse_metadata_xml(xml_text: str, requested_pmids: List[str]) -> Dict[str, dict]:
         results: Dict[str, dict] = {}

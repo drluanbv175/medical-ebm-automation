@@ -166,8 +166,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # claude/truc-xuyen-cong-sau-gia-lap-20261117; vẫn 64.
 # 17/11/2026 (chiều): viet-ban-thao, dao-duc-dang-ky (bản vá đo trên đề cương BTM thật) — y hệt repo gốc nhánh
 # claude/de-cuong-btm-sau-a12-20261117; vẫn 64.
+# 17/11/2026 (tối): kiem-chung-trich-dan, binh-duyet, _HOI-DONG-CONG (kết nối Claude API: ba công cụ tư vấn) — y hệt
+# repo gốc nhánh claude/api-claude-nghien-cuu-20261117; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "06087134f76929af787d90c6c74e2f78befd6a21d163efef9613d3c917f8e4b2"
+    "4a36ed97a01999d835f32a2d6e750d27bc13969d5a2d9e6e37f20772118718fc"
 )
 
 MINIMUM_AGENT_COUNT = 64

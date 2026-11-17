@@ -1,7 +1,7 @@
 path,sha256,size_bytes
 .claude/agents/an-toan-nghien-cuu.md,0a5d41c4e7be7b268af3dc7e261dde9b7221bd06d517e69b30ad8110027598e0,23299
 .claude/agents/bien-so-nghien-cuu.md,bd18d31c81ab8410f6b77df5ebd27b6daa061dc0a4b5931e5d00b2378896e2f3,33041
-.claude/agents/binh-duyet.md,9ea53c4e5317764bef788d8176f6a1662eb5b30a7b6790c8e519722b1ebf1629,27908
+.claude/agents/binh-duyet.md,06dc4c3017d4a5a379275c56c85628615631694c04dbf167e2f0a3cf81ecadb1,29150
 .claude/agents/cap-nhat-guideline.md,e9f023b43d4793217f747bd319507959fe0850360f79a012cd80cd0ea0fbee33,19594
 .claude/agents/cau-hoi-nghien-cuu.md,ffb78d6a7a1973339bcfe8a93cdf156e5a4eb6694b3d73c1fc52b3b7490a9d65,27294
 .claude/agents/cham-soc-giam-nhe.md,3a59acae8197c120052bc0129dc5055e7cf85675b88f2c3606296baa482ce4bb,26200
@@ -34,7 +34,7 @@ path,sha256,size_bytes
 .claude/agents/ket-qua-hoc-tap.md,1ffef344876b72c3dda883a00b34db9fe056049e342ef10a8d007104ce1d791a,17361
 .claude/agents/khai-thac-benh-su-kham.md,d019c73c453cd39be891ec7f9c2882339ec4a5725a2ee1c5655a0f6201395081,14136
 .claude/agents/khoang-trong-nghien-cuu.md,cd826559e0a7155f28e4c273056e274bcbdf205f272cf3ad026a2afcef9f2cbc,15403
-.claude/agents/kiem-chung-trich-dan.md,0ddf0ce8dd2a69335e3a03fac9066ade3141032b1f841ca38df0ee97fe506006,26832
+.claude/agents/kiem-chung-trich-dan.md,27992a0612940a7532dd4408677dff33ccaf05aa693f21eac67227ea1ed437e6,28239
 .claude/agents/kinh-te-y-te.md,45c8eccc2a3c8f3145855f1bb1d4c61a830e127e93ce8ef0a2cb7ce5f789594b,25570
 .claude/agents/loi-dan-tuan-thu.md,23be8d832d02edff1244c9d36ac3e57dfbc01577bb43194425de5c4bb747cb55,14255
 .claude/agents/meta-phan-tich.md,fc22e56ef2ecf17de42cbb74feaced6bbd231047bea486e58e01ae855f3d6920,18883

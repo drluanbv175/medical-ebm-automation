@@ -121,6 +121,19 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact citation-check
 - Quét lại A12 trên HỢP (giữ PMID đã kiểm) TRƯỚC khi ký G8 và TRƯỚC khi chấm manifest G9 — biên nhận A12 nằm trong manifest G9, chạy lại sau khi G9 khoá là làm vỡ khoá (đã gặp: CONSORT mở rộng cụm PMID 22951546 trong bản nhận xét, CHEERS 2022 PMID 35017145 ở SAP §16).
 - Bài đã rút lọt vào bản thảo: chuỗi 3 tầng bắt được (giả lập: PMID 18453793, Morisky 2008 «Retracted Publication») ⇒ tác giả thay nguồn còn hiệu lực (vd PMID 3945130) rồi chạy lại A12 — không xoá câu mà giữ khẳng định không nguồn.
 
+## Kiểm NỘI DUNG trích dẫn bằng Claude API (17/11/2026 — tuỳ chọn, tính phí)
+
+Sau khi A12 máy-kiểm sạch (PMID có thật, chưa rút, đúng metadata), phần «câu này có đúng là điều bài [n] nói không»
+chạy được bằng máy ở mức ABSTRACT: `python3 tools/kiem_noi_dung_trich_dan.py --study <mã>` (repo y khoa). Mặc định
+CHẠY KHÔ — in số đoạn, số lượt gọi, ước chi phí, không mạng, không ghi. Gọi thật (`--goi-api`) là quyết định tốn tiền
+của bác sĩ: hỏi trước, đưa con số ước tính. Kết quả ở `exports/<mã>/kiem_may_api/A12_KIEM_NOI_DUNG_<mã>.md`.
+- Máy đã tự kiểm lại câu trả lời của model: căn cứ «trích» phải có NGUYÊN VĂN trong abstract (không có ⇒ «máy không
+  xác minh được căn cứ»), số liệu % / thập phân trong đoạn phải có trong abstract (không có ⇒ cờ «số không thấy»).
+- `khong_ho_tro` / `ho_tro_mot_phan` / cờ ⇒ agent ĐỌC LẠI abstract hoặc toàn văn rồi sửa câu hoặc thay nguồn; không
+  tự coi «máy: hỗ trợ» là đã đọc toàn văn. «Abstract không đủ thông tin» ≠ trích sai. Tài liệu không có PMID máy
+  không kiểm — vẫn là việc đọc tay.
+- Công cụ TƯ VẤN: không ghi biên nhận A12, không mở/chặn cổng, không sửa đề cương.
+
 ## Ranh giới
 KHÔNG tự viết lại nội dung khoa học (→ `viet-ban-thao`); KHÔNG bịa trích dẫn thay thế khi thiếu — nêu "cần bổ sung nguồn". Connector PubMed/Crossref không sẵn → **PARTIAL**. Cửa trước tìm + dựng danh mục nhanh là `thu-thu-tai-lieu`; bạn là cổng cứng sâu trước khi nộp.
 
