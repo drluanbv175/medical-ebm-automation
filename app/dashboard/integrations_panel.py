@@ -54,7 +54,17 @@ def warning_style(wtype: str) -> Tuple[str, str]:
 
 
 def has_anthropic_key() -> bool:
-    return bool(os.getenv("ANTHROPIC_API_KEY", "").strip())
+    """Có khoá để gọi Claude không — biến môi trường HOẶC kho bí mật ngoài OneDrive (cùng thứ tự §5 với cầu nối chung
+    `tools/api_claude_nc.py`). Trước 17/11/2026 chỉ xem biến môi trường: khoá nằm trong kho thì bảng báo «chưa có khoá»
+    dù lời gọi thật vẫn chạy được. Không bao giờ trả/in giá trị khoá."""
+    if os.getenv("ANTHROPIC_API_KEY", "").strip():
+        return True
+    try:
+        from app.integrations._api_claude import cau_noi
+
+        return bool(cau_noi().khoa_api())
+    except Exception:  # thiếu cầu nối/lỗi đọc kho ⇒ coi như chưa có khoá (bảng hướng dẫn dán prompt vào agent)
+        return False
 
 
 # ---------------------------------------------------------------------------

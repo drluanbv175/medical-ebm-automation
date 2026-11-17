@@ -27,7 +27,6 @@ Ví dụ (đã có faster-whisper + một callable LLM):
 """
 from __future__ import annotations
 
-import os
 import re
 import unicodedata
 from dataclasses import dataclass, field
@@ -337,26 +336,20 @@ def from_audio(audio_path: str, *, consent: bool, llm: Optional[LlmFn] = None,
 # ---------------------------------------------------------------------------
 # 4. LLM Claude (tùy chọn) — chỉ chạy khi có anthropic SDK + ANTHROPIC_API_KEY
 # ---------------------------------------------------------------------------
-def claude_llm(prompt: str, *, model: Optional[str] = None, max_tokens: int = 1500) -> str:
-    """Gọi Claude API để viết SOAP. Cần `pip install anthropic` + ANTHROPIC_API_KEY.
+def claude_llm(prompt: str, *, model: Optional[str] = None, max_tokens: Optional[int] = None,
+               client=None) -> str:
+    """Gọi Claude API để viết SOAP — qua cầu nối chung `tools/api_claude_nc.py` (`app/integrations/_api_claude.py`).
 
-    Model lấy từ env AMBIENT_SOAP_MODEL (mặc định claude-sonnet-4-6 — đủ cho ghi SOAP).
-    Tách riêng để pipeline vẫn test được với llm stub (không tốn API).
+    Model: tham số > env AMBIENT_SOAP_MODEL > Sonnet 5.5. Khoá theo §5 (biến môi trường → kho bí mật ngoài OneDrive).
+    `max_tokens` mặc định của cầu nối (16000): model hiện hành tính cả phần suy nghĩ vào `max_tokens`, mức 1500 cũ làm
+    SOAP bị cắt cụt. Câu trả lời cắt cụt/bị từ chối ⇒ AmbientError, KHÔNG trả nửa bản nháp. Mỗi lượt ghi sức khoẻ API
+    (`nguon` = ambient_scribe) cho hòm việc. Tách riêng để pipeline vẫn test được với llm stub (không tốn API).
     """
-    key = os.getenv("ANTHROPIC_API_KEY", "")
-    if not key:
-        raise AmbientError("Thiếu ANTHROPIC_API_KEY — đặt trong .env (ngoài OneDrive) để dùng claude_llm.")
-    try:
-        import anthropic  # type: ignore
-    except ImportError as exc:  # pragma: no cover - phụ thuộc môi trường
-        raise AmbientError("Chưa cài SDK: `pip install anthropic`.") from exc
-    mdl = model or os.getenv("AMBIENT_SOAP_MODEL", "claude-sonnet-4-6")
-    client = anthropic.Anthropic(api_key=key)
-    resp = client.messages.create(  # pragma: no cover - cần mạng + key
-        model=mdl, max_tokens=max_tokens,
-        messages=[{"role": "user", "content": prompt}],
-    )
-    return "".join(getattr(b, "text", "") for b in resp.content)
+    from app.integrations._api_claude import MODEL_SOAP, goi_claude
+
+    return goi_claude(prompt, nguon="ambient_scribe", loi=AmbientError, model=model,
+                      bien_model="AMBIENT_SOAP_MODEL", model_mac_dinh=MODEL_SOAP,
+                      max_tokens=max_tokens, effort="low", client=client)
 
 
 # ---------------------------------------------------------------------------
