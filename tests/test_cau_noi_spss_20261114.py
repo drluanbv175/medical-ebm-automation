@@ -482,8 +482,15 @@ def test_tim_python_spss_bo_qua_python3_hong(tmp_path, monkeypatch):
     monkeypatch.delenv("EBM_SPSS_PYTHON", raising=False)
     monkeypatch.setattr(C.sys, "platform", "darwin")
     assert [p.name for p in C.ung_vien_python_spss(tmp_path)] == ["python3.13", "python3.9"]
-    monkeypatch.setenv("EBM_SPSS_PYTHON", "/khac/python")
-    assert C.ung_vien_python_spss(tmp_path) == [Path("/khac/python")]
+    # 17/11/2026: biến môi trường thắng mọi dò tìm KHI trỏ tệp có thật; trỏ tệp không có ⇒ coi như máy không cài SPSS
+    # (máy CI) — trước đây đường hỏng được trả nguyên rồi subprocess sập FileNotFoundError.
+    khac = tmp_path / "khac" / "python"
+    khac.parent.mkdir()
+    khac.write_text("", encoding="utf-8", newline="\n")
+    monkeypatch.setenv("EBM_SPSS_PYTHON", str(khac))
+    assert C.ung_vien_python_spss(tmp_path) == [khac]
+    monkeypatch.setenv("EBM_SPSS_PYTHON", "/khac/khong-co/python")
+    assert C.ung_vien_python_spss(tmp_path) == []
 
 
 def test_nhap_sav_tu_choi_thu_muc_ra_trong_repo(tmp_path):

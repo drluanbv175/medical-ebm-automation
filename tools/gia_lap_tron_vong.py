@@ -993,15 +993,33 @@ class TronVong:
                                                     newline="\n")
         self.chay("Nhập liệu — mẫu Excel", "nhap_lieu_excel.py", "mau", "--study", self.study, "--ra",
                   str(nl / "MAU.xlsx"), "--so-dong", str(len(hang) + 10))
-        self.chay("Nhập liệu — mẫu SPSS (.sav)", "nhap_lieu_excel.py", "mau", "--study", self.study, "--dang", "sav",
-                  "--ra", str(nl / "MAU.sav"))
+        # 17/11/2026 (16 kịch bản vào CI): máy chạy CI không có IBM SPSS Statistics (phần mềm bản quyền) ⇒ người nhập
+        # lần 2 dùng Excel thay SPSS; so nhập kép Excel ↔ Excel. Máy có SPSS vẫn đi đường SPSS như cũ.
+        import cau_noi_spss as SP  # noqa: PLC0415
+
+        try:
+            co_spss = bool(SP.tim_spss())
+        except Exception:  # noqa: BLE001 — KhongDoDuoc: máy không cài SPSS
+            co_spss = False
+        if co_spss:
+            self.chay("Nhập liệu — mẫu SPSS (.sav)", "nhap_lieu_excel.py", "mau", "--study", self.study, "--dang",
+                      "sav", "--ra", str(nl / "MAU.sav"))
+        else:
+            self.buoc.append({"buoc": "Nhập liệu — mẫu SPSS (.sav)", "lenh": "—", "ma": None, "crash": False,
+                              "cuoi": ["máy không có IBM SPSS Statistics — người nhập lần 2 dùng Excel"]})
         lan1, lan2 = cai_loi_nhap(hang)
         self.du_lieu = {"n": len(hang), "loi_cai_lan1": len(lan1), "loi_cai_lan2": len(lan2)}
         self._ghi_excel(nl / "MAU.xlsx", nl / "lan1_excel.xlsx", hang_x, lan1)
-        sav = self._ghi_sav(nl / "MAU.sav", nl / "lan2_spss.sav", hang_s, lan2)
-        self.du_lieu["nhap_spss"] = sav
-        r = self.chay("Nhập liệu — so nhập kép (Excel ↔ SPSS)", "nhap_lieu_excel.py", "so-sanh", "--study", self.study,
-                      "--excel1", str(nl / "lan1_excel.xlsx"), "--excel2", str(nl / "lan2_spss.sav"), "--ra",
+        if co_spss:
+            sav = self._ghi_sav(nl / "MAU.sav", nl / "lan2_spss.sav", hang_s, lan2)
+            self.du_lieu["nhap_spss"] = sav
+            lan2_tep, ten_so = nl / "lan2_spss.sav", "Nhập liệu — so nhập kép (Excel ↔ SPSS)"
+        else:
+            self._ghi_excel(nl / "MAU.xlsx", nl / "lan2_excel.xlsx", hang_x, lan2)
+            self.du_lieu["nhap_spss"] = {"ma": None, "loi": ["không có SPSS — lần 2 nhập bằng Excel"]}
+            lan2_tep, ten_so = nl / "lan2_excel.xlsx", "Nhập liệu — so nhập kép (Excel ↔ Excel, máy không có SPSS)"
+        r = self.chay(ten_so, "nhap_lieu_excel.py", "so-sanh", "--study", self.study,
+                      "--excel1", str(nl / "lan1_excel.xlsx"), "--excel2", str(lan2_tep), "--ra",
                       str(nl / "so_sanh_1"))
         lech = _doc_csv(nl / "so_sanh_1" / "NHAP_KEP_chi_tiet.csv")
         self.du_lieu["o_lech_bat_duoc"] = len(lech)

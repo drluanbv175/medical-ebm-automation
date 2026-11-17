@@ -186,7 +186,9 @@ def ung_vien_python_spss(thu_muc_ung_dung: Path = Path("/Applications")) -> list
     """Python ĐI KÈM SPSS (có gói `spss`). Biến môi trường EBM_SPSS_PYTHON thắng mọi dò tìm."""
     env = os.environ.get("EBM_SPSS_PYTHON", "").strip()
     if env:
-        return [Path(env)]
+        # 17/11/2026: biến trỏ tệp KHÔNG có (máy CI, cài lệch) ⇒ «không tìm thấy SPSS» (KhongDoDuoc) như máy không cài,
+        # thay vì đưa đường hỏng cho subprocess rồi sập bằng FileNotFoundError.
+        return [Path(env)] if Path(env).is_file() else []
     ra: list[Path] = []
     if sys.platform == "darwin":
         for goc in sorted(thu_muc_ung_dung.glob("IBM SPSS Statistics*"), reverse=True):

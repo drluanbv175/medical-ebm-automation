@@ -90,3 +90,17 @@ def test_kiem_gia_lap_16_dat_va_truot(tmp_path, capsys):
 def test_moi_kich_ban_co_nen_g0_trong_fixtures(ten):
     """CI chạy offline ⇒ mỗi kịch bản phải có nền G0 đã lưu (thiếu thì Phần A «không đo được» ⇒ 0/16)."""
     assert (REPO / "tests" / "fixtures" / "gia_lap_nen_g0" / ten / "_nen.json").is_file()
+
+
+def test_bien_spss_tro_tep_khong_co_la_khong_co_spss(monkeypatch, tmp_path):
+    """CI không cài SPSS: EBM_SPSS_PYTHON trỏ tệp không có ⇒ «không tìm thấy» (KhongDoDuoc), không đưa đường hỏng cho
+    subprocess (từng sập FileNotFoundError ⇒ 16/16 job gia-lap đỏ)."""
+    import cau_noi_spss as SP
+    monkeypatch.setenv("EBM_SPSS_PYTHON", str(tmp_path / "khong-co" / "python3"))
+    assert SP.ung_vien_python_spss() == []
+    with pytest.raises(SP.KhongDoDuoc):
+        SP.tim_spss()
+    that = tmp_path / "python3"
+    that.write_text("", encoding="utf-8", newline="\n")
+    monkeypatch.setenv("EBM_SPSS_PYTHON", str(that))
+    assert SP.ung_vien_python_spss() == [that]
