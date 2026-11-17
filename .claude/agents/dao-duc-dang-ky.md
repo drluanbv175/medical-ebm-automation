@@ -400,6 +400,7 @@ Date · 23. Summary Results · 24. IPD Sharing Statement
   #13/#14/#19/#20 lấy từ `gate_params.G0/G1` đã pin (kết cục phụ: `gate_params.G1.secondary_outcomes`; #14 kèm câu quần thể
   `gate_params.G1.population` ở dòng «Population:» trước tiêu chí — 17/11/2026); masking (#15)
   từ `gate_params.G1.blinding` — không in cứng «blinded».
+- Xin miễn phiếu đồng ý (17/11/2026): TÀI LIỆU 4/5 thành ghi chú «không áp dụng» và guardrail R6/R6b KHÔNG còn đòi đủ mục phiếu khi hồ sơ có đơn xin miễn (TÀI LIỆU 9); bỏ phiếu mà không có đơn ⇒ R6 đỏ. Trước đó MỌI đề tài xin miễn bị báo đỏ giả (đo trên BTM).
 - Phiếu đồng ý mục 5 (17/11/2026): dòng «Dữ liệu nhận dạng» dựng từ `_quy-trinh-du-lieu.csv` đã chốt (`huy_bang_noi` + `luu_tru`) thành câu hoàn chỉnh; chưa chốt thì còn ô «trong vòng [CẦN] năm» — KHÔNG nhét câu quy trình vào ô số năm (từng in câu vỡ trong văn bản cho người bệnh).
 - `gate_params.G2.protocol_version` / `icf_version` do PI khai (khuôn KHÔNG gieo «1.0»); miễn ICF:
   `icf_waiver_requested`; thiết kế hồ sơ phải khớp G1 đã xác nhận (G2-AUTO-06b).

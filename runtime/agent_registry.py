@@ -164,8 +164,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 17/11/2026: viet-ban-thao, kiem-chung-trich-dan, bien-so-nghien-cuu, thiet-ke-nghien-cuu, co-mau-nghien-cuu,
 # dao-duc-dang-ky (trục xuyên cổng sau giả lập 16 đề tài) — y hệt repo gốc nhánh
 # claude/truc-xuyen-cong-sau-gia-lap-20261117; vẫn 64.
+# 17/11/2026 (chiều): viet-ban-thao, dao-duc-dang-ky (bản vá đo trên đề cương BTM thật) — y hệt repo gốc nhánh
+# claude/de-cuong-btm-sau-a12-20261117; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "b43ca782a066523983876d33dd2631b2559fc5b92bc72d3e727eb31f4605595c"
+    "06087134f76929af787d90c6c74e2f78befd6a21d163efef9613d3c917f8e4b2"
 )
 
 MINIMUM_AGENT_COUNT = 64
