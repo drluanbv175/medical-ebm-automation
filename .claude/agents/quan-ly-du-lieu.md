@@ -83,6 +83,10 @@ python medical-ebm-automation/tools/run_g5_auto.py --study "MA-DE-TAI"
 > `branching_logic.calc_khong_tinh_duoc` + cảnh báo: viết lại calc đó trong tập con hoặc để PI quyết từng query —
 > KHÔNG coi là ẩn. Câu chọn nhiều BẮT BUỘC xuất thành `<biến>___<mã>`: có ít nhất một cột con là đủ biến (bộ làm sạch
 > và G5-AUTO-07b), không mở «missing_required_column».
+> **Tên cột của trường phân loại có mã (17/11/2026, giả lập chân thực RCT):** trường khai trong từ điển G5 là
+> yesno/radio/dropdown/checkbox (vd `tc_dien_thoai` = «có điện thoại nhận tin nhắn — Có/Không») KHÔNG bị chặn PII chỉ vì
+> tên cột chứa «dien_thoai/email…» ở cổng nạp, làm sạch, khoá, giả danh và G5-AUTO-02 — vì chỉ chứa mã; GIÁ TRỊ ô vẫn
+> quét đủ mẫu SĐT/CCCD/email/BHYT. Trường `text` mang tên như vậy vẫn bị chặn như cũ.
 > Chỉ khi query log không còn `open` mới được chạy:
 > ```bash
 > python medical-ebm-automation/tools/lock_analysis_dataset.py --study "MA-DE-TAI" \

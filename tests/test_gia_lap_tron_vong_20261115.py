@@ -26,6 +26,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
 
 import gia_lap_bien_the_kho as BTK  # noqa: E402
+import gia_lap_chan_thuc as GCT  # noqa: E402
 import gia_lap_dinh_ky as GL  # noqa: E402
 import gia_lap_tron_vong as TV  # noqa: E402
 
@@ -45,6 +46,17 @@ _KHO = BTK.danh_sach()
 
 @pytest.mark.parametrize("ma", [m for m, _i in _KHO], ids=[i for _m, i in _KHO])
 def test_gia_lap_bien_the_kho(ma, tmp_path, monkeypatch):
+    _chay_tron_vong(ma, tmp_path, monkeypatch)
+
+
+# 17/11/2026 — kịch bản CHÂN THỰC (phiếu nhiều phần, sàng lọc, nhánh theo dõi, calc, câu chọn nhiều bắt buộc; dữ liệu
+# sinh từ từ điển G5 của đề tài): sổ `gia_lap_chan_thuc`, cùng thân chạy.
+# Chạy đích danh: …::test_gia_lap_chan_thuc[rct_chan_thuc].
+_CHAN_THUC = GCT.danh_sach()
+
+
+@pytest.mark.parametrize("ma", [m for m, _i in _CHAN_THUC], ids=[i for _m, i in _CHAN_THUC])
+def test_gia_lap_chan_thuc(ma, tmp_path, monkeypatch):
     _chay_tron_vong(ma, tmp_path, monkeypatch)
 
 

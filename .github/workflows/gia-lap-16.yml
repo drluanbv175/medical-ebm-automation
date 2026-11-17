@@ -60,6 +60,16 @@ jobs:
           - { kb: cohort_vong_sua, node: "test_gia_lap_bien_the_kho[cohort_vong_sua]" }
           - { kb: rct_kinh_te, node: "test_gia_lap_bien_the_kho[rct_kinh_te]" }
           - { kb: rct_hon_hop, node: "test_gia_lap_bien_the_kho[rct_hon_hop]" }
+          # 17/11/2026 — 8 kịch bản CHÂN THỰC (phiếu nhiều phần, sàng lọc, nhánh, calc, dữ liệu sinh từ từ điển G5) +
+          # phép kiểm độ chính xác: ước lượng chính phải tìm lại tham số dùng để sinh dữ liệu (tools/gia_lap_chan_thuc.py)
+          - { kb: rct_chan_thuc, node: "test_gia_lap_chan_thuc[rct_chan_thuc]" }
+          - { kb: cross_sectional_chan_thuc, node: "test_gia_lap_chan_thuc[cross_sectional_chan_thuc]" }
+          - { kb: cohort_chan_thuc, node: "test_gia_lap_chan_thuc[cohort_chan_thuc]" }
+          - { kb: case_control_chan_thuc, node: "test_gia_lap_chan_thuc[case_control_chan_thuc]" }
+          - { kb: diagnostic_chan_thuc, node: "test_gia_lap_chan_thuc[diagnostic_chan_thuc]" }
+          - { kb: prediction_chan_thuc, node: "test_gia_lap_chan_thuc[prediction_chan_thuc]" }
+          - { kb: sr_ma_chan_thuc, node: "test_gia_lap_chan_thuc[sr_ma_chan_thuc]" }
+          - { kb: qualitative_chan_thuc, node: "test_gia_lap_chan_thuc[qualitative_chan_thuc]" }
     env:
       PYTHONUTF8: "1"
       PYTHONIOENCODING: "utf-8"
@@ -90,7 +100,7 @@ jobs:
         run: |
           python -B -m pytest "tests/test_gia_lap_tron_vong_20261115.py::$NODE" -q -p no:cacheprovider -s
 
-      - name: Phán kết quả (khoá gói G10 · 0 ô lỗi máy · đề cương nộp đạt)
+      - name: Phán kết quả (khoá gói G10 · 0 ô lỗi máy · đề cương nộp đạt · chân thực tìm lại tham số thật)
         run: python tools/kiem_gia_lap_16.py --kich-ban ${{ matrix.kb }}
 
       - name: Lưu báo cáo kịch bản
@@ -107,9 +117,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
-      - name: Cả 16 kịch bản phải xanh (huỷ/bỏ qua cũng là ĐỎ)
+      - name: Cả 24 kịch bản phải xanh (huỷ/bỏ qua cũng là ĐỎ)
         env:
           KET_QUA: ${{ needs.kich-ban.result }}
         run: |
           [ "$KET_QUA" = "success" ] || { echo "kich-ban: $KET_QUA" >&2; exit 1; }
-          echo "✅ 16/16 kịch bản giả lập khoá được gói G10"
+          echo "✅ 24/24 kịch bản giả lập khoá được gói G10 (8 kịch bản chân thực tìm lại đúng tham số)"

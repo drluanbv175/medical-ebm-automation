@@ -665,10 +665,16 @@ class GiaLap:
         return "R1B" in loi or (not cp.get("n_pmids") and bool(cp.get("query_errors")))
 
     def _nen_g0(self) -> Path:
-        return self.nen_g0_dir / self.ma
+        """Nền G0 đã lưu của kịch bản. Kịch bản KẾ THỪA cùng đề tài/truy vấn (khoá `nen_g0_tu`, vd kịch bản chân thực)
+        dùng lại nền của kịch bản gốc khi chưa có nền riêng — G0 không đổi vì chỉ phiếu thu thập thay."""
+        rieng = self.nen_g0_dir / self.ma
+        tu = self.kb.get("nen_g0_tu")
+        return self.nen_g0_dir / str(tu) if tu and not rieng.is_dir() else rieng
 
     def luu_nen_g0(self) -> None:
         """Lưu tệp G0_* + topic/query_en (trạng thái «chờ PICO» sau khi đã khai query_en) để lượt ngoại tuyến dùng."""
+        if self.kb.get("nen_g0_tu"):
+            return  # kịch bản kế thừa dùng nền của kịch bản gốc — không ghi nền riêng (tránh thư mục trùng lặp)
         cp = self._cp("G0")
         if not cp.get("n_pmids") or self._g0_bi_chan_vi_nguon():
             return
@@ -840,14 +846,21 @@ class GiaLap:
         import csv  # noqa: PLC0415
 
         bs = self.kb["bien_so"]
+        # 17/11/2026 (kịch bản chân thực): `meta_bien` = {tên: {form, nhanh, bat_buoc, ghi_chu, phan}} — phiếu nhiều
+        # biểu mẫu, logic nhánh, câu không bắt buộc (calc), tiêu đề phần như từ điển REDCap của đề tài thật. Vắng ⇒
+        # một biểu mẫu «phieu», mọi câu bắt buộc như cũ.
+        meta_bien = bs.get("meta_bien") or {}
         with (self.out / "_bo-bien-rieng.csv").open("w", encoding="utf-8", newline="") as f:
             w = csv.DictWriter(f, fieldnames=list(COT_BO_BIEN), lineterminator="\n")
             w.writeheader()
             for ten, loai, nhan, lua, kt, lo, hi in bs["bo_bien"]:
-                w.writerow({"Variable / Field Name": ten, "Form Name": "phieu", "Field Type": loai, "Field Label": nhan,
-                            "Choices, Calculations, OR Slider Labels": lua,
+                m = meta_bien.get(ten) or {}
+                w.writerow({"Variable / Field Name": ten, "Form Name": m.get("form") or "phieu",
+                            "Section Header": m.get("phan") or "", "Field Type": loai, "Field Label": nhan,
+                            "Choices, Calculations, OR Slider Labels": lua, "Field Note": m.get("ghi_chu") or "",
                             "Text Validation Type OR Show Slider Number": kt, "Text Validation Min": lo,
-                            "Text Validation Max": hi, "Required Field?": "y"})
+                            "Text Validation Max": hi, "Branching Logic (Show field only if...)": m.get("nhanh") or "",
+                            "Required Field?": "y" if m.get("bat_buoc", True) else "n"})
         with (self.out / "_ma-tran-muc-tieu-bien.csv").open("w", encoding="utf-8", newline="") as f:
             w = csv.writer(f, lineterminator="\n")
             w.writerow(list(COT_MA_TRAN))

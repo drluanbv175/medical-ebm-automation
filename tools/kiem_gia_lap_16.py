@@ -28,6 +28,9 @@ KICH_BAN = {
     "cohort_mi": "thuan_tap_mi", "rct_rut_bai": "rct_rut_bai", "cohort_vong_sua": "thuan_tap_vong_sua",
     "rct_kinh_te": "rct_kinh_te", "rct_hon_hop": "rct_hon_hop",
 }
+# 17/11/2026 — kịch bản CHÂN THỰC (gia_lap_chan_thuc): cùng cổng phán + ước lượng chính phải tìm lại tham số thật.
+CHAN_THUC = {f"{t}_chan_thuc": f"{t}_chan_thuc" for t in ("rct", "cross_sectional", "cohort", "case_control",
+                                                          "diagnostic", "prediction", "sr_ma", "qualitative")}
 
 
 def kiem_mot(p: Path) -> List[str]:
@@ -47,24 +50,42 @@ def kiem_mot(p: Path) -> List[str]:
     dc = ((j.get("du_lieu") or {}).get("de_cuong_nop") or {})
     if dc.get("ma") != 0:
         loi.append(f"đề cương nộp mã {dc.get('ma')}: {'; '.join(map(str, dc.get('loi') or []))[:200]}")
+    cx = j.get("chinh_xac") or {}
+    if cx.get("ket") in ("SAI", "CHUA_DO"):  # CHUA_DO chỉ xảy ra khi kịch bản có khai phép kiểm mà không đo được
+        loi.append(f"độ chính xác {cx.get('ket')}: {cx.get('lay')} thật {cx.get('that')} · ước lượng {cx.get('uoc')} "
+                   f"KTC {cx.get('ci_95')} {cx.get('loi') or ''}".strip())
     return loi
+
+
+def _cx(p: Path) -> str:
+    try:
+        cx = json.loads(p.read_text(encoding="utf-8")).get("chinh_xac") or {}
+    except (OSError, ValueError):
+        return ""
+    if cx.get("ket") in (None, "KHONG_AP_DUNG"):
+        return ""
+    return (f" · chính xác {cx['ket']} ({cx.get('lay')}: thật {cx.get('that')}, ước lượng {cx.get('uoc')} "
+            f"{cx.get('ci_95')})")
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--thu-muc", default=str(REPO / "state" / "gia-lap-tron-vong"))
     ap.add_argument("--kich-ban", nargs="*", help="tên nút (vd rct cohort); mặc định cả 16")
+    ap.add_argument("--chan-thuc", action="store_true", help="phán 8 kịch bản chân thực thay cho 16 kịch bản")
     a = ap.parse_args(argv)
-    ten = a.kich_ban or list(KICH_BAN)
-    la = [t for t in ten if t not in KICH_BAN]
+    bang = CHAN_THUC if a.chan_thuc else {**KICH_BAN, **CHAN_THUC}
+    ten = a.kich_ban or list(CHAN_THUC if a.chan_thuc else KICH_BAN)
+    la = [t for t in ten if t not in bang]
     if la:
         print(f"❌ kịch bản lạ: {la}")
         return 3
     truot = 0
     for t in ten:
-        loi = kiem_mot(Path(a.thu_muc) / f"{KICH_BAN[t]}.json")
+        loi = kiem_mot(Path(a.thu_muc) / f"{bang[t]}.json")
         truot += bool(loi)
-        ket = "; ".join(loi) if loi else "khoá gói G10 · 0 ô lỗi máy · đề cương nộp đạt"
+        tep = Path(a.thu_muc) / f"{bang[t]}.json"
+        ket = "; ".join(loi) if loi else "khoá gói G10 · 0 ô lỗi máy · đề cương nộp đạt" + _cx(tep)
         print(f"{'✅' if not loi else '⛔'} {t:16} {ket}")
     print(f"KẾT: {len(ten) - truot}/{len(ten)} kịch bản đạt.")
     return 1 if truot else 0

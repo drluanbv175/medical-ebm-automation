@@ -429,10 +429,12 @@ def _ap_bien_the(rows: List[Dict[str, Any]], bien_the: Mapping[str, Any], kc: Op
 
 
 def _kich_ban_kho() -> Dict[str, Dict[str, Any]]:
-    """Sổ biến thể khó (16/11/2026) — nạp khi cần, không nhập vào KICH_BAN của lượt giả lập định kỳ."""
+    """Sổ biến thể khó (16/11/2026) + kịch bản chân thực (17/11/2026) — nạp khi cần, không nhập vào KICH_BAN của lượt
+    giả lập định kỳ."""
     import gia_lap_bien_the_kho as BTK  # noqa: PLC0415
+    import gia_lap_chan_thuc as GCT  # noqa: PLC0415
 
-    return BTK.kich_ban_kho()
+    return {**BTK.kich_ban_kho(), **GCT.kich_ban_chan_thuc()}
 
 
 def sinh_du_lieu(thiet_ke: str, bien_so: Mapping[str, Any], g3: Mapping[str, Any], n: int,
@@ -787,6 +789,8 @@ class TronVong:
         ⇒ G0 trùng hệt ⇒ dùng chung nền G0 đã lưu của gốc. Khác mã đề tài thì không chép (nền phải tra riêng)."""
         goc = self.kb.get("goc")
         dich, nguon = self.nen_g0_dir / self.ma, self.nen_g0_dir / str(goc)
+        if self.kb.get("nen_g0_tu"):  # kịch bản kế thừa ĐỌC thẳng nền gốc (GiaLap._nen_g0) — không chép bản trùng
+            return
         if not goc or goc == self.ma or (dich / "_nen.json").is_file() or not (nguon / "_nen.json").is_file():
             return
         if (GL.KICH_BAN.get(goc) or {}).get("study") == self.kb.get("study"):
@@ -984,8 +988,12 @@ class TronVong:
 
             hm = getattr(SR, dl_redcap["hinh_mau"]) if isinstance(dl_redcap.get("hinh_mau"), str) else dl_redcap.get(
                 "hinh_mau")
-            hang = SR.sinh(SR.doc_tu_dien(tu_dien_g5), int(dl_redcap.get("so_ho_so") or n), hm,
-                           dung_khi=dl_redcap.get("dung_khi"))
+            # «N_G3» ⇒ đúng cỡ mẫu G3 đã chốt; trần số hồ sơ mở = so_ho_so hoặc hệ số × N (tuyển/trích tới khi đủ N)
+            dk = dl_redcap.get("dung_khi")
+            if dk:
+                dk = [dk[0], n if str(dk[1]) == "N_G3" else int(dk[1])]
+            tran = int(dl_redcap.get("so_ho_so") or 0) or int(float(dl_redcap.get("so_ho_so_he_so") or 1) * n)
+            hang = SR.sinh(SR.doc_tu_dien(tu_dien_g5), tran, hm, dung_khi=dk)
         else:
             hang = sinh_du_lieu(self.thiet_ke, self.kb["bien_so"], _gp(self._meta(), "G3"), n,
                                 bien_the=self.kb.get("bien_the"))
@@ -1030,6 +1038,11 @@ class TronVong:
                               "cuoi": ["máy không có IBM SPSS Statistics — người nhập lần 2 dùng Excel"]})
         lan1, lan2 = cai_loi_nhap(hang)
         self.du_lieu = {"n": len(hang), "loi_cai_lan1": len(lan1), "loi_cai_lan2": len(lan2)}
+        if not (nl / "MAU.xlsx").is_file():
+            # 17/11/2026 (kịch bản chân thực): G5 không dựng được từ điển (vd SAP chưa khoá vì G3 còn REVIEW) ⇒ không có
+            # mẫu nhập. Dừng GỌN với lý do của hệ — bản cũ sập FileNotFoundError, che mất cổng thật đang chặn.
+            self.dung = self.dung or "g5:khong_co_mau_nhap_lieu"
+            return
         self._ghi_excel(nl / "MAU.xlsx", nl / "lan1_excel.xlsx", hang_x, lan1)
         if co_spss:
             sav = self._ghi_sav(nl / "MAU.sav", nl / "lan2_spss.sav", hang_s, lan2)
@@ -1135,11 +1148,29 @@ class TronVong:
         ma_cau = {d[3]: d[5] for d in bs.get("ma_tran", ()) if len(d) > 5 and d[5]}
         dong = [f"# PHIẾU THU THẬP SỐ LIỆU — {self._meta().get('title') or self.kb.get('topic')}", "",
                 f"Phiên bản 1.0 · nộp kèm hồ sơ Hội đồng Đạo đức · {GL.NHAN}", ""]
+        # 17/11/2026 (kịch bản chân thực): có `meta_bien` ⇒ phiếu chia PHẦN theo tiêu đề phần của từ điển, câu có
+        # nhánh ghi «chỉ hỏi khi …», câu chọn nhiều ghi «chọn mọi ý đúng», trường calc ghi «máy tự tính».
+        meta = bs.get("meta_bien") or {}
+        so_cau = {d[0]: (meta.get(d[0]) or {}).get("ma_cau") or ma_cau.get(d[0]) or f"C{i}"
+                  for i, d in enumerate(bs.get("bo_bien", ()), 1)}
+
+        def doc_nhanh(bt: str) -> str:
+            """«[x] = '1' and [y] >= 2» ⇒ «câu C3 = 1 và câu C7 ≥ 2» (văn bản nộp không mang cú pháp REDCap)."""
+            v = re.sub(r"\[(\w+)(?:\((\w+)\))?\]", lambda k: f"câu {so_cau.get(k.group(1), k.group(1))}"
+                       + (f" chọn ý {k.group(2)}" if k.group(2) else ""), bt)
+            v = re.sub(r"'([^']*)'", r"\1", v).replace(">=", "≥").replace("<=", "≤").replace("<>", "≠")
+            return re.sub(r"\s+and\s+", " và ", re.sub(r"\s+or\s+", " hoặc ", v, flags=re.I), flags=re.I)
+
         for i, (ten, kieu, nhan, lua, _v, _lo, _hi) in enumerate(bs.get("bo_bien", ()), 1):
-            ma = ma_cau.get(ten) or f"C{i}"
+            m = meta.get(ten) or {}
+            if m.get("phan"):
+                dong += ["", f"## PHẦN {m['phan']}", ""]
+            ma = so_cau[ten]
             lc = f" — lựa chọn: {lua}" if lua and kieu in ("radio", "dropdown") else (
-                " — Có/Không" if kieu == "yesno" else "")
-            dong.append(f"- {ma}. {nhan} (`{ten}`){lc}")
+                " — Có/Không" if kieu == "yesno" else f" — chọn mọi ý đúng: {lua}" if kieu == "checkbox" else
+                " — máy tự tính, không ghi tay" if kieu == "calc" else "")
+            dk = f" *(chỉ hỏi khi {doc_nhanh(m['nhanh'])})*" if m.get("nhanh") else ""
+            dong.append(f"- {ma}. {nhan} (`{ten}`){lc}{dk}")
         (self.out / f"PHIEU_THU_THAP_SO_LIEU_{self.study}.md").write_text("\n".join(dong) + "\n", encoding="utf-8",
                                                                          newline="\n")
         self.o.append({"cong": "G2", "tep": f"PHIEU_THU_THAP_SO_LIEU_{self.study}.md", "dong": 0,
@@ -2076,6 +2107,24 @@ Kết luận tổng thể: {ket_luan}
         self.do_truc("sau_G10")
 
     # ── báo cáo
+    def kiem_chinh_xac(self) -> Dict[str, Any]:
+        """Kịch bản chân thực (17/11/2026): ước lượng chính G6 phải TÌM LẠI tham số đã dùng sinh dữ liệu
+        (`gia_lap_chan_thuc.KIEM_CHINH_XAC`). Kịch bản khác / chưa có kết quả G6 ⇒ «không áp dụng»/«chưa đo»."""
+        import gia_lap_chan_thuc as GCT  # noqa: PLC0415
+
+        if self.ma not in GCT.KIEM_CHINH_XAC:
+            return {"ket": "KHONG_AP_DUNG"}
+        lay, _dich, thang_log = GCT.KIEM_CHINH_XAC[self.ma]
+        u = self._uoc_luong(lay, "G6")
+        if not u:
+            return {"ket": "CHUA_DO", "lay": lay}
+        he = 100.0 if lay == "ty_le" else 1.0  # tỷ lệ báo theo %
+        try:
+            that = GCT.tham_so_that(self.ma) * he
+        except Exception as exc:  # noqa: BLE001 — không tính được đích thì nói rõ, không coi là đạt
+            return {"ket": "CHUA_DO", "lay": lay, "loi": f"{type(exc).__name__}: {exc}"[:200]}
+        return {"lay": lay, **GCT.phan_xet_chinh_xac(that, u["uoc"], tuple(u["ci"]), thang_log)}
+
     def bao_cao(self) -> Dict[str, Any]:
         theo_cong: Dict[str, Any] = {}
         for g in sorted({o["cong"] for o in self.o}):
@@ -2086,7 +2135,14 @@ Kết luận tổng thể: {ket_luan}
                 "cong": self.cong, "o_theo_cong": theo_cong, "du_lieu": self.du_lieu, "truc": self.truc,
                 "dung": self.dung,
                 "so_o_loi_may": len(loi_may), "o_loi_may": sorted(set(loi_may))[:200],
-                "crash": [b["buoc"] for b in self.buoc if b.get("crash")], "buoc": self.buoc}
+                "crash": [b["buoc"] for b in self.buoc if b.get("crash")], "buoc": self.buoc,
+                "chinh_xac": self._chinh_xac_an_toan()}
+
+    def _chinh_xac_an_toan(self) -> Dict[str, Any]:
+        try:
+            return self.kiem_chinh_xac()
+        except Exception as exc:  # noqa: BLE001 — báo cáo không được sập vì phép kiểm phụ
+            return {"ket": "CHUA_DO", "loi": f"{type(exc).__name__}: {exc}"[:200]}
 
     def chay_tron_vong(self, tu_cong: Optional[str] = None, den_cong: Optional[str] = None) -> Dict[str, Any]:
         """`tu_cong` (vd «G6») = chạy TIẾP trên bản sao đã đi qua các cổng trước (cùng khoá giả); `den_cong` = dừng SAU

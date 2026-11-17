@@ -856,7 +856,9 @@ def clean_dataset(study: str, data_path: Path, *,
 
     if blocker is None:
         pii_profile = RDI._scan_csv(data_path, max_scan_rows=max_scan_rows,
-                                    exempt_date_columns=date_columns)
+                                    exempt_date_columns=date_columns,
+                                    exempt_header_columns=RDI.cot_phan_loai_tu_variables(
+                                        dictionary.get("variables")))
         pii_issues = list(pii_profile.get("issues") or [])
         pii_scan = {
             "passed": not pii_issues,
