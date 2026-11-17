@@ -13,13 +13,14 @@
 | G2-AUTO-03 | Bộ hồ sơ IRB/ICF/DMP có đủ cấu trúc bắt buộc (ICF đủ mục theo thiết kế) | PASS | đủ marker tài liệu 1-8, ICF, DMP, rủi ro/bồi thường/COI; ICF đủ mục theo thiết kế |
 | G2-AUTO-03b | ICF tiếng Anh tương ứng ICF tiếng Việt (cùng tập mục) | PASS | hai bản ICF có cùng tập mục (hoặc chưa có bản tiếng Anh/tiếng Việt để đối chiếu) |
 | G2-AUTO-04 | WHO TRDS 1.3.1 đủ 24 mục | PASS | 24/24 mục đúng số và nhãn |
-| G2-AUTO-05 | Không còn placeholder khoa học/vận hành trọng yếu | REVIEW | còn 82 dòng [CẦN]/ô mẫu chung/ô trống phải điền TRƯỚC khi nộp IRB; 8 dòng chỉ điền được SAU phê duyệt/đăng ký (thông tin, chưa chặn nộp) — ngoài các ô chỉ chứa PII và chỗ ký/ngày điền tay |
+| G2-AUTO-05 | Không còn placeholder khoa học/vận hành trọng yếu | REVIEW | còn 34 dòng [CẦN]/ô mẫu chung/ô trống phải điền TRƯỚC khi nộp IRB; 7 dòng chỉ điền được SAU phê duyệt/đăng ký (thông tin, chưa chặn nộp) — ngoài các ô chỉ chứa PII và chỗ ký/ngày điền tay |
 | G2-AUTO-06 | Thiết kế và lộ trình đạo đức không còn mơ hồ | PASS | design_code=cross_sectional; ambiguous=False |
 | G2-AUTO-06b | Hồ sơ G2 sinh đúng thiết kế G1 hiện hành | PASS | hồ sơ G2 và G1 cùng thiết kế «cross_sectional» |
 | G2-AUTO-07 | Kế hoạch an toàn tương xứng thiết kế | PASS | không phải RCT và PI không khai safety_plan_required=true — kế hoạch an toàn theo nguy cơ |
 | G2-AUTO-08 | Mục khoa học WHO TRDS (can thiệp/tiêu chí/kết cục) đã có nội dung thật | PASS | mục 13/14/19/20 đã có nội dung |
 | G2-AUTO-08b | Mục WHO TRDS tự điền đã được PI khai (9 tiêu đề công khai, 12 tình trạng sức khỏe, 15 masking của RCT) | PASS | mục 9/12 (và masking RCT) đã do PI khai |
 | G2-AUTO-10 | Phiên bản đề cương/ICF hiện hành do PI khai | PASS | protocol_version=1.0; icf_version=Không áp dụng — đề nghị miễn ICF (TÀI LIỆU 9); «1.0» có thể là giá trị khuôn gieo trước 04/10/2026 — PI xác nhận |
+| G2-AUTO-11 | Quyết định đăng ký của PI khớp nghĩa vụ đăng ký (tiến cứu/SR-MA ⇒ đăng ký trước người tham gia đầu tiên) | PASS | không thuộc diện bắt buộc đăng ký |
 | G2-AUTO-09 | Mã Hội đồng Đạo đức tách biệt khỏi định danh người duyệt chung | PASS | ethics_committee_ref_source=chưa có attestation |
 
 ## Phê duyệt người thật
@@ -30,7 +31,6 @@
 
 ## Ô chỉ điền được SAU phê duyệt/đăng ký
 Không chặn nộp IRB; BẮT BUỘC điền trước khi ký khoá G2 (approve_gate từ chối ký khi còn).
-- [Phiên bản phê duyệt sẽ có số IRB, CẦN BỔ SUNG]
 - [CẦN — sẽ có sau khi đăng ký: NCT_______ / ANZCTR_____]
 - [CẦN — ngày đăng ký thành công]
 - Số phê duyệt IRB: [CẦN sau khi nhận]
