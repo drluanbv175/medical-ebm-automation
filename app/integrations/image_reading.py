@@ -197,28 +197,26 @@ def read_image(path: str, *, consent: bool, vision_llm: Optional[VisionFn] = Non
 # 4. Vision LLM Claude (tùy chọn) — cần anthropic SDK + ANTHROPIC_API_KEY
 # ---------------------------------------------------------------------------
 def claude_vision(image_bytes: bytes, prompt: str, media_type: str = "image/png", *,
-                  model: Optional[str] = None, max_tokens: int = 1500) -> str:
-    """Gọi Claude (vision) đọc ảnh. Model lấy từ env AMBIENT_VISION_MODEL (mặc định claude-opus-4-8)."""
+                  model: Optional[str] = None, max_tokens: Optional[int] = None, client=None) -> str:
+    """Gọi Claude (vision) đọc ảnh — qua cầu nối chung `tools/api_claude_nc.py` (`app/integrations/_api_claude.py`).
+
+    Model: tham số > env AMBIENT_VISION_MODEL > Opus 5.5. `max_tokens` mặc định của cầu nối (16000) vì phần suy
+    nghĩ tính vào `max_tokens`; bản đọc bị cắt cụt (có thể mất đúng mục cờ đỏ ở cuối) hay bị từ chối ⇒
+    ImageReadError, KHÔNG trả nửa bản đọc. Mỗi lượt ghi sức khoẻ API (`nguon` = image_reading). Ảnh truyền vào
+    phải đã khử EXIF (`read_image` lo).
+    """
     import base64
 
-    key = os.getenv("ANTHROPIC_API_KEY", "")
-    if not key:
-        raise ImageReadError("Thiếu ANTHROPIC_API_KEY — đặt trong .env (ngoài OneDrive) để dùng claude_vision.")
-    try:
-        import anthropic  # type: ignore
-    except ImportError as exc:  # pragma: no cover
-        raise ImageReadError("Chưa cài SDK: pip install anthropic.") from exc
-    mdl = model or os.getenv("AMBIENT_VISION_MODEL", "claude-opus-4-8")
-    client = anthropic.Anthropic(api_key=key)
+    from app.integrations._api_claude import MODEL_ANH, goi_claude
+
     b64 = base64.standard_b64encode(image_bytes).decode("ascii")
-    resp = client.messages.create(  # pragma: no cover - cần mạng + key
-        model=mdl, max_tokens=max_tokens,
-        messages=[{"role": "user", "content": [
-            {"type": "image", "source": {"type": "base64", "media_type": media_type, "data": b64}},
-            {"type": "text", "text": prompt},
-        ]}],
-    )
-    return "".join(getattr(b, "text", "") for b in resp.content)
+    noi_dung = [
+        {"type": "image", "source": {"type": "base64", "media_type": media_type, "data": b64}},
+        {"type": "text", "text": prompt},
+    ]
+    return goi_claude(noi_dung, nguon="image_reading", loi=ImageReadError, model=model,
+                      bien_model="AMBIENT_VISION_MODEL", model_mac_dinh=MODEL_ANH,
+                      max_tokens=max_tokens, effort="medium", client=client)
 
 
 def main(argv: Optional[List[str]] = None) -> int:  # pragma: no cover - CLI mỏng

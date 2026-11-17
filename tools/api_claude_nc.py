@@ -23,7 +23,10 @@ import json
 import os
 import re
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Sequence, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
+
+# Nội dung một lượt: chuỗi, hoặc danh sách khối (ảnh + chữ — tích hợp đọc ảnh của app, 17/11/2026).
+NoiDung = Union[str, List[Dict[str, Any]]]
 
 KHO_BI_MAT = os.path.join(os.path.expanduser("~"), ".ebm-secrets", "medical-ebm-automation.env")
 NHAT_KY_API = os.path.join(os.path.expanduser("~"), ".ebm-api-claude.json")
@@ -136,7 +139,7 @@ def chon_model(model: Optional[str], bien_moi_truong: str = "EBM_NC_API_MODEL") 
 
 
 def tham_so(
-    noi_dung: str,
+    noi_dung: NoiDung,
     *,
     he_thong: Optional[str] = None,
     model: Optional[str] = None,
@@ -179,7 +182,7 @@ def _kiem_stop(stop_reason: Optional[str], nhom: Optional[str], max_tokens: int)
 
 
 def goi(
-    noi_dung: str,
+    noi_dung: NoiDung,
     *,
     he_thong: Optional[str] = None,
     model: Optional[str] = None,
