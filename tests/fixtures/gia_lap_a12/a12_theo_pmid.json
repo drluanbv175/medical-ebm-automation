@@ -1,0 +1,1765 @@
+{
+ "retraction": {
+  "15485730": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "17872937": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "18416914": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "18453793": {
+   "status": "retracted",
+   "retraction_notice": {
+    "pmid": "37594186",
+    "citation": "J Clin Hypertens (Greenwich). 2023 Sep;25(9):890. doi: 10.1111/jch.14712."
+   },
+   "retraction_notices": [
+    {
+     "pmid": "37594022",
+     "citation": "J Clin Hypertens (Greenwich). 2023 Sep;25(9):889. doi: 10.1111/jch.14718."
+    },
+    {
+     "pmid": "37594186",
+     "citation": "J Clin Hypertens (Greenwich). 2023 Sep;25(9):890. doi: 10.1111/jch.14712."
+    }
+   ],
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed",
+   "notice_ids": [
+    "37594022",
+    "37594186"
+   ],
+   "withdrawn_correction_notice": false
+  },
+  "19523535": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "20332511": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "20659284": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "21365461": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "21469914": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "21605729": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "21701389": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "22114101": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "22137073": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "22951546": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "23137151": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "23268269": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "23268518": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "23279139": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "23929781": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "24221694": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "24777151": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "24846373": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "24937265": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "25194294": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "25554246": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "25898902": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "26147376": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "26462494": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "26691646": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "26823263": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "26831740": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "26964707": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "27422768": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "27881078": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "28301676": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "28586172": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "29199170": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "29632222": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "30159775": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "30383903": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "30424892": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "30709604": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "31820546": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "32188600": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "32853471": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "33176659": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "33780219": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "34001645": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "34432914": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "34450083": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "34622475": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "35017145": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "35342691": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "35427812": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "35500594": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "35830032": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "36002638": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "36089508": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "36259143": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "36322107": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "36526813": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "36828607": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "36924031": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "37278999": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "37290471": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "37311173": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "37551735": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "37900994": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "38262663": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "38366854": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "38573034": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "38739123": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "38924296": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "38977877": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "39194352": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "39332937": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "39357612": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "3945130": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "39611763": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "39635965": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "39657401": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "39703127": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "39719284": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "39843675": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "39938855": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "40062731": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "40123081": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "40294593": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "40294956": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "40583484": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "40622370": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "40725928": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "40764400": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "40848405": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "40907093": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "40929717": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "41101281": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "41358893": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "41358900": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "41528277": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "41533456": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "42063912": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "42082844": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "42263266": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "42283624": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "42287444": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "42426564": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "42442791": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "42566081": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "42587114": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "42591121": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "42616235": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "42659939": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "42755179": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "42952754": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "7063747": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  }
+ },
+ "metadata": {
+  "15485730": {
+   "status": "resolved",
+   "title": "Patterns of intra-cluster correlation from primary care research to inform study design and analysis.",
+   "authors": "Adams G, Gulliford MC, Ukoumunne OC, Eldridge S, Chinn S",
+   "journal": "Journal of clinical epidemiology",
+   "year": "2004",
+   "doi": "10.1016/j.jclinepi.2003.12.013"
+  },
+  "17872937": {
+   "status": "resolved",
+   "title": "Consolidated criteria for reporting qualitative research (COREQ): a 32-item checklist for interviews and focus groups.",
+   "authors": "Tong A, Sainsbury P, Craig J",
+   "journal": "International journal for quality in health care : journal of the International Society for Quality in Health Care",
+   "year": "2007",
+   "doi": "10.1093/intqhc/mzm042"
+  },
+  "18416914": {
+   "status": "resolved",
+   "title": "The quality of mixed methods studies in health services research.",
+   "authors": "O'Cathain A, Murphy E, Nicholl J",
+   "journal": "Journal of health services research & policy",
+   "year": "2008",
+   "doi": "10.1258/jhsrp.2007.007074"
+  },
+  "18453793": {
+   "status": "resolved",
+   "title": "Predictive validity of a medication adherence measure in an outpatient setting.",
+   "authors": "Morisky DE, Ang A, Krousel-Wood M, Ward HJ",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "year": "2008",
+   "doi": "10.1111/j.1751-7176.2008.07572.x"
+  },
+  "19523535": {
+   "status": "resolved",
+   "title": "Comparison of noninvasive markers of fibrosis in patients with nonalcoholic fatty liver disease.",
+   "authors": "Shah AG, Lydecker A, Murray K, Tetri BN, Contos MJ",
+   "journal": "Clinical gastroenterology and hepatology : the official clinical practice journal of the American Gastroenterological Association",
+   "year": "2009",
+   "doi": "10.1016/j.cgh.2009.05.033"
+  },
+  "20332511": {
+   "status": "resolved",
+   "title": "CONSORT 2010 explanation and elaboration: updated guidelines for reporting parallel group randomised trials.",
+   "authors": "Moher D, Hopewell S, Schulz KF, Montori V, Gøtzsche PC",
+   "journal": "BMJ (Clinical research ed.)",
+   "year": "2010",
+   "doi": "10.1136/bmj.c869"
+  },
+  "20659284": {
+   "status": "resolved",
+   "title": "Systematic review: Helicobacter pylori and the risk of upper gastrointestinal bleeding risk in patients taking aspirin.",
+   "authors": "Fletcher EH, Johnston DE, Fisher CR, Koerner RJ, Newton JL",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "year": "2010",
+   "doi": "10.1111/j.1365-2036.2010.04415.x"
+  },
+  "21365461": {
+   "status": "resolved",
+   "title": "Vertebral fracture efficacy during risedronate therapy in patients using proton pump inhibitors.",
+   "authors": "Roux C, Goldstein JL, Zhou X, Klemes A, Lindsay R",
+   "journal": "Osteoporosis international : a journal established as result of cooperation between the European Foundation for Osteoporosis and the National Osteoporosis Foundation of the USA",
+   "year": "2012",
+   "doi": "10.1007/s00198-011-1574-5"
+  },
+  "21469914": {
+   "status": "resolved",
+   "title": "Are patients with type 2 diabetes reluctant to start insulin therapy? An examination of the scope and underpinnings of psychological insulin resistance in a large, international population.",
+   "authors": "Polonsky WH, Hajos TR, Dain MP, Snoek FJ",
+   "journal": "Current medical research and opinion",
+   "year": "2011",
+   "doi": "10.1185/03007995.2011.573623"
+  },
+  "21605729": {
+   "status": "resolved",
+   "title": "Proton pump inhibitors and risk of fractures: a meta-analysis of 11 international studies.",
+   "authors": "Yu EW, Bauer SR, Bain PA, Bauer DC",
+   "journal": "The American journal of medicine",
+   "year": "2011",
+   "doi": "10.1016/j.amjmed.2011.01.007"
+  },
+  "21701389": {
+   "status": "resolved",
+   "title": "Proton pump inhibitors therapy and risk of hip fracture: a systematic review and meta-analysis.",
+   "authors": "Ye X, Liu H, Wu C, Qin Y, Zang J",
+   "journal": "European journal of gastroenterology & hepatology",
+   "year": "2011",
+   "doi": "10.1097/MEG.0b013e328348a56a"
+  },
+  "22114101": {
+   "status": "resolved",
+   "title": "Factors related to morbidity and mortality in patients with chronic heart failure with systolic dysfunction: the HF-ACTION predictive risk score model.",
+   "authors": "O'Connor CM, Whellan DJ, Wojdyla D, Leifer E, Clare RM",
+   "journal": "Circulation. Heart failure",
+   "year": "2012",
+   "doi": "10.1161/CIRCHEARTFAILURE.111.963462"
+  },
+  "22137073": {
+   "status": "resolved",
+   "title": "Benefit of exercise therapy for systolic heart failure in relation to disease severity and etiology-findings from the Heart Failure and A Controlled Trial Investigating Outcomes of Exercise Training study.",
+   "authors": "Whellan DJ, Nigam A, Arnold M, Starr AZ, Hill J",
+   "journal": "American heart journal",
+   "year": "2011",
+   "doi": "10.1016/j.ahj.2011.09.017"
+  },
+  "22951546": {
+   "status": "resolved",
+   "title": "Consort 2010 statement: extension to cluster randomised trials.",
+   "authors": "Campbell MK, Piaggio G, Elbourne DR, Altman DG,",
+   "journal": "BMJ (Clinical research ed.)",
+   "year": "2012",
+   "doi": "10.1136/bmj.e5661"
+  },
+  "23137151": {
+   "status": "resolved",
+   "title": "Individual NSAIDs and upper gastrointestinal complications: a systematic review and meta-analysis of observational studies (the SOS project).",
+   "authors": "Castellsague J, Riera-Guardia N, Calingaert B, Varas-Lorenzo C, Fourrier-Reglat A",
+   "journal": "Drug safety",
+   "year": "2012",
+   "doi": "10.2165/11633470-000000000-00000"
+  },
+  "23268269": {
+   "status": "resolved",
+   "title": "[Colonoscopic restoration for sigmoid vovulus in the elderly].",
+   "authors": "Lou Z, Yu ED, Meng RG, Zhang W, Liu LJ",
+   "journal": "Zhonghua wei chang wai ke za zhi = Chinese journal of gastrointestinal surgery",
+   "year": "2012",
+   "doi": null
+  },
+  "23268518": {
+   "status": "resolved",
+   "title": "Reporting of noninferiority and equivalence randomized trials: extension of the CONSORT 2010 statement.",
+   "authors": "Piaggio G, Elbourne DR, Pocock SJ, Evans SJ, Altman DG",
+   "journal": "JAMA",
+   "year": "2012",
+   "doi": "10.1001/jama.2012.87802"
+  },
+  "23279139": {
+   "status": "resolved",
+   "title": "Characterization and prediction of natriuretic peptide \"nonresponse\" during heart failure management: results from the ProBNP Outpatient Tailored Chronic Heart Failure (PROTECT) and the NT-proBNP-Assisted Treatment to Lessen Serial Cardiac Readmissions and Death (BATTLESCARRED) study.",
+   "authors": "Gaggin HK, Truong QA, Rehman SU, Mohammed AA, Bhardwaj A",
+   "journal": "Congestive heart failure (Greenwich, Conn.)",
+   "year": "2013",
+   "doi": "10.1111/chf.12016"
+  },
+  "23929781": {
+   "status": "resolved",
+   "title": "Anemia and associated clinical outcomes in patients with heart failure due to reduced left ventricular systolic function.",
+   "authors": "McCullough PA, Barnard D, Clare R, Ellis SJ, Fleg JL",
+   "journal": "Clinical cardiology",
+   "year": "2013",
+   "doi": "10.1002/clc.22181"
+  },
+  "24221694": {
+   "status": "resolved",
+   "title": "Aspirin and non-aspirin NSAIDs increase risk of colonic diverticular bleeding: a systematic review and meta-analysis.",
+   "authors": "Yuhara H, Corley DA, Nakahara F, Nakajima T, Koike J",
+   "journal": "Journal of gastroenterology",
+   "year": "2014",
+   "doi": "10.1007/s00535-013-0905-z"
+  },
+  "24777151": {
+   "status": "resolved",
+   "title": "Risk of upper gastrointestinal bleeding with selective serotonin reuptake inhibitors with or without concurrent nonsteroidal anti-inflammatory use: a systematic review and meta-analysis.",
+   "authors": "Anglin R, Yuan Y, Moayyedi P, Tse F, Armstrong D",
+   "journal": "The American journal of gastroenterology",
+   "year": "2014",
+   "doi": "10.1038/ajg.2014.82"
+  },
+  "24846373": {
+   "status": "resolved",
+   "title": "A novel algorithm to assess risk of heart failure exacerbation using ICD diagnostics: validation from RAFT.",
+   "authors": "Gula LJ, Wells GA, Yee R, Koehler J, Sarkar S",
+   "journal": "Heart rhythm",
+   "year": "2014",
+   "doi": "10.1016/j.hrthm.2014.05.015"
+  },
+  "24937265": {
+   "status": "resolved",
+   "title": "Risk of upper gastrointestinal bleeding from different drug combinations.",
+   "authors": "Masclee GM, Valkhoff VE, Coloma PM, de Ridder M, Romio S",
+   "journal": "Gastroenterology",
+   "year": "2014",
+   "doi": "10.1053/j.gastro.2014.06.007"
+  },
+  "25194294": {
+   "status": "resolved",
+   "title": "Factors influencing the predictive power of models for predicting mortality and/or heart failure hospitalization in patients with heart failure.",
+   "authors": "Ouwerkerk W, Voors AA, Zwinderman AH",
+   "journal": "JACC. Heart failure",
+   "year": "2014",
+   "doi": "10.1016/j.jchf.2014.04.006"
+  },
+  "25554246": {
+   "status": "resolved",
+   "title": "Preferred reporting items for systematic review and meta-analysis protocols (PRISMA-P) 2015 statement.",
+   "authors": "Moher D, Shamseer L, Clarke M, Ghersi D, Liberati A",
+   "journal": "Systematic reviews",
+   "year": "2015",
+   "doi": "10.1186/2046-4053-4-1"
+  },
+  "25898902": {
+   "status": "resolved",
+   "title": "Systematic review with meta-analysis: the association between the use of calcium channel blockers and gastrointestinal bleeding.",
+   "authors": "He Y, Chan EW, Leung WK, Anand S, Wong IC",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "year": "2015",
+   "doi": "10.1111/apt.13211"
+  },
+  "26147376": {
+   "status": "resolved",
+   "title": "Barriers and facilitators to starting insulin in patients with type 2 diabetes: a systematic review.",
+   "authors": "Ng CJ, Lai PS, Lee YK, Azmi SA, Teo CH",
+   "journal": "International journal of clinical practice",
+   "year": "2015",
+   "doi": "10.1111/ijcp.12691"
+  },
+  "26462494": {
+   "status": "resolved",
+   "title": "Proton-pump inhibitors and risk of fractures: an update meta-analysis.",
+   "authors": "Zhou B, Huang Y, Li H, Sun W, Liu J",
+   "journal": "Osteoporosis international : a journal established as result of cooperation between the European Foundation for Osteoporosis and the National Osteoporosis Foundation of the USA",
+   "year": "2016",
+   "doi": "10.1007/s00198-015-3365-x"
+  },
+  "26691646": {
+   "status": "resolved",
+   "title": "Patient education and follow-up as an intervention for hypertensive patients discharged from an emergency department: a randomized control trial study protocol.",
+   "authors": "Gleason-Comstock J, Streater A, Ager J, Goodman A, Brody A",
+   "journal": "BMC emergency medicine",
+   "year": "2015",
+   "doi": "10.1186/s12873-015-0052-3"
+  },
+  "26823263": {
+   "status": "resolved",
+   "title": "Barriers to effective management of type 2 diabetes in primary care: qualitative systematic review.",
+   "authors": "Rushforth B, McCrorie C, Glidewell L, Midgley E, Foy R",
+   "journal": "The British journal of general practice : the journal of the Royal College of General Practitioners",
+   "year": "2016",
+   "doi": "10.3399/bjgp16X683509"
+  },
+  "26831740": {
+   "status": "resolved",
+   "title": "Mobile Telephone Text Messaging for Medication Adherence in Chronic Disease: A Meta-analysis.",
+   "authors": "Thakkar J, Kurup R, Laba TL, Santo K, Thiagalingam A",
+   "journal": "JAMA internal medicine",
+   "year": "2016",
+   "doi": "10.1001/jamainternmed.2015.7667"
+  },
+  "26964707": {
+   "status": "resolved",
+   "title": "Adequate sample size for developing prediction models is not simply related to events per variable.",
+   "authors": "Ogundimu EO, Altman DG, Collins GS",
+   "journal": "Journal of clinical epidemiology",
+   "year": "2016",
+   "doi": "10.1016/j.jclinepi.2016.02.031"
+  },
+  "27422768": {
+   "status": "resolved",
+   "title": "Safety of metamizole: a systematic review of the literature.",
+   "authors": "Andrade S, Bartels DB, Lange R, Sandford L, Gurwitz J",
+   "journal": "Journal of clinical pharmacy and therapeutics",
+   "year": "2016",
+   "doi": "10.1111/jcpt.12422"
+  },
+  "27881078": {
+   "status": "resolved",
+   "title": "No rationale for 1 variable per 10 events criterion for binary logistic regression analysis.",
+   "authors": "van Smeden M, de Groot JA, Moons KG, Collins GS, Altman DG",
+   "journal": "BMC medical research methodology",
+   "year": "2016",
+   "doi": "10.1186/s12874-016-0267-3"
+  },
+  "28301676": {
+   "status": "resolved",
+   "title": "Deprescribing versus continuation of chronic proton pump inhibitor use in adults.",
+   "authors": "Boghossian TA, Rashid FJ, Thompson W, Welch V, Moayyedi P",
+   "journal": "The Cochrane database of systematic reviews",
+   "year": "2017",
+   "doi": "10.1002/14651858.CD011969.pub2"
+  },
+  "28586172": {
+   "status": "resolved",
+   "title": "Comparison of laboratory tests, ultrasound, or magnetic resonance elastography to detect fibrosis in patients with nonalcoholic fatty liver disease: A meta-analysis.",
+   "authors": "Xiao G, Zhu S, Xiao X, Yan L, Yang J",
+   "journal": "Hepatology (Baltimore, Md.)",
+   "year": "2017",
+   "doi": "10.1002/hep.29302"
+  },
+  "29199170": {
+   "status": "resolved",
+   "title": "What is the long term acid inhibitor treatment in gastroesophageal reflux disease? What are the potential problems related to long term acid inhibitor treatment in gastroesophageal reflux disease? How should these cases be followed?",
+   "authors": "Hatemi İ, Esatoğlu SN",
+   "journal": "The Turkish journal of gastroenterology : the official journal of Turkish Society of Gastroenterology",
+   "year": "2017",
+   "doi": "10.5152/tjg.2017.15"
+  },
+  "29632222": {
+   "status": "resolved",
+   "title": "Quality of Cardiovascular Disease Care in Small Urban Practices.",
+   "authors": "Shelley D, Blechter B, Siman N, Jiang N, Cleland C",
+   "journal": "Annals of family medicine",
+   "year": "2018",
+   "doi": "10.1370/afm.2174"
+  },
+  "30159775": {
+   "status": "resolved",
+   "title": "Proton pump inhibitors' use and risk of hip fracture: a systematic review and meta-analysis.",
+   "authors": "Hussain S, Siddiqui AN, Habib A, Hussain MS, Najmi AK",
+   "journal": "Rheumatology international",
+   "year": "2018",
+   "doi": "10.1007/s00296-018-4142-x"
+  },
+  "30383903": {
+   "status": "resolved",
+   "title": "Gastrointestinal safety of coxibs: systematic review and meta-analysis of observational studies on selective inhibitors of cyclo-oxygenase 2.",
+   "authors": "Martín Arias LH, Martín González A, Sanz Fadrique R, Salgueiro Vázquez E",
+   "journal": "Fundamental & clinical pharmacology",
+   "year": "2019",
+   "doi": "10.1111/fcp.12430"
+  },
+  "30424892": {
+   "status": "resolved",
+   "title": "SGLT2 inhibitors for primary and secondary prevention of cardiovascular and renal outcomes in type 2 diabetes: a systematic review and meta-analysis of cardiovascular outcome trials.",
+   "authors": "Zelniker TA, Wiviott SD, Raz I, Im K, Goodrich EL",
+   "journal": "Lancet (London, England)",
+   "year": "2019",
+   "doi": "10.1016/S0140-6736(18)32590-X"
+  },
+  "30709604": {
+   "status": "resolved",
+   "title": "Identifying solutions to psychological insulin resistance: An international study.",
+   "authors": "Polonsky WH, Fisher L, Hessler D, Stuckey H, Snoek FJ",
+   "journal": "Journal of diabetes and its complications",
+   "year": "2019",
+   "doi": "10.1016/j.jdiacomp.2019.01.001"
+  },
+  "31820546": {
+   "status": "resolved",
+   "title": "Baseline features of the VICTORIA (Vericiguat Global Study in Subjects with Heart Failure with Reduced Ejection Fraction) trial.",
+   "authors": "Pieske B, Patel MJ, Westerhout CM, Anstrom KJ, Butler J",
+   "journal": "European journal of heart failure",
+   "year": "2019",
+   "doi": "10.1002/ejhf.1664"
+  },
+  "32188600": {
+   "status": "resolved",
+   "title": "Calculating the sample size required for developing a clinical prediction model.",
+   "authors": "Riley RD, Ensor J, Snell KIE, Harrell FE, Martin GP",
+   "journal": "BMJ (Clinical research ed.)",
+   "year": "2020",
+   "doi": "10.1136/bmj.m441"
+  },
+  "32853471": {
+   "status": "resolved",
+   "title": "Mortality risk in dilated cardiomyopathy: the accuracy of heart failure prognostic models and dilated cardiomyopathy-tailored prognostic model.",
+   "authors": "Dziewięcka E, Gliniak M, Winiarczyk M, Karapetyan A, Wiśniowska-Śmiałek S",
+   "journal": "ESC heart failure",
+   "year": "2020",
+   "doi": "10.1002/ehf2.12809"
+  },
+  "33176659": {
+   "status": "resolved",
+   "title": "Perceived Barriers, Benefits, Facilitators, and Attitudes of Health Professionals Towards Multidisciplinary Team Care in Type 2 Diabetes Management: A Systematic Review.",
+   "authors": "Dankoly US, Vissers D, El Farkouch Z, Kolasa E, Ziyyat A",
+   "journal": "Current diabetes reviews",
+   "year": "2021",
+   "doi": "10.2174/1573399816999201110200126"
+  },
+  "33780219": {
+   "status": "resolved",
+   "title": "Identifying Advanced Fibrosis in NAFLD Using Noninvasive Tests: A Systematic Review of Sequential Algorithms.",
+   "authors": "Noorian S, Patel A, Ashkar C, Saab S",
+   "journal": "Journal of clinical gastroenterology",
+   "year": "2022",
+   "doi": "10.1097/MCG.0000000000001517"
+  },
+  "34001645": {
+   "status": "resolved",
+   "title": "Diagnostic accuracy of non-invasive tests for advanced fibrosis in patients with NAFLD: an individual patient data meta-analysis.",
+   "authors": "Mózes FE, Lee JA, Selvaraj EA, Jayaswal ANA, Trauner M",
+   "journal": "Gut",
+   "year": "2022",
+   "doi": "10.1136/gutjnl-2021-324243"
+  },
+  "34432914": {
+   "status": "resolved",
+   "title": "Individual, healthcare professional and system-level barriers and facilitators to initiation and adherence to injectable therapies for type 2 diabetes: A systematic review and meta-ethnography.",
+   "authors": "Byrne J, Willis A, Dunkley A, Fitzpatrick C, Campbell S",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "year": "2022",
+   "doi": "10.1111/dme.14678"
+  },
+  "34450083": {
+   "status": "resolved",
+   "title": "Worldwide trends in hypertension prevalence and progress in treatment and control from 1990 to 2019: a pooled analysis of 1201 population-representative studies with 104 million participants.",
+   "authors": null,
+   "journal": "Lancet (London, England)",
+   "year": "2021",
+   "doi": "10.1016/S0140-6736(21)01330-1"
+  },
+  "34622475": {
+   "status": "resolved",
+   "title": "Association of proton-pump inhibitor use with adverse health outcomes: A systematic umbrella review of meta-analyses of cohort studies and randomised controlled trials.",
+   "authors": "Veettil SK, Sadoyu S, Bald EM, Chandran VP, Khuu SAT",
+   "journal": "British journal of clinical pharmacology",
+   "year": "2022",
+   "doi": "10.1111/bcp.15103"
+  },
+  "35017145": {
+   "status": "resolved",
+   "title": "Consolidated Health Economic Evaluation Reporting Standards 2022 (CHEERS 2022) statement: updated reporting guidance for health economic evaluations.",
+   "authors": "Husereau D, Drummond M, Augustovski F, de Bekker-Grob E, Briggs AH",
+   "journal": "BMJ (Clinical research ed.)",
+   "year": "2022",
+   "doi": "10.1136/bmj-2021-067975"
+  },
+  "35342691": {
+   "status": "resolved",
+   "title": "Effectiveness and Acceptability of a Mobile Phone Text Messaging Intervention to Improve Blood Pressure Control (TEXT4BP) among Patients with Hypertension in Nepal: A Feasibility Randomised Controlled Trial.",
+   "authors": "Bhandari B, Narasimhan P, Jayasuriya R, Vaidya A, Schutte AE",
+   "journal": "Global heart",
+   "year": "2022",
+   "doi": "10.5334/gh.1103"
+  },
+  "35427812": {
+   "status": "resolved",
+   "title": "Prognostic significance of addition of electrocardiographic findings to the MAGGIC heart failure risk score.",
+   "authors": "Ikitimur B, Barman HA, Dogan O, Atıcı A, Meriç BK",
+   "journal": "Journal of electrocardiology",
+   "year": "2022",
+   "doi": "10.1016/j.jelectrocard.2022.03.003"
+  },
+  "35500594": {
+   "status": "resolved",
+   "title": "A village doctor-led multifaceted intervention for blood pressure control in rural China: an open, cluster randomised trial.",
+   "authors": "Sun Y, Mu J, Wang DW, Ouyang N, Xing L",
+   "journal": "Lancet (London, England)",
+   "year": "2022",
+   "doi": "10.1016/S0140-6736(22)00325-7"
+  },
+  "35830032": {
+   "status": "resolved",
+   "title": "SAFETY OF LONG-TERM PROTON PUMP INHIBITORS: FACTS AND MYTHS.",
+   "authors": "Chinzon D, Domingues G, Tosetto N, Perrotti M",
+   "journal": "Arquivos de gastroenterologia",
+   "year": "2022",
+   "doi": "10.1590/S0004-2803.202202000-40"
+  },
+  "36002638": {
+   "status": "resolved",
+   "title": "Selective serotonin reuptake inhibitors increase risk of upper gastrointestinal bleeding when used with NSAIDs: a systemic review and meta-analysis.",
+   "authors": "Alam SM, Qasswal M, Ahsan MJ, Walters RW, Chandra S",
+   "journal": "Scientific reports",
+   "year": "2022",
+   "doi": "10.1038/s41598-022-18654-2"
+  },
+  "36089508": {
+   "status": "resolved",
+   "title": "The experiences of insulin use among older people with Type 2 diabetes mellitus: A thematic synthesis.",
+   "authors": "Langerman C, Forbes A, Robert G",
+   "journal": "Primary care diabetes",
+   "year": "2022",
+   "doi": "10.1016/j.pcd.2022.08.008"
+  },
+  "36259143": {
+   "status": "resolved",
+   "title": "Effect of eTansiyon smartphone application on hypertension control.",
+   "authors": "Yilmaz E, Uzuner A, Bajgora M, Dogan B, Altikardes ZA",
+   "journal": "Primary health care research & development",
+   "year": "2022",
+   "doi": "10.1017/S146342362100058X"
+  },
+  "36322107": {
+   "status": "resolved",
+   "title": "Nurse-led Telehealth Intervention for Rehabilitation (Telerehabilitation) Among Community-Dwelling Patients With Chronic Diseases: Systematic Review and Meta-analysis.",
+   "authors": "Lee AYL, Wong AKC, Hung TTM, Yan J, Yang S",
+   "journal": "Journal of medical Internet research",
+   "year": "2022",
+   "doi": "10.2196/40364"
+  },
+  "36526813": {
+   "status": "resolved",
+   "title": "Risk of Gastrointestinal Bleeding with Concurrent Use of NSAID and SSRI: A Systematic Review and Network Meta-Analysis.",
+   "authors": "Haghbin H, Zakirkhodjaev N, Husain FF, Lee-Smith W, Aziz M",
+   "journal": "Digestive diseases and sciences",
+   "year": "2023",
+   "doi": "10.1007/s10620-022-07788-y"
+  },
+  "36828607": {
+   "status": "resolved",
+   "title": "Effectiveness, reach, uptake, and feasibility of digital health interventions for adults with hypertension: a systematic review and meta-analysis of randomised controlled trials.",
+   "authors": "Siopis G, Moschonis G, Eweka E, Jung J, Kwasnicka D",
+   "journal": "The Lancet. Digital health",
+   "year": "2023",
+   "doi": "10.1016/S2589-7500(23)00002-X"
+  },
+  "36924031": {
+   "status": "resolved",
+   "title": "Noninvasive assessment of liver disease severity in patients with nonalcoholic fatty liver disease (NAFLD) and type 2 diabetes.",
+   "authors": "Pennisi G, Enea M, Falco V, Aithal GP, Palaniyappan N",
+   "journal": "Hepatology (Baltimore, Md.)",
+   "year": "2023",
+   "doi": "10.1097/HEP.0000000000000351"
+  },
+  "37278999": {
+   "status": "resolved",
+   "title": "Effect of a Peer Health Coaching Intervention on Clinical Outcomes Among US Veterans With Cardiovascular Risks: The Vet-COACH Randomized Clinical Trial.",
+   "authors": "Nelson KM, Taylor L, Williams JL, Rao M, Gray KE",
+   "journal": "JAMA network open",
+   "year": "2023",
+   "doi": "10.1001/jamanetworkopen.2023.17046"
+  },
+  "37290471": {
+   "status": "resolved",
+   "title": "Performance of non-invasive tests and histology for the prediction of clinical outcomes in patients with non-alcoholic fatty liver disease: an individual participant data meta-analysis.",
+   "authors": "Mózes FE, Lee JA, Vali Y, Alzoubi O, Staufer K",
+   "journal": "The lancet. Gastroenterology & hepatology",
+   "year": "2023",
+   "doi": "10.1016/S2468-1253(23)00141-3"
+  },
+  "37311173": {
+   "status": "resolved",
+   "title": "Postpartum Home Blood Pressure Monitoring: A Systematic Review.",
+   "authors": "Steele DW, Adam GP, Saldanha IJ, Kanaan G, Zahradnik ML",
+   "journal": "Obstetrics and gynecology",
+   "year": "2023",
+   "doi": "10.1097/AOG.0000000000005270"
+  },
+  "37551735": {
+   "status": "resolved",
+   "title": "Patient experiences of continuous glucose monitoring and sensor-augmented insulin pump therapy for diabetes: A systematic review of qualitative studies.",
+   "authors": "Natale P, Chen S, Chow CK, Cheung NW, Martinez-Martin D",
+   "journal": "Journal of diabetes",
+   "year": "2023",
+   "doi": "10.1111/1753-0407.13454"
+  },
+  "37900994": {
+   "status": "resolved",
+   "title": "Diagnostic role of transient elastography in patients with autoimmune liver diseases: A systematic review and meta-analysis.",
+   "authors": "Chen H, Shen Y, Wu SD, Zhu Q, Weng CZ",
+   "journal": "World journal of gastroenterology",
+   "year": "2023",
+   "doi": "10.3748/wjg.v29.i39.5503"
+  },
+  "38262663": {
+   "status": "resolved",
+   "title": "The estimands framework: a primer on the ICH E9(R1) addendum.",
+   "authors": "Kahan BC, Hindley J, Edwards M, Cro S, Morris TP",
+   "journal": "BMJ (Clinical research ed.)",
+   "year": "2024",
+   "doi": "10.1136/bmj-2023-076316"
+  },
+  "38366854": {
+   "status": "resolved",
+   "title": "The impact of non-pharmacological interventions on adherence to medication and persistence in dyslipidaemia and hypertension: a systematic review.",
+   "authors": "Kengne AP, Brière JB, Gudiña IA, Jiang X, Kodjamanova P",
+   "journal": "Expert review of pharmacoeconomics & outcomes research",
+   "year": "2024",
+   "doi": "10.1080/14737167.2024.2319598"
+  },
+  "38573034": {
+   "status": "resolved",
+   "title": "Diagnostic accuracy of non-invasive tests to screen for at-risk MASH-An individual participant data meta-analysis.",
+   "authors": "Mózes FE, Lee JA, Vali Y, Selvaraj EA, Jayaswal ANA",
+   "journal": "Liver international : official journal of the International Association for the Study of the Liver",
+   "year": "2024",
+   "doi": "10.1111/liv.15914"
+  },
+  "38739123": {
+   "status": "resolved",
+   "title": "Titration of Medications After Acute Heart Failure Is Safe, Tolerated, and Effective Regardless of Risk.",
+   "authors": "Ambrosy AP, Chang AJ, Davison B, Voors A, Cohen-Solal A",
+   "journal": "JACC. Heart failure",
+   "year": "2024",
+   "doi": "10.1016/j.jchf.2024.04.017"
+  },
+  "38924296": {
+   "status": "resolved",
+   "title": "Intervention strategies to improve adherence to treatment for selected chronic conditions in sub-Saharan Africa: a systematic review.",
+   "authors": "Gumede SB, de Wit JBF, Venter WDF, Wensing AMJ, Lalla-Edward ST",
+   "journal": "Journal of the International AIDS Society",
+   "year": "2024",
+   "doi": "10.1002/jia2.26266"
+  },
+  "38977877": {
+   "status": "resolved",
+   "title": "Effectiveness of digital health interventions for telemedicine/telehealth for managing blood pressure in adults: a systematic review and meta-analysis.",
+   "authors": "Sakima A, Akagi Y, Akasaki Y, Fujii T, Haze T",
+   "journal": "Hypertension research : official journal of the Japanese Society of Hypertension",
+   "year": "2025",
+   "doi": "10.1038/s41440-024-01792-7"
+  },
+  "39194352": {
+   "status": "resolved",
+   "title": "Managing cardiovascular risk factors with telemedicine in primary care: A systematic review and meta-analysis of patients with arterial hypertension and type 2 diabetes.",
+   "authors": "Mihevc M, Virtič Potočnik T, Zavrnik Č, Klemenc-Ketiš Z, Poplas Susič A",
+   "journal": "Chronic illness",
+   "year": "2025",
+   "doi": "10.1177/17423953241277896"
+  },
+  "39332937": {
+   "status": "resolved",
+   "title": "Mobile phone interventions to improve health outcomes among patients with chronic diseases: an umbrella review and evidence synthesis from 34 meta-analyses.",
+   "authors": "Sun S, Simonsson O, McGarvey S, Torous J, Goldberg SB",
+   "journal": "The Lancet. Digital health",
+   "year": "2024",
+   "doi": "10.1016/S2589-7500(24)00119-5"
+  },
+  "39357612": {
+   "status": "resolved",
+   "title": "Telemedical strategies for improving systolic blood pressure control in secondary prevention of cerebrovascular events-a systematic review and meta-analysis.",
+   "authors": "Munir A, Farooqi HA, Nabi R, Hasnain U, Khan M",
+   "journal": "Journal of stroke and cerebrovascular diseases : the official journal of National Stroke Association",
+   "year": "2024",
+   "doi": "10.1016/j.jstrokecerebrovasdis.2024.108046"
+  },
+  "3945130": {
+   "status": "resolved",
+   "title": "Concurrent and predictive validity of a self-reported measure of medication adherence.",
+   "authors": "Morisky DE, Green LW, Levine DM",
+   "journal": "Medical care",
+   "year": "1986",
+   "doi": "10.1097/00005650-198601000-00007"
+  },
+  "39611763": {
+   "status": "resolved",
+   "title": "Remote blood pressure monitoring in women at risk of or with hypertensive disorders of pregnancy: A systematic review and meta-analysis.",
+   "authors": "Rajkumar T, Hennessy A, Makris A",
+   "journal": "International journal of gynaecology and obstetrics: the official organ of the International Federation of Gynaecology and Obstetrics",
+   "year": "2025",
+   "doi": "10.1002/ijgo.16059"
+  },
+  "39635965": {
+   "status": "resolved",
+   "title": "The Effectiveness of Telemedicine in Hypertension Management of Adults in Rural Communities: A Systematic Review and Meta-Analysis.",
+   "authors": "Dones V, Velasquez AAG, Dacuya MG, Ignacio KET, Cavite ETM",
+   "journal": "Physiotherapy research international : the journal for researchers and clinicians in physical therapy",
+   "year": "2025",
+   "doi": "10.1002/pri.70014"
+  },
+  "39657401": {
+   "status": "resolved",
+   "title": "The digital prescription: A systematic review and meta-analysis of smartphone apps for blood pressure control.",
+   "authors": "Motta-Yanac E, Riley V, Ellis NJ, Mankoo A, Gidlow CJ",
+   "journal": "International journal of medical informatics",
+   "year": "2025",
+   "doi": "10.1016/j.ijmedinf.2024.105755"
+  },
+  "39703127": {
+   "status": "resolved",
+   "title": "Diagnostic accuracy of Agile-4 score for liver cirrhosis in patients with metabolic dysfunction-associated steatotic liver disease. A systematic review and meta-analysis of diagnostic test accuracy studies.",
+   "authors": "Malandris K, Katsoula A, Liakos A, Karagiannis T, Sinakos E",
+   "journal": "Diabetes, obesity & metabolism",
+   "year": "2025",
+   "doi": "10.1111/dom.16142"
+  },
+  "39719284": {
+   "status": "resolved",
+   "title": "Effectiveness and compliance of telemedicine on blood pressure management in poststroke patients: a systematic review and meta-analysis of randomised controlled trials.",
+   "authors": "Yang Y, Xu H, Chang W, Li C, Cao P",
+   "journal": "BMJ open",
+   "year": "2024",
+   "doi": "10.1136/bmjopen-2023-083461"
+  },
+  "39843675": {
+   "status": "resolved",
+   "title": "Patient Perceptions of Provider Race Concordance and Quality of Chronic Illness Care.",
+   "authors": "Grant B, Soroka O, Baquero E, Ringel JB, Cherrington A",
+   "journal": "Journal of general internal medicine",
+   "year": "2025",
+   "doi": "10.1007/s11606-024-09025-w"
+  },
+  "39938855": {
+   "status": "resolved",
+   "title": "A randomized trial of postpartum ibuprofen in severe hypertensive disorders of pregnancy.",
+   "authors": "Penfield CA, Oakes MC, Caballero D, Marty LN, Berger DS",
+   "journal": "American journal of obstetrics and gynecology",
+   "year": "2025",
+   "doi": "10.1016/j.ajog.2025.02.012"
+  },
+  "40062731": {
+   "status": "resolved",
+   "title": "Neuropathological links between T2DM and LOAD: systematic review and meta-analysis.",
+   "authors": "Lemche E, Hortobágyi T, Kiecker C, Turkheimer F",
+   "journal": "Physiological reviews",
+   "year": "2025",
+   "doi": "10.1152/physrev.00040.2024"
+  },
+  "40123081": {
+   "status": "resolved",
+   "title": "Postpartum remote blood pressure monitoring and risk of hypertensive-related readmission: systematic review and meta-analysis of randomized controlled trials.",
+   "authors": "Zullo F, Di Mascio D, Amro FH, Sorrenti S, D'Alberti E",
+   "journal": "Journal of perinatal medicine",
+   "year": "2025",
+   "doi": "10.1515/jpm-2024-0515"
+  },
+  "40294593": {
+   "status": "resolved",
+   "title": "SPIRIT 2025 Statement: Updated Guideline for Protocols of Randomized Trials.",
+   "authors": "Chan AW, Boutron I, Hopewell S, Moher D, Schulz KF",
+   "journal": "JAMA",
+   "year": "2025",
+   "doi": "10.1001/jama.2025.4486"
+  },
+  "40294956": {
+   "status": "resolved",
+   "title": "SPIRIT 2025 explanation and elaboration: updated guideline for protocols of randomised trials.",
+   "authors": "Hróbjartsson A, Boutron I, Hopewell S, Moher D, Schulz KF",
+   "journal": "BMJ (Clinical research ed.)",
+   "year": "2025",
+   "doi": "10.1136/bmj-2024-081660"
+  },
+  "40583484": {
+   "status": "resolved",
+   "title": "Factors associated with blood pressure control in Swedish primary care patients with hypertension: a cross-sectional study.",
+   "authors": "Brodin N, Wolff M, Borgström Bolmsjö B, Milos Nymberg V, Nymberg P",
+   "journal": "Scandinavian journal of primary health care",
+   "year": "2026",
+   "doi": "10.1080/02813432.2025.2524366"
+  },
+  "40622370": {
+   "status": "resolved",
+   "title": "A prospective cohort study of the SEARCH integrated HIV/hypertension community health worker-led intervention in rural Kenya and Uganda.",
+   "authors": "Hickey MD, Owaraganise A, Ogachi S, Sunday H, Aoko C",
+   "journal": "Journal of the International AIDS Society",
+   "year": "2025",
+   "doi": "10.1002/jia2.26500"
+  },
+  "40725928": {
+   "status": "resolved",
+   "title": "The effectiveness of the chronic disease management for hypertension: A systematic review and meta-analysis.",
+   "authors": "Li Z, Wu J, Yuan W, Lan D, Chang R",
+   "journal": "Medicine",
+   "year": "2025",
+   "doi": "10.1097/MD.0000000000042455"
+  },
+  "40764400": {
+   "status": "resolved",
+   "title": "A systematic review and meta-analysis of digital interventions targeting lifestyle factors in patients with hypertension.",
+   "authors": "Lindsay-Perez A, Jurdon R, King T, Koffman L, Roberts N",
+   "journal": "Journal of human hypertension",
+   "year": "2025",
+   "doi": "10.1038/s41371-025-01051-3"
+  },
+  "40848405": {
+   "status": "resolved",
+   "title": "Proton pump inhibitors and risk of fracture in older adults: a systematic review and meta-analysis.",
+   "authors": "Robert V, Papailhau C, Lesclide E, Ben Romdhane Z, Vincentelli MB",
+   "journal": "Geriatric nursing (New York, N.Y.)",
+   "year": "2025",
+   "doi": "10.1016/j.gerinurse.2025.103596"
+  },
+  "40907093": {
+   "status": "resolved",
+   "title": "Effects of a nurse-led diabetes self-management programme for people with type 2 diabetes receiving insulin injection therapy: A randomised controlled trial with qualitative process evaluation.",
+   "authors": "Liang W, Chow KM, Ni X, Tola YO, Lo SHS",
+   "journal": "International journal of nursing studies",
+   "year": "2025",
+   "doi": "10.1016/j.ijnurstu.2025.105200"
+  },
+  "40929717": {
+   "status": "resolved",
+   "title": "eHealth and Hypertensive Disorders of Pregnancy: Systematic Review.",
+   "authors": "Hu H, Noori N, Lee V, Chow C, Cheung NW",
+   "journal": "Journal of medical Internet research",
+   "year": "2025",
+   "doi": "10.2196/77064"
+  },
+  "41101281": {
+   "status": "resolved",
+   "title": "Effectiveness of mobile health interventions on physical activity management in adults with hypertension: A systematic review and meta-analysis.",
+   "authors": "Liu Y, Qin Y, Chen Q, Liu Y, Wang Z",
+   "journal": "International journal of nursing studies",
+   "year": "2025",
+   "doi": "10.1016/j.ijnurstu.2025.105225"
+  },
+  "41358893": {
+   "status": "resolved",
+   "title": "2. Diagnosis and Classification of Diabetes: Standards of Care in Diabetes-2026.",
+   "authors": null,
+   "journal": "Diabetes care",
+   "year": "2026",
+   "doi": "10.2337/dc26-S002"
+  },
+  "41358900": {
+   "status": "resolved",
+   "title": "9. Pharmacologic Approaches to Glycemic Treatment: Standards of Care in Diabetes-2026.",
+   "authors": null,
+   "journal": "Diabetes care",
+   "year": "2026",
+   "doi": "10.2337/dc26-S009"
+  },
+  "41528277": {
+   "status": "resolved",
+   "title": "Lactate Dehydrogenase and Outcomes in Patients With HF and Reduced Ejection Fraction: Insights From GALACTIC-HF.",
+   "authors": "Ono R, Chimura M, Docherty KF, Jhund PS, Yang M",
+   "journal": "JACC. Heart failure",
+   "year": "2026",
+   "doi": "10.1016/j.jchf.2025.102900"
+  },
+  "41533456": {
+   "status": "resolved",
+   "title": "Imaging-Based Modalities for Identifying At Risk MASH. A Diagnostic Test Meta-Analysis.",
+   "authors": "Gunalan SZ, Law MSN, Kua YX, Yu Z, Lim RYZ",
+   "journal": "The American journal of gastroenterology",
+   "year": "2026",
+   "doi": "10.14309/ajg.0000000000003919"
+  },
+  "42063912": {
+   "status": "resolved",
+   "title": "Use of proton pump inhibitors and increased risk of fracture in type 2 DM and menopausal women: a systematic review and meta-analysis.",
+   "authors": "Battula P, Sree PB, Latha YS, Poojitha KN, Reddy KVS",
+   "journal": "African health sciences",
+   "year": "2026",
+   "doi": "10.4314/ahs.v26i1.15"
+  },
+  "42082844": {
+   "status": "resolved",
+   "title": "Barriers to Medication Adherence and Mild Cognitive Impairment Among African Americans with Persistently Uncontrolled Hypertension: A Cross-sectional Analysis from the Southeastern Collaboration Trial.",
+   "authors": "Singh S, Ringel JB, Baquero E, Cummings DM, Halladay J",
+   "journal": "Journal of general internal medicine",
+   "year": "2026",
+   "doi": "10.1007/s11606-026-10477-5"
+  },
+  "42263266": {
+   "status": "resolved",
+   "title": "Effectiveness of Digital Health Interventions to Improve Self-Care in Patients With Chronic Diseases: Systematic Review and Meta-Analysis of Randomized Controlled Trials.",
+   "authors": "Longhini J, Pedrotti D, Foladori F, Stedile M, Stefani F",
+   "journal": "Journal of medical Internet research",
+   "year": "2026",
+   "doi": "10.2196/88708"
+  },
+  "42283624": {
+   "status": "resolved",
+   "title": "Clinical effectiveness of telepharmacy services in patients with non-communicable diseases in ambulatory care settings.",
+   "authors": "Sugita H, Sato MT, Yamaji N, Maeda M, Ichimura T",
+   "journal": "The Cochrane database of systematic reviews",
+   "year": "2026",
+   "doi": "10.1002/14651858.CD015136.pub2"
+  },
+  "42287444": {
+   "status": "resolved",
+   "title": "Risk factors for rebleeding in acute lower gastrointestinal bleeding: a systematic review and meta-analysis.",
+   "authors": "Lu Z, Zong D, Yang Z, Yue B",
+   "journal": "International journal of colorectal disease",
+   "year": "2026",
+   "doi": "10.1007/s00384-026-05172-0"
+  },
+  "42426564": {
+   "status": "resolved",
+   "title": "Efficacy and Safety of SGLT2 Inhibitors and GLP-1 Receptor Agonists on Ventricular Arrhythmias and Cardiovascular Events: A Disease-Stratified Network Meta-Analysis.",
+   "authors": "Sun WT, Liu RX, Jiang YH, Zhao YK, Yi-Cai",
+   "journal": "Diabetes, obesity & metabolism",
+   "year": "2026",
+   "doi": "10.1111/dom.71094"
+  },
+  "42442791": {
+   "status": "resolved",
+   "title": "Cardiovascular and renal outcomes of combined SGLT2 inhibitors and GLP-1 receptor agonists versus monotherapy in patients with type 2 diabetes mellitus: a network meta-analysis.",
+   "authors": "Chuang MH, Ho CW, Wang HY, Pan HC, Wu VC",
+   "journal": "CMAJ : Canadian Medical Association journal = journal de l'Association medicale canadienne",
+   "year": "2026",
+   "doi": "10.1503/cmaj.250369"
+  },
+  "42566081": {
+   "status": "resolved",
+   "title": "Are SGLT2 inhibitors really associated with increased urinary tract infection risk? A trial-level meta-analysis across type 2 diabetes, heart failure, and chronic kidney disease.",
+   "authors": "Matteucci A, Di Fusco SA, Bonanni M, Castello L, Aquilani S",
+   "journal": "Daru : journal of Faculty of Pharmacy, Tehran University of Medical Sciences",
+   "year": "2026",
+   "doi": "10.1007/s40199-026-00637-7"
+  },
+  "42587114": {
+   "status": "resolved",
+   "title": "SGLT2 inhibitors and secondary polycythemia: a systematic review and meta-analysis of hematologic effects in patients with type 2 diabetes.",
+   "authors": "Ali EAH, Rabadi M, Aweer RA, Subahi E, Abdelmahmuod EA",
+   "journal": "European journal of clinical pharmacology",
+   "year": "2026",
+   "doi": "10.1007/s00228-026-04160-1"
+  },
+  "42591121": {
+   "status": "resolved",
+   "title": "Cardiovascular outcomes of SGLT2 inhibitors versus GLP-1 receptor agonists in patients with type 2 diabetes and a history of myocardial infarction: a systematic review and network meta-analysis of randomized controlled trials.",
+   "authors": "Ren Y, Yang H, Zhang S, Hu T, Tan Q",
+   "journal": "Frontiers in endocrinology",
+   "year": "2026",
+   "doi": "10.3389/fendo.2026.1902802"
+  },
+  "42616235": {
+   "status": "resolved",
+   "title": "Combined use of SGLT2 inhibitor and GLP-1 receptor agonist versus either monotherapy for cardiorenal Outcomes: an exploratory network meta-analysis of 16 randomized trials.",
+   "authors": "Banerjee M, Basu M, Mukhopadhyay P, Ghosh S",
+   "journal": "Endocrine",
+   "year": "2026",
+   "doi": "10.1007/s12020-026-04752-y"
+  },
+  "42659939": {
+   "status": "resolved",
+   "title": "Efficacy of sodium-glucose cotransporter 2 inhibitors after acute myocardial infarction: Are the benefits limited to patients with diabetes? A systematic review and meta-analysis.",
+   "authors": "Santos MCF, Mamede I, Bessa R, Carvalhal G, Leão LA",
+   "journal": "Journal of diabetes and its complications",
+   "year": "2026",
+   "doi": "10.1016/j.jdiacomp.2026.109393"
+  },
+  "42755179": {
+   "status": "resolved",
+   "title": "Non-Invasive Fibrosis Testing in Adults With Obesity and MASLD: A Systematic Review and Meta-Analysis.",
+   "authors": "Ortega PM, Sabatella L, Manousou P, Arregui A, Ahmed AR",
+   "journal": "Diabetes, obesity & metabolism",
+   "year": "2026",
+   "doi": "10.1111/dom.71357"
+  },
+  "42952754": {
+   "status": "resolved",
+   "title": "Network and pairwise meta-analysis of the effects of novel hypoglycemic agents on cardiorenal outcomes in patients with type 2 diabetes and heart failure.",
+   "authors": "Ye X, Wu Q, Li L, Huang M, Wang S",
+   "journal": "Frontiers in endocrinology",
+   "year": "2026",
+   "doi": "10.3389/fendo.2026.1955431"
+  },
+  "7063747": {
+   "status": "resolved",
+   "title": "The meaning and use of the area under a receiver operating characteristic (ROC) curve.",
+   "authors": "Hanley JA, McNeil BJ",
+   "journal": "Radiology",
+   "year": "1982",
+   "doi": "10.1148/radiology.143.1.7063747"
+  }
+ }
+}

@@ -1,0 +1,7 @@
+{
+  "luc": "2026-11-15T19:52:47+07:00",
+  "study": "ZZCANARY-RCT-NHI-PHAN",
+  "topic": "Hiệu quả của tin nhắn nhắc uống thuốc so với chăm sóc thường quy lên tỷ lệ kiểm soát huyết áp sau 6 tháng ở người tăng huyết áp điều trị ngoại trú: thử nghiệm lâm sàng ngẫu nhiên có đối chứng",
+  "query_en": "(\"text messaging\"[tiab] OR \"text message\"[tiab] OR SMS[tiab] OR \"short message\"[tiab] OR \"Text Messaging\"[MeSH]) AND (hypertension[MeSH] OR hypertension[tiab] OR hypertensive[tiab]) AND (adherence[tiab] OR \"Medication Adherence\"[MeSH] OR \"blood pressure control\"[tiab] OR \"blood pressure\"[tiab])",
+  "base_query": "(\"text messaging\"[tiab] OR \"text message\"[tiab] OR SMS[tiab] OR \"short message\"[tiab] OR \"Text Messaging\"[MeSH]) AND (hypertension[MeSH] OR hypertension[tiab] OR hypertensive[tiab]) AND (adherence[tiab] OR \"Medication Adherence\"[MeSH] OR \"blood pressure control\"[tiab] OR \"blood pressure\"[tiab])"
+}

@@ -1,0 +1,7 @@
+{
+  "luc": "2026-11-15T19:54:36+07:00",
+  "study": "ZZCANARY-CAT-NGANG-MO-TA",
+  "topic": "Tỷ lệ kiểm soát huyết áp và các yếu tố liên quan ở người tăng huyết áp điều trị ngoại trú: nghiên cứu cắt ngang mô tả",
+  "query_en": "(hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"controlled hypertension\"[tiab] OR \"hypertension control\"[tiab]) AND (outpatient*[tiab] OR \"primary care\"[tiab]) AND (prevalence[tiab] OR \"cross-sectional\"[tiab])",
+  "base_query": "(hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"controlled hypertension\"[tiab] OR \"hypertension control\"[tiab]) AND (outpatient*[tiab] OR \"primary care\"[tiab]) AND (prevalence[tiab] OR \"cross-sectional\"[tiab])"
+}

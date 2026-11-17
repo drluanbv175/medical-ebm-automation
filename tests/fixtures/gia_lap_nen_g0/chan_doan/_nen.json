@@ -1,0 +1,7 @@
+{
+  "luc": "2026-11-15T20:00:29+07:00",
+  "study": "ZZCANARY-CHAN-DOAN",
+  "topic": "Giá trị chẩn đoán của chỉ số FIB-4 trong phát hiện xơ hoá gan tiến triển ở người bệnh gan nhiễm mỡ liên quan chuyển hoá điều trị ngoại trú",
+  "query_en": "(\"FIB-4\"[tiab] OR \"fibrosis-4\"[tiab]) AND (\"Non-alcoholic Fatty Liver Disease\"[MeSH] OR NAFLD[tiab] OR MASLD[tiab]) AND (\"Elasticity Imaging Techniques\"[MeSH] OR elastography[tiab]) AND (\"Sensitivity and Specificity\"[MeSH] OR \"diagnostic accuracy\"[tiab] OR AUROC[tiab])",
+  "base_query": "(\"FIB-4\"[tiab] OR \"fibrosis-4\"[tiab]) AND (\"Non-alcoholic Fatty Liver Disease\"[MeSH] OR NAFLD[tiab] OR MASLD[tiab]) AND (\"Elasticity Imaging Techniques\"[MeSH] OR elastography[tiab]) AND (\"Sensitivity and Specificity\"[MeSH] OR \"diagnostic accuracy\"[tiab] OR AUROC[tiab])"
+}

@@ -1,0 +1,269 @@
+{
+  "study": "ZZCANARY-TONG-QUAN-GOP",
+  "gate": "G0",
+  "gate_status": "DRAFT — CHỜ BÁC SĨ: G0-HUMAN-01, G0-HUMAN-02, G0-HUMAN-03, G0-HUMAN-04, G0-HUMAN-05, G0-HUMAN-06, G0-HUMAN-07, G0-HUMAN-08",
+  "generated_at": "2026-11-15T20:04:56.998410",
+  "topic": "Hiệu quả của thuốc ức chế SGLT2 lên nhập viện vì suy tim ở người đái tháo đường típ 2 không có suy tim lúc đầu: tổng quan hệ thống và phân tích gộp các thử nghiệm ngẫu nhiên",
+  "base_query": "(\"Sodium-Glucose Transporter 2 Inhibitors\"[MeSH] OR \"SGLT2 inhibitor*\"[tiab] OR empagliflozin[tiab] OR dapagliflozin[tiab] OR canagliflozin[tiab]) AND (\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (\"heart failure\"[tiab] OR \"Heart Failure\"[MeSH]) AND (\"randomized controlled trial\"[pt] OR randomi*[tiab])",
+  "pubmed_results": {
+    "total_found": 46,
+    "n_pmids": 46,
+    "all_pmids": [
+      "34184823",
+      "42471097",
+      "42658493",
+      "42591121",
+      "34780022",
+      "42659939",
+      "41569429",
+      "42647034",
+      "41311237",
+      "42616235",
+      "42522027",
+      "42046405",
+      "42802242",
+      "40813129",
+      "41582387",
+      "40976500",
+      "42420866",
+      "41831639",
+      "42566081",
+      "42180672",
+      "41358900",
+      "41117973",
+      "40580026",
+      "42211456",
+      "40952180",
+      "42260102",
+      "42171707",
+      "40624547",
+      "42442791",
+      "40958495",
+      "41358893",
+      "40195777",
+      "42426564",
+      "41802526",
+      "42219264",
+      "42556782",
+      "42144626",
+      "41804881",
+      "41419094",
+      "41831709",
+      "42802824",
+      "41817689",
+      "40947857",
+      "42952754",
+      "42587114",
+      "42328113"
+    ],
+    "n_sr": 242,
+    "n_rct": 264,
+    "n_guideline": 1,
+    "n_observational": 106,
+    "n_recent": 405,
+    "most_recent_year": 2026,
+    "counts_are_real": true,
+    "counts_unavailable": [],
+    "query_errors": {}
+  },
+  "n_sr": 242,
+  "n_rct": 264,
+  "n_pmids": 46,
+  "pmids_verified": [
+    "34184823",
+    "42471097",
+    "42658493",
+    "42591121",
+    "34780022",
+    "42659939",
+    "41569429",
+    "42647034",
+    "41311237",
+    "42616235",
+    "42522027",
+    "42046405",
+    "42802242",
+    "40813129",
+    "41582387",
+    "40976500",
+    "42420866",
+    "41831639",
+    "42566081",
+    "42180672",
+    "41358900",
+    "41117973",
+    "40580026",
+    "42211456",
+    "40952180",
+    "42260102",
+    "42171707",
+    "40624547",
+    "42442791",
+    "40958495",
+    "41358893",
+    "40195777",
+    "42426564",
+    "41802526",
+    "42219264",
+    "42556782",
+    "42144626",
+    "41804881",
+    "41419094",
+    "41831709",
+    "42802824",
+    "41817689",
+    "40947857",
+    "42952754",
+    "42587114",
+    "42328113"
+  ],
+  "evidence_note": "MẠNH — có SR/MA (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)",
+  "evidence_level": "MẠNH — có SR/MA (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)",
+  "research_gaps": [
+    "KHÔNG phát hiện khoảng trống nào từ dữ liệu PubMed đã tra (đã có SR/MA, RCT, guideline và nghiên cứu mới) — [CẦN BÁC SĨ TỰ XÁC ĐỊNH khoảng trống, ví dụ quần thể/bối cảnh chưa được phủ; hệ KHÔNG suy ra được]",
+    "Có 6 nghiên cứu đang/sắp tuyển trên ClinicalTrials.gov — cần đối chiếu để tránh trùng lặp (xem §3.6 của G0_A1)"
+  ],
+  "design_suggestion": "Nghiên cứu phân tích dưới nhóm / quần thể đặc thù / pragmatic trial",
+  "novelty_concern": "⚠ Chủ đề đã có nhiều SR/MA → cần biện minh tính mới rõ ràng | ⚠ ClinicalTrials.gov: 6 nghiên cứu ĐANG/SẮP TUYỂN cho truy vấn này (tổng 16 hồ sơ đăng ký). 'Chưa công bố' KHÔNG có nghĩa 'chưa ai làm' — đọc các hồ sơ ở §3.6 trước khi biện minh tính mới; nguy cơ trùng đề tài thật.",
+  "registry_check": {
+    "registry": "ClinicalTrials.gov",
+    "query": "(\"Sodium-Glucose Transporter 2 Inhibitors\"[MeSH] OR \"SGLT2 inhibitor*\"[tiab] OR empagliflozin[tiab] OR dapagliflozin[tiab] OR canagliflozin[tiab]) AND (\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (\"heart failure\"[tiab] OR \"Heart Failure\"[MeSH]) AND (\"randomized controlled trial\"[pt] OR randomi*[tiab])",
+    "checked": true,
+    "n_trials": 16,
+    "n_active": 6,
+    "trials": [
+      {
+        "nct_id": "NCT05998525",
+        "title": "Dapagliflozin Effects on Coronary Calcium and Epicardial Fat Assessed by Cardiotomography",
+        "status": "COMPLETED",
+        "start_date": "2021-06-21",
+        "phases": [
+          "PHASE3"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Diabete Type 2, Unstable Angina, Myocardial Infarction",
+        "enrollment": 54,
+        "url": "https://clinicaltrials.gov/study/NCT05998525"
+      },
+      {
+        "nct_id": "NCT07811427",
+        "title": "Heart-Kidney-Diabetes Multidisciplinary Care MOdels for CardiovascuLar Health In Patients With Chronic Kidney DiSease and Diabetes: A PragmaTIC Cluster Randomized Controlled Trial ",
+        "status": "NOT_YET_RECRUITING",
+        "start_date": "2026-12",
+        "phases": [
+          "PHASE4"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Chronic Kidney Disease, Type II Diabetes",
+        "enrollment": 570,
+        "url": "https://clinicaltrials.gov/study/NCT07811427"
+      },
+      {
+        "nct_id": "NCT03982381",
+        "title": "SGLT2 Inhibitor or Metformin as Standard Treatment of Early Stage Type 2 Diabetes",
+        "status": "COMPLETED",
+        "start_date": "2019-09-05",
+        "phases": [
+          "PHASE4"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Type 2 Diabetes",
+        "enrollment": 2067,
+        "url": "https://clinicaltrials.gov/study/NCT03982381"
+      },
+      {
+        "nct_id": "NCT03736668",
+        "title": "Study of Left Ventricular Function of Patients With Type 2 Diabetes Without Cardiovascular Disease",
+        "status": "UNKNOWN",
+        "start_date": "2018-05-22",
+        "phases": [
+          "NA"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Type2 Diabetes",
+        "enrollment": 200,
+        "url": "https://clinicaltrials.gov/study/NCT03736668"
+      },
+      {
+        "nct_id": "NCT06593314",
+        "title": "Using Ultromics EchoGo HFpEF Algorithm to Identify and Treat High Heart Failure Risk in Patients With Type 2 Diabetes",
+        "status": "RECRUITING",
+        "start_date": "2025-08-06",
+        "phases": [
+          "NA"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Heart Failure, Diabetes",
+        "enrollment": 800,
+        "url": "https://clinicaltrials.gov/study/NCT06593314"
+      }
+    ],
+    "error": null,
+    "checked_at": "2026-11-15T20:04:54",
+    "query_gui_ctgov": "(\"Sodium-Glucose Transporter 2 Inhibitors\" OR \"SGLT2 inhibitor*\" OR empagliflozin OR dapagliflozin OR canagliflozin ) AND (\"Diabetes Mellitus, Type 2\" OR \"type 2 diabetes\" ) AND (\"heart failure\" OR \"Heart Failure\" ) AND (\"randomized controlled trial\" OR randomi* )"
+  },
+  "guardrail": {
+    "passed": true,
+    "n_errors": 0,
+    "errors": []
+  },
+  "artifacts": {
+    "A1_markdown": "exports/ZZCANARY-TONG-QUAN-GOP/G0_A1_PICO_FINER_ZZCANARY-TONG-QUAN-GOP.md",
+    "A1_docx": "exports/ZZCANARY-TONG-QUAN-GOP/G0_A1_PICO_FINER_ZZCANARY-TONG-QUAN-GOP.docx"
+  },
+  "pending_doctor_actions": [
+    "Điền gate_params.G0.population/intervention/comparison/outcomes trong study_meta.json (ghi 'không có nhóm so sánh — mô tả' nếu đúng vậy).",
+    "Điền primary_outcome (1 kết cục) + primary_outcome_measure + primary_outcome_timepoint.",
+    "Điền test_type (superiority/non_inferiority/equivalence/descriptive); nếu không phải nghiên cứu mô tả thì điền cả hypothesis_h0/h1 và expected_direction.",
+    "Điền question_type: treatment (≡ therapy)/diagnosis/prognosis/harm/descriptive/qualitative/prediction_model.",
+    "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận.",
+    "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification.",
+    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"33e1fd079e4a2268\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+    "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn).",
+    "Chạy: python tools/g0_quality_gate.py --study ZZCANARY-TONG-QUAN-GOP"
+  ],
+  "next_gate": "G1 — Thiết kế nghiên cứu (CHỈ sau khi G0 đạt PASS_G0_CONFIRMED)",
+  "disclaimer": "Cần bác sĩ kiểm chứng.",
+  "danh_muc_doc_bo_sung": [],
+  "quality_contract_version": "G0-2026.1",
+  "quality_gate": {
+    "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
+    "contract_version": "G0-2026.1",
+    "automated_checks_passed": true,
+    "human_confirmation_complete": false,
+    "pending_actions": [
+      "Điền gate_params.G0.population/intervention/comparison/outcomes trong study_meta.json (ghi 'không có nhóm so sánh — mô tả' nếu đúng vậy).",
+      "Điền primary_outcome (1 kết cục) + primary_outcome_measure + primary_outcome_timepoint.",
+      "Điền test_type (superiority/non_inferiority/equivalence/descriptive); nếu không phải nghiên cứu mô tả thì điền cả hypothesis_h0/h1 và expected_direction.",
+      "Điền question_type: treatment (≡ therapy)/diagnosis/prognosis/harm/descriptive/qualitative/prediction_model.",
+      "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận.",
+      "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification.",
+      "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"33e1fd079e4a2268\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+      "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn)."
+    ],
+    "dau_van_tay_luc_cham": "33e1fd079e4a2268"
+  },
+  "needs_input": {
+    "blocked": true,
+    "reason_code": "MISSING_PICO",
+    "human_message": "G0 đã dựng xong NỀN BẰNG CHỨNG nhưng CÂU HỎI NGHIÊN CỨU chưa được bác sĩ chốt (còn chờ: G0-HUMAN-01, G0-HUMAN-02, G0-HUMAN-03, G0-HUMAN-04, G0-HUMAN-05, G0-HUMAN-06, G0-HUMAN-07, G0-HUMAN-08). Hệ KHÔNG tự viết PICO thay bác sĩ.",
+    "remediation": {
+      "action": "rerun_with_real_input",
+      "command": "sửa exports/<study>/study_meta.json → gate_params.G0 rồi chạy: python tools/g0_quality_gate.py --study <study>",
+      "study_meta_patch": {
+        "gate_params": {
+          "G0": {
+            "pico_confirmed": true
+          }
+        }
+      },
+      "must_not_fabricate": [
+        "PICO",
+        "primary_outcome",
+        "FINER",
+        "hypothesis"
+      ]
+    },
+    "supplied_by": "doctor"
+  }
+}

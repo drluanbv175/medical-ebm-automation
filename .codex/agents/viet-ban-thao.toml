@@ -187,6 +187,20 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact manuscript
 - Bản thảo G7: khoảng trống PI viết ở G1 (`knowledge_gap`) đứng đầu, thay ô «[CẦN BÁC SĨ TỰ XÁC ĐỊNH khoảng trống]» của G0; thiết kế không có dòng phơi nhiễm trong ma trận dùng `G1.intervention_or_exposure`; tổng quan–gộp/định tính/dự báo in «Cỡ mẫu đã chốt ở G3: N = …» thay ô hỏi lại.
 - Thử nghiệm không kém hơn: ô «[CẦN THỐNG KÊ VIÊN — diễn giải non_inferiority …]» là việc của người — ghi rõ nhóm nào là thử nghiệm rồi kết luận theo cận KTC so với biên.
 
+## Dấu vết máy mà K1–K8 từng bỏ sót (17/11/2026 — phản biện máy Claude API trên đề cương BTM)
+
+Phản biện máy (`tools/phan_bien_may_de_cuong.py --goi-api`) đọc đề cương nộp BTM đã «ĐẠT K1–K8» và tìm ra 11 dấu vết
+có thật, nay được bộ sinh đổi sang cách nói của văn bản nộp và K8 chặn tất định: mã tệp nội bộ «(xem
+G0_KHOANG_TRONG)» · khoá «gate_params.G0.intervention» (từng thành «như.intervention») · «(quyết ở G2)» · lời ghi
+nguồn gốc quyết định kèm ngày («chủ nhiệm chọn tham chiếu 15/11/2026», «(chủ nhiệm duyệt C1–C3)») · «xem điểm S6 của
+phiếu đề xuất» · «qua công cụ phân tích của hệ thống» · «(bảng RACI ở A13)» · mã cổng làm tân ngữ («thống nhất với
+G3» → «với cách tính cỡ mẫu») · dấu chấm đôi · mã vai trò không dấu «yeu to» ở Phụ lục A. Bảng 3.1 tách loại «Đồng
+thuận chuyên môn/báo cáo hội nghị» (KDIGO Summit, consensus statement) khỏi «Hướng dẫn thực hành»; nghiên cứu ĐO tuân
+thủ hướng dẫn («Concordance with … guidelines for …») không vào suất hướng dẫn. Lời giải thích sau PMID trong ngoặc
+(«(Tác giả năm, PMID n: lời)») là NỘI DUNG — bộ sinh giữ thành «(lời [k])»; bỏ lời đó từng làm [41] bị trích ngược
+nghĩa. Sửa bộ sinh xong vẫn nên cho máy đọc lại (phản biện máy + `kiem_noi_dung_trich_dan.py`) trước khi nộp — bác
+sĩ quyết vì tính phí.
+
 ## Ranh giới
 KHÔNG tạo dữ liệu/kết quả chưa có (→ `[CẦN BỔ SUNG]`); KHÔNG tự quyết phân tích (nhận từ `phan-tich-thong-ke`, kế hoạch từ `thiet-ke-nghien-cuu`). Bản thảo phải qua `binh-duyet` trước khi coi là sẵn sàng nộp; chọn tạp chí/rebuttal → `nop-bai-phan-hoi`.
 

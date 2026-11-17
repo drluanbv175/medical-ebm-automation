@@ -201,7 +201,10 @@ def _gen(ma: str, **kw):
 def test_sap_tong_quan_khong_con_khuon_ca_the():
     sap = _gen("sr_ma")
     assert "### §5 TỔNG HỢP ĐỊNH LƯỢNG" in sap and "### §6 DỮ LIỆU THIẾU CẤP NGHIÊN CỨU" in sap
-    for khuon_ca_the in ("Multiple Imputation", "±1 SD", "Complete case vs MI", "mice", "Biến độc lập đưa vào"):
+    # 17/11/2026: khuôn cá thể §9 đổi «±1 SD» thành «Định nghĩa thay thế của phơi nhiễm/kết cục» — giữ cả hai để phép
+    # kiểm không yếu đi khi khuôn đổi chữ.
+    for khuon_ca_the in ("Multiple Imputation", "±1 SD", "Định nghĩa thay thế của phơi nhiễm/kết cục",
+                         "Complete case vs MI", "mice", "Biến độc lập đưa vào"):
         assert khuon_ca_the not in sap, khuon_ca_the
     assert "Multiple Imputation" in _gen("cohort")  # thiết kế cá thể giữ nguyên
 

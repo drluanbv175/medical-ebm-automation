@@ -1,0 +1,223 @@
+{
+  "study": "ZZCANARY-DU-BAO",
+  "gate": "G0",
+  "gate_status": "DRAFT — CHỜ BÁC SĨ: G0-HUMAN-01, G0-HUMAN-02, G0-HUMAN-03, G0-HUMAN-04, G0-HUMAN-05, G0-HUMAN-06, G0-HUMAN-07, G0-HUMAN-08",
+  "generated_at": "2026-11-15T20:02:20.129477",
+  "topic": "Phát triển mô hình dự báo nguy cơ nhập viện trong 12 tháng ở người suy tim điều trị ngoại trú",
+  "base_query": "(\"Heart Failure\"[MeSH] OR \"heart failure\"[tiab]) AND (outpatient*[tiab] OR ambulatory[tiab]) AND (\"prediction model\"[tiab] OR \"risk score\"[tiab] OR \"prognostic model\"[tiab]) AND (hospitalization[tiab] OR hospitalisation[tiab] OR \"Hospitalization\"[MeSH])",
+  "pubmed_results": {
+    "total_found": 24,
+    "n_pmids": 24,
+    "all_pmids": [
+      "39960078",
+      "40983571",
+      "22114101",
+      "20102876",
+      "41913566",
+      "40228649",
+      "23279139",
+      "40023206",
+      "35068257",
+      "23929781",
+      "24846373",
+      "35427812",
+      "22137073",
+      "42667938",
+      "31820546",
+      "33413363",
+      "40592217",
+      "32853471",
+      "39304675",
+      "41528277",
+      "41475581",
+      "38739123",
+      "37257517",
+      "40812809"
+    ],
+    "n_sr": 2,
+    "n_rct": 9,
+    "n_guideline": 0,
+    "n_observational": 29,
+    "n_recent": 3,
+    "most_recent_year": 2026,
+    "counts_are_real": true,
+    "counts_unavailable": [],
+    "query_errors": {}
+  },
+  "n_sr": 2,
+  "n_rct": 9,
+  "n_pmids": 24,
+  "pmids_verified": [
+    "39960078",
+    "40983571",
+    "22114101",
+    "20102876",
+    "41913566",
+    "40228649",
+    "23279139",
+    "40023206",
+    "35068257",
+    "23929781",
+    "24846373",
+    "35427812",
+    "22137073",
+    "42667938",
+    "31820546",
+    "33413363",
+    "40592217",
+    "32853471",
+    "39304675",
+    "41528277",
+    "41475581",
+    "38739123",
+    "37257517",
+    "40812809"
+  ],
+  "evidence_note": "TRUNG BÌNH — có 1 SR/MA (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)",
+  "evidence_level": "TRUNG BÌNH — có 1 SR/MA (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)",
+  "research_gaps": [
+    "Không thấy guideline được PubMed đánh chỉ mục (PubMed, truy vấn G0 «(\"Heart Failure\"[MeSH] OR \"heart failure\"[tiab]) AND (outpatient*[tiab] OR ambulatory[tiab]) AND (\"prediction model\"[tiab] OR \"risk score\"[tiab] OR \"prognostic model\"[tiab]) AND (hospitalization[tiab] OR hospitalisation[tiab] OR \"Hospitalization\"[MeSH])») — văn bản quy phạm trong nước (Bộ Y tế…) và trang hiệp hội KHÔNG nằm trên PubMed: phải rà trước khi kết luận «chưa có»",
+    "Có 11 nghiên cứu đang/sắp tuyển trên ClinicalTrials.gov — cần đối chiếu để tránh trùng lặp (xem §3.6 của G0_A1)"
+  ],
+  "design_suggestion": "RCT HOẶC Cohort tiến cứu đa trung tâm — ⚠ NHƯNG có 11 thử nghiệm đang/sắp tuyển: đọc §3.6 trước, cân nhắc hợp tác/đa trung tâm hoặc đổi câu hỏi thay vì khởi động một thử nghiệm trùng",
+  "novelty_concern": "Có thể cập nhật SR/MA hiện có hoặc nghiên cứu quần thể cụ thể | ⚠ ClinicalTrials.gov: 11 nghiên cứu ĐANG/SẮP TUYỂN cho truy vấn này (tổng 31 hồ sơ đăng ký). 'Chưa công bố' KHÔNG có nghĩa 'chưa ai làm' — đọc các hồ sơ ở §3.6 trước khi biện minh tính mới; nguy cơ trùng đề tài thật.",
+  "registry_check": {
+    "registry": "ClinicalTrials.gov",
+    "query": "(\"Heart Failure\"[MeSH] OR \"heart failure\"[tiab]) AND (outpatient*[tiab] OR ambulatory[tiab]) AND (\"prediction model\"[tiab] OR \"risk score\"[tiab] OR \"prognostic model\"[tiab]) AND (hospitalization[tiab] OR hospitalisation[tiab] OR \"Hospitalization\"[MeSH])",
+    "checked": true,
+    "n_trials": 31,
+    "n_active": 11,
+    "trials": [
+      {
+        "nct_id": "NCT01928121",
+        "title": "Effectiveness of an Interdisciplinary, Nurse-coordinated Atrial Fibrillation Expert Program for Primary Care Patients",
+        "status": "UNKNOWN",
+        "start_date": "2013-09",
+        "phases": [
+          "NA"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Atrial Fibrillation",
+        "enrollment": 450,
+        "url": "https://clinicaltrials.gov/study/NCT01928121"
+      },
+      {
+        "nct_id": "NCT01486316",
+        "title": "Diagnostic Device Risk Management of Atrial Fibrillation and Heart Failure",
+        "status": "COMPLETED",
+        "start_date": "2011-11",
+        "phases": [
+          "NA"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Atrial Fibrillation, Heart Failure",
+        "enrollment": 24,
+        "url": "https://clinicaltrials.gov/study/NCT01486316"
+      },
+      {
+        "nct_id": "NCT07276139",
+        "title": "Pacing Advancements With Cost and Experience VALuation for Unified Patient-Led Clinical Evidence - the PACEVALUE Study",
+        "status": "RECRUITING",
+        "start_date": "2026-01-01",
+        "phases": null,
+        "study_type": "OBSERVATIONAL",
+        "conditions": "Cardiomyopathy, Secondary, Arrhythmias, Cardiac, Heart Failure",
+        "enrollment": 4500,
+        "url": "https://clinicaltrials.gov/study/NCT07276139"
+      },
+      {
+        "nct_id": "NCT02674438",
+        "title": "Comparison of Outcomes and Access to Care for Heart Failure Trial",
+        "status": "COMPLETED",
+        "start_date": "2016-09",
+        "phases": [
+          "PHASE3"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Heart Failure",
+        "enrollment": 5452,
+        "url": "https://clinicaltrials.gov/study/NCT02674438"
+      },
+      {
+        "nct_id": "NCT05256303",
+        "title": "Rural Hospital-Level Care at Home for Acutely Ill Adults",
+        "status": "COMPLETED",
+        "start_date": "2022-02-16",
+        "phases": [
+          "NA"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Infections, Heart Failure, Chronic Obstructive Pulmonary Disease",
+        "enrollment": 160,
+        "url": "https://clinicaltrials.gov/study/NCT05256303"
+      }
+    ],
+    "error": null,
+    "checked_at": "2026-11-15T20:02:17",
+    "query_gui_ctgov": "(\"Heart Failure\" OR \"heart failure\" ) AND (outpatient* OR ambulatory ) AND (\"prediction model\" OR \"risk score\" OR \"prognostic model\" ) AND (hospitalization OR hospitalisation OR \"Hospitalization\" )"
+  },
+  "guardrail": {
+    "passed": true,
+    "n_errors": 0,
+    "errors": []
+  },
+  "artifacts": {
+    "A1_markdown": "exports/ZZCANARY-DU-BAO/G0_A1_PICO_FINER_ZZCANARY-DU-BAO.md",
+    "A1_docx": "exports/ZZCANARY-DU-BAO/G0_A1_PICO_FINER_ZZCANARY-DU-BAO.docx"
+  },
+  "pending_doctor_actions": [
+    "Điền gate_params.G0.population/intervention/comparison/outcomes trong study_meta.json (ghi 'không có nhóm so sánh — mô tả' nếu đúng vậy).",
+    "Điền primary_outcome (1 kết cục) + primary_outcome_measure + primary_outcome_timepoint.",
+    "Điền test_type (superiority/non_inferiority/equivalence/descriptive); nếu không phải nghiên cứu mô tả thì điền cả hypothesis_h0/h1 và expected_direction.",
+    "Điền question_type: treatment (≡ therapy)/diagnosis/prognosis/harm/descriptive/qualitative/prediction_model.",
+    "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận.",
+    "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification.",
+    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"5ba41c4684baf4bb\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+    "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn).",
+    "Chạy: python tools/g0_quality_gate.py --study ZZCANARY-DU-BAO"
+  ],
+  "next_gate": "G1 — Thiết kế nghiên cứu (CHỈ sau khi G0 đạt PASS_G0_CONFIRMED)",
+  "disclaimer": "Cần bác sĩ kiểm chứng.",
+  "danh_muc_doc_bo_sung": [],
+  "quality_contract_version": "G0-2026.1",
+  "quality_gate": {
+    "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
+    "contract_version": "G0-2026.1",
+    "automated_checks_passed": true,
+    "human_confirmation_complete": false,
+    "pending_actions": [
+      "Điền gate_params.G0.population/intervention/comparison/outcomes trong study_meta.json (ghi 'không có nhóm so sánh — mô tả' nếu đúng vậy).",
+      "Điền primary_outcome (1 kết cục) + primary_outcome_measure + primary_outcome_timepoint.",
+      "Điền test_type (superiority/non_inferiority/equivalence/descriptive); nếu không phải nghiên cứu mô tả thì điền cả hypothesis_h0/h1 và expected_direction.",
+      "Điền question_type: treatment (≡ therapy)/diagnosis/prognosis/harm/descriptive/qualitative/prediction_model.",
+      "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận.",
+      "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification.",
+      "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"5ba41c4684baf4bb\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+      "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn)."
+    ],
+    "dau_van_tay_luc_cham": "5ba41c4684baf4bb"
+  },
+  "needs_input": {
+    "blocked": true,
+    "reason_code": "MISSING_PICO",
+    "human_message": "G0 đã dựng xong NỀN BẰNG CHỨNG nhưng CÂU HỎI NGHIÊN CỨU chưa được bác sĩ chốt (còn chờ: G0-HUMAN-01, G0-HUMAN-02, G0-HUMAN-03, G0-HUMAN-04, G0-HUMAN-05, G0-HUMAN-06, G0-HUMAN-07, G0-HUMAN-08). Hệ KHÔNG tự viết PICO thay bác sĩ.",
+    "remediation": {
+      "action": "rerun_with_real_input",
+      "command": "sửa exports/<study>/study_meta.json → gate_params.G0 rồi chạy: python tools/g0_quality_gate.py --study <study>",
+      "study_meta_patch": {
+        "gate_params": {
+          "G0": {
+            "pico_confirmed": true
+          }
+        }
+      },
+      "must_not_fabricate": [
+        "PICO",
+        "primary_outcome",
+        "FINER",
+        "hypothesis"
+      ]
+    },
+    "supplied_by": "doctor"
+  }
+}

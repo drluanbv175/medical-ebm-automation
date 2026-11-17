@@ -1,0 +1,234 @@
+{
+  "study": "ZZCANARY-THIEU-MI",
+  "gate": "G0",
+  "gate_status": "DRAFT — CHỜ BÁC SĨ: G0-HUMAN-01, G0-HUMAN-02, G0-HUMAN-03, G0-HUMAN-04, G0-HUMAN-05, G0-HUMAN-06, G0-HUMAN-07, G0-HUMAN-08",
+  "generated_at": "2026-11-16T18:43:25.244092",
+  "topic": "Sử dụng thuốc ức chế bơm proton kéo dài và nguy cơ gãy xương ở người từ 60 tuổi điều trị ngoại trú khi hồ sơ thiếu dữ liệu hiệp biến: nghiên cứu thuần tập hồi cứu có gán đa trị",
+  "base_query": "(\"Proton Pump Inhibitors\"[MeSH] OR \"proton pump inhibitor*\"[tiab] OR omeprazole[tiab] OR esomeprazole[tiab] OR pantoprazole[tiab]) AND (\"Fractures, Bone\"[MeSH] OR fracture*[tiab]) AND (aged[MeSH] OR elderly[tiab] OR \"older adults\"[tiab])",
+  "pubmed_results": {
+    "total_found": 30,
+    "n_pmids": 30,
+    "all_pmids": [
+      "21701389",
+      "40659386",
+      "42944786",
+      "34622475",
+      "40780490",
+      "30159775",
+      "21605729",
+      "41832801",
+      "41125947",
+      "31152740",
+      "40848405",
+      "28301676",
+      "24825180",
+      "40678972",
+      "42063912",
+      "20493982",
+      "30684601",
+      "41364067",
+      "29199170",
+      "42191059",
+      "35830032",
+      "40367346",
+      "40312835",
+      "41668463",
+      "41656326",
+      "39932099",
+      "39233100",
+      "21365461",
+      "30445008",
+      "40442516"
+    ],
+    "n_sr": 11,
+    "n_rct": 4,
+    "n_guideline": 0,
+    "n_observational": 109,
+    "n_recent": 4,
+    "most_recent_year": 2026,
+    "counts_are_real": true,
+    "counts_unavailable": [],
+    "query_errors": {}
+  },
+  "n_sr": 11,
+  "n_rct": 4,
+  "n_pmids": 30,
+  "pmids_verified": [
+    "21701389",
+    "40659386",
+    "42944786",
+    "34622475",
+    "40780490",
+    "30159775",
+    "21605729",
+    "41832801",
+    "41125947",
+    "31152740",
+    "40848405",
+    "28301676",
+    "24825180",
+    "40678972",
+    "42063912",
+    "20493982",
+    "30684601",
+    "41364067",
+    "29199170",
+    "42191059",
+    "35830032",
+    "40367346",
+    "40312835",
+    "41668463",
+    "41656326",
+    "39932099",
+    "39233100",
+    "21365461",
+    "30445008",
+    "40442516"
+  ],
+  "evidence_note": "MẠNH — có SR/MA (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)",
+  "evidence_level": "MẠNH — có SR/MA (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)",
+  "research_gaps": [
+    "Không thấy guideline được PubMed đánh chỉ mục (PubMed, truy vấn G0 «(\"Proton Pump Inhibitors\"[MeSH] OR \"proton pump inhibitor*\"[tiab] OR omeprazole[tiab] OR esomeprazole[tiab] OR pantoprazole[tiab]) AND (\"Fractures, Bone\"[MeSH] OR fracture*[tiab]) AND (aged[MeSH] OR elderly[tiab] OR \"older adults\"[tiab])») — văn bản quy phạm trong nước (Bộ Y tế…) và trang hiệp hội KHÔNG nằm trên PubMed: phải rà trước khi kết luận «chưa có»"
+  ],
+  "design_suggestion": "Nghiên cứu phân tích dưới nhóm / quần thể đặc thù / pragmatic trial",
+  "novelty_concern": "⚠ Chủ đề đã có nhiều SR/MA → cần biện minh tính mới rõ ràng",
+  "registry_check": {
+    "registry": "ClinicalTrials.gov",
+    "query": "(\"Proton Pump Inhibitors\"[MeSH] OR \"proton pump inhibitor*\"[tiab] OR omeprazole[tiab] OR esomeprazole[tiab] OR pantoprazole[tiab]) AND (\"Fractures, Bone\"[MeSH] OR fracture*[tiab]) AND (aged[MeSH] OR elderly[tiab] OR \"older adults\"[tiab])",
+    "checked": true,
+    "n_trials": 11,
+    "n_active": 0,
+    "trials": [
+      {
+        "nct_id": "NCT05062018",
+        "title": "Vitamin D3 - Omega3 - Home Exercise - HeALTHy Aging and Longevity Cohort",
+        "status": "UNKNOWN",
+        "start_date": "2019-11-26",
+        "phases": null,
+        "study_type": "OBSERVATIONAL",
+        "conditions": "Healthy Aging",
+        "enrollment": 534,
+        "url": "https://clinicaltrials.gov/study/NCT05062018"
+      },
+      {
+        "nct_id": "NCT02558049",
+        "title": "Should I Continue Taking My Acid Reflux Medication? Development and Pilot Testing of a Patient Decision Aid",
+        "status": "COMPLETED",
+        "start_date": "2015-11",
+        "phases": [
+          "NA"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Proton Pump Inhibitors, Gastroesophageal Reflux Disease",
+        "enrollment": 12,
+        "url": "https://clinicaltrials.gov/study/NCT02558049"
+      },
+      {
+        "nct_id": "NCT06567054",
+        "title": "Clinical Study to Predict the Risk of Bone Fractures With the POROUS Ultrasound Device",
+        "status": "ACTIVE_NOT_RECRUITING",
+        "start_date": "2025-03-03",
+        "phases": [
+          "NA"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Healthy, Osteopenia, Osteoporosis",
+        "enrollment": 1600,
+        "url": "https://clinicaltrials.gov/study/NCT06567054"
+      },
+      {
+        "nct_id": "NCT04079868",
+        "title": "Models of Primary Osteoporosis Screening in Male Veterans",
+        "status": "COMPLETED",
+        "start_date": "2019-08-30",
+        "phases": [
+          "NA"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Osteoporosis, Osteopenia, Osteoporotic Fracture",
+        "enrollment": 3512,
+        "url": "https://clinicaltrials.gov/study/NCT04079868"
+      },
+      {
+        "nct_id": "NCT04637750",
+        "title": "Proton Pump Inhibitors (PPI): a Study to Improve Appropriate Prescriptions in the Elderly",
+        "status": "COMPLETED",
+        "start_date": "2019-10-10",
+        "phases": [
+          "NA"
+        ],
+        "study_type": "INTERVENTIONAL",
+        "conditions": "Proton Pump Inhibitor, Primary Care",
+        "enrollment": 800,
+        "url": "https://clinicaltrials.gov/study/NCT04637750"
+      }
+    ],
+    "error": null,
+    "checked_at": "2026-11-16T18:43:23",
+    "query_gui_ctgov": "(\"Proton Pump Inhibitors\" OR \"proton pump inhibitor*\" OR omeprazole OR esomeprazole OR pantoprazole ) AND (\"Fractures, Bone\" OR fracture* ) AND (aged OR elderly OR \"older adults\" )"
+  },
+  "guardrail": {
+    "passed": true,
+    "n_errors": 0,
+    "errors": []
+  },
+  "artifacts": {
+    "A1_markdown": "exports/ZZCANARY-THIEU-MI/G0_A1_PICO_FINER_ZZCANARY-THIEU-MI.md",
+    "A1_docx": "exports/ZZCANARY-THIEU-MI/G0_A1_PICO_FINER_ZZCANARY-THIEU-MI.docx"
+  },
+  "pending_doctor_actions": [
+    "Điền gate_params.G0.population/intervention/comparison/outcomes trong study_meta.json (ghi 'không có nhóm so sánh — mô tả' nếu đúng vậy).",
+    "Điền primary_outcome (1 kết cục) + primary_outcome_measure + primary_outcome_timepoint.",
+    "Điền test_type (superiority/non_inferiority/equivalence/descriptive); nếu không phải nghiên cứu mô tả thì điền cả hypothesis_h0/h1 và expected_direction.",
+    "Điền question_type: treatment (≡ therapy)/diagnosis/prognosis/harm/descriptive/qualitative/prediction_model.",
+    "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận.",
+    "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification.",
+    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"79ed80efdad746d2\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+    "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn).",
+    "Chạy: python tools/g0_quality_gate.py --study ZZCANARY-THIEU-MI"
+  ],
+  "next_gate": "G1 — Thiết kế nghiên cứu (CHỈ sau khi G0 đạt PASS_G0_CONFIRMED)",
+  "disclaimer": "Cần bác sĩ kiểm chứng.",
+  "danh_muc_doc_bo_sung": [],
+  "quality_contract_version": "G0-2026.1",
+  "quality_gate": {
+    "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
+    "contract_version": "G0-2026.1",
+    "automated_checks_passed": true,
+    "human_confirmation_complete": false,
+    "pending_actions": [
+      "Điền gate_params.G0.population/intervention/comparison/outcomes trong study_meta.json (ghi 'không có nhóm so sánh — mô tả' nếu đúng vậy).",
+      "Điền primary_outcome (1 kết cục) + primary_outcome_measure + primary_outcome_timepoint.",
+      "Điền test_type (superiority/non_inferiority/equivalence/descriptive); nếu không phải nghiên cứu mô tả thì điền cả hypothesis_h0/h1 và expected_direction.",
+      "Điền question_type: treatment (≡ therapy)/diagnosis/prognosis/harm/descriptive/qualitative/prediction_model.",
+      "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận.",
+      "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification.",
+      "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"79ed80efdad746d2\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+      "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn)."
+    ],
+    "dau_van_tay_luc_cham": "79ed80efdad746d2"
+  },
+  "needs_input": {
+    "blocked": true,
+    "reason_code": "MISSING_PICO",
+    "human_message": "G0 đã dựng xong NỀN BẰNG CHỨNG nhưng CÂU HỎI NGHIÊN CỨU chưa được bác sĩ chốt (còn chờ: G0-HUMAN-01, G0-HUMAN-02, G0-HUMAN-03, G0-HUMAN-04, G0-HUMAN-05, G0-HUMAN-06, G0-HUMAN-07, G0-HUMAN-08). Hệ KHÔNG tự viết PICO thay bác sĩ.",
+    "remediation": {
+      "action": "rerun_with_real_input",
+      "command": "sửa exports/<study>/study_meta.json → gate_params.G0 rồi chạy: python tools/g0_quality_gate.py --study <study>",
+      "study_meta_patch": {
+        "gate_params": {
+          "G0": {
+            "pico_confirmed": true
+          }
+        }
+      },
+      "must_not_fabricate": [
+        "PICO",
+        "primary_outcome",
+        "FINER",
+        "hypothesis"
+      ]
+    },
+    "supplied_by": "doctor"
+  }
+}

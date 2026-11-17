@@ -405,7 +405,7 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
                 {"id": "DN_ca_day_du", "vai": "do_nhay", "sap_muc": "§9", "sap_neo": "Complete case vs MI",
                  "mo_ta": "Phân tích ca đầy đủ (không impute) đối chiếu với phân tích chính", "ke_thua": True,
                  "tham_so": {"n_imputations": 0}},
-                _sd_khong_ap_dung("kết cục và nhóm so sánh đều nhị phân — ±1 SD không áp dụng"),
+                _sd_khong_ap_dung("kết cục và nhóm so sánh đều nhị phân — định nghĩa thay thế chưa khai cụ thể"),
                 {"id": "DN_theo_de_cuong", "vai": "do_nhay", "sap_muc": "§9",
                  "sap_neo": "Phân tích theo đề cương (per-protocol)", "mo_ta": "Phân tích theo đề cương",
                  "chua_tu_dong": "cần biến tuân thủ đề cương (số lần tái khám đúng nhánh) — chưa có trong bộ biến; "
@@ -515,7 +515,7 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
                 *_nhom_gioi(1, 0),
                 {"id": "DN_ca_day_du", "vai": "do_nhay", "sap_muc": "§9", "sap_neo": "Complete case vs MI",
                  "mo_ta": "Phân tích ca đầy đủ", "ke_thua": True, "tham_so": {"n_imputations": 0}},
-                _sd_khong_ap_dung("phơi nhiễm nhị phân — ±1 SD không áp dụng"),
+                _sd_khong_ap_dung("phơi nhiễm nhị phân — định nghĩa thay thế chưa khai cụ thể"),
                 {"id": "DN_theo_doi_12t", "vai": "do_nhay", "sap_muc": "§9",
                  "sap_neo": "Loại người theo dõi dưới 12 tháng", "mo_ta": "Chỉ người theo dõi ≥ 12 tháng",
                  "ke_thua": True, "tham_so": {"loc": "thoi_gian_den_gay >= 12"}}]
@@ -574,7 +574,7 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
                 {"id": "DN_ca_day_du", "vai": "do_nhay", "sap_muc": "§9", "sap_neo": "Complete case vs MI",
                  "mo_ta": "Phân tích ca đầy đủ (không gán đa trị) đối chiếu MI", "ke_thua": True,
                  "tham_so": {"n_imputations": 0}},
-                _sd_khong_ap_dung("phơi nhiễm và kết cục nhị phân — ±1 SD không áp dụng"),
+                _sd_khong_ap_dung("phơi nhiễm và kết cục nhị phân — định nghĩa thay thế chưa khai cụ thể"),
                 {"id": "DN_theo_doi_12t", "vai": "do_nhay", "sap_muc": "§9",
                  "sap_neo": "Loại người theo dõi dưới 12 tháng", "mo_ta": "Chỉ người theo dõi ≥ 12 tháng",
                  "ke_thua": True, "tham_so": {"loc": "thoi_gian_theo_doi >= 12"}}]

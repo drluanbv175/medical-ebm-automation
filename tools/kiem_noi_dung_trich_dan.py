@@ -50,6 +50,7 @@ _DAU = re.compile(r"\[(\d+(?:\s*[-–]\s*\d+)?(?:\s*[,;]\s*\d+(?:\s*[-–]\s*\d+
 _TLTK = re.compile(r"^#{1,3}\s*(?:\d+\.?\s*)?(TÀI LIỆU THAM KHẢO|REFERENCES)\b", re.I)
 _SO_LIEU = re.compile(r"(?<![\w.,])(\d{1,3}(?:[.,]\d+)?)\s*%|(?<![\w.,])(\d+[,.]\d+)(?![\w.,])")
 SO_CAU_MOI_LO = 6
+TOKEN_MOI_ABSTRACT = 1000  # tiêu đề + loại xuất bản + abstract có cấu trúc, đo trên BTM
 TOI_DA_MAC_DINH = 200
 
 
@@ -449,7 +450,10 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, lay=None, goc
     if not a.goi_api:
         so_cap = sum(len(c.so) for c in cau_ds)
         so_lo = len(API.chia_lo(cau_ds, a.lo))
-        vao = so_lo * (API.uoc_token(HE_THONG) + 6 * 450) + API.uoc_token(" ".join(c.cau for c in cau_ds))
+        # 17/11/2026: lượt thật đầu tiên (BTM) tốn 39,5 nghìn token vào trong khi bản ước cũ (6 × 450/lô) báo 17 nghìn —
+        # abstract dài hơn giả định và mỗi lô mang mọi tài liệu khác nhau của nó. Ước theo số tài liệu THẬT của từng lô.
+        vao = sum(API.uoc_token(HE_THONG) + TOKEN_MOI_ABSTRACT * len({n for c in lo for n in c.so if n in tltk})
+                  + API.uoc_token(" ".join(c.cau for c in lo)) for lo in API.chia_lo(cau_ds, a.lo))
         ra = so_cap * 90
         kh = {
             "study": a.study,

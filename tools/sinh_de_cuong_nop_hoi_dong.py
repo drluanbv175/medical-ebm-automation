@@ -71,9 +71,30 @@ _BO_HAN = [re.compile(x, re.IGNORECASE) for x in (
     # văn xuôi.
     r"\bTheo\s+(?:G\d{1,2}(?:\s*§\s*[\d.]*\d)?|[A-Z][A-Z0-9]*_[A-Z0-9_]+)(?:\s*\([^()]*\))?\s*:\s*",
     r"\s*\(biến\s+[A-Za-z][A-Za-z0-9]*_[A-Za-z0-9_]+\)",
+    # 17/11/2026 (phản biện máy Claude API trên đề cương BTM — dấu vết K1–K8 bỏ sót): chỉ dẫn tệp nội bộ «(xem
+    # G0_KHOANG_TRONG)», dấu quyết định «(quyết ở G2)», lời ghi nguồn gốc quyết định «(chủ nhiệm duyệt C1–C3)»,
+    # «, chủ nhiệm chọn tham chiếu 15/11/2026», trỏ phiếu đề xuất nội bộ «xem điểm S6 của phiếu đề xuất», và câu nói
+    # về công cụ máy «qua công cụ phân tích của hệ thống (`…`)».
+    r"\s*\(xem\s+[A-Z][A-Z0-9]*_[A-Z0-9_]+[^()]*\)",
+    r"\s*\((?:quyết|chốt|duyệt)(?:\s+(?:ở|tại)\s+(?:cổng\s+)?G\d{1,2})?\)",
+    r"\s*\((?:PI|chủ nhiệm)(?:\s+đề tài)?\s+(?:chọn|chốt|duyệt|quyết)[^()]*\)",
+    r",\s*(?:PI|chủ nhiệm)(?:\s+đề tài)?\s+(?:chọn|chốt|duyệt|quyết)[^,;()]*?\d{1,2}/\d{1,2}/\d{4}",
+    r"[;,]?\s*(?:cách đo\s+)?xem điểm\s+S\d+\s+của phiếu đề xuất",
+    r"\s*qua công cụ phân tích của hệ thống(?:\s*\([^()]*\))?",
 )]
 # Thay cụm nội bộ bằng cách nói của văn bản nộp.
+# 17/11/2026 (đề cương BTM): khoá trường đã chốt «gate_params.G0.intervention» từng thành «như.intervention»; mã cổng
+# làm tân ngữ «cho thống nhất với G3;» từng thành «với;». Đổi sang cách nói của văn bản nộp thay vì xoá.
+_NHAN_KHOA_DA_CHOT = {"intervention": "các yếu tố khảo sát nêu ở mục 4.5", "population": "quần thể nghiên cứu",
+                      "comparison": "nhóm so sánh", "outcomes": "các kết cục nghiên cứu"}
+_NHAN_CONG = {"0": "câu hỏi nghiên cứu", "1": "thiết kế nghiên cứu", "2": "hồ sơ đạo đức", "3": "cách tính cỡ mẫu",
+              "4": "kế hoạch phân tích thống kê", "5": "kế hoạch quản lý dữ liệu"}
 _THAY = [(re.compile(a, re.IGNORECASE), b) for a, b in (
+    (r"\bgate_params\.G\d{1,2}\.([a-z_]+)",
+     lambda m: _NHAN_KHOA_DA_CHOT.get(m.group(1).lower(), "các nội dung đã chốt")),
+    (r"\b((?:so\s+)?với|cho)\s+G([0-5])\b(?!\s*[–-]\s*G)", lambda m: f"{m.group(1)} {_NHAN_CONG[m.group(2)]}"),
+    (r"\s*\(bảng RACI ở A13[^()]*\)", " (mục 6.1)"),
+    (r"\(\s*(SOP-[A-Z]+-\d+)\s*\)", r"(theo quy trình chuẩn \1 của đề tài)"),
     (r"Tài liệu\s+4\s*[–-]\s*5\s+hồ sơ\s+G2", "Phụ lục B"),
     (r"\bhồ sơ\s+G2\b", "hồ sơ đạo đức"),
     (r"\bkế hoạch an toàn G2\b", "kế hoạch an toàn"),
@@ -271,11 +292,17 @@ class TrichDan:
         def _ngoac(m: re.Match) -> str:
             k = self.so(m.group(2))
             truoc = m.group(1).strip(" ,;")
+            # 17/11/2026 (kiểm nội dung trích dẫn bằng Claude API, đề cương BTM): «(Ogundimu 2016, PMID 26964707: EPV
+            # nên dựa vào dữ liệu, không phải quy tắc cứng)» từng thành «[41]» trần — mất lời giải thích, câu đọc như
+            # bài [41] ủng hộ ngưỡng cứng mà bài phản đối. Lời sau dấu «:»/«—» là NỘI DUNG, phải giữ.
+            duoi = re.sub(r"^\s*[,;]?\s*(?:DOI|doi)\s*:?\s*10\.\d{4,9}/\S+?(?=[:;—–]|$)", "", m.group(3) or "")
+            ghi = re.sub(r"^\s*[:—–]\s*", "", duoi).strip(" ,;") if re.match(r"^\s*[:—–]", duoi) else ""
             if k is None:
-                return f" ({truoc})" if truoc else ""
-            return f" [{k}]"
+                noi = "; ".join(x for x in (truoc, ghi) if x)
+                return f" ({noi})" if noi else ""
+            return f" ({ghi} [{k}])" if ghi else f" [{k}]"
 
-        text = re.sub(r"\s*\(([^()]*?)[,;]?\s*PMID:?\s*(\d{5,9})[^()]*\)", _ngoac, text)
+        text = re.sub(r"\s*\(([^()]*?)[,;]?\s*PMID:?\s*(\d{5,9})([^()]*)\)", _ngoac, text)
 
         def _tran(m: re.Match) -> str:
             k = self.so(m.group(1))
@@ -610,14 +637,21 @@ def phieu_thu_thap(n: Nguon) -> List[str]:
         nhom[tieu_de].append(r)
     dong: List[str] = []
     stt = 0
+    so_phan = 0
     for tieu_de, ds in nhom.items():
         if not ds:
             continue
-        dong += [f"**{tieu_de}**", "", "| Câu | Nội dung | Trả lời | Mã biến |", "|---|---|---|---|"]
+        # 17/11/2026 (phản biện máy Claude API): phần rỗng bị bỏ mà số giữ nguyên ⇒ «PHẦN 2 → PHẦN 4»; mã biến bọc
+        # dấu ` đọc như mã phần mềm. Đánh số liên tục; mã biến để trần (cột «Mã biến» là của người nhập liệu).
+        so_phan += 1
+        # ngoài f-string: Python 3.11 cấm «\» trong biểu thức f-string
+        ten_phan = re.sub(r"^PHẦN \d+\.", f"PHẦN {so_phan}.", tieu_de)
+        dong += [f"**{ten_phan}**", "",
+                 "| Câu | Nội dung | Trả lời | Mã biến |", "|---|---|---|---|"]
         for r in ds:
             stt += 1
             nhan = lam_sach(r.get("Field Label") or "") or CHAM
-            dong.append(f"| {stt} | {nhan} | {_o_tra_loi(r)} | `{r.get('Variable / Field Name')}` |")
+            dong.append(f"| {stt} | {nhan} | {_o_tra_loi(r)} | {r.get('Variable / Field Name')} |")
         dong.append("")
     dong.append("Người thu thập: ……………………………   Ngày thu thập: …… /…… /…………")
     return dong
@@ -854,6 +888,16 @@ _VIET_TAT = {
     "SR/MA": "Tổng quan hệ thống/phân tích gộp", "DAG": "Đồ thị nhân quả có hướng không chu trình",
     "VIF": "Hệ số phóng đại phương sai", "SD": "Độ lệch chuẩn", "IQR": "Khoảng tứ phân vị",
     "CRF": "Phiếu thu thập số liệu (case report form)", "TIDieR": "Hướng dẫn mô tả can thiệp TIDieR",
+    # 17/11/2026 (phản biện máy, BTM): từ viết tắt dùng trong văn bản mà danh mục thiếu
+    "UACR": "Tỷ số albumin/creatinin niệu (urine albumin-to-creatinine ratio)",
+    "eGFR": "Mức lọc cầu thận ước tính (estimated glomerular filtration rate)", "BTM": "Bệnh thận mạn",
+    "BHYT": "Bảo hiểm y tế", "HIS": "Hệ thống thông tin bệnh viện (hospital information system)",
+    "PR": "Tỷ số tỷ lệ hiện mắc (prevalence ratio)", "ACEi": "Thuốc ức chế men chuyển angiotensin",
+    "ARB": "Thuốc chẹn thụ thể angiotensin II", "RAASi": "Thuốc ức chế hệ renin–angiotensin–aldosteron",
+    "KDIGO": "Kidney Disease: Improving Global Outcomes",
+    "ADA": "Hiệp hội Đái tháo đường Hoa Kỳ (American Diabetes Association)",
+    "EPV": "Số biến cố trên mỗi tham số (events per variable)", "BMI": "Chỉ số khối cơ thể (body mass index)",
+    "HbA1c": "Huyết sắc tố gắn glucose (glycated haemoglobin)",
 }
 
 
@@ -926,14 +970,26 @@ _LOAI_BAI = (("sr_ma", "Tổng quan hệ thống/phân tích gộp"), ("guidelin
 # nhánh tổng quan của G0 (PubMed gắn «Review») mà vẫn là hướng dẫn; ngược lại một nghiên cứu quan sát «… according to
 # … guidelines …» KHÔNG phải hướng dẫn — chỉ nhắc chữ «guideline» không đủ.
 _HUONG_DAN_MANH = re.compile(r"standards of (?:medical )?care|clinical practice guideline|\bguidelines? (?:for|on)\b|"
-                             r"consensus (?:statement|report)|position statement|recommendations? (?:for|on)\b|"
-                             r"summit recommendations", re.I)
+                             r"recommendations? (?:for|on)\b", re.I)
+# 17/11/2026 (kiểm nội dung trích dẫn bằng Claude API): báo cáo hội nghị/đồng thuận — «KDIGO Summit Recommendations
+# on …» (PubMed: Journal Article) — từng bị xếp «Hướng dẫn thực hành». Có khuyến nghị nhưng không phải hướng dẫn chính
+# thức ⇒ loại riêng, vẫn vào bảng 3.1. Xét TRƯỚC `_HUONG_DAN_MANH` («recommendations on» nằm trong tiêu đề summit).
+_DONG_THUAN = re.compile(r"consensus (?:statement|report|recommendations?)|position statement|"
+                         r"\bsummit (?:recommendations?|report)|controversies conference", re.I)
+LOAI_DONG_THUAN = "Đồng thuận chuyên môn/báo cáo hội nghị"
+# Nghiên cứu ĐO sự tuân thủ hướng dẫn («Concordance With … Guidelines for …», «adherence to guidelines») không phải
+# hướng dẫn — từng lọt vào suất «hướng dẫn» của bảng 3.1 khi bản summit chuyển sang loại đồng thuận (17/11/2026).
+_DO_TUAN_THU = re.compile(r"\b(?:concordance|adherence|compliance|uptake|guideline-directed|according to|"
+                          r"in line with)\b", re.I)
 
 
 def _loai_bai(n: Nguon, pmid: str) -> str:
     """Loại tài liệu: dấu hiệu hướng dẫn MẠNH ở tiêu đề trước, rồi nhánh tìm của G0 (lọc publication type của PubMed);
     ngoài các nhánh ⇒ suy từ tiêu đề."""
-    if _HUONG_DAN_MANH.search(str((n.td.md.get(pmid) or {}).get("title") or "")):
+    tieu_de = str((n.td.md.get(pmid) or {}).get("title") or "")
+    if _DONG_THUAN.search(tieu_de):
+        return LOAI_DONG_THUAN
+    if _HUONG_DAN_MANH.search(tieu_de) and not _DO_TUAN_THU.search(tieu_de):
         return _LOAI_BAI[1][1]
     for k, nhan in _LOAI_BAI:
         if any(isinstance(x, dict) and str(x.get("pmid")) == pmid for x in n.g0raw.get(k) or []):
@@ -941,13 +997,25 @@ def _loai_bai(n: Nguon, pmid: str) -> str:
     t = str((n.td.md.get(pmid) or {}).get("title") or "").lower()
     if re.search(r"systematic review|meta-analys|umbrella review", t):
         return _LOAI_BAI[0][1]
-    if _HUONG_DAN_MANH.search(t):
+    if _HUONG_DAN_MANH.search(t) and not _DO_TUAN_THU.search(t):
         return _LOAI_BAI[1][1]
     if re.search(r"randomi[sz]ed|randomi[sz]ation|\btrial\b", t):
         return _LOAI_BAI[2][1]
     if re.search(r"cohort|case-control|cross-sectional|observational", t):
         return _LOAI_BAI[3][1]
     return "Nghiên cứu khác"
+
+
+def tai_lieu_bang_31(n: Any, loai_nhan: Sequence[str]) -> List[str]:
+    """Ứng viên bảng 3.1: đúng loại tài liệu, TRỪ tài liệu chuẩn/phương pháp hệ chèn (SPIRIT 2025, CONSORT, Piaggio…)
+    — 17/11/2026 (phản biện máy, 6/16 đề tài): chúng không phải bằng chứng của chủ đề mà từng chiếm suất «hướng dẫn»."""
+    try:
+        import protocol_checklist_items as PCI  # noqa: PLC0415
+
+        he_thong = {str(v) for v in PCI.cap_doi_pmid_he_thong().values()}
+    except Exception:  # noqa: BLE001 — thiếu bảng thì giữ hành vi cũ
+        he_thong = set()
+    return [p for p in n.ung_vien if _loai_bai(n, p) in loai_nhan and str(p) not in he_thong]
 
 
 def _tac_gia_to_chuc(tieu_de: str) -> str:
@@ -998,13 +1066,18 @@ def chuong_tong_quan(n: Nguon, con_lai: Sequence[str] = ()) -> List[str]:
     for x in (n.g1.get("evidence_summary") or n.s("literature", "summary"), n.s("literature", "disagreements")):
         if _co(x):
             dong += [_cau(td.thay(str(x))), ""]
-    chinh = [p for p in n.ung_vien if _loai_bai(n, p) in [x for _, x in _LOAI_BAI[:3]]]
-    chinh.sort(key=lambda p: ([x for _, x in _LOAI_BAI].index(_loai_bai(n, p)),
+    thu_tu = [_LOAI_BAI[0][1], _LOAI_BAI[1][1], LOAI_DONG_THUAN, _LOAI_BAI[2][1], _LOAI_BAI[3][1], "Nghiên cứu khác"]
+    chinh = tai_lieu_bang_31(n, thu_tu[:4])
+    chinh.sort(key=lambda p: (thu_tu.index(_loai_bai(n, p)),
                               -int(str((td.md.get(p) or {}).get("year") or "0")[:4] or 0)))
     if chinh:
-        dong += ["**Bảng 3.1. Các tổng quan hệ thống, hướng dẫn và thử nghiệm chính liên quan đến đề tài**", "",
+        ten_loai = {_LOAI_BAI[0][1]: "tổng quan hệ thống", _LOAI_BAI[1][1]: "hướng dẫn",
+                    LOAI_DONG_THUAN: "đồng thuận chuyên môn", _LOAI_BAI[2][1]: "thử nghiệm"}
+        co = [ten_loai[x] for x in thu_tu[:4] if any(_loai_bai(n, p) == x for p in chinh)]
+        tieu = ", ".join(co[:-1]) + (" và " if len(co) > 1 else "") + co[-1]
+        dong += [f"**Bảng 3.1. Các {tieu} chính liên quan đến đề tài**", "",
                  "| Tài liệu | Năm | Loại nghiên cứu | Tên bài (nguyên văn) |", "|---|---|---|---|"]
-        tran = {_LOAI_BAI[0][1]: 5, _LOAI_BAI[1][1]: 3, _LOAI_BAI[2][1]: 4}  # bảng cân đối các loại bằng chứng
+        tran = {_LOAI_BAI[0][1]: 5, _LOAI_BAI[1][1]: 3, LOAI_DONG_THUAN: 2, _LOAI_BAI[2][1]: 4}  # cân đối các loại
         dem_loai: Dict[str, int] = {}
         chon = []
         to_chuc_da_co: set = set()
@@ -1152,9 +1225,11 @@ def doan_co_mau(n: Nguon) -> List[str]:
             + (f", dựa trên {nguon_hq}" if nguon_hq else "") + ". "
             + f"Cỡ mẫu tính được là {_n(c.get('n_per_group'))} người mỗi nhóm (tổng {_n(c.get('n_total'))} người).")
     elif loai == "NI_PROPORTION":
+        # 17/11/2026 (phản biện máy): «tỷ lệ tỷ lệ …» khi tên kết cục đã mở đầu bằng «tỷ lệ»
+        ty_le_kc = ket_cuc if ket_cuc.startswith("tỷ lệ") else "tỷ lệ " + (ket_cuc or "kết cục")
         dong.append(
             f"Cỡ mẫu được tính cho giả thuyết không kém hơn của hai tỷ lệ, với mức ý nghĩa α = {an} (một phía), lực "
-            f"mẫu {luc}, tỷ lệ {ket_cuc or 'kết cục'} kỳ vọng ở cả hai nhóm là {_pt(c.get('p0'))} và biên không kém "
+            f"mẫu {luc}, {ty_le_kc} kỳ vọng ở cả hai nhóm là {_pt(c.get('p0'))} và biên không kém "
             f"hơn Δ = {_so(float(c.get('margin') or 0) * 100, 1)} điểm phần trăm"
             + (f" (căn cứ {nguon_hq})" if nguon_hq else "") + ". "
             + f"Cỡ mẫu tính được là {_n(c.get('n_per_group'))} người mỗi nhóm (tổng {_n(c.get('n_total'))} người).")
@@ -1381,7 +1456,7 @@ def chuong_phuong_phap(n: Nguon) -> List[str]:
     # Công cụ & kỹ thuật thu thập
     muc("Công cụ và kỹ thuật thu thập số liệu")
     for nhan, x in (("Công cụ", n.s("data_collection", "instrument", "name")),
-                    ("Nguồn số liệu", n.s("data_collection", "source")),
+                    ("Nguồn số liệu", "; ".join(dict.fromkeys(_danh_sach(n.s("data_collection", "source"))))),
                     ("Thời điểm thu thập", n.g1.get("follow_up_schedule") or
                      n.s("data_collection", "measurement_times")),
                     ("Kiểm soát chất lượng", n.s("data_collection", "quality_control")),
@@ -1482,7 +1557,7 @@ def _lo_trinh(x: Any) -> str:
     if "RÚT GỌN" in s and "FULL" in s:
         return ("Đề nghị xét duyệt theo quy trình rút gọn; nếu Hội đồng không chấp nhận, đề cương được xét tại phiên "
                 "họp toàn Hội đồng.")
-    if "RÚT GỌN" in s:
+    if "RÚT GỌN" in s or "EXPEDITED" in s:  # 17/11/2026: «EXPEDITED REVIEW» từng in nguyên tiếng Anh
         return "Đề nghị xét duyệt theo quy trình rút gọn."
     if "MIỄN" in s or "EXEMPT" in s:
         return "Đề nghị Hội đồng xem xét miễn xét duyệt."
@@ -1640,16 +1715,19 @@ def phu_luc_a(n: Nguon) -> List[str]:
     ten_vai = {"ket_cuc_chinh": "Kết cục chính", "ket_cuc_phu": "Kết cục phụ", "phoi_nhiem": "Phơi nhiễm/nhóm so sánh",
                "hiep_bien": "Biến hiệu chỉnh", "mo_ta": "Biến mô tả", "phan_nhom": "Biến phân nhóm",
                "su_kien": "Biến cố", "thoi_gian_den_su_kien": "Thời gian đến biến cố", "chi_phi": "Chi phí",
-               "du_bao": "Biến dự báo", "tham_chieu": "Tiêu chuẩn tham chiếu", "xet_nghiem": "Xét nghiệm đánh giá"}
+               "du_bao": "Biến dự báo", "tham_chieu": "Tiêu chuẩn tham chiếu", "xet_nghiem": "Xét nghiệm đánh giá",
+               # 17/11/2026 (phản biện máy, BTM): «yeu_to» từng in thành «yeu to» không dấu
+               "yeu_to": "Yếu tố liên quan", "nhieu": "Biến nhiễu", "dieu_chinh": "Biến điều chỉnh tác động"}
     pp_chinh = _thuong(n.s("analysis", "primary_method"))
     dong += ["| Mục tiêu | Biến | Vai trò | Cách phân tích |", "|---|---|---|---|"]
     for r in n.ma_tran:
         vai = r.get("vai_tro", "")
         cach = {"ket_cuc_chinh": pp_chinh or "Mô hình chính", "phoi_nhiem": "Biến so sánh của mô hình chính",
                 "hiep_bien": "Đưa vào mô hình hiệu chỉnh", "mo_ta": "Thống kê mô tả",
-                "ket_cuc_phu": "Mô hình phù hợp kiểu biến, diễn giải thăm dò"}.get(vai, "Theo kế hoạch phân tích")
+                "yeu_to": "Đưa vào mô hình yếu tố liên quan", "nhieu": "Đưa vào mô hình hiệu chỉnh",
+                "ket_cuc_phu": "Theo mục 4.9; diễn giải thăm dò"}.get(vai, "Theo kế hoạch phân tích")
         dong.append(f"| {lam_sach(r.get('muc_tieu'))} | {lam_sach(r.get('khai_niem'))} | "
-                    f"{ten_vai.get(vai, lam_sach(vai.replace('_', ' ')))} | {cach} |")
+                    f"{ten_vai.get(vai, 'Biến khác')} | {cach} |")
     return dong + [""]
 
 
@@ -1708,8 +1786,10 @@ def _cau_phuong_phap_hoc(n: Nguon) -> List[str]:
     if not k:
         return []
     cum = (f"{k[0]}–{k[-1]}" if len(k) > 2 and k == list(range(k[0], k[-1] + 1)) else ", ".join(map(str, k)))
-    return [f"Việc xác định cỡ mẫu và lập kế hoạch phân tích tham khảo các hướng dẫn phương pháp học liên quan "
-            f"[{cum}].", ""]
+    # 17/11/2026 (phản biện máy vòng 3, 3/16 đề tài): danh sách gồm cả CHUẨN BÁO CÁO (SPIRIT 2025, CONSORT) — câu cũ
+    # gọi chung là «hướng dẫn phương pháp học» cho cỡ mẫu nên bị bắt là trích không đúng ngữ cảnh.
+    return [f"Việc xác định cỡ mẫu, lập kế hoạch phân tích và trình bày đề cương tham khảo các hướng dẫn phương pháp "
+            f"học và chuẩn báo cáo liên quan [{cum}].", ""]
 
 
 def _than(n: Nguon, con_lai: Sequence[str]) -> List[str]:
@@ -1756,7 +1836,14 @@ def dung_de_cuong(n: Nguon) -> str:
     than += ["# PHỤ LỤC D. BẢNG BIẾN SỐ VÀ MÃ HOÁ", ""] + bang_bien_so(n) + [""]
     dau = thong_tin_chung(n) + tom_tat(n)
     van = "\n".join(dau + viet_tat("\n".join(than)) + than)
+    return don_cuoi(van)
+
+
+def don_cuoi(van: str) -> str:
+    """Lượt dọn cuối trên TOÀN văn bản. 17/11/2026 (phản biện máy, BTM): «… 28/02/2027..» — câu nguồn đã có dấu chấm,
+    khuôn thêm một dấu nữa. Không đụng «...» hay dòng chấm «………» để chủ nhiệm điền tay."""
     van = re.sub(r"\n{3,}", "\n\n", van)
+    van = re.sub(r"(?<![.…])\.\.(?![.…])", ".", van)
     return van.rstrip() + "\n"
 
 

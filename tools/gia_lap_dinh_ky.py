@@ -98,7 +98,10 @@ from gia_lap_kich_ban_them import bien_so_them, ho_so_tron_vong, kich_ban_them  
 
 PHIEN_BAN = 1
 STATE_PATH = REPO_ROOT / "state" / "gia-lap-dinh-ky-gan-nhat.json"
-NEN_G0_DIR = REPO_ROOT / "state" / "gia-lap-dinh-ky" / "nen-g0"
+# 17/11/2026 (đưa 16 kịch bản vào CI): CI không tra PubMed được ⇒ nền G0 đã lưu được commit ở tests/fixtures/
+# gia_lap_nen_g0/ và trỏ tới bằng GIA_LAP_NEN_G0_DIR. Vắng biến ⇒ thư mục state như cũ.
+NEN_G0_DIR = (Path(os.environ["GIA_LAP_NEN_G0_DIR"]) if os.environ.get("GIA_LAP_NEN_G0_DIR")
+              else REPO_ROOT / "state" / "gia-lap-dinh-ky" / "nen-g0")
 # Thư mục chép sang bản sao tạm — đủ cho chuỗi G0→G5 của run_pipeline (đo 14/11/2026).
 THU_MUC_CHEP = ("tools", "app", "config", "templates")
 BO_QUA_KHI_CHEP = shutil.ignore_patterns("__pycache__", "*.pyc", ".DS_Store", "._*")

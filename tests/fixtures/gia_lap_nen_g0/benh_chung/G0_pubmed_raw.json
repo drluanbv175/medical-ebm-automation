@@ -1,0 +1,698 @@
+{
+  "sr_ma": [
+    {
+      "pmid": "42287444",
+      "title": "Risk factors for rebleeding in acute lower gastrointestinal bleeding: a systematic review and meta-analysis.",
+      "year": "2026",
+      "journal": "International journal of colorectal disease",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42287444/",
+      "authors": "Lu Z, Zong D, Yang Z, Yue B"
+    },
+    {
+      "pmid": "36526813",
+      "title": "Risk of Gastrointestinal Bleeding with Concurrent Use of NSAID and SSRI: A Systematic Review and Network Meta-Analysis.",
+      "year": "2023",
+      "journal": "Digestive diseases and sciences",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36526813/",
+      "authors": "Haghbin H, Zakirkhodjaev N, Husain FF, Lee-Smith W, Aziz M"
+    },
+    {
+      "pmid": "36002638",
+      "title": "Selective serotonin reuptake inhibitors increase risk of upper gastrointestinal bleeding when used with NSAIDs: a systemic review and meta-analysis.",
+      "year": "2022",
+      "journal": "Scientific reports",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36002638/",
+      "authors": "Alam SM, Qasswal M, Ahsan MJ, Walters RW, Chandra S"
+    },
+    {
+      "pmid": "30383903",
+      "title": "Gastrointestinal safety of coxibs: systematic review and meta-analysis of observational studies on selective inhibitors of cyclo-oxygenase 2.",
+      "year": "2019",
+      "journal": "Fundamental & clinical pharmacology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/30383903/",
+      "authors": "Martín Arias LH, Martín González A, Sanz Fadrique R, Salgueiro Vázquez E"
+    },
+    {
+      "pmid": "27422768",
+      "title": "Safety of metamizole: a systematic review of the literature.",
+      "year": "2016",
+      "journal": "Journal of clinical pharmacy and therapeutics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/27422768/",
+      "authors": "Andrade S, Bartels DB, Lange R, Sandford L, Gurwitz J"
+    },
+    {
+      "pmid": "25898902",
+      "title": "Systematic review with meta-analysis: the association between the use of calcium channel blockers and gastrointestinal bleeding.",
+      "year": "2015",
+      "journal": "Alimentary pharmacology & therapeutics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/25898902/",
+      "authors": "He Y, Chan EW, Leung WK, Anand S, Wong IC"
+    },
+    {
+      "pmid": "24777151",
+      "title": "Risk of upper gastrointestinal bleeding with selective serotonin reuptake inhibitors with or without concurrent nonsteroidal anti-inflammatory use: a systematic review and meta-analysis.",
+      "year": "2014",
+      "journal": "The American journal of gastroenterology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/24777151/",
+      "authors": "Anglin R, Yuan Y, Moayyedi P, Tse F, Armstrong D"
+    },
+    {
+      "pmid": "24221694",
+      "title": "Aspirin and non-aspirin NSAIDs increase risk of colonic diverticular bleeding: a systematic review and meta-analysis.",
+      "year": "2014",
+      "journal": "Journal of gastroenterology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/24221694/",
+      "authors": "Yuhara H, Corley DA, Nakahara F, Nakajima T, Koike J"
+    },
+    {
+      "pmid": "23137151",
+      "title": "Individual NSAIDs and upper gastrointestinal complications: a systematic review and meta-analysis of observational studies (the SOS project).",
+      "year": "2012",
+      "journal": "Drug safety",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/23137151/",
+      "authors": "Castellsague J, Riera-Guardia N, Calingaert B, Varas-Lorenzo C, Fourrier-Reglat A"
+    },
+    {
+      "pmid": "20659284",
+      "title": "Systematic review: Helicobacter pylori and the risk of upper gastrointestinal bleeding risk in patients taking aspirin.",
+      "year": "2010",
+      "journal": "Alimentary pharmacology & therapeutics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/20659284/",
+      "authors": "Fletcher EH, Johnston DE, Fisher CR, Koerner RJ, Newton JL"
+    },
+    {
+      "pmid": "16918879",
+      "title": "Systematic review: the lower gastrointestinal adverse effects of non-steroidal anti-inflammatory drugs.",
+      "year": "2006",
+      "journal": "Alimentary pharmacology & therapeutics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/16918879/",
+      "authors": "Laine L, Smith R, Min K, Chen C, Dubois RW"
+    },
+    {
+      "pmid": "16611205",
+      "title": "Upper gastrointestinal complications among users of paracetamol.",
+      "year": "2006",
+      "journal": "Basic & clinical pharmacology & toxicology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/16611205/",
+      "authors": "González-Pérez A, Rodríguez LA"
+    },
+    {
+      "pmid": "12236853",
+      "title": "Dose-response relationships between individual nonaspirin nonsteroidal anti-inflammatory drugs (NANSAIDs) and serious upper gastrointestinal bleeding: a meta-analysis based on individual patient data.",
+      "year": "2002",
+      "journal": "British journal of clinical pharmacology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/12236853/",
+      "authors": "Lewis SC, Langman MJ, Laporte JR, Matthews JN, Rawlins MD"
+    },
+    {
+      "pmid": "11950025",
+      "title": "A metaanalysis of severe upper gastrointestinal complications of nonsteroidal antiinflammatory drugs.",
+      "year": "2002",
+      "journal": "The Journal of rheumatology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/11950025/",
+      "authors": "Ofman JJ, MacLean CH, Straus WL, Morton SC, Berger ML"
+    },
+    {
+      "pmid": "11809181",
+      "title": "Role of Helicobacter pylori infection and non-steroidal anti-inflammatory drugs in peptic-ulcer disease: a meta-analysis.",
+      "year": "2002",
+      "journal": "Lancet (London, England)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/11809181/",
+      "authors": "Huang JQ, Sridhar S, Hunt RH"
+    }
+  ],
+  "rct": [
+    {
+      "pmid": "34085115",
+      "title": "Effect of a proton-pump inhibitor on intestinal microbiota in patients taking low-dose aspirin.",
+      "year": "2021",
+      "journal": "European journal of clinical pharmacology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/34085115/",
+      "authors": "Tsujimoto H, Hirata Y, Ueda Y, Kinoshita N, Tawa H"
+    },
+    {
+      "pmid": "18606952",
+      "title": "Risk of upper gastrointestinal tract bleeding associated with selective serotonin reuptake inhibitors and venlafaxine therapy: interaction with nonsteroidal anti-inflammatory drugs and effect of acid-suppressing agents.",
+      "year": "2008",
+      "journal": "Archives of general psychiatry",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/18606952/",
+      "authors": "de Abajo FJ, García-Rodríguez LA"
+    },
+    {
+      "pmid": "11228592",
+      "title": "Risk of upper gastrointestinal bleeding and perforation associated with low-dose aspirin as plain and enteric-coated formulations.",
+      "year": "2001",
+      "journal": "BMC clinical pharmacology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/11228592/",
+      "authors": "de Abajo FJ, García Rodríguez LA"
+    },
+    {
+      "pmid": "1670734",
+      "title": "Upper gastrointestinal bleeding in relation to previous use of analgesics and non-steroidal anti-inflammatory drugs. Catalan Countries Study on Upper Gastrointestinal Bleeding.",
+      "year": "1991",
+      "journal": "Lancet (London, England)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/1670734/",
+      "authors": "Laporte JR, Carné X, Vidal X, Moreno V, Juan J"
+    }
+  ],
+  "guideline": [],
+  "recent": [
+    {
+      "pmid": "42287444",
+      "title": "Risk factors for rebleeding in acute lower gastrointestinal bleeding: a systematic review and meta-analysis.",
+      "year": "2026",
+      "journal": "International journal of colorectal disease",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42287444/",
+      "authors": "Lu Z, Zong D, Yang Z, Yue B"
+    },
+    {
+      "pmid": "36526813",
+      "title": "Risk of Gastrointestinal Bleeding with Concurrent Use of NSAID and SSRI: A Systematic Review and Network Meta-Analysis.",
+      "year": "2023",
+      "journal": "Digestive diseases and sciences",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36526813/",
+      "authors": "Haghbin H, Zakirkhodjaev N, Husain FF, Lee-Smith W, Aziz M"
+    },
+    {
+      "pmid": "36002638",
+      "title": "Selective serotonin reuptake inhibitors increase risk of upper gastrointestinal bleeding when used with NSAIDs: a systemic review and meta-analysis.",
+      "year": "2022",
+      "journal": "Scientific reports",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36002638/",
+      "authors": "Alam SM, Qasswal M, Ahsan MJ, Walters RW, Chandra S"
+    },
+    {
+      "pmid": "34085115",
+      "title": "Effect of a proton-pump inhibitor on intestinal microbiota in patients taking low-dose aspirin.",
+      "year": "2021",
+      "journal": "European journal of clinical pharmacology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/34085115/",
+      "authors": "Tsujimoto H, Hirata Y, Ueda Y, Kinoshita N, Tawa H"
+    }
+  ],
+  "observational": [
+    {
+      "pmid": "42070040",
+      "title": "Interpretable LightGBM model for predicting postoperative gastrointestinal hemorrhage in elderly hip fracture patients: leveraging systemic inflammation and medication exposures for personalized risk stratification.",
+      "year": "2026",
+      "journal": "BMC geriatrics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42070040/",
+      "authors": "Sai H, Ren J, Ma X, Yang K, Bai C"
+    },
+    {
+      "pmid": "41790684",
+      "title": "The use of prophylactic transcatheter arterial embolization in Forrest type II ulcer patients without attempted endoscopic hemostasis.",
+      "year": "2026",
+      "journal": "Medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41790684/",
+      "authors": "Zhang X, Wang D, Zhu Q, Zhang H"
+    },
+    {
+      "pmid": "41373035",
+      "title": "Appropriateness of proton pump inhibitor prescription for prevention of gastrointestinal bleeding in patients receiving warfarin: a real world, database study.",
+      "year": "2025",
+      "journal": "BMC pharmacology & toxicology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41373035/",
+      "authors": "Manasirisuk P, Sawanyawisuth K, Manasirisuk W"
+    },
+    {
+      "pmid": "41083165",
+      "title": "Esophagogastroduodenoscopy findings in patients with or without recent use of antiplatelets, anticoagulants, or NSAIDs and non-variceal upper gastrointestinal bleeding: A retrospective cohort study.",
+      "year": "2025",
+      "journal": "Acta gastro-enterologica Belgica",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41083165/",
+      "authors": "Mpakogiannis K, Fousekis FS, Moshou P, Katsanos KH, Christodoulou DK"
+    },
+    {
+      "pmid": "40667956",
+      "title": "Clinical and endoscopic analysis of gastrointestinal bleeding during COVID-19 full-blown pandemic: a retrospective cohort study.",
+      "year": "2025",
+      "journal": "Annals of medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40667956/",
+      "authors": "Liu JW, Sui Y, Lu JH, Ren JN, Gong JW"
+    },
+    {
+      "pmid": "40441242",
+      "title": "Effects of antiplatelet, anticoagulant, and nonsteroidal anti-inflammatory drugs on upper gastrointestinal bleeding in geriatric patients.",
+      "year": "2025",
+      "journal": "Medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40441242/",
+      "authors": "Onem S, Güven İE, Dolu S, Onem MGG, Akyol T"
+    },
+    {
+      "pmid": "40426059",
+      "title": "Comparative efficacy of gelatin sponge, microcoils, and nbca in arterial gastrointestinal bleeding: a retrospective study.",
+      "year": "2025",
+      "journal": "BMC gastroenterology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40426059/",
+      "authors": "Lai L, Liu X, Su J"
+    },
+    {
+      "pmid": "40174780",
+      "title": "Emergent endoscopy is associated with lower mortality in hemodynamically unstable upper GI bleeding: Single-center experience with 24/7 endoscopy services.",
+      "year": "2025",
+      "journal": "Clinics and research in hepatology and gastroenterology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40174780/",
+      "authors": "Pham TT, Quach DT, Le LT, Nguyen VN, Chung NM"
+    },
+    {
+      "pmid": "40028763",
+      "title": "Risk of cardiovascular diseases and gastrointestinal bleeding is comparable between celecoxib and non-selective non-steroidal anti-inflammatory drugs in patients with ankylosing spondylitis: a nationwide retrospective cohort study.",
+      "year": "2025",
+      "journal": "Scandinavian journal of rheumatology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40028763/",
+      "authors": "Kim A, Kim SC, Kim J, So MW, Lee SG"
+    },
+    {
+      "pmid": "39892621",
+      "title": "Gastrointestinal Bleeds Are a Rare Event After Total Hip and Knee Arthroplasty.",
+      "year": "2025",
+      "journal": "The Journal of arthroplasty",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39892621/",
+      "authors": "Ballard ET, Bergeson KS, Wisniewski SJ, Singh S, Ejub S"
+    },
+    {
+      "pmid": "39748650",
+      "title": "Risk of Lower Gastrointestinal Bleeding in Nonsteroidal Anti-inflammatory Drug (NSAID) and Proton Pump Inhibitor Users Compared with NSAID-Only Users: A Common Data Model Analysis.",
+      "year": "2025",
+      "journal": "Gut and liver",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39748650/",
+      "authors": "Lee M, Kim M, Cha JM"
+    },
+    {
+      "pmid": "39360666",
+      "title": "Nonvitamin K Anticoagulants: Risk of Bleeding When Interacting With Other Medications: A Cohort Study From Medicare.",
+      "year": "2024",
+      "journal": "Clinical cardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39360666/",
+      "authors": "Gomez-Lumbreras A, Brendle M, Moorman-Bishir K, Tan M, Malone DC"
+    },
+    {
+      "pmid": "39105571",
+      "title": "Comparison of gastrointestinal bleeding in patients with and without liver cirrhosis.",
+      "year": "2024",
+      "journal": "Scandinavian journal of gastroenterology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39105571/",
+      "authors": "Daðadóttir SM, Ingason AB, Hreinsson JP, Björnsson ES"
+    },
+    {
+      "pmid": "38968495",
+      "title": "DA-9601 has protective effects comparable to those of proton pump inhibitor and rebamipide against nonsteroidal anti-inflammatory drugs-induced upper and lower gastrointestinal bleeding in patients with rheumatoid arthritis: A nationwide study using Korean Health Insurance Review and Assessment Service database.",
+      "year": "2024",
+      "journal": "Medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38968495/",
+      "authors": "So MW, Kim A, Lee SG"
+    },
+    {
+      "pmid": "38861561",
+      "title": "Continuous co-prescription of rebamipide prevents upper gastrointestinal bleeding in NSAID use for orthopaedic conditions: A nested case-control study using the LIFE Study database.",
+      "year": "2024",
+      "journal": "PloS one",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38861561/",
+      "authors": "Yamate S, Ishiguro C, Fukuda H, Hamai S, Nakashima Y"
+    }
+  ],
+  "khong_loc": [
+    {
+      "pmid": "42287444",
+      "title": "Risk factors for rebleeding in acute lower gastrointestinal bleeding: a systematic review and meta-analysis.",
+      "year": "2026",
+      "journal": "International journal of colorectal disease",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42287444/"
+    },
+    {
+      "pmid": "42070040",
+      "title": "Interpretable LightGBM model for predicting postoperative gastrointestinal hemorrhage in elderly hip fracture patients: leveraging systemic inflammation and medication exposures for personalized risk stratification.",
+      "year": "2026",
+      "journal": "BMC geriatrics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42070040/"
+    },
+    {
+      "pmid": "41790684",
+      "title": "The use of prophylactic transcatheter arterial embolization in Forrest type II ulcer patients without attempted endoscopic hemostasis.",
+      "year": "2026",
+      "journal": "Medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41790684/"
+    },
+    {
+      "pmid": "41373035",
+      "title": "Appropriateness of proton pump inhibitor prescription for prevention of gastrointestinal bleeding in patients receiving warfarin: a real world, database study.",
+      "year": "2025",
+      "journal": "BMC pharmacology & toxicology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41373035/"
+    },
+    {
+      "pmid": "41083165",
+      "title": "Esophagogastroduodenoscopy findings in patients with or without recent use of antiplatelets, anticoagulants, or NSAIDs and non-variceal upper gastrointestinal bleeding: A retrospective cohort study.",
+      "year": "2025",
+      "journal": "Acta gastro-enterologica Belgica",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41083165/"
+    },
+    {
+      "pmid": "40667956",
+      "title": "Clinical and endoscopic analysis of gastrointestinal bleeding during COVID-19 full-blown pandemic: a retrospective cohort study.",
+      "year": "2025",
+      "journal": "Annals of medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40667956/"
+    },
+    {
+      "pmid": "40441242",
+      "title": "Effects of antiplatelet, anticoagulant, and nonsteroidal anti-inflammatory drugs on upper gastrointestinal bleeding in geriatric patients.",
+      "year": "2025",
+      "journal": "Medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40441242/"
+    },
+    {
+      "pmid": "40426059",
+      "title": "Comparative efficacy of gelatin sponge, microcoils, and nbca in arterial gastrointestinal bleeding: a retrospective study.",
+      "year": "2025",
+      "journal": "BMC gastroenterology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40426059/"
+    },
+    {
+      "pmid": "40174780",
+      "title": "Emergent endoscopy is associated with lower mortality in hemodynamically unstable upper GI bleeding: Single-center experience with 24/7 endoscopy services.",
+      "year": "2025",
+      "journal": "Clinics and research in hepatology and gastroenterology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40174780/"
+    },
+    {
+      "pmid": "40028763",
+      "title": "Risk of cardiovascular diseases and gastrointestinal bleeding is comparable between celecoxib and non-selective non-steroidal anti-inflammatory drugs in patients with ankylosing spondylitis: a nationwide retrospective cohort study.",
+      "year": "2025",
+      "journal": "Scandinavian journal of rheumatology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40028763/"
+    },
+    {
+      "pmid": "39892621",
+      "title": "Gastrointestinal Bleeds Are a Rare Event After Total Hip and Knee Arthroplasty.",
+      "year": "2025",
+      "journal": "The Journal of arthroplasty",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39892621/"
+    },
+    {
+      "pmid": "39748650",
+      "title": "Risk of Lower Gastrointestinal Bleeding in Nonsteroidal Anti-inflammatory Drug (NSAID) and Proton Pump Inhibitor Users Compared with NSAID-Only Users: A Common Data Model Analysis.",
+      "year": "2025",
+      "journal": "Gut and liver",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39748650/"
+    },
+    {
+      "pmid": "39360666",
+      "title": "Nonvitamin K Anticoagulants: Risk of Bleeding When Interacting With Other Medications: A Cohort Study From Medicare.",
+      "year": "2024",
+      "journal": "Clinical cardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39360666/"
+    },
+    {
+      "pmid": "39105571",
+      "title": "Comparison of gastrointestinal bleeding in patients with and without liver cirrhosis.",
+      "year": "2024",
+      "journal": "Scandinavian journal of gastroenterology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39105571/"
+    },
+    {
+      "pmid": "38968495",
+      "title": "DA-9601 has protective effects comparable to those of proton pump inhibitor and rebamipide against nonsteroidal anti-inflammatory drugs-induced upper and lower gastrointestinal bleeding in patients with rheumatoid arthritis: A nationwide study using Korean Health Insurance Review and Assessment Service database.",
+      "year": "2024",
+      "journal": "Medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38968495/"
+    },
+    {
+      "pmid": "38861561",
+      "title": "Continuous co-prescription of rebamipide prevents upper gastrointestinal bleeding in NSAID use for orthopaedic conditions: A nested case-control study using the LIFE Study database.",
+      "year": "2024",
+      "journal": "PloS one",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38861561/"
+    },
+    {
+      "pmid": "38726558",
+      "title": "Real-World Bleeding Risk of Anticoagulant and Nonsteroidal Anti-inflammatory Drugs Combotherapy versus Anticoagulant Monotherapy.",
+      "year": "2024",
+      "journal": "Gut and liver",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38726558/"
+    },
+    {
+      "pmid": "38653188",
+      "title": "Active surveillance pharmacovigilance for Clostridioides difficile infection and gastrointestinal bleeding: an analytic framework based on case-control studies.",
+      "year": "2024",
+      "journal": "EBioMedicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38653188/"
+    },
+    {
+      "pmid": "38520626",
+      "title": "Patterns of Comorbidities and Prescribing and Dispensing of Non-steroidal Anti-inflammatory Drugs (NSAIDs) Among Patients with Osteoarthritis in the USA: Real-World Study.",
+      "year": "2024",
+      "journal": "Drugs & aging",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38520626/"
+    },
+    {
+      "pmid": "38419217",
+      "title": "Risk factors and outcomes of upper gastrointestinal bleeding in hospitalized patients in a tertiary care hospital.",
+      "year": "2024",
+      "journal": "JPMA. The Journal of the Pakistan Medical Association",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/38419217/"
+    },
+    {
+      "pmid": "37659073",
+      "title": "Retrospective evaluation of the incidence of gastrointestinal bleeding in dogs receiving ophthalmic nonsteroidal anti-inflammatory drugs.",
+      "year": "2023",
+      "journal": "Veterinary ophthalmology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37659073/"
+    },
+    {
+      "pmid": "37392366",
+      "title": "A new model (Alfalfa-Warfarin-GIB) for predicting the risk of major gastrointestinal bleeding in warfarin patients.",
+      "year": "2023",
+      "journal": "European journal of clinical pharmacology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37392366/"
+    },
+    {
+      "pmid": "37179194",
+      "title": "Use of Antidepressants and the Risk of Upper Gastrointestinal Tract Bleeding: A Case-control Study.",
+      "year": "2023",
+      "journal": "Clinical therapeutics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37179194/"
+    },
+    {
+      "pmid": "36948854",
+      "title": "[Study on HBV-related acute-on-chronic liver failure risk factors and novel predictive survival model].",
+      "year": "2023",
+      "journal": "Zhonghua gan zang bing za zhi = Zhonghua ganzangbing zazhi = Chinese journal of hepatology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36948854/"
+    },
+    {
+      "pmid": "36942299",
+      "title": "The role of CYP2C9*2, CYP2C9*3 and VKORC1-1639 variants on the susceptibility of upper gastrointestinal bleeding: A full case-control study.",
+      "year": "2023",
+      "journal": "Journal of pharmacy & pharmaceutical sciences : a publication of the Canadian Society for Pharmaceutical Sciences, Societe canadienne des sciences pharmaceutiques",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36942299/"
+    },
+    {
+      "pmid": "36735101",
+      "title": "Gastrointestinal bleeding in children with familial dysautonomia: a case-control study.",
+      "year": "2023",
+      "journal": "Clinical autonomic research : official journal of the Clinical Autonomic Research Society",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36735101/"
+    },
+    {
+      "pmid": "36526813",
+      "title": "Risk of Gastrointestinal Bleeding with Concurrent Use of NSAID and SSRI: A Systematic Review and Network Meta-Analysis.",
+      "year": "2023",
+      "journal": "Digestive diseases and sciences",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36526813/"
+    },
+    {
+      "pmid": "36433812",
+      "title": "Early postoperative non-steroidal anti-inflammatory drugs and anastomotic leakage after oesophagectomy.",
+      "year": "2023",
+      "journal": "The British journal of surgery",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36433812/"
+    },
+    {
+      "pmid": "36002638",
+      "title": "Selective serotonin reuptake inhibitors increase risk of upper gastrointestinal bleeding when used with NSAIDs: a systemic review and meta-analysis.",
+      "year": "2022",
+      "journal": "Scientific reports",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36002638/"
+    },
+    {
+      "pmid": "35971682",
+      "title": "A new model to predict the risk of major gastrointestinal bleeding in patients on direct oral anticoagulants (dabigatran and rivaroxaban).",
+      "year": "2023",
+      "journal": "British journal of clinical pharmacology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35971682/"
+    }
+  ],
+  "true_counts": {
+    "sr_ma": 17,
+    "rct": 4,
+    "guideline": 0,
+    "observational": 425,
+    "recent": 4
+  },
+  "search_provenance": {
+    "co_so_du_lieu": "PubMed (MEDLINE và phần còn lại của PubMed)",
+    "giao_dien": "NCBI E-utilities (esearch/efetch) qua app.sources.pubmed.PubMedClient",
+    "ngay_tra": "2026-11-15T19:57:24",
+    "truy_van_goc": "(\"Anti-Inflammatory Agents, Non-Steroidal\"[MeSH] OR NSAID*[tiab] OR \"non-steroidal anti-inflammatory\"[tiab]) AND (\"Gastrointestinal Hemorrhage\"[MeSH] OR \"upper gastrointestinal bleeding\"[tiab] OR \"peptic ulcer bleeding\"[tiab]) AND (\"case-control\"[tiab] OR \"Case-Control Studies\"[MeSH])",
+    "query_en_do_nguoi_cung_cap": true,
+    "nhanh": {
+      "sr_ma": {
+        "nhom_ket_qua": "sr_ma",
+        "truy_van": "(\"Anti-Inflammatory Agents, Non-Steroidal\"[MeSH] OR NSAID*[tiab] OR \"non-steroidal anti-inflammatory\"[tiab]) AND (\"Gastrointestinal Hemorrhage\"[MeSH] OR \"upper gastrointestinal bleeding\"[tiab] OR \"peptic ulcer bleeding\"[tiab]) AND (\"case-control\"[tiab] OR \"Case-Control Studies\"[MeSH]) AND (systematic review[pt] OR meta-analysis[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Anti-Inflammatory Agents, Non-Steroidal\"[MeSH] OR NSAID*[tiab] OR \"non-steroidal anti-inflammatory\"[tiab]) AND (\"Gastrointestinal Hemorrhage\"[MeSH] OR \"upper gastrointestinal bleeding\"[tiab] OR \"peptic ulcer bleeding\"[tiab]) AND (\"case-control\"[tiab] OR \"Case-Control Studies\"[MeSH]) AND (systematic review[pt] OR meta-analysis[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 17,
+        "so_bai_lay_ve": 15,
+        "pmid_lay_ve": [
+          "42287444",
+          "36526813",
+          "36002638",
+          "30383903",
+          "27422768",
+          "25898902",
+          "24777151",
+          "24221694",
+          "23137151",
+          "20659284",
+          "16918879",
+          "16611205",
+          "12236853",
+          "11950025",
+          "11809181"
+        ]
+      },
+      "rct": {
+        "nhom_ket_qua": "rct",
+        "truy_van": "(\"Anti-Inflammatory Agents, Non-Steroidal\"[MeSH] OR NSAID*[tiab] OR \"non-steroidal anti-inflammatory\"[tiab]) AND (\"Gastrointestinal Hemorrhage\"[MeSH] OR \"upper gastrointestinal bleeding\"[tiab] OR \"peptic ulcer bleeding\"[tiab]) AND (\"case-control\"[tiab] OR \"Case-Control Studies\"[MeSH]) AND randomized controlled trial[pt]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Anti-Inflammatory Agents, Non-Steroidal\"[MeSH] OR NSAID*[tiab] OR \"non-steroidal anti-inflammatory\"[tiab]) AND (\"Gastrointestinal Hemorrhage\"[MeSH] OR \"upper gastrointestinal bleeding\"[tiab] OR \"peptic ulcer bleeding\"[tiab]) AND (\"case-control\"[tiab] OR \"Case-Control Studies\"[MeSH]) AND randomized controlled trial[pt]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 4,
+        "so_bai_lay_ve": 4,
+        "pmid_lay_ve": [
+          "34085115",
+          "18606952",
+          "11228592",
+          "1670734"
+        ]
+      },
+      "guideline": {
+        "nhom_ket_qua": "guideline",
+        "truy_van": "(\"Anti-Inflammatory Agents, Non-Steroidal\"[MeSH] OR NSAID*[tiab] OR \"non-steroidal anti-inflammatory\"[tiab]) AND (\"Gastrointestinal Hemorrhage\"[MeSH] OR \"upper gastrointestinal bleeding\"[tiab] OR \"peptic ulcer bleeding\"[tiab]) AND (\"case-control\"[tiab] OR \"Case-Control Studies\"[MeSH]) AND (guideline[pt] OR practice guideline[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Anti-Inflammatory Agents, Non-Steroidal\"[MeSH] OR NSAID*[tiab] OR \"non-steroidal anti-inflammatory\"[tiab]) AND (\"Gastrointestinal Hemorrhage\"[MeSH] OR \"upper gastrointestinal bleeding\"[tiab] OR \"peptic ulcer bleeding\"[tiab]) AND (\"case-control\"[tiab] OR \"Case-Control Studies\"[MeSH]) AND (guideline[pt] OR practice guideline[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 5,
+        "loai_trung_pmid": true,
+        "so_hit_that": 0,
+        "so_bai_lay_ve": 0,
+        "pmid_lay_ve": []
+      },
+      "observational": {
+        "nhom_ket_qua": "observational",
+        "truy_van": "(\"Anti-Inflammatory Agents, Non-Steroidal\"[MeSH] OR NSAID*[tiab] OR \"non-steroidal anti-inflammatory\"[tiab]) AND (\"Gastrointestinal Hemorrhage\"[MeSH] OR \"upper gastrointestinal bleeding\"[tiab] OR \"peptic ulcer bleeding\"[tiab]) AND (\"case-control\"[tiab] OR \"Case-Control Studies\"[MeSH])",
+        "bo_loc": "(\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "chuoi_hieu_luc": "((\"Anti-Inflammatory Agents, Non-Steroidal\"[MeSH] OR NSAID*[tiab] OR \"non-steroidal anti-inflammatory\"[tiab]) AND (\"Gastrointestinal Hemorrhage\"[MeSH] OR \"upper gastrointestinal bleeding\"[tiab] OR \"peptic ulcer bleeding\"[tiab]) AND (\"case-control\"[tiab] OR \"Case-Control Studies\"[MeSH])) AND (\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 425,
+        "so_bai_lay_ve": 15,
+        "pmid_lay_ve": [
+          "42070040",
+          "41790684",
+          "41373035",
+          "41083165",
+          "40667956",
+          "40441242",
+          "40426059",
+          "40174780",
+          "40028763",
+          "39892621",
+          "39748650",
+          "39360666",
+          "39105571",
+          "38968495",
+          "38861561"
+        ]
+      },
+      "recent_5yr": {
+        "nhom_ket_qua": "recent",
+        "truy_van": "(\"Anti-Inflammatory Agents, Non-Steroidal\"[MeSH] OR NSAID*[tiab] OR \"non-steroidal anti-inflammatory\"[tiab]) AND (\"Gastrointestinal Hemorrhage\"[MeSH] OR \"upper gastrointestinal bleeding\"[tiab] OR \"peptic ulcer bleeding\"[tiab]) AND (\"case-control\"[tiab] OR \"Case-Control Studies\"[MeSH]) AND 2021:2026[dp]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Anti-Inflammatory Agents, Non-Steroidal\"[MeSH] OR NSAID*[tiab] OR \"non-steroidal anti-inflammatory\"[tiab]) AND (\"Gastrointestinal Hemorrhage\"[MeSH] OR \"upper gastrointestinal bleeding\"[tiab] OR \"peptic ulcer bleeding\"[tiab]) AND (\"case-control\"[tiab] OR \"Case-Control Studies\"[MeSH]) AND 2021:2026[dp]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 10,
+        "loai_trung_pmid": false,
+        "so_hit_that": 4,
+        "so_bai_lay_ve": 4,
+        "pmid_lay_ve": [
+          "42287444",
+          "36526813",
+          "36002638",
+          "34085115"
+        ]
+      },
+      "khong_loc": {
+        "nhom_ket_qua": null,
+        "truy_van": "(\"Anti-Inflammatory Agents, Non-Steroidal\"[MeSH] OR NSAID*[tiab] OR \"non-steroidal anti-inflammatory\"[tiab]) AND (\"Gastrointestinal Hemorrhage\"[MeSH] OR \"upper gastrointestinal bleeding\"[tiab] OR \"peptic ulcer bleeding\"[tiab]) AND (\"case-control\"[tiab] OR \"Case-Control Studies\"[MeSH])",
+        "bo_loc": null,
+        "chuoi_hieu_luc": "((\"Anti-Inflammatory Agents, Non-Steroidal\"[MeSH] OR NSAID*[tiab] OR \"non-steroidal anti-inflammatory\"[tiab]) AND (\"Gastrointestinal Hemorrhage\"[MeSH] OR \"upper gastrointestinal bleeding\"[tiab] OR \"peptic ulcer bleeding\"[tiab]) AND (\"case-control\"[tiab] OR \"Case-Control Studies\"[MeSH]))",
+        "tran_so_bai": 30,
+        "loai_trung_pmid": false,
+        "chi_ghi_lai": true,
+        "so_hit_that": 459,
+        "so_bai_lay_ve": 30,
+        "pmid_lay_ve": [
+          "42287444",
+          "42070040",
+          "41790684",
+          "41373035",
+          "41083165",
+          "40667956",
+          "40441242",
+          "40426059",
+          "40174780",
+          "40028763",
+          "39892621",
+          "39748650",
+          "39360666",
+          "39105571",
+          "38968495",
+          "38861561",
+          "38726558",
+          "38653188",
+          "38520626",
+          "38419217",
+          "37659073",
+          "37392366",
+          "37179194",
+          "36948854",
+          "36942299",
+          "36735101",
+          "36526813",
+          "36433812",
+          "36002638",
+          "35971682"
+        ],
+        "pmid_bo_loc_da_loai": [
+          "38726558",
+          "38653188",
+          "38520626",
+          "38419217",
+          "37659073",
+          "37392366",
+          "37179194",
+          "36948854",
+          "36942299",
+          "36735101",
+          "36433812",
+          "35971682"
+        ]
+      }
+    },
+    "loi_nhanh": {}
+  }
+}

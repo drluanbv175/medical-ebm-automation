@@ -1,0 +1,178 @@
+{
+  "study": "ZZCANARY-BENH-CHUNG",
+  "gate": "G0",
+  "gate_status": "DRAFT — CHỜ BÁC SĨ: G0-HUMAN-01, G0-HUMAN-02, G0-HUMAN-03, G0-HUMAN-04, G0-HUMAN-05, G0-HUMAN-06, G0-HUMAN-07, G0-HUMAN-08",
+  "generated_at": "2026-11-15T19:57:24.817475",
+  "topic": "Sử dụng thuốc chống viêm không steroid và xuất huyết tiêu hoá trên ở người từ 60 tuổi: nghiên cứu bệnh–chứng",
+  "base_query": "(\"Anti-Inflammatory Agents, Non-Steroidal\"[MeSH] OR NSAID*[tiab] OR \"non-steroidal anti-inflammatory\"[tiab]) AND (\"Gastrointestinal Hemorrhage\"[MeSH] OR \"upper gastrointestinal bleeding\"[tiab] OR \"peptic ulcer bleeding\"[tiab]) AND (\"case-control\"[tiab] OR \"Case-Control Studies\"[MeSH])",
+  "pubmed_results": {
+    "total_found": 34,
+    "n_pmids": 34,
+    "all_pmids": [
+      "41083165",
+      "38861561",
+      "16611205",
+      "40028763",
+      "39360666",
+      "24221694",
+      "41373035",
+      "1670734",
+      "18606952",
+      "39105571",
+      "20659284",
+      "34085115",
+      "16918879",
+      "42070040",
+      "27422768",
+      "39892621",
+      "41790684",
+      "23137151",
+      "24777151",
+      "11950025",
+      "39748650",
+      "11228592",
+      "36002638",
+      "40174780",
+      "12236853",
+      "36526813",
+      "42287444",
+      "30383903",
+      "11809181",
+      "40667956",
+      "25898902",
+      "38968495",
+      "40441242",
+      "40426059"
+    ],
+    "n_sr": 17,
+    "n_rct": 4,
+    "n_guideline": 0,
+    "n_observational": 425,
+    "n_recent": 4,
+    "most_recent_year": 2026,
+    "counts_are_real": true,
+    "counts_unavailable": [],
+    "query_errors": {}
+  },
+  "n_sr": 17,
+  "n_rct": 4,
+  "n_pmids": 34,
+  "pmids_verified": [
+    "41083165",
+    "38861561",
+    "16611205",
+    "40028763",
+    "39360666",
+    "24221694",
+    "41373035",
+    "1670734",
+    "18606952",
+    "39105571",
+    "20659284",
+    "34085115",
+    "16918879",
+    "42070040",
+    "27422768",
+    "39892621",
+    "41790684",
+    "23137151",
+    "24777151",
+    "11950025",
+    "39748650",
+    "11228592",
+    "36002638",
+    "40174780",
+    "12236853",
+    "36526813",
+    "42287444",
+    "30383903",
+    "11809181",
+    "40667956",
+    "25898902",
+    "38968495",
+    "40441242",
+    "40426059"
+  ],
+  "evidence_note": "MẠNH — có SR/MA (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)",
+  "evidence_level": "MẠNH — có SR/MA (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)",
+  "research_gaps": [
+    "Không thấy guideline được PubMed đánh chỉ mục (PubMed, truy vấn G0 «(\"Anti-Inflammatory Agents, Non-Steroidal\"[MeSH] OR NSAID*[tiab] OR \"non-steroidal anti-inflammatory\"[tiab]) AND (\"Gastrointestinal Hemorrhage\"[MeSH] OR \"upper gastrointestinal bleeding\"[tiab] OR \"peptic ulcer bleeding\"[tiab]) AND (\"case-control\"[tiab] OR \"Case-Control Studies\"[MeSH])») — văn bản quy phạm trong nước (Bộ Y tế…) và trang hiệp hội KHÔNG nằm trên PubMed: phải rà trước khi kết luận «chưa có»"
+  ],
+  "design_suggestion": "Nghiên cứu phân tích dưới nhóm / quần thể đặc thù / pragmatic trial",
+  "novelty_concern": "⚠ Chủ đề đã có nhiều SR/MA → cần biện minh tính mới rõ ràng",
+  "registry_check": {
+    "registry": "ClinicalTrials.gov",
+    "query": "(\"Anti-Inflammatory Agents, Non-Steroidal\"[MeSH] OR NSAID*[tiab] OR \"non-steroidal anti-inflammatory\"[tiab]) AND (\"Gastrointestinal Hemorrhage\"[MeSH] OR \"upper gastrointestinal bleeding\"[tiab] OR \"peptic ulcer bleeding\"[tiab]) AND (\"case-control\"[tiab] OR \"Case-Control Studies\"[MeSH])",
+    "checked": true,
+    "n_trials": 0,
+    "n_active": 0,
+    "trials": [],
+    "error": null,
+    "checked_at": "2026-11-15T19:57:21",
+    "query_gui_ctgov": "(\"Anti-Inflammatory Agents, Non-Steroidal\" OR NSAID* OR \"non-steroidal anti-inflammatory\" ) AND (\"Gastrointestinal Hemorrhage\" OR \"upper gastrointestinal bleeding\" OR \"peptic ulcer bleeding\" ) AND (\"case-control\" OR \"Case-Control Studies\" )"
+  },
+  "guardrail": {
+    "passed": true,
+    "n_errors": 0,
+    "errors": []
+  },
+  "artifacts": {
+    "A1_markdown": "exports/ZZCANARY-BENH-CHUNG/G0_A1_PICO_FINER_ZZCANARY-BENH-CHUNG.md",
+    "A1_docx": "exports/ZZCANARY-BENH-CHUNG/G0_A1_PICO_FINER_ZZCANARY-BENH-CHUNG.docx"
+  },
+  "pending_doctor_actions": [
+    "Điền gate_params.G0.population/intervention/comparison/outcomes trong study_meta.json (ghi 'không có nhóm so sánh — mô tả' nếu đúng vậy).",
+    "Điền primary_outcome (1 kết cục) + primary_outcome_measure + primary_outcome_timepoint.",
+    "Điền test_type (superiority/non_inferiority/equivalence/descriptive); nếu không phải nghiên cứu mô tả thì điền cả hypothesis_h0/h1 và expected_direction.",
+    "Điền question_type: treatment (≡ therapy)/diagnosis/prognosis/harm/descriptive/qualitative/prediction_model.",
+    "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận.",
+    "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification.",
+    "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"481f7f623c66418d\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+    "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn).",
+    "Chạy: python tools/g0_quality_gate.py --study ZZCANARY-BENH-CHUNG"
+  ],
+  "next_gate": "G1 — Thiết kế nghiên cứu (CHỈ sau khi G0 đạt PASS_G0_CONFIRMED)",
+  "disclaimer": "Cần bác sĩ kiểm chứng.",
+  "danh_muc_doc_bo_sung": [],
+  "quality_contract_version": "G0-2026.1",
+  "quality_gate": {
+    "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
+    "contract_version": "G0-2026.1",
+    "automated_checks_passed": true,
+    "human_confirmation_complete": false,
+    "pending_actions": [
+      "Điền gate_params.G0.population/intervention/comparison/outcomes trong study_meta.json (ghi 'không có nhóm so sánh — mô tả' nếu đúng vậy).",
+      "Điền primary_outcome (1 kết cục) + primary_outcome_measure + primary_outcome_timepoint.",
+      "Điền test_type (superiority/non_inferiority/equivalence/descriptive); nếu không phải nghiên cứu mô tả thì điền cả hypothesis_h0/h1 và expected_direction.",
+      "Điền question_type: treatment (≡ therapy)/diagnosis/prognosis/harm/descriptive/qualitative/prediction_model.",
+      "Viết cho mỗi khoá finer_* một câu kết luận + lý do (F và E máy KHÔNG thể tự đánh giá). Tiêu chí KHÔNG ĐẠT ⇒ đổi câu hỏi nghiên cứu, hoặc ghi rõ vì sao vẫn chấp nhận.",
+      "Đọc danh sách PMID ở §3 của A1, rồi đặt evidence_reviewed_confirmed=true và viết novelty_justification.",
+      "Đặt pico_confirmed=true, reviewed_by_role (PI/chủ nhiệm/methodologist), reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"481f7f623c66418d\" (dấu của nội dung đang chốt). Không cần lưu danh tính.",
+      "Tự tra WHO ICTRP (trialsearch.who.int) — và PROSPERO nếu là tổng quan hệ thống — rồi ghi gate_params.G0.registry_manual_checked = {\"ictrp\": \"YYYY-MM-DD\", \"prospero\": \"YYYY-MM-DD\"}; có thử nghiệm đang tuyển khớp ⇒ viết registry_overlap_assessment (khác biệt/chồng lấn)."
+    ],
+    "dau_van_tay_luc_cham": "481f7f623c66418d"
+  },
+  "needs_input": {
+    "blocked": true,
+    "reason_code": "MISSING_PICO",
+    "human_message": "G0 đã dựng xong NỀN BẰNG CHỨNG nhưng CÂU HỎI NGHIÊN CỨU chưa được bác sĩ chốt (còn chờ: G0-HUMAN-01, G0-HUMAN-02, G0-HUMAN-03, G0-HUMAN-04, G0-HUMAN-05, G0-HUMAN-06, G0-HUMAN-07, G0-HUMAN-08). Hệ KHÔNG tự viết PICO thay bác sĩ.",
+    "remediation": {
+      "action": "rerun_with_real_input",
+      "command": "sửa exports/<study>/study_meta.json → gate_params.G0 rồi chạy: python tools/g0_quality_gate.py --study <study>",
+      "study_meta_patch": {
+        "gate_params": {
+          "G0": {
+            "pico_confirmed": true
+          }
+        }
+      },
+      "must_not_fabricate": [
+        "PICO",
+        "primary_outcome",
+        "FINER",
+        "hypothesis"
+      ]
+    },
+    "supplied_by": "doctor"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "luc": "2026-11-15T19:57:53+07:00",
+  "study": "ZZCANARY-BENH-CHUNG",
+  "topic": "Sử dụng thuốc chống viêm không steroid và xuất huyết tiêu hoá trên ở người từ 60 tuổi: nghiên cứu bệnh–chứng",
+  "query_en": "(\"Anti-Inflammatory Agents, Non-Steroidal\"[MeSH] OR NSAID*[tiab] OR \"non-steroidal anti-inflammatory\"[tiab]) AND (\"Gastrointestinal Hemorrhage\"[MeSH] OR \"upper gastrointestinal bleeding\"[tiab] OR \"peptic ulcer bleeding\"[tiab]) AND (\"case-control\"[tiab] OR \"Case-Control Studies\"[MeSH])",
+  "base_query": "(\"Anti-Inflammatory Agents, Non-Steroidal\"[MeSH] OR NSAID*[tiab] OR \"non-steroidal anti-inflammatory\"[tiab]) AND (\"Gastrointestinal Hemorrhage\"[MeSH] OR \"upper gastrointestinal bleeding\"[tiab] OR \"peptic ulcer bleeding\"[tiab]) AND (\"case-control\"[tiab] OR \"Case-Control Studies\"[MeSH])"
+}

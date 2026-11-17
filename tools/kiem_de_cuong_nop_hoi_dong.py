@@ -93,6 +93,25 @@ _DAU_VET_MAY = (
     (re.compile(r"cần bác sĩ kiểm chứng|mức tự động", re.IGNORECASE), "lời dặn của hệ"),
     (re.compile(r"<!--"), "chú thích HTML"),
     (re.compile(r"GIẢ LẬP|\(giả lập\)|hồ sơ chưa có"), "nhãn giả lập/ô chưa điền"),
+    # 17/11/2026 — 11 dấu vết K1–K8 bỏ sót, lộ khi phản biện máy (Claude API) đọc đề cương BTM thật; mã hoá thành luật
+    # tất định để lần sau bắt được không cần API.
+    (re.compile(r"(?<![\w/.-])[A-Z][A-Z0-9]*_[A-Z0-9][A-Z0-9_]*\b"), "mã tệp nội bộ (vd G0_KHOANG_TRONG)"),
+    (re.compile(r"(?<![\w/.@-])[A-Za-zÀ-ỹ]{2,}\.[a-z_]{4,}\b(?![.\w])"),
+     "khoá máy dính dấu chấm (vd «như.intervention»)"),
+    (re.compile(r"\bgate_params\b"), "khoá gate_params"),
+    (re.compile(r"\(\s*(?:quyết|chốt|duyệt)\s*\)"), "dấu quyết định «(quyết)»"),
+    (re.compile(r"phiếu đề xuất|công cụ phân tích của hệ thống", re.IGNORECASE), "trỏ tài liệu/công cụ nội bộ"),
+    (re.compile(r"\b(?:PI|chủ nhiệm)(?:\s+đề tài)?\s+(?:chọn|chốt|duyệt|quyết)\b[^.;()|]{0,40}\d{1,2}/\d{1,2}/\d{4}"),
+     "lời ghi nguồn gốc quyết định kèm ngày"),
+    (re.compile(r"\bở\s+A\d{1,2}b?\b"), "mã tài liệu nội bộ «ở A…»"),
+    (re.compile(r"\b(?:với|cho|của)\s*[;,)]"), "câu cụt sau giới từ («với;»)"),
+    (re.compile(r"(?<![.…])\.\.(?![.…])"), "dấu chấm đôi"),
+    # 17/11/2026 vòng đọc 1 trên 16 đề cương giả lập
+    (re.compile(r"(?<!\w)(tỷ lệ|nhóm|bệnh nhân|người bệnh|kết cục) \1(?!\w)"), "lặp chữ («tỷ lệ tỷ lệ»)"),
+    (re.compile(r"\b(?:EXPEDITED|EXEMPT|FULL BOARD)\b"), "tên hình thức xét duyệt tiếng Anh"),
+    (re.compile(r"ghi rõ chính sách|\w…\*\*"), "ghi chú cho người soạn / tiêu đề bị cắt"),
+    (re.compile(r"\|\s*(?:yeu to|ket cuc(?: chinh| phu)?|hiep bien|mo ta|phoi nhiem|dieu chinh|nhieu)\s*\|"),
+     "mã vai trò không dấu trong bảng"),
 )
 _TEN_BIEN_RE = re.compile(r"(?<![\w./-])[a-z][a-z0-9]*_[a-z0-9_]+\b")
 _DE_MUC_RE = re.compile(r"^(#{1,4})\s+(.*\S)\s*$", re.MULTILINE)

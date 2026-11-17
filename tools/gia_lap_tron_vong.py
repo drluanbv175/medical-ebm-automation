@@ -993,15 +993,33 @@ class TronVong:
                                                     newline="\n")
         self.chay("Nhập liệu — mẫu Excel", "nhap_lieu_excel.py", "mau", "--study", self.study, "--ra",
                   str(nl / "MAU.xlsx"), "--so-dong", str(len(hang) + 10))
-        self.chay("Nhập liệu — mẫu SPSS (.sav)", "nhap_lieu_excel.py", "mau", "--study", self.study, "--dang", "sav",
-                  "--ra", str(nl / "MAU.sav"))
+        # 17/11/2026 (16 kịch bản vào CI): máy chạy CI không có IBM SPSS Statistics (phần mềm bản quyền) ⇒ người nhập
+        # lần 2 dùng Excel thay SPSS; so nhập kép Excel ↔ Excel. Máy có SPSS vẫn đi đường SPSS như cũ.
+        import cau_noi_spss as SP  # noqa: PLC0415
+
+        try:
+            co_spss = bool(SP.tim_spss())
+        except Exception:  # noqa: BLE001 — KhongDoDuoc: máy không cài SPSS
+            co_spss = False
+        if co_spss:
+            self.chay("Nhập liệu — mẫu SPSS (.sav)", "nhap_lieu_excel.py", "mau", "--study", self.study, "--dang",
+                      "sav", "--ra", str(nl / "MAU.sav"))
+        else:
+            self.buoc.append({"buoc": "Nhập liệu — mẫu SPSS (.sav)", "lenh": "—", "ma": None, "crash": False,
+                              "cuoi": ["máy không có IBM SPSS Statistics — người nhập lần 2 dùng Excel"]})
         lan1, lan2 = cai_loi_nhap(hang)
         self.du_lieu = {"n": len(hang), "loi_cai_lan1": len(lan1), "loi_cai_lan2": len(lan2)}
         self._ghi_excel(nl / "MAU.xlsx", nl / "lan1_excel.xlsx", hang_x, lan1)
-        sav = self._ghi_sav(nl / "MAU.sav", nl / "lan2_spss.sav", hang_s, lan2)
-        self.du_lieu["nhap_spss"] = sav
-        r = self.chay("Nhập liệu — so nhập kép (Excel ↔ SPSS)", "nhap_lieu_excel.py", "so-sanh", "--study", self.study,
-                      "--excel1", str(nl / "lan1_excel.xlsx"), "--excel2", str(nl / "lan2_spss.sav"), "--ra",
+        if co_spss:
+            sav = self._ghi_sav(nl / "MAU.sav", nl / "lan2_spss.sav", hang_s, lan2)
+            self.du_lieu["nhap_spss"] = sav
+            lan2_tep, ten_so = nl / "lan2_spss.sav", "Nhập liệu — so nhập kép (Excel ↔ SPSS)"
+        else:
+            self._ghi_excel(nl / "MAU.xlsx", nl / "lan2_excel.xlsx", hang_x, lan2)
+            self.du_lieu["nhap_spss"] = {"ma": None, "loi": ["không có SPSS — lần 2 nhập bằng Excel"]}
+            lan2_tep, ten_so = nl / "lan2_excel.xlsx", "Nhập liệu — so nhập kép (Excel ↔ Excel, máy không có SPSS)"
+        r = self.chay(ten_so, "nhap_lieu_excel.py", "so-sanh", "--study", self.study,
+                      "--excel1", str(nl / "lan1_excel.xlsx"), "--excel2", str(lan2_tep), "--ra",
                       str(nl / "so_sanh_1"))
         lech = _doc_csv(nl / "so_sanh_1" / "NHAP_KEP_chi_tiet.csv")
         self.du_lieu["o_lech_bat_duoc"] = len(lech)
@@ -1472,6 +1490,58 @@ class TronVong:
         return {k: v for k, v in self.env.items()
                 if not k.startswith("PYTEST_") and k not in ("EBM_GATE_KEY_PATH", "USE_MOCK_SOURCES")}
 
+    def _tra_a12(self, pmid: Sequence[str]) -> Dict[str, Any]:
+        """Tra rút bài + metadata cho tập PMID (bước mạng DUY NHẤT của giả lập).
+
+        17/11/2026 (bác sĩ: «đưa 16 kịch bản vào CI»): CI không có mạng ổn định lẫn khoá NCBI. `GIA_LAP_A12_KHO=<tệp
+        .json>` là kho kết quả THEO TỪNG PMID: đủ mọi PMID trong kho ⇒ dựng lại đúng JSON của `check_citations --json`
+        và mã thoát theo CÙNG luật «sạch» (`la_van_de`, metadata «resolved») — không gọi mạng. Lượt có mạng thì ghi
+        thêm vào kho các PMID có kết luận dứt khoát (bỏ «unknown_*» — lỗi mạng không được thành dữ kiện).
+        `GIA_LAP_A12_CHI_KHO=1` ⇒ thiếu PMID trong kho là LỖI nói rõ cách bổ sung, không lặng lẽ gọi mạng."""
+        kho = os.environ.get("GIA_LAP_A12_KHO", "").strip()
+        d_kho: Dict[str, Dict[str, Any]] = {"retraction": {}, "metadata": {}}
+        if kho and Path(kho).is_file():
+            try:
+                d_kho = json.loads(Path(kho).read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                d_kho = {"retraction": {}, "metadata": {}}
+        if kho:
+            thieu = [x for x in pmid if x not in d_kho.get("retraction", {}) or x not in d_kho.get("metadata", {})]
+            if not thieu:
+                import check_citation_retraction as CCR  # noqa: PLC0415
+
+                r = {x: d_kho["retraction"][x] for x in pmid}
+                m = {x: d_kho["metadata"][x] for x in pmid}
+                van_de = any(CCR.la_van_de(r.get(x)) for x in pmid) or any(
+                    not isinstance(m.get(x), dict) or m[x].get("status") != "resolved" for x in pmid)
+                return {"ma": 1 if van_de else 0, "crash": False, "tu_kho": True,
+                        "ra": json.dumps({"retraction": r, "metadata": m}, ensure_ascii=False, indent=2)}
+            if os.environ.get("GIA_LAP_A12_CHI_KHO") == "1":
+                return {"ma": 9, "crash": False, "ra": (
+                    f"Kho A12 ghi sẵn thiếu {len(thieu)} PMID ({', '.join(thieu[:8])}) — chạy giả lập CÓ MẠNG một lần "
+                    f"với GIA_LAP_A12_KHO={kho} để bổ sung kho rồi commit tệp kho.")}
+        kq = self.chay_lenh(self._lenh("check_citations.py", "--pmids", ",".join(pmid), "--json"),
+                            self.repo, self._env_mang(), 900)
+        m_json = re.search(r"^\{.*^\}", str(kq.get("ra") or ""), re.S | re.M)
+        if kho and m_json:
+            try:
+                moi = json.loads(m_json.group(0))
+            except ValueError:
+                moi = {}
+            doi = False
+            for x in pmid:
+                r, mt = (moi.get("retraction") or {}).get(x), (moi.get("metadata") or {}).get(x)
+                if (isinstance(r, dict) and isinstance(mt, dict) and not str(r.get("status")).startswith("unknown")
+                        and not str(mt.get("status")).startswith("unknown")):
+                    d_kho.setdefault("retraction", {})[x] = r
+                    d_kho.setdefault("metadata", {})[x] = mt
+                    doi = True
+            if doi:
+                Path(kho).parent.mkdir(parents=True, exist_ok=True)
+                Path(kho).write_text(json.dumps({k: dict(sorted(v.items())) for k, v in d_kho.items()},
+                                                ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
+        return kq
+
     def _a12(self, *tep: Path, them: Sequence[str] = ()) -> None:
         """Người kiểm trích dẫn: mọi PMID trong các tệp (+ `them`: PMID chuẩn đề cương G10 sẽ chèn) ⇒ check_citations
         (rút bài 3 tầng + metadata, ghi receipt) ⇒ A12 chỉ ghi dòng «đã xác minh» khi lệnh trả 0."""
@@ -1483,8 +1553,7 @@ class TronVong:
         # không nạp cấu hình ⇒ nguồn giả); (2) ghi receipt bằng ĐÚNG hàm của check_citations trong môi trường KHOÁ GIẢ.
         # Bản đầu
         # gọi thẳng `--study` ngoài biến pytest ⇒ receipt của thư mục giả lập bị ký bằng khoá THẬT (sửa 15/11/2026).
-        kq = self.chay_lenh(self._lenh("check_citations.py", "--pmids", ",".join(pmid), "--json"),
-                            self.repo, self._env_mang(), 900)
+        kq = self._tra_a12(pmid)
         ra = str(kq.get("ra") or "")
         dong = [x for x in ra.splitlines() if x.strip() and "| INFO" not in x]
         self.buoc.append({"buoc": "A12 tra rút bài + metadata (mạng, không ký)", "lenh": "check_citations.py",

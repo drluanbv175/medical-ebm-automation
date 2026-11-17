@@ -1,0 +1,714 @@
+{
+  "sr_ma": [],
+  "rct": [
+    {
+      "pmid": "42082844",
+      "title": "Barriers to Medication Adherence and Mild Cognitive Impairment Among African Americans with Persistently Uncontrolled Hypertension: A Cross-sectional Analysis from the Southeastern Collaboration Trial.",
+      "year": "2026",
+      "journal": "Journal of general internal medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42082844/",
+      "authors": "Singh S, Ringel JB, Baquero E, Cummings DM, Halladay J"
+    },
+    {
+      "pmid": "40583484",
+      "title": "Factors associated with blood pressure control in Swedish primary care patients with hypertension: a cross-sectional study.",
+      "year": "2026",
+      "journal": "Scandinavian journal of primary health care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40583484/",
+      "authors": "Brodin N, Wolff M, Borgström Bolmsjö B, Milos Nymberg V, Nymberg P"
+    },
+    {
+      "pmid": "40622370",
+      "title": "A prospective cohort study of the SEARCH integrated HIV/hypertension community health worker-led intervention in rural Kenya and Uganda.",
+      "year": "2025",
+      "journal": "Journal of the International AIDS Society",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40622370/",
+      "authors": "Hickey MD, Owaraganise A, Ogachi S, Sunday H, Aoko C"
+    },
+    {
+      "pmid": "39938855",
+      "title": "A randomized trial of postpartum ibuprofen in severe hypertensive disorders of pregnancy.",
+      "year": "2025",
+      "journal": "American journal of obstetrics and gynecology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39938855/",
+      "authors": "Penfield CA, Oakes MC, Caballero D, Marty LN, Berger DS"
+    },
+    {
+      "pmid": "39843675",
+      "title": "Patient Perceptions of Provider Race Concordance and Quality of Chronic Illness Care.",
+      "year": "2025",
+      "journal": "Journal of general internal medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39843675/",
+      "authors": "Grant B, Soroka O, Baquero E, Ringel JB, Cherrington A"
+    },
+    {
+      "pmid": "37278999",
+      "title": "Effect of a Peer Health Coaching Intervention on Clinical Outcomes Among US Veterans With Cardiovascular Risks: The Vet-COACH Randomized Clinical Trial.",
+      "year": "2023",
+      "journal": "JAMA network open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37278999/",
+      "authors": "Nelson KM, Taylor L, Williams JL, Rao M, Gray KE"
+    },
+    {
+      "pmid": "36259143",
+      "title": "Effect of eTansiyon smartphone application on hypertension control.",
+      "year": "2022",
+      "journal": "Primary health care research & development",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36259143/",
+      "authors": "Yilmaz E, Uzuner A, Bajgora M, Dogan B, Altikardes ZA"
+    },
+    {
+      "pmid": "35500594",
+      "title": "A village doctor-led multifaceted intervention for blood pressure control in rural China: an open, cluster randomised trial.",
+      "year": "2022",
+      "journal": "Lancet (London, England)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35500594/",
+      "authors": "Sun Y, Mu J, Wang DW, Ouyang N, Xing L"
+    },
+    {
+      "pmid": "29632222",
+      "title": "Quality of Cardiovascular Disease Care in Small Urban Practices.",
+      "year": "2018",
+      "journal": "Annals of family medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/29632222/",
+      "authors": "Shelley D, Blechter B, Siman N, Jiang N, Cleland C"
+    },
+    {
+      "pmid": "26691646",
+      "title": "Patient education and follow-up as an intervention for hypertensive patients discharged from an emergency department: a randomized control trial study protocol.",
+      "year": "2015",
+      "journal": "BMC emergency medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/26691646/",
+      "authors": "Gleason-Comstock J, Streater A, Ager J, Goodman A, Brody A"
+    },
+    {
+      "pmid": "23890931",
+      "title": "Characteristics, drug combinations and dosages of primary care patients with uncontrolled ambulatory blood pressure and high medication adherence.",
+      "year": "2013",
+      "journal": "Journal of the American Society of Hypertension : JASH",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/23890931/",
+      "authors": "Grigoryan L, Pavlik VN, Hyman DJ"
+    },
+    {
+      "pmid": "23253744",
+      "title": "Risk-adjusted versus overall blood pressure control rate for identifying the need for intensified cardiovascular risk reduction: lessons from a cross-sectional study.",
+      "year": "2013",
+      "journal": "European journal of preventive cardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/23253744/",
+      "authors": "In der Schmitten J, Wegscheider K, Abholz HH, Mortsiefer A"
+    },
+    {
+      "pmid": "22926634",
+      "title": "Factors associated with non-adherence to three hypertension self-management behaviors: preliminary data for a new instrument.",
+      "year": "2013",
+      "journal": "Journal of general internal medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/22926634/",
+      "authors": "Crowley MJ, Grubber JM, Olsen MK, Bosworth HB"
+    },
+    {
+      "pmid": "20073139",
+      "title": "Predictors of medication adherence for African American patients diagnosed with hypertension.",
+      "year": "2009",
+      "journal": "Ethnicity & disease",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/20073139/",
+      "authors": "Braverman J, Dedier J"
+    },
+    {
+      "pmid": "19575270",
+      "title": "The effect of patient race and blood pressure control on patient-physician communication.",
+      "year": "2009",
+      "journal": "Journal of general internal medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/19575270/",
+      "authors": "Cené CW, Roter D, Carson KA, Miller ER, Cooper LA"
+    }
+  ],
+  "guideline": [
+    {
+      "pmid": "18574054",
+      "title": "Resistant hypertension: diagnosis, evaluation, and treatment: a scientific statement from the American Heart Association Professional Education Committee of the Council for High Blood Pressure Research.",
+      "year": "2008",
+      "journal": "Circulation",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/18574054/",
+      "authors": "Calhoun DA, Jones D, Textor S, Goff DC, Murphy TP"
+    },
+    {
+      "pmid": "18391085",
+      "title": "Resistant hypertension: diagnosis, evaluation, and treatment. A scientific statement from the American Heart Association Professional Education Committee of the Council for High Blood Pressure Research.",
+      "year": "2008",
+      "journal": "Hypertension (Dallas, Tex. : 1979)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/18391085/",
+      "authors": "Calhoun DA, Jones D, Textor S, Goff DC, Murphy TP"
+    }
+  ],
+  "recent": [
+    {
+      "pmid": "42082844",
+      "title": "Barriers to Medication Adherence and Mild Cognitive Impairment Among African Americans with Persistently Uncontrolled Hypertension: A Cross-sectional Analysis from the Southeastern Collaboration Trial.",
+      "year": "2026",
+      "journal": "Journal of general internal medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42082844/",
+      "authors": "Singh S, Ringel JB, Baquero E, Cummings DM, Halladay J"
+    },
+    {
+      "pmid": "40583484",
+      "title": "Factors associated with blood pressure control in Swedish primary care patients with hypertension: a cross-sectional study.",
+      "year": "2026",
+      "journal": "Scandinavian journal of primary health care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40583484/",
+      "authors": "Brodin N, Wolff M, Borgström Bolmsjö B, Milos Nymberg V, Nymberg P"
+    },
+    {
+      "pmid": "40622370",
+      "title": "A prospective cohort study of the SEARCH integrated HIV/hypertension community health worker-led intervention in rural Kenya and Uganda.",
+      "year": "2025",
+      "journal": "Journal of the International AIDS Society",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40622370/",
+      "authors": "Hickey MD, Owaraganise A, Ogachi S, Sunday H, Aoko C"
+    },
+    {
+      "pmid": "39938855",
+      "title": "A randomized trial of postpartum ibuprofen in severe hypertensive disorders of pregnancy.",
+      "year": "2025",
+      "journal": "American journal of obstetrics and gynecology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39938855/",
+      "authors": "Penfield CA, Oakes MC, Caballero D, Marty LN, Berger DS"
+    },
+    {
+      "pmid": "39843675",
+      "title": "Patient Perceptions of Provider Race Concordance and Quality of Chronic Illness Care.",
+      "year": "2025",
+      "journal": "Journal of general internal medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/39843675/",
+      "authors": "Grant B, Soroka O, Baquero E, Ringel JB, Cherrington A"
+    },
+    {
+      "pmid": "37278999",
+      "title": "Effect of a Peer Health Coaching Intervention on Clinical Outcomes Among US Veterans With Cardiovascular Risks: The Vet-COACH Randomized Clinical Trial.",
+      "year": "2023",
+      "journal": "JAMA network open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/37278999/",
+      "authors": "Nelson KM, Taylor L, Williams JL, Rao M, Gray KE"
+    },
+    {
+      "pmid": "36259143",
+      "title": "Effect of eTansiyon smartphone application on hypertension control.",
+      "year": "2022",
+      "journal": "Primary health care research & development",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/36259143/",
+      "authors": "Yilmaz E, Uzuner A, Bajgora M, Dogan B, Altikardes ZA"
+    },
+    {
+      "pmid": "35500594",
+      "title": "A village doctor-led multifaceted intervention for blood pressure control in rural China: an open, cluster randomised trial.",
+      "year": "2022",
+      "journal": "Lancet (London, England)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/35500594/",
+      "authors": "Sun Y, Mu J, Wang DW, Ouyang N, Xing L"
+    }
+  ],
+  "observational": [
+    {
+      "pmid": "43000718",
+      "title": "Serial cross-sectional assessment of glycaemic and blood pressure profiles at a KwaZulu-Natal tertiary hospital: A 5-year analysis (2021-2025).",
+      "year": "2026",
+      "journal": "South African family practice : official journal of the South African Academy of Family Practice/Primary Care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/43000718/",
+      "authors": "Pillay S"
+    },
+    {
+      "pmid": "42907775",
+      "title": "Vascular risk factors after stroke in the older people: a population-based study.",
+      "year": "2026",
+      "journal": "BMC geriatrics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42907775/",
+      "authors": "Iza Achutegui M, Rizzo F, Olive-Gadea M, Brunet J, Colangelo G"
+    },
+    {
+      "pmid": "42822005",
+      "title": "Hypertension epidemiology and primary care indicators in Portugal: a contemporary nationwide analysis.",
+      "year": "2026",
+      "journal": "Blood pressure",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42822005/",
+      "authors": "de Pinho R, Nogueira-Silva L, Lima Nogueira J, Abecasis F, Varela V"
+    },
+    {
+      "pmid": "42540706",
+      "title": "Hypertension Control in Bangladesh: Changes, Sociodemographic Variation, and Socioeconomic Inequality from the 2017-18 to 2022 Bangladesh Demographic and Health Surveys.",
+      "year": "2026",
+      "journal": "Global heart",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42540706/",
+      "authors": "Monower MM, Al Abid SU, Jubayer S, Bhuiyan MR, Al Mamun MA"
+    },
+    {
+      "pmid": "42390343",
+      "title": "Comparing the Documentation of Phosphatidylethanol and Alcohol History in Hypertension Management in Primary Care: A Cross-Sectional Study.",
+      "year": "2026",
+      "journal": "Journal of primary care & community health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42390343/",
+      "authors": "Norrman A, Thurfjell Å, Hagströmer M, Adami J, Lundh L"
+    },
+    {
+      "pmid": "42348444",
+      "title": "Knowledge of Hypertension and Self-Blood Pressure Measurement Skills in Spain.",
+      "year": "2026",
+      "journal": "Journal of primary care & community health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42348444/",
+      "authors": "Sitjar Suñer M, Pericot Mozo X, Noell Boix R, Aguilar Mas N, Masià Plana A"
+    },
+    {
+      "pmid": "42239000",
+      "title": "Hypertension management profiles in Chinese adults aged 60 years and older.",
+      "year": "2026",
+      "journal": "Frontiers in public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42239000/",
+      "authors": "Xia J, Chen Y, Pu D, Jiang X, Liu Y"
+    },
+    {
+      "pmid": "42191433",
+      "title": "[Epidemiological, clinical and therapeutic aspects of arterial hypertension in young adults at the Abidjan heart institute].",
+      "year": "2026",
+      "journal": "Annales de cardiologie et d'angeiologie",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42191433/",
+      "authors": "Boka B, Djoma AH, Ateba N, Tano M, Oné J"
+    },
+    {
+      "pmid": "42121043",
+      "title": "Factors impacting poor hypertension control in young urban adults in a Malaysian primary care clinic.",
+      "year": "2026",
+      "journal": "BMC primary care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42121043/",
+      "authors": "Ibrahim AN, Jamil TR, Kamaludin R"
+    },
+    {
+      "pmid": "42108551",
+      "title": "Neighborhood level social determinants of health and loss of blood pressure control.",
+      "year": "2026",
+      "journal": "American journal of hypertension",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42108551/",
+      "authors": "Le JN, Huang TY, Botting PG, Albertson E, Bello NA"
+    },
+    {
+      "pmid": "42069528",
+      "title": "Prevalence and clinical correlates of hypertension among patients with type 2 diabetes in Spanish primary care: a cross-sectional study.",
+      "year": "2026",
+      "journal": "BMC primary care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42069528/",
+      "authors": "Díaz Vera AS, Abellán Alemán J, Golac Rabanal MDS, Astudillo Astudillo MA, Zhuzhingo Vásquez CJ"
+    },
+    {
+      "pmid": "42013748",
+      "title": "Current postpartum management of hypertension: A survey of obstetricians, general practitioners, and midwives in the UK.",
+      "year": "2026",
+      "journal": "Pregnancy hypertension",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42013748/",
+      "authors": "Tucker K, Edmundson H, Stevens R, Chisholm A, Lavallee L"
+    },
+    {
+      "pmid": "41875030",
+      "title": "Remote Patient Monitoring Program Components and Short-Term Hypertension Control: Retrospective Cohort Study.",
+      "year": "2026",
+      "journal": "JMIR mHealth and uHealth",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41875030/",
+      "authors": "LaPointe S, Merrill M"
+    },
+    {
+      "pmid": "41849457",
+      "title": "Impact of Obesity on Patients with Resistant and Refractory Arterial Hypertension: A Cross-Sectional Study.",
+      "year": "2026",
+      "journal": "Arquivos brasileiros de cardiologia",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41849457/",
+      "authors": "Costa BVPLD, Bulhões F, Macedo C, Improta-Caria AC, Aras Júnior R"
+    }
+  ],
+  "khong_loc": [
+    {
+      "pmid": "43034396",
+      "title": "Prevalence and associated factors of uncontrolled hypertension among hypertensive patients at Soroti Regional Referral Hospital, Uganda: Cross-sectional study.",
+      "year": "2026",
+      "journal": "Sage open chronic disease",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/43034396/"
+    },
+    {
+      "pmid": "43000718",
+      "title": "Serial cross-sectional assessment of glycaemic and blood pressure profiles at a KwaZulu-Natal tertiary hospital: A 5-year analysis (2021-2025).",
+      "year": "2026",
+      "journal": "South African family practice : official journal of the South African Academy of Family Practice/Primary Care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/43000718/"
+    },
+    {
+      "pmid": "42999744",
+      "title": "Prescribing, Medication Adherence, and Blood Pressure Goal Achievement Among Middle-to-Older Age Adults in a Primary Care Setting.",
+      "year": "2026",
+      "journal": "International journal of hypertension",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42999744/"
+    },
+    {
+      "pmid": "42907775",
+      "title": "Vascular risk factors after stroke in the older people: a population-based study.",
+      "year": "2026",
+      "journal": "BMC geriatrics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42907775/"
+    },
+    {
+      "pmid": "42861754",
+      "title": "Therapeutic Inertia in the Management of Hypertension by Moroccan General Practitioners.",
+      "year": "2026",
+      "journal": "Current hypertension reviews",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42861754/"
+    },
+    {
+      "pmid": "42857365",
+      "title": "Prevalence of Dyslipidemia and Associated Factors Among Adult Outpatients at Jimma Medical Center, Southwest Ethiopia: A Cross-Sectional Study.",
+      "year": "2026",
+      "journal": "Health science reports",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42857365/"
+    },
+    {
+      "pmid": "42827113",
+      "title": "Association of hypertension specialist treatment with blood pressure control in Japanese primary care: The J-DOME study.",
+      "year": "2026",
+      "journal": "Hypertension research : official journal of the Japanese Society of Hypertension",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42827113/"
+    },
+    {
+      "pmid": "42822005",
+      "title": "Hypertension epidemiology and primary care indicators in Portugal: a contemporary nationwide analysis.",
+      "year": "2026",
+      "journal": "Blood pressure",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42822005/"
+    },
+    {
+      "pmid": "42798477",
+      "title": "Fixed-dose combination versus multi-pill combination antihypertensive therapy in medication-defined apparent treatment-resistant hypertension: real-world evidence on healthcare utilization and health-related quality of life.",
+      "year": "2026",
+      "journal": "Frontiers in pharmacology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42798477/"
+    },
+    {
+      "pmid": "42689304",
+      "title": "Decade of Risk: Predicting Ten-year Cardiovascular Disease Events (Stroke/myocardial Infarction) in Hypertensive Patients at a Tertiary Care Institute in Jharkhand.",
+      "year": "2026",
+      "journal": "Indian journal of community medicine : official publication of Indian Association of Preventive & Social Medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42689304/"
+    },
+    {
+      "pmid": "42670447",
+      "title": "Factors associated with control of arterial hypertension in Francisco Morazán, Honduras.",
+      "year": "2026",
+      "journal": "Global health & medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42670447/"
+    },
+    {
+      "pmid": "42540706",
+      "title": "Hypertension Control in Bangladesh: Changes, Sociodemographic Variation, and Socioeconomic Inequality from the 2017-18 to 2022 Bangladesh Demographic and Health Surveys.",
+      "year": "2026",
+      "journal": "Global heart",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42540706/"
+    },
+    {
+      "pmid": "42519269",
+      "title": "Evaluation of Antihypertensive Medication Adherence and Its Association With Blood Pressure Control Among Hypertensive Patients Attending Outpatient Clinics in Khyber Pakhtunkhwa, Pakistan: A Cross-Sectional Study.",
+      "year": "2026",
+      "journal": "Cureus",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42519269/"
+    },
+    {
+      "pmid": "42435616",
+      "title": "Implementation of an AI-driven hierarchical medical system for chronic disease management: ethical framework, resource optimization, and effectiveness evaluation.",
+      "year": "2026",
+      "journal": "International journal of medical informatics",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42435616/"
+    },
+    {
+      "pmid": "42405284",
+      "title": "Adherence to Antihypertensive Medication and Its Associated Factors Among Patients with Hypertension Attending a Tertiary Hospital in Mogadishu, Somalia: A Cross-Sectional Study.",
+      "year": "2026",
+      "journal": "Patient preference and adherence",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42405284/"
+    },
+    {
+      "pmid": "42394388",
+      "title": "Importance of Hypercortisolism in BP Control, Cardiovascular Risk and in Patients With Difficult-to-Control Hypertension: An Overview for Primary Care Physicians.",
+      "year": "2026",
+      "journal": "Diabetes, obesity & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42394388/"
+    },
+    {
+      "pmid": "42390343",
+      "title": "Comparing the Documentation of Phosphatidylethanol and Alcohol History in Hypertension Management in Primary Care: A Cross-Sectional Study.",
+      "year": "2026",
+      "journal": "Journal of primary care & community health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42390343/"
+    },
+    {
+      "pmid": "42348444",
+      "title": "Knowledge of Hypertension and Self-Blood Pressure Measurement Skills in Spain.",
+      "year": "2026",
+      "journal": "Journal of primary care & community health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42348444/"
+    },
+    {
+      "pmid": "42344085",
+      "title": "Assessment of Hypertension and Diabetes Care in Public Health Facilities Across India: A Multicentric Cross-Sectional Study.",
+      "year": "2026",
+      "journal": "Indian journal of community medicine : official publication of Indian Association of Preventive & Social Medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42344085/"
+    },
+    {
+      "pmid": "42293058",
+      "title": "Hypertension knowledge gaps: A patient-caregiver comparison from a tertiary care centre in Northern India.",
+      "year": "2026",
+      "journal": "Heart international",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42293058/"
+    },
+    {
+      "pmid": "42282359",
+      "title": "Medication adherence, lifestyle practices and blood pressure control in hypertensive patients: A questionnaire-based analysis.",
+      "year": "2026",
+      "journal": "Bioinformation",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42282359/"
+    },
+    {
+      "pmid": "42279094",
+      "title": "Rural-Urban Differences in Hypertension Prevalence and Control in a Large Regional Health System Cohort.",
+      "year": "2026",
+      "journal": "Journal of clinical medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42279094/"
+    },
+    {
+      "pmid": "42239000",
+      "title": "Hypertension management profiles in Chinese adults aged 60 years and older.",
+      "year": "2026",
+      "journal": "Frontiers in public health",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42239000/"
+    },
+    {
+      "pmid": "42191433",
+      "title": "[Epidemiological, clinical and therapeutic aspects of arterial hypertension in young adults at the Abidjan heart institute].",
+      "year": "2026",
+      "journal": "Annales de cardiologie et d'angeiologie",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42191433/"
+    },
+    {
+      "pmid": "42136626",
+      "title": "The Association Between Medication Literacy and Blood Pressure Control in Patients With Hypertension in a Multi-ethnic County in China.",
+      "year": "2026",
+      "journal": "Cureus",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42136626/"
+    },
+    {
+      "pmid": "42121043",
+      "title": "Factors impacting poor hypertension control in young urban adults in a Malaysian primary care clinic.",
+      "year": "2026",
+      "journal": "BMC primary care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42121043/"
+    },
+    {
+      "pmid": "42108551",
+      "title": "Neighborhood level social determinants of health and loss of blood pressure control.",
+      "year": "2026",
+      "journal": "American journal of hypertension",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42108551/"
+    },
+    {
+      "pmid": "42082844",
+      "title": "Barriers to Medication Adherence and Mild Cognitive Impairment Among African Americans with Persistently Uncontrolled Hypertension: A Cross-sectional Analysis from the Southeastern Collaboration Trial.",
+      "year": "2026",
+      "journal": "Journal of general internal medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42082844/"
+    },
+    {
+      "pmid": "42069528",
+      "title": "Prevalence and clinical correlates of hypertension among patients with type 2 diabetes in Spanish primary care: a cross-sectional study.",
+      "year": "2026",
+      "journal": "BMC primary care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42069528/"
+    },
+    {
+      "pmid": "42064859",
+      "title": "Implementation, integration, and institutionalization of a community-based strategy for hypertension control in Colombia: the RE-HOPE implementation study protocol.",
+      "year": "2026",
+      "journal": "Frontiers in cardiovascular medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42064859/"
+    }
+  ],
+  "true_counts": {
+    "sr_ma": 0,
+    "rct": 19,
+    "guideline": 2,
+    "observational": 302,
+    "recent": 8
+  },
+  "search_provenance": {
+    "co_so_du_lieu": "PubMed (MEDLINE và phần còn lại của PubMed)",
+    "giao_dien": "NCBI E-utilities (esearch/efetch) qua app.sources.pubmed.PubMedClient",
+    "ngay_tra": "2026-11-15T19:53:59",
+    "truy_van_goc": "(hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"controlled hypertension\"[tiab] OR \"hypertension control\"[tiab]) AND (outpatient*[tiab] OR \"primary care\"[tiab]) AND (prevalence[tiab] OR \"cross-sectional\"[tiab])",
+    "query_en_do_nguoi_cung_cap": true,
+    "nhanh": {
+      "sr_ma": {
+        "nhom_ket_qua": "sr_ma",
+        "truy_van": "(hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"controlled hypertension\"[tiab] OR \"hypertension control\"[tiab]) AND (outpatient*[tiab] OR \"primary care\"[tiab]) AND (prevalence[tiab] OR \"cross-sectional\"[tiab]) AND (systematic review[pt] OR meta-analysis[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"controlled hypertension\"[tiab] OR \"hypertension control\"[tiab]) AND (outpatient*[tiab] OR \"primary care\"[tiab]) AND (prevalence[tiab] OR \"cross-sectional\"[tiab]) AND (systematic review[pt] OR meta-analysis[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 0,
+        "so_bai_lay_ve": 0,
+        "pmid_lay_ve": []
+      },
+      "rct": {
+        "nhom_ket_qua": "rct",
+        "truy_van": "(hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"controlled hypertension\"[tiab] OR \"hypertension control\"[tiab]) AND (outpatient*[tiab] OR \"primary care\"[tiab]) AND (prevalence[tiab] OR \"cross-sectional\"[tiab]) AND randomized controlled trial[pt]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"controlled hypertension\"[tiab] OR \"hypertension control\"[tiab]) AND (outpatient*[tiab] OR \"primary care\"[tiab]) AND (prevalence[tiab] OR \"cross-sectional\"[tiab]) AND randomized controlled trial[pt]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 19,
+        "so_bai_lay_ve": 15,
+        "pmid_lay_ve": [
+          "42082844",
+          "40583484",
+          "40622370",
+          "39938855",
+          "39843675",
+          "37278999",
+          "36259143",
+          "35500594",
+          "29632222",
+          "26691646",
+          "23890931",
+          "23253744",
+          "22926634",
+          "20073139",
+          "19575270"
+        ]
+      },
+      "guideline": {
+        "nhom_ket_qua": "guideline",
+        "truy_van": "(hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"controlled hypertension\"[tiab] OR \"hypertension control\"[tiab]) AND (outpatient*[tiab] OR \"primary care\"[tiab]) AND (prevalence[tiab] OR \"cross-sectional\"[tiab]) AND (guideline[pt] OR practice guideline[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"controlled hypertension\"[tiab] OR \"hypertension control\"[tiab]) AND (outpatient*[tiab] OR \"primary care\"[tiab]) AND (prevalence[tiab] OR \"cross-sectional\"[tiab]) AND (guideline[pt] OR practice guideline[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 5,
+        "loai_trung_pmid": true,
+        "so_hit_that": 2,
+        "so_bai_lay_ve": 2,
+        "pmid_lay_ve": [
+          "18574054",
+          "18391085"
+        ]
+      },
+      "observational": {
+        "nhom_ket_qua": "observational",
+        "truy_van": "(hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"controlled hypertension\"[tiab] OR \"hypertension control\"[tiab]) AND (outpatient*[tiab] OR \"primary care\"[tiab]) AND (prevalence[tiab] OR \"cross-sectional\"[tiab])",
+        "bo_loc": "(\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "chuoi_hieu_luc": "((hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"controlled hypertension\"[tiab] OR \"hypertension control\"[tiab]) AND (outpatient*[tiab] OR \"primary care\"[tiab]) AND (prevalence[tiab] OR \"cross-sectional\"[tiab])) AND (\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 302,
+        "so_bai_lay_ve": 15,
+        "pmid_lay_ve": [
+          "43000718",
+          "42907775",
+          "42822005",
+          "42540706",
+          "42390343",
+          "42348444",
+          "42239000",
+          "42191433",
+          "42121043",
+          "42108551",
+          "42082844",
+          "42069528",
+          "42013748",
+          "41875030",
+          "41849457"
+        ]
+      },
+      "recent_5yr": {
+        "nhom_ket_qua": "recent",
+        "truy_van": "(hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"controlled hypertension\"[tiab] OR \"hypertension control\"[tiab]) AND (outpatient*[tiab] OR \"primary care\"[tiab]) AND (prevalence[tiab] OR \"cross-sectional\"[tiab]) AND 2021:2026[dp]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"controlled hypertension\"[tiab] OR \"hypertension control\"[tiab]) AND (outpatient*[tiab] OR \"primary care\"[tiab]) AND (prevalence[tiab] OR \"cross-sectional\"[tiab]) AND 2021:2026[dp]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 10,
+        "loai_trung_pmid": false,
+        "so_hit_that": 8,
+        "so_bai_lay_ve": 8,
+        "pmid_lay_ve": [
+          "42082844",
+          "40583484",
+          "40622370",
+          "39938855",
+          "39843675",
+          "37278999",
+          "36259143",
+          "35500594"
+        ]
+      },
+      "khong_loc": {
+        "nhom_ket_qua": null,
+        "truy_van": "(hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"controlled hypertension\"[tiab] OR \"hypertension control\"[tiab]) AND (outpatient*[tiab] OR \"primary care\"[tiab]) AND (prevalence[tiab] OR \"cross-sectional\"[tiab])",
+        "bo_loc": null,
+        "chuoi_hieu_luc": "((hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"controlled hypertension\"[tiab] OR \"hypertension control\"[tiab]) AND (outpatient*[tiab] OR \"primary care\"[tiab]) AND (prevalence[tiab] OR \"cross-sectional\"[tiab]))",
+        "tran_so_bai": 30,
+        "loai_trung_pmid": false,
+        "chi_ghi_lai": true,
+        "so_hit_that": 507,
+        "so_bai_lay_ve": 30,
+        "pmid_lay_ve": [
+          "43034396",
+          "43000718",
+          "42999744",
+          "42907775",
+          "42861754",
+          "42857365",
+          "42827113",
+          "42822005",
+          "42798477",
+          "42689304",
+          "42670447",
+          "42540706",
+          "42519269",
+          "42435616",
+          "42405284",
+          "42394388",
+          "42390343",
+          "42348444",
+          "42344085",
+          "42293058",
+          "42282359",
+          "42279094",
+          "42239000",
+          "42191433",
+          "42136626",
+          "42121043",
+          "42108551",
+          "42082844",
+          "42069528",
+          "42064859"
+        ],
+        "pmid_bo_loc_da_loai": [
+          "43034396",
+          "42999744",
+          "42861754",
+          "42857365",
+          "42827113",
+          "42798477",
+          "42689304",
+          "42670447",
+          "42519269",
+          "42435616",
+          "42405284",
+          "42394388",
+          "42344085",
+          "42293058",
+          "42282359",
+          "42279094",
+          "42136626",
+          "42064859"
+        ]
+      }
+    },
+    "loi_nhanh": {}
+  }
+}

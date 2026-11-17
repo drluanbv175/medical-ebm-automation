@@ -1,0 +1,849 @@
+{
+  "sr_ma": [
+    {
+      "pmid": "41358893",
+      "title": "2. Diagnosis and Classification of Diabetes: Standards of Care in Diabetes-2026.",
+      "year": "2026",
+      "journal": "Diabetes care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41358893/",
+      "authors": null
+    },
+    {
+      "pmid": "41358900",
+      "title": "9. Pharmacologic Approaches to Glycemic Treatment: Standards of Care in Diabetes-2026.",
+      "year": "2026",
+      "journal": "Diabetes care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41358900/",
+      "authors": null
+    },
+    {
+      "pmid": "42952754",
+      "title": "Network and pairwise meta-analysis of the effects of novel hypoglycemic agents on cardiorenal outcomes in patients with type 2 diabetes and heart failure.",
+      "year": "2026",
+      "journal": "Frontiers in endocrinology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42952754/",
+      "authors": "Ye X, Wu Q, Li L, Huang M, Wang S"
+    },
+    {
+      "pmid": "42659939",
+      "title": "Efficacy of sodium-glucose cotransporter 2 inhibitors after acute myocardial infarction: Are the benefits limited to patients with diabetes? A systematic review and meta-analysis.",
+      "year": "2026",
+      "journal": "Journal of diabetes and its complications",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42659939/",
+      "authors": "Santos MCF, Mamede I, Bessa R, Carvalhal G, Leão LA"
+    },
+    {
+      "pmid": "42616235",
+      "title": "Combined use of SGLT2 inhibitor and GLP-1 receptor agonist versus either monotherapy for cardiorenal Outcomes: an exploratory network meta-analysis of 16 randomized trials.",
+      "year": "2026",
+      "journal": "Endocrine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42616235/",
+      "authors": "Banerjee M, Basu M, Mukhopadhyay P, Ghosh S"
+    },
+    {
+      "pmid": "42591121",
+      "title": "Cardiovascular outcomes of SGLT2 inhibitors versus GLP-1 receptor agonists in patients with type 2 diabetes and a history of myocardial infarction: a systematic review and network meta-analysis of randomized controlled trials.",
+      "year": "2026",
+      "journal": "Frontiers in endocrinology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42591121/",
+      "authors": "Ren Y, Yang H, Zhang S, Hu T, Tan Q"
+    },
+    {
+      "pmid": "42587114",
+      "title": "SGLT2 inhibitors and secondary polycythemia: a systematic review and meta-analysis of hematologic effects in patients with type 2 diabetes.",
+      "year": "2026",
+      "journal": "European journal of clinical pharmacology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42587114/",
+      "authors": "Ali EAH, Rabadi M, Aweer RA, Subahi E, Abdelmahmuod EA"
+    },
+    {
+      "pmid": "42566081",
+      "title": "Are SGLT2 inhibitors really associated with increased urinary tract infection risk? A trial-level meta-analysis across type 2 diabetes, heart failure, and chronic kidney disease.",
+      "year": "2026",
+      "journal": "Daru : journal of Faculty of Pharmacy, Tehran University of Medical Sciences",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42566081/",
+      "authors": "Matteucci A, Di Fusco SA, Bonanni M, Castello L, Aquilani S"
+    },
+    {
+      "pmid": "42442791",
+      "title": "Cardiovascular and renal outcomes of combined SGLT2 inhibitors and GLP-1 receptor agonists versus monotherapy in patients with type 2 diabetes mellitus: a network meta-analysis.",
+      "year": "2026",
+      "journal": "CMAJ : Canadian Medical Association journal = journal de l'Association medicale canadienne",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42442791/",
+      "authors": "Chuang MH, Ho CW, Wang HY, Pan HC, Wu VC"
+    },
+    {
+      "pmid": "42426564",
+      "title": "Efficacy and Safety of SGLT2 Inhibitors and GLP-1 Receptor Agonists on Ventricular Arrhythmias and Cardiovascular Events: A Disease-Stratified Network Meta-Analysis.",
+      "year": "2026",
+      "journal": "Diabetes, obesity & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42426564/",
+      "authors": "Sun WT, Liu RX, Jiang YH, Zhao YK, Yi-Cai"
+    },
+    {
+      "pmid": "42420866",
+      "title": "Renal and cardiovascular outcomes and safety of SGLT2 inhibitors in patients aged ≥ 65 years with non-dialysis chronic kidney disease: a systematic review and meta-analysis of subgroup-level estimates derived from randomized trials.",
+      "year": "2026",
+      "journal": "BMC cardiovascular disorders",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42420866/",
+      "authors": "Bao Z, Hu J, Sun Y, Li X, Lin R"
+    },
+    {
+      "pmid": "42328113",
+      "title": "Genetic Evidence for the Benefits and Risks of Glucose-Lowering Drugs on Cardiovascular-Kidney-Metabolic Syndrome: A Drug-Target Mendelian Randomization Study.",
+      "year": "2026",
+      "journal": "International journal of medical sciences",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42328113/",
+      "authors": "Lu J, Sun S, Shang X, Jiang S, Deng Z"
+    },
+    {
+      "pmid": "42211456",
+      "title": "Glucose cotransporter-2 inhibitors on mortality and hospitalization in heart failure patients: a comprehensive meta-analysis.",
+      "year": "2026",
+      "journal": "Frontiers in endocrinology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42211456/",
+      "authors": "Mao X, Liu W, Hu B, Xu E"
+    },
+    {
+      "pmid": "42180672",
+      "title": "Safety evaluation of Sodium-glucose cotransporter 2 inhibitors for cancer risk in specific populations: systematic review and meta-analysis.",
+      "year": "2026",
+      "journal": "Frontiers in clinical diabetes and healthcare",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42180672/",
+      "authors": "Teng J, Li T, Tan Y, Tang H"
+    },
+    {
+      "pmid": "42144626",
+      "title": "Cardiovascular, limb, and kidney effects of SGLT2 inhibitors in patients with peripheral artery disease: a systematic review and meta-analysis of randomized controlled trial data.",
+      "year": "2026",
+      "journal": "Cardiovascular diabetology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42144626/",
+      "authors": "Hu C, Ernst M, Snelling R, Ye Q, Paneni F"
+    }
+  ],
+  "rct": [
+    {
+      "pmid": "42556782",
+      "title": "Impact of sodium-glucose cotransporter 2 inhibitors on blood glucose levels in patients with heart failure with reduced ejection fraction without diabetes.",
+      "year": "2026",
+      "journal": "Revista portuguesa de cardiologia : orgao oficial da Sociedade Portuguesa de Cardiologia = Portuguese journal of cardiology : an official journal of the Portuguese Society of Cardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42556782/",
+      "authors": "Abd El Hady YA, Abd Elaziz AASA, Adly Mahmoud A"
+    },
+    {
+      "pmid": "42522027",
+      "title": "Effect of empagliflozin on copeptin levels in patients with recent acute coronary syndrome and newly detected dysglycaemia: a post-hoc analysis of the SOCOGAMI randomized controlled trial.",
+      "year": "2026",
+      "journal": "Cardiovascular diabetology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42522027/",
+      "authors": "Fortin E, Melander O, Ferrannini G, Näsman P, Norhammar A"
+    },
+    {
+      "pmid": "42471097",
+      "title": "Dapagliflozin in acute myocardial infarction with type 2 diabetes: a randomized clinical trial.",
+      "year": "2026",
+      "journal": "Current problems in cardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42471097/",
+      "authors": "Macías-Cervantes HE, Guardado-Mendoza R, González LJ, Bautista-López GR, Hernández-Tizapa K"
+    },
+    {
+      "pmid": "42260102",
+      "title": "Effects of SGLT2 inhibition on incident heart failure in carriers of cardiomyopathy-associated genetic variants.",
+      "year": "2026",
+      "journal": "Nature medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42260102/",
+      "authors": "Marston NA, Kany S, Melloni GEM, Jurgens SJ, Kamanu FK"
+    },
+    {
+      "pmid": "42219264",
+      "title": "The Effect of Canagliflozin Dose on Renal and Cardiovascular Outcomes in Type 2 Diabetes and High Cardiovascular Risk.",
+      "year": "2026",
+      "journal": "Diabetes, obesity & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42219264/",
+      "authors": "Elenjickal EJ, Baroz F, Boileau P, Tsoukas MA, Sharma A"
+    },
+    {
+      "pmid": "42046405",
+      "title": "Effects of Dapagliflozin on Cardiovascular Outcomes in Patients With Type 2 Diabetes at Risk of Liver Fibrosis.",
+      "year": "2026",
+      "journal": "Diabetes, obesity & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42046405/",
+      "authors": "Oscarsson J, Huhn M, Jiang Y, Gause-Nilsson I, Wiviott SD"
+    },
+    {
+      "pmid": "41831639",
+      "title": "The Effect of Empagliflozin on Left Ventricular Mass and Volumes in Older Adult Individuals With Overweight and High Risk of Heart Failure: The Empire Prevent Cardiac Trial.",
+      "year": "2026",
+      "journal": "Journal of cardiac failure",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41831639/",
+      "authors": "Larsen JH, Andersen CF, Hansen MC, Omar M, Jensen J"
+    },
+    {
+      "pmid": "41817689",
+      "title": "Impact of canagliflozin on the cardiorenal effects of dietary sodium intake in type 2 diabetes: a post hoc analysis of the CREDENCE trial.",
+      "year": "2026",
+      "journal": "Diabetologia",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41817689/",
+      "authors": "Chiriacò M, Tricò D, Giannoni A, Sacchetta L, Nesti L"
+    },
+    {
+      "pmid": "41802526",
+      "title": "Empagliflozin and functional aerobic capacity in individuals with increased risk of heart failure: The Empire Prevent Cardiac trial.",
+      "year": "2026",
+      "journal": "American heart journal",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41802526/",
+      "authors": "Larsen JH, Andersen CF, Jessen MM, Hansen MC, Omar M"
+    },
+    {
+      "pmid": "41582387",
+      "title": "Bridging Glycemic and Lipid Control: Effects of Dapagliflozin in Co-Morbid Diabetes and Heart Failure – A Randomized Controlled Trial.",
+      "year": "2026",
+      "journal": "Endocrine, metabolic & immune disorders drug targets",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41582387/",
+      "authors": "Bhaganagarapu LS, Sundararajan S, Munusamy V"
+    },
+    {
+      "pmid": "41569429",
+      "title": "Association Between the 2022 AHA/ACC/HFSA Heart Failure Staging and Cardiovascular and Kidney Outcomes in Patients With Diabetes and Kidney Disease: A Post Hoc Analysis of the SCORED Randomized Controlled Trial.",
+      "year": "2026",
+      "journal": "Circulation. Heart failure",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41569429/",
+      "authors": "Odutayo A, Bhatt DL, Sridhar VS, Szarek M, Cannon CP"
+    },
+    {
+      "pmid": "41311237",
+      "title": "SGLT2 inhibitor or metformin as standard treatment in early-stage type 2 diabetes? Baseline data in SMARTEST, a novel, decentralised, register-based randomised trial on prevention of diabetic complications.",
+      "year": "2026",
+      "journal": "Diabetes, obesity & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41311237/",
+      "authors": "Eriksson JW, Fanni G, Lundqvist MH, Jansson S, Rådholm K"
+    },
+    {
+      "pmid": "40976500",
+      "title": "Use of the win ratio approach to assess outcomes in the DapaTAVI trial.",
+      "year": "2026",
+      "journal": "Revista espanola de cardiologia (English ed.)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40976500/",
+      "authors": "Rossello X, Gonzalez-Manzanares R, Amat-Santos I, Peral Disdier V, Nieto Roca L"
+    }
+  ],
+  "guideline": [
+    {
+      "pmid": "40813129",
+      "title": "Cardiovascular, kidney related, and weight loss effects of therapeutics for type 2 diabetes: a living clinical practice guideline.",
+      "year": "2025",
+      "journal": "BMJ (Clinical research ed.)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40813129/",
+      "authors": "Agarwal A, Mustafa R, Manja V, Agoritsas T, Macdonald H"
+    }
+  ],
+  "recent": [
+    {
+      "pmid": "41358893",
+      "title": "2. Diagnosis and Classification of Diabetes: Standards of Care in Diabetes-2026.",
+      "year": "2026",
+      "journal": "Diabetes care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41358893/",
+      "authors": null
+    },
+    {
+      "pmid": "41358900",
+      "title": "9. Pharmacologic Approaches to Glycemic Treatment: Standards of Care in Diabetes-2026.",
+      "year": "2026",
+      "journal": "Diabetes care",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41358900/",
+      "authors": null
+    },
+    {
+      "pmid": "40813129",
+      "title": "Cardiovascular, kidney related, and weight loss effects of therapeutics for type 2 diabetes: a living clinical practice guideline.",
+      "year": "2025",
+      "journal": "BMJ (Clinical research ed.)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40813129/",
+      "authors": "Agarwal A, Mustafa R, Manja V, Agoritsas T, Macdonald H"
+    },
+    {
+      "pmid": "34184823",
+      "title": "Cardiac, renal, and metabolic effects of sodium-glucose co-transporter 2 inhibitors: a position paper from the European Society of Cardiology ad-hoc task force on sodium-glucose co-transporter 2 inhibitors.",
+      "year": "2021",
+      "journal": "European journal of heart failure",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/34184823/",
+      "authors": "Herrington WG, Savarese G, Haynes R, Marx N, Mellbin L"
+    },
+    {
+      "pmid": "34780022",
+      "title": "Egyptian Atherosclerosis and Vascular Biology Association Consensus on the Use of Sodium Glucose Cotransporter-2 Inhibitors in Heart Failure with Reduced Ejection Fraction.",
+      "year": "2021",
+      "journal": "Clinical drug investigation",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/34780022/",
+      "authors": "Elserafy AS, Reda A, Farag E, Mostafa T, Farag N"
+    },
+    {
+      "pmid": "40195777",
+      "title": "Possibilities of Optimizing Drug Therapy for Myocardial Infarction: a Consensus on the Use of Type 2 Sodium-Glucose Co-Transporter Inhibitors. Conciliation Document of the Expert Group.",
+      "year": "2025",
+      "journal": "Kardiologiia",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40195777/",
+      "authors": "Arutyunov GP, Kononov SK, Novitskii NI, Baglikov AN, Shchendrygina AA"
+    },
+    {
+      "pmid": "42952754",
+      "title": "Network and pairwise meta-analysis of the effects of novel hypoglycemic agents on cardiorenal outcomes in patients with type 2 diabetes and heart failure.",
+      "year": "2026",
+      "journal": "Frontiers in endocrinology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42952754/",
+      "authors": "Ye X, Wu Q, Li L, Huang M, Wang S"
+    },
+    {
+      "pmid": "42659939",
+      "title": "Efficacy of sodium-glucose cotransporter 2 inhibitors after acute myocardial infarction: Are the benefits limited to patients with diabetes? A systematic review and meta-analysis.",
+      "year": "2026",
+      "journal": "Journal of diabetes and its complications",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42659939/",
+      "authors": "Santos MCF, Mamede I, Bessa R, Carvalhal G, Leão LA"
+    },
+    {
+      "pmid": "42616235",
+      "title": "Combined use of SGLT2 inhibitor and GLP-1 receptor agonist versus either monotherapy for cardiorenal Outcomes: an exploratory network meta-analysis of 16 randomized trials.",
+      "year": "2026",
+      "journal": "Endocrine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42616235/",
+      "authors": "Banerjee M, Basu M, Mukhopadhyay P, Ghosh S"
+    },
+    {
+      "pmid": "42591121",
+      "title": "Cardiovascular outcomes of SGLT2 inhibitors versus GLP-1 receptor agonists in patients with type 2 diabetes and a history of myocardial infarction: a systematic review and network meta-analysis of randomized controlled trials.",
+      "year": "2026",
+      "journal": "Frontiers in endocrinology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42591121/",
+      "authors": "Ren Y, Yang H, Zhang S, Hu T, Tan Q"
+    }
+  ],
+  "observational": [
+    {
+      "pmid": "42802824",
+      "title": "Dapagliflozin Alone or Combined With Semaglutide: Cardiovascular and Renal Outcomes Among Patients With Type 2 Diabetes Mellitus in a 6-Month Real-World Retrospective Cohort Study in Saudi Arabia.",
+      "year": "2026",
+      "journal": "Journal of the ASEAN Federation of Endocrine Societies",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42802824/",
+      "authors": "Alharajin R, AlTaweel M, AlSubaiee M, Al Makhloof S, Almusaad A"
+    },
+    {
+      "pmid": "42802242",
+      "title": "Effectiveness of Adding GLP-1 Receptor Agonists to SGLT2 Inhibitor Therapy in Chronic Kidney Disease: A Population Based Study.",
+      "year": "2026",
+      "journal": "Diabetes, obesity & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42802242/",
+      "authors": "Salim H, Qureshi S, Gulsin GS, Khan HR, Waqas SA"
+    },
+    {
+      "pmid": "42658493",
+      "title": "Early Sodium-Glucose Cotransporter-2 Inhibitor Use After Acute Kidney Injury in Type 2 Diabetes.",
+      "year": "2026",
+      "journal": "JAMA network open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42658493/",
+      "authors": "Chou YT, Chen JY, Jiang ZH, Lin LC, Wu VC"
+    },
+    {
+      "pmid": "42647034",
+      "title": "Glucagon-Like Peptide 1 Receptor Agonists, Mortality, and Cardiovascular Outcomes in Serious Mental Illness.",
+      "year": "2026",
+      "journal": "JAMA psychiatry",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42647034/",
+      "authors": "McIntyre RS, Zhang-James Y, Kwan ATH"
+    },
+    {
+      "pmid": "42171707",
+      "title": "Dapagliflozin is associated with a reduction in left atrial volume index in type 2 diabetes mellitus without established cardiovascular disease.",
+      "year": "2026",
+      "journal": "Acta diabetologica",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42171707/",
+      "authors": "Çakır B, Polat F, Karataş MB, Dayı ŞÜ, Öz A"
+    },
+    {
+      "pmid": "41831709",
+      "title": "Sodium-glucose cotransporter 2 inhibitor use and outcomes after surgical aortic valve replacement.",
+      "year": "2026",
+      "journal": "The Journal of thoracic and cardiovascular surgery",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41831709/",
+      "authors": "Jacquemyn X, Hasan I, Ogami T, Serna-Gallegos D, Bonatti J"
+    },
+    {
+      "pmid": "41804881",
+      "title": "Safety and Efficacy of Sodium Glucose Cotransporter-2 Inhibitors in Patients With Cancer and Diabetes.",
+      "year": "2026",
+      "journal": "Journal of the American Heart Association",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41804881/",
+      "authors": "Gvili Perelman M, Brzezinski RY, Banai S, Wolf I, Laufer-Perl M"
+    },
+    {
+      "pmid": "41419094",
+      "title": "Cardio-renal outcomes in type 2 diabetes patients with advanced chronic kidney disease on SGLT2 inhibitors or GLP-1 receptor agonists.",
+      "year": "2026",
+      "journal": "The American journal of medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41419094/",
+      "authors": "Chen JJ, Tsai MH, Ho WY, Fang YW, Chen MT"
+    },
+    {
+      "pmid": "41117973",
+      "title": "Effectiveness and safety of combining SGLT2 inhibitors and GLP-1 receptor agonists in individuals with type 2 diabetes: a systematic review and meta-analysis of cohort studies.",
+      "year": "2026",
+      "journal": "Diabetologia",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/41117973/",
+      "authors": "Colombijn JMT, de Leijer JF, Visseren FLJ, Verhaar MC, van Raalte DH"
+    },
+    {
+      "pmid": "40958495",
+      "title": "Cardiometabolic outcomes with dapagliflozin after myocardial infarction by baseline ejection fraction: DAPA-MI.",
+      "year": "2025",
+      "journal": "ESC heart failure",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40958495/",
+      "authors": "Erlinge D, James S, Deanfield J, Eriksson N, de Belder M"
+    },
+    {
+      "pmid": "40952180",
+      "title": "Galectin-3 and kidney function in type 2 diabetes treated with dapagliflozin: Analysis from DECLARE-TIMI 58.",
+      "year": "2025",
+      "journal": "ESC heart failure",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40952180/",
+      "authors": "Haller PM, Wiviott SD, Berg DD, Jarolim P, Goodrich EL"
+    },
+    {
+      "pmid": "40947857",
+      "title": "Empagliflozin after myocardial infarction with or without diabetes and chronic kidney disease: Insights from EMPACT-MI.",
+      "year": "2025",
+      "journal": "ESC heart failure",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40947857/",
+      "authors": "Fioretti F, Butler J, Udell JA, Schuyler Jones W, Petrie MC"
+    },
+    {
+      "pmid": "40624547",
+      "title": "Impact of SGLT2 inhibitors on myocardial fibrosis in diabetic HFpEF: a longitudinal study.",
+      "year": "2025",
+      "journal": "European journal of medical research",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40624547/",
+      "authors": "Albulushi A, Askari KM, Al-Abedi AM, Al-Kulaibi MA, Hasan MS"
+    },
+    {
+      "pmid": "40580026",
+      "title": "Effects of sodium-glucose cotransport-2 inhibitors treatment in patients with pulmonary hypertension.",
+      "year": "2025",
+      "journal": "Therapeutic advances in respiratory disease",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/40580026/",
+      "authors": "Obeidat M, Vignarajah A, Abdel-Razeq R, Nathir A, Vigneswaramoorthy NA"
+    }
+  ],
+  "khong_loc": [
+    {
+      "pmid": "43032206",
+      "title": "Cardiovascular Outcomes Across the Sodium-Glucose Cotransporter (SGLT) Selectivity Spectrum in Type 2 Diabetes and Chronic Kidney Disease: A Systematic Review of Heart Failure, Myocardial Infarction, and Stroke.",
+      "year": "2026",
+      "journal": "Cureus",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/43032206/"
+    },
+    {
+      "pmid": "42977998",
+      "title": "Complication Prevention Beyond Glycaemic Control in Type 2 Diabetes: Cumulative Metabolic Exposure, Organ Vulnerability and Treatment Durability.",
+      "year": "2026",
+      "journal": "Endocrinology, diabetes & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42977998/"
+    },
+    {
+      "pmid": "42975136",
+      "title": "Bexagliflozin: pharmacological profile and clinical applications of a sodium-glucose cotransporter 2 inhibitor.",
+      "year": "2026",
+      "journal": "Journal of basic and clinical physiology and pharmacology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42975136/"
+    },
+    {
+      "pmid": "42969666",
+      "title": "GLP-1 Receptor Agonists Versus Empagliflozin or Dapagliflozin in the MASLD-Heart Failure Phenotype: An Exploratory Propensity-Matched Cohort Study.",
+      "year": "2026",
+      "journal": "Balkan medical journal",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42969666/"
+    },
+    {
+      "pmid": "42967552",
+      "title": "Association of GLP-1 receptor agonist and SGLT2 inhibitor use with outcomes in patients with type 2 diabetes undergoing pacemaker implantation.",
+      "year": "2026",
+      "journal": "Current problems in cardiology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42967552/"
+    },
+    {
+      "pmid": "42966404",
+      "title": "SGLT2 inhibitor-induced genitourinary infections and the consequent antimicrobial-antidiabetic drug interactions: A narrative review of clinical and pharmacovigilance concern.",
+      "year": "2026",
+      "journal": "Diabetes research and clinical practice",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42966404/"
+    },
+    {
+      "pmid": "42952754",
+      "title": "Network and pairwise meta-analysis of the effects of novel hypoglycemic agents on cardiorenal outcomes in patients with type 2 diabetes and heart failure.",
+      "year": "2026",
+      "journal": "Frontiers in endocrinology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42952754/"
+    },
+    {
+      "pmid": "42941631",
+      "title": "Drug Therapies and Incident Heart Failure in Atrial Fibrillation: A Systematic Review.",
+      "year": "2026",
+      "journal": "Journal of clinical medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42941631/"
+    },
+    {
+      "pmid": "42932136",
+      "title": "Skeletal Muscle in Vulnerable Populations Receiving Cardiorenal-Metabolic Therapies: SGLT2 Inhibitors, Incretin-Based Therapies, and the Challenge of Precision Medicine.",
+      "year": "2026",
+      "journal": "Advances in therapy",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42932136/"
+    },
+    {
+      "pmid": "42906932",
+      "title": "Whether to hold and what to measure: perioperative euglycemic ketoacidosis in patients taking SGLT2 inhibitors.",
+      "year": "2026",
+      "journal": "Anesthesia and pain medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42906932/"
+    },
+    {
+      "pmid": "42877252",
+      "title": "Sodium-Glucose Cotransporter 2 Inhibitors: A Scoping Review of Current Evidence, Mechanisms, and Adverse Effects.",
+      "year": "2026",
+      "journal": "Journal of Brown hospital medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42877252/"
+    },
+    {
+      "pmid": "42865310",
+      "title": "SGLT2 Inhibitors Reduce Heart Failure Hospitalization, Cardiovascular Death and Kidney Outcomes in Type 2 Diabetes: A Meta-Analysis of Randomized Controlled Trials.",
+      "year": "2026",
+      "journal": "Diabetes, obesity & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42865310/"
+    },
+    {
+      "pmid": "42864264",
+      "title": "Comparative Cardiorenal Efficacy and Safety of SGLT2 Inhibitors and Finerenone in Chronic Kidney Disease With Type 2 Diabetes: A Systematic Review and Network Meta-Analysis.",
+      "year": "2026",
+      "journal": "Diabetes, obesity & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42864264/"
+    },
+    {
+      "pmid": "42841533",
+      "title": "Dapagliflozin and ventricular repolarization across heart failure phenotypes.",
+      "year": "2026",
+      "journal": "Current medical research and opinion",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42841533/"
+    },
+    {
+      "pmid": "42802824",
+      "title": "Dapagliflozin Alone or Combined With Semaglutide: Cardiovascular and Renal Outcomes Among Patients With Type 2 Diabetes Mellitus in a 6-Month Real-World Retrospective Cohort Study in Saudi Arabia.",
+      "year": "2026",
+      "journal": "Journal of the ASEAN Federation of Endocrine Societies",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42802824/"
+    },
+    {
+      "pmid": "42802242",
+      "title": "Effectiveness of Adding GLP-1 Receptor Agonists to SGLT2 Inhibitor Therapy in Chronic Kidney Disease: A Population Based Study.",
+      "year": "2026",
+      "journal": "Diabetes, obesity & metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42802242/"
+    },
+    {
+      "pmid": "42792704",
+      "title": "Imaging and Hemodynamic Mechanisms of Cardiac Remodeling with SGLT2 Inhibitors Across Heart Failure Phenotypes: A Systematic Review.",
+      "year": "2026",
+      "journal": "Biomedicines",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42792704/"
+    },
+    {
+      "pmid": "42778649",
+      "title": "Clinical Evidence of Kidney Protection Exerted by SGLT2 Inhibitors.",
+      "year": "2026",
+      "journal": "Handbook of experimental pharmacology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42778649/"
+    },
+    {
+      "pmid": "42754980",
+      "title": "SGLT2 Inhibitors: Dual Effects on Erythropoiesis and Bone Metabolism.",
+      "year": "2026",
+      "journal": "Journal of bone metabolism",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42754980/"
+    },
+    {
+      "pmid": "42742671",
+      "title": "Study Protocol for the TIGHTEN Study Comparing the Effects of Tofogliflozin and Glimepiride on Skeletal Muscle Mass in Patients with Type 2 Diabetes without Obesity: A Prospective, Multicenter, Open-Label, Randomized, Parallel Group Trial in Japan.",
+      "year": "2026",
+      "journal": "Diabetes therapy : research, treatment and education of diabetes and related disorders",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42742671/"
+    },
+    {
+      "pmid": "42729808",
+      "title": "Diabetes, Adiposity, and Functional Phenotypes in HFpEF: A Systematic Review of Recent Treatment-Response Evidence.",
+      "year": "2026",
+      "journal": "Cureus",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42729808/"
+    },
+    {
+      "pmid": "42724505",
+      "title": "Cardiorenal Protection in Type 2 Diabetes: A Systematic Review Comparing Glucagon-Like Peptide-1 Receptor Agonists and Sodium-Glucose Cotransporter-2 Inhibitors.",
+      "year": "2026",
+      "journal": "Cureus",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42724505/"
+    },
+    {
+      "pmid": "42667546",
+      "title": "The Role of SGLT2 Inhibitors in the Prevention of Type 2 Diabetes: A Narrative Review of Current Evidence.",
+      "year": "2026",
+      "journal": "Diabetes therapy : research, treatment and education of diabetes and related disorders",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42667546/"
+    },
+    {
+      "pmid": "42659939",
+      "title": "Efficacy of sodium-glucose cotransporter 2 inhibitors after acute myocardial infarction: Are the benefits limited to patients with diabetes? A systematic review and meta-analysis.",
+      "year": "2026",
+      "journal": "Journal of diabetes and its complications",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42659939/"
+    },
+    {
+      "pmid": "42658493",
+      "title": "Early Sodium-Glucose Cotransporter-2 Inhibitor Use After Acute Kidney Injury in Type 2 Diabetes.",
+      "year": "2026",
+      "journal": "JAMA network open",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42658493/"
+    },
+    {
+      "pmid": "42652896",
+      "title": "The Effect of Weight Loss and Metabolic Interventions on Recurrence After Atrial Fibrillation Ablation.",
+      "year": "2026",
+      "journal": "Journal of clinical medicine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42652896/"
+    },
+    {
+      "pmid": "42647034",
+      "title": "Glucagon-Like Peptide 1 Receptor Agonists, Mortality, and Cardiovascular Outcomes in Serious Mental Illness.",
+      "year": "2026",
+      "journal": "JAMA psychiatry",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42647034/"
+    },
+    {
+      "pmid": "42616235",
+      "title": "Combined use of SGLT2 inhibitor and GLP-1 receptor agonist versus either monotherapy for cardiorenal Outcomes: an exploratory network meta-analysis of 16 randomized trials.",
+      "year": "2026",
+      "journal": "Endocrine",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42616235/"
+    },
+    {
+      "pmid": "42591121",
+      "title": "Cardiovascular outcomes of SGLT2 inhibitors versus GLP-1 receptor agonists in patients with type 2 diabetes and a history of myocardial infarction: a systematic review and network meta-analysis of randomized controlled trials.",
+      "year": "2026",
+      "journal": "Frontiers in endocrinology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42591121/"
+    },
+    {
+      "pmid": "42587114",
+      "title": "SGLT2 inhibitors and secondary polycythemia: a systematic review and meta-analysis of hematologic effects in patients with type 2 diabetes.",
+      "year": "2026",
+      "journal": "European journal of clinical pharmacology",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/42587114/"
+    }
+  ],
+  "true_counts": {
+    "sr_ma": 242,
+    "rct": 264,
+    "guideline": 1,
+    "observational": 106,
+    "recent": 405
+  },
+  "search_provenance": {
+    "co_so_du_lieu": "PubMed (MEDLINE và phần còn lại của PubMed)",
+    "giao_dien": "NCBI E-utilities (esearch/efetch) qua app.sources.pubmed.PubMedClient",
+    "ngay_tra": "2026-11-15T20:04:56",
+    "truy_van_goc": "(\"Sodium-Glucose Transporter 2 Inhibitors\"[MeSH] OR \"SGLT2 inhibitor*\"[tiab] OR empagliflozin[tiab] OR dapagliflozin[tiab] OR canagliflozin[tiab]) AND (\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (\"heart failure\"[tiab] OR \"Heart Failure\"[MeSH]) AND (\"randomized controlled trial\"[pt] OR randomi*[tiab])",
+    "query_en_do_nguoi_cung_cap": true,
+    "nhanh": {
+      "sr_ma": {
+        "nhom_ket_qua": "sr_ma",
+        "truy_van": "(\"Sodium-Glucose Transporter 2 Inhibitors\"[MeSH] OR \"SGLT2 inhibitor*\"[tiab] OR empagliflozin[tiab] OR dapagliflozin[tiab] OR canagliflozin[tiab]) AND (\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (\"heart failure\"[tiab] OR \"Heart Failure\"[MeSH]) AND (\"randomized controlled trial\"[pt] OR randomi*[tiab]) AND (systematic review[pt] OR meta-analysis[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Sodium-Glucose Transporter 2 Inhibitors\"[MeSH] OR \"SGLT2 inhibitor*\"[tiab] OR empagliflozin[tiab] OR dapagliflozin[tiab] OR canagliflozin[tiab]) AND (\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (\"heart failure\"[tiab] OR \"Heart Failure\"[MeSH]) AND (\"randomized controlled trial\"[pt] OR randomi*[tiab]) AND (systematic review[pt] OR meta-analysis[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 242,
+        "so_bai_lay_ve": 15,
+        "pmid_lay_ve": [
+          "41358893",
+          "41358900",
+          "42952754",
+          "42659939",
+          "42616235",
+          "42591121",
+          "42587114",
+          "42566081",
+          "42442791",
+          "42426564",
+          "42420866",
+          "42328113",
+          "42211456",
+          "42180672",
+          "42144626"
+        ]
+      },
+      "rct": {
+        "nhom_ket_qua": "rct",
+        "truy_van": "(\"Sodium-Glucose Transporter 2 Inhibitors\"[MeSH] OR \"SGLT2 inhibitor*\"[tiab] OR empagliflozin[tiab] OR dapagliflozin[tiab] OR canagliflozin[tiab]) AND (\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (\"heart failure\"[tiab] OR \"Heart Failure\"[MeSH]) AND (\"randomized controlled trial\"[pt] OR randomi*[tiab]) AND randomized controlled trial[pt]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Sodium-Glucose Transporter 2 Inhibitors\"[MeSH] OR \"SGLT2 inhibitor*\"[tiab] OR empagliflozin[tiab] OR dapagliflozin[tiab] OR canagliflozin[tiab]) AND (\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (\"heart failure\"[tiab] OR \"Heart Failure\"[MeSH]) AND (\"randomized controlled trial\"[pt] OR randomi*[tiab]) AND randomized controlled trial[pt]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 264,
+        "so_bai_lay_ve": 15,
+        "pmid_lay_ve": [
+          "41358893",
+          "41358900",
+          "42556782",
+          "42522027",
+          "42471097",
+          "42260102",
+          "42219264",
+          "42046405",
+          "41831639",
+          "41817689",
+          "41802526",
+          "41582387",
+          "41569429",
+          "41311237",
+          "40976500"
+        ]
+      },
+      "guideline": {
+        "nhom_ket_qua": "guideline",
+        "truy_van": "(\"Sodium-Glucose Transporter 2 Inhibitors\"[MeSH] OR \"SGLT2 inhibitor*\"[tiab] OR empagliflozin[tiab] OR dapagliflozin[tiab] OR canagliflozin[tiab]) AND (\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (\"heart failure\"[tiab] OR \"Heart Failure\"[MeSH]) AND (\"randomized controlled trial\"[pt] OR randomi*[tiab]) AND (guideline[pt] OR practice guideline[pt])",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Sodium-Glucose Transporter 2 Inhibitors\"[MeSH] OR \"SGLT2 inhibitor*\"[tiab] OR empagliflozin[tiab] OR dapagliflozin[tiab] OR canagliflozin[tiab]) AND (\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (\"heart failure\"[tiab] OR \"Heart Failure\"[MeSH]) AND (\"randomized controlled trial\"[pt] OR randomi*[tiab]) AND (guideline[pt] OR practice guideline[pt])) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 5,
+        "loai_trung_pmid": true,
+        "so_hit_that": 1,
+        "so_bai_lay_ve": 3,
+        "pmid_lay_ve": [
+          "41358893",
+          "41358900",
+          "40813129"
+        ]
+      },
+      "observational": {
+        "nhom_ket_qua": "observational",
+        "truy_van": "(\"Sodium-Glucose Transporter 2 Inhibitors\"[MeSH] OR \"SGLT2 inhibitor*\"[tiab] OR empagliflozin[tiab] OR dapagliflozin[tiab] OR canagliflozin[tiab]) AND (\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (\"heart failure\"[tiab] OR \"Heart Failure\"[MeSH]) AND (\"randomized controlled trial\"[pt] OR randomi*[tiab])",
+        "bo_loc": "(\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "chuoi_hieu_luc": "((\"Sodium-Glucose Transporter 2 Inhibitors\"[MeSH] OR \"SGLT2 inhibitor*\"[tiab] OR empagliflozin[tiab] OR dapagliflozin[tiab] OR canagliflozin[tiab]) AND (\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (\"heart failure\"[tiab] OR \"Heart Failure\"[MeSH]) AND (\"randomized controlled trial\"[pt] OR randomi*[tiab])) AND (\"Cohort Studies\"[MeSH] OR \"Case-Control Studies\"[MeSH] OR \"Cross-Sectional Studies\"[MeSH] OR \"Observational Study\"[Publication Type] OR \"Prospective Studies\"[MeSH] OR \"Retrospective Studies\"[MeSH])",
+        "tran_so_bai": 15,
+        "loai_trung_pmid": true,
+        "so_hit_that": 106,
+        "so_bai_lay_ve": 15,
+        "pmid_lay_ve": [
+          "42802824",
+          "42802242",
+          "42658493",
+          "42647034",
+          "42471097",
+          "42171707",
+          "41831709",
+          "41804881",
+          "41419094",
+          "41117973",
+          "40958495",
+          "40952180",
+          "40947857",
+          "40624547",
+          "40580026"
+        ]
+      },
+      "recent_5yr": {
+        "nhom_ket_qua": "recent",
+        "truy_van": "(\"Sodium-Glucose Transporter 2 Inhibitors\"[MeSH] OR \"SGLT2 inhibitor*\"[tiab] OR empagliflozin[tiab] OR dapagliflozin[tiab] OR canagliflozin[tiab]) AND (\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (\"heart failure\"[tiab] OR \"Heart Failure\"[MeSH]) AND (\"randomized controlled trial\"[pt] OR randomi*[tiab]) AND 2021:2026[dp]",
+        "bo_loc": "(\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "chuoi_hieu_luc": "((\"Sodium-Glucose Transporter 2 Inhibitors\"[MeSH] OR \"SGLT2 inhibitor*\"[tiab] OR empagliflozin[tiab] OR dapagliflozin[tiab] OR canagliflozin[tiab]) AND (\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (\"heart failure\"[tiab] OR \"Heart Failure\"[MeSH]) AND (\"randomized controlled trial\"[pt] OR randomi*[tiab]) AND 2021:2026[dp]) AND (\"systematic review\"[Publication Type] OR \"meta-analysis\"[Publication Type] OR \"randomized controlled trial\"[Publication Type] OR \"guideline\"[Publication Type] OR \"practice guideline\"[Publication Type])",
+        "tran_so_bai": 10,
+        "loai_trung_pmid": false,
+        "so_hit_that": 405,
+        "so_bai_lay_ve": 10,
+        "pmid_lay_ve": [
+          "41358893",
+          "41358900",
+          "40813129",
+          "34184823",
+          "34780022",
+          "40195777",
+          "42952754",
+          "42659939",
+          "42616235",
+          "42591121"
+        ]
+      },
+      "khong_loc": {
+        "nhom_ket_qua": null,
+        "truy_van": "(\"Sodium-Glucose Transporter 2 Inhibitors\"[MeSH] OR \"SGLT2 inhibitor*\"[tiab] OR empagliflozin[tiab] OR dapagliflozin[tiab] OR canagliflozin[tiab]) AND (\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (\"heart failure\"[tiab] OR \"Heart Failure\"[MeSH]) AND (\"randomized controlled trial\"[pt] OR randomi*[tiab])",
+        "bo_loc": null,
+        "chuoi_hieu_luc": "((\"Sodium-Glucose Transporter 2 Inhibitors\"[MeSH] OR \"SGLT2 inhibitor*\"[tiab] OR empagliflozin[tiab] OR dapagliflozin[tiab] OR canagliflozin[tiab]) AND (\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (\"heart failure\"[tiab] OR \"Heart Failure\"[MeSH]) AND (\"randomized controlled trial\"[pt] OR randomi*[tiab]))",
+        "tran_so_bai": 30,
+        "loai_trung_pmid": false,
+        "chi_ghi_lai": true,
+        "so_hit_that": 875,
+        "so_bai_lay_ve": 30,
+        "pmid_lay_ve": [
+          "43032206",
+          "42977998",
+          "42975136",
+          "42969666",
+          "42967552",
+          "42966404",
+          "42952754",
+          "42941631",
+          "42932136",
+          "42906932",
+          "42877252",
+          "42865310",
+          "42864264",
+          "42841533",
+          "42802824",
+          "42802242",
+          "42792704",
+          "42778649",
+          "42754980",
+          "42742671",
+          "42729808",
+          "42724505",
+          "42667546",
+          "42659939",
+          "42658493",
+          "42652896",
+          "42647034",
+          "42616235",
+          "42591121",
+          "42587114"
+        ],
+        "pmid_bo_loc_da_loai": [
+          "43032206",
+          "42977998",
+          "42975136",
+          "42969666",
+          "42967552",
+          "42966404",
+          "42941631",
+          "42932136",
+          "42906932",
+          "42877252",
+          "42865310",
+          "42864264",
+          "42841533",
+          "42792704",
+          "42778649",
+          "42754980",
+          "42742671",
+          "42729808",
+          "42724505",
+          "42667546",
+          "42652896"
+        ]
+      }
+    },
+    "loi_nhanh": {}
+  }
+}

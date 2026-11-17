@@ -1,0 +1,115 @@
+name: gia-lap-16-kich-ban
+
+# 17/11/2026 — bác sĩ: «đưa 16 kịch bản vào CI». Trước đây «16/16 khoá gói G10» chỉ là con số đọc tay sau mỗi lượt giả
+# lập chạy trên máy bác sĩ; bài kiểm `test_gia_lap_tron_vong*` là bài MÔ TẢ (passed cả khi G10 bị chặn) nên một thay đổi
+# làm vỡ một thiết kế vẫn qua CI xanh. Job này chạy trọn G0→G10 cho từng kịch bản rồi `tools/kiem_gia_lap_16.py` PHÁN:
+# không khoá được gói G10 / có ô lỗi máy / đề cương nộp trượt K1–K8 ⇒ ĐỎ.
+#
+# Chạy OFFLINE, không khoá, không mạng: nền G0 (kết quả tra PubMed của lượt trực tuyến) ở tests/fixtures/gia_lap_nen_g0/,
+# kết quả A12 (rút bài + metadata theo TỪNG PMID) ở tests/fixtures/gia_lap_a12/a12_theo_pmid.json; GIA_LAP_A12_CHI_KHO=1
+# ⇒ PMID mới chưa có trong kho là LỖI nói rõ cách bổ sung, không lặng lẽ gọi mạng. Khoá ký là khoá GIẢ sinh trong thư mục
+# tạm của runner (ngoài repo). Kho ghi sẵn đóng băng trạng thái rút bài lúc ghi — job kiểm HÀNH VI của hệ, không kiểm
+# rút bài sống (việc đó của A12 thật trên đề tài thật).
+
+on:
+  push:
+    branches: [ "feat/r1-1-2-design-gap-remediation" ]
+  pull_request:
+    paths:
+      - "tools/**"
+      - "app/**"
+      - "runtime/**"
+      - "scripts/**"
+      - "templates/**"
+      - "config/**"
+      - "tests/test_gia_lap*"
+      - "tests/fixtures/gia_lap_*/**"
+      - "requirements.lock.txt"
+      - ".github/workflows/gia-lap-16.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: gia-lap-16-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  kich-ban:
+    name: gia-lap (${{ matrix.kb }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 40      # đo trên máy bác sĩ: 7–10 phút mỗi kịch bản khi 16 kịch bản chạy song song
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { kb: rct, node: "test_gia_lap_tron_vong[rct]" }
+          - { kb: cross_sectional, node: "test_gia_lap_tron_vong[cross_sectional]" }
+          - { kb: cohort, node: "test_gia_lap_tron_vong[cohort]" }
+          - { kb: case_control, node: "test_gia_lap_tron_vong[case_control]" }
+          - { kb: diagnostic, node: "test_gia_lap_tron_vong[diagnostic]" }
+          - { kb: prediction, node: "test_gia_lap_tron_vong[prediction]" }
+          - { kb: sr_ma, node: "test_gia_lap_tron_vong[sr_ma]" }
+          - { kb: qualitative, node: "test_gia_lap_tron_vong[qualitative]" }
+          - { kb: rct_ni, node: "test_gia_lap_bien_the_kho[rct_ni]" }
+          - { kb: rct_cum, node: "test_gia_lap_bien_the_kho[rct_cum]" }
+          - { kb: cohort_cox, node: "test_gia_lap_bien_the_kho[cohort_cox]" }
+          - { kb: cohort_mi, node: "test_gia_lap_bien_the_kho[cohort_mi]" }
+          - { kb: rct_rut_bai, node: "test_gia_lap_bien_the_kho[rct_rut_bai]" }
+          - { kb: cohort_vong_sua, node: "test_gia_lap_bien_the_kho[cohort_vong_sua]" }
+          - { kb: rct_kinh_te, node: "test_gia_lap_bien_the_kho[rct_kinh_te]" }
+          - { kb: rct_hon_hop, node: "test_gia_lap_bien_the_kho[rct_hon_hop]" }
+    env:
+      PYTHONUTF8: "1"
+      PYTHONIOENCODING: "utf-8"
+      USE_MOCK_SOURCES: "true"
+      GIA_LAP_TRON_VONG: "1"
+      GIA_LAP_A12_CHI_KHO: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.lock.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.lock.txt
+
+      - name: Chạy trọn G0→G10 cho kịch bản ${{ matrix.kb }}
+        env:
+          GIA_LAP_TRON_VONG_DIR: ${{ runner.temp }}/gia-lap
+          GIA_LAP_NEN_G0_DIR: ${{ github.workspace }}/tests/fixtures/gia_lap_nen_g0
+          GIA_LAP_A12_KHO: ${{ github.workspace }}/tests/fixtures/gia_lap_a12/a12_theo_pmid.json
+          NODE: ${{ matrix.node }}
+        run: |
+          python -B -m pytest "tests/test_gia_lap_tron_vong_20261115.py::$NODE" -q -p no:cacheprovider -s
+
+      - name: Phán kết quả (khoá gói G10 · 0 ô lỗi máy · đề cương nộp đạt)
+        run: python tools/kiem_gia_lap_16.py --kich-ban ${{ matrix.kb }}
+
+      - name: Lưu báo cáo kịch bản
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: gia-lap-${{ matrix.kb }}
+          path: state/gia-lap-tron-vong/
+
+  gia-lap-ok:
+    name: gia-lap-ok
+    if: always()
+    needs: [kich-ban]
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Cả 16 kịch bản phải xanh (huỷ/bỏ qua cũng là ĐỎ)
+        env:
+          KET_QUA: ${{ needs.kich-ban.result }}
+        run: |
+          [ "$KET_QUA" = "success" ] || { echo "kich-ban: $KET_QUA" >&2; exit 1; }
+          echo "✅ 16/16 kịch bản giả lập khoá được gói G10"
