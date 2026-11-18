@@ -578,3 +578,44 @@ def test_ban_cham_sai_khuon_khong_vao_so(tmp_path):
     st = json.loads(HB.tep_trang_thai(out, "G3").read_text(encoding="utf-8"))
     c = st["cham"][NV["ma"]]
     assert c["ket"]["chuyen_mon"] is None and "sai khuôn" in c["loi"][0]
+
+
+# ── 18/11/2026 (BTM thật): một lô trả JSON sai cú pháp ⇒ 12/51 cặp «không kiểm được»; nay gửi lại đúng lô đó MỘT lần ─
+def test_kiem_trich_dan_json_hong_thi_gui_lai_mot_lan(tmp_path):
+    goc = _goc_tam(tmp_path)
+    dem = {"n": 0}
+
+    def tra(kw):
+        dem["n"] += 1
+        return '{"ket_qua": [ {"id": "C001" "hỏng"' if dem["n"] == 1 else _tra_knd(kw)
+
+    kh = KhachGia(tra)
+    ma = KND.main(["--study", "S1", "--goi-api"], client=kh, lay=lambda p: ABS, goc=goc)
+    js = json.loads((goc / "exports" / "S1" / "kiem_may_api" / "A12_KIEM_NOI_DUNG_S1.json").read_text(encoding="utf-8"))
+    muc = {(k["id"], k["so"]): k["muc"] for k in js["ket_qua"]}
+    assert ma == 0 and len(kh.messages.goi) == 2 and muc[("C001", 1)] == "ho_tro" and js["loi"] == []
+
+
+def test_kiem_trich_dan_json_hong_hai_lan_thi_khong_kiem_duoc_khong_doan(tmp_path):
+    goc = _goc_tam(tmp_path)
+    kh = KhachGia('{"ket_qua": [ {"id": "C001" "hỏng"')
+    KND.main(["--study", "S1", "--goi-api"], client=kh, lay=lambda p: ABS, goc=goc)
+    js = json.loads((goc / "exports" / "S1" / "kiem_may_api" / "A12_KIEM_NOI_DUNG_S1.json").read_text(encoding="utf-8"))
+    assert len(kh.messages.goi) == 2  # gửi đầu + đúng MỘT lần gửi lại, không lặp
+    assert {k["muc"] for k in js["ket_qua"]} == {"khong_kiem_duoc"} and "JSON hỏng" in js["loi"][0]
+
+
+def test_kiem_trich_dan_cat_cut_khong_gui_lai(tmp_path):
+    """Cắt cụt (max_tokens) gửi lại cũng cụt ⇒ không tốn thêm lượt."""
+    goc = _goc_tam(tmp_path)
+    kh = KhachGia(lambda kw: _resp('{"ket_qua": [', stop="max_tokens"))
+    KND.main(["--study", "S1", "--goi-api"], client=kh, lay=lambda p: ABS, goc=goc)
+    assert len(kh.messages.goi) == 1
+
+
+def test_kiem_trich_dan_json_tot_khong_gui_them(tmp_path):
+    """Câu trả lời đọc được ⇒ mỗi lô đúng một lượt gọi (thử lại không được tốn tiền khi không cần)."""
+    goc = _goc_tam(tmp_path)
+    kh = KhachGia(_tra_knd)
+    KND.main(["--study", "S1", "--goi-api"], client=kh, lay=lambda p: ABS, goc=goc)
+    assert len(kh.messages.goi) == 1

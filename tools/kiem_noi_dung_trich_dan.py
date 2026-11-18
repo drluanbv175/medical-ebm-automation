@@ -51,6 +51,7 @@ _DAU = re.compile(r"\[(\d+(?:\s*[-–]\s*\d+)?(?:\s*[,;]\s*\d+(?:\s*[-–]\s*\d+
 _TLTK = re.compile(r"^#{1,3}\s*(?:\d+\.?\s*)?(TÀI LIỆU THAM KHẢO|REFERENCES)\b", re.I)
 _SO_LIEU = re.compile(r"(?<![\w.,])(\d{1,3}(?:[.,]\d+)?)\s*%|(?<![\w.,])(\d+[,.]\d+)(?![\w.,])")
 SO_CAU_MOI_LO = 6
+SO_LAN_THU_JSON_HONG = 2  # lô trả JSON sai cú pháp ⇒ gửi lại đúng lô đó tối đa 1 lần (tính phí thêm 1 lượt)
 TOKEN_MOI_ABSTRACT = 1000  # tiêu đề + loại xuất bản + abstract có cấu trúc, đo trên BTM
 TOI_DA_MAC_DINH = 200
 
@@ -323,16 +324,26 @@ def chay(
     for nhom in API.chia_lo(can, lo):
         tk["so_lo"] += 1
         try:
-            kq = API.goi(
-                dung_loi_nhan(nhom, tai_lieu), he_thong=HE_THONG, model=model, effort="low", client=client,
-                cache_he_thong=True,  # cùng lời dặn cho mọi lô ⇒ lô sau đọc từ cache
-                nguon="kiem_noi_dung_trich_dan",
-            )
-            tk["token_vao"] += kq.token_vao
-            tk["token_ra"] += kq.token_ra
-            tk["token_cache_ghi"] += kq.token_cache_ghi
-            tk["token_cache_doc"] += kq.token_cache_doc
-            ra.extend(kiem_tra_tra_loi(nhom, API.doc_json(kq.van_ban), tai_lieu))
+            for lan in range(SO_LAN_THU_JSON_HONG):
+                kq = API.goi(
+                    dung_loi_nhan(nhom, tai_lieu), he_thong=HE_THONG, model=model, effort="low", client=client,
+                    cache_he_thong=True,  # cùng lời dặn cho mọi lô ⇒ lô sau đọc từ cache
+                    nguon="kiem_noi_dung_trich_dan",
+                )
+                tk["token_vao"] += kq.token_vao
+                tk["token_ra"] += kq.token_ra
+                tk["token_cache_ghi"] += kq.token_cache_ghi
+                tk["token_cache_doc"] += kq.token_cache_doc
+                try:
+                    tra_loi = API.doc_json(kq.van_ban)
+                    break
+                except API.KetQuaHong:
+                    # 18/11/2026 (BTM): một lô trả JSON hỏng ⇒ 12/51 cặp «không kiểm được». Câu trả lời ĐỦ (không cắt
+                    # cụt/từ chối — `goi` đã ném trước) mà sai cú pháp là lỗi ngẫu nhiên ⇒ gửi lại ĐÚNG lô đó một lần.
+                    if lan + 1 >= SO_LAN_THU_JSON_HONG:
+                        raise
+                    tk["lo_thu_lai"] = tk.get("lo_thu_lai", 0) + 1
+            ra.extend(kiem_tra_tra_loi(nhom, tra_loi, tai_lieu))
         except (API.ThieuKhoa, API.HetNganSach):
             raise  # thiếu khoá / chạm trần chi phí ⇒ dừng CẢ lượt, không gửi lô sau
         except API.LoiApi as exc:
