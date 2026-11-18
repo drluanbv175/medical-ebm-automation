@@ -88,6 +88,61 @@ def test_kiem_dac_ta_khong_canh_bao_khi_sap_con_cau_khang_dinh(tmp_path):
     assert not [x for x in CS.kiem_dac_ta(d, dt)["canh_bao"] if "PHỦ ĐỊNH" in x]
 
 
+# ───────────── (2b) phân tích PHỤ viết liền trong câu phải vào đặc tả (giới hạn còn lại, 18/11/2026) ─────────────
+SAP_PHU = (
+    "## §4 Kết cục chính\n"
+    "- **Phương pháp:** ước lượng tỷ lệ kèm KTC Wilson. Không áp hiệu chỉnh quần thể hữu hạn ở phân tích chính; "
+    "nếu biết kích thước khung mẫu thì báo thêm KTC có hiệu chỉnh quần thể hữu hạn như một thông tin phụ.\n"
+    "## §5 Mục tiêu phụ\n"
+    "- **Giả định:** xem đồ thị phần dư; nếu lệch rõ thì báo thêm mô hình với biến chia nhóm.\n"  # chỉ «báo thêm»
+    "- Không báo thêm mô hình nào khác.\n"  # dấu hiệu bị phủ định ⇒ không phải phân tích phụ
+    "| 1.5 | thêm thông tin phụ ở §4 |\n"  # dòng bảng (lịch sử phiên bản) ⇒ bỏ qua
+    "## §9 Độ nhạy\n"
+    "- Báo thêm phân tích độ nhạy bỏ ca thiếu.\n"  # §9 do luật cũ phủ cả gạch đầu dòng
+)
+
+
+def test_nhan_dien_menh_de_phan_tich_phu_viet_trong_cau():
+    assert CS.menh_de_phan_tich_phu(SAP_PHU) == [
+        ("§4", "nếu biết kích thước khung mẫu thì báo thêm KTC có hiệu chỉnh quần thể hữu hạn như một thông tin phụ."),
+        ("§5", "nếu lệch rõ thì báo thêm mô hình với biến chia nhóm.")]
+
+
+def _dt_phu(*muc_phu: dict) -> dict:
+    return {"phan_tich": [{"id": "chinh", "sap_neo": ["KTC Wilson"]}, {"id": "dn", "sap_neo": ["bỏ ca thiếu"]},
+                          {"id": "chia_nhom", "sap_neo": ["biến chia nhóm"]}, *muc_phu]}
+
+
+def test_bo_muc_phan_tich_phu_thi_bao_chua_phu_du_cung_dong_co_neo_chinh():
+    """Ca thật MT1_fpc: neo «KTC Wilson» của phân tích chính nằm CÙNG gạch đầu dòng — phủ theo dòng sẽ lọt."""
+    phu = CS.kiem_phu_sap(_dt_phu(), SAP_PHU)
+    assert phu["muc_chua_phu"] == [] and [m for m, _ in phu["phu_chua_phu"]] == ["§4"]
+
+
+def test_co_muc_neo_trong_dung_menh_de_thi_du():
+    phu = CS.kiem_phu_sap(_dt_phu({"id": "fpc", "sap_neo": ["báo thêm KTC có hiệu chỉnh"]}), SAP_PHU)
+    assert phu["phu_chua_phu"] == []
+
+
+def test_kiem_dac_ta_bao_loi_khi_phan_tich_phu_chua_vao_dac_ta(tmp_path):
+    d = tmp_path / "exports" / "S"
+    d.mkdir(parents=True)
+    p = d / "G4_A5_SAP_FINAL_S.md"
+    p.write_text(SAP_PHU, encoding="utf-8", newline="\n")
+    dt = {"nguon_sap": p.name, "sha256_sap": hashlib.sha256(p.read_bytes()).hexdigest(), "phan_tich": [
+        {"id": "chinh", "vai": "chinh", "sap_muc": "§4", "mo_ta": "tỷ lệ", "sap_neo": ["KTC Wilson"],
+         "tham_so": {"ty_le": ["y"], "nguong_ty_le": 1}},
+        {"id": "dn", "vai": "do_nhay", "sap_muc": "§9", "mo_ta": "bỏ ca thiếu", "sap_neo": ["bỏ ca thiếu"],
+         "chua_tu_dong": "tính tay"},
+        {"id": "chia_nhom", "vai": "do_nhay", "sap_muc": "§5", "mo_ta": "biến chia nhóm", "sap_neo": ["biến chia nhóm"],
+         "chua_tu_dong": "khi lệch tuyến tính"}]}
+    loi = [x for x in CS.kiem_dac_ta(d, dt)["loi"] if "PHỤ viết trong câu" in x]
+    assert len(loi) == 1 and "§4" in loi[0] and "thông tin phụ" in loi[0]
+    dt["phan_tich"].append({"id": "fpc", "vai": "mo_ta", "sap_muc": "§4", "mo_ta": "KTC hiệu chỉnh",
+                            "sap_neo": ["báo thêm KTC có hiệu chỉnh"], "chua_tu_dong": "tính tay"})
+    assert not [x for x in CS.kiem_dac_ta(d, dt)["loi"] if "PHỤ viết trong câu" in x]
+
+
 # ───────────────────────────── (3) tài liệu chỉ có DOI ─────────────────────────────
 class HttpGia:
     """`get_json` giả: trả theo tiền tố URL; giá trị là Exception thì ném ra."""
