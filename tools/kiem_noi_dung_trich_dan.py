@@ -191,9 +191,16 @@ HE_THONG = (
     "cấp (không dùng trí nhớ về "
     "bài báo), xếp một mức:\n"
     "- ho_tro: abstract nêu rõ điều đoạn khẳng định nói (kể cả con số, quần thể, chiều hiệu ứng);\n"
-    "- ho_tro_mot_phan: abstract nêu một phần; phần còn lại vắng hoặc khác (ghi rõ phần nào trong ly_do);\n"
+    "- ho_tro_mot_phan: abstract nói KHÁC, hoặc vắng, đúng một chi tiết mà đoạn khẳng định gắn RIÊNG cho tài liệu này "
+    "(ghi rõ chi tiết nào trong ly_do);\n"
     "- khong_ho_tro: abstract nói khác/ngược, số liệu khác, hoặc bài thuộc quần thể/chủ đề/thiết kế khác hẳn;\n"
     "- khong_du_thong_tin: abstract không đủ để kết luận (có thể ở toàn văn) — KHÔNG phải lỗi.\n"
+    # 18/11/2026 — bác sĩ gắn nhãn 17 phát hiện: 4/4 mục «ho_tro_mot_phan» là báo nhầm, cùng bốn kiểu dưới đây.
+    "Phạm vi của MỘT tài liệu [n]: (1) chỉ xét phần đoạn khẳng định mà [n] được giao chống đỡ — phần câu gắn với số "
+    "trích dẫn KHÁC trong cùng câu không thuộc [n]; (2) câu trích nhiều tài liệu cùng lúc (vd [38, 41]) được chống đỡ "
+    "CHUNG — [n] chỉ cần ủng hộ ý chung, không phải tự nêu đủ mọi chi tiết; (3) tên tác giả, năm, tạp chí là siêu dữ "
+    "liệu thư mục, không có trong abstract và được kiểm ở bước khác — KHÔNG dùng chúng để hạ mức; (4) câu chung kiểu "
+    "«… được tham khảo khi xây dựng đề cương» chỉ đòi tài liệu ĐÚNG CHỦ ĐỀ — đúng chủ đề thì ho_tro.\n"
     "Luật: «trich» là cụm NGUYÊN VĂN ≤ 25 từ chép đúng từng chữ từ tiêu đề hoặc abstract của "
     "CHÍNH tài liệu đó, bắt buộc "
     "với ho_tro/ho_tro_mot_phan/khong_ho_tro, để trống với khong_du_thong_tin. ly_do ≤ 30 từ, tiếng Việt. Khẳng định "
@@ -648,6 +655,8 @@ def main(
                 "tep_sha256": hashlib.sha256(van.encode("utf-8")).hexdigest(),  # đề cương đổi ⇒ báo cáo cũ
                 "luc": luc,
                 "model": model,
+                # 18/11/2026: đo độ đúng theo TỪNG phiên bản lời dặn (nhãn bác sĩ gắn cho lượt nào thì thuộc lời dặn đó)
+                "loi_dan_sha256": hashlib.sha256(HE_THONG.encode("utf-8")).hexdigest()[:12],
                 "thong_ke": {k: v for k, v in tk.items() if k != "loi"},
                 "loi": tk.get("loi", []),
                 "bo_qua_vi_tran": [c.id for c in bo],
