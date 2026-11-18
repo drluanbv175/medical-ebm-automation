@@ -170,8 +170,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # repo gốc nhánh claude/api-claude-nghien-cuu-20261117; vẫn 64.
 # 17/11/2026 (khuya): viet-ban-thao, thiet-ke-nghien-cuu (dấu vết máy lộ khi phản biện máy Claude API đọc đề cương
 # BTM) — y hệt repo gốc nhánh claude/de-cuong-dau-vet-api-20261117; vẫn 64.
+# 18/11/2026: kiem-chung-trich-dan, thu-thu-tai-lieu, dieu-phoi-g10 (trích dẫn đề tài phải có toàn văn — G10-AUTO-12)
+# — y hệt repo gốc nhánh claude/bien-nhan-toan-van-tltk-20261118; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "1a2cac6a2ab47e28b461f4f28e5c06279ae3481fca49db5961beecc25d609959"
+    "047760cb08128d367827be56aef0e2d60bafd1e4248b4520982ec8ae44e11d98"
 )
 
 MINIMUM_AGENT_COUNT = 64

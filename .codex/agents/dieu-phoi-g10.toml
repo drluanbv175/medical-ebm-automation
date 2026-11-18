@@ -29,7 +29,7 @@ bác sĩ chưa đồng ý (`_HOI-DONG-CONG.md` §5 — chi phí).
 | Mã | Nhiệm vụ | Agent chuyên trách | Đầu ra (artifact/khoá — tên là HỢP ĐỒNG) | Chấm chéo chuyên môn + giám khảo |
 |---|---|---|---|---|
 | G10-T1 | Lắp đề cương thống nhất + manifest gói phát hành (run_g10_assemble.py) | `dieu-phoi-g10` | `DE_CUONG_THONG_NHAT_<mã>.md`, `G10_checkpoint.json`, `G10_RELEASE_READINESS.json` | `tham-dinh-dau-ra`, `binh-duyet` + `giam-khao-cong` |
-| G10-T2 | A12 phủ mọi PMID của gói cuối (kể cả PMID do hệ chèn) | `kiem-chung-trich-dan` | `A12_RETRACTION_RECEIPT.json`, `A12_METADATA_RECEIPT.json` | `thu-thu-tai-lieu` + `giam-khao-cong` |
+| G10-T2 | A12 phủ mọi PMID của gói cuối (kể cả PMID do hệ chèn); mọi trích dẫn có toàn văn | `kiem-chung-trich-dan` | `A12_RETRACTION_RECEIPT.json`, `A12_METADATA_RECEIPT.json`, `TOAN_VAN_TLTK_<mã>.json` | `thu-thu-tai-lieu` + `giam-khao-cong` |
 | G10-T3 | Ghi sổ cái và bộ nhớ đề tài (sổ trạng thái riêng trong thư mục đề tài) | `so-cai-ghi-nho` | `SO_TRANG_THAI_<mã>.md` (một sổ mỗi đề tài; đủ mốc mọi cổng đã ký) | `tham-dinh-dau-ra` + `giam-khao-cong` |
 | G10-T4 | Đề cương NỘP HỘI ĐỒNG: viết lại thành văn bản khoa học người đọc được từ quyết định đã chốt (khi gói trình Hội đồng/cập nhật đăng ký) | `viet-ban-thao` | `DE_CUONG_NOP_HOI_DONG_<mã>.md`, `DE_CUONG_NOP_HOI_DONG_<mã>.docx` | `tham-dinh-dau-ra`, `kiem-chung-trich-dan` + `giam-khao-cong` |
 
@@ -44,14 +44,14 @@ Nhiệm vụ có điều kiện không áp dụng cho thiết kế ⇒ ghi lý d
 <!-- TRACH-NHIEM-CONG:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## 4b. Trách nhiệm hoàn chỉnh của cổng G10 (09/10/2026)
 Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối
-của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Mọi tiêu chí (17) của
+của cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ của chính cổng đó». Mọi tiêu chí (18) của
 `tools/g10_quality_gate.py` đã gán ĐÚNG MỘT bên ở `hoi_dong_cong.PHAN_CONG`
 (bảng dưới chép lại; test đối chiếu):
 
 | Bên chịu trách nhiệm | Tiêu chí |
 |---|---|
 | `G10-T1` — agent `dieu-phoi-g10` | G10-AUTO-01, G10-AUTO-03, G10-AUTO-06, G10-AUTO-07, G10-AUTO-08, G10-AUTO-09, G10-AUTO-10, G10-AUTO-11 |
-| `G10-T2` — agent `kiem-chung-trich-dan` | G10-AUTO-05 |
+| `G10-T2` — agent `kiem-chung-trich-dan` | G10-AUTO-05, G10-AUTO-12 |
 | `PI@G10-T1` — NGƯỜI PI quyết/ký; agent chuẩn bị hồ sơ + lệnh: `dieu-phoi-g10` | G10-HUMAN-01, G10-HUMAN-02, G10-HUMAN-03, G10-HUMAN-04, G10-HUMAN-05 |
 | `^*` — cổng tiền đề các cổng tiền đề theo mục đích phát hành (điều phối cổng đó chịu trách nhiệm) | G10-AUTO-02, G10-AUTO-02B, G10-AUTO-04 |
 
@@ -134,6 +134,7 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - ĐÃ VÁ 16/11/2026: bộ lắp + cổng G10 (`run_g10_assemble.load_meta`) và `check_de_cuong` (R15–R17) CÙNG áp lớp phủ `tools/quyet_dinh_da_chot.py` — ba nơi một nguồn (lệch nhau thì R16/R17 chặn đề cương mà bộ lắp đã lấp đúng). 21 khoá TRỐNG lấy từ quyết định đã chốt: kết cục chính (+ nguồn đo, tên biến), phơi nhiễm, hiệp biến, nguồn dữ liệu, công cụ (CHỈ khi mọi nguồn đo là hồ sơ — thang đo/PROM thì PI khai công cụ đã kiểm định), phân tích chính SAP §4, dữ liệu thiếu §6, khung bảng §11, kết quả mong đợi, mục tiêu, phiên bản/ngày đề cương, rủi ro–lợi ích, ICF, đăng ký, thu thập/kiểm soát chất lượng/khử định danh/quản trị/bảo mật dữ liệu G5, tác giả G7. KHÔNG ghi đè khoá PI đã khai, không ghi đĩa, không chép ô còn [CẦN]. Xem trước (chỉ đọc): `python3 tools/quyet_dinh_da_chot.py --study <mã>`. Đo thuần tập: 21 → 0 khoá phải khai lại; 17 khoá còn lại là thông tin MỚI đúng vai (nhân lực, kinh phí, tổng quan, hạn chế…). Hệ quả: đề tài đã lắp G10 trước 16/11 có StudySpec tính lại khác bản lưu ⇒ «chạy lại run_g10_assemble.py» rồi PI ký lại — không sửa tay cho khớp.
 - Luật độ tươi: G3 đọc G2 ⇒ hồ sơ G2 sinh lại sau G3 làm G3/G4 «cũ» và G10 chặn — chạy lại G3 rồi G4 sau G2.
 - Không chạy lại A12 ở G10 nếu bộ PMID của gói không đổi (vỡ manifest G9).
+- G10-AUTO-12 (18/11/2026): mọi TLTK của đề cương nộp + bản thảo G7 phải có TOÀN VĂN theo biên nhận `TOAN_VAN_TLTK_<mã>.json` (repo gốc `nap_endnote_de_tai.py --ghi-bien-nhan-toan-van`); bài không lấy được sau truy cập mở + làn trình duyệt ⇒ `toan_van_trich_dan.py loai-bo --ap-dung` rồi sinh lại đề cương nộp. Gói đã khoá chỉ cảnh báo, không tự huỷ khoá.
 
 ## Đề cương G10 tự lấp quyết định đặc thù thiết kế — giả lập trọn vòng 8 thiết kế (16/11/2026)
 - `quyet_dinh_da_chot.py` (lớp phủ dùng chung bộ lắp, cổng G10, `check_de_cuong`) nay lấp thêm: ngưỡng chẩn đoán (SAP),

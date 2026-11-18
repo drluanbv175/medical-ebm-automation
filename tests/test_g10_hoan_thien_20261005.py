@@ -51,6 +51,7 @@ import research_study_spec as RS  # noqa: E402
 import run_g2_auto as G2A  # noqa: E402
 import run_g10_assemble as G10A  # noqa: E402
 import skill_standards as S  # noqa: E402
+import toan_van_trich_dan as TVT  # noqa: E402
 
 from tests._chuoi_da_chot import dien_sap_g4, dung_g0_g3_da_chot, sinh_sap_g4_that, xac_nhan_g4  # noqa: E402
 from tests.g5_test_helpers import append_signed_approval, configure_test_signing_key  # noqa: E402
@@ -219,6 +220,10 @@ def _de_tai_g10_that(tmp_path: Path, monkeypatch, thiet_ke: str = "cohort") -> t
     _noi_dung_de_cuong(out, study, thiet_ke)
     _lap_g10(goc, study, monkeypatch)
     _ghi(out / G10Q.READINESS_JSON, json.dumps(_complete_readiness(study), ensure_ascii=False, indent=2))
+    # 18/11/2026 (G10-AUTO-12): thủ thư ghi biên nhận toàn văn cho mọi TLTK của bản thảo (đề tài thật: repo gốc đo
+    # trên EndNote) — thiếu biên nhận thì G10 đúng luật dừng ở bản nháp.
+    TVT.ghi_bien_nhan(out, study, TVT.dung_bien_nhan(out, study, toan_van=True, nguon="do_ga",
+                                                     nguoi_do="thu-thu-tai-lieu (đồ gá kiểm thử)"))
     _lap_g10(goc, study, monkeypatch)
     return study, out, goc
 

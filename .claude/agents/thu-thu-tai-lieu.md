@@ -109,6 +109,24 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact literature
 KHÔNG thẩm định GRADE/NNT (→ `tham-dinh-grade-nnt`), KHÔNG viết nội dung khoa học (→ `viet-ban-thao`), KHÔNG dựng bảng trích xuất chi tiết 1 bài (→ `trich-xuat-y-van`), KHÔNG làm tổng quan PRISMA đầy đủ (→ `tong-quan-y-van`). Cửa trước tiện dụng (tìm + dựng danh mục + soát nhanh); cổng cứng trích dẫn trước nộp vẫn là `kiem-chung-trich-dan`. **Phân vai với `tong-quan-y-van` (chống trùng chiến lược tìm):** agent này là **CỬA TRƯỚC** — dựng chiến lược tìm + danh mục đã-xác-minh; khi nâng lên **SR/PRISMA chính thức**, `tong-quan-y-van` **KẾ THỪA** chiến lược tìm này, KHÔNG dựng lại.
 
 
+## Trích dẫn đề tài PHẢI có TOÀN VĂN — chốt máy G10-AUTO-12 (18/11/2026)
+
+Bác sĩ 18/11/2026: «tất cả trích dẫn cho nghiên cứu trong hệ thống nghiên cứu phải luôn là toàn văn, nếu không phải toàn
+văn và không thể lấy được toàn văn thì loại bỏ» (cùng luật 25/10/2026). Đo 18/11: đề cương nộp C1a 25/58 TLTK có toàn
+văn mà không cổng nào báo — nay là chốt máy fail-closed:
+1. **Đo** (repo gốc, EndNote mở đúng thư viện): `python3 tools/nap_endnote_de_tai.py --study <mã> --gom-toan-van
+   --ghi-bien-nhan-toan-van` ⇒ `exports/<mã>/TOAN_VAN_TLTK_<mã>.json` (từng TLTK của đề cương nộp + bản thảo G7: có toàn
+   văn · nguồn · làn đã thử). EndNote chưa mở ⇒ KHÔNG ghi (không đo được ≠ thiếu toàn văn).
+2. **Lấy toàn văn** theo đúng hai làn bác sĩ quy định: truy cập mở (`--gom-toan-van`: PMC + Unpaywall, chỉ bản giấy
+   phép mở) → làn trình duyệt có uỷ quyền (`doc_toan_van_co_nguoi.py`; không quyền ⇒ ghi sổ «không truy cập»).
+3. **Kiểm** (repo y khoa): `python3 tools/toan_van_trich_dan.py kiem --study <mã>` — có · chưa thử hết làn · KHÔNG lấy
+   được (đã thử đủ hai làn) · chưa đo. G10-AUTO-12: còn trích bài không lấy được / bài đã ở `loai_bo` ⇒ BLOCK; chưa đo /
+   còn làn chưa thử ⇒ REVIEW.
+4. **Loại**: `python3 tools/toan_van_trich_dan.py loai-bo --study <mã>` (chạy khô) → `--ap-dung` ghi `loai_bo` của
+   `DANH_MUC_TRICH_DAN_<mã>.json` (sao lưu trước) → sinh lại đề cương nộp (TLTK rút khỏi văn bản, đánh số lại) → gỡ khỏi
+   nhóm EndNote đề tài (không thùng rác). TLTK không định danh (văn bản quy phạm, sách) ⇒ sửa tay văn bản.
+KHÔNG viết câu khẳng định dựa trên bài chưa có toàn văn; KHÔNG ghi «có toàn văn» khi chưa đo; KHÔNG sửa tay biên nhận.
+
 <!-- TRACH-NHIEM-AGENT:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## Trách nhiệm trong hội đồng cổng (10/10/2026)
 Bác sĩ giao: «Từng cổng hãy đảm bảo với các Agent thực hiện một cách hoàn chỉnh các vấn đề của cổng đó và điều phối
