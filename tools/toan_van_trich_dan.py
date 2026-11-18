@@ -635,8 +635,10 @@ def _in(kq: Dict[str, Any]) -> None:
             "KHONG_DO_DUOC": "⚪"}.get(kq["trang_thai"], "⚪")
     print(f"{bieu} Toàn văn trích dẫn — {kq['study']}: {kq['trang_thai']}")
     dem = kq.get("dem") or {}
+    # Có tệp giữ: «không lấy được» chưa chắc «phải loại» (bài được giữ hợp lệ) — nhãn trung tính, số giữ in dòng dưới.
+    ten = {**TEN_KET_LUAN, "khong_lay_duoc": "KHÔNG lấy được toàn văn"} if kq.get("giu_tep") else TEN_KET_LUAN
     if kq.get("tltk"):
-        print("   " + " · ".join(f"{TEN_KET_LUAN[k]} {dem.get(k, 0)}" for k in KET_LUAN)
+        print("   " + " · ".join(f"{ten[k]} {dem.get(k, 0)}" for k in KET_LUAN)
               + f" · đã loại mà còn trích {dem.get('da_loai_ma_con_trich', 0)}")
         if kq.get("giu_tep"):
             print(f"   Giữ theo lời bác sĩ ({kq['giu_tep']}): hợp lệ {dem.get('giu_giu', 0)} · chờ kiểm lại rút bài "
@@ -647,7 +649,8 @@ def _in(kq: Dict[str, Any]) -> None:
     can = [x for x in kq.get("tltk") or [] if x["ket_luan"] != "co" or x["da_loai_bo"]]
     for x in can[:20]:
         them = (" · ĐÃ Ở loai_bo MÀ CÒN TRÍCH" if x["da_loai_bo"] else "") + nhan_giu.get(x.get("giu") or "", "")
-        print(f"   - TLTK {x['so']} ({x['tai_lieu']}): {TEN_KET_LUAN[x['ket_luan']]}{them} — {x['van'][:90]}")
+        nhan = ten[x["ket_luan"]] if x.get("giu") in ("giu", "cho_kiem") else TEN_KET_LUAN[x["ket_luan"]]
+        print(f"   - TLTK {x['so']} ({x['tai_lieu']}): {nhan}{them} — {x['van'][:90]}")
     if len(can) > 20:
         print(f"   … và {len(can) - 20} TLTK nữa (--json để xem đủ)")
     for e in kq.get("loi") or []:

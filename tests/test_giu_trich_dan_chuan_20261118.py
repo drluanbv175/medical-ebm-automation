@@ -303,3 +303,13 @@ def test_pmid_lech_doi_va_lech_tieu_de_thi_khong_dat(tmp_path):
     _ghi(p, x)
     dx = TVT.de_xuat_giu(d, S, tra_doi=_tra)
     assert any(y["so"] == 1 and "khớp tiêu đề" in y["ly_do"] for y in dx["khong_dat"])
+
+
+def test_bai_duoc_giu_khong_in_nhan_phai_loai(tmp_path, capsys):
+    d = _de_tai(tmp_path)
+    TVT.ap_dung_giu(d, S, LOI, tra_doi=_tra)
+    assert TVT.main(["kiem", "--study", S], exports=tmp_path) == 0
+    ra = capsys.readouterr().out
+    dong_1 = next(x for x in ra.splitlines() if "TLTK 1 (" in x)
+    assert "GIỮ" in dong_1 and "phải loại" not in dong_1
+    assert "phải loại" not in ra.splitlines()[1]  # dòng đếm khi có tệp giữ
