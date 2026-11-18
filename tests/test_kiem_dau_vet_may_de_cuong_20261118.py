@@ -107,3 +107,18 @@ def test_bo_sinh_giu_ma_in_hoa_co_chu_so():
     assert G._cau("MT1 và ĐN4") == "MT1 và ĐN4."
     assert G._cau("Quần thể CHÍNH") == "Quần thể chính."
     assert G._cau("KHÔNG kiểm định") == "Không kiểm định."
+
+
+@pytest.mark.parametrize("dong, nhan", [
+    ("Câu hỏi đã chốt là mô tả (= descriptive) nên cắt ngang là thiết kế chuẩn;", "(= descriptive)"),
+    ("… mở từng hồ sơ (quyết định 28/10/2026), nên lấy một mẫu ngẫu nhiên …", "(quyết định 28/10/2026)"),
+])
+def test_k8_bat_dau_vet_luot_3(dong, nhan):
+    loi = K.loi_k8(dong)
+    assert len(loi) == 1 and nhan in loi[0], loi
+
+
+@pytest.mark.parametrize("dong", ["n = Z²(1−α/2) × p(1 − p) / d²", "theo Quyết định số 2767/QĐ-BYT ngày 01/7/2026",
+                                  "(= 1 khi có ít nhất một kết quả)", "hệ số (= 0,74)"])
+def test_k8_luot_3_khong_bao_nham(dong):
+    assert K.loi_k8(dong) == []
