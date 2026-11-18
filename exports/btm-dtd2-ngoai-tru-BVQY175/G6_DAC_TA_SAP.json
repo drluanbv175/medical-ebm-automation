@@ -1,7 +1,7 @@
 {
  "nguon_sap": "G4_A5_SAP_FINAL_btm-dtd2-ngoai-tru-BVQY175.md",
- "sha256_sap": "58a6d8cd07d53442345bede7e294647cb496620dc6d4b3a955fcc091f2224ad2",
- "trang_thai_de_xuat": "ĐỀ XUẤT CỦA AGENT 15/11/2026 (đồng bộ lại theo SAP hiện tại, giai đoạn 7: neo từng phân tích vào SAP bằng sap_neo, thêm phân tích SAP mới bổ sung) — CHỜ thống kê viên/PI duyệt (ghi nguoi_duyet). SAP nguồn còn là bản DRAFT chưa ký: SAP sửa trước khi khoá ⇒ sha256_sap lệch, đặc tả bị coi là cũ và phải đồng bộ lại.",
+ "sha256_sap": "56a322ba8a5f86d7b43177ec20290c3d04e8c1d5466119552fe1010c008301f1",
+ "trang_thai_de_xuat": "Đồng bộ lại 18/11/2026 theo SAP sửa nháp 5 (câu EPV, B1) và sửa nháp 4 (ĐN4 lọc dn4_co_don, quyết định B10). ĐỀ XUẤT CỦA AGENT 15/11/2026 (đồng bộ lại theo SAP hiện tại, giai đoạn 7: neo từng phân tích vào SAP bằng sap_neo, thêm phân tích SAP mới bổ sung) — CHỜ thống kê viên/PI duyệt (ghi nguoi_duyet). SAP nguồn còn là bản DRAFT chưa ký: SAP sửa trước khi khoá ⇒ sha256_sap lệch, đặc tả bị coi là cũ và phải đồng bộ lại.",
  "can_thong_ke_vien_quyet": [
   "Đề tài CHƯA có từ điển G5 — tên biến lấy theo bộ biến G3 (_bo-bien-rieng.csv) và _bien-phai-sinh.csv; đối chiếu lại khi dựng từ điển G5.",
   "Quy tắc giảm tham số khi EPV < 10 (SAP §5 bước 1–3) là điều kiện — kiểm EPV trên dữ liệu, bước nào áp thì thêm mục với tập biến đã giảm.",
@@ -330,7 +330,7 @@
     "ty_le": [
      "xn_du"
     ],
-    "loc": "du_tieu_chuan == 1 and so_nhom_ha_glucose >= 1"
+    "loc": "du_tieu_chuan == 1 and dn4_co_don == 1"
    },
    "sap_neo": [
     "ĐN4 —"

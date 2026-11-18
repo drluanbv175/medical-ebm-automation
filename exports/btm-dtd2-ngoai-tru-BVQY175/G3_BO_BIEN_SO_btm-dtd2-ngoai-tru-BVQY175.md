@@ -5,8 +5,8 @@
 > **CHỦ NHIỆM ĐÃ DUYỆT B1–B9 (28/10/2026, nguyên văn «Áp dụng B1–B9»).** Còn bảng ánh xạ tên xét nghiệm trên eHospital (mục 7), làm cùng quy trình trích ở mục 2.8. Máy soạn ngày 28/10/2026 từ các quyết định đã chốt: G0 (dấu 858fd91d6edbd8eb), G1 (dấu 91fc5cdaaa5a689c), G3 (dấu e86410f1846a5b43, N = 385). Không biến nào là định danh người bệnh. Cần bác sĩ kiểm chứng.
 
 ## 1. Cách dùng
-- **73 trường REDCap** (71 trường nhập tay, 2 trường máy tự tính) trong 5 phần: sàng lọc hồ sơ, thông tin chung, ĐTĐ và bệnh kèm, xét nghiệm thận, thuốc.
-- **31 biến phái sinh** (23 duyệt 28/10/2026 + 8 duyệt 15/11/2026) tính ở bước phân tích (không nhập tay), trong đó có kết cục chính `xn_du`.
+- **74 trường REDCap** (72 trường nhập tay, 2 trường máy tự tính) trong 5 phần: sàng lọc hồ sơ, thông tin chung, ĐTĐ và bệnh kèm, xét nghiệm thận, thuốc.
+- **32 biến phái sinh** (23 duyệt 28/10/2026 + 8 duyệt 15/11/2026 + 1 thêm 18/11/2026, công thức chờ duyệt) tính ở bước phân tích (không nhập tay), trong đó có kết cục chính `xn_du`.
 - Tệp máy đọc:
   - `_bo-bien-rieng.csv`: từ điển REDCap 18 cột; nhập thẳng vào REDCap, và là nguồn biến duy nhất của G5;
   - `_bien-phai-sinh.csv`: công thức các biến phái sinh;
@@ -21,7 +21,7 @@
 5. Ngày lượt khám và ngày xét nghiệm được ghi vì cần cho quy tắc «2 lần đo cách nhau từ 90 ngày». Trước khi chia sẻ, tệp phân tích đổi ngày thành «ngày thứ mấy trong năm 2026».
 6. Không có kết quả xét nghiệm thì ghi số lượng = 0, không dùng mã thiếu.
 
-## 3. Bảng bộ biến (73 trường)
+## 3. Bảng bộ biến (74 trường)
 
 
 **Biểu mẫu `sang_loc_ho_so`**
@@ -115,6 +115,7 @@
 | Tên biến | Nhãn | Loại | Giá trị hợp lệ | Nhóm | Vai trò | Mã chuẩn | Bắt buộc | Hiện khi | Lý do |
 |---|---|---|---|---|---|---|---|---|---|
 | `thuoc_ha_glucose` | Nhóm thuốc hạ glucose có trong đơn tại lượt khám cuối năm 2026 — *Viên phối hợp đánh dấu mọi nhóm thành phần* | chọn nhiều | 1, Metformin; 2, Sulfonylurea; 3, Ức chế DPP-4; 4, Ức chế SGLT2; 5, Đồng vận thụ thể GLP-1; 6, Thiazolidinedion; 7, Ức chế alpha-glucosidase; 8, Insulin; 9, Nhóm khác; 0, Không có thuốc hạ glucose | 6. Phơi nhiễm, biến giải thích | Biến giải thích MT3 (insulin, số nhóm thuốc); kết cục Phụ 3b (SGLT2i) | ATC A10A, A10BA, A10BB, A10BH, A10BK, A10BJ, A10BG, A10BF | có | [du_tieu_chuan] = '1' | G0 chốt; kết cục Phụ 3 (G1) |
+| `don_ha_glucose_nam` | Có ít nhất một đơn thuốc hạ glucose ở bất kỳ lượt khám nào năm 2026 — *Xem đơn của mọi lượt khám năm 2026, không chỉ lượt cuối; chỉ ghi có/không, không ghi nhóm thuốc* | chọn một | 1, Có; 0, Không | 6. Phơi nhiễm, biến giải thích | Quần thể độ nhạy ĐN4 của kết cục chính | ATC A10 | có | [du_tieu_chuan] = '1' | G1 «có ít nhất một đơn thuốc hạ glucose trong cửa sổ»; quyết định B10 (18/11/2026) |
 | `raasi` | ACEi hoặc ARB có trong đơn tại lượt khám cuối năm 2026 — *Kể cả viên phối hợp (ví dụ perindopril/amlodipin)* | chọn một | 0, Không; 1, ACEi; 2, ARB; 3, Cả ACEi và ARB | 8. Kết cục | Kết cục Phụ 3a | ATC C09A, C09B (ACEi); C09C, C09D (ARB) | có | [du_tieu_chuan] = '1' | Kết cục Phụ 3 (G1) |
 | `thuoc_ngoai_don` | Bệnh án ghi người bệnh đang dùng nhưng KHÔNG có trong đơn eHospital (thuốc kê hoặc mua ngoài) | chọn nhiều | 1, ACEi hoặc ARB; 2, Ức chế SGLT2; 0, Không có | 8. Kết cục | Phân tích độ nhạy kết cục Phụ 3 | — | có | [du_tieu_chuan] = '1' | Bảng sai lệch G1: thuốc kê hoặc mua ngoài |
 | `ccd_raasi` | Hồ sơ ghi rõ chống chỉ định hoặc không dung nạp ACEi/ARB | chọn một | 1, Có; 0, Không | 8. Kết cục | Loại khỏi mẫu số kết cục Phụ 3a | — | có | [du_tieu_chuan] = '1' | G1: người có chống chỉ định ghi trong hồ sơ loại khỏi mẫu số |
@@ -133,7 +134,7 @@
 - 8. Kết cục: kết cục chính và kết cục phụ là biến phái sinh (mục 4) từ các trường nhóm 2, 4, 8; trường nhập tay thuộc nhóm này: `raasi`, `thuoc_ngoai_don`, `ccd_raasi`, `ccd_raasi_ly_do`, `ccd_sglt2i`, `ccd_sglt2i_ly_do`.
 - 9. Theo dõi, an toàn: không theo dõi dọc, không có biến cố bất lợi (không can thiệp); chỉ ghi mốc thời gian: `ngay_kham_dau`, `ngay_kham_cuoi`.
 
-## 4. Biến phái sinh (31 biến, tính ở bước phân tích)
+## 4. Biến phái sinh (32 biến, tính ở bước phân tích)
 
 | Tên | Nhãn | Kiểu | Định nghĩa / công thức | Biến nguồn | Quy tắc thiếu | Dùng ở | Nguồn |
 |---|---|---|---|---|---|---|---|
@@ -168,15 +169,16 @@
 | `nhom_tuoi_65` | Nhóm tuổi < 65 / ≥ 65 | Phân loại | 1 = dưới 65 tuổi; 2 = từ 65 tuổi trở lên | tuoi | tuoi thiếu ⇒ thiếu | Nhóm nhỏ của kết cục chính (SAP §7) | SAP §7; duyệt 15/11/2026 (G3_BO_BIEN_SO_QUYET_DINH_20261115.md) |
 | `btm_chua_ghi_nhan_mr` | BTM chưa ghi nhận — danh mục mã thận mở rộng | Nhị phân | Chỉ trên người phan_loai_btm = 2: 1 khi ma_btm_ghi_nhan = 0 VÀ ma_than_mo_rong = 0 (không có cả N18, E11.2, N08.3 lẫn N19, I12, I13, R80) | phan_loai_btm ma_btm_ghi_nhan ma_than_mo_rong | Chỉ tính trên người có phan_loai_btm = 2 | ĐN5 — độ nhạy của Phụ 2 (MT1) | Quyết định B3 (28/10/2026); SAP §9; duyệt 15/11/2026 (G3_BO_BIEN_SO_QUYET_DINH_20261115.md) |
 | `chi_dinh_raasi_1lan` | Chỉ định ACEi/ARB — albumin niệu chỉ cần một lần | Nhị phân | 1 khi tha = 1 và có ít nhất 1 kết quả UACR ≥ 30 mg/g năm 2026 | tha uacr_mg_g_k | — | ĐN6 — độ nhạy của Phụ 3a (MT2) | Quyết định B5 (28/10/2026); SAP §9; duyệt 15/11/2026 (G3_BO_BIEN_SO_QUYET_DINH_20261115.md) |
+| `dn4_co_don` | Quần thể ĐN4 — có đơn thuốc hạ glucose trong năm 2026 | Nhị phân | 1 nếu don_ha_glucose_nam = 1 | don_ha_glucose_nam | — | ĐN4 — độ nhạy định nghĩa quần thể của kết cục chính (MT1) | Quyết định B10 (18/11/2026); SAP §9; công thức chờ duyệt |
 
 ## 5. Vai trò biến ở MT3 và lưu ý cho kế hoạch phân tích (G4)
 - MT3 là phân tích **thăm dò**: không có một phơi nhiễm chính nên không dựng tập biến hiệu chỉnh tối thiểu theo DAG. Mọi biến giải thích G0 đã chốt cùng vào mô hình; kết quả diễn giải là mối liên quan, không phải nhân quả (G1).
 - Biến giải thích (12, theo G0): tuổi, giới, nhóm đối tượng, thời gian mắc ĐTĐ, HbA1c gần nhất, insulin, số nhóm thuốc hạ glucose, tăng huyết áp, BMI, tim mạch (xơ vữa hoặc suy tim), số lượt khám, phòng khám theo dõi chính.
 - **Cảnh báo 1 — HbA1c thiếu không ngẫu nhiên:** người không được làm HbA1c nhiều khả năng cũng không được làm UACR. Vì vậy codebook ghi riêng `co_hba1c`. SAP (G4) cần quyết cách xử lý: biến chỉ báo, hoặc phân tích trên người có HbA1c. Không nên chỉ phân tích trên những người có đủ dữ liệu.
 - **Cảnh báo 2 — số lượt khám:** số lượt khám nhiều làm tăng cơ hội được xét nghiệm, nên mối liên quan một phần là do cấu trúc. Cần diễn giải thận trọng.
-- **Đếm tham số của mô hình đa biến (bàn giao cho G3/G4):** khoảng 15 tham số. Một biến phân loại k mức tính k−1 tham số: nhóm đối tượng 4 mức ⇒ 3, phòng khám 3 mức ⇒ 2, mỗi biến còn lại ⇒ 1.
-  - Nếu tỷ lệ xét nghiệm đủ là 25%, nhóm kết cục ít hơn có khoảng 96 người, tức khoảng 6,4 người cho mỗi tham số.
-  - Nếu tỷ lệ xét nghiệm đủ là 50%, nhóm kết cục ít hơn có khoảng 192 người, tức khoảng 12,8 người cho mỗi tham số.
+- **Đếm tham số của mô hình đa biến (bàn giao cho G3/G4):** 16 tham số, khớp SAP và đề cương mục 4.9. Một biến phân loại k mức tính k−1 tham số: nhóm đối tượng 4 mức ⇒ 3, HbA1c gần nhất 3 mức ⇒ 2, phòng khám 3 mức ⇒ 2, mỗi biến còn lại ⇒ 1.
+  - Nếu tỷ lệ xét nghiệm đủ là 25%, nhóm kết cục ít hơn có khoảng 96 người, tức 6,0 người cho mỗi tham số — dưới ngưỡng 10, nên SAP giảm tham số theo thứ tự định trước (đề cương mục 4.9).
+  - Nếu tỷ lệ xét nghiệm đủ là 50%, nhóm kết cục ít hơn có khoảng 192 người, tức 12,0 người cho mỗi tham số.
   - Ngưỡng «10 biến cố mỗi tham số» chỉ là kiểm tra sơ bộ. SAP (G4) quyết có cần gộp mức hay giảm biến hay không.
 
 ## 6. Kiểm chống thiếu và chống thừa
@@ -185,7 +187,8 @@
 - [x] Đủ biến cho mọi kết cục phụ: BTM xác nhận hoặc nghi; nhóm G và A; BTM chưa ghi nhận; chỉ định và sử dụng ACEi/ARB, SGLT2i; chống chỉ định.
 - [x] Đủ 12 biến giải thích MT3 mà G0 đã chốt.
 - [x] Biến chọn mẫu và «không đáp ứng»: phần A ghi cho mọi hồ sơ đã mở, nên dựng được sơ đồ chọn STROBE/RECORD.
-- [x] Biến cho mọi phân tích độ nhạy G1 đã nêu: albumin niệu dạng khác; xét nghiệm và thuốc ngoài viện; lượt khám đầu trước 01/07; danh mục mã thận mở rộng.
+- [x] Biến cho các phân tích độ nhạy G1: albumin niệu dạng khác; xét nghiệm và thuốc ngoài viện; lượt khám đầu trước 01/07; danh mục mã thận mở rộng.
+- [x] Biến nguồn cho ĐN4 (kết cục chính chỉ trên người có đơn thuốc hạ glucose): `don_ha_glucose_nam` xem đơn của mọi lượt khám năm 2026 (B10, 18/11/2026); `thuoc_ha_glucose` vẫn chỉ ghi đơn của lượt khám cuối.
 - [x] Biến kiểm soát chất lượng: người trích, ngày trích, thời gian trích.
 - [ ] **Chưa có:** tên xét nghiệm đúng như trên eHospital (mục 7). Chủ nhiệm điền; hai người duyệt trước khi trích (làm cùng quy trình trích, mục 2.8).
 
@@ -252,6 +255,12 @@ Mã ICD-10 theo bảng WHO mà eHospital đang dùng. Mã LOINC ghi ở bảng b
 | B7 | Tuổi dùng cho eGFR | Tuổi tại lượt khám đầu (sai lệch tối đa 1 tuổi) | Ghi năm sinh để tính tuổi tại từng lần xét nghiệm (tăng dữ kiện gần định danh) |
 | B8 | Ghi ngày lượt khám và ngày xét nghiệm | Ghi, rồi đổi thành «ngày thứ trong năm» trước khi chia sẻ tệp | Chỉ ghi tháng (không áp được quy tắc 90 ngày chính xác) |
 | B9 | Mã thiếu | KGHS (hồ sơ không ghi), KDD (không đọc được hoặc mâu thuẫn) | Chủ nhiệm ấn định |
+
+**Quyết định của chủ nhiệm (18/11/2026, nguyên văn): «đồng ý bỏ Hiệu chỉnh quần thể hữu hạn; ĐN4 (B10) cho a»** — B10 áp dụng phương án ở cột «Đề xuất».
+
+| Mã | Câu hỏi | Đề xuất | Lựa chọn khác |
+|---|---|---|---|
+| B10 | Biến nguồn cho ĐN4 (kết cục chính chỉ trên người có đơn thuốc hạ glucose) | Thêm một trường chọn một «Có đơn thuốc hạ glucose ở bất kỳ lượt khám nào năm 2026» (1, Có; 0, Không) và biến phái sinh cờ ĐN4; chỉ ghi có/không, không ghi nhóm thuốc, nên khối lượng trích tăng ít | Đổi định nghĩa ĐN4 trong đề cương và SAP thành «có thuốc hạ glucose tại lượt khám cuối» (dùng ngay `thuoc_ha_glucose`, không thêm trường) |
 
 Đổi một quyết định ở trên về sau thì sửa codebook, chạy lại bộ nạp G5 và ghi lời chủ nhiệm vào phiếu quyết định.
 

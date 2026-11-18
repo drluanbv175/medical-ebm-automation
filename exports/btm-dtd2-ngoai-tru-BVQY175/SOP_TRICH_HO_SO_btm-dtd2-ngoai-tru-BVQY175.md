@@ -48,7 +48,7 @@ Người đảm nhận các vai ngoài chủ nhiệm do chủ nhiệm phân côn
 ## 4. Chuẩn bị (làm một lần, trước hồ sơ đầu tiên)
 
 1. **Dựng hai dự án REDCap** (quản lý dữ liệu):
-   - dự án chính và dự án «trích lại» riêng, cùng tải lên `_bo-bien-rieng.csv` (73 trường, 5 biểu mẫu);
+   - dự án chính và dự án «trích lại» riêng, cùng tải lên `_bo-bien-rieng.csv` (74 trường, 5 biểu mẫu);
    - khai mã thiếu (Missing Data Codes) theo `_ma-thieu-theo-bien.csv`: `KGHS` = hồ sơ không ghi; `KDD` = không đọc được hoặc mâu thuẫn;
    - mỗi người một tài khoản riêng; người trích lại không có quyền xem dự án chính.
 2. **Hoàn thành bảng ánh xạ tên xét nghiệm (Phụ lục 2).**
@@ -114,6 +114,7 @@ Người đảm nhận các vai ngoài chủ nhiệm do chủ nhiệm phân côn
 - **Phần E (kết quả ngoài viện).** Chỉ ghi khi bệnh án ghi rõ **cả ngày lẫn kết quả**. Các kết quả này chỉ dùng cho phân tích độ nhạy.
 - **Phần F (thuốc).**
   - Đọc đơn của **lượt khám cuối**. Viên phối hợp được đánh dấu cho mọi nhóm thành phần.
+  - Riêng câu `don_ha_glucose_nam`: xem đơn của **mọi lượt khám năm 2026**; có ít nhất một đơn có thuốc hạ glucose thì ghi «Có». Câu này dùng cho phân tích độ nhạy ĐN4.
   - Thuốc bệnh án ghi «đang dùng» nhưng không có trong đơn eHospital thì ghi ở câu `thuoc_ngoai_don`.
   - Chống chỉ định hoặc không dung nạp chỉ ghi khi hồ sơ **ghi rõ**; không tự suy từ kết quả xét nghiệm.
 
