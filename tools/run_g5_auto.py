@@ -2894,6 +2894,8 @@ def main():
 
 
 if __name__ == "__main__":
+    import moi_truong_venv as _MV  # bảo đảm Python đủ thư viện: thiếu ⇒ chạy lại bằng ~/.ebm-venv (18/11/2026)
+    _MV.dam_bao_moi_truong(__file__)
     # VÁ 2026-07-27: TRƯỚC ĐÂY gọi main() trần nên MỌI mã thoát main() trả về đều bị
     # vứt và tiến trình luôn exit 0 — chốt chặn G4 vừa thêm sẽ in cảnh báo rồi vẫn báo
     # "thành công" với caller/script tự động. Cùng lớp lỗi đã vá ở run_g10_assemble.py.

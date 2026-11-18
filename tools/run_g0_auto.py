@@ -67,6 +67,14 @@ for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
 _REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_REPO_ROOT))
 
+if __name__ == "__main__":
+    # 18/11/2026: chạy trực tiếp ⇒ bảo đảm Python đủ thư viện TRƯỚC khi nạp app.sources.pubmed (cần defusedxml) —
+    # python3 hệ thống thiếu ⇒ chạy lại bằng ~/.ebm-venv; không chuyển được ⇒ thoát mã 2, không ghi gì.
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import moi_truong_venv as _MV  # noqa: E402
+
+    _MV.dam_bao_moi_truong(__file__)
+
 # NCBI_EMAIL do app.config tự đọc (biến môi trường → kho secrets ngoài git → .env). Bỏ email cá nhân gài mặc định
 # (27/09/2026): repo công khai, và email gài trước khi import app.config còn ĐÈ giá trị bác sĩ khai trong kho secrets.
 # Thiếu email ⇒ PubMedClient trả bản ghi GIẢ LẬP ⇒ §3 của A1 tự gắn nhãn giả lập (xem _ly_do_gia_lap).
