@@ -39,8 +39,12 @@ REPO = Path(__file__).resolve().parents[1]
 BAO_CAO = {
     "A12": "A12_KIEM_NOI_DUNG_{s}.json",
     "PHAN_BIEN": "PHAN_BIEN_MAY_{s}.json",
+    # 18/11/2026 — thí điểm kiểm tổng quan tài liệu G0-T3/T4 bằng API (tools/kiem_tong_quan_g0_api.py)
+    "G0": "G0_KIEM_TONG_QUAN_{s}.json",
 }
-TEN = {"A12": "kiểm nội dung trích dẫn A12", "PHAN_BIEN": "phản biện máy đề cương"}
+TEN = {"A12": "kiểm nội dung trích dẫn A12", "PHAN_BIEN": "phản biện máy đề cương",
+       "G0": "kiểm tổng quan tài liệu G0-T3/T4"}
+MUC_G0_A_CAN_XEM = ("sai", "khong_hop_ly", "sai_lech", "can_xem")  # cùng luật `kiem_tong_quan_g0_api.can_xem_a`
 MUC_A12_CAN_XEM = ("khong_ho_tro", "ho_tro_mot_phan", "can_xem")  # cùng luật `kiem_noi_dung_trich_dan.can_xem`
 THU_TU_MUC = {"cao": 0, "vua": 1, "thap": 2}
 NHAN_HOP_LE = ("dung", "sai", "khong_ro")
@@ -85,6 +89,13 @@ def hieu_luc(bc: Dict[str, Any], study: str, goc: Path = REPO) -> Tuple[Optional
     if bc.get("tep_sha256"):
         if _sha_tep(tep) != bc["tep_sha256"]:
             return True, f"{tep.name} đã đổi sau lượt kiểm (mã băm khác)"
+        # 18/11/2026: báo cáo đọc NHIỀU tệp (kiểm G0: tổng hợp + khoảng trống) — tệp phụ đổi/vắng cũng là báo cáo cũ
+        for ten, sha in (bc.get("tep_phu") or {}).items():
+            phu = goc / "exports" / study / str(ten)
+            if not phu.is_file():
+                return True, f"tệp phụ {ten} không còn"
+            if _sha_tep(phu) != sha:
+                return True, f"{ten} đã đổi sau lượt kiểm (mã băm khác)"
         return False, "mã băm khớp"
     luc = _luc(bc.get("luc"))
     if luc is None:
@@ -120,6 +131,8 @@ def muc_can_duyet(loai: str, bc: Dict[str, Any]) -> List[Dict[str, Any]]:
                         ],
                     }
                 )
+    elif loai == "G0":
+        ra += _muc_g0(bc)
     else:
         ds = sorted(bc.get("phat_hien") or [], key=lambda p: (THU_TU_MUC.get(str(p.get("muc")), 9), p.get("dong") or 0))
         for p in ds:
@@ -142,6 +155,43 @@ def muc_can_duyet(loai: str, bc: Dict[str, Any]) -> List[Dict[str, Any]]:
                     ],
                 }
             )
+    return ra
+
+
+def _muc_g0(bc: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Mục cần duyệt của báo cáo kiểm G0 (18/11/2026): A — trường bảng sàng lọc · B — cặp đoạn tổng hợp ↔ tài liệu ·
+    C — vấn đề khoảng trống. Khoá bền theo định danh bài/trường, không theo thứ tự."""
+    ra: List[Dict[str, Any]] = []
+    for k in bc.get("a") or []:
+        co = [str(x) for x in k.get("co") or []]
+        if k.get("muc") in MUC_G0_A_CAN_XEM or any(x.startswith("so_khong_thay") for x in co):
+            ra.append({"khoa": f"G0A|{k.get('dinh_danh')}|{k.get('truong')}", "cong_cu": "G0_SANG_LOC",
+                       "muc": str(k.get("muc")),
+                       "tieu_de": (f"bảng sàng lọc · {k.get('dinh_danh')} · {k.get('truong')} — máy phán "
+                                   f"«{k.get('muc')}»"),
+                       "chi_tiet": [f"Máy nói: {k.get('ly_do', '')}",
+                                    *([f"Trích căn cứ: «{k.get('trich')}»"] if k.get("trich") else []),
+                                    *([f"Cờ máy: {', '.join(co)}"] if co else [])]})
+    cau = {c.get("id"): c for c in bc.get("cau_b") or []}
+    for k in bc.get("b") or []:
+        co = [str(x) for x in k.get("co") or []]
+        if k.get("muc") in MUC_A12_CAN_XEM or any(x.startswith("so_khong_thay") for x in co):
+            doan = str((cau.get(k.get("id")) or {}).get("doan") or "")
+            ra.append({"khoa": f"G0B|{hashlib.sha1(doan.encode('utf-8')).hexdigest()[:10]}|{k.get('dinh_danh')}",
+                       "cong_cu": "G0_TONG_HOP", "muc": str(k.get("muc")),
+                       "tieu_de": f"đoạn tổng hợp ↔ {k.get('dinh_danh')} — máy phán «{k.get('muc')}»",
+                       "chi_tiet": [f"Đoạn: {doan[:400]}", f"Máy nói: {k.get('ly_do', '')}",
+                                    *([f"Trích căn cứ: «{k.get('trich')}»"] if k.get("trich") else []),
+                                    *([f"Cờ máy: {', '.join(co)}"] if co else [])]})
+    for k in bc.get("c") or []:
+        if k.get("muc") in ("van_de", "can_xem"):
+            tr = str(k.get("trich") or "")
+            ra.append({"khoa": f"G0C|{k.get('loai')}|{hashlib.sha1(tr.encode('utf-8')).hexdigest()[:10]}",
+                       "cong_cu": "G0_KHOANG_TRONG", "muc": str(k.get("loai")),
+                       "tieu_de": f"khoảng trống · {k.get('loai')}" + (f" · {k['dinh_danh']}" if k.get("dinh_danh")
+                                                                       else ""),
+                       "chi_tiet": [f"Trích: «{tr[:300]}»", f"Máy nói: {k.get('ly_do', '')}",
+                                    *([f"Cờ máy: {', '.join(k['co'])}"] if k.get("co") else [])]})
     return ra
 
 
@@ -255,7 +305,7 @@ def dung_phieu(study: str, goc: Path = REPO) -> Tuple[Path, Path, int]:
     bcs = doc_bao_cao(study, goc)
     nhan = doc_nhan(study, goc)["nhan"]
     muc: List[Dict[str, Any]] = []
-    for loai in ("A12", "PHAN_BIEN"):
+    for loai in BAO_CAO:
         if loai in bcs and not bcs[loai].get("hong"):
             muc += bcs[loai]["muc"]
     luc = dt.datetime.now().isoformat(timespec="seconds")
@@ -270,7 +320,7 @@ def dung_phieu(study: str, goc: Path = REPO) -> Tuple[Path, Path, int]:
         "Máy KHÔNG tự gắn nhãn. Tỷ lệ đúng chỉ tính trên các mục bác sĩ đã trả lời «đúng» hoặc «sai».",
         "",
     ]
-    for loai in ("A12", "PHAN_BIEN"):
+    for loai in BAO_CAO:
         x = bcs.get(loai)
         if not x:
             continue
