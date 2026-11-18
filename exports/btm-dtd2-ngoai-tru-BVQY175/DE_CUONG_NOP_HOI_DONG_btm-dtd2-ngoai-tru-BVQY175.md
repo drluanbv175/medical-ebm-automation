@@ -350,7 +350,7 @@ Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và 
 ## 6.4. Kế hoạch quản lý dữ liệu
 
 - Thời hạn lưu: Số liệu điện tử (và phiếu giấy nếu có) lưu 2 năm sau khi kết thúc nghiên cứu. Hết thời hạn lưu trữ: tệp điện tử xoá an toàn, phiếu giấy (nếu có) huỷ bằng máy huỷ tài liệu, có biên bản.
-- Khử định danh: Phiếu chỉ mang mã nghiên cứu, không ghi trường định danh nào của người bệnh; Bảng nối mã nghiên cứu với mã người bệnh lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ, huỷ sau khi khoá dữ liệu (quy trình dữ liệu đã chốt).
+- Khử định danh: Phiếu chỉ mang mã nghiên cứu, không ghi trường định danh nào của người bệnh; Bảng nối mã nghiên cứu với mã người bệnh lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ, huỷ sau khi khoá dữ liệu.
 
 ## 6.5. Đăng ký nghiên cứu và phổ biến kết quả
 
