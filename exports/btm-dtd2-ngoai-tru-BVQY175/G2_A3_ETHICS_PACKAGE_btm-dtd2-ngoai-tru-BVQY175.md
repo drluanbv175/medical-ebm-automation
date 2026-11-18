@@ -1,5 +1,5 @@
 # A3, HỒ SƠ ĐẠO ĐỨC & ĐĂNG KÝ NGHIÊN CỨU | btm-dtd2-ngoai-tru-BVQY175
-> Tạo tự động: 2026-11-17 13:53 | Theo Helsinki (WMA, bản sửa 2024) · ICH-GCP E6(R3) · TT43/2024/TT-BYT · Luật 91/2025/QH15
+> Tạo tự động: 2026-11-18 16:20 | Theo Helsinki (WMA, bản sửa 2024) · ICH-GCP E6(R3) · TT43/2024/TT-BYT · Luật 91/2025/QH15
 > [BẢN NHÁP TỰ ĐỘNG — DRAFT Phiên bản 1.0 chờ phê duyệt]
 > Cần bác sĩ/chủ nhiệm kiểm chứng, chỉnh sửa và ký trước khi nộp Hội đồng đạo đức.
 
@@ -23,7 +23,7 @@
 ```
 ---
  ĐƠN XIN PHÊ DUYỆT NGHIÊN CỨU Y SINH HỌC
- (DRAFT Phiên bản 1.0 — 2026-11-17)
+ (DRAFT Phiên bản 1.0 — 2026-11-18)
 ---
 
 Kính gửi: Hội đồng Đạo đức Nghiên cứu Y sinh
@@ -172,7 +172,7 @@ NOT APPLICABLE, informed consent waiver requested (see Document 9).
 
 ```
 KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
-Đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026 | Phiên bản: 1.0 | Ngày: 2026-11-17
+Đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026 | Phiên bản: 1.0 | Ngày: 2026-11-18
 ---
 
 1. LOẠI DỮ LIỆU THU THẬP:
@@ -231,7 +231,7 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
 
 ```
 CHECKLIST HỒ SƠ NỘP HỘI ĐỒNG ĐẠO ĐỨC
-Đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026 | Ngày chuẩn bị: 2026-11-17
+Đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026 | Ngày chuẩn bị: 2026-11-18
 ---
 
 HỒ SƠ BẮT BUỘC:
@@ -279,7 +279,7 @@ KHAI BÁO XUNG ĐỘT LỢI ÍCH, TÀI TRỢ VÀ SỬ DỤNG AI
 ---
 Tên chủ nhiệm: [CẦN BỔ SUNG]
 Chức vụ: [CẦN BỔ SUNG] | Đơn vị: [CẦN BỔ SUNG]
-Ngày khai báo: 17/11/2026
+Ngày khai báo: 18/11/2026
 
 A. XUNG ĐỘT LỢI ÍCH TÀI CHÍNH (12 tháng gần nhất):
 ☐ Không có
@@ -333,7 +333,7 @@ YÊU CẦU MIỄN THỦ TỤC ĐỒNG THUẬN (ICF Waiver Request), DRAFT Phiên
 Căn cứ: TT43/2024/TT-BYT Điều 15 · Helsinki (WMA, bản sửa 2024) §29
 Tên đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026
 Chủ nhiệm: [CẦN BỔ SUNG]
-Ngày: 2026-11-17
+Ngày: 2026-11-18
 
 CƠ SỞ XIN MIỄN (phải thỏa CẢ 4 điều kiện):
 ☑ Dùng hồ sơ có sẵn, GIẢ DANH HOÁ (chưa ẩn danh hoàn toàn cho tới khi huỷ bảng nối): Phiếu chỉ mang mã nghiên cứu, không ghi trường định danh nào của người bệnh; Bảng nối mã nghiên cứu với mã người bệnh lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ, huỷ sau khi khoá dữ liệu
@@ -364,7 +364,7 @@ Chữ ký chủ nhiệm: [CẦN KÝ] | Ngày: ___/___/2026
 **Thời điểm:** TÙY CHỌN. Hồi cứu dữ liệu thứ cấp, không tuyển người tham gia mới (PI đã chốt, gate_params.G2.recruitment_mode)
 
 **Nghiên cứu tương tự đã đăng ký (prior art, tra thật trên ClinicalTrials.gov API v2):**
-> **ĐÃ TRA THẬT ngày 2026-11-17** trên ClinicalTrials.gov API v2 với truy vấn `("Diabetes Mellitus, Type 2"[Mesh] OR "type 2 diabetes"[tiab]) AND ("Renal Insufficiency, Chronic"[Mesh] OR "Diabetic Nephropathies"[Mesh] OR "chronic kidney disease"[tiab] OR albuminuria[tiab]) AND ("Guideline Adherence"[Mesh] OR "Practice Patterns, Physicians'"[Mesh] OR "care gap"[tiab] OR "albuminuria testing"[tiab] OR "albuminuria screening"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR "Ambulatory Care"[Mesh] OR "Primary Health Care"[Mesh] OR "primary care"[tiab]) AND 2019:2026[dp]` — **0 hồ sơ khớp**, trong đó **0 đang/sắp tuyển**. Tra lại: https://clinicaltrials.gov/search?term=%28%22Diabetes+Mellitus%2C+Type+2%22+OR+%22type+2+diabetes%22+%29+AND+%28%22Renal+Insufficiency%2C+Chronic%22+OR+%22Diabetic+Nephropathies%22+OR+%22chronic+kidney+disease%22+OR+albuminuria+%29+AND+%28%22Guideline+Adherence%22+OR+%22Practice+Patterns%2C+Physicians%27%22+OR+%22care+gap%22+OR+%22albuminuria+testing%22+OR+%22albuminuria+screening%22+OR+undiagnosed+OR+underdiagnos%2A+OR+underuse+OR+underutili%2A+%29+AND+%28outpatient%2A+OR+%22Ambulatory+Care%22+OR+%22Primary+Health+Care%22+OR+%22primary+care%22+%29+AND+2019%3A2026
+> **ĐÃ TRA THẬT ngày 2026-11-18** trên ClinicalTrials.gov API v2 với truy vấn `("Diabetes Mellitus, Type 2"[Mesh] OR "type 2 diabetes"[tiab]) AND ("Renal Insufficiency, Chronic"[Mesh] OR "Diabetic Nephropathies"[Mesh] OR "chronic kidney disease"[tiab] OR albuminuria[tiab]) AND ("Guideline Adherence"[Mesh] OR "Practice Patterns, Physicians'"[Mesh] OR "care gap"[tiab] OR "albuminuria testing"[tiab] OR "albuminuria screening"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR "Ambulatory Care"[Mesh] OR "Primary Health Care"[Mesh] OR "primary care"[tiab]) AND 2019:2026[dp]` — **0 hồ sơ khớp**, trong đó **0 đang/sắp tuyển**. Tra lại: https://clinicaltrials.gov/search?term=%28%22Diabetes+Mellitus%2C+Type+2%22+OR+%22type+2+diabetes%22+%29+AND+%28%22Renal+Insufficiency%2C+Chronic%22+OR+%22Diabetic+Nephropathies%22+OR+%22chronic+kidney+disease%22+OR+albuminuria+%29+AND+%28%22Guideline+Adherence%22+OR+%22Practice+Patterns%2C+Physicians%27%22+OR+%22care+gap%22+OR+%22albuminuria+testing%22+OR+%22albuminuria+screening%22+OR+undiagnosed+OR+underdiagnos%2A+OR+underuse+OR+underutili%2A+%29+AND+%28outpatient%2A+OR+%22Ambulatory+Care%22+OR+%22Primary+Health+Care%22+OR+%22primary+care%22+%29+AND+2019%3A2026
 > Đây là kết quả tra THẬT (khác hẳn "CHƯA TRA ĐƯỢC"): không có hồ sơ đăng ký nào khớp truy vấn này.
 > Lưu ý: ClinicalTrials.gov không bao phủ mọi đăng ký. WHO ICTRP, PROSPERO (nếu SR/MA) và đăng ký trong nước vẫn cần bác sĩ tự tra.
 

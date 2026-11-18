@@ -30,16 +30,16 @@
 | G1-HUMAN-05 | Estimand đủ 5 thuộc tính khi là RCT | PASS | N/A cho thiết kế không phải RCT |
 | G1-HUMAN-06 | Đề cương lõi, kiểm soát sai lệch và tính khả thi được xác nhận | PASS | protocol_core_confirmed=True; bias_controls_confirmed=True; feasibility_confirmed=True |
 | G1-HUMAN-07 | Khoảng trống và nội dung trích dẫn đã được người thật đọc lại | PASS | evidence_review_confirmed=True; identifiers=90 |
-| G1-HUMAN-08 | Có vai trò, thời điểm rà phương pháp và xác nhận gắn đúng nội dung | PASS | reviewed_by_role=chủ nhiệm; reviewed_at=2026-10-28T15:54:00+07:00; xác nhận gắn đúng nội dung hiện tại |
+| G1-HUMAN-08 | Có vai trò, thời điểm rà phương pháp và xác nhận gắn đúng nội dung | PASS | reviewed_by_role=chủ nhiệm; reviewed_at=2026-11-18T11:40:57+07:00; xác nhận gắn đúng nội dung hiện tại |
 
 ## Manifest artifact
 | Artifact | Đường dẫn | SHA-256 |
 |---|---|---|
-| A2 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md | `2b5c2becdd8c911ca8090a05db6538727fbf79b16f6700a0185f7fcf951e58fa` |
-| A1b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md | `76f6af98967e40457902026d0d0b8e27e4be5f98cf3e48fa4d5686076d7fc720` |
-| A2b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md | `a068525bf321d8100e3220b1fc3b686e3380f221bdfb813a4940d19f71c06272` |
-| A13 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md | `d533755ed3479bf47c125b1147a6a02e8bf3213d05efa6c8d75cfddbd211f2c2` |
-| A13b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13b_RISK_REGISTER_btm-dtd2-ngoai-tru-BVQY175.md | `aa398df7656c05ee5f285dc23e331a5d3ed283f4cf4a4eb7b438ba4f090ec7c4` |
+| A2 | /Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md | `c25ee43b063d5daea010b377ded6d8e4d663b01062a56cb219065bff899cd68f` |
+| A1b | /Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md | `f043d2ca00d9b87746f34baefb796121953c0e2e88490022e2ba79ccb722fecb` |
+| A2b | /Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md | `39746169336f185905471b377833a0b5b3a3ee6d6a63ee8d62c6eb663dfecb4e` |
+| A13 | /Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md | `d533755ed3479bf47c125b1147a6a02e8bf3213d05efa6c8d75cfddbd211f2c2` |
+| A13b | /Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13b_RISK_REGISTER_btm-dtd2-ngoai-tru-BVQY175.md | `aa398df7656c05ee5f285dc23e331a5d3ed283f4cf4a4eb7b438ba4f090ec7c4` |
 
 ## Nền chuẩn
 | Chuẩn | Phạm vi | PMID/DOI/URL |

@@ -3,7 +3,7 @@
   "gate": "G1",
   "gate_status": "PASS — G1 DESIGN + REPORTING MAP ĐÃ ĐƯỢC XÁC NHẬN",
   "automation_status": "AUTOMATED_CHECKS_PASS",
-  "generated_at": "2026-11-15T14:43:09.200505",
+  "generated_at": "2026-11-18T16:20:50.433092",
   "question_type": "descriptive",
   "design": {
     "primary": "Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)",
@@ -111,14 +111,14 @@
         "label": "Thiết kế bác sĩ đã ghim được chuỗi G0–G10 hỗ trợ (không bị thay bằng suy luận)",
         "status": "PASS",
         "evidence": "không có pin bị từ chối",
-        "action": "PI ghim lại study_meta.design_code bằng một trong rct/cohort/case_control/cross_sectional/diagnostic/sr_ma/prediction/qualitative có chủ ý, hoặc dùng agent chuyên trách cho thiết kế này (vd quasi-experimental → TREND, cải tiến chất lượng → SQUIRE 2.0, ca lâm sàng → CARE)."
+        "action": "PI ghim lại gate_params.G1.design (hoặc study_meta.design_code kèm design_code_nguon=\"PI\") bằng một trong rct/cohort/case_control/cross_sectional/diagnostic/sr_ma/prediction/qualitative có chủ ý, hoặc dùng agent chuyên trách cho thiết kế này (vd quasi-experimental → TREND, cải tiến chất lượng → SQUIRE 2.0, ca lâm sàng → CARE). Thiết kế HỖN HỢP định lượng–định tính: ghim mã của cấu phần định lượng và khai cấu phần định tính + kế hoạch tích hợp ở gate_params.G1.mixed_methods (kiểm bằng tools/hon_hop.py, báo cáo GRAMMS)."
       },
       {
         "id": "G1-AUTO-02d",
         "label": "Thiết kế hợp với loại câu hỏi đã chốt ở G0",
         "status": "PASS",
         "evidence": "thiết kế «cross_sectional» hợp với loại câu hỏi G0 «descriptive»",
-        "action": "Chạy lại G1 để suy lại theo loại câu hỏi G0; hoặc PI sửa question_type ở G0, hoặc ghim study_meta.design_code (PI giải trình nếu cố ý chọn thiết kế ngoài nhóm)."
+        "action": "Chạy lại G1 để suy lại theo loại câu hỏi G0; hoặc PI sửa question_type ở G0, hoặc ghim gate_params.G1.design (hoặc study_meta.design_code kèm design_code_nguon=\"PI\") — PI giải trình nếu cố ý chọn thiết kế ngoài nhóm."
       },
       {
         "id": "G1-AUTO-02b",
@@ -190,7 +190,7 @@
         "label": "PI/methodologist xác nhận thiết kế",
         "status": "PASS",
         "evidence": "pin='cross_sectional'; design_confirmed=True",
-        "action": "Điền design_code/gate_params.G1.design và design_confirmed=true."
+        "action": "Điền gate_params.G1.design (hoặc design_code kèm design_code_nguon=\"PI\") và design_confirmed=true."
       },
       {
         "id": "G1-HUMAN-02",
@@ -238,34 +238,34 @@
         "id": "G1-HUMAN-08",
         "label": "Có vai trò, thời điểm rà phương pháp và xác nhận gắn đúng nội dung",
         "status": "PASS",
-        "evidence": "reviewed_by_role=chủ nhiệm; reviewed_at=2026-10-28T15:54:00+07:00; xác nhận gắn đúng nội dung hiện tại",
-        "action": "Ghi reviewed_by_role, reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"91fc5cdaaa5a689c\" (dấu của các quyết định G1 đang chốt); không cần lưu danh tính."
+        "evidence": "reviewed_by_role=chủ nhiệm; reviewed_at=2026-11-18T11:40:57+07:00; xác nhận gắn đúng nội dung hiện tại",
+        "action": "Ghi reviewed_by_role, reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"c504c4e6ea68bd69\" (dấu của các quyết định G1 đang chốt); không cần lưu danh tính."
       }
     ],
     "pending_actions": [],
     "artifact_manifest": {
       "A2": {
-        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md",
-        "sha256": "2b5c2becdd8c911ca8090a05db6538727fbf79b16f6700a0185f7fcf951e58fa"
+        "path": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "c25ee43b063d5daea010b377ded6d8e4d663b01062a56cb219065bff899cd68f"
       },
       "A1b": {
-        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md",
-        "sha256": "76f6af98967e40457902026d0d0b8e27e4be5f98cf3e48fa4d5686076d7fc720"
+        "path": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "f043d2ca00d9b87746f34baefb796121953c0e2e88490022e2ba79ccb722fecb"
       },
       "A2b": {
-        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md",
-        "sha256": "a068525bf321d8100e3220b1fc3b686e3380f221bdfb813a4940d19f71c06272"
+        "path": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "39746169336f185905471b377833a0b5b3a3ee6d6a63ee8d62c6eb663dfecb4e"
       },
       "A13": {
-        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md",
+        "path": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md",
         "sha256": "d533755ed3479bf47c125b1147a6a02e8bf3213d05efa6c8d75cfddbd211f2c2"
       },
       "A13b": {
-        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13b_RISK_REGISTER_btm-dtd2-ngoai-tru-BVQY175.md",
+        "path": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13b_RISK_REGISTER_btm-dtd2-ngoai-tru-BVQY175.md",
         "sha256": "aa398df7656c05ee5f285dc23e331a5d3ed283f4cf4a4eb7b438ba4f090ec7c4"
       }
     },
-    "dau_van_tay_hien_tai": "91fc5cdaaa5a689c",
+    "dau_van_tay_hien_tai": "c504c4e6ea68bd69",
     "standards_basis": [
       {
         "standard": "EQUATOR Network",
@@ -302,36 +302,36 @@
     "scope_statement": "PASS_G1_CONFIRMED chỉ xác nhận thiết kế/reporting map và bộ artifact G1 theo bằng chứng đã ghi; không thay IRB, khóa SAP, dữ liệu thật hoặc thẩm định khoa học độc lập. Checklist báo cáo đánh giá tính đầy đủ của mô tả, không tự chứng minh chất lượng thiết kế hay thực hiện.",
     "artifact_manifest_luc_sinh": {
       "A2": {
-        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md",
-        "sha256": "2b5c2becdd8c911ca8090a05db6538727fbf79b16f6700a0185f7fcf951e58fa"
+        "path": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "c25ee43b063d5daea010b377ded6d8e4d663b01062a56cb219065bff899cd68f"
       },
       "A1b": {
-        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md",
-        "sha256": "76f6af98967e40457902026d0d0b8e27e4be5f98cf3e48fa4d5686076d7fc720"
+        "path": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "f043d2ca00d9b87746f34baefb796121953c0e2e88490022e2ba79ccb722fecb"
       },
       "A2b": {
-        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md",
-        "sha256": "a068525bf321d8100e3220b1fc3b686e3380f221bdfb813a4940d19f71c06272"
+        "path": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "39746169336f185905471b377833a0b5b3a3ee6d6a63ee8d62c6eb663dfecb4e"
       },
       "A13": {
-        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md",
+        "path": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md",
         "sha256": "d533755ed3479bf47c125b1147a6a02e8bf3213d05efa6c8d75cfddbd211f2c2"
       },
       "A13b": {
-        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13b_RISK_REGISTER_btm-dtd2-ngoai-tru-BVQY175.md",
+        "path": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13b_RISK_REGISTER_btm-dtd2-ngoai-tru-BVQY175.md",
         "sha256": "aa398df7656c05ee5f285dc23e331a5d3ed283f4cf4a4eb7b438ba4f090ec7c4"
       }
     }
   },
   "quality_contract_version": "G1-2026.1",
   "artifacts": {
-    "A2_markdown": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md",
-    "A2_docx": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.docx",
-    "A1b_project_charter": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md",
-    "A2b_evidence_ledger": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md",
-    "A13_implementation_plan": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md",
-    "A13b_risk_register": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13b_RISK_REGISTER_btm-dtd2-ngoai-tru-BVQY175.md",
-    "quality_report": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_QUALITY_REPORT.md"
+    "A2_markdown": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md",
+    "A2_docx": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.docx",
+    "A1b_project_charter": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md",
+    "A2b_evidence_ledger": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md",
+    "A13_implementation_plan": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md",
+    "A13b_risk_register": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13b_RISK_REGISTER_btm-dtd2-ngoai-tru-BVQY175.md",
+    "quality_report": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G1_QUALITY_REPORT.md"
   },
   "pending_doctor_actions": [],
   "next_gate": "G2 (Đạo đức IRB) song song với G3 (Cỡ mẫu + SAP hoàn thiện)",
@@ -348,7 +348,7 @@
     "masking": null,
     "alpha_sidedness": null,
     "dau_van_tay": "6ba26632a4c46b44",
-    "ghi_luc": "2026-11-15T14:43:09"
+    "ghi_luc": "2026-11-18T16:20:50"
   },
-  "dau_gate_params_g1": "91fc5cdaaa5a689c"
+  "dau_gate_params_g1": "c504c4e6ea68bd69"
 }
