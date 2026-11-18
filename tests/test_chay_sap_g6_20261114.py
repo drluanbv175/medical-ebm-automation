@@ -350,3 +350,70 @@ def test_r_cu_phap_chen_khoi_loc(tmp_path, monkeypatch):
     vb = (d / "r" / "SAP_phan_tich.R").read_text(encoding="utf-8")
     assert vb.index('D[["hop_le"]] <-') < vb.index("D <- D[!is.na(.loc) & .loc == 1, , drop = FALSE]") < vb.index(
         "KET <- list()")
+
+
+# ───────────────────────── duyệt đặc tả (18/11/2026 — lệnh cho thống kê viên/PI tự chạy) ─────────────────────────
+
+
+def _duyet(monkeypatch, goc: Path, *doi_so: str) -> tuple[int, str]:
+    monkeypatch.setattr(CS, "BASE", goc)
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out), contextlib.redirect_stderr(out):
+        ma = CS.main(["duyet", "--study", "SAP", *doi_so])
+    return ma, out.getvalue()
+
+
+def test_duyet_chay_kho_khong_ghi_roi_ap_dung_ghi_dung_dau(tmp_path, monkeypatch):
+    d = _de_tai(tmp_path)
+    dt = _dac_ta(d, duyet=False)
+    truoc = (d / CS.TEP_DAC_TA).read_bytes()
+    ma, ra = _duyet(monkeypatch, tmp_path, "--vai", "PI", "--tham-chieu", "PI-SAP-01")
+    assert ma == 0 and "agent không chạy" in ra and (d / CS.TEP_DAC_TA).read_bytes() == truoc  # chạy khô
+    ma, ra = _duyet(monkeypatch, tmp_path, "--vai", "PI", "--tham-chieu", "PI-SAP-01", "--ap-dung")
+    moi = json.loads((d / CS.TEP_DAC_TA).read_text(encoding="utf-8"))
+    vai, ref, ngay, dau = moi["nguoi_duyet"].split(":")
+    assert ma == 0 and (vai, ref, dau) == ("PI", "PI-SAP-01", CS.dau_dac_ta(dt)) and len(ngay) == 10
+    assert CS.kiem_dac_ta(d, moi)["duyet"] == "DA_DUYET" and moi["phan_tich"] == dt["phan_tich"]
+    assert list(d.glob(f"{CS.TEP_DAC_TA}.bak-*")), "phải sao lưu trước khi ghi"
+
+
+def test_duyet_tu_choi_vai_sai_dac_ta_loi_va_sap_doi(tmp_path, monkeypatch):
+    d = _de_tai(tmp_path)
+    _dac_ta(d, duyet=False)
+    assert _duyet(monkeypatch, tmp_path, "--vai", "AGENT", "--tham-chieu", "X1", "--ap-dung")[0] == 3
+    assert _duyet(monkeypatch, tmp_path, "--vai", "PI", "--tham-chieu", "a:b", "--ap-dung")[0] == 3
+    (d / "G4_A5_SAP_FINAL_SAP.md").write_text("# SAP sửa đổi\n", encoding="utf-8", newline="\n")
+    ma, _ = _duyet(monkeypatch, tmp_path, "--vai", "PI", "--tham-chieu", "PI-SAP-01", "--ap-dung")
+    assert ma in (1, 3) and "nguoi_duyet" not in json.loads((d / CS.TEP_DAC_TA).read_text(encoding="utf-8"))
+
+
+def test_duyet_con_hieu_luc_cung_nguoi_thi_giu_nguyen(tmp_path, monkeypatch):
+    d = _de_tai(tmp_path)
+    _dac_ta(d, duyet=False)
+    _duyet(monkeypatch, tmp_path, "--vai", "PI", "--tham-chieu", "PI-SAP-01", "--ap-dung")
+    truoc = (d / CS.TEP_DAC_TA).read_bytes()
+    so_bak = len(list(d.glob(f"{CS.TEP_DAC_TA}.bak-*")))
+    ma, ra = _duyet(monkeypatch, tmp_path, "--vai", "PI", "--tham-chieu", "PI-SAP-01", "--ap-dung")
+    assert ma == 0 and "giữ nguyên" in ra and (d / CS.TEP_DAC_TA).read_bytes() == truoc
+    assert len(list(d.glob(f"{CS.TEP_DAC_TA}.bak-*"))) == so_bak
+
+
+def test_duyet_dac_ta_con_loi_thi_khong_ghi(tmp_path, monkeypatch):
+    d = _de_tai(tmp_path)
+    _dac_ta(d, duyet=False, phan_tich=[{"id": "chinh", "vai": "chinh", "sap_muc": "§4", "mo_ta": "x",
+                                         "tham_so": {"outcome": "--i-confirm-sap-locked"}}])
+    ma, ra = _duyet(monkeypatch, tmp_path, "--vai", "PI", "--tham-chieu", "PI-SAP-01", "--ap-dung")
+    assert ma == 1 and "còn lỗi" in ra
+    assert "nguoi_duyet" not in json.loads((d / CS.TEP_DAC_TA).read_text(encoding="utf-8"))
+
+
+def test_duyet_giu_dinh_dang_thut_le_chi_doi_dong_nguoi_duyet(tmp_path, monkeypatch):
+    d = _de_tai(tmp_path)
+    dt = _dac_ta(d, duyet=False)
+    (d / CS.TEP_DAC_TA).write_text(json.dumps(dt, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
+    truoc = (d / CS.TEP_DAC_TA).read_text(encoding="utf-8").splitlines()
+    _duyet(monkeypatch, tmp_path, "--vai", "PI", "--tham-chieu", "PI-SAP-01", "--ap-dung")
+    sau = (d / CS.TEP_DAC_TA).read_text(encoding="utf-8").splitlines()
+    them = [x for x in sau if x not in truoc and x.rstrip(",") not in truoc]  # bỏ qua dấu phẩy nối khoá mới
+    assert len(them) == 1 and them[0].startswith(' "nguoi_duyet": "PI:PI-SAP-01:')
+    assert len(sau) == len(truoc) + 1, "giữ thụt lề 1 ⇒ chỉ thêm đúng một dòng"
