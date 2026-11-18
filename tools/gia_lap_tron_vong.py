@@ -2086,6 +2086,20 @@ Kết luận tổng thể: {ket_luan}
         self.du_lieu["de_cuong_nop"] = {"ma": ra.get("ma"), "loi": ra.get("loi") or [],
                                         "trich_dan": ra.get("trich_dan"), "so_dong": ra.get("so_dong")}
 
+    def _bien_nhan_toan_van(self) -> None:
+        """Thủ thư (thu-thu-tai-lieu) ghi BIÊN NHẬN TOÀN VĂN cho mọi TLTK của đề cương nộp + bản thảo G7 (18/11/2026 —
+        bác sĩ: mọi trích dẫn của đề tài phải có toàn văn; G10-AUTO-12 đọc biên nhận này). Đề tài thật: repo gốc đo trên
+        thư viện EndNote thật (`nap_endnote_de_tai.py --ghi-bien-nhan-toan-van`). Giả lập: mọi TLTK do bộ sinh chọn đều
+        là bài trong kho A12 đã kiểm ⇒ coi như thủ thư đã gắn toàn văn; biên nhận mang nhãn giả lập."""
+        import toan_van_trich_dan as TVT  # noqa: PLC0415
+
+        bn = TVT.dung_bien_nhan(self.out, self.study, toan_van=True, nguon="gia_lap", ghi_chu=GL.NHAN,
+                                nguoi_do="thu-thu-tai-lieu (giả lập — không đo trên EndNote thật)")
+        TVT.ghi_bien_nhan(self.out, self.study, bn)
+        self.buoc.append({"buoc": "Thủ thư ghi biên nhận toàn văn TLTK", "lenh": TVT.TEP_BIEN_NHAN.format(
+            study=self.study), "ma": 0, "crash": False,
+            "cuoi": [f"{len(bn['muc'])} TLTK · {', '.join(bn['tai_lieu'])}"]})
+
     def g10(self) -> None:
         hs = self.kb.get("ho_so_tron_vong") or {}
         self._khai_dac_ta_g10()
@@ -2097,6 +2111,7 @@ Kết luận tổng thể: {ket_luan}
         self._quet_a12("G10")
         self._khai_g10()
         self._de_cuong_nop()
+        self._bien_nhan_toan_van()
         self.chay("G10 lắp lại gói sau khi PI khai", "run_g10_assemble.py", "--study", self.study)
         self.cong["G10_truoc_ky"] = {"trang_thai": self.cham("G10"),
                                      "chua_dat": GL.GiaLap._chua_dat(GL.cham_song("G10", self.study, self.out,

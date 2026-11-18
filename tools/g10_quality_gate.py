@@ -1045,6 +1045,30 @@ def evaluate_study(
         )
     )
 
+    # G10-AUTO-12 (18/11/2026 — bác sĩ: «tất cả trích dẫn cho nghiên cứu … phải luôn là toàn văn, nếu không phải toàn
+    # văn và không thể lấy được toàn văn thì loại bỏ»; cùng luật 25/10/2026). Đo trên biên nhận TOAN_VAN_TLTK_<mã>.json
+    # (repo gốc đo trên thư viện EndNote thật): còn trích bài đã loại hoặc không lấy được toàn văn ⇒ BLOCK; chưa đo /
+    # còn làn chưa thử ⇒ REVIEW. Gói ĐÃ khoá thì chỉ cảnh báo (cùng cách G10-05) — không tự huỷ khoá.
+    try:
+        import toan_van_trich_dan as TVT  # noqa: PLC0415
+
+        tv_status, tv_evidence = TVT.tieu_chi_g10(out_dir, study)
+    except Exception as exc:  # noqa: BLE001 — bộ chốt hỏng phải hiện ra, không im lặng như «đạt»
+        tv_status, tv_evidence = "REVIEW", f"không chạy được bộ chốt toàn văn: {type(exc).__name__}: {exc}"
+    if tv_status != "PASS" and g10_approved:
+        tv_status, tv_evidence = "PASS", f"⚠ {tv_evidence} (đã khoá — chỉ cảnh báo, không huỷ khoá)"
+    rows.append(
+        _criterion(
+            "G10-AUTO-12",
+            "Mọi trích dẫn của đề tài có TOÀN VĂN; bài không lấy được toàn văn đã bị loại khỏi văn bản",
+            tv_status,
+            tv_evidence,
+            "Repo gốc: python3 tools/nap_endnote_de_tai.py --study <mã> --gom-toan-van --ghi-bien-nhan-toan-van; "
+            "bài thuê bao qua làn trình duyệt có uỷ quyền; vẫn thiếu ⇒ python3 tools/toan_van_trich_dan.py loai-bo "
+            "--study <mã> --ap-dung rồi sinh lại đề cương nộp.",
+        )
+    )
+
     # G10-02: StudySpec TÍNH LẠI từ checkpoint/study_meta hiện hành (bản cũ: checkpoint['study_spec'] lúc lắp ráp).
     try:
         spec, spec_lech = _study_spec_song(study, out_dir, purpose)

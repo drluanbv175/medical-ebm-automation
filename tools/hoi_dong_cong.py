@@ -263,8 +263,11 @@ NHIEM_VU: Dict[str, List[Dict[str, Any]]] = {
         _nv("G10-T1", "Lắp đề cương thống nhất + manifest gói phát hành (run_g10_assemble.py)", "dieu-phoi-g10",
             ("DE_CUONG_THONG_NHAT_<mã>.md", "G10_checkpoint.json", "G10_RELEASE_READINESS.json"),
             ("tham-dinh-dau-ra", "binh-duyet")),
-        _nv("G10-T2", "A12 phủ mọi PMID của gói cuối (kể cả PMID do hệ chèn)", "kiem-chung-trich-dan",
-            ("A12_RETRACTION_RECEIPT.json", "A12_METADATA_RECEIPT.json"), ("thu-thu-tai-lieu",)),
+        # 18/11/2026: + biên nhận TOÀN VĂN từng TLTK (tools/toan_van_trich_dan.py — bác sĩ: trích dẫn phải có toàn văn).
+        _nv("G10-T2", "A12 phủ mọi PMID của gói cuối (kể cả PMID do hệ chèn); mọi trích dẫn có toàn văn",
+            "kiem-chung-trich-dan",
+            ("A12_RETRACTION_RECEIPT.json", "A12_METADATA_RECEIPT.json", "TOAN_VAN_TLTK_<mã>.json"),
+            ("thu-thu-tai-lieu",)),
         # 10/10/2026 — bác sĩ giao «mỗi đề tài lưu sổ cái trong thư mục riêng»: sổ trạng thái checkpoint của đề tài là
         # `exports/<mã>/SO_TRANG_THAI_<mã>.md` (trước ghi vào tệp doctrine dùng chung `_SO-TRANG-THAI-CHECKPOINT.md`).
         _nv("G10-T3", "Ghi sổ cái và bộ nhớ đề tài (sổ trạng thái riêng trong thư mục đề tài)", "so-cai-ghi-nho",
@@ -423,6 +426,8 @@ PHAN_CONG: Dict[str, Dict[str, str]] = {
         "G10-AUTO-01": "G10-T1", "G10-AUTO-02": "^*", "G10-AUTO-02B": "^*", "G10-AUTO-03": "G10-T1",
         "G10-AUTO-04": "^*", "G10-AUTO-05": "G10-T2", "G10-AUTO-06": "G10-T1", "G10-AUTO-07": "G10-T1",
         "G10-AUTO-08": "G10-T1", "G10-AUTO-09": "G10-T1", "G10-AUTO-10": "G10-T1", "G10-AUTO-11": "G10-T1",
+        # 18/11/2026: mọi trích dẫn có toàn văn (biên nhận TOAN_VAN_TLTK) — người kiểm trích dẫn cùng thủ thư.
+        "G10-AUTO-12": "G10-T2",
         "G10-HUMAN-01": "PI@G10-T1", "G10-HUMAN-02": "PI@G10-T1", "G10-HUMAN-03": "PI@G10-T1",
         "G10-HUMAN-04": "PI@G10-T1", "G10-HUMAN-05": "PI@G10-T1",
     },
