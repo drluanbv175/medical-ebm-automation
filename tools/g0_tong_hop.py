@@ -35,6 +35,25 @@ SCHEMA_KHOANG_TRONG = "g0/khoang_trong/v1"
 
 LIEN_QUAN = ("truc_tiep", "gian_tiep", "khong")
 NHAN_LIEN_QUAN = {"truc_tiep": "trực tiếp", "gian_tiep": "gián tiếp", "khong": "không liên quan"}
+#: 18/11/2026 — THANG «mức liên quan» bác sĩ chốt (4 câu hỏi; thí điểm kiểm G0 bằng Claude API cho thấy 46/70 phát hiện
+#: là bất đồng ĐỊNH NGHĨA giữa agent G0-T3 và máy chấm vì hệ chưa có định nghĩa). MỘT nguồn cho agent `tong-quan-y-van`
+#: và máy chấm `kiem_tong_quan_g0_api` — không tự nới/siết.
+DINH_NGHIA_LIEN_QUAN = {
+    "truc_tiep": ("cùng quần thể bệnh VÀ cùng kết cục chính (hoặc đúng khái niệm chính) của câu hỏi; KHÁC NƯỚC hay "
+                  "khác bối cảnh VẪN là trực tiếp — ghi rõ bối cảnh (khoảng trống trong nước do G0-T4 nêu riêng)"),
+    "gian_tiep": ("đúng khái niệm chính nhưng ở QUẦN THỂ CON khác quần thể đề tài (vd người bệnh HIV điều trị ART, "
+                  "bệnh viện chuyên khoa so với ngoại trú chung), HOẶC cùng bối cảnh nhưng đo khái niệm GẦN chứ không "
+                  "đúng kết cục chính (vd chất lượng dịch vụ SERVPERF thay vì mức hài lòng chung; chỉ đo thời gian "
+                  "chờ)"),
+    "khong": ("khác khái niệm chính của câu hỏi, KỂ CẢ khi cùng quần thể (vd ngưng thở khi ngủ hay bệnh động mạch "
+              "ngoại biên ở người ĐTĐ típ 2 trong đề tài chăm sóc thận; tư vấn dược từ xa trong đề tài hài lòng khám "
+              "bệnh)"),
+}
+
+
+def thang_lien_quan() -> str:
+    """Thang mức liên quan dạng văn bản (cho lời dặn agent/máy chấm)."""
+    return "\n".join(f"- {k} ({NHAN_LIEN_QUAN[k]}): {v};" for k, v in DINH_NGHIA_LIEN_QUAN.items())
 LOAI_KHOANG_TRONG = ("bang_chung", "quan_the", "boi_canh", "phuong_phap", "cong_cu_do", "ket_cuc", "cap_nhat")
 MUC_NOVELTY = ("moi_hoan_toan", "mo_rong_boi_canh", "nhan_rong_co_kiem_chung", "cap_nhat", "trung_lap")
 TRANG_THAI_NGUON = ("day_du", "partial", "chua_tra", "khong_ap_dung")

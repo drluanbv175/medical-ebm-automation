@@ -84,7 +84,7 @@ class Khach:
     def create(self, **kw):
         self.goi.append(kw)
         ht = _he_thong(kw)
-        f = self.a if "G0-T3" in ht else (self.c if "G0-T4" in ht else self.b)
+        f = self.a if "nhiệm vụ G0-T3" in ht else (self.c if "nhiệm vụ G0-T4" in ht else self.b)
         return _resp(f(kw) if callable(f) else f)
 
 
@@ -196,7 +196,7 @@ def test_phan_c_chi_giao_bai_truc_tiep_co_abstract_khong_giao_bai_lac_de(tmp_pat
     goc = _goc(tmp_path)
     kh = Khach(_a_dat, _b_dat, C_RONG)
     K.main(["--study", S, "--goi-api"], client=kh, goc=goc, lay=lambda p: ABS, lay_doi=lambda d: ABS_DOI)
-    nd = next(g for g in kh.goi if "G0-T4" in _he_thong(g))["messages"][0]["content"]
+    nd = next(g for g in kh.goi if "nhiệm vụ G0-T4" in _he_thong(g))["messages"][0]["content"]
     assert "PMID 11111111" in nd and "doi:10.1000/vn1" in nd and "PMID 22222222" not in nd
 
 
@@ -206,7 +206,7 @@ def test_lo_json_hong_hai_lan_thi_khong_kiem_duoc_khong_doan(tmp_path):
     ma = K.main(["--study", S, "--goi-api"], client=kh, goc=goc, lay=lambda p: ABS, lay_doi=lambda d: ABS_DOI)
     js = json.loads((goc / "exports" / S / "kiem_may_api" / f"G0_KIEM_TONG_QUAN_{S}.json").read_text(encoding="utf-8"))
     assert all(k["muc"] == "khong_kiem_duoc" for k in js["a"])
-    assert sum(1 for g in kh.goi if "G0-T3" in _he_thong(g)) == 2  # gửi đầu + đúng MỘT lần gửi lại
+    assert sum(1 for g in kh.goi if "nhiệm vụ G0-T3" in _he_thong(g)) == 2  # gửi đầu + đúng MỘT lần gửi lại
     assert ma in (0, 1, 2) and js["loi"]
 
 
@@ -254,3 +254,14 @@ def test_so_co_trong_hieu_dau_cham_phan_cach_nghin(so, van, ky):
     import kiem_noi_dung_trich_dan as KND  # noqa: PLC0415
 
     assert KND.so_co_trong(so, van) is ky
+
+
+def test_loi_dan_may_cham_dung_thang_lien_quan_bac_si_chot_tu_mot_nguon():
+    """18/11/2026: bác sĩ chốt thang mức liên quan (khác nước vẫn trực tiếp; kết cục gần/quần thể con = gián tiếp; cùng
+    quần thể khác khái niệm = không). Máy chấm phải dùng ĐÚNG văn bản thang của g0_tong_hop — không định nghĩa riêng."""
+    import g0_tong_hop as GTH  # noqa: PLC0415
+
+    assert GTH.thang_lien_quan() in K.HE_THONG_A
+    assert set(GTH.DINH_NGHIA_LIEN_QUAN) == set(GTH.LIEN_QUAN)
+    assert "KHÁC NƯỚC" in GTH.DINH_NGHIA_LIEN_QUAN["truc_tiep"]
+    assert "KỂ CẢ khi cùng quần thể" in GTH.DINH_NGHIA_LIEN_QUAN["khong"]
