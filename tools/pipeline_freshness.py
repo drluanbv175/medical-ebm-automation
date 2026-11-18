@@ -20,6 +20,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import subprocess
 
 # Windows: stdout mặc định cp1252 giết print() tiếng Việt — ép UTF-8 (chốt BH55/R4)
 import sys as _sys_r4
@@ -152,14 +153,119 @@ def _parse_stamp(s: str) -> Optional[float]:
     return None
 
 
-def find_stale_gates(out_dir: Path) -> List[Dict[str, object]]:
+class _NhanChungGit:
+    """Đọc lịch sử git của thư mục đề tài — CHỈ để GỠ cảnh báo «cũ» GIẢ do git ghi lại tệp (pull, checkout, trả tệp).
+
+    Vì sao (18/11/2026, đo sống): độ tươi đo bằng mtime, mà `git pull` / `git checkout -- <tệp>` đặt mtime tệp thành
+    «bây giờ» dù nội dung không đổi ⇒ mọi cổng phía sau bị báo «cũ» (C1a: trả hai checkpoint G0/G2 về đúng bản git làm
+    G1/G3/G4 «cũ» và G10-AUTO-03 CHẶN). Mọi lỗi (không có git, ngoài repo, lệnh hỏng, quá giờ) ⇒ không có bằng chứng ⇒
+    giữ nguyên kết luận theo mtime — không bao giờ biến «không chứng minh được» thành «tươi».
+    """
+
+    def __init__(self, out_dir: Path) -> None:
+        self.goc: Optional[Path] = None
+        ra = self._git(["rev-parse", "--show-toplevel"], Path(out_dir))
+        if isinstance(ra, str) and ra.strip():
+            try:
+                self.goc = Path(ra.strip()).resolve()
+            except OSError:
+                self.goc = None
+        self._sach: Dict[str, bool] = {}
+        self._commit: Dict[str, Optional[tuple]] = {}
+
+    @staticmethod
+    def _git(args: List[str], cwd: Path, *, ma_thoat: bool = False):
+        try:
+            kq = subprocess.run(["git", *args], cwd=str(cwd), capture_output=True, text=True, timeout=20)
+        except (OSError, subprocess.SubprocessError):
+            return None
+        if ma_thoat:
+            return kq.returncode
+        return kq.stdout if kq.returncode == 0 else None
+
+    def _rel(self, p: Path) -> Optional[str]:
+        if self.goc is None:
+            return None
+        try:
+            return Path(p).resolve().relative_to(self.goc).as_posix()
+        except (OSError, ValueError):
+            return None
+
+    def sach(self, p: Path) -> bool:
+        """Tệp được git theo dõi VÀ nội dung trùng HEAD (không sửa, không stage)."""
+        rel = self._rel(p)
+        if rel is None or self.goc is None:
+            return False
+        if rel not in self._sach:
+            theo_doi = self._git(["ls-files", "--error-unmatch", "--", rel], self.goc, ma_thoat=True) == 0
+            self._sach[rel] = theo_doi and self._git(["diff", "--quiet", "HEAD", "--", rel], self.goc,
+                                                     ma_thoat=True) == 0
+        return self._sach[rel]
+
+    def commit_cuoi(self, p: Path) -> Optional[tuple]:
+        """(mã commit, giờ commit epoch giây) của commit CUỐI đổi tệp; None nếu không đo được."""
+        rel = self._rel(p)
+        if rel is None or self.goc is None:
+            return None
+        if rel not in self._commit:
+            phan = str(self._git(["log", "-1", "--format=%H %ct", "--", rel], self.goc) or "").split()
+            self._commit[rel] = (phan[0], float(phan[1])) if len(phan) == 2 and phan[1].isdigit() else None
+        return self._commit[rel]
+
+    def khong_doi_tu(self, sha: str, p: Path) -> bool:
+        """Tệp ở HEAD trùng TỪNG BYTE với tệp ở commit `sha` (tệp chưa có ở `sha` ⇒ False)."""
+        rel = self._rel(p)
+        if rel is None or self.goc is None:
+            return False
+        return self._git(["diff", "--quiet", sha, "HEAD", "--", rel], self.goc, ma_thoat=True) == 0
+
+
+def ly_do_cuu_theo_git(out_dir: Path, gate: str, dep: str, git: Optional["_NhanChungGit"]) -> Optional[str]:
+    """Lý do GỠ cảnh báo «`gate` cũ hơn `dep`» khi git CHỨNG MINH được mtime của `dep` mới hơn chỉ vì git ghi lại tệp.
+
+    Đủ CẢ BA điều kiện mới gỡ (thiếu một ⇒ None ⇒ giữ «cũ»):
+      1. checkpoint `gate` và `dep` đều được git theo dõi và trùng HEAD (cổng sau sinh lại tại chỗ chưa commit, hay
+         thượng nguồn đang sửa dở ⇒ không gỡ);
+      2. mtime `dep` MUỘN HƠN giờ commit cuối của chính `dep` ⇒ mtime do git ghi lại tệp sau khi commit (pull/checkout).
+         Tệp sửa/sinh rồi mới commit có mtime SỚM HƠN giờ commit ⇒ mtime đó là thật ⇒ không gỡ — chặn đường «commit
+         cổng sau đã cũ cùng lúc với thượng nguồn vừa sửa» làm mất cảnh báo;
+      3. nội dung `dep` ở HEAD trùng từng byte với `dep` ở commit cuối của `gate` ⇒ thượng nguồn KHÔNG đổi kể từ lượt
+         cổng sau được ghi vào git. Thượng nguồn đổi thật (vd đổi tên đề tài ở G0) ⇒ không gỡ — cảnh báo «cũ» là thật.
+    """
+    if git is None or git.goc is None:
+        return None
+    p_gate, p_dep = checkpoint_path(out_dir, gate), checkpoint_path(out_dir, dep)
+    if not (git.sach(p_gate) and git.sach(p_dep)):
+        return None
+    c_gate, c_dep = git.commit_cuoi(p_gate), git.commit_cuoi(p_dep)
+    if c_gate is None or c_dep is None:
+        return None
+    try:
+        mtime_dep = p_dep.stat().st_mtime
+    except OSError:
+        return None
+    if mtime_dep <= c_dep[1]:
+        return None
+    if not git.khong_doi_tu(c_gate[0], p_dep):
+        return None
+    return (f"mtime {dep} mới hơn chỉ vì git ghi lại tệp sau commit {c_dep[0][:8]}; nội dung {dep} không đổi kể từ "
+            f"commit {c_gate[0][:8]} của {gate} ⇒ không tính {gate} là cũ")
+
+
+def find_stale_gates(out_dir: Path, *, dung_git: bool = True,
+                     ghi_cuu: Optional[List[Dict[str, object]]] = None) -> List[Dict[str, object]]:
     """Tìm các cổng CŨ (stale) hoặc downstream MỒ CÔI.
 
     Trả list dict{gate, kind, reason, offending_upstream}. kind ∈
     {'stale', 'orphan_downstream'}.
+
+    `dung_git` (18/11/2026): cặp bị mtime báo «cũ» được đối chiếu lịch sử git (`ly_do_cuu_theo_git`) — chỉ GỠ khi có
+    bằng chứng mtime mới hơn là do git ghi lại tệp và nội dung thượng nguồn không đổi; không bao giờ THÊM «tươi» cho cặp
+    mtime chưa báo cũ. Cặp được gỡ ghi vào `ghi_cuu` (nếu truyền) để báo cáo nói rõ.
     """
     out: List[Dict[str, object]] = []
     mtimes = {g: checkpoint_mtime(out_dir, g) for g in GATE_ORDER}
+    git: Optional[_NhanChungGit] = None  # chỉ dựng khi có cặp «cũ» cần đối chiếu
 
     for gate in GATE_ORDER:
         gm = mtimes[gate]
@@ -184,6 +290,17 @@ def find_stale_gates(out_dir: Path) -> List[Dict[str, object]]:
             d for d, dm in present_deps
             if dm is not None and dm - gm > SAME_RUN_TOLERANCE_S
         ]
+        if newer and dung_git:
+            if git is None:
+                git = _NhanChungGit(out_dir)
+            con_cu: List[str] = []
+            for d in newer:
+                ly_do = ly_do_cuu_theo_git(out_dir, gate, d, git)
+                if ly_do is None:
+                    con_cu.append(d)
+                elif ghi_cuu is not None:
+                    ghi_cuu.append({"gate": gate, "upstream": d, "reason": ly_do})
+            newer = con_cu
         if newer:
             out.append({
                 "gate": gate, "kind": "stale",
@@ -235,8 +352,10 @@ def mtime_khong_tin_duoc(out_dir: Path) -> Optional[str]:
 def stale_report(out_dir: Path) -> Dict[str, object]:
     """Báo cáo tổng hợp freshness cho 1 study.
 
-    mtime bị dàn phẳng ⇒ fresh=False kèm `mtime_khong_tin_duoc` (không phải tươi)."""
-    issues = find_stale_gates(out_dir)
+    mtime bị dàn phẳng ⇒ fresh=False kèm `mtime_khong_tin_duoc` (không phải tươi).
+    `cuu_theo_git`: các cặp mtime báo «cũ» nhưng git chứng minh chỉ là tệp bị ghi lại (xem `ly_do_cuu_theo_git`)."""
+    cuu: List[Dict[str, object]] = []
+    issues = find_stale_gates(out_dir, ghi_cuu=cuu)
     dan_phang = mtime_khong_tin_duoc(out_dir)
     if dan_phang:
         issues = issues + [{"gate": "*", "kind": "mtime_khong_tin_duoc", "reason": dan_phang, "offending_upstream": []}]
@@ -250,12 +369,15 @@ def stale_report(out_dir: Path) -> Dict[str, object]:
         "stale_gates": [i["gate"] for i in issues if i["kind"] == "stale"],
         "orphan_gates": [i["gate"] for i in issues if i["kind"] == "orphan_downstream"],
         "mtime_khong_tin_duoc": dan_phang,
+        "cuu_theo_git": cuu,
     }
 
 
 def print_report(report: Dict[str, object]) -> None:
     status = "✅ TƯƠI (nhất quán)" if report["fresh"] else "⚠ CÓ CỔNG CŨ/MỒ CÔI"
     print(f"  Freshness chuỗi checkpoint: {status}")
+    for muc in report.get("cuu_theo_git") or []:
+        print(f"    ℹ [git] {muc['gate']} ← {muc['upstream']}: {muc['reason']}")
     print(f"    - checkpoint có: {', '.join(report['checkpoints_present']) or '(chưa có)'}")
     for issue in report["issues"]:
         print(f"    ⚠ [{issue['kind']}] {issue['reason']}")
@@ -280,4 +402,6 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    import moi_truong_venv as _MV  # bảo đảm Python đủ thư viện: thiếu ⇒ chạy lại bằng ~/.ebm-venv (18/11/2026)
+    _MV.dam_bao_moi_truong(__file__)
     raise SystemExit(main())

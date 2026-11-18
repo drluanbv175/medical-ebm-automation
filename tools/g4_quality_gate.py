@@ -1650,4 +1650,6 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    import moi_truong_venv as _MV  # bảo đảm Python đủ thư viện: thiếu ⇒ chạy lại bằng ~/.ebm-venv (18/11/2026)
+    _MV.dam_bao_moi_truong(__file__)
     raise SystemExit(main())
