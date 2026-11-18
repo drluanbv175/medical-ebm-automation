@@ -115,7 +115,13 @@ def pico_da_chot(out_dir: Path) -> str:
     nhan = (("population", "Quần thể (P)"), ("intervention", "Can thiệp/phơi nhiễm (I/E)"),
             ("comparison", "So sánh (C)"), ("primary_outcome", "Kết cục chính (O)"),
             ("primary_outcome_measure", "Cách đo kết cục chính"), ("question_type", "Loại câu hỏi"))
-    return "\n".join(f"- {t}: {str(g0[k])[:500]}" for k, t in nhan if str(g0.get(k) or "").strip())
+    ra = [f"- {t}: {str(g0[k])[:500]}" for k, t in nhan if str(g0.get(k) or "").strip()]
+    # 18/11/2026 (thí điểm BTM): thiếu danh sách kết cục PHỤ thì máy chấm hạ bài đo kết cục phụ (kê ACEi/ARB, SGLT2i;
+    # BTM chưa ghi chẩn đoán) xuống «không liên quan» — bác sĩ chốt: đo đúng một kết cục đã chốt là trực tiếp.
+    kc = g0.get("outcomes")
+    if isinstance(kc, list) and kc:
+        ra.append("- Mọi kết cục đã chốt (chính + phụ):\n" + "\n".join(f"  · {str(x)[:300]}" for x in kc))
+    return "\n".join(ra)
 
 
 def bai_cua_g0(th: Dict[str, Any]) -> List[Dict[str, Any]]:
