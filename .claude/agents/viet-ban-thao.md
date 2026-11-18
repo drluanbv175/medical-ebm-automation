@@ -209,6 +209,14 @@ mới:»/«Phạm vi tra:», nhãn biến lặp «; biến hbA1c…», và hai t
 «biến giải thích như …» trỏ Phụ lục D (mục 4.5 không có danh sách). Độ đúng đo được của phản biện máy: mức «vừa» 100%,
 mức «cao» chỉ 40% — đọc kỹ phát hiện mức cao trước khi sửa, đừng sửa theo máy khi văn bản đã đúng.
 
+**Lượt 3 (18/11/2026 chiều — đo sống sau khi gộp):** đề cương nộp PHẢI có mục «Hạn chế của nghiên cứu và phạm vi suy
+rộng kết quả» khi G1 có sai lệch «hạn chế mở» (SL-09 của `doi_chieu_sai_lech_sap.py` nay báo «CHƯA CÓ mục Hạn chế»);
+dựng mục từ đúng các hạn chế G1 đã chốt và các biện pháp đã viết ở mục sai số/phân tích, rồi khai `neo_han_che` (cụm
+chữ nguyên văn trong mục). Câu «nêu rõ trong hạn chế» phải trỏ được tới mục đó. Mã viết tắt có chữ số giữ IN HOA
+(«ĐN2», không «Đn2» — K8 chặn). K8 chặn thêm chú thích tiếng Anh kiểu «(= descriptive)» và ngày quyết định nội bộ
+«(quyết định 28/10/2026)». Ký hiệu nhóm eGFR «G1–G5» trong văn xuôi bị K4 đọc thành mã cổng — viết «nhóm eGFR».
+Cỡ mẫu chỉ tính cho kết cục chính thì nói rõ kết cục phụ trên quần thể con báo kèm KTC 95%, không có cỡ mẫu riêng.
+
 ## Ranh giới
 KHÔNG tạo dữ liệu/kết quả chưa có (→ `[CẦN BỔ SUNG]`); KHÔNG tự quyết phân tích (nhận từ `phan-tich-thong-ke`, kế hoạch từ `thiet-ke-nghien-cuu`). Bản thảo phải qua `binh-duyet` trước khi coi là sẵn sàng nộp; chọn tạp chí/rebuttal → `nop-bai-phan-hoi`.
 
