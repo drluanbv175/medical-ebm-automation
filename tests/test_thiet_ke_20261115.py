@@ -266,6 +266,23 @@ def test_sl09_chua_khai_neo_va_chua_co_de_cuong(tmp_path):
     assert DSL.kiem(d, STUDY)["loi"] == []  # chưa có đề cương ⇒ không đòi
 
 
+def test_sl09_de_cuong_thieu_muc_han_che_bao_dung_viec(tmp_path):
+    """18/11/2026 (BTM): đề cương có mà KHÔNG có tiêu đề «Hạn chế» ⇒ MỘT lỗi «chưa có mục», nêu tên hạn chế mở — không
+    phải «chưa khai neo_han_che» (lỗi cũ dẫn người đọc đi điền bảng trong khi việc thật là viết mục cho Hội đồng)."""
+    d = _han_che_de_tai(tmp_path, neo="", han_che="| X | Y |")
+    (d / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md").write_text(
+        "# 4. PHƯƠNG PHÁP\n## 4.10. Đạo đức\nNội dung\n# 5. DỰ KIẾN KẾT QUẢ\n", encoding="utf-8", newline="\n")
+    loi = DSL.kiem(d, STUDY)["loi"]
+    assert [x["ma"] for x in loi] == ["SL-09"]
+    assert "CHƯA CÓ mục «Hạn chế»" in loi[0]["noi_dung"] and BIAS[2]["sai_lech"] in loi[0]["noi_dung"]
+    assert "chưa khai neo_han_che" not in loi[0]["noi_dung"]
+    # Không có hạn chế mở nào ⇒ đề cương thiếu mục cũng không bị đòi.
+    d2 = _de_tai(tmp_path / "khong-mo", bias=[dict(b, trang_thai="khống chế") for b in BIAS])
+    _bang_sai_lech(d2, [r + ("",) for r in BANG_DUNG[:3]])
+    (d2 / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md").write_text("# 4. PHƯƠNG PHÁP\n", encoding="utf-8", newline="\n")
+    assert DSL.kiem(d2, STUDY)["loi"] == []
+
+
 # ── ⑦ giai đoạn 9 «Báo cáo»: bảng kiểm G7 có bảng kiểm mở rộng của đề tài ─────────────────────────────────────────
 def test_g7_bang_kiem_co_khoi_mo_rong_va_nguon_da_kiem():
     import run_g7_auto as G7
