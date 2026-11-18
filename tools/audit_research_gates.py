@@ -2154,7 +2154,7 @@ def _update_meta(out_dir: Path, report: Dict[str, Any],
         "note": "Audit điều hướng; không thay thế phê duyệt IRB/SAP/data lock/liêm chính thật.",
     }
     (out_dir / "study_meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+        json.dumps(meta, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
 def _hoi_dong_cong(out_dir: Path) -> Dict[str, Any]:

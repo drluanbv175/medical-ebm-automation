@@ -787,7 +787,7 @@ def _update_meta(out_dir: Path, report: Dict[str, Any], report_path: Path) -> No
         "note": "Làm sạch trên bản sao; query mở phải được đóng trước data lock.",
     }
     (out_dir / "study_meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+        json.dumps(meta, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
 def clean_dataset(study: str, data_path: Path, *,

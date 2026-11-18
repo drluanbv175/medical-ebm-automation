@@ -1596,7 +1596,7 @@ def main():
             _g9p = _meta.setdefault("gate_params", {}).setdefault("G9", {})
             if any(_g9p.get(k) != v for k, v in _seed_g9.items()):
                 _g9p.update(_seed_g9)
-                _meta_p.write_text(json.dumps(_meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+                _meta_p.write_text(json.dumps(_meta, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
     n_authors      = max(1, args.n_authors)
     target_journal = args.target_journal

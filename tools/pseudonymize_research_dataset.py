@@ -374,7 +374,7 @@ def _update_meta(out_dir: Path, report: Dict[str, Any], report_path: Path) -> No
         ),
     }
     (out_dir / "study_meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+        json.dumps(meta, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
 def pseudonymize_dataset(study: str, data_path: Path, *,

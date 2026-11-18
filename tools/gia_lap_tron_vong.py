@@ -85,7 +85,7 @@ def _doc_json(p: Path) -> Dict[str, Any]:
 
 
 def _ghi_json(p: Path, obj: Any) -> None:
-    Path(p).write_text(json.dumps(obj, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+    Path(p).write_text(json.dumps(obj, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
 def _text(v: Any) -> str:

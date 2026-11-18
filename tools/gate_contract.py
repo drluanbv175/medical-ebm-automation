@@ -772,7 +772,9 @@ def ensure_study_meta(out_dir: Path, *, seed: Optional[Dict[str, Any]] = None,
                         changed = True
 
     if changed or not p.exists():
-        p.write_text(json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+        # 18/11/2026: kèm xuống dòng cuối tệp — thiếu nó thì mỗi lần máy ghi (run_pipeline…) làm diff thừa với bản
+        # người/công cụ khác ghi có "\n" (đo trên BTM: lượt chạy lại G1→G4 chỉ đổi đúng ký tự cuối của study_meta).
+        p.write_text(json.dumps(meta, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     return meta
 
 
