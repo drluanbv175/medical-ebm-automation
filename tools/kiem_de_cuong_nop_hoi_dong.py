@@ -123,6 +123,10 @@ _DAU_VET_MAY = (
     (re.compile(r";\s*biến\s+[a-z]+[A-Z0-9]"), "nhãn biến lặp trong ngoặc («; biến hbA1c 3 mức»)"),
     # 18/11/2026 — đề cương BTM ghi «Đn1…Đn9» trong khi kế hoạch phân tích ghi «ĐN1…ĐN9» (bộ sinh hạ chữ nhấn mạnh).
     (re.compile(r"(?<!\w)(?:Đn|đn)\d{1,2}\b"), "mã phân tích độ nhạy bị hạ chữ («Đn2» thay «ĐN2»)"),
+    # 18/11/2026 — phản biện máy lượt 3 trên BTM: chú thích tiếng Anh kiểu máy và ngày quyết định trong ngoặc.
+    (re.compile(r"\(=\s*[A-Za-z][a-z]+\)"), "chú thích tiếng Anh kiểu máy («(= descriptive)»)"),
+    (re.compile(r"\(quyết định\s+(?:ngày\s+)?\d{1,2}/\d{1,2}/\d{4}\)"),
+     "ghi ngày quyết định nội bộ «(quyết định 28/10/2026)»"),
 )
 # 18/11/2026: cùng một bảng nối mã mà hai chỗ hứa hai thời điểm huỷ khác nhau (BTM: «khoá dữ liệu» ở mục đạo đức và quản
 # lý dữ liệu, «kết thúc nghiên cứu» ở cam kết bảo mật) — Hội đồng đọc thấy ngay, K1–K8 không so.
