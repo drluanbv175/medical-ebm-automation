@@ -18,8 +18,10 @@ Luật (mỗi lỗi một dòng; rỗng = đạt):
   K6  mọi PMID nằm trong biên nhận rút bài A12 (`A12_RETRACTION_RECEIPT.json`) đã kiểm và sạch;
   K7  không email/số điện thoại (bỏ DOI/URL trước khi dò), không nhãn ô trống [CẦN…] (dòng chấm «………» để PI điền tay
       là hợp lệ).
-  K8  không dấu vết soạn thảo/máy (bác sĩ 17/11/2026): «DRAFT», «bản nháp», «do AI/trí tuệ nhân tạo soạn», «máy soạn/
-      máy sinh», «Cần bác sĩ kiểm chứng», «Mức tự động», chú thích HTML, nhãn «(giả lập)»/«GIẢ LẬP», «hồ sơ chưa có».
+  K8  không dấu vết soạn thảo/máy (bác sĩ 17/11/2026): «DRAFT», «bản nháp», «do AI/trí tuệ nhân tạo soạn»,
+      «máy soạn/máy sinh», «Cần bác sĩ kiểm chứng», «Mức tự động», chú thích HTML, nhãn «(giả lập)»/«GIẢ LẬP»,
+      «hồ sơ chưa có». Thêm 18/11/2026: «(… đã chốt)», mã SOP-…, mã thiếu («mã KGHS»), «= 1»/«khác 9» trong văn
+      xuôi, nhãn tự đánh giá, nhãn biến lặp, thời điểm huỷ bảng nối mã lệch nhau giữa các mục.
 
 Lệnh:  python3 tools/kiem_de_cuong_nop_hoi_dong.py --study <mã> [--json]
 Mã thoát: 0 đạt · 1 có lỗi · 2 thiếu tệp đề cương nộp.
@@ -112,7 +114,20 @@ _DAU_VET_MAY = (
     (re.compile(r"ghi rõ chính sách|\w…\*\*"), "ghi chú cho người soạn / tiêu đề bị cắt"),
     (re.compile(r"\|\s*(?:yeu to|ket cuc(?: chinh| phu)?|hiep bien|mo ta|phoi nhiem|dieu chinh|nhieu)\s*\|"),
      "mã vai trò không dấu trong bảng"),
+    # 18/11/2026 — phản biện máy lượt 2 trên đề cương BTM thật (bác sĩ duyệt nhãn «máy đúng»): 7 dấu vết K1–K8 bỏ sót.
+    (re.compile(r"\([^()]{0,24}\bđã\s+(?:chốt|duyệt)\s*\)"), "ghi chú «(… đã chốt)»"),
+    (re.compile(r"\bSOP-[A-Z]{1,5}-\d{1,3}\b"), "mã quy trình nội bộ «SOP-…»"),
+    (re.compile(r"\bmã\s+(?!ICD|ATC)[A-Z]{3,5}\b(?![-\d])"), "mã thiếu/mã nội bộ («mã KGHS»)"),
+    (re.compile(r"[A-Za-zÀ-ỹ]{3,}\s=\s[0-29]\b(?![.,]?\d)|\bkhác\s+9\b"), "mã biến trong văn xuôi («= 1», «khác 9»)"),
+    (re.compile(r"\b(?:Mức tính mới|Phạm vi tra)\s*:"), "nhãn tự đánh giá nội bộ («Mức tính mới:»)"),
+    (re.compile(r";\s*biến\s+[a-z]+[A-Z0-9]"), "nhãn biến lặp trong ngoặc («; biến hbA1c 3 mức»)"),
 )
+# 18/11/2026: cùng một bảng nối mã mà hai chỗ hứa hai thời điểm huỷ khác nhau (BTM: «khoá dữ liệu» ở mục đạo đức và quản
+# lý dữ liệu, «kết thúc nghiên cứu» ở cam kết bảo mật) — Hội đồng đọc thấy ngay, K1–K8 không so.
+_HUY_NOI_MA = {
+    "khoá dữ liệu": re.compile(r"huỷ\s+sau\s+khi\s+khoá\s+dữ\s+liệu", re.IGNORECASE),
+    "kết thúc nghiên cứu": re.compile(r"huỷ\s+sau\s+khi\s+kết\s+thúc\s+nghiên\s+cứu", re.IGNORECASE),
+}
 _TEN_BIEN_RE = re.compile(r"(?<![\w./-])[a-z][a-z0-9]*_[a-z0-9_]+\b")
 _DE_MUC_RE = re.compile(r"^(#{1,4})\s+(.*\S)\s*$", re.MULTILINE)
 
@@ -143,6 +158,21 @@ def _pmid(text: str) -> set:
 
 def _dinh_dang_n(n: int) -> tuple:
     return (str(n), f"{n:,}".replace(",", "."), f"{n:,}")
+
+
+def loi_k8(md: str) -> List[str]:
+    """K8 — dấu vết soạn thảo/máy theo từng dòng (mỗi dòng báo mẫu đầu tiên khớp) + thời điểm huỷ bảng nối mã lệch."""
+    loi: List[str] = []
+    for so, dong in enumerate(md.splitlines(), 1):
+        for bt, nhan in _DAU_VET_MAY:
+            if bt.search(dong):
+                loi.append(f"K8 dòng {so}: dấu vết soạn thảo/máy ({nhan})")
+                break
+    thoi_diem = [ten for ten, bt in _HUY_NOI_MA.items() if bt.search(md)]
+    if len(thoi_diem) > 1:
+        loi.append(f"K8 thời điểm huỷ bảng nối mã khác nhau giữa các mục ({' / '.join(thoi_diem)}) — thống nhất theo "
+                   "quy trình dữ liệu đã chốt")
+    return loi
 
 
 def kiem(out_dir: Path, study: str) -> List[str]:
@@ -234,11 +264,7 @@ def kiem(out_dir: Path, study: str) -> List[str]:
     for so, dong in enumerate(md.splitlines(), 1):
         if G10._PLACEHOLDER_RE.search(dong):
             loi.append(f"K7 dòng {so}: nhãn ô trống [CẦN…]/<…>")
-    for so, dong in enumerate(md.splitlines(), 1):
-        for bt, nhan in _DAU_VET_MAY:
-            if bt.search(dong):
-                loi.append(f"K8 dòng {so}: dấu vết soạn thảo/máy ({nhan})")
-                break
+    loi.extend(loi_k8(md))
     if G10._co_lien_lac_ca_nhan(md) or (docx_chu is not None and G10._co_lien_lac_ca_nhan(docx_chu)):
         loi.append("K7 có email/số điện thoại — PII liên lạc để dòng chấm cho PI điền tay ngoài hệ thống")
     return loi
