@@ -68,6 +68,14 @@ HE_THONG = (
     "- thuat_ngu: một khái niệm gọi nhiều tên, hoặc chữ viết tắt dùng mà không định nghĩa;\n"
     "- logic: mục tiêu – câu hỏi – biến số – phân tích không ăn khớp (vd kết cục chính không có phân tích tương ứng);\n"
     "- trinh_bay: đánh số mục/bảng sai, định dạng làm khó đọc.\n"
+    # 18/11/2026 — bác sĩ gắn nhãn 12 phát hiện: 6 là báo nhầm, theo các kiểu dưới đây.
+    "Trước khi ghi một phát hiện, tự kiểm: (1) mau_thuan_so — cộng/đối chiếu lại; số khớp thì KHÔNG ghi; (2) mâu "
+    "thuẫn phải có hai chỗ NÓI KHÁC NHAU — một chỗ chỉ chi tiết hơn chỗ kia, hay thiết kế của MỘT NGHIÊN CỨU ĐƯỢC "
+    "TRÍCH khác thiết kế của đề tài, thì không phải mâu thuẫn; (3) không cho một giá trị (phiên bản phần mềm, mã, số "
+    "liệu) là «không có thật» khi văn bản không tự mâu thuẫn — bạn không kiểm được điều đó; (4) cỡ mẫu cần trích khác "
+    "kích thước khung mẫu/quần thể nguồn; (5) cột mã biến đặt cạnh nội dung tiếng Việt trong phiếu thu thập hay từ "
+    "điển dữ liệu là trình bày chuẩn, không phải dau_vet_may; (6) chỉ báo thiếu chữ viết tắt sau khi đã đối chiếu bảng "
+    "viết tắt — cụm từ thường không phải chữ viết tắt.\n"
     "Văn bản được đánh số dòng dạng «123| nội dung». Mỗi phát hiện gồm: loai; muc (cao = Hội đồng có thể trả hồ sơ, "
     "vua = nên sửa trước khi nộp, thap = tuỳ chọn); dong (số dòng); trich (NGUYÊN VĂN ≤ 25 từ chép đúng từng chữ từ "
     'dòng đó, KHÔNG kèm số dòng); doi_chieu (chỉ với mâu thuẫn: {"dong": n, "trich": nguyên văn ≤ 25 từ chỗ kia}); '
@@ -315,6 +323,8 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
                 "tep_sha256": hashlib.sha256(van.encode("utf-8")).hexdigest(),  # đề cương đổi ⇒ báo cáo cũ
                 "luc": luc,
                 "model": kq.model,
+                # 18/11/2026: đo độ đúng theo TỪNG phiên bản lời dặn
+                "loi_dan_sha256": hashlib.sha256(HE_THONG.encode("utf-8")).hexdigest()[:12],
                 "token": {"vao": kq.token_vao, "ra": kq.token_ra},
                 "usd": API.uoc_chi_phi(kq.token_vao, kq.token_ra, kq.model),
                 "trich_dan_tat_dinh": tat_dinh,
