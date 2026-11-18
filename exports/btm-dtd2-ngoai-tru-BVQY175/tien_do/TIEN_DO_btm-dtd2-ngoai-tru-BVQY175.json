@@ -1,7 +1,7 @@
 {
  "schema": "de_tai/so_tien_do/v1",
  "study": "btm-dtd2-ngoai-tru-BVQY175",
- "ten_de_tai": "Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026",
+ "ten_de_tai": "Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026",
  "tap_chi_dich": "Tạp chí Y Dược Thực hành 175",
  "cap_nhat": "15/11/2026",
  "cach_dung": "Nguồn sự thật của bảng theo dõi tiến độ. Trạng thái: xong · dang · cho_bs · chua (máy tự suy «khoa» khi việc trước chưa xong). Mục gắn cổng đo sống bằng công cụ ở `do_song` mỗi lần cập nhật — không tự đánh «xong» khi cổng chưa đạt. Hạn là ƯỚC TÍNH, chủ nhiệm chỉnh.",

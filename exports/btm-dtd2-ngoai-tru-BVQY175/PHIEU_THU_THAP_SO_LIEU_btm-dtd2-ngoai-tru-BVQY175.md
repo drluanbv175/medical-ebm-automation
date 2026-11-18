@@ -1,6 +1,6 @@
 # PHIẾU THU THẬP SỐ LIỆU
 
-**Đề tài:** Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026
+**Đề tài:** Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026
 
 **Nguồn dữ liệu:** hồ sơ bệnh án điện tử trên eHospital, cửa sổ 01/01/2026–31/12/2026 · **Phiếu dựng từ:** `_bo-bien-rieng.csv` (codebook mục 2.7, chủ nhiệm duyệt B1–B9 ngày 28/10/2026) · **Quy trình:** SOP-TR-01
 

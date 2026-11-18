@@ -34,7 +34,7 @@ Từ: Chủ nhiệm đề tài: [CẦN BỔ SUNG]
  Đơn vị: [CẦN BỔ SUNG]
  Điện thoại: _______________ | Email: _______________
 
-TÊN ĐỀ TÀI: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026
+TÊN ĐỀ TÀI: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026
 
 THÔNG TIN TỔNG QUAN:
  Loại nghiên cứu: Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)
@@ -83,7 +83,7 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT, ngôn ngữ hành chính)
 ---
 
 1. VẤN ĐỀ NGHIÊN CỨU VÀ LÝ DO CẦN THIẾT:
- Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026
+ Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026
  Bằng chứng hiện có (từ PubMed): 0 SR/MA · 1 RCT (mức: YẾU, mới 1 RCT (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)).
  Lý do cần nghiên cứu tại bối cảnh Việt Nam: Theo G0_KHOANG_TRONG (25/10/2026): ở Việt Nam chưa thấy nghiên cứu đo đồng thời cả chuỗi xét nghiệm → phát hiện → ghi nhận → điều trị ở người ĐTĐ típ 2 ngoại trú tại bệnh viện quân đội; các nghiên cứu tìm được chủ yếu đo tỷ lệ bệnh thận mạn trong mẫu đã xét nghiệm hoặc mô tả kê đơn ở người đã có bệnh thận mạn. Mức tính mới: mở rộng bối cảnh. Không mới trên thế giới. Phạm vi tra: PubMed + Crossref; chưa tra Google Scholar và thư viện luận văn.
 
@@ -172,7 +172,7 @@ NOT APPLICABLE, informed consent waiver requested (see Document 9).
 
 ```
 KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
-Đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026 | Phiên bản: 1.0 | Ngày: 2026-11-17
+Đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026 | Phiên bản: 1.0 | Ngày: 2026-11-17
 ---
 
 1. LOẠI DỮ LIỆU THU THẬP:
@@ -231,7 +231,7 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
 
 ```
 CHECKLIST HỒ SƠ NỘP HỘI ĐỒNG ĐẠO ĐỨC
-Đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026 | Ngày chuẩn bị: 2026-11-17
+Đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026 | Ngày chuẩn bị: 2026-11-17
 ---
 
 HỒ SƠ BẮT BUỘC:
@@ -331,7 +331,7 @@ Chữ ký chủ nhiệm: _______________ Ngày: ___/___/2026
 YÊU CẦU MIỄN THỦ TỤC ĐỒNG THUẬN (ICF Waiver Request), DRAFT Phiên bản 1.0
 ---
 Căn cứ: TT43/2024/TT-BYT Điều 15 · Helsinki (WMA, bản sửa 2024) §29
-Tên đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026
+Tên đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026
 Chủ nhiệm: [CẦN BỔ SUNG]
 Ngày: 2026-11-17
 
@@ -407,7 +407,7 @@ Trường 9, Public title (tiêu đề công khai, dễ hiểu):
  Detection of chronic kidney disease and kidney-protective treatment among outpatients with type 2 diabetes at Military Hospital 175, Vietnam
 
 Trường 10, Scientific title (tiêu đề khoa học):
- Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026
+ Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026
 
 Trường 11, Countries of recruitment:
  Vietnam (VN) [CẦN BỔ SUNG tỉnh/tỉnh thành]

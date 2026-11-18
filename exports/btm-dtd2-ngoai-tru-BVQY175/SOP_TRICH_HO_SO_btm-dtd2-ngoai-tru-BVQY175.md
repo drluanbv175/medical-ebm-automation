@@ -1,6 +1,6 @@
 # QUY TRÌNH THAO TÁC CHUẨN: LẬP KHUNG MẪU VÀ TRÍCH HỒ SƠ TRÊN eHOSPITAL
 
-**Đề tài:** Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026 (mã `btm-dtd2-ngoai-tru-BVQY175`)
+**Đề tài:** Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026 (mã `btm-dtd2-ngoai-tru-BVQY175`)
 
 **Mã quy trình:** SOP-TR-01 · **Phiên bản:** 1.0 (bản soạn ngày 28/10/2026) · **Trạng thái:** chủ nhiệm đề tài đã duyệt C1–C3 ngày 28/10/2026 (nguyên văn «Áp dụng C1–C3»); ban hành khi Hội đồng duyệt đề cương
 

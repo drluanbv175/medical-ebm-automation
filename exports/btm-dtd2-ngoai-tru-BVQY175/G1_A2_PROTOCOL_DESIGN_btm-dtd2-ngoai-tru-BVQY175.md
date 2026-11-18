@@ -13,7 +13,7 @@
 
 ### 0.1 Quản trị tài liệu
 - Mã đề tài: `btm-dtd2-ngoai-tru-BVQY175`
-- Tên đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026
+- Tên đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026
 - Phiên bản protocol: 1.0
 - Ngày tạo/cập nhật: 2026-11-15 14:43
 - Chủ nhiệm, nhà phương pháp, thống kê viên, quản lý dữ liệu: Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và SAP, ký hồ sơ đạo đức, lập khung mẫu và trích hồ sơ trên eHospital, giữ bảng nối mã, chịu trách nhiệm chung. Nhà phương pháp/thống kê: cỡ mẫu (G3), viết và khoá SAP (G4), phân tích (G6). Quản lý dữ liệu: codebook và phiếu thu thập, nhập liệu, kiểm tra chất lượng, khoá cơ sở dữ liệu (G5), lưu trữ tệp đã mã hoá. Người trích lại: trích lại độc lập 10% hồ sơ kiểm chứng. Người đảm nhận các vai ngoài chủ nhiệm do chủ nhiệm phân công (bảng RACI ở A13); một người có thể kiêm nhiều vai, riêng người trích lại phải khác chủ nhiệm.
@@ -131,7 +131,7 @@ Thiết kế do BÁC SĨ pin trong study_meta.json (quyết định thật, ưu 
 | Sai lệch thông tin — thuốc kê hoặc mua ngoài BVQY175 | Ghi riêng thuốc đang dùng mà bệnh án có ghi nhưng không có đơn trong eHospital; nêu rõ trong hạn chế (chiều lệch: Ước lượng THẤP tỷ lệ đang dùng ACEi/ARB và SGLT2i) — trạng thái: định lượng + hạn chế mở |
 | Thời gian quan sát không đều trong cửa sổ | Báo phân bố số tháng từ lượt khám đầu đến hết cửa sổ; phân tích độ nhạy giới hạn người có lượt khám đầu trước 01/07/2026 (chiều lệch: Người bắt đầu khám muộn có ít thời gian được xét nghiệm nên kéo tỷ lệ xuống THẤP) — trạng thái: định lượng |
 | Nhiễu và tương quan trong cụm ở phân tích yếu tố liên quan (MT3) | Mô hình đa biến với tập biến đã chốt ở G0; phòng khám theo dõi chính là biến trong mô hình; sai số chuẩn vững; diễn giải là mối liên quan, không nhân quả (chiều lệch: Không xác định trước; chỉ ảnh hưởng MT3, không ảnh hưởng ước lượng tỷ lệ của MT1–MT2) — trạng thái: khống chế một phần |
-| Sai lệch báo cáo và phân tích có chọn lọc | Khoá SAP ở G4 trước khi nhận dữ liệu; báo cáo đủ mọi kết cục đã định trước theo STROBE và RECORD; cân nhắc đăng ký công khai đề cương (quyết ở G2) (chiều lệch: Chỉ báo các chỉ số «đẹp» hoặc đổi định nghĩa sau khi thấy số liệu) — trạng thái: khống chế |
+| Sai lệch báo cáo và phân tích có chọn lọc | Khoá SAP ở G4 trước khi nhận dữ liệu; báo cáo đủ mọi kết cục đã định trước theo STROBE và RECORD; không đăng ký công khai đề cương (chiều lệch: Chỉ báo các chỉ số «đẹp» hoặc đổi định nghĩa sau khi thấy số liệu) — trạng thái: khống chế |
 | Sai lệch người trích (chủ nhiệm vừa trích dữ liệu vừa là bác sĩ của khoa được đánh giá) | Quy tắc trích và định nghĩa từng biến viết trước; chỉ ghi dữ kiện khách quan có trong hồ sơ (kết quả xét nghiệm, mã, đơn thuốc), không diễn giải; người thứ hai độc lập trích lại 10% hồ sơ chọn ngẫu nhiên, báo mức đồng thuận (kappa) ở từng biến chính (chiều lệch: Có thể ghi nhận xét nghiệm hoặc thuốc ở chỗ không rõ ràng ⇒ ước lượng CAO chất lượng chăm sóc) — trạng thái: khống chế + định lượng |
 
 ---

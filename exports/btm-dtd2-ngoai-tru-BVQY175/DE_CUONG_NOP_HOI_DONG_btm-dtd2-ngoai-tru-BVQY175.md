@@ -1,6 +1,6 @@
 # ĐỀ CƯƠNG NGHIÊN CỨU KHOA HỌC
 
-## THỰC TRẠNG PHÁT HIỆN VÀ ĐIỀU TRỊ BẢO VỆ THẬN Ở BỆNH NHÂN ĐÁI THÁO ĐƯỜNG TÍP 2 ĐIỀU TRỊ NGOẠI TRÚ TẠI BỆNH VIỆN QUÂN Y 175 THEO KDIGO 2024 VÀ ADA 2026
+## THỰC TRẠNG PHÁT HIỆN VÀ ĐIỀU TRỊ BẢO VỆ THẬN Ở BỆNH NHÂN ĐÁI THÁO ĐƯỜNG TÍP 2 ĐIỀU TRỊ NGOẠI TRÚ TẠI BỆNH VIỆN QUÂN Y 175 THEO KDIGO 2022, KDIGO 2024 VÀ ADA 2026
 
 **Phiên bản đề cương:** 1.0, ngày ……/……/……
 
@@ -8,7 +8,7 @@
 
 | Mục | Nội dung |
 |---|---|
-| Tên đề tài | Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026 |
+| Tên đề tài | Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026 |
 | Chủ nhiệm đề tài | ……… |
 | Đơn vị thực hiện | Khoa Khám bệnh, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh — bệnh viện quân đội tuyến cuối; người bệnh gồm quân nhân, người có BHYT và người khám dịch vụ, theo dõi ĐTĐ ở phòng khám nội tiết hoặc nội chung. Nguồn dữ liệu: hồ sơ bệnh án điện tử trên phần mềm eHospital (HIS của BVQY175) — lượt khám, mã ICD-10, kết quả xét nghiệm, đơn thuốc ngoại trú. |
 | Thiết kế | Nghiên cứu cắt ngang mô tả có phân tích |
@@ -58,7 +58,7 @@ Bệnh thận mạn thường gặp ở người ĐTĐ típ 2 [1]; phát hiện 
 
 Ở Việt Nam chưa thấy nghiên cứu đo đồng thời cả chuỗi xét nghiệm → phát hiện → ghi nhận → điều trị ở người ĐTĐ típ 2 ngoại trú tại bệnh viện quân đội; các nghiên cứu tìm được chủ yếu đo tỷ lệ bệnh thận mạn trong mẫu đã xét nghiệm hoặc mô tả kê đơn ở người đã có bệnh thận mạn. Đề tài mở rộng bối cảnh: chủ đề không mới trên thế giới, nhưng chuỗi chăm sóc thận chưa được đo trọn tại bệnh viện quân đội ở Việt Nam.
 
-Xuất phát từ thực tế trên, chúng tôi tiến hành đề tài «Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026» với các mục tiêu sau:
+Xuất phát từ thực tế trên, chúng tôi tiến hành đề tài «Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026» với các mục tiêu sau:
 
 1. MT1: Mô tả thực trạng phát hiện bệnh thận mạn ở người bệnh đái tháo đường típ 2 điều trị ngoại trú tại Khoa Khám bệnh, Bệnh viện Quân y 175 năm 2026 — tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh (kết cục chính), tỷ lệ bệnh thận mạn theo KDIGO 2024 và tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán.
 2. MT2: Mô tả thực trạng điều trị bảo vệ thận (ACEi/ARB, SGLT2i) ở người bệnh đủ chỉ định theo KDIGO 2022 trong cùng quần thể.
@@ -68,7 +68,7 @@ Xuất phát từ thực tế trên, chúng tôi tiến hành đề tài «Thự
 
 ## 2.1. Mục tiêu
 
-**Mục tiêu chung:** Đánh giá thực trạng phát hiện bệnh thận mạn và điều trị bảo vệ thận ở người bệnh đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 năm 2026 theo KDIGO 2024 và ADA 2026.
+**Mục tiêu chung:** Đánh giá thực trạng phát hiện bệnh thận mạn và điều trị bảo vệ thận ở người bệnh đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 năm 2026 theo KDIGO 2022, KDIGO 2024 và ADA 2026.
 
 **Mục tiêu cụ thể:**
 
@@ -200,7 +200,7 @@ Chọn mẫu ngẫu nhiên đơn ở cấp người bệnh: (1) lập khung mẫ
 | Sai lệch thông tin — thuốc kê hoặc mua ngoài BVQY175 | Ước lượng thấp tỷ lệ đang dùng ACEi/ARB và SGLT2i. | Ghi riêng thuốc đang dùng mà bệnh án có ghi nhưng không có đơn trong eHospital; nêu rõ ở mục 4.11. |
 | Thời gian quan sát không đều trong cửa sổ | Người bắt đầu khám muộn có ít thời gian được xét nghiệm nên kéo tỷ lệ xuống thấp. | Báo phân bố số tháng từ lượt khám đầu đến hết cửa sổ; phân tích độ nhạy giới hạn người có lượt khám đầu trước 01/07/2026. |
 | Nhiễu và tương quan trong cụm ở phân tích yếu tố liên quan (MT3) | Không xác định trước; chỉ ảnh hưởng MT3, không ảnh hưởng ước lượng tỷ lệ của MT1–MT2. | Mô hình đa biến với tập biến đã chốt; phòng khám theo dõi chính là biến trong mô hình; sai số chuẩn vững; diễn giải là mối liên quan, không nhân quả. |
-| Sai lệch báo cáo và phân tích có chọn lọc | Chỉ báo các chỉ số «đẹp» hoặc đổi định nghĩa sau khi thấy số liệu. | Khoá kế hoạch phân tích thống kê trước khi nhận dữ liệu; báo cáo đủ mọi kết cục đã định trước theo STROBE và RECORD; cân nhắc đăng ký công khai đề cương. |
+| Sai lệch báo cáo và phân tích có chọn lọc | Chỉ báo các chỉ số «đẹp» hoặc đổi định nghĩa sau khi thấy số liệu. | Khoá kế hoạch phân tích thống kê trước khi nhận dữ liệu; báo cáo đủ mọi kết cục đã định trước theo STROBE và RECORD. |
 | Sai lệch người trích (chủ nhiệm vừa trích dữ liệu vừa là bác sĩ của khoa được đánh giá) | Có thể ghi nhận xét nghiệm hoặc thuốc ở chỗ không rõ ràng → ước lượng CAO chất lượng chăm sóc. | Quy tắc trích và định nghĩa từng biến viết trước; chỉ ghi dữ kiện khách quan có trong hồ sơ (kết quả xét nghiệm, mã, đơn thuốc), không diễn giải; người thứ hai độc lập trích lại 10% hồ sơ chọn ngẫu nhiên, báo mức đồng thuận (kappa) ở từng biến chính. |
 
 ## 4.9. Xử lý và phân tích số liệu
@@ -290,7 +290,7 @@ Nghiên cứu tuân thủ Tuyên bố Helsinki và các quy định hiện hành
 - Hình thức xét duyệt: Đề nghị xét duyệt theo quy trình rút gọn.
 - Quy trình đồng thuận: đề nghị miễn thủ tục đồng thuận (Phụ lục B).
 - Bảo mật thông tin: phiếu chỉ mang mã nghiên cứu, không ghi trường định danh nào của người bệnh; Bảng nối mã nghiên cứu với mã người bệnh lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ, huỷ sau khi khoá dữ liệu; chỉ phân tích bộ dữ liệu đã khử định danh.
-- Đăng ký nghiên cứu: không bắt buộc với nghiên cứu quan sát hồi cứu; nhóm nghiên cứu cân nhắc đăng ký công khai đề cương để tăng minh bạch (mục 4.8).
+- Đăng ký nghiên cứu: nghiên cứu quan sát hồi cứu không bắt buộc đăng ký; đề tài không đăng ký trên hệ thống đăng ký công khai.
 - Xung đột lợi ích: nhóm nghiên cứu cam kết không có xung đột lợi ích liên quan đến đề tài; mọi thay đổi sẽ được khai báo với Hội đồng.
 
 ## 4.11. Hạn chế của nghiên cứu và phạm vi suy rộng kết quả
@@ -372,7 +372,7 @@ Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và 
 
 ## 6.5. Đăng ký nghiên cứu và phổ biến kết quả
 
-- Không bắt buộc đăng ký.
+- Không đăng ký trên hệ thống đăng ký công khai (nghiên cứu quan sát hồi cứu, không bắt buộc đăng ký).
 
 # 7. TÀI LIỆU THAM KHẢO
 

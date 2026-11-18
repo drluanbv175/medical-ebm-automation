@@ -1,14 +1,14 @@
 {
  "nguon_sap": "G4_A5_SAP_FINAL_btm-dtd2-ngoai-tru-BVQY175.md",
- "sha256_sap": "56a322ba8a5f86d7b43177ec20290c3d04e8c1d5466119552fe1010c008301f1",
- "trang_thai_de_xuat": "Đồng bộ lại 18/11/2026 theo SAP sửa nháp 5 (câu EPV, B1) và sửa nháp 4 (ĐN4 lọc dn4_co_don, quyết định B10). ĐỀ XUẤT CỦA AGENT 15/11/2026 (đồng bộ lại theo SAP hiện tại, giai đoạn 7: neo từng phân tích vào SAP bằng sap_neo, thêm phân tích SAP mới bổ sung) — CHỜ thống kê viên/PI duyệt (ghi nguoi_duyet). SAP nguồn còn là bản DRAFT chưa ký: SAP sửa trước khi khoá ⇒ sha256_sap lệch, đặc tả bị coi là cũ và phải đồng bộ lại.",
+ "sha256_sap": "dc258e0a7b06c59d445a6f1e169962b4c58e7682c1a27a59d2fccd5cd61ce61c",
+ "trang_thai_de_xuat": "Đồng bộ lại 18/11/2026 (chiều): bỏ mục MT1_fpc vì SAP §4 ghi «Không áp hiệu chỉnh quần thể hữu hạn» (chủ nhiệm quyết 18/11); cập nhật sha256_sap theo tên đề tài mới. Đồng bộ lại 18/11/2026 theo SAP sửa nháp 5 (câu EPV, B1) và sửa nháp 4 (ĐN4 lọc dn4_co_don, quyết định B10). ĐỀ XUẤT CỦA AGENT 15/11/2026 (đồng bộ lại theo SAP hiện tại, giai đoạn 7: neo từng phân tích vào SAP bằng sap_neo, thêm phân tích SAP mới bổ sung) — CHỜ thống kê viên/PI duyệt (ghi nguoi_duyet). SAP nguồn còn là bản DRAFT chưa ký: SAP sửa trước khi khoá ⇒ sha256_sap lệch, đặc tả bị coi là cũ và phải đồng bộ lại.",
  "can_thong_ke_vien_quyet": [
   "Đề tài CHƯA có từ điển G5 — tên biến lấy theo bộ biến G3 (_bo-bien-rieng.csv) và _bien-phai-sinh.csv; đối chiếu lại khi dựng từ điển G5.",
   "Quy tắc giảm tham số khi EPV < 10 (SAP §5 bước 1–3) là điều kiện — kiểm EPV trên dữ liệu, bước nào áp thì thêm mục với tập biến đã giảm.",
   "MI: run_stats_analysis chạy MI m = 20 khi có thiếu (CC báo song song = ĐN8); biến phụ trợ vao_truoc_0107 trong mô hình gán (SAP §6) chưa khai được qua đặc tả — thống kê viên xác nhận.",
   "Phụ 3 loại người có chống chỉ định ghi rõ (= 1); ô chống chỉ định để trống (nhánh không hiện) vẫn giữ trong mẫu số.",
-  "du_tieu_chuan và bmi là trường calc của REDCap: nhập Excel/SPSS không tính calc ⇒ PR này khai bản công thức CÙNG TÊN (đúng định nghĩa calc của bộ biến) — chờ duyệt như mọi biến phái sinh.",
-  "15/11/2026: chủ nhiệm duyệt 8 biến bổ sung bộ biến (G3_BO_BIEN_SO_QUYET_DINH_20261115.md) — MT1_thanh_phan, MT3_poisson, NC_tuoi1/2, DN5, DN6 đã có tham_so; công thức 8 biến CHƯA DUYỆT trong _bien-phai-sinh.csv.",
+  "du_tieu_chuan và bmi là trường calc của REDCap: nhập Excel/SPSS không tính calc ⇒ khai bản công thức CÙNG TÊN (đúng định nghĩa calc của bộ biến) — ĐÃ DUYỆT (18/11/2026: 42/42 biến phái sinh DA_DUYET).",
+  "15/11/2026: chủ nhiệm duyệt 8 biến bổ sung bộ biến (G3_BO_BIEN_SO_QUYET_DINH_20261115.md) — MT1_thanh_phan, MT3_poisson, NC_tuoi1/2, DN5, DN6 đã có tham_so; công thức của 8 biến ĐÃ DUYỆT trong _bien-phai-sinh.csv (18/11/2026, cùng dn4_co_don).",
   "MT3_poisson: 'tuoi' làm phơi nhiễm chỉ để có PR mỗi 10 năm (don_vi_phoi_nhiem 10); hba1c_3muc tham chiếu = mã 1 = < 7% (chủ nhiệm chọn 15/11). SAP §5 còn báo PR THÔ từng biến — chưa có mục đặc tả, thống kê viên xác nhận cách chạy."
  ],
  "phan_tich": [
@@ -394,16 +394,6 @@
    "chua_tu_dong": "bảng chéo G × A chưa có công cụ — nhom_g, nhom_a đã có công thức; thống kê viên lập bảng",
    "sap_neo": [
     "bảng chéo G1–G5 × A1–A3"
-   ]
-  },
-  {
-   "id": "MT1_fpc",
-   "vai": "mo_ta",
-   "sap_muc": "§4",
-   "mo_ta": "KTC có hiệu chỉnh quần thể hữu hạn (thông tin phụ, khi biết kích thước khung mẫu)",
-   "chua_tu_dong": "cần kích thước khung mẫu eHospital — tính tay",
-   "sap_neo": [
-    "quần thể hữu hạn"
    ]
   },
   {
