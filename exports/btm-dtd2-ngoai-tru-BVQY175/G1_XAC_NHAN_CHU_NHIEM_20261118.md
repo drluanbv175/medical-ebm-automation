@@ -30,3 +30,16 @@
   Bệnh viện Quân y 175 năm 2026 theo KDIGO 2024 và ADA 2026.»
 - **Đã ghi vào `gate_params.G1`:** `reviewed_at = "2026-11-18T07:28:26+07:00"`; `dau_van_tay_chot = "35669ac14fd0ecd1"` (khớp vân tay sống);
   `reviewed_by_role` và các cờ confirmed giữ nguyên.
+
+## Chốt lại lần 3 (18/11/2026) — tên đề tài và quyết định không đăng ký công khai
+
+- **Vì sao:** hai quyết định của chủ nhiệm cùng ngày làm đổi `gate_params.G1`:
+  - tên đề tài nêu đủ ba hướng dẫn (xem `G0_XAC_NHAN_CHU_NHIEM_20261118.md`). Mục tiêu chung `aim` dựng từ tên đề tài
+    (quyết định B5), nên đổi theo thành «… năm 2026 theo KDIGO 2022, KDIGO 2024 và ADA 2026.»;
+  - không đăng ký công khai đề cương (nguyên văn bác sĩ: «Không đăng ký công khai»). Biện pháp của sai lệch «báo cáo và
+    phân tích có chọn lọc» bỏ cụm «cân nhắc đăng ký công khai đề cương (quyết ở G2)», thay bằng «không đăng ký công khai
+    đề cương».
+- **Nội dung thay đổi so với lần chốt trước (dấu 35669ac14fd0ecd1):** chỉ hai khoá `aim` và
+  `bias_controls[«Sai lệch báo cáo và phân tích có chọn lọc»].bien_phap`, đúng hai cụm nêu trên.
+- **Đã ghi vào `gate_params.G1`:** `reviewed_at = "2026-11-18T11:40:57+07:00"`; `dau_van_tay_chot = "c504c4e6ea68bd69"`
+  (khớp vân tay sống); `reviewed_by_role` và các cờ confirmed giữ nguyên.

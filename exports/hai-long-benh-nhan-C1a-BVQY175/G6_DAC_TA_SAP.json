@@ -1,7 +1,7 @@
 {
  "nguon_sap": "G4_A5_SAP_FINAL_hai-long-benh-nhan-C1a-BVQY175.md",
- "sha256_sap": "4b9010eee502ffaafd1e15ab1f16a5a81c380ccc2e1181516291ff5c1221daac",
- "trang_thai_de_xuat": "ĐỀ XUẤT CỦA AGENT 15/11/2026 (đồng bộ lại theo SAP hiện tại, giai đoạn 7: neo từng phân tích vào SAP bằng sap_neo, thêm phân tích SAP mới bổ sung) — CHỜ thống kê viên/PI duyệt (ghi nguoi_duyet). SAP nguồn còn là bản DRAFT chưa ký: SAP sửa trước khi khoá ⇒ sha256_sap lệch, đặc tả bị coi là cũ và phải đồng bộ lại.",
+ "sha256_sap": "d854c16f53141e29a5c28380d1f11fcdf9191ab0b3f3a55cfefc281791ecae6c",
+ "trang_thai_de_xuat": "Đồng bộ lại 18/11/2026: P2_g2_g3 thành phân tích máy chạy được theo phương pháp chủ nhiệm chọn (SAP §2 sửa nháp 18/11). ĐỀ XUẤT CỦA AGENT 15/11/2026 (đồng bộ lại theo SAP hiện tại, giai đoạn 7: neo từng phân tích vào SAP bằng sap_neo, thêm phân tích SAP mới bổ sung) — CHỜ thống kê viên/PI duyệt (ghi nguoi_duyet). SAP nguồn còn là bản DRAFT chưa ký: SAP sửa trước khi khoá ⇒ sha256_sap lệch, đặc tả bị coi là cũ và phải đồng bộ lại.",
  "can_thong_ke_vien_quyet": [
   "suckhoe_tudanhgia (5 mức thứ tự): đề xuất đưa vào dạng SỐ (1 tham số, giả định tuyến tính); SAP §5 chưa nói rõ số hay phân loại — chuyển vào hiep_bien_phan_loai nếu muốn 4 biến giả.",
   "duoc_dung_bacsi mã 7 «Không áp dụng» KHÔNG khai là mã thiếu ⇒ đề xuất giữ như một MỨC (biến giả _2 và _7, tham chiếu 1 «Có»).",
@@ -156,11 +156,19 @@
    "id": "P2_g2_g3",
    "vai": "phu",
    "sap_muc": "§2",
-   "mo_ta": "G2 (ý định quay lại), G3 (ý định giới thiệu) — kết cục thứ cấp định trước",
-   "chua_tu_dong": "SAP §2 nêu là kết cục thứ cấp nhưng CHƯA định phương pháp (tỷ lệ? thứ tự?) — thống kê viên chốt rồi đổi mục này thành tham_so",
+   "mo_ta": "G2 (ý định quay lại), G3 (ý định giới thiệu) — kết cục thứ cấp định trước: phân bố 5 mức + tỷ lệ mức 4–5 kèm KTC 95% Wilson hiệu chỉnh chùm, không kiểm định (chủ nhiệm chọn 18/11/2026)",
    "sap_neo": [
     "ý định quay lại"
-   ]
+   ],
+   "tham_so": {
+    "ty_le": [
+     "g2",
+     "g3"
+    ],
+    "nguong_ty_le": 4,
+    "cot_cum": "ma_ban_kham",
+    "loc": "PhieuHopLe == 1"
+   }
   },
   {
    "id": "P2_hoi_tu",

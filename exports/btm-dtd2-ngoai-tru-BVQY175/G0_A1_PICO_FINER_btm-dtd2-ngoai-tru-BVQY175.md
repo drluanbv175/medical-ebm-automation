@@ -15,7 +15,7 @@
 ## PHẦN 1 — PICO / PECO (khung trống — bác sĩ tự viết)
 
 
-**Topic đề tài:** Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026
+**Topic đề tài:** Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026
 **Truy vấn PubMed:** `("Diabetes Mellitus, Type 2"[Mesh] OR "type 2 diabetes"[tiab]) AND ("Renal Insufficiency, Chronic"[Mesh] OR "Diabetic Nephropathies"[Mesh] OR "chronic kidney disease"[tiab] OR albuminuria[tiab]) AND ("Guideline Adherence"[Mesh] OR "Practice Patterns, Physicians'"[Mesh] OR "care gap"[tiab] OR "albuminuria testing"[tiab] OR "albuminuria screening"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR "Ambulatory Care"[Mesh] OR "Primary Health Care"[Mesh] OR "primary care"[tiab]) AND 2019:2026[dp]`
 
 ```

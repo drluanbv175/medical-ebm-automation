@@ -1,6 +1,6 @@
 # KẾ HOẠCH HOÀN THIỆN ĐỀ TÀI
 
-**Đề tài:** Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026
+**Đề tài:** Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026
 **Mã:** `btm-dtd2-ngoai-tru-BVQY175` · **Thiết kế dự kiến:** cắt ngang mô tả có phân tích, hồi cứu hồ sơ (mã `cross_sectional`; loại câu hỏi `descriptive`)
 **Tạp chí đích:** Tạp chí Y Dược Thực hành 175 (ISSN 2354-1024, DOI 10.59354)
 **Lập ngày:** 26/10/2026 — bản đề xuất của Claude; mốc thời gian là ƯỚC TÍNH, chủ nhiệm chỉnh theo thực tế.

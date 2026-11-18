@@ -1,5 +1,5 @@
 # A5, SAP FINAL + SAP LOCK CERTIFICATE (DRAFT, CHỜ BÁC SĨ KÝ)
-**Đề tài:** Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026  
+**Đề tài:** Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026  
 **Mã:** btm-dtd2-ngoai-tru-BVQY175 | **Phiên bản SAP:** 1.0 | **Ngày soạn:** 2026-10-28
 **Chuẩn báo cáo:** STROBE kèm RECORD (nghiên cứu dùng dữ liệu y tế thu thập thường quy)
 
@@ -12,7 +12,7 @@
 
 | Mục | Nội dung |
 |---|---|
-| Tên đề tài | Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026 |
+| Tên đề tài | Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026 |
 | Mã nghiên cứu | btm-dtd2-ngoai-tru-BVQY175 |
 | Thiết kế | Nghiên cứu Cắt ngang Mô tả (Cross-sectional / Prevalence), có phân tích yếu tố liên quan thăm dò (MT3) |
 | Chuẩn báo cáo | STROBE + RECORD |

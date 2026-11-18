@@ -1,5 +1,5 @@
 # A4 — KẾ HOẠCH CỠ MẪU (DRAFT)
-**Đề tài:** Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026  
+**Đề tài:** Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026  
 **Mã:** btm-dtd2-ngoai-tru-BVQY175 | **Ngày sinh:** 2026-10-28 | **Trạng thái:** DRAFT — CHỜ BÁC SĨ XÁC NHẬN
 
 ---

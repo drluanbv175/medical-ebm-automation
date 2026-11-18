@@ -1,6 +1,6 @@
 {
-  "title": "Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026",
-  "topic": "Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2024 và ADA 2026",
+  "title": "Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026",
+  "topic": "Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026",
   "query_en": "(\"Diabetes Mellitus, Type 2\"[Mesh] OR \"type 2 diabetes\"[tiab]) AND (\"Renal Insufficiency, Chronic\"[Mesh] OR \"Diabetic Nephropathies\"[Mesh] OR \"chronic kidney disease\"[tiab] OR albuminuria[tiab]) AND (\"Guideline Adherence\"[Mesh] OR \"Practice Patterns, Physicians'\"[Mesh] OR \"care gap\"[tiab] OR \"albuminuria testing\"[tiab] OR \"albuminuria screening\"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR \"Ambulatory Care\"[Mesh] OR \"Primary Health Care\"[Mesh] OR \"primary care\"[tiab]) AND 2019:2026[dp]",
   "base_query": "(\"Diabetes Mellitus, Type 2\"[Mesh] OR \"type 2 diabetes\"[tiab]) AND (\"Renal Insufficiency, Chronic\"[Mesh] OR \"Diabetic Nephropathies\"[Mesh] OR \"chronic kidney disease\"[tiab] OR albuminuria[tiab]) AND (\"Guideline Adherence\"[Mesh] OR \"Practice Patterns, Physicians'\"[Mesh] OR \"care gap\"[tiab] OR \"albuminuria testing\"[tiab] OR \"albuminuria screening\"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR \"Ambulatory Care\"[Mesh] OR \"Primary Health Care\"[Mesh] OR \"primary care\"[tiab]) AND 2019:2026[dp]",
   "irb_approved": false,
@@ -43,8 +43,8 @@
       "registry_overlap_assessment": null,
       "pico_confirmed": true,
       "reviewed_by_role": "chủ nhiệm đề tài",
-      "reviewed_at": "2026-10-28T15:29:00+07:00",
-      "dau_van_tay_chot": "858fd91d6edbd8eb"
+      "reviewed_at": "2026-11-18T11:40:57+07:00",
+      "dau_van_tay_chot": "9475cdb714650351"
     },
     "G1": {
       "protocol_version": "1.0",
@@ -259,10 +259,10 @@
       "protocol_core_confirmed": true,
       "feasibility_confirmed": true,
       "evidence_review_confirmed": true,
-      "aim": "Đánh giá thực trạng phát hiện bệnh thận mạn và điều trị bảo vệ thận ở người bệnh đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 năm 2026 theo KDIGO 2024 và ADA 2026.",
+      "aim": "Đánh giá thực trạng phát hiện bệnh thận mạn và điều trị bảo vệ thận ở người bệnh đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 năm 2026 theo KDIGO 2022, KDIGO 2024 và ADA 2026.",
       "reviewed_by_role": "chủ nhiệm",
-      "reviewed_at": "2026-11-18T07:28:26+07:00",
-      "dau_van_tay_chot": "35669ac14fd0ecd1",
+      "reviewed_at": "2026-11-18T11:40:57+07:00",
+      "dau_van_tay_chot": "c504c4e6ea68bd69",
       "sampling_design": [
         "ngau_nhien_don"
       ],
@@ -328,7 +328,7 @@
         },
         {
           "sai_lech": "Sai lệch báo cáo và phân tích có chọn lọc",
-          "bien_phap": "Khoá SAP ở G4 trước khi nhận dữ liệu; báo cáo đủ mọi kết cục đã định trước theo STROBE và RECORD; cân nhắc đăng ký công khai đề cương (quyết ở G2)",
+          "bien_phap": "Khoá SAP ở G4 trước khi nhận dữ liệu; báo cáo đủ mọi kết cục đã định trước theo STROBE và RECORD; không đăng ký công khai đề cương",
           "chieu": "Chỉ báo các chỉ số «đẹp» hoặc đổi định nghĩa sau khi thấy số liệu",
           "trang_thai": "khống chế"
         },
