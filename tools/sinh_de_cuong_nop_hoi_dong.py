@@ -209,7 +209,9 @@ def _ha_hoa_nhan_manh(s: str) -> str:
     giữ từ viết tắt và tên chuẩn quốc tế."""
     def _mot(m: re.Match) -> str:
         w = m.group(0)
-        return w if w in _GIU_HOA or w.isascii() else w.lower()
+        # 18/11/2026: cụm IN HOA có chữ số là MÃ (ĐN2, MT1…), không phải chữ nhấn mạnh — bản cũ hạ «ĐN2» (có «Đ» ngoài
+        # ASCII) thành «Đn2» trong đề cương BTM, lệch nhãn «ĐN2» của kế hoạch phân tích.
+        return w if w in _GIU_HOA or w.isascii() or any(c.isdigit() for c in w) else w.lower()
     return re.sub(r"(?<![\w-])[A-ZÀ-ỸĐ][A-ZÀ-ỸĐ0-9-]+(?![\w-])",
                   lambda m: _mot(m) if m.group(0) == m.group(0).upper() and m.group(0) != m.group(0).lower()
                   else m.group(0), s)

@@ -112,7 +112,9 @@ def muc_sap(out_dir: Path, study: str) -> Dict[str, str]:
 
 def muc_han_che_de_cuong(out_dir: Path, study: str) -> Optional[str]:
     """Văn bản mục «Hạn chế…» của đề cương nộp (tới tiêu đề cùng cấp hoặc cao hơn kế tiếp); None nếu chưa có đề
-    cương."""
+    cương; chuỗi rỗng nếu đề cương CÓ nhưng không có tiêu đề nào chứa «Hạn chế» (18/11/2026: người gọi phải báo
+    «thiếu mục», không báo «chưa khai neo» — đề cương BTM viết tay thiếu mục này từ 15/11 mà lỗi bị đọc thành việc
+    điền bảng)."""
     try:
         dc = unicodedata.normalize("NFC", (out_dir / f"DE_CUONG_NOP_HOI_DONG_{study}.md").read_text(encoding="utf-8"))
     except OSError:
@@ -207,7 +209,15 @@ def kiem(out_dir: Path, study: str, *, meta: Optional[Mapping[str, Any]] = None)
         if k not in da_co:
             loi.append(_vd("SL-02", "loi", f"sai lệch G1 «{x['sai_lech']}» chưa có dòng đối chiếu"))
     han_che = muc_han_che_de_cuong(out_dir, study)
-    if han_che is not None:
+    mo = [x for x in theo_ten.values() if "hạn chế mở" in x.get("trang_thai", "").casefold()]
+    if han_che == "" and mo:
+        # Đề cương không có mục «Hạn chế» ⇒ MỘT lỗi nói đúng việc cần làm (thêm mục), thay vì N lỗi «chưa khai neo».
+        loi.append(_vd("SL-09", "loi", "đề cương nộp CHƯA CÓ mục «Hạn chế» (không tiêu đề nào chứa chữ «Hạn chế») "
+                                       f"nhưng G1 có {len(mo)} hạn chế mở: "
+                                       + "; ".join(f"«{x['sai_lech']}»" for x in mo)
+                                       + " — thêm mục «Hạn chế của nghiên cứu» nêu các hạn chế này, rồi khai "
+                                         "neo_han_che (cụm chữ nguyên văn trong mục đó)"))
+    elif han_che is not None:
         theo_dong = {_khoa(r.get("sai_lech")): r for r in dong}
         for k, x in theo_ten.items():
             if "hạn chế mở" not in x.get("trang_thai", "").casefold() or k not in theo_dong:

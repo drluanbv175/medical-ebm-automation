@@ -86,3 +86,24 @@ def test_van_ban_sau_khi_bo_sinh_go_thi_k8_sach():
     vao = ("Thu thập: trích hồ sơ eHospital; nhập kép (quy trình dữ liệu đã chốt). "
            "Đăng ký: không bắt buộc (PI chốt ở G2). Tiêu chuẩn: E11 (PICO đã chốt).")
     assert K.loi_k8(vao) and K.loi_k8(G.lam_sach(vao)) == []
+
+
+# ── 18/11/2026 (chiều): mã phân tích độ nhạy bị hạ chữ — đề cương BTM «Đn1…Đn9», kế hoạch phân tích «ĐN1…ĐN9» ──────
+@pytest.mark.parametrize("dong", ["Đn2 — xét nghiệm ngoài viện: kết cục chính tính cả kết quả ngoài BVQY175.",
+                                  "… (Đn6 ở mục 4.9 chỉ cần một lần) …"])
+def test_k8_bat_ma_do_nhay_bi_ha_chu(dong):
+    loi = K.loi_k8(dong)
+    assert len(loi) == 1 and "Đn2" in loi[0], loi
+
+
+@pytest.mark.parametrize("dong", ["ĐN2 — xét nghiệm ngoài viện.", "Đơn thuốc 2 lần", "Đnh2", "điểm Đ12"])
+def test_k8_ma_do_nhay_dung_chu_khong_bao(dong):
+    assert K.loi_k8(dong) == []
+
+
+def test_bo_sinh_giu_ma_in_hoa_co_chu_so():
+    """Cụm IN HOA có chữ số là mã (ĐN2, MT1) — không hạ chữ; chữ nhấn mạnh không số vẫn hạ như cũ."""
+    assert G._cau("ĐN2 — xét nghiệm ngoài viện") == "ĐN2 — xét nghiệm ngoài viện."
+    assert G._cau("MT1 và ĐN4") == "MT1 và ĐN4."
+    assert G._cau("Quần thể CHÍNH") == "Quần thể chính."
+    assert G._cau("KHÔNG kiểm định") == "Không kiểm định."
