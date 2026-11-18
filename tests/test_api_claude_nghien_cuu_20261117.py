@@ -619,3 +619,11 @@ def test_kiem_trich_dan_json_tot_khong_gui_them(tmp_path):
     kh = KhachGia(_tra_knd)
     KND.main(["--study", "S1", "--goi-api"], client=kh, lay=lambda p: ABS, goc=goc)
     assert len(kh.messages.goi) == 1
+
+
+def test_so_de_muc_khong_phai_so_lieu():
+    """18/11/2026 (BTM C022): «mục 4.9» bị gắn cờ «số không thấy: 4.9» dù câu trích đúng — số đề mục bị bỏ qua."""
+    assert KND.so_lieu("kế hoạch giảm tham số ở mục 4.9 dùng mức này [38]") == []
+    assert KND.so_lieu("xem Bảng 5.2 và Phụ lục 3,1; §4.10") == []
+    assert KND.so_lieu("tỷ lệ 31,2% ở mục 4.9; HR 0,74 [2]") == ["31.2", "0.74"]
+    assert KND.so_lieu("đo 4.9 mmol/L [2]") == ["4.9"]

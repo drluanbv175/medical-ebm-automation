@@ -50,6 +50,7 @@ TEN_MUC = {
 _DAU = re.compile(r"\[(\d+(?:\s*[-–]\s*\d+)?(?:\s*[,;]\s*\d+(?:\s*[-–]\s*\d+)?)*)\]")
 _TLTK = re.compile(r"^#{1,3}\s*(?:\d+\.?\s*)?(TÀI LIỆU THAM KHẢO|REFERENCES)\b", re.I)
 _SO_LIEU = re.compile(r"(?<![\w.,])(\d{1,3}(?:[.,]\d+)?)\s*%|(?<![\w.,])(\d+[,.]\d+)(?![\w.,])")
+_SO_MUC_TRUOC = re.compile(r"(?:\b(?:[Mm]ục|[Pp]hụ lục|[Bb]ảng|[Hh]ình|[Ss]ơ đồ|[Cc]hương)|§)\s*$")
 SO_CAU_MOI_LO = 6
 SO_LAN_THU_JSON_HONG = 2  # lô trả JSON sai cú pháp ⇒ gửi lại đúng lô đó tối đa 1 lần (tính phí thêm 1 lượt)
 TOKEN_MOI_ABSTRACT = 1000  # tiêu đề + loại xuất bản + abstract có cấu trúc, đo trên BTM
@@ -171,6 +172,9 @@ def so_lieu(doan: str) -> List[str]:
     sach = _DAU.sub(" ", doan)
     ra = []
     for m in _SO_LIEU.finditer(sach):
+        if m.group(2) and _SO_MUC_TRUOC.search(sach[:m.start()]):
+            # 18/11/2026: «mục 4.9», «Bảng 5.2» là số đề mục, không phải số liệu (trước đây bị gắn «số không thấy»).
+            continue
         ra.append((m.group(1) or m.group(2)).replace(",", "."))
     return list(dict.fromkeys(ra))
 
