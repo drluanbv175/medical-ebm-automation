@@ -144,7 +144,7 @@ Việc xác định cỡ mẫu, lập kế hoạch phân tích và trình bày �
 
 ### 4.4.2. Phương pháp chọn mẫu
 
-Chọn mẫu ngẫu nhiên đơn ở cấp người bệnh: (1) lập khung mẫu là danh sách người bệnh (mỗi người một dòng, theo mã người bệnh) có mã ICD-10 E11 khám ngoại trú tại Khoa Khám bệnh trong năm 2026, lấy từ chức năng tra cứu/danh sách của eHospital — gộp các lượt khám của cùng một người trước khi chọn để người khám nhiều lần không có xác suất được chọn cao hơn; (2) xếp danh sách theo thứ tự ngẫu nhiên do máy tính sinh, ghi lại hạt giống (seed); (3) mở lần lượt từng hồ sơ theo đúng thứ tự đó, kiểm tiêu chuẩn chọn vào và loại trừ; hồ sơ không đủ tiêu chuẩn ghi lý do và chuyển sang hồ sơ kế tiếp, cho tới khi đủ cỡ mẫu tính (hiệu chỉnh quần thể hữu hạn theo kích thước khung mẫu). Nếu eHospital không lập được danh sách khung mẫu thì dừng, chọn cách chọn mẫu khác và sửa đề cương trước khi trình Hội đồng. Sơ đồ chọn (STROBE, RECORD) báo số người trong khung mẫu, số lượng hồ sơ đã mở, số bị loại theo từng lý do và số đưa vào phân tích.
+Chọn mẫu ngẫu nhiên đơn ở cấp người bệnh: (1) lập khung mẫu là danh sách người bệnh (mỗi người một dòng, theo mã người bệnh) có mã ICD-10 E11 khám ngoại trú tại Khoa Khám bệnh trong năm 2026, lấy từ chức năng tra cứu/danh sách của eHospital — gộp các lượt khám của cùng một người trước khi chọn để người khám nhiều lần không có xác suất được chọn cao hơn; (2) xếp danh sách theo thứ tự ngẫu nhiên do máy tính sinh, ghi lại hạt giống (seed); (3) mở lần lượt từng hồ sơ theo đúng thứ tự đó, kiểm tiêu chuẩn chọn vào và loại trừ; hồ sơ không đủ tiêu chuẩn ghi lý do và chuyển sang hồ sơ kế tiếp, cho tới khi đủ cỡ mẫu tính (385 hồ sơ đủ tiêu chuẩn; không hiệu chỉnh quần thể hữu hạn). Nếu eHospital không lập được danh sách khung mẫu thì dừng, chọn cách chọn mẫu khác và sửa đề cương trước khi trình Hội đồng. Sơ đồ chọn (STROBE, RECORD) báo số người trong khung mẫu, số lượng hồ sơ đã mở, số bị loại theo từng lý do và số đưa vào phân tích.
 
 ## 4.5. Biến số và chỉ số nghiên cứu
 
@@ -257,7 +257,7 @@ Kế hoạch phân tích thống kê (phiên bản 1.0) được khoá trước 
 - Đn1 — dạng albumin niệu: Kết cục chính tính cả albumin hoặc protein niệu dạng khác.
 - Đn2 — xét nghiệm ngoài viện: Kết cục chính tính cả kết quả ngoài BVQY175 mà bệnh án ghi rõ ngày và kết quả.
 - Đn3 — thời gian quan sát: Kết cục chính chỉ trên người có lượt khám đầu trước 01/07/2026 (lượt khám đầu trước 01/07/2026 = 1).
-- Đn4 — định nghĩa quần thể: Kết cục chính chỉ trên người có đơn thuốc hạ glucose.
+- Đn4 — định nghĩa quần thể: Kết cục chính chỉ trên người có ít nhất một đơn thuốc hạ glucose ở bất kỳ lượt khám nào năm 2026.
 - Đn5 — BTM chưa ghi nhận: Phụ 2 với danh mục mã thận mở rộng (thêm N19, I12, I13, R80).
 - Đn6 — chỉ định ACEi/ARB: Phụ 3a với albumin niệu chỉ cần một lần UACR ≥ 30 mg/g.
 - Đn7 — thuốc ngoài đơn: Phụ 3 tính cả thuốc bệnh án ghi «đang dùng» nhưng không có trong đơn eHospital.
@@ -516,7 +516,8 @@ Chủ nhiệm đề tài (ký, ghi rõ họ tên): ………………………�
 | 70 | Bệnh án ghi kết quả creatinin làm NGOÀI BVQY175 năm 2026 (có ghi rõ ngày và kết quả) | ☐ 1. Có  ☐ 0. Không | creat_ngoai_vien |
 | 71 | Bệnh án ghi kết quả UACR làm NGOÀI BVQY175 năm 2026 (có ghi rõ ngày và kết quả) | ☐ 1. Có  ☐ 0. Không | uacr_ngoai_vien |
 | 72 | Nhóm thuốc hạ glucose có trong đơn tại lượt khám cuối năm 2026 | ☐ 1. Metformin  ☐ 2. Sulfonylurea  ☐ 3. Ức chế DPP-4  ☐ 4. Ức chế SGLT2  ☐ 5. Đồng vận thụ thể GLP-1  ☐ 6. Thiazolidinedion  ☐ 7. Ức chế alpha-glucosidase  ☐ 8. Insulin  ☐ 9. Nhóm khác  ☐ 0. Không có thuốc hạ glucose | thuoc_ha_glucose |
-| 73 | ACEi hoặc ARB có trong đơn tại lượt khám cuối năm 2026 | ☐ 0. Không  ☐ 1. ACEi  ☐ 2. ARB  ☐ 3. Cả ACEi và ARB | raasi |
+| 73 | Có ít nhất một đơn thuốc hạ glucose ở bất kỳ lượt khám nào năm 2026 | ☐ 1. Có  ☐ 0. Không | don_ha_glucose_nam |
+| 74 | ACEi hoặc ARB có trong đơn tại lượt khám cuối năm 2026 | ☐ 0. Không  ☐ 1. ACEi  ☐ 2. ARB  ☐ 3. Cả ACEi và ARB | raasi |
 
 Người thu thập: ……………………………   Ngày thu thập: …… /…… /…………
 
@@ -591,6 +592,7 @@ Người thu thập: ……………………………   Ngày thu thập: …�
 | uacr_nv_ngay | UACR ngoài viện gần nhất: ngày | Ngày tháng | 2026-01-01–2026-12-31 | Phiếu thu thập số liệu |
 | uacr_nv_gt | UACR ngoài viện gần nhất: giá trị (cùng đơn vị với đơn vị UACR trên eHospital) | Định lượng | 0–10000 | Phiếu thu thập số liệu |
 | thuoc_ha_glucose | Nhóm thuốc hạ glucose có trong đơn tại lượt khám cuối năm 2026 | Định danh/thứ bậc | 1 = Metformin; 2 = Sulfonylurea; 3 = Ức chế DPP-4; 4 = Ức chế SGLT2; 5 = Đồng vận thụ thể GLP-1; 6 = Thiazolidinedion; 7 = Ức chế alpha-glucosidase; 8 = Insulin; 9 = Nhóm khác; 0 = Không có thuốc hạ glucose | Phiếu thu thập số liệu |
+| don_ha_glucose_nam | Có ít nhất một đơn thuốc hạ glucose ở bất kỳ lượt khám nào năm 2026 | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
 | raasi | ACEi hoặc ARB có trong đơn tại lượt khám cuối năm 2026 | Định danh/thứ bậc | 0 = Không; 1 = ACEi; 2 = ARB; 3 = Cả ACEi và ARB | Phiếu thu thập số liệu |
 | thuoc_ngoai_don | Bệnh án ghi người bệnh đang dùng nhưng KHÔNG có trong đơn eHospital (thuốc kê hoặc mua ngoài) | Định danh/thứ bậc | 1 = ACEi hoặc ARB; 2 = Ức chế SGLT2; 0 = Không có | Phiếu thu thập số liệu |
 | ccd_raasi | Hồ sơ ghi rõ chống chỉ định hoặc không dung nạp ACEi/ARB | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |

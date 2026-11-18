@@ -30,6 +30,7 @@
 | 1.0 (sửa nháp) | 2026-11-15 | Máy (chưa ký) | Gắn nhãn truy nguyên mục tiêu G1 cho từng kết cục và bảng (MT1: kết cục chính, phụ 1, phụ 2 · MT2: phụ 3 · MT3: phụ 4); §5 ghi mức tham chiếu HbA1c < 7% theo lựa chọn của chủ nhiệm (G3_BO_BIEN_SO_QUYET_DINH_20261115.md). Không đổi kết cục, mô hình hay tập biến. |
 | 1.0 (sửa nháp 2) | 2026-11-15 | Máy (chưa ký) | Đồng bộ trích dẫn với danh mục trích dẫn của đề tài (luật «chỉ giữ bài có toàn văn», bác sĩ 25/10 và 15/11/2026): bỏ Zou 2004 và Brown–Cai–DasGupta 2001 (không lấy được toàn văn kể cả khi bác sĩ đăng nhập; bác sĩ: «nếu không lấy được hãy loại bỏ cho tôi»); câu hồi quy Poisson giữ nguồn mở Barros & Hirakata 2003, câu KTC giữ tên phương pháp (khoảng điểm Wilson). White 2011 giữ (đã có toàn văn). Gọi đúng tên biến `nhom_g`, `nhom_a` (§2) và `thoi_gian_mac_dtd_5` (§5) cho khớp ma trận mục tiêu → biến. Không đổi phương pháp, kết cục hay tập biến. |
 | 1.0 (sửa nháp 3) | 2026-11-15 | Máy (chưa ký) | Giai đoạn thiết kế — đồng bộ với bảng kiểm soát sai lệch G1: §1 sơ đồ chọn thêm so sánh tuổi, giới, nhóm đối tượng giữa người bị loại vì chỉ 1 lượt khám và mẫu nghiên cứu (G1 đã hứa, SAP chưa có). Không đổi phương pháp, kết cục hay tập biến. |
+| 1.0 (sửa nháp 4) | 2026-11-18 | Máy (chưa ký) | §9 ĐN4 đo bằng trường mới `don_ha_glucose_nam` (đơn thuốc hạ glucose ở bất kỳ lượt khám nào năm 2026) theo lựa chọn của chủ nhiệm cho B10 (G3_BO_BIEN_SO_QUYET_DINH_20261118.md); codebook 73 thành 74 trường. Không đổi kết cục, mô hình hay phân tích chính. |
 
 ---
 
@@ -116,7 +117,7 @@ Mỗi phân tích độ nhạy được định trước; không thay kết qu�
 - **ĐN1 — dạng albumin niệu:** kết cục chính tính cả albumin hoặc protein niệu dạng khác (`xn_du_nhay_alb`).  
 - **ĐN2 — xét nghiệm ngoài viện:** kết cục chính tính cả kết quả ngoài BVQY175 mà bệnh án ghi rõ ngày và kết quả (`xn_du_nhay_nv`).  
 - **ĐN3 — thời gian quan sát:** kết cục chính chỉ trên người có lượt khám đầu trước 01/07/2026 (`vao_truoc_0107` = 1).  
-- **ĐN4 — định nghĩa quần thể:** kết cục chính chỉ trên người có đơn thuốc hạ glucose (G1; cách đo xem điểm S6 của phiếu đề xuất).  
+- **ĐN4 — định nghĩa quần thể:** kết cục chính chỉ trên người có ít nhất một đơn thuốc hạ glucose ở bất kỳ lượt khám nào năm 2026 (G1), đo bằng trường `don_ha_glucose_nam` (biến phái sinh `dn4_co_don`; quyết định B10, 18/11/2026).  
 - **ĐN5 — BTM chưa ghi nhận:** Phụ 2 với danh mục mã thận mở rộng (thêm N19, I12, I13, R80).  
 - **ĐN6 — chỉ định ACEi/ARB:** Phụ 3a với albumin niệu chỉ cần một lần UACR ≥ 30 mg/g.  
 - **ĐN7 — thuốc ngoài đơn:** Phụ 3 tính cả thuốc bệnh án ghi «đang dùng» nhưng không có trong đơn eHospital (`thuoc_ngoai_don`).  

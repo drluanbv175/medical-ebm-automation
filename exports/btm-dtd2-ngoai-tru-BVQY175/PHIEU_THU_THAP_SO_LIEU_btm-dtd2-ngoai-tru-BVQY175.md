@@ -324,29 +324,35 @@
 
    *Ghi chú: Viên phối hợp đánh dấu mọi nhóm thành phần*
 
-**68. ACEi hoặc ARB có trong đơn tại lượt khám cuối năm 2026** `raasi`
+**68. Có ít nhất một đơn thuốc hạ glucose ở bất kỳ lượt khám nào năm 2026** `don_ha_glucose_nam`
+
+   ☐ Có   ☐ Không
+
+   *Ghi chú: Xem đơn của mọi lượt khám năm 2026, không chỉ lượt cuối; chỉ ghi có/không, không ghi nhóm thuốc*
+
+**69. ACEi hoặc ARB có trong đơn tại lượt khám cuối năm 2026** `raasi`
 
    ☐ Không   ☐ ACEi   ☐ ARB   ☐ Cả ACEi và ARB
 
    *Ghi chú: Kể cả viên phối hợp (ví dụ perindopril/amlodipin)*
 
-**69. Bệnh án ghi người bệnh đang dùng nhưng KHÔNG có trong đơn eHospital (thuốc kê hoặc mua ngoài)** `thuoc_ngoai_don`
+**70. Bệnh án ghi người bệnh đang dùng nhưng KHÔNG có trong đơn eHospital (thuốc kê hoặc mua ngoài)** `thuoc_ngoai_don`
 
    ☐ ACEi hoặc ARB   ☐ Ức chế SGLT2   ☐ Không có  *(chọn nhiều)*
 
-**70. Hồ sơ ghi rõ chống chỉ định hoặc không dung nạp ACEi/ARB** `ccd_raasi`
+**71. Hồ sơ ghi rõ chống chỉ định hoặc không dung nạp ACEi/ARB** `ccd_raasi`
 
    ☐ Có   ☐ Không
 
-**71. Lý do được ghi** `ccd_raasi_ly_do` — *chỉ điền khi có chống chỉ định ACEi/ARB = Có*
+**72. Lý do được ghi** `ccd_raasi_ly_do` — *chỉ điền khi có chống chỉ định ACEi/ARB = Có*
 
    ☐ Tăng kali máu   ☐ Phù mạch   ☐ Hạ huyết áp   ☐ Tăng creatinin hoặc tổn thương thận cấp   ☐ Có thai hoặc dự định có thai   ☐ Khác  *(chọn nhiều)*
 
-**72. Hồ sơ ghi rõ chống chỉ định hoặc không dung nạp thuốc ức chế SGLT2** `ccd_sglt2i`
+**73. Hồ sơ ghi rõ chống chỉ định hoặc không dung nạp thuốc ức chế SGLT2** `ccd_sglt2i`
 
    ☐ Có   ☐ Không
 
-**73. Lý do được ghi** `ccd_sglt2i_ly_do` — *chỉ điền khi có chống chỉ định SGLT2i = Có*
+**74. Lý do được ghi** `ccd_sglt2i_ly_do` — *chỉ điền khi có chống chỉ định SGLT2i = Có*
 
    ☐ Nhiễm toan ceton   ☐ Nhiễm khuẩn tiết niệu – sinh dục tái diễn   ☐ eGFR dưới ngưỡng dùng thuốc   ☐ Giảm thể tích hoặc hạ huyết áp   ☐ Khác  *(chọn nhiều)*
 
