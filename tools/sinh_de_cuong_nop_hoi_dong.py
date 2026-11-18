@@ -57,6 +57,9 @@ _BO_HAN = [re.compile(x, re.IGNORECASE) for x in (
     r"\s*\(giả lập\b[^()]*\)",
     r"\s*\((?:G\d{1,2}|SAP)(?:\s*§\s*\d+)?\s*[—–-][^()]*\)",                # (G1 — đã chốt), (SAP §4 — đã chốt ở G4)
     r"\s*\((?:PI|bác sĩ|chủ nhiệm)\s+đã\s+chốt[^()]*\)",                  # (PI đã chốt — gate_params.G2.…)
+    # 18/11/2026: ghi chú nguồn gốc quyết định mà K8 nay bắt (đề cương BTM + 22/24 đề cương giả lập mang «(quy trình dữ
+    # liệu đã chốt)» do quyet_dinh_da_chot gắn để truy vết) — giữ ở dữ kiện, gỡ khi in văn bản nộp.
+    r"\s*\([^()]{0,24}\bđã\s+(?:chốt|duyệt)\s*\)",                         # (quy trình dữ liệu đã chốt), (PICO đã chốt)
     r"\s*\(SPIRIT(?:\s+2025)?(?:\s+mục)?\s+\d+[a-z]?(?:\s*[,;]\s*\d+[a-z]?)*\)",
     r"\s*\((?:hồ sơ vận hành G5|xác nhận lúc khoá G5|từ ma trận mục tiêu[–-]biến)[^()]*\)",
     r"\s*\(nguồn đo từng biến[^()]*\)",
@@ -85,7 +88,7 @@ _BO_HAN = [re.compile(x, re.IGNORECASE) for x in (
 # Thay cụm nội bộ bằng cách nói của văn bản nộp.
 # 17/11/2026 (đề cương BTM): khoá trường đã chốt «gate_params.G0.intervention» từng thành «như.intervention»; mã cổng
 # làm tân ngữ «cho thống nhất với G3;» từng thành «với;». Đổi sang cách nói của văn bản nộp thay vì xoá.
-_NHAN_KHOA_DA_CHOT = {"intervention": "các yếu tố khảo sát nêu ở mục 4.5", "population": "quần thể nghiên cứu",
+_NHAN_KHOA_DA_CHOT = {"intervention": "các yếu tố khảo sát liệt kê ở Phụ lục D", "population": "quần thể nghiên cứu",
                       "comparison": "nhóm so sánh", "outcomes": "các kết cục nghiên cứu"}
 _NHAN_CONG = {"0": "câu hỏi nghiên cứu", "1": "thiết kế nghiên cứu", "2": "hồ sơ đạo đức", "3": "cách tính cỡ mẫu",
               "4": "kế hoạch phân tích thống kê", "5": "kế hoạch quản lý dữ liệu"}
@@ -94,7 +97,9 @@ _THAY = [(re.compile(a, re.IGNORECASE), b) for a, b in (
      lambda m: _NHAN_KHOA_DA_CHOT.get(m.group(1).lower(), "các nội dung đã chốt")),
     (r"\b((?:so\s+)?với|cho)\s+G([0-5])\b(?!\s*[–-]\s*G)", lambda m: f"{m.group(1)} {_NHAN_CONG[m.group(2)]}"),
     (r"\s*\(bảng RACI ở A13[^()]*\)", " (mục 6.1)"),
-    (r"\(\s*(SOP-[A-Z]+-\d+)\s*\)", r"(theo quy trình chuẩn \1 của đề tài)"),
+    # 18/11/2026: bác sĩ xác nhận «mã quy trình nội bộ chưa định nghĩa» là lỗi thật (phản biện máy BTM, mục 19) ⇒ in
+    # bằng lời, không giữ mã SOP-… (K8 nay bắt mã này). Cùng lượt: «mục 4.5» không có danh sách yếu tố (mục 11).
+    (r"\(\s*(SOP-[A-Z]+-\d+)\s*\)", "(theo quy trình chuẩn của đề tài)"),
     (r"Tài liệu\s+4\s*[–-]\s*5\s+hồ sơ\s+G2", "Phụ lục B"),
     (r"\bhồ sơ\s+G2\b", "hồ sơ đạo đức"),
     (r"\bkế hoạch an toàn G2\b", "kế hoạch an toàn"),

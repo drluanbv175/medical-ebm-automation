@@ -33,12 +33,12 @@ import sinh_de_cuong_nop_hoi_dong as SD  # noqa: E402
     ("Python 3.14.6 qua công cụ phân tích của hệ thống (`tools/run_stats_analysis.py`) và script phân tích",
      "công cụ phân tích", "Python 3.14.6 và script phân tích"),
     ("biến giải thích như gate_params.G0.intervention; phân tích thăm dò", "intervention",
-     "biến giải thích như các yếu tố khảo sát nêu ở mục 4.5; phân tích thăm dò"),
+     "biến giải thích như các yếu tố khảo sát liệt kê ở Phụ lục D; phân tích thăm dò"),  # 18/11: 4.5 không có danh sách
     ("Không áp hiệu chỉnh quần thể hữu hạn, cho thống nhất với G3; nếu biết khung mẫu", "với;",
      "cho thống nhất với cách tính cỡ mẫu; nếu biết"),
     ("do chủ nhiệm phân công (bảng RACI ở A13); một người", "A13", "do chủ nhiệm phân công (mục 6.1); một người"),
-    ("chọn ngẫu nhiên từ khung mẫu eHospital (SOP-TR-01). Không tính", "(SOP-TR-01)",
-     "(theo quy trình chuẩn SOP-TR-01 của đề tài)"),
+    ("chọn ngẫu nhiên từ khung mẫu eHospital (SOP-TR-01). Không tính", "SOP-TR-01",  # 18/11: bác sĩ — mã nội bộ
+     "(theo quy trình chuẩn của đề tài)"),
 ])
 def test_lam_sach_doi_dau_vet_sang_van_ban_nop(nguon, khong_con, phai_co):
     ra = SD.lam_sach(nguon)
@@ -137,7 +137,7 @@ def test_k8_bat_dau_vet(dong):
     "Hồ sơ đạt v.v... sẽ báo cáo theo STROBE và RECORD.",
     "| 3 | tuổi | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |",
     "Kết quả so sánh với y văn trong nước, cho thấy tỷ lệ cao hơn.",
-    "Trích hồ sơ theo quy trình chuẩn SOP-TR-01 của đề tài.",
+    "Trích hồ sơ theo quy trình chuẩn của đề tài.",  # 18/11: mã SOP-… nay là dấu vết (bác sĩ xác nhận)
 ])
 def test_k8_khong_bao_oan_van_ban_sach(dong):
     assert _k8(dong) == [], (dong, _k8(dong))

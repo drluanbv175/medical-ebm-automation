@@ -201,6 +201,13 @@ thủ hướng dẫn («Concordance with … guidelines for …») không vào s
 nghĩa. Sửa bộ sinh xong vẫn nên cho máy đọc lại (phản biện máy + `kiem_noi_dung_trich_dan.py`) trước khi nộp — bác
 sĩ quyết vì tính phí.
 
+**Lượt 2 (18/11/2026 — bác sĩ duyệt nhãn phiếu kiểm máy BTM, 22/31 máy đúng):** K8 chặn thêm «(… đã chốt)» (bộ sinh
+gỡ ghi chú nguồn gốc như «(quy trình dữ liệu đã chốt)»), mã quy trình «SOP-…» (bộ sinh in «theo quy trình chuẩn của
+đề tài»), mã thiếu «mã KGHS/KDD», mã biến trong văn xuôi («= 1», «khác 9» — viết bằng lời), nhãn tự đánh giá «Mức tính
+mới:»/«Phạm vi tra:», nhãn biến lặp «; biến hbA1c…», và hai thời điểm huỷ bảng nối mã khác nhau giữa các mục.
+«biến giải thích như …» trỏ Phụ lục D (mục 4.5 không có danh sách). Độ đúng đo được của phản biện máy: mức «vừa» 100%,
+mức «cao» chỉ 40% — đọc kỹ phát hiện mức cao trước khi sửa, đừng sửa theo máy khi văn bản đã đúng.
+
 ## Ranh giới
 KHÔNG tạo dữ liệu/kết quả chưa có (→ `[CẦN BỔ SUNG]`); KHÔNG tự quyết phân tích (nhận từ `phan-tich-thong-ke`, kế hoạch từ `thiet-ke-nghien-cuu`). Bản thảo phải qua `binh-duyet` trước khi coi là sẵn sàng nộp; chọn tạp chí/rebuttal → `nop-bai-phan-hoi`.
 
