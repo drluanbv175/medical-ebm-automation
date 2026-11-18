@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
 import re
 import sys
@@ -282,11 +283,15 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
             print(f"Sẽ gọi 1 lượt · ước {kh['uoc_tinh']}. Gọi thật: thêm --goi-api (tính phí).")
         return 0
     try:
-        kq = API.goi(loi_nhan, he_thong=HE_THONG, model=model, effort=a.effort, client=client)
+        kq = API.goi(loi_nhan, he_thong=HE_THONG, model=model, effort=a.effort, client=client,
+                     nguon="phan_bien_may_de_cuong")
         dat, khong = kiem_phat_hien(API.doc_json(kq.van_ban), van)
     except API.ThieuKhoa as exc:
         print(f"⚪ {exc}")
         API.ghi_nhat_ky_api("skipped", str(exc), 0, "phan_bien_may_de_cuong")
+        return 2
+    except API.HetNganSach as exc:  # lỗi phía máy — khoá vẫn sống, không ghi nhật ký sức khoẻ
+        print(f"⛔ {exc}")
         return 2
     except API.KetQuaHong as exc:  # API vẫn sống (khoá dùng được) — chỉ câu trả lời hỏng
         print(f"⚪ Không phản biện được: {exc}")
@@ -307,9 +312,11 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
                 "schema": "phan_bien_may_de_cuong/v1",
                 "study": a.study,
                 "tep": tep.name,
+                "tep_sha256": hashlib.sha256(van.encode("utf-8")).hexdigest(),  # đề cương đổi ⇒ báo cáo cũ
                 "luc": luc,
                 "model": kq.model,
                 "token": {"vao": kq.token_vao, "ra": kq.token_ra},
+                "usd": API.uoc_chi_phi(kq.token_vao, kq.token_ra, kq.model),
                 "trich_dan_tat_dinh": tat_dinh,
                 "phat_hien": dat,
                 "khong_xac_minh": khong,

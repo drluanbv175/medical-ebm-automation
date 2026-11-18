@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import hashlib
 import json
 import re
 import sys
@@ -315,16 +316,25 @@ def chay(
     """Gọi API theo lô; lô hỏng ⇒ mọi cặp của lô «không kiểm được» kèm lý do (không đoán), lô khác vẫn chạy."""
     can = [c for c in cau_ds if any(n in tai_lieu for n in c.so)]
     ra: List[KetQua] = []
-    tk = {"so_lo": 0, "lo_loi": 0, "lo_loi_api": 0, "token_vao": 0, "token_ra": 0, "loi": []}
+    tk = {
+        "so_lo": 0, "lo_loi": 0, "lo_loi_api": 0, "token_vao": 0, "token_ra": 0,
+        "token_cache_ghi": 0, "token_cache_doc": 0, "loi": [],
+    }
     for nhom in API.chia_lo(can, lo):
         tk["so_lo"] += 1
         try:
-            kq = API.goi(dung_loi_nhan(nhom, tai_lieu), he_thong=HE_THONG, model=model, effort="low", client=client)
+            kq = API.goi(
+                dung_loi_nhan(nhom, tai_lieu), he_thong=HE_THONG, model=model, effort="low", client=client,
+                cache_he_thong=True,  # cùng lời dặn cho mọi lô ⇒ lô sau đọc từ cache
+                nguon="kiem_noi_dung_trich_dan",
+            )
             tk["token_vao"] += kq.token_vao
             tk["token_ra"] += kq.token_ra
+            tk["token_cache_ghi"] += kq.token_cache_ghi
+            tk["token_cache_doc"] += kq.token_cache_doc
             ra.extend(kiem_tra_tra_loi(nhom, API.doc_json(kq.van_ban), tai_lieu))
-        except API.ThieuKhoa:
-            raise
+        except (API.ThieuKhoa, API.HetNganSach):
+            raise  # thiếu khoá / chạm trần chi phí ⇒ dừng CẢ lượt, không gửi lô sau
         except API.LoiApi as exc:
             tk["lo_loi"] += 1
             if not isinstance(exc, API.KetQuaHong):  # lỗi của KÊNH (khoá/mạng/hạn mức), không phải câu trả lời hỏng
@@ -495,6 +505,9 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, lay=None, goc
         print(f"⚪ {exc}")
         API.ghi_nhat_ky_api("skipped", str(exc), 0, "kiem_noi_dung_trich_dan")
         return 2
+    except API.HetNganSach as exc:  # lỗi phía máy — khoá vẫn sống, không ghi nhật ký sức khoẻ; không ghi báo cáo dở
+        print(f"⛔ {exc}")
+        return 2
     ket = ket_qua_may(cau_ds, tltk, tai_lieu) + ket
     ket.sort(key=lambda k: (k.id, k.so))
     luc = dt.datetime.now().isoformat(timespec="seconds")
@@ -508,6 +521,7 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, lay=None, goc
                 "schema": "kiem_noi_dung_trich_dan/v1",
                 "study": a.study,
                 "tep": tep.name,
+                "tep_sha256": hashlib.sha256(van.encode("utf-8")).hexdigest(),  # đề cương đổi ⇒ báo cáo cũ
                 "luc": luc,
                 "model": model,
                 "thong_ke": {k: v for k, v in tk.items() if k != "loi"},

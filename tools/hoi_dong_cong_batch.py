@@ -279,7 +279,8 @@ def yeu_cau_tiep(
                 (
                     f"{tien_to}_{i:03d}",
                     API.tham_so(
-                        nd, he_thong=he_thong(ai, goc), model=st["model"], max_tokens=max_tokens, effort="medium"
+                        nd, he_thong=he_thong(ai, goc), model=st["model"], max_tokens=max_tokens, effort="medium",
+                        cache_he_thong=True,  # cùng tệp agent cho nhiều đầu ra ⇒ đọc từ cache
                     ),
                     {"loai": "cham", "ma": ma, "vai": vai},
                 )
@@ -325,7 +326,10 @@ def yeu_cau_tiep(
         ra.append(
             (
                 f"{t['buoc'][:2]}_{i:03d}",
-                API.tham_so(nd, he_thong=he_thong(ai, goc), model=st["model"], max_tokens=max_tokens, effort="medium"),
+                API.tham_so(
+                    nd, he_thong=he_thong(ai, goc), model=st["model"], max_tokens=max_tokens, effort="medium",
+                    cache_he_thong=True,
+                ),
                 {"loai": "tranh", "ma": ma, "buoc": t["buoc"]},
             )
         )
@@ -363,12 +367,12 @@ def _hop_phan_quyet(dl: Any) -> Dict[str, Any]:
 
 def ap_ket_qua(st: Dict[str, Any], ket: Dict[str, Dict[str, Any]], max_tokens: int = MAX_TOKENS) -> Dict[str, int]:
     """Đưa kết quả batch vào trạng thái. Hỏng ⇒ phần đó ghi lỗi (không đoán), phần khác đi tiếp."""
-    dem = {"ok": 0, "loi": 0, "vao": 0, "ra": 0}
+    dem = {"ok": 0, "loi": 0, "vao": 0, "ra": 0, "cache_ghi": 0, "cache_doc": 0}
     yc = (st.get("batch") or {}).get("yeu_cau") or {}
     for cid, nhan in yc.items():
         kq = ket.get(cid) or {"loai": "thieu", "loi": "batch không trả custom_id này"}
-        dem["vao"] += int(kq.get("vao") or 0)
-        dem["ra"] += int(kq.get("ra") or 0)
+        for k in ("vao", "ra", "cache_ghi", "cache_doc"):
+            dem[k] += int(kq.get(k) or 0)
         try:
             dl = API.doc_json(API.van_ban_ket_qua_batch(kq, max_tokens))
             if nhan["loai"] == "cham":
@@ -523,6 +527,18 @@ def uoc_tinh(st: Dict[str, Any], out_dir: Path, goc: Path = REPO) -> Dict[str, A
     }
 
 
+def _in_chi_phi_that(dem: Dict[str, int], model: str) -> str:
+    """Chi phí THẬT của một batch (giá Batch, gồm token cache) — số đã ghi vào sổ chi phí tháng."""
+    usd = API.uoc_chi_phi(
+        dem["vao"], dem["ra"], model, batch=True, cache_ghi=dem["cache_ghi"], cache_doc=dem["cache_doc"]
+    )
+    tien = "chưa ghi giá model" if usd is None else f"≈ {usd:.2f} USD"
+    return (
+        f"{dem['vao']:,} token vào + {dem['cache_ghi']:,} ghi cache + {dem['cache_doc']:,} đọc cache + "
+        f"{dem['ra']:,} token ra {tien} ({model}, Batch API)"
+    )
+
+
 def _nhan_yc(yc: Sequence[Tuple[str, Dict[str, Any], Dict[str, Any]]]) -> str:
     return ", ".join(sorted({n["loai"] + ":" + (n.get("vai") or n.get("buoc") or "") for _, _, n in yc}))
 
@@ -549,6 +565,11 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
     ap.add_argument("--goi-api", action="store_true", help="buoc: nộp/lấy batch THẬT (tính phí)")
     ap.add_argument("--ap-dung", action="store_true", help="ghi: ghi biên bản thật")
     ap.add_argument("--lam-lai", action="store_true", help="buoc: bỏ trạng thái cũ, khởi tạo lại từ hồ sơ máy")
+    ap.add_argument(
+        "--chi-lay",
+        action="store_true",
+        help="buoc --goi-api: CHỈ lấy kết quả batch đang chờ, KHÔNG nộp batch kế tiếp (bước sau tính phí)",
+    )
     ap.add_argument("--model", default=None)
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args(argv)
@@ -636,7 +657,7 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
                 print(f"⏳ batch {tt['id']}: đang xử lý {tt['dang_xu_ly']} · xong {tt['xong']} · lỗi {tt['loi']}")
                 _ghi_st(p, st)
                 return 4
-            ket = API.doc_ket_qua_batch(st["batch"]["id"], client)
+            ket = API.doc_ket_qua_batch(st["batch"]["id"], client, nguon=CONG_CU)
             dem = ap_ket_qua(st, ket)
             st["lich_su"].append(
                 {
@@ -646,12 +667,14 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
                     "so_yeu_cau": len(st["batch"]["yeu_cau"]),
                     "token_vao": dem["vao"],
                     "token_ra": dem["ra"],
+                    "token_cache_ghi": dem["cache_ghi"],
+                    "token_cache_doc": dem["cache_doc"],
                     "loi": dem["loi"],
                 }
             )
             print(
                 f"📥 batch {st['batch']['id']}: {dem['ok']} đạt khuôn · {dem['loi']} hỏng · "
-                f"{API.in_chi_phi(dem['vao'], dem['ra'], st['model'], batch=True)}"
+                f"{_in_chi_phi_that(dem, st['model'])}"
             )
             st["batch"] = None
             API.ghi_nhat_ky_api(
@@ -660,12 +683,28 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
                 dem["ok"],
                 "hoi_dong_cong_batch",
             )
+        elif a.chi_lay:
+            print("Không có batch nào đang chờ — `--chi-lay` không nộp gì.")
+            return 0
+        if a.chi_lay:  # bác sĩ chỉ cho lấy kết quả đã trả phí — bước kế tiếp (nộp batch mới) phải hỏi riêng
+            _ghi_st(p, st)
+            ban = json.loads(json.dumps(st))  # bản nháp: yeu_cau_tiep ghi lỗi «tài liệu đổi» vào đây, không vào sổ
+            con = yeu_cau_tiep(ban, out_dir, goc_agent)
+            ket_tac = [f"{m}: {x}" for m, c in ban["cham"].items() for x in c["loi"]]
+            ket_tac += [f"{m}: {x}" for m, t in ban["tranh"].items() for x in t["loi"]]
+            print(
+                f"⏸ --chi-lay: KHÔNG nộp batch kế tiếp ({len(con)} yêu cầu: {_nhan_yc(con) or 'không còn gì'}). "
+                "`ghi` để kiểm luật biên bản phần đã xong (chạy khô)."
+            )
+            if ket_tac:  # «không còn gì» không được che phần bị chặn
+                print(f"⚠ {len(ket_tac)} phần KHÔNG đi tiếp được: " + " · ".join(ket_tac)[:1500])
+            return 1 if ket_tac else 0
         yc = yeu_cau_tiep(st, out_dir, goc_agent)
         if not yc:
             _ghi_st(p, st)
             print("✅ Xong mọi bước có thể chạy — `ghi` để kiểm luật biên bản (chạy khô), `ghi --ap-dung` để ghi.")
             return 1 if any(c["loi"] for c in st["cham"].values()) or any(t["loi"] for t in st["tranh"].values()) else 0
-        bid = API.nop_batch([(cid, prm) for cid, prm, _ in yc], client)
+        bid = API.nop_batch([(cid, prm) for cid, prm, _ in yc], client, nguon=CONG_CU)
         st["batch"] = {
             "id": bid,
             "nop_luc": dt.datetime.now().isoformat(timespec="seconds"),

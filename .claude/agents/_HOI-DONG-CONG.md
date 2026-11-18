@@ -261,6 +261,12 @@ batch: chấm chuyên môn + giám khảo + đề xuất DP → phản biện �
 model không có công cụ (tệp dán kèm đánh số dòng, `cham-song` + nhất quán xuyên cổng chạy sẵn là nguồn duy nhất cho căn
 cứ «lenh»), tranh biện MỘT vòng, biên bản mang `nguon_may` và tranh biện `che_do: batch_api`; tài liệu đổi sau khi
 khởi tạo ⇒ phần đó không ghi. Triệu tập vẫn phải hỏi bác sĩ (tính phí) — chỉ khác là rẻ hơn và không cần phiên mở.
+**Hoàn thiện 18/11/2026 (bác sĩ chọn):** (1) `buoc --goi-api --chi-lay` CHỈ lấy kết quả batch đang chờ (đã trả phí),
+KHÔNG nộp batch kế tiếp — `buoc --goi-api` trơn lấy xong sẽ tự nộp bước sau (tính phí), nên khi bác sĩ mới duyệt «lấy
+kết quả» thì dùng `--chi-lay`; phần bị chặn vì «tài liệu đổi sau khi khởi tạo» được in rõ, khởi tạo lại (`--lam-lai`)
+là một lượt tính phí mới phải hỏi. (2) System prompt (tệp agent) mang `cache_control` ⇒ yêu cầu cùng vai đọc từ cache.
+(3) Mọi lượt nộp đi qua TRẦN CHI PHÍ THÁNG của cầu nối (`~/.ebm-api-claude-chi-phi.json`, mặc định 20 USD, đổi bằng
+`EBM_API_CLAUDE_TRAN_USD_THANG`) — chạm trần ⇒ ⛔ không nộp; agent KHÔNG tự nâng trần.
 
 ## 6. Khối bàn giao (bắt buộc ở cuối mỗi hội đồng cổng)
 

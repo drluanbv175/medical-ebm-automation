@@ -62,6 +62,7 @@ def goi_claude(
             max_tokens=int(max_tokens or api.MAX_TOKENS_MAC_DINH),
             effort=effort,
             client=client,
+            nguon=nguon,
         )
     except api.ThieuKhoa as exc:
         api.ghi_nhat_ky_api("skipped", str(exc), 0, nguon)

@@ -321,6 +321,9 @@ không được trích, thứ tự Vancouver) và in ước chi phí; `--goi-api
 cho Claude tìm mâu thuẫn số liệu/nội dung giữa các chương, câu cụt, dấu vết phần mềm, thuật ngữ, mục tiêu–phân tích
 không khớp. Máy chỉ trình phát hiện có đoạn trích NGUYÊN VĂN trong đề cương (cả chỗ đối chiếu của mâu thuẫn); phần
 còn lại xếp «máy không xác minh được», không phải lỗi đã xác nhận. Báo cáo ở `exports/<mã>/kiem_may_api/`.
+(18/11/2026) Báo cáo mang `tep_sha256`; `python3 tools/duyet_kiem_may_api.py tinh-trang --study <mã>` báo «CŨ» khi đề
+cương đổi sau lượt phản biện — báo cáo cũ không được trình như phản biện của bản hiện hành. Tỷ lệ đúng của phản biện
+máy chỉ có sau khi bác sĩ duyệt phiếu (`phieu` → bác sĩ trả lời → `ghi --loi "<nguyên văn>" --ap-dung` → `do`).
 Đây là lớp đọc bổ sung: KHÔNG thay phản biện người của G8 (`G8_PEER_REVIEW_REPORT_<mã>.md` vẫn do người thật viết),
 không đánh giá lại lựa chọn khoa học thuộc thẩm quyền chủ nhiệm, không sửa đề cương.
 
