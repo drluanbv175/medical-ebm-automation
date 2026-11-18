@@ -33,6 +33,8 @@ Lệnh
   kiem    --study <mã> [--json]                         đặc tả hợp lệ? dấu, trạng thái duyệt, SAP còn khớp?
   chay    --study <mã> [--chi id1,id2] [--kiem-cheo]    chạy lần lượt (dữ liệu ĐÃ KHOÁ G5 — kiểm bằng hàm của cổng)
   ket-qua --study <mã> [--json]                         chỉ mục G6_SAP_ket_qua.json
+  duyet   --study <mã> --vai PI|THONG_KE_VIEN --tham-chieu <mã> [--ap-dung]
+                                                        THỐNG KÊ VIÊN/PI tự ghi duyệt (chạy khô mặc định)
 Không bao giờ truyền cờ ghi đè cổng (--i-confirm-*). Mã thoát: 0 đạt · 1 có phân tích lỗi/lệch · 2 không đo được ·
 3 từ chối (đặc tả sai/cũ/chưa duyệt, dữ liệu chưa khoá). Cần bác sĩ kiểm chứng.
 """
@@ -265,7 +267,10 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
     dau = dau_dac_ta(dt)
     duyet = BPS.trang_thai_duyet(str(dt.get("nguoi_duyet") or ""), dau)
     if duyet != "DA_DUYET":
-        canh_bao.append(f"đặc tả {duyet} — thống kê viên/PI ghi nguoi_duyet «<VAI>:<tham chiếu>:<YYYY-MM-DD>:{dau}»")
+        # 18/11/2026: trỏ lệnh duyệt (người duyệt tự chạy) thay vì bảo sửa tay JSON.
+        canh_bao.append(f"đặc tả {duyet} — thống kê viên/PI tự chạy `chay_sap_g6.py duyet --study {d.name} "
+                        "--vai PI|THONG_KE_VIEN --tham-chieu <mã người duyệt> --ap-dung` "
+                        f"(ghi nguoi_duyet «<VAI>:<tham chiếu>:<YYYY-MM-DD>:{dau}»)")
     return {"loi": loi, "canh_bao": canh_bao, "dau": dau, "duyet": duyet, "sap_khop": sap_khop, "phan_tich": ds,
             "phu_sap": phu}
 
@@ -437,6 +442,58 @@ def lenh_kiem(args) -> int:
     return 1 if k["loi"] else 0
 
 
+def lenh_duyet(args) -> int:
+    """GHI DUYỆT đặc tả — lệnh của THỐNG KÊ VIÊN/PI tự chạy (18/11/2026).
+
+    Bác sĩ: «Giải quyết đặc tả G6 giúp tôi». Hợp đồng giữ nguyên «agent soạn đặc tả, KHÔNG ghi nguoi_duyet»; trước đây
+    người duyệt phải sửa tay JSON và chép đúng dấu 12 hex — dễ sai dạng (SAI_DANG). Lệnh này ghi
+    «<VAI>:<tham chiếu>:<hôm nay>:<dấu đặc tả hiện tại>», cùng khuôn `bien_phai_sinh.py duyet`. Chạy khô mặc định —
+    `--ap-dung` mới ghi; đặc tả còn lỗi hoặc SAP đã đổi so với đặc tả ⇒ từ chối (không duyệt đặc tả chưa đúng); sao lưu
+    tệp trước khi ghi. Sửa đặc tả sau đó ⇒ dấu đổi ⇒ HET_HIEU_LUC (`kiem`)."""
+    from datetime import date as _date  # noqa: PLC0415
+
+    vai = (args.vai or "").strip().upper()
+    ref = (args.tham_chieu or "").strip()
+    if vai not in BPS.VAI_DUYET:
+        raise TuChoi(f"--vai phải là một trong {', '.join(BPS.VAI_DUYET)}")
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{1,40}", ref):
+        raise TuChoi("--tham-chieu là mã người duyệt (chữ, số, «.», «_», «-»; không dấu «:») — vd TKV-BTM-01, "
+                     "PI-BTM-01")
+    d = thu_muc(args.study)
+    dt = doc_dac_ta(d)
+    k = kiem_dac_ta(d, dt)
+    if k["loi"]:
+        print("✗ Đặc tả còn lỗi — không duyệt (sửa đặc tả rồi chạy lại):")
+        for x in k["loi"][:10]:
+            print(f"    {x}")
+        return 1
+    if not k["sap_khop"]:
+        raise TuChoi("SAP đã đổi so với lúc soạn đặc tả (sha256_sap lệch) — soạn lại đặc tả theo SAP hiện tại trước")
+    cu = str(dt.get("nguoi_duyet") or "").strip()
+    moi = f"{vai}:{ref}:{_date.today().isoformat()}:{k['dau']}"
+    if BPS.trang_thai_duyet(cu, k["dau"]) == "DA_DUYET" and [x.strip() for x in cu.split(":")][:2] == [vai, ref]:
+        print(f"Đặc tả SAP G6 — {args.study}: đã duyệt, còn hiệu lực ({cu}) — giữ nguyên. {CAN_KIEM}")
+        return 0
+    print(f"{'GHI' if args.ap_dung else 'SẼ GHI'} DUYỆT đặc tả SAP G6 — {args.study}: {len(k['phan_tich'])} phân tích")
+    print(f"  nguoi_duyet: {moi}" + (f"  (thay «{cu}»)" if cu else ""))
+    if not args.ap_dung:
+        print("Thêm --ap-dung để ghi. Lệnh dành cho THỐNG KÊ VIÊN/PI tự chạy — agent không chạy. " + CAN_KIEM)
+        return 0
+    p = d / TEP_DAC_TA
+    tho = p.read_text(encoding="utf-8")
+    sao_luu = p.with_name(f"{p.name}.bak-{datetime.now().strftime('%Y%m%d-%H%M%S')}")
+    sao_luu.write_text(tho, encoding="utf-8", newline="\n")
+    dt["nguoi_duyet"] = moi
+    # Giữ định dạng tệp (đặc tả thật thụt lề 1; tệp một dòng thì ghi một dòng) — diff chỉ đúng dòng nguoi_duyet.
+    dong = tho.splitlines()
+    thut = (len(dong[1]) - len(dong[1].lstrip(" ")) or 2) if len(dong) > 1 else None
+    p.write_text(json.dumps(dt, ensure_ascii=False, indent=thut) + "\n", encoding="utf-8", newline="\n")
+    dt_sau = doc_dac_ta(d)
+    sau = BPS.trang_thai_duyet(str(dt_sau.get("nguoi_duyet") or ""), dau_dac_ta(dt_sau))
+    print(f"✓ Đã ghi; sao lưu {sao_luu.name}. Đo lại: đặc tả {sau}. {CAN_KIEM}")
+    return 0 if sau == "DA_DUYET" else 1
+
+
 def lenh_chay(args) -> int:
     d = thu_muc(args.study)
     dt = doc_dac_ta(d)
@@ -564,9 +621,14 @@ def main(argv: list[str] | None = None) -> int:
     q = sp.add_parser("ket-qua")
     q.add_argument("--study", required=True)
     q.add_argument("--json", action="store_true")
+    dy = sp.add_parser("duyet", help="THỐNG KÊ VIÊN/PI ghi duyệt đặc tả (chạy khô mặc định)")
+    dy.add_argument("--study", required=True)
+    dy.add_argument("--vai", required=True, help="PI hoặc THONG_KE_VIEN")
+    dy.add_argument("--tham-chieu", required=True, help="mã người duyệt, vd PI-BTM-01")
+    dy.add_argument("--ap-dung", action="store_true")
     args = ap.parse_args(argv)
     try:
-        return {"kiem": lenh_kiem, "chay": lenh_chay, "ket-qua": lenh_ket_qua}[args.lenh](args)
+        return {"kiem": lenh_kiem, "chay": lenh_chay, "ket-qua": lenh_ket_qua, "duyet": lenh_duyet}[args.lenh](args)
     except KhongDoDuoc as e:
         print(f"⚪ Không đo được: {e}", file=sys.stderr)
         return 2

@@ -762,7 +762,11 @@ def doi_chieu(out_dir: Path, study: Optional[str] = None) -> Dict[str, Any]:
             ok, ly_do = _xac_nhan_ket_cuc(meta, dau, nguon_kc)
             noi_lech = ", ".join(n["cong"] + " (" + n["noi"] + ")" for n in lech)
             if ok:
-                ket.append(_ket("ket_cuc_chinh", "Kết cục chính", nguon_kc, MUC_CAN_XEM,
+                # 18/11/2026 (bác sĩ đồng ý): khác CÁCH DIỄN ĐẠT mà chủ nhiệm đã xác nhận cùng một kết cục, gắn đúng
+                # dấu vân tay của tập mô tả hiện tại ⇒ trục ĐÓNG (khớp) nhưng vẫn in lời xác nhận cho người đọc. Trước
+                # đây để «cần xem» vĩnh viễn ⇒ đề tài không bao giờ tự báo được «đồng bộ hoàn toàn» dù không còn việc
+                # gì để làm. Diễn đạt đổi ⇒ dấu đổi ⇒ xác nhận hết hiệu lực ⇒ quay về lệch mềm (nhánh dưới).
+                ket.append(_ket("ket_cuc_chinh", "Kết cục chính", nguon_kc, MUC_KHOP,
                                 f"{noi_lech} diễn đạt khác «{goc['cong']}» — chủ nhiệm ĐÃ xác nhận là cùng một kết cục "
                                 f"(dấu {dau}): «{ly_do[:120]}»"))
             else:

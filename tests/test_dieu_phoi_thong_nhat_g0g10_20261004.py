@@ -170,7 +170,10 @@ def test_xac_nhan_cua_chu_nhiem_gan_dau_van_tay_moi_ha_lech_mem(tmp_path):
             {"xac_nhan_ket_cuc_chinh": {"giai_trinh": gt, "reviewed_at": ngay, "dau_van_tay": dau_vt}}))
         return _muc(NQ.doi_chieu(out, STUDY), "ket_cuc_chinh")
 
-    assert xn(dau)["muc"] == NQ.MUC_CAN_XEM
+    # 18/11/2026 (bác sĩ đồng ý): xác nhận hợp lệ ⇒ trục ĐÓNG (khớp) nhưng vẫn in lời xác nhận cho người đọc.
+    kc_xn = xn(dau)
+    assert kc_xn["muc"] == NQ.MUC_KHOP
+    assert "ĐÃ xác nhận là cùng một kết cục" in kc_xn["ghi_chu"] and dau in kc_xn["ghi_chu"]
     assert xn("0" * 16)["muc"] == NQ.MUC_LECH_MEM, "dấu vân tay khác ⇒ xác nhận không gắn với tập mô tả này"
     assert xn(dau, ngay="2099-12-31T00:00:00")["muc"] == NQ.MUC_LECH_MEM, "ngày ở tương lai ⇒ không hợp lệ"
     assert xn(dau, ngay="04/10/2026")["muc"] == NQ.MUC_LECH_MEM, "ngày không ISO ⇒ không hợp lệ"

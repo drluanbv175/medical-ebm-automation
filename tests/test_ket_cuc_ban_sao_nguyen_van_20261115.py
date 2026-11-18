@@ -74,8 +74,8 @@ def test_truc_ket_cuc_chinh_qua_doi_chieu(tmp_path):
         _sua_meta(out, sua)
         return _muc(NQ.doi_chieu(out, STUDY), "ket_cuc_chinh")["muc"]
 
-    assert xn(dau) == NQ.MUC_CAN_XEM
-    assert xn(dau, g8=sap) == NQ.MUC_CAN_XEM, "G8 chép nguyên văn SAP §2 ⇒ xác nhận cũ còn hiệu lực"
+    assert xn(dau) == NQ.MUC_KHOP  # 18/11/2026: xác nhận hợp lệ ⇒ trục đóng
+    assert xn(dau, g8=sap) == NQ.MUC_KHOP, "G8 chép nguyên văn SAP §2 ⇒ xác nhận cũ còn hiệu lực"
     assert xn("0" * 16, g8=sap) == NQ.MUC_LECH_MEM, "xác nhận gắn tập khác ⇒ bản sao không cứu được"
     assert xn(dau, g8=sap + " sau 30 ngày") == NQ.MUC_LECH_MEM, "diễn đạt mới ⇒ phải xác nhận lại"
 
