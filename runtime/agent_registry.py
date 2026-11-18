@@ -172,8 +172,9 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # BTM) — y hệt repo gốc nhánh claude/de-cuong-dau-vet-api-20261117; vẫn 64.
 # 18/11/2026: kiem-chung-trich-dan, thu-thu-tai-lieu, dieu-phoi-g10 (trích dẫn đề tài phải có toàn văn — G10-AUTO-12)
 # — y hệt repo gốc nhánh claude/bien-nhan-toan-van-tltk-20261118; vẫn 64.
+# 18/11/2026 (chiều): ba agent trên thêm bước 5 «giữ trích dẫn đạt chuẩn» (bác sĩ cho riêng C1a) — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "047760cb08128d367827be56aef0e2d60bafd1e4248b4520982ec8ae44e11d98"
+    "908356ebd446549c872d567f728e75466d183572e9503f23298d974ba5d91307"
 )
 
 MINIMUM_AGENT_COUNT = 64
