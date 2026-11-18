@@ -254,6 +254,9 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
         loi += [f"SAP {muc} có phân tích chưa vào đặc tả: «{dong[:100]}»" for muc, dong in phu["muc_chua_phu"]]
         canh_bao += [f"{pid}: chưa khai sap_neo (cụm chữ nguyên văn trong SAP) — không truy nguyên được"
                      for pid in phu["chua_neo"]]
+        canh_bao += [f"{pid}: cụm neo «{neo}» chỉ nằm trong câu PHỦ ĐỊNH của SAP («{cau}») — SAP có thể đã LOẠI phân "
+                     "tích này; thống kê viên xem lại: bỏ mục khỏi đặc tả, hoặc neo vào câu khẳng định"
+                     for pid, neo, cau in phu["neo_phu_dinh"]]
         qt = quan_the_chinh_sap(sap.read_text(encoding="utf-8"))
         for pt in ds:
             if not qt or not isinstance(pt, dict) or not isinstance(pt.get("tham_so"), dict):
@@ -333,17 +336,66 @@ def quan_the_chinh_sap(sap_text: str) -> tuple[str, str] | None:
     return None
 
 
+# 18/11/2026 — cụm neo nằm trong câu PHỦ ĐỊNH: đặc tả BTM giữ mục `MT1_fpc` neo «quần thể hữu hạn» trong khi SAP §4 ghi
+# «Không áp hiệu chỉnh quần thể hữu hạn» (chủ nhiệm đã bỏ) — phép khớp chuỗi coi là neo hợp lệ nên `kiem` không báo, mục
+# bị SAP loại vẫn sẽ chạy. Nay: MỌI lần xuất hiện của cụm neo đều đứng sau một từ phủ định trong cùng mệnh đề ⇒ CẢNH BÁO
+# (không chặn — nhận diện phủ định bằng luật có thể nhầm; thống kê viên quyết).
+_TU_PHU_DINH = re.compile(r"(?<!\w)(?:không|chưa|chẳng|loại bỏ|bỏ|thay vì)(?!\w)")
+_RANH_GIOI_MENH_DE = re.compile(r"[.;:!?\n,()]|—|–")
+CUA_SO_PHU_DINH = 50  # ký tự trước cụm neo được xét (đủ cho «Không áp hiệu chỉnh …», không với sang mệnh đề khác)
+
+
+def _bi_phu_dinh(sap_cf: str, vi_tri: int) -> bool:
+    """Cụm neo bắt đầu ở `vi_tri` (trong văn bản đã casefold) đứng sau một từ phủ định của CÙNG mệnh đề."""
+    truoc = sap_cf[max(0, vi_tri - CUA_SO_PHU_DINH):vi_tri]
+    ranh = list(_RANH_GIOI_MENH_DE.finditer(truoc))
+    if ranh:
+        truoc = truoc[ranh[-1].end():]
+    return bool(_TU_PHU_DINH.search(truoc))
+
+
+def _cau_quanh(sap: str, vi_tri: int, do_dai: int) -> str:
+    """Câu (giữa hai dấu chấm/xuống dòng) chứa vị trí — để in kèm cảnh báo."""
+    dau = max(sap.rfind(".", 0, vi_tri), sap.rfind("\n", 0, vi_tri)) + 1
+    cuoi = [i for i in (sap.find(".", vi_tri + do_dai), sap.find("\n", vi_tri + do_dai)) if i != -1]
+    return sap[dau:(min(cuoi) if cuoi else len(sap))].strip()[:160]
+
+
+def neo_chi_trong_cau_phu_dinh(sap_text: str, neo: str) -> str | None:
+    """Câu phủ định đầu tiên nếu MỌI lần cụm `neo` xuất hiện trong SAP đều bị phủ định.
+
+    None nếu có ít nhất một lần khẳng định (hoặc cụm không có trong SAP — việc đó do `neo_thieu` báo)."""
+    import unicodedata  # noqa: PLC0415
+
+    sap = unicodedata.normalize("NFC", sap_text)
+    sap_cf, neo_cf = sap.casefold(), unicodedata.normalize("NFC", neo).casefold()
+    if not neo_cf or len(sap_cf) != len(sap):  # casefold đổi độ dài (hiếm với tiếng Việt) ⇒ không định vị được, bỏ qua
+        return None
+    vi_tri = [m.start() for m in re.finditer(re.escape(neo_cf), sap_cf)]
+    if not vi_tri or not all(_bi_phu_dinh(sap_cf, i) for i in vi_tri):
+        return None
+    return _cau_quanh(sap, vi_tri[0], len(neo_cf))
+
+
 def kiem_phu_sap(dt: dict, sap_text: str) -> dict:
-    """{neo_thieu: [(id, neo)], chua_neo: [id], muc_chua_phu: [(§k, dòng)]} — đặc tả ↔ SAP hai chiều."""
+    """{neo_thieu: [(id, neo)], chua_neo: [id], muc_chua_phu: [(§k, dòng)], neo_phu_dinh: [(id, neo, câu)]} — đặc tả ↔
+    SAP hai chiều."""
     import unicodedata  # noqa: PLC0415
 
     sap = unicodedata.normalize("NFC", sap_text).casefold()
     ds = [pt for pt in dt.get("phan_tich") or [] if isinstance(pt, dict)]
     neo = [(str(pt.get("id")), unicodedata.normalize("NFC", n)) for pt in ds for n in neo_cua(pt)]
+    phu_dinh = []
+    for pt in ds:  # mục có ít nhất một neo khẳng định thì không cảnh báo (neo phụ có thể nằm trong câu loại trừ)
+        cac_neo = neo_cua(pt)
+        cau = [neo_chi_trong_cau_phu_dinh(sap_text, n) for n in cac_neo if n.casefold() in sap]
+        if cau and all(cau):
+            phu_dinh.append((str(pt.get("id")), cac_neo[0], cau[0]))
     return {"neo_thieu": [(pid, n) for pid, n in neo if n.casefold() not in sap],
             "chua_neo": [str(pt.get("id")) for pt in ds if not neo_cua(pt)],
             "muc_chua_phu": [(muc, dong) for muc, dong in muc_sap_bat_buoc(sap_text)
-                             if not any(n.casefold() in dong.casefold() for _, n in neo)]}
+                             if not any(n.casefold() in dong.casefold() for _, n in neo)],
+            "neo_phu_dinh": phu_dinh}
 
 
 def gate_cua(pt: dict) -> str:

@@ -205,13 +205,21 @@ HE_THONG = (
 )
 
 
+def dinh_danh(t: Dict[str, Any]) -> str:
+    """«PMID n» (abstract PubMed) hoặc «DOI d (abstract Europe PMC/Crossref)» — tài liệu chỉ có DOI (18/11/2026)."""
+    if t.get("pmid") and not t.get("nguon"):
+        return f"PMID {t['pmid']}"
+    nguon = f" (abstract {t['nguon']})" if t.get("nguon") else ""
+    return f"DOI {t.get('doi')}{nguon}" if t.get("doi") else f"PMID {t.get('pmid')}{nguon}"
+
+
 def dung_loi_nhan(lo: Sequence[Cau], tai_lieu: Dict[int, Dict[str, Any]]) -> str:
     so_dung = sorted({n for c in lo for n in c.so if n in tai_lieu})
     khoi = []
     for n in so_dung:
         t = tai_lieu[n]
         khoi.append(
-            f"[{n}] PMID {t.get('pmid')}\nTiêu đề: {t.get('title', '')}\n"
+            f"[{n}] {dinh_danh(t)}\nTiêu đề: {t.get('title', '')}\n"
             f"Loại xuất bản: {', '.join(t.get('publication_types') or []) or 'không ghi'}\n"
             f"Abstract:\n{t.get('abstract', '')}"
         )
@@ -280,16 +288,90 @@ def ket_qua_may(cau_ds: Sequence[Cau], tltk: Dict[int, TaiLieu], tai_lieu: Dict[
                 continue
             if n not in tltk:
                 ly = "số trích dẫn không có trong danh mục tài liệu tham khảo"
+            elif not tltk[n].pmid and not tltk[n].doi:
+                ly = "tài liệu không có PMID lẫn DOI (máy chỉ đọc abstract tra theo định danh)"
             elif not tltk[n].pmid:
-                ly = "tài liệu không có PMID (máy chỉ đọc abstract PubMed)"
+                ly = "không lấy được abstract theo DOI ở Europe PMC lẫn Crossref (xem lý do ở phần Tài liệu)"
             else:
                 ly = "không lấy được abstract PubMed (xem lý do ở phần Tài liệu)"
             ra.append(KetQua(c.id, n, "khong_kiem_duoc", ly))
     return ra
 
 
-def lay_abstract(tltk: Dict[int, TaiLieu], lay=None) -> Tuple[Dict[int, Dict[str, Any]], Dict[int, str]]:
-    """{n: bản ghi có abstract} + {n: lý do không dùng được}. `lay` tiêm được cho kiểm thử."""
+def _bo_the(s: str) -> str:
+    """Bỏ thẻ JATS/HTML (abstract Crossref dạng <jats:p>…) và khoảng trắng thừa."""
+    import html  # noqa: PLC0415
+
+    return re.sub(r"\s+", " ", html.unescape(re.sub(r"<[^>]+>", " ", s or ""))).strip()
+
+
+def lay_abstract_theo_doi(dois: Sequence[str], http: Any = None) -> Dict[str, Dict[str, Any]]:
+    """{doi viết thường: bản ghi} cho tài liệu CHỈ có DOI (18/11/2026 — trước đây mọi cặp loại này «không kiểm được»).
+
+    Thứ tự: Europe PMC (`DOI:"…"`, gồm cả bài ngoài MEDLINE; DOI bản ghi phải TRÙNG đúng DOI tra) → Crossref
+    (`/works/<doi>`, abstract nhà xuất bản nộp, dạng JATS). Không nguồn nào có abstract ⇒ status khác «resolved» kèm lý
+    do — không đoán. Lỗi mạng của một DOI không làm hỏng DOI khác. `http` tiêm được cho kiểm thử (có `get_json`)."""
+    from urllib.parse import quote  # noqa: PLC0415
+
+    if http is None:
+        from app.utils.http import HttpClient  # noqa: PLC0415
+
+        # Đo 18/11/2026: VPN làm DNS www.ebi.ac.uk lúc được lúc không — 5 lần thử mặc định ⇒ ~45 giây/DOI. Một lần thử
+        # lại là đủ; nguồn sau (Crossref) vẫn được hỏi.
+        http = HttpClient(max_retries=1)
+    from app.sources.europepmc import SEARCH, trang_thai_rut_bai_epmc  # noqa: PLC0415
+
+    ra: Dict[str, Dict[str, Any]] = {}
+    for doi in dois:
+        khoa = doi.strip().lower()
+        ban: Dict[str, Any] = {"status": "not_found", "reason": "không thấy ở Europe PMC lẫn Crossref", "doi": doi}
+        loi: List[str] = []
+        try:
+            dl = http.get_json(SEARCH, params={"query": f'DOI:"{doi}"', "format": "json", "resultType": "core",
+                                               "pageSize": 5}) or {}
+            for r in (dl.get("resultList") or {}).get("result") or []:
+                if str(r.get("doi") or "").strip().lower() != khoa:
+                    continue
+                loai = (r.get("pubTypeList") or {}).get("pubType") or []
+                ban = {"status": "resolved", "doi": doi, "nguon": "Europe PMC", "pmid": r.get("pmid"),
+                       "title": _bo_the(r.get("title") or ""), "abstract": _bo_the(r.get("abstractText") or ""),
+                       "publication_types": [loai] if isinstance(loai, str) else list(loai),
+                       "rut_bai": trang_thai_rut_bai_epmc(r)}
+                break
+        except Exception as exc:  # noqa: BLE001 — mạng/định dạng: ghi lý do, thử nguồn sau
+            loi.append(f"Europe PMC lỗi {type(exc).__name__}")
+        if not str(ban.get("abstract") or "").strip():
+            co_ban_ghi = ban.get("status") == "resolved"
+            try:
+                dl_cr = http.get_json(f"https://api.crossref.org/works/{quote(doi, safe='/')}") or {}
+                it = dl_cr.get("message") or {}
+                tom = _bo_the(it.get("abstract") or "")
+                khop = str(it.get("DOI") or "").strip().lower() == khoa
+                if khop and tom:
+                    ban = {"status": "resolved", "doi": doi, "nguon": "Crossref", "pmid": ban.get("pmid"),
+                           "title": _bo_the((it.get("title") or [""])[0]) or ban.get("title", ""), "abstract": tom,
+                           "publication_types": [it["type"]] if it.get("type") else [], "rut_bai": ban.get("rut_bai")}
+                co_ban_ghi = co_ban_ghi or khop
+            except Exception as exc:  # noqa: BLE001
+                loi.append(f"Crossref lỗi {type(exc).__name__}")
+            if co_ban_ghi and not str(ban.get("abstract") or "").strip():
+                ban = {**ban, "status": "no_abstract",
+                       "reason": "có bản ghi nhưng Europe PMC lẫn Crossref không có abstract"}
+        if loi and ban.get("status") == "no_abstract":
+            ban = {**ban, "reason": f"{ban['reason']}; {'; '.join(loi)}"}
+        elif loi and ban.get("status") != "resolved":  # không đo được ≠ «không có»
+            ban = {**ban, "status": "error", "reason": "; ".join(loi)}
+        ra[khoa] = ban
+    return ra
+
+
+def lay_abstract(
+    tltk: Dict[int, TaiLieu], lay=None, lay_doi=None
+) -> Tuple[Dict[int, Dict[str, Any]], Dict[int, str]]:
+    """{n: bản ghi có abstract} + {n: lý do không dùng được}.
+
+    `lay` (PubMed theo PMID) và `lay_doi` (tài liệu CHỈ có DOI, mặc định `lay_abstract_theo_doi`) tiêm được cho kiểm
+    thử."""
     if lay is None:
         from app.sources.pubmed import PubMedClient
 
@@ -312,6 +394,17 @@ def lay_abstract(tltk: Dict[int, TaiLieu], lay=None) -> Tuple[Dict[int, Dict[str
             dung[n] = {**b, "pmid": t.pmid}
             if b.get("rut_bai"):
                 ly_do[n] = f"PMID {t.pmid}: PubMed gắn «{b['rut_bai']}» — xem A12"
+    chi_doi = {n: t for n, t in tltk.items() if not t.pmid and t.doi}
+    if chi_doi:
+        ban_doi = (lay_doi or lay_abstract_theo_doi)(sorted({t.doi for t in chi_doi.values()}))
+        for n, t in chi_doi.items():
+            b = (ban_doi or {}).get(t.doi.strip().lower()) or {}
+            if b.get("status") != "resolved" or not str(b.get("abstract") or "").strip():
+                ly_do[n] = f"DOI {t.doi}: {b.get('status', 'không có')} — {b.get('reason', '')}".strip(" —")
+                continue
+            dung[n] = {**b, "doi": t.doi}
+            if b.get("rut_bai"):
+                ly_do[n] = f"DOI {t.doi}: {b.get('nguon')} gắn «{b['rut_bai']}» — xem A12"
     return dung, ly_do
 
 
@@ -382,8 +475,16 @@ def bao_cao_md(
     model: str,
     tk: Dict[str, Any],
     luc: str,
+    tai_lieu: Optional[Dict[int, Dict[str, Any]]] = None,
 ) -> str:
     theo_id = {c.id: c for c in cau_ds}
+
+    def _tl(n: int) -> str:
+        if tai_lieu and n in tai_lieu:
+            return dinh_danh(tai_lieu[n])
+        t = tltk.get(n) or TaiLieu(0, "")
+        return f"PMID {t.pmid}" if t.pmid else (f"DOI {t.doi}" if t.doi else "không định danh")
+
     dem: Dict[str, int] = {}
     for k in ket:
         dem[k.muc] = dem.get(k.muc, 0) + 1
@@ -399,7 +500,8 @@ def bao_cao_md(
         + " · ".join(f"{TEN_MUC.get(m, m)} {n}" for m, n in sorted(dem.items()))
         + f" · số liệu không thấy trong abstract {so_thay}",
         "",
-        "So với TIÊU ĐỀ + ABSTRACT PubMed, không phải toàn văn. «Abstract không đủ thông tin» không có nghĩa trích "
+        "So với TIÊU ĐỀ + ABSTRACT (PubMed theo PMID; tài liệu chỉ có DOI: Europe PMC hoặc Crossref, ghi ở cột Tài "
+        "liệu), không phải toàn văn. «Abstract không đủ thông tin» không có nghĩa trích "
         "sai. Mọi căn cứ «trích» đã được máy đối chiếu nguyên văn với abstract; không khớp thì xếp «máy không xác "
         "minh được căn cứ».",
         "",
@@ -418,7 +520,7 @@ def bao_cao_md(
             for x in k.co
         )
         dong.append(
-            f"| {k.id} | {_o(c.vi_tri)} | {_o(c.doan)[:300]} | [{k.so}] PMID {(tltk.get(k.so) or TaiLieu(0, '')).pmid} "
+            f"| {k.id} | {_o(c.vi_tri)} | {_o(c.doan)[:300]} | [{k.so}] {_o(_tl(k.so))} "
             f"| {TEN_MUC.get(k.muc, k.muc)} | {_o(k.ly_do)}{(' — ' + co) if co else ''} | {_o(k.trich)} |"
         )
     if not xem:
@@ -442,7 +544,9 @@ def _tep_de_cuong(study: str, tep: Optional[str], goc: Path) -> Path:
     return goc / "exports" / study / f"DE_CUONG_NOP_HOI_DONG_{study}.md"
 
 
-def main(argv: Optional[Sequence[str]] = None, client: Any = None, lay=None, goc: Path = REPO) -> int:
+def main(
+    argv: Optional[Sequence[str]] = None, client: Any = None, lay=None, goc: Path = REPO, lay_doi=None
+) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--study", required=True)
     ap.add_argument("--tep", help="tệp Markdown cần kiểm (mặc định: đề cương nộp Hội đồng của đề tài)")
@@ -471,6 +575,8 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, lay=None, goc
     bo = cau_ds[a.toi_da :] if a.toi_da > 0 else []
     cau_ds = cau_ds[: a.toi_da] if a.toi_da > 0 else cau_ds
     khong_pmid = sorted(n for n, t in tltk.items() if not t.pmid)
+    chi_doi = sorted(n for n, t in tltk.items() if not t.pmid and t.doi)
+    khong_dinh_danh = sorted(n for n, t in tltk.items() if not t.pmid and not t.doi)
     khong_co = sorted({n for c in cau_ds for n in c.so if n not in tltk})
     if not a.goi_api:
         so_cap = sum(len(c.so) for c in cau_ds)
@@ -487,6 +593,8 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, lay=None, goc
             "so_cap": so_cap,
             "so_tltk": len(tltk),
             "tltk_khong_pmid": khong_pmid,
+            "tltk_chi_doi": chi_doi,
+            "tltk_khong_dinh_danh": khong_dinh_danh,
             "so_trich_khong_co_trong_tltk": khong_co,
             "so_luot_goi": so_lo,
             "bo_qua_vi_tran": len(bo),
@@ -497,8 +605,8 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, lay=None, goc
         else:
             print(
                 f"CHẠY KHÔ — {a.study}: {len(cau_ds)} đoạn khẳng định, {so_cap} cặp (đoạn, tài liệu), {len(tltk)} "
-                f"tài liệu (không PMID: {khong_pmid or 'không'}; số trích không có trong danh "
-                f"mục: {khong_co or 'không'})."
+                f"tài liệu (chỉ có DOI — tra abstract Europe PMC/Crossref: {chi_doi or 'không'}; không PMID lẫn DOI: "
+                f"{khong_dinh_danh or 'không'}; số trích không có trong danh mục: {khong_co or 'không'})."
             )
             if bo:
                 print(
@@ -507,9 +615,9 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, lay=None, goc
             print(f"Sẽ gọi {so_lo} lượt · ước {kh['uoc_tinh']}. Gọi thật: thêm --goi-api (tính phí).")
         return 0
     try:
-        tai_lieu, ly_do_tl = lay_abstract(tltk, lay)
+        tai_lieu, ly_do_tl = lay_abstract(tltk, lay, lay_doi)
     except Exception as exc:  # mạng/NCBI — không kết luận gì
-        print(f"⚪ Không lấy được abstract PubMed: {type(exc).__name__}: {exc}")
+        print(f"⚪ Không lấy được abstract (PubMed/Europe PMC/Crossref): {type(exc).__name__}: {exc}")
         return 2
     if not tai_lieu:
         print("⚪ Không tài liệu nào có abstract dùng được — KHÔNG kiểm được (không phải «đúng hết»).")
@@ -529,7 +637,8 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, lay=None, goc
     ra_dir = Path(a.ra) if a.ra else goc / "exports" / a.study / "kiem_may_api"
     ra_dir.mkdir(parents=True, exist_ok=True)
     md = ra_dir / f"A12_KIEM_NOI_DUNG_{a.study}.md"
-    md.write_text(bao_cao_md(a.study, tep, cau_ds, tltk, ket, ly_do_tl, model, tk, luc), encoding="utf-8", newline="\n")
+    md.write_text(bao_cao_md(a.study, tep, cau_ds, tltk, ket, ly_do_tl, model, tk, luc, tai_lieu),
+                  encoding="utf-8", newline="\n")
     (ra_dir / f"A12_KIEM_NOI_DUNG_{a.study}.json").write_text(
         json.dumps(
             {
