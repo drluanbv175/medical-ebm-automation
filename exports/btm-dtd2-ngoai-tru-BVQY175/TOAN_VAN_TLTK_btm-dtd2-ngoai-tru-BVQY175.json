@@ -1,0 +1,515 @@
+{
+  "schema": "de_tai/toan_van_tltk/v1",
+  "study": "btm-dtd2-ngoai-tru-BVQY175",
+  "luc": "2026-11-18T20:03:05",
+  "nguoi_do": "tools/nap_endnote_de_tai.py --ghi-bien-nhan-toan-van (đo trên thư viện EndNote thật)",
+  "tai_lieu": [
+    "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md"
+  ],
+  "muc": [
+    {
+      "so": 1,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1177/1479164118795559",
+        "pmid:30238781"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 2,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.2337/dc26-s011",
+        "pmid:41358881"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 3,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1016/j.kint.2023.10.018",
+        "pmid:38490803"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 4,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1016/j.kint.2022.06.008",
+        "pmid:36272764"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 5,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1001/jamanetworkopen.2024.18808",
+        "pmid:38922613"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 6,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1016/j.mayocp.2020.07.037",
+        "pmid:33722396"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 7,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1186/s12882-025-04672-5",
+        "pmid:41345917"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 8,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1016/j.pcd.2026.02.007",
+        "pmid:41741270"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 9,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.3390/medicina61050843",
+        "pmid:40428801"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 10,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1007/s11606-022-07863-0",
+        "pmid:36352203"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 11,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1111/jch.70241",
+        "pmid:41916900"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 12,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1016/j.ekir.2025.06.010",
+        "pmid:40814615"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 13,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1111/nep.14167",
+        "pmid:37153973"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 14,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1016/j.amjmed.2026.04.022",
+        "pmid:42031191"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 15,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1002/sim.4067",
+        "pmid:21225900"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 16,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1016/j.amjmed.2025.08.029",
+        "pmid:40902917"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 17,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1186/s12882-020-1705-3",
+        "pmid:32111192"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 18,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1111/dom.16608",
+        "pmid:40667713"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 19,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1016/j.pcd.2024.10.007",
+        "pmid:39487060"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 20,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1016/j.pcd.2026.07.013",
+        "pmid:42575755"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 21,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1136/heartjnl-2024-325046",
+        "pmid:40037768"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 22,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.3389/fendo.2024.1359904",
+        "pmid:39507052"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 23,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.2337/dc26-s009",
+        "pmid:41358900"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 24,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1186/s12875-022-01731-w",
+        "pmid:35606699"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 25,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1186/s12875-025-03117-0",
+        "pmid:41276836"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 26,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1136/fmch-2021-001006",
+        "pmid:35177470"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 27,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.2337/dc26-s002",
+        "pmid:41358893"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 28,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1136/bmjopen-2026-121190",
+        "pmid:42838586"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 29,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1111/dom.71298",
+        "pmid:42723263"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 30,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1016/j.pmedr.2026.103581",
+        "pmid:42541306"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 31,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1016/j.ekir.2025.09.027",
+        "pmid:41541781"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 32,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1016/j.pcd.2025.05.002",
+        "pmid:40335370"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 33,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.25259/ijn_451_23",
+        "pmid:39156845"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 34,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1136/bmjoq-2021-001591",
+        "pmid:35101868"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 35,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1111/eci.14282",
+        "pmid:39023418"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 36,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.5114/pm.2024.141090",
+        "pmid:39391521"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 37,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1371/journal.pmed.1001885",
+        "pmid:26440803"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 38,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1186/s12874-016-0267-3",
+        "pmid:27881078"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 39,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1056/nejmoa2102953",
+        "pmid:34554658"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 40,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1186/1471-2288-3-21",
+        "pmid:14567763"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 41,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1016/j.jclinepi.2016.02.031",
+        "pmid:26964707"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 42,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_btm-dtd2-ngoai-tru-BVQY175.md",
+      "khoa": [
+        "doi:10.1136/bmj.b2393",
+        "pmid:19564179"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    }
+  ]
+}
