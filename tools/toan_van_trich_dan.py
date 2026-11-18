@@ -28,9 +28,28 @@ LOẠI BỎ: `loai-bo --ap-dung` ghi TLTK «không lấy được toàn văn» (
 nên sinh lại đề cương là TLTK rút khỏi văn bản và đánh số lại. TLTK không định danh (văn bản quy phạm, sách) thì báo để
 agent sửa tay văn bản. Chạy khô mặc định; sao lưu danh mục trước khi ghi; không đụng EndNote (gỡ khỏi nhóm do repo gốc).
 
+GIỮ TRÍCH DẪN ĐẠT CHUẨN (bác sĩ 18/11/2026, RIÊNG từng đề tài — C1a: «Riêng với đề tài C1a hãy giữ lại trích dẫn đủ
+tiêu chuẩn của nghiên cứu y khoa chuẩn»): TLTK chưa có toàn văn vẫn được GIỮ khi bác sĩ cho phép ở
+`exports/<mã>/GIU_TRICH_DAN_CHUAN_<mã>.json` (schema `de_tai/giu_trich_dan_chuan/v1`, bắt buộc nguyên văn lời bác sĩ) VÀ
+TLTK đạt ĐỦ ba tiêu chí chuẩn trích dẫn — đo bằng máy, không tin lời khai trong tệp:
+  · dinh_danh  — PMID phân giải trong biên nhận A12 (khớp DOI hoặc tiêu đề) / DOI có bản ghi Crossref khớp tiêu đề +
+                 năm / văn bản không định danh nhận diện được cơ quan ban hành + số hiệu (văn bản quy phạm) hoặc tổ chức
+                 y tế quốc tế là nhà xuất bản;
+  · rut_bai    — đã kiểm rút bài (sổ `KIEM_RUT_BAI_TRICH_DAN_<mã>.json` hoặc biên nhận A12) trong
+                 `HAN_RUT_BAI_NGAY` ngày, không rút / không «expression of concern» (văn bản quy phạm, tài liệu tổ
+                 chức quốc tế: không áp dụng);
+  · loai_nguon — bài tạp chí có bình duyệt, sách học thuật, văn bản quy phạm của cơ quan nhà nước, tài liệu tổ chức y tế
+                 quốc tế (`LOAI_NGUON_CHUAN`); tiền ấn phẩm chưa bình duyệt KHÔNG đạt.
+`giu-chuan --loi "<nguyên văn>"` đo đủ ba tiêu chí (DOI tra Crossref thật) rồi đề xuất / `--ap-dung` ghi tệp; cổng đo
+lại mọi lần chạy: bài đã bị rút ⇒ quyền giữ mất hiệu lực (BLOCK); kiểm rút bài quá hạn/vắng ⇒ REVIEW. Toàn TLTK còn
+lại có toàn văn hoặc được giữ hợp lệ ⇒ `DAT_CO_GIU` ⇒ G10-AUTO-12 PASS kèm số TLTK giữ (không trông như mọi bài có
+toàn văn).
+Được giữ KHÔNG miễn việc tìm toàn văn: làn chưa thử vẫn báo để thu-thu-tai-lieu thử tiếp.
+
 Ranh giới: chỉ đo trên biên nhận máy ghi, không tự lấy toàn văn, không ký, không đổi decision. Cần bác sĩ kiểm chứng.
 
-Mã thoát `kiem`: 0 mọi TLTK có toàn văn (hoặc không có trích dẫn nào) · 1 còn việc (chưa thử hết làn/chưa đo) hoặc
+Mã thoát `kiem`: 0 mọi TLTK có toàn văn hoặc được giữ hợp lệ (hoặc không có trích dẫn nào) · 1 còn việc (chưa thử hết
+làn/chưa đo) hoặc
 vi phạm (phải loại) · 2 không đo được (có định danh mà không tách được mục TLTK, biên nhận vắng/hỏng) · 3 tham số sai.
 """
 
@@ -39,6 +58,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import hashlib
+import html
 import json
 import re
 import shutil
@@ -75,6 +95,30 @@ LOI_BAC_SI_MAC_DINH = ("Bác sĩ 18/11/2026: «xây dựng đảm bảo tất c�
                        "luật 25/10/2026)")
 _STUDY = re.compile(r"^[A-Za-z0-9._-]+$")
 _DONG_TLTK = re.compile(r"^\s*(?:\[(\d{1,3})\]|(\d{1,3})\.)\s+(.+)$")
+
+# Giữ trích dẫn đạt chuẩn khi chưa có toàn văn (xem docstring mô-đun).
+TEP_GIU = "GIU_TRICH_DAN_CHUAN_{study}.json"
+SCHEMA_GIU = "de_tai/giu_trich_dan_chuan/v1"
+#: Hạn của kết luận rút bài (CLAUDE.md §6.4: 30 ngày cho trạng thái rút bài).
+HAN_RUT_BAI_NGAY = 30
+LOAI_NGUON_CHUAN = {
+    "bai_tap_chi": "bài tạp chí có bình duyệt",
+    "sach_hoc_thuat": "sách chuyên khảo của nhà xuất bản học thuật",
+    "van_ban_phap_quy": "văn bản quy phạm/hướng dẫn của cơ quan nhà nước",
+    "tai_lieu_to_chuc_quoc_te": "tài liệu của tổ chức y tế quốc tế",
+}
+#: Loại xuất bản của Crossref ⇒ loại nguồn chuẩn; loại khác (posted-content = tiền ấn phẩm, dataset…) không đạt.
+_LOAI_CROSSREF = {"journal-article": "bai_tap_chi", "book": "sach_hoc_thuat", "monograph": "sach_hoc_thuat",
+                  "edited-book": "sach_hoc_thuat", "reference-book": "sach_hoc_thuat",
+                  "book-chapter": "sach_hoc_thuat"}
+_TIEN_AN_PHAM = re.compile(r"medrxiv|biorxiv|research ?square|preprints?\b|ssrn|arxiv", re.I)
+#: Văn bản quy phạm: «<Cơ quan>. <Loại văn bản> số <số hiệu> …» — cơ quan nhà nước đứng đầu câu TLTK.
+_VAN_BAN_PHAP_QUY = re.compile(
+    r"^\s*(?:Bộ Y tế|Bộ [A-ZĐ][\w ]{2,40}|Chính phủ|Quốc hội|Thủ tướng Chính phủ|Cục [A-ZĐ][\w ]{2,60})\.\s+"
+    r"(?:Quyết định|Thông tư(?: liên tịch)?|Nghị định|Luật|Chỉ thị|Công văn|Hướng dẫn)\s+(?:số\s+)?\d+[\w/.-]*")
+#: Tài liệu tổ chức y tế quốc tế: tổ chức là NHÀ XUẤT BẢN («Nơi: World Health Organization; năm»).
+_NXB_TO_CHUC = re.compile(r":\s*(?:World Health Organization|Tổ chức Y tế Thế giới|WHO Regional Office[\w ]*)"
+                          r"[^;]{0,60};\s*(?:19|20)\d{2}")
 
 
 # ── tách TLTK ─────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -199,18 +243,218 @@ def _doc_van(p: Path) -> str:
         return ""
 
 
+# ── giữ trích dẫn đạt chuẩn khi chưa có toàn văn ──────────────────────────────────────────────────────────────────
+_DUONG_TINH = ("retracted", "expression_of_concern")
+_KHONG_RUT = ("ok", "correction")
+
+
+def doc_giu(out_dir: Path, study: str) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
+    """(tệp giữ, lỗi). Vắng ⇒ (None, None). Hỏng / sai khuôn / sai đề tài / thiếu nguyên văn lời bác sĩ ⇒ (None, lỗi):
+    không giữ TLTK nào (fail-closed — quyền giữ là quyết định của bác sĩ, không có lời thì không có quyền)."""
+    p = Path(out_dir) / TEP_GIU.format(study=study)
+    if not p.is_file():
+        return None, None
+    try:
+        d = json.loads(p.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        return None, f"{p.name}: không đọc được ({type(exc).__name__}) — không giữ TLTK nào"
+    if (not isinstance(d, dict) or d.get("schema") != SCHEMA_GIU or d.get("study") != study
+            or not isinstance(d.get("muc"), list)):
+        return None, (f"{p.name}: sai khuôn (cần schema «{SCHEMA_GIU}», study «{study}», danh sách «muc») — không giữ "
+                      "TLTK nào")
+    if not str(d.get("loi_bac_si") or "").strip():
+        return None, f"{p.name}: thiếu nguyên văn lời bác sĩ («loi_bac_si») — không giữ TLTK nào"
+    return d, None
+
+
+def _tuoi_ngay(v: Any) -> Optional[int]:
+    try:
+        return (dt.date.today() - dt.date.fromisoformat(str(v)[:10])).days
+    except (TypeError, ValueError):
+        return None
+
+
+def _doc_json(p: Path) -> Dict[str, Any]:
+    try:
+        d = json.loads(p.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return d if isinstance(d, dict) else {}
+
+
+def _gop_rut(a: Optional[Tuple[str, str, Optional[int]]],
+             b: Optional[Tuple[str, str, Optional[int]]]) -> Optional[Tuple[str, str, Optional[int]]]:
+    """Gộp BẤT ĐỐI XỨNG (CLAUDE.md §6.4): tín hiệu DƯƠNG từ bất kỳ nguồn nào là nhận; giữa hai kết luận «không rút» lấy
+    bản mới hơn; không kết luận được thì không thay được kết luận đã có."""
+    if a is None or b is None:
+        return a or b
+    for x in (a, b):
+        if x[0] in _DUONG_TINH:
+            return x
+    co = [x for x in (a, b) if x[0] in _KHONG_RUT]
+    if not co:
+        return a
+    return min(co, key=lambda x: x[2] if x[2] is not None and x[2] >= 0 else 10 ** 6)
+
+
+def so_xac_minh(out_dir: Path, study: str) -> Dict[str, Any]:
+    """{meta: {pmid: bản ghi A12}, rut: {«pmid:…»/«doi:…»: (trạng thái, tệp nguồn, tuổi ngày)}} — từ biên nhận A12 +
+    sổ kiểm rút bài theo từng mã (`tools/kiem_rut_bai_trich_dan.py`)."""
+    out_dir = Path(out_dir)
+    a12m = _doc_json(out_dir / "A12_METADATA_RECEIPT.json")
+    a12r = _doc_json(out_dir / "A12_RETRACTION_RECEIPT.json")
+    so = _doc_json(out_dir / f"KIEM_RUT_BAI_TRICH_DAN_{study}.json")
+    meta = a12m.get("metadata") if isinstance(a12m.get("metadata"), dict) else {}
+    rut: Dict[str, Tuple[str, str, Optional[int]]] = {}
+    nguon = ((a12r.get("results"), "A12_RETRACTION_RECEIPT.json", _tuoi_ngay(a12r.get("checked_at_utc")), "pmid:"),
+             (so.get("ket_qua"), f"KIEM_RUT_BAI_TRICH_DAN_{study}.json", _tuoi_ngay(so.get("checked_at")), ""))
+    for kq, ten, tuoi, tien_to in nguon:
+        for k, v in (kq.items() if isinstance(kq, dict) else ()):
+            if isinstance(v, dict):
+                khoa = (tien_to + str(k)).lower()
+                rut[khoa] = _gop_rut(rut.get(khoa), (str(v.get("status")), ten, tuoi))
+    return {"meta": meta, "rut": rut}
+
+
+def _kiem_rut(khoa: Sequence[str], so: Mapping[str, Any]) -> Tuple[str, str]:
+    """(ok|rut|cu|chua, mô tả) — kết luận rút bài của MỘT TLTK theo mọi định danh của nó."""
+    kq = [so["rut"][k] for k in khoa if k in so["rut"]]
+    if not kq:
+        return "chua", "chưa có kết luận rút bài (chạy tools/kiem_rut_bai_trich_dan.py --study <mã> --ghi)"
+    duong = next((x for x in kq if x[0] in _DUONG_TINH), None)
+    if duong:
+        return "rut", f"«{duong[0]}» theo {duong[1]}"
+    tot = [x for x in kq if x[0] in _KHONG_RUT]
+    if not tot:
+        return "chua", f"nguồn kiểm rút bài không kết luận được ({', '.join(sorted({x[0] for x in kq}))})"
+    moi = min(tot, key=lambda x: x[2] if x[2] is not None and x[2] >= 0 else 10 ** 6)
+    if moi[2] is None or moi[2] < 0 or moi[2] > HAN_RUT_BAI_NGAY:
+        return "cu", (f"kết luận rút bài «{moi[0]}» ({moi[1]}) đã {moi[2]} ngày, quá hạn {HAN_RUT_BAI_NGAY} ngày — "
+                      "kiểm lại bằng tools/kiem_rut_bai_trich_dan.py --study <mã> --ghi")
+    return "ok", f"không rút («{moi[0]}», {moi[1]}, {moi[2]} ngày trước)"
+
+
+def _ty_le_tieu_de(tieu_de: Any, van: str) -> float:
+    """Tỷ lệ từ (> 2 ký tự) của tiêu đề có mặt trong câu TLTK."""
+    t = [w for w in chuan_van(str(tieu_de or "")).split() if len(w) > 2]
+    v = set(chuan_van(van).split())
+    return sum(1 for w in t if w in v) / len(t) if t else 0.0
+
+
+def tra_crossref(doi: str) -> Optional[Dict[str, Any]]:
+    """Bản ghi Crossref `GET /works/{doi}` (khoá «message») hoặc None — tra CHÍNH XÁC một DOI đã biết."""
+    from urllib.parse import quote  # noqa: PLC0415
+
+    if str(REPO) not in sys.path:
+        sys.path.insert(0, str(REPO))
+    from app.utils.http import HttpClient  # noqa: PLC0415
+
+    data = HttpClient().get_json("https://api.crossref.org/works/" + quote(doi, safe=""))
+    it = (data or {}).get("message") if isinstance(data, dict) else None
+    return it if isinstance(it, dict) else None
+
+
+def tieu_chuan_trich_dan(khoa: Sequence[str], van: str, so: Mapping[str, Any], *,
+                         tra_doi: Optional[Any] = None) -> Dict[str, Any]:
+    """Đo BA tiêu chí chuẩn trích dẫn (dinh_danh · rut_bai · loai_nguon) cho MỘT TLTK.
+
+    `tra_doi(doi)` → bản ghi Crossref | None; None (không truyền) ⇒ TLTK chỉ có DOI «chưa tra được» (không đạt)."""
+    pm = next((k.split(":", 1)[1] for k in khoa if k.startswith("pmid:")), None)
+    doi = next((k.split(":", 1)[1] for k in khoa if k.startswith("doi:")), None)
+    tc: Dict[str, Tuple[bool, str]] = {}
+    loai: Optional[str] = None
+    rut = "khong_ap_dung"
+    if pm:
+        md = so["meta"].get(pm)
+        if not isinstance(md, dict) or md.get("status") != "resolved":
+            tc["dinh_danh"] = (False, f"PMID {pm} chưa phân giải trong A12_METADATA_RECEIPT.json")
+            tc["loai_nguon"] = (False, "không đo được (thiếu bản ghi PubMed)")
+        else:
+            khop_doi = bool(doi) and str(md.get("doi") or "").lower() == doi
+            tl = _ty_le_tieu_de(md.get("title"), van)
+            tc["dinh_danh"] = (khop_doi or tl >= 0.6, f"PubMed PMID {pm}: "
+                               + ("khớp DOI" if khop_doi else f"khớp tiêu đề {tl:.2f} (cần ≥ 0,60)"))
+            tap_chi = str(md.get("journal") or "")
+            loai = "bai_tap_chi" if tap_chi and not _TIEN_AN_PHAM.search(tap_chi) else None
+            tc["loai_nguon"] = (loai is not None, f"bài tạp chí — {tap_chi} {md.get('year') or ''}".strip() if loai
+                                else f"không phải tạp chí có bình duyệt ({tap_chi or 'không rõ tạp chí'})")
+    elif doi:
+        cr = None
+        if tra_doi is not None:
+            try:
+                cr = tra_doi(doi)
+            except Exception:  # noqa: BLE001 — lỗi mạng = không đo được, không phải «đạt»
+                cr = None
+        if not cr:
+            tc["dinh_danh"] = (False, f"không lấy được bản ghi Crossref cho DOI {doi}")
+            tc["loai_nguon"] = (False, "không đo được (thiếu bản ghi Crossref)")
+        else:
+            nam = ((cr.get("issued") or {}).get("date-parts") or [[None]])[0][0]
+            tl = _ty_le_tieu_de((cr.get("title") or [""])[0], van)
+            co_nam = bool(nam) and str(nam) in van
+            tc["dinh_danh"] = (tl >= 0.8 and co_nam, f"Crossref DOI {doi}: khớp tiêu đề {tl:.2f} (cần ≥ 0,80), năm "
+                               f"{nam} " + ("có" if co_nam else "KHÔNG có") + " trong câu TLTK")
+            kieu = str(cr.get("type") or "")
+            noi = html.unescape(str((cr.get("container-title") or [""])[0] or cr.get("publisher") or ""))
+            loai = _LOAI_CROSSREF.get(kieu) if not _TIEN_AN_PHAM.search(noi) else None
+            tc["loai_nguon"] = (loai is not None, f"{kieu or 'không rõ loại'} — {noi or 'không rõ nơi xuất bản'}")
+    else:
+        if _VAN_BAN_PHAP_QUY.search(van):
+            loai, mo = "van_ban_phap_quy", "văn bản quy phạm: nhận diện cơ quan ban hành + số hiệu"
+        elif _NXB_TO_CHUC.search(van):
+            loai, mo = "tai_lieu_to_chuc_quoc_te", "tổ chức y tế quốc tế là nhà xuất bản (kèm năm)"
+        else:
+            mo = "không định danh, không nhận diện được cơ quan ban hành hay tổ chức xuất bản"
+        tc["dinh_danh"] = (loai is not None, mo)
+        tc["loai_nguon"] = (loai is not None, LOAI_NGUON_CHUAN.get(loai or "", "không rõ loại nguồn"))
+        tc["rut_bai"] = (loai is not None, "không áp dụng (văn bản quy phạm / tài liệu tổ chức)" if loai else "—")
+    if "rut_bai" not in tc:
+        rut, mo = _kiem_rut([str(k).lower() for k in khoa], so)
+        tc["rut_bai"] = (rut == "ok", mo)
+    return {"dat": all(v[0] for v in tc.values()), "loai_nguon": loai, "rut": rut,
+            "tieu_chi": {k: {"dat": v[0], "mo_ta": v[1]} for k, v in tc.items()}}
+
+
+def _giu_hop_le(t: Mapping[str, Any], muc_giu: Mapping[str, Any], so: Mapping[str, Any]) -> Tuple[str, str]:
+    """(giu|cho_kiem|vo_hieu|khong_dat, lý do) — cổng ĐO LẠI tiêu chí mỗi lần chạy, không tin lời khai trong tệp giữ.
+
+    Riêng định danh + loại nguồn của TLTK CHỈ có DOI (cổng chạy ngoại tuyến, không tra Crossref) lấy bằng chứng máy đã
+    ghi lúc `giu-chuan` tra Crossref thật; rút bài luôn đo lại từ sổ kiểm rút bài."""
+    tc = tieu_chuan_trich_dan(t["khoa"], t["van"], so)
+    chi_doi = not any(k.startswith("pmid:") for k in t["khoa"]) and any(k.startswith("doi:") for k in t["khoa"])
+    if chi_doi:
+        bc = muc_giu.get("tieu_chi") if isinstance(muc_giu.get("tieu_chi"), dict) else {}
+        for k in ("dinh_danh", "loai_nguon"):
+            x = bc.get(k) if isinstance(bc.get(k), dict) else {}
+            tc["tieu_chi"][k] = {"dat": x.get("dat") is True and muc_giu.get("loai_nguon") in LOAI_NGUON_CHUAN,
+                                 "mo_ta": str(x.get("mo_ta") or "thiếu bằng chứng tra Crossref trong tệp giữ")}
+    if tc["rut"] == "rut":
+        return "vo_hieu", f"bài ĐÃ BỊ RÚT/có thông báo quan ngại — mất quyền giữ ({tc['tieu_chi']['rut_bai']['mo_ta']})"
+    hong = [f"{k}: {v['mo_ta']}" for k, v in tc["tieu_chi"].items() if k != "rut_bai" and not v["dat"]]
+    if hong:
+        return "khong_dat", "không đạt chuẩn trích dẫn — " + "; ".join(hong)
+    if not tc["tieu_chi"]["rut_bai"]["dat"]:
+        return "cho_kiem", tc["tieu_chi"]["rut_bai"]["mo_ta"]
+    return "giu", "đạt chuẩn trích dẫn — " + "; ".join(v["mo_ta"] for v in tc["tieu_chi"].values())
+
+
 def danh_gia(out_dir: Path, study: str) -> Dict[str, Any]:
     """Đánh giá luật toàn văn cho mọi TLTK của đề tài.
 
-    trang_thai: DAT · KHONG_CO_TRICH_DAN (không văn bản nào có mục TLTK lẫn định danh trích dẫn) · CON_VIEC (chưa thử
-    hết làn / chưa đo) · VI_PHAM (còn trích bài đã loại hoặc không lấy được toàn văn) · KHONG_DO_DUOC (có định danh mà
-    không tách được mục TLTK, hoặc biên nhận vắng/hỏng)."""
+    trang_thai: DAT · DAT_CO_GIU (mọi TLTK có toàn văn hoặc được bác sĩ giữ hợp lệ, có ít nhất một bài giữ) ·
+    KHONG_CO_TRICH_DAN (không văn bản nào có mục TLTK lẫn định danh trích dẫn) · CON_VIEC (chưa thử hết làn / chưa đo /
+    bài giữ chờ kiểm lại rút bài) · VI_PHAM (còn trích bài đã loại, không lấy được toàn văn mà không được giữ hợp lệ,
+    hoặc bài giữ đã bị rút) · KHONG_DO_DUOC (có định danh mà không tách được mục TLTK, hoặc biên nhận vắng/hỏng)."""
     out_dir = Path(out_dir)
     tltk, van_ban = tltk_de_tai(out_dir, study)
     bn, loi = doc_bien_nhan(out_dir, study)
+    giu_d, loi_giu = doc_giu(out_dir, study)
+    so = so_xac_minh(out_dir, study) if giu_d else None
     loai = {str(k).lower(): v for k, v in (DMT.loai_bo(out_dir, study) or {}).items()}
     ra: Dict[str, Any] = {"study": study, "van_ban": van_ban, "bien_nhan": TEP_BIEN_NHAN.format(study=study),
-                          "bien_nhan_luc": (bn or {}).get("luc"), "tltk": [], "loi": [loi] if loi else []}
+                          "bien_nhan_luc": (bn or {}).get("luc"), "tltk": [],
+                          "giu_tep": TEP_GIU.format(study=study) if giu_d else None,
+                          "loi": [x for x in (loi, loi_giu) if x]}
     if not van_ban:
         # Không văn bản nào có mục TLTK: không có định danh trích dẫn nào ⇒ không có gì để kiểm (đạt); CÓ PMID/DOI mà
         # không tách được mục TLTK (tiêu đề lạ, khuôn đánh số lạ) ⇒ KHÔNG ĐO ĐƯỢC — không bao giờ coi là đạt.
@@ -226,22 +470,35 @@ def danh_gia(out_dir: Path, study: str) -> Dict[str, Any]:
         m = _tim_muc(t["khoa"], bn) if bn else None
         kl = ket_luan_muc(m) if m else "khong_do"
         da_loai = sorted(k for k in t["khoa"] if k in loai)
+        giu = giu_ly_do = None
+        if giu_d and so is not None and kl in ("chua_thu_het", "khong_lay_duoc") and not da_loai:
+            mg = _tim_muc(t["khoa"], giu_d)
+            if mg:
+                giu, giu_ly_do = _giu_hop_le(t, mg, so)
         ra["tltk"].append({**t, "van": t["van"][:160], "ket_luan": kl, "nguon": (m or {}).get("nguon"),
-                           "lan_da_thu": (m or {}).get("lan_da_thu") or [], "da_loai_bo": da_loai})
+                           "lan_da_thu": (m or {}).get("lan_da_thu") or [], "da_loai_bo": da_loai,
+                           "giu": giu, "giu_ly_do": giu_ly_do})
     dem = {k: sum(1 for x in ra["tltk"] if x["ket_luan"] == k) for k in KET_LUAN}
     dem["da_loai_ma_con_trich"] = sum(1 for x in ra["tltk"] if x["da_loai_bo"])
+    for k in ("giu", "cho_kiem", "vo_hieu", "khong_dat"):
+        dem["giu_" + k] = sum(1 for x in ra["tltk"] if x["giu"] == k)
     ra["dem"] = dem
+    duoc_giu = ("giu", "cho_kiem")
+    vi_pham = [x for x in ra["tltk"] if x["da_loai_bo"] or x["giu"] == "vo_hieu"
+               or (x["ket_luan"] == "khong_lay_duoc" and x["giu"] not in duoc_giu)]
+    con_viec = [x for x in ra["tltk"] if x["giu"] == "cho_kiem"
+                or (x["ket_luan"] in ("chua_thu_het", "khong_do") and x["giu"] not in duoc_giu)]
     if bn is None:
         ra["trang_thai"] = "KHONG_DO_DUOC"
         if not loi:
             ra["loi"].append(f"chưa có biên nhận {ra['bien_nhan']} — đo bằng repo gốc: python3 tools/nap_endnote_de_tai"
                              f".py --study {study} --ghi-bien-nhan-toan-van")
-    elif dem["khong_lay_duoc"] or dem["da_loai_ma_con_trich"]:
+    elif vi_pham:
         ra["trang_thai"] = "VI_PHAM"
-    elif dem["chua_thu_het"] or dem["khong_do"]:
+    elif con_viec:
         ra["trang_thai"] = "CON_VIEC"
     else:
-        ra["trang_thai"] = "DAT"
+        ra["trang_thai"] = "DAT_CO_GIU" if dem["giu_giu"] else "DAT"
     return ra
 
 
@@ -257,16 +514,26 @@ def tieu_chi_g10(out_dir: Path, study: str) -> Tuple[str, str]:
         tom = (f"{len(kq['tltk'])} TLTK ({', '.join(kq['van_ban'])}): có toàn văn {dem.get('co', 0)} · còn làn chưa "
                f"thử {dem.get('chua_thu_het', 0)} · chưa đo {dem.get('khong_do', 0)} · không lấy được "
                f"{dem.get('khong_lay_duoc', 0)} · đã loại mà còn trích {dem.get('da_loai_ma_con_trich', 0)}")
+        if kq.get("giu_tep"):
+            tom += (f" · bác sĩ cho giữ (đạt chuẩn, chưa có toàn văn) {dem.get('giu_giu', 0)} · giữ chờ kiểm lại "
+                    f"rút bài {dem.get('giu_cho_kiem', 0)} · giữ mất hiệu lực vì bị rút {dem.get('giu_vo_hieu', 0)} · "
+                    f"không đạt chuẩn để giữ {dem.get('giu_khong_dat', 0)}")
     if kq["trang_thai"] == "DAT":
         return "PASS", tom
+    if kq["trang_thai"] == "DAT_CO_GIU":
+        giu = [str(x["so"]) for x in kq["tltk"] if x["giu"] == "giu"]
+        return "PASS", (f"{tom} — mọi TLTK còn lại có toàn văn; TLTK {', '.join(giu)} được giữ theo "
+                        f"{kq['giu_tep']} (lời bác sĩ, đạt đủ ba tiêu chí chuẩn trích dẫn) dù chưa có toàn văn")
     if kq["trang_thai"] == "KHONG_CO_TRICH_DAN":
         return "PASS", ("không văn bản nào của đề tài có mục TÀI LIỆU THAM KHẢO hay định danh trích dẫn — không có gì "
                         "để kiểm")
     if kq["trang_thai"] == "VI_PHAM":
-        sai = [f"TLTK {x['so']} ({x['tai_lieu']})" for x in kq["tltk"]
-               if x["ket_luan"] == "khong_lay_duoc" or x["da_loai_bo"]]
+        sai = [f"TLTK {x['so']} ({x['tai_lieu']})" + (" — bài giữ ĐÃ BỊ RÚT" if x["giu"] == "vo_hieu" else "")
+               for x in kq["tltk"] if x["da_loai_bo"] or x["giu"] == "vo_hieu"
+               or (x["ket_luan"] == "khong_lay_duoc" and x["giu"] not in ("giu", "cho_kiem"))]
         return "BLOCK", f"{tom} — phải LOẠI: {', '.join(sai[:8])}"
-    return "REVIEW", "; ".join([tom] * bool(tom) + kq.get("loi", []))
+    cho = [f"TLTK {x['so']}: {x['giu_ly_do']}" for x in kq.get("tltk") or [] if x.get("giu") == "cho_kiem"]
+    return "REVIEW", "; ".join([tom] * bool(tom) + cho[:3] + kq.get("loi", []))
 
 
 # ── loại bỏ ───────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -278,7 +545,7 @@ def de_xuat_loai_bo(out_dir: Path, study: str) -> Dict[str, Any]:
     sua_tay: List[str] = []
     da: Set[str] = set()
     for x in kq.get("tltk") or []:
-        if x["ket_luan"] != "khong_lay_duoc" or x["da_loai_bo"]:
+        if x["ket_luan"] != "khong_lay_duoc" or x["da_loai_bo"] or x.get("giu") in ("giu", "cho_kiem"):
             continue
         pm = next((k.split(":", 1)[1] for k in x["khoa"] if k.startswith("pmid:")), None)
         doi = next((k.split(":", 1)[1] for k in x["khoa"] if k.startswith("doi:")), None)
@@ -313,18 +580,73 @@ def ap_dung_loai_bo(out_dir: Path, study: str, loi_bac_si: str = LOI_BAC_SI_MAC_
     return {**dx, "da_ghi": len(dx["loai"]), "tep": p.name}
 
 
+# ── giữ trích dẫn đạt chuẩn: đề xuất / ghi ────────────────────────────────────────────────────────────────────────
+def de_xuat_giu(out_dir: Path, study: str, tra_doi: Optional[Any] = tra_crossref) -> Dict[str, Any]:
+    """{giu: [mục đạt đủ ba tiêu chí], khong_dat: [{so, ly_do}]} cho mọi TLTK chưa có toàn văn (còn làn chưa thử hoặc
+    không lấy được) — đo trên câu TLTK ĐẦY ĐỦ; DOI tra Crossref thật qua `tra_doi`."""
+    out_dir = Path(out_dir)
+    kq = danh_gia(out_dir, study)
+    so = so_xac_minh(out_dir, study)
+    day = {(t["tai_lieu"], t["so"]): t["van"] for t in tltk_de_tai(out_dir, study)[0]}
+    nay = dt.date.today().isoformat()
+    giu: List[Dict[str, Any]] = []
+    khong_dat: List[Dict[str, Any]] = []
+    for x in kq.get("tltk") or []:
+        if x["ket_luan"] not in ("chua_thu_het", "khong_lay_duoc") or x["da_loai_bo"]:
+            continue
+        van = day.get((x["tai_lieu"], x["so"]), x["van"])
+        tc = tieu_chuan_trich_dan(x["khoa"], van, so, tra_doi=tra_doi)
+        if tc["dat"]:
+            giu.append({"so": x["so"], "tai_lieu": x["tai_lieu"], "khoa": x["khoa"], "ket_luan_toan_van": x["ket_luan"],
+                        "loai_nguon": tc["loai_nguon"], "tieu_chi": tc["tieu_chi"], "ngay": nay})
+        else:
+            khong_dat.append({"so": x["so"], "tai_lieu": x["tai_lieu"],
+                              "ly_do": "; ".join(f"{k}: {v['mo_ta']}" for k, v in tc["tieu_chi"].items()
+                                                 if not v["dat"])})
+    return {"trang_thai": kq["trang_thai"], "giu": giu, "khong_dat": khong_dat}
+
+
+def ap_dung_giu(out_dir: Path, study: str, loi_bac_si: str, tra_doi: Optional[Any] = tra_crossref) -> Dict[str, Any]:
+    """Ghi `GIU_TRICH_DAN_CHUAN_<mã>.json` CHỈ với TLTK đạt đủ ba tiêu chí; bắt buộc nguyên văn lời bác sĩ; sao lưu tệp
+    cũ trước khi ghi đè."""
+    if not str(loi_bac_si or "").strip():
+        raise ValueError("thiếu nguyên văn lời bác sĩ (--loi) — quyền giữ trích dẫn là quyết định của bác sĩ")
+    dx = de_xuat_giu(out_dir, study, tra_doi=tra_doi)
+    p = Path(out_dir) / TEP_GIU.format(study=study)
+    if not dx["giu"]:
+        return {**dx, "da_ghi": 0}
+    if p.is_file():
+        shutil.copy2(p, p.with_name(f"{p.stem}.bak-{dt.datetime.now():%Y%m%d-%H%M%S}.json"))
+    d = {"schema": SCHEMA_GIU, "study": study, "ngay": dt.date.today().isoformat(), "loi_bac_si": loi_bac_si.strip(),
+         "cong_cu": "tools/toan_van_trich_dan.py giu-chuan --ap-dung",
+         "tieu_chi": {"dinh_danh": ("PMID phân giải (A12) khớp DOI/tiêu đề · DOI có bản ghi Crossref khớp tiêu đề "
+                                    "+ năm · văn bản không định danh nhận diện được cơ quan ban hành + số hiệu hoặc tổ "
+                                    "chức y tế quốc tế là nhà xuất bản"),
+                      "rut_bai": f"đã kiểm, không rút, trong {HAN_RUT_BAI_NGAY} ngày",
+                      "loai_nguon": " · ".join(LOAI_NGUON_CHUAN.values())},
+         "muc": dx["giu"]}
+    p.write_text(json.dumps(d, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
+    return {**dx, "da_ghi": len(dx["giu"]), "tep": p.name}
+
+
 # ── CLI ───────────────────────────────────────────────────────────────────────────────────────────────────────────
 def _in(kq: Dict[str, Any]) -> None:
-    bieu = {"DAT": "🟢", "KHONG_CO_TRICH_DAN": "🟢", "CON_VIEC": "🟠", "VI_PHAM": "🔴",
+    bieu = {"DAT": "🟢", "DAT_CO_GIU": "🟢", "KHONG_CO_TRICH_DAN": "🟢", "CON_VIEC": "🟠", "VI_PHAM": "🔴",
             "KHONG_DO_DUOC": "⚪"}.get(kq["trang_thai"], "⚪")
     print(f"{bieu} Toàn văn trích dẫn — {kq['study']}: {kq['trang_thai']}")
     dem = kq.get("dem") or {}
     if kq.get("tltk"):
         print("   " + " · ".join(f"{TEN_KET_LUAN[k]} {dem.get(k, 0)}" for k in KET_LUAN)
               + f" · đã loại mà còn trích {dem.get('da_loai_ma_con_trich', 0)}")
+        if kq.get("giu_tep"):
+            print(f"   Giữ theo lời bác sĩ ({kq['giu_tep']}): hợp lệ {dem.get('giu_giu', 0)} · chờ kiểm lại rút bài "
+                  f"{dem.get('giu_cho_kiem', 0)} · mất hiệu lực vì bị rút {dem.get('giu_vo_hieu', 0)} · không đạt "
+                  f"chuẩn {dem.get('giu_khong_dat', 0)}")
+    nhan_giu = {"giu": " · GIỮ (đạt chuẩn, lời bác sĩ)", "cho_kiem": " · GIỮ — chờ kiểm lại rút bài",
+                "vo_hieu": " · GIỮ MẤT HIỆU LỰC: bài đã bị rút", "khong_dat": " · không đạt chuẩn để giữ"}
     can = [x for x in kq.get("tltk") or [] if x["ket_luan"] != "co" or x["da_loai_bo"]]
     for x in can[:20]:
-        them = " · ĐÃ Ở loai_bo MÀ CÒN TRÍCH" if x["da_loai_bo"] else ""
+        them = (" · ĐÃ Ở loai_bo MÀ CÒN TRÍCH" if x["da_loai_bo"] else "") + nhan_giu.get(x.get("giu") or "", "")
         print(f"   - TLTK {x['so']} ({x['tai_lieu']}): {TEN_KET_LUAN[x['ket_luan']]}{them} — {x['van'][:90]}")
     if len(can) > 20:
         print(f"   … và {len(can) - 20} TLTK nữa (--json để xem đủ)")
@@ -338,10 +660,13 @@ EXPORTS = REPO / "exports"
 
 def main(argv: Optional[Sequence[str]] = None, exports: Optional[Path] = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("lenh", choices=("kiem", "loai-bo"))
+    ap.add_argument("lenh", choices=("kiem", "loai-bo", "giu-chuan"))
     ap.add_argument("--study", required=True)
-    ap.add_argument("--ap-dung", action="store_true", help="loai-bo: ghi thật vào danh mục trích dẫn")
-    ap.add_argument("--loi", default=LOI_BAC_SI_MAC_DINH, help="loai-bo: nguyên văn lời bác sĩ làm căn cứ")
+    ap.add_argument("--ap-dung", action="store_true",
+                    help="loai-bo: ghi thật vào danh mục trích dẫn · giu-chuan: ghi tệp giữ trích dẫn đạt chuẩn")
+    ap.add_argument("--loi", default=None,
+                    help="nguyên văn lời bác sĩ làm căn cứ (loai-bo: mặc định luật 18/11; giu-chuan: BẮT BUỘC khi ghi)")
+    ap.add_argument("--khong-mang", action="store_true", help="giu-chuan: không tra Crossref (DOI-only ⇒ không đạt)")
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args(argv)
     if not _STUDY.match(a.study):
@@ -354,9 +679,31 @@ def main(argv: Optional[Sequence[str]] = None, exports: Optional[Path] = None) -
     if a.lenh == "kiem":
         kq = danh_gia(out, a.study)
         print(json.dumps(kq, ensure_ascii=False, indent=1)) if a.json else _in(kq)
-        ma = {"DAT": 0, "KHONG_CO_TRICH_DAN": 0, "CON_VIEC": 1, "VI_PHAM": 1}
+        ma = {"DAT": 0, "DAT_CO_GIU": 0, "KHONG_CO_TRICH_DAN": 0, "CON_VIEC": 1, "VI_PHAM": 1}
         return ma.get(kq["trang_thai"], 2)
-    kq = ap_dung_loai_bo(out, a.study, a.loi) if a.ap_dung else {**de_xuat_loai_bo(out, a.study), "da_ghi": 0}
+    if a.lenh == "giu-chuan":
+        tra = None if a.khong_mang else tra_crossref
+        if a.ap_dung and not str(a.loi or "").strip():
+            print("❌ giu-chuan --ap-dung cần --loi \"<nguyên văn lời bác sĩ>\" — quyền giữ là quyết định của bác sĩ")
+            return 3
+        kq = ap_dung_giu(out, a.study, a.loi, tra_doi=tra) if a.ap_dung else {**de_xuat_giu(out, a.study, tra),
+                                                                              "da_ghi": 0}
+        if a.json:
+            print(json.dumps(kq, ensure_ascii=False, indent=1))
+            return 0
+        print(f"{'GHI THẬT' if a.ap_dung else 'CHẠY KHÔ'} — giữ {len(kq['giu'])} TLTK chưa có toàn văn mà đạt đủ ba "
+              f"tiêu chí chuẩn trích dẫn" + (f" vào {kq.get('tep')}" if kq.get("da_ghi") else ""))
+        for x in kq["giu"]:
+            print(f"   ✓ TLTK {x['so']} [{LOAI_NGUON_CHUAN.get(x['loai_nguon'], x['loai_nguon'])}]: "
+                  + " · ".join(v["mo_ta"] for v in x["tieu_chi"].values()))
+        for x in kq["khong_dat"]:
+            print(f"   ✗ TLTK {x['so']} KHÔNG giữ — {x['ly_do']}")
+        if not a.ap_dung and kq["giu"]:
+            print("   Thêm --ap-dung --loi \"<nguyên văn lời bác sĩ>\" để ghi.")
+        print("   Được giữ không miễn việc tìm toàn văn. Cần bác sĩ kiểm chứng.")
+        return 0
+    loi = a.loi or LOI_BAC_SI_MAC_DINH
+    kq = ap_dung_loai_bo(out, a.study, loi) if a.ap_dung else {**de_xuat_loai_bo(out, a.study), "da_ghi": 0}
     if a.json:
         print(json.dumps(kq, ensure_ascii=False, indent=1))
     else:

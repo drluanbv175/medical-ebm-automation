@@ -125,7 +125,17 @@ văn mà không cổng nào báo — nay là chốt máy fail-closed:
 4. **Loại**: `python3 tools/toan_van_trich_dan.py loai-bo --study <mã>` (chạy khô) → `--ap-dung` ghi `loai_bo` của
    `DANH_MUC_TRICH_DAN_<mã>.json` (sao lưu trước) → sinh lại đề cương nộp (TLTK rút khỏi văn bản, đánh số lại) → gỡ khỏi
    nhóm EndNote đề tài (không thùng rác). TLTK không định danh (văn bản quy phạm, sách) ⇒ sửa tay văn bản.
-KHÔNG viết câu khẳng định dựa trên bài chưa có toàn văn; KHÔNG ghi «có toàn văn» khi chưa đo; KHÔNG sửa tay biên nhận.
+5. **Giữ trích dẫn đạt chuẩn** (bác sĩ 18/11/2026, RIÊNG từng đề tài — C1a: «Riêng với đề tài C1a hãy giữ lại trích
+   dẫn đủ tiêu chuẩn của nghiên cứu y khoa chuẩn»): CHỈ khi bác sĩ nói cho đúng đề tài đó, `python3
+   tools/toan_van_trich_dan.py giu-chuan --study <mã>` (chạy khô, DOI tra Crossref thật) → `--ap-dung --loi
+   "<nguyên văn lời bác sĩ>"` ghi `GIU_TRICH_DAN_CHUAN_<mã>.json` CHỈ với TLTK đạt đủ ba tiêu chí: định danh khớp
+   (PMID/DOI/tiêu đề/năm; văn bản không định danh phải có cơ quan ban hành + số hiệu, hoặc tổ chức y tế quốc tế là
+   nhà xuất bản) · đã kiểm không rút trong 30 ngày · bài tạp chí bình duyệt / sách học thuật / văn bản quy phạm /
+   tài liệu tổ chức y tế quốc tế (tiền ấn phẩm không đạt). Cổng đo lại mỗi lần chạy: bài giữ bị rút ⇒ BLOCK; kiểm rút
+   bài quá hạn ⇒ REVIEW (chạy lại `kiem_rut_bai_trich_dan.py --study <mã> --ghi`); đạt ⇒ `DAT_CO_GIU` (PASS kèm số
+   bài giữ). KHÔNG tự cho đề tài khác quyền giữ; được giữ vẫn tiếp tục tìm toàn văn.
+KHÔNG viết câu khẳng định MỚI dựa trên bài chưa có toàn văn (bài được giữ: chỉ giữ câu đã có, đối chiếu
+abstract); KHÔNG ghi «có toàn văn» khi chưa đo; KHÔNG sửa tay biên nhận.
 
 <!-- TRACH-NHIEM-AGENT:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
 ## Trách nhiệm trong hội đồng cổng (10/10/2026)
