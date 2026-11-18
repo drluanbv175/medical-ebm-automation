@@ -930,11 +930,36 @@ def ho_so_tron_vong() -> Dict[str, Dict[str, Any]]:
     return hs
 
 
+#: 18/11/2026 (đo 24 đề tài giả lập, G3-T3): khoảng hợp lệ (min, max) cho MỌI trường số của 6 kịch bản — như từ điển
+#: REDCap của đề tài thật, khoảng theo giới hạn sinh lý/đo được của phép đo (không phải khoảng tham chiếu bình thường):
+#: giá trị ngoài khoảng là lỗi nhập, không phải bệnh lý nặng. Trước đây cả 6 kịch bản ghi min/max rỗng ⇒ G3-T3 báo
+#: «trường số thiếu khoảng hợp lệ» và luật kiểm tra dữ liệu của G5 không có ngưỡng để bắt lỗi nhập.
+KHOANG_HOP_LE: Dict[str, Tuple[str, str]] = {
+    "tuoi": ("18", "110"),                  # năm — đề tài người trưởng thành
+    "thoi_gian_theo_doi": ("0", "60"),      # tháng — cửa sổ theo dõi 3 năm
+    "ast": ("1", "5000"), "alt": ("1", "5000"),  # U/L
+    "tieu_cau": ("1", "1500"),              # G/L
+    "lsm_kpa": ("1.5", "75"),               # kPa — dải đo của máy đo đàn hồi gan thoáng qua
+    "lvef": ("5", "90"),                    # %
+    "ntprobnp": ("0", "70000"),             # pg/mL
+    "egfr": ("0", "200"),                   # mL/phút/1,73 m²
+    "natri": ("100", "180"),                # mmol/L
+    "hb": ("2", "25"),                      # g/dL
+    "thoi_gian_dtd": ("0", "80"),           # năm
+    "n_can_thiep": ("1", "100000"), "n_chung": ("1", "100000"),            # người/nhánh của một thử nghiệm
+    "bien_co_can_thiep": ("0", "100000"), "bien_co_chung": ("0", "100000"),
+    "theo_doi_thang": ("0", "240"),         # tháng
+}
+
+
 def bien_so_them() -> Dict[str, Dict[str, list]]:
     """Bộ biến + ma trận của 6 kịch bản mới theo khuôn `bien_so` của canary.
 
-    Mỗi biến: (tên, loại, nhãn, lựa chọn, kiểm, min, max)."""
-    return {ma: {"bo_bien": [(t, k, n, lc, v, "", "") for t, k, n, lc, v, _muc in hs["bo_bien"]],
+    Mỗi biến: (tên, loại, nhãn, lựa chọn, kiểm, min, max) — trường số lấy (min, max) ở `KHOANG_HOP_LE`."""
+    def _khoang(ten: str, kiem: str) -> Tuple[str, str]:
+        return KHOANG_HOP_LE.get(ten, ("", "")) if kiem in ("integer", "number") else ("", "")
+
+    return {ma: {"bo_bien": [(t, k, n, lc, v, *_khoang(t, v)) for t, k, n, lc, v, _muc in hs["bo_bien"]],
                  "ma_tran": list(hs["ma_tran"])}
             for ma, hs in _ho_so_bien_6().items()}
 

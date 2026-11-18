@@ -1519,6 +1519,9 @@ def _nap_bo_bien(out_dir: Path, study: str) -> Tuple[Optional[list], List[str]]:
         return None, [" ".join(str(exc).split())[:400]]
 
 
+_LOAI_PHAN_LOAI = frozenset({"yesno", "truefalse", "radio", "dropdown", "checkbox"})  # cùng g5_quality_gate (17/11)
+
+
 def _kiem_bo_bien_so(out_dir: Path, study: str) -> List[str]:
     """G3-T2 — bộ biến nạp được bởi G5 (10 cột REDCap, tên biến hợp lệ/không trùng, loại trường, nhãn), không khai
     biến định danh trực tiếp (cùng luật G5-AUTO-02) và PHỦ mục tiêu qua ma trận `_ma-tran-muc-tieu-bien.csv`
@@ -1529,7 +1532,11 @@ def _kiem_bo_bien_so(out_dir: Path, study: str) -> List[str]:
     try:
         import g5_quality_gate as G5Q  # noqa: PLC0415
 
-        pii = sorted({r[0] for r in rows if G5Q._la_ten_bien_dinh_danh(r[0])})
+        # 18/11/2026 (đo 24 đề tài giả lập): G5-AUTO-02 bỏ qua trường PHÂN LOẠI có mã từ 17/11 (vd «tc_dien_thoai» =
+        # «có điện thoại nhận tin nhắn — Có/Không») nhưng G3-T2 vẫn chỉ xét tên ⇒ báo «G5-AUTO-02 sẽ chặn» trong khi
+        # G5 không chặn. Dùng ĐÚNG cùng luật: trường yesno/truefalse/radio/dropdown/checkbox không là biến định danh.
+        pii = sorted({r[0] for r in rows if str(r[3]).strip().casefold() not in _LOAI_PHAN_LOAI
+                      and G5Q._la_ten_bien_dinh_danh(r[0])})
     except Exception as exc:  # noqa: BLE001
         return [f"không kiểm được biến định danh: {type(exc).__name__}"]
     loi = [f"biến định danh trực tiếp (G5-AUTO-02 sẽ chặn): {', '.join(pii[:10])}"] if pii else []

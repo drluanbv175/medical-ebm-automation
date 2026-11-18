@@ -65,6 +65,8 @@ NHOM_KHOA = ("IRB", "STATISTICIAN", "PI", "DATA_MANAGER", "INDEPENDENT_PEER_REVI
 O_RE = re.compile(r"\[(?:CẦN|CẦN|TO BE COMPLETED)[^\]\n]*\]")
 LOAI_O = ("hoi_lai_da_chot", "hoi_lap", "khong_ap_dung", "moi_dung_vai", "chua_co_ho_so")
 LOAI_O_LOI_MAY = ("hoi_lai_da_chot", "hoi_lap")
+#: Bảng trích xuất cấp nghiên cứu của tổng quan (G5-T2) — PHẢI trùng `hoi_dong_cong.TEP_TRICH_XUAT_SR` (test khoá).
+TEP_TRICH_XUAT_SR = "06_phan_tich_R/study_level_extraction.csv"
 
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════ tiện ích
@@ -1090,6 +1092,8 @@ class TronVong:
         if self.thiet_ke == "qualitative":
             self._ban_go_bang(hang)
         self.chay("G5 khoá dữ liệu (quản lý dữ liệu)", "lock_analysis_dataset.py", *tham)
+        if self.thiet_ke == "sr_ma":
+            self._bang_trich_xuat_sr()
         self.cong["G5_truoc_ky"] = {"trang_thai": self.cham("G5"),
                                     "chua_dat": GL.GiaLap._chua_dat(GL.cham_song("G5", self.study, self.out,
                                                                                  self.repo))}
@@ -1097,6 +1101,51 @@ class TronVong:
         self._ky("G5", "G5_checkpoint.json", "PI", "GIA-LAP-PI")
         self.cong["G5"] = {"trang_thai": self.cham("G5")}
         self.do_truc("sau_G5")
+
+    def _bang_trich_xuat_sr(self) -> None:
+        """Tổng quan hệ thống (G5-T2, agent trich-xuat-y-van): từ bộ dữ liệu ĐÃ KHOÁ, ghi bảng trích xuất cấp nghiên cứu
+        `06_phan_tich_R/study_level_extraction.csv` mà script gộp G6 đọc (hợp đồng cột ở
+        `hoi_dong_cong._kiem_bang_trich_xuat`: study, year + event.e/n.e/event.c/n.c).
+
+        18/11/2026 (đo 24 đề tài giả lập): trước đây bộ giả lập không ghi tệp này ⇒ G5-T2 của cả hai kịch bản tổng quan
+        báo thiếu đầu ra. Chỉ lấy nghiên cứu ĐƯỢC ĐƯA VÀO: mọi cột tiêu chuẩn chọn `tc_*` = 1, mọi lý do loại `lt_*` = 0
+        (khi phiếu có các cột đó) và đủ bốn số của bảng 2x2. Năm: cột `nam_cong_bo` nếu có, không thì năm trong mã
+        nghiên cứu («TN01-2016»)."""
+        import hashlib  # noqa: PLC0415
+
+        mf = _doc_json(self.out / "DATA_LOCK_manifest.json")
+        khoa = self.out / str(mf.get("locked_dataset_path") or "")
+        if not mf.get("locked_dataset_path") or not khoa.is_file():
+            self.buoc.append({"buoc": "G5-T2 bảng trích xuất cấp nghiên cứu", "lenh": "—", "ma": None,
+                              "crash": False, "cuoi": ["chưa có bộ dữ liệu đã khoá — không dựng bảng trích xuất"]})
+            return
+        cot_so = (("event.e", "bien_co_can_thiep"), ("n.e", "n_can_thiep"), ("event.c", "bien_co_chung"),
+                  ("n.c", "n_chung"))
+        them = ("thuoc_sglt2", "theo_doi_thang", "rob2_tong")
+        ra: List[Dict[str, str]] = []
+        with khoa.open(encoding="utf-8-sig", newline="") as fh:
+            for d in csv.DictReader(fh):
+                d = {k: (v or "").strip() for k, v in d.items()}
+                if any(d[c] != "1" for c in d if c.startswith("tc_")) or any(
+                        d[c] != "0" for c in d if c.startswith("lt_")):
+                    continue
+                if not all(d.get(c) for _m, c in cot_so):
+                    continue
+                nam = d.get("nam_cong_bo") or (re.search(r"(?:19|20)\d{2}", d.get("study_id", "")) or [""])[0]
+                ra.append({"study": d.get("study_id", ""), "year": nam,
+                           **{moi: str(int(float(d[c]))) for moi, c in cot_so},
+                           **{c: d.get(c, "") for c in them if c in d}})
+        dich = self.out / TEP_TRICH_XUAT_SR
+        dich.parent.mkdir(parents=True, exist_ok=True)
+        with dich.open("w", encoding="utf-8", newline="") as fh:
+            w = csv.DictWriter(fh, fieldnames=["study", "year", *(m for m, _c in cot_so),
+                                               *(c for c in them if ra and c in ra[0])], lineterminator="\n")
+            w.writeheader()
+            w.writerows(ra)
+        self.buoc.append({"buoc": "G5-T2 bảng trích xuất cấp nghiên cứu (trích xuất y văn)", "lenh": TEP_TRICH_XUAT_SR,
+                          "ma": 0, "crash": False,
+                          "cuoi": [f"{len(ra)} nghiên cứu được đưa vào · sha256 "
+                                   f"{hashlib.sha256(dich.read_bytes()).hexdigest()[:12]}"]})
 
     def _ban_go_bang(self, hang: Sequence[Mapping[str, Any]]) -> None:
         """Đề tài ĐỊNH TÍNH: quản lý dữ liệu nộp bản gỡ băng ĐÃ KHỬ ĐỊNH DANH (mỗi người tham gia một tệp .txt, chỉ
@@ -1957,7 +2006,9 @@ Kết luận tổng thể: {ket_luan}
         hang = [d for d in a8.read_text(encoding="utf-8").splitlines() if re.match(r"\s*\|\s*\d+[a-z]?\s*\|", d)]
         if not hang:
             return None
-        ten = f"G9_REPORTING_CHECKLIST_{self.study}.md"
+        # 18/11/2026: đúng tên hội đồng đòi ở G9-T1 (`REPORTING_CHECKLIST_<mã>.md`, như fixture của g9_quality_gate) —
+        # tên cũ «G9_REPORTING_CHECKLIST_…» làm G9-T1 báo thiếu đầu ra dù gói đã có checklist.
+        ten = f"REPORTING_CHECKLIST_{self.study}.md"
         (self.out / ten).write_text(f"# Checklist chuẩn báo cáo — {self.study}\n\n"
                                     "| Mục | Nội dung | Trạng thái | Ghi chú |\n|---|---|---|---|\n"
                                     + "\n".join(hang) + "\n",
