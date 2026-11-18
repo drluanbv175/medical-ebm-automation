@@ -1,0 +1,625 @@
+{
+  "schema": "de_tai/giu_trich_dan_chuan/v1",
+  "study": "hai-long-benh-nhan-C1a-BVQY175",
+  "ngay": "2026-11-18",
+  "loi_bac_si": "Bác sĩ 18/11/2026: «Riêng với đề tài C1a hãy giữ lại trích dẫn đủ tiêu chuẩn của nghiên cứu y khoa chuẩn»",
+  "cong_cu": "tools/toan_van_trich_dan.py giu-chuan --ap-dung",
+  "tieu_chi": {
+    "dinh_danh": "PMID phân giải (A12) khớp DOI/tiêu đề · DOI có bản ghi Crossref khớp tiêu đề + năm · văn bản không định danh nhận diện được cơ quan ban hành + số hiệu hoặc tổ chức y tế quốc tế là nhà xuất bản",
+    "rut_bai": "đã kiểm, không rút, trong 30 ngày",
+    "loai_nguon": "bài tạp chí có bình duyệt · sách chuyên khảo của nhà xuất bản học thuật · văn bản quy phạm/hướng dẫn của cơ quan nhà nước · tài liệu của tổ chức y tế quốc tế"
+  },
+  "muc": [
+    {
+      "so": 1,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "van:e1e98d62ccd1bc7f"
+      ],
+      "ket_luan_toan_van": "chua_thu_het",
+      "loai_nguon": "van_ban_phap_quy",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "văn bản quy phạm: nhận diện cơ quan ban hành + số hiệu"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "văn bản quy phạm/hướng dẫn của cơ quan nhà nước"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không áp dụng (văn bản quy phạm / tài liệu tổ chức)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 5,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1080/00185868.2021.1969871",
+        "pmid:34445940"
+      ],
+      "ket_luan_toan_van": "khong_lay_duoc",
+      "loai_nguon": "bai_tap_chi",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "PubMed PMID 34445940: khớp DOI"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "bài tạp chí — Hospital topics 2023"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», A12_RETRACTION_RECEIPT.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 6,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.51298/vmj.v540i1.10302"
+      ],
+      "ket_luan_toan_van": "chua_thu_het",
+      "loai_nguon": "bai_tap_chi",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "Crossref DOI 10.51298/vmj.v540i1.10302: khớp tiêu đề 1.00 (cần ≥ 0,80), năm 2024 có trong câu TLTK"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "journal-article — Tạp chí Y học Việt Nam"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», KIEM_RUT_BAI_TRICH_DAN_hai-long-benh-nhan-C1a-BVQY175.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 7,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.52163/yhc.v64i6.841"
+      ],
+      "ket_luan_toan_van": "chua_thu_het",
+      "loai_nguon": "bai_tap_chi",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "Crossref DOI 10.52163/yhc.v64i6.841: khớp tiêu đề 1.00 (cần ≥ 0,80), năm 2023 có trong câu TLTK"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "journal-article — Tạp chí Y học Cộng đồng"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», KIEM_RUT_BAI_TRICH_DAN_hai-long-benh-nhan-C1a-BVQY175.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 8,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.52163/yhc.v67icd5.5018"
+      ],
+      "ket_luan_toan_van": "chua_thu_het",
+      "loai_nguon": "bai_tap_chi",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "Crossref DOI 10.52163/yhc.v67icd5.5018: khớp tiêu đề 1.00 (cần ≥ 0,80), năm 2026 có trong câu TLTK"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "journal-article — Tạp chí Y học Cộng đồng"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», KIEM_RUT_BAI_TRICH_DAN_hai-long-benh-nhan-C1a-BVQY175.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 11,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.38148/jhds.0706skpt23-064"
+      ],
+      "ket_luan_toan_van": "chua_thu_het",
+      "loai_nguon": "bai_tap_chi",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "Crossref DOI 10.38148/jhds.0706skpt23-064: khớp tiêu đề 1.00 (cần ≥ 0,80), năm 2023 có trong câu TLTK"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "journal-article — Journal of Health and Development Studies"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», KIEM_RUT_BAI_TRICH_DAN_hai-long-benh-nhan-C1a-BVQY175.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 13,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.52163/yhc.v66i1.1940"
+      ],
+      "ket_luan_toan_van": "chua_thu_het",
+      "loai_nguon": "bai_tap_chi",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "Crossref DOI 10.52163/yhc.v66i1.1940: khớp tiêu đề 1.00 (cần ≥ 0,80), năm 2025 có trong câu TLTK"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "journal-article — Tạp chí Y học Cộng đồng"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», KIEM_RUT_BAI_TRICH_DAN_hai-long-benh-nhan-C1a-BVQY175.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 15,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "van:e0bf9f7a76681280"
+      ],
+      "ket_luan_toan_van": "chua_thu_het",
+      "loai_nguon": "van_ban_phap_quy",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "văn bản quy phạm: nhận diện cơ quan ban hành + số hiệu"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "văn bản quy phạm/hướng dẫn của cơ quan nhà nước"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không áp dụng (văn bản quy phạm / tài liệu tổ chức)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 20,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1108/ijhcqa-07-2025-0100",
+        "pmid:41645935"
+      ],
+      "ket_luan_toan_van": "chua_thu_het",
+      "loai_nguon": "bai_tap_chi",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "PubMed PMID 41645935: khớp DOI"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "bài tạp chí — International journal of health care quality assurance 2026"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», A12_RETRACTION_RECEIPT.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 21,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1016/j.jhqr.2021.04.004",
+        "pmid:34053882"
+      ],
+      "ket_luan_toan_van": "khong_lay_duoc",
+      "loai_nguon": "bai_tap_chi",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "PubMed PMID 34053882: khớp DOI"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "bài tạp chí — Journal of healthcare quality research 2021"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», A12_RETRACTION_RECEIPT.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 29,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.52163/yhc.v67i7.5934"
+      ],
+      "ket_luan_toan_van": "chua_thu_het",
+      "loai_nguon": "bai_tap_chi",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "Crossref DOI 10.52163/yhc.v67i7.5934: khớp tiêu đề 1.00 (cần ≥ 0,80), năm 2026 có trong câu TLTK"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "journal-article — Tạp chí Y học Cộng đồng"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», KIEM_RUT_BAI_TRICH_DAN_hai-long-benh-nhan-C1a-BVQY175.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 34,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "van:6d1c1661af7849ef"
+      ],
+      "ket_luan_toan_van": "chua_thu_het",
+      "loai_nguon": "tai_lieu_to_chuc_quoc_te",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "tổ chức y tế quốc tế là nhà xuất bản (kèm năm)"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "tài liệu của tổ chức y tế quốc tế"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không áp dụng (văn bản quy phạm / tài liệu tổ chức)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 35,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1093/ije/dyl129"
+      ],
+      "ket_luan_toan_van": "khong_lay_duoc",
+      "loai_nguon": "bai_tap_chi",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "Crossref DOI 10.1093/ije/dyl129: khớp tiêu đề 1.00 (cần ≥ 0,80), năm 2006 có trong câu TLTK"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "journal-article — International Journal of Epidemiology"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», KIEM_RUT_BAI_TRICH_DAN_hai-long-benh-nhan-C1a-BVQY175.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 37,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1191/1740774505cn071oa",
+        "pmid:16279131"
+      ],
+      "ket_luan_toan_van": "khong_lay_duoc",
+      "loai_nguon": "bai_tap_chi",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "PubMed PMID 16279131: khớp DOI"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "bài tạp chí — Clinical trials (London, England) 2005"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», A12_RETRACTION_RECEIPT.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 38,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1002/sim.4780122404",
+        "pmid:8134732"
+      ],
+      "ket_luan_toan_van": "khong_lay_duoc",
+      "loai_nguon": "bai_tap_chi",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "PubMed PMID 8134732: khớp DOI"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "bài tạp chí — Statistics in medicine 1993"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», A12_RETRACTION_RECEIPT.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 41,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1207/s15327906mbr2603_7",
+        "pmid:26776715"
+      ],
+      "ket_luan_toan_van": "khong_lay_duoc",
+      "loai_nguon": "bai_tap_chi",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "PubMed PMID 26776715: khớp DOI"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "bài tạp chí — Multivariate behavioral research 1991"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», A12_RETRACTION_RECEIPT.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 42,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1002/nur.20199",
+        "pmid:17654487"
+      ],
+      "ket_luan_toan_van": "khong_lay_duoc",
+      "loai_nguon": "bai_tap_chi",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "PubMed PMID 17654487: khớp DOI"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "bài tạp chí — Research in nursing & health 2007"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», A12_RETRACTION_RECEIPT.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 46,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1080/10705519909540118"
+      ],
+      "ket_luan_toan_van": "khong_lay_duoc",
+      "loai_nguon": "bai_tap_chi",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "Crossref DOI 10.1080/10705519909540118: khớp tiêu đề 1.00 (cần ≥ 0,80), năm 1999 có trong câu TLTK"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "journal-article — Structural Equation Modeling: A Multidisciplinary Journal"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», KIEM_RUT_BAI_TRICH_DAN_hai-long-benh-nhan-C1a-BVQY175.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 47,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1037/0033-2909.88.3.588"
+      ],
+      "ket_luan_toan_van": "chua_thu_het",
+      "loai_nguon": "bai_tap_chi",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "Crossref DOI 10.1037/0033-2909.88.3.588: khớp tiêu đề 1.00 (cần ≥ 0,80), năm 1980 có trong câu TLTK"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "journal-article — Psychological Bulletin"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», KIEM_RUT_BAI_TRICH_DAN_hai-long-benh-nhan-C1a-BVQY175.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 48,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1177/0049124192021002005"
+      ],
+      "ket_luan_toan_van": "khong_lay_duoc",
+      "loai_nguon": "bai_tap_chi",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "Crossref DOI 10.1177/0049124192021002005: khớp tiêu đề 1.00 (cần ≥ 0,80), năm 1992 có trong câu TLTK"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "journal-article — Sociological Methods & Research"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», KIEM_RUT_BAI_TRICH_DAN_hai-long-benh-nhan-C1a-BVQY175.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 52,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1002/sim.1047",
+        "pmid:12210625"
+      ],
+      "ket_luan_toan_van": "khong_lay_duoc",
+      "loai_nguon": "bai_tap_chi",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "PubMed PMID 12210625: khớp DOI"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "bài tạp chí — Statistics in medicine 2002"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», A12_RETRACTION_RECEIPT.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 53,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1037/a0020761",
+        "pmid:20954780"
+      ],
+      "ket_luan_toan_van": "chua_thu_het",
+      "loai_nguon": "bai_tap_chi",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "PubMed PMID 20954780: khớp DOI"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "bài tạp chí — Psychological methods 2010"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», A12_RETRACTION_RECEIPT.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 54,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1146/annurev-publhealth-032315-021402",
+        "pmid:26653405"
+      ],
+      "ket_luan_toan_van": "chua_thu_het",
+      "loai_nguon": "bai_tap_chi",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "PubMed PMID 26653405: khớp DOI"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "bài tạp chí — Annual review of public health 2016"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», A12_RETRACTION_RECEIPT.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 55,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1037/1082-989x.12.1.23",
+        "pmid:17402810"
+      ],
+      "ket_luan_toan_van": "chua_thu_het",
+      "loai_nguon": "bai_tap_chi",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "PubMed PMID 17402810: khớp DOI"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "bài tạp chí — Psychological methods 2007"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», A12_RETRACTION_RECEIPT.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    },
+    {
+      "so": 58,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1002/9780470316696"
+      ],
+      "ket_luan_toan_van": "chua_thu_het",
+      "loai_nguon": "sach_hoc_thuat",
+      "tieu_chi": {
+        "dinh_danh": {
+          "dat": true,
+          "mo_ta": "Crossref DOI 10.1002/9780470316696: khớp tiêu đề 1.00 (cần ≥ 0,80), năm 1987 có trong câu TLTK"
+        },
+        "loai_nguon": {
+          "dat": true,
+          "mo_ta": "monograph — Wiley Series in Probability and Statistics"
+        },
+        "rut_bai": {
+          "dat": true,
+          "mo_ta": "không rút («ok», KIEM_RUT_BAI_TRICH_DAN_hai-long-benh-nhan-C1a-BVQY175.json, 3 ngày trước)"
+        }
+      },
+      "ngay": "2026-11-18"
+    }
+  ]
+}
