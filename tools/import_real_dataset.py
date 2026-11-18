@@ -358,7 +358,7 @@ def _update_study_meta(out_dir: Path, manifest: Dict[str, Any], manifest_path: P
         "note": "Dữ liệu thật đã nhập nhưng CHƯA khóa DB; không phân tích chính cho tới khi có lock memo.",
     }
     (out_dir / "study_meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+        json.dumps(meta, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
 def import_dataset(study: str, data_path: Path, *,

@@ -1391,7 +1391,7 @@ def evaluate_study(
         if isinstance(real_lock, dict):
             real_lock["g5_quality_status"] = status
         (out_dir / "study_meta.json").write_text(
-            json.dumps(meta_for_write, ensure_ascii=False, indent=2),
+            json.dumps(meta_for_write, ensure_ascii=False, indent=2) + "\n",
             encoding="utf-8", newline="\n"
         )
 

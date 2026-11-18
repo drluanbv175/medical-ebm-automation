@@ -173,7 +173,7 @@ def _update_meta(out_dir: Path, report: Dict[str, Any], report_path: Path) -> No
         "note": "Báo cáo không lưu giá trị PII; chỉ lưu số lượng/cột/mẫu xử lý.",
     }
     (out_dir / "study_meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+        json.dumps(meta, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
 def deidentify_dataset(study: str, data_path: Path, *,

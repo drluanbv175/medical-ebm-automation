@@ -459,7 +459,7 @@ def _update_meta(out_dir: Path, manifest: Dict[str, Any],
         if isinstance(intake, dict):
             intake["db_locked"] = True
     (out_dir / "study_meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+        json.dumps(meta, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
 
 
 def _ghi_checkpoint_khoa(out_dir: Path, study_id: str, manifest: Dict[str, Any]) -> None:
