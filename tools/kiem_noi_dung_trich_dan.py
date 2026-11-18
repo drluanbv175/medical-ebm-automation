@@ -180,9 +180,17 @@ def so_lieu(doan: str) -> List[str]:
 
 
 def so_co_trong(so: str, van: str) -> bool:
-    v = (van or "").replace("\u2008", " ").replace("\u00b7", ".")
+    """Số `so` (đã chuẩn «24.9») có trong văn bản nguồn? Nguồn «24,9»/«24·9» chuẩn về «24.9».
+
+    18/11/2026 (thí điểm A12 trên C1a): «1.298 người bệnh» — dấu chấm phân cách NGHÌN kiểu Việt — bị so như số thập
+    phân 1.298 trong khi abstract ghi «1298»/«4,372» ⇒ cờ «số không thấy» giả. Số dạng «d.ddd» (1–3 chữ số, chấm, đúng
+    3 chữ số) nhập nhằng nghìn/thập phân ⇒ nhận cả dạng liền «1298» và dạng cách «1 298»."""
+    v = (van or "").replace("\u2008", " ").replace("\u202f", " ").replace("\u00a0", " ").replace("\u00b7", ".")
     v = re.sub(r"(?<=\d),(?=\d)", ".", v)
-    return re.search(rf"(?<![\d.]){re.escape(so)}(?![\d])", v) is not None
+    cac = [so]
+    if re.fullmatch(r"\d{1,3}\.\d{3}", so):
+        cac += [so.replace(".", ""), so.replace(".", " ")]
+    return any(re.search(rf"(?<![\d.]){re.escape(x)}(?![\d])", v) is not None for x in cac)
 
 
 HE_THONG = (
