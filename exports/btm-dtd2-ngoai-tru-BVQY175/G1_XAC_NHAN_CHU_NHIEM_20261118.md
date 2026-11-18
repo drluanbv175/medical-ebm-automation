@@ -19,3 +19,14 @@
   Các cờ `design_confirmed`, `protocol_core_confirmed`, `bias_controls_confirmed`, `feasibility_confirmed`,
   `evidence_review_confirmed` giữ nguyên `true`.
 - **Lưu ý:** sửa bất kỳ nội dung nào trong `gate_params.G1` sẽ làm đổi dấu vân tay, và xác nhận này hết hiệu lực.
+
+## Chốt lại lần 2 (18/11/2026) — thêm mục tiêu chung (B5)
+
+- **Câu hỏi đã trình:** B5 của phiếu đề xuất sau diễn tập — mục tiêu chung (`gate_params.G1.aim`). Mô tả phương án A ghi
+  rõ: ghi câu vào G1.aim và đề cương 2.1, **chốt lại G1**.
+- **Lựa chọn của bác sĩ (nguyên văn phương án đã chọn):** «A: dùng câu dựng từ tên đề tài».
+- **Nội dung thay đổi so với lần chốt trước (dấu c9449332e89c9572):** máy so từng khoá — chỉ thêm khoá `aim` = «Đánh giá
+  thực trạng phát hiện bệnh thận mạn và điều trị bảo vệ thận ở người bệnh đái tháo đường típ 2 điều trị ngoại trú tại
+  Bệnh viện Quân y 175 năm 2026 theo KDIGO 2024 và ADA 2026.»
+- **Đã ghi vào `gate_params.G1`:** `reviewed_at = "2026-11-18T07:28:26+07:00"`; `dau_van_tay_chot = "35669ac14fd0ecd1"` (khớp vân tay sống);
+  `reviewed_by_role` và các cờ confirmed giữ nguyên.

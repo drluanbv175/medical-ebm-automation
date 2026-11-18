@@ -259,9 +259,10 @@
       "protocol_core_confirmed": true,
       "feasibility_confirmed": true,
       "evidence_review_confirmed": true,
+      "aim": "Đánh giá thực trạng phát hiện bệnh thận mạn và điều trị bảo vệ thận ở người bệnh đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 năm 2026 theo KDIGO 2024 và ADA 2026.",
       "reviewed_by_role": "chủ nhiệm",
-      "reviewed_at": "2026-11-18T07:14:52+07:00",
-      "dau_van_tay_chot": "c9449332e89c9572",
+      "reviewed_at": "2026-11-18T07:28:26+07:00",
+      "dau_van_tay_chot": "35669ac14fd0ecd1",
       "sampling_design": [
         "ngau_nhien_don"
       ],
