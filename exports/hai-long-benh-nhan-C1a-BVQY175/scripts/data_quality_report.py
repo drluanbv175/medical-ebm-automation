@@ -16,6 +16,9 @@ from pathlib import Path
 from datetime import datetime
 
 
+# Ma ban ghi = truong DAU cua tu dien (REDCap) — record_id hoac khoa da duyet (vd study_id)
+ID_COL = 'record_id'
+
 RANGE_CHECKS = [
     ("tuoi", 18.0, 120.0),
     ("kyvong_thoigiancho", 0.0, 600.0),
@@ -43,12 +46,12 @@ def generate_report(df: pd.DataFrame, study_name: str, design: str, out_path: Pa
         "",
     ]
 
-    if "record_id" in df.columns:
-        n_dup = int(df["record_id"].duplicated(keep=False).sum())
+    if ID_COL in df.columns:
+        n_dup = int(df[ID_COL].duplicated(keep=False).sum())
         suffix = "  CANH BAO: CAN XU LY" if n_dup > 0 else "  OK"
-        lines.append(f"TRUNG record_id: {n_dup} dong{suffix}")
+        lines.append(f"TRUNG {ID_COL}: {n_dup} dong{suffix}")
     else:
-        lines.append("TRUNG record_id: khong tim thay cot record_id")
+        lines.append(f"TRUNG {ID_COL}: khong tim thay cot {ID_COL}")
 
     lines.append("")
     lines.append("% DU LIEU DAY DU (Completeness) theo bien:")
@@ -80,8 +83,8 @@ def generate_report(df: pd.DataFrame, study_name: str, design: str, out_path: Pa
 
     lines += ["", "=" * 60, "KET LUAN:"]
     issues = []
-    if "record_id" in df.columns and df["record_id"].duplicated(keep=False).sum() > 0:
-        issues.append("Co record_id trung — can xu ly truoc khi phan tich")
+    if ID_COL in df.columns and df[ID_COL].duplicated(keep=False).sum() > 0:
+        issues.append(f"Co {ID_COL} trung — can xu ly truoc khi phan tich")
     high_missing = missing[missing > 30]
     if not high_missing.empty:
         issues.append(f"{len(high_missing)} bien thieu >30%: {list(high_missing.index)}")
@@ -100,8 +103,7 @@ def generate_report(df: pd.DataFrame, study_name: str, design: str, out_path: Pa
         "=" * 60,
     ]
     report_text = "\n".join(lines)
-    out_path.write_text(report_text, encoding="utf-8", newline="
-")
+    out_path.write_text(report_text, encoding="utf-8", newline="\n")
     print(report_text)
     print(f"\n-> Da luu bao cao: {out_path}")
 

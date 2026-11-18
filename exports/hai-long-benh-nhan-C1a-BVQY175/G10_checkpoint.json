@@ -1,7 +1,7 @@
 {
   "gate": "G10",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "generated_at": "2026-11-17T16:06:07.607696",
+  "generated_at": "2026-11-19T04:11:15.292732",
   "gate_status": "BLOCKED — chờ input đời-thực",
   "quality_contract_version": "G10-2026.1",
   "guardrail": {
@@ -56,7 +56,7 @@
   },
   "real_world_signals": {
     "irb_approved": false,
-    "sap_locked": false,
+    "sap_locked": true,
     "db_locked": false,
     "results_final": false,
     "peer_review_approved": false,
@@ -76,7 +76,7 @@
   "skill_gate_states": {
     "G0": "DỰ THẢO (ĐẠT guardrail)",
     "G1": "DỰ THẢO (ĐẠT guardrail)",
-    "G2": "DỰ THẢO (ĐẠT guardrail)",
+    "G2": "KHOÁ",
     "G3": "DỰ THẢO (ĐẠT guardrail)",
     "G4": "DỰ THẢO (ĐẠT guardrail)",
     "G5": "DỰ THẢO (ĐẠT guardrail)",
@@ -99,7 +99,7 @@
     {
       "moc": "Sẵn sàng phân tích chính",
       "dat": "CHƯA ĐẠT",
-      "chi_tiet": "BẮT BUỘC SAP đã ký khoá (sap_locked) VÀ dữ liệu đã khoá thật (db_locked) — khớp SKILL.md §Kết luận | Chặn bởi: thiếu SAP đã ký khoá; thiếu dữ liệu đã khoá thật; cổng skill G6 (Dữ liệu): THIẾU"
+      "chi_tiet": "BẮT BUỘC SAP đã ký khoá (sap_locked) VÀ dữ liệu đã khoá thật (db_locked) — khớp SKILL.md §Kết luận | Chặn bởi: thiếu dữ liệu đã khoá thật; cổng skill G6 (Dữ liệu): THIẾU"
     },
     {
       "moc": "Sẵn sàng nộp công bố/nghiệm thu",
@@ -113,17 +113,17 @@
     "study_spec_json": "exports/hai-long-benh-nhan-C1a-BVQY175/STUDY_SPEC_hai-long-benh-nhan-C1a-BVQY175.json",
     "decision_package_md": "exports/hai-long-benh-nhan-C1a-BVQY175/GOI_QUYET_DINH_hai-long-benh-nhan-C1a-BVQY175.md",
     "release_readiness_json": "exports/hai-long-benh-nhan-C1a-BVQY175/G10_RELEASE_READINESS.json",
-    "de_cuong_md_sha256": "b1b45e53bc8eb80a6551adb35451ba4ba1680624ac67228508af5ba8771711ef",
-    "de_cuong_docx_sha256": "9880626e83974d9efe55577b7316d2e32147c151f15cefbaf49f2caefce0b7aa"
+    "de_cuong_md_sha256": "a26727465e6e94571d4cf6a2bfdbf28bae4cd74089bd732d53644734efba4268",
+    "de_cuong_docx_sha256": "5d2b272a4795de6c0f25807451f43f00d1ff9efc34aa48c99801bce3792721ce"
   },
   "quality_gate": {
-    "status": "DRAFT_ASSEMBLED_NEEDS_COMPLETION",
+    "status": "READY_FOR_G10_PI_RELEASE_APPROVAL",
     "report": "G10_QUALITY_REPORT.json",
-    "package_sha256": "43e0856d723e6d9a7810c6c373c9e402d56214ebdbe073f4ded9ebc39ad9d3a1",
+    "package_sha256": "c06831b5c8ccb14264b5ff4f63d04a538215b28e93a198822d73f4774b8b004f",
     "human_approval_valid": false,
     "external_submission_state": "NOT_PERFORMED_OR_PROVEN_BY_G10"
   },
-  "release_package_ready": false,
+  "release_package_ready": true,
   "release_package_locked": false,
   "n_de_cuong_sections": 18,
   "n_protocol_core_items": 24,
@@ -133,15 +133,15 @@
     "files": {
       "final_protocol_md": {
         "path": "DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "b1b45e53bc8eb80a6551adb35451ba4ba1680624ac67228508af5ba8771711ef"
+        "sha256": "a26727465e6e94571d4cf6a2bfdbf28bae4cd74089bd732d53644734efba4268"
       },
       "final_protocol_docx": {
         "path": "DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.docx",
-        "sha256": "9880626e83974d9efe55577b7316d2e32147c151f15cefbaf49f2caefce0b7aa"
+        "sha256": "5d2b272a4795de6c0f25807451f43f00d1ff9efc34aa48c99801bce3792721ce"
       },
       "study_spec": {
         "path": "STUDY_SPEC_hai-long-benh-nhan-C1a-BVQY175.json",
-        "sha256": "c2a6cc1f34b9ffadc6f7b13c67571a0a0a3f7fe42d9a8bfc4a5e3c3305a6289b"
+        "sha256": "bcafd0d72b83d6a1d797b1d2980ee955a840e0ebe12461e808b3fb99098a42b4"
       },
       "decision_package": {
         "path": "GOI_QUYET_DINH_hai-long-benh-nhan-C1a-BVQY175.md",
@@ -169,7 +169,7 @@
       },
       "g4_sap_final": {
         "path": "G4_A5_SAP_FINAL_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "4b9010eee502ffaafd1e15ab1f16a5a81c380ccc2e1181516291ff5c1221daac"
+        "sha256": "d854c16f53141e29a5c28380d1f11fcdf9191ab0b3f3a55cfefc281791ecae6c"
       },
       "checkpoint_g0": {
         "path": "G0_checkpoint.json",
@@ -189,7 +189,7 @@
       },
       "checkpoint_g4": {
         "path": "G4_checkpoint.json",
-        "sha256": "33ccde79ee80db02cc15c057e774f27b8454a09218a99540814c7520d32747be"
+        "sha256": "c32d0ef5e60347191bb57e661ef3f01aa88501885144617f74236f3f662b3724"
       },
       "g1_protocol_design": {
         "path": "G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
@@ -205,14 +205,14 @@
       },
       "irb_protocol_md": {
         "path": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "963e1bdd7fcc64c8b15d0b49b01e5be6041119c114160ab8d79135c69f80a445"
+        "sha256": "191f86b6c06d11248fe0c6916e1229f7d86f7384fafee60f5b2e25938ab0c080"
       },
       "irb_protocol_docx": {
         "path": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.docx",
-        "sha256": "566c9abe201a453ac25add87e099bc85db5af69fb7f81238eb23d4823b2c2bfe"
+        "sha256": "0bccd139d381fa1083fffa4856748288dd1c09081564d1a0e0946b470f0169bb"
       }
     },
-    "package_sha256": "43e0856d723e6d9a7810c6c373c9e402d56214ebdbe073f4ded9ebc39ad9d3a1"
+    "package_sha256": "c06831b5c8ccb14264b5ff4f63d04a538215b28e93a198822d73f4774b8b004f"
   },
   "needs_input": {
     "blocked": true,

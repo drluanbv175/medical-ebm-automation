@@ -3,7 +3,7 @@
   "study": "hai-long-benh-nhan-C1a-BVQY175",
   "quality_contract_version": "G5-2026.2",
   "status": "DRAFT_READY_NEEDS_REAL_DATA",
-  "generated_at": "2026-10-24T03:17:22.268853+00:00",
+  "generated_at": "2026-11-18T21:09:43.982132+00:00",
   "automatic_criteria": [
     {
       "id": "G5-AUTO-00",
@@ -102,6 +102,27 @@
       "status": "PASS",
       "evidence": "không áp dụng (không phải định tính hoặc chưa có dữ liệu)",
       "action": "Lập TRANSCRIPT_manifest.json cho mọi transcript_id (tệp đã khử định danh, chỉ đọc, sha256, reviewer_ref không PII) rồi khoá lại."
+    },
+    {
+      "id": "G5-AUTO-11",
+      "label": "Từ điển nhập liệu ↔ đề cương/bộ biến đã duyệt ↔ phiếu thu thập đồng bộ (máy đo, không chỉ người xác nhận)",
+      "status": "PASS",
+      "evidence": "Biến ↔ đề cương/bộ biến đã duyệt: khop — 79 biến của DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md, G3_BO_BIEN_SO_hai-long-benh-nhan-C1a-BVQY175.md khớp bản máy; Công cụ thu thập ↔ từ điển nhập liệu: khop — 22 câu chọn đáp án của phiếu khớp mã từ điển (kể cả ô KSD)",
+      "action": "Chạy python3 tools/doi_chieu_bien_de_cuong.py --study <mã> và python3 tools/nhat_quan_xuyen_cong.py --study <mã>; sửa bản máy theo đề cương/bộ biến đã duyệt (hoặc chủ nhiệm duyệt sửa đề cương/bộ biến trước)."
+    },
+    {
+      "id": "G5-AUTO-12",
+      "label": "Từ điển G5 dựng từ bộ biến riêng và phủ đủ ma trận mục tiêu–biến (không từ bộ mẫu chung)",
+      "status": "PASS",
+      "evidence": "từ điển từ bộ biến riêng; ma trận ĐẠT (37 dòng, 2 mục tiêu) và mọi biến ma trận có trong từ điển",
+      "action": "agent bien-so-nghien-cuu hoàn tất _bo-bien-rieng.csv + _ma-tran-muc-tieu-bien.csv; kiểm python tools/ma_tran_muc_tieu_bien.py kiem --study hai-long-benh-nhan-C1a-BVQY175; rồi chạy lại run_g5_auto.py (trước khi nạp dữ liệu)"
+    },
+    {
+      "id": "G5-AUTO-13",
+      "label": "Phiếu nộp Hội đồng Đạo đức (G2) khớp các câu hỏi dùng để nhập liệu",
+      "status": "PASS",
+      "evidence": "9 mã câu hỏi có trong G2_A3_ETHICS_PACKAGE_hai-long-benh-nhan-C1a-BVQY175.md, DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "action": "Đính phiếu/công cụ đúng bản nộp Hội đồng vào hồ sơ G2 hoặc khai đường dẫn ở gate_params.G2.phieu_nop_hoi_dong; câu hỏi thêm/sửa sau khi Hội đồng duyệt ⇒ sửa đổi đề cương trình lại."
     },
     {
       "id": "G5-HUMAN-01",
