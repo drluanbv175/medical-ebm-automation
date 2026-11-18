@@ -2,7 +2,7 @@
 
 - Hợp đồng: `G5-2026.2`
 - Trạng thái: **DRAFT_READY_NEEDS_REAL_DATA**
-- Sinh lúc: 2026-10-24T03:17:22.268853+00:00
+- Sinh lúc: 2026-11-18T21:09:43.982132+00:00
 - Vai đã ký G5: chưa có
 
 ## Tiêu chí tự động
@@ -23,6 +23,9 @@
 | G5-AUTO-08 | Query log tồn tại, mọi query đã đóng và hash khớp | REVIEW | rows=0; open=0; issues=['missing_query_log']; hash_match=True; giai_quyet_khop=True |
 | G5-AUTO-09 | Manifest khóa liên kết toàn bộ hồ sơ và dataset chỉ đọc | REVIEW | status=None; checksum=True; readonly=False; reviewer_group=None; confirmations=False; checkpoint_hashes=False |
 | G5-AUTO-10 | Định tính: bản gỡ băng có TRANSCRIPT_manifest (băm, khử định danh, chỉ đọc, không còn mẫu PII) | PASS | không áp dụng (không phải định tính hoặc chưa có dữ liệu) |
+| G5-AUTO-11 | Từ điển nhập liệu ↔ đề cương/bộ biến đã duyệt ↔ phiếu thu thập đồng bộ (máy đo, không chỉ người xác nhận) | PASS | Biến ↔ đề cương/bộ biến đã duyệt: khop — 79 biến của DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md, G3_BO_BIEN_SO_hai-long-benh-nhan-C1a-BVQY175.md khớp bản máy; Công cụ thu thập ↔ từ điển nhập liệu: khop — 22 câu chọn đáp án của phiếu khớp mã từ điển (kể cả ô KSD) |
+| G5-AUTO-12 | Từ điển G5 dựng từ bộ biến riêng và phủ đủ ma trận mục tiêu–biến (không từ bộ mẫu chung) | PASS | từ điển từ bộ biến riêng; ma trận ĐẠT (37 dòng, 2 mục tiêu) và mọi biến ma trận có trong từ điển |
+| G5-AUTO-13 | Phiếu nộp Hội đồng Đạo đức (G2) khớp các câu hỏi dùng để nhập liệu | PASS | 9 mã câu hỏi có trong G2_A3_ETHICS_PACKAGE_hai-long-benh-nhan-C1a-BVQY175.md, DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md |
 | G5-HUMAN-01 | Người quản trị dữ liệu/PI phê duyệt G5 gắn với hash checkpoint | REVIEW | approval_ledger_G5=False |
 
 ## Hành động còn lại

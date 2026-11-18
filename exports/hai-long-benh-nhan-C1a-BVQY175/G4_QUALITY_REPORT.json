@@ -81,7 +81,7 @@
     },
     {
       "id": "G4-AUTO-10",
-      "label": "Mục bắt buộc có mặt và không còn ô trống (§1/§2/§4/§5/§9/§10; RCT thêm §13/§14/§15)",
+      "label": "Mục bắt buộc có mặt và không còn ô trống (§1/§2/§4/§5/§9/§10; RCT thêm §13/§14/§15; đánh giá kinh tế thêm §16)",
       "status": "PASS",
       "evidence": "không còn ô trống ở §1/§2/§4/§5/§9/§10",
       "action": "Điền đủ (và khôi phục nếu đã xoá) §1/§2/§4/§5/§9/§10, RCT thêm §13/§14/§15 — approve_gate.py cũng từ chối ký khi mục bắt buộc còn ô trống hoặc vắng."
@@ -139,10 +139,10 @@
     },
     {
       "id": "G4-HUMAN-03",
-      "label": "Người ký G4 khác người ký các cổng khác (chỉ dấu độc lập)",
+      "label": "Thống kê viên ký G4 khác người ký các vai khác (chỉ dấu độc lập)",
       "status": "PASS",
-      "evidence": "reviewer_ref của G4 ('TKV-C1A-01') khác mọi cổng còn lại",
-      "action": "Cân nhắc để thống kê viên (không phải người đã ký G2/G8/G9) ký G4."
+      "evidence": "reviewer_ref của thống kê viên ký G4 ('TKV-C1A-01') khác mọi bản ký vai khác (1 bản ký: G10/PI)",
+      "action": "Cân nhắc để thống kê viên (không phải người đã ký vai PI/IRB/quản lý dữ liệu/phản biện) ký G4 bằng reviewer_ref riêng."
     },
     {
       "id": "G4-HUMAN-04",
@@ -177,7 +177,7 @@
       "label": "Xác nhận G4 của thống kê viên/PI gắn đúng nội dung SAP hiện tại (dấu vân tay)",
       "status": "PASS",
       "evidence": "xác nhận gắn đúng nội dung hiện tại",
-      "action": "Sau khi đọc lại SAP, ghi gate_params.G4.dau_van_tay_chot=\"837e9ceb0b89d3a9\" (dấu nội dung PHẦN 3 hiện tại) cùng reviewed_at dạng ISO-8601; sửa SAP sau đó phải xác nhận lại."
+      "action": "Sau khi đọc lại SAP, ghi gate_params.G4.dau_van_tay_chot=\"228e0cc82d488a0b\" (dấu nội dung PHẦN 3 hiện tại) cùng reviewed_at dạng ISO-8601; sửa SAP sau đó phải xác nhận lại."
     }
   ],
   "pending_actions": [],

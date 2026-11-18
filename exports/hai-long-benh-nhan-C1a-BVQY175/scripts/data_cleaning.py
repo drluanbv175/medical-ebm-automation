@@ -19,6 +19,9 @@ from datetime import datetime
 # Danh sach bien theo CRF dictionary (sinh tu dong)
 EXPECTED_COLUMNS = ['record_id', 'mode_tra_loi', 'tuoi', 'gioitinh', 'trinhdohocvan', 'nghenghiep', 'nghenghiepkhac', 'tinhtranghonnhan', 'noicutru', 'khoangcachnhabv', 'thunhaphogd', 'cobhyt', 'lydokham', 'lydokhamkhac', 'solankham12thang', 'phuongtiendichuyen', 'phuongtiendichuyenkhac', 'nguonthongtinbv', 'nguonthongtinbvkhac', 'kyvong_thoigiancho', 'xacnhan_kyvong', 'lydo_chon_theoyeucau', 'lydo_chon_khac', 'co_yeucau_bacsi', 'duoc_dung_bacsi', 'kenh_datlich', 'co_goikham', 'rieng_tu', 'suckhoe_tudanhgia', 'hoan_vi_chiphi', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'b1', 'b2', 'b3', 'b4', 'b5', 'b6', 'b7', 'b8', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'd1', 'd2', 'd3', 'e1', 'e2', 'f1', 'g1', 'g2', 'g3', 'ykiendonggop', 'thoigian_cho', 'khunggio_kham', 'ngay_trong_tuan', 'co_cls', 'so_quay_buoc', 'ma_ban_kham', 'trang_thai_ghep_his']
 
+# Ma ban ghi = truong DAU cua tu dien (REDCap) — record_id hoac khoa da duyet (vd study_id)
+ID_COL = 'record_id'
+
 # Bien so can ep kieu numeric
 NUMERIC_COLS = ['tuoi', 'kyvong_thoigiancho', 'thoigian_cho', 'so_quay_buoc']
 
@@ -105,12 +108,12 @@ def check_logic(df: pd.DataFrame) -> None:
 
 
 def check_duplicates(df: pd.DataFrame) -> None:
-    """Phat hien record_id trung."""
-    if "record_id" in df.columns:
-        dups = df["record_id"].duplicated(keep=False)
+    """Phat hien ma ban ghi (ID_COL) trung."""
+    if ID_COL in df.columns:
+        dups = df[ID_COL].duplicated(keep=False)
         if dups.sum() > 0:
-            dup_ids = df.loc[dups, "record_id"].unique()
-            print(f"[ERROR] record_id TRUNG: {dup_ids}")
+            dup_ids = df.loc[dups, ID_COL].unique()
+            print(f"[ERROR] {ID_COL} TRUNG: {dup_ids}")
 
 
 def save_clean(df: pd.DataFrame, out_dir: Path) -> None:
@@ -123,7 +126,7 @@ def save_clean(df: pd.DataFrame, out_dir: Path) -> None:
     print(f"[SAVE] Dataset lam sach -> {out_path} ({len(df_clean)} dong)")
     if flag_cols:
         flag_path = out_dir / "df_flags.csv"
-        df[["record_id"] + flag_cols].to_csv(flag_path, index=False, encoding="utf-8-sig")
+        df[[ID_COL] + flag_cols].to_csv(flag_path, index=False, encoding="utf-8-sig")
         print(f"[SAVE] Co kiem tra -> {flag_path}")
 
 

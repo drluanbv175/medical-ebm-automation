@@ -1,7 +1,7 @@
 # A6 — KẾ HOẠCH QUẢN LÝ DỮ LIỆU (DRAFT)
 **Đề tài:** Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175  
-**Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Ngày:** 2026-10-24 | **Thiết kế:** cross_sectional | **N dự kiến:** 1000 (cỡ mẫu kế hoạch, G3 confirmed_n; tối thiểu theo thống kê 808)  
-**Trạng thái:** DRAFT — CHỜ BÁC SĨ ĐIỀN CÁC [CẦN...] VÀ XÁC NHẬN
+**Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Ngày:** 2026-11-19 | **Thiết kế:** cross_sectional | **N dự kiến:** 1000 (cỡ mẫu kế hoạch, G3 confirmed_n; tối thiểu theo thống kê 630)  
+**Trạng thái:** DRAFT — CHỜ BÁC SĨ ĐIỀN CÁC Ô CÒN TRỐNG VÀ XÁC NHẬN
 
 > **BẢO MẬT:** KHÔNG đưa PII vào pipeline. Chỉ xử lý bản đã khử định danh trong môi trường cục bộ được đơn vị cho phép; dữ liệu không được gửi tới mô hình AI.
 > Tham chiếu: ICH E6(R3) Data Governance; FDA Electronic Records 2024; CDISC CDASH; FAIR Principles (PMID: 26978244; DOI: 10.1038/sdata.2016.18).
@@ -12,7 +12,7 @@
 
 ## PHẦN 1 — CẤU TRÚC CRF (Case Report Form)
 
-Thiết kế: **cross_sectional** | Chuyên khoa: **BỘ BIẾN RIÊNG của đề tài (_bo-bien-rieng.csv — không dùng bundle)** | Tổng biến CRF: **71 dòng** | N dự kiến: **1000 (cỡ mẫu kế hoạch, G3 confirmed_n; tối thiểu theo thống kê 808)**
+Thiết kế: **cross_sectional** | Chuyên khoa: **BỘ BIẾN RIÊNG của đề tài (_bo-bien-rieng.csv — không dùng bundle)** | Tổng biến CRF: **71 dòng** | N dự kiến: **1000 (cỡ mẫu kế hoạch, G3 confirmed_n; tối thiểu theo thống kê 630)**
 
 ### Nhóm: phieu_khao_sat (64 biến)
 
@@ -237,7 +237,7 @@ Dựng từ CHÍNH từ điển REDCap của đề tài — đúng các ràng bu
                    │
   ┌────────────────▼─────────────────────────┐
   │  TUYỂN VÀO (Enrolled):                   │
-  │  N = 1000 (cỡ mẫu kế hoạch, tối thiểu theo thống kê 808)│
+  │  N = 1000 (cỡ mẫu kế hoạch, tối thiểu theo thống kê 630)│
   └────────────────┬─────────────────────────┘
                    │
         ┌──────────┴──────────────────┐
@@ -259,7 +259,7 @@ Dựng từ CHÍNH từ điển REDCap của đề tài — đúng các ràng bu
   ┌────────────────▼─────────────────────────┐
   │  PHÂN TÍCH (Analysed):                   │
   │  N = 1000 → [CẦN điều chỉnh thực tế]│
-  │  Phân tích chính: N = [CẦN — sau loại trừ] (cần tối thiểu 686 theo G3)│
+  │  Phân tích chính: N = [CẦN — sau loại trừ] (cần tối thiểu 535 theo G3)│
   └──────────────────────────────────────────┘
 
   Ghi chú: Điền N=[CẦN] SAU khi thu thập dữ liệu thật.
@@ -363,7 +363,7 @@ Thực hiện TRƯỚC khi chạy phân tích chính (G6):
 
 ## PHẦN 9 — TIÊU CHÍ QUA CỔNG G5
 
-- [ ] **[CẦN BÁC SĨ]** Điền tất cả [CẦN...] trong CRF (biến phơi nhiễm/kết cục cụ thể)
+- [ ] **[CẦN BÁC SĨ]** Điền tất cả ô còn trống trong CRF (biến phơi nhiễm/kết cục cụ thể)
 - [ ] **[CẦN BÁC SĨ]** Import REDCap dictionary CSV vào REDCap cơ sở
 - [ ] **[CẦN BÁC SĨ + ĐỘI NC]** Thu thập dữ liệu thật (chỉ sau G2 = LOCKED)
 - [ ] **[CẦN BÁC SĨ]** Spot-check 10% phiếu CRF

@@ -17,7 +17,7 @@
 | G4-AUTO-07 | §7 phân tích nhóm nhỏ/chọn mẫu đã điền (chống HARKing) | PASS | §7 đã điền |
 | G4-AUTO-08 | §10 phần mềm+seed cụ thể (không phải placeholder bị thay bằng 'OK') | PASS | §10 có tên+phiên bản phần mềm và seed số nguyên cụ thể |
 | G4-AUTO-09 | Margin(Δ) cho NI/equivalence có giá trị và có nguồn biện minh | PASS | hypothesis_type=descriptive_precision — không cần margin |
-| G4-AUTO-10 | Mục bắt buộc có mặt và không còn ô trống (§1/§2/§4/§5/§9/§10; RCT thêm §13/§14/§15) | PASS | không còn ô trống ở §1/§2/§4/§5/§9/§10 |
+| G4-AUTO-10 | Mục bắt buộc có mặt và không còn ô trống (§1/§2/§4/§5/§9/§10; RCT thêm §13/§14/§15; đánh giá kinh tế thêm §16) | PASS | không còn ô trống ở §1/§2/§4/§5/§9/§10 |
 | G4-AUTO-11 | Kết cục chính §2 khớp câu hỏi nghiên cứu đã chốt (G0/G1) | PASS | kết cục chính §2 chứa 'G1 — mức hài lòng chung, hỏi trực tiếp (biến SHLNBChung_Truc' đã chốt ở G0/G1 |
 | G4-AUTO-12 | G3 (cỡ mẫu) chấm sống đã chốt PASS_G3_CONFIRMED — không bị chặn | PASS | G3 chấm sống=PASS_G3_CONFIRMED |
 | G4-AUTO-13 | Chứng chỉ khoá SAP (PHẦN 5) đã điền đủ và «KQ chính» khớp §2 | PASS | chứng chỉ khoá đã điền, «KQ chính» cùng kết cục với §2 |
@@ -29,7 +29,7 @@
 |---|---|---|---|
 | G4-HUMAN-01 | Sổ cái có phê duyệt G4 hợp lệ đúng vai trò thống kê/PI | PASS | ledger_approved=True |
 | G4-HUMAN-02 | Mức bảo đảm của khóa ký được nêu đúng (không nói quá) | PASS | ký bằng khóa RIÊNG của nhóm thống kê/PI (scope=role) — có dấu vết tách bạch vận hành, NHƯNG vẫn không chứng minh được người ký khác chủ nhiệm |
-| G4-HUMAN-03 | Người ký G4 khác người ký các cổng khác (chỉ dấu độc lập) | PASS | reviewer_ref của G4 ('TKV-C1A-01') khác mọi cổng còn lại |
+| G4-HUMAN-03 | Thống kê viên ký G4 khác người ký các vai khác (chỉ dấu độc lập) | PASS | reviewer_ref của thống kê viên ký G4 ('TKV-C1A-01') khác mọi bản ký vai khác (1 bản ký: G10/PI) |
 | G4-HUMAN-04 | Bác sĩ/thống kê viên xác nhận đã rà EPV/VIF ở §5 | PASS | gate_params.G4.epv_vif_reviewed=True |
 | G4-HUMAN-05 | Bác sĩ/thống kê viên xác nhận cơ chế dữ liệu thiếu ở §6 | PASS | gate_params.G4.missing_data_mechanism_confirmed=True |
 | G4-HUMAN-06 | Subgroup/đa so sánh xác nhận TIỀN ĐỊNH trước khi khóa dữ liệu (ngày ISO, ký trước khoá hoặc có amendment) | PASS | subgroup đã xác nhận tiền định, mốc thời gian hợp lý (hoặc chưa có data_lock_date để đối chiếu) |
