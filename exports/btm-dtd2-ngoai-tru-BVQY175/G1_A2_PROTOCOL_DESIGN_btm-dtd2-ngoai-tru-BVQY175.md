@@ -1,5 +1,5 @@
 # A2 — THIẾT KẾ NGHIÊN CỨU & SAP SKELETON | btm-dtd2-ngoai-tru-BVQY175
-> Tạo tự động: 2026-11-15 14:43 | Rule-based; có ứng viên effect size truy nguyên từ PubMed
+> Tạo tự động: 2026-11-18 16:20 | Rule-based; có ứng viên effect size truy nguyên từ PubMed
 > [BẢN NHÁP TỰ ĐỘNG] — Bác sĩ xác nhận thiết kế chọn + điền [CẦN...] trước khi tiến G2/G4
 > Cần bác sĩ kiểm chứng.
 
@@ -15,7 +15,7 @@
 - Mã đề tài: `btm-dtd2-ngoai-tru-BVQY175`
 - Tên đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026
 - Phiên bản protocol: 1.0
-- Ngày tạo/cập nhật: 2026-11-15 14:43
+- Ngày tạo/cập nhật: 2026-11-18 16:20
 - Chủ nhiệm, nhà phương pháp, thống kê viên, quản lý dữ liệu: Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và SAP, ký hồ sơ đạo đức, lập khung mẫu và trích hồ sơ trên eHospital, giữ bảng nối mã, chịu trách nhiệm chung. Nhà phương pháp/thống kê: cỡ mẫu (G3), viết và khoá SAP (G4), phân tích (G6). Quản lý dữ liệu: codebook và phiếu thu thập, nhập liệu, kiểm tra chất lượng, khoá cơ sở dữ liệu (G5), lưu trữ tệp đã mã hoá. Người trích lại: trích lại độc lập 10% hồ sơ kiểm chứng. Người đảm nhận các vai ngoài chủ nhiệm do chủ nhiệm phân công (bảng RACI ở A13); một người có thể kiêm nhiều vai, riêng người trích lại phải khác chủ nhiệm.
 - Tài trợ, bảo hiểm, xung đột lợi ích và vai trò nhà tài trợ: [CẦN HOÀN THIỆN Ở G2/G9]
 - Chuẩn đề cương: Protocol định trước; đăng ký nếu cần minh bạch

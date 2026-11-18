@@ -128,6 +128,13 @@
       "action": "Nâng N, hoặc ghi rõ chấp nhận giảm lực kèm hệ quả; ghi confirmed_n_method cho thiết kế không dùng power."
     },
     {
+      "id": "G3-AUTO-19",
+      "label": "Ma trận mục tiêu → biến → câu hỏi → phân tích SAP đủ, khớp bộ biến và đúng kiểu",
+      "status": "PASS",
+      "evidence": "22 dòng phủ 3 mục tiêu; 0 cảnh báo",
+      "action": "Dựng khung: python tools/ma_tran_muc_tieu_bien.py mau --study btm-dtd2-ngoai-tru-BVQY175 --ghi; agent bien-so-nghien-cuu điền biến/kiểu/câu hỏi/mục SAP cho TỪNG yếu tố mục tiêu nêu; kiểm: python tools/ma_tran_muc_tieu_bien.py kiem --study btm-dtd2-ngoai-tru-BVQY175"
+    },
+    {
       "id": "G3-AUTO-14",
       "label": "Tham số đã ghim đủ để chạy lại ra cùng một N",
       "status": "PASS",
@@ -197,8 +204,8 @@
   "dau_van_tay_hien_tai": "e86410f1846a5b43",
   "artifact_manifest": {
     "A4_SAMPLE_SIZE": {
-      "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G3_A4_SAMPLE_SIZE_btm-dtd2-ngoai-tru-BVQY175.md",
-      "sha256": "487b251350d5d485f7cb3f7eda66f265bcff8813038de51ffc8b9db129775c2b"
+      "path": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G3_A4_SAMPLE_SIZE_btm-dtd2-ngoai-tru-BVQY175.md",
+      "sha256": "cb991c91635ffc31b1a8eacb7f772b43d7d55dfbc482aadb308c007618bc020b"
     }
   },
   "sensitivity_table": {

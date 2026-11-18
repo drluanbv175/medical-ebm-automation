@@ -23,6 +23,7 @@
 | G3-AUTO-17 | Thiết kế không dùng power đã dùng đúng khung thay thế | PASS | thiết kế dùng công thức power thông thường |
 | G3-AUTO-18 | Tham số đã ghim trong study_meta khớp giá trị thật sự đem vào phép tính | PASS | các tham số đã ghim khớp checkpoint |
 | G3-AUTO-13 | N thực tế đã chốt đủ lực và có phương pháp | PASS | chưa chốt N thực tế |
+| G3-AUTO-19 | Ma trận mục tiêu → biến → câu hỏi → phân tích SAP đủ, khớp bộ biến và đúng kiểu | PASS | 22 dòng phủ 3 mục tiêu; 0 cảnh báo |
 | G3-AUTO-14 | Tham số đã ghim đủ để chạy lại ra cùng một N | PASS | tham số quyết định đã ghim trong study_meta |
 | G3-AUTO-15 | Khai rõ công thức đã dùng và phần mềm/phiên bản | PASS | formula=có; software=run_g3_auto.py (repo medical-ebm-automation, commit f970eae ngày 28/10/2026), Python 3.14.6, scipy 1.18.0; công thức ước lượng một tỷ lệ theo xấp xỉ chuẩn (Cochran): n = z²(1−α/2)·p(1−p)/d², α = 0,05 |
 

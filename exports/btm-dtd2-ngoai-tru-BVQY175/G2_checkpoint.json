@@ -2,7 +2,7 @@
   "study": "btm-dtd2-ngoai-tru-BVQY175",
   "gate": "G2",
   "gate_status": "DRAFT_NEEDS_HUMAN_COMPLETION — G2 CHƯA ĐƯỢC KHÓA",
-  "generated_at": "2026-11-17T13:53:54.110153",
+  "generated_at": "2026-11-18T16:20:51.607655",
   "quality_contract_version": "G2-2026.1",
   "g2_status": "PENDING",
   "design_ambiguous": false,
@@ -19,7 +19,7 @@
     "n_trials": 0,
     "n_active": 0,
     "error": null,
-    "checked_at": "2026-11-17T13:53:52",
+    "checked_at": "2026-11-18T16:20:50",
     "search_url": "https://clinicaltrials.gov/search?term=%28%22Diabetes+Mellitus%2C+Type+2%22+OR+%22type+2+diabetes%22+%29+AND+%28%22Renal+Insufficiency%2C+Chronic%22+OR+%22Diabetic+Nephropathies%22+OR+%22chronic+kidney+disease%22+OR+albuminuria+%29+AND+%28%22Guideline+Adherence%22+OR+%22Practice+Patterns%2C+Physicians%27%22+OR+%22care+gap%22+OR+%22albuminuria+testing%22+OR+%22albuminuria+screening%22+OR+undiagnosed+OR+underdiagnos%2A+OR+underuse+OR+underutili%2A+%29+AND+%28outpatient%2A+OR+%22Ambulatory+Care%22+OR+%22Primary+Health+Care%22+OR+%22primary+care%22+%29+AND+2019%3A2026",
     "pending_action": null,
     "samples": []
@@ -32,9 +32,9 @@
     "errors": []
   },
   "artifacts": {
-    "A3_markdown": "/Users/nguyenluan/.ebm-worktrees/do-btm-g2-20261117/exports/btm-dtd2-ngoai-tru-BVQY175/G2_A3_ETHICS_PACKAGE_btm-dtd2-ngoai-tru-BVQY175.md",
-    "A3_docx": "/Users/nguyenluan/.ebm-worktrees/do-btm-g2-20261117/exports/btm-dtd2-ngoai-tru-BVQY175/G2_A3_ETHICS_PACKAGE_btm-dtd2-ngoai-tru-BVQY175.docx",
-    "registration_draft": "/Users/nguyenluan/.ebm-worktrees/do-btm-g2-20261117/exports/btm-dtd2-ngoai-tru-BVQY175/G2_REGISTRATION_DRAFT_btm-dtd2-ngoai-tru-BVQY175.json",
+    "A3_markdown": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G2_A3_ETHICS_PACKAGE_btm-dtd2-ngoai-tru-BVQY175.md",
+    "A3_docx": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G2_A3_ETHICS_PACKAGE_btm-dtd2-ngoai-tru-BVQY175.docx",
+    "registration_draft": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G2_REGISTRATION_DRAFT_btm-dtd2-ngoai-tru-BVQY175.json",
     "quality_report": "exports/btm-dtd2-ngoai-tru-BVQY175/G2_QUALITY_REPORT.md"
   },
   "documents_generated": [
