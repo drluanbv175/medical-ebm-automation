@@ -76,6 +76,12 @@ _DAU_CU_ALPHA_BO_DAU = "[can"
 _NGOAC_MOT_DONG = re.compile(r"\[[^\[\]\n]*\]|<[^<>\n]*>")
 # SAP khai RÕ tham số không áp dụng (vd không có bước ngẫu nhiên) — không phải ô trống, không giữ DRAFT.
 _KHONG_AP_DUNG = re.compile(r"không\s+áp\s+dụng|not\s+applicable", re.IGNORECASE)
+# 18/11/2026 — bước ngẫu nhiên / kiểm định thống kê trong script (R hoặc Python): có một trong hai thì «không áp dụng»
+# của đề tài định tính KHÔNG được tự công nhận — vẫn để thống kê viên xác nhận.
+_BUOC_NGAU_NHIEN = re.compile(r"set\.seed|\bsample\s*\(|\bsample_n\b|slice_sample|\brunif\b|\brnorm\b|\brbinom\b|"
+                              r"np\.random|random\.(?:seed|sample|choice|shuffle|randint)|\bboot\s*\(")
+_KIEM_DINH = re.compile(r"\b(?:t\.test|chisq\.test|wilcox\.test|fisher\.test|kruskal\.test|cor\.test|aov|anova|"
+                        r"glm|lm|lmer|glmer|coxph|survdiff|logit|ols)\s*\(|p\.value|p_value|scipy\.stats|statsmodels")
 
 # G6-AUTO-07 — DANH SÁCH THAM SỐ RIÊNG mà khuôn sinh run_g6_auto.py in khi KHÔNG phát hiện được biến/tham
 # số (lượt đo 03/10/2026). Cố ý KHÔNG quét chung họ NHAN/ngoặc/dấu lửng trên script/A7: ô bảng khung
@@ -475,6 +481,19 @@ def _la_dinh_tinh(thu_muc: Path, sap: str) -> bool:
     return "qualitative" in _ho_mo_hinh_sap(_sec(sap, 4))
 
 
+def _alpha_khong_ap_dung(add, thu_muc: Path, sap: str, art: str) -> None:
+    """G6-AUTO-03 khi SAP §12 khai alpha «không áp dụng» (18/11/2026).
+
+    Đề tài ĐỊNH TÍNH (thiết kế đã chốt) mà script không có kiểm định/mô hình thống kê nào ⇒ ĐẠT (đo được). Còn lại —
+    thiết kế định lượng, hoặc script vẫn có kiểm định — để thống kê viên xác nhận như cũ."""
+    if _la_dinh_tinh(thu_muc, sap) and not _KIEM_DINH.search(art):
+        add("G6-AUTO-03", True, "SAP §12 khai alpha KHÔNG ÁP DỤNG — đề tài định tính (thiết kế đã chốt) và script "
+                                "không có kiểm định thống kê nào")
+    else:
+        add("G6-AUTO-03", None, "SAP §12 khai alpha KHÔNG ÁP DỤNG — thống kê viên xác nhận (không "
+                                "suy đoán hộ)")
+
+
 def _nhom_con_trong_script(noi_dung: str) -> list[tuple[str, bool]]:
     """[(tên biến nhóm con, đã dán nhãn post-hoc CÙNG khối)] trong một script (VÁ 04/10/2026, G6-03).
 
@@ -619,8 +638,15 @@ def evaluate_study(study: str, out_dir: Path | None = None, write: bool = True,
                 "KHÔNG phải seed đã chốt")
             trang_thai = _DRAFT
         elif any(_KHONG_AP_DUNG.search(d) for d in dong_seed):
-            add("G6-AUTO-02", None, "SAP §10 khai seed KHÔNG ÁP DỤNG — thống kê viên xác nhận script "
-                                    "không có bước ngẫu nhiên cần tái lập (không suy đoán hộ)")
+            if _la_dinh_tinh(thu_muc, sap) and not _BUOC_NGAU_NHIEN.search(art):
+                # 18/11/2026 (đo 24 đề tài giả lập): đề tài ĐỊNH TÍNH (thiết kế đã chốt ở G1/G2) và script không có
+                # bước ngẫu nhiên nào ⇒ «không áp dụng» là sự thật đo được, không phải suy đoán — trước đây mục này
+                # treo «cần xem» vĩnh viễn vì không có chỗ ghi xác nhận của thống kê viên.
+                add("G6-AUTO-02", True, "SAP §10 khai seed KHÔNG ÁP DỤNG — đề tài định tính (thiết kế đã chốt) và "
+                                        "script không có bước ngẫu nhiên nào cần tái lập")
+            else:
+                add("G6-AUTO-02", None, "SAP §10 khai seed KHÔNG ÁP DỤNG — thống kê viên xác nhận script "
+                                        "không có bước ngẫu nhiên cần tái lập (không suy đoán hộ)")
         else:
             add("G6-AUTO-02", None, "SAP §10 không có seed máy-đọc-được (`set.seed(N)` hoặc «seed: N») — "
                                     "chưa đối chiếu được nên KHÔNG được PASS; ghi seed vào SAP §10 hoặc khai "
@@ -667,16 +693,14 @@ def evaluate_study(study: str, out_dir: Path | None = None, write: bool = True,
     elif not a_sap and not alpha_o_trong and any(_KHONG_AP_DUNG.search(d) for d in dong_alpha):
         # VÁ 04/10/2026: §12 (phạm vi hẹp) KHAI RÕ alpha không áp dụng (SAP định tính) là câu trả lời dứt khoát — lưới
         # cũ đọc tới hết tệp từng giữ DRAFT vì ô [CẦN] hợp lệ của nhật ký sửa đổi SAP (PHẦN 4), ngoài §12.
-        add("G6-AUTO-03", None, "SAP §12 khai alpha KHÔNG ÁP DỤNG — thống kê viên xác nhận (không "
-                                "suy đoán hộ)")
+        _alpha_khong_ap_dung(add, thu_muc, sap, art)
     elif not a_sap or draft_cu_alpha:
         if alpha_o_trong or draft_cu_alpha or _DAU_CU_ALPHA_BO_DAU in _bo_dau(sap12):
             add("G6-AUTO-03", None, "SAP §12 alpha còn placeholder "
                 f"({'; '.join(alpha_o_trong[:2]) or '[CẦN …]'}) — chưa đối chiếu được")
             trang_thai = _DRAFT
         elif any(_KHONG_AP_DUNG.search(d) for d in dong_alpha):
-            add("G6-AUTO-03", None, "SAP §12 khai alpha KHÔNG ÁP DỤNG — thống kê viên xác nhận (không "
-                                    "suy đoán hộ)")
+            _alpha_khong_ap_dung(add, thu_muc, sap, art)
         else:
             add("G6-AUTO-03", None, "không đọc được alpha từ SAP §12 — chưa đối chiếu được nên KHÔNG được PASS. "
                                     "SAP ĐÃ KÝ thì KHÔNG sửa tay (lệch dấu chữ ký G4): sửa đổi SAP có dòng «SAP "
