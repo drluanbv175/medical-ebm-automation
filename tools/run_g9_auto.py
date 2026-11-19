@@ -30,7 +30,7 @@ import sys
 import sys as _sys_r4
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Dict, Optional
 
 for _s_r4 in (_sys_r4.stdout, _sys_r4.stderr):
     try:
@@ -932,6 +932,86 @@ def build_part7_reviewer_response(study: str, target_journal: str) -> str:
 # 9. SINH PHẦN 8 — TIÊU CHÍ QUA CỔNG G9 (HARD GATE)
 # ════════════════════════════════════════════════════════════════════════════
 
+#: Mục của tờ «Phần 8» ↔ phép kiểm điện tử của g9_quality_gate (19/11/2026, kiểm toàn diện — VĐ10): mục được tích ☑ khi
+#: MỌI phép kiểm ánh xạ của nó PASS lúc dựng gói (TRƯỚC chữ ký — A10 nằm trong manifest băm, tích sau khi ký là phá chữ
+#: ký). Tờ giấy chỉ PHẢN ÁNH hồ sơ điện tử, không thay nó.
+PHAN8_ANH_XA = {
+    "A1": ("G9-HUMAN-01",), "A2": ("G9-HUMAN-03",), "A3": ("G9-HUMAN-06",), "A4": ("G9-HUMAN-04",),
+    "A5": ("G9-HUMAN-05",), "A7": ("G9-HUMAN-05A",), "C1": ("G9-AUTO-05",), "C2": ("G9-AUTO-04",),
+    "C3": ("G9-HUMAN-06",), "C4": ("G9-AUTO-05",), "C5": ("G9-AUTO-05",),
+}
+
+
+def _trang_thai_kiem_g9(study: str) -> Dict[str, str]:
+    """id phép kiểm → trạng thái, chấm SỐNG không ghi (lỗi/thiếu ⇒ rỗng: không tích gì — không bao giờ tích bừa)."""
+    try:
+        import g9_quality_gate as G9Q  # noqa: PLC0415
+
+        bc = G9Q.evaluate_study(study, _REPO_ROOT / "exports" / study, repo_root=_REPO_ROOT, write=False)
+    except Exception:  # noqa: BLE001
+        return {}
+    ra: Dict[str, str] = {}
+
+    def _di(o: Any) -> None:
+        if isinstance(o, dict):
+            if str(o.get("id", "")).startswith("G9-") and "status" in o:
+                ra[str(o["id"])] = str(o["status"])
+            for v in o.values():
+                _di(v)
+        elif isinstance(o, list):
+            for v in o:
+                _di(v)
+
+    _di(bc)
+    return ra
+
+
+def tich_phan_8(van_ban: str, trang_thai: Dict[str, str], readiness: Optional[dict] = None) -> str:
+    """Tích ô «đã xong» của các mục Phần 8 mà phép kiểm điện tử đã PASS; nhóm D theo `institutional_confirmation`."""
+    if not trang_thai:
+        return van_ban
+    ic = ((readiness or {}).get("institutional_confirmation") or {}) if trang_thai.get("G9-HUMAN-11") == "PASS" \
+        else {}
+    dong = van_ban.split("\n")
+    muc = None
+    for i, d in enumerate(dong):
+        m = re.match(r"^([A-D]\d)\.\s", d)
+        if m:
+            muc = m.group(1)
+            continue
+        if "☐" not in d or muc is None:
+            continue
+        if muc.startswith("D"):
+            khoa = {"D1": "department_head", "D2": "internal_review", "D3": "sponsor_review"}[muc]
+            can, xong = ic.get(f"{khoa}_required"), ic.get(f"{khoa}_confirmed")
+            if can is False:
+                dong[i] = d.replace("☐", "☑", 1)
+            elif can and xong:
+                k = d.rfind("☐")
+                dong[i] = d[:k] + "☑" + d[k + 1:]
+            continue
+        ids = PHAN8_ANH_XA.get(muc)
+        if not ids or not all(trang_thai.get(x) == "PASS" for x in ids):
+            continue
+        if d.count("☐") >= 2:  # «☐ Chưa …  ☐ Đã …» ⇒ tích ô thứ hai
+            k = d.find("☐", d.find("☐") + 1)
+            dong[i] = d[:k] + "☑" + d[k + 1:]
+        else:  # mục một ô (A7) ⇒ tích ô đó
+            dong[i] = d.replace("☐", "☑", 1)
+    return "\n".join(dong)
+
+
+def _cong_song_dat(gate: str, study: str) -> bool:
+    """Cổng đã đạt theo chấm SỐNG (cùng nguồn sự thật với mọi nơi khác của hệ — 06/10/2026)."""
+    try:
+        import cong_song as CS  # noqa: PLC0415
+
+        st = CS.trang_thai_song(gate, study, _REPO_ROOT / "exports" / study, repo_root=_REPO_ROOT).get("status")
+    except Exception:  # noqa: BLE001
+        return False
+    return str(st or "").startswith(f"PASS_{gate}")
+
+
 def build_part8_gate_criteria(cps: dict, n_authors: int, study: str) -> str:
     """
     Sinh bảng tiêu chí cứng G9.
@@ -1006,6 +1086,11 @@ def build_part8_gate_criteria(cps: dict, n_authors: int, study: str) -> str:
         )
     )
 
+    # 19/11/2026 (kiểm toàn diện, 24 đề tài giả lập): G4 đã khoá bằng chữ ký thật mà tờ vẫn in «PENDING — CHỜ BÁC SĨ KÝ
+    # SAP» — checkpoint không mang `sap_signed_date`. Chấm SỐNG của cổng là nguồn sự thật chung của cả hệ.
+    ethics_locked = ethics_locked or _cong_song_dat("G2", study)
+    sap_locked = sap_locked or _cong_song_dat("G4", study)
+    db_locked = db_locked or _cong_song_dat("G5", study)
     g2_icon = "✅" if ethics_locked else "⚠ CHỜ BÁC SĨ"
     g4_icon = "✅" if sap_locked    else "⚠ CHỜ BÁC SĨ"
     g5_icon = "✅" if db_locked     else "⚠ CHỜ BÁC SĨ"
@@ -1664,6 +1749,11 @@ def main():
 
     print("  -> Phần 8: Tiêu chí Cổng G9")
     part8 = build_part8_gate_criteria(cps, n_authors, study)
+    try:
+        _rd = json.loads((_REPO_ROOT / "exports" / study / "G9_PUBLICATION_READINESS.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        _rd = None
+    part8 = tich_phan_8(part8, _trang_thai_kiem_g9(study), _rd)
 
     # Footer tóm tắt việc còn lại
     footer = "\n".join([

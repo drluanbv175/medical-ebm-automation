@@ -653,7 +653,7 @@ def lenh_chay(args) -> int:
         "disclaimer": CAN_KIEM,
     }
     (d / TEP_KQ_JSON).write_text(json.dumps(chi_muc, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
-    (d / TEP_KQ_MD).write_text(md_chi_muc(chi_muc), encoding="utf-8", newline="\n")
+    (d / TEP_KQ_MD).write_text(md_chi_muc(chi_muc, ve_forest_g6(chi_muc, d)), encoding="utf-8", newline="\n")
     dm = chi_muc["dem"]
     print(f"\n══ SAP G6 — {args.study}: {dm['DA_CHAY']} đã chạy · {dm['LOI']} lỗi · "
           f"{dm['CHUA_TU_DONG']} chờ làm tay ══")
@@ -661,7 +661,113 @@ def lenh_chay(args) -> int:
     return ma
 
 
-def md_chi_muc(cm: dict) -> str:
+def _so(x, chu_so: int = 2) -> str:
+    """Số theo quy ước văn bản tiếng Việt: dấu phẩy thập phân."""
+    try:
+        return f"{float(x):.{chu_so}f}".replace(".", ",")
+    except (TypeError, ValueError):
+        return "—"
+
+
+def _p(x) -> str:
+    try:
+        v = float(x)
+    except (TypeError, ValueError):
+        return ""
+    return "p < 0,001" if v < 0.001 else f"p = {_so(v, 3)}"
+
+
+def _ktc(ci) -> str:
+    return f" (KTC 95% {_so(ci[0])}–{_so(ci[1])})" if isinstance(ci, (list, tuple)) and len(ci) == 2 else ""
+
+
+#: (khoá trong uoc_luong, nhãn thước đo, khoá ước lượng, khoá KTC) — thứ tự ưu tiên khi một lượt có nhiều mô hình
+_THUOC_DO_G6 = (("poisson_pr", "PR hiệu chỉnh", "PR_adj", "CI_95"),
+                ("thu_tu", "OR chung hiệu chỉnh", "OR_adj", "CI_95"),
+                ("da_bien", "OR hiệu chỉnh", "OR_adj", "CI_95"), ("hr_hieu_chinh", "HR hiệu chỉnh", "HR", "CI_95"),
+                ("or_tho", "OR thô", "uoc_luong", "ci_95"))
+
+
+def ty_so_g6(u: dict):
+    """(nhãn, ước lượng, KTC) của tỷ số chính một lượt G6 — None khi lượt không có tỷ số (tỷ lệ, AUC…)."""
+    for khoa, nhan, k_ul, k_ci in _THUOC_DO_G6:
+        x = u.get(khoa) or {}
+        if x.get(k_ul) is not None:
+            return nhan, x.get(k_ul), x.get(k_ci)
+        if khoa == "da_bien" and x.get("beta") is not None:
+            return "β hiệu chỉnh", x.get("beta"), x.get("CI_95")
+    return None
+
+
+def dinh_dang_uoc_luong(u: dict) -> str:
+    """Ước lượng chính của MỘT lượt viết theo chuẩn trình bày: thước đo, ước lượng (KTC 95%), p — thay chuỗi JSON thô
+    (19/11/2026, bác sĩ: «tất cả vấn đề liên quan số liệu phân tích, kết quả phân tích» phải đúng chuẩn)."""
+    if not u:
+        return ""
+    ts = ty_so_g6(u)
+    if ts:
+        nhan, ul, ci = ts
+        x = next((u[k] for k, *_r in _THUOC_DO_G6 if k in u), {})
+        return f"{nhan} {_so(ul)}{_ktc(ci)}" + (f"; {_p(x.get('p'))}" if _p(x.get("p")) else "")
+    if u.get("md_tho"):
+        x = u["md_tho"]
+        return f"Hiệu số trung bình {_so(x.get('uoc_luong'))}" + (f"; {_p(x.get('p'))}" if _p(x.get("p")) else "")
+    if u.get("ty_le"):
+        x = u["ty_le"][0]
+        ci = x.get("ci_95")
+        return f"Tỷ lệ {_so(x.get('ty_le'), 1)}%" + (f" (KTC 95% {_so(ci[0], 1)}–{_so(ci[1], 1)})"
+                                                     if isinstance(ci, (list, tuple)) and len(ci) == 2 else "") + \
+            (f"; n = {x.get('n')}" if x.get("n") is not None else "")
+    if u.get("chan_doan"):
+        x = u["chan_doan"]
+        return (f"AUC {_so(x.get('auc'))}{_ktc(x.get('ci_95'))}; độ nhạy {_so(x.get('do_nhay'))}; "
+                f"độ đặc hiệu {_so(x.get('do_dac_hieu'))}")
+    if u.get("du_bao"):
+        x = u["du_bao"]
+        return f"Thống kê C {_so(x.get('c_statistic'))}; điểm Brier {_so(x.get('brier'), 3)}"
+    if u.get("gop"):
+        x = u["gop"]
+        return (f"RR gộp {_so(x.get('rr'))}{_ktc(x.get('ci_95'))}; I² {_so(x.get('i2'), 1)}%; "
+                f"số nghiên cứu {x.get('k')}")
+    if u.get("kinh_te"):
+        x = u["kinh_te"]
+        return f"ICER {_so(x.get('icer'), 0)}; chênh chi phí {_so(x.get('delta_c'), 0)}; chênh hiệu quả " \
+               f"{_so(x.get('delta_e'), 3)}"
+    if u.get("dinh_tinh"):
+        x = u["dinh_tinh"]
+        return f"{x.get('so_chu_de')} chủ đề từ {x.get('n')} bản ghi"
+    loi = next((v.get("loi") for v in u.values() if isinstance(v, dict) and v.get("loi")), None)
+    return f"lỗi mô hình: {loi}" if loi else ""
+
+
+def ve_forest_g6(cm: dict, d: Path) -> str | None:
+    """Forest plot các tỷ số (phân tích chính, nhóm nhỏ, độ nhạy) có KTC 95% — từ SỐ LIỆU THẬT của lượt chạy. Dưới 2
+    tỷ số hoặc thiếu matplotlib ⇒ None (chỉ mục vẫn có bảng)."""
+    hang = []
+    for x in cm.get("phan_tich") or []:
+        ts = ty_so_g6(x.get("uoc_luong") or {})
+        if ts and isinstance(ts[2], (list, tuple)) and len(ts[2]) == 2 and ts[1] is not None:
+            vai = {"chinh": "Phân tích chính", "phu": "Phân tích phụ", "nhom_con": "Nhóm nhỏ",
+                   "do_nhay": "Độ nhạy"}.get(x.get("vai"), x.get("vai") or "")
+            mo_ta = re.sub(r"\s+", " ", str(x.get("mo_ta") or "")).split(" — ")[-1].strip()[:42]
+            hang.append((f"{vai}: {mo_ta}" if mo_ta and x.get("vai") != "chinh" else vai or x["id"], float(ts[1]),
+                         float(ts[2][0]), float(ts[2][1]), ts[0]))
+    if len(hang) < 2:
+        return None
+    try:
+        import khung_bieu_bang as KBB  # noqa: PLC0415
+
+        kh = KBB.Khung("bieu_do", "", dac_ta={"kieu": "forest", "nhan": [h[0] for h in hang], "ref": 1.0,
+                                              "truc_x": f"{hang[0][4]} (KTC 95%)", "log": True})
+        rel = f"{KBB.THU_MUC_HINH}/g6-uoc-luong.png"
+        KBB.ve_hinh(kh, d / rel, du_lieu={"uoc_luong": [h[1] for h in hang], "duoi": [h[2] for h in hang],
+                                          "tren": [h[3] for h in hang]})
+        return rel
+    except Exception:  # noqa: BLE001 — thiếu matplotlib: chỉ mục vẫn đầy đủ dạng bảng
+        return None
+
+
+def md_chi_muc(cm: dict, hinh: str | None = None) -> str:
     dong = [f"# Chỉ mục kết quả SAP G6 — {cm['study']}", "",
             f"Lúc {cm['luc']} · đặc tả `{cm['dac_ta']['tep']}` dấu `{cm['dac_ta']['dau']}` ({cm['dac_ta']['duyet']}) · "
             f"dữ liệu khoá SHA-256 `{cm['du_lieu_khoa']['sha256'][:16]}…` · kiểm chéo SPSS/R: "
@@ -670,11 +776,16 @@ def md_chi_muc(cm: dict) -> str:
             "|---|---|---|---|---|---|---|"]  # fmt: skip
     for x in cm["phan_tich"]:
         u = x.get("uoc_luong") or {}
-        chinh = next((json.dumps(u[k], ensure_ascii=False) for k in ("poisson_pr", "thu_tu", "da_bien", "or_tho",
-                                                                       "md_tho", "hr_hieu_chinh", "ty_le") if k in u),
-                     x.get("ly_do") or "")  # fmt: skip
+        chinh = dinh_dang_uoc_luong(u) or x.get("ly_do") or ""
         dong.append(f"| {x['id']} | {x['vai']} | {x.get('sap_muc') or ''} | {x['trang_thai']} | {x.get('gate', '—')} | "
                     f"{str(chinh)[:160].replace('|', '/')} | {x.get('kiem_cheo', '—')} |")  # fmt: skip
+    dong += ["", "*Ghi chú:* PR: tỷ số tỷ lệ hiện mắc; OR: tỷ số chênh; HR: tỷ số nguy cơ tức thời; AUC: diện tích "
+             "dưới đường cong ROC; KTC: khoảng tin cậy. p ghi ba chữ số thập phân, «p < 0,001» khi nhỏ hơn."]
+    if hinh:
+        dong += ["", f"![Biểu đồ ước lượng]({hinh})", "",
+                 "**Biểu đồ. Ước lượng của phân tích chính, phân tích nhóm nhỏ và phân tích độ nhạy kèm KTC 95%**", "",
+                 "*Ghi chú:* Điểm là ước lượng, đoạn ngang là KTC 95%; đường dọc tại 1 là không có liên quan; trục "
+                 "hoành theo thang log."]
     cho = [x for x in cm["phan_tich"] if x["trang_thai"] == "CHUA_TU_DONG"]
     if cho:
         dong += ["", "## Chờ thống kê viên làm tay (hệ chưa có công cụ)", ""]

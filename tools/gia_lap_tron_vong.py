@@ -2136,10 +2136,8 @@ Kết luận tổng thể: {ket_luan}
         một đề cương hoàn chỉnh). Kết quả K1–K7 ghi vào du_lieu để phép thử trọn vòng đòi sạch."""
         kq = self.chay("PI soạn đề cương nộp Hội đồng", "sinh_de_cuong_nop_hoi_dong.py", "--study", self.study,
                        "--ghi", "--json")
-        dong = kq.get("dong") or []
-        dau = next((i for i, d in enumerate(dong) if d.strip() == "{"), None)  # bỏ dòng cảnh báo font của md2docx
         try:
-            ra = json.loads("\n".join(dong[dau:])) if dau is not None else {}
+            ra = doc_json_dau_ra(kq.get("dong") or [])
         except ValueError:
             ra = {"ma": kq.get("ma"), "loi": ["không đọc được kết quả JSON của bộ sinh"]}
         self.du_lieu["de_cuong_nop"] = {"ma": ra.get("ma"), "loi": ra.get("loi") or [],
@@ -2469,3 +2467,14 @@ def dung_ban_sao_tron_vong(goc: Path, dich: Path) -> Path:
 def chay_mot(ma: str, repo: Path, tu_cong: Optional[str] = None, den_cong: Optional[str] = None,
              **kw: Any) -> Dict[str, Any]:
     return TronVong(ma, repo, **kw).chay_tron_vong(tu_cong=tu_cong, den_cong=den_cong)
+
+
+def doc_json_dau_ra(dong: List[str]) -> Dict[str, Any]:
+    """Khối JSON trong đầu ra một công cụ: từ dòng «{» ĐẦU tới dòng «}» CUỐI — bỏ cảnh báo phông của md2docx ở trước và
+    log ở sau (19/11/2026: matplotlib dựng bộ nhớ đệm phông lần đầu trên CI in INFO SAU khối JSON ⇒ bộ giả lập đọc hỏng
+    kết quả dù bộ sinh đạt). Không có «{» ⇒ {}; JSON hỏng ⇒ ValueError."""
+    dau = next((i for i, d in enumerate(dong) if d.strip() == "{"), None)
+    if dau is None:
+        return {}
+    cuoi = max((i for i, d in enumerate(dong) if d.rstrip() == "}" and i >= dau), default=len(dong) - 1)
+    return json.loads("\n".join(dong[dau:cuoi + 1]))

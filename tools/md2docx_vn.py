@@ -109,6 +109,10 @@ JOURNAL_PROFILES: Dict[str, Dict] = {
                        "https://jpmp175.vn/yduocthuchanh175/guideline-for-contributors — đọc 19/11/2026: A4, Times "
                        "New Roman cỡ 13, dòng cách dòng 1,3, lề trái 3 cm, phải 2 cm, trên 2 cm, dưới 2 cm, đánh số "
                        "trang tự động. Đối chiếu lại trang trước mỗi lần nộp (thể lệ có thể đổi).",
+        # 19/11/2026: thể lệ giới hạn «không quá 10 trang bao gồm cả tài liệu tham khảo». Bảng chia cột đều làm cột
+        # đầu xuống dòng liên tục (bản thảo BTM đo bằng Word: 13 trang). Bảng gọn = cột rộng theo nội dung, căn trái,
+        # lề ô và khoảng cách đoạn trong ô nhỏ. Không đổi cỡ chữ/giãn dòng thân bài mà thể lệ quy định.
+        "table_compact": True,
     },
     "bmj_open": {
         "key": "bmj_open",
@@ -676,9 +680,26 @@ def _parse_table(lines: List[str], start: int):
     return rows, idx
 
 
+def do_rong_cot_theo_noi_dung(rows, ncols: int, tong: int = CONTENT_WIDTH_TWIPS) -> List[int]:
+    """Độ rộng cột (twips) tỉ lệ với độ dài chữ dài nhất mỗi cột — dùng cho bảng gọn của hồ sơ tạp chí.
+
+    Mỗi cột có trọng số = độ dài ô dài nhất, kẹp trong [12, 45] ký tự: cột số liệu hẹp vẫn đủ chỗ cho «152/385» hay
+    «39,5 (34,7–44,4)» khi điền, cột chữ dài không nuốt hết bề ngang. Tổng các cột đúng bằng `tong`.
+    """
+    trong_so = []
+    for c in range(ncols):
+        dai = max((len(_strip_md(r[c])) if c < len(r) else 0) for r in rows)
+        trong_so.append(min(45, max(12, dai)))
+    tong_ts = sum(trong_so)
+    rong = [max(900, tong * w // tong_ts) for w in trong_so]
+    rong[0] += tong - sum(rong)
+    return rong
+
+
 def _add_table(doc, rows):
     from docx.enum.table import WD_CELL_VERTICAL_ALIGNMENT, WD_TABLE_ALIGNMENT
     from docx.enum.text import WD_ALIGN_PARAGRAPH as A
+    from docx.shared import Twips
 
     ncols = max(len(r) for r in rows)
     table = doc.add_table(rows=len(rows), cols=ncols)
@@ -688,21 +709,30 @@ def _add_table(doc, rows):
         table.style = "Table Grid"
     except KeyError:
         pass
-    col_width = max(900, CONTENT_WIDTH_TWIPS // max(1, ncols))
+    gon = bool((_active_profile or {}).get("table_compact"))
+    if gon:
+        rong_cot = do_rong_cot_theo_noi_dung(rows, ncols)
+        for c, w in enumerate(rong_cot):
+            table.columns[c].width = Twips(w)
+    else:
+        rong_cot = [max(900, CONTENT_WIDTH_TWIPS // max(1, ncols))] * ncols
     if table.rows:
         _repeat_header_row(table.rows[0])
     for r, row in enumerate(rows):
         for c in range(ncols):
             cell = table.cell(r, c)
             cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.TOP
-            _set_cell_width(cell, col_width)
-            _set_cell_margins(cell)
+            _set_cell_width(cell, rong_cot[c])
+            _set_cell_margins(cell, margin=57 if gon else 108)
             if r == 0:
                 _set_cell_shading(cell)
             cell.paragraphs[0].text = ""
             p = cell.paragraphs[0]
-            _spacing(p, before=2, after=2, line=1.15,
-                     align=A.CENTER if r == 0 else A.JUSTIFY)
+            if gon:
+                _spacing(p, before=0, after=0, line=1.15, align=A.CENTER if r == 0 else A.LEFT)
+            else:
+                _spacing(p, before=2, after=2, line=1.15,
+                         align=A.CENTER if r == 0 else A.JUSTIFY)
             _add_inline_runs(p, row[c] if c < len(row) else "",
                              size=TABLE_PT, bold=(r == 0))
     return table
@@ -794,6 +824,35 @@ def _init_document(title_page: Optional[Dict], profile: Optional[Dict] = None):
         # bản thảo nộp tạp chí (không title_page) giữ nguyên bố cục cũ.
         _add_toc(doc)
     return doc
+
+
+_ANH_RE = re.compile(r"^!\[([^\]]*)\]\(([^)\s]+)\)\s*$")
+_TEN_BIEU_BANG_RE = re.compile(r"^\*\*(?:Bảng|Hình|Biểu đồ|Sơ đồ)\s+\d+(?:\.\d+)*\.\s.+\*\*$")
+RONG_ANH_TOI_DA_CM = 15.0
+
+
+def _them_anh(doc, tep: Path, chu_thay: str) -> None:
+    """Chèn ảnh căn giữa, rộng tối đa 15 cm (vừa lề trang A4 3-2 cm); ảnh vuông/nhỏ giữ ≤ 11 cm."""
+    from docx.enum.text import WD_ALIGN_PARAGRAPH as A
+    from docx.shared import Cm
+
+    p = doc.add_paragraph()
+    _spacing(p, before=6, after=2, line=1.0, align=A.CENTER)
+    if not Path(tep).is_file():
+        _add_text(p, f"[Thiếu tệp hình: {Path(tep).name} — {chu_thay}]", italic=True)
+        return
+    rong = RONG_ANH_TOI_DA_CM
+    try:
+        from PIL import Image  # noqa: PLC0415
+
+        with Image.open(tep) as im:
+            w, h = im.size
+        if h and w / h < 1.25:
+            rong = 11.0
+    except Exception:  # noqa: BLE001 — thiếu Pillow/ảnh lạ: dùng bề rộng chuẩn
+        pass
+    p.paragraph_format.keep_with_next = True
+    p.add_run().add_picture(str(tep), width=Cm(rong))
 
 
 def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
@@ -897,6 +956,24 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
             p = doc.add_paragraph(style="List Bullet")
             _spacing(p, after=4, line=body_line, align=A.JUSTIFY)
             _add_inline_runs(p, stripped[2:])
+            i += 1
+            continue
+
+        # 19/11/2026 (bác sĩ: «phần trình bày biểu bảng chưa có và chưa đúng chuẩn»): hình/biểu đồ Markdown
+        # «![…](tệp.png)» ⇒ ảnh thật căn giữa (đường dẫn tương đối theo thư mục tệp .docx); thiếu tệp ⇒ dòng nghiêng
+        # nói rõ, không im lặng bỏ hình.
+        m_anh = _ANH_RE.match(stripped)
+        if m_anh:
+            _them_anh(doc, out_path.parent / m_anh.group(2), m_anh.group(1))
+            i += 1
+            continue
+
+        # Tên bảng/hình/biểu đồ «**Bảng 5.1. …**» ⇒ đoạn in đậm CĂN GIỮA (chuẩn trình bày; tên bảng giữ liền với bảng).
+        if _TEN_BIEU_BANG_RE.match(stripped):
+            p = doc.add_paragraph()
+            _spacing(p, before=6, after=6, line=body_line, align=A.CENTER)
+            p.paragraph_format.keep_with_next = stripped.startswith("**Bảng")
+            _add_inline_runs(p, stripped)
             i += 1
             continue
 

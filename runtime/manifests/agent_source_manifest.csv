@@ -42,7 +42,7 @@ path,sha256,size_bytes
 .claude/agents/nghien-cuu-dinh-tinh.md,dbefeabfc9f51c99bfcd0e7d5ecc02f04525206818c6380e281410965fce83b2,22292
 .claude/agents/nop-bai-phan-hoi.md,058a05e0c167eacfeaa4b18e2e5cc6621156ce4ea51f74d93e830bab68186db2,37303
 .claude/agents/phan-bien-tranh-bien.md,6d7f342bd002247f009791333994c7eee2231300c369d559b97ae4070a34be24,8478
-.claude/agents/phan-tich-thong-ke.md,0a3e7eb0ba1c23cf25bfed17d0491bb33439452d4b17ef7063b19936f45d70b4,45491
+.claude/agents/phan-tich-thong-ke.md,98d8682753cc73d9c8898a3947a02a1f6fcbb028d597bc2a501ee44fd6fa4cdb,46335
 .claude/agents/pico-lam-sang.md,5fd5f34ebdd9ed6978d8c25de2dd9d0c5f0377f18eca6f7cee8651cfadecd58b,13825
 .claude/agents/quan-ly-du-lieu.md,87a137b3a0967ecfa156058a52cbdfa6bf886ad57df7ff353813656339712adc,45682
 .claude/agents/quan-ly-khang-dong.md,85eb9974cd9fbe7d63da6eea998050cb89386e5c59d52b2b21e9e37701c0e89e,25434
@@ -62,4 +62,4 @@ path,sha256,size_bytes
 .claude/agents/tram-cam-lo-au.md,207df856a95e1c64bc3288254233cdb948bd06b1cd9727e49b5dc59c59e3c050,20710
 .claude/agents/trich-xuat-y-van.md,ff455c96ab01e49e249990ff7e2372e19db1b0eb06432185bc9db1af0eac1c77,16435
 .claude/agents/trong-tai-tranh-bien.md,fc07f8763904a40a634d8f540309741f69db8c87ea9e0a8d920a3c4703a58966,9803
-.claude/agents/viet-ban-thao.md,f48fab7e48913a2380b4b531e1433c5830199bd9d09597a4c13b559a0d0c47ab,40868
+.claude/agents/viet-ban-thao.md,9b90914729f4be92b2fd9418b44eb615621f9ac2bdb6463e7778dc0b033931f6,43685
