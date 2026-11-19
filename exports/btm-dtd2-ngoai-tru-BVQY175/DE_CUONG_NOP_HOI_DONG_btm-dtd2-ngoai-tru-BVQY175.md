@@ -309,40 +309,196 @@ Nghiên cứu tuân thủ Tuyên bố Helsinki và các quy định hiện hành
 
 # 5. DỰ KIẾN KẾT QUẢ
 
-**Bảng 5.1. Đặc điểm mẫu nghiên cứu (mô tả toàn mẫu)**
+Kết quả được trình bày theo thứ tự đặc điểm đối tượng nghiên cứu, rồi lần lượt theo từng mục tiêu nghiên cứu. Các bảng, hình và biểu đồ dưới đây là khung trình bày đã xác định trước theo kế hoạch phân tích; số liệu được điền sau khi phân tích. Quy ước trình bày: biến định lượng mô tả bằng trung bình ± độ lệch chuẩn khi phân phối gần chuẩn, ngược lại bằng trung vị [khoảng tứ phân vị]; biến định tính bằng tần số và tỷ lệ phần trăm, ghi rõ mẫu số khi khác cỡ mẫu chung; tỷ lệ và các ước lượng hiệu ứng kèm khoảng tin cậy 95%; giá trị p ghi ba chữ số thập phân (p < 0,001 khi nhỏ hơn). Tên bảng đặt phía trên bảng, tên hình và biểu đồ đặt phía dưới; chữ viết tắt được giải thích ngay dưới mỗi bảng.
 
-| Biến | Toàn mẫu (N = 385): n (%) hoặc trung bình ± SD / trung vị [IQR] | Số thiếu (%) |
-|---|---|---|
-| Giới nữ | … | … |
-| Nhóm đối tượng (quân nhân / BHYT / dịch vụ / khác) | … | … |
-| Thời gian mắc ĐTĐ (năm) | … | … |
-| HbA1c: không làm / < 7% / ≥ 7% | … | … |
-| BMI (kg/m²) | … | … |
-| Số tháng quan sát | … | … |
+## 5.1. Đặc điểm đối tượng nghiên cứu
 
-**Bảng 5.2. Kết cục chính — MT1 (ước lượng theo độ chính xác)**
+![Hình 5.1](bieu-bang/hinh-5-1.png)
 
-| Kết cục | n/N | Tỷ lệ (%) | KTC 95% (Wilson) |
-|---|---|---|---|
-| Có ít nhất một creatinin huyết thanh | … | … | … |
-| Có ít nhất một UACR dạng tỷ số | … | … | … |
-| Được xét nghiệm đủ UACR và creatinin | … | … | … |
-| Theo phòng khám / nhóm đối tượng / nhóm tuổi | … | … | … |
+**Hình 5.1. Sơ đồ chọn đối tượng nghiên cứu (theo STROBE)**
 
-**Bảng 5.3. Điều trị bảo vệ thận ở người đủ chỉ định (KDIGO 2022) — MT2**
+*Ghi chú:* Số lượng ở từng bước và lý do loại được ghi đầy đủ khi kết thúc thu thập số liệu.
 
-| Chỉ định | N đủ chỉ định | Loại vì chống chỉ định ghi trong hồ sơ | Đang dùng: n (%) | KTC 95% |
-|---|---|---|---|---|
-| ACEi/ARB (tăng huyết áp và albumin niệu xác nhận) | … | … | … | … |
-| SGLT2i (BTM xác nhận và eGFR ≥ 20) | … | … | … | … |
+**Bảng 5.1. Đặc điểm chung của đối tượng nghiên cứu**
 
-**Bảng 5.4. Yếu tố liên quan với việc không được xét nghiệm đủ (MT3)**
+| Đặc điểm | Toàn mẫu (N = 385) | Số thiếu, n (%) |
+| --- | --- | --- |
+| Tuổi, TB ± ĐLC hoặc trung vị [KTPV] | … ± … | … (…) |
+| Giới: nam, n (%) | … (…) | … (…) |
+| Nhóm đối tượng, n (%) |   | … (…) |
+| – Quân nhân | … (…) |   |
+| – Bảo hiểm y tế | … (…) |   |
+| – Dịch vụ | … (…) |   |
+| – Khác | … (…) |   |
+| Thời gian mắc đái tháo đường (đơn vị 5 năm), TB ± ĐLC hoặc trung vị [KTPV] | … ± … | … (…) |
+| HbA1c (3 mức), n (%) |   | … (…) |
+| – HbA1c < 7% | … (…) |   |
+| – HbA1c ≥ 7% | … (…) |   |
+| – Không làm HbA1c năm 2026 | … (…) |   |
+| Đang dùng insulin, n (%) | … (…) | … (…) |
+| Số nhóm thuốc hạ glucose, TB ± ĐLC hoặc trung vị [KTPV] | … ± … | … (…) |
+| Tăng huyết áp, n (%) | … (…) | … (…) |
+| BMI (đơn vị 5 kg/m²), TB ± ĐLC hoặc trung vị [KTPV] | … ± … | … (…) |
+| Bệnh tim mạch do xơ vữa hoặc suy tim, n (%) | … (…) | … (…) |
+| Số lượt khám năm 2026, TB ± ĐLC hoặc trung vị [KTPV] | … ± … | … (…) |
+| Phòng khám theo dõi chính, n (%) |   | … (…) |
+| – Nội tiết | … (…) |   |
+| – Nội chung (nội tổng hợp) | … (…) |   |
+| – Khác | … (…) |   |
 
-| Biến | Không xét nghiệm đủ: n (%) | PR thô (KTC 95%) | PR hiệu chỉnh (KTC 95%), MI | PR hiệu chỉnh (KTC 95%), complete case |
-|---|---|---|---|---|
-| (12 biến) | … | … | … | … |
+*Ghi chú:* Chữ viết tắt — TB: trung bình; ĐLC: độ lệch chuẩn; KTPV: khoảng tứ phân vị. Biến định lượng trình bày TB ± ĐLC khi phân phối gần chuẩn, ngược lại trung vị [KTPV].
 
-Kết quả sẽ được trình bày và bàn luận theo từng mục tiêu nghiên cứu (3 mục tiêu), đối chiếu với các nghiên cứu đã công bố và nêu rõ ý nghĩa thực hành cũng như hạn chế của nghiên cứu.
+## 5.2. Kết quả theo mục tiêu 1: Mô tả thực trạng phát hiện bệnh thận mạn ở người bệnh đái tháo đường típ 2 điều trị ngoại trú tại Khoa Khám bệnh, Bệnh viện Quân y 175 năm 2026 — tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh (kết cục chính), tỷ lệ bệnh thận mạn theo KDIGO 2024 và tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán
+
+**Bảng 5.2. Tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh và các chỉ số mô tả liên quan (Mục tiêu 1)**
+
+| Chỉ số | n/N | Tỷ lệ % hoặc TB ± ĐLC | Trung vị [KTPV] | KTC 95% |
+| --- | --- | --- | --- | --- |
+| Tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh | …/… | … | — | … – … |
+| Tỷ lệ bệnh thận mạn theo KDIGO 2024, phân bố các mức |   |   |   |   |
+| – Không BTM | …/… | … | — | … – … |
+| – Nghi BTM | …/… | … | — | … – … |
+| – BTM xác nhận | …/… | … | — | … – … |
+| – Không đủ xét nghiệm để phân loại | …/… | … | — | … – … |
+| Nhóm eGFR theo KDIGO (G1–G5), phân bố các mức |   |   |   |   |
+| – G1 (eGFR ≥ 90) | …/… | … | — | … – … |
+| – G2 (eGFR 60–89) | …/… | … | — | … – … |
+| – G3a (eGFR 45–59) | …/… | … | — | … – … |
+| – G3b (eGFR 30–44) | …/… | … | — | … – … |
+| – G4 (eGFR 15–29) | …/… | … | — | … – … |
+| – G5 (eGFR < 15) | …/… | … | — | … – … |
+| Nhóm albumin niệu theo KDIGO (A1–A3), phân bố các mức |   |   |   |   |
+| – A1 (UACR < 30) | …/… | … | — | … – … |
+| – A2 (UACR 30–300) | …/… | … | — | … – … |
+| – A3 (UACR > 300) | …/… | … | — | … – … |
+| Tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán | …/… | … | — | … – … |
+
+*Ghi chú:* Chữ viết tắt — TB: trung bình; ĐLC: độ lệch chuẩn; KTPV: khoảng tứ phân vị; KTC: khoảng tin cậy. Tỷ lệ kèm KTC 95% theo phương pháp đã nêu ở mục xử lý số liệu; mẫu số của từng chỉ số ghi ở cột n/N.
+
+![Biểu đồ 5.1](bieu-bang/bieu-do-5-1.png)
+
+**Biểu đồ 5.1. Tỷ lệ các chỉ số chính kèm khoảng tin cậy 95% (Mục tiêu 1)**
+
+*Ghi chú:* Cột là ước lượng điểm; thanh sai số là KTC 95%.
+
+## 5.3. Kết quả theo mục tiêu 2: Mô tả thực trạng điều trị bảo vệ thận (ACEi/ARB, SGLT2i) ở người bệnh đủ chỉ định theo KDIGO 2022 trong cùng quần thể
+
+**Bảng 5.3. Điều trị bảo vệ thận — ACEi/ARB và các chỉ số mô tả liên quan (Mục tiêu 2)**
+
+| Chỉ số | n/N | Tỷ lệ % hoặc TB ± ĐLC | Trung vị [KTPV] | KTC 95% |
+| --- | --- | --- | --- | --- |
+| Điều trị bảo vệ thận — ACEi/ARB | …/… | … | — | … – … |
+| Điều trị bảo vệ thận — SGLT2i | …/… | … | — | … – … |
+| Người bệnh đủ chỉ định ACEi/ARB theo KDIGO 2022 | …/… | … | — | … – … |
+| Người bệnh đủ chỉ định SGLT2i theo KDIGO 2022 | …/… | … | — | … – … |
+
+*Ghi chú:* Chữ viết tắt — TB: trung bình; ĐLC: độ lệch chuẩn; KTPV: khoảng tứ phân vị; KTC: khoảng tin cậy. Tỷ lệ kèm KTC 95% theo phương pháp đã nêu ở mục xử lý số liệu; mẫu số của từng chỉ số ghi ở cột n/N.
+
+![Biểu đồ 5.2](bieu-bang/bieu-do-5-2.png)
+
+**Biểu đồ 5.2. Tỷ lệ các chỉ số chính kèm khoảng tin cậy 95% (Mục tiêu 2)**
+
+*Ghi chú:* Cột là ước lượng điểm; thanh sai số là KTC 95%.
+
+## 5.4. Kết quả theo mục tiêu 3: Phân tích một số yếu tố liên quan với việc không được xét nghiệm đủ UACR và creatinin (phân tích thăm dò, không kiểm định giả thuyết định trước)
+
+**Bảng 5.4. Phân tích đơn biến các yếu tố liên quan đến việc không được xét nghiệm đủ UACR và creatinin (biến phụ thuộc của MT3) (Mục tiêu 3)**
+
+| Yếu tố | Nhóm / đơn vị | Có kết cục: n (%) | Không có kết cục: n (%) | PR thô (KTC 95%) | p |
+| --- | --- | --- | --- | --- | --- |
+| Tuổi | mỗi đơn vị tăng | … ± … | … ± … | … (… – …) | … |
+| Giới | Nam | … (…) | … (…) | 1 (nhóm tham chiếu) |   |
+|   | Nữ | … (…) | … (…) | … (… – …) | … |
+| Nhóm đối tượng | Quân nhân | … (…) | … (…) | 1 (nhóm tham chiếu) |   |
+|   | Bảo hiểm y tế | … (…) | … (…) | … (… – …) | … |
+|   | Dịch vụ | … (…) | … (…) | … (… – …) | … |
+|   | Khác | … (…) | … (…) | … (… – …) | … |
+| Thời gian mắc đái tháo đường (đơn vị 5 năm) | mỗi đơn vị tăng | … ± … | … ± … | … (… – …) | … |
+| HbA1c (3 mức) | HbA1c < 7% | … (…) | … (…) | 1 (nhóm tham chiếu) |   |
+|   | HbA1c ≥ 7% | … (…) | … (…) | … (… – …) | … |
+|   | Không làm HbA1c năm 2026 | … (…) | … (…) | … (… – …) | … |
+| Đang dùng insulin | Không | … (…) | … (…) | 1 (nhóm tham chiếu) |   |
+|   | Có | … (…) | … (…) | … (… – …) | … |
+| Số nhóm thuốc hạ glucose | mỗi đơn vị tăng | … ± … | … ± … | … (… – …) | … |
+| Tăng huyết áp | Không | … (…) | … (…) | 1 (nhóm tham chiếu) |   |
+|   | Có | … (…) | … (…) | … (… – …) | … |
+| BMI (đơn vị 5 kg/m²) | mỗi đơn vị tăng | … ± … | … ± … | … (… – …) | … |
+| Bệnh tim mạch do xơ vữa hoặc suy tim | Không | … (…) | … (…) | 1 (nhóm tham chiếu) |   |
+|   | Có | … (…) | … (…) | … (… – …) | … |
+| Số lượt khám năm 2026 | mỗi đơn vị tăng | … ± … | … ± … | … (… – …) | … |
+| Phòng khám theo dõi chính | Nội tiết | … (…) | … (…) | 1 (nhóm tham chiếu) |   |
+|   | Nội chung (nội tổng hợp) | … (…) | … (…) | … (… – …) | … |
+|   | Khác | … (…) | … (…) | … (… – …) | … |
+
+*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy; PR: tỷ số tỷ lệ hiện mắc. PR thô ước lượng bằng mô hình một biến cùng loại với mô hình chính; p ghi ba chữ số thập phân, «< 0,001» khi nhỏ hơn.
+
+**Bảng 5.5. Mô hình đa biến các yếu tố liên quan đến việc không được xét nghiệm đủ UACR và creatinin (biến phụ thuộc của MT3) (Mục tiêu 3)**
+
+| Yếu tố | Nhóm / đơn vị | PR hiệu chỉnh (KTC 95%) | p |
+| --- | --- | --- | --- |
+| Tuổi | mỗi đơn vị tăng | … (… – …) | … |
+| Giới | Nam | 1 (nhóm tham chiếu) |   |
+|   | Nữ | … (… – …) | … |
+| Nhóm đối tượng | Quân nhân | 1 (nhóm tham chiếu) |   |
+|   | Bảo hiểm y tế | … (… – …) | … |
+|   | Dịch vụ | … (… – …) | … |
+|   | Khác | … (… – …) | … |
+| Thời gian mắc đái tháo đường (đơn vị 5 năm) | mỗi đơn vị tăng | … (… – …) | … |
+| HbA1c (3 mức) | HbA1c < 7% | 1 (nhóm tham chiếu) |   |
+|   | HbA1c ≥ 7% | … (… – …) | … |
+|   | Không làm HbA1c năm 2026 | … (… – …) | … |
+| Đang dùng insulin | Không | 1 (nhóm tham chiếu) |   |
+|   | Có | … (… – …) | … |
+| Số nhóm thuốc hạ glucose | mỗi đơn vị tăng | … (… – …) | … |
+| Tăng huyết áp | Không | 1 (nhóm tham chiếu) |   |
+|   | Có | … (… – …) | … |
+| BMI (đơn vị 5 kg/m²) | mỗi đơn vị tăng | … (… – …) | … |
+| Bệnh tim mạch do xơ vữa hoặc suy tim | Không | 1 (nhóm tham chiếu) |   |
+|   | Có | … (… – …) | … |
+| Số lượt khám năm 2026 | mỗi đơn vị tăng | … (… – …) | … |
+| Phòng khám theo dõi chính | Nội tiết | 1 (nhóm tham chiếu) |   |
+|   | Nội chung (nội tổng hợp) | … (… – …) | … |
+|   | Khác | … (… – …) | … |
+
+*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy; PR: tỷ số tỷ lệ hiện mắc. PR (tỷ số tỷ lệ hiện mắc) hiệu chỉnh đồng thời cho mọi biến trong bảng; mô hình hồi quy Poisson với sai số chuẩn vững.
+
+![Biểu đồ 5.3](bieu-bang/bieu-do-5-3.png)
+
+**Biểu đồ 5.3. PR hiệu chỉnh và KTC 95% của các yếu tố liên quan đến việc không được xét nghiệm đủ UACR và creatinin (biến phụ thuộc của MT3) (Mục tiêu 3)**
+
+*Ghi chú:* Điểm là PR hiệu chỉnh, đoạn ngang là KTC 95%; đường dọc tại 1,0 là không có liên quan; trục hoành theo thang log. Chữ viết tắt — PR: tỷ số tỷ lệ hiện mắc; KTC: khoảng tin cậy.
+
+## 5.5. Phân tích nhóm nhỏ và phân tích độ nhạy
+
+**Bảng 5.6. Kết quả phân tích nhóm nhỏ và phân tích độ nhạy**
+
+| Phân tích | Loại | n | Ước lượng (KTC 95%) | So với phân tích chính |
+| --- | --- | --- | --- | --- |
+| Tỷ lệ kết cục chính — được xét nghiệm đủ uacr và creatinin năm 2026 — phòng khám theo dõi chính: nội tiết | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
+| Tỷ lệ kết cục chính — được xét nghiệm đủ uacr và creatinin năm 2026 — phòng khám theo dõi chính: nội chung | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
+| Tỷ lệ kết cục chính — được xét nghiệm đủ uacr và creatinin năm 2026 — phòng khám theo dõi chính: khác | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
+| Tỷ lệ kết cục chính — được xét nghiệm đủ uacr và creatinin năm 2026 — nhóm đối tượng: quân nhân | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
+| Tỷ lệ kết cục chính — được xét nghiệm đủ uacr và creatinin năm 2026 — nhóm đối tượng: BHYT | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
+| Tỷ lệ kết cục chính — được xét nghiệm đủ uacr và creatinin năm 2026 — nhóm đối tượng: dịch vụ | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
+| Tỷ lệ kết cục chính — được xét nghiệm đủ uacr và creatinin năm 2026 — nhóm đối tượng: khác | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
+| Tỷ lệ kết cục chính — được xét nghiệm đủ uacr và creatinin năm 2026 — nhóm tuổi < 65 | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
+| Tỷ lệ kết cục chính — được xét nghiệm đủ uacr và creatinin năm 2026 — nhóm tuổi ≥ 65 | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
+| ĐN1 — kết cục chính tính cả albumin/protein niệu dạng khác | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
+| ĐN2 — kết cục chính tính cả xét nghiệm ngoài viện có ghi ngày và kết quả | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
+| ĐN3 — kết cục chính chỉ trên người có lượt khám đầu trước 01/07/2026 | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
+| ĐN4 — kết cục chính chỉ trên người có đơn thuốc hạ glucose | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
+| ĐN5 — Phụ 2 với danh mục mã thận mở rộng (N19, I12, I13, R80) | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
+| ĐN6 — Phụ 3a với albumin niệu chỉ cần một lần UACR ≥ 30 mg/g | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
+| ĐN7 — Phụ 3 tính cả thuốc bệnh án ghi «đang dùng» ngoài đơn | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
+| ĐN9 — MT3 với biến liên tục chia nhóm | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
+
+*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy. Các phân tích đã định trước trong kế hoạch phân tích; phân tích nhóm nhỏ chỉ mang tính thăm dò, kèm kiểm định tương tác.
+
+![Biểu đồ 5.4](bieu-bang/bieu-do-5-4.png)
+
+**Biểu đồ 5.4. Ước lượng theo nhóm nhỏ kèm KTC 95%**
+
+*Ghi chú:* Đường dọc là ước lượng không hiệu ứng; mỗi hàng là một nhóm nhỏ đã định trước.
 
 # 6. KẾ HOẠCH THỰC HIỆN
 
