@@ -578,7 +578,19 @@ Chủ nhiệm đề tài công tác tại chính Khoa C1a – đơn vị đượ
 
 Kết quả được trình bày theo các bảng dưới đây. Các bảng chỉ là khung trình bày, chưa có số liệu.
 
-*Bảng 5.1. Đặc điểm chung của đối tượng nghiên cứu (n = 1.000).*
+Quy ước trình bày: biến định lượng mô tả bằng trung bình ± độ lệch chuẩn khi phân phối gần chuẩn, ngược lại bằng trung vị [khoảng tứ phân vị]; biến định tính bằng tần số và tỷ lệ phần trăm, ghi rõ mẫu số khi khác cỡ mẫu chung; tỷ lệ và các ước lượng hiệu ứng kèm khoảng tin cậy 95%; giá trị p ghi ba chữ số thập phân (p < 0,001 khi nhỏ hơn). Tên bảng đặt phía trên bảng, tên hình và biểu đồ đặt phía dưới; chữ viết tắt được giải thích ngay dưới mỗi bảng.
+
+
+
+
+![Hình 5.1](bieu-bang/hinh-5-1.png)
+
+**Hình 5.1. Sơ đồ tuyển chọn đối tượng nghiên cứu (theo STROBE)**
+
+*Ghi chú:* Số lượng ở từng bước và lý do loại được ghi đầy đủ khi kết thúc thu thập số liệu.
+
+
+**Bảng 5.1. Đặc điểm chung của đối tượng nghiên cứu (n = 1.000)**
 
 | Đặc điểm | Phân nhóm | n (%) hoặc TB ± ĐLC / trung vị [khoảng tứ phân vị] |
 |---|---|---|
@@ -601,7 +613,10 @@ Kết quả được trình bày theo các bảng dưới đây. Các bảng ch�
 | Ngày trong tuần | Thứ Hai … Chủ nhật | — |
 | Cách hoàn thành phiếu | Tự điền; Người nhà ghi hộ; Điều tra viên ghi hộ | — |
 
-*Bảng 5.2. Mức độ hài lòng theo lĩnh vực và hài lòng chung (Mục tiêu 1).*
+*Ghi chú:* Chữ viết tắt — TB: trung bình; ĐLC: độ lệch chuẩn.
+
+
+**Bảng 5.2. Mức độ hài lòng theo lĩnh vực và hài lòng chung (Mục tiêu 1)**
 
 | Lĩnh vực | Số câu | TB ± ĐLC | Trung vị [khoảng tứ phân vị] | % điểm sàn | % điểm trần | Tỷ lệ hài lòng % (KTC 95%) |
 |---|---|---|---|---|---|---|
@@ -614,9 +629,16 @@ Kết quả được trình bày theo các bảng dưới đây. Các bảng ch�
 | Hài lòng chung (G1) – kết cục chính | 1 | — | — | — | — | — |
 | Điểm hài lòng tổng hợp (30 câu A–F) | 30 | — | — | — | — | — |
 
-*Phân bố đầy đủ 5 mức của G1 và của từng câu được trình bày kèm theo. Tỷ lệ hài lòng: G1 (hoặc điểm câu/lĩnh vực) ≥ 4.*
+*Ghi chú:* Chữ viết tắt — TB: trung bình; ĐLC: độ lệch chuẩn; KTC: khoảng tin cậy. Phân bố đầy đủ 5 mức của G1 và của từng câu được trình bày kèm theo. Tỷ lệ hài lòng: G1 (hoặc điểm câu/lĩnh vực) ≥ 4.
 
-*Bảng 5.3. Phân tích đơn biến các yếu tố liên quan đến mức hài lòng chung (Mục tiêu 2).*
+![Biểu đồ 5.1](bieu-bang/bieu-do-5-1.png)
+
+**Biểu đồ 5.1. Giá trị trung bình các chỉ số chính kèm khoảng tin cậy 95% (Mục tiêu 1)**
+
+*Ghi chú:* Cột là ước lượng điểm; thanh sai số là KTC 95%.
+
+
+**Bảng 5.3. Phân tích đơn biến các yếu tố liên quan đến mức hài lòng chung (Mục tiêu 2)**
 
 | Yếu tố | Phân nhóm | Phân bố G1 / tỷ lệ hài lòng % | Mối liên quan thô (KTC 95%) | p |
 |---|---|---|---|---|
@@ -626,7 +648,10 @@ Kết quả được trình bày theo các bảng dưới đây. Các bảng ch�
 | Khung giờ khám; ngày trong tuần | | — | — | — |
 | Tự đánh giá sức khỏe; được khám đúng bác sĩ đã yêu cầu | | — | — | — |
 
-*Bảng 5.4. Mô hình hồi quy logistic thứ tự đa biến các yếu tố liên quan đến mức hài lòng chung G1 (Mục tiêu 2 – phân tích chính).*
+*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy.
+
+
+**Bảng 5.4. Mô hình hồi quy logistic thứ tự đa biến các yếu tố liên quan đến mức hài lòng chung G1 (Mục tiêu 2 – phân tích chính)**
 
 | Biến | Đơn vị / phân nhóm | Tỷ số chênh chung hiệu chỉnh | KTC 95% | p |
 |---|---|---|---|---|
@@ -641,11 +666,33 @@ Kết quả được trình bày theo các bảng dưới đây. Các bảng ch�
 | Tự đánh giá sức khỏe | Theo mức | — | — | — |
 | Được khám đúng bác sĩ đã yêu cầu | Theo nhóm | — | — | — |
 
-*Nhóm tham chiếu của từng biến được xác định trong kế hoạch phân tích. Kèm theo: kết quả kiểm định giả định tỷ số chênh tương xứng; hệ số tương quan nội cụm theo bàn khám; số quan sát đưa vào mô hình.*
+*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy. Nhóm tham chiếu của từng biến được xác định trong kế hoạch phân tích. Kèm theo: kết quả kiểm định giả định tỷ số chênh tương xứng; hệ số tương quan nội cụm theo bàn khám; số quan sát đưa vào mô hình.
 
-*Bảng 5.5. Phân tích độ nhạy.* Trình bày ước lượng của thời gian chờ (KTC 95%) trong từng kịch bản ở mục 4.10, so sánh chiều và độ lớn với mô hình chính.
+![Biểu đồ 5.2](bieu-bang/bieu-do-5-2.png)
 
-*Bảng 5.6. Tỷ lệ đáp ứng và dữ liệu thiếu.*
+**Biểu đồ 5.2. OR hiệu chỉnh và KTC 95% của các yếu tố liên quan đến mức độ hài lòng chung (G1, hỏi trực tiếp) (Mục tiêu 2)**
+
+*Ghi chú:* Điểm là OR hiệu chỉnh, đoạn ngang là KTC 95%; đường dọc tại 1,0 là không có liên quan; trục hoành theo thang log. Chữ viết tắt — OR: tỷ số chênh; KTC: khoảng tin cậy.
+
+
+**Bảng 5.5. Phân tích độ nhạy**
+
+| Phân tích | Loại | n | Ước lượng (KTC 95%) | So với phân tích chính |
+| --- | --- | --- | --- | --- |
+| Loại phiếu có hỗ trợ ghi (câu 1. cách hoàn thành phiếu 2/3), chạy lại mô hình chính trên tập tự điền | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
+| Partial proportional odds / generalized ordered logit khi vi phạm tỷ lệ odds | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
+| Phi tuyến thời gian chờ: spline RCS 3 nút / theo phân vị | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
+| Logistic thường vs Firth (chỉ khi separation) | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
+| Có/không điểm ảnh hưởng; mô hình đầy đủ vs rút gọn | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
+| Mô hình thứ tự hệ số chặn ngẫu nhiên theo mã bàn khám/bác sĩ khám | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
+| Có/không trọng số hậu phân tầng (svyolr; postStratify cho Mục tiêu 1) | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
+| Gộp mức G1 khi lệch trần (mức < 20 quan sát) | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
+| Phân tích giới hạn cho người bỏ về trước khi khám (f từ số liệu tổng hợp HIS) | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
+
+*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy. Các phân tích đã định trước trong kế hoạch phân tích; phân tích nhóm nhỏ chỉ mang tính thăm dò, kèm kiểm định tương tác. Trình bày ước lượng của thời gian chờ (KTC 95%) trong từng kịch bản ở mục 4.10, so sánh chiều và độ lớn với mô hình chính.
+
+
+**Bảng 5.6. Tỷ lệ đáp ứng và dữ liệu thiếu**
 
 | Chỉ số | Cách tính | Kết quả |
 |---|---|---|
@@ -658,22 +705,6 @@ Kết quả được trình bày theo các bảng dưới đây. Các bảng ch�
 | So sánh người từ chối với người tham gia | Nhóm tuổi, giới, khung giờ | — |
 | Tỷ lệ câu không áp dụng / không biết / không trả lời | Theo từng câu | — |
 | Tỷ lệ không ghép được thời gian chờ từ HIS | Số phiếu không ghép được / số phiếu hợp lệ | — |
-
-*Hình 5.1. Sơ đồ tuyển chọn đối tượng nghiên cứu (theo STROBE).*
-
-| Bước | Số lượng |
-|---|---|
-| Người bệnh lấy số khám tại Khoa C1a trong thời gian nghiên cứu (HIS) | n = … |
-| → Bỏ về trước khi vào buồng khám (nhánh riêng, số liệu HIS) | n = … |
-| Hoàn thành lượt khám | n = … |
-| Được chọn theo quy trình chọn mẫu hệ thống phân tầng | n = … |
-| → Không đủ tiêu chuẩn hoặc đã tham gia trước đó | n = … |
-| Được mời tham gia | n = … |
-| → Từ chối | n = … |
-| Đồng ý tham gia và nộp phiếu | n = … |
-| → Phiếu bị loại: thiếu G1 / bỏ trống từ 7 câu Phần 2 trở lên / bỏ trống trọn một lĩnh vực | n = … / … / … |
-| **Đưa vào phân tích** | **n = …** |
-
 ---
 
 # 6. KẾ HOẠCH THỰC HIỆN
