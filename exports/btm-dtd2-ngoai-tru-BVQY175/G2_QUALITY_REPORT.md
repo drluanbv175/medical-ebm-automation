@@ -8,7 +8,7 @@
 | ID | Tiêu chí | Trạng thái | Bằng chứng |
 |---|---|---|---|
 | G2-AUTO-01 | Liêm chính nội dung hồ sơ HIỆN HÀNH (PII, số phê duyệt tự gán, tự xưng phê duyệt/khoá, disclaimer) | PASS | R1/R2/R3/R7 sạch trên nội dung hiện hành (guardrail lúc sinh: passed=True) |
-| G2-AUTO-02 | G1 đã được PI/methodologist xác nhận (chấm sống) | PASS | G1 chấm sống=PASS_G1_CONFIRMED |
+| G2-AUTO-02 | G1 đã được PI/methodologist xác nhận (chấm sống) | REVIEW | G1 chấm sống=DRAFT_READY_NEEDS_HUMAN_REVIEW |
 | G2-AUTO-02b | ICH E6(R3) Annex 2 Step 4: IRB/consent/privacy/data governance đủ cho phương pháp mới | PASS | status=NOT_APPLICABLE; methods=không áp dụng |
 | G2-AUTO-03 | Bộ hồ sơ IRB/ICF/DMP có đủ cấu trúc bắt buộc (ICF đủ mục theo thiết kế) | PASS | đủ marker tài liệu 1-8, ICF, DMP, rủi ro/bồi thường/COI; ICF đủ mục theo thiết kế |
 | G2-AUTO-03b | ICF tiếng Anh tương ứng ICF tiếng Việt (cùng tập mục) | PASS | hai bản ICF có cùng tập mục (hoặc chưa có bản tiếng Anh/tiếng Việt để đối chiếu) |
@@ -40,6 +40,7 @@ Không chặn nộp IRB; BẮT BUỘC điền trước khi ký khoá G2 (approve
 - "DRAFT, Điền trường còn [CẦN] trước khi gửi đăng ký."
 
 ## Việc còn lại
+- Hoàn tất xác nhận phương pháp G1; có thể soạn G2 song song nhưng chưa khóa.
 - Điền nội dung thật; với PII dùng bản nộp ngoài hệ thống và giữ bản redacted. Ô sau phê duyệt (số IRB, ngày phê duyệt, mã/ngày đăng ký…) điền khi có quyết định, TRƯỚC khi ký khoá G2.
 - Hội đồng/đầu mối được ủy quyền ghi quyết định bằng approve_gate.py.
 - Người có thẩm quyền IRB tự ký; agent không được chạy lệnh phê duyệt.

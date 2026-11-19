@@ -1,13 +1,20 @@
 {
   "study": "btm-dtd2-ngoai-tru-BVQY175",
-  "checked_at_utc": "2026-11-17T06:57:42.775644+00:00",
+  "checked_at_utc": "2026-11-19T22:45:15.000686+00:00",
   "pmids_checked": [
     "14567763",
+    "16977646",
+    "17654487",
     "19564179",
+    "21130355",
     "21225900",
+    "2189948",
+    "2348207",
     "26440803",
     "26964707",
+    "27330520",
     "27881078",
+    "2868172",
     "30238781",
     "32111192",
     "33722396",
@@ -43,11 +50,117 @@
     "42541306",
     "42575755",
     "42723263",
-    "42838586"
+    "42838586",
+    "8501467",
+    "8599488"
   ],
-  "pmids_hash": "882fd204f7427d95e28fa60d843c678fd1b9ab4d192bd3f91944e837cbbebf3e",
+  "pmids_hash": "3a3b07c1a1d110ae64c0576654566ce8d1b3f41b64e340fefbeb516aec7b9bc9",
   "all_resolved": true,
   "metadata": {
+    "14567763": {
+      "status": "resolved",
+      "title": "Alternatives for logistic regression in cross-sectional studies: an empirical comparison of models that directly estimate the prevalence ratio.",
+      "authors": "Barros AJ, Hirakata VN",
+      "journal": "BMC medical research methodology",
+      "year": "2003",
+      "doi": "10.1186/1471-2288-3-21"
+    },
+    "16977646": {
+      "status": "resolved",
+      "title": "The content validity index: are you sure you know what's being reported? Critique and recommendations.",
+      "authors": "Polit DF, Beck CT",
+      "journal": "Research in nursing & health",
+      "year": "2006",
+      "doi": "10.1002/nur.20147"
+    },
+    "17654487": {
+      "status": "resolved",
+      "title": "Is the CVI an acceptable indicator of content validity? Appraisal and recommendations.",
+      "authors": "Polit DF, Beck CT, Owen SV",
+      "journal": "Research in nursing & health",
+      "year": "2007",
+      "doi": "10.1002/nur.20199"
+    },
+    "19564179": {
+      "status": "resolved",
+      "title": "Multiple imputation for missing data in epidemiological and clinical research: potential and pitfalls.",
+      "authors": "Sterne JA, White IR, Carlin JB, Spratt M, Royston P",
+      "journal": "BMJ (Clinical research ed.)",
+      "year": "2009",
+      "doi": "10.1136/bmj.b2393"
+    },
+    "21130355": {
+      "status": "resolved",
+      "title": "Guidelines for Reporting Reliability and Agreement Studies (GRRAS) were proposed.",
+      "authors": "Kottner J, Audigé L, Brorson S, Donner A, Gajewski BJ",
+      "journal": "Journal of clinical epidemiology",
+      "year": "2011",
+      "doi": "10.1016/j.jclinepi.2010.03.002"
+    },
+    "21225900": {
+      "status": "resolved",
+      "title": "Multiple imputation using chained equations: Issues and guidance for practice.",
+      "authors": "White IR, Royston P, Wood AM",
+      "journal": "Statistics in medicine",
+      "year": "2011",
+      "doi": "10.1002/sim.4067"
+    },
+    "2189948": {
+      "status": "resolved",
+      "title": "High agreement but low kappa: II. Resolving the paradoxes.",
+      "authors": "Cicchetti DV, Feinstein AR",
+      "journal": "Journal of clinical epidemiology",
+      "year": "1990",
+      "doi": "10.1016/0895-4356(90)90159-m"
+    },
+    "2348207": {
+      "status": "resolved",
+      "title": "High agreement but low kappa: I. The problems of two paradoxes.",
+      "authors": "Feinstein AR, Cicchetti DV",
+      "journal": "Journal of clinical epidemiology",
+      "year": "1990",
+      "doi": "10.1016/0895-4356(90)90158-l"
+    },
+    "26440803": {
+      "status": "resolved",
+      "title": "The REporting of studies Conducted using Observational Routinely-collected health Data (RECORD) statement.",
+      "authors": "Benchimol EI, Smeeth L, Guttmann A, Harron K, Moher D",
+      "journal": "PLoS medicine",
+      "year": "2015",
+      "doi": "10.1371/journal.pmed.1001885"
+    },
+    "26964707": {
+      "status": "resolved",
+      "title": "Adequate sample size for developing prediction models is not simply related to events per variable.",
+      "authors": "Ogundimu EO, Altman DG, Collins GS",
+      "journal": "Journal of clinical epidemiology",
+      "year": "2016",
+      "doi": "10.1016/j.jclinepi.2016.02.031"
+    },
+    "27330520": {
+      "status": "resolved",
+      "title": "A Guideline of Selecting and Reporting Intraclass Correlation Coefficients for Reliability Research.",
+      "authors": "Koo TK, Li MY",
+      "journal": "Journal of chiropractic medicine",
+      "year": "2016",
+      "doi": "10.1016/j.jcm.2016.02.012"
+    },
+    "27881078": {
+      "status": "resolved",
+      "title": "No rationale for 1 variable per 10 events criterion for binary logistic regression analysis.",
+      "authors": "van Smeden M, de Groot JA, Moons KG, Collins GS, Altman DG",
+      "journal": "BMC medical research methodology",
+      "year": "2016",
+      "doi": "10.1186/s12874-016-0267-3"
+    },
+    "2868172": {
+      "status": "resolved",
+      "title": "Statistical methods for assessing agreement between two methods of clinical measurement.",
+      "authors": "Bland JM, Altman DG",
+      "journal": "Lancet (London, England)",
+      "year": "1986",
+      "doi": null
+    },
     "30238781": {
       "status": "resolved",
       "title": "Guidelines and clinical practice at the primary level of healthcare in patients with type 2 diabetes mellitus with and without kidney disease in five European countries.",
@@ -56,37 +169,13 @@
       "year": "2019",
       "doi": "10.1177/1479164118795559"
     },
-    "41358881": {
+    "32111192": {
       "status": "resolved",
-      "title": "11. Chronic Kidney Disease and Risk Management: Standards of Care in Diabetes-2026.",
-      "authors": null,
-      "journal": "Diabetes care",
-      "year": "2026",
-      "doi": "10.2337/dc26-S011"
-    },
-    "38490803": {
-      "status": "resolved",
-      "title": "KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease.",
-      "authors": null,
-      "journal": "Kidney international",
-      "year": "2024",
-      "doi": "10.1016/j.kint.2023.10.018"
-    },
-    "36272764": {
-      "status": "resolved",
-      "title": "KDIGO 2022 Clinical Practice Guideline for Diabetes Management in Chronic Kidney Disease.",
-      "authors": null,
-      "journal": "Kidney international",
-      "year": "2022",
-      "doi": "10.1016/j.kint.2022.06.008"
-    },
-    "38922613": {
-      "status": "resolved",
-      "title": "Concordance With Screening and Treatment Guidelines for Chronic Kidney Disease in Type 2 Diabetes.",
-      "authors": "Edmonston D, Lydon E, Mulder H, Chiswell K, Lampron Z",
-      "journal": "JAMA network open",
-      "year": "2024",
-      "doi": "10.1001/jamanetworkopen.2024.18808"
+      "title": "The burden of unrecognised chronic kidney disease in patients with type 2 diabetes at a county hospital clinic in Kenya: implications to care and need for screening.",
+      "authors": "Otieno FCF, Ogola EN, Kimando MW, Mutai K",
+      "journal": "BMC nephrology",
+      "year": "2020",
+      "doi": "10.1186/s12882-020-1705-3"
     },
     "33722396": {
       "status": "resolved",
@@ -96,21 +185,133 @@
       "year": "2021",
       "doi": "10.1016/j.mayocp.2020.07.037"
     },
-    "41345917": {
+    "34554658": {
       "status": "resolved",
-      "title": "Underutilization of albuminuria screening in adults with diabetes mellitus or hypertension: a systematic review and meta-analysis.",
-      "authors": "Albekery MA, Alhomoud IS, Alabdulathim LS, Almajed MA, Alobaid AA",
-      "journal": "BMC nephrology",
-      "year": "2025",
-      "doi": "10.1186/s12882-025-04672-5"
+      "title": "New Creatinine- and Cystatin C-Based Equations to Estimate GFR without Race.",
+      "authors": "Inker LA, Eneanya ND, Coresh J, Tighiouart H, Wang D",
+      "journal": "The New England journal of medicine",
+      "year": "2021",
+      "doi": "10.1056/NEJMoa2102953"
     },
-    "41741270": {
+    "35101868": {
       "status": "resolved",
-      "title": "Undiagnosed chronic kidney disease in people with type 2 diabetes in Spain: Prevalence, treatment patterns and associated factors in a multicentre cross-sectional study.",
-      "authors": "Cebrián Cuenca A, Cornejo Martin J, Álvarez Guisasola F, Orozco Beltrán D, Quesada JA",
+      "title": "Improving annual albuminuria testing for individuals with diabetes.",
+      "authors": "Kam S, Angaramo S, Antoun J, Bhatta MR, Bonds PD",
+      "journal": "BMJ open quality",
+      "year": "2022",
+      "doi": "10.1136/bmjoq-2021-001591"
+    },
+    "35177470": {
+      "status": "resolved",
+      "title": "Using electronic medical record data to assess chronic kidney disease, type 2 diabetes and cardiovascular disease testing, recognition and management as documented in Australian general practice: a cross-sectional analysis.",
+      "authors": "Jones JL, Lumsden NG, Simons K, Ta'eed A, de Courten MP",
+      "journal": "Family medicine and community health",
+      "year": "2022",
+      "doi": "10.1136/fmch-2021-001006"
+    },
+    "35606699": {
+      "status": "resolved",
+      "title": "Underuse of cardiorenal protective agents in high-risk diabetes patients in primary care: a cross-sectional study.",
+      "authors": "Hao R, Myroniuk T, McGuckin T, Manca D, Campbell-Scherer D",
+      "journal": "BMC primary care",
+      "year": "2022",
+      "doi": "10.1186/s12875-022-01731-w"
+    },
+    "36272764": {
+      "status": "resolved",
+      "title": "KDIGO 2022 Clinical Practice Guideline for Diabetes Management in Chronic Kidney Disease.",
+      "authors": null,
+      "journal": "Kidney international",
+      "year": "2022",
+      "doi": "10.1016/j.kint.2022.06.008"
+    },
+    "36352203": {
+      "status": "resolved",
+      "title": "Care Gaps in Sodium-Glucose Cotransporter-2 Inhibitor and Renin Angiotensin System Inhibitor Prescriptions for Patients with Diabetic Kidney Disease.",
+      "authors": "Rikin S, Deccy S, Zhang C, Crandall J, Deng Y",
+      "journal": "Journal of general internal medicine",
+      "year": "2023",
+      "doi": "10.1007/s11606-022-07863-0"
+    },
+    "37153973": {
+      "status": "resolved",
+      "title": "Practical considerations for the use of SGLT-2 inhibitors in the Asia-Pacific countries-An expert consensus statement.",
+      "authors": "Liew A, Lydia A, Matawaran BJ, Susantitaphong P, Tran HTB",
+      "journal": "Nephrology (Carlton, Vic.)",
+      "year": "2023",
+      "doi": "10.1111/nep.14167"
+    },
+    "38490803": {
+      "status": "resolved",
+      "title": "KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease.",
+      "authors": null,
+      "journal": "Kidney international",
+      "year": "2024",
+      "doi": "10.1016/j.kint.2023.10.018"
+    },
+    "38922613": {
+      "status": "resolved",
+      "title": "Concordance With Screening and Treatment Guidelines for Chronic Kidney Disease in Type 2 Diabetes.",
+      "authors": "Edmonston D, Lydon E, Mulder H, Chiswell K, Lampron Z",
+      "journal": "JAMA network open",
+      "year": "2024",
+      "doi": "10.1001/jamanetworkopen.2024.18808"
+    },
+    "39023418": {
+      "status": "resolved",
+      "title": "Suboptimal monitoring and management in patients with unrecorded stage 3 chronic kidney disease in real-world settings: Insights from REVEAL-CKD.",
+      "authors": "Tangri N, Alvarez CS, Arnold M, Barone S, Cebrián A",
+      "journal": "European journal of clinical investigation",
+      "year": "2024",
+      "doi": "10.1111/eci.14282"
+    },
+    "39156845": {
+      "status": "resolved",
+      "title": "Using eGFR and Albumin Creatinine Ratio as an Initial Screening Tool in Trinidadian Primary Care to Identify High-risk Population for CKD: A Cross-Sectional Study.",
+      "authors": "Mahadevappa K, Nayak SB, Maharaj RG, Bhaktha G",
+      "journal": "Indian journal of nephrology",
+      "year": "2024",
+      "doi": "10.25259/ijn_451_23"
+    },
+    "39391521": {
+      "status": "resolved",
+      "title": "Optimising antidiabetic medication management for type 2 diabetes and renal dysfunction in Can Tho City, Vietnam.",
+      "authors": "Dang KD, Nguyen HMT, Phung YP, Le TQN",
+      "journal": "Przeglad menopauzalny = Menopause review",
+      "year": "2024",
+      "doi": "10.5114/pm.2024.141090"
+    },
+    "39487060": {
+      "status": "resolved",
+      "title": "Trends in type 2 diabetes medication use and guideline adherence in Belgian primary care (2019-2023).",
+      "authors": "Raat W, Mamouris P, Mathieu C, Goderis G, Vaes B",
       "journal": "Primary care diabetes",
-      "year": "2026",
-      "doi": "10.1016/j.pcd.2026.02.007"
+      "year": "2025",
+      "doi": "10.1016/j.pcd.2024.10.007"
+    },
+    "39507052": {
+      "status": "resolved",
+      "title": "Temporal trend in quality indicators of diabetes care performance among persons with type 2 diabetes in primary care practice: a serial cross-sectional analytical study, 2013/14 to 2021/22.",
+      "authors": "Awiphan R, Kowatcharakul W, Ruengorn C, Noppakun K, Thavorn K",
+      "journal": "Frontiers in endocrinology",
+      "year": "2024",
+      "doi": "10.3389/fendo.2024.1359904"
+    },
+    "40037768": {
+      "status": "resolved",
+      "title": "Missed opportunities to manage complex comorbidity of heart failure, type 2 diabetes mellitus and chronic kidney disease: a retrospective cohort study.",
+      "authors": "Pasea L, Mohamed M, Dashtban A, Bhuva A, Mizani MA",
+      "journal": "Heart (British Cardiac Society)",
+      "year": "2025",
+      "doi": "10.1136/heartjnl-2024-325046"
+    },
+    "40335370": {
+      "status": "resolved",
+      "title": "Evaluating risk stratification according to Type 2 diabetes guidelines in primary care - Insights from the Danish DIAGRAM project.",
+      "authors": "Charles MH, Schousboe K, Thybo T, Hall-Andersen EK, Knudsen ST",
+      "journal": "Primary care diabetes",
+      "year": "2025",
+      "doi": "10.1016/j.pcd.2025.05.002"
     },
     "40428801": {
       "status": "resolved",
@@ -120,13 +321,85 @@
       "year": "2025",
       "doi": "10.3390/medicina61050843"
     },
-    "36352203": {
+    "40667713": {
       "status": "resolved",
-      "title": "Care Gaps in Sodium-Glucose Cotransporter-2 Inhibitor and Renin Angiotensin System Inhibitor Prescriptions for Patients with Diabetic Kidney Disease.",
-      "authors": "Rikin S, Deccy S, Zhang C, Crandall J, Deng Y",
-      "journal": "Journal of general internal medicine",
-      "year": "2023",
-      "doi": "10.1007/s11606-022-07863-0"
+      "title": "Prevalence of SGLT2 inhibitor and GLP1 receptor agonist prescriptions in type 2 diabetes patients with and without chronic kidney disease: Analysis of an Australian primary care dataset.",
+      "authors": "Wallace H, Wick J, Neuen BL, Buizen L, Badve SV",
+      "journal": "Diabetes, obesity & metabolism",
+      "year": "2025",
+      "doi": "10.1111/dom.16608"
+    },
+    "40814615": {
+      "status": "resolved",
+      "title": "Kidney Disease: Improving Global Outcomes Summit Recommendations on Implementation of Diabetes Management in CKD: From Primary to Data-Driven Collaborative Care.",
+      "authors": "Li PK, Cheung M, Chow KM, Leung MKW, Lim LL",
+      "journal": "Kidney international reports",
+      "year": "2025",
+      "doi": "10.1016/j.ekir.2025.06.010"
+    },
+    "40902917": {
+      "status": "resolved",
+      "title": "Optimizing guideline-directed medical therapy in chronic kidney disease and type 2 diabetes mellitus patients in primary care.",
+      "authors": "Santana R, Umana CD, Oo ZT, Kolli ST, Bejugam VR",
+      "journal": "The American journal of medicine",
+      "year": "2026",
+      "doi": "10.1016/j.amjmed.2025.08.029"
+    },
+    "41276836": {
+      "status": "resolved",
+      "title": "Chronic kidney disease screening in primary care: a descriptive analysis of the Girona Sud health region.",
+      "authors": "Barrot-de la Puente J, Lopez Arpí C, Ramon Granes M, Escribà Planes M, Fernandez-Camins B",
+      "journal": "BMC primary care",
+      "year": "2025",
+      "doi": "10.1186/s12875-025-03117-0"
+    },
+    "41345917": {
+      "status": "resolved",
+      "title": "Underutilization of albuminuria screening in adults with diabetes mellitus or hypertension: a systematic review and meta-analysis.",
+      "authors": "Albekery MA, Alhomoud IS, Alabdulathim LS, Almajed MA, Alobaid AA",
+      "journal": "BMC nephrology",
+      "year": "2025",
+      "doi": "10.1186/s12882-025-04672-5"
+    },
+    "41358881": {
+      "status": "resolved",
+      "title": "11. Chronic Kidney Disease and Risk Management: Standards of Care in Diabetes-2026.",
+      "authors": null,
+      "journal": "Diabetes care",
+      "year": "2026",
+      "doi": "10.2337/dc26-S011"
+    },
+    "41358893": {
+      "status": "resolved",
+      "title": "2. Diagnosis and Classification of Diabetes: Standards of Care in Diabetes-2026.",
+      "authors": null,
+      "journal": "Diabetes care",
+      "year": "2026",
+      "doi": "10.2337/dc26-S002"
+    },
+    "41358900": {
+      "status": "resolved",
+      "title": "9. Pharmacologic Approaches to Glycemic Treatment: Standards of Care in Diabetes-2026.",
+      "authors": null,
+      "journal": "Diabetes care",
+      "year": "2026",
+      "doi": "10.2337/dc26-S009"
+    },
+    "41541781": {
+      "status": "resolved",
+      "title": "From Evidence to Action: Advancing Timely Implementation of Triple Therapy in Type 2 Diabetes Mellitus and CKD.",
+      "authors": "Fernandez-Fernandez B, Gorriz JL, Cebrian-Cuenca A, Fácila L, Fernandez Rodriguez JM",
+      "journal": "Kidney international reports",
+      "year": "2026",
+      "doi": "10.1016/j.ekir.2025.09.027"
+    },
+    "41741270": {
+      "status": "resolved",
+      "title": "Undiagnosed chronic kidney disease in people with type 2 diabetes in Spain: Prevalence, treatment patterns and associated factors in a multicentre cross-sectional study.",
+      "authors": "Cebrián Cuenca A, Cornejo Martin J, Álvarez Guisasola F, Orozco Beltrán D, Quesada JA",
+      "journal": "Primary care diabetes",
+      "year": "2026",
+      "doi": "10.1016/j.pcd.2026.02.007"
     },
     "41916900": {
       "status": "resolved",
@@ -144,85 +417,13 @@
       "year": "2026",
       "doi": "10.1016/j.amjmed.2026.04.022"
     },
-    "26440803": {
+    "42541306": {
       "status": "resolved",
-      "title": "The REporting of studies Conducted using Observational Routinely-collected health Data (RECORD) statement.",
-      "authors": "Benchimol EI, Smeeth L, Guttmann A, Harron K, Moher D",
-      "journal": "PLoS medicine",
-      "year": "2015",
-      "doi": "10.1371/journal.pmed.1001885"
-    },
-    "34554658": {
-      "status": "resolved",
-      "title": "New Creatinine- and Cystatin C-Based Equations to Estimate GFR without Race.",
-      "authors": "Inker LA, Eneanya ND, Coresh J, Tighiouart H, Wang D",
-      "journal": "The New England journal of medicine",
-      "year": "2021",
-      "doi": "10.1056/NEJMoa2102953"
-    },
-    "14567763": {
-      "status": "resolved",
-      "title": "Alternatives for logistic regression in cross-sectional studies: an empirical comparison of models that directly estimate the prevalence ratio.",
-      "authors": "Barros AJ, Hirakata VN",
-      "journal": "BMC medical research methodology",
-      "year": "2003",
-      "doi": "10.1186/1471-2288-3-21"
-    },
-    "26964707": {
-      "status": "resolved",
-      "title": "Adequate sample size for developing prediction models is not simply related to events per variable.",
-      "authors": "Ogundimu EO, Altman DG, Collins GS",
-      "journal": "Journal of clinical epidemiology",
-      "year": "2016",
-      "doi": "10.1016/j.jclinepi.2016.02.031"
-    },
-    "19564179": {
-      "status": "resolved",
-      "title": "Multiple imputation for missing data in epidemiological and clinical research: potential and pitfalls.",
-      "authors": "Sterne JA, White IR, Carlin JB, Spratt M, Royston P",
-      "journal": "BMJ (Clinical research ed.)",
-      "year": "2009",
-      "doi": "10.1136/bmj.b2393"
-    },
-    "21225900": {
-      "status": "resolved",
-      "title": "Multiple imputation using chained equations: Issues and guidance for practice.",
-      "authors": "White IR, Royston P, Wood AM",
-      "journal": "Statistics in medicine",
-      "year": "2011",
-      "doi": "10.1002/sim.4067"
-    },
-    "40902917": {
-      "status": "resolved",
-      "title": "Optimizing guideline-directed medical therapy in chronic kidney disease and type 2 diabetes mellitus patients in primary care.",
-      "authors": "Santana R, Umana CD, Oo ZT, Kolli ST, Bejugam VR",
-      "journal": "The American journal of medicine",
+      "title": "Current attitudes of primary care providers toward albuminuria testing in patients with diabetes in the United States.",
+      "authors": "Miyamoto Y, Xu F, Zaganjor I, Pavkov ME, Koyama AK",
+      "journal": "Preventive medicine reports",
       "year": "2026",
-      "doi": "10.1016/j.amjmed.2025.08.029"
-    },
-    "32111192": {
-      "status": "resolved",
-      "title": "The burden of unrecognised chronic kidney disease in patients with type 2 diabetes at a county hospital clinic in Kenya: implications to care and need for screening.",
-      "authors": "Otieno FCF, Ogola EN, Kimando MW, Mutai K",
-      "journal": "BMC nephrology",
-      "year": "2020",
-      "doi": "10.1186/s12882-020-1705-3"
-    },
-    "40667713": {
-      "status": "resolved",
-      "title": "Prevalence of SGLT2 inhibitor and GLP1 receptor agonist prescriptions in type 2 diabetes patients with and without chronic kidney disease: Analysis of an Australian primary care dataset.",
-      "authors": "Wallace H, Wick J, Neuen BL, Buizen L, Badve SV",
-      "journal": "Diabetes, obesity & metabolism",
-      "year": "2025",
-      "doi": "10.1111/dom.16608"
-    },
-    "39487060": {
-      "status": "resolved",
-      "title": "Trends in type 2 diabetes medication use and guideline adherence in Belgian primary care (2019-2023).",
-      "authors": "Raat W, Mamouris P, Mathieu C, Goderis G, Vaes B",
-      "journal": "Primary care diabetes",
-      "year": "2025",
-      "doi": "10.1016/j.pcd.2024.10.007"
+      "doi": "10.1016/j.pmedr.2026.103581"
     },
     "42575755": {
       "status": "resolved",
@@ -232,61 +433,13 @@
       "year": "2026",
       "doi": "10.1016/j.pcd.2026.07.013"
     },
-    "40037768": {
+    "42723263": {
       "status": "resolved",
-      "title": "Missed opportunities to manage complex comorbidity of heart failure, type 2 diabetes mellitus and chronic kidney disease: a retrospective cohort study.",
-      "authors": "Pasea L, Mohamed M, Dashtban A, Bhuva A, Mizani MA",
-      "journal": "Heart (British Cardiac Society)",
-      "year": "2025",
-      "doi": "10.1136/heartjnl-2024-325046"
-    },
-    "39507052": {
-      "status": "resolved",
-      "title": "Temporal trend in quality indicators of diabetes care performance among persons with type 2 diabetes in primary care practice: a serial cross-sectional analytical study, 2013/14 to 2021/22.",
-      "authors": "Awiphan R, Kowatcharakul W, Ruengorn C, Noppakun K, Thavorn K",
-      "journal": "Frontiers in endocrinology",
-      "year": "2024",
-      "doi": "10.3389/fendo.2024.1359904"
-    },
-    "41358900": {
-      "status": "resolved",
-      "title": "9. Pharmacologic Approaches to Glycemic Treatment: Standards of Care in Diabetes-2026.",
-      "authors": null,
-      "journal": "Diabetes care",
+      "title": "The SGLT2i Treatment Gap in UK Primary Care: A Cross-Sectional RWE Study of Prescribing in Clinical Practice.",
+      "authors": "Stefanska C, Chung R, Ramjaun S, Jin D, Doherty C",
+      "journal": "Diabetes, obesity & metabolism",
       "year": "2026",
-      "doi": "10.2337/dc26-S009"
-    },
-    "35606699": {
-      "status": "resolved",
-      "title": "Underuse of cardiorenal protective agents in high-risk diabetes patients in primary care: a cross-sectional study.",
-      "authors": "Hao R, Myroniuk T, McGuckin T, Manca D, Campbell-Scherer D",
-      "journal": "BMC primary care",
-      "year": "2022",
-      "doi": "10.1186/s12875-022-01731-w"
-    },
-    "41276836": {
-      "status": "resolved",
-      "title": "Chronic kidney disease screening in primary care: a descriptive analysis of the Girona Sud health region.",
-      "authors": "Barrot-de la Puente J, Lopez Arpí C, Ramon Granes M, Escribà Planes M, Fernandez-Camins B",
-      "journal": "BMC primary care",
-      "year": "2025",
-      "doi": "10.1186/s12875-025-03117-0"
-    },
-    "35177470": {
-      "status": "resolved",
-      "title": "Using electronic medical record data to assess chronic kidney disease, type 2 diabetes and cardiovascular disease testing, recognition and management as documented in Australian general practice: a cross-sectional analysis.",
-      "authors": "Jones JL, Lumsden NG, Simons K, Ta'eed A, de Courten MP",
-      "journal": "Family medicine and community health",
-      "year": "2022",
-      "doi": "10.1136/fmch-2021-001006"
-    },
-    "41358893": {
-      "status": "resolved",
-      "title": "2. Diagnosis and Classification of Diabetes: Standards of Care in Diabetes-2026.",
-      "authors": null,
-      "journal": "Diabetes care",
-      "year": "2026",
-      "doi": "10.2337/dc26-S002"
+      "doi": "10.1111/dom.71298"
     },
     "42838586": {
       "status": "resolved",
@@ -296,94 +449,22 @@
       "year": "2026",
       "doi": "10.1136/bmjopen-2026-121190"
     },
-    "42723263": {
+    "8501467": {
       "status": "resolved",
-      "title": "The SGLT2i Treatment Gap in UK Primary Care: A Cross-Sectional RWE Study of Prescribing in Clinical Practice.",
-      "authors": "Stefanska C, Chung R, Ramjaun S, Jin D, Doherty C",
-      "journal": "Diabetes, obesity & metabolism",
-      "year": "2026",
-      "doi": "10.1111/dom.71298"
+      "title": "Bias, prevalence and kappa.",
+      "authors": "Byrt T, Bishop J, Carlin JB",
+      "journal": "Journal of clinical epidemiology",
+      "year": "1993",
+      "doi": "10.1016/0895-4356(93)90018-v"
     },
-    "42541306": {
+    "8599488": {
       "status": "resolved",
-      "title": "Current attitudes of primary care providers toward albuminuria testing in patients with diabetes in the United States.",
-      "authors": "Miyamoto Y, Xu F, Zaganjor I, Pavkov ME, Koyama AK",
-      "journal": "Preventive medicine reports",
-      "year": "2026",
-      "doi": "10.1016/j.pmedr.2026.103581"
-    },
-    "41541781": {
-      "status": "resolved",
-      "title": "From Evidence to Action: Advancing Timely Implementation of Triple Therapy in Type 2 Diabetes Mellitus and CKD.",
-      "authors": "Fernandez-Fernandez B, Gorriz JL, Cebrian-Cuenca A, Fácila L, Fernandez Rodriguez JM",
-      "journal": "Kidney international reports",
-      "year": "2026",
-      "doi": "10.1016/j.ekir.2025.09.027"
-    },
-    "40335370": {
-      "status": "resolved",
-      "title": "Evaluating risk stratification according to Type 2 diabetes guidelines in primary care - Insights from the Danish DIAGRAM project.",
-      "authors": "Charles MH, Schousboe K, Thybo T, Hall-Andersen EK, Knudsen ST",
-      "journal": "Primary care diabetes",
-      "year": "2025",
-      "doi": "10.1016/j.pcd.2025.05.002"
-    },
-    "39156845": {
-      "status": "resolved",
-      "title": "Using eGFR and Albumin Creatinine Ratio as an Initial Screening Tool in Trinidadian Primary Care to Identify High-risk Population for CKD: A Cross-Sectional Study.",
-      "authors": "Mahadevappa K, Nayak SB, Maharaj RG, Bhaktha G",
-      "journal": "Indian journal of nephrology",
-      "year": "2024",
-      "doi": "10.25259/ijn_451_23"
-    },
-    "35101868": {
-      "status": "resolved",
-      "title": "Improving annual albuminuria testing for individuals with diabetes.",
-      "authors": "Kam S, Angaramo S, Antoun J, Bhatta MR, Bonds PD",
-      "journal": "BMJ open quality",
-      "year": "2022",
-      "doi": "10.1136/bmjoq-2021-001591"
-    },
-    "39023418": {
-      "status": "resolved",
-      "title": "Suboptimal monitoring and management in patients with unrecorded stage 3 chronic kidney disease in real-world settings: Insights from REVEAL-CKD.",
-      "authors": "Tangri N, Alvarez CS, Arnold M, Barone S, Cebrián A",
-      "journal": "European journal of clinical investigation",
-      "year": "2024",
-      "doi": "10.1111/eci.14282"
-    },
-    "37153973": {
-      "status": "resolved",
-      "title": "Practical considerations for the use of SGLT-2 inhibitors in the Asia-Pacific countries-An expert consensus statement.",
-      "authors": "Liew A, Lydia A, Matawaran BJ, Susantitaphong P, Tran HTB",
-      "journal": "Nephrology (Carlton, Vic.)",
-      "year": "2023",
-      "doi": "10.1111/nep.14167"
-    },
-    "39391521": {
-      "status": "resolved",
-      "title": "Optimising antidiabetic medication management for type 2 diabetes and renal dysfunction in Can Tho City, Vietnam.",
-      "authors": "Dang KD, Nguyen HMT, Phung YP, Le TQN",
-      "journal": "Przeglad menopauzalny = Menopause review",
-      "year": "2024",
-      "doi": "10.5114/pm.2024.141090"
-    },
-    "40814615": {
-      "status": "resolved",
-      "title": "Kidney Disease: Improving Global Outcomes Summit Recommendations on Implementation of Diabetes Management in CKD: From Primary to Data-Driven Collaborative Care.",
-      "authors": "Li PK, Cheung M, Chow KM, Leung MKW, Lim LL",
-      "journal": "Kidney international reports",
-      "year": "2025",
-      "doi": "10.1016/j.ekir.2025.06.010"
-    },
-    "27881078": {
-      "status": "resolved",
-      "title": "No rationale for 1 variable per 10 events criterion for binary logistic regression analysis.",
-      "authors": "van Smeden M, de Groot JA, Moons KG, Collins GS, Altman DG",
-      "journal": "BMC medical research methodology",
-      "year": "2016",
-      "doi": "10.1186/s12874-016-0267-3"
+      "title": "Chart reviews in emergency medicine research: Where are the methods?",
+      "authors": "Gilbert EH, Lowenstein SR, Koziol-McLain J, Barta DC, Steiner J",
+      "journal": "Annals of emergency medicine",
+      "year": "1996",
+      "doi": "10.1016/s0196-0644(96)70264-0"
     }
   },
-  "receipt_signature": "v4:shared:b1b3975e8a3cabbb2bac22b4795504bd980f0a9518ec4bebc22022be80c3b5aa"
+  "receipt_signature": "v4:shared:1b5eb1d4c3bd98d3dce56d4387126fcf4bc215bdc07f1167a9d2f9ecae43f8ba"
 }

@@ -12,7 +12,7 @@
 | Chủ nhiệm đề tài | ……… |
 | Đơn vị thực hiện | Khoa Khám bệnh, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh — bệnh viện quân đội tuyến cuối; người bệnh gồm quân nhân, người có BHYT và người khám dịch vụ, theo dõi ĐTĐ ở phòng khám nội tiết hoặc nội chung. Nguồn dữ liệu: hồ sơ bệnh án điện tử trên phần mềm eHospital (HIS của BVQY175) — lượt khám, mã ICD-10, kết quả xét nghiệm, đơn thuốc ngoại trú. |
 | Thiết kế | Nghiên cứu cắt ngang mô tả có phân tích |
-| Thời gian thực hiện | Cửa sổ dữ liệu hồi cứu 01/01/2026–31/12/2026. Thời gian thực hiện dự kiến 11/2026–09/2027 theo sổ tiến độ đề tài. Trích xuất dữ liệu chỉ bắt đầu sau khi Hội đồng Đạo đức BVQY175 phê duyệt (T0), kế hoạch phân tích thống kê đã khoá và cửa sổ đã khép (sớm nhất tháng 01/2027) — dự kiến 19/01–28/02/2027. |
+| Thời gian thực hiện | Cửa sổ dữ liệu hồi cứu 01/01/2026–31/12/2026. Thời gian thực hiện dự kiến 11/2026–09/2027 theo sổ tiến độ đề tài. Trích xuất dữ liệu chỉ bắt đầu sau khi Hội đồng Đạo đức BVQY175 phê duyệt (T0), kế hoạch phân tích thống kê đã khoá và cửa sổ đã khép (sớm nhất tháng 02/2027) — dự kiến 16/02–02/04/2027, gồm trích thử phiếu 16–19/02/2027. |
 | Kinh phí | Tự túc, không đề nghị cấp kinh phí |
 | Phiên bản đề cương | 1.0 |
 
@@ -29,22 +29,30 @@
 | CKD-EPI | Nhóm hợp tác dịch tễ học bệnh thận mạn (Chronic Kidney Disease Epidemiology Collaboration) |
 | EPV | Số biến cố trên mỗi tham số (events per variable) |
 | GRADE | Hệ thống phân hạng chứng cứ (Grading of Recommendations, Assessment, Development and Evaluation) |
+| GRRAS | Hướng dẫn báo cáo nghiên cứu độ tin cậy và đồng thuận (Guidelines for Reporting Reliability and Agreement Studies) |
 | HIS | Hệ thống thông tin bệnh viện (hospital information system) |
 | HbA1c | Huyết sắc tố gắn glucose (glycated haemoglobin) |
+| I-CVI | Chỉ số giá trị nội dung mức mục (item-level content validity index) |
+| ICC | Hệ số tương quan nội lớp (intraclass correlation coefficient) |
 | ICD-10 | Bảng phân loại bệnh quốc tế lần thứ 10 |
 | IQR | Khoảng tứ phân vị |
 | KDIGO | Kidney Disease: Improving Global Outcomes |
 | KTC | Khoảng tin cậy |
 | MAR | Thiếu ngẫu nhiên (missing at random) |
+| MCID | Mức thay đổi tối thiểu có ý nghĩa lâm sàng (minimal clinically important difference) |
 | MI | Gán đa trị (multiple imputation) |
 | MNAR | Thiếu không ngẫu nhiên (missing not at random) |
 | OR | Tỷ số chênh (odds ratio) |
 | PR | Tỷ số tỷ lệ hiện mắc (prevalence ratio) |
 | RAASi | Thuốc ức chế hệ renin–angiotensin–aldosteron |
 | RECORD | Hướng dẫn báo cáo nghiên cứu dùng dữ liệu thu thập thường quy (REporting of studies Conducted using Observational Routinely-collected health Data) |
+| S-CVI | Chỉ số giá trị nội dung mức phiếu (scale-level content validity index); S-CVI/Ave: trung bình các I-CVI; S-CVI/UA: tỷ lệ mục được mọi chuyên gia đánh giá phù hợp |
 | SD | Độ lệch chuẩn |
+| SDC | Thay đổi nhỏ nhất phát hiện được (smallest detectable change) |
+| SEM | Sai số chuẩn của phép đo (standard error of measurement) |
 | SGLT2 | Đồng vận chuyển natri–glucose 2 |
 | SGLT2i | Thuốc ức chế đồng vận chuyển natri–glucose 2 |
+| SOP | Quy trình thao tác chuẩn (standard operating procedure) |
 | STROBE | Hướng dẫn báo cáo nghiên cứu quan sát (Strengthening the Reporting of Observational Studies in Epidemiology) |
 | UACR | Tỷ số albumin/creatinin niệu (urine albumin-to-creatinine ratio) |
 | VIF | Hệ số phóng đại phương sai |
@@ -60,7 +68,7 @@ Bệnh thận mạn thường gặp ở người ĐTĐ típ 2 [1]; phát hiện 
 
 Xuất phát từ thực tế trên, chúng tôi tiến hành đề tài «Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026» với các mục tiêu sau:
 
-1. MT1: Mô tả thực trạng phát hiện bệnh thận mạn ở người bệnh đái tháo đường típ 2 điều trị ngoại trú tại Khoa Khám bệnh, Bệnh viện Quân y 175 năm 2026 — tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh (kết cục chính), tỷ lệ bệnh thận mạn theo KDIGO 2024 và tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán.
+1. MT1: Mô tả thực trạng phát hiện bệnh thận mạn ở người bệnh đái tháo đường típ 2 điều trị ngoại trú được theo dõi đều (từ 2 lượt khám trong năm) tại Khoa Khám bệnh, Bệnh viện Quân y 175 năm 2026 — tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh (kết cục chính), tỷ lệ bệnh thận mạn theo KDIGO 2024 và tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán.
 2. MT2: Mô tả thực trạng điều trị bảo vệ thận (ACEi/ARB, SGLT2i) ở người bệnh đủ chỉ định theo KDIGO 2022 trong cùng quần thể.
 3. MT3: Phân tích một số yếu tố liên quan với việc không được xét nghiệm đủ UACR và creatinin (phân tích thăm dò, không kiểm định giả thuyết định trước).
 
@@ -72,7 +80,7 @@ Xuất phát từ thực tế trên, chúng tôi tiến hành đề tài «Thự
 
 **Mục tiêu cụ thể:**
 
-1. MT1: Mô tả thực trạng phát hiện bệnh thận mạn ở người bệnh đái tháo đường típ 2 điều trị ngoại trú tại Khoa Khám bệnh, Bệnh viện Quân y 175 năm 2026 — tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh (kết cục chính), tỷ lệ bệnh thận mạn theo KDIGO 2024 và tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán.
+1. MT1: Mô tả thực trạng phát hiện bệnh thận mạn ở người bệnh đái tháo đường típ 2 điều trị ngoại trú được theo dõi đều (từ 2 lượt khám trong năm) tại Khoa Khám bệnh, Bệnh viện Quân y 175 năm 2026 — tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh (kết cục chính), tỷ lệ bệnh thận mạn theo KDIGO 2024 và tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán.
 2. MT2: Mô tả thực trạng điều trị bảo vệ thận (ACEi/ARB, SGLT2i) ở người bệnh đủ chỉ định theo KDIGO 2022 trong cùng quần thể.
 3. MT3: Phân tích một số yếu tố liên quan với việc không được xét nghiệm đủ UACR và creatinin (phân tích thăm dò, không kiểm định giả thuyết định trước).
 
@@ -128,7 +136,7 @@ Nghiên cứu được thiết kế theo phương pháp nghiên cứu cắt ngan
 ## 4.2. Địa điểm và thời gian nghiên cứu
 
 - Địa điểm: Khoa Khám bệnh, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh — bệnh viện quân đội tuyến cuối; người bệnh gồm quân nhân, người có BHYT và người khám dịch vụ, theo dõi ĐTĐ ở phòng khám nội tiết hoặc nội chung. Nguồn dữ liệu: hồ sơ bệnh án điện tử trên phần mềm eHospital (HIS của BVQY175) — lượt khám, mã ICD-10, kết quả xét nghiệm, đơn thuốc ngoại trú.
-- Thời gian: Cửa sổ dữ liệu hồi cứu 01/01/2026–31/12/2026. Thời gian thực hiện dự kiến 11/2026–09/2027 theo sổ tiến độ đề tài. Trích xuất dữ liệu chỉ bắt đầu sau khi Hội đồng Đạo đức BVQY175 phê duyệt (T0), kế hoạch phân tích thống kê đã khoá và cửa sổ đã khép (sớm nhất tháng 01/2027) — dự kiến 19/01–28/02/2027.
+- Thời gian: Cửa sổ dữ liệu hồi cứu 01/01/2026–31/12/2026. Thời gian thực hiện dự kiến 11/2026–09/2027 theo sổ tiến độ đề tài. Trích xuất dữ liệu chỉ bắt đầu sau khi Hội đồng Đạo đức BVQY175 phê duyệt (T0), kế hoạch phân tích thống kê đã khoá và cửa sổ đã khép (sớm nhất tháng 02/2027) — dự kiến 16/02–02/04/2027, gồm trích thử phiếu 16–19/02/2027.
 
 ## 4.3. Đối tượng nghiên cứu
 
@@ -169,23 +177,29 @@ Chọn mẫu ngẫu nhiên đơn ở cấp người bệnh: (1) lập khung mẫ
 
 ## 4.6. Công cụ và kỹ thuật thu thập số liệu
 
-- Công cụ: Phiếu thu thập số liệu (Phụ lục C), xây dựng từ bộ biến số của đề tài.
-- Nguồn số liệu: Phiếu trích hồ sơ eHospital (SOP trích hồ sơ).
+- Công cụ: Phiếu thu thập số liệu (Phụ lục C) là phiếu trích hồ sơ do nhóm nghiên cứu tự xây dựng từ bộ biến số của đề tài. Mỗi trường của phiếu có định nghĩa vận hành, vị trí dữ kiện trên eHospital và quy tắc mã hoá được viết trước (Phụ lục D và quy trình trích hồ sơ viết sẵn). Phiếu chỉ ghi lại dữ kiện có sẵn trong hồ sơ (mã ICD-10, kết quả xét nghiệm, đơn thuốc, lượt khám); phiếu không phải thang đo hay bộ câu hỏi và các mục không được cộng thành điểm.
+- Nguồn số liệu: hồ sơ bệnh án điện tử trên phần mềm eHospital, trích theo quy trình trích hồ sơ.
 - Thời điểm thu thập: Không áp dụng — cắt ngang hồi cứu, không theo dõi; mỗi người được quan sát một lần trên dữ liệu có sẵn trong cửa sổ 12 tháng.
-- Kiểm soát chất lượng: Người thứ hai độc lập với chủ nhiệm trích lại 10% hồ sơ chọn ngẫu nhiên (39 hồ sơ, hai đợt); tỷ lệ đồng thuận mọi biến, kappa cho biến phân loại chính; ngưỡng đồng thuận kết cục chính được xét nghiệm đủ UACR và creatinin năm 2026 từ 95%.
+- Kiểm định phiếu trích hồ sơ, gồm ba bước:
+  1. Độ giá trị nội dung: trước khi nộp Hội đồng, một hội đồng 5 chuyên gia (tối thiểu 3 người; gồm bác sĩ nội tiết, bác sĩ thận học, dược sĩ lâm sàng, người phụ trách mã hoá bệnh tật và người làm phương pháp nghiên cứu hoặc thống kê; chủ nhiệm không chấm) chấm độc lập từng định nghĩa vận hành theo thang 4 mức về mức phù hợp với khái niệm cần đo theo KDIGO 2022, KDIGO 2024, ADA 2026 và mục tiêu đề tài, trên 43 trường nhập tay và 18 biến phái sinh định nghĩa kết cục. Chỉ số giá trị nội dung mức mục (I-CVI) được tính kèm kappa hiệu chỉnh cho đồng thuận ngẫu nhiên [40]; chỉ số mức phiếu được báo theo cả hai cách S-CVI/Ave và S-CVI/UA [41]. Mục có I-CVI dưới 0,78 [40] được sửa theo góp ý và chấm lại, tối đa hai vòng; hai câu hỏi mở thu nhận dữ kiện cần thiết mà phiếu còn thiếu.
+  2. Thử nghiệm phiếu (trích thử): sau khi Hội đồng duyệt, chủ nhiệm và người trích lại trích độc lập 10 hồ sơ tập ở 10 vị trí cuối của danh sách đã xếp ngẫu nhiên (không thuộc mẫu nghiên cứu; thêm tối đa 10 hồ sơ tập nếu cần trích thử vòng hai), ghi nhật ký vấn đề theo từng trường (khó hiểu định nghĩa, khó tìm dữ kiện, phải phán đoán, khó mã hoá) và thời gian trích mỗi hồ sơ. Mục có vấn đề ở từ 10% lượt trích được viết lại quy tắc; nếu từ 3 mục có vấn đề ở từ 20% lượt trích thì sửa rồi trích thử vòng hai. Quy tắc chưa rõ được viết bổ sung vào quy trình trích hồ sơ; phiếu và quy trình được khoá phiên bản sau trích thử, trước hồ sơ chính thức đầu tiên. Thay đổi về biến số (thêm, bỏ hoặc đổi định nghĩa) được báo Hội đồng Đạo đức trước khi áp dụng.
+  3. Độ tin cậy giữa hai người trích, theo các tiêu chí phương pháp của nghiên cứu trích hồ sơ [42]: một người thứ hai độc lập với chủ nhiệm, không xem bản trích chính, trích lại 10% hồ sơ chọn ngẫu nhiên (39 hồ sơ, hai đợt: 10 hồ sơ chọn trong 100 hồ sơ đủ tiêu chuẩn đầu tiên và 29 hồ sơ khi trích xong) và sàng lọc lại 10 hồ sơ chọn ngẫu nhiên trong số hồ sơ bị loại. Đồng thuận được tính trên bản trích của chủ nhiệm trước khi hoà giải. Với mọi trường, tính tỷ lệ đồng thuận tuyệt đối kèm KTC 95% Wilson; với biến phân loại chính, tính thêm hệ số kappa Cohen kèm KTC 95%, tỷ lệ đồng thuận dương và âm, chỉ số tỷ lệ hiện mắc và chỉ số lệch [43–45]; với biến đếm, tính ICC hai chiều ngẫu nhiên, đồng thuận tuyệt đối, một người đo [46] và giới hạn đồng thuận 95% Bland–Altman [47]. Ngưỡng chấp nhận là đồng thuận từ 95% ở kết cục chính được xét nghiệm đủ UACR và creatinin năm 2026; nếu thấp hơn, dừng trích, tìm nguyên nhân, sửa quy tắc và rà lại biến bị ảnh hưởng ở mọi hồ sơ đã trích. Biến phân loại khác có đồng thuận dưới 90% thì xem lại quy tắc trích. Kết quả được báo cáo theo hướng dẫn GRRAS [48].
+- Các đặc tính đo lường dành cho thang đo và bộ câu hỏi — độ giá trị cấu trúc bằng phân tích nhân tố khám phá hoặc khẳng định, độ tin cậy nội tại Cronbach's α, độ tin cậy lặp lại test–retest, độ giá trị hội tụ hoặc phân biệt, độ đáp ứng và MCID, sai số đo lường SEM/SDC, hiệu ứng sàn–trần — không thuộc phạm vi đề tài vì phiếu trích không tạo điểm thang đo.
 
 ## 4.7. Quy trình nghiên cứu
 
 1. Chốt đề cương, cỡ mẫu và bộ biến số (11/2026). T0 là ngày Hội đồng Đạo đức BVQY175 phê duyệt.
-2. Hồ sơ đạo đức và kế hoạch phân tích thống kê sẵn sàng (09–22/11/2026).
-3. Hội đồng Khoa học, Đạo đức xét duyệt (23/11/2026–18/01/2027).
-4. Khoá kế hoạch phân tích thống kê trước khi trích hồ sơ.
-5. Cửa sổ dữ liệu khép 31/12/2026.
-6. Lập khung mẫu, chọn ngẫu nhiên, chủ nhiệm trích hồ sơ trên eHospital, người thứ hai trích lại mẫu kiểm chứng, khoá dữ liệu (19/01–28/02/2027).
-7. Phân tích (01–14/03/2027).
-8. Bản thảo (15/03–07/04/2027).
-9. Bình duyệt và liêm chính (08–28/04/2027).
-10. Nộp Tạp chí Y Dược Thực hành 175 (từ 29/04/2027).
+2. Hội đồng 5 chuyên gia chấm độ giá trị nội dung của phiếu trích, sửa và chấm lại nếu cần (23/11–11/12/2026; mục 4.6).
+3. Hồ sơ đạo đức và kế hoạch phân tích thống kê sẵn sàng (09/11–11/12/2026).
+4. Nộp Hội đồng Khoa học, Đạo đức (14/12/2026); Hội đồng xét duyệt (14/12/2026–15/02/2027).
+5. Khoá kế hoạch phân tích thống kê trước khi trích hồ sơ.
+6. Cửa sổ dữ liệu khép 31/12/2026.
+7. Lập khung mẫu, xếp ngẫu nhiên; trích thử 10 hồ sơ tập; khoá phiên bản phiếu và quy trình trích hồ sơ trước hồ sơ chính thức đầu tiên (16–19/02/2027; mục 4.6).
+8. Chủ nhiệm trích hồ sơ trên eHospital, người thứ hai trích lại mẫu kiểm chứng, khoá dữ liệu (22/02–02/04/2027).
+9. Phân tích (05–16/04/2027).
+10. Bản thảo (19/04–07/05/2027).
+11. Bình duyệt và liêm chính (10–28/05/2027).
+12. Nộp Tạp chí Y Dược Thực hành 175 (từ 31/05/2027).
 
 ## 4.8. Sai số và biện pháp khống chế sai số
 
@@ -201,7 +215,8 @@ Chọn mẫu ngẫu nhiên đơn ở cấp người bệnh: (1) lập khung mẫ
 | Thời gian quan sát không đều trong cửa sổ | Người bắt đầu khám muộn có ít thời gian được xét nghiệm nên kéo tỷ lệ xuống thấp. | Báo phân bố số tháng từ lượt khám đầu đến hết cửa sổ; phân tích độ nhạy giới hạn người có lượt khám đầu trước 01/07/2026. |
 | Nhiễu và tương quan trong cụm ở phân tích yếu tố liên quan (MT3) | Không xác định trước; chỉ ảnh hưởng MT3, không ảnh hưởng ước lượng tỷ lệ của MT1–MT2. | Mô hình đa biến với tập biến đã chốt; phòng khám theo dõi chính là biến trong mô hình; sai số chuẩn vững; diễn giải là mối liên quan, không nhân quả. |
 | Sai lệch báo cáo và phân tích có chọn lọc | Chỉ báo các chỉ số «đẹp» hoặc đổi định nghĩa sau khi thấy số liệu. | Khoá kế hoạch phân tích thống kê trước khi nhận dữ liệu; báo cáo đủ mọi kết cục đã định trước theo STROBE và RECORD. |
-| Sai lệch người trích (chủ nhiệm vừa trích dữ liệu vừa là bác sĩ của khoa được đánh giá) | Có thể ghi nhận xét nghiệm hoặc thuốc ở chỗ không rõ ràng → ước lượng CAO chất lượng chăm sóc. | Quy tắc trích và định nghĩa từng biến viết trước; chỉ ghi dữ kiện khách quan có trong hồ sơ (kết quả xét nghiệm, mã, đơn thuốc), không diễn giải; người thứ hai độc lập trích lại 10% hồ sơ chọn ngẫu nhiên, báo mức đồng thuận (kappa) ở từng biến chính. |
+| Sai lệch người trích (chủ nhiệm vừa trích dữ liệu vừa là bác sĩ của khoa được đánh giá) | Có thể ghi nhận xét nghiệm hoặc thuốc ở chỗ không rõ ràng → ước lượng CAO chất lượng chăm sóc. | Quy tắc trích và định nghĩa từng biến viết trước; chỉ ghi dữ kiện khách quan có trong hồ sơ (kết quả xét nghiệm, mã, đơn thuốc), không diễn giải; người thứ hai độc lập trích lại 10% hồ sơ chọn ngẫu nhiên, báo mức đồng thuận (kappa) ở từng biến chính; định nghĩa vận hành được hội đồng chuyên gia thẩm định độ giá trị nội dung và phiếu được trích thử trước khi khoá (mục 4.6); đồng thuận tính trên bản trích trước hoà giải. |
+| Sai lệch phân loại do định nghĩa biến mơ hồ hoặc khó áp dụng trên eHospital | Không xác định trước; làm lệch các tỷ lệ của MT1–MT2. | Hội đồng chuyên gia chấm I-CVI cho từng định nghĩa; trích thử 10 hồ sơ tập có nhật ký vấn đề; quy tắc bổ sung viết vào quy trình trích hồ sơ trước khi trích chính thức (mục 4.6). |
 
 ## 4.9. Xử lý và phân tích số liệu
 
@@ -236,11 +251,11 @@ Kế hoạch phân tích thống kê (phiên bản 1.0) được khoá trước 
 **Phân tích đa biến.**
 
 - Mục tiêu: MT3 — phân tích thăm dò, không kiểm định giả thuyết định trước, không suy nhân quả.
-- Mô hình: Hồi quy Poisson liên kết log với phương sai vững (sandwich) để ước lượng trực tiếp tỷ số tỷ lệ hiện mắc (PR) của không được xét nghiệm đủ (biến phụ thuộc của MT3) [40]. Báo PR thô (từng biến) và PR hiệu chỉnh (mô hình đầy đủ), kèm KTC 95%. Không dùng hồi quy logistic vì kết cục phổ biến, OR sẽ phóng đại PR.
+- Mô hình: Hồi quy Poisson liên kết log với phương sai vững (sandwich) để ước lượng trực tiếp tỷ số tỷ lệ hiện mắc (PR) của không được xét nghiệm đủ (biến phụ thuộc của MT3) [49]. Báo PR thô (từng biến) và PR hiệu chỉnh (mô hình đầy đủ), kèm KTC 95%. Không dùng hồi quy logistic vì kết cục phổ biến, OR sẽ phóng đại PR.
 - Biến độc lập đưa vào: 12 biến giải thích đã chốt — tuổi (mỗi 10 năm), giới, nhóm đối tượng (quân nhân / BHYT / dịch vụ / khác), thời gian mắc ĐTĐ (mỗi 5 năm), HbA1c dạng 3 mức (< 7% — mức tham chiếu / ≥ 7% / không làm HbA1c năm 2026), đang dùng insulin, số nhóm thuốc hạ glucose, tăng huyết áp, BMI (mỗi 5 kg/m²), bệnh tim mạch do xơ vữa hoặc suy tim, số lượt khám năm 2026, phòng khám theo dõi chính (nội tiết / nội chung / khác).
 - Lý do mã hoá HbA1c 3 mức: Người không làm HbA1c thiếu giá trị vì không được xét nghiệm (thiếu có cấu trúc, liên quan trực tiếp tới kết cục), nên không thay bằng giá trị gán; mức «không làm» giữ thông tin đó.
 - Phương pháp chọn biến: Đưa vào toàn bộ, không stepwise, không chọn theo giá trị p.
-- Số tham số và EPV: Mô hình đầy đủ có 16 tham số (biến phân loại k mức tính k−1): tuổi 1, giới 1, nhóm đối tượng 3, thời gian mắc ĐTĐ 1, HbA1c 2, đang dùng insulin 1, số nhóm thuốc hạ glucose 1, tăng huyết áp 1, BMI 1, bệnh tim mạch 1, số lượt khám 1, phòng khám theo dõi chính 2. Số người ở nhóm kết cục ít hơn (được hoặc không được xét nghiệm đủ) chia cho số tham số là số biến cố trên mỗi tham số (EPV); ngưỡng sơ bộ EPV ≥ 10 chỉ là mức tham khảo, không phải quy tắc cứng [38, 41]. Nếu EPV < 10, giảm tham số theo thứ tự định trước, dừng ngay khi EPV ≥ 10: (1) gộp nhóm đối tượng thành 2 mức (quân nhân / khác); (2) gộp phòng khám thành 2 mức (nội tiết / khác); (3) bỏ số nhóm thuốc hạ glucose (giữ insulin). Báo cáo rõ mô hình nào được dùng và vì sao.
+- Số tham số và EPV: Mô hình đầy đủ có 16 tham số (biến phân loại k mức tính k−1): tuổi 1, giới 1, nhóm đối tượng 3, thời gian mắc ĐTĐ 1, HbA1c 2, đang dùng insulin 1, số nhóm thuốc hạ glucose 1, tăng huyết áp 1, BMI 1, bệnh tim mạch 1, số lượt khám 1, phòng khám theo dõi chính 2. Số người ở nhóm kết cục ít hơn (được hoặc không được xét nghiệm đủ) chia cho số tham số là số biến cố trên mỗi tham số (EPV); ngưỡng sơ bộ EPV ≥ 10 chỉ là mức tham khảo, không phải quy tắc cứng [38, 50]. Nếu EPV < 10, giảm tham số theo thứ tự định trước, dừng ngay khi EPV ≥ 10: (1) gộp nhóm đối tượng thành 2 mức (quân nhân / khác); (2) gộp phòng khám thành 2 mức (nội tiết / khác); (3) bỏ số nhóm thuốc hạ glucose (giữ insulin). Báo cáo rõ mô hình nào được dùng và vì sao.
 - Đa cộng tuyến: Tính VIF cho mọi biến; VIF > 5 được báo cáo, và cặp insulin – số nhóm thuốc được xử lý theo bước (3) ở trên.
 - Giả định: Dạng tuyến tính của biến liên tục (tuổi, thời gian mắc, BMI, số lượt khám) được xem bằng đồ thị phần dư; nếu lệch rõ thì báo thêm mô hình với biến chia nhóm như phân tích độ nhạy, không đổi mô hình chính.
 - Cụm: Phòng khám theo dõi chính là biến trong mô hình; sai số chuẩn vững.
@@ -249,7 +264,7 @@ Kế hoạch phân tích thống kê (phiên bản 1.0) được khoá trước 
 
 - Kết cục chính và kết cục phụ: Không thể thiếu theo định nghĩa (không có kết quả xét nghiệm → 0 hoặc «không phân loại được» = 9); không gán giá trị.
 - Biến giải thích của MT3 có thể thiếu: Thời gian mắc ĐTĐ (hồ sơ không ghi năm chẩn đoán), BMI (hồ sơ không ghi cân nặng hoặc chiều cao), và các biến mà hồ sơ ghi không đọc được hoặc mâu thuẫn. HbA1c không gán (xử lý bằng mức «không làm»).
-- Chiến lược: Gán đa trị (Multiple Imputation by Chained Equations, m = 20, so khớp trung bình dự đoán — predictive mean matching cho biến liên tục), gộp theo quy tắc Rubin [42].
+- Chiến lược: Gán đa trị (Multiple Imputation by Chained Equations, m = 20, so khớp trung bình dự đoán — predictive mean matching cho biến liên tục), gộp theo quy tắc Rubin [51].
 - Giả định: Thiếu ngẫu nhiên (missing at random, MAR) có điều kiện trên các biến đưa vào mô hình gán; nêu rõ khả năng MNAR (người ít được theo dõi thì vừa thiếu BMI vừa ít được xét nghiệm) ở mục 4.11.
 - Biến đưa vào mô hình imputation: Biến phụ thuộc không được xét nghiệm đủ (biến phụ thuộc của MT3) và cả 12 biến giải thích (dạng như trong mô hình phân tích), cộng lượt khám đầu trước 01/07/2026.
 - Phân tích hoàn chỉnh (phân tích ca đầy đủ): Báo cáo song song với MI. Nếu mọi biến giải thích thiếu dưới 5% thì MI vẫn chạy cho nhất quán, kết luận dựa trên MI.
@@ -303,7 +318,8 @@ Nghiên cứu tuân thủ Tuyên bố Helsinki và các quy định hiện hành
 | Thuốc kê hoặc mua ngoài BVQY175 | Ước lượng thấp tỷ lệ đang dùng ACEi/ARB và SGLT2i. | Ghi riêng thuốc bệnh án ghi «đang dùng» nhưng không có đơn trong eHospital; phân tích độ nhạy ĐN7 tính cả các thuốc này (mục 4.9). |
 | Dữ liệu thiếu không ngẫu nhiên ở biến giải thích của MT3 | Người ít được theo dõi thì vừa thiếu BMI vừa ít được xét nghiệm; gán đa trị dựa trên giả định thiếu ngẫu nhiên có thể không loại hết sai lệch. | Gán đa trị kèm phân tích ca đầy đủ báo cáo song song; so sánh đặc điểm người thiếu với người đủ dữ liệu (mục 4.9). |
 | Kết cục phụ tính trên quần thể con | Khoảng tin cậy rộng hơn kết cục chính, nhất là ở nhóm nhỏ. | Báo cáo tỷ lệ kèm KTC 95% Wilson trên đúng quần thể con; diễn giải thận trọng (mục 4.4.1, 4.9). |
-| Chủ nhiệm vừa trích dữ liệu vừa là bác sĩ của khoa được đánh giá | Có thể ước lượng cao chất lượng chăm sóc. | Quy tắc trích và định nghĩa biến viết trước; người thứ hai độc lập trích lại 10% hồ sơ chọn ngẫu nhiên, báo mức đồng thuận (mục 4.8). |
+| Chủ nhiệm vừa trích dữ liệu vừa là bác sĩ của khoa được đánh giá | Có thể ước lượng cao chất lượng chăm sóc. | Quy tắc trích và định nghĩa biến viết trước, được hội đồng chuyên gia thẩm định và trích thử trước khi khoá; người thứ hai độc lập trích lại 10% hồ sơ chọn ngẫu nhiên, báo mức đồng thuận (mục 4.6, 4.8). |
+| Độ chính xác hạn chế của ước lượng độ tin cậy giữa hai người trích (39 hồ sơ) | Hệ số kappa có KTC rộng; ngay cả khi đồng thuận 100% cũng chỉ loại trừ được mức đồng thuận dưới khoảng 91%. | Báo KTC 95% cho mọi chỉ số đồng thuận; ngưỡng 95% dùng như ngưỡng kiểm soát chất lượng, không phải phép chứng minh (mục 4.6). |
 
 **Phạm vi suy rộng kết quả.** Kết quả áp dụng cho người từ 18 tuổi mắc đái tháo đường típ 2 được quản lý ngoại trú tại Khoa Khám bệnh BVQY175, có ít nhất 2 lượt khám trong năm 2026, không lọc máu, chưa ghép thận và không có thai. Nghiên cứu thực hiện tại một bệnh viện quân đội tuyến cuối, người bệnh gồm quân nhân, người có BHYT và người khám dịch vụ, nên kết quả không đại diện cho người đái tháo đường típ 2 được quản lý ở tuyến cơ sở hay ở các bệnh viện khác, cũng không đại diện cho người chỉ đến khám một lần trong năm.
 
@@ -348,7 +364,7 @@ Kết quả được trình bày theo thứ tự đặc điểm đối tượng 
 
 *Ghi chú:* Chữ viết tắt — TB: trung bình; ĐLC: độ lệch chuẩn; KTPV: khoảng tứ phân vị. Biến định lượng trình bày TB ± ĐLC khi phân phối gần chuẩn, ngược lại trung vị [KTPV].
 
-## 5.2. Kết quả theo mục tiêu 1: Mô tả thực trạng phát hiện bệnh thận mạn ở người bệnh đái tháo đường típ 2 điều trị ngoại trú tại Khoa Khám bệnh, Bệnh viện Quân y 175 năm 2026 — tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh (kết cục chính), tỷ lệ bệnh thận mạn theo KDIGO 2024 và tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán
+## 5.2. Kết quả theo mục tiêu 1: Mô tả thực trạng phát hiện bệnh thận mạn ở người bệnh đái tháo đường típ 2 điều trị ngoại trú được theo dõi đều (từ 2 lượt khám trong năm) tại Khoa Khám bệnh, Bệnh viện Quân y 175 năm 2026 — tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh (kết cục chính), tỷ lệ bệnh thận mạn theo KDIGO 2024 và tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán
 
 **Bảng 5.2. Tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh và các chỉ số mô tả liên quan (Mục tiêu 1)**
 
@@ -504,7 +520,7 @@ Kết quả được trình bày theo thứ tự đặc điểm đối tượng 
 
 ## 6.1. Nhân lực và phân công nhiệm vụ
 
-Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và kế hoạch phân tích thống kê, ký hồ sơ đạo đức, lập khung mẫu và trích hồ sơ trên eHospital, giữ bảng nối mã, chịu trách nhiệm chung. Nhà phương pháp/thống kê: cỡ mẫu, viết và khoá kế hoạch phân tích thống kê, phân tích. Quản lý dữ liệu: codebook và phiếu thu thập, nhập liệu, kiểm tra chất lượng, khoá cơ sở dữ liệu, lưu trữ tệp đã mã hoá. Người trích lại: trích lại độc lập 10% hồ sơ kiểm chứng. Người đảm nhận các vai ngoài chủ nhiệm do chủ nhiệm phân công; một người có thể kiêm nhiều vai, riêng người trích lại phải khác chủ nhiệm.
+Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và kế hoạch phân tích thống kê, ký hồ sơ đạo đức, lập khung mẫu và trích hồ sơ trên eHospital, giữ bảng nối mã, chịu trách nhiệm chung. Nhà phương pháp/thống kê: cỡ mẫu, viết và khoá kế hoạch phân tích thống kê, phân tích. Quản lý dữ liệu: codebook và phiếu thu thập, nhập liệu, kiểm tra chất lượng, khoá cơ sở dữ liệu, lưu trữ tệp đã mã hoá. Người trích lại: cùng chủ nhiệm trích thử độc lập 10 hồ sơ tập; trích lại độc lập 10% hồ sơ kiểm chứng và sàng lọc lại 10 hồ sơ bị loại. Hội đồng chuyên gia (5 người: bác sĩ nội tiết, bác sĩ thận học, dược sĩ lâm sàng, người phụ trách mã hoá bệnh tật, người làm phương pháp nghiên cứu hoặc thống kê; chủ nhiệm không chấm): chấm độc lập độ giá trị nội dung của phiếu trích. Người đảm nhận các vai ngoài chủ nhiệm do chủ nhiệm phân công; một người có thể kiêm nhiều vai, riêng người trích lại phải khác chủ nhiệm.
 
 ## 6.2. Tiến độ thực hiện
 
@@ -517,9 +533,11 @@ Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và 
 | STT | Khoản chi | Số lượng | Đơn giá | Thành tiền |
 |---|---|---|---|---|
 | 1 | Lập khung mẫu và trích hồ sơ trên eHospital (chủ nhiệm tự làm) | Theo cỡ mẫu | — | Tự túc |
-| 2 | Trích lại mẫu kiểm chứng (người thứ hai) | 10% cỡ mẫu | — | Tự túc |
-| 3 | Xử lý, phân tích số liệu và lưu trữ tệp giả danh | Theo kế hoạch phân tích thống kê | — | Tự túc |
-| 4 | Hồ sơ Hội đồng Khoa học, Đạo đức và công bố (Tạp chí Y Dược Thực hành 175) | 1 bộ hồ sơ, 1 bài báo | — | Tự túc |
+| 2 | Hội đồng chuyên gia thẩm định độ giá trị nội dung của phiếu trích | 5 chuyên gia, tối đa 2 vòng chấm | — | Tự túc |
+| 3 | Trích thử phiếu (chủ nhiệm và người trích lại) | 10 hồ sơ tập (tối đa 20) | — | Tự túc |
+| 4 | Trích lại mẫu kiểm chứng (người thứ hai) | 10% cỡ mẫu và 10 hồ sơ bị loại sàng lọc lại | — | Tự túc |
+| 5 | Xử lý, phân tích số liệu và lưu trữ tệp giả danh | Theo kế hoạch phân tích thống kê | — | Tự túc |
+| 6 | Hồ sơ Hội đồng Khoa học, Đạo đức và công bố (Tạp chí Y Dược Thực hành 175) | 1 bộ hồ sơ, 1 bài báo | — | Tự túc |
 
 ## 6.4. Kế hoạch quản lý dữ liệu
 
@@ -571,9 +589,18 @@ Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và 
 37. Benchimol EI, Smeeth L, Guttmann A, Harron K, Moher D. The REporting of studies Conducted using Observational Routinely-collected health Data (RECORD) statement. PLoS medicine. 2015. doi:10.1371/journal.pmed.1001885. PMID: 26440803.
 38. van Smeden M, de Groot JA, Moons KG, Collins GS, Altman DG. No rationale for 1 variable per 10 events criterion for binary logistic regression analysis. BMC medical research methodology. 2016. doi:10.1186/s12874-016-0267-3. PMID: 27881078.
 39. Inker LA, Eneanya ND, Coresh J, Tighiouart H, Wang D. New Creatinine- and Cystatin C-Based Equations to Estimate GFR without Race. The New England journal of medicine. 2021. doi:10.1056/NEJMoa2102953. PMID: 34554658.
-40. Barros AJ, Hirakata VN. Alternatives for logistic regression in cross-sectional studies: an empirical comparison of models that directly estimate the prevalence ratio. BMC medical research methodology. 2003. doi:10.1186/1471-2288-3-21. PMID: 14567763.
-41. Ogundimu EO, Altman DG, Collins GS. Adequate sample size for developing prediction models is not simply related to events per variable. Journal of clinical epidemiology. 2016. doi:10.1016/j.jclinepi.2016.02.031. PMID: 26964707.
-42. Sterne JA, White IR, Carlin JB, Spratt M, Royston P. Multiple imputation for missing data in epidemiological and clinical research: potential and pitfalls. BMJ (Clinical research ed.). 2009. doi:10.1136/bmj.b2393. PMID: 19564179.
+40. Polit DF, Beck CT, Owen SV. Is the CVI an acceptable indicator of content validity? Appraisal and recommendations. Research in nursing & health. 2007. doi:10.1002/nur.20199. PMID: 17654487.
+41. Polit DF, Beck CT. The content validity index: are you sure you know what's being reported? Critique and recommendations. Research in nursing & health. 2006. doi:10.1002/nur.20147. PMID: 16977646.
+42. Gilbert EH, Lowenstein SR, Koziol-McLain J, Barta DC, Steiner J. Chart reviews in emergency medicine research: Where are the methods? Annals of emergency medicine. 1996. doi:10.1016/s0196-0644(96)70264-0. PMID: 8599488.
+43. Feinstein AR, Cicchetti DV. High agreement but low kappa: I. The problems of two paradoxes. Journal of clinical epidemiology. 1990. doi:10.1016/0895-4356(90)90158-l. PMID: 2348207.
+44. Cicchetti DV, Feinstein AR. High agreement but low kappa: II. Resolving the paradoxes. Journal of clinical epidemiology. 1990. doi:10.1016/0895-4356(90)90159-m. PMID: 2189948.
+45. Byrt T, Bishop J, Carlin JB. Bias, prevalence and kappa. Journal of clinical epidemiology. 1993. doi:10.1016/0895-4356(93)90018-v. PMID: 8501467.
+46. Koo TK, Li MY. A Guideline of Selecting and Reporting Intraclass Correlation Coefficients for Reliability Research. Journal of chiropractic medicine. 2016. doi:10.1016/j.jcm.2016.02.012. PMID: 27330520.
+47. Bland JM, Altman DG. Statistical methods for assessing agreement between two methods of clinical measurement. Lancet (London, England). 1986. PMID: 2868172.
+48. Kottner J, Audigé L, Brorson S, Donner A, Gajewski BJ. Guidelines for Reporting Reliability and Agreement Studies (GRRAS) were proposed. Journal of clinical epidemiology. 2011. doi:10.1016/j.jclinepi.2010.03.002. PMID: 21130355.
+49. Barros AJ, Hirakata VN. Alternatives for logistic regression in cross-sectional studies: an empirical comparison of models that directly estimate the prevalence ratio. BMC medical research methodology. 2003. doi:10.1186/1471-2288-3-21. PMID: 14567763.
+50. Ogundimu EO, Altman DG, Collins GS. Adequate sample size for developing prediction models is not simply related to events per variable. Journal of clinical epidemiology. 2016. doi:10.1016/j.jclinepi.2016.02.031. PMID: 26964707.
+51. Sterne JA, White IR, Carlin JB, Spratt M, Royston P. Multiple imputation for missing data in epidemiological and clinical research: potential and pitfalls. BMJ (Clinical research ed.). 2009. doi:10.1136/bmj.b2393. PMID: 19564179.
 
 # PHỤ LỤC A. TÓM TẮT KẾ HOẠCH PHÂN TÍCH THỐNG KÊ
 

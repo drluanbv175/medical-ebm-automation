@@ -64,7 +64,8 @@
     "Xác nhận effect size (PMID/DOI từ y văn/pilot study)",
     "Xác nhận tỷ lệ bỏ cuộc dự kiến",
     "Xác nhận tỷ lệ biến cố nền (với log-rank)",
-    "Copy khối cỡ mẫu vào đề cương"
+    "Copy khối cỡ mẫu vào đề cương",
+    "Chạy G0/G1 trước; không tính cỡ mẫu trên thiết kế mặc định."
   ],
   "quality_contract_version": "G3-2026.1",
   "quality_gate": {
@@ -72,9 +73,9 @@
     "contract_version": "G3-2026.1",
     "study": "btm-dtd2-ngoai-tru-BVQY175",
     "gate": "G3",
-    "status": "PASS_G3_CONFIRMED",
+    "status": "DRAFT_NEEDS_HUMAN_PARAMETERS",
     "automated_checks_passed": true,
-    "parameters_ready_for_review": true,
+    "parameters_ready_for_review": false,
     "human_confirmation_complete": true,
     "automatic_criteria": [
       {
@@ -87,8 +88,8 @@
       {
         "id": "G3-AUTO-01",
         "label": "Tiền đề G0/G1 có thật (thiết kế không do mặc định im lặng)",
-        "status": "PASS",
-        "evidence": "G1 chấm sống=PASS_G1_CONFIRMED",
+        "status": "REVIEW",
+        "evidence": "G1 chấm sống=DRAFT_READY_NEEDS_HUMAN_REVIEW — thiết kế chưa được PI/methodologist chốt",
         "action": "Chạy G0/G1 trước; không tính cỡ mẫu trên thiết kế mặc định."
       },
       {
@@ -269,11 +270,13 @@
         "action": "Với thử nghiệm quyết định, mời nhà thống kê độc lập xác nhận và cân nhắc power 90%."
       }
     ],
-    "pending_actions": [],
+    "pending_actions": [
+      "Chạy G0/G1 trước; không tính cỡ mẫu trên thiết kế mặc định."
+    ],
     "dau_van_tay_hien_tai": "e86410f1846a5b43",
     "artifact_manifest": {
       "A4_SAMPLE_SIZE": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/thu-chay-lai-btm-g1-20261118/exports/btm-dtd2-ngoai-tru-BVQY175/G3_A4_SAMPLE_SIZE_btm-dtd2-ngoai-tru-BVQY175.md",
+        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G3_A4_SAMPLE_SIZE_btm-dtd2-ngoai-tru-BVQY175.md",
         "sha256": "cb991c91635ffc31b1a8eacb7f772b43d7d55dfbc482aadb308c007618bc020b"
       }
     },

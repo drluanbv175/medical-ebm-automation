@@ -32,6 +32,7 @@
 | 1.0 (sửa nháp 3) | 2026-11-15 | Máy (chưa ký) | Giai đoạn thiết kế — đồng bộ với bảng kiểm soát sai lệch G1: §1 sơ đồ chọn thêm so sánh tuổi, giới, nhóm đối tượng giữa người bị loại vì chỉ 1 lượt khám và mẫu nghiên cứu (G1 đã hứa, SAP chưa có). Không đổi phương pháp, kết cục hay tập biến. |
 | 1.0 (sửa nháp 4) | 2026-11-18 | Máy (chưa ký) | §9 ĐN4 đo bằng trường mới `don_ha_glucose_nam` (đơn thuốc hạ glucose ở bất kỳ lượt khám nào năm 2026) theo lựa chọn của chủ nhiệm cho B10 (G3_BO_BIEN_SO_QUYET_DINH_20261118.md); codebook 73 thành 74 trường. Không đổi kết cục, mô hình hay phân tích chính. |
 | 1.0 (sửa nháp 5) | 2026-11-18 | Máy (chưa ký) | §5 viết lại câu EPV và trích thêm van Smeden 2016 theo lựa chọn của chủ nhiệm cho B1 (phiếu đề xuất sau diễn tập, 18/11/2026). Không đổi kết cục, mô hình hay phân tích. |
+| 1.0 (sửa nháp 6) | 2026-11-20 | Máy (chưa ký) | Đưa kiểm định phiếu trích vào kế hoạch phân tích theo quyết định của chủ nhiệm ngày 20/11/2026 («Đưa vào đề cương»; Q6 thêm 10 hồ sơ bị loại sàng lọc lại; Q7 giữ 39 hồ sơ trích lại; ngưỡng vận hành theo bộ đề xuất): §3 thêm độ tin cậy giữa hai người trích (đồng thuận tuyệt đối, kappa kèm đồng thuận dương/âm và chỉ số tỷ lệ hiện mắc/chỉ số lệch, ICC(2,1) và giới hạn đồng thuận cho biến đếm; tính trên bản trước hoà giải); §10 thêm công cụ tính; §11 thêm Bảng S1. Đây là chỉ số chất lượng dữ liệu, không phải kết cục; không đổi kết cục, mô hình hay phân tích chính. |
 
 ---
 
@@ -69,6 +70,7 @@
 - Mọi tỷ lệ của kết cục (chính và phụ) trình bày kèm KTC 95% theo phương pháp khoảng điểm Wilson (Wilson score interval).  
 - Báo cáo số và tỷ lệ thiếu dữ liệu của từng biến (Bảng 1).  
 - Mô tả thời gian quan sát: phân bố số tháng từ lượt khám đầu đến 31/12/2026 (`thang_quan_sat`).  
+- **Độ tin cậy giữa hai người trích (chỉ số chất lượng dữ liệu, không phải kết cục nghiên cứu):** trên 39 hồ sơ trích lại (SOP-TR-01 §7) và 10 hồ sơ bị loại được sàng lọc lại, so bản chụp của chủ nhiệm trước hoà giải với bản của người trích lại. (i) Mọi trường nhập tay: tỷ lệ đồng thuận tuyệt đối kèm KTC 95% Wilson; trường giá trị đồng thuận khi trùng khớp sau khi quy về cùng đơn vị; trường chọn nhiều so theo từng phương án. (ii) Biến phân loại chính `co_creat`, `co_uacr`, `xn_du`, `alb_khac`, `tha`, `ma_btm_ghi_nhan`, `dung_raasi`, `dung_sglt2i`, `ccd_raasi`, `ccd_sglt2i`, `phan_loai_btm`, `chi_dinh_raasi`, `chi_dinh_sglt2i` (biến phái sinh tính từ mỗi bản bằng cùng công thức `_bien-phai-sinh.csv`): kappa Cohen không trọng số kèm KTC 95% bootstrap bách phân vị (2.000 lần, hạt giống 20261028), tỷ lệ đồng thuận dương và âm, chỉ số tỷ lệ hiện mắc và chỉ số lệch (Feinstein và Cicchetti 1990, PMID 2348207; Cicchetti và Feinstein 1990, PMID 2189948; Byrt 1993, PMID 8501467); kappa không xác định khi cả hai người cùng một giá trị ở mọi hồ sơ — khi đó chỉ báo tỷ lệ đồng thuận. (iii) Biến đếm `so_lan_creat`, `so_lan_uacr`, `so_luot_kham`: ICC(2,1) — hai chiều ngẫu nhiên, đồng thuận tuyệt đối, một người đo — kèm KTC 95% (Koo và Li 2016, PMID 27330520), chênh trung bình và giới hạn đồng thuận 95% (Bland và Altman 1986, PMID 2868172). (iv) Ngưỡng: đồng thuận `xn_du` từ 95% (CTQ 3); biến phân loại khác dưới 90% thì xem lại quy tắc trích. Không kiểm định giả thuyết; báo cáo theo GRRAS (Kottner 2011, PMID 21130355).  
 
 ### §4 PHÂN TÍCH CHÍNH (MT1 kết cục chính; kết cục phụ 1–2 cho MT1, phụ 3 cho MT2)
 
@@ -130,6 +132,7 @@ Mỗi phân tích độ nhạy được định trước; không thay kết qu�
 - **Phần mềm:** Python 3.14.6 (statsmodels 0.14.6, pandas 2.3.3, numpy 2.4.6) qua công cụ phân tích của hệ thống (`tools/run_stats_analysis.py`) và script phân tích lưu cùng gói tái lặp; ghi lại phiên bản thật lúc chạy vào nhật ký phân tích.  
 - **Packages:** statsmodels (GLM Poisson với cov_type="HC0"; proportion_confint method="wilson"; MICEData/MICE cho gán đa trị; variance_inflation_factor), pandas, numpy.  
 - **Random seed:** 20261028  
+- **Độ tin cậy giữa hai người trích:** kappa Cohen bằng `statsmodels.stats.inter_rater.cohens_kappa`; KTC bootstrap bằng numpy (hạt giống 20261028); ICC(2,1) bằng hàm `icc_2_1` của `tools/kiem_tin_cay_thang_do.py`.  
 
 ### §11 DUMMY TABLES (Khung bảng kết quả)
 
@@ -173,6 +176,15 @@ Mỗi phân tích độ nhạy được định trước; không thay kết qu�
 | (12 biến ở §5) | | | | |
 
 **Bảng 7, Phân tích độ nhạy:** ĐN1–ĐN9, mỗi dòng: ước lượng + KTC 95% so với phân tích chính.
+
+**Bảng S1, Đồng thuận giữa hai người trích (chỉ số chất lượng dữ liệu; 39 hồ sơ trích lại, 10 hồ sơ bị loại sàng lọc lại ở dòng riêng):**
+| Biến | Loại | Số cặp | Đồng thuận n (%) [KTC 95% Wilson] | Kappa [KTC 95%] | Đồng thuận dương / âm | Chỉ số tỷ lệ hiện mắc / chỉ số lệch | ICC(2,1) [KTC 95%] | Chênh trung bình (giới hạn đồng thuận 95%) |
+|---|---|---|---|---|---|---|---|---|
+| `xn_du` (kết cục chính) | Nhị phân | | | | | | — | — |
+| (các biến phân loại chính khác ở §3) | | | | | | | — | — |
+| `so_lan_creat`, `so_lan_uacr`, `so_luot_kham` | Đếm | | | — | — | — | | |
+| (mọi trường còn lại) | | | | — | — | — | — | — |
+| Sàng lọc lại 10 hồ sơ bị loại: `du_tieu_chuan` | Nhị phân | | | — | — | — | — | — |
 
 ### §12 ALPHA + ĐỘ CHÍNH XÁC (cỡ mẫu theo sai số cho phép)
 

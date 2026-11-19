@@ -7,7 +7,9 @@ Hai lệnh:
             theo cột mã người bệnh, rồi xếp thứ tự ngẫu nhiên theo hạt giống đã ghi vào sổ khung mẫu.
             Đầu ra là BẢNG NỐI MÃ (có mã người bệnh) ⇒ chỉ được ghi ra thư mục mã hoá NGOÀI OneDrive.
   trich-lai Chọn ngẫu nhiên các bản ghi cho người thứ hai trích lại, từ tệp xuất REDCap (chỉ cần cột record_id và
-            du_tieu_chuan). Đầu ra chỉ có mã nghiên cứu, không có mã người bệnh.
+            du_tieu_chuan). Đầu ra chỉ có mã nghiên cứu, không có mã người bệnh. Thêm `--bi-loai` (20/11/2026, quyết
+            định Q6 của chủ nhiệm) ⇒ chọn trong số hồ sơ BỊ LOẠI (du_tieu_chuan = 0) để người thứ hai sàng lọc lại
+            phần A, kiểm bước sàng lọc.
 
 Cách xếp: thứ tự = sắp theo SHA-256(«hạt giống|mã»). Cùng hạt giống và cùng danh sách thì ra đúng cùng thứ tự trên
 mọi máy (Mac, Windows) và mọi phiên bản Python — người kiểm tra chạy lại là tái lập được.
@@ -110,18 +112,20 @@ def lenh_xep(a: argparse.Namespace) -> int:
 
 def lenh_trich_lai(a: argparse.Namespace) -> int:
     _, dong = _doc_bang(Path(a.ds))
+    gia_tri = ("0", "0.0") if a.bi_loai else ("1", "1.0")
+    nhom_ten = "bị loại" if a.bi_loai else "đủ tiêu chuẩn"
     du = [(r.get("record_id") or "").strip() for r in dong
-          if (r.get("du_tieu_chuan") or "").strip() in ("1", "1.0") and (r.get("record_id") or "").strip()]
+          if (r.get("du_tieu_chuan") or "").strip() in gia_tri and (r.get("record_id") or "").strip()]
     loai = set()
     if a.loai_tru:
         loai = {(r.get("record_id") or "").strip() for r in _doc_bang(Path(a.loai_tru))[1]}
     ung_vien = sorted(set(du) - loai)
     so = a.so if a.so is not None else math.ceil(a.ty_le * len(du))
     if so > len(ung_vien):
-        print(f"❌ Cần {so} bản ghi nhưng chỉ còn {len(ung_vien)} bản ghi đủ tiêu chuẩn chưa được chọn.")
+        print(f"❌ Cần {so} bản ghi nhưng chỉ còn {len(ung_vien)} bản ghi {nhom_ten} chưa được chọn.")
         return 2
     chon = sorted(ung_vien, key=lambda m: (_khoa(a.hat_giong, m), m))[:so]
-    print(f"Bản ghi đủ tiêu chuẩn: {len(du)} · đã chọn ở đợt trước (loại trừ): {len(loai)} · chọn lần này: {so}")
+    print(f"Bản ghi {nhom_ten}: {len(du)} · đã chọn ở đợt trước (loại trừ): {len(loai)} · chọn lần này: {so}")
     print(f"Hạt giống: {a.hat_giong} · dấu danh sách chọn (SHA-256): {_dau_thu_tu(chon)}")
     if a.ra:
         with Path(a.ra).open("w", encoding="utf-8-sig", newline="") as f:
@@ -150,6 +154,8 @@ def main(argv: list[str] | None = None) -> int:
     nhom.add_argument("--so", type=int, help="Số bản ghi cần chọn")
     nhom.add_argument("--ty-le", type=float, help="Tỷ lệ cần chọn trên số bản ghi đủ tiêu chuẩn (vd 0.1)")
     t.add_argument("--loai-tru", help="Tệp record_id đã chọn ở đợt trước (không chọn lại)")
+    t.add_argument("--bi-loai", action="store_true",
+                   help="Chọn trong số hồ sơ bị loại (du_tieu_chuan = 0) để sàng lọc lại phần A (Q6)")
     t.add_argument("--ra", help="Tệp ghi danh sách record_id được chọn")
     a = p.parse_args(argv)
     return lenh_xep(a) if a.lenh == "xep" else lenh_trich_lai(a)
