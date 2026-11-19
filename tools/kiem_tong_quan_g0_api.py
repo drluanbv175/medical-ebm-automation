@@ -403,8 +403,8 @@ def bao_cao_md(study: str, kq: Dict[str, Any], model: str, luc: str, ly_do_tl: D
          f"- A. bảng sàng lọc: {len({k['id'] for k in kq['a']})} bài · cần xem {len(a_xem)} trường",
          f"- B. đoạn tổng hợp: {len(kq['cau_b'])} đoạn dẫn nguồn · cần xem {len(b_xem)} cặp",
          f"- C. khoảng trống: {len(c_xem)} vấn đề", "",
-         "So với TIÊU ĐỀ + ABSTRACT (PubMed; bài chỉ có DOI: Europe PMC/Crossref), không phải toàn văn. Mọi «trích» đã "
-         "được máy đối chiếu nguyên văn; không khớp thì xếp «máy không xác minh được căn cứ».", "",
+         "So với TIÊU ĐỀ + ABSTRACT (PubMed; bài chỉ có mã DOI thì lấy qua Europe PMC/Crossref), không phải toàn văn. "
+         "Mọi «trích» đã được máy đối chiếu nguyên văn; không khớp thì xếp «máy không xác minh được căn cứ».", "",
          "## A. Bảng sàng lọc G0-T3 — cần bác sĩ xem", "",
          "| Mã | Bài | Nhóm | Trường | Máy phán | Lý do / cờ | Căn cứ trong abstract |",
          "|---|---|---|---|---|---|---|"]
