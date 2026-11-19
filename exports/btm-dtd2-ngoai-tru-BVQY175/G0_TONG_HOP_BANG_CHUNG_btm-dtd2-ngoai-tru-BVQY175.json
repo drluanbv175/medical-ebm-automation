@@ -98,6 +98,7 @@
   "rut_bai": {
     "ngay": "2026-10-25",
     "cong_cu": "tools/check_citation_retraction.py (chuỗi Retraction Watch ngoại tuyến → PubMed)",
-    "ket_qua": "56 PMID đã kiểm (30 PMID nền G0, 15 PMID nguồn bổ sung từ nhánh không lọc, 8 PMID tra bổ sung, 3 guideline): không phát hiện rút bài hay expression of concern. 14 nguồn trong nước chỉ có DOI (không có PMID): CHƯA kiểm rút bài. 17 PMID lạc đề của nhánh không lọc không đưa vào kết luận nên không kiểm."
+    "ket_qua": "56 PMID đã kiểm (30 PMID nền G0, 15 PMID nguồn bổ sung từ nhánh không lọc, 8 PMID tra bổ sung, 3 guideline): không phát hiện rút bài hay expression of concern. 14 nguồn trong nước chỉ có DOI (không có PMID): CHƯA kiểm rút bài. 17 PMID lạc đề của nhánh không lọc không đưa vào kết luận nên không kiểm.",
+    "pmid_da_kiem": []
   }
 }

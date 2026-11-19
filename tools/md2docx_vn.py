@@ -88,6 +88,28 @@ JOURNAL_PROFILES: Dict[str, Dict] = {
                        "xác minh riêng với 1 trang hướng dẫn tác giả cụ thể. BẮT BUỘC bác sĩ đối "
                        "chiếu lại hướng dẫn tác giả hiện hành trước khi nộp.",
     },
+    # THÊM 19/11/2026 — bác sĩ giao «Tạp chí Y Dược thực hành 175 hãy đọc hướng dẫn và hoàn thiện để đăng bài»
+    # (tạp chí đích của đề tài btm-dtd2-ngoai-tru-BVQY175). Cả 9 trường định dạng đọc TRỰC TIẾP trên trang «Thể lệ
+    # viết bài» của tạp chí ngày 19/11/2026 ⇒ verified_fields đủ 9, không chèn cảnh báo «cần xác minh». Bảng kiểm OJS
+    # mặc định của trang gửi bài ghi «cỡ 12, cách dòng đơn» — đó là chữ mẫu của phần mềm OJS; thể lệ riêng của tạp
+    # chí ghi cỡ 13, giãn dòng 1,3 ⇒ theo thể lệ riêng. Giới hạn nội dung (≤ 5.000 từ, ≤ 20 TLTK, ≤ 5 bảng, ≤ 5 hình,
+    # tóm tắt ≤ 250 từ 4 phần) KHÔNG nằm trong hồ sơ định dạng này — xem bảng kiểm của đề tài.
+    "tap_chi_y_duoc_thuc_hanh_175": {
+        "key": "tap_chi_y_duoc_thuc_hanh_175",
+        "label": "Tạp chí Y Dược Thực hành 175",
+        "match": ("tạp chí y dược thực hành 175", "tap chi y duoc thuc hanh 175", "y dược thực hành 175",
+                  "journal of practical medicine and pharmacy 175", "ydth175"),
+        "font": "Times New Roman", "body_pt": 13, "body_line_spacing": 1.3,
+        "page_width_cm": 21.0, "page_height_cm": 29.7,
+        "left_margin_cm": 3.0, "right_margin_cm": 2.0,
+        "top_margin_cm": 2.0, "bottom_margin_cm": 2.0,
+        "verified_fields": frozenset({"font", "body_pt", "body_line_spacing", "page_width_cm", "page_height_cm",
+                                      "left_margin_cm", "right_margin_cm", "top_margin_cm", "bottom_margin_cm"}),
+        "source_note": "Thể lệ viết bài, Tạp chí Y Dược Thực hành 175 (ISSN 2354-1024): "
+                       "https://jpmp175.vn/yduocthuchanh175/guideline-for-contributors — đọc 19/11/2026: A4, Times "
+                       "New Roman cỡ 13, dòng cách dòng 1,3, lề trái 3 cm, phải 2 cm, trên 2 cm, dưới 2 cm, đánh số "
+                       "trang tự động. Đối chiếu lại trang trước mỗi lần nộp (thể lệ có thể đổi).",
+    },
     "bmj_open": {
         "key": "bmj_open",
         "label": "BMJ Open",

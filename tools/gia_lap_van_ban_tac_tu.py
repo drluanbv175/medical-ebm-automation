@@ -325,11 +325,11 @@ def _rut_bai(pmid_xet: Sequence[str], kho_a12: Optional[Path], hom_nay: date) ->
     phan.append(f"phát hiện rút bài hoặc thông báo biên tập: PMID {', '.join(rut)}" if rut
                 else "không phát hiện rút bài hoặc thông báo biên tập trong số đã kiểm")
     if chua:
-        # KHÔNG liệt kê mã: bộ đối chiếu xuyên cổng coi mọi PMID xuất hiện trong `rut_bai` là ĐÃ kiểm.
         phan.append(f"{len(chua)} PMID còn lại chưa kiểm rút bài")
+    # 19/11/2026: bộ đối chiếu xuyên cổng chỉ tin danh sách `pmid_da_kiem` (không đọc câu văn) — chỉ PMID có kết quả.
     return {"ngay": hom_nay.isoformat(),
             "cong_cu": "tools/check_citations.py (kho kết quả theo PMID của bộ giả lập — GIA_LAP_A12_KHO)",
-            "ket_qua": "; ".join(phan)}
+            "ket_qua": "; ".join(phan), "pmid_da_kiem": list(dict.fromkeys(da))}
 
 
 def pmid_trong(*nguon: Any) -> set:

@@ -25,7 +25,8 @@ DOCX (vá 2026-07-15): xuất qua md2docx_vn.markdown_to_docx() — bảng Word 
 (không phải khối chữ monospace), cùng cỗ máy render đã dùng cho G10/gen_research_
 docx.py. --target-journal khớp đúng tên (không phân biệt hoa/thường/dấu) với 1
 trong các hồ sơ định dạng thật (font/lề/cách dòng) ở md2docx_vn.JOURNAL_PROFILES
-("BMJ Open", "Tạp chí Y học Việt Nam") — tên khác vẫn được chèn vào nội dung như
+("BMJ Open", "Tạp chí Y học Việt Nam", "Tạp chí Y Dược Thực hành 175" — thêm 19/11/2026, xác minh đủ 9
+trường định dạng với thể lệ của tạp chí) — tên khác vẫn được chèn vào nội dung như
 trước, chỉ không đổi định dạng. Hồ sơ là VÍ DỤ, bác sĩ PHẢI đối chiếu lại hướng
 dẫn tác giả hiện hành của tạp chí đích trước khi nộp.
 
@@ -3062,7 +3063,7 @@ def main() -> None:
                         help="Tên tạp chí mục tiêu (tuỳ chọn). Khớp đúng tên (không phân biệt "
                              "hoa/thường/dấu) với hồ sơ định dạng DOCX thật (font/lề/cách dòng) — "
                              "vá 2026-07-15, xem md2docx_vn.JOURNAL_PROFILES. Hiện có: \"BMJ Open\", "
-                             "\"Tạp chí Y học Việt Nam\". Tên khác → vẫn chèn vào nội dung, dùng "
+                             "\"Tạp chí Y học Việt Nam\", \"Tạp chí Y Dược Thực hành 175\". Tên khác → vẫn chèn vào nội dung, dùng "
                              "định dạng mặc định (chuẩn luận văn VN).")
     parser.add_argument("--word-limit",     type=int, default=3500,
                         help="Giới hạn từ tạp chí yêu cầu (mặc định: 3500)")
