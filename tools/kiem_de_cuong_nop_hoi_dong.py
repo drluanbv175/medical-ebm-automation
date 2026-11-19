@@ -18,6 +18,11 @@ Luật (mỗi lỗi một dòng; rỗng = đạt):
   K6  mọi PMID nằm trong biên nhận rút bài A12 (`A12_RETRACTION_RECEIPT.json`) đã kiểm và sạch;
   K7  không email/số điện thoại (bỏ DOI/URL trước khi dò), không nhãn ô trống [CẦN…] (dòng chấm «………» để PI điền tay
       là hợp lệ).
+  K9  biểu bảng đúng chuẩn trong chương «Dự kiến kết quả» (bác sĩ 19/11/2026: «phần trình bày biểu bảng chưa có và
+      chưa đúng chuẩn»): tên bảng in đậm ĐẶT TRÊN bảng, tên hình/biểu đồ đặt DƯỚI hình, đánh số liên tục; ghi chú giải
+      thích chữ viết tắt; không hàng giữ chỗ; bảng đặc điểm nền không cột p; ước lượng kèm KTC 95%; MỖI mục tiêu có bảng
+      hoặc biểu đồ; có hình/biểu đồ và đủ khung bắt buộc của chuẩn báo cáo theo thiết kế (luật ở `khung_bieu_bang.py`;
+      dựng/nâng cấp: `khung_bieu_bang.py --study <mã> --thay-chuong|--nang-cap --ghi`).
   K8  không dấu vết soạn thảo/máy (bác sĩ 17/11/2026): «DRAFT», «bản nháp», «do AI/trí tuệ nhân tạo soạn»,
       «máy soạn/máy sinh», «Cần bác sĩ kiểm chứng», «Mức tự động», chú thích HTML, nhãn «(giả lập)»/«GIẢ LẬP»,
       «hồ sơ chưa có». Thêm 18/11/2026: «(… đã chốt)», mã SOP-…, mã thiếu («mã KGHS»), «= 1»/«khác 9» trong văn
@@ -181,6 +186,19 @@ def loi_k8(md: str) -> List[str]:
     return loi
 
 
+def loi_k9(out_dir: Path, md: str, thiet_ke: str) -> List[str]:
+    """K9 — biểu bảng của chương «Dự kiến kết quả» (luật và chuẩn ở `khung_bieu_bang`)."""
+    import khung_bieu_bang as KBB  # noqa: PLC0415
+
+    try:
+        meta = json.loads((Path(out_dir) / "study_meta.json").read_text(encoding="utf-8"))
+        mt = ((meta.get("gate_params") or {}).get("G1") or {}).get("objectives") or []
+        so_mt = len([x for x in (mt if isinstance(mt, list) else [mt]) if str(x).strip()])
+    except (OSError, ValueError, AttributeError):
+        so_mt = 0
+    return KBB.kiem_bieu_bang(md, thiet_ke, so_mt, goc=Path(out_dir))
+
+
 def kiem(out_dir: Path, study: str) -> List[str]:
     """Danh sách lỗi của bản đề cương nộp Hội đồng (rỗng = đạt). Thiếu tệp `.md` ⇒ một lỗi K1."""
     out_dir = Path(out_dir)
@@ -220,6 +238,10 @@ def kiem(out_dir: Path, study: str) -> List[str]:
             chuong = _chuan(m.group(2))
         sach = G10._DOI_URL_RE.sub(" ", dong)
         for bt, nhan in _KY_HIEU_NOI_BO:
+            # 19/11/2026: «G4 (eGFR 15–29)» là giai đoạn eGFR theo KDIGO, không phải mã cổng — chỉ miễn khi chính dòng
+            # đó nói eGFR (khung biểu bảng luôn ghi kèm khoảng eGFR cho các mức G1–G5).
+            if nhan == "mã cổng G0/G4–G10" and re.search(r"eGFR", sach):
+                continue
             if bt.search(sach):
                 loi.append(f"K4 dòng {so}: {nhan}")
                 break
@@ -271,6 +293,7 @@ def kiem(out_dir: Path, study: str) -> List[str]:
         if G10._PLACEHOLDER_RE.search(dong):
             loi.append(f"K7 dòng {so}: nhãn ô trống [CẦN…]/<…>")
     loi.extend(loi_k8(md))
+    loi.extend(loi_k9(out_dir, md, tk))
     if G10._co_lien_lac_ca_nhan(md) or (docx_chu is not None and G10._co_lien_lac_ca_nhan(docx_chu)):
         loi.append("K7 có email/số điện thoại — PII liên lạc để dòng chấm cho PI điền tay ngoài hệ thống")
     return loi

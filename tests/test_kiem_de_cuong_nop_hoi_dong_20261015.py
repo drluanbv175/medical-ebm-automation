@@ -1,7 +1,8 @@
 """Công cụ kiểm bản đề cương NỘP HỘI ĐỒNG (G10-T4, 15/10/2026) — `tools/kiem_de_cuong_nop_hoi_dong.py`.
 
 Fixture tự soạn, ngoại tuyến: một đề cương đủ chương, Word dựng từ chính các dòng của .md, biên nhận A12 phủ PMID.
-Mỗi luật K1–K7 có một ca hỏng đúng một chỗ."""
+Mỗi luật K1–K7 có một ca hỏng đúng một chỗ. 19/11/2026: chương 5 của fixture mang một hình và một bảng đúng chuẩn
+biểu bảng (K9) — fixture cũ để trống chương 5, đúng kiểu bác sĩ chê «biểu bảng chưa có»."""
 from __future__ import annotations
 
 import json
@@ -43,6 +44,18 @@ Cỡ mẫu của đề tài là 1.000 phiếu hợp lệ.
 Số quyết định phê duyệt: ……… ngày ……/……/………
 
 # 5. DỰ KIẾN KẾT QUẢ
+
+*Mô tả hình:* sơ đồ các bước chọn đối tượng nghiên cứu.
+
+**Hình 5.1. Sơ đồ chọn đối tượng nghiên cứu (theo STROBE)**
+
+**Bảng 5.1. Mức độ hài lòng chung (Mục tiêu 1)**
+
+| Chỉ số | n/N | Tỷ lệ % | KTC 95% |
+|---|---|---|---|
+| Hài lòng chung | …/… | … | … – … |
+
+*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy.
 
 # 6. KẾ HOẠCH THỰC HIỆN
 

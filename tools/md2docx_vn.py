@@ -796,6 +796,35 @@ def _init_document(title_page: Optional[Dict], profile: Optional[Dict] = None):
     return doc
 
 
+_ANH_RE = re.compile(r"^!\[([^\]]*)\]\(([^)\s]+)\)\s*$")
+_TEN_BIEU_BANG_RE = re.compile(r"^\*\*(?:Bảng|Hình|Biểu đồ|Sơ đồ)\s+\d+(?:\.\d+)*\.\s.+\*\*$")
+RONG_ANH_TOI_DA_CM = 15.0
+
+
+def _them_anh(doc, tep: Path, chu_thay: str) -> None:
+    """Chèn ảnh căn giữa, rộng tối đa 15 cm (vừa lề trang A4 3-2 cm); ảnh vuông/nhỏ giữ ≤ 11 cm."""
+    from docx.enum.text import WD_ALIGN_PARAGRAPH as A
+    from docx.shared import Cm
+
+    p = doc.add_paragraph()
+    _spacing(p, before=6, after=2, line=1.0, align=A.CENTER)
+    if not Path(tep).is_file():
+        _add_text(p, f"[Thiếu tệp hình: {Path(tep).name} — {chu_thay}]", italic=True)
+        return
+    rong = RONG_ANH_TOI_DA_CM
+    try:
+        from PIL import Image  # noqa: PLC0415
+
+        with Image.open(tep) as im:
+            w, h = im.size
+        if h and w / h < 1.25:
+            rong = 11.0
+    except Exception:  # noqa: BLE001 — thiếu Pillow/ảnh lạ: dùng bề rộng chuẩn
+        pass
+    p.paragraph_format.keep_with_next = True
+    p.add_run().add_picture(str(tep), width=Cm(rong))
+
+
 def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
                      journal_profile: Optional[Dict] = None):
     """Chuyển chuỗi Markdown -> .docx. Trả về Path đã lưu.
@@ -897,6 +926,24 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
             p = doc.add_paragraph(style="List Bullet")
             _spacing(p, after=4, line=body_line, align=A.JUSTIFY)
             _add_inline_runs(p, stripped[2:])
+            i += 1
+            continue
+
+        # 19/11/2026 (bác sĩ: «phần trình bày biểu bảng chưa có và chưa đúng chuẩn»): hình/biểu đồ Markdown
+        # «![…](tệp.png)» ⇒ ảnh thật căn giữa (đường dẫn tương đối theo thư mục tệp .docx); thiếu tệp ⇒ dòng nghiêng
+        # nói rõ, không im lặng bỏ hình.
+        m_anh = _ANH_RE.match(stripped)
+        if m_anh:
+            _them_anh(doc, out_path.parent / m_anh.group(2), m_anh.group(1))
+            i += 1
+            continue
+
+        # Tên bảng/hình/biểu đồ «**Bảng 5.1. …**» ⇒ đoạn in đậm CĂN GIỮA (chuẩn trình bày; tên bảng giữ liền với bảng).
+        if _TEN_BIEU_BANG_RE.match(stripped):
+            p = doc.add_paragraph()
+            _spacing(p, before=6, after=6, line=body_line, align=A.CENTER)
+            p.paragraph_format.keep_with_next = stripped.startswith("**Bảng")
+            _add_inline_runs(p, stripped)
             i += 1
             continue
 
