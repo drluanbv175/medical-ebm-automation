@@ -49,6 +49,29 @@ python medical-ebm-automation/tools/run_g2_auto.py --study "MA-DE-TAI"
 Mở `exports/<MA-DE-TAI>/G2_A3_ETHICS_PACKAGE_<MA-DE-TAI>.docx`:
 - Điền tất cả `[CẦN BỔ SUNG]` (tên chủ nhiệm, đơn vị, liên lạc, cỡ mẫu)
 - Ký TL1 (Đơn IRB) + Trưởng đơn vị → nộp Hội đồng
+
+### 🏥 Nộp Hội đồng Đạo đức BVQY175 — dùng ĐÚNG mẫu bệnh viện (19/11/2026)
+
+Khi đề tài nộp Hội đồng Đạo đức trong nghiên cứu y sinh học Bệnh viện Quân y
+175 (không phải Hội đồng khác, không phải mẫu tự soạn), chạy `tools/ho_so_hdd_bvqy175.py`
+theo đúng thứ tự — KHÔNG tự soạn mẫu khác thay nó:
+
+```bash
+python3 tools/ho_so_hdd_bvqy175.py mau                       # dò bộ mẫu bệnh viện (ngoài git)
+python3 tools/ho_so_hdd_bvqy175.py trich --study "MA-DE-TAI" --ghi
+python3 tools/ho_so_hdd_bvqy175.py dung  --study "MA-DE-TAI" --quy-trinh rut_gon|day_du|ca_hai --ghi
+python3 tools/ho_so_hdd_bvqy175.py kiem  --study "MA-DE-TAI"
+```
+
+Chi tiết schema JSON, ranh giới (ô cá nhân/ký/thư giới thiệu/lệ phí/gửi email
+là việc CỦA BÁC SĨ, agent không tự điền/tự gửi) và vị trí bộ mẫu:
+`docs/HO-SO-HDD-BVQY175.md`. Sau `trich`, chỉ bổ sung thêm nội dung văn xuôi
+(`phu_luc_10.phan_bon`, `phu_luc_11.muc`, `icf.muc`/`icf_khac`, `mien_icf.ba_dieu_kien_cioms`) từ dữ kiện ĐÃ
+CHỐT ở G0–G4 của đề tài — KHÔNG bịa số liệu/thông tin cá nhân chưa có nguồn; chạy lại `kiem` và
+báo số ô còn `[CẦN...]` theo nhóm cho bác sĩ trước khi kết thúc. `dung` tự sinh ĐỦ Mẫu 2–8, đơn miễn đồng thuận
+và phiếu thu thập (bảng Word thật) — KHÔNG viết script điền tay; mẫu nào sinh sai/thiếu thì sửa công cụ. Văn bản
+nộp không được mang tên tệp/đường dẫn/ký hiệu cổng G0–G10 (`kiem` chặn). Cờ «dữ liệu xác định được» ghi trung thực
+(còn bảng nối mã ⇒ true) — không phải lý do tự động buộc lấy chấp thuận (CIOMS 2016 Hướng dẫn 10).
 - Nhận quyết định IRB thật → người có thẩm quyền TỰ ghi bằng `approve_gate.py --gate G2` (kèm phụ lục quyết định có
   cấu trúc/attestation) → bộ chấm sống trả `PASS_G2_APPROVED`. Agent KHÔNG ghi `G2_STATUS: LOCKED` (không mở cổng nào)
 - **Thu hẹp 07/10/2026 (bác sĩ quyết):** cổng sau (G5–G10) chỉ nhận G2 khi gói `G2_A3_ETHICS_PACKAGE` ĐÃ KÝ có
@@ -71,7 +94,7 @@ Mở `exports/<MA-DE-TAI>/G2_A3_ETHICS_PACKAGE_<MA-DE-TAI>.docx`:
      ngang tiến cứu thật đang chạy trong hệ thống này).
    - Quan sát HỒI CỨU/dữ liệu thứ cấp thuần túy KHÔNG tuyển người tham gia mới (chỉ phân tích hồ
      sơ bệnh án/dữ liệu đã có sẵn) → đăng ký thật sự tùy chọn (không có "người tham gia đầu tiên"
-     để mốc thời gian đăng ký áp vào) — xác định có cần ICF không (TT43 Điều 15).
+     để mốc thời gian đăng ký áp vào) — xác định có cần ICF không (miễn: Hội đồng quyết theo TT43/2024/TT-BYT Điều 7 khoản 1 điểm b; điều kiện CIOMS 2016 Hướng dẫn 10 — xem TÀI LIỆU 9).
 3. **Xác định Hội đồng đạo đức sẽ nộp** — `[CẦN BÁC SĨ XÁC NHẬN]`.
 4. **Sự tham gia của bệnh nhân/công chúng khi xây dựng đề tài (PPI)** — SPIRIT 2025 mục
    11, mục MỚI (không có ở SPIRIT 2013), bắt buộc nếu can thiệp/RCT (vá 2026-07-17, round
@@ -418,24 +441,29 @@ Kích hoạt theo cờ `risk["icf_waiver_eligible"]` gắn TĨNH theo `design_co
 ```
 YÊU CẦU MIỄN THỦ TỤC ĐỒNG THUẬN (ICF Waiver Request) — DRAFT Phiên bản 1.0
 ═══════════════════════════════════════════════════════
-Căn cứ: TT43/2024/TT-BYT Điều 15 · Helsinki WMA 2024 §32 (Nghiên cứu dùng vật liệu/dữ liệu người có thể định danh — số mục không đổi từ bản 2013)
+Căn cứ: Helsinki WMA 10/2024 §32 (dữ liệu/vật liệu xác định được: không thể hoặc không thực tế xin chấp thuận ⇒ chỉ làm sau khi hội đồng đạo đức chấp thuận) + §24 (riêng tư) · CIOMS 2016 Hướng dẫn 10 (tr. 37–39) + Hướng dẫn 12 (tr. 47–52) · TT43/2024/TT-BYT Điều 7 khoản 1 điểm b (Hội đồng chấp thuận miễn bản thông tin + phiếu tình nguyện). KHÔNG ghi «TT43 Điều 15» (chuyên gia tư vấn độc lập) hay «Helsinki §29» (ưng thuận của người không đủ năng lực) — đối chiếu nguồn 19/11/2026, hằng số dùng chung ở `tools/can_cu_dao_duc.py`.
 Tên đề tài: ___   |   Chủ nhiệm: ___   |   Ngày: ___/___/20__
 
-CƠ SỞ XIN MIỄN (phải thỏa CẢ 4 điều kiện):
-☑ Dữ liệu đã ẩn danh/mã giả danh — không thể truy ngược cá nhân
-☑ Không có can thiệp/thủ thuật bổ sung lên người tham gia
-☑ Rủi ro không vượt "nguy cơ tối thiểu" từ việc truy cập dữ liệu
-☑ Không khả thi nếu phải lấy ICF (hồ sơ lưu trữ, dữ liệu cũ)
+ĐIỀU KIỆN MIỄN (CIOMS 2016 Hướng dẫn 10 — phải thoả CẢ BA, mỗi điều kiện một đoạn lập luận riêng):
+☐ (i) Không khả thi hoặc không thực hiện được nếu không miễn
+☐ (ii) Có giá trị xã hội quan trọng
+☐ (iii) Nguy cơ không vượt mức tối thiểu đối với người tham gia và nhóm của họ
+(Trước khi xin miễn, xét phương án SỬA ĐỔI thủ tục — vd thông báo và cho từ chối, Hướng dẫn 12.)
+
+ĐẶC ĐIỂM DỮ LIỆU (mô tả ĐÚNG để Hội đồng xét): ẩn danh hoàn toàn hay GIẢ DANH HOÁ (còn bảng nối mã) · có can
+thiệp/thủ thuật bổ sung không · có tiếp xúc người tham gia không.
 
 ĐẢM BẢO BẢO MẬT:
 Phương pháp khử định danh: ___   |   Ai có quyền truy cập: ___
 Lưu trữ: ___   |   Kế hoạch hủy sau nghiên cứu: ___
 
-CỜ ĐỎ (bất kỳ mục → PHẢI lấy ICF đầy đủ, không miễn):
-⚠ Dữ liệu có thể nhận dạng cá nhân → ICF bắt buộc
-⚠ Có can thiệp/xét nghiệm bổ sung → ICF bắt buộc
-⚠ Dữ liệu nhạy cảm (di truyền/HIV/tâm thần/nghiện) → ICF đặc biệt
-⚠ Người dưới 18 tuổi hoặc mất năng lực hành vi → ICF người giám hộ
+LƯU Ý (không phải cờ chặn tự động):
+• Dữ liệu xác định được/giả danh hoá KHÔNG tự động buộc lấy chấp thuận — Hội đồng xét theo ba điều kiện trên
+  (Helsinki §32 chính là điều khoản cho dữ liệu xác định được); ghi cờ trung thực, kèm biện pháp bảo mật.
+• Có can thiệp/xét nghiệm bổ sung hoặc tiếp xúc trực tiếp để thu dữ liệu mới ⇒ thông thường phải xin chấp thuận
+  (có thể sửa đổi thủ tục).
+• Dữ liệu nhạy cảm (di truyền/HIV/tâm thần/nghiện) ⇒ lập luận nguy cơ (iii) chặt hơn.
+• Người dưới 18 tuổi hoặc mất năng lực hành vi ⇒ chấp thuận của người đại diện hợp pháp + ưng thuận (Helsinki §29–30).
 
 Chữ ký chủ nhiệm: [CẦN KÝ]   |   Ngày: ___
 "DRAFT — Cần Hội đồng Đạo đức phê duyệt trước khi truy cập dữ liệu."

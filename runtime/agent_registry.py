@@ -176,8 +176,11 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 19/11/2026: tong-quan-y-van — `rut_bai.pmid_da_kiem`/`doi_da_kiem` có cấu trúc (bộ đối chiếu xuyên cổng không đọc
 # câu văn nữa) — y hệt repo gốc nhánh claude/rut-bai-g0-co-cau-truc-20261119; + kiem-chung-trich-dan (câu văn báo
 # cáo A12 không còn tính là đã kiểm rút bài) — y hệt repo gốc nhánh claude/a12-khong-doc-cau-van-20261119; vẫn 64.
+# 19/11/2026: dạy `dao-duc-dang-ky` dùng `tools/ho_so_hdd_bvqy175.py` khi nộp Hội đồng Đạo đức BVQY175 — vẫn 64.
+# 19/11/2026 (chiều): `dao-duc-dang-ky` sửa căn cứ miễn đồng thuận (Helsinki §32 · CIOMS HD10 · TT43 Điều 7 khoản 1
+# điểm b, thay «TT43 Điều 15 · §29» sai) và bỏ cờ «dữ liệu nhận dạng được → ICF bắt buộc» — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "0b90fedf8568d4bf526e225a886cd1e4a4ece1f47ea3dfd71dc72648bc191bd0"
+    "2b50d7494d71057a50badbbeb8607b73b231610da5181ad3d297e2d01a47add7"
 )
 
 MINIMUM_AGENT_COUNT = 64

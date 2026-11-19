@@ -42,6 +42,7 @@ _REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(_REPO_ROOT))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+import can_cu_dao_duc as CCDD  # noqa: E402  (căn cứ miễn đồng thuận đã đối chiếu nguồn — 19/11/2026)
 import chuan_trinh_bay as _CTB  # noqa: E402  (chuẩn trình bày tài liệu — font/ký tự, 01/09/2026)
 import dau_may_sinh as DMS  # noqa: E402  (dấu SHA-256 bản máy sinh — K6, 14/11/2026)
 import g2_quality_gate as G2Q  # noqa: E402  (hợp đồng chất lượng riêng G2)
@@ -1537,6 +1538,11 @@ def generate_g2_full_package(
             "PI đã chọn xin miễn ICF (`gate_params.G2.icf_waiver_requested` = true) — Hội đồng Đạo đức quyết định."
             if _g2m.get("icf_waiver_requested") is True else
             "`[CẦN BÁC SĨ XÁC NHẬN: nghiên cứu của tôi đủ điều kiện miễn ICF không?]`")
+        # SỬA 19/11/2026 (hồ sơ Hội đồng Đạo đức BVQY175, đối chiếu nguồn chính thức): căn cứ cũ ghi cứng «TT43/2024
+        # Điều 15 · Helsinki §29» là SAI (Điều 15 = chuyên gia tư vấn độc lập; §29 = ưng thuận của người không đủ năng
+        # lực) và khối «CỜ ĐỎ: có dữ liệu nhận dạng được → ICF bắt buộc» trái CIOMS 2016 Hướng dẫn 10 (miễn được khi
+        # đủ ba điều kiện) và Helsinki 2024 §32 (chính là điều khoản cho dữ liệu xác định được). Căn cứ + ba điều kiện
+        # lấy CHUNG từ `can_cu_dao_duc.py` với `ho_so_hdd_bvqy175.py`; nguồn và ngày đọc ở docstring tệp đó.
         waiver_section = """
 ---
 
@@ -1548,12 +1554,15 @@ def generate_g2_full_package(
 ```
 YÊU CẦU MIỄN THỦ TỤC ĐỒNG THUẬN (ICF Waiver Request) — DRAFT Phiên bản 1.0
 ═══════════════════════════════════════════════════════════════
-Căn cứ: TT43/2024/TT-BYT Điều 15 · Helsinki (WMA, bản sửa 2024) §29
+Căn cứ: {can_cu}
 Tên đề tài: {ten_dt}
 Chủ nhiệm: [CẦN BỔ SUNG]
 Ngày: {run_date_short}
 
-CƠ SỞ XIN MIỄN (phải thỏa CẢ 4 điều kiện):
+ĐIỀU KIỆN MIỄN (CIOMS 2016 Hướng dẫn 10 — phải thoả CẢ BA; Hội đồng quyết):
+{ba_dieu_kien}
+
+ĐẶC ĐIỂM DỮ LIỆU VÀ CAN THIỆP (mô tả đúng để Hội đồng xét):
 {waiver_criteria}
 
 ĐẢM BẢO BẢO MẬT:
@@ -1562,15 +1571,19 @@ Mã hóa: {ma_hoa_line}
 Quyền truy cập: Chỉ nhóm nghiên cứu
 Kế hoạch hủy: {ke_hoach_huy_line}
 
-CỜ ĐỎ (bất kỳ → PHẢI lấy ICF đầy đủ):
-☐ Có dữ liệu cá nhân nhận dạng được → ICF bắt buộc
-☐ Có tiếp xúc người tham gia → ICF bắt buộc
+LƯU Ý (CIOMS 2016 Hướng dẫn 10; Helsinki 2024 §32):
+• Dữ liệu xác định được/giả danh hoá (còn bảng nối mã) KHÔNG tự động buộc lấy chấp thuận —
+  Hội đồng xét theo ba điều kiện trên, kèm biện pháp bảo mật.
+• Có tiếp xúc trực tiếp người tham gia để thu dữ liệu mới ⇒ thông thường phải xin chấp thuận
+  (có thể sửa đổi thủ tục); chỉ đề nghị miễn khi lập luận được điều kiện (i).
 
 Chữ ký chủ nhiệm: [CẦN KÝ]   |   Ngày: ___/___/{year}
 "DRAFT — Cần Hội đồng Đạo đức phê duyệt."
 ═══════════════════════════════════════════════════════════════
 ```
 """.format(
+            can_cu=CCDD.CAN_CU_MIEN_DONG_THUAN_NGAN,
+            ba_dieu_kien="\n".join(f"☐ {nhan} — [CẦN LẬP LUẬN]" for _k, nhan in CCDD.BA_DIEU_KIEN_CIOMS),
             ten_dt=ten_dt, run_date_short=run_date[:10], year=_YEAR,
             activation_note=activation_note, waiver_criteria=waiver_criteria,
             data_type_line=data_type_line, xac_nhan_mien_line=xac_nhan_mien_line,
