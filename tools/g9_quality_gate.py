@@ -29,7 +29,7 @@ import sys as _sys_r4
 from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Mapping, Optional
+from typing import Any, Dict, Mapping, Optional, Tuple
 
 import cong_song as CS
 import gate_contract as GC
@@ -851,12 +851,32 @@ def _documents_clean(files: Mapping[str, Optional[Path]]) -> tuple[bool, str, bo
     return clean, f"placeholders={placeholder_hits}; internal_traces={trace_hits}", bool(trace_hits)
 
 
-def _readiness_has_contact_pii(readiness_path: Path) -> bool:
+def quet_lien_he(path: Path) -> Tuple[Optional[bool], str]:
+    """Quét email/điện thoại trong một tệp hồ sơ, trả (kết quả, mô tả có vị trí) — KHÔNG chép lại nội dung trúng.
+
+    None = KHÔNG ĐO ĐƯỢC (tệp chưa có / không đọc được) — người gọi vẫn chặn (fail-closed) nhưng bằng chứng phải nói
+    đúng là «chưa có tệp», không phải «phát hiện PII». Sửa 19/11/2026: G10 của đề tài BTM chưa lắp gói nên chưa có
+    G10_RELEASE_READINESS.json; hàm cũ trả True ⇒ bằng chứng «contact_pii_detected=True» khiến hai người chấm và trọng
+    tài hội đồng cổng đi tìm PII không có thật, và đề nghị bằng chứng phải nêu tệp/dòng.
+    """
     try:
-        text = readiness_path.read_text(encoding="utf-8")
+        text = path.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError):
-        return True
-    return bool(_EMAIL_RE.search(text) or _PHONE_RE.search(text))
+        return None, f"chưa có hoặc không đọc được {path.name} — chưa đo được (vẫn chặn)"
+    vi_tri = []
+    for so, dong in enumerate(text.splitlines(), 1):
+        loai = [ten for ten, bt in (("email", _EMAIL_RE), ("điện thoại", _PHONE_RE)) if bt.search(dong)]
+        if loai:
+            vi_tri.append(f"dòng {so} ({', '.join(loai)})")
+    if not vi_tri:
+        return False, f"{path.name}: không thấy email/điện thoại"
+    them = f" và {len(vi_tri) - 5} chỗ khác" if len(vi_tri) > 5 else ""
+    return True, f"{path.name}: {'; '.join(vi_tri[:5])}{them}"
+
+
+def _readiness_has_contact_pii(readiness_path: Path) -> bool:
+    """Giữ cho người gọi cũ: True khi có PII HOẶC không đo được (fail-closed)."""
+    return quet_lien_he(readiness_path)[0] is not False
 
 
 # THÊM 2026-08-30 (audit cổng, khoảng hở #5): đọc NGƯỢC trạng thái tick ☐/☑
@@ -1270,18 +1290,19 @@ def evaluate_study(
         )
     )
 
-    contact_pii = _readiness_has_contact_pii(readiness_path)
+    contact_pii, pii_mo_ta = quet_lien_he(readiness_path)
     # SỬA 05/10/2026 (soát từng cổng G9-09): A10 (được manifest băm, lưu trong exports/) cũng không được chứa email/điện
     # thoại — Phần 1 của khuôn cũ còn dạy ghi «HỌ TÊN + ĐƠN VỊ + EMAIL». Cover letter là tài liệu nộp tạp chí (được
     # phép có email tác giả liên lạc) nên KHÔNG quét ở đây.
-    a10_pii = _readiness_has_contact_pii(out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md") if (
-        out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").exists() else False
+    a10_pii, a10_mo_ta = quet_lien_he(out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md") if (
+        out_dir / f"G9_A10_AUTHOR_INTEGRITY_{study}.md").exists() else (False, "chưa có A10")
     rows.append(
         _criterion(
             "G9-AUTO-06",
             "Hồ sơ readiness và A10 chỉ dùng mã tham chiếu, không lưu email/điện thoại",
-            "BLOCK" if (contact_pii or a10_pii) else "PASS",
-            f"contact_pii_readiness={contact_pii}; contact_pii_a10={a10_pii}",
+            "PASS" if (contact_pii is False and a10_pii is False) else "BLOCK",
+            f"contact_pii_readiness={'chưa đo' if contact_pii is None else contact_pii}; "
+            f"contact_pii_a10={'chưa đo' if a10_pii is None else a10_pii}; {pii_mo_ta}; {a10_mo_ta}",
             "Xóa email/điện thoại khỏi JSON và A10 (dùng AUTHOR-NN); lưu form nhận diện/chữ ký ở hệ thống được "
             "kiểm soát.",
         )
