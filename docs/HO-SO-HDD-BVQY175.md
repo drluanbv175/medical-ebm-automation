@@ -20,11 +20,15 @@ Quyển 2 (Hồ sơ đăng ký) theo đúng thứ tự 8 mục:
 7. Bệnh án/phiếu thu thập số liệu và phụ lục của đề cương
 8. Giấy chấp thuận đạo đức nơi khác (nếu nghiên cứu nhiều cơ quan)
 
-Quyển 1 (Thuyết minh đề cương) dùng bìa Mẫu 2, ghép với bản Word đề cương nộp
-đã có sẵn (`DE_CUONG_NOP_HOI_DONG_<mã>.docx`) — công cụ KHÔNG tự ghép bìa này.
+Quyển 1 (Thuyết minh đề cương) dùng bìa Mẫu 2 (công cụ điền sẵn), ghép với bản
+Word đề cương nộp đã có (`DE_CUONG_NOP_HOI_DONG_<mã>.docx`) — công cụ KHÔNG tự
+ghép hai tệp.
 
-Nộp bản mềm (1 tệp thuyết minh + 1 tệp hồ sơ đăng ký, PDF/scan) tới
-`thuky.hddd.bvqy175@gmail.com` TRƯỚC khi nộp bản cứng. Bản cứng: 03 bộ (quy
+Nộp bản mềm (1 tệp thuyết minh + 1 tệp hồ sơ đăng ký, PDF/scan) tới địa chỉ
+email Thư ký ghi trong hướng dẫn gốc của Hội đồng (tệp 1 của bộ mẫu) TRƯỚC khi
+nộp bản cứng — công cụ đọc địa chỉ từ tệp đó lúc chạy (hoặc biến môi trường
+`EBM_EMAIL_THU_KY_HDD_BVQY175`), không viết cứng vào repo công khai. Mẫu Phụ lục
+10 ghi một địa chỉ khác — danh mục nhắc bác sĩ hỏi lại Thư ký. Bản cứng: 03 bộ (quy
 trình rút gọn) hoặc 07 bộ (quy trình đầy đủ). Lệ phí 2.000.000 đ/hồ sơ,
 chuyển khoản theo thông tin ở Phụ lục 2 của hướng dẫn gốc (số tài khoản
 KHÔNG lưu trong repo git). Quy trình xét duyệt có 5 mốc (5/2/2/10/2 ngày
@@ -68,24 +72,41 @@ python3 tools/ho_so_hdd_bvqy175.py kiem --study <mã>
 ```
 
 Kết quả nằm ở `exports/<mã>/ho_so_hdd/`:
-- `HO_SO_HDD_BVQY175.json` — dữ kiện đã trích (xem docstring của tool để biết
-  đầy đủ cấu trúc schema).
-- `MAU4_DON_XIN_DANH_GIA_DAO_DUC_<mã>.docx`
+- `HO_SO_HDD_BVQY175.json` — dữ kiện đã trích (schema 2.0; JSON 1.0 vẫn đọc
+  được, `trich --ghi` nâng cấp và lưu — xem docstring của công cụ).
+- `MAU2_BIA_THUYET_MINH_DE_CUONG_<mã>.docx`, `MAU3_BIA_HO_SO_DANG_KY_<mã>.docx`
+- `MAU4_DON_XIN_DANH_GIA_DAO_DUC_<mã>.docx` (ghi đủ địa chỉ/điện thoại và TÊN
+  từng tài liệu khác kèm theo)
 - `MAU5_LY_LICH_KHOA_HOC_<mã>_NN.docx` (một tệp mỗi người)
-- `MIEN_ICF_<mã>.docx` (chỉ khi xin miễn ICF)
-- `PHIEU_THU_THAP_SO_LIEU_<mã>.docx` (trích từ đề cương nộp, nếu có)
-- `DANH_MUC_HO_SO_HDD_<mã>.md` — danh mục đủ 8 mục của Quyển 2 + việc chỉ
-  bác sĩ làm được.
+- `MAU6_PHU_LUC_10_BANG_KIEM_RUT_GON_<mã>.docx` (quy trình rút gọn) và/hoặc
+  `MAU7_PHU_LUC_11_PHIEU_QUY_TRINH_DAY_DU_<mã>.docx` (quy trình đầy đủ)
+- `MAU8_PHU_LUC_8_ICF_…_<mã>.docx` — một tệp cho MỖI bản thông tin (vd bản
+  chính + bản phỏng vấn nhận thức) — HOẶC `MIEN_ICF_<mã>.docx` khi xin miễn
+- `PHIEU_THU_THAP_SO_LIEU_<mã>.docx` — CHỈ các phụ lục phiếu thu thập/bảng biến
+  của đề cương nộp, bảng Word thật (không chép thân đề cương)
+- `DANH_MUC_HO_SO_HDD_<mã>.md` — danh mục 8 mục của Quyển 2, trạng thái theo tệp
+  HIỆN CÓ trên đĩa (và so với JSON) + việc chỉ bác sĩ làm được.
 
 Tệp JSON đã có (bác sĩ đã sửa tay) chạy `trich --ghi` lại CHỈ bổ sung khoá
-còn thiếu — KHÔNG ghi đè giá trị đã sửa. Muốn ghi đè toàn bộ (vd dữ kiện gốc
-đổi nhiều) dùng `--ghi-de` (tự sao lưu bản cũ trước khi ghi đè).
+còn thiếu — KHÔNG ghi đè giá trị đã sửa (luôn sao lưu bản cũ). Muốn ghi đè toàn
+bộ dùng `--ghi-de`. Chạy lại `dung` không làm mất bản Word người đã sửa tay: tệp
+khác bản công cụ ghi lần trước được chép sang `ho_so_hdd/_sao_luu/<tên>.bak-<giờ>`
+trước khi ghi đè.
 
-Mẫu 6 (Phụ lục 10, quy trình rút gọn) và Mẫu 7 (Phụ lục 11, quy trình đầy
-đủ) chưa có bộ điền tự động riêng (cấu trúc bảng/trường quá nhiều ô tự do
-cho một lần soạn đầu tiên) — nội dung nháp của hai mẫu này nằm sẵn trong
-`HO_SO_HDD_BVQY175.json` (`phu_luc_10`, `phu_luc_11`) để agent soạn nội dung
-(xem bên dưới) điền tay vào mẫu Word hoặc để công cụ phiên bản sau bổ sung.
+Phiếu thu thập (mục 7): mặc định lấy mọi phụ lục của đề cương nộp TRỪ phụ lục đã
+nộp thành mục riêng (bản thông tin/phiếu đồng ý, đơn miễn đồng thuận → mục 6) và
+tóm tắt kế hoạch phân tích thống kê (thuộc phương pháp, Quyển 1); đổi danh sách
+bằng khoá `phieu_thu_thap.phu_luc` trong JSON.
+
+Đơn đề nghị miễn đồng thuận: căn cứ Tuyên bố Helsinki 2024 §32 + §24, CIOMS 2016
+Hướng dẫn 10 (ba điều kiện) + Hướng dẫn 12, Thông tư 43/2024/TT-BYT Điều 7 khoản 1
+điểm b — đã đối chiếu nguồn chính thức ngày 19/11/2026 (`tools/can_cu_dao_duc.py`,
+dùng chung với `run_g2_auto.py`). Dữ liệu xác định được (giả danh hoá, còn bảng nối
+mã) KHÔNG tự động buộc lấy chấp thuận; công cụ ghi cờ trung thực và lập luận theo
+ba điều kiện.
+
+`kiem` chặn văn bản nộp còn dấu vết máy: đường dẫn, tên tệp `.md/.json…`, ký hiệu
+cổng G0–G10 trong ngữ cảnh máy (mã câu hỏi kiểu «G1» của bộ câu hỏi không bị chặn).
 
 ## Ranh giới — máy soạn NHÁP, bác sĩ quyết định và ký
 
@@ -95,14 +116,15 @@ Công cụ KHÔNG:
 - Tự xin thư giới thiệu của đơn vị chủ trì hay quyết định phân công người
   hướng dẫn.
 - Tự chuyển lệ phí (2.000.000 đ/hồ sơ) — số tài khoản không lưu trong repo.
-- Tự gửi email tới `thuky.hddd.bvqy175@gmail.com`.
+- Tự gửi email cho Thư ký Hội đồng.
 - Bịa thông tin cá nhân (ngày sinh, học vị, địa chỉ, số điện thoại, học
   hàm…) — mọi ô này luôn giữ `[CẦN BÁC SĨ ĐIỀN]` cho tới khi bác sĩ tự điền
   vào JSON rồi chạy lại `dung`.
 - Tự suy luận các ô A/B của Phụ lục 10 khi không có dữ kiện chắc chắn (chỉ
   suy luận được A9 khi `recruitment_mode = RETROSPECTIVE_SECONDARY_DATA`,
-  và B1 khi có kế hoạch mã hoá ghi rõ trong tài liệu DMP) — mọi ô khác giữ
-  nguyên để bác sĩ tự đánh dấu.
+  và B1 từ quy trình dữ liệu đã chốt `_quy-trinh-du-lieu.csv`) — ô chưa quyết
+  hiện ☐ kèm `[CẦN BÁC SĨ XÁC NHẬN]`.
+- Đánh dấu ô ý kiến của người hướng dẫn, trưởng khoa, Chủ tịch Hội đồng.
 
 ## Để agent soạn nội dung cho một đề tài cụ thể
 
