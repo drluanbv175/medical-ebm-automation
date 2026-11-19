@@ -110,6 +110,7 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact citation-check
 - Hạn trạng thái rút bài 30 ngày: mục TLTK có lần kiểm gần nhất quá 30 ngày ⇒ kiểm lại trước khi nộp.
 - Mã không kết luận được giữ «không biết» — TUYỆT ĐỐI không ghi «chưa bị rút»; câu tổng («n PMID đã kiểm») không thay bản ghi từng mã.
 - Trục `trich_dan_tong_quan` của `nhat_quan_xuyen_cong` đọc tệp này; bài có tín hiệu rút ⇒ lệch, cổng A12 chặn ở G10.
+- Từ 19/11/2026 (bác sĩ duyệt) trục đó CHỈ tin bản ghi có cấu trúc: biên nhận máy `A12_RETRACTION_RECEIPT.json` (PMID), tệp `KIEM_RUT_BAI_TRICH_DAN_<mã>.json` (PMID + DOI) và danh sách `rut_bai.pmid_da_kiem`/`doi_da_kiem` của G0. Câu văn/bảng trong `A12_CITATION_VERIFICATION_<mã>.md` KHÔNG còn tính là đã kiểm rút bài — DOI (kể cả tài liệu phương pháp mà SAP dẫn) phải qua `kiem_rut_bai_trich_dan.py --ghi`, đừng chỉ ghi «không có thông báo rút» vào báo cáo.
 
 ## Bài học giả lập trọn vòng 8 thiết kế (16/11/2026)
 - Phạm vi A12 = MỌI PMID mà gói phát hành sẽ trích, không chỉ bản thảo: thêm PMID của đề cương G10 (dựng nháp
