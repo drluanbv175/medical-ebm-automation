@@ -113,6 +113,11 @@ JOURNAL_PROFILES: Dict[str, Dict] = {
         # đầu xuống dòng liên tục (bản thảo BTM đo bằng Word: 13 trang). Bảng gọn = cột rộng theo nội dung, căn trái,
         # lề ô và khoảng cách đoạn trong ô nhỏ. Không đổi cỡ chữ/giãn dòng thân bài mà thể lệ quy định.
         "table_compact": True,
+        # 20/11/2026: thể lệ không quy định khoảng cách đoạn; bộ dựng mặc định 8 pt sau đoạn + MỘT dòng trống sau mỗi
+        # bảng làm bản thảo BTM vượt 10 trang dù đã đủ gọn chữ. Đoạn gọn = 6 pt sau đoạn (mức tối thiểu thông dụng của
+        # văn bản hành chính Việt Nam, NĐ 30/2020), đề mục cách gọn hơn, sau bảng 6 pt thay dòng trống. Cỡ chữ, giãn
+        # dòng, lề giữ đúng thể lệ.
+        "body_compact": True,
     },
     "bmj_open": {
         "key": "bmj_open",
@@ -618,6 +623,11 @@ def _add_plain_text(paragraph, text, size=None, bold=False, italic=False):
         _add_text(paragraph, text[vt:], size, bold=bold, italic=italic)
 
 
+def _doan_gon() -> bool:
+    """Hồ sơ đang áp bật «đoạn gọn» (khoảng cách đoạn nhỏ hơn) — chỉ hồ sơ tạp chí khai `body_compact`."""
+    return bool((_active_profile or {}).get("body_compact"))
+
+
 def _spacing(paragraph, before=0, after=8, line=1.5, align=None):
     from docx.enum.text import WD_LINE_SPACING
     pf = paragraph.paragraph_format
@@ -909,14 +919,14 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
 
         if stripped.startswith("### "):
             p = doc.add_paragraph()
-            _spacing(p, before=10, after=6, line=1.3)
+            _spacing(p, before=6 if _doan_gon() else 10, after=3 if _doan_gon() else 6, line=1.3)
             _add_text(p, _strip_md(stripped[4:]), bold=True, italic=True)
             i += 1
             continue
 
         if stripped.startswith("## "):
             p = doc.add_paragraph()
-            _spacing(p, before=14, after=8, line=1.3)
+            _spacing(p, before=10 if _doan_gon() else 14, after=4 if _doan_gon() else 8, line=1.3)
             _add_text(p, _strip_md(stripped[3:]), 14, bold=True)
             i += 1
             continue
@@ -934,7 +944,12 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
         if stripped.startswith("|"):
             rows, i = _parse_table(lines, i)
             _add_table(doc, rows)
-            doc.add_paragraph()
+            sau_bang = doc.add_paragraph()
+            if _doan_gon():
+                from docx.shared import Pt
+                sau_bang.paragraph_format.space_before = Pt(0)
+                sau_bang.paragraph_format.space_after = Pt(0)
+                sau_bang.paragraph_format.line_spacing = Pt(6)  # khoảng 6 pt sau bảng thay cho một dòng trống
             continue
 
         if stripped.startswith("$$"):
@@ -947,14 +962,14 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
         m = re.match(r"^(\d+)\.\s+(.*)$", stripped)
         if m:
             p = doc.add_paragraph(style="List Number")
-            _spacing(p, after=6, line=body_line, align=A.JUSTIFY)
+            _spacing(p, after=4 if _doan_gon() else 6, line=body_line, align=A.JUSTIFY)
             _add_inline_runs(p, m.group(2))
             i += 1
             continue
 
         if stripped.startswith("- ") or stripped.startswith("* "):
             p = doc.add_paragraph(style="List Bullet")
-            _spacing(p, after=4, line=body_line, align=A.JUSTIFY)
+            _spacing(p, after=3 if _doan_gon() else 4, line=body_line, align=A.JUSTIFY)
             _add_inline_runs(p, stripped[2:])
             i += 1
             continue
@@ -971,7 +986,8 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
         # Tên bảng/hình/biểu đồ «**Bảng 5.1. …**» ⇒ đoạn in đậm CĂN GIỮA (chuẩn trình bày; tên bảng giữ liền với bảng).
         if _TEN_BIEU_BANG_RE.match(stripped):
             p = doc.add_paragraph()
-            _spacing(p, before=6, after=6, line=body_line, align=A.CENTER)
+            _spacing(p, before=4 if _doan_gon() else 6, after=4 if _doan_gon() else 6, line=body_line,
+                     align=A.CENTER)
             p.paragraph_format.keep_with_next = stripped.startswith("**Bảng")
             _add_inline_runs(p, stripped)
             i += 1
@@ -979,7 +995,7 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
 
         # Đoạn văn thường.
         p = doc.add_paragraph()
-        _spacing(p, after=8, line=body_line, align=A.JUSTIFY)
+        _spacing(p, after=6 if _doan_gon() else 8, line=body_line, align=A.JUSTIFY)
         _add_inline_runs(p, stripped)
         i += 1
 

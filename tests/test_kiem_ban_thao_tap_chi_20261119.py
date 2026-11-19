@@ -207,3 +207,32 @@ def test_do_rong_cot_kep_trong_so():
     rows = [["x" * 200, "n", "y"], ["a", "b", "c"]]
     rong = M2D.do_rong_cot_theo_noi_dung(rows, 3, 9000)
     assert sum(rong) == 9000 and rong[1] == rong[2] and rong[0] < 9000 * 45 // 69 + 10
+
+
+# ── Đoạn gọn của hồ sơ tạp chí (20/11/2026) ────────────────────────────────────────────────────────────────────────
+_DOAN = "## 2. PHƯƠNG PHÁP\n\nĐoạn một của thân bài.\n\n| A | B |\n|---|---|\n| 1 | 2 |\n\nĐoạn sau bảng.\n"
+
+
+def _cach_doan(docx_path: Path):
+    import docx as _docx
+    d = _docx.Document(str(docx_path))
+    than = next(p for p in d.paragraphs if p.text == "Đoạn một của thân bài.")
+    de_muc = next(p for p in d.paragraphs if p.text.startswith("2. PHƯƠNG PHÁP"))
+    sau_bang = d.paragraphs[[p.text for p in d.paragraphs].index("Đoạn sau bảng.") - 1]
+    return than.paragraph_format.space_after.pt, de_muc.paragraph_format.space_before.pt, sau_bang
+
+
+def test_ho_so_ydth175_doan_gon(tmp_path):
+    out = tmp_path / "gon.docx"
+    M2D.markdown_to_docx(_DOAN, out, journal_profile=M2D.resolve_journal_profile(TEN))
+    sau, truoc, sau_bang = _cach_doan(out)
+    assert sau == 6 and truoc == 10
+    assert sau_bang.text == "" and sau_bang.paragraph_format.line_spacing.pt == 6
+
+
+def test_mac_dinh_giu_khoang_cach_doan_cu(tmp_path):
+    out = tmp_path / "mac_dinh.docx"
+    M2D.markdown_to_docx(_DOAN, out)
+    sau, truoc, sau_bang = _cach_doan(out)
+    assert sau == 8 and truoc == 14
+    assert sau_bang.text == "" and sau_bang.paragraph_format.line_spacing is None
