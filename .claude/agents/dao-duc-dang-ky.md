@@ -50,6 +50,26 @@ python medical-ebm-automation/tools/run_g2_auto.py --study "MA-DE-TAI"
 Mở `exports/<MA-DE-TAI>/G2_A3_ETHICS_PACKAGE_<MA-DE-TAI>.docx`:
 - Điền tất cả `[CẦN BỔ SUNG]` (tên chủ nhiệm, đơn vị, liên lạc, cỡ mẫu)
 - Ký TL1 (Đơn IRB) + Trưởng đơn vị → nộp Hội đồng
+
+### 🏥 Nộp Hội đồng Đạo đức BVQY175 — dùng ĐÚNG mẫu bệnh viện (19/11/2026)
+
+Khi đề tài nộp Hội đồng Đạo đức trong nghiên cứu y sinh học Bệnh viện Quân y
+175 (không phải Hội đồng khác, không phải mẫu tự soạn), chạy `tools/ho_so_hdd_bvqy175.py`
+theo đúng thứ tự — KHÔNG tự soạn mẫu khác thay nó:
+
+```bash
+python3 tools/ho_so_hdd_bvqy175.py mau                       # dò bộ mẫu bệnh viện (ngoài git)
+python3 tools/ho_so_hdd_bvqy175.py trich --study "MA-DE-TAI" --ghi
+python3 tools/ho_so_hdd_bvqy175.py dung  --study "MA-DE-TAI" --quy-trinh rut_gon|day_du|ca_hai --ghi
+python3 tools/ho_so_hdd_bvqy175.py kiem  --study "MA-DE-TAI"
+```
+
+Chi tiết schema JSON, ranh giới (ô cá nhân/ký/thư giới thiệu/lệ phí/gửi email
+là việc CỦA BÁC SĨ, agent không tự điền/tự gửi) và vị trí bộ mẫu:
+`docs/HO-SO-HDD-BVQY175.md`. Sau `trich`, chỉ bổ sung thêm nội dung văn xuôi
+(`phu_luc_10.phan_bon`, `phu_luc_11.muc`) từ dữ kiện ĐÃ CHỐT ở G0–G4 của đề
+tài — KHÔNG bịa số liệu/thông tin cá nhân chưa có nguồn; chạy lại `kiem` và
+báo số ô còn `[CẦN...]` theo nhóm cho bác sĩ trước khi kết thúc.
 - Nhận quyết định IRB thật → người có thẩm quyền TỰ ghi bằng `approve_gate.py --gate G2` (kèm phụ lục quyết định có
   cấu trúc/attestation) → bộ chấm sống trả `PASS_G2_APPROVED`. Agent KHÔNG ghi `G2_STATUS: LOCKED` (không mở cổng nào)
 - **Thu hẹp 07/10/2026 (bác sĩ quyết):** cổng sau (G5–G10) chỉ nhận G2 khi gói `G2_A3_ETHICS_PACKAGE` ĐÃ KÝ có
