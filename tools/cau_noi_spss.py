@@ -676,6 +676,9 @@ def bien_phan_tich_g6(out_dir: Path) -> set[str]:
     return ra
 
 
+LOAI_PHAN_LOAI_CO_MA = ("radio", "dropdown", "yesno", "truefalse", "checkbox")
+
+
 def ke_hoach_bien(
     tieu_de: list[str], tk: list[dict], td: dict[str, dict], ma_thieu: list[dict], *, giu_ghi_chu: bool = False,
     giu_cot: set[str] | None = None,
@@ -845,6 +848,11 @@ def ke_hoach_bien(
                 "ngay": la_ngay,
                 "dinh_dang_ngay": dinh_dang_ngay(kt_d) if la_ngay else None,
                 "co_dinh_nghia": bool(d),
+                # 19/11/2026: trường PHÂN LOẠI CÓ MÃ (radio/dropdown/yesno/truefalse/checkbox) chỉ chứa mã đã định
+                # nghĩa — không chứa được số điện thoại/họ tên ⇒ miễn phép chặn theo TÊN cột, đúng luật cổng
+                # tiếp nhận/làm sạch/khoá (`import_real_dataset.cot_phan_loai_tu_variables`).
+                "phan_loai_co_ma": bool(d) and (cot != goc or loai in LOAI_PHAN_LOAI_CO_MA) and bool(nhan_gt)
+                and not tu_do,
                 "nhan": cat_byte(nhan, TRAN_NHAN_BIEN),
                 "nhan_gia_tri": {k: cat_byte(v, TRAN_NHAN_GIA_TRI) for k, v in nhan_gt.items()},
                 "muc_do": muc,
@@ -863,7 +871,10 @@ def ke_hoach_bien(
                 f"{cot}: từ điển ghi kiểu số nhưng có giá trị chữ ngoài mã thiếu "
                 f"({len(khong_so_con)} giá trị) — đọc dạng chuỗi"
             )
-    pii = _quet_pii_ten([b["cot"] for b in ke if not b["bo"]])
+    # Kiểm toàn diện 19/11/2026: RCT chân thực có tiêu chí chọn «tc_dien_thoai» (Có điện thoại — yesno) ⇒ bản cũ chặn
+    # xuat-sav (mã 3) ⇒ nửa SPSS của kiểm chéo G6 «TU_CHOI» cho MỌI phân tích dù R khớp 8/8. Cột văn bản/số mang tên
+    # nghi định danh vẫn bị chặn.
+    pii = _quet_pii_ten([b["cot"] for b in ke if not b["bo"] and not b["phan_loai_co_ma"]])
     if pii:
         raise TuChoi("tên cột nghi định danh — khử định danh trước khi xuất SPSS: " + "; ".join(pii))
     if de_xuat:
