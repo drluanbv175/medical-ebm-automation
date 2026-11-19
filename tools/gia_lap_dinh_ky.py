@@ -121,7 +121,7 @@ TRANG_THAI_DUNG_PIPELINE = ("blocked_missing_input", "chan_song", "dung_lech_xuy
 # 15/11/2026 (bác sĩ chọn G3-T2 thêm bảng .md): agent soạn `G3_BO_BIEN_SO_<mã>.md` (tools/bang_bien_g3.py) rồi PI đọc
 # và ghi gate_params.G3.bo_bien_so_duyet — cũng là bước ĐÚNG THIẾT KẾ (nguồn người duyệt của G5-AUTO-11).
 CAN_THIEP_DUNG_THIET_KE = ("dien_noi_dung", "xac_nhan_dau_van_tay", "dung_bo_bien_ma_tran", "soan_bang_bien_g3",
-                           "duyet_bang_bien_g3")
+                           "duyet_bang_bien_g3", "soan_van_ban_g0")
 # PI tự chạy cổng mà tiêu chí máy chưa đạt KHÔNG đổi (15/11/2026, giả lập 8 thiết kế: G3-AUTO-19 thiếu bộ biến làm
 # canary đếm «tự chạy G3» thành lỗi N4 ở 4/6 thiết kế): chạy lại không giúp gì ⇒ pipeline không có lỗi «không chạy
 # lại»; tiêu chí còn kẹt mới là khiếm khuyết và đã có khoá `ket:` riêng. Ghi lại để thấy, không tính là can thiệp
@@ -623,6 +623,7 @@ class GiaLap:
         self.g0_do_duoc = False
         self.ghi_chu: List[str] = []
         self._da_tu_chay: set = set()
+        self._da_soan_g0: set = set()
 
     # ── tiện ích tệp đề tài tạm
     def _meta(self) -> Dict[str, Any]:
@@ -682,12 +683,29 @@ class GiaLap:
         if dich.exists():
             shutil.rmtree(dich)
         dich.mkdir(parents=True)
+        # 19/11/2026: hai tệp do AGENT soạn (G0-T3/T4) không phải nền tra cứu — lượt sau soạn lại từ nền.
+        cua_agent = {f"G0_TONG_HOP_BANG_CHUNG_{self.study}.json", f"G0_KHOANG_TRONG_{self.study}.json"}
         for p in self.out.iterdir():
-            if p.is_file() and p.name.startswith("G0_"):
+            if p.is_file() and p.name.startswith("G0_") and p.name not in cua_agent:
                 shutil.copy2(p, dich / p.name)
         meta = self._meta()
+        self._luu_nhanh_day_du()
         _ghi_json(dich / "_nen.json", {"luc": _bay_gio(), "study": self.study, "topic": meta.get("topic"),
                                        "query_en": meta.get("query_en"), "base_query": cp.get("base_query")})
+
+    def _luu_nhanh_day_du(self) -> None:
+        """Trực tuyến: nhánh KHÔNG lọc vượt trần ⇒ tải đủ bản ghi cho agent G0-T3 (gia_lap_van_ban_tac_tu). Lỗi mạng
+        chỉ ghi chú — tệp cũ giữ nguyên, lượt ngoại tuyến sau sẽ báo thiếu nếu không còn khớp."""
+        import gia_lap_van_ban_tac_tu as VB  # noqa: PLC0415
+
+        kl = VB.nhanh_khong_loc(_doc_json(self.out / "G0_pubmed_raw.json"))
+        q, so_hit = str(kl.get("truy_van") or ""), kl.get("so_hit_that")
+        if not q or not isinstance(so_hit, int) or so_hit <= int(kl.get("so_bai_lay_ve") or 0):
+            return
+        try:
+            VB._ghi_json(VB.tep_day_du(self.nen_g0_dir, q), VB.tai_nhanh_day_du(q))
+        except Exception as exc:  # noqa: BLE001 — mạng hỏng không được thành dữ kiện
+            self.ghi_chu.append(f"chưa tải được nhánh không lọc đầy đủ ({type(exc).__name__})")
 
     def nap_nen_g0(self) -> bool:
         nen = self._nen_g0()
@@ -765,6 +783,8 @@ class GiaLap:
                 self._ghi_meta(meta)
                 self._ghi_can_thiep("G0", "khai_query_en", "máy dịch chủ đề tiếng Việt thành truy vấn lạc đề (K4)")
                 return "G0"
+        if cp0 and cp0.get("n_pmids") and self._soan_van_ban_g0():
+            return "G0"
         for gate in CONG_MEM:
             if gate not in self.kb["pi"]:
                 continue
@@ -824,6 +844,44 @@ class GiaLap:
             self.ket = f"{gate}:{','.join(self._chua_dat(bao)) or bao.get('status')}"
             return None
         return None
+
+    def _soan_van_ban_g0(self) -> bool:
+        """G0-T3 `tong-quan-y-van` + G0-T4 `khoang-trong-nghien-cuu` (19/11/2026): soạn hai tệp đề xuất từ nền G0 hiện
+        hành (`gia_lap_van_ban_tac_tu`) rồi dựng lại A1 không tra lại PubMed — như đề tài thật: agent soạn TRƯỚC khi PI
+        chốt G0 (danh mục đọc bổ sung vào dấu vân tay G0). Chỉ soạn khi tệp vắng hoặc không còn đạt bộ kiem của hệ; mỗi
+        tập PMID nền soạn MỘT lần — soạn xong vẫn lỗi là khiếm khuyết thật, không lặp vô hạn. True khi vừa soạn."""
+        import g0_tong_hop as GT  # noqa: PLC0415
+        import gia_lap_van_ban_tac_tu as VB  # noqa: PLC0415
+
+        cp = self._cp("G0")
+        pr = cp.get("pubmed_results") if isinstance(cp.get("pubmed_results"), dict) else {}
+        nen = sorted(str(p) for p in pr.get("all_pmids") or cp.get("pmids_verified") or [])
+        khoa = (str(cp.get("base_query") or ""), tuple(nen))
+        if khoa in self._da_soan_g0:
+            return False
+        kl = VB.nhanh_khong_loc(_doc_json(self.out / "G0_pubmed_raw.json"))
+        th, loi_th = GT.doc(self.out, GT.TEP_TONG_HOP, self.study)
+        kt, loi_kt = GT.doc(self.out, GT.TEP_KHOANG_TRONG, self.study)
+        can_th = th is None or bool(loi_th) or bool(GT.kiem_tong_hop(th, nen, kl or None))
+        can_kt = kt is None or bool(loi_kt) or bool(GT.kiem_khoang_trong(kt))
+        if not (can_th or can_kt):
+            return False
+        self._da_soan_g0.add(khoa)
+        hom_nay = datetime.now().date()
+        kho = os.environ.get("GIA_LAP_A12_KHO", "").strip()
+        if can_th:
+            _ghi_json(self.out / GT.TEP_TONG_HOP.format(study=self.study),
+                      VB.soan_tong_hop(self.out, self.study, self.nen_g0_dir, hom_nay, Path(kho) if kho else None,
+                                       VB.pmid_trong(self.kb.get("pi"), self._meta().get("gate_params"))))
+        if can_kt:
+            g0 = {**(self.kb.get("pi", {}).get("G0") or {}),
+                  **((self._meta().get("gate_params") or {}).get("G0") or {})}
+            _ghi_json(self.out / GT.TEP_KHOANG_TRONG.format(study=self.study),
+                      VB.soan_khoang_trong(self.out, self.study, {"gate_params": {"G0": g0}}, hom_nay))
+        self._chay("dung_lai_a1", self._lenh("run_g0_auto.py", "--study", self.study, "--dung-lai-a1"))
+        self._ghi_can_thiep("G0", "soan_van_ban_g0", "G0-T3/T4: agent tong-quan-y-van + khoang-trong-nghien-cuu soạn "
+                            "tổng hợp bằng chứng và khoảng trống (gia_lap_van_ban_tac_tu) rồi dựng lại A1")
+        return True
 
     def _duyet_bang_bien_g3(self) -> bool:
         """PI GIẢ LẬP (đề tài tạm ZZCANARY-) đọc bảng G3 rồi ghi xác nhận gắn dấu nội dung — True khi vừa ghi."""

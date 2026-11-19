@@ -1,0 +1,4562 @@
+{
+ "schema": "gia_lap/khong_loc_day_du/v1",
+ "truy_van": "(\"Anti-Inflammatory Agents, Non-Steroidal\"[MeSH] OR NSAID*[tiab] OR \"non-steroidal anti-inflammatory\"[tiab]) AND (\"Gastrointestinal Hemorrhage\"[MeSH] OR \"upper gastrointestinal bleeding\"[tiab] OR \"peptic ulcer bleeding\"[tiab]) AND (\"case-control\"[tiab] OR \"Case-Control Studies\"[MeSH])",
+ "so_hit_that": 459,
+ "so_bai_lay_ve": 459,
+ "ngay_tai": "2026-11-19",
+ "cach": "PubMed E-utilities esearch (sort=date) + esummary, không lọc thiết kế",
+ "ban_ghi": [
+  {
+   "pmid": "42287444",
+   "title": "Risk factors for rebleeding in acute lower gastrointestinal bleeding: a systematic review and meta-analysis.",
+   "year": "2026",
+   "journal": "International journal of colorectal disease",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "42070040",
+   "title": "Interpretable LightGBM model for predicting postoperative gastrointestinal hemorrhage in elderly hip fracture patients: leveraging systemic inflammation and medication exposures for personalized risk stratification.",
+   "year": "2026",
+   "journal": "BMC geriatrics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41790684",
+   "title": "The use of prophylactic transcatheter arterial embolization in Forrest type II ulcer patients without attempted endoscopic hemostasis.",
+   "year": "2026",
+   "journal": "Medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41373035",
+   "title": "Appropriateness of proton pump inhibitor prescription for prevention of gastrointestinal bleeding in patients receiving warfarin: a real world, database study.",
+   "year": "2025",
+   "journal": "BMC pharmacology & toxicology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41083165",
+   "title": "Esophagogastroduodenoscopy findings in patients with or without recent use of antiplatelets, anticoagulants, or NSAIDs and non-variceal upper gastrointestinal bleeding: A retrospective cohort study.",
+   "year": "2025",
+   "journal": "Acta gastro-enterologica Belgica",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40667956",
+   "title": "Clinical and endoscopic analysis of gastrointestinal bleeding during COVID-19 full-blown pandemic: a retrospective cohort study.",
+   "year": "2025",
+   "journal": "Annals of medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "40441242",
+   "title": "Effects of antiplatelet, anticoagulant, and nonsteroidal anti-inflammatory drugs on upper gastrointestinal bleeding in geriatric patients.",
+   "year": "2025",
+   "journal": "Medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "40426059",
+   "title": "Comparative efficacy of gelatin sponge, microcoils, and nbca in arterial gastrointestinal bleeding: a retrospective study.",
+   "year": "2025",
+   "journal": "BMC gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "40174780",
+   "title": "Emergent endoscopy is associated with lower mortality in hemodynamically unstable upper GI bleeding: Single-center experience with 24/7 endoscopy services.",
+   "year": "2025",
+   "journal": "Clinics and research in hepatology and gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40028763",
+   "title": "Risk of cardiovascular diseases and gastrointestinal bleeding is comparable between celecoxib and non-selective non-steroidal anti-inflammatory drugs in patients with ankylosing spondylitis: a nationwide retrospective cohort study.",
+   "year": "2025",
+   "journal": "Scandinavian journal of rheumatology",
+   "pubtypes": [
+    "Journal Article",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "39892621",
+   "title": "Gastrointestinal Bleeds Are a Rare Event After Total Hip and Knee Arthroplasty.",
+   "year": "2025",
+   "journal": "The Journal of arthroplasty",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "39748650",
+   "title": "Risk of Lower Gastrointestinal Bleeding in Nonsteroidal Anti-inflammatory Drug (NSAID) and Proton Pump Inhibitor Users Compared with NSAID-Only Users: A Common Data Model Analysis.",
+   "year": "2025",
+   "journal": "Gut and liver",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "39360666",
+   "title": "Nonvitamin K Anticoagulants: Risk of Bleeding When Interacting With Other Medications: A Cohort Study From Medicare.",
+   "year": "2024",
+   "journal": "Clinical cardiology",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "39105571",
+   "title": "Comparison of gastrointestinal bleeding in patients with and without liver cirrhosis.",
+   "year": "2024",
+   "journal": "Scandinavian journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "38968495",
+   "title": "DA-9601 has protective effects comparable to those of proton pump inhibitor and rebamipide against nonsteroidal anti-inflammatory drugs-induced upper and lower gastrointestinal bleeding in patients with rheumatoid arthritis: A nationwide study using Korean Health Insurance Review and Assessment Service database.",
+   "year": "2024",
+   "journal": "Medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Comparative Study",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "38861561",
+   "title": "Continuous co-prescription of rebamipide prevents upper gastrointestinal bleeding in NSAID use for orthopaedic conditions: A nested case-control study using the LIFE Study database.",
+   "year": "2024",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "38726558",
+   "title": "Real-World Bleeding Risk of Anticoagulant and Nonsteroidal Anti-inflammatory Drugs Combotherapy versus Anticoagulant Monotherapy.",
+   "year": "2024",
+   "journal": "Gut and liver",
+   "pubtypes": [
+    "Journal Article",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "38653188",
+   "title": "Active surveillance pharmacovigilance for Clostridioides difficile infection and gastrointestinal bleeding: an analytic framework based on case-control studies.",
+   "year": "2024",
+   "journal": "EBioMedicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38520626",
+   "title": "Patterns of Comorbidities and Prescribing and Dispensing of Non-steroidal Anti-inflammatory Drugs (NSAIDs) Among Patients with Osteoarthritis in the USA: Real-World Study.",
+   "year": "2024",
+   "journal": "Drugs & aging",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38419217",
+   "title": "Risk factors and outcomes of upper gastrointestinal bleeding in hospitalized patients in a tertiary care hospital.",
+   "year": "2024",
+   "journal": "JPMA. The Journal of the Pakistan Medical Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37659073",
+   "title": "Retrospective evaluation of the incidence of gastrointestinal bleeding in dogs receiving ophthalmic nonsteroidal anti-inflammatory drugs.",
+   "year": "2023",
+   "journal": "Veterinary ophthalmology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37392366",
+   "title": "A new model (Alfalfa-Warfarin-GIB) for predicting the risk of major gastrointestinal bleeding in warfarin patients.",
+   "year": "2023",
+   "journal": "European journal of clinical pharmacology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37179194",
+   "title": "Use of Antidepressants and the Risk of Upper Gastrointestinal Tract Bleeding: A Case-control Study.",
+   "year": "2023",
+   "journal": "Clinical therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36948854",
+   "title": "[Study on HBV-related acute-on-chronic liver failure risk factors and novel predictive survival model].",
+   "year": "2023",
+   "journal": "Zhonghua gan zang bing za zhi = Zhonghua ganzangbing zazhi = Chinese journal of hepatology",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36942299",
+   "title": "The role of CYP2C9*2, CYP2C9*3 and VKORC1-1639 variants on the susceptibility of upper gastrointestinal bleeding: A full case-control study.",
+   "year": "2023",
+   "journal": "Journal of pharmacy & pharmaceutical sciences : a publication of the Canadian Society for Pharmaceutical Sciences, Societe canadienne des sciences pharmaceutiques",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36735101",
+   "title": "Gastrointestinal bleeding in children with familial dysautonomia: a case-control study.",
+   "year": "2023",
+   "journal": "Clinical autonomic research : official journal of the Clinical Autonomic Research Society",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "36526813",
+   "title": "Risk of Gastrointestinal Bleeding with Concurrent Use of NSAID and SSRI: A Systematic Review and Network Meta-Analysis.",
+   "year": "2023",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Systematic Review",
+    "Journal Article",
+    "Network Meta-Analysis"
+   ]
+  },
+  {
+   "pmid": "36433812",
+   "title": "Early postoperative non-steroidal anti-inflammatory drugs and anastomotic leakage after oesophagectomy.",
+   "year": "2023",
+   "journal": "The British journal of surgery",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36002638",
+   "title": "Selective serotonin reuptake inhibitors increase risk of upper gastrointestinal bleeding when used with NSAIDs: a systemic review and meta-analysis.",
+   "year": "2022",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "35971682",
+   "title": "A new model to predict the risk of major gastrointestinal bleeding in patients on direct oral anticoagulants (dabigatran and rivaroxaban).",
+   "year": "2023",
+   "journal": "British journal of clinical pharmacology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35574622",
+   "title": "VNTR Polymorphism in Intron 4 of the eNOS Gene and the Risk of Gastrointestinal Bleeding: A Case-control Study.",
+   "year": "2022",
+   "journal": "Journal of gastrointestinal and liver diseases : JGLD",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35484847",
+   "title": "Does coprescribing nonsteroidal anti-inflammatory drugs and oral anticoagulants increase the risk of major bleeding, stroke and systemic embolism?",
+   "year": "2022",
+   "journal": "British journal of clinical pharmacology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35165484",
+   "title": "[Analysis of the relationship between high altitude polycythemia and peptic ulcer bleeding].",
+   "year": "2022",
+   "journal": "Beijing da xue xue bao. Yi xue ban = Journal of Peking University. Health sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35114859",
+   "title": "Synergism interaction between genetic polymorphisms in drug metabolizing enzymes and NSAIDs on upper gastrointestinal haemorrhage: a multicenter case-control study.",
+   "year": "2022",
+   "journal": "Annals of medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35025879",
+   "title": "Low-dose aspirin and incidence of lung carcinoma in patients with chronic obstructive pulmonary disease in Hong Kong: A cohort study.",
+   "year": "2022",
+   "journal": "PLoS medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34983141",
+   "title": "Gastrointestinal Bleeding Risk Factors in Patients with Type 2 Diabetes Mellitus.",
+   "year": "2022",
+   "journal": "Journal of the College of Physicians and Surgeons--Pakistan : JCPSP",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34847677",
+   "title": "Characteristics of Patients with Nonvariceal Upper Gastrointestinal Bleeding - Are We Underestimating Gastroprotection during NSAIDs Therapy?",
+   "year": "2021",
+   "journal": "Acta medica academica",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34620931",
+   "title": "A multicenter case-control study of the effect of e-nos VNTR polymorphism on upper gastrointestinal hemorrhage in NSAID users.",
+   "year": "2021",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34405815",
+   "title": "Clinical Scoring Systems in Predicting the Outcomes of Small Bowel Bleeding.",
+   "year": "2021",
+   "journal": "The Turkish journal of gastroenterology : the official journal of Turkish Society of Gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34398204",
+   "title": "Oral Anticoagulants for Nonvalvular Atrial Fibrillation in Patients With High Risk of Gastrointestinal Bleeding.",
+   "year": "2021",
+   "journal": "JAMA network open",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34290607",
+   "title": "Genetic Variants in PTGS1 and NOS3 Genes Increase the Risk of Upper Gastrointestinal Bleeding: A Case-Control Study.",
+   "year": "2021",
+   "journal": "Frontiers in pharmacology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34085115",
+   "title": "Effect of a proton-pump inhibitor on intestinal microbiota in patients taking low-dose aspirin.",
+   "year": "2021",
+   "journal": "European journal of clinical pharmacology",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "34036087",
+   "title": "Negative Video Capsule Endoscopy Had a High Negative Predictive Value for Small Bowel Lesions, but Diagnostic Capability May Be Lower in Young Patients with Overt Bleeding.",
+   "year": "2021",
+   "journal": "Canadian journal of gastroenterology & hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33642110",
+   "title": "Risk of Gastrointestinal Bleeding With Extended Use of Nonsteroidal Anti-Inflammatory Drug Analgesia After Joint Arthroplasty.",
+   "year": "2021",
+   "journal": "The Journal of arthroplasty",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33226862",
+   "title": "Acute upper gastrointestinal bleeding: a population-based, five-year follow-up study.",
+   "year": "2021",
+   "journal": "Scandinavian journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33214605",
+   "title": "Clinical factors associated with safety and efficacy in patients receiving direct oral anticoagulants for non-valvular atrial fibrillation.",
+   "year": "2020",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33086531",
+   "title": "Clinical Impact of Small Bowel Capsule Endoscopy in Obscure Gastrointestinal Bleeding.",
+   "year": "2020",
+   "journal": "Medicina (Kaunas, Lithuania)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33073362",
+   "title": "Proton Pump Inhibitor Utilization in Veteran Patients on Combined Antithrombotic Therapy and Validation of Simplified Bleeding Risk Score.",
+   "year": "2020",
+   "journal": "Pharmacotherapy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32882758",
+   "title": "Concomitant Use of NSAIDs or SSRIs with NOACs Requires Monitoring for Bleeding.",
+   "year": "2020",
+   "journal": "Yonsei medical journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32719046",
+   "title": "Risk of lower gastrointestinal bleeding and colorectal neoplasms following initiation of low-dose aspirin: a Danish population-based cohort study.",
+   "year": "2020",
+   "journal": "BMJ open gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32524701",
+   "title": "Empirical assessment of case-based methods for identification of drugs associated with upper gastrointestinal bleeding in the French National Healthcare System database (SNDS).",
+   "year": "2020",
+   "journal": "Pharmacoepidemiology and drug safety",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32513198",
+   "title": "Non-steroidal anti-inflammatory drug-induced enteropathy as a major risk factor for small bowel bleeding: a retrospective study.",
+   "year": "2020",
+   "journal": "BMC gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31898979",
+   "title": "Retrospective study of 213 cases of Stevens-Johnson syndrome and toxic epidermal necrolysis from China.",
+   "year": "2020",
+   "journal": "Burns : journal of the International Society for Burn Injuries",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31765070",
+   "title": "A model to predict the risk of aspirin/non-steroidal anti-inflammatory drugs-related upper gastrointestinal bleeding for the individual patient.",
+   "year": "2020",
+   "journal": "Basic & clinical pharmacology & toxicology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31754294",
+   "title": "Changes of gastric ulcer bleeding in the metropolitan area of Japan.",
+   "year": "2019",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31215277",
+   "title": "Phenotype of histologically suspected drug-induced colitis; results of a comparative, retrospective cohort study.",
+   "year": "2019",
+   "journal": "Scandinavian journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31199288",
+   "title": "NSAID, antiaggregant, and/or anticoagulant-related upper gastrointestinal bleeding: Is there any change in prophylaxis rate after a 10-year period?",
+   "year": "2019",
+   "journal": "The Turkish journal of gastroenterology : the official journal of Turkish Society of Gastroenterology",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30949782",
+   "title": "Recent use of NSAID and NOAC medications are associated with a positive CT arteriogram.",
+   "year": "2019",
+   "journal": "Abdominal radiology (New York)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30818850",
+   "title": "The Spectrum of Small Intestinal Lesions in Patients with Unexplained Iron Deficiency Anemia Detected by Video Capsule Endoscopy.",
+   "year": "2019",
+   "journal": "Medicina (Kaunas, Lithuania)",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "30636251",
+   "title": "Long-Term Prognosis of Patients with Obscure Gastrointestinal Bleeding: A Retrospective Cohort Study.",
+   "year": "2019",
+   "journal": "Digestion",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "30631757",
+   "title": "The Natural History of Incidental Colonic Diverticulosis on Screening Colonoscopy.",
+   "year": "2018",
+   "journal": "Canadian journal of gastroenterology & hepatology",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30554208",
+   "title": "Pilot Study Indicates Helicobacter pylori Infection May Induce Small Intestinal Mucosal Injury.",
+   "year": "2019",
+   "journal": "Digestion",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30383903",
+   "title": "Gastrointestinal safety of coxibs: systematic review and meta-analysis of observational studies on selective inhibitors of cyclo-oxygenase 2.",
+   "year": "2019",
+   "journal": "Fundamental & clinical pharmacology",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "30241493",
+   "title": "Epidemiology of non-steroidal anti-inflammatory drugs consumption in Spain. The MCC-Spain study.",
+   "year": "2018",
+   "journal": "BMC public health",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "30228784",
+   "title": "Gastroduodenal ulcer bleeding in elderly patients on low dose aspirin therapy.",
+   "year": "2018",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30043109",
+   "title": "Only full adherence to proton pump inhibitors protects against drug-induced upper gastrointestinal bleeding.",
+   "year": "2018",
+   "journal": "European journal of clinical pharmacology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "30024515",
+   "title": "Long-term follow up of patients with obscure gastrointestinal bleeding examined with video capsule endoscopy.",
+   "year": "2018",
+   "journal": "Medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "29948304",
+   "title": "A case-control study of the risk of upper gastrointestinal mucosal injuries in patients prescribed concurrent NSAIDs and antithrombotic drugs based on data from the Japanese national claims database of 13 million accumulated patients.",
+   "year": "2018",
+   "journal": "Journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29806660",
+   "title": "[Gastrointestinal bleeding and potentially inappropriate medication by NSAIDs].",
+   "year": "2018",
+   "journal": "Revista espanola de salud publica",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "29718891",
+   "title": "Risk factors associated with nonsteroidal anti-inflammatory drugs (NSAIDs)-induced gastrointestinal bleeding resulting on people over 60 years old in Beijing.",
+   "year": "2018",
+   "journal": "Medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29702713",
+   "title": "Predictors of Bleeding in Patients with Symptomatic Peripheral Artery Disease: A Cohort Study Using The Health Improvement Network in the United Kingdom.",
+   "year": "2018",
+   "journal": "Thrombosis and haemostasis",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "29698506",
+   "title": "External validation of the NOBLADS score, a risk scoring system for severe acute lower gastrointestinal bleeding.",
+   "year": "2018",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "29696804",
+   "title": "Rebleeding rate and risk factors in nonsteroidal anti-inflammatory drug-induced enteropathy.",
+   "year": "2018",
+   "journal": "Journal of digestive diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29655196",
+   "title": "Contribution of Helicobacter pylori infection to the risk of peptic ulcer bleeding in patients on nonsteroidal anti-inflammatory drugs, antiplatelet agents, anticoagulants, corticosteroids and selective serotonin reuptake inhibitors.",
+   "year": "2018",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29610653",
+   "title": "Risk factors for hematemesis in Hoima and Buliisa Districts, Western Uganda, September-October 2015.",
+   "year": "2017",
+   "journal": "The Pan African medical journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29538453",
+   "title": "Nonsteroidal anti-inflammatory drug choice and adverse outcomes in clopidogrel users: A retrospective cohort study.",
+   "year": "2018",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "29468603",
+   "title": "Glucocorticoids and the Risk of Peptic Ulcer Bleeding: Case-Control Analysis Based on Swiss Claims Data.",
+   "year": "2018",
+   "journal": "Drug safety",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "29024218",
+   "title": "Using probability of drug use as independent variable in a register-based pharmacoepidemiological cause-effect study-An application of the reverse waiting time distribution.",
+   "year": "2017",
+   "journal": "Pharmacoepidemiology and drug safety",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28930849",
+   "title": "Analysis of risk factors for colonic diverticular bleeding and recurrence.",
+   "year": "2017",
+   "journal": "Medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28766108",
+   "title": "A Pharmacoepidemiology Database System for Monitoring Risk Due to the Use of Medicines by New Zealand Primary Care Patients.",
+   "year": "2017",
+   "journal": "Drug safety",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28719079",
+   "title": "Associations between drugs and small-bowel mucosal bleeding: Multicenter capsule-endoscopy study.",
+   "year": "2018",
+   "journal": "Digestive endoscopy : official journal of the Japan Gastroenterological Endoscopy Society",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "28691597",
+   "title": "Clinical factors associated with positive capsule endoscopy findings in patients with obscure gastrointestinal bleeding: a single-center study.",
+   "year": "2017",
+   "journal": "Scandinavian journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28569554",
+   "title": "Non-steroidal anti-inflammatory drug related upper gastrointestinal bleeding: types of drug use and patient profiles in real clinical practice.",
+   "year": "2017",
+   "journal": "Current medical research and opinion",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28465641",
+   "title": "Clinical characteristics of peptic ulcer perforation in Korea.",
+   "year": "2017",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28460044",
+   "title": "Risk Factors for Upper Gastrointestinal Bleeding in Patients Taking Selective COX-2 Inhibitors: A Nationwide Population-Based Cohort Study.",
+   "year": "2018",
+   "journal": "Pain medicine (Malden, Mass.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "28449186",
+   "title": "The risk of lower gastrointestinal bleeding in low-dose aspirin users.",
+   "year": "2017",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28370857",
+   "title": "Gastrointestinal toxicity among patients taking selective COX-2 inhibitors or conventional NSAIDs, alone or combined with proton pump inhibitors: a case-control study.",
+   "year": "2017",
+   "journal": "Pharmacoepidemiology and drug safety",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28338108",
+   "title": "VKORC1-1639 G>A Polymorphism and the Risk of Non-Variceal Upper Gastrointestinal Bleeding.",
+   "year": "2017",
+   "journal": "Journal of gastrointestinal and liver diseases : JGLD",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "28209098",
+   "title": "The predictive value of negative capsule endoscopy for the indication of Obscure Gastrointestinal Bleeding: no reassurance in the long term.",
+   "year": "2016",
+   "journal": "Acta gastro-enterologica Belgica",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29927224",
+   "title": "Clinical Characteristics, Treatment Outcomes and Risk Assessment of Patients with Acute Upper Gastrointestinal Bleeding in Rajavithi Hospital, Thailand.",
+   "year": "2017",
+   "journal": "Journal of the Medical Association of Thailand = Chotmaihet thangphaet",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28124306",
+   "title": "Gastrointestinal bleeding in patients with renal failure under hemodialysis treatment: a single-center experience.",
+   "year": "2017",
+   "journal": "International urology and nephrology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27998630",
+   "title": "Nonsteroidal anti-inflammatory drugs-induced small bowel enteropathy and obscure gastrointestinal bleeding.",
+   "year": "2018",
+   "journal": "Gastroenterologia y hepatologia",
+   "pubtypes": [
+    "Letter"
+   ]
+  },
+  {
+   "pmid": "27603298",
+   "title": "The role of capsule endoscopy in the diagnosis and treatment of obscure gastrointestinal bleeding in older individuals.",
+   "year": "2016",
+   "journal": "European journal of gastroenterology & hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27639805",
+   "title": "Association of Proton Pump Inhibitors With Reduced Risk of Warfarin-Related Serious Upper Gastrointestinal Bleeding.",
+   "year": "2016",
+   "journal": "Gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "27596107",
+   "title": "Risk factors for active bleeding from colonic angiodysplasia confirmed by colonoscopic observation.",
+   "year": "2016",
+   "journal": "International journal of colorectal disease",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27422768",
+   "title": "Safety of metamizole: a systematic review of the literature.",
+   "year": "2016",
+   "journal": "Journal of clinical pharmacy and therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "27395835",
+   "title": "Peptic Ulcers and Erosions in Children at a Pediatric Unit in Turkey.",
+   "year": "2016",
+   "journal": "Indian pediatrics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27371500",
+   "title": "Frequency and predictors of bleeding events after 2nd generation drug-eluting stent implantation differ depending on time after implantation.",
+   "year": "2017",
+   "journal": "Journal of cardiology",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "27286877",
+   "title": "Origin, Clinical Characteristics and 30-Day Outcomes of Severe Hematochezia in Cirrhotics and Non-cirrhotics.",
+   "year": "2016",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, Non-P.H.S.",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "27256606",
+   "title": "[The incidence, clinical characteristics and risk factors of upper gastrointestinal bleeding in patients taking dual antiplatelet therapy after percutaneous coronary intervention in south China].",
+   "year": "2016",
+   "journal": "Zhonghua nei ke za zhi",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27189658",
+   "title": "Factors predicting adverse events associated with therapeutic colonoscopy for colorectal neoplasia: a retrospective nationwide study in Japan.",
+   "year": "2016",
+   "journal": "Gastrointestinal endoscopy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27130815",
+   "title": "Risks of Bleeding Recurrence and Cardiovascular Events With Continued Aspirin Use After Lower Gastrointestinal Hemorrhage.",
+   "year": "2016",
+   "journal": "Gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "27125439",
+   "title": "Upper gastrointestinal bleeding in children from a hospital center of Northeast Romania.",
+   "year": "2016",
+   "journal": "Minerva pediatrica",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26978517",
+   "title": "Acute Middle Gastrointestinal Bleeding Risk Associated with NSAIDs, Antithrombotic Drugs, and PPIs: A Multicenter Case-Control Study.",
+   "year": "2016",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26902026",
+   "title": "Risk Factors Associated with Mortality and Increased Drug Costs in Nonvariceal Upper Gastrointestinal Bleeding.",
+   "year": "2015",
+   "journal": "Hepato-gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26855547",
+   "title": "Italian survey on non-steroidal anti-inflammatory drugs and gastrointestinal bleeding in children.",
+   "year": "2016",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "26819158",
+   "title": "Importance of red blood cell distribution width (RDW) in patients with upper gastrointestinal haemorrhage.",
+   "year": "2016",
+   "journal": "JPMA. The Journal of the Pakistan Medical Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26544900",
+   "title": "CYP2C9 variants as a risk modifier of NSAID-related gastrointestinal bleeding: a case-control study.",
+   "year": "2016",
+   "journal": "Pharmacogenetics and genomics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26467562",
+   "title": "Upper Gastrointestinal Bleeding in Chinese Children: A Multicenter 10-Year Retrospective Study.",
+   "year": "2016",
+   "journal": "Clinical pediatrics",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "26441280",
+   "title": "Comparison of Risk Factors Between Small Intestinal Ulcerative and Vascular Lesions in Occult Versus Overt Obscure Gastrointestinal Bleeding.",
+   "year": "2016",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26398382",
+   "title": "Formalin therapy for hemorrhagic radiation proctitis.",
+   "year": "2015",
+   "journal": "Pharmacological reports : PR",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26280706",
+   "title": "The Association of Drugs With Severity and Specific Causes of Acute Lower Gastrointestinal Bleeding: A Prospective Study.",
+   "year": "2016",
+   "journal": "Journal of clinical gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26229405",
+   "title": "Clinical characteristics of Helicobacter pylori-negative drug-negative peptic ulcer bleeding.",
+   "year": "2015",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26165066",
+   "title": "[Diagnosis and treatment of aspirin--and NSAID-induced peptic ulcers].",
+   "year": "2015",
+   "journal": "Nihon rinsho. Japanese journal of clinical medicine",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26147360",
+   "title": "Risk factors for small bowel bleeding in chronic nonsteroidal anti-inflammatory drug users.",
+   "year": "2015",
+   "journal": "Journal of digestive diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26099321",
+   "title": "Visceral fat accumulation affects risk of colonic diverticular hemorrhage.",
+   "year": "2015",
+   "journal": "International journal of colorectal disease",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26096497",
+   "title": "Short-term use of glucocorticoids and risk of peptic ulcer bleeding: a nationwide population-based case-crossover study.",
+   "year": "2015",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26087793",
+   "title": "Analysis of Risk Factors for Colonic Diverticular Bleeding: A Matched Case-Control Study.",
+   "year": "2016",
+   "journal": "Gut and liver",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26031860",
+   "title": "Obscure gastrointestinal bleeding: Which factors are associated with positive capsule endoscopy findings?",
+   "year": "2015",
+   "journal": "Revista espanola de enfermedades digestivas",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25910287",
+   "title": "Clinical outcomes of nonvariceal upper gastrointestinal bleeding in Kosova.",
+   "year": "2014",
+   "journal": "The Turkish journal of gastroenterology : the official journal of Turkish Society of Gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25898902",
+   "title": "Systematic review with meta-analysis: the association between the use of calcium channel blockers and gastrointestinal bleeding.",
+   "year": "2015",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "25895518",
+   "title": "Peptic Ulcer Bleeding Risk. The Role of Helicobacter Pylori Infection in NSAID/Low-Dose Aspirin Users.",
+   "year": "2015",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25700638",
+   "title": "Effect of proton-pump inhibitors on the risk of lower gastrointestinal bleeding associated with NSAIDs, aspirin, clopidogrel, and warfarin.",
+   "year": "2015",
+   "journal": "Journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25672008",
+   "title": "[Iron deficiency anemia in people aged 65 years and older: a cohort study of 102 patients].",
+   "year": "2014",
+   "journal": "Revue medicale de Bruxelles",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25632915",
+   "title": "Time trends of the impact of Helicobacter pylori infection and nonsteroidal anti-inflammatory drugs on peptic ulcer bleeding in Japanese patients.",
+   "year": "2015",
+   "journal": "Digestion",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25573732",
+   "title": "Suboptimal use of gastroprotective medication in elderly antiplatelet users.",
+   "year": "2014",
+   "journal": "Bratislavske lekarske listy",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25495855",
+   "title": "Long-term outcome in patients with obscure gastrointestinal bleeding after capsule endoscopy.",
+   "year": "2015",
+   "journal": "Journal of digestive diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25460554",
+   "title": "Risk of upper and lower gastrointestinal bleeding in patients taking nonsteroidal anti-inflammatory drugs, antiplatelet agents, or anticoagulants.",
+   "year": "2015",
+   "journal": "Clinical gastroenterology and hepatology : the official clinical practice journal of the American Gastroenterological Association",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25458547",
+   "title": "[Capsule endoscopy and obscure gastrointestinal bleeding: does the form of presentation matter?].",
+   "year": "2015",
+   "journal": "Gastroenterologia y hepatologia",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25382984",
+   "title": "Observational study of upper gastrointestinal tract bleeding events in patients taking duloxetine and nonsteroidal anti-inflammatory drugs: a case-control analysis.",
+   "year": "2014",
+   "journal": "Drug, healthcare and patient safety",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25366148",
+   "title": "Low-Dose Aspirin and Non-steroidal Anti-inflammatory Drugs Increase the Risk of Bleeding in Patients with Gastroduodenal Ulcer.",
+   "year": "2015",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25339607",
+   "title": "Risk of peptic ulcer bleeding associated with Helicobacter pylori infection, nonsteroidal anti-inflammatory drugs, low-dose aspirin, and antihypertensive drugs: a case-control study.",
+   "year": "2015",
+   "journal": "Journal of gastroenterology and hepatology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25278707",
+   "title": "Small-bowel mucosal injuries in low-dose aspirin users with obscure gastrointestinal bleeding.",
+   "year": "2014",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25278002",
+   "title": "Risk of gastrointestinal bleeding with dabigatran: a head-to-head comparative study with rivaroxaban.",
+   "year": "2014",
+   "journal": "Digestion",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25181990",
+   "title": "Factors affecting in-hospital mortality in patients with lower gastrointestinal tract bleeding: a retrospective study using a national database in Japan.",
+   "year": "2015",
+   "journal": "Journal of gastroenterology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25168049",
+   "title": "[Clinical impact of dual antiplatelet therapy on peptic ulcer disease].",
+   "year": "2014",
+   "journal": "The Korean journal of gastroenterology = Taehan Sohwagi Hakhoe chi",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25152603",
+   "title": "Clinical and endoscopic characteristics of drug-induced esophagitis.",
+   "year": "2014",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "25132768",
+   "title": "One fifth of hospitalizations for peptic ulcer-related bleeding are potentially preventable.",
+   "year": "2014",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "25088922",
+   "title": "Lower GI bleeding risk of nonsteroidal anti-inflammatory drugs and antiplatelet drug use alone and the effect of combined therapy.",
+   "year": "2014",
+   "journal": "Gastrointestinal endoscopy",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25003908",
+   "title": "Risk factors associated with uncomplicated peptic ulcer and changes in medication use after diagnosis.",
+   "year": "2014",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24997023",
+   "title": "Postoperative gastrointestinal bleeding in orthognathic surgery patients: its estimated prevalence and possible association to known risk factors.",
+   "year": "2014",
+   "journal": "Journal of oral and maxillofacial surgery : official journal of the American Association of Oral and Maxillofacial Surgeons",
+   "pubtypes": [
+    "Case Reports",
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24909069",
+   "title": "Similarities and differences in the clinical features between cardia varices and esophageal varices.",
+   "year": "2014",
+   "journal": "Journal of gastroenterology and hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24789145",
+   "title": "Measures of 'exposure needed for one additional patient to be harmed' in population-based case-control studies.",
+   "year": "2014",
+   "journal": "Pharmacoepidemiology and drug safety",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24777151",
+   "title": "Risk of upper gastrointestinal bleeding with selective serotonin reuptake inhibitors with or without concurrent nonsteroidal anti-inflammatory use: a systematic review and meta-analysis.",
+   "year": "2014",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "24758713",
+   "title": "Cameron lesions in patients with hiatal hernias: prevalence, presentation, and treatment outcome.",
+   "year": "2015",
+   "journal": "Diseases of the esophagus : official journal of the International Society for Diseases of the Esophagus",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "24593260",
+   "title": "Opposing effects of aspirin and anticoagulants on morbidity and mortality in patients with upper gastrointestinal bleeding.",
+   "year": "2014",
+   "journal": "Journal of digestive diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24583422",
+   "title": "Low-dose aspirin and comorbidities are significantly related to bleeding peptic ulcers in elderly patients compared with nonelderly patients in Japan.",
+   "year": "2014",
+   "journal": "Internal medicine (Tokyo, Japan)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24566586",
+   "title": "Alendronate, a bisphosphonate, increased upper and lower gastrointestinal bleeding: risk factor analysis from a nationwide population-based study.",
+   "year": "2014",
+   "journal": "Osteoporosis international : a journal established as result of cooperation between the European Foundation for Osteoporosis and the National Osteoporosis Foundation of the USA",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24283213",
+   "title": "Risk factors of mild rectal bleeding in very low birth weight infants: a case control study.",
+   "year": "2013",
+   "journal": "BMC pediatrics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24259974",
+   "title": "Hemorrhagic gastric and duodenal ulcers after the Great East Japan Earthquake Disaster.",
+   "year": "2013",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "24222192",
+   "title": "Hair analysis in the detection of long-term use of non-steroidal anti-inflammatory drugs and its relation to gastrointestinal hemorrhage: an examination of 268 hair and blood samples from autopsy cases.",
+   "year": "2014",
+   "journal": "Forensic science, medicine, and pathology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "24221694",
+   "title": "Aspirin and non-aspirin NSAIDs increase risk of colonic diverticular bleeding: a systematic review and meta-analysis.",
+   "year": "2014",
+   "journal": "Journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "24138295",
+   "title": "Eosinophilic colitis is a sporadic self-limited disease of middle-aged people: a population-based study.",
+   "year": "2014",
+   "journal": "Colorectal disease : the official journal of the Association of Coloproctology of Great Britain and Ireland",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24088733",
+   "title": "Mortality prediction of nonalcoholic patients presenting with upper gastrointestinal bleeding using data mining.",
+   "year": "2014",
+   "journal": "European journal of gastroenterology & hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24012412",
+   "title": "High risk of gastrointestinal hemorrhage in patients with epilepsy: a nationwide cohort study.",
+   "year": "2013",
+   "journal": "Mayo Clinic proceedings",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23959537",
+   "title": "Accuracy of International Classification of Diseases, 9th Revision, Clinical Modification codes for upper gastrointestinal complications varied by position and age: a validation study in a cohort of nonsteroidal anti-inflammatory drugs users in Friuli Venezia Giulia, Italy.",
+   "year": "2013",
+   "journal": "Pharmacoepidemiology and drug safety",
+   "pubtypes": [
+    "Journal Article",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "23923369",
+   "title": "Spectrum of upper gastrointestinal hemorrhage in coastal Odisha.",
+   "year": "2013",
+   "journal": "Tropical gastroenterology : official journal of the Digestive Diseases Foundation",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "23873021",
+   "title": "Proximal predominance of small bowel injury associated with uncoated low-dose aspirin therapy: a video capsule study in chronic users.",
+   "year": "2013",
+   "journal": "European journal of gastroenterology & hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23790756",
+   "title": "Safety of capsule endoscopy in the octogenarian as compared with younger patients.",
+   "year": "2013",
+   "journal": "Gastrointestinal endoscopy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23650778",
+   "title": "Risk factors associated with recurrent hemorrhage after the initial improvement of colonic diverticular bleeding.",
+   "year": "2013",
+   "journal": "Acta gastro-enterologica Belgica",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23488965",
+   "title": "Diabetes is an independent risk factor for peptic ulcer bleeding: a nationwide population-based cohort study.",
+   "year": "2013",
+   "journal": "Journal of gastroenterology and hepatology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23470619",
+   "title": "Comorbidities affect risk of nonvariceal upper gastrointestinal bleeding.",
+   "year": "2013",
+   "journal": "Gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23371011",
+   "title": "Risk of complications after a peptic ulcer diagnosis: effectiveness of proton pump inhibitors.",
+   "year": "2013",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23368528",
+   "title": "Factors predicting the presence of small bowel lesions in patients with obscure gastrointestinal bleeding.",
+   "year": "2013",
+   "journal": "Digestive endoscopy : official journal of the Japan Gastroenterological Endoscopy Society",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23322388",
+   "title": "Effectiveness and safety of indomethacin versus ibuprofen for the treatment of patent ductus arteriosus in preterm infants.",
+   "year": "2013",
+   "journal": "American journal of perinatology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23286253",
+   "title": "Implication of antithrombotic agents on potential bleeding from endoscopically determined peptic ulcers, incidentally detected as surrogate markers for nsaids-associated ulcers complication.",
+   "year": "2013",
+   "journal": "Digestive endoscopy : official journal of the Japan Gastroenterological Endoscopy Society",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23269097",
+   "title": "Association between adherence to concomitant proton pump inhibitor therapy in current NSAID users and upper gastrointestinal complications.",
+   "year": "2013",
+   "journal": "European journal of gastroenterology & hepatology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23268277",
+   "title": "[Risk factors associated with stress ulcer bleeding in postoperative rectal cancer patients].",
+   "year": "2012",
+   "journal": "Zhonghua wei chang wai ke za zhi = Chinese journal of gastrointestinal surgery",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23267857",
+   "title": "CYP2C19*17 gain-of-function polymorphism is associated with peptic ulcer disease.",
+   "year": "2013",
+   "journal": "Clinical pharmacology and therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23164486",
+   "title": "Bleeding risk after invasive procedures in aspirin/NSAID users: polypectomy study in veterans.",
+   "year": "2012",
+   "journal": "The American journal of medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23161291",
+   "title": "An observational European study on clinical outcomes associated with current management strategies for non-variceal upper gastrointestinal bleeding (ENERGIB-Turkey).",
+   "year": "2012",
+   "journal": "The Turkish journal of gastroenterology : the official journal of Turkish Society of Gastroenterology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23147082",
+   "title": "Effects of indomethacin on patent ductus arteriosus in neonates with genetic disorders and/or congenital anomalies.",
+   "year": "2013",
+   "journal": "American journal of perinatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23137151",
+   "title": "Individual NSAIDs and upper gastrointestinal complications: a systematic review and meta-analysis of observational studies (the SOS project).",
+   "year": "2012",
+   "journal": "Drug safety",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "23134152",
+   "title": "Factors associated with increased bleeding post-endoscopic mucosal resection.",
+   "year": "2013",
+   "journal": "Journal of digestive diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23053423",
+   "title": "Peptic ulcers after the Great East Japan earthquake and tsunami: possible existence of psychosocial stress ulcers in humans.",
+   "year": "2013",
+   "journal": "Journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "23046845",
+   "title": "The role of aspirin in post-polypectomy bleeding--a retrospective survey.",
+   "year": "2012",
+   "journal": "BMC gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23013623",
+   "title": "Lower gastrointestinal bleeding: incidence, etiology, and outcomes in a population-based setting.",
+   "year": "2013",
+   "journal": "European journal of gastroenterology & hepatology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22955795",
+   "title": "Upper gastrointestinal bleeding associated with NSAIDs, other drugs and interactions: a nested case-control study in a new general practice database.",
+   "year": "2013",
+   "journal": "European journal of clinical pharmacology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22925283",
+   "title": "Clinical evaluation of hemorrhagic gastroduodenal ulcer in the elderly: is Helicobacter pylori infection a risk factor for hemorrhage?",
+   "year": "2012",
+   "journal": "Digestive endoscopy : official journal of the Japan Gastroenterological Endoscopy Society",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22907391",
+   "title": "Evaluation of individual risk in nonvariceal gastrointestinal bleeding patients with NSAID administration: a multicenter study in Japan.",
+   "year": "2012",
+   "journal": "Digestion",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "22791953",
+   "title": "Poor awareness of preventing aspirin-induced gastrointestinal injury with combined protective medications.",
+   "year": "2012",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22725110",
+   "title": "Video capsule endoscopy for previous overt obscure gastrointestinal bleeding in patients using anti-thrombotic drugs.",
+   "year": "2012",
+   "journal": "Digestive endoscopy : official journal of the Japan Gastroenterological Endoscopy Society",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22657569",
+   "title": "Nonvariceal upper gastrointestinal bleeding in Portugal: a multicentric retrospective study in twelve Portuguese hospitals.",
+   "year": "2012",
+   "journal": "Gastroenterologia y hepatologia",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "22617527",
+   "title": "[Clinical characteristics of patients diagnosed as peptic ulcer disease in the third referral center in 2007].",
+   "year": "2012",
+   "journal": "The Korean journal of gastroenterology = Taehan Sohwagi Hakhoe chi",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22584295",
+   "title": "The association between arteriosclerosis related diseases and diverticular bleeding.",
+   "year": "2012",
+   "journal": "International journal of colorectal disease",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22537571",
+   "title": "A fibreoptic endoscopic study of upper gastrointestinal bleeding at Bugando Medical Centre in northwestern Tanzania: a retrospective review of 240 cases.",
+   "year": "2012",
+   "journal": "BMC research notes",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22527341",
+   "title": "Bleeding adverse drug reactions (ADRs) in patients exposed to antiplatelet plus serotonin reuptake inhibitor drugs: analysis of the French Spontaneous Reporting Database for a controversial ADR.",
+   "year": "2012",
+   "journal": "European journal of clinical pharmacology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22508379",
+   "title": "Adherence to gastroprotection during cyclooxygenase 2 inhibitor treatment and the risk of upper gastrointestinal tract events: a population-based study.",
+   "year": "2012",
+   "journal": "Arthritis and rheumatism",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22497905",
+   "title": "Risk factors and outcome of acute severe lower gastrointestinal bleeding in Crohn's disease.",
+   "year": "2012",
+   "journal": "Digestive and liver disease : official journal of the Italian Society of Gastroenterology and the Italian Association for the Study of the Liver",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22353508",
+   "title": "Comparative evaluation of barium meal follow-through and barium enteroclysis before capsule endoscopy in obscure gastrointestinal bleeding.",
+   "year": "2012",
+   "journal": "Hepato-gastroenterology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22313346",
+   "title": "Re-prescribing of causative drugs in persons discharged after serious drug-induced upper gastrointestinal bleeding.",
+   "year": "2012",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22093553",
+   "title": "[A retrospective analysis of clinical characteristics and mortality of gastrointestinal bleeding in 414 elderly patients].",
+   "year": "2011",
+   "journal": "Zhonghua nei ke za zhi",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22055597",
+   "title": "Upper gastrointestinal bleeding in elderly patients in a Tunisian hospital: A retrospective study.",
+   "year": "2011",
+   "journal": "Arab journal of gastroenterology : the official publication of the Pan-Arab Association of Gastroenterology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21987606",
+   "title": "Special diaphragm-like strictures of small bowel unrelated to non-steroidal anti-inflammatory drugs.",
+   "year": "2011",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21959901",
+   "title": "Obscure gastrointestinal bleeding: single centre experience of capsule endoscopy.",
+   "year": "2013",
+   "journal": "Internal and emergency medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21805414",
+   "title": "A retrospective study demonstrating properties of nonvariceal upper gastrointestinal bleeding in Turkey.",
+   "year": "2011",
+   "journal": "The Turkish journal of gastroenterology : the official journal of Turkish Society of Gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21793917",
+   "title": "Continuous proton pump inhibitor treatment decreases upper gastrointestinal bleeding and related death in rural area in Japan.",
+   "year": "2012",
+   "journal": "Journal of gastroenterology and hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21738810",
+   "title": "Synergism between prior Anisakis simplex infections and intake of NSAIDs, on the risk of upper digestive bleeding: a case-control study.",
+   "year": "2011",
+   "journal": "PLoS neglected tropical diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21737077",
+   "title": "Impact of nasogastric lavage on outcomes in acute GI bleeding.",
+   "year": "2011",
+   "journal": "Gastrointestinal endoscopy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21692963",
+   "title": "Recurrence of colonic diverticular bleeding and associated risk factors.",
+   "year": "2012",
+   "journal": "Colorectal disease : the official journal of the Association of Coloproctology of Great Britain and Ireland",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21636644",
+   "title": "Suboptimal gastroprotective coverage of NSAID use and the risk of upper gastrointestinal bleeding and ulcers: an observational study using three European databases.",
+   "year": "2011",
+   "journal": "Gut",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21554164",
+   "title": "Helicobacter pylori and risk of upper gastrointestinal bleeding among users of selective serotonin reuptake inhibitors.",
+   "year": "2011",
+   "journal": "Scandinavian journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21510320",
+   "title": "Incidence of and risk factors for upper gastrointestinal complications in patients taking low-dose aspirin in Japan.",
+   "year": "2011",
+   "journal": "Hepato-gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21490373",
+   "title": "Acute upper gastrointestinal bleeding in the UK: patient characteristics, diagnoses and outcomes in the 2007 UK audit.",
+   "year": "2011",
+   "journal": "Gut",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21390148",
+   "title": "Single center experience of capsule endoscopy in patients with obscure gastrointestinal bleeding.",
+   "year": "2011",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21357821",
+   "title": "Risk of upper gastrointestinal bleeding with low-dose acetylsalicylic acid alone and in combination with clopidogrel and other medications.",
+   "year": "2011",
+   "journal": "Circulation",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21220246",
+   "title": "Atherosclerosis and acetylsalicylic acid are independent risk factors for hemorrhage in patients with gastric or duodenal ulcer.",
+   "year": "2011",
+   "journal": "Anadolu kardiyoloji dergisi : AKD = the Anatolian journal of cardiology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21198829",
+   "title": "NSAIDs are a significant risk factor for colonic diverticular hemorrhage in elder patients: evaluation by a case-control study.",
+   "year": "2011",
+   "journal": "Journal of gastroenterology and hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21105630",
+   "title": "Impact of nonresective operations for complicated peptic ulcer disease in a high-risk population.",
+   "year": "2010",
+   "journal": "The American surgeon",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "20823836",
+   "title": "Potential precipitating factors of esophageal variceal bleeding: a case-control study.",
+   "year": "2011",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20695720",
+   "title": "Impact of aspirin, NSAIDs, warfarin, corticosteroids and SSRIs on the site and outcome of non-variceal upper and lower gastrointestinal bleeding.",
+   "year": "2010",
+   "journal": "Scandinavian journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20659284",
+   "title": "Systematic review: Helicobacter pylori and the risk of upper gastrointestinal bleeding risk in patients taking aspirin.",
+   "year": "2010",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "20653635",
+   "title": "Mortality from peptic ulcer bleeding: the impact of comorbidity and the use of drugs that promote bleeding.",
+   "year": "2010",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20626380",
+   "title": "Underutilization of gastroprotection for at-risk patients undergoing percutaneous coronary intervention: Spain compared with the United States.",
+   "year": "2010",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20569940",
+   "title": "Gastroprotection in trauma patients receiving non-steroidal anti-inflammatory drugs.",
+   "year": "2010",
+   "journal": "The surgeon : journal of the Royal Colleges of Surgeons of Edinburgh and Ireland",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "20445534",
+   "title": "CYP2C9*3 Loss-of-Function Allele Is Associated With Acute Upper Gastrointestinal Bleeding Related to the Use of NSAIDs Other Than Aspirin.",
+   "year": "2010",
+   "journal": "Clinical pharmacology and therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20195757",
+   "title": "Fecal occult blood test in patients on low-dose aspirin, warfarin, clopidogrel, or non-steroidal anti-inflammatory drugs.",
+   "year": "2010",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "20140892",
+   "title": "Validation of claims-based diagnostic and procedure codes for cardiovascular and gastrointestinal serious adverse events in a commercially-insured population.",
+   "year": "2010",
+   "journal": "Pharmacoepidemiology and drug safety",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "21811460",
+   "title": "Risk of Upper Gastrointestinal Bleeding in a Cohort of New Users of Low-Dose ASA for Secondary Prevention of Cardiovascular Outcomes.",
+   "year": "2010",
+   "journal": "Frontiers in pharmacology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "19904505",
+   "title": "Etiology of upper gastrointestinal bleeding in young children.",
+   "year": "2009",
+   "journal": "Indian journal of pediatrics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "19891579",
+   "title": "Preadmission use of SSRIs alone or in combination with NSAIDs and 30-day mortality after peptic ulcer bleeding.",
+   "year": "2009",
+   "journal": "Scandinavian journal of gastroenterology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19828953",
+   "title": "Outcome of non-variceal acute upper gastrointestinal bleeding in patients with antithrombotic therapy.",
+   "year": "2009",
+   "journal": "Digestion",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "19823852",
+   "title": "The effect of non-steroidal anti-inflammatory drugs and Helicobacter pylori infection on the gastric mucosa in children with upper gastrointestinal bleeding.",
+   "year": "2010",
+   "journal": "Pediatric surgery international",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "19803017",
+   "title": "Upper gastrointestinal tract bleeding in Ilorin, Nigeria--a report of 30 cases.",
+   "year": "2009",
+   "journal": "Nigerian journal of clinical practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "19799547",
+   "title": "Genetic polymorphisms in UDP-glucuronosyltransferase 1A6 are not associated with NSAIDs-related peptic ulcer haemorrhage.",
+   "year": "2009",
+   "journal": "Drug metabolism letters",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "19753582",
+   "title": "Upper gastrointestinal hemorrhage: have new therapeutics made a difference?",
+   "year": "2009",
+   "journal": "Journal of hospital medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, Non-P.H.S.",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "19716436",
+   "title": "An association between selective serotonin reuptake inhibitor use and serious upper gastrointestinal bleeding.",
+   "year": "2009",
+   "journal": "Clinical gastroenterology and hepatology : the official clinical practice journal of the American Gastroenterological Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "19694237",
+   "title": "[Radiation proctitis: description of two cases refractory to pharmacological treatment].",
+   "year": "2009",
+   "journal": "Chirurgia italiana",
+   "pubtypes": [
+    "Case Reports",
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "19662606",
+   "title": "Nonsteroidal antiinflammatory drugs and risk of gastrointestinal bleeding among patients on hemodialysis.",
+   "year": "2009",
+   "journal": "Journal of nephrology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19574968",
+   "title": "Time trends and impact of upper and lower gastrointestinal bleeding and perforation in clinical practice.",
+   "year": "2009",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19491861",
+   "title": "Selective serotonin reuptake inhibitors are associated with a modest increase in the risk of upper gastrointestinal bleeding.",
+   "year": "2009",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19458466",
+   "title": "[Comparison of clinical characteristics and outcomes between geriatric and non-geriatric patients in peptic ulcer bleeding].",
+   "year": "2009",
+   "journal": "The Korean journal of gastroenterology = Taehan Sohwagi Hakhoe chi",
+   "pubtypes": [
+    "Comparative Study",
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "19420807",
+   "title": "Role of antithrombotic therapy and nonsteroidal anti-inflammatory drug use in bleeding gastroduodenal ulcers.",
+   "year": "2009",
+   "journal": "Internal medicine (Tokyo, Japan)",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "19397069",
+   "title": "Prescribing NSAIDs to patients on SSRIs: possible adverse drug interaction of importance to dental practitioners.",
+   "year": "2009",
+   "journal": "Compendium of continuing education in dentistry (Jamesburg, N.J. : 1995)",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "19379513",
+   "title": "Decreasing incidence of peptic ulcer complications after the introduction of the proton pump inhibitors, a study of the Swedish population from 1974-2002.",
+   "year": "2009",
+   "journal": "BMC gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "19373431",
+   "title": "Characteristics of small bowel injury in symptomatic chronic low-dose aspirin users: the experience of two medical centers in capsule endoscopy.",
+   "year": "2009",
+   "journal": "Journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "19298582",
+   "title": "Risk of upper gastrointestinal bleeding with oral bisphosphonates and non steroidal anti-inflammatory drugs: a case-control study.",
+   "year": "2009",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19205904",
+   "title": "Ex-drinking may be a surrogate for unmeasured risk factors for upper gastrointestinal bleeding: reappraisal and an additional survey of subjects from a case-control study in Japan.",
+   "year": "2009",
+   "journal": "European journal of epidemiology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19174039",
+   "title": "[Bleeding peptic ulcer. Prevalence of Helicobacter pylori and use of nonsteroidal anti-inflammatory drugs/acetylsalicylic acid].",
+   "year": "2009",
+   "journal": "Ugeskrift for laeger",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "18950464",
+   "title": "The influence of polymorphisms of VKORC1 and CYP2C9 on major gastrointestinal bleeding risk in anticoagulated patients.",
+   "year": "2008",
+   "journal": "British journal of haematology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18799124",
+   "title": "Adverse effects of nonsteroidal anti-inflammatory drugs on the colon.",
+   "year": "2008",
+   "journal": "Current gastroenterology reports",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "18716867",
+   "title": "Clarifying the relationship between ABO/Rhesus blood group antigens and upper gastrointestinal bleeding.",
+   "year": "2009",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "18711705",
+   "title": "Hospitalization for peptic ulcer and bleeding in users of selective COX-2 inhibitors and nonselective NSAIDs with special reference to celecoxib.",
+   "year": "2008",
+   "journal": "Pharmacoepidemiology and drug safety",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "18648934",
+   "title": "Risk factors involved in patients with bleeding peptic ulcers: a case-control study.",
+   "year": "2009",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "18616644",
+   "title": "Proton pump inhibitors reduce the long-term risk of recurrent upper gastrointestinal bleeding: an observational study.",
+   "year": "2008",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18606952",
+   "title": "Risk of upper gastrointestinal tract bleeding associated with selective serotonin reuptake inhibitors and venlafaxine therapy: interaction with nonsteroidal anti-inflammatory drugs and effect of acid-suppressing agents.",
+   "year": "2008",
+   "journal": "Archives of general psychiatry",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18492400",
+   "title": "Gastric protection and gastrointestinal bleeding with aspirin thromboprophylaxis in hip and knee joint replacements.",
+   "year": "2008",
+   "journal": "Annals of the Royal College of Surgeons of England",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "18343248",
+   "title": "A case-control study of the association between polymorphisms of the endothelial nitric oxide synthase and glycoprotein IIIa genes and upper gastrointestinal bleeding in users of low-dose aspirin.",
+   "year": "2008",
+   "journal": "Clinical therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18277175",
+   "title": "Confounding in database pharmacoepidemiology studies.",
+   "year": "2008",
+   "journal": "Epidemiology (Cambridge, Mass.)",
+   "pubtypes": [
+    "Letter",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18217791",
+   "title": "Risk of upper gastrointestinal bleeding and the degree of serotonin reuptake inhibition by antidepressants: a case-control study.",
+   "year": "2008",
+   "journal": "Drug safety",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18216720",
+   "title": "Interaction of CYP2C8 and CYP2C9 genotypes modifies the risk for nonsteroidal anti-inflammatory drugs-related acute gastrointestinal bleeding.",
+   "year": "2008",
+   "journal": "Pharmacogenetics and genomics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18209579",
+   "title": "Changing trends in the epidemiology and clinical outcome of acute upper gastrointestinal bleeding in a defined geographical area in Greece.",
+   "year": "2008",
+   "journal": "Journal of clinical gastroenterology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "18197486",
+   "title": "Risk factors for gastrointestinal bleeding: a hospital-based case-control study.",
+   "year": "2007",
+   "journal": "Swiss medical weekly",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "18188866",
+   "title": "Moderate and high affinity serotonin reuptake inhibitors increase the risk of upper gastrointestinal toxicity.",
+   "year": "2008",
+   "journal": "Pharmacoepidemiology and drug safety",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18085336",
+   "title": "Assessment of the risk factors for colonic diverticular hemorrhage.",
+   "year": "2008",
+   "journal": "Diseases of the colon and rectum",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17994466",
+   "title": "Analysis of the risk factors and their combinations in acute gastroduodenal ulcer bleeding: a case-control study.",
+   "year": "2007",
+   "journal": "Scandinavian journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17892525",
+   "title": "Hospitalization for gastrointestinal adverse events attributable to the use of low-dose aspirin among patients 50 years or older also using non-steroidal anti-inflammatory drugs: a retrospective cohort study.",
+   "year": "2007",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17881925",
+   "title": "Primary and secondary nonvariceal upper gastrointestinal bleeding.",
+   "year": "2007",
+   "journal": "Journal of clinical gastroenterology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17763811",
+   "title": "[Increased risk of gastrointestinal bleeding or ulcers when using spironolactone: a case-control study].",
+   "year": "2007",
+   "journal": "Nederlands tijdschrift voor geneeskunde",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17698822",
+   "title": "Drug drug interactions between antithrombotic medications and the risk of gastrointestinal bleeding.",
+   "year": "2007",
+   "journal": "CMAJ : Canadian Medical Association journal = journal de l'Association medicale canadienne",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17681167",
+   "title": "Genetic susceptibility to nonsteroidal anti-inflammatory drug-related gastroduodenal bleeding: role of cytochrome P450 2C9 polymorphisms.",
+   "year": "2007",
+   "journal": "Gastroenterology",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17613921",
+   "title": "Risk of upper gastrointestinal events with the use of various NSAIDs: a case-control study in a general population.",
+   "year": "2007",
+   "journal": "Scandinavian journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17608846",
+   "title": "Incidence and etiology of acute non-malignant upper gastrointestinal bleeding in northern Greece.",
+   "year": "2007",
+   "journal": "Journal of gastroenterology and hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17593072",
+   "title": "Adherence to gastroprotection and the risk of NSAID-related upper gastrointestinal ulcers and haemorrhage.",
+   "year": "2007",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17530673",
+   "title": "Do proton-pump inhibitors confer additional gastrointestinal protection in patients given celecoxib?",
+   "year": "2007",
+   "journal": "Arthritis and rheumatism",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17521422",
+   "title": "Proton-pump inhibitors are associated with a reduced risk for bleeding and perforated gastroduodenal ulcers attributable to non-steroidal anti-inflammatory drugs: a nested case-control study.",
+   "year": "2007",
+   "journal": "Arthritis research & therapy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17498077",
+   "title": "Upper gastrointestinal bleeding in haemophiliacs: incidence and relation to use of non-steroidal anti-inflammatory drugs.",
+   "year": "2007",
+   "journal": "Haemophilia : the official journal of the World Federation of Hemophilia",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, N.I.H., Intramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17469410",
+   "title": "[Endoscopy in non-variceal upper gastrointestinal bleeding].",
+   "year": "2005",
+   "journal": "Revista de gastroenterologia de Mexico",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "17370084",
+   "title": "Is perforated marginal ulcer after the surgery of gastroduodenal ulcer associated with inadequate treatment for Helicobacter pylori eradication?",
+   "year": "2007",
+   "journal": "Langenbeck's archives of surgery",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17338735",
+   "title": "Effect of antisecretory drugs and nitrates on the risk of ulcer bleeding associated with nonsteroidal anti-inflammatory drugs, antiplatelet agents, and anticoagulants.",
+   "year": "2007",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17322786",
+   "title": "[Analysis of the factors that affect the diagnostic yield of capsule endoscopy in patients with obscure gastrointestinal bleeding].",
+   "year": "2007",
+   "journal": "The Korean journal of gastroenterology = Taehan Sohwagi Hakhoe chi",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17258728",
+   "title": "Risk of upper gastrointestinal complications among users of traditional NSAIDs and COXIBs in the general population.",
+   "year": "2007",
+   "journal": "Gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17255138",
+   "title": "Risks and benefits of COX-2 inhibitors vs non-selective NSAIDs: does their cardiovascular risk exceed their gastrointestinal benefit? A retrospective cohort study.",
+   "year": "2007",
+   "journal": "Rheumatology (Oxford, England)",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17146090",
+   "title": "Changes in rates of upper gastrointestinal hemorrhage after the introduction of cyclooxygenase-2 inhibitors in British Columbia and Ontario.",
+   "year": "2006",
+   "journal": "CMAJ : Canadian Medical Association journal = journal de l'Association medicale canadienne",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17122765",
+   "title": "Emergency gastric ulcer complications in elderly. Factors affecting the morbidity and mortality in relation to therapeutic approaches.",
+   "year": "2006",
+   "journal": "Minerva chirurgica",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17078001",
+   "title": "Effect of a specific cyclooxygenase-gene polymorphism (A-842G/C50T) on the occurrence of peptic ulcer hemorrhage.",
+   "year": "2006",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17066599",
+   "title": "[Evaluation of diagnostic yield and clinical impact of capsule endoscopy in patients with obscure gastrointestinal bleeding].",
+   "year": "2006",
+   "journal": "Orvosi hetilap",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16974033",
+   "title": "Capsule endoscopy in obscure gastrointestinal bleeding--an Indian experience.",
+   "year": "2006",
+   "journal": "Indian journal of gastroenterology : official journal of the Indian Society of Gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16945603",
+   "title": "Selective serotonin reuptake inhibitors and risk of upper GI bleeding: confusion or confounding?",
+   "year": "2006",
+   "journal": "The American journal of medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "16945053",
+   "title": "Interaction between selective serotonin reuptake inhibitors and nonsteroidal antiinflammatory drugs: review of the literature.",
+   "year": "2006",
+   "journal": "Pharmacotherapy",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "16918879",
+   "title": "Systematic review: the lower gastrointestinal adverse effects of non-steroidal anti-inflammatory drugs.",
+   "year": "2006",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "16868823",
+   "title": "Endoscopic features of chronic nonspecific multiple ulcers of the small intestine: comparison with nonsteroidal anti-inflammatory drug-induced enteropathy.",
+   "year": "2006",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16844699",
+   "title": "Hospitalization for gastrointestinal bleeding associated with non-steroidal anti-inflammatory drugs among elderly patients using low-dose aspirin: a retrospective cohort study.",
+   "year": "2007",
+   "journal": "Rheumatology (Oxford, England)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "16821007",
+   "title": "Case-control study on the association of upper gastrointestinal bleeding and nonsteroidal anti-inflammatory drugs in Japan.",
+   "year": "2006",
+   "journal": "European journal of clinical pharmacology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "16699852",
+   "title": "Acute necrotizing esophagitis: role of nonsteroidal anti-inflammatory drugs.",
+   "year": "2006",
+   "journal": "Journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16687434",
+   "title": "Risk of upper gastrointestinal ulcer bleeding associated with selective cyclo-oxygenase-2 inhibitors, traditional non-aspirin non-steroidal anti-inflammatory drugs, aspirin and combinations.",
+   "year": "2006",
+   "journal": "Gut",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "16611205",
+   "title": "Upper gastrointestinal complications among users of paracetamol.",
+   "year": "2006",
+   "journal": "Basic & clinical pharmacology & toxicology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Meta-Analysis",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "16573796",
+   "title": "Increased use of selective serotonin reuptake inhibitors in patients admitted with gastrointestinal haemorrhage: a multicentre retrospective analysis.",
+   "year": "2006",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "16539204",
+   "title": "Upper gastrointestinal bleeding after hip and knee arthroplasty.",
+   "year": "2006",
+   "journal": "Orthopedics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16498802",
+   "title": "[Role of non-steroidal anti-inflammatory drugs on upper gastrointestinal bleeding].",
+   "year": "2005",
+   "journal": "Polski merkuriusz lekarski : organ Polskiego Towarzystwa Lekarskiego",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16356991",
+   "title": "Risk of gastrointestinal effects with COX-2 inhibitors and NSAIDs: study conclusions do not reflect findings for celecoxib.",
+   "year": "2005",
+   "journal": "BMJ (Clinical research ed.)",
+   "pubtypes": [
+    "Comment",
+    "Letter"
+   ]
+  },
+  {
+   "pmid": "16322018",
+   "title": "Risk of adverse gastrointestinal outcomes in patients taking cyclo-oxygenase-2 inhibitors or conventional non-steroidal anti-inflammatory drugs: population based nested case-control analysis.",
+   "year": "2005",
+   "journal": "BMJ (Clinical research ed.)",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "16164494",
+   "title": "Bleeding complications in patients on celecoxib and warfarin.",
+   "year": "2005",
+   "journal": "Journal of clinical pharmacy and therapeutics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16149687",
+   "title": "Prediction of UGIB event in NSAID users: a model development.",
+   "year": "2005",
+   "journal": "Journal of the Medical Association of Thailand = Chotmaihet thangphaet",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16137212",
+   "title": "Gastrointestinal bleeding rates among managed care patients newly started on cox-2 inhibitors or nonselective NSAIDs.",
+   "year": "2005",
+   "journal": "Journal of managed care pharmacy : JMCP",
+   "pubtypes": [
+    "Comment",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16133960",
+   "title": "Minidose aspirin and gastrointestinal bleeding--a retrospective, case-control study in hospitalized patients.",
+   "year": "2005",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "16091054",
+   "title": "Does concurrent prescription of selective serotonin reuptake inhibitors and non-steroidal anti-inflammatory drugs substantially increase the risk of upper gastrointestinal bleeding?",
+   "year": "2005",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "15952021",
+   "title": "Frequent prescribing of drugs with potential gastrointestinal toxicity among continuous users of non-steroidal anti-inflammatory drugs.",
+   "year": "2005",
+   "journal": "European journal of clinical pharmacology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "15937829",
+   "title": "Surgery for peptic ulcer disease in children in the post-histamine2-blocker era.",
+   "year": "2005",
+   "journal": "Journal of pediatric surgery",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "15883235",
+   "title": "Risk of hospitalization for myocardial infarction among users of rofecoxib, celecoxib, and other NSAIDs: a population-based case-control study.",
+   "year": "2005",
+   "journal": "Archives of internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "15858691",
+   "title": "Rapid diagnosis of Helicobacter pylori infection in dyspeptic patients using salivary secretion: a non-invasive approach.",
+   "year": "2005",
+   "journal": "Singapore medical journal",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "15794724",
+   "title": "Selective serotonin re-uptake inhibitors and the risk of bleeding.",
+   "year": "2005",
+   "journal": "Expert opinion on drug safety",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "15787263",
+   "title": "[Digestive bleeding and anti-inflammatory drugs at the teaching hospital of Brazzaville].",
+   "year": "2004",
+   "journal": "Bulletin de la Societe de pathologie exotique (1990)",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "15761977",
+   "title": "Acute upper gastrointestinal bleeding in patients on long-term oral anticoagulation therapy: endoscopic findings, clinical management and outcome.",
+   "year": "2005",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "15743481",
+   "title": "Prescription channeling of COX-2 inhibitors and traditional nonselective nonsteroidal anti-inflammatory drugs: a population-based case-control study.",
+   "year": "2005",
+   "journal": "Arthritis research & therapy",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "15742993",
+   "title": "Clinical significance of cytotoxin-associated gene A status of Helicobacter pylori among non-steroidal anti-inflammatory drug users with peptic ulcer bleeding: a multicenter case-control study.",
+   "year": "2004",
+   "journal": "Scandinavian journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "15735566",
+   "title": "Helicobacter pylori and nonsteroidal anti-inflammatory drugs in perforations and bleeding of peptic ulcers.",
+   "year": "2005",
+   "journal": "Medical science monitor : international medical journal of experimental and clinical research",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "15683100",
+   "title": "Outcome of upper gastro-intestinal bleeding and use of ibuprofen versus paracetamol.",
+   "year": "2004",
+   "journal": "Pharmacy world & science : PWS",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "15668365",
+   "title": "Risk of upper gastrointestinal hemorrhage in warfarin users treated with nonselective NSAIDs or COX-2 inhibitors.",
+   "year": "2005",
+   "journal": "Archives of internal medicine",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "15557969",
+   "title": "Frequency and clinical outcome of capsule retention during capsule endoscopy for GI bleeding of obscure origin.",
+   "year": "2004",
+   "journal": "Gastrointestinal endoscopy",
+   "pubtypes": [
+    "Case Reports",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "15487881",
+   "title": "Risk assessment of NSAID-induced gastrointestinal toxicity in ambulatory care patients.",
+   "year": "2004",
+   "journal": "American journal of health-system pharmacy : AJHP : official journal of the American Society of Health-System Pharmacists",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "15365400",
+   "title": "The usefulness of routine small bowel biopsies in evaluation of iron deficiency anemia.",
+   "year": "2004",
+   "journal": "Journal of clinical gastroenterology",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "15330919",
+   "title": "Postpolypectomy lower gastrointestinal bleeding: potential role of aspirin.",
+   "year": "2004",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "15268644",
+   "title": "Gastrointestinal safety of paracetamol: is there any cause for concern?",
+   "year": "2004",
+   "journal": "Expert opinion on drug safety",
+   "pubtypes": [
+    "Editorial",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "15266128",
+   "title": "[The effect of non-steroidal anti-inflammatory drugs in upper gastrointestinal bleeding].",
+   "year": "2004",
+   "journal": "The Korean journal of gastroenterology = Taehan Sohwagi Hakhoe chi",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "15187205",
+   "title": "Nonsteroidal antiinflammatory drug use among patients with GI bleeding.",
+   "year": "2004",
+   "journal": "The Annals of pharmacotherapy",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "15144234",
+   "title": "Upper gastrointestinal bleeding associated with the use of NSAIDs: newer versus older agents.",
+   "year": "2004",
+   "journal": "Drug safety",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "15093756",
+   "title": "Effect of helicobacter pylori infection on the risk of upper gastrointestinal bleeding in users of nonsteroidal anti-inflammatory drugs.",
+   "year": "2004",
+   "journal": "The American journal of medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "15043523",
+   "title": "COX-2-selective inhibitors and the risk of upper gastrointestinal bleeding in high-risk patients with previous gastrointestinal diseases: a population-based case-control study.",
+   "year": "2004",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "15000891",
+   "title": "Risk factors of adverse drug reaction from non-steroidal anti-inflammatory drugs in Shanghai patients with arthropathy.",
+   "year": "2004",
+   "journal": "Acta pharmacologica Sinica",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "14971811",
+   "title": "Bleeding duodenal ulcer: comparison between Helicobacter pylori positive and Helicobacter pylori negative bleeders.",
+   "year": "2004",
+   "journal": "Digestive and liver disease : official journal of the Italian Society of Gastroenterology and the Italian Association for the Study of the Liver",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "14763350",
+   "title": "[Digestive and hemorrhage complications of low-dose aspirin].",
+   "year": "2003",
+   "journal": "Presse medicale (Paris, France : 1983)",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "14763349",
+   "title": "[Risk factors for gastrointestinal bleeding associated with low-dose aspirin].",
+   "year": "2003",
+   "journal": "Presse medicale (Paris, France : 1983)",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "14736715",
+   "title": "Packed red blood cell transfusions in dogs with gastrointestinal hemorrhage: 55 cases (1999-2001).",
+   "year": "2003",
+   "journal": "Journal of the American Animal Hospital Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "14704592",
+   "title": "Nonselective nonaspirin nonsteroidal anti-inflammatory drugs and gastrointestinal bleeding: relative and absolute risk estimates from recent epidemiologic studies.",
+   "year": "2004",
+   "journal": "American journal of therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "14676507",
+   "title": "Upper gastrointestinal haemorrhage in Emergency Departments in France: causes and management.",
+   "year": "2003",
+   "journal": "European journal of emergency medicine : official journal of the European Society for Emergency Medicine",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "14649063",
+   "title": "[Before polyp removal. To stop or not to stop ASA?].",
+   "year": "2003",
+   "journal": "MMW Fortschritte der Medizin",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "14632282",
+   "title": "For the patient. Treating pain without causing complications.",
+   "year": "2003",
+   "journal": "Ethnicity & disease",
+   "pubtypes": [
+    "Journal Article",
+    "Patient Education Handout"
+   ]
+  },
+  {
+   "pmid": "14632273",
+   "title": "Upper gastrointestinal toxicity of nonsteroidal anti-inflammatory drugs in African-American and Hispanic elderly patients.",
+   "year": "2003",
+   "journal": "Ethnicity & disease",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "14528523",
+   "title": "Predicting the risk of gastrointestinal bleeding due to nonsteroidal antiinflammatory drugs: NSAID electronic assessment of risk.",
+   "year": "2003",
+   "journal": "The Journal of rheumatology",
+   "pubtypes": [
+    "Journal Article",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "12847903",
+   "title": "[Gastrointestinal hemorrhages as complications of gastropathies associated with intake of nonsteroidal anti-inflammatory drugs].",
+   "year": "2003",
+   "journal": "Terapevticheskii arkhiv",
+   "pubtypes": [
+    "Comparative Study",
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "12672201",
+   "title": "The hidden cost of nonselective nonsteroidal antiinflammatory drugs in older patients.",
+   "year": "2003",
+   "journal": "The Journal of rheumatology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "12519219",
+   "title": "Relationship between non-steroidal anti-inflammatory drug use and Helicobacter pylori infection in bleeding or uncomplicated peptic ulcers: A case-control study.",
+   "year": "2003",
+   "journal": "Journal of gastroenterology and hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "12236853",
+   "title": "Dose-response relationships between individual nonaspirin nonsteroidal anti-inflammatory drugs (NANSAIDs) and serious upper gastrointestinal bleeding: a meta-analysis based on individual patient data.",
+   "year": "2002",
+   "journal": "British journal of clinical pharmacology",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "12148709",
+   "title": "Lower gastrointestinal hemorrhage in African-American and Hispanic elderly patients.",
+   "year": "2002",
+   "journal": "Ethnicity & disease",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, P.H.S.",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "12032444",
+   "title": "[Endoscopic treatment of upper gastrointestinal non-variceal bleeding].",
+   "year": "2002",
+   "journal": "Minerva medica",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "11995447",
+   "title": "Colopathy associated with the systemic use of nonsteroidal antiinflammatory medications. An underestimated entity.",
+   "year": "2002",
+   "journal": "Hepato-gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "11960063",
+   "title": "Endoscopic evidence of mucosal injury in patients taking ticlopidine compared with patients taking aspirin/nonsteroidal antiinflammatory drugs and controls.",
+   "year": "2002",
+   "journal": "Journal of clinical gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "11950025",
+   "title": "A metaanalysis of severe upper gastrointestinal complications of nonsteroidal antiinflammatory drugs.",
+   "year": "2002",
+   "journal": "The Journal of rheumatology",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "11929396",
+   "title": "Helicobacter pylori increases the risk of upper gastrointestinal bleeding in patients taking low-dose aspirin.",
+   "year": "2002",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "11914052",
+   "title": "Risk factors for hospitalized upper or lower gastrointestinal tract bleeding in treated hypertensives.",
+   "year": "2002",
+   "journal": "Preventive medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "11876703",
+   "title": "Interactions between Helicobacter pylori and other risk factors for peptic ulcer bleeding.",
+   "year": "2002",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "11851642",
+   "title": "Contraindicated NSAIDs are frequently prescribed to elderly patients with peptic ulcer disease.",
+   "year": "2002",
+   "journal": "British journal of clinical pharmacology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "11809181",
+   "title": "Role of Helicobacter pylori infection and non-steroidal anti-inflammatory drugs in peptic-ulcer disease: a meta-analysis.",
+   "year": "2002",
+   "journal": "Lancet (London, England)",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis"
+   ]
+  },
+  {
+   "pmid": "11681104",
+   "title": "Massive lower intestinal bleeding--a decade of experience.",
+   "year": "2001",
+   "journal": "Tropical gastroenterology : official journal of the Digestive Diseases Foundation",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "11505178",
+   "title": "Relative risk of upper gastrointestinal complications among users of acetaminophen and nonsteroidal anti-inflammatory drugs.",
+   "year": "2001",
+   "journal": "Epidemiology (Cambridge, Mass.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "11444470",
+   "title": "Helicobacter pylori and bleeding duodenal ulcer: prevalence of the infection and role of non-steroidal anti-inflammatory drugs.",
+   "year": "2001",
+   "journal": "Scandinavian journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "11417061",
+   "title": "Ulcer complications associated with anti-inflammatory drug use. What is the extent of the disease burden?",
+   "year": "2001",
+   "journal": "Pharmacoepidemiology and drug safety",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "11302864",
+   "title": "Incidence of clinically manifest ulcers and their complications in patients with rheumatoid arthritis.",
+   "year": "2001",
+   "journal": "Annals of the rheumatic diseases",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "11228592",
+   "title": "Risk of upper gastrointestinal bleeding and perforation associated with low-dose aspirin as plain and enteric-coated formulations.",
+   "year": "2001",
+   "journal": "BMC clinical pharmacology",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "11109625",
+   "title": "[Gastrointestinal bleeding induced by nonsteroidal antiinflammatory drugs].",
+   "year": "2000",
+   "journal": "Terapevticheskii arkhiv",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "11007221",
+   "title": "Risk of upper gastrointestinal bleeding associated with use of low-dose aspirin.",
+   "year": "2000",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "10995862",
+   "title": "Nitrovasodilators, low-dose aspirin, other nonsteroidal antiinflammatory drugs, and the risk of upper gastrointestinal bleeding.",
+   "year": "2000",
+   "journal": "The New England journal of medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "10907963",
+   "title": "The risk of gastrointestinal bleed, myocardial infarction, and newly diagnosed hypertension in users of meloxicam, diclofenac, naproxen, and piroxicam.",
+   "year": "2000",
+   "journal": "Pharmacotherapy",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "10904451",
+   "title": "Association between nonsteroidal anti-inflammatory drugs and upper gastrointestinal tract bleeding/perforation: an overview of epidemiologic studies published in the 1990s.",
+   "year": "2000",
+   "journal": "Archives of internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "10890286",
+   "title": "Over the counter non-steroidal anti-inflammatory drugs and risk of gastrointestinal bleeding.",
+   "year": "2000",
+   "journal": "Journal of epidemiology and biostatistics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "10875466",
+   "title": "Risk factors for presentation with bleeding in patients with Helicobacter pylori-related peptic ulcer diseases.",
+   "year": "2000",
+   "journal": "Journal of clinical gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "10779215",
+   "title": "Helicobacter pylori-negative peptic ulcer in Japan: which contributes most to peptic ulcer development, Helicobacter pylori, NSAIDS or stress?",
+   "year": "2000",
+   "journal": "Journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "10692616",
+   "title": "Quantitative estimation of rare adverse events which follow a biological progression: a new model applied to chronic NSAID use.",
+   "year": "2000",
+   "journal": "Pain",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "10673289",
+   "title": "Risk of ulcer bleeding in patients infected with Helicobacter pylori taking non-steroidal anti-inflammatory drugs.",
+   "year": "2000",
+   "journal": "Gut",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "10601050",
+   "title": "Peptic ulcer bleeding: accessory risk factors and interactions with non-steroidal anti-inflammatory drugs.",
+   "year": "2000",
+   "journal": "Gut",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "10571719",
+   "title": "Preventive care in chronic liver disease.",
+   "year": "1999",
+   "journal": "Journal of general internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "10566713",
+   "title": "The risk of acute major upper gastrointestinal bleeding among users of aspirin and ibuprofen at various levels of alcohol consumption.",
+   "year": "1999",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "10531103",
+   "title": "Association between selective serotonin reuptake inhibitors and upper gastrointestinal bleeding: population based case-control study.",
+   "year": "1999",
+   "journal": "BMJ (Clinical research ed.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "10363194",
+   "title": "Helicobacter pylori increases the risk of peptic ulcer bleeding: a case-control study.",
+   "year": "1999",
+   "journal": "Italian journal of gastroenterology and hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "10348813",
+   "title": "Helicobacter pylori and risk of ulcer bleeding among users of nonsteroidal anti-inflammatory drugs: a case-control study.",
+   "year": "1999",
+   "journal": "Gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "10232865",
+   "title": "Interaction between Helicobacter pylori and non-steroidal anti-inflammatory drugs in peptic ulcer bleeding.",
+   "year": "1999",
+   "journal": "Scandinavian journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "10230826",
+   "title": "Omeprazole and bleeding peptic ulcer, or \"how case-control studies can tell you what you suspected all along\".",
+   "year": "1999",
+   "journal": "Epidemiology (Cambridge, Mass.)",
+   "pubtypes": [
+    "Editorial",
+    "Comment"
+   ]
+  },
+  {
+   "pmid": "9895389",
+   "title": "Anti-inflammatory drugs and variceal bleeding: a case-control study.",
+   "year": "1999",
+   "journal": "Gut",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "9865555",
+   "title": "Colonoscopic evaluation of severe hematochezia in an Oriental population.",
+   "year": "1998",
+   "journal": "Endoscopy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "9829355",
+   "title": "Helicobacter pylori and the relation to other risk factors in patients with acute bleeding peptic ulcer.",
+   "year": "1998",
+   "journal": "Scandinavian journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "9718466",
+   "title": "Effects of nitrate and prophylactic aspirin on upper gastrointestinal bleeding: a retrospective case-control study.",
+   "year": "1998",
+   "journal": "The Journal of international medical research",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "9625116",
+   "title": "Clinical aspects of upper gastrointestinal bleeding associated with the use of nonsteroidal antiinflammatory drugs.",
+   "year": "1998",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "9576408",
+   "title": "Gastrointestinal bleeding in the hospitalized patient: a case-control study to assess risk factors, causes, and outcome.",
+   "year": "1998",
+   "journal": "The American journal of medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "9537636",
+   "title": "The prevalence and significance of leukocytosis in upper gastrointestinal bleeding.",
+   "year": "1998",
+   "journal": "The American journal of the medical sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "9531232",
+   "title": "Gastrointestinal tract bleeding associated with naproxen sodium vs ibuprofen.",
+   "year": "1997",
+   "journal": "Archives of internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "9391242",
+   "title": "Peptic ulcer bleeding in the elderly: relative roles of Helicobacter pylori and non-steroidal anti-inflammatory drugs.",
+   "year": "1997",
+   "journal": "Gut",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "9299669",
+   "title": "Esophagitis is a major cause of upper gastrointestinal hemorrhage in the elderly.",
+   "year": "1997",
+   "journal": "Scandinavian journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "9214056",
+   "title": "[NSAID and ulcer complications. An analysis of risk factors].",
+   "year": "1997",
+   "journal": "Ugeskrift for laeger",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "9177503",
+   "title": "The American College of Gastroenterology Bleeding Registry: preliminary findings.",
+   "year": "1997",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "9164412",
+   "title": "Steroid therapy and H2-receptor antagonists: pharmacoeconomic implications.",
+   "year": "1997",
+   "journal": "Clinical pharmacology and therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "9149053",
+   "title": "Nonsteroidal antiinflammatory drugs are associated with both upper and lower gastrointestinal bleeding.",
+   "year": "1997",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "9149052",
+   "title": "Association of nonsteroidal antiinflammatory drugs with outcome in upper and lower gastrointestinal bleeding.",
+   "year": "1997",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "9099642",
+   "title": "Relationship between upper gastrointestinal bleeding and non steroidal anti-inflammatory drugs in children.",
+   "year": "1997",
+   "journal": "Pediatric surgery international",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "9073143",
+   "title": "Role of Helicobacter pylori infection on upper gastrointestinal bleeding in the elderly: a case-control study.",
+   "year": "1997",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "9071237",
+   "title": "Aspirin preparation and risk of GI bleeding.",
+   "year": "1997",
+   "journal": "The Journal of family practice",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "9051873",
+   "title": "Which peptic ulcers bleed? Results of a case-control study. DUSUK Study Group.",
+   "year": "1997",
+   "journal": "Scandinavian journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "9116088",
+   "title": "Individual nonsteroidal antiinflammatory drugs and other risk factors for upper gastrointestinal bleeding and perforation.",
+   "year": "1997",
+   "journal": "Epidemiology (Cambridge, Mass.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "9009119",
+   "title": "Effect of combined anticoagulation and low-dose aspirin treatment on upper gastrointestinal bleeding.",
+   "year": "1997",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "8937281",
+   "title": "Risk of aspirin-associated major upper-gastrointestinal bleeding with enteric-coated or buffered product.",
+   "year": "1996",
+   "journal": "Lancet (London, England)",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "8888440",
+   "title": "Is there a relationship between the use of analgesics and non-steroidal anti-inflammatory drugs and acute upper gastrointestinal bleeding? A Finnish case-control prospective study.",
+   "year": "1996",
+   "journal": "Scandinavian journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "8953831",
+   "title": "[Focus on the safety of ibuprofen at the analgesic-antipyretic dose].",
+   "year": "1996",
+   "journal": "Therapie",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "8832307",
+   "title": "The relationship between upper gastrointestinal hemorrhage and drug use: a case control study.",
+   "year": "1996",
+   "journal": "International journal of clinical pharmacology and therapeutics",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "8664664",
+   "title": "Variability in risk of gastrointestinal complications with individual non-steroidal anti-inflammatory drugs: results of a collaborative meta-analysis.",
+   "year": "1996",
+   "journal": "BMJ (Clinical research ed.)",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "8656917",
+   "title": "Antagonism to calcium antagonists.",
+   "year": "1996",
+   "journal": "Lancet (London, England)",
+   "pubtypes": [
+    "Letter"
+   ]
+  },
+  {
+   "pmid": "8862193",
+   "title": "Clinical presentation of bleeding peptic ulcer in the elderly.",
+   "year": "1996",
+   "journal": "Aging (Milan, Italy)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "8842839",
+   "title": "Acute gastrointestinal bleeding due to Meckel's diverticulum heterotopic gastric mucosa.",
+   "year": "1996",
+   "journal": "The Italian journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "8773912",
+   "title": "Non-steroidal anti-inflammatory drugs and variceal bleeding: a case-control study.",
+   "year": "1996",
+   "journal": "Journal of hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "8569017",
+   "title": "Parenteral ketorolac and risk of gastrointestinal and operative site bleeding. A postmarketing surveillance study.",
+   "year": "1996",
+   "journal": "JAMA",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "8739738",
+   "title": "Ulcer site and complications: relation to Helicobacter pylori infection and NSAID use.",
+   "year": "1996",
+   "journal": "Endoscopy",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "8886573",
+   "title": "Helicobacter pylori-negative duodenal and pyloric ulcer: role of NSAIDs.",
+   "year": "1996",
+   "journal": "Digestion",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "8566838",
+   "title": "Use of whole gut perfusion to investigate gastrointestinal blood loss in patients with iron deficiency anaemia.",
+   "year": "1996",
+   "journal": "Gut",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "7572894",
+   "title": "Diverticular bleeding: are nonsteroidal anti-inflammatory drugs risk factors for hemorrhage and can colonoscopy predict outcome for patients?",
+   "year": "1995",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "7473468",
+   "title": "Trends in hospitalizations for gastrointestinal bleeding among patients with rheumatoid arthritis in Rochester, Minnesota, 1950-1991.",
+   "year": "1995",
+   "journal": "The Journal of rheumatology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "7794085",
+   "title": "Peptic ulcer and gastrointestinal hemorrhage associated with nonsteroidal anti-inflammatory drug use in patients younger than 65 years. A large health maintenance organization cohort study.",
+   "year": "1995",
+   "journal": "Archives of internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "7613317",
+   "title": "Topical non-steroidal anti-inflammatory drugs and admission to hospital for upper gastrointestinal bleeding and perforation: a record linkage case-control study.",
+   "year": "1995",
+   "journal": "BMJ (Clinical research ed.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "7665813",
+   "title": "Seasonal fluctuations in acute gastrointestinal bleeding.",
+   "year": "1995",
+   "journal": "Journal of clinical gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "7614104",
+   "title": "Which patients taking non-aspirin non-steroidal anti-inflammatory drugs bleed? A case-control study.",
+   "year": "1995",
+   "journal": "European journal of gastroenterology & hepatology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "7711618",
+   "title": "Prophylactic aspirin and risk of peptic ulcer bleeding.",
+   "year": "1995",
+   "journal": "BMJ (Clinical research ed.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "7900721",
+   "title": "Nonsteroidal anti-inflammatory drugs and the incidence of hospitalizations for peptic ulcer disease in elderly persons.",
+   "year": "1995",
+   "journal": "American journal of epidemiology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "7976067",
+   "title": "Risk factors affecting the mortality in acute gastric mucosal lesions.",
+   "year": "1994",
+   "journal": "Acta chirurgica Belgica",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "7824858",
+   "title": "Upper gastrointestinal hemorrhage. Comparison of the causes and prognosis in primary and secondary bleeders.",
+   "year": "1994",
+   "journal": "Scandinavian journal of gastroenterology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "7722586",
+   "title": "Evidence of the depletion of susceptibles effect in non-experimental pharmacoepidemiologic research.",
+   "year": "1994",
+   "journal": "Journal of clinical epidemiology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "7909103",
+   "title": "Risks of bleeding peptic ulcer associated with individual non-steroidal anti-inflammatory drugs.",
+   "year": "1994",
+   "journal": "Lancet (London, England)",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "7909094",
+   "title": "NSAIDs: time to re-evaluate gut toxicity.",
+   "year": "1994",
+   "journal": "Lancet (London, England)",
+   "pubtypes": [
+    "Comment",
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "8149834",
+   "title": "Bleeding peptic ulcer occurring in hospitalized patients: analysis of predictive and risk factors and comparison with out-of-hospital onset of hemorrhage.",
+   "year": "1994",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "8035395",
+   "title": "ACTH revisited: effective treatment for acute crystal induced synovitis in patients with multiple medical problems.",
+   "year": "1994",
+   "journal": "The Journal of rheumatology",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "7907735",
+   "title": "Risk of upper gastrointestinal bleeding and perforation associated with individual non-steroidal anti-inflammatory drugs.",
+   "year": "1994",
+   "journal": "Lancet (London, England)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "7816782",
+   "title": "Relation of the use of analgesics and non-steroidal anti-inflammatory drugs (NSAIDs) to upper gastrointestinal bleeding: a preliminary report of a Finnish case-control prospective study.",
+   "year": "1994",
+   "journal": "Pharmacology & toxicology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "8223081",
+   "title": "Nonsteroidal antiinflammatory drugs and upper gastrointestinal hemorrhage in an urban hospital.",
+   "year": "1993",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "8359073",
+   "title": "Nonsteroidal antiinflammatory drugs and lower gastrointestinal bleeding.",
+   "year": "1993",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "8255837",
+   "title": "Gastro-duodenal injury associated with intake of 100-325 mg aspirin daily.",
+   "year": "1993",
+   "journal": "Postgraduate medical journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "8237359",
+   "title": "Still's disease: experience in 12 children.",
+   "year": "1993",
+   "journal": "Zhonghua Minguo xiao er ke yi xue hui za zhi [Journal]. Zhonghua Minguo xiao er ke yi xue hui",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "8230040",
+   "title": "Upper gastrointestinal bleeding associated with analgesics and NSAID use: a case-control study.",
+   "year": "1993",
+   "journal": "The Journal of rheumatology",
+   "pubtypes": [
+    "Letter",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "8333804",
+   "title": "Concurrent use of nonsteroidal anti-inflammatory drugs and oral anticoagulants places elderly persons at high risk for hemorrhagic peptic ulcer disease.",
+   "year": "1993",
+   "journal": "Archives of internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "8477566",
+   "title": "Nonsteroidal anti-inflammatory drug use in relation to major upper gastrointestinal bleeding.",
+   "year": "1993",
+   "journal": "Clinical pharmacology and therapeutics",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "8434814",
+   "title": "The risk of emergency intestinal bleeding among users of acenocoumarin: a population-based cohort study.",
+   "year": "1993",
+   "journal": "Angiology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "8430245",
+   "title": "[Hemorrhages of the upper gastrointestinal tract and nonsteroidal anti-inflammatory drugs: the results of a case-controlled surveillance].",
+   "year": "1993",
+   "journal": "Recenti progressi in medicina",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "8424842",
+   "title": "Variation in the risk of peptic ulcer complications with nonsteroidal antiinflammatory drug therapy.",
+   "year": "1993",
+   "journal": "Arthritis and rheumatism",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "1560923",
+   "title": "Antiinflammatory drugs and emergency surgery for peptic ulcers in the Waikato.",
+   "year": "1992",
+   "journal": "The New Zealand medical journal",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "1595370",
+   "title": "[Significance of digestive hemorrhage in patients with chronic renal insufficiency in hemodialysis].",
+   "year": "1992",
+   "journal": "Acta medica portuguesa",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "1929684",
+   "title": "Should nonsteroidal anti-inflammatory drugs be stopped before elective surgery?",
+   "year": "1991",
+   "journal": "Archives of internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "1684655",
+   "title": "Hiatal hernial ulcers: clinical features and follow-up.",
+   "year": "1991",
+   "journal": "Postgraduate medical journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "1933208",
+   "title": "Non-steroidal anti-inflammatory drugs and complicated diverticular disease: a case-control study.",
+   "year": "1991",
+   "journal": "The British journal of surgery",
+   "pubtypes": [
+    "Comment",
+    "Letter"
+   ]
+  },
+  {
+   "pmid": "1930744",
+   "title": "Statistical methods in pharmacoepidemiology. Principles in managing error.",
+   "year": "1991",
+   "journal": "Drug safety",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "1884961",
+   "title": "A review of 1338 patients with acute upper gastrointestinal bleeding at Chulalongkorn University Hospital, Bangkok.",
+   "year": "1991",
+   "journal": "Gastroenterologia Japonica",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "1855677",
+   "title": "Relation of upper gastrointestinal bleeding to non-steroidal anti-inflammatory drugs and aspirin: a case-control study.",
+   "year": "1991",
+   "journal": "Gut",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "1673597",
+   "title": "The impact of ulcerogenic drugs on surgery for the treatment of peptic ulcer disease.",
+   "year": "1991",
+   "journal": "Archives of surgery (Chicago, Ill. : 1960)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "1672190",
+   "title": "NSAIDs and risk of upper gastrointestinal bleeding.",
+   "year": "1991",
+   "journal": "Lancet (London, England)",
+   "pubtypes": [
+    "Comment",
+    "Comparative Study",
+    "Letter",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "2038013",
+   "title": "Epidemiology and NSAID induced gastropathy.",
+   "year": "1991",
+   "journal": "The Journal of rheumatology. Supplement",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "2015469",
+   "title": "Non-steroidal anti-inflammatory drugs and complicated diverticular disease: a case-control study.",
+   "year": "1991",
+   "journal": "The British journal of surgery",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "1670734",
+   "title": "Upper gastrointestinal bleeding in relation to previous use of analgesics and non-steroidal anti-inflammatory drugs. Catalan Countries Study on Upper Gastrointestinal Bleeding.",
+   "year": "1991",
+   "journal": "Lancet (London, England)",
+   "pubtypes": [
+    "Clinical Trial",
+    "Comparative Study",
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "1783251",
+   "title": "[Digestive hemorrhage following gastroduodenal ulcers caused by non-steroidal anti-inflammatory agents].",
+   "year": "1991",
+   "journal": "Gastroenterologie clinique et biologique",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "2371983",
+   "title": "Studies of gastric ulcer disease by community-based gastroenterologists.",
+   "year": "1990",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "2142902",
+   "title": "[Epidemiologic and diagnostic observations on hemorrhage of the upper gastroenteric tract].",
+   "year": "1990",
+   "journal": "La Clinica terapeutica",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "2616429",
+   "title": "Non-steroidal anti-inflammatory drug ingestion: retrospective study of 272 bleeding or perforated peptic ulcers.",
+   "year": "1989",
+   "journal": "Postgraduate medical journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "2731675",
+   "title": "[Frequency and severity of gastric and duodenal lesions induced by non-steroidal anti-inflammatory agents and aspirin].",
+   "year": "1989",
+   "journal": "Gastroenterologie clinique et biologique",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "3144369",
+   "title": "Aspirin and bleeding peptic ulcers in the elderly.",
+   "year": "1988",
+   "journal": "BMJ (Clinical research ed.)",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "3261560",
+   "title": "Nonsteroidal anti-inflammatory drug use and death from peptic ulcer in elderly persons.",
+   "year": "1988",
+   "journal": "Annals of internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "3363293",
+   "title": "Peptic ulcer bleeding in patients with and without dyspepsia.",
+   "year": "1988",
+   "journal": "Scandinavian journal of gastroenterology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "3340237",
+   "title": "[Non-steroidal anti-inflammatory drugs and hemorrhage from stomach and duodenal ulcers].",
+   "year": "1988",
+   "journal": "Nederlands tijdschrift voor geneeskunde",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "3120956",
+   "title": "Fatal peptic ulcer complications and the use of non-steroidal anti-inflammatory drugs, aspirin, and corticosteroids.",
+   "year": "1987",
+   "journal": "British medical journal (Clinical research ed.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "3498747",
+   "title": "Duodenal mucosal injury with nonsteroidal antiinflammatory drugs.",
+   "year": "1987",
+   "journal": "Journal of clinical gastroenterology",
+   "pubtypes": [
+    "Clinical Trial",
+    "Controlled Clinical Trial",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "3496062",
+   "title": "The relative gastrointestinal toxicity of the nonsteroidal anti-inflammatory drugs.",
+   "year": "1987",
+   "journal": "Archives of internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "3492182",
+   "title": "The association of nonsteroidal anti-inflammatory drugs with upper gastrointestinal tract bleeding.",
+   "year": "1987",
+   "journal": "Archives of internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "3490836",
+   "title": "Nonsteroidal anti-inflammatory drugs and gastrointestinal bleeding. A case-control study.",
+   "year": "1986",
+   "journal": "Archives of internal medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "3087475",
+   "title": "Bleeding from peptic ulcers and use of non-steroidal anti-inflammatory drugs.",
+   "year": "1986",
+   "journal": "British medical journal (Clinical research ed.)",
+   "pubtypes": [
+    "Letter"
+   ]
+  },
+  {
+   "pmid": "3493403",
+   "title": "Anti-inflammatory drug intake and the risk of ulcer complications.",
+   "year": "1986",
+   "journal": "Medical toxicology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "3994179",
+   "title": "Peptic ulcer disease and the nonsteroidal anti-inflammatory drugs.",
+   "year": "1985",
+   "journal": "The American surgeon",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  }
+ ]
+}

@@ -1,0 +1,4993 @@
+{
+ "schema": "gia_lap/khong_loc_day_du/v1",
+ "truy_van": "(hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"controlled hypertension\"[tiab] OR \"hypertension control\"[tiab]) AND (outpatient*[tiab] OR \"primary care\"[tiab]) AND (prevalence[tiab] OR \"cross-sectional\"[tiab])",
+ "so_hit_that": 507,
+ "so_bai_lay_ve": 507,
+ "ngay_tai": "2026-11-19",
+ "cach": "PubMed E-utilities esearch (sort=date) + esummary, không lọc thiết kế",
+ "ban_ghi": [
+  {
+   "pmid": "43034396",
+   "title": "Prevalence and associated factors of uncontrolled hypertension among hypertensive patients at Soroti Regional Referral Hospital, Uganda: Cross-sectional study.",
+   "year": "2026",
+   "journal": "Sage open chronic disease",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "43000718",
+   "title": "Serial cross-sectional assessment of glycaemic and blood pressure profiles at a KwaZulu-Natal tertiary hospital: A 5-year analysis (2021-2025).",
+   "year": "2026",
+   "journal": "South African family practice : official journal of the South African Academy of Family Practice/Primary Care",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42999744",
+   "title": "Prescribing, Medication Adherence, and Blood Pressure Goal Achievement Among Middle-to-Older Age Adults in a Primary Care Setting.",
+   "year": "2026",
+   "journal": "International journal of hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42907775",
+   "title": "Vascular risk factors after stroke in the older people: a population-based study.",
+   "year": "2026",
+   "journal": "BMC geriatrics",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "42861754",
+   "title": "Therapeutic Inertia in the Management of Hypertension by Moroccan General Practitioners.",
+   "year": "2026",
+   "journal": "Current hypertension reviews",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42857365",
+   "title": "Prevalence of Dyslipidemia and Associated Factors Among Adult Outpatients at Jimma Medical Center, Southwest Ethiopia: A Cross-Sectional Study.",
+   "year": "2026",
+   "journal": "Health science reports",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42827113",
+   "title": "Association of hypertension specialist treatment with blood pressure control in Japanese primary care: The J-DOME study.",
+   "year": "2026",
+   "journal": "Hypertension research : official journal of the Japanese Society of Hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42822005",
+   "title": "Hypertension epidemiology and primary care indicators in Portugal: a contemporary nationwide analysis.",
+   "year": "2026",
+   "journal": "Blood pressure",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42798477",
+   "title": "Fixed-dose combination versus multi-pill combination antihypertensive therapy in medication-defined apparent treatment-resistant hypertension: real-world evidence on healthcare utilization and health-related quality of life.",
+   "year": "2026",
+   "journal": "Frontiers in pharmacology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42689304",
+   "title": "Decade of Risk: Predicting Ten-year Cardiovascular Disease Events (Stroke/myocardial Infarction) in Hypertensive Patients at a Tertiary Care Institute in Jharkhand.",
+   "year": "2026",
+   "journal": "Indian journal of community medicine : official publication of Indian Association of Preventive & Social Medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42670447",
+   "title": "Factors associated with control of arterial hypertension in Francisco Morazán, Honduras.",
+   "year": "2026",
+   "journal": "Global health & medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42540706",
+   "title": "Hypertension Control in Bangladesh: Changes, Sociodemographic Variation, and Socioeconomic Inequality from the 2017-18 to 2022 Bangladesh Demographic and Health Surveys.",
+   "year": "2026",
+   "journal": "Global heart",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "42519269",
+   "title": "Evaluation of Antihypertensive Medication Adherence and Its Association With Blood Pressure Control Among Hypertensive Patients Attending Outpatient Clinics in Khyber Pakhtunkhwa, Pakistan: A Cross-Sectional Study.",
+   "year": "2026",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42435616",
+   "title": "Implementation of an AI-driven hierarchical medical system for chronic disease management: ethical framework, resource optimization, and effectiveness evaluation.",
+   "year": "2026",
+   "journal": "International journal of medical informatics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42405284",
+   "title": "Adherence to Antihypertensive Medication and Its Associated Factors Among Patients with Hypertension Attending a Tertiary Hospital in Mogadishu, Somalia: A Cross-Sectional Study.",
+   "year": "2026",
+   "journal": "Patient preference and adherence",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42394388",
+   "title": "Importance of Hypercortisolism in BP Control, Cardiovascular Risk and in Patients With Difficult-to-Control Hypertension: An Overview for Primary Care Physicians.",
+   "year": "2026",
+   "journal": "Diabetes, obesity & metabolism",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "42390343",
+   "title": "Comparing the Documentation of Phosphatidylethanol and Alcohol History in Hypertension Management in Primary Care: A Cross-Sectional Study.",
+   "year": "2026",
+   "journal": "Journal of primary care & community health",
+   "pubtypes": [
+    "Journal Article",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "42348444",
+   "title": "Knowledge of Hypertension and Self-Blood Pressure Measurement Skills in Spain.",
+   "year": "2026",
+   "journal": "Journal of primary care & community health",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "42344085",
+   "title": "Assessment of Hypertension and Diabetes Care in Public Health Facilities Across India: A Multicentric Cross-Sectional Study.",
+   "year": "2026",
+   "journal": "Indian journal of community medicine : official publication of Indian Association of Preventive & Social Medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42293058",
+   "title": "Hypertension knowledge gaps: A patient-caregiver comparison from a tertiary care centre in Northern India.",
+   "year": "2026",
+   "journal": "Heart international",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42282359",
+   "title": "Medication adherence, lifestyle practices and blood pressure control in hypertensive patients: A questionnaire-based analysis.",
+   "year": "2026",
+   "journal": "Bioinformation",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42279094",
+   "title": "Rural-Urban Differences in Hypertension Prevalence and Control in a Large Regional Health System Cohort.",
+   "year": "2026",
+   "journal": "Journal of clinical medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42239000",
+   "title": "Hypertension management profiles in Chinese adults aged 60 years and older.",
+   "year": "2026",
+   "journal": "Frontiers in public health",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "42191433",
+   "title": "[Epidemiological, clinical and therapeutic aspects of arterial hypertension in young adults at the Abidjan heart institute].",
+   "year": "2026",
+   "journal": "Annales de cardiologie et d'angeiologie",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42136626",
+   "title": "The Association Between Medication Literacy and Blood Pressure Control in Patients With Hypertension in a Multi-ethnic County in China.",
+   "year": "2026",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42121043",
+   "title": "Factors impacting poor hypertension control in young urban adults in a Malaysian primary care clinic.",
+   "year": "2026",
+   "journal": "BMC primary care",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42108551",
+   "title": "Neighborhood level social determinants of health and loss of blood pressure control.",
+   "year": "2026",
+   "journal": "American journal of hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42082844",
+   "title": "Barriers to Medication Adherence and Mild Cognitive Impairment Among African Americans with Persistently Uncontrolled Hypertension: A Cross-sectional Analysis from the Southeastern Collaboration Trial.",
+   "year": "2026",
+   "journal": "Journal of general internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, U.S. Gov't, P.H.S.",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "42069528",
+   "title": "Prevalence and clinical correlates of hypertension among patients with type 2 diabetes in Spanish primary care: a cross-sectional study.",
+   "year": "2026",
+   "journal": "BMC primary care",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42064859",
+   "title": "Implementation, integration, and institutionalization of a community-based strategy for hypertension control in Colombia: the RE-HOPE implementation study protocol.",
+   "year": "2026",
+   "journal": "Frontiers in cardiovascular medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42028500",
+   "title": "Hypertension Treatment Cascade in Rural Delhi: Prevalence, Awareness, Treatment, and Control Among Adults.",
+   "year": "2026",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42013748",
+   "title": "Current postpartum management of hypertension: A survey of obstetricians, general practitioners, and midwives in the UK.",
+   "year": "2026",
+   "journal": "Pregnancy hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41994785",
+   "title": "Association of Lifestyle Factors With Blood Pressure Control Among Hypertensive U.S. Adults: An Analysis of the National Ambulatory Medical Care Survey (NAMCS) 2010-2015.",
+   "year": "2026",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41875030",
+   "title": "Remote Patient Monitoring Program Components and Short-Term Hypertension Control: Retrospective Cohort Study.",
+   "year": "2026",
+   "journal": "JMIR mHealth and uHealth",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "41870079",
+   "title": "Europe's hotspot region for hypertension: the Balkans.",
+   "year": "2026",
+   "journal": "Blood pressure",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "41868123",
+   "title": "Fixed-dose combination antihypertensive therapy and healthcare utilization in U.S. adults with hypertension: a propensity score-based analysis of a nationally representative population.",
+   "year": "2026",
+   "journal": "Frontiers in pharmacology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41849457",
+   "title": "Impact of Obesity on Patients with Resistant and Refractory Arterial Hypertension: A Cross-Sectional Study.",
+   "year": "2026",
+   "journal": "Arquivos brasileiros de cardiologia",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41845044",
+   "title": "A multi-centre study of prescribing patterns for the management of resistant hypertension amongst cardiologists.",
+   "year": "2026",
+   "journal": "Journal of human hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "41823597",
+   "title": "A nurse practitioner's guide to metabolic dysfunction‑associated steatotic liver disease: From diagnosis to management.",
+   "year": "2026",
+   "journal": "Journal of the American Association of Nurse Practitioners",
+   "pubtypes": [
+    "Journal Article",
+    "Case Reports"
+   ]
+  },
+  {
+   "pmid": "41653282",
+   "title": "Barriers to effective hypertension control in a low-income healthcare setting: The role of therapeutic inertia and its predictors among hypertensive outpatients.",
+   "year": "2026",
+   "journal": "Naunyn-Schmiedeberg's archives of pharmacology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "41638020",
+   "title": "Assessing the impact of socioeconomic determinants and management models on primary health care in Catalonia.",
+   "year": "2026",
+   "journal": "Atencion primaria",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "41628356",
+   "title": "Addressing Gaps in the Hypertension and Diabetes Care Continuum in Rural Bangladesh Through Digital Technology Supported Decentralized Primary Care: Study Protocol and Baseline Results for a Hybrid Effectiveness-Implementation Trial.",
+   "year": "2026",
+   "journal": "JMIR research protocols",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "41624668",
+   "title": "Prevalence and risk factors of uncontrolled blood pressure in adult patients with diabetes: A cross-sectional study in Bahrain's primary care specialized clinics.",
+   "year": "2025",
+   "journal": "Journal of family medicine and primary care",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41586873",
+   "title": "Heart Healthy Ohio Initiative: A Statewide Cooperative to Improve Cardiovascular Risk.",
+   "year": "2026",
+   "journal": "Journal of general internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "41582794",
+   "title": "[Rapid Deterioration of Preeclampsia and Suspected Monogenic Hypertension - A Case Report].",
+   "year": "2026",
+   "journal": "Harefuah",
+   "pubtypes": [
+    "Case Reports",
+    "Journal Article",
+    "English Abstract"
+   ]
+  },
+  {
+   "pmid": "41477672",
+   "title": "Impact of Sleep-disordered Breathing Management in Primary Care on Systemic Hypertension Control: Protocol for the METASLEEP Implementation Trial.",
+   "year": "2026",
+   "journal": "Open respiratory archives",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41419163",
+   "title": "Caribbean and South American team-based strategy to control hypertension (CATCH): Rationale and study design of a cluster randomized trial.",
+   "year": "2026",
+   "journal": "American heart journal",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41416129",
+   "title": "Self-Care Behaviors and Associated Factors among Patients with Hypertension in the Kurdistan Region of Iraq: A Cross-Sectional Study.",
+   "year": "2025",
+   "journal": "Journal of patient experience",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41377724",
+   "title": "The mediating role of self-care self-efficacy in the relationship between health behavior and psychological wellbeing among community-dwelling older adults with hypertension.",
+   "year": "2025",
+   "journal": "Frontiers in public health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41365766",
+   "title": "The dalmatian hypertensive patients and arterial stiffness study (DALMA-HARES): Blood pressure control, body composition, and lifestyle adherence in a mediterranean population.",
+   "year": "2025",
+   "journal": "Obesity research & clinical practice",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "41355346",
+   "title": "Heart failure in China: a macroeconomic modelling study of intervention strategies.",
+   "year": "2026",
+   "journal": "European heart journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41281158",
+   "title": "The Role of Body Mass Index and Obesity Indicators in Sleep Quality Among Hypertensive Patients in Turkey.",
+   "year": "2025",
+   "journal": "Nature and science of sleep",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41236608",
+   "title": "Prevalence and Medical Treatment of Arterial Hypertension and Hypercholesterolemia in Germany: a Nationwide questionnaire-based Survey in Medical Practices.",
+   "year": "2026",
+   "journal": "High blood pressure & cardiovascular prevention : the official journal of the Italian Society of Hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41235217",
+   "title": "Hypertension outcomes in a fragile setting: predictors of blood pressure reduction and control in the Central African Republic.",
+   "year": "2025",
+   "journal": "Frontiers in public health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41189836",
+   "title": "The Impact of Lifestyle Counseling by Family Physicians on the Management of Hypertension in Primary Care Settings: A Systematic Review.",
+   "year": "2025",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "41160556",
+   "title": "Prevalence and risk factors of hypertension among clients seeking care at Selected Healthcare Facilities in Kenya.",
+   "year": "2025",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41154887",
+   "title": "Adherence to Antihypertensive Therapy: A Cross-Sectional Study Among Patients in the Republic of Kazakhstan.",
+   "year": "2025",
+   "journal": "International journal of environmental research and public health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "41146104",
+   "title": "Changing patterns in health-seeking behaviour and prescription practices for treatment of hypertension in nine districts - insights from India Hypertension Control Initiative, 2018-19 and 2023-24.",
+   "year": "2025",
+   "journal": "BMC public health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41138531",
+   "title": "Blood Pressure Control and Maintenance in U.S. Veterans: Roles of Sex, Race, Ethnicity, and Deprivation.",
+   "year": "2025",
+   "journal": "JACC. Advances",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41116855",
+   "title": "Clinical Implementation of the Hill-Bone Compliance to High Blood Pressure Therapy Scale: Antihypertensive Adherence Assessment in a Romanian Cardiology Outpatient Center.",
+   "year": "2025",
+   "journal": "Patient preference and adherence",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41041574",
+   "title": "Prevalence and Factors Associated with Apparent Treatment-Resistant Hypertension Among Adults with Hypertension Attending the Medical Outpatient Clinic at Mbarara Regional Referral Hospital: A Cross-sectional Study.",
+   "year": "2025",
+   "journal": "Research square",
+   "pubtypes": [
+    "Journal Article",
+    "Preprint"
+   ]
+  },
+  {
+   "pmid": "40958011",
+   "title": "The association of area deprivation index and blood pressure control and therapeutic inertia among older adults with hypertension.",
+   "year": "2025",
+   "journal": "Journal of human hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "40951858",
+   "title": "A Cross-sectional Study on Prevalence of Cardiovascular Disease Risk among Hypertensive Patients Using the World Health Organization-International Society of Hypertension Chart in Rural Field Practice Areas of a Medical College, Chennai.",
+   "year": "2025",
+   "journal": "Journal of mid-life health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40951277",
+   "title": "Health Systems and Self-Reported Medication Adherence in Patients with Hypertension: A cross-sectional comparison of Jamaica and Colombia.",
+   "year": "2025",
+   "journal": "Research square",
+   "pubtypes": [
+    "Journal Article",
+    "Preprint"
+   ]
+  },
+  {
+   "pmid": "40928431",
+   "title": "[Sex differences in the pharmacological treatment of hypertension in primary care].",
+   "year": "2025",
+   "journal": "Nederlands tijdschrift voor geneeskunde",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40918626",
+   "title": "Reducing Racial Disparities in Hypertension Control Using a Multicomponent, Equity-Centered Approach.",
+   "year": "2025",
+   "journal": "Health equity",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40918605",
+   "title": "Predictors of Antihypertensive Drug Adherence and Blood Pressure Control Among Hypertensive Patients: A Multicenter Cross-Sectional Study.",
+   "year": "2025",
+   "journal": "International journal of hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40869638",
+   "title": "Three-Year Echocardiographic Follow-Up in Outpatients with Systemic Arterial Hypertension: An Observational Cohort Study.",
+   "year": "2025",
+   "journal": "Journal of clinical medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40843741",
+   "title": "Adherence, Persistence, and Blood Pressure Control in Hypertensive Patients: A Cross-Sectional Study in Mureș County, Romania.",
+   "year": "2025",
+   "journal": "Medical sciences (Basel, Switzerland)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "40837649",
+   "title": "Predictors of adherence to Hypertension Self-management practices among older persons attending a rural hospital in Uganda.",
+   "year": "2025",
+   "journal": "African health sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40830067",
+   "title": "Insulin Resistance Bio-Anthropometric Markers Predict Hypertension Control in Individuals Without Diabetes.",
+   "year": "2025",
+   "journal": "European journal of preventive cardiology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40799896",
+   "title": "Relationship Between Perceived Stress and Blood Pressure Control in Young Adults With a Family History of Hypertension.",
+   "year": "2025",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40751466",
+   "title": "Forgetfulness to Take Antihypertensive Medications and Poor Blood Pressure Control in Older Adults With Type 2 Diabetes and Hypertension in Vietnam.",
+   "year": "2025",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "40622370",
+   "title": "A prospective cohort study of the SEARCH integrated HIV/hypertension community health worker-led intervention in rural Kenya and Uganda.",
+   "year": "2025",
+   "journal": "Journal of the International AIDS Society",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "40620468",
+   "title": "Trends in Antihypertensive Drug Use and Irrational Prescriptions Among Elderly Patients in China (2016-2023): A Nationwide Multi-Center Cross-Sectional Survey Study.",
+   "year": "2025",
+   "journal": "Drug design, development and therapy",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "40583484",
+   "title": "Factors associated with blood pressure control in Swedish primary care patients with hypertension: a cross-sectional study.",
+   "year": "2026",
+   "journal": "Scandinavian journal of primary health care",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "40558670",
+   "title": "Navigating the Complexities of Cancer Treatment-Induced Hypertension.",
+   "year": "2025",
+   "journal": "Journal of cardiovascular development and disease",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "40546292",
+   "title": "Knowledge, Attitudes, and Practices of Healthcare Professionals Toward Internet-Based Hypertension Management: A Cross-Sectional Study.",
+   "year": "2025",
+   "journal": "Journal of multidisciplinary healthcare",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40470158",
+   "title": "A composite score of polygraphic oximetry parameters predicts left ventricular hypertrophy in patients with obstructive sleep apnoea.",
+   "year": "2025",
+   "journal": "ERJ open research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40127412",
+   "title": "Nurse-Managed Hypertension Care in Primary Health Care Centers in Region Stockholm and Its Association With Blood Pressure Control and Key Indicators for Contractual Follow-Up.",
+   "year": "2025",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "40119013",
+   "title": "Relationships Matter: Exploring the Impact of Patients' Familial, Community, and Provider Relationships on Hypertension Management.",
+   "year": "2026",
+   "journal": "Journal of general internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "40093852",
+   "title": "Sociodemographic correlates of hypertension prevalence, awareness, and control in the Eastern Caribbean.",
+   "year": "2025",
+   "journal": "Lancet regional health. Americas",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40090233",
+   "title": "[Blood pressure profile and glycaemic control of type 2 diabetics and hypertensives at the Yalgado Ouédraogo University Hospital : 116 Cases].",
+   "year": "2025",
+   "journal": "Annales de cardiologie et d'angeiologie",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39989512",
+   "title": "Application of hypertension clinical guidelines among family medicine doctors in primary health care centers in Riyadh City, Saudi Arabia.",
+   "year": "2025",
+   "journal": "Journal of family medicine and primary care",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39978826",
+   "title": "Sex differences in the prescription of antihypertensive medications in primary care patients: an observational study.",
+   "year": "2025",
+   "journal": "BJGP open",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39938855",
+   "title": "A randomized trial of postpartum ibuprofen in severe hypertensive disorders of pregnancy.",
+   "year": "2025",
+   "journal": "American journal of obstetrics and gynecology",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "39929181",
+   "title": "Joint Association of Physical Activity and Sleep Quality With Blood Pressure Control in Patients With Hypertension in Douala, Cameroon.",
+   "year": "2025",
+   "journal": "Journal of physical activity & health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39843675",
+   "title": "Patient Perceptions of Provider Race Concordance and Quality of Chronic Illness Care.",
+   "year": "2025",
+   "journal": "Journal of general internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Multicenter Study",
+    "Research Support, N.I.H., Intramural",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "39731689",
+   "title": "Pathways to Hypertension Control: Unfinished Journeys of Low-Income Individuals in Malaysia and the Philippines.",
+   "year": "2025",
+   "journal": "The International journal of health planning and management",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "39706585",
+   "title": "Improving Blood Pressure Control and Tobacco Use Cessation Intervention In Primary Care: Protocol for the Alabama Cardiovascular Cooperative Heart Health Improvement Project.",
+   "year": "2024",
+   "journal": "JMIR research protocols",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "39570803",
+   "title": "Blood pressure control and antihypertensive treatment in Swiss general practice: a cross-sectional study using routine data.",
+   "year": "2024",
+   "journal": "Swiss medical weekly",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39538168",
+   "title": "Trends in hypertension prevalence, awareness, treatment, and control in the Thai population, 2004 to 2020.",
+   "year": "2024",
+   "journal": "BMC public health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "39494661",
+   "title": "Hypertension guideline implementation and blood pressure control in Matlosana, South Africa.",
+   "year": "2024",
+   "journal": "South African family practice : official journal of the South African Academy of Family Practice/Primary Care",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39469027",
+   "title": "Pharmacovigilance monitoring and treatment adherence in patients on antihypertensive drugs at a tertiary care centre.",
+   "year": "2024",
+   "journal": "Drugs in context",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39377207",
+   "title": "Necessity of a systematic annual consultation in primary care to better improve detection and control of hypertension?",
+   "year": "2024",
+   "journal": "Acta cardiologica",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "39340787",
+   "title": "Relationship Between Blood Pressure Control and Self-Care Practices Among Hypertensive Patients Attending Family Medicine Clinic of Lagos State University Teaching Hospital, Lagos, Nigeria.",
+   "year": "2024",
+   "journal": "West African journal of medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39010244",
+   "title": "Improving hypertension control in Nigeria: early policy implications from the Hypertension Treatment in Nigeria program.",
+   "year": "2024",
+   "journal": "Global health research and policy",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "38939892",
+   "title": "QUALITY OF PRESCRIPTIONS RECEIVED BY PATIENTS WITH HYPERTENSION ATTENDING A SECONDARY HEALTH FACILITY IN IBADAN, OYO STATE.",
+   "year": "2024",
+   "journal": "Annals of Ibadan postgraduate medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38897704",
+   "title": "Use of electronic health records for the management of diabetes and its risk factors in the Principality of Asturias from 2014 to 2018.",
+   "year": "2024",
+   "journal": "Endocrinologia, diabetes y nutricion",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "38866526",
+   "title": "Overcoming Clinical Inertia in the Treatment of Hypertension.",
+   "year": "2025",
+   "journal": "Internal medicine (Tokyo, Japan)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38549427",
+   "title": "Office or home versus 24-h blood pressure measurement in stable kidney transplant recipients.",
+   "year": "2024",
+   "journal": "Nephrology, dialysis, transplantation : official publication of the European Dialysis and Transplant Association - European Renal Association",
+   "pubtypes": [
+    "Journal Article",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "38361594",
+   "title": "Characteristics and clinical outcomes of people with hypertension receiving continuous care in Thailand: a cross-sectional study.",
+   "year": "2024",
+   "journal": "The Lancet regional health. Southeast Asia",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38130081",
+   "title": "Mission 70/26 Project: improving blood pressure control in Portugal.",
+   "year": "2024",
+   "journal": "Blood pressure",
+   "pubtypes": [
+    "News"
+   ]
+  },
+  {
+   "pmid": "38107602",
+   "title": "Barriers and Facilitators to Risk Reduction of Cardiovascular Disease in Hypertensive Patients in Nigeria.",
+   "year": "2023",
+   "journal": "Annals of global health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "38097504",
+   "title": "Multimorbidity and Blood Pressure Control in Patients Attending Primary Care in Canada.",
+   "year": "2023",
+   "journal": "Journal of primary care & community health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "38035923",
+   "title": "From guidelines to current practices: Suboptimal hypertension management in France.",
+   "year": "2023",
+   "journal": "Journal de medecine vasculaire",
+   "pubtypes": [
+    "Observational Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38021707",
+   "title": "Carotid Intima-Media Thickness and Its Correlation With Echocardiographic Left Ventricular Function and Geometry in Hypertensive Individuals: A Cross-Sectional Study.",
+   "year": "2023",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37893564",
+   "title": "Prevalence Rates of Arterial Hypertension According to the Threshold Criteria of 140/90 or 130/80 mmHg and Associated Cardiometabolic and Renal Factors: SIMETAP-HTN Study.",
+   "year": "2023",
+   "journal": "Medicina (Kaunas, Lithuania)",
+   "pubtypes": [
+    "Observational Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37891517",
+   "title": "Hypertension care cascade in an urban resettlement colony and slum in Delhi, India: a cross-sectional survey.",
+   "year": "2023",
+   "journal": "BMC public health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37811010",
+   "title": "Characteristics and factors associated with hypertensive crisis: a cross-sectional study in patients with hypertension receiving care in a tertiary hospital.",
+   "year": "2023",
+   "journal": "Annals of medicine and surgery (2012)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37806186",
+   "title": "Blood Pressure Control in a Diverse Population of Hypertensive Patients With Heart Failure.",
+   "year": "2023",
+   "journal": "The American journal of cardiology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37727705",
+   "title": "Cost analysis of the WHO-HEARTS program for hypertension control and CVD prevention in primary health facilities in Ethiopia.",
+   "year": "2023",
+   "journal": "Public health in practice (Oxford, England)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37673957",
+   "title": "Prevalence of true resistant hypertension in those referred for uncontrolled hypertension in Malaysia: A comparison using different definitions.",
+   "year": "2024",
+   "journal": "Hypertension research : official journal of the Japanese Society of Hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37639217",
+   "title": "Prevalence and Correlates of Uncontrolled Hypertension, Persistently Uncontrolled Hypertension, and Hypertensive Crisis at a Healthcare System.",
+   "year": "2023",
+   "journal": "American journal of hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37592221",
+   "title": "Dementia awareness among elderly at risk for developing mild cognitive impairment: a cross sectional study at a university-based primary care clinic.",
+   "year": "2023",
+   "journal": "BMC geriatrics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37530942",
+   "title": "Hypertension, uncontrolled hypertension and resistant hypertension: prevalence, comorbidities and prescribed medications in 228,406 adults resident in urban areas. A population-based observational study.",
+   "year": "2023",
+   "journal": "Internal and emergency medicine",
+   "pubtypes": [
+    "Observational Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37498594",
+   "title": "Estimated Prevalence and Testing for Albuminuria in US Adults at Risk for Chronic Kidney Disease.",
+   "year": "2023",
+   "journal": "JAMA network open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "37474252",
+   "title": "Factors influencing blood pressure control in patients with atrial fibrillation and hypertension in Australian primary care.",
+   "year": "2023",
+   "journal": "Heart (British Cardiac Society)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37367408",
+   "title": "Effectiveness of the Combination of Enalapril and Nifedipine for the Treatment of Hypertension versus Empirical Treatment in Primary Care Patients.",
+   "year": "2023",
+   "journal": "Journal of cardiovascular development and disease",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37297771",
+   "title": "Spatial Patterns in the Distribution of Hypertension among Men and Women in India and Its Relationship with Health Insurance Coverage.",
+   "year": "2023",
+   "journal": "Healthcare (Basel, Switzerland)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37278999",
+   "title": "Effect of a Peer Health Coaching Intervention on Clinical Outcomes Among US Veterans With Cardiovascular Risks: The Vet-COACH Randomized Clinical Trial.",
+   "year": "2023",
+   "journal": "JAMA network open",
+   "pubtypes": [
+    "Randomized Controlled Trial",
+    "Journal Article",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "37090520",
+   "title": "Associations between Blood Pressure Control and Documented Nutrition Care Using Structured Data from Electronic Health Records of Patients with Hypertension.",
+   "year": "2023",
+   "journal": "Research square",
+   "pubtypes": [
+    "Preprint",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37021012",
+   "title": "Blood pressure-lowering medication prescribing, its adherence to guidelines and relationship with blood pressure control at a family medicine department.",
+   "year": "2023",
+   "journal": "Health science reports",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36994270",
+   "title": "Hypertension Control Cascade and Regional Performance in India: A Repeated Cross-Sectional Analysis (2015-2021).",
+   "year": "2023",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40567932",
+   "title": "Quality of Care for Patients with Hypertension in selected Health Centres in Rwamagana District, Rwanda.",
+   "year": "2023",
+   "journal": "Rwanda journal of medicine and health sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36962239",
+   "title": "Hypertension screening, prevalence, treatment, and control at a large private hospital in Kampala, Uganda: A retrospective analysis.",
+   "year": "2022",
+   "journal": "PLOS global public health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36938155",
+   "title": "Blood Pressure Control and Prescription Pattern of Antihypertensive Drugs in Adherence to the 2020 International Society of Hypertension (ISH) Global Hypertension Practice Guidelines in Saudi Arabia: A Retrospective Study.",
+   "year": "2023",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36874683",
+   "title": "Association Between Electrocardiographic Left Atrial Enlargement and Echocardiographic Left Atrial Indices Among Hypertensive Subjects in a Tertiary Hospital in South South Nigeria.",
+   "year": "2023",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36814163",
+   "title": "Predictors of blood pressure control amongst primary care patients of a teaching hospital in Bauchi, North-Eastern Nigeria.",
+   "year": "2023",
+   "journal": "The Nigerian postgraduate medical journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36780543",
+   "title": "Progression of chronic kidney disease among black patients attending a tertiary hospital in Johannesburg, South Africa.",
+   "year": "2023",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36763360",
+   "title": "Association of Perceived Neighborhood Health With Hypertension Self-care.",
+   "year": "2023",
+   "journal": "JAMA network open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "36718176",
+   "title": "Recruitment and retention of primary care practices in the Southeastern Collaboration to Improve Blood Pressure Control.",
+   "year": "2023",
+   "journal": "Contemporary clinical trials communications",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36658330",
+   "title": "Hypertension: sex-related differences in drug treatment, prevalence and blood pressure control in primary care.",
+   "year": "2023",
+   "journal": "Journal of human hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Review",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36637099",
+   "title": "Factors influencing self-care among patients with primary hypertension: path analysis of mediating roles of self-efficacy and depressive symptoms.",
+   "year": "2023",
+   "journal": "European journal of cardiovascular nursing",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36631148",
+   "title": "Prevalence, awareness, treatment, and control of hypertension in China, 2004-18: findings from six rounds of a national survey.",
+   "year": "2023",
+   "journal": "BMJ (Clinical research ed.)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36608026",
+   "title": "Hypertension in an Emergency Department Population in Moshi, Tanzania; A Qualitative Study of Barriers to Hypertension Control.",
+   "year": "2023",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "36607636",
+   "title": "Blood Pressure Control Among Black and White Adults Following a Quality Improvement Program in a Large Integrated Health System.",
+   "year": "2023",
+   "journal": "JAMA network open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36606165",
+   "title": "Prevalence and determinants of medications non-adherence among patients with uncontrolled hypertension in primary care setting in Sarawak, Malaysia: A cross-sectional study.",
+   "year": "2022",
+   "journal": "Malaysian family physician : the official journal of the Academy of Family Physicians of Malaysia",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36600388",
+   "title": "Rationale and design of leveraging the HIV platform for hypertension control in Africa: protocol of a cluster-randomised controlled trial in Uganda.",
+   "year": "2022",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36585734",
+   "title": "Prescribing pattern of anti-hypertensive medications among hypertensive outpatients at selected hospitals of South Gondar Zone, Amhara, Ethiopia: a hospital based cross sectional study.",
+   "year": "2022",
+   "journal": "BMC pharmacology & toxicology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36521957",
+   "title": "Primary care institutional characteristics associated with hypertension awareness, treatment, and control in the China PEACE-Million Persons Project and primary health-care survey: a cross-sectional study.",
+   "year": "2023",
+   "journal": "The Lancet. Global health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36464896",
+   "title": "Associations among hypertension, dementia biomarkers, and cognition: The MEMENTO cohort.",
+   "year": "2023",
+   "journal": "Alzheimer's & dementia : the journal of the Alzheimer's Association",
+   "pubtypes": [
+    "Multicenter Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36443657",
+   "title": "Perception of risk of hypertension related complications and adherence to antihypertensive drugs: a primary healthcare based cross-sectional study.",
+   "year": "2022",
+   "journal": "BMC primary care",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36323484",
+   "title": "Identification of patient-related, healthcare-related and knowledge-related factors associated with inadequate blood pressure control in outpatients: a cross-sectional study in Serbia.",
+   "year": "2022",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36259143",
+   "title": "Effect of eTansiyon smartphone application on hypertension control.",
+   "year": "2022",
+   "journal": "Primary health care research & development",
+   "pubtypes": [
+    "Randomized Controlled Trial",
+    "Controlled Clinical Trial",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36255725",
+   "title": "Association Between Electronic Health Record Time and Quality of Care Metrics in Primary Care.",
+   "year": "2022",
+   "journal": "JAMA network open",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36065817",
+   "title": "Urban Spatial Accessibility of Primary Care and Hypertension Control and Awareness on Chicago's South Side: A Study From the COMPASS Cohort.",
+   "year": "2022",
+   "journal": "Circulation. Cardiovascular quality and outcomes",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "35991354",
+   "title": "Medication Adherence and Blood Pressure Control Among Hypertensive Outpatients Attending a Tertiary Cardiovascular Hospital in Tanzania: A Cross-Sectional Study.",
+   "year": "2022",
+   "journal": "Integrated blood pressure control",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35957928",
+   "title": "Prevalence and predictors of clinic appointment non-adherence among adults with poorly controlled hypertension in a primary care setting.",
+   "year": "2021",
+   "journal": "Ghana medical journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35949997",
+   "title": "Prevalence and factors associated with psychological distress among adult patients with hypertension in a primary care clinic: A cross-sectional study.",
+   "year": "2022",
+   "journal": "Malaysian family physician : the official journal of the Academy of Family Physicians of Malaysia",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35898241",
+   "title": "Blood Pressure Control and Associated Factors Among Hypertensive Patients Attending Shashemene Referral Hospital, Oromia, Ethiopia.",
+   "year": "2022",
+   "journal": "Hospital pharmacy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35770852",
+   "title": "Factors associated with uncontrolled blood pressure in hypertensive Brazilians.",
+   "year": "2022",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35734002",
+   "title": "Case identification, retention and blood pressure control in Kenya.",
+   "year": "2022",
+   "journal": "Public health action",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35723847",
+   "title": "Health-Related Quality of Life of HIV Positive Patients with Hypertension: Is There an Association with Blood Pressure Control?",
+   "year": "2022",
+   "journal": "High blood pressure & cardiovascular prevention : the official journal of the Italian Society of Hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35708747",
+   "title": "Antihypertensive prescribing pattern, prescriber adherence to ISH 2020 guidelines, and implication of outpatient drug price on blood pressure control at selected hospitals in Southern Ethiopia.",
+   "year": "2022",
+   "journal": "European journal of clinical pharmacology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35651902",
+   "title": "Cardiovascular Hypertension-Mediated Organ Damage in Hypertensive Urgencies and Hypertensive Outpatients.",
+   "year": "2022",
+   "journal": "Frontiers in cardiovascular medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35619091",
+   "title": "Home blood pressure monitoring and adherence in patients with hypertension on primary prevention treatment: a survey of 1026 patients in general medicine in the Auvergne region.",
+   "year": "2022",
+   "journal": "BMC primary care",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35573426",
+   "title": "Prevalence and control of hypertension among people living with HIV receiving care at a Nigerian hospital.",
+   "year": "2022",
+   "journal": "The Pan African medical journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35500594",
+   "title": "A village doctor-led multifaceted intervention for blood pressure control in rural China: an open, cluster randomised trial.",
+   "year": "2022",
+   "journal": "Lancet (London, England)",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "35356473",
+   "title": "Knowing the gap: medication use, adherence and blood pressure control among patients with hypertension in Indonesian primary care settings.",
+   "year": "2022",
+   "journal": "PeerJ",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35300440",
+   "title": "Impact of Anti-Diabetic Medications on Quality of Life in Persons with Type 2 Diabetes Mellitus.",
+   "year": "2021",
+   "journal": "Indian journal of endocrinology and metabolism",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35114739",
+   "title": "Greater Social Functioning Associated With Lower Depressive Symptomatology Among Black Belt African Americans Enrolled in the Southeastern Collaboration to Improve Blood Pressure Control Study.",
+   "year": "2022",
+   "journal": "The primary care companion for CNS disorders",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "35085323",
+   "title": "Knowledge, attitude and practices of lifestyle modification and associated factors among hypertensive patients on-treatment follow up at Yekatit 12 General Hospital in the largest city of East Africa: A prospective cross-sectional study.",
+   "year": "2022",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35023614",
+   "title": "Evaluating the efficacy of telephone-based outreach in addressing hypertension control among black men with severe hypertension: An observational study.",
+   "year": "2022",
+   "journal": "Worldviews on evidence-based nursing",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "34980111",
+   "title": "Capitated versus fee-for-service reimbursement and quality of care for chronic disease: a US cross-sectional analysis.",
+   "year": "2022",
+   "journal": "BMC health services research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34948526",
+   "title": "Is the Association between Herbal Use and Blood-Pressure Control Mediated by Medication Adherence? A Cross-Sectional Study in Primary Care.",
+   "year": "2021",
+   "journal": "International journal of environmental research and public health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34916785",
+   "title": "Blood Pressure Control and Adherence to Drug Treatment in Patients with Hypertension Treated at a Specialized Outpatient Clinic: A Cross-Sectional Study.",
+   "year": "2021",
+   "journal": "Patient preference and adherence",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34790643",
+   "title": "Factors Associated With Hypertension Awareness, Treatment, and Control Among Adults in Kerala, India.",
+   "year": "2021",
+   "journal": "Frontiers in public health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34782969",
+   "title": "Hypertension and cardiovascular risk factor management in a multi-ethnic cohort of adults with CKD: a cross sectional study in general practice.",
+   "year": "2022",
+   "journal": "Journal of nephrology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34631164",
+   "title": "Awareness, Treatment, and Control of Hypertension among the Adult Population in Burkina Faso: Evidence from a Nationwide Population-Based Survey.",
+   "year": "2021",
+   "journal": "International journal of hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34574499",
+   "title": "Internet Use, Electronic Health Literacy, and Hypertension Control among the Elderly at an Urban Primary Care Center in Thailand: A Cross-Sectional Study.",
+   "year": "2021",
+   "journal": "International journal of environmental research and public health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34544289",
+   "title": "Patient and physician factors contributing to polypharmacy among older patients.",
+   "year": "2022",
+   "journal": "Current medical research and opinion",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34479796",
+   "title": "[Factors associated with the optimum simultaneous control of diabetes, arterial hypertension and hypercholesterolemia in the diabetic population. BPC Diabetes study].",
+   "year": "2022",
+   "journal": "Semergen",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34428932",
+   "title": "Hypertension Management in Stroke Prevention: Time to Consider Primary Aldosteronism.",
+   "year": "2021",
+   "journal": "Stroke",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "34327016",
+   "title": "Blood Pressure Control, Accessibility, and Adherence to Antihypertensive Medications: Patients Seeking Care in Two Hospitals in the Ashanti Region of Ghana.",
+   "year": "2021",
+   "journal": "International journal of hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34220374",
+   "title": "May Measurement Month 2019: blood pressure screening results from Chile.",
+   "year": "2021",
+   "journal": "European heart journal supplements : journal of the European Society of Cardiology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34161828",
+   "title": "Correlation Between Ambulatory Blood Pressure Monitoring and Office Blood Pressure Measurement in Patients with Hypertension: A Community Study.",
+   "year": "2021",
+   "journal": "The American journal of the medical sciences",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "34130806",
+   "title": "[Practice of home blood pressure monitoring in a population of hypertensive patients in subsaharan Africa].",
+   "year": "2022",
+   "journal": "Annales de cardiologie et d'angeiologie",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "34107576",
+   "title": "[A cross-sectional study of renal dysfunction in chronic hepatitis B outpatients treated with nucleos(t)ide drugs in China].",
+   "year": "2021",
+   "journal": "Zhonghua gan zang bing za zhi = Zhonghua ganzangbing zazhi = Chinese journal of hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34105862",
+   "title": "Association between elevated carotid intima-media thickness and serum uric acid levels among patients with essential hypertension in primary care setting in Sungai Buloh, Malaysia.",
+   "year": "2021",
+   "journal": "International journal of clinical practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33967217",
+   "title": "Blood pressure control in Australian general practice: analysis using general practice records of 1.2 million patients from the MedicineInsight database.",
+   "year": "2021",
+   "journal": "Journal of hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33953972",
+   "title": "Home Blood Pressure Control and Drug Prescription Patterns among Thai Hypertensives: A 1-Year Analysis of Telehealth Assisted Instrument in Home Blood Pressure Monitoring Nationwide Pilot Project.",
+   "year": "2021",
+   "journal": "International journal of hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33884271",
+   "title": "Blood Pressure Control and Associations with Social Support among Hypertensive Outpatients in a Developing Country.",
+   "year": "2021",
+   "journal": "BioMed research international",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33854797",
+   "title": "Association of Depression with Uncontrolled Hypertension in Primary Care Setting: A Cross-Sectional Study in Less-Developed Northwest China.",
+   "year": "2021",
+   "journal": "International journal of hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33822861",
+   "title": "Patient Awareness and Clinical Inertia: Obstacles to Hypertension Control in Rural Communities in the Dominican Republic.",
+   "year": "2021",
+   "journal": "American journal of hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33754796",
+   "title": "Characteristics of Populations Excluded From Clinical Trials Supporting Intensive Blood Pressure Control Guidelines.",
+   "year": "2021",
+   "journal": "Journal of the American Heart Association",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "33706193",
+   "title": "Factors Linked to Chronic Kidney Disease Among Stroke Survivors in Ghana.",
+   "year": "2021",
+   "journal": "Journal of stroke and cerebrovascular diseases : the official journal of National Stroke Association",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "33665440",
+   "title": "Comparison of the management and control of hypertension by public and private primary care providers in Shenzhen, China.",
+   "year": "2021",
+   "journal": "Heliyon",
+   "pubtypes": [
+    "Journal Article",
+    "Retracted Publication"
+   ]
+  },
+  {
+   "pmid": "33663387",
+   "title": "Reasons for poor blood pressure control in Eastern Sub-Saharan Africa: looking into 4P's (primary care, professional, patient, and public health policy) for improving blood pressure control: a scoping review.",
+   "year": "2021",
+   "journal": "BMC cardiovascular disorders",
+   "pubtypes": [
+    "Journal Article",
+    "Scoping Review"
+   ]
+  },
+  {
+   "pmid": "33617623",
+   "title": "Blood pressure control of hypertensive patients followed in a high complexity clinic and associated variables.",
+   "year": "2021",
+   "journal": "Jornal brasileiro de nefrologia",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33605981",
+   "title": "Rationale and Design of a Cluster Randomized Trial of a Village Doctor-Led Intervention on Hypertension Control in China.",
+   "year": "2021",
+   "journal": "American journal of hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Clinical Trial Protocol"
+   ]
+  },
+  {
+   "pmid": "33425155",
+   "title": "Prescription of pharmacotherapy and blood pressure control among hypertensive outpatients in two semi-urban hospitals in Cameroon: a cross-sectional study.",
+   "year": "2020",
+   "journal": "The Pan African medical journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33364109",
+   "title": "The Structure and the Outcome of Telephone-Based Cardiac Consultations During Lockdown: A Lesson From COVID-19.",
+   "year": "2020",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33356616",
+   "title": "Investigation of Blood Pressure Control in Hypertensive Patients with and without Antithrombotic Therapy in a Real-World Setting.",
+   "year": "2021",
+   "journal": "Clinical and experimental hypertension (New York, N.Y. : 1993)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33257191",
+   "title": "Real-life appraisal on blood pressure targets achievement in adult outpatients at high cardiovascular risk.",
+   "year": "2021",
+   "journal": "Nutrition, metabolism, and cardiovascular diseases : NMCD",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Observational Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33116783",
+   "title": "Blood Pressure Control, Left Ventricular Hypertrophy and Treatment Practice Among Hypertensive Patients in Ethiopia.",
+   "year": "2020",
+   "journal": "International journal of general medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33093247",
+   "title": "Combined antihypertensive treatment is better than mono-therapy in hypertensive patients.",
+   "year": "2020",
+   "journal": "The Netherlands journal of medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33087065",
+   "title": "Association between attendance at outpatient follow-up appointments and blood pressure control among patients with hypertension.",
+   "year": "2020",
+   "journal": "BMC cardiovascular disorders",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33079862",
+   "title": "A Multicenter, Cross-Sectional Quality Improvement Project: The Perioperative Implementation of a Hypertension Protocol by Anesthesiologists.",
+   "year": "2020",
+   "journal": "Anesthesia and analgesia",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33048153",
+   "title": "Association of Geographic Differences in Prevalence of Uncontrolled Chronic Conditions With Changes in Individuals' Likelihood of Uncontrolled Chronic Conditions.",
+   "year": "2020",
+   "journal": "JAMA",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32884465",
+   "title": "May Measurement Month 2018: an analysis of blood pressure screening results from Chile.",
+   "year": "2020",
+   "journal": "European heart journal supplements : journal of the European Society of Cardiology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32821388",
+   "title": "Blood pressure control practice and determinants among ambulatory hypertensive patients attending primary health care facilities in Addis Ababa.",
+   "year": "2020",
+   "journal": "SAGE open medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32657419",
+   "title": "Effect of guideline revisions by the Swiss Society of Hypertension on blood pressure control in hypertensive patients from primary care.",
+   "year": "2020",
+   "journal": "Swiss medical weekly",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "32650725",
+   "title": "Blood pressure control in patients with a previous stroke/transient ischaemic attack in primary care in Ireland: a cross sectional study.",
+   "year": "2020",
+   "journal": "BMC family practice",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32366586",
+   "title": "Primary care use and cardiovascular disease risk in Russian 40-69 year olds: a cross-sectional study.",
+   "year": "2020",
+   "journal": "Journal of epidemiology and community health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32362038",
+   "title": "Impact of Victoria's first dedicated endocrine hypertension service on the pattern of primary aldosteronism diagnoses.",
+   "year": "2021",
+   "journal": "Internal medicine journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32149712",
+   "title": "Evaluating the Feasibility and Acceptability of a Mobile Health-Based Female Community Health Volunteer Program for Hypertension Control in Rural Nepal: Cross-Sectional Study.",
+   "year": "2020",
+   "journal": "JMIR mHealth and uHealth",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32043258",
+   "title": "Neighborhood Environment Characteristics and Control of Hypertension and Diabetes in a Primary Care Patient Sample.",
+   "year": "2020",
+   "journal": "Journal of general internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "31967722",
+   "title": "Implementation of a community-based hypertension control program in Matanzas, Cuba.",
+   "year": "2020",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31930302",
+   "title": "Characteristics and Outcomes of Patients Presenting With Hypertensive Urgency in the Office Setting: The Campania Salute Network.",
+   "year": "2020",
+   "journal": "American journal of hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31885556",
+   "title": "Indicators of Quality of Clinical Care for Type 2 Diabetes Patients in Primary Health Care Centers in Qatar: A Retrospective Analysis.",
+   "year": "2019",
+   "journal": "International journal of endocrinology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31879650",
+   "title": "Factors affecting self-management of hypertensive patients attending family medicine clinics in Riyadh, Saudi Arabia.",
+   "year": "2019",
+   "journal": "Journal of family medicine and primary care",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31823381",
+   "title": "The Medication Adherence Report Scale: A measurement tool for eliciting patients' reports of nonadherence.",
+   "year": "2020",
+   "journal": "British journal of clinical pharmacology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31816161",
+   "title": "Asian management of hypertension: Current status, home blood pressure, and specific concerns in Taiwan.",
+   "year": "2020",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "31807374",
+   "title": "Hypertension-related Knowledge and Its Relationship with Blood Pressure Control in Hypertensive Patients Visiting a Semi-private Tertiary-care Charity Hospital in Karachi, Pakistan.",
+   "year": "2019",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31641324",
+   "title": "Beyond Medication Adherence: The Role of Patients' Beliefs and Life Context in Blood Pressure Control.",
+   "year": "2019",
+   "journal": "Ethnicity & disease",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "31638907",
+   "title": "Patient, clinician and logistic barriers to blood pressure control among adult hypertensives in rural district hospitals in Rwanda: a cross-sectional study.",
+   "year": "2019",
+   "journal": "BMC cardiovascular disorders",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Observational Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31612976",
+   "title": "Prevalence, control and risk factors related to hypertension among Moroccan adults: a multicentre study.",
+   "year": "2019",
+   "journal": "Eastern Mediterranean health journal = La revue de sante de la Mediterranee orientale = al-Majallah al-sihhiyah li-sharq al-mutawassit",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "31555029",
+   "title": "Evaluation of Blood Pressure Control and Associated Factors among Patients with Hypertension in Iraq: A Prospective Cross-sectional Study.",
+   "year": "2019",
+   "journal": "Journal of pharmacy & bioallied sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31387436",
+   "title": "Cross-Sectional Study on the Management and Control of Hypertension Among Migrants in Primary Care: What Is the Impact of Segmented Health Insurance Schemes?",
+   "year": "2019",
+   "journal": "Journal of the American Heart Association",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31209681",
+   "title": "Blood pressure phenotype reproducibility in CKD outpatients: a clinical practice report.",
+   "year": "2020",
+   "journal": "Internal and emergency medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31109105",
+   "title": "Medication Adherence and Its Association with Health Literacy and Performance in Activities of Daily Livings among Elderly Hypertensive Patients in Islamabad, Pakistan.",
+   "year": "2019",
+   "journal": "Medicina (Kaunas, Lithuania)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31043872",
+   "title": "May Measurement Month 2017 in Chile-Americas.",
+   "year": "2019",
+   "journal": "European heart journal supplements : journal of the European Society of Cardiology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30938688",
+   "title": "An Interactive Voice Response and Text Message Intervention to Improve Blood Pressure Control Among Individuals With Hypertension Receiving Care at an Urban Indian Health Organization: Protocol and Baseline Characteristics of a Pragmatic Randomized Controlled Trial.",
+   "year": "2019",
+   "journal": "JMIR research protocols",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30898823",
+   "title": "Self-management and blood pressure control in China: a community-based multicentre cross-sectional study.",
+   "year": "2019",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30782721",
+   "title": "Association of lifestyle modification and pharmacological adherence on blood pressure control among patients with hypertension at Kenyatta National Hospital, Kenya: a cross-sectional study.",
+   "year": "2019",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30683584",
+   "title": "Burden of hypertension and associated risks for cardiovascular mortality in Cuba: a prospective cohort study.",
+   "year": "2019",
+   "journal": "The Lancet. Public health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30639355",
+   "title": "Automated office blood pressure measurements in primary care are misleading in more than one third of treated hypertensives: The VALENTINE-Greece Home Blood Pressure Monitoring study.",
+   "year": "2020",
+   "journal": "Hellenic journal of cardiology : HJC = Hellenike kardiologike epitheorese",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30621853",
+   "title": "Patient-reported barriers and outcomes associated with poor glycaemic and blood pressure control in co-morbid diabetes and chronic kidney disease.",
+   "year": "2019",
+   "journal": "Journal of diabetes and its complications",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30595260",
+   "title": "Comparsion of central aortic pressure to brachial artery pressure in hypertensive patients on drug treatment: An observational study.",
+   "year": "2018",
+   "journal": "Indian heart journal",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "30384953",
+   "title": "Risk Factors for Low Pharmacy Refill Adherence Among Older Hypertensive Men and Women by Race.",
+   "year": "2018",
+   "journal": "The American journal of the medical sciences",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "30383839",
+   "title": "Cross-sectional survey evaluating blood pressure control ACHIEVEment in hypertensive patients treated with multiple anti-hypertensive agents in Belgium and Luxembourg.",
+   "year": "2018",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30340528",
+   "title": "Treatment adherence and blood pressure outcome among hypertensive out-patients in two tertiary hospitals in Sokoto, Northwestern Nigeria.",
+   "year": "2018",
+   "journal": "BMC cardiovascular disorders",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "30327190",
+   "title": "PAIT-survey-Prevalence of albuminuria in patients with diabetes and hypertension in Turkey.",
+   "year": "2018",
+   "journal": "Primary care diabetes",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "30170651",
+   "title": "Hypertension in Tunisian adults attending primary care physicians (ETHNA-Tunisia).",
+   "year": "2018",
+   "journal": "Indian heart journal",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "30063645",
+   "title": "Sociodemographics and hypertension control among young adults with incident hypertension: a multidisciplinary group practice observational study.",
+   "year": "2018",
+   "journal": "Journal of hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "30035448",
+   "title": "[Between old and new targets: blood pressure control in hypertensive outpatients].",
+   "year": "2018",
+   "journal": "Giornale italiano di nefrologia : organo ufficiale della Societa italiana di nefrologia",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29972834",
+   "title": "[Quality of Blood Pressure Control in General Practice Using Ambulatory Blood Pressure Monitoring - a Retrospective Monocentric Cross-Sectional Study].",
+   "year": "2018",
+   "journal": "Deutsche medizinische Wochenschrift (1946)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29950471",
+   "title": "Characteristics and treatment of African-American and European-American patients with resistant hypertension identified using the electronic health record in an academic health centre: a case-control study.",
+   "year": "2018",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "29887993",
+   "title": "A New Lebanese Medication Adherence Scale: Validation in Lebanese Hypertensive Adults.",
+   "year": "2018",
+   "journal": "International journal of hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29669909",
+   "title": "Time course of blood pressure control prior to lacunar TIA and stroke: Population-based study.",
+   "year": "2018",
+   "journal": "Neurology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "29632222",
+   "title": "Quality of Cardiovascular Disease Care in Small Urban Practices.",
+   "year": "2018",
+   "journal": "Annals of family medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "29538560",
+   "title": "Non-use of primary care routine consultations for individuals with hypertension.",
+   "year": "2018",
+   "journal": "Ciencia & saude coletiva",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29503561",
+   "title": "Appearance and potential predictors of poorly controlled hypertension at the primary care level in an urban community.",
+   "year": "2018",
+   "journal": "Journal of multidisciplinary healthcare",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29454558",
+   "title": "Clinical characteristics and management of patients with atrial fibrillation treated with direct oral anticoagulants according to blood pressure control.",
+   "year": "2018",
+   "journal": "Hipertension y riesgo vascular",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29449941",
+   "title": "Cardiovascular risk factor burden in Africa and the Middle East across country income categories: a post hoc analysis of the cross-sectional Africa Middle East Cardiovascular Epidemiological (ACE) study.",
+   "year": "2018",
+   "journal": "Archives of public health = Archives belges de sante publique",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32405420",
+   "title": "Hypertension knowledge, heart healthy lifestyle practices and medication adherence among adults with hypertension.",
+   "year": "2018",
+   "journal": "European journal for person centered healthcare",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29217952",
+   "title": "Control of Hypertension among Diabetic Patients in a Referral Hospital in Tanzania: A Cross-Sectional Study.",
+   "year": "2017",
+   "journal": "Ethiopian journal of health sciences",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29176460",
+   "title": "Primary Care and the Hypertension Care Continuum in Brazil.",
+   "year": "2018",
+   "journal": "The Journal of ambulatory care management",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29082466",
+   "title": "Perception, Knowledge, and Attitude toward Physical Activity Behaviour: Implications for Participation among Individuals with Essential Hypertension.",
+   "year": "2018",
+   "journal": "High blood pressure & cardiovascular prevention : the official journal of the Italian Society of Hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29053607",
+   "title": "Does Migration Limit the Effect of Health Insurance on Hypertension Management in China?",
+   "year": "2017",
+   "journal": "International journal of environmental research and public health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28955417",
+   "title": "Prescription pattern of antihypertensive medications and blood pressure control among hypertensive outpatients at the University of Benin Teaching Hospital in Benin City, Nigeria.",
+   "year": "2017",
+   "journal": "Malawi medical journal : the journal of Medical Association of Malawi",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28936150",
+   "title": "Prevalence of poor glycemic and blood pressure control and pattern of drug use among primary health-care outpatients in Al Ahsa Saudi Arabia.",
+   "year": "2017",
+   "journal": "International journal of health sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28831829",
+   "title": "Prescription patterns and adequacy of blood pressure control among adult hypertensive patients in Kenya; findings and implications.",
+   "year": "2017",
+   "journal": "Expert review of clinical pharmacology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28814679",
+   "title": "Awareness on Hypertension and its Self-Management Practices Among Hypertensive Patients Attending Outreach Clinics of a Medical College in South India.",
+   "year": "2016",
+   "journal": "Kathmandu University medical journal (KUMJ)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28704407",
+   "title": "Variations in achievement of evidence-based, high-impact quality indicators in general practice: An observational study.",
+   "year": "2017",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "28695552",
+   "title": "Glycaemic, blood pressure and lipid goal attainment and chronic kidney disease stage of type 2 diabetic patients treated in primary care practices.",
+   "year": "2017",
+   "journal": "Swiss medical weekly",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28600362",
+   "title": "Social epidemiology of hypertension in Buffalo City Metropolitan Municipality (BCMM): cross-sectional study of determinants of prevalence, awareness, treatment and control among South African adults.",
+   "year": "2017",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "28505066",
+   "title": "Routine urinary detection of antihypertensive drugs for systematic evaluation of adherence to treatment in hypertensive patients.",
+   "year": "2017",
+   "journal": "Journal of hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "28385080",
+   "title": "Blood pressure control in anticoagulated patients with hypertension and atrial fibrillation.",
+   "year": "2017",
+   "journal": "Blood pressure",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "28327875",
+   "title": "Compliance with the Prescription of Antihypertensive Medications and Blood Pressure Control in Primary Care.",
+   "year": "2017",
+   "journal": "Arquivos brasileiros de cardiologia",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28260908",
+   "title": "Statin therapy reduces the likelihood of suboptimal blood pressure control among Ugandan adult diabetic patients.",
+   "year": "2017",
+   "journal": "Therapeutics and clinical risk management",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28217585",
+   "title": "Blood pressure (BP) control and perceived family support in patients with essential hypertension seen at a primary care clinic in Western Nigeria.",
+   "year": "2016",
+   "journal": "Journal of family medicine and primary care",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28189571",
+   "title": "Blood Pressure Control among Hypertensive Stroke Survivors in Nigeria.",
+   "year": "2017",
+   "journal": "Journal of stroke and cerebrovascular diseases : the official journal of National Stroke Association",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "28174659",
+   "title": "Making an IMPAKT; Improving care of Chronic Kidney Disease patients in the community through collaborative working and utilizing Information Technology.",
+   "year": "2017",
+   "journal": "BMJ quality improvement reports",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28135324",
+   "title": "Predictors of Medication Adherence and Blood Pressure Control among Saudi Hypertensive Patients Attending Primary Care Clinics: A Cross-Sectional Study.",
+   "year": "2017",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28099229",
+   "title": "Twenty-four-hour ambulatory blood pressure monitoring for clinical evaluation of hypertensive patients in primary care: which groups would most benefit?",
+   "year": "2017",
+   "journal": "Blood pressure monitoring",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27965999",
+   "title": "Uncontrolled hypertension among patients managed in primary healthcare facilities in Kinshasa, Democratic Republic of the Congo.",
+   "year": "2016",
+   "journal": "Cardiovascular journal of Africa",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27886435",
+   "title": "A multicomponent quality improvement intervention to improve blood pressure and reduce racial disparities in rural primary care practices.",
+   "year": "2017",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27822057",
+   "title": "Exploring knowledge, attitudes, and practices toward older adults with hypertension in primary care.",
+   "year": "2016",
+   "journal": "Journal of multidisciplinary healthcare",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27792661",
+   "title": "Treatment Intensification for Hypertension in US Ambulatory Medical Care.",
+   "year": "2016",
+   "journal": "Journal of the American Heart Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27762517",
+   "title": "Strategies for Better Hypertension Control in India and Other Lower Middle Income Countries.",
+   "year": "2016",
+   "journal": "The Journal of the Association of Physicians of India",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "27747167",
+   "title": "Factors associated with blood pressure control amongst adults with hypertension in Yaounde, Cameroon: a cross-sectional study.",
+   "year": "2016",
+   "journal": "Cardiovascular diagnosis and therapy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27718050",
+   "title": "Prevalence and Control of Hypertension in Different Macro-Areas in Italy: Analysis of a Large Database by the General Practice.",
+   "year": "2016",
+   "journal": "High blood pressure & cardiovascular prevention : the official journal of the Italian Society of Hypertension",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27686552",
+   "title": "[Effects of body mass index on blood pressure control rate in elderly coronary heart disease outpatients with hypertension].",
+   "year": "2016",
+   "journal": "Zhonghua yi xue za zhi",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27676649",
+   "title": "Antihypertensive treatment and blood pressure control in patients with hypertension in daily clinical practice: a cross-sectional, multicenter, observational study in Egypt.",
+   "year": "2017",
+   "journal": "Current medical research and opinion",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "27629243",
+   "title": "Prevalence and control of hypertension in the general practice in Italy: updated analysis of a large database.",
+   "year": "2017",
+   "journal": "Journal of human hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27502451",
+   "title": "Subclinical Mood and Cognition Impairments and Blood Pressure Control in a Large Cohort of Elderly Hypertensives.",
+   "year": "2016",
+   "journal": "Journal of the American Medical Directors Association",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "27294333",
+   "title": "Characteristics and Outcomes of Patients Presenting With Hypertensive Urgency in the Office Setting.",
+   "year": "2016",
+   "journal": "JAMA internal medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27196458",
+   "title": "Medication Adherence and Blood Pressure Control Among Hypertensive Patients With Coexisting Long-Term Conditions in Primary Care Settings: A Cross-Sectional Analysis.",
+   "year": "2016",
+   "journal": "Medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27136620",
+   "title": "Reliability and validity of the Treatment Satisfaction Questionnaire for Medication among Portuguese-speaking Brazilian patients with hypertension.",
+   "year": "2016",
+   "journal": "Journal of clinical nursing",
+   "pubtypes": [
+    "Journal Article",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "31156832",
+   "title": "Assessment of drug-related problems and their impact on blood pressure control in patients with hypertension.",
+   "year": "2016",
+   "journal": "European journal of hospital pharmacy : science and practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27104796",
+   "title": "Home blood pressure monitor use in patients with chronic kidney disease.",
+   "year": "2016",
+   "journal": "Blood pressure",
+   "pubtypes": [
+    "Journal Article",
+    "Comment"
+   ]
+  },
+  {
+   "pmid": "26893938",
+   "title": "Prevalence and characteristics of resistant hypertension at primary clinics in Korea: a nationwide cross-sectional study.",
+   "year": "2015",
+   "journal": "Clinical hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26763848",
+   "title": "Relationship between outpatient visit frequency and hypertension control: a 9-year occupational cohort study.",
+   "year": "2016",
+   "journal": "Hypertension research : official journal of the Japanese Society of Hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29688661",
+   "title": "[Fatty acid profile in phospholipids fraction with regard to blood pressure control in the kidney transplant patients].",
+   "year": "2016",
+   "journal": "Przeglad lekarski",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26702164",
+   "title": "The prevalence of albuminuria among diabetic patients in a primary care setting in Singapore.",
+   "year": "2015",
+   "journal": "Singapore medical journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26691646",
+   "title": "Patient education and follow-up as an intervention for hypertensive patients discharged from an emergency department: a randomized control trial study protocol.",
+   "year": "2015",
+   "journal": "BMC emergency medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26690757",
+   "title": "The association between self-perceptions of aging and antihypertensive medication adherence in older Chinese adults.",
+   "year": "2016",
+   "journal": "Aging clinical and experimental research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26596192",
+   "title": "High prevalence of posttraumatic stress in patients with primary hypertension.",
+   "year": "2016",
+   "journal": "General hospital psychiatry",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26566497",
+   "title": "The Association between Hypertension Comorbidity and Microvascular Complications in Type 2 Diabetes Patients: A Nationwide Cross-Sectional Study in Thailand.",
+   "year": "2015",
+   "journal": "Diabetes & metabolism journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26458541",
+   "title": "Nephrology co-management versus primary care solo management for early chronic kidney disease: a retrospective cross-sectional analysis.",
+   "year": "2015",
+   "journal": "BMC nephrology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "26425291",
+   "title": "Poor blood pressure control and its associated factors among older people with hypertension: A cross-sectional study in six public primary care clinics in Malaysia.",
+   "year": "2015",
+   "journal": "Malaysian family physician : the official journal of the Academy of Family Physicians of Malaysia",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26418226",
+   "title": "Gender-specific associations of sleep duration with uncontrolled blood pressure in middle-aged patients.",
+   "year": "2016",
+   "journal": "Clinical and experimental hypertension (New York, N.Y. : 1993)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26309457",
+   "title": "An observational study of hypertension treatment and patient outcomes in a primary care setting.",
+   "year": "2015",
+   "journal": "The Pan African medical journal",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "26299315",
+   "title": "Age Differences in Treatment and Control of Hypertension in US Physician Offices, 2003-2010: A Serial Cross-sectional Study.",
+   "year": "2016",
+   "journal": "The American journal of medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26248616",
+   "title": "Hypertension: a cross-sectional study of the role of multimorbidity in blood pressure control.",
+   "year": "2015",
+   "journal": "BMC family practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26232704",
+   "title": "Evaluation of medication adherence in Lebanese hypertensive patients.",
+   "year": "2016",
+   "journal": "Journal of epidemiology and global health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26179853",
+   "title": "[Knowledge level of hypertensive patients about hypertension. Relationship between knowledge level and hypertension control].",
+   "year": "2015",
+   "journal": "Hipertension y riesgo vascular",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26097758",
+   "title": "Antihypertensive Medications Adherence Among Nigerian Hypertensive Subjects in a Specialist Clinic Compared to a General Outpatient Clinic.",
+   "year": "2015",
+   "journal": "Annals of medical and health sciences research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26058350",
+   "title": "General Practitioners' vitamin K antagonist monitoring is associated with better blood pressure control in patients with hypertension--a cross-sectional database study.",
+   "year": "2015",
+   "journal": "BMC cardiovascular disorders",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26049900",
+   "title": "[Prevalence of target organ damage in patients treated for primary arterial hypertension: Comparison between men and women. ESSENTIELLE study].",
+   "year": "2015",
+   "journal": "Annales de cardiologie et d'angeiologie",
+   "pubtypes": [
+    "Comparative Study",
+    "English Abstract",
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "26002722",
+   "title": "Factors associated with blood pressure control among patients attending the outpatient clinic of a South African district hospital.",
+   "year": "2015",
+   "journal": "Tropical doctor",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25992295",
+   "title": "Trends in the utilization of antihypertensive medications among Palestine refugees in Jordan, 2008-2012.",
+   "year": "2015",
+   "journal": "Journal of pharmaceutical policy and practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25922321",
+   "title": "Adherence to medications and associated factors: A cross-sectional study among Palestinian hypertensive patients.",
+   "year": "2015",
+   "journal": "Journal of epidemiology and global health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25900022",
+   "title": "HYT-hypertension in Turkey: a cross-sectional survey on blood pressure control with calcium channel blockers alone or combined with other antihypertensive drugs.",
+   "year": "2015",
+   "journal": "High blood pressure & cardiovascular prevention : the official journal of the Italian Society of Hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25876725",
+   "title": "[Cluster analysis on the blood pressure control rate and related factors of hypertensive outpatients in China].",
+   "year": "2015",
+   "journal": "Zhonghua xin xue guan bing za zhi",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25818013",
+   "title": "Prevalence, awareness, treatment and control of arterial hypertension in Astana, Kazakhstan. A cross-sectional study.",
+   "year": "2015",
+   "journal": "Public health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25810065",
+   "title": "Severity of obesity and management of hypertension, hypercholesterolaemia and smoking in primary care: population-based cohort study.",
+   "year": "2016",
+   "journal": "Journal of human hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25601108",
+   "title": "[Influence of psychosocial factors on adherence to antihypertensive drug therapy: results from a Cardiovascular Health Program cohort followed in the Metropolitan Region of Santiago, Chile].",
+   "year": "2014",
+   "journal": "Revista medica de Chile",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25518895",
+   "title": "Attitudes and preferences for the clinical management of hypertension and hypertension-related cardiac disease in general practice: results of the Italian Hypertension and Heart Survey.",
+   "year": "2015",
+   "journal": "Journal of human hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25495003",
+   "title": "Ethnic disparity in prevalence of diabetic kidney disease in an Asian primary healthcare cluster.",
+   "year": "2015",
+   "journal": "Nephrology (Carlton, Vic.)",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25459384",
+   "title": "[Baseline clinical characteristics and management of patients included in IBERICAN study].",
+   "year": "2015",
+   "journal": "Semergen",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "25398627",
+   "title": "Pediatric Hypertension Specialists' Perspectives About Adolescent Hypertension Management: Implications for Primary Care Providers.",
+   "year": "2015",
+   "journal": "Clinical pediatrics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "25373360",
+   "title": "Antihypertensive treatment and control according to gender, education, country of birth and psychiatric disorder: the Swedish Primary Care Cardiovascular Database (SPCCD).",
+   "year": "2015",
+   "journal": "Journal of human hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25352230",
+   "title": "Racial/ethnic differences in hypertension prevalence, treatment, and control for outpatients in northern California 2010-2012.",
+   "year": "2015",
+   "journal": "American journal of hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "25323136",
+   "title": "Blood pressure status during consultation: a primary care study.",
+   "year": "2015",
+   "journal": "High blood pressure & cardiovascular prevention : the official journal of the Italian Society of Hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25297796",
+   "title": "Uncontrolled hypertension among hypertensive patients on treatment in Lupane District, Zimbabwe, 2012.",
+   "year": "2014",
+   "journal": "BMC research notes",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25267050",
+   "title": "Prevalence and costs of treating uncomplicated stage 1 hypertension in primary care: a cross-sectional analysis.",
+   "year": "2014",
+   "journal": "The British journal of general practice : the journal of the Royal College of General Practitioners",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25263637",
+   "title": "[Approach to hypertension in the older population].",
+   "year": "2014",
+   "journal": "Semergen",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25194144",
+   "title": "Metabolic control and cardiovascular risk factors in type 2 diabetes mellitus patients according to diabetes duration.",
+   "year": "2015",
+   "journal": "Family practice",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25035720",
+   "title": "Anti-hypertensive medicines prescribing for medical outpatients in a premier teaching hospital in Nigeria: a probable shift of paradigm.",
+   "year": "2014",
+   "journal": "Pharmacy practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24927636",
+   "title": "Prevalence, determinants, and management of chronic kidney disease in Karachi, Pakistan - a community based cross-sectional study.",
+   "year": "2014",
+   "journal": "BMC nephrology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24882088",
+   "title": "Low literacy is associated with uncontrolled blood pressure in primary care patients with hypertension and heart disease.",
+   "year": "2014",
+   "journal": "Patient education and counseling",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24703582",
+   "title": "[Blood pressure control in a population of hypertensive diabetic patients treated in primary care: PRESCAP-Diabetes Study 2010].",
+   "year": "2015",
+   "journal": "Semergen",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "24621471",
+   "title": "Prevalence and control of high blood pressure in primary care: results from the German Metabolic and Cardiovascular Risk Study (GEMCAS).",
+   "year": "2014",
+   "journal": "Hypertension research : official journal of the Japanese Society of Hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24621371",
+   "title": "Sex-specific differences in cardiovascular risk factors and blood pressure control in hypertensive patients.",
+   "year": "2014",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24524610",
+   "title": "[Clustering of cardiovascular risk factors and hypertension control status among hypertensive patients in the outpatient setting].",
+   "year": "2013",
+   "journal": "Zhonghua xin xue guan bing za zhi",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24493322",
+   "title": "Antihypertensive medication initiation among young adults with regular primary care use.",
+   "year": "2014",
+   "journal": "Journal of general internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26245402",
+   "title": "Blood pressure control amongst patients living with hypertension presenting to an urban district hospital outpatient clinic in Kwazulu-Natal.",
+   "year": "2014",
+   "journal": "African journal of primary health care & family medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26245397",
+   "title": "Improving the quality of care for patients with hypertension in Moshupa District, Botswana: quality improvement cycle.",
+   "year": "2014",
+   "journal": "African journal of primary health care & family medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24330411",
+   "title": "How many hypertensive patients can be controlled in \"real life\": an improvement strategy in primary care.",
+   "year": "2013",
+   "journal": "BMC family practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24325864",
+   "title": "Population prevalence and control of cardiovascular risk factors: what electronic medical records tell us.",
+   "year": "2014",
+   "journal": "Atencion primaria",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24266617",
+   "title": "Patient-physician racial/ethnic concordance and blood pressure control: the role of trust and medication adherence.",
+   "year": "2014",
+   "journal": "Ethnicity & health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24151125",
+   "title": "Clinical management of patients with hypertension and high cardiovascular risk: main results of an Italian survey on blood pressure control.",
+   "year": "2014",
+   "journal": "High blood pressure & cardiovascular prevention : the official journal of the Italian Society of Hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "24089262",
+   "title": "Blood pressure control and management of very elderly patients with hypertension in primary care settings in Spain.",
+   "year": "2014",
+   "journal": "Hypertension research : official journal of the Japanese Society of Hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24059788",
+   "title": "Prevalence of resistant hypertension in 1810 patients followed up in a specialized outpatient clinic and its association with the metabolic syndrome.",
+   "year": "2013",
+   "journal": "Blood pressure",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23994974",
+   "title": "Characterization, risk stratification and the hypertension control rate at hospital-based clinics: a survey of 25,336 hypertensives in Beijing, Shanghai and Guangzhou.",
+   "year": "2013",
+   "journal": "Internal medicine (Tokyo, Japan)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23918752",
+   "title": "Prevalence of optimal treatment regimens in patients with apparent treatment-resistant hypertension based on office blood pressure in a community-based practice network.",
+   "year": "2013",
+   "journal": "Hypertension (Dallas, Tex. : 1979)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "23890931",
+   "title": "Characteristics, drug combinations and dosages of primary care patients with uncontrolled ambulatory blood pressure and high medication adherence.",
+   "year": "2013",
+   "journal": "Journal of the American Society of Hypertension : JASH",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "23800117",
+   "title": "Suboptimal blood pressure control in chronic kidney disease stage 3: baseline data from a cohort study in primary care.",
+   "year": "2013",
+   "journal": "BMC family practice",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23783072",
+   "title": "Progressive chronic kidney disease in primary care: modifiable risk factors and predictive model.",
+   "year": "2013",
+   "journal": "Preventive medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23732151",
+   "title": "Ruling out secondary causes of hypertension.",
+   "year": "2013",
+   "journal": "EuroIntervention : journal of EuroPCR in collaboration with the Working Group on Interventional Cardiology of the European Society of Cardiology",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "23690989",
+   "title": "Factors associated with blood pressure control in hypertensive patients with coronary heart disease: evidence from the Chinese Cholesterol Education Program.",
+   "year": "2013",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23536235",
+   "title": "Blood pressure control among hypertensive patients with and without diabetes mellitus in six public primary care clinics in Malaysia.",
+   "year": "2015",
+   "journal": "Asia-Pacific journal of public health",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23517891",
+   "title": "[Medical conduct in primary care as regards blood pressure control. PRESCAP 2010 study].",
+   "year": "2013",
+   "journal": "Semergen",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "23284945",
+   "title": "Changes in the prevalence, treatment and control of hypertension in Germany? A clinical-epidemiological study of 50.000 primary care patients.",
+   "year": "2012",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23265230",
+   "title": "Managing hypertension in general practice: a cross-sectional study of treatment and ethnicity.",
+   "year": "2012",
+   "journal": "The British journal of general practice : the journal of the Royal College of General Practitioners",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23253744",
+   "title": "Risk-adjusted versus overall blood pressure control rate for identifying the need for intensified cardiovascular risk reduction: lessons from a cross-sectional study.",
+   "year": "2013",
+   "journal": "European journal of preventive cardiology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23221932",
+   "title": "Epidemiological Trial of Hypertension in North Africa (ETHNA): an international multicentre study in Algeria, Morocco and Tunisia.",
+   "year": "2013",
+   "journal": "Journal of hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23203238",
+   "title": "A cross-sectional survey of hypertension diagnosis and treatment practices among physicians in Yaroslavl Region, Russia.",
+   "year": "2012",
+   "journal": "Advances in therapy",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23199827",
+   "title": "[Vascular risk in outpatient from Internal Medicine departments. MICARE Study].",
+   "year": "2013",
+   "journal": "Medicina clinica",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23153688",
+   "title": "Hypertension caused by primary hyperaldosteronism: increased heart damage and cardiovascular risk.",
+   "year": "2013",
+   "journal": "Revista espanola de cardiologia (English ed.)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23095492",
+   "title": "Good knowledge about hypertension is linked to better control of hypertension; a multicentre cross sectional study in Karachi, Pakistan.",
+   "year": "2012",
+   "journal": "BMC research notes",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "23039989",
+   "title": "Metabolic control and treatment patterns in patients with type 1 diabetes in Castilla-La Mancha: the DIAbetes tipo 1 in Castilla La Mancha study.",
+   "year": "2012",
+   "journal": "Endocrinologia y nutricion : organo de la Sociedad Espanola de Endocrinologia y Nutricion",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "22990354",
+   "title": "Treatment and blood pressure control in Spain during 2002-2010.",
+   "year": "2012",
+   "journal": "Journal of hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22969292",
+   "title": "Medication adherence among hypertensive patients of primary health clinics in Malaysia.",
+   "year": "2012",
+   "journal": "Patient preference and adherence",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22926634",
+   "title": "Factors associated with non-adherence to three hypertension self-management behaviors: preliminary data for a new instrument.",
+   "year": "2013",
+   "journal": "Journal of general internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "22874108",
+   "title": "Prevalence of chronic kidney disease and its risk factors among family practice patients in Lithuania.",
+   "year": "2012",
+   "journal": "Clinical nephrology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22818296",
+   "title": "Awareness and management of chronic disease, insurance status, and health professional shortage areas in the REasons for Geographic And Racial Differences in Stroke (REGARDS): a cross-sectional study.",
+   "year": "2012",
+   "journal": "BMC health services research",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "22813562",
+   "title": "Prevalence of hypertension, control of blood pressure and treatment in hypertensive with type 2 diabetes in Hospital University Sains Malaysia.",
+   "year": "2011",
+   "journal": "Diabetes & metabolic syndrome",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22790546",
+   "title": "Blood pressure control in hypertensive patients within Family Health Program versus at Primary Healthcare Units: analytical cross-sectional study.",
+   "year": "2012",
+   "journal": "Sao Paulo medical journal = Revista paulista de medicina",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22701781",
+   "title": "Overcoming barriers in the management of hypertension: the experience of the cardiovascular health program in chilean primary health care centers.",
+   "year": "2012",
+   "journal": "International journal of hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22688844",
+   "title": "Association between the 8-item Morisky Medication Adherence Scale (MMAS-8) and blood pressure control.",
+   "year": "2012",
+   "journal": "Arquivos brasileiros de cardiologia",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "22677180",
+   "title": "[Factors associated with poor blood pressure control in hypertensive black Africans: cross-sectional study of 456 hypertensive patients from Burkina Faso].",
+   "year": "2013",
+   "journal": "Annales de cardiologie et d'angeiologie",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22668566",
+   "title": "[Gaps between prescription of anti-hypertensive and hypertension control in older adults of Buenos Aires suburbs].",
+   "year": "2011",
+   "journal": "Revista de la Facultad de Ciencias Medicas (Cordoba, Argentina)",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22583820",
+   "title": "Guidelines adherence and hypertension control at a tertiary hospital in Malaysia.",
+   "year": "2013",
+   "journal": "Journal of evaluation in clinical practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22514242",
+   "title": "Intervention for control of hypertension in Catalonia, Spain (INCOTECA Project): results of a multicentric, non-randomised, quasi-experimental controlled intervention study.",
+   "year": "2012",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22477206",
+   "title": "Management of hypertension and factors affecting its control in Jordanian renal transplant recipients.",
+   "year": "2012",
+   "journal": "International journal of clinical pharmacy",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22436384",
+   "title": "[Blood pressure control in hypertensive Spanish population attended in primary care setting. The PRESCAP 2010 study].",
+   "year": "2012",
+   "journal": "Medicina clinica",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "22321062",
+   "title": "Aliskiren for the treatment of essential hypertension under real-life practice conditions: design and baseline data of the prospective 3A registry.",
+   "year": "2012",
+   "journal": "International journal of clinical practice",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22303571",
+   "title": "Influence of food intake and eating habits on hypertension control among outpatients at a government health clinic in the Klang Valley, Malaysia.",
+   "year": "2011",
+   "journal": "Malaysian journal of nutrition",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22275740",
+   "title": "Relationship between alcohol consumption and control of hypertension among elderly Greeks. The Nemea primary care study.",
+   "year": "2012",
+   "journal": "Hellenic journal of cardiology : HJC = Hellenike kardiologike epitheorese",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22242212",
+   "title": "Hypertension control and cardiometabolic risk: a regional perspective.",
+   "year": "2012",
+   "journal": "Cardiology research and practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22176929",
+   "title": "[Determination of urinary albumin excretion in arterial hypertension].",
+   "year": "2012",
+   "journal": "Revista clinica espanola",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22000627",
+   "title": "Prevalence of heart failure with preserved ejection fraction in Latin American, Middle Eastern, and North African Regions in the I PREFER study (Identification of Patients With Heart Failure and PREserved Systolic Function: an epidemiological regional study).",
+   "year": "2011",
+   "journal": "The American journal of cardiology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21970625",
+   "title": "Baseline characteristics of patients with chronic kidney disease stage 3 and stage 4 in Spain: the MERENA observational cohort study.",
+   "year": "2011",
+   "journal": "BMC nephrology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "21935425",
+   "title": "Physician perception of blood pressure control and treatment behavior in high-risk hypertensive patients: a cross-sectional study.",
+   "year": "2011",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21902448",
+   "title": "Electronic health records, clinical decision support, and blood pressure control.",
+   "year": "2011",
+   "journal": "The American journal of managed care",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21897758",
+   "title": "Are we satisfied with the follow-up of hypertensive and chronic kidney disease patients in outpatient clinics?",
+   "year": "2011",
+   "journal": "Hippokratia",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21723026",
+   "title": "Blood pressure control in hypertensive women aged 65 years or older in a primary care setting. MERICAP study.",
+   "year": "2011",
+   "journal": "Revista espanola de cardiologia",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21722469",
+   "title": "Impact of the pay-for-performance contract and the management of hypertension in Scottish primary care: a 6-year population-based repeated cross-sectional study.",
+   "year": "2011",
+   "journal": "The British journal of general practice : the journal of the Royal College of General Practitioners",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21677297",
+   "title": "Quality achievement and disease prevalence in primary care predicts regional variation in renal replacement therapy (RRT) incidence: an ecological study.",
+   "year": "2012",
+   "journal": "Nephrology, dialysis, transplantation : official publication of the European Dialysis and Transplant Association - European Renal Association",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21477495",
+   "title": "Racial disparities in blood pressure control and treatment differences in a Medicaid population, North Carolina, 2005-2006.",
+   "year": "2011",
+   "journal": "Preventing chronic disease",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21264184",
+   "title": "Predictors of uncontrolled hypertension and antihypertensive medication nonadherence.",
+   "year": "2010",
+   "journal": "Journal of cardiovascular disease research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21200100",
+   "title": "Global cardiometabolic risk profile in patients with hypertension: results from the Turkish arm of the pan-European GOOD survey.",
+   "year": "2010",
+   "journal": "Turk Kardiyoloji Dernegi arsivi : Turk Kardiyoloji Derneginin yayin organidir",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21105758",
+   "title": "Gender and hypertension management: a sub-analysis of the I-inSYST survey.",
+   "year": "2011",
+   "journal": "Blood pressure",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21087817",
+   "title": "CKD awareness and blood pressure control in the primary care hypertensive population.",
+   "year": "2011",
+   "journal": "American journal of kidney diseases : the official journal of the National Kidney Foundation",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21073073",
+   "title": "Blood pressure control among diabetic hypertensives under cardiology follow-up at a regional hospital in rural Malaysia.",
+   "year": "2010",
+   "journal": "The Southeast Asian journal of tropical medicine and public health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23804612",
+   "title": "Racial differences in barriers to blood pressure control in a family practice setting.",
+   "year": "2010",
+   "journal": "Journal of primary care & community health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "20610360",
+   "title": "Epidemiology of hypertension in the elderly with chronic kidney disease.",
+   "year": "2010",
+   "journal": "Advances in chronic kidney disease",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, U.S. Gov't, Non-P.H.S.",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "20586538",
+   "title": "Detection of unrecognized clinical heart failure in elderly hypertensive women attended in primary care setting.",
+   "year": "2010",
+   "journal": "Blood pressure",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20583851",
+   "title": "Improved blood pressure control in elderly hypertensive patients: results of the PAPY-65 Survey.",
+   "year": "2010",
+   "journal": "Drugs & aging",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20493419",
+   "title": "Clinical profile and management of patients with chronic ischemic heart disease according to age in the population daily attended by cardiologists in Spain The ELDERCIC study.",
+   "year": "2010",
+   "journal": "European journal of internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20450565",
+   "title": "[National survey of blood pressure control rate in Chinese hypertensive outpatients-China STATUS].",
+   "year": "2010",
+   "journal": "Zhonghua xin xue guan bing za zhi",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "20428720",
+   "title": "[Inadequate blood pressure control in patients with type 2 diabetes mellitus].",
+   "year": "2010",
+   "journal": "Arquivos brasileiros de cardiologia",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "20423584",
+   "title": "Obstructive sleep apnoea in patients with obesity and hypertension.",
+   "year": "2010",
+   "journal": "The British journal of general practice : the journal of the Royal College of General Practitioners",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "20073139",
+   "title": "Predictors of medication adherence for African American patients diagnosed with hypertension.",
+   "year": "2009",
+   "journal": "Ethnicity & disease",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "25606184",
+   "title": "Prescribing of Antihypertensive Agents in Public Primary Care Clinics - is it in Accordance with Current Evidence?",
+   "year": "2010",
+   "journal": "Malaysian family physician : the official journal of the Academy of Family Physicians of Malaysia",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "20031846",
+   "title": "Does reducing physician uncertainty improve hypertension control?: rationale and methods.",
+   "year": "2009",
+   "journal": "Circulation. Cardiovascular quality and outcomes",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "19915481",
+   "title": "Chronic kidney disease in hypertension under specialist care: the I-DEMAND study.",
+   "year": "2010",
+   "journal": "Journal of hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19907436",
+   "title": "Echocardiography in clinical practice: the burden of arterial hypertension. A multicenter Italian survey.",
+   "year": "2010",
+   "journal": "Journal of human hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19754934",
+   "title": "Blood pressure control and components of the metabolic syndrome: the GOOD survey.",
+   "year": "2009",
+   "journal": "Cardiovascular diabetology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19625099",
+   "title": "Prevalence of use and potential impact of increased use of primary care interventions to prevent cardiovascular hospitalizations in patients with diabetes.",
+   "year": "2009",
+   "journal": "Diabetes research and clinical practice",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19609271",
+   "title": "Blood pressure control and physicians' therapeutic behavior in a very elderly Spanish hypertensive population.",
+   "year": "2009",
+   "journal": "Hypertension research : official journal of the Japanese Society of Hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "19575270",
+   "title": "The effect of patient race and blood pressure control on patient-physician communication.",
+   "year": "2009",
+   "journal": "Journal of general internal medicine",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "19537225",
+   "title": "Understanding the complexity of hypertensive African American home care patients: challenges to intervention.",
+   "year": "2009",
+   "journal": "Ethnicity & disease",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "19385461",
+   "title": "Compliance to antihypertensive drugs, salt restriction, exercise and control of systemic hypertension in hypertensive patients at Abbottabad.",
+   "year": "2008",
+   "journal": "Journal of Ayub Medical College, Abbottabad : JAMC",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "19321009",
+   "title": "A quality improvement plan for hypertension control: the INCOTECA Project (INterventions for COntrol of hyperTEnsion in CAtalonia).",
+   "year": "2009",
+   "journal": "BMC public health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19300317",
+   "title": "Electronic health record components and the quality of care.",
+   "year": "2008",
+   "journal": "Medical care",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "19242492",
+   "title": "Blood pressure control and drug therapy in patients with diagnosed hypertension: a survey in Italian general practice.",
+   "year": "2009",
+   "journal": "Journal of human hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "19223610",
+   "title": "Insufficient control of blood pressure and incident diabetes.",
+   "year": "2009",
+   "journal": "Diabetes care",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "19125758",
+   "title": "Blood pressure control and awareness among patients with diabetes and hypertension attending a tertiary ophthalmic clinic.",
+   "year": "2009",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19001300",
+   "title": "Ethnic disparities in blood pressure management in patients with hypertension after the introduction of pay for performance.",
+   "year": "2008",
+   "journal": "Annals of family medicine",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18954496",
+   "title": "Cognitive function and blood pressure control in hypertensive patients over 60 years of age: COGNIPRES study.",
+   "year": "2008",
+   "journal": "Current medical research and opinion",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18830251",
+   "title": "Peripheral arterial disease and isolated systolic hypertension: the ATTEST study.",
+   "year": "2009",
+   "journal": "Journal of human hypertension",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "18817698",
+   "title": "[Primary care physicians behaviour on hypertensive patients with poor blood pressure control. The PRESCAP 2006 study].",
+   "year": "2008",
+   "journal": "Revista clinica espanola",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "18574054",
+   "title": "Resistant hypertension: diagnosis, evaluation, and treatment: a scientific statement from the American Heart Association Professional Education Committee of the Council for High Blood Pressure Research.",
+   "year": "2008",
+   "journal": "Circulation",
+   "pubtypes": [
+    "Journal Article",
+    "Practice Guideline"
+   ]
+  },
+  {
+   "pmid": "18554076",
+   "title": "Quality monitoring and management in commercial health plans.",
+   "year": "2008",
+   "journal": "The American journal of managed care",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "18544250",
+   "title": "Survey of blood pressure control status in patients with ischemic stroke or transient ischemic attack in China.",
+   "year": "2008",
+   "journal": "Neurological research",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18544106",
+   "title": "Obesity and intermediate clinical outcomes in diabetes: evidence of a differential relationship across ethnic groups.",
+   "year": "2008",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18501138",
+   "title": "[Control of blood pressure in Spanish hypertensive population attended in primary health-care. PRESCAP 2006 Study].",
+   "year": "2008",
+   "journal": "Medicina clinica",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18454221",
+   "title": "Blood pressure control among type 2 diabetics.",
+   "year": "2008",
+   "journal": "Saudi medical journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "18391085",
+   "title": "Resistant hypertension: diagnosis, evaluation, and treatment. A scientific statement from the American Heart Association Professional Education Committee of the Council for High Blood Pressure Research.",
+   "year": "2008",
+   "journal": "Hypertension (Dallas, Tex. : 1979)",
+   "pubtypes": [
+    "Journal Article",
+    "Practice Guideline"
+   ]
+  },
+  {
+   "pmid": "18383562",
+   "title": "For the majority of patients with diabetes blood pressure and lipid management is not in line with recommendations. Results from a large population-based cohort in Germany.",
+   "year": "2008",
+   "journal": "Pharmacoepidemiology and drug safety",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18288540",
+   "title": "Racial differences in blood pressure control: potential explanatory factors.",
+   "year": "2008",
+   "journal": "Journal of general internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "18261219",
+   "title": "Self-care and adherence to medication: a survey in the hypertension outpatient clinic.",
+   "year": "2008",
+   "journal": "BMC complementary and alternative medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "18259013",
+   "title": "Gender disparities in blood pressure control and cardiovascular care in a national sample of ambulatory care visits.",
+   "year": "2008",
+   "journal": "Hypertension (Dallas, Tex. : 1979)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, Non-P.H.S.",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "18093503",
+   "title": "[Follow-up and monitoring of hypertension. Is this performed the same in the autochthonous and immigrant populations?].",
+   "year": "2007",
+   "journal": "Atencion primaria",
+   "pubtypes": [
+    "Comparative Study",
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "18082091",
+   "title": "[Blood pressure control in hypertensive patients with left ventricular hypertrophy. The VIIDA Study].",
+   "year": "2007",
+   "journal": "Revista espanola de cardiologia",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "17962233",
+   "title": "Practice and patient characteristics related to blood pressure in patients with type 2 diabetes in primary care: a cross-sectional study.",
+   "year": "2007",
+   "journal": "Family practice",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17886426",
+   "title": "Patients knowledge of hypertension and its control in Eastern Sudan.",
+   "year": "2007",
+   "journal": "East African medical journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17688851",
+   "title": "[Blood pressure findings in Spanish dyslipidemic primary-care patients. LIPICAP-PA Study].",
+   "year": "2007",
+   "journal": "Revista espanola de cardiologia",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "17617008",
+   "title": "Poor hypertension control in Greek patients with diabetes in rural areas. The VANK study in primary care.",
+   "year": "2007",
+   "journal": "Rural and remote health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17563573",
+   "title": "Blood pressure control in Italy: results of recent surveys on hypertension.",
+   "year": "2007",
+   "journal": "Journal of hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17537361",
+   "title": "[Adequacy of the treatment of hypertensive patients with metabolic syndrome].",
+   "year": "2007",
+   "journal": "Medicina clinica",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17504665",
+   "title": "[Diabetes mellitus in hypertensive population attended in Primary Care in Spain. Blood pressure and lipid control rates].",
+   "year": "2007",
+   "journal": "Revista clinica espanola",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17478656",
+   "title": "Improving outcomes for high-risk diabetics using information systems.",
+   "year": "2007",
+   "journal": "Journal of the American Board of Family Medicine : JABFM",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "17475179",
+   "title": "[Blood pressure and lipid control and coronary risk in the hypertensive population attended in Primary Care setting in Spain. The PRESCOT study].",
+   "year": "2007",
+   "journal": "Revista clinica espanola",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17408001",
+   "title": "Correlates of quality of life in primary care patients with hypertension.",
+   "year": "2006",
+   "journal": "International journal of psychiatry in medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17395604",
+   "title": "Pilot study of potential barriers to blood pressure control in patients with inadequately controlled hypertension.",
+   "year": "2007",
+   "journal": "Family practice",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17309957",
+   "title": "Differences in blood pressure control and stroke mortality across Spain: the Prevención de Riesgo de Ictus (PREV-ICTUS) study.",
+   "year": "2007",
+   "journal": "Hypertension (Dallas, Tex. : 1979)",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17279356",
+   "title": "Prescribing pattern of antihypertensive drugs in primary care units in Turkey: results from the TURKSAHA study.",
+   "year": "2007",
+   "journal": "European journal of clinical pharmacology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17242314",
+   "title": "Outpatient hypertension treatment, treatment intensification, and control in Western Europe and the United States.",
+   "year": "2007",
+   "journal": "Archives of internal medicine",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "17167271",
+   "title": "Control of hypertension in patients with hypertension, diabetes, and impaired fasting glucose by Czech primary care physicians.",
+   "year": "2006",
+   "journal": "Kidney & blood pressure research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17082720",
+   "title": "Female sexual dysfunction in essential hypertension: a common problem being uncovered.",
+   "year": "2006",
+   "journal": "Journal of hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17061743",
+   "title": "The changing patterns of hypertension in Ghana: a study of four rural communities in the Ga District.",
+   "year": "2006",
+   "journal": "Ethnicity & disease",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16966912",
+   "title": "Cultural factors associated with antihypertensive medication adherence in Chinese immigrants.",
+   "year": "2006",
+   "journal": "The Journal of cardiovascular nursing",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "16849901",
+   "title": "Relationship between physician knowledge of hypertension and blood pressure control.",
+   "year": "2006",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "16647627",
+   "title": "The effect of age on hypertension control and management.",
+   "year": "2006",
+   "journal": "American journal of hypertension",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "16612245",
+   "title": "Success in control of hypertension in a low-resource setting: the Cuban experience.",
+   "year": "2006",
+   "journal": "Journal of hypertension",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16595083",
+   "title": "[Prevalence and general features of the metabolic syndrome in the Spanish hypertensive population].",
+   "year": "2006",
+   "journal": "Medicina clinica",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16553506",
+   "title": "Factors associated with drug adherence and blood pressure control in patients with hypertension.",
+   "year": "2006",
+   "journal": "Pharmacotherapy",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "16540035",
+   "title": "[Left ventricular hypertrophy in the Spanish hypertensive population. The ERIC-HTA study].",
+   "year": "2006",
+   "journal": "Revista espanola de cardiologia",
+   "pubtypes": [
+    "Comparative Study",
+    "English Abstract",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "16510091",
+   "title": "[Treatment and control of cardiovascular risk in primary care in Spain. The PREVENCAT study].",
+   "year": "2006",
+   "journal": "Medicina clinica",
+   "pubtypes": [
+    "Clinical Trial",
+    "Comparative Study",
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16508589",
+   "title": "Blood pressure control in patients with chronic renal insufficiency in Spain: a cross-sectional study.",
+   "year": "2006",
+   "journal": "Journal of hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "16498504",
+   "title": "Treatment of type 2 diabetes mellitus in a primary care setting in Taiwan: comparison with secondary/tertiary care.",
+   "year": "2006",
+   "journal": "Journal of the Formosan Medical Association = Taiwan yi zhi",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16496446",
+   "title": "Prevalence of masked uncontrolled and treated white-coat hypertension defined according to the average of morning and evening home blood pressure value: from the Japan Home versus Office Measurement Evaluation Study.",
+   "year": "2005",
+   "journal": "Blood pressure monitoring",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "16492610",
+   "title": "Determinants of hypertension control in a large French population of treated hypertensive subjects.",
+   "year": "2006",
+   "journal": "Blood pressure",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16441983",
+   "title": "Compliance to antihypertensive therapy.",
+   "year": "2006",
+   "journal": "Journal of the College of Physicians and Surgeons--Pakistan : JCPSP",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16429641",
+   "title": "Characteristics of blood-pressure control in treated hypertensive patients in Croatia.",
+   "year": "2005",
+   "journal": "Blood pressure. Supplement",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "16415636",
+   "title": "Hypertension--a treatable component of the cardiometabolic syndrome: challenges for the primary care physician.",
+   "year": "2006",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, Non-P.H.S.",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "16153374",
+   "title": "[Primary care physicians behaviour in inadequate blood pressure control].",
+   "year": "2005",
+   "journal": "Atencion primaria",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "16127803",
+   "title": "Blood pressure control is hard to achieve in patients with chronic renal failure: results from a survey of renal units in Norway.",
+   "year": "2005",
+   "journal": "Scandinavian journal of urology and nephrology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "16103755",
+   "title": "Ethnic differences in the treatment and control of hypertension in patients with diabetes.",
+   "year": "2005",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "16093911",
+   "title": "Hypertension and health-related quality of life: an epidemiological study in patients attending hospital clinics in China.",
+   "year": "2005",
+   "journal": "Journal of hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "16093909",
+   "title": "Isolated uncontrolled hypertension at home and in the office among treated hypertensive patients from the J-HOME study.",
+   "year": "2005",
+   "journal": "Journal of hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "16050889",
+   "title": "Quality of ambulatory care for women and men in the Veterans Affairs Health Care System.",
+   "year": "2005",
+   "journal": "Journal of general internal medicine",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, U.S. Gov't, Non-P.H.S.",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "15989414",
+   "title": "Women with diabetes have poorer control of blood pressure than men.",
+   "year": "2005",
+   "journal": "Journal of women's health (2002)",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "15915275",
+   "title": "Target organ damage and associated clinical conditions among Nigerians with treated hypertension.",
+   "year": "2005",
+   "journal": "Cardiovascular journal of South Africa : official journal for Southern Africa Cardiac Society [and] South African Society of Cardiac Practitioners",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "15847732",
+   "title": "[Control of hypertension in elderly patients receiving primary care in Spain].",
+   "year": "2005",
+   "journal": "Revista espanola de cardiologia",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "15752245",
+   "title": "Prevention of renal failure: the Malaysian experience.",
+   "year": "2005",
+   "journal": "Kidney international. Supplement",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "15485752",
+   "title": "Hypertension in overweight and obese primary care patients is highly prevalent and poorly controlled.",
+   "year": "2004",
+   "journal": "American journal of hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "15448805",
+   "title": "Demographic and clinical characteristics of hypertensive patients in the internal medicine outpatient clinic of a university hospital in Rio de Janeiro.",
+   "year": "2004",
+   "journal": "Sao Paulo medical journal = Revista paulista de medicina",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "15182110",
+   "title": "HYDRA: possible determinants of unsatisfactory hypertension control in German primary care patients.",
+   "year": "2004",
+   "journal": "Blood pressure",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "15175489",
+   "title": "Will changes in primary care improve health outcomes? Modelling the impact of financial incentives introduced to improve quality of care in the UK.",
+   "year": "2004",
+   "journal": "Quality & safety in health care",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "15106795",
+   "title": "Barriers to management of cardiovascular risk in a low-resource setting using hypertension as an entry point.",
+   "year": "2004",
+   "journal": "Journal of hypertension",
+   "pubtypes": [
+    "Clinical Trial",
+    "Comparative Study",
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "15103315",
+   "title": "Home blood pressure measurement and its relationship with blood pressure control in a large selected hypertensive population.",
+   "year": "2004",
+   "journal": "Journal of human hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "15074180",
+   "title": "[Relatively poor regulation of blood pressure in patients with type-2 diabetes mellitus in the primary care setting and specialists' practice in the Netherlands].",
+   "year": "2004",
+   "journal": "Nederlands tijdschrift voor geneeskunde",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "15002002",
+   "title": "Effective control of hypertension: a project of the Hungarian Society of Hypertension, baseline data.",
+   "year": "2004",
+   "journal": "Journal of human hypertension",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "14998450",
+   "title": "[Blood pressure control in Spanish hypertensive patients in Primary Health Care Centres. PRESCAP 2002 Study].",
+   "year": "2004",
+   "journal": "Medicina clinica",
+   "pubtypes": [
+    "Comparative Study",
+    "English Abstract",
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "14605586",
+   "title": "Pathogenesis and treatment of resistant hypertension.",
+   "year": "2003",
+   "journal": "Minerva medica",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "14504626",
+   "title": "Treatment and blood pressure control in isolated systolic hypertension vs diastolic hypertension in primary care.",
+   "year": "2003",
+   "journal": "Journal of human hypertension",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "12894954",
+   "title": "Hypertension in Ghana: a cross-sectional community prevalence study in greater Accra.",
+   "year": "2003",
+   "journal": "Ethnicity & disease",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "12778878",
+   "title": "[Effect of arterial pressure and age on renal function, The \"Care for the Kidney\" study].",
+   "year": "2003",
+   "journal": "Nefrologia : publicacion oficial de la Sociedad Espanola Nefrologia",
+   "pubtypes": [
+    "Comparative Study",
+    "English Abstract",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "12777958",
+   "title": "Why is hypertension so frequently uncontrolled in secondary prevention?",
+   "year": "2003",
+   "journal": "Journal of hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "12777957",
+   "title": "Awareness, treatment and control of hypertension in patients attending hospital clinics in China.",
+   "year": "2003",
+   "journal": "Journal of hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "12556669",
+   "title": "Optimal treatment of hypertension and cardiovascular risk reduction in African Americans: treatment approaches for outpatients.",
+   "year": "2003",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "12521653",
+   "title": "Oral contraceptives: a risk factor for uncontrolled blood pressure among hypertensive women.",
+   "year": "2003",
+   "journal": "Contraception",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "12407847",
+   "title": "Trends in hypertension control and left ventricular hypertrophy over three years.",
+   "year": "2002",
+   "journal": "Italian heart journal : official journal of the Italian Federation of Cardiology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "12240784",
+   "title": "A retrospective, population-based analysis of persistence with antihypertensive drug therapy in primary care practice in Italy.",
+   "year": "2002",
+   "journal": "Clinical therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "11985133",
+   "title": "Cardiovascular disease and the kidney. Tracking a killer in chronic kidney disease.",
+   "year": "2002",
+   "journal": "Postgraduate medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "11910316",
+   "title": "Hypertension in high-risk patients: beware of the underuse of effective combination therapy (results of the PRATIK study).",
+   "year": "2002",
+   "journal": "Journal of hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "11522708",
+   "title": "Congestive heart failure in type 2 diabetes: prevalence, incidence, and risk factors.",
+   "year": "2001",
+   "journal": "Diabetes care",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "11416630",
+   "title": "Comparison of Automated and Mercury Column Blood Pressure Measurements in Health Care Settings.",
+   "year": "2000",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "11255611",
+   "title": "Hypertension control in a community health centre at Riyadh, Saudi Arabia.",
+   "year": "2001",
+   "journal": "Saudi medical journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "11204303",
+   "title": "Hypertension in four African-origin populations: current 'Rule of Halves', quality of blood pressure control and attributable risk of cardiovascular disease.",
+   "year": "2001",
+   "journal": "Journal of hypertension",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "11035864",
+   "title": "Results of antihypertensive treatment by primary and secondary care physicians as assessed by ambulatory blood pressure monitoring.",
+   "year": "2000",
+   "journal": "Blood pressure monitoring",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "10872567",
+   "title": "Prevalence of target organ damage in treated hypertensive patients: different impact of clinic and ambulatory blood pressure control.",
+   "year": "2000",
+   "journal": "Journal of hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "10588524",
+   "title": "A five-year evaluation of intervention in diabetes care in Trinidad and Tobago.",
+   "year": "1999",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "9766706",
+   "title": "Changes of ischemic heart disease in Utsunomiya, Japan, over 10 years: a survey of primary care physicians.",
+   "year": "1998",
+   "journal": "Japanese circulation journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "9610036",
+   "title": "Hypertension and the eye: applications of the Sixth Report of the Joint National Committee on Prevention, Detection, Evaluation, and Treatment of High Blood Pressure.",
+   "year": "1998",
+   "journal": "Journal of the American Optometric Association",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "9455936",
+   "title": "Audit of public sector primary diabetes care in Cape Town, South Africa: high prevalence of complications, uncontrolled hyperglycaemia, and hypertension.",
+   "year": "1997",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "9129850",
+   "title": "Discontinuation of antihypertensive therapy: prevalence of relapses and predictors of successful withdrawal in a hypertensive community.",
+   "year": "1997",
+   "journal": "Cardiology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "8746863",
+   "title": "Correlates of health care satisfaction in inner-city patients with hypertension and chronic renal insufficiency.",
+   "year": "1995",
+   "journal": "Social science & medicine (1982)",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "1291657",
+   "title": "Advances in the community control of hypertension: from epidemiology to primary care practice.",
+   "year": "1992",
+   "journal": "Journal of hypertension. Supplement : official journal of the International Society of Hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "7350822",
+   "title": "Hypertension control in a rural biracial community: successes and failures of primary care.",
+   "year": "1980",
+   "journal": "American journal of public health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  }
+ ]
+}

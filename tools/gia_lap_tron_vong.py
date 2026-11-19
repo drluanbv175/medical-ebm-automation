@@ -741,9 +741,17 @@ class TronVong:
         if not duoi_pytest_khoa_gia() or not self.env.get("PYTEST_CURRENT_TEST") or not k or "ebm-secrets" in k:
             self.dung = self.dung or f"{g}:khong_ky_ngoai_pytest"
             return {"ma": None}
-        return self.chay(f"{g} ký {vai} (khoá giả)", "approve_gate.py", "--study", self.study, "--gate", g,
-                         "--artifact", f"exports/{self.study}/{artifact}", "--reviewer-role", vai,
-                         "--reviewer-ref", ref, "--scope", "GIẢ LẬP TRỌN VÒNG — khoá giả pytest, thư mục tạm", *them)
+        kq = self.chay(f"{g} ký {vai} (khoá giả)", "approve_gate.py", "--study", self.study, "--gate", g,
+                       "--artifact", f"exports/{self.study}/{artifact}", "--reviewer-role", vai,
+                       "--reviewer-ref", ref, "--scope", "GIẢ LẬP TRỌN VÒNG — khoá giả pytest, thư mục tạm", *them)
+        if kq.get("ma") == 0:
+            # G10-T3 `so-cai-ghi-nho` (19/11/2026): mỗi lần ký thành công nối một khối vào sổ trạng thái riêng của đề
+            # tài — như đề tài thật (bảng trách nhiệm G10 đòi đủ khối cho mọi cổng đã ký).
+            import gia_lap_van_ban_tac_tu as VB  # noqa: PLC0415
+
+            VB.noi_so_trang_thai(self.out, self.study, g, self.hom_nay.isoformat(),
+                                 f"{artifact} — vai {vai} ký phê duyệt cổng {g}")
+        return kq
 
     def _khoa_vai(self) -> None:
         k = os.environ.get("EBM_GATE_KEY_PATH", "")

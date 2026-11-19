@@ -1,0 +1,1929 @@
+{
+ "schema": "gia_lap/khong_loc_day_du/v1",
+ "truy_van": "(\"Proton Pump Inhibitors\"[MeSH] OR \"proton pump inhibitor*\"[tiab] OR omeprazole[tiab] OR esomeprazole[tiab] OR pantoprazole[tiab]) AND (\"Fractures, Bone\"[MeSH] OR fracture*[tiab]) AND (aged[MeSH] OR elderly[tiab] OR \"older adults\"[tiab])",
+ "so_hit_that": 196,
+ "so_bai_lay_ve": 196,
+ "ngay_tai": "2026-11-19",
+ "cach": "PubMed E-utilities esearch (sort=date) + esummary, không lọc thiết kế",
+ "ban_ghi": [
+  {
+   "pmid": "43030542",
+   "title": "Association Between Long-Term Proton Pump Inhibitor Use and the Risk of Osteoporotic Fractures.",
+   "year": "2026",
+   "journal": "Journal of clinical medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "42944786",
+   "title": "Association of bone mineral-reducing medications with two-year complications following open reduction and internal fixation of ankle fractures: a propensity score-matched analysis.",
+   "year": "2026",
+   "journal": "European journal of orthopaedic surgery & traumatology : orthopedie traumatologie",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42688114",
+   "title": "Differential fracture risk among proton pump inhibitors in older adults: evidence network and pharmacovigilance validation.",
+   "year": "2026",
+   "journal": "Frontiers in pharmacology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42496351",
+   "title": "Hyponatraemia in Neck of Femur Fracture: A Narrative Review of Epidemiology, Pathophysiology, and Outcomes.",
+   "year": "2026",
+   "journal": "Geriatrics (Basel, Switzerland)",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "42191059",
+   "title": "Pre-operative proton pump inhibitor use and risk of adverse outcomes after total elbow arthroplasty: a propensity-matched analysis.",
+   "year": "2026",
+   "journal": "Journal of shoulder and elbow surgery",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42110060",
+   "title": "Impact of Proton Pump Inhibitor Therapy on Bone Mineral Density: An Updated Systematic Review.",
+   "year": "2026",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "42063912",
+   "title": "Use of proton pump inhibitors and increased risk of fracture in type 2 DM and menopausal women: a systematic review and meta-analysis.",
+   "year": "2026",
+   "journal": "African health sciences",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review",
+    "Meta-Analysis"
+   ]
+  },
+  {
+   "pmid": "41916568",
+   "title": "A Structured Protocol to Optimize Proton Pump Inhibitor Use: A Quality Improvement Initiative.",
+   "year": "2026",
+   "journal": "Critical care nurse",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41832801",
+   "title": "Population-based deprescribing strategy for proton pump inhibitors: health outcomes from a case-control study.",
+   "year": "2026",
+   "journal": "Medicina clinica",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41682877",
+   "title": "Association of Polypharmacy and Bone Mineral Density: A Cross-Sectional Analysis of Geriatric Inpatients in Germany.",
+   "year": "2026",
+   "journal": "Journal of clinical medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41668463",
+   "title": "Prescribing of Medication to Prevent Glucocorticoid Harms in Patients With Polymyalgia Rheumatica: A Cross-Sectional Study and Two Emulated Target Trials in the Clinical Practice Research Datalink Aurum.",
+   "year": "2026",
+   "journal": "Arthritis & rheumatology (Hoboken, N.J.)",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "41656326",
+   "title": "One-year body weight loss and gain as independent predictors of frailty-related outcomes and mortality in an aging Japanese population.",
+   "year": "2026",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41364067",
+   "title": "Proton Pump Inhibitors Are Associated With Increased Risk of Site-Specific Nonunion After Open Reduction Internal Fixation.",
+   "year": "2026",
+   "journal": "Journal of orthopaedic trauma",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "41269594",
+   "title": "Appropriate Use of Proton Pump Inhibitors in Older Adults: Concerns and Solutions.",
+   "year": "2026",
+   "journal": "Drugs & aging",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "41125947",
+   "title": "Regular Proton-Pump Inhibitor Intake is Associated with Deterioration of Peripheral Bone Mineral Density, Microarchitecture, and Strength in Older Patients as Assessed by High-Resolution Peripheral Quantitative Computed Tomography (HR-pQCT).",
+   "year": "2025",
+   "journal": "Calcified tissue international",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "40978844",
+   "title": "Long-Term Proton Pump Inhibitor Use and the Risk of Kidney Disease, Dementia, and Fractures: A Systematic Review.",
+   "year": "2025",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "40848405",
+   "title": "Proton pump inhibitors and risk of fracture in older adults: a systematic review and meta-analysis.",
+   "year": "2025",
+   "journal": "Geriatric nursing (New York, N.Y.)",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review",
+    "Meta-Analysis"
+   ]
+  },
+  {
+   "pmid": "40831145",
+   "title": "Development of a Deprescribing Intervention for Proton Pump Inhibitors in Primary Care: A Co-Design Approach With General Practitioners and Patients.",
+   "year": "2025",
+   "journal": "Basic & clinical pharmacology & toxicology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40780490",
+   "title": "Effects of Perioperative Proton Pump Inhibitor Use on Outcomes of Total Joint Arthroplasty Patients Who Have Osteoporosis and Osteopenia.",
+   "year": "2026",
+   "journal": "The Journal of arthroplasty",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "40777658",
+   "title": "Sex differences in drug-induced osteoporosis: a pharmacovigilance study based on the FAERS database.",
+   "year": "2025",
+   "journal": "Frontiers in public health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40678972",
+   "title": "Association of Pneumonia, Fracture, Metabolic, and Renal Events With Long-Term Proton Pump Inhibitor Use in Patients With Chronic Kidney Disease.",
+   "year": "2025",
+   "journal": "Pharmacotherapy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40659386",
+   "title": "Bone health, renal outcomes, and iron deficiency anaemia in proton pump inhibitor versus histamine-2 receptor antagonist users: a retrospective cohort study based on TriNetX global collaborative network data.",
+   "year": "2025",
+   "journal": "BMJ open gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "40442516",
+   "title": "The impact of proton pump inhibitor use on fusion rates following single-level lumbar spinal fusion surgery.",
+   "year": "2025",
+   "journal": "European spine journal : official publication of the European Spine Society, the European Spinal Deformity Society, and the European Section of the Cervical Spine Research Society",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40367346",
+   "title": "Proton pump inhibitor exposure, trabecular bone score, and BMD: a registry-based cohort study.",
+   "year": "2025",
+   "journal": "Journal of bone and mineral research : the official journal of the American Society for Bone and Mineral Research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40312835",
+   "title": "Incidence of Osteopenia or Osteoporosis in Asian Patients With Chronic Hepatitis B.",
+   "year": "2025",
+   "journal": "Journal of gastroenterology and hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40022357",
+   "title": "First assessments of nutrient bioaccessibility with an INFOGEST semi-dynamic gastric digestion in vitro protocol adapted to model proton pump inhibitor use.",
+   "year": "2025",
+   "journal": "Food research international (Ottawa, Ont.)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39932099",
+   "title": "Fracture Risk Linked to Proton Pump Inhibitors Versus H2 Receptor Antagonists in Autoimmune Rheumatic and Gastrointestinal Disease Patients.",
+   "year": "2025",
+   "journal": "International journal of rheumatic diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "39575958",
+   "title": "[Vitamin B12 deficiency in the elderly and its associations with geriatric syndromes].",
+   "year": "2024",
+   "journal": "Zhurnal nevrologii i psikhiatrii imeni S.S. Korsakova",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39233100",
+   "title": "Routine Prescription of Proton Pump Inhibitors in the Perioperative Period is Associated With Decreased Rates of 2-Year Revision Surgery After Total Hip and Knee Arthroplasty.",
+   "year": "2025",
+   "journal": "The Journal of arthroplasty",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "39025803",
+   "title": "Proton pump inhibitor use and bone fractures in patients with chronic kidney disease.",
+   "year": "2024",
+   "journal": "Nephrology, dialysis, transplantation : official publication of the European Dialysis and Transplant Association - European Renal Association",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "38482392",
+   "title": "Prescribing Portraits to Optimize Prescribing of Proton Pump Inhibitors in Long-Term Care: PPI-T STOP Study.",
+   "year": "2024",
+   "journal": "The Canadian journal of hospital pharmacy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38477777",
+   "title": "Risk factors for hip and vertebral fractures in chronic kidney disease: the CRIC study.",
+   "year": "2024",
+   "journal": "Journal of bone and mineral research : the official journal of the American Society for Bone and Mineral Research",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "38467202",
+   "title": "The Association Between Oral Bone Mineral Density-Reducing Medications and the Risk of 2-Year Implant-Related Complications Following Total Knee Arthroplasty.",
+   "year": "2024",
+   "journal": "The Journal of arthroplasty",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38198798",
+   "title": "Bisphosphonate Use and Risk of Atypical Femoral Fractures: A Danish Case-Cohort Study With Blinded Radiographic Review.",
+   "year": "2024",
+   "journal": "The Journal of clinical endocrinology and metabolism",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "38170137",
+   "title": "Use of Proton Pump Inhibitors and Risk of Fracture in Adults: A Review of Literature.",
+   "year": "2023",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "37957997",
+   "title": "Incidence of Acute Upper Gastrointestinal Bleeding and Related Risk Factors among Elderly Patients Undergoing Surgery for Major Limb Fractures: An Analytical Cohort Study.",
+   "year": "2023",
+   "journal": "Healthcare (Basel, Switzerland)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37779765",
+   "title": "Comparing the Safety and Efficacy of Proton Pump Inhibitors and Histamine-2 Receptor Antagonists in the Management of Patients With Peptic Ulcer Disease: A Systematic Review.",
+   "year": "2023",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "37530847",
+   "title": "The association between proton pump inhibitors and hyperparathyroidism: a potential mechanism for increased fracture-results of a large observational cohort study.",
+   "year": "2023",
+   "journal": "Osteoporosis international : a journal established as result of cooperation between the European Foundation for Osteoporosis and the National Osteoporosis Foundation of the USA",
+   "pubtypes": [
+    "Observational Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37496243",
+   "title": "Inappropriate Use of Proton Pump Inhibitor Among Elderly Patients in British Columbia: What are the Long-term Adverse Events?",
+   "year": "2024",
+   "journal": "Current drug safety",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37463830",
+   "title": "Different effects of chronic omeprazole use on osteoporotic fractures rate in the elderly.",
+   "year": "2023",
+   "journal": "British journal of clinical pharmacology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36803698",
+   "title": "Development and Implementation of a Pharmacist-Led Proton Pump Inhibitor Deprescribing Algorithm in a Geriatric Ambulatory Office.",
+   "year": "2023",
+   "journal": "The Senior care pharmacist",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36773272",
+   "title": "The correlates of post-surgical haematoma in older adults with proximal femoral fractures.",
+   "year": "2023",
+   "journal": "Aging clinical and experimental research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36621542",
+   "title": "Bone microstructure in proton pump inhibitor users.",
+   "year": "2023",
+   "journal": "Bone",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "36340568",
+   "title": "Cost Analysis of Implementing an Exercise Program for Fall and Fracture Prevention in Older Adults on Proton Pump Inhibitor Therapy.",
+   "year": "2022",
+   "journal": "Journal of patient-centered research and reviews",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36176864",
+   "title": "Chronic Proton-Pump Inhibitor Therapy and Fracture Risk in Women Aged Between 50 and 65 years: A Retrospective Case-Control Study.",
+   "year": "2022",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35830032",
+   "title": "SAFETY OF LONG-TERM PROTON PUMP INHIBITORS: FACTS AND MYTHS.",
+   "year": "2022",
+   "journal": "Arquivos de gastroenterologia",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "35159345",
+   "title": "Glucocorticoids Are Not Associated with Bone Mineral Density in Patients with Polymyalgia Rheumatica, Giant Cell Arteritis and Other Vasculitides-Cross-Sectional Baseline Analysis of the Prospective Rh-GIOP Cohort.",
+   "year": "2022",
+   "journal": "Cells",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34622475",
+   "title": "Association of proton-pump inhibitor use with adverse health outcomes: A systematic umbrella review of meta-analyses of cohort studies and randomised controlled trials.",
+   "year": "2022",
+   "journal": "British journal of clinical pharmacology",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "34532076",
+   "title": "Should we routinely prescribe proton pump inhibitors peri-operatively in elderly patients with hip fractures? A review of the literature.",
+   "year": "2021",
+   "journal": "EFORT open reviews",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "33462371",
+   "title": "Calcium-based phosphate binder use is associated with lower risk of osteoporosis in hemodialysis patients.",
+   "year": "2021",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33361800",
+   "title": "Pantoprazole impairs fracture healing in aged mice.",
+   "year": "2020",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33337258",
+   "title": "The association between gallstone disease (GSD) and hip fracture: a nationwide population-based study.",
+   "year": "2021",
+   "journal": "Postgraduate medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33321079",
+   "title": "Are Nursing Home Residents With Dementia Appropriately Treated for Fracture Prevention?",
+   "year": "2021",
+   "journal": "Journal of the American Medical Directors Association",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33310727",
+   "title": "Concomitant use of oral glucocorticoids and proton pump inhibitors and risk of osteoporotic fractures among patients with rheumatoid arthritis: a population-based cohort study.",
+   "year": "2021",
+   "journal": "Annals of the rheumatic diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33067623",
+   "title": "Comparison of fracture risk between proton pump inhibitors and histamine-2 receptor antagonists in ANCA-associated vasculitis patients: a nested case-control study.",
+   "year": "2021",
+   "journal": "Rheumatology (Oxford, England)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33059626",
+   "title": "Comparing proton pump inhibitors with histamin-2 receptor blockers regarding the risk of osteoporotic fractures: a nested case-control study of more than 350,000 Korean patients with GERD and peptic ulcer disease.",
+   "year": "2020",
+   "journal": "BMC geriatrics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32830092",
+   "title": "Relevance of proton pump inhibitors prescriptions in a tertiary care hospital in Lebanon.",
+   "year": "2020",
+   "journal": "Arab journal of gastroenterology : the official publication of the Pan-Arab Association of Gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32826941",
+   "title": "Proton pump inhibitor use and risk of hip fracture in patients with type 2 diabetes.",
+   "year": "2020",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32730257",
+   "title": "Association between proton pump inhibitor use and risk of fracture: A population-based case-control study.",
+   "year": "2020",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32729625",
+   "title": "Proton pump inhibitors increase risk of bone fractures in men with cirrhosis: a population-based study.",
+   "year": "2020",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32593677",
+   "title": "Association between proton pump inhibitors use and risk of hip fracture: A general population-based cohort study.",
+   "year": "2020",
+   "journal": "Bone",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32513631",
+   "title": "Latest insights into the hot question of proton pump inhibitor safety - a narrative review.",
+   "year": "2020",
+   "journal": "Digestive and liver disease : official journal of the Italian Society of Gastroenterology and the Italian Association for the Study of the Liver",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "32126312",
+   "title": "Comparative analysis of the risk of osteoporotic fractures with proton pump inhibitor use and histamine-2 receptor antagonist therapy in elderly women: A nationwide population-based nested case-control study.",
+   "year": "2020",
+   "journal": "Bone",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32123926",
+   "title": "Utilization of Acid Suppression Medication in an Underserved Population.",
+   "year": "2020",
+   "journal": "Southern medical journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32058466",
+   "title": "Proton Pump Inhibitors, But Not H2-receptor Antagonists, Are Associated With Incident Fractures Among Kidney Transplant Recipients.",
+   "year": "2020",
+   "journal": "Transplantation",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32011964",
+   "title": "Determinants of Oral Bisphosphonate Use Beyond 5 Years.",
+   "year": "2020",
+   "journal": "Journal of managed care & specialty pharmacy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31807948",
+   "title": "Proton Pump Inhibitors in the Elderly, Balancing Risk and Benefit: an Age-Old Problem.",
+   "year": "2019",
+   "journal": "Current gastroenterology reports",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "31741023",
+   "title": "Proton pump inhibitors and fracture risk. The HUNT study, Norway.",
+   "year": "2020",
+   "journal": "Osteoporosis international : a journal established as result of cooperation between the European Foundation for Osteoporosis and the National Osteoporosis Foundation of the USA",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31722031",
+   "title": "Association of Receiving Multiple, Concurrent Fracture-Associated Drugs With Hip Fracture Risk.",
+   "year": "2019",
+   "journal": "JAMA network open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "31711264",
+   "title": "Acetylcholinesterase Inhibitors Are Associated with Reduced Fracture Risk among Older Veterans with Dementia.",
+   "year": "2020",
+   "journal": "Journal of bone and mineral research : the official journal of the American Society for Bone and Mineral Research",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "31471066",
+   "title": "[The general practitioner's knowledge and attitude towards proton pump inhibitors adverse effects].",
+   "year": "2020",
+   "journal": "Therapie",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31368080",
+   "title": "A Novel Approach to Visualize Risk Minimization Effectiveness: Peeping at the 2012 UK Proton Pump Inhibitor Label Change Using a Rapid Cycle Analysis Tool.",
+   "year": "2019",
+   "journal": "Drug safety",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31351509",
+   "title": "Rowell's Syndrome Triggered by Omeprazole.",
+   "year": "2019",
+   "journal": "Acta dermatovenerologica Croatica : ADC",
+   "pubtypes": [
+    "Case Reports",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31175146",
+   "title": "Early Acid Suppression Therapy Exposure and Fracture in Young Children.",
+   "year": "2019",
+   "journal": "Pediatrics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31152740",
+   "title": "Safety of Proton Pump Inhibitors Based on a Large, Multi-Year, Randomized Trial of Patients Receiving Rivaroxaban or Aspirin.",
+   "year": "2019",
+   "journal": "Gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31092411",
+   "title": "Medications associated with fracture risk in patients with rheumatoid arthritis.",
+   "year": "2019",
+   "journal": "Annals of the rheumatic diseases",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "30834583",
+   "title": "Prenatal use of medications for gastroesophageal reflux disease and early childhood fracture risk.",
+   "year": "2019",
+   "journal": "Birth (Berkeley, Calif.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "30829427",
+   "title": "Fracture risk of young adults receiving proton-pump inhibitors and H2-receptor antagonists.",
+   "year": "2019",
+   "journal": "International journal of clinical practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30821177",
+   "title": "Pre-fracture medication use as a predictor of 30-day mortality in hip fracture patients: an analysis of 141,201 patients.",
+   "year": "2020",
+   "journal": "Hip international : the journal of clinical and experimental research on hip pathology and therapy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30684601",
+   "title": "A phase III, multicenter, prospective, single-blinded, noninferiority, randomized controlled trial on the performance of a novel esophageal stent with an antireflux valve (with video).",
+   "year": "2019",
+   "journal": "Gastrointestinal endoscopy",
+   "pubtypes": [
+    "Clinical Trial, Phase III",
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Video-Audio Media"
+   ]
+  },
+  {
+   "pmid": "30575640",
+   "title": "Proton pump inhibitors therapy and the risk of major osteoporotic nonhip fractures in older adults in Taiwan.",
+   "year": "2019",
+   "journal": "European journal of gastroenterology & hepatology",
+   "pubtypes": [
+    "Journal Article",
+    "Comment"
+   ]
+  },
+  {
+   "pmid": "30500865",
+   "title": "A cross-sectional study of national outpatient gastric acid suppressant prescribing in the United States between 2009 and 2015.",
+   "year": "2018",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30461523",
+   "title": "Response to letter: 'Proton pump inhibitors therapy and the risk of major osteoporotic nonhip fractures in older adults in Taiwan'.",
+   "year": "2019",
+   "journal": "European journal of gastroenterology & hepatology",
+   "pubtypes": [
+    "Letter",
+    "Comment"
+   ]
+  },
+  {
+   "pmid": "30445008",
+   "title": "Dexlansoprazole and Esomeprazole Do Not Affect Bone Homeostasis in Healthy Postmenopausal Women.",
+   "year": "2019",
+   "journal": "Gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30401996",
+   "title": "Quantifying Candidacy for Deprescribing of Proton Pump Inhibitors among Long-Term Care Residents.",
+   "year": "2018",
+   "journal": "The Canadian journal of hospital pharmacy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30325487",
+   "title": "Effect of long-term proton pump inhibitors on bone mineral density.",
+   "year": "2018",
+   "journal": "La Tunisie medicale",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30290768",
+   "title": "Potentially inappropriate medication use among hypertensive older African-American adults.",
+   "year": "2018",
+   "journal": "BMC geriatrics",
+   "pubtypes": [
+    "Case Reports",
+    "Journal Article",
+    "Observational Study",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "30262672",
+   "title": "Proton Pump Inhibitors, Histamine-2 Receptor Antagonists, and Hip Fracture Risk among Patients on Hemodialysis.",
+   "year": "2018",
+   "journal": "Clinical journal of the American Society of Nephrology : CJASN",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30232537",
+   "title": "Impact of prescription drugs on second fragility fractures among US Medicare patients.",
+   "year": "2018",
+   "journal": "Osteoporosis international : a journal established as result of cooperation between the European Foundation for Osteoporosis and the National Osteoporosis Foundation of the USA",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30185290",
+   "title": "Proton Pump Inhibitor Use in Older Adults: Long-Term Risks and Steps for Deprescribing.",
+   "year": "2018",
+   "journal": "The Consultant pharmacist : the journal of the American Society of Consultant Pharmacists",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30172013",
+   "title": "Long term time trends in use of medications associated with risk of developing osteoporosis: Nationwide data for Denmark from 1999 to 2016.",
+   "year": "2019",
+   "journal": "Bone",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30159775",
+   "title": "Proton pump inhibitors' use and risk of hip fracture: a systematic review and meta-analysis.",
+   "year": "2018",
+   "journal": "Rheumatology international",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "30100220",
+   "title": "Lower Trabecular Bone Score is Associated With the Use of Proton Pump Inhibitors.",
+   "year": "2019",
+   "journal": "Journal of clinical densitometry : the official journal of the International Society for Clinical Densitometry",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "29774402",
+   "title": "Subtrochanteric and diaphyseal femoral fractures in hypophosphatasia-not atypical at all.",
+   "year": "2018",
+   "journal": "Osteoporosis international : a journal established as result of cooperation between the European Foundation for Osteoporosis and the National Osteoporosis Foundation of the USA",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29661684",
+   "title": "Trabecular Bone Score and Hip Structural Analysis in Patients With Atypical Femur Fractures.",
+   "year": "2019",
+   "journal": "Journal of clinical densitometry : the official journal of the International Society for Clinical Densitometry",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29538319",
+   "title": "Self-Reported Fractures in Dermatitis Herpetiformis Compared to Coeliac Disease.",
+   "year": "2018",
+   "journal": "Nutrients",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29508411",
+   "title": "Proton pump inhibitor use and risk of hip fractures among community-dwelling persons with Alzheimer's disease-a nested case-control study.",
+   "year": "2018",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "29493043",
+   "title": "Proton pump inhibitor use and the risk of fractures among an older adult cohort.",
+   "year": "2018",
+   "journal": "Pharmacoepidemiology and drug safety",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "29432225",
+   "title": "Nonsteroidal anti-inflammatory drugs and cancer pain.",
+   "year": "2018",
+   "journal": "Current opinion in supportive and palliative care",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "29392851",
+   "title": "Do FDA label changes work? Assessment of the 2010 class label change for proton pump inhibitors using the Sentinel System's analytic tools.",
+   "year": "2018",
+   "journal": "Pharmacoepidemiology and drug safety",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "29320988",
+   "title": "Prevalence and key radiographic spinal malalignment parameters that influence the risk for gastroesophageal reflux disease in patients treated surgically for adult spinal deformity.",
+   "year": "2018",
+   "journal": "BMC gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29223273",
+   "title": "A 79-Year-Old Woman With Dyspnea and Hypoxemia That Worsened in an Upright Position.",
+   "year": "2017",
+   "journal": "Chest",
+   "pubtypes": [
+    "Case Reports",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29215660",
+   "title": "[Prioritization of non-recommended clinical activities in Primary Care].",
+   "year": "2017",
+   "journal": "Anales del sistema sanitario de Navarra",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29199170",
+   "title": "What is the long term acid inhibitor treatment in gastroesophageal reflux disease? What are the potential problems related to long term acid inhibitor treatment in gastroesophageal reflux disease? How should these cases be followed?",
+   "year": "2017",
+   "journal": "The Turkish journal of gastroenterology : the official journal of Turkish Society of Gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "29150162",
+   "title": "Distribution of clinical risk factors for fracture in a Brussels cohort of postmenopausal women: The FRISBEE study and comparison with other major cohort studies.",
+   "year": "2017",
+   "journal": "Maturitas",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29032384",
+   "title": "Proton pump inhibitor use and the risk of osteoporosis and fracture in stroke patients: a population-based cohort study.",
+   "year": "2018",
+   "journal": "Osteoporosis international : a journal established as result of cooperation between the European Foundation for Osteoporosis and the National Osteoporosis Foundation of the USA",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28980336",
+   "title": "Incidence and predictors of osteoporotic fractures in patients with Barrett's oesophagus: a population-based nested case-control study.",
+   "year": "2017",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28861211",
+   "title": "Adverse effects of proton-pump inhibitor use in older adults: a review of the evidence.",
+   "year": "2017",
+   "journal": "Therapeutic advances in drug safety",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "28717153",
+   "title": "Proton Pump Inhibitors and the Risk for Fracture at Specific Sites: Data Mining of the FDA Adverse Event Reporting System.",
+   "year": "2017",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "28716041",
+   "title": "Potentially inappropriate home medications among older patients with cardiovascular disease admitted to a cardiology service in USA.",
+   "year": "2017",
+   "journal": "BMC cardiovascular disorders",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28680175",
+   "title": "Outcome after Discontinuation of Proton Pump Inhibitors at a Residential Care Site: Quality Improvement Project.",
+   "year": "2017",
+   "journal": "The Canadian journal of hospital pharmacy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28301676",
+   "title": "Deprescribing versus continuation of chronic proton pump inhibitor use in adults.",
+   "year": "2017",
+   "journal": "The Cochrane database of systematic reviews",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "28270664",
+   "title": "Proton-Pump Inhibitors and Fragility Fractures in Vulnerable Older Patients.",
+   "year": "2017",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Letter",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "28083667",
+   "title": "Use of proton pump inhibitors and mortality after hip fracture in a nationwide study.",
+   "year": "2017",
+   "journal": "Osteoporosis international : a journal established as result of cooperation between the European Foundation for Osteoporosis and the National Osteoporosis Foundation of the USA",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27908278",
+   "title": "Comparison of predictors of hip fracture and mortality after hip fracture in community-dwellers with and without Alzheimer's disease - exposure-matched cohort study.",
+   "year": "2016",
+   "journal": "BMC geriatrics",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27885227",
+   "title": "[The experience of dissolving polypharmacy by reducing the prescription of anti-ulcer drugs in residents of a special geriatric nursing home].",
+   "year": "2016",
+   "journal": "Nihon Ronen Igakkai zasshi. Japanese journal of geriatrics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27845341",
+   "title": "Long-Term Proton Pump Inhibitor Use Is Not Associated With Changes in Bone Strength and Structure.",
+   "year": "2017",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "27190324",
+   "title": "Risk of fracture in adults on renal replacement therapy: a Danish national cohort study.",
+   "year": "2016",
+   "journal": "Nephrology, dialysis, transplantation : official publication of the European Dialysis and Transplant Association - European Renal Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27055405",
+   "title": "Prophylactic proton pump inhibitors in femoral neck fracture patients - A life - and cost-saving intervention.",
+   "year": "2016",
+   "journal": "Annals of the Royal College of Surgeons of England",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27026435",
+   "title": "Location of fractures and the characteristics of patients with atypical femoral fractures: analyses of 38 Japanese cases.",
+   "year": "2017",
+   "journal": "Journal of bone and mineral metabolism",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26860609",
+   "title": "Gastroesophageal reflux disease with proton pump inhibitor use is associated with an increased risk of osteoporosis: a nationwide population-based analysis.",
+   "year": "2016",
+   "journal": "Osteoporosis international : a journal established as result of cooperation between the European Foundation for Osteoporosis and the National Osteoporosis Foundation of the USA",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26728937",
+   "title": "Association of Proton Pump Inhibitor Use with Recurrent Falls and Risk of Fractures in Older Women: A Study of Medication Use in Older Fallers.",
+   "year": "2016",
+   "journal": "The journal of nutrition, health & aging",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30755856",
+   "title": "Pantoprazole-related Symptomatic Hyponatremia.",
+   "year": "2016",
+   "journal": "European journal of case reports in internal medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26595692",
+   "title": "What are the precautions with proton pump inhibitor use for reflux disease?",
+   "year": "2015",
+   "journal": "JAAPA : official journal of the American Academy of Physician Assistants",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26536643",
+   "title": "[Diagnosing osteoporosis: what is new in the 2014 DVO guideline?].",
+   "year": "2015",
+   "journal": "Deutsche medizinische Wochenschrift (1946)",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26525846",
+   "title": "Cost-effectiveness of nonsteroidal anti-inflammatory drugs and opioids in the treatment of knee osteoarthritis in older patients with multiple comorbidities.",
+   "year": "2016",
+   "journal": "Osteoarthritis and cartilage",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "26415604",
+   "title": "Hyperparathyroidism Associated with Long-Term Proton Pump Inhibitors Independent of Concurrent Bisphosphonate Therapy in Elderly Adults.",
+   "year": "2015",
+   "journal": "Journal of the American Geriatrics Society",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26319499",
+   "title": "The effect of dose and type of proton pump inhibitor use on risk of fractures and osteoporosis treatment in older Australian women: A prospective cohort study.",
+   "year": "2015",
+   "journal": "Bone",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26202894",
+   "title": "Factors associated with atypical femoral fracture.",
+   "year": "2016",
+   "journal": "Rheumatology international",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25873758",
+   "title": "Pantoprazole decreases cell viability and function of human osteoclasts in vitro.",
+   "year": "2015",
+   "journal": "Mediators of inflammation",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25391248",
+   "title": "Calcium gluconate supplementation is effective to balance calcium homeostasis in patients with gastrectomy.",
+   "year": "2015",
+   "journal": "Osteoporosis international : a journal established as result of cooperation between the European Foundation for Osteoporosis and the National Osteoporosis Foundation of the USA",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25265829",
+   "title": "Exercise prevented the lansoprazole-induced reduction of anti-osteoporotic efficacy of alendronate in androgen deficiency rats.",
+   "year": "2014",
+   "journal": "Acta poloniae pharmaceutica",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24908106",
+   "title": "New-onset hyponatraemia after surgery for traumatic hip fracture.",
+   "year": "2014",
+   "journal": "Age and ageing",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24893920",
+   "title": "Pantoprazole increases cell viability and function of primary human osteoblasts in vitro.",
+   "year": "2014",
+   "journal": "Injury",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24825180",
+   "title": "Long-term proton pump inhibitor therapy and falls and fractures in elderly women: a prospective cohort study.",
+   "year": "2014",
+   "journal": "Journal of bone and mineral research : the official journal of the American Society for Bone and Mineral Research",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24706060",
+   "title": "The relationship between proton pump inhibitor adherence and fracture risk in the elderly.",
+   "year": "2014",
+   "journal": "Calcified tissue international",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24634248",
+   "title": "A benefit-risk assessment of the use of proton pump inhibitors in the elderly.",
+   "year": "2014",
+   "journal": "Drugs & aging",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "24634193",
+   "title": "Study of the association between hip fracture and acid-suppressive drug use in a UK primary care setting.",
+   "year": "2014",
+   "journal": "Pharmacotherapy",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24512269",
+   "title": "Pantoprazole-induced thrombocytopenia in patients with upper gastrointestinal bleeding.",
+   "year": "2015",
+   "journal": "Platelets",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24507954",
+   "title": "Proton-pump inhibitor use and hip fractures in men: a population-based case-control study.",
+   "year": "2014",
+   "journal": "Annals of epidemiology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24505459",
+   "title": "Prevalence, incidence and etiology of hyponatremia in elderly patients with fragility fractures.",
+   "year": "2014",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24076021",
+   "title": "Use of proton pump inhibitors is associated with lower trabecular bone density in older individuals.",
+   "year": "2013",
+   "journal": "Bone",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, N.I.H., Intramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23998981",
+   "title": "Safety of long-term PPI therapy.",
+   "year": "2013",
+   "journal": "Best practice & research. Clinical gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "23973557",
+   "title": "Proton pump inhibitor use and fracture risk - effect modification by histamine H1 receptor blockade. Observational case-control study using National Prescription Data.",
+   "year": "2013",
+   "journal": "Bone",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23761350",
+   "title": "Predictors of fracture while on treatment with oral bisphosphonates: a population-based cohort study.",
+   "year": "2014",
+   "journal": "Journal of bone and mineral research : the official journal of the American Society for Bone and Mineral Research",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23676267",
+   "title": "Risk factors for falls with use of acid-suppressive drugs.",
+   "year": "2013",
+   "journal": "Epidemiology (Cambridge, Mass.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23627578",
+   "title": "Impact of clinical pharmacists' recommendations on a proton pump inhibitor taper protocol in an ambulatory care practice.",
+   "year": "2013",
+   "journal": "Journal of managed care pharmacy : JMCP",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23602075",
+   "title": "The association between serious upper gastrointestinal bleeding and incident bisphosphonate use: a population-based nested cohort study.",
+   "year": "2013",
+   "journal": "BMC geriatrics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23307040",
+   "title": "A population-based case-control study: proton pump inhibition and risk of hip fracture by use of bisphosphonate.",
+   "year": "2013",
+   "journal": "Journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23023097",
+   "title": "Use of proton pump inhibitors and risk of fragility hip fracture in a Mediterranean region.",
+   "year": "2013",
+   "journal": "Bone",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23010681",
+   "title": "Proton pump inhibitors: potential adverse effects.",
+   "year": "2012",
+   "journal": "Current opinion in gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, Non-P.H.S.",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "22890365",
+   "title": "The effect of proton pump inhibitors on fracture risk: report from the Canadian Multicenter Osteoporosis Study.",
+   "year": "2013",
+   "journal": "Osteoporosis international : a journal established as result of cooperation between the European Foundation for Osteoporosis and the National Osteoporosis Foundation of the USA",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22791365",
+   "title": "Patterns of bone density evaluation in a community population treated with aromatase inhibitors.",
+   "year": "2012",
+   "journal": "Breast cancer research and treatment",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "22777336",
+   "title": "The relationship between proton pump inhibitor use and longitudinal change in bone mineral density: a population-based study [corrected] from the Canadian Multicentre Osteoporosis Study (CaMos).",
+   "year": "2012",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22615013",
+   "title": "Proton pump inhibitors increase the incidence of bone fractures in hepatitis C patients.",
+   "year": "2012",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22421518",
+   "title": "Gastrointestinal bleeding and possible hypothyroidism.",
+   "year": "2012",
+   "journal": "The Consultant pharmacist : the journal of the American Society of Consultant Pharmacists",
+   "pubtypes": [
+    "Case Reports",
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "22330952",
+   "title": "Considerations for the use of proton-pump inhibitors in older adults.",
+   "year": "2012",
+   "journal": "The Consultant pharmacist : the journal of the American Society of Consultant Pharmacists",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "22278844",
+   "title": "Factors associated with the initiation of proton pump inhibitors in corticosteroid users.",
+   "year": "2012",
+   "journal": "Pharmacoepidemiology and drug safety",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21856642",
+   "title": "Systematic review of observational studies finds increased risk of fracture among older adults taking a proton pump inhibitor.",
+   "year": "2012",
+   "journal": "Evidence-based medicine",
+   "pubtypes": [
+    "Comment",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21701389",
+   "title": "Proton pump inhibitors therapy and risk of hip fracture: a systematic review and meta-analysis.",
+   "year": "2011",
+   "journal": "European journal of gastroenterology & hepatology",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "21605729",
+   "title": "Proton pump inhibitors and risk of fractures: a meta-analysis of 11 international studies.",
+   "year": "2011",
+   "journal": "The American journal of medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "21544271",
+   "title": "PPI therapy: when to worry about fracture risk.",
+   "year": "2011",
+   "journal": "The Journal of family practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21419526",
+   "title": "[Chronic use of proton pump inhibitors: is the risk of osteoporosis and fractures real?].",
+   "year": "2011",
+   "journal": "Gastroenterologia y hepatologia",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "21378759",
+   "title": "Treatment of GERD and proton pump inhibitor use in the elderly: practical approaches and frequently asked questions.",
+   "year": "2011",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21365461",
+   "title": "Vertebral fracture efficacy during risedronate therapy in patients using proton pump inhibitors.",
+   "year": "2012",
+   "journal": "Osteoporosis international : a journal established as result of cooperation between the European Foundation for Osteoporosis and the National Osteoporosis Foundation of the USA",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis"
+   ]
+  },
+  {
+   "pmid": "21365243",
+   "title": "Adverse effects of long-term proton pump inhibitor therapy.",
+   "year": "2011",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "21321287",
+   "title": "Proton pump inhibitor use and the antifracture efficacy of alendronate.",
+   "year": "2011",
+   "journal": "Archives of internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21250399",
+   "title": "Magnitude and economic effect of overuse of antisecretory therapy in the ambulatory care setting.",
+   "year": "2010",
+   "journal": "The American journal of managed care",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "20872906",
+   "title": "Use of proton pump inhibitors increased the risk of hip fracture: a population-based case-control study.",
+   "year": "2010",
+   "journal": "Pharmacoepidemiology and drug safety",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20812769",
+   "title": "Proton pump inhibitors and fracture risk: true effect or residual confounding?",
+   "year": "2010",
+   "journal": "Drug safety",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "20606141",
+   "title": "Proton pump inhibitors linked to fracture risk.",
+   "year": "2010",
+   "journal": "JAMA",
+   "pubtypes": [
+    "News"
+   ]
+  },
+  {
+   "pmid": "20586539",
+   "title": "Use of proton-pump inhibitors and their associated risks among frail elderly nursing home residents.",
+   "year": "2010",
+   "journal": "Scandinavian journal of primary health care",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "20585937",
+   "title": "Use of proton pump inhibitors and risk of hip/femur fracture: a population-based case-control study.",
+   "year": "2011",
+   "journal": "Osteoporosis international : a journal established as result of cooperation between the European Foundation for Osteoporosis and the National Osteoporosis Foundation of the USA",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20493982",
+   "title": "Atypical fractures of the femur and bisphosphonate therapy: A systematic review of case/case series studies.",
+   "year": "2010",
+   "journal": "Bone",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "20480516",
+   "title": "Safety of the long-term use of proton pump inhibitors.",
+   "year": "2010",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Editorial",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "20458083",
+   "title": "Proton pump inhibitor use, hip fracture, and change in bone mineral density in postmenopausal women: results from the Women's Health Initiative.",
+   "year": "2010",
+   "journal": "Archives of internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "20353792",
+   "title": "Proton pump inhibitors and histamine-2 receptor antagonists are associated with hip fractures among at-risk patients.",
+   "year": "2010",
+   "journal": "Gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19931262",
+   "title": "Proton-pump inhibitor use is not associated with osteoporosis or accelerated bone mineral density loss.",
+   "year": "2010",
+   "journal": "Gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19671895",
+   "title": "Common drugs can harm elderly patients.",
+   "year": "2009",
+   "journal": "JAMA",
+   "pubtypes": [
+    "News"
+   ]
+  },
+  {
+   "pmid": "19670917",
+   "title": "Low-energy femoral fractures associated with the long-term use of bisphosphonates: a case series from a Swiss university hospital.",
+   "year": "2009",
+   "journal": "Drug safety",
+   "pubtypes": [
+    "Case Reports",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "19333676",
+   "title": "Fracture risk in patients receiving acid-suppressant medication alone and in combination with bisphosphonates.",
+   "year": "2009",
+   "journal": "Osteoporosis international : a journal established as result of cooperation between the European Foundation for Osteoporosis and the National Osteoporosis Foundation of the USA",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19240711",
+   "title": "Biological plausibility between proton pump inhibitory therapy and hip fracture: hyperhomocysteinemia can be the link.",
+   "year": "2009",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Comment",
+    "Letter"
+   ]
+  },
+  {
+   "pmid": "19023510",
+   "title": "Increase in vertebral fracture risk in postmenopausal women using omeprazole.",
+   "year": "2009",
+   "journal": "Calcified tissue international",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18813868",
+   "title": "Acid-suppressive medications and risk of bone loss and fracture in older adults.",
+   "year": "2008",
+   "journal": "Calcified tissue international",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "18695179",
+   "title": "Use of proton pump inhibitors and risk of osteoporosis-related fractures.",
+   "year": "2008",
+   "journal": "CMAJ : Canadian Medical Association journal = journal de l'Association medicale canadienne",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18691003",
+   "title": "Proton pump inhibitor therapy and osteoporosis.",
+   "year": "2008",
+   "journal": "Current drug safety",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "18657011",
+   "title": "Proton pump inhibitor use and risk of hip fractures in patients without major risk factors.",
+   "year": "2008",
+   "journal": "Pharmacotherapy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "18450246",
+   "title": "The utilisation and expenditure of medicines for the prophylaxis and treatment of osteoporosis.",
+   "year": "2008",
+   "journal": "Irish medical journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "18383937",
+   "title": "[Innovations in ambulatory care: screening, treatment and iatrogenicity].",
+   "year": "2008",
+   "journal": "Revue medicale suisse",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17217452",
+   "title": "Perioperative acute upper gastrointestinal haemorrhage in older patients with hip fracture: incidence, risk factors and prevention.",
+   "year": "2007",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17190895",
+   "title": "Long-term proton pump inhibitor therapy and risk of hip fracture.",
+   "year": "2006",
+   "journal": "JAMA",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "16927047",
+   "title": "Proton pump inhibitors, histamine H2 receptor antagonists, and other antacid medications and the risk of fracture.",
+   "year": "2006",
+   "journal": "Calcified tissue international",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "16780742",
+   "title": "[The application of high-resolution endoscopy in non-erosive reflux disease].",
+   "year": "2006",
+   "journal": "Zhonghua nei ke za zhi",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16678644",
+   "title": "Determinants of persistence with bisphosphonates: a study in women with postmenopausal osteoporosis.",
+   "year": "2006",
+   "journal": "Clinical therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "15616892",
+   "title": "Multiple vertebral fractures are associated with refractory reflux esophagitis in postmenopausal women.",
+   "year": "2005",
+   "journal": "Journal of bone and mineral metabolism",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "12523455",
+   "title": "Warfarin therapy and risk of hip fracture among elderly patients.",
+   "year": "2003",
+   "journal": "Pharmacotherapy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  }
+ ]
+}
