@@ -16,7 +16,7 @@
 |---|---|---|
 | **Phát hiện khoảng trống** | Bộ điều phối (LLM: `dieu-phoi-nghien-cuu`/`dieu-phoi-lam-sang`) | Nhận ra "việc này KHÔNG agent nào đang có phụ trách đúng" |
 | **Soạn SPEC** | Bộ điều phối | Viết đặc tả giàu: vai · trigger · phương pháp · ranh giới · cổng · nguồn bắt buộc |
-| **Dựng + cấy guardrail + đăng ký** | `tools/generate_agent.py` (xác định, KHÔNG LLM) | Bảo đảm agent mới ĐÚNG KHUNG: luật nền · self-check · disclaimer · cổng guardrail · sync Codex · registry |
+| **Dựng + cấy guardrail + đăng ký** | `tools/generate_agent.py` (xác định, KHÔNG LLM) | Bảo đảm agent mới ĐÚNG KHUNG: luật nền · self-check · disclaimer · cổng guardrail · kiểm sức khoẻ agent · registry |
 | **Duyệt** | **BÁC SĨ** | Rà nội dung/nguồn, xoá nhãn `[TỰ SINH — CHỜ BÁC SĨ DUYỆT]` → chính thức |
 
 Nhờ tách vai này, **agent tự sinh AN TOÀN THEO CẤU TRÚC**: bất kể nội dung chuyên
@@ -38,13 +38,13 @@ Nếu 1 trong 4 không thỏa → **KHÔNG sinh**; hoặc dùng agent gần nh�
 Bộ điều phối soạn SPEC JSON (giàu, có nguồn), rồi:
 ```bash
 python tools/generate_agent.py --spec spec.json --register
-# --register: tự chạy enforce → sync Codex → --check → audit
+# --register: tự chạy enforce → kiểm sức khoẻ agent → audit
 # (kiểm khô trước khi ghi: thêm --dry-run)
 ```
 `generate_agent.py` tự: kiểm slug/không trùng → dựng `.claude/agents/<slug>.md` đúng
 khung (Luật nền · Khi nào kích hoạt · Phương pháp · Ranh giới · Tiêu chí · Self-check) →
 gắn nhãn `[TỰ SINH — CHỜ BÁC SĨ DUYỆT]` → ghi `_TU-SINH-AGENT-REGISTRY.json` → (nếu
-`--register`) cấy guardrail + đồng bộ Codex + audit.
+`--register`) cấy guardrail + kiểm sức khoẻ agent + audit.
 
 **Chất lượng "tốt nhất":** nếu môi trường cho phép nhiều lượt, bộ điều phối nên
 soạn SPEC theo lối **đối kháng đa lăng kính** — nháp vai/phương pháp, tự phản biện

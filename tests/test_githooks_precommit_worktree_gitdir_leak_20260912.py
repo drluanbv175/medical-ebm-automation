@@ -19,7 +19,7 @@ giản in $PWD khi GIT_WORK_TREE không được set kèm theo. Nghĩa là ROOT_
 KHÔNG "cd nhầm về worktree lồng bên trong" như suy luận ban đầu (đã thử
 và bị chính phép đột biến bác bỏ). CƠ CHẾ THẬT: ROOT_HOOK vẫn chạy ĐÚNG
 thư mục ($PWD = WORKSPACE_ROOT), nhưng các lệnh git PHÍA SAU (cụ thể là
-`git diff --name-only -- .claude/agents .Codex/agents .codex/agents`) vẫn
+`git diff --name-only -- .claude/agents`) vẫn
 đọc INDEX của repo SAI (medical-ebm-automation, do GIT_DIR/GIT_INDEX_FILE
 còn rò) trong khi so với các FILE THẬT trên đĩa tại $PWD đúng (workspace).
 Hai repo đều mirror file cùng tên tương đối (".claude/agents/*.md") theo

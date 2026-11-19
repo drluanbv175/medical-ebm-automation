@@ -10,7 +10,7 @@ Canh SÁU thứ — mỗi thứ là một cách việc này hỏng IM LẶNG:
   3. CLI in thiếu / in lặp / trộn trường ⇒ JSON và bản đọc đều có ĐÚNG MỘT lần, ở trường/dòng riêng;
   4. gắn nhầm sang `ema`                 ⇒ EMA không phải dữ liệu NLM, không được mang câu này;
   5. thêm trường làm lệch fail-closed cũ ⇒ `loi` ≠ không thấy, `gan_dung` không tự chấp nhận, mã thoát giữ nguyên;
-  6. công cụ in mà agent không được dạy  ⇒ doctrine §1ter (cả bản `.claude` lẫn mirror `.codex`) phải trích đúng câu.
+  6. công cụ in mà agent không được dạy  ⇒ doctrine §1ter (bản `.claude`; mirror `.codex` gỡ 19/11) phải trích đúng câu.
 Ngoại tuyến hoàn toàn: HTTP giả, không gọi mạng. Hình dạng phản hồi mượn của `test_rxnorm_ema_medicines.py` (lấy từ
 các lời gọi thật 20/09/2026).
 """
@@ -231,7 +231,7 @@ def test_cli_ema_khong_gan_dong_mien_tru_cua_nlm(monkeypatch, capsys, ca, co):
 
 
 # ---------------------------------------------------------------- 6. doctrine dạy agent
-@pytest.mark.parametrize("thu_muc", [".claude", ".codex"])
+@pytest.mark.parametrize("thu_muc", [".claude"])   # mirror .codex gỡ 19/11/2026
 def test_doctrine_1ter_day_agent_in_dong_mien_tru_nguyen_van(thu_muc):
     """BH41/§6.4 của repo gốc: công cụ in mà doctrine không dạy thì agent trình kết quả vẫn thiếu dòng miễn trừ."""
     van_ban = (GOC / thu_muc / "agents" / "_CONNECTOR-CHUNG-CU.md").read_text(encoding="utf-8")

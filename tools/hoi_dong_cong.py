@@ -85,10 +85,10 @@ GIAM_KHAO = "giam-khao-cong"
 # ── Tranh biện ───────────────────────────────────────────────────────────────────────────────────────────────────────
 PHAN_BIEN = "phan-bien-tranh-bien"
 TRONG_TAI = "trong-tai-tranh-bien"
-TRONG_TAI_CODEX = "codex:trong-tai-tranh-bien"
 # 17/11/2026: «batch_api» = hội đồng qua Claude Batch API (`tools/hoi_dong_cong_batch.py`) — cùng ba vai, trọng tài
 # là trong-tai-tranh-bien; biên bản mang thêm `nguon_may` (công cụ, model, id batch).
-CHE_DO = ("subagent", "codex", "cung_phien", "batch_api")
+# «codex» (trọng tài Codex) gỡ 19/11/2026 — bác sĩ không còn dùng Codex.
+CHE_DO = ("subagent", "cung_phien", "batch_api")
 KET_QUA_TRANH_BIEN = ("giu_ket_luan", "sua_ket_luan", "chuyen_bac_si")
 PHAN_QUYET = ("chap_nhan", "bac", "chua_du_can_cu")
 THAM_QUYEN = ("PI", "IRB", "STATISTICIAN", "DATA_MANAGER", "INDEPENDENT_PEER_REVIEWER")
@@ -695,9 +695,8 @@ def _kiem_tranh_bien(bb: Dict[str, Any], gate: str, out_dir: Path, repo_root: Pa
         loi.append(f"vai.de_xuat phải là điều phối cổng «{dieu_phoi_cong(gate)}»")
     if phan_bien != PHAN_BIEN:
         loi.append(f"vai.phan_bien phải là «{PHAN_BIEN}»")
-    trong_tai_dung = TRONG_TAI_CODEX if che_do == "codex" else TRONG_TAI
-    if trong_tai != trong_tai_dung:
-        loi.append(f"vai.trong_tai phải là «{trong_tai_dung}» với che_do={che_do}")
+    if trong_tai != TRONG_TAI:
+        loi.append(f"vai.trong_tai phải là «{TRONG_TAI}» với che_do={che_do}")
     if len({de_xuat, phan_bien, trong_tai}) != 3:
         loi.append("vai: đề xuất, phản biện, trọng tài phải là ba agent khác nhau")
     if not _co_noi_dung(bb.get("ket_luan_de_xuat")):
@@ -1309,7 +1308,7 @@ def mau_bien_ban(loai: str, gate: str) -> Dict[str, Any]:
                               "ket_luan": "dat|dat_co_luu_y|tra_ve_sua"}]}
     dp = DIEM_QUYET_DINH[gate][0]
     cc = [{"loai": "tep|tieu_chi|pmid|doi|lenh", "gia_tri": ""}]
-    return {"loai": "tranh_bien", "che_do": "subagent|codex|cung_phien|batch_api",
+    return {"loai": "tranh_bien", "che_do": "subagent|cung_phien|batch_api",
             "diem_quyet_dinh": {"ma": dp["ma"], "cau_hoi": dp["cau_hoi"]},
             "nguon_bat_dong": "(id biên bản đánh giá chéo bất đồng, nếu có)",
             "tai_lieu_xet": ["<tệp trong thư mục đề tài>"], "ket_luan_de_xuat": "",

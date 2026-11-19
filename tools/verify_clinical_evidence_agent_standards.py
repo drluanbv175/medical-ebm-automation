@@ -862,8 +862,7 @@ def build_operational_completeness_policy() -> OperationalCompletenessPolicy:
         ],
         completeness_evidence=[
             "upgrade_verify.py requires 28/28 PASS before technical release",
-            "sync_agents_to_codex.py --check PASS",
-            "check_claude_codex_sync_health.py PASS",
+            "kiem_suc_khoe_agent.py PASS",
             "verify_clinical_evidence_agent_standards.py fail_count=0",
             "verify_clinical_evidence_update_pipeline.py PASS",
             "verify_clinical_production_control_plane.py keeps production blocked",

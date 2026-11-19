@@ -79,7 +79,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 07/10/2026 (thu hẹp nhánh tương thích G2 kiểu cũ): 2 agent (dao-duc-dang-ky, dieu-phoi-g2) dạy luật mới — bản cặp
 # y hệt gốc; vẫn 64.
 # 07/10/2026 (trọng tài Codex — tools/trong_tai_codex.py): _HOI-DONG-CONG, dieu-phoi-nghien-cuu, trong-tai-tranh-bien
-# dạy cách chạy chế độ codex — bản cặp y hệt gốc; vẫn 64.
+# dạy cách chạy chế độ codex — bản cặp y hệt gốc; vẫn 64. 19/11/2026: chế độ Codex GỠ (bác sĩ không còn dùng); vẫn 64.
 # 09/10/2026 (G0 chấm lại ≠ dựng lại — hội đồng BD-G0-T1/T2): dieu-phoi-g0 dạy hành vi mới của run_pipeline — bản cặp
 # y hệt gốc; vẫn 64.
 # 09/10/2026 (trách nhiệm cổng — bác sĩ giao điều phối cổng chịu trách nhiệm kết quả cổng): 11 dieu-phoi-gN thêm mục 4b
@@ -182,7 +182,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 19/11/2026 (tối): dạy `viet-ban-thao` + `phan-tich-thong-ke` biểu bảng chuẩn (khung_bieu_bang, K9, trình bày kết quả
 # G6) — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "b2dcc102835a7ef4427c37e2bc5506354497c2f0d38ba9d16268451f2c155c67"
+    "2fe94df3198d3635eb57d4cf21209f1ceca5b6263f860320f1ed8023f447d7c1"
 )
 
 MINIMUM_AGENT_COUNT = 64

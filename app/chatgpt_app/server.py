@@ -198,7 +198,7 @@ def prepare_research_workflow(research_topic: str) -> CallToolResult:
     name="get_sync_status",
     title="Kiểm tra đồng bộ EBM",
     description=(
-        "Use this when you need the live Claude-to-Codex agent mirror and knowledge "
+        "Use this when you need the live agent-source and knowledge "
         "reload status without changing files."
     ),
     annotations=READ_ONLY,
@@ -214,7 +214,7 @@ def get_sync_status() -> CallToolResult:
     title="Đồng bộ hệ thống agent EBM",
     description=(
         "Use this only after the physician explicitly asks to synchronize. Pass the exact "
-        "confirmation returned by the tool; it regenerates Claude-to-Codex mirrors AND may "
+        "confirmation returned by the tool; it re-checks agent health AND may "
         "write directly to the source .claude/agents/*.md files (guardrail block insertion, "
         "additive only), but never pulls or pushes GitHub."
     ),

@@ -89,7 +89,7 @@ cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ c�
 12. **Tiêu chuẩn hoàn thiện từng agent và từng điều phối** (10/10/2026, bác sĩ giao «xây dựng từng Agent một cho tới
     khi hoàn thiện để khỏi tốn thời gian và Token»): `python3 tools/tieu_chuan_hoan_thien.py [--agent <tên>]` (repo y
     khoa) đo MỘT bộ hạng mục — agent A1 khung doctrine · A2 có điều phối giao việc · A3 khối sinh khớp · A4 mọi
-    nhiệm vụ có kiểm máy · A5 lệnh chạy được · A6 bản Codex · A7 giao nhiệm vụ + tiêu chí kết quả + người
+    nhiệm vụ có kiểm máy · A5 lệnh chạy được · (A6 bản Codex — bỏ 19/11/2026) · A7 giao nhiệm vụ + tiêu chí kết quả + người
     kiểm (mọi vai, `--json` → «giao_viec»); điều phối cổng D1 bảng §3 khớp · D2 phủ đủ tiêu chí
     bộ chấm · D3 mọi nhiệm vụ có kiểm máy; nhạc trưởng lâm sàng L1; điều phối tổng N1/N2. Mã 0 = mọi agent + điều
     phối ĐẠT; test chốt không cho lùi. Làm việc theo danh sách công cụ in ra — không rà mở lại từ đầu.
@@ -153,8 +153,7 @@ thì không bịa bài học cho có.
 
 - **Vai (ba agent khác nhau):** ĐỀ XUẤT = `dieu-phoi-gN` (trình kết luận dự kiến + căn cứ) · PHẢN BIỆN =
   `phan-bien-tranh-bien` (tìm phản đối MẠNH NHẤT có căn cứ; không tìm được thì ghi `nhuong=true` — không bịa phản đối
-  cho có) · TRỌNG TÀI = `trong-tai-tranh-bien` (ngữ cảnh mới, không tham gia soạn; chế độ `codex` ⇒
-  `codex:trong-tai-tranh-bien` chạy ở phiên Codex tách biệt — khác họ mô hình).
+  cho có) · TRỌNG TÀI = `trong-tai-tranh-bien` (ngữ cảnh mới, không tham gia soạn).
 - **Vòng:** mỗi vòng ĐỀ XUẤT rồi PHẢN BIỆN; tối đa **2 vòng** (trần chi phí, chống cãi vòng) rồi trọng tài phán.
 - **Phán quyết:** từng phản đối `chap_nhan` · `bac` · `chua_du_can_cu` (kèm lý do); kết quả `giu_ket_luan` ·
   `sua_ket_luan` (kèm `viec_sua`) · `chuyen_bac_si` (kèm vấn đề + vì sao thuộc thẩm quyền người). Đã chấp nhận một
@@ -186,16 +185,10 @@ của chuỗi lời gọi — lượt song song gần như chạy lại hết (0
 | Chế độ | Khi nào | Độc lập | Chi phí |
 |---|---|---|---|
 | **Hội đồng đầy đủ** (`subagent`) | bác sĩ đồng ý; khuyến nghị cho DP **bắt buộc** ở 6 cổng cứng và mọi bất đồng | ngữ cảnh mới từng vai | cao |
-| **Trọng tài Codex** (`codex`) | máy có Codex CLI; muốn trọng tài khác họ mô hình | khác họ mô hình | Codex chịu phần trọng tài |
-| **Cùng phiên** (`cung_phien`) | bác sĩ chọn tiết kiệm / phiên không có subagent / Codex | chỉ độc lập VAI (ghi rõ trên biên bản) | thấp |
+| **Cùng phiên** (`cung_phien`) | bác sĩ chọn tiết kiệm / phiên không có subagent | chỉ độc lập VAI (ghi rõ trên biên bản) | thấp |
 
-**Chạy chế độ `codex` (07/10/2026):** workflow `hoi-dong-cong.js` với `args.trong_tai: "codex"` — vai trọng tài KHÔNG tự
-phán mà chạy `python3 tools/trong_tai_codex.py --study <mã> --gate G<N> --tep <nháp.json> --json` rồi trả nguyên văn
-phán quyết; chạy tay thêm `--chay-thu` (xem prompt, không gọi Codex) hoặc `--ghi`. Trình chạy gọi Codex CLI ở sandbox
-CHỈ-ĐỌC, phiên tạm, môi trường đã lọc, đầu ra ép schema, rồi kiểm bằng CHÍNH luật biên bản (vi phạm ⇒ mã 3, không ghi).
-Chế độ này GỬI tới dịch vụ Codex (OpenAI): doctrine trọng tài, bản nháp tranh biện, trạng thái cổng và trích đoạn tệp căn
-cứ CẤP ĐẦU thư mục đề tài — không tệp ẩn/khoá/`.env`, không dữ liệu hay bản gỡ băng ở thư mục con. Bác sĩ chọn chế độ khi
-triệu tập.
+(Chế độ **Trọng tài Codex** (`codex`, thêm 07/10/2026) đã GỠ 19/11/2026 — bác sĩ không còn dùng Codex; không gửi hồ sơ
+đề tài ra dịch vụ Codex nữa.) Bác sĩ chọn chế độ khi triệu tập.
 
 **Họp tiết kiệm — hồ sơ do máy lập (10/10/2026; bác sĩ: «việc họp rất tốn token, hãy hoàn thiện theo cách thông minh
 nhất»).** Ba khoản tốn mà máy làm thay được, KHÔNG đổi rubric, luật biên bản, vai hay mức độc lập:

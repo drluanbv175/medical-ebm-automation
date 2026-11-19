@@ -214,7 +214,7 @@ Projects/<ten-de-tai>/
 
 ## §8. KHOẢNG TRỐNG — TRẠNG THÁI VÁ (cập nhật 2026-06-30)
 
-> Sau khi sửa agent: `python tools/enforce_agent_guardrails.py` → `python tools/sync_agents_to_codex.py`
+> Sau khi sửa agent: `python tools/enforce_agent_guardrails.py` → `python tools/kiem_suc_khoe_agent.py`
 > → `--check` → `python tools/audit_ebm_system.py`.
 
 | Mã | Vá | File chạm | Ưu tiên | Trạng thái |
