@@ -73,9 +73,9 @@
     "contract_version": "G3-2026.1",
     "study": "btm-dtd2-ngoai-tru-BVQY175",
     "gate": "G3",
-    "status": "DRAFT_NEEDS_HUMAN_PARAMETERS",
+    "status": "PASS_G3_CONFIRMED",
     "automated_checks_passed": true,
-    "parameters_ready_for_review": false,
+    "parameters_ready_for_review": true,
     "human_confirmation_complete": true,
     "automatic_criteria": [
       {
@@ -88,8 +88,8 @@
       {
         "id": "G3-AUTO-01",
         "label": "Tiền đề G0/G1 có thật (thiết kế không do mặc định im lặng)",
-        "status": "REVIEW",
-        "evidence": "G1 chấm sống=DRAFT_READY_NEEDS_HUMAN_REVIEW — thiết kế chưa được PI/methodologist chốt",
+        "status": "PASS",
+        "evidence": "G1 chấm sống=PASS_G1_CONFIRMED",
         "action": "Chạy G0/G1 trước; không tính cỡ mẫu trên thiết kế mặc định."
       },
       {
@@ -270,9 +270,7 @@
         "action": "Với thử nghiệm quyết định, mời nhà thống kê độc lập xác nhận và cân nhắc power 90%."
       }
     ],
-    "pending_actions": [
-      "Chạy G0/G1 trước; không tính cỡ mẫu trên thiết kế mặc định."
-    ],
+    "pending_actions": [],
     "dau_van_tay_hien_tai": "e86410f1846a5b43",
     "artifact_manifest": {
       "A4_SAMPLE_SIZE": {

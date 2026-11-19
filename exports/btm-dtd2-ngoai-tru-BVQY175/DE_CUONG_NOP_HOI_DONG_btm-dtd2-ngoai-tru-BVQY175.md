@@ -177,7 +177,7 @@ Chọn mẫu ngẫu nhiên đơn ở cấp người bệnh: (1) lập khung mẫ
 
 ## 4.6. Công cụ và kỹ thuật thu thập số liệu
 
-- Công cụ: Phiếu thu thập số liệu (Phụ lục C) là phiếu trích hồ sơ do nhóm nghiên cứu tự xây dựng từ bộ biến số của đề tài. Mỗi trường của phiếu có định nghĩa vận hành, vị trí dữ kiện trên eHospital và quy tắc mã hoá được viết trước (Phụ lục D và quy trình trích hồ sơ viết sẵn). Phiếu chỉ ghi lại dữ kiện có sẵn trong hồ sơ (mã ICD-10, kết quả xét nghiệm, đơn thuốc, lượt khám); phiếu không phải thang đo hay bộ câu hỏi và các mục không được cộng thành điểm.
+- Công cụ: Phiếu thu thập số liệu (Phụ lục C) là phiếu trích hồ sơ do nhóm nghiên cứu tự xây dựng từ bộ biến số của đề tài. Mỗi trường của phiếu có định nghĩa vận hành, vị trí dữ kiện trên eHospital và quy tắc mã hoá được viết trước (Phụ lục D, danh mục mã ở Phụ lục E và quy trình trích hồ sơ viết sẵn). Phiếu chỉ ghi lại dữ kiện có sẵn trong hồ sơ (mã ICD-10, kết quả xét nghiệm, đơn thuốc, lượt khám); phiếu không phải thang đo hay bộ câu hỏi và các mục không được cộng thành điểm.
 - Nguồn số liệu: hồ sơ bệnh án điện tử trên phần mềm eHospital, trích theo quy trình trích hồ sơ.
 - Thời điểm thu thập: Không áp dụng — cắt ngang hồi cứu, không theo dõi; mỗi người được quan sát một lần trên dữ liệu có sẵn trong cửa sổ 12 tháng.
 - Kiểm định phiếu trích hồ sơ, gồm ba bước:
@@ -641,94 +641,109 @@ Chủ nhiệm đề tài (ký, ghi rõ họ tên): ………………………�
 
 # PHỤ LỤC C. PHIẾU THU THẬP SỐ LIỆU
 
-**PHẦN 1. THÔNG TIN HÀNH CHÍNH**
+**PHẦN A. Sàng lọc hồ sơ (ghi cho MỌI hồ sơ đã mở, kể cả hồ sơ bị loại)**
 
 | Câu | Nội dung | Trả lời | Mã biến |
 |---|---|---|---|
 | 1 | Mã nghiên cứu | ……… | record_id |
-| 2 | Ngày trích hồ sơ | …… /…… /………… | ngay_trich |
-| 3 | Ngày lượt khám đầu tiên tại Khoa Khám bệnh năm 2026 | …… /…… /………… | ngay_kham_dau |
-| 4 | Ngày lượt khám cuối cùng tại Khoa Khám bệnh năm 2026 | …… /…… /………… | ngay_kham_cuoi |
+| 2 | Số thứ tự của hồ sơ trong danh sách đã xếp ngẫu nhiên | ……… (từ 1 đến 100000) | thu_tu_ngau_nhien |
+| 3 | Người trích | ☐ 1. Chủ nhiệm  ☐ 2. Người trích lại (kiểm chứng 10%) | nguoi_trich |
+| 4 | Ngày trích hồ sơ | …… /…… /………… | ngay_trich |
+| 5 | Thời gian trích hồ sơ này (phút) | ……… (từ 1 đến 240) | thoi_gian_trich_phut |
+| 6 | Mở được hồ sơ trên eHospital | ☐ 1. Có  ☐ 0. Không | ho_so_mo_duoc |
+| 7 | Từ 18 tuổi trở lên tại lượt khám đầu tiên trong năm 2026 | ☐ 1. Có  ☐ 0. Không | tc_tuoi18 |
+| 8 | Có mã E11 (chẩn đoán chính hoặc kèm theo) ở ít nhất một lượt khám ngoại trú tại Khoa Khám bệnh năm 2026 | ☐ 1. Có  ☐ 0. Không | tc_e11 |
+| 9 | Có từ 2 lượt khám ngoại trú tại Khoa Khám bệnh năm 2026 | ☐ 1. Có  ☐ 0. Không | tc_2luot |
+| 10 | Đang lọc máu hoặc đã ghép thận (mã Z49, Z99.2, Z94.0, T86.1 hoặc chỉ định lọc máu trên eHospital) | ☐ 1. Có  ☐ 0. Không | lt_loc_ghep |
+| 11 | Có thai trong năm 2026 (mã chương O hoặc Z33) | ☐ 1. Có  ☐ 0. Không | lt_thai |
+| 12 | Có mã E10, E12 hoặc E13 ở bất kỳ lượt khám nào năm 2026 | ☐ 1. Có  ☐ 0. Không | lt_dtd_khac |
+| 13 | Người bệnh này đã có trong mẫu dưới một mã nghiên cứu khác | ☐ 1. Có  ☐ 0. Không | trung_nguoi |
+| 14 | Đủ tiêu chuẩn — đưa vào mẫu (tự tính) | (tính từ các câu trên) | du_tieu_chuan |
 
-**PHẦN 2. ĐẶC ĐIỂM CHUNG CỦA ĐỐI TƯỢNG**
-
-| Câu | Nội dung | Trả lời | Mã biến |
-|---|---|---|---|
-| 5 | Số thứ tự của hồ sơ trong danh sách đã xếp ngẫu nhiên | ……… (từ 1 đến 100000) | thu_tu_ngau_nhien |
-| 6 | Người trích | ☐ 1. Chủ nhiệm  ☐ 2. Người trích lại (kiểm chứng 10%) | nguoi_trich |
-| 7 | Thời gian trích hồ sơ này (phút) | ……… (từ 1 đến 240) | thoi_gian_trich_phut |
-| 8 | Mở được hồ sơ trên eHospital | ☐ 1. Có  ☐ 0. Không | ho_so_mo_duoc |
-| 9 | Đang lọc máu hoặc đã ghép thận (mã Z49, Z99.2, Z94.0, T86.1 hoặc chỉ định lọc máu trên eHospital) | ☐ 1. Có  ☐ 0. Không | lt_loc_ghep |
-| 10 | Người bệnh này đã có trong mẫu dưới một mã nghiên cứu khác | ☐ 1. Có  ☐ 0. Không | trung_nguoi |
-| 11 | Đủ tiêu chuẩn — đưa vào mẫu (tự tính) | (tính từ các câu trên) | du_tieu_chuan |
-| 12 | Tuổi (năm) tại lượt khám đầu tiên trong năm 2026 | ……… (từ 18 đến 110) | tuoi |
-| 13 | Giới | ☐ 1. Nam  ☐ 2. Nữ | gioi |
-| 14 | Nhóm đối tượng khám tại lượt khám đầu tiên trong năm 2026 | ☐ 1. Quân nhân  ☐ 2. Bảo hiểm y tế  ☐ 3. Dịch vụ  ☐ 4. Khác | nhom_doi_tuong |
-| 15 | Số lượt khám ngoại trú tại Khoa Khám bệnh năm 2026 | ……… (từ 2 đến 200) | so_luot_kham |
-| 16 | Phòng khám theo dõi chính | ☐ 1. Nội tiết  ☐ 2. Nội chung (nội tổng hợp)  ☐ 3. Khác | phong_kham_chinh |
-| 17 | Năm được chẩn đoán đái tháo đường (theo bệnh án) | ……… (từ 1950 đến 2026) | nam_chan_doan_dtd |
-| 18 | Tăng huyết áp: có mã I10–I15 ở ít nhất một lượt khám năm 2026 | ☐ 1. Có  ☐ 0. Không | tha |
-| 19 | Cân nặng (kg) tại lượt khám gần nhất có ghi cả cân nặng và chiều cao | ……… (từ 25 đến 250) | can_nang |
-| 20 | Chiều cao (cm) tại cùng lượt khám đó | ……… (từ 120 đến 220) | chieu_cao |
-| 21 | BMI (kg/m², máy tự tính) | (tính từ các câu trên) | bmi |
-| 22 | Ngày làm HbA1c gần nhất | …… /…… /………… | hba1c_ngay |
-| 23 | Đơn vị creatinin trên eHospital | ☐ 1. µmol/L  ☐ 2. mg/dL | creat_don_vi |
-| 24 | Creatinin — kết quả thứ 1: ngày | …… /…… /………… | creat_1_ngay |
-| 25 | Creatinin — kết quả thứ 1: giá trị | ……… (từ 0.1 đến 2000) | creat_1_gt |
-| 26 | Creatinin — kết quả thứ 2: ngày | …… /…… /………… | creat_2_ngay |
-| 27 | Creatinin — kết quả thứ 2: giá trị | ……… (từ 0.1 đến 2000) | creat_2_gt |
-| 28 | Creatinin — kết quả thứ 3: ngày | …… /…… /………… | creat_3_ngay |
-| 29 | Creatinin — kết quả thứ 3: giá trị | ……… (từ 0.1 đến 2000) | creat_3_gt |
-| 30 | Creatinin — kết quả thứ 4: ngày | …… /…… /………… | creat_4_ngay |
-| 31 | Creatinin — kết quả thứ 4: giá trị | ……… (từ 0.1 đến 2000) | creat_4_gt |
-| 32 | Creatinin — kết quả thứ 5: ngày | …… /…… /………… | creat_5_ngay |
-| 33 | Creatinin — kết quả thứ 5: giá trị | ……… (từ 0.1 đến 2000) | creat_5_gt |
-| 34 | Creatinin — kết quả thứ 6: ngày | …… /…… /………… | creat_6_ngay |
-| 35 | Creatinin — kết quả thứ 6: giá trị | ……… (từ 0.1 đến 2000) | creat_6_gt |
-| 36 | Đơn vị UACR trên eHospital | ☐ 1. mg/g  ☐ 2. mg/mmol | uacr_don_vi |
-| 37 | UACR — kết quả thứ 1: ngày | …… /…… /………… | uacr_1_ngay |
-| 38 | UACR — kết quả thứ 1: giá trị | ……… (từ 0 đến 10000) | uacr_1_gt |
-| 39 | UACR — kết quả thứ 2: ngày | …… /…… /………… | uacr_2_ngay |
-| 40 | UACR — kết quả thứ 2: giá trị | ……… (từ 0 đến 10000) | uacr_2_gt |
-| 41 | UACR — kết quả thứ 3: ngày | …… /…… /………… | uacr_3_ngay |
-| 42 | UACR — kết quả thứ 3: giá trị | ……… (từ 0 đến 10000) | uacr_3_gt |
-| 43 | UACR — kết quả thứ 4: ngày | …… /…… /………… | uacr_4_ngay |
-| 44 | UACR — kết quả thứ 4: giá trị | ……… (từ 0 đến 10000) | uacr_4_gt |
-| 45 | Loại xét nghiệm albumin/protein niệu dạng khác | ☐ 1. Nồng độ microalbumin niệu  ☐ 2. Que nhúng protein niệu  ☐ 3. Protein niệu 24 giờ hoặc tỷ số protein/creatinin  ☐ 4. Khác | alb_khac_loai |
-| 46 | Có ít nhất một kết quả dạng khác vượt giới hạn tham chiếu của phòng xét nghiệm | ☐ 1. Có  ☐ 0. Không | alb_khac_bat_thuong |
-| 47 | Creatinin ngoài viện gần nhất: ngày | …… /…… /………… | creat_nv_ngay |
-| 48 | Creatinin ngoài viện gần nhất: giá trị (cùng đơn vị với đơn vị creatinin trên eHospital) | ……… (từ 0.1 đến 2000) | creat_nv_gt |
-| 49 | UACR ngoài viện gần nhất: ngày | …… /…… /………… | uacr_nv_ngay |
-| 50 | UACR ngoài viện gần nhất: giá trị (cùng đơn vị với đơn vị UACR trên eHospital) | ……… (từ 0 đến 10000) | uacr_nv_gt |
-| 51 | Bệnh án ghi người bệnh đang dùng nhưng KHÔNG có trong đơn eHospital (thuốc kê hoặc mua ngoài) | ☐ 1. ACEi hoặc ARB  ☐ 2. Ức chế SGLT2  ☐ 0. Không có | thuoc_ngoai_don |
-| 52 | Hồ sơ ghi rõ chống chỉ định hoặc không dung nạp ACEi/ARB | ☐ 1. Có  ☐ 0. Không | ccd_raasi |
-| 53 | Lý do được ghi | ☐ 1. Tăng kali máu  ☐ 2. Phù mạch  ☐ 3. Hạ huyết áp  ☐ 4. Tăng creatinin hoặc tổn thương thận cấp  ☐ 5. Có thai hoặc dự định có thai  ☐ 6. Khác | ccd_raasi_ly_do |
-| 54 | Hồ sơ ghi rõ chống chỉ định hoặc không dung nạp thuốc ức chế SGLT2 | ☐ 1. Có  ☐ 0. Không | ccd_sglt2i |
-| 55 | Lý do được ghi | ☐ 1. Nhiễm toan ceton  ☐ 2. Nhiễm khuẩn tiết niệu – sinh dục tái diễn  ☐ 3. eGFR dưới ngưỡng dùng thuốc  ☐ 4. Giảm thể tích hoặc hạ huyết áp  ☐ 5. Khác | ccd_sglt2i_ly_do |
-
-**PHẦN 3. KẾT CỤC**
+**PHẦN B. Thông tin chung**
 
 | Câu | Nội dung | Trả lời | Mã biến |
 |---|---|---|---|
-| 56 | Từ 18 tuổi trở lên tại lượt khám đầu tiên trong năm 2026 | ☐ 1. Có  ☐ 0. Không | tc_tuoi18 |
-| 57 | Có mã E11 (chẩn đoán chính hoặc kèm theo) ở ít nhất một lượt khám ngoại trú tại Khoa Khám bệnh năm 2026 | ☐ 1. Có  ☐ 0. Không | tc_e11 |
-| 58 | Có từ 2 lượt khám ngoại trú tại Khoa Khám bệnh năm 2026 | ☐ 1. Có  ☐ 0. Không | tc_2luot |
-| 59 | Có thai trong năm 2026 (mã chương O hoặc Z33) | ☐ 1. Có  ☐ 0. Không | lt_thai |
-| 60 | Có mã E10, E12 hoặc E13 ở bất kỳ lượt khám nào năm 2026 | ☐ 1. Có  ☐ 0. Không | lt_dtd_khac |
-| 61 | Bệnh tim mạch do xơ vữa: có mã I20–I25, I63–I66, G45, I70, I73.9, Z95.1 hoặc Z95.5 ở ít nhất một lượt khám năm 2026 | ☐ 1. Có  ☐ 0. Không | ascvd |
-| 62 | Suy tim: có mã I50, I11.0, I13.0 hoặc I13.2 ở ít nhất một lượt khám năm 2026 | ☐ 1. Có  ☐ 0. Không | suy_tim |
-| 63 | Có mã bệnh thận mạn hoặc biến chứng thận do ĐTĐ (N18, E11.2, N08.3) ở ít nhất một lượt khám năm 2026 | ☐ 1. Có  ☐ 0. Không | ma_btm_ghi_nhan |
-| 64 | Có mã thận khác (N19, I12, I13, R80) ở ít nhất một lượt khám năm 2026 | ☐ 1. Có  ☐ 0. Không | ma_than_mo_rong |
-| 65 | Có kết quả HbA1c trong eHospital năm 2026 | ☐ 1. Có  ☐ 0. Không | co_hba1c |
-| 66 | HbA1c gần nhất năm 2026 (%) | ……… (từ 3 đến 20) | hba1c_gt |
-| 67 | Số kết quả creatinin huyết thanh trong eHospital năm 2026 | ……… (từ 0 đến 100) | so_lan_creat |
-| 68 | Số kết quả UACR (tỷ số albumin/creatinin niệu) trong eHospital năm 2026 | ……… (từ 0 đến 60) | so_lan_uacr |
-| 69 | Có xét nghiệm albumin hoặc protein niệu dạng KHÁC trong eHospital năm 2026 (nồng độ microalbumin niệu, que nhúng…) | ☐ 1. Có  ☐ 0. Không | alb_khac |
-| 70 | Bệnh án ghi kết quả creatinin làm NGOÀI BVQY175 năm 2026 (có ghi rõ ngày và kết quả) | ☐ 1. Có  ☐ 0. Không | creat_ngoai_vien |
-| 71 | Bệnh án ghi kết quả UACR làm NGOÀI BVQY175 năm 2026 (có ghi rõ ngày và kết quả) | ☐ 1. Có  ☐ 0. Không | uacr_ngoai_vien |
-| 72 | Nhóm thuốc hạ glucose có trong đơn tại lượt khám cuối năm 2026 | ☐ 1. Metformin  ☐ 2. Sulfonylurea  ☐ 3. Ức chế DPP-4  ☐ 4. Ức chế SGLT2  ☐ 5. Đồng vận thụ thể GLP-1  ☐ 6. Thiazolidinedion  ☐ 7. Ức chế alpha-glucosidase  ☐ 8. Insulin  ☐ 9. Nhóm khác  ☐ 0. Không có thuốc hạ glucose | thuoc_ha_glucose |
-| 73 | Có ít nhất một đơn thuốc hạ glucose ở bất kỳ lượt khám nào năm 2026 | ☐ 1. Có  ☐ 0. Không | don_ha_glucose_nam |
-| 74 | ACEi hoặc ARB có trong đơn tại lượt khám cuối năm 2026 | ☐ 0. Không  ☐ 1. ACEi  ☐ 2. ARB  ☐ 3. Cả ACEi và ARB | raasi |
+| 15 | Tuổi (năm) tại lượt khám đầu tiên trong năm 2026 | ……… (từ 18 đến 110) | tuoi |
+| 16 | Giới | ☐ 1. Nam  ☐ 2. Nữ | gioi |
+| 17 | Nhóm đối tượng khám tại lượt khám đầu tiên trong năm 2026 | ☐ 1. Quân nhân  ☐ 2. Bảo hiểm y tế  ☐ 3. Dịch vụ  ☐ 4. Khác | nhom_doi_tuong |
+| 18 | Số lượt khám ngoại trú tại Khoa Khám bệnh năm 2026 | ……… (từ 2 đến 200) | so_luot_kham |
+| 19 | Ngày lượt khám đầu tiên tại Khoa Khám bệnh năm 2026 | …… /…… /………… | ngay_kham_dau |
+| 20 | Ngày lượt khám cuối cùng tại Khoa Khám bệnh năm 2026 | …… /…… /………… | ngay_kham_cuoi |
+| 21 | Phòng khám theo dõi chính | ☐ 1. Nội tiết  ☐ 2. Nội chung (nội tổng hợp)  ☐ 3. Khác | phong_kham_chinh |
+
+**PHẦN C. Đái tháo đường và bệnh kèm (tra mã ICD-10 ở MỌI lượt khám năm 2026)**
+
+| Câu | Nội dung | Trả lời | Mã biến |
+|---|---|---|---|
+| 22 | Năm được chẩn đoán đái tháo đường (theo bệnh án) | ……… (từ 1950 đến 2026) | nam_chan_doan_dtd |
+| 23 | Tăng huyết áp: có mã I10–I15 ở ít nhất một lượt khám năm 2026 | ☐ 1. Có  ☐ 0. Không | tha |
+| 24 | Bệnh tim mạch do xơ vữa: có mã I20–I25, I63–I66, G45, I70, I73.9, Z95.1 hoặc Z95.5 ở ít nhất một lượt khám năm 2026 | ☐ 1. Có  ☐ 0. Không | ascvd |
+| 25 | Suy tim: có mã I50, I11.0, I13.0 hoặc I13.2 ở ít nhất một lượt khám năm 2026 | ☐ 1. Có  ☐ 0. Không | suy_tim |
+| 26 | Có mã bệnh thận mạn hoặc biến chứng thận do ĐTĐ (N18, E11.2, N08.3) ở ít nhất một lượt khám năm 2026 | ☐ 1. Có  ☐ 0. Không | ma_btm_ghi_nhan |
+| 27 | Có mã thận khác (N19, I12, I13, R80) ở ít nhất một lượt khám năm 2026 | ☐ 1. Có  ☐ 0. Không | ma_than_mo_rong |
+| 28 | Cân nặng (kg) tại lượt khám gần nhất có ghi cả cân nặng và chiều cao | ……… (từ 25 đến 250) | can_nang |
+| 29 | Chiều cao (cm) tại cùng lượt khám đó | ……… (từ 120 đến 220) | chieu_cao |
+| 30 | BMI (kg/m², máy tự tính) | (tính từ các câu trên) | bmi |
+| 31 | Có kết quả HbA1c trong eHospital năm 2026 | ☐ 1. Có  ☐ 0. Không | co_hba1c |
+| 32 | HbA1c gần nhất năm 2026 (%) | ……… (từ 3 đến 20) | hba1c_gt |
+| 33 | Ngày làm HbA1c gần nhất | …… /…… /………… | hba1c_ngay |
+
+**PHẦN D. Xét nghiệm thận — chỉ kết quả có trong eHospital năm 2026 (kết quả ngoài viện ghi ở mục E)**
+
+| Câu | Nội dung | Trả lời | Mã biến |
+|---|---|---|---|
+| 34 | Số kết quả creatinin huyết thanh trong eHospital năm 2026 | ……… (từ 0 đến 100) | so_lan_creat |
+| 35 | Đơn vị creatinin trên eHospital | ☐ 1. µmol/L  ☐ 2. mg/dL | creat_don_vi |
+| 36 | Creatinin — kết quả thứ 1: ngày | …… /…… /………… | creat_1_ngay |
+| 37 | Creatinin — kết quả thứ 1: giá trị | ……… (từ 0.1 đến 2000) | creat_1_gt |
+| 38 | Creatinin — kết quả thứ 2: ngày | …… /…… /………… | creat_2_ngay |
+| 39 | Creatinin — kết quả thứ 2: giá trị | ……… (từ 0.1 đến 2000) | creat_2_gt |
+| 40 | Creatinin — kết quả thứ 3: ngày | …… /…… /………… | creat_3_ngay |
+| 41 | Creatinin — kết quả thứ 3: giá trị | ……… (từ 0.1 đến 2000) | creat_3_gt |
+| 42 | Creatinin — kết quả thứ 4: ngày | …… /…… /………… | creat_4_ngay |
+| 43 | Creatinin — kết quả thứ 4: giá trị | ……… (từ 0.1 đến 2000) | creat_4_gt |
+| 44 | Creatinin — kết quả thứ 5: ngày | …… /…… /………… | creat_5_ngay |
+| 45 | Creatinin — kết quả thứ 5: giá trị | ……… (từ 0.1 đến 2000) | creat_5_gt |
+| 46 | Creatinin — kết quả thứ 6: ngày | …… /…… /………… | creat_6_ngay |
+| 47 | Creatinin — kết quả thứ 6: giá trị | ……… (từ 0.1 đến 2000) | creat_6_gt |
+| 48 | Số kết quả UACR (tỷ số albumin/creatinin niệu) trong eHospital năm 2026 | ……… (từ 0 đến 60) | so_lan_uacr |
+| 49 | Có xét nghiệm albumin hoặc protein niệu dạng KHÁC trong eHospital năm 2026 (nồng độ microalbumin niệu, que nhúng…) | ☐ 1. Có  ☐ 0. Không | alb_khac |
+| 50 | Đơn vị UACR trên eHospital | ☐ 1. mg/g  ☐ 2. mg/mmol | uacr_don_vi |
+| 51 | UACR — kết quả thứ 1: ngày | …… /…… /………… | uacr_1_ngay |
+| 52 | UACR — kết quả thứ 1: giá trị | ……… (từ 0 đến 10000) | uacr_1_gt |
+| 53 | UACR — kết quả thứ 2: ngày | …… /…… /………… | uacr_2_ngay |
+| 54 | UACR — kết quả thứ 2: giá trị | ……… (từ 0 đến 10000) | uacr_2_gt |
+| 55 | UACR — kết quả thứ 3: ngày | …… /…… /………… | uacr_3_ngay |
+| 56 | UACR — kết quả thứ 3: giá trị | ……… (từ 0 đến 10000) | uacr_3_gt |
+| 57 | UACR — kết quả thứ 4: ngày | …… /…… /………… | uacr_4_ngay |
+| 58 | UACR — kết quả thứ 4: giá trị | ……… (từ 0 đến 10000) | uacr_4_gt |
+| 59 | Loại xét nghiệm albumin/protein niệu dạng khác | ☐ 1. Nồng độ microalbumin niệu  ☐ 2. Que nhúng protein niệu  ☐ 3. Protein niệu 24 giờ hoặc tỷ số protein/creatinin  ☐ 4. Khác | alb_khac_loai |
+| 60 | Có ít nhất một kết quả dạng khác vượt giới hạn tham chiếu của phòng xét nghiệm | ☐ 1. Có  ☐ 0. Không | alb_khac_bat_thuong |
+
+**PHẦN E. Kết quả làm ngoài BVQY175 mà bệnh án có ghi (chỉ dùng cho phân tích độ nhạy)**
+
+| Câu | Nội dung | Trả lời | Mã biến |
+|---|---|---|---|
+| 61 | Bệnh án ghi kết quả creatinin làm NGOÀI BVQY175 năm 2026 (có ghi rõ ngày và kết quả) | ☐ 1. Có  ☐ 0. Không | creat_ngoai_vien |
+| 62 | Creatinin ngoài viện gần nhất: ngày | …… /…… /………… | creat_nv_ngay |
+| 63 | Creatinin ngoài viện gần nhất: giá trị (cùng đơn vị với đơn vị creatinin trên eHospital) | ……… (từ 0.1 đến 2000) | creat_nv_gt |
+| 64 | Bệnh án ghi kết quả UACR làm NGOÀI BVQY175 năm 2026 (có ghi rõ ngày và kết quả) | ☐ 1. Có  ☐ 0. Không | uacr_ngoai_vien |
+| 65 | UACR ngoài viện gần nhất: ngày | …… /…… /………… | uacr_nv_ngay |
+| 66 | UACR ngoài viện gần nhất: giá trị (cùng đơn vị với đơn vị UACR trên eHospital) | ……… (từ 0 đến 10000) | uacr_nv_gt |
+
+**PHẦN F. Thuốc — theo đơn eHospital tại lượt khám cuối cùng năm 2026 (kể cả viên phối hợp)**
+
+| Câu | Nội dung | Trả lời | Mã biến |
+|---|---|---|---|
+| 67 | Nhóm thuốc hạ glucose có trong đơn tại lượt khám cuối năm 2026 | ☐ 1. Metformin  ☐ 2. Sulfonylurea  ☐ 3. Ức chế DPP-4  ☐ 4. Ức chế SGLT2  ☐ 5. Đồng vận thụ thể GLP-1  ☐ 6. Thiazolidinedion  ☐ 7. Ức chế alpha-glucosidase  ☐ 8. Insulin  ☐ 9. Nhóm khác  ☐ 0. Không có thuốc hạ glucose | thuoc_ha_glucose |
+| 68 | Có ít nhất một đơn thuốc hạ glucose ở bất kỳ lượt khám nào năm 2026 | ☐ 1. Có  ☐ 0. Không | don_ha_glucose_nam |
+| 69 | ACEi hoặc ARB có trong đơn tại lượt khám cuối năm 2026 | ☐ 0. Không  ☐ 1. ACEi  ☐ 2. ARB  ☐ 3. Cả ACEi và ARB | raasi |
+| 70 | Bệnh án ghi người bệnh đang dùng nhưng KHÔNG có trong đơn eHospital (thuốc kê hoặc mua ngoài) | ☐ 1. ACEi hoặc ARB  ☐ 2. Ức chế SGLT2  ☐ 0. Không có | thuoc_ngoai_don |
+| 71 | Hồ sơ ghi rõ chống chỉ định hoặc không dung nạp ACEi/ARB | ☐ 1. Có  ☐ 0. Không | ccd_raasi |
+| 72 | Lý do được ghi | ☐ 1. Tăng kali máu  ☐ 2. Phù mạch  ☐ 3. Hạ huyết áp  ☐ 4. Tăng creatinin hoặc tổn thương thận cấp  ☐ 5. Có thai hoặc dự định có thai  ☐ 6. Khác | ccd_raasi_ly_do |
+| 73 | Hồ sơ ghi rõ chống chỉ định hoặc không dung nạp thuốc ức chế SGLT2 | ☐ 1. Có  ☐ 0. Không | ccd_sglt2i |
+| 74 | Lý do được ghi | ☐ 1. Nhiễm toan ceton  ☐ 2. Nhiễm khuẩn tiết niệu – sinh dục tái diễn  ☐ 3. eGFR dưới ngưỡng dùng thuốc  ☐ 4. Giảm thể tích hoặc hạ huyết áp  ☐ 5. Khác | ccd_sglt2i_ly_do |
 
 Người thu thập: ……………………………   Ngày thu thập: …… /…… /…………
 
@@ -810,3 +825,30 @@ Người thu thập: ……………………………   Ngày thu thập: …�
 | ccd_raasi_ly_do | Lý do được ghi | Định danh/thứ bậc | 1 = Tăng kali máu; 2 = Phù mạch; 3 = Hạ huyết áp; 4 = Tăng creatinin hoặc tổn thương thận cấp; 5 = Có thai hoặc dự định có thai; 6 = Khác | Phiếu thu thập số liệu |
 | ccd_sglt2i | Hồ sơ ghi rõ chống chỉ định hoặc không dung nạp thuốc ức chế SGLT2 | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
 | ccd_sglt2i_ly_do | Lý do được ghi | Định danh/thứ bậc | 1 = Nhiễm toan ceton; 2 = Nhiễm khuẩn tiết niệu – sinh dục tái diễn; 3 = eGFR dưới ngưỡng dùng thuốc; 4 = Giảm thể tích hoặc hạ huyết áp; 5 = Khác | Phiếu thu thập số liệu |
+
+# PHỤ LỤC E. DANH MỤC MÃ DÙNG ĐỂ TRÍCH
+
+| Dùng cho | Nội dung | Mã | Hệ mã |
+|---|---|---|---|
+| Chọn vào | ĐTĐ típ 2 | E11 (mọi mã con) | ICD-10 (WHO) |
+| Loại trừ | ĐTĐ típ 1, thể liên quan suy dinh dưỡng, thể xác định khác | E10, E12, E13 | ICD-10 (WHO) |
+| Sơ đồ chọn | ĐTĐ không xác định típ (đếm, không vào mẫu) | E14 | ICD-10 (WHO) |
+| Loại trừ | Lọc máu, ghép thận | Z49, Z99.2, Z94.0, T86.1 | ICD-10 (WHO); kèm chỉ định lọc máu ghi trên eHospital |
+| Loại trừ | Có thai | Chương O (O00–O99), Z33 | ICD-10 (WHO) |
+| Tăng huyết áp | Bệnh tăng huyết áp | I10–I15 | ICD-10 (WHO) |
+| Tim mạch do xơ vữa | Bệnh tim thiếu máu cục bộ; nhồi máu não, đột quỵ, hẹp tắc động mạch não/trước não; cơn thiếu máu não thoáng qua; xơ vữa động mạch; bệnh mạch máu ngoại biên; tình trạng sau bắc cầu hoặc can thiệp mạch vành | I20–I25, I63–I66, G45, I70, I73.9, Z95.1, Z95.5 | ICD-10 (WHO) |
+| Suy tim | Suy tim; bệnh tim do tăng huyết áp có suy tim | I50, I11.0, I13.0, I13.2 | ICD-10 (WHO) |
+| BTM đã được ghi nhận (kết cục phụ) | Bệnh thận mạn; ĐTĐ típ 2 có biến chứng thận; bệnh cầu thận trong ĐTĐ | N18, E11.2, N08.3 | ICD-10 (WHO) |
+| BTM — danh mục mở rộng (phân tích độ nhạy) | Suy thận không xác định; bệnh thận do tăng huyết áp; protein niệu | N19, I12, I13, R80 | ICD-10 (WHO) |
+| Thuốc | Metformin | A10BA02 | ATC (WHO) |
+| Thuốc | Sulfonylurea | A10BB | ATC (WHO) |
+| Thuốc | Ức chế DPP-4 | A10BH | ATC (WHO) |
+| Thuốc | Ức chế SGLT2 | A10BK | ATC (WHO) |
+| Thuốc | Đồng vận thụ thể GLP-1 | A10BJ | ATC (WHO) |
+| Thuốc | Thiazolidinedion | A10BG | ATC (WHO) |
+| Thuốc | Ức chế alpha-glucosidase | A10BF | ATC (WHO) |
+| Thuốc | Insulin | A10A | ATC (WHO) |
+| Thuốc | ACEi đơn chất / phối hợp | C09A / C09B | ATC (WHO) |
+| Thuốc | ARB đơn chất / phối hợp | C09C / C09D | ATC (WHO) |
+
+Mã ICD-10 theo bảng WHO mà eHospital đang dùng; mã thuốc theo hệ phân loại ATC của WHO.

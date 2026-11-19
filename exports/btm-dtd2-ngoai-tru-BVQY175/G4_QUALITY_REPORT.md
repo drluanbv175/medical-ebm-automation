@@ -1,6 +1,6 @@
 # BÁO CÁO CHẤT LƯỢNG G4 (KHÓA SAP) — btm-dtd2-ngoai-tru-BVQY175
 
-**Trạng thái:** `DRAFT_NEEDS_HUMAN_CONTENT`
+**Trạng thái:** `READY_FOR_SIGNATURE`
 **Phiên bản hợp đồng:** G4-2026.1
 **Phạm vi khóa ký:** không xác định
 
@@ -19,7 +19,7 @@
 | G4-AUTO-09 | Margin(Δ) cho NI/equivalence có giá trị và có nguồn biện minh | PASS | hypothesis_type=descriptive_precision — không cần margin |
 | G4-AUTO-10 | Mục bắt buộc có mặt và không còn ô trống (§1/§2/§4/§5/§9/§10; RCT thêm §13/§14/§15; đánh giá kinh tế thêm §16) | PASS | không còn ô trống ở §1/§2/§4/§5/§9/§10 |
 | G4-AUTO-11 | Kết cục chính §2 khớp câu hỏi nghiên cứu đã chốt (G0/G1) | PASS | kết cục chính §2 chứa 'Được xét nghiệm đủ UACR và creatinin huyết thanh trong cửa s' đã chốt ở G0/G1 |
-| G4-AUTO-12 | G3 (cỡ mẫu) chấm sống đã chốt PASS_G3_CONFIRMED — không bị chặn | REVIEW | G3 chấm sống=DRAFT_NEEDS_HUMAN_PARAMETERS — G3 chưa đạt PASS_G3_CONFIRMED; tiêu chí G3 còn chờ: G3-AUTO-01; SAP không được khoá khi G3 chưa chốt |
+| G4-AUTO-12 | G3 (cỡ mẫu) chấm sống đã chốt PASS_G3_CONFIRMED — không bị chặn | PASS | G3 chấm sống=PASS_G3_CONFIRMED |
 | G4-AUTO-13 | Chứng chỉ khoá SAP (PHẦN 5) đã điền đủ và «KQ chính» khớp §2 | PASS | chứng chỉ khoá đã điền, «KQ chính» cùng kết cục với §2 |
 | G4-AUTO-14 | N kế hoạch thấp hơn N tối thiểu được nêu thật và có giải trình | PASS | N kế hoạch ≥ N tối thiểu (hoặc chưa chốt N riêng) |
 | G4-AUTO-15 | RCT: §4 chứa estimand ICH E9(R1) đã khai ở G1 và quần thể phân tích chính | PASS | thiết kế cross_sectional — estimand bắt buộc (G1-HUMAN-05) chỉ cho RCT |
@@ -37,7 +37,6 @@
 | G4-HUMAN-08 | Xác nhận G4 của thống kê viên/PI gắn đúng nội dung SAP hiện tại (dấu vân tay) | REVIEW | `reviewed_at` không phải ISO-8601 hợp lệ hoặc ở tương lai |
 
 ## Việc còn lại
-- Chạy python3 tools/g3_quality_gate.py --study <đề tài>, xử lý mục BLOCK/REVIEW của G3 (thống kê viên/PI xác nhận tham số gắn dấu vân tay) rồi chấm lại G4.
 - Thống kê viên/PI tự ký: approve_gate.py --gate G4 --reviewer-role METHODS_STATISTICS_REVIEWER / BIOSTATISTICIAN / STATISTICIAN HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR
 - Tạo khóa riêng: setup_gate_approval_key.py --role STATISTICIAN, và để thống kê viên giữ.
 - Cân nhắc để thống kê viên (không phải người đã ký vai PI/IRB/quản lý dữ liệu/phản biện) ký G4 bằng reviewer_ref riêng.

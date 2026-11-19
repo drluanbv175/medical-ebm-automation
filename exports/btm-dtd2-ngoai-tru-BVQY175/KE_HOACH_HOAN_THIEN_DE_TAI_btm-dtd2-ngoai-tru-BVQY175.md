@@ -5,6 +5,8 @@
 **Tạp chí đích:** Tạp chí Y Dược Thực hành 175 (ISSN 2354-1024, DOI 10.59354)
 **Lập ngày:** 26/10/2026 — bản đề xuất của Claude; mốc thời gian là ƯỚC TÍNH, chủ nhiệm chỉnh theo thực tế.
 
+**Cập nhật 20/11/2026:** chủ nhiệm chọn chấm độ giá trị nội dung phiếu trích (CVI) xong rồi mới nộp và «Lùi cả chuỗi» — mốc hiện hành ở sổ `tien_do/TIEN_DO_btm-dtd2-ngoai-tru-BVQY175.json` và đề cương nộp §4.7: CVI 23/11–11/12/2026, nộp Hội đồng 14/12/2026, trích hồ sơ 16/02–02/04/2027, nộp tạp chí từ 31/05/2027.
+
 ---
 
 ## 1. Đang ở đâu (đo bằng `tools/study_readiness.py`, 26/10/2026)
@@ -64,7 +66,7 @@ Ký hiệu người làm: 🤖 máy soạn (agent/công cụ) · 👤 bác sĩ/c
 | 1.9 | **G3** — cỡ mẫu ước lượng một tỷ lệ | `/tinh-co-mau` (`run_g3_auto.py --prevalence … --precision …`, thêm `--population-n` nếu lấy theo quần thể hữu hạn của khoa) | 🤖 → 👤 chọn p, d | N kèm NGUỒN p (gợi ý PMID 38922613: 24,9% làm đủ cả hai xét nghiệm; PMID 33722396: 43,3% có UACR) | — |
 | 1.10 | Bộ biến số + CRF/codebook | `/dat-bien-so` | 🤖 → 👤 | Codebook (tuổi, giới, thời gian mắc, HbA1c, huyết áp, BMI, creatinin/UACR kèm ngày, mã ICD, thuốc ACEi/ARB/SGLT2i/GLP-1 RA, số lượt khám, nhóm đối tượng) | — |
 
-### Giai đoạn 2 — Hồ sơ xét duyệt (Tuần 3–4: 09/11 → 22/11/2026), cổng G2 · G4 ở mức SẴN SÀNG
+### Giai đoạn 2 — Hồ sơ xét duyệt và chấm CVI (09/11 → 11/12/2026), cổng G2 · G4 ở mức SẴN SÀNG, ký G4 sau CVI
 
 | # | Việc | Lệnh / công cụ | Ai | Xong khi có | Trạng thái |
 |---|---|---|---|---|---|
@@ -73,7 +75,7 @@ Ký hiệu người làm: 🤖 máy soạn (agent/công cụ) · 👤 bác sĩ/c
 | 2.3 | Gói nộp hội đồng | `run_g10_assemble.py` với mục đích `ETHICS_SUBMISSION` (chỉ đòi G0–G4, G2/G4 ở mức READY) | 🤖 | Đề cương thống nhất + Word | — |
 | 2.4 | Kiểm nhất quán N, thiết kế, kết cục chính giữa các cổng | `python tools/nhat_quan_xuyen_cong.py --study btm-dtd2-ngoai-tru-BVQY175` | 🤖 | Không lệch cứng | — |
 
-### Giai đoạn 3 — Xét duyệt (ngoài hệ thống, ước 4–8 tuần: 23/11/2026 → 01/2027)
+### Giai đoạn 3 — Xét duyệt (ngoài hệ thống, ước 8–9 tuần: 14/12/2026 → 15/02/2027)
 
 | # | Việc | Ai | Xong khi có |
 |---|---|---|---|
@@ -81,7 +83,7 @@ Ký hiệu người làm: 🤖 máy soạn (agent/công cụ) · 👤 bác sĩ/c
 | 3.2 | **Ký G2** ngay khi có quyết định | 👤 `approve_gate.py --gate G2` | Sổ cái niêm phong |
 | 3.3 | **Khoá và ký G4 (SAP) TRƯỚC khi nhìn dữ liệu** | 👤 (thống kê viên hoặc chủ nhiệm) `approve_gate.py --gate G4` | SAP khoá |
 
-### Giai đoạn 4 — Dữ liệu (ước 4–6 tuần: 01 → 02/2027)
+### Giai đoạn 4 — Dữ liệu (16/02 → 02/04/2027, gồm trích thử 16–19/02)
 
 | # | Việc | Lệnh / công cụ | Ai | Xong khi có |
 |---|---|---|---|---|
@@ -91,7 +93,7 @@ Ký hiệu người làm: 🤖 máy soạn (agent/công cụ) · 👤 bác sĩ/c
 | 4.4 | Làm sạch, bác sĩ duyệt từng quyết định | `/lam-sach-du-lieu` | 🤖 → 👤 | Nhật ký làm sạch |
 | 4.5 | **Khoá cơ sở dữ liệu → ký G5** | `/khoa-du-lieu` → `approve_gate.py --gate G5` | 👤 | DB khoá |
 
-### Giai đoạn 5 — Phân tích và bản thảo (ước 5 tuần: 02 → 03/2027)
+### Giai đoạn 5 — Phân tích và bản thảo (05/04 → 07/05/2027)
 
 | # | Việc | Lệnh / công cụ | Ai | Xong khi có |
 |---|---|---|---|---|
@@ -103,7 +105,7 @@ Ký hiệu người làm: 🤖 máy soạn (agent/công cụ) · 👤 bác sĩ/c
 | 5.6 | Đối chiếu STROBE + RECORD | `/kiem-chuan-bao-cao` | 🤖 | Bảng kiểm |
 | 5.7 | Gọt tóm tắt tiếng Anh; tự rà bằng con mắt phản biện | `/got-tieng-anh`, `/tu-ra-bai` | 🤖 → 👤 | Bản thảo sửa |
 
-### Giai đoạn 6 — Bình duyệt, liêm chính, nộp (ước 3–4 tuần: 03 → 04/2027)
+### Giai đoạn 6 — Bình duyệt, liêm chính, nộp (10/05 → 28/05/2027; nộp từ 31/05/2027)
 
 | # | Việc | Lệnh / công cụ | Ai | Xong khi có |
 |---|---|---|---|---|
