@@ -230,3 +230,12 @@ def test_xuat_word_khong_hai_bia(tmp_path):
     p = SDC.xuat_word(tmp_path, "S", van, _N())
     chu = [x.text.strip().upper() for x in D.Document(p).paragraphs if x.text.strip()][:12]
     assert sum("ĐỀ CƯƠNG NGHIÊN CỨU KHOA HỌC" in c for c in chu) == 1 and "MỤC LỤC" not in chu
+
+
+def test_gia_lap_doc_json_bo_log_sau_khoi():
+    import gia_lap_tron_vong as GL  # noqa: PLC0415
+
+    dong = ["CẢNH BÁO phông", "{", '  "ma": 0,', '  "loi": []', "}",
+            "2026-11-19 | INFO | matplotlib.font_manager | generated new fontManager"]
+    assert GL.doc_json_dau_ra(dong) == {"ma": 0, "loi": []}
+    assert GL.doc_json_dau_ra(["không có json"]) == {}

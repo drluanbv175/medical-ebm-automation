@@ -926,6 +926,11 @@ def _mo_ta_hinh(kh: Khung) -> str:
 
 # ─────────────────────────────── vẽ hình ───────────────────────────────
 def _plt():
+    import logging  # noqa: PLC0415
+
+    # 19/11/2026 (CI Ubuntu): lần đầu dựng bộ nhớ đệm phông, matplotlib ghi log INFO («generated new fontManager»…) qua
+    # cấu hình logging của app — các dòng này rơi SAU khối JSON của bộ sinh đề cương ⇒ bộ giả lập đọc hỏng kết quả.
+    logging.getLogger("matplotlib").setLevel(logging.WARNING)
     import matplotlib  # noqa: PLC0415
 
     matplotlib.use("Agg")
