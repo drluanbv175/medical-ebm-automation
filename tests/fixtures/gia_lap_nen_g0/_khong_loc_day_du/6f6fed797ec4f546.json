@@ -1,0 +1,549 @@
+{
+ "schema": "gia_lap/khong_loc_day_du/v1",
+ "truy_van": "(\"Heart Failure\"[MeSH] OR \"heart failure\"[tiab]) AND (outpatient*[tiab] OR ambulatory[tiab]) AND (\"prediction model\"[tiab] OR \"risk score\"[tiab] OR \"prognostic model\"[tiab]) AND (hospitalization[tiab] OR hospitalisation[tiab] OR \"Hospitalization\"[MeSH])",
+ "so_hit_that": 53,
+ "so_bai_lay_ve": 53,
+ "ngay_tai": "2026-11-19",
+ "cach": "PubMed E-utilities esearch (sort=date) + esummary, không lọc thiết kế",
+ "ban_ghi": [
+  {
+   "pmid": "42954690",
+   "title": "Incidence of Dementia and Subsequent Outcomes in Patients With Heart Failure.",
+   "year": "2026",
+   "journal": "JACC. Advances",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42667938",
+   "title": "Ambulatory outpatient management of acute decompensated heart failure in a heart failure specialist nurse delivered unit.",
+   "year": "2026",
+   "journal": "Current problems in cardiology",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "42524449",
+   "title": "Non-Biomarker Bedside Risk Scores for One-Year Mortality After Acute Heart Failure Hospitalization.",
+   "year": "2026",
+   "journal": "Cardiology research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41913566",
+   "title": "Efficacy and workload implications of the Triage-HF™ algorithm in a nurse- and allied professional-led heart failure care pathway.",
+   "year": "2026",
+   "journal": "European journal of cardiovascular nursing",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41884313",
+   "title": "The WATCH-DM integer-based risk score identifies risk of all-cause mortality in patients with type 2 diabetes: a retrospective cohort study.",
+   "year": "2026",
+   "journal": "Therapeutic advances in endocrinology and metabolism",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41827461",
+   "title": "Cardiovascular Prognosis in Stable Patients with Cardiac Amyloidosis: A Novel and Simple Risk Score.",
+   "year": "2026",
+   "journal": "Journal of clinical medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41528277",
+   "title": "Lactate Dehydrogenase and Outcomes in Patients With HF and Reduced Ejection Fraction: Insights From GALACTIC-HF.",
+   "year": "2026",
+   "journal": "JACC. Heart failure",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Clinical Trial, Phase III",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "41475581",
+   "title": "The 2025 Echocardiographic Diastolic Function Algorithm is Associated with Improved Risk Stratification in Hospitalized Patients with Heart Failure.",
+   "year": "2026",
+   "journal": "Journal of the American Society of Echocardiography : official publication of the American Society of Echocardiography",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40983571",
+   "title": "Utilisation of ambulatory ECG monitoring for prediction of heart failure and stroke events and healthcare expenditure in treated and untreated patients: a retrospective cohort study.",
+   "year": "2025",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40812809",
+   "title": "Frailty, quality of life and nutritional status for the prediction of morbidity and mortality in individuals with chronic heart failure in southern Brazil (FPROHEART): a cohort study protocol.",
+   "year": "2025",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40592217",
+   "title": "Development of the Anesthesia Risk Assessment Score (ARAS) for postoperative mortality and adverse discharge to a nursing facility.",
+   "year": "2025",
+   "journal": "Journal of clinical anesthesia",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40228649",
+   "title": "Echocardiographic Estimate of Pulmonary Capillary Wedge Pressure Improves Outcome Prediction in Heart Failure Patients With Reduced and Mildly Reduced Ejection Fraction.",
+   "year": "2025",
+   "journal": "Journal of the American Society of Echocardiography : official publication of the American Society of Echocardiography",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40023206",
+   "title": "Identifying low-risk in patients with worsening heart failure with short hospital stay: A comparison of risk scores in predicting 30-day risk events.",
+   "year": "2025",
+   "journal": "Current problems in cardiology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39960078",
+   "title": "Prognostic value of liver fibrosis scores in ambulatory patients with heart failure.",
+   "year": "2025",
+   "journal": "Postgraduate medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39736919",
+   "title": "Comparison of Physical Frailty Assessments in Heart Failure With Preserved Ejection Fraction.",
+   "year": "2024",
+   "journal": "JACC. Advances",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39304675",
+   "title": "Cardiovascular outcomes in Parkinson's disease patients from a retrospective cohort study.",
+   "year": "2024",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "38739123",
+   "title": "Titration of Medications After Acute Heart Failure Is Safe, Tolerated, and Effective Regardless of Risk.",
+   "year": "2024",
+   "journal": "JACC. Heart failure",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "38416125",
+   "title": "Development and validation of the Aortic valve Stenosis Guarded by Amplified Risk Determination (ASGARD) risk score for safe monitoring in asymptomatic non-severe aortic valve stenosis.",
+   "year": "2025",
+   "journal": "European journal of preventive cardiology",
+   "pubtypes": [
+    "Journal Article",
+    "Validation Study",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "37943225",
+   "title": "A Novel Heart Failure Diagnostic Risk Score Using a Minimally Invasive Subcutaneous Insertable Cardiac Monitor.",
+   "year": "2024",
+   "journal": "JACC. Heart failure",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37706670",
+   "title": "Malnutrition in heart failure with preserved ejection fraction.",
+   "year": "2023",
+   "journal": "Journal of the American Geriatrics Society",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "37456933",
+   "title": "The Relationship between the MAGGIC Score and Cardiorenal Syndrome in Patients with Acute Decompensated Heart Failure with Reduced Ejection Fraction.",
+   "year": "2023",
+   "journal": "Acta Cardiologica Sinica",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37257517",
+   "title": "WATCH-DM risk score predicts the prognosis of diabetic phenotype patients with heart failure and preserved ejection fraction.",
+   "year": "2023",
+   "journal": "International journal of cardiology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36354767",
+   "title": "Cardio-Ankle Vascular Index as an Arterial Stiffness Marker Improves the Prediction of Cardiovascular Events in Patients without Cardiovascular Diseases.",
+   "year": "2022",
+   "journal": "Journal of cardiovascular development and disease",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35545655",
+   "title": "Performance assessment across different care settings of a heart failure hospitalisation risk-score for type 2 diabetes using administrative claims.",
+   "year": "2022",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35427812",
+   "title": "Prognostic significance of addition of electrocardiographic findings to the MAGGIC heart failure risk score.",
+   "year": "2022",
+   "journal": "Journal of electrocardiology",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis"
+   ]
+  },
+  {
+   "pmid": "35068257",
+   "title": "Utilization of an Electronic Health Record Integrated Risk Score to Predict Hospitalization Among COVID-19 Patients.",
+   "year": "2022",
+   "journal": "Journal of primary care & community health",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33489725",
+   "title": "Fast track triage for COVID-19 based on a population study: The soda score.",
+   "year": "2021",
+   "journal": "Preventive medicine reports",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33413363",
+   "title": "Prognostic value of non-alcoholic fatty liver disease for predicting cardiovascular events in patients with diabetes mellitus with suspected coronary artery disease: a prospective cohort study.",
+   "year": "2021",
+   "journal": "Cardiovascular diabetology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32853471",
+   "title": "Mortality risk in dilated cardiomyopathy: the accuracy of heart failure prognostic models and dilated cardiomyopathy-tailored prognostic model.",
+   "year": "2020",
+   "journal": "ESC heart failure",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32056359",
+   "title": "Predictors of unplanned hospitalisation in the older population: The role of polypharmacy and other medication and chronic disease-related factors.",
+   "year": "2020",
+   "journal": "Australasian journal on ageing",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31820546",
+   "title": "Baseline features of the VICTORIA (Vericiguat Global Study in Subjects with Heart Failure with Reduced Ejection Fraction) trial.",
+   "year": "2019",
+   "journal": "European journal of heart failure",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31519694",
+   "title": "Machine Learning to Predict the Risk of Incident Heart Failure Hospitalization Among Patients With Diabetes: The WATCH-DM Risk Score.",
+   "year": "2019",
+   "journal": "Diabetes care",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31510768",
+   "title": "Prognostic Implications of Congestion on Physical Examination Among Contemporary Patients With Heart Failure and Reduced Ejection Fraction: PARADIGM-HF.",
+   "year": "2019",
+   "journal": "Circulation",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30979539",
+   "title": "Superior Prognostic Value of Right Ventricular Free Wall Compared to Global Longitudinal Strain in Patients With Heart Failure.",
+   "year": "2019",
+   "journal": "Journal of the American Society of Echocardiography : official publication of the American Society of Echocardiography",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30919603",
+   "title": "Validation of a new score for outcome prediction in patients with heart failure with reduced ejection fraction.",
+   "year": "2019",
+   "journal": "Minerva cardioangiologica",
+   "pubtypes": [
+    "Journal Article",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "28215922",
+   "title": "Early Postdischarge STOP-HF-Clinic Reduces 30-day Readmissions in Old and Frail Patients With Heart Failure.",
+   "year": "2017",
+   "journal": "Revista espanola de cardiologia (English ed.)",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26842270",
+   "title": "Effect of telehealth on hospital utilisation and mortality in routine clinical practice: a matched control cohort study in an early adopter site.",
+   "year": "2016",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26011392",
+   "title": "A simple validated method for predicting the risk of hospitalization for worsening of heart failure in ambulatory patients: the Redin-SCORE.",
+   "year": "2015",
+   "journal": "European journal of heart failure",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "25444486",
+   "title": "Clinical predictors of risk for atrial fibrillation: implications for diagnosis and monitoring.",
+   "year": "2014",
+   "journal": "Mayo Clinic proceedings",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24846373",
+   "title": "A novel algorithm to assess risk of heart failure exacerbation using ICD diagnostics: validation from RAFT.",
+   "year": "2014",
+   "journal": "Heart rhythm",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "24333348",
+   "title": "Detection of high-sensitivity troponin in outpatients with stable pulmonary hypertension identifies a subgroup at higher risk of adverse outcomes.",
+   "year": "2014",
+   "journal": "Journal of cardiac failure",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24075022",
+   "title": "Readmission after hospitalization for heart failure among patients with chronic kidney disease: a prediction model.",
+   "year": "2013",
+   "journal": "Clinical nephrology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23929781",
+   "title": "Anemia and associated clinical outcomes in patients with heart failure due to reduced left ventricular systolic function.",
+   "year": "2013",
+   "journal": "Clinical cardiology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "23513212",
+   "title": "Development and validation of an integrated diagnostic algorithm derived from parameters monitored in implantable devices for identifying patients at risk for heart failure hospitalization in an ambulatory setting.",
+   "year": "2013",
+   "journal": "European heart journal",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "23279139",
+   "title": "Characterization and prediction of natriuretic peptide \"nonresponse\" during heart failure management: results from the ProBNP Outpatient Tailored Chronic Heart Failure (PROTECT) and the NT-proBNP-Assisted Treatment to Lessen Serial Cardiac Readmissions and Death (BATTLESCARRED) study.",
+   "year": "2013",
+   "journal": "Congestive heart failure (Greenwich, Conn.)",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22137073",
+   "title": "Benefit of exercise therapy for systolic heart failure in relation to disease severity and etiology-findings from the Heart Failure and A Controlled Trial Investigating Outcomes of Exercise Training study.",
+   "year": "2011",
+   "journal": "American heart journal",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "22114101",
+   "title": "Factors related to morbidity and mortality in patients with chronic heart failure with systolic dysfunction: the HF-ACTION predictive risk score model.",
+   "year": "2012",
+   "journal": "Circulation. Heart failure",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "20181681",
+   "title": "Risk score to predict serious bleeding in stable outpatients with or at risk of atherothrombosis.",
+   "year": "2010",
+   "journal": "European heart journal",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20102876",
+   "title": "Safety and feasibility of early hospital discharge in ST-segment elevation myocardial infarction--a prospective and randomized trial in low-risk primary percutaneous coronary intervention patients (the Safe-Depart Trial).",
+   "year": "2010",
+   "journal": "American heart journal",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17027575",
+   "title": "A novel prognostic index to determine the impact of cardiac conditions and co-morbidities on one-year outcome in patients with heart failure.",
+   "year": "2006",
+   "journal": "The American journal of cardiology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16750691",
+   "title": "Utility of impedance cardiography for the identification of short-term risk of clinical decompensation in stable patients with chronic heart failure.",
+   "year": "2006",
+   "journal": "Journal of the American College of Cardiology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "15704060",
+   "title": "Variation by race in factors contributing to heart failure hospitalizations.",
+   "year": "2005",
+   "journal": "Journal of cardiac failure",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "14978322",
+   "title": "Risk factors for nonelective hospitalization in frail and older adult, inner-city outpatients.",
+   "year": "2004",
+   "journal": "The Gerontologist",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  }
+ ]
+}

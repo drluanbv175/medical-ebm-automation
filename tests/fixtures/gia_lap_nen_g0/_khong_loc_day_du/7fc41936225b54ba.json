@@ -1,0 +1,3058 @@
+{
+ "schema": "gia_lap/khong_loc_day_du/v1",
+ "truy_van": "(telephone[tiab] OR telemedicine[tiab] OR \"remote consultation\"[tiab] OR telemonitoring[tiab]) AND (hypertension[MeSH] OR hypertension[tiab]) AND (\"blood pressure control\"[tiab] OR \"blood pressure\"[tiab]) AND (non-inferiority[tiab] OR noninferiority[tiab] OR follow-up[tiab])",
+ "so_hit_that": 299,
+ "so_bai_lay_ve": 299,
+ "ngay_tai": "2026-11-19",
+ "cach": "PubMed E-utilities esearch (sort=date) + esummary, không lọc thiết kế",
+ "ban_ghi": [
+  {
+   "pmid": "43033983",
+   "title": "Impact of a multi-site, multidisciplinary self-measured blood pressure monitoring program.",
+   "year": "2026",
+   "journal": "Journal of the American Pharmacists Association : JAPhA",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "43016914",
+   "title": "Blood pressure changes across pregnancy and postpartum: from physiological adaptations to pathological deviations.",
+   "year": "2026",
+   "journal": "Frontiers in cardiovascular medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "42970781",
+   "title": "Outcomes Associated With a WhatsApp-Based Telehealth Education Program and Remote Follow-Up on Blood Pressure, Medication Adherence, and Self-Care: Formative Quasi-Experimental Pilot Study.",
+   "year": "2026",
+   "journal": "JMIR formative research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42928248",
+   "title": "Nurses' role in the management of patients living with hypertension in a district hospital in Ghana: a qualitative study.",
+   "year": "2026",
+   "journal": "BMC nursing",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42762427",
+   "title": "Pilot Randomised Controlled Trial Comparing Two Digital Solutions in the Management of Hypertensive Patients.",
+   "year": "2026",
+   "journal": "High blood pressure & cardiovascular prevention : the official journal of the Italian Society of Hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42733409",
+   "title": "Integrating telemedicine into dental workflows for medically complex patients: An exploratory pilot feasibility and care coordination study.",
+   "year": "2026",
+   "journal": "Digital health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42659643",
+   "title": "Community-Based Hypertension Screening to Prevent Stroke in Underserved Urban Neighborhoods in French Guiana: Protocol for a Quasi-Experimental Study.",
+   "year": "2026",
+   "journal": "JMIR research protocols",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "42560143",
+   "title": "Health system competence and care continuity in patients with hypertension: electronic cohort in Uruguay.",
+   "year": "2026",
+   "journal": "Blood pressure",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42594238",
+   "title": "",
+   "year": "2026",
+   "journal": "",
+   "pubtypes": [
+    "Review"
+   ]
+  },
+  {
+   "pmid": "42491589",
+   "title": "Systems-Based Approaches to Cardiometabolic and Chronic Disease Management in Adult Clinical Practice: A Systematic Review.",
+   "year": "2026",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "42465949",
+   "title": "Effect of Intensive vs Standard Blood Pressure Control According to APOE ε4 Genotype: A Secondary Analysis of SPRINT.",
+   "year": "2026",
+   "journal": "medRxiv : the preprint server for health sciences",
+   "pubtypes": [
+    "Journal Article",
+    "Preprint"
+   ]
+  },
+  {
+   "pmid": "42283624",
+   "title": "Clinical effectiveness of telepharmacy services in patients with non-communicable diseases in ambulatory care settings.",
+   "year": "2026",
+   "journal": "The Cochrane database of systematic reviews",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "42205622",
+   "title": "Blood pressure telemonitoring and the incidence of cardiovascular events: a records based, matched patient analysis.",
+   "year": "2026",
+   "journal": "European heart journal. Digital health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42145904",
+   "title": "Co-creation of a mobile health program (MumCare) for preventing maternal cardiovascular disease after pregnancy complications.",
+   "year": "2026",
+   "journal": "Frontiers in global women's health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42053330",
+   "title": "A Remote Chronic Disease Management Program to Improve Cardiovascular and Metabolic Outcomes in a Diverse Community-Based Diabetic Population: Study Design of the TAMIS Trial.",
+   "year": "2026",
+   "journal": "Journal of evaluation in clinical practice",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "42025715",
+   "title": "A randomized controlled trial comparing remote blood pressure monitoring with office-based blood pressure monitoring for women at high risk of preeclampsia.",
+   "year": "2026",
+   "journal": "American journal of obstetrics and gynecology",
+   "pubtypes": [
+    "Equivalence Trial",
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "41962739",
+   "title": "Impact of a multicomponent digital health and telemonitoring intervention on hypertension and diabetes control in cardiac patients: A randomized controlled trial.",
+   "year": "2026",
+   "journal": "Indian heart journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41927288",
+   "title": "First population-based study on non-communicable diseases and risk factors in northeastern Iran: Sabzevar cohort profile.",
+   "year": "2026",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41741627",
+   "title": "The association between pro-inflammatory diet and incidence of hypertension: a prospective cohort study.",
+   "year": "2026",
+   "journal": "Hypertension research : official journal of the Japanese Society of Hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41729538",
+   "title": "Dietary Patterns and Indicators of Cognitive Function.",
+   "year": "2026",
+   "journal": "JAMA neurology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41608669",
+   "title": "Impact of remote monitoring on well-being, therapeutic adherence, and organ damage evaluation in hypertensive patients: the PROSIT study.",
+   "year": "2026",
+   "journal": "European heart journal. Digital health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41595894",
+   "title": "Women's Postpartum Experiences of Hypertensive Disorders of Pregnancy: A Qualitative Study of Barriers and Enablers to Healthy Lifestyle Behaviours.",
+   "year": "2026",
+   "journal": "International journal of environmental research and public health",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "41589543",
+   "title": "Hypertensive disorders of pregnancy: The use of eHealth technologies in postpartum follow-up strategies to reduce cardiovascular risk - A scoping review.",
+   "year": "2026",
+   "journal": "Health informatics journal",
+   "pubtypes": [
+    "Journal Article",
+    "Scoping Review"
+   ]
+  },
+  {
+   "pmid": "41541610",
+   "title": "Home Blood Pressure Telemonitoring and Hypertension Management in Kenya: A Feasibility Study (HBPT-K).",
+   "year": "2026",
+   "journal": "Global heart",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "41454226",
+   "title": "Development and internal validation of the goliat score to predict 48-hour complications after minor/moderate traumatic brain injury in the emergency department: a single-center cohort study.",
+   "year": "2025",
+   "journal": "BMC emergency medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "41365582",
+   "title": "Non-pharmacological and psychosocial interventions for comorbid hypertension and depression: a scoping review.",
+   "year": "2025",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Scoping Review"
+   ]
+  },
+  {
+   "pmid": "41361824",
+   "title": "Can TElemedicine system replace doctor consultations to Achieve non-inferior blood pressure in patients with Controlled Hypertension (TEACH)? Study protocol for a randomised controlled trial.",
+   "year": "2025",
+   "journal": "Trials",
+   "pubtypes": [
+    "Journal Article",
+    "Clinical Trial Protocol"
+   ]
+  },
+  {
+   "pmid": "41197208",
+   "title": "Safety and impact of self-monitoring blood pressure through a digital platform in high-risk pregnancies in 11 hospitals: The multicenter before-after SAFE@home II study.",
+   "year": "2025",
+   "journal": "Pregnancy hypertension",
+   "pubtypes": [
+    "Equivalence Trial",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "41188792",
+   "title": "Factors influencing pregnant women's use of antenatal and emergency care services covered by social security: findings from the maternal eCohort in Mexico.",
+   "year": "2025",
+   "journal": "BMC pregnancy and childbirth",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "41092347",
+   "title": "Evaluation of an Email Blood Pressure Measurement Outreach Program.",
+   "year": "2026",
+   "journal": "American journal of hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Evaluation Study"
+   ]
+  },
+  {
+   "pmid": "41022548",
+   "title": "Telecardiology Management of Hypertension in Brazilian Remote Populations.",
+   "year": "2026",
+   "journal": "Telemedicine journal and e-health : the official journal of the American Telemedicine Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40997232",
+   "title": "Hypertension Prevalence and Determinants in Urban Coastal Communities in Ghana.",
+   "year": "2026",
+   "journal": "Journal of public health management and practice : JPHMP",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40929717",
+   "title": "eHealth and Hypertensive Disorders of Pregnancy: Systematic Review.",
+   "year": "2025",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "40777572",
+   "title": "Identification and follow up of cardiovascular disease risk factors among participants at a pharmacy student-led screening program.",
+   "year": "2025",
+   "journal": "Exploratory research in clinical and social pharmacy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40764960",
+   "title": "Efficiency of remote monitoring and guidance in blood pressure management: a randomized controlled trial : The role of remote monitoring in improving hypertension management.",
+   "year": "2025",
+   "journal": "BMC medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "40622370",
+   "title": "A prospective cohort study of the SEARCH integrated HIV/hypertension community health worker-led intervention in rural Kenya and Uganda.",
+   "year": "2025",
+   "journal": "Journal of the International AIDS Society",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "40440692",
+   "title": "Impact of 12-Month mHealth Home Telemonitoring on Clinical Outcomes in Older Individuals With Hypertension and Type 2 Diabetes: Multicenter Randomized Controlled Trial.",
+   "year": "2025",
+   "journal": "JMIR mHealth and uHealth",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "40433737",
+   "title": "Blood pressure monitoring is key in aortic dissection.",
+   "year": "2025",
+   "journal": "The Journal of cardiovascular surgery",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "40360292",
+   "title": "Blood Pressure Outcomes Following a Home Blood Pressure Monitoring Program in a Large Integrated US Health System.",
+   "year": "2025",
+   "journal": "American journal of hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40352115",
+   "title": "A comparative study of blood pressure submission between mobilec app users and non-users in Romania: a pilot cohort study.",
+   "year": "2025",
+   "journal": "Frontiers in rehabilitation sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40273398",
+   "title": "Targeting better hypertension control with the usage of the ESH smartphone application.",
+   "year": "2026",
+   "journal": "European journal of preventive cardiology",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "40262175",
+   "title": "Telemedicine Booths for Screening Cardiovascular Risk Factors: Prospective Multicenter Study.",
+   "year": "2025",
+   "journal": "JMIR human factors",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "40123081",
+   "title": "Postpartum remote blood pressure monitoring and risk of hypertensive-related readmission: systematic review and meta-analysis of randomized controlled trials.",
+   "year": "2025",
+   "journal": "Journal of perinatal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review",
+    "Meta-Analysis"
+   ]
+  },
+  {
+   "pmid": "39819096",
+   "title": "Long-Term Effect of Intensive vs Standard Blood Pressure Control on Mild Cognitive Impairment and Probable Dementia in SPRINT.",
+   "year": "2025",
+   "journal": "Neurology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "39719284",
+   "title": "Effectiveness and compliance of telemedicine on blood pressure management in poststroke patients: a systematic review and meta-analysis of randomised controlled trials.",
+   "year": "2024",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "39695330",
+   "title": "Phone-based telemonitoring of arterial hypertension versus usual care: the HOROSCOPE study.",
+   "year": "2025",
+   "journal": "Hypertension research : official journal of the Japanese Society of Hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "39611763",
+   "title": "Remote blood pressure monitoring in women at risk of or with hypertensive disorders of pregnancy: A systematic review and meta-analysis.",
+   "year": "2025",
+   "journal": "International journal of gynaecology and obstetrics: the official organ of the International Federation of Gynaecology and Obstetrics",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review",
+    "Meta-Analysis"
+   ]
+  },
+  {
+   "pmid": "39503965",
+   "title": "Patient-specific multifactorial mortality risk assessment using classification and regression tree analysis in the context of ambulatory blood pressure monitoring.",
+   "year": "2025",
+   "journal": "Journal of nephrology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39393514",
+   "title": "Feasibility of a blood pressure telemedicine program in the virtual age.",
+   "year": "2024",
+   "journal": "Journal of stroke and cerebrovascular diseases : the official journal of National Stroke Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39357612",
+   "title": "Telemedical strategies for improving systolic blood pressure control in secondary prevention of cerebrovascular events-a systematic review and meta-analysis.",
+   "year": "2024",
+   "journal": "Journal of stroke and cerebrovascular diseases : the official journal of National Stroke Association",
+   "pubtypes": [
+    "Systematic Review",
+    "Journal Article",
+    "Meta-Analysis"
+   ]
+  },
+  {
+   "pmid": "39269685",
+   "title": "Feasibility and Methodology of a Pilot Free Blood Pressure Monitoring and Follow-Up Program at Two Free Clinics.",
+   "year": "2024",
+   "journal": "Journal of primary care & community health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "39194352",
+   "title": "Managing cardiovascular risk factors with telemedicine in primary care: A systematic review and meta-analysis of patients with arterial hypertension and type 2 diabetes.",
+   "year": "2025",
+   "journal": "Chronic illness",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "39172561",
+   "title": "[Perception and identification of barriers to the use of digital technologies in arterial hypertension].",
+   "year": "2024",
+   "journal": "Medicina",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Observational Study",
+    "English Abstract"
+   ]
+  },
+  {
+   "pmid": "38977877",
+   "title": "Effectiveness of digital health interventions for telemedicine/telehealth for managing blood pressure in adults: a systematic review and meta-analysis.",
+   "year": "2025",
+   "journal": "Hypertension research : official journal of the Japanese Society of Hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "38842799",
+   "title": "Home Blood Pressure Telemonitoring and Nurse Case Management in Black and Hispanic Patients With Stroke: A Randomized Clinical Trial.",
+   "year": "2024",
+   "journal": "JAMA",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "38744907",
+   "title": "Participants' views of ultra-low dose combination therapy for high blood pressure: a mixed-methods study from the QUARTET trial.",
+   "year": "2024",
+   "journal": "Journal of human hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "38702619",
+   "title": "Report from a text-based blood pressure monitoring prospective cohort trial among postpartum women with hypertensive disorders of pregnancy.",
+   "year": "2024",
+   "journal": "BMC pregnancy and childbirth",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38697716",
+   "title": "Survival within 12months after stroke in Madagascar.",
+   "year": "2024",
+   "journal": "Journal de medecine vasculaire",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38441897",
+   "title": "Nurse-Led Strategy to Improve Blood Pressure and Cholesterol Level Among People With HIV: A Randomized Clinical Trial.",
+   "year": "2024",
+   "journal": "JAMA network open",
+   "pubtypes": [
+    "Randomized Controlled Trial",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "38363585",
+   "title": "Outcomes of an Asynchronous Care Model for Chronic Conditions in a Diverse Population: 12-Month Retrospective Chart Review Study.",
+   "year": "2024",
+   "journal": "JMIR diabetes",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38137733",
+   "title": "Achievement of Treatment Goals and Mortality in Individuals with Diabetes: The ELSA-Brasil Study.",
+   "year": "2023",
+   "journal": "Journal of clinical medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37976672",
+   "title": "Applying the RE-AIM framework to evaluate an educational model to \"close the gap\" and improve health equity in uncontrolled hypertension.",
+   "year": "2024",
+   "journal": "Patient education and counseling",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37710151",
+   "title": "Reporting of blood pressure levels and self-monitoring practices: a survey among outpatients diagnosed with hypertension in Bogotá, Colombia.",
+   "year": "2023",
+   "journal": "BMC primary care",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37705024",
+   "title": "Cardiometabolic healthcare for men with prostate cancer: an MD Anderson Cancer Center experience.",
+   "year": "2023",
+   "journal": "Cardio-oncology (London, England)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37635629",
+   "title": "Blood pressure telemonitoring and telemedicine, a Latin America perspective.",
+   "year": "2023",
+   "journal": "Blood pressure",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "37560010",
+   "title": "Postpartum remote home blood pressure monitoring: the new frontier.",
+   "year": "2023",
+   "journal": "AJOG global reports",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37424245",
+   "title": "Effect of Home Blood Pressure Telemonitoring Plus Additional Support on Blood Pressure Control: A Randomized Clinical Trial.",
+   "year": "2023",
+   "journal": "Biomedical and environmental sciences : BES",
+   "pubtypes": [
+    "Randomized Controlled Trial",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37405426",
+   "title": "The challenging clinical dilemma of posterior reversible encephalopathy syndrome in systemic lupus erythematosus.",
+   "year": "2024",
+   "journal": "Zeitschrift fur Rheumatologie",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37391694",
+   "title": "Risk factors associated with attendance at postpartum blood pressure follow-up visit in discharged patients with hypertensive disorders of pregnancy.",
+   "year": "2023",
+   "journal": "BMC pregnancy and childbirth",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37364050",
+   "title": "Self-care Level of Adults With Arterial Hypertension in Outpatient Follow-up in Brazil: A Cross-sectional Study.",
+   "year": "2024",
+   "journal": "The Journal of cardiovascular nursing",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37346383",
+   "title": "Comparison of the use of blood pressure telemonitoring versus standard medical care in the achievement of short-term therapeutic goals in blood pressure in patients with uncontrolled hypertension: An open-label clinical trial.",
+   "year": "2023",
+   "journal": "JRSM cardiovascular disease",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37311173",
+   "title": "Postpartum Home Blood Pressure Monitoring: A Systematic Review.",
+   "year": "2023",
+   "journal": "Obstetrics and gynecology",
+   "pubtypes": [
+    "Systematic Review",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "37270600",
+   "title": "AT1R gene rs389566 polymorphism contributes to MACCEs in hypertension patients.",
+   "year": "2023",
+   "journal": "BMC cardiovascular disorders",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37221066",
+   "title": "[Effect of health management service for hypertension patients under framework of Basic Public Health Service Project: a regression discontinuity design].",
+   "year": "2023",
+   "journal": "Zhonghua liu xing bing xue za zhi = Zhonghua liuxingbingxue zazhi",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37198117",
+   "title": "[Outcome of surgical repair for aortic coarctation with coexisting descending aortic aneurysm in adult patients].",
+   "year": "2023",
+   "journal": "Zhonghua xin xue guan bing za zhi",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37161483",
+   "title": "Determining Optimal Intervals for In-Person Visits During Video-Based Telemedicine Among Patients With Hypertension: Cluster Randomized Controlled Trial.",
+   "year": "2023",
+   "journal": "JMIR cardio",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37147930",
+   "title": "Urinary proteomics combined with home blood pressure telemonitoring for health care reform trial-First progress report.",
+   "year": "2023",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Randomized Controlled Trial",
+    "Multicenter Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36939826",
+   "title": "Influence of Internet-Based Health Management on Control of Clinical Parameters in Patients With Hypertension: Four-Year Longitudinal Study.",
+   "year": "2023",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36891366",
+   "title": "Effect of hypertension on the long-term prognosis of children with primary focal segmental glomerulosclerosis-a retrospective cohort study.",
+   "year": "2023",
+   "journal": "Translational pediatrics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36862142",
+   "title": "Health system adaptions to improve care for people living with non-communicable diseases during COVID-19 in low-middle income countries: A scoping review.",
+   "year": "2023",
+   "journal": "Journal of global health",
+   "pubtypes": [
+    "Journal Article",
+    "Scoping Review"
+   ]
+  },
+  {
+   "pmid": "36861733",
+   "title": "Management of an Integrated Care Pathways (ICPs): an Italian Study.",
+   "year": "2022",
+   "journal": "Igiene e sanita pubblica",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40828953",
+   "title": "",
+   "year": "2023",
+   "journal": "",
+   "pubtypes": [
+    "Review"
+   ]
+  },
+  {
+   "pmid": "40763225",
+   "title": "",
+   "year": "2023",
+   "journal": "",
+   "pubtypes": [
+    "Review"
+   ]
+  },
+  {
+   "pmid": "36849580",
+   "title": "Current situation of telemedicine research for cardiovascular risk in Japan.",
+   "year": "2023",
+   "journal": "Hypertension research : official journal of the Japanese Society of Hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "36809278",
+   "title": "Encouraging brisk walking with the free Active10 app in postnatal women who had a hypertensive pregnancy: \"Just Walk It\" feasibility study.",
+   "year": "2023",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36710899",
+   "title": "Automatic transmission of home blood pressure data can be effective in managing hypertension: a systematic review and meta-analysis.",
+   "year": "2022",
+   "journal": "European heart journal. Digital health",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "36589937",
+   "title": "Evaluation of pharmacist-led telemedicine medication management for hypertension established patients during COVID-19 pandemic: A pilot study.",
+   "year": "2022",
+   "journal": "Frontiers in public health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36556027",
+   "title": "Challenges for Management of Dilated Cardiomyopathy during COVID-19 Pandemic-A Telemedicine Application.",
+   "year": "2022",
+   "journal": "Journal of clinical medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36480345",
+   "title": "Centrally supported clinical pharmacist intervention to reduce clinical inertia in hypertension.",
+   "year": "2023",
+   "journal": "American journal of health-system pharmacy : AJHP : official journal of the American Society of Health-System Pharmacists",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36477479",
+   "title": "Effect of a Multicomponent Intervention Delivered on a Web-Based Platform on Hypertension Control: A Cluster Randomized Clinical Trial.",
+   "year": "2022",
+   "journal": "JAMA network open",
+   "pubtypes": [
+    "Randomized Controlled Trial",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36322107",
+   "title": "Nurse-led Telehealth Intervention for Rehabilitation (Telerehabilitation) Among Community-Dwelling Patients With Chronic Diseases: Systematic Review and Meta-analysis.",
+   "year": "2022",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Meta-Analysis",
+    "Systematic Review",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36281763",
+   "title": "Comparing Pharmacist-Led Telehealth Care and Clinic-Based Care for Uncontrolled High Blood Pressure: The Hyperlink 3 Pragmatic Cluster-Randomized Trial.",
+   "year": "2022",
+   "journal": "Hypertension (Dallas, Tex. : 1979)",
+   "pubtypes": [
+    "Randomized Controlled Trial",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Pragmatic Clinical Trial"
+   ]
+  },
+  {
+   "pmid": "36279299",
+   "title": "Effectiveness of integrated care for older adults with depression and hypertension in rural China: A cluster randomized controlled trial.",
+   "year": "2022",
+   "journal": "PLoS medicine",
+   "pubtypes": [
+    "Randomized Controlled Trial",
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "36233668",
+   "title": "Associations of Atrial Fibrillation with Mild Cognitive Impairment and Dementia: An Investigation Using SPRINT Research Materials.",
+   "year": "2022",
+   "journal": "Journal of clinical medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36159207",
+   "title": "The Fourth Trimester: a Time for Enhancing Transitions in Cardiovascular Care.",
+   "year": "2022",
+   "journal": "Current cardiovascular risk reports",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "35979106",
+   "title": "Diagnosis of spontaneous isolated superior mesenteric artery dissection with ultrasound: A case report.",
+   "year": "2022",
+   "journal": "World journal of clinical cases",
+   "pubtypes": [
+    "Case Reports",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35834496",
+   "title": "Alpha globin gene copy number and hypertension risk among Black Americans.",
+   "year": "2022",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35696440",
+   "title": "Integration of a multicomponent intervention for hypertension into primary healthcare services in Singapore-A cluster randomized controlled trial.",
+   "year": "2022",
+   "journal": "PLoS medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35685555",
+   "title": "Efficacy of Pharmaceutical Care in Patients with Type 2 Diabetes Mellitus and Hypertension: A Randomized Controlled Trial.",
+   "year": "2022",
+   "journal": "International journal of clinical practice",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "35588550",
+   "title": "[Optimizing blood pressure control through telemedicine in Primary Care in Spain (Iniciativa Óptima): Results from a Delphi study].",
+   "year": "2022",
+   "journal": "Atencion primaria",
+   "pubtypes": [
+    "Practice Guideline",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35583869",
+   "title": "Effect of Lifestyle Coaching or Enhanced Pharmacotherapy on Blood Pressure Control Among Black Adults With Persistent Uncontrolled Hypertension: A Cluster Randomized Clinical Trial.",
+   "year": "2022",
+   "journal": "JAMA network open",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35503346",
+   "title": "Effect of Self-monitoring of Blood Pressure on Diagnosis of Hypertension During Higher-Risk Pregnancy: The BUMP 1 Randomized Clinical Trial.",
+   "year": "2022",
+   "journal": "JAMA",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "35503345",
+   "title": "Effect of Self-monitoring of Blood Pressure on Blood Pressure Control in Pregnant Individuals With Chronic or Gestational Hypertension: The BUMP 2 Randomized Clinical Trial.",
+   "year": "2022",
+   "journal": "JAMA",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "35453961",
+   "title": "Improving Blood Pressure Control Using Digital Communication Methods in Serbia.",
+   "year": "2022",
+   "journal": "Diagnostics (Basel, Switzerland)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35354637",
+   "title": "Simplified regimen for the management of hypertension with telemedicine and blood pressure self-monitoring (SIMPLE): study protocol for a randomised controlled trial.",
+   "year": "2022",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35353040",
+   "title": "Pilot Results of a Digital Hypertension Self-management Program Among Adults With Excess Body Weight: Single-Arm Nonrandomized Trial.",
+   "year": "2022",
+   "journal": "JMIR formative research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35230254",
+   "title": "Home Telemonitoring of Arterial Hypertension With Antihypertensive Treatment Titration: Protocol for a Randomized Controlled Prospective Trial (HOROSCOPE Study).",
+   "year": "2022",
+   "journal": "JMIR research protocols",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35210352",
+   "title": "Bedtime versus morning use of antihypertensives for cardiovascular risk reduction (BedMed): protocol for a prospective, randomised, open-label, blinded end-point pragmatic trial.",
+   "year": "2022",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35186305",
+   "title": "Telemonitoring and Case Management for Hypertensive and Remote-Dwelling Patients With Chronic Kidney Disease-The Telemonitoring for Improved Kidney Outcomes Study (TIKO): A Clinical Research Protocol.",
+   "year": "2022",
+   "journal": "Canadian journal of kidney health and disease",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35023614",
+   "title": "Evaluating the efficacy of telephone-based outreach in addressing hypertension control among black men with severe hypertension: An observational study.",
+   "year": "2022",
+   "journal": "Worldviews on evidence-based nursing",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "34929044",
+   "title": "Success factors in high-effect, low-cost eHealth programs for patients with hypertension: a systematic review and meta-analysis.",
+   "year": "2021",
+   "journal": "European journal of preventive cardiology",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "34883524",
+   "title": "The usefulness of telemedicine devices in patients with severe heart failure with an implanted cardiac resynchronization therapy system during two years of observation.",
+   "year": "2022",
+   "journal": "Kardiologia polska",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "34830638",
+   "title": "Clinical Predictors of Mortality in Prehospital Distress Calls by Emergency Medical Service Subscribers.",
+   "year": "2021",
+   "journal": "Journal of clinical medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34802471",
+   "title": "Feasibility of a randomized hypertension screening initiative in the perioperative setting.",
+   "year": "2021",
+   "journal": "Perioperative medicine (London, England)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34790878",
+   "title": "Effect of Pharmacist Home Visits on Weight Control in Overweight Elderly Hypertensive African American Patients: Managing Your Blood Pressure (My Bp) Program.",
+   "year": "2021",
+   "journal": "Journal of advances in medical and pharmaceutical sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34714208",
+   "title": "Hypertension telemonitoring and home-based physical training programs.",
+   "year": "2021",
+   "journal": "Blood pressure",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "34713718",
+   "title": "Comparison of Long-Term Outcomes for Responders Versus Non-Responders Following Renal Denervation in Resistant Hypertension.",
+   "year": "2021",
+   "journal": "Journal of the American Heart Association",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34665645",
+   "title": "Can Remote Patient Monitoring Be the New Standard in Primary Care of Chronic Diseases, Post-COVID-19?",
+   "year": "2022",
+   "journal": "Telemedicine journal and e-health : the official journal of the American Telemedicine Association",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "34649784",
+   "title": "Effects of Dietary App-Supported Tele-Counseling on Sodium Intake, Diet Quality, and Blood Pressure in Patients With Diabetes and Kidney Disease.",
+   "year": "2022",
+   "journal": "Journal of renal nutrition : the official journal of the Council on Renal Nutrition of the National Kidney Foundation",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "34606593",
+   "title": "Sex Differences in the Association Between Metabolic Dysregulation and Cognitive Aging: The Health and Retirement Study.",
+   "year": "2022",
+   "journal": "The journals of gerontology. Series A, Biological sciences and medical sciences",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "34475137",
+   "title": "Cost-effectiveness of a Community-based Hypertension Improvement Project (ComHIP) in Ghana: results from a modelling study.",
+   "year": "2021",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34462278",
+   "title": "Study protocol: long-term effect of the New Nordic Renal Diet on phosphorus and lipid homeostasis in patients with chronic kidney disease, stages 3 and 4: a randomised controlled trial.",
+   "year": "2021",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34461803",
+   "title": "Urinary proteomics combined with home blood pressure telemonitoring for health care reform trial: rational and protocol.",
+   "year": "2021",
+   "journal": "Blood pressure",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34380417",
+   "title": "Nocturnal blood pressure rise as a predictor of cognitive impairment among the elderly: a retrospective cohort study.",
+   "year": "2021",
+   "journal": "BMC geriatrics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34328375",
+   "title": "Effects of technology-enabled blood pressure monitoring in primary care: A quasi-experimental trial.",
+   "year": "2024",
+   "journal": "Journal of telemedicine and telecare",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34155907",
+   "title": "Improving Efficiency of the Barbershop Model of Hypertension Care for Black Men With Virtual Visits.",
+   "year": "2021",
+   "journal": "Journal of the American Heart Association",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34076063",
+   "title": "Treated Hypertensive Patients Assessed by Home Blood Pressure Telemonitoring. TeleMRPA Study.",
+   "year": "2021",
+   "journal": "Arquivos brasileiros de cardiologia",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33953972",
+   "title": "Home Blood Pressure Control and Drug Prescription Patterns among Thai Hypertensives: A 1-Year Analysis of Telehealth Assisted Instrument in Home Blood Pressure Monitoring Nationwide Pilot Project.",
+   "year": "2021",
+   "journal": "International journal of hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33899090",
+   "title": "Nurse co-ordinated health and lifestyle modification for reducing multiple cardio-metabolic risk factors in regional adults: outcomes from the MODERN randomized controlled trial.",
+   "year": "2022",
+   "journal": "European journal of cardiovascular nursing",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33888438",
+   "title": "2021 Spanish Society of Hypertension position statement about telemedicine.",
+   "year": "2021",
+   "journal": "Hipertension y riesgo vascular",
+   "pubtypes": [
+    "Consensus Statement",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33753350",
+   "title": "Impact of changes to national guidelines on hypertension-related workload: an interrupted time series analysis in English primary care.",
+   "year": "2021",
+   "journal": "The British journal of general practice : the journal of the Royal College of General Practitioners",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33693252",
+   "title": "Disease Control Status and Safety of Telemedicine in Patients With Lifestyle Diseases　- A Multicenter Prospective Observational Study in Japan.",
+   "year": "2020",
+   "journal": "Circulation reports",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33591624",
+   "title": "Phone calls for improving blood pressure control among hypertensive patients attending private medical practitioners in India: Findings from Mumbai hypertension project.",
+   "year": "2021",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33568079",
+   "title": "Examining the effectiveness of telemonitoring with routinely acquired blood pressure data in primary care: challenges in the statistical analysis.",
+   "year": "2021",
+   "journal": "BMC medical research methodology",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33468225",
+   "title": "Statistical analysis plan for management of hypertension and multiple risk factors to enhance cardiovascular health in Singapore: the SingHypertension pragmatic cluster randomized controlled trial.",
+   "year": "2021",
+   "journal": "Trials",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Pragmatic Clinical Trial"
+   ]
+  },
+  {
+   "pmid": "33364109",
+   "title": "The Structure and the Outcome of Telephone-Based Cardiac Consultations During Lockdown: A Lesson From COVID-19.",
+   "year": "2020",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38626258",
+   "title": "77 Routine outpatients visits during SARS-CoV2 global pandemic.",
+   "year": "2020",
+   "journal": "European heart journal supplements : journal of the European Society of Cardiology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33250059",
+   "title": "Tele-ECG consulting and outcomes on primary care patients in a low-to-middle income population: the first experience from Makassar telemedicine program, Indonesia.",
+   "year": "2020",
+   "journal": "BMC family practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33190559",
+   "title": "Dietary Approaches to Stop Hypertension Dietary Intervention Improves Blood Pressure and Vascular Health in Youth With Elevated Blood Pressure.",
+   "year": "2021",
+   "journal": "Hypertension (Dallas, Tex. : 1979)",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "33071206",
+   "title": "Mitigating the effects of COVID-19 pandemic on controlling vascular risk factors among participants in a carotid stenosis trial.",
+   "year": "2020",
+   "journal": "Journal of stroke and cerebrovascular diseases : the official journal of National Stroke Association",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "33051232",
+   "title": "Digital telemedicine interventions for patients with multimorbidity: a systematic review and meta-analysis.",
+   "year": "2020",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "32974043",
+   "title": "Assessing the acceptability of a text messaging service and smartphone app to support patient adherence to medications prescribed for high blood pressure: a pilot study.",
+   "year": "2020",
+   "journal": "Pilot and feasibility studies",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32954832",
+   "title": "Value-based approach to blood pressure telemonitoring and remote counseling in hypertensive patients.",
+   "year": "2021",
+   "journal": "Blood pressure",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32951538",
+   "title": "Rationale, Design, and Implementation of Intensive Risk Factor Treatment in the CREST2 Trial.",
+   "year": "2020",
+   "journal": "Stroke",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't",
+    "Clinical Trial Protocol"
+   ]
+  },
+  {
+   "pmid": "32862713",
+   "title": "Cardiovascular Events and Costs With Home Blood Pressure Telemonitoring and Pharmacist Management for Uncontrolled Hypertension.",
+   "year": "2020",
+   "journal": "Hypertension (Dallas, Tex. : 1979)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "32842295",
+   "title": "[A prospective cohort study on blood pressure control and risk of ischemic stroke in patients with hypertension].",
+   "year": "2020",
+   "journal": "Zhonghua yu fang yi xue za zhi [Chinese journal of preventive medicine]",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32780026",
+   "title": "Understanding the Feasibility, Acceptability, and Efficacy of a Clinical Pharmacist-led Mobile Approach (BPTrack) to Hypertension Management: Mixed Methods Pilot Study.",
+   "year": "2020",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "32679537",
+   "title": "Blood pressure postpartum (BP(2)) RCT protocol: Follow-up and lifestyle behaviour change strategies in the first 12 months after hypertensive pregnancy.",
+   "year": "2020",
+   "journal": "Pregnancy hypertension",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32564482",
+   "title": "Randomised trial of telephone counselling to improve participants' adherence to prescribed drugs in a vascular screening trial.",
+   "year": "2020",
+   "journal": "Basic & clinical pharmacology & toxicology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "32443961",
+   "title": "Primary Care Clinic Nurse Activities with a Telehealth Monitoring System.",
+   "year": "2020",
+   "journal": "Western journal of nursing research",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "32339053",
+   "title": "Automatized follow-up and alert system for patients with chronic hypertension.",
+   "year": "2020",
+   "journal": "Health informatics journal",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32285994",
+   "title": "Supporting patients with long-term conditions in the community: Evaluation of the Greater Manchester Community Pharmacy Care Plan Service.",
+   "year": "2020",
+   "journal": "Health & social care in the community",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31956473",
+   "title": "Impact evaluation of a four-year academic-community partnership in provision of medication management and tertiary prevention services for rural patients with diabetes and/or hypertension.",
+   "year": "2020",
+   "journal": "Preventive medicine reports",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31893258",
+   "title": "ECHO: A Pilot Health Literacy Intervention to Improve Hypertension Self-Care.",
+   "year": "2019",
+   "journal": "Health literacy research and practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31855113",
+   "title": "Understanding Moderators of Home Blood Pressure Telemonitoring Systems in Urban Hypertensive Patients: A Systematic Review and Meta-Analysis.",
+   "year": "2020",
+   "journal": "Telemedicine journal and e-health : the official journal of the American Telemedicine Association",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "31739848",
+   "title": "Technology Assisted Behavior Intervention to Extend Sleep Among Adults With Short Sleep Duration and Prehypertension/Stage 1 Hypertension: A Randomized Pilot Feasibility Study.",
+   "year": "2019",
+   "journal": "Journal of clinical sleep medicine : JCSM : official publication of the American Academy of Sleep Medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31710134",
+   "title": "Nursing case management for people with hypertension in primary health care: A randomized controlled trial.",
+   "year": "2020",
+   "journal": "Research in nursing & health",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31662396",
+   "title": "HOspital care versus TELemonitoring in high-risk pregnancy (HOTEL): study protocol for a multicentre non-inferiority randomised controlled trial.",
+   "year": "2019",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31550992",
+   "title": "A Pilot Study Embedding Clinical Pharmacists Within an Interprofessional Nephrology Clinic for the Initiation and Monitoring of Empagliflozin in Diabetic Kidney Disease.",
+   "year": "2021",
+   "journal": "Journal of pharmacy practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31496664",
+   "title": "Mobile health technology (WeChat) for the hierarchical management of community hypertension: protocol for a cluster randomized controlled trial.",
+   "year": "2019",
+   "journal": "Patient preference and adherence",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31408138",
+   "title": "Association of Midlife to Late-Life Blood Pressure Patterns With Incident Dementia.",
+   "year": "2019",
+   "journal": "JAMA",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "31109906",
+   "title": "Treatment of Hypertension in People With Dementia: A Multicenter Prospective Observational Cohort Study.",
+   "year": "2019",
+   "journal": "Journal of the American Medical Directors Association",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Observational Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30964439",
+   "title": "Addressing Diabetes and Poorly Controlled Hypertension: Pragmatic mHealth Self-Management Intervention.",
+   "year": "2019",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30779798",
+   "title": "Technology enabled non-physician health workers extending telemedicine to rural homes to control hypertension and diabetes (TETRA): A pre-post demonstration project in Telangana, India.",
+   "year": "2019",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "30738649",
+   "title": "Prehospital transdermal glyceryl trinitrate in patients with ultra-acute presumed stroke (RIGHT-2): an ambulance-based, randomised, sham-controlled, blinded, phase 3 trial.",
+   "year": "2019",
+   "journal": "Lancet (London, England)",
+   "pubtypes": [
+    "Clinical Trial, Phase III",
+    "Journal Article",
+    "Multicenter Study",
+    "Pragmatic Clinical Trial",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "30711463",
+   "title": "Impact of ENHANCED (diEtitiaNs Helping pAtieNts CarE for Diabetes) Telemedicine Randomized Controlled Trial on Diabetes Optimal Care Outcomes in Patients with Type 2 Diabetes.",
+   "year": "2019",
+   "journal": "Journal of the Academy of Nutrition and Dietetics",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30660477",
+   "title": "Correlation between pre-admission blood pressure and outcome in a large telestroke cohort.",
+   "year": "2019",
+   "journal": "Journal of clinical neuroscience : official journal of the Neurosurgical Society of Australasia",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30647461",
+   "title": "The impact of routine follow-up with health care teams on blood pressure control among patients with hypertension.",
+   "year": "2019",
+   "journal": "Journal of human hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "30646291",
+   "title": "Efficacy of Patient Activation Interventions With or Without Financial Incentives to Promote Prescribing of Thiazides and Hypertension Control: A Randomized Clinical Trial.",
+   "year": "2018",
+   "journal": "JAMA network open",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "30646139",
+   "title": "Long-term Outcomes of the Effects of Home Blood Pressure Telemonitoring and Pharmacist Management on Blood Pressure Among Adults With Uncontrolled Hypertension: Follow-up of a Cluster Randomized Clinical Trial.",
+   "year": "2018",
+   "journal": "JAMA network open",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "30586732",
+   "title": "Effectiveness of an mHealth-Based Electronic Decision Support System for Integrated Management of Chronic Conditions in Primary Care: The mWellcare Cluster-Randomized Controlled Trial.",
+   "year": "2019",
+   "journal": "Circulation",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30488380",
+   "title": "First real-world experience with mobile health telemonitoring in adult patients with congenital heart disease.",
+   "year": "2019",
+   "journal": "Netherlands heart journal : monthly journal of the Netherlands Society of Cardiology and the Netherlands Heart Foundation",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30087093",
+   "title": "Technologies for Innovative Monitoring to Reduce Blood Pressure and Change Lifestyle Using Mobile Phones in Adult and Elderly Populations (TIM Study): Protocol for a Randomized Controlled Trial.",
+   "year": "2018",
+   "journal": "JMIR research protocols",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30006326",
+   "title": "Using Mobile Health to Enhance Outcomes of Noncommunicable Diseases Care in Rural Settings and Refugee Camps: Randomized Controlled Trial.",
+   "year": "2018",
+   "journal": "JMIR mHealth and uHealth",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29967037",
+   "title": "Self-Management of Postnatal Hypertension: The SNAP-HT Trial.",
+   "year": "2018",
+   "journal": "Hypertension (Dallas, Tex. : 1979)",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "29933721",
+   "title": "The role of telehealth counselling with mobile self-monitoring on blood pressure reduction among overseas Koreans with high blood pressure in Vietnam.",
+   "year": "2019",
+   "journal": "Journal of telemedicine and telecare",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29864548",
+   "title": "The Healing and Empowering Alaskan Lives Toward Healthy-Hearts (HEALTHH) Project: Study protocol for a randomized controlled trial of an intervention for tobacco use and other cardiovascular risk behaviors for Alaska Native People.",
+   "year": "2018",
+   "journal": "Contemporary clinical trials",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "29687432",
+   "title": "Association of Structured Virtual Visits for Hypertension Follow-Up in Primary Care with Blood Pressure Control and Use of Clinical Services.",
+   "year": "2018",
+   "journal": "Journal of general internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "29540213",
+   "title": "Management of hypertension and multiple risk factors to enhance cardiovascular health in Singapore: The SingHypertension cluster randomized trial.",
+   "year": "2018",
+   "journal": "Trials",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "29384026",
+   "title": "Evaluation of an Academic-Community Partnership to Implement MTM Services in Rural Communities to Improve Pharmaceutical Care for Patients with Diabetes and/or Hypertension.",
+   "year": "2018",
+   "journal": "Journal of managed care & specialty pharmacy",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29278986",
+   "title": "Reach and effectiveness of the HeartBeat Connections telemedicine pilot program.",
+   "year": "2018",
+   "journal": "Journal of telemedicine and telecare",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29258978",
+   "title": "The Effectiveness of Text Messaging for Detection and Management of Hypertension in Indigenous People in Canada: Protocol for a Randomized Controlled Trial.",
+   "year": "2017",
+   "journal": "JMIR research protocols",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29188883",
+   "title": "Dietary Approach to Stop Hypertension with Sodium Reduction for Chinese Canadians (DASHNa-CC): A Pilot Randomized Controlled Trial.",
+   "year": "2017",
+   "journal": "The journal of nutrition, health & aging",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "29041841",
+   "title": "Effect of home telehealth care on blood pressure control: A public healthcare centre model.",
+   "year": "2019",
+   "journal": "Journal of telemedicine and telecare",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29017994",
+   "title": "Utilizing Consumer Health Informatics to Support Management of Hypertension by Clinical Pharmacists in Primary Care: Study Protocol.",
+   "year": "2017",
+   "journal": "JMIR research protocols",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28957819",
+   "title": "Exaggerated blood pressure response to exercise and late-onset hypertension in young adults.",
+   "year": "2017",
+   "journal": "Blood pressure monitoring",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28882734",
+   "title": "[Control of blood pressure by using an intelligent telephone application with feedback and competitiveness strategy. HTApp Control project].",
+   "year": "2018",
+   "journal": "Semergen",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28475431",
+   "title": "Exploring Implementation of m-Health Monitoring in Postpartum Women with Hypertension.",
+   "year": "2017",
+   "journal": "Telemedicine journal and e-health : the official journal of the American Telemedicine Association",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "28451389",
+   "title": "Effect of ephedrine combined with bupivacaine on maternal hemodynamic and spinal nerve block in cesarean delivery.",
+   "year": "2017",
+   "journal": "Biomedical reports",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28325823",
+   "title": "Video consultations as add-on to standard care among patients with type 2 diabetes not responding to standard regimens: a randomized controlled trial.",
+   "year": "2017",
+   "journal": "European journal of endocrinology",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "28215382",
+   "title": "A Place-Based Community Health Worker Program: Feasibility and Early Outcomes, New York City, 2015.",
+   "year": "2017",
+   "journal": "American journal of preventive medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28148474",
+   "title": "Text Messaging to Improve Hypertension Medication Adherence in African Americans From Primary Care and Emergency Department Settings: Results From Two Randomized Feasibility Studies.",
+   "year": "2017",
+   "journal": "JMIR mHealth and uHealth",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27942205",
+   "title": "The design, rationale, and baseline characteristics of a nationwide cohort registry in China: blood pressure and clinical outcome in TIA or ischemic stroke.",
+   "year": "2016",
+   "journal": "Patient preference and adherence",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27885969",
+   "title": "36th International Symposium on Intensive Care and Emergency Medicine : Brussels, Belgium. 15-18 March 2016.",
+   "year": "2016",
+   "journal": "Critical care (London, England)",
+   "pubtypes": [
+    "Conference Proceedings"
+   ]
+  },
+  {
+   "pmid": "27825313",
+   "title": "Using pharmacists to improve risk stratification and management of stage 3A chronic kidney disease: a feasibility study.",
+   "year": "2016",
+   "journal": "BMC nephrology",
+   "pubtypes": [
+    "Journal Article",
+    "Pragmatic Clinical Trial",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "27720142",
+   "title": "Patient characteristics associated with greater blood pressure control in a randomized trial of home blood pressure telemonitoring and pharmacist management.",
+   "year": "2016",
+   "journal": "Journal of the American Society of Hypertension : JASH",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "27618162",
+   "title": "Kidney Outcomes 5 Years After Pediatric Cardiac Surgery: The TRIBE-AKI Study.",
+   "year": "2016",
+   "journal": "JAMA pediatrics",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "27508314",
+   "title": "The effectiveness of a comprehensive reminder system in the secondary prevention of hypertensive ischaemic stroke: randomized controlled trial protocol.",
+   "year": "2016",
+   "journal": "Journal of advanced nursing",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "27492293",
+   "title": "[The Use of Telemedicine Interventions to Improve Hypertension Management Among Racial Ethnic Minorities: A Systematic Review].",
+   "year": "2016",
+   "journal": "Hu li za zhi The journal of nursing",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "27391818",
+   "title": "Management of hypertension and multiple risk factors to enhance cardiovascular health - a feasibility study in Singapore polyclinics.",
+   "year": "2016",
+   "journal": "BMC health services research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27358088",
+   "title": "Vascular Health Assessment of The Hypertensive Patients (VASOTENS) Registry: Study Protocol of an International, Web-Based Telemonitoring Registry for Ambulatory Blood Pressure and Arterial Stiffness.",
+   "year": "2016",
+   "journal": "JMIR research protocols",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27334521",
+   "title": "Short-term telemedical home blood pressure monitoring does not improve blood pressure in uncomplicated hypertensive patients.",
+   "year": "2017",
+   "journal": "Journal of human hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "27223479",
+   "title": "Use of Telemedicine for Management of Diabetes in Correctional Facilities.",
+   "year": "2017",
+   "journal": "Telemedicine journal and e-health : the official journal of the American Telemedicine Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27167766",
+   "title": "The Importance of Walking for Control of Blood Pressure: Proof Using a Telemedicine System.",
+   "year": "2016",
+   "journal": "Telemedicine journal and e-health : the official journal of the American Telemedicine Association",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "27015053",
+   "title": "A Pharmacist Telephone Intervention to Identify Adherence Barriers and Improve Adherence Among Nonadherent Patients with Comorbid Hypertension and Diabetes in a Medicare Advantage Plan.",
+   "year": "2016",
+   "journal": "Journal of managed care & specialty pharmacy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26874395",
+   "title": "Effect of predischarge blood pressure on follow-up outcomes in patients with severe hypertension in the ED.",
+   "year": "2016",
+   "journal": "The American journal of emergency medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26687550",
+   "title": "Assessment of hypertension control and clinical course of patients excluded from the SYMPLICITY HTN-3 trial.",
+   "year": "2015",
+   "journal": "Journal of the American Society of Hypertension : JASH",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "26678063",
+   "title": "The impact of community-based eHealth self-management intervention among elderly living alone with hypertension.",
+   "year": "2017",
+   "journal": "Journal of telemedicine and telecare",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26671271",
+   "title": "Managing Medication Adherence in Elderly Hypertensive Patients Through Pharmacist Home Visits.",
+   "year": "2015",
+   "journal": "The Consultant pharmacist : the journal of the American Society of Consultant Pharmacists",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26410537",
+   "title": "Long-term outcomes after Roux-en-Y gastric bypass: 10- to 13-year data.",
+   "year": "2016",
+   "journal": "Surgery for obesity and related diseases : official journal of the American Society for Bariatric Surgery",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26359961",
+   "title": "Pharmacist-provided diabetes management and education via a telemonitoring program.",
+   "year": "2015",
+   "journal": "Journal of the American Pharmacists Association : JAPhA",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "26343551",
+   "title": "Interactive telemedicine: effects on professional practice and health care outcomes.",
+   "year": "2015",
+   "journal": "The Cochrane database of systematic reviews",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "26302142",
+   "title": "Improving Medication Adherence in Patients with Hypertension: A Randomized Trial.",
+   "year": "2015",
+   "journal": "The American journal of medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26163030",
+   "title": "Effectiveness of a low-intensity telephone counselling intervention on an untreated metabolic syndrome detected by national population screening in Korea: a non-randomised study using regression discontinuity design.",
+   "year": "2015",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Clinical Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26081765",
+   "title": "Does pragmatically structured outpatient dietary counselling reduce sodium intake in hypertensive patients? Study protocol for a randomized controlled trial.",
+   "year": "2015",
+   "journal": "Trials",
+   "pubtypes": [
+    "Journal Article",
+    "Pragmatic Clinical Trial",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25952653",
+   "title": "A Successful Multifaceted Trial to Improve Hypertension Control in Primary Care: Why Did it Work?",
+   "year": "2015",
+   "journal": "Journal of general internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "25763214",
+   "title": "Angina self-management plan and quality of life, anxiety and depression in post coronary angioplasty patients.",
+   "year": "2014",
+   "journal": "Iranian Red Crescent medical journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25588699",
+   "title": "Is Pulse Pressure an Independent Risk Factor for Incident Stroke, REasons for Geographic And Racial Differences in Stroke.",
+   "year": "2015",
+   "journal": "American journal of hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "25569481",
+   "title": "Long-term effects of 3-month telemetric blood pressure intervention in patients with inadequately treated arterial hypertension.",
+   "year": "2015",
+   "journal": "Telemedicine journal and e-health : the official journal of the American Telemedicine Association",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "25324324",
+   "title": "Task shifting interventions for cardiovascular risk reduction in low-income and middle-income countries: a systematic review of randomised controlled trials.",
+   "year": "2014",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "25276765",
+   "title": "The incidence of hypertension and the follow-up rate in a sample of population over 30 years old in kashan 2013.",
+   "year": "2014",
+   "journal": "Journal of caring sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25054266",
+   "title": "Analysis of care given to patients with hypertension in Belo Horizonte, according to telephone survey.",
+   "year": "2014",
+   "journal": "Revista brasileira de epidemiologia = Brazilian journal of epidemiology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24803275",
+   "title": "Use of a telehealth system by older adults with hypertension.",
+   "year": "2014",
+   "journal": "Journal of telemedicine and telecare",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24734136",
+   "title": "Home blood pressure monitoring, secure electronic messaging and medication intensification for improving hypertension control: a mediation analysis.",
+   "year": "2014",
+   "journal": "Applied clinical informatics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24619321",
+   "title": "Do the benefits of participation in a hypertension self-management trial persist after patients resume usual care?",
+   "year": "2014",
+   "journal": "Circulation. Cardiovascular quality and outcomes",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "24412897",
+   "title": "Derivation and validation of a set of 10-year cardiovascular risk predictive functions in Spain: the FRESCO Study.",
+   "year": "2014",
+   "journal": "Preventive medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "24396559",
+   "title": "Efficiency of an intervention package for arterial hypertension comprising telemanagement in a Cameroonian rural setting: The TELEMED-CAM study.",
+   "year": "2013",
+   "journal": "The Pan African medical journal",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24157649",
+   "title": "EHR-based medication support and nurse-led medication therapy management: rationale and design for a three-arm clinic randomized trial.",
+   "year": "2013",
+   "journal": "Journal of the American Heart Association",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "24021286",
+   "title": "Lifestyle interventions reduce cardiovascular risk in patients with coronary artery disease: a randomized clinical trial.",
+   "year": "2014",
+   "journal": "European journal of cardiovascular nursing",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23821088",
+   "title": "Effect of home blood pressure telemonitoring and pharmacist management on blood pressure control: a cluster randomized clinical trial.",
+   "year": "2013",
+   "journal": "JAMA",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "23759734",
+   "title": "[Assessment of educational benefits in 73 hypertensive patients by telephone survey at distance of HTA Vasc educational program].",
+   "year": "2013",
+   "journal": "Annales de cardiologie et d'angeiologie",
+   "pubtypes": [
+    "Comparative Study",
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23721616",
+   "title": "Outcome of 312 Japanese patients with carotid endarterectomy and factors associated with cardiovascular events--a single-center study in Japan.",
+   "year": "2014",
+   "journal": "Journal of stroke and cerebrovascular diseases : the official journal of National Stroke Association",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23629739",
+   "title": "Home blood pressure monitoring in hypertensive stroke patients: a prospective cohort study following a randomized controlled trial.",
+   "year": "2013",
+   "journal": "Family practice",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23537980",
+   "title": "Managing hypertension in urban underserved subjects using telemedicine--a clinical trial.",
+   "year": "2013",
+   "journal": "American heart journal",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "23061642",
+   "title": "Hypertension management using mobile technology and home blood pressure monitoring: results of a randomized trial in two low/middle-income countries.",
+   "year": "2012",
+   "journal": "Telemedicine journal and e-health : the official journal of the American Telemedicine Association",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23031143",
+   "title": "Adherence to blood pressure telemonitoring in a cluster-randomized clinical trial.",
+   "year": "2012",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "22971205",
+   "title": "Randomized controlled trial of clinical pharmacy management of patients with type 2 diabetes in an outpatient diabetes clinic in Jordan.",
+   "year": "2012",
+   "journal": "Journal of managed care pharmacy : JMCP",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "22877684",
+   "title": "Clinical analysis of factors predisposing the recurrence of primary intracerebral hemorrhage in patients taking anti-hypertensive drugs: a prospective cohort study.",
+   "year": "2013",
+   "journal": "Clinical neurology and neurosurgery",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22498720",
+   "title": "Design and rationale for Home Blood Pressure Telemonitoring and Case Management to Control Hypertension (HyperLink): a cluster randomized trial.",
+   "year": "2012",
+   "journal": "Contemporary clinical trials",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "22335395",
+   "title": "A multifactorial intervention to improve blood pressure control in co-existing diabetes and kidney disease: a feasibility randomized controlled trial.",
+   "year": "2012",
+   "journal": "Journal of advanced nursing",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22143452",
+   "title": "Nurse-led disease management for hypertension control in a diverse urban community: a randomized trial.",
+   "year": "2012",
+   "journal": "Journal of general internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "21968855",
+   "title": "Better cognitive and physical performance is associated with higher blood pressure in centenarians.",
+   "year": "2011",
+   "journal": "The journal of nutrition, health & aging",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21968751",
+   "title": "Predictors of decline in medication adherence: results from the cohort study of medication adherence among older adults.",
+   "year": "2011",
+   "journal": "Hypertension (Dallas, Tex. : 1979)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "21884451",
+   "title": "A systematic review of the effectiveness of primary health education or intervention programs in improving rural women's knowledge of heart disease risk factors and changing lifestyle behaviours.",
+   "year": "2011",
+   "journal": "International journal of evidence-based healthcare",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "21826529",
+   "title": "The Banishing Obesity and Diabetes in Youth (BODY) Project: description and feasibility of a program to halt obesity-associated disease among urban high school students.",
+   "year": "2012",
+   "journal": "Journal of community health",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21806771",
+   "title": "Teletransmitted monitoring of blood pressure and bilingual nurse counseling-sustained improvements in blood pressure control during 12 months in hypertensive Korean Americans.",
+   "year": "2011",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "21747013",
+   "title": "Home blood pressure management and improved blood pressure control: results from a randomized controlled trial.",
+   "year": "2011",
+   "journal": "Archives of internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "21675274",
+   "title": "[Outpatient prophylaxis and treatment of arterial hypertension with application of mobile telephone systems and Internet techniques].",
+   "year": "2011",
+   "journal": "Terapevticheskii arkhiv",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21531237",
+   "title": "Racial differences in two self-management hypertension interventions.",
+   "year": "2011",
+   "journal": "The American journal of medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "21241165",
+   "title": "Telemedicine: the role of specialist second opinion for GPs in the care of hypertensive patients.",
+   "year": "2011",
+   "journal": "Blood pressure",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21108159",
+   "title": "[Callers' perception of the service at the cardiovascular hotline of the German Hypertension Society: results of follow-up telephone interviews].",
+   "year": "2010",
+   "journal": "Deutsche medizinische Wochenschrift (1946)",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "20691830",
+   "title": "Economic analysis of a tailored behavioral intervention to improve blood pressure control for primary care patients.",
+   "year": "2010",
+   "journal": "American heart journal",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "20667838",
+   "title": "Does telephone follow-up improve blood pressure after minor stroke or TIA?",
+   "year": "2010",
+   "journal": "Age and ageing",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20619448",
+   "title": "Telemonitoring and self-management in the control of hypertension (TASMINH2): a randomised controlled trial.",
+   "year": "2010",
+   "journal": "Lancet (London, England)",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20413121",
+   "title": "Effects of 8 weeks sustained follow-up after a nurse consultation on hypertension: a randomised trial.",
+   "year": "2010",
+   "journal": "International journal of nursing studies",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20349155",
+   "title": "A randomized community-based intervention trial comparing faith community nurse referrals to telephone-assisted physician appointments for health fair participants with elevated blood pressure.",
+   "year": "2010",
+   "journal": "Journal of general internal medicine",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20170948",
+   "title": "Renal outcomes with different fixed-dose combination therapies in patients with hypertension at high risk for cardiovascular events (ACCOMPLISH): a prespecified secondary analysis of a randomised controlled trial.",
+   "year": "2010",
+   "journal": "Lancet (London, England)",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20064272",
+   "title": "The devil is in the detail - a multifactorial intervention to reduce blood pressure in co-existing diabetes and chronic kidney disease: a single blind, randomized controlled trial.",
+   "year": "2010",
+   "journal": "BMC family practice",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20057172",
+   "title": "Prehypertension among middle-aged and elderly people in Taiwan: a five-year follow-up.",
+   "year": "2010",
+   "journal": "Journal of atherosclerosis and thrombosis",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "19965037",
+   "title": "Technical and compliance considerations for mobile health self-monitoring of glucose and blood pressure for patients with diabetes.",
+   "year": "2009",
+   "journal": "Annual International Conference of the IEEE Engineering in Medicine and Biology Society. IEEE Engineering in Medicine and Biology Society. Annual International Conference",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19948706",
+   "title": "The physician at a distance: the use of videoconferencing in the treatment of patients with hypertension.",
+   "year": "2009",
+   "journal": "Journal of telemedicine and telecare",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19920269",
+   "title": "Two self-management interventions to improve hypertension control: a randomized trial.",
+   "year": "2009",
+   "journal": "Annals of internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "19780688",
+   "title": "Experiences of telemedicine-aided hypertension control in the follow-up of Finnish hypertensive patients.",
+   "year": "2009",
+   "journal": "Telemedicine journal and e-health : the official journal of the American Telemedicine Association",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19337882",
+   "title": "Survival and quality of life after renal angioplasty: a five-year follow-up study.",
+   "year": "2009",
+   "journal": "Scandinavian journal of urology and nephrology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19249414",
+   "title": "Patient education and provider decision support to control blood pressure in primary care: a cluster randomized trial.",
+   "year": "2009",
+   "journal": "American heart journal",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "19220913",
+   "title": "Protocol for a randomised controlled trial of telemonitoring and self-management in the control of hypertension: telemonitoring and self-management in hypertension. [ISRCTN17585681].",
+   "year": "2009",
+   "journal": "BMC cardiovascular disorders",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19145785",
+   "title": "Home blood pressure telemonitoring improves hypertension control in general practice. The TeleBPCare study.",
+   "year": "2009",
+   "journal": "Journal of hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19000959",
+   "title": "Impact of patient-general practitioner short-messages-based interaction on the control of hypertension in a follow-up service for low-to-medium risk hypertensive patients: a randomized controlled trial.",
+   "year": "2008",
+   "journal": "IEEE transactions on information technology in biomedicine : a publication of the IEEE Engineering in Medicine and Biology Society",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18843828",
+   "title": "Relationship between depression and specific health indicators among hypertensive African American parents and grandparents.",
+   "year": "2008",
+   "journal": "Progress in cardiovascular nursing",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "18706028",
+   "title": "Glyceryl trinitrate vs. control, and continuing vs. stopping temporarily prior antihypertensive therapy, in acute stroke: rationale and design of the Efficacy of Nitric Oxide in Stroke (ENOS) trial (ISRCTN99414122).",
+   "year": "2006",
+   "journal": "International journal of stroke : official journal of the International Stroke Society",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "18568696",
+   "title": "Blood pressure control during telemonitoring of home blood pressure. A randomized controlled trial during 6 months.",
+   "year": "2008",
+   "journal": "Blood pressure",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18561875",
+   "title": "A significant decrease in blood pressure through a family-based nutrition health education programme among community residents in Taiwan.",
+   "year": "2009",
+   "journal": "Public health nutrition",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18539693",
+   "title": "Predictors of successful, self-reported lifestyle changes in a defined middle-aged population: the Soderakra Cardiovascular Risk Factor Study, Sweden.",
+   "year": "2008",
+   "journal": "Scandinavian journal of public health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18378859",
+   "title": "Telemedicine home blood pressure measurements and progression of albuminuria in elderly people with diabetes.",
+   "year": "2008",
+   "journal": "Hypertension (Dallas, Tex. : 1979)",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "17846552",
+   "title": "Effects of nurse-managed telemonitoring on blood pressure at 12-month follow-up among urban African Americans.",
+   "year": "2007",
+   "journal": "Nursing research",
+   "pubtypes": [
+    "Controlled Clinical Trial",
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "17287150",
+   "title": "The medication Adherence and Blood Pressure Control (ABC) trial: a multi-site randomized controlled trial in a hypertensive, multi-cultural, economically disadvantaged population.",
+   "year": "2007",
+   "journal": "Contemporary clinical trials",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "17055561",
+   "title": "Evaluating a community-based walking intervention for hypertensive older people in Taiwan: a randomized controlled trial.",
+   "year": "2007",
+   "journal": "Preventive medicine",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "16950591",
+   "title": "Social problem solving training for African Americans: effects on dietary problem solving skill and DASH diet-related behavior change.",
+   "year": "2007",
+   "journal": "Patient education and counseling",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "16759315",
+   "title": "Mortality in African-Americans with Type 1 diabetes: The New Jersey 725.",
+   "year": "2006",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "15942466",
+   "title": "The use of a telematic connection for the follow-up of hypertensive patients improves the cardiovascular prognosis.",
+   "year": "2005",
+   "journal": "Journal of hypertension",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "15272089",
+   "title": "Cardiovascular reactivity to work stress predicts subsequent onset of hypertension: the Air Traffic Controller Health Change Study.",
+   "year": "2004",
+   "journal": "Psychosomatic medicine",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "14649103",
+   "title": "Six-month hypertension intervention study. One year follow-up.",
+   "year": "2003",
+   "journal": "The West Indian medical journal",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "14596488",
+   "title": "Computer telephony: automated calls for medical care.",
+   "year": "2003",
+   "journal": "Clinical and investigative medicine. Medecine clinique et experimentale",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "12068135",
+   "title": "A nested case-control study on the high-normal blood pressure as a risk factor of hypertension in Korean middle-aged men.",
+   "year": "2002",
+   "journal": "Journal of Korean medical science",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "11924716",
+   "title": "Discriminating factors for recurrent hypertension in patients with primary aldosteronism after adrenalectomy.",
+   "year": "2002",
+   "journal": "Hypertension research : official journal of the Japanese Society of Hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "11816255",
+   "title": "Factors affecting medication adherence in hypertensive patients.",
+   "year": "2002",
+   "journal": "The Annals of pharmacotherapy",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "11403506",
+   "title": "Does higher diastolic augmentation predict clinical benefit from enhanced external counterpulsation?: Data from the International EECP Patient Registry (IEPR).",
+   "year": "2001",
+   "journal": "Clinical cardiology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "11343005",
+   "title": "Effects of home telemonitoring and community-based monitoring on blood pressure control in urban African Americans: a pilot study.",
+   "year": "2001",
+   "journal": "Heart & lung : the journal of critical care",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "11205651",
+   "title": "Vaccination, screening for malignancy, and health maintenance of the liver transplant recipient.",
+   "year": "2001",
+   "journal": "Journal of clinical gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "10972003",
+   "title": "Patients' knowledge and attitude towards treatment and control of hypertension: a nation-wide telephone survey conducted in Malaysia.",
+   "year": "1999",
+   "journal": "The Medical journal of Malaysia",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "10371363",
+   "title": "A clinical trial to improve high blood pressure care in young urban black men: recruitment, follow-up, and outcomes.",
+   "year": "1999",
+   "journal": "American journal of hypertension",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "10178467",
+   "title": "Enhancement of compliance among patients with hypertension.",
+   "year": "1997",
+   "journal": "The American journal of managed care",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "9100710",
+   "title": "The relationship between endothelin-1, event-related P300 potentials, and prognosis in cerebral arteriosclerosis.",
+   "year": "1997",
+   "journal": "Journal of the American Geriatrics Society",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "8896658",
+   "title": "\"Inappropriate\" physician habits in prescribing oral nifedipine capsules in hospitalized patients.",
+   "year": "1996",
+   "journal": "American journal of hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "2606449",
+   "title": "[A prospective study of future cardiac events in subjects who underwent treadmill exercise testing].",
+   "year": "1989",
+   "journal": "[Hokkaido igaku zasshi] The Hokkaido journal of medical science",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "2914043",
+   "title": "Emergency department detection and follow-up of high blood pressure: use and effectiveness of community health workers.",
+   "year": "1989",
+   "journal": "The American journal of emergency medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "6471943",
+   "title": "The emergency room and the hypertensive patient. Improving linkage to clinical care.",
+   "year": "1984",
+   "journal": "Medical care",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "7074758",
+   "title": "Long-term effects of a blood pressure survey on patient treatment in a community.",
+   "year": "1982",
+   "journal": "Circulation",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "403306",
+   "title": "Industrial hypertension program in a rural state. Efficacy and cost effectiveness.",
+   "year": "1977",
+   "journal": "JAMA",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  }
+ ]
+}

@@ -569,6 +569,33 @@ def load_pubmed_raw(path: Path) -> dict:
     return {}
 
 
+def uu_tien_theo_sang_loc_g0(out_dir: Path, study: str, pmids: list[str]) -> list[str]:
+    """PMID hạt giống của bản thảo theo SÀNG LỌC G0-T3 (`G0_TONG_HOP_BANG_CHUNG_<mã>.json`, 19/11/2026).
+
+    Vì sao: bản cũ lấy 10 PMID đầu của MỌI nhánh `G0_pubmed_raw.json` — kể cả bài agent `tong-quan-y-van` đã sàng là
+    LẠC ĐỀ — rồi chúng đi vào TLTK đề cương nộp; trục `trich_dan_tong_quan` của nhat_quan_xuyen_cong mới bắt được ở
+    G10 («TLTK trích bài G0 đã sàng là lạc đề», đo trên giả lập trọn vòng có G0-T3). Nay: bỏ bài sàng «khong» (cả nhánh
+    không lọc), xếp «truc_tiep» trước «gian_tiep» rồi bài chưa sàng; giữ thứ tự gốc trong cùng mức. Tệp tổng hợp
+    vắng/hỏng ⇒ trả nguyên danh sách (hành vi cũ — không đoán)."""
+    import g0_tong_hop as GT  # noqa: PLC0415
+
+    du, loi = GT.doc(out_dir, GT.TEP_TONG_HOP, study)
+    if not du or loi:
+        return list(pmids)
+    muc: dict[str, str] = {}
+    for x in du.get("sang_loc") or []:
+        if isinstance(x, dict) and x.get("pmid"):
+            muc[str(x["pmid"]).strip()] = str(x.get("lien_quan") or "")
+    for x in du.get("nguon_bo_sung") or []:
+        if isinstance(x, dict) and x.get("pmid"):
+            muc.setdefault(str(x["pmid"]).strip(), str(x.get("lien_quan") or ""))
+    for x in du.get("sang_loc_khong_loc") or []:
+        if isinstance(x, dict) and x.get("pmid"):
+            muc[str(x["pmid"]).strip()] = "khong"
+    hang = {"truc_tiep": 0, "gian_tiep": 1}
+    return sorted((p for p in pmids if muc.get(p) != "khong"), key=lambda p: hang.get(muc.get(p, ""), 2))
+
+
 _TABLE1_SKIP = {
     "record_id", "consent_date", "site_id", "complete_flag", "comments",
     "visit_date", "censor_date", "censor_reason", "protocol_deviation", "ltfu",
@@ -3114,6 +3141,7 @@ def main() -> None:
                 pid = str(art.get("pmid", "")).strip()
                 if pid and pid not in pmids:
                     pmids.append(pid)
+    pmids = uu_tien_theo_sang_loc_g0(out_dir, study, pmids)
 
     # Từ G1
     # SỬA: .get("design", {}) không dùng default {} khi key tồn tại với giá

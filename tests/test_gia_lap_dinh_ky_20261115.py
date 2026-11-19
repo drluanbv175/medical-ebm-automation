@@ -165,7 +165,9 @@ def test_luong_day_du_dem_can_thiep_va_khoa_khiem_khuyet(tmp_path):
     tg = TheGioi()
     _gl, kq = _chay_kb(tmp_path, tg)
     assert kq["do_duoc"] and kq["g0_do_duoc"]
-    assert _loai(kq) == [("G0", "khai_query_en"), ("G0", "dien_noi_dung"), ("G0", "xac_nhan_dau_van_tay"),
+    # 19/11/2026: agent G0-T3/T4 soạn tổng hợp + khoảng trống TRƯỚC khi PI điền/chốt G0 (gia_lap_van_ban_tac_tu).
+    assert _loai(kq) == [("G0", "khai_query_en"), ("G0", "soan_van_ban_g0"), ("G0", "dien_noi_dung"),
+                         ("G0", "xac_nhan_dau_van_tay"),
                          ("G1", "dien_noi_dung"), ("G1", "xac_nhan_dau_van_tay"),
                          ("G3", "dien_noi_dung"), ("G3", "tu_chay_cong"), ("G3", "xac_nhan_dau_van_tay")]
     assert kq["so_can_thiep_do_may"] == 2 and kq["cong_dung"] == "G5" and kq["thiet_ke_may_suy"] == "rct"
@@ -247,7 +249,7 @@ def test_moi_luot_pi_deu_lui_thoi_gian_truoc_khi_pi_lam(tmp_path, monkeypatch):
 
     monkeypatch.setattr(GL, "lui_thoi_gian", gian_diep)
     kq = gl.chay_kich_ban()
-    assert kq["so_can_thiep"] == 8
+    assert kq["so_can_thiep"] == 9  # 8 lượt PI + 1 lượt agent G0-T3/T4 (19/11/2026)
     assert goi == list(range(kq["so_can_thiep"] + 1))
 
 

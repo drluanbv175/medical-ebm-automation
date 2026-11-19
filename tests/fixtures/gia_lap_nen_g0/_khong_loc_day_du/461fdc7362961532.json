@@ -1,0 +1,2112 @@
+{
+ "schema": "gia_lap/khong_loc_day_du/v1",
+ "truy_van": "(\"FIB-4\"[tiab] OR \"fibrosis-4\"[tiab]) AND (\"Non-alcoholic Fatty Liver Disease\"[MeSH] OR NAFLD[tiab] OR MASLD[tiab]) AND (\"Elasticity Imaging Techniques\"[MeSH] OR elastography[tiab]) AND (\"Sensitivity and Specificity\"[MeSH] OR \"diagnostic accuracy\"[tiab] OR AUROC[tiab])",
+ "so_hit_that": 215,
+ "so_bai_lay_ve": 215,
+ "ngay_tai": "2026-11-19",
+ "cach": "PubMed E-utilities esearch (sort=date) + esummary, không lọc thiết kế",
+ "ban_ghi": [
+  {
+   "pmid": "43050037",
+   "title": "Biopsy-Validated Performance of Non-Invasive Tests for Preoperative Liver Assessment in Adults with Grade II-III Obesity Undergoing Metabolic Bariatric Surgery.",
+   "year": "2026",
+   "journal": "Obesity surgery",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "43037728",
+   "title": "Serum fibroblast growth factor-21 shows a stronger association with liver stiffness than fetuin-a in adults with type 2 diabetes mellitus undergoing non-invasive liver assessment: a cross-sectional study.",
+   "year": "2026",
+   "journal": "Acta diabetologica",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42992694",
+   "title": "Developing and Externally Validating Explainable Machine Learning for Elastography-Defined Steatotic Liver Disease.",
+   "year": "2026",
+   "journal": "Journal of visualized experiments : JoVE",
+   "pubtypes": [
+    "Journal Article",
+    "Video-Audio Media"
+   ]
+  },
+  {
+   "pmid": "42985628",
+   "title": "Diagnostic Performance of Triglyceride-Glucose Body Mass Index (TyG-BMI), Fibrosis-4 Index (FIB-4), and Their Combined Model for Clinically Significant Liver Fibrosis in Type 2 Diabetes Mellitus.",
+   "year": "2026",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42971355",
+   "title": "New CLA3+/4 scores predict outcomes in MASLD.",
+   "year": "2026",
+   "journal": "JHEP reports : innovation in hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42902667",
+   "title": "Comprehensive Approach to Detect Liver Fibrosis by Indirect Serum Biomarkers.",
+   "year": "2026",
+   "journal": "The Journal of the Association of Physicians of India",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42845069",
+   "title": "Diagnostic Performance of Non-Invasive Tests in Assessing Liver Fibrosis Among Type 2 Diabetes Mellitus.",
+   "year": "2026",
+   "journal": "Acta medica Indonesiana",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42827235",
+   "title": "Diagnostic performance of FIB-6 for identifying FibroScan-defined advanced fibrosis in Metabolic Dysfunction-Associated Steatotic Liver Disease (MASLD): a cross-sectional diagnostic accuracy study.",
+   "year": "2026",
+   "journal": "BMC gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42802126",
+   "title": "[Noninvasive scores for predicting liver-related events in patients with metabolic dysfunction-associated fatty liver disease].",
+   "year": "2026",
+   "journal": "Zhonghua gan zang bing za zhi = Zhonghua ganzangbing zazhi = Chinese journal of hepatology",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42781769",
+   "title": "Diagnostic Accuracy of Serum-Based Fibrosis Scores for Clinically Significant Liver Fibrosis in an East Asian Cohort.",
+   "year": "2026",
+   "journal": "The Kaohsiung journal of medical sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42767245",
+   "title": "Device-Specific Cut-Offs of Canon Aplio i800 2D Shear Wave Elastography for Advanced Fibrosis in MASLD: A Histologically Validated Study.",
+   "year": "2026",
+   "journal": "Ultraschall in der Medizin (Stuttgart, Germany : 1980)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42759697",
+   "title": "Aligned ELF and VCTE cut-offs facilitate risk staging in patients with metabolic dysfunction-associated steatohepatitis.",
+   "year": "2026",
+   "journal": "JHEP reports : innovation in hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42755179",
+   "title": "Non-Invasive Fibrosis Testing in Adults With Obesity and MASLD: A Systematic Review and Meta-Analysis.",
+   "year": "2026",
+   "journal": "Diabetes, obesity & metabolism",
+   "pubtypes": [
+    "Systematic Review",
+    "Journal Article",
+    "Meta-Analysis"
+   ]
+  },
+  {
+   "pmid": "42722220",
+   "title": "Assessing Strategies to Mitigate the Effect of Age When Using Fibrosis-4 Index to Screen for Metabolic Dysfunction-Associated Steatotic Liver Disease-Related Liver Fibrosis.",
+   "year": "2026",
+   "journal": "Clinical gastroenterology and hepatology : the official clinical practice journal of the American Gastroenterological Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42654424",
+   "title": "Noninvasive Detection of Clinically Significant Fibrosis in Biopsy-Proven MASLD: A Retrospective Cross-Sectional Diagnostic Accuracy Study.",
+   "year": "2026",
+   "journal": "Medicina (Kaunas, Lithuania)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42602073",
+   "title": "Discriminative performance of non-invasive scoring systems for VCTE-defined steatosis and fibrosis in patients with psoriasis.",
+   "year": "2026",
+   "journal": "Hepatology forum",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42581304",
+   "title": "Emerging Indices Outperform Traditional Fibrosis Scores in Young Metabolic Dysfunction-Associated Steatotic Liver Disease Across Divergent Screening Goals.",
+   "year": "2026",
+   "journal": "Journal of gastroenterology and hepatology",
+   "pubtypes": [
+    "Journal Article",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "42579768",
+   "title": "Simplified definition and imaging-based stratification of at-risk MASH using magnetic resonance elastography.",
+   "year": "2026",
+   "journal": "Hepatology communications",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "42566274",
+   "title": "Sequential FIB-4-based testing limits detection of fibrotic MASLD despite optimized ELF thresholds.",
+   "year": "2026",
+   "journal": "Hepatology communications",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42467953",
+   "title": "Metabolic-dysfunction associated steatotic liver disease: clinical features and noninvasive methods of detection in young adults with obesity.",
+   "year": "2026",
+   "journal": "European journal of gastroenterology & hepatology",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "42394207",
+   "title": "Enhanced Liver Fibrosis Test, FIB-4 and FibroScan: Real-World Prognostic Accuracy for MASLD in a Biopsy-Controlled Cohort.",
+   "year": "2026",
+   "journal": "Liver international : official journal of the International Association for the Study of the Liver",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "42392311",
+   "title": "Evaluating performance of non-invasive tests for fibrosis detection in MASLD with Type 2 Diabetes Mellitus: Insights from VCTE-Based assessment.",
+   "year": "2026",
+   "journal": "Clinics and research in hepatology and gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42367551",
+   "title": "A Cross-Sectional Observational Study of Non-alcoholic Fatty Liver Disease Assessed by Fibrosis Index in Patients With Type 2 Diabetes Mellitus Presenting to a Tertiary Care Centre in Southwestern Maharashtra.",
+   "year": "2026",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42294564",
+   "title": "Prevalence of Steatotic Liver Disease with Fibrosis and Diagnostic Screening Tools in Patients with Psoriasis.",
+   "year": "2026",
+   "journal": "Acta dermato-venereologica",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42291159",
+   "title": "FibroX: a machine learning model for detecting and prognosticating advanced fibrosis in metabolic dysfunction-associated steatotic liver disease.",
+   "year": "2026",
+   "journal": "Translational gastroenterology and hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42065895",
+   "title": "FIB-4 fails to identify significant liver fibrosis in people with HIV: A large multinational screening study.",
+   "year": "2026",
+   "journal": "Hepatology (Baltimore, Md.)",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "42001012",
+   "title": "Blood-based non-invasive tests show comparable accuracy in MetALD and MASLD for MRE-defined advanced fibrosis.",
+   "year": "2026",
+   "journal": "BMC gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "41911049",
+   "title": "Two-step clinical care pathway to predict MASLD-related advanced fibrosis and long-term outcomes in type 2 diabetes.",
+   "year": "2026",
+   "journal": "Gut",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "41870956",
+   "title": "Diagnostic and prognostic performance of the fibrotic nonalcoholic steatohepatitis index in patients with metabolic dysfunction-associated steatotic liver disease.",
+   "year": "2026",
+   "journal": "European journal of gastroenterology & hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41784418",
+   "title": "SAFE vs. FIB-4: diagnostic accuracy for clinically significant fibrosis in U.S. adults with cardiometabolic risk factors - a NHANES 2017-2020 analysis.",
+   "year": "2026",
+   "journal": "European journal of gastroenterology & hepatology",
+   "pubtypes": [
+    "Journal Article",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "41742207",
+   "title": "Metabolic dysfunction-associated steatotic liver disease is associated with vascular dysfunction in type 1 diabetes.",
+   "year": "2026",
+   "journal": "Cardiovascular diabetology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41698414",
+   "title": "A Novel Fibroblast Activation Protein-Based Algorithm to Assess Fibrosis in Metabolic Dysfunction-Associated Steatotic Liver Disease.",
+   "year": "2026",
+   "journal": "Journal of gastroenterology and hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41650315",
+   "title": "Metabolic biomarkers add little to diagnostic performance of FIB-4 in MASLD.",
+   "year": "2026",
+   "journal": "Scandinavian journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41642476",
+   "title": "Dual elastography ultrasound for classifying metabolic dysfunction-associated steatotic liver disease: a cross-sectional study within a prospective cohort.",
+   "year": "2026",
+   "journal": "Hepatology international",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "41640950",
+   "title": "Blood markers vs transient elastography for liver stiffness and steatosis in metabolic dysfunction-associated steatotic liver disease.",
+   "year": "2026",
+   "journal": "World journal of hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41639646",
+   "title": "Diagnostic value of LPRI for assessing advanced liver fibrosis in patients with chronic hepatitis B and non-alcoholic fatty liver disease.",
+   "year": "2026",
+   "journal": "BMC gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41637800",
+   "title": "Performance of fibrosis-4 and NAFLD fibrosis score for screening liver fibrosis in Indian individuals with type 2 diabetes: a prospective cross-sectional study.",
+   "year": "2026",
+   "journal": "Diabetes & metabolic syndrome",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41624490",
+   "title": "Integration of PNPLA3 and TM6SF2 genotypes provides incremental improvement in advanced fibrosis prediction among MASLD patients with type 2 diabetes mellitus.",
+   "year": "2026",
+   "journal": "JHEP reports : innovation in hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41585324",
+   "title": "Clinical utility of the MAF-5 score for assessing MAFLD/MASLD in a Japanese population with obesity.",
+   "year": "2026",
+   "journal": "Diabetology international",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41560381",
+   "title": "Steatosis-Associated Fibrosis Estimator Score in Asian Patients with Metabolic Dysfunction-Associated Steatotic Liver Disease.",
+   "year": "2026",
+   "journal": "Yonsei medical journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41551835",
+   "title": "Noninvasive strategies for metabolic dysfunction-associated steatotic liver disease assessment and referral in Japan.",
+   "year": "2026",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "41545932",
+   "title": "An interpretable machine learning model for prediction of significant liver fibrosis in comorbid chronic hepatitis B and nonalcoholic fatty liver disease: a retrospective development and validation study.",
+   "year": "2026",
+   "journal": "BMC gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "41533456",
+   "title": "Imaging-Based Modalities for Identifying At Risk MASH. A Diagnostic Test Meta-Analysis.",
+   "year": "2026",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis"
+   ]
+  },
+  {
+   "pmid": "41531589",
+   "title": "Advancing Diagnosis of Liver Cirrhosis: Why Non-invasive Methods Are the Future?",
+   "year": "2025",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "41517299",
+   "title": "Use of FibroScan-AST (FAST) Score and Fibrosis-4 Index to Identify Advanced Liver Fibrosis in Patients with Type 2 Diabetes and Metabolic Dysfunction-Associated Steatotic Liver Disease.",
+   "year": "2025",
+   "journal": "Journal of clinical medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41508788",
+   "title": "Agile 3+ Index Is Independently Associated With Cardiovascular Diseases in Patients With Metabolic Dysfunction-Associated Steatotic Liver Disease: Analysis of NHANES 2017-2020.",
+   "year": "2026",
+   "journal": "Diabetes/metabolism research and reviews",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41411679",
+   "title": "Guideline comparison for fatty liver disease: European (EASL-EASD-EASO) and Asian (APASL) perspectives.",
+   "year": "2026",
+   "journal": "Expert review of gastroenterology & hepatology",
+   "pubtypes": [
+    "Journal Article",
+    "Review",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "41357039",
+   "title": "Prevalence of Hepatic Fibrosis and Performance of Non-invasive Liver Fibrosis Scores in an Eastern Indian Diabetic Population with NAFLD.",
+   "year": "2025",
+   "journal": "Journal of the ASEAN Federation of Endocrine Societies",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "41312562",
+   "title": "Evaluation of a novel albumin platelet product (APP) fibrosis index and three non-invasive fibrosis indices in metabolic dysfunction-associated steatotic liver disease.",
+   "year": "2025",
+   "journal": "Canadian liver journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41179089",
+   "title": "Overall Diagnostic Efficiency of a Noninvasive Diagnostic Strategy Aimed at Early Detection of Advanced Liver Fibrosis in Metabolic Dysfunction-Associated Steatotic Liver Disease Cases.",
+   "year": "2025",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41152066",
+   "title": "The Bubble-Destruction Curve Obtained Using Contrast-Enhanced Ultrasound is Useful for Assessing Liver Fibrosis and Identifying At-risk MASH in Patients With MASLD.",
+   "year": "2026",
+   "journal": "Ultrasound in medicine & biology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41100867",
+   "title": "Global performance of non-invasive tests in MASLD: Insights from the G-MASLD study.",
+   "year": "2026",
+   "journal": "Hepatology (Baltimore, Md.)",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "41031802",
+   "title": "Diagnostic and Prognostic Performance of the Agile 3+ Score in Patients With Chronic Hepatitis B and Concurrent MASLD After Complete Viral Suppression With Nucleos(t)ide Analogues.",
+   "year": "2025",
+   "journal": "Journal of gastroenterology and hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41025074",
+   "title": "Machine learning fibrosis score for pediatric metabolic dysfunction-associated steatotic liver disease: Promising but premature.",
+   "year": "2025",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Editorial"
+   ]
+  },
+  {
+   "pmid": "41025016",
+   "title": "Added value of the albumin-bilirubin score in predicting liver-related complications and mortality in metabolic-associated steatotic liver disease.",
+   "year": "2025",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40980782",
+   "title": "Lipid Parameters and Their Association With Liver Function Test Variables in Patients With Type 2 Diabetes Mellitus.",
+   "year": "2025",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40919904",
+   "title": "Reduced Predictive Performance of the FIB-4 Index in Chronic Hepatitis B Patients With Concurrent Metabolic Dysfunction-Associated Liver Disease.",
+   "year": "2025",
+   "journal": "Journal of viral hepatitis",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40839133",
+   "title": "A novel multi-parameter MRI-based model for identification of high-risk metabolic dysfunction-associated steatohepatitis.",
+   "year": "2026",
+   "journal": "European radiology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40712713",
+   "title": "FIB-4-based Referral Pathways Have Suboptimal Accuracy to Identify Increased Liver Stiffness and Incident Advanced Liver Disease.",
+   "year": "2026",
+   "journal": "Clinical gastroenterology and hepatology : the official clinical practice journal of the American Gastroenterological Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40664273",
+   "title": "Steatosis non-invasive tests accurately predict metabolic dysfunction-associated steatotic liver disease, while fibrosis non-invasive tests fall short: Validation in U.S. adult population.",
+   "year": "2025",
+   "journal": "Clinics and research in hepatology and gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "40634664",
+   "title": "MISHTI study evaluating hepatic fibrosis in type 2 diabetes patients in India.",
+   "year": "2025",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "40554612",
+   "title": "Evaluation of the prevalence of MASLD, MASH and liver fibrosis in a Dutch bariatric cohort.",
+   "year": "2025",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "40416452",
+   "title": "Redefining Liver Fibrosis Risk Assessment in Indians with Type 2 Diabetes: New FIB-4 Score Cutoff for Optimizing Sequential Assessment with Transient Elastography.",
+   "year": "2025",
+   "journal": "Indian journal of endocrinology and metabolism",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40377491",
+   "title": "Noninvasive pathway for stratifying fibrosis in suspected metabolic dysfunction and alcohol-associated liver disease (MetALD).",
+   "year": "2025",
+   "journal": "Hepatology communications",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "40361937",
+   "title": "Simple Clinical Prediction Rules for Identifying Significant Liver Fibrosis: Evaluation of Established Scores and Development of the Aspartate Aminotransferase-Thrombocytopenia-Albumin (ATA) Score.",
+   "year": "2025",
+   "journal": "Diagnostics (Basel, Switzerland)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40331893",
+   "title": "Comparison of diagnostic accuracy and utility of non-invasive tests for clinically significant liver disease in a general population with metabolic dysfunction.",
+   "year": "2026",
+   "journal": "Hepatology (Baltimore, Md.)",
+   "pubtypes": [
+    "Journal Article",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "40295262",
+   "title": "The accuracy of FibroScan, FIB-4, and nonalcoholic fatty liver disease fibrosis score in predicting biopsy-defined fibrosis and steatosis across all fibrosis stages in patients with metabolic dysfunction associated steatotic liver disease.",
+   "year": "2025",
+   "journal": "Medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "40212791",
+   "title": "Non-invasive tests for fibrotic MASH for reducing screen failure in therapeutic trials.",
+   "year": "2025",
+   "journal": "JHEP reports : innovation in hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40181673",
+   "title": "Risk stratification by noninvasive tests in patients with metabolic dysfunction-associated steatotic liver disease.",
+   "year": "2025",
+   "journal": "Clinical and molecular hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40158190",
+   "title": "A negative correlation of low estimated glucose disposal rate with significant liver fibrosis in adults with NAFLD and obesity: results from NHANES 2017-2020.",
+   "year": "2025",
+   "journal": "BMC gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40146016",
+   "title": "ALADDIN: A Machine Learning Approach to Enhance the Prediction of Significant Fibrosis or Higher in Metabolic Dysfunction-Associated Steatotic Liver Disease.",
+   "year": "2026",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40126753",
+   "title": "Agile 3+ and 4 Scores Accurately Predict Major Adverse Liver Outcomes, Liver Transplant, Progression of MELD Score, the Development of Hepatocellular Carcinoma, and Death in NAFLD.",
+   "year": "2025",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40002828",
+   "title": "Diagnostic Performance of Serum Mac-2-Binding Protein Glycosylation Isomer as a Fibrosis Biomarker in Non-Obese and Obese Patients with MASLD.",
+   "year": "2025",
+   "journal": "Biomedicines",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39929473",
+   "title": "Economic evaluation of non-invasive test pathways for high-risk metabolic dysfunction-associated steatotic liver disease (MASLD) in the United Kingdom (UK).",
+   "year": "2025",
+   "journal": "Annals of hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39865358",
+   "title": "Precision in Liver Diagnosis: Varied Accuracy Across Subgroups and the Need for Variable Thresholds in Diagnosis of MASLD.",
+   "year": "2025",
+   "journal": "Liver international : official journal of the International Association for the Study of the Liver",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "39772945",
+   "title": "The role of noninvasive biomarkers for monitoring cell injury in advanced liver fibrosis.",
+   "year": "2025",
+   "journal": "Expert review of gastroenterology & hepatology",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "39703127",
+   "title": "Diagnostic accuracy of Agile-4 score for liver cirrhosis in patients with metabolic dysfunction-associated steatotic liver disease. A systematic review and meta-analysis of diagnostic test accuracy studies.",
+   "year": "2025",
+   "journal": "Diabetes, obesity & metabolism",
+   "pubtypes": [
+    "Systematic Review",
+    "Journal Article",
+    "Meta-Analysis"
+   ]
+  },
+  {
+   "pmid": "39674323",
+   "title": "A new generation of non-invasive tests of liver fibrosis with improved accuracy in MASLD.",
+   "year": "2025",
+   "journal": "Journal of hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39674225",
+   "title": "Development, validation, and prognostic evaluation of LiverPRO for the prediction of significant liver fibrosis in primary care: a prospective cohort study.",
+   "year": "2025",
+   "journal": "The lancet. Gastroenterology & hepatology",
+   "pubtypes": [
+    "Journal Article",
+    "Validation Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "39670870",
+   "title": "Age-dependent differences in FIB-4 predictions of fibrosis in patients with MASLD referred from primary care.",
+   "year": "2025",
+   "journal": "Hepatology communications",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39624533",
+   "title": "Correlation Between Transient Elastography and Non-invasive Biomarker Scores for the Detection of Liver Fibrosis.",
+   "year": "2024",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39582309",
+   "title": "Evaluation of Liver Fibrosis through Noninvasive Tests in Steatotic Liver Disease.",
+   "year": "2024",
+   "journal": "The Korean journal of gastroenterology = Taehan Sohwagi Hakhoe chi",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "39492822",
+   "title": "Recent developments in non-invasive methods for assessing metabolic dysfunction-associated fatty liver disease.",
+   "year": "2024",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Review",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39481576",
+   "title": "EUS-guided shear wave elastography for fibrosis screening in patients with obesity and metabolic dysfunction-associated steatotic liver disease: a pilot study (with video).",
+   "year": "2025",
+   "journal": "Gastrointestinal endoscopy",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Video-Audio Media"
+   ]
+  },
+  {
+   "pmid": "39462487",
+   "title": "Implementation of Machine Learning Algorithms to Screen for Advanced Liver Fibrosis in Metabolic Dysfunction-Associated Steatotic Liver Disease: An In-Depth Explanatory Analysis.",
+   "year": "2025",
+   "journal": "Digestion",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39460547",
+   "title": "Diagnostic accuracy of FibroScan-AST (FAST) score, non-alcoholic fatty liver fibrosis score (NFS), FibroScan, and liver fibrosis index (FIB-4) for identifying fibrotic non-alcoholic steatohepatitis in patients with chronic hepatitis B with metabolic dysfunction-associated fatty liver disease.",
+   "year": "2024",
+   "journal": "Annals of medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39423341",
+   "title": "Disparities in screening and risk stratification for Hispanic adults with metabolic dysfunction-associated steatotic liver disease.",
+   "year": "2025",
+   "journal": "Hepatology (Baltimore, Md.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "39376063",
+   "title": "Diagnostic accuracy of exhaled nitric oxide for the non-invasive identification of patients with fibrotic metabolic dysfunction-associated steatohepatitis.",
+   "year": "2024",
+   "journal": "Annals of medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "39358200",
+   "title": "Comparative evaluation of APRI, FIB-4, HFS, and NFS: Scoring tools for liver fibrosis in a Mexican population with MASLD.",
+   "year": "2024",
+   "journal": "Revista de gastroenterologia de Mexico (English)",
+   "pubtypes": [
+    "Journal Article",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "39272195",
+   "title": "Diagnostic performance of new BAST score versus FIB-4 index in predicating of the liver fibrosis in patients with metabolic dysfunction-associated steatotic liver disease.",
+   "year": "2024",
+   "journal": "European journal of medical research",
+   "pubtypes": [
+    "Journal Article",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "39099245",
+   "title": "One-step non-invasive diagnosis of metabolic dysfunction-associated steatohepatitis and fibrosis in high-risk population.",
+   "year": "2024",
+   "journal": "United European gastroenterology journal",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "38946405",
+   "title": "LIVERSTAT for risk stratification for patients with metabolic dysfunction-associated fatty liver disease.",
+   "year": "2024",
+   "journal": "Journal of gastroenterology and hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38890093",
+   "title": "Fibrosis-4 score for screening of metabolic dysfunction-associated steatotic liver disease (MASLD): Data from a population-based sample in Tuscany.",
+   "year": "2024",
+   "journal": "Nutrition, metabolism, and cardiovascular diseases : NMCD",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38879175",
+   "title": "Diagnostic performance of non-invasive tests in patients with MetALD in a health check-up cohort.",
+   "year": "2024",
+   "journal": "Journal of hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38851395",
+   "title": "The steatosis-associated fibrosis estimator (SAFE) outperformed the FIB-4 score in screening the population for liver disease.",
+   "year": "2024",
+   "journal": "Annals of hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38828944",
+   "title": "Serum growth differentiation factor 15 is a novel biomarker with high predictive capability for liver cancer occurrence in patients with MASLD regardless of liver fibrosis.",
+   "year": "2024",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "38789011",
+   "title": "Agile scores in MASLD and ALD: External validation and their utility in clinical algorithms.",
+   "year": "2024",
+   "journal": "Journal of hepatology",
+   "pubtypes": [
+    "Journal Article",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "38781158",
+   "title": "FAST and Agile-the MASLD drift: Validation of Agile 3+, Agile 4 and FAST scores in 246 biopsy-proven NAFLD patients meeting MASLD criteria of prevalent caucasian origin.",
+   "year": "2024",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Validation Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "38764767",
+   "title": "FibroScan-aspartate transaminase: A superior non-invasive model for diagnosing high-risk metabolic dysfunction-associated steatohepatitis.",
+   "year": "2024",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "38716213",
+   "title": "Lower FIB-4 threshold in patients with diabetes improves diagnostic accuracy of the test in a Hispanic population.",
+   "year": "2024",
+   "journal": "Translational gastroenterology and hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38700632",
+   "title": "An Electronic Health Record Model for Predicting Risk of Hepatic Fibrosis in Primary Care Patients.",
+   "year": "2024",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38686620",
+   "title": "Performance of MAST, FAST, and MEFIB in predicting metabolic dysfunction-associated steatohepatitis.",
+   "year": "2024",
+   "journal": "Journal of gastroenterology and hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38573034",
+   "title": "Diagnostic accuracy of non-invasive tests to screen for at-risk MASH-An individual participant data meta-analysis.",
+   "year": "2024",
+   "journal": "Liver international : official journal of the International Association for the Study of the Liver",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "38513745",
+   "title": "Metabolic Dysfunction-Associated Fibrosis 5 (MAF-5) Score Predicts Liver Fibrosis Risk and Outcome in the General Population With Metabolic Dysfunction.",
+   "year": "2024",
+   "journal": "Gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "38431106",
+   "title": "EUS-guided liver palpation as a screening tool for advanced fibrosis and cirrhosis in patients with suspected metabolic dysfunction-associated steatotic liver disease: a pilot study.",
+   "year": "2024",
+   "journal": "Gastrointestinal endoscopy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38314810",
+   "title": "Diagnostic Ability of Simple Noninvasive Blood Tests to Predict Increased Liver Stiffness in People Living With HIV and Steatotic Liver Disease.",
+   "year": "2024",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "38311058",
+   "title": "A Composite Blood Biomarker Including AKR1B10 and Cytokeratin 18 for Progressive Types of Nonalcoholic Fatty Liver Disease.",
+   "year": "2024",
+   "journal": "Diabetes & metabolism journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38234005",
+   "title": "Performance of noninvasive seromarkers in predicting liver fibrosis among MAFLD patients with or without viral hepatitis.",
+   "year": "2024",
+   "journal": "The Kaohsiung journal of medical sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38131420",
+   "title": "Machine-learning model comprising five clinical indices and liver stiffness measurement can accurately identify MASLD-related liver fibrosis.",
+   "year": "2024",
+   "journal": "Liver international : official journal of the International Association for the Study of the Liver",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37987833",
+   "title": "A combination of non-invasive tests for the detection of significant fibrosis in patients with metabolic dysfunction-associated steatotic liver disease is not superior to magnetic resonance elastography alone.",
+   "year": "2024",
+   "journal": "European radiology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37956400",
+   "title": "The Steatosis-Associated Fibrosis Estimator (SAFE) score for assessing significant liver fibrosis in patients with psoriasis.",
+   "year": "2024",
+   "journal": "Clinical and experimental dermatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37938933",
+   "title": "Noninvasive diagnosis of significant liver inflammation in patients with chronic hepatitis B in the indeterminate phase.",
+   "year": "2023",
+   "journal": "Virulence",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37900994",
+   "title": "Diagnostic role of transient elastography in patients with autoimmune liver diseases: A systematic review and meta-analysis.",
+   "year": "2023",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Meta-Analysis",
+    "Systematic Review",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37889111",
+   "title": "Predictors of advanced liver fibrosis and the performance of fibrosis scores: lean compared to non-lean metabolic dysfunction-associated steatotic liver disease (MASLD) patients.",
+   "year": "2024",
+   "journal": "Minerva gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "37724633",
+   "title": "MAFLD fibrosis score: Using routine measures to identify advanced fibrosis in metabolic-associated fatty liver disease.",
+   "year": "2023",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Multicenter Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37691582",
+   "title": "Algorithms for early detection of silent liver fibrosis in the primary care setting - a scoping review.",
+   "year": "2023",
+   "journal": "Expert review of gastroenterology & hepatology",
+   "pubtypes": [
+    "Journal Article",
+    "Scoping Review"
+   ]
+  },
+  {
+   "pmid": "37650363",
+   "title": "Diagnostic and prognostic performance of the SAFE score in non-alcoholic fatty liver disease.",
+   "year": "2024",
+   "journal": "Liver international : official journal of the International Association for the Study of the Liver",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37642160",
+   "title": "Prospective direct comparison of non-invasive liver tests in outpatients with type 2 diabetes using intention-to-diagnose analysis.",
+   "year": "2023",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37505221",
+   "title": "Serum identification of at-risk MASH: The metabolomics-advanced steatohepatitis fibrosis score (MASEF).",
+   "year": "2024",
+   "journal": "Hepatology (Baltimore, Md.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37398885",
+   "title": "Novel multi-parametric diagnosis of non-alcoholic fatty liver disease using ultrasonography, body mass index, and Fib-4 index.",
+   "year": "2023",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Observational Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37290471",
+   "title": "Performance of non-invasive tests and histology for the prediction of clinical outcomes in patients with non-alcoholic fatty liver disease: an individual participant data meta-analysis.",
+   "year": "2023",
+   "journal": "The lancet. Gastroenterology & hepatology",
+   "pubtypes": [
+    "Meta-Analysis",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37203233",
+   "title": "Magnetic resonance elastography-based prediction model for hepatic decompensation in NAFLD: A multicenter cohort study.",
+   "year": "2023",
+   "journal": "Hepatology (Baltimore, Md.)",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, American Recovery and Reinvestment Act"
+   ]
+  },
+  {
+   "pmid": "37153139",
+   "title": "Recent advances in NAFLD: current areas of contention.",
+   "year": "2023",
+   "journal": "Faculty reviews",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "37141504",
+   "title": "Increased accuracy in identifying NAFLD with advanced fibrosis and cirrhosis: independent validation of the Agile 3+ and 4 scores.",
+   "year": "2023",
+   "journal": "Hepatology communications",
+   "pubtypes": [
+    "Multicenter Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37115504",
+   "title": "Diagnostic Performance of Noninvasive Tests for Advanced Hepatic Fibrosis in Young Age Population.",
+   "year": "2023",
+   "journal": "Clinical gastroenterology and hepatology : the official clinical practice journal of the American Gastroenterological Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37094749",
+   "title": "Noninvasive identification of probable fibrotic nonalcoholic steatohepatitis across the spectrum of glucose tolerance in the United States.",
+   "year": "2023",
+   "journal": "Diabetes research and clinical practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37088311",
+   "title": "Using the ELF test, FIB-4 and NAFLD fibrosis score to screen the population for liver disease.",
+   "year": "2023",
+   "journal": "Journal of hepatology",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37043830",
+   "title": "High Prevalence of NASH and Advanced Fibrosis in Type 2 Diabetes: A Prospective Study of 330 Outpatients Undergoing Liver Biopsies for Elevated ALT, Using a Low Threshold.",
+   "year": "2023",
+   "journal": "Diabetes care",
+   "pubtypes": [
+    "Multicenter Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37026734",
+   "title": "The Steatosis-associated fibrosis estimator (SAFE) score: validation in the general US population.",
+   "year": "2023",
+   "journal": "Hepatology communications",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37018145",
+   "title": "Cost-effectiveness of MRE versus VCTE in staging fibrosis for nonalcoholic fatty liver disease (NAFLD) patients with advanced fibrosis.",
+   "year": "2023",
+   "journal": "Hepatology (Baltimore, Md.)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36950488",
+   "title": "The NAFLD Decompensation Risk Score: External Validation and Comparison to Existing Models to Predict Hepatic Events in a Retrospective Cohort Study.",
+   "year": "2023",
+   "journal": "Journal of clinical and experimental hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36924031",
+   "title": "Noninvasive assessment of liver disease severity in patients with nonalcoholic fatty liver disease (NAFLD) and type 2 diabetes.",
+   "year": "2023",
+   "journal": "Hepatology (Baltimore, Md.)",
+   "pubtypes": [
+    "Meta-Analysis",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36807720",
+   "title": "Validation of the utility of Agile scores to identify advanced fibrosis and cirrhosis in Japanese patients with nonalcoholic fatty liver disease.",
+   "year": "2023",
+   "journal": "Hepatology research : the official journal of the Japan Society of Hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36675579",
+   "title": "Cross-Sectional and Longitudinal Performance of Non-Invasive Tests of Liver Fibrosis in Patients with Non-Alcoholic Fatty Liver Disease.",
+   "year": "2023",
+   "journal": "Journal of clinical medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36639212",
+   "title": "Identification of patients with type 2 diabetes with non-alcoholic fatty liver disease who are at increased risk of progressing to advanced fibrosis: a cross-sectional study.",
+   "year": "2023",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36538211",
+   "title": "Diagnostic Value of Non-invasive Liver Function Tests in Liver Fibrosis and Changes in These Parameters Post-metabolic Surgery.",
+   "year": "2023",
+   "journal": "Obesity surgery",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36375686",
+   "title": "Enhanced diagnosis of advanced fibrosis and cirrhosis in individuals with NAFLD using FibroScan-based Agile scores.",
+   "year": "2023",
+   "journal": "Journal of hepatology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36359453",
+   "title": "Accuracy of Noninvasive Diagnostic Tests for the Detection of Significant and Advanced Fibrosis Stages in Nonalcoholic Fatty Liver Disease: A Systematic Literature Review of the US Studies.",
+   "year": "2022",
+   "journal": "Diagnostics (Basel, Switzerland)",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "36307441",
+   "title": "A 3-step approach to predict advanced fibrosis in nonalcoholic fatty liver disease: impact on diagnosis, patient burden, and medical costs.",
+   "year": "2022",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36010180",
+   "title": "Clinical Model for the Prediction of Severe Liver Fibrosis in Adult Patients with Type II Diabetes Mellitus.",
+   "year": "2022",
+   "journal": "Diagnostics (Basel, Switzerland)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35973400",
+   "title": "Transient Elastography and Serum-Based Tests for Diagnosis of Fatty Liver and Advanced Fibrosis in a Community Cohort: A Cross-Sectional Analysis.",
+   "year": "2023",
+   "journal": "Digestive diseases (Basel, Switzerland)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35873289",
+   "title": "Assessment of Noninvasive Markers of Steatosis and Liver Fibrosis in Human Immunodeficiency Virus-Monoinfected Patients on Stable Antiretroviral Regimens.",
+   "year": "2022",
+   "journal": "Open forum infectious diseases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35842119",
+   "title": "AGILE 3+ Score for the Diagnosis of Advanced Fibrosis and for Predicting Liver-related Events in NAFLD.",
+   "year": "2023",
+   "journal": "Clinical gastroenterology and hepatology : the official clinical practice journal of the American Gastroenterological Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35822302",
+   "title": "Validation of the new 2021 EASL algorithm for the noninvasive diagnosis of advanced fibrosis in NAFLD.",
+   "year": "2023",
+   "journal": "Hepatology (Baltimore, Md.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35808928",
+   "title": "Gamma-Glutamyl Transpeptidase-to-Platelet ratio predicts liver fibrosis in patients with concomitant chronic hepatitis B and nonalcoholic fatty liver disease.",
+   "year": "2022",
+   "journal": "Journal of clinical laboratory analysis",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35791792",
+   "title": "Liver stiffness accuracy by magnetic resonance elastography in histologically proven non-alcoholic fatty liver disease patients: a Spanish cohort.",
+   "year": "2023",
+   "journal": "Revista espanola de enfermedades digestivas",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35587726",
+   "title": "Validation of magnetic resonance elastography plus fibrosis-4 for significant fibrosis in nonalcoholic fatty liver disease.",
+   "year": "2022",
+   "journal": "Journal of gastroenterology and hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35486350",
+   "title": "Reduced and more appropriate referrals of patients with type 2 diabetes using liver stiffness measurement compared to FIB-4.",
+   "year": "2023",
+   "journal": "Irish journal of medical science",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35386158",
+   "title": "Assessment of Liver Fibrosis Using Non-invasive Screening Tools in Individuals With Diabetes Mellitus and Metabolic Syndrome.",
+   "year": "2022",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35352460",
+   "title": "Noninvasive assessment of liver fibrosis and its clinical significance in nonalcoholic fatty liver disease.",
+   "year": "2022",
+   "journal": "Hepatology research : the official journal of the Japan Society of Hepatology",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "35284290",
+   "title": "Diagnosis of steatohepatitis and fibrosis in biopsy-proven nonalcoholic fatty liver diseases: including two-dimension real-time shear wave elastography and noninvasive fibrotic biomarker scores.",
+   "year": "2022",
+   "journal": "Quantitative imaging in medicine and surgery",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35152674",
+   "title": "[Study on the diagnostic value of transient elastography, APRI and FIB-4 for liver fibrosis in children with non-alcoholic fatty liver disease].",
+   "year": "2022",
+   "journal": "Zhonghua gan zang bing za zhi = Zhonghua ganzangbing zazhi = Chinese journal of hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35123096",
+   "title": "Two-Step Strategy, FIB-4 Followed by Magnetic Resonance Elastography, for Detecting Advanced Fibrosis in NAFLD.",
+   "year": "2023",
+   "journal": "Clinical gastroenterology and hepatology : the official clinical practice journal of the American Gastroenterological Association",
+   "pubtypes": [
+    "Multicenter Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35005800",
+   "title": "A sequential approach using the age-adjusted fibrosis-4 index and vibration-controlled transient elastography to detect advanced fibrosis in Korean patients with non-alcoholic fatty liver disease.",
+   "year": "2022",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "34841632",
+   "title": "Comparison of diagnostic performance between FIB-4 and NFS in metabolic-associated fatty liver disease era.",
+   "year": "2022",
+   "journal": "Hepatology research : the official journal of the Japan Society of Hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34762779",
+   "title": "Acoustic radiation force impulse elastography and liver fibrosis risk scores in severe obesity.",
+   "year": "2021",
+   "journal": "Archives of endocrinology and metabolism",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34588540",
+   "title": "Combination of FIB-4 with ultrasound surface nodularity or elastography as predictors of histologic advanced liver fibrosis in chronic liver disease.",
+   "year": "2021",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34573947",
+   "title": "Determining the Target Population That Would Most Benefit from Screening for Hepatic Fibrosis in a Primary Care Setting.",
+   "year": "2021",
+   "journal": "Diagnostics (Basel, Switzerland)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34529067",
+   "title": "Performance of the Enhanced Liver Fibrosis Test to Estimate Advanced Fibrosis Among Patients With Nonalcoholic Fatty Liver Disease.",
+   "year": "2021",
+   "journal": "JAMA network open",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34496054",
+   "title": "Magnetic resonance elastography plus Fibrosis-4 versus FibroScan-aspartate aminotransferase in detection of candidates for pharmacological treatment of NASH-related fibrosis.",
+   "year": "2022",
+   "journal": "Hepatology (Baltimore, Md.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34231477",
+   "title": "Feasibility of Fibroscan in Assessment of Hepatic Steatosis and Fibrosis in Obese Patients: Report From a General Internal Medicine Clinic.",
+   "year": "2021",
+   "journal": "The Turkish journal of gastroenterology : the official journal of Turkish Society of Gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34132935",
+   "title": "Ultrasonographic grayscale findings related to fibrosis in patients with non-alcoholic fatty liver disease: comparison with transient elastography and Fib-4 index.",
+   "year": "2021",
+   "journal": "Journal of medical ultrasonics (2001)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34001645",
+   "title": "Diagnostic accuracy of non-invasive tests for advanced fibrosis in patients with NAFLD: an individual patient data meta-analysis.",
+   "year": "2022",
+   "journal": "Gut",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33780219",
+   "title": "Identifying Advanced Fibrosis in NAFLD Using Noninvasive Tests: A Systematic Review of Sequential Algorithms.",
+   "year": "2022",
+   "journal": "Journal of clinical gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "33677935",
+   "title": "Development of a Non-Invasive Liver Fibrosis Score Based on Transient Elastography for Risk Stratification in Patients with Type 2 Diabetes.",
+   "year": "2021",
+   "journal": "Endocrinology and metabolism (Seoul, Korea)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33389416",
+   "title": "A Stepwise Algorithmic Approach and External Validation Study for Noninvasive Prediction of Advanced Fibrosis in Nonalcoholic Fatty Liver Disease.",
+   "year": "2021",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33307138",
+   "title": "Refining the Baveno VI elastography criteria for the definition of compensated advanced chronic liver disease.",
+   "year": "2021",
+   "journal": "Journal of hepatology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "33307033",
+   "title": "The Association of Histologic and Noninvasive Tests With Adverse Clinical and Patient-Reported Outcomes in Patients With Advanced Fibrosis Due to Nonalcoholic Steatohepatitis.",
+   "year": "2021",
+   "journal": "Gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33268036",
+   "title": "Modified AST to platelet ratio index improves APRI and better predicts advanced fibrosis and liver cirrhosis in patients with non-alcoholic fatty liver disease.",
+   "year": "2021",
+   "journal": "Clinics and research in hepatology and gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33252454",
+   "title": "A Sequential Algorithm Combining ADAPT and Liver Stiffness Can Stage Metabolic-Associated Fatty Liver Disease in Hospital-Based and Primary Care Patients.",
+   "year": "2021",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33236409",
+   "title": "Transient Versus Two-Dimensional Shear-Wave Elastography in a Multistep Strategy to Detect Advanced Fibrosis in NAFLD.",
+   "year": "2021",
+   "journal": "Hepatology (Baltimore, Md.)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33214165",
+   "title": "MRE combined with FIB-4 (MEFIB) index in detection of candidates for pharmacological treatment of NASH-related fibrosis.",
+   "year": "2021",
+   "journal": "Gut",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "32997882",
+   "title": "MAFLD identifies patients with significant hepatic fibrosis better than NAFLD.",
+   "year": "2020",
+   "journal": "Liver international : official journal of the International Association for the Study of the Liver",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32700500",
+   "title": "Noninvasive diagnosis of fibrosis in non-alcoholic fatty liver disease: diagnostic accuracy of different scores.",
+   "year": "2020",
+   "journal": "Minerva gastroenterologica e dietologica",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32684060",
+   "title": "Biomarkers of liver fibrosis: prospective comparison of multimodal magnetic resonance, serum algorithms and transient elastography.",
+   "year": "2020",
+   "journal": "Scandinavian journal of gastroenterology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32523101",
+   "title": "Prediction of advanced fibrosis in non-alcoholic fatty liver disease using gut microbiota-based approaches compared with simple non-invasive tools.",
+   "year": "2020",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32502037",
+   "title": "Accuracy of FibroScan in analysis of liver fibrosis in patients with concomitant chronic Hepatitis B and nonalcoholic fatty liver disease.",
+   "year": "2020",
+   "journal": "Medicine",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32476514",
+   "title": "Biopsy rate and nonalcoholic steatohepatitis (NASH) in patients with nonalcoholic fatty liver disease (NAFLD).",
+   "year": "2020",
+   "journal": "Scandinavian journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32289535",
+   "title": "Cost Effectiveness of Different Strategies for Detecting Cirrhosis in Patients With Nonalcoholic Fatty Liver Disease Based on United States Health Care System.",
+   "year": "2020",
+   "journal": "Clinical gastroenterology and hepatology : the official clinical practice journal of the American Gastroenterological Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32251018",
+   "title": "Multiparametric MR Is a Valuable Modality for Evaluating Disease Severity of Nonalcoholic Fatty Liver Disease.",
+   "year": "2020",
+   "journal": "Clinical and translational gastroenterology",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32077617",
+   "title": "Non-invasive tests for liver fibrosis in NAFLD: Creating pathways between primary healthcare and liver clinics.",
+   "year": "2020",
+   "journal": "Liver international : official journal of the International Association for the Study of the Liver",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "31662868",
+   "title": "Evaluation and comparison of six noninvasive tests for prediction of significant or advanced fibrosis in nonalcoholic fatty liver disease.",
+   "year": "2019",
+   "journal": "United European gastroenterology journal",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31651653",
+   "title": "The diagnostic utility of fibrosis-4 or nonalcoholic fatty liver disease fibrosis score combined with liver stiffness measurement by fibroscan in assessment of advanced liver fibrosis: a biopsy-proven nonalcoholic fatty liver disease study.",
+   "year": "2020",
+   "journal": "European journal of gastroenterology & hepatology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "31549590",
+   "title": "Liver Fibrosis Assessment in a Cohort of Greek HIV Mono-Infected Patients by Non-Invasive Biomarkers.",
+   "year": "2019",
+   "journal": "Current HIV research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31538241",
+   "title": "Diagnostic accuracy of combined biomarker measurements and vibration-controlled transient elastography (VCTE) for predicting fibrosis stage of non-alcoholic fatty liver disease.",
+   "year": "2020",
+   "journal": "Journal of gastroenterology",
+   "pubtypes": [
+    "Clinical Trial",
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31332938",
+   "title": "Referral pathways for patients with NAFLD based on non-invasive fibrosis tests: Diagnostic accuracy and cost analysis.",
+   "year": "2019",
+   "journal": "Liver international : official journal of the International Association for the Study of the Liver",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31300805",
+   "title": "Wisteria floribunda agglutinin-positive mac-2 binding protein as an age-independent fibrosis marker in nonalcoholic fatty liver disease.",
+   "year": "2019",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31169533",
+   "title": "Impact of Obesity and Alanine Aminotransferase Levels on the Diagnostic Accuracy for Advanced Liver Fibrosis of Noninvasive Tools in Patients With Nonalcoholic Fatty Liver Disease.",
+   "year": "2019",
+   "journal": "The American journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "31102719",
+   "title": "New sequential combinations of non-invasive fibrosis tests provide an accurate diagnosis of advanced fibrosis in NAFLD.",
+   "year": "2019",
+   "journal": "Journal of hepatology",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30876959",
+   "title": "Optimizing Use of Nonalcoholic Fatty Liver Disease Fibrosis Score, Fibrosis-4 Score, and Liver Stiffness Measurement to Identify Patients With Advanced Fibrosis.",
+   "year": "2019",
+   "journal": "Clinical gastroenterology and hepatology : the official clinical practice journal of the American Gastroenterological Association",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30570529",
+   "title": "Diagnostic Accuracy of Noninvasive Markers of Steatosis, NASH, and Liver Fibrosis in HIV-Monoinfected Individuals at Risk of Nonalcoholic Fatty Liver Disease (NAFLD): Results From the ECHAM Study.",
+   "year": "2019",
+   "journal": "Journal of acquired immune deficiency syndromes (1999)",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30567742",
+   "title": "Serum metabolites detect the presence of advanced fibrosis in derivation and validation cohorts of patients with non-alcoholic fatty liver disease.",
+   "year": "2019",
+   "journal": "Gut",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30506860",
+   "title": "Distribution of liver stiffness in non-alcoholic fatty liver disease with higher fibrosis-4 index than low cut-off index.",
+   "year": "2019",
+   "journal": "Journal of gastroenterology and hepatology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30288767",
+   "title": "Predictors of advanced fibrosis in non-cirrhotic non-alcoholic fatty liver disease in Germany.",
+   "year": "2018",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30239032",
+   "title": "Liver stiffness assessed by transient elastography as a potential indicator of chronic kidney disease in patients with nonalcoholic fatty liver disease.",
+   "year": "2019",
+   "journal": "Journal of clinical laboratory analysis",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29427494",
+   "title": "Diagnosis of non-alcoholic fatty liver disease/non-alcoholic steatohepatitis: Non-invasive tests are enough.",
+   "year": "2018",
+   "journal": "Liver international : official journal of the International Association for the Study of the Liver",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "29028281",
+   "title": "Usefulness of the index of NASH - ION for the diagnosis of steatohepatitis in patients with non-alcoholic fatty liver: An external validation study.",
+   "year": "2018",
+   "journal": "Liver international : official journal of the International Association for the Study of the Liver",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "28796410",
+   "title": "Steatosis severity affects the diagnostic performances of noninvasive fibrosis tests in nonalcoholic fatty liver disease.",
+   "year": "2018",
+   "journal": "Liver international : official journal of the International Association for the Study of the Liver",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "28692443",
+   "title": "A Single Test Combining Blood Markers and Elastography is More Accurate Than Other Fibrosis Tests in the Main Causes of Chronic Liver Diseases.",
+   "year": "2017",
+   "journal": "Journal of clinical gastroenterology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28586172",
+   "title": "Comparison of laboratory tests, ultrasound, or magnetic resonance elastography to detect fibrosis in patients with nonalcoholic fatty liver disease: A meta-analysis.",
+   "year": "2017",
+   "journal": "Hepatology (Baltimore, Md.)",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Meta-Analysis",
+    "Review",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "27936280",
+   "title": "Application of the combined FibroMeter vibration-controlled transient elastography algorithm in Chinese patients with non-alcoholic fatty liver disease.",
+   "year": "2017",
+   "journal": "Journal of gastroenterology and hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27740518",
+   "title": "Most overweight and obese Indian children have nonalcoholic fatty liver disease.",
+   "year": "2016",
+   "journal": "Annals of hepatology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26494963",
+   "title": "Liver fibrosis in non-alcoholic fatty liver disease - diagnostic challenge with prognostic significance.",
+   "year": "2015",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "26378645",
+   "title": "Noninvasive Evaluation of Nonalcoholic Fatty Liver Disease.",
+   "year": "2015",
+   "journal": "Seminars in liver disease",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "26031832",
+   "title": "A comprehensive review of noninvasive liver fibrosis tests in pediatric nonalcoholic Fatty liver disease.",
+   "year": "2015",
+   "journal": "Current gastroenterology reports",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "25873207",
+   "title": "Comparative diagnostic accuracy of magnetic resonance elastography vs. eight clinical prediction rules for non-invasive diagnosis of advanced fibrosis in biopsy-proven non-alcoholic fatty liver disease: a prospective study.",
+   "year": "2015",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25854911",
+   "title": "Usefulness of liver test and controlled attenuation parameter in detection of nonalcoholic fatty liver disease in patients with chronic renal failure and coronary heart disease.",
+   "year": "2015",
+   "journal": "Wiener klinische Wochenschrift",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24574716",
+   "title": "Limitations of liver biopsy and non-invasive diagnostic tests for the diagnosis of nonalcoholic fatty liver disease/nonalcoholic steatohepatitis.",
+   "year": "2014",
+   "journal": "World journal of gastroenterology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "24512822",
+   "title": "Using non-invasive biomarkers to identify hepatic fibrosis in people with type 2 diabetes mellitus: the Edinburgh type 2 diabetes study.",
+   "year": "2014",
+   "journal": "Journal of hepatology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23564711",
+   "title": "Advanced fibrosis in nonalcoholic fatty liver disease: noninvasive assessment with MR elastography.",
+   "year": "2013",
+   "journal": "Radiology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23560827",
+   "title": "The role of transient elastography in the detection of liver disease in patients with chronic pancreatitis.",
+   "year": "2013",
+   "journal": "Liver international : official journal of the International Association for the Study of the Liver",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "23278163",
+   "title": "Review article: the diagnosis of non-alcoholic fatty liver disease -- availability and accuracy of non-invasive methods.",
+   "year": "2013",
+   "journal": "Alimentary pharmacology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "22790906",
+   "title": "Liver stiffness measurements in patients with different stages of nonalcoholic fatty liver disease: diagnostic performance and clinicopathological correlation.",
+   "year": "2013",
+   "journal": "Digestive diseases and sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21460032",
+   "title": "Early detection of nonalcoholic steatohepatitis in patients with nonalcoholic fatty liver disease by using MR elastography.",
+   "year": "2011",
+   "journal": "Radiology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "20101745",
+   "title": "Diagnosis of fibrosis and cirrhosis using liver stiffness measurement in nonalcoholic fatty liver disease.",
+   "year": "2010",
+   "journal": "Hepatology (Baltimore, Md.)",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  }
+ ]
+}

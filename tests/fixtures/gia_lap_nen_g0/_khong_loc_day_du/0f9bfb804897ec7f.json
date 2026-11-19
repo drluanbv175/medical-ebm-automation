@@ -1,0 +1,2881 @@
+{
+ "schema": "gia_lap/khong_loc_day_du/v1",
+ "truy_van": "(\"text messaging\"[tiab] OR \"text message\"[tiab] OR SMS[tiab] OR \"short message\"[tiab] OR \"Text Messaging\"[MeSH]) AND (hypertension[MeSH] OR hypertension[tiab] OR hypertensive[tiab]) AND (adherence[tiab] OR \"Medication Adherence\"[MeSH] OR \"blood pressure control\"[tiab] OR \"blood pressure\"[tiab])",
+ "so_hit_that": 280,
+ "so_bai_lay_ve": 280,
+ "ngay_tai": "2026-11-19",
+ "cach": "PubMed E-utilities esearch (sort=date) + esummary, không lọc thiết kế",
+ "ban_ghi": [
+  {
+   "pmid": "42999812",
+   "title": "A systematic review and meta-analysis of the effect of mobile health (mHealth) interventions vs. usual care on self-management, medication adherence, and blood pressure in adults with primary hypertension.",
+   "year": "2026",
+   "journal": "mHealth",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42993434",
+   "title": "Digital Health Interventions in Cardiovascular Prevention: Medication Adherence, Risk Factor Management, and Patient Engagement.",
+   "year": "2026",
+   "journal": "Current atherosclerosis reports",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "42910463",
+   "title": "Nurse-Led Instant Message-Delivered Dyadic Intervention in Sodium Intake Reduction Knowledge, Attitude and Practice in Hypertensive Stroke Survivors: Randomised Controlled Trial Protocol.",
+   "year": "2026",
+   "journal": "Nursing open",
+   "pubtypes": [
+    "Journal Article",
+    "Clinical Trial Protocol"
+   ]
+  },
+  {
+   "pmid": "42814674",
+   "title": "Erratum.",
+   "year": "2026",
+   "journal": "Kidney & blood pressure research",
+   "pubtypes": [
+    "Published Erratum"
+   ]
+  },
+  {
+   "pmid": "42773923",
+   "title": "Development and Preliminary Feasibility Testing of PACERS, a Physical Activity-Centered Intervention for Rural Older Adults With Hypertension.",
+   "year": "2026",
+   "journal": "Journal of the American Geriatrics Society",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42666424",
+   "title": "Digital Health Delivery Models for Hypertension Self-Care in Asia: A Systematic Review.",
+   "year": "2026",
+   "journal": "Journal of multidisciplinary healthcare",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "42594238",
+   "title": "",
+   "year": "2026",
+   "journal": "",
+   "pubtypes": [
+    "Review"
+   ]
+  },
+  {
+   "pmid": "42394059",
+   "title": "Patient Empowerment and Digital Health Readiness for Diabetes and Hypertension Care in Rwanda.",
+   "year": "2026",
+   "journal": "Studies in health technology and informatics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42326515",
+   "title": "The Role of Behavioral Friction for Patients and Clinicians in a Text-Based Home Blood Pressure Monitoring Program: A Realist Evaluation.",
+   "year": "2026",
+   "journal": "Research square",
+   "pubtypes": [
+    "Journal Article",
+    "Preprint"
+   ]
+  },
+  {
+   "pmid": "42288547",
+   "title": "Effect of multicomponent support intervention on medication adherence and self-efficacy levels in hypertension patients.",
+   "year": "2026",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "42263266",
+   "title": "Effectiveness of Digital Health Interventions to Improve Self-Care in Patients With Chronic Diseases: Systematic Review and Meta-Analysis of Randomized Controlled Trials.",
+   "year": "2026",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review",
+    "Meta-Analysis"
+   ]
+  },
+  {
+   "pmid": "42254366",
+   "title": "Impact of health-promoting text messages on cardiovascular risk: findings from a randomized controlled trial in primary care.",
+   "year": "2026",
+   "journal": "Frontiers in medicine",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42004219",
+   "title": "Randomised controlled trial of a very brief nurse-delivered intervention followed by a digital intervention to support medication adherence and reduce blood pressure in people prescribed treatment for hypertension in primary care: protocol for the Programme on Adherence to Medication (PAM) trial.",
+   "year": "2026",
+   "journal": "NIHR open research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41980662",
+   "title": "Effectiveness of text messaging intervention for blood pressure control and medication adherence among patients with uncontrolled hypertension in India: Design and rationale of the SMS4BP randomized controlled trial.",
+   "year": "2026",
+   "journal": "Contemporary clinical trials",
+   "pubtypes": [
+    "Journal Article",
+    "Clinical Trial Protocol"
+   ]
+  },
+  {
+   "pmid": "41975054",
+   "title": "Health-Related Quality of Life in People Living with HIV andHypertension: Effects of a Short Message Service-Based Mobile HealthIntervention (MOPHADHIV Trial).",
+   "year": "2026",
+   "journal": "AIDS and behavior",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "41956556",
+   "title": "Effect of a mobile health intervention optimised with artificial intelligence on blood pressure and other cardiovascular risk factors in adults with high blood pressure: rationale and design of My Intelligent Cardiac Assistant (MICArdiac) randomised controlled trial.",
+   "year": "2026",
+   "journal": "Open heart",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "41721367",
+   "title": "Using artificially intelligent text messaging to improve health behaviors to reduce cardiovascular risk: study protocol for a pragmatic randomized control trial.",
+   "year": "2026",
+   "journal": "Trials",
+   "pubtypes": [
+    "Journal Article",
+    "Clinical Trial Protocol"
+   ]
+  },
+  {
+   "pmid": "41684610",
+   "title": "Efficacy of an e-education program based on the Health Belief Model on exercise management in women with gestational hypertension: A randomized controlled clinical trial.",
+   "year": "2026",
+   "journal": "International journal of nursing sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41407287",
+   "title": "Piloting a Novel eHealth Technology for the Control and Management of Elevated Blood Pressure in Rwanda (HeartCare@Home Project): Protocol for a 2-Phase Crossover Study.",
+   "year": "2025",
+   "journal": "JMIR research protocols",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "41379039",
+   "title": "Behavioral Economics and Medication Adherence for Hypertension: A Randomized Clinical Trial.",
+   "year": "2026",
+   "journal": "Journal of the American College of Cardiology",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "41364803",
+   "title": "Effectiveness of a Cardiovascular Management System on Triple Risk Factor Control in High-Risk Older Adults: Protocol for a Randomized Controlled Trial.",
+   "year": "2025",
+   "journal": "JMIR research protocols",
+   "pubtypes": [
+    "Journal Article",
+    "Clinical Trial Protocol",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "41262488",
+   "title": "Digital Health and Telemedicine Interventions for Hypertension Management in Adults: A Systematic Review.",
+   "year": "2025",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "41258999",
+   "title": "Testing Optical Character Recognition of Home Blood Pressure Measurements, a Randomized Trial.",
+   "year": "2026",
+   "journal": "American journal of hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "41191358",
+   "title": "Text Messaging and Video Stories to Support Hypertension Self-Management in Black Veterans: A Randomized Clinical Trial.",
+   "year": "2025",
+   "journal": "JAMA network open",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "41188444",
+   "title": "Impact of behavioral economics to improve antihypertensive therapy adherence, a pilot randomized controlled trial in Los Angeles.",
+   "year": "2025",
+   "journal": "Scientific reports",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "41166313",
+   "title": "Predicting hypertension and identifying most important factors among married women in Bangladesh using machine learning approach.",
+   "year": "2025",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41139061",
+   "title": "Protocol for a type 1 hybrid effectiveness implementation trial to evaluate whether a technology-based collaborative care model is non-inferior to remote blood pressure monitoring on persistent hypertension and preventive care attendance among postpartum people with hypertension.",
+   "year": "2025",
+   "journal": "Contemporary clinical trials",
+   "pubtypes": [
+    "Journal Article",
+    "Clinical Trial Protocol"
+   ]
+  },
+  {
+   "pmid": "41101281",
+   "title": "Effectiveness of mobile health interventions on physical activity management in adults with hypertension: A systematic review and meta-analysis.",
+   "year": "2025",
+   "journal": "International journal of nursing studies",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review",
+    "Meta-Analysis"
+   ]
+  },
+  {
+   "pmid": "41073105",
+   "title": "Digital health tools in hypertension management in sub-Saharan Africa: a scoping review of barriers and facilitators of adoption into mainstream healthcare.",
+   "year": "2025",
+   "journal": "BMJ health & care informatics",
+   "pubtypes": [
+    "Journal Article",
+    "Scoping Review"
+   ]
+  },
+  {
+   "pmid": "41057081",
+   "title": "Implementation Strategies for Self-Measured Blood Pressure Monitoring in Racially and Ethnically Diverse Populations (InSPIRED): A study protocol.",
+   "year": "2025",
+   "journal": "Contemporary clinical trials",
+   "pubtypes": [
+    "Journal Article",
+    "Clinical Trial Protocol"
+   ]
+  },
+  {
+   "pmid": "40999044",
+   "title": "Effect of digital messaging on blood pressure control in general practice: observations from the BP@Home programme in wirral area.",
+   "year": "2025",
+   "journal": "Journal of human hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40929717",
+   "title": "eHealth and Hypertensive Disorders of Pregnancy: Systematic Review.",
+   "year": "2025",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "40892409",
+   "title": "Behavioral Economic Framing for Enrollment and Retention of Patients in Remote Blood Pressure Monitoring: A Randomized Clinical Trial.",
+   "year": "2025",
+   "journal": "JAMA network open",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Pragmatic Clinical Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "40764400",
+   "title": "A systematic review and meta-analysis of digital interventions targeting lifestyle factors in patients with hypertension.",
+   "year": "2025",
+   "journal": "Journal of human hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review",
+    "Meta-Analysis"
+   ]
+  },
+  {
+   "pmid": "40755930",
+   "title": "Telemonitoring and self-management for digital hypertension management: is there a preferred method?",
+   "year": "2025",
+   "journal": "mHealth",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "40725928",
+   "title": "The effectiveness of the chronic disease management for hypertension: A systematic review and meta-analysis.",
+   "year": "2025",
+   "journal": "Medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review",
+    "Meta-Analysis"
+   ]
+  },
+  {
+   "pmid": "40707048",
+   "title": "Leveraging a multifaceted digital medication refill system on improving patients' medication adherence and reducing medication oversupply among elderly patients with hypertension.",
+   "year": "2025",
+   "journal": "BMJ open quality",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40690759",
+   "title": "Key Elements and Theoretical Foundations for the Design and Delivery of Text Messages to Boost Medication Adherence in Patients With Diabetes, Hypertension, and Hyperlipidemia: Scoping Review.",
+   "year": "2025",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Journal Article",
+    "Scoping Review"
+   ]
+  },
+  {
+   "pmid": "40524849",
+   "title": "A Low-Cost Educational Intervention for Rural Hypertension Control: Lessons for National Scale-Up.",
+   "year": "2025",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Editorial"
+   ]
+  },
+  {
+   "pmid": "40463987",
+   "title": "Facilitators and barriers of a subscriber identity module enabled, remote blood pressure monitoring system for residents of a low-income housing: A feasibility study.",
+   "year": "2025",
+   "journal": "Digital health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40421259",
+   "title": "Effectiveness of mobile health technology-enabled interventions to improve management and control of hypertension and diabetes in India- a systematic review.",
+   "year": "2025",
+   "journal": "Preventive medicine reports",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "40308998",
+   "title": "Patient engagement pilot for uncontrolled hypertension: implications for quality, safety, and population health.",
+   "year": "2025",
+   "journal": "Frontiers in health services",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40244981",
+   "title": "Text message reminders for visit adherence among non-communicable disease patients in Haiti: A pilot study.",
+   "year": "2025",
+   "journal": "PLOS global public health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40108568",
+   "title": "Efficacy of short message service (SMS) intervention on medication adherence and knowledge of stroke prevention among clinic attendees at risk of stroke: a randomized controlled trial.",
+   "year": "2025",
+   "journal": "BMC public health",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "40086748",
+   "title": "Championing Hypertension Remote Monitoring for Equity and Dissemination (CHARMED): A multi-site factorial randomized controlled trial protocol.",
+   "year": "2025",
+   "journal": "Contemporary clinical trials",
+   "pubtypes": [
+    "Journal Article",
+    "Clinical Trial Protocol",
+    "Research Support, U.S. Gov't, P.H.S.",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "39998025",
+   "title": "Development of Chronic Kidney Disease Screening Integrative Care Model Led by Community Pharmacists.",
+   "year": "2025",
+   "journal": "Pharmacy (Basel, Switzerland)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39937817",
+   "title": "Health-promoting text messages to patients with hypertension-A randomized controlled trial in Swedish primary healthcare.",
+   "year": "2025",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "39775770",
+   "title": "Use of text messages to promote medication adherence and reduce blood pressure in patients with hypertension: the ESSENCE study.",
+   "year": "2024",
+   "journal": "Cadernos de saude publica",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "39770906",
+   "title": "Strategies for Effective Communication in Hypertension Management: Validation of Messages from a Mobile Application to Assist Hypertensive Older Adults in Adherence to Treatment, Nutrition and Physical Activity.",
+   "year": "2024",
+   "journal": "Nutrients",
+   "pubtypes": [
+    "Journal Article",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "39657401",
+   "title": "The digital prescription: A systematic review and meta-analysis of smartphone apps for blood pressure control.",
+   "year": "2025",
+   "journal": "International journal of medical informatics",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "39635965",
+   "title": "The Effectiveness of Telemedicine in Hypertension Management of Adults in Rural Communities: A Systematic Review and Meta-Analysis.",
+   "year": "2025",
+   "journal": "Physiotherapy research international : the journal for researchers and clinicians in physical therapy",
+   "pubtypes": [
+    "Systematic Review",
+    "Journal Article",
+    "Meta-Analysis"
+   ]
+  },
+  {
+   "pmid": "39633105",
+   "title": "Automated Text Message-Based Program to Improve Uncontrolled Blood Pressure in Primary Care Patients: A Randomized Clinical Trial.",
+   "year": "2025",
+   "journal": "Journal of general internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Pragmatic Clinical Trial",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "39582112",
+   "title": "The Influence of Commonly-Encountered Participant Behaviors on Cardiovascular Indices During Testing.",
+   "year": "2025",
+   "journal": "American journal of hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "39578837",
+   "title": "Intention to use mobile text message reminders for medication adherence among hypertensive patients in North West Ethiopia: a cross-sectional study.",
+   "year": "2024",
+   "journal": "BMC health services research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39341482",
+   "title": "Design and rationale of penn medicine healthy heart, a randomized trial of effectiveness of a centrally organized approach to blood pressure and cholesterol improvement among patients at elevated risk of atherosclerotic cardiovascular disease.",
+   "year": "2024",
+   "journal": "American heart journal",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "39332937",
+   "title": "Mobile phone interventions to improve health outcomes among patients with chronic diseases: an umbrella review and evidence synthesis from 34 meta-analyses.",
+   "year": "2024",
+   "journal": "The Lancet. Digital health",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "39221086",
+   "title": "Mobile health technologies in the prevention and management of hypertension: A scoping review.",
+   "year": "2024",
+   "journal": "Digital health",
+   "pubtypes": [
+    "Journal Article",
+    "Scoping Review"
+   ]
+  },
+  {
+   "pmid": "39130129",
+   "title": "Birthing Parent Experiences of Postpartum at-Home Blood Pressure Monitoring Versus Office-Based Follow up After Diagnosis of Hypertensive Disorders of Pregnancy.",
+   "year": "2024",
+   "journal": "Journal of patient experience",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39033994",
+   "title": "Rationale, Design and Baseline Characteristics of a Randomized Controlled Trial of a Cardiovascular Quality Improvement Strategy in India: The C-QIP Trial.",
+   "year": "2024",
+   "journal": "American heart journal",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "38991671",
+   "title": "Barriers and facilitators of habit building for long-term adherence to antihypertensive therapy among people with hypertensive disorders in Los Angeles, California: a qualitative study.",
+   "year": "2024",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "38954482",
+   "title": "Supporting Self-Management of Healthy Behaviors in Chronic Kidney Disease and Hypertension: The Supporting Self-Management of Healthy Behaviors Pilot Randomized Trial.",
+   "year": "2024",
+   "journal": "Clinical journal of the American Society of Nephrology : CJASN",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38924296",
+   "title": "Intervention strategies to improve adherence to treatment for selected chronic conditions in sub-Saharan Africa: a systematic review.",
+   "year": "2024",
+   "journal": "Journal of the International AIDS Society",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "38889070",
+   "title": "Engagement in mHealth-Prompted Self-Measured Blood Pressure Monitoring Among Participants Recruited From a Safety-Net Emergency Department: Secondary Analysis of the Reach Out Trial.",
+   "year": "2024",
+   "journal": "JMIR mHealth and uHealth",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "38878995",
+   "title": "Shop-to-Stop Hypertension: A multicenter cluster-randomized controlled trial protocol to improve screening and text message follow-up of adults with high blood pressure at health kiosks in hardware retail stores.",
+   "year": "2024",
+   "journal": "Contemporary clinical trials",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "38848120",
+   "title": "mHealth Intervention for Elevated Blood Pressure Among College Students: Single-Arm Intervention Study.",
+   "year": "2024",
+   "journal": "JMIR formative research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38829618",
+   "title": "Remote Blood Pressure Monitoring With Social Support for Patients With Hypertension: A Randomized Clinical Trial.",
+   "year": "2024",
+   "journal": "JAMA network open",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "38805253",
+   "title": "The Effect of an AI-Based, Autonomous, Digital Health Intervention Using Precise Lifestyle Guidance on Blood Pressure in Adults With Hypertension: Single-Arm Nonrandomized Trial.",
+   "year": "2024",
+   "journal": "JMIR cardio",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38805251",
+   "title": "Exploring the Acceptability and Feasibility of Remote Blood Pressure Measurements and Cognition Assessments Among Participants Recruited From a Safety-Net Emergency Department (Reach Out Cognition): Nonrandomized Mobile Health Trial.",
+   "year": "2024",
+   "journal": "JMIR formative research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38741137",
+   "title": "Lipidomic studies revealing serological markers associated with the occurrence of retinopathy in type 2 diabetes.",
+   "year": "2024",
+   "journal": "Journal of translational medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "38702619",
+   "title": "Report from a text-based blood pressure monitoring prospective cohort trial among postpartum women with hypertensive disorders of pregnancy.",
+   "year": "2024",
+   "journal": "BMC pregnancy and childbirth",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38628013",
+   "title": "Effect of Weekly Text Messaging Reminders on Medication Adherence in Hypertension and Type 2 Diabetes Mellitus at a Tertiary Care Center in Eastern Nepal.",
+   "year": "2023",
+   "journal": "Kathmandu University medical journal (KUMJ)",
+   "pubtypes": [
+    "Observational Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38605754",
+   "title": "Baseline knowledge about hypertension and sociodemographic factors related to salt intake behavior among hypertensive individuals in a rural community of Bangladesh: Substudy of a randomized controlled trial.",
+   "year": "2024",
+   "journal": "Journal of family medicine and primary care",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38366854",
+   "title": "The impact of non-pharmacological interventions on adherence to medication and persistence in dyslipidaemia and hypertension: a systematic review.",
+   "year": "2024",
+   "journal": "Expert review of pharmacoeconomics & outcomes research",
+   "pubtypes": [
+    "Systematic Review",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38333367",
+   "title": "Effectiveness of digital health interventions on blood pressure control, lifestyle behaviours and adherence to medication in patients with hypertension in low-income and middle-income countries: a systematic review and meta-analysis of randomised controlled trials.",
+   "year": "2024",
+   "journal": "EClinicalMedicine",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "38317254",
+   "title": "The effectiveness of short mobile phone text message reminders compared to usual care on medication adherence in patients with hypertension: a systematic review protocol.",
+   "year": "2024",
+   "journal": "Systematic reviews",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38311068",
+   "title": "Associations of Contemporary Screen Time Modalities With Early Adolescent Nutrition.",
+   "year": "2024",
+   "journal": "Academic pediatrics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "38171212",
+   "title": "An adaptive text message intervention to promote psychological well-being and reduce cardiac risk: The Text4Health controlled clinical pilot trial.",
+   "year": "2024",
+   "journal": "Journal of psychosomatic research",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "38048147",
+   "title": "Automated Messaging Program to Facilitate Systematic Home Blood Pressure Monitoring: Qualitative Analysis of Provider Interviews.",
+   "year": "2023",
+   "journal": "JMIR cardio",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37903607",
+   "title": "SMS text intervention for uncontrolled hypertension among hypertensive homeless adults in shelter clinics of New York City: protocol for a pragmatic randomised trial study.",
+   "year": "2023",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37882343",
+   "title": "'In the end, I'm the one who has to do the job': Participant experience of a lifestyle intervention for patients with hypertension.",
+   "year": "2023",
+   "journal": "Scandinavian journal of primary health care",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37753512",
+   "title": "Joint Modeling of Blood Pressure Measurements and Survival Time to Cardiovascular Disease Complication among Hypertension Patients Follow-up at DebreTabor Hospital, Ethiopia.",
+   "year": "2023",
+   "journal": "Vascular health and risk management",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37745417",
+   "title": "Heterogeneity of the Effect of Telemedicine Hypertension Management Approach on Blood Pressure: A Systematic Review and Meta-analysis of US-based Clinical Trials.",
+   "year": "2023",
+   "journal": "medRxiv : the preprint server for health sciences",
+   "pubtypes": [
+    "Preprint",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37712088",
+   "title": "TEXT MY BP MEDS NOLA: A pilot study of text-messaging and social support to increase hypertension medication adherence.",
+   "year": "2023",
+   "journal": "American heart journal plus : cardiology research and practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37550030",
+   "title": "Effectiveness of educational interventions on hypertensive patients' self-management behaviours: an umbrella review protocol.",
+   "year": "2023",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37486745",
+   "title": "Digitally Based Blood Pressure Self-Monitoring Program That Promotes Hypertension Self-Management and Health Education Among Patients With Low-Income: Usability Study.",
+   "year": "2023",
+   "journal": "JMIR human factors",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37311173",
+   "title": "Postpartum Home Blood Pressure Monitoring: A Systematic Review.",
+   "year": "2023",
+   "journal": "Obstetrics and gynecology",
+   "pubtypes": [
+    "Systematic Review",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "37295501",
+   "title": "Educational Program with Text Messaging for Community-Dwelling Patients with Hypertension: A Pilot Randomized Controlled Trial.",
+   "year": "2023",
+   "journal": "Asian nursing research",
+   "pubtypes": [
+    "Randomized Controlled Trial",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37255819",
+   "title": "The Iranian blood pressure measurement campaign, 2019: study protocol and preliminary results.",
+   "year": "2023",
+   "journal": "Journal of diabetes and metabolic disorders",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37192282",
+   "title": "Reach Out Emergency Department: A Randomized Factorial Trial to Determine the Optimal Mobile Health Components to Reduce Blood Pressure.",
+   "year": "2023",
+   "journal": "Circulation. Cardiovascular quality and outcomes",
+   "pubtypes": [
+    "Randomized Controlled Trial",
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "37097263",
+   "title": "Impact of mHealth Interventions on Supporting Dietary Adherence in Cardiovascular Disease: A Systematic Review.",
+   "year": "2023",
+   "journal": "Journal of nutrition education and behavior",
+   "pubtypes": [
+    "Systematic Review",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "37027200",
+   "title": "Engagement in Self-measured Blood Pressure Monitoring Among Medically Underresourced Participants (the Reach Out Trial): Digital Framework Qualitative Study.",
+   "year": "2023",
+   "journal": "JMIR cardio",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37000664",
+   "title": "[Genes Associated with Increased Stress Sensitivity in Hypertensive ISIAH Rats].",
+   "year": "2023",
+   "journal": "Molekuliarnaia biologiia",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36828607",
+   "title": "Effectiveness, reach, uptake, and feasibility of digital health interventions for adults with hypertension: a systematic review and meta-analysis of randomised controlled trials.",
+   "year": "2023",
+   "journal": "The Lancet. Digital health",
+   "pubtypes": [
+    "Meta-Analysis",
+    "Systematic Review",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36826217",
+   "title": "Randomized Controlled Trial of Home Telemonitoring of Blood Pressure with an Adapted Tensiometer with SMS Capability.",
+   "year": "2023",
+   "journal": "European journal of investigation in health, psychology and education",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36741506",
+   "title": "Effective engagement of a stakeholder advisory board in severe mental illness (SMI) research: A case study of a clinical trial to improve adherence among people with SMI and hypertension.",
+   "year": "2022",
+   "journal": "International journal of healthcare",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36738916",
+   "title": "Randomized trial protocol for remote monitoring for equity in advancing the control of hypertension in safety net systems (REACH-SNS) study.",
+   "year": "2023",
+   "journal": "Contemporary clinical trials",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "36721213",
+   "title": "Effectiveness of a diabetes program based on digital health on capacity building and quality of care in type 2 diabetes: a pragmatic quasi-experimental study.",
+   "year": "2023",
+   "journal": "BMC health services research",
+   "pubtypes": [
+    "Journal Article",
+    "Pragmatic Clinical Trial"
+   ]
+  },
+  {
+   "pmid": "36703104",
+   "title": "Study protocol for the sheMATTERS study (iMproving cArdiovascular healTh in new moThERS): a randomized behavioral trial assessing the effect of a self-efficacy enhancing breastfeeding intervention on postpartum blood pressure and breastfeeding continuation in women with hypertensive disorders of pregnancy.",
+   "year": "2023",
+   "journal": "BMC pregnancy and childbirth",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36640862",
+   "title": "Feasibility and outcomes from using a commitment device and text message reminders to increase adherence to time-restricted eating: A randomized trial.",
+   "year": "2023",
+   "journal": "American heart journal",
+   "pubtypes": [
+    "Randomized Controlled Trial",
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36631742",
+   "title": "Anaesthetic considerations in Shrinking Man syndrome: two case reports.",
+   "year": "2023",
+   "journal": "BMC anesthesiology",
+   "pubtypes": [
+    "Case Reports",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "36573193",
+   "title": "Study design of BETTER-BP: Behavioral economics trial to enhance regulation of blood pressure.",
+   "year": "2022",
+   "journal": "International journal of cardiology. Cardiovascular risk and prevention",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36563025",
+   "title": "Feasibility, Usability and Acceptability of a mHealth Intervention to Reduce Cardiovascular Risk in Rural Hispanic Adults: Descriptive Study.",
+   "year": "2022",
+   "journal": "JMIR formative research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36287598",
+   "title": "Quality Assessment of Hypertension Treatment-Related Information on WeChat: Cross-sectional Study.",
+   "year": "2022",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35928047",
+   "title": "Prescribing Time in Nature for Human Health and Well-Being: Study Protocol for Tailored Park Prescriptions.",
+   "year": "2022",
+   "journal": "Frontiers in digital health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35768875",
+   "title": "Using mHealth to improve adherence and reduce blood pressure in individuals with hypertension and bipolar disorder (iTAB-CV): study protocol for a 2-stage randomized clinical trial.",
+   "year": "2022",
+   "journal": "Trials",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35767327",
+   "title": "Identifying Medication-Related Intents From a Bidirectional Text Messaging Platform for Hypertension Management Using an Unsupervised Learning Approach: Retrospective Observational Pilot Study.",
+   "year": "2022",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Research Support, U.S. Gov't, Non-P.H.S.",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "35531090",
+   "title": "Technology-based interventions to improve adherence to antihypertensive medications - An evidence-based review.",
+   "year": "2022",
+   "journal": "Digital health",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "35383086",
+   "title": "Use of technology to prevent, detect, manage and control hypertension in sub-Saharan Africa: a systematic review.",
+   "year": "2022",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35342691",
+   "title": "Effectiveness and Acceptability of a Mobile Phone Text Messaging Intervention to Improve Blood Pressure Control (TEXT4BP) among Patients with Hypertension in Nepal: A Feasibility Randomised Controlled Trial.",
+   "year": "2022",
+   "journal": "Global heart",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35228280",
+   "title": "Patient and practitioner views on a combined face-to-face and digital intervention to support medication adherence in hypertension: a qualitative study within primary care.",
+   "year": "2022",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35195015",
+   "title": "Feasibility and Short-Term Effects of a Multi-Component Emergency Department Blood Pressure Intervention: A Pilot Randomized Trial.",
+   "year": "2022",
+   "journal": "Journal of the American Heart Association",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "35072647",
+   "title": "Predictors of Smartphone and Tablet Use Among Patients With Hypertension: Secondary Analysis of Health Information National Trends Survey Data.",
+   "year": "2022",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "35014147",
+   "title": "Integration of text messaging interventions into hypertension management among older adults: A systematic review and meta-analysis.",
+   "year": "2022",
+   "journal": "Worldviews on evidence-based nursing",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "34963143",
+   "title": "Estimating the impact of engagement with digital health interventions on patient outcomes in randomized trials.",
+   "year": "2021",
+   "journal": "Journal of the American Medical Informatics Association : JAMIA",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "34950501",
+   "title": "Engaging primary care providers in a mobile health strategy to support lifestyle change and blood pressure management.",
+   "year": "2021",
+   "journal": "Digital health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34900655",
+   "title": "Impact of Telenursing on Blood Pressure and Body Mass Index of People with Prehypertension: A Randomized Controlled Clinical Trial.",
+   "year": "2021",
+   "journal": "Iranian journal of nursing and midwifery research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34855617",
+   "title": "Incorporating African American Veterans' Success Stories for Hypertension Management: Developing a Behavioral Support Texting Protocol.",
+   "year": "2021",
+   "journal": "JMIR research protocols",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34819115",
+   "title": "Supplement study update for Reach Out: a multi-arm randomized trial of behavioral interventions for hypertension initiated in the emergency department: Reach Out Cognition.",
+   "year": "2021",
+   "journal": "Trials",
+   "pubtypes": [
+    "Letter",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "34809710",
+   "title": "Examining medication adherence and preferences for a lifestyle intervention among Black and Latinx adults with hypertension: a feasibility study.",
+   "year": "2021",
+   "journal": "Pilot and feasibility studies",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34805386",
+   "title": "A pilot evaluation of Swasthya Pahal program using SMAART informatics framework to support NCD self-management.",
+   "year": "2021",
+   "journal": "mHealth",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34747122",
+   "title": "The effectiveness of nurse-led group interventions on hypertension lifestyle management: A mixed method study.",
+   "year": "2022",
+   "journal": "Journal of nursing scholarship : an official publication of Sigma Theta Tau International Honor Society of Nursing",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "34690012",
+   "title": "User preferences for and engagement with text messages to support antihypertensive medication adherence: Findings from a pilot study evaluating an emergency department-based behavioral intervention.",
+   "year": "2022",
+   "journal": "Patient education and counseling",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, U.S. Gov't, Non-P.H.S.",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34601205",
+   "title": "Comparative effect of eHealth interventions on hypertension management-related outcomes: A network meta-analysis.",
+   "year": "2021",
+   "journal": "International journal of nursing studies",
+   "pubtypes": [
+    "Journal Article",
+    "Network Meta-Analysis",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "34599802",
+   "title": "Community Hypertension Screening and Care Referral With Blood Pressure-Measuring Kiosks, Digital Education Modalities, and Text Messages.",
+   "year": "2022",
+   "journal": "American journal of hypertension",
+   "pubtypes": [
+    "Editorial",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't",
+    "Comment"
+   ]
+  },
+  {
+   "pmid": "34550078",
+   "title": "Effectiveness of Text Messaging Interventions on Blood Pressure Control Among Patients With Hypertension: Systematic Review of Randomized Controlled Trials.",
+   "year": "2021",
+   "journal": "JMIR mHealth and uHealth",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "34475137",
+   "title": "Cost-effectiveness of a Community-based Hypertension Improvement Project (ComHIP) in Ghana: results from a modelling study.",
+   "year": "2021",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34407820",
+   "title": "Patient and healthcare provider perspectives on adherence with antihypertensive medications: an exploratory qualitative study in Tanzania.",
+   "year": "2021",
+   "journal": "BMC health services research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34382648",
+   "title": "The Retail Outlet Health Kiosk Hypertension Trial (ROKHYT): Pilot Results.",
+   "year": "2022",
+   "journal": "American journal of hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "34380527",
+   "title": "The NUDGE trial pragmatic trial to enhance cardiovascular medication adherence: study protocol for a randomized controlled trial.",
+   "year": "2021",
+   "journal": "Trials",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34329800",
+   "title": "Implementation of a text-based postpartum blood pressure monitoring program at 3 different academic sites.",
+   "year": "2021",
+   "journal": "American journal of obstetrics & gynecology MFM",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34318542",
+   "title": "The effect of nurse-led telephone support on adherence to blood pressure control and drug treatment in individuals with primary hypertension: A randomized controlled study.",
+   "year": "2022",
+   "journal": "International journal of nursing practice",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "34294852",
+   "title": "Mobile health strategies for blood pressure self-management in urban populations with digital barriers: systematic review and meta-analyses.",
+   "year": "2021",
+   "journal": "NPJ digital medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "34239050",
+   "title": "Randomized feasibility trial of a digital intervention for hypertension self-management.",
+   "year": "2022",
+   "journal": "Journal of human hypertension",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Pragmatic Clinical Trial"
+   ]
+  },
+  {
+   "pmid": "34114961",
+   "title": "Effects of Telemedicine and mHealth on Systolic Blood Pressure Management in Stroke Patients: Systematic Review and Meta-Analysis of Randomized Controlled Trials.",
+   "year": "2021",
+   "journal": "JMIR mHealth and uHealth",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "33993727",
+   "title": "Text Message Medication Adherence Reminders Automated and Delivered at Scale Across Two Institutions: Testing the Nudge System: Pilot Study.",
+   "year": "2021",
+   "journal": "Circulation. Cardiovascular quality and outcomes",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "33988789",
+   "title": "Promoting Culturally Tailored mHealth: A Scoping Review of Mobile Health Interventions in Latinx Communities.",
+   "year": "2021",
+   "journal": "Journal of immigrant and minority health",
+   "pubtypes": [
+    "Journal Article",
+    "Scoping Review"
+   ]
+  },
+  {
+   "pmid": "33988513",
+   "title": "Text Messaging and Home Blood Pressure Monitoring for Patients with Uncontrolled Hypertension: Proposal for a Feasibility Pilot Randomized Controlled Trial.",
+   "year": "2021",
+   "journal": "JMIR research protocols",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33618661",
+   "title": "The association between self-efficacy and self-care in essential hypertension: a systematic review.",
+   "year": "2021",
+   "journal": "BMC family practice",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "33573687",
+   "title": "Effect of a nurse-led lifestyle choice and coaching intervention on systolic blood pressure among type 2 diabetic patients with a high atherosclerotic cardiovascular risk: study protocol for a cluster-randomized trial.",
+   "year": "2021",
+   "journal": "Trials",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33451308",
+   "title": "Intervention development of a brief messaging intervention for a randomised controlled trial to improve diabetes treatment adherence in sub-Saharan Africa.",
+   "year": "2021",
+   "journal": "BMC public health",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33409504",
+   "title": "Differential Medication Attitudes to Antihypertensive and Mood Stabilizing Agents in response to an Automated Text-Messaging Adherence Enhancement Intervention.",
+   "year": "2020",
+   "journal": "Journal of behavioral and cognitive therapy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33284129",
+   "title": "Awareness Development and Usage of Mobile Health Technology Among Individuals With Hypertension in a Rural Community of Bangladesh: Randomized Controlled Trial.",
+   "year": "2020",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33284116",
+   "title": "Feasibility of a Digital Health Intervention to Improve Diet Quality Among Women With High Blood Pressure: Randomized Controlled Feasibility Trial.",
+   "year": "2020",
+   "journal": "JMIR mHealth and uHealth",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "33270032",
+   "title": "Patient Interaction Phenotypes With an Automated Remote Hypertension Monitoring Program and Their Association With Blood Pressure Control: Observational Study.",
+   "year": "2020",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, U.S. Gov't, P.H.S.",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "33165652",
+   "title": "Strategies to Improve Adherence to Anti-Hypertensive Medications: a Narrative Review.",
+   "year": "2020",
+   "journal": "Current hypertension reports",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "33078730",
+   "title": "A prospective study to assess the medication adherence pattern among hypertensives and to evaluate the use of cellular phone text messaging as a tool to improve adherence to medications in a tertiary health-care center.",
+   "year": "2020",
+   "journal": "Indian journal of pharmacology",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "33038500",
+   "title": "A pharmacist intervention for monitoring and treating hypertension using bidirectional texting: PharmText BP.",
+   "year": "2020",
+   "journal": "Contemporary clinical trials",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "33014371",
+   "title": "Improvement of nutritional intake for the low-income urban dwellers with hypertension in Malaysia.",
+   "year": "2020",
+   "journal": "SAGE open medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32980623",
+   "title": "Successful implementation of text-based blood pressure monitoring for postpartum hypertension.",
+   "year": "2020",
+   "journal": "Pregnancy hypertension",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32974043",
+   "title": "Assessing the acceptability of a text messaging service and smartphone app to support patient adherence to medications prescribed for high blood pressure: a pilot study.",
+   "year": "2020",
+   "journal": "Pilot and feasibility studies",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32873686",
+   "title": "Theory-based mobile phone text messaging intervention for blood pressure control (TEXT4BP) among hypertensive patients in Nepal: study protocol for a feasibility randomised controlled trial.",
+   "year": "2020",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32795983",
+   "title": "Text Messaging Adherence Intervention for Adolescents and Young Adults with Chronic Kidney Disease: Pilot Randomized Controlled Trial and Stakeholder Interviews.",
+   "year": "2020",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32686972",
+   "title": "Text message-based lifestyle intervention in primary care patients with hypertension: a randomized controlled pilot trial.",
+   "year": "2020",
+   "journal": "Scandinavian journal of primary health care",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "32628615",
+   "title": "Mobile Phone Technologies in the Management of Ischemic Heart Disease, Heart Failure, and Hypertension: Systematic Review and Meta-Analysis.",
+   "year": "2020",
+   "journal": "JMIR mHealth and uHealth",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "32548157",
+   "title": "Utilising digital health to improve medication-related quality of care for hypertensive patients: An integrative literature review.",
+   "year": "2020",
+   "journal": "World journal of clinical cases",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32516486",
+   "title": "A randomized clinical trial of an interactive voice response and text message intervention for individuals with hypertension.",
+   "year": "2020",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32493502",
+   "title": "Reach out behavioral intervention for hypertension initiated in the emergency department connecting multiple health systems: study protocol for a randomized control trial.",
+   "year": "2020",
+   "journal": "Trials",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32432556",
+   "title": "Efficacy of Text Messaging and Personal Consultation by Pharmacy Students Among Adults With Hypertension: Randomized Controlled Trial.",
+   "year": "2020",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32427113",
+   "title": "A Highly Tailored Text and Voice Messaging Intervention to Improve Medication Adherence in Patients With Either or Both Hypertension and Type 2 Diabetes in a UK Primary Care Setting: Feasibility Randomized Controlled Trial of Clinical Effectiveness.",
+   "year": "2020",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32362175",
+   "title": "Personalized text message and checklist support for initiation of antihypertensive medication: the cluster randomized, controlled check and support trial.",
+   "year": "2020",
+   "journal": "Scandinavian journal of primary health care",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "32314970",
+   "title": "Sustainability of mHealth Effects on Cardiometabolic Risk Factors: Five-Year Results of a Randomized Clinical Trial.",
+   "year": "2020",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32245533",
+   "title": "Long-Term Management: Modern Measures to Prevent Readmission in Patients with Hepatic Encephalopathy.",
+   "year": "2020",
+   "journal": "Clinics in liver disease",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "32228238",
+   "title": "Reach Out Emergency Department: Partnering With an Economically Disadvantaged Community in the Development of a Text-Messaging Intervention to Address High Blood Pressure.",
+   "year": "2020",
+   "journal": "Health promotion practice",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "32192020",
+   "title": "Impact of 12-Month Smartphone Breathing Meditation Program upon Systolic Blood Pressure among Non-Medicated Stage 1 Hypertensive Adults.",
+   "year": "2020",
+   "journal": "International journal of environmental research and public health",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "32155382",
+   "title": "Educational Intervention Using WhatsApp on Medication Adherence in Hypertension and Diabetes Patients: A Randomized Clinical Trial.",
+   "year": "2020",
+   "journal": "Telemedicine journal and e-health : the official journal of the American Telemedicine Association",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32143061",
+   "title": "Postpartum blood pressure trends are impacted by race and BMI.",
+   "year": "2020",
+   "journal": "Pregnancy hypertension",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31904693",
+   "title": "Effects of a Comprehensive Reminder System Based on the Health Belief Model for Patients Who Have Had a Stroke on Health Behaviors, Blood Pressure, Disability, and Recurrence From Baseline to 6 Months: A Randomized Controlled Trial.",
+   "year": "2020",
+   "journal": "The Journal of cardiovascular nursing",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31879549",
+   "title": "Effect of Training through Short Message Service on Compliance and Mean Blood Pressure of Hypertensive Patients.",
+   "year": "2019",
+   "journal": "International journal of preventive medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31856596",
+   "title": "Effectiveness of mobile phone-based self-management interventions for medication adherence and change in blood pressure in patients with coronary heart disease: A systematic review and meta-analysis.",
+   "year": "2020",
+   "journal": "European journal of cardiovascular nursing",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "31815678",
+   "title": "Analysis of the Implementation, User Perspectives, and Feedback From a Mobile Health Intervention for Individuals Living With Hypertension (DREAM-GLOBAL): Mixed Methods Study.",
+   "year": "2019",
+   "journal": "JMIR mHealth and uHealth",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "31805787",
+   "title": "Randomized Trial of an Intervention to Improve Blood Pressure Control in Stroke Survivors.",
+   "year": "2019",
+   "journal": "Circulation. Cardiovascular quality and outcomes",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "31682574",
+   "title": "Wise Practices for Cultural Safety in Electronic Health Research and Clinical Trials With Indigenous People: Secondary Analysis of a Randomized Clinical Trial.",
+   "year": "2019",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31503408",
+   "title": "A texting-based blood pressure surveillance intervention.",
+   "year": "2019",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "31503389",
+   "title": "Use of home blood pressure telemonitoring in routine practice: Still many rivers to cross.",
+   "year": "2019",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Comment"
+   ]
+  },
+  {
+   "pmid": "31503166",
+   "title": "A Postpartum Remote Hypertension Monitoring Protocol Implemented at the Hospital Level.",
+   "year": "2019",
+   "journal": "Obstetrics and gynecology",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "31428985",
+   "title": "Capsule Commentary: Mehta et al. Electronic Pill Bottles or Bidirectional Text Messaging to Improve Hypertension Medication Adherence.",
+   "year": "2019",
+   "journal": "Journal of general internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Comment"
+   ]
+  },
+  {
+   "pmid": "31396815",
+   "title": "Electronic Pill Bottles or Bidirectional Text Messaging to Improve Hypertension Medication Adherence (Way 2 Text): a Randomized Clinical Trial.",
+   "year": "2019",
+   "journal": "Journal of general internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Pragmatic Clinical Trial",
+    "Research Support, Non-U.S. Gov't",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "31262847",
+   "title": "Using mHealth for the management of hypertension in UK primary care: an embedded qualitative study of the TASMINH4 randomised controlled trial.",
+   "year": "2019",
+   "journal": "The British journal of general practice : the journal of the Royal College of General Practitioners",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31262674",
+   "title": "SMS-facilitated home blood pressure monitoring: A qualitative analysis of resultant health behavior change.",
+   "year": "2019",
+   "journal": "Patient education and counseling",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "31215511",
+   "title": "Addressing Depression Comorbid With Diabetes or Hypertension in Resource-Poor Settings: A Qualitative Study About User Perception of a Nurse-Supported Smartphone App in Peru.",
+   "year": "2019",
+   "journal": "JMIR mental health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31170176",
+   "title": "One-way SMS and healthcare outcomes in Africa: Systematic review of randomised trials with meta-analysis.",
+   "year": "2019",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "31140445",
+   "title": "User Preferences and Persona Design for an mHealth Intervention to Support Adherence to Cardiovascular Disease Medication in Singapore: A Multi-Method Study.",
+   "year": "2019",
+   "journal": "JMIR mHealth and uHealth",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31121137",
+   "title": "Text message remote monitoring reduced racial disparities in postpartum blood pressure ascertainment.",
+   "year": "2019",
+   "journal": "American journal of obstetrics and gynecology",
+   "pubtypes": [
+    "Letter",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "31118586",
+   "title": "The impact of short message services and personal consultation by pharmacy students on medication adherence and blood pressure control: study protocol for a cluster randomized trial.",
+   "year": "2019",
+   "journal": "Patient preference and adherence",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30991908",
+   "title": "Outcomes of Psychoeducation and a Text Messaging Adherence Intervention Among Individuals With Hypertension and Bipolar Disorder.",
+   "year": "2019",
+   "journal": "Psychiatric services (Washington, D.C.)",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "30959858",
+   "title": "Impact of a Culturally Tailored mHealth Medication Regimen Self-Management Program upon Blood Pressure among Hypertensive Hispanic Adults.",
+   "year": "2019",
+   "journal": "International journal of environmental research and public health",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "30938688",
+   "title": "An Interactive Voice Response and Text Message Intervention to Improve Blood Pressure Control Among Individuals With Hypertension Receiving Care at an Urban Indian Health Organization: Protocol and Baseline Characteristics of a Pragmatic Randomized Controlled Trial.",
+   "year": "2019",
+   "journal": "JMIR research protocols",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30873217",
+   "title": "Preserve encephalus in surgery of trauma: online survey. (P.E.S.T.O).",
+   "year": "2019",
+   "journal": "World journal of emergency surgery : WJES",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30675374",
+   "title": "Combining Wireless Technology and Behavioral Economics to Engage Patients (WiBEEP) with cardiometabolic disease: a pilot study.",
+   "year": "2019",
+   "journal": "Pilot and feasibility studies",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30659702",
+   "title": "Feasibility of Emergency Department-initiated, Mobile Health Blood Pressure Intervention: An Exploratory, Randomized Clinical Trial.",
+   "year": "2019",
+   "journal": "Academic emergency medicine : official journal of the Society for Academic Emergency Medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30613027",
+   "title": "Development and piloting of a highly tailored digital intervention to support adherence to antihypertensive medications as an adjunct to primary care consultations.",
+   "year": "2019",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30565485",
+   "title": "Acceptability of the Medication Adherence for Patients Support intervention to improve adherence to patients prescribed medications for hypertension or comorbidities, as an adjunct to primary care: A qualitative study.",
+   "year": "2021",
+   "journal": "Journal of health psychology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30502778",
+   "title": "Cost-Effectiveness of a Comprehensive Approach for Hypertension Control in Low-Income Settings in Argentina: Trial-Based Analysis of the Hypertension Control Program in Argentina.",
+   "year": "2018",
+   "journal": "Value in health : the journal of the International Society for Pharmacoeconomics and Outcomes Research",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30474927",
+   "title": "Designing interventions for blood pressure control in challenging settings: Active not passive intervention is needed.",
+   "year": "2019",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "30474909",
+   "title": "Diagnosing hypertension in Indigenous Canadians (DREAM-GLOBAL): A randomized controlled trial to compare the effectiveness of short message service messaging for management of hypertension: Main results.",
+   "year": "2019",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't",
+    "Pragmatic Clinical Trial"
+   ]
+  },
+  {
+   "pmid": "30410985",
+   "title": "Patient Participation in the Development of a Customized M-Health Intervention to Improve Medication Adherence in Poorly Adherent Individuals with Bipolar Disorder (BD) and Hypertension (HTN).",
+   "year": "2018",
+   "journal": "International journal of healthcare",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30398461",
+   "title": "Community-based screening for cardiovascular risk using a novel mHealth tool in rural Kenya.",
+   "year": "2018",
+   "journal": "Journal of innovation in health informatics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30262148",
+   "title": "Dietary Approaches to Stop Hypertension Diet and Activity to Limit Gestational Weight: Maternal Offspring Metabolics Family Intervention Trial, a Technology Enhanced Randomized Trial.",
+   "year": "2018",
+   "journal": "American journal of preventive medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, N.I.H., Intramural",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "30166114",
+   "title": "Using mHealth strategies in a Diabetes Management Program to improve the quality of care in Argentina: Study design and baseline data.",
+   "year": "2018",
+   "journal": "Primary care diabetes",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30087093",
+   "title": "Technologies for Innovative Monitoring to Reduce Blood Pressure and Change Lifestyle Using Mobile Phones in Adult and Elderly Populations (TIM Study): Protocol for a Randomized Controlled Trial.",
+   "year": "2018",
+   "journal": "JMIR research protocols",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30083727",
+   "title": "Effect of a Remotely Delivered Tailored Multicomponent Approach to Enhance Medication Taking for Patients With Hyperlipidemia, Hypertension, and Diabetes: The STIC2IT Cluster Randomized Clinical Trial.",
+   "year": "2018",
+   "journal": "JAMA internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Pragmatic Clinical Trial",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "30006326",
+   "title": "Using Mobile Health to Enhance Outcomes of Noncommunicable Diseases Care in Rural Settings and Refugee Camps: Randomized Controlled Trial.",
+   "year": "2018",
+   "journal": "JMIR mHealth and uHealth",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29901484",
+   "title": "The Efficacy of a Comprehensive Reminder System to Improve Health Behaviors and Blood Pressure Control in Hypertensive Ischemic Stroke Patients: A Randomized Controlled Trial.",
+   "year": "2018",
+   "journal": "The Journal of cardiovascular nursing",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "29806998",
+   "title": "Development and Preliminary Feasibility of an Automated Hypertension Self-Management System.",
+   "year": "2018",
+   "journal": "The American journal of medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "29703800",
+   "title": "Comparing standard office-based follow-up with text-based remote monitoring in the management of postpartum hypertension: a randomised clinical trial.",
+   "year": "2018",
+   "journal": "BMJ quality & safety",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "29391369",
+   "title": "Are self-reported telemonitored blood pressure readings affected by end-digit preference: a prospective cohort study in Scotland.",
+   "year": "2018",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "29382623",
+   "title": "Improving Refill Adherence in Medicare Patients With Tailored and Interactive Mobile Text Messaging: Pilot Study.",
+   "year": "2018",
+   "journal": "JMIR mHealth and uHealth",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29361934",
+   "title": "Using the Medical Research Council framework for development and evaluation of complex interventions in a low resource setting to develop a theory-based treatment support intervention delivered via SMS text message to improve blood pressure control.",
+   "year": "2018",
+   "journal": "BMC health services research",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "29343463",
+   "title": "The Impact of mHealth Interventions: Systematic Review of Systematic Reviews.",
+   "year": "2018",
+   "journal": "JMIR mHealth and uHealth",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "29313363",
+   "title": "Effectiveness, acceptability and usefulness of mobile applications for cardiovascular disease self-management: Systematic review with meta-synthesis of quantitative and qualitative data.",
+   "year": "2018",
+   "journal": "European journal of preventive cardiology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "29258978",
+   "title": "The Effectiveness of Text Messaging for Detection and Management of Hypertension in Indigenous People in Canada: Protocol for a Randomized Controlled Trial.",
+   "year": "2017",
+   "journal": "JMIR research protocols",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29184896",
+   "title": "Formative evaluation on cultural tailoring breathing awareness meditation smartphone apps to reduce stress and blood pressure.",
+   "year": "2017",
+   "journal": "mHealth",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29046768",
+   "title": "Smartphones and e-tablets in perioperative medicine.",
+   "year": "2017",
+   "journal": "Korean journal of anesthesiology",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "28975305",
+   "title": "Effect of a Community Health Worker-Led Multicomponent Intervention on Blood Pressure Control in Low-Income Patients in Argentina: A Randomized Clinical Trial.",
+   "year": "2017",
+   "journal": "JAMA",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "28942613",
+   "title": "Not all texts are created equal: Design considerations for text message interventions to improve antihypertensive medication adherence.",
+   "year": "2017",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Journal Article",
+    "Comment"
+   ]
+  },
+  {
+   "pmid": "28941056",
+   "title": "Mobile phone text messaging improves antihypertensive drug adherence in the community.",
+   "year": "2017",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "30684401",
+   "title": "A Novel Patient Engagement Platform Using Accessible Text Messages and Calls (Epharmix): Feasibility Study.",
+   "year": "2017",
+   "journal": "JMIR formative research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30291093",
+   "title": "Digital Health for Medication Adherence in Adult Diabetes or Hypertension: An Integrative Review.",
+   "year": "2017",
+   "journal": "JMIR diabetes",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "31758763",
+   "title": "Assessing the Utility of a Novel SMS- and Phone-Based System for Blood Pressure Control in Hypertensive Patients: Feasibility Study.",
+   "year": "2017",
+   "journal": "JMIR cardio",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28720121",
+   "title": "The effectiveness of daily SMS reminders in pharmaceutical care of older adults on improving patients' adherence to antihypertensive medication (SPPA): study protocol for a randomized controlled trial.",
+   "year": "2017",
+   "journal": "Trials",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Pragmatic Clinical Trial",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "28666310",
+   "title": "Effectiveness of self-management support in maintenance haemodialysis patients with hypertension: A pilot cluster randomized controlled trial.",
+   "year": "2018",
+   "journal": "Nephrology (Carlton, Vic.)",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "28596147",
+   "title": "A Mobile Phone-Based Health Coaching Intervention for Weight Loss and Blood Pressure Reduction in a National Payer Population: A Retrospective Study.",
+   "year": "2017",
+   "journal": "JMIR mHealth and uHealth",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28210974",
+   "title": "Mobile Health (mHealth) Technology for the Management of Hypertension and Hyperlipidemia: Slow Start but Loads of Potential.",
+   "year": "2017",
+   "journal": "Current atherosclerosis reports",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "28148474",
+   "title": "Text Messaging to Improve Hypertension Medication Adherence in African Americans From Primary Care and Emergency Department Settings: Results From Two Randomized Feasibility Studies.",
+   "year": "2017",
+   "journal": "JMIR mHealth and uHealth",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27884232",
+   "title": "Adherence to Antihypertensive Therapy.",
+   "year": "2017",
+   "journal": "The Medical clinics of North America",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "27866193",
+   "title": "Mixed Aqueous Extract of Salvia Miltiorrhiza Reduces Blood Pressure through Inhibition of Vascular Remodelling and Oxidative Stress in Spontaneously Hypertensive Rats.",
+   "year": "2016",
+   "journal": "Cellular physiology and biochemistry : international journal of experimental cellular physiology, biochemistry, and pharmacology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27757986",
+   "title": "Acceptability of mHealth Technology for Self-Monitoring Eating and Activity among Rural Men.",
+   "year": "2017",
+   "journal": "Public health nursing (Boston, Mass.)",
+   "pubtypes": [
+    "Case Reports",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27695701",
+   "title": "What Clinical Interventions Have Been Implemented to Prevent or Reduce Postpartum Hypertension Readmissions? A Clin-IQ.",
+   "year": "2016",
+   "journal": "Journal of patient-centered research and reviews",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29474713",
+   "title": "The role of mHealth for improving medication adherence in patients with cardiovascular disease: a systematic review.",
+   "year": "2016",
+   "journal": "European heart journal. Quality of care & clinical outcomes",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "27659887",
+   "title": "Rationale and design of the Study of a Tele-pharmacy Intervention for Chronic diseases to Improve Treatment adherence (STIC2IT): A cluster-randomized pragmatic trial.",
+   "year": "2016",
+   "journal": "American heart journal",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Pragmatic Clinical Trial",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "27596244",
+   "title": "Phone-based Intervention under Nurse Guidance after Stroke (PINGS): study protocol for a randomized controlled trial.",
+   "year": "2016",
+   "journal": "Trials",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "27589695",
+   "title": "Efficacy of a virtual assistance-based lifestyle intervention in reducing risk factors for Type 2 diabetes in young employees in the information technology industry in India: LIMIT, a randomized controlled trial.",
+   "year": "2017",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "27508314",
+   "title": "The effectiveness of a comprehensive reminder system in the secondary prevention of hypertensive ischaemic stroke: randomized controlled trial protocol.",
+   "year": "2016",
+   "journal": "Journal of advanced nursing",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "27382587",
+   "title": "A Comparison between The Effectiveness of Short Message Service and Reminder Cards Regarding Medication Adherence in Patients with Hypertension: A Randomized Controlled Clinical Trial.",
+   "year": "2016",
+   "journal": "International journal of community based nursing and midwifery",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26969619",
+   "title": "\"I have to live like I'm old.\" Young adults' perspectives on managing hypertension: a multi-center qualitative study.",
+   "year": "2016",
+   "journal": "BMC family practice",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26894095",
+   "title": "Mobile Phone Usage and its Health Effects Among Adults in a Semi-Urban Area of Southern India.",
+   "year": "2016",
+   "journal": "Journal of clinical and diagnostic research : JCDR",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26890041",
+   "title": "Patient-Centered Home Care Using Digital Medicine and Telemetric Data for Hypertension: Feasibility and Acceptability of Objective Ambulatory Assessment.",
+   "year": "2016",
+   "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26769742",
+   "title": "Mobile Phone Text Messages to Support Treatment Adherence in Adults With High Blood Pressure (SMS-Text Adherence Support [StAR]): A Single-Blind, Randomized Trial.",
+   "year": "2016",
+   "journal": "Circulation",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't",
+    "Pragmatic Clinical Trial"
+   ]
+  },
+  {
+   "pmid": "26769741",
+   "title": "Text Messaging and Patient Engagement in an Increasingly Mobile World.",
+   "year": "2016",
+   "journal": "Circulation",
+   "pubtypes": [
+    "Editorial",
+    "Comment"
+   ]
+  },
+  {
+   "pmid": "26601092",
+   "title": "Effect of self-care education on lifestyle modification, medication adherence and blood pressure in hypertensive adults: Randomized controlled clinical trial.",
+   "year": "2015",
+   "journal": "Advanced biomedical research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26596977",
+   "title": "Mobile Health Devices as Tools for Worldwide Cardiovascular Risk Reduction and Disease Management.",
+   "year": "2015",
+   "journal": "Circulation",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "26593951",
+   "title": "Evaluation of an mHealth Medication Regimen Self-Management Program for African American and Hispanic Uncontrolled Hypertensives.",
+   "year": "2015",
+   "journal": "Journal of personalized medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26525857",
+   "title": "Confirming the theoretical structure of expert-developed text messages to improve adherence to anti-hypertensive medications.",
+   "year": "2016",
+   "journal": "Research in social & administrative pharmacy : RSAP",
+   "pubtypes": [
+    "Journal Article",
+    "Validation Study"
+   ]
+  },
+  {
+   "pmid": "26484882",
+   "title": "Perception of receiving SMS based health messages among hypertensive individuals in urban slums.",
+   "year": "2016",
+   "journal": "Technology and health care : official journal of the European Society for Engineering and Medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26343551",
+   "title": "Interactive telemedicine: effects on professional practice and health care outcomes.",
+   "year": "2015",
+   "journal": "The Cochrane database of systematic reviews",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "26183439",
+   "title": "Implementation of simple telehealth to manage hypertension in general practice: a service evaluation.",
+   "year": "2015",
+   "journal": "BMC family practice",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26137844",
+   "title": "Improving treatment adherence for blood pressure lowering via mobile phone SMS-messages in South Africa: a qualitative evaluation of the SMS-text Adherence SuppoRt (StAR) trial.",
+   "year": "2015",
+   "journal": "BMC family practice",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25878606",
+   "title": "Hypertensive patients' readiness to use of mobile phones and other information technological modes for improving their compliance to doctors' advice in Karachi.",
+   "year": "2015",
+   "journal": "Pakistan journal of medical sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25795698",
+   "title": "Patient and professional user experiences of simple telehealth for hypertension, medication reminders and smoking cessation: a service evaluation.",
+   "year": "2015",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25771023",
+   "title": "Outpatient blood pressure monitoring using bi-directional text messaging.",
+   "year": "2015",
+   "journal": "Journal of the American Society of Hypertension : JASH",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25565680",
+   "title": "Text Messaging to Improve Hypertension Medication Adherence in African Americans: BPMED Intervention Development and Study Protocol.",
+   "year": "2015",
+   "journal": "JMIR research protocols",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25472682",
+   "title": "Does mHealth increase adherence to medication? Results of a systematic review.",
+   "year": "2015",
+   "journal": "International journal of clinical practice",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "25440360",
+   "title": "Phone-based intervention under nurse guidance after stroke: concept for lowering blood pressure after stroke in Sub-Saharan Africa.",
+   "year": "2015",
+   "journal": "Journal of stroke and cerebrovascular diseases : the official journal of National Stroke Association",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "25264996",
+   "title": "Potential Limitations of E-mail and Text Messaging in Improving Adherence in Glaucoma and Ocular Hypertension.",
+   "year": "2015",
+   "journal": "Journal of glaucoma",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25165687",
+   "title": "Establishing an independent mobile health program for chronic disease self-management support in bolivia.",
+   "year": "2014",
+   "journal": "Frontiers in public health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25042605",
+   "title": "Randomized controlled trial of a multipronged intervention to improve blood pressure control among stroke survivors in Nigeria.",
+   "year": "2014",
+   "journal": "International journal of stroke : official journal of the International Stroke Society",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "24410738",
+   "title": "Efficacy of a text messaging (SMS) based intervention for adults with hypertension: protocol for the StAR (SMS Text-message Adherence suppoRt trial) randomised controlled trial.",
+   "year": "2014",
+   "journal": "BMC public health",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't",
+    "Pragmatic Clinical Trial"
+   ]
+  },
+  {
+   "pmid": "24004517",
+   "title": "Mobile Health Medication Adherence and Blood Pressure Control in Renal Transplant Recipients: A Proof-of-Concept Randomized Controlled Trial.",
+   "year": "2013",
+   "journal": "JMIR research protocols",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31741551",
+   "title": "MessageSpace: a Messaging System for Health Research.",
+   "year": "2013",
+   "journal": "Proceedings of SPIE--the International Society for Optical Engineering",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23235644",
+   "title": "Mobile phone messaging for facilitating self-management of long-term illnesses.",
+   "year": "2012",
+   "journal": "The Cochrane database of systematic reviews",
+   "pubtypes": [
+    "Journal Article",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "22995803",
+   "title": "Active ambulatory care management supported by short message services and mobile phone technology in patients with arterial hypertension.",
+   "year": "2012",
+   "journal": "Journal of the American Society of Hypertension : JASH",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22921386",
+   "title": "Effectiveness of a short message reminder in increasing compliance with pediatric cataract treatment: a randomized trial.",
+   "year": "2012",
+   "journal": "Ophthalmology",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "22714113",
+   "title": "Reduced heart rate response to dipyridamole in patients undergoing myocardial perfusion SPECT.",
+   "year": "2012",
+   "journal": "Annals of nuclear medicine",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22265810",
+   "title": "Evaluation of mobile phone and Internet intervention on waist circumference and blood pressure in post-menopausal women with abdominal obesity.",
+   "year": "2012",
+   "journal": "International journal of medical informatics",
+   "pubtypes": [
+    "Controlled Clinical Trial",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21858634",
+   "title": "[Hypertension short message service].",
+   "year": "2011",
+   "journal": "Wiener medizinische Wochenschrift (1946)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "19643661",
+   "title": "Cellular phone and Internet-based individual intervention on blood pressure and obesity in obese patients with hypertension.",
+   "year": "2009",
+   "journal": "International journal of medical informatics",
+   "pubtypes": [
+    "Controlled Clinical Trial",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16850905",
+   "title": "Hypertension and hearing impairment in workers of iron and steel industry.",
+   "year": "2006",
+   "journal": "Indian journal of physiology and pharmacology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "12421023",
+   "title": "Insulin sensitivity in pre-eclampsia.",
+   "year": "2002",
+   "journal": "The Journal of the Association of Physicians of India",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "11113693",
+   "title": "Using semi-automated oscillometric blood pressure measurement in diabetic patients and their offspring.",
+   "year": "2000",
+   "journal": "Journal of diabetes and its complications",
+   "pubtypes": [
+    "Clinical Trial",
+    "Comparative Study",
+    "Controlled Clinical Trial",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "10965221",
+   "title": "Control of catecholamine release and blood pressure with octreotide in a patient with pheochromocytoma: a case report with in vitro studies.",
+   "year": "2000",
+   "journal": "Hormone research",
+   "pubtypes": [
+    "Case Reports",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "7783101",
+   "title": "Investigation of ambulatory blood pressure monitoring data editing criteria.",
+   "year": "1995",
+   "journal": "Journal of human hypertension",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "8261660",
+   "title": "Influence of somatostatin analogue (SMS 201-995, octreotide) on blood pressure in adrenocorticotrophin (ACTH) treated rats: role of hyperinsulinaemia in ACTH hypertension.",
+   "year": "1993",
+   "journal": "Clinical and experimental pharmacology & physiology",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "2215839",
+   "title": "Postprandial blood pressure reduction.",
+   "year": "1990",
+   "journal": "The Netherlands journal of medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "2687350",
+   "title": "Influence of octreotide (SMS 201-995) and insulin administration on the course of blood pressure after an oral glucose load in hypertensive elderly subjects.",
+   "year": "1989",
+   "journal": "Journal of the American Geriatrics Society",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "2678621",
+   "title": "[Reduction in blood pressure after meals in the elderly. A review article].",
+   "year": "1989",
+   "journal": "Tijdschrift voor gerontologie en geriatrie",
+   "pubtypes": [
+    "English Abstract",
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "2646315",
+   "title": "Somatostatin analog octreotide (SMS 201-995) prevents the decrease in blood pressure after oral glucose loading in the elderly.",
+   "year": "1989",
+   "journal": "The Journal of clinical endocrinology and metabolism",
+   "pubtypes": [
+    "Clinical Trial",
+    "Controlled Clinical Trial",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "3071597",
+   "title": "SMS 201-995 prevents postprandial blood pressure reduction in normotensive and hypertensive elderly subjects.",
+   "year": "1988",
+   "journal": "Journal of hypertension. Supplement : official journal of the International Society of Hypertension",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "2867802",
+   "title": "Effects of a somatostatin analogue SMS 201-995 on hepatic haemodynamics in the pig and on intravariceal pressure in man.",
+   "year": "1985",
+   "journal": "The British journal of surgery",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "2866012",
+   "title": "The effects of a somatostatin analogue SMS 201-995 on hepatic haemodynamics in the cirrhotic rat.",
+   "year": "1985",
+   "journal": "The British journal of surgery",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "4006252",
+   "title": "Comparison of two automatic devices and the standard mercury sphygmomanometer in hypertensive patients.",
+   "year": "1985",
+   "journal": "Clinical and experimental hypertension. Part A, Theory and practice",
+   "pubtypes": [
+    "Clinical Trial",
+    "Comparative Study",
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  }
+ ]
+}

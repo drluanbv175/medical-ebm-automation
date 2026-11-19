@@ -1,0 +1,2750 @@
+{
+ "schema": "gia_lap/khong_loc_day_du/v1",
+ "truy_van": "(\"Diabetes Mellitus, Type 2\"[MeSH] OR \"type 2 diabetes\"[tiab]) AND (insulin[tiab]) AND (\"psychological insulin resistance\"[tiab] OR barrier*[tiab] OR experience*[tiab]) AND (\"Qualitative Research\"[MeSH] OR qualitative[tiab] OR interview*[tiab])",
+ "so_hit_that": 282,
+ "so_bai_lay_ve": 282,
+ "ngay_tai": "2026-11-19",
+ "cach": "PubMed E-utilities esearch (sort=date) + esummary, không lọc thiết kế",
+ "ban_ghi": [
+  {
+   "pmid": "43046000",
+   "title": "PROTECT: PRegnancy Outcomes using continuous glucose monitoring TEChnology in pregnant women with early-onset Type 2 diabetes: a multicentre randomised controlled trial - study protocol.",
+   "year": "2026",
+   "journal": "BMC pregnancy and childbirth",
+   "pubtypes": [
+    "Journal Article",
+    "Clinical Trial Protocol"
+   ]
+  },
+  {
+   "pmid": "42858479",
+   "title": "The transition from pre- to early pregnancy for women with type 2 diabetes - a qualitative study.",
+   "year": "2026",
+   "journal": "Midwifery",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42815716",
+   "title": "Exploring Diabetes Management Behaviours With FreeStyle Libre 2: Insights From Adults With Type 2 Diabetes in Quebec.",
+   "year": "2026",
+   "journal": "Canadian journal of diabetes",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42703470",
+   "title": "Quinary Prevention in Patients With Type 2 Diabetes Mellitus Included in the Family Adoption Programme of a Medical College in Jaipur: A Qualitative Study.",
+   "year": "2026",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42698185",
+   "title": "Participant and physician perspectives on the use of SGLT2 inhibitors in type 1 diabetes.",
+   "year": "2026",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42550210",
+   "title": "A technology-blended exercise intervention for cognitive risk reduction and brain health in middle-aged and older adults with type 2 diabetes in Singapore: a mixed-methods study.",
+   "year": "2026",
+   "journal": "The journals of gerontology. Series A, Biological sciences and medical sciences",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42458379",
+   "title": "Escalating diabetes prevalence in pakistan: a qualitative study of endocrinologists' perspectives on contributing factors, management barriers, and strategies.",
+   "year": "2026",
+   "journal": "BMC endocrine disorders",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42417094",
+   "title": "Implementing Patient Decision Aids for Insulin Initiation in China: What are the Barriers and Facilitators? A TDF-Based Qualitative Study.",
+   "year": "2026",
+   "journal": "Journal of diabetes research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42387496",
+   "title": "Barriers to glycemic control among youth with diabetes in Ghana: a mixed-methods cross-sectional study.",
+   "year": "2026",
+   "journal": "BMC endocrine disorders",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42374016",
+   "title": "Experiences of People with Type 2 Diabetes and Healthcare Professionals with Once-Weekly Insulin Efsitora Alfa in QWINT Phase 3 Trials: Qualitative In-Trial Interviews.",
+   "year": "2026",
+   "journal": "The patient",
+   "pubtypes": [
+    "Journal Article",
+    "Clinical Trial, Phase III"
+   ]
+  },
+  {
+   "pmid": "42207173",
+   "title": "Experiences of People With Poorly Controlled Type 2 Diabetes Using Telemonitoring: Qualitative Study Embedded in a Feasibility Trial.",
+   "year": "2026",
+   "journal": "JMIR formative research",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "42175345",
+   "title": "Nurses' Perspectives on a Telemonitoring Intervention for Type 2 Diabetes: Findings from a Feasibility Study.",
+   "year": "2026",
+   "journal": "Studies in health technology and informatics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42175242",
+   "title": "Patient Perspectives on Telemonitoring in Insulin-Treated Type 2 Diabetes: Preliminary Findings from a Qualitative Study.",
+   "year": "2026",
+   "journal": "Studies in health technology and informatics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42141826",
+   "title": "What barriers need to be removed to incorporate resistance exercise into the lives of older adults with long-term diabetes and prefrailty? A deductive framework analysis using the Capability, Opportunity, Motivation and Behaviour (COM-B) behavioural science model.",
+   "year": "2026",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "42137973",
+   "title": "How Continuous Glucose Monitoring Reports Inform Clinical Decision-Making for Older Adults With Type 2 Diabetes: Mapping Clinical Workflow to Situation Awareness.",
+   "year": "2026",
+   "journal": "Journal of diabetes science and technology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41917833",
+   "title": "Healthcare professionals' experiences with the use of continuous glucose monitoring in nursing homes and home healthcare services: a qualitative study.",
+   "year": "2026",
+   "journal": "BMC geriatrics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41657351",
+   "title": "Sleep in adolescents with or at risk for type 2 diabetes: perspectives from adolescents and parents.",
+   "year": "2026",
+   "journal": "Journal of pediatric psychology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41638420",
+   "title": "Quantifying the Basal Insulin Treatment Preferences of People Living in Canada With Type 2 Diabetes When Glycemic Management and Cost Are Held Constant: A Discrete Choice Experiment.",
+   "year": "2026",
+   "journal": "Canadian journal of diabetes",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41555588",
+   "title": "Preferences for basal insulin treatments in adults with type 2 diabetes: A discrete choice experiment in France and Spain.",
+   "year": "2026",
+   "journal": "Diabetes, obesity & metabolism",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41527077",
+   "title": "Level of physical activity and its predictors among adult diabetic men who were on follow-up at health facilities in Bale Zone, Southeast Ethiopia: institution-based cross-sectional study.",
+   "year": "2026",
+   "journal": "BMC research notes",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41512489",
+   "title": "'It's very hard, it's very very difficult ….' Exploring the lived experiences of managing diabetes among young people living with type 1 diabetes in underserved communities in Ghana.",
+   "year": "2026",
+   "journal": "Social science & medicine (1982)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41360624",
+   "title": "Identifying interhospital variation in hyperosmolar hyperglycemic syndrome (HHS) care: development and outcomes of the DEKODE HHS model.",
+   "year": "2025",
+   "journal": "BMJ open diabetes research & care",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "41358572",
+   "title": "'Why, Can I Not Have Control of My Own Insulin?': Qualitative Exploration Amongst Older Adults With Diabetes With Lived Experience of Surgical Hospital Admission.",
+   "year": "2025",
+   "journal": "Health expectations : an international journal of public participation in health care and health policy",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41245606",
+   "title": "Barriers to the Prevention of Insulin Injection-Associated Lipohypertrophy for Individuals with Diabetes.",
+   "year": "2025",
+   "journal": "Patient preference and adherence",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41177160",
+   "title": "Exploring insulin rejection through photo-elicitation among informal caregivers and patients with type 2 diabetes mellitus.",
+   "year": "2026",
+   "journal": "Korean journal of family medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41160893",
+   "title": "Feasibility and outcomes of a collaborative pharmacy and general practice service for people with type 2 diabetes with high HbA1c: a mixed methods study.",
+   "year": "2026",
+   "journal": "Journal of primary health care",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "41102072",
+   "title": "Understanding the benefits and psychological burdens of using continuous glucose monitoring for lifestyle change: A mixed-methods cross-sectional study.",
+   "year": "2025",
+   "journal": "Obesity research & clinical practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41096023",
+   "title": "Patient Experience with Continuous Glucose Monitoring During Dialysis in Type 2 Diabetes: A Qualitative Study.",
+   "year": "2025",
+   "journal": "Journal of clinical medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41093335",
+   "title": "Who is using continuous glucose monitoring for type 2 diabetes management? A scoping review protocol.",
+   "year": "2025",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "41030722",
+   "title": "Prevalence and Predictors of Post-coital Hypoglycemia in Diabetes Mellitus.",
+   "year": "2025",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40926927",
+   "title": "Prevalence and Associated Factors of Hypoglycemia Among Patients With Type 2 Diabetes Mellitus: A Cross-Sectional Study.",
+   "year": "2025",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40907093",
+   "title": "Effects of a nurse-led diabetes self-management programme for people with type 2 diabetes receiving insulin injection therapy: A randomised controlled trial with qualitative process evaluation.",
+   "year": "2025",
+   "journal": "International journal of nursing studies",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "40893590",
+   "title": "A Comparative Multicenter Cross-Sectional Study on Hypoglycemia in Young Adults and Older Adults With Type 2 Diabetes Mellitus in an Outpatient Setting in Sri Lanka.",
+   "year": "2025",
+   "journal": "Journal of diabetes research",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "40884258",
+   "title": "A Randomised Controlled Trial Testing a Behavioural Intervention Program for the Prevention of Type 2 Diabetes Among American Indian Youth: The Tribal Turning Point Study.",
+   "year": "2025",
+   "journal": "Pediatric obesity",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "40833702",
+   "title": "Quantifying Patient Preferences for Basal Insulin Treatments in Adults Living with Type 2 Diabetes: A Discrete Choice Experiment in Canada, Spain, France, and Japan.",
+   "year": "2025",
+   "journal": "Diabetes therapy : research, treatment and education of diabetes and related disorders",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40823934",
+   "title": "Glycaemic control in labour with diabetes: GILD, a scoping study.",
+   "year": "2025",
+   "journal": "Health technology assessment (Winchester, England)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "40787144",
+   "title": "Factors Influencing Adherence to Dietary Interventions Among Patients with Gestational Diabetes Mellitus in China: A Qualitative Study Based on the COM-B Model.",
+   "year": "2025",
+   "journal": "Journal of multidisciplinary healthcare",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40723075",
+   "title": "Mapping Barriers and Interventions to Diabetes Self-Management in Latino Youth: A Scoping Review.",
+   "year": "2025",
+   "journal": "Children (Basel, Switzerland)",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "40712439",
+   "title": "Diabetes, obesity, and economic social exclusion (DOSE) syndemic among a nationally representative sample in the United States.",
+   "year": "2025",
+   "journal": "Social science & medicine (1982)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40576167",
+   "title": "The Role of Social Support on Self-Management of Gestational Diabetes Mellitus: A Qualitative Analysis.",
+   "year": "2025",
+   "journal": "Journal of midwifery & women's health",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "40506766",
+   "title": "\"I lost my syringes, my insulin, and my glucose test strips. I lost all my belongings\": a qualitative study on the perspective of elderly individuals with type 2 diabetes regarding the unprecedented flooding in southern Brazil.",
+   "year": "2025",
+   "journal": "Diabetology & metabolic syndrome",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40258264",
+   "title": "Exploring Psychosocial Burdens of Diabetes in Pregnancy and the Feasibility of Technology-Based Support: Qualitative Study.",
+   "year": "2025",
+   "journal": "JMIR diabetes",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40223769",
+   "title": "Implementing Lifestyle Counselling Into Secondary Type 2 Diabetes Care: Perspectives From Diabetes Nurses.",
+   "year": "2025",
+   "journal": "Nursing open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "40148948",
+   "title": "Evaluation of the implementation of an insulin patient decision aid for patients with type 2 diabetes in an academic primary care clinic in Malaysia: a mixed method study.",
+   "year": "2025",
+   "journal": "BMC health services research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "40116013",
+   "title": "Intermittent Use of Continuous Glucose Monitoring in Type 2 Diabetes Is Preferred: A Qualitative Study of Patients' Experiences.",
+   "year": "2025",
+   "journal": "The science of diabetes self-management and care",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "40062731",
+   "title": "Neuropathological links between T2DM and LOAD: systematic review and meta-analysis.",
+   "year": "2025",
+   "journal": "Physiological reviews",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review",
+    "Meta-Analysis",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "40038224",
+   "title": "A Qualitative Study of Older Adult Perspectives on Continuous Glucose Monitoring for Type 2 Diabetes.",
+   "year": "2025",
+   "journal": "Journal of general internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "39986967",
+   "title": "Individual, Social and Environmental Factors Influencing Medication-Taking Among Adults of Vietnamese Heritage With Type 2 Diabetes Living in Australia: A Qualitative Study.",
+   "year": "2025",
+   "journal": "Clinical therapeutics",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39977858",
+   "title": "High-Intensity Interval Training for Individuals With Isolated Impaired Fasting Glucose: Protocol for a Proof-of-Concept Randomized Controlled Trial.",
+   "year": "2025",
+   "journal": "JMIR research protocols",
+   "pubtypes": [
+    "Journal Article",
+    "Clinical Trial Protocol",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S.",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "39901587",
+   "title": "Experiences With a Novel Micro-Choice-Based Concentrated Group Intervention for People With Type 2 Diabetes: A Qualitative Study.",
+   "year": "2025",
+   "journal": "The science of diabetes self-management and care",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "39885416",
+   "title": "Experiences of adults with type 2 diabetes mellitus with low socioeconomic status: a qualitative study.",
+   "year": "2025",
+   "journal": "BMC public health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39854487",
+   "title": "Insulin therapy adherence and its associated factors among diabetic patients in a Ghanaian primary care hospital.",
+   "year": "2025",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39793006",
+   "title": "\"Now I can see it works!\" Perspectives on Using a Nutrition-Focused Approach When Initiating Continuous Glucose Monitoring in People with Type 2 Diabetes: Qualitative Interview Study.",
+   "year": "2025",
+   "journal": "JMIR diabetes",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39649699",
+   "title": "Experience of Telephone-Based Diabetes Health Coaching Among Community-Based Adults With Type 2 Diabetes.",
+   "year": "2024",
+   "journal": "Diabetes spectrum : a publication of the American Diabetes Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39551734",
+   "title": "Perspectives of patients with type 1 and type 2 diabetes on barriers to diabetes care: a qualitative study.",
+   "year": "2024",
+   "journal": "BMC health services research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39368488",
+   "title": "Improved treatment satisfaction with once-weekly insulin icodec compared with once-daily basal insulin in individuals with type 2 diabetes: An analysis of patient-reported outcomes and participant interviews from ONWARDS 2 and 5 and a physician survey from ONWARDS 1.",
+   "year": "2024",
+   "journal": "Diabetes research and clinical practice",
+   "pubtypes": [
+    "Journal Article",
+    "Clinical Trial, Phase III",
+    "Comparative Study"
+   ]
+  },
+  {
+   "pmid": "39347898",
+   "title": "Perspectives and Preferences of People with Type 2 Diabetes for the Attributes of Weekly Insulin.",
+   "year": "2024",
+   "journal": "Diabetes therapy : research, treatment and education of diabetes and related disorders",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39188431",
+   "title": "Adherence to Self-Monitoring of Blood Glucose and Its Related Factors Among Type 2 Diabetic Patients Attending Al-Ahsa Primary Health Care Centers in Saudi Arabia.",
+   "year": "2024",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "39074147",
+   "title": "Enhancing care in the initiation and management of insulin in older people with diabetes: A collaborative journey with older individuals and their caregivers using Experience-Based Co-Design.",
+   "year": "2024",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38932793",
+   "title": "Acceptability and experiences of real-time continuous glucose monitoring in adults with type 2 diabetes using insulin: a qualitative study.",
+   "year": "2024",
+   "journal": "Journal of diabetes and metabolic disorders",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38905318",
+   "title": "Living with and managing type 1 diabetes in humanitarian settings: A qualitative synthesis of lived experience and stakeholder tacit knowledge.",
+   "year": "2024",
+   "journal": "PLOS global public health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38820261",
+   "title": "Sustaining the benefits of structured education: Participants' experiences of receiving structured individual support during a programme (DAFNEplus) informed by behavioural science.",
+   "year": "2024",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38778345",
+   "title": "A telemonitoring intervention design for patients with poorly controlled type 2 diabetes: protocol for a feasibility study.",
+   "year": "2024",
+   "journal": "Pilot and feasibility studies",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38778253",
+   "title": "A qualitative study of the experiences of insulin use by older people with type 2 diabetes mellitus.",
+   "year": "2024",
+   "journal": "BMC primary care",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38341207",
+   "title": "Manchester Intermittent Diet in Gestational Diabetes Acceptability Study (MIDDAS-GDM): a two-arm randomised feasibility protocol trial of an intermittent low-energy diet (ILED) in women with gestational diabetes and obesity in Greater Manchester.",
+   "year": "2024",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "38284517",
+   "title": "Hypoglycaemic confidence levels and experiences related to the hypoglycaemia of patients with diabetes: A mixed methods study.",
+   "year": "2024",
+   "journal": "Journal of clinical nursing",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38243951",
+   "title": "Factors Influencing Hypoglycemia in Type 2 Diabetes Mellitus Outpatients with State Health Insurance at Regional General Hospitals in Jakarta, Indonesia.",
+   "year": "2024",
+   "journal": "Current diabetes reviews",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "38041170",
+   "title": "The role of diabetes distress in Diabulimia.",
+   "year": "2023",
+   "journal": "Journal of eating disorders",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "37798953",
+   "title": "Exploring Disease Management Experiences of Individuals with Type 2 Diabetes During the COVID-19 Pandemic: A Qualitative Study.",
+   "year": "2024",
+   "journal": "Clinical nursing research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37782644",
+   "title": "[Assessment of the progression dynamics of chronic kidney disease in elderly patients with type 2 diabetes mellitus.].",
+   "year": "2023",
+   "journal": "Advances in gerontology = Uspekhi gerontologii",
+   "pubtypes": [
+    "Observational Study",
+    "English Abstract",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37773626",
+   "title": "Assessing the Content Validity, Acceptability, and Feasibility of the Hypo-METRICS App: Survey and Interview Study.",
+   "year": "2023",
+   "journal": "JMIR diabetes",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37658019",
+   "title": "Perception of self-management and glycaemic control in people with type 2 diabetes receiving insulin injection therapy: A qualitative study.",
+   "year": "2023",
+   "journal": "Primary care diabetes",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37624794",
+   "title": "The magnitude of chronic diabetes complications and its associated factors among diabetic patients attending the general hospitals in Tigray region, Northern Ethiopia.",
+   "year": "2023",
+   "journal": "PloS one",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "37551735",
+   "title": "Patient experiences of continuous glucose monitoring and sensor-augmented insulin pump therapy for diabetes: A systematic review of qualitative studies.",
+   "year": "2023",
+   "journal": "Journal of diabetes",
+   "pubtypes": [
+    "Systematic Review",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37237318",
+   "title": "The diabetes insulin self-management education (DIME) intervention for people with type 2 diabetes starting insulin: a pilot feasibility randomised controlled trial.",
+   "year": "2023",
+   "journal": "Pilot and feasibility studies",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "37007415",
+   "title": "Knowledge and Practice of Use of Insulin Therapy Among Patients With Type 2 Diabetes Attending Primary Health Care Centers, Riyadh, Saudi Arabia: A Cross-Sectional Study.",
+   "year": "2023",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36607714",
+   "title": "Social Support in a Diabetes Online Community: Mixed Methods Content Analysis.",
+   "year": "2023",
+   "journal": "JMIR diabetes",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36561654",
+   "title": "Continuous Glucose Monitoring Plus an Online Peer Support Community Reinforces Healthy Behaviors in Hispanic Adults With Type 2 Diabetes.",
+   "year": "2022",
+   "journal": "Diabetes spectrum : a publication of the American Diabetes Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36279173",
+   "title": "Medication Adherence and Cardiometabolic Control Indicators Among American Indian Adults Receiving Tribal Health Services: Protocol for a Longitudinal Electronic Health Records Study.",
+   "year": "2022",
+   "journal": "JMIR research protocols",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36254398",
+   "title": "The \"Life-World\" trip of type 2 diabetes patients with allopathic treatment options: a triangulated qualitative investigation.",
+   "year": "2022",
+   "journal": "Annals of medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36253034",
+   "title": "Supporting self-management in women with pre-existing diabetes in pregnancy: a protocol for a mixed-methods sequential comparative case study.",
+   "year": "2022",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36222807",
+   "title": "Social Determinants of Health and Diabetes-Related Distress in Patients With Insulin-Dependent Type 2 Diabetes: Cross-sectional, Mixed Methods Approach.",
+   "year": "2022",
+   "journal": "JMIR formative research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36197724",
+   "title": "Exploring the Experiences and Perspectives of Insulin Therapy in Type 2 Diabetes via Web-Based UK Diabetes Health Forums: Qualitative Thematic Analysis of Threads.",
+   "year": "2022",
+   "journal": "JMIR diabetes",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36176003",
+   "title": "Testing a very low-carbohydrate adaption of the Diabetes Prevention Program among adults with prediabetes: study protocol for the Lifestyle Education about prediabetes (LEAP) trial.",
+   "year": "2022",
+   "journal": "Trials",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "36089508",
+   "title": "The experiences of insulin use among older people with Type 2 diabetes mellitus: A thematic synthesis.",
+   "year": "2022",
+   "journal": "Primary care diabetes",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "35966831",
+   "title": "Euglycaemic Ketoacidosis Due to Extremely Low-Calorie Intake and Dehydration After Laparoscopic Sleeve Gastrectomy in a Patient with Type 2 Diabetes.",
+   "year": "2022",
+   "journal": "Diabetes, metabolic syndrome and obesity : targets and therapy",
+   "pubtypes": [
+    "Case Reports",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35958887",
+   "title": "Treatment-Related Attributes of Diabetes Therapies and How People with Type 2 Diabetes Report Their Impact on Indicators of Medication-Taking Behaviors.",
+   "year": "2022",
+   "journal": "Patient preference and adherence",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "35924623",
+   "title": "Factors affecting the implementation of a complex health intervention to improve insulin management in primary care: A SWOT analysis.",
+   "year": "2022",
+   "journal": "African journal of primary health care & family medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35854336",
+   "title": "Barriers and facilitators to insulin treatment: a phenomenological inquiry.",
+   "year": "2022",
+   "journal": "Journal of pharmaceutical policy and practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35761498",
+   "title": "Barriers and Facilitators to Diabetes Self-Management in Pregnant Women with Pre-existing Type 2 Diabetes Mellitus: A Scoping Review.",
+   "year": "2023",
+   "journal": "Current diabetes reviews",
+   "pubtypes": [
+    "Journal Article",
+    "Scoping Review"
+   ]
+  },
+  {
+   "pmid": "35719862",
+   "title": "Comorbidity Between Recent Diagnosis of Type 2 Diabetes and Non-Psychotic Psychiatric Disorders: Metabolic Characteristics and Clinical Correlates.",
+   "year": "2022",
+   "journal": "Neuropsychiatric disease and treatment",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35698052",
+   "title": "Non-adherence to guideline recommendations for insulins: a qualitative study amongst primary care practitioners.",
+   "year": "2022",
+   "journal": "BMC primary care",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35619860",
+   "title": "Anti-hyperglycemic Medication Compliance: A Quality Assurance Project.",
+   "year": "2022",
+   "journal": "Cureus",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35583602",
+   "title": "Major osteoporosis fracture prediction in type 2 diabetes: a derivation and comparison study.",
+   "year": "2022",
+   "journal": "Osteoporosis international : a journal established as result of cooperation between the European Foundation for Osteoporosis and the National Osteoporosis Foundation of the USA",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35300440",
+   "title": "Impact of Anti-Diabetic Medications on Quality of Life in Persons with Type 2 Diabetes Mellitus.",
+   "year": "2021",
+   "journal": "Indian journal of endocrinology and metabolism",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35256314",
+   "title": "Key factors for overcoming psychological insulin resistance: A qualitative study in Japanese people with type 2 diabetes.",
+   "year": "2022",
+   "journal": "Primary care diabetes",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35118920",
+   "title": "\"Something Tells Me I Can't Do That No More\": Experiences With Real-Time Glucose and Activity Monitoring Among Underserved Black Women With Type 2 Diabetes.",
+   "year": "2022",
+   "journal": "The science of diabetes self-management and care",
+   "pubtypes": [
+    "Clinical Trial",
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "35105572",
+   "title": "Investigating the day-to-day impact of hypoglycaemia in adults with type 1 or type 2 diabetes: design and validation protocol of the Hypo-METRICS application.",
+   "year": "2022",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "35033801",
+   "title": "Evaluating the Incidence and Risk Factors Associated With Mild and Severe Hypoglycemia in Insulin-Treated Type 2 Diabetes.",
+   "year": "2022",
+   "journal": "Value in health regional issues",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "35030281",
+   "title": "'I need someone to believe in me and walk the journey with me': A qualitative analysis of preferred approaches to weight management discussions in clinical care among adults with type 2 diabetes.",
+   "year": "2022",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34952888",
+   "title": "Striving for autonomy in everyday diabetes self-management-qualitative exploration via grounded theory approach.",
+   "year": "2021",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34916146",
+   "title": "Toward a more comprehensive understanding of the emotional side of type 2 diabetes: A re-envisioning of the assessment of diabetes distress.",
+   "year": "2022",
+   "journal": "Journal of diabetes and its complications",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34561252",
+   "title": "'Is Insulin Right for Me?' Development of a theory-informed, web-based resource for reducing psychological barriers to insulin therapy in type 2 diabetes.",
+   "year": "2021",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34559032",
+   "title": "Veterans' Interpretation of Diabetes Distress in Diabetes Self-Management: Findings From Cognitive Interviews.",
+   "year": "2021",
+   "journal": "The science of diabetes self-management and care",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, Non-P.H.S."
+   ]
+  },
+  {
+   "pmid": "34465005",
+   "title": "'For me, it didn't seem as drastic a step as being controlled by insulin': A qualitative investigation of expectations and experiences of non-insulin injectable therapy among adults with type 2 diabetes.",
+   "year": "2022",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34432914",
+   "title": "Individual, healthcare professional and system-level barriers and facilitators to initiation and adherence to injectable therapies for type 2 diabetes: A systematic review and meta-ethnography.",
+   "year": "2022",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "34414787",
+   "title": "Combining CGM and an Online Peer Support Community for Hispanic Adults with T2D: A Feasibility Study.",
+   "year": "2022",
+   "journal": "Journal of diabetes science and technology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34283032",
+   "title": "Improving Diabetes Self-management by Providing Continuous Positive Airway Pressure Treatment to Patients With Obstructive Sleep Apnea and Type 2 Diabetes: Qualitative Exploratory Interview Study.",
+   "year": "2021",
+   "journal": "JMIR formative research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34259058",
+   "title": "Experiences of barriers to self-monitoring and medication-management among Indian patients with type 2 diabetes, their primary family-members and physicians.",
+   "year": "2022",
+   "journal": "Chronic illness",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "34177225",
+   "title": "Enhancing Diabetes Self-Management Education and Psychological Services for Veterans With Comorbid Chronic Health and Mental Health Conditions.",
+   "year": "2021",
+   "journal": "Federal practitioner : for the health care professionals of the VA, DoD, and PHS",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34080280",
+   "title": "Beyond \"Watching the Sweets\": An interpretive description of adolescent's understandings and insights into preventing prediabetes and type 2 diabetes.",
+   "year": "2021",
+   "journal": "Journal for specialists in pediatric nursing : JSPN",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "34043162",
+   "title": "The Burden of Type 2 Diabetes and the Value of Achieving Near Normoglycemia from the Patient Perspective.",
+   "year": "2021",
+   "journal": "Diabetes therapy : research, treatment and education of diabetes and related disorders",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "33316310",
+   "title": "Ramadan fasting and diabetes 2019: The year in review.",
+   "year": "2021",
+   "journal": "Diabetes research and clinical practice",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "33199194",
+   "title": "Diabetes care innovation in the Mexican Institute for Social Insurance: Scaling up the preventive chronic disease care model to address critical coverage constraints.",
+   "year": "2021",
+   "journal": "Primary care diabetes",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "33176659",
+   "title": "Perceived Barriers, Benefits, Facilitators, and Attitudes of Health Professionals Towards Multidisciplinary Team Care in Type 2 Diabetes Management: A Systematic Review.",
+   "year": "2021",
+   "journal": "Current diabetes reviews",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "33117446",
+   "title": "Prevalence of Primary Non-adherence with Insulin and Barriers to Insulin Initiation in Patients with Type 2 Diabetes Mellitus - An Exploratory Study in a Tertiary Care Teaching Public Hospital.",
+   "year": "2020",
+   "journal": "European endocrinology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32718924",
+   "title": "Implementation of blood glucose self-monitoring among insulin-dependent patients with type 2 diabetes in three rural districts in Rwanda: 6 months open randomised controlled trial.",
+   "year": "2020",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Clinical Trial Protocol",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32706738",
+   "title": "User Engagement Among Diverse Adults in a 12-Month Text Message-Delivered Diabetes Support Intervention: Results from a Randomized Controlled Trial.",
+   "year": "2020",
+   "journal": "JMIR mHealth and uHealth",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "32676533",
+   "title": "\"Life or death\": Experiences of insulin insecurity among adults with type 1 diabetes in the United States.",
+   "year": "2020",
+   "journal": "SSM - population health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32550167",
+   "title": "Culturally based pre-Ramadan education increased benefits and reduced hazards of Ramadan fasting for type 2 diabetic patients.",
+   "year": "2020",
+   "journal": "Journal of diabetes and metabolic disorders",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32533547",
+   "title": "Understanding Reasons for Treatment Discontinuation, Attitudes and Education Needs Among People Who Discontinue Type 2 Diabetes Treatment: Results from an Online Patient Survey in the USA and UK.",
+   "year": "2020",
+   "journal": "Diabetes therapy : research, treatment and education of diabetes and related disorders",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32406854",
+   "title": "Patient Empowerment Using Electronic Telemonitoring With Telephone Support in the Transition to Insulin Therapy in Adults With Type 2 Diabetes: Observational, Pre-Post, Mixed Methods Study.",
+   "year": "2020",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32306819",
+   "title": "A survey of physician experience and treatment satisfaction using fast-acting insulin aspart in people with type 1 or type 2 diabetes.",
+   "year": "2020",
+   "journal": "Postgraduate medicine",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32179603",
+   "title": "Successful Health Care Provider Strategies to Overcome Psychological Insulin Resistance in United States and Canada.",
+   "year": "2020",
+   "journal": "Journal of the American Board of Family Medicine : JABFM",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32152165",
+   "title": "Cultural adaptation of a patient decision-aid for insulin therapy.",
+   "year": "2020",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "32124421",
+   "title": "Perceptions of Insulin Pen Use and Technique in Black and Hispanic/Latino Patients with Type 2 Diabetes: a Qualitative Study.",
+   "year": "2020",
+   "journal": "Journal of racial and ethnic health disparities",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "32079327",
+   "title": "A Delayed Morning and Earlier Evening Time-Restricted Feeding Protocol for Improving Glycemic Control and Dietary Adherence in Men with Overweight/Obesity: A Randomized Controlled Trial.",
+   "year": "2020",
+   "journal": "Nutrients",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "31981212",
+   "title": "A Practitioner's Toolkit for Insulin Motivation in Adults with Type 1 and Type 2 Diabetes Mellitus: Evidence-Based Recommendations from an International Expert Panel.",
+   "year": "2020",
+   "journal": "Diabetes therapy : research, treatment and education of diabetes and related disorders",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "31908792",
+   "title": "Key factors for overcoming psychological insulin resistance: an examination of patient perspectives through content analysis.",
+   "year": "2019",
+   "journal": "BMJ open diabetes research & care",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31732858",
+   "title": "Experiences of Attending Group Education to Support Insulin Initiation in Type 2 Diabetes: A Qualitative Study.",
+   "year": "2020",
+   "journal": "Diabetes therapy : research, treatment and education of diabetes and related disorders",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31629655",
+   "title": "Triple strength utility of the Modified Drug Adherence Work-Up (M-DRAW) tool in a veterans affairs outpatient diabetes clinic.",
+   "year": "2020",
+   "journal": "Research in social & administrative pharmacy : RSAP",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31368439",
+   "title": "Barriers and Facilitators to the Implementation of a Mobile Insulin Titration Intervention for Patients With Uncontrolled Diabetes: A Qualitative Analysis.",
+   "year": "2019",
+   "journal": "JMIR mHealth and uHealth",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31365159",
+   "title": "Inducing remission of Type 2 diabetes in the Caribbean: findings from a mixed methods feasibility study of a low-calorie liquid diet-based intervention in Barbados.",
+   "year": "2020",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "31336509",
+   "title": "Ketogenic diets potentially reverse Type II diabetes and ameliorate clinical depression: A case study.",
+   "year": "2019",
+   "journal": "Diabetes & metabolic syndrome",
+   "pubtypes": [
+    "Case Reports",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31148993",
+   "title": "The perceived barriers to insulin therapy among type 2 diabetic patients.",
+   "year": "2019",
+   "journal": "African health sciences",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31123588",
+   "title": "The determinants of anti-diabetic medication adherence based on the experiences of patients with type 2 diabetes.",
+   "year": "2019",
+   "journal": "Archives of public health = Archives belges de sante publique",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "31115132",
+   "title": "What will make patients use a patient decision aid? A qualitative study on patients' perspectives on implementation barriers and facilitators.",
+   "year": "2020",
+   "journal": "Journal of evaluation in clinical practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30913529",
+   "title": "\"Wasting away\": Diabetes, food insecurity, and medical insecurity in the Somali Region of Ethiopia.",
+   "year": "2019",
+   "journal": "Social science & medicine (1982)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30804666",
+   "title": "Perceptions of insulin therapy in people with type 2 diabetes and physicians: a cross-sectional survey conducted in France.",
+   "year": "2019",
+   "journal": "Patient preference and adherence",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30798408",
+   "title": "Factors Impacting Adherence to Diabetes Medication Among Urban, Low Income Mexican-Americans with Diabetes.",
+   "year": "2019",
+   "journal": "Journal of immigrant and minority health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30734352",
+   "title": "Reducing risk of Type 2 diabetes in HIV: a mixed-methods investigation of the STOP-Diabetes diet and physical activity intervention.",
+   "year": "2020",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30700277",
+   "title": "Self-reported hypoglycemia in adult diabetic patients in East Gojjam, Northwest Ethiopia: institution based cross-sectional study.",
+   "year": "2019",
+   "journal": "BMC endocrine disorders",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30580259",
+   "title": "Patient work from a context and time use perspective: a mixed-methods study protocol.",
+   "year": "2018",
+   "journal": "BMJ open",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "30552308",
+   "title": "Hypoglycemic side effects of sulfonylureas and repaglinide in ageing patients - knowledge and self-management.",
+   "year": "2018",
+   "journal": "Journal of physiology and pharmacology : an official journal of the Polish Physiological Society",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30294713",
+   "title": "Development of the Diabetes Injection Device Experience Questionnaire (DID-EQ) and Diabetes Injection Device Preference Questionnaire (DID-PQ).",
+   "year": "2018",
+   "journal": "Journal of patient-reported outcomes",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30214472",
+   "title": "A cross-sectional assessment of diabetes self-management, education and support needs of Syrian refugee patients living with diabetes in Bekaa Valley Lebanon.",
+   "year": "2018",
+   "journal": "Conflict and health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30182736",
+   "title": "Digital Diabetes Data and Artificial Intelligence: A Time for Humility Not Hubris.",
+   "year": "2019",
+   "journal": "Journal of diabetes science and technology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "30120753",
+   "title": "Patients' Perspectives of Oral and Injectable Type 2 Diabetes Medicines, Their Body Weight and Medicine-Taking Behavior in the UK: A Systematic Review and Meta-Ethnography.",
+   "year": "2018",
+   "journal": "Diabetes therapy : research, treatment and education of diabetes and related disorders",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "30027749",
+   "title": "Perceived Usefulness of Continuous Glucose Monitoring Devices at the Workplace: Secondary Analysis of Data From a Qualitative Study.",
+   "year": "2019",
+   "journal": "Journal of diabetes science and technology",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29845932",
+   "title": "Managing with Learning Disability and Diabetes: OK-Diabetes - a case-finding study and feasibility randomised controlled trial.",
+   "year": "2018",
+   "journal": "Health technology assessment (Winchester, England)",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Observational Study",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "29844719",
+   "title": "A qualitative study exploring patients' experiences regarding insulin pump use.",
+   "year": "2018",
+   "journal": "Saudi pharmaceutical journal : SPJ : the official publication of the Saudi Pharmaceutical Society",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29788908",
+   "title": "Perceptions of insulin use in type 2 diabetes in primary care: a thematic synthesis.",
+   "year": "2018",
+   "journal": "BMC family practice",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "29720273",
+   "title": "When insulin degludec enhances quality of life in patients with type 2 diabetes: a qualitative investigation.",
+   "year": "2018",
+   "journal": "Health and quality of life outcomes",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29693546",
+   "title": "Self-management of gestational diabetes among Chinese migrants: A qualitative study.",
+   "year": "2019",
+   "journal": "Women and birth : journal of the Australian College of Midwives",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29657678",
+   "title": "Safety of Sodium-Glucose Cotransporter 2 Inhibitors (SGLT2-I) During the Month of Ramadan in Muslim Patients with Type 2 Diabetes.",
+   "year": "2018",
+   "journal": "Oman medical journal",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29603813",
+   "title": "Enhanced self-monitoring blood glucose in non-insulin-requiring Type 2 diabetes: A qualitative study in primary care.",
+   "year": "2018",
+   "journal": "Journal of clinical nursing",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29555341",
+   "title": "Knowledge Translation to Optimize Adult Inpatient Glycemic Management With Basal Bolus Insulin Therapy and Improve Patient Outcomes.",
+   "year": "2018",
+   "journal": "Canadian journal of diabetes",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29530385",
+   "title": "A qualitative evaluation of a physician-delivered pedometer-based step count prescription strategy with insight from participants and treating physicians.",
+   "year": "2018",
+   "journal": "Diabetes research and clinical practice",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "37184185",
+   "title": "",
+   "year": "2018",
+   "journal": "",
+   "pubtypes": [
+    "Review"
+   ]
+  },
+  {
+   "pmid": "29266453",
+   "title": "Perspectives of patients with non-insulin-treated type 2 diabetes on self-monitoring of blood glucose: A qualitative study.",
+   "year": "2018",
+   "journal": "Journal of clinical nursing",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "29218568",
+   "title": "Peer Education Group Intervention to Reduce Psychological Insulin Resistance: A Pilot Mixed-Method Study in a Chinese Population.",
+   "year": "2018",
+   "journal": "Diabetes therapy : research, treatment and education of diabetes and related disorders",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28875722",
+   "title": "Diabetes injectable therapy: type 2 diabetes management in Danish practice.",
+   "year": "2017",
+   "journal": "Current medical research and opinion",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28616435",
+   "title": "Impact of Pharmacist Intervention on Appropriate Insulin Pen Use in Older Patients with Type 2 Diabetes Mellitus in a Rural Area in Iran.",
+   "year": "2017",
+   "journal": "Journal of research in pharmacy practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28549668",
+   "title": "Adult Patient Perspectives on Care for Type 1 and Type 2 Diabetes Across the Institute of Medicine's 6 Domains of Quality.",
+   "year": "2018",
+   "journal": "Canadian journal of diabetes",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28405339",
+   "title": "Ethiopian patients' perceptions of anti-diabetic medications: implications for diabetes education.",
+   "year": "2017",
+   "journal": "Journal of pharmaceutical policy and practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28327157",
+   "title": "Factors influencing implementation of a patient decision aid in a developing country: an exploratory study.",
+   "year": "2017",
+   "journal": "Implementation science : IS",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28245810",
+   "title": "A mixed-methods needs assessment of adult diabetes mellitus (type II) and hypertension care in Toledo, Belize.",
+   "year": "2017",
+   "journal": "BMC health services research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28138362",
+   "title": "Barriers that practitioners face when initiating insulin therapy in general practice settings and how they can be overcome.",
+   "year": "2017",
+   "journal": "World journal of diabetes",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "28077829",
+   "title": "[Development of a Psychological Insulin Resistance Scale for Korean Patients with Diabetes].",
+   "year": "2016",
+   "journal": "Journal of Korean Academy of Nursing",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27997217",
+   "title": "Investigating Hypoglycemic Confidence in Type 1 and Type 2 Diabetes.",
+   "year": "2017",
+   "journal": "Diabetes technology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "27994961",
+   "title": "Self-reported frequency, severity of, and awareness of hypoglycemia in type 2 diabetes patients in Turkey.",
+   "year": "2016",
+   "journal": "PeerJ",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27810685",
+   "title": "Attitudes towards insulin initiation in type 2 diabetes patients among healthcare providers: A survey research.",
+   "year": "2016",
+   "journal": "Diabetes research and clinical practice",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Observational Study"
+   ]
+  },
+  {
+   "pmid": "27609738",
+   "title": "Development and Usability of REACH: A Tailored Theory-Based Text Messaging Intervention for Disadvantaged Adults With Type 2 Diabetes.",
+   "year": "2016",
+   "journal": "JMIR human factors",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27605456",
+   "title": "Barriers to insulin treatment among Australian Torres Strait Islanders with poorly controlled diabetes.",
+   "year": "2016",
+   "journal": "The Australian journal of rural health",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27505306",
+   "title": "Barriers to and enablers of insulin self-titration in adults with Type 2 diabetes: a qualitative study.",
+   "year": "2017",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27321332",
+   "title": "Principles of self-adjustment of insulin dose in people with diabetes type 2 and flexible insulin therapy.",
+   "year": "2016",
+   "journal": "Diabetes research and clinical practice",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27215757",
+   "title": "Understanding Experiences of Diabetes Medications Among African Americans Living With Type 2 Diabetes.",
+   "year": "2017",
+   "journal": "Journal of transcultural nursing : official journal of the Transcultural Nursing Society",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27174496",
+   "title": "The Usability of Diabetes MAP: A Web-delivered Intervention for Improving Medication Adherence.",
+   "year": "2016",
+   "journal": "JMIR human factors",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "27114388",
+   "title": "The impact of insulin therapy and attitudes towards insulin intensification among adults with type 2 diabetes: A qualitative study.",
+   "year": "2016",
+   "journal": "Journal of diabetes and its complications",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26823263",
+   "title": "Barriers to effective management of type 2 diabetes in primary care: qualitative systematic review.",
+   "year": "2016",
+   "journal": "The British journal of general practice : the journal of the Royal College of General Practitioners",
+   "pubtypes": [
+    "Journal Article",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "26801908",
+   "title": "Estimating the impact of changes in HbA1c, body weight and insulin injection regimen on health related quality-of-life: a time trade off study.",
+   "year": "2016",
+   "journal": "Health and quality of life outcomes",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "26242670",
+   "title": "The poor children of the poor: Coping with diabetes control in a resource-poor setting.",
+   "year": "2015",
+   "journal": "South African medical journal = Suid-Afrikaanse tydskrif vir geneeskunde",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "26147376",
+   "title": "Barriers and facilitators to starting insulin in patients with type 2 diabetes: a systematic review.",
+   "year": "2015",
+   "journal": "International journal of clinical practice",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Systematic Review"
+   ]
+  },
+  {
+   "pmid": "26118939",
+   "title": "Position Statement on the management of continuous subcutaneous insulin infusion (CSII): The Italian Lazio experience.",
+   "year": "2016",
+   "journal": "Journal of diabetes",
+   "pubtypes": [
+    "Journal Article",
+    "Practice Guideline"
+   ]
+  },
+  {
+   "pmid": "25688345",
+   "title": "Optimizing care and outcomes for people with type 2 diabetes - lessons from a translational research program on insulin initiation in general practice.",
+   "year": "2014",
+   "journal": "Frontiers in medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "25584361",
+   "title": "Role of Self-Efficacy in the Relationship Between Patient-Provider Relationships and Psychological Insulin Resistance Among Patients with Type 2 Diabetes.",
+   "year": "2014",
+   "journal": "Journal of contemporary diabetes research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25551737",
+   "title": "Current perspectives on psychological insulin resistance: primary care provider and patient views.",
+   "year": "2015",
+   "journal": "Diabetes technology & therapeutics",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25439281",
+   "title": "Concerns and perceptions about necessity in relation to insulin therapy in an ethnically diverse UK population with Type 2 diabetes: a qualitative study focusing mainly on people of South Asian origin.",
+   "year": "2015",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Case Reports",
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25421525",
+   "title": "A cohort study of gestational diabetes mellitus and complimentary qualitative research: background, aims and design.",
+   "year": "2014",
+   "journal": "BMC pregnancy and childbirth",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25342711",
+   "title": "Stigma among workers attending a hospital specialist diabetes clinic.",
+   "year": "2015",
+   "journal": "Occupational medicine (Oxford, England)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25340869",
+   "title": "Diabetes patients' experiences with the implementation of insulin therapy and their perceptions of computer-assisted self-management systems for insulin therapy.",
+   "year": "2014",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25213801",
+   "title": "Initial experience and evaluation of reusable insulin pen devices among patients with diabetes in emerging countries.",
+   "year": "2014",
+   "journal": "Diabetes therapy : research, treatment and education of diabetes and related disorders",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "25186101",
+   "title": "Adolescents' views and experiences of treatments for Type 2 diabetes: a qualitative study.",
+   "year": "2015",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "25145469",
+   "title": "Engaging GPs in insulin therapy initiation: a qualitative study evaluating a support program in the Belgian context.",
+   "year": "2014",
+   "journal": "BMC family practice",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24958464",
+   "title": "Barriers to initiating insulin in type 2 diabetes patients: development of a new patient education tool to address myths, misconceptions and clinical realities.",
+   "year": "2014",
+   "journal": "The patient",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24916569",
+   "title": "Information and decision support needs in patients with type 2 diabetes.",
+   "year": "2016",
+   "journal": "Health informatics journal",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24690502",
+   "title": "An interprofessional qualitative study of barriers and potential solutions for the safe use of insulin in the hospital setting.",
+   "year": "2014",
+   "journal": "Canadian journal of diabetes",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24627628",
+   "title": "Barriers and facilitators to self-monitoring of blood glucose in people with type 2 diabetes using insulin: a qualitative study.",
+   "year": "2014",
+   "journal": "Patient preference and adherence",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "24533738",
+   "title": "Erectile dysfunction is a strong predictor of poor quality of life in men with Type 2 diabetes mellitus.",
+   "year": "2014",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Journal Article",
+    "Observational Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24473676",
+   "title": "Stepping up: a nurse-led model of care for insulin initiation for people with type 2 diabetes.",
+   "year": "2014",
+   "journal": "Family practice",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24341962",
+   "title": "Psychological insulin resistance in geriatric patients with diabetes mellitus.",
+   "year": "2014",
+   "journal": "Patient education and counseling",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24164794",
+   "title": "Factors influencing insulin acceptance among type 2 diabetes mellitus patients in a primary care clinic: a qualitative exploration.",
+   "year": "2013",
+   "journal": "BMC family practice",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24146143",
+   "title": "Insulin administration and the impacts of forgetting a dose.",
+   "year": "2014",
+   "journal": "The patient",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "24119213",
+   "title": "Self-monitoring of blood glucose in Black Caribbean and South Asian Canadians with non-insulin treated Type 2 diabetes mellitus: a qualitative study of patients' perspectives.",
+   "year": "2013",
+   "journal": "BMC endocrine disorders",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "23748392",
+   "title": "Understanding barriers to glycaemic control from the patient's perspective.",
+   "year": "2013",
+   "journal": "Journal of primary health care",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "23378747",
+   "title": "What are the barriers faced by patients using insulin? A qualitative study of Malaysian health care professionals' views.",
+   "year": "2013",
+   "journal": "Patient preference and adherence",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22545648",
+   "title": "How can insulin initiation delivery in a dual-sector health system be optimised? A qualitative study on healthcare professionals' views.",
+   "year": "2012",
+   "journal": "BMC public health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22486745",
+   "title": "Insulin initiation and management in people with Type 2 diabetes in an ethnically diverse population: the healthcare provider perspective.",
+   "year": "2012",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22469132",
+   "title": "A qualitative study on healthcare professionals' perceived barriers to insulin initiation in a multi-ethnic population.",
+   "year": "2012",
+   "journal": "BMC family practice",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22397638",
+   "title": "Perspectives of patients with type 1 or insulin-treated type 2 diabetes on self-monitoring of blood glucose: a qualitative study.",
+   "year": "2012",
+   "journal": "BMC public health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22357711",
+   "title": "The meaning of insulin to Hispanic immigrants with type 2 diabetes and their families.",
+   "year": "2012",
+   "journal": "The Diabetes educator",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "22313444",
+   "title": "A problem-solving approach to effective insulin injection for patients at either end of the body mass index.",
+   "year": "2012",
+   "journal": "Population health management",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22222513",
+   "title": "Getting under the skin of clinical inertia in insulin initiation: the Translating Research Into Action for Diabetes (TRIAD) Insulin Starts Project.",
+   "year": "2012",
+   "journal": "The Diabetes educator",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study"
+   ]
+  },
+  {
+   "pmid": "22173249",
+   "title": "Initiation of insulin for type 2 diabetes mellitus patients: what are the issues? A qualitative study.",
+   "year": "2011",
+   "journal": "Singapore medical journal",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21851643",
+   "title": "Study protocol: a pragmatic randomised controlled trial of a 12-week physical activity and nutritional education program for overweight Aboriginal and Torres Strait Islander women.",
+   "year": "2011",
+   "journal": "BMC public health",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21814661",
+   "title": "Insulin in general practice - barriers and enablers for timely initiation.",
+   "year": "2011",
+   "journal": "Australian family physician",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21771714",
+   "title": "3D visualization as a communicative aid in pharmaceutical advice-giving over distance.",
+   "year": "2011",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21601482",
+   "title": "Depression among adults with diabetes in Jordan: risk factors and relationship to blood sugar control.",
+   "year": "2011",
+   "journal": "Journal of diabetes and its complications",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21569337",
+   "title": "International challenges without borders: a descriptive study of family physicians' educational needs in the field of diabetes.",
+   "year": "2011",
+   "journal": "BMC family practice",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21542916",
+   "title": "Challenges of maintaining research protocol fidelity in a clinical care setting: a qualitative study of the experiences and views of patients and staff participating in a randomized controlled trial.",
+   "year": "2011",
+   "journal": "Trials",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21480965",
+   "title": "Participants' experiences of intensifying insulin therapy during the Treating to Target in Type 2 Diabetes (4-T) trial: qualitative interview study.",
+   "year": "2011",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Journal Article",
+    "Multicenter Study",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21478041",
+   "title": "Ramadan fasting with diabetes: an interview study of inpatients' and general practitioners' attitudes in the South of France.",
+   "year": "2011",
+   "journal": "Diabetes & metabolism",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21084529",
+   "title": "Age differences in hopelessness and toe pain in persons with insulin-dependent and non-insulin-dependent diabetes mellitus.",
+   "year": "2010",
+   "journal": "Journal of the American Podiatric Medical Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "21060125",
+   "title": "Efficacy and harms of the hypoglycemic agent pramlintide in diabetes mellitus.",
+   "year": "2010",
+   "journal": "Annals of family medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "20965801",
+   "title": "Management of infections in type 2 diabetes from the patient's perspective: a qualitative approach.",
+   "year": "2011",
+   "journal": "Primary care diabetes",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20592050",
+   "title": "Initiating insulin as part of the Treating To Target in Type 2 Diabetes (4-T) trial: an interview study of patients' and health professionals' experiences.",
+   "year": "2010",
+   "journal": "Diabetes care",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "20546260",
+   "title": "Barriers in initiating insulin therapy in a South Asian Muslim community.",
+   "year": "2010",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "20435797",
+   "title": "Factors associated with psychological insulin resistance in individuals with type 2 diabetes.",
+   "year": "2010",
+   "journal": "Diabetes care",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "22273275",
+   "title": "Development and Testing of the Insulin Treatment Experience Questionnaire (ITEQ).",
+   "year": "2010",
+   "journal": "The patient",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "20001569",
+   "title": "Management of severe hypoglycaemia: cultural similarities, differences and resource consumption in three European countries.",
+   "year": "2009",
+   "journal": "Journal of medical economics",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "19228402",
+   "title": "Community based yoga classes for type 2 diabetes: an exploratory randomised controlled trial.",
+   "year": "2009",
+   "journal": "BMC health services research",
+   "pubtypes": [
+    "Journal Article",
+    "Randomized Controlled Trial",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "21821504",
+   "title": "A virtual clinic for diabetes self-management: pilot study.",
+   "year": "2009",
+   "journal": "Journal of medical Internet research",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "18682013",
+   "title": "GPs' approach to insulin prescribing in older patients: a qualitative study.",
+   "year": "2008",
+   "journal": "The British journal of general practice : the journal of the Royal College of General Practitioners",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18560802",
+   "title": "A cross-sectional study of the association between persistent organic pollutants and glucose intolerance among Greenland Inuit.",
+   "year": "2008",
+   "journal": "Diabetologia",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18445583",
+   "title": "Routine glutamic acid decarboxylase autoantibody (GADA) testing: patients' perspective.",
+   "year": "2008",
+   "journal": "Family practice",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18426378",
+   "title": "Defining success in diabetes disease management: digging deeper in the data.",
+   "year": "2008",
+   "journal": "Disease management : DM",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "18393965",
+   "title": "Primary care physician beliefs about insulin initiation in patients with type 2 diabetes.",
+   "year": "2008",
+   "journal": "International journal of clinical practice",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "18051928",
+   "title": "Incidence of childhood type I and non-type 1 diabetes mellitus in a diverse population: the Chicago Childhood Diabetes Registry, 1994 to 2003.",
+   "year": "2007",
+   "journal": "Journal of pediatric endocrinology & metabolism : JPEM",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "18000317",
+   "title": "\"I take what I think works for me\": a qualitative study to explore patient perception of diabetes treatment benefits and risks.",
+   "year": "2007",
+   "journal": "The Canadian journal of clinical pharmacology = Journal canadien de pharmacologie clinique",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17977482",
+   "title": "Barriers to the initiation of, and persistence with, insulin therapy.",
+   "year": "2007",
+   "journal": "Current medical research and opinion",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17617288",
+   "title": "Comparison of usability and patient preference for the new disposable insulin device Solostar versus Flexpen, lilly disposable pen, and a prototype pen: an open-label study.",
+   "year": "2007",
+   "journal": "Clinical therapeutics",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17616351",
+   "title": "Transition to insulin in Type 2 diabetes: family physicians' misconception of patients' fears contributes to existing barriers.",
+   "year": "2007",
+   "journal": "Journal of diabetes and its complications",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17598895",
+   "title": "Telecare motivational interviewing for diabetes patient education and support: a randomised controlled trial based in primary care comparing nurse and peer supporter delivery.",
+   "year": "2007",
+   "journal": "Trials",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17550671",
+   "title": "Health beliefs of African-Caribbean people with type 2 diabetes: a qualitative study.",
+   "year": "2007",
+   "journal": "The British journal of general practice : the journal of the Royal College of General Practitioners",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17486806",
+   "title": "Starting patients on insulin therapy: diabetes nurse specialist views.",
+   "year": "2007",
+   "journal": "Nursing standard (Royal College of Nursing (Great Britain) : 1987)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17348595",
+   "title": "Experiences of patients with type 2 diabetes starting insulin therapy.",
+   "year": "2007",
+   "journal": "Nursing standard (Royal College of Nursing (Great Britain) : 1987)",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "17337497",
+   "title": "How doctors choose medications to treat type 2 diabetes: a national survey of specialists and academic generalists.",
+   "year": "2007",
+   "journal": "Diabetes care",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "17300478",
+   "title": "Sociodemographic factors and self-management practices related to type 2 diabetes among Hispanics and non-Hispanic whites in a rural setting.",
+   "year": "2007",
+   "journal": "The Journal of rural health : official journal of the American Rural Health Association and the National Rural Health Care Association",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16872541",
+   "title": "The use of insulin declines as patients live farther from their source of care: results of a survey of adults with type 2 diabetes.",
+   "year": "2006",
+   "journal": "BMC public health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, N.I.H., Extramural"
+   ]
+  },
+  {
+   "pmid": "16772656",
+   "title": "Understanding diabetes medications from the perspective of patients with type 2 diabetes: prerequisite to medication concordance.",
+   "year": "2006",
+   "journal": "The Diabetes educator",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "16341336",
+   "title": "Barriers to initiating insulin therapy in patients with type 2 diabetes mellitus in public-sector primary health care centres in Cape Town.",
+   "year": "2005",
+   "journal": "South African medical journal = Suid-Afrikaanse tydskrif vir geneeskunde",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "16019569",
+   "title": "Diagnostic controversy: gestational diabetes and the meaning of risk for pima Indian women.",
+   "year": "2005",
+   "journal": "Medical anthropology",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, Non-P.H.S.",
+    "Research Support, U.S. Gov't, P.H.S.",
+    "Review"
+   ]
+  },
+  {
+   "pmid": "15317613",
+   "title": "'Urine testing is a waste of time': newly diagnosed Type 2 diabetes patients' perceptions of self-monitoring.",
+   "year": "2004",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "15220018",
+   "title": "Metabolic effects of pioglitazone and rosiglitazone in patients with diabetes and metabolic syndrome treated with glimepiride: a twelve-month, multicenter, double-blind, randomized, controlled, parallel-group trial.",
+   "year": "2004",
+   "journal": "Clinical therapeutics",
+   "pubtypes": [
+    "Clinical Trial",
+    "Comparative Study",
+    "Journal Article",
+    "Multicenter Study",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "15000441",
+   "title": "Closing the gap between literature and practice: evaluation of a teaching programme (in the absence of a structured treatment) on both type 1 and type 2 diabetes.",
+   "year": "2003",
+   "journal": "Diabetes, nutrition & metabolism",
+   "pubtypes": [
+    "Evaluation Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "12752869",
+   "title": "Converting to insulin in primary care: an exploration of the needs of practice nurses.",
+   "year": "2003",
+   "journal": "Journal of advanced nursing",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "12242318",
+   "title": "Diabetes mellitus as a risk factor for hip fracture in mexican american older adults.",
+   "year": "2002",
+   "journal": "The journals of gerontology. Series A, Biological sciences and medical sciences",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "12133154",
+   "title": "Health-related quality of life in urban African Americans with type 2 diabetes.",
+   "year": "2002",
+   "journal": "Journal of general internal medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "11813736",
+   "title": "Barriers to non-insulin dependent diabetes mellitus (NIDDM) self-care practices among older women.",
+   "year": "2001",
+   "journal": "Journal of aging and health",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "11128624",
+   "title": "Interpreting diabetes mellitus: differences between patient and provider models of disease and their implications for clinical practice.",
+   "year": "2000",
+   "journal": "Culture, medicine and psychiatry",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "10735480",
+   "title": "Herbs, prayer, and insulin. Use of medical and alternative treatments by a group of Mexican American diabetes patients.",
+   "year": "2000",
+   "journal": "The Journal of family practice",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "9932317",
+   "title": "Neuropathy in non-insulin-dependent diabetes mellitus. The significance of symptoms.",
+   "year": "1998",
+   "journal": "Scandinavian journal of primary health care",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "9579748",
+   "title": "Porque me tocó a mi? Mexican American diabetes patients' causal stories and their relationship to treatment behaviors.",
+   "year": "1998",
+   "journal": "Social science & medicine (1982)",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "9096980",
+   "title": "Personal-model beliefs and social-environmental barriers related to diabetes self-management.",
+   "year": "1997",
+   "journal": "Diabetes care",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "9051375",
+   "title": "NIDDM patients' fears and hopes about insulin therapy. The basis of patient reluctance.",
+   "year": "1997",
+   "journal": "Diabetes care",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, Non-P.H.S.",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "8956833",
+   "title": "Haida perspectives on living with non-insulin-dependent diabetes.",
+   "year": "1996",
+   "journal": "CMAJ : Canadian Medical Association journal = journal de l'Association medicale canadienne",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "8936127",
+   "title": "Diabetes in urban African Americans. V. Use of discussion groups to identify barriers to dietary therapy among low-income individuals with non-insulin-dependent diabetes mellitus.",
+   "year": "1996",
+   "journal": "The Diabetes educator",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "8641116",
+   "title": "Non-insulin-dependent diabetes and 11-year mortality in Asian Indian and Melanesian Fijians.",
+   "year": "1996",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "8871895",
+   "title": "Decision support for insulin regime prescription based on a neural-network approach.",
+   "year": "1996",
+   "journal": "Medical informatics = Medecine et informatique",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "7851265",
+   "title": "Utilizing content analysis of counseling sessions to identify psychosocial stressors among patients with type II diabetes.",
+   "year": "1994",
+   "journal": "The Diabetes educator",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "7956633",
+   "title": "Use of focus groups to explore nutrition practices and health beliefs of urban Caribbean Latinos with diabetes.",
+   "year": "1994",
+   "journal": "Diabetes care",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "7826547",
+   "title": "The lived experience of Native Americans with diabetes within a transcultural nursing perspective.",
+   "year": "1994",
+   "journal": "Journal of transcultural nursing : official journal of the Transcultural Nursing Society",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "8375241",
+   "title": "Self-monitoring of blood glucose by adults with diabetes in the United States population.",
+   "year": "1993",
+   "journal": "Diabetes care",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "8485954",
+   "title": "Frequency and symptoms of hypoglycaemia experienced by patients with type 2 diabetes treated with insulin.",
+   "year": "1993",
+   "journal": "Diabetic medicine : a journal of the British Diabetic Association",
+   "pubtypes": [
+    "Comparative Study",
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "1419260",
+   "title": "General practice based diabetes surveillance: the views of patients.",
+   "year": "1992",
+   "journal": "The British journal of general practice : the journal of the Royal College of General Practitioners",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "2038046",
+   "title": "Problem solving and diabetes self-care.",
+   "year": "1991",
+   "journal": "Journal of behavioral medicine",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "2209319",
+   "title": "Effects of childbearing on glucose tolerance and NIDDM prevalence.",
+   "year": "1990",
+   "journal": "Diabetes care",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "2556559",
+   "title": "Diabetes and its care--what do patients expect?",
+   "year": "1989",
+   "journal": "The Journal of the Royal College of General Practitioners",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't"
+   ]
+  },
+  {
+   "pmid": "2649340",
+   "title": "The influence of different insulin regimens on quality of life and metabolic control in insulin-dependent diabetics.",
+   "year": "1989",
+   "journal": "Diabetes research and clinical practice",
+   "pubtypes": [
+    "Clinical Trial",
+    "Comparative Study",
+    "Journal Article",
+    "Randomized Controlled Trial"
+   ]
+  },
+  {
+   "pmid": "2910689",
+   "title": "Experiences with diabetes mellitus and implantable insulin pump therapy: a summary of interview data.",
+   "year": "1989",
+   "journal": "The Diabetes educator",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, Non-U.S. Gov't",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  },
+  {
+   "pmid": "2707221",
+   "title": "Symptom awareness and blood glucose estimation in diabetic adults.",
+   "year": "1989",
+   "journal": "Health psychology : official journal of the Division of Health Psychology, American Psychological Association",
+   "pubtypes": [
+    "Journal Article"
+   ]
+  },
+  {
+   "pmid": "3186479",
+   "title": "Self-regulation in individuals with type II diabetes.",
+   "year": "1988",
+   "journal": "Nursing research",
+   "pubtypes": [
+    "Journal Article",
+    "Research Support, U.S. Gov't, P.H.S."
+   ]
+  }
+ ]
+}
