@@ -357,7 +357,9 @@
     "cong_cu": "tools/check_citation_retraction.py (PubMed: PublicationType + CommentsCorrections RetractionIn); kiểm theo mã DOI bằng app/sources/crossref_retraction.py + app/sources/retraction_watch.py (2026-10-11); 2026-10-14: R1C của run_g0_auto (16 PMID nền) + tools/check_citation_retraction.py (11 PMID bổ sung)",
     "ket_qua": "16/16 PMID nền (2026-10-14) + 11/11 PMID bổ sung (2026-10-14) không phát hiện rút bài/expression of concern theo PubMed; 9/9 DOI trong nước bổ sung 2026-10-11: Crossref không có thông báo rút (updated-by) và Retraction Watch ngoại tuyến không có bản ghi",
     "ngay_bo_sung_20261017": "PMID 34017606, 32244937, 29915440, 28690831: tools/check_citation_retraction.py OK; DOI 10.55401/y8fmp830, 10.52163/yhc.v67i7.5934, 10.52163/yhc.v67i2.4385, 10.54436/jns.2024.03.766: crossref_retraction «ok» + Retraction Watch ngoại tuyến không có bản ghi — chưa thấy tín hiệu rút",
-    "ngay_bo_sung_20261017_khong_loc": "PMID 42582692, 33116425, 16162387, 22548036: tools/check_citation_retraction.py OK — chưa thấy tín hiệu rút; PMID 22961881: OK"
+    "ngay_bo_sung_20261017_khong_loc": "PMID 42582692, 33116425, 16162387, 22548036: tools/check_citation_retraction.py OK — chưa thấy tín hiệu rút; PMID 22961881: OK",
+    "pmid_da_kiem": ["34017606", "32244937", "29915440", "28690831", "42582692", "33116425", "16162387", "22548036", "22961881"],
+    "doi_da_kiem": ["10.55401/y8fmp830", "10.52163/yhc.v67i7.5934", "10.52163/yhc.v67i2.4385", "10.54436/jns.2024.03.766"]
   },
   "disclaimer": "Cần bác sĩ kiểm chứng. ĐỀ XUẤT của agent — PI đọc và tự chốt novelty_justification ở gate_params.G0.",
   "sang_loc_khong_loc": [
