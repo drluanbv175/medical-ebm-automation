@@ -212,3 +212,21 @@ def test_phan_8_tich_theo_phep_kiem_va_nhom_d():
     assert "☐ Không cần  ☐ Cần -> ☑ Đã ký" in ra      # D1 cần và đã ký
     assert "☑ Không có tài trợ  ☐ Đã duyệt" in ra     # D3 không cần
     assert G9A.tich_phan_8(to, {}, rd) == to          # không chấm được ⇒ không tích bừa
+
+
+# ── 8. Xuất Word đề cương: văn bản đã có bìa ⇒ không thêm bìa máy (hai bìa) ─────────────────────────────────────────
+def test_xuat_word_khong_hai_bia(tmp_path):
+    import docx as D  # noqa: PLC0415
+    import sinh_de_cuong_nop_hoi_dong as SDC  # noqa: PLC0415
+
+    class _N:
+        meta = {"title": "Đề tài thử", "org_lines": ["BỆNH VIỆN THỬ"]}
+
+        @staticmethod
+        def s(*_a):
+            return ""
+
+    van = "# ĐỀ CƯƠNG NGHIÊN CỨU KHOA HỌC\n\n## ĐỀ TÀI THỬ\n\n# 1. ĐẶT VẤN ĐỀ\n\nNội dung.\n"
+    p = SDC.xuat_word(tmp_path, "S", van, _N())
+    chu = [x.text.strip().upper() for x in D.Document(p).paragraphs if x.text.strip()][:12]
+    assert sum("ĐỀ CƯƠNG NGHIÊN CỨU KHOA HỌC" in c for c in chu) == 1 and "MỤC LỤC" not in chu

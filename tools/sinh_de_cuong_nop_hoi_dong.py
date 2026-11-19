@@ -1922,6 +1922,13 @@ def xuat_word(out_dir: Path, study: str, van: str, n: Optional[Nguon] = None) ->
         import md2docx_vn  # noqa: PLC0415
     except ImportError:
         return None
+    # 19/11/2026: văn bản đã tự mang bìa/tiêu đề («# ĐỀ CƯƠNG NGHIÊN CỨU KHOA HỌC», dòng cơ quan chủ quản) ⇒ KHÔNG thêm
+    # trang bìa máy — bản cũ thêm cả bìa máy lẫn mục lục tự động TRƯỚC bìa của chính văn bản (hai bìa; C1a/BTM đều xuất
+    # lại tay không bìa máy để tránh).
+    dau = "\n".join(van.lstrip().splitlines()[:14]).upper()
+    if "ĐỀ CƯƠNG NGHIÊN CỨU" in dau or "BỘ QUỐC PHÒNG" in dau or "BỘ Y TẾ" in dau:
+        md2docx_vn.markdown_to_docx(van, docx_p)
+        return str(docx_p)
     tieu_de = lam_sach(n.meta.get("title") or n.s("title"))
     chu_nhiem = lam_sach((n.meta.get("administrative") or {}).get("principal_investigator"))
     trang_bia = {"org_lines": [lam_sach(x) for x in (n.meta.get("org_lines") or []) if _co(x)],
