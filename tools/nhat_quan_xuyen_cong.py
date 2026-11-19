@@ -1485,10 +1485,17 @@ def _hom_nay() -> date:
 def _da_kiem_rut_bai(out_dir: Path, study: str) -> Tuple[Dict[str, Optional[str]], Dict[str, str]]:
     """({khoá «pmid:/doi:» → ngày kiểm GẦN NHẤT có bản ghi theo TỪNG định danh}, {khoá → trạng thái DƯƠNG}).
 
-    Nguồn: `KIEM_RUT_BAI_TRICH_DAN_<mã>.json` (tools/kiem_rut_bai_trich_dan.py — chỉ mã có phán quyết), biên nhận A12
-    (`pmids_checked`) + bảng DOI của báo cáo A12, khoá `rut_bai` của tổng hợp G0 (chỉ mã được NÊU TÊN — câu «56 PMID
-    đã kiểm» không đối chiếu được từng mã), `G0_checkpoint.pmids_verified` (bước R1C của G0)."""
+    Nguồn — CHỈ bản ghi CÓ CẤU TRÚC: `KIEM_RUT_BAI_TRICH_DAN_<mã>.json` (tools/kiem_rut_bai_trich_dan.py — chỉ mã có
+    phán quyết), biên nhận máy A12 (`pmids_checked`), danh sách `rut_bai.pmid_da_kiem`/`doi_da_kiem` của tổng hợp G0,
+    `G0_checkpoint.pmids_verified` (bước R1C của G0).
+
+    19/11/2026 (bác sĩ duyệt): KHÔNG đọc CÂU VĂN nữa — cả khoá `rut_bai` của G0 lẫn báo cáo
+    `A12_CITATION_VERIFICATION_<mã>.md`. Trước đây mọi dãy 7–8 chữ số trong `rut_bai` và mọi «PMID x»/DOI trong báo cáo
+    A12 (kể cả bảng đối chiếu NỘI DUNG, câu «chưa kiểm được», ngày viết liền «20261017») đều tính là «đã kiểm rút bài»
+    ⇒ báo xanh giả về an toàn. DOI chỉ có trong báo cáo A12 nay phải được kiểm bằng
+    `tools/kiem_rut_bai_trich_dan.py --study <mã> --ghi` (Crossref `updated-by` + Retraction Watch theo DOI)."""
     import danh_muc_trich_dan as DMT  # noqa: PLC0415
+    import g0_tong_hop as GT  # noqa: PLC0415
     import kiem_rut_bai_trich_dan as KRB  # noqa: PLC0415
 
     ngay: Dict[str, Optional[str]] = {}
@@ -1501,11 +1508,10 @@ def _da_kiem_rut_bai(out_dir: Path, study: str) -> Tuple[Dict[str, Optional[str]
     rec = _doc_json(out_dir / "A12_RETRACTION_RECEIPT.json")
     luc_a12 = str(rec.get("checked_at_utc") or "")[:10] or None
     _them({f"pmid:{str(p).strip()}" for p in rec.get("pmids_checked") or []}, luc_a12)
-    _them(DMT.dinh_danh(_doc_text(out_dir / f"A12_CITATION_VERIFICATION_{study}.md")), luc_a12)
-    rb = _doc_json(out_dir / f"G0_TONG_HOP_BANG_CHUNG_{study}.json").get("rut_bai")
+    rb =_doc_json(out_dir / f"G0_TONG_HOP_BANG_CHUNG_{study}.json").get("rut_bai")
     if isinstance(rb, dict):
-        chu = json.dumps(rb, ensure_ascii=False)
-        _them(DMT.dinh_danh(chu) | {f"pmid:{p}" for p in re.findall(r"(?<![\d./-])(\d{7,8})(?![\d./-])", chu)},
+        pm, do = GT.ma_da_kiem_rut_bai(rb)
+        _them(set().union(*(DMT.khoa_cua({"pmid": p}) for p in pm), *(DMT.khoa_cua({"doi": d}) for d in do)),
               str(rb.get("ngay") or "")[:10] or None)
     cp0 = _doc_json(out_dir / "G0_checkpoint.json")
     _them({f"pmid:{str(p).strip()}" for p in cp0.get("pmids_verified") or []},

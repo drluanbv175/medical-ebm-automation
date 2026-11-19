@@ -46,6 +46,8 @@ def _sach(d: Path) -> None:
     _ghi(d, DC, _de_cuong("Mở đầu [1]. Tiếp [2, 3]. Lại [1].", [R1, R2, R3]))
     _ghi(d, "A12_RETRACTION_RECEIPT.json", {"pmids_checked": ["11111111"], "checked_at_utc": "2026-11-10T00:00:00"})
     _ghi(d, f"A12_CITATION_VERIFICATION_{S}.md", "| 10.1000/hai | ✅ tồn tại, không rút |\n")
+    # 19/11/2026: DOI phải có bản ghi kiểm THEO TỪNG MÃ (câu văn báo cáo A12 không còn tính là đã kiểm)
+    KRB.ghi(d, S, {"doi:10.1000/hai": {"status": "ok"}}, luc="2026-11-10T00:00:00+00:00")
 
 
 def _truc(d: Path, meta: dict | None = None):
@@ -105,9 +107,23 @@ def test_trung_dinh_danh(tmp_path, monkeypatch):
 def test_muc_chua_kiem_rut_bai_la_lech_mem(tmp_path, monkeypatch):
     _hom_nay(monkeypatch)
     _sach(tmp_path)
-    (tmp_path / f"A12_CITATION_VERIFICATION_{S}.md").unlink()
+    (tmp_path / KRB.TEP.format(study=S)).unlink()
     k = _truc(tmp_path)
     assert k["muc"] == NQ.MUC_LECH_MEM and "chưa có bản ghi kiểm rút bài" in k["ghi_chu"] and "(số [2])" in k["ghi_chu"]
+
+
+def test_cau_van_bao_cao_a12_khong_phai_ban_ghi_kiem_rut_bai(tmp_path, monkeypatch):
+    # 19/11/2026 (bác sĩ duyệt): mọi «PMID x»/DOI trong báo cáo A12 từng tính là đã kiểm — kể cả câu «chưa kiểm được»
+    # và bảng đối chiếu NỘI DUNG; nay chỉ biên nhận máy + tệp kiểm theo từng mã mới tính
+    _hom_nay(monkeypatch)
+    _sach(tmp_path)
+    (tmp_path / KRB.TEP.format(study=S)).unlink()
+    _ghi(tmp_path, f"A12_CITATION_VERIFICATION_{S}.md",
+         "| 10.1000/hai | CHƯA kiểm được rút bài (Crossref lỗi) |\n| PMID 22222222 | đối chiếu nội dung: khớp |\n")
+    r4 = "Tác giả D. 2019. PMID: 22222222."
+    _ghi(tmp_path, DC, _de_cuong("Mở đầu [1]. Tiếp [2, 3]. Thêm [4].", [R1, R2, R3, r4]))
+    k = _truc(tmp_path)
+    assert "chưa có bản ghi kiểm rút bài" in k["ghi_chu"] and "(số [2, 4])" in k["ghi_chu"]
 
 
 def test_ban_ghi_rut_bai_qua_30_ngay_la_can_xem_va_tep_moi_lam_tuoi(tmp_path, monkeypatch):
@@ -123,7 +139,6 @@ def test_ban_ghi_rut_bai_qua_30_ngay_la_can_xem_va_tep_moi_lam_tuoi(tmp_path, mo
 def test_ma_khong_ket_luan_khong_tinh_la_da_kiem(tmp_path, monkeypatch):
     _hom_nay(monkeypatch)
     _sach(tmp_path)
-    (tmp_path / f"A12_CITATION_VERIFICATION_{S}.md").unlink()
     KRB.ghi(tmp_path, S, {"doi:10.1000/hai": {"status": "unknown_fetch_error"}}, luc="2026-11-14T00:00:00+00:00")
     assert _truc(tmp_path)["muc"] == NQ.MUC_LECH_MEM  # «không biết» KHÔNG bao giờ là «đã kiểm»
 

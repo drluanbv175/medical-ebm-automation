@@ -86,8 +86,8 @@ def test_xep_lien_quan_mot_khoi_thieu_la_khong_lien_quan():
 
 
 def test_rut_bai_khong_liet_ke_pmid_chua_kiem(tmp_path):
-    """Bộ đối chiếu xuyên cổng coi mọi PMID trong `rut_bai` là ĐÃ kiểm ⇒ PMID chưa kiểm không được xuất hiện; không
-    bao giờ ghi «chưa bị rút»."""
+    """PMID chưa kiểm không được xuất hiện trong `rut_bai` (kể cả danh sách `pmid_da_kiem` mà bộ đối chiếu xuyên cổng
+    tin); không bao giờ ghi «chưa bị rút»."""
     kho = tmp_path / "a12.json"
     kho.write_text(json.dumps({"retraction": {"11111111": {"status": "ok"},
                                               "22222222": {"status": "retracted"}}}), encoding="utf-8", newline="\n")
@@ -95,8 +95,9 @@ def test_rut_bai_khong_liet_ke_pmid_chua_kiem(tmp_path):
     assert "33333333" not in json.dumps(rb)
     assert "22222222" in rb["ket_qua"] and "1 PMID còn lại chưa kiểm" in rb["ket_qua"]
     assert "chưa bị rút" not in rb["ket_qua"]
+    assert rb["pmid_da_kiem"] == ["11111111", "22222222"]
     rb0 = VB._rut_bai(["33333333"], None, HOM_NAY)
-    assert "0/1" in rb0["ket_qua"] and "33333333" not in json.dumps(rb0)
+    assert "0/1" in rb0["ket_qua"] and "33333333" not in json.dumps(rb0) and rb0["pmid_da_kiem"] == []
 
 
 # ── G0-T4: khoảng trống ──────────────────────────────────────────────────────────────────────────────────────────

@@ -87,6 +87,40 @@ def _ngay_hop_le(v: Any) -> bool:
     return d <= date.today()
 
 
+def ma_da_kiem_rut_bai(rb: Any) -> Tuple[List[str], List[str]]:
+    """(PMID, DOI) mà công cụ ĐÃ kiểm rút bài theo danh sách CÓ CẤU TRÚC `rut_bai.pmid_da_kiem` / `doi_da_kiem`.
+
+    19/11/2026 (bác sĩ duyệt): bộ đối chiếu xuyên cổng trước đây đọc CÂU VĂN tự do của `rut_bai` và coi mọi dãy 7–8
+    chữ số là «PMID đã kiểm» — câu «PMID x chưa kiểm được» cũng thành đã kiểm (báo xanh giả về an toàn). Nay chỉ tin
+    danh sách mã; câu văn chỉ để người đọc. Mục không phải chuỗi đúng dạng bị bỏ (bộ kiểm báo lỗi riêng)."""
+    if not isinstance(rb, dict):
+        return [], []
+    pm = rb.get("pmid_da_kiem") if isinstance(rb.get("pmid_da_kiem"), list) else []
+    do = rb.get("doi_da_kiem") if isinstance(rb.get("doi_da_kiem"), list) else []
+    return ([x.strip() for x in pm if isinstance(x, str) and _PMID.match(x.strip())],
+            [x.strip() for x in do if isinstance(x, str) and _DOI.match(x.strip())])
+
+
+def _kiem_ma_da_kiem(rb: Dict[str, Any], nhan: str, loi: List[str]) -> None:
+    """`pmid_da_kiem` BẮT BUỘC (danh sách mã, rỗng nếu chưa kiểm mã nào); `doi_da_kiem` tuỳ chọn — đúng dạng, không
+    trùng."""
+    for khoa, mau, bat_buoc, dang in (("pmid_da_kiem", _PMID, True, "6–9 chữ số"),
+                                      ("doi_da_kiem", _DOI, False, "10.xxxx/…")):
+        if khoa not in rb and not bat_buoc:
+            continue
+        ds = rb.get(khoa)
+        if not isinstance(ds, list):
+            loi.append(f"{nhan}: «rut_bai.{khoa}» cần DANH SÁCH mã mà công cụ đã kiểm rút bài (rỗng nếu chưa kiểm mã "
+                       "nào) — bộ đối chiếu xuyên cổng chỉ tin danh sách này, không đọc câu văn của «ket_qua»")
+            continue
+        sai = [str(x) for x in ds if not (isinstance(x, str) and mau.match(x.strip()))]
+        if sai:
+            loi.append(f"{nhan}: «rut_bai.{khoa}» có mục sai dạng ({dang}): {', '.join(sai[:5])}")
+        tr = sorted({x for x in ds if isinstance(x, str) and ds.count(x) > 1})
+        if tr:
+            loi.append(f"{nhan}: «rut_bai.{khoa}» trùng mã: {', '.join(tr[:5])}")
+
+
 def doc(out_dir: Path, mau: str, study: str) -> Tuple[Optional[Dict[str, Any]], Optional[str]]:
     """(dữ liệu, lỗi đọc). Tệp vắng ⇒ (None, None) — vắng không phải lỗi CẤU TRÚC (bảng trách nhiệm báo «thiếu đầu
     ra» riêng); tệp có mà hỏng ⇒ (None, «lỗi»)."""
@@ -280,8 +314,10 @@ def kiem_tong_hop(du_lieu: Any, all_pmids: Iterable[Any], khong_loc: Optional[Di
     rb = du_lieu.get("rut_bai")
     if not isinstance(rb, dict) or not _ngay_hop_le(rb.get("ngay")) or not _chuoi(rb.get("cong_cu")) \
             or not _chuoi(rb.get("ket_qua")):
-        loi.append(f"{nhan}: «rut_bai» cần {{ngay ISO, cong_cu, ket_qua}} — không kiểm được thì ghi «chưa kiểm», "
-                   "TUYỆT ĐỐI không ghi «chưa bị rút»")
+        loi.append(f"{nhan}: «rut_bai» cần {{ngay ISO, cong_cu, ket_qua, pmid_da_kiem[]}} — không kiểm được thì ghi "
+                   "«chưa kiểm», TUYỆT ĐỐI không ghi «chưa bị rút»")
+    if isinstance(rb, dict):
+        _kiem_ma_da_kiem(rb, nhan, loi)
     _quet_pii(nhan, du_lieu, loi)
     return loi
 
