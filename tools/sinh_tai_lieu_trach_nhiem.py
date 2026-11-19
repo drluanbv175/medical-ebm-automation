@@ -15,7 +15,7 @@ Lệnh:
   python3 tools/sinh_tai_lieu_trach_nhiem.py [--agents-dir DIR]        # KIỂM (mặc định): mã 1 nếu tài liệu lệch
   python3 tools/sinh_tai_lieu_trach_nhiem.py --ghi [--agents-dir DIR]  # ghi lại các khối
 Nguồn biên tập agent là repo GỐC: chạy `--ghi --agents-dir <gốc>/.claude/agents`, rồi chép bản y hệt sang
-`.claude/agents/` của repo này, sinh lại mirror (`tools/sinh_mirror_codex.py --ghi`) và manifest runtime.
+`.claude/agents/` của repo này, và sinh lại manifest runtime (mirror Codex gỡ 19/11/2026).
 Mã thoát: 0 khớp/đã ghi · 1 lệch (chế độ kiểm) · 2 thiếu tệp agent.
 """
 from __future__ import annotations

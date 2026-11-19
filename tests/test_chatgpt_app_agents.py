@@ -197,8 +197,7 @@ def test_synchronize_redacts_pii_like_subprocess_output(monkeypatch, tmp_path: P
     root = tmp_path  # synchronize() dùng root = project_root.parent
     for name in (
         "tools/enforce_agent_guardrails.py",
-        "tools/sync_agents_to_codex.py",
-        "tools/check_claude_codex_sync_health.py",
+        "tools/kiem_suc_khoe_agent.py",
     ):
         script = root / name
         script.parent.mkdir(parents=True, exist_ok=True)
@@ -232,8 +231,7 @@ def test_synchronize_handles_subprocess_timeout_without_leaking_local_paths(
     root = tmp_path
     for name in (
         "tools/enforce_agent_guardrails.py",
-        "tools/sync_agents_to_codex.py",
-        "tools/check_claude_codex_sync_health.py",
+        "tools/kiem_suc_khoe_agent.py",
     ):
         script = root / name
         script.parent.mkdir(parents=True, exist_ok=True)
@@ -260,8 +258,7 @@ def test_synchronize_handles_missing_python_executable_without_leaking_paths(
     root = tmp_path
     for name in (
         "tools/enforce_agent_guardrails.py",
-        "tools/sync_agents_to_codex.py",
-        "tools/check_claude_codex_sync_health.py",
+        "tools/kiem_suc_khoe_agent.py",
     ):
         script = root / name
         script.parent.mkdir(parents=True, exist_ok=True)

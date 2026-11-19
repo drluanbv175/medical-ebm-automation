@@ -4,7 +4,7 @@
 > Agent thực thi: `tham-dinh-dau-ra.md`. Đồng bộ với `_HIEN-PHAP-LIEM-CHINH.md`, `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`, `_TU-SUA-CHUA-PROTOCOL.md`, `dieu-phoi-lam-sang.md`, `dieu-phoi-nghien-cuu.md`. Cập nhật 2026-07-11 (thêm R1b/R14 vào bảng rubric — trước đó lệch với `tham-dinh-dau-ra.md`).
 
 ## ⚠️ GIỚI HẠN BẢN CHẤT (đọc trước — KHÔNG nói quá)
-- Có hai chế độ: fallback trong prompt vẫn do cùng mô hình/cùng phiên; còn `python tools/run_orchestrator.py ... --execute` chạy generator và `IndependentClinicalGrader` bằng **hai phiên Codex `--ephemeral` tách ngữ cảnh**, sandbox `read-only`, JSON schema fail-closed. Đây vẫn là cùng họ mô hình, không phải hội đồng bác sĩ.
+- Có hai chế độ: fallback trong prompt vẫn do cùng mô hình/cùng phiên; còn nhánh `run_orchestrator.py --execute` (hai phiên Codex tách ngữ cảnh) đã GỠ 19/11/2026 cùng Codex — `IndependentClinicalGrader` nay chỉ chạy với client được tiêm, JSON schema fail-closed. Đây vẫn là cùng họ mô hình, không phải hội đồng bác sĩ.
 - "Độc lập" ở đây nghĩa là **độc lập về VAI** (đổi tư thế sang đối kháng, soi gói như của người khác), KHÔNG phải độc lập về tiến trình. Đây là phòng vệ lớp prompt — giảm sai sót, **không** đảm bảo tuyệt đối.
 - Hiệu lực phụ thuộc: (a) nhạc trưởng thật sự GỌI bước kiểm; (b) mô hình tuân thủ rubric; (c) gói đầu ra được đưa vào kiểm đầy đủ. Nếu một trong ba thiếu → chốt kiểm vô hiệu một phần. Vì vậy rào cứng cuối cùng vẫn là **bác sĩ duyệt (Cổng A/B, cổng G)**.
 - Khi cần chốt mạnh hơn cùng-phiên, dùng đường `--execute`; khi cần độc lập khác-họ/người thật vẫn phải có bác sĩ/hội đồng thẩm định.

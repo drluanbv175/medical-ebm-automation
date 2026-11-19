@@ -45,8 +45,8 @@ if [[ "$AG_RC" -ne 0 ]]; then
 fi
 
 echo "== Step 3/4: audit/sync check (best-effort, không chặn nếu thiếu tool) =="
-if [[ -f ../tools/sync_agents_to_codex.py ]]; then
-  "$PY" ../tools/sync_agents_to_codex.py --check || echo "WARN: sync check non-zero (xem log)"
+if [[ -f ../tools/kiem_suc_khoe_agent.py ]]; then
+  "$PY" ../tools/kiem_suc_khoe_agent.py || echo "WARN: kiem_suc_khoe_agent non-zero (xem log)"
 fi
 
 echo "== Step 4/4: pytest hermetic (network blocked, no API key) =="

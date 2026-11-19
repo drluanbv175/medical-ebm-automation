@@ -197,21 +197,11 @@ class SafeAgentCatalog:
         }
 
     def sync_status(self) -> dict[str, object]:
-        """Đọc trạng thái mirror Claude↔Codex mà không sửa tệp."""
+        """Đọc trạng thái đội agent nguồn mà không sửa tệp (bản sao Codex đã gỡ 19/11/2026)."""
         source_ids = {doc.agent_id for doc in self.agents()}
-        root = self.project_root.parent
-        mirrors: dict[str, dict[str, object]] = {}
-        for relative in (".Codex/agents", ".codex/agents"):
-            folder = root / relative
-            ids = {path.stem for path in folder.glob("*.toml")} if folder.is_dir() else set()
-            mirrors[relative] = {
-                "count": len(ids),
-                "missing": sorted(source_ids - ids),
-                "extra": sorted(ids - source_ids),
-            }
         return {
             "source_count": len(source_ids),
-            "mirrors": mirrors,
+            "codex_mirror": "removed 2026-11-19 (physician no longer uses Codex)",
             "knowledge_live_reload": True,
             "github_auto_push": False,
             "github_note": (
@@ -225,22 +215,19 @@ class SafeAgentCatalog:
 
         Bước đầu (``enforce_agent_guardrails.py``) có thể GHI TRỰC TIẾP lên
         chính file nguồn biên tập ``.claude/agents/*.md`` (chèn khối guardrail
-        nếu thiếu marker), không chỉ tái sinh mirror ``.Codex``/``.codex`` như
-        tên hàm/mô tả tool gợi ý — ghi rõ ở đây để không đánh giá thấp phạm vi
-        thay đổi khi bác sĩ xác nhận đồng bộ.
+        nếu thiếu marker) — ghi rõ ở đây để không đánh giá thấp phạm vi thay đổi
+        khi bác sĩ xác nhận đồng bộ. (Bước sinh/kiểm bản sao Codex gỡ 19/11/2026.)
         """
         if confirmation != SYNC_CONFIRMATION:
             return {
                 "status": "confirmation_required",
                 "required_confirmation": SYNC_CONFIRMATION,
-                "warning": "Only call after the physician explicitly asks to synchronize agent mirrors.",
+                "warning": "Only call after the physician explicitly asks to synchronize the agent system.",
             }
         root = self.project_root.parent
         commands = (
             ("enforce", root / "tools/enforce_agent_guardrails.py", ()),
-            ("sync", root / "tools/sync_agents_to_codex.py", ()),
-            ("check", root / "tools/sync_agents_to_codex.py", ("--check",)),
-            ("health", root / "tools/check_claude_codex_sync_health.py", ()),
+            ("health", root / "tools/kiem_suc_khoe_agent.py", ()),
         )
         results: list[dict[str, object]] = []
         python = Path.home() / ".ebm-venv/bin/python"

@@ -247,7 +247,7 @@ def _them_vong(bb: dict, so: int) -> dict:
     (lambda b: b["vai"].update(de_xuat="thiet-ke-nghien-cuu"), "điều phối cổng «dieu-phoi-g4»"),
     (lambda b: b["vai"].update(phan_bien="binh-duyet"), "vai.phan_bien phải là"),
     (lambda b: b["vai"].update(trong_tai="dieu-phoi-g4"), "ba agent khác nhau"),
-    (lambda b: b.update(che_do="codex"), "codex:trong-tai-tranh-bien"),
+    (lambda b: b.update(che_do="codex"), "che_do phải thuộc"),   # trọng tài Codex gỡ 19/11/2026
     (lambda b: b.update(che_do="tu_do"), "che_do phải thuộc"),
     (lambda b: b["diem_quyet_dinh"].update(ma="DP-G2-1"), "không thuộc danh mục của G4"),
     (lambda b: _them_vong(_them_vong(b, 2), 3), "số vòng phải trong 1..2"),
@@ -298,11 +298,13 @@ def test_chap_nhan_phan_doi_thi_sua_hoac_chuyen_bac_si_duoc_ghi(de_tai, ket_qua,
     assert p is not None, kq["loi"]
 
 
-def test_che_do_codex_dung_trong_tai_khac_ho_mo_hinh(de_tai):
+def test_che_do_codex_da_go_khong_ghi_duoc(de_tai):
+    """Trọng tài Codex gỡ 19/11/2026 (bác sĩ không còn dùng Codex): biên bản che_do=codex bị từ chối, không ghi."""
     bb = _tranh_bien()
     bb["che_do"] = "codex"
-    bb["vai"]["trong_tai"] = bb["phan_quyet"]["trong_tai"] = HD.TRONG_TAI_CODEX
-    assert _ghi(de_tai, bb)[0] is not None
+    bb["vai"]["trong_tai"] = bb["phan_quyet"]["trong_tai"] = "codex:trong-tai-tranh-bien"
+    assert _ghi(de_tai, bb)[0] is None
+    assert not hasattr(HD, "TRONG_TAI_CODEX")
 
 
 # ── Tóm tắt theo cổng (tư vấn) ───────────────────────────────────────────────────────────────────────────────────────

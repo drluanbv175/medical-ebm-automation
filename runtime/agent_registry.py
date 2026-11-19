@@ -79,7 +79,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 07/10/2026 (thu hẹp nhánh tương thích G2 kiểu cũ): 2 agent (dao-duc-dang-ky, dieu-phoi-g2) dạy luật mới — bản cặp
 # y hệt gốc; vẫn 64.
 # 07/10/2026 (trọng tài Codex — tools/trong_tai_codex.py): _HOI-DONG-CONG, dieu-phoi-nghien-cuu, trong-tai-tranh-bien
-# dạy cách chạy chế độ codex — bản cặp y hệt gốc; vẫn 64.
+# dạy cách chạy chế độ codex — bản cặp y hệt gốc; vẫn 64. 19/11/2026: chế độ Codex GỠ (bác sĩ không còn dùng); vẫn 64.
 # 09/10/2026 (G0 chấm lại ≠ dựng lại — hội đồng BD-G0-T1/T2): dieu-phoi-g0 dạy hành vi mới của run_pipeline — bản cặp
 # y hệt gốc; vẫn 64.
 # 09/10/2026 (trách nhiệm cổng — bác sĩ giao điều phối cổng chịu trách nhiệm kết quả cổng): 11 dieu-phoi-gN thêm mục 4b
@@ -180,7 +180,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 19/11/2026 (chiều): `dao-duc-dang-ky` sửa căn cứ miễn đồng thuận (Helsinki §32 · CIOMS HD10 · TT43 Điều 7 khoản 1
 # điểm b, thay «TT43 Điều 15 · §29» sai) và bỏ cờ «dữ liệu nhận dạng được → ICF bắt buộc» — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "2b50d7494d71057a50badbbeb8607b73b231610da5181ad3d297e2d01a47add7"
+    "65f08aa32b39a5214473b947b4ffa22f0997f1edb3b461877570a4e516e84ad5"
 )
 
 MINIMUM_AGENT_COUNT = 64

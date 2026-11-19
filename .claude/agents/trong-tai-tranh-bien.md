@@ -53,11 +53,7 @@ quyền chọn — không quyết thay, không viết như trạng thái cổng 
  "giai_phap_tot_nhat": {"phuong_an": "…", "can_cu": [{"loai": "tep|tieu_chi|pmid|doi|lenh", "gia_tri": "…"}],
                         "phuong_an_khac": [{"phuong_an": "…", "vi_sao_khong_chon": "…"}]}}
 ```
-Chế độ `codex` (trọng tài khác họ mô hình, phiên Codex tách biệt) dùng cùng nội dung này với tên vai
-`codex:trong-tai-tranh-bien`. Khi BẠN là agent Claude được workflow gọi ở chế độ `codex` (07/10/2026), bạn chỉ CHUYỂN
-TIẾP: KHÔNG tự phán, KHÔNG sửa phán quyết — chạy `python3 tools/trong_tai_codex.py --study <mã> --gate G<N> --tep
-<nháp.json> --json`, trả NGUYÊN VĂN `bien_ban.phan_quyet`; mã thoát 2 (không chạy được) hoặc 3 (phán quyết vi phạm
-luật) ⇒ báo lỗi kèm thông điệp, không phán thay. (Phiên Codex do trình chạy mở mới là trọng tài thật — nó phán trực tiếp.) Khuôn biên bản: `python3 tools/hoi_dong_cong.py mau --loai tranh_bien --gate G<N>`.
+(Chế độ trọng tài Codex `codex` đã GỠ 19/11/2026 — bác sĩ không còn dùng Codex.) Khuôn biên bản: `python3 tools/hoi_dong_cong.py mau --loai tranh_bien --gate G<N>`.
 
 ## BƯỚC TỰ KIỂM — trước khi trả phán quyết
 1. Đã kiểm căn cứ của MỌI luận điểm/phản đối trước khi phán; phán đủ mọi phản đối `P…`, mỗi phán có lý do.

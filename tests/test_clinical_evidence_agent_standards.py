@@ -416,7 +416,7 @@ def test_operational_completeness_policy_closes_technical_scope_without_producti
 
     evidence = " ".join(policy["completeness_evidence"])
     assert "upgrade_verify.py requires 28/28 PASS before technical release" in evidence
-    assert "check_claude_codex_sync_health.py PASS" in evidence
+    assert "kiem_suc_khoe_agent.py PASS" in evidence
     assert "verify_clinical_production_control_plane.py keeps production blocked" in evidence
     assert "doctor_review_packet present before clinical use" in evidence
 

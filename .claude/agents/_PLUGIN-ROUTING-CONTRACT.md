@@ -2,7 +2,7 @@
 
 > Sổ hạ tầng (`_*`), không phải agent. Nguồn máy đọc được:
 > `tools/orchestrator/plugin_ownership_registry.json`. Mọi sửa đổi phải đồng thời qua
-> `python tools/verify_plugin_orchestration.py` và đồng bộ Claude Code ↔ Codex.
+> `python tools/verify_plugin_orchestration.py` và `python tools/kiem_suc_khoe_agent.py`.
 
 ## 1. Bất biến
 
@@ -74,7 +74,7 @@ JSON canonical, sau đó chạy `verify_plugin_orchestration.py`.
 
 **Giới hạn thực thi:** `tools/orchestrator/` nay định tuyến phân cấp tới từng agent/bước, lọc
 worker chuyên biệt bằng cue, kiểm `SKILL.md` thật và ghi `LOCAL_FALLBACK` khi thiếu plugin.
-Nó vẫn không tự gọi LLM bên ngoài nếu runtime không cung cấp executor; trong Claude/Codex,
+Nó vẫn không tự gọi LLM bên ngoài nếu runtime không cung cấp executor; trong Claude Code,
 nhạc trưởng thực hiện worker qua skill/tool đang khả dụng của phiên. Không được biến plan/dry-run
 thành tuyên bố "đã chạy".
 
@@ -117,10 +117,10 @@ python tools/run_orchestrator.py --plugins
 python tools/run_orchestrator.py --resolve-capability research_lifecycle --json
 python tools/verify_plugin_orchestration.py
 python tools/run_orchestrator.py --validate
-python tools/sync_agents_to_codex.py --check
+python tools/kiem_suc_khoe_agent.py
 ```
 
-Pre-commit và `upgrade_verify.py` phải fail khi registry, doctrine, flow, mirror hoặc sáu cổng
+Pre-commit và `upgrade_verify.py` phải fail khi registry, doctrine, flow, sức khoẻ agent hoặc sáu cổng
 nghiên cứu trôi lệch. Plugin có thể vắng trong một phiên; khi đó owner tiếp tục bằng agent/công cụ
 nội bộ hoặc ghi PARTIAL, không đổi owner.
 

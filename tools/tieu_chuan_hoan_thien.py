@@ -14,7 +14,7 @@ AGENT (mọi tệp `.claude/agents/<tên>.md`):
   A4 Mỗi nhiệm vụ agent LÀM có KIỂM MÁY: ≥ 1 tiêu chí bộ chấm cổng gán cho nhiệm vụ (kể cả ô có điều kiện, NGƯỜI@nhiệm
      vụ) hoặc kiểm máy cấp nhiệm vụ (`KIEM_NHIEM_VU`). Nhiệm vụ chỉ dựa đánh giá chéo = CHƯA.
   A5 Lệnh `python3 tools/…` trong tài liệu chỉ dùng cờ có thật của công cụ.
-  A6 Có bản Codex `.codex/agents/<tên>.toml`.
+  (A6 «có bản Codex» đã BỎ 19/11/2026 cùng bản sao `.codex/agents` — bác sĩ không còn dùng Codex.)
   A7 GIAO NHIỆM VỤ + TIÊU CHÍ KẾT QUẢ (10/10/2026, bác sĩ: «mỗi Agent và điều phối đã giao nhiệm vụ và tiêu chí kết quả
      phải đạt được») — áp dụng cho MỌI vai, không có «—»: agent nhiệm vụ cổng ⇒ mỗi nhiệm vụ có tiêu chí máy; người chấm
      chéo ⇒ rubric RQ1–RQ8 + JSON kiểm bằng `hoi_dong_cong.py ghi`; agent lâm sàng ⇒ bước + mã tự-rà của nhạc trưởng;
@@ -59,12 +59,11 @@ import hoi_dong_cong as HD  # noqa: E402
 import sinh_tai_lieu_trach_nhiem as SG  # noqa: E402
 
 AGENTS = BASE / ".claude" / "agents"
-CODEX = BASE / ".codex" / "agents"
 VAI_HOI_DONG = frozenset({HD.GIAM_KHAO, HD.PHAN_BIEN, HD.TRONG_TAI, "dieu-phoi-nghien-cuu"}
                          | {HD.dieu_phoi_cong(g) for g in HD.CONG})
 TEN_HANG_MUC = {
     "A1": "khung doctrine", "A2": "có điều phối giao việc", "A3": "khối nhiệm vụ sinh tự động khớp",
-    "A4": "mọi nhiệm vụ có kiểm máy", "A5": "lệnh trong tài liệu chạy được", "A6": "có bản Codex",
+    "A4": "mọi nhiệm vụ có kiểm máy", "A5": "lệnh trong tài liệu chạy được",
     "A7": "giao nhiệm vụ + tiêu chí kết quả",
     "D1": "bảng §3 khớp danh mục", "D2": "phân công phủ đủ tiêu chí bộ chấm", "D3": "mọi nhiệm vụ của cổng có kiểm máy",
     "L1": "mọi agent lâm sàng có bước + tự-rà", "N1": "dạy bảng trách nhiệm toàn đề tài",
@@ -224,10 +223,11 @@ def giao_viec(ten: str, van: str, vai_nc: Dict[str, Dict[str, list]], vai_ls: Di
             "dat": not thieu, "ly_do": "; ".join(thieu)}
 
 
-def do(thu_muc: Path = AGENTS, codex: Path = CODEX) -> Dict[str, object]:
+def do(thu_muc: Path = AGENTS, codex: object = None) -> Dict[str, object]:
     """{"agent": {tên: {"dat": bool, "hang_muc": {mã: "✅"|"—"|lý do}}}, "dieu_phoi": {...}, "tong": {...}}.
-    `thu_muc` phải nằm dạng <gốc>/.claude/agents (bộ kiểm A1 đọc theo bố cục đó); công cụ/bộ chấm đọc từ repo này."""
-    thu_muc, codex = Path(thu_muc), Path(codex)
+    `thu_muc` phải nằm dạng <gốc>/.claude/agents (bộ kiểm A1 đọc theo bố cục đó); công cụ/bộ chấm đọc từ repo này.
+    `codex` bị bỏ qua (A6 gỡ 19/11/2026) — giữ tham số để lời gọi cũ không vỡ."""
+    thu_muc = Path(thu_muc)
     tep = {p.stem: p for p in sorted(thu_muc.glob("*.md")) if not p.stem.startswith("_") and p.stem != "README"}
     van = {t: p.read_text(encoding="utf-8") for t, p in tep.items()}
     # A1 — đúng bộ kiểm agent_gate_governance (gom lỗi theo tệp)
@@ -263,7 +263,6 @@ def do(thu_muc: Path = AGENTS, codex: Path = CODEX) -> Dict[str, object]:
             hm["A4"] = "✅" if not thieu else "chỉ đánh giá chéo: " + ", ".join(thieu)
         sai = lenh_sai(van[ten], BASE)
         hm["A5"] = "✅" if not sai else "; ".join(sai[:3])
-        hm["A6"] = "✅" if (codex / f"{ten}.toml").is_file() else "thiếu bản Codex"
         gv = giao_viec(ten, van[ten], vai_nc, vai_ls)
         hm["A7"] = "✅" if gv["dat"] else str(gv["ly_do"])
         agent[ten] = {"dat": all(v in ("✅", "—") for v in hm.values()), "hang_muc": hm, "giao_viec": gv}

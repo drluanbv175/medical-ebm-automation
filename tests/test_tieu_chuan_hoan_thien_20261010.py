@@ -47,8 +47,7 @@ def test_cli_ma_thoat_va_loc_agent(capsys):
 def ban_sao(tmp_path):
     agents = tmp_path / ".claude" / "agents"
     shutil.copytree(ROOT / ".claude" / "agents", agents)
-    codex = tmp_path / "codex"
-    shutil.copytree(ROOT / ".codex" / "agents", codex)
+    codex = None   # bản sao .codex/agents và hạng mục A6 gỡ 19/11/2026
     return agents, codex
 
 
@@ -103,11 +102,10 @@ def test_a5_lenh_co_sai(ban_sao):
     assert "--khong-co" in _hm(kq, "agent", "kinh-te-y-te", "A5")
 
 
-def test_a6_thieu_ban_codex(ban_sao):
+def test_a6_da_bo_cung_ban_sao_codex(ban_sao):
     agents, codex = ban_sao
-    (codex / "kinh-te-y-te.toml").unlink()
-    assert TC.do(agents, codex)["agent"]["kinh-te-y-te"]["hang_muc"]["A6"] == "thiếu bản Codex"
-
+    kq = TC.do(agents, codex)
+    assert "A6" not in TC.TEN_HANG_MUC and all("A6" not in v["hang_muc"] for v in kq["agent"].values())
 
 def test_d1_bang_3_thieu_nhiem_vu(ban_sao):
     agents, codex = ban_sao

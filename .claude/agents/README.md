@@ -161,15 +161,14 @@ Mọi agent (toàn đội) phải áp dụng **`_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-P
 - **Gọi lẻ:** "Dùng agent `tra-cuu-chung-cu`: SGLT2i có giảm tử vong tim mạch ở ĐTĐ2 kèm CKD không?"
 - Claude cũng tự định tuyến tới agent phù hợp dựa trên mô tả công việc.
 
-## Đồng bộ Claude Code ↔ Codex ChatGPT
-- **Nguồn gốc duy nhất:** `.claude/agents/*.md` là bản biên tập chính cho Claude Code.
-- **Bản Codex sinh tự động:** `.Codex/agents/*.toml` / `.codex/agents/*.toml` dùng cho Codex ChatGPT. Trên macOS hiện tại, `.Codex` và `.codex` trỏ cùng một thư mục do filesystem không phân biệt hoa/thường; script tự nhận diện và dùng một bản canonical.
+## Nguồn đội agent
+- **Nguồn gốc duy nhất:** `.claude/agents/*.md`. Bản sao Codex (`.Codex/agents`, `.codex/agents`) đã GỠ 19/11/2026 —
+  bác sĩ không còn dùng Codex.
 - Sau khi sửa/thêm agent ở `.claude/agents`, chạy:
   ```bash
-  python3 tools/sync_agents_to_codex.py
-  python3 tools/sync_agents_to_codex.py --check
+  python3 tools/enforce_agent_guardrails.py
+  python3 tools/kiem_suc_khoe_agent.py
   ```
-- Không sửa tay file TOML sinh ra; nếu cần đổi nội dung, sửa file `.md` nguồn rồi đồng bộ lại.
 
 ## Ma trận định tuyến: yêu cầu → agent vào cửa
 > 🗺️ **Bản đồ kết nối toàn đội (điểm vào · luồng · điểm cuối · cầu nối · hub):** `.claude/agents/_BAN-DO-KET-NOI.md`.
