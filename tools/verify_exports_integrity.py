@@ -166,8 +166,16 @@ def _is_fixture(path: Path) -> bool:
     return any(_FIXTURE.match(part) for part in path.parts)
 
 
+# 19/11/2026 (kiểm toàn diện): đề cương NỘP Hội đồng theo luật K8 (`kiem_de_cuong_nop_hoi_dong.py`, bác sĩ 17/11/2026)
+# KHÔNG được mang «Cần bác sĩ kiểm chứng»/«bản nháp» — đòi nhãn ở đây làm MỌI đề cương nộp đúng luật bị cảnh báo. Nhãn
+# trạng thái của văn bản nộp nằm ở checkpoint/báo cáo cổng, không ở văn bản người đọc. K1–K8 vẫn do công cụ kia kiểm.
+_VAN_BAN_NOP_KHONG_NHAN = ("DE_CUONG_NOP_HOI_DONG_",)
+
+
 def _check_disclaimer(path: Path, text: str, rep: Report) -> None:
     if path.name.startswith(INTERNAL_PREFIX) or _is_fixture(path):
+        return
+    if path.name.startswith(_VAN_BAN_NOP_KHONG_NHAN):
         return
     if _DISCLAIMER.search(text):
         return

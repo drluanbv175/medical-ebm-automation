@@ -52,3 +52,25 @@ def test_luat_doi_van_bat_o_doi_bia(tmp_path):
     md = tmp_path / "x.md"
     md.write_text("| 1 | Bài A | DOI: chua-co |\n", encoding="utf-8", newline="\n")
     assert any(x.startswith("EXP-DOI-FORMAT") for x in _loi_dinh_danh(md))
+
+
+# ── Đề cương nộp (luật K8) không bị đòi nhãn «Cần bác sĩ kiểm chứng» ─────────────────────────────────────────────
+def _canh_bao_nhan(p: Path) -> list:
+    rep = VEI.Report()
+    VEI._check_disclaimer(p, p.read_text(encoding="utf-8"), rep)
+    return [f.code for f in rep.findings]
+
+
+def test_de_cuong_nop_dung_k8_khong_bi_doi_nhan(tmp_path):
+    import kiem_de_cuong_nop_hoi_dong as KDC  # noqa: PLC0415
+
+    p = tmp_path / "DE_CUONG_NOP_HOI_DONG_S1.md"
+    p.write_text("# ĐỀ CƯƠNG NGHIÊN CỨU\n\nNội dung đề cương hoàn chỉnh.\n", encoding="utf-8", newline="\n")
+    assert KDC.loi_k8(p.read_text(encoding="utf-8")) == []
+    assert _canh_bao_nhan(p) == []
+
+
+def test_tai_lieu_noi_bo_khac_thieu_nhan_van_bi_canh_bao(tmp_path):
+    p = tmp_path / "G4_A5_SAP_FINAL_S1.md"
+    p.write_text("# SAP\n\nNội dung.\n", encoding="utf-8", newline="\n")
+    assert _canh_bao_nhan(p) == ["EXP-NO-DISCLAIMER"]
