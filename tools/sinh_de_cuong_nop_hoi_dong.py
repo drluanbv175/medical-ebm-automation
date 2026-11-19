@@ -1651,6 +1651,30 @@ def dao_duc(n: Nguon) -> List[str]:
 
 
 def chuong_du_kien(n: Nguon) -> List[str]:
+    """Chương 5 — biểu bảng chuẩn (19/11/2026, bác sĩ: «phần trình bày biểu bảng chưa có và chưa đúng chuẩn»): dựng từ
+    ma trận mục tiêu – biến + bộ biến + đặc tả phân tích qua `khung_bieu_bang` (sơ đồ chọn đối tượng theo chuẩn báo cáo,
+    bảng đặc điểm, bảng và biểu đồ cho TỪNG mục tiêu, nhóm nhỏ/độ nhạy, an toàn). Chưa có ma trận (đề tài cũ) ⇒ chép
+    khung bảng của kế hoạch phân tích như trước."""
+    if n.ma_tran:
+        import khung_bieu_bang as KBB  # noqa: PLC0415
+
+        ngu_canh = KBB.nap_ngu_canh(n.out, n.study, thiet_ke=n.thiet_ke, muc_tieu=_muc_tieu(n), tu_dien=n.tu_dien,
+                                    ma_tran=n.ma_tran)
+        cac_muc = KBB.dung_khung(ngu_canh)
+        HH = _hh()
+        if HH.khoi(n.meta):
+            dong_hh = [[_hoa_dau(lam_sach(r["chu_de"])), _hoa_dau(lam_sach(r["dinh_luong"])) or "…",
+                        _hoa_dau(lam_sach(r["dinh_tinh"])) or "…", "Hội tụ / bổ sung / bất đồng"]
+                       for r in HH.chu_de_tich_hop(n.meta)]
+            cac_muc.append(KBB.Muc("Tích hợp kết quả định lượng và định tính", [KBB.Khung(
+                "bang", "Khung bảng tích hợp kết quả định lượng và định tính",
+                ["Nội dung tích hợp", "Kết quả định lượng", "Kết quả định tính", "Nhận định tích hợp"],
+                dong_hh or [["Nội dung tích hợp", "…", "…", "Hội tụ / bổ sung / bất đồng"]],
+                ["Mỗi nội dung được đối chiếu kết quả của hai cấu phần và kết luận là hội tụ, bổ sung cho nhau hoặc "
+                 "bất đồng; trường hợp bất đồng được phân tích trong phần bàn luận."])]))
+        dong, loi_ve = KBB.ve_chuong(cac_muc, 5, n.out, ve_anh=getattr(n, "ve_anh", False))
+        n.loi_ve_bieu_bang = loi_ve
+        return dong + [""]
     dong = ["# 5. DỰ KIẾN KẾT QUẢ", ""]
     muc = _muc_tieu(n)
     bang = bang_sap(n.sap_text)
@@ -1888,6 +1912,33 @@ def la_ban_may(p: Path) -> bool:
     return bool(dau) and dau.get("sha256") == DMS.bam_noi_dung(noi)
 
 
+def xuat_word(out_dir: Path, study: str, van: str, n: Optional[Nguon] = None) -> Optional[str]:
+    """Xuất bản Word của đề cương nộp từ chuỗi Markdown `van` (trang bìa từ study_meta). Dùng chung cho `sinh` và lệnh
+    thay chương của `khung_bieu_bang` (19/11/2026). Không có python-docx ⇒ None."""
+    out_dir = Path(out_dir)
+    n = n or Nguon(out_dir, study)
+    docx_p = out_dir / (TEN.format(study=study) + ".docx")
+    try:
+        import md2docx_vn  # noqa: PLC0415
+    except ImportError:
+        return None
+    # 19/11/2026: văn bản đã tự mang bìa/tiêu đề («# ĐỀ CƯƠNG NGHIÊN CỨU KHOA HỌC», dòng cơ quan chủ quản) ⇒ KHÔNG thêm
+    # trang bìa máy — bản cũ thêm cả bìa máy lẫn mục lục tự động TRƯỚC bìa của chính văn bản (hai bìa; C1a/BTM đều xuất
+    # lại tay không bìa máy để tránh).
+    dau = "\n".join(van.lstrip().splitlines()[:14]).upper()
+    if "ĐỀ CƯƠNG NGHIÊN CỨU" in dau or "BỘ QUỐC PHÒNG" in dau or "BỘ Y TẾ" in dau:
+        md2docx_vn.markdown_to_docx(van, docx_p)
+        return str(docx_p)
+    tieu_de = lam_sach(n.meta.get("title") or n.s("title"))
+    chu_nhiem = lam_sach((n.meta.get("administrative") or {}).get("principal_investigator"))
+    trang_bia = {"org_lines": [lam_sach(x) for x in (n.meta.get("org_lines") or []) if _co(x)],
+                 "doc_type": "ĐỀ CƯƠNG NGHIÊN CỨU KHOA HỌC", "title": tieu_de,
+                 "meta_lines": [f"Chủ nhiệm đề tài: {chu_nhiem or CHAM}"],
+                 "place_year": lam_sach(n.meta.get("place_year")) or ""}
+    md2docx_vn.markdown_to_docx(van, docx_p, title_page=trang_bia)
+    return str(docx_p)
+
+
 def sinh(out_dir: Path, study: str, ghi: bool = False) -> Dict[str, Any]:
     out_dir = Path(out_dir)
     md_p = out_dir / (TEN.format(study=study) + ".md")
@@ -1896,8 +1947,11 @@ def sinh(out_dir: Path, study: str, ghi: bool = False) -> Dict[str, Any]:
     if md_p.is_file() and not la_ban_may(md_p):
         return {"ma": 4, "loi": [f"{md_p.name} là bản VIẾT TAY (không mang dấu máy) — không ghi đè"], "md": str(md_p)}
     n = Nguon(out_dir, study)
+    n.ve_anh = ghi  # hình/biểu đồ của chương 5 chỉ vẽ ra đĩa khi ghi thật
     van = dung_de_cuong(n)
     kq: Dict[str, Any] = {"md": str(md_p), "so_dong": van.count("\n"), "trich_dan": len(n.td.thu_tu), "ghi": ghi}
+    if getattr(n, "loi_ve_bieu_bang", None):
+        kq["loi_ve_bieu_bang"] = n.loi_ve_bieu_bang
     if not ghi:
         kq["ma"] = 0
         return kq
@@ -1905,20 +1959,7 @@ def sinh(out_dir: Path, study: str, ghi: bool = False) -> Dict[str, Any]:
     import dau_may_sinh as DMS  # noqa: PLC0415 — dấu bản máy NGOÀI văn bản (văn bản nộp không mang dấu vết máy)
 
     DMS.ghi_dau(md_p, van, {"study": study}, "sinh_de_cuong_nop_hoi_dong.py")
-    docx_p = md_p.with_suffix(".docx")
-    try:
-        import md2docx_vn  # noqa: PLC0415
-
-        tieu_de = lam_sach(n.meta.get("title") or n.s("title"))
-        chu_nhiem = lam_sach((n.meta.get("administrative") or {}).get("principal_investigator"))
-        trang_bia = {"org_lines": [lam_sach(x) for x in (n.meta.get("org_lines") or []) if _co(x)],
-                     "doc_type": "ĐỀ CƯƠNG NGHIÊN CỨU KHOA HỌC", "title": tieu_de,
-                     "meta_lines": [f"Chủ nhiệm đề tài: {chu_nhiem or CHAM}"],
-                     "place_year": lam_sach(n.meta.get("place_year")) or ""}
-        md2docx_vn.markdown_to_docx(van, docx_p, title_page=trang_bia)
-        kq["docx"] = str(docx_p)
-    except ImportError:
-        kq["docx"] = None
+    kq["docx"] = xuat_word(out_dir, study, van, n)
     import kiem_de_cuong_nop_hoi_dong as KDN  # noqa: PLC0415
 
     kq["loi"] = KDN.kiem(out_dir, study)

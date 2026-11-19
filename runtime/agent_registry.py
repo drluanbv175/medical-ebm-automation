@@ -179,8 +179,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 19/11/2026: dạy `dao-duc-dang-ky` dùng `tools/ho_so_hdd_bvqy175.py` khi nộp Hội đồng Đạo đức BVQY175 — vẫn 64.
 # 19/11/2026 (chiều): `dao-duc-dang-ky` sửa căn cứ miễn đồng thuận (Helsinki §32 · CIOMS HD10 · TT43 Điều 7 khoản 1
 # điểm b, thay «TT43 Điều 15 · §29» sai) và bỏ cờ «dữ liệu nhận dạng được → ICF bắt buộc» — vẫn 64.
+# 19/11/2026 (tối): dạy `viet-ban-thao` + `phan-tich-thong-ke` biểu bảng chuẩn (khung_bieu_bang, K9, trình bày kết quả
+# G6) — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "2b50d7494d71057a50badbbeb8607b73b231610da5181ad3d297e2d01a47add7"
+    "be2b24ede2c313240649f33682b93506ff0c4a158bc754a05fc4322b83a95c83"
 )
 
 MINIMUM_AGENT_COUNT = 64

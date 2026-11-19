@@ -463,6 +463,12 @@ python tools/gen_research_docx.py --study "<TEN>" --gate G6
 ## Đồng bộ phân tích số liệu — độ sẵn sàng (15/11/2026 — giai đoạn 7)
 - **Đặc tả máy đọc `exports/<mã>/G6_DAC_TA_SAP.json` ↔ SAP HAI CHIỀU:** mỗi mục đặc tả khai `sap_neo` (cụm chữ NGUYÊN VĂN trong SAP; nhiều cụm cách « | » hoặc danh sách) — cụm không còn trong SAP = đặc tả trỏ phân tích đã bị bỏ; MỌI gạch đầu dòng cấp 1 của SAP §9 và mọi mục nhãn đậm là phân tích ở §1/§3/§5/§7 (trừ mục ghi «KHÔNG CÓ») phải có ít nhất một neo — thiếu = SAP cam kết phân tích mà đặc tả không có (`chay_sap_g6.kiem_phu_sap`).
 - SAP sửa (SHA khác) ⇒ agent ĐỒNG BỘ LẠI đặc tả (thêm/bỏ mục, cập nhật `sha256_sap`, giữ nguyên thụt lề tệp), KHÔNG ghi `nguoi_duyet`; phân tích chưa có công cụ ⇒ `chua_tu_dong` kèm lý do (không bỏ im); phân tích mà SAP còn ô [CẦN …] ⇒ `chua_tu_dong` «chờ thống kê viên chọn phương pháp».
+- **Trình bày kết quả phân tích (bác sĩ 19/11/2026: «tất cả vấn đề liên quan số liệu phân tích, kết quả phân tích»):**
+  chỉ mục `G6_SAP_ket_qua.md` viết mỗi ước lượng theo chuẩn — thước đo, ước lượng (KTC 95%), p ba chữ số thập phân
+  («p < 0,001»), dấu phẩy thập phân, ghi chú chữ viết tắt — KHÔNG dán chuỗi JSON; forest plot của phân tích chính/nhóm
+  nhỏ/độ nhạy vẽ từ SỐ LIỆU THẬT (`bieu-bang/g6-uoc-luong.png`). Bảng/biểu đồ kết quả theo đúng khung đã hứa ở chương
+  «Dự kiến kết quả» của đề cương (`tools/khung_bieu_bang.py`): bảng nền không cột p, hiệu ứng nhị phân của RCT trình bày
+  cả tuyệt đối lẫn tương đối, tên bảng trên/tên hình dưới.
 - Kiểm: `python3 tools/chay_sap_g6.py kiem --study <mã>` + trục `dac_ta_phan_tich` của `nhat_quan_xuyen_cong` (lệch mềm khi SHA lệch/thiếu phủ/neo mất; cần xem khi chưa duyệt).
 
 ## Bài học giả lập trọn vòng 8 thiết kế (16/11/2026)

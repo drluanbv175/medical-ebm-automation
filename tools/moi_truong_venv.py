@@ -43,11 +43,11 @@ BIEN_DA_CHUYEN = "EBM_DA_CHUYEN_VENV"
 # muộn trong hàm. Test tests/test_moi_truong_venv_20261118.py đo lại cây import và ĐỎ khi thiếu tên ở đây.
 THU_VIEN_CHUOI_CONG = (
     "cryptography", "defusedxml", "docx", "dotenv", "fontTools", "lifelines", "matplotlib", "numpy", "openpyxl",
-    "pandas", "requests", "scipy", "statsmodels",
+    "pandas", "PIL", "requests", "scipy", "statsmodels",
 )
 
 # Tên gói pip khác tên import — chỉ để in lệnh cài cho dễ hiểu.
-_GOI_PIP = {"docx": "python-docx", "dotenv": "python-dotenv", "fontTools": "fonttools"}
+_GOI_PIP = {"docx": "python-docx", "dotenv": "python-dotenv", "fontTools": "fonttools", "PIL": "pillow"}
 
 # Script ĐIỂM VÀO của chuỗi cổng phải gọi dam_bao_moi_truong (test kiểm dây nối theo cây cú pháp).
 DIEM_VAO_CHUOI_CONG = tuple(
