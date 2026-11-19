@@ -192,3 +192,23 @@ def test_g6_dinh_dang_uoc_luong_va_forest(tmp_path):
     assert "{" not in bang and "PR hiệu chỉnh 1,35 (KTC 95% 1,02–1,79)" in bang
     assert "KTC: khoảng tin cậy" in md
     assert "![Biểu đồ ước lượng]" in md and json.dumps(cm)  # cm không bị đổi
+
+
+# ── 7. G9 «Phần 8»: tích theo phép kiểm điện tử TRƯỚC chữ ký; B1–B3 theo chấm sống ─────────────────────────────────
+def test_phan_8_tich_theo_phep_kiem_va_nhom_d():
+    import run_g9_auto as G9A  # noqa: PLC0415
+
+    to = ("A1. ICMJE\n    ☐ Chưa ký  ☐ Đã ký đầy đủ\n\nA2. COI\n    ☐ Chưa nộp  ☐ Đã nộp đủ\n\n"
+          "A7. Quyền truy cập\n    ☐ Mọi tác giả rà được dữ liệu\n\n"
+          "D1. Trưởng đơn vị\n    ☐ Không cần  ☐ Cần -> ☐ Đã ký\n\n"
+          "D3. Nhà tài trợ\n    ☐ Không có tài trợ  ☐ Đã duyệt\n")
+    tt = {"G9-HUMAN-01": "PASS", "G9-HUMAN-03": "BLOCKED", "G9-HUMAN-05A": "PASS", "G9-HUMAN-11": "PASS"}
+    rd = {"institutional_confirmation": {"department_head_required": True, "department_head_confirmed": True,
+                                         "sponsor_review_required": False}}
+    ra = G9A.tich_phan_8(to, tt, rd)
+    assert "☐ Chưa ký  ☑ Đã ký đầy đủ" in ra          # A1 đạt ⇒ tích ô «đã xong»
+    assert "☐ Chưa nộp  ☐ Đã nộp đủ" in ra            # A2 chưa đạt ⇒ không tích
+    assert "☑ Mọi tác giả rà được dữ liệu" in ra      # mục một ô
+    assert "☐ Không cần  ☐ Cần -> ☑ Đã ký" in ra      # D1 cần và đã ký
+    assert "☑ Không có tài trợ  ☐ Đã duyệt" in ra     # D3 không cần
+    assert G9A.tich_phan_8(to, {}, rd) == to          # không chấm được ⇒ không tích bừa
