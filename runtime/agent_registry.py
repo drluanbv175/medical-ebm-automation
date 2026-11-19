@@ -173,8 +173,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 18/11/2026: kiem-chung-trich-dan, thu-thu-tai-lieu, dieu-phoi-g10 (trích dẫn đề tài phải có toàn văn — G10-AUTO-12)
 # — y hệt repo gốc nhánh claude/bien-nhan-toan-van-tltk-20261118; vẫn 64.
 # 18/11/2026 (chiều): ba agent trên thêm bước 5 «giữ trích dẫn đạt chuẩn» (bác sĩ cho riêng C1a) — vẫn 64.
+# 19/11/2026: tong-quan-y-van — `rut_bai.pmid_da_kiem`/`doi_da_kiem` có cấu trúc (bộ đối chiếu xuyên cổng không đọc
+# câu văn nữa) — y hệt repo gốc nhánh claude/rut-bai-g0-co-cau-truc-20261119; vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "908356ebd446549c872d567f728e75466d183572e9503f23298d974ba5d91307"
+    "a78501579fe4cc3d2f886b30336ac50c8d16dde3a87f2947ff0ca7cc56ebdd4b"
 )
 
 MINIMUM_AGENT_COUNT = 64

@@ -46,7 +46,8 @@ def _tong_hop(**them) -> dict:
         "khong_loc_vuot_tran": {"ngay": "2026-10-17", "pmid": ["10948789"], "cach": "connector PubMed, 35/35"},
         "muc_bang_chung_sau_sang_loc": "Sau sàng lọc: chỉ có khảo sát cắt ngang (PMID 34445940; PMID 42582692).",
         "tong_hop": "Khảo sát cắt ngang (PMID 34445940; PMID 42582692).",
-        "rut_bai": {"ngay": "2026-10-17", "cong_cu": "check_citation_retraction.py", "ket_qua": "0 rút"},
+        "rut_bai": {"ngay": "2026-10-17", "cong_cu": "check_citation_retraction.py", "ket_qua": "0 rút",
+                    "pmid_da_kiem": []},
     }
     du.update(them)
     return du

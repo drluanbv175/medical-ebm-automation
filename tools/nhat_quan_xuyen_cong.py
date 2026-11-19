@@ -1486,9 +1486,13 @@ def _da_kiem_rut_bai(out_dir: Path, study: str) -> Tuple[Dict[str, Optional[str]
     """({khoá «pmid:/doi:» → ngày kiểm GẦN NHẤT có bản ghi theo TỪNG định danh}, {khoá → trạng thái DƯƠNG}).
 
     Nguồn: `KIEM_RUT_BAI_TRICH_DAN_<mã>.json` (tools/kiem_rut_bai_trich_dan.py — chỉ mã có phán quyết), biên nhận A12
-    (`pmids_checked`) + bảng DOI của báo cáo A12, khoá `rut_bai` của tổng hợp G0 (chỉ mã được NÊU TÊN — câu «56 PMID
-    đã kiểm» không đối chiếu được từng mã), `G0_checkpoint.pmids_verified` (bước R1C của G0)."""
+    (`pmids_checked`) + bảng DOI của báo cáo A12, danh sách CÓ CẤU TRÚC `rut_bai.pmid_da_kiem`/`doi_da_kiem` của tổng
+    hợp G0, `G0_checkpoint.pmids_verified` (bước R1C của G0).
+
+    19/11/2026 (bác sĩ duyệt): KHÔNG đọc câu văn của `rut_bai` nữa — trước đây mọi dãy 7–8 chữ số trong đó tính là
+    «PMID đã kiểm», kể cả câu «PMID x chưa kiểm được» và ngày viết liền «20261017» (báo xanh giả về an toàn)."""
     import danh_muc_trich_dan as DMT  # noqa: PLC0415
+    import g0_tong_hop as GT  # noqa: PLC0415
     import kiem_rut_bai_trich_dan as KRB  # noqa: PLC0415
 
     ngay: Dict[str, Optional[str]] = {}
@@ -1504,8 +1508,8 @@ def _da_kiem_rut_bai(out_dir: Path, study: str) -> Tuple[Dict[str, Optional[str]
     _them(DMT.dinh_danh(_doc_text(out_dir / f"A12_CITATION_VERIFICATION_{study}.md")), luc_a12)
     rb = _doc_json(out_dir / f"G0_TONG_HOP_BANG_CHUNG_{study}.json").get("rut_bai")
     if isinstance(rb, dict):
-        chu = json.dumps(rb, ensure_ascii=False)
-        _them(DMT.dinh_danh(chu) | {f"pmid:{p}" for p in re.findall(r"(?<![\d./-])(\d{7,8})(?![\d./-])", chu)},
+        pm, do = GT.ma_da_kiem_rut_bai(rb)
+        _them(set().union(*(DMT.khoa_cua({"pmid": p}) for p in pm), *(DMT.khoa_cua({"doi": d}) for d in do)),
               str(rb.get("ngay") or "")[:10] or None)
     cp0 = _doc_json(out_dir / "G0_checkpoint.json")
     _them({f"pmid:{str(p).strip()}" for p in cp0.get("pmids_verified") or []},
