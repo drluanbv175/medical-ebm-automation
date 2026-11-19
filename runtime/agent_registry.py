@@ -182,7 +182,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 19/11/2026 (tối): dạy `viet-ban-thao` + `phan-tich-thong-ke` biểu bảng chuẩn (khung_bieu_bang, K9, trình bày kết quả
 # G6) — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "be2b24ede2c313240649f33682b93506ff0c4a158bc754a05fc4322b83a95c83"
+    "b2dcc102835a7ef4427c37e2bc5506354497c2f0d38ba9d16268451f2c155c67"
 )
 
 MINIMUM_AGENT_COUNT = 64

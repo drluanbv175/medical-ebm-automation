@@ -16,7 +16,7 @@ rồi chỉ được trả về **3 thứ** (KHÔNG xuất đoạn văn xuôi In
 2. **Câu hỏi gợi** để tác giả cung cấp ý chính/kết quả/thông điệp;
 3. Đề nghị: "gửi bản nháp của bạn → tôi biên tập, làm mạnh, chuẩn hóa trích dẫn."
 
-Chỉ khi tác giả ĐÃ cung cấp nội dung/kết quả/bản nháp thì mới chuyển sang Quy trình viết (mục 3). Không vì bị thúc ("viết luôn đi", "dài 500 từ") mà bỏ qua cổng này. Mọi đoạn AI soạn giúp gắn nhãn `[BẢN NHÁP AI — TÁC GIẢ PHẢI VIẾT LẠI & CHỊU TRÁCH NHIỆM]`.
+Chỉ khi tác giả ĐÃ cung cấp nội dung/kết quả/bản nháp thì mới chuyển sang Quy trình viết (mục 3). Không vì bị thúc ("viết luôn đi", "dài 500 từ") mà bỏ qua cổng này. Mọi đoạn AI soạn giúp được ghi nhãn nguồn gốc `BẢN NHÁP AI — TÁC GIẢ PHẢI VIẾT LẠI & CHỊU TRÁCH NHIỆM` theo từng mục ở tệp hướng dẫn điền của gói (`HUONG_DAN_DIEN_GOI_NOP_<mã>.md` — tài liệu nội bộ, không nộp); KHÔNG chèn nhãn hay dòng ghi chú «>» vào văn bản nộp (bác sĩ 17/11/2026: văn bản người đọc không mang dấu vết soạn thảo/máy).
 
 ## CHẾ ĐỘ TỰ ĐỘNG G7 — VIẾT BẢN THẢO (CHỈ SAU KHI TÁC GIẢ CUNG CẤP NỘI DUNG)
 
@@ -49,7 +49,7 @@ Script này (bản nâng cấp) tự điền Methods §3/§4 (phơi nhiễm/kế
 
 ## CHẾ ĐỘ PIPELINE — AUTO-PULL TỪ KẾT QUẢ PHÂN TÍCH (CHAY-TOAN-BO / G6→G7)
 
-> Kích hoạt khi orchestrator gọi từ CHAY-TOAN-BO **sau khi G6 đã hoàn tất** và truyền kết quả từ `phan-tich-thong-ke` + `dien-giai-ket-qua`. **(2026-07-07 — làm rõ, tránh mâu thuẫn với CỔNG 0):** CỔNG 0 anti-ghostwrite KHÔNG chặn phần **Results/bảng số liệu** — đây là dữ kiện khách quan sao chép nguyên vẹn từ dữ liệu đã khóa (G4/G5 LOCKED) do bác sĩ cung cấp, không phải luận điểm AI tự nghĩ. Nhưng phần **Discussion/diễn giải** (luận điểm, ý nghĩa lâm sàng — do agent `dien-giai-ket-qua` soạn, không phải bác sĩ) VẪN phải qua CỔNG 0 đầy đủ: dùng đúng nhãn mạnh `[BẢN NHÁP AI — TÁC GIẢ PHẢI VIẾT LẠI & CHỊU TRÁCH NHIỆM]` (không phải nhãn yếu "chỉ kiểm tra số liệu" ở dưới), và bác sĩ phải cung cấp góc nhìn/ý chính của riêng mình trước khi AI soạn Discussion.
+> Kích hoạt khi orchestrator gọi từ CHAY-TOAN-BO **sau khi G6 đã hoàn tất** và truyền kết quả từ `phan-tich-thong-ke` + `dien-giai-ket-qua`. **(2026-07-07 — làm rõ, tránh mâu thuẫn với CỔNG 0):** CỔNG 0 anti-ghostwrite KHÔNG chặn phần **Results/bảng số liệu** — đây là dữ kiện khách quan sao chép nguyên vẹn từ dữ liệu đã khóa (G4/G5 LOCKED) do bác sĩ cung cấp, không phải luận điểm AI tự nghĩ. Nhưng phần **Discussion/diễn giải** (luận điểm, ý nghĩa lâm sàng — do agent `dien-giai-ket-qua` soạn, không phải bác sĩ) VẪN phải qua CỔNG 0 đầy đủ: ghi đúng nhãn mạnh `BẢN NHÁP AI — TÁC GIẢ PHẢI VIẾT LẠI & CHỊU TRÁCH NHIỆM` cho mục Discussion ở tệp hướng dẫn điền của gói (không phải nhãn yếu "chỉ kiểm tra số liệu" ở dưới), và bác sĩ phải cung cấp góc nhìn/ý chính của riêng mình trước khi AI soạn Discussion.
 
 **Điều kiện kích hoạt:** orchestrator truyền rõ kết quả G6 + G6.5 ĐÃ CÓ SỐ LIỆU THẬT — G4/G5 còn khoá khi CHẤM SỐNG (`gate_contract.g4/g5_quality_contract_satisfied`; G7 chấm sống G0–G6 qua `g7_quality_gate.tien_de_song`), KHÔNG dựa trường `G4_STATUS`/`G5_STATUS` trong checkpoint (trường đó không mở cổng nào; agent không ghi).
 
@@ -67,7 +67,8 @@ Script này (bản nâng cấp) tự điền Methods §3/§4 (phơi nhiễm/kế
 - Số liệu **SAO CHÉP NGUYÊN VẸN** từ đầu ra G6 — không làm tròn/diễn đạt lại mà không gắn cờ
 - Ô bảng còn `___` (chưa chạy code) → giữ `[CẦN BỔ SUNG — chạy code R/SPSS trên dữ liệu thật]`
 - Không có trong đầu vào → `[CẦN BỔ SUNG]`, KHÔNG bịa
-- Gắn nhãn đầu bản thảo: nếu bản thảo CÓ đoạn Discussion do AI soạn → dùng `[BẢN NHÁP AI — TÁC GIẢ PHẢI VIẾT LẠI & CHỊU TRÁCH NHIỆM]` (nhãn mạnh, đúng CỔNG 0); nếu bản thảo CHỈ có Results/bảng số liệu (chưa có Discussion) → `[BẢN NHÁP AI — TÁC GIẢ PHẢI KIỂM TRA TỪNG SỐ LIỆU TRƯỚC KHI NỘP]` là đủ.
+- Ghi nhãn nguồn gốc ở tệp hướng dẫn điền của gói, KHÔNG trong bản thảo: nếu bản thảo CÓ đoạn Discussion do AI soạn → `BẢN NHÁP AI — TÁC GIẢ PHẢI VIẾT LẠI & CHỊU TRÁCH NHIỆM` (nhãn mạnh, đúng CỔNG 0); nếu bản thảo CHỈ có Results/bảng số liệu (chưa có Discussion) → `BẢN NHÁP AI — TÁC GIẢ PHẢI KIỂM TRA TỪNG SỐ LIỆU TRƯỚC KHI NỘP` là đủ. Câu khai báo dùng AI theo ICMJE trong mục Tuyên bố của bản thảo là nội dung thật, giữ.
+- Trước khi trả gói nộp tạp chí (19/11/2026): chạy `python3 tools/kiem_ban_thao_tap_chi.py <bản thảo .md> --tap-chi "<tên tạp chí>" --docx <bản .docx> --dem-trang` trong `medical-ebm-automation/` — không còn vi phạm ngoài ô [CẦN…] (dấu vết máy K8, từ khoá, tóm tắt, TLTK, bảng, hình, trích dẫn đặt sai mục, số từ, số trang). Số trang chỉ tin khi Word đếm; máy không có Word ⇒ ghi «chưa đo», KHÔNG ghi «đạt». Ca thật: gói Tạp chí Y Dược Thực hành 175 của đề tài BTM đếm tay ghi «chưa đo được» số trang, Word đếm 15 trang trong khi thể lệ cho 10.
 - Tác giả phải khai báo dùng AI (ICMJE) và xác nhận số liệu trước khi nộp
 - Sau draft: tự giao `kiem-chung-trich-dan` + `binh-duyet` ngay trong cùng vòng
 
@@ -86,7 +87,7 @@ Thông điệp chính (1 câu) · loại thiết kế (chọn chuẩn báo cáo)
   1. **Dựng DÀN Ý/khung** có chỗ trống `[TÁC GIẢ ĐIỀN: …]` để tác giả tự viết luận điểm;
   2. Đề nghị tác giả **cung cấp ý chính/kết quả** trước, rồi mới chuyển thành văn xuôi;
   3. Nếu **đã có bản nháp của tác giả** → biên tập/làm mạnh/sửa ngữ pháp/chuẩn hóa trích dẫn.
-  Mọi đoạn văn xuôi AI soạn giúp phải gắn nhãn **`[BẢN NHÁP AI — TÁC GIẢ PHẢI VIẾT LẠI & CHỊU TRÁCH NHIỆM]`** + nhắc **khai báo dùng AI (ICMJE)**. Cổng cứng: không vì bị thúc mà bỏ qua.
+  Mọi đoạn văn xuôi AI soạn giúp phải được ghi nhãn **`BẢN NHÁP AI — TÁC GIẢ PHẢI VIẾT LẠI & CHỊU TRÁCH NHIỆM`** ở tệp hướng dẫn điền của gói (không trong văn bản nộp) + nhắc **khai báo dùng AI (ICMJE)** trong mục Tuyên bố. Cổng cứng: không vì bị thúc mà bỏ qua.
 **Bước 1 — Dàn ý:** chốt thông điệp chính (1 câu), chọn chuẩn báo cáo (CONSORT 2025/RCT · STROBE/quan sát · PRISMA 2020/SR · SPIRIT 2025/protocol · STARD/chẩn đoán · TRIPOD+AI/mô hình; định tính → COREQ/SRQR qua `nghien-cuu-dinh-tinh`), lập sườn IMRAD theo checklist chuẩn đó. **Nếu G3/`hypothesis_type` = non_inferiority hoặc equivalence → dùng THÊM Phụ lục CONSORT cho Non-inferiority/Equivalence (Piaggio G et al. JAMA. 2012;308(24):2594-2604. doi:10.1001/jama.2012.87802) — sửa mục tiêu đề (ghi rõ NI/equivalence), mục cỡ mẫu (biện minh margin Δ, KHÔNG bịa), và mục diễn giải kết quả (CI so với margin, không chỉ p-value).**
 **Bước 2 — Văn xuôi:** viết liền mạch, KHÔNG gạch đầu dòng trong thân bài.
 - **Introduction:** khoảng trống kiến thức → mục tiêu/giả thuyết.
