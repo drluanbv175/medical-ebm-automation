@@ -515,8 +515,8 @@ def bao_cao_md(
         + " · ".join(f"{TEN_MUC.get(m, m)} {n}" for m, n in sorted(dem.items()))
         + f" · số liệu không thấy trong abstract {so_thay}",
         "",
-        "So với TIÊU ĐỀ + ABSTRACT (PubMed theo PMID; tài liệu chỉ có DOI: Europe PMC hoặc Crossref, ghi ở cột Tài "
-        "liệu), không phải toàn văn. «Abstract không đủ thông tin» không có nghĩa trích "
+        "So với TIÊU ĐỀ + ABSTRACT (PubMed theo PMID; tài liệu chỉ có mã DOI thì lấy qua Europe PMC hoặc Crossref, ghi "
+        "ở cột Tài liệu), không phải toàn văn. «Abstract không đủ thông tin» không có nghĩa trích "
         "sai. Mọi căn cứ «trích» đã được máy đối chiếu nguyên văn với abstract; không khớp thì xếp «máy không xác "
         "minh được căn cứ».",
         "",
