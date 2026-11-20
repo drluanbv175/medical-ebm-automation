@@ -27,6 +27,9 @@ Luật (mỗi lỗi một dòng; rỗng = đạt):
       «máy soạn/máy sinh», «Cần bác sĩ kiểm chứng», «Mức tự động», chú thích HTML, nhãn «(giả lập)»/«GIẢ LẬP»,
       «hồ sơ chưa có». Thêm 18/11/2026: «(… đã chốt)», mã SOP-…, mã thiếu («mã KGHS»), «= 1»/«khác 9» trong văn
       xuôi, nhãn tự đánh giá, nhãn biến lặp, thời điểm huỷ bảng nối mã lệch nhau giữa các mục.
+  K10 không số liệu «trôi nổi» (bác sĩ 20/11/2026: «Không có số liệu thực, chứng cứ thực hãy loại bỏ»): trong đặt vấn
+      đề / tổng quan / bàn luận, mỗi mệnh đề mang số liệu kiểu kết quả (%, OR/RR/HR/PR, KTC 95%, TB ± ĐLC) phải tự mang
+      trích dẫn [n]; tách mệnh đề ở «;» ngoài ngoặc. Nguồn không có trong danh mục ⇒ loại con số.
 
 Lệnh:  python3 tools/kiem_de_cuong_nop_hoi_dong.py --study <mã> [--json]
 Mã thoát: 0 đạt · 1 có lỗi · 2 thiếu tệp đề cương nộp.
@@ -186,6 +189,60 @@ def loi_k8(md: str) -> List[str]:
     return loi
 
 
+# K10 (bác sĩ 20/11/2026: «Không có số liệu thực, chứng cứ thực hãy loại bỏ trong hệ thống nghiên cứu y khoa»).
+# Phản biện máy đề cương BTM bắt «(15,32% đến 31,1%)» trong tổng quan: hai nghiên cứu trong nước có thật nhưng KHÔNG nằm
+# trong danh mục tài liệu tham khảo của đề cương, câu chỉ mang [11] ở MỆNH ĐỀ SAU dấu «;» nên người đọc tưởng có
+# nguồn.
+_PHAN_CHUNG_CU_RE = re.compile(r"ĐẶT VẤN ĐỀ|TỔNG QUAN|BÀN LUẬN", re.I)
+_SO_KET_QUA_RE = re.compile(
+    r"\d+(?:[.,]\d+)?\s?%"                                      # tỷ lệ
+    r"|\b(?:a?OR|AOR|aPR|PR|RR|HR|IRR)\s*[=:]?\s*\d"           # thước đo hiệu ứng
+    r"|\bKTC\s*95|\b95\s*%\s*CI"                                # khoảng tin cậy
+    r"|\d\s*±\s*\d")                                            # trung bình ± độ lệch chuẩn
+_TRICH_DAN_RE = re.compile(r"\[\d+(?:\s*[–,-]\s*\d+)*\]")
+_HET_CAU_RE = re.compile(r"(?<=[.!?])\s+(?=[A-ZÀ-Ỹ\[(«])")
+
+
+def _menh_de(cau: str) -> List[str]:
+    """Tách câu thành mệnh đề ở «;» nằm NGOÀI ngoặc — «(aOR 0,53; KTC 95%: 0,28–0,98)» là một khối, không phải hai."""
+    ra, sau, tang = [], [], 0
+    for ky in cau:
+        tang += (ky in "([") - (ky in ")]")
+        if ky == ";" and tang <= 0:
+            ra.append("".join(sau))
+            sau = []
+        else:
+            sau.append(ky)
+    ra.append("".join(sau))
+    return [x.strip() for x in ra if x.strip()]
+
+
+def loi_k10(md: str) -> List[str]:
+    """K10 — trong đặt vấn đề / tổng quan / bàn luận, MỖI mệnh đề mang số liệu kiểu kết quả nghiên cứu phải tự
+    mang trích dẫn [n]. Không có nguồn trong danh mục ⇒ loại con số (hoặc đưa nguồn thật vào danh mục) — không giữ
+    số «trôi nổi»."""
+    loi: List[str] = []
+    cap: Dict[int, bool] = {}
+    trong = False
+    for so, dong in enumerate(md.splitlines(), 1):
+        m = _DE_MUC_RE.match(dong)
+        if m:
+            k = len(m.group(1))
+            cap = {c: v for c, v in cap.items() if c < k}
+            cap[k] = bool(_PHAN_CHUNG_CU_RE.search(m.group(2)))
+            trong = any(cap.values())
+            continue
+        s = dong.strip()
+        if not trong or not s or s.startswith(("|", "!", "```", ">", "<!--")):
+            continue
+        for cau in _HET_CAU_RE.split(s):
+            for md_ in _menh_de(cau):
+                if _SO_KET_QUA_RE.search(md_) and not _TRICH_DAN_RE.search(md_):
+                    loi.append(f"K10 dòng {so}: số liệu không có trích dẫn trong cùng mệnh đề — «{md_[:90]}» "
+                               "(không có nguồn thật trong danh mục ⇒ loại con số)")
+    return loi
+
+
 def loi_k9(out_dir: Path, md: str, thiet_ke: str) -> List[str]:
     """K9 — biểu bảng của chương «Dự kiến kết quả» (luật và chuẩn ở `khung_bieu_bang`)."""
     import khung_bieu_bang as KBB  # noqa: PLC0415
@@ -294,6 +351,7 @@ def kiem(out_dir: Path, study: str) -> List[str]:
             loi.append(f"K7 dòng {so}: nhãn ô trống [CẦN…]/<…>")
     loi.extend(loi_k8(md))
     loi.extend(loi_k9(out_dir, md, tk))
+    loi.extend(loi_k10(md))
     if G10._co_lien_lac_ca_nhan(md) or (docx_chu is not None and G10._co_lien_lac_ca_nhan(docx_chu)):
         loi.append("K7 có email/số điện thoại — PII liên lạc để dòng chấm cho PI điền tay ngoài hệ thống")
     return loi

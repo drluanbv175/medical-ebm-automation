@@ -149,6 +149,8 @@ def do_ban_thao(md: str, gh: Dict) -> Dict:
     k8 = K.loi_k8(khong_o)
     if k8:
         vi_pham.extend(k8)
+    # K10 (bác sĩ 20/11/2026): số liệu ở đặt vấn đề/bàn luận phải tự mang trích dẫn — ô [CẦN…] chờ kết quả thật đã bỏ.
+    vi_pham.extend(K.loi_k10(khong_o))
     so["o_can"] = len(_CAN_RE.findall(md))
     so["so_tu"] = dem_tu(md)
     if so["so_tu"] > gh["so_tu"]:
