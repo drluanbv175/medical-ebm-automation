@@ -10,11 +10,10 @@
 |---|---|
 | Tên đề tài | Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026 |
 | Chủ nhiệm đề tài | ……… |
-| Đơn vị thực hiện | Khoa Khám bệnh, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh — bệnh viện quân đội tuyến cuối; người bệnh gồm quân nhân, người có BHYT và người khám dịch vụ, theo dõi ĐTĐ ở phòng khám nội tiết hoặc nội chung. Nguồn dữ liệu: hồ sơ bệnh án điện tử trên phần mềm eHospital (HIS của BVQY175) — lượt khám, mã ICD-10, kết quả xét nghiệm, đơn thuốc ngoại trú. |
+| Đơn vị thực hiện | Khoa Khám bệnh, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh |
 | Thiết kế | Nghiên cứu cắt ngang mô tả có phân tích |
-| Thời gian thực hiện | Cửa sổ dữ liệu hồi cứu 01/01/2026–31/12/2026. Thời gian thực hiện dự kiến 11/2026–09/2027 theo sổ tiến độ đề tài. Trích xuất dữ liệu chỉ bắt đầu sau khi Hội đồng Đạo đức BVQY175 phê duyệt (T0), kế hoạch phân tích thống kê đã khoá và cửa sổ đã khép (sớm nhất tháng 02/2027) — dự kiến 16/02–02/04/2027, gồm trích thử phiếu 16–19/02/2027. |
+| Thời gian thực hiện | Cửa sổ dữ liệu hồi cứu 01/01/2026–31/12/2026; thực hiện dự kiến 11/2026–09/2027; trích hồ sơ dự kiến 16/02–02/04/2027, sau khi Hội đồng Đạo đức phê duyệt (chi tiết ở mục 4.2 và 4.7) |
 | Kinh phí | Tự túc, không đề nghị cấp kinh phí |
-| Phiên bản đề cương | 1.0 |
 
 ## DANH MỤC CHỮ VIẾT TẮT
 
@@ -23,51 +22,56 @@
 | ACEi | Thuốc ức chế men chuyển angiotensin |
 | ADA | Hiệp hội Đái tháo đường Hoa Kỳ (American Diabetes Association) |
 | ARB | Thuốc chẹn thụ thể angiotensin II |
+| ATC | Hệ thống phân loại thuốc theo giải phẫu – điều trị – hoá học (Anatomical Therapeutic Chemical) |
 | BHYT | Bảo hiểm y tế |
 | BMI | Chỉ số khối cơ thể (body mass index) |
 | BTM | Bệnh thận mạn |
+| BVQY175 | Bệnh viện Quân y 175 |
 | CKD-EPI | Nhóm hợp tác dịch tễ học bệnh thận mạn (Chronic Kidney Disease Epidemiology Collaboration) |
+| DPP-4 | Dipeptidyl peptidase-4 |
+| ĐLC | Độ lệch chuẩn |
+| ĐN | Phân tích độ nhạy (đánh số ĐN1–ĐN9) |
+| ĐTĐ | Đái tháo đường |
+| eGFR | Mức lọc cầu thận ước tính (estimated glomerular filtration rate) |
 | EPV | Số biến cố trên mỗi tham số (events per variable) |
-| GRADE | Hệ thống phân hạng chứng cứ (Grading of Recommendations, Assessment, Development and Evaluation) |
+| GLP-1 | Peptide giống glucagon 1 (glucagon-like peptide-1) |
 | GRRAS | Hướng dẫn báo cáo nghiên cứu độ tin cậy và đồng thuận (Guidelines for Reporting Reliability and Agreement Studies) |
-| HIS | Hệ thống thông tin bệnh viện (hospital information system) |
 | HbA1c | Huyết sắc tố gắn glucose (glycated haemoglobin) |
+| HIS | Hệ thống thông tin bệnh viện (hospital information system) |
 | I-CVI | Chỉ số giá trị nội dung mức mục (item-level content validity index) |
 | ICC | Hệ số tương quan nội lớp (intraclass correlation coefficient) |
 | ICD-10 | Bảng phân loại bệnh quốc tế lần thứ 10 |
-| IQR | Khoảng tứ phân vị |
-| KDIGO | Kidney Disease: Improving Global Outcomes |
+| KDIGO | Tổ chức Cải thiện kết cục toàn cầu về bệnh thận (Kidney Disease: Improving Global Outcomes) |
 | KTC | Khoảng tin cậy |
+| KTPV | Khoảng tứ phân vị |
 | MAR | Thiếu ngẫu nhiên (missing at random) |
 | MCID | Mức thay đổi tối thiểu có ý nghĩa lâm sàng (minimal clinically important difference) |
 | MI | Gán đa trị (multiple imputation) |
 | MNAR | Thiếu không ngẫu nhiên (missing not at random) |
+| MT | Mục tiêu nghiên cứu (MT1–MT3) |
 | OR | Tỷ số chênh (odds ratio) |
 | PR | Tỷ số tỷ lệ hiện mắc (prevalence ratio) |
 | RAASi | Thuốc ức chế hệ renin–angiotensin–aldosteron |
 | RECORD | Hướng dẫn báo cáo nghiên cứu dùng dữ liệu thu thập thường quy (REporting of studies Conducted using Observational Routinely-collected health Data) |
 | S-CVI | Chỉ số giá trị nội dung mức phiếu (scale-level content validity index); S-CVI/Ave: trung bình các I-CVI; S-CVI/UA: tỷ lệ mục được mọi chuyên gia đánh giá phù hợp |
-| SD | Độ lệch chuẩn |
 | SDC | Thay đổi nhỏ nhất phát hiện được (smallest detectable change) |
 | SEM | Sai số chuẩn của phép đo (standard error of measurement) |
 | SGLT2 | Đồng vận chuyển natri–glucose 2 |
 | SGLT2i | Thuốc ức chế đồng vận chuyển natri–glucose 2 |
-| SOP | Quy trình thao tác chuẩn (standard operating procedure) |
 | STROBE | Hướng dẫn báo cáo nghiên cứu quan sát (Strengthening the Reporting of Observational Studies in Epidemiology) |
 | T0 | Thời điểm Hội đồng Đạo đức BVQY175 phê duyệt — mốc sớm nhất được bắt đầu trích dữ liệu |
+| TB | Trung bình |
 | UACR | Tỷ số albumin/creatinin niệu (urine albumin-to-creatinine ratio) |
-| VIF | Hệ số phóng đại phương sai |
-| eGFR | Mức lọc cầu thận ước tính (estimated glomerular filtration rate) |
-| ĐN | Phân tích độ nhạy (đánh số ĐN1–ĐN9) |
-| ĐTĐ | Đái tháo đường |
+| VIF | Hệ số phóng đại phương sai (variance inflation factor) |
+| WHO | Tổ chức Y tế Thế giới (World Health Organization) |
 
 # 1. ĐẶT VẤN ĐỀ
 
-Bệnh thận mạn thường gặp ở người ĐTĐ típ 2 [1]; phát hiện sớm cần cả eGFR lẫn UACR — ADA 2026 khuyến cáo đánh giá UACR và eGFR ít nhất mỗi năm [2]; KDIGO 2024 định nghĩa và phân loại bệnh thận mạn theo eGFR và albumin niệu (A1–A3) [3]; chỉ định điều trị bảo vệ thận (ACEi/ARB, SGLT2i) ở người ĐTĐ có bệnh thận mạn theo hướng dẫn KDIGO 2022 về quản lý đái tháo đường trong bệnh thận mạn [4]. Không làm UACR thì bệnh thận mạn giai đoạn sớm bị bỏ sót và người bệnh mất cơ hội dùng các thuốc bảo vệ thận đã được khuyến cáo [4]. Tại Khoa Khám bệnh BVQY175 chưa có số liệu về mức độ được xét nghiệm, ghi nhận và điều trị bệnh thận mạn ở người ĐTĐ típ 2 ngoại trú.
+Bệnh thận mạn thường gặp ở người ĐTĐ típ 2 [1]; phát hiện sớm cần cả eGFR lẫn UACR — ADA 2026 khuyến cáo đánh giá UACR và eGFR ít nhất mỗi năm [2]; KDIGO 2024 định nghĩa và phân loại bệnh thận mạn theo eGFR và albumin niệu (A1–A3) [3]; hướng dẫn KDIGO 2022 về quản lý đái tháo đường trong bệnh thận mạn nêu chỉ định điều trị bảo vệ thận (ACEi/ARB, SGLT2i) ở người ĐTĐ có bệnh thận mạn [4]. Không làm UACR thì bệnh thận mạn giai đoạn sớm bị bỏ sót và người bệnh mất cơ hội dùng các thuốc bảo vệ thận đã được khuyến cáo [4]. Tại Khoa Khám bệnh BVQY175 chưa có số liệu về mức độ được xét nghiệm, ghi nhận và điều trị bệnh thận mạn ở người ĐTĐ típ 2 ngoại trú.
 
-Ở Việt Nam chưa thấy nghiên cứu đo đồng thời cả chuỗi xét nghiệm → phát hiện → ghi nhận → điều trị ở người ĐTĐ típ 2 ngoại trú tại bệnh viện quân đội; các nghiên cứu tìm được chủ yếu đo tỷ lệ bệnh thận mạn trong mẫu đã xét nghiệm hoặc mô tả kê đơn ở người đã có bệnh thận mạn. Đề tài mở rộng bối cảnh: chủ đề không mới trên thế giới, nhưng chuỗi chăm sóc thận chưa được đo trọn tại bệnh viện quân đội ở Việt Nam.
+Ở Việt Nam, chúng tôi chưa tìm thấy nghiên cứu đo đồng thời cả chuỗi chăm sóc thận (xét nghiệm, phát hiện, ghi nhận chẩn đoán và điều trị) ở người ĐTĐ típ 2 ngoại trú tại bệnh viện quân đội; các nghiên cứu tìm được chủ yếu đo tỷ lệ bệnh thận mạn trong mẫu đã xét nghiệm hoặc mô tả kê đơn ở người đã có bệnh thận mạn. Chủ đề này đã được nghiên cứu nhiều trên thế giới, nhưng chuỗi chăm sóc thận chưa được đo trọn tại bệnh viện quân đội ở Việt Nam.
 
-Xuất phát từ thực tế trên, chúng tôi tiến hành đề tài «Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026» với các mục tiêu sau:
+Xuất phát từ thực tế trên, chúng tôi tiến hành đề tài “Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026” với các mục tiêu sau:
 
 1. MT1: Mô tả thực trạng phát hiện bệnh thận mạn ở người bệnh đái tháo đường típ 2 điều trị ngoại trú được theo dõi đều (từ 2 lượt khám trong năm) tại Khoa Khám bệnh, Bệnh viện Quân y 175 năm 2026 — tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh (kết cục chính), tỷ lệ bệnh thận mạn theo KDIGO 2024 và tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán.
 2. MT2: Mô tả thực trạng điều trị bảo vệ thận (ACEi/ARB, SGLT2i) ở người bệnh đủ chỉ định theo KDIGO 2022 trong cùng quần thể.
@@ -101,13 +105,13 @@ Tài liệu được tìm trên PubMed (MEDLINE và phần còn lại của PubM
 
 > ("Diabetes Mellitus, Type 2"[Mesh] OR "type 2 diabetes"[tiab]) AND ("Renal Insufficiency, Chronic"[Mesh] OR "Diabetic Nephropathies"[Mesh] OR "chronic kidney disease"[tiab] OR albuminuria[tiab]) AND ("Guideline Adherence"[Mesh] OR "Practice Patterns, Physicians'"[Mesh] OR "care gap"[tiab] OR "albuminuria testing"[tiab] OR "albuminuria screening"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR "Ambulatory Care"[Mesh] OR "Primary Health Care"[Mesh] OR "primary care"[tiab]) AND 2019:2026[dp]
 
-Kết quả gồm 1 thử nghiệm ngẫu nhiên, 27 nghiên cứu quan sát; không có tổng quan hệ thống/phân tích gộp, hướng dẫn thực hành được PubMed đánh chỉ mục. Các nghiên cứu trong nước được tìm bổ sung trên Crossref.
+Theo loại xuất bản, kết quả gồm 1 thử nghiệm ngẫu nhiên và 27 nghiên cứu quan sát; không có bài nào được PubMed đánh chỉ mục là tổng quan hệ thống, phân tích gộp hay hướng dẫn thực hành. Các hướng dẫn thực hành, tổng quan hệ thống và đồng thuận chuyên môn ở Bảng 3.1 được bổ sung qua tra cứu có chủ đích ngoài chiến lược trên; các nghiên cứu trong nước được tìm bổ sung trên Crossref.
 
 Mọi tài liệu được trích dẫn trong đề cương đã được đối chiếu thông tin thư mục với PubMed và kiểm tra tình trạng rút bài trước khi sử dụng.
 
 ## 3.2. Các bằng chứng hiện có
 
-Ở các hệ thống có dữ liệu thường quy, chuỗi chăm sóc thận cho người ĐTĐ típ 2 hụt ở mọi bước. Xét nghiệm: chỉ 24,9% được làm cả creatinin lẫn UACR [5]; UACR 43,3% trong khi creatinin 84,8% [6]; phân tích gộp ước tỷ lệ xét nghiệm uACR khoảng 22% theo mô hình cố định, dao động rất rộng [7]. Ghi nhận: 54% bệnh thận mạn theo xét nghiệm chưa được chẩn đoán [8]; chẩn đoán chỉ được ghi ở 46,9% người có xét nghiệm bất thường lặp lại [9]. Điều trị: tỷ lệ chưa được kê SGLT2i 80,3% và RAASi 42,0% ở bệnh thận ĐTĐ [10]. Trong nước, chỉ một nghiên cứu đo tỷ lệ làm UACR, ở người tăng huyết áp điều trị nội trú [11]. Các bằng chứng trên gần như toàn bộ là nghiên cứu quan sát trên dữ liệu thường quy, đa số ở Âu–Mỹ–Úc.
+Ở các hệ thống có dữ liệu thường quy, chuỗi chăm sóc thận cho người ĐTĐ típ 2 còn thiếu hụt ở mọi bước. Về xét nghiệm, chỉ 24,9% người bệnh được làm cả creatinin lẫn UACR [5]; tỷ lệ làm UACR là 43,3% trong khi tỷ lệ làm creatinin là 84,8% [6]; một phân tích gộp ước tính tỷ lệ xét nghiệm UACR khoảng 22% theo mô hình hiệu ứng cố định, với mức dao động rất rộng giữa các nghiên cứu [7]. Về ghi nhận chẩn đoán, 54% trường hợp bệnh thận mạn theo xét nghiệm chưa được chẩn đoán [8]; chẩn đoán chỉ được ghi ở 46,9% người có xét nghiệm bất thường lặp lại [9]. Về điều trị, ở người bệnh thận do ĐTĐ, 80,3% chưa được kê SGLT2i và 42,0% chưa được kê RAASi [10]. Trong nước, chỉ một nghiên cứu đo tỷ lệ làm UACR, ở người tăng huyết áp điều trị nội trú [11]. Các bằng chứng trên gần như toàn bộ là nghiên cứu quan sát trên dữ liệu thường quy, đa số ở Âu–Mỹ–Úc. Các tổng quan hệ thống, hướng dẫn, đồng thuận chuyên môn và thử nghiệm chính được tóm tắt ở Bảng 3.1.
 
 **Bảng 3.1. Các tổng quan hệ thống, hướng dẫn, đồng thuận chuyên môn và thử nghiệm chính liên quan đến đề tài**
 
@@ -124,20 +128,20 @@ Các tổng quan, nghiên cứu, hướng dẫn và tài liệu phương pháp k
 
 ## 3.3. Khoảng trống nghiên cứu và đóng góp của đề tài
 
-Mở rộng bối cảnh: đo trọn chuỗi chăm sóc thận (xét nghiệm, ghi nhận chẩn đoán, điều trị theo chỉ định) ở người ĐTĐ típ 2 ngoại trú một bệnh viện quân đội tuyến cuối; các nghiên cứu trong nước tìm được chỉ đo tỷ lệ BTM trong mẫu đã xét nghiệm hoặc mô tả kê đơn ở người đã có BTM. Hạn chế của việc tìm tài liệu: mới tra PubMed và Crossref, chưa tra Google Scholar và thư viện luận văn trong nước.
+Đóng góp của đề tài là mở rộng bối cảnh: đo trọn chuỗi chăm sóc thận (xét nghiệm, ghi nhận chẩn đoán, điều trị theo chỉ định) ở người ĐTĐ típ 2 ngoại trú tại một bệnh viện quân đội tuyến cuối, trong khi các nghiên cứu trong nước tìm được chỉ đo tỷ lệ BTM trong mẫu đã xét nghiệm hoặc mô tả kê đơn ở người đã có BTM. Hạn chế của việc tìm tài liệu: mới tra PubMed và Crossref, chưa tra Google Scholar và thư viện luận văn trong nước.
 
-Tra cứu ClinicalTrials.gov ngày 25/10/2026 với cùng chiến lược ghi nhận 0 hồ sơ đăng ký, trong đó 0 nghiên cứu đang hoặc sắp tuyển người tham gia.
+Tra cứu ClinicalTrials.gov ngày 25/10/2026 với cùng chiến lược tìm kiếm không ghi nhận hồ sơ đăng ký nào, do đó không có nghiên cứu đang hoặc sắp tuyển người tham gia.
 
 # 4. ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP NGHIÊN CỨU
 
 ## 4.1. Thiết kế nghiên cứu
 
-Nghiên cứu được thiết kế theo phương pháp nghiên cứu cắt ngang mô tả có phân tích, trên dữ liệu y tế thu thập thường quy: chủ nhiệm mở và trích hồ sơ bệnh án điện tử trên phần mềm eHospital (HIS của BVQY175) của một mẫu ngẫu nhiên người ĐTĐ típ 2, đo tình trạng xét nghiệm, ghi nhận chẩn đoán và kê đơn trong cửa sổ 12 tháng (01/01/2026–31/12/2026). Câu hỏi nghiên cứu mang tính mô tả nên thiết kế cắt ngang là phù hợp; MT3 chỉ ước lượng mối liên quan (tỷ số tỷ lệ hiện mắc), không suy nhân quả. Các thiết kế đã cân nhắc nhưng không chọn: (1) đoàn hệ hồi cứu theo dõi kết cục thận — vượt nhu cầu câu hỏi (đề tài đo khoảng trống chăm sóc, không đo tiến triển bệnh) và cần dữ liệu nhiều năm; (2) cắt ngang thu mới bằng phỏng vấn/khám — tốn nguồn lực và không đo được hành vi xét nghiệm, kê đơn thực tế; (3) trích xuất tự động toàn bộ quần thể từ HIS — không dùng vì dữ liệu của từng người do chủ nhiệm mở hồ sơ và trích tay; danh sách người bệnh lấy từ HIS chỉ dùng làm khung mẫu, nên lấy một mẫu ngẫu nhiên đủ cỡ thay cho lấy toàn bộ. Khung đo tương tự [5] (cohort hồi cứu trên dữ liệu thường quy) và [8] (cắt ngang, dùng hồi quy Poisson phương sai vững). Chuẩn báo cáo: STROBE kèm phần mở rộng RECORD cho nghiên cứu dùng dữ liệu y tế thu thập thường quy [37].
+Nghiên cứu cắt ngang mô tả có phân tích, trên dữ liệu y tế thu thập thường quy: chủ nhiệm mở và trích hồ sơ bệnh án điện tử trên phần mềm eHospital (HIS của BVQY175) của một mẫu ngẫu nhiên người ĐTĐ típ 2, đo tình trạng xét nghiệm, ghi nhận chẩn đoán và kê đơn trong cửa sổ 12 tháng (01/01/2026–31/12/2026). Câu hỏi nghiên cứu mang tính mô tả nên thiết kế cắt ngang là phù hợp; MT3 chỉ ước lượng mối liên quan (tỷ số tỷ lệ hiện mắc), không suy nhân quả. Các thiết kế đã cân nhắc nhưng không chọn: (1) đoàn hệ hồi cứu theo dõi kết cục thận — vượt nhu cầu câu hỏi (đề tài đo khoảng trống chăm sóc, không đo tiến triển bệnh) và cần dữ liệu nhiều năm; (2) cắt ngang thu mới bằng phỏng vấn/khám — tốn nguồn lực và không đo được hành vi xét nghiệm, kê đơn thực tế; (3) trích xuất tự động toàn bộ quần thể từ HIS — không dùng vì dữ liệu của từng người do chủ nhiệm mở hồ sơ và trích tay; danh sách người bệnh lấy từ HIS chỉ dùng làm khung mẫu, nên lấy một mẫu ngẫu nhiên đủ cỡ thay cho lấy toàn bộ. Khung đo tương tự [5] (đoàn hệ hồi cứu trên dữ liệu thường quy) và [8] (cắt ngang, dùng hồi quy Poisson phương sai vững). Chuẩn báo cáo: STROBE kèm phần mở rộng RECORD cho nghiên cứu dùng dữ liệu y tế thu thập thường quy [37].
 
 ## 4.2. Địa điểm và thời gian nghiên cứu
 
 - Địa điểm: Khoa Khám bệnh, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh — bệnh viện quân đội tuyến cuối; người bệnh gồm quân nhân, người có BHYT và người khám dịch vụ, theo dõi ĐTĐ ở phòng khám nội tiết hoặc nội chung. Nguồn dữ liệu: hồ sơ bệnh án điện tử trên phần mềm eHospital (HIS của BVQY175) — lượt khám, mã ICD-10, kết quả xét nghiệm, đơn thuốc ngoại trú.
-- Thời gian: Cửa sổ dữ liệu hồi cứu 01/01/2026–31/12/2026. Thời gian thực hiện dự kiến 11/2026–09/2027 theo sổ tiến độ đề tài. Trích xuất dữ liệu chỉ bắt đầu sau khi Hội đồng Đạo đức BVQY175 phê duyệt (T0), kế hoạch phân tích thống kê đã khoá và cửa sổ đã khép (sớm nhất tháng 02/2027) — dự kiến 16/02–02/04/2027, gồm trích thử phiếu 16–19/02/2027.
+- Thời gian: Cửa sổ dữ liệu hồi cứu 01/01/2026–31/12/2026. Thời gian thực hiện dự kiến 11/2026–09/2027 (các mốc ở mục 4.7). Trích xuất dữ liệu chỉ bắt đầu sau khi Hội đồng Đạo đức BVQY175 phê duyệt (T0), kế hoạch phân tích thống kê đã khoá và cửa sổ đã khép (sớm nhất tháng 02/2027) — dự kiến 16/02–02/04/2027, gồm trích thử phiếu 16–19/02/2027.
 
 ## 4.3. Đối tượng nghiên cứu
 
@@ -151,7 +155,7 @@ Người từ 18 tuổi, chẩn đoán đái tháo đường típ 2 (ICD-10 E11)
 
 ### 4.3.2. Tiêu chuẩn loại trừ
 
-- Đang lọc máu (thận nhân tạo hoặc lọc màng bụng) hoặc đã ghép thận — nhận diện qua mã ICD-10 (ví dụ Z49, Z99.2, Z94.0; danh sách đầy đủ chốt cùng codebook) hoặc chỉ định lọc máu trong HIS.
+- Đang lọc máu (thận nhân tạo hoặc lọc màng bụng) hoặc đã ghép thận — nhận diện qua mã ICD-10 (Z49, Z99.2, Z94.0, T86.1; danh mục mã ở Phụ lục E) hoặc chỉ định lọc máu trong HIS.
 - Có thai trong cửa sổ (mã chương O hoặc Z33).
 - Có mã ĐTĐ típ 1 (E10) hoặc thể khác (E12, E13) ở bất kỳ lượt khám nào trong cửa sổ; người chỉ có mã E14 (không xác định típ) không vào mẫu và được đếm trong sơ đồ chọn.
 
@@ -167,24 +171,28 @@ Cỡ mẫu được tính cho kết cục chính (MT1). Các kết cục phụ t
 
 ### 4.4.2. Phương pháp chọn mẫu
 
-Chọn mẫu ngẫu nhiên đơn ở cấp người bệnh: (1) lập khung mẫu là danh sách người bệnh (mỗi người một dòng, theo mã người bệnh) có mã ICD-10 E11 khám ngoại trú tại Khoa Khám bệnh trong năm 2026, lấy từ chức năng tra cứu/danh sách của eHospital — gộp các lượt khám của cùng một người trước khi chọn để người khám nhiều lần không có xác suất được chọn cao hơn; (2) xếp danh sách theo thứ tự ngẫu nhiên do máy tính sinh, ghi lại hạt giống (seed); (3) mở lần lượt từng hồ sơ theo đúng thứ tự đó, kiểm tiêu chuẩn chọn vào và loại trừ; hồ sơ không đủ tiêu chuẩn ghi lý do và chuyển sang hồ sơ kế tiếp, cho tới khi đủ cỡ mẫu tính (385 hồ sơ đủ tiêu chuẩn; không hiệu chỉnh quần thể hữu hạn). Nếu eHospital không lập được danh sách khung mẫu thì dừng, chọn cách chọn mẫu khác và sửa đề cương trước khi trình Hội đồng. Sơ đồ chọn (STROBE, RECORD) báo số người trong khung mẫu, số lượng hồ sơ đã mở, số bị loại theo từng lý do và số đưa vào phân tích.
+Chọn mẫu ngẫu nhiên đơn ở cấp người bệnh: (1) lập khung mẫu là danh sách người bệnh (mỗi người một dòng, theo mã người bệnh) có mã ICD-10 E11 khám ngoại trú tại Khoa Khám bệnh trong năm 2026, lấy từ chức năng tra cứu/danh sách của eHospital — gộp các lượt khám của cùng một người trước khi chọn để người khám nhiều lần không có xác suất được chọn cao hơn; (2) xếp danh sách theo thứ tự ngẫu nhiên do máy tính sinh, ghi lại hạt giống (seed); (3) mở lần lượt từng hồ sơ theo đúng thứ tự đó, kiểm tiêu chuẩn chọn vào và loại trừ; hồ sơ không đủ tiêu chuẩn ghi lý do và chuyển sang hồ sơ kế tiếp, cho tới khi đủ cỡ mẫu tính (385 hồ sơ đủ tiêu chuẩn; không hiệu chỉnh quần thể hữu hạn). Nếu eHospital không lập được danh sách khung mẫu thì dừng, chọn cách chọn mẫu khác và sửa đề cương trước khi trình Hội đồng. Sơ đồ chọn (STROBE, RECORD) báo số người trong khung mẫu, số hồ sơ đã mở, số bị loại theo từng lý do và số đưa vào phân tích.
 
 ## 4.5. Biến số và chỉ số nghiên cứu
 
-- Kết cục chính: Được xét nghiệm đủ UACR và creatinin huyết thanh trong cửa sổ 12 tháng, xác định bằng biến nhị phân trích từ hồ sơ trên eHospital: bằng 1 khi trong 01/01–31/12/2026 người bệnh có ít nhất một kết quả UACR (tỷ số albumin/creatinin niệu, mg/g hoặc mg/mmol) và ít nhất một kết quả creatinin huyết thanh (để tính eGFR) trong eHospital; bằng 0 khi thiếu một hoặc cả hai. Xét nghiệm albumin niệu không ở dạng tỷ số (nồng độ microalbumin niệu đơn thuần, que nhúng protein niệu) không tính là UACR ở phân tích chính — ghi riêng và đưa vào phân tích độ nhạy. Kết quả làm ở cơ sở khác chỉ được tính ở phân tích độ nhạy, và chỉ khi bệnh án ghi rõ ngày và kết quả. Kết cục được đánh giá trong một khoảng cắt ngang là cửa sổ hồi cứu 12 tháng 01/01/2026–31/12/2026 [2], không theo dõi dọc.
-- Kết cục phụ: phụ 1 — bệnh thận mạn theo KDIGO 2024 [3]: eGFR dưới 60 mL/phút/1,73 m² và/hoặc UACR từ 30 mg/g (3 mg/mmol), bất thường ở 2 lần đo cách nhau từ 90 ngày; chỉ 1 lần bất thường thì xếp nhóm «nghi bệnh thận mạn», báo cáo riêng. eGFR tính từ creatinin bằng phương trình CKD-EPI 2021 không hệ số chủng tộc [39]. Mẫu số là người có đủ xét nghiệm để phân loại; báo cáo phân bố theo nhóm và A1–A3; phụ 2 — bệnh thận mạn chưa được ghi nhận: người thoả định nghĩa bệnh thận mạn theo xét nghiệm (Phụ 1) nhưng không có mã ICD-10 của bệnh thận mạn hoặc biến chứng thận do ĐTĐ ở bất kỳ lượt khám nào trong cửa sổ (danh sách mã chốt cùng codebook); mẫu số là người có bệnh thận mạn theo xét nghiệm; phụ 3 — điều trị bảo vệ thận ở người đủ chỉ định theo KDIGO 2022 [4]: (a) ACEi hoặc ARB ở người có tăng huyết áp và albumin niệu đã xác nhận (UACR từ 30 mg/g ở 2 lần đo cách nhau từ 90 ngày; phân tích độ nhạy ĐN6 ở mục 4.9 chỉ cần một lần); (b) SGLT2i ở người có bệnh thận mạn và eGFR từ 20 mL/phút/1,73 m². «Đang dùng» là có đơn kê thuốc nhóm đó tại lượt khám cuối cùng trong cửa sổ; người có chống chỉ định ghi trong hồ sơ được loại khỏi mẫu số và báo cáo riêng; phụ 4 — yếu tố liên quan với việc không được xét nghiệm đủ: hồi quy Poisson phương sai vững, báo cáo tỷ số tỷ lệ hiện mắc (PR) kèm KTC 95%; biến giải thích là 12 yếu tố nêu ở mục 4.9; phân tích thăm dò.
-- Các biến khác (đặc điểm chung, biến hiệu chỉnh): nhóm eGFR theo KDIGO; nhóm albumin niệu theo KDIGO (A1–A3); người bệnh đủ chỉ định ACEi/ARB theo KDIGO 2022; người bệnh đủ chỉ định SGLT2i theo KDIGO 2022.
+- Kết cục chính: Được xét nghiệm đủ UACR và creatinin huyết thanh trong cửa sổ 12 tháng, xác định bằng biến nhị phân: bằng 1 khi trong 01/01–31/12/2026 người bệnh có ít nhất một kết quả UACR (tỷ số albumin/creatinin niệu, mg/g hoặc mg/mmol) và ít nhất một kết quả creatinin huyết thanh (để tính eGFR) trong eHospital; bằng 0 khi thiếu một hoặc cả hai. Xét nghiệm albumin niệu không ở dạng tỷ số (nồng độ microalbumin niệu đơn thuần, que nhúng protein niệu) không tính là UACR ở phân tích chính — ghi riêng và đưa vào phân tích độ nhạy. Kết quả làm ở cơ sở khác chỉ được tính ở phân tích độ nhạy, và chỉ khi bệnh án ghi rõ ngày và kết quả. Kết cục được đánh giá trên toàn bộ cửa sổ hồi cứu 12 tháng (01/01/2026–31/12/2026), phù hợp khuyến cáo đánh giá UACR và eGFR ít nhất mỗi năm [2]; không theo dõi dọc.
+- Kết cục phụ:
+  - Phụ 1 — bệnh thận mạn theo KDIGO 2024 [3]: eGFR < 60 mL/phút/1,73 m² và/hoặc UACR ≥ 30 mg/g (3 mg/mmol), bất thường ở 2 lần đo cách nhau ít nhất 90 ngày; người chỉ có 1 lần bất thường được xếp nhóm “nghi bệnh thận mạn” và báo cáo riêng. eGFR tính từ creatinin bằng phương trình CKD-EPI 2021 không hệ số chủng tộc [39]. Mẫu số là người có đủ xét nghiệm để phân loại; báo cáo phân bố theo nhóm eGFR (G1–G5) và nhóm albumin niệu (A1–A3).
+  - Phụ 2 — bệnh thận mạn chưa được ghi nhận: người thoả định nghĩa bệnh thận mạn theo xét nghiệm (Phụ 1) nhưng không có mã ICD-10 của bệnh thận mạn hoặc biến chứng thận do ĐTĐ ở bất kỳ lượt khám nào trong cửa sổ (danh mục mã ở Phụ lục E); mẫu số là người có bệnh thận mạn theo xét nghiệm.
+  - Phụ 3 — điều trị bảo vệ thận ở người đủ chỉ định theo KDIGO 2022 [4]: (a) ACEi hoặc ARB ở người có tăng huyết áp và albumin niệu đã xác nhận (UACR ≥ 30 mg/g ở 2 lần đo cách nhau ít nhất 90 ngày; phân tích độ nhạy ĐN6 ở mục 4.9 chỉ cần một lần); (b) SGLT2i ở người có bệnh thận mạn và eGFR ≥ 20 mL/phút/1,73 m². “Đang dùng” là có đơn kê thuốc nhóm đó tại lượt khám cuối cùng trong cửa sổ; người có chống chỉ định hoặc không dung nạp ghi trong hồ sơ được loại khỏi mẫu số và báo cáo riêng.
+  - Phụ 4 — yếu tố liên quan với việc không được xét nghiệm đủ (MT3, phân tích thăm dò): hồi quy Poisson phương sai vững, báo cáo tỷ số tỷ lệ hiện mắc (PR) kèm KTC 95%; biến giải thích là 12 yếu tố nêu ở mục 4.9.
+- Các biến khác (đặc điểm chung, biến hiệu chỉnh): Nhóm eGFR theo KDIGO; nhóm albumin niệu theo KDIGO (A1–A3); người bệnh đủ chỉ định ACEi/ARB theo KDIGO 2022; người bệnh đủ chỉ định SGLT2i theo KDIGO 2022.
 - Định nghĩa, loại biến và cách mã hoá của từng biến trình bày ở Phụ lục D.
 
 ## 4.6. Công cụ và kỹ thuật thu thập số liệu
 
 - Công cụ: Phiếu thu thập số liệu (Phụ lục C) là phiếu trích hồ sơ do nhóm nghiên cứu tự xây dựng từ bộ biến số của đề tài. Mỗi trường của phiếu có định nghĩa vận hành, vị trí dữ kiện trên eHospital và quy tắc mã hoá được viết trước (Phụ lục D, danh mục mã ở Phụ lục E và quy trình trích hồ sơ viết sẵn). Phiếu chỉ ghi lại dữ kiện có sẵn trong hồ sơ (mã ICD-10, kết quả xét nghiệm, đơn thuốc, lượt khám); phiếu không phải thang đo hay bộ câu hỏi và các mục không được cộng thành điểm.
-- Nguồn số liệu: hồ sơ bệnh án điện tử trên phần mềm eHospital, trích theo quy trình trích hồ sơ.
+- Nguồn số liệu: Hồ sơ bệnh án điện tử trên phần mềm eHospital, trích theo quy trình trích hồ sơ.
 - Thời điểm thu thập: Không áp dụng — cắt ngang hồi cứu, không theo dõi; mỗi người được quan sát một lần trên dữ liệu có sẵn trong cửa sổ 12 tháng.
 - Kiểm định phiếu trích hồ sơ, gồm ba bước:
   1. Độ giá trị nội dung: trước khi nộp Hội đồng, một hội đồng 5 chuyên gia (tối thiểu 3 người; gồm bác sĩ nội tiết, bác sĩ thận học, dược sĩ lâm sàng, người phụ trách mã hoá bệnh tật và người làm phương pháp nghiên cứu hoặc thống kê; chủ nhiệm không chấm) chấm độc lập từng định nghĩa vận hành theo thang 4 mức về mức phù hợp với khái niệm cần đo theo KDIGO 2022, KDIGO 2024, ADA 2026 và mục tiêu đề tài, trên 43 trường nhập tay và 18 biến phái sinh định nghĩa kết cục. Chỉ số giá trị nội dung mức mục (I-CVI) được tính kèm kappa hiệu chỉnh cho đồng thuận ngẫu nhiên [40]; chỉ số mức phiếu được báo theo cả hai cách S-CVI/Ave và S-CVI/UA [41]. Mục có I-CVI dưới 0,78 [40] được sửa theo góp ý và chấm lại, tối đa hai vòng; hai câu hỏi mở thu nhận dữ kiện cần thiết mà phiếu còn thiếu.
-  2. Thử nghiệm phiếu (trích thử): sau khi Hội đồng duyệt, chủ nhiệm và người trích lại trích độc lập 10 hồ sơ tập ở 10 vị trí cuối của danh sách đã xếp ngẫu nhiên (không thuộc mẫu nghiên cứu; thêm tối đa 10 hồ sơ tập nếu cần trích thử vòng hai), ghi nhật ký vấn đề theo từng trường (khó hiểu định nghĩa, khó tìm dữ kiện, phải phán đoán, khó mã hoá) và thời gian trích mỗi hồ sơ. Mục có vấn đề ở từ 10% lượt trích được viết lại quy tắc; nếu từ 3 mục có vấn đề ở từ 20% lượt trích thì sửa rồi trích thử vòng hai. Quy tắc chưa rõ được viết bổ sung vào quy trình trích hồ sơ; phiếu và quy trình được khoá phiên bản sau trích thử, trước hồ sơ chính thức đầu tiên. Thay đổi về biến số (thêm, bỏ hoặc đổi định nghĩa) được báo Hội đồng Đạo đức trước khi áp dụng.
-  3. Độ tin cậy giữa hai người trích, theo các tiêu chí phương pháp của nghiên cứu trích hồ sơ [42]: một người thứ hai độc lập với chủ nhiệm, không xem bản trích chính, trích lại 10% hồ sơ chọn ngẫu nhiên (39 hồ sơ, hai đợt: 10 hồ sơ chọn trong 100 hồ sơ đủ tiêu chuẩn đầu tiên và 29 hồ sơ khi trích xong) và sàng lọc lại 10 hồ sơ chọn ngẫu nhiên trong số hồ sơ bị loại. Đồng thuận được tính trên bản trích của chủ nhiệm trước khi hoà giải. Với mọi trường, tính tỷ lệ đồng thuận tuyệt đối kèm KTC 95% Wilson; với biến phân loại chính, tính thêm hệ số kappa Cohen kèm KTC 95%, tỷ lệ đồng thuận dương và âm, chỉ số tỷ lệ hiện mắc và chỉ số lệch [43–45]; với biến đếm, tính ICC hai chiều ngẫu nhiên, đồng thuận tuyệt đối, một người đo [46] và giới hạn đồng thuận 95% Bland–Altman [47]. Ngưỡng chấp nhận là đồng thuận từ 95% ở kết cục chính được xét nghiệm đủ UACR và creatinin năm 2026; nếu thấp hơn, dừng trích, tìm nguyên nhân, sửa quy tắc và rà lại biến bị ảnh hưởng ở mọi hồ sơ đã trích. Biến phân loại khác có đồng thuận dưới 90% thì xem lại quy tắc trích. Kết quả được báo cáo theo hướng dẫn GRRAS [48].
+  2. Thử nghiệm phiếu (trích thử): sau khi Hội đồng duyệt, chủ nhiệm và người trích lại trích độc lập 10 hồ sơ tập ở 10 vị trí cuối của danh sách đã xếp ngẫu nhiên (không thuộc mẫu nghiên cứu; thêm tối đa 10 hồ sơ tập nếu cần trích thử vòng hai), ghi nhật ký vấn đề theo từng trường (khó hiểu định nghĩa, khó tìm dữ kiện, phải phán đoán, khó mã hoá) và thời gian trích mỗi hồ sơ. Mục gặp vấn đề ở ≥ 10% lượt trích được viết lại quy tắc; nếu có từ 3 mục trở lên gặp vấn đề ở ≥ 20% lượt trích thì sửa phiếu rồi trích thử vòng hai. Quy tắc chưa rõ được viết bổ sung vào quy trình trích hồ sơ; phiếu và quy trình được khoá phiên bản sau trích thử, trước hồ sơ chính thức đầu tiên. Thay đổi về biến số (thêm, bỏ hoặc đổi định nghĩa) được báo Hội đồng Đạo đức trước khi áp dụng.
+  3. Độ tin cậy giữa hai người trích, theo các tiêu chí phương pháp của nghiên cứu trích hồ sơ [42]: một người thứ hai độc lập với chủ nhiệm, không xem bản trích chính, trích lại 10% hồ sơ chọn ngẫu nhiên (39 hồ sơ, hai đợt: 10 hồ sơ chọn trong 100 hồ sơ đủ tiêu chuẩn đầu tiên và 29 hồ sơ khi trích xong) và sàng lọc lại 10 hồ sơ chọn ngẫu nhiên trong số hồ sơ bị loại. Đồng thuận được tính trên bản trích của chủ nhiệm trước khi hoà giải. Với mọi trường, tính tỷ lệ đồng thuận tuyệt đối kèm KTC 95% Wilson; với biến phân loại chính, tính thêm hệ số kappa Cohen kèm KTC 95%, tỷ lệ đồng thuận dương và âm, chỉ số tỷ lệ hiện mắc và chỉ số lệch [43–45]; với biến đếm, tính ICC hai chiều ngẫu nhiên, đồng thuận tuyệt đối, một người đo [46] và giới hạn đồng thuận 95% Bland–Altman [47]. Ngưỡng chấp nhận là đồng thuận ≥ 95% ở kết cục chính được xét nghiệm đủ UACR và creatinin năm 2026; nếu thấp hơn, dừng trích, tìm nguyên nhân, sửa quy tắc và rà lại biến bị ảnh hưởng ở mọi hồ sơ đã trích. Biến phân loại khác có đồng thuận dưới 90% thì xem lại quy tắc trích. Kết quả được báo cáo theo hướng dẫn GRRAS [48].
 - Các đặc tính đo lường dành cho thang đo và bộ câu hỏi — độ giá trị cấu trúc bằng phân tích nhân tố khám phá hoặc khẳng định, độ tin cậy nội tại Cronbach's α, độ tin cậy lặp lại test–retest, độ giá trị hội tụ hoặc phân biệt, độ đáp ứng và MCID, sai số đo lường SEM/SDC, hiệu ứng sàn–trần — không thuộc phạm vi đề tài vì phiếu trích không tạo điểm thang đo.
 
 ## 4.7. Quy trình nghiên cứu
@@ -204,19 +212,23 @@ Chọn mẫu ngẫu nhiên đơn ở cấp người bệnh: (1) lập khung mẫ
 
 ## 4.8. Sai số và biện pháp khống chế sai số
 
+Các nguồn sai số dự kiến, chiều ảnh hưởng và biện pháp khống chế được trình bày ở Bảng 4.1.
+
+**Bảng 4.1. Các nguồn sai lệch và biện pháp khống chế**
+
 | Nguồn sai lệch | Chiều ảnh hưởng dự kiến | Biện pháp khống chế |
 |---|---|---|
-| Sai lệch chọn do tiêu chí từ 2 lượt khám | Mẫu nghiêng về người theo dõi đều nên có thể ước lượng CAO tỷ lệ được xét nghiệm so với mọi người ĐTĐ típ 2 từng đến khám. | Sơ đồ chọn đếm hồ sơ bị loại vì chỉ 1 lượt khám và so sánh tuổi, giới, nhóm đối tượng với mẫu nghiên cứu. |
-| Sai lệch chọn mẫu | Chọn theo lượt khám làm người khám nhiều lần (thường được theo dõi kỹ hơn) dễ vào mẫu → ước lượng CAO tỷ lệ được xét nghiệm. | Khung mẫu ở cấp người bệnh (gộp lượt khám trùng); thứ tự ngẫu nhiên do máy tính sinh, ghi seed; mở hồ sơ đúng thứ tự; ghi lý do mọi hồ sơ bị loại; người trích không tự chọn hồ sơ. |
+| Sai lệch chọn do tiêu chí từ 2 lượt khám | Mẫu nghiêng về người theo dõi đều nên có thể ước lượng cao tỷ lệ được xét nghiệm so với mọi người ĐTĐ típ 2 từng đến khám. | Sơ đồ chọn đếm hồ sơ bị loại vì chỉ 1 lượt khám và so sánh tuổi, giới, nhóm đối tượng với mẫu nghiên cứu. |
+| Sai lệch chọn mẫu | Chọn theo lượt khám làm người khám nhiều lần (thường được theo dõi kỹ hơn) dễ vào mẫu, dẫn đến ước lượng cao tỷ lệ được xét nghiệm. | Khung mẫu ở cấp người bệnh (gộp lượt khám trùng); thứ tự ngẫu nhiên do máy tính sinh, ghi seed; mở hồ sơ đúng thứ tự; ghi lý do mọi hồ sơ bị loại; người trích không tự chọn hồ sơ. |
 | Sai lệch phân loại quần thể do mã ICD-10 | Mã E11 ghi nhầm làm lẫn người không ĐTĐ típ 2 vào mẫu; chiều lệch của kết cục không xác định trước. | Định nghĩa ca bằng E11, loại E10/E12/E13, đếm riêng người chỉ có E14; phân tích độ nhạy giới hạn người có E11 kèm ít nhất một đơn thuốc hạ glucose trong cửa sổ. |
 | Sai lệch thông tin — xét nghiệm làm ngoài BVQY175 không có trong eHospital | Ước lượng thấp tỷ lệ được xét nghiệm đủ. | Khi mở hồ sơ, ghi riêng kết quả ngoài viện nếu bệnh án ghi rõ ngày và kết quả; báo tỷ lệ này và phân tích độ nhạy tính lại kết cục chính. |
 | Sai lệch phân loại kết cục — UACR với nồng độ microalbumin niệu hoặc que nhúng | Loại dạng khác thì đếm thiếu xét nghiệm; gộp vào thì đếm thừa so với khuyến cáo. | Bảng ánh xạ mã xét nghiệm HIS do hai người duyệt trước khi trích; phân tích chính chỉ tính UACR dạng tỷ số, phân tích độ nhạy tính cả các dạng albumin niệu khác. |
-| Sai lệch phân loại bệnh thận mạn khi chỉ có 1 lần đo | Dùng 1 lần đo sẽ ước lượng CAO tỷ lệ bệnh thận mạn. | Xác nhận tính mạn bằng 2 lần đo bất thường cách nhau từ 90 ngày theo KDIGO 2024; người chỉ có 1 lần bất thường xếp nhóm «nghi bệnh thận mạn», báo cáo riêng. |
+| Sai lệch phân loại bệnh thận mạn khi chỉ có 1 lần đo | Dùng 1 lần đo sẽ ước lượng cao tỷ lệ bệnh thận mạn. | Xác nhận tính mạn bằng 2 lần đo bất thường cách nhau ít nhất 90 ngày theo KDIGO 2024; người chỉ có 1 lần bất thường xếp nhóm “nghi bệnh thận mạn”, báo cáo riêng. |
 | Sai lệch thông tin — thuốc kê hoặc mua ngoài BVQY175 | Ước lượng thấp tỷ lệ đang dùng ACEi/ARB và SGLT2i. | Ghi riêng thuốc đang dùng mà bệnh án có ghi nhưng không có đơn trong eHospital; nêu rõ ở mục 4.11. |
 | Thời gian quan sát không đều trong cửa sổ | Người bắt đầu khám muộn có ít thời gian được xét nghiệm nên kéo tỷ lệ xuống thấp. | Báo phân bố số tháng từ lượt khám đầu đến hết cửa sổ; phân tích độ nhạy giới hạn người có lượt khám đầu trước 01/07/2026. |
 | Nhiễu và tương quan trong cụm ở phân tích yếu tố liên quan (MT3) | Không xác định trước; chỉ ảnh hưởng MT3, không ảnh hưởng ước lượng tỷ lệ của MT1–MT2. | Mô hình đa biến với tập biến đã chốt; phòng khám theo dõi chính là biến trong mô hình; sai số chuẩn vững; diễn giải là mối liên quan, không nhân quả. |
-| Sai lệch báo cáo và phân tích có chọn lọc | Chỉ báo các chỉ số «đẹp» hoặc đổi định nghĩa sau khi thấy số liệu. | Khoá kế hoạch phân tích thống kê trước khi nhận dữ liệu; báo cáo đủ mọi kết cục đã định trước theo STROBE và RECORD. |
-| Sai lệch người trích (chủ nhiệm vừa trích dữ liệu vừa là bác sĩ của khoa được đánh giá) | Có thể ghi nhận xét nghiệm hoặc thuốc ở chỗ không rõ ràng → ước lượng CAO chất lượng chăm sóc. | Quy tắc trích và định nghĩa từng biến viết trước; chỉ ghi dữ kiện khách quan có trong hồ sơ (kết quả xét nghiệm, mã, đơn thuốc), không diễn giải; người thứ hai độc lập trích lại 10% hồ sơ chọn ngẫu nhiên, báo mức đồng thuận (kappa) ở từng biến chính; định nghĩa vận hành được hội đồng chuyên gia thẩm định độ giá trị nội dung và phiếu được trích thử trước khi khoá (mục 4.6); đồng thuận tính trên bản trích trước hoà giải. |
+| Sai lệch báo cáo và phân tích có chọn lọc | Chỉ báo các chỉ số “đẹp” hoặc đổi định nghĩa sau khi thấy số liệu. | Khoá kế hoạch phân tích thống kê trước khi nhận dữ liệu; báo cáo đủ mọi kết cục đã định trước theo STROBE và RECORD. |
+| Sai lệch người trích (chủ nhiệm vừa trích dữ liệu vừa là bác sĩ của khoa được đánh giá) | Có thể ghi nhận xét nghiệm hoặc thuốc ở chỗ không rõ ràng, dẫn đến ước lượng cao chất lượng chăm sóc. | Quy tắc trích và định nghĩa từng biến viết trước; chỉ ghi dữ kiện khách quan có trong hồ sơ (kết quả xét nghiệm, mã, đơn thuốc), không diễn giải; người thứ hai độc lập trích lại 10% hồ sơ chọn ngẫu nhiên, báo mức đồng thuận (kappa) ở từng biến chính; định nghĩa vận hành được hội đồng chuyên gia thẩm định độ giá trị nội dung và phiếu được trích thử trước khi khoá (mục 4.6); đồng thuận tính trên bản trích trước hoà giải. |
 | Sai lệch phân loại do định nghĩa biến mơ hồ hoặc khó áp dụng trên eHospital | Không xác định trước; làm lệch các tỷ lệ của MT1–MT2. | Hội đồng chuyên gia chấm I-CVI cho từng định nghĩa; trích thử 10 hồ sơ tập có nhật ký vấn đề; quy tắc bổ sung viết vào quy trình trích hồ sơ trước khi trích chính thức (mục 4.6). |
 
 ## 4.9. Xử lý và phân tích số liệu
@@ -232,15 +244,15 @@ Kế hoạch phân tích thống kê (phiên bản 1.0) được khoá trước 
   - Phụ 2 (BTM chưa ghi nhận): người có bệnh thận mạn theo xét nghiệm (đã xác nhận ở 2 lần đo).
   - Phụ 3a (ACEi/ARB): người có đủ chỉ định ACEi/ARB theo KDIGO 2022, trừ người có hồ sơ ghi rõ chống chỉ định hoặc không dung nạp ACEi/ARB (báo cáo riêng).
   - Phụ 3b (SGLT2i): người có đủ chỉ định thuốc ức chế SGLT2 theo KDIGO 2022, trừ người có hồ sơ ghi rõ chống chỉ định hoặc không dung nạp thuốc ức chế SGLT2 (báo cáo riêng).
-- Sơ đồ chọn (STROBE, RECORD): Số người trong khung mẫu, số người chỉ có E14, số lượng hồ sơ đã mở, bị loại theo từng lý do (phần A của phiếu), hồ sơ tập và đưa vào phân tích; đếm riêng người bị loại vì chỉ có 1 lượt khám và so sánh tuổi, giới, nhóm đối tượng khám của nhóm này với mẫu nghiên cứu (sai lệch «Sai lệch chọn do tiêu chí từ 2 lượt khám») — trình bày n (%) hoặc trung vị [khoảng tứ phân vị] hai nhóm cạnh nhau, chỉ mô tả.
+- Sơ đồ chọn (STROBE, RECORD): Số người trong khung mẫu, số người chỉ có E14, số hồ sơ đã mở, số bị loại theo từng lý do (phần A của phiếu), số hồ sơ tập và số đưa vào phân tích; đếm riêng người bị loại vì chỉ có 1 lượt khám và so sánh tuổi, giới, nhóm đối tượng khám của nhóm này với mẫu nghiên cứu (dòng “Sai lệch chọn do tiêu chí từ 2 lượt khám” ở Bảng 4.1) — trình bày n (%) hoặc trung vị [khoảng tứ phân vị] hai nhóm cạnh nhau, chỉ mô tả.
 
 **Thống kê mô tả.**
 
-- Biến liên tục: trung bình ± SD nếu phân phối gần chuẩn, ngược lại trung vị [khoảng tứ phân vị]; quyết định theo biểu đồ và độ lệch, không theo kiểm định chuẩn.
+- Biến liên tục: Trung bình ± độ lệch chuẩn nếu phân phối gần chuẩn, ngược lại trung vị [khoảng tứ phân vị]; quyết định theo biểu đồ và độ lệch, không theo kiểm định chuẩn.
 - Biến phân loại: n (%), mẫu số ghi rõ ở từng dòng.
-- Mọi tỷ lệ của kết cục (chính và phụ) trình bày kèm KTC 95% theo phương pháp khoảng điểm Wilson (Wilson score interval).
+- Mọi tỷ lệ của kết cục (chính và phụ) được trình bày kèm KTC 95% theo phương pháp khoảng điểm Wilson (Wilson score interval).
 - Báo cáo số và tỷ lệ thiếu dữ liệu của từng biến (Bảng 1).
-- Mô tả thời gian quan sát: phân bố số tháng từ lượt khám đầu đến 31/12/2026.
+- Mô tả thời gian quan sát: Phân bố số tháng từ lượt khám đầu đến 31/12/2026.
 
 **Phân tích chính.**
 
@@ -252,9 +264,9 @@ Kế hoạch phân tích thống kê (phiên bản 1.0) được khoá trước 
 **Phân tích đa biến.**
 
 - Mục tiêu: MT3 — phân tích thăm dò, không kiểm định giả thuyết định trước, không suy nhân quả.
-- Mô hình: Hồi quy Poisson liên kết log với phương sai vững (sandwich) để ước lượng trực tiếp tỷ số tỷ lệ hiện mắc (PR) của không được xét nghiệm đủ (biến phụ thuộc của MT3) [49]. Báo PR thô (từng biến) và PR hiệu chỉnh (mô hình đầy đủ), kèm KTC 95%. Không dùng hồi quy logistic vì kết cục phổ biến, OR sẽ phóng đại PR.
+- Mô hình: Hồi quy Poisson liên kết log với phương sai vững (sandwich) để ước lượng trực tiếp tỷ số tỷ lệ hiện mắc (PR) của việc không được xét nghiệm đủ (biến phụ thuộc của MT3) [49]. Báo PR thô (từng biến) và PR hiệu chỉnh (mô hình đầy đủ), kèm KTC 95%. Không dùng hồi quy logistic vì kết cục phổ biến, OR sẽ phóng đại PR.
 - Biến độc lập đưa vào: 12 biến giải thích đã chốt — tuổi (mỗi 10 năm), giới, nhóm đối tượng (quân nhân / BHYT / dịch vụ / khác), thời gian mắc ĐTĐ (mỗi 5 năm), HbA1c dạng 3 mức (< 7% — mức tham chiếu / ≥ 7% / không làm HbA1c năm 2026), đang dùng insulin, số nhóm thuốc hạ glucose, tăng huyết áp, BMI (mỗi 5 kg/m²), bệnh tim mạch do xơ vữa hoặc suy tim, số lượt khám năm 2026, phòng khám theo dõi chính (nội tiết / nội chung / khác).
-- Lý do mã hoá HbA1c 3 mức: Người không làm HbA1c thiếu giá trị vì không được xét nghiệm (thiếu có cấu trúc, liên quan trực tiếp tới kết cục), nên không thay bằng giá trị gán; mức «không làm» giữ thông tin đó.
+- Lý do mã hoá HbA1c 3 mức: Người không làm HbA1c thiếu giá trị vì không được xét nghiệm (thiếu có cấu trúc, liên quan trực tiếp tới kết cục), nên không thay bằng giá trị gán; mức “không làm” giữ thông tin đó.
 - Phương pháp chọn biến: Đưa vào toàn bộ, không stepwise, không chọn theo giá trị p.
 - Số tham số và EPV: Mô hình đầy đủ có 16 tham số (biến phân loại k mức tính k−1): tuổi 1, giới 1, nhóm đối tượng 3, thời gian mắc ĐTĐ 1, HbA1c 2, đang dùng insulin 1, số nhóm thuốc hạ glucose 1, tăng huyết áp 1, BMI 1, bệnh tim mạch 1, số lượt khám 1, phòng khám theo dõi chính 2. Số người ở nhóm kết cục ít hơn (được hoặc không được xét nghiệm đủ) chia cho số tham số là số biến cố trên mỗi tham số (EPV); ngưỡng sơ bộ EPV ≥ 10 chỉ là mức tham khảo, không phải quy tắc cứng [38, 50]. Nếu EPV < 10, giảm tham số theo thứ tự định trước, dừng ngay khi EPV ≥ 10: (1) gộp nhóm đối tượng thành 2 mức (quân nhân / khác); (2) gộp phòng khám thành 2 mức (nội tiết / khác); (3) bỏ số nhóm thuốc hạ glucose (giữ insulin). Báo cáo rõ mô hình nào được dùng và vì sao.
 - Đa cộng tuyến: Tính VIF cho mọi biến; VIF > 5 được báo cáo, và cặp insulin – số nhóm thuốc được xử lý theo bước (3) ở trên.
@@ -263,12 +275,12 @@ Kế hoạch phân tích thống kê (phiên bản 1.0) được khoá trước 
 
 **Dữ liệu thiếu.**
 
-- Kết cục chính và kết cục phụ: Không thể thiếu theo định nghĩa (không có kết quả xét nghiệm → 0 hoặc «không phân loại được» = 9); không gán giá trị.
-- Biến giải thích của MT3 có thể thiếu: Thời gian mắc ĐTĐ (hồ sơ không ghi năm chẩn đoán), BMI (hồ sơ không ghi cân nặng hoặc chiều cao), và các biến mà hồ sơ ghi không đọc được hoặc mâu thuẫn. HbA1c không gán (xử lý bằng mức «không làm»).
-- Chiến lược: Gán đa trị (Multiple Imputation by Chained Equations, m = 20, so khớp trung bình dự đoán — predictive mean matching cho biến liên tục), gộp theo quy tắc Rubin [15, 51].
+- Kết cục chính và kết cục phụ: Không thể thiếu theo định nghĩa (không có kết quả xét nghiệm thì mã 0, hoặc mã 9 = “không phân loại được”); không gán giá trị.
+- Biến giải thích của MT3 có thể thiếu: Thời gian mắc ĐTĐ (hồ sơ không ghi năm chẩn đoán), BMI (hồ sơ không ghi cân nặng hoặc chiều cao), và các biến mà hồ sơ ghi không đọc được hoặc mâu thuẫn. HbA1c không gán (xử lý bằng mức “không làm”).
+- Chiến lược: Gán đa trị bằng chuỗi phương trình (multiple imputation by chained equations) với m = 20 bộ dữ liệu, dùng so khớp trung bình dự đoán (predictive mean matching) cho biến liên tục; gộp kết quả theo quy tắc Rubin [15, 51].
 - Giả định: Thiếu ngẫu nhiên (missing at random, MAR) có điều kiện trên các biến đưa vào mô hình gán; nêu rõ khả năng MNAR (người ít được theo dõi thì vừa thiếu BMI vừa ít được xét nghiệm) ở mục 4.11.
-- Biến đưa vào mô hình imputation: Biến phụ thuộc không được xét nghiệm đủ (biến phụ thuộc của MT3) và cả 12 biến giải thích (dạng như trong mô hình phân tích), cộng lượt khám đầu trước 01/07/2026.
-- Phân tích hoàn chỉnh (phân tích ca đầy đủ): Báo cáo song song với MI. Nếu mọi biến giải thích thiếu dưới 5% thì MI vẫn chạy cho nhất quán, kết luận dựa trên MI.
+- Biến đưa vào mô hình gán: Biến phụ thuộc không được xét nghiệm đủ (biến phụ thuộc của MT3) và cả 12 biến giải thích (dạng như trong mô hình phân tích), cộng lượt khám đầu trước 01/07/2026.
+- Phân tích ca đủ dữ liệu (complete case): Báo cáo song song với MI. Nếu mọi biến giải thích thiếu dưới 5% thì MI vẫn chạy cho nhất quán, kết luận dựa trên MI.
 - Báo cáo: Số và tỷ lệ thiếu từng biến; so sánh đặc điểm người thiếu với người đủ dữ liệu.
 
 **Phân tích nhóm nhỏ.**
@@ -286,12 +298,12 @@ Kế hoạch phân tích thống kê (phiên bản 1.0) được khoá trước 
 
 - ĐN1 — dạng albumin niệu: Kết cục chính tính cả albumin hoặc protein niệu dạng khác.
 - ĐN2 — xét nghiệm ngoài viện: Kết cục chính tính cả kết quả ngoài BVQY175 mà bệnh án ghi rõ ngày và kết quả.
-- ĐN3 — thời gian quan sát: Kết cục chính chỉ trên người có lượt khám đầu trước 01/07/2026 (lượt khám đầu trước 01/07/2026 = 1).
+- ĐN3 — thời gian quan sát: Kết cục chính chỉ trên người có lượt khám đầu trước 01/07/2026.
 - ĐN4 — định nghĩa quần thể: Kết cục chính chỉ trên người có ít nhất một đơn thuốc hạ glucose ở bất kỳ lượt khám nào năm 2026.
 - ĐN5 — BTM chưa ghi nhận: Phụ 2 với danh mục mã thận mở rộng (thêm N19, I12, I13, R80).
 - ĐN6 — chỉ định ACEi/ARB: Phụ 3a với albumin niệu chỉ cần một lần UACR ≥ 30 mg/g.
-- ĐN7 — thuốc ngoài đơn: Phụ 3 tính cả thuốc bệnh án ghi «đang dùng» nhưng không có trong đơn eHospital.
-- ĐN8 — dữ liệu thiếu: MT3 complete case so với MI.
+- ĐN7 — thuốc ngoài đơn: Phụ 3 tính cả thuốc bệnh án ghi “đang dùng” nhưng không có trong đơn eHospital.
+- ĐN8 — dữ liệu thiếu: MT3 trên ca đủ dữ liệu so với gán đa trị.
 - ĐN9 — dạng biến liên tục: MT3 với tuổi, thời gian mắc, BMI, số lượt khám chia nhóm (chỉ khi đồ thị phần dư cho thấy lệch tuyến tính).
 
 **Phần mềm.**
@@ -304,20 +316,24 @@ Nghiên cứu tuân thủ Tuyên bố Helsinki và các quy định hiện hành
 
 - Mức nguy cơ: Nguy cơ tối thiểu; Hội đồng Đạo đức quyết định mức nguy cơ cuối cùng.
 - Hình thức xét duyệt: Đề nghị xét duyệt theo quy trình rút gọn.
-- Quy trình đồng thuận: đề nghị miễn thủ tục đồng thuận (Phụ lục B).
-- Bảo mật thông tin: phiếu chỉ mang mã nghiên cứu, không ghi trường định danh nào của người bệnh; Bảng nối mã nghiên cứu với mã người bệnh lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ, huỷ sau khi khoá dữ liệu; chỉ phân tích bộ dữ liệu đã khử định danh.
-- Đăng ký nghiên cứu: nghiên cứu quan sát hồi cứu không bắt buộc đăng ký; đề tài không đăng ký trên hệ thống đăng ký công khai.
-- Xung đột lợi ích: nhóm nghiên cứu cam kết không có xung đột lợi ích liên quan đến đề tài; mọi thay đổi sẽ được khai báo với Hội đồng.
+- Quy trình đồng thuận: Đề nghị miễn thủ tục đồng thuận (Phụ lục B).
+- Bảo mật thông tin: Phiếu chỉ mang mã nghiên cứu, không ghi trường định danh nào của người bệnh; bảng nối mã nghiên cứu với mã người bệnh lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ, huỷ sau khi khoá dữ liệu; chỉ phân tích bộ dữ liệu đã khử định danh.
+- Đăng ký nghiên cứu: Nghiên cứu quan sát hồi cứu không bắt buộc đăng ký; đề tài không đăng ký trên hệ thống đăng ký công khai.
+- Xung đột lợi ích: Nhóm nghiên cứu cam kết không có xung đột lợi ích liên quan đến đề tài; mọi thay đổi sẽ được khai báo với Hội đồng.
 
 ## 4.11. Hạn chế của nghiên cứu và phạm vi suy rộng kết quả
+
+Các hạn chế dự kiến, chiều hướng sai lệch và biện pháp đã áp dụng được trình bày ở Bảng 4.2.
+
+**Bảng 4.2. Hạn chế dự kiến và chiều hướng sai lệch**
 
 | Hạn chế | Chiều hướng sai lệch dự kiến | Biện pháp đã áp dụng |
 |---|---|---|
 | Thiết kế cắt ngang trên dữ liệu thu thập thường quy | Không xác lập được trình tự thời gian; MT3 chỉ ước lượng mối liên quan, không cho phép suy luận nhân quả. | Diễn giải kết quả MT3 ở mức mối liên quan (tỷ số tỷ lệ hiện mắc); mô hình đa biến với tập biến đã chốt (mục 4.9). |
 | Sai lệch chọn do tiêu chí từ 2 lượt khám | Mẫu nghiêng về người theo dõi đều nên có thể ước lượng cao tỷ lệ được xét nghiệm so với mọi người ĐTĐ típ 2 từng đến khám. | Sơ đồ chọn đếm số hồ sơ bị loại vì chỉ có 1 lượt khám và so sánh tuổi, giới, nhóm đối tượng của nhóm này với mẫu nghiên cứu (mục 4.8). |
 | Xét nghiệm làm ngoài BVQY175 không có trong eHospital | Ước lượng thấp tỷ lệ được xét nghiệm đủ. | Ghi riêng kết quả ngoài viện khi bệnh án ghi rõ ngày và kết quả; báo tỷ lệ này và phân tích độ nhạy ĐN2 tính lại kết cục chính (mục 4.9). |
-| Thuốc kê hoặc mua ngoài BVQY175 | Ước lượng thấp tỷ lệ đang dùng ACEi/ARB và SGLT2i. | Ghi riêng thuốc bệnh án ghi «đang dùng» nhưng không có đơn trong eHospital; phân tích độ nhạy ĐN7 tính cả các thuốc này (mục 4.9). |
-| Dữ liệu thiếu không ngẫu nhiên ở biến giải thích của MT3 | Người ít được theo dõi thì vừa thiếu BMI vừa ít được xét nghiệm; gán đa trị dựa trên giả định thiếu ngẫu nhiên có thể không loại hết sai lệch. | Gán đa trị kèm phân tích ca đầy đủ báo cáo song song; so sánh đặc điểm người thiếu với người đủ dữ liệu (mục 4.9). |
+| Thuốc kê hoặc mua ngoài BVQY175 | Ước lượng thấp tỷ lệ đang dùng ACEi/ARB và SGLT2i. | Ghi riêng thuốc bệnh án ghi “đang dùng” nhưng không có đơn trong eHospital; phân tích độ nhạy ĐN7 tính cả các thuốc này (mục 4.9). |
+| Dữ liệu thiếu không ngẫu nhiên ở biến giải thích của MT3 | Người ít được theo dõi thì vừa thiếu BMI vừa ít được xét nghiệm; gán đa trị dựa trên giả định thiếu ngẫu nhiên có thể không loại hết sai lệch. | Gán đa trị, kèm phân tích ca đủ dữ liệu báo cáo song song; so sánh đặc điểm người thiếu với người đủ dữ liệu (mục 4.9). |
 | Kết cục phụ tính trên quần thể con | Khoảng tin cậy rộng hơn kết cục chính, nhất là ở nhóm nhỏ. | Báo cáo tỷ lệ kèm KTC 95% Wilson trên đúng quần thể con; diễn giải thận trọng (mục 4.4.1, 4.9). |
 | Chủ nhiệm vừa trích dữ liệu vừa là bác sĩ của khoa được đánh giá | Có thể ước lượng cao chất lượng chăm sóc. | Quy tắc trích và định nghĩa biến viết trước, được hội đồng chuyên gia thẩm định và trích thử trước khi khoá; người thứ hai độc lập trích lại 10% hồ sơ chọn ngẫu nhiên, báo mức đồng thuận (mục 4.6, 4.8). |
 | Độ chính xác hạn chế của ước lượng độ tin cậy giữa hai người trích (39 hồ sơ) | Hệ số kappa có KTC rộng; ngay cả khi đồng thuận 100% cũng chỉ loại trừ được mức đồng thuận dưới khoảng 91%. | Báo KTC 95% cho mọi chỉ số đồng thuận; ngưỡng 95% dùng như ngưỡng kiểm soát chất lượng, không phải phép chứng minh (mục 4.6). |
@@ -332,7 +348,7 @@ Kết quả được trình bày theo thứ tự đặc điểm đối tượng 
 
 ![Hình 5.1](bieu-bang/hinh-5-1.png)
 
-**Hình 5.1. Sơ đồ chọn đối tượng nghiên cứu (theo STROBE)**
+**Hình 5.1. Sơ đồ chọn hồ sơ nghiên cứu (theo STROBE/RECORD)**
 
 *Ghi chú:* Số lượng ở từng bước và lý do loại được ghi đầy đủ khi kết thúc thu thập số liệu.
 
@@ -340,14 +356,14 @@ Kết quả được trình bày theo thứ tự đặc điểm đối tượng 
 
 | Đặc điểm | Toàn mẫu (N = 385) | Số thiếu, n (%) |
 | --- | --- | --- |
-| Tuổi, TB ± ĐLC hoặc trung vị [KTPV] | … ± … | … (…) |
+| Tuổi (năm), TB ± ĐLC hoặc trung vị [KTPV] | … ± … | … (…) |
 | Giới: nam, n (%) | … (…) | … (…) |
 | Nhóm đối tượng, n (%) |   | … (…) |
 | – Quân nhân | … (…) |   |
 | – Bảo hiểm y tế | … (…) |   |
 | – Dịch vụ | … (…) |   |
 | – Khác | … (…) |   |
-| Thời gian mắc đái tháo đường (đơn vị 5 năm), TB ± ĐLC hoặc trung vị [KTPV] | … ± … | … (…) |
+| Thời gian mắc đái tháo đường (năm), TB ± ĐLC hoặc trung vị [KTPV] | … ± … | … (…) |
 | HbA1c (3 mức), n (%) |   | … (…) |
 | – HbA1c < 7% | … (…) |   |
 | – HbA1c ≥ 7% | … (…) |   |
@@ -355,7 +371,7 @@ Kết quả được trình bày theo thứ tự đặc điểm đối tượng 
 | Đang dùng insulin, n (%) | … (…) | … (…) |
 | Số nhóm thuốc hạ glucose, TB ± ĐLC hoặc trung vị [KTPV] | … ± … | … (…) |
 | Tăng huyết áp, n (%) | … (…) | … (…) |
-| BMI (đơn vị 5 kg/m²), TB ± ĐLC hoặc trung vị [KTPV] | … ± … | … (…) |
+| BMI (kg/m²), TB ± ĐLC hoặc trung vị [KTPV] | … ± … | … (…) |
 | Bệnh tim mạch do xơ vữa hoặc suy tim, n (%) | … (…) | … (…) |
 | Số lượt khám năm 2026, TB ± ĐLC hoặc trung vị [KTPV] | … ± … | … (…) |
 | Phòng khám theo dõi chính, n (%) |   | … (…) |
@@ -365,32 +381,32 @@ Kết quả được trình bày theo thứ tự đặc điểm đối tượng 
 
 *Ghi chú:* Chữ viết tắt — TB: trung bình; ĐLC: độ lệch chuẩn; KTPV: khoảng tứ phân vị. Biến định lượng trình bày TB ± ĐLC khi phân phối gần chuẩn, ngược lại trung vị [KTPV].
 
-## 5.2. Kết quả theo mục tiêu 1: Mô tả thực trạng phát hiện bệnh thận mạn ở người bệnh đái tháo đường típ 2 điều trị ngoại trú được theo dõi đều (từ 2 lượt khám trong năm) tại Khoa Khám bệnh, Bệnh viện Quân y 175 năm 2026 — tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh (kết cục chính), tỷ lệ bệnh thận mạn theo KDIGO 2024 và tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán
+## 5.2. Kết quả theo mục tiêu 1: Mô tả thực trạng phát hiện bệnh thận mạn ở người bệnh đái tháo đường típ 2 điều trị ngoại trú được theo dõi đều tại Khoa Khám bệnh, Bệnh viện Quân y 175 năm 2026
 
 **Bảng 5.2. Tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh và các chỉ số mô tả liên quan (Mục tiêu 1)**
 
-| Chỉ số | n/N | Tỷ lệ % hoặc TB ± ĐLC | Trung vị [KTPV] | KTC 95% |
-| --- | --- | --- | --- | --- |
-| Tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh | …/… | … | — | … – … |
-| Tỷ lệ bệnh thận mạn theo KDIGO 2024, phân bố các mức |   |   |   |   |
-| – Không BTM | …/… | … | — | … – … |
-| – Nghi BTM | …/… | … | — | … – … |
-| – BTM xác nhận | …/… | … | — | … – … |
-| – Không đủ xét nghiệm để phân loại | …/… | … | — | … – … |
-| Nhóm eGFR theo KDIGO (G1–G5), phân bố các mức |   |   |   |   |
-| – G1 (eGFR ≥ 90) | …/… | … | — | … – … |
-| – G2 (eGFR 60–89) | …/… | … | — | … – … |
-| – G3a (eGFR 45–59) | …/… | … | — | … – … |
-| – G3b (eGFR 30–44) | …/… | … | — | … – … |
-| – G4 (eGFR 15–29) | …/… | … | — | … – … |
-| – G5 (eGFR < 15) | …/… | … | — | … – … |
-| Nhóm albumin niệu theo KDIGO (A1–A3), phân bố các mức |   |   |   |   |
-| – A1 (UACR < 30) | …/… | … | — | … – … |
-| – A2 (UACR 30–300) | …/… | … | — | … – … |
-| – A3 (UACR > 300) | …/… | … | — | … – … |
-| Tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán | …/… | … | — | … – … |
+| Chỉ số | n/N | Tỷ lệ (%) | KTC 95% |
+| --- | --- | --- | --- |
+| Tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh | …/… | … | … – … |
+| Tỷ lệ bệnh thận mạn theo KDIGO 2024, phân bố các mức |   |   |   |
+| – Không BTM | …/… | … | … – … |
+| – Nghi BTM | …/… | … | … – … |
+| – BTM xác nhận | …/… | … | … – … |
+| – Không đủ xét nghiệm để phân loại | …/… | … | … – … |
+| Nhóm eGFR theo KDIGO (G1–G5), phân bố các mức |   |   |   |
+| – G1 (eGFR ≥ 90) | …/… | … | … – … |
+| – G2 (eGFR 60–89) | …/… | … | … – … |
+| – G3a (eGFR 45–59) | …/… | … | … – … |
+| – G3b (eGFR 30–44) | …/… | … | … – … |
+| – G4 (eGFR 15–29) | …/… | … | … – … |
+| – G5 (eGFR < 15) | …/… | … | … – … |
+| Nhóm albumin niệu theo KDIGO (A1–A3), phân bố các mức |   |   |   |
+| – A1 (UACR < 30) | …/… | … | … – … |
+| – A2 (UACR 30–300) | …/… | … | … – … |
+| – A3 (UACR > 300) | …/… | … | … – … |
+| Tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán | …/… | … | … – … |
 
-*Ghi chú:* Chữ viết tắt — TB: trung bình; ĐLC: độ lệch chuẩn; KTPV: khoảng tứ phân vị; KTC: khoảng tin cậy. Tỷ lệ kèm KTC 95% theo phương pháp đã nêu ở mục xử lý số liệu; mẫu số của từng chỉ số ghi ở cột n/N.
+*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy. Tỷ lệ kèm KTC 95% theo phương pháp đã nêu ở mục xử lý số liệu; mẫu số của từng chỉ số ghi ở cột n/N. Ngưỡng phân nhóm: eGFR tính bằng mL/phút/1,73 m²; UACR tính bằng mg/g.
 
 ![Biểu đồ 5.1](bieu-bang/bieu-do-5-1.png)
 
@@ -398,18 +414,18 @@ Kết quả được trình bày theo thứ tự đặc điểm đối tượng 
 
 *Ghi chú:* Cột là ước lượng điểm; thanh sai số là KTC 95%.
 
-## 5.3. Kết quả theo mục tiêu 2: Mô tả thực trạng điều trị bảo vệ thận (ACEi/ARB, SGLT2i) ở người bệnh đủ chỉ định theo KDIGO 2022 trong cùng quần thể
+## 5.3. Kết quả theo mục tiêu 2: Mô tả thực trạng điều trị bảo vệ thận ở người bệnh đủ chỉ định theo KDIGO 2022 trong cùng quần thể
 
 **Bảng 5.3. Điều trị bảo vệ thận — ACEi/ARB và các chỉ số mô tả liên quan (Mục tiêu 2)**
 
-| Chỉ số | n/N | Tỷ lệ % hoặc TB ± ĐLC | Trung vị [KTPV] | KTC 95% |
-| --- | --- | --- | --- | --- |
-| Điều trị bảo vệ thận — ACEi/ARB | …/… | … | — | … – … |
-| Điều trị bảo vệ thận — SGLT2i | …/… | … | — | … – … |
-| Người bệnh đủ chỉ định ACEi/ARB theo KDIGO 2022 | …/… | … | — | … – … |
-| Người bệnh đủ chỉ định SGLT2i theo KDIGO 2022 | …/… | … | — | … – … |
+| Chỉ số | n/N | Tỷ lệ (%) | KTC 95% |
+| --- | --- | --- | --- |
+| Điều trị bảo vệ thận — ACEi/ARB | …/… | … | … – … |
+| Điều trị bảo vệ thận — SGLT2i | …/… | … | … – … |
+| Người bệnh đủ chỉ định ACEi/ARB theo KDIGO 2022 | …/… | … | … – … |
+| Người bệnh đủ chỉ định SGLT2i theo KDIGO 2022 | …/… | … | … – … |
 
-*Ghi chú:* Chữ viết tắt — TB: trung bình; ĐLC: độ lệch chuẩn; KTPV: khoảng tứ phân vị; KTC: khoảng tin cậy. Tỷ lệ kèm KTC 95% theo phương pháp đã nêu ở mục xử lý số liệu; mẫu số của từng chỉ số ghi ở cột n/N.
+*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy. Tỷ lệ kèm KTC 95% theo phương pháp đã nêu ở mục xử lý số liệu; mẫu số của từng chỉ số ghi ở cột n/N.
 
 ![Biểu đồ 5.2](bieu-bang/bieu-do-5-2.png)
 
@@ -417,71 +433,71 @@ Kết quả được trình bày theo thứ tự đặc điểm đối tượng 
 
 *Ghi chú:* Cột là ước lượng điểm; thanh sai số là KTC 95%.
 
-## 5.4. Kết quả theo mục tiêu 3: Phân tích một số yếu tố liên quan với việc không được xét nghiệm đủ UACR và creatinin (phân tích thăm dò, không kiểm định giả thuyết định trước)
+## 5.4. Kết quả theo mục tiêu 3: Phân tích một số yếu tố liên quan với việc không được xét nghiệm đủ UACR và creatinin
 
-**Bảng 5.4. Phân tích đơn biến các yếu tố liên quan đến việc không được xét nghiệm đủ UACR và creatinin (biến phụ thuộc của MT3) (Mục tiêu 3)**
+**Bảng 5.4. Phân tích đơn biến các yếu tố liên quan đến việc không được xét nghiệm đủ UACR và creatinin (Mục tiêu 3)**
 
-| Yếu tố | Nhóm / đơn vị | Có kết cục: n (%) | Không có kết cục: n (%) | PR thô (KTC 95%) | p |
+| Yếu tố | Nhóm / đơn vị | Có kết cục | Không có kết cục | PR thô (KTC 95%) | p |
 | --- | --- | --- | --- | --- | --- |
-| Tuổi | mỗi đơn vị tăng | … ± … | … ± … | … (… – …) | … |
+| Tuổi | mỗi 10 năm tăng thêm | … ± … | … ± … | … (… – …) | … |
 | Giới | Nam | … (…) | … (…) | 1 (nhóm tham chiếu) |   |
 |   | Nữ | … (…) | … (…) | … (… – …) | … |
 | Nhóm đối tượng | Quân nhân | … (…) | … (…) | 1 (nhóm tham chiếu) |   |
 |   | Bảo hiểm y tế | … (…) | … (…) | … (… – …) | … |
 |   | Dịch vụ | … (…) | … (…) | … (… – …) | … |
 |   | Khác | … (…) | … (…) | … (… – …) | … |
-| Thời gian mắc đái tháo đường (đơn vị 5 năm) | mỗi đơn vị tăng | … ± … | … ± … | … (… – …) | … |
+| Thời gian mắc đái tháo đường | mỗi 5 năm tăng thêm | … ± … | … ± … | … (… – …) | … |
 | HbA1c (3 mức) | HbA1c < 7% | … (…) | … (…) | 1 (nhóm tham chiếu) |   |
 |   | HbA1c ≥ 7% | … (…) | … (…) | … (… – …) | … |
 |   | Không làm HbA1c năm 2026 | … (…) | … (…) | … (… – …) | … |
 | Đang dùng insulin | Không | … (…) | … (…) | 1 (nhóm tham chiếu) |   |
 |   | Có | … (…) | … (…) | … (… – …) | … |
-| Số nhóm thuốc hạ glucose | mỗi đơn vị tăng | … ± … | … ± … | … (… – …) | … |
+| Số nhóm thuốc hạ glucose | mỗi đơn vị tăng thêm | … ± … | … ± … | … (… – …) | … |
 | Tăng huyết áp | Không | … (…) | … (…) | 1 (nhóm tham chiếu) |   |
 |   | Có | … (…) | … (…) | … (… – …) | … |
-| BMI (đơn vị 5 kg/m²) | mỗi đơn vị tăng | … ± … | … ± … | … (… – …) | … |
+| BMI | mỗi 5 kg/m² tăng thêm | … ± … | … ± … | … (… – …) | … |
 | Bệnh tim mạch do xơ vữa hoặc suy tim | Không | … (…) | … (…) | 1 (nhóm tham chiếu) |   |
 |   | Có | … (…) | … (…) | … (… – …) | … |
-| Số lượt khám năm 2026 | mỗi đơn vị tăng | … ± … | … ± … | … (… – …) | … |
+| Số lượt khám năm 2026 | mỗi đơn vị tăng thêm | … ± … | … ± … | … (… – …) | … |
 | Phòng khám theo dõi chính | Nội tiết | … (…) | … (…) | 1 (nhóm tham chiếu) |   |
 |   | Nội chung (nội tổng hợp) | … (…) | … (…) | … (… – …) | … |
 |   | Khác | … (…) | … (…) | … (… – …) | … |
 
-*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy; PR: tỷ số tỷ lệ hiện mắc. PR thô ước lượng bằng mô hình một biến cùng loại với mô hình chính; p ghi ba chữ số thập phân, «< 0,001» khi nhỏ hơn.
+*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy; PR: tỷ số tỷ lệ hiện mắc. Cột “Có kết cục” là những người không được xét nghiệm đủ UACR và creatinin; biến phân loại ghi n (%) theo hàng, biến định lượng ghi TB ± ĐLC. PR thô ước lượng bằng mô hình một biến cùng loại với mô hình chính; p ghi ba chữ số thập phân, “< 0,001” khi nhỏ hơn.
 
-**Bảng 5.5. Mô hình đa biến các yếu tố liên quan đến việc không được xét nghiệm đủ UACR và creatinin (biến phụ thuộc của MT3) (Mục tiêu 3)**
+**Bảng 5.5. Mô hình đa biến các yếu tố liên quan đến việc không được xét nghiệm đủ UACR và creatinin (Mục tiêu 3)**
 
 | Yếu tố | Nhóm / đơn vị | PR hiệu chỉnh (KTC 95%), gán đa trị | p | PR hiệu chỉnh (KTC 95%), ca đủ dữ liệu |
 | --- | --- | --- | --- | --- |
-| Tuổi | mỗi đơn vị tăng | … (… – …) | … | … (… – …) |
+| Tuổi | mỗi 10 năm tăng thêm | … (… – …) | … | … (… – …) |
 | Giới | Nam | 1 (nhóm tham chiếu) |   | 1 (nhóm tham chiếu) |
 |   | Nữ | … (… – …) | … | … (… – …) |
 | Nhóm đối tượng | Quân nhân | 1 (nhóm tham chiếu) |   | 1 (nhóm tham chiếu) |
 |   | Bảo hiểm y tế | … (… – …) | … | … (… – …) |
 |   | Dịch vụ | … (… – …) | … | … (… – …) |
 |   | Khác | … (… – …) | … | … (… – …) |
-| Thời gian mắc đái tháo đường (đơn vị 5 năm) | mỗi đơn vị tăng | … (… – …) | … | … (… – …) |
+| Thời gian mắc đái tháo đường | mỗi 5 năm tăng thêm | … (… – …) | … | … (… – …) |
 | HbA1c (3 mức) | HbA1c < 7% | 1 (nhóm tham chiếu) |   | 1 (nhóm tham chiếu) |
 |   | HbA1c ≥ 7% | … (… – …) | … | … (… – …) |
 |   | Không làm HbA1c năm 2026 | … (… – …) | … | … (… – …) |
 | Đang dùng insulin | Không | 1 (nhóm tham chiếu) |   | 1 (nhóm tham chiếu) |
 |   | Có | … (… – …) | … | … (… – …) |
-| Số nhóm thuốc hạ glucose | mỗi đơn vị tăng | … (… – …) | … | … (… – …) |
+| Số nhóm thuốc hạ glucose | mỗi đơn vị tăng thêm | … (… – …) | … | … (… – …) |
 | Tăng huyết áp | Không | 1 (nhóm tham chiếu) |   | 1 (nhóm tham chiếu) |
 |   | Có | … (… – …) | … | … (… – …) |
-| BMI (đơn vị 5 kg/m²) | mỗi đơn vị tăng | … (… – …) | … | … (… – …) |
+| BMI | mỗi 5 kg/m² tăng thêm | … (… – …) | … | … (… – …) |
 | Bệnh tim mạch do xơ vữa hoặc suy tim | Không | 1 (nhóm tham chiếu) |   | 1 (nhóm tham chiếu) |
 |   | Có | … (… – …) | … | … (… – …) |
-| Số lượt khám năm 2026 | mỗi đơn vị tăng | … (… – …) | … | … (… – …) |
+| Số lượt khám năm 2026 | mỗi đơn vị tăng thêm | … (… – …) | … | … (… – …) |
 | Phòng khám theo dõi chính | Nội tiết | 1 (nhóm tham chiếu) |   | 1 (nhóm tham chiếu) |
 |   | Nội chung (nội tổng hợp) | … (… – …) | … | … (… – …) |
 |   | Khác | … (… – …) | … | … (… – …) |
 
-*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy; PR: tỷ số tỷ lệ hiện mắc. PR (tỷ số tỷ lệ hiện mắc) hiệu chỉnh đồng thời cho mọi biến trong bảng; mô hình hồi quy Poisson với sai số chuẩn vững. Dữ liệu thiếu xử lý bằng gán đa trị (20 bộ dữ liệu); cột cuối là phân tích trên ca đủ dữ liệu (complete case), phân tích độ nhạy về dữ liệu thiếu.
+*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy; PR: tỷ số tỷ lệ hiện mắc. PR hiệu chỉnh đồng thời cho mọi biến trong bảng; mô hình hồi quy Poisson với sai số chuẩn vững. Dữ liệu thiếu xử lý bằng gán đa trị (20 bộ dữ liệu); cột cuối là phân tích trên ca đủ dữ liệu (complete case), phân tích độ nhạy về dữ liệu thiếu.
 
 ![Biểu đồ 5.3](bieu-bang/bieu-do-5-3.png)
 
-**Biểu đồ 5.3. PR hiệu chỉnh và KTC 95% của các yếu tố liên quan đến việc không được xét nghiệm đủ UACR và creatinin (biến phụ thuộc của MT3) (Mục tiêu 3)**
+**Biểu đồ 5.3. PR hiệu chỉnh và KTC 95% của các yếu tố liên quan đến việc không được xét nghiệm đủ UACR và creatinin (Mục tiêu 3)**
 
 *Ghi chú:* Điểm là PR hiệu chỉnh, đoạn ngang là KTC 95%; đường dọc tại 1,0 là không có liên quan; trục hoành theo thang log. Chữ viết tắt — PR: tỷ số tỷ lệ hiện mắc; KTC: khoảng tin cậy.
 
@@ -491,31 +507,31 @@ Kết quả được trình bày theo thứ tự đặc điểm đối tượng 
 
 | Phân tích | Loại | n | Ước lượng (KTC 95%) | So với phân tích chính |
 | --- | --- | --- | --- | --- |
-| Tỷ lệ KẾT CỤC CHÍNH — được xét nghiệm đủ UACR và creatinin năm 2026 — phòng khám theo dõi chính: nội tiết | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
-| Tỷ lệ KẾT CỤC CHÍNH — được xét nghiệm đủ UACR và creatinin năm 2026 — phòng khám theo dõi chính: nội chung | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
-| Tỷ lệ KẾT CỤC CHÍNH — được xét nghiệm đủ UACR và creatinin năm 2026 — phòng khám theo dõi chính: khác | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
-| Tỷ lệ KẾT CỤC CHÍNH — được xét nghiệm đủ UACR và creatinin năm 2026 — nhóm đối tượng: quân nhân | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
-| Tỷ lệ KẾT CỤC CHÍNH — được xét nghiệm đủ UACR và creatinin năm 2026 — nhóm đối tượng: BHYT | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
-| Tỷ lệ KẾT CỤC CHÍNH — được xét nghiệm đủ UACR và creatinin năm 2026 — nhóm đối tượng: dịch vụ | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
-| Tỷ lệ KẾT CỤC CHÍNH — được xét nghiệm đủ UACR và creatinin năm 2026 — nhóm đối tượng: khác | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
-| Tỷ lệ KẾT CỤC CHÍNH — được xét nghiệm đủ UACR và creatinin năm 2026 — nhóm tuổi < 65 | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
-| Tỷ lệ KẾT CỤC CHÍNH — được xét nghiệm đủ UACR và creatinin năm 2026 — nhóm tuổi ≥ 65 | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
-| ĐN1 — kết cục chính tính cả albumin/protein niệu dạng khác | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
-| ĐN2 — kết cục chính tính cả xét nghiệm ngoài viện có ghi ngày và kết quả | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
-| ĐN3 — kết cục chính chỉ trên người có lượt khám đầu trước 01/07/2026 | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
-| ĐN4 — kết cục chính chỉ trên người có đơn thuốc hạ glucose | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
-| ĐN5 — Phụ 2 với danh mục mã thận mở rộng (N19, I12, I13, R80) | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
-| ĐN6 — Phụ 3a với albumin niệu chỉ cần một lần UACR ≥ 30 mg/g | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
-| ĐN7 — Phụ 3 tính cả thuốc bệnh án ghi «đang dùng» ngoài đơn | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
+| Phòng khám theo dõi chính: nội tiết | nhóm nhỏ | … | … (… – …) | chênh … điểm % |
+| Phòng khám theo dõi chính: nội chung | nhóm nhỏ | … | … (… – …) | chênh … điểm % |
+| Phòng khám theo dõi chính: khác | nhóm nhỏ | … | … (… – …) | chênh … điểm % |
+| Nhóm đối tượng: quân nhân | nhóm nhỏ | … | … (… – …) | chênh … điểm % |
+| Nhóm đối tượng: BHYT | nhóm nhỏ | … | … (… – …) | chênh … điểm % |
+| Nhóm đối tượng: dịch vụ | nhóm nhỏ | … | … (… – …) | chênh … điểm % |
+| Nhóm đối tượng: khác | nhóm nhỏ | … | … (… – …) | chênh … điểm % |
+| Nhóm tuổi < 65 | nhóm nhỏ | … | … (… – …) | chênh … điểm % |
+| Nhóm tuổi ≥ 65 | nhóm nhỏ | … | … (… – …) | chênh … điểm % |
+| ĐN1 — kết cục chính tính cả albumin/protein niệu dạng khác | độ nhạy | … | … (… – …) | chênh … điểm % |
+| ĐN2 — kết cục chính tính cả xét nghiệm ngoài viện có ghi ngày và kết quả | độ nhạy | … | … (… – …) | chênh … điểm % |
+| ĐN3 — kết cục chính chỉ trên người có lượt khám đầu trước 01/07/2026 | độ nhạy | … | … (… – …) | chênh … điểm % |
+| ĐN4 — kết cục chính chỉ trên người có đơn thuốc hạ glucose | độ nhạy | … | … (… – …) | chênh … điểm % |
+| ĐN5 — Phụ 2 với danh mục mã thận mở rộng (N19, I12, I13, R80) | độ nhạy | … | … (… – …) | chênh … điểm % |
+| ĐN6 — Phụ 3a với albumin niệu chỉ cần một lần UACR ≥ 30 mg/g | độ nhạy | … | … (… – …) | chênh … điểm % |
+| ĐN7 — Phụ 3 tính cả thuốc bệnh án ghi “đang dùng” ngoài đơn | độ nhạy | … | … (… – …) | chênh … điểm % |
 | ĐN9 — MT3 với biến liên tục chia nhóm | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
 
-*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy. Các phân tích đã định trước trong kế hoạch phân tích; phân tích nhóm nhỏ chỉ mang tính thăm dò. Phân tích trên ca đủ dữ liệu so với gán đa trị (dữ liệu thiếu) trình bày ở cột cuối bảng mô hình đa biến.
+*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy. Các phân tích đã định trước trong kế hoạch phân tích; phân tích nhóm nhỏ chỉ mang tính thăm dò. Cột cuối: với tỷ lệ ghi chênh lệch (điểm phần trăm) so với ước lượng của phân tích chính; với tỷ số ghi cùng chiều hay khác chiều với mô hình chính. Các dòng nhóm nhỏ: tỷ lệ được xét nghiệm đủ UACR và creatinin năm 2026 trong từng nhóm. Phân tích trên ca đủ dữ liệu so với gán đa trị (dữ liệu thiếu) trình bày ở cột cuối bảng mô hình đa biến.
 
 ![Biểu đồ 5.4](bieu-bang/bieu-do-5-4.png)
 
-**Biểu đồ 5.4. Ước lượng theo nhóm nhỏ kèm KTC 95%**
+**Biểu đồ 5.4. Tỷ lệ được xét nghiệm đủ UACR và creatinin năm 2026 theo nhóm nhỏ kèm KTC 95%**
 
-*Ghi chú:* Đường dọc là ước lượng không hiệu ứng; mỗi hàng là một nhóm nhỏ đã định trước.
+*Ghi chú:* Mỗi hàng là một nhóm nhỏ đã định trước; hàng “Chung” là tỷ lệ trên toàn mẫu.
 
 # 6. KẾ HOẠCH THỰC HIỆN
 
@@ -525,11 +541,13 @@ Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và 
 
 ## 6.2. Tiến độ thực hiện
 
-- Tiến độ: theo các mốc ở mục 4.7, từ chốt đề cương tháng 11/2026 đến hoàn thành tháng 09/2027.
+Tiến độ thực hiện theo các mốc ở mục 4.7, từ chốt đề cương tháng 11/2026 đến hoàn thành tháng 09/2027.
 
 ## 6.3. Dự trù kinh phí
 
-Đề tài tự túc kinh phí, không đề nghị cấp kinh phí.
+Đề tài tự túc kinh phí, không đề nghị cấp kinh phí; dự trù chi phí thực hiện được trình bày ở Bảng 6.1.
+
+**Bảng 6.1. Dự trù kinh phí**
 
 | STT | Khoản chi | Số lượng | Đơn giá | Thành tiền |
 |---|---|---|---|---|
@@ -543,11 +561,11 @@ Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và 
 ## 6.4. Kế hoạch quản lý dữ liệu
 
 - Thời hạn lưu: Số liệu điện tử (và phiếu giấy nếu có) lưu 2 năm sau khi kết thúc nghiên cứu. Hết thời hạn lưu trữ: tệp điện tử xoá an toàn, phiếu giấy (nếu có) huỷ bằng máy huỷ tài liệu, có biên bản.
-- Khử định danh: Phiếu chỉ mang mã nghiên cứu, không ghi trường định danh nào của người bệnh; Bảng nối mã nghiên cứu với mã người bệnh lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ, huỷ sau khi khoá dữ liệu.
+- Khử định danh: Phiếu chỉ mang mã nghiên cứu, không ghi trường định danh nào của người bệnh; bảng nối mã nghiên cứu với mã người bệnh lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ, huỷ sau khi khoá dữ liệu.
 
 ## 6.5. Đăng ký nghiên cứu và phổ biến kết quả
 
-- Không đăng ký trên hệ thống đăng ký công khai (nghiên cứu quan sát hồi cứu, không bắt buộc đăng ký).
+Đề tài không đăng ký trên hệ thống đăng ký công khai (nghiên cứu quan sát hồi cứu, không bắt buộc đăng ký). Kết quả được công bố trên Tạp chí Y Dược Thực hành 175 ở dạng số liệu tổng hợp.
 
 # 7. TÀI LIỆU THAM KHẢO
 
@@ -605,30 +623,32 @@ Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và 
 
 # PHỤ LỤC A. TÓM TẮT KẾ HOẠCH PHÂN TÍCH THỐNG KÊ
 
+**Bảng A.1. Tóm tắt kế hoạch phân tích theo mục tiêu**
+
 | Mục tiêu | Biến | Vai trò | Cách phân tích |
 |---|---|---|---|
-| 1 | tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh | Kết cục chính | ước lượng tỷ lệ được xét nghiệm đủ UACR và creatinin năm 2026 trên toàn bộ N kèm KTC 95% Wilson; không kiểm định giả thuyết (thiết kế theo độ chính xác). Không áp hiệu chỉnh quần thể hữu hạn ở phân tích chính, cho thống nhất với cách tính cỡ mẫu; nếu biết kích thước khung mẫu thì báo thêm KTC có hiệu chỉnh quần thể hữu hạn như một thông tin phụ |
-| 1 | tỷ lệ bệnh thận mạn theo KDIGO 2024 | Kết cục phụ | Theo mục 4.9; diễn giải thăm dò |
-| 1 | nhóm eGFR theo KDIGO | Biến mô tả | Thống kê mô tả |
-| 1 | nhóm albumin niệu theo KDIGO (A1–A3) | Biến mô tả | Thống kê mô tả |
-| 1 | tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán | Kết cục phụ | Theo mục 4.9; diễn giải thăm dò |
-| 2 | điều trị bảo vệ thận — ACEi/ARB | Kết cục phụ | Theo mục 4.9; diễn giải thăm dò |
-| 2 | điều trị bảo vệ thận — SGLT2i | Kết cục phụ | Theo mục 4.9; diễn giải thăm dò |
-| 2 | người bệnh đủ chỉ định ACEi/ARB theo KDIGO 2022 | Biến mô tả | Thống kê mô tả |
-| 2 | người bệnh đủ chỉ định SGLT2i theo KDIGO 2022 | Biến mô tả | Thống kê mô tả |
-| 3 | việc không được xét nghiệm đủ UACR và creatinin | Kết cục phụ | Theo mục 4.9; diễn giải thăm dò |
-| 3 | tuổi | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
-| 3 | giới | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
-| 3 | nhóm đối tượng | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
-| 3 | thời gian mắc đái tháo đường | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
-| 3 | HbA1c (3 mức) | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
-| 3 | đang dùng insulin | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
-| 3 | số nhóm thuốc hạ glucose | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
-| 3 | tăng huyết áp | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
-| 3 | BMI | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
-| 3 | bệnh tim mạch do xơ vữa hoặc suy tim | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
-| 3 | số lượt khám năm 2026 | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
-| 3 | phòng khám theo dõi chính | Yếu tố liên quan | Đưa vào mô hình yếu tố liên quan |
+| 1 | Tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh | Kết cục chính | Ước lượng tỷ lệ trên toàn bộ N kèm KTC 95% Wilson; không kiểm định giả thuyết; không hiệu chỉnh quần thể hữu hạn (mục 4.9) |
+| 1 | Tỷ lệ bệnh thận mạn theo KDIGO 2024 | Kết cục phụ | Tỷ lệ kèm KTC 95% Wilson trên quần thể con; thăm dò (mục 4.9) |
+| 1 | Nhóm eGFR theo KDIGO | Biến mô tả | Thống kê mô tả |
+| 1 | Nhóm albumin niệu theo KDIGO (A1–A3) | Biến mô tả | Thống kê mô tả |
+| 1 | Tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán | Kết cục phụ | Tỷ lệ kèm KTC 95% Wilson trên quần thể con; thăm dò (mục 4.9) |
+| 2 | Điều trị bảo vệ thận — ACEi/ARB | Kết cục phụ | Tỷ lệ kèm KTC 95% Wilson trên quần thể con; thăm dò (mục 4.9) |
+| 2 | Điều trị bảo vệ thận — SGLT2i | Kết cục phụ | Tỷ lệ kèm KTC 95% Wilson trên quần thể con; thăm dò (mục 4.9) |
+| 2 | Người bệnh đủ chỉ định ACEi/ARB theo KDIGO 2022 | Biến mô tả | Thống kê mô tả |
+| 2 | Người bệnh đủ chỉ định SGLT2i theo KDIGO 2022 | Biến mô tả | Thống kê mô tả |
+| 3 | Việc không được xét nghiệm đủ UACR và creatinin | Kết cục phụ | Hồi quy Poisson phương sai vững, PR kèm KTC 95%; thăm dò (mục 4.9) |
+| 3 | Tuổi | Yếu tố liên quan | Biến giải thích trong mô hình Poisson (mục 4.9) |
+| 3 | Giới | Yếu tố liên quan | Biến giải thích trong mô hình Poisson (mục 4.9) |
+| 3 | Nhóm đối tượng | Yếu tố liên quan | Biến giải thích trong mô hình Poisson (mục 4.9) |
+| 3 | Thời gian mắc đái tháo đường | Yếu tố liên quan | Biến giải thích trong mô hình Poisson (mục 4.9) |
+| 3 | HbA1c (3 mức) | Yếu tố liên quan | Biến giải thích trong mô hình Poisson (mục 4.9) |
+| 3 | Đang dùng insulin | Yếu tố liên quan | Biến giải thích trong mô hình Poisson (mục 4.9) |
+| 3 | Số nhóm thuốc hạ glucose | Yếu tố liên quan | Biến giải thích trong mô hình Poisson (mục 4.9) |
+| 3 | Tăng huyết áp | Yếu tố liên quan | Biến giải thích trong mô hình Poisson (mục 4.9) |
+| 3 | BMI | Yếu tố liên quan | Biến giải thích trong mô hình Poisson (mục 4.9) |
+| 3 | Bệnh tim mạch do xơ vữa hoặc suy tim | Yếu tố liên quan | Biến giải thích trong mô hình Poisson (mục 4.9) |
+| 3 | Số lượt khám năm 2026 | Yếu tố liên quan | Biến giải thích trong mô hình Poisson (mục 4.9) |
+| 3 | Phòng khám theo dõi chính | Yếu tố liên quan | Biến giải thích trong mô hình Poisson (mục 4.9) |
 
 # PHỤ LỤC B. ĐƠN ĐỀ NGHỊ MIỄN ĐỒNG THUẬN THAM GIA NGHIÊN CỨU
 
@@ -647,7 +667,7 @@ Chủ nhiệm đề tài (ký, ghi rõ họ tên): ………………………�
 | Câu | Nội dung | Trả lời | Mã biến |
 |---|---|---|---|
 | 1 | Mã nghiên cứu | ……… | record_id |
-| 2 | Số thứ tự của hồ sơ trong danh sách đã xếp ngẫu nhiên | ……… (từ 1 đến 100000) | thu_tu_ngau_nhien |
+| 2 | Số thứ tự của hồ sơ trong danh sách đã xếp ngẫu nhiên | ……… (từ 1 đến 100.000) | thu_tu_ngau_nhien |
 | 3 | Người trích | ☐ 1. Chủ nhiệm  ☐ 2. Người trích lại (kiểm chứng 10%) | nguoi_trich |
 | 4 | Ngày trích hồ sơ | …… /…… /………… | ngay_trich |
 | 5 | Thời gian trích hồ sơ này (phút) | ……… (từ 1 đến 240) | thoi_gian_trich_phut |
@@ -697,28 +717,28 @@ Chủ nhiệm đề tài (ký, ghi rõ họ tên): ………………………�
 | 34 | Số kết quả creatinin huyết thanh trong eHospital năm 2026 | ……… (từ 0 đến 100) | so_lan_creat |
 | 35 | Đơn vị creatinin trên eHospital | ☐ 1. µmol/L  ☐ 2. mg/dL | creat_don_vi |
 | 36 | Creatinin — kết quả thứ 1: ngày | …… /…… /………… | creat_1_ngay |
-| 37 | Creatinin — kết quả thứ 1: giá trị | ……… (từ 0.1 đến 2000) | creat_1_gt |
+| 37 | Creatinin — kết quả thứ 1: giá trị | ……… (từ 0,1 đến 2000) | creat_1_gt |
 | 38 | Creatinin — kết quả thứ 2: ngày | …… /…… /………… | creat_2_ngay |
-| 39 | Creatinin — kết quả thứ 2: giá trị | ……… (từ 0.1 đến 2000) | creat_2_gt |
+| 39 | Creatinin — kết quả thứ 2: giá trị | ……… (từ 0,1 đến 2000) | creat_2_gt |
 | 40 | Creatinin — kết quả thứ 3: ngày | …… /…… /………… | creat_3_ngay |
-| 41 | Creatinin — kết quả thứ 3: giá trị | ……… (từ 0.1 đến 2000) | creat_3_gt |
+| 41 | Creatinin — kết quả thứ 3: giá trị | ……… (từ 0,1 đến 2000) | creat_3_gt |
 | 42 | Creatinin — kết quả thứ 4: ngày | …… /…… /………… | creat_4_ngay |
-| 43 | Creatinin — kết quả thứ 4: giá trị | ……… (từ 0.1 đến 2000) | creat_4_gt |
+| 43 | Creatinin — kết quả thứ 4: giá trị | ……… (từ 0,1 đến 2000) | creat_4_gt |
 | 44 | Creatinin — kết quả thứ 5: ngày | …… /…… /………… | creat_5_ngay |
-| 45 | Creatinin — kết quả thứ 5: giá trị | ……… (từ 0.1 đến 2000) | creat_5_gt |
+| 45 | Creatinin — kết quả thứ 5: giá trị | ……… (từ 0,1 đến 2000) | creat_5_gt |
 | 46 | Creatinin — kết quả thứ 6: ngày | …… /…… /………… | creat_6_ngay |
-| 47 | Creatinin — kết quả thứ 6: giá trị | ……… (từ 0.1 đến 2000) | creat_6_gt |
+| 47 | Creatinin — kết quả thứ 6: giá trị | ……… (từ 0,1 đến 2000) | creat_6_gt |
 | 48 | Số kết quả UACR (tỷ số albumin/creatinin niệu) trong eHospital năm 2026 | ……… (từ 0 đến 60) | so_lan_uacr |
 | 49 | Có xét nghiệm albumin hoặc protein niệu dạng KHÁC trong eHospital năm 2026 (nồng độ microalbumin niệu, que nhúng…) | ☐ 1. Có  ☐ 0. Không | alb_khac |
 | 50 | Đơn vị UACR trên eHospital | ☐ 1. mg/g  ☐ 2. mg/mmol | uacr_don_vi |
 | 51 | UACR — kết quả thứ 1: ngày | …… /…… /………… | uacr_1_ngay |
-| 52 | UACR — kết quả thứ 1: giá trị | ……… (từ 0 đến 10000) | uacr_1_gt |
+| 52 | UACR — kết quả thứ 1: giá trị | ……… (từ 0 đến 10.000) | uacr_1_gt |
 | 53 | UACR — kết quả thứ 2: ngày | …… /…… /………… | uacr_2_ngay |
-| 54 | UACR — kết quả thứ 2: giá trị | ……… (từ 0 đến 10000) | uacr_2_gt |
+| 54 | UACR — kết quả thứ 2: giá trị | ……… (từ 0 đến 10.000) | uacr_2_gt |
 | 55 | UACR — kết quả thứ 3: ngày | …… /…… /………… | uacr_3_ngay |
-| 56 | UACR — kết quả thứ 3: giá trị | ……… (từ 0 đến 10000) | uacr_3_gt |
+| 56 | UACR — kết quả thứ 3: giá trị | ……… (từ 0 đến 10.000) | uacr_3_gt |
 | 57 | UACR — kết quả thứ 4: ngày | …… /…… /………… | uacr_4_ngay |
-| 58 | UACR — kết quả thứ 4: giá trị | ……… (từ 0 đến 10000) | uacr_4_gt |
+| 58 | UACR — kết quả thứ 4: giá trị | ……… (từ 0 đến 10.000) | uacr_4_gt |
 | 59 | Loại xét nghiệm albumin/protein niệu dạng khác | ☐ 1. Nồng độ microalbumin niệu  ☐ 2. Que nhúng protein niệu  ☐ 3. Protein niệu 24 giờ hoặc tỷ số protein/creatinin  ☐ 4. Khác | alb_khac_loai |
 | 60 | Có ít nhất một kết quả dạng khác vượt giới hạn tham chiếu của phòng xét nghiệm | ☐ 1. Có  ☐ 0. Không | alb_khac_bat_thuong |
 
@@ -728,19 +748,19 @@ Chủ nhiệm đề tài (ký, ghi rõ họ tên): ………………………�
 |---|---|---|---|
 | 61 | Bệnh án ghi kết quả creatinin làm NGOÀI BVQY175 năm 2026 (có ghi rõ ngày và kết quả) | ☐ 1. Có  ☐ 0. Không | creat_ngoai_vien |
 | 62 | Creatinin ngoài viện gần nhất: ngày | …… /…… /………… | creat_nv_ngay |
-| 63 | Creatinin ngoài viện gần nhất: giá trị (cùng đơn vị với đơn vị creatinin trên eHospital) | ……… (từ 0.1 đến 2000) | creat_nv_gt |
+| 63 | Creatinin ngoài viện gần nhất: giá trị (cùng đơn vị với đơn vị creatinin trên eHospital) | ……… (từ 0,1 đến 2000) | creat_nv_gt |
 | 64 | Bệnh án ghi kết quả UACR làm NGOÀI BVQY175 năm 2026 (có ghi rõ ngày và kết quả) | ☐ 1. Có  ☐ 0. Không | uacr_ngoai_vien |
 | 65 | UACR ngoài viện gần nhất: ngày | …… /…… /………… | uacr_nv_ngay |
-| 66 | UACR ngoài viện gần nhất: giá trị (cùng đơn vị với đơn vị UACR trên eHospital) | ……… (từ 0 đến 10000) | uacr_nv_gt |
+| 66 | UACR ngoài viện gần nhất: giá trị (cùng đơn vị với đơn vị UACR trên eHospital) | ……… (từ 0 đến 10.000) | uacr_nv_gt |
 
 **PHẦN F. Thuốc — theo đơn eHospital tại lượt khám cuối cùng năm 2026 (kể cả viên phối hợp)**
 
 | Câu | Nội dung | Trả lời | Mã biến |
 |---|---|---|---|
-| 67 | Nhóm thuốc hạ glucose có trong đơn tại lượt khám cuối năm 2026 | ☐ 1. Metformin  ☐ 2. Sulfonylurea  ☐ 3. Ức chế DPP-4  ☐ 4. Ức chế SGLT2  ☐ 5. Đồng vận thụ thể GLP-1  ☐ 6. Thiazolidinedion  ☐ 7. Ức chế alpha-glucosidase  ☐ 8. Insulin  ☐ 9. Nhóm khác  ☐ 0. Không có thuốc hạ glucose | thuoc_ha_glucose |
+| 67 | Nhóm thuốc hạ glucose có trong đơn tại lượt khám cuối năm 2026 (chọn mọi nhóm có trong đơn) | ☐ 1. Metformin  ☐ 2. Sulfonylurea  ☐ 3. Ức chế DPP-4  ☐ 4. Ức chế SGLT2  ☐ 5. Đồng vận thụ thể GLP-1  ☐ 6. Thiazolidinedion  ☐ 7. Ức chế alpha-glucosidase  ☐ 8. Insulin  ☐ 9. Nhóm khác  ☐ 0. Không có thuốc hạ glucose | thuoc_ha_glucose |
 | 68 | Có ít nhất một đơn thuốc hạ glucose ở bất kỳ lượt khám nào năm 2026 | ☐ 1. Có  ☐ 0. Không | don_ha_glucose_nam |
 | 69 | ACEi hoặc ARB có trong đơn tại lượt khám cuối năm 2026 | ☐ 0. Không  ☐ 1. ACEi  ☐ 2. ARB  ☐ 3. Cả ACEi và ARB | raasi |
-| 70 | Bệnh án ghi người bệnh đang dùng nhưng KHÔNG có trong đơn eHospital (thuốc kê hoặc mua ngoài) | ☐ 1. ACEi hoặc ARB  ☐ 2. Ức chế SGLT2  ☐ 0. Không có | thuoc_ngoai_don |
+| 70 | Bệnh án ghi người bệnh đang dùng nhưng KHÔNG có trong đơn eHospital (thuốc kê hoặc mua ngoài; có thể chọn cả hai) | ☐ 1. ACEi hoặc ARB  ☐ 2. Ức chế SGLT2  ☐ 0. Không có | thuoc_ngoai_don |
 | 71 | Hồ sơ ghi rõ chống chỉ định hoặc không dung nạp ACEi/ARB | ☐ 1. Có  ☐ 0. Không | ccd_raasi |
 | 72 | Lý do được ghi | ☐ 1. Tăng kali máu  ☐ 2. Phù mạch  ☐ 3. Hạ huyết áp  ☐ 4. Tăng creatinin hoặc tổn thương thận cấp  ☐ 5. Có thai hoặc dự định có thai  ☐ 6. Khác | ccd_raasi_ly_do |
 | 73 | Hồ sơ ghi rõ chống chỉ định hoặc không dung nạp thuốc ức chế SGLT2 | ☐ 1. Có  ☐ 0. Không | ccd_sglt2i |
@@ -750,12 +770,14 @@ Người thu thập: ……………………………   Ngày thu thập: …�
 
 # PHỤ LỤC D. BẢNG BIẾN SỐ VÀ MÃ HOÁ
 
+**Bảng D.1. Danh mục biến số, mã biến và cách mã hoá**
+
 | Mã biến | Tên biến | Loại biến | Giá trị/cách mã hoá | Nguồn thu thập |
 |---|---|---|---|---|
 | record_id | Mã nghiên cứu | Chuỗi ký tự | Giá trị ghi nhận | Phiếu thu thập số liệu |
-| thu_tu_ngau_nhien | Số thứ tự của hồ sơ trong danh sách đã xếp ngẫu nhiên | Định lượng | 1–100000 | Phiếu thu thập số liệu |
+| thu_tu_ngau_nhien | Số thứ tự của hồ sơ trong danh sách đã xếp ngẫu nhiên | Định lượng | 1–100.000 | Phiếu thu thập số liệu |
 | nguoi_trich | Người trích | Nhị phân | 1 = Chủ nhiệm; 2 = Người trích lại (kiểm chứng 10%) | Phiếu thu thập số liệu |
-| ngay_trich | Ngày trích hồ sơ | Ngày tháng | 2026-11-01–2027-12-31 | Phiếu thu thập số liệu |
+| ngay_trich | Ngày trích hồ sơ | Ngày tháng | 01/11/2026–31/12/2027 | Phiếu thu thập số liệu |
 | thoi_gian_trich_phut | Thời gian trích hồ sơ này (phút) | Định lượng | 1–240 | Phiếu thu thập số liệu |
 | ho_so_mo_duoc | Mở được hồ sơ trên eHospital | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
 | tc_tuoi18 | Từ 18 tuổi trở lên tại lượt khám đầu tiên trong năm 2026 | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
@@ -766,15 +788,15 @@ Người thu thập: ……………………………   Ngày thu thập: …�
 | lt_dtd_khac | Có mã E10, E12 hoặc E13 ở bất kỳ lượt khám nào năm 2026 | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
 | trung_nguoi | Người bệnh này đã có trong mẫu dưới một mã nghiên cứu khác | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
 | du_tieu_chuan | Đủ tiêu chuẩn — đưa vào mẫu (tự tính) | Tính toán | 1 khi hồ sơ mở được, đủ mọi tiêu chuẩn chọn vào và không có tiêu chuẩn loại trừ nào; ngược lại 0 | Phiếu thu thập số liệu |
-| tuoi | Tuổi (năm) tại lượt khám đầu tiên trong năm 2026 | Định lượng | 18–110 | Phiếu trích hồ sơ eHospital (SOP trích hồ sơ) |
-| gioi | Giới | Nhị phân | 1 = Nam; 2 = Nữ | Phiếu trích hồ sơ eHospital (SOP trích hồ sơ) |
-| nhom_doi_tuong | Nhóm đối tượng khám tại lượt khám đầu tiên trong năm 2026 | Định danh/thứ bậc | 1 = Quân nhân; 2 = Bảo hiểm y tế; 3 = Dịch vụ; 4 = Khác | Phiếu trích hồ sơ eHospital (SOP trích hồ sơ) |
-| so_luot_kham | Số lượt khám ngoại trú tại Khoa Khám bệnh năm 2026 | Định lượng | 2–200 | Phiếu trích hồ sơ eHospital (SOP trích hồ sơ) |
-| ngay_kham_dau | Ngày lượt khám đầu tiên tại Khoa Khám bệnh năm 2026 | Ngày tháng | 2026-01-01–2026-12-31 | Phiếu thu thập số liệu |
-| ngay_kham_cuoi | Ngày lượt khám cuối cùng tại Khoa Khám bệnh năm 2026 | Ngày tháng | 2026-01-01–2026-12-31 | Phiếu thu thập số liệu |
-| phong_kham_chinh | Phòng khám theo dõi chính | Định danh/thứ bậc | 1 = Nội tiết; 2 = Nội chung (nội tổng hợp); 3 = Khác | Phiếu trích hồ sơ eHospital (SOP trích hồ sơ) |
+| tuoi | Tuổi (năm) tại lượt khám đầu tiên trong năm 2026 | Định lượng | 18–110 | Phiếu thu thập số liệu |
+| gioi | Giới | Nhị phân | 1 = Nam; 2 = Nữ | Phiếu thu thập số liệu |
+| nhom_doi_tuong | Nhóm đối tượng khám tại lượt khám đầu tiên trong năm 2026 | Định danh | 1 = Quân nhân; 2 = Bảo hiểm y tế; 3 = Dịch vụ; 4 = Khác | Phiếu thu thập số liệu |
+| so_luot_kham | Số lượt khám ngoại trú tại Khoa Khám bệnh năm 2026 | Định lượng | 2–200 | Phiếu thu thập số liệu |
+| ngay_kham_dau | Ngày lượt khám đầu tiên tại Khoa Khám bệnh năm 2026 | Ngày tháng | 01/01/2026–31/12/2026 | Phiếu thu thập số liệu |
+| ngay_kham_cuoi | Ngày lượt khám cuối cùng tại Khoa Khám bệnh năm 2026 | Ngày tháng | 01/01/2026–31/12/2026 | Phiếu thu thập số liệu |
+| phong_kham_chinh | Phòng khám theo dõi chính | Định danh | 1 = Nội tiết; 2 = Nội chung (nội tổng hợp); 3 = Khác | Phiếu thu thập số liệu |
 | nam_chan_doan_dtd | Năm được chẩn đoán đái tháo đường (theo bệnh án) | Định lượng | 1950–2026 | Phiếu thu thập số liệu |
-| tha | Tăng huyết áp: có mã I10–I15 ở ít nhất một lượt khám năm 2026 | Nhị phân | 1 = Có; 0 = Không | Phiếu trích hồ sơ eHospital (SOP trích hồ sơ) |
+| tha | Tăng huyết áp: có mã I10–I15 ở ít nhất một lượt khám năm 2026 | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
 | ascvd | Bệnh tim mạch do xơ vữa: có mã I20–I25, I63–I66, G45, I70, I73.9, Z95.1 hoặc Z95.5 ở ít nhất một lượt khám năm 2026 | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
 | suy_tim | Suy tim: có mã I50, I11.0, I13.0 hoặc I13.2 ở ít nhất một lượt khám năm 2026 | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
 | ma_btm_ghi_nhan | Có mã bệnh thận mạn hoặc biến chứng thận do ĐTĐ (N18, E11.2, N08.3) ở ít nhất một lượt khám năm 2026 | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
@@ -784,50 +806,52 @@ Người thu thập: ……………………………   Ngày thu thập: …�
 | bmi | BMI (kg/m², máy tự tính) | Tính toán | = can_nang / ((chieu_cao / 100)²) (làm tròn 1 chữ số thập phân) | Phiếu thu thập số liệu |
 | co_hba1c | Có kết quả HbA1c trong eHospital năm 2026 | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
 | hba1c_gt | HbA1c gần nhất năm 2026 (%) | Định lượng | 3–20 | Phiếu thu thập số liệu |
-| hba1c_ngay | Ngày làm HbA1c gần nhất | Ngày tháng | 2026-01-01–2026-12-31 | Phiếu thu thập số liệu |
+| hba1c_ngay | Ngày làm HbA1c gần nhất | Ngày tháng | 01/01/2026–31/12/2026 | Phiếu thu thập số liệu |
 | so_lan_creat | Số kết quả creatinin huyết thanh trong eHospital năm 2026 | Định lượng | 0–100 | Phiếu thu thập số liệu |
 | creat_don_vi | Đơn vị creatinin trên eHospital | Nhị phân | 1 = µmol/L; 2 = mg/dL | Phiếu thu thập số liệu |
-| creat_1_ngay | Creatinin — kết quả thứ 1: ngày | Ngày tháng | 2026-01-01–2026-12-31 | Phiếu thu thập số liệu |
-| creat_1_gt | Creatinin — kết quả thứ 1: giá trị | Định lượng | 0.1–2000 | Phiếu thu thập số liệu |
-| creat_2_ngay | Creatinin — kết quả thứ 2: ngày | Ngày tháng | 2026-01-01–2026-12-31 | Phiếu thu thập số liệu |
-| creat_2_gt | Creatinin — kết quả thứ 2: giá trị | Định lượng | 0.1–2000 | Phiếu thu thập số liệu |
-| creat_3_ngay | Creatinin — kết quả thứ 3: ngày | Ngày tháng | 2026-01-01–2026-12-31 | Phiếu thu thập số liệu |
-| creat_3_gt | Creatinin — kết quả thứ 3: giá trị | Định lượng | 0.1–2000 | Phiếu thu thập số liệu |
-| creat_4_ngay | Creatinin — kết quả thứ 4: ngày | Ngày tháng | 2026-01-01–2026-12-31 | Phiếu thu thập số liệu |
-| creat_4_gt | Creatinin — kết quả thứ 4: giá trị | Định lượng | 0.1–2000 | Phiếu thu thập số liệu |
-| creat_5_ngay | Creatinin — kết quả thứ 5: ngày | Ngày tháng | 2026-01-01–2026-12-31 | Phiếu thu thập số liệu |
-| creat_5_gt | Creatinin — kết quả thứ 5: giá trị | Định lượng | 0.1–2000 | Phiếu thu thập số liệu |
-| creat_6_ngay | Creatinin — kết quả thứ 6: ngày | Ngày tháng | 2026-01-01–2026-12-31 | Phiếu thu thập số liệu |
-| creat_6_gt | Creatinin — kết quả thứ 6: giá trị | Định lượng | 0.1–2000 | Phiếu thu thập số liệu |
+| creat_1_ngay | Creatinin — kết quả thứ 1: ngày | Ngày tháng | 01/01/2026–31/12/2026 | Phiếu thu thập số liệu |
+| creat_1_gt | Creatinin — kết quả thứ 1: giá trị | Định lượng | 0,1–2000 | Phiếu thu thập số liệu |
+| creat_2_ngay | Creatinin — kết quả thứ 2: ngày | Ngày tháng | 01/01/2026–31/12/2026 | Phiếu thu thập số liệu |
+| creat_2_gt | Creatinin — kết quả thứ 2: giá trị | Định lượng | 0,1–2000 | Phiếu thu thập số liệu |
+| creat_3_ngay | Creatinin — kết quả thứ 3: ngày | Ngày tháng | 01/01/2026–31/12/2026 | Phiếu thu thập số liệu |
+| creat_3_gt | Creatinin — kết quả thứ 3: giá trị | Định lượng | 0,1–2000 | Phiếu thu thập số liệu |
+| creat_4_ngay | Creatinin — kết quả thứ 4: ngày | Ngày tháng | 01/01/2026–31/12/2026 | Phiếu thu thập số liệu |
+| creat_4_gt | Creatinin — kết quả thứ 4: giá trị | Định lượng | 0,1–2000 | Phiếu thu thập số liệu |
+| creat_5_ngay | Creatinin — kết quả thứ 5: ngày | Ngày tháng | 01/01/2026–31/12/2026 | Phiếu thu thập số liệu |
+| creat_5_gt | Creatinin — kết quả thứ 5: giá trị | Định lượng | 0,1–2000 | Phiếu thu thập số liệu |
+| creat_6_ngay | Creatinin — kết quả thứ 6: ngày | Ngày tháng | 01/01/2026–31/12/2026 | Phiếu thu thập số liệu |
+| creat_6_gt | Creatinin — kết quả thứ 6: giá trị | Định lượng | 0,1–2000 | Phiếu thu thập số liệu |
 | so_lan_uacr | Số kết quả UACR (tỷ số albumin/creatinin niệu) trong eHospital năm 2026 | Định lượng | 0–60 | Phiếu thu thập số liệu |
 | uacr_don_vi | Đơn vị UACR trên eHospital | Nhị phân | 1 = mg/g; 2 = mg/mmol | Phiếu thu thập số liệu |
-| uacr_1_ngay | UACR — kết quả thứ 1: ngày | Ngày tháng | 2026-01-01–2026-12-31 | Phiếu thu thập số liệu |
-| uacr_1_gt | UACR — kết quả thứ 1: giá trị | Định lượng | 0–10000 | Phiếu thu thập số liệu |
-| uacr_2_ngay | UACR — kết quả thứ 2: ngày | Ngày tháng | 2026-01-01–2026-12-31 | Phiếu thu thập số liệu |
-| uacr_2_gt | UACR — kết quả thứ 2: giá trị | Định lượng | 0–10000 | Phiếu thu thập số liệu |
-| uacr_3_ngay | UACR — kết quả thứ 3: ngày | Ngày tháng | 2026-01-01–2026-12-31 | Phiếu thu thập số liệu |
-| uacr_3_gt | UACR — kết quả thứ 3: giá trị | Định lượng | 0–10000 | Phiếu thu thập số liệu |
-| uacr_4_ngay | UACR — kết quả thứ 4: ngày | Ngày tháng | 2026-01-01–2026-12-31 | Phiếu thu thập số liệu |
-| uacr_4_gt | UACR — kết quả thứ 4: giá trị | Định lượng | 0–10000 | Phiếu thu thập số liệu |
+| uacr_1_ngay | UACR — kết quả thứ 1: ngày | Ngày tháng | 01/01/2026–31/12/2026 | Phiếu thu thập số liệu |
+| uacr_1_gt | UACR — kết quả thứ 1: giá trị | Định lượng | 0–10.000 | Phiếu thu thập số liệu |
+| uacr_2_ngay | UACR — kết quả thứ 2: ngày | Ngày tháng | 01/01/2026–31/12/2026 | Phiếu thu thập số liệu |
+| uacr_2_gt | UACR — kết quả thứ 2: giá trị | Định lượng | 0–10.000 | Phiếu thu thập số liệu |
+| uacr_3_ngay | UACR — kết quả thứ 3: ngày | Ngày tháng | 01/01/2026–31/12/2026 | Phiếu thu thập số liệu |
+| uacr_3_gt | UACR — kết quả thứ 3: giá trị | Định lượng | 0–10.000 | Phiếu thu thập số liệu |
+| uacr_4_ngay | UACR — kết quả thứ 4: ngày | Ngày tháng | 01/01/2026–31/12/2026 | Phiếu thu thập số liệu |
+| uacr_4_gt | UACR — kết quả thứ 4: giá trị | Định lượng | 0–10.000 | Phiếu thu thập số liệu |
 | alb_khac | Có xét nghiệm albumin hoặc protein niệu dạng KHÁC trong eHospital năm 2026 (nồng độ microalbumin niệu, que nhúng…) | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
-| alb_khac_loai | Loại xét nghiệm albumin/protein niệu dạng khác | Định danh/thứ bậc | 1 = Nồng độ microalbumin niệu; 2 = Que nhúng protein niệu; 3 = Protein niệu 24 giờ hoặc tỷ số protein/creatinin; 4 = Khác | Phiếu thu thập số liệu |
+| alb_khac_loai | Loại xét nghiệm albumin/protein niệu dạng khác | Định danh | 1 = Nồng độ microalbumin niệu; 2 = Que nhúng protein niệu; 3 = Protein niệu 24 giờ hoặc tỷ số protein/creatinin; 4 = Khác | Phiếu thu thập số liệu |
 | alb_khac_bat_thuong | Có ít nhất một kết quả dạng khác vượt giới hạn tham chiếu của phòng xét nghiệm | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
 | creat_ngoai_vien | Bệnh án ghi kết quả creatinin làm NGOÀI BVQY175 năm 2026 (có ghi rõ ngày và kết quả) | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
-| creat_nv_ngay | Creatinin ngoài viện gần nhất: ngày | Ngày tháng | 2026-01-01–2026-12-31 | Phiếu thu thập số liệu |
-| creat_nv_gt | Creatinin ngoài viện gần nhất: giá trị (cùng đơn vị với đơn vị creatinin trên eHospital) | Định lượng | 0.1–2000 | Phiếu thu thập số liệu |
+| creat_nv_ngay | Creatinin ngoài viện gần nhất: ngày | Ngày tháng | 01/01/2026–31/12/2026 | Phiếu thu thập số liệu |
+| creat_nv_gt | Creatinin ngoài viện gần nhất: giá trị (cùng đơn vị với đơn vị creatinin trên eHospital) | Định lượng | 0,1–2000 | Phiếu thu thập số liệu |
 | uacr_ngoai_vien | Bệnh án ghi kết quả UACR làm NGOÀI BVQY175 năm 2026 (có ghi rõ ngày và kết quả) | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
-| uacr_nv_ngay | UACR ngoài viện gần nhất: ngày | Ngày tháng | 2026-01-01–2026-12-31 | Phiếu thu thập số liệu |
-| uacr_nv_gt | UACR ngoài viện gần nhất: giá trị (cùng đơn vị với đơn vị UACR trên eHospital) | Định lượng | 0–10000 | Phiếu thu thập số liệu |
-| thuoc_ha_glucose | Nhóm thuốc hạ glucose có trong đơn tại lượt khám cuối năm 2026 | Định danh/thứ bậc | 1 = Metformin; 2 = Sulfonylurea; 3 = Ức chế DPP-4; 4 = Ức chế SGLT2; 5 = Đồng vận thụ thể GLP-1; 6 = Thiazolidinedion; 7 = Ức chế alpha-glucosidase; 8 = Insulin; 9 = Nhóm khác; 0 = Không có thuốc hạ glucose | Phiếu thu thập số liệu |
+| uacr_nv_ngay | UACR ngoài viện gần nhất: ngày | Ngày tháng | 01/01/2026–31/12/2026 | Phiếu thu thập số liệu |
+| uacr_nv_gt | UACR ngoài viện gần nhất: giá trị (cùng đơn vị với đơn vị UACR trên eHospital) | Định lượng | 0–10.000 | Phiếu thu thập số liệu |
+| thuoc_ha_glucose | Nhóm thuốc hạ glucose có trong đơn tại lượt khám cuối năm 2026 | Định danh (chọn nhiều) | 1 = Metformin; 2 = Sulfonylurea; 3 = Ức chế DPP-4; 4 = Ức chế SGLT2; 5 = Đồng vận thụ thể GLP-1; 6 = Thiazolidinedion; 7 = Ức chế alpha-glucosidase; 8 = Insulin; 9 = Nhóm khác; 0 = Không có thuốc hạ glucose | Phiếu thu thập số liệu |
 | don_ha_glucose_nam | Có ít nhất một đơn thuốc hạ glucose ở bất kỳ lượt khám nào năm 2026 | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
-| raasi | ACEi hoặc ARB có trong đơn tại lượt khám cuối năm 2026 | Định danh/thứ bậc | 0 = Không; 1 = ACEi; 2 = ARB; 3 = Cả ACEi và ARB | Phiếu thu thập số liệu |
-| thuoc_ngoai_don | Bệnh án ghi người bệnh đang dùng nhưng KHÔNG có trong đơn eHospital (thuốc kê hoặc mua ngoài) | Định danh/thứ bậc | 1 = ACEi hoặc ARB; 2 = Ức chế SGLT2; 0 = Không có | Phiếu thu thập số liệu |
+| raasi | ACEi hoặc ARB có trong đơn tại lượt khám cuối năm 2026 | Định danh | 0 = Không; 1 = ACEi; 2 = ARB; 3 = Cả ACEi và ARB | Phiếu thu thập số liệu |
+| thuoc_ngoai_don | Bệnh án ghi người bệnh đang dùng nhưng KHÔNG có trong đơn eHospital (thuốc kê hoặc mua ngoài) | Định danh (chọn nhiều) | 1 = ACEi hoặc ARB; 2 = Ức chế SGLT2; 0 = Không có | Phiếu thu thập số liệu |
 | ccd_raasi | Hồ sơ ghi rõ chống chỉ định hoặc không dung nạp ACEi/ARB | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
-| ccd_raasi_ly_do | Lý do được ghi | Định danh/thứ bậc | 1 = Tăng kali máu; 2 = Phù mạch; 3 = Hạ huyết áp; 4 = Tăng creatinin hoặc tổn thương thận cấp; 5 = Có thai hoặc dự định có thai; 6 = Khác | Phiếu thu thập số liệu |
+| ccd_raasi_ly_do | Lý do được ghi | Định danh | 1 = Tăng kali máu; 2 = Phù mạch; 3 = Hạ huyết áp; 4 = Tăng creatinin hoặc tổn thương thận cấp; 5 = Có thai hoặc dự định có thai; 6 = Khác | Phiếu thu thập số liệu |
 | ccd_sglt2i | Hồ sơ ghi rõ chống chỉ định hoặc không dung nạp thuốc ức chế SGLT2 | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
-| ccd_sglt2i_ly_do | Lý do được ghi | Định danh/thứ bậc | 1 = Nhiễm toan ceton; 2 = Nhiễm khuẩn tiết niệu – sinh dục tái diễn; 3 = eGFR dưới ngưỡng dùng thuốc; 4 = Giảm thể tích hoặc hạ huyết áp; 5 = Khác | Phiếu thu thập số liệu |
+| ccd_sglt2i_ly_do | Lý do được ghi | Định danh | 1 = Nhiễm toan ceton; 2 = Nhiễm khuẩn tiết niệu – sinh dục tái diễn; 3 = eGFR dưới ngưỡng dùng thuốc; 4 = Giảm thể tích hoặc hạ huyết áp; 5 = Khác | Phiếu thu thập số liệu |
 
 # PHỤ LỤC E. DANH MỤC MÃ DÙNG ĐỂ TRÍCH
+
+**Bảng E.1. Danh mục mã dùng để trích dữ liệu**
 
 | Dùng cho | Nội dung | Mã | Hệ mã |
 |---|---|---|---|
