@@ -591,6 +591,24 @@ def _lua_chon(chuoi: str) -> List[Tuple[str, str]]:
     return ra
 
 
+def _so_hien(s: str) -> str:
+    """Số trong phiếu/bảng biến số theo kiểu Việt Nam (soát 20/11/2026): thập phân dấu phẩy («0.1» → «0,1»), nhóm nghìn
+    bằng dấu chấm từ 5 chữ số («10000» → «10.000»; số 4 chữ số giữ nguyên để không nhầm năm «1950–2026»); ngày ISO
+    «2026-01-01» → «01/01/2026». Chuỗi khác giữ nguyên."""
+    s = (s or "").strip()
+    m = re.fullmatch(r"(\d{4})-(\d{2})-(\d{2})", s)
+    if m:
+        return f"{m[3]}/{m[2]}/{m[1]}"
+    m = re.fullmatch(r"(-?)(\d+)(?:\.(\d+))?", s)
+    if not m:
+        return s
+    nguyen = f"{int(m[2]):,}".replace(",", ".") if len(m[2]) >= 5 else m[2]
+    return m[1] + nguyen + (f",{m[3]}" if m[3] else "")
+
+
+_TU_THU_BAC = re.compile(r"\b(?:rất|hoàn toàn|mức|bình thường|trung lập|nhẹ|vừa|nặng|thấp|cao|kém|tốt)\b", re.I)
+
+
 def _o_tra_loi(r: Dict[str, str]) -> str:
     kieu = (r.get("Field Type") or "").strip()
     if kieu in ("radio", "dropdown", "checkbox"):
@@ -602,7 +620,7 @@ def _o_tra_loi(r: Dict[str, str]) -> str:
         return "…… /…… /…………"
     lo, hi = (r.get("Text Validation Min") or "").strip(), (r.get("Text Validation Max") or "").strip()
     if kiem in ("integer", "number") or lo or hi:
-        return f"{CHAM}" + (f" (từ {lo} đến {hi})" if lo and hi else "")
+        return f"{CHAM}" + (f" (từ {_so_hien(lo)} đến {_so_hien(hi)})" if lo and hi else "")
     if kieu == "calc":
         return "(tính từ các câu trên)"
     return CHAM
@@ -614,8 +632,14 @@ def _loai_bien(r: Dict[str, str]) -> str:
     if kieu == "calc":
         return "Tính toán"
     if kieu in ("radio", "dropdown", "checkbox", "yesno", "truefalse"):
-        n = len(_lua_chon(r.get("Choices, Calculations, OR Slider Labels"))) or 2
-        return "Nhị phân" if n == 2 else "Định danh/thứ bậc"
+        lc = _lua_chon(r.get("Choices, Calculations, OR Slider Labels"))
+        if kieu == "checkbox":
+            return "Định danh (chọn nhiều)"
+        if (len(lc) or 2) == 2:
+            return "Nhị phân"
+        # «Định danh/thứ bậc» (trước 20/11/2026) bỏ lửng cho người đọc: thang có thứ tự (Likert «Rất … / Bình thường /
+        # …») là thứ bậc, còn lại là định danh.
+        return "Thứ bậc" if sum(1 for _ma, nhan in lc if _TU_THU_BAC.search(nhan)) >= 2 else "Định danh"
     if kiem.startswith("date"):
         return "Ngày tháng"
     if kiem in ("integer", "number"):
@@ -697,7 +721,7 @@ def bang_bien_so(n: Nguon) -> List[str]:
             ma = "1 = Có; 0 = Không"
         else:
             lo, hi = (r.get("Text Validation Min") or "").strip(), (r.get("Text Validation Max") or "").strip()
-            ma = f"{lo}–{hi}" if lo and hi else ("dd/mm/yyyy" if "date" in (r.get(
+            ma = f"{_so_hien(lo)}–{_so_hien(hi)}" if lo and hi else ("dd/mm/yyyy" if "date" in (r.get(
                 "Text Validation Type OR Show Slider Number") or "") else "Giá trị ghi nhận")
         nguon = lam_sach((vai.get(ten) or {}).get("cong_cu", "")) or "Phiếu thu thập số liệu"
         nguon = nguon[:1].upper() + nguon[1:]
@@ -919,7 +943,7 @@ _VIET_TAT = {
     "BHYT": "Bảo hiểm y tế", "HIS": "Hệ thống thông tin bệnh viện (hospital information system)",
     "PR": "Tỷ số tỷ lệ hiện mắc (prevalence ratio)", "ACEi": "Thuốc ức chế men chuyển angiotensin",
     "ARB": "Thuốc chẹn thụ thể angiotensin II", "RAASi": "Thuốc ức chế hệ renin–angiotensin–aldosteron",
-    "KDIGO": "Kidney Disease: Improving Global Outcomes",
+    "KDIGO": "Tổ chức Cải thiện kết cục toàn cầu về bệnh thận (Kidney Disease: Improving Global Outcomes)",
     "ADA": "Hiệp hội Đái tháo đường Hoa Kỳ (American Diabetes Association)",
     "EPV": "Số biến cố trên mỗi tham số (events per variable)", "BMI": "Chỉ số khối cơ thể (body mass index)",
     "HbA1c": "Huyết sắc tố gắn glucose (glycated haemoglobin)",
@@ -1810,12 +1834,30 @@ def tom_tat(n: Nguon) -> List[str]:
     return ["## TÓM TẮT ĐỀ CƯƠNG", "", _cau(n.td.thay(str(tt))), ""]
 
 
+def _bo_tltk(van: str) -> str:
+    """Bỏ danh mục tài liệu tham khảo (tên tác giả «Nguyen HA», «SD» trong tên tạp chí… không phải chữ viết tắt của
+    văn bản) — 20/11/2026, K11 bắt mục «HA», «SD», «DE» thừa ở đề cương máy sinh."""
+    m = re.search(r"^#{1,2}\s+(?:\d+\.\s*)?TÀI LIỆU THAM KHẢO.*$", van, re.M)
+    if not m:
+        return van
+    j = re.search(r"^#{1,2}\s+PHỤ LỤC", van[m.end():], re.M)
+    return van[:m.start()] + (van[m.end() + j.start():] if j else "")
+
+
+def _khoa_van_viet(k: str) -> str:
+    return k.upper().replace("Đ", "D~")
+
+
 def viet_tat(than: str) -> List[str]:
-    co = [(k, v) for k, v in _VIET_TAT.items() if re.search(rf"(?<![\w-]){re.escape(k)}(?![\w-])", than)]
+    """Bảng chữ viết tắt: chỉ mục DÙNG trong văn bản (ngoài danh mục tài liệu tham khảo; «ĐN1», «MT2» tính là dùng),
+    xếp theo bảng chữ cái tiếng Việt (K11 của kiem_de_cuong_nop_hoi_dong)."""
+    van = _bo_tltk(than)
+    co = [(k, v) for k, v in _VIET_TAT.items()
+          if re.search(rf"(?<![\w-]){re.escape(k)}(?:\d|(?![\w-]))", van)]
     if not co:
         return []
     return ["## DANH MỤC CHỮ VIẾT TẮT", "", "| Viết tắt | Nghĩa |", "|---|---|"] + [
-        f"| {k} | {v} |" for k, v in sorted(co)] + [""]
+        f"| {k} | {v} |" for k, v in sorted(co, key=lambda kv: _khoa_van_viet(kv[0]))] + [""]
 
 
 def _pmid_phuong_phap_hoc() -> set:
@@ -1893,7 +1935,31 @@ def don_cuoi(van: str) -> str:
     khuôn thêm một dấu nữa. Không đụng «...» hay dòng chấm «………» để chủ nhiệm điền tay."""
     van = re.sub(r"\n{3,}", "\n\n", van)
     van = re.sub(r"(?<![.…])\.\.(?![.…])", ".", van)
-    return van.rstrip() + "\n"
+    return _chuan_viet(van).rstrip() + "\n"
+
+
+_NGAY_ISO_VAN_RE = re.compile(r"(?<![\w-])((?:19|20)\d{2})-([01]\d)-([0-3]\d)(?![\w-])")
+_SO_0_CHAM_RE = re.compile(r"(?<![\w.,])0\.(\d+)(?![\d.])")
+_DONG_TIM_KIEM_RE = re.compile(r"\[(?:Mesh|tiab|pt|ti|tw|majr|dp)\]", re.I)
+
+
+def _chuan_viet(van: str) -> str:
+    """Chuẩn trình bày tiếng Việt (K11, 20/11/2026) trên văn bản máy sinh: ngoặc kép “…” thay «…», ngày dd/mm/yyyy thay
+    ISO. Không đụng danh mục tài liệu tham khảo (giữ nguyên văn), mã trong `…`, dòng chuỗi tìm kiếm."""
+    ra, trong_tltk = [], False
+    for d in van.split("\n"):
+        if re.match(r"^#{1,2}\s", d):
+            trong_tltk = "TÀI LIỆU THAM KHẢO" in d.upper()
+        if trong_tltk or _DONG_TIM_KIEM_RE.search(d):
+            ra.append(d)
+            continue
+        manh = re.split(r"(`[^`]*`)", d)
+        for i in range(0, len(manh), 2):
+            x = manh[i].replace("«", "“").replace("»", "”")
+            x = _SO_0_CHAM_RE.sub(r"0,\1", x)  # «biên Δ = 0.1» (giá trị G3 chèn thô) ⇒ «0,1» (giả lập RCT NI)
+            manh[i] = _NGAY_ISO_VAN_RE.sub(r"\3/\2/\1", x)
+        ra.append("".join(manh))
+    return "\n".join(ra)
 
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════════ ghi + kiểm

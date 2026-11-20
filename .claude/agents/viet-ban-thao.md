@@ -166,6 +166,23 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact manuscript
   «(12 biến)». Đề cương đã có: `--thay-chuong --ghi` (chương máy dựng sơ sài) hoặc `--nang-cap --ghi` (chương soạn tay —
   giữ bảng của nhóm nghiên cứu, chuẩn hoá tên/ghi chú, bảng «Bước | Số lượng» ⇒ sơ đồ thật, thêm biểu đồ còn thiếu).
   Hình nằm ở `exports/<mã>/bieu-bang/`; Word chèn ảnh thật (`md_sang_docx_times.py` / `md2docx_vn`).
+- **Chuẩn trình bày từng câu, từng bảng, từng biểu đồ (bác sĩ 20/11/2026: «từng câu, từng chữ, ngữ nghĩa phải chuẩn,
+  từng bảng từng đồ thị phải đúng chuẩn, đúng định dạng» — áp cho MỌI đề tài, mọi văn bản nộp: đề cương, bản thảo, thư,
+  bảng kiểm):** chốt máy K11 của `kiem_de_cuong_nop_hoi_dong.py` (cả `kiem_ban_thao_tap_chi.py`) chặn: số thập phân
+  dấu chấm (viết 0,1), số từ 5 chữ số chưa nhóm nghìn (10.000), ngày ISO (viết dd/mm/yyyy), ngoặc kép thẳng hoặc «»
+  (dùng “…”), «vs» (viết «so với»), chữ IN HOA nhấn mạnh trong câu ngoài phụ lục, loại biến «Định danh/thứ bậc», tên
+  bảng/hình hai ngoặc liền; bảng chữ viết tắt hai mục cùng nghĩa (SD và ĐLC), mục không dùng, không xếp theo vần tiếng
+  Việt. K9 chặn bảng dồn nhiều mức/biến vào một ô («Giới | Nam; Nữ») — mỗi biến một hàng, mỗi mức một dòng. Máy
+  KHÔNG đo được, agent tự soát trước khi trả: (a) bảng đa biến và forest plot cùng biến, cùng nhóm tham chiếu với mô
+  hình chính của SAP (biến có/không lấy «Không» làm tham chiếu, biến khác lấy mã nhỏ nhất); (b) bước tăng của biến
+  liên tục đúng SAP («mỗi 10 năm», «mỗi 15 phút», biến thứ bậc đưa dạng số ghi «mỗi mức tăng»); (c) cột phân tích chính
+  đúng SAP (ca đủ dữ liệu hay gán đa trị là chính — đặt đúng cột, cột kia ghi «độ nhạy»); (d) bảng độ nhạy đủ MỌI mục
+  của SAP đã khoá, viết tiếng Việt (không «separation», «svyolr»); (e) mức của biến trong bảng đúng chữ của phiếu thu
+  thập; (f) bảng mô tả theo đơn vị gốc (năm, kg/m²), không theo thang đã chia cho mô hình; (g) câu khẳng định trong tổng
+  quan không mâu thuẫn bảng (vd «tìm PubMed không có hướng dẫn» trong khi Bảng 3.1 liệt kê hướng dẫn ⇒ nói rõ nguồn tìm
+  bổ sung); (h) giá trị đã chốt ở G1 (thời gian, khoản chi) giữ đúng chữ — sửa văn phong không được làm lệch trục
+  `de_cuong_nop` của `nhat_quan_xuyen_cong`. Lỗi lặp lại ⇒ sửa ở bộ sinh (`khung_bieu_bang.py`,
+  `sinh_de_cuong_nop_hoi_dong.py`) + phép thử, không vá tay từng đề tài.
 - Nguồn gốc bản máy nằm NGOÀI văn bản: dấu sha256 ở `_dau_may_sinh/DE_CUONG_NOP_HOI_DONG_<mã>.md.json` (17/11/2026). Tệp khớp dấu là bản máy chưa ai sửa ⇒ sinh lại được; tệp đã có người sửa (lệch sha256) hoặc không có dấu là bản của chủ nhiệm ⇒ công cụ từ chối ghi đè (mã 4). Bản cũ còn dòng `<!-- sinh-de-cuong-nop-hoi-dong: … -->` vẫn được nhận là bản máy.
 
 ## Văn bản không mang dấu vết soạn thảo hay dấu vết máy (17/11/2026 — bác sĩ yêu cầu)

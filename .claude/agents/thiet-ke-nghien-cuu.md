@@ -468,6 +468,8 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact sap
 
 **Đạt G1 khi:** thiết kế phù hợp câu hỏi + bảng so sánh 3 ứng viên + kiểm soát 7 sai lệch + estimand (nếu can thiệp) + KHỐI THIẾT KẾ hoàn chỉnh.
 
+**Khung bảng kết quả (dummy tables) đúng chuẩn trình bày (bác sĩ 20/11/2026):** mỗi biến một hàng, mỗi mức một dòng theo đúng chữ của phiếu; bảng đa biến liệt kê đúng biến và nhóm tham chiếu của mô hình chính (biến có/không tham chiếu «Không», biến khác mã nhỏ nhất) và bước tăng của biến liên tục; ghi rõ phân tích chính về dữ liệu thiếu (ca đủ dữ liệu hay gán đa trị) để bảng đề cương đặt đúng cột; mọi phân tích độ nhạy của SAP có một dòng; số kiểu Việt Nam (0,1; 10.000) — luật K9/K11 của `kiem_de_cuong_nop_hoi_dong.py` (repo y khoa) đo phần đo được.
+
 **Đạt G4 khi:** 12 mục SAP đầy đủ (15 nếu RCT, +§13-15) + SAP Lock Certificate + dummy tables + kết cục chính không thay đổi sau ký + bác sĩ xác nhận ngày khóa.
 
 ## Đồng bộ xuyên cổng (15/11/2026 — bác sĩ duyệt)

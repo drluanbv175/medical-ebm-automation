@@ -1632,12 +1632,14 @@ def main() -> int:
         description="Chấm lại hợp đồng chất lượng G4; không sinh lại SAP, không ký thay ai."
     )
     parser.add_argument("--study", required=True)
+    parser.add_argument("--no-write", action="store_true",
+                        help="chỉ chấm và in, KHÔNG ghi báo cáo/checkpoint (đo trên checkout chính, 20/11/2026)")
     args = parser.parse_args()
     GC.ensure_utf8_stdout()
     repo_root = Path(__file__).resolve().parents[1]
     study = re.sub(r"[^\w\-]", "_", args.study.strip().replace(" ", "-"))
     out_dir = repo_root / "exports" / study
-    report = evaluate_study(study, out_dir, repo_root=repo_root, write=True)
+    report = evaluate_study(study, out_dir, repo_root=repo_root, write=not args.no_write)
     print(f"G4 quality status: {report['status']}")
     print(f"Phạm vi khóa ký: {report.get('signature_scope') or 'không xác định'}")
     for row in report["automatic_criteria"] + report["approval_criteria"]:

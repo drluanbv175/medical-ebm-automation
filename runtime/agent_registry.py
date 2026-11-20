@@ -185,8 +185,11 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # đã đọc nguồn chính thức) — vẫn 64.
 # 20/11/2026 (chiều): dạy `viet-ban-thao` + `kiem-chung-trich-dan` luật «số liệu phải có chứng cứ thực» (bác sĩ: «Không
 # có số liệu thực, chứng cứ thực hãy loại bỏ»), chốt máy K10 — vẫn 64.
+# 20/11/2026 (tối): dạy `viet-ban-thao`, `thiet-ke-nghien-cuu`, `dieu-phoi-g10` chuẩn trình bày văn bản nộp (K11, K9
+# «mỗi mức một dòng») — vẫn 64.
+# 20/11/2026 (tối, lượt 2): dạy `co-mau-nghien-cuu` đo lại chi tiết con số phụ của cỡ mẫu — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "fb3982a1f801a85c0ac4573141b8386913dd9dfda1974e2eb24bff54f54256d1"
+    "547b9b70bdbed96673b162081ffb5219c60078a493308e8f93827e369ebe2f9c"
 )
 
 MINIMUM_AGENT_COUNT = 64

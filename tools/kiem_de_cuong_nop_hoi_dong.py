@@ -30,6 +30,11 @@ Luật (mỗi lỗi một dòng; rỗng = đạt):
   K10 không số liệu «trôi nổi» (bác sĩ 20/11/2026: «Không có số liệu thực, chứng cứ thực hãy loại bỏ»): trong đặt vấn
       đề / tổng quan / bàn luận, mỗi mệnh đề mang số liệu kiểu kết quả (%, OR/RR/HR/PR, KTC 95%, TB ± ĐLC) phải tự mang
       trích dẫn [n]; tách mệnh đề ở «;» ngoài ngoặc. Nguồn không có trong danh mục ⇒ loại con số.
+  K11 chuẩn trình bày tiếng Việt (bác sĩ 20/11/2026: «từng câu, từng chữ… từng bảng từng đồ thị phải đúng chuẩn, đúng
+      định dạng»): số thập phân dấu phẩy, nhóm nghìn từ 5 chữ số, ngày dd/mm/yyyy, ngoặc kép “…”, không «vs», không chữ
+      IN HOA nhấn mạnh ngoài phụ lục, loại biến không bỏ lửng «Định danh/thứ bậc», tên bảng/hình không hai ngoặc liền;
+      bảng chữ viết tắt không hai mục cùng nghĩa, không mục thừa, xếp theo vần tiếng Việt. (Bảng «mỗi mức một dòng»
+      ở K9.) Danh mục tài liệu tham khảo, mã, chuỗi tìm kiếm, DOI/URL/PMID được miễn.
 
 Lệnh:  python3 tools/kiem_de_cuong_nop_hoi_dong.py --study <mã> [--json]
 Mã thoát: 0 đạt · 1 có lỗi · 2 thiếu tệp đề cương nộp.
@@ -243,6 +248,104 @@ def loi_k10(md: str) -> List[str]:
     return loi
 
 
+# K11 (bác sĩ 20/11/2026: «từng câu, từng chữ, ngữ nghĩa phải chuẩn, từng bảng từng đồ thị phải đúng chuẩn, đúng định
+# dạng»). Soát tay đề cương BTM/C1a gặp lặp lại: số kiểu máy (0.1; 100000; 2026-01-01), ngoặc kép thẳng/«», hai mục
+# viết tắt cùng nghĩa (SD và ĐLC), mục viết tắt không dùng, bảng viết tắt không theo vần, loại biến «Định danh/thứ bậc»,
+# tên bảng hai ngoặc liền «(…) (Mục tiêu 3)», «vs», chữ IN HOA nhấn mạnh trong câu («ước lượng CAO»).
+_SO_THAP_PHAN_MAY_RE = re.compile(r"(?<![\w.,])0\.\d+(?![\d.])")
+_SO_LON_MAY_RE = re.compile(r"(?<![\w.,/-])\d{5,}(?![\w.,/-])")
+_NGAY_ISO_RE = re.compile(r"(?<![\w-])(?:19|20)\d{2}-[01]\d-[0-3]\d(?![\w-])")
+_NGOAC_KEP_RE = re.compile(r"[«»]|\"[^\"\n]{1,200}\"")
+_NGU_CANH_MA_RE = re.compile(r"(?:seed|hạt giống|mã|ID|ISSN|NCT|số hiệu|số)\s*[:=]?\s*$", re.I)
+_VS_RE = re.compile(r"(?<![\wÀ-ỹ])vs\.?(?![\wÀ-ỹ])")
+_IN_HOA_NHAN_RE = re.compile(r"(?<![\wÀ-ỹ])(?:CAO|THẤP|KHÔNG|CHỈ|MỌI|PHẢI|LUÔN|TĂNG|GIẢM|ĐÚNG|SAI)(?![\wÀ-ỹ])")
+_TIM_KIEM_RE = re.compile(r"\[(?:Mesh|tiab|pt|ti|tw|majr|dp)\]", re.I)
+_TEN_BB_HAI_NGOAC_RE = re.compile(r"^\*\*(?:Bảng|Hình|Biểu đồ) [0-9A-Z]+\.\d+\..*\)\s*\(")
+
+
+def _khoa_van_viet(k: str) -> str:
+    """Khoá xếp theo bảng chữ cái tiếng Việt cho chữ viết tắt: không phân biệt hoa thường, «Đ» sau «D»."""
+    return k.upper().replace("Đ", "D~")
+
+
+def loi_k11(md: str) -> List[str]:
+    """K11 — chuẩn trình bày tiếng Việt của văn bản nộp (đề cương, bản thảo). Bỏ qua: danh mục tài liệu tham khảo (giữ
+    nguyên văn), mã trong `…`, dòng chuỗi tìm kiếm ([tiab]/[Mesh]…), DOI/URL, PMID, dòng hình. Mỗi dòng báo một lỗi."""
+    loi: List[str] = []
+    dong = md.splitlines()
+    trong_tltk = trong_vt = phu_luc = False
+    vt: Dict[str, str] = {}
+    vt_dong: List[int] = []
+    for so, d in enumerate(dong, 1):
+        m = _DE_MUC_RE.match(d)
+        if m:
+            ten = m.group(2).upper()
+            trong_tltk = "TÀI LIỆU THAM KHẢO" in ten
+            trong_vt = "CHỮ VIẾT TẮT" in ten
+            if len(m.group(1)) == 1:
+                phu_luc = ten.startswith("PHỤ LỤC")
+        if trong_vt and d.startswith("|") and not re.match(r"^\|[-\s|:]+\|$", d):
+            o = [x.strip() for x in d.strip().strip("|").split("|")]
+            if len(o) >= 2 and not re.match(r"(?:Chữ viết tắt|Viết tắt)$", o[0], re.I):
+                vt[o[0]] = o[1]
+                vt_dong.append(so)
+            continue
+        if trong_tltk or d.startswith("![") or _TIM_KIEM_RE.search(d):
+            continue
+        s = G10._DOI_URL_RE.sub(" ", re.sub(r"`[^`]*`", " ", d))
+        s = re.sub(r"PMID:?\s*\d+|\b10\.\d{4,9}/\S+", " ", s)
+        luat = (
+            (_SO_THAP_PHAN_MAY_RE, "số thập phân dùng dấu chấm — viết dấu phẩy (0,1)"),
+            (_SO_LON_MAY_RE, "số từ 5 chữ số chưa nhóm nghìn — viết 10.000"),
+            (_NGAY_ISO_RE, "ngày dạng ISO — viết dd/mm/yyyy"),
+            (_NGOAC_KEP_RE, "ngoặc kép thẳng hoặc «» — dùng ngoặc kép tiếng Việt “…”"),
+            (_VS_RE, "«vs» — viết «so với»"),
+        )
+        for bt, nhan in luat:
+            hit = bt.search(s)
+            # Số định danh không phải số đếm («seed 20261115», «mã 40062», «Quyết định số 3869») — không nhóm nghìn.
+            while hit and bt is _SO_LON_MAY_RE and _NGU_CANH_MA_RE.search(s[max(0, hit.start() - 25):hit.start()]):
+                hit = bt.search(s, hit.end())
+            if hit:
+                loi.append(f"K11 dòng {so}: {nhan} («{hit.group(0)[:30]}»)")
+                break
+        if "Định danh/thứ bậc" in s or "định danh/thứ bậc" in s:
+            loi.append(f"K11 dòng {so}: loại biến bỏ lửng «Định danh/thứ bậc» — ghi rõ Định danh, Thứ bậc hoặc "
+                       "Định danh (chọn nhiều)")
+        if _TEN_BB_HAI_NGOAC_RE.match(d.strip()):
+            loi.append(f"K11 dòng {so}: tên bảng/hình có hai ngoặc đơn liền nhau — gộp hoặc bỏ phần ngoặc thừa")
+        # Phụ lục (phiếu thu thập, phiếu đồng ý) được dùng chữ in hoa nhấn mạnh cho người điền («KHÔNG có trong đơn»).
+        if not m and not phu_luc and not d.lstrip().startswith("**"):
+            # Ô bảng viết hoa toàn bộ là NHÃN trạng thái («KHÔNG ÁP DỤNG» của bảng kiểm STROBE), không phải nhấn mạnh
+            # trong câu — chỉ bắt khi chữ in hoa nằm giữa chữ thường của cùng ô/câu.
+            doan = [o for o in s.split("|")] if d.lstrip().startswith("|") else [s]
+            hoa = next((h for o in doan if any(ch.islower() for ch in o) for h in [_IN_HOA_NHAN_RE.search(o)] if h),
+                       None)
+            if hoa:
+                loi.append(f"K11 dòng {so}: chữ IN HOA để nhấn mạnh trong câu («{hoa.group(0)}») — viết thường")
+    if vt:
+        nghia: Dict[str, List[str]] = {}
+        for k, v in vt.items():
+            chinh = re.sub(r"\s*\([^()]*\)\s*", " ", v).split(";")[0].strip().lower()
+            nghia.setdefault(chinh, []).append(k)
+        for chinh, ds in nghia.items():
+            if len(ds) > 1 and chinh:
+                loi.append(f"K11 bảng chữ viết tắt: {', '.join(ds)} cùng nghĩa «{chinh}» — giữ một")
+        than = "\n".join(d for so, d in enumerate(dong, 1) if so not in set(vt_dong))
+        i_tltk = re.search(r"^#{1,2}\s+(?:\d+\.\s*)?TÀI LIỆU THAM KHẢO", than, re.M)
+        if i_tltk:
+            j = re.search(r"^#{1,2}\s+PHỤ LỤC", than[i_tltk.end():], re.M)
+            than = than[:i_tltk.start()] + (than[i_tltk.end() + j.start():] if j else "")
+        for k in vt:
+            dau = re.split(r"[,\s±]+", k)[0]
+            # «ĐN» được dùng dưới dạng ĐN1–ĐN9, «MT» dưới dạng MT1–MT3 ⇒ cho phép số liền sau
+            if dau and not re.search(rf"(?<![\wÀ-ỹ]){re.escape(dau)}(?:\d|(?![\wÀ-ỹ]))", than):
+                loi.append(f"K11 bảng chữ viết tắt: «{k}» không xuất hiện trong văn bản — bỏ mục này")
+        if list(vt) != sorted(vt, key=_khoa_van_viet):
+            loi.append("K11 bảng chữ viết tắt chưa xếp theo bảng chữ cái tiếng Việt")
+    return loi
+
+
 def loi_k9(out_dir: Path, md: str, thiet_ke: str) -> List[str]:
     """K9 — biểu bảng của chương «Dự kiến kết quả» (luật và chuẩn ở `khung_bieu_bang`)."""
     import khung_bieu_bang as KBB  # noqa: PLC0415
@@ -352,6 +455,7 @@ def kiem(out_dir: Path, study: str) -> List[str]:
     loi.extend(loi_k8(md))
     loi.extend(loi_k9(out_dir, md, tk))
     loi.extend(loi_k10(md))
+    loi.extend(loi_k11(md))
     if G10._co_lien_lac_ca_nhan(md) or (docx_chu is not None and G10._co_lien_lac_ca_nhan(docx_chu)):
         loi.append("K7 có email/số điện thoại — PII liên lạc để dòng chấm cho PI điền tay ngoài hệ thống")
     return loi

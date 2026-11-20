@@ -374,6 +374,19 @@ def _co_so(cong_thuc: str, v: float, nguong: bool = False) -> bool:
 # ─────────────────────────── đối chiếu ───────────────────────────
 
 
+# Số viết kiểu Việt Nam trong đề cương: nghìn bằng dấu chấm, thập phân bằng dấu phẩy («0,1–2.000», «1–100.000»). Trước
+# 20/11/2026 «2.000» bị đọc thành 2,0 ⇒ LỆCH giả với từ điển 0.1–2000 khi soát định dạng số đề cương BTM.
+_SO_VN = r"-?\d{1,3}(?:\.\d{3})+(?:,\d+)?|-?\d+(?:[.,]\d+)?"
+
+
+def _so_may(s: str) -> str:
+    """«2.000» → «2000»; «1.234,5» → «1234.5»; «0,1» → «0.1»; «0.1» (kiểu máy, 1–2 chữ số sau dấu chấm) giữ nguyên."""
+    s = s.strip()
+    if re.fullmatch(r"-?\d{1,3}(?:\.\d{3})+(?:,\d+)?", s):
+        return s.replace(".", "").replace(",", ".")
+    return s.replace(",", ".")
+
+
 def _la_loai_dinh_luong(loai: str) -> bool:
     l = loai.lower()  # noqa: E741
     return any(x in l for x in ("định lượng", "rời rạc", "liên tục", "số", "ngày")) and "danh định" not in l
@@ -546,12 +559,12 @@ def doi_chieu(study_dir: Path, study: str) -> KetQua:
                         )
                     )
         else:
-            m = re.fullmatch(r"\s*(-?\d+(?:[.,]\d+)?)\s*[–-]\s*(-?\d+(?:[.,]\d+)?)\s*", b.ma_hoa or "")
+            m = re.fullmatch(rf"\s*({_SO_VN})\s*[–-]\s*({_SO_VN})\s*", b.ma_hoa or "")
             if m:
                 lo, hi = (f.get("Text Validation Min") or "").strip(), (f.get("Text Validation Max") or "").strip()
-                if (lo, hi) != (m[1].replace(",", "."), m[2].replace(",", ".")) and lo and hi:
+                if (lo, hi) != (_so_may(m[1]), _so_may(m[2])) and lo and hi:
                     try:
-                        if float(lo) != float(m[1].replace(",", ".")) or float(hi) != float(m[2].replace(",", ".")):
+                        if float(lo) != float(_so_may(m[1])) or float(hi) != float(_so_may(m[2])):
                             them(PhatHien(LECH, "V2", b.ten, f"khoảng nguồn {m[1]}–{m[2]} ≠ từ điển {lo}–{hi}"))
                     except ValueError:
                         pass

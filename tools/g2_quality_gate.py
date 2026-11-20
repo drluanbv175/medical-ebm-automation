@@ -1762,10 +1762,12 @@ def main() -> int:
         description="Đánh giá lại G2; không tự phê duyệt hoặc ký thay IRB."
     )
     parser.add_argument("--study", required=True)
+    parser.add_argument("--no-write", action="store_true",
+                        help="chỉ chấm và in, KHÔNG ghi báo cáo/checkpoint (đo trên checkout chính, 20/11/2026)")
     args = parser.parse_args()
     repo_root = Path(__file__).resolve().parents[1]
     out_dir = repo_root / "exports" / args.study
-    report = evaluate_study(args.study, out_dir, repo_root=repo_root, write=True)
+    report = evaluate_study(args.study, out_dir, repo_root=repo_root, write=not args.no_write)
     print(f"G2 quality status: {report['status']}")
     print(f"Báo cáo: {out_dir / 'G2_QUALITY_REPORT.md'}")
     print("Cần bác sĩ kiểm chứng.")
