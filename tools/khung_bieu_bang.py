@@ -184,8 +184,10 @@ def _lam_sach_mo_ta(ngu: "NguCanh", s: str) -> str:
     s = re.sub(r"\(\s*[a-z][a-z0-9]*_[a-z0-9_]+\s*=\s*\d+\s*\)", "", s)
 
     def _nhan(m: "re.Match") -> str:
+        # Chỉ hạ chữ cái đầu (giữ viết tắt): .lower() cả chuỗi từng in «xét nghiệm đủ uacr» (phản biện máy BTM
+        # 20/11/2026).
         b = ngu.bien.get(m.group(0))
-        return b.nhan.lower() if b else m.group(0).replace("_", " ")
+        return _thuong_dau(b.nhan) if b else m.group(0).replace("_", " ")
 
     s = re.sub(r"(?<![\w./-])[a-z][a-z0-9]*_[a-z0-9_]+\b", _nhan, s)
     s = re.sub(r"\s*=\s*\d+\b", "", s)
@@ -646,12 +648,23 @@ def _khung_lien_quan(nc: NguCanh, k: int, ten_mt: str, dong_mt: List[Dict[str, s
     cot_kq = ["Có kết cục: n (%)", "Không có kết cục: n (%)"] if kq_nhi_phan else ["Kết cục: TB ± ĐLC"]
     cot_dv = ["Yếu tố", "Nhóm / đơn vị", *cot_kq, f"{vt} thô (KTC 95%)", "p"]
     cot_db = ["Yếu tố", "Nhóm / đơn vị", f"{vt} hiệu chỉnh (KTC 95%)", "p"]
+    # Gán đa trị trong đặc tả (n_imputations) ⇒ SAP báo SONG SONG phân tích trên ca đủ dữ liệu (complete case —
+    # phân tích độ nhạy về dữ liệu thiếu, vd ĐN8 của BTM). Trước 20/11/2026 bảng chỉ có cột gán đa trị nên đề cương
+    # thiếu hẳn phân tích đó (phản biện máy BTM: «Bảng 5.6 thiếu ĐN8»).
+    so_gan = ts.get("n_imputations")
+    co_gan = isinstance(so_gan, int) and not isinstance(so_gan, bool) and so_gan > 0
+    if co_gan:
+        cot_db = ["Yếu tố", "Nhóm / đơn vị", f"{vt} hiệu chỉnh (KTC 95%), gán đa trị", "p",
+                  f"{vt} hiệu chỉnh (KTC 95%), ca đủ dữ liệu"]
+        dong_db = [[*d, d[2] if d[2] == "1 (nhóm tham chiếu)" else f"{X} ({X} – {X})"] for d in dong_db]
     ghi_dv = _ghi_chu(cot_dv, dong_dv, [f"{vt} thô ước lượng bằng mô hình một biến cùng loại với mô hình chính; "
                                         "p ghi ba "
                                         "chữ số thập phân, «< 0,001» khi nhỏ hơn."])
     mo_hinh = TEN_MO_HINH.get(str(ts.get("outcome_type") or "").lower(), "")
     ghi_db = _ghi_chu(cot_db, dong_db, [f"{vt} ({ten_td}) hiệu chỉnh đồng thời cho mọi biến trong bảng"
-                                        + (f"; mô hình {mo_hinh}" if mo_hinh else "") + "."])
+                                        + (f"; mô hình {mo_hinh}" if mo_hinh else "") + "."]
+                      + ([f"Dữ liệu thiếu xử lý bằng gán đa trị ({so_gan} bộ dữ liệu); cột cuối là phân tích trên "
+                          "ca đủ dữ liệu (complete case), phân tích độ nhạy về dữ liệu thiếu."] if co_gan else []))
     nhan_fp = nhan_fp[:16]
     kq_thuong = _thuong_dau(kq_nhan)
     kh = [Khung("bang", f"Phân tích đơn biến các yếu tố liên quan đến {kq_thuong} (Mục tiêu {k})", cot_dv,
@@ -805,9 +818,16 @@ def _khung_nhom_nho_do_nhay(nc: NguCanh) -> List[Khung]:
     dong = [[_lam_sach_mo_ta(ngu_canh_nho, str(p.get("mo_ta") or p.get("id")))[:110],
              "nhóm nhỏ" if p.get("vai") == "nhom_con" else "độ nhạy", X, f"{X} ({X} – {X})", "cùng chiều / khác chiều"]
             for p in nn + dn]
-    kh = [Khung("bang", "Kết quả phân tích nhóm nhỏ và phân tích độ nhạy", cot, dong,
-                _ghi_chu(cot, dong, ["Các phân tích đã định trước trong kế hoạch phân tích; phân tích nhóm nhỏ chỉ "
-                                     "mang tính thăm dò, kèm kiểm định tương tác."]))]
+    # KHÔNG tự khẳng định «kèm kiểm định tương tác»: câu cứng đó từng mâu thuẫn SAP của cả BTM («mô tả, không kiểm định
+    # tương tác») lẫn C1a («không có số hạng tương tác định trước») — phản biện máy BTM 20/11/2026. Cách kiểm định nhóm
+    # nhỏ (nếu có) do SAP quy định, bảng chỉ nói phần chung đúng cho mọi SAP.
+    ghi = ["Các phân tích đã định trước trong kế hoạch phân tích; phân tích nhóm nhỏ chỉ mang tính thăm dò."]
+    if any(isinstance((p.get("tham_so") or {}).get("n_imputations"), int)
+           and not isinstance((p.get("tham_so") or {}).get("n_imputations"), bool)
+           and (p.get("tham_so") or {}).get("n_imputations") > 0 for p in nc.phan_tich):
+        ghi.append("Phân tích trên ca đủ dữ liệu so với gán đa trị (dữ liệu thiếu) trình bày ở cột cuối bảng mô hình "
+                   "đa biến.")
+    kh = [Khung("bang", "Kết quả phân tích nhóm nhỏ và phân tích độ nhạy", cot, dong, _ghi_chu(cot, dong, ghi))]
     if len(nn) >= 2:
         kh.append(Khung("bieu_do", "Ước lượng theo nhóm nhỏ kèm KTC 95%",
                         dac_ta={"kieu": "forest", "nhan": [_lam_sach_mo_ta(ngu_canh_nho, str(p.get("mo_ta") or
