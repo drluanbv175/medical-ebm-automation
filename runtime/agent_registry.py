@@ -183,8 +183,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # G6) — vẫn 64.
 # 20/11/2026: bản sao `cap-nhat-guideline` đồng bộ với nguồn gốc (gốc #447 thêm mục «apply KHÔNG có PMID» — bằng chứng
 # đã đọc nguồn chính thức) — vẫn 64.
+# 20/11/2026 (chiều): dạy `viet-ban-thao` + `kiem-chung-trich-dan` luật «số liệu phải có chứng cứ thực» (bác sĩ: «Không
+# có số liệu thực, chứng cứ thực hãy loại bỏ»), chốt máy K10 — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "39836313b894ea751aeabe0a126e8c164e93989cb961497dcaa5ad49fa646775"
+    "fb3982a1f801a85c0ac4573141b8386913dd9dfda1974e2eb24bff54f54256d1"
 )
 
 MINIMUM_AGENT_COUNT = 64

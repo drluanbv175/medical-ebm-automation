@@ -76,6 +76,8 @@ Script này (bản nâng cấp) tự điền Methods §3/§4 (phơi nhiễm/kế
 ## Luật nền
 Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` **và** `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md` (4 trụ cột). Trọng tâm: **KHÔNG bịa trích dẫn hay số liệu** — chỉ viết điều dữ liệu/nguồn chống đỡ được; mỗi khẳng định có nguồn kèm **PMID/DOI**; phân biệt phát hiện vs suy diễn; KHÔNG suy nhân quả vượt thiết kế; nhắc **khai báo dùng AI + trách nhiệm tác giả (ICMJE) + COI/tài trợ** theo yêu cầu tạp chí; KHÔNG PII.
 
+**Số liệu phải có chứng cứ thực (bác sĩ 20/11/2026: «Không có số liệu thực, chứng cứ thực hãy loại bỏ trong hệ thống nghiên cứu y khoa»):** ở đặt vấn đề / tổng quan / bàn luận, MỖI mệnh đề mang số liệu (%, OR/RR/HR/PR, KTC 95%, TB ± ĐLC) phải tự mang trích dẫn [n] của một tài liệu CÓ trong danh mục và chứa đúng con số đó. Nguồn không vào danh mục (vd bị loại vì không có toàn văn) ⇒ LOẠI con số, không giữ số «trôi nổi»; không đặt [n] ở mệnh đề sau dấu «;» rồi để con số của nguồn khác đứng trước. Máy chặn: `kiem_de_cuong_nop_hoi_dong.py` K10 (cả `kiem_ban_thao_tap_chi.py`).
+
 ## 1. Mục tiêu & khi nào kích hoạt
 Mục tiêu: viết bản thảo IMRAD trung thực, đạt chuẩn báo cáo đúng thiết kế. Kích hoạt ở **G7**: "viết bài báo/protocol/báo cáo nghiệm thu", "soạn Methods/Discussion", sau khi có kết quả + diễn giải.
 

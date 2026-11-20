@@ -265,3 +265,6 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
    kể cả «chỉ điền khi còn trống». Bản sao của máy để ở checkpoint/tệp riêng (vd `.cho-ky.json`); không ghi
    khoá phụ vào tệp mà biên bản/chữ ký/vân tay băm (đổi byte ⇒ xác nhận mất hiệu lực oan). Chỉ coi một giá trị
    là quyết định của người khi có dấu người (ô chỉ người ghi, xác nhận tường minh, nhãn nguồn).
+
+## Số liệu phải có chứng cứ thực (bác sĩ 20/11/2026)
+«Không có số liệu thực, chứng cứ thực hãy loại bỏ trong hệ thống nghiên cứu y khoa.» Khi kiểm một đề cương/bản thảo: con số ở đặt vấn đề / tổng quan / bàn luận mà (a) mệnh đề chứa nó không có trích dẫn, hoặc (b) trích dẫn kèm theo không chứa con số (kiểm nội dung A12: «số không thấy trong nguồn», đối chiếu toàn văn khi có) ⇒ đề xuất LOẠI con số hoặc đưa nguồn thật vào danh mục — không đề xuất giữ nguyên. Ca gốc: đề cương BTM «(15,32% đến 31,1%)» của hai bài trong nước không có trong danh mục, câu chỉ mang [11] ở mệnh đề sau «;». Chốt máy: K10 của `kiem_de_cuong_nop_hoi_dong.py`.
