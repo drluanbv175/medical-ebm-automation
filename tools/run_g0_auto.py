@@ -914,21 +914,22 @@ def generate_a1_artifact(topic: str, study_name: str, queries: dict,
                      if _ma_ghim else "")
     _can_prospero = _ma_ghim == "sr_ma"
 
-    artifact = f"""# A1 — CÂU HỎI NGHIÊN CỨU & PICO | {study_name}
-> Tạo tự động: {run_date} | Truy vấn PubMed thật
-> **Hệ KHÔNG suy ra PICO.** Mọi ô P/I/C/O bên dưới là chỗ TRỐNG — bác sĩ phải tự viết.
-> Thứ G0 làm được là dựng NỀN BẰNG CHỨNG (PHẦN 3) và chỉ ra khoảng trống (PHẦN 4) để bác sĩ
-> viết PICO có căn cứ. (Câu cũ ở dòng này ghi "xác nhận hoặc chỉnh PICO, không điền
-> lại từ đầu" — đã bỏ 2026-07-28 vì mô tả sai việc hệ thật sự làm.)
->
-> ⚠️ **NƠI CHỐT chính thức KHÔNG phải file này** mà là `study_meta.json →
-> gate_params.G0` (file .md này bị GHI ĐÈ mỗi lần chạy lại G0). Sau khi điền, chạy:
-> `python tools/g0_quality_gate.py --study {study_name}`
-> Cần bác sĩ kiểm chứng.
-
----
-
-## PHẦN 1 — PICO / PECO (khung trống — bác sĩ tự viết)
+    # 20/11/2026 (kiểm toàn hệ nghiên cứu): PI ĐÃ chốt G0 ⇒ ẩn khung soạn lần đầu. Trước đây PHẦN 1/1b/2 luôn in khung
+    # trống ngay dưới khối giá trị đã chốt — 27–28 ô «[CẦN BÁC SĨ ẤN ĐỊNH/XÁC NHẬN]» hỏi lại PI điều đã quyết (đo trên
+    # C1a, BTM), và trục ③ của kiem_chi_tiet_he_nghien_cuu đếm chúng thành việc của chủ nhiệm. Chưa chốt ⇒ khuôn cũ
+    # NGUYÊN VĂN.
+    _an_khung = _da_chot and bool(khoi_pico_chot)
+    _co_gt = any(_co_gia_tri(_g0m.get(k)) for k in ("hypothesis_h0", "hypothesis_h1")) or str(
+        _g0m.get("test_type") or "").lower() in ("descriptive", "mo_ta")
+    _dong_pico_dau = ("> PICO, giả thuyết và FINER ĐÃ được PI chốt — PHẦN 1/1b/2 hiển thị giá trị đã chốt (chỉ đọc); "
+                      "khung soạn lần đầu được ẩn.\n" if _an_khung else
+                      "> **Hệ KHÔNG suy ra PICO.** Mọi ô P/I/C/O bên dưới là chỗ TRỐNG — bác sĩ phải tự viết.\n")
+    if _an_khung:
+        phan_1 = ("## PHẦN 1 — PICO / PECO (đã chốt — chỉ đọc)\n\n" + khoi_pico_chot
+                  + f"\n**Topic đề tài:** {topic}\n**Truy vấn PubMed:** `{queries.get('base', topic)}`\n\n"
+                  "> Sửa PICO thì sửa `study_meta.json → gate_params.G0` rồi PI chốt lại (G0-HUMAN-07).\n\n")
+    else:
+        phan_1 = f"""## PHẦN 1 — PICO / PECO (khung trống — bác sĩ tự viết)
 
 {khoi_pico_chot}
 **Topic đề tài:** {topic}
@@ -978,9 +979,12 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 > `study_meta.json → gate_params.G0.question_type` và `.test_type` — ô tick trong
 > file .md này không có mã nào đọc lại (đã kiểm 2026-07-28).
 
----
-
-## PHẦN 1b — GIẢ THUYẾT (THÀNH PHẦN 3 của doctrine — trước đây THIẾU HẲN)
+"""
+    if _an_khung and _co_gt:
+        phan_1b = ("## PHẦN 1b — GIẢ THUYẾT (đã chốt — chỉ đọc)\n\n"
+                   "> H0, H1, loại kiểm định và chiều kỳ vọng đã ghi ở khối PHẦN 1 (`gate_params.G0`).\n\n")
+    else:
+        phan_1b = """## PHẦN 1b — GIẢ THUYẾT (THÀNH PHẦN 3 của doctrine — trước đây THIẾU HẲN)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -994,9 +998,19 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 > Điền vào `gate_params.G0.hypothesis_h0/hypothesis_h1/expected_direction`.
 > Không có giả thuyết định trước thì mọi kiểm định ở G6 đều là thăm dò.
 
----
-
-## PHẦN 2 — KIỂM FINER (tự động + bác sĩ hoàn thiện)
+"""
+    if _an_khung and _finer_du:
+        _finer_nhan = (("finer_feasible", "F — Khả thi"), ("finer_interesting", "I — Có giá trị khoa học"),
+                       ("finer_novel", "N — Tính mới"), ("finer_ethical", "E — Đạo đức"),
+                       ("finer_relevant", "R — Liên quan thực hành"))
+        phan_2 = ("## PHẦN 2 — KIỂM FINER (đã chốt — chỉ đọc)\n\n"
+                  + "\n".join(f"- **{n}:** {' '.join(str(_g0m.get(k)).split())}" for k, n in _finer_nhan)
+                  + f"\n\n**Thông tin máy (từ PubMed thật):** mức bằng chứng {gaps['evidence_level']}; "
+                    f"SR/MA {gaps['n_sr']} · RCT {gaps['n_rct']} · guideline {gaps['n_guide']} · quan sát "
+                    f"{gaps.get('n_observational', 0)}; năm mới nhất {gaps['most_recent_year'] or 'không có bài nào'}; "
+                    f"sau sàng lọc (G0-T3): {muc_sau_sang_loc}.\n\n")
+    else:
+        phan_2 = f"""## PHẦN 2 — KIỂM FINER (tự động + bác sĩ hoàn thiện)
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -1034,7 +1048,26 @@ CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
 > «ĐẠT — <lý do>» (cờ true trơn KHÔNG đủ — G0-HUMAN-05). F và E chỉ PI đánh giá được.
 
 {khoi_finer}
+"""
+
+    artifact = f"""# A1 — CÂU HỎI NGHIÊN CỨU & PICO | {study_name}
+> Tạo tự động: {run_date} | Truy vấn PubMed thật
+{_dong_pico_dau}> Thứ G0 làm được là dựng NỀN BẰNG CHỨNG (PHẦN 3) và chỉ ra khoảng trống (PHẦN 4) để bác sĩ
+> viết PICO có căn cứ. (Câu cũ ở dòng này ghi "xác nhận hoặc chỉnh PICO, không điền
+> lại từ đầu" — đã bỏ 2026-07-28 vì mô tả sai việc hệ thật sự làm.)
+>
+> ⚠️ **NƠI CHỐT chính thức KHÔNG phải file này** mà là `study_meta.json →
+> gate_params.G0` (file .md này bị GHI ĐÈ mỗi lần chạy lại G0). Sau khi điền, chạy:
+> `python tools/g0_quality_gate.py --study {study_name}`
+> Cần bác sĩ kiểm chứng.
+
 ---
+
+{phan_1}---
+
+{phan_1b}---
+
+{phan_2}---
 
 ## PHẦN 3 — BẰNG CHỨNG HIỆN CÓ ({_evidence_source_label()} — {run_date[:10]})
 
@@ -1267,8 +1300,12 @@ def guardrail_check_g0(artifact: str, results: dict) -> dict:
         (r"(?<!\d)\d{12}(?!\d)", "dãy 12 chữ số (dạng số căn cước)"),
         (r"\b[\w.+-]+@[\w-]+\.[\w.]{2,}\b", "địa chỉ email"),
     )
+    # 20/11/2026: KHOẢNG ngày «01/01/2026–31/12/2026» là khung nghiên cứu (cửa sổ hồi cứu đã chốt ở G0), không phải ngày
+    # của một người — A1 in PICO đã chốt nên R2 từng báo PII giả trên BTM. Ngày LẺ vẫn bị bắt.
+    _khong_khoang = re.sub(r"\b\d{2}[/-]\d{2}[/-](?:19|20)\d{2}\s*(?:[–—-]|đến)\s*\d{2}[/-]\d{2}[/-](?:19|20)\d{2}\b",
+                           " ", artifact_normalized)
     for pattern, label in _shape_checks:
-        if re.search(pattern, artifact_normalized):
+        if re.search(pattern, _khong_khoang if label.startswith("ngày tháng năm") else artifact_normalized):
             pii_hits.append(label)
 
     if pii_hits:
@@ -1416,7 +1453,11 @@ def guardrail_check_g0(artifact: str, results: dict) -> dict:
     # g0_quality_gate.py (tiêu chí G0-HUMAN-01..07) đảm nhiệm, đọc study_meta.json
     # chứ không đọc artifact .md này.
     has_can_label = "[CẦN BÁC SĨ XÁC NHẬN]" in artifact or "[CẦN BỔ SUNG]" in artifact
-    if not has_can_label:
+    # 20/11/2026: PI đã chốt G0 ⇒ A1 ẩn khung soạn lần đầu (không còn phần chưa hoàn chỉnh để gắn nhãn). Vẫn bắt văn
+    # bản bị cắt: phải còn đủ dấu của PHẦN 1 (đã chốt) và PHẦN 2.
+    da_chot_day_du = ("## PHẦN 1 — PICO / PECO (đã chốt — chỉ đọc)" in artifact
+                      and "## PHẦN 2 — KIỂM FINER (đã chốt — chỉ đọc)" in artifact)
+    if not has_can_label and not da_chot_day_du:
         errors.append("R6 🔴 Thiếu nhãn [CẦN...] cho phần chưa hoàn chỉnh")
     else:
         warnings.append("R6 ✅ Các phần chưa hoàn chỉnh đã gắn nhãn [CẦN...]")
@@ -1629,7 +1670,7 @@ def _bai_tu_raw(d: dict):
                            journal_or_organization=d.get("journal"), url=d.get("url"), authors=d.get("authors"))
 
 
-def dung_lai_a1(study: str, out_dir: Path) -> int:
+def dung_lai_a1(study: str, out_dir: Path, chi_van_ban: bool = False) -> int:
     """Dựng lại A1 (+ DOCX) từ `G0_pubmed_raw.json` + `G0_checkpoint.json` ĐÃ CÓ — KHÔNG tra lại PubMed (10/10/2026).
 
     Vì sao: «chấm lại ≠ dựng lại nền bằng chứng» (09/10). Khi bộ sinh A1 đổi khuôn, hoặc agent G0-T3/T4 cập nhật hai
@@ -1638,7 +1679,11 @@ def dung_lai_a1(study: str, out_dir: Path) -> int:
     (khoảng trống, mức bằng chứng, gợi ý thiết kế, guardrail, đường dẫn artifact, `danh_muc_doc_bo_sung` — từ
     11/10/2026 dấu vân tay G0 băm danh mục này nên danh mục ĐỔI thì PI phải chốt lại) rồi chấm lại bằng g0_quality_gate.
     Guardrail R1C (kiểm rút bài) vẫn chạy và CÓ THỂ gọi mạng — đó là kiểm liêm chính, không phải tìm bằng chứng mới.
-    Thiếu tệp nền ⇒ mã 2, không ghi gì."""
+    Thiếu tệp nền ⇒ mã 2, không ghi gì.
+
+    `chi_van_ban` (20/11/2026, kiểm toàn hệ nghiên cứu): CHỈ dựng lại văn bản A1 (.md + .docx), KHÔNG ghi checkpoint
+    và KHÔNG chấm có ghi — dùng khi đổi CÁCH TRÌNH BÀY trên đề tài đã chốt. Ghi checkpoint (dù chỉ đổi câu chữ suy ra,
+    vd «xem §3.6» → «xem §3.6 của G0_A1») làm G0 mới hơn mọi cổng sau ⇒ pipeline_freshness báo cả chuỗi «cũ»."""
     out_dir = Path(out_dir)
     cp_path, raw_path = out_dir / "G0_checkpoint.json", out_dir / "G0_pubmed_raw.json"
     if not cp_path.is_file() or not raw_path.is_file():
@@ -1646,6 +1691,7 @@ def dung_lai_a1(study: str, out_dir: Path) -> int:
               "đầy đủ (có --topic) để dựng nền bằng chứng trước.")
         return GC.EXIT_BLOCKED
     cp = json.loads(cp_path.read_text(encoding="utf-8"))
+    cp_goc = json.loads(json.dumps(cp))  # bản gốc để biết nội dung suy ra có đổi không
     raw = json.loads(raw_path.read_text(encoding="utf-8"))
     pr = cp.get("pubmed_results") if isinstance(cp.get("pubmed_results"), dict) else {}
     results = {k: [_bai_tu_raw(x) for x in raw.get(k) or [] if isinstance(x, dict)]
@@ -1667,13 +1713,26 @@ def dung_lai_a1(study: str, out_dir: Path) -> int:
     artifact_md = generate_a1_artifact(topic, study, {"base": base}, results, gaps, run_date,
                                        registry=registry, meta=meta, out_dir=out_dir)
     md_path = out_dir / f"G0_A1_PICO_FINER_{study}.md"
+    if chi_van_ban:  # chỉ văn bản: guardrail TRƯỚC khi ghi — lỗi thì không đụng bản đang có
+        guardrail = guardrail_check_g0(artifact_md, results)
+        if not guardrail["passed"]:
+            print("  🔴 Guardrail lỗi — KHÔNG ghi văn bản A1: " + "; ".join(guardrail["errors"][:3]))
+            return GC.EXIT_BLOCKED
     if md_path.exists():
         backup = out_dir / f"G0_A1_PICO_FINER_{study}.bak-{datetime.now():%Y%m%d-%H%M%S}.md"
         backup.write_text(md_path.read_text(encoding="utf-8"), encoding="utf-8", newline="\n")
         print(f"  ↩ Đã sao lưu bản A1 cũ: {backup.name}")
     md_path.write_text(artifact_md, encoding="utf-8", newline="\n")
-    guardrail = guardrail_check_g0(artifact_md, results)
+    if not chi_van_ban:  # chỉ văn bản đã chạy guardrail ở trên (R1C có thể gọi mạng — không chạy lại)
+        guardrail = guardrail_check_g0(artifact_md, results)
     docx_path = export_docx(artifact_md, study, out_dir)
+    if chi_van_ban:
+        quality = G0Q.evaluate_study(study, out_dir, write=False)
+        print(f"  📝 Đã dựng lại {md_path.name} (+ .docx) — CHỈ văn bản, checkpoint G0 giữ nguyên")
+        print("  🔴 Guardrail: ✅ PASS")
+        print(f"  🧭 G0 quality (chấm không ghi): {quality['status']}")
+        print("  Cần bác sĩ kiểm chứng.")
+        return GC.EXIT_OK
     pr = dict(pr)
     pr["most_recent_year"] = gaps["most_recent_year"]
     cp.update({
@@ -1693,8 +1752,17 @@ def dung_lai_a1(study: str, out_dir: Path) -> int:
         cp["danh_muc_doc_bo_sung"] = ds
     else:
         print(f"  ⚠ Không đọc được danh mục đọc bổ sung ({loi_ds}) — checkpoint giữ danh mục cũ.")
-    cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
-    quality = G0Q.evaluate_study(study, out_dir, write=True)
+    # 20/11/2026 (kiểm toàn hệ nghiên cứu): chỉ ghi checkpoint khi nội dung SUY RA đổi (bỏ qua dấu giờ dựng lại).
+    # Ghi mỗi lần làm G0 mới hơn mọi cổng sau ⇒ pipeline_freshness báo cả chuỗi «cũ», G10-AUTO-03 chặn — đo trên bản
+    # sao C1a: dựng lại A1 chỉ để đổi câu chữ đã làm G10 READY thành BLOCKED.
+    _khong_gio = {"a1_dung_lai_luc"}
+    doi = ({k: v for k, v in cp.items() if k not in _khong_gio}
+           != {k: v for k, v in cp_goc.items() if k not in _khong_gio})
+    if doi:
+        cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
+    else:
+        print("  ⏸ G0_checkpoint.json giữ nguyên — nội dung suy ra không đổi (không làm các cổng sau thành «cũ»)")
+    quality = G0Q.evaluate_study(study, out_dir, write=doi)
     print(f"  📝 Đã dựng lại {md_path.name} từ {len(results['all_pmids'])} PMID đã lưu (không tra lại PubMed)")
     print(f"  🔴 Guardrail: {'✅ PASS' if guardrail['passed'] else str(len(guardrail['errors'])) + ' LỖI'}")
     print(f"  🧭 G0 quality: {quality['status']}")
@@ -1738,17 +1806,22 @@ def main():
     parser.add_argument("--dung-lai-a1", action="store_true",
                         help="Dựng lại A1 (+DOCX) từ G0_pubmed_raw.json + G0_checkpoint.json đã có — KHÔNG tra lại "
                              "PubMed; đọc hai tệp agent G0-T3/T4 (10/10/2026). Không cần --topic.")
+    parser.add_argument("--chi-van-ban", action="store_true",
+                        help="Đi cùng --dung-lai-a1: CHỈ dựng lại văn bản A1 (.md + .docx), KHÔNG ghi checkpoint G0 "
+                             "(đổi cách trình bày trên đề tài đã chốt mà không làm các cổng sau thành «cũ»).")
     args = parser.parse_args()
     # --topic chỉ được bỏ khi dựng lại: thiếu --topic ở lượt chạy đầy đủ từng ghi checkpoint BLOCKED đè hồ sơ có sẵn.
     if args.topic is None and not args.dung_lai_a1:
         parser.error("cần --topic (hoặc --dung-lai-a1 để dựng lại A1 từ dữ liệu đã lưu)")
+    if args.chi_van_ban and not args.dung_lai_a1:
+        parser.error("--chi-van-ban chỉ đi cùng --dung-lai-a1")
     if args.repo_root:
         global _REPO_ROOT
         _REPO_ROOT = Path(args.repo_root).resolve()
     GC.ensure_utf8_stdout()
     if args.dung_lai_a1:
         _ma = re.sub(r'[^\w\-]', '_', args.study.strip().replace(" ", "-"))
-        return dung_lai_a1(_ma, _thu_muc_de_tai(_ma))
+        return dung_lai_a1(_ma, _thu_muc_de_tai(_ma), chi_van_ban=args.chi_van_ban)
 
     # Ghi đè email nếu có
     if args.email:

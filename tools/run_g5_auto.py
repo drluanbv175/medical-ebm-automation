@@ -1293,7 +1293,9 @@ _STROBE_EXPOSURE_LABEL_RCT = {
 
 
 def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_total: int, n_per_group: int,
-                           specialty: str = "generic", n_toi_thieu: Optional[int] = None) -> str:
+                           specialty: str = "generic", n_toi_thieu: Optional[int] = None, *,
+                           phoi_nhiem: Optional[str] = None,
+                           tieu_chi_loai_tru: Optional[list] = None) -> str:
     """Sinh sơ đồ tham gia nghiên cứu dạng ASCII theo STROBE/CONSORT.
 
     `n_adjusted` là N HIỆU LỰC (G3 confirmed_n nếu có); `n_toi_thieu` là N tối thiểu theo thống kê — khác nhau thì
@@ -1306,6 +1308,22 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
     exclusion_lines = "\n".join(_STROBE_EXCLUSION_LINES.get(specialty, [
         "  │  • [CẦN — tiêu chí loại trừ theo PICO/SAP thật]  │",
     ]))
+    # 20/11/2026 (kiểm toàn hệ nghiên cứu): PI ĐÃ chốt tiêu chuẩn loại trừ và phơi nhiễm ở G1 ⇒ sơ đồ dùng đúng giá
+    # trị đó (liệt kê ở chú thích dưới sơ đồ — khung ASCII không chứa nổi câu dài). Trước đây A6 của C1a vẫn in
+    # «[CẦN — tiêu chí loại trừ…]» và «[CẦN — tên biến phơi nhiễm…]» như thể chưa quyết. Ô N vẫn [CẦN] (số chỉ có khi
+    # thu thập dữ liệu thật).
+    _loai_tru = [" ".join(str(x).split()) for x in (tieu_chi_loai_tru or []) if str(x).strip()]
+    _phoi_nhiem = " ".join(str(phoi_nhiem or "").split())
+    chu_thich = []
+    if _loai_tru:
+        exclusion_lines = (f"        │  • {len(_loai_tru)} tiêu chuẩn loại trừ đã chốt ở G1\n"
+                           "        │    (xem Chú thích 1 dưới sơ đồ)\n"
+                           "        │  • Ghi N theo từng tiêu chuẩn khi có dữ liệu thật")
+        chu_thich.append("  Chú thích 1 — Tiêu chuẩn loại trừ đã chốt ở G1:\n"
+                         + "\n".join(f"    {i}. {x}" for i, x in enumerate(_loai_tru, 1)))
+    if _phoi_nhiem:
+        chu_thich.append(f"  Chú thích 2 — Phơi nhiễm / biến giải thích đã chốt ở G1: {_phoi_nhiem}")
+    khoi_chu_thich = ("\n" + "\n\n".join(chu_thich) + "\n") if chu_thich else ""
 
     if is_rct:
         group_a = n_per_group
@@ -1631,6 +1649,34 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
         _co_chia_nhom = n_total - n_per_group > 0
         n_nhom_1 = n_per_group if _co_chia_nhom else "[CẦN]"
         n_nhom_2 = n_total - n_per_group if _co_chia_nhom else "[CẦN]"
+        dong_loai_chung = ("" if _loai_tru else
+                           "\n        │  • Không đồng thuận          │\n        │  • [CẦN thêm lý do cụ thể]  │")
+        if design_code == "cross_sectional" and _phoi_nhiem:
+            # 20/11/2026: cắt ngang đo phơi nhiễm/biến giải thích cùng lúc với kết cục; phơi nhiễm đã chốt ở G1
+            # (C1a: thời gian chờ liên tục; BTM: nhiều biến giải thích) không chia mẫu thành «có/không phơi nhiễm»
+            # ⇒ một khối mẫu, không vẽ hai nhánh giả.
+            khoi_nhom = """\
+                   │
+  ┌────────────────▼─────────────────────────┐
+  │  MẪU NGHIÊN CỨU (một thời điểm):         │
+  │  Phơi nhiễm/biến giải thích và kết cục   │
+  │  đo cùng lúc — xem Chú thích 2.          │
+  │  N = [CẦN]                               │
+  └────────────────┬─────────────────────────┘
+                   │"""
+        else:
+            _nhan_pn = "(CT 2)" if _phoi_nhiem else exposure_label
+            khoi_nhom = f"""\
+                   │
+        ┌──────────┴──────────────────┐
+        │                             │
+        ▼                             ▼
+  ┌───────────────┐           ┌───────────────┐
+  │  CÓ PHƠI      │           │  KHÔNG PHƠI   │
+  │  NHIỄM {_nhan_pn:<8}│          │  NHIỄM        │
+  │  N ≈ {n_nhom_1:<8}     │           │  N ≈ {n_nhom_2:<8}     │
+  └───────┬───────┘           └───────┬───────┘
+{followup_block}"""
         flowchart = f"""\
 ┌─────────────────────────────────────────────────────────────────┐
 │        BIỂU ĐỒ THAM GIA NGHIÊN CỨU (STROBE Flowchart)         │
@@ -1645,25 +1691,14 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
         ┌──────────▼──────────────────┐
         │  Loại trừ (Excluded):        │
         │  N = [CẦN]                   │
-{exclusion_lines}
-        │  • Không đồng thuận          │
-        │  • [CẦN thêm lý do cụ thể]  │
+{exclusion_lines}{dong_loai_chung}
         └─────────────────────────────┘
                    │
   ┌────────────────▼─────────────────────────┐
   │  TUYỂN VÀO (Enrolled):                   │
   │  N = {n_adjusted} ({nhan_n})│
   └────────────────┬─────────────────────────┘
-                   │
-        ┌──────────┴──────────────────┐
-        │                             │
-        ▼                             ▼
-  ┌───────────────┐           ┌───────────────┐
-  │  CÓ PHƠI      │           │  KHÔNG PHƠI   │
-  │  NHIỄM {exposure_label:<8}│          │  NHIỄM        │
-  │  N ≈ {n_nhom_1:<8}     │           │  N ≈ {n_nhom_2:<8}     │
-  └───────┬───────┘           └───────┬───────┘
-{followup_block}
+{khoi_nhom}
   ┌────────────────▼─────────────────────────┐
   │  PHÂN TÍCH (Analysed):                   │
   │  N = {n_adjusted} → [CẦN điều chỉnh thực tế]│
@@ -1673,7 +1708,7 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
   Ghi chú: Điền N=[CẦN] SAU khi thu thập dữ liệu thật.
   Tham chiếu: STROBE 2007 (PMID: 18064739). Cần bác sĩ kiểm chứng.
 """
-    return flowchart
+    return flowchart + khoi_chu_thich
 
 
 # ---------------------------------------------------------------------------
@@ -1970,6 +2005,27 @@ def _dong_luu_tru_huy(study: str) -> str:
             "tài trợ/đơn vị; không dùng một thời hạn cứng cho mọi đề tài.")
 
 
+def _g1_da_chot_cho_so_do(study: str) -> tuple:
+    """(phơi nhiễm, danh sách tiêu chuẩn loại trừ) PI đã chốt ở G1 — chỉ khi `design_confirmed` là True.
+
+    Đọc `exports/<study>/study_meta.json → gate_params.G1`. Chưa chốt / thiếu tệp / JSON hỏng ⇒ (None, None):
+    sơ đồ giữ ô [CẦN] như trước, không suy đoán."""
+    try:
+        meta = json.loads((BASE / "exports" / study / "study_meta.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None, None
+    g1 = ((meta.get("gate_params") or {}).get("G1") or {}) if isinstance(meta, dict) else {}
+    if not isinstance(g1, dict) or g1.get("design_confirmed") is not True:
+        return None, None
+    lt = g1.get("exclusion_criteria")
+    if isinstance(lt, str):
+        lt = [lt] if lt.strip() else []
+    lt = [x for x in (lt or []) if isinstance(x, str) and x.strip()] or None
+    pn = g1.get("intervention_or_exposure")
+    pn = pn.strip() if isinstance(pn, str) and pn.strip() else None
+    return pn, lt
+
+
 def generate_artifact(
     study: str, topic: str, design_code: str,
     n_adjusted: int, n_total: int, n_per_group: int,
@@ -1983,8 +2039,9 @@ def generate_artifact(
     n_hien = (f"{n_adjusted} (cỡ mẫu kế hoạch, G3 confirmed_n; tối thiểu theo thống kê {n_toi_thieu})"
               if n_toi_thieu and n_toi_thieu != n_adjusted else f"{n_adjusted}")
 
+    _pn_g1, _lt_g1 = _g1_da_chot_cho_so_do(study)
     flowchart = build_strobe_flowchart(study, design_code, n_adjusted, n_total, n_per_group, specialty,
-                                       n_toi_thieu=n_toi_thieu)
+                                       n_toi_thieu=n_toi_thieu, phoi_nhiem=_pn_g1, tieu_chi_loai_tru=_lt_g1)
     specialty_label = _SPECIALTY_LABELS.get(specialty, specialty)
 
     lines = [
