@@ -44,7 +44,7 @@
 - Đặt gate_params.G4.missing_data_mechanism_confirmed=true sau khi rà §6.
 - Đặt gate_params.G4.subgroup_multiplicity_predefined_confirmed=true và reviewed_at dạng ISO-8601 TRƯỚC khi G5 khoá dữ liệu; sửa SAP sau khi khoá dữ liệu phải ghi dòng «SAP AMENDMENT» ở PHẦN 4.
 - Đặt gate_params.G4.reviewed_by_role đúng nhóm: METHODS_STATISTICS_REVIEWER / BIOSTATISTICIAN / STATISTICIAN HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR.
-- Sau khi đọc lại SAP, ghi gate_params.G4.dau_van_tay_chot="12f20b66b4de7303" (dấu nội dung PHẦN 3 hiện tại) cùng reviewed_at dạng ISO-8601; sửa SAP sau đó phải xác nhận lại.
+- Sau khi đọc lại SAP, ghi gate_params.G4.dau_van_tay_chot="8e867e6fd6343f79" (dấu nội dung PHẦN 3 hiện tại) cùng reviewed_at dạng ISO-8601; sửa SAP sau đó phải xác nhận lại.
 
 ## Nền chuẩn
 | Chuẩn | Phạm vi | Nguồn |

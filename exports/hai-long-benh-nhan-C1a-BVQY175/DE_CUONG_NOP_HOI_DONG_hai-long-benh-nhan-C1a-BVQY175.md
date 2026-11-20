@@ -58,24 +58,30 @@
 
 | Chữ viết tắt | Nghĩa đầy đủ |
 |---|---|
-| BHYT | Bảo hiểm y tế |
-| BVQY 175 | Bệnh viện Quân y 175 |
 | AES | Chuẩn mã hóa nâng cao (Advanced Encryption Standard) |
-| CFA | Phân tích nhân tố khẳng định (Confirmatory Factor Analysis) |
+| ANOVA | Phân tích phương sai (analysis of variance) |
+| BHYT | Bảo hiểm y tế |
 | CFI, TLI | Chỉ số phù hợp so sánh (Comparative Fit Index), chỉ số Tucker–Lewis (Tucker–Lewis Index) |
+| CIOMS | Hội đồng các Tổ chức Quốc tế về Khoa học Y học (Council for International Organizations of Medical Sciences) |
 | CNTT | Công nghệ thông tin |
+| COSMIN | Hướng dẫn chọn lựa công cụ đo lường sức khỏe dựa trên đồng thuận (COnsensus-based Standards for the selection of health Measurement INstruments) |
 | CROSS | Bảng kiểm báo cáo nghiên cứu khảo sát (Consensus-Based Checklist for Reporting of Survey Studies) |
+| CV | Hệ số biến thiên (coefficient of variation) |
 | CVI | Chỉ số giá trị nội dung (Content Validity Index); I-CVI: cấp từng câu, S-CVI: cấp toàn thang |
 | DAG | Sơ đồ nhân quả có hướng không chu trình (Directed Acyclic Graph) |
 | DE | Hiệu ứng thiết kế (Design Effect) |
-| EFA | Phân tích nhân tố khám phá (Exploratory Factor Analysis) |
 | HC3 | Sai số chuẩn vững với phương sai không đồng nhất, loại 3 (heteroskedasticity-consistent) |
 | HIS | Hệ thống thông tin bệnh viện (Hospital Information System) |
 | ICC | Hệ số tương quan nội cụm (Intraclass Correlation Coefficient) |
+| ICH | Hội đồng Quốc tế về hài hòa các yêu cầu kỹ thuật đối với dược phẩm dùng cho người (International Council for Harmonisation) |
+| ICTRP | Nền tảng đăng ký thử nghiệm lâm sàng quốc tế của WHO (International Clinical Trials Registry Platform) |
+| KSD | Không sử dụng (dịch vụ được hỏi) |
 | KTC 95% | Khoảng tin cậy 95% |
+| KTV | Kỹ thuật viên |
 | NVYT | Nhân viên y tế |
 | OR | Tỷ số chênh (Odds Ratio); aOR: tỷ số chênh hiệu chỉnh |
 | OSF | Open Science Framework |
+| PREM | Thước đo trải nghiệm do người bệnh báo cáo (patient-reported experience measure) |
 | QĐ-BYT | Quyết định của Bộ trưởng Bộ Y tế |
 | QLCL | Quản lý chất lượng |
 | RECORD | Hướng dẫn báo cáo nghiên cứu dùng dữ liệu y tế thu thập thường quy (REporting of studies Conducted using Observational Routinely-collected health Data) |
@@ -83,7 +89,11 @@
 | SRMR | Căn bậc hai phần dư chuẩn hóa trung bình (Standardized Root Mean Square Residual) |
 | STROBE | Hướng dẫn báo cáo nghiên cứu quan sát (Strengthening the Reporting of Observational Studies in Epidemiology) |
 | TB ± ĐLC | Trung bình ± độ lệch chuẩn |
+| THCS | Trung học cơ sở |
+| THPT | Trung học phổ thông |
 | VIF, GVIF | Hệ số phóng đại phương sai (Variance Inflation Factor), dạng tổng quát (Generalized VIF) |
+| VNĐ | Đồng Việt Nam |
+| WHO | Tổ chức Y tế Thế giới (World Health Organization) |
 | WLSMV | Bình phương tối thiểu có trọng số, hiệu chỉnh trung bình và phương sai (Weighted Least Squares Mean and Variance adjusted) |
 
 ---
@@ -94,7 +104,7 @@ Sự hài lòng của người bệnh phản ánh mức độ dịch vụ y tế
 
 Khám chữa bệnh theo yêu cầu là một mô hình đặc thù trong bệnh viện công: người bệnh chủ động chi trả cao hơn để được lựa chọn bác sĩ, rút ngắn thời gian chờ và hưởng điều kiện phục vụ tốt hơn, do đó kỳ vọng của họ cũng cao hơn. Khoa Khám bệnh C1a thuộc Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175 – bệnh viện quân y tuyến cuối tại Thành phố Hồ Chí Minh – vận hành theo mô hình này, với lưu lượng người bệnh lớn và đa dạng về nơi cư trú, đối tượng chi trả và lý do đến khám.
 
-Y văn trong nước cho thấy những điểm người bệnh ngoại trú ít hài lòng nhất lặp lại khá nhất quán là thời gian chờ và thủ tục hành chính [2–4]; trong một khảo sát tại Hà Nội, giá dịch vụ là nội dung có tỷ lệ hoàn toàn hài lòng thấp nhất [5]. Sự hài lòng đã được khảo sát tại khoa khám theo yêu cầu của một số bệnh viện [6–8], tại các bệnh viện quân y [9–11] và tại Khoa Y học cổ truyền của chính Bệnh viện Quân y 175 [12, 13]. Một khảo sát tại Hà Nội còn ghi nhận nhóm sử dụng dịch vụ theo yêu cầu và nhóm đến từ tỉnh khác có mức hài lòng thấp hơn, gợi ý vai trò của kỳ vọng [5]. Tuy vậy, trong phạm vi đã tra cứu, chưa có nghiên cứu công bố nào tại khối khám ngoại trú theo yêu cầu của Bệnh viện Quân y 175. Bên cạnh đó, phần lớn nghiên cứu trong nước đo thời gian chờ bằng tự báo cáo hoặc chỉ hỏi mức hài lòng với thời gian chờ, chưa gắn mức hài lòng với thời gian chờ đo khách quan từ hệ thống thông tin bệnh viện, và chưa tính đến sự tương quan giữa các người bệnh được khám tại cùng một bàn khám. Bộ phiếu khảo sát của Bộ Y tế được thiết kế cho người bệnh ngoại trú nói chung, không có lĩnh vực riêng về chi phí dịch vụ theo yêu cầu [1].
+Y văn trong nước cho thấy những điểm người bệnh ngoại trú ít hài lòng nhất lặp lại khá nhất quán là thời gian chờ và thủ tục hành chính [2–4]; trong một khảo sát tại Hà Nội, giá dịch vụ là nội dung có tỷ lệ hoàn toàn hài lòng thấp nhất [5]. Sự hài lòng đã được khảo sát tại khoa khám theo yêu cầu của một số bệnh viện [6–8], tại các bệnh viện quân y [9–11] và tại Khoa Y học cổ truyền của chính Bệnh viện Quân y 175 [12, 13]. Một khảo sát tại Hà Nội còn ghi nhận nhóm sử dụng dịch vụ theo yêu cầu và nhóm đến từ tỉnh khác có mức hài lòng thấp hơn, gợi ý vai trò của kỳ vọng [5]. Tuy vậy, trong phạm vi đã tra cứu, chưa có nghiên cứu công bố nào tại khối khám ngoại trú theo yêu cầu của Bệnh viện Quân y 175. Bên cạnh đó, phần lớn nghiên cứu trong nước đo thời gian chờ bằng tự báo cáo hoặc chỉ hỏi mức hài lòng với thời gian chờ, chưa gắn mức hài lòng với thời gian chờ đo khách quan từ hệ thống thông tin bệnh viện, và chưa tính đến sự tương quan giữa những người bệnh được khám tại cùng một bàn khám. Bộ phiếu khảo sát của Bộ Y tế được thiết kế cho người bệnh ngoại trú nói chung, không có lĩnh vực riêng về chi phí dịch vụ theo yêu cầu [1].
 
 Xuất phát từ nhu cầu có số liệu nền tại chỗ để Trung tâm C1 và Khoa C1a cải tiến chất lượng dịch vụ, chúng tôi tiến hành đề tài này với hai mục tiêu trình bày ở mục 2. Đề tài cung cấp dữ liệu về mức độ hài lòng và các yếu tố liên quan trong bối cảnh khám theo yêu cầu tại một bệnh viện quân y tuyến cuối; đề tài không được thiết kế để so sánh trực tiếp mô hình khám theo yêu cầu với mô hình khám thông thường.
 
@@ -168,7 +178,7 @@ Thời gian chờ đã được đo khách quan từ phần mềm quản lý b�
 
 **Chiến lược tìm kiếm tài liệu.** Việc tra cứu được thực hiện và ghi lại như sau để người đọc kiểm chứng được phạm vi của các nhận định về khoảng trống:
 
-*Bảng 3.1. Chiến lược tìm kiếm tài liệu.*
+**Bảng 3.1. Chiến lược tìm kiếm tài liệu**
 
 | Nguồn | Câu tìm kiếm chính | Ngày tra cứu | Ghi chú |
 |---|---|---|---|
@@ -176,11 +186,11 @@ Thời gian chờ đã được đo khách quan từ phần mềm quản lý b�
 | PubMed/MEDLINE | `("Patient Satisfaction"[Mesh] OR satisf*[tiab] OR "patient experience"[tiab]) AND ("Outpatients"[Mesh] OR "Ambulatory Care"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND ("Vietnam"[Mesh] OR vietnam*[tiab] OR "viet nam"[tiab])` | 14/10/2026 | 16 kết quả; kết hợp tra theo danh mục tài liệu tham khảo của các bài đã chọn |
 | PubMed/MEDLINE | `patient satisfaction[Title] AND military hospital AND outpatient` | 30/08/2026 | 4 kết quả, không bài nào cùng bối cảnh |
 | Europe PMC | `(satisfaction OR "patient experience") AND (outpatient* OR ambulatory OR "out-patient") AND (Vietnam OR "Viet Nam")` | 14/10/2026 | Bổ sung các bài PubMed không bắt được |
-| Crossref (tạp chí trong nước) | "hài lòng người bệnh ngoại trú khoa khám bệnh theo yêu cầu bệnh viện quân y"; "sự hài lòng người bệnh Bệnh viện Quân y 175" | 11/10/2026 | Xét 20 và 15 kết quả đầu, xếp theo mức độ liên quan |
+| Crossref (tạp chí trong nước) | “hài lòng người bệnh ngoại trú khoa khám bệnh theo yêu cầu bệnh viện quân y”; “sự hài lòng người bệnh Bệnh viện Quân y 175” | 11/10/2026 | Xét 20 và 15 kết quả đầu, xếp theo mức độ liên quan |
 | PubMed/MEDLINE | `("waiting time"[tiab] OR "wait time"[tiab] OR "waiting times"[tiab] OR "Waiting Lists"[Mesh]) AND ("Patient Satisfaction"[Mesh] OR satisf*[tiab]) AND ("Outpatients"[Mesh] OR "Ambulatory Care"[Mesh] OR outpatient[tiab] OR outpatients[tiab] OR ambulatory[tiab]) AND ("Vietnam"[Mesh] OR vietnam[tiab] OR "viet nam"[tiab])` | 17/10/2026 | 4 kết quả; tìm nhắm đúng thời gian chờ gắn với hài lòng |
 | PubMed/MEDLINE | `("intraclass correlation"[tiab] OR ICC[tiab] OR multilevel[tiab] OR hierarchical[tiab] OR "Multilevel Analysis"[Mesh] OR clustering[tiab]) AND ("Patient Satisfaction"[Mesh] OR satisf*[tiab]) AND ("Vietnam"[Mesh] OR vietnam[tiab])` (chuỗi đầy đủ lưu trong hồ sơ tra cứu) | 17/10/2026 | 31 kết quả; tìm nhắm đúng hệ số tương quan nội cụm và phân tích đa mức |
 | Europe PMC | `("waiting time" OR "wait time") AND (satisfaction) AND (outpatient OR ambulatory) AND (Vietnam OR "Viet Nam")` | 17/10/2026 | Xét 50 kết quả đầu (tìm cả toàn văn) |
-| Crossref (tạp chí trong nước) | "thời gian chờ khám bệnh hài lòng người bệnh ngoại trú"; "phần mềm quản lý bệnh viện thời gian chờ khám bệnh" | 17/10/2026 | Xét 20 kết quả đầu mỗi câu |
+| Crossref (tạp chí trong nước) | “thời gian chờ khám bệnh hài lòng người bệnh ngoại trú”; “phần mềm quản lý bệnh viện thời gian chờ khám bệnh” | 17/10/2026 | Xét 20 kết quả đầu mỗi câu |
 | ClinicalTrials.gov | Hài lòng người bệnh ngoại trú tại Việt Nam | 14/10/2026 | Không có nghiên cứu đăng ký trùng câu hỏi |
 | WHO ICTRP | Tra thủ công | 11/10/2026 | Không thấy nghiên cứu trùng |
 
@@ -188,24 +198,15 @@ Giới hạn của chiến lược tìm kiếm: luận văn, đề tài cấp c�
 
 **Khoảng trống.** Sự hài lòng của người bệnh ngoại trú đã được nghiên cứu nhiều tại Việt Nam, kể cả tại khoa khám theo yêu cầu, tại bệnh viện quân y và tại một khoa điều trị của Bệnh viện Quân y 175 (mục 3.3–3.4). Khoảng trống của đề tài vì vậy không nằm ở chủ đề, mà ở ba điểm: (1) chưa có số liệu công bố tại khối khám ngoại trú theo yêu cầu của Bệnh viện Quân y 175; (2) thời gian chờ đã được lấy từ phần mềm quản lý bệnh viện ở nghiên cứu trong nước [28] nhưng không gắn với mức hài lòng, còn các nghiên cứu gắn thời gian chờ với hài lòng dùng thời gian chờ do người bệnh tự khai [2] hoặc đo trực tiếp [29] – chưa thấy nghiên cứu gắn mức hài lòng với thời gian chờ lấy từ mốc thời gian của HIS; (3) đã có phân tích đa mức sự hài lòng ngoại trú ở cấp cơ sở y tế và tỉnh [2], nhưng chưa thấy ước lượng hệ số tương quan nội cụm của mức hài lòng theo bàn khám trong một khoa. Ngoài ra, bộ phiếu chuẩn của Bộ Y tế không có lĩnh vực riêng về chi phí dịch vụ theo yêu cầu.
 
-**Đóng góp của đề tài.** Đề tài là một nghiên cứu lặp lại có kiểm chứng câu hỏi đã được nghiên cứu, áp dụng vào một bối cảnh chưa có số liệu, với thiết kế chặt chẽ hơn mức thường gặp ở các đề tài cùng chủ đề: kết cục giữ nguyên dạng thứ bậc thay vì nhị phân hóa, thời gian chờ đo bằng mốc HIS thay vì tự khai, kế hoạch phân tích được khóa trước khi có dữ liệu, và có xử lý hiện tượng gom cụm theo bàn khám. Đóng góp cụ thể gồm: (1) số liệu nền tại Khoa C1a để đối chiếu với các kỳ khảo sát sau và làm căn cứ cải tiến chất lượng; (2) ước lượng hệ số tương quan nội cụm theo bàn khám – thông số cần cho tính cỡ mẫu của các nghiên cứu hài lòng về sau; (3) kiểm định thực nghiệm cấu trúc năm lĩnh vực A–E của bộ câu hỏi (lĩnh vực chi phí là chỉ số đơn câu) bằng phân tích nhân tố khám phá và khẳng định trên hai nửa mẫu độc lập (mục 4.5.3).
+**Đóng góp của đề tài.** Đề tài lặp lại một câu hỏi đã được nghiên cứu nhưng áp dụng vào một bối cảnh chưa có số liệu, với thiết kế chặt chẽ hơn mức thường gặp ở các đề tài cùng chủ đề: kết cục giữ nguyên dạng thứ bậc thay vì nhị phân hóa, thời gian chờ đo bằng mốc HIS thay vì tự khai, kế hoạch phân tích được khóa trước khi có dữ liệu, và có xử lý hiện tượng gom cụm theo bàn khám. Đóng góp cụ thể gồm: (1) số liệu nền tại Khoa C1a để đối chiếu với các kỳ khảo sát sau và làm căn cứ cải tiến chất lượng; (2) ước lượng hệ số tương quan nội cụm theo bàn khám – thông số cần cho tính cỡ mẫu của các nghiên cứu hài lòng về sau; (3) kiểm định thực nghiệm cấu trúc năm lĩnh vực A–E của bộ câu hỏi (lĩnh vực chi phí là chỉ số đơn câu) bằng phân tích nhân tố khám phá và khẳng định trên hai nửa mẫu độc lập (mục 4.5.3).
 
 ## 3.6. Khung lý thuyết của nghiên cứu
 
 Khung lý thuyết của đề tài dựa trên năm lĩnh vực hài lòng của người bệnh ngoại trú trong Mẫu số 2, Quyết định 56/QĐ-BYT [1], bổ sung lĩnh vực chi phí dịch vụ phù hợp với khối khám theo yêu cầu. Sự hài lòng chung được xem là kết quả tổng hợp của trải nghiệm qua sáu lĩnh vực, chịu ảnh hưởng của đặc điểm người bệnh, đặc điểm lượt khám và kỳ vọng trước khi đến khám:
 
-*Hình 3.1. Khung lý thuyết của nghiên cứu.*
+![Hình 3.1](bieu-bang/hinh-3-1.png)
 
-| Khung lý thuyết của nghiên cứu |
-|---|
-| **Đặc điểm người bệnh:** tuổi, giới, nơi cư trú, học vấn, nghề nghiệp, thu nhập, BHYT, lý do khám, số lần khám trước đó, tự đánh giá sức khỏe; kỳ vọng trước khi đến khám (thời gian chờ dự kiến, lý do chọn khám theo yêu cầu) |
-| **Đặc điểm lượt khám:** thời gian chờ khám theo HIS (yếu tố quan tâm chính); khung giờ, ngày trong tuần; được khám đúng bác sĩ đã yêu cầu; bàn khám (đơn vị gom cụm) |
-| ↓ |
-| **Đối chiếu với kỳ vọng:** chênh lệch giữa thời gian chờ dự kiến và thực tế; đánh giá dịch vụ so với mong đợi (biến trung gian, phân tích thăm dò) |
-| ↓ |
-| **Trải nghiệm theo sáu lĩnh vực:** A. Khả năng tiếp cận · B. Cơ sở vật chất · C. Thái độ, năng lực NVYT · D. Minh bạch thông tin, thủ tục · E. Kết quả cung cấp dịch vụ · F. Chi phí |
-| ↓ |
-| **Hài lòng chung (G1)** → ý định quay lại (G2), ý định giới thiệu (G3) |
+**Hình 3.1. Khung lý thuyết của nghiên cứu**
 
 Khung lý thuyết dùng để tổ chức bộ câu hỏi và diễn giải kết quả. Việc lựa chọn biến hiệu chỉnh trong mô hình đa biến dựa trên sơ đồ nhân quả trình bày ở Phụ lục D; mũi tên trong khung chỉ biểu thị giả định về mối liên quan, không hàm ý đã chứng minh quan hệ nhân quả.
 
@@ -273,9 +274,9 @@ DE = 1 + [(CV² + 1) × m − 1] × ICC
 
 Trong đó: m = 20 – số phiếu trung bình mỗi bàn khám; ICC = 0,02 – hệ số tương quan nội cụm dùng để lập kế hoạch, chọn thận trọng dựa trên phân bố ICC trong các nghiên cứu tại cơ sở chăm sóc ban đầu (trung vị 0,010; khoảng tứ phân vị 0–0,032) [36] và nhận định rằng ICC ở tuyến chuyên sâu thường cao hơn [37]; CV ≈ 0,14 – hệ số biến thiên của số phiếu giữa các bàn khám, ước từ lưu lượng mỗi bàn khám 60–100 lượt người bệnh/ngày (thứ Hai đến thứ Sáu, 5 giờ–11 giờ 30 và 13 giờ–16 giờ 30) theo số liệu của chủ nhiệm đề tài, coi số lượt phân bố đều trong khoảng này (trung bình 80, độ lệch chuẩn khoảng 11,5). Kết quả DE = 1,39, cỡ mẫu cần thiết là 385 × 1,39 = 535; dự phòng 15% phiếu không đáp ứng hoặc không hợp lệ, cỡ mẫu tối thiểu là 535/0,85 = **630**. Với giả định thận trọng CV = 1,0 (phân tích độ nhạy), DE = 1,78 và cỡ mẫu tối thiểu là 808.
 
-**Cỡ mẫu của đề tài là 1.000 phiếu hợp lệ**, tương ứng 50 bàn khám với trung bình 20 phiếu mỗi bàn, lớn hơn cỡ mẫu tối thiểu và thống nhất với thuyết minh đề tài đã nộp Bệnh viện (thuyết minh tính theo d = 0,031 khi chưa hiệu chỉnh gom cụm, cho n = 1.000). Với các giả định trên, cỡ mẫu này vẫn đủ ngay cả khi tính thận trọng 1.000 là số phiếu thu về (trước khi trừ phiếu không hợp lệ) và hệ số biến thiên giữa các bàn lên tới khoảng 1,43. Hệ số biến thiên thực tế sẽ được tính từ số liệu lưu lượng theo bàn khám trên HIS (đối chiếu với giá trị lập kế hoạch 0,14) và tỷ lệ không đáp ứng thực tế được đối chiếu ở khảo sát thử; khi các số này khác giả định, kế hoạch phân tích được cập nhật theo thủ tục sửa đổi (Phụ lục A). Với CV ≈ 0,14 và ICC = 0,02, nửa độ rộng khoảng tin cậy 95% của tỷ lệ hài lòng là ±3,7% khi đủ 1.000 phiếu hợp lệ và ±4,0% nếu chỉ còn 850 phiếu (1.000 phiếu thu về trừ 15% không hợp lệ); độ chính xác ±5% vẫn đạt khi ICC thực tế không vượt quá khoảng 0,083 (1.000 phiếu) hoặc 0,062 (850 phiếu). Độ chính xác dự kiến của ước lượng tỷ lệ hài lòng với n = 1.000 được trình bày ở Bảng 4.1.
+**Cỡ mẫu của đề tài là 1.000 phiếu hợp lệ**, tương ứng 50 bàn khám với trung bình 20 phiếu mỗi bàn, lớn hơn cỡ mẫu tối thiểu và thống nhất với thuyết minh đề tài đã nộp Bệnh viện (thuyết minh tính theo d = 0,031 khi chưa hiệu chỉnh gom cụm, cho n = 1.000). Với các giả định trên, cỡ mẫu này vẫn đủ ngay cả khi tính thận trọng 1.000 là số phiếu thu về (trước khi trừ phiếu không hợp lệ) và hệ số biến thiên giữa các bàn lên tới khoảng 1,43. Hệ số biến thiên thực tế sẽ được tính từ số liệu lưu lượng theo bàn khám trên HIS (đối chiếu với giá trị lập kế hoạch 0,14) và tỷ lệ không đáp ứng thực tế được đối chiếu ở khảo sát thử; khi các số này khác giả định, kế hoạch phân tích được cập nhật theo thủ tục sửa đổi (Phụ lục A). Với CV ≈ 0,14 và ICC = 0,02, nửa độ rộng khoảng tin cậy 95% của tỷ lệ hài lòng là ±3,7% khi đủ 1.000 phiếu hợp lệ và ±4,0% nếu chỉ còn 850 phiếu (1.000 phiếu thu về trừ 15% không hợp lệ); độ chính xác ±5% vẫn đạt khi ICC thực tế không vượt quá khoảng 0,083 (1.000 phiếu) hoặc 0,063 (850 phiếu). Độ chính xác dự kiến của ước lượng tỷ lệ hài lòng với n = 1.000 được trình bày ở Bảng 4.1.
 
-*Bảng 4.1. Nửa độ rộng khoảng tin cậy 95% của tỷ lệ hài lòng (p = 0,5; n = 1.000; trung bình 20 phiếu/bàn khám).*
+**Bảng 4.1. Nửa độ rộng khoảng tin cậy 95% của tỷ lệ hài lòng (p = 0,5; n = 1.000; trung bình 20 phiếu/bàn khám)**
 
 | Hệ số tương quan nội cụm (ICC) | CV = 0 (số phiếu đều giữa các bàn) | CV ≈ 0,14 (giá trị lập kế hoạch) | CV = 0,5 | CV = 1,0 |
 |---|---|---|---|---|
@@ -289,7 +290,7 @@ n = 3 × (Z₁₋α/₂ + Z₁₋β)² / [(1 − Σpᵢ³) × β² × Var(X) × 
 
 Trong đó pᵢ là tỷ lệ người bệnh ở mức thứ i của G1; β = ln(OR) ứng với mỗi 15 phút chờ thêm; Var(X) = (ĐLC thời gian chờ/15)²; R² là hệ số xác định khi hồi quy thời gian chờ theo các biến hiệu chỉnh. Với α = 0,05 (hai phía), lực thống kê 80%, R² = 0,20 và ba giả định về phân bố của G1, tỷ số chênh nhỏ nhất phát hiện được với n = 1.000 trình bày ở Bảng 4.2.
 
-*Bảng 4.2. Tỷ số chênh nhỏ nhất phát hiện được cho mỗi 15 phút chờ thêm (n = 1.000).*
+**Bảng 4.2. Tỷ số chênh nhỏ nhất phát hiện được cho mỗi 15 phút chờ thêm (n = 1.000)**
 
 | Giả định phân bố G1 (mức 1 → 5) | 1 − Σpᵢ³ | ĐLC thời gian chờ 20 phút | 30 phút | 40 phút |
 |---|---|---|---|---|
@@ -297,13 +298,13 @@ Trong đó pᵢ là tỷ lệ người bệnh ở mức thứ i của G1; β = l
 | Lệch vừa: 2/5/18/45/30% | 0,876 | 1,147 | 1,096 | 1,071 |
 | Lệch nhẹ: 3/7/25/42/23% | 0,898 | 1,145 | 1,095 | 1,070 |
 
-Như vậy, với n = 1.000, nghiên cứu phát hiện được tỷ số chênh khoảng 1,07–1,15 cho mỗi 15 phút chờ thêm, tùy độ phân tán thực tế của thời gian chờ (ví dụ, với ĐLC 30 phút, OR 1,098 cho mỗi 15 phút tương đương OR khoảng 1,45 cho mỗi giờ chờ thêm). Do chiều liên quan dự kiến là tỷ số chênh nhỏ hơn 1, các giá trị tương ứng là khoảng 0,87–0,93 cho mỗi 15 phút. Bảng 4.2 chưa tính hiệu ứng thiết kế do gom cụm. Khi hiệu chỉnh – trừ 15% phiếu dự phòng hỏng và chia cho hệ số thiết kế 1,39 của kết cục chính (CV ≈ 0,14), tức cỡ mẫu hiệu dụng khoảng 612 người – tỷ số chênh nhỏ nhất phát hiện được là 1,09–1,20 cho mỗi 15 phút chờ thêm (0,84–0,92 theo chiều giảm); với giả định thận trọng CV = 1,0 (hệ số thiết kế 1,78, cỡ mẫu hiệu dụng khoảng 478 người), các giá trị này là 1,10–1,23 (0,82–0,91 theo chiều giảm). Đây là chặn trên của mức hiệu chỉnh: với yếu tố đo ở cấp cá nhân như thời gian chờ, mức phóng đại phương sai của hệ số hồi quy không vượt quá hệ số thiết kế của kết cục và sẽ được ước lượng lại từ hệ số tương quan nội cụm thực tế của thời gian chờ. Phân bố của G1 và độ lệch chuẩn của thời gian chờ là giả định; nhà thống kê sẽ tính lại khi có số liệu khảo sát thử và số liệu HIS, trước khi tiếp cận số liệu mẫu chính, theo thủ tục sửa đổi kế hoạch phân tích (Phụ lục A).
+Như vậy, với n = 1.000, nghiên cứu phát hiện được tỷ số chênh khoảng 1,07–1,15 cho mỗi 15 phút chờ thêm, tùy độ phân tán thực tế của thời gian chờ (ví dụ, với ĐLC 30 phút, OR 1,098 cho mỗi 15 phút tương đương OR khoảng 1,45 cho mỗi giờ chờ thêm). Do chiều liên quan dự kiến là tỷ số chênh nhỏ hơn 1, các giá trị tương ứng là khoảng 0,87–0,93 cho mỗi 15 phút. Bảng 4.2 chưa tính hiệu ứng thiết kế do gom cụm. Khi hiệu chỉnh – trừ 15% phiếu dự phòng hỏng và chia cho hệ số thiết kế 1,39 của kết cục chính (CV ≈ 0,14), tức cỡ mẫu hiệu dụng khoảng 612 người – tỷ số chênh nhỏ nhất phát hiện được là 1,09–1,20 cho mỗi 15 phút chờ thêm (0,84–0,92 theo chiều giảm); với giả định thận trọng CV = 1,0 (hệ số thiết kế 1,78, cỡ mẫu hiệu dụng khoảng 478 người), các giá trị này là 1,10–1,22 (0,82–0,91 theo chiều giảm). Đây là chặn trên của mức hiệu chỉnh: với yếu tố đo ở cấp cá nhân như thời gian chờ, mức phóng đại phương sai của hệ số hồi quy không vượt quá hệ số thiết kế của kết cục và sẽ được ước lượng lại từ hệ số tương quan nội cụm thực tế của thời gian chờ. Phân bố của G1 và độ lệch chuẩn của thời gian chờ là giả định; nhà thống kê sẽ tính lại khi có số liệu khảo sát thử và số liệu HIS, trước khi tiếp cận số liệu mẫu chính, theo thủ tục sửa đổi kế hoạch phân tích (Phụ lục A).
 
-**Kết cục nhị phân thứ cấp và phân tích độ nhạy.** Hồi quy logistic nhị phân trên kết cục "hài lòng" (G1 ≥ 4) chỉ được thực hiện khi số trường hợp "chưa hài lòng" đạt tối thiểu 10 trường hợp cho mỗi tham số của mô hình [39]; quy tắc này được dùng như ngưỡng tối thiểu, có lưu ý về giới hạn của nó [40]. Với tỷ lệ "chưa hài lòng" khoảng 15% (tương ứng 150 trường hợp trên 1.000 người), mô hình tối đa khoảng 15 tham số. Trong khi đó, bộ biến hiệu chỉnh bắt buộc của mô hình chính đã tương ứng khoảng 24 tham số; vì vậy nhiều khả năng phân tích hồi quy nhị phân thứ cấp chỉ dừng ở mức mô tả tỷ lệ kèm khoảng tin cậy 95%. Phân tích độ nhạy bằng hồi quy tuyến tính cần tối thiểu n ≥ 104 + số tham số [41], thấp hơn nhiều so với cỡ mẫu của đề tài.
+**Kết cục nhị phân thứ cấp và phân tích độ nhạy.** Hồi quy logistic nhị phân trên kết cục “hài lòng” (G1 ≥ 4) chỉ được thực hiện khi số trường hợp “chưa hài lòng” đạt tối thiểu 10 trường hợp cho mỗi tham số của mô hình [39]; quy tắc này được dùng như ngưỡng tối thiểu, có lưu ý về giới hạn của nó [40]. Với tỷ lệ “chưa hài lòng” khoảng 15% (tương ứng 150 trường hợp trên 1.000 người), mô hình tối đa khoảng 15 tham số. Trong khi đó, mô hình chính (thời gian chờ và chín biến hiệu chỉnh bắt buộc; tự đánh giá sức khỏe đưa vào dạng số, ngày trong tuần gồm năm ngày làm việc) đã tương ứng 19 tham số; vì vậy nhiều khả năng phân tích hồi quy nhị phân thứ cấp chỉ dừng ở mức mô tả tỷ lệ kèm khoảng tin cậy 95%. Phân tích độ nhạy bằng hồi quy tuyến tính cần tối thiểu n ≥ 104 + số tham số [41], thấp hơn nhiều so với cỡ mẫu của đề tài.
 
 ### 4.4.2. Phương pháp chọn mẫu
 
-Áp dụng phương pháp **chọn mẫu hệ thống phân tầng** trên dòng người bệnh hoàn thành lượt khám tại Khoa C1a. Tầng được xác định theo ngày trong tuần × khung giờ khám (sáng sớm, cuối buổi sáng, đầu buổi chiều, cuối buổi chiều). Khoa có dòng người bệnh liên tục với số thứ tự khám, tạo thành khung mẫu động phù hợp cho chọn mẫu hệ thống; cách chọn này loại bỏ việc điều tra viên tự chọn người trả lời – nguồn sai lệch khó kiểm soát nhất trong khảo sát hài lòng tại phòng khám.
+Áp dụng phương pháp **chọn mẫu hệ thống phân tầng** trên dòng người bệnh hoàn thành lượt khám tại Khoa C1a. Tầng được xác định theo ngày trong tuần × khung giờ khám: năm ngày làm việc (thứ Hai đến thứ Sáu) × bốn khung giờ (sáng sớm, cuối buổi sáng, đầu buổi chiều, cuối buổi chiều) = 20 tầng. Khoa có dòng người bệnh liên tục với số thứ tự khám, tạo thành khung mẫu động phù hợp cho chọn mẫu hệ thống; cách chọn này loại bỏ việc điều tra viên tự chọn người trả lời – nguồn sai lệch khó kiểm soát nhất trong khảo sát hài lòng tại phòng khám.
 
 - **Số người cần mời:** với 1.000 phiếu hợp lệ và tỷ lệ không đáp ứng dự kiến 15%, cần mời khoảng 1.180–1.250 người bệnh trong toàn đợt.
 - **Phân bổ theo tầng:** số người cần mời trong mỗi tầng (nₕ) được phân bổ theo tỷ lệ lưu lượng người bệnh của tầng đó (Nₕ), ước tính từ số liệu lưu lượng của Khoa C1a trên HIS.
@@ -316,7 +317,7 @@ Như vậy, với n = 1.000, nghiên cứu phát hiện được tỷ số chên
 
 **Buổi chạy thử quy trình.** Trước khi thu thập chính thức, nhóm nghiên cứu tổ chức chạy thử toàn bộ quy trình (chọn mẫu theo tầng, mời tham gia, ký đồng ý, phát và thu phiếu, quản lý hòm phiếu, ghép thời gian chờ) tại khu vực khảo sát trong điều kiện lưu lượng thực, với tối thiểu 40 lượt mời trải trên ít nhất 4 tầng. Buổi chạy thử được đánh giá theo năm tiêu chí xác định trước (Bảng 4.3).
 
-*Bảng 4.3. Tiêu chí khả thi của buổi chạy thử.*
+**Bảng 4.3. Tiêu chí khả thi của buổi chạy thử**
 
 | # | Tiêu chí | Ngưỡng không khả thi | Nguồn số liệu |
 |---|---|---|---|
@@ -330,7 +331,7 @@ Như vậy, với n = 1.000, nghiên cứu phát hiện được tỷ số chên
 
 ### 4.4.3. Liên hệ với thuyết minh đề tài đã nộp
 
-Thuyết minh đề tài đã nộp Bệnh viện ghi phương pháp chọn mẫu là chọn mẫu thuận tiện, lấy liên tục người bệnh đủ tiêu chuẩn cho đến khi đủ cỡ mẫu. Đề cương này cụ thể hóa phương pháp đó bằng khung phân tầng theo ngày và khung giờ, theo hướng chặt chẽ hơn: cách lấy liên tục có thể làm mẫu dồn vào giai đoạn đầu và không phủ đều các khung giờ, trong khi thời gian chờ – yếu tố quan tâm chính – thay đổi mạnh theo ngày và giờ khám. Cỡ mẫu giữ nguyên n = 1.000 như thuyết minh. Mô hình "hồi quy logistic hoặc mô hình tương đương" trong thuyết minh được cụ thể hóa thành hồi quy logistic thứ tự, phù hợp với kết cục thứ bậc 5 mức.
+Thuyết minh đề tài đã nộp Bệnh viện ghi phương pháp chọn mẫu là chọn mẫu thuận tiện, lấy liên tục người bệnh đủ tiêu chuẩn cho đến khi đủ cỡ mẫu. Đề cương này cụ thể hóa phương pháp đó bằng khung phân tầng theo ngày và khung giờ, theo hướng chặt chẽ hơn: cách lấy liên tục có thể làm mẫu dồn vào giai đoạn đầu và không phủ đều các khung giờ, trong khi thời gian chờ – yếu tố quan tâm chính – thay đổi mạnh theo ngày và giờ khám. Cỡ mẫu giữ nguyên n = 1.000 như thuyết minh. Mô hình “hồi quy logistic hoặc mô hình tương đương” trong thuyết minh được cụ thể hóa thành hồi quy logistic thứ tự, phù hợp với kết cục thứ bậc 5 mức.
 
 ## 4.5. Công cụ thu thập số liệu
 
@@ -339,7 +340,7 @@ Thuyết minh đề tài đã nộp Bệnh viện ghi phương pháp chọn mẫ
 Công cụ thu thập là **Phiếu khảo sát ý kiến người bệnh ngoại trú** do nhóm nghiên cứu xây dựng riêng cho đề tài (toàn văn ở Phụ lục C). Phiếu gồm 4 phần, 58 câu:
 
 - **Phần 1 – Thông tin chung (24 câu):** cách hoàn thành phiếu; tuổi, giới, học vấn, nghề nghiệp, hôn nhân, nơi cư trú, thu nhập hộ gia đình, BHYT, lý do khám, số lần khám trong 12 tháng, khoảng cách và phương tiện đến bệnh viện, nguồn thông tin biết đến bệnh viện; kỳ vọng trước khi đến khám (thời gian chờ dự kiến, so sánh dịch vụ với mong đợi, lý do chọn khám theo yêu cầu); đặc thù khám theo yêu cầu (yêu cầu bác sĩ cụ thể, được khám đúng bác sĩ đã yêu cầu, kênh đăng ký khám, sử dụng gói khám, mức riêng tư khi khám); tự đánh giá sức khỏe; hoãn hoặc không thực hiện dịch vụ được chỉ định vì chi phí.
-- **Phần 2 – Mức độ hài lòng theo lĩnh vực (30 câu, thang Likert 5 mức:** 1 = rất không hài lòng; 2 = không hài lòng; 3 = bình thường/không ý kiến; 4 = hài lòng; 5 = rất hài lòng): A. Khả năng tiếp cận (6 câu); B. Cơ sở vật chất và phương tiện phục vụ (8 câu); C. Thái độ ứng xử và năng lực chuyên môn của nhân viên y tế (10 câu); D. Minh bạch thông tin và thủ tục khám bệnh (3 câu); E. Kết quả cung cấp dịch vụ (2 câu); F. Chi phí dịch vụ (1 câu).
+- **Phần 2 – Mức độ hài lòng theo lĩnh vực** (30 câu, thang Likert 5 mức: 1 = rất không hài lòng; 2 = không hài lòng; 3 = bình thường/không ý kiến; 4 = hài lòng; 5 = rất hài lòng): A. Khả năng tiếp cận (6 câu); B. Cơ sở vật chất và phương tiện phục vụ (8 câu); C. Thái độ ứng xử và năng lực chuyên môn của nhân viên y tế (10 câu); D. Minh bạch thông tin và thủ tục khám bệnh (3 câu); E. Kết quả cung cấp dịch vụ (2 câu); F. Chi phí dịch vụ (1 câu).
 - **Phần 3 – Đánh giá chung (3 câu):** G1 – hài lòng chung với lần khám (kết cục chính); G2 – ý định quay lại; G3 – ý định giới thiệu cho người khác.
 - **Phần 4 – Ý kiến đóng góp (1 câu hỏi mở).**
 
@@ -358,11 +359,11 @@ Nếu thời gian hoàn thành phiếu vượt ngưỡng ở buổi chạy thử
 
 Sau bốn bước, phiên bản cuối của bộ câu hỏi được khóa (ghi số phiên bản và ngày khóa) và không thay đổi câu chữ trong suốt quá trình thu thập mẫu chính. Các tài liệu của pha này (bảng truy xuất, biên bản hội đồng chuyên gia kèm chỉ số CVI, biên bản phỏng vấn nhận thức, báo cáo khảo sát thử) được lưu trong hồ sơ đề tài.
 
-### 4.5.2. Cách tính điểm và định nghĩa "hài lòng"
+### 4.5.2. Cách tính điểm và định nghĩa “hài lòng”
 
-- **Điểm lĩnh vực:** trung bình cộng các câu có điểm hợp lệ (1–5) trong lĩnh vực, giữ thang 1–5. Câu không áp dụng (mã 7) được loại khỏi cả tử số và mẫu số; câu "không biết/không nhớ" (mã 8) và "không trả lời" (mã 9) được loại khỏi tử số và tính là thiếu. Điểm lĩnh vực chỉ được tính khi ít nhất 80% số câu áp dụng của lĩnh vực có điểm hợp lệ. Lĩnh vực F chỉ có 1 câu nên được trình bày như một chỉ số đơn câu; lĩnh vực E có 2 câu nên độ tin cậy nội tại cần diễn giải thận trọng.
-- **Kết cục chính – mức hài lòng chung (câu G1):** câu hỏi trực tiếp "Nói chung, Ông/Bà hài lòng ở mức độ nào với tất cả các dịch vụ đã nhận được tại Khoa Khám bệnh trong lần khám này?", giữ nguyên thang thứ bậc 1–5. G1 không được tính từ điểm các lĩnh vực vì lĩnh vực A có 4 câu hỏi trực tiếp về mức hài lòng với thời gian chờ; nếu dùng điểm trung bình các lĩnh vực làm kết cục, thời gian chờ vừa là yếu tố phơi nhiễm vừa góp phần tạo nên kết cục, gây sai lệch do kết cục chứa phơi nhiễm. Dùng câu G1 độc lập loại bỏ được nguy cơ này ngay từ thiết kế.
-- **Tỷ lệ hài lòng (kết cục thứ cấp):** người bệnh được xem là hài lòng khi G1 ≥ 4 (chọn mức "hài lòng" hoặc "rất hài lòng"). Ngưỡng này được xác định trước, không thay đổi sau khi xem số liệu. Tỷ lệ hài lòng theo từng câu và từng lĩnh vực dùng cùng ngưỡng ≥ 4.
+- **Điểm lĩnh vực:** trung bình cộng các câu có điểm hợp lệ (1–5) trong lĩnh vực, giữ thang 1–5. Câu không áp dụng (mã 7) được loại khỏi cả tử số và mẫu số; câu “không biết/không nhớ” (mã 8) và “không trả lời” (mã 9) được loại khỏi tử số và tính là thiếu. Điểm lĩnh vực chỉ được tính khi ít nhất 80% số câu áp dụng của lĩnh vực có điểm hợp lệ. Lĩnh vực F chỉ có 1 câu nên được trình bày như một chỉ số đơn câu; lĩnh vực E có 2 câu nên độ tin cậy nội tại cần diễn giải thận trọng.
+- **Kết cục chính – mức hài lòng chung (câu G1):** câu hỏi trực tiếp “Nói chung, Ông/Bà hài lòng ở mức độ nào với tất cả các dịch vụ đã nhận được tại Khoa Khám bệnh trong lần khám này?”, giữ nguyên thang thứ bậc 1–5. G1 không được tính từ điểm các lĩnh vực vì lĩnh vực A có 4 câu hỏi trực tiếp về mức hài lòng với thời gian chờ; nếu dùng điểm trung bình các lĩnh vực làm kết cục, thời gian chờ vừa là yếu tố phơi nhiễm vừa góp phần tạo nên kết cục, gây sai lệch do kết cục chứa phơi nhiễm. Dùng câu G1 độc lập loại bỏ được nguy cơ này ngay từ thiết kế.
+- **Tỷ lệ hài lòng (kết cục thứ cấp):** người bệnh được xem là hài lòng khi G1 ≥ 4 (chọn mức “hài lòng” hoặc “rất hài lòng”). Ngưỡng này được xác định trước, không thay đổi sau khi xem số liệu. Tỷ lệ hài lòng theo từng câu và từng lĩnh vực dùng cùng ngưỡng ≥ 4.
 - **Điểm hài lòng tổng hợp (kết cục đối chiếu):** trung bình cộng các câu hợp lệ trong 30 câu A–F; dùng để đánh giá sự hội tụ với G1 và trong phân tích độ nhạy, không thay thế kết cục chính.
 - **Kết cục thứ cấp xác định trước:** ý định quay lại (G2) và ý định giới thiệu (G3).
 
@@ -381,7 +382,7 @@ Sau bốn bước, phiên bản cuối của bộ câu hỏi được khóa (ghi
 
 ### 4.6.1. Biến kết cục
 
-*Bảng 4.4. Biến kết cục.*
+**Bảng 4.4. Biến kết cục**
 
 | Biến | Loại biến | Định nghĩa và cách đo |
 |---|---|---|
@@ -395,7 +396,7 @@ Sau bốn bước, phiên bản cuối của bộ câu hỏi được khóa (ghi
 
 ### 4.6.2. Biến độc lập
 
-*Bảng 4.5. Biến độc lập và vai trò trong phân tích Mục tiêu 2.*
+**Bảng 4.5. Biến độc lập và vai trò trong phân tích Mục tiêu 2**
 
 | Nhóm | Biến | Loại biến | Nguồn | Vai trò trong phân tích |
 |---|---|---|---|---|
@@ -440,13 +441,13 @@ Vai trò của từng biến được xác định trước theo sơ đồ nhân
 
 Nội dung phiếu khảo sát là khuyết danh; riêng khâu ghép thời gian chờ là giả danh hóa có kiểm soát, sau đó số liệu được khử định danh trước khi phân tích.
 
-**Nguồn dự phòng:** nếu buổi chạy thử cho thấy không ghép được thời gian chờ từ HIS (tiêu chí khả thi số 3, mục 4.4.2), nhóm nghiên cứu bổ sung vào phiếu một câu hỏi về thời gian đã chờ theo cảm nhận của người bệnh và trình Hội đồng phê duyệt sửa đổi trước khi thu thập chính thức; biến này được gọi đúng tên là "thời gian chờ theo cảm nhận của người bệnh". Người bệnh thường ước lượng thời gian chờ dài hơn thực tế; hai nguồn số liệu được phân tích tách biệt, không gộp chung trong một biến.
+**Nguồn dự phòng:** nếu buổi chạy thử cho thấy không ghép được thời gian chờ từ HIS (tiêu chí khả thi số 3, mục 4.4.2), nhóm nghiên cứu bổ sung vào phiếu một câu hỏi về thời gian đã chờ theo cảm nhận của người bệnh và trình Hội đồng phê duyệt sửa đổi trước khi thu thập chính thức; biến này được gọi đúng tên là “thời gian chờ theo cảm nhận của người bệnh”. Người bệnh thường ước lượng thời gian chờ dài hơn thực tế; hai nguồn số liệu được phân tích tách biệt, không gộp chung trong một biến.
 
 ## 4.7. Kỹ thuật thu thập số liệu
 
 Các thang đo trải nghiệm người bệnh thường có hiệu ứng trần, một phần do sai lệch do mong muốn xã hội [49]; tâm lý ngại phê bình người vừa phục vụ mình cũng có thể làm điểm dồn về mức cao và che khuất những điểm cần cải tiến. Đề tài áp dụng hình thức tự điền khuyết danh kết hợp hòm phiếu kín thay cho phỏng vấn trực tiếp bởi nhân viên khoa.
 
-*Bảng 4.6. Biện pháp hạn chế sai lệch do mong muốn xã hội.*
+**Bảng 4.6. Biện pháp hạn chế sai lệch do mong muốn xã hội**
 
 | Biện pháp | Cách thực hiện |
 |---|---|
@@ -459,7 +460,7 @@ Các thang đo trải nghiệm người bệnh thường có hiệu ứng trần
 
 ## 4.8. Sai số và biện pháp khống chế sai số
 
-*Bảng 4.7. Các nguồn sai lệch và biện pháp khống chế.*
+**Bảng 4.7. Các nguồn sai lệch và biện pháp khống chế**
 
 | Nguồn sai lệch | Biểu hiện | Biện pháp khống chế |
 |---|---|---|
@@ -479,7 +480,7 @@ Các thang đo trải nghiệm người bệnh thường có hiệu ứng trần
 
 1. **Chuẩn bị:** đăng ký đề tài trên OSF Registries; trình Hội đồng Y đức hồ sơ đạo đức cho toàn bộ đề cương, bao gồm cả pha phát triển bộ câu hỏi (có tiếp xúc người bệnh) và mẫu chính.
 2. **Phát triển và kiểm định bộ câu hỏi** (sau khi được phê duyệt): bảng truy xuất nguồn gốc câu hỏi, hội đồng chuyên gia, phỏng vấn nhận thức, khảo sát thử; khóa phiên bản cuối của phiếu (mục 4.5.1).
-3. **Chuẩn bị thu thập:** in phiếu đồng ý tham gia và phiếu khảo sát thành hai tài liệu riêng; tập huấn điều tra viên; đề nghị Phòng CNTT/QLCL cấp mã bàn khám giả danh và xác nhận quy trình trích xuất; tổ chức buổi chạy thử và đánh giá theo năm tiêu chí khả thi (mục 4.4.2); sửa đổi kế hoạch phân tích thống kê theo kết quả chạy thử nếu cần (kế hoạch đã khóa, phiên bản 1.5) (Phụ lục A).
+3. **Chuẩn bị thu thập:** in phiếu đồng ý tham gia và phiếu khảo sát thành hai tài liệu riêng; tập huấn điều tra viên; đề nghị Phòng CNTT/QLCL cấp mã bàn khám giả danh và xác nhận quy trình trích xuất; tổ chức buổi chạy thử và đánh giá theo năm tiêu chí khả thi (mục 4.4.2); sửa đổi kế hoạch phân tích thống kê (đã khóa, phiên bản 1.5) theo kết quả chạy thử nếu cần, theo thủ tục ở Phụ lục A.
 4. **Xác định người bệnh được chọn:** người chuyên trách xác định người thứ kₕ trong dòng người bệnh đã hoàn thành lượt khám của từng tầng.
 5. **Sàng lọc:** đối chiếu tiêu chuẩn lựa chọn, loại trừ và kiểm tra chống trùng lặp.
 6. **Giải thích và lấy đồng ý:** điều tra viên giải thích theo Bản thông tin (Phụ lục B); người bệnh đồng ý thì ký tên (hoặc điểm chỉ) trên phiếu đồng ý. Phiếu đồng ý được thu và lưu riêng, không gắn với mã nghiên cứu của phiếu khảo sát.
@@ -506,7 +507,7 @@ Kế hoạch phân tích được tóm tắt dưới đây và trình bày chi t
 
 **Mục tiêu 2 – phân tích đơn biến.** Mô tả mối liên quan thô giữa từng yếu tố và kết cục (với G1: kiểm định Mann–Whitney, Kruskal–Wallis hoặc tương quan Spearman; với điểm lĩnh vực: kiểm định t, ANOVA hoặc tương quan Pearson/Spearman tùy phân bố; với kết cục nhị phân thứ cấp: kiểm định khi bình phương hoặc Fisher), luôn kèm độ lớn mối liên quan và khoảng tin cậy 95%. Bảng đơn biến chỉ có vai trò mô tả, không dùng để chọn biến đưa vào mô hình đa biến.
 
-**Mục tiêu 2 – mô hình chính.** Mô hình này dùng để kiểm định giả thuyết ở mục 2.3 (H₀: tỷ số chênh chung của thời gian chờ bằng 1; kiểm định hai phía, α = 0,05). Hồi quy logistic thứ tự (mô hình tỷ số chênh tương xứng – proportional odds) đa biến với kết cục G1 giữ nguyên 5 mức; kết quả trình bày bằng tỷ số chênh chung hiệu chỉnh kèm khoảng tin cậy 95%. Thời gian chờ được đưa vào mô hình dưới dạng liên tục, trình bày theo mỗi 15 phút; dạng phi tuyến được kiểm tra bằng hàm spline bậc ba giới hạn 3 nút hoặc phân tích theo nhóm tứ phân vị. Các biến hiệu chỉnh bắt buộc được đưa đồng thời vào mô hình: tuổi, giới, nơi cư trú, BHYT, lý do khám, khung giờ khám, ngày trong tuần, tự đánh giá sức khỏe và được khám đúng bác sĩ đã yêu cầu. Không chọn biến theo ngưỡng p đơn biến, không dùng phương pháp chọn biến từng bước. Giả định tỷ số chênh tương xứng được kiểm định (kiểm định Brant hoặc so sánh log-likelihood) trước khi diễn giải; nếu vi phạm, dùng mô hình tỷ số chênh tương xứng một phần hoặc mô hình logit thứ tự tổng quát và trình bày hệ số theo từng ngưỡng cắt cho biến vi phạm [50]. Đa cộng tuyến được kiểm tra bằng hệ số phóng đại phương sai (VIF/GVIF).
+**Mục tiêu 2 – mô hình chính.** Mô hình này dùng để kiểm định giả thuyết ở mục 2.3 (H₀: tỷ số chênh chung của thời gian chờ bằng 1; kiểm định hai phía, α = 0,05). Hồi quy logistic thứ tự (mô hình tỷ số chênh tương xứng – proportional odds) đa biến với kết cục G1 giữ nguyên 5 mức; kết quả trình bày bằng tỷ số chênh chung hiệu chỉnh kèm khoảng tin cậy 95%. Thời gian chờ được đưa vào mô hình dưới dạng liên tục, trình bày theo mỗi 15 phút; dạng phi tuyến được kiểm tra bằng hàm spline bậc ba giới hạn 3 nút hoặc phân tích theo nhóm tứ phân vị. Các biến hiệu chỉnh bắt buộc được đưa đồng thời vào mô hình: tuổi, giới, nơi cư trú, BHYT, lý do khám, khung giờ khám, ngày trong tuần, tự đánh giá sức khỏe (dạng số, thang 1–5) và được khám đúng bác sĩ đã yêu cầu. Không chọn biến theo ngưỡng p đơn biến, không dùng phương pháp chọn biến từng bước. Giả định tỷ số chênh tương xứng được kiểm định (kiểm định Brant hoặc so sánh log-likelihood) trước khi diễn giải; nếu vi phạm, dùng mô hình tỷ số chênh tương xứng một phần hoặc mô hình logit thứ tự tổng quát và trình bày hệ số theo từng ngưỡng cắt cho biến vi phạm [50]. Đa cộng tuyến được kiểm tra bằng hệ số phóng đại phương sai (VIF/GVIF).
 
 **Xử lý gom cụm theo bàn khám.** Mô hình chính sử dụng sai số chuẩn vững theo cụm (cụm là bàn khám). Phân tích độ nhạy sử dụng mô hình hồi quy logistic thứ tự có hệ số chặn ngẫu nhiên theo bàn khám. Hệ số tương quan nội cụm được ước lượng và báo cáo cho G1 và cho từng lĩnh vực. Nếu số bàn khám thực tế có số liệu dưới 15, mô hình có hệ số chặn ngẫu nhiên trở thành phân tích chính.
 
@@ -514,7 +515,7 @@ Kế hoạch phân tích được tóm tắt dưới đây và trình bày chi t
 
 **Quy tắc gộp mức khi phân bố lệch về phía hài lòng.** Nếu một mức của G1 có dưới 20 quan sát, mức đó được gộp với mức liền kề về phía giữa thang (mức 1 gộp vào mức 2; nếu vẫn dưới 20 thì gộp tiếp vào mức 3); không gộp mức 5 và không gộp xuống dưới 3 mức. Việc gộp chỉ áp dụng cho mô hình; bảng mô tả vẫn trình bày đủ 5 mức gốc. Với hồi quy logistic nhị phân thứ cấp, nếu xảy ra hiện tượng tách biệt hoàn toàn, sử dụng hồi quy có hiệu chỉnh Firth khi số liệu còn đủ thông tin để ước lượng [52]; với mô hình thứ tự, ô thưa được xử lý bằng quy tắc gộp mức nêu trên.
 
-**Phân tích thứ cấp.** Hồi quy logistic nhị phân trên tình trạng hài lòng (G1 ≥ 4), trình bày aOR kèm khoảng tin cậy 95%, chỉ thực hiện khi số trường hợp chưa hài lòng đạt tối thiểu 10 trường hợp cho mỗi tham số (mục 4.4.1); nếu không đạt, chỉ trình bày tỷ lệ và khoảng tin cậy 95%. Tương quan giữa G1 và điểm hài lòng tổng hợp được tính để đánh giá sự hội tụ. Ý định quay lại (G2) và ý định giới thiệu (G3) được mô tả bằng phân bố 5 mức và tỷ lệ có ý định (mức 4–5, cùng ngưỡng với G1) kèm khoảng tin cậy 95% Wilson hiệu chỉnh chùm theo bàn khám; không kiểm định giả thuyết. Phân tích vai trò trung gian của kỳ vọng là phân tích thăm dò xác định trước, trình bày riêng: dùng phương pháp trung gian nhân quả dựa trên hồi quy theo khung phản thực [53], với mô hình cho biến trung gian và mô hình kết cục logistic thứ tự cùng dạng mô hình chính, ước lượng tác động gián tiếp và trực tiếp kèm khoảng tin cậy 95%, có phân tích độ nhạy với nhiễu chưa đo giữa biến trung gian và kết cục [54]. Do số liệu cắt ngang không xác lập được trình tự thời gian, ước lượng trung gian có thể sai lệch đáng kể [55] nên kết quả chỉ được diễn giải là thăm dò và được báo cáo theo bản rút gọn của hướng dẫn AGReMA [56].
+**Phân tích thứ cấp.** Hồi quy logistic nhị phân trên tình trạng hài lòng (G1 ≥ 4), trình bày aOR kèm khoảng tin cậy 95%, chỉ thực hiện khi số trường hợp chưa hài lòng đạt tối thiểu 10 trường hợp cho mỗi tham số (mục 4.4.1); nếu không đạt, chỉ trình bày tỷ lệ và khoảng tin cậy 95%. Tương quan giữa G1 và điểm hài lòng tổng hợp được tính để đánh giá sự hội tụ. Ý định quay lại (G2) và ý định giới thiệu (G3) được mô tả bằng phân bố 5 mức và tỷ lệ có ý định (mức 4–5, cùng ngưỡng với G1) kèm khoảng tin cậy 95% Wilson hiệu chỉnh gom cụm theo bàn khám; không kiểm định giả thuyết. Phân tích vai trò trung gian của kỳ vọng là phân tích thăm dò xác định trước, trình bày riêng: dùng phương pháp trung gian nhân quả dựa trên hồi quy theo khung phản thực [53], với mô hình cho biến trung gian và mô hình kết cục logistic thứ tự cùng dạng mô hình chính, ước lượng tác động gián tiếp và trực tiếp kèm khoảng tin cậy 95%, có phân tích độ nhạy với nhiễu chưa đo giữa biến trung gian và kết cục [54]. Do số liệu cắt ngang không xác lập được trình tự thời gian, ước lượng trung gian có thể sai lệch đáng kể [55] nên kết quả chỉ được diễn giải là thăm dò và được báo cáo theo bản rút gọn của hướng dẫn AGReMA [56].
 
 **Phân tích độ nhạy (xác định trước):** (1) hồi quy tuyến tính trên G1 coi là biến liên tục, sai số chuẩn vững HC3; (2) điền khuyết đa lần cho biến nền và biến phơi nhiễm; (3) mô hình có hệ số chặn ngẫu nhiên theo bàn khám; (4) loại các phiếu có người hỗ trợ ghi, chỉ giữ phiếu người bệnh tự điền; (5) ước lượng theo thiết kế với cụm là bàn khám và tầng ngày × khung giờ đưa vào bằng hậu phân tầng (bàn khám không lồng trong tầng nên không khai tầng như một bậc chọn mẫu); (6) có và không có các quan sát có ảnh hưởng lớn; (7) mô hình với thời gian chờ ở dạng spline hoặc theo nhóm tứ phân vị.
 
@@ -542,7 +543,7 @@ Nghiên cứu tuân thủ Tuyên ngôn Helsinki của Hiệp hội Y khoa Thế 
 
 Chủ nhiệm đề tài công tác tại chính Khoa C1a – đơn vị được đánh giá. Đây là xung đột lợi ích về cơ cấu (không phải xung đột lợi ích tài chính), không thể loại bỏ vì hiểu biết về quy trình của khoa là điều kiện để thiết kế nghiên cứu, nhưng được quản lý công khai. Đề tài không nhận tài trợ bên ngoài và không có xung đột lợi ích tài chính. Nguyên tắc quản lý là tách người có lợi ích khỏi mọi khâu mà phán đoán chủ quan có thể làm thay đổi kết quả:
 
-*Bảng 4.8. Biện pháp quản lý xung đột lợi ích.*
+**Bảng 4.8. Biện pháp quản lý xung đột lợi ích**
 
 | Khâu | Người thực hiện | Ràng buộc |
 |---|---|---|
@@ -556,7 +557,7 @@ Chủ nhiệm đề tài công tác tại chính Khoa C1a – đơn vị đượ
 
 ## 4.12. Hạn chế của nghiên cứu và phạm vi suy rộng kết quả
 
-*Bảng 4.9. Hạn chế dự kiến và chiều hướng sai lệch.*
+**Bảng 4.9. Hạn chế dự kiến và chiều hướng sai lệch**
 
 | Hạn chế | Chiều hướng sai lệch dự kiến | Biện pháp đã áp dụng |
 |---|---|---|
@@ -576,12 +577,11 @@ Chủ nhiệm đề tài công tác tại chính Khoa C1a – đơn vị đượ
 
 # 5. DỰ KIẾN KẾT QUẢ
 
-Kết quả được trình bày theo các bảng dưới đây. Các bảng chỉ là khung trình bày, chưa có số liệu.
+Kết quả được trình bày theo thứ tự đặc điểm đối tượng nghiên cứu, rồi lần lượt theo từng mục tiêu nghiên cứu. Các bảng, hình và biểu đồ dưới đây là khung trình bày đã xác định trước theo kế hoạch phân tích; số liệu được điền sau khi phân tích.
 
 Quy ước trình bày: biến định lượng mô tả bằng trung bình ± độ lệch chuẩn khi phân phối gần chuẩn, ngược lại bằng trung vị [khoảng tứ phân vị]; biến định tính bằng tần số và tỷ lệ phần trăm, ghi rõ mẫu số khi khác cỡ mẫu chung; tỷ lệ và các ước lượng hiệu ứng kèm khoảng tin cậy 95%; giá trị p ghi ba chữ số thập phân (p < 0,001 khi nhỏ hơn). Tên bảng đặt phía trên bảng, tên hình và biểu đồ đặt phía dưới; chữ viết tắt được giải thích ngay dưới mỗi bảng.
 
-
-
+## 5.1. Đặc điểm đối tượng nghiên cứu
 
 ![Hình 5.1](bieu-bang/hinh-5-1.png)
 
@@ -589,47 +589,107 @@ Quy ước trình bày: biến định lượng mô tả bằng trung bình ± �
 
 *Ghi chú:* Số lượng ở từng bước và lý do loại được ghi đầy đủ khi kết thúc thu thập số liệu.
 
-
 **Bảng 5.1. Đặc điểm chung của đối tượng nghiên cứu (n = 1.000)**
 
-| Đặc điểm | Phân nhóm | n (%) hoặc TB ± ĐLC / trung vị [khoảng tứ phân vị] |
+| Đặc điểm | n (%) hoặc TB ± ĐLC | Số thiếu, n (%) |
 |---|---|---|
-| Tuổi (năm) | | — |
-| Nhóm tuổi | < 30; 30–44; 45–59; ≥ 60 | — |
-| Giới | Nam; Nữ | — |
-| Học vấn | Tiểu học trở xuống; THCS; THPT; Trung cấp/Cao đẳng; Đại học; Sau đại học | — |
-| Nghề nghiệp | 9 nhóm | — |
-| Tình trạng hôn nhân | Độc thân; Đã kết hôn/chung sống; Ly hôn/ly thân; Góa | — |
-| Nơi cư trú | Thành thị; Nông thôn | — |
-| Khoảng cách từ nhà đến bệnh viện | < 5 km; 5–10 km; > 10 km | — |
-| Thu nhập hộ gia đình/tháng | < 5 triệu; 5 – < 10 triệu; 10 – < 20 triệu; ≥ 20 triệu đồng | — |
-| Có thẻ BHYT còn hiệu lực | Có; Không | — |
-| Lý do khám | Lần đầu; Tái khám theo hẹn; Khám sức khỏe định kỳ; Chủ động chọn bác sĩ/chuyên khoa; Khác | — |
-| Số lần khám tại khoa trong 12 tháng | 0; 1–2; ≥ 3 | — |
-| Tự đánh giá sức khỏe | Rất kém; Kém; Trung bình; Tốt; Rất tốt | — |
-| Có yêu cầu bác sĩ cụ thể / được khám đúng bác sĩ đã yêu cầu | Có; Không; Không áp dụng | — |
-| Thời gian chờ khám (phút, theo HIS) | | — |
-| Khung giờ khám | Sáng sớm; Cuối buổi sáng; Đầu buổi chiều; Cuối buổi chiều | — |
-| Ngày trong tuần | Thứ Hai … Chủ nhật | — |
-| Cách hoàn thành phiếu | Tự điền; Người nhà ghi hộ; Điều tra viên ghi hộ | — |
+| Tuổi (năm), TB ± ĐLC hoặc trung vị [KTPV] | … ± … | … (…) |
+| Nhóm tuổi, n (%) | | … (…) |
+| – Dưới 30 | … (…) | |
+| – 30–44 | … (…) | |
+| – 45–59 | … (…) | |
+| – Từ 60 trở lên | … (…) | |
+| Giới: nữ, n (%) | … (…) | … (…) |
+| Trình độ học vấn, n (%) | | … (…) |
+| – Mù chữ/chưa đi học | … (…) | |
+| – Tiểu học | … (…) | |
+| – Trung học cơ sở | … (…) | |
+| – Trung học phổ thông | … (…) | |
+| – Trung cấp/cao đẳng | … (…) | |
+| – Đại học | … (…) | |
+| – Sau đại học | … (…) | |
+| Nghề nghiệp, n (%) | | … (…) |
+| – Cán bộ, công chức, viên chức | … (…) | |
+| – Nông, lâm, ngư nghiệp | … (…) | |
+| – Công nhân, lao động chân tay | … (…) | |
+| – Lao động tự do, kinh doanh nhỏ | … (…) | |
+| – Hưu trí | … (…) | |
+| – Nội trợ | … (…) | |
+| – Học sinh, sinh viên | … (…) | |
+| – Thất nghiệp/chưa có việc làm | … (…) | |
+| – Khác | … (…) | |
+| Tình trạng hôn nhân, n (%) | | … (…) |
+| – Độc thân/chưa kết hôn | … (…) | |
+| – Đã kết hôn/chung sống | … (…) | |
+| – Ly hôn/ly thân | … (…) | |
+| – Góa | … (…) | |
+| Nơi cư trú: nông thôn, n (%) | … (…) | … (…) |
+| Khoảng cách từ nhà đến bệnh viện, n (%) | | … (…) |
+| – Dưới 5 km | … (…) | |
+| – 5–10 km | … (…) | |
+| – Trên 10 km | … (…) | |
+| Thu nhập hộ gia đình/tháng, n (%) | | … (…) |
+| – Dưới 5 triệu đồng | … (…) | |
+| – Từ 5 đến dưới 10 triệu đồng | … (…) | |
+| – Từ 10 đến dưới 20 triệu đồng | … (…) | |
+| – Từ 20 triệu đồng trở lên | … (…) | |
+| Có thẻ BHYT còn hiệu lực, n (%) | … (…) | … (…) |
+| Lý do khám, n (%) | | … (…) |
+| – Khám bệnh lần đầu | … (…) | |
+| – Tái khám theo lịch hẹn | … (…) | |
+| – Khám sức khỏe định kỳ/tổng quát | … (…) | |
+| – Chủ động chọn bác sĩ/chuyên khoa theo yêu cầu riêng | … (…) | |
+| – Khác | … (…) | |
+| Số lần khám tại khoa trong 12 tháng, n (%) | | … (…) |
+| – 0 lần | … (…) | |
+| – 1–2 lần | … (…) | |
+| – Từ 3 lần trở lên | … (…) | |
+| Tự đánh giá sức khỏe, n (%) | | … (…) |
+| – Rất kém | … (…) | |
+| – Kém | … (…) | |
+| – Trung bình | … (…) | |
+| – Tốt | … (…) | |
+| – Rất tốt | … (…) | |
+| Có yêu cầu khám với một bác sĩ cụ thể, n (%) | … (…) | … (…) |
+| Được khám đúng bác sĩ đã yêu cầu, n (%) | | … (…) |
+| – Có | … (…) | |
+| – Không | … (…) | |
+| – Không áp dụng (không yêu cầu bác sĩ nào) | … (…) | |
+| Thời gian chờ khám (phút, theo HIS), TB ± ĐLC hoặc trung vị [KTPV] | … ± … | … (…) |
+| Khung giờ khám, n (%) | | … (…) |
+| – Sáng sớm (lấy số trước 08:15) | … (…) | |
+| – Cuối buổi sáng (lấy số từ 08:15 đến trước 11:30) | … (…) | |
+| – Đầu buổi chiều (lấy số từ 11:30 đến trước 14:45) | … (…) | |
+| – Cuối buổi chiều (lấy số từ 14:45) | … (…) | |
+| Ngày trong tuần, n (%) | | … (…) |
+| – Thứ Hai | … (…) | |
+| – Thứ Ba | … (…) | |
+| – Thứ Tư | … (…) | |
+| – Thứ Năm | … (…) | |
+| – Thứ Sáu | … (…) | |
+| Cách hoàn thành phiếu, n (%) | | … (…) |
+| – Người bệnh tự điền | … (…) | |
+| – Người nhà/người chăm sóc ghi hộ | … (…) | |
+| – Điều tra viên ghi hộ | … (…) | |
 
-*Ghi chú:* Chữ viết tắt — TB: trung bình; ĐLC: độ lệch chuẩn.
+*Ghi chú:* Chữ viết tắt — TB: trung bình; ĐLC: độ lệch chuẩn; KTPV: khoảng tứ phân vị; BHYT: bảo hiểm y tế; HIS: hệ thống thông tin bệnh viện. Biến định lượng trình bày TB ± ĐLC khi phân phối gần chuẩn, ngược lại trung vị [KTPV]. Các mức của từng biến theo đúng phiếu khảo sát (Phụ lục C); Khoa khám từ thứ Hai đến thứ Sáu.
 
+## 5.2. Kết quả theo mục tiêu 1: Mức độ hài lòng của người bệnh
 
 **Bảng 5.2. Mức độ hài lòng theo lĩnh vực và hài lòng chung (Mục tiêu 1)**
 
-| Lĩnh vực | Số câu | TB ± ĐLC | Trung vị [khoảng tứ phân vị] | % điểm sàn | % điểm trần | Tỷ lệ hài lòng % (KTC 95%) |
+| Lĩnh vực | Số câu | TB ± ĐLC | Trung vị [KTPV] | Điểm sàn, % | Điểm trần, % | Tỷ lệ hài lòng, % (KTC 95%) |
 |---|---|---|---|---|---|---|
-| A. Khả năng tiếp cận | 6 | — | — | — | — | — |
-| B. Cơ sở vật chất và phương tiện phục vụ | 8 | — | — | — | — | — |
-| C. Thái độ ứng xử và năng lực chuyên môn của NVYT | 10 | — | — | — | — | — |
-| D. Minh bạch thông tin và thủ tục khám bệnh | 3 | — | — | — | — | — |
-| E. Kết quả cung cấp dịch vụ | 2 | — | — | — | — | — |
-| F. Chi phí dịch vụ | 1 | — | — | — | — | — |
-| Hài lòng chung (G1) – kết cục chính | 1 | — | — | — | — | — |
-| Điểm hài lòng tổng hợp (30 câu A–F) | 30 | — | — | — | — | — |
+| A. Khả năng tiếp cận | 6 | … ± … | … [… – …] | … | … | … (… – …) |
+| B. Cơ sở vật chất và phương tiện phục vụ | 8 | … ± … | … [… – …] | … | … | … (… – …) |
+| C. Thái độ ứng xử và năng lực chuyên môn của NVYT | 10 | … ± … | … [… – …] | … | … | … (… – …) |
+| D. Minh bạch thông tin và thủ tục khám bệnh | 3 | … ± … | … [… – …] | … | … | … (… – …) |
+| E. Kết quả cung cấp dịch vụ | 2 | … ± … | … [… – …] | … | … | … (… – …) |
+| F. Chi phí dịch vụ | 1 | … ± … | … [… – …] | … | … | … (… – …) |
+| Hài lòng chung (G1) – kết cục chính | 1 | … ± … | … [… – …] | … | … | … (… – …) |
+| Điểm hài lòng tổng hợp (30 câu A–F) | 30 | … ± … | … [… – …] | … | … | … (… – …) |
 
-*Ghi chú:* Chữ viết tắt — TB: trung bình; ĐLC: độ lệch chuẩn; KTC: khoảng tin cậy. Phân bố đầy đủ 5 mức của G1 và của từng câu được trình bày kèm theo. Tỷ lệ hài lòng: G1 (hoặc điểm câu/lĩnh vực) ≥ 4.
+*Ghi chú:* Chữ viết tắt — TB: trung bình; ĐLC: độ lệch chuẩn; KTPV: khoảng tứ phân vị; KTC: khoảng tin cậy; NVYT: nhân viên y tế. Điểm theo thang 1–5; hài lòng khi điểm ≥ 4. Tỷ lệ hài lòng kèm KTC 95% theo phương pháp Wilson có hiệu chỉnh gom cụm theo bàn khám (mục 4.10). Phân bố đầy đủ 5 mức của G1 và của từng câu được trình bày kèm theo.
 
 ![Biểu đồ 5.1](bieu-bang/bieu-do-5-1.png)
 
@@ -637,81 +697,137 @@ Quy ước trình bày: biến định lượng mô tả bằng trung bình ± �
 
 *Ghi chú:* Cột là ước lượng điểm; thanh sai số là KTC 95%.
 
+## 5.3. Kết quả theo mục tiêu 2: Một số yếu tố liên quan đến mức độ hài lòng
 
-**Bảng 5.3. Phân tích đơn biến các yếu tố liên quan đến mức hài lòng chung (Mục tiêu 2)**
+**Bảng 5.3. Phân tích đơn biến các yếu tố liên quan đến mức hài lòng chung G1 (Mục tiêu 2)**
 
-| Yếu tố | Phân nhóm | Phân bố G1 / tỷ lệ hài lòng % | Mối liên quan thô (KTC 95%) | p |
+| Yếu tố | Phân nhóm / đơn vị | Hài lòng chung (G1 ≥ 4), n (%) | Mối liên quan thô (KTC 95%) | p |
 |---|---|---|---|---|
-| Tuổi; giới; nơi cư trú; học vấn; khoảng cách | | — | — | — |
-| BHYT; lý do khám; số lần khám | | — | — | — |
-| Thời gian chờ (mỗi 15 phút) | | — | — | — |
-| Khung giờ khám; ngày trong tuần | | — | — | — |
-| Tự đánh giá sức khỏe; được khám đúng bác sĩ đã yêu cầu | | — | — | — |
+| Thời gian chờ khám | Mỗi 15 phút | — | … (… – …) | … |
+| Tuổi | Mỗi năm | — | … (… – …) | … |
+| Giới | Nam | … (…) | 1 (nhóm tham chiếu) | |
+| | Nữ | … (…) | … (… – …) | … |
+| Nơi cư trú | Thành thị | … (…) | 1 (nhóm tham chiếu) | |
+| | Nông thôn | … (…) | … (… – …) | … |
+| Trình độ học vấn | Mù chữ/chưa đi học | … (…) | 1 (nhóm tham chiếu) | |
+| | Tiểu học | … (…) | … (… – …) | … |
+| | Trung học cơ sở | … (…) | … (… – …) | … |
+| | Trung học phổ thông | … (…) | … (… – …) | … |
+| | Trung cấp/cao đẳng | … (…) | … (… – …) | … |
+| | Đại học | … (…) | … (… – …) | … |
+| | Sau đại học | … (…) | … (… – …) | … |
+| Khoảng cách từ nhà đến bệnh viện | Dưới 5 km | … (…) | 1 (nhóm tham chiếu) | |
+| | 5–10 km | … (…) | … (… – …) | … |
+| | Trên 10 km | … (…) | … (… – …) | … |
+| Có thẻ BHYT còn hiệu lực | Không | … (…) | 1 (nhóm tham chiếu) | |
+| | Có | … (…) | … (… – …) | … |
+| Lý do khám | Khám bệnh lần đầu | … (…) | 1 (nhóm tham chiếu) | |
+| | Tái khám theo lịch hẹn | … (…) | … (… – …) | … |
+| | Khám sức khỏe định kỳ/tổng quát | … (…) | … (… – …) | … |
+| | Chủ động chọn bác sĩ/chuyên khoa theo yêu cầu riêng | … (…) | … (… – …) | … |
+| | Khác | … (…) | … (… – …) | … |
+| Số lần khám tại khoa trong 12 tháng | 0 lần | … (…) | 1 (nhóm tham chiếu) | |
+| | 1–2 lần | … (…) | … (… – …) | … |
+| | Từ 3 lần trở lên | … (…) | … (… – …) | … |
+| Khung giờ khám | Sáng sớm | … (…) | 1 (nhóm tham chiếu) | |
+| | Cuối buổi sáng | … (…) | … (… – …) | … |
+| | Đầu buổi chiều | … (…) | … (… – …) | … |
+| | Cuối buổi chiều | … (…) | … (… – …) | … |
+| Ngày trong tuần | Thứ Hai | … (…) | 1 (nhóm tham chiếu) | |
+| | Thứ Ba | … (…) | … (… – …) | … |
+| | Thứ Tư | … (…) | … (… – …) | … |
+| | Thứ Năm | … (…) | … (… – …) | … |
+| | Thứ Sáu | … (…) | … (… – …) | … |
+| Tự đánh giá sức khỏe | Mỗi mức tăng (thang 1–5) | — | … (… – …) | … |
+| Được khám đúng bác sĩ đã yêu cầu | Không | … (…) | 1 (nhóm tham chiếu) | |
+| | Có | … (…) | … (… – …) | … |
+| | Không áp dụng | … (…) | … (… – …) | … |
 
-*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy.
-
+*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy; BHYT: bảo hiểm y tế. Cột “Hài lòng chung” ghi n (%) theo hàng của từng phân nhóm; biến định lượng không có cột này (—). Mối liên quan thô và giá trị p theo phương pháp ở mục 4.10; bảng chỉ mô tả, không dùng để chọn biến đưa vào mô hình đa biến.
 
 **Bảng 5.4. Mô hình hồi quy logistic thứ tự đa biến các yếu tố liên quan đến mức hài lòng chung G1 (Mục tiêu 2 – phân tích chính)**
 
-| Biến | Đơn vị / phân nhóm | Tỷ số chênh chung hiệu chỉnh | KTC 95% | p |
+| Yếu tố | Phân nhóm / đơn vị | Tỷ số chênh chung hiệu chỉnh (KTC 95%), ca đủ dữ liệu | p | Tỷ số chênh chung hiệu chỉnh (KTC 95%), điền khuyết đa lần |
 |---|---|---|---|---|
-| Thời gian chờ khám | Mỗi 15 phút | — | — | — |
-| Tuổi | Mỗi năm | — | — | — |
-| Giới | Nữ so với nam | — | — | — |
-| Nơi cư trú | Nông thôn so với thành thị | — | — | — |
-| BHYT | Không có so với có | — | — | — |
-| Lý do khám | Theo nhóm | — | — | — |
-| Khung giờ khám | Theo khung giờ | — | — | — |
-| Ngày trong tuần | Theo ngày | — | — | — |
-| Tự đánh giá sức khỏe | Theo mức | — | — | — |
-| Được khám đúng bác sĩ đã yêu cầu | Theo nhóm | — | — | — |
+| Thời gian chờ khám | Mỗi 15 phút | … (… – …) | … | … (… – …) |
+| Tuổi | Mỗi năm | … (… – …) | … | … (… – …) |
+| Giới | Nam | 1 (nhóm tham chiếu) | | 1 (nhóm tham chiếu) |
+| | Nữ | … (… – …) | … | … (… – …) |
+| Nơi cư trú | Thành thị | 1 (nhóm tham chiếu) | | 1 (nhóm tham chiếu) |
+| | Nông thôn | … (… – …) | … | … (… – …) |
+| Có thẻ BHYT còn hiệu lực | Không | 1 (nhóm tham chiếu) | | 1 (nhóm tham chiếu) |
+| | Có | … (… – …) | … | … (… – …) |
+| Lý do khám | Khám bệnh lần đầu | 1 (nhóm tham chiếu) | | 1 (nhóm tham chiếu) |
+| | Tái khám theo lịch hẹn | … (… – …) | … | … (… – …) |
+| | Khám sức khỏe định kỳ/tổng quát | … (… – …) | … | … (… – …) |
+| | Chủ động chọn bác sĩ/chuyên khoa theo yêu cầu riêng | … (… – …) | … | … (… – …) |
+| | Khác | … (… – …) | … | … (… – …) |
+| Khung giờ khám | Sáng sớm | 1 (nhóm tham chiếu) | | 1 (nhóm tham chiếu) |
+| | Cuối buổi sáng | … (… – …) | … | … (… – …) |
+| | Đầu buổi chiều | … (… – …) | … | … (… – …) |
+| | Cuối buổi chiều | … (… – …) | … | … (… – …) |
+| Ngày trong tuần | Thứ Hai | 1 (nhóm tham chiếu) | | 1 (nhóm tham chiếu) |
+| | Thứ Ba | … (… – …) | … | … (… – …) |
+| | Thứ Tư | … (… – …) | … | … (… – …) |
+| | Thứ Năm | … (… – …) | … | … (… – …) |
+| | Thứ Sáu | … (… – …) | … | … (… – …) |
+| Tự đánh giá sức khỏe | Mỗi mức tăng (thang 1–5) | … (… – …) | … | … (… – …) |
+| Được khám đúng bác sĩ đã yêu cầu | Không | 1 (nhóm tham chiếu) | | 1 (nhóm tham chiếu) |
+| | Có | … (… – …) | … | … (… – …) |
+| | Không áp dụng | … (… – …) | … | … (… – …) |
 
-*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy. Nhóm tham chiếu của từng biến được xác định trong kế hoạch phân tích. Kèm theo: kết quả kiểm định giả định tỷ số chênh tương xứng; hệ số tương quan nội cụm theo bàn khám; số quan sát đưa vào mô hình.
+*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy; BHYT: bảo hiểm y tế. Tỷ số chênh chung hiệu chỉnh đồng thời cho mọi biến trong bảng; mô hình hồi quy logistic thứ tự, sai số chuẩn vững theo cụm bàn khám. Nhóm tham chiếu: với biến có/không là “Không”, với biến khác là mức có mã nhỏ nhất (Phụ lục E). Phân tích chính trên các trường hợp đủ dữ liệu; cột cuối là phân tích độ nhạy điền khuyết đa lần (20 bộ dữ liệu, mục 4.10). Kèm theo: kết quả kiểm định giả định tỷ số chênh tương xứng, hệ số tương quan nội cụm theo bàn khám và số quan sát đưa vào mô hình.
 
 ![Biểu đồ 5.2](bieu-bang/bieu-do-5-2.png)
 
-**Biểu đồ 5.2. OR hiệu chỉnh và KTC 95% của các yếu tố liên quan đến mức độ hài lòng chung (G1, hỏi trực tiếp) (Mục tiêu 2)**
+**Biểu đồ 5.2. Tỷ số chênh chung hiệu chỉnh và KTC 95% của các yếu tố liên quan đến mức hài lòng chung G1 (Mục tiêu 2)**
 
-*Ghi chú:* Điểm là OR hiệu chỉnh, đoạn ngang là KTC 95%; đường dọc tại 1,0 là không có liên quan; trục hoành theo thang log. Chữ viết tắt — OR: tỷ số chênh; KTC: khoảng tin cậy.
+*Ghi chú:* Điểm là tỷ số chênh chung hiệu chỉnh (OR), đoạn ngang là KTC 95%; đường dọc tại 1,0 là không có liên quan; trục hoành theo thang log. Chữ viết tắt — OR: tỷ số chênh; KTC: khoảng tin cậy.
 
+## 5.4. Phân tích độ nhạy, tỷ lệ đáp ứng và dữ liệu thiếu
 
-**Bảng 5.5. Phân tích độ nhạy**
+**Bảng 5.5. Kết quả phân tích độ nhạy**
 
-| Phân tích | Loại | n | Ước lượng (KTC 95%) | So với phân tích chính |
-| --- | --- | --- | --- | --- |
-| Loại phiếu có hỗ trợ ghi (câu 1. cách hoàn thành phiếu 2/3), chạy lại mô hình chính trên tập tự điền | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
-| Partial proportional odds / generalized ordered logit khi vi phạm tỷ lệ odds | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
-| Phi tuyến thời gian chờ: spline RCS 3 nút / theo phân vị | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
-| Logistic thường vs Firth (chỉ khi separation) | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
-| Có/không điểm ảnh hưởng; mô hình đầy đủ vs rút gọn | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
-| Mô hình thứ tự hệ số chặn ngẫu nhiên theo mã bàn khám/bác sĩ khám | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
-| Có/không trọng số hậu phân tầng (svyolr; postStratify cho Mục tiêu 1) | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
-| Gộp mức G1 khi lệch trần (mức < 20 quan sát) | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
-| Phân tích giới hạn cho người bỏ về trước khi khám (f từ số liệu tổng hợp HIS) | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
+| Phân tích | n | Ước lượng (KTC 95%) | So với phân tích chính |
+|---|---|---|---|
+| Điền khuyết đa lần (20 bộ dữ liệu) cho biến nền và biến phơi nhiễm | … | … (… – …) | cùng chiều / khác chiều |
+| Hồi quy tuyến tính trên G1 coi là biến liên tục, sai số chuẩn vững HC3 | … | … (… – …) | cùng chiều / khác chiều |
+| Mô hình tỷ số chênh tương xứng một phần hoặc logit thứ tự tổng quát (khi vi phạm giả định tỷ số chênh tương xứng) | … | … (… – …) | cùng chiều / khác chiều |
+| Hồi quy logistic nhị phân trên tình trạng hài lòng (G1 ≥ 4); hiệu chỉnh Firth khi xảy ra tách biệt hoàn toàn | … | … (… – …) | cùng chiều / khác chiều |
+| Có và không có các quan sát có ảnh hưởng lớn; mô hình đầy đủ so với mô hình rút gọn khi số tham số eo hẹp | … | … (… – …) | cùng chiều / khác chiều |
+| Loại các phiếu có người hỗ trợ ghi (câu 1, mã 2 hoặc 3), chỉ giữ phiếu người bệnh tự điền | … | … (… – …) | cùng chiều / khác chiều |
+| Mô hình logistic thứ tự có hệ số chặn ngẫu nhiên theo bàn khám | … | … (… – …) | cùng chiều / khác chiều |
+| Có và không có trọng số hậu phân tầng | … | … (… – …) | cùng chiều / khác chiều |
+| Ước lượng theo thiết kế: cụm là bàn khám, hậu phân tầng theo ngày × khung giờ | … | … (… – …) | cùng chiều / khác chiều |
+| Thời gian chờ dạng phi tuyến: spline bậc ba giới hạn 3 nút hoặc theo nhóm tứ phân vị | … | … (… – …) | cùng chiều / khác chiều |
+| Gộp mức G1 khi một mức có dưới 20 quan sát | … | … (… – …) | cùng chiều / khác chiều |
+| Phân tích giới hạn cho người bỏ về trước khi khám (Mục tiêu 1) | … | … (… – …) | — |
 
-*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy. Các phân tích đã định trước trong kế hoạch phân tích; phân tích nhóm nhỏ chỉ mang tính thăm dò. Trình bày ước lượng của thời gian chờ (KTC 95%) trong từng kịch bản ở mục 4.10, so sánh chiều và độ lớn với mô hình chính.
-
+*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy; HC3: sai số chuẩn vững với phương sai không đồng nhất, loại 3. Các phân tích đã định trước trong kế hoạch phân tích (mục 4.10, Phụ lục A). Mỗi dòng trình bày ước lượng của thời gian chờ (mỗi 15 phút) kèm KTC 95% trong kịch bản tương ứng — tỷ số chênh chung, hệ số hồi quy với mô hình tuyến tính, hoặc tỷ số chênh với mô hình nhị phân — và so sánh chiều, độ lớn với mô hình chính; riêng phân tích giới hạn trình bày khoảng giới hạn của tỷ lệ hài lòng chung.
 
 **Bảng 5.6. Tỷ lệ đáp ứng và dữ liệu thiếu**
 
 | Chỉ số | Cách tính | Kết quả |
 |---|---|---|
-| Tỷ lệ đồng ý tham gia | Số đồng ý / số được mời | — |
-| Tỷ lệ hoàn thành phiếu | Số phiếu nộp / số đồng ý | — |
-| Tỷ lệ phiếu hợp lệ | Số phiếu hợp lệ / số phiếu nộp | — |
-| Tỷ lệ đáp ứng chung | Số phiếu hợp lệ / số được mời | — |
-| Tỷ lệ người bệnh bỏ về trước khi vào buồng khám (HIS) | Số lượt bỏ về / tổng số lượt lấy số | — |
-| Thời gian chờ của nhóm bỏ về so với nhóm được khám | Trung vị [khoảng tứ phân vị] | — |
-| So sánh người từ chối với người tham gia | Nhóm tuổi, giới, khung giờ | — |
-| Tỷ lệ câu không áp dụng / không biết / không trả lời | Theo từng câu | — |
-| Tỷ lệ không ghép được thời gian chờ từ HIS | Số phiếu không ghép được / số phiếu hợp lệ | — |
+| Tỷ lệ đồng ý tham gia | Số đồng ý / số được mời | … |
+| Tỷ lệ hoàn thành phiếu | Số phiếu nộp / số đồng ý | … |
+| Tỷ lệ phiếu hợp lệ | Số phiếu hợp lệ / số phiếu nộp | … |
+| Tỷ lệ đáp ứng chung | Số phiếu hợp lệ / số được mời | … |
+| Tỷ lệ người bệnh bỏ về trước khi vào buồng khám (HIS) | Số lượt bỏ về / tổng số lượt lấy số | … |
+| Thời gian chờ của nhóm bỏ về so với nhóm được khám | Trung vị [KTPV] | … |
+| So sánh người từ chối với người tham gia | Nhóm tuổi, giới, khung giờ | … |
+| Tỷ lệ câu không áp dụng / không biết / không trả lời | Theo từng câu | … |
+| Tỷ lệ không ghép được thời gian chờ từ HIS | Số phiếu không ghép được / số phiếu hợp lệ | … |
+
+*Ghi chú:* Chữ viết tắt — HIS: hệ thống thông tin bệnh viện; KTPV: khoảng tứ phân vị. Tỷ lệ trình bày dạng n/N (%).
+
 ---
 
 # 6. KẾ HOẠCH THỰC HIỆN
 
 ## 6.1. Nhân lực và phân công nhiệm vụ
 
-*Bảng 6.1. Phân công nhiệm vụ.*
+**Bảng 6.1. Phân công nhiệm vụ**
 
 | Vai trò | Nhiệm vụ chính | Yêu cầu độc lập |
 |---|---|---|
@@ -730,7 +846,7 @@ Số người cụ thể cho mỗi vai trò do chủ nhiệm đề tài bố tr�
 
 ## 6.2. Tiến độ thực hiện
 
-*Bảng 6.2. Tiến độ dự kiến (các mốc sau ngày phê duyệt được điều chỉnh theo ngày Hội đồng phê duyệt thực tế).*
+**Bảng 6.2. Tiến độ dự kiến (các mốc sau ngày phê duyệt được điều chỉnh theo ngày Hội đồng phê duyệt thực tế)**
 
 | # | Nội dung công việc | Thời gian dự kiến | Sản phẩm |
 |---|---|---|---|
@@ -750,7 +866,7 @@ Hai nguyên tắc không thay đổi: không thu thập số liệu trước khi
 
 Nguồn kinh phí: tự túc (chủ nhiệm đề tài tự chi trả). Đơn giá áp dụng theo định mức hiện hành của đơn vị.
 
-*Bảng 6.3. Dự trù kinh phí.*
+**Bảng 6.3. Dự trù kinh phí**
 
 | # | Nội dung chi | Số lượng | Đơn giá (đồng) | Thành tiền (đồng) |
 |---|---|---|---|---|
@@ -769,7 +885,7 @@ Nguồn kinh phí: tự túc (chủ nhiệm đề tài tự chi trả). Đơn gi
 
 ## 6.4. Quản lý rủi ro
 
-*Bảng 6.4. Rủi ro dự kiến và biện pháp xử lý.*
+**Bảng 6.4. Rủi ro dự kiến và biện pháp xử lý**
 
 | # | Rủi ro | Mức độ | Biện pháp phòng ngừa | Biện pháp xử lý |
 |---|---|---|---|---|
@@ -904,7 +1020,7 @@ Kế hoạch phân tích thống kê chi tiết là tài liệu riêng, được
 | Phân nhóm | Không có phân tích phân nhóm xác định trước; mọi phân tích phân nhóm hoặc tương tác phát sinh là phân tích thăm dò |
 | Dữ liệu thiếu | Phân tích chính trên trường hợp đủ dữ liệu; điền khuyết đa lần (≥ 20 bộ) cho biến nền và phơi nhiễm là phân tích độ nhạy; không điền khuyết kết cục |
 | Đa so sánh | Một kết cục chính, α = 0,05; không hiệu chỉnh đa so sánh cho bảng đơn biến |
-| Phân tích độ nhạy | Bảy kịch bản ở mục 4.10; quy tắc gộp mức G1 xác định trước |
+| Phân tích độ nhạy | Bảy kịch bản ở mục 4.10 cùng các phân tích có điều kiện đã định trước (mô hình tỷ số chênh tương xứng một phần, hiệu chỉnh Firth, gộp mức G1, trọng số hậu phân tầng, phân tích giới hạn cho người bỏ về); tổng hợp ở Bảng 5.5 |
 | Đặc tính đo lường | Cronbach's alpha, omega; tỷ lệ điểm sàn – trần; phân tích nhân tố khám phá và khẳng định năm nhân tố A–E trên hai nửa mẫu |
 | Phần mềm | R ≥ 4.3 (các gói stats, MASS, ordinal, rms, brant, VGAM, car, logistf, mice; sandwich cho sai số chuẩn vững theo cụm và survey cho ước lượng theo thiết kế); hạt giống ngẫu nhiên do nhà thống kê ấn định khi khóa kế hoạch |
 | Khung bảng kết quả | Theo chương 5 |
@@ -1062,7 +1178,7 @@ Xin Ông/Bà cho biết mức độ hài lòng đối với từng nội dung d�
 | **F** | **CHI PHÍ DỊCH VỤ** | | | | | | |
 | F1 | Sự phù hợp của chi phí khám chữa bệnh so với chất lượng dịch vụ Ông/Bà nhận được | ☐ | ☐ | ☐ | ☐ | ☐ | |
 
-*¹ Câu C6 và C9 có thể được tách thành hai câu riêng cho từng nhóm nhân viên theo kết luận của hội đồng chuyên gia (mục 4.5.1). ² Câu C8 đã được viết lại so với phiếu gốc («Kỹ năng thực hiện các y lệnh, thủ thuật») vì người bệnh quan sát được sự cẩn thận và tôn trọng riêng tư, không đánh giá được kỹ năng chuyên môn kỹ thuật.*
+*¹ Câu C6 và C9 có thể được tách thành hai câu riêng cho từng nhóm nhân viên theo kết luận của hội đồng chuyên gia (mục 4.5.1). ² Câu C8 đã được viết lại so với phiếu gốc (“Kỹ năng thực hiện các y lệnh, thủ thuật”) vì người bệnh quan sát được sự cẩn thận và tôn trọng riêng tư, không đánh giá được kỹ năng chuyên môn kỹ thuật.*
 
 **PHẦN 3. ĐÁNH GIÁ SỰ HÀI LÒNG CHUNG**
 
@@ -1100,7 +1216,7 @@ Xin Ông/Bà cho biết mức độ hài lòng đối với từng nội dung d�
 - Lý do khám (lần đầu, tái khám, khám định kỳ, chủ động chọn bác sĩ) → kỳ vọng → hài lòng; đồng thời lý do khám → thời gian chờ (người tái khám quen quy trình hơn).
 - Khung giờ khám, ngày trong tuần → lưu lượng người bệnh → thời gian chờ → hài lòng; đồng thời khung giờ và ngày có thể liên quan đến hài lòng qua kênh khác (nhân lực theo ca).
 - Tự đánh giá sức khỏe → hài lòng (người bệnh mệt mỏi, lo lắng đánh giá thấp hơn); đồng thời tình trạng sức khỏe có thể liên quan đến việc chọn bác sĩ cụ thể và thời điểm đến khám, qua đó liên quan đến thời gian chờ.
-- Yêu cầu khám với bác sĩ cụ thể → phải chờ đúng bác sĩ đó (thời gian chờ dài hơn) và → hài lòng. Mô hình chính hiệu chỉnh biến «được khám đúng bác sĩ đã yêu cầu» theo kế hoạch phân tích; lưu ý biến này có thể chịu ảnh hưởng của chính thời gian chờ (người bệnh đổi bác sĩ khi phải chờ lâu), nên phân tích độ nhạy thay bằng biến «có yêu cầu bác sĩ cụ thể» được cân nhắc trong bản sửa đổi kế hoạch phân tích sau khảo sát thử (Phụ lục A).
+- Yêu cầu khám với bác sĩ cụ thể → phải chờ đúng bác sĩ đó (thời gian chờ dài hơn) và → hài lòng. Mô hình chính hiệu chỉnh biến “được khám đúng bác sĩ đã yêu cầu” theo kế hoạch phân tích; lưu ý biến này có thể chịu ảnh hưởng của chính thời gian chờ (người bệnh đổi bác sĩ khi phải chờ lâu), nên phân tích độ nhạy thay bằng biến “có yêu cầu bác sĩ cụ thể” được cân nhắc trong bản sửa đổi kế hoạch phân tích sau khảo sát thử (Phụ lục A).
 
 **D.2. Biến có đường gây nhiễu hợp lý nhưng chủ động đưa vào nhóm thăm dò:** học vấn (→ thời gian chờ và → hài lòng). Học vấn có 7 mức, làm tăng đáng kể số tham số của mô hình; đề tài lựa chọn có chủ ý đưa biến này vào nhóm thăm dò. Nếu số liệu mô tả cho thấy cần thiết và số tham số còn cho phép, việc bổ sung học vấn vào nhóm hiệu chỉnh bắt buộc chỉ được quyết định trong bản sửa đổi kế hoạch phân tích, trước khi tiếp cận số liệu mẫu chính (Phụ lục A).
 
@@ -1115,7 +1231,7 @@ Xin Ông/Bà cho biết mức độ hài lòng đối với từng nội dung d�
 
 # PHỤ LỤC E. BẢNG BIẾN SỐ VÀ MÃ HÓA
 
-*Bảng E.1. Danh mục biến số, mã biến và cách mã hóa (dùng cho phiếu thu thập điện tử và phân tích).*
+**Bảng E.1. Danh mục biến số, mã biến và cách mã hóa (dùng cho phiếu thu thập điện tử và phân tích)**
 
 | Mã biến | Nội dung | Loại biến | Mã hóa / đơn vị | Nguồn |
 |---|---|---|---|---|
