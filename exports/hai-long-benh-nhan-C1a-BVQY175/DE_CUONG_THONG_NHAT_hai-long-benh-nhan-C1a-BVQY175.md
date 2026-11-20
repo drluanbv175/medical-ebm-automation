@@ -2,7 +2,7 @@
 
 ---
 
-> **Ghi chú tài liệu:** Đề cương THỐNG NHẤT này do cổng G10 (assembler) lắp ráp TỰ ĐỘNG lúc 2026-11-20 14:41 từ checkpoint G0–G9 của đề tài `hai-long-benh-nhan-C1a-BVQY175`, theo mẫu 18 chương và ma trận bao phủ 24 thành phần protocol lõi của skill `nghien-cuu-y-khoa-chuan-quoc-te`. Dữ liệu cấu trúc (thiết kế, cỡ mẫu, công thức, đạo đức, chuẩn báo cáo, 16 PMID) lấy TỪ pipeline — không bịa. Mọi chỗ còn thiếu dữ liệu/thẩm quyền sẽ được đánh dấu NGAY TẠI ĐÓ bằng một trong các nhãn quy ước của skill (CẦN BỔ SUNG · CẦN XÁC NHẬN TẠI ĐƠN VỊ · DỰ THẢO · CẦN KIỂM CHỨNG NGUỒN CHÍNH THỨC — luôn đặt trong ngoặc vuông tại đúng vị trí thiếu). **Văn xuôi học thuật (Đặt vấn đề, Tổng quan, Bàn luận) do bác sĩ/agent viết riêng — G10 chỉ dựng khung + nhồi dữ liệu thật + chỉ chỗ cần điền.** Cần bác sĩ kiểm chứng toàn bộ trước khi trình Hội đồng Đạo đức hoặc sử dụng chính thức.
+> **Ghi chú tài liệu:** Đề cương THỐNG NHẤT này do cổng G10 (assembler) lắp ráp TỰ ĐỘNG lúc 2026-11-20 17:53 từ checkpoint G0–G9 của đề tài `hai-long-benh-nhan-C1a-BVQY175`, theo mẫu 18 chương và ma trận bao phủ 24 thành phần protocol lõi của skill `nghien-cuu-y-khoa-chuan-quoc-te`. Dữ liệu cấu trúc (thiết kế, cỡ mẫu, công thức, đạo đức, chuẩn báo cáo, 16 PMID) lấy TỪ pipeline — không bịa. Mọi chỗ còn thiếu dữ liệu/thẩm quyền sẽ được đánh dấu NGAY TẠI ĐÓ bằng một trong các nhãn quy ước của skill (CẦN BỔ SUNG · CẦN XÁC NHẬN TẠI ĐƠN VỊ · DỰ THẢO · CẦN KIỂM CHỨNG NGUỒN CHÍNH THỨC — luôn đặt trong ngoặc vuông tại đúng vị trí thiếu). **Văn xuôi học thuật (Đặt vấn đề, Tổng quan, Bàn luận) do bác sĩ/agent viết riêng — G10 chỉ dựng khung + nhồi dữ liệu thật + chỉ chỗ cần điền.** Cần bác sĩ kiểm chứng toàn bộ trước khi trình Hội đồng Đạo đức hoặc sử dụng chính thức.
 
 
 # Kiểm soát phiên bản và lịch sử thay đổi
@@ -21,7 +21,7 @@ Mục này bắt buộc cho tài liệu chính của nghiên cứu. Mọi chỉn
 ## Nhật ký thay đổi
 | Phiên bản | Ngày | Nguồn thay đổi | Nội dung thay đổi | Người phê duyệt/chủ nhiệm |
 |---|---|---|---|---|
-| 1.0 | 2026-11-20 14:41 | G10 assembler từ G0, G1, G2, G3, G4, G5 | Lắp ráp đề cương thống nhất, bảng cổng, bảng/hình, compliance, kiểm hoàn thành và thiếu sót còn lại. | Chủ nhiệm đề tài (PI) — phê duyệt bằng chữ ký G10 trong sổ cái phê duyệt |
+| 1.0 | 2026-11-20 17:53 | G10 assembler từ G0, G1, G2, G3, G4, G5 | Lắp ráp đề cương thống nhất, bảng cổng, bảng/hình, compliance, kiểm hoàn thành và thiếu sót còn lại. | Chủ nhiệm đề tài (PI) — phê duyệt bằng chữ ký G10 trong sổ cái phê duyệt |
 
 > Nếu không có nhật ký thay đổi, mọi đầu ra chỉ là bản nháp có kiểm soát; không được coi là bản đã phê duyệt hoặc đã khóa.
 
@@ -448,15 +448,15 @@ Bảo mật: theo mục «Bảo mật dữ liệu» ở trên.
 
 Danh mục PMID (G0/G7/chủ nhiệm khai) — metadata Vancouver lấy từ PubMed qua cổng A12 (`check_citation_metadata.py`, `check_citation_retraction.py`), đã kiểm rút bài:
 
-1. Quyen BTT, Ha NT, Van Minh H. Outpatient satisfaction with primary health care services in Vietnam: Multilevel analysis results from The Vietnam Health Facilities Assessment 2015. Health psychology open. 2021. doi:10.1177/20551029211015117. PMID: 34017606.
-2. Mahajan P, Anand A, Hossain S, Vishwakarma M. Exploring Patient Satisfaction and Determinants in Outpatient Services: A Cross-Sectional Study. Cureus. 2025. doi:10.7759/cureus.77345. PMID: 39944421.
-3. Dibba Y, Boima F, Jerome JG, Watson SI, Chery L. Patient satisfaction and its associated factors in selected primary healthcare facilities in Kono District, Sierra Leone: a cross-sectional study. BMJ open. 2025. doi:10.1136/bmjopen-2024-093501. PMID: 40295132.
-4. Thach Phuong N, Vu Hoang P, Mac Dang T, Nguyen Thi Huyen T, Ngo Thi T. Improving Hospital's Quality of Service in Vietnam: The Patient Satisfaction Evaluation in Multiple Health Facilities. Hospital topics. 2023. doi:10.1080/00185868.2021.1969871. PMID: 34445940.
-5. Dang KT, Quang NA, Nguyen MH, Huynh NB, Nguyen NT. Outpatient satisfaction assessed using a nationally standardized questionnaire: a survey of five health care facilities in Vietnam. Frontiers in health services. 2026. doi:10.3389/frhs.2026.1844842. PMID: 42625778.
-6. Hwang J, Vu GT, Tran BX, Nguyen THT, Nguyen BV. Measuring satisfaction with health care services for Vietnamese patients with cardiovascular diseases. PloS one. 2020. doi:10.1371/journal.pone.0235333. PMID: 32584904.
-7. Tran BX, Dang AK, Vu GT, Tran TT, Latkin CA. Patient satisfaction with HIV services in Vietnam: Status, service models and association with treatment outcome. PloS one. 2019. doi:10.1371/journal.pone.0223723. PMID: 31703089.
-8. Duc Thanh N, My Anh BT, Xiem CH, Quynh Anh P, Tien PH. Patient Satisfaction With Healthcare Service Quality and Its Associated Factors at One Polyclinic in Hanoi, Vietnam. International journal of public health. 2022. doi:10.3389/ijph.2022.1605055. PMID: 36439278.
-9. Tran TD, Nguyen UV, Minh Nong V, Tran BX. Patient waiting time in the outpatient clinic at a central surgical hospital of Vietnam: Implications for resource allocation. F1000Research. 2017. doi:10.12688/f1000research.11045.3. PMID: 28690831.
+1. Quyen BTT, Ha NT, Van Minh H. Outpatient satisfaction with primary health care services in Vietnam: Multilevel analysis results from The Vietnam Health Facilities Assessment 2015. Health Psychol Open. 2021;8(1):20551029211015117. doi:10.1177/20551029211015117. PMID: 34017606.
+2. Mahajan P, Anand A, Hossain S, Vishwakarma M. Exploring Patient Satisfaction and Determinants in Outpatient Services: A Cross-Sectional Study. Cureus. 2025;17(1):e77345. doi:10.7759/cureus.77345. PMID: 39944421.
+3. Dibba Y, Boima F, Jerome JG, Watson SI, Chery L, Higgins J, et al. Patient satisfaction and its associated factors in selected primary healthcare facilities in Kono District, Sierra Leone: a cross-sectional study. BMJ Open. 2025;15(4):e093501. doi:10.1136/bmjopen-2024-093501. PMID: 40295132.
+4. Thach Phuong N, Vu Hoang P, Mac Dang T, Nguyen Thi Huyen T, Ngo Thi T. Improving Hospital's Quality of Service in Vietnam: The Patient Satisfaction Evaluation in Multiple Health Facilities. Hosp Top. 2023;101(2):73-83. doi:10.1080/00185868.2021.1969871. PMID: 34445940.
+5. Dang KT, Quang NA, Nguyen MH, Huynh NB, Nguyen NT, Pham TT, et al. Outpatient satisfaction assessed using a nationally standardized questionnaire: a survey of five health care facilities in Vietnam. Front Health Serv. 2026;6:1844842. doi:10.3389/frhs.2026.1844842. PMID: 42625778.
+6. Hwang J, Vu GT, Tran BX, Nguyen THT, Nguyen BV, Nguyen LH, et al. Measuring satisfaction with health care services for Vietnamese patients with cardiovascular diseases. PLoS One. 2020;15(6):e0235333. doi:10.1371/journal.pone.0235333. PMID: 32584904.
+7. Tran BX, Dang AK, Vu GT, Tran TT, Latkin CA, Ho CSH, et al. Patient satisfaction with HIV services in Vietnam: Status, service models and association with treatment outcome. PLoS One. 2019;14(11):e0223723. doi:10.1371/journal.pone.0223723. PMID: 31703089.
+8. Duc Thanh N, My Anh BT, Xiem CH, Quynh Anh P, Tien PH, Thi Phuong Thanh N, et al. Patient Satisfaction With Healthcare Service Quality and Its Associated Factors at One Polyclinic in Hanoi, Vietnam. Int J Public Health. 2022;67:1605055. doi:10.3389/ijph.2022.1605055. PMID: 36439278.
+9. Tran TD, Nguyen UV, Minh Nong V, Tran BX. Patient waiting time in the outpatient clinic at a central surgical hospital of Vietnam: Implications for resource allocation. F1000Res. 2017;6:454. doi:10.12688/f1000research.11045.3. PMID: 28690831.
 
 **Tài liệu tham khảo tiếng Việt (chủ nhiệm khai):**
 

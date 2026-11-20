@@ -957,7 +957,7 @@ Kế hoạch quản lý dữ liệu tuân thủ Luật Bảo vệ dữ liệu c�
 30. Thang DX, Tuan HA, Nguyen CTT, Phuong DT, Thuy LT, Duc TN. A cross-sectional study of patients satisfaction with the pharmacy services at the 108 Military Central Hospital: determinants and implications. Health Sci Rep. 2025;8(5):e70868. doi:10.1002/hsr2.70868. PMID: 40432693.
 31. von Elm E, Altman DG, Egger M, Pocock SJ, Gøtzsche PC, Vandenbroucke JP; STROBE Initiative. The Strengthening the Reporting of Observational Studies in Epidemiology (STROBE) statement: guidelines for reporting observational studies. J Clin Epidemiol. 2008;61(4):344-349. doi:10.1016/j.jclinepi.2007.11.008. PMID: 18313558.
 32. Sharma A, Minh Duc NT, Luu Lam Thang T, Nam NH, Ng SJ, Abbas KS, et al. A Consensus-Based Checklist for Reporting of Survey Studies (CROSS). J Gen Intern Med. 2021;36(10):3179-3187. doi:10.1007/s11606-021-06737-1. PMID: 33886027.
-33. Benchimol EI, Smeeth L, Guttmann A, Harron K, Moher D, Petersen I, et al. The REporting of studies Conducted using Observational Routinely-collected health Data (RECORD) statement. PLoS Med. 2015;12(10):e1001885. doi:10.1371/journal.pmed.1001885. PMID: 26440803.
+33. Benchimol EI, Smeeth L, Guttmann A, Harron K, Moher D, Petersen I, et al.; RECORD Working Committee. The REporting of studies Conducted using Observational Routinely-collected health Data (RECORD) statement. PLoS Med. 2015;12(10):e1001885. doi:10.1371/journal.pmed.1001885. PMID: 26440803.
 34. Lwanga SK, Lemeshow S. Sample size determination in health studies: a practical manual. Geneva: World Health Organization; 1991.
 35. Eldridge SM, Ashby D, Kerry S. Sample size for cluster randomized trials: effect of coefficient of variation of cluster size and analysis method. Int J Epidemiol. 2006;35(5):1292-1300. doi:10.1093/ije/dyl129.
 36. Adams G, Gulliford MC, Ukoumunne OC, Eldridge S, Chinn S, Campbell MJ. Patterns of intra-cluster correlation from primary care research to inform study design and analysis. J Clin Epidemiol. 2004;57(8):785-794. doi:10.1016/j.jclinepi.2003.12.013. PMID: 15485730.
@@ -980,7 +980,7 @@ Kế hoạch quản lý dữ liệu tuân thủ Luật Bảo vệ dữ liệu c�
 53. Imai K, Keele L, Tingley D. A general approach to causal mediation analysis. Psychol Methods. 2010;15(4):309-34. doi:10.1037/a0020761. PMID: 20954780.
 54. VanderWeele TJ. Mediation analysis: a practitioner's guide. Annu Rev Public Health. 2016;37:17-32. doi:10.1146/annurev-publhealth-032315-021402. PMID: 26653405.
 55. Maxwell SE, Cole DA. Bias in cross-sectional analyses of longitudinal mediation. Psychol Methods. 2007;12(1):23-44. doi:10.1037/1082-989X.12.1.23. PMID: 17402810.
-56. Lee H, Cashin AG, Lamb SE, Hopewell S, Vansteelandt S, VanderWeele TJ, et al. A guideline for reporting mediation analyses of randomized trials and observational studies: the AGReMA statement. JAMA. 2021;326(11):1045-1056. doi:10.1001/jama.2021.14075. PMID: 34546296.
+56. Lee H, Cashin AG, Lamb SE, Hopewell S, Vansteelandt S, VanderWeele TJ, et al.; AGReMA group. A guideline for reporting mediation analyses of randomized trials and observational studies: the AGReMA statement. JAMA. 2021;326(11):1045-1056. doi:10.1001/jama.2021.14075. PMID: 34546296.
 57. Sterne JA, White IR, Carlin JB, Spratt M, Royston P, Kenward MG, et al. Multiple imputation for missing data in epidemiological and clinical research: potential and pitfalls. BMJ. 2009;338:b2393. doi:10.1136/bmj.b2393. PMID: 19564179.
 58. Rubin DB. Multiple imputation for nonresponse in surveys. New York: John Wiley & Sons; 1987. doi:10.1002/9780470316696.
 

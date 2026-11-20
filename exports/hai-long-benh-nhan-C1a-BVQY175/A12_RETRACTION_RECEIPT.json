@@ -1,6 +1,6 @@
 {
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "checked_at_utc": "2026-11-15T11:43:48.640312+00:00",
+  "checked_at_utc": "2026-11-20T10:51:05.255931+00:00",
   "pmids_checked": [
     "12210625",
     "15485730",
@@ -367,5 +367,5 @@
       "source": "pubmed"
     }
   },
-  "receipt_signature": "v4:shared:d4fcf48de991b5147bf4ea79a3e52eb08b4ad3003775f6daa7f8d5ff29b4d8d4"
+  "receipt_signature": "v4:shared:fd714395d5a6c694269b02786de422f7e7ec084c6a1652aa0a92276e7391f0a7"
 }

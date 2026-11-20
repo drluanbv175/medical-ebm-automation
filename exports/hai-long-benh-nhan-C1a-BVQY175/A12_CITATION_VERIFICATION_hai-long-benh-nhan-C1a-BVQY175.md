@@ -7,7 +7,7 @@
 
 | Bước | Công cụ | Kết quả |
 |---|---|---|
-| Rút bài + metadata 40 PMID | `tools/check_citations.py --study hai-long-benh-nhan-C1a-BVQY175` | `A12_RETRACTION_RECEIPT.json` all_clean=true (2026-11-15T11:43Z); `A12_METADATA_RECEIPT.json` all_resolved=true (2026-11-15T11:43Z) |
+| Rút bài + metadata 40 PMID | `tools/check_citations.py --study hai-long-benh-nhan-C1a-BVQY175` | `A12_RETRACTION_RECEIPT.json` all_clean=true (2026-11-20T10:51Z); `A12_METADATA_RECEIPT.json` all_resolved=true (2026-11-20T10:51Z) |
 | 9 DOI tạp chí trong nước (không có PMID) | `app.sources.crossref_retraction.CrossrefRetraction.check` (Crossref) | 9/9 tồn tại, trạng thái ok — không có quan hệ rút/đính chính (updated-by) |
 
 Retraction Watch ngoại tuyến không được nạp trên máy ở lượt này; lượt kiểm 2026-10-11 (tổng hợp G0-T3) đã ghi 9/9 DOI không có bản ghi Retraction Watch.

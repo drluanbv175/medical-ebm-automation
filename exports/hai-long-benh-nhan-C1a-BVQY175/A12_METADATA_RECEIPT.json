@@ -1,6 +1,6 @@
 {
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "checked_at_utc": "2026-11-15T11:43:48.641303+00:00",
+  "checked_at_utc": "2026-11-20T10:51:05.256337+00:00",
   "pmids_checked": [
     "12210625",
     "15485730",
@@ -52,7 +52,16 @@
       "authors": "Heinze G, Schemper M",
       "journal": "Statistics in medicine",
       "year": "2002",
-      "doi": "10.1002/sim.1047"
+      "doi": "10.1002/sim.1047",
+      "n_authors": 2,
+      "authors_6": [
+        "Heinze G",
+        "Schemper M"
+      ],
+      "journal_abbr": "Stat Med",
+      "volume": "21",
+      "issue": "16",
+      "pages": "2409-19"
     },
     "15485730": {
       "status": "resolved",
@@ -60,7 +69,20 @@
       "authors": "Adams G, Gulliford MC, Ukoumunne OC, Eldridge S, Chinn S",
       "journal": "Journal of clinical epidemiology",
       "year": "2004",
-      "doi": "10.1016/j.jclinepi.2003.12.013"
+      "doi": "10.1016/j.jclinepi.2003.12.013",
+      "n_authors": 6,
+      "authors_6": [
+        "Adams G",
+        "Gulliford MC",
+        "Ukoumunne OC",
+        "Eldridge S",
+        "Chinn S",
+        "Campbell MJ"
+      ],
+      "journal_abbr": "J Clin Epidemiol",
+      "volume": "57",
+      "issue": "8",
+      "pages": "785-94"
     },
     "16279131": {
       "status": "resolved",
@@ -68,7 +90,17 @@
       "authors": "Campbell MK, Fayers PM, Grimshaw JM",
       "journal": "Clinical trials (London, England)",
       "year": "2005",
-      "doi": "10.1191/1740774505cn071oa"
+      "doi": "10.1191/1740774505cn071oa",
+      "n_authors": 3,
+      "authors_6": [
+        "Campbell MK",
+        "Fayers PM",
+        "Grimshaw JM"
+      ],
+      "journal_abbr": "Clin Trials",
+      "volume": "2",
+      "issue": "2",
+      "pages": "99-107"
     },
     "17161752": {
       "status": "resolved",
@@ -76,7 +108,20 @@
       "authors": "Terwee CB, Bot SD, de Boer MR, van der Windt DA, Knol DL",
       "journal": "Journal of clinical epidemiology",
       "year": "2007",
-      "doi": "10.1016/j.jclinepi.2006.03.012"
+      "doi": "10.1016/j.jclinepi.2006.03.012",
+      "n_authors": 8,
+      "authors_6": [
+        "Terwee CB",
+        "Bot SD",
+        "de Boer MR",
+        "van der Windt DA",
+        "Knol DL",
+        "Dekker J"
+      ],
+      "journal_abbr": "J Clin Epidemiol",
+      "volume": "60",
+      "issue": "1",
+      "pages": "34-42"
     },
     "17402810": {
       "status": "resolved",
@@ -84,7 +129,16 @@
       "authors": "Maxwell SE, Cole DA",
       "journal": "Psychological methods",
       "year": "2007",
-      "doi": "10.1037/1082-989X.12.1.23"
+      "doi": "10.1037/1082-989X.12.1.23",
+      "n_authors": 2,
+      "authors_6": [
+        "Maxwell SE",
+        "Cole DA"
+      ],
+      "journal_abbr": "Psychol Methods",
+      "volume": "12",
+      "issue": "1",
+      "pages": "23-44"
     },
     "17654487": {
       "status": "resolved",
@@ -92,7 +146,17 @@
       "authors": "Polit DF, Beck CT, Owen SV",
       "journal": "Research in nursing & health",
       "year": "2007",
-      "doi": "10.1002/nur.20199"
+      "doi": "10.1002/nur.20199",
+      "n_authors": 3,
+      "authors_6": [
+        "Polit DF",
+        "Beck CT",
+        "Owen SV"
+      ],
+      "journal_abbr": "Res Nurs Health",
+      "volume": "30",
+      "issue": "4",
+      "pages": "459-67"
     },
     "18313558": {
       "status": "resolved",
@@ -100,7 +164,23 @@
       "authors": "von Elm E, Altman DG, Egger M, Pocock SJ, Gøtzsche PC",
       "journal": "Journal of clinical epidemiology",
       "year": "2008",
-      "doi": "10.1016/j.jclinepi.2007.11.008"
+      "doi": "10.1016/j.jclinepi.2007.11.008",
+      "n_authors": 6,
+      "authors_6": [
+        "von Elm E",
+        "Altman DG",
+        "Egger M",
+        "Pocock SJ",
+        "Gøtzsche PC",
+        "Vandenbroucke JP"
+      ],
+      "nhom_tac_gia": [
+        "STROBE Initiative"
+      ],
+      "journal_abbr": "J Clin Epidemiol",
+      "volume": "61",
+      "issue": "4",
+      "pages": "344-9"
     },
     "19564179": {
       "status": "resolved",
@@ -108,7 +188,19 @@
       "authors": "Sterne JA, White IR, Carlin JB, Spratt M, Royston P",
       "journal": "BMJ (Clinical research ed.)",
       "year": "2009",
-      "doi": "10.1136/bmj.b2393"
+      "doi": "10.1136/bmj.b2393",
+      "n_authors": 8,
+      "authors_6": [
+        "Sterne JA",
+        "White IR",
+        "Carlin JB",
+        "Spratt M",
+        "Royston P",
+        "Kenward MG"
+      ],
+      "journal_abbr": "BMJ",
+      "volume": "338",
+      "pages": "b2393"
     },
     "20494804": {
       "status": "resolved",
@@ -116,7 +208,20 @@
       "authors": "Mokkink LB, Terwee CB, Patrick DL, Alonso J, Stratford PW",
       "journal": "Journal of clinical epidemiology",
       "year": "2010",
-      "doi": "10.1016/j.jclinepi.2010.02.006"
+      "doi": "10.1016/j.jclinepi.2010.02.006",
+      "n_authors": 8,
+      "authors_6": [
+        "Mokkink LB",
+        "Terwee CB",
+        "Patrick DL",
+        "Alonso J",
+        "Stratford PW",
+        "Knol DL"
+      ],
+      "journal_abbr": "J Clin Epidemiol",
+      "volume": "63",
+      "issue": "7",
+      "pages": "737-45"
     },
     "20954780": {
       "status": "resolved",
@@ -124,7 +229,17 @@
       "authors": "Imai K, Keele L, Tingley D",
       "journal": "Psychological methods",
       "year": "2010",
-      "doi": "10.1037/a0020761"
+      "doi": "10.1037/a0020761",
+      "n_authors": 3,
+      "authors_6": [
+        "Imai K",
+        "Keele L",
+        "Tingley D"
+      ],
+      "journal_abbr": "Psychol Methods",
+      "volume": "15",
+      "issue": "4",
+      "pages": "309-34"
     },
     "23883565": {
       "status": "resolved",
@@ -132,7 +247,15 @@
       "authors": "Thayaparan AJ, Mahdi E",
       "journal": "Medical education online",
       "year": "2013",
-      "doi": "10.3402/meo.v18i0.21747"
+      "doi": "10.3402/meo.v18i0.21747",
+      "n_authors": 2,
+      "authors_6": [
+        "Thayaparan AJ",
+        "Mahdi E"
+      ],
+      "journal_abbr": "Med Educ Online",
+      "volume": "18",
+      "pages": "21747"
     },
     "26440803": {
       "status": "resolved",
@@ -140,7 +263,23 @@
       "authors": "Benchimol EI, Smeeth L, Guttmann A, Harron K, Moher D",
       "journal": "PLoS medicine",
       "year": "2015",
-      "doi": "10.1371/journal.pmed.1001885"
+      "doi": "10.1371/journal.pmed.1001885",
+      "n_authors": 9,
+      "authors_6": [
+        "Benchimol EI",
+        "Smeeth L",
+        "Guttmann A",
+        "Harron K",
+        "Moher D",
+        "Petersen I"
+      ],
+      "nhom_tac_gia": [
+        "RECORD Working Committee"
+      ],
+      "journal_abbr": "PLoS Med",
+      "volume": "12",
+      "issue": "10",
+      "pages": "e1001885"
     },
     "26653405": {
       "status": "resolved",
@@ -148,7 +287,14 @@
       "authors": "VanderWeele TJ",
       "journal": "Annual review of public health",
       "year": "2016",
-      "doi": "10.1146/annurev-publhealth-032315-021402"
+      "doi": "10.1146/annurev-publhealth-032315-021402",
+      "n_authors": 1,
+      "authors_6": [
+        "VanderWeele TJ"
+      ],
+      "journal_abbr": "Annu Rev Public Health",
+      "volume": "37",
+      "pages": "17-32"
     },
     "26776715": {
       "status": "resolved",
@@ -156,7 +302,15 @@
       "authors": "Green SB",
       "journal": "Multivariate behavioral research",
       "year": "1991",
-      "doi": "10.1207/s15327906mbr2603_7"
+      "doi": "10.1207/s15327906mbr2603_7",
+      "n_authors": 1,
+      "authors_6": [
+        "Green SB"
+      ],
+      "journal_abbr": "Multivariate Behav Res",
+      "volume": "26",
+      "issue": "3",
+      "pages": "499-510"
     },
     "27881078": {
       "status": "resolved",
@@ -164,7 +318,20 @@
       "authors": "van Smeden M, de Groot JA, Moons KG, Collins GS, Altman DG",
       "journal": "BMC medical research methodology",
       "year": "2016",
-      "doi": "10.1186/s12874-016-0267-3"
+      "doi": "10.1186/s12874-016-0267-3",
+      "n_authors": 7,
+      "authors_6": [
+        "van Smeden M",
+        "de Groot JA",
+        "Moons KG",
+        "Collins GS",
+        "Altman DG",
+        "Eijkemans MJ"
+      ],
+      "journal_abbr": "BMC Med Res Methodol",
+      "volume": "16",
+      "issue": "1",
+      "pages": "163"
     },
     "28690831": {
       "status": "resolved",
@@ -172,7 +339,17 @@
       "authors": "Tran TD, Nguyen UV, Minh Nong V, Tran BX",
       "journal": "F1000Research",
       "year": "2017",
-      "doi": "10.12688/f1000research.11045.3"
+      "doi": "10.12688/f1000research.11045.3",
+      "n_authors": 4,
+      "authors_6": [
+        "Tran TD",
+        "Nguyen UV",
+        "Minh Nong V",
+        "Tran BX"
+      ],
+      "journal_abbr": "F1000Res",
+      "volume": "6",
+      "pages": "454"
     },
     "29550964": {
       "status": "resolved",
@@ -180,7 +357,20 @@
       "authors": "Terwee CB, Prinsen CAC, Chiarotto A, Westerman MJ, Patrick DL",
       "journal": "Quality of life research : an international journal of quality of life aspects of treatment, care and rehabilitation",
       "year": "2018",
-      "doi": "10.1007/s11136-018-1829-0"
+      "doi": "10.1007/s11136-018-1829-0",
+      "n_authors": 9,
+      "authors_6": [
+        "Terwee CB",
+        "Prinsen CAC",
+        "Chiarotto A",
+        "Westerman MJ",
+        "Patrick DL",
+        "Alonso J"
+      ],
+      "journal_abbr": "Qual Life Res",
+      "volume": "27",
+      "issue": "5",
+      "pages": "1159-1170"
     },
     "31218671": {
       "status": "resolved",
@@ -188,7 +378,18 @@
       "authors": "Bull C, Byrnes J, Hettiarachchi R, Downes M",
       "journal": "Health services research",
       "year": "2019",
-      "doi": "10.1111/1475-6773.13187"
+      "doi": "10.1111/1475-6773.13187",
+      "n_authors": 4,
+      "authors_6": [
+        "Bull C",
+        "Byrnes J",
+        "Hettiarachchi R",
+        "Downes M"
+      ],
+      "journal_abbr": "Health Serv Res",
+      "volume": "54",
+      "issue": "5",
+      "pages": "1023-1035"
     },
     "31703089": {
       "status": "resolved",
@@ -196,7 +397,20 @@
       "authors": "Tran BX, Dang AK, Vu GT, Tran TT, Latkin CA",
       "journal": "PloS one",
       "year": "2019",
-      "doi": "10.1371/journal.pone.0223723"
+      "doi": "10.1371/journal.pone.0223723",
+      "n_authors": 7,
+      "authors_6": [
+        "Tran BX",
+        "Dang AK",
+        "Vu GT",
+        "Tran TT",
+        "Latkin CA",
+        "Ho CSH"
+      ],
+      "journal_abbr": "PLoS One",
+      "volume": "14",
+      "issue": "11",
+      "pages": "e0223723"
     },
     "32584904": {
       "status": "resolved",
@@ -204,7 +418,20 @@
       "authors": "Hwang J, Vu GT, Tran BX, Nguyen THT, Nguyen BV",
       "journal": "PloS one",
       "year": "2020",
-      "doi": "10.1371/journal.pone.0235333"
+      "doi": "10.1371/journal.pone.0235333",
+      "n_authors": 10,
+      "authors_6": [
+        "Hwang J",
+        "Vu GT",
+        "Tran BX",
+        "Nguyen THT",
+        "Nguyen BV",
+        "Nguyen LH"
+      ],
+      "journal_abbr": "PLoS One",
+      "volume": "15",
+      "issue": "6",
+      "pages": "e0235333"
     },
     "32946537": {
       "status": "resolved",
@@ -212,7 +439,17 @@
       "authors": "Nguyen T, Nguyen H, Dang A",
       "journal": "PloS one",
       "year": "2020",
-      "doi": "10.1371/journal.pone.0239306"
+      "doi": "10.1371/journal.pone.0239306",
+      "n_authors": 3,
+      "authors_6": [
+        "Nguyen T",
+        "Nguyen H",
+        "Dang A"
+      ],
+      "journal_abbr": "PLoS One",
+      "volume": "15",
+      "issue": "9",
+      "pages": "e0239306"
     },
     "32992600": {
       "status": "resolved",
@@ -220,7 +457,19 @@
       "authors": "Li Y, Gong W, Kong X, Mueller O, Lu G",
       "journal": "International journal of environmental research and public health",
       "year": "2020",
-      "doi": "10.3390/ijerph17197070"
+      "doi": "10.3390/ijerph17197070",
+      "n_authors": 5,
+      "authors_6": [
+        "Li Y",
+        "Gong W",
+        "Kong X",
+        "Mueller O",
+        "Lu G"
+      ],
+      "journal_abbr": "Int J Environ Res Public Health",
+      "volume": "17",
+      "issue": "19",
+      "pages": "7070"
     },
     "33886027": {
       "status": "resolved",
@@ -228,7 +477,20 @@
       "authors": "Sharma A, Minh Duc NT, Luu Lam Thang T, Nam NH, Ng SJ",
       "journal": "Journal of general internal medicine",
       "year": "2021",
-      "doi": "10.1007/s11606-021-06737-1"
+      "doi": "10.1007/s11606-021-06737-1",
+      "n_authors": 29,
+      "authors_6": [
+        "Sharma A",
+        "Minh Duc NT",
+        "Luu Lam Thang T",
+        "Nam NH",
+        "Ng SJ",
+        "Abbas KS"
+      ],
+      "journal_abbr": "J Gen Intern Med",
+      "volume": "36",
+      "issue": "10",
+      "pages": "3179-3187"
     },
     "34017606": {
       "status": "resolved",
@@ -236,7 +498,17 @@
       "authors": "Quyen BTT, Ha NT, Van Minh H",
       "journal": "Health psychology open",
       "year": "2021",
-      "doi": "10.1177/20551029211015117"
+      "doi": "10.1177/20551029211015117",
+      "n_authors": 3,
+      "authors_6": [
+        "Quyen BTT",
+        "Ha NT",
+        "Van Minh H"
+      ],
+      "journal_abbr": "Health Psychol Open",
+      "volume": "8",
+      "issue": "1",
+      "pages": "20551029211015117"
     },
     "34053882": {
       "status": "resolved",
@@ -244,7 +516,19 @@
       "authors": "Iglesias-Puzas Á, de Miguel-Abildúa E, Conde-Taboada A, Iglesias-Bayo L, López-Bran E",
       "journal": "Journal of healthcare quality research",
       "year": "2021",
-      "doi": "10.1016/j.jhqr.2021.04.004"
+      "doi": "10.1016/j.jhqr.2021.04.004",
+      "n_authors": 5,
+      "authors_6": [
+        "Iglesias-Puzas Á",
+        "de Miguel-Abildúa E",
+        "Conde-Taboada A",
+        "Iglesias-Bayo L",
+        "López-Bran E"
+      ],
+      "journal_abbr": "J Healthc Qual Res",
+      "volume": "36",
+      "issue": "5",
+      "pages": "269-274"
     },
     "34445940": {
       "status": "resolved",
@@ -252,7 +536,19 @@
       "authors": "Thach Phuong N, Vu Hoang P, Mac Dang T, Nguyen Thi Huyen T, Ngo Thi T",
       "journal": "Hospital topics",
       "year": "2023",
-      "doi": "10.1080/00185868.2021.1969871"
+      "doi": "10.1080/00185868.2021.1969871",
+      "n_authors": 5,
+      "authors_6": [
+        "Thach Phuong N",
+        "Vu Hoang P",
+        "Mac Dang T",
+        "Nguyen Thi Huyen T",
+        "Ngo Thi T"
+      ],
+      "journal_abbr": "Hosp Top",
+      "volume": "101",
+      "issue": "2",
+      "pages": "73-83"
     },
     "34546296": {
       "status": "resolved",
@@ -260,7 +556,23 @@
       "authors": "Lee H, Cashin AG, Lamb SE, Hopewell S, Vansteelandt S",
       "journal": "JAMA",
       "year": "2021",
-      "doi": "10.1001/jama.2021.14075"
+      "doi": "10.1001/jama.2021.14075",
+      "n_authors": 21,
+      "authors_6": [
+        "Lee H",
+        "Cashin AG",
+        "Lamb SE",
+        "Hopewell S",
+        "Vansteelandt S",
+        "VanderWeele TJ"
+      ],
+      "nhom_tac_gia": [
+        "AGReMA group"
+      ],
+      "journal_abbr": "JAMA",
+      "volume": "326",
+      "issue": "11",
+      "pages": "1045-1056"
     },
     "35155757": {
       "status": "resolved",
@@ -268,7 +580,19 @@
       "authors": "Badejo MA, Ramtin S, Rossano A, Ring D, Koenig K",
       "journal": "Journal of patient experience",
       "year": "2022",
-      "doi": "10.1177/23743735221079144"
+      "doi": "10.1177/23743735221079144",
+      "n_authors": 6,
+      "authors_6": [
+        "Badejo MA",
+        "Ramtin S",
+        "Rossano A",
+        "Ring D",
+        "Koenig K",
+        "Crijns TJ"
+      ],
+      "journal_abbr": "J Patient Exp",
+      "volume": "9",
+      "pages": "23743735221079144"
     },
     "36292392": {
       "status": "resolved",
@@ -276,7 +600,16 @@
       "authors": "Nguyen BQ, Nguyen CTT",
       "journal": "Healthcare (Basel, Switzerland)",
       "year": "2022",
-      "doi": "10.3390/healthcare10101945"
+      "doi": "10.3390/healthcare10101945",
+      "n_authors": 2,
+      "authors_6": [
+        "Nguyen BQ",
+        "Nguyen CTT"
+      ],
+      "journal_abbr": "Healthcare (Basel)",
+      "volume": "10",
+      "issue": "10",
+      "pages": "1945"
     },
     "36439278": {
       "status": "resolved",
@@ -284,7 +617,19 @@
       "authors": "Duc Thanh N, My Anh BT, Xiem CH, Quynh Anh P, Tien PH",
       "journal": "International journal of public health",
       "year": "2022",
-      "doi": "10.3389/ijph.2022.1605055"
+      "doi": "10.3389/ijph.2022.1605055",
+      "n_authors": 9,
+      "authors_6": [
+        "Duc Thanh N",
+        "My Anh BT",
+        "Xiem CH",
+        "Quynh Anh P",
+        "Tien PH",
+        "Thi Phuong Thanh N"
+      ],
+      "journal_abbr": "Int J Public Health",
+      "volume": "67",
+      "pages": "1605055"
     },
     "39944421": {
       "status": "resolved",
@@ -292,7 +637,18 @@
       "authors": "Mahajan P, Anand A, Hossain S, Vishwakarma M",
       "journal": "Cureus",
       "year": "2025",
-      "doi": "10.7759/cureus.77345"
+      "doi": "10.7759/cureus.77345",
+      "n_authors": 4,
+      "authors_6": [
+        "Mahajan P",
+        "Anand A",
+        "Hossain S",
+        "Vishwakarma M"
+      ],
+      "journal_abbr": "Cureus",
+      "volume": "17",
+      "issue": "1",
+      "pages": "e77345"
     },
     "40295132": {
       "status": "resolved",
@@ -300,7 +656,20 @@
       "authors": "Dibba Y, Boima F, Jerome JG, Watson SI, Chery L",
       "journal": "BMJ open",
       "year": "2025",
-      "doi": "10.1136/bmjopen-2024-093501"
+      "doi": "10.1136/bmjopen-2024-093501",
+      "n_authors": 11,
+      "authors_6": [
+        "Dibba Y",
+        "Boima F",
+        "Jerome JG",
+        "Watson SI",
+        "Chery L",
+        "Higgins J"
+      ],
+      "journal_abbr": "BMJ Open",
+      "volume": "15",
+      "issue": "4",
+      "pages": "e093501"
     },
     "40432693": {
       "status": "resolved",
@@ -308,7 +677,20 @@
       "authors": "Thang DX, Tuan HA, Nguyen CTT, Phuong DT, Thuy LT",
       "journal": "Health science reports",
       "year": "2025",
-      "doi": "10.1002/hsr2.70868"
+      "doi": "10.1002/hsr2.70868",
+      "n_authors": 6,
+      "authors_6": [
+        "Thang DX",
+        "Tuan HA",
+        "Nguyen CTT",
+        "Phuong DT",
+        "Thuy LT",
+        "Duc TN"
+      ],
+      "journal_abbr": "Health Sci Rep",
+      "volume": "8",
+      "issue": "5",
+      "pages": "e70868"
     },
     "40995744": {
       "status": "resolved",
@@ -316,7 +698,19 @@
       "authors": "Tura MR, Amena N, Wondie WT, Olkaba BF, Egu LM",
       "journal": "Inquiry : a journal of medical care organization, provision and financing",
       "year": "2025",
-      "doi": "10.1177/00469580251371387"
+      "doi": "10.1177/00469580251371387",
+      "n_authors": 11,
+      "authors_6": [
+        "Tura MR",
+        "Amena N",
+        "Wondie WT",
+        "Olkaba BF",
+        "Egu LM",
+        "Tadesse B"
+      ],
+      "journal_abbr": "Inquiry",
+      "volume": "62",
+      "pages": "469580251371387"
     },
     "41645935": {
       "status": "resolved",
@@ -324,7 +718,18 @@
       "authors": "Sinha S, Islam MN, Hassan MM, Karim MR, Khan AH",
       "journal": "International journal of health care quality assurance",
       "year": "2026",
-      "doi": "10.1108/IJHCQA-07-2025-0100"
+      "doi": "10.1108/IJHCQA-07-2025-0100",
+      "n_authors": 9,
+      "authors_6": [
+        "Sinha S",
+        "Islam MN",
+        "Hassan MM",
+        "Karim MR",
+        "Khan AH",
+        "Kamruzzaman AKM"
+      ],
+      "journal_abbr": "Int J Health Care Qual Assur",
+      "pages": "1-11"
     },
     "42582692": {
       "status": "resolved",
@@ -332,7 +737,18 @@
       "authors": "Thanh ND, Thanh TC, Nguyet HTM, Xiem CH",
       "journal": "Health science reports",
       "year": "2026",
-      "doi": "10.1002/hsr2.73018"
+      "doi": "10.1002/hsr2.73018",
+      "n_authors": 4,
+      "authors_6": [
+        "Thanh ND",
+        "Thanh TC",
+        "Nguyet HTM",
+        "Xiem CH"
+      ],
+      "journal_abbr": "Health Sci Rep",
+      "volume": "9",
+      "issue": "8",
+      "pages": "e73018"
     },
     "42625778": {
       "status": "resolved",
@@ -340,7 +756,19 @@
       "authors": "Dang KT, Quang NA, Nguyen MH, Huynh NB, Nguyen NT",
       "journal": "Frontiers in health services",
       "year": "2026",
-      "doi": "10.3389/frhs.2026.1844842"
+      "doi": "10.3389/frhs.2026.1844842",
+      "n_authors": 9,
+      "authors_6": [
+        "Dang KT",
+        "Quang NA",
+        "Nguyen MH",
+        "Huynh NB",
+        "Nguyen NT",
+        "Pham TT"
+      ],
+      "journal_abbr": "Front Health Serv",
+      "volume": "6",
+      "pages": "1844842"
     },
     "8134732": {
       "status": "resolved",
@@ -348,7 +776,15 @@
       "authors": "Whitehead J",
       "journal": "Statistics in medicine",
       "year": "1993",
-      "doi": "10.1002/sim.4780122404"
+      "doi": "10.1002/sim.4780122404",
+      "n_authors": 1,
+      "authors_6": [
+        "Whitehead J"
+      ],
+      "journal_abbr": "Stat Med",
+      "volume": "12",
+      "issue": "24",
+      "pages": "2257-71"
     },
     "8970487": {
       "status": "resolved",
@@ -356,7 +792,19 @@
       "authors": "Peduzzi P, Concato J, Kemper E, Holford TR, Feinstein AR",
       "journal": "Journal of clinical epidemiology",
       "year": "1996",
-      "doi": "10.1016/s0895-4356(96)00236-3"
+      "doi": "10.1016/s0895-4356(96)00236-3",
+      "n_authors": 5,
+      "authors_6": [
+        "Peduzzi P",
+        "Concato J",
+        "Kemper E",
+        "Holford TR",
+        "Feinstein AR"
+      ],
+      "journal_abbr": "J Clin Epidemiol",
+      "volume": "49",
+      "issue": "12",
+      "pages": "1373-9"
     },
     "9762873": {
       "status": "resolved",
@@ -364,8 +812,17 @@
       "authors": "Bender R, Grouven U",
       "journal": "Journal of clinical epidemiology",
       "year": "1998",
-      "doi": "10.1016/s0895-4356(98)00066-3"
+      "doi": "10.1016/s0895-4356(98)00066-3",
+      "n_authors": 2,
+      "authors_6": [
+        "Bender R",
+        "Grouven U"
+      ],
+      "journal_abbr": "J Clin Epidemiol",
+      "volume": "51",
+      "issue": "10",
+      "pages": "809-16"
     }
   },
-  "receipt_signature": "v4:shared:8c4e6bf4adf462eafc066a51674a4e54e5eb254d07ee9fbe9e7b83a3bf2ec014"
+  "receipt_signature": "v4:shared:0c74bba7360642f6b38df345dede7812ed147367d8982c3cd76ee110a3b41350"
 }
