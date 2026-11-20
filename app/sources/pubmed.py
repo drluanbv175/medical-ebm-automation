@@ -372,11 +372,24 @@ def _truong_vancouver(art: ET.Element) -> dict:
     if mc is None:
         return {}
     ra: dict = {}
-    tac_gia = [_ten_tac_gia(a) for a in mc.findall("Article/AuthorList/Author")]
-    tac_gia = [t for t in tac_gia if t]
-    if tac_gia:
-        ra["n_authors"] = len(tac_gia)
-        ra["authors_6"] = tac_gia[:6]
+    # Sửa cùng ngày (K13 chạy thật trên BTM/C1a): (1) quy tắc «6 tác giả rồi et al.» của NLM chỉ đếm tác giả CÁ NHÂN —
+    # tác giả TẬP THỂ ghi sau, ngăn bằng «;» («von Elm E, … Vandenbroucke JP; STROBE Initiative.»); đếm chung từng báo
+    # đỏ giả «bài có 7 tác giả». (2) PubMed gắn dấu chú thích «*» vào tên tập thể («…Committee for Diabetes*») — bỏ.
+    ca_nhan: List[str] = []
+    tap_the: List[str] = []
+    for a in mc.findall("Article/AuthorList/Author"):
+        ten = f"{a.findtext('LastName') or ''} {a.findtext('Initials') or ''}".strip().rstrip("*").strip()
+        if ten:
+            ca_nhan.append(ten)
+        else:
+            nhom = _full_text(a.find("CollectiveName")).strip().rstrip("*").strip()
+            if nhom:
+                tap_the.append(nhom)
+    if ca_nhan or tap_the:
+        ra["n_authors"] = len(ca_nhan)
+        ra["authors_6"] = ca_nhan[:6]
+    if tap_the:
+        ra["nhom_tac_gia"] = tap_the
     for khoa, duong in (("journal_abbr", "MedlineJournalInfo/MedlineTA"),
                         ("volume", "Article/Journal/JournalIssue/Volume"),
                         ("issue", "Article/Journal/JournalIssue/Issue"),

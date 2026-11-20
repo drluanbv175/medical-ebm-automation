@@ -1258,6 +1258,10 @@ def _vancouver(pid: str, md: dict) -> Optional[str]:
     tac_gia = list(tac_gia) if isinstance(tac_gia, (list, tuple)) else ([tac_gia] if tac_gia else [])
     tong = md.get("n_authors") if isinstance(md.get("n_authors"), int) else len(tac_gia)
     ten = ", ".join(str(a) for a in tac_gia[:6]) + (", et al" if tong > 6 else "")
+    # tác giả TẬP THỂ (biên nhận từ 20/11/2026, khoá `nhom_tac_gia`) đứng sau tác giả cá nhân, ngăn bằng «;» — NLM
+    nhom = [str(x) for x in (md.get("nhom_tac_gia") or []) if RS.is_present(x)]
+    if nhom:
+        ten = (ten + "; " if RS.is_present(ten) else "") + "; ".join(nhom)
     tieu_de = str(md["title"]).strip()
     tieu_de = tieu_de if tieu_de.endswith(("?", "!")) else tieu_de.rstrip(".") + "."
     vi_tri = str(md.get("year") or "")[:4] if md.get("volume") else md.get("year")
