@@ -116,14 +116,49 @@ _XML = """<PubmedArticleSet><PubmedArticle><MedlineCitation><PMID>1</PMID><Artic
 </MedlineCitation></PubmedArticle></PubmedArticleSet>"""
 
 
-def test_truong_vancouver_lay_du_tac_gia_tap_the_tap_so_trang():
-    tg = "<Author><CollectiveName>American Diabetes Association Committee</CollectiveName></Author>" + "".join(
+def test_truong_vancouver_tach_ca_nhan_tap_the_bo_dau_sao_lay_tap_so_trang():
+    """K13 chạy thật 20/11/2026: tập thể bị đếm vào quy tắc 6 tác giả (STROBE: «bài có 7 tác giả» — sai) và giữ dấu «*»
+    của PubMed («…Committee for Diabetes*») ⇒ báo đỏ giả. Nay tách hai loại, bỏ dấu sao."""
+    tg = "<Author><CollectiveName>American Diabetes Association Committee*</CollectiveName></Author>" + "".join(
         f"<Author><LastName>Ho{i}</LastName><Initials>A</Initials></Author>" for i in range(7))
     art = ET.fromstring(_XML.format(tac_gia=tg)).find("PubmedArticle")
     r = PM._truong_vancouver(art)
-    assert r["n_authors"] == 8 and len(r["authors_6"]) == 6
-    assert r["authors_6"][0] == "American Diabetes Association Committee"
+    assert r["n_authors"] == 7 and r["authors_6"] == [f"Ho{i} A" for i in range(6)]
+    assert r["nhom_tac_gia"] == ["American Diabetes Association Committee"]
     assert (r["journal_abbr"], r["volume"], r["issue"], r["pages"]) == ("Diabetes Care", "49", "Suppl 1", "S246-S260")
+
+
+def test_k13_tap_the_sau_ca_nhan_khong_tinh_vao_quy_tac_6_tac_gia(tmp_path):
+    m = {"status": "resolved", "year": "2008", "n_authors": 6, "volume": "61", "journal_abbr": "J Clin Epidemiol",
+         "authors_6": ["von Elm E", "Altman DG", "Egger M", "Pocock SJ", "Gøtzsche PC", "Vandenbroucke JP"],
+         "nhom_tac_gia": ["STROBE Initiative"]}
+    d = _bien_nhan(tmp_path, {"333": m})
+    dung = ("1. von Elm E, Altman DG, Egger M, Pocock SJ, Gøtzsche PC, Vandenbroucke JP; STROBE Initiative. The STROBE "
+            "statement. J Clin Epidemiol. 2008;61(4):344-9. PMID: 333.")
+    assert KDN.loi_k13(d, _md("Câu [1].", dung)) == []
+    thieu = dung.replace("; STROBE Initiative", "")
+    assert "thiếu tác giả tập thể «STROBE Initiative»" in KDN.loi_k13(d, _md("Câu [1].", thieu))[0]
+
+
+def test_k13_chi_co_tac_gia_tap_the_bo_dau_sao_khi_so(tmp_path):
+    m = {"status": "resolved", "year": "2026", "n_authors": 0, "authors_6": [], "volume": "49",
+         "journal_abbr": "Diabetes Care", "nhom_tac_gia": ["American Diabetes Association Committee*"]}
+    d = _bien_nhan(tmp_path, {"444": m})
+    md = _md("Câu [1].", "1. American Diabetes Association Committee. 11. Chronic Kidney Disease. Diabetes Care. "
+             "2026;49(Suppl 1):S246-S260. PMID: 444.")
+    assert KDN.loi_k13(d, md) == []
+
+
+def test_vancouver_g10_ghi_tap_the_sau_ca_nhan():
+    import run_g10_assemble as G10A
+    m = {"status": "resolved", "title": "The STROBE statement.", "year": "2008", "n_authors": 6, "volume": "61",
+         "issue": "4", "pages": "344-9", "journal_abbr": "J Clin Epidemiol", "nhom_tac_gia": ["STROBE Initiative"],
+         "authors_6": ["von Elm E", "Altman DG", "Egger M", "Pocock SJ", "Gøtzsche PC", "Vandenbroucke JP"]}
+    assert G10A._vancouver("333", m) == ("von Elm E, Altman DG, Egger M, Pocock SJ, Gøtzsche PC, Vandenbroucke JP; "
+                                         "STROBE Initiative. The STROBE statement. J Clin Epidemiol. "
+                                         "2008;61(4):344-9. PMID: 333.")
+    chi_nhom = G10A._vancouver("444", dict(m, n_authors=0, authors_6=[], nhom_tac_gia=["ADA Committee"]))
+    assert chi_nhom.startswith("ADA Committee. The STROBE statement.")
 
 
 def test_truong_vancouver_lui_ve_elocation_khi_khong_co_trang():

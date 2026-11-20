@@ -431,7 +431,8 @@ def loi_k13(out_dir: Path, md: str) -> List[str]:
     Chỉ kiểm khoá mà biên nhận CÓ (`n_authors`/`authors_6`, `volume`, `journal_abbr` — biên nhận từ 20/11/2026); biên
     nhận cũ không có thì bỏ qua (dựng lại biên nhận: `check_citations.py --study <mã>`). Luật: có hơn 6 tác giả ⇒ mục
     ghi 6 tác giả đầu rồi «et al.»; từ 6 tác giả trở xuống ⇒ ghi đủ, không «et al.»; có tập ⇒ có «năm;tập»; có tên
-    tạp chí viết tắt NLM ⇒ mục dùng đúng tên đó."""
+    tạp chí viết tắt NLM ⇒ mục dùng đúng tên đó. Quy tắc 6 tác giả chỉ đếm tác giả CÁ NHÂN; tác giả TẬP THỂ
+    (`nhom_tac_gia`) phải có mặt, ghi sau tác giả cá nhân, ngăn bằng «;» (NLM)."""
     _, muc = _tach_tltk(md)
     try:
         meta = json.loads((Path(out_dir) / "A12_METADATA_RECEIPT.json").read_text(encoding="utf-8")).get("metadata")
@@ -446,16 +447,22 @@ def loi_k13(out_dir: Path, md: str) -> List[str]:
         if not isinstance(m, dict) or m.get("status") != "resolved":
             continue
         sai: List[str] = []
+        # `n_authors`/`authors_6` = tác giả CÁ NHÂN; `nhom_tac_gia` = tác giả TẬP THỂ (ghi sau, ngăn «;» — NLM, không
+        # tính vào quy tắc 6 tác giả). Dấu chú thích «*» PubMed gắn vào tên bị bỏ khi so.
         tong, sau = m.get("n_authors"), m.get("authors_6")
-        if isinstance(tong, int) and isinstance(sau, list) and sau:
+        if isinstance(tong, int) and isinstance(sau, list) and sau and tong > 0:
             co_et_al = re.search(r"\bet al\b", noi_dung) is not None
-            cuoi = str(sau[min(tong, 6) - 1])
+            cuoi = str(sau[min(tong, 6) - 1]).rstrip("*").strip()
             if tong > 6 and not co_et_al:
-                sai.append(f"bài có {tong} tác giả — ghi 6 tác giả đầu rồi «et al.»")
+                sai.append(f"bài có {tong} tác giả cá nhân — ghi 6 tác giả đầu rồi «et al.»")
             elif tong <= 6 and co_et_al:
-                sai.append(f"bài có {tong} tác giả — ghi đủ, không «et al.»")
+                sai.append(f"bài có {tong} tác giả cá nhân — ghi đủ, không «et al.»")
             if cuoi and cuoi not in noi_dung:
                 sai.append(f"thiếu tác giả thứ {min(tong, 6)} «{cuoi}»")
+        for nhom in m.get("nhom_tac_gia") or []:
+            nhom = str(nhom).rstrip("*").strip()
+            if nhom and nhom not in noi_dung:
+                sai.append(f"thiếu tác giả tập thể «{nhom}»")
         nam = str(m.get("year") or "")[:4]
         if m.get("volume") and nam and f"{nam};{m['volume']}" not in noi_dung:
             sai.append(f"thiếu «{nam};{m['volume']}…» (năm;tập(số):trang)")
