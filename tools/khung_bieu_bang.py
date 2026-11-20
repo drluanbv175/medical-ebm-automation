@@ -1378,6 +1378,15 @@ def kiem_bieu_bang(md: str, thiet_ke: str, so_muc_tieu: int, goc: Optional[Path]
                 if h and _O_GIU_CHO.search(h[0] or ""):
                     loi.append(f"K9 Bảng {c}.{k}: hàng giữ chỗ «{h[0][:30]}» — liệt kê đúng biến/chỉ số")
                     break
+            # Soát 20/11/2026 (C1a): «Giới | Nam; Nữ | —», «Tuổi; giới; nơi cư trú | | —» — nhiều mức/nhiều biến dồn
+            # một ô thì không điền được n (%) cho từng mức. Chuẩn: mỗi biến một hàng tiêu đề, mỗi mức một dòng.
+            for h in than:
+                gop = next((o for o in h[:2] if len([x for x in o.split(";") if x.strip()]) >= 2
+                            and all(len(x.strip()) <= 45 for x in o.split(";"))), None)
+                if gop:
+                    loi.append(f"K9 Bảng {c}.{k}: nhiều mức/biến dồn một ô «{gop[:40]}» — mỗi biến một hàng, mỗi mức "
+                               "một dòng")
+                    break
             ghi = next((x.strip() for x in ch[j:] if x.strip()), "")
             chu_bang = " ".join(" ".join(h) for h in hang)
             vt_dung = [v for v in _VIET_TAT_KIEM if re.search(rf"(?<![\wÀ-ỹ]){re.escape(v)}(?![\wÀ-ỹ])", chu_bang)]

@@ -943,7 +943,7 @@ _VIET_TAT = {
     "BHYT": "Bảo hiểm y tế", "HIS": "Hệ thống thông tin bệnh viện (hospital information system)",
     "PR": "Tỷ số tỷ lệ hiện mắc (prevalence ratio)", "ACEi": "Thuốc ức chế men chuyển angiotensin",
     "ARB": "Thuốc chẹn thụ thể angiotensin II", "RAASi": "Thuốc ức chế hệ renin–angiotensin–aldosteron",
-    "KDIGO": "Kidney Disease: Improving Global Outcomes",
+    "KDIGO": "Tổ chức Cải thiện kết cục toàn cầu về bệnh thận (Kidney Disease: Improving Global Outcomes)",
     "ADA": "Hiệp hội Đái tháo đường Hoa Kỳ (American Diabetes Association)",
     "EPV": "Số biến cố trên mỗi tham số (events per variable)", "BMI": "Chỉ số khối cơ thể (body mass index)",
     "HbA1c": "Huyết sắc tố gắn glucose (glycated haemoglobin)",
@@ -1834,12 +1834,30 @@ def tom_tat(n: Nguon) -> List[str]:
     return ["## TÓM TẮT ĐỀ CƯƠNG", "", _cau(n.td.thay(str(tt))), ""]
 
 
+def _bo_tltk(van: str) -> str:
+    """Bỏ danh mục tài liệu tham khảo (tên tác giả «Nguyen HA», «SD» trong tên tạp chí… không phải chữ viết tắt của
+    văn bản) — 20/11/2026, K11 bắt mục «HA», «SD», «DE» thừa ở đề cương máy sinh."""
+    m = re.search(r"^#{1,2}\s+(?:\d+\.\s*)?TÀI LIỆU THAM KHẢO.*$", van, re.M)
+    if not m:
+        return van
+    j = re.search(r"^#{1,2}\s+PHỤ LỤC", van[m.end():], re.M)
+    return van[:m.start()] + (van[m.end() + j.start():] if j else "")
+
+
+def _khoa_van_viet(k: str) -> str:
+    return k.upper().replace("Đ", "D~")
+
+
 def viet_tat(than: str) -> List[str]:
-    co = [(k, v) for k, v in _VIET_TAT.items() if re.search(rf"(?<![\w-]){re.escape(k)}(?![\w-])", than)]
+    """Bảng chữ viết tắt: chỉ mục DÙNG trong văn bản (ngoài danh mục tài liệu tham khảo; «ĐN1», «MT2» tính là dùng),
+    xếp theo bảng chữ cái tiếng Việt (K11 của kiem_de_cuong_nop_hoi_dong)."""
+    van = _bo_tltk(than)
+    co = [(k, v) for k, v in _VIET_TAT.items()
+          if re.search(rf"(?<![\w-]){re.escape(k)}(?:\d|(?![\w-]))", van)]
     if not co:
         return []
     return ["## DANH MỤC CHỮ VIẾT TẮT", "", "| Viết tắt | Nghĩa |", "|---|---|"] + [
-        f"| {k} | {v} |" for k, v in sorted(co)] + [""]
+        f"| {k} | {v} |" for k, v in sorted(co, key=lambda kv: _khoa_van_viet(kv[0]))] + [""]
 
 
 def _pmid_phuong_phap_hoc() -> set:
@@ -1917,7 +1935,29 @@ def don_cuoi(van: str) -> str:
     khuôn thêm một dấu nữa. Không đụng «...» hay dòng chấm «………» để chủ nhiệm điền tay."""
     van = re.sub(r"\n{3,}", "\n\n", van)
     van = re.sub(r"(?<![.…])\.\.(?![.…])", ".", van)
-    return van.rstrip() + "\n"
+    return _chuan_viet(van).rstrip() + "\n"
+
+
+_NGAY_ISO_VAN_RE = re.compile(r"(?<![\w-])((?:19|20)\d{2})-([01]\d)-([0-3]\d)(?![\w-])")
+_DONG_TIM_KIEM_RE = re.compile(r"\[(?:Mesh|tiab|pt|ti|tw|majr|dp)\]", re.I)
+
+
+def _chuan_viet(van: str) -> str:
+    """Chuẩn trình bày tiếng Việt (K11, 20/11/2026) trên văn bản máy sinh: ngoặc kép “…” thay «…», ngày dd/mm/yyyy thay
+    ISO. Không đụng danh mục tài liệu tham khảo (giữ nguyên văn), mã trong `…`, dòng chuỗi tìm kiếm."""
+    ra, trong_tltk = [], False
+    for d in van.split("\n"):
+        if re.match(r"^#{1,2}\s", d):
+            trong_tltk = "TÀI LIỆU THAM KHẢO" in d.upper()
+        if trong_tltk or _DONG_TIM_KIEM_RE.search(d):
+            ra.append(d)
+            continue
+        manh = re.split(r"(`[^`]*`)", d)
+        for i in range(0, len(manh), 2):
+            x = manh[i].replace("«", "“").replace("»", "”")
+            manh[i] = _NGAY_ISO_VAN_RE.sub(r"\3/\2/\1", x)
+        ra.append("".join(manh))
+    return "\n".join(ra)
 
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════════ ghi + kiểm

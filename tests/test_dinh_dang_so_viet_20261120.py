@@ -47,3 +47,85 @@ def test_doi_chieu_doc_so_viet_nam():
     assert DC._so_may("100.000") == "100000"
     assert DC._so_may("1.234,5") == "1234.5"
     assert DC._so_may("0,1") == "0.1" and DC._so_may("0.1") == "0.1"
+
+
+# ── K11 «chuẩn trình bày tiếng Việt» áp cho MỌI đề cương (bác sĩ 20/11/2026: «hoàn thiện cho hệ thống chứ không riêng 2
+# đề tài C1a và BTM») — bộ sinh phải tự ra văn bản đạt K11 với mọi thiết kế; luật bắt đúng các lỗi đã gặp. ──────────
+import kiem_de_cuong_nop_hoi_dong as KDN  # noqa: E402
+import pytest  # noqa: E402
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from test_sinh_de_cuong_nop_hoi_dong_20261116 import MA, _de_tai  # noqa: E402
+
+
+# «qualitative» không có ở đây: khuôn đề tài mẫu của test bộ sinh mang cỡ mẫu định lượng (K5 lệch) — ngoài phạm vi K11.
+@pytest.mark.parametrize("thiet_ke", ["rct", "cross_sectional", "cohort", "case_control", "diagnostic",
+                                      "prediction", "sr_ma"])
+def test_bo_sinh_ra_de_cuong_dat_k11_moi_thiet_ke(tmp_path, thiet_ke):
+    d = _de_tai(tmp_path, thiet_ke)
+    kq = SDC.sinh(d, MA, ghi=True)
+    assert kq["ma"] == 0, kq.get("loi")
+    van = (d / f"DE_CUONG_NOP_HOI_DONG_{MA}.md").read_text(encoding="utf-8")
+    assert KDN.loi_k11(van) == []
+
+
+def test_k11_bat_cac_loi_trinh_bay_da_gap():
+    md = "\n".join([
+        "## DANH MỤC CHỮ VIẾT TẮT", "", "| Viết tắt | Nghĩa |", "|---|---|",
+        "| TB | Trung bình |", "| SD | Độ lệch chuẩn |", "| ĐLC | Độ lệch chuẩn |", "| ZZZ | Không dùng |", "",
+        "# 1. ĐẶT VẤN ĐỀ", "",
+        "Trung bình TB ± SD và ĐLC.", "Ngưỡng 0.1 mg.", "Khung 100000 hồ sơ.", "Ngày 2026-01-01.",
+        "Câu có \"ngoặc thẳng\" ở đây.",
+        "Mô hình A vs mô hình B.",
+        "Dùng 1 lần đo sẽ ước lượng CAO tỷ lệ.",
+        "| tuoi | Tuổi | Định danh/thứ bậc | 1–3 | Phiếu |",
+        "**Bảng 5.4. Phân tích đơn biến (biến phụ thuộc) (Mục tiêu 3)**",
+        "", "# 7. TÀI LIỆU THAM KHẢO", "", "1. Nguyen HA. Tên bài \"gốc\". 2020;12345678.",
+    ])
+    loi = "\n".join(KDN.loi_k11(md))
+    for mau in ("dấu phẩy (0,1)", "nhóm nghìn", "dd/mm/yyyy", "ngoặc kép", "so với", "IN HOA", "Định danh/thứ bậc",
+                "hai ngoặc", "SD, ĐLC cùng nghĩa", "«ZZZ» không xuất hiện", "chưa xếp theo"):
+        assert mau in loi, mau
+    assert "dòng 24" not in loi  # danh mục tài liệu tham khảo giữ nguyên văn (ngoặc thẳng, số 8 chữ số)
+
+
+def test_k11_mien_phu_luc_ma_va_chuoi_tim_kiem():
+    md = "\n".join([
+        "# 3. TỔNG QUAN", "",
+        '> ("Diabetes Mellitus, Type 2"[Mesh] OR "type 2"[tiab])',
+        "Dùng mã `0.1` trong tệp.",
+        "# PHỤ LỤC C. PHIẾU", "",
+        "| 70 | Bệnh án ghi đang dùng nhưng KHÔNG có trong đơn | ☐ 1. Có | x |",
+    ])
+    assert KDN.loi_k11(md) == []
+
+
+def test_k9_bang_khong_don_nhieu_muc_vao_mot_o():
+    import khung_bieu_bang as KBB  # noqa: PLC0415
+
+    md = "\n".join([
+        "# 5. DỰ KIẾN KẾT QUẢ", "",
+        "**Bảng 5.1. Đặc điểm chung của đối tượng nghiên cứu (Mục tiêu 1)**", "",
+        "| Đặc điểm | Phân nhóm | n (%) |", "|---|---|---|", "| Giới | Nam; Nữ | … |", "",
+        "*Ghi chú:* Chữ viết tắt —.", "", "![Biểu đồ 5.1](x.png)", "", "**Biểu đồ 5.1. Tỷ lệ (Mục tiêu 1)**",
+    ])
+    assert any("dồn một ô" in x for x in KBB.kiem_bieu_bang(md, "cross_sectional", 1))
+    tot = md.replace("| Giới | Nam; Nữ | … |", "| Giới: nữ | | … |")
+    assert not any("dồn một ô" in x for x in KBB.kiem_bieu_bang(tot, "cross_sectional", 1))
+
+
+def test_bang_viet_tat_bo_tu_trong_tai_lieu_tham_khao_va_xep_van():
+    than = "\n".join(["# 1. ĐẶT VẤN ĐỀ", "", "Người ĐTĐ có BHYT; KTC 95% và ĐN1.", "",
+                      "# 7. TÀI LIỆU THAM KHẢO", "", "1. Nguyen HA, Tran SD. Bài báo. 2020.", "",
+                      "# PHỤ LỤC A. KẾ HOẠCH", "", "Ước lượng OR."])
+    bang = SDC.viet_tat(than)
+    ma = [d.split("|")[1].strip() for d in bang if d.startswith("| ") and "Viết tắt" not in d]
+    assert "HA" not in ma and "SD" not in ma  # tên tác giả trong danh mục tài liệu không phải chữ viết tắt
+    assert ma == ["BHYT", "ĐTĐ", "KTC", "OR"]  # «Đ» sau «D», trước «E»
+
+
+def test_k11_o_bang_viet_hoa_toan_bo_la_nhan_khong_phai_nhan_manh():
+    md = "\n".join(["# 4. PHƯƠNG PHÁP", "", "| 16c | Chuyển nguy cơ tương đối | — | KHÔNG ÁP DỤNG |",
+                    "| 17 | Ghi chú | Ước lượng CAO tỷ lệ | x |"])
+    loi = KDN.loi_k11(md)
+    assert len(loi) == 1 and "dòng 4" in loi[0]
