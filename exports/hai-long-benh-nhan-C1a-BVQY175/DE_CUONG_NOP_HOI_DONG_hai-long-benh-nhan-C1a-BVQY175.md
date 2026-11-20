@@ -136,7 +136,7 @@ Chiều liên quan dự kiến là thời gian chờ dài hơn đi kèm mức h�
 
 ## 3.1. Khái niệm sự hài lòng của người bệnh
 
-Sự hài lòng của người bệnh là mức độ mà trải nghiệm dịch vụ y tế đáp ứng được kỳ vọng của người bệnh. Đây là một thước đo do người bệnh tự báo cáo, gần với nhóm thước đo trải nghiệm người bệnh (patient-reported experience measures – PREM), phản ánh nhiều khía cạnh của chất lượng dịch vụ: khả năng tiếp cận, sự minh bạch thông tin và thủ tục, cơ sở vật chất, thái độ ứng xử và năng lực chuyên môn của nhân viên y tế, và kết quả cung cấp dịch vụ [1]. Một tổng quan hệ thống về các bộ công cụ đo trải nghiệm người bệnh cho thấy phần lớn công cụ mới chỉ được kiểm định một phần các thuộc tính đo lường [14]. Vì vậy, khi sử dụng một bộ câu hỏi tự xây dựng, nghiên cứu cần chủ động đánh giá độ tin cậy và giá trị của công cụ trong chính mẫu nghiên cứu (mục 4.5.3).
+Sự hài lòng của người bệnh là mức độ mà trải nghiệm dịch vụ y tế đáp ứng được kỳ vọng của người bệnh. Đây là một thước đo do người bệnh tự báo cáo, gần với nhóm thước đo trải nghiệm người bệnh (patient-reported experience measures – PREM), phản ánh nhiều khía cạnh của chất lượng dịch vụ: khả năng tiếp cận, sự minh bạch thông tin và thủ tục, cơ sở vật chất, thái độ ứng xử và năng lực chuyên môn của nhân viên y tế, và kết quả cung cấp dịch vụ [1]. Một tổng quan hệ thống 88 bộ công cụ đo trải nghiệm người bệnh cho thấy 7 trong 10 tiêu chí về độ tin cậy và giá trị chưa được kiểm định ở ít nhất một nửa số bộ công cụ [14]. Vì vậy, khi sử dụng một bộ câu hỏi tự xây dựng, nghiên cứu cần chủ động đánh giá độ tin cậy và giá trị của công cụ trong chính mẫu nghiên cứu (mục 4.5.3).
 
 ## 3.2. Công cụ đo lường sự hài lòng của người bệnh ngoại trú
 
