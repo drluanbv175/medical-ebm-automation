@@ -54,6 +54,7 @@
 | SGLT2i | Thuốc ức chế đồng vận chuyển natri–glucose 2 |
 | SOP | Quy trình thao tác chuẩn (standard operating procedure) |
 | STROBE | Hướng dẫn báo cáo nghiên cứu quan sát (Strengthening the Reporting of Observational Studies in Epidemiology) |
+| T0 | Thời điểm Hội đồng Đạo đức BVQY175 phê duyệt — mốc sớm nhất được bắt đầu trích dữ liệu |
 | UACR | Tỷ số albumin/creatinin niệu (urine albumin-to-creatinine ratio) |
 | VIF | Hệ số phóng đại phương sai |
 | eGFR | Mức lọc cầu thận ước tính (estimated glomerular filtration rate) |
@@ -264,7 +265,7 @@ Kế hoạch phân tích thống kê (phiên bản 1.0) được khoá trước 
 
 - Kết cục chính và kết cục phụ: Không thể thiếu theo định nghĩa (không có kết quả xét nghiệm → 0 hoặc «không phân loại được» = 9); không gán giá trị.
 - Biến giải thích của MT3 có thể thiếu: Thời gian mắc ĐTĐ (hồ sơ không ghi năm chẩn đoán), BMI (hồ sơ không ghi cân nặng hoặc chiều cao), và các biến mà hồ sơ ghi không đọc được hoặc mâu thuẫn. HbA1c không gán (xử lý bằng mức «không làm»).
-- Chiến lược: Gán đa trị (Multiple Imputation by Chained Equations, m = 20, so khớp trung bình dự đoán — predictive mean matching cho biến liên tục), gộp theo quy tắc Rubin [51].
+- Chiến lược: Gán đa trị (Multiple Imputation by Chained Equations, m = 20, so khớp trung bình dự đoán — predictive mean matching cho biến liên tục), gộp theo quy tắc Rubin [15, 51].
 - Giả định: Thiếu ngẫu nhiên (missing at random, MAR) có điều kiện trên các biến đưa vào mô hình gán; nêu rõ khả năng MNAR (người ít được theo dõi thì vừa thiếu BMI vừa ít được xét nghiệm) ở mục 4.11.
 - Biến đưa vào mô hình imputation: Biến phụ thuộc không được xét nghiệm đủ (biến phụ thuộc của MT3) và cả 12 biến giải thích (dạng như trong mô hình phân tích), cộng lượt khám đầu trước 01/07/2026.
 - Phân tích hoàn chỉnh (phân tích ca đầy đủ): Báo cáo song song với MI. Nếu mọi biến giải thích thiếu dưới 5% thì MI vẫn chạy cho nhất quán, kết luận dựa trên MI.
@@ -450,33 +451,33 @@ Kết quả được trình bày theo thứ tự đặc điểm đối tượng 
 
 **Bảng 5.5. Mô hình đa biến các yếu tố liên quan đến việc không được xét nghiệm đủ UACR và creatinin (biến phụ thuộc của MT3) (Mục tiêu 3)**
 
-| Yếu tố | Nhóm / đơn vị | PR hiệu chỉnh (KTC 95%) | p |
-| --- | --- | --- | --- |
-| Tuổi | mỗi đơn vị tăng | … (… – …) | … |
-| Giới | Nam | 1 (nhóm tham chiếu) |   |
-|   | Nữ | … (… – …) | … |
-| Nhóm đối tượng | Quân nhân | 1 (nhóm tham chiếu) |   |
-|   | Bảo hiểm y tế | … (… – …) | … |
-|   | Dịch vụ | … (… – …) | … |
-|   | Khác | … (… – …) | … |
-| Thời gian mắc đái tháo đường (đơn vị 5 năm) | mỗi đơn vị tăng | … (… – …) | … |
-| HbA1c (3 mức) | HbA1c < 7% | 1 (nhóm tham chiếu) |   |
-|   | HbA1c ≥ 7% | … (… – …) | … |
-|   | Không làm HbA1c năm 2026 | … (… – …) | … |
-| Đang dùng insulin | Không | 1 (nhóm tham chiếu) |   |
-|   | Có | … (… – …) | … |
-| Số nhóm thuốc hạ glucose | mỗi đơn vị tăng | … (… – …) | … |
-| Tăng huyết áp | Không | 1 (nhóm tham chiếu) |   |
-|   | Có | … (… – …) | … |
-| BMI (đơn vị 5 kg/m²) | mỗi đơn vị tăng | … (… – …) | … |
-| Bệnh tim mạch do xơ vữa hoặc suy tim | Không | 1 (nhóm tham chiếu) |   |
-|   | Có | … (… – …) | … |
-| Số lượt khám năm 2026 | mỗi đơn vị tăng | … (… – …) | … |
-| Phòng khám theo dõi chính | Nội tiết | 1 (nhóm tham chiếu) |   |
-|   | Nội chung (nội tổng hợp) | … (… – …) | … |
-|   | Khác | … (… – …) | … |
+| Yếu tố | Nhóm / đơn vị | PR hiệu chỉnh (KTC 95%), gán đa trị | p | PR hiệu chỉnh (KTC 95%), ca đủ dữ liệu |
+| --- | --- | --- | --- | --- |
+| Tuổi | mỗi đơn vị tăng | … (… – …) | … | … (… – …) |
+| Giới | Nam | 1 (nhóm tham chiếu) |   | 1 (nhóm tham chiếu) |
+|   | Nữ | … (… – …) | … | … (… – …) |
+| Nhóm đối tượng | Quân nhân | 1 (nhóm tham chiếu) |   | 1 (nhóm tham chiếu) |
+|   | Bảo hiểm y tế | … (… – …) | … | … (… – …) |
+|   | Dịch vụ | … (… – …) | … | … (… – …) |
+|   | Khác | … (… – …) | … | … (… – …) |
+| Thời gian mắc đái tháo đường (đơn vị 5 năm) | mỗi đơn vị tăng | … (… – …) | … | … (… – …) |
+| HbA1c (3 mức) | HbA1c < 7% | 1 (nhóm tham chiếu) |   | 1 (nhóm tham chiếu) |
+|   | HbA1c ≥ 7% | … (… – …) | … | … (… – …) |
+|   | Không làm HbA1c năm 2026 | … (… – …) | … | … (… – …) |
+| Đang dùng insulin | Không | 1 (nhóm tham chiếu) |   | 1 (nhóm tham chiếu) |
+|   | Có | … (… – …) | … | … (… – …) |
+| Số nhóm thuốc hạ glucose | mỗi đơn vị tăng | … (… – …) | … | … (… – …) |
+| Tăng huyết áp | Không | 1 (nhóm tham chiếu) |   | 1 (nhóm tham chiếu) |
+|   | Có | … (… – …) | … | … (… – …) |
+| BMI (đơn vị 5 kg/m²) | mỗi đơn vị tăng | … (… – …) | … | … (… – …) |
+| Bệnh tim mạch do xơ vữa hoặc suy tim | Không | 1 (nhóm tham chiếu) |   | 1 (nhóm tham chiếu) |
+|   | Có | … (… – …) | … | … (… – …) |
+| Số lượt khám năm 2026 | mỗi đơn vị tăng | … (… – …) | … | … (… – …) |
+| Phòng khám theo dõi chính | Nội tiết | 1 (nhóm tham chiếu) |   | 1 (nhóm tham chiếu) |
+|   | Nội chung (nội tổng hợp) | … (… – …) | … | … (… – …) |
+|   | Khác | … (… – …) | … | … (… – …) |
 
-*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy; PR: tỷ số tỷ lệ hiện mắc. PR (tỷ số tỷ lệ hiện mắc) hiệu chỉnh đồng thời cho mọi biến trong bảng; mô hình hồi quy Poisson với sai số chuẩn vững.
+*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy; PR: tỷ số tỷ lệ hiện mắc. PR (tỷ số tỷ lệ hiện mắc) hiệu chỉnh đồng thời cho mọi biến trong bảng; mô hình hồi quy Poisson với sai số chuẩn vững. Dữ liệu thiếu xử lý bằng gán đa trị (20 bộ dữ liệu); cột cuối là phân tích trên ca đủ dữ liệu (complete case), phân tích độ nhạy về dữ liệu thiếu.
 
 ![Biểu đồ 5.3](bieu-bang/bieu-do-5-3.png)
 
@@ -490,15 +491,15 @@ Kết quả được trình bày theo thứ tự đặc điểm đối tượng 
 
 | Phân tích | Loại | n | Ước lượng (KTC 95%) | So với phân tích chính |
 | --- | --- | --- | --- | --- |
-| Tỷ lệ kết cục chính — được xét nghiệm đủ uacr và creatinin năm 2026 — phòng khám theo dõi chính: nội tiết | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
-| Tỷ lệ kết cục chính — được xét nghiệm đủ uacr và creatinin năm 2026 — phòng khám theo dõi chính: nội chung | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
-| Tỷ lệ kết cục chính — được xét nghiệm đủ uacr và creatinin năm 2026 — phòng khám theo dõi chính: khác | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
-| Tỷ lệ kết cục chính — được xét nghiệm đủ uacr và creatinin năm 2026 — nhóm đối tượng: quân nhân | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
-| Tỷ lệ kết cục chính — được xét nghiệm đủ uacr và creatinin năm 2026 — nhóm đối tượng: BHYT | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
-| Tỷ lệ kết cục chính — được xét nghiệm đủ uacr và creatinin năm 2026 — nhóm đối tượng: dịch vụ | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
-| Tỷ lệ kết cục chính — được xét nghiệm đủ uacr và creatinin năm 2026 — nhóm đối tượng: khác | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
-| Tỷ lệ kết cục chính — được xét nghiệm đủ uacr và creatinin năm 2026 — nhóm tuổi < 65 | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
-| Tỷ lệ kết cục chính — được xét nghiệm đủ uacr và creatinin năm 2026 — nhóm tuổi ≥ 65 | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
+| Tỷ lệ KẾT CỤC CHÍNH — được xét nghiệm đủ UACR và creatinin năm 2026 — phòng khám theo dõi chính: nội tiết | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
+| Tỷ lệ KẾT CỤC CHÍNH — được xét nghiệm đủ UACR và creatinin năm 2026 — phòng khám theo dõi chính: nội chung | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
+| Tỷ lệ KẾT CỤC CHÍNH — được xét nghiệm đủ UACR và creatinin năm 2026 — phòng khám theo dõi chính: khác | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
+| Tỷ lệ KẾT CỤC CHÍNH — được xét nghiệm đủ UACR và creatinin năm 2026 — nhóm đối tượng: quân nhân | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
+| Tỷ lệ KẾT CỤC CHÍNH — được xét nghiệm đủ UACR và creatinin năm 2026 — nhóm đối tượng: BHYT | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
+| Tỷ lệ KẾT CỤC CHÍNH — được xét nghiệm đủ UACR và creatinin năm 2026 — nhóm đối tượng: dịch vụ | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
+| Tỷ lệ KẾT CỤC CHÍNH — được xét nghiệm đủ UACR và creatinin năm 2026 — nhóm đối tượng: khác | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
+| Tỷ lệ KẾT CỤC CHÍNH — được xét nghiệm đủ UACR và creatinin năm 2026 — nhóm tuổi < 65 | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
+| Tỷ lệ KẾT CỤC CHÍNH — được xét nghiệm đủ UACR và creatinin năm 2026 — nhóm tuổi ≥ 65 | nhóm nhỏ | … | … (… – …) | cùng chiều / khác chiều |
 | ĐN1 — kết cục chính tính cả albumin/protein niệu dạng khác | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
 | ĐN2 — kết cục chính tính cả xét nghiệm ngoài viện có ghi ngày và kết quả | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
 | ĐN3 — kết cục chính chỉ trên người có lượt khám đầu trước 01/07/2026 | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
@@ -508,7 +509,7 @@ Kết quả được trình bày theo thứ tự đặc điểm đối tượng 
 | ĐN7 — Phụ 3 tính cả thuốc bệnh án ghi «đang dùng» ngoài đơn | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
 | ĐN9 — MT3 với biến liên tục chia nhóm | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
 
-*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy. Các phân tích đã định trước trong kế hoạch phân tích; phân tích nhóm nhỏ chỉ mang tính thăm dò, kèm kiểm định tương tác.
+*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy. Các phân tích đã định trước trong kế hoạch phân tích; phân tích nhóm nhỏ chỉ mang tính thăm dò. Phân tích trên ca đủ dữ liệu so với gán đa trị (dữ liệu thiếu) trình bày ở cột cuối bảng mô hình đa biến.
 
 ![Biểu đồ 5.4](bieu-bang/bieu-do-5-4.png)
 
@@ -551,7 +552,7 @@ Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và 
 # 7. TÀI LIỆU THAM KHẢO
 
 1. Eder S, Leierer J, Kerschbaum J, Rosivall L, Wiecek A. Guidelines and clinical practice at the primary level of healthcare in patients with type 2 diabetes mellitus with and without kidney disease in five European countries. Diabetes & vascular disease research. 2019. doi:10.1177/1479164118795559. PMID: 30238781.
-2. 11. Chronic Kidney Disease and Risk Management: Standards of Care in Diabetes-2026. Diabetes care. 2026. doi:10.2337/dc26-S011. PMID: 41358881.
+2. American Diabetes Association Professional Practice Committee for Diabetes. 11. Chronic Kidney Disease and Risk Management: Standards of Care in Diabetes-2026. Diabetes care. 2026. doi:10.2337/dc26-S011. PMID: 41358881.
 3. KDIGO 2024 Clinical Practice Guideline for the Evaluation and Management of Chronic Kidney Disease. Kidney international. 2024. doi:10.1016/j.kint.2023.10.018. PMID: 38490803.
 4. KDIGO 2022 Clinical Practice Guideline for Diabetes Management in Chronic Kidney Disease. Kidney international. 2022. doi:10.1016/j.kint.2022.06.008. PMID: 36272764.
 5. Edmonston D, Lydon E, Mulder H, Chiswell K, Lampron Z. Concordance With Screening and Treatment Guidelines for Chronic Kidney Disease in Type 2 Diabetes. JAMA network open. 2024. doi:10.1001/jamanetworkopen.2024.18808. PMID: 38922613.
@@ -572,11 +573,11 @@ Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và 
 20. Arzuaga A, García-Casanovas A, Mas-Morán A, Megia-Colet A, Adam-Ruiz D. A cross-regional initiative for improving type 2 diabetes mellitus care quality measurement in Spain - The Diabetes Lighthouse project. Primary care diabetes. 2026. doi:10.1016/j.pcd.2026.07.013. PMID: 42575755.
 21. Pasea L, Mohamed M, Dashtban A, Bhuva A, Mizani MA. Missed opportunities to manage complex comorbidity of heart failure, type 2 diabetes mellitus and chronic kidney disease: a retrospective cohort study. Heart (British Cardiac Society). 2025. doi:10.1136/heartjnl-2024-325046. PMID: 40037768.
 22. Awiphan R, Kowatcharakul W, Ruengorn C, Noppakun K, Thavorn K. Temporal trend in quality indicators of diabetes care performance among persons with type 2 diabetes in primary care practice: a serial cross-sectional analytical study, 2013/14 to 2021/22. Frontiers in endocrinology. 2024. doi:10.3389/fendo.2024.1359904. PMID: 39507052.
-23. 9. Pharmacologic Approaches to Glycemic Treatment: Standards of Care in Diabetes-2026. Diabetes care. 2026. doi:10.2337/dc26-S009. PMID: 41358900.
+23. American Diabetes Association Professional Practice Committee for Diabetes. 9. Pharmacologic Approaches to Glycemic Treatment: Standards of Care in Diabetes-2026. Diabetes care. 2026. doi:10.2337/dc26-S009. PMID: 41358900.
 24. Hao R, Myroniuk T, McGuckin T, Manca D, Campbell-Scherer D. Underuse of cardiorenal protective agents in high-risk diabetes patients in primary care: a cross-sectional study. BMC primary care. 2022. doi:10.1186/s12875-022-01731-w. PMID: 35606699.
 25. Barrot-de la Puente J, Lopez Arpí C, Ramon Granes M, Escribà Planes M, Fernandez-Camins B. Chronic kidney disease screening in primary care: a descriptive analysis of the Girona Sud health region. BMC primary care. 2025. doi:10.1186/s12875-025-03117-0. PMID: 41276836.
 26. Jones JL, Lumsden NG, Simons K, Ta'eed A, de Courten MP. Using electronic medical record data to assess chronic kidney disease, type 2 diabetes and cardiovascular disease testing, recognition and management as documented in Australian general practice: a cross-sectional analysis. Family medicine and community health. 2022. doi:10.1136/fmch-2021-001006. PMID: 35177470.
-27. 2. Diagnosis and Classification of Diabetes: Standards of Care in Diabetes-2026. Diabetes care. 2026. doi:10.2337/dc26-S002. PMID: 41358893.
+27. American Diabetes Association Professional Practice Committee for Diabetes. 2. Diagnosis and Classification of Diabetes: Standards of Care in Diabetes-2026. Diabetes care. 2026. doi:10.2337/dc26-S002. PMID: 41358893.
 28. Zahradka I, Petr V, Tichanek F, Chroma A, Neskudla T. Prevalence, risk factors and renoprotective treatment of chronic kidney disease among internal medicine outpatients at a Central European tertiary care centre: a cross-sectional study. BMJ open. 2026. doi:10.1136/bmjopen-2026-121190. PMID: 42838586.
 29. Stefanska C, Chung R, Ramjaun S, Jin D, Doherty C. The SGLT2i Treatment Gap in UK Primary Care: A Cross-Sectional RWE Study of Prescribing in Clinical Practice. Diabetes, obesity & metabolism. 2026. doi:10.1111/dom.71298. PMID: 42723263.
 30. Miyamoto Y, Xu F, Zaganjor I, Pavkov ME, Koyama AK. Current attitudes of primary care providers toward albuminuria testing in patients with diabetes in the United States. Preventive medicine reports. 2026. doi:10.1016/j.pmedr.2026.103581. PMID: 42541306.

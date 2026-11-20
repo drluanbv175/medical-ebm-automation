@@ -689,7 +689,7 @@ Quy ước trình bày: biến định lượng mô tả bằng trung bình ± �
 | Gộp mức G1 khi lệch trần (mức < 20 quan sát) | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
 | Phân tích giới hạn cho người bỏ về trước khi khám (f từ số liệu tổng hợp HIS) | độ nhạy | … | … (… – …) | cùng chiều / khác chiều |
 
-*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy. Các phân tích đã định trước trong kế hoạch phân tích; phân tích nhóm nhỏ chỉ mang tính thăm dò, kèm kiểm định tương tác. Trình bày ước lượng của thời gian chờ (KTC 95%) trong từng kịch bản ở mục 4.10, so sánh chiều và độ lớn với mô hình chính.
+*Ghi chú:* Chữ viết tắt — KTC: khoảng tin cậy. Các phân tích đã định trước trong kế hoạch phân tích; phân tích nhóm nhỏ chỉ mang tính thăm dò. Trình bày ước lượng của thời gian chờ (KTC 95%) trong từng kịch bản ở mục 4.10, so sánh chiều và độ lớn với mô hình chính.
 
 
 **Bảng 5.6. Tỷ lệ đáp ứng và dữ liệu thiếu**
