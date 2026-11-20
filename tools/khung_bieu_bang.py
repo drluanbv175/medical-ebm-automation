@@ -73,6 +73,10 @@ CHU_VIET_TAT = {
     "RD": "hiệu số nguy cơ", "MD": "hiệu số trung bình", "SMD": "hiệu số trung bình chuẩn hoá",
 }
 
+# Đơn vị của các chỉ số hay dùng làm ngưỡng phân nhóm trong nhãn mức (vd «G3a (eGFR 45–59)», «A2 (UACR 30–300)»):
+# nhãn mức thường không ghi đơn vị nên bảng phải ghi ở chú thích (soát 20/11/2026, Bảng 5.2 BTM).
+DON_VI_NGUONG = {"eGFR": "mL/phút/1,73 m²", "UACR": "mg/g", "HbA1c": "%", "LDL-C": "mmol/L"}
+
 # Kiểu kết cục của đặc tả phân tích → (tên thước đo, viết tắt, giá trị không hiệu ứng)
 THUOC_DO = {
     "binary": ("tỷ số chênh", "OR", 1.0), "logistic": ("tỷ số chênh", "OR", 1.0),
@@ -119,6 +123,8 @@ class NguCanh:
     ma_tran: List[Dict[str, str]]
     phan_tich: List[Dict[str, Any]]
     n: Optional[int] = None
+    # 20/11/2026: nghiên cứu khai thác hồ sơ CÓ SẴN (miễn đồng thuận) — không có bước «mời tham gia/từ chối».
+    hoi_cuu: bool = False
 
 
 # ─────────────────────────────── nạp dữ kiện ───────────────────────────────
@@ -191,6 +197,8 @@ def _lam_sach_mo_ta(ngu: "NguCanh", s: str) -> str:
 
     s = re.sub(r"(?<![\w./-])[a-z][a-z0-9]*_[a-z0-9_]+\b", _nhan, s)
     s = re.sub(r"\s*=\s*\d+\b", "", s)
+    # Ngoặc kép văn bản tiếng Việt “…” (đặc tả viết «…» cho máy) — soát 20/11/2026.
+    s = s.replace("«", "“").replace("»", "”")
     return _hoa_dau(re.sub(r"\s+", " ", s).strip(" —-"))
 
 
@@ -266,7 +274,11 @@ def nap_ngu_canh(out_dir: Path, study: str, thiet_ke: str = "", muc_tieu: Option
         n = int(n) if n is not None else None
     except (TypeError, ValueError):
         n = None
-    return NguCanh(tk, list(muc_tieu or []), bien, list(ma_tran or []), list(dac.get("phan_tich") or []), n)
+    g2 = ((meta.get("gate_params") or {}).get("G2") or {})
+    cach_thu = str(g1.get("data_collection_method") or meta.get("data_collection_method") or "")
+    hoi_cuu = g2.get("icf_waiver_requested") is True or bool(re.search(r"có sẵn|hồi cứu", cach_thu, re.I))
+    return NguCanh(tk, list(muc_tieu or []), bien, list(ma_tran or []), list(dac.get("phan_tich") or []), n,
+                   hoi_cuu)
 
 
 # ─────────────────────────────── tiện ích chữ ───────────────────────────────
@@ -279,7 +291,8 @@ def _thuong_dau(s: str) -> str:
     """Hạ chữ cái đầu khi nó không mở đầu một viết tắt («Việc không…» → «việc không…»; «UACR…» giữ nguyên)."""
     s = str(s or "")
     dau = s.split(" ", 1)[0]
-    return s[:1].lower() + s[1:] if len(dau) > 1 and dau.isalpha() and dau[1:].islower() else s
+    s = s[:1].lower() + s[1:] if len(dau) > 1 and dau.isalpha() and dau[1:].islower() else s
+    return s.replace("chủ Nhật", "chủ nhật")  # nhãn mức «Chủ Nhật» của bộ biến
 
 
 def _bo_ngoac_noi_bo(s: str) -> str:
@@ -309,16 +322,65 @@ def _ten_muc_tieu(s: str) -> str:
     return s.rstrip(". ")
 
 
+def _ten_muc_tieu_ngan(s: str) -> str:
+    """Tên mục tiêu dùng làm TIÊU ĐỀ mục: bỏ phần diễn giải sau « — » và các ngoặc đơn (soát 20/11/2026 — tiêu đề 5.2
+    của BTM dài ba dòng vì chép cả danh sách kết cục). Nội dung đầy đủ của mục tiêu vẫn ở chương 2."""
+    s = _ten_muc_tieu(s).split(" — ")[0]
+    s = re.sub(r"\s*\([^()]*\)", "", s)
+    return re.sub(r"\s+", " ", s).strip().rstrip(".,;: ")
+
+
+_NOI_BO_RE = re.compile(r"\bMT\s*\d|biến phụ thuộc|biến độc lập", re.I)
+_DON_VI_THANG_RE = re.compile(r"^đơn vị\s+(\d+(?:[.,]\d+)?)\s+(\S.*)$", re.I)
+_DON_VI_GOC_RE = re.compile(r"\((năm|tháng|tuần|ngày|giờ|phút|kg|cm|mmHg|%|kg/m²|lần)\)")
+
+
+def _don_vi_bien(b: Optional["Bien"]) -> Tuple[str, str]:
+    """(đơn vị gốc, bước thang của biến đã chia thang). «đơn vị 5 năm» ⇒ («năm», «5»); «năm» ⇒ («năm», «»); không khai
+    đơn vị nhưng nhãn có «(năm)» (vd «Tuổi (năm) tại lượt khám…») ⇒ («năm», «»). Ngoặc ghi chú nội bộ («biến phụ thuộc
+    của MT3») KHÔNG phải đơn vị."""
+    if b is None:
+        return "", ""
+    dv = (b.don_vi or "").strip()
+    if dv and _NOI_BO_RE.search(dv):
+        dv = ""
+    m = _DON_VI_THANG_RE.match(dv)
+    if m:
+        return m.group(2).strip(), m.group(1)
+    if dv:
+        return dv, ""
+    m = _DON_VI_GOC_RE.search(b.nhan or "")
+    return (m.group(1), "") if m else ("", "")
+
+
+def _buoc_tang(b: Optional["Bien"], ts: Dict[str, Any], ten: str) -> str:
+    """Ô «Nhóm / đơn vị» của biến liên tục trong bảng yếu tố liên quan: «mỗi 10 năm tăng thêm» khi biết bước — từ biến
+    đã chia thang («đơn vị 5 năm») hoặc `don_vi_phoi_nhiem` của biến phơi nhiễm chính trong đặc tả SAP. Trước
+    20/11/2026 luôn in «mỗi đơn vị tăng» ⇒ lệch SAP BTM («tuổi mỗi 10 năm»)."""
+    goc, buoc = _don_vi_bien(b)
+    dv_pn = ts.get("don_vi_phoi_nhiem")
+    if not buoc and ten and ten == ts.get("group") and isinstance(dv_pn, (int, float)) and not isinstance(dv_pn, bool) \
+            and dv_pn > 0:
+        buoc = str(int(dv_pn)) if float(dv_pn).is_integer() else str(dv_pn).replace(".", ",")
+    if buoc:
+        return f"mỗi {buoc} {goc or 'đơn vị'} tăng thêm"
+    return f"mỗi {goc} tăng thêm" if goc else "mỗi đơn vị tăng thêm"
+
+
 def _so(n: Optional[int]) -> str:
     return f"{n:,}".replace(",", ".") if isinstance(n, int) else X
 
 
-def _nhan_bien(nc: NguCanh, ten: str, khai_niem: str = "") -> str:
+def _nhan_bien(nc: NguCanh, ten: str, khai_niem: str = "", don_vi: bool = True) -> str:
+    """Nhãn biến để in. `don_vi=False`: không gắn đơn vị (bảng yếu tố liên quan ghi bước tăng ở cột riêng). Đơn vị là
+    ghi chú nội bộ («biến phụ thuộc của MT3») thì bỏ — trước 20/11/2026 nó lọt vào tên Bảng 5.4–5.5/Biểu đồ 5.3."""
     b = nc.bien.get(ten)
-    nhan = _hoa_dau(_bo_ngoac_noi_bo(khai_niem)) if khai_niem else (b.nhan if b else ten)
-    nhan = re.sub(r"\s*\([^()]*\)\s*$", "", nhan) if b and b.don_vi and nhan.endswith(")") else nhan
+    nhan = _hoa_dau(_bo_ngoac_noi_bo(khai_niem)) if khai_niem else _bo_ngoac_noi_bo(b.nhan if b else ten)
+    dv = (b.don_vi or "").strip() if b else ""
+    dv = "" if _NOI_BO_RE.search(dv) else dv
+    nhan = re.sub(r"\s*\([^()]*\)\s*$", "", nhan) if dv and nhan.endswith(")") else nhan
     nhan = nhan.replace("_", " ")
-    return f"{nhan} ({b.don_vi})" if b and b.don_vi and f"({b.don_vi})" not in nhan else nhan
+    return f"{nhan} ({dv})" if don_vi and dv and f"({dv})" not in nhan else nhan
 
 
 def _khai_niem(ngu: NguCanh, ten: str) -> str:
@@ -350,6 +412,12 @@ def _dong_mo_ta(nc: NguCanh, ten: str, khai_niem: str, so_cot: int, chi_so: bool
     nhan = _nhan_bien(nc, ten, khai_niem)
     kieu = b.kieu
     if kieu in ("lien_tuc", "dem"):
+        # Bảng mô tả trình bày theo ĐƠN VỊ GỐC («Thời gian mắc ĐTĐ (năm)», «BMI (kg/m²)»), không theo thang đã chia
+        # cho mô hình («đơn vị 5 năm») — soát 20/11/2026.
+        goc, _buoc = _don_vi_bien(b)
+        nhan = _nhan_bien(nc, ten, khai_niem, don_vi=False)
+        if goc and f"({goc})" not in nhan:
+            nhan = f"{nhan} ({goc})"
         return [[f"{nhan}, TB ± ĐLC hoặc trung vị [KTPV]" if chi_so else nhan] + [f"{X} ± {X}"] * so_cot]
     if kieu == "nhi_phan":
         muc = _muc_duong(b)[1] if b.muc else "Có"
@@ -446,6 +514,20 @@ def _so_do(nc: NguCanh) -> Khung:
                 (f"Kiểm định nội bộ bằng lấy mẫu lặp {n}", None)]
         tach = []
         ten = "Sơ đồ chọn người bệnh cho phát triển và kiểm định mô hình (theo TRIPOD+AI)"
+    elif nc.hoi_cuu:  # khai thác hồ sơ CÓ SẴN: không mời, không ai từ chối (phản biện 20/11/2026: hình BTM in sai)
+        buoc = [(f"Hồ sơ trong khung chọn mẫu {n}", None),
+                (f"Hồ sơ được chọn vào mẫu và mở để sàng lọc {n}",
+                 f"Không đủ tiêu chuẩn chọn hoặc thuộc tiêu chuẩn loại trừ {n}"),
+                (f"Hồ sơ đủ tiêu chuẩn {n}", f"Thiếu dữ liệu kết cục chính {n}")]
+        if tk in ("cohort", "case_control"):
+            nhom = [c.split(" (n =")[0] for c in _cot_nhom(nc, _bien_nhom(nc), (
+                ("Nhóm phơi nhiễm", "Nhóm không phơi nhiễm") if tk == "cohort" else ("Nhóm bệnh", "Nhóm chứng")))]
+            tach = [[f"{g} {n}", (f"Mất theo dõi {n}" if tk == "cohort" else f"Thiếu dữ liệu phơi nhiễm {n}"),
+                     f"Đưa vào phân tích {n}"] for g in nhom[:2]]
+        else:
+            buoc.append((f"Đưa vào phân tích {n}", None))
+            tach = []
+        ten = "Sơ đồ chọn hồ sơ nghiên cứu (theo STROBE/RECORD)"
     else:  # cross_sectional · cohort · case_control
         buoc = [(f"Đối tượng trong khung chọn mẫu {n}", f"Không đủ tiêu chuẩn chọn hoặc thuộc tiêu chuẩn loại trừ {n}"),
                 (f"Đối tượng đủ điều kiện được mời tham gia {n}", f"Từ chối tham gia {n}"),
@@ -580,11 +662,20 @@ def _khung_mo_ta_kq(nc: NguCanh, k: int, ten_mt: str, kq: List[Dict[str, str]]) 
             dong.append([nhan, f"{X}", f"{X} ± {X}", f"{X} [{X} – {X}]", f"{X} – {X}"])
         else:
             dong.append([nhan, f"{X}/{X}", X, "—", f"{X} – {X}"])
+    if not any(d[2] == f"{X} ± {X}" for d in dong):
+        # Bảng chỉ gồm tỷ lệ ⇒ bỏ hai cột TB ± ĐLC / trung vị toàn «—» (soát 20/11/2026, Bảng 5.2–5.3 BTM).
+        cot = ["Chỉ số", "n/N", "Tỷ lệ (%)", "KTC 95%"]
+        dong = [[d[0], d[1], d[2], d[4]] for d in dong]
     chinh_kq = _nhan_bien(nc, kq[0]["bien"].strip(), kq[0].get("khai_niem") or "") if kq and kq[0].get("bien") \
         else _hoa_dau(ten_mt)
     ten = f"{chinh_kq}" + (" và các chỉ số mô tả liên quan" if len(kq) > 1 else "") + f" (Mục tiêu {k})"
-    ghi = _ghi_chu(cot, dong, ["Tỷ lệ kèm KTC 95% theo phương pháp đã nêu ở mục xử lý số liệu; mẫu số của từng chỉ số "
-                               "ghi ở cột n/N."])
+    them = ["Tỷ lệ kèm KTC 95% theo phương pháp đã nêu ở mục xử lý số liệu; mẫu số của từng chỉ số ghi ở cột n/N."]
+    chu_dong = " ".join(d[0] for d in dong)
+    dv_nguong = [f"{k_} tính bằng {v}" for k_, v in DON_VI_NGUONG.items()
+                 if re.search(rf"{re.escape(k_)}\s*(?:[<>≤≥]|\d)", chu_dong)]
+    if dv_nguong:
+        them.append("Ngưỡng phân nhóm: " + "; ".join(dv_nguong) + ".")
+    ghi = _ghi_chu(cot, dong, them)
     nhi = [r for r in kq if (nc.bien.get(r["bien"].strip()) or Bien("", "", "nhi_phan")).kieu == "nhi_phan"]
     lt = [r for r in kq if (nc.bien.get(r["bien"].strip()) or Bien("", "", "nhi_phan")).kieu in ("lien_tuc", "dem")]
     co_ty_le = len(nhi) >= 2 or (bool(nhi) and len(lt) < 2)
@@ -622,30 +713,46 @@ def _khung_lien_quan(nc: NguCanh, k: int, ten_mt: str, dong_mt: List[Dict[str, s
         b = nc.bien.get(ten_b) or Bien(ten_b, ten_b, "lien_tuc")
         nhan = _nhan_bien(nc, ten_b, r.get("khai_niem") or "")
         o_kq = [f"{X} ({X})", f"{X} ({X})"] if kq_nhi_phan else [f"{X} ± {X}"]
-        if b.kieu in ("lien_tuc", "dem"):
-            dong_dv.append([nhan, "mỗi đơn vị tăng", *([f"{X} ± {X}"] * len(o_kq)), f"{X} ({X} – {X})", X])
-            dong_db.append([nhan, "mỗi đơn vị tăng", f"{X} ({X} – {X})", X])
-            nhan_fp.append(nhan)
+        trong_mo_hinh = ten_b in ten_cov or not ten_cov
+        # Biến thứ bậc mà đặc tả SAP KHÔNG khai ở `hiep_bien_phan_loai` được đưa vào mô hình dạng số (mỗi mức tăng) —
+        # vd tự đánh giá sức khỏe 1–5 của C1a; trước 20/11/2026 bảng/biểu đồ vẫn tách mức ⇒ lệch SAP.
+        lien_tuc = b.kieu in ("lien_tuc", "dem") or (
+            b.kieu == "thu_tu" and isinstance(ts.get("hiep_bien_phan_loai"), list) and ten_b in ten_cov
+            and ten_b not in ts["hiep_bien_phan_loai"])
+        if lien_tuc:
+            nhan = _nhan_bien(nc, ten_b, r.get("khai_niem") or "", don_vi=False)
+            buoc = _buoc_tang(nc.bien.get(ten_b), ts, ten_b)
+            if b.kieu == "thu_tu" and buoc == "mỗi đơn vị tăng thêm":
+                buoc = "mỗi mức tăng thêm"
+            dong_dv.append([nhan, buoc, *([f"{X} ± {X}"] * len(o_kq)), f"{X} ({X} – {X})", X])
+            # Bảng đa biến/forest CHỈ gồm biến của mô hình (phơi nhiễm + hiệp biến đã khai) — trước 20/11/2026 mọi biến
+            # liên tục của ma trận (kể cả biến trung gian, biến sau phơi nhiễm) lọt vào bảng đa biến.
+            if trong_mo_hinh:
+                dong_db.append([nhan, buoc, f"{X} ({X} – {X})", X])
+                nhan_fp.append(nhan if buoc == "mỗi đơn vị tăng thêm" else f"{nhan} ({buoc.replace(' tăng thêm', '')})")
         elif b.muc:
             for i, m in enumerate(_muc_theo_tham_chieu(b)):
                 nhom_tc = i == 0
                 dong_dv.append([nhan if i == 0 else "", m[1], *o_kq,
                                 "1 (nhóm tham chiếu)" if nhom_tc else f"{X} ({X} – {X})", "" if nhom_tc else X])
-                if ten_b in ten_cov or not ten_cov:
+                if trong_mo_hinh:
                     dong_db.append([nhan if i == 0 else "", m[1],
                                     "1 (nhóm tham chiếu)" if nhom_tc else f"{X} ({X} – {X})", "" if nhom_tc else X])
                     if not nhom_tc:
                         nhan_fp.append(f"{nhan}: {_thuong_dau(m[1])}")
         else:
             dong_dv.append([nhan, "theo nhóm", *o_kq, f"{X} ({X} – {X})", X])
-            dong_db.append([nhan, "theo nhóm", f"{X} ({X} – {X})", X])
-            nhan_fp.append(nhan)
+            if trong_mo_hinh:
+                dong_db.append([nhan, "theo nhóm", f"{X} ({X} – {X})", X])
+                nhan_fp.append(nhan)
     if not dong_dv:
         dong_dv = [["Yếu tố trong mô hình", "theo nhóm", *([f"{X} ({X})"] * (2 if kq_nhi_phan else 1)),
                     f"{X} ({X} – {X})", X]]
     if not dong_db:
         dong_db = [["Yếu tố trong mô hình", "theo nhóm", f"{X} ({X} – {X})", X]]
-    cot_kq = ["Có kết cục: n (%)", "Không có kết cục: n (%)"] if kq_nhi_phan else ["Kết cục: TB ± ĐLC"]
+    # Tiêu đề cột không ghép «n (%)» vì hàng biến định lượng ghi TB ± ĐLC (soát 20/11/2026: Bảng 5.4 BTM ghi «n (%)»
+    # trên đầu cột chứa «… ± …»); cách ghi từng loại ô nằm ở chú thích.
+    cot_kq = ["Có kết cục", "Không có kết cục"] if kq_nhi_phan else ["Kết cục: TB ± ĐLC"]
     cot_dv = ["Yếu tố", "Nhóm / đơn vị", *cot_kq, f"{vt} thô (KTC 95%)", "p"]
     cot_db = ["Yếu tố", "Nhóm / đơn vị", f"{vt} hiệu chỉnh (KTC 95%)", "p"]
     # Gán đa trị trong đặc tả (n_imputations) ⇒ SAP báo SONG SONG phân tích trên ca đủ dữ liệu (complete case —
@@ -657,16 +764,21 @@ def _khung_lien_quan(nc: NguCanh, k: int, ten_mt: str, dong_mt: List[Dict[str, s
         cot_db = ["Yếu tố", "Nhóm / đơn vị", f"{vt} hiệu chỉnh (KTC 95%), gán đa trị", "p",
                   f"{vt} hiệu chỉnh (KTC 95%), ca đủ dữ liệu"]
         dong_db = [[*d, d[2] if d[2] == "1 (nhóm tham chiếu)" else f"{X} ({X} – {X})"] for d in dong_db]
-    ghi_dv = _ghi_chu(cot_dv, dong_dv, [f"{vt} thô ước lượng bằng mô hình một biến cùng loại với mô hình chính; "
-                                        "p ghi ba "
-                                        "chữ số thập phân, «< 0,001» khi nhỏ hơn."])
+    kq_thuong = _thuong_dau(kq_nhan)
+    kq_nhom = re.sub(r"^việc\s+", "", kq_thuong)
+    them_dv = ([f"Cột “Có kết cục” là những người {kq_nhom}; biến phân loại ghi n (%) theo hàng, biến định lượng "
+                "ghi TB ± ĐLC."] if kq_nhi_phan else [])
+    ghi_dv = _ghi_chu(cot_dv, dong_dv, them_dv + [f"{vt} thô ước lượng bằng mô hình một biến cùng loại với mô hình "
+                                                  "chính; p ghi ba chữ số thập phân, “< 0,001” khi nhỏ hơn."])
     mo_hinh = TEN_MO_HINH.get(str(ts.get("outcome_type") or "").lower(), "")
-    ghi_db = _ghi_chu(cot_db, dong_db, [f"{vt} ({ten_td}) hiệu chỉnh đồng thời cho mọi biến trong bảng"
+    ghi_db = _ghi_chu(cot_db, dong_db, [f"{vt} hiệu chỉnh đồng thời cho mọi biến trong bảng"
                                         + (f"; mô hình {mo_hinh}" if mo_hinh else "") + "."]
                       + ([f"Dữ liệu thiếu xử lý bằng gán đa trị ({so_gan} bộ dữ liệu); cột cuối là phân tích trên "
                           "ca đủ dữ liệu (complete case), phân tích độ nhạy về dữ liệu thiếu."] if co_gan else []))
-    nhan_fp = nhan_fp[:16]
-    kq_thuong = _thuong_dau(kq_nhan)
+    # Không cắt im lặng (trước 20/11/2026 cắt ở 16 nhãn ⇒ Biểu đồ 5.2 C1a mất 2 biến của mô hình); trên 30 hàng thì
+    # biểu đồ quá dày — giữ 30 và ghi chú số hàng còn lại ở bảng.
+    so_bo_fp = max(0, len(nhan_fp) - 30)
+    nhan_fp = nhan_fp[:30]
     kh = [Khung("bang", f"Phân tích đơn biến các yếu tố liên quan đến {kq_thuong} (Mục tiêu {k})", cot_dv,
                 dong_dv, ghi_dv),
           Khung("bang", f"Mô hình đa biến các yếu tố liên quan đến {kq_thuong} (Mục tiêu {k})", cot_db,
@@ -677,7 +789,9 @@ def _khung_lien_quan(nc: NguCanh, k: int, ten_mt: str, dong_mt: List[Dict[str, s
                         "log": ref == 1.0},
                 ghi_chu=[f"Điểm là {vt} hiệu chỉnh, đoạn ngang là KTC 95%; đường dọc tại {str(ref).replace('.', ',')} "
                          "là không có liên quan" + ("; trục hoành theo thang log." if ref == 1.0 else "."),
-                         "Chữ viết tắt — " + f"{vt}: {CHU_VIET_TAT.get(vt, ten_td)}; KTC: khoảng tin cậy."])]
+                         "Chữ viết tắt — " + f"{vt}: {CHU_VIET_TAT.get(vt, ten_td)}; KTC: khoảng tin cậy."]
+                + ([f"Biểu đồ trình bày 30 hàng đầu; {so_bo_fp} hàng còn lại xem ở bảng mô hình đa biến."]
+                   if so_bo_fp else []))]
     return kh
 
 
@@ -806,6 +920,23 @@ def _khung_muc_tieu(nc: NguCanh, k: int, muc_tieu: str) -> List[Khung]:
     return _khung_mo_ta_kq(nc, k, ten_mt, [r for r in kq if r.get("bien")] or kq)
 
 
+def _tach_tien_to_chung(ds: List[str]) -> Tuple[str, List[str]]:
+    """Tách phần đầu CHUNG của mọi mô tả (cắt ở dấu « — » cuối cùng trong phần chung) ⇒ (phần chung, phần riêng).
+    «Tỷ lệ kết cục chính — được xét nghiệm đủ UACR — nhóm đối tượng: quân nhân» ×n ⇒ («Tỷ lệ … UACR», [«Nhóm đối
+    tượng: quân nhân», …]). Dưới 2 dòng hoặc không có phần chung tại « — » ⇒ («», ds) giữ nguyên."""
+    if len(ds) < 2:
+        return "", list(ds)
+    import os.path as _op  # noqa: PLC0415
+    chung = _op.commonprefix(list(ds))
+    cat = chung.rfind(" — ")
+    if cat <= 0:
+        return "", list(ds)
+    dau = chung[:cat].strip()
+    if dau.lower().startswith("tỷ lệ kết cục chính — "):
+        dau = "Tỷ lệ " + dau[len("tỷ lệ kết cục chính — "):]
+    return dau, [_hoa_dau(x[cat + 3:]) for x in ds]
+
+
 def _khung_nhom_nho_do_nhay(nc: NguCanh) -> List[Khung]:
     ngu_canh_nho = nc
     nn = [p for p in nc.phan_tich if p.get("vai") == "nhom_con"]
@@ -815,13 +946,39 @@ def _khung_nhom_nho_do_nhay(nc: NguCanh) -> List[Khung]:
     chinh = _phan_tich_chinh(nc)
     _ten, vt, ref = _thuoc_do(chinh, nc.thiet_ke)
     cot = ["Phân tích", "Loại", "n", "Ước lượng (KTC 95%)", "So với phân tích chính"]
-    dong = [[_lam_sach_mo_ta(ngu_canh_nho, str(p.get("mo_ta") or p.get("id")))[:110],
-             "nhóm nhỏ" if p.get("vai") == "nhom_con" else "độ nhạy", X, f"{X} ({X} – {X})", "cùng chiều / khác chiều"]
-            for p in nn + dn]
+    # 20/11/2026: dòng nhóm nhỏ từng lặp nguyên chuỗi «Tỷ lệ kết cục chính — … — <nhóm>» 9 lần (bảng khó đọc, forest
+    # cắt 40 ký tự ⇒ 9 nhãn giống hệt). Phần chung đưa lên ghi chú/tên biểu đồ; mỗi dòng chỉ còn tên nhóm.
+    mo_ta_nn = [_lam_sach_mo_ta(ngu_canh_nho, str(p.get("mo_ta") or p.get("id"))) for p in nn]
+    chung_nn, rieng_nn = _tach_tien_to_chung(mo_ta_nn)
+    ty_le = bool(nn) and all("ty_le" in (p.get("tham_so") or {}) or m.lower().startswith("tỷ lệ")
+                             for p, m in zip(nn, mo_ta_nn))
+    # Cột cuối: ước lượng là TỶ LỆ thì so bằng chênh lệch điểm phần trăm — «cùng chiều / khác chiều» chỉ có nghĩa với
+    # tỷ số/hiệu số (soát 20/11/2026: Bảng 5.6 BTM ghi «cùng chiều» cho tỷ lệ từng nhóm).
+    def _la_ty_le(p: Dict[str, Any], mo_ta: str) -> bool:
+        ts_p = p.get("tham_so") or {}
+        if "ty_le" in ts_p:
+            return True
+        if ts_p.get("outcome_type") or ts_p.get("outcome"):
+            return False
+        return bool(re.match(r"(?:tỷ lệ|kết cục chính|phụ\s*\d)", mo_ta.strip(), re.I)) or \
+            bool(re.match(r"ĐN\d+\s*—\s*(?:kết cục chính|phụ\s*\d)", mo_ta.strip(), re.I))
+
+    so_ty_le, so_ty_so = f"chênh {X} điểm %", "cùng chiều / khác chiều"
+    mo_ta_dn = [_lam_sach_mo_ta(ngu_canh_nho, str(p.get("mo_ta") or p.get("id"))) for p in dn]
+    dong = [[r[:110], "nhóm nhỏ", X, f"{X} ({X} – {X})", so_ty_le if (ty_le or _la_ty_le(p, m)) else so_ty_so]
+            for r, p, m in zip(rieng_nn, nn, mo_ta_nn)] + [
+        [m[:110], "độ nhạy", X, f"{X} ({X} – {X})", so_ty_le if _la_ty_le(p, m) else so_ty_so]
+        for p, m in zip(dn, mo_ta_dn)]
     # KHÔNG tự khẳng định «kèm kiểm định tương tác»: câu cứng đó từng mâu thuẫn SAP của cả BTM («mô tả, không kiểm định
     # tương tác») lẫn C1a («không có số hạng tương tác định trước») — phản biện máy BTM 20/11/2026. Cách kiểm định nhóm
     # nhỏ (nếu có) do SAP quy định, bảng chỉ nói phần chung đúng cho mọi SAP.
     ghi = ["Các phân tích đã định trước trong kế hoạch phân tích; phân tích nhóm nhỏ chỉ mang tính thăm dò."]
+    cot_cuoi = {d[-1] for d in dong}
+    if so_ty_le in cot_cuoi:
+        ghi.append("Cột cuối: với tỷ lệ ghi chênh lệch (điểm phần trăm) so với ước lượng của phân tích chính"
+                   + ("; với tỷ số ghi cùng chiều hay khác chiều với mô hình chính." if so_ty_so in cot_cuoi else "."))
+    if chung_nn:
+        ghi.append(f"Các dòng nhóm nhỏ: {_thuong_dau(chung_nn)} trong từng nhóm.")
     if any(isinstance((p.get("tham_so") or {}).get("n_imputations"), int)
            and not isinstance((p.get("tham_so") or {}).get("n_imputations"), bool)
            and (p.get("tham_so") or {}).get("n_imputations") > 0 for p in nc.phan_tich):
@@ -829,13 +986,18 @@ def _khung_nhom_nho_do_nhay(nc: NguCanh) -> List[Khung]:
                    "đa biến.")
     kh = [Khung("bang", "Kết quả phân tích nhóm nhỏ và phân tích độ nhạy", cot, dong, _ghi_chu(cot, dong, ghi))]
     if len(nn) >= 2:
-        kh.append(Khung("bieu_do", "Ước lượng theo nhóm nhỏ kèm KTC 95%",
-                        dac_ta={"kieu": "forest", "nhan": [_lam_sach_mo_ta(ngu_canh_nho, str(p.get("mo_ta") or
-                                                                                         p.get("id")))[:40]
-                                                          for p in nn][:12] + ["Chung"],
-                                "ref": ref if chinh else None, "truc_x": "Ước lượng (KTC 95%)",
-                                "log": bool(chinh) and ref == 1.0},
-                        ghi_chu=["Đường dọc là ước lượng không hiệu ứng; mỗi hàng là một nhóm nhỏ đã định trước."]))
+        # Ước lượng của nhóm nhỏ là TỶ LỆ ⇒ trục 0–100%, không đường «không hiệu ứng» ở 1 (trước 20/11/2026 vẽ thang log
+        # 0,25–4 với đường dọc tại 1 — đúng cho tỷ số, sai cho tỷ lệ).
+        ten_bd = (f"{_hoa_dau(chung_nn)} theo nhóm nhỏ kèm KTC 95%" if ty_le and chung_nn else
+                  "Tỷ lệ theo nhóm nhỏ kèm KTC 95%" if ty_le else "Ước lượng theo nhóm nhỏ kèm KTC 95%")
+        kh.append(Khung("bieu_do", ten_bd,
+                        dac_ta={"kieu": "forest", "nhan": [r[:40] for r in rieng_nn][:12] + ["Chung"],
+                                "ref": None if ty_le else (ref if chinh else None),
+                                "truc_x": "Tỷ lệ (%) và KTC 95%" if ty_le else "Ước lượng (KTC 95%)",
+                                "log": (not ty_le) and bool(chinh) and ref == 1.0, "phan_tram": ty_le},
+                        ghi_chu=["Mỗi hàng là một nhóm nhỏ đã định trước; hàng “Chung” là tỷ lệ trên toàn mẫu."
+                                 if ty_le else
+                                 "Đường dọc là ước lượng không hiệu ứng; mỗi hàng là một nhóm nhỏ đã định trước."]))
     return kh
 
 
@@ -859,7 +1021,7 @@ def dung_khung(nc: NguCanh) -> List[Muc]:
                  "qualitative": "Đặc điểm người tham gia nghiên cứu"}.get(nc.thiet_ke, "Đặc điểm đối tượng nghiên cứu")
     muc = [Muc(tieu_de_1, [_so_do(nc), _bang_dac_diem(nc)])]
     for k, mt in enumerate(nc.muc_tieu or ["Kết quả nghiên cứu"], 1):
-        muc.append(Muc(f"Kết quả theo mục tiêu {k}: {_ten_muc_tieu(mt)}", _khung_muc_tieu(nc, k, mt), k))
+        muc.append(Muc(f"Kết quả theo mục tiêu {k}: {_ten_muc_tieu_ngan(mt)}", _khung_muc_tieu(nc, k, mt), k))
     nd = _khung_nhom_nho_do_nhay(nc)
     if nd:
         muc.append(Muc("Phân tích nhóm nhỏ và phân tích độ nhạy", nd))
@@ -965,7 +1127,9 @@ def _plt():
 def _ngat(s: str, rong: int = 34) -> str:
     import textwrap  # noqa: PLC0415
 
-    return "\n".join(textwrap.fill(d, rong) if d else d for d in str(s).split("\n"))
+    # «(n = …)» luôn đứng liền một dòng (20/11/2026: ô «Thiếu dữ liệu kết cục chính (n =» / «…)» bị tách đôi).
+    s = re.sub(r"\(n = ([^()]*)\)", lambda m: "(n = " + m.group(1).replace(" ", " ") + ")", str(s))
+    return "\n".join(textwrap.fill(d, rong, break_on_hyphens=False) if d else d for d in s.split("\n"))
 
 
 def ve_hinh(kh: Khung, dich: Path, du_lieu: Optional[Dict[str, Any]] = None) -> Path:
@@ -1019,6 +1183,9 @@ def ve_hinh(kh: Khung, dich: Path, du_lieu: Optional[Dict[str, Any]] = None) -> 
             ax.xaxis.set_major_locator(FixedLocator(vach))
             ax.xaxis.set_minor_locator(NullLocator())
             ax.set_xticklabels([str(v).replace(".", ",") for v in vach])
+        elif d.get("phan_tram"):
+            ax.set_xlim(0, 100)
+            ax.set_xticks(list(range(0, 101, 20)))
         elif ref is not None:
             ax.set_xlim(ref - 1, ref + 1)
         if ref is not None:

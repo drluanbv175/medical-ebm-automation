@@ -591,6 +591,24 @@ def _lua_chon(chuoi: str) -> List[Tuple[str, str]]:
     return ra
 
 
+def _so_hien(s: str) -> str:
+    """Số trong phiếu/bảng biến số theo kiểu Việt Nam (soát 20/11/2026): thập phân dấu phẩy («0.1» → «0,1»), nhóm nghìn
+    bằng dấu chấm từ 5 chữ số («10000» → «10.000»; số 4 chữ số giữ nguyên để không nhầm năm «1950–2026»); ngày ISO
+    «2026-01-01» → «01/01/2026». Chuỗi khác giữ nguyên."""
+    s = (s or "").strip()
+    m = re.fullmatch(r"(\d{4})-(\d{2})-(\d{2})", s)
+    if m:
+        return f"{m[3]}/{m[2]}/{m[1]}"
+    m = re.fullmatch(r"(-?)(\d+)(?:\.(\d+))?", s)
+    if not m:
+        return s
+    nguyen = f"{int(m[2]):,}".replace(",", ".") if len(m[2]) >= 5 else m[2]
+    return m[1] + nguyen + (f",{m[3]}" if m[3] else "")
+
+
+_TU_THU_BAC = re.compile(r"\b(?:rất|hoàn toàn|mức|bình thường|trung lập|nhẹ|vừa|nặng|thấp|cao|kém|tốt)\b", re.I)
+
+
 def _o_tra_loi(r: Dict[str, str]) -> str:
     kieu = (r.get("Field Type") or "").strip()
     if kieu in ("radio", "dropdown", "checkbox"):
@@ -602,7 +620,7 @@ def _o_tra_loi(r: Dict[str, str]) -> str:
         return "…… /…… /…………"
     lo, hi = (r.get("Text Validation Min") or "").strip(), (r.get("Text Validation Max") or "").strip()
     if kiem in ("integer", "number") or lo or hi:
-        return f"{CHAM}" + (f" (từ {lo} đến {hi})" if lo and hi else "")
+        return f"{CHAM}" + (f" (từ {_so_hien(lo)} đến {_so_hien(hi)})" if lo and hi else "")
     if kieu == "calc":
         return "(tính từ các câu trên)"
     return CHAM
@@ -614,8 +632,14 @@ def _loai_bien(r: Dict[str, str]) -> str:
     if kieu == "calc":
         return "Tính toán"
     if kieu in ("radio", "dropdown", "checkbox", "yesno", "truefalse"):
-        n = len(_lua_chon(r.get("Choices, Calculations, OR Slider Labels"))) or 2
-        return "Nhị phân" if n == 2 else "Định danh/thứ bậc"
+        lc = _lua_chon(r.get("Choices, Calculations, OR Slider Labels"))
+        if kieu == "checkbox":
+            return "Định danh (chọn nhiều)"
+        if (len(lc) or 2) == 2:
+            return "Nhị phân"
+        # «Định danh/thứ bậc» (trước 20/11/2026) bỏ lửng cho người đọc: thang có thứ tự (Likert «Rất … / Bình thường /
+        # …») là thứ bậc, còn lại là định danh.
+        return "Thứ bậc" if sum(1 for _ma, nhan in lc if _TU_THU_BAC.search(nhan)) >= 2 else "Định danh"
     if kiem.startswith("date"):
         return "Ngày tháng"
     if kiem in ("integer", "number"):
@@ -697,7 +721,7 @@ def bang_bien_so(n: Nguon) -> List[str]:
             ma = "1 = Có; 0 = Không"
         else:
             lo, hi = (r.get("Text Validation Min") or "").strip(), (r.get("Text Validation Max") or "").strip()
-            ma = f"{lo}–{hi}" if lo and hi else ("dd/mm/yyyy" if "date" in (r.get(
+            ma = f"{_so_hien(lo)}–{_so_hien(hi)}" if lo and hi else ("dd/mm/yyyy" if "date" in (r.get(
                 "Text Validation Type OR Show Slider Number") or "") else "Giá trị ghi nhận")
         nguon = lam_sach((vai.get(ten) or {}).get("cong_cu", "")) or "Phiếu thu thập số liệu"
         nguon = nguon[:1].upper() + nguon[1:]
