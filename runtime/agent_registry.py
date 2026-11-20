@@ -188,8 +188,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 20/11/2026 (tối): dạy `viet-ban-thao`, `thiet-ke-nghien-cuu`, `dieu-phoi-g10` chuẩn trình bày văn bản nộp (K11, K9
 # «mỗi mức một dòng») — vẫn 64.
 # 20/11/2026 (tối, lượt 2): dạy `co-mau-nghien-cuu` đo lại chi tiết con số phụ của cỡ mẫu — vẫn 64.
+# 20/11/2026 (tối, lượt 3): bản sao `cap-nhat-guideline` (gốc #454 — cổng «đọc nguồn chính thức» nay CHẶN, có sổ nợ)
+# và `_CONNECTOR-CHUNG-CU.md` (gốc #456 — thêm ASM vào bảng điều khoản NXB) đồng bộ với nguồn gốc — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "547b9b70bdbed96673b162081ffb5219c60078a493308e8f93827e369ebe2f9c"
+    "60ba765dcaf4698ef90ff5172772ee1229ce2bec1d6fc7d95d367b19845e91a9"
 )
 
 MINIMUM_AGENT_COUNT = 64

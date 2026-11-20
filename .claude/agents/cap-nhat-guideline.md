@@ -132,8 +132,9 @@ chưa uỷ quyền (guideline ESC ở MỌI nơi đăng, ADA, AHA/Wolters Kluwer
 «chưa đọc được toàn văn», không suy ra nội dung từ tóm tắt.
 
 **Mục «apply» KHÔNG có PMID (thêm 20/11/2026):** nguồn chính thức (trang FDA/MHRA, nhãn DailyMed/openFDA, guideline
-chỉ có DOI/URL) cũng phải có bằng chứng ĐÃ ĐỌC — cổng `verify_dashboard.py --strict-sources` cảnh báo «ĐỌC NGUỒN CHÍNH
-THỨC» (hiện chỉ cảnh báo, chưa chặn). Tạo bằng chứng: `python3 tools/doc_nguon_chinh_thuc.py tai --ghi` (máy CHỈ tải
+chỉ có DOI/URL) cũng phải có bằng chứng ĐÃ ĐỌC — cổng `verify_dashboard.py --strict-sources` CHẶN «ĐỌC NGUỒN CHÍNH
+THỨC» (từ 20/11/2026; chỉ mục tồn trong sổ nợ `no-nguon-chinh-thuc-apply.json` còn hạn mới được cảnh báo — xem bằng
+`python3 tools/doc_nguon_chinh_thuc.py so-no`; agent không tự lập/gia hạn sổ). Tạo bằng chứng: `python3 tools/doc_nguon_chinh_thuc.py tai --ghi` (máy CHỈ tải
 miền cơ quan nhà nước/NXB giấy phép mở; NXB «cấm» chưa uỷ quyền ⇒ bác sĩ đọc trực tiếp rồi
 `bac-si-da-doc --nguon "<DOI|URL>" --ghi-chu "<kết luận của bác sĩ>" --ghi`; còn lại ⇒ làn trình duyệt theo `huong-dan`,
 NXB chưa kiểm thì đọc trang điều khoản trước và nạp kèm `--dieu-khoan`). Xem độ phủ: `python3 tools/so_toan_van.py`.
