@@ -160,3 +160,30 @@ def test_markdown_va_khuon(de_tai):
     assert khuon["loai"] == HD.LOAI_XU_LY and khuon["viec"][0]["cach_xu_ly"] == "|".join(HD.CACH_XU_LY)
     assert HD.viec_can_xu_ly(json.loads(Path(str(p).replace(p.name, f"{goc}.json")).read_text(
         encoding="utf-8"))) == ["giam-khao-cong:RQ5"]
+
+
+def test_sua_ket_luan_xu_ly_o_tai_lieu_khac_thi_het_can_sua(de_tai):
+    """20/11/2026 (C1a G1 DP-G1-2): việc sửa nằm ở tài liệu NGOÀI tai_lieu_xet của biên bản gốc (đề cương nộp) — bản
+    gốc không «cũ» nên nhánh «cũ + xử lý» không chạy; biên bản xử lý hợp lệ phủ đủ việc vẫn phải đóng «CẦN SỬA»."""
+    tb = _tranh_bien("DP-G4-1", "sua_ket_luan")
+    tb["phan_quyet"]["viec_sua"] = ["Thêm câu estimand-like vào đề cương — nhóm soạn đề cương",
+                                    "Viết lại kết luận dự kiến thành mệnh đề có điều kiện — dieu-phoi-g4"]
+    goc = _ghi_ok(de_tai, tb)
+    (de_tai / "DE_CUONG_KHAC.md").write_text("Đại lượng cần ước lượng của Mục tiêu 2 …\n", encoding="utf-8",
+                                             newline="\n")
+    assert "DP-G4-1: hội đồng yêu cầu sửa" in HD.tom_tat_cong("G4", de_tai)["ly_do"]
+    xl = _xl(goc, "viec_sua:1", "viec_sua:2")
+    xl["viec"][0]["can_cu"] = [{"loai": "tep", "gia_tri": "DE_CUONG_KHAC.md", "mau": "Đại lượng cần ước lượng"}]
+    _ghi_ok(de_tai, xl)
+    assert HD.kiem_bien_ban(next(b for b in HD.doc_bien_ban(de_tai, "G4") if b.get("id") == goc),
+                            de_tai)["cu"] == [], "biên bản gốc không cũ — đúng ca cần vá"
+    assert "DP-G4-1: hội đồng yêu cầu sửa" not in HD.tom_tat_cong("G4", de_tai)["ly_do"]
+
+
+def test_sua_ket_luan_xu_ly_thieu_viec_van_can_sua(de_tai):
+    tb = _tranh_bien("DP-G4-1", "sua_ket_luan")
+    tb["phan_quyet"]["viec_sua"] = ["Việc một — dieu-phoi-g4", "Việc hai — dieu-phoi-g4"]
+    goc = _ghi_ok(de_tai, tb)
+    p, kq = _ghi(de_tai, _xl(goc, "viec_sua:1"))
+    assert p is None and any("chưa xử lý 1 việc" in e for e in kq["loi"])
+    assert "DP-G4-1: hội đồng yêu cầu sửa" in HD.tom_tat_cong("G4", de_tai)["ly_do"]
