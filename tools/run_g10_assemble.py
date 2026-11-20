@@ -1251,11 +1251,24 @@ def _vancouver(pid: str, md: dict) -> Optional[str]:
     """Một dòng Vancouver từ metadata PubMed ĐÃ PHÂN GIẢI (A12_METADATA_RECEIPT) — None khi chưa phân giải."""
     if not isinstance(md, dict) or md.get("status") != "resolved" or not RS.is_present(md.get("title")):
         return None
-    tac_gia = md.get("authors")
+    # 20/11/2026 (phản biện đề cương BTM, mục O14): biên nhận A12 mới mang `authors_6` + `n_authors` + `journal_abbr` +
+    # tập/số/trang ⇒ dòng đúng Vancouver/NLM (tối đa 6 tác giả rồi «et al.», tên tạp chí viết tắt NLM,
+    # «năm;tập(số):trang»). Biên nhận cũ/kho giả lập không có các khoá đó ⇒ giữ nguyên cách dựng cũ.
+    tac_gia = md.get("authors_6") if isinstance(md.get("authors_6"), (list, tuple)) else md.get("authors")
     tac_gia = list(tac_gia) if isinstance(tac_gia, (list, tuple)) else ([tac_gia] if tac_gia else [])
-    ten = ", ".join(str(a) for a in tac_gia[:6]) + (", et al" if len(tac_gia) > 6 else "")
-    phan = [ten, str(md["title"]).rstrip("."), md.get("journal"), md.get("year")]
-    dong = ". ".join(str(x) for x in phan if RS.is_present(x)) + "."
+    tong = md.get("n_authors") if isinstance(md.get("n_authors"), int) else len(tac_gia)
+    ten = ", ".join(str(a) for a in tac_gia[:6]) + (", et al" if tong > 6 else "")
+    tieu_de = str(md["title"]).strip()
+    tieu_de = tieu_de if tieu_de.endswith(("?", "!")) else tieu_de.rstrip(".") + "."
+    vi_tri = str(md.get("year") or "")[:4] if md.get("volume") else md.get("year")
+    if md.get("volume") and vi_tri:
+        vi_tri += f";{md['volume']}" + (f"({md['issue']})" if RS.is_present(md.get("issue")) else "")
+        if RS.is_present(md.get("pages")):
+            vi_tri += f":{md['pages']}"
+    tap_chi = md.get("journal_abbr") if RS.is_present(md.get("journal_abbr")) else md.get("journal")
+    dong = " ".join(x for x in ((ten + ".") if RS.is_present(ten) else "", tieu_de,
+                                (f"{tap_chi}." if RS.is_present(tap_chi) else ""),
+                                (f"{vi_tri}." if RS.is_present(vi_tri) else "")) if x)
     if RS.is_present(md.get("doi")):
         dong += f" doi:{md['doi']}."
     return f"{dong} PMID: {pid}."

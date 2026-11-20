@@ -183,6 +183,21 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact manuscript
   bổ sung); (h) giá trị đã chốt ở G1 (thời gian, khoản chi) giữ đúng chữ — sửa văn phong không được làm lệch trục
   `de_cuong_nop` của `nhat_quan_xuyen_cong`. Lỗi lặp lại ⇒ sửa ở bộ sinh (`khung_bieu_bang.py`,
   `sinh_de_cuong_nop_hoi_dong.py`) + phép thử, không vá tay từng đề tài.
+- **Tổng quan tài liệu — mỗi tài liệu đỡ một câu, mỗi con số khớp toàn văn (bác sĩ 20/11/2026: «Hãy kiểm tra và hoàn
+  thiện vấn đề tổng quan tài liệu»):** chốt máy K12 chặn ngoặc trích gộp từ 6 tài liệu trở lên (kiểu «các tài liệu khác
+  được tham khảo khi xây dựng đề cương [15–36]») và mục TLTK không được trích; K13 chặn mục có PMID lệch Vancouver/NLM
+  theo biên nhận A12 (hơn 6 tác giả ⇒ 6 tác giả rồi «et al.», «năm;tập(số):trang», tên tạp chí viết tắt NLM). Bài
+  trong nước: tên tác giả, tên bài, trang lấy từ trang đầu PDF (tên trên Crossref hay đảo họ tên). Trước khi trả chạy
+  `tools/kiem_so_lieu_toan_van.py --study <mã>`: mọi con số trong vế có [n] phải có trong toàn văn của đúng tài liệu
+  được dẫn ở chính vế đó. Máy chỉ kiểm SỰ CÓ MẶT; agent tự soát: (i) đúng quần thể (46,9% của mọi người bệnh thận mạn
+  không phải của người ĐTĐ típ 2); (ii) không chọn lọc ước lượng (nguồn nêu cả hiệu ứng cố định lẫn ngẫu nhiên ⇒ nêu cả
+  hai, kèm I²); (iii) đúng thuật ngữ của nguồn («bệnh thận đái tháo đường», «biến chứng thận» khác «bệnh thận mạn»);
+  (iv) khuyến cáo trích kèm số hiệu và mức chứng cứ NGUYÊN VĂN, điểm thực hành KDIGO không có mức; (v) không dùng bài
+  chủ nhiệm đã loại khỏi danh mục, không đưa phiếu tra chưa được chủ nhiệm xác nhận; (vi) toàn văn hướng dẫn trong
+  EndNote: bỏ tệp «_TomTatChungCu.pdf» (bản tóm tắt hệ thống dựng, không phải nguồn). Tổng quan đề cương đủ: định nghĩa
+  và phân loại, khuyến cáo làm chuẩn đo, thực trạng thế giới theo từng khâu, tình hình trong nước, khoảng trống có căn
+  cứ; bảng nghiên cứu chính có cột «Kết quả chính». Sửa đề cương đã lắp G10 ⇒ lắp lại G10 trên checkout có sổ phê
+  duyệt (worktree thiếu sổ ⇒ đọc sai SAP thành «chưa khoá»).
 - Nguồn gốc bản máy nằm NGOÀI văn bản: dấu sha256 ở `_dau_may_sinh/DE_CUONG_NOP_HOI_DONG_<mã>.md.json` (17/11/2026). Tệp khớp dấu là bản máy chưa ai sửa ⇒ sinh lại được; tệp đã có người sửa (lệch sha256) hoặc không có dấu là bản của chủ nhiệm ⇒ công cụ từ chối ghi đè (mã 4). Bản cũ còn dòng `<!-- sinh-de-cuong-nop-hoi-dong: … -->` vẫn được nhận là bản máy.
 
 ## Văn bản không mang dấu vết soạn thảo hay dấu vết máy (17/11/2026 — bác sĩ yêu cầu)
