@@ -88,8 +88,9 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT, ngôn ngữ hành chính)
  Lý do cần nghiên cứu tại bối cảnh Việt Nam: Theo G0_KHOANG_TRONG (25/10/2026): ở Việt Nam chưa thấy nghiên cứu đo đồng thời cả chuỗi xét nghiệm → phát hiện → ghi nhận → điều trị ở người ĐTĐ típ 2 ngoại trú tại bệnh viện quân đội; các nghiên cứu tìm được chủ yếu đo tỷ lệ bệnh thận mạn trong mẫu đã xét nghiệm hoặc mô tả kê đơn ở người đã có bệnh thận mạn. Mức tính mới: mở rộng bối cảnh. Không mới trên thế giới. Phạm vi tra: PubMed + Crossref; chưa tra Google Scholar và thư viện luận văn.
 
 2. MỤC TIÊU CỤ THỂ:
- 2.1 MT1: Mô tả thực trạng phát hiện bệnh thận mạn ở người bệnh đái tháo đường típ 2 điều trị ngoại trú tại Khoa Khám bệnh, Bệnh viện Quân y 175 năm 2026. Tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh (kết cục chính), tỷ lệ bệnh thận mạn theo KDIGO 2024 và tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán.
+ 2.1 MT1: Mô tả thực trạng phát hiện bệnh thận mạn ở người bệnh đái tháo đường típ 2 điều trị ngoại trú được theo dõi đều (từ 2 lượt khám trong năm) tại Khoa Khám bệnh, Bệnh viện Quân y 175 năm 2026 — tỷ lệ được xét nghiệm đủ UACR và creatinin huyết thanh (kết cục chính), tỷ lệ bệnh thận mạn theo KDIGO 2024 và tỷ lệ bệnh thận mạn chưa được ghi nhận chẩn đoán.
  2.2 MT2: Mô tả thực trạng điều trị bảo vệ thận (ACEi/ARB, SGLT2i) ở người bệnh đủ chỉ định theo KDIGO 2022 trong cùng quần thể.
+ 2.3 MT3: Phân tích một số yếu tố liên quan với việc không được xét nghiệm đủ UACR và creatinin (phân tích thăm dò, không kiểm định giả thuyết định trước).
 
 3. ĐỐI TƯỢNG THAM GIA:
  Tiêu chí chọn: Từ 18 tuổi trở lên tại lượt khám đầu tiên trong cửa sổ; Có mã ICD-10 E11 (chẩn đoán chính hoặc kèm theo) ở ít nhất một lượt khám ngoại trú tại Khoa Khám bệnh BVQY175 trong cửa sổ 01/01/2026–31/12/2026; Có ít nhất 2 lượt khám ngoại trú tại Khoa Khám bệnh trong cùng cửa sổ

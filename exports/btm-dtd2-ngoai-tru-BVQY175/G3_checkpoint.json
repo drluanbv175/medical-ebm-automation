@@ -1,7 +1,7 @@
 {
   "gate": "G3",
   "study": "btm-dtd2-ngoai-tru-BVQY175",
-  "run_date": "2026-11-18",
+  "run_date": "2026-11-20",
   "gate_status": "DRAFT — CHỜ BÁC SĨ XÁC NHẬN",
   "design_code": "cross_sectional",
   "design_ambiguous": false,
@@ -39,12 +39,12 @@
     "sd": null,
     "confirmed_n": null,
     "hypothesis_type": "đặc tả thiết kế G1 (g1_khoa)",
-    "prevalence": "CLI",
-    "precision": "CLI",
+    "prevalence": "study_meta",
+    "precision": "study_meta",
     "alpha": "mặc định 0.05 — giữ từ checkpoint lượt trước",
     "power": "mặc định 0.8 — giữ từ checkpoint lượt trước",
     "p0": "mặc định 0.3 — giữ từ checkpoint lượt trước",
-    "dropout": "CLI",
+    "dropout": "study_meta",
     "p_event": "mặc định 0.3 — giữ từ checkpoint lượt trước"
   },
   "tham_so_mac_dinh_may": [
@@ -53,7 +53,7 @@
     "p_event",
     "power"
   ],
-  "nguon_hieu_qua": "CLI",
+  "nguon_hieu_qua": "study_meta",
   "guardrail": "✅ PASS",
   "core_value": {
     "name": "n_adjusted",
@@ -64,8 +64,7 @@
     "Xác nhận effect size (PMID/DOI từ y văn/pilot study)",
     "Xác nhận tỷ lệ bỏ cuộc dự kiến",
     "Xác nhận tỷ lệ biến cố nền (với log-rank)",
-    "Copy khối cỡ mẫu vào đề cương",
-    "Chạy G0/G1 trước; không tính cỡ mẫu trên thiết kế mặc định."
+    "Copy khối cỡ mẫu vào đề cương"
   ],
   "quality_contract_version": "G3-2026.1",
   "quality_gate": {
@@ -275,7 +274,7 @@
     "artifact_manifest": {
       "A4_SAMPLE_SIZE": {
         "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G3_A4_SAMPLE_SIZE_btm-dtd2-ngoai-tru-BVQY175.md",
-        "sha256": "cb991c91635ffc31b1a8eacb7f772b43d7d55dfbc482aadb308c007618bc020b"
+        "sha256": "b9409da69aad95b82d2a63c934c40efc261a900d1e540cd99a0a467dee7d88da"
       }
     },
     "sensitivity_table": {

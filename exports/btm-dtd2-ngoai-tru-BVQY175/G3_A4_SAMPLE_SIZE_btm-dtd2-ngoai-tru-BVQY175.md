@@ -1,6 +1,6 @@
 # A4 — KẾ HOẠCH CỠ MẪU (DRAFT)
 **Đề tài:** Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026  
-**Mã:** btm-dtd2-ngoai-tru-BVQY175 | **Ngày sinh:** 2026-11-18 | **Trạng thái:** DRAFT — CHỜ BÁC SĨ XÁC NHẬN
+**Mã:** btm-dtd2-ngoai-tru-BVQY175 | **Ngày sinh:** 2026-11-20 | **Trạng thái:** DRAFT — CHỜ BÁC SĨ XÁC NHẬN
 
 ---
 
@@ -11,8 +11,8 @@
 | Khung cỡ mẫu | Ước lượng theo ĐỘ CHÍNH XÁC (không kiểm định giả thuyết) | đặc tả thiết kế G1 (g1_khoa) |
 | Độ tin cậy | 95% (α = 0.05, hai phía) | Quy ước |
 | Tỷ lệ không trả lời dự kiến | 0% | [CẦN BÁC SĨ XÁC NHẬN] |
-| Tỷ lệ ước lượng p | 0.50 | do bác sĩ/thống kê viên cấp (dòng lệnh); nguồn: Chủ nhiệm chọn p = 50% ngày 28/10/2026, nguyên văn «p 50%, d 5%» (mục 2.5): giả định thận trọng nhất — tích p(1−p) lớn nhất nên cho cỡ mẫu lớn nhất khi chưa biết tỷ lệ thật tại BVQY175. Y văn đã trình để tham khảo: PMID 38922613 (24,9% làm đủ UACR và creatinin), PMID 33722396 (43,3% có làm UACR). |
-| Sai số tuyệt đối cho phép d | ±5% | do bác sĩ/thống kê viên cấp (dòng lệnh) |
+| Tỷ lệ ước lượng p | 0.50 | ghim trong study_meta; nguồn: Chủ nhiệm chọn p = 50% ngày 28/10/2026, nguyên văn «p 50%, d 5%» (mục 2.5): giả định thận trọng nhất — tích p(1−p) lớn nhất nên cho cỡ mẫu lớn nhất khi chưa biết tỷ lệ thật tại BVQY175. Y văn đã trình để tham khảo: PMID 38922613 (24,9% làm đủ UACR và creatinin), PMID 33722396 (43,3% có làm UACR). |
+| Sai số tuyệt đối cho phép d | ±5% | ghim trong study_meta |
 
 > **Thiết kế:** Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)  
 > **Công thức:** Cỡ mẫu ước lượng một tỷ lệ theo độ chính xác (Lwanga & Lemeshow/Cochran, xấp xỉ chuẩn): tỷ lệ hiện mắc ước lượng p=0.50, sai số cho phép d=0.05, alpha=0.05
