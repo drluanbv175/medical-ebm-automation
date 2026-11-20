@@ -10,11 +10,14 @@
    và vẽ hai nhánh «có/không phơi nhiễm» cho thiết kế cắt ngang có phơi nhiễm liên tục.
 5. Trục ⑤ của kiem_chi_tiet: artifact dựng lại SAU khi ký («NỘI DUNG ĐÃ ĐỔI SAU KHI DUYỆT») bị xếp 🔴 «bất thường sổ
    cái — điều tra, ký lại trên máy hiện tại» thay vì 🟡 «PI rà rồi ký lại».
+6. G10 A12: DOI không có PMID đã được kiem_rut_bai_trich_dan.py kiểm (còn hạn) vẫn bị bảo «tra tay»; DOI đã rút/EoC
+   trong kết quả ấy không chặn (PMID đã rút thì chặn).
 """
 from __future__ import annotations
 
 import json
 import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -24,10 +27,15 @@ for _p in (str(ROOT / "tools"), str(ROOT / "tests")):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
+import check_citation_metadata as CCM  # noqa: E402
+import check_citation_retraction as CCR  # noqa: E402
 import gate_contract as GC  # noqa: E402
 import kiem_chi_tiet_he_nghien_cuu as KCT  # noqa: E402
 import run_g0_auto as G0  # noqa: E402
 import run_g5_auto as G5  # noqa: E402
+import run_g10_assemble as G10A  # noqa: E402
+
+from tests.g5_test_helpers import configure_test_signing_key  # noqa: E402
 
 STUDY = "S-HTC20"
 NEN = ["34445940", "36439278"]
@@ -283,3 +291,81 @@ def test_r6_da_chot_day_du_khong_doi_nhan_can():
                                      "## PHẦN 2 — KIỂM FINER (đã chốt — chỉ đọc)\n", "Không có gì.\n"])
 def test_r6_chua_chot_du_van_doi_nhan_can(van_ban):
     assert _r6(van_ban)
+
+
+# ── 6. G10 A12: DOI không có PMID dùng kết quả kiem_rut_bai_trich_dan.py còn hạn ───────────────────────────────
+
+DOI_LE = "10.9999/khong-ro"
+
+
+def _ghi_json(p: Path, v) -> None:
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(v if isinstance(v, str) else json.dumps(v, ensure_ascii=False), encoding="utf-8", newline="\n")
+
+
+def _goi_a12(tmp_path, monkeypatch, kiem: dict | None):
+    configure_test_signing_key(tmp_path, monkeypatch)
+    goc, study = tmp_path / "goc", "S-A12-DOI2"
+    out = goc / "exports" / study
+    _ghi_json(out / f"A12_CITATION_VERIFICATION_{study}.md",
+              "KẾT QUẢ CỔNG A12: ĐÃ XÁC MINH TOÀN BỘ TRÍCH DẪN — KHÔNG CÒN 🔴\n")
+    _ghi_json(out / f"DE_CUONG_THONG_NHAT_{study}.md",
+              "Tài liệu tham khảo\n1. Tác giả A. Nguồn thử. Tạp chí thử. 2018. doi:10.5555/thu-1. PMID: 30560792.\n"
+              f"2. Sách không có trên PubMed. doi:{DOI_LE}.\n")
+    monkeypatch.setattr(CCR, "REPO_ROOT", goc)
+    monkeypatch.setattr(CCM, "REPO_ROOT", goc)
+    CCR.write_retraction_receipt(study, ["30560792"], {"30560792": {"status": "ok"}})
+    CCM.write_metadata_receipt(study, ["30560792"], {"30560792": {"status": "resolved", "title": "Nguồn thử",
+                                                                  "doi": "10.5555/thu-1"}})
+    if kiem is not None:
+        _ghi_json(out / f"KIEM_RUT_BAI_TRICH_DAN_{study}.json", {"study": study, **kiem})
+    return study, out
+
+
+def _kiem(trang_thai: str, ngay_truoc: int = 2, doi: str = DOI_LE) -> dict:
+    luc = (datetime.now(timezone.utc) - timedelta(days=ngay_truoc)).isoformat(timespec="seconds")
+    return {"checked_at": luc, "ket_qua": {f"doi:{doi}": {"status": trang_thai, "source": "crossref"}}}
+
+
+@pytest.mark.parametrize("tt", ["ok", "correction"])
+def test_a12_doi_da_kiem_con_han_khong_bat_tra_tay(tmp_path, monkeypatch, capsys, tt):
+    study, out = _goi_a12(tmp_path, monkeypatch, _kiem(tt))
+    ok, ly_do = G10A.citation_verification_ok(study, out)
+    ra = capsys.readouterr().out
+    assert ok, ly_do
+    assert "1 DOI không có PMID đã kiểm rút bài qua Crossref/Retraction Watch" in ra
+    assert "CẢNH BÁO CỔNG A12: phát hiện" not in ra
+
+
+@pytest.mark.parametrize("tt", ["retracted", "expression_of_concern"])
+def test_a12_doi_duong_tinh_thi_chan(tmp_path, monkeypatch, tt):
+    study, out = _goi_a12(tmp_path, monkeypatch, _kiem(tt, doi=DOI_LE.upper()))
+    ok, ly_do = G10A.citation_verification_ok(study, out)
+    assert not ok and "ĐÃ RÚT" in ly_do and tt in ly_do
+
+
+@pytest.mark.parametrize("kiem", [None, _kiem("ok", ngay_truoc=31), _kiem("unknown"), _kiem("ok", doi="10.1/khac"),
+                                  {"checked_at": "2026-11-15T04:54:26", "ket_qua": {f"doi:{DOI_LE}": {"status": "ok"}}},
+                                  {"checked_at": "hỏng", "ket_qua": {}}])
+def test_a12_doi_chua_kiem_con_han_van_canh_bao(tmp_path, monkeypatch, capsys, kiem):
+    study, out = _goi_a12(tmp_path, monkeypatch, kiem)
+    ok, ly_do = G10A.citation_verification_ok(study, out)
+    ra = capsys.readouterr().out
+    assert ok, ly_do
+    dong = next(d for d in ra.splitlines() if "CẢNH BÁO CỔNG A12: phát hiện" in d)
+    assert DOI_LE in dong and f"kiem_rut_bai_trich_dan.py --study {study} --ghi" in dong
+
+
+def test_a12_tep_kiem_cua_de_tai_khac_khong_dung(tmp_path, monkeypatch, capsys):
+    study, out = _goi_a12(tmp_path, monkeypatch, None)
+    _ghi_json(out / f"KIEM_RUT_BAI_TRICH_DAN_{study}.json", {"study": "DE-TAI-KHAC", **_kiem("ok")})
+    G10A.citation_verification_ok(study, out)
+    assert "CẢNH BÁO CỔNG A12: phát hiện" in capsys.readouterr().out
+
+
+def test_a12_doi_so_khop_khong_phan_biet_hoa_thuong(tmp_path):
+    """DOI không phân biệt hoa/thường: văn bản ghi «10.9999/KHONG-RO», tệp kết quả ghi chữ thường ⇒ vẫn là đã kiểm."""
+    study = "S-A12-HOA"
+    _ghi_json(tmp_path / f"KIEM_RUT_BAI_TRICH_DAN_{study}.json", {"study": study, **_kiem("ok")})
+    da_kiem, duong_tinh = G10A._doi_da_kiem_rut_bai({DOI_LE.upper()}, study, tmp_path)
+    assert da_kiem == {DOI_LE.upper()} and duong_tinh == {}
