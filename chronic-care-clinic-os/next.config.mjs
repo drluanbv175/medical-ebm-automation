@@ -1,8 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    typedRoutes: true
-  },
+  // Next 15.5 đưa typedRoutes ra khỏi `experimental` (tính năng đã ổn định, hành vi giữ nguyên).
+  typedRoutes: true,
   async headers() {
     return [
       {

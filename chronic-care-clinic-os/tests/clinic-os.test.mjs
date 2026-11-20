@@ -746,3 +746,56 @@ test("AI_DRAFTS_ENABLED has a real code-level circuit breaker, not just a doc pr
   assert.match(envExample, /AI_DRAFTS_ENABLED="false"/);
   assert.match(blockers, /lib\/ai-guard\.ts::assertAiDraftsEnabled/);
 });
+
+// Bỏ chú thích để chốt chỉ khớp DÒNG THI HÀNH (chú thích cùng chuỗi không được làm xanh/đỏ giả).
+function executableSource(source) {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .split("\n")
+    .filter((line) => !line.trim().startsWith("//"))
+    .join("\n");
+}
+
+test("app entry files use Next 15 async params/searchParams", () => {
+  // 20/11/2026: `next build` (Next 15.5) dịch xong nhưng dừng ở «checking validity of types» vì
+  // app/patients/[id]/page.tsx còn khai `params: { id: string }` — Next 15 đổi params/searchParams
+  // thành Promise. `tsc -p tsconfig.check.json` KHÔNG bắt được (ràng buộc PageProps chỉ sinh trong
+  // .next/types lúc build), nên khoá tĩnh ở đây cho mọi page/layout/template/default/route.
+  const entryFiles = listFiles("app").filter((file) =>
+    /(^|[\\/])(page|layout|template|default)\.tsx$|(^|[\\/])route\.ts$/.test(file)
+  );
+  assert.ok(
+    entryFiles.some((file) => /\[[^\]]+\]/.test(file)),
+    "phải có ít nhất một segment động để chốt có ý nghĩa"
+  );
+  for (const file of entryFiles) {
+    const code = executableSource(read(file));
+    // Hook client (useParams/useSearchParams) trả object đồng bộ — không thuộc phạm vi chốt này.
+    if (/\buse(Search)?Params\s*\(/.test(code)) continue;
+    for (const name of ["params", "searchParams"]) {
+      const typings = [...code.matchAll(new RegExp(`\\b${name}\\s*\\??\\s*:\\s*([^\\n]*)`, "g"))];
+      for (const typing of typings) {
+        assert.match(typing[1], /^Promise</, `${file}: \`${name}\` phải khai kiểu Promise<...> (Next 15)`);
+      }
+      assert.doesNotMatch(
+        code,
+        new RegExp(`\\b${name}\\.\\w`),
+        `${file}: chỉ đọc \`${name}\` sau khi await (server) hoặc React.use (client)`
+      );
+      if (typings.length > 0) {
+        assert.match(
+          code,
+          new RegExp(`\\bawait\\s+${name}\\b|\\buse\\(\\s*${name}\\s*\\)`),
+          `${file}: \`${name}\` khai Promise nhưng không await/use`
+        );
+      }
+    }
+  }
+});
+
+test("next.config uses stable typedRoutes instead of experimental flag", () => {
+  // Next 15.5 cảnh báo `experimental.typedRoutes` đã chuyển thành `typedRoutes` (cùng tính năng).
+  const config = executableSource(read("next.config.mjs"));
+  assert.match(config, /^\s*typedRoutes:\s*true\b/m);
+  assert.doesNotMatch(config, /experimental\s*:\s*\{[^}]*typedRoutes/);
+});
