@@ -1149,8 +1149,11 @@ def generate_g2_full_package(
                                    blank=f"[CẦN — từ ___/___/{_YEAR} đến ___/___/____]")
     _gap_vn = _meta_or_blank(meta, "gate_params", "G1", "knowledge_gap",
                              blank="[CẦN BỔ SUNG: lý do cần nghiên cứu thêm tại bối cảnh Việt Nam]")
-    _obj1 = str(_objectives[0]) if len(_objectives) > 0 else "[CẦN — Mục tiêu 1, từ PICO G0]"
-    _obj2 = str(_objectives[1]) if len(_objectives) > 1 else "[CẦN — Mục tiêu 2 nếu có]"
+    # 20/11/2026 (kiểm toàn hệ nghiên cứu, BTM): tóm tắt TL2 chỉ có hai ô {_obj1}/{_obj2} ⇒ đề tài 3 mục tiêu mất MT3
+    # trong hồ sơ trình Hội đồng, kể cả khi sinh lại. Nay liệt kê ĐỦ mục tiêu G1 đã chốt, NGUYÊN VĂN; vắng thì giữ hai ô.
+    _muc_tieu_ds = [" ".join(str(o).split()) for o in _objectives if str(o).strip()]
+    _khoi_muc_tieu = ("\n".join(f"   2.{i} {o}" for i, o in enumerate(_muc_tieu_ds, 1)) if _muc_tieu_ds else
+                      "   2.1 [CẦN — Mục tiêu 1, từ PICO G0]\n   2.2 [CẦN — Mục tiêu 2 nếu có]")
     # 16/11/2026: câu «Nghiên cứu do [đơn vị] thực hiện … tại [nơi thực hiện]» của ICF lấy đơn vị/nơi thực hiện ĐÃ CHỐT
     # (administrative.pi_unit, G1.setting) — trước là ô mẫu chung không nhãn, PI phải gõ lại điều G1 đã có.
     _don_vi_icf = (f"Nghiên cứu do {_pi_unit} thực hiện tại {_setting}" if not _pi_unit.startswith("[")
@@ -1698,8 +1701,7 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT — ngôn ngữ hành chính)
    Lý do cần nghiên cứu tại bối cảnh Việt Nam: {_gap_vn}
 
 2. MỤC TIÊU CỤ THỂ:
-   2.1 {_obj1}
-   2.2 {_obj2}
+{_khoi_muc_tieu}
 
 3. ĐỐI TƯỢNG THAM GIA:
    Tiêu chí chọn: {_incl}

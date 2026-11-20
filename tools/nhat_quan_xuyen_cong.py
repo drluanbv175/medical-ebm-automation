@@ -891,7 +891,7 @@ TRUC_CHUOI = ("bien_de_cuong", "cong_cu_tu_dien", "muc_tieu_phan_tich", "chon_ma
               "tong_quan_khoang_trong", "co_mau_tinh_lai", "ky_thuat_chon_mau", "tai_lieu_nop_co_mau", "ten_de_tai",
               "cau_hoi_gia_thuyet", "trich_dan_tong_quan", "ma_tran_muc_tieu", "chuan_bao_cao", "mo_ta_thiet_ke",
               "kiem_soat_sai_lech", "quy_trinh_du_lieu", "cong_cu_do_luong", "de_cuong_nop",
-              "dac_ta_phan_tich")
+              "dac_ta_phan_tich", "muc_tieu_ho_so_g2")
 # Trục nào là trách nhiệm của cổng nào (hoi_dong_cong.trach_nhiem dùng — «hoàn thiện» của cổng phải qua trục của nó).
 TRUC_THEO_CONG = {
     "co_mau": ("G3", "G4", "G10"), "alpha": ("G3", "G4", "G10"), "power": ("G3", "G4", "G10"),
@@ -911,6 +911,7 @@ TRUC_THEO_CONG = {
     "kiem_soat_sai_lech": ("G1", "G4", "G10"),
     "quy_trinh_du_lieu": ("G1", "G2", "G5", "G10"), "cong_cu_do_luong": ("G1", "G3", "G10"),
     "de_cuong_nop": ("G2", "G4", "G10"), "dac_ta_phan_tich": ("G4", "G6", "G10"),
+    "muc_tieu_ho_so_g2": ("G1", "G2", "G10"),
 }
 
 
@@ -1044,6 +1045,48 @@ def _truc_muc_tieu(meta: Dict[str, Any], sap_text: str) -> Optional[Dict[str, An
                     MUC_CAN_XEM, f"{len(thieu)}/{len(ob)} mục tiêu không được SAP gọi tên — ghi rõ phân tích nào "
                     "trả lời mục tiêu nào (truy nguyên mục tiêu → phân tích)")  # fmt: skip
     return _ket("muc_tieu_phan_tich", ten, [], MUC_KHOP, f"{len(ob)}/{len(ob)} mục tiêu có trong SAP")
+
+
+def _chuan_muc_tieu(s: str) -> str:
+    """Khoá so mục tiêu: bỏ nhãn «MTn:», dấu câu, hoa/thường, khoảng trắng — chỉ còn chữ và số."""
+    s = re.sub(r"^\s*MT\s*\d+\s*[:.–—-]?\s*", "", str(s))
+    return " ".join(re.sub(r"[^\w\s]", " ", s.lower()).split())
+
+
+def _truc_muc_tieu_ho_so_g2(out_dir: Path, study: str, meta: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Mục tiêu G1 đã chốt ↔ hồ sơ đạo đức G2 (20/11/2026, kiểm toàn hệ nghiên cứu).
+
+    Đo thật BTM: G1 sửa 20/11 (MT1 thu hẹp «được theo dõi đều», thêm MT3) nhưng G2 giữ bản đã biên tập ⇒ hồ sơ trình
+    Hội đồng thiếu MT3 và MT1 còn câu cũ; không trục nào bắt. Mục tiêu G1 vắng hẳn khỏi hồ sơ G2 (cả nhãn MTn lẫn nội
+    dung) ⇒ LỆCH MỀM (Hội đồng duyệt sai phạm vi); có nhãn mà câu chữ khác bản G1 ⇒ CẦN XEM; chưa có hồ sơ G2 ⇒ None;
+    hồ sơ không có mục mục tiêu nào (bản rút gọn) ⇒ CHƯA ĐỦ ĐỂ SO."""
+    ob = [str(x) for x in (_gp(meta, "G1").get("objectives") or []) if _co_that(x)]
+    p = out_dir / f"G2_A3_ETHICS_PACKAGE_{study}.md"
+    if not ob or not p.is_file():
+        return None
+    ten = "Mục tiêu (G1) ↔ hồ sơ đạo đức (G2)"
+    g2 = p.read_text(encoding="utf-8", errors="replace")
+    if not re.search(r"^\s*(?:\d+(?:\.\d+)*\.?\s+)?(?:(?:MỤC TIÊU|Mục tiêu)[^\n]*:|MT\s*\d+\s*:)", g2,
+                     re.M):
+        return _ket("muc_tieu_ho_so_g2", ten, [], MUC_CHUA_DU, f"{p.name} không có mục mục tiêu để so")
+    g2_chuan = _chuan_muc_tieu(g2)
+    vang, khac = [], []
+    for o in ob:
+        if _chuan_muc_tieu(o) in g2_chuan:
+            continue
+        m = re.match(r"\s*MT\s*(\d+)", o)
+        # có dòng mục tiêu «[2.3] MTn: …» ⇒ khác câu chữ; nhãn MTn giữa câu khác («biến … cho MT3») không tính
+        co_dong = bool(m and re.search(rf"^\s*(?:\d+(?:\.\d+)*\.?\s+)?MT\s*{m[1]}\s*:", g2, re.M))
+        (khac if co_dong else vang).append(o[:90])
+    nguon = [{"cong": "G1", "noi": "objectives", "gia_tri": x} for x in vang + khac]
+    if vang:
+        return _ket("muc_tieu_ho_so_g2", ten, nguon, MUC_LECH_MEM,
+                    f"{len(vang)}/{len(ob)} mục tiêu G1 không có trong {p.name}" + (f"; {len(khac)} mục tiêu khác câu "
+                    "chữ" if khac else "") + " — cập nhật hồ sơ G2 theo G1 trước khi nộp Hội đồng")
+    if khac:
+        return _ket("muc_tieu_ho_so_g2", ten, nguon, MUC_CAN_XEM,
+                    f"{len(khac)}/{len(ob)} mục tiêu có trong hồ sơ G2 nhưng câu chữ khác bản G1 đã chốt")
+    return _ket("muc_tieu_ho_so_g2", ten, [], MUC_KHOP, f"{len(ob)}/{len(ob)} mục tiêu G1 có nguyên văn trong hồ sơ G2")
 
 
 def _truc_chon_mau(meta: Dict[str, Any], sap_text: str, td: Dict[str, Dict[str, str]]) -> Optional[Dict[str, Any]]:
@@ -2151,7 +2194,8 @@ def truc_chuoi(out_dir: Path, study: str, meta: Dict[str, Any], sap_text: str) -
                 lambda: _truc_quy_trinh_du_lieu(out_dir, study, meta),
                 lambda: _truc_cong_cu_do_luong(out_dir, study, meta),
                 lambda: _truc_de_cuong_nop(out_dir, study, meta, sap_text),
-                lambda: _truc_dac_ta_phan_tich(out_dir, study, sap_text)):
+                lambda: _truc_dac_ta_phan_tich(out_dir, study, sap_text),
+                lambda: _truc_muc_tieu_ho_so_g2(out_dir, study, meta)):
         try:
             k = ham()
         except Exception as e:  # noqa: BLE001
