@@ -1,6 +1,6 @@
 # A1 — CÂU HỎI NGHIÊN CỨU & PICO | hai-long-benh-nhan-C1a-BVQY175
-> Tạo tự động: 2026-10-17 15:43 | Truy vấn PubMed thật
-> **Hệ KHÔNG suy ra PICO.** Mọi ô P/I/C/O bên dưới là chỗ TRỐNG — bác sĩ phải tự viết.
+> Tạo tự động: 2026-11-20 20:20 | Truy vấn PubMed thật
+> PICO, giả thuyết và FINER ĐÃ được PI chốt — PHẦN 1/1b/2 hiển thị giá trị đã chốt (chỉ đọc); khung soạn lần đầu được ẩn.
 > Thứ G0 làm được là dựng NỀN BẰNG CHỨNG (PHẦN 3) và chỉ ra khoảng trống (PHẦN 4) để bác sĩ
 > viết PICO có căn cứ. (Câu cũ ở dòng này ghi "xác nhận hoặc chỉnh PICO, không điền
 > lại từ đầu" — đã bỏ 2026-07-28 vì mô tả sai việc hệ thật sự làm.)
@@ -12,9 +12,9 @@
 
 ---
 
-## PHẦN 1 — PICO / PECO (khung trống — bác sĩ tự viết)
+## PHẦN 1 — PICO / PECO (đã chốt — chỉ đọc)
 
-> **Đã ghi trong `study_meta.json → gate_params.G0`** — PI chốt lúc 2026-10-14T19:17:12+07:00 (vai PI; dấu vân tay lúc chốt 4678a3407d3ccd57). Khối này CHỈ ĐỌC; khung bên dưới chỉ dùng khi soạn lần đầu.
+> **Đã ghi trong `study_meta.json → gate_params.G0`** — PI chốt lúc 2026-10-28T15:06:57+07:00 (vai PI; dấu vân tay lúc chốt d33688f542ce7146). Khối này CHỈ ĐỌC; khung bên dưới chỉ dùng khi soạn lần đầu.
 >
 > - **P — Quần thể:** Người bệnh ngoại trú từ đủ 18 tuổi trở lên (kể cả phụ nữ mang thai), đủ sức khỏe và năng lực nhận thức/ngôn ngữ để trả lời, đã cơ bản hoàn thành quy trình khám tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175, và đồng ý tham gia tự nguyện (mục 4.3.1 đề cương)
 > - **I/E — Can thiệp/phơi nhiễm:** Không có can thiệp — nghiên cứu quan sát. Phơi nhiễm trung tâm của Mục tiêu 2 là thời gian chờ khám đo theo mốc HIS/eHospital, báo hiệu ứng theo mỗi 15 phút chờ thêm (mục 4.6.3 đề cương)
@@ -31,119 +31,29 @@
 **Topic đề tài:** Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
 **Truy vấn PubMed:** `("Patient Satisfaction"[Mesh] OR satisf*[tiab] OR "patient experience"[tiab]) AND ("Outpatients"[Mesh] OR "Ambulatory Care"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND ("Vietnam"[Mesh] OR vietnam*[tiab] OR "viet nam"[tiab])`
 
-```
-═══════════════════════════════════════════════════════
-CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
-"Ở [P — điền], [I/E — điền] có liên quan đến / dẫn đến
- [C — điền] về [O — điền] không?"
-═══════════════════════════════════════════════════════
-
-┌─────────────────────────────────────────────────────────┐
-│ P — POPULATION (Dân số/Bệnh nhân)                      │
-│   Đặc điểm: [CẦN BÁC SĨ VIẾT — hệ KHÔNG suy từ topic]    │
-│   Tiêu chí chọn: [CẦN BÁC SĨ XÁC NHẬN]               │
-│   Tiêu chí loại: [CẦN BÁC SĨ XÁC NHẬN]               │
-│   Bối cảnh: Ngoại trú / Nội trú / Cộng đồng           │
-├─────────────────────────────────────────────────────────┤
-│ I — INTERVENTION / E — EXPOSURE                         │
-│   Can thiệp/Phơi nhiễm: [CẦN BÁC SĨ VIẾT]             │
-│   Liều/thời gian: [CẦN BÁC SĨ XÁC NHẬN]              │
-├─────────────────────────────────────────────────────────┤
-│ C — COMPARISON (So sánh)                               │
-│   Từ evidence tìm được: [xem §3 bên dưới]             │
-│   [CẦN BÁC SĨ XÁC NHẬN]                              │
-├─────────────────────────────────────────────────────────┤
-│ O — OUTCOMES (Kết cục)                                 │
-│   Kết cục CHÍNH — CHỈ ĐƯỢC 1:                          │
-│     Tên kết cục: [CẦN BÁC SĨ ẤN ĐỊNH]                │
-│     Định nghĩa/công cụ đo: [CẦN BÁC SĨ ẤN ĐỊNH]      │
-│     Đơn vị/thang đo: [CẦN BÁC SĨ ẤN ĐỊNH]            │
-│     Thời điểm đo: [CẦN BÁC SĨ ẤN ĐỊNH]               │
-│   Kết cục PHỤ 1: [CẦN BÁC SĨ ẤN ĐỊNH]               │
-│   Kết cục PHỤ 2: [CẦN BÁC SĨ ẤN ĐỊNH]               │
-│   Căn cứ chọn kết cục: PMIDs bên dưới                 │
-└─────────────────────────────────────────────────────────┘
-```
-
-> Ba dòng "định nghĩa · đơn vị · thời điểm" của kết cục chính là bắt buộc: cổng G1
-> sẽ CHẶN nếu thiếu, và cỡ mẫu ở G3 không tính được nếu không biết thang đo.
-
-**Loại câu hỏi:** ☐ Điều trị  ☐ Chẩn đoán  ☐ Tiên lượng  ☐ Tác hại  ☐ Mô tả
-**Loại kiểm định:** ☐ Superiority  ☐ Non-inferiority  ☐ Equivalence  ☐ Mô tả
-
-> Ô tick ở trên chỉ để bác sĩ suy nghĩ. Giá trị được HỆ ĐỌC nằm ở
-> `study_meta.json → gate_params.G0.question_type` và `.test_type` — ô tick trong
-> file .md này không có mã nào đọc lại (đã kiểm 2026-07-28).
+> Sửa PICO thì sửa `study_meta.json → gate_params.G0` rồi PI chốt lại (G0-HUMAN-07).
 
 ---
 
-## PHẦN 1b — GIẢ THUYẾT (THÀNH PHẦN 3 của doctrine — trước đây THIẾU HẲN)
+## PHẦN 1b — GIẢ THUYẾT (đã chốt — chỉ đọc)
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│ H0 (giả thuyết vô hiệu): [CẦN BÁC SĨ ẤN ĐỊNH]            │
-│ H1 (giả thuyết nghiên cứu): [CẦN BÁC SĨ ẤN ĐỊNH]         │
-│ Chiều kỳ vọng: ☐ tăng ☐ giảm ☐ liên quan dương ☐ âm       │
-│   Căn cứ chiều kỳ vọng: PMID/DOI ___ hoặc [CẦN KIỂM CHỨNG]│
-│ Nghiên cứu MÔ TẢ thuần: ☐ đúng → không cần H0/H1           │
-└─────────────────────────────────────────────────────────────┘
-```
-> Điền vào `gate_params.G0.hypothesis_h0/hypothesis_h1/expected_direction`.
-> Không có giả thuyết định trước thì mọi kiểm định ở G6 đều là thăm dò.
+> H0, H1, loại kiểm định và chiều kỳ vọng đã ghi ở khối PHẦN 1 (`gate_params.G0`).
 
 ---
 
-## PHẦN 2 — KIỂM FINER (tự động + bác sĩ hoàn thiện)
+## PHẦN 2 — KIỂM FINER (đã chốt — chỉ đọc)
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│ F — FEASIBLE (Khả thi) [CẦN BÁC SĨ XÁC NHẬN]            │
-│   Cỡ mẫu đủ trong thời gian dự kiến? [CẦN XÁC NHẬN]     │
-│   Nguồn lực đủ? [CẦN XÁC NHẬN]                           │
-│   Chuyên môn nhóm NC phù hợp? [CẦN XÁC NHẬN]            │
-├─────────────────────────────────────────────────────────────┤
-│ I — INTERESTING (Có giá trị khoa học)                      │
-│   Evidence level hiện có: TRUNG BÌNH — có 1 SR/MA (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)
-│   → Có thể cập nhật SR/MA hiện có hoặc nghiên cứu quần thể cụ thể | ⚠ ClinicalTrials.gov: 3 nghiên cứu ĐANG/SẮP TUYỂN cho truy vấn này (tổng 5 hồ sơ đăng ký). 'Chưa công bố' KHÔNG có nghĩa 'chưa ai làm' — đọc các hồ sơ ở §3.6 trước khi biện minh tính mới; nguy cơ trùng đề tài thật. — PI ĐÃ ĐÁNH GIÁ chồng lấn (gate_params.G0.registry_overlap_assessment): Không chồng lấn với câu hỏi đề tài: NCT07602231 (Anterior Cruciate Ligament Rupture, Enhanced Recovery After Surgery (ERAS) Protocol, Ambulatory Surgery); NCT07555704 (Rotator Cuff Tear, Telemedecine, Rotator Cuff Injuries); NCT07540637 (Chronic Hepatitis B) — theo tiêu đề và bệnh/tình trạng đăng ký, đều là thử nghiệm can thiệp cho vấn đề khác, không phải khảo sát hài lòng với dịch vụ khám ngoại trú theo yêu cầu.
-│   Sau sàng lọc (G0-T3): Sau sàng lọc (mọi nhánh của truy vấn G0 + nguồn bổ sung): bằng chứng liên quan TRỰC TIẾP đều là khảo sát cắt ngang tại Việt Nam (vd PMID 34445940; PMID 42625778; PMID 42582692; doi:10.52163/yhc.v67icd5.5018). SR/MA duy nhất (PMID 22336833) và RCT duy nhất (PMID 29980547) của nền G0 là lạc đề; hai tổng quan hệ thống liên quan ở bối cảnh khác (PMID 32992600 Trung Quốc; PMID 40995744 Ethiopia). Trong phạm vi đã tra chưa thấy RCT hay tổng quan hệ thống về hài lòng người bệnh ngoại trú tại Việt Nam. Dòng «TRUNG BÌNH — có 1 SR/MA» của A1 tính theo số hit, không theo sàng lọc.
-├─────────────────────────────────────────────────────────────┤
-│ N — NOVEL (Tính mới) — DỰA TRÊN PUBMED THẬT              │
-│   SR/MA: 1 | RCT: 1 | Guideline: 0 | Quan sát: 15
-│   (số hit THẬT từ PubMed)
-│   Năm công bố mới nhất trong các bài đã tải (mọi nhánh): 2025
-│   Khoảng trống:
-│     • Không thấy guideline được PubMed đánh chỉ mục (PubMed, truy vấn G0 «("Patient Satisfaction"[Mesh] OR satisf*[tiab] OR "patient experience"[tiab]) AND ("Outpatients"[Mesh] OR "Ambulatory Care"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND ("Vietnam"[Mesh] OR vietnam*[tiab] OR "viet nam"[tiab])») — văn bản quy phạm trong nước (Bộ Y tế…) và trang hiệp hội KHÔNG nằm trên PubMed: phải rà trước khi kết luận «chưa có»
-│     • Không có SR/MA, RCT hay guideline mới trong 5 năm gần đây (2021-2026) — nhánh này KHÔNG soi nghiên cứu quan sát
-│     • Có 3 nghiên cứu đang/sắp tuyển trên ClinicalTrials.gov — cần đối chiếu để tránh trùng lặp (xem §3.6)
-│
-├─────────────────────────────────────────────────────────────┤
-│ E — ETHICAL (Đạo đức) [CẦN BÁC SĨ XÁC NHẬN]             │
-│   Rủi ro người tham gia: ☐ Tối thiểu  ☐ Nhỏ  ☐ Lớn     │
-│   Cần ICF: ☐ Có  ☐ Không                                 │
-│   Nhóm dễ tổn thương: ☐ Có (biện pháp: ___)  ☐ Không    │
-│   Cần đăng ký trước: ☐ Có (can thiệp)  ☐ Không           │
-├─────────────────────────────────────────────────────────────┤
-│ R — RELEVANT (Liên quan thực hành)                         │
-│   Ảnh hưởng thực hành lâm sàng: [CẦN BÁC SĨ XÁC NHẬN] │
-│   Phù hợp ưu tiên đơn vị/quốc gia: [CẦN XÁC NHẬN]      │
-└─────────────────────────────────────────────────────────────┘
-Đánh giá FINER: ☐ ĐẠT  ☐ CẦN SỬA [điểm: ___]  ☐ KHÔNG KHẢ THI
-```
+- **F — Khả thi:** ĐẠT CÓ ĐIỀU KIỆN — các việc còn mở, phải xong trước khi thu thập dữ liệu: dry-run F1–F5 chưa chạy (đúng người thứ k_h từ 80%, đồng ý từ 60%, ghép HIS từ 90%); lưu lượng/hệ số biến thiên theo tầng từ HIS chưa có; nhân lực ngoài khoa (điều tra viên, tổ mở hòm, tổ mã hoá ý kiến mở) chưa ấn định (đề cương §4.4.2, §6.1).
+- **I — Có giá trị khoa học:** ĐẠT — thời gian chờ và thủ tục là lĩnh vực hài lòng thấp lặp lại ở người bệnh ngoại trú Việt Nam (PMID 32584904; PMID 31703089) và người chờ lâu hơn ít hài lòng hơn (PMID 34017606); khối dịch vụ theo yêu cầu có tín hiệu hài lòng thấp hơn ở mẫu nhỏ (PMID 34445940).
+- **N — Tính mới:** ĐẠT ở mức «nhân rộng có kiểm chứng» — KHÔNG mới về chủ đề: đã có khảo sát hài lòng tại khoa khám theo yêu cầu (doi:10.52163/yhc.v67icd5.5018; doi:10.51298/vmj.v540i1.10302) và tại bệnh viện quân y (doi:10.52163/yhc.v64i1.573); mới ở bối cảnh Khoa C1a và ở cách đo trong phạm vi đã tra (lượt tìm nhắm đúng 2026-10-17): gắn hài lòng với thời gian chờ lấy từ mốc HIS (thời gian chờ từ HIS đơn thuần đã có — PMID 28690831; PMID 29915440) và ICC theo bàn khám trong một khoa (đa mức cấp cơ sở y tế/tỉnh đã có — PMID 34017606); điều kiện hội đồng (DP-G0-2) ĐÃ THOẢ: doi:10.55401/y8fmp830 thu thời gian chờ bằng phỏng vấn trực tiếp qua bộ câu hỏi tự soạn, không lấy từ HIS (đọc toàn văn mục 2.2 ngày 2026-10-17).
+- **E — Đạo đức:** ĐẠT CÓ ĐIỀU KIỆN — rủi ro đã cân nhắc, xử lý theo đề cương: riêng tư ở khâu ghép mốc HIS (khử định danh có kiểm soát, bảng ghép do CNTT/QLCL giữ, huỷ trong 30 ngày), xung đột lợi ích cơ cấu khi nhóm nghiên cứu thuộc khoa được đánh giá, áp lực chiều lòng tại chỗ; chưa có phê duyệt Hội đồng Y đức (đề cương §4.11, §4.11.1). Chỉ thu thập dữ liệu sau khi Hội đồng Y đức phê duyệt.
+- **R — Liên quan thực hành:** ĐẠT — kết quả dùng trực tiếp cho cải tiến chất lượng của Trung tâm C1/Khoa C1a; đo lường hài lòng là yêu cầu thường quy của quản lý chất lượng bệnh viện (QĐ 56/QĐ-BYT 2024, theo đề cương §1 và §3.2.1).
 
-> Nơi hệ ĐỌC: `gate_params.G0.finer_feasible/_interesting/_novel/_ethical/_relevant` — MỖI khoá một câu
-> «ĐẠT — <lý do>» (cờ true trơn KHÔNG đủ — G0-HUMAN-05). F và E chỉ PI đánh giá được.
-
-**Nháp lý do FINER (đề xuất của `khoang-trong-nghien-cuu` — PI đọc, sửa rồi TỰ ghi vào `gate_params.G0.finer_*`, mỗi khoá một câu «ĐẠT — <lý do>»):**
-
-- `finer_feasible`: CẦN PI QUYẾT — rủi ro: dry-run F1–F5 chưa chạy (đúng người thứ k_h từ 80%, đồng ý từ 60%, ghép HIS từ 90%); lưu lượng/hệ số biến thiên theo tầng từ HIS chưa có; nhân lực ngoài khoa (điều tra viên, tổ mở hòm, tổ mã hoá ý kiến mở) chưa ấn định (đề cương §4.4.2, §6.1).
-- `finer_interesting`: ĐỀ XUẤT ĐẠT — thời gian chờ và thủ tục là lĩnh vực hài lòng thấp lặp lại ở người bệnh ngoại trú Việt Nam (PMID 32584904; PMID 31703089) và người chờ lâu hơn ít hài lòng hơn (PMID 34017606); khối dịch vụ theo yêu cầu có tín hiệu hài lòng thấp hơn ở mẫu nhỏ (PMID 34445940).
-- `finer_novel`: ĐỀ XUẤT ĐẠT ở mức «nhân rộng có kiểm chứng» — KHÔNG mới về chủ đề: đã có khảo sát hài lòng tại khoa khám theo yêu cầu (doi:10.52163/yhc.v67icd5.5018; doi:10.51298/vmj.v540i1.10302) và tại bệnh viện quân y (doi:10.52163/yhc.v64i1.573); mới ở bối cảnh Khoa C1a và ở cách đo trong phạm vi đã tra (lượt tìm nhắm đúng 2026-10-17): gắn hài lòng với thời gian chờ lấy từ mốc HIS (thời gian chờ từ HIS đơn thuần đã có — PMID 28690831; PMID 29915440) và ICC theo bàn khám trong một khoa (đa mức cấp cơ sở y tế/tỉnh đã có — PMID 34017606); điều kiện hội đồng (DP-G0-2) ĐÃ THOẢ: doi:10.55401/y8fmp830 thu thời gian chờ bằng phỏng vấn trực tiếp qua bộ câu hỏi tự soạn, không lấy từ HIS (đọc toàn văn mục 2.2 ngày 2026-10-17).
-- `finer_ethical`: CẦN PI QUYẾT — rủi ro: riêng tư ở khâu ghép mốc HIS (khử định danh có kiểm soát, bảng ghép do CNTT/QLCL giữ, huỷ trong 30 ngày), xung đột lợi ích cơ cấu khi nhóm nghiên cứu thuộc khoa được đánh giá, áp lực chiều lòng tại chỗ; chưa có phê duyệt Hội đồng Y đức (đề cương §4.11, §4.11.1).
-- `finer_relevant`: ĐỀ XUẤT ĐẠT — kết quả dùng trực tiếp cho cải tiến chất lượng của Trung tâm C1/Khoa C1a; đo lường hài lòng là yêu cầu thường quy của quản lý chất lượng bệnh viện (QĐ 56/QĐ-BYT 2024, theo đề cương §1 và §3.2.1).
+**Thông tin máy (từ PubMed thật):** mức bằng chứng TRUNG BÌNH — có 1 SR/MA (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan); SR/MA 1 · RCT 1 · guideline 0 · quan sát 15; năm mới nhất 2025; sau sàng lọc (G0-T3): Sau sàng lọc (mọi nhánh của truy vấn G0 + nguồn bổ sung): bằng chứng liên quan TRỰC TIẾP đều là khảo sát cắt ngang tại Việt Nam (vd PMID 34445940; PMID 42625778; PMID 42582692; doi:10.52163/yhc.v67icd5.5018). SR/MA duy nhất (PMID 22336833) và RCT duy nhất (PMID 29980547) của nền G0 là lạc đề; hai tổng quan hệ thống liên quan ở bối cảnh khác (PMID 32992600 Trung Quốc; PMID 40995744 Ethiopia). Trong phạm vi đã tra chưa thấy RCT hay tổng quan hệ thống về hài lòng người bệnh ngoại trú tại Việt Nam. Dòng «TRUNG BÌNH — có 1 SR/MA» của A1 tính theo số hit, không theo sàng lọc..
 
 ---
 
-## PHẦN 3 — BẰNG CHỨNG HIỆN CÓ (THẬT — từ PubMed — 2026-10-17)
+## PHẦN 3 — BẰNG CHỨNG HIỆN CÓ (THẬT — từ PubMed — 2026-11-20)
 
 > **Lưu ý:** Danh sách dưới đây là kết quả THẬT từ PubMed E-utilities — PMID được xác minh TỒN TẠI trên PubMed. Trạng thái rút bài KHÔNG được khẳng định ở đây: xem §3.0 (nếu agent đã kiểm) và guardrail R1C trong G0_checkpoint.json; không kiểm được là «chưa kiểm», không phải «chưa bị rút».
 > Bác sĩ cần đọc toàn văn để kiểm chứng nội dung.
@@ -338,7 +248,7 @@ Nguồn: `G0_TONG_HOP_BANG_CHUNG_hai-long-benh-nhan-C1a-BVQY175.json` — soạn
 **Khoảng trống nghiên cứu cụ thể:**
 • Không thấy guideline được PubMed đánh chỉ mục (PubMed, truy vấn G0 «("Patient Satisfaction"[Mesh] OR satisf*[tiab] OR "patient experience"[tiab]) AND ("Outpatients"[Mesh] OR "Ambulatory Care"[Mesh] OR outpatient*[tiab] OR ambulatory[tiab]) AND ("Vietnam"[Mesh] OR vietnam*[tiab] OR "viet nam"[tiab])») — văn bản quy phạm trong nước (Bộ Y tế…) và trang hiệp hội KHÔNG nằm trên PubMed: phải rà trước khi kết luận «chưa có»
 • Không có SR/MA, RCT hay guideline mới trong 5 năm gần đây (2021-2026) — nhánh này KHÔNG soi nghiên cứu quan sát
-• Có 3 nghiên cứu đang/sắp tuyển trên ClinicalTrials.gov — cần đối chiếu để tránh trùng lặp (xem §3.6)
+• Có 3 nghiên cứu đang/sắp tuyển trên ClinicalTrials.gov — cần đối chiếu để tránh trùng lặp (xem §3.6 của G0_A1)
 
 **Đối chiếu đăng ký:** ⚠ ClinicalTrials.gov: 3 nghiên cứu ĐANG/SẮP TUYỂN cho truy vấn này (tổng 5 hồ sơ đăng ký). 'Chưa công bố' KHÔNG có nghĩa 'chưa ai làm' — đọc các hồ sơ ở §3.6 trước khi biện minh tính mới; nguy cơ trùng đề tài thật. — PI ĐÃ ĐÁNH GIÁ chồng lấn (gate_params.G0.registry_overlap_assessment): Không chồng lấn với câu hỏi đề tài: NCT07602231 (Anterior Cruciate Ligament Rupture, Enhanced Recovery After Surgery (ERAS) Protocol, Ambulatory Surgery); NCT07555704 (Rotator Cuff Tear, Telemedecine, Rotator Cuff Injuries); NCT07540637 (Chronic Hepatitis B) — theo tiêu đề và bệnh/tình trạng đăng ký, đều là thử nghiệm can thiệp cho vấn đề khác, không phải khảo sát hài lòng với dịch vụ khám ngoại trú theo yêu cầu.
 
@@ -418,7 +328,7 @@ PHẦN CHỈ BÁC SĨ QUYẾT ĐƯỢC (hệ KHÔNG tự điền; ☑ = ĐÃ GHI
 ```
 
 **Hành động tiếp theo của bác sĩ** (danh sách SỐNG luôn ở `python3 tools/hoi_dong_cong.py cham-song --study hai-long-benh-nhan-C1a-BVQY175 --gate G0`):
-> PI đã chốt G0 lúc 2026-10-14T19:17:12+07:00. Nếu bộ chấm báo dấu vân tay lệch (G0-HUMAN-07) thì chỉ cần chốt lại; các bước 1–4 dưới đây là quy trình lần đầu.
+> PI đã chốt G0 lúc 2026-10-28T15:06:57+07:00. Nếu bộ chấm báo dấu vân tay lệch (G0-HUMAN-07) thì chỉ cần chốt lại; các bước 1–4 dưới đây là quy trình lần đầu.
 1. Đọc ĐỦ danh sách bài ở PHẦN 3 (bảng sàng lọc §3.0 nếu có) và hồ sơ đăng ký ở §3.6
 2. Mở `study_meta.json`, điền khối `gate_params.G0` theo bảng trên
 3. Chạy `python tools/g0_quality_gate.py --study hai-long-benh-nhan-C1a-BVQY175` — bộ chấm in `dau_van_tay_chot` của nội dung HIỆN TẠI;

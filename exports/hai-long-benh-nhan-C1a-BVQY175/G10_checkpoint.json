@@ -1,7 +1,7 @@
 {
   "gate": "G10",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "generated_at": "2026-11-20T17:53:12.961409",
+  "generated_at": "2026-11-20T20:22:23.719375",
   "gate_status": "BLOCKED — chờ input đời-thực",
   "quality_contract_version": "G10-2026.1",
   "guardrail": {
@@ -113,13 +113,13 @@
     "study_spec_json": "exports/hai-long-benh-nhan-C1a-BVQY175/STUDY_SPEC_hai-long-benh-nhan-C1a-BVQY175.json",
     "decision_package_md": "exports/hai-long-benh-nhan-C1a-BVQY175/GOI_QUYET_DINH_hai-long-benh-nhan-C1a-BVQY175.md",
     "release_readiness_json": "exports/hai-long-benh-nhan-C1a-BVQY175/G10_RELEASE_READINESS.json",
-    "de_cuong_md_sha256": "dd153b12752c181ee8e98b923a8eb0184501827091227d85b4d9093da26daffd",
-    "de_cuong_docx_sha256": "d7b49ffa913ed859f6abc12abdbf02e8c8ddc32480522fda29806021cb72a59a"
+    "de_cuong_md_sha256": "8789454afe6c307fa17ec59f681ff109cb80e8f2d7b2ff28e0cda763785c0610",
+    "de_cuong_docx_sha256": "0d812981bb3adb324280d3f35f54a141ca016e74b810d0f32fe608833ff723b9"
   },
   "quality_gate": {
     "status": "READY_FOR_G10_PI_RELEASE_APPROVAL",
     "report": "G10_QUALITY_REPORT.json",
-    "package_sha256": "235d2746c70ccdb435e871614d51a0fd7dc3cb78b5e3326e299b54a958b5a455",
+    "package_sha256": "aba8f343079d43dbd5979c611589314f351475e54068dcd19235167403032c93",
     "human_approval_valid": false,
     "external_submission_state": "NOT_PERFORMED_OR_PROVEN_BY_G10"
   },
@@ -133,11 +133,11 @@
     "files": {
       "final_protocol_md": {
         "path": "DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "dd153b12752c181ee8e98b923a8eb0184501827091227d85b4d9093da26daffd"
+        "sha256": "8789454afe6c307fa17ec59f681ff109cb80e8f2d7b2ff28e0cda763785c0610"
       },
       "final_protocol_docx": {
         "path": "DE_CUONG_THONG_NHAT_hai-long-benh-nhan-C1a-BVQY175.docx",
-        "sha256": "d7b49ffa913ed859f6abc12abdbf02e8c8ddc32480522fda29806021cb72a59a"
+        "sha256": "0d812981bb3adb324280d3f35f54a141ca016e74b810d0f32fe608833ff723b9"
       },
       "study_spec": {
         "path": "STUDY_SPEC_hai-long-benh-nhan-C1a-BVQY175.json",
@@ -205,14 +205,14 @@
       },
       "irb_protocol_md": {
         "path": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "1444dd24e1d2b514ac050d8e1a76f3aa036d8958336b5251052223649ea005dc"
+        "sha256": "27f688ee4a13c42c2a86733ccaa573a54c7fb626b8f765c40accf6310f83d85e"
       },
       "irb_protocol_docx": {
         "path": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.docx",
-        "sha256": "a2c5e909830864afdf06035cb20c3d752971d2cb2873995bd610072dafa47b15"
+        "sha256": "1e7ad35e90c5198dc43269de707a8e408e05ea54f1d1c8cd5760f24ecaf59ec5"
       }
     },
-    "package_sha256": "235d2746c70ccdb435e871614d51a0fd7dc3cb78b5e3326e299b54a958b5a455"
+    "package_sha256": "aba8f343079d43dbd5979c611589314f351475e54068dcd19235167403032c93"
   },
   "needs_input": {
     "blocked": true,

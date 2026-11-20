@@ -1,6 +1,6 @@
 # A1 — CÂU HỎI NGHIÊN CỨU & PICO | btm-dtd2-ngoai-tru-BVQY175
-> Tạo tự động: 2026-10-25 17:37 | Truy vấn PubMed thật
-> **Hệ KHÔNG suy ra PICO.** Mọi ô P/I/C/O bên dưới là chỗ TRỐNG — bác sĩ phải tự viết.
+> Tạo tự động: 2026-11-20 20:22 | Truy vấn PubMed thật
+> PICO, giả thuyết và FINER ĐÃ được PI chốt — PHẦN 1/1b/2 hiển thị giá trị đã chốt (chỉ đọc); khung soạn lần đầu được ẩn.
 > Thứ G0 làm được là dựng NỀN BẰNG CHỨNG (PHẦN 3) và chỉ ra khoảng trống (PHẦN 4) để bác sĩ
 > viết PICO có căn cứ. (Câu cũ ở dòng này ghi "xác nhận hoặc chỉnh PICO, không điền
 > lại từ đầu" — đã bỏ 2026-07-28 vì mô tả sai việc hệ thật sự làm.)
@@ -12,124 +12,45 @@
 
 ---
 
-## PHẦN 1 — PICO / PECO (khung trống — bác sĩ tự viết)
+## PHẦN 1 — PICO / PECO (đã chốt — chỉ đọc)
 
+> **Đã ghi trong `study_meta.json → gate_params.G0`** — PI chốt lúc 2026-11-18T11:40:57+07:00 (vai chủ nhiệm đề tài; dấu vân tay lúc chốt 9475cdb714650351). Khối này CHỈ ĐỌC; khung bên dưới chỉ dùng khi soạn lần đầu.
+>
+> - **P — Quần thể:** Người từ 18 tuổi, chẩn đoán đái tháo đường típ 2 (ICD-10 E11), quản lý ngoại trú tại Khoa Khám bệnh BVQY175, có ít nhất 2 lượt khám trong cửa sổ hồi cứu 01/01/2026–31/12/2026; loại trừ: lọc máu hoặc ghép thận, có thai, đái tháo đường típ 1 hoặc thể khác.
+> - **I/E — Can thiệp/phơi nhiễm:** Không có can thiệp — nghiên cứu quan sát hồi cứu. Biến giải thích cho mục tiêu phụ 4: tuổi, giới, nhóm đối tượng khám (quân nhân / BHYT / dịch vụ); thời gian mắc ĐTĐ, HbA1c gần nhất, đang dùng insulin, số thuốc hạ glucose; tăng huyết áp, BMI, bệnh tim mạch do xơ vữa hoặc suy tim; số lượt khám trong cửa sổ, phòng khám theo dõi chính (nội tiết / nội chung).
+> - **C — So sánh:** Không có nhóm so sánh ngoài — thiết kế mô tả cắt ngang có phân tích.
+> - **O — Kết cục chính:** Tỷ lệ người ĐTĐ típ 2 ngoại trú được xét nghiệm đủ UACR + creatinin trong 12 tháng
+> - **Thang/công cụ đo kết cục chính:** Biến nhị phân trích từ kết quả xét nghiệm trong HIS (có/không có cả hai xét nghiệm trong cửa sổ); báo cáo tỷ lệ % kèm KTC 95%
+> - **Thời điểm đo:** Cửa sổ hồi cứu 12 tháng: 01/01/2026–31/12/2026
+> - **Loại câu hỏi:** descriptive
+> - **Loại kiểm định:** descriptive
 
 **Topic đề tài:** Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026
 **Truy vấn PubMed:** `("Diabetes Mellitus, Type 2"[Mesh] OR "type 2 diabetes"[tiab]) AND ("Renal Insufficiency, Chronic"[Mesh] OR "Diabetic Nephropathies"[Mesh] OR "chronic kidney disease"[tiab] OR albuminuria[tiab]) AND ("Guideline Adherence"[Mesh] OR "Practice Patterns, Physicians'"[Mesh] OR "care gap"[tiab] OR "albuminuria testing"[tiab] OR "albuminuria screening"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR "Ambulatory Care"[Mesh] OR "Primary Health Care"[Mesh] OR "primary care"[tiab]) AND 2019:2026[dp]`
 
-```
-═══════════════════════════════════════════════════════
-CÂU HỎI NGHIÊN CỨU (dự thảo — bác sĩ điều chỉnh):
-"Ở [P — điền], [I/E — điền] có liên quan đến / dẫn đến
- [C — điền] về [O — điền] không?"
-═══════════════════════════════════════════════════════
-
-┌─────────────────────────────────────────────────────────┐
-│ P — POPULATION (Dân số/Bệnh nhân)                      │
-│   Đặc điểm: [CẦN BÁC SĨ VIẾT — hệ KHÔNG suy từ topic]    │
-│   Tiêu chí chọn: [CẦN BÁC SĨ XÁC NHẬN]               │
-│   Tiêu chí loại: [CẦN BÁC SĨ XÁC NHẬN]               │
-│   Bối cảnh: Ngoại trú / Nội trú / Cộng đồng           │
-├─────────────────────────────────────────────────────────┤
-│ I — INTERVENTION / E — EXPOSURE                         │
-│   Can thiệp/Phơi nhiễm: [CẦN BÁC SĨ VIẾT]             │
-│   Liều/thời gian: [CẦN BÁC SĨ XÁC NHẬN]              │
-├─────────────────────────────────────────────────────────┤
-│ C — COMPARISON (So sánh)                               │
-│   Từ evidence tìm được: [xem §3 bên dưới]             │
-│   [CẦN BÁC SĨ XÁC NHẬN]                              │
-├─────────────────────────────────────────────────────────┤
-│ O — OUTCOMES (Kết cục)                                 │
-│   Kết cục CHÍNH — CHỈ ĐƯỢC 1:                          │
-│     Tên kết cục: [CẦN BÁC SĨ ẤN ĐỊNH]                │
-│     Định nghĩa/công cụ đo: [CẦN BÁC SĨ ẤN ĐỊNH]      │
-│     Đơn vị/thang đo: [CẦN BÁC SĨ ẤN ĐỊNH]            │
-│     Thời điểm đo: [CẦN BÁC SĨ ẤN ĐỊNH]               │
-│   Kết cục PHỤ 1: [CẦN BÁC SĨ ẤN ĐỊNH]               │
-│   Kết cục PHỤ 2: [CẦN BÁC SĨ ẤN ĐỊNH]               │
-│   Căn cứ chọn kết cục: PMIDs bên dưới                 │
-└─────────────────────────────────────────────────────────┘
-```
-
-> Ba dòng "định nghĩa · đơn vị · thời điểm" của kết cục chính là bắt buộc: cổng G1
-> sẽ CHẶN nếu thiếu, và cỡ mẫu ở G3 không tính được nếu không biết thang đo.
-
-**Loại câu hỏi:** ☐ Điều trị  ☐ Chẩn đoán  ☐ Tiên lượng  ☐ Tác hại  ☐ Mô tả
-**Loại kiểm định:** ☐ Superiority  ☐ Non-inferiority  ☐ Equivalence  ☐ Mô tả
-
-> Ô tick ở trên chỉ để bác sĩ suy nghĩ. Giá trị được HỆ ĐỌC nằm ở
-> `study_meta.json → gate_params.G0.question_type` và `.test_type` — ô tick trong
-> file .md này không có mã nào đọc lại (đã kiểm 2026-07-28).
+> Sửa PICO thì sửa `study_meta.json → gate_params.G0` rồi PI chốt lại (G0-HUMAN-07).
 
 ---
 
-## PHẦN 1b — GIẢ THUYẾT (THÀNH PHẦN 3 của doctrine — trước đây THIẾU HẲN)
+## PHẦN 1b — GIẢ THUYẾT (đã chốt — chỉ đọc)
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│ H0 (giả thuyết vô hiệu): [CẦN BÁC SĨ ẤN ĐỊNH]            │
-│ H1 (giả thuyết nghiên cứu): [CẦN BÁC SĨ ẤN ĐỊNH]         │
-│ Chiều kỳ vọng: ☐ tăng ☐ giảm ☐ liên quan dương ☐ âm       │
-│   Căn cứ chiều kỳ vọng: PMID/DOI ___ hoặc [CẦN KIỂM CHỨNG]│
-│ Nghiên cứu MÔ TẢ thuần: ☐ đúng → không cần H0/H1           │
-└─────────────────────────────────────────────────────────────┘
-```
-> Điền vào `gate_params.G0.hypothesis_h0/hypothesis_h1/expected_direction`.
-> Không có giả thuyết định trước thì mọi kiểm định ở G6 đều là thăm dò.
+> H0, H1, loại kiểm định và chiều kỳ vọng đã ghi ở khối PHẦN 1 (`gate_params.G0`).
 
 ---
 
-## PHẦN 2 — KIỂM FINER (tự động + bác sĩ hoàn thiện)
+## PHẦN 2 — KIỂM FINER (đã chốt — chỉ đọc)
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│ F — FEASIBLE (Khả thi) [CẦN BÁC SĨ XÁC NHẬN]            │
-│   Cỡ mẫu đủ trong thời gian dự kiến? [CẦN XÁC NHẬN]     │
-│   Nguồn lực đủ? [CẦN XÁC NHẬN]                           │
-│   Chuyên môn nhóm NC phù hợp? [CẦN XÁC NHẬN]            │
-├─────────────────────────────────────────────────────────────┤
-│ I — INTERESTING (Có giá trị khoa học)                      │
-│   Evidence level hiện có: YẾU — mới 1 RCT (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan)
-│   → Cơ hội tốt cho RCT mới hoặc cohort tiến cứu
-│   Sau sàng lọc (G0-T3): Sau sàng lọc 62 bản ghi PubMed: 13 bài liên quan trực tiếp trong nền G0, gần như toàn bộ là nghiên cứu quan sát (cắt ngang/cohort hồi cứu trên dữ liệu thường quy ở Âu–Mỹ–Úc, Kenya, Thái Lan; vd PMID 38922613, 33722396, 41741270) và 1 RCT can thiệp nhắc xét nghiệm (PMID 42031191); bổ sung 1 tổng quan hệ thống + phân tích gộp tỷ lệ xét nghiệm albumin niệu (PMID 41345917). Trong nước (Crossref): nhiều nghiên cứu cắt ngang về TỶ LỆ BTM ở ĐTĐ típ 2 ngoại trú và vài nghiên cứu mô tả kê đơn; một nghiên cứu nội trú đo tỷ lệ làm UACR (PMID 41916900). G0 không chấm GRADE cho tập này.
-├─────────────────────────────────────────────────────────────┤
-│ N — NOVEL (Tính mới) — DỰA TRÊN PUBMED THẬT              │
-│   SR/MA: 0 | RCT: 1 | Guideline: 0 | Quan sát: 27
-│   (số hit THẬT từ PubMed)
-│   Năm công bố mới nhất trong các bài đã tải (mọi nhánh): 2026
-│   Khoảng trống:
-│     • Không thấy SR/MA trong PubMed, truy vấn G0 «("Diabetes Mellitus, Type 2"[Mesh] OR "type 2 diabetes"[tiab]) AND ("Renal Insufficiency, Chronic"[Mesh] OR "Diabetic Nephropathies"[Mesh] OR "chronic kidney disease"[tiab] OR albuminuria[tiab]) AND ("Guideline Adherence"[Mesh] OR "Practice Patterns, Physicians'"[Mesh] OR "care gap"[tiab] OR "albuminuria testing"[tiab] OR "albuminuria screening"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR "Ambulatory Care"[Mesh] OR "Primary Health Care"[Mesh] OR "primary care"[tiab]) AND 2019:2026[dp]» — chỉ trong phạm vi một truy vấn, KHÔNG phải kết luận «chưa có tổng quan»
-│     • Không thấy guideline được PubMed đánh chỉ mục (PubMed, truy vấn G0 «("Diabetes Mellitus, Type 2"[Mesh] OR "type 2 diabetes"[tiab]) AND ("Renal Insufficiency, Chronic"[Mesh] OR "Diabetic Nephropathies"[Mesh] OR "chronic kidney disease"[tiab] OR albuminuria[tiab]) AND ("Guideline Adherence"[Mesh] OR "Practice Patterns, Physicians'"[Mesh] OR "care gap"[tiab] OR "albuminuria testing"[tiab] OR "albuminuria screening"[tiab] OR undiagnosed[tiab] OR underdiagnos*[tiab] OR underuse[tiab] OR underutili*[tiab]) AND (outpatient*[tiab] OR "Ambulatory Care"[Mesh] OR "Primary Health Care"[Mesh] OR "primary care"[tiab]) AND 2019:2026[dp]») — văn bản quy phạm trong nước (Bộ Y tế…) và trang hiệp hội KHÔNG nằm trên PubMed: phải rà trước khi kết luận «chưa có»
-│
-├─────────────────────────────────────────────────────────────┤
-│ E — ETHICAL (Đạo đức) [CẦN BÁC SĨ XÁC NHẬN]             │
-│   Rủi ro người tham gia: ☐ Tối thiểu  ☐ Nhỏ  ☐ Lớn     │
-│   Cần ICF: ☐ Có  ☐ Không                                 │
-│   Nhóm dễ tổn thương: ☐ Có (biện pháp: ___)  ☐ Không    │
-│   Cần đăng ký trước: ☐ Có (can thiệp)  ☐ Không           │
-├─────────────────────────────────────────────────────────────┤
-│ R — RELEVANT (Liên quan thực hành)                         │
-│   Ảnh hưởng thực hành lâm sàng: [CẦN BÁC SĨ XÁC NHẬN] │
-│   Phù hợp ưu tiên đơn vị/quốc gia: [CẦN XÁC NHẬN]      │
-└─────────────────────────────────────────────────────────────┘
-Đánh giá FINER: ☐ ĐẠT  ☐ CẦN SỬA [điểm: ___]  ☐ KHÔNG KHẢ THI
-```
+- **F — Khả thi:** ĐẠT có điều kiện — điều kiện: chủ nhiệm tự trích dữ liệu bằng cách mở từng hồ sơ trên phần mềm eHospital (HIS của BVQY175) và lập được danh sách người bệnh có mã E11 khám ngoại trú năm 2026 làm khung chọn mẫu; hồ sơ eHospital có kết quả creatinin, UACR, mã ICD-10 và đơn thuốc của cửa sổ 01/01/2026–31/12/2026; cỡ mẫu ngẫu nhiên theo G3 để khối lượng trích thủ công nằm trong thời gian thu thập. Rủi ro đã biết: UACR làm ở cơ sở khác không có trong eHospital ⇒ ghi là hạn chế và phân tích độ nhạy.
+- **I — Có giá trị khoa học:** ĐẠT — trả lời trực tiếp mức bỏ sót xét nghiệm và điều trị bảo vệ thận tại Khoa Khám bệnh; y văn nước ngoài cho thấy chỉ 24,9% đến 43,3% được làm UACR (PMID 38922613, 33722396).
+- **N — Tính mới:** ĐẠT ở mức «mở rộng bối cảnh» — không mới trên thế giới; trong nước chủ yếu đo tỷ lệ BTM hoặc kê đơn ở người đã có BTM; trong phạm vi PubMed + Crossref đã tra (2026-10-25) chưa thấy bài đo cả chuỗi xét nghiệm → ghi nhận → điều trị ở ĐTĐ típ 2 ngoại trú bệnh viện quân đội.
+- **E — Đạo đức:** ĐẠT — hồi cứu hồ sơ, không can thiệp, rủi ro tối thiểu; khử định danh ngay khi trích xuất, chỉ dùng mã nghiên cứu ẩn danh, không lấy trường định danh nào; hình thức đồng thuận (miễn hay rút gọn) do Hội đồng Đạo đức BVQY175 quyết định.
+- **R — Liên quan thực hành:** ĐẠT — phục vụ cải tiến chất lượng chăm sóc bệnh mạn ngoại trú tại chính BVQY175; tạp chí đích là Tạp chí Y Dược Thực hành 175; là số liệu nền cho nghiên cứu can thiệp nhắc xét nghiệm tiếp nối.
 
-> Nơi hệ ĐỌC: `gate_params.G0.finer_feasible/_interesting/_novel/_ethical/_relevant` — MỖI khoá một câu
-> «ĐẠT — <lý do>» (cờ true trơn KHÔNG đủ — G0-HUMAN-05). F và E chỉ PI đánh giá được.
-
-**Nháp lý do FINER (đề xuất của `khoang-trong-nghien-cuu` — PI đọc, sửa rồi TỰ ghi vào `gate_params.G0.finer_*`, mỗi khoá một câu «ĐẠT — <lý do>»):**
-
-- `finer_feasible`: CẦN PI QUYẾT — rủi ro: (1) HIS Khoa Khám bệnh có xuất được creatinin, UACR, mã ICD và đơn thuốc theo mã bệnh nhân ẩn danh trong 12 tháng không; (2) UACR làm ở cơ sở khác không có trong HIS ⇒ đánh giá thấp tỷ lệ xét nghiệm; (3) chọn lấy toàn bộ hay mẫu ngẫu nhiên, và nhân lực trích xuất.
-- `finer_interesting`: Bác sĩ nội khoa ngoại trú quan tâm vì kết quả trả lời trực tiếp phòng khám đang bỏ sót bao nhiêu; nghiên cứu nước ngoài cho thấy chỉ 24,9% đến 43,3% được làm UACR (PMID 38922613, 33722396).
-- `finer_novel`: Mở rộng bối cảnh: y văn quốc tế đã nhiều; trong nước chủ yếu đo tỷ lệ BTM hoặc kê đơn ở người đã có BTM; trong phạm vi PubMed + Crossref đã tra chưa thấy bài đo cả chuỗi xét nghiệm → ghi nhận → điều trị ở ĐTĐ típ 2 ngoại trú bệnh viện quân đội.
-- `finer_ethical`: CẦN PI QUYẾT — hồi cứu hồ sơ, không can thiệp; rủi ro chính là bảo mật dữ liệu (khử định danh ngay khi trích xuất, chỉ lấy mã nghiên cứu ẩn danh, không lấy bất kỳ trường định danh nào) và hình thức miễn/rút gọn đồng thuận do Hội đồng Đạo đức BVQY175 quyết.
-- `finer_relevant`: Phù hợp ưu tiên chất lượng chăm sóc bệnh mạn ngoại trú; tạp chí đích là Tạp chí Y Dược Thực hành 175 (tạp chí của chính bệnh viện, DOI 10.59354) — kết quả phục vụ cải tiến tại Khoa Khám bệnh và là số liệu nền cho nghiên cứu can thiệp tiếp nối.
+**Thông tin máy (từ PubMed thật):** mức bằng chứng YẾU — mới 1 RCT (theo số hit của bộ lọc, CHƯA sàng lọc mức liên quan); SR/MA 0 · RCT 1 · guideline 0 · quan sát 27; năm mới nhất 2026; sau sàng lọc (G0-T3): Sau sàng lọc 62 bản ghi PubMed: 13 bài liên quan trực tiếp trong nền G0, gần như toàn bộ là nghiên cứu quan sát (cắt ngang/cohort hồi cứu trên dữ liệu thường quy ở Âu–Mỹ–Úc, Kenya, Thái Lan; vd PMID 38922613, 33722396, 41741270) và 1 RCT can thiệp nhắc xét nghiệm (PMID 42031191); bổ sung 1 tổng quan hệ thống + phân tích gộp tỷ lệ xét nghiệm albumin niệu (PMID 41345917). Trong nước (Crossref): nhiều nghiên cứu cắt ngang về TỶ LỆ BTM ở ĐTĐ típ 2 ngoại trú và vài nghiên cứu mô tả kê đơn; một nghiên cứu nội trú đo tỷ lệ làm UACR (PMID 41916900). G0 không chấm GRADE cho tập này..
 
 ---
 
-## PHẦN 3 — BẰNG CHỨNG HIỆN CÓ (THẬT — từ PubMed — 2026-10-25)
+## PHẦN 3 — BẰNG CHỨNG HIỆN CÓ (THẬT — từ PubMed — 2026-11-20)
 
 > **Lưu ý:** Danh sách dưới đây là kết quả THẬT từ PubMed E-utilities — PMID được xác minh TỒN TẠI trên PubMed. Trạng thái rút bài KHÔNG được khẳng định ở đây: xem §3.0 (nếu agent đã kiểm) và guardrail R1C trong G0_checkpoint.json; không kiểm được là «chưa kiểm», không phải «chưa bị rút».
 > Bác sĩ cần đọc toàn văn để kiểm chứng nội dung.
@@ -412,10 +333,11 @@ Nguồn: `G0_KHOANG_TRONG_btm-dtd2-ngoai-tru-BVQY175.json` — soạn bởi `kho
 
 ## PHẦN 5 — THIẾT KẾ GỢI Ý SƠ BỘ (G1 quyết định chính thức)
 
+> ✅ **Đã có quyết định thiết kế:** `cross_sectional` theo thiết kế đã ghim ở G1 — dòng «Ưu tiên 1» bên dưới theo quyết định đó, KHÔNG suy từ số hit; mục này chỉ còn giá trị lịch sử.
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │ Ưu tiên 1 (hệ gợi ý từ bằng chứng thật):                   │
-│   RCT HOẶC Cohort tiến cứu đa trung tâm
+│   Thiết kế `cross_sectional` theo thiết kế đã ghim ở G1...
 │   Lý do: suy từ 0 SR/MA · 1 RCT · 27 quan sát (số hit, chưa sàng lọc)
 │   Hạn chế: [CẦN BÁC SĨ NÊU — khả thi tại đơn vị?]         │
 ├─────────────────────────────────────────────────────────────┤
@@ -426,9 +348,9 @@ Nguồn: `G0_KHOANG_TRONG_btm-dtd2-ngoai-tru-BVQY175.json` — soạn bởi `kho
 ```
 
 **Chuẩn báo cáo DỰ KIẾN** (theo ưu tiên 1; G1 chốt lại theo thiết kế thật):
-- Mã thiết kế suy được: `[chưa suy được từ gợi ý]`
-- Chuẩn báo cáo: [CẦN XÁC ĐỊNH Ở G1] — tra EQUATOR Network theo thiết kế thật
-- Chuẩn đề cương: [CẦN XÁC ĐỊNH Ở G1]
+- Mã thiết kế suy được: `cross_sectional`
+- Chuẩn báo cáo: STROBE
+- Chuẩn đề cương: Protocol định trước; đăng ký nếu cần minh bạch
 
 *(Chuyển `thiet-ke-nghien-cuu` quyết định chi tiết ở G1)*
 
@@ -447,17 +369,18 @@ PHẦN MÁY LÀM ĐƯỢC (tự động)
 ☑ Đã tra đăng ký nghiên cứu đang tiến hành
 
 PHẦN CHỈ BÁC SĨ QUYẾT ĐƯỢC (hệ KHÔNG tự điền; ☑ = ĐÃ GHI trong gate_params — đạt hay không do bộ chấm quyết)
-☐ PICO/PECO 4 thành phần            → gate_params.G0.population/intervention/comparison/outcomes
-☐ Kết cục CHÍNH duy nhất + thang đo + thời điểm → .primary_outcome{,_measure,_timepoint}
+☑ PICO/PECO 4 thành phần            → gate_params.G0.population/intervention/comparison/outcomes
+☑ Kết cục CHÍNH duy nhất + thang đo + thời điểm → .primary_outcome{,_measure,_timepoint}
 ☐ Giả thuyết H0/H1 + chiều kỳ vọng  → .hypothesis_h0/.hypothesis_h1/.expected_direction
-☐ Loại câu hỏi + loại kiểm định     → .question_type/.test_type
-☐ FINER 5 tiêu chí, MỖI khoá một câu «ĐẠT — <lý do>» → .finer_feasible/_interesting/_novel/_ethical/_relevant
-☐ Đã đọc lại bằng chứng + biện minh tính mới (bỏ nhãn [DỰ THẢO …]) → .evidence_reviewed_confirmed/.novelty_justification
-☐ Tự tra WHO ICTRP, ghi NGÀY tra  → .registry_manual_checked = {"ictrp": "YYYY-MM-DD"}
-☐ Chốt PICO (vai trò + thời điểm + dấu nội dung) → .pico_confirmed/.reviewed_by_role/.reviewed_at/.dau_van_tay_chot
+☑ Loại câu hỏi + loại kiểm định     → .question_type/.test_type
+☑ FINER 5 tiêu chí, MỖI khoá một câu «ĐẠT — <lý do>» → .finer_feasible/_interesting/_novel/_ethical/_relevant
+☑ Đã đọc lại bằng chứng + biện minh tính mới (bỏ nhãn [DỰ THẢO …]) → .evidence_reviewed_confirmed/.novelty_justification
+☑ Tự tra WHO ICTRP, ghi NGÀY tra  → .registry_manual_checked = {"ictrp": "YYYY-MM-DD"}
+☑ Chốt PICO (vai trò + thời điểm + dấu nội dung) → .pico_confirmed/.reviewed_by_role/.reviewed_at/.dau_van_tay_chot
 ```
 
 **Hành động tiếp theo của bác sĩ** (danh sách SỐNG luôn ở `python3 tools/hoi_dong_cong.py cham-song --study btm-dtd2-ngoai-tru-BVQY175 --gate G0`):
+> PI đã chốt G0 lúc 2026-11-18T11:40:57+07:00. Nếu bộ chấm báo dấu vân tay lệch (G0-HUMAN-07) thì chỉ cần chốt lại; các bước 1–4 dưới đây là quy trình lần đầu.
 1. Đọc ĐỦ danh sách bài ở PHẦN 3 (bảng sàng lọc §3.0 nếu có) và hồ sơ đăng ký ở §3.6
 2. Mở `study_meta.json`, điền khối `gate_params.G0` theo bảng trên
 3. Chạy `python tools/g0_quality_gate.py --study btm-dtd2-ngoai-tru-BVQY175` — bộ chấm in `dau_van_tay_chot` của nội dung HIỆN TẠI;

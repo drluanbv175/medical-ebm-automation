@@ -1,6 +1,6 @@
 # A6 — KẾ HOẠCH QUẢN LÝ DỮ LIỆU (DRAFT)
 **Đề tài:** Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175  
-**Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Ngày:** 2026-11-19 | **Thiết kế:** cross_sectional | **N dự kiến:** 1000 (cỡ mẫu kế hoạch, G3 confirmed_n; tối thiểu theo thống kê 630)  
+**Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Ngày:** 2026-11-20 | **Thiết kế:** cross_sectional | **N dự kiến:** 1000 (cỡ mẫu kế hoạch, G3 confirmed_n; tối thiểu theo thống kê 630)  
 **Trạng thái:** DRAFT — CHỜ BÁC SĨ ĐIỀN CÁC Ô CÒN TRỐNG VÀ XÁC NHẬN
 
 > **BẢO MẬT:** KHÔNG đưa PII vào pipeline. Chỉ xử lý bản đã khử định danh trong môi trường cục bộ được đơn vị cho phép; dữ liệu không được gửi tới mô hình AI.
@@ -230,9 +230,9 @@ Dựng từ CHÍNH từ điển REDCap của đề tài — đúng các ràng bu
         ┌──────────▼──────────────────┐
         │  Loại trừ (Excluded):        │
         │  N = [CẦN]                   │
-  │  • [CẦN — tiêu chí loại trừ theo PICO/SAP thật]  │
-        │  • Không đồng thuận          │
-        │  • [CẦN thêm lý do cụ thể]  │
+        │  • 4 tiêu chuẩn loại trừ đã chốt ở G1
+        │    (xem Chú thích 1 dưới sơ đồ)
+        │  • Ghi N theo từng tiêu chuẩn khi có dữ liệu thật
         └─────────────────────────────┘
                    │
   ┌────────────────▼─────────────────────────┐
@@ -240,20 +240,11 @@ Dựng từ CHÍNH từ điển REDCap của đề tài — đúng các ràng bu
   │  N = 1000 (cỡ mẫu kế hoạch, tối thiểu theo thống kê 630)│
   └────────────────┬─────────────────────────┘
                    │
-        ┌──────────┴──────────────────┐
-        │                             │
-        ▼                             ▼
-  ┌───────────────┐           ┌───────────────┐
-  │  CÓ PHƠI      │           │  KHÔNG PHƠI   │
-  │  NHIỄM [CẦN — tên biến phơi nhiễm/can thiệp theo PICO]│          │  NHIỄM        │
-  │  N ≈ [CẦN]        │           │  N ≈ [CẦN]        │
-  └───────┬───────┘           └───────┬───────┘
-          │                           │
-          ▼                           ▼
-  ┌──────────────────────────────────────────┐
-  │  ĐO ĐỒNG THỜI (cross-sectional):        │
-  │  Phơi nhiễm + kết cục đo cùng 1 thời điểm│
-  │  Không có giai đoạn theo dõi dọc.       │
+  ┌────────────────▼─────────────────────────┐
+  │  MẪU NGHIÊN CỨU (một thời điểm):         │
+  │  Phơi nhiễm/biến giải thích và kết cục   │
+  │  đo cùng lúc — xem Chú thích 2.          │
+  │  N = [CẦN]                               │
   └────────────────┬─────────────────────────┘
                    │
   ┌────────────────▼─────────────────────────┐
@@ -264,6 +255,14 @@ Dựng từ CHÍNH từ điển REDCap của đề tài — đúng các ràng bu
 
   Ghi chú: Điền N=[CẦN] SAU khi thu thập dữ liệu thật.
   Tham chiếu: STROBE 2007 (PMID: 18064739). Cần bác sĩ kiểm chứng.
+
+  Chú thích 1 — Tiêu chuẩn loại trừ đã chốt ở G1:
+    1. Từ chối tham gia
+    2. Không đủ năng lực trả lời (cấp cứu, suy giảm nhận thức, rào cản ngôn ngữ không khắc phục được)
+    3. Nhân viên y tế của chính khoa/bệnh viện đi khám (nguy cơ xung đột/thiên lệch đánh giá)
+    4. Đã tham gia nghiên cứu trước đó (kể cả phỏng vấn nhận thức hoặc khảo sát thử ở pha phát triển bộ câu hỏi; chống trùng — mục 4.3.2 đề cương)
+
+  Chú thích 2 — Phơi nhiễm / biến giải thích đã chốt ở G1: Không can thiệp. Phơi nhiễm trung tâm của MT2: thời gian chờ khám theo mốc HIS/eHospital, báo hiệu ứng theo mỗi 15 phút chờ thêm; kiểm phi tuyến bằng restricted cubic spline 3 nút (mục 4.6.3, 4.10)
 
 ```
 
