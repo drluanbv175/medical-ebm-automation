@@ -1190,8 +1190,13 @@ def tom_tat_cong(gate: str, out_dir: Path, repo_root: Optional[Path] = None) -> 
     xl_hl = xu_ly_hieu_luc(out_dir, gate)
     cho_thuc_hien = [dp for dp in da_quyet if not (tranh_bien_moi[dp][1].get("viec_sua_da_xu_ly")
                                                    or str(tranh_bien_moi[dp][0].get("id")) in xl_hl)]
-    can_sua = ([dp for dp, (_bb, tom) in tranh_bien_moi.items()
-                if tom.get("ket_qua") == "sua_ket_luan" and not tom.get("viec_sua_da_xu_ly")]
+    # 20/11/2026 (C1a G1 DP-G1-2): «sửa kết luận» cũng đóng bằng biên bản xử lý HỢP LỆ còn hiệu lực — như «chuyển bác
+    # sĩ» ở trên. Trước đây chỉ đóng khi tài liệu biên bản gốc từng xét đổi (nhánh «cũ» + xử lý); việc sửa nằm ở tài
+    # liệu KHÁC (đề cương nộp) hoặc chỉ là câu chữ kết luận thì treo mãi, đòi họp lại. _kiem_xu_ly đã buộc phủ ĐỦ mọi
+    # việc của biên bản gốc, mỗi việc có căn cứ kiểm được.
+    can_sua = ([dp for dp, (bb_tb, tom) in tranh_bien_moi.items()
+                if tom.get("ket_qua") == "sua_ket_luan"
+                and not (tom.get("viec_sua_da_xu_ly") or str(bb_tb.get("id")) in xl_hl)]
                + [ma for ma, (_bb, tom) in danh_gia_moi.items() if tom.get("ket_luan_chung") == "tra_ve_sua"])
     thieu_bb = [dp["ma"] for dp in DIEM_QUYET_DINH.get(gate, []) if dp["bat_buoc"] and dp["ma"] not in tranh_bien_moi]
     if hong:
