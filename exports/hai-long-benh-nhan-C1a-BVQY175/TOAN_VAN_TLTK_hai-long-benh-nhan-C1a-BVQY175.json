@@ -1,7 +1,7 @@
 {
   "schema": "de_tai/toan_van_tltk/v1",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "luc": "2026-11-18T20:08:19",
+  "luc": "2026-11-20T09:26:04",
   "nguoi_do": "tools/nap_endnote_de_tai.py --ghi-bien-nhan-toan-van (đo trên thư viện EndNote thật)",
   "tai_lieu": [
     "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md"
@@ -315,8 +315,8 @@
         "pmid:23883565"
       ],
       "toan_van": true,
-      "nguon": "kho_toan_van",
-      "tep": "PMID-23883565_BANIN.pdf",
+      "nguon": "endnote",
+      "tep": null,
       "lan_da_thu": []
     },
     {
@@ -521,6 +521,11 @@
           "lan": "truy_cap_mo",
           "ngay": "2026-11-18",
           "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
+        },
+        {
+          "lan": "trinh_duyet",
+          "ngay": "2026-11-20",
+          "ket_qua": "SAGE Clinical Trials 2005: /doi/pdf trả HTTP 403 (185 KB, không phải PDF) — IP thoát hôm nay không được nhận thuê bao tổ chức (TLTK 37 C1a) — phiên 20261120-045831"
         }
       ]
     },
@@ -531,8 +536,8 @@
         "doi:10.1002/sim.4780122404",
         "pmid:8134732"
       ],
-      "toan_van": false,
-      "nguon": null,
+      "toan_van": true,
+      "nguon": "endnote",
       "tep": null,
       "lan_da_thu": [
         {
@@ -591,6 +596,11 @@
           "lan": "truy_cap_mo",
           "ngay": "2026-11-18",
           "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
+        },
+        {
+          "lan": "trinh_duyet",
+          "ngay": "2026-11-20",
+          "ket_qua": "T&F Multivariate Behav Res 1991: /doi/pdf trả trang HTML 198 KB (không phải PDF) — IP thoát hôm nay không được nhận thuê bao tổ chức (TLTK 41 C1a) — phiên 20261120-045831"
         }
       ]
     },
@@ -601,8 +611,8 @@
         "doi:10.1002/nur.20199",
         "pmid:17654487"
       ],
-      "toan_van": false,
-      "nguon": null,
+      "toan_van": true,
+      "nguon": "endnote",
       "tep": null,
       "lan_da_thu": [
         {
@@ -756,8 +766,8 @@
         "doi:10.1002/sim.1047",
         "pmid:12210625"
       ],
-      "toan_van": false,
-      "nguon": null,
+      "toan_van": true,
+      "nguon": "endnote",
       "tep": null,
       "lan_da_thu": [
         {

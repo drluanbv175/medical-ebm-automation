@@ -1152,6 +1152,22 @@
    "ngay_xong": "",
    "do_song": "",
    "ghi_chu": "Bác sĩ chọn 20/11/2026 «Sau vòng CVI»"
+  },
+  {
+   "id": "3.11",
+   "gd": "GĐ3",
+   "ten": "Hội đồng cổng G1 đánh giá chéo lại G1-T4 (kiểm định phiếu trích) sau khi CVI chốt",
+   "ai": "may",
+   "lenh": "python3 tools/hoi_dong_cong.py uoc-tinh --study btm-dtd2-ngoai-tru-BVQY175 --gate G1",
+   "xong_khi": "trach-nhiem G1 không còn «chất lượng chưa bảo đảm: G1-T4» (biên bản đánh giá chéo mới khớp tài liệu hiện hành)",
+   "phu_thuoc": [
+    "3.9"
+   ],
+   "han": "11/12/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": "Biên bản cũ có trước lần sửa 20/11 nên máy báo «chất lượng chưa bảo đảm». Họp SAU vòng CVI vì CVI có thể đổi phiếu; ước tính 20/11: 11–23 agent (4,2–8,7 triệu token) nếu chạy trong phiên — có đường Batch API rẻ hơn. Triệu tập cần bác sĩ đồng ý."
   }
  ],
  "lich_su": [
