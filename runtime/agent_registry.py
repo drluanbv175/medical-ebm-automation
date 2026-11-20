@@ -181,8 +181,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # điểm b, thay «TT43 Điều 15 · §29» sai) và bỏ cờ «dữ liệu nhận dạng được → ICF bắt buộc» — vẫn 64.
 # 19/11/2026 (tối): dạy `viet-ban-thao` + `phan-tich-thong-ke` biểu bảng chuẩn (khung_bieu_bang, K9, trình bày kết quả
 # G6) — vẫn 64.
+# 20/11/2026: bản sao `cap-nhat-guideline` đồng bộ với nguồn gốc (gốc #447 thêm mục «apply KHÔNG có PMID» — bằng chứng
+# đã đọc nguồn chính thức) — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "2fe94df3198d3635eb57d4cf21209f1ceca5b6263f860320f1ed8023f447d7c1"
+    "39836313b894ea751aeabe0a126e8c164e93989cb961497dcaa5ad49fa646775"
 )
 
 MINIMUM_AGENT_COUNT = 64
