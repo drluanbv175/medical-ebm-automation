@@ -1,6 +1,6 @@
 {
   "study": "btm-dtd2-ngoai-tru-BVQY175",
-  "checked_at_utc": "2026-11-19T22:45:15.000686+00:00",
+  "checked_at_utc": "2026-11-20T10:51:01.686241+00:00",
   "pmids_checked": [
     "14567763",
     "16977646",
@@ -63,7 +63,15 @@
       "authors": "Barros AJ, Hirakata VN",
       "journal": "BMC medical research methodology",
       "year": "2003",
-      "doi": "10.1186/1471-2288-3-21"
+      "doi": "10.1186/1471-2288-3-21",
+      "n_authors": 2,
+      "authors_6": [
+        "Barros AJ",
+        "Hirakata VN"
+      ],
+      "journal_abbr": "BMC Med Res Methodol",
+      "volume": "3",
+      "pages": "21"
     },
     "16977646": {
       "status": "resolved",
@@ -71,7 +79,16 @@
       "authors": "Polit DF, Beck CT",
       "journal": "Research in nursing & health",
       "year": "2006",
-      "doi": "10.1002/nur.20147"
+      "doi": "10.1002/nur.20147",
+      "n_authors": 2,
+      "authors_6": [
+        "Polit DF",
+        "Beck CT"
+      ],
+      "journal_abbr": "Res Nurs Health",
+      "volume": "29",
+      "issue": "5",
+      "pages": "489-97"
     },
     "17654487": {
       "status": "resolved",
@@ -79,7 +96,17 @@
       "authors": "Polit DF, Beck CT, Owen SV",
       "journal": "Research in nursing & health",
       "year": "2007",
-      "doi": "10.1002/nur.20199"
+      "doi": "10.1002/nur.20199",
+      "n_authors": 3,
+      "authors_6": [
+        "Polit DF",
+        "Beck CT",
+        "Owen SV"
+      ],
+      "journal_abbr": "Res Nurs Health",
+      "volume": "30",
+      "issue": "4",
+      "pages": "459-67"
     },
     "19564179": {
       "status": "resolved",
@@ -87,7 +114,19 @@
       "authors": "Sterne JA, White IR, Carlin JB, Spratt M, Royston P",
       "journal": "BMJ (Clinical research ed.)",
       "year": "2009",
-      "doi": "10.1136/bmj.b2393"
+      "doi": "10.1136/bmj.b2393",
+      "n_authors": 8,
+      "authors_6": [
+        "Sterne JA",
+        "White IR",
+        "Carlin JB",
+        "Spratt M",
+        "Royston P",
+        "Kenward MG"
+      ],
+      "journal_abbr": "BMJ",
+      "volume": "338",
+      "pages": "b2393"
     },
     "21130355": {
       "status": "resolved",
@@ -95,7 +134,20 @@
       "authors": "Kottner J, Audigé L, Brorson S, Donner A, Gajewski BJ",
       "journal": "Journal of clinical epidemiology",
       "year": "2011",
-      "doi": "10.1016/j.jclinepi.2010.03.002"
+      "doi": "10.1016/j.jclinepi.2010.03.002",
+      "n_authors": 9,
+      "authors_6": [
+        "Kottner J",
+        "Audigé L",
+        "Brorson S",
+        "Donner A",
+        "Gajewski BJ",
+        "Hróbjartsson A"
+      ],
+      "journal_abbr": "J Clin Epidemiol",
+      "volume": "64",
+      "issue": "1",
+      "pages": "96-106"
     },
     "21225900": {
       "status": "resolved",
@@ -103,7 +155,17 @@
       "authors": "White IR, Royston P, Wood AM",
       "journal": "Statistics in medicine",
       "year": "2011",
-      "doi": "10.1002/sim.4067"
+      "doi": "10.1002/sim.4067",
+      "n_authors": 3,
+      "authors_6": [
+        "White IR",
+        "Royston P",
+        "Wood AM"
+      ],
+      "journal_abbr": "Stat Med",
+      "volume": "30",
+      "issue": "4",
+      "pages": "377-99"
     },
     "2189948": {
       "status": "resolved",
@@ -111,7 +173,16 @@
       "authors": "Cicchetti DV, Feinstein AR",
       "journal": "Journal of clinical epidemiology",
       "year": "1990",
-      "doi": "10.1016/0895-4356(90)90159-m"
+      "doi": "10.1016/0895-4356(90)90159-m",
+      "n_authors": 2,
+      "authors_6": [
+        "Cicchetti DV",
+        "Feinstein AR"
+      ],
+      "journal_abbr": "J Clin Epidemiol",
+      "volume": "43",
+      "issue": "6",
+      "pages": "551-8"
     },
     "2348207": {
       "status": "resolved",
@@ -119,7 +190,16 @@
       "authors": "Feinstein AR, Cicchetti DV",
       "journal": "Journal of clinical epidemiology",
       "year": "1990",
-      "doi": "10.1016/0895-4356(90)90158-l"
+      "doi": "10.1016/0895-4356(90)90158-l",
+      "n_authors": 2,
+      "authors_6": [
+        "Feinstein AR",
+        "Cicchetti DV"
+      ],
+      "journal_abbr": "J Clin Epidemiol",
+      "volume": "43",
+      "issue": "6",
+      "pages": "543-9"
     },
     "26440803": {
       "status": "resolved",
@@ -127,7 +207,23 @@
       "authors": "Benchimol EI, Smeeth L, Guttmann A, Harron K, Moher D",
       "journal": "PLoS medicine",
       "year": "2015",
-      "doi": "10.1371/journal.pmed.1001885"
+      "doi": "10.1371/journal.pmed.1001885",
+      "n_authors": 9,
+      "authors_6": [
+        "Benchimol EI",
+        "Smeeth L",
+        "Guttmann A",
+        "Harron K",
+        "Moher D",
+        "Petersen I"
+      ],
+      "nhom_tac_gia": [
+        "RECORD Working Committee"
+      ],
+      "journal_abbr": "PLoS Med",
+      "volume": "12",
+      "issue": "10",
+      "pages": "e1001885"
     },
     "26964707": {
       "status": "resolved",
@@ -135,7 +231,16 @@
       "authors": "Ogundimu EO, Altman DG, Collins GS",
       "journal": "Journal of clinical epidemiology",
       "year": "2016",
-      "doi": "10.1016/j.jclinepi.2016.02.031"
+      "doi": "10.1016/j.jclinepi.2016.02.031",
+      "n_authors": 3,
+      "authors_6": [
+        "Ogundimu EO",
+        "Altman DG",
+        "Collins GS"
+      ],
+      "journal_abbr": "J Clin Epidemiol",
+      "volume": "76",
+      "pages": "175-82"
     },
     "27330520": {
       "status": "resolved",
@@ -143,7 +248,16 @@
       "authors": "Koo TK, Li MY",
       "journal": "Journal of chiropractic medicine",
       "year": "2016",
-      "doi": "10.1016/j.jcm.2016.02.012"
+      "doi": "10.1016/j.jcm.2016.02.012",
+      "n_authors": 2,
+      "authors_6": [
+        "Koo TK",
+        "Li MY"
+      ],
+      "journal_abbr": "J Chiropr Med",
+      "volume": "15",
+      "issue": "2",
+      "pages": "155-63"
     },
     "27881078": {
       "status": "resolved",
@@ -151,7 +265,20 @@
       "authors": "van Smeden M, de Groot JA, Moons KG, Collins GS, Altman DG",
       "journal": "BMC medical research methodology",
       "year": "2016",
-      "doi": "10.1186/s12874-016-0267-3"
+      "doi": "10.1186/s12874-016-0267-3",
+      "n_authors": 7,
+      "authors_6": [
+        "van Smeden M",
+        "de Groot JA",
+        "Moons KG",
+        "Collins GS",
+        "Altman DG",
+        "Eijkemans MJ"
+      ],
+      "journal_abbr": "BMC Med Res Methodol",
+      "volume": "16",
+      "issue": "1",
+      "pages": "163"
     },
     "2868172": {
       "status": "resolved",
@@ -159,7 +286,16 @@
       "authors": "Bland JM, Altman DG",
       "journal": "Lancet (London, England)",
       "year": "1986",
-      "doi": null
+      "doi": null,
+      "n_authors": 2,
+      "authors_6": [
+        "Bland JM",
+        "Altman DG"
+      ],
+      "journal_abbr": "Lancet",
+      "volume": "1",
+      "issue": "8476",
+      "pages": "307-10"
     },
     "30238781": {
       "status": "resolved",
@@ -167,7 +303,20 @@
       "authors": "Eder S, Leierer J, Kerschbaum J, Rosivall L, Wiecek A",
       "journal": "Diabetes & vascular disease research",
       "year": "2019",
-      "doi": "10.1177/1479164118795559"
+      "doi": "10.1177/1479164118795559",
+      "n_authors": 11,
+      "authors_6": [
+        "Eder S",
+        "Leierer J",
+        "Kerschbaum J",
+        "Rosivall L",
+        "Wiecek A",
+        "de Zeeuw D"
+      ],
+      "journal_abbr": "Diab Vasc Dis Res",
+      "volume": "16",
+      "issue": "1",
+      "pages": "47-56"
     },
     "32111192": {
       "status": "resolved",
@@ -175,7 +324,18 @@
       "authors": "Otieno FCF, Ogola EN, Kimando MW, Mutai K",
       "journal": "BMC nephrology",
       "year": "2020",
-      "doi": "10.1186/s12882-020-1705-3"
+      "doi": "10.1186/s12882-020-1705-3",
+      "n_authors": 4,
+      "authors_6": [
+        "Otieno FCF",
+        "Ogola EN",
+        "Kimando MW",
+        "Mutai K"
+      ],
+      "journal_abbr": "BMC Nephrol",
+      "volume": "21",
+      "issue": "1",
+      "pages": "73"
     },
     "33722396": {
       "status": "resolved",
@@ -183,7 +343,20 @@
       "authors": "Folkerts K, Petruski-Ivleva N, Comerford E, Blankenburg M, Evers T",
       "journal": "Mayo Clinic proceedings",
       "year": "2021",
-      "doi": "10.1016/j.mayocp.2020.07.037"
+      "doi": "10.1016/j.mayocp.2020.07.037",
+      "n_authors": 8,
+      "authors_6": [
+        "Folkerts K",
+        "Petruski-Ivleva N",
+        "Comerford E",
+        "Blankenburg M",
+        "Evers T",
+        "Gay A"
+      ],
+      "journal_abbr": "Mayo Clin Proc",
+      "volume": "96",
+      "issue": "4",
+      "pages": "975-986"
     },
     "34554658": {
       "status": "resolved",
@@ -191,7 +364,23 @@
       "authors": "Inker LA, Eneanya ND, Coresh J, Tighiouart H, Wang D",
       "journal": "The New England journal of medicine",
       "year": "2021",
-      "doi": "10.1056/NEJMoa2102953"
+      "doi": "10.1056/NEJMoa2102953",
+      "n_authors": 33,
+      "authors_6": [
+        "Inker LA",
+        "Eneanya ND",
+        "Coresh J",
+        "Tighiouart H",
+        "Wang D",
+        "Sang Y"
+      ],
+      "nhom_tac_gia": [
+        "Chronic Kidney Disease Epidemiology Collaboration"
+      ],
+      "journal_abbr": "N Engl J Med",
+      "volume": "385",
+      "issue": "19",
+      "pages": "1737-1749"
     },
     "35101868": {
       "status": "resolved",
@@ -199,7 +388,20 @@
       "authors": "Kam S, Angaramo S, Antoun J, Bhatta MR, Bonds PD",
       "journal": "BMJ open quality",
       "year": "2022",
-      "doi": "10.1136/bmjoq-2021-001591"
+      "doi": "10.1136/bmjoq-2021-001591",
+      "n_authors": 19,
+      "authors_6": [
+        "Kam S",
+        "Angaramo S",
+        "Antoun J",
+        "Bhatta MR",
+        "Bonds PD",
+        "Cadar AG"
+      ],
+      "journal_abbr": "BMJ Open Qual",
+      "volume": "11",
+      "issue": "1",
+      "pages": "e001591"
     },
     "35177470": {
       "status": "resolved",
@@ -207,7 +409,20 @@
       "authors": "Jones JL, Lumsden NG, Simons K, Ta'eed A, de Courten MP",
       "journal": "Family medicine and community health",
       "year": "2022",
-      "doi": "10.1136/fmch-2021-001006"
+      "doi": "10.1136/fmch-2021-001006",
+      "n_authors": 12,
+      "authors_6": [
+        "Jones JL",
+        "Lumsden NG",
+        "Simons K",
+        "Ta'eed A",
+        "de Courten MP",
+        "Wijeratne T"
+      ],
+      "journal_abbr": "Fam Med Community Health",
+      "volume": "10",
+      "issue": "1",
+      "pages": "e001006"
     },
     "35606699": {
       "status": "resolved",
@@ -215,7 +430,20 @@
       "authors": "Hao R, Myroniuk T, McGuckin T, Manca D, Campbell-Scherer D",
       "journal": "BMC primary care",
       "year": "2022",
-      "doi": "10.1186/s12875-022-01731-w"
+      "doi": "10.1186/s12875-022-01731-w",
+      "n_authors": 7,
+      "authors_6": [
+        "Hao R",
+        "Myroniuk T",
+        "McGuckin T",
+        "Manca D",
+        "Campbell-Scherer D",
+        "Lau D"
+      ],
+      "journal_abbr": "BMC Prim Care",
+      "volume": "23",
+      "issue": "1",
+      "pages": "124"
     },
     "36272764": {
       "status": "resolved",
@@ -223,7 +451,16 @@
       "authors": null,
       "journal": "Kidney international",
       "year": "2022",
-      "doi": "10.1016/j.kint.2022.06.008"
+      "doi": "10.1016/j.kint.2022.06.008",
+      "n_authors": 0,
+      "authors_6": [],
+      "nhom_tac_gia": [
+        "Kidney Disease: Improving Global Outcomes (KDIGO) Diabetes Work Group"
+      ],
+      "journal_abbr": "Kidney Int",
+      "volume": "102",
+      "issue": "5S",
+      "pages": "S1-S127"
     },
     "36352203": {
       "status": "resolved",
@@ -231,7 +468,20 @@
       "authors": "Rikin S, Deccy S, Zhang C, Crandall J, Deng Y",
       "journal": "Journal of general internal medicine",
       "year": "2023",
-      "doi": "10.1007/s11606-022-07863-0"
+      "doi": "10.1007/s11606-022-07863-0",
+      "n_authors": 6,
+      "authors_6": [
+        "Rikin S",
+        "Deccy S",
+        "Zhang C",
+        "Crandall J",
+        "Deng Y",
+        "Golestaneh L"
+      ],
+      "journal_abbr": "J Gen Intern Med",
+      "volume": "38",
+      "issue": "7",
+      "pages": "1599-1605"
     },
     "37153973": {
       "status": "resolved",
@@ -239,7 +489,20 @@
       "authors": "Liew A, Lydia A, Matawaran BJ, Susantitaphong P, Tran HTB",
       "journal": "Nephrology (Carlton, Vic.)",
       "year": "2023",
-      "doi": "10.1111/nep.14167"
+      "doi": "10.1111/nep.14167",
+      "n_authors": 6,
+      "authors_6": [
+        "Liew A",
+        "Lydia A",
+        "Matawaran BJ",
+        "Susantitaphong P",
+        "Tran HTB",
+        "Lim LL"
+      ],
+      "journal_abbr": "Nephrology (Carlton)",
+      "volume": "28",
+      "issue": "8",
+      "pages": "415-424"
     },
     "38490803": {
       "status": "resolved",
@@ -247,7 +510,16 @@
       "authors": null,
       "journal": "Kidney international",
       "year": "2024",
-      "doi": "10.1016/j.kint.2023.10.018"
+      "doi": "10.1016/j.kint.2023.10.018",
+      "n_authors": 0,
+      "authors_6": [],
+      "nhom_tac_gia": [
+        "Kidney Disease: Improving Global Outcomes (KDIGO) CKD Work Group"
+      ],
+      "journal_abbr": "Kidney Int",
+      "volume": "105",
+      "issue": "4S",
+      "pages": "S117-S314"
     },
     "38922613": {
       "status": "resolved",
@@ -255,7 +527,20 @@
       "authors": "Edmonston D, Lydon E, Mulder H, Chiswell K, Lampron Z",
       "journal": "JAMA network open",
       "year": "2024",
-      "doi": "10.1001/jamanetworkopen.2024.18808"
+      "doi": "10.1001/jamanetworkopen.2024.18808",
+      "n_authors": 25,
+      "authors_6": [
+        "Edmonston D",
+        "Lydon E",
+        "Mulder H",
+        "Chiswell K",
+        "Lampron Z",
+        "Marsolo K"
+      ],
+      "journal_abbr": "JAMA Netw Open",
+      "volume": "7",
+      "issue": "6",
+      "pages": "e2418808"
     },
     "39023418": {
       "status": "resolved",
@@ -263,7 +548,20 @@
       "authors": "Tangri N, Alvarez CS, Arnold M, Barone S, Cebrián A",
       "journal": "European journal of clinical investigation",
       "year": "2024",
-      "doi": "10.1111/eci.14282"
+      "doi": "10.1111/eci.14282",
+      "n_authors": 17,
+      "authors_6": [
+        "Tangri N",
+        "Alvarez CS",
+        "Arnold M",
+        "Barone S",
+        "Cebrián A",
+        "Chen H"
+      ],
+      "journal_abbr": "Eur J Clin Invest",
+      "volume": "54",
+      "issue": "11",
+      "pages": "e14282"
     },
     "39156845": {
       "status": "resolved",
@@ -271,7 +569,18 @@
       "authors": "Mahadevappa K, Nayak SB, Maharaj RG, Bhaktha G",
       "journal": "Indian journal of nephrology",
       "year": "2024",
-      "doi": "10.25259/ijn_451_23"
+      "doi": "10.25259/ijn_451_23",
+      "n_authors": 4,
+      "authors_6": [
+        "Mahadevappa K",
+        "Nayak SB",
+        "Maharaj RG",
+        "Bhaktha G"
+      ],
+      "journal_abbr": "Indian J Nephrol",
+      "volume": "34",
+      "issue": "4",
+      "pages": "332-337"
     },
     "39391521": {
       "status": "resolved",
@@ -279,7 +588,18 @@
       "authors": "Dang KD, Nguyen HMT, Phung YP, Le TQN",
       "journal": "Przeglad menopauzalny = Menopause review",
       "year": "2024",
-      "doi": "10.5114/pm.2024.141090"
+      "doi": "10.5114/pm.2024.141090",
+      "n_authors": 4,
+      "authors_6": [
+        "Dang KD",
+        "Nguyen HMT",
+        "Phung YP",
+        "Le TQN"
+      ],
+      "journal_abbr": "Prz Menopauzalny",
+      "volume": "23",
+      "issue": "2",
+      "pages": "75-82"
     },
     "39487060": {
       "status": "resolved",
@@ -287,7 +607,19 @@
       "authors": "Raat W, Mamouris P, Mathieu C, Goderis G, Vaes B",
       "journal": "Primary care diabetes",
       "year": "2025",
-      "doi": "10.1016/j.pcd.2024.10.007"
+      "doi": "10.1016/j.pcd.2024.10.007",
+      "n_authors": 5,
+      "authors_6": [
+        "Raat W",
+        "Mamouris P",
+        "Mathieu C",
+        "Goderis G",
+        "Vaes B"
+      ],
+      "journal_abbr": "Prim Care Diabetes",
+      "volume": "19",
+      "issue": "1",
+      "pages": "29-34"
     },
     "39507052": {
       "status": "resolved",
@@ -295,7 +627,19 @@
       "authors": "Awiphan R, Kowatcharakul W, Ruengorn C, Noppakun K, Thavorn K",
       "journal": "Frontiers in endocrinology",
       "year": "2024",
-      "doi": "10.3389/fendo.2024.1359904"
+      "doi": "10.3389/fendo.2024.1359904",
+      "n_authors": 6,
+      "authors_6": [
+        "Awiphan R",
+        "Kowatcharakul W",
+        "Ruengorn C",
+        "Noppakun K",
+        "Thavorn K",
+        "Nochaiwong S"
+      ],
+      "journal_abbr": "Front Endocrinol (Lausanne)",
+      "volume": "15",
+      "pages": "1359904"
     },
     "40037768": {
       "status": "resolved",
@@ -303,7 +647,20 @@
       "authors": "Pasea L, Mohamed M, Dashtban A, Bhuva A, Mizani MA",
       "journal": "Heart (British Cardiac Society)",
       "year": "2025",
-      "doi": "10.1136/heartjnl-2024-325046"
+      "doi": "10.1136/heartjnl-2024-325046",
+      "n_authors": 12,
+      "authors_6": [
+        "Pasea L",
+        "Mohamed M",
+        "Dashtban A",
+        "Bhuva A",
+        "Mizani MA",
+        "Ali S"
+      ],
+      "journal_abbr": "Heart",
+      "volume": "111",
+      "issue": "16",
+      "pages": "776-785"
     },
     "40335370": {
       "status": "resolved",
@@ -311,7 +668,19 @@
       "authors": "Charles MH, Schousboe K, Thybo T, Hall-Andersen EK, Knudsen ST",
       "journal": "Primary care diabetes",
       "year": "2025",
-      "doi": "10.1016/j.pcd.2025.05.002"
+      "doi": "10.1016/j.pcd.2025.05.002",
+      "n_authors": 5,
+      "authors_6": [
+        "Charles MH",
+        "Schousboe K",
+        "Thybo T",
+        "Hall-Andersen EK",
+        "Knudsen ST"
+      ],
+      "journal_abbr": "Prim Care Diabetes",
+      "volume": "19",
+      "issue": "4",
+      "pages": "368-374"
     },
     "40428801": {
       "status": "resolved",
@@ -319,7 +688,19 @@
       "authors": "Kostev K, Lang M, Tröbs SO, Urbisch S, Gabler M",
       "journal": "Medicina (Kaunas, Lithuania)",
       "year": "2025",
-      "doi": "10.3390/medicina61050843"
+      "doi": "10.3390/medicina61050843",
+      "n_authors": 5,
+      "authors_6": [
+        "Kostev K",
+        "Lang M",
+        "Tröbs SO",
+        "Urbisch S",
+        "Gabler M"
+      ],
+      "journal_abbr": "Medicina (Kaunas)",
+      "volume": "61",
+      "issue": "5",
+      "pages": "843"
     },
     "40667713": {
       "status": "resolved",
@@ -327,7 +708,20 @@
       "authors": "Wallace H, Wick J, Neuen BL, Buizen L, Badve SV",
       "journal": "Diabetes, obesity & metabolism",
       "year": "2025",
-      "doi": "10.1111/dom.16608"
+      "doi": "10.1111/dom.16608",
+      "n_authors": 22,
+      "authors_6": [
+        "Wallace H",
+        "Wick J",
+        "Neuen BL",
+        "Buizen L",
+        "Badve SV",
+        "Chalmers J"
+      ],
+      "journal_abbr": "Diabetes Obes Metab",
+      "volume": "27",
+      "issue": "10",
+      "pages": "5599-5611"
     },
     "40814615": {
       "status": "resolved",
@@ -335,7 +729,20 @@
       "authors": "Li PK, Cheung M, Chow KM, Leung MKW, Lim LL",
       "journal": "Kidney international reports",
       "year": "2025",
-      "doi": "10.1016/j.ekir.2025.06.010"
+      "doi": "10.1016/j.ekir.2025.06.010",
+      "n_authors": 35,
+      "authors_6": [
+        "Li PK",
+        "Cheung M",
+        "Chow KM",
+        "Leung MKW",
+        "Lim LL",
+        "Lui JNM"
+      ],
+      "journal_abbr": "Kidney Int Rep",
+      "volume": "10",
+      "issue": "8",
+      "pages": "2551-2565"
     },
     "40902917": {
       "status": "resolved",
@@ -343,7 +750,20 @@
       "authors": "Santana R, Umana CD, Oo ZT, Kolli ST, Bejugam VR",
       "journal": "The American journal of medicine",
       "year": "2026",
-      "doi": "10.1016/j.amjmed.2025.08.029"
+      "doi": "10.1016/j.amjmed.2025.08.029",
+      "n_authors": 16,
+      "authors_6": [
+        "Santana R",
+        "Umana CD",
+        "Oo ZT",
+        "Kolli ST",
+        "Bejugam VR",
+        "Piplani S"
+      ],
+      "journal_abbr": "Am J Med",
+      "volume": "139",
+      "issue": "2",
+      "pages": "207-213"
     },
     "41276836": {
       "status": "resolved",
@@ -351,7 +771,20 @@
       "authors": "Barrot-de la Puente J, Lopez Arpí C, Ramon Granes M, Escribà Planes M, Fernandez-Camins B",
       "journal": "BMC primary care",
       "year": "2025",
-      "doi": "10.1186/s12875-025-03117-0"
+      "doi": "10.1186/s12875-025-03117-0",
+      "n_authors": 7,
+      "authors_6": [
+        "Barrot-de la Puente J",
+        "Lopez Arpí C",
+        "Ramon Granes M",
+        "Escribà Planes M",
+        "Fernandez-Camins B",
+        "Vlacho B"
+      ],
+      "journal_abbr": "BMC Prim Care",
+      "volume": "26",
+      "issue": "1",
+      "pages": "409"
     },
     "41345917": {
       "status": "resolved",
@@ -359,7 +792,20 @@
       "authors": "Albekery MA, Alhomoud IS, Alabdulathim LS, Almajed MA, Alobaid AA",
       "journal": "BMC nephrology",
       "year": "2025",
-      "doi": "10.1186/s12882-025-04672-5"
+      "doi": "10.1186/s12882-025-04672-5",
+      "n_authors": 9,
+      "authors_6": [
+        "Albekery MA",
+        "Alhomoud IS",
+        "Alabdulathim LS",
+        "Almajed MA",
+        "Alobaid AA",
+        "Alomair MK"
+      ],
+      "journal_abbr": "BMC Nephrol",
+      "volume": "27",
+      "issue": "1",
+      "pages": "18"
     },
     "41358881": {
       "status": "resolved",
@@ -367,7 +813,16 @@
       "authors": null,
       "journal": "Diabetes care",
       "year": "2026",
-      "doi": "10.2337/dc26-S011"
+      "doi": "10.2337/dc26-S011",
+      "n_authors": 0,
+      "authors_6": [],
+      "nhom_tac_gia": [
+        "American Diabetes Association Professional Practice Committee for Diabetes"
+      ],
+      "journal_abbr": "Diabetes Care",
+      "volume": "49",
+      "issue": "Suppl 1",
+      "pages": "S246-S260"
     },
     "41358893": {
       "status": "resolved",
@@ -375,7 +830,16 @@
       "authors": null,
       "journal": "Diabetes care",
       "year": "2026",
-      "doi": "10.2337/dc26-S002"
+      "doi": "10.2337/dc26-S002",
+      "n_authors": 0,
+      "authors_6": [],
+      "nhom_tac_gia": [
+        "American Diabetes Association Professional Practice Committee for Diabetes"
+      ],
+      "journal_abbr": "Diabetes Care",
+      "volume": "49",
+      "issue": "Supplement_1",
+      "pages": "S27-S49"
     },
     "41358900": {
       "status": "resolved",
@@ -383,7 +847,16 @@
       "authors": null,
       "journal": "Diabetes care",
       "year": "2026",
-      "doi": "10.2337/dc26-S009"
+      "doi": "10.2337/dc26-S009",
+      "n_authors": 0,
+      "authors_6": [],
+      "nhom_tac_gia": [
+        "American Diabetes Association Professional Practice Committee for Diabetes"
+      ],
+      "journal_abbr": "Diabetes Care",
+      "volume": "49",
+      "issue": "Suppl 1",
+      "pages": "S183-S215"
     },
     "41541781": {
       "status": "resolved",
@@ -391,7 +864,20 @@
       "authors": "Fernandez-Fernandez B, Gorriz JL, Cebrian-Cuenca A, Fácila L, Fernandez Rodriguez JM",
       "journal": "Kidney international reports",
       "year": "2026",
-      "doi": "10.1016/j.ekir.2025.09.027"
+      "doi": "10.1016/j.ekir.2025.09.027",
+      "n_authors": 7,
+      "authors_6": [
+        "Fernandez-Fernandez B",
+        "Gorriz JL",
+        "Cebrian-Cuenca A",
+        "Fácila L",
+        "Fernandez Rodriguez JM",
+        "Maraver MP"
+      ],
+      "journal_abbr": "Kidney Int Rep",
+      "volume": "11",
+      "issue": "1",
+      "pages": "6-16"
     },
     "41741270": {
       "status": "resolved",
@@ -399,7 +885,20 @@
       "authors": "Cebrián Cuenca A, Cornejo Martin J, Álvarez Guisasola F, Orozco Beltrán D, Quesada JA",
       "journal": "Primary care diabetes",
       "year": "2026",
-      "doi": "10.1016/j.pcd.2026.02.007"
+      "doi": "10.1016/j.pcd.2026.02.007",
+      "n_authors": 9,
+      "authors_6": [
+        "Cebrián Cuenca A",
+        "Cornejo Martin J",
+        "Álvarez Guisasola F",
+        "Orozco Beltrán D",
+        "Quesada JA",
+        "Artola Menéndez S"
+      ],
+      "journal_abbr": "Prim Care Diabetes",
+      "volume": "20",
+      "issue": "3",
+      "pages": "298-305"
     },
     "41916900": {
       "status": "resolved",
@@ -407,7 +906,20 @@
       "authors": "Bui TD, Le PT, Dinh LNT, Nguyen THN, Doan TPT",
       "journal": "Journal of clinical hypertension (Greenwich, Conn.)",
       "year": "2026",
-      "doi": "10.1111/jch.70241"
+      "doi": "10.1111/jch.70241",
+      "n_authors": 11,
+      "authors_6": [
+        "Bui TD",
+        "Le PT",
+        "Dinh LNT",
+        "Nguyen THN",
+        "Doan TPT",
+        "Vo TTH"
+      ],
+      "journal_abbr": "J Clin Hypertens (Greenwich)",
+      "volume": "28",
+      "issue": "4",
+      "pages": "e70241"
     },
     "42031191": {
       "status": "resolved",
@@ -415,7 +927,23 @@
       "authors": "Goldhaber SZ, Rashedi S, Pfeferman M, Leyva H, Bacare B",
       "journal": "The American journal of medicine",
       "year": "2026",
-      "doi": "10.1016/j.amjmed.2026.04.022"
+      "doi": "10.1016/j.amjmed.2026.04.022",
+      "n_authors": 10,
+      "authors_6": [
+        "Goldhaber SZ",
+        "Rashedi S",
+        "Pfeferman M",
+        "Leyva H",
+        "Bacare B",
+        "Chopard R"
+      ],
+      "nhom_tac_gia": [
+        "CKD-DETECT investigators"
+      ],
+      "journal_abbr": "Am J Med",
+      "volume": "139",
+      "issue": "9",
+      "pages": "1228-1236"
     },
     "42541306": {
       "status": "resolved",
@@ -423,7 +951,19 @@
       "authors": "Miyamoto Y, Xu F, Zaganjor I, Pavkov ME, Koyama AK",
       "journal": "Preventive medicine reports",
       "year": "2026",
-      "doi": "10.1016/j.pmedr.2026.103581"
+      "doi": "10.1016/j.pmedr.2026.103581",
+      "n_authors": 6,
+      "authors_6": [
+        "Miyamoto Y",
+        "Xu F",
+        "Zaganjor I",
+        "Pavkov ME",
+        "Koyama AK",
+        "Onufrak S"
+      ],
+      "journal_abbr": "Prev Med Rep",
+      "volume": "69",
+      "pages": "103581"
     },
     "42575755": {
       "status": "resolved",
@@ -431,7 +971,20 @@
       "authors": "Arzuaga A, García-Casanovas A, Mas-Morán A, Megia-Colet A, Adam-Ruiz D",
       "journal": "Primary care diabetes",
       "year": "2026",
-      "doi": "10.1016/j.pcd.2026.07.013"
+      "doi": "10.1016/j.pcd.2026.07.013",
+      "n_authors": 17,
+      "authors_6": [
+        "Arzuaga A",
+        "García-Casanovas A",
+        "Mas-Morán A",
+        "Megia-Colet A",
+        "Adam-Ruiz D",
+        "Barbazán-García E"
+      ],
+      "journal_abbr": "Prim Care Diabetes",
+      "volume": "20",
+      "issue": "5",
+      "pages": "620-628"
     },
     "42723263": {
       "status": "resolved",
@@ -439,7 +992,20 @@
       "authors": "Stefanska C, Chung R, Ramjaun S, Jin D, Doherty C",
       "journal": "Diabetes, obesity & metabolism",
       "year": "2026",
-      "doi": "10.1111/dom.71298"
+      "doi": "10.1111/dom.71298",
+      "n_authors": 7,
+      "authors_6": [
+        "Stefanska C",
+        "Chung R",
+        "Ramjaun S",
+        "Jin D",
+        "Doherty C",
+        "McCafferty K"
+      ],
+      "journal_abbr": "Diabetes Obes Metab",
+      "volume": "28",
+      "issue": "12",
+      "pages": "11278-11287"
     },
     "42838586": {
       "status": "resolved",
@@ -447,7 +1013,20 @@
       "authors": "Zahradka I, Petr V, Tichanek F, Chroma A, Neskudla T",
       "journal": "BMJ open",
       "year": "2026",
-      "doi": "10.1136/bmjopen-2026-121190"
+      "doi": "10.1136/bmjopen-2026-121190",
+      "n_authors": 12,
+      "authors_6": [
+        "Zahradka I",
+        "Petr V",
+        "Tichanek F",
+        "Chroma A",
+        "Neskudla T",
+        "Kahle M"
+      ],
+      "journal_abbr": "BMJ Open",
+      "volume": "16",
+      "issue": "10",
+      "pages": "e121190"
     },
     "8501467": {
       "status": "resolved",
@@ -455,7 +1034,17 @@
       "authors": "Byrt T, Bishop J, Carlin JB",
       "journal": "Journal of clinical epidemiology",
       "year": "1993",
-      "doi": "10.1016/0895-4356(93)90018-v"
+      "doi": "10.1016/0895-4356(93)90018-v",
+      "n_authors": 3,
+      "authors_6": [
+        "Byrt T",
+        "Bishop J",
+        "Carlin JB"
+      ],
+      "journal_abbr": "J Clin Epidemiol",
+      "volume": "46",
+      "issue": "5",
+      "pages": "423-9"
     },
     "8599488": {
       "status": "resolved",
@@ -463,8 +1052,20 @@
       "authors": "Gilbert EH, Lowenstein SR, Koziol-McLain J, Barta DC, Steiner J",
       "journal": "Annals of emergency medicine",
       "year": "1996",
-      "doi": "10.1016/s0196-0644(96)70264-0"
+      "doi": "10.1016/s0196-0644(96)70264-0",
+      "n_authors": 5,
+      "authors_6": [
+        "Gilbert EH",
+        "Lowenstein SR",
+        "Koziol-McLain J",
+        "Barta DC",
+        "Steiner J"
+      ],
+      "journal_abbr": "Ann Emerg Med",
+      "volume": "27",
+      "issue": "3",
+      "pages": "305-8"
     }
   },
-  "receipt_signature": "v4:shared:1b5eb1d4c3bd98d3dce56d4387126fcf4bc215bdc07f1167a9d2f9ecae43f8ba"
+  "receipt_signature": "v4:shared:c0a2386715601a2e34b028069a4d488d38f81556a0ae227d4ecb3c8e5e8a789e"
 }

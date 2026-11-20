@@ -1,6 +1,6 @@
 {
   "study": "btm-dtd2-ngoai-tru-BVQY175",
-  "checked_at_utc": "2026-11-19T22:45:05.928954+00:00",
+  "checked_at_utc": "2026-11-20T10:51:01.685739+00:00",
   "pmids_checked": [
     "14567763",
     "16977646",
@@ -65,6 +65,22 @@
       ],
       "source": "pubmed"
     },
+    "16977646": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "17654487": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
     "19564179": {
       "status": "ok",
       "sources_tried": [
@@ -73,7 +89,31 @@
       ],
       "source": "pubmed"
     },
+    "21130355": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
     "21225900": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "2189948": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "2348207": {
       "status": "ok",
       "sources_tried": [
         "retraction_watch",
@@ -97,7 +137,23 @@
       ],
       "source": "pubmed"
     },
+    "27330520": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
     "27881078": {
+      "status": "ok",
+      "sources_tried": [
+        "retraction_watch",
+        "pubmed"
+      ],
+      "source": "pubmed"
+    },
+    "2868172": {
       "status": "ok",
       "sources_tried": [
         "retraction_watch",
@@ -393,15 +449,7 @@
       ],
       "source": "pubmed"
     },
-    "16977646": {
-      "status": "ok",
-      "sources_tried": [
-        "retraction_watch",
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "17654487": {
+    "8501467": {
       "status": "ok",
       "sources_tried": [
         "retraction_watch",
@@ -416,55 +464,7 @@
         "pubmed"
       ],
       "source": "pubmed"
-    },
-    "2348207": {
-      "status": "ok",
-      "sources_tried": [
-        "retraction_watch",
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "2189948": {
-      "status": "ok",
-      "sources_tried": [
-        "retraction_watch",
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "8501467": {
-      "status": "ok",
-      "sources_tried": [
-        "retraction_watch",
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "27330520": {
-      "status": "ok",
-      "sources_tried": [
-        "retraction_watch",
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "2868172": {
-      "status": "ok",
-      "sources_tried": [
-        "retraction_watch",
-        "pubmed"
-      ],
-      "source": "pubmed"
-    },
-    "21130355": {
-      "status": "ok",
-      "sources_tried": [
-        "retraction_watch",
-        "pubmed"
-      ],
-      "source": "pubmed"
     }
   },
-  "receipt_signature": "v4:shared:fdef932db3e0c779c79487d723a6c735bf06048dea2066c3cdf7bc9ca773321e"
+  "receipt_signature": "v4:shared:5cdb98af2c1e2bf86aba0c05a8660bad39e9d16be03a5af4c6c45a3d29d38838"
 }
