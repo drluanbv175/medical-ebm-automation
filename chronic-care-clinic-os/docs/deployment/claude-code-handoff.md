@@ -30,6 +30,21 @@ node scripts/sync-check.mjs
 pnpm outpatient:verify -- --json
 ```
 
+Full production build check (2026-11-20): `typecheck:app` does NOT cover the Next 15 `PageProps`
+constraint (generated under `.next/types` only during `next build`), so run the real build too.
+`prisma/seed.ts` is inside `tsconfig.json`, so generate the Prisma client first — `prisma generate`
+only reads `prisma/schema.prisma` and needs no database connection. Revert `next-env.d.ts` if the
+build rewrites it.
+
+```bash
+node node_modules/prisma/build/index.js generate
+NEXT_TELEMETRY_DISABLED=1 node node_modules/next/dist/bin/next build
+git checkout -- next-env.d.ts
+```
+
+Next 15 rule (locked by `tests/clinic-os.test.mjs`): `params`/`searchParams` of pages, layouts and
+route handlers are `Promise<...>` and must be awaited (server) or unwrapped with `React.use` (client).
+
 ## Completed app modules
 
 - `lib/care-orchestrator.ts`: turns risk, labs, medication, follow-up, post-discharge and care-plan gaps into a command-center queue.

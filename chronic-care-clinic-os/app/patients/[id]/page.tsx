@@ -8,8 +8,11 @@ import { getPatient } from "@/lib/seed-data";
 import { buildVisitPrepPacket } from "@/lib/visit-prep";
 import { previewCreateCarePlanDraftAction } from "@/lib/workflow-actions";
 
-export default function PatientDetailPage({ params }: { params: { id: string } }) {
-  const patient = getPatient(params.id);
+// Next 15: `params` của trang động là Promise — phải `await` trước khi đọc.
+// Trang vẫn là server component, chỉ đọc dữ liệu demo; không ghi, không gửi gì.
+export default async function PatientDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const patient = getPatient(id);
   if (!patient) {
     notFound();
   }
