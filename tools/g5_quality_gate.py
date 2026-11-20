@@ -1418,6 +1418,8 @@ def main() -> int:
 
     parser = argparse.ArgumentParser(description="Chấm hợp đồng chất lượng G5.")
     parser.add_argument("--study", required=True, help="Mã đề tài")
+    parser.add_argument("--no-write", action="store_true",
+                        help="chỉ chấm và in, KHÔNG ghi báo cáo/checkpoint (đo trên checkout chính, 20/11/2026)")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     study = RDI._sanitize_study(args.study)
@@ -1425,7 +1427,7 @@ def main() -> int:
         study,
         root / "exports" / study,
         repo_root=root,
-        write=True,
+        write=not args.no_write,
     )
     print(f"G5 quality status: {report['status']}")
     print(f"Report: exports/{study}/{REPORT_JSON}")

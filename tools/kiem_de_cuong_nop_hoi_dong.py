@@ -256,6 +256,7 @@ _SO_THAP_PHAN_MAY_RE = re.compile(r"(?<![\w.,])0\.\d+(?![\d.])")
 _SO_LON_MAY_RE = re.compile(r"(?<![\w.,/-])\d{5,}(?![\w.,/-])")
 _NGAY_ISO_RE = re.compile(r"(?<![\w-])(?:19|20)\d{2}-[01]\d-[0-3]\d(?![\w-])")
 _NGOAC_KEP_RE = re.compile(r"[«»]|\"[^\"\n]{1,200}\"")
+_NGU_CANH_MA_RE = re.compile(r"(?:seed|hạt giống|mã|ID|ISSN|NCT|số hiệu|số)\s*[:=]?\s*$", re.I)
 _VS_RE = re.compile(r"(?<![\wÀ-ỹ])vs\.?(?![\wÀ-ỹ])")
 _IN_HOA_NHAN_RE = re.compile(r"(?<![\wÀ-ỹ])(?:CAO|THẤP|KHÔNG|CHỈ|MỌI|PHẢI|LUÔN|TĂNG|GIẢM|ĐÚNG|SAI)(?![\wÀ-ỹ])")
 _TIM_KIEM_RE = re.compile(r"\[(?:Mesh|tiab|pt|ti|tw|majr|dp)\]", re.I)
@@ -302,6 +303,9 @@ def loi_k11(md: str) -> List[str]:
         )
         for bt, nhan in luat:
             hit = bt.search(s)
+            # Số định danh không phải số đếm («seed 20261115», «mã 40062», «Quyết định số 3869») — không nhóm nghìn.
+            while hit and bt is _SO_LON_MAY_RE and _NGU_CANH_MA_RE.search(s[max(0, hit.start() - 25):hit.start()]):
+                hit = bt.search(s, hit.end())
             if hit:
                 loi.append(f"K11 dòng {so}: {nhan} («{hit.group(0)[:30]}»)")
                 break

@@ -1946,12 +1946,14 @@ def main() -> int:
         description="Chấm lại hợp đồng chất lượng G3; không tính lại cỡ mẫu, không tự xác nhận."
     )
     parser.add_argument("--study", required=True)
+    parser.add_argument("--no-write", action="store_true",
+                        help="chỉ chấm và in, KHÔNG ghi báo cáo/checkpoint (đo trên checkout chính, 20/11/2026)")
     args = parser.parse_args()
     GC.ensure_utf8_stdout()
     repo_root = Path(__file__).resolve().parents[1]
     study = re.sub(r"[^\w\-]", "_", args.study.strip().replace(" ", "-"))
     out_dir = repo_root / "exports" / study
-    report = evaluate_study(study, out_dir, write=True)
+    report = evaluate_study(study, out_dir, write=not args.no_write)
     print(f"G3 quality status: {report['status']}")
     for row in report["automatic_criteria"] + report["human_criteria"]:
         if row["status"] != "PASS":

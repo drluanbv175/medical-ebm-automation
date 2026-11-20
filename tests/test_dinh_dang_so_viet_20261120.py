@@ -129,3 +129,17 @@ def test_k11_o_bang_viet_hoa_toan_bo_la_nhan_khong_phai_nhan_manh():
                     "| 17 | Ghi chú | Ước lượng CAO tỷ lệ | x |"])
     loi = KDN.loi_k11(md)
     assert len(loi) == 1 and "dòng 4" in loi[0]
+
+
+def test_chuan_viet_doi_so_thap_phan_khong_cham_khong_dung_so_muc():
+    van = "\n".join(["# 4. PHƯƠNG PHÁP", "", "So cận KTC với biên Δ = 0.1; xem mục 4.10 và phiên bản 3.14.6.",
+                     "Mã `0.1` giữ nguyên.", "# 7. TÀI LIỆU THAM KHẢO", "", "1. Bài 0.5 mg. 2020."])
+    ra = SDC._chuan_viet(van)
+    assert "Δ = 0,1" in ra and "mục 4.10" in ra and "3.14.6" in ra and "`0.1`" in ra and "Bài 0.5 mg" in ra
+
+
+def test_k11_mien_so_dinh_danh_khong_phai_so_dem():
+    md = "\n".join(["# 4. PHƯƠNG PHÁP", "", "Bootstrap (B = 2000, seed 20261115 cố định).", "Theo Quyết định số 38690.",
+                    "Khung 100000 hồ sơ."])
+    loi = KDN.loi_k11(md)
+    assert len(loi) == 1 and "dòng 5" in loi[0]

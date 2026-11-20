@@ -107,6 +107,21 @@ class Khung:
     ghi_chu: List[str] = field(default_factory=list)
     dac_ta: Dict[str, Any] = field(default_factory=dict)
 
+    def __post_init__(self) -> None:
+        # Tên bảng/hình không có hai ngoặc đơn liền nhau (K11, 20/11/2026): nhãn kết cục/mục tiêu mang ngoặc riêng
+        # («Gãy xương (trong 2 năm)») + «(Mục tiêu k)» ⇒ «Gãy xương, trong 2 năm (Mục tiêu k)». Giả lập trọn vòng đoàn
+        # hệ/RCT bắt được lỗi này ở đề cương máy sinh.
+        self.ten = _gon_hai_ngoac(self.ten)
+
+
+def _gon_hai_ngoac(ten: str) -> str:
+    ten = str(ten or "")
+    while True:
+        moi = re.sub(r"\s*\(([^()]*)\)(\s*\()", r", \1\2", ten, count=1)
+        if moi == ten:
+            return ten
+        ten = moi
+
 
 @dataclass
 class Muc:

@@ -126,6 +126,24 @@ Sau MỖI lần chốt hay sửa G3 (tham số, N chốt, CV/ICC/m), chạy `pyt
 - `tai_lieu_nop_co_mau`: mọi tài liệu nộp (`DE_CUONG_NOP_HOI_DONG_`, `DE_CUONG_THONG_NHAT_`, `De-cuong_`, `Bai-bao-giao-thuc_`) nói tới cỡ mẫu phải ghi đúng N chốt và DE hiện hành. Bản cũ không cập nhật nữa ⇒ đầu tệp ghi «> **BẢN CŨ — ĐÃ THAY BẰNG** <tệp> (<ngày>)» — KHÔNG xoá tệp.
 Đổi tham số sau khi SAP/G10 đã ký ⇒ sửa đổi theo thủ tục (SAP amendment, PI ký lại) — không sửa thẳng văn bản đã ký.
 
+## Đo lại chi tiết mọi con số phụ của cỡ mẫu (20/11/2026 — bác sĩ: «Hãy đo một cách chi tiết và hoàn thành một cách chi tiết … kiểm tra hoàn thiện vấn đề cỡ mẫu, mẫu, biến»)
+Trục `co_mau_tinh_lai` chỉ tính lại n₀, DE, N cần. Các con số PHỤ trong đề cương/SAP (bảng độ chính xác theo ICC × CV, OR nhỏ
+nhất phát hiện được, cỡ mẫu hiệu dụng, ngưỡng ICC/CV còn giữ được độ chính xác, số người cần mời, số tham số mô hình, EPV)
+máy chưa đo — agent TỰ TÍNH LẠI độc lập từng số (viết lại công thức, không chép số cũ) trước khi trả. Đo C1a/BTM ngày
+20/11/2026: 52/56 số khớp; 4 chỗ lệch là bài học:
+- Làm tròn một cách thống nhất trong cùng một đoạn: cận trên OR 1,2248 ghi «1,23» trong khi chiều nghịch đảo 0,82 lại tính
+  từ 1,22; ngưỡng ICC «0,083» tính từ n₀ = 384,16 nhưng «0,062» lại từ 385. Chọn một cách (số chưa làm tròn) cho cả đoạn.
+- «Số tham số mô hình» phải đếm theo ĐÚNG đặc tả: biến thứ bậc vào mô hình dạng số (1 tham số) hay phân loại (k − 1),
+  số mức THỰC phát sinh (khoa chỉ khám thứ Hai–Sáu ⇒ biến ngày 4 tham số, dù bộ biến có 7 mã). SAP chưa nói rõ dạng
+  biến ⇒ hỏi chủ nhiệm/thống kê viên, không tự chọn rồi viết con số.
+- Quy tắc giảm tham số theo EPV phải có nhánh «vẫn dưới ngưỡng sau bước cuối» (giữ mô hình sau bước cuối, báo EPV thực
+  tế, diễn giải thận trọng — hoặc phương án khác do thống kê viên chọn); tính EPV dự kiến ở tỷ lệ y văn, không chỉ ở p = 0,5.
+- Số đã có trong SAP ĐÃ KÝ mà sai ⇒ không sửa thẳng SAP: sửa đề cương theo lựa chọn của chủ nhiệm và ghi mục chờ ký
+  (`exports/<mã>/G4_SAP_SUA_DOI_CHO_KY_<ngày>_<mã>.md`); SAP chưa ký ⇒ sửa kèm dòng nhật ký phiên bản, rồi đồng bộ
+  `sha256_sap` của đặc tả G6 — dấu đặc tả đổi ⇒ PI/thống kê viên đóng dấu duyệt lại (`chay_sap_g6.py kiem` rồi `duyet`).
+- Đo cổng trên checkout chính: bộ chấm `g2/g3/g4/g5_quality_gate.py` dùng `--no-write` (ghi lại báo cáo/checkpoint làm
+  G10-AUTO-03 chặn vì độ tươi — đã xảy ra 18/11 và 20/11/2026).
+
 ## Nguyên tắc nền & disclaimer
 Áp `_NGUYEN-TAC-TRUNG-THUC-BAO-MAT-PHAP-LY-LIEM-CHINH.md`: tuyệt đối không bịa effect size/tỷ lệ/SD; minh bạch công thức + giả định; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
 

@@ -197,3 +197,9 @@ def test_bang_da_bien_chi_gom_bien_mo_hinh_va_thu_bac_dang_so():
     assert ["Tự đánh giá sức khỏe", "mỗi mức tăng thêm"] == da_bien.dong[-1][:2]
     fp = next(k for k in kh if k.loai == "bieu_do" and "hiệu chỉnh" in k.ten)
     assert "Tự đánh giá sức khỏe (mỗi mức)" in fp.dac_ta["nhan"]
+
+
+def test_ten_khung_khong_hai_ngoac_lien_nhau():
+    assert KBB.Khung("bang", "Gãy xương (trong 2 năm) (Mục tiêu 1)").ten == "Gãy xương, trong 2 năm (Mục tiêu 1)"
+    assert KBB.Khung("bang", "A (b) (c) (Mục tiêu 2)").ten == "A, b, c (Mục tiêu 2)"
+    assert KBB.Khung("bang", "Tỷ lệ (Mục tiêu 1)").ten == "Tỷ lệ (Mục tiêu 1)"

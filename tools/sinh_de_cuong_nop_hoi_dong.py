@@ -1939,6 +1939,7 @@ def don_cuoi(van: str) -> str:
 
 
 _NGAY_ISO_VAN_RE = re.compile(r"(?<![\w-])((?:19|20)\d{2})-([01]\d)-([0-3]\d)(?![\w-])")
+_SO_0_CHAM_RE = re.compile(r"(?<![\w.,])0\.(\d+)(?![\d.])")
 _DONG_TIM_KIEM_RE = re.compile(r"\[(?:Mesh|tiab|pt|ti|tw|majr|dp)\]", re.I)
 
 
@@ -1955,6 +1956,7 @@ def _chuan_viet(van: str) -> str:
         manh = re.split(r"(`[^`]*`)", d)
         for i in range(0, len(manh), 2):
             x = manh[i].replace("«", "“").replace("»", "”")
+            x = _SO_0_CHAM_RE.sub(r"0,\1", x)  # «biên Δ = 0.1» (giá trị G3 chèn thô) ⇒ «0,1» (giả lập RCT NI)
             manh[i] = _NGAY_ISO_VAN_RE.sub(r"\3/\2/\1", x)
         ra.append("".join(manh))
     return "\n".join(ra)
