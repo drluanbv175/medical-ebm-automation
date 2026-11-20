@@ -359,6 +359,39 @@ def _own_book_doi(book_art: ET.Element) -> Optional[str]:
     return None
 
 
+def _truong_vancouver(art: ET.Element) -> dict:
+    """Trường thư mục đủ để dựng dòng Vancouver/NLM cho MỘT `<PubmedArticle>` (thêm 20/11/2026).
+
+    Vì sao: `authors` của biên nhận A12 chỉ giữ 5 tác giả đầu và không có tập/số/trang ⇒ danh mục tài liệu tham khảo
+    dựng từ biên nhận bị cắt ở 5 tác giả mà không có «et al.», thiếu «năm;tập(số):trang» và mang tên tạp chí đầy đủ
+    viết thường (phản biện đề cương BTM 19/11/2026, mục O14). Mọi đường dẫn NEO vào `MedlineCitation/…` — không dùng
+    `.//` để khỏi nhặt dữ kiện của bài được bình luận/đính chính. Trường vắng ⇒ không ghi khoá đó (giữ tương thích
+    với biên nhận cũ và kho giả lập).
+    """
+    mc = art.find("MedlineCitation")
+    if mc is None:
+        return {}
+    ra: dict = {}
+    tac_gia = [_ten_tac_gia(a) for a in mc.findall("Article/AuthorList/Author")]
+    tac_gia = [t for t in tac_gia if t]
+    if tac_gia:
+        ra["n_authors"] = len(tac_gia)
+        ra["authors_6"] = tac_gia[:6]
+    for khoa, duong in (("journal_abbr", "MedlineJournalInfo/MedlineTA"),
+                        ("volume", "Article/Journal/JournalIssue/Volume"),
+                        ("issue", "Article/Journal/JournalIssue/Issue"),
+                        ("pages", "Article/Pagination/MedlinePgn")):
+        gt = (mc.findtext(duong) or "").strip()
+        if gt:
+            ra[khoa] = gt
+    if "pages" not in ra:  # bài chỉ có số định danh điện tử (vd «e2418808»), không phải DOI
+        for el in mc.findall("Article/ELocationID"):
+            if (el.get("EIdType") or "").lower() != "doi" and (el.text or "").strip():
+                ra["pages"] = (el.text or "").strip()
+                break
+    return ra
+
+
 # SỬA 2026-09-04 (Workflow đối kháng đa-agent vòng 2): dò trang CHẶN của NCBI dùng
 # CHUNG cho mọi hàm parse tiêu thụ phản hồi efetch. Trước bản vá, chỉ
 # `_parse_retraction_xml()` có bước dò này (thêm 12/08/2026) — `_parse_metadata_xml()`
@@ -922,6 +955,7 @@ class PubMedClient(SourceClient):
                 "journal": journal or None,
                 "year": year or None,
                 "doi": doi,
+                **_truong_vancouver(art),
             }
         # Tài liệu NCBI Bookshelf (vá 26/09/2026, phát hiện #29): PMID có thật ⇒ "resolved". Mọi đường dẫn neo
         # vào BookDocument; bản ghi CẢ CUỐN (vd guideline NICE) không có ArticleTitle ⇒ lùi về Book/BookTitle.

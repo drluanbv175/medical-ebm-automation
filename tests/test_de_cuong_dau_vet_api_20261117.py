@@ -201,6 +201,10 @@ def test_bang_31_bo_tai_lieu_chuan_cua_he():
 def test_cau_tai_lieu_phuong_phap_goi_dung_ca_chuan_bao_cao():
     """Vòng 3: danh sách gồm cả SPIRIT/CONSORT ⇒ câu phải nói «phương pháp học và chuẩn báo cáo», không gán chuẩn báo
     cáo cho việc tính cỡ mẫu."""
-    td = SD.TrichDan({"1": {}, "2": {}}, ["1", "2"])
+    td = SD.TrichDan({"1": {"title": "SPIRIT 2025 statement"}, "2": {"title": "Sample size for prevalence studies."}},
+                     ["1", "2"])
     cau = SD._cau_phuong_phap_hoc(SimpleNamespace(td=td, pp_con_lai=["1", "2"]))[0]
-    assert "phương pháp học và chuẩn báo cáo liên quan [1, 2]" in cau
+    assert "phương pháp học và chuẩn báo cáo sau" in cau
+    # 20/11/2026 (K12): mỗi tài liệu gắn với tên bài của nó — không còn ngoặc gộp «[1, 2]»
+    assert "“SPIRIT 2025 statement” [1]" in cau and "“Sample size for prevalence studies” [2]" in cau
+    assert "[1, 2]" not in cau

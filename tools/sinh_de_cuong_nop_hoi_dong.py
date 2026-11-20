@@ -1151,13 +1151,26 @@ def chuong_tong_quan(n: Nguon, con_lai: Sequence[str] = ()) -> List[str]:
             dong.append(f"| {ten_tg} [{k}] | {str(m.get('year') or '')[:4]} | {_loai_bai(n, p)} | "
                         f"{lam_sach(str(m.get('title') or '')).rstrip('.')} |")
         dong.append("")
-    if con_lai:
-        k = [x for x in (n.td.so(p) for p in con_lai) if x]
-        k = sorted(set(k))
-        cum = (f"{k[0]}–{k[-1]}" if len(k) > 2 and k == list(range(k[0], k[-1] + 1)) else ", ".join(map(str, k)))
-        if k:
-            dong += [f"Các tổng quan, nghiên cứu và hướng dẫn liên quan khác đã được rà soát khi xây dựng đề cương "
-                     f"này [{cum}].", ""]
+    # 20/11/2026 (bác sĩ: hoàn thiện tổng quan; phản biện BTM mục O13): câu cũ «Các tổng quan, nghiên cứu và hướng dẫn
+    # liên quan khác đã được rà soát … [15–36]» là khối trích dẫn gộp — không tài liệu nào đỡ một câu cụ thể, Hội đồng
+    # coi là trích dẫn độn (K12 chặn). Máy không đọc bài nên không viết thay nhận định; mỗi tài liệu còn lại vì vậy đứng
+    # MỘT dòng bảng kèm tên bài nguyên văn — người viết đề cương thay dần bằng câu có số liệu hoặc bỏ tài liệu đó.
+    dong_con = []
+    for p in con_lai:
+        k = n.td.so(p)
+        if not k:
+            continue
+        m = td.md.get(p) or {}
+        tg = str(m.get("authors") or "").split(",")[0].strip()
+        ten_tg = f"{tg.split(' ')[0]} và cộng sự" if tg else _tac_gia_to_chuc(str(m.get("title") or ""))
+        dong_con.append(f"| {ten_tg} [{k}] | {str(m.get('year') or '')[:4]} | {_loai_bai(n, p)} | "
+                        f"{lam_sach(str(m.get('title') or '')).rstrip('.')} |")
+    if dong_con:
+        so_bang = "3.2" if chinh else "3.1"
+        dong += [f"Các tài liệu liên quan khác đã được rà soát khi xây dựng đề cương được liệt kê ở Bảng {so_bang}.",
+                 "",
+                 f"**Bảng {so_bang}. Các tài liệu liên quan khác đã được rà soát**", "",
+                 "| Tài liệu | Năm | Loại nghiên cứu | Tên bài (nguyên văn) |", "|---|---|---|---|"] + dong_con + [""]
     muc("Khoảng trống nghiên cứu và đóng góp của đề tài")
     moi = n.g0.get("novelty_justification")
     for x in ((moi,) if _co(moi) else (n.g1.get("knowledge_gap") or n.s("rationale", "evidence_gap"),)):
@@ -1873,14 +1886,20 @@ def _pmid_phuong_phap_hoc() -> set:
 def _cau_phuong_phap_hoc(n: Nguon) -> List[str]:
     """Một câu dẫn tài liệu PHƯƠNG PHÁP (cỡ mẫu, chuẩn báo cáo…) mà văn bản cổng dẫn nhưng thân đề cương chưa nhắc tự
     nhiên — đặt ở mục cỡ mẫu thay vì dồn vào phần tổng quan bằng chứng (17/11/2026)."""
-    k = sorted({x for x in (n.td.so(p) for p in getattr(n, "pp_con_lai", ()) or ()) if x})
-    if not k:
+    # 20/11/2026 (K12): mỗi tài liệu phương pháp gắn với TÊN BÀI của nó thay vì một ngoặc gộp «[a–b]» — đọc được tài
+    # liệu nào đỡ việc gì, và không có khối trích dẫn độn.
+    muc = []
+    for p in getattr(n, "pp_con_lai", ()) or ():
+        k = n.td.so(p)
+        ten = lam_sach(str((n.td.md.get(p) or {}).get("title") or "")).rstrip(".")
+        if k:
+            muc.append(f"“{ten}” [{k}]" if ten else f"tài liệu [{k}]")
+    if not muc:
         return []
-    cum = (f"{k[0]}–{k[-1]}" if len(k) > 2 and k == list(range(k[0], k[-1] + 1)) else ", ".join(map(str, k)))
     # 17/11/2026 (phản biện máy vòng 3, 3/16 đề tài): danh sách gồm cả CHUẨN BÁO CÁO (SPIRIT 2025, CONSORT) — câu cũ
     # gọi chung là «hướng dẫn phương pháp học» cho cỡ mẫu nên bị bắt là trích không đúng ngữ cảnh.
-    return [f"Việc xác định cỡ mẫu, lập kế hoạch phân tích và trình bày đề cương tham khảo các hướng dẫn phương pháp "
-            f"học và chuẩn báo cáo liên quan [{cum}].", ""]
+    return [f"Việc xác định cỡ mẫu, lập kế hoạch phân tích và trình bày đề cương tham khảo các tài liệu phương pháp "
+            f"học và chuẩn báo cáo sau: {'; '.join(muc)}.", ""]
 
 
 def _than(n: Nguon, con_lai: Sequence[str]) -> List[str]:

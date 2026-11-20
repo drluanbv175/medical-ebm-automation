@@ -35,6 +35,11 @@ Luật (mỗi lỗi một dòng; rỗng = đạt):
       IN HOA nhấn mạnh ngoài phụ lục, loại biến không bỏ lửng «Định danh/thứ bậc», tên bảng/hình không hai ngoặc liền;
       bảng chữ viết tắt không hai mục cùng nghĩa, không mục thừa, xếp theo vần tiếng Việt. (Bảng «mỗi mức một dòng»
       ở K9.) Danh mục tài liệu tham khảo, mã, chuỗi tìm kiếm, DOI/URL/PMID được miễn.
+  K12 mỗi tài liệu tham khảo đỡ một câu cụ thể (bác sĩ 20/11/2026, phản biện BTM O13): không ngoặc trích gộp từ 6 tài
+      liệu trở lên, không mục danh mục nào không được trích.
+  K13 mục có PMID đúng Vancouver/NLM theo metadata biên nhận A12 (O14): hơn 6 tác giả ⇒ 6 tác giả rồi «et al.»,
+      «năm;tập(số):trang», tên tạp chí viết tắt NLM. Biên nhận cũ chưa có các khoá này ⇒ bỏ qua.
+  Số liệu ↔ toàn văn của đúng tài liệu được dẫn là phép TƯ VẤN riêng: `tools/kiem_so_lieu_toan_van.py --study <mã>`.
 
 Lệnh:  python3 tools/kiem_de_cuong_nop_hoi_dong.py --study <mã> [--json]
 Mã thoát: 0 đạt · 1 có lỗi · 2 thiếu tệp đề cương nộp.
@@ -276,6 +281,7 @@ def loi_k11(md: str) -> List[str]:
     trong_tltk = trong_vt = phu_luc = False
     vt: Dict[str, str] = {}
     vt_dong: List[int] = []
+    cot_nguyen_van: set = set()
     for so, d in enumerate(dong, 1):
         m = _DE_MUC_RE.match(d)
         if m:
@@ -292,6 +298,16 @@ def loi_k11(md: str) -> List[str]:
             continue
         if trong_tltk or d.startswith("![") or _TIM_KIEM_RE.search(d):
             continue
+        # 20/11/2026: cột bảng khai «(nguyên văn)» — vd «Tên bài (nguyên văn)» của bảng tài liệu ở chương tổng quan —
+        # giữ đúng chữ của nguồn như danh mục tài liệu tham khảo (tiêu đề tiếng Anh dùng «vs», số không nhóm nghìn).
+        if d.startswith("|"):
+            o = d.strip().strip("|").split("|")
+            if so < len(dong) and re.match(r"^\|[-\s|:]+\|$", dong[so].strip()):
+                cot_nguyen_van = {i for i, x in enumerate(o) if "nguyên văn" in x.lower()}
+            elif cot_nguyen_van and not re.match(r"^\|[-\s|:]+\|$", d.strip()):
+                d = "|" + "|".join(" " if i in cot_nguyen_van else x for i, x in enumerate(o)) + "|"
+        else:
+            cot_nguyen_van = set()
         s = G10._DOI_URL_RE.sub(" ", re.sub(r"`[^`]*`", " ", d))
         s = re.sub(r"PMID:?\s*\d+|\b10\.\d{4,9}/\S+", " ", s)
         luat = (
@@ -343,6 +359,110 @@ def loi_k11(md: str) -> List[str]:
                 loi.append(f"K11 bảng chữ viết tắt: «{k}» không xuất hiện trong văn bản — bỏ mục này")
         if list(vt) != sorted(vt, key=_khoa_van_viet):
             loi.append("K11 bảng chữ viết tắt chưa xếp theo bảng chữ cái tiếng Việt")
+    return loi
+
+
+_TLTK_DE_MUC_RE = re.compile(r"^#{1,3}\s*(?:\d+\.?\s*)?TÀI LIỆU THAM KHẢO\s*$", re.M)
+_TRICH_SO_RE = re.compile(r"\[(\d+(?:\s*[–-]\s*\d+)?(?:\s*,\s*\d+(?:\s*[–-]\s*\d+)?)*)\]")
+_MUC_TLTK_RE = re.compile(r"^(\d+)\.\s+(.+)$")
+TRAN_KHOI_GOP = 6  # một ngoặc trích từ 6 tài liệu trở lên ⇒ khối gộp
+
+
+def _mo_rong_trich(s: str) -> List[int]:
+    """«3–5, 9» ⇒ [3, 4, 5, 9]."""
+    ra: List[int] = []
+    for phan in s.split(","):
+        phan = phan.strip().replace("–", "-")
+        if "-" in phan:
+            a, b = (int(x) for x in phan.split("-", 1))
+            ra.extend(range(a, b + 1) if b >= a else [a, b])
+        elif phan.isdigit():
+            ra.append(int(phan))
+    return ra
+
+
+def _tach_tltk(md: str) -> tuple:
+    """(dòng ngoài danh mục TLTK kèm số dòng, {số: nội dung mục TLTK}). Danh mục kết thúc ở đề mục cấp 1 kế tiếp."""
+    ngoai: List[tuple] = []
+    muc: Dict[int, str] = {}
+    trong = False
+    for so, dong in enumerate(md.splitlines(), 1):
+        if _TLTK_DE_MUC_RE.match(dong):
+            trong = True
+            continue
+        if trong and re.match(r"^#\s", dong):
+            trong = False
+        if trong:
+            m = _MUC_TLTK_RE.match(dong.strip())
+            if m:
+                muc[int(m.group(1))] = m.group(2)
+            continue
+        ngoai.append((so, dong))
+    return ngoai, muc
+
+
+def loi_k12(md: str) -> List[str]:
+    """K12 — mỗi tài liệu tham khảo phải đỡ một câu cụ thể (bác sĩ 20/11/2026, phản biện đề cương BTM mục O13).
+
+    Lỗi khi (a) một ngoặc trích dẫn gộp từ `TRAN_KHOI_GOP` tài liệu trở lên — kiểu «các tài liệu khác được tham khảo khi
+    xây dựng đề cương [15–36]», Hội đồng và tạp chí coi là trích dẫn độn; (b) một mục trong danh mục không được trích ở
+    đâu trong thân bài và phụ lục. Tài liệu không đỡ câu nào thì bỏ khỏi danh mục."""
+    ngoai, muc = _tach_tltk(md)
+    loi: List[str] = []
+    da_trich: set = set()
+    for so, dong in ngoai:
+        for m in _TRICH_SO_RE.finditer(dong):
+            ds = _mo_rong_trich(m.group(1))
+            da_trich.update(ds)
+            if len(set(ds)) >= TRAN_KHOI_GOP:
+                loi.append(f"K12 dòng {so}: khối trích dẫn gộp [{m.group(1)}] ({len(set(ds))} tài liệu) — mỗi tài liệu "
+                           "phải đỡ một câu cụ thể; tài liệu không đỡ câu nào thì bỏ khỏi danh mục")
+    thua = sorted(set(muc) - da_trich)
+    if thua:
+        loi.append(f"K12 {len(thua)} mục tài liệu tham khảo không được trích ở đâu: "
+                   f"{', '.join(map(str, thua[:10]))} — gắn vào câu mà tài liệu đỡ hoặc bỏ khỏi danh mục")
+    return loi
+
+
+def loi_k13(out_dir: Path, md: str) -> List[str]:
+    """K13 — mục tài liệu tham khảo có PMID khớp metadata PubMed của biên nhận A12 theo Vancouver/NLM (20/11/2026,
+    phản biện BTM mục O14: tác giả cắt ở 5 người không có «et al.», thiếu tập/số/trang, tên tạp chí không viết tắt).
+
+    Chỉ kiểm khoá mà biên nhận CÓ (`n_authors`/`authors_6`, `volume`, `journal_abbr` — biên nhận từ 20/11/2026); biên
+    nhận cũ không có thì bỏ qua (dựng lại biên nhận: `check_citations.py --study <mã>`). Luật: có hơn 6 tác giả ⇒ mục
+    ghi 6 tác giả đầu rồi «et al.»; từ 6 tác giả trở xuống ⇒ ghi đủ, không «et al.»; có tập ⇒ có «năm;tập»; có tên
+    tạp chí viết tắt NLM ⇒ mục dùng đúng tên đó."""
+    _, muc = _tach_tltk(md)
+    try:
+        meta = json.loads((Path(out_dir) / "A12_METADATA_RECEIPT.json").read_text(encoding="utf-8")).get("metadata")
+    except (OSError, ValueError, AttributeError):
+        return []
+    if not isinstance(meta, dict):
+        return []
+    loi: List[str] = []
+    for so, noi_dung in sorted(muc.items()):
+        pm = re.search(r"PMID:\s*(\d+)", noi_dung)
+        m = meta.get(pm.group(1)) if pm else None
+        if not isinstance(m, dict) or m.get("status") != "resolved":
+            continue
+        sai: List[str] = []
+        tong, sau = m.get("n_authors"), m.get("authors_6")
+        if isinstance(tong, int) and isinstance(sau, list) and sau:
+            co_et_al = re.search(r"\bet al\b", noi_dung) is not None
+            cuoi = str(sau[min(tong, 6) - 1])
+            if tong > 6 and not co_et_al:
+                sai.append(f"bài có {tong} tác giả — ghi 6 tác giả đầu rồi «et al.»")
+            elif tong <= 6 and co_et_al:
+                sai.append(f"bài có {tong} tác giả — ghi đủ, không «et al.»")
+            if cuoi and cuoi not in noi_dung:
+                sai.append(f"thiếu tác giả thứ {min(tong, 6)} «{cuoi}»")
+        nam = str(m.get("year") or "")[:4]
+        if m.get("volume") and nam and f"{nam};{m['volume']}" not in noi_dung:
+            sai.append(f"thiếu «{nam};{m['volume']}…» (năm;tập(số):trang)")
+        if m.get("journal_abbr") and str(m["journal_abbr"]) not in noi_dung:
+            sai.append(f"tên tạp chí viết tắt NLM là «{m['journal_abbr']}»")
+        if sai:
+            loi.append(f"K13 TLTK [{so}] (PMID {pm.group(1)}): " + "; ".join(sai))
     return loi
 
 
@@ -456,6 +576,8 @@ def kiem(out_dir: Path, study: str) -> List[str]:
     loi.extend(loi_k9(out_dir, md, tk))
     loi.extend(loi_k10(md))
     loi.extend(loi_k11(md))
+    loi.extend(loi_k12(md))
+    loi.extend(loi_k13(out_dir, md))
     if G10._co_lien_lac_ca_nhan(md) or (docx_chu is not None and G10._co_lien_lac_ca_nhan(docx_chu)):
         loi.append("K7 có email/số điện thoại — PII liên lạc để dòng chấm cho PI điền tay ngoài hệ thống")
     return loi

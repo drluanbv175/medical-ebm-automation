@@ -103,6 +103,9 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact literature
 
 - Bài ở `loai_bo` của danh mục KHÔNG được dùng ở TLTK đề cương, SAP, thiết kế G1, bộ biến G3, đề cương thống nhất. Sổ A2b tách chúng ra mục riêng — sau khi danh mục đổi, dựng lại: `python tools/run_g1_auto.py --study <mã> --dung-lai-ho-tro` (repo y khoa). Khôi phục bài nào thì chuyển về `trich_dan`, không xoá dấu vết.
 - TLTK đề cương: đánh số theo thứ tự trích LẦN ĐẦU (Vancouver); mỗi `[n]` trong thân có mục; mỗi mục được trích; không trùng PMID/DOI.
+- Dạng mục (20/11/2026, chốt K12/K13): tối đa 6 tác giả rồi «et al.», tên tạp chí viết tắt NLM, «năm;tập(số):trang»,
+  doi, PMID — lấy từ metadata PubMed (biên nhận A12 mới), không gõ tay; bài trong nước lấy tên tác giả/tên bài/trang
+  từ trang đầu PDF. Không một ngoặc nào gộp từ 6 tài liệu; mục không đỡ câu nào thì bỏ.
 - Nguồn phương pháp mà SAP, thiết kế G1, bộ biến G3 và `gate_params.G3.*_source` dẫn phải có trong TLTK đề cương nộp (chưa có đề cương ⇒ ghi chú để đưa vào khi soạn). Guideline của khoảng trống G0 có PMID/DOI cũng vậy.
 - Trước khi báo xong: `python tools/nhat_quan_xuyen_cong.py --study <mã>` — trục `trich_dan_tong_quan` phải `khop`, hoặc phần còn mở được nêu nguyên văn kèm VAI xử lý. Không báo «hoàn thiện» khi câu «Kết luận» của công cụ còn ghi «CHƯA đồng bộ hoàn toàn».
 

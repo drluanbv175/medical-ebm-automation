@@ -141,6 +141,19 @@ của bác sĩ: hỏi trước, đưa con số ước tính. Kết quả ở `ex
   không kiểm — vẫn là việc đọc tay.
 - Công cụ TƯ VẤN: không ghi biên nhận A12, không mở/chặn cổng, không sửa đề cương.
 
+## Con số ↔ toàn văn và danh mục Vancouver theo metadata A12 (20/11/2026)
+
+> Vì sao: soát tay tổng quan đề cương BTM — con số gán lệch quần thể, ước lượng chọn lọc, khối trích dẫn gộp 22 tài liệu,
+> danh mục cắt ở 5 tác giả không «et al.» và thiếu tập/số/trang (biên nhận A12 khi đó chỉ giữ 5 tác giả, không tập/trang).
+
+- `tools/kiem_so_lieu_toan_van.py --study <mã>` (repo y khoa, TƯ VẤN, không mạng, không phí): mọi con số trong vế có [n]
+  phải có trong TOÀN VĂN của đúng tài liệu được dẫn. «⚪ chưa đối chiếu được» = tài liệu chưa có toàn văn trên máy, KHÔNG
+  phải đạt. Giới hạn: số viết bằng chữ trong nguồn, số ngắn trùng ngẫu nhiên, không kiểm quần thể/chiều liên quan.
+- Biên nhận A12 metadata (từ 20/11/2026) mang `n_authors`, `authors_6`, `journal_abbr`, `volume`, `issue`, `pages` ⇒
+  danh mục dựng từ đó (G10, bộ sinh đề cương) đúng Vancouver/NLM; K13 của `kiem_de_cuong_nop_hoi_dong.py` chặn mục lệch.
+  Biên nhận cũ chưa có các khoá này ⇒ chạy lại `check_citations.py --study <mã>` rồi mới trông vào K13.
+- K12 chặn ngoặc gộp từ 6 tài liệu và mục TLTK không được trích — tài liệu không đỡ câu nào thì bỏ khỏi danh mục.
+
 ## Trích dẫn đề tài PHẢI có TOÀN VĂN — chốt máy G10-AUTO-12 (18/11/2026)
 
 Bác sĩ 18/11/2026: «tất cả trích dẫn cho nghiên cứu trong hệ thống nghiên cứu phải luôn là toàn văn, nếu không phải toàn

@@ -184,7 +184,9 @@ def test_tai_lieu_phuong_phap_dan_o_muc_co_mau():
                         pp_con_lai=["23268518", "27881078"])
     assert {"23268518", "27881078"} <= SD._pmid_phuong_phap_hoc()
     ra = SD._cau_phuong_phap_hoc(n)
-    assert ra and ra[0].startswith("Việc xác định cỡ mẫu") and ra[0].endswith("[1, 2].")
+    # 20/11/2026 (K12): mỗi tài liệu đứng riêng (gắn tên bài khi có), không còn ngoặc gộp «[1, 2]»
+    assert ra and ra[0].startswith("Việc xác định cỡ mẫu") and ra[0].endswith("tài liệu [2].")
+    assert "tài liệu [1]" in ra[0] and "[1, 2]" not in ra[0]
     assert SD._cau_phuong_phap_hoc(SimpleNamespace(td=n.td, pp_con_lai=[])) == []
 
 
