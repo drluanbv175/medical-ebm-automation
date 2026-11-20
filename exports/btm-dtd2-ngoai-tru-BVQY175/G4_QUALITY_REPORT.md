@@ -17,7 +17,7 @@
 | G4-AUTO-07 | §7 phân tích nhóm nhỏ/chọn mẫu đã điền (chống HARKing) | PASS | §7 đã điền |
 | G4-AUTO-08 | §10 phần mềm+seed cụ thể (không phải placeholder bị thay bằng 'OK') | PASS | §10 có tên+phiên bản phần mềm và seed số nguyên cụ thể |
 | G4-AUTO-09 | Margin(Δ) cho NI/equivalence có giá trị và có nguồn biện minh | PASS | hypothesis_type=descriptive_precision — không cần margin |
-| G4-AUTO-10 | Mục bắt buộc có mặt và không còn ô trống (§1/§2/§4/§5/§9/§10; RCT thêm §13/§14/§15) | PASS | không còn ô trống ở §1/§2/§4/§5/§9/§10 |
+| G4-AUTO-10 | Mục bắt buộc có mặt và không còn ô trống (§1/§2/§4/§5/§9/§10; RCT thêm §13/§14/§15; đánh giá kinh tế thêm §16) | PASS | không còn ô trống ở §1/§2/§4/§5/§9/§10 |
 | G4-AUTO-11 | Kết cục chính §2 khớp câu hỏi nghiên cứu đã chốt (G0/G1) | PASS | kết cục chính §2 chứa 'Được xét nghiệm đủ UACR và creatinin huyết thanh trong cửa s' đã chốt ở G0/G1 |
 | G4-AUTO-12 | G3 (cỡ mẫu) chấm sống đã chốt PASS_G3_CONFIRMED — không bị chặn | PASS | G3 chấm sống=PASS_G3_CONFIRMED |
 | G4-AUTO-13 | Chứng chỉ khoá SAP (PHẦN 5) đã điền đủ và «KQ chính» khớp §2 | PASS | chứng chỉ khoá đã điền, «KQ chính» cùng kết cục với §2 |
@@ -29,7 +29,7 @@
 |---|---|---|---|
 | G4-HUMAN-01 | Sổ cái có phê duyệt G4 hợp lệ đúng vai trò thống kê/PI | REVIEW | chưa có sổ cái phê duyệt (approval_ledger.json) cho đề tài này |
 | G4-HUMAN-02 | Mức bảo đảm của khóa ký được nêu đúng (không nói quá) | REVIEW | chưa xác định phạm vi khóa; khóa riêng nhóm thống kê/PI có sẵn=False |
-| G4-HUMAN-03 | Người ký G4 khác người ký các cổng khác (chỉ dấu độc lập) | REVIEW | chưa có bản ghi phê duyệt G4 để đối chiếu |
+| G4-HUMAN-03 | Thống kê viên ký G4 khác người ký các vai khác (chỉ dấu độc lập) | REVIEW | chưa có bản ký G4 của vai thống kê viên (STATISTICIAN) |
 | G4-HUMAN-04 | Bác sĩ/thống kê viên xác nhận đã rà EPV/VIF ở §5 | REVIEW | gate_params.G4.epv_vif_reviewed=False |
 | G4-HUMAN-05 | Bác sĩ/thống kê viên xác nhận cơ chế dữ liệu thiếu ở §6 | REVIEW | gate_params.G4.missing_data_mechanism_confirmed=False |
 | G4-HUMAN-06 | Subgroup/đa so sánh xác nhận TIỀN ĐỊNH trước khi khóa dữ liệu (ngày ISO, ký trước khoá hoặc có amendment) | REVIEW | gate_params.G4.subgroup_multiplicity_predefined_confirmed chưa bật |
@@ -39,12 +39,12 @@
 ## Việc còn lại
 - Thống kê viên/PI tự ký: approve_gate.py --gate G4 --reviewer-role METHODS_STATISTICS_REVIEWER / BIOSTATISTICIAN / STATISTICIAN HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR
 - Tạo khóa riêng: setup_gate_approval_key.py --role STATISTICIAN, và để thống kê viên giữ.
-- Cân nhắc để thống kê viên (không phải người đã ký G2/G8/G9) ký G4.
+- Cân nhắc để thống kê viên (không phải người đã ký vai PI/IRB/quản lý dữ liệu/phản biện) ký G4 bằng reviewer_ref riêng.
 - Đặt gate_params.G4.epv_vif_reviewed=true trong study_meta.json sau khi rà §5.
 - Đặt gate_params.G4.missing_data_mechanism_confirmed=true sau khi rà §6.
 - Đặt gate_params.G4.subgroup_multiplicity_predefined_confirmed=true và reviewed_at dạng ISO-8601 TRƯỚC khi G5 khoá dữ liệu; sửa SAP sau khi khoá dữ liệu phải ghi dòng «SAP AMENDMENT» ở PHẦN 4.
 - Đặt gate_params.G4.reviewed_by_role đúng nhóm: METHODS_STATISTICS_REVIEWER / BIOSTATISTICIAN / STATISTICIAN HOẶC PI / PI_PROJECT_OWNER / PRINCIPAL_INVESTIGATOR.
-- Sau khi đọc lại SAP, ghi gate_params.G4.dau_van_tay_chot="23d61b2fe647c1b4" (dấu nội dung PHẦN 3 hiện tại) cùng reviewed_at dạng ISO-8601; sửa SAP sau đó phải xác nhận lại.
+- Sau khi đọc lại SAP, ghi gate_params.G4.dau_van_tay_chot="12f20b66b4de7303" (dấu nội dung PHẦN 3 hiện tại) cùng reviewed_at dạng ISO-8601; sửa SAP sau đó phải xác nhận lại.
 
 ## Nền chuẩn
 | Chuẩn | Phạm vi | Nguồn |

@@ -43,3 +43,15 @@
   `bias_controls[«Sai lệch báo cáo và phân tích có chọn lọc»].bien_phap`, đúng hai cụm nêu trên.
 - **Đã ghi vào `gate_params.G1`:** `reviewed_at = "2026-11-18T11:40:57+07:00"`; `dau_van_tay_chot = "c504c4e6ea68bd69"`
   (khớp vân tay sống); `reviewed_by_role` và các cờ confirmed giữ nguyên.
+
+## Chốt lại lần 4 (20/11/2026) — quyết định G1 ngày 20/11 (thu hẹp mục tiêu, kiểm định phiếu trích, lùi tiến độ)
+
+- **Vì sao:** các quyết định của chủ nhiệm ngày 20/11/2026 (DP-G1-1 «Thu hẹp mục tiêu»; G1-T4 «Đưa vào đề cương»; Q1 «Chạy
+  xong rồi mới nộp» + tiến độ «Lùi cả chuỗi»; Q5–Q7) làm đổi `gate_params.G1` (PR #342 của repo y khoa).
+- **Nội dung thay đổi so với lần chốt trước (dấu c504c4e6ea68bd69):** máy so từng khoá — 9 khoá:
+  `bias_controls`, `budget`, `critical_to_quality`, `data_collection_method`, `monitoring_plan`, `objectives`, `study_period`, `study_schema_timeline`, `team_roles`. Chi tiết từng cụm ở PR #342 và
+  `G1_DE_XUAT_KIEM_DINH_PHIEU_TRICH_20261119_btm-dtd2-ngoai-tru-BVQY175.md`.
+- **Câu hỏi đã trình:** «Bác sĩ chốt lại G1 với dấu vân tay aa132ca9bc229315?» (phiếu hỏi trong phiên Claude, 20/11/2026).
+- **Lựa chọn của bác sĩ (nguyên văn):** «Chốt lại G1»
+- **Đã ghi vào `gate_params.G1`:** `reviewed_at = "2026-11-20T06:35:38+07:00"`; `dau_van_tay_chot = "aa132ca9bc229315"` (máy đã kiểm khớp
+  dấu vân tay đang sống trước khi ghi); `reviewed_by_role` và các cờ confirmed giữ nguyên.

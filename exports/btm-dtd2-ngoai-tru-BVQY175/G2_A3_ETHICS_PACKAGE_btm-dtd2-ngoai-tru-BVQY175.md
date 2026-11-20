@@ -42,7 +42,7 @@ THÔNG TIN TỔNG QUAN:
  Lộ trình xét duyệt đề nghị: EXPEDITED REVIEW (hoặc EXEMPT nếu không có PII và rủi ro tối thiểu)
  Dân số tham gia: Người từ 18 tuổi, chẩn đoán đái tháo đường típ 2 (ICD-10 E11), quản lý ngoại trú tại Khoa Khám bệnh BVQY175, có ít nhất 2 lượt khám trong cửa sổ hồi cứu 01/01/2026–31/12/2026; loại trừ: lọc máu hoặc ghép thận, có thai, đái tháo đường típ 1 hoặc thể khác.
  Cỡ mẫu dự kiến: 385
- Thời gian nghiên cứu: Cửa sổ dữ liệu hồi cứu 01/01/2026–31/12/2026. Thời gian thực hiện dự kiến 11/2026–09/2027 theo sổ tiến độ đề tài. Trích xuất dữ liệu chỉ bắt đầu sau khi Hội đồng Đạo đức BVQY175 phê duyệt (T0), SAP đã khoá ở cổng G4 và cửa sổ đã khép (sớm nhất tháng 01/2027), dự kiến 19/01–28/02/2027.
+ Thời gian nghiên cứu: Cửa sổ dữ liệu hồi cứu 01/01/2026–31/12/2026. Thời gian thực hiện dự kiến 11/2026–09/2027 theo sổ tiến độ đề tài. Trích xuất dữ liệu chỉ bắt đầu sau khi Hội đồng Đạo đức BVQY175 phê duyệt (T0), SAP đã khoá ở cổng G4 và cửa sổ đã khép (sớm nhất tháng 02/2027), dự kiến 16/02–02/04/2027, gồm trích thử phiếu 16–19/02/2027.
  Nguồn tài trợ: [CẦN BỔ SUNG / "Không có tài trợ bên ngoài"]
  Xung đột lợi ích (COI): [CẦN KHAI BÁO — xem Tài liệu 8]
  Đăng ký nghiên cứu: Không bắt buộc đăng ký thử nghiệm. Nghiên cứu hồi cứu trên dữ liệu thứ cấp, không tuyển mới người tham gia
@@ -100,7 +100,7 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT, ngôn ngữ hành chính)
  Thiết kế: Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)
  Chuẩn báo cáo: STROBE + RECORD
  Nơi thực hiện: Khoa Khám bệnh, Bệnh viện Quân y 175, Thành phố Hồ Chí Minh. Bệnh viện quân đội tuyến cuối; người bệnh gồm quân nhân, người có BHYT và người khám dịch vụ, theo dõi ĐTĐ ở phòng khám nội tiết hoặc nội chung. Nguồn dữ liệu: hồ sơ bệnh án điện tử trên phần mềm eHospital (HIS của BVQY175), lượt khám, mã ICD-10, kết quả xét nghiệm, đơn thuốc ngoại trú.
- Quy trình: T0 = ngày Hội đồng Đạo đức BVQY175 phê duyệt. Trình tự: chốt G1, cỡ mẫu G3 và codebook (11/2026) → hồ sơ đạo đức G2 và SAP sẵn sàng G4 (09–22/11/2026) → Hội đồng Khoa học, Đạo đức xét duyệt (23/11/2026–18/01/2027) → khoá SAP trước khi trích hồ sơ → cửa sổ dữ liệu khép 31/12/2026 → lập khung mẫu, chọn ngẫu nhiên, chủ nhiệm trích hồ sơ trên eHospital, người thứ hai trích lại mẫu kiểm chứng, khoá dữ liệu G5 (19/01–28/02/2027) → phân tích G6 (01–14/03/2027) → bản thảo G7 (15/03–07/04/2027) → bình duyệt và liêm chính G8–G9 (08–28/04/2027) → nộp Tạp chí Y Dược Thực hành 175 (G10, từ 29/04/2027).
+ Quy trình: T0 = ngày Hội đồng Đạo đức BVQY175 phê duyệt. Trình tự: chốt G1, cỡ mẫu G3 và codebook (11/2026) → hội đồng 5 chuyên gia chấm độ giá trị nội dung của phiếu trích, sửa và chấm lại nếu cần (23/11–11/12/2026) → hồ sơ đạo đức G2 và SAP sẵn sàng G4 (09/11–11/12/2026) → nộp Hội đồng Khoa học, Đạo đức (14/12/2026) và xét duyệt (14/12/2026–15/02/2027) → khoá SAP trước khi trích hồ sơ → cửa sổ dữ liệu khép 31/12/2026 → lập khung mẫu, xếp ngẫu nhiên, trích thử 10 hồ sơ tập, khoá phiên bản phiếu và quy trình trích hồ sơ (16–19/02/2027) → chủ nhiệm trích hồ sơ trên eHospital, người thứ hai trích lại mẫu kiểm chứng, khoá dữ liệu G5 (22/02–02/04/2027) → phân tích G6 (05–16/04/2027) → bản thảo G7 (19/04–07/05/2027) → bình duyệt và liêm chính G8–G9 (10–28/05/2027) → nộp Tạp chí Y Dược Thực hành 175 (G10, từ 31/05/2027).
 
 5. RỦI RO TIỀM TÀNG VÀ BIỆN PHÁP BẢO VỆ:
  Mức nguy cơ tổng thể: TỐI THIỂU
@@ -165,10 +165,11 @@ NOT APPLICABLE, informed consent waiver requested (see Document 9).
 - **Cách thu thập:** Chủ nhiệm mở từng hồ sơ được chọn trên eHospital và ghi vào phiếu thu thập dựng từ codebook, theo quy tắc trích viết trước _(nguồn: G1 data_collection_method; SOP trích hồ sơ)_
 - **Ẩn danh / định danh:** Phiếu chỉ mang mã nghiên cứu, không ghi trường định danh nào của người bệnh _(nguồn: G1 data_collection_method; SOP trích hồ sơ)_
 - **Nhập liệu:** Nhập vào REDCap theo từ điển của đề tài; bản trích lại 10% nhập vào một dự án REDCap riêng dùng chung từ điển, giữ nguyên mã nghiên cứu _(nguồn: G3 bộ biến (nguoi_trich); phiếu thu thập)_
-- **Kiểm chứng chất lượng thu thập:** Người thứ hai độc lập với chủ nhiệm trích lại 10% hồ sơ chọn ngẫu nhiên (39 hồ sơ, hai đợt); tỷ lệ đồng thuận mọi biến, kappa cho biến phân loại chính; ngưỡng đồng thuận kết cục chính xn_du từ 95% _(nguồn: G1 data_collection_method; SOP trích hồ sơ §7)_
+- **Kiểm chứng chất lượng thu thập:** Người thứ hai độc lập với chủ nhiệm trích lại 10% hồ sơ chọn ngẫu nhiên (39 hồ sơ, hai đợt) và sàng lọc lại 10 hồ sơ bị loại; đồng thuận tính trên bản trích trước hoà giải; tỷ lệ đồng thuận mọi biến, kappa cho biến phân loại chính, ICC cho biến đếm; ngưỡng đồng thuận kết cục chính xn_du từ 95%, biến phân loại khác dưới 90% thì xem lại quy tắc trích _(nguồn: G1 data_collection_method; SOP trích hồ sơ §7; quyết định chủ nhiệm 20/11/2026 (kiểm định phiếu trích Q5–Q7))_
 - **Bảng nối / đối chiếu mã:** Bảng nối mã nghiên cứu với mã người bệnh lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ, huỷ sau khi khoá dữ liệu _(nguồn: G1 data_collection_method; SOP trích hồ sơ)_
 - **Thời hạn lưu trữ:** Số liệu điện tử (và phiếu giấy nếu có) lưu 2 năm sau khi kết thúc nghiên cứu _(nguồn: PI chọn 15/11/2026 (phiếu đề xuất B3: «2 năm, xoá an toàn có biên bản (Khuyên dùng)»))_
 - **Hủy dữ liệu:** Hết thời hạn lưu trữ: tệp điện tử xoá an toàn, phiếu giấy (nếu có) huỷ bằng máy huỷ tài liệu, có biên bản _(nguồn: PI chọn 15/11/2026 (phiếu đề xuất B3: «2 năm, xoá an toàn có biên bản (Khuyên dùng)»))_
+- **Khác:** Thử nghiệm phiếu: hai người trích mở tối đa 20 hồ sơ tập ngoài mẫu nghiên cứu (10 vị trí cuối danh sách đã xếp ngẫu nhiên, thêm 10 nếu cần vòng hai) để thử phiếu; dữ liệu hồ sơ tập không đưa vào phân tích _(nguồn: đề cương nộp 4.6; quyết định chủ nhiệm 20/11/2026 (kiểm định phiếu trích))_
 
 ```
 KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB

@@ -3,7 +3,7 @@
  "study": "btm-dtd2-ngoai-tru-BVQY175",
  "ten_de_tai": "Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026",
  "tap_chi_dich": "Tạp chí Y Dược Thực hành 175",
- "cap_nhat": "15/11/2026",
+ "cap_nhat": "20/11/2026",
  "cach_dung": "Nguồn sự thật của bảng theo dõi tiến độ. Trạng thái: xong · dang · cho_bs · chua (máy tự suy «khoa» khi việc trước chưa xong). Mục gắn cổng đo sống bằng công cụ ở `do_song` mỗi lần cập nhật — không tự đánh «xong» khi cổng chưa đạt. Hạn là ƯỚC TÍNH, chủ nhiệm chỉnh.",
  "ai": {
   "may": "Máy",
@@ -28,44 +28,44 @@
   },
   {
    "id": "GĐ3",
-   "ten": "Hồ sơ xét duyệt (G2, G4 sẵn sàng)",
+   "ten": "Hồ sơ xét duyệt, chấm CVI (G2, G4 sẵn sàng; ký G4 sau CVI)",
    "tu": "09/11/2026",
-   "den": "22/11/2026"
+   "den": "11/12/2026"
   },
   {
    "id": "GĐ4",
-   "ten": "Hội đồng xét duyệt, ký G2 và G4",
-   "tu": "23/11/2026",
-   "den": "18/01/2027"
+   "ten": "Hội đồng xét duyệt, ký G2",
+   "tu": "14/12/2026",
+   "den": "15/02/2027"
   },
   {
    "id": "GĐ5",
    "ten": "Dữ liệu (G5)",
-   "tu": "19/01/2027",
-   "den": "28/02/2027"
+   "tu": "16/02/2027",
+   "den": "02/04/2027"
   },
   {
    "id": "GĐ6",
    "ten": "Phân tích (G6)",
-   "tu": "01/03/2027",
-   "den": "14/03/2027"
+   "tu": "05/04/2027",
+   "den": "16/04/2027"
   },
   {
    "id": "GĐ7",
    "ten": "Bản thảo (G7)",
-   "tu": "15/03/2027",
-   "den": "07/04/2027"
+   "tu": "19/04/2027",
+   "den": "07/05/2027"
   },
   {
    "id": "GĐ8",
    "ten": "Bình duyệt và liêm chính (G8, G9)",
-   "tu": "08/04/2027",
-   "den": "28/04/2027"
+   "tu": "10/05/2027",
+   "den": "28/05/2027"
   },
   {
    "id": "GĐ9",
    "ten": "Nộp và đăng tạp chí (G10)",
-   "tu": "29/04/2027",
+   "tu": "31/05/2027",
    "den": "30/09/2027"
   }
  ],
@@ -362,7 +362,7 @@
     "2.7",
     "1.10"
    ],
-   "han": "15/11/2026",
+   "han": "24/11/2026",
    "trang_thai": "cho_bs",
    "ngay_xong": "",
    "do_song": "15/11/2026 (sau phiếu đề xuất): g2_quality_gate DRAFT_NEEDS_HUMAN_COMPLETION — tự động FAIL 0, REVIEW chỉ còn G2-AUTO-05 (ô [CẦN] trong hồ sơ); người: G2-HUMAN-01/02 (quyết định Hội đồng). G2-AUTO-08b, G2-AUTO-10 đạt. CT.gov 0 trùng. G1/G3 PASS, G4 READY_FOR_SIGNATURE",
@@ -395,7 +395,7 @@
     "3.1",
     "3.2"
    ],
-   "han": "16/11/2026",
+   "han": "11/12/2026",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "g2_quality_gate",
@@ -412,7 +412,7 @@
     "2.6",
     "2.7"
    ],
-   "han": "15/11/2026",
+   "han": "24/11/2026",
    "trang_thai": "cho_bs",
    "ngay_xong": "",
    "do_song": "28/10/2026: g4_quality_gate READY_FOR_SIGNATURE — 16/16 tự động, 0/8 người (ký ở 4.6)",
@@ -428,7 +428,7 @@
    "phu_thuoc": [
     "3.4"
    ],
-   "han": "16/11/2026",
+   "han": "11/12/2026",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "28/10/2026: READY_FOR_SIGNATURE (đo trên SAP dự thảo 3.4; đánh dấu sau khi 3.4 xong)",
@@ -445,7 +445,7 @@
     "3.3",
     "3.5"
    ],
-   "han": "18/11/2026",
+   "han": "11/12/2026",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -462,7 +462,7 @@
     "3.6",
     "1.10"
    ],
-   "han": "20/11/2026",
+   "han": "11/12/2026",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "g10 readiness",
@@ -478,7 +478,7 @@
    "phu_thuoc": [
     "3.7"
    ],
-   "han": "22/11/2026",
+   "han": "11/12/2026",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -494,7 +494,7 @@
    "phu_thuoc": [
     "3.8"
    ],
-   "han": "25/11/2026",
+   "han": "14/12/2026",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -510,7 +510,7 @@
    "phu_thuoc": [
     "3.8"
    ],
-   "han": "25/11/2026",
+   "han": "14/12/2026",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -527,7 +527,7 @@
     "4.1",
     "4.2"
    ],
-   "han": "31/12/2026",
+   "han": "26/01/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -543,7 +543,7 @@
    "phu_thuoc": [
     "4.2"
    ],
-   "han": "15/01/2027",
+   "han": "12/02/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -560,7 +560,7 @@
     "4.4",
     "3.3"
    ],
-   "han": "18/01/2027",
+   "han": "15/02/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "approval_ledger G2",
@@ -574,14 +574,15 @@
    "lenh": "approve_gate.py --gate G4",
    "xong_khi": "Sổ cái ghi G4 đã ký",
    "phu_thuoc": [
-    "4.5",
-    "3.5"
+    "3.10",
+    "3.5",
+    "4.5"
    ],
-   "han": "18/01/2027",
+   "han": "11/12/2026",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "approval_ledger G4",
-   "ghi_chu": ""
+   "ghi_chu": "20/11/2026 bác sĩ chọn «Sau vòng CVI»: ghi xác nhận G4 của PI rồi PI + thống kê viên ký G4 trước khi nộp 14/12/2026."
   },
   {
    "id": "5.1",
@@ -595,7 +596,7 @@
     "4.6",
     "2.8"
    ],
-   "han": "22/01/2027",
+   "han": "19/02/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -611,7 +612,7 @@
    "phu_thuoc": [
     "5.1"
    ],
-   "han": "05/02/2027",
+   "han": "07/03/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -627,7 +628,7 @@
    "phu_thuoc": [
     "5.2"
    ],
-   "han": "07/02/2027",
+   "han": "09/03/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -643,7 +644,7 @@
    "phu_thuoc": [
     "5.3"
    ],
-   "han": "21/02/2027",
+   "han": "25/03/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -659,7 +660,7 @@
    "phu_thuoc": [
     "5.4"
    ],
-   "han": "24/02/2027",
+   "han": "28/03/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -676,7 +677,7 @@
     "5.4",
     "5.5"
    ],
-   "han": "28/02/2027",
+   "han": "02/04/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "approval_ledger G5",
@@ -692,7 +693,7 @@
    "phu_thuoc": [
     "5.6"
    ],
-   "han": "07/03/2027",
+   "han": "10/04/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "G6 checkpoint",
@@ -708,7 +709,7 @@
    "phu_thuoc": [
     "6.1"
    ],
-   "han": "10/03/2027",
+   "han": "13/04/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -724,7 +725,7 @@
    "phu_thuoc": [
     "6.1"
    ],
-   "han": "10/03/2027",
+   "han": "13/04/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -740,7 +741,7 @@
    "phu_thuoc": [
     "6.1"
    ],
-   "han": "10/03/2027",
+   "han": "13/04/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -758,7 +759,7 @@
     "6.3",
     "6.4"
    ],
-   "han": "14/03/2027",
+   "han": "16/04/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -774,7 +775,7 @@
    "phu_thuoc": [
     "6.5"
    ],
-   "han": "17/03/2027",
+   "han": "21/04/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -790,7 +791,7 @@
    "phu_thuoc": [
     "7.1"
    ],
-   "han": "28/03/2027",
+   "han": "29/04/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -806,7 +807,7 @@
    "phu_thuoc": [
     "7.2"
    ],
-   "han": "31/03/2027",
+   "han": "02/05/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -822,7 +823,7 @@
    "phu_thuoc": [
     "7.2"
    ],
-   "han": "31/03/2027",
+   "han": "02/05/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -838,7 +839,7 @@
    "phu_thuoc": [
     "7.2"
    ],
-   "han": "31/03/2027",
+   "han": "02/05/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -856,7 +857,7 @@
     "7.4",
     "7.5"
    ],
-   "han": "03/04/2027",
+   "han": "04/05/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -872,7 +873,7 @@
    "phu_thuoc": [
     "7.6"
    ],
-   "han": "07/04/2027",
+   "han": "07/05/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -888,7 +889,7 @@
    "phu_thuoc": [
     "7.7"
    ],
-   "han": "10/04/2027",
+   "han": "12/05/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -904,7 +905,7 @@
    "phu_thuoc": [
     "3.8"
    ],
-   "han": "31/03/2027",
+   "han": "03/05/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -921,7 +922,7 @@
     "8.1",
     "8.2"
    ],
-   "han": "24/04/2027",
+   "han": "24/05/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -937,7 +938,7 @@
    "phu_thuoc": [
     "8.3"
    ],
-   "han": "26/04/2027",
+   "han": "26/05/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "approval_ledger G8",
@@ -953,7 +954,7 @@
    "phu_thuoc": [
     "7.7"
    ],
-   "han": "20/04/2027",
+   "han": "21/05/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -970,7 +971,7 @@
     "8.5",
     "8.4"
    ],
-   "han": "28/04/2027",
+   "han": "28/05/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "approval_ledger G9",
@@ -986,7 +987,7 @@
    "phu_thuoc": [
     "8.4"
    ],
-   "han": "30/04/2027",
+   "han": "01/06/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -1002,7 +1003,7 @@
    "phu_thuoc": [
     "8.4"
    ],
-   "han": "30/04/2027",
+   "han": "01/06/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -1020,7 +1021,7 @@
     "9.1",
     "9.2"
    ],
-   "han": "03/05/2027",
+   "han": "03/06/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "approval_ledger G10",
@@ -1036,7 +1037,7 @@
    "phu_thuoc": [
     "9.3"
    ],
-   "han": "05/05/2027",
+   "han": "05/06/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -1052,7 +1053,7 @@
    "phu_thuoc": [
     "9.4"
    ],
-   "han": "15/06/2027",
+   "han": "07/07/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -1068,7 +1069,7 @@
    "phu_thuoc": [
     "9.5"
    ],
-   "han": "30/06/2027",
+   "han": "19/07/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -1084,7 +1085,7 @@
    "phu_thuoc": [
     "9.6"
    ],
-   "han": "31/07/2027",
+   "han": "13/08/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -1100,7 +1101,7 @@
    "phu_thuoc": [
     "9.7"
    ],
-   "han": "15/08/2027",
+   "han": "25/08/2027",
    "trang_thai": "chua",
    "ngay_xong": "",
    "do_song": "",
@@ -1121,6 +1122,36 @@
    "ngay_xong": "",
    "do_song": "",
    "ghi_chu": ""
+  },
+  {
+   "id": "3.9",
+   "gd": "GĐ3",
+   "ten": "Hội đồng 5 chuyên gia chấm CVI phiếu trích (vòng 1–2), sửa định nghĩa theo góp ý",
+   "ai": "bs",
+   "lenh": "cong_cu/bo_ho_so_cvi.py dung → gửi chuyên gia → cong_cu/bo_ho_so_cvi.py nhap --vao <thư mục> --ap-dung → tools/pha_phat_trien_cong_cu.py cvi",
+   "xong_khi": "Mọi mục I-CVI ≥ 0,78 (hoặc chủ nhiệm quyết giữ kèm lý do) sau tối đa 2 vòng",
+   "phu_thuoc": [],
+   "han": "11/12/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": "Bác sĩ duyệt thang chấm 20/11/2026 «Duyệt như dự thảo»; hồ sơ ở pha_cong_cu/HO_SO_CHAM_CVI_* và PHIEU_CHAM_CVI_*"
+  },
+  {
+   "id": "3.10",
+   "gd": "GĐ3",
+   "ten": "Xác nhận G4 của PI (EPV/VIF §5, dữ liệu thiếu §6, nhóm nhỏ/đa so sánh tiền định) gắn dấu SAP sau CVI",
+   "ai": "bs",
+   "lenh": "gate_params.G4 (epv_vif_reviewed, missing_data_mechanism_confirmed, subgroup_multiplicity_predefined_confirmed, reviewed_by_role, reviewed_at, dau_van_tay_chot)",
+   "xong_khi": "g4_quality_gate: G4-HUMAN-04…08 PASS",
+   "phu_thuoc": [
+    "3.9"
+   ],
+   "han": "11/12/2026",
+   "trang_thai": "chua",
+   "ngay_xong": "",
+   "do_song": "",
+   "ghi_chu": "Bác sĩ chọn 20/11/2026 «Sau vòng CVI»"
   }
  ],
  "lich_su": [
@@ -1211,6 +1242,10 @@
   {
    "ngay": "2026-11-15",
    "viec": "Phiếu đề xuất: 3.2 xong (không đăng ký); 3.1 B2/B3/B4 đã ghi; 1.10 tạm bố cục C1a; 3.7 viết sau G2 sẵn sàng; B1 xác nhận lại kết cục chính (dấu be7a10ba02e38f7d)"
+  },
+  {
+   "ngay": "2026-11-20",
+   "viec": "Lùi cả chuỗi theo quyết định chủ nhiệm (chấm CVI xong rồi mới nộp): GĐ3–GĐ9 đổi mốc; nộp 14/12/2026; ký G4 sau CVI trước 11/12; ký G2 sau khi Hội đồng duyệt (hạn 15/02/2027); thêm 3.9 chấm CVI, 3.10 xác nhận G4; G1 chốt lại lần 4 (dấu aa132ca9bc229315)"
   }
  ]
 }

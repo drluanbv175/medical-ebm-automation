@@ -2,7 +2,7 @@
 
 **Đề tài:** Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026 (mã `btm-dtd2-ngoai-tru-BVQY175`)
 
-**Mã quy trình:** SOP-TR-01 · **Phiên bản:** 1.0 (bản soạn ngày 28/10/2026) · **Trạng thái:** chủ nhiệm đề tài đã duyệt C1–C3 ngày 28/10/2026 (nguyên văn «Áp dụng C1–C3»); ban hành khi Hội đồng duyệt đề cương
+**Mã quy trình:** SOP-TR-01 · **Phiên bản:** 1.0 (bản soạn ngày 28/10/2026; bổ sung kiểm định phiếu trích ngày 20/11/2026) · **Trạng thái:** chủ nhiệm đề tài đã duyệt C1–C3 ngày 28/10/2026 (nguyên văn «Áp dụng C1–C3»); ban hành khi Hội đồng duyệt đề cương
 
 **Căn cứ:**
 - thiết kế, chọn mẫu, cách thu thập, bảng sai lệch và sổ rủi ro đã chốt ở G1 (dấu 91fc5cdaaa5a689c);
@@ -40,7 +40,7 @@ Người đảm nhận các vai ngoài chủ nhiệm do chủ nhiệm phân côn
 | Vai trò | Việc trong quy trình này | Yêu cầu |
 |---|---|---|
 | Chủ nhiệm đề tài | Lập khung mẫu, ghi hạt giống, xếp ngẫu nhiên; mở và trích hồ sơ; giữ bảng nối mã | Người duy nhất giữ bảng nối mã và danh sách khung mẫu |
-| Người trích lại | Trích lại độc lập các hồ sơ được chọn ngẫu nhiên (10%) | Khác chủ nhiệm; không xem bản trích của chủ nhiệm |
+| Người trích lại | Cùng chủ nhiệm trích thử 10 hồ sơ tập (mục 4); trích lại độc lập các hồ sơ được chọn ngẫu nhiên (10%) và sàng lọc lại 10 hồ sơ bị loại (mục 7) | Khác chủ nhiệm; không xem bản trích của chủ nhiệm |
 | Người duyệt thứ hai của bảng ánh xạ | Cùng chủ nhiệm duyệt tên xét nghiệm trên eHospital | Hiểu danh mục xét nghiệm của bệnh viện |
 | Quản lý dữ liệu | Dựng hai dự án REDCap; kiểm dữ liệu hằng tuần; so sánh bản trích lại | Chỉ thấy mã nghiên cứu |
 | Nhà thống kê | Chỉ tiếp cận cơ sở dữ liệu đã khoá (G5) | — |
@@ -58,7 +58,13 @@ Người đảm nhận các vai ngoài chủ nhiệm do chủ nhiệm phân côn
 4. **Tập trích trên 10 hồ sơ thử (R9).**
    - Làm ngay sau khi xếp ngẫu nhiên (mục 5), trước hồ sơ chính thức đầu tiên. Hồ sơ thử là 10 người ở **10 vị trí cuối** của danh sách đã xếp (C1): đánh dấu «hồ sơ tập» trong bảng nối mã, không đưa vào mẫu, ghi trong sơ đồ chọn và Sổ khung mẫu.
    - Chủ nhiệm và người trích lại cùng trích độc lập 10 hồ sơ thử, nhập vào một bản sao dự án REDCap, rồi so sánh từng biến.
+   - Mỗi người ghi nhật ký vấn đề theo từng trường của phiếu, mã hoá một trong bốn loại: định nghĩa hoặc quy tắc mơ hồ; khó tìm dữ kiện trên eHospital; hồ sơ không rõ, phải phán đoán; dữ kiện có nhưng khó ghi vào phương án hoặc đơn vị có sẵn. Ghi thêm số phút trích mỗi hồ sơ (tệp mẫu ở `pha_cong_cu/`, mã lượt NT01–NT20; không ghi dữ kiện nhận ra người bệnh).
+   - Ngưỡng vận hành (chủ nhiệm ấn định 20/11/2026):
+     - mục có vấn đề ở từ 10% lượt trích (từ 2/20): bắt buộc xem lại và viết rõ quy tắc vào mục 6;
+     - từ 3 mục có vấn đề ở từ 20% lượt trích: sửa rồi trích thử vòng hai trên 10 hồ sơ tập kế tiếp ở cuối danh sách (tối đa 20 hồ sơ tập);
+     - bất kỳ bất đồng nào ở phần A, `so_lan_creat` hoặc `so_lan_uacr` (quy về có/không) trên cùng hồ sơ: bàn và sửa quy tắc trước hồ sơ chính thức đầu tiên.
    - Mọi sai khác được bàn, và quy tắc chưa rõ được viết thêm vào mục 6 trước khi trích chính thức.
+   - **Khoá phiên bản:** sau tập trích, nâng phiên bản quy trình này và phiếu thu thập (ví dụ 1.1), ghi ngày khoá vào Biên bản tập trích. Chỉ sau khi khoá mới mở hồ sơ chính thức đầu tiên. Sửa câu chữ quy tắc là thay đổi thủ tục nội bộ; thêm, bỏ hoặc đổi định nghĩa biến là sửa đổi đề cương — báo Hội đồng Đạo đức trước khi áp dụng.
    - Hồ sơ thử **không** đưa vào mẫu. Ghi kết quả vào Biên bản tập trích (Phụ lục 3).
 
 ## 5. Lập khung mẫu và xếp ngẫu nhiên
@@ -128,16 +134,21 @@ Người đảm nhận các vai ngoài chủ nhiệm do chủ nhiệm phân côn
 1. **Chọn hồ sơ trích lại** bằng công cụ (lệnh `trich-lai`, Phụ lục 5), từ tệp xuất REDCap chỉ gồm hai cột `record_id` và `du_tieu_chuan`.
    - Mỗi đợt dùng một hạt giống riêng, ghi vào Sổ khung mẫu trước khi chạy.
    - Cần trích lại 10% của 385 hồ sơ, tức **39 hồ sơ**, chia **hai đợt** (C2): đợt 1 chọn 10 hồ sơ trong 100 hồ sơ đủ tiêu chuẩn đầu tiên, ngay khi có đủ 100 hồ sơ; đợt 2 chọn 29 hồ sơ trong số còn lại khi trích xong.
+   - **Sàng lọc lại hồ sơ bị loại** (chủ nhiệm chọn 20/11/2026): khi trích xong, chọn ngẫu nhiên **10 hồ sơ** trong số hồ sơ bị loại (`du_tieu_chuan` = 0) bằng lệnh `trich-lai --bi-loai` (Phụ lục 5), hạt giống riêng ghi vào Sổ khung mẫu trước khi chạy. Người trích lại chỉ trích lại phần A (tiêu chuẩn chọn và loại) của các hồ sơ này.
 2. **Bàn giao cho người trích lại:**
    - Chủ nhiệm đưa người trích lại danh sách mã nghiên cứu được chọn và mã người bệnh tương ứng (tra từ bảng nối mã).
    - Bàn giao trực tiếp, không gửi qua tin nhắn hay thư điện tử.
 3. **Trích lại độc lập.** Người trích lại mở các hồ sơ đó trên eHospital và trích theo đúng quy trình này vào dự án REDCap «trích lại», giữ nguyên mã nghiên cứu. Người trích lại không xem bản trích của chủ nhiệm.
 4. **So sánh** (quản lý dữ liệu):
-   - Đối chiếu từng biến của hai bản và tính tỷ lệ đồng thuận tuyệt đối cho mọi biến.
-   - Tính hệ số kappa cho các biến phân loại chính: tiêu chuẩn chọn và loại; `so_lan_creat` và `so_lan_uacr` đã quy về có/không; `tha`; `ma_btm_ghi_nhan`; `raasi`; SGLT2i.
-   - Tính `xn_du` từ cả hai bản và đo đồng thuận.
+   - Trước khi hoà giải, xuất bản chụp các bản ghi được trích lại của dự án chính; mọi chỉ số đồng thuận tính trên bản chụp này, không tính trên bản đã sửa sau hoà giải.
+   - Đối chiếu từng biến của hai bản và tính tỷ lệ đồng thuận tuyệt đối kèm KTC 95% Wilson cho mọi biến.
+   - Tính kappa kèm KTC 95%, tỷ lệ đồng thuận dương và âm, chỉ số tỷ lệ hiện mắc và chỉ số lệch cho các biến phân loại chính: `co_creat`, `co_uacr`, `xn_du`, `alb_khac`, `tha`, `ma_btm_ghi_nhan`, `dung_raasi`, `dung_sglt2i`, `ccd_raasi`, `ccd_sglt2i`, `phan_loai_btm`, `chi_dinh_raasi`, `chi_dinh_sglt2i` (biến phái sinh tính từ mỗi bản bằng cùng công thức).
+   - Tính ICC(2,1) và giới hạn đồng thuận 95% cho biến đếm `so_lan_creat`, `so_lan_uacr`, `so_luot_kham`.
+   - Với 10 hồ sơ bị loại sàng lọc lại: đối chiếu `du_tieu_chuan` và lý do loại.
+   - Cách tính chi tiết theo kế hoạch phân tích thống kê §3 (Bảng S1).
 5. **Ngưỡng chấp nhận:** đồng thuận ở kết cục chính `xn_du` **từ 95%** (CTQ 3).
-   - Nếu thấp hơn ngưỡng: dừng trích, tìm nguyên nhân, sửa quy tắc ở mục 6, rồi trích lại các hồ sơ bị ảnh hưởng (R9; quy tắc dừng của G1).
+   - Nếu thấp hơn ngưỡng: dừng trích, tìm nguyên nhân, sửa quy tắc ở mục 6, rồi rà lại biến bị ảnh hưởng ở mọi hồ sơ đã trích (R9; quy tắc dừng của G1).
+   - Biến phân loại khác có đồng thuận dưới 90%: xem lại quy tắc trích của biến đó ở mục 6 (ngưỡng cảnh báo, chủ nhiệm ấn định 20/11/2026).
 6. **Giải quyết bất đồng.** Mỗi sai khác được giải quyết bằng cách mở lại hồ sơ gốc. Giá trị đúng được sửa trong dự án chính và ghi vào Nhật ký hoà giải (Phụ lục 4), có chữ ký hai người.
 
 ## 8. Bảo mật (R6)
@@ -173,6 +184,8 @@ Người đảm nhận các vai ngoài chủ nhiệm do chủ nhiệm phân côn
 | C1 | Nguồn 10 hồ sơ dùng để tập trích | 10 hồ sơ ở **cuối** danh sách ngẫu nhiên: đánh dấu «hồ sơ tập», không đưa vào mẫu, ghi trong sơ đồ chọn. Cách này nằm trong khung mẫu và cửa sổ đã được duyệt | 10 hồ sơ ĐTĐ típ 2 năm 2025 (ngoài cửa sổ; cần Hội đồng cho phép xem) |
 | C2 | Trích lại một lần hay hai đợt | **Hai đợt:** 10 hồ sơ chọn trong 100 hồ sơ đủ tiêu chuẩn đầu tiên, để phát hiện sớm quy tắc chưa rõ; 29 hồ sơ còn lại chọn khi trích xong | Một lần 39 hồ sơ khi trích xong |
 | C3 | Nơi lưu bảng nối mã | Thư mục mã hoá trên máy chủ nhiệm (ổ đĩa ảnh mã hoá hoặc tệp nén có mật khẩu AES-256), dự phòng trên USB mã hoá | Chủ nhiệm ấn định |
+
+**Bổ sung ngày 20/11/2026** (kiểm định phiếu trích, phiếu đề xuất `G1_DE_XUAT_KIEM_DINH_PHIEU_TRICH_20261119`): chủ nhiệm chọn «Đưa vào đề cương», thêm 10 hồ sơ bị loại vào mẫu sàng lọc lại (Q6), giữ 39 hồ sơ trích lại (Q7) và dùng bộ ngưỡng vận hành đề xuất (Q5). Đã sửa mục 3, 4, 7 và Phụ lục 5.
 
 Còn mở: chủ nhiệm ghi tên người cho hai vai: người trích lại và người duyệt thứ hai của bảng ánh xạ. Chỉ ghi vai trong hồ sơ; tên ghi ở bảng phân công A13.
 
@@ -241,6 +254,14 @@ Trích lại đợt 2 (29 hồ sơ, không chọn lại hồ sơ của đợt 1)
 ```bash
 python3 cong_cu/xep_ngau_nhien_khung_mau.py trich-lai --ds "<tệp xuất REDCap>.csv" --hat-giong <hạt giống đợt 2> --so 29 --loai-tru trich_lai_dot1.csv --ra trich_lai_dot2.csv
 ```
+
+Sàng lọc lại 10 hồ sơ bị loại (khi trích xong; chọn trong số `du_tieu_chuan` = 0):
+
+```bash
+python3 cong_cu/xep_ngau_nhien_khung_mau.py trich-lai --ds "<tệp xuất REDCap>.csv" --hat-giong <hạt giống đợt bị loại> --so 10 --bi-loai --ra trich_lai_bi_loai.csv
+```
+
+Tuỳ chọn `--bi-loai` thử ngày 20/11/2026 trên dữ liệu giả: chỉ chọn bản ghi bị loại; thiếu bản ghi thì báo lỗi (mã 2); mặc định vẫn chọn bản ghi đủ tiêu chuẩn.
 
 Công cụ đã được thử ngày 28/10/2026 trên dữ liệu giả (không dùng mã người bệnh thật):
 - chặn ghi vào thư mục đồng bộ đám mây;
