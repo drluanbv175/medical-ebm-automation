@@ -8,3 +8,19 @@ allowBuilds:
   prisma: true
   sharp: true
   unrs-resolver: true
+
+# Ép phiên bản tối thiểu cho gói phụ thuộc bắc cầu bị Dependabot gắn cờ. Đặt ở đây (không ở trường
+# "pnpm" của package.json — pnpm bản mới bỏ qua trường đó, lockfile cũ vì vậy chưa từng áp overrides).
+# Mỗi ràng buộc giữ ĐÚNG dòng major đang dùng: ">=" sẽ kéo nanoid 6/js-yaml 5/effect 4 (đổi API, chỉ ESM).
+overrides:
+  sharp: ^0.35.5
+  js-yaml: ^4.3.2
+  baseline-browser-mapping: ^2.11.0
+  browserslist: ^4.28.7
+  deepmerge-ts: ^8.0.0
+  nanoid: ^3.3.18
+  postcss: ^8.5.23
+  brace-expansion@5: ^5.0.12
+  effect: ^3.22.1
+  minimatch@10: ^11.0.1
+  postcss-selector-parser: ^6.1.5
