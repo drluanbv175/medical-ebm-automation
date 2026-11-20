@@ -55,6 +55,12 @@ Biên bản đánh giá chéo G10-T4 `G10-DG-20261017T192537-eadd7f0a` (qua, có
 - Chuỗi chốt 28/10/2026: PI chốt lại G0 (15:06) và G1 (15:08); G2 sẵn sàng nộp; thống kê viên chốt lại G3 (15:10) và G4 (17:18), ký G4 lúc 17:19; PI thu hồi gói G10 lắp ngày 18/10 (lúc 17:49) rồi ký gói lắp lại lúc 19:19 (bản ghi `929f12c076daa911`) ⇒ G10 khoá. `kiem_de_cuong_nop_hoi_dong.py`: ĐẠT; bản `.docx` khớp `.md`.
 - **Bản sao nộp:** cặp tệp trong `exports/` đổi nội dung ⇒ bản sao nộp tạo TRƯỚC 28/10 đã lỗi thời; tạo bản sao mới từ cặp tệp hiện tại rồi mới điền tay (mục 4.1).
 
+## 3d. Lượt sửa theo hội đồng G1 (tranh biện 19/11/2026, DP-G1-2; chủ nhiệm giao 20/11/2026)
+
+- **Đại lượng cần ước lượng của Mục tiêu 2:** thêm đoạn «Mục tiêu 2 – đại lượng cần ước lượng» ở mục phân tích thống kê, ngay sau đoạn quần thể ước lượng. Đoạn này gom năm thành phần (quần thể, biến kết cục, phơi nhiễm, thước đo tóm tắt, sự kiện đi kèm) từ các quyết định đã có ở mục 2.3, 4.3 và kế hoạch phân tích §1/§4/§9. Không đổi quyết định nào; khung ICH E9(R1) chính thức vẫn ghi không áp dụng cho thiết kế quan sát.
+- **Xác nhận G1 của PI:** dấu `a1092035d7005539` PI chép ngày 15/11/2026 đúng bằng dấu nội dung hiện tại; chấm sống G1 đạt 22/22 tiêu chí. Hội đồng đọc phần chấm cũ lưu trong checkpoint nên tưởng còn lệch.
+- `kiem_de_cuong_nop_hoi_dong.py`: ĐẠT; bản `.docx` đã xuất lại. Gói G10 được lắp lại ⇒ PI rà phần đã sửa rồi ký lại G10.
+
 ## 4. Việc bác sĩ cần quyết hoặc điền
 
 1. **Điền tay — trên BẢN SAO NỘP nằm ngoài `exports/` và ngoài git** (chữ ký G10 ràng buộc mã băm của cặp tệp trong `exports/`; sửa ở đó thì G10 chặn và phải khoá + ký lại): mã đăng ký OSF (đăng ký TRƯỚC khi nộp), ngày phiên bản, Bảng 6.3 (số lượng còn trống, đơn giá, thành tiền, tổng cộng), trang ký (ngày, chữ ký chủ nhiệm, xác nhận + dấu đơn vị chủ trì), hai số điện thoại trong Bản thông tin. Ô chỉ có SAU khi nộp (số, ngày quyết định của Hội đồng) ghi ở bước G2 — người vai IRB tự chạy `approve_gate.py --gate G2 --reviewer-role IRB`.
@@ -72,6 +78,7 @@ Biên bản đánh giá chéo G10-T4 `G10-DG-20261017T192537-eadd7f0a` (qua, có
 - 9 DOI tạp chí trong nước + Eldridge 2006: metadata và tóm tắt từ Crossref; không có thông báo đính chính/rút bài.
 - 3 DOI thêm ngày 18/10/2026 cho ngưỡng phù hợp CFA (Hu & Bentler 1999; Bentler & Bonett 1980; Browne & Cudeck 1992): metadata Crossref; Retraction Watch ngoại tuyến + Crossref: không có thông báo rút bài.
 - 28/10/2026: cảnh báo A12 nêu 17 DOI không có PMID song song (tạp chí trong nước, sách, bài phương pháp thống kê). Đã tra cả 17 bằng Retraction Watch ngoại tuyến + Crossref: không có thông báo rút bài. Trong đó có 2 DOI mới tra 28/10 (Lumley 2004, `10.18637/jss.v009.i08`; Solon và cộng sự 2015, `10.3368/jhr.50.2.301`).
+- 20/11/2026: kiểm rút bài theo TỪNG trích dẫn (`kiem_rut_bai_trich_dan.py --ghi`): 57/57 «ok» — PMID qua chuỗi Retraction Watch → NCBI → Europe PMC; DOI không có PMID qua Crossref + Retraction Watch, gồm cả 2 tài liệu phương pháp mà kế hoạch phân tích dẫn (Dean và Pagano 2015; Solon và cộng sự 2015). Cảnh báo «tra tay» của G10 đã hết.
 - Nội dung các câu trích được đối chiếu với tiêu đề + tóm tắt (thẩm định độc lập soát lại toàn bộ: khớp), chưa đọc toàn văn.
 - Tên tác giả bài tiếng Việt theo Crossref; «Lê Đình Son» có thể là «Sơn» — bác sĩ đối chiếu PDF.
 
