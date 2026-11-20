@@ -369,3 +369,34 @@ def test_a12_doi_so_khop_khong_phan_biet_hoa_thuong(tmp_path):
     _ghi_json(tmp_path / f"KIEM_RUT_BAI_TRICH_DAN_{study}.json", {"study": study, **_kiem("ok")})
     da_kiem, duong_tinh = G10A._doi_da_kiem_rut_bai({DOI_LE.upper()}, study, tmp_path)
     assert da_kiem == {DOI_LE.upper()} and duong_tinh == {}
+
+
+# ── 7. kiem_rut_bai_trich_dan.thu_thap phủ DOI chỉ có trong văn bản gói phát hành (SAP dẫn…) ───────────────────
+
+def test_thu_thap_them_doi_cua_van_ban_goi_phat_hanh(tmp_path):
+    import kiem_rut_bai_trich_dan as KRB  # noqa: PLC0415
+
+    s = "S-KRB-GOI"
+    _ghi_json(tmp_path / f"DANH_MUC_TRICH_DAN_{s}.json", {"trich_dan": [{"id": "T01", "doi": "10.1/Da-Co"}]})
+    _ghi_json(tmp_path / f"A12_CITATION_VERIFICATION_{s}.md",
+              "| DOI | Tên | Nơi dẫn |\n|---|---|---|\n| 10.1093/jssam/smv024 | Dean & Pagano | SAP §3 |\n"
+              "| 10.1/da-co | Đã có | TLTK |\n")
+    _ghi_json(tmp_path / f"DE_CUONG_THONG_NHAT_{s}.md", "Phương pháp (doi:10.3368/jhr.50.2.301).\n")
+    muc = KRB.thu_thap(tmp_path, s)
+    assert [(m["nguon"], m["doi"]) for m in muc] == [
+        ("danh mục T01", "10.1/da-co"), ("văn bản gói phát hành", "10.1093/jssam/smv024"),
+        ("văn bản gói phát hành", "10.3368/jhr.50.2.301")]
+    assert all(m["pmid"] is None for m in muc)
+
+
+def test_doi_goi_phat_hanh_kiem_xong_thi_g10_het_bao_tra_tay(tmp_path, monkeypatch, capsys):
+    import kiem_rut_bai_trich_dan as KRB  # noqa: PLC0415
+
+    study, out = _goi_a12(tmp_path, monkeypatch, None)
+    muc = KRB.thu_thap(out, study)
+    assert DOI_LE in {m["doi"] for m in muc}, "DOI chỉ có trong đề cương thống nhất phải vào tập kiểm"
+    KRB.ghi(out, study, {f"doi:{m['doi']}": {"status": "ok", "source": "crossref"} for m in muc if m["doi"]},
+            luc=datetime.now(timezone.utc).isoformat(timespec="seconds"))
+    ok, ly_do = G10A.citation_verification_ok(study, out)
+    assert ok, ly_do
+    assert "CẢNH BÁO CỔNG A12: phát hiện" not in capsys.readouterr().out
