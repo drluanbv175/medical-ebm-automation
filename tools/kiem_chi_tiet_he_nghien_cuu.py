@@ -423,6 +423,11 @@ def danh_gia_docx(md: Optional[Path], docx: Path) -> list[tuple[str, str, str, b
 # ─────────────────────────────────────────────────────────────────────────────
 
 _LY_DO_DO = ("THU HỒI", "REVOKED", "BỊ SỬA", "TAMPER", "KHÔNG KHỚP", "ĐÃ ĐỔI", "HỎNG", "DỊ DẠNG", "CHUỖI")
+# 20/11/2026 (kiểm toàn hệ nghiên cứu): artifact được dựng lại SAU khi người duyệt ký (sổ cái và niêm phong vẫn
+# nguyên vẹn — gate_contract.gate_block_reason trả «NỘI DUNG ĐÃ ĐỔI SAU KHI DUYỆT») là việc NGƯỜI rà bản mới rồi
+# ký lại, không phải sổ cái bất thường. Trước đây chữ «ĐÃ ĐỔI» làm nó thành 🔴 kèm lời khuyên «điều tra sổ cái, ký
+# lại trên máy hiện tại» (C1a G10 sau khi lắp lại 20/11) — sai việc, sai người. Cổng vẫn chặn như cũ.
+_LY_DO_KY_LAI = "NỘI DUNG ĐÃ ĐỔI SAU KHI DUYỆT"
 
 
 def da_ky(gate: str, study: str, out_dir: Path) -> tuple[bool, str | None]:
@@ -449,6 +454,8 @@ def mau_ly_do_ky(ly_do: str | None) -> str:
     if ly_do is None:
         return VANG
     u = ly_do.upper()
+    if u.startswith(_LY_DO_KY_LAI):
+        return VANG
     return DO if any(k in u for k in _LY_DO_DO) else VANG
 
 
@@ -758,10 +765,16 @@ def kiem_cong(gate: str, study: str, out_dir: Path, cps: dict[str, dict[str, Any
             m.append(Muc(gate, "⑤", VANG, "Chưa có artifact để ký", "chưa tới lượt"))
         else:
             mau = mau_ly_do_ky(ghi)
-            m.append(Muc(gate, "⑤", mau, "Sổ cái: " + ("DẤU HIỆU BẤT THƯỜNG" if mau == DO else "chưa ký"),
-                         _rut_gon(ghi, 110),
-                         "điều tra sổ cái, ký lại trên máy hiện tại" if mau == DO
-                         else f"{vai} — tools/trinh_ky_cong.py hoặc approve_gate.py --gate {gate}", False))
+            if ghi.upper().startswith(_LY_DO_KY_LAI):
+                m.append(Muc(gate, "⑤", VANG, "Sổ cái: bản đã ký cũ — artifact sửa sau khi duyệt, chờ ký lại",
+                             _rut_gon(ghi, 110),
+                             f"{vai} rà phần đã sửa rồi ký lại — tools/trinh_ky_cong.py hoặc approve_gate.py "
+                             f"--gate {gate}", False))
+            else:
+                m.append(Muc(gate, "⑤", mau, "Sổ cái: " + ("DẤU HIỆU BẤT THƯỜNG" if mau == DO else "chưa ký"),
+                             _rut_gon(ghi, 110),
+                             "điều tra sổ cái, ký lại trên máy hiện tại" if mau == DO
+                             else f"{vai} — tools/trinh_ky_cong.py hoặc approve_gate.py --gate {gate}", False))
     return m
 
 

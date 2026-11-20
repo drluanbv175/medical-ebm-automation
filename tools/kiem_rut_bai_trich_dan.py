@@ -6,6 +6,7 @@ bài») — không ai đối chiếu được mã nào đã kiểm; biên nhận
 băm nên không được ghi đè. Công cụ này kiểm MỌI định danh của TLTK đề cương nộp + danh mục trích dẫn:
 - PMID: chuỗi 3 tầng `app.sources.retraction_chain.RetractionChain` (Retraction Watch ngoại tuyến → NCBI → Europe PMC);
 - DOI không có PMID: Crossref `updated-by` (`CrossrefRetraction`) + Retraction Watch theo DOI;
+- từ 20/11/2026 thêm DOI CHỈ có trong văn bản gói phát hành mà G10 quét (tài liệu phương pháp SAP dẫn…);
 và ghi `exports/<mã>/KIEM_RUT_BAI_TRICH_DAN_<mã>.json` (tệp RIÊNG, không đụng biên nhận A12 đã băm). Luật gộp bất đối
 xứng giữ nguyên: tín hiệu DƯƠNG từ bất kỳ nguồn nào là nhận; không kết luận được ⇒ KHÔNG BIẾT, không bao giờ «ok».
 
@@ -38,7 +39,8 @@ CO_PHAN_QUYET = ("ok", "correction", "retracted", "expression_of_concern")
 
 
 def thu_thap(out_dir: Path, study: str) -> List[Dict[str, Any]]:
-    """[{nguon, pmid, doi}] — TLTK đề cương nộp (nếu có) + mục `trich_dan` của danh mục; bỏ trùng theo định danh."""
+    """[{nguon, pmid, doi}] — TLTK đề cương nộp (nếu có) + mục `trich_dan` của danh mục + DOI chỉ có trong văn bản gói
+    phát hành mà G10 quét (A12_CITATION_VERIFICATION, đề cương thống nhất, bản nộp); bỏ trùng theo định danh."""
     ra: List[Dict[str, Any]] = []
     da: set = set()
 
@@ -58,6 +60,18 @@ def thu_thap(out_dir: Path, study: str) -> List[Dict[str, Any]]:
     for x in DMT.doc(out_dir, study).get("trich_dan") or []:
         if isinstance(x, dict):
             _them(f"danh mục {x.get('id') or '?'}", DMT.khoa_cua(x))
+    # 20/11/2026 (kiểm toàn hệ nghiên cứu): DOI CHỈ có trong văn bản gói phát hành mà G10 quét cho cảnh báo A12 —
+    # A12_CITATION_VERIFICATION (bảng tài liệu phương pháp mà SAP dẫn), đề cương thống nhất, bản nộp Hội đồng. Trước
+    # đây chỉ đọc TLTK + danh mục ⇒ DOI mà SAP dẫn (C1a: Dean & Pagano 2015, Solon và cộng sự 2015) không bao giờ được
+    # kiểm — trái doctrine kiem-chung-trich-dan 19/11 — và G10 vẫn bảo tra tay. Dùng CHUNG bộ tách/chuẩn hoá DOI của
+    # G10 để hai bên cùng một tập.
+    import run_g10_assemble as G10A  # noqa: PLC0415 — nạp trễ, chỉ cần hai hàm tách DOI
+    van_ban = [G10A._van_ban_ban_cuoi(study, Path(out_dir))]
+    tep_a12 = Path(out_dir) / f"A12_CITATION_VERIFICATION_{study}.md"
+    if tep_a12.is_file():
+        van_ban.append(tep_a12.read_text(encoding="utf-8"))
+    for d in sorted(G10A._dois_from_text("\n".join(van_ban)), key=str.lower):
+        _them("văn bản gói phát hành", {f"doi:{G10A._chuan_doi(d)}"})
     return ra
 
 

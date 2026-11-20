@@ -2716,6 +2716,40 @@ def _doi_co_pmid_da_kiem(dois: set, checked_pmids: set, out_dir: Path) -> set:
     return {d for d in dois if cap.get(_chuan_doi(d)) in da_kiem}
 
 
+def _doi_da_kiem_rut_bai(dois: set, study: str, out_dir: Path, *,
+                         bay_gio: Optional[datetime] = None) -> tuple[set, Dict[str, str]]:
+    """(DOI đã kiểm «không rút», {DOI: trạng thái dương tính}) theo `KIEM_RUT_BAI_TRICH_DAN_<mã>.json`.
+
+    20/11/2026 (kiểm toàn hệ nghiên cứu): `tools/kiem_rut_bai_trich_dan.py` (15/11) đã kiểm rút bài cho DOI không có
+    PMID qua Crossref `updated-by` + Retraction Watch theo DOI, nhưng G10 không đọc kết quả ấy — vẫn bảo bác sĩ tra
+    tay MỌI DOI (C1a: 15/17 DOI đã có kết quả «ok» trong hạn). Chỉ nhận tệp còn trong hạn A12_RUT_BAI_HAN_NGAY ngày,
+    có múi giờ, đúng mã đề tài; «ok»/«correction» (đính chính không phải rút bài) là đã kiểm; «retracted»/
+    «expression_of_concern» là DƯƠNG TÍNH; trạng thái khác (không kết luận được) ⇒ không tính là đã kiểm.
+    Không đọc được tệp ⇒ (rỗng, rỗng): cảnh báo tra tay giữ nguyên."""
+    try:
+        du_lieu = json.loads((Path(out_dir) / f"KIEM_RUT_BAI_TRICH_DAN_{study}.json").read_text(encoding="utf-8"))
+        moc = datetime.fromisoformat(str(du_lieu.get("checked_at") or "").replace("Z", "+00:00"))
+        ket_qua = du_lieu.get("ket_qua")
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError, AttributeError):
+        return set(), {}
+    if moc.tzinfo is None or str(du_lieu.get("study") or "") != str(study) or not isinstance(ket_qua, dict):
+        return set(), {}
+    now = bay_gio or datetime.now(moc.tzinfo)
+    if (now - moc).total_seconds() / 86400 > A12_RUT_BAI_HAN_NGAY:
+        return set(), {}
+    trang_thai = {_chuan_doi(k[4:]): str((v or {}).get("status") or "")
+                  for k, v in ket_qua.items() if str(k).lower().startswith("doi:") and isinstance(v, dict)}
+    da_kiem: set = set()
+    duong_tinh: Dict[str, str] = {}
+    for d in dois:
+        tt = trang_thai.get(_chuan_doi(d))
+        if tt in ("retracted", "expression_of_concern"):
+            duong_tinh[d] = tt
+        elif tt in ("ok", "correction"):
+            da_kiem.add(d)
+    return da_kiem, duong_tinh
+
+
 def _extract_pmids_from_final_document(study: str, out_dir: Path) -> set:
     """Trích PMID xuất hiện trong bản G10 cuối nếu file đã được assemble().
 
@@ -2954,16 +2988,27 @@ def citation_verification_ok(study: str, out_dir: Path, *, kiem_ban_g10: bool = 
         return False, meta_reason
     doi_tim_thay = _scan_doi_citation_coverage(text, study, out_dir)
     doi_da_phu = _doi_co_pmid_da_kiem(doi_tim_thay, checked_set, out_dir)
-    doi_citations = doi_tim_thay - doi_da_phu
+    doi_da_kiem, doi_duong_tinh = _doi_da_kiem_rut_bai(doi_tim_thay - doi_da_phu, study, out_dir)
+    if doi_duong_tinh:
+        # Tín hiệu DƯƠNG từ bất kỳ nguồn nào là nhận (CLAUDE.md §6.4) — cùng mức với PMID đã rút (all_clean=false).
+        return False, ("A12: trích dẫn chỉ có DOI ĐÃ RÚT hoặc có expression of concern theo "
+                       f"KIEM_RUT_BAI_TRICH_DAN_{study}.json: "
+                       + ", ".join(f"{d} ({tt})" for d, tt in sorted(doi_duong_tinh.items()))
+                       + " — thay bằng nguồn khác (hoặc bản «rút và thay» đúng) rồi lắp lại G10.")
+    doi_citations = doi_tim_thay - doi_da_phu - doi_da_kiem
     if doi_da_phu:
         print(f"  ℹ️  A12: {len(doi_da_phu)} DOI có PMID song song đã nằm trong biên nhận rút bài — không cần tra tay.")
+    if doi_da_kiem:
+        print(f"  ℹ️  A12: {len(doi_da_kiem)} DOI không có PMID đã kiểm rút bài qua Crossref/Retraction Watch trong "
+              f"{A12_RUT_BAI_HAN_NGAY} ngày (KIEM_RUT_BAI_TRICH_DAN_{study}.json) — không cần tra tay.")
     if doi_citations:
         print(
             "  ⚠️  CẢNH BÁO CỔNG A12: phát hiện " + str(len(doi_citations)) +
             " DOI trong tài liệu (" + ", ".join(sorted(doi_citations)[:8]) +
             (" …" if len(doi_citations) > 8 else "") +
-            ") — cơ chế kiểm rút bài máy-kiểm (check_citation_retraction.py) CHỈ nhận "
-            "PMID, KHÔNG tự tra rút bài qua DOI. Nếu các DOI này thuộc trích dẫn "
+            ") chưa có kết quả kiểm rút bài còn hạn. Chạy trước: python3 tools/kiem_rut_bai_trich_dan.py --study "
+            + study + " --ghi (Crossref updated-by + Retraction Watch theo DOI) rồi lắp lại G10. "
+            "check_citation_retraction.py CHỈ nhận PMID. Nếu vẫn còn DOI thuộc trích dẫn "
             "KHÔNG có PMID song song (preprint/guideline/sách không index PubMed), "
             "bác sĩ/agent PHẢI tự tra Retraction Watch (retractionwatch.com) thủ công "
             "cho từng DOI trước khi tin tưởng gói nộp — receipt all_clean=true ở trên "
