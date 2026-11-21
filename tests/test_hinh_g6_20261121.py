@@ -140,6 +140,25 @@ def test_forest_tho_hieu_chinh_tach_or_va_pr(ket_qua):
     assert j_pr["thuoc_do"] == "PR" and [x["uoc_luong"] for x in j_pr["dong"]] == [1.6]
 
 
+def test_forest_hr_cox_va_beta_tuyen_tinh_moi_thuoc_do_mot_truc(tmp_path):
+    """Thuần tập Cox (HR) và kết cục liên tục (β) — mỗi thước đo một hình, số đúng chỉ mục G6, β trên trục cộng."""
+    cm = {"phan_tich": [
+        {"id": "MT1_chinh", "vai": "chinh", "uoc_luong": {"hr_hieu_chinh": {"HR": 0.72, "CI_95": [0.6, 0.86],
+                                                                             "p": 0.0004}}},
+        {"id": "NC_nam", "vai": "nhom_con", "uoc_luong": {"hr_hieu_chinh": {"HR": 0.8, "CI_95": [0.6, 1.07],
+                                                                             "p": 0.13}}},
+        {"id": "HR_loi", "vai": "do_nhay", "uoc_luong": {"hr_hieu_chinh": {"HR": 0.9, "CI_95": [None, 1.2]}}},
+        {"id": "LT", "vai": "phu", "uoc_luong": {"da_bien": {"variable": "nhom", "beta": -2.4,
+                                                              "CI_95": [-3.9, -0.9], "p": 0.002}}}]}
+    kq = HG.sinh("x", tmp_path, [], cm, None, nap=lambda s, c, loc: None)
+    tep = {h["tep"] for h in kq["hinh"] if h["loai"] == "forest-uoc-luong"}
+    assert tep == {"bieu-bang/g6-tho-hieu-chinh-hr.png", "bieu-bang/g6-tho-hieu-chinh-beta.png"}
+    j_hr = json.loads((tmp_path / "bieu-bang/g6-tho-hieu-chinh-hr.json").read_text(encoding="utf-8"))
+    assert j_hr["thuoc_do"] == "HR" and [x["uoc_luong"] for x in j_hr["dong"]] == [0.72, 0.8]  # KTC thiếu ⇒ bỏ
+    j_b = json.loads((tmp_path / "bieu-bang/g6-tho-hieu-chinh-beta.json").read_text(encoding="utf-8"))
+    assert j_b["thuoc_do"] == "β" and [x["uoc_luong"] for x in j_b["dong"]] == [-2.4]
+
+
 def test_forest_gop_trung_rr_gop_cua_g6(ket_qua, du_lieu):
     d, _ = ket_qua
     g6 = PT.gop(du_lieu["gop"].to_dict("records"), "nc", "a", "n1", "c", "n0")

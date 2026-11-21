@@ -253,9 +253,15 @@ def hinh_cua_phan_tich(study: str, pt: Dict[str, Any], thu_muc: Path, nap: Calla
 
 
 def _bang_tho_hieu_chinh(chi_muc: Dict[str, Any]) -> Dict[str, List[Dict[str, str]]]:
-    """Bảng ước lượng từ chỉ mục G6 (đúng số G6 đã ghi), TÁCH theo thước đo — OR (thô + hiệu chỉnh logistic/thứ tự)
-    và PR (Poisson) không bao giờ chung một trục."""
-    dong: Dict[str, List[Dict[str, str]]] = {"OR": [], "PR": []}
+    """Bảng ước lượng từ chỉ mục G6 (đúng số G6 đã ghi), TÁCH theo thước đo — OR (thô + hiệu chỉnh logistic/thứ tự),
+    PR (Poisson), HR (Cox) và β (hồi quy tuyến tính, trục cộng) không bao giờ chung một trục."""
+    dong: Dict[str, List[Dict[str, str]]] = {"OR": [], "PR": [], "HR": [], "β": []}
+
+    def _them(do: str, ten: str, vai: str, v: Any, ci: Any, p: Any, mo_hinh: str) -> None:
+        if v is not None and isinstance(ci, (list, tuple)) and len(ci) == 2 and None not in ci:
+            dong[do].append({"bien": ten, "muc": vai, "uoc_luong": str(v), "duoi": str(ci[0]), "tren": str(ci[1]),
+                             "p": "" if p is None else str(p), "mo_hinh": mo_hinh})
+
     for x in (chi_muc or {}).get("phan_tich") or []:
         u = x.get("uoc_luong") or {}
         tho = u.get("or_tho") or {}
@@ -267,12 +273,16 @@ def _bang_tho_hieu_chinh(chi_muc: Dict[str, Any]) -> Dict[str, List[Dict[str, st
             dong["OR"].append({"bien": ten, "muc": x.get("vai") or "", "uoc_luong": str(tho["uoc_luong"]),
                                "duoi": str(ci_t[0]),
                          "tren": str(ci_t[1]), "p": "" if tho.get("p") is None else str(tho["p"]), "mo_hinh": "Thô"})
-        do = "PR" if hc.get("PR_adj") is not None else "OR"
-        v = hc.get("PR_adj") if do == "PR" else (hc.get("OR_adj") or hc.get("OR"))
-        ci = hc.get("CI_95") or []
-        if v is not None and len(ci) == 2:
-            dong[do].append({"bien": ten, "muc": x.get("vai") or "", "uoc_luong": str(v), "duoi": str(ci[0]),
-                         "tren": str(ci[1]), "p": "" if hc.get("p") is None else str(hc["p"]), "mo_hinh": "Hiệu chỉnh"})
+        if hc.get("PR_adj") is not None:
+            _them("PR", ten, x.get("vai") or "", hc["PR_adj"], hc.get("CI_95"), hc.get("p"), "Hiệu chỉnh")
+        elif (hc.get("OR_adj") or hc.get("OR")) is not None:
+            _them("OR", ten, x.get("vai") or "", hc.get("OR_adj") or hc.get("OR"), hc.get("CI_95"), hc.get("p"),
+                  "Hiệu chỉnh")
+        elif hc.get("beta") is not None:
+            _them("β", ten, x.get("vai") or "", hc["beta"], hc.get("CI_95"), hc.get("p"), "Hiệu chỉnh")
+        hr = u.get("hr_hieu_chinh") or {}
+        if isinstance(hr, dict) and not hr.get("loi"):
+            _them("HR", ten, x.get("vai") or "", hr.get("HR"), hr.get("CI_95"), hr.get("p"), "Hiệu chỉnh (Cox)")
     return dong
 
 
@@ -297,7 +307,7 @@ def sinh(study: str, d: Path, phan_tich: Sequence[Dict[str, Any]], chi_muc: Opti
     for do, bang in _bang_tho_hieu_chinh(chi_muc or {}).items():
         if not bang:
             continue
-        ten = "g6-tho-hieu-chinh" + ("" if do == "OR" else "-pr")
+        ten = "g6-tho-hieu-chinh" + {"OR": "", "PR": "-pr", "HR": "-hr", "β": "-beta"}[do]
         try:
             import bieu_do_hoi_quy as HQ  # noqa: PLC0415
 
