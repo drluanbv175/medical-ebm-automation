@@ -209,3 +209,209 @@ def test_phan_bien_van_khong_cache_sau_khi_them_ttl():
     """Chốt lại sau khi thêm TTL: lượt MỘT LẦN vẫn không đánh dấu cache (ghi 1,25× mà không ai đọc lại)."""
     assert "cache_he_thong=True" not in (REPO / "tools" / "phan_bien_may_de_cuong.py").read_text(encoding="utf-8")
     assert API.tham_so("x", he_thong=PBM.HE_THONG)["system"] == PBM.HE_THONG
+
+
+# ── 5. Luật hoà vốn `nen_cache` ──────────────────────────────────────────────────────────────────────────────────
+def test_khong_tai_dung_thi_khong_nen_cache():
+    """Gửi một lần rồi thôi ⇒ ghi cache là tiền bỏ đi (đúng quyết định đã có ở phan_bien_may_de_cuong)."""
+    assert API.nen_cache(0) is False
+
+
+def test_tai_dung_mot_lan_da_nen_cache_voi_ttl_5m():
+    """Sonnet 5.5: đọc 0,05× ⇒ 1,25 + 0,05 = 1,30 < 2,00 ⇒ lợi ngay từ lần tái dùng đầu."""
+    assert API.nen_cache(1, ttl="5m", model="claude-sonnet-5-5") is True
+
+
+def test_ttl_1h_can_nhieu_lan_tai_dung_hon_5m():
+    """Ghi 1h tốn 2× nên hoà vốn muộn hơn: 1 lần tái dùng chưa đủ, 2 lần thì đủ."""
+    assert API.nen_cache(1, ttl="1h", model="claude-sonnet-5-5") is False
+    assert API.nen_cache(2, ttl="1h", model="claude-sonnet-5-5") is True
+
+
+def test_nen_cache_dung_he_so_doc_cua_tung_model():
+    """Model có giá đọc cache cao hơn thì hoà vốn chậm hơn — không dùng một hệ số chung cho mọi model."""
+    # claude-fable-5: doc_cache 1.00 / vao 10.00 = 0,10× ; claude-sonnet-5-5 = 0,05×
+    assert API.he_so_doc_cache("claude-sonnet-5-5") == pytest.approx(0.05)
+    assert API.he_so_doc_cache("claude-fable-5") == pytest.approx(0.10)
+
+
+def test_nen_cache_khong_bien_minh_viec_phinh_prefix():
+    """Chốt bằng SỐ cạm bẫy đã ghi trong docstring: dồn corpus dùng-một-lần vào prefix chung thì LỖ.
+
+    34 lô × 6 tài liệu × 1.000 token gửi thẳng = 204.000. Dồn cả corpus 100 tài liệu vào prefix cache =
+    100.000×1,25 + 33×100.000×0,05 = 290.000. Cache ĐẮT HƠN 1,42× — nên `nen_cache` không được dùng để biện minh."""
+    gui_thang = 34 * 6 * 1000
+    corpus = 100 * 1000
+    qua_cache = corpus * API.HE_SO_GHI_CACHE + 33 * corpus * API.he_so_doc_cache("claude-sonnet-5-5")
+    assert qua_cache > gui_thang
+
+
+# ── 6. Chẩn đoán cache ───────────────────────────────────────────────────────────────────────────────────────────
+def test_chan_doan_mac_dinh_tat(monkeypatch):
+    """Mặc định TẮT ⇒ request giữ đúng khuôn các lượt đã chạy thật, không có khoá `diagnostics`."""
+    monkeypatch.delenv(API.BIEN_CHAN_DOAN_CACHE, raising=False)
+    assert API.chan_doan_cache_bat() is False
+    kh = KhachGia("ok")
+    API.goi("x", client=kh, nguon="t")
+    assert "diagnostics" not in kh.messages.goi[-1]
+
+
+def test_chan_doan_bat_thi_luot_dau_gui_none(monkeypatch, so):
+    """Lượt đầu của một nguồn: `previous_message_id=None` = khai báo tham gia, chưa có gì để so."""
+    monkeypatch.setenv(API.BIEN_CHAN_DOAN_CACHE, "1")
+    monkeypatch.setattr(API, "_ID_LUOT_TRUOC", {}, raising=False)
+    kh = KhachGia(lambda kw: _resp_usage(input_tokens=10, output_tokens=5))
+    API.goi("x", client=kh, nguon="nguon_a")
+    assert kh.messages.goi[-1]["diagnostics"] == {"previous_message_id": None}
+
+
+def test_chan_doan_noi_chuoi_theo_tung_nguon(monkeypatch, so):
+    """Chuỗi phải so hai lượt LIÊN TIẾP của CÙNG công cụ — trộn các công cụ thì chẩn đoán vô nghĩa."""
+    monkeypatch.setenv(API.BIEN_CHAN_DOAN_CACHE, "1")
+    monkeypatch.setattr(API, "_ID_LUOT_TRUOC", {}, raising=False)
+
+    def tra(kw):
+        r = _resp_usage(input_tokens=10, output_tokens=5)
+        r.id = "msg_a1" if kw.get("diagnostics", {}).get("previous_message_id") is None else "msg_a2"
+        return r
+
+    kh = KhachGia(tra)
+    API.goi("x", client=kh, nguon="nguon_a")          # lượt 1 nguồn A -> id msg_a1
+    API.goi("y", client=kh, nguon="nguon_b")          # nguồn B: chuỗi RIÊNG, vẫn phải là None
+    assert kh.messages.goi[-1]["diagnostics"] == {"previous_message_id": None}
+    API.goi("z", client=kh, nguon="nguon_a")          # lượt 2 nguồn A -> phải nối vào msg_a1
+    assert kh.messages.goi[-1]["diagnostics"] == {"previous_message_id": "msg_a1"}
+
+
+def test_doc_ly_do_truot_va_ghi_vao_so(monkeypatch, so):
+    monkeypatch.setenv(API.BIEN_CHAN_DOAN_CACHE, "1")
+    monkeypatch.setattr(API, "_ID_LUOT_TRUOC", {}, raising=False)
+    r = _resp_usage(input_tokens=10, output_tokens=5)
+    r.diagnostics = {"cache_miss_reason": {"type": "system_changed", "cache_missed_input_tokens": 41850}}
+    kq = API.goi("x", client=KhachGia(lambda kw: r), nguon="nguon_a")
+    assert (kq.ly_do_truot_cache, kq.token_truot_cache) == ("system_changed", 41850)
+    assert _doc(so)["luot"][-1]["token"] is not None
+    assert _doc(so)["luot"][-1]["truot_cache"] == "system_changed"
+
+
+def test_so_sanh_chua_xong_khong_doc_thanh_da_khop(so):
+    """`cache_miss_reason: None` = so sánh CHƯA xong (vô định) — không được hiểu là «prefix đã khớp»."""
+    r = _resp_usage(input_tokens=10, output_tokens=5)
+    r.diagnostics = {"cache_miss_reason": None}
+    kq = API.goi("x", client=KhachGia(lambda kw: r), nguon="nguon_a")
+    assert kq.ly_do_truot_cache is None
+    assert "truot_cache" not in _doc(so)["luot"][-1]
+
+
+def test_chan_doan_khong_lam_hong_luot_goi_khi_sdk_cu(monkeypatch, so, capsys):
+    """SDK chưa biết `diagnostics` ⇒ gọi lại KHÔNG chẩn đoán, lượt vẫn thành công (best-effort, không chặn)."""
+    monkeypatch.setenv(API.BIEN_CHAN_DOAN_CACHE, "1")
+    monkeypatch.setattr(API, "_ID_LUOT_TRUOC", {}, raising=False)
+
+    def tra(kw):
+        if "diagnostics" in kw:
+            raise TypeError("create() got an unexpected keyword argument 'diagnostics'")
+        return _resp_usage(input_tokens=10, output_tokens=5)
+
+    kq = API.goi("x", client=KhachGia(tra), nguon="nguon_a")
+    assert kq.van_ban == "ok"
+    assert "bỏ chẩn đoán cache" in capsys.readouterr().out
+
+
+def test_loi_type_error_that_van_bao_loi_khi_chan_doan_tat(monkeypatch, so):
+    """Khi chẩn đoán TẮT, TypeError là lỗi thật của tham số ⇒ phải ném LoiApi, không được nuốt."""
+    monkeypatch.delenv(API.BIEN_CHAN_DOAN_CACHE, raising=False)
+
+    def tra(kw):
+        raise TypeError("tham số sai thật")
+
+    with pytest.raises(API.LoiApi):
+        API.goi("x", client=KhachGia(tra), nguon="nguon_a")
+
+
+# ── 7. Công cụ đo hiệu quả cache ─────────────────────────────────────────────────────────────────────────────────
+def _so_gia(luot):
+    return {"thang": "2026-11", "usd": 1.0, "luot": luot, "batch_da_ghi": []}
+
+
+def _luot(nguon, vao, ghi, doc, model="claude-sonnet-5-5", **extra):
+    t = {"vao": vao, "ra": 100, "cache_ghi": ghi, "cache_doc": doc}
+    return {"luc": "2026-11-20T10:00:00", "nguon": nguon, "model": model, "usd": 0.01, "batch": None,
+            "token": t, **extra}
+
+
+def test_do_cache_xep_nhan_dang_lo_khi_ghi_nhieu_hon_doc():
+    import do_cache_api as DO
+
+    bc = DO.bao_cao(_so_gia([_luot("x", 20000, 15000, 2000) for _ in range(4)]))
+    assert bc["theo_nguon"]["x"]["nhan"] == "ĐANG LỖ VÌ CACHE"
+
+
+def test_do_cache_xep_nhan_da_tot_khi_ty_le_doc_cao():
+    import do_cache_api as DO
+
+    bc = DO.bao_cao(_so_gia([_luot("x", 400, 0, 50000) for _ in range(3)]))
+    assert bc["theo_nguon"]["x"]["nhan"] == "ĐÃ TỐT"
+
+
+def test_do_cache_xep_nhan_chua_bat_khi_khong_co_token_cache():
+    import do_cache_api as DO
+
+    bc = DO.bao_cao(_so_gia([_luot("x", 80000, 0, 0)]))
+    assert bc["theo_nguon"]["x"]["nhan"] == "CHƯA BẬT CACHE"
+
+
+def test_do_cache_khong_phan_khi_qua_it_du_lieu():
+    """Vài lượt lẻ không đủ để kết luận — phải nói rõ «chưa đủ dữ liệu», không phán bừa."""
+    import do_cache_api as DO
+
+    bc = DO.bao_cao(_so_gia([_luot("x", 100, 0, 0)]))
+    assert bc["theo_nguon"]["x"]["nhan"] == "CHƯA ĐỦ DỮ LIỆU"
+
+
+def test_do_cache_tai_hien_dung_buc_tranh_console_cua_a12():
+    """Mô phỏng đúng A12 thật: system 591 token cached + abstract MỚI mỗi lô ⇒ khấu hao cao mà tỷ lệ đọc thấp.
+
+    Đây chính là hình dạng Console báo cho Sonnet 5.5 (12,7% đọc / 3,70× khấu hao) — nhãn phải là CẦN XEM LẠI,
+    KHÔNG phải ĐANG LỖ, vì cache đang hoạt động đúng; vấn đề là phần đầu vào mới mỗi lượt."""
+    import do_cache_api as DO
+
+    luot = [_luot("a12", 6000, 591 if i == 0 else 0, 0 if i == 0 else 591) for i in range(34)]
+    v = DO.bao_cao(_so_gia(luot))["theo_nguon"]["a12"]
+    assert v["nhan"] == "CẦN XEM LẠI"
+    assert v["khau_hao_ghi"] > 1.0
+    assert v["ty_le_doc_cache"] < 0.15
+
+
+def test_do_cache_gop_ly_do_truot_tu_so():
+    import do_cache_api as DO
+
+    luot = [_luot("x", 60000, 0, 0, truot_cache="system_changed") for _ in range(3)]
+    luot.append(_luot("x", 60000, 0, 0, truot_cache="tools_changed"))
+    v = DO.bao_cao(_so_gia(luot))["theo_nguon"]["x"]
+    assert v["ly_do_truot"] == {"system_changed": 3, "tools_changed": 1}
+
+
+def test_do_cache_thieu_so_thi_bao_ro_phai_lam_gi(tmp_path):
+    import do_cache_api as DO
+
+    with pytest.raises(RuntimeError, match="Không thấy sổ chi phí"):
+        DO.doc_so(str(tmp_path / "khong-co.json"))
+
+
+def test_do_cache_so_hong_khong_sap(tmp_path):
+    import do_cache_api as DO
+
+    p = tmp_path / "so.json"
+    p.write_text("{khong phai json", encoding="utf-8")
+    with pytest.raises(RuntimeError, match="không đọc được"):
+        DO.doc_so(str(p))
+
+
+def test_do_cache_bo_qua_luot_khuon_la():
+    """Sổ có lượt thiếu `token` hoặc kiểu lạ ⇒ bỏ qua, không sập (sổ là tệp lưu lâu dài, khuôn có thể cũ)."""
+    import do_cache_api as DO
+
+    bc = DO.bao_cao(_so_gia(["chuỗi lạ", {"nguon": "x"}, {"nguon": "y", "token": "không phải dict"},
+                             _luot("z", 60000, 0, 0)]))
+    assert "z" in bc["theo_nguon"]
