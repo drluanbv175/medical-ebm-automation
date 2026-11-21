@@ -323,7 +323,11 @@ def phan_loai_o(tep_text: str, cong: str, tep: str, meta: Mapping[str, Any], cps
             duoi = re.match(r":\s*", tep_text[m.end():]).group(0)
             ra.append({**o, "o": o_txt + duoi, "loai": "moi_dung_vai", "dien": ""})
             continue
-        ly_do = khong_ap_dung(nhan, dong + " " + o_txt, thiet_ke, meta)
+        # 22/11/2026 (phiên K18 đo bản thảo G7): câu GỢI Ý trong ô («Ví dụ với cohort: thiếu ngẫu nhiên hóa…») không
+        # phải câu hỏi — trước đây chữ «ngẫu nhiên hóa» trong ví dụ làm ô «§5 Hạn chế» của thuần tập bị xếp «chỉ áp dụng
+        # cho thử nghiệm ngẫu nhiên», câu trả lời hạn chế của tác giả bị đè ⇒ STROBE 19 trượt. Bỏ phần ví dụ khi xét.
+        ly_do = khong_ap_dung(nhan, re.split(r"\b[Vv][íi]\s+d[ụu]\b", dong + " " + o_txt, maxsplit=1)[0], thiet_ke,
+                              meta)
         # ô KẾT QUẢ không hỏi điều đã chốt (tên kết cục ≠ kết quả của kết cục) ⇒ không lấy bảng đã chốt
         # (16/11/2026) cùng lẽ: ô đòi nhận định «sau khi có dữ liệu thật» (vd tính đại diện quần thể) là nội dung
         # MỚI của tác giả — dòng có chữ «cỡ mẫu» không biến nó thành câu hỏi lại G3.n

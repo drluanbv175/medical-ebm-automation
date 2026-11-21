@@ -191,3 +191,23 @@ def test_khau9_nhan_chuan_so_do_luong_hien_hanh():
     for tk in ("cohort", "case_control", "cross_sectional"):
         assert "13a–b" in VB.DANH_MUC[tk]["chuan"] and "cân nhắc" in VB.DANH_MUC[tk]["chuan"]
         assert "so_do_luong" in VB.DANH_MUC[tk]["bat_buoc"]
+
+
+# ── Ô «§5 Hạn chế» của bản thảo G7 (phiên K18 đo 22/11/2026) ─────────────────────────────────────────────────────────
+_O_HAN_CHE = ("**§5 Hạn chế (Limitations):**  \n"
+              "[CẦN — liệt kê hạn chế cụ thể của thiết kế và thực hiện nghiên cứu này.  \n"
+              "Ví dụ với Thuần tập: thiếu ngẫu nhiên hóa có thể có confounding chưa đo được; LTFU có thể không ngẫu "
+              "nhiên...]  \n")
+
+
+@pytest.mark.parametrize("tk", ["cohort", "case_control", "cross_sectional", "rct"])
+def test_o_han_che_g7_nhan_cau_tra_loi_tac_gia_khong_bi_vi_du_danh_lua(tk):
+    """Chữ «ngẫu nhiên hóa» trong câu VÍ DỤ của khuôn không biến ô hạn chế thành ô «chỉ áp dụng cho RCT»."""
+    o = TV.phan_loai_o(_O_HAN_CHE, "G7", "G7.md", {}, {}, tk, [(r"liet ke han che", "HẠN_CHẾ")], {})
+    assert [(x["loai"], x["dien"]) for x in o] == [("moi_dung_vai", "HẠN_CHẾ")]
+
+
+def test_o_that_su_chi_rct_van_khong_ap_dung_cho_quan_sat():
+    o = TV.phan_loai_o("Phân tích giữa kỳ: [CẦN — kế hoạch phân tích giữa kỳ và DMC]\n", "G7", "G7.md", {}, {},
+                       "cohort", [], {})
+    assert o[0]["loai"] == "khong_ap_dung" and "thử nghiệm ngẫu nhiên" in o[0]["dien"]
