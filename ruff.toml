@@ -20,6 +20,8 @@ select = ["E", "F", "W", "I", "FA102"]
 # File DỮ LIỆU/NỘI DUNG: chuỗi lâm sàng (mô tả, nguồn trích dẫn) & fixture dài là
 # hợp lệ; KHÔNG bẻ dòng để tránh làm sai nội dung y khoa.
 "app/clinical_scores/verified.py" = ["E501"]
+# Danh mục nguyên văn STROBE/RECORD do tools/sinh_chuan_bao_cao_items.py sinh: không bẻ dòng chuỗi nguyên văn.
+"tools/chuan_bao_cao_items.py" = ["E501"]
 "app/sources/_fixtures.py" = ["E501"]
 # Chronic Care synthetic shadow module có nhiều chuỗi lâm sàng/narrative dài đang ở nhánh khác;
 # giữ nguyên nội dung để không làm sai fixture khi chạy kiểm định Phase 2D.
