@@ -1462,12 +1462,20 @@ def dieu_kien_loc(n: "Nguon") -> List[str]:
             + (f"; loại hồ sơ có: {'; '.join(loai)}" if loai else "") + "."]
 
 
-def kiem_dinh_ma(n: "Nguon") -> List[str]:
-    """RECORD 6.2: quần thể hoặc kết cục xác định bằng mã (ICD…) ⇒ nêu bước đối chiếu mã với hồ sơ gốc mà PI đã chốt
-    (G1 critical_to_quality / monitoring_plan có «kiểm/đối chiếu … hồ sơ/phim/xét nghiệm»). Không có ⇒ ô trống."""
-    kc = n.g1.get("primary_outcome") if isinstance(n.g1.get("primary_outcome"), dict) else {}
-    van = " ".join(lam_sach(x) for x in (n.g1.get("population"), n.g1.get("inclusion_criteria"), kc.get("measure")))
-    if n.thiet_ke in ("sr_ma", "qualitative") or not re.search(r"\bICD|mã (bệnh|chẩn đoán|thuốc|ATC)", van):
+DAU_DOI_CHIEU_MA = "@@DOI_CHIEU_MA@@"
+
+
+def kiem_dinh_ma(n: "Nguon", van: str) -> List[str]:
+    """RECORD 6.2: đề tài dùng dữ liệu thường quy và xác định quần thể/biến bằng mã (ICD…) — đo trên TOÀN văn bằng CHÍNH
+    điều kiện của K17 (21/11/2026: giả lập thuần tập sống còn có sổ sai lệch «sai lệch thông tin do mã chẩn đoán» nên
+    K17 đòi mục này, còn bộ sinh chỉ tìm mã ở quần thể/cách đo kết cục) ⇒ nêu bước đối chiếu mã với hồ sơ gốc mà PI đã
+    chốt (G1 critical_to_quality / monitoring_plan / biện pháp trong sổ sai lệch có «kiểm/đối chiếu … hồ sơ/phim/xét
+    nghiệm»). Không có ⇒ ô trống."""
+    import kiem_chuan_de_cuong_theo_muc as KCM  # noqa: PLC0415
+
+    van = van.replace(DAU_DOI_CHIEU_MA, "").replace(DAU_THUONG_QUY, "")
+    if n.thiet_ke in ("sr_ma", "qualitative") or not du_lieu_thuong_quy(n, van) or not KCM.co_dieu_kien(
+            KCM.dieu_kien_muc("RECORD 2015", "6.2"), van):
         return []
     cum_ds = [c for k in ("critical_to_quality", "monitoring_plan") for c in _danh_sach(n.g1.get(k))]
     cum_ds += [c for x in (n.g1.get("bias_controls") or []) if isinstance(x, dict)
@@ -1897,11 +1905,11 @@ def chuong_phuong_phap(n: Nguon) -> List[str]:
     # Sai số
     muc("Sai số và biện pháp khống chế sai số")
     bang_sl = bang_sai_lech(n.g1.get("bias_controls"))
-    km = kiem_dinh_ma(n)  # RECORD 6.2 — bước đối chiếu mã khống chế sai lệch phân loại
+    # RECORD 6.2 — bước đối chiếu mã khống chế sai lệch phân loại (dấu, thay ở `dung_de_cuong` khi đã có toàn văn)
     if bang_sl:
-        dong += bang_sl + (km + [""] if km else [])
+        dong += bang_sl + [DAU_DOI_CHIEU_MA, ""]
     else:
-        dong += km
+        dong.append(DAU_DOI_CHIEU_MA)
         rui = n.meta.get("bias_risks") or n.s("bias", "risks")
         kiem = n.meta.get("bias_controls") or n.s("bias", "mitigations")
         # 21/11/2026 (STROBE 19): chưa có sổ sai lệch {sai_lech, bien_phap, chieu} ⇒ dòng chiều ảnh hưởng để trống cho
@@ -2325,6 +2333,7 @@ def dung_de_cuong(n: Nguon) -> str:
     van = "\n".join(dau + viet_tat("\n".join(than)) + than)
     # RECORD 19.1 cần TOÀN văn (phụ lục, phiếu) để biết đề tài có dùng dữ liệu thường quy không — cùng phép đo của K17
     van = van.replace(DAU_THUONG_QUY, "\n".join(he_qua_thuong_quy(n, van)))
+    van = van.replace(DAU_DOI_CHIEU_MA, "\n".join(kiem_dinh_ma(n, van)))
     return don_cuoi(van)
 
 

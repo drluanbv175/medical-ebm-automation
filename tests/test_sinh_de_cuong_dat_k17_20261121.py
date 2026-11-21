@@ -189,15 +189,30 @@ def test_dieu_kien_loc_va_doi_chieu_ma_chi_khi_lay_tu_co_so_du_lieu(tmp_path):
     n = _nguon(tmp_path, "cohort", g1=g1)
     assert SDC.dieu_kien_loc(n) == ["- Điều kiện lọc hồ sơ trên cơ sở dữ liệu: tuổi ≥18; đang dùng thuốc hạ áp; loại "
                                     "hồ sơ có: không đọc được tin nhắn."]
-    assert SDC.kiem_dinh_ma(n) == ["- Đối chiếu cách xác định bằng mã với hồ sơ gốc: kiểm 10% hồ sơ biến cố bằng phim "
-                                   "X-quang."]
     van = SDC.dung_de_cuong(n)
+    assert ("- Đối chiếu cách xác định bằng mã với hồ sơ gốc: kiểm 10% hồ sơ biến cố bằng phim X-quang." in van)
     assert "- Hệ quả của dữ liệu thu thập thường quy: dữ liệu" in van and SDC.DAU_THUONG_QUY not in van
+    assert SDC.DAU_DOI_CHIEU_MA not in van
     assert "mã chẩn đoán" in van.split("Hệ quả của dữ liệu thu thập thường quy")[1].split("\n")[0]
+    assert _thieu(van, "cohort").get(("RECORD 2015", "6.2")) is None
     # tuyển mới (fixture gốc) ⇒ không có các dòng RECORD
     goc = _nguon(tmp_path / "goc", "cohort")
-    assert SDC.dieu_kien_loc(goc) == [] and SDC.kiem_dinh_ma(goc) == []
-    assert "Hệ quả của dữ liệu thu thập thường quy" not in SDC.dung_de_cuong(goc)
+    van_goc = SDC.dung_de_cuong(goc)
+    assert SDC.dieu_kien_loc(goc) == [] and SDC.kiem_dinh_ma(goc, van_goc) == []
+    assert "Hệ quả của dữ liệu thu thập thường quy" not in van_goc and SDC.DAU_DOI_CHIEU_MA not in van_goc
+
+
+def test_doi_chieu_ma_dung_dieu_kien_k17_tren_toan_van(tmp_path):
+    """21/11/2026 (giả lập thuần tập sống còn): mã chẩn đoán chỉ xuất hiện ở sổ sai lệch của PI — K17 vẫn đòi RECORD
+    6.2, nên bộ sinh phải đo bằng cùng điều kiện trên toàn văn, không chỉ ở quần thể/cách đo kết cục."""
+    g1 = {"recruitment_strategy": "Trích toàn bộ hồ sơ đủ tiêu chuẩn từ cơ sở dữ liệu ngoại trú",
+          "data_collection_method": "Trích hồ sơ bệnh án điện tử theo phiếu",
+          "bias_controls": [{"sai_lech": "Sai lệch thông tin do mã chẩn đoán gãy xương",
+                             "bien_phap": "Kiểm 10% hồ sơ biến cố bằng phim X-quang",
+                             "chieu": "Ghi mã thiếu làm ước lượng thấp hơn thực tế"}]}
+    van = _van(tmp_path, "cohort", g1=g1)
+    assert "- Đối chiếu cách xác định bằng mã với hồ sơ gốc: kiểm 10% hồ sơ biến cố bằng phim X-quang." in van
+    assert ("RECORD 2015", "6.2") not in _thieu(van, "cohort")
 
 
 # ───────────────────────────────────────── STROBE 18/21: bàn luận theo mục tiêu, phạm vi suy rộng

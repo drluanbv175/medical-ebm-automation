@@ -822,6 +822,15 @@ def cham_muc(muc: MucKiem, md: str, cac_phan: Sequence[Phan]) -> KetQua:
     return kq
 
 
+def dieu_kien_muc(chuan: str, ma: str, thiet_ke: str = "") -> Optional[str]:
+    """Biểu thức «áp dụng khi» của một mục — để bộ sinh đề cương dùng ĐÚNG điều kiện của K17 (không chép lại biểu
+    thức)."""
+    for m in danh_sach_muc(chuan, thiet_ke) or []:
+        if m.ma == ma:
+            return m.ap_dung_khi
+    return None
+
+
 def danh_sach_muc(chuan: str, thiet_ke: str) -> Optional[List[MucKiem]]:
     """Mục kiểm của một chuẩn; None khi chuẩn chưa có tiêu chí tự động."""
     ma = S.canonical_design_code(thiet_ke) or ""
