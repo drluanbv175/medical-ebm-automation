@@ -411,6 +411,9 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
     for so, (doan, nguon) in sorted(co_van.items()):
         try:
             ra, kq = kiem_tai_lieu(so, theo_so[so], doan, model, client, tltk[so].van)
+        except API.HetNganSach as exc:  # hết tín dụng / chạm trần ⇒ dừng CẢ lượt, không ghi báo cáo dở (21/11/2026)
+            print(f"⛔ {exc}")
+            return 2
         except API.LoiApi as exc:
             loi.append(f"[{so}] {type(exc).__name__}: {str(exc)[:160]}")
             ket += [{"id": c["id"], "so": so, "cau": c["cau"][:400], "muc_abstract": c["muc"],

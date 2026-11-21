@@ -294,3 +294,23 @@ def test_gach_noi_ngat_dong_van_khop():
                                     doan)
     # gạch nối thật («cross-cultural») ngắt dòng vẫn khớp nhờ phép so bỏ khoảng trắng
     assert K.co_nguyen_van_toan_van("cross-cultural validity", "and cross- cultural validity were")
+
+
+def test_het_tin_dung_giua_chung_dung_ca_luot_khong_ghi_bao_cao(tmp_path, monkeypatch, capsys):
+    goc = _goc(tmp_path)
+    _xml(goc, "17654487", POLIT)
+    _xml(goc, "15485730", POLIT.replace("Is the CVI", "Patterns of intra-cluster correlation. Adams G. Is the CVI"))
+    bc = json.loads((goc / "exports" / S / "kiem_may_api" / f"A12_KIEM_NOI_DUNG_{S}.json").read_text(encoding="utf-8"))
+    bc["ket_qua"][1]["muc"] = "can_xem"  # hai tài liệu cần xem ⇒ hai lượt gọi
+    p = goc / "exports" / S / "kiem_may_api" / f"A12_KIEM_NOI_DUNG_{S}.json"
+    p.write_text(json.dumps(bc, ensure_ascii=False), encoding="utf-8", newline="\n")
+    goi = []
+
+    def gia(*a, **k):
+        goi.append(1)
+        raise K.API.HetNganSach("Tài khoản Claude API HẾT TÍN DỤNG")
+
+    monkeypatch.setattr(K.API, "goi", gia)
+    assert K.main(["--study", S, "--goi-api"], goc=goc, es=None) == 2
+    assert len(goi) == 1 and "HẾT TÍN DỤNG" in capsys.readouterr().out
+    assert not (goc / "exports" / S / "kiem_may_api" / f"A12_TOAN_VAN_{S}.json").exists()
