@@ -55,6 +55,160 @@ SO_CAU_MOI_LO = 6
 SO_LAN_THU_JSON_HONG = 2  # lô trả JSON sai cú pháp ⇒ gửi lại đúng lô đó tối đa 1 lần (tính phí thêm 1 lượt)
 TOKEN_MOI_ABSTRACT = 1000  # tiêu đề + loại xuất bản + abstract có cấu trúc, đo trên BTM
 TOI_DA_MAC_DINH = 200
+CONG_CU = "kiem_noi_dung_trich_dan"
+
+# ── Batch API (bác sĩ chọn 21/11/2026: «merge, rồi làm luôn Batch API cho A12») ────────────────────────────────────
+# VÌ SAO. Công cụ này là nguồn tốn token vào lớn nhất của hệ (đo Console 7 ngày tới 20/11/2026: Sonnet 5.5 13 Tr
+# token vào, 12,7% đọc cache). Phần đầu vào KHÔNG cache được vì bản chất: mỗi lô mang abstract của riêng nó, mỗi
+# abstract gửi đúng một lần — prompt caching không tiết kiệm cho nội dung gửi một lần (xem docs/BO-NHO-DEM-API.md §1).
+# Batch API thì khác: giảm 50% MỌI khoản (vào, ra, ghi cache, đọc cache) và CỘNG DỒN với cache. Đây là đòn tiết kiệm
+# lớn hơn cache cho đúng đường này.
+#
+# ĐÁNH ĐỔI, nói rõ: batch là BẤT ĐỒNG BỘ. Nộp xong không có kết quả ngay — phải quay lại lấy. Vì vậy đây là lựa chọn
+# OPT-IN (`--batch`), đường gọi trực tiếp vẫn là mặc định để lượt khám/lượt gấp không bị chờ.
+#
+# SỔ TRẠNG THÁI. Giữ ĐÚNG abstract đã gửi, không tra lại lúc lấy kết quả: tra lại có thể ra abstract khác (bản ghi
+# PubMed/Crossref cập nhật) ⇒ báo cáo sẽ nói về tài liệu KHÁC với tài liệu model đã đọc. Đó là lỗi liêm chính, không
+# phải lỗi hiệu năng. Phần suy ra được từ chính tệp Markdown (đoạn khẳng định, danh mục TLTK) thì KHÔNG lưu — tính
+# lại và canh bằng SHA-256 của tệp: tệp đổi giữa hai bước ⇒ TỪ CHỐI, không ghép kết quả cũ vào văn bản mới.
+TEN_SO_BATCH = "A12_batch_{study}.json"
+_CID_LO = "a12_lo_{i:04d}"
+
+
+def _bam(van: str) -> str:
+    return hashlib.sha256((van or "").encode("utf-8")).hexdigest()
+
+
+def _lo_can_kiem(cau_ds: Sequence[Cau], tai_lieu: Dict[int, Dict[str, Any]], lo: int) -> List[List[Cau]]:
+    """Danh sách lô — PHẢI dùng chung cho cả bước nộp và bước lấy để custom_id ứng đúng lô."""
+    return API.chia_lo([c for c in cau_ds if any(n in tai_lieu for n in c.so)], lo)
+
+
+def tham_so_lo(nhom: Sequence[Cau], tai_lieu: Dict[int, Dict[str, Any]], *, model: str) -> Dict[str, Any]:
+    """Tham số MỘT lô — cùng lời nhắn, cùng system, cùng cache như đường gọi trực tiếp (chỉ khác đường vận chuyển)."""
+    return API.tham_so(
+        dung_loi_nhan(nhom, tai_lieu), he_thong=HE_THONG, model=model, effort="low", cache_he_thong=True
+    )
+
+
+def duong_so_batch(study: str, ra_dir: Path) -> Path:
+    return ra_dir / TEN_SO_BATCH.format(study=study)
+
+
+def doc_so_batch(duong: Path) -> Optional[Dict[str, Any]]:
+    """Sổ batch đang chờ, hoặc None. Sổ hỏng ⇒ LoiCucBo (không đoán là «chưa nộp» rồi nộp lần hai, tính phí đôi)."""
+    if not duong.is_file():
+        return None
+    try:
+        st = json.loads(duong.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise API.LoiCucBo(
+            f"Sổ batch {duong.name} không đọc được ({type(exc).__name__}) — có thể đang có batch ĐÃ TRẢ PHÍ chờ lấy. "
+            "Kiểm tay trên Claude Console trước khi xoá sổ; KHÔNG nộp lại khi chưa rõ."
+        ) from exc
+    if not isinstance(st, dict) or not (st.get("batch") or {}).get("id"):
+        return None
+    return st
+
+
+def nop_batch_a12(
+    cau_ds: Sequence[Cau],
+    tai_lieu: Dict[int, Dict[str, Any]],
+    ly_do_tl: Dict[int, str],
+    *,
+    model: str,
+    lo: int,
+    tep: Path,
+    van: str,
+    toi_da: int,
+    client: Any = None,
+    duong: Path,
+) -> Dict[str, Any]:
+    """Nộp TOÀN BỘ lô thành một batch, ghi sổ trạng thái, trả sổ. Không có kết quả ở bước này."""
+    nhoms = _lo_can_kiem(cau_ds, tai_lieu, lo)
+    if not nhoms:
+        raise API.LoiCucBo("Không lô nào cần kiểm — không nộp batch rỗng.")
+    yc = [(_CID_LO.format(i=i), tham_so_lo(nhom, tai_lieu, model=model)) for i, nhom in enumerate(nhoms)]
+    bid = API.nop_batch(yc, client, nguon=CONG_CU)
+    st = {
+        "cong_cu": CONG_CU,
+        "tep": str(tep),
+        "tep_sha256": _bam(van),
+        "he_thong_sha256": _bam(HE_THONG),
+        "model": model,
+        "lo": int(lo),
+        "toi_da": int(toi_da),
+        "batch": {"id": bid, "nop_luc": dt.datetime.now().isoformat(timespec="seconds"), "so_lo": len(yc)},
+        # Khoá JSON là chuỗi — đọc lại phải đổi về int (xem `_tai_lieu_tu_so`).
+        "tai_lieu": {str(k): v for k, v in tai_lieu.items()},
+        "ly_do_tl": {str(k): v for k, v in (ly_do_tl or {}).items()},
+    }
+    duong.parent.mkdir(parents=True, exist_ok=True)
+    duong.write_text(json.dumps(st, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
+    return st
+
+
+def _tai_lieu_tu_so(st: Dict[str, Any]) -> Tuple[Dict[int, Dict[str, Any]], Dict[int, str]]:
+    tl = {int(k): v for k, v in (st.get("tai_lieu") or {}).items()}
+    ly = {int(k): v for k, v in (st.get("ly_do_tl") or {}).items()}
+    return tl, ly
+
+
+def lay_batch_a12(
+    st: Dict[str, Any], cau_ds: Sequence[Cau], van: str, *, client: Any = None
+) -> Tuple[Optional[List[KetQua]], Dict[str, Any]]:
+    """Lấy kết quả batch đã nộp. Chưa xong ⇒ (None, trạng_thái). Xong ⇒ (kết quả, thống kê) đúng khuôn `chay`.
+
+    Canh trước khi ghép: tệp Markdown và system prompt phải y nguyên lúc nộp — khác ⇒ LoiCucBo. Ghép kết quả của
+    văn bản cũ vào văn bản mới sẽ cho báo cáo nói về những dòng không còn tồn tại."""
+    if _bam(van) != st.get("tep_sha256"):
+        raise API.LoiCucBo(
+            "Tệp đã ĐỔI sau khi nộp batch — không ghép kết quả cũ vào văn bản mới. Nộp lại batch cho bản mới "
+            "(kết quả batch cũ vẫn xem được trên Claude Console nếu cần)."
+        )
+    if _bam(HE_THONG) != st.get("he_thong_sha256"):
+        raise API.LoiCucBo("Lời dặn (HE_THONG) đã đổi sau khi nộp batch — kết quả không so sánh được. Nộp lại batch.")
+    tt = API.trang_thai_batch(st["batch"]["id"], client)
+    if tt["trang_thai"] != "ended":
+        return None, tt
+    tai_lieu, _ = _tai_lieu_tu_so(st)
+    ket_batch = API.doc_ket_qua_batch(st["batch"]["id"], client, nguon=CONG_CU)
+    nhoms = _lo_can_kiem(cau_ds, tai_lieu, int(st["lo"]))
+    ra: List[KetQua] = []
+    tk: Dict[str, Any] = {
+        "so_lo": 0, "lo_loi": 0, "lo_loi_api": 0, "token_vao": 0, "token_ra": 0,
+        "token_cache_ghi": 0, "token_cache_doc": 0, "loi": [], "batch": True,
+        "batch_id": st["batch"]["id"], "lo_thieu": 0,
+    }
+    for i, nhom in enumerate(nhoms):
+        tk["so_lo"] += 1
+        kq = ket_batch.get(_CID_LO.format(i=i))
+        if kq is None:
+            # Batch trả thiếu lô — KHÔNG đoán là «đúng hết»; mọi cặp của lô thành «không kiểm được».
+            tk["lo_loi"] += 1
+            tk["lo_thieu"] += 1
+            tk["loi"].append(f"lô {i}: batch không trả kết quả cho {_CID_LO.format(i=i)}")
+            ra.extend(
+                KetQua(c.id, n, "khong_kiem_duoc", "batch không trả kết quả cho lô này")
+                for c in nhom for n in c.so if n in tai_lieu
+            )
+            continue
+        for k in ("vao", "ra", "cache_ghi", "cache_doc"):
+            tk["token_" + k] += int(kq.get(k, 0) or 0)
+        try:
+            tra_loi = API.doc_json(API.van_ban_ket_qua_batch(kq))
+        except API.KetQuaHong as exc:
+            # Batch không gửi lại được trong cùng lượt (khác đường gọi trực tiếp, vốn thử lại 1 lần). Ghi rõ lý do
+            # và để bác sĩ nộp lại riêng lô đó nếu muốn — KHÔNG im lặng coi như đã kiểm.
+            tk["lo_loi"] += 1
+            tk["loi"].append(f"lô {i}: {str(exc)[:160]}")
+            ra.extend(
+                KetQua(c.id, n, "khong_kiem_duoc", f"lô batch hỏng: {str(exc)[:120]}")
+                for c in nhom for n in c.so if n in tai_lieu
+            )
+            continue
+        ra.extend(kiem_tra_tra_loi(nhom, tra_loi, tai_lieu))
+    return ra, tk
 
 
 @dataclass
@@ -508,7 +662,10 @@ def bao_cao_md(
         f"# Kiểm nội dung trích dẫn bằng máy — {study}",
         "",
         f"- Tệp: `{tep.name}` · lúc {luc} · model `{model}` · {tk.get('so_lo', 0)} lượt gọi "
-        f"({tk.get('lo_loi', 0)} lỗi) · {API.in_chi_phi(tk.get('token_vao', 0), tk.get('token_ra', 0), model)}",
+        # `batch=…` phải truyền đúng: giá Batch bằng 50% giá gọi trực tiếp, in sai đường thì con số tiền bị đọc sai.
+        f"({tk.get('lo_loi', 0)} lỗi) · "
+        + API.in_chi_phi(tk.get("token_vao", 0), tk.get("token_ra", 0), model, batch=bool(tk.get("batch")))
+        + (f" · batch `{tk['batch_id']}`" if tk.get("batch_id") else ""),
         f"- {len(cau_ds)} đoạn khẳng định có trích dẫn · {len(tltk)} tài liệu tham khảo · "
         f"{len(ket)} cặp (đoạn, tài liệu)",
         "- Kết quả: "
@@ -570,10 +727,23 @@ def main(
     ap.add_argument("--lo", type=int, default=SO_CAU_MOI_LO, help="số đoạn mỗi lượt gọi")
     ap.add_argument("--toi-da", type=int, default=TOI_DA_MAC_DINH, help="trần số đoạn kiểm mỗi lượt")
     ap.add_argument("--ra", help="thư mục ghi báo cáo (mặc định exports/<mã>/kiem_may_api/)")
+    ap.add_argument(
+        "--batch",
+        action="store_true",
+        help="dùng Batch API: giảm 50% mọi khoản nhưng BẤT ĐỒNG BỘ (nộp xong phải quay lại lấy kết quả)",
+    )
+    ap.add_argument(
+        "--chi-lay",
+        action="store_true",
+        help="chỉ LẤY kết quả batch đã nộp (đã trả phí), KHÔNG nộp batch mới",
+    )
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args(argv)
     if not re.fullmatch(r"[A-Za-z0-9._-]+", a.study):
         print("❌ --study chỉ nhận chữ/số/._-")
+        return 3
+    if a.chi_lay and not a.batch:
+        print("❌ --chi-lay chỉ dùng cùng --batch (đường gọi trực tiếp không có gì để lấy lại).")
         return 3
     tep = _tep_de_cuong(a.study, a.tep, goc)
     if not tep.is_file():
@@ -613,8 +783,9 @@ def main(
             "so_trich_khong_co_trong_tltk": khong_co,
             "so_luot_goi": so_lo,
             "bo_qua_vi_tran": len(bo),
-            "uoc_tinh": API.in_chi_phi(vao, ra, model),
-            "uoc_usd": API.uoc_chi_phi(vao, ra, model),
+            "duong": "batch" if a.batch else "goi_truc_tiep",
+            "uoc_tinh": API.in_chi_phi(vao, ra, model, batch=a.batch),
+            "uoc_usd": API.uoc_chi_phi(vao, ra, model, batch=a.batch),
         }
         if a.json:
             print(json.dumps(kh, ensure_ascii=False, indent=1))
@@ -630,27 +801,86 @@ def main(
                 )
             print(f"Sẽ gọi {so_lo} lượt · ước {kh['uoc_tinh']}. Gọi thật: thêm --goi-api (tính phí).")
         return 0
+    ra_dir = Path(a.ra) if a.ra else goc / "exports" / a.study / "kiem_may_api"
+    so_batch = duong_so_batch(a.study, ra_dir)
     try:
-        tai_lieu, ly_do_tl = lay_abstract(tltk, lay, lay_doi)
-    except Exception as exc:  # mạng/NCBI — không kết luận gì
-        print(f"⚪ Không lấy được abstract (PubMed/Europe PMC/Crossref): {type(exc).__name__}: {exc}")
-        return 2
-    if not tai_lieu:
-        print("⚪ Không tài liệu nào có abstract dùng được — KHÔNG kiểm được (không phải «đúng hết»).")
-        return 2
-    try:
-        ket, tk = chay(cau_ds, tai_lieu, model=model, lo=a.lo, client=client)
-    except API.ThieuKhoa as exc:
-        print(f"⚪ {exc}")
-        API.ghi_nhat_ky_api("skipped", str(exc), 0, "kiem_noi_dung_trich_dan")
-        return 2
-    except API.HetNganSach as exc:  # lỗi phía máy — khoá vẫn sống, không ghi nhật ký sức khoẻ; không ghi báo cáo dở
+        st_cho = doc_so_batch(so_batch) if a.batch else None
+    except API.LoiCucBo as exc:
         print(f"⛔ {exc}")
-        return 2
+        return 3
+
+    if a.batch and st_cho:
+        # ── LẤY kết quả batch đã nộp. Dùng abstract ĐÃ GỬI trong sổ, không tra lại (xem ghi chú ở TEN_SO_BATCH);
+        # và dùng `lo`/`toi_da` ĐÃ NỘP, không dùng cờ dòng lệnh, để ranh giới lô trùng khít với lúc nộp.
+        tai_lieu, ly_do_tl = _tai_lieu_tu_so(st_cho)
+        td = int(st_cho.get("toi_da", a.toi_da))
+        cau_ds = (lambda ds: ds[:td] if td > 0 else ds)(tach_cau_khang_dinh(van))
+        try:
+            ket, tk = lay_batch_a12(st_cho, cau_ds, van, client=client)
+        except API.LoiCucBo as exc:
+            print(f"⛔ {exc}")
+            return 3
+        except API.ThieuKhoa as exc:
+            print(f"⚪ {exc}")
+            return 2
+        if ket is None:  # tk = trạng thái batch
+            print(
+                f"⏳ batch {tk['id']}: đang xử lý {tk['dang_xu_ly']} · xong {tk['xong']} · lỗi {tk['loi']} — "
+                f"chạy lại `--batch --chi-lay` sau."
+            )
+            return 4
+        so_batch.unlink(missing_ok=True)  # đã lấy xong ⇒ sổ hết nhiệm vụ (giữ lại sẽ bị đọc là «còn batch chờ»)
+    elif a.batch and a.chi_lay:
+        print("Không có batch nào đang chờ — `--chi-lay` không nộp gì.")
+        return 0
+    elif a.batch:
+        # ── NỘP batch. Bước này KHÔNG có kết quả; mã 4 = chưa xong.
+        try:
+            tai_lieu, ly_do_tl = lay_abstract(tltk, lay, lay_doi)
+        except Exception as exc:  # mạng/NCBI — không kết luận gì
+            print(f"⚪ Không lấy được abstract (PubMed/Europe PMC/Crossref): {type(exc).__name__}: {exc}")
+            return 2
+        if not tai_lieu:
+            print("⚪ Không tài liệu nào có abstract dùng được — KHÔNG kiểm được (không phải «đúng hết»).")
+            return 2
+        try:
+            st = nop_batch_a12(
+                cau_ds, tai_lieu, ly_do_tl, model=model, lo=a.lo, tep=tep, van=van,
+                toi_da=a.toi_da, client=client, duong=so_batch,
+            )
+        except API.ThieuKhoa as exc:
+            print(f"⚪ {exc}")
+            API.ghi_nhat_ky_api("skipped", str(exc), 0, CONG_CU)
+            return 2
+        except (API.HetNganSach, API.LoiCucBo) as exc:
+            print(f"⛔ {exc}")
+            return 2
+        print(
+            f"📤 Đã nộp batch {st['batch']['id']} · {st['batch']['so_lo']} lô · giá Batch (giảm 50%). "
+            f"Sổ: {so_batch}\nLấy kết quả: chạy lại cùng lệnh kèm `--batch --chi-lay`."
+        )
+        return 4
+    else:
+        try:
+            tai_lieu, ly_do_tl = lay_abstract(tltk, lay, lay_doi)
+        except Exception as exc:  # mạng/NCBI — không kết luận gì
+            print(f"⚪ Không lấy được abstract (PubMed/Europe PMC/Crossref): {type(exc).__name__}: {exc}")
+            return 2
+        if not tai_lieu:
+            print("⚪ Không tài liệu nào có abstract dùng được — KHÔNG kiểm được (không phải «đúng hết»).")
+            return 2
+        try:
+            ket, tk = chay(cau_ds, tai_lieu, model=model, lo=a.lo, client=client)
+        except API.ThieuKhoa as exc:
+            print(f"⚪ {exc}")
+            API.ghi_nhat_ky_api("skipped", str(exc), 0, CONG_CU)
+            return 2
+        except API.HetNganSach as exc:  # lỗi phía máy — khoá vẫn sống, không ghi nhật ký sức khoẻ; không báo cáo dở
+            print(f"⛔ {exc}")
+            return 2
     ket = ket_qua_may(cau_ds, tltk, tai_lieu) + ket
     ket.sort(key=lambda k: (k.id, k.so))
     luc = dt.datetime.now().isoformat(timespec="seconds")
-    ra_dir = Path(a.ra) if a.ra else goc / "exports" / a.study / "kiem_may_api"
     ra_dir.mkdir(parents=True, exist_ok=True)
     md = ra_dir / f"A12_KIEM_NOI_DUNG_{a.study}.md"
     md.write_text(bao_cao_md(a.study, tep, cau_ds, tltk, ket, ly_do_tl, model, tk, luc, tai_lieu),
