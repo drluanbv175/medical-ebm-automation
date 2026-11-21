@@ -72,6 +72,16 @@ _SO_HO_SO_MA = re.compile(r"số\s+hồ\s+sơ[^.\n;]{0,25}?(?<![\d\w])(?!(?:19|2
                           re.IGNORECASE)
 
 
+def co_nhan(van_ban: str, nhan: str) -> bool:
+    """Nhãn PII có trong văn bản như một CỤM ĐỨNG RIÊNG — không chữ/số liền trước hay liền sau (so không phân biệt
+    hoa/thường, sau NFC). 21/11/2026 (giả lập cắt ngang CI): mã SHA-256 «…f95cccdadfdd…» của báo cáo phản biện chứa
+    chuỗi con «cccd» ⇒ R2 của G8 báo PII, cả chuỗi G8→G10 BLOCKED; mã băm đổi mỗi lượt nên CI lúc xanh lúc đỏ. Nhãn
+    đứng riêng («CCCD: …», «số CCCD») vẫn bị bắt."""
+    vb = unicodedata.normalize("NFC", str(van_ban or "")).lower()
+    n = unicodedata.normalize("NFC", str(nhan or "")).lower()
+    return bool(n) and re.search(rf"(?<![0-9a-zà-ỹđ]){re.escape(n)}(?![0-9a-zà-ỹđ])", vb) is not None
+
+
 def nhan_so_ho_so(van_ban: str) -> bool:
     """True khi văn bản ghi MỘT số hồ sơ cụ thể: «số hồ sơ: …», «số hồ sơ #…», hoặc «số hồ sơ …» kèm mã có ≥ 4 chữ số
     (không tính năm 19xx/20xx) trong 25 ký tự kế. Câu nói VỀ hồ sơ («số hồ sơ phải mở», «số hồ sơ đã trích») không phải
@@ -118,7 +128,7 @@ def quet_pii_van_ban(van_ban: Any, *, che_do: str = CHAT, mien: Iterable[str] = 
     if che_do == CHAT:
         thuong = vb.lower()
         for nhan in _NHAN_CHAT:
-            if nhan in thuong and ("nhãn", nhan) not in da_thay:
+            if co_nhan(thuong, nhan) and ("nhãn", nhan) not in da_thay:
                 da_thay.add(("nhãn", nhan))
                 ra.append(PhatHienPII(f"nhãn định danh «{nhan}»", nhan))
     for loai, mau in _MAU_HINH[che_do]:
