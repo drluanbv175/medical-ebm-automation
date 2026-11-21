@@ -90,15 +90,21 @@ def test_tran_chap_nhan_dau_phay_thap_phan(monkeypatch):
     assert API.tran_usd_thang() == pytest.approx(7.5)
 
 
-def test_model_chua_ghi_gia_la_chan(so):
+def test_model_chua_ghi_gia_la_chan_khi_co_tran(so, monkeypatch):
+    """21/11/2026: chỉ chặn khi biến môi trường OS đặt trần; theo tín dụng (mặc định) model chưa ghi giá vẫn gọi."""
+    monkeypatch.setenv("EBM_API_CLAUDE_TRAN_USD_THANG", "5")
     kh = KhachGia("ok")
     with pytest.raises(API.HetNganSach, match="Chưa ghi giá"):
         API.goi("x", model="claude-moi-chua-co-gia", client=kh)
     assert kh.messages.goi == []
+    monkeypatch.delenv("EBM_API_CLAUDE_TRAN_USD_THANG")
+    API.goi("x", model="claude-moi-chua-co-gia", client=kh)
+    assert len(kh.messages.goi) == 1
 
 
-def test_so_hong_thi_chan_va_khong_ghi_de(so):
+def test_so_hong_thi_chan_va_khong_ghi_de(so, monkeypatch):
     so.write_text("{hỏng", encoding="utf-8", newline="\n")
+    monkeypatch.setenv("EBM_API_CLAUDE_TRAN_USD_THANG", "5")  # có trần mới cần sổ để kiểm
     kh = KhachGia("ok")
     with pytest.raises(API.HetNganSach, match="không đọc được"):
         API.goi("x", client=kh)
@@ -106,7 +112,8 @@ def test_so_hong_thi_chan_va_khong_ghi_de(so):
     assert so.read_text(encoding="utf-8") == "{hỏng" and kh.messages.goi == []
 
 
-def test_so_sai_khuon_thi_chan(so):
+def test_so_sai_khuon_thi_chan(so, monkeypatch):
+    monkeypatch.setenv("EBM_API_CLAUDE_TRAN_USD_THANG", "5")
     so.write_text(json.dumps({"thang": API._thang_nay(), "usd": "nhiều"}), encoding="utf-8", newline="\n")
     with pytest.raises(API.HetNganSach, match="sai khuôn"):
         API.goi("x", client=KhachGia("ok"))
@@ -414,14 +421,98 @@ def test_tran_doc_tu_kho_bi_mat_khi_moi_truong_trong(tmp_path, monkeypatch):
         "EBM_API_CLAUDE_TRAN_USD_THANG=5\nEBM_API_CLAUDE_TRAN_USD_THANG=7,5\n", encoding="utf-8", newline="\n"
     )
     monkeypatch.delenv("EBM_API_CLAUDE_TRAN_USD_THANG", raising=False)
-    assert API.tran_usd_thang_nguon(str(kho)) == (7.5, "kho bí mật")  # dòng cuối thắng
+    # 21/11/2026 (bác sĩ: dùng theo tín dụng): trần trong kho bí mật bị BỎ QUA, nêu rõ trong nguồn (dòng cuối)
+    tran, nguon = API.tran_usd_thang_nguon(str(kho))
+    assert tran is None and nguon.startswith("theo tín dụng") and "bỏ qua trần «7,5»" in nguon
     monkeypatch.setenv("EBM_API_CLAUDE_TRAN_USD_THANG", "3")
     assert API.tran_usd_thang_nguon(str(kho)) == (3.0, "biến môi trường")  # biến môi trường đè kho
     monkeypatch.delenv("EBM_API_CLAUDE_TRAN_USD_THANG")
-    assert API.tran_usd_thang_nguon(str(tmp_path / "khong-co.env")) == (API.TRAN_USD_THANG_MAC_DINH, "mặc định")
+    assert API.tran_usd_thang_nguon(str(tmp_path / "khong-co.env")) == (
+        None, "theo tín dụng tài khoản (bác sĩ 21/11/2026)")
 
 
 def test_tran_khong_doc_kho_that_duoi_pytest(monkeypatch):
     monkeypatch.delenv("EBM_API_CLAUDE_TRAN_USD_THANG", raising=False)
     monkeypatch.delenv("EBM_KIEM_API_THAT", raising=False)
-    assert API.tran_usd_thang_nguon() == (API.TRAN_USD_THANG_MAC_DINH, "mặc định")
+    assert API.tran_usd_thang_nguon() == (None, "theo tín dụng tài khoản (bác sĩ 21/11/2026)")
+
+
+# ── 21/11/2026: dùng THEO TÍN DỤNG tài khoản; hết tín dụng / chạm giới hạn Console ⇒ tự dừng ─────────────────────────
+HET_TD = ("Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'Your credit "
+          "balance is too low to access the Anthropic API. Please go to Plans & Billing to upgrade or purchase "
+          "credits.'}}")
+HET_GH = ("Error code: 400 - {'type': 'error', 'error': {'type': 'invalid_request_error', 'message': 'You have reached "
+          "your specified API usage limits. You will regain access on 2026-12-01 at 00:00 UTC.'}}")
+
+
+@pytest.fixture
+def co(tmp_path, monkeypatch):
+    duong = tmp_path / "het-tin-dung.json"
+    monkeypatch.setattr(API, "CO_HET_TIN_DUNG", str(duong))
+    monkeypatch.delenv("EBM_API_CLAUDE_TRAN_USD_THANG", raising=False)
+    return duong
+
+
+def _no(thong_diep):
+    def f(kw):
+        raise RuntimeError(thong_diep)
+    return f
+
+
+def test_mac_dinh_theo_tin_dung_khong_tran(so, co):
+    _ghi_so(so, 1_000_000.0)  # đã tiêu bao nhiêu cũng không chặn — giới hạn là tín dụng tài khoản
+    kh = KhachGia("ok")
+    API.goi("x", client=kh, max_tokens=16000, nguon="kiem")
+    assert len(kh.messages.goi) == 1 and API.tran_usd_thang() is None
+
+
+@pytest.mark.parametrize("thong_diep", [HET_TD, HET_GH])
+def test_het_tin_dung_tu_dung_va_chan_luot_sau(so, co, thong_diep):
+    with pytest.raises(API.HetTinDung, match="HẾT TÍN DỤNG"):
+        API.goi("x", client=KhachGia(_no(thong_diep)), nguon="kiem")
+    assert co.exists() and API.doc_co_het_tin_dung()
+    kh = KhachGia("ok")
+    with pytest.raises(API.HetTinDung):  # lượt sau dừng sớm, KHÔNG gọi mạng
+        API.goi("x", client=kh, nguon="kiem")
+    assert kh.messages.goi == []
+    assert issubclass(API.HetTinDung, API.HetNganSach)  # công cụ đã dừng cả lượt khi chạm trần cũ cũng dừng
+
+
+def test_co_het_han_cho_thu_lai_thanh_cong_thi_go_co(so, co):
+    import datetime as dt
+    cu = (dt.datetime.now() - dt.timedelta(minutes=API.HET_TIN_DUNG_CHO_PHUT + 1)).isoformat(timespec="seconds")
+    co.write_text(json.dumps({"luc": cu, "ly_do": "x"}), encoding="utf-8", newline="\n")
+    kh = KhachGia("ok")
+    API.goi("x", client=kh)
+    assert len(kh.messages.goi) == 1 and not co.exists()
+
+
+def test_loi_400_khac_khong_phai_het_tin_dung(so, co):
+    with pytest.raises(API.LoiApi) as e:
+        API.goi("x", client=KhachGia(_no("Error code: 400 - invalid model name")))
+    assert not isinstance(e.value, API.HetTinDung) and not co.exists()
+
+
+def test_nop_batch_het_tin_dung(so, co):
+    class BatchHet:
+        def __init__(self):
+            self.messages = SimpleNamespace(batches=self)
+
+        def create(self, requests):
+            raise RuntimeError(HET_TD)
+
+    with pytest.raises(API.HetTinDung):
+        API.nop_batch([("cm_000", API.tham_so("x", he_thong="vai"))], BatchHet(), nguon="hoi_dong")
+    assert co.exists()
+
+
+def test_cong_cu_dung_ca_luot_khi_het_tin_dung(tmp_path, so, co):
+    goc = _goc_tam(tmp_path, VAN_PB)
+    assert PBM.main(["--study", "S1", "--goi-api"], client=KhachGia(_no(HET_TD)), goc=goc) == 2
+    assert not (goc / "exports" / "S1" / "kiem_may_api" / "PHAN_BIEN_MAY_S1.json").exists()
+
+
+def test_khong_doc_ghi_co_that_duoi_pytest(monkeypatch):
+    monkeypatch.delenv("EBM_KIEM_API_THAT", raising=False)
+    assert API.doc_co_het_tin_dung(API._HTD_THAT) is None
+    API.ghi_co_het_tin_dung("x", duong=API._HTD_THAT)  # rào pytest: không đụng tệp thật

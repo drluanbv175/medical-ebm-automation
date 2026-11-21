@@ -192,9 +192,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # và `_CONNECTOR-CHUNG-CU.md` (gốc #456 — thêm ASM vào bảng điều khoản NXB) đồng bộ với nguồn gốc — vẫn 64.
 # 20/11/2026 (tổng quan tài liệu): bản sao `viet-ban-thao`, `dieu-phoi-g10`, `kiem-chung-trich-dan`, `thu-thu-tai-lieu`
 # học K12 (mỗi tài liệu đỡ một câu), K13 (TLTK Vancouver theo metadata A12) và `kiem_so_lieu_toan_van.py` — vẫn 64.
+# 21/11/2026: đồng bộ bản sao _HOI-DONG-CONG.md, kiem-chung-trich-dan.md với nguồn gốc (tools/dong_bo_agent_y_khoa.py).
 # 21/11/2026: đồng bộ bản sao thu-thu-tai-lieu.md, tong-quan-y-van.md với nguồn gốc (tools/dong_bo_agent_y_khoa.py).
 MANIFEST_SELF_CHECK_SHA256 = (
-    "a45259c61f9f85ad7c437c561c817f629d8ec8e59dcef104fdf7ddb1fda48c5d"
+    "e130ba00c0808e32f07be54f6ca022f5ba65a6f63c8ea0ba494ebcf5f96d1f8a"
 )
 
 MINIMUM_AGENT_COUNT = 64
