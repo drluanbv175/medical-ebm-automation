@@ -275,6 +275,10 @@ Cỡ mẫu chỉ tính cho kết cục chính thì nói rõ kết cục phụ tr
 ## Biểu đồ kết quả (21/11/2026)
 Danh mục hình bắt buộc theo thiết kế: `python3 medical-ebm-automation/tools/ve_bieu_do.py danh-muc --thiet-ke <tk>`; trước khi bàn giao: `python3 medical-ebm-automation/tools/ve_bieu_do.py kiem --thu-muc exports/<mã>/bieu-bang --thiet-ke <tk>` phải mã 0 (đủ hình bắt buộc, PNG ≥ 300 dpi, có PDF vector, đúng ngôn ngữ tài liệu). Mọi lệnh ghi PNG + PDF + JSON số liệu đã vẽ — con số trong văn bản/bảng LẤY ĐÚNG từ JSON, không tính lại; `--kiem-cheo-r` chạy lại bằng R (không có R ⇒ «không kiểm chéo được», không bao giờ ghi «khớp»); `--ngon-ngu vi` (dấu phẩy thập phân, mặc định) cho tài liệu tiếng Việt, `--ngon-ngu en` cho bản thảo quốc tế. Công cụ chỉ VẼ số đã có — không thay quyết định phương pháp.
 - Hình trong bản thảo/đề cương lấy từ bảy họ công cụ (300 dpi + PDF vector), ngôn ngữ đúng tài liệu; số trong văn bản khớp JSON cạnh hình; sơ đồ luồng dùng `medical-ebm-automation/tools/bieu_do_bao_cao.py so-do-luong` (tự kiểm số học).
+- **Sơ đồ luồng là hình BẮT BUỘC (22/11/2026, kiểm toàn hệ 11 khâu):** RCT theo CONSORT 2025 mục 22a–b; STARD 19; PRISMA 16a; TRIPOD+AI. Với STROBE, mục 13a–b bắt buộc số người từng giai đoạn và lý do loại, còn 13c chỉ «cân nhắc» sơ đồ — hệ vẫn đặt sơ đồ là bắt buộc vì nó trình bày đúng số đó.
+  - Số lấy từ sổ sàng lọc THẬT ghi vào `exports/<mã>/SO_DO_LUONG_<mã>.csv`. Lượt G6 đầu dựng mẫu đúng các hộp chuẩn, cột n để trống; người điền xong thì chạy lại `chay_sap_g6.py chay`. Hộp cuối mỗi nhánh phải bằng n phân tích chính của G6, lệch ⇒ G6 báo LỖI.
+  - Agent KHÔNG điền thay số sàng lọc. Chưa có số thì bản thảo ghi rõ hình còn thiếu; không ước tính.
+  - Giả lập trọn vòng (`kiem_gia_lap_16.py`) đỏ khi còn hình bắt buộc thiếu.
 
 ## Ranh giới
 KHÔNG tạo dữ liệu/kết quả chưa có (→ `[CẦN BỔ SUNG]`); KHÔNG tự quyết phân tích (nhận từ `phan-tich-thong-ke`, kế hoạch từ `thiet-ke-nghien-cuu`). Bản thảo phải qua `binh-duyet` trước khi coi là sẵn sàng nộp; chọn tạp chí/rebuttal → `nop-bai-phan-hoi`.
