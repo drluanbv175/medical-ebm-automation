@@ -100,8 +100,15 @@ THAM_SO = {
     "chi_phi": ("--chi-phi", "s"),
     "hieu_qua": ("--hieu-qua", "s"),
     "nguong_wtp": ("--nguong-wtp", "so"),
+    # 21/11/2026 (khoảng trống hệ nghiên cứu — C1a đề cương 4.5.3): giá trị cấu trúc bộ câu hỏi, EFA nửa 1 + CFA nửa
+    # 2, chạy bằng phan_tich_nhan_to_r.py (R psych/lavaan; phương pháp đọc từ SAP đã khoá).
+    "phan_tich_nhan_to": ("--phan-tich-nhan-to", "nhan_to"),
+    "tang": ("--tang", "ds"),
+    "thieu": ("--thieu", "thieu"),
 }
 DAC_THU = ("chan_doan", "du_bao", "gop", "dinh_tinh", "kinh_te")
+NHAN_TO = ("efa_cfa",)
+KHOA_NHAN_TO = ("phan_tich_nhan_to", "tang", "thieu", "loc")
 LOAI_KC = ("auto", "binary", "continuous", "ordinal", "poisson_pr")
 TEN_RE = re.compile(r"^[A-Za-z][A-Za-z0-9_]*$")
 
@@ -167,6 +174,12 @@ def _kiem_gia_tri(ten: str, kieu: str, v) -> list[str]:
     elif kieu == "loai":
         if v not in DAC_THU:
             return [f"{ten}: phải thuộc {DAC_THU}"]
+    elif kieu == "nhan_to":
+        if v not in NHAN_TO:
+            return [f"{ten}: phải thuộc {NHAN_TO}"]
+    elif kieu == "thieu":
+        if v not in ("listwise", "pairwise"):
+            return [f"{ten}: phải là listwise hoặc pairwise"]
     elif kieu == "bt":
         if not chuoi_an_toan(v):
             return [f"{ten}: cần biểu thức (không bắt đầu bằng «-»)"]
@@ -229,7 +242,16 @@ def kiem_dac_ta(d: Path, dt: dict) -> dict:
         for k, v in ts.items():
             if k in THAM_SO:
                 loi += [f"{pid}: {x}" for x in _kiem_gia_tri(k, THAM_SO[k][1], v)]
-        if ts.get("loai_dac_thu"):
+        if ts.get("phan_tich_nhan_to") or ts.get("tang") or ts.get("thieu"):
+            # giá trị cấu trúc (EFA/CFA): tham số khác không có nghĩa với phan_tich_nhan_to_r.py — báo ngay khi kiểm
+            if not ts.get("phan_tich_nhan_to"):
+                loi.append(f"{pid}: tang/thieu chỉ dùng kèm phan_tich_nhan_to")
+            elif not ts.get("tang"):
+                loi.append(f"{pid}: phân tích nhân tố thiếu tang (cột phân tầng khi chia nửa)")
+            thua = [x for x in ts if x not in KHOA_NHAN_TO]
+            if thua:
+                loi.append(f"{pid}: tham số không áp dụng cho phân tích nhân tố: {', '.join(thua)}")
+        elif ts.get("loai_dac_thu"):
             import phan_tich_thiet_ke_dac_thu as PTD  # noqa: PLC0415
 
             thieu = [x for x in PTD.LOAI.get(ts["loai_dac_thu"], ()) if ts.get(x) in (None, "", [])]
@@ -492,6 +514,15 @@ def _tom_tat_uoc_luong(tom: dict) -> dict:
                              "goc_phan_tu": dt_["goc_phan_tu"], "nmb_tai_wtp": dt_["nmb_tai_wtp"]}
         else:
             ra["dinh_tinh"] = {"so_chu_de": dt_["so_chu_de"], "n": dt_["n_ban_go_bang"]}
+    if tom.get("nhan_to"):  # 21/11/2026: giá trị cấu trúc — số nhân tố gợi ý (nửa 1) + chỉ số phù hợp scaled (nửa 2)
+        nt = tom["nhan_to"]
+        efa, cfa = nt.get("efa") or {}, nt.get("cfa") or {}
+        cs = cfa.get("chi_so") or {}
+        ra["nhan_to"] = {"so_nhan_to_song_song": (efa.get("song_song") or {}).get("so_nhan_to"),
+                         "cfa_hoi_tu": cfa.get("hoi_tu"),
+                         **{k.replace(".", "_"): cs.get(k) for k in ("cfi.scaled", "tli.scaled", "rmsea.scaled",
+                                                                     "srmr")},
+                         "phan_loai": nt.get("phan_loai_theo_nguong_dinh_truoc")}
     sv = tom.get("survival") or {}
     if (sv.get("adjusted") or {}).get("HR") is not None:
         ra["hr_hieu_chinh"] = {k: sv["adjusted"].get(k) for k in ("HR", "CI_95", "p")}
@@ -611,10 +642,15 @@ def lenh_chay(args) -> int:
             print(f"⏸  {pt['id']}: CHỜ thống kê viên làm tay — {pt['chua_tu_dong']}")
             continue
         gate = gate_cua(pt)
-        cong_cu = "phan_tich_thiet_ke_dac_thu.py" if (pt.get("tham_so") or {}).get("loai_dac_thu") else \
-            "run_stats_analysis.py"
-        lenh = [sys.executable, str(TOOLS / cong_cu), "--data", str(csv_khoa), "--study", args.study,
-                "--gate", gate, *doi_so_run_stats(pt), *(["--kiem-cheo"] if args.kiem_cheo else [])]  # fmt: skip
+        ts_pt = pt.get("tham_so") or {}
+        if ts_pt.get("phan_tich_nhan_to"):  # R psych/lavaan — tự đọc bộ khoá bằng cùng hàm của cổng; không kiểm chéo
+            lenh = [sys.executable, str(TOOLS / "phan_tich_nhan_to_r.py"), "chay", "--study", args.study,
+                    "--gate", gate, *doi_so_run_stats(pt)]  # fmt: skip
+        else:
+            cong_cu = "phan_tich_thiet_ke_dac_thu.py" if (pt.get("tham_so") or {}).get("loai_dac_thu") else \
+                "run_stats_analysis.py"
+            lenh = [sys.executable, str(TOOLS / cong_cu), "--data", str(csv_khoa), "--study", args.study,
+                    "--gate", gate, *doi_so_run_stats(pt), *(["--kiem-cheo"] if args.kiem_cheo else [])]  # fmt: skip
         print(f"▶  {pt['id']} ({pt['vai']}, {pt.get('sap_muc')}) — gate {gate}", flush=True)
         try:
             r = subprocess.run(lenh, capture_output=True, text=True, encoding="utf-8", errors="replace",
