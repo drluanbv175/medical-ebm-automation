@@ -22,6 +22,15 @@ không mỗi cái tự viết một kiểu:
 - PROMPT CACHING (18/11/2026, bác sĩ chọn): system prompt lặp lại giữa nhiều yêu cầu (tệp agent của hội đồng, lời dặn
   của kiểm A12 theo lô) được đánh dấu `cache_control` — đọc từ cache chỉ tính một phần nhỏ giá token vào. Lượt gọi một
   lần (phản biện máy) KHÔNG đánh dấu: ghi cache tính 1,25× mà không ai đọc lại.
+- TTL CACHE (21/11/2026): `cache_ttl="5m"` (mặc định, ghi 1,25× giá vào, mỗi lượt đọc làm mới miễn phí) hoặc `"1h"`
+  (ghi 2× giá vào). Chọn "1h" CHỈ khi các lượt gọi cách nhau HƠN 5 phút mà vẫn trong vòng một giờ — ví dụ lượt quét
+  giám sát tuần/tháng gọi rải theo từng nguồn; nhịp dày dưới 5 phút thì "5m" rẻ hơn vì được làm mới không mất phí.
+  `usage.cache_creation` tách token ghi theo TTL nên sổ chi phí tính 1,25× cho phần 5m và 2× cho phần 1h, không
+  gộp một hệ số (gộp thì lượt 1h bị ghi thiếu tiền, trần tháng canh sai).
+- NGƯỠNG TỐI THIỂU: prefix dưới ngưỡng của model thì API LẶNG LẼ không cache và KHÔNG tính phí ghi — không có lỗi trả
+  về, nên chỗ duy nhất thấy được là `usage.cache_creation_input_tokens == 0`. Vì vậy đánh dấu `cache_control` cho một
+  prefix ngắn là vô hại về tiền, nhưng một prompt NẰM SÁT ngưỡng (xem `NGUONG_CACHE_TOKEN`) có thể rơi xuống dưới sau
+  một lần sửa chữ và âm thầm mất cache — `tests/test_cache_nguong_va_ttl_20261121.py` canh việc đó.
 """
 
 from __future__ import annotations
@@ -77,6 +86,27 @@ GIA_USD_TRIEU_TOKEN = {
     "claude-haiku-4-5": {"vao": 1.00, "ra": 5.00, "doc_cache": 0.10},
 }
 HE_SO_GHI_CACHE = 1.25
+# Ghi cache TTL 1 giờ tính 2× giá vào (tài liệu Prompt Caching, đọc 21/11/2026).
+HE_SO_GHI_CACHE_1H = 2.00
+CACHE_TTL_HOP_LE = ("5m", "1h")
+# Số token tối thiểu để một prefix được cache, theo model (tài liệu Prompt Caching, đọc 21/11/2026). Dưới ngưỡng thì
+# API không cache và không tính phí ghi — im lặng, không lỗi. Model không có trong bảng ⇒ lấy ngưỡng thận trọng nhất.
+NGUONG_CACHE_TOKEN = {
+    "claude-sonnet-5-5": 512,
+    "claude-opus-5-5": 512,
+    "claude-opus-5": 512,
+    "claude-haiku-5-5": 512,
+    "claude-fable-5-2": 512,
+    "claude-fable-5-1": 512,
+    "claude-fable-5": 512,
+    "claude-sonnet-5": 1024,
+    "claude-opus-4-8": 1024,
+    "claude-sonnet-4-6": 1024,
+    "claude-opus-4-7": 2048,
+    "claude-opus-4-6": 4096,
+    "claude-haiku-4-5": 4096,
+}
+NGUONG_CACHE_THAN_TRONG = 4096
 # Trần chi phí tháng mặc định (USD) — bác sĩ đổi bằng biến môi trường EBM_API_CLAUDE_TRAN_USD_THANG (≤ 0 = khoá hẳn).
 # Đo 17/11/2026: một lượt kiểm A12 + một lượt phản biện máy trên BTM tốn ≈ 0,3 USD; 20 USD đủ cho vài chục lượt/tháng.
 TRAN_USD_THANG_MAC_DINH = 20.0
@@ -188,13 +218,16 @@ def tham_so(
     max_tokens: int = MAX_TOKENS_MAC_DINH,
     effort: str = "low",
     cache_he_thong: bool = False,
+    cache_ttl: str = "5m",
 ) -> Dict[str, Any]:
     """Tham số Messages API cho MỘT lời gọi — dùng chung cho gọi trực tiếp và Batch API (Batch không nhận `fallbacks`
-    nên phần đó thêm riêng ở `goi`). `cache_he_thong=True` ⇒ system thành khối có `cache_control` (TTL 5 phút) — chỉ
-    bật khi cùng system prompt được gửi lại nhiều lần; prefix dưới ngưỡng tối thiểu (512 token với model hiện hành) thì
-    API lặng lẽ không cache, không tính phí ghi."""
+    nên phần đó thêm riêng ở `goi`). `cache_he_thong=True` ⇒ system thành khối có `cache_control` — chỉ bật khi cùng
+    system prompt được gửi lại nhiều lần; prefix dưới ngưỡng tối thiểu của model (`NGUONG_CACHE_TOKEN`) thì API lặng lẽ
+    không cache, không tính phí ghi. `cache_ttl="1h"` cho nhịp gọi cách nhau hơn 5 phút (ghi 2× thay vì 1,25×)."""
     if effort not in ("low", "medium", "high", "xhigh", "max"):
         raise LoiCucBo(f"effort «{effort}» không hợp lệ")
+    if cache_ttl not in CACHE_TTL_HOP_LE:
+        raise LoiCucBo(f"cache_ttl «{cache_ttl}» không hợp lệ (chỉ {', '.join(CACHE_TTL_HOP_LE)})")
     mdl = chon_model(model)
     p: Dict[str, Any] = {
         "model": mdl,
@@ -202,9 +235,13 @@ def tham_so(
         "messages": [{"role": "user", "content": noi_dung}],
     }
     if he_thong:
-        p["system"] = (
-            [{"type": "text", "text": he_thong, "cache_control": {"type": "ephemeral"}}] if cache_he_thong else he_thong
-        )
+        if cache_he_thong:
+            dau: Dict[str, Any] = {"type": "ephemeral"}
+            if cache_ttl != "5m":  # mặc định 5m không gửi `ttl` để giữ nguyên khuôn tham số các lượt đã chạy thật
+                dau["ttl"] = cache_ttl
+            p["system"] = [{"type": "text", "text": he_thong, "cache_control": dau}]
+        else:
+            p["system"] = he_thong
     if mdl in MODEL_HIEN_HANH:
         p["output_config"] = {"effort": effort}
     return p
@@ -219,8 +256,9 @@ class KetQuaGoi:
     token_vao: int = 0
     token_ra: int = 0
     stop_reason: Optional[str] = None
-    token_cache_ghi: int = 0
+    token_cache_ghi: int = 0  # TỔNG token ghi cache (cả 5m và 1h) — nghĩa cũ, không đổi
     token_cache_doc: int = 0
+    token_cache_ghi_1h: int = 0  # phần ghi ở TTL 1 giờ (tính 2× thay vì 1,25×); 0 khi chỉ dùng 5m
 
 
 def _kiem_stop(stop_reason: Optional[str], nhom: Optional[str], max_tokens: int) -> None:
@@ -239,12 +277,19 @@ def goi(
     effort: str = "low",
     client: Any = None,
     cache_he_thong: bool = False,
+    cache_ttl: str = "5m",
     nguon: str = "",
 ) -> KetQuaGoi:
     """MỘT lời gọi Messages API. Lỗi mạng/khoá/SDK ⇒ LoiApi; cắt cụt/từ chối ⇒ KetQuaHong; vượt trần tháng ⇒
     HetNganSach (không gửi). Số tiêu thật ghi vào sổ chi phí theo `nguon`."""
     p = tham_so(
-        noi_dung, he_thong=he_thong, model=model, max_tokens=max_tokens, effort=effort, cache_he_thong=cache_he_thong
+        noi_dung,
+        he_thong=he_thong,
+        model=model,
+        max_tokens=max_tokens,
+        effort=effort,
+        cache_he_thong=cache_he_thong,
+        cache_ttl=cache_ttl,
     )
     kh = tao_client(client)
     kiem_ngan_sach(uoc_toi_da(p), p["model"], nguon)
@@ -266,12 +311,28 @@ def goi(
         stop_reason=getattr(resp, "stop_reason", None),
         token_cache_ghi=_so_nguyen(getattr(u, "cache_creation_input_tokens", 0)),
         token_cache_doc=_so_nguyen(getattr(u, "cache_read_input_tokens", 0)),
+        token_cache_ghi_1h=_ghi_cache_1h(u),
     )
     ghi_chi_phi(
-        uoc_chi_phi(kq.token_vao, kq.token_ra, p["model"], cache_ghi=kq.token_cache_ghi, cache_doc=kq.token_cache_doc),
+        uoc_chi_phi(
+            kq.token_vao,
+            kq.token_ra,
+            p["model"],
+            cache_ghi=kq.token_cache_ghi,
+            cache_doc=kq.token_cache_doc,
+            cache_ghi_1h=kq.token_cache_ghi_1h,
+        ),
         nguon,
         p["model"],
-        {"vao": kq.token_vao, "ra": kq.token_ra, "cache_ghi": kq.token_cache_ghi, "cache_doc": kq.token_cache_doc},
+        # `cache_ghi_1h` CHỈ ghi khi khác 0: sổ chi phí là tệp lưu lâu dài, công cụ khác đọc theo khuôn cũ — thêm một
+        # khoá vào mọi bản ghi là đổi khuôn không cần thiết cho lượt 5m (tuyệt đại đa số).
+        {
+            "vao": kq.token_vao,
+            "ra": kq.token_ra,
+            "cache_ghi": kq.token_cache_ghi,
+            "cache_doc": kq.token_cache_doc,
+            **({"cache_ghi_1h": kq.token_cache_ghi_1h} if kq.token_cache_ghi_1h else {}),
+        },
     )
     # Lượt bị cắt cụt/từ chối VẪN tính phí ⇒ ghi sổ trước, rồi mới kiểm stop_reason.
     _kiem_stop(kq.stop_reason, getattr(getattr(resp, "stop_details", None), "category", None), max_tokens)
@@ -304,17 +365,27 @@ def uoc_token(van_ban: str) -> int:
 
 
 def uoc_chi_phi(
-    token_vao: int, token_ra: int, model: str, batch: bool = False, cache_ghi: int = 0, cache_doc: int = 0
+    token_vao: int,
+    token_ra: int,
+    model: str,
+    batch: bool = False,
+    cache_ghi: int = 0,
+    cache_doc: int = 0,
+    cache_ghi_1h: int = 0,
 ) -> Optional[float]:
     """USD theo bảng giá ĐÃ GHI; model chưa có giá ⇒ None (công cụ chỉ báo token). `token_vao` là phần vào KHÔNG qua
-    cache (đúng nghĩa `usage.input_tokens`); ghi cache tính HE_SO_GHI_CACHE × giá vào, đọc cache theo «doc_cache»."""
+    cache (đúng nghĩa `usage.input_tokens`); đọc cache theo «doc_cache». `cache_ghi` là TỔNG token ghi cache, trong đó
+    `cache_ghi_1h` là phần TTL 1 giờ tính HE_SO_GHI_CACHE_1H (2×) — phần còn lại tính HE_SO_GHI_CACHE (1,25×)."""
     g = GIA_USD_TRIEU_TOKEN.get(model)
     if not g:
         return None
     he_so = 0.5 if batch else 1.0
+    ghi_1h = min(max(0, int(cache_ghi_1h or 0)), max(0, int(cache_ghi or 0)))
+    ghi_5m = max(0, int(cache_ghi or 0)) - ghi_1h
     tong = (
         token_vao * g["vao"]
-        + cache_ghi * g["vao"] * HE_SO_GHI_CACHE
+        + ghi_5m * g["vao"] * HE_SO_GHI_CACHE
+        + ghi_1h * g["vao"] * HE_SO_GHI_CACHE_1H
         + cache_doc * g.get("doc_cache", g["vao"])
         + token_ra * g["ra"]
     )
@@ -335,6 +406,20 @@ def _so_nguyen(x: Any) -> int:
         return max(0, int(x or 0))
     except (TypeError, ValueError):
         return 0
+
+
+def _ghi_cache_1h(u: Any) -> int:
+    """Token ghi cache ở TTL 1 giờ, lấy từ `usage.cache_creation.ephemeral_1h_input_tokens`.
+
+    Thiếu trường (SDK cũ, lượt không cache, khách giả trong test) ⇒ 0: coi như toàn bộ phần ghi là 5 phút, tức tính
+    1,25× — ước THẤP hơn thực tế nếu thật là 1h. Chỉ an toàn vì mọi chỗ gọi với `cache_ttl="1h"` đều phải khai rõ, và
+    trần chi phí tháng còn một lớp canh riêng; không suy đoán TTL từ số token."""
+    cc = getattr(u, "cache_creation", None)
+    if cc is None:
+        return 0
+    if isinstance(cc, dict):
+        return _so_nguyen(cc.get("ephemeral_1h_input_tokens", 0))
+    return _so_nguyen(getattr(cc, "ephemeral_1h_input_tokens", 0))
 
 
 def _van_ban_noi_dung(nd: Any) -> Tuple[str, int]:
@@ -610,17 +695,29 @@ def doc_ket_qua_batch(batch_id: str, client: Any = None, nguon: str = "") -> Dic
                 "ra": _so_nguyen(getattr(u, "output_tokens", 0)),
                 "cache_ghi": _so_nguyen(getattr(u, "cache_creation_input_tokens", 0)),
                 "cache_doc": _so_nguyen(getattr(u, "cache_read_input_tokens", 0)),
+                "cache_ghi_1h": _ghi_cache_1h(u),
             }
             model = model or str(getattr(m, "model", "") or "")
         else:
             loi = getattr(getattr(r.result, "error", None), "type", "") or ""
             ket[r.custom_id] = {"loai": loai, "loi": str(loi)}
-    tok = {k: sum(int(v.get(k, 0)) for v in ket.values()) for k in ("vao", "ra", "cache_ghi", "cache_doc")}
+    tok = {
+        k: sum(int(v.get(k, 0)) for v in ket.values())
+        for k in ("vao", "ra", "cache_ghi", "cache_doc", "cache_ghi_1h")
+    }
     if any(tok.values()):
         mdl = model or MODEL_MAC_DINH
         usd = uoc_chi_phi(
-            tok["vao"], tok["ra"], mdl, batch=True, cache_ghi=tok["cache_ghi"], cache_doc=tok["cache_doc"]
+            tok["vao"],
+            tok["ra"],
+            mdl,
+            batch=True,
+            cache_ghi=tok["cache_ghi"],
+            cache_doc=tok["cache_doc"],
+            cache_ghi_1h=tok["cache_ghi_1h"],
         )
+        if not tok["cache_ghi_1h"]:  # giữ khuôn sổ cũ cho lượt 5m — xem ghi chú ở `goi`
+            tok.pop("cache_ghi_1h")
         ghi_chi_phi(usd, nguon, mdl, tok, batch_id=batch_id)
     return ket
 
