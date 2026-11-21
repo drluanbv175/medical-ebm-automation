@@ -371,6 +371,12 @@ def _compare_categorical(col: pd.Series, grp: pd.Series) -> dict:
     return {"p": round(float(p), 4), "effect": "N/A", "test": "Chi-square"}
 
 
+# Chú thích cột p của Bảng 1 RCT (22/11/2026): chuẩn hiện hành là CONSORT 2025 (mục 25 — bảng đặc điểm nền theo nhóm;
+# danh mục đối chiếu ở run_g7_auto.CHECKLIST_ITEMS["rct"]); trước ghi «CONSORT 2010». Lý do bỏ kiểm định nền vẫn dẫn bản
+# giải thích & chi tiết CONSORT 2010 mục 15 (Moher et al., BMJ 2010, PMID 20332511) — xem docstring dưới.
+KHONG_KIEM_DINH_NEN_RCT = "không kiểm định (RCT — CONSORT 2025 mục 25)"
+
+
 def table1_descriptive(df: pd.DataFrame, group_col: str, vars_: list, kiem_dinh_nen: bool = True) -> dict:
     """Tạo Bảng 1 đặc điểm mẫu theo nhóm.
 
@@ -411,7 +417,7 @@ def table1_descriptive(df: pd.DataFrame, group_col: str, vars_: list, kiem_dinh_
                 if n_inf:
                     row[f"grp_{g}"] += f" (⚠loại {n_inf} giá trị Inf)"
             if not kiem_dinh_nen:
-                row["test"] = "không kiểm định (RCT — CONSORT 2010)"
+                row["test"] = KHONG_KIEM_DINH_NEN_RCT
             elif len(groups) == 2 and HAS_SCIPY:
                 comp = _compare_continuous(grp_data[groups[0]], grp_data[groups[1]])
                 row["p"] = comp["p"]
@@ -441,7 +447,7 @@ def table1_descriptive(df: pd.DataFrame, group_col: str, vars_: list, kiem_dinh_
                     counts = s.value_counts()
                     row[f"grp_{g}"] = "; ".join(f"{k}: {v}({v/len(s)*100:.0f}%)" for k, v in counts.items())
             if not kiem_dinh_nen:
-                row["test"] = "không kiểm định (RCT — CONSORT 2010)"
+                row["test"] = KHONG_KIEM_DINH_NEN_RCT
             elif len(groups) == 2 and HAS_SCIPY:
                 comp = _compare_categorical(df[var], df[group_col])
                 row["p"] = comp["p"]
@@ -2942,7 +2948,14 @@ def main():
         print(f"ℹ️  Bảng 1: bỏ phân nhóm theo «{args.group}» ({df[args.group].nunique()} giá trị — biến liên tục).")
     if args.group and args.group in df.columns and not phoi_nhiem_lien_tuc:
         try:
-            t1 = table1_descriptive(df, args.group, vars_for_t1, kiem_dinh_nen=design_code != "rct")
+            # 22/11/2026 (bản thảo G7 RCT giả lập): nhánh CÓ nhóm so sánh từng đưa nguyên `vars_for_t1` (mọi cột khi
+            # không khai --vars) vào Bảng 1 ⇒ hàng `record_id`, `ngay_ngau_nhien` lọt vào bảng đặc điểm nền bản thảo.
+            # Cùng bộ lọc với nhánh một nhóm: bỏ định danh, ngày, văn bản tự do, cột rỗng.
+            bien_t1 = bien_bang1_mo_ta(df, vars_for_t1, (args.group, args.outcome))
+            bo_t1 = [c for c in vars_for_t1 if c not in bien_t1 and c not in (args.group, args.outcome)]
+            if bo_t1:
+                print(f"ℹ️  Bảng 1: bỏ {len(bo_t1)} cột định danh/ngày/văn bản tự do/rỗng: {', '.join(bo_t1[:8])}")
+            t1 = table1_descriptive(df, args.group, bien_t1, kiem_dinh_nen=design_code != "rct")
             t1_txt = format_table1_text(t1)
             summary["table1"] = bang1_cho_tom_tat(t1)
             print(f"✓ Bảng 1: {len(t1['rows'])} biến, {len(t1['groups'])} nhóm")
