@@ -7,7 +7,7 @@
 
 | Bước | Công cụ | Kết quả |
 |---|---|---|
-| Rút bài + metadata 40 PMID | `tools/check_citations.py --study hai-long-benh-nhan-C1a-BVQY175` | `A12_RETRACTION_RECEIPT.json` all_clean=true (2026-11-20T10:51Z); `A12_METADATA_RECEIPT.json` all_resolved=true (2026-11-20T10:51Z) |
+| Rút bài + metadata 41 PMID (thêm 27094345 ngày 21/11/2026) | `tools/check_citations.py --study hai-long-benh-nhan-C1a-BVQY175` | `A12_RETRACTION_RECEIPT.json` all_clean=true (2026-11-21T13:58:57.738051+00:00); `A12_METADATA_RECEIPT.json` all_resolved=true (2026-11-21T13:58:57.738051+00:00) |
 | 9 DOI tạp chí trong nước (không có PMID) | `app.sources.crossref_retraction.CrossrefRetraction.check` (Crossref) | 9/9 tồn tại, trạng thái ok — không có quan hệ rút/đính chính (updated-by) |
 
 Retraction Watch ngoại tuyến không được nạp trên máy ở lượt này; lượt kiểm 2026-10-11 (tổng hợp G0-T3) đã ghi 9/9 DOI không có bản ghi Retraction Watch.
@@ -25,6 +25,7 @@ Retraction Watch ngoại tuyến không được nạp trên máy ở lượt n�
 | 39944421 | Hài lòng ngoại trú tại bệnh viện tuyến ba, Andaman và Nicobar (n=1298) | Thời gian chờ dài hơn đi kèm hài lòng thấp hơn, khá nhất quán | 🟠 ủng hộ một phần — tóm tắt có kiểm định chi bình phương giữa hài lòng và thời gian chờ, kết luận thời gian chờ là điểm cần cải thiện, nhưng KHÔNG nêu chiều/độ lớn của liên quan; bối cảnh khác (Ấn Độ). Đề nghị PI: giữ kèm nhãn bối cảnh, hoặc chuyển bài này sang câu «thời gian chờ là điểm cần cải thiện» |
 | 40295132 | Hài lòng tại 5 cơ sở chăm sóc ban đầu, Sierra Leone (n=290) | Thời gian chờ liên quan nghịch với hài lòng; học vấn AOR 0,53 (KTC 95% 0,28–0,98) | ✅ khớp (số chép đúng tóm tắt: học vấn AOR 0,53; thời gian chờ AOR 0,41) |
 | 42625778 | Bộ phiếu chuẩn quốc gia 2024, 5 cơ sở (n=2500) | Có BHYT, cư trú nông thôn, tái khám nhiều lần đi kèm hài lòng cao hơn | ✅ khớp |
+| 27094345 | Abma 2016, BMC Res Notes 9:226 — giá trị hội tụ của PROM: dựng giả thuyết, diễn giải kết quả (đọc TOÀN VĂN 21/11/2026, CC BY 4.0) | Giả thuyết hội tụ ρ > 0,50 (ngưỡng thường dùng khi đối chiếu với công cụ đo cùng khái niệm); giả thuyết không đạt thì bàn luận nguyên nhân (mục 2.6.1.3, điểm 5) | ✅ Toàn văn: «correlation with an instrument measuring the same construct is >0.50»; khuyên nêu chiều và độ lớn kỳ vọng và bàn luận giả thuyết không đạt |
 
 ## 3. Đối chiếu — DOI tạp chí trong nước (Crossref 2026-10-14)
 
