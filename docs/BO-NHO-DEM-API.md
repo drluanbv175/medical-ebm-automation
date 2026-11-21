@@ -270,14 +270,27 @@ Tháng 11, 200 lượt gần nhất: **4,12 Tr token vào · 5,6% đọc cache �
 3. **Khấu hao «—» là bình thường**, không phải lỗi: nguồn đọc lại cache đã ghi từ lượt TRƯỚC thì trong cửa sổ 200
    lượt của sổ không còn bản ghi ghi nào.
 
-### Việc còn bỏ ngỏ: `kiem_trich_dan_toan_van`
+### `kiem_trich_dan_toan_van` — ĐÃ BẬT CACHE (bác sĩ duyệt 21/11/2026)
 
-`kiem_tai_lieu()` gọi `API.goi(noi, he_thong=HE_THONG, …)` **thiếu `cache_he_thong=True`**, trong khi `HE_THONG` =
-816 token (trên ngưỡng 512) và được gửi y nguyên cho **mỗi tài liệu** — đo được 88 lượt trong một tháng. Thêm cờ đó
-là thay đổi một dòng và chắc chắn có lãi theo §1 (tái dùng 87 lần, hoà vốn từ lần đầu).
+Đo được: 88 lượt · 726 N token vào · **0% đọc cache**. Nguyên nhân: thiếu `cache_he_thong=True` ở **CẢ HAI** đường
+gọi — `kiem_tai_lieu()` (gọi trực tiếp) và `tham_so_tai_lieu()` (chế độ `--batch`). `HE_THONG` = 816 token (trên
+ngưỡng 512) và gửi y nguyên cho **mỗi tài liệu** ⇒ hoà vốn ngay từ tài liệu thứ hai (§1). Nay bật ở cả hai.
 
-Nhưng phần lớn 726 N token là **đoạn toàn văn của từng tài liệu**, mỗi đoạn gửi đúng một lần ⇒ không cache được.
-Đòn lớn ở đây vẫn là **Batch API** như §9 đã làm cho A12. Cả hai việc đều CHƯA làm, chờ bác sĩ quyết.
+**Phải đi kèm việc đếm token cache.** `uoc_chi_phi` tính phí GHI cache riêng (1,25× giá vào), nên bật cache mà vẫn
+chỉ đếm `vao`/`ra` thì báo cáo **ghi thiếu tiền** — sai theo hướng nguy hiểm (trần chi tiêu tháng canh sai). Nay
+`tok`/`tok_b` đếm cả `cache_ghi`/`cache_doc`, giá tính theo chúng, và dòng in ra nêu rõ trạng thái cache.
+
+Khuôn báo cáo JSON `kiem_trich_dan_toan_van/v1` giữ NGUYÊN cho lượt không có cache (`_tok_bc` bỏ khoá cache khi
+bằng 0) — báo cáo là tệp lưu lâu dài, công cụ khác đọc theo khuôn cũ.
+
+**Batch cho công cụ này do PR #387 làm, thiết kế khác §9**: chờ sẵn trong lượt (`API.goi_lo` + `--cho-batch-toi-da`)
+và tự gửi thường khi batch lỗi, thay vì nộp-rồi-quay-lại như A12. Giữ nguyên bản đã merge, KHÔNG dựng thiết kế thứ
+hai cho cùng một công cụ.
+
+Vẫn đúng điều §1 nói: phần lớn 726 N token là **đoạn toàn văn của từng tài liệu**, mỗi đoạn gửi một lần ⇒ cache chỉ
+cứu được phần `HE_THONG`; đòn lớn là Batch.
+
+Test: `tests/test_ktv_cache_20261121.py` — 10 test.
 
 ---
 

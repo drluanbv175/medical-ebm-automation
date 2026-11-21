@@ -274,9 +274,9 @@ def loi_nhan_tai_lieu(so: int, cap: List[Dict[str, Any]], doan: str, tltk: str =
 
 
 def tham_so_tai_lieu(so: int, cap: List[Dict[str, Any]], doan: str, model: str, tltk: str = "") -> Dict[str, Any]:
-    """Tham số của ĐÚNG lượt gọi thường (cùng lời dặn, model, effort, max_tokens) — dùng cho chế độ Batch."""
+    """Tham số của ĐÚNG lượt gọi thường (cùng lời dặn, model, effort, max_tokens, CACHE) — dùng cho chế độ Batch."""
     return API.tham_so(loi_nhan_tai_lieu(so, cap, doan, tltk), he_thong=HE_THONG, model=model, max_tokens=MAX_TOKENS,
-                       effort="medium")
+                       effort="medium", cache_he_thong=True)
 
 
 def kiem_tai_lieu(so: int, cap: List[Dict[str, Any]], doan: str, model: str, client: Any,
@@ -294,6 +294,10 @@ def kiem_tai_lieu(so: int, cap: List[Dict[str, Any]], doan: str, model: str, cli
     noi = loi_nhan_tai_lieu(so, cap, doan, tltk)
     for lan in range(0 if dl is not None else SO_LAN_THU_JSON_HONG):
         kq = API.goi(noi, he_thong=HE_THONG, model=model, max_tokens=MAX_TOKENS, effort="medium", client=client,
+                     # Đo 21/11/2026 trên SỔ CHI PHÍ THẬT: công cụ này 88 lượt · 726 N token vào · 0% đọc cache —
+                     # thiếu đúng cờ này ở CẢ HAI đường (đây và `tham_so_tai_lieu`). `HE_THONG` = 816 token (trên
+                     # ngưỡng 512) và gửi Y NGUYÊN cho MỖI tài liệu ⇒ hoà vốn ngay từ tài liệu thứ hai.
+                     cache_he_thong=True,
                      nguon="kiem_trich_dan_toan_van")
         try:
             dl = API.doc_json(kq.van_ban)
@@ -322,6 +326,15 @@ def kiem_tai_lieu(so: int, cap: List[Dict[str, Any]], doan: str, model: str, cli
 
 def _o(s: Any) -> str:
     return str(s or "").replace("|", "/").replace("\n", " ").strip()
+
+
+def _tok_bc(tok: Dict[str, int]) -> Dict[str, int]:
+    """Bộ đếm token cho báo cáo JSON: BỎ khoá cache khi bằng 0.
+
+    Giữ khuôn `kiem_trich_dan_toan_van/v1` y như trước cho lượt không có cache — báo cáo là tệp lưu lâu dài và công
+    cụ khác đọc theo khuôn cũ. Lượt CÓ cache thì mới thêm `cache_ghi`/`cache_doc`. Dòng in ra màn hình luôn nêu
+    trạng thái cache, nên không mất thông tin."""
+    return {k: v for k, v in tok.items() if v or k in ("vao", "ra")}
 
 
 def bao_cao_md(bc: Dict[str, Any]) -> str:
@@ -432,8 +445,10 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
         return 2
     ket: List[Dict[str, Any]] = []
     loi: List[str] = []
-    tok = {"vao": 0, "ra": 0}
-    tok_b = {"vao": 0, "ra": 0}
+    # Đếm cả token cache. PHẢI đi kèm việc bật cache ở trên: `uoc_chi_phi` tính phí ghi cache riêng (1,25× giá vào),
+    # nên nếu chỉ bật cache mà vẫn đếm vao/ra thì báo cáo GHI THIẾU tiền — sai theo hướng nguy hiểm.
+    tok = {"vao": 0, "ra": 0, "cache_ghi": 0, "cache_doc": 0}
+    tok_b = {"vao": 0, "ra": 0, "cache_ghi": 0, "cache_doc": 0}
     san: Dict[int, Any] = {}
     if a.batch:
         try:
@@ -465,19 +480,26 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
         dich = tok_b if (kq is not None and kq is san.get(so)) else tok   # token Batch tính giá Batch
         dich["vao"] += kq.token_vao
         dich["ra"] += kq.token_ra
+        dich["cache_ghi"] += kq.token_cache_ghi
+        dich["cache_doc"] += kq.token_cache_doc
         ket += [dict(x, nguon=nguon) for x in ra]
-    u1 = API.uoc_chi_phi(tok["vao"], tok["ra"], model)
-    u2 = API.uoc_chi_phi(tok_b["vao"], tok_b["ra"], model, batch=True)
+    u1 = API.uoc_chi_phi(tok["vao"], tok["ra"], model,
+                         cache_ghi=tok["cache_ghi"], cache_doc=tok["cache_doc"])
+    u2 = API.uoc_chi_phi(tok_b["vao"], tok_b["ra"], model, batch=True,
+                         cache_ghi=tok_b["cache_ghi"], cache_doc=tok_b["cache_doc"])
     usd = None if u1 is None or u2 is None else round(u1 + u2, 6)
     chi_phi = f"≈ {usd:.3f} USD" if usd is not None else "chưa ghi giá model"
     if tok_b["vao"]:
         chi_phi += f" (Batch {tok_b['vao'] + tok_b['ra']} token)"
+    # Nêu rõ cache: không có dòng này thì không ai biết cache có chạy hay không (đúng lỗ đã đo 21/11/2026).
+    c_ghi, c_doc = tok["cache_ghi"] + tok_b["cache_ghi"], tok["cache_doc"] + tok_b["cache_doc"]
+    chi_phi += f" · cache ghi {c_ghi:,} / đọc {c_doc:,} token" if (c_ghi or c_doc) else " · cache: 0 token"
     ho_tro = sum(1 for k in ket if k["muc_toan_van"] == "ho_tro")
     con = len(cap) - ho_tro
     bc = {"schema": "kiem_trich_dan_toan_van/v1", "study": a.study, "tep": tep.name,
           "tep_sha256": hashlib.sha256(tep.read_bytes()).hexdigest(), "a12_luc": bc12.get("luc"),
-          "luc": dt.datetime.now().isoformat(timespec="seconds"), "model": model, "token": tok,
-          "token_batch": tok_b, "usd": usd,
+          "luc": dt.datetime.now().isoformat(timespec="seconds"), "model": model, "token": _tok_bc(tok),
+          "token_batch": _tok_bc(tok_b), "usd": usd,
           "loi_dan_sha256": hashlib.sha256(HE_THONG.encode("utf-8")).hexdigest()[:12],
           "so_cap": len(cap), "so_co_toan_van": len(ket), "so_ho_tro": ho_tro, "so_con_xem": con,
           "ket_qua": ket, "khong_toan_van": khong, "loi": loi}
