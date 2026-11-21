@@ -730,7 +730,7 @@ def main(
     ap.add_argument(
         "--batch",
         action="store_true",
-        help="dùng Batch API: giảm 50% mọi khoản nhưng BẤT ĐỒNG BỘ (nộp xong phải quay lại lấy kết quả)",
+        help="dùng Batch API: giảm 50%% mọi khoản nhưng BẤT ĐỒNG BỘ (nộp xong phải quay lại lấy kết quả)",
     )
     ap.add_argument(
         "--chi-lay",
