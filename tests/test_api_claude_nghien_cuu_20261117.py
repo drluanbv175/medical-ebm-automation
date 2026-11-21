@@ -441,9 +441,11 @@ TRA["gk"] = TRA["cm"]
 class KhachBatch:
     """Batch giả: nộp ⇒ id; retrieve ⇒ ended; results ⇒ JSON theo tiền tố custom_id."""
 
-    def __init__(self, hong=(), sai_khuon=()):
+    def __init__(self, hong=(), sai_khuon=(), hong_mot_lan=(), cut=()):
         self.lo, self.hong, self.batches = {}, set(hong), self
         self.sai_khuon = set(sai_khuon)
+        self.hong_mot_lan = set(hong_mot_lan)  # hỏng ở lần trả ĐẦU, lần gửi lại trả đúng
+        self.cut = set(cut)  # trả cụt (max_tokens) — không được gửi lại
         self.messages = SimpleNamespace(batches=self)
 
     def create(self, requests):
@@ -461,14 +463,15 @@ class KhachBatch:
 
     def results(self, bid):
         for cid in self.lo[bid]:
-            if cid in self.hong:
+            if cid in self.hong or cid in self.hong_mot_lan:
+                self.hong_mot_lan.discard(cid)
                 text = "không phải json"
             elif cid in self.sai_khuon:
                 text = json.dumps({"ket_luan": "tuyet_voi"})  # JSON đúng cú pháp, sai khuôn bản chấm
             else:
                 text = json.dumps(TRA[cid[:2]], ensure_ascii=False)
             msg = SimpleNamespace(
-                stop_reason="end_turn",
+                stop_reason="max_tokens" if cid in self.cut else "end_turn",
                 stop_details=None,
                 content=[SimpleNamespace(text=text)],
                 usage=SimpleNamespace(input_tokens=1000, output_tokens=200),
@@ -531,11 +534,13 @@ def test_vong_batch_dau_cuoi_ghi_bien_ban_hop_le(tmp_path):
 def test_ket_qua_hong_ghi_loi_khong_doan(tmp_path):
     goc, out = _chuan_bi(tmp_path)
     kh = KhachBatch(hong={"gk_000"})
-    _chay(goc, kh, "buoc", "--goi-api")
-    _chay(goc, kh, "buoc", "--goi-api")
+    for _ in range(3):  # nộp → lấy (hỏng, gửi lại) → lấy (hỏng lần 2 ⇒ lỗi)
+        _chay(goc, kh, "buoc", "--goi-api")
+    assert sum(cid == "gk_000" for lo in kh.lo.values() for cid in lo) == 2  # gửi lại ĐÚNG một lần
     st = json.loads(HB.tep_trang_thai(out, "G3").read_text(encoding="utf-8"))
     c = st["cham"][NV["ma"]]
-    assert c["ket"]["giam_khao"] is None and "gk_000" in c["loi"][0]
+    assert c["ket"]["giam_khao"] is None and "gk_000" in c["loi"][0] and "đã gửi lại 1 lần" in c["loi"][0]
+    assert c["gui_lai"] == {"giam_khao": 1}
     assert not [x for x in HB.ban_nhap(st) if x[0] == "danh_gia_cheo"]
 
 
@@ -573,11 +578,84 @@ def test_ghi_tu_choi_khi_tai_lieu_doi_sau_cham(tmp_path):
 def test_ban_cham_sai_khuon_khong_vao_so(tmp_path):
     goc, out = _chuan_bi(tmp_path)
     kh = KhachBatch(sai_khuon={"cm_000"})
-    _chay(goc, kh, "buoc", "--goi-api")
-    _chay(goc, kh, "buoc", "--goi-api")
+    for _ in range(3):
+        _chay(goc, kh, "buoc", "--goi-api")
     st = json.loads(HB.tep_trang_thai(out, "G3").read_text(encoding="utf-8"))
     c = st["cham"][NV["ma"]]
     assert c["ket"]["chuyen_mon"] is None and "sai khuôn" in c["loi"][0]
+
+
+# ── 21/11/2026 (C1a G10 thật): JSON hỏng/sai khuôn ⇒ gửi lại ĐÚNG một lần; cụt không gửi lại; trạng thái cũ nâng cấp ─
+def test_hong_lan_dau_gui_lai_thi_cham_duoc_va_ghi_bien_ban(tmp_path):
+    goc, out = _chuan_bi(tmp_path)
+    kh = KhachBatch(hong_mot_lan={"gk_000"})
+    for _ in range(5):
+        _chay(goc, kh, "buoc", "--goi-api")
+    st = json.loads(HB.tep_trang_thai(out, "G3").read_text(encoding="utf-8"))
+    c = st["cham"][NV["ma"]]
+    assert c["ket"]["giam_khao"] and c["loi"] == [] and c["gui_lai"] == {"giam_khao": 1}
+    assert any("gửi lại 1 lần" in x for x in c["ghi_chu"])
+    assert sum(cid == "gk_000" for lo in kh.lo.values() for cid in lo) == 2
+    assert _chay(goc, kh, "ghi", "--ap-dung") == 0
+    loai = sorted(json.loads(x.read_text(encoding="utf-8"))["loai"] for x in (out / "hoi_dong" / "G3").glob("*.json"))
+    assert "danh_gia_cheo" in loai
+
+
+def test_cut_cut_khong_gui_lai(tmp_path):
+    goc, out = _chuan_bi(tmp_path)
+    kh = KhachBatch(cut={"cm_000"})
+    for _ in range(3):
+        _chay(goc, kh, "buoc", "--goi-api")
+    assert sum(cid == "cm_000" for lo in kh.lo.values() for cid in lo) == 1
+    c = json.loads(HB.tep_trang_thai(out, "G3").read_text(encoding="utf-8"))["cham"][NV["ma"]]
+    assert c["ket"]["chuyen_mon"] is None and "cm_000" in c["loi"][0] and not c.get("gui_lai")
+
+
+def _muc_cham(loi, ket_cm=None, **them):
+    return {"ket": {"chuyen_mon": ket_cm, "giam_khao": {"ket_luan": "dat"}}, "loi": list(loi), **them}
+
+
+def test_nang_cap_trang_thai_cu_chi_cho_loi_gui_lai_duoc():
+    st = {
+        "cham": {
+            "A": _muc_cham(["cm_001: JSON hỏng: Expecting ',' delimiter: line 9"]),
+            "B": _muc_cham(["cm_002: JSON hỏng: x", "tài liệu đổi sau khi khởi tạo: a.md — khởi tạo lại (--lam-lai)"]),
+            "C": _muc_cham(["cm_003: JSON hỏng: x (đã gửi lại 1 lần)"], gui_lai={"chuyen_mon": 1}),
+            "D": _muc_cham(["cm_004: JSON hỏng: x"], ket_cm={"ket_luan": "dat"}),  # bước đã có kết quả
+            "E": _muc_cham(["cm_005: batch: errored overloaded_error"]),
+            "F": _muc_cham(["cm_006: JSON hỏng: x", "gk_006: JSON hỏng: y"]),  # hai bước một lúc
+        },
+        "tranh": {
+            "T1": {"buoc": "trong_tai", "loi": ["tr_000: phán quyết sai khuôn"]},
+            "T2": {"buoc": "phan_bien", "loi": ["tr_001: phán quyết sai khuôn"]},
+        },
+    }
+    assert HB.nang_cap_loi_json_cu(st) == 2
+    a = st["cham"]["A"]
+    assert a["loi"] == [] and a["gui_lai"] == {"chuyen_mon": 1} and "trước luật gửi lại" in a["ghi_chu"][0]
+    assert st["tranh"]["T1"]["loi"] == [] and st["tranh"]["T1"]["gui_lai"] == {"trong_tai": 1}
+    for m in ("B", "C", "D", "E", "F"):
+        assert st["cham"][m]["loi"], m
+    assert st["tranh"]["T2"]["loi"] and "gui_lai" not in st["tranh"]["T2"]
+    assert HB.nang_cap_loi_json_cu(st) == 0  # chạy lại: không đổi gì
+
+
+def test_trang_thai_cu_qua_main_gui_lai_mot_lan_roi_loi(tmp_path):
+    goc, out = _chuan_bi(tmp_path)
+    kh = KhachBatch(hong={"gk_000"})
+    _chay(goc, kh, "buoc", "--goi-api")
+    _chay(goc, kh, "buoc", "--goi-api", "--chi-lay")
+    p = HB.tep_trang_thai(out, "G3")
+    st = json.loads(p.read_text(encoding="utf-8"))
+    c = st["cham"][NV["ma"]]
+    c.pop("gui_lai"), c.pop("ghi_chu")  # giả trạng thái lưu TRƯỚC luật: lỗi nằm thẳng trong `loi`
+    c["loi"] = ["gk_000: JSON hỏng: Expecting value: line 1 column 1 (char 0)"]
+    HB._ghi_st(p, st)
+    _chay(goc, kh, "buoc", "--goi-api")  # nâng cấp ⇒ nộp lại gk_000
+    _chay(goc, kh, "buoc", "--goi-api")  # hỏng lần nữa ⇒ lỗi thật
+    assert sum(cid == "gk_000" for lo in kh.lo.values() for cid in lo) == 2
+    c = json.loads(p.read_text(encoding="utf-8"))["cham"][NV["ma"]]
+    assert c["loi"] and "đã gửi lại 1 lần" in c["loi"][-1]
 
 
 # ── 18/11/2026 (BTM thật): một lô trả JSON sai cú pháp ⇒ 12/51 cặp «không kiểm được»; nay gửi lại đúng lô đó MỘT lần ─

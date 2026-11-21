@@ -9,6 +9,15 @@ cương (cả chỗ đối chiếu với lỗi mâu thuẫn) — không có thì
 như lỗi. Phần tất định chạy cả khi chạy khô: số trích dẫn không có trong danh mục, tài liệu không được trích, thứ tự
 xuất hiện lần đầu sai luật Vancouver.
 
+THẨM TRA (21/11/2026, bác sĩ chọn «lọc báo động giả»): lượt đo thật trên C1a ra 12 phát hiện đã xác minh nguyên văn,
+trong đó 2 phát hiện «mức cao» và 3 phát hiện khác là báo động giả — chính phần «vấn đề» tự ghi «số khớp», «không
+mâu thuẫn». Nay mỗi phát hiện đã xác minh được một model thứ hai (mặc định Opus 5.5) thẩm tra trên đúng đoạn trích +
+ngữ cảnh ±1 dòng: «giữ» (có thể HẠ mức, không nâng) hoặc «loại». Phát hiện bị loại vẫn liệt kê ở mục riêng kèm lý do
+— không giấu. Thẩm tra lỗi/thiếu phán quyết ⇒ GIỮ phát hiện (fail-safe). Tắt bằng --khong-tham-tra.
+Phát hiện thuật ngữ/viết tắt được gửi kèm DANH MỤC CHỮ VIẾT TẮT nguyên văn + đối chiếu máy từng chữ viết tắt
+(A/B thật 21/11: thiếu danh mục thì cả Sonnet lẫn Opus loại nhầm «thiếu AGReMA»; có danh mục thì Opus loại đúng
+7/7 báo động giả, giữ lỗi thật — Sonnet 5/7).
+
 Ranh giới: TƯ VẤN — không sửa đề cương, không mở/chặn cổng, không thay phản biện người (G8). Không đánh giá lại lựa chọn
 khoa học thuộc thẩm quyền chủ nhiệm. CHẠY KHÔ mặc định; `--goi-api` mới gọi (tính phí) và ghi báo cáo vào
 exports/<mã>/kiem_may_api/.
@@ -22,6 +31,7 @@ import argparse
 import datetime as dt
 import hashlib
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -84,6 +94,126 @@ HE_THONG = (
     f"có. Tối đa {TOI_DA_PHAT_HIEN} phát hiện, xếp từ cao xuống thấp. Trả DUY NHẤT JSON "
     '{"phat_hien":[{"loai":"…","muc":"…","dong":1,"trich":"…","doi_chieu":null,"van_de":"…","goi_y":"…"}]}.'
 )
+
+
+MODEL_THAM_TRA_MAC_DINH = "claude-opus-5-5"
+MAX_TOKENS_THAM_TRA = 8000
+HE_THONG_THAM_TRA = (
+    "Bạn là người THẨM TRA THỨ HAI, hoài nghi, cho các phát hiện mà một mô hình khác nêu khi phản biện đề cương nộp "
+    "Hội đồng khoa học và đạo đức. Với MỖI phát hiện, chỉ dựa trên đoạn trích và ngữ cảnh đã cho (dòng dạng «n| …»), "
+    "quyết định:\n"
+    "- giu: lỗi có thật mà thành viên Hội đồng sẽ bắt, thấy được ngay từ các đoạn đã cho;\n"
+    "- loai: báo động giả — gồm: số liệu thực ra khớp (cộng/đối chiếu lại); hai chỗ không nói khác nhau (một chỗ chỉ "
+    "chi tiết hơn, hoặc nói về đối tượng khác như nghiên cứu được trích); chính phần «van_de» tự thừa nhận khớp/không "
+    "mâu thuẫn/ổn; phán xét lựa chọn khoa học thuộc thẩm quyền chủ nhiệm; đòi điều văn bản không cần nêu; "
+    "«chữ viết tắt» thực ra là tên riêng/tên sản phẩm.\n"
+    "Không đủ căn cứ trong các đoạn đã cho để BÁC BỎ ⇒ giu — tuyệt đối không loại vì «không kiểm chứng được». "
+    "Phát hiện thuật ngữ/viết tắt: dùng DANH MỤC CHỮ VIẾT TẮT nguyên văn và «doi_chieu_may_viet_tat» (máy đã tra) — "
+    "chữ viết tắt cùng loại với các mục danh mục đang liệt kê (vd tên chuẩn báo cáo, thang đo, nền tảng) mà vắng là "
+    "lỗi thật; chỉ loại khi danh mục cho thấy loại đó không được liệt kê (vd tên thương mại phần mềm). "
+    "Không chắc thì giu (để người đọc quyết). Có thể HẠ mức (muc_moi) nếu lỗi có thật nhưng nhẹ hơn; không được nâng. "
+    "Trả DUY NHẤT JSON {\"phan_quyet\":[{\"id\":1,\"ket_luan\":\"giu|loai\",\"muc_moi\":\"cao|vua|thap|null\","
+    "\"ly_do\":\"≤ 30 từ, tiếng Việt\"}]} — đủ MỌI id đã cho."
+)
+
+
+def _ngu_canh(dong_ds: List[str], so: Any, ban_kinh: int = 1) -> str:
+    """Các dòng quanh dòng `so` (đánh số «n| …»); số dòng lạ ⇒ rỗng."""
+    if not isinstance(so, int) or not 1 <= so <= len(dong_ds):
+        return ""
+    a, b = max(1, so - ban_kinh), min(len(dong_ds), so + ban_kinh)
+    return "\n".join(f"{i}| {dong_ds[i - 1]}" for i in range(a, b + 1))
+
+
+_RE_DANH_MUC_VT = re.compile(r"^#{1,6}\s*DANH MỤC (?:CÁC )?(?:CHỮ |TỪ )?VIẾT TẮT", re.I)
+_RE_VIET_TAT = re.compile(r"\b[A-Za-z][A-Za-z0-9-]*[A-Z][A-Za-z0-9-]*\b")
+
+
+def _khoang_danh_muc_vt(dong_ds: List[str]) -> Optional[Tuple[int, int]]:
+    """(dòng đầu, dòng cuối) 1-based của mục DANH MỤC CHỮ VIẾT TẮT; không có ⇒ None."""
+    dau = next((i for i, d in enumerate(dong_ds, 1) if _RE_DANH_MUC_VT.match(d.strip())), None)
+    if dau is None:
+        return None
+    cuoi = next((i - 1 for i in range(dau + 1, len(dong_ds) + 1) if dong_ds[i - 1].lstrip().startswith("#")),
+                len(dong_ds))
+    return dau, cuoi
+
+
+def _doi_chieu_viet_tat(p: Dict[str, Any], dong_ds: List[str], kh: Optional[Tuple[int, int]]) -> Dict[str, Any]:
+    """Máy tra từng chữ viết tắt nêu trong phát hiện: có dòng riêng trong danh mục không, lần đầu ở dòng nào (ngoài
+    danh mục). 21/11/2026: thẩm tra không thấy danh mục ⇒ cả Sonnet lẫn Opus loại nhầm «thiếu AGReMA» (C1a)."""
+    if kh is None:
+        return {}
+    danh_muc = "\n".join(dong_ds[kh[0] - 1:kh[1]])
+    ra: Dict[str, Any] = {}
+    for tu in sorted(set(_RE_VIET_TAT.findall(f"{p.get('van_de', '')} {p.get('trich', '')}")))[:8]:
+        co = re.search(rf"^\|\s*{re.escape(tu)}\s*\|", danh_muc, re.M) is not None
+        dau = next((i for i, d in enumerate(dong_ds, 1) if not kh[0] <= i <= kh[1]
+                    and re.search(rf"(?<![A-Za-z0-9]){re.escape(tu)}(?![A-Za-z0-9])", d)), None)
+        ra[tu] = {"trong_danh_muc": co, "dong_dau_tien": dau,
+                  "ngu_canh": f"{dau}| {dong_ds[dau - 1][:300]}" if dau else ""}
+    return ra
+
+
+def tham_tra(
+    dat: List[Dict[str, Any]], van: str, model: str, client: Any = None
+) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], Optional[API.KetQuaGoi], Optional[str]]:
+    """(giữ, loại, kết quả gọi, lỗi). Một lượt gọi cho mọi phát hiện. Phán quyết thiếu/lạ ⇒ GIỮ; lỗi API/JSON ⇒ giữ
+    TẤT CẢ và trả lỗi (không bao giờ vì thẩm tra hỏng mà mất phát hiện). `muc_moi` chỉ được HẠ mức."""
+    if not dat:
+        return [], [], None, None
+    dong_ds = van.splitlines()
+    kh_vt = _khoang_danh_muc_vt(dong_ds)
+    ds = []
+    for i, p in enumerate(dat, 1):
+        m: Dict[str, Any] = {"id": i, "loai": p["loai"], "muc": p["muc"], "van_de": p["van_de"],
+                             "trich": p["trich"], "ngu_canh": _ngu_canh(dong_ds, p.get("dong"))}
+        dc = p.get("doi_chieu")
+        if dc:
+            so_dc = dc.get("dong")
+            if not (isinstance(so_dc, int) and 1 <= so_dc <= len(dong_ds) and API.co_nguyen_van(dc["trich"],
+                                                                                            dong_ds[so_dc - 1])):
+                so_dc = next((k for k, d in enumerate(dong_ds, 1) if API.co_nguyen_van(dc["trich"], d)), so_dc)
+            m["doi_chieu"] = {"trich": dc["trich"], "ngu_canh": _ngu_canh(dong_ds, so_dc)}
+        if p["loai"] == "thuat_ngu":
+            m["doi_chieu_may_viet_tat"] = _doi_chieu_viet_tat(p, dong_ds, kh_vt)
+        ds.append(m)
+    loi_nhan = "CÁC PHÁT HIỆN CẦN THẨM TRA (JSON):\n" + json.dumps(ds, ensure_ascii=False, indent=1)
+    if kh_vt and any(p["loai"] == "thuat_ngu" for p in dat):
+        loi_nhan += "\n\nDANH MỤC CHỮ VIẾT TẮT CỦA ĐỀ CƯƠNG (nguyên văn):\n" + "\n".join(
+            f"{i}| {dong_ds[i - 1]}" for i in range(kh_vt[0], kh_vt[1] + 1)
+        )[:12000]
+    try:
+        kq = API.goi(loi_nhan, he_thong=HE_THONG_THAM_TRA, model=model, max_tokens=MAX_TOKENS_THAM_TRA,
+                     effort="high", client=client, nguon="phan_bien_may_tham_tra")
+        dl = API.doc_json(kq.van_ban)
+    except API.LoiApi as exc:
+        return [dict(p) for p in dat], [], None, f"{type(exc).__name__}: {str(exc)[:200]}"
+    pq: Dict[int, Dict[str, Any]] = {}
+    for x in (dl.get("phan_quyet") if isinstance(dl, dict) else None) or []:
+        if isinstance(x, dict) and str(x.get("id", "")).strip().isdigit():
+            pq[int(str(x["id"]).strip())] = x
+    giu: List[Dict[str, Any]] = []
+    loai: List[Dict[str, Any]] = []
+    for i, p in enumerate(dat, 1):
+        x, r = pq.get(i), dict(p)
+        kl = str((x or {}).get("ket_luan") or "")
+        ly_do = str((x or {}).get("ly_do") or "")[:300]
+        if kl == "loai":
+            r["ly_do_loai"] = ly_do or "(không nêu lý do)"
+            loai.append(r)
+            continue
+        if kl == "giu":
+            mm = str((x or {}).get("muc_moi") or "")
+            if mm in MUC and MUC.index(mm) > MUC.index(p["muc"]):  # chỉ HẠ mức (cao → vừa → thấp)
+                r["muc_truoc_tham_tra"], r["muc"] = p["muc"], mm
+            r["tham_tra"] = ly_do
+        else:
+            r["tham_tra"] = "không có phán quyết hợp lệ — giữ"
+        giu.append(r)
+    thu_tu = {m: k for k, m in enumerate(MUC)}
+    giu.sort(key=lambda z: (thu_tu.get(z["muc"], 9), z.get("dong") or 0))
+    return giu, loai, kq, None
 
 
 def danh_so_dong(van: str) -> str:
@@ -193,6 +323,16 @@ def _o(s: Any) -> str:
     return str(s or "").replace("|", "/").replace("\n", " ").strip()
 
 
+def _dong_tham_tra(tt: Optional[Dict[str, Any]], loai: Optional[List[Dict[str, Any]]]) -> str:
+    """Một dòng tóm tắt bước thẩm tra cho đầu báo cáo."""
+    if not tt:
+        return "- Thẩm tra phát hiện: không chạy (--khong-tham-tra hoặc không có phát hiện)"
+    if tt.get("loi"):
+        return f"- Thẩm tra phát hiện: LỖI ({tt['loi']}) — GIỮ mọi phát hiện như chưa thẩm tra"
+    return (f"- Thẩm tra phát hiện: model `{tt.get('model')}` · loại {len(loai or [])} báo động giả · "
+            f"{tt.get('chi_phi') or ''}")
+
+
 def bao_cao_md(
     study: str,
     tep: Path,
@@ -202,6 +342,8 @@ def bao_cao_md(
     model: str,
     kq: Optional[API.KetQuaGoi],
     luc: str,
+    loai: Optional[List[Dict[str, Any]]] = None,
+    tt: Optional[Dict[str, Any]] = None,
 ) -> str:
     dem = {m: sum(1 for p in dat if p["muc"] == m) for m in MUC}
     dong = [
@@ -211,6 +353,7 @@ def bao_cao_md(
         + (f" · {API.in_chi_phi(kq.token_vao, kq.token_ra, model)}" if kq else ""),
         f"- Phát hiện đã xác minh nguyên văn: cao {dem['cao']} · vừa {dem['vua']} · thấp {dem['thap']} · "
         f"máy không xác minh được {len(khong)} (không trình như lỗi) · trích dẫn tất định {len(tat_dinh)}",
+        _dong_tham_tra(tt, loai),
         "",
         "Mỗi phát hiện dưới đây có đoạn trích đã được máy đối chiếu NGUYÊN VĂN với đề cương. Đây là lớp đọc bổ sung, "
         "không thay phản biện người và không đánh giá lại lựa chọn khoa học của chủ nhiệm.",
@@ -235,6 +378,11 @@ def bao_cao_md(
         )
     if not dat:
         dong.append("| — | — | — | — | — | Không có phát hiện đã xác minh | — | — |")
+    if loai:
+        dong += ["", "## Máy thẩm tra loại (báo động giả — vẫn liệt kê để bác sĩ đối chiếu)", "",
+                 "| Mức gốc | Loại | Dòng | Trích | Vấn đề máy nêu | Lý do loại |", "|---|---|---|---|---|---|"]
+        dong += [f"| {p['muc']} | {TEN_LOAI.get(p['loai'], p['loai'])} | {p.get('dong') or ''} | {_o(p['trich'])} | "
+                 f"{_o(p['van_de'])} | {_o(p.get('ly_do_loai'))} |" for p in loai]
     dong += ["", "## Máy không xác minh được (để tham khảo, không phải lỗi đã xác nhận)", ""]
     dong += [f"- dòng {p.get('dong')}: {_o(p['van_de'])} ({p['ly_do_khong_xac_minh']})" for p in khong] or [
         "- Không có."
@@ -250,6 +398,9 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
     ap.add_argument("--goi-api", action="store_true", help="GỌI Claude API (tính phí) + ghi báo cáo")
     ap.add_argument("--model", default=None)
     ap.add_argument("--effort", default="medium", choices=("low", "medium", "high"))
+    ap.add_argument("--khong-tham-tra", action="store_true", help="bỏ bước thẩm tra phát hiện (lọc báo động giả)")
+    ap.add_argument("--model-tham-tra", default=None,
+                    help=f"model thẩm tra (mặc định biến EBM_NC_API_MODEL_THAM_TRA hoặc {MODEL_THAM_TRA_MAC_DINH})")
     ap.add_argument("--ra", help="thư mục ghi báo cáo (mặc định exports/<mã>/kiem_may_api/)")
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args(argv)
@@ -262,6 +413,8 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
         return 3
     try:
         model = API.chon_model(a.model)
+        model_tt = API.chon_model(a.model_tham_tra or os.environ.get("EBM_NC_API_MODEL_THAM_TRA")
+                                  or MODEL_THAM_TRA_MAC_DINH)
     except API.LoiApi as exc:
         print(f"❌ {exc}")
         return 3
@@ -289,6 +442,9 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
                 + "."
             )
             print(f"Sẽ gọi 1 lượt · ước {kh['uoc_tinh']}. Gọi thật: thêm --goi-api (tính phí).")
+            if not a.khong_tham_tra:
+                print(f"  + 1 lượt thẩm tra phát hiện ({model_tt}, chỉ đoạn trích + ngữ cảnh — "
+                      "thường ≈ 0,02–0,08 USD).")
         return 0
     try:
         kq = API.goi(loi_nhan, he_thong=HE_THONG, model=model, effort=a.effort, client=client,
@@ -309,11 +465,22 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
         print(f"⚪ Không phản biện được: {exc}")
         API.ghi_nhat_ky_api("error", str(exc), 0, "phan_bien_may_de_cuong")
         return 2
+    loai: List[Dict[str, Any]] = []
+    tt: Optional[Dict[str, Any]] = None
+    if dat and not a.khong_tham_tra:
+        dat, loai, kq_tt, loi_tt = tham_tra(dat, van, model_tt, client)
+        tt = {"model": model_tt, "loi": loi_tt, "so_loai": len(loai)}
+        if kq_tt is not None:
+            tt.update({"model": kq_tt.model, "token": {"vao": kq_tt.token_vao, "ra": kq_tt.token_ra},
+                       "usd": API.uoc_chi_phi(kq_tt.token_vao, kq_tt.token_ra, kq_tt.model),
+                       "chi_phi": API.in_chi_phi(kq_tt.token_vao, kq_tt.token_ra, kq_tt.model),
+                       "loi_dan_sha256": hashlib.sha256(HE_THONG_THAM_TRA.encode("utf-8")).hexdigest()[:12]})
     luc = dt.datetime.now().isoformat(timespec="seconds")
     ra_dir = Path(a.ra) if a.ra else goc / "exports" / a.study / "kiem_may_api"
     ra_dir.mkdir(parents=True, exist_ok=True)
     md = ra_dir / f"PHAN_BIEN_MAY_{a.study}.md"
-    md.write_text(bao_cao_md(a.study, tep, tat_dinh, dat, khong, model, kq, luc), encoding="utf-8", newline="\n")
+    md.write_text(bao_cao_md(a.study, tep, tat_dinh, dat, khong, model, kq, luc, loai, tt), encoding="utf-8",
+                  newline="\n")
     (ra_dir / f"PHAN_BIEN_MAY_{a.study}.json").write_text(
         json.dumps(
             {
@@ -330,6 +497,8 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
                 "trich_dan_tat_dinh": tat_dinh,
                 "phat_hien": dat,
                 "khong_xac_minh": khong,
+                "tham_tra": tt,
+                "loai_sau_tham_tra": loai,
                 "luu_y": API.DISCLAIMER,
             },
             ensure_ascii=False,
@@ -342,7 +511,10 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
     API.ghi_nhat_ky_api("ok", "", len(dat), "phan_bien_may_de_cuong")
     nang = [p for p in dat if p["muc"] in ("cao", "vua")] + [p for p in tat_dinh if p["muc"] in ("cao", "vua")]
     print(
-        f"{'🟠' if nang else '🟢'} {len(nang)} phát hiện mức cao/vừa · {len(khong)} không xác minh được · báo cáo {md}"
+        f"{'🟠' if nang else '🟢'} {len(nang)} phát hiện mức cao/vừa · {len(khong)} không xác minh được"
+        + (f" · thẩm tra loại {len(loai)}" if tt and not tt.get("loi")
+           else (" · thẩm tra LỖI — giữ nguyên" if tt else ""))
+        + f" · báo cáo {md}"
     )
     return 1 if nang else 0
 
