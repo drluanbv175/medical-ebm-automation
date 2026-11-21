@@ -201,8 +201,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # (tools/dong_bo_agent_y_khoa.py).
 # 21/11/2026: bản sao `cong-cu-do-luong`, `phan-tich-thong-ke` học dùng `tools/phan_tich_nhan_to_r.py` (EFA nửa 1 + CFA
 # nửa 2, PR y khoa #384) thay vì tự viết script R — chỉ phần đoạn mới; mục «Biểu đồ» đi theo PR #383 — vẫn 64.
+# 21/11/2026 (khuôn hướng dẫn chung BVQY175): bản sao `dieu-phoi-g10`, `kiem-chung-trich-dan`, `viet-ban-thao` học
+# khuôn đề cương + K14 (cặp của gốc #473) — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "6cea088cf02460a264be29f8b810851b15f80f4ae33c051a83d6ac63e2c16c55"
+    "f52682d9d85cbcd31a976aac3ead9ab62779599e5f5cc28ddaa5101db7df960b"
 )
 
 MINIMUM_AGENT_COUNT = 64

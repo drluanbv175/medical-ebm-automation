@@ -1344,22 +1344,34 @@ BAT_BUOC = {
 }
 
 
-def _chuong_du_kien(md: str) -> Tuple[List[str], int]:
+# Đề mục chương: «# 5. DỰ KIẾN KẾT QUẢ» (cấu trúc cũ) hoặc «# CHƯƠNG 3. DỰ KIẾN KẾT QUẢ VÀ BÀN LUẬN» (khuôn
+# hướng dẫn chung BVQY175, 21/11/2026 — `khuon_de_cuong_bvqy175.py`).
+_CHUONG_DK_RE = re.compile(r"^#\s+(?:CHƯƠNG\s+)?(\d+)\.\s+DỰ KIẾN KẾT QUẢ")
+_SO_CHUONG_RE = re.compile(r"^#\s+(?:CHƯƠNG\s+)?(\d+)\.")
+# Phần cuối chương của khuôn hướng dẫn chung không phải khung biểu bảng — thay/dựng lại khung thì GIỮ nguyên.
+_DUOI_CHUONG_GIU_RE = re.compile(r"^##\s+(?:\d+\.\d+\.\s+)?(?:Dự kiến bàn luận|Hạn chế)", re.I)
+
+
+def _chuong_du_kien(md: str, chi_khung: bool = False) -> Tuple[List[str], int]:
+    """(các dòng của chương dự kiến kết quả, chỉ số dòng đầu). `chi_khung` ⇒ dừng trước «Dự kiến bàn luận»/«Hạn chế»
+    của khuôn hướng dẫn chung — phần đó không phải khung biểu bảng (bảng hạn chế không chấm như bảng kết quả)."""
     dong = md.splitlines()
-    bd = next((i for i, d in enumerate(dong) if re.match(r"^#\s+\d+\.\s+DỰ KIẾN KẾT QUẢ", d.strip())), None)
+    bd = next((i for i, d in enumerate(dong) if _CHUONG_DK_RE.match(d.strip())), None)
     if bd is None:
         return [], -1
     kt = next((i for i in range(bd + 1, len(dong)) if re.match(r"^#\s+\S", dong[i])), len(dong))
+    if chi_khung:
+        kt = next((i for i in range(bd + 1, kt) if _DUOI_CHUONG_GIU_RE.match(dong[i])), kt)
     return dong[bd:kt], bd
 
 
 def kiem_bieu_bang(md: str, thiet_ke: str, so_muc_tieu: int, goc: Optional[Path] = None) -> List[str]:
     """Luật K9 (19/11/2026) trên chương «Dự kiến kết quả» của đề cương nộp. Rỗng = đạt."""
-    ch, bd = _chuong_du_kien(md)
+    ch, bd = _chuong_du_kien(md, chi_khung=True)
     if not ch:
         return ["K9 không thấy chương «DỰ KIẾN KẾT QUẢ»"]
     loi: List[str] = []
-    so_ch = re.match(r"^#\s+(\d+)\.", ch[0]).group(1)
+    so_ch = _SO_CHUONG_RE.match(ch[0]).group(1)
     dem = {"Bảng": 0, "Hình": 0, "Biểu đồ": 0}
     ten_theo_loai: Dict[str, List[str]] = {"Bảng": [], "Hình": [], "Biểu đồ": []}
     for i, d in enumerate(ch):
@@ -1451,13 +1463,36 @@ def thay_chuong(md: str, chuong_md: List[str]) -> str:
     if bd < 0:
         raise ValueError("đề cương không có chương «DỰ KIẾN KẾT QUẢ»")
     kt = bd + len(ch)
-    # giữ đúng số chương của văn bản gốc
-    so = re.match(r"^#\s+(\d+)\.", dong[bd]).group(1)
-    moi = [re.sub(r"^#\s+\d+\.", f"# {so}.", chuong_md[0])] + [
+    # giữ đúng số chương của văn bản gốc; khuôn hướng dẫn chung giữ cả ĐỀ MỤC chương («# CHƯƠNG 3. DỰ KIẾN KẾT QUẢ VÀ
+    # BÀN LUẬN») và phần «Dự kiến bàn luận»/«Hạn chế» cuối chương (không phải khung biểu bảng)
+    so = _SO_CHUONG_RE.match(dong[bd]).group(1)
+    khuon = dong[bd].lstrip("# ").startswith("CHƯƠNG")
+    dau = dong[bd] if khuon else re.sub(r"^#\s+\d+\.", f"# {so}.", chuong_md[0])
+    giu = next((i for i in range(bd + 1, kt) if _DUOI_CHUONG_GIU_RE.match(dong[i])), kt) if khuon else kt
+    moi = [dau] + [
         re.sub(r"^(##\s+)\d+\.", rf"\g<1>{so}.", x) if x.startswith("## ") else
         re.sub(r"^\*\*(Bảng|Hình|Biểu đồ) \d+\.", rf"**\1 {so}.", x) for x in chuong_md[1:]]
     while moi and not moi[-1].strip():
         moi.pop()
+    duoi = dong[giu:kt]
+    if duoi:
+        # đánh số tiếp đề mục của phần giữ sau khung mới (cấp 2 nối số; cấp 3–4 theo cấp 2 chứa nó)
+        n2 = sum(1 for x in moi if re.match(rf"^##\s+{so}\.\d+\.", x))
+        cu: Optional[str] = None
+        ra: List[str] = []
+        for y in duoi:
+            m = re.match(rf"^##\s+{so}\.(\d+)\.\s+(.*)$", y)
+            if m:
+                n2 += 1
+                cu = m.group(1)
+                ra.append(f"## {so}.{n2}. {m.group(2)}")
+                continue
+            if cu is not None:
+                y = re.sub(rf"^(#{{3,4}}\s+){so}\.{cu}\.", rf"\g<1>{so}.{n2}.", y)
+            ra.append(y)
+        moi += [""] + ra
+        while moi and not moi[-1].strip():
+            moi.pop()
     return "\n".join(dong[:bd] + moi + [""] + dong[kt:]) + ("\n" if md.endswith("\n") else "")
 
 
@@ -1488,11 +1523,11 @@ def nang_cap_chuong(md: str, ngu: NguCanh, out_dir: Optional[Path], ve_anh: bool
     «Bước | Số lượng» ⇒ sơ đồ thật, tên đặt dưới; tên bảng không kèm bảng (chỉ một câu) ⇒ bảng phân tích độ nhạy/nhóm
     nhỏ dựng từ đặc tả; mỗi mục tiêu chưa có biểu đồ ⇒ thêm biểu đồ của khung chuẩn ngay sau bảng cuối của mục tiêu
     đó."""
-    ch, bd = _chuong_du_kien(md)
+    ch, bd = _chuong_du_kien(md, chi_khung=True)
     if bd < 0:
         raise ValueError("đề cương không có chương «DỰ KIẾN KẾT QUẢ»")
     dong_goc = md.splitlines()
-    so_ch = re.match(r"^#\s+(\d+)\.", ch[0]).group(1)
+    so_ch = _SO_CHUONG_RE.match(ch[0]).group(1)
     khung_chuan = {m.muc_tieu: m.khung for m in dung_khung(ngu) if m.muc_tieu}
     nd = _khung_nhom_nho_do_nhay(ngu)
     ra: List[str] = []

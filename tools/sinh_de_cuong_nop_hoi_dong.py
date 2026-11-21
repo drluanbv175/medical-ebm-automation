@@ -2050,6 +2050,11 @@ def xuat_word(out_dir: Path, study: str, van: str, n: Optional[Nguon] = None) ->
     # 19/11/2026: văn bản đã tự mang bìa/tiêu đề («# ĐỀ CƯƠNG NGHIÊN CỨU KHOA HỌC», dòng cơ quan chủ quản) ⇒ KHÔNG thêm
     # trang bìa máy — bản cũ thêm cả bìa máy lẫn mục lục tự động TRƯỚC bìa của chính văn bản (hai bìa; C1a/BTM đều xuất
     # lại tay không bìa máy để tránh).
+    # 21/11/2026: văn bản theo khuôn hướng dẫn chung BVQY175 (có «# CHƯƠNG 1.») ⇒ chế độ khuôn của md2docx (14pt, giãn
+    # 1,5, lề 3,5/2/3/3 cm, bìa không số trang, phần đầu số La Mã, từ Đặt vấn đề số Ả rập, mục lục tự động)
+    if re.search(r"^# CHƯƠNG 1\.", van, re.M):
+        md2docx_vn.markdown_to_docx(van, docx_p, khuon_bvqy175=True)
+        return str(docx_p)
     dau = "\n".join(van.lstrip().splitlines()[:14]).upper()
     if "ĐỀ CƯƠNG NGHIÊN CỨU" in dau or "BỘ QUỐC PHÒNG" in dau or "BỘ Y TẾ" in dau:
         md2docx_vn.markdown_to_docx(van, docx_p)
@@ -2064,7 +2069,13 @@ def xuat_word(out_dir: Path, study: str, van: str, n: Optional[Nguon] = None) ->
     return str(docx_p)
 
 
-def sinh(out_dir: Path, study: str, ghi: bool = False) -> Dict[str, Any]:
+def dung_khuon(study: str, ep: Optional[bool] = None) -> bool:
+    """Có dựng theo khuôn hướng dẫn chung BVQY175 không: cờ dòng lệnh thắng; không cờ ⇒ đề tài mang mã «…BVQY175» (quy
+    ước đặt mã đề tài của bệnh viện) dùng khuôn, đề tài khác giữ cấu trúc cũ."""
+    return ep if ep is not None else study.upper().endswith("BVQY175")
+
+
+def sinh(out_dir: Path, study: str, ghi: bool = False, khuon: Optional[bool] = None) -> Dict[str, Any]:
     out_dir = Path(out_dir)
     md_p = out_dir / (TEN.format(study=study) + ".md")
     if not (out_dir / "study_meta.json").is_file():
@@ -2074,7 +2085,15 @@ def sinh(out_dir: Path, study: str, ghi: bool = False) -> Dict[str, Any]:
     n = Nguon(out_dir, study)
     n.ve_anh = ghi  # hình/biểu đồ của chương 5 chỉ vẽ ra đĩa khi ghi thật
     van = dung_de_cuong(n)
+    khuon_bao_cao: List[str] = []
+    if dung_khuon(study, khuon):
+        import khuon_de_cuong_bvqy175 as KDC  # noqa: PLC0415
+
+        ket = KDC.chuyen(van)
+        van, khuon_bao_cao = ket.md, ket.bao_cao + [f"⚠ {x}" for x in ket.canh_bao]
     kq: Dict[str, Any] = {"md": str(md_p), "so_dong": van.count("\n"), "trich_dan": len(n.td.thu_tu), "ghi": ghi}
+    if khuon_bao_cao:
+        kq["khuon_bvqy175"] = khuon_bao_cao
     if getattr(n, "loi_ve_bieu_bang", None):
         kq["loi_ve_bieu_bang"] = n.loi_ve_bieu_bang
     if not ghi:
@@ -2098,13 +2117,20 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ap.add_argument("--exports-root", default=str(BASE / "exports"))
     ap.add_argument("--ghi", action="store_true", help="ghi tệp (mặc định chạy khô)")
     ap.add_argument("--json", action="store_true")
+    kh = ap.add_mutually_exclusive_group()
+    kh.add_argument("--khuon-bvqy175", dest="khuon", action="store_true", default=None,
+                    help="dựng theo khuôn hướng dẫn chung BVQY175 (mặc định cho mã đề tài …BVQY175)")
+    kh.add_argument("--khong-khuon", dest="khuon", action="store_false", help="giữ cấu trúc cũ 1–7")
+    ap.set_defaults(khuon=None)
     a = ap.parse_args(argv)
-    kq = sinh(Path(a.exports_root) / a.study, a.study, ghi=a.ghi)
+    kq = sinh(Path(a.exports_root) / a.study, a.study, ghi=a.ghi, khuon=a.khuon)
     if a.json:
         print(json.dumps(kq, ensure_ascii=False, indent=2))
     else:
         print(("Đã ghi" if kq.get("ghi") else "Chạy khô") + f": {kq.get('md')} ({kq.get('so_dong', 0)} dòng, "
               f"{kq.get('trich_dan', 0)} trích dẫn)")
+        for d in kq.get("khuon_bvqy175") or []:
+            print(f"  • khuôn hướng dẫn chung BVQY175: {d}")
         for d in kq.get("loi") or []:
             print(f"  ✗ {d}")
         if kq.get("ghi") and not kq.get("loi"):

@@ -39,6 +39,14 @@ Luật (mỗi lỗi một dòng; rỗng = đạt):
       liệu trở lên, không mục danh mục nào không được trích.
   K13 mục có PMID đúng Vancouver/NLM theo metadata biên nhận A12 (O14): hơn 6 tác giả ⇒ 6 tác giả rồi «et al.»,
       «năm;tập(số):trang», tên tạp chí viết tắt NLM. Biên nhận cũ chưa có các khoá này ⇒ bỏ qua.
+  K14 (chỉ khi đề cương đã theo khuôn «Hướng dẫn viết đăng ký và báo cáo đề tài KH&CN cấp bệnh viện» — có
+      «# CHƯƠNG 1.»; chuyển: `khuon_de_cuong_bvqy175.py`): đủ và đúng thứ tự cấu trúc mục II (danh sách cán bộ · mục lục
+      · danh mục chữ viết tắt · danh mục bảng, biểu · đặt vấn đề · Chương 1–3 · tài liệu tham khảo · phụ lục); bìa có
+      «ĐỀ CƯƠNG NGHIÊN CỨU», «Phiên bản đề cương: …, ngày …», «Địa danh, năm», bìa phụ có chữ ký Chủ nhiệm đề tài và
+      Chủ nhiệm khoa; mục tiêu ở cuối đặt
+      vấn đề, đánh số, in nghiêng đậm, tên đề tài trong ngoặc kép in đậm; tài liệu tham khảo xếp tiếng Việt trước rồi
+      ngoại ngữ, mỗi nhóm theo ABC (tác giả Việt theo tên, nước ngoài theo họ, cơ quan theo chữ đầu), đánh số liền, ít
+      nhất 50% xuất bản trong 10 năm; danh mục bảng, biểu khớp đúng tên bảng/hình có trong thân bài.
   Số liệu ↔ toàn văn của đúng tài liệu được dẫn là phép TƯ VẤN riêng: `tools/kiem_so_lieu_toan_van.py --study <mã>`.
 
 Lệnh:  python3 tools/kiem_de_cuong_nop_hoi_dong.py --study <mã> [--json]
@@ -51,6 +59,7 @@ import json
 import re
 import sys
 import zipfile
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -239,7 +248,10 @@ def loi_k10(md: str) -> List[str]:
         if m:
             k = len(m.group(1))
             cap = {c: v for c, v in cap.items() if c < k}
-            cap[k] = bool(_PHAN_CHUNG_CU_RE.search(m.group(2)))
+            # khuôn hướng dẫn chung: «CHƯƠNG 3. DỰ KIẾN KẾT QUẢ VÀ BÀN LUẬN» — chỉ phần «Dự kiến bàn luận» là bàn
+            # luận; phần dự kiến kết quả (khung bảng, câu mô tả chỉ số) không phải câu dẫn chứng cứ
+            cap[k] = bool(_PHAN_CHUNG_CU_RE.search(m.group(2))) and not (
+                k == 1 and "DỰ KIẾN KẾT QUẢ" in m.group(2).upper())
             trong = any(cap.values())
             continue
         s = dong.strip()
@@ -493,6 +505,132 @@ def loi_k13(out_dir: Path, md: str) -> List[str]:
     return loi
 
 
+# K14 (21/11/2026 — bác sĩ gửi hướng dẫn chung kèm bộ mẫu BVQY175, chọn áp sát hướng dẫn). Thứ tự đề mục cấp 1 theo
+# mục II «Cấu trúc theo quy định»; mẫu so trên đề mục đã chuẩn hoá (in hoa, bỏ dấu nhấn mạnh).
+KHUON_THU_TU = (
+    ("danh sách cán bộ tham gia thực hiện đề tài", r"^DANH SÁCH CÁC CÁN BỘ"),
+    ("mục lục", r"^MỤC LỤC$"),
+    ("danh mục các chữ viết tắt", r"^DANH MỤC CÁC CHỮ VIẾT TẮT"),
+    ("danh mục các bảng, biểu", r"^DANH MỤC CÁC BẢNG"),
+    ("đặt vấn đề", r"^ĐẶT VẤN ĐỀ$"),
+    ("Chương 1. Tổng quan tài liệu", r"^CHƯƠNG 1\.\s+TỔNG QUAN"),
+    ("Chương 2. Đối tượng và phương pháp nghiên cứu", r"^CHƯƠNG 2\.\s+ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP"),
+    ("Chương 3. Dự kiến kết quả và bàn luận", r"^CHƯƠNG 3\.\s+DỰ KIẾN KẾT QUẢ VÀ BÀN LUẬN"),
+    ("tài liệu tham khảo", r"^TÀI LIỆU THAM KHẢO$"),
+    ("phụ lục", r"^PHỤ LỤC"),
+)
+NGUONG_10_NAM = 0.5  # hướng dẫn chung mục II.9: «Ít nhất phải có 50% tài liệu tham khảo được xuất bản trong 10 năm»
+_DIA_DANH_NAM_RE = re.compile(r"^\*\*[^*\n]+,\s*((?:19|20)\d{2})\*\*\s*$", re.M)
+_CHU_THICH_KHUON_RE = re.compile(r"^\*\*(Bảng|Hình|Biểu đồ|Sơ đồ)\s+([0-9A-Z]+\.\d+)\.\s")
+_NAM_TAP_RE = re.compile(r"(?<!\d)((?:19|20)\d{2})\s*;")
+_NAM_RE = re.compile(r"(?<![\d/])((?:19|20)\d{2})(?![\d/])")
+
+
+def _nam_xuat_ban(muc: str) -> Optional[int]:
+    """Năm xuất bản của một mục: «năm;tập» (bài báo Vancouver); không có thì năm cuối cùng đứng trước DOI/URL/PMID."""
+    m = _NAM_TAP_RE.search(muc)
+    if m:
+        return int(m.group(1))
+    truoc = re.split(r"doi:|https?://|PMID", muc, maxsplit=1)[0]
+    ds = _NAM_RE.findall(truoc)
+    return int(ds[-1]) if ds else None
+
+
+def loi_k14(md: str, nam: Optional[int] = None) -> List[str]:
+    """K14 — đề cương đã theo khuôn hướng dẫn chung (có «# CHƯƠNG 1.») phải đúng cấu trúc và trình bày của khuôn.
+    Đề cương cấu trúc cũ ⇒ bỏ qua (rỗng). `nam` = năm của đề cương (mặc định lấy ở dòng «Địa danh, năm» của bìa)."""
+    if not re.search(r"^# CHƯƠNG 1\.", md, re.M):
+        return []
+    import khuon_de_cuong_bvqy175 as KDC  # noqa: PLC0415 — tránh nạp vòng (bộ chuyển khuôn gọi bộ kiểm này)
+
+    loi: List[str] = []
+    dong = md.splitlines()
+    h1 = [(so, _chuan(d[2:])) for so, d in enumerate(dong, 1) if re.match(r"^#\s", d)]
+    vi_tri: List[Tuple[str, int]] = []
+    for nhan, mau in KHUON_THU_TU:
+        i = next((k for k, (_so, t) in enumerate(h1) if re.search(mau, t)), None)
+        if i is None:
+            loi.append(f"K14 thiếu phần «{nhan}» (hướng dẫn chung mục II — cấu trúc theo quy định)")
+        else:
+            vi_tri.append((nhan, i))
+    for (n1, i1), (n2, i2) in zip(vi_tri, vi_tri[1:]):
+        if i2 < i1:
+            loi.append(f"K14 «{n2}» đứng trước «{n1}» — sai thứ tự cấu trúc của hướng dẫn chung")
+    # bìa + bìa phụ (phụ lục 6, 7 của hướng dẫn)
+    dau_h1 = h1[0][0] - 1 if h1 else len(dong)
+    bia = "\n".join(dong[:dau_h1])
+    bia_chuan = _chuan(bia)
+    if "ĐỀ CƯƠNG NGHIÊN CỨU" not in bia_chuan:
+        loi.append("K14 bìa thiếu dòng «ĐỀ CƯƠNG NGHIÊN CỨU ĐỀ TÀI KHOA HỌC VÀ CÔNG NGHỆ CẤP BỆNH VIỆN»")
+    nam_bia = _DIA_DANH_NAM_RE.findall(bia)
+    if not nam_bia:
+        loi.append("K14 bìa thiếu dòng «Địa danh, năm» (in đậm)")
+    if not re.search(r"^\**\s*Phiên bản đề cương\s*:", bia, re.M | re.I):
+        loi.append("K14 bìa thiếu dòng «Phiên bản đề cương: …, ngày …» (Hội đồng đòi trên mọi tài liệu nộp)")
+    if bia_chuan.count("CHỦ NHIỆM ĐỀ TÀI") < 2 or "CHỦ NHIỆM KHOA" not in bia_chuan:
+        loi.append("K14 bìa phụ thiếu khối họ tên và chữ ký của Chủ nhiệm đề tài và Chủ nhiệm khoa")
+    if nam is None:
+        nam = int(nam_bia[-1]) if nam_bia else datetime.now().year
+    # đặt vấn đề: tên đề tài trong ngoặc kép in đậm; mục tiêu ở cuối, đánh số, in nghiêng đậm
+    i_dvd = next((so for so, t in h1 if t == "ĐẶT VẤN ĐỀ"), None)
+    if i_dvd is not None:
+        het = next((so for so, _t in h1 if so > i_dvd), len(dong) + 1)
+        dvd = dong[i_dvd:het - 1]
+        if not any(re.search(r"“\*\*.+?\*\*”", d) for d in dvd):
+            loi.append("K14 đặt vấn đề chưa ghi tên đề tài trong ngoặc kép, in đậm (“**…**”)")
+        i_mt = next((k for k, d in enumerate(dvd) if re.match(r"^##\s+MỤC TIÊU", d)), None)
+        if i_mt is None:
+            loi.append("K14 mục tiêu nghiên cứu phải viết ở cuối phần đặt vấn đề (đề mục «MỤC TIÊU NGHIÊN CỨU»)")
+        else:
+            muc_tieu = [d for d in dvd[i_mt + 1:] if re.match(r"^\d+\.\s", d)]
+            if not muc_tieu:
+                loi.append("K14 mục tiêu nghiên cứu chưa đánh số thứ tự")
+            for d in muc_tieu:
+                if not re.match(r"^\d+\.\s+\*\*\*.+\*\*\*\s*$", d):
+                    loi.append(f"K14 mục tiêu «{d[:50]}» chưa in nghiêng, đậm")
+                    break
+    # tài liệu tham khảo: theo ngôn ngữ, ABC, số liền, ≥ 50% trong 10 năm
+    _ngoai, muc = _tach_tltk(md)
+    if muc:
+        so = sorted(muc)
+        if so != list(range(1, len(so) + 1)):
+            loi.append("K14 tài liệu tham khảo đánh số không liền từ 1")
+        thu_tu = [muc[k] for k in so]
+        la_viet = [KDC.la_tieng_viet(v) for v in thu_tu]
+        if True in la_viet and False in la_viet and la_viet.index(False) < len(la_viet) - la_viet[::-1].index(True) - 1:
+            loi.append("K14 tài liệu tham khảo chưa xếp riêng theo ngôn ngữ (tiếng Việt trước, tiếng nước ngoài sau)")
+        else:
+            for nhom in ([v for v, t in zip(thu_tu, la_viet) if t], [v for v, t in zip(thu_tu, la_viet) if not t]):
+                khoa = [KDC.khoa_tac_gia(v) for v in nhom]
+                sai = next((i for i in range(1, len(khoa)) if khoa[i] < khoa[i - 1]), None)
+                if sai is not None:
+                    loi.append(f"K14 tài liệu tham khảo chưa theo ABC: «{nhom[sai][:40]}» đứng sau "
+                               f"«{nhom[sai - 1][:40]}»")
+        nam_xb = [_nam_xuat_ban(v) for v in thu_tu]
+        co_nam = [x for x in nam_xb if x]
+        if co_nam:
+            moi = sum(1 for x in co_nam if x >= nam - 9)
+            if moi / len(co_nam) < NGUONG_10_NAM:
+                loi.append(f"K14 chỉ {moi}/{len(co_nam)} tài liệu tham khảo xuất bản trong 10 năm ({nam - 9}–{nam}) "
+                           "— hướng dẫn chung đòi ít nhất 50%")
+    # danh mục bảng, biểu ↔ tên bảng/hình trong thân bài
+    i_dm = next((so for so, t in h1 if t.startswith("DANH MỤC CÁC BẢNG")), None)
+    if i_dm is not None:
+        het = next((so for so, _t in h1 if so > i_dm), len(dong) + 1)
+        dm = set()
+        for d in dong[i_dm:het - 1]:
+            m = re.match(r"^\|\s*((?:Bảng|Hình|Biểu đồ|Sơ đồ)\s+[0-9A-Z]+\.\d+)\s*\|", d)
+            if m:
+                dm.add(m.group(1))
+        than = {f"{m.group(1)} {m.group(2)}" for d in dong[het - 1:] for m in [_CHU_THICH_KHUON_RE.match(d)] if m}
+        thieu, thua = sorted(than - dm), sorted(dm - than)
+        if thieu:
+            loi.append(f"K14 danh mục bảng, biểu thiếu: {', '.join(thieu[:6])}")
+        if thua:
+            loi.append(f"K14 danh mục bảng, biểu có mục không thấy trong thân bài: {', '.join(thua[:6])}")
+    return loi
+
+
 def loi_k9(out_dir: Path, md: str, thiet_ke: str) -> List[str]:
     """K9 — biểu bảng của chương «Dự kiến kết quả» (luật và chuẩn ở `khung_bieu_bang`)."""
     import khung_bieu_bang as KBB  # noqa: PLC0415
@@ -605,6 +743,7 @@ def kiem(out_dir: Path, study: str) -> List[str]:
     loi.extend(loi_k11(md))
     loi.extend(loi_k12(md))
     loi.extend(loi_k13(out_dir, md))
+    loi.extend(loi_k14(md))
     if G10._co_lien_lac_ca_nhan(md) or (docx_chu is not None and G10._co_lien_lac_ca_nhan(docx_chu)):
         loi.append("K7 có email/số điện thoại — PII liên lạc để dòng chấm cho PI điền tay ngoài hệ thống")
     return loi

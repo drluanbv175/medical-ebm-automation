@@ -336,9 +336,19 @@ def kiem_docx(p: Path, co_than_cho_phep: set[int] | None = None) -> dict[str, An
     }
 
 
-def _co_than_cho_phep(md_name: str) -> set[int]:
-    """Cỡ thân bài chấp nhận: chuẩn 13; bản thảo G7 còn được theo hồ sơ tạp chí (md2docx_vn)."""
+def _co_than_cho_phep(md_name: str, md: Optional[Path] = None) -> set[int]:
+    """Cỡ thân bài chấp nhận: chuẩn 13; bản thảo G7 còn được theo hồ sơ tạp chí (md2docx_vn); đề cương nộp theo khuôn
+    hướng dẫn chung BVQY175 (`.md` có «# CHƯƠNG 1.», 21/11/2026 — bác sĩ chọn 14pt, giãn 1,5 theo mẫu) được 14pt."""
     cho = {int(CTB.CO_CHU_CHUAN)}
+    if md_name.startswith("DE_CUONG_NOP_HOI_DONG_") and md is not None:
+        try:
+            khuon = re.search(r"^# CHƯƠNG 1\.", md.read_text(encoding="utf-8"), re.M) is not None
+        except (OSError, UnicodeDecodeError):
+            khuon = False
+        if khuon:
+            import md2docx_vn as M2D  # noqa: PLC0415
+
+            cho.add(int(M2D.HO_SO_KHUON_BVQY175["body_pt"]))
     if md_name.startswith("G7_A8_"):
         try:
             import md2docx_vn as M2D
@@ -395,7 +405,7 @@ def danh_gia_docx(md: Optional[Path], docx: Path) -> list[tuple[str, str, str, b
         loi.append("font lạ " + ", ".join(f"{k}({v})" for k, v in list(d["font_la"].items())[:3]))
     if d["ti_le_font_ma"] > 0.10:
         loi.append(f"font đơn cách chiếm {d['ti_le_font_ma']:.0%} (>10%)")
-    cho = _co_than_cho_phep((md or docx).name)
+    cho = _co_than_cho_phep((md or docx).name, md or docx.with_suffix(".md"))
     if d["co_than_uu_the"] is not None and int(d["co_than_uu_the"]) not in cho:
         loi.append(f"cỡ thân bài {d['co_than_uu_the']:g}pt (chuẩn {sorted(cho)})")
     if d["co_bang_uu_the"] is not None and int(d["co_bang_uu_the"]) not in {int(CTB.CO_CHU_BANG), *cho}:

@@ -150,6 +150,10 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact manuscript
 ## Đồng bộ đề cương nộp (15/11/2026 — giai đoạn 6)
 - **Bìa đề cương nộp ghi phiên bản và ngày** («**Phiên bản đề cương:** <protocol_version>, ngày ……/……/<năm>») — phiên bản = `gate_params.G1/G2.protocol_version`; ngày để dòng chấm cho PI điền khi nộp (giống phiếu đồng ý).
 - **Mọi chỗ đề cương trích phiên bản khác phải trùng tài liệu gốc:** «kế hoạch phân tích … phiên bản X» = phiên bản ở tiêu đề SAP (SAP sửa đổi chưa ký ⇒ GIỮ phiên bản đã ký trong đề cương, sửa sau khi thống kê viên ký — không ghi trước điều chưa xảy ra); phiếu thông tin/đồng ý ở phụ lục = `G2.icf_version`; «Thời gian thực hiện» = `G1.study_period`; bảng kinh phí = các khoản `G1.budget`.
+- Đề cương nộp BVQY175 theo khuôn hướng dẫn chung (21/11/2026 — cấu trúc, TLTK theo ngôn ngữ rồi ABC, 14pt giãn 1,5;
+  chi tiết `dieu-phoi-g10`): chuyển bằng `medical-ebm-automation/tools/khuon_de_cuong_bvqy175.py --study <mã>` (chạy khô ⇒
+  `--ghi`), không sắp xếp tay; đề cương có «# CHƯƠNG 1.» thì `md_sang_docx_times.py` tự xuất bằng chế độ khuôn của repo
+  y khoa (thiếu chế độ đó ⇒ không ghi, mã 1); bộ kiểm phải ĐẠT K1–K14.
 - Sửa `.md` xong phải sinh lại `.docx` bằng `tools/md_sang_docx_times.py <md> --co-chu 13 --trang-de-cuong` chạy ở nơi có `medical-ebm-automation/` lồng/cạnh (thiếu thì công cụ báo «CHƯA đạt chuẩn nộp» — chạy lại), rồi `kiem_de_cuong_nop_hoi_dong.py` (K1–K9) và trục `de_cuong_nop` của `nhat_quan_xuyen_cong` (DC-01…DC-05).
 
 ## Bản máy đề cương nộp Hội đồng (16/11/2026 — bác sĩ chê câu chữ đề cương giả lập)
