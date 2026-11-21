@@ -52,12 +52,20 @@ def test_trich_nguyen_van_dung_cua_so_moi_duoc_tinh():
     assert H.xac_minh_thanh_vien("pb1", _tv(phat_hien=[sai_dong]), DE_CUONG, ["STROBE"])["dat"] == []
 
 
-@pytest.mark.parametrize("diem", [0, 6, "4", None, True])
+@pytest.mark.parametrize("diem", [0, 6, "6", "4.5", 4.5, "", None, True])
 def test_diem_sai_khuon_la_ket_qua_hong(diem):
     dl = _tv()
     dl["diem"]["2"] = diem
     with pytest.raises(API.KetQuaHong):
         H.xac_minh_thanh_vien("pb1", dl, DE_CUONG, [])
+
+
+def test_diem_dang_chuoi_mot_chu_so_duoc_nhan():
+    """Lượt thật 22/11: model trả «"3"» theo khuôn cũ ⇒ 9/10 bản chấm bị loại. Chuỗi một chữ số 1–5 được nhận."""
+    dl = _tv()
+    dl["diem"] = {"1": "3", "2": " 4 ", "3": 5, "4": "2"}
+    dl["phat_hien"] = [dict(PH_DUNG, muc_phieu="4")]
+    assert H.xac_minh_thanh_vien("pb1", dl, DE_CUONG, ["STROBE"])["diem"] == {"1": 3, "2": 4, "3": 5, "4": 2}
 
 
 def test_diem_thap_khong_can_cu_va_chuan_ngoai_danh_muc_bi_canh_bao():
@@ -230,3 +238,91 @@ def test_cham_hieu_chuan_do_nhay(tmp_path):
     assert kq["bat"] == 1 and kq["so_loi_cai"] == len(da) and kq["van_de_ngoai_loi_cai"] == 1
     assert H.main(["hieu-chuan", "--study", STUDY, "--tao"], goc=goc) == 0
     assert json.loads((goc / "exports" / STUDY / H.THU_MUC / "hieu_chuan" / "dap_an.json").read_text("utf-8"))["dap_an"]
+
+
+# ── vòng kín: biên tập có rào liêm chính → họp lại tới khi thông qua (bác sĩ 22/11/2026) ─────────────────────────────
+@pytest.mark.parametrize("th, ly", [
+    ({"dong": 8, "cu": "theo Wilson", "moi": "theo Wilson; dữ liệu thiếu xử lý bằng phân tích ca đầy đủ"}, None),
+    ({"dong": 8, "cu": "theo Wilson", "moi": "theo Wilson, tỷ lệ thiếu dự kiến 12%"}, "số mới"),
+    ({"dong": 2, "cu": "phổ biến [1]", "moi": "phổ biến [1, 7]"}, "trích dẫn mới"),
+    ({"dong": 8, "cu": "khoảng tin cậy", "moi": "KTC"}, None),
+    ({"dong": 4, "cu": "huyết áp", "moi": "HA"}, "xuất hiện"),
+    ({"dong": 2, "cu": "theo Wilson", "moi": "theo Wilson."}, "không nằm ở dòng"),
+    ({"dong": 8, "cu": "theo Wilson", "moi": "theo Wilson [CẦN bổ sung]"}, "dấu vết máy"),
+    ({"dong": 8, "cu": "theo Wilson", "moi": "x" * 1600}, "dài"),
+])
+def test_rao_liem_chinh_cua_tung_thay_the(th, ly):
+    loi = H.kiem_thay(th, DE_CUONG)
+    assert (loi is None) if ly is None else (loi and ly in loi), loi
+
+
+def test_ap_bien_tap_ghi_nhat_ky_day_du():
+    dl = {"sua": [{"id": "F01", "hanh_dong": "sua", "thay": [
+        {"dong": 8, "cu": "theo Wilson", "moi": "theo Wilson; dữ liệu thiếu xử lý bằng phân tích ca đầy đủ"},
+        {"dong": 8, "cu": "đoạn không có trong văn bản", "moi": "…"}]},   # đoạn cũ không có ⇒ loại
+        {"id": "F02", "hanh_dong": "khong_sua", "ly_do": "đã có ở dòng 8"},
+        {"id": "F03", "hanh_dong": "vuot_tham_quyen", "ly_do": "cần kinh phí thật"}]}
+    van, nk = H.ap_bien_tap(dl, DE_CUONG)
+    assert "phân tích ca đầy đủ" in van and len(nk["nhan"]) == 1 and len(nk["loai"]) == 1
+    assert nk["khong_sua"][0]["id"] == "F02" and nk["vuot_tham_quyen"][0]["id"] == "F03"
+
+
+SUA = {"sua": [{"id": "F01", "hanh_dong": "sua", "thay": [
+    {"dong": 8, "cu": "theo Wilson", "moi": "theo Wilson; dữ liệu thiếu xử lý bằng phân tích ca đầy đủ"}]}]}
+SACH = {**{m: _tv(diem=5) for m in ("pb1", "pb2", "uv_tk", "uv_dd", "uv_tl")},
+        "ct": {"phan_quyet": [], "gop": [], "nhan_xet_chung": "Đạt.", "yeu_cau_chinh_sua": []}}
+
+
+def _vong(goc, kh, n=12):
+    ma = None
+    for _ in range(n):
+        ma = H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc)
+        out = goc / "exports" / STUDY / H.THU_MUC
+        if any((H._doc_st(p) or {}).get("buoc") == "dat" for p in out.glob("trang_thai_*.json")):
+            return ma
+    return ma
+
+
+def test_vong_kin_sua_roi_hop_lai_toi_khi_dat(tmp_path):
+    goc = _goc(tmp_path)
+    kh = KhachBatch({**TRA, "bt": SUA})
+    p = goc / "exports" / STUDY / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md"
+    for _ in range(6):                                   # vòng 1: họp → còn «cần sửa» → biên tập → áp
+        H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc)
+        if "phân tích ca đầy đủ" in p.read_text(encoding="utf-8"):
+            break
+    assert "phân tích ca đầy đủ" in p.read_text(encoding="utf-8")
+    out = goc / "exports" / STUDY / H.THU_MUC
+    assert list(out.glob("sao_luu_*.md")) and list(out.glob("BIEN_BAN_HDKH_*.md"))   # sao lưu + biên bản vòng 1
+    kh.tra = SACH                                         # vòng 2: hội đồng không còn vấn đề
+    assert _vong(goc, kh) == 0
+    st = [H._doc_st(x) for x in out.glob("trang_thai_*.json")]
+    dat = [s for s in st if s.get("buoc") == "dat"]
+    assert len(dat) == 1 and dat[0]["vong"] == 2 and dat[0]["ban_truoc"]
+
+
+def test_vong_kin_hoan_nguyen_khi_ban_sua_lam_chuan_xau_di(tmp_path, monkeypatch):
+    goc = _goc(tmp_path)
+    kh = KhachBatch({**TRA, "bt": SUA})
+    p = goc / "exports" / STUDY / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md"
+    goc_van = p.read_text(encoding="utf-8")
+    that = H._do_chuan
+
+    def do_gia(van, study, out_dir, la_chinh):
+        r = that(van, study, out_dir, la_chinh)
+        if la_chinh and "phân tích ca đầy đủ" in van:
+            r["lech"] = (r.get("lech") or 0) + 1        # giả lập: bản sửa làm lệch xuyên cổng tăng
+        return r
+
+    monkeypatch.setattr(H, "_do_chuan", do_gia)
+    ma = [H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc) for _ in range(6)]
+    assert 1 in ma and p.read_text(encoding="utf-8") == goc_van  # đã hoàn nguyên, không để bản xấu đi
+
+
+def test_vong_kin_dung_sau_so_vong_toi_da(tmp_path, monkeypatch):
+    monkeypatch.setattr(H, "SO_VONG_TOI_DA", 1)
+    goc, kh = _goc(tmp_path), KhachBatch({**TRA, "bt": SUA})
+    # 4 lượt họp (nộp/lấy thành viên, nộp/lấy chủ tịch) + lượt 5 xét điều kiện dừng ở «xong»
+    ma = [H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc) for _ in range(5)]
+    assert ma[-1] == 1 and "phân tích ca đầy đủ" not in (goc / "exports" / STUDY /
+                                                        f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md").read_text("utf-8")

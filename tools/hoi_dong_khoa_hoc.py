@@ -181,7 +181,7 @@ def khoi_chung(study: str, ten_tep: str, van: str, ho_so: Dict[str, Any]) -> str
 
 def _khuon_tv() -> str:
     return json.dumps({
-        "diem": {"1": "số nguyên 1–5", "2": "…", "3": "…", "4": "…"},
+        "diem": {"1": 4, "2": 3, "3": 4, "4": 3},
         "ly_do_diem": {"1": "một–hai câu, nói căn cứ", "2": "…", "3": "…", "4": "…"},
         "phat_hien": [{"muc_phieu": "1|2|3|4", "muc_do": "nghiem_trong|can_sua|goi_y", "dong": "số dòng",
                        "trich": "NGUYÊN VĂN một đoạn ngắn của dòng đó (chép đúng từng chữ)",
@@ -268,6 +268,10 @@ def xac_minh_thanh_vien(ma: str, dl: Any, van: str, chuan_ap_dung: Sequence[str]
     diem: Dict[str, int] = {}
     for k in MUC_PHIEU:
         v = (dl.get("diem") or {}).get(k)
+        # 22/11/2026 (lượt hiệu chuẩn thật đầu tiên): khuôn cũ ghi «"số nguyên 1–5"» nên model trả điểm dạng CHUỖI "3"
+        # ⇒ 9/10 bản chấm bị loại. Nhận chuỗi MỘT chữ số 1–5; mọi dạng khác (0, 6, 4.5, true, rỗng) vẫn hỏng.
+        if isinstance(v, str) and v.strip() in {"1", "2", "3", "4", "5"}:
+            v = int(v.strip())
         if not isinstance(v, int) or isinstance(v, bool) or not 1 <= v <= 5:
             raise API.KetQuaHong(f"điểm mục {k} không hợp lệ: {v!r}")
         diem[k] = v
@@ -469,7 +473,9 @@ def _chay_buoc(st: Dict[str, Any], van: str, goi_api: bool, client: Any) -> int:
         for tv in THANH_VIEN:
             cid = f"{tv['ma']}_{sha8}"
             try:
-                dl = API.doc_json(API.van_ban_ket_qua_batch(ket.get(cid, {"loai": "thieu"}), MAX_TOKENS_TV))
+                tho = API.van_ban_ket_qua_batch(ket.get(cid, {"loai": "thieu"}), MAX_TOKENS_TV)
+                st.setdefault("tho", {})[tv["ma"]] = tho  # nguyên văn trả lời — kiểm toán/đọc lại không tốn phí
+                dl = API.doc_json(tho)
                 st["thanh_vien"][tv["ma"]] = xac_minh_thanh_vien(tv["ma"], dl, van, st["ho_so"].get("chuan_ap_dung")
                                                                  or [])
             except API.LoiApi as exc:
@@ -552,6 +558,252 @@ def bien_ban_md(st: Dict[str, Any]) -> str:
     return "\n".join(d)
 
 
+def ghi_bien_ban(st: Dict[str, Any], out_dir: Path) -> Path:
+    """Ghi biên bản .md + .json của MỘT lần họp (tên gắn ngày + SHA tài liệu)."""
+    ngay = dt.date.today().strftime("%Y%m%d")
+    p_md = thu_muc_hd(out_dir) / f"BIEN_BAN_HDKH_{st['study']}_{ngay}_{st['sha'][:8]}.md"
+    p_md.parent.mkdir(parents=True, exist_ok=True)
+    tam = p_md.with_name(p_md.name + ".tam")
+    tam.write_text(bien_ban_md(st), encoding="utf-8", newline="\n")
+    tam.replace(p_md)
+    _ghi_json(p_md.with_suffix(".json"), {"schema": SCHEMA, "study": st["study"], "tep": st["tep"], "sha": st["sha"],
+                                          "vong": st.get("vong", 1), "model": st["model"], "tong_hop": tong_hop(st),
+                                          "chu_tich": st.get("chu_tich"), "bien_tap": st.get("bien_tap"),
+                                          "disclaimer": API.DISCLAIMER})
+    return p_md
+
+
+# ── vòng kín: hội đồng → biên tập (có rào liêm chính) → họp lại tới khi thông qua ────────────────────────────────────
+# Bác sĩ 22/11/2026: «Hội đồng đã được xây dựng đủ tiêu chuẩn để phản biện nên đừng để xảy ra vấn đề phát hiện lỗi và để
+# tôi phải quyết; tôi chỉ nhận lại là những nội dung liêm chính và chuẩn mực nhất». Nhận xét đã xác minh ⇒ biên tập viên
+# (Claude) đề xuất THAY THẾ NGUYÊN VĂN; MÁY chỉ áp thay thế qua đủ rào; bản mới họp lại; tối đa `SO_VONG_TOI_DA` vòng.
+SO_VONG_TOI_DA = 3
+MAX_TOKENS_BT = 32000
+TRAN_KY_TU_THAY = 1500
+_SO_RE = re.compile(r"\d+(?:[.,]\d+)*")
+_TRICH_RE = re.compile(r"\[(\d+(?:\s*[,–-]\s*\d+)*)\]")
+_DAU_VET_MAY = re.compile(r"\[CẦN|giả lập|máy sinh|Claude|trí tuệ nhân tạo sinh|\bAI\b", re.IGNORECASE)
+
+
+def loi_nhan_bien_tap(van_de: Sequence[Dict[str, Any]]) -> str:
+    gon = [{k: f.get(k) for k in ("id", "muc_phieu", "muc_do", "dong", "trich", "van_de", "chuan", "de_xuat")}
+           for f in van_de]
+    dong = [
+        "VAI CỦA BẠN: BIÊN TẬP VIÊN thay mặt nhóm nghiên cứu, sửa đề cương theo các vấn đề hội đồng đã giữ (đã xác",
+        "minh nguyên văn). Với TỪNG vấn đề chọn một hành động:",
+        "- «sua»: danh sách thay thế {dong, cu, moi} — «cu» là đoạn NGUYÊN VĂN, đủ dài để chỉ xuất hiện MỘT lần",
+        "  trong tài liệu, nằm ở dòng «dong»; «moi» là đoạn thay.",
+        "- «khong_sua»: đề cương thật ra đã đáp ứng — nêu số dòng chứng minh.",
+        "- «vuot_tham_quyen»: chỉ khi cần dữ kiện/quyết định KHÔNG có trong tài liệu và hồ sơ (số liệu thật, kinh",
+        "  phí, chữ ký, quyết định của Hội đồng Đạo đức) — nêu đúng dữ kiện cần.",
+        "LUẬT LIÊM CHÍNH (máy kiểm, vi phạm ⇒ thay thế bị loại):",
+        "1. KHÔNG thêm con số nào chưa có trong tài liệu; KHÔNG thêm trích dẫn/tài liệu tham khảo mới (chỉ dùng số",
+        "   trích dẫn đã có).",
+        "2. KHÔNG đổi quyết định đã chốt: thiết kế, cỡ mẫu, kết cục chính, quần thể, kế hoạch phân tích đã khoá",
+        "   trong SAP. Vấn đề đòi đổi những điều đó ⇒ «vuot_tham_quyen» kèm đề xuất.",
+        "3. Khẳng định không có nguồn ⇒ viết lại cho đúng mức chứng cứ hoặc bỏ; KHÔNG bịa nguồn.",
+        "4. Văn phong tiếng Việt học thuật, đọc như văn bản người viết: không «[CẦN …]», không nhắc máy/giả lập/AI.",
+        "5. Sửa tối thiểu đủ giải quyết vấn đề; mỗi «moi» ≤ 1.500 ký tự.",
+        f"VẤN ĐỀ:\n{json.dumps(gon, ensure_ascii=False, indent=1)}",
+        "Trả về DUY NHẤT JSON: " + json.dumps({"sua": [{"id": "F01", "hanh_dong": "sua|khong_sua|vuot_tham_quyen",
+                                                    "thay": [{"dong": 12, "cu": "…", "moi": "…"}], "ly_do": "…"}]},
+                                            ensure_ascii=False),
+    ]
+    return "\n".join(dong)
+
+
+def kiem_thay(th: Dict[str, Any], van: str) -> Optional[str]:
+    """Lý do LOẠI một thay thế (None = nhận). Kiểm trên văn bản HIỆN TẠI (sau các thay thế đã áp trước nó)."""
+    cu, moi = str(th.get("cu") or ""), str(th.get("moi") or "")
+    if not cu.strip():
+        return "thiếu đoạn cũ"
+    if van.count(cu) != 1:
+        return f"đoạn cũ xuất hiện {van.count(cu)} lần (phải đúng 1)"
+    try:
+        dong = int(th.get("dong"))
+    except (TypeError, ValueError):
+        return "thiếu số dòng"
+    if abs(van[:van.index(cu)].count("\n") + 1 - dong) > CUA_SO_DONG:
+        return "đoạn cũ không nằm ở dòng đã nêu"
+    if len(moi) > TRAN_KY_TU_THAY:
+        return f"đoạn thay dài {len(moi)} ký tự (> {TRAN_KY_TU_THAY})"
+    da_co = {int(x) for m in _TRICH_RE.findall(van) for x in re.findall(r"\d+", m)}
+    trich_moi = {int(x) for m in _TRICH_RE.findall(moi) for x in re.findall(r"\d+", m)} - da_co
+    if trich_moi:
+        return f"trích dẫn mới không có trong đề cương: {sorted(trich_moi)}"
+    khong_trich = _TRICH_RE.sub(" ", moi)
+    so_moi = set(_SO_RE.findall(khong_trich)) - set(_SO_RE.findall(cu)) - set(_SO_RE.findall(van))
+    if so_moi:
+        return f"số mới không có trong đề cương: {', '.join(sorted(so_moi))}"
+    if _DAU_VET_MAY.search(moi):
+        return "đoạn thay có ô trống hoặc dấu vết máy"
+    if _SO_DIEN_THOAI.search(moi):
+        return "đoạn thay có chuỗi giống số điện thoại (PII)"
+    return None
+
+
+def ap_bien_tap(dl: Any, van: str) -> Tuple[str, Dict[str, Any]]:
+    """Áp các thay thế hợp lệ theo thứ tự; trả (văn bản mới, nhật ký nhận/loại/không sửa/vượt thẩm quyền)."""
+    if not isinstance(dl, dict):
+        raise API.KetQuaHong("đề xuất biên tập không phải đối tượng JSON")
+    nk: Dict[str, Any] = {"nhan": [], "loai": [], "khong_sua": [], "vuot_tham_quyen": []}
+    for muc in dl.get("sua") or []:
+        if not isinstance(muc, dict):
+            continue
+        hd, fid, ly = str(muc.get("hanh_dong") or ""), muc.get("id"), str(muc.get("ly_do") or "")
+        if hd in ("khong_sua", "vuot_tham_quyen"):
+            nk[hd].append({"id": fid, "ly_do": ly})
+            continue
+        for th in muc.get("thay") or []:
+            if not isinstance(th, dict):
+                continue
+            loi = kiem_thay(th, van)
+            ban = {"id": fid, "dong": th.get("dong"), "cu": str(th.get("cu") or "")[:300],
+                   "moi": str(th.get("moi") or "")[:TRAN_KY_TU_THAY]}
+            if loi:
+                nk["loai"].append({**ban, "ly_do_loai": loi})
+            else:
+                van = van.replace(str(th["cu"]), str(th.get("moi") or ""), 1)
+                nk["nhan"].append(ban)
+    return van, nk
+
+
+def _do_chuan(van: str, study: str, out_dir: Path, la_chinh: bool) -> Dict[str, Any]:
+    """Số đo tất định để so TRƯỚC/SAU biên tập: số mục chuẩn thiếu (K17), lỗi K1–K17, lệch xuyên cổng."""
+    hs = ho_so_kiem_may(study, out_dir, van, la_chinh)
+    k17 = hs.get("k17") if isinstance(hs.get("k17"), dict) else {}
+    nq = (hs.get("nhat_quan") or {}) if isinstance(hs.get("nhat_quan"), dict) else {}
+    tong = nq.get("tong") or {}
+    return {"k17_thieu": k17.get("thieu"), "k1_k17": hs.get("k1_k17") if isinstance(hs.get("k1_k17"), list) else None,
+            "lech": (tong.get("lech_cung") or 0) + (tong.get("lech_mem") or 0) if tong else None}
+
+
+def _xau_di(truoc: Dict[str, Any], sau: Dict[str, Any]) -> List[str]:
+    ra = []
+    if isinstance(truoc.get("k17_thieu"), int) and isinstance(sau.get("k17_thieu"), int) \
+            and sau["k17_thieu"] > truoc["k17_thieu"]:
+        ra.append(f"K17 thiếu {truoc['k17_thieu']} → {sau['k17_thieu']}")
+    if isinstance(truoc.get("k1_k17"), list) and isinstance(sau.get("k1_k17"), list):
+        # So SỐ LỖI theo từng mã K, không so nguyên chuỗi: thông điệp lỗi trích đoạn văn nên cùng một lỗi cũ ở cùng
+        # chỗ đổi chữ sau khi sửa câu (đo 22/11: K10 dòng 8 bị coi là «mới» ⇒ hoàn nguyên nhầm một bản sửa đúng).
+        def _dem(ds: Sequence[str]) -> Dict[str, int]:
+            d: Dict[str, int] = {}
+            for x in ds:
+                m = re.match(r"\s*(K\d+)", str(x))
+                d[m.group(1) if m else "khac"] = d.get(m.group(1) if m else "khac", 0) + 1
+            return d
+        dt_, ds_ = _dem(truoc["k1_k17"]), _dem(sau["k1_k17"])
+        tang = [f"{k} {dt_.get(k, 0)}→{v}" for k, v in sorted(ds_.items()) if v > dt_.get(k, 0)]
+        if tang:
+            ra.append("lỗi K1–K17 tăng: " + ", ".join(tang))
+    if isinstance(truoc.get("lech"), int) and isinstance(sau.get("lech"), int) and sau["lech"] > truoc["lech"]:
+        ra.append(f"lệch xuyên cổng {truoc['lech']} → {sau['lech']}")
+    return ra
+
+
+def _ghi_van(p: Path, van: str) -> None:
+    tam = p.with_name(p.name + ".tam")
+    tam.write_text(van, encoding="utf-8", newline="\n")
+    tam.replace(p)
+
+
+def _xuat_word(out_dir: Path, study: str, van: str) -> str:
+    """Xuất lại Word của đề cương nộp (bộ xuất riêng của đề cương, không thêm bìa máy). Trả ghi chú kết quả."""
+    try:
+        import sinh_de_cuong_nop_hoi_dong as SDC  # noqa: PLC0415
+
+        kq = SDC.xuat_word(out_dir, study, van)
+        return "đã xuất lại Word" if kq else "chưa xuất lại Word (thiếu python-docx)"
+    except Exception as exc:  # noqa: BLE001
+        return f"chưa xuất lại Word: {type(exc).__name__}"
+
+
+def vong_kin_buoc(st: Dict[str, Any], van: str, tep: Path, out_dir: Path, goi_api: bool, ap_dung: bool,
+                  client: Any) -> int:
+    """MỘT bước của vòng kín trên tài liệu hiện tại. Trả mã thoát; 0 + st['buoc']=='dat' ⇒ đã thông qua."""
+    if st["buoc"] in ("thanh_vien", "chu_tich"):
+        return _chay_buoc(st, van, goi_api, client)
+    th = tong_hop(st) if st["buoc"] in ("xong", "bien_tap") else None
+    if st["buoc"] == "xong":
+        con = [f for f in th["van_de"] if f["muc_do"] in ("nghiem_trong", "can_sua")]
+        if th["ket_luan"] == "thong_qua" and not con:
+            st["buoc"] = "dat"
+        elif int(st.get("vong", 1)) >= SO_VONG_TOI_DA:
+            print(f"⛔ Đã {st.get('vong', 1)} vòng mà còn {len(con)} vấn đề nghiêm trọng/cần sửa — dừng, xem biên bản.")
+            return 1
+        else:
+            st["buoc"] = "bien_tap"
+    if st["buoc"] == "dat":
+        print(f"✅ ĐẠT: hội đồng thông qua ở vòng {st.get('vong', 1)} — không còn vấn đề nghiêm trọng/cần sửa.")
+        return 0
+    if st["buoc"] == "da_sua":
+        print(f"↻ Đã sửa ở vòng {st.get('vong', 1)} — chạy lại để hội đồng họp bản mới.")
+        return 0
+    # bien_tap
+    chung = khoi_chung(st["study"], Path(st["tep"]).name, van, st["ho_so"])
+    cid = f"bt_{st['sha'][:8]}"
+    bid = st["batch"].get("bien_tap")
+    if not bid:
+        if not goi_api:
+            print(f"(chạy khô) biên tập {len(th['van_de'])} vấn đề — thêm --goi-api.")
+            return 0
+        yc = [(cid, tham_so_yeu_cau(chung, loi_nhan_bien_tap(th["van_de"]), st["model"], MAX_TOKENS_BT))]
+        st["batch"]["bien_tap"] = API.nop_batch(yc, client=client, nguon=CONG_CU)
+        print(f"📨 Đã nộp batch biên tập: {st['batch']['bien_tap']}.")
+        return 4
+    if not goi_api:
+        return 0
+    tt = API.trang_thai_batch(bid, client=client)
+    if tt["trang_thai"] != "ended":
+        print(f"⏳ Batch biên tập {bid} đang xử lý — chạy lại sau.")
+        return 4
+    ket = API.doc_ket_qua_batch(bid, client=client, nguon=CONG_CU)
+    tho = API.van_ban_ket_qua_batch(ket.get(cid, {"loai": "thieu"}), MAX_TOKENS_BT)
+    st.setdefault("tho", {})["bien_tap"] = tho
+    van_moi, nk = ap_bien_tap(API.doc_json(tho), van)
+    la_chinh = Path(st["tep"]).resolve() == tep_mac_dinh(st["study"], out_dir.parents[1]).resolve()
+    truoc, sau = _do_chuan(van, st["study"], out_dir, False), _do_chuan(van_moi, st["study"], out_dir, False)
+    xau = _xau_di(truoc, sau)
+    nk.update(do_truoc=truoc, do_sau=sau, xau_di=xau)
+    st["bien_tap"] = nk
+    if not nk["nhan"]:
+        print(f"⛔ Không thay thế nào qua rào liêm chính ({len(nk['loai'])} bị loại) — dừng.")
+        return 1
+    if xau:
+        print("⛔ Bản sửa làm chuẩn xấu đi — KHÔNG áp: " + "; ".join(xau))
+        return 1
+    if not ap_dung:
+        print(f"(chạy khô) {len(nk['nhan'])} thay thế qua rào, {len(nk['loai'])} bị loại — thêm --ap-dung để ghi.")
+        return 0
+    sao_luu = thu_muc_hd(out_dir) / f"sao_luu_{st['sha'][:12]}{tep.suffix}"
+    if not sao_luu.exists():
+        _ghi_van(sao_luu, van)
+    # K1–K17 và nhất quán xuyên cổng đọc TỆP trên đĩa ⇒ đo «trước» khi ghi bản mới, đo «sau» khi đã ghi.
+    k_truoc = _do_chuan(van, st["study"], out_dir, True) if la_chinh else {}
+    _ghi_van(tep, van_moi)
+    if la_chinh:
+        # Word xuất TRƯỚC khi đo «sau»: K1–K17 so Word với .md — đo khi Word còn cũ sẽ báo lỗi giả và hoàn nguyên nhầm.
+        nk["word"] = _xuat_word(out_dir, st["study"], van_moi)
+        try:
+            k_sau = _do_chuan(van_moi, st["study"], out_dir, True)
+        except Exception as exc:  # noqa: BLE001 — không đo được ⇒ coi là xấu đi, hoàn nguyên (không bao giờ «đạt»)
+            k_sau = {"loi": str(exc)}
+        xau2 = _xau_di(k_truoc, k_sau) + ([f"không đo được sau sửa: {k_sau['loi']}"] if "loi" in k_sau else [])
+        if xau2:
+            _ghi_van(tep, van)  # hoàn nguyên cả .md lẫn Word
+            _xuat_word(out_dir, st["study"], van)
+            nk["xau_di"] = xau2
+            print("⛔ K1–K17/nhất quán xấu đi trên bản chính — đã HOÀN NGUYÊN: " + "; ".join(xau2))
+            return 1
+    st["buoc"], st["sha_moi"] = "da_sua", _sha(van_moi)
+    moi = khoi_tao(st["study"], out_dir, tep, st["model"])
+    moi.update(vong=int(st.get("vong", 1)) + 1, ban_truoc=st["sha"])
+    _ghi_json(tep_trang_thai(out_dir, moi["sha"]), moi)
+    print(f"✍️ Đã áp {len(nk['nhan'])} thay thế ({len(nk['loai'])} bị loại, {len(nk['vuot_tham_quyen'])} vượt thẩm "
+          f"quyền) — vòng {moi['vong']} sẽ họp bản mới.")
+    return 0
+
+
 # ── hiệu chuẩn: cài lỗi đã biết vào bản sao ──────────────────────────────────────────────────────────────────────────
 LOI_CAI: Tuple[Tuple[str, str, str, str], ...] = (
     # (mã, mô tả, mẫu dòng neo — chèn NGAY SAU dòng khớp đầu tiên, câu chèn). Neo chỉ bám ĐỀ MỤC («#…»/«**…»): dòng
@@ -614,7 +866,7 @@ def cham_hieu_chuan(dap_an: Sequence[Dict[str, Any]], st: Dict[str, Any]) -> Dic
 def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = REPO) -> int:
     ap = argparse.ArgumentParser(description="Hội đồng Khoa học máy cấp đề tài (Claude Batch API).")
     sub = ap.add_subparsers(dest="lenh", required=True)
-    for ten in ("uoc-tinh", "hop", "bien-ban", "hieu-chuan"):
+    for ten in ("uoc-tinh", "hop", "bien-ban", "hieu-chuan", "vong-kin"):
         p = sub.add_parser(ten)
         p.add_argument("--study", required=True)
         p.add_argument("--tep", type=Path, help="tài liệu (mặc định: đề cương nộp Hội đồng của đề tài)")
@@ -624,6 +876,10 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
             p.add_argument("--lam-lai", action="store_true", help="bỏ trạng thái cũ của tài liệu này, họp lại")
         if ten == "bien-ban":
             p.add_argument("--ap-dung", action="store_true", help="ghi biên bản .md + .json")
+        if ten == "vong-kin":
+            p.add_argument("--goi-api", action="store_true", help="nộp/lấy batch (TÍNH PHÍ)")
+            p.add_argument("--ap-dung", action="store_true",
+                           help="ghi bản đã sửa (sao lưu bản cũ; hoàn nguyên nếu xấu đi)")
         if ten == "hieu-chuan":
             g = p.add_mutually_exclusive_group(required=True)
             g.add_argument("--tao", action="store_true", help="tạo bản sao cài lỗi + đáp án (0 gọi API)")
@@ -688,23 +944,21 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
             if a.goi_api or st.get("batch"):
                 _ghi_json(p_st, st)
             return ma
-        if st.get("buoc") != "xong":
+        if a.lenh == "vong-kin":
+            ma = vong_kin_buoc(st, van, tep, out_dir, a.goi_api, a.ap_dung, client)
+            if a.goi_api or st.get("batch"):
+                if st["buoc"] in ("bien_tap", "dat", "da_sua") and not st.get("bien_ban"):
+                    st["bien_ban"] = ghi_bien_ban(st, out_dir).name  # mỗi vòng một biên bản — để kiểm toán
+                _ghi_json(p_st, st)
+            return ma
+        if st.get("buoc") not in ("xong", "bien_tap", "dat", "da_sua"):
             print("⏳ hội đồng chưa họp xong — chạy «hop --goi-api» tới khi xong.", file=sys.stderr)
             return 4
-        md = bien_ban_md(st)
         if not a.ap_dung:
-            print(md)
+            print(bien_ban_md(st))
             print("(chạy khô — thêm --ap-dung để ghi biên bản)")
             return 0
-        ngay = dt.date.today().strftime("%Y%m%d")
-        p_md = thu_muc_hd(out_dir) / f"BIEN_BAN_HDKH_{a.study}_{ngay}_{st['sha'][:8]}.md"
-        tam = p_md.with_name(p_md.name + ".tam")
-        tam.write_text(md, encoding="utf-8", newline="\n")
-        tam.replace(p_md)
-        _ghi_json(p_md.with_suffix(".json"), {"schema": SCHEMA, "study": a.study, "tep": st["tep"], "sha": st["sha"],
-                                              "model": st["model"], "tong_hop": tong_hop(st),
-                                              "chu_tich": st.get("chu_tich"), "disclaimer": API.DISCLAIMER})
-        print(f"📝 Đã ghi {p_md.name} (+ .json). Cần bác sĩ kiểm chứng.")
+        print(f"📝 Đã ghi {ghi_bien_ban(st, out_dir).name} (+ .json). Cần bác sĩ kiểm chứng.")
         return 0
     except API.HetNganSach as exc:
         print(f"⛔ {exc}", file=sys.stderr)
