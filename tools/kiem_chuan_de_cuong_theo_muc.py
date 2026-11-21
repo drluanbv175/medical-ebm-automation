@@ -15,6 +15,10 @@ CÁCH KIỂM (tất định, không gọi mạng):
      sách YẾU TỐ bắt buộc (biểu thức). ĐẠT chỉ khi MỌI yếu tố có mặt TRONG phần đó; báo số dòng làm bằng chứng.
   3. Mục «if applicable» chỉ xét khi đề cương có điều kiện tương ứng (vd 12d cắt ngang khi có chọn mẫu cụm/gom cụm).
   4. Chuẩn chưa có tiêu chí tự động ⇒ «chua_do» (⚪), KHÔNG BAO GIỜ tính là đạt.
+  5. (21/11/2026, tối) 12 chuẩn còn lại — SPIRIT, PRISMA-P, STARD, TRIPOD+AI, COREQ, SRQR, GRAMMS, SQUIRE, CHEERS,
+     TREND, CARE, COSMIN — có tiêu chí ở `tieu_chi_chuan_de_cuong.py`. Chuẩn chưa đối chiếu được bảng gốc (TREND, COREQ,
+     SRQR) báo «canh_bao» (⚠), không làm K17 đỏ. ⚪ chỉ còn cho mã thiết kế ngoài bảng và ISPOR BIA GPP II 2014.
+     Phân xử trên 8 đề cương giả lập + 2 đề cương thật: `docs/K17-PHAN-XU-12-CHUAN-20261121.md`.
 
 MỨC ĐỘ: `bat_buoc` (mục phương pháp phải có trong đề cương) · `ke_hoach` (mục kết quả/bàn luận — đề cương phải lên kế
 hoạch: khung bảng, sơ đồ chọn mẫu, phần hạn chế) · `bao_cao` (chỉ áp khi viết bài báo, vd tiêu đề/tóm tắt — liệt kê,

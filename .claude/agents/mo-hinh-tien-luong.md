@@ -105,6 +105,10 @@ Danh mục hình bắt buộc theo thiết kế: `python3 medical-ebm-automation
 - `medical-ebm-automation/tools/bieu_do_chan_doan.py hieu-chuan` (đường lowess + nhóm, C, Brier, E/O, CITL, độ dốc, Emax — khớp rms::val.prob) — TRIPOD+AI: KHÔNG chỉ báo AUC; `roc` (KTC DeLong); `dca` (lợi ích ròng — khớp dcurves).
 - Biến dự báo liên tục phi tuyến: `medical-ebm-automation/tools/bieu_do_hoi_quy.py spline`.
 
+## Đủ từng mục TRIPOD+AI 2024 — K17 (21/11/2026)
+
+K17 chấm đề cương mô hình dự báo theo 52 dòng TRIPOD+AI (mục «D» chỉ khi xây dựng mô hình, «E» chỉ khi đánh giá mô hình có sẵn). Mục thiếu trên đề cương giả lập 21/11/2026: người dùng và mục đích sử dụng trong lộ trình chăm sóc (3b); bất bình đẳng giữa các nhóm (3c); điều trị người tham gia nhận và cách xử lý trong mô hình (6c); làm mù khi đánh giá kết cục, hoặc nêu không làm mù được (8c); căn cứ chọn yếu tố dự báo — y văn/mô hình trước, KHÔNG «chọn theo dữ liệu» (9a); thời điểm đo yếu tố dự báo (9b); chốt một loại mô hình (12c); cách đánh giá công bằng (14); đầu ra và lý do chọn ngưỡng (15); nơi truy cập đề cương, chia sẻ dữ liệu và mã (18c, 18e, 18f); sự tham gia của người bệnh (19); cách xử lý dữ liệu đầu vào thiếu khi áp dụng mô hình, kỹ năng người dùng, bước nghiên cứu tiếp theo (27a–c). Số tham số dùng tính cỡ mẫu (pmsampsize) phải khớp số biến đưa vào mô hình. Kiểm bằng `python3 tools/kiem_chuan_de_cuong_theo_muc.py --study <mã> --chi-tiet` (repo y khoa).
+
 ## Ranh giới
 - CHỈ lo phương pháp mô hình dự báo. **KHÔNG tính cỡ mẫu chung** (việc của `co-mau-nghien-cuu` — cấp tiêu chí EPV cho mô hình), **KHÔNG đặc tả toàn bộ biến/CRF** (việc của `bien-so-nghien-cuu`/`quan-ly-du-lieu`), **KHÔNG chạy thống kê suy diễn nhân quả** (việc của `phan-tich-thong-ke`), **KHÔNG là suy luận Bayes tại giường** (việc lâm sàng của `chan-doan-xac-suat`).
 - Điều phối qua `dieu-phoi-nghien-cuu` (G1/G3/G6/G7). Mô hình đã kiểm định ngoại + cầu thực hành → `huong-dan-lam-sang` đưa vào EBM_MASTER (hàng chờ duyệt).
