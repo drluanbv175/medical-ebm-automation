@@ -1,0 +1,10 @@
+buoc,n,loai,nhanh,ly_do
+Đánh giá đủ tiêu chuẩn,500,chinh,,
+Loại trừ,120,loai,,Không đủ tiêu chuẩn: 80; Từ chối tham gia: 30; Lý do khác: 10
+Phân bổ ngẫu nhiên,380,chinh,,
+Được phân bổ can thiệp,190,chinh,Can thiệp,
+Mất theo dõi,12,loai,Can thiệp,Chuyển nơi ở: 7; Rút đồng ý: 5
+Đưa vào phân tích,178,chinh,Can thiệp,
+Được phân bổ chứng,190,chinh,Chứng,
+Mất theo dõi,15,loai,Chứng,Chuyển nơi ở: 9; Rút đồng ý: 6
+Đưa vào phân tích,175,chinh,Chứng,
