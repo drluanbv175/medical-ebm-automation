@@ -403,7 +403,7 @@ def test_do_cache_so_hong_khong_sap(tmp_path):
     import do_cache_api as DO
 
     p = tmp_path / "so.json"
-    p.write_text("{khong phai json", encoding="utf-8")
+    p.write_text("{khong phai json", encoding="utf-8", newline="\n")
     with pytest.raises(RuntimeError, match="không đọc được"):
         DO.doc_so(str(p))
 

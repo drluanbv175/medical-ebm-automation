@@ -1,0 +1,3 @@
+Agent/gate senior governance: PASS
+agents=64 (clinical=21, research=42, guardrail=1, autogen=0)
+errors=0 findings=0
