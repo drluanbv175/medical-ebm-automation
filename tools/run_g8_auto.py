@@ -1853,8 +1853,9 @@ def guardrail_g8(artifact: str, pipeline: dict) -> dict:
 
     # R2 -- PII
     pii_patterns = ["ten benh nhan", "ho ten:", "ngay sinh:", "cccd", "so ho so:"]
+    import pii_van_ban as _PV  # noqa: PLC0415 — nhãn khớp theo ranh giới từ (mã băm hex chứa «cccd», 21/11/2026)
     for p in pii_patterns:
-        if p in artifact.lower():
+        if _PV.co_nhan(artifact, p):
             errors.append(f"R2 [DO] PII phat hien: '{p}'")
             break
     else:

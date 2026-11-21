@@ -378,8 +378,12 @@ def simple_guardrail(output: str) -> GuardrailResult:
 
     # R2 — PII
     pii_patterns = ["tên bệnh nhân", "ngày sinh", "cccd", "số hồ sơ", "địa chỉ", "sdt"]
+    try:  # nhãn khớp theo ranh giới từ (mã băm hex chứa «cccd», 21/11/2026); nạp được cả kiểu tools.retry_loop
+        import pii_van_ban as _PV  # noqa: PLC0415
+    except ImportError:
+        from tools import pii_van_ban as _PV  # noqa: PLC0415
     for p in pii_patterns:
-        if p in text_lower:
+        if _PV.co_nhan(text_lower, p):
             errors.append(classify_error("R2", f"Phát hiện PII candidate: '{p}'"))
             break
 
