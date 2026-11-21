@@ -211,8 +211,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 21/11/2026: gỡ dòng ⚠️ «#384 CHƯA gộp» đã lỗi thời ở bản sao `cong-cu-do-luong`, `phan-tich-thong-ke` (đồng bộ nguồn
 # gốc) — vẫn 64.
 # 21/11/2026 (f): viet-ban-thao + thiet-ke-nghien-cuu — K17 đủ từng mục chuẩn của thiết kế (PR cặp gốc #476).
+# 21/11/2026 (h): 7 agent — K17 mở rộng 12 chuẩn (viet-ban-thao, thiet-ke-nghien-cuu, tong-quan-y-van,
+# mo-hinh-tien-luong, tham-dinh-do-chinh-xac-chan-doan, nghien-cuu-dinh-tinh, kinh-te-y-te) — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "9c92ec0ceebb3e7d60279d1817317a3edf82661db856f98f000122c511cf6066"
+    "1e37b29a1eab475b5790e9e82064b2b68956dd85a08f6f683c7b4636a2969896"
 )
 
 MINIMUM_AGENT_COUNT = 64

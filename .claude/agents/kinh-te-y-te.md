@@ -125,6 +125,10 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact health-economics
 Danh mục hình bắt buộc theo thiết kế: `python3 medical-ebm-automation/tools/ve_bieu_do.py danh-muc --thiet-ke <tk>`; trước khi bàn giao: `python3 medical-ebm-automation/tools/ve_bieu_do.py kiem --thu-muc exports/<mã>/bieu-bang --thiet-ke <tk>` phải mã 0 (đủ hình bắt buộc, PNG ≥ 300 dpi, có PDF vector, đúng ngôn ngữ tài liệu). Mọi lệnh ghi PNG + PDF + JSON số liệu đã vẽ — con số trong văn bản/bảng LẤY ĐÚNG từ JSON, không tính lại; `--kiem-cheo-r` chạy lại bằng R (không có R ⇒ «không kiểm chéo được», không bao giờ ghi «khớp»); `--ngon-ngu vi` (dấu phẩy thập phân, mặc định) cho tài liệu tiếng Việt, `--ngon-ngu en` cho bản thảo quốc tế. Công cụ chỉ VẼ số đã có — không thay quyết định phương pháp.
 - `medical-ebm-automation/tools/bieu_do_bao_cao.py ce-plane` (đám điểm PSA, ICER, λ, góc phần tư) · `ceac` · `tornado` (CHEERS 2022).
 
+## Đủ từng mục CHEERS 2022 — K17 (21/11/2026)
+
+K17 chấm đề cương có đánh giá kinh tế đầy đủ (CEA/CUA/CBA) theo 28 mục CHEERS 2022 — kể cả khi kinh tế chỉ là cấu phần của một RCT. Mục 3–21 phải có trong đề cương: kế hoạch phân tích kinh tế và nơi truy cập (4), quan điểm và lý do (8), khung thời gian (9), tỷ lệ chiết khấu (10), đo và định giá kết cục (11–13), định giá chi phí, đơn vị tiền tệ và năm giá (14, 15), mô hình nếu có (16), phân tích phân nhóm, phân bố và bất định (18–20), sự tham gia của người bệnh/cộng đồng (21). Phân tích tác động ngân sách đứng riêng báo cáo theo ISPOR BIA GPP II 2014: K17 báo ⚪ «chưa đo được», không dùng CHEERS và không bao giờ tính là đạt. Kiểm bằng `python3 tools/kiem_chuan_de_cuong_theo_muc.py --study <mã> --chi-tiet` (repo y khoa).
+
 ## Ranh giới
 - CHỈ làm phân tích kinh tế. **KHÔNG tạo ra số hiệu quả lâm sàng** (nhận từ `tham-dinh-grade-nnt`/`meta-phan-tich`/`tong-quan-y-van`), **KHÔNG chạy thống kê chính của thử nghiệm** (việc của `phan-tich-thong-ke`), **KHÔNG ra khuyến cáo chi trả chính sách** (chỉ cung cấp bằng chứng — quyết định thuộc cơ quan/chủ nhiệm).
 - Điều phối qua `dieu-phoi-nghien-cuu` (G1 thiết kế cấu phần kinh tế · G7 báo cáo CHEERS).

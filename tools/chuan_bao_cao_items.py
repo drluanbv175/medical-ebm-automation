@@ -1,10 +1,18 @@
-"""Nguyên văn mục STROBE 2007 và RECORD 2015.
+"""Nguyên văn mục các chuẩn báo cáo mang giấy phép Creative Commons.
 
 SINH TỰ ĐỘNG bởi tools/sinh_chuan_bao_cao_items.py — KHÔNG sửa tay.
 
-Nguồn (CC BY): STROBE E&E PLoS Med 2007;4(10):e297 (PMID 17941715; PMC2020496) · RECORD PLoS Med 2015;12(10):
-e1001885 (PMID 26440803; PMC4595218). Lấy qua Europe PMC fullTextXML ngày 21/11/2026.
+Nguồn (lấy qua Europe PMC fullTextXML ngày 21/11/2026; giấy phép đọc từ khối <license> của chính XML):
+  STROBE E&E PLoS Med 2007;4(10):e297 (PMID 17941715; PMC2020496) · RECORD PLoS Med 2015;12(10):e1001885
+  (PMID 26440803; PMC4595218) · STARD BMJ 2015;351:h5527 (PMID 26511519; PMC4623764) · TRIPOD+AI BMJ
+  2024;385:e078378 (PMID 38626948; PMC11019967) · CHEERS BMJ 2022;376:e067975 (PMID 35017145; PMC8749494) ·
+  SQUIRE 2.0 BMJ Qual Saf 2016;25(12):986-992 (PMID 26369893; PMC5256233; CC BY-NC — phi thương mại) · CARE
+  J Med Case Rep 2013;7:223 (PMID 24228906; PMC3844611) · HARPER Pharmacoepidemiol Drug Saf 2023;32(1):44-55
+  (PMID 36215113; PMC9771861; mẫu đề cương).
 """
+
+#: giấy phép đọc từ XML, theo chuẩn
+GIAY_PHEP = {'STROBE': 'creativecommons.org/licenses/by/4.0', 'RECORD': 'creativecommons.org/licenses/by/4.0', 'STARD': 'creativecommons.org/licenses/by/4.0', 'TRIPOD_AI': 'creativecommons.org/licenses/by/4.0', 'CHEERS': 'creativecommons.org/licenses/by/4.0', 'SQUIRE': 'creativecommons.org/licenses/by-nc/4.0', 'CARE': 'creativecommons.org/licenses/by/3.0', 'HARPER': 'creativecommons.org/licenses/by/4.0'}
 
 # (mã, thiết kế: chung|cat_ngang|thuan_tap|benh_chung, chủ đề, nguyên văn)
 STROBE_2007_ITEMS = (
@@ -68,4 +76,261 @@ RECORD_2015_ITEMS = (
     ('22.1', 'Authors should provide information on how to access any supplemental information such as the study protocol, raw data, or programming code.'),
 )
 
-assert len(STROBE_2007_ITEMS) == 41 and len(RECORD_2015_ITEMS) == 13
+# (mã, phần, chủ đề, nguyên văn)
+STARD_2015_ITEMS = (
+    ('1', 'Title or abstract', 'Title or abstract', 'Identification as a study of diagnostic accuracy using at least one measure of accuracy (such as sensitivity, specificity, predictive values, or AUC)'),
+    ('2', 'Abstract', 'Abstract', 'Structured summary of study design, methods, results, and conclusions (for specific guidance, see STARD for Abstracts)'),
+    ('3', 'Introduction', 'Introduction', 'Scientific and clinical background, including the intended use and clinical role of the index test'),
+    ('4', 'Introduction', 'Introduction', 'Study objectives and hypotheses'),
+    ('5', 'Methods', 'Study design', 'Whether data collection was planned before the index test and reference standard were performed (prospective study) or after (retrospective study)'),
+    ('6', 'Methods', 'Participants', 'Eligibility criteria'),
+    ('7', 'Methods', 'Participants', 'On what basis potentially eligible participants were identified (such as symptoms, results from previous tests, inclusion in registry)'),
+    ('8', 'Methods', 'Participants', 'Where and when potentially eligible participants were identified (setting, location, and dates)'),
+    ('9', 'Methods', 'Participants', 'Whether participants formed a consecutive, random, or convenience series'),
+    ('10a', 'Methods', 'Test methods', 'Index test, in sufficient detail to allow replication'),
+    ('10b', 'Methods', 'Test methods', 'Reference standard, in sufficient detail to allow replication'),
+    ('11', 'Methods', 'Test methods', 'Rationale for choosing the reference standard (if alternatives exist)'),
+    ('12a', 'Methods', 'Test methods', 'Definition of and rationale for test positivity cut-offs or result categories of the index test, distinguishing pre-specified from exploratory'),
+    ('12b', 'Methods', 'Test methods', 'Definition of and rationale for test positivity cut-offs or result categories of the reference standard, distinguishing pre-specified from exploratory'),
+    ('13a', 'Methods', 'Test methods', 'Whether clinical information and reference standard results were available to the performers or readers of the index test'),
+    ('13b', 'Methods', 'Test methods', 'Whether clinical information and index test results were available to the assessors of the reference standard'),
+    ('14', 'Methods', 'Analysis', 'Methods for estimating or comparing measures of diagnostic accuracy'),
+    ('15', 'Methods', 'Analysis', 'How indeterminate index test or reference standard results were handled'),
+    ('16', 'Methods', 'Analysis', 'How missing data on the index test and reference standard were handled'),
+    ('17', 'Methods', 'Analysis', 'Any analyses of variability in diagnostic accuracy, distinguishing pre-specified from exploratory'),
+    ('18', 'Methods', 'Analysis', 'Intended sample size and how it was determined'),
+    ('19', 'Results', 'Participants', 'Flow of participants, using a diagram'),
+    ('20', 'Results', 'Participants', 'Baseline demographic and clinical characteristics of participants'),
+    ('21a', 'Results', 'Participants', 'Distribution of severity of disease in those with the target condition'),
+    ('21b', 'Results', 'Participants', 'Distribution of alternative diagnoses in those without the target condition'),
+    ('22', 'Results', 'Participants', 'Time interval and any clinical interventions between index test and reference standard'),
+    ('23', 'Results', 'Test results', 'Cross tabulation of the index test results (or their distribution) by the results of the reference standard'),
+    ('24', 'Results', 'Test results', 'Estimates of diagnostic accuracy and their precision (such as 95% confidence intervals)'),
+    ('25', 'Results', 'Test results', 'Any adverse events from performing the index test or the reference standard'),
+    ('26', 'Discussion', 'Discussion', 'Study limitations, including sources of potential bias, statistical uncertainty, and generalisability'),
+    ('27', 'Discussion', 'Discussion', 'Implications for practice, including the intended use and clinical role of the index test'),
+    ('28', 'Other information', 'Other information', 'Registration number and name of registry'),
+    ('29', 'Other information', 'Other information', 'Where the full study protocol can be accessed'),
+    ('30', 'Other information', 'Other information', 'Sources of funding and other support; role of funders'),
+)
+
+# (mã, phần, chủ đề, D/E — D: phát triển, E: đánh giá, nguyên văn)
+TRIPOD_AI_2024_ITEMS = (
+    ('1', 'Title', 'Title', 'D;E', 'Identify the study as developing or evaluating the performance of a multivariable prediction model, the target population, and the outcome to be predicted'),
+    ('2', 'Abstract', 'Abstract', 'D;E', 'See TRIPOD+AI for Abstracts checklist'),
+    ('3a', 'Introduction', 'Background', 'D;E', 'Explain the healthcare context (including whether diagnostic or prognostic) and rationale for developing or evaluating the prediction model, including references to existing models'),
+    ('3b', 'Introduction', 'Background', 'D;E', 'Describe the target population and the intended purpose of the prediction model in the context of the care pathway, including its intended users (eg, healthcare professionals, patients, public)'),
+    ('3c', 'Introduction', 'Background', 'D;E', 'Describe any known health inequalities between sociodemographic groups'),
+    ('4', 'Introduction', 'Objectives', 'D;E', 'Specify the study objectives, including whether the study describes the development or validation of a prediction model (or both)'),
+    ('5a', 'Methods', 'Data', 'D;E', 'Describe the sources of data separately for the development and evaluation datasets (eg, randomised trial, cohort, routine care or registry data), the rationale for using these data, and representativeness of the data'),
+    ('5b', 'Methods', 'Data', 'D;E', 'Specify the dates of the collected participant data, including start and end of participant accrual; and, if applicable, end of follow-up'),
+    ('6a', 'Methods', 'Participants', 'D;E', 'Specify key elements of the study setting (eg, primary care, secondary care, general population) including the number and location of centres'),
+    ('6b', 'Methods', 'Participants', 'D;E', 'Describe the eligibility criteria for study participants'),
+    ('6c', 'Methods', 'Participants', 'D;E', 'Give details of any treatments received, and how they were handled during model development or evaluation, if relevant'),
+    ('7', 'Methods', 'Data preparation', 'D;E', 'Describe any data pre-processing and quality checking, including whether this was similar across relevant sociodemographic groups'),
+    ('8a', 'Methods', 'Outcome', 'D;E', 'Clearly define the outcome that is being predicted and the time horizon, including how and when assessed, the rationale for choosing this outcome, and whether the method of outcome assessment is consistent across sociodemographic groups'),
+    ('8b', 'Methods', 'Outcome', 'D;E', 'If outcome assessment requires subjective interpretation, describe the qualifications and demographic characteristics of the outcome assessors'),
+    ('8c', 'Methods', 'Outcome', 'D;E', 'Report any actions to blind assessment of the outcome to be predicted'),
+    ('9a', 'Methods', 'Predictors', 'D', 'Describe the choice of initial predictors (eg, literature, previous models, all available predictors) and any pre-selection of predictors before model building'),
+    ('9b', 'Methods', 'Predictors', 'D;E', 'Clearly define all predictors, including how and when they were measured (and any actions to blind assessment of predictors for the outcome and other predictors)'),
+    ('9c', 'Methods', 'Predictors', 'D;E', 'If predictor measurement requires subjective interpretation, describe the qualifications and demographic characteristics of the predictor assessors'),
+    ('10', 'Methods', 'Sample size', 'D;E', 'Explain how the study size was arrived at (separately for development and evaluation), and justify that the study size was sufficient to answer the research question. Include details of any sample size calculation'),
+    ('11', 'Methods', 'Missing data', 'D;E', 'Describe how missing data were handled. Provide reasons for omitting any data'),
+    ('12a', 'Methods', 'Analytical methods', 'D', 'Describe how the data were used (eg, for development and evaluation of model performance) in the analysis, including whether the data were partitioned, considering any sample size requirements'),
+    ('12b', 'Methods', 'Analytical methods', 'D', 'Depending on the type of model, describe how predictors were handled in the analyses (functional form, rescaling, transformation, or any standardisation)'),
+    ('12c', 'Methods', 'Analytical methods', 'D', 'Specify the type of model, rationale†, all model building steps, including any hyperparameter tuning, and method for internal validation'),
+    ('12d', 'Methods', 'Analytical methods', 'D;E', 'Describe if and how any heterogeneity in estimates of model parameter values and model performance was handled and quantified across clusters (eg, hospitals, countries). See TRIPOD-Cluster for additional considerations‡'),
+    ('12e', 'Methods', 'Analytical methods', 'D;E', 'Specify all measures and plots used (and their rationale) to evaluate model performance (eg, discrimination, calibration, clinical utility) and, if relevant, to compare multiple models'),
+    ('12f', 'Methods', 'Analytical methods', 'E', 'Describe any model updating (eg, recalibration) arising from the model evaluation, either overall or for particular sociodemographic groups or settings'),
+    ('12g', 'Methods', 'Analytical methods', 'E', 'For model evaluation, describe how the model predictions were calculated (eg, formula, code, object, application programming interface)'),
+    ('13', 'Methods', 'Class imbalance', 'D;E', 'If class imbalance methods were used, state why and how this was done, and any subsequent methods to recalibrate the model or the model predictions'),
+    ('14', 'Methods', 'Fairness', 'D;E', 'Describe any approaches that were used to address model fairness and their rationale'),
+    ('15', 'Methods', 'Model output', 'D', 'Specify the output of the prediction model (eg, probabilities, classification). Provide details and rationale for any classification and how the thresholds were identified'),
+    ('16', 'Methods', 'Training versus evaluation', 'D;E', 'Identify any differences between the development and evaluation data in healthcare setting, eligibility criteria, outcome, and predictors'),
+    ('17', 'Methods', 'Ethical approval', 'D;E', 'Name the institutional research board or ethics committee that approved the study and describe the participant informed consent or the ethics committee waiver of informed consent'),
+    ('18a', 'Open science', 'Funding', 'D;E', 'Give the source of funding and the role of the funders for the present study'),
+    ('18b', 'Open science', 'Conflicts of interest', 'D;E', 'Declare any conflicts of interest and financial disclosures for all authors'),
+    ('18c', 'Open science', 'Protocol', 'D;E', 'Indicate where the study protocol can be accessed or state that a protocol was not prepared'),
+    ('18d', 'Open science', 'Registration', 'D;E', 'Provide registration information for the study, including register name and registration number, or state that the study was not registered'),
+    ('18e', 'Open science', 'Data sharing', 'D;E', 'Provide details of the availability of the study data'),
+    ('18f', 'Open science', 'Code sharing', 'D;E', 'Provide details of the availability of the analytical code§'),
+    ('19', 'Patient and public involvement', 'Patient and public involvement', 'D;E', 'Provide details of any patient and public involvement during the design, conduct, reporting, interpretation, or dissemination of the study or state no involvement'),
+    ('20a', 'Result', 'Participants', 'D;E', 'Describe the flow of participants through the study, including the number of participants with and without the outcome and, if applicable, a summary of the follow-up time. A diagram may be helpful'),
+    ('20b', 'Result', 'Participants', 'D;E', 'Report the characteristics overall and, where applicable, for each data source or setting, including the key dates, key predictors (including demographics), treatments received, sample size, number of outcome events, follow-up time, and amount of missing data. A table may be helpful. Report any differences across key demographic groups'),
+    ('20c', 'Result', 'Participants', 'E', 'For model evaluation, show a comparison with the development data of the distribution of important predictors (demographics, predictors, and outcome)'),
+    ('21', 'Result', 'Model development', 'D;E', 'Specify the number of participants and outcome events in each analysis (eg, for model development, hyperparameter tuning, model evaluation)'),
+    ('22', 'Result', 'Model specification', 'D', 'Provide details of the full prediction model (eg, formula, code, object, application programming interface) to allow predictions in new individuals and to enable third party evaluation and implementation, including any restrictions to access or reuse (eg, freely available, proprietary)¶'),
+    ('23a', 'Result', 'Model performance', 'D;E', 'Report model performance estimates with confidence intervals, including for any key subgroups (eg, sociodemographic). Consider plots to aid presentation'),
+    ('23b', 'Result', 'Model performance', 'D;E', 'If examined, report results of any heterogeneity in model performance across clusters. See TRIPOD-Cluster for additional details‡'),
+    ('24', 'Result', 'Model updating', 'E', 'Report the results from any model updating, including the updated model and subsequent performance'),
+    ('25', 'Discussion', 'Interpretation', 'D;E', 'Give an overall interpretation of the main results, including issues of fairness in the context of the objectives and previous studies'),
+    ('26', 'Discussion', 'Limitations', 'D;E', 'Discuss any limitations of the study (such as a non-representative sample, sample size, overfitting, missing data) and their effects on any biases, statistical uncertainty, and generalisability'),
+    ('27a', 'Discussion', 'Usability of the model in the context of current care', 'D', 'Describe how poor quality or unavailable input data (eg, predictor values) should be assessed and handled when implementing the prediction model'),
+    ('27b', 'Discussion', 'Usability of the model in the context of current care', 'D', 'Specify whether users will be required to interact in the handling of the input data or use of the model, and what level of expertise is required of users'),
+    ('27c', 'Discussion', 'Usability of the model in the context of current care', 'D;E', 'Discuss any next steps for future research, with a specific view to applicability and generalisability of the model'),
+)
+
+# (mã, phần, chủ đề, nguyên văn)
+CHEERS_2022_ITEMS = (
+    ('1', 'Title', 'Title', 'Identify the study as an economic evaluation and specify the interventions being compared.'),
+    ('2', 'Abstract', 'Abstract', 'Provide a structured summary that highlights context, key methods, results, and alternative analyses.'),
+    ('3', 'Introduction', 'Background and objectives', 'Give the context for the study, the study question, and its practical relevance for decision making in policy or practice.'),
+    ('4', 'Methods', 'Health economic analysis plan', 'Indicate whether a health economic analysis plan was developed and where available.'),
+    ('5', 'Methods', 'Study population', 'Describe characteristics of the study population (such as age range, demographics, socioeconomic, or clinical characteristics).'),
+    ('6', 'Methods', 'Setting and location', 'Provide relevant contextual information that may influence findings.'),
+    ('7', 'Methods', 'Comparators', 'Describe the interventions or strategies being compared and why chosen.'),
+    ('8', 'Methods', 'Perspective', 'State the perspective(s) adopted by the study and why chosen.'),
+    ('9', 'Methods', 'Time horizon', 'State the time horizon for the study and why appropriate.'),
+    ('10', 'Methods', 'Discount rate', 'Report the discount rate(s) and reason chosen.'),
+    ('11', 'Methods', 'Selection of outcomes', 'Describe what outcomes were used as the measure(s) of benefit(s) and harm(s).'),
+    ('12', 'Methods', 'Measurement of outcomes', 'Describe how outcomes used to capture benefit(s) and harm(s) were measured.'),
+    ('13', 'Methods', 'Valuation of outcomes', 'Describe the population and methods used to measure and value outcomes.'),
+    ('14', 'Methods', 'Measurement and valuation of resources and costs', 'Describe how costs were valued.'),
+    ('15', 'Methods', 'Currency, price date, and conversion', 'Report the dates of the estimated resource quantities and unit costs, plus the currency and year of conversion.'),
+    ('16', 'Methods', 'Rationale and description of model', 'If modelling is used, describe in detail and why used. Report if the model is publicly available and where it can be accessed.'),
+    ('17', 'Methods', 'Analytics and assumptions', 'Describe any methods for analysing or statistically transforming data, any extrapolation methods, and approaches for validating any model used.'),
+    ('18', 'Methods', 'Characterising heterogeneity', 'Describe any methods used for estimating how the results of the study vary for subgroups.'),
+    ('19', 'Methods', 'Characterising distributional effects', 'Describe how impacts are distributed across different individuals or adjustments made to reflect priority populations.'),
+    ('20', 'Methods', 'Characterising uncertainty', 'Describe methods to characterise any sources of uncertainty in the analysis.'),
+    ('21', 'Methods', 'Approach to engagement with patients and others affected by the study', 'Describe any approaches to engage patients or service recipients, the general public, communities, or stakeholders (such as clinicians or payers) in the design of the study.'),
+    ('22', 'Results', 'Study parameters', 'Report all analytic inputs (such as values, ranges, references) including uncertainty or distributional assumptions.'),
+    ('23', 'Results', 'Summary of main results', 'Report the mean values for the main categories of costs and outcomes of interest and summarise them in the most appropriate overall measure.'),
+    ('24', 'Results', 'Effect of uncertainty', 'Describe how uncertainty about analytic judgments, inputs, or projections affect findings. Report the effect of choice of discount rate and time horizon, if applicable.'),
+    ('25', 'Results', 'Effect of engagement with patients and others affected by the study', 'Report on any difference patient/service recipient, general public, community, or stakeholder involvement made to the approach or findings of the study'),
+    ('26', 'Discussion', 'Study findings, limitations, generalisability, and current knowledge', 'Report key findings, limitations, ethical or equity considerations not captured, and how these could affect patients, policy, or practice.'),
+    ('27', 'Other relevant information', 'Source of funding', 'Describe how the study was funded and any role of the funder in the identification, design, conduct, and reporting of the analysis'),
+    ('28', 'Other relevant information', 'Conflicts of interest', 'Report authors conflicts of interest according to journal or International Committee of Medical Journal Editors requirements.'),
+)
+
+# (mã, phần, chủ đề, nguyên văn)
+SQUIRE_2_0_ITEMS = (
+    ('1', 'Title and abstract', 'Title', 'Indicate that the manuscript concerns an initiative to improve healthcare (broadly defined to include the quality, safety, effectiveness, patient-centredness, timeliness, cost, efficiency and equity of healthcare).'),
+    ('2a', 'Title and abstract', 'Abstract', 'Provide adequate information to aid in searching and indexing.'),
+    ('2b', 'Title and abstract', 'Abstract', 'Summarise all key information from various sections of the text using the abstract format of the intended publication or a structured summary such as: background, local problem, methods, interventions, results, conclusions.'),
+    ('3', 'Introduction', 'Problem description', 'Nature and significance of the local problem.'),
+    ('4', 'Introduction', 'Available knowledge', 'Summary of what is currently known about the problem, including relevant previous studies.'),
+    ('5', 'Introduction', 'Rationale', 'Informal or formal frameworks, models, concepts and/or theories used to explain the problem, any reasons or assumptions that were used to develop the intervention(s) and reasons why the intervention(s) was expected to work'),
+    ('6', 'Introduction', 'Specific aims', 'Purpose of the project and of this report.'),
+    ('7', 'Methods', 'Context', 'Contextual elements considered important at the outset of introducing the intervention(s).'),
+    ('8a', 'Methods', 'Intervention(s)', 'Description of the intervention(s) in sufficient detail that others could reproduce it.'),
+    ('8b', 'Methods', 'Intervention(s)', 'Specifics of the team involved in the work.'),
+    ('9a', 'Methods', 'Study of the intervention(s)', 'Approach chosen for assessing the impact of the intervention(s).'),
+    ('9b', 'Methods', 'Study of the intervention(s)', 'Approach used to establish whether the observed outcomes were due to the intervention(s).'),
+    ('10a', 'Methods', 'Measures', 'Measures chosen for studying processes and outcomes of the intervention(s), including rationale for choosing them, their operational definitions and their validity and reliability.'),
+    ('10b', 'Methods', 'Measures', 'Description of the approach to the ongoing assessment of contextual elements that contributed to the success, failure, efficiency and cost.'),
+    ('10c', 'Methods', 'Measures', 'Methods employed for assessing completeness and accuracy of data.'),
+    ('11a', 'Methods', 'Analysis', 'Qualitative and quantitative methods used to draw inferences from the data.'),
+    ('11b', 'Methods', 'Analysis', 'Methods for understanding variation within the data, including the effects of time as a variable.'),
+    ('12', 'Methods', 'Ethical considerations', 'Ethical aspects of implementing and studying the intervention(s) and how they were addressed, including, but not limited to, formal ethics review and potential conflict(s) of interest.'),
+    ('13a', 'Results', 'Results', 'Initial steps of the intervention(s) and their evolution over time (eg, time-line diagram, flow chart or table), including modifications made to the intervention during the project.'),
+    ('13b', 'Results', 'Results', 'Details of the process measures and outcomes.'),
+    ('13c', 'Results', 'Results', 'Contextual elements that interacted with the intervention(s).'),
+    ('13d', 'Results', 'Results', 'Observed associations between outcomes, interventions and relevant contextual elements.'),
+    ('13e', 'Results', 'Results', 'Unintended consequences such as unexpected benefits, problems, failures or costs associated with the intervention(s).'),
+    ('13f', 'Results', 'Results', 'Details about missing data.'),
+    ('14a', 'Discussion', 'Summary', 'Key findings, including relevance to the rationale and specific aims.'),
+    ('14b', 'Discussion', 'Summary', 'Particular strengths of the project.'),
+    ('15a', 'Discussion', 'Interpretation', 'Nature of the association between the intervention(s) and the outcomes.'),
+    ('15b', 'Discussion', 'Interpretation', 'Comparison of results with findings from other publications.'),
+    ('15c', 'Discussion', 'Interpretation', 'Impact of the project on people and systems.'),
+    ('15d', 'Discussion', 'Interpretation', 'Reasons for any differences between observed and anticipated outcomes, including the influence of context.'),
+    ('15e', 'Discussion', 'Interpretation', 'Costs and strategic trade-offs, including opportunity costs.'),
+    ('16a', 'Discussion', 'Limitations', 'Limits to the generalisability of the work.'),
+    ('16b', 'Discussion', 'Limitations', 'Factors that might have limited internal validity such as confounding, bias or imprecision in the design, methods, measurement or analysis.'),
+    ('16c', 'Discussion', 'Limitations', 'Efforts made to minimise and adjust for limitations.'),
+    ('17a', 'Discussion', 'Conclusions', 'Usefulness of the work.'),
+    ('17b', 'Discussion', 'Conclusions', 'Sustainability.'),
+    ('17c', 'Discussion', 'Conclusions', 'Potential for spread to other contexts.'),
+    ('17d', 'Discussion', 'Conclusions', 'Implications for practice and for further study in the field.'),
+    ('17e', 'Discussion', 'Conclusions', 'Suggested next steps.'),
+    ('18', 'Other information', 'Funding', 'Sources of funding that supported this work. Role, if any, of the funding organisation in the design, implementation, interpretation and reporting.'),
+)
+
+# câu dẫn của từng phần SQUIRE 2.0 (nguyên văn)
+SQUIRE_2_0_CAU_DAN = {'Introduction': 'Why did you start?', 'Methods': 'What did you do?', 'Results': 'What did you find?', 'Discussion': 'What does it mean?'}
+
+# (mã, chủ đề, nguyên văn)
+CARE_2013_ITEMS = (
+    ('1', 'Title', 'The words “case report” (or “case study”) should appear in the title along with phenomenon of greatest interest (eg, symptom, diagnosis, test, intervention)'),
+    ('2', 'Keywords', 'The key elements of this case in 2-5 words'),
+    ('3a', 'Abstract', 'Introduction—What does this case add?'),
+    ('3b', 'Abstract', 'Case Presentation: - The main symptoms of the patient - The main clinical findings - The main diagnoses and interventions - The main outcomes'),
+    ('3c', 'Abstract', 'Conclusion—What were the main “take-away” lessons from this case?'),
+    ('4', 'Introduction', 'Brief background summary of this case referencing the relevant medical literature'),
+    ('5a', 'Patient Information', 'Demographic information (eg, age, gender, ethnicity, occupation)'),
+    ('5b', 'Patient Information', 'Main symptoms of the patient (his or her chief complaints)'),
+    ('5c', 'Patient Information', 'Medical, family, and psychosocial history—including diet, lifestyle, and genetic information whenever possible, and details about relevant comorbidities including past interventions and their outcomes'),
+    ('6', 'Clinical Findings', 'Describe the relevant physical examination (PE) findings'),
+    ('7', 'Timeline', 'Depict important dates and times in this case (table or figure)'),
+    ('8a', 'Diagnostic Assessment', 'Diagnostic methods (eg, PE, laboratory testing, imaging, questionnaires)'),
+    ('8b', 'Diagnostic Assessment', 'Diagnostic challenges (eg, financial, language/cultural)'),
+    ('8c', 'Diagnostic Assessment', 'Diagnostic reasoning including other diagnoses considered'),
+    ('8d', 'Diagnostic Assessment', 'Prognostic characteristics (eg, staging) where applicable'),
+    ('9a', 'Therapeutic Intervention', 'Types of intervention (eg, pharmacologic, surgical, preventive, self-care) - Administration of intervention (eg, dosage, strength, duration) - Changes in intervention (with rationale)'),
+    ('10a', 'Follow-up and Outcomes', 'Summarize the clinical course of all follow-up visits including - Clinician and patient-assessed outcomes - Important follow-up test results (positive or negative) - Intervention adherence and tolerability (and how this was assessed) - Adverse and unanticipated events'),
+    ('11a', 'Discussion', 'The strengths and limitations of the management of this case'),
+    ('11b', 'Discussion', 'The relevant medical literature'),
+    ('11c', 'Discussion', 'The rationale for conclusions (including assessments of cause and effect)'),
+    ('11d', 'Discussion', 'The main “take-away” lessons of this case report'),
+    ('12', 'Patient Perspective', 'The patient should share his or her perspective or experience whenever possible'),
+    ('13', 'Informed Consent', 'Did the patient give informed consent? Please provide if requested'),
+)
+
+# đoạn mở đầu bảng CARE (nguyên văn)
+CARE_2013_MO_DAU = 'The Narrative: A case report tells a story in a narrative format that includes the presenting concerns, clinical findings, diagnoses, interventions, outcomes (including adverse events), and follow-up. The narrative should include a discussion of the rationale for any conclusions and any take-away messages.'
+
+# (mã — T<n> là bảng cấu trúc, tiêu đề nguyên văn, bảng thuộc mục)
+HARPER_2023_MUC_LUC = (
+    ('1', 'Title Page', ''),
+    ('2', 'Abstract', ''),
+    ('3', 'Amendments and updates', ''),
+    ('4', 'Timeline', ''),
+    ('T1', 'Table 1 Milestones and Timeline', '4'),
+    ('5', 'Rationale and background', ''),
+    ('6', 'Research question and objectives', ''),
+    ('T2', 'Table 2 Primary and secondary research questions and objective', '6'),
+    ('7', 'Research methods', ''),
+    ('7.1', 'Study design', ''),
+    ('7.2', 'Study design diagram', ''),
+    ('7.3', 'Setting', ''),
+    ('7.3.1', 'Context and rationale for definition of time 0 (and other primary time anchors) for entry to the study population', ''),
+    ('T3', 'Table 3 Operational Definition of Time 0 (index date) and other primary time anchors', '7.3.1'),
+    ('7.3.2', 'Context and rationale for study inclusion criteria:', ''),
+    ('T4', 'Table 4. Operational Definitions of Inclusion Criteria', '7.3.2'),
+    ('7.3.3', 'Context and rationale for study exclusion criteria', ''),
+    ('T5', 'Table 5. Operational Definitions of Exclusion Criteria', '7.3.3'),
+    ('7.4', 'Variables', ''),
+    ('7.4.1', 'Context and rationale for exposure(s) of interest', ''),
+    ('T6', 'Table 6. Operational Definitions of Exposure', '7.4.1'),
+    ('7.4.2', 'Context and rationale for outcome(s) of interest', ''),
+    ('T7', 'Table 7. Operational Definitions of Outcome', '7.4.2'),
+    ('7.4.3', 'Context and rationale for follow up', ''),
+    ('T8', 'Table 8. Operational Definitions of Follow Up', '7.4.3'),
+    ('7.4.4', 'Context and rationale for covariates (confounding variables and effect modifiers, e.g. risk factors, comorbidities, comedications)', ''),
+    ('T9', 'Table 9. Operational Definitions of Covariates', '7.4.4'),
+    ('7.5', 'Data analysis', ''),
+    ('7.5.1', 'Context and rationale for analysis plan', ''),
+    ('T10', 'Table 10. Primary, secondary, and subgroup analysis specification', '7.5.1'),
+    ('T11', 'Table 11. Sensitivity analyses – rationale, strengths and limitations', '7.5.1'),
+    ('7.6', 'Data sources', ''),
+    ('7.6.1', 'Context and rationale for data sources', ''),
+    ('T12', 'Table 12. Metadata about data sources and software', '7.6.1'),
+    ('7.7', 'Data management', ''),
+    ('7.8', 'Quality control', ''),
+    ('7.9', 'Study size and feasibility', ''),
+    ('T13', 'Table 13. Power and sample size', '7.9'),
+    ('8', 'Limitation of the methods', ''),
+    ('9', 'Protection of human subjects', ''),
+    ('10', 'Reporting of adverse events', ''),
+    ('11', 'References', ''),
+    ('12', 'Appendices', ''),
+)
+
+assert (len(STROBE_2007_ITEMS) == 41
+        and len(RECORD_2015_ITEMS) == 13
+        and len(STARD_2015_ITEMS) == 34
+        and len(TRIPOD_AI_2024_ITEMS) == 52
+        and len(CHEERS_2022_ITEMS) == 28
+        and len(SQUIRE_2_0_ITEMS) == 40
+        and len(CARE_2013_ITEMS) == 23
+        and len(HARPER_2023_MUC_LUC) == 43)

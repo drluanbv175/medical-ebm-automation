@@ -78,6 +78,10 @@ Disclaimer: **"Cần bác sĩ kiểm chứng."**
 python tools/gen_research_docx.py --study "<TEN>" --artifact qualitative-design
 ```
 
+## Đủ từng mục COREQ, SRQR, GRAMMS — K17 (21/11/2026)
+
+K17 chấm đề cương định tính theo COREQ 2007 (32 mục) và SRQR 2014 (21 mục); đề tài hỗn hợp thêm GRAMMS 2008 (6 mục), và mọi đề tài có phỏng vấn sâu/nhóm tiêu điểm đều chịu COREQ + SRQR. Danh mục COREQ và SRQR chưa đối chiếu được bảng gốc (bài gốc chỉ cho thuê bao) nên mục thiếu chỉ báo ⚠ cảnh báo, không chặn — vẫn phải bổ sung. Mục thiếu trên đề cương giả lập 21/11/2026: tác giả nào trực tiếp phỏng vấn (COREQ 1); giới của người phỏng vấn (4); cách tiếp cận/mời người tham gia (11); kế hoạch ghi số từ chối, rút lui kèm lý do (13); có người khác có mặt khi phỏng vấn không (15); ghi chép thực địa (20); có gửi lại bản gỡ băng cho người tham gia không (23); hệ hình nghiên cứu và lý do chọn cách tiếp cận (SRQR S5). Đề cương định tính không được mang bảng «phân tích độ nhạy» kiểu định lượng. GRAMMS: lý do dùng hỗn hợp, thiết kế (mục đích, ưu tiên, trình tự), từng phương pháp, nơi/cách/ai tích hợp, hạn chế do kết hợp, hiểu biết thu được. Kiểm bằng `python3 tools/kiem_chuan_de_cuong_theo_muc.py --study <mã> --chi-tiet` (repo y khoa).
+
 ## Ranh giới
 - Nhận câu hỏi từ `cau-hoi-nghien-cuu`; phối hợp `thiet-ke-nghien-cuu`, `dao-duc-dang-ky` (ICF phỏng vấn/ghi âm), `quan-ly-du-lieu` (khử định danh bản gỡ băng), `viet-ban-thao` (báo cáo COREQ/SRQR), `cong-cu-do-luong` (khi mixed-methods cần kiểm định một bộ câu hỏi/thang đo định lượng theo COSMIN — sửa 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 7: trước đây chỉ có dẫn chiếu MỘT CHIỀU từ cong-cu-do-luong sang đây).
 - **KHÔNG chạy thống kê suy diễn định lượng** (`phan-tich-thong-ke`); mixed-methods → bạn lo luồng định tính + tích hợp, luồng định lượng giao cụm thống kê. Sau mỗi sản phẩm, giao `so-cai-ghi-nho` lưu.

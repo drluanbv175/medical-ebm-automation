@@ -177,9 +177,10 @@ def test_chuan_dieu_kien_record_cross_va_tong_quan_he_thong():
 
 
 def test_chuan_chua_co_tieu_chi_la_chua_do_khong_bao_gio_dat():
-    kq = K.doi_chieu(DU, "rct")
-    assert ("SPIRIT 2025", K.doi_chieu(DU, "rct")["chua_do"][0][1]) in kq["chua_do"]
-    assert not any(r.chuan == "SPIRIT 2025" for r in kq["ket_qua"])
+    # 21/11/2026 (PR 12 chuẩn): mọi chuẩn của 13 thiết kế đã có tiêu chí — ⚪ chỉ còn cho mã thiết kế ngoài bảng.
+    kq = K.doi_chieu(DU, "case_series")
+    assert [c for c, _ in kq["chua_do"]] == ["(không xác định)"]
+    assert not any(r.chuan == "(không xác định)" for r in kq["ket_qua"])
 
 
 def test_bang_sai_lech_doc_kem_hang_tieu_de_cot():
