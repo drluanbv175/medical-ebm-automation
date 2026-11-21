@@ -148,9 +148,11 @@ def test_khong_co_so_sai_lech_thi_chieu_de_trong_va_k17_bao(tmp_path):
 
 # ───────────────────────────────────────── STROBE 12d: mất theo dõi
 def test_xu_ly_mat_theo_doi_ghep_tu_quyet_dinh_da_chot(tmp_path):
-    n = _nguon(tmp_path, "cohort", g1={"exclusion_criteria": ["Không đọc được tin nhắn", "Theo dõi <6 tháng"]})
+    n = _nguon(tmp_path, "cohort", g1={"exclusion_criteria": [
+        "Gãy xương trong 12 tháng trước ngày bắt đầu theo dõi", "Theo dõi <6 tháng"]})
     dong = SDC.xu_ly_mat_theo_doi(n)
-    assert dong[0].startswith("- Xử lý mất theo dõi: loại khỏi mẫu người có theo dõi <6 tháng")
+    assert dong[0].startswith("- Xử lý mất theo dõi: loại khỏi mẫu: theo dõi <6 tháng")
+    assert "gãy xương" not in dong[0]  # tiêu chí bệnh trước đó chỉ tình cờ chứa chữ «theo dõi»
     assert "gán đa trị" in dong[0]  # SAP §6 đưa chính biến kết cục chính vào kế hoạch dữ liệu thiếu
     assert SDC.xu_ly_mat_theo_doi(_nguon(tmp_path / "r", "rct")) == []  # chỉ thuần tập / dự báo
     (tmp_path / "t").mkdir()

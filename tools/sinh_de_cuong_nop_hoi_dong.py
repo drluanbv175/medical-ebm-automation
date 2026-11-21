@@ -1529,9 +1529,13 @@ def xu_ly_mat_theo_doi(n: "Nguon") -> List[str]:
         for nh, nd in muc.get(so, []):
             if re.search(r"mất theo dõi|mất dấu|kiểm duyệt|censor", f"{nh} {nd}", re.I):
                 phan.append(_thuong(f"{nh}: {nd}" if nh and nh != "•" else nd))
-    loai = [_thuong(x) for x in _danh_sach(n.g1.get("exclusion_criteria")) if re.search(r"theo dõi", x, re.I)]
+    # chỉ tiêu chí loại VỀ thời gian theo dõi («Theo dõi <6 tháng») — không lấy «gãy xương trong 12 tháng trước ngày bắt
+    # đầu theo dõi» (tiêu chí bệnh trước đó, chỉ tình cờ chứa chữ «theo dõi»)
+    loai = [_thuong(x) for x in _danh_sach(n.g1.get("exclusion_criteria"))
+            if re.match(r"(?:thời gian\s+)?theo dõi\s*(?:<|≤|dưới|ít hơn|không đủ|ngắn hơn)", x, re.I)
+            or re.search(r"mất (?:theo dõi|dấu)", x, re.I)]
     if loai:
-        phan.append("loại khỏi mẫu người có " + "; ".join(loai))
+        phan.append("loại khỏi mẫu: " + "; ".join(loai))
     kc = [r.get("bien") for r in n.ma_tran if r.get("vai_tro") == "ket_cuc_chinh" and r.get("bien")]
     s6 = muc.get(6, [])
     chien_luoc = next((lam_sach(nd) for nh, nd in s6 if re.search(r"chiến lược", nh or "", re.I) and _co(nd)), "")
@@ -1596,6 +1600,12 @@ def lam_sach_so_lieu(n: "Nguon") -> str:
     return "- Làm sạch số liệu: " + "; ".join(x for x in (cau, _thuong(kiem)) if x) + "."
 
 
+def nguon_so_lieu(n: "Nguon") -> List[str]:
+    """Nguồn số liệu đã chốt, bỏ mục nằm trọn trong mục khác («Hồ sơ» khi đã có «Hồ sơ và phim X-quang»)."""
+    ds = list(dict.fromkeys(x for x in _danh_sach(n.s("data_collection", "source")) if x))
+    return [x for x in ds if not any(x != y and x.lower() in y.lower() for y in ds)]
+
+
 def du_lieu_thuong_quy(n: "Nguon", van: str) -> bool:
     """Đề tài dùng dữ liệu thu thập thường quy (RECORD 2015) — cùng biểu thức với K17 để hai nơi không lệch nhau."""
     import kiem_chuan_de_cuong_theo_muc as KCM  # noqa: PLC0415
@@ -1606,9 +1616,9 @@ def du_lieu_thuong_quy(n: "Nguon", van: str) -> bool:
 def _mo_ta_chon_mau(n: "Nguon") -> str:
     ma = [str(x) for x in (n.g1.get("sampling_design") or [])]
     if "toan_bo" in ma:
-        return "toàn bộ hồ sơ/người bệnh đủ tiêu chuẩn trong thời gian nghiên cứu"
+        return "lấy toàn bộ đối tượng đủ tiêu chuẩn trong thời gian nghiên cứu"
     if any("ngau_nhien" in x or "ngẫu nhiên" in x for x in ma):
-        return "chọn mẫu ngẫu nhiên từ khung mẫu"
+        return "chọn ngẫu nhiên từ khung mẫu"
     khac = [x.split(":", 1)[1].strip() for x in ma if x.startswith("khac:") and "không áp dụng" not in x]
     return khac[0] if khac else ""
 
@@ -1621,7 +1631,7 @@ def he_qua_thuong_quy(n: "Nguon", van: str) -> List[str]:
     nguồn dữ liệu đã chốt, biến xác định bằng mã chẩn đoán/đơn thuốc (nếu văn bản có), dữ liệu thiếu, nhiễu chưa đo."""
     if n.thiet_ke in ("sr_ma", "qualitative") or not du_lieu_thuong_quy(n, van.replace(DAU_THUONG_QUY, "")):
         return []
-    nguon = "; ".join(dict.fromkeys(_thuong(x) for x in _danh_sach(n.s("data_collection", "source")) if x))
+    nguon = "; ".join(_thuong(x) for x in nguon_so_lieu(n))
     ma = [r for r, bt in (("mã chẩn đoán", r"\bICD"), ("đơn thuốc", r"đơn thuốc|cấp phát")) if re.search(bt, van)]
     return ["- Hệ quả của dữ liệu thu thập thường quy: dữ liệu " + (f"từ {nguon} " if nguon else "")
             + "được ghi nhận cho mục đích lâm sàng, không được thu thập cho câu hỏi nghiên cứu này, nên có thể "
@@ -1653,8 +1663,7 @@ def han_che_suy_rong(n: "Nguon") -> List[str]:
                   f"khác dựa trên mô tả chi tiết người tham gia ({pop or CHAM}) và bối cảnh ({noi or CHAM}).")
     elif pop or noi:
         cm = _mo_ta_chon_mau(n)
-        ra.append(f"- Phạm vi suy rộng: kết quả phản ánh {pop or CHAM} tại {noi or CHAM}" + (f", chọn theo {cm}"
-                                                                                          if cm else "")
+        ra.append(f"- Phạm vi suy rộng: kết quả phản ánh {pop or CHAM} tại {noi or CHAM}" + (f" ({cm})" if cm else "")
                   + "; áp dụng cho cơ sở hoặc quần thể khác cần cân nhắc khác biệt về đặc điểm người bệnh và cách "
                     "chăm sóc.")
     else:
@@ -1867,7 +1876,7 @@ def chuong_phuong_phap(n: Nguon) -> List[str]:
     # Công cụ & kỹ thuật thu thập
     muc("Công cụ và kỹ thuật thu thập số liệu")
     for nhan, x in (("Công cụ", n.s("data_collection", "instrument", "name")),
-                    ("Nguồn số liệu", "; ".join(dict.fromkeys(_danh_sach(n.s("data_collection", "source"))))),
+                    ("Nguồn số liệu", "; ".join(nguon_so_lieu(n))),
                     ("Thời điểm thu thập", n.g1.get("follow_up_schedule") or
                      n.s("data_collection", "measurement_times")),
                     ("Kiểm soát chất lượng", n.s("data_collection", "quality_control")),
