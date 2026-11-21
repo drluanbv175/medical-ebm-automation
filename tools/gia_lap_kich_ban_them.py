@@ -130,8 +130,9 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                              "variable": "Gãy xương mọi vị trí trong 3 năm",
                              "intercurrent_events_strategy": "Tử vong trước gãy xương: biến cố cạnh tranh",
                              "population_summary_measure": "Nguy cơ tương đối (RR) hiệu chỉnh"},
-                "background_problem": vi("Thuốc ức chế bơm proton thường được kê kéo dài ở người cao tuổi mà không "
-                                         "đánh giá lại chỉ định"),
+                # 21/11/2026 — K15: câu bối cảnh không nguồn «thường được kê kéo dài» ⇒ dẫn nguồn đã kiểm của kịch bản
+                "background_problem": vi("Dùng thuốc ức chế bơm proton đi kèm nguy cơ gãy xương cao hơn "
+                                         "(PMID 26462494), nên việc kê kéo dài ở người cao tuổi cần được đánh giá lại"),
                 "evidence_summary": vi("Phân tích gộp quan sát (PMID 26462494) báo nguy cơ gãy xương mọi vị trí "
                                        "tăng vừa phải ở người dùng PPI"),
                 "knowledge_gap": vi("Thiếu thuần tập trên người cao tuổi ngoại trú Việt Nam"),
@@ -238,7 +239,8 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                              "variable": "Xuất huyết tiêu hoá trên",
                              "intercurrent_events_strategy": "Không áp dụng (đo phơi nhiễm một lần)",
                              "population_summary_measure": "Tỷ số chênh (OR) hiệu chỉnh"},
-                "background_problem": vi("Xuất huyết tiêu hoá trên ở người cao tuổi thường liên quan thuốc tự mua"),
+                "background_problem": vi("Nguy cơ biến chứng tiêu hoá trên khác nhau theo từng thuốc chống viêm không "
+                                         "steroid (PMID 23137151)"),
                 "evidence_summary": vi("Phân tích gộp quan sát (PMID 23137151) báo nguy cơ biến chứng tiêu hoá trên "
                                        "tăng với mọi NSAID, khác nhau theo loại"),
                 "knowledge_gap": vi("Thiếu số liệu phơi nhiễm theo loại NSAID ở người cao tuổi Việt Nam"),
@@ -542,7 +544,9 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                              "intercurrent_events_strategy": "Theo định nghĩa của từng thử nghiệm (ITT)",
                              "population_summary_measure": "RR gộp (mô hình hiệu ứng ngẫu nhiên, REML, "
                                                            "Hartung–Knapp)"},
-                "background_problem": vi("Suy tim là biến chứng thường gặp ở người ĐTĐ típ 2"),
+                # 21/11/2026 — K15: kịch bản không có nguồn dịch tễ ⇒ phát biểu VẤN ĐỀ, không khẳng định không nguồn
+                "background_problem": vi("Cần ước lượng gộp tác dụng của thuốc ức chế SGLT2 lên nhập viện vì suy tim "
+                                         "riêng ở người ĐTĐ típ 2 chưa có suy tim lúc đầu"),
                 "evidence_summary": vi("Các thử nghiệm kết cục tim mạch lớn báo giảm nhập viện vì suy tim với thuốc ức "
                                        "chế SGLT2"),
                 "knowledge_gap": vi("Ước lượng riêng cho người không có suy tim lúc đầu chưa được cập nhật"),
@@ -659,7 +663,8 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "estimand": {"population": "Không áp dụng (định tính)", "treatment_condition": "Không áp dụng",
                              "variable": "Không áp dụng", "intercurrent_events_strategy": "Không áp dụng",
                              "population_summary_measure": "Không áp dụng"},
-                "background_problem": vi("Nhiều người ĐTĐ típ 2 trì hoãn insulin dù đã có chỉ định"),
+                "background_problem": vi("Lý do người ĐTĐ típ 2 đã có chỉ định insulin nhưng trì hoãn bắt đầu điều trị "
+                                         "chưa được mô tả tại phòng khám ngoại trú ở Việt Nam"),
                 "evidence_summary": vi("Y văn quốc tế mô tả «kháng insulin tâm lý»; bối cảnh Việt Nam chưa được mô tả"),
                 "knowledge_gap": vi("Chưa có dữ liệu định tính ở người ngoại trú Việt Nam"),
                 "benefit_risk_rationale": vi("Phỏng vấn có đồng ý; nguy cơ khó chịu cảm xúc thấp, có thể dừng bất cứ "

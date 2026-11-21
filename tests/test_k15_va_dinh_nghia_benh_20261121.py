@@ -34,6 +34,8 @@ def _de_cuong(than_tq: str, than_pp: str = "Cỡ mẫu tính theo công thức."
     ("Các bằng chứng trên gần như toàn bộ là nghiên cứu quan sát, chủ yếu ở Âu – Mỹ – Úc.", "gần như toàn bộ"),
     ("SGLT2i có lợi ích đã được chứng minh được khuyến cáo (khuyến cáo 11.7a); GLP-1 RA cũng được khuyến cáo [13].",
      "đã được chứng minh"),
+    ("Nhiều người ĐTĐ típ 2 trì hoãn insulin dù đã có chỉ định.", "Nhiều người"),
+    ("Xuất huyết tiêu hoá trên ở người cao tuổi thường liên quan thuốc tự mua.", "thường liên quan"),
 ])
 def test_k15_bat_khang_dinh_mo_ho_khong_nguon(cau, tu):
     loi = KDC.loi_k15(_de_cuong(cau))

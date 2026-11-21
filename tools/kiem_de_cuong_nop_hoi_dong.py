@@ -276,7 +276,8 @@ def loi_k10(md: str) -> List[str]:
 _MO_HO_RE = re.compile(
     r"(?<![\wÀ-ỹ])(nhiều nghiên cứu|nhiều tác giả|nhiều bằng chứng|các nghiên cứu (?:cho thấy|đều)|y văn (?:cho thấy|"
     r"ghi nhận)|phần lớn|đa số|hầu hết|gần như toàn bộ|một số nghiên cứu|thường gặp|khá cao|rất cao|rất thấp|đáng kể|"
-    r"ngày càng|đã được chứng minh)(?![\wÀ-ỹ])", re.I)
+    r"ngày càng|đã được chứng minh|nhiều người|nhiều bệnh nhân|thường (?:được|liên quan|do|xảy ra|kéo dài))"
+    r"(?![\wÀ-ỹ])", re.I)
 _CHU_THICH_BB = ("**Bảng", "**Hình", "**Biểu đồ", "**Sơ đồ")
 
 
