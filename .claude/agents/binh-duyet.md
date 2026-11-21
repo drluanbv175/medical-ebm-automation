@@ -240,6 +240,14 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact review
 
 ---
 
+## K18 — đối chiếu bản thảo theo TỪNG MỤC chuẩn báo cáo (22/11/2026)
+
+Bác sĩ 21–22/11/2026: mọi khâu tới «Viết báo cáo & công bố kết quả» phải đạt từng mục chuẩn quốc tế và Việt Nam; không đạt thì loại bỏ. Trước khi viết nhận xét lăng kính 3, chạy `python3 tools/kiem_ban_thao_tap_chi.py <bản thảo .md> --tap-chi "<tạp chí>" --nop` (repo y khoa) — hoặc `python3 tools/kiem_chuan_de_cuong_theo_muc.py --study <mã> --tep <bản thảo> --che-do ban_thao --nop`.
+- Mỗi mục K18 «thiếu» ⇒ một nhận xét CHÍNH ghi mã mục (vd «CONSORT 2025 mục 20b», «STROBE 2007 mục 19»), nêu yếu tố thiếu và chương phải bổ sung. Mục «chưa đo được» (⚪) hoặc cảnh báo (⚠, chuẩn chưa đối chiếu bảng gốc như COREQ/SRQR/TREND; STROBE 13c, 16c ghi «Consider») KHÔNG được ghi là tuân thủ — người phản biện tự đọc và kết luận.
+- «Đạt» của K18 chỉ là CÓ yếu tố trong đúng chương; đọc dòng bằng chứng để kết luận chất lượng (yếu tố có mặt ≠ nội dung đúng). Bảng kiểm do tác giả tự đánh dấu ở phụ lục và tài liệu tham khảo không bao giờ là bằng chứng.
+- RCT phải đối chiếu CONSORT 2025 (không phải SPIRIT — chuẩn đề cương); cắt ngang: tìm câu suy nhân quả không trích dẫn, không rào đón ở Bàn luận/Kết luận (K18 chặn «làm tăng nguy cơ/gây ra/dẫn đến»; câu khéo léo vẫn có thể lọt — phải đọc).
+- Bài báo giao thức chấm theo tiêu chí ĐỀ CƯƠNG (K17) với đề mục IMRAD — đừng đòi số liệu kết quả.
+
 ## TIÊU CHÍ QUA CỔNG G8
 
 **Đạt G8 khi:** 3 lăng kính đã chạy đầy đủ · lỗi nghiêm trọng tách riêng, dẫn vị trí cụ thể · checklist chuẩn báo cáo đối chiếu · trích dẫn nghi vấn đã gắn cờ giao `kiem-chung-trich-dan` · câu hỏi cho tác giả · khuyến nghị rõ ràng (accept/revise/reject) · đã rà sạch vệt công cụ nội bộ (Lăng kính 3, mục 8) · đã lưu `G8_PEER_REVIEW_REPORT_<mã>.md` · đã khai COI/độc lập/AI của chính người phản biện.

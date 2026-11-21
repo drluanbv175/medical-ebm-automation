@@ -19,6 +19,9 @@ không dịch. Chỉ lưu nguyên văn khi bài nguồn mang giấy phép Creati
   - CARE 2013 — J Med Case Rep 2013;7:223 (PMID 24228906; PMC3844611), CC BY 3.0. Table 1.
   - HARPER 2023 — Pharmacoepidemiol Drug Saf 2023;32(1):44-55 (PMID 36215113; PMC9771861), CC BY 4.0. Table 3 (mục lục
     của MẪU ĐỀ CƯƠNG, không phải checklist báo cáo).
+  - CONSORT 2025 (22/11/2026, K18 — kiểm BẢN THẢO RCT) — bản PLOS Med 2025;22(4):e1004587 (PMID 40228477;
+    PMC11996237), CC BY 4.0 (khối <license> của XML: ccbylicense). Table 1. Bản BMJ (PMID 40228833) ghi «No commercial
+    re-use» và bản Lancet (PMID 40245901) không có trên PMC nên KHÔNG dùng làm nguồn chép.
 Chuẩn KHÔNG mang giấy phép CC (CROSS, TREND, COREQ, SRQR, GRAMMS, COSMIN) không đi qua tệp này: bộ kiểm chỉ lưu mã mục,
 chủ đề và tiêu chí do hệ viết.
 
@@ -51,6 +54,7 @@ NGUON: Dict[str, Tuple[str, int, int]] = {
     "SQUIRE": ("PMC5256233", 40, 0),
     "CARE": ("PMC3844611", 23, 0),
     "HARPER": ("PMC9771861", 43, 2),
+    "CONSORT": ("PMC11996237", 42, 0),
 }
 
 
@@ -228,6 +232,40 @@ def muc_harper(xml: Path) -> list:
     return ra
 
 
+def _chu_o_consort(td) -> str:
+    """Chữ một ô CONSORT 2025: đoạn dẫn + từng gạch đầu dòng của <list> (mục 26) nối bằng « • » — giữ nguyên chữ, chỉ
+    thêm dấu tách mà bản XML thể hiện bằng phần tử danh sách (itertext gộp làm dính «analysisthe»)."""
+    ds = td.find(".//list")
+    if ds is None:
+        return _chu(td)
+    dan = " ".join(_chu(p) for p in td.findall("p"))
+    return " • ".join([dan] + [_chu(li) for li in ds.findall("list-item")]).strip(" •")
+
+
+def muc_consort(xml: Path) -> list:
+    """[(mã, phần, chủ đề, nguyên văn)] — CONSORT 2025 Table 1 (cột: Section/topic · No · Item). Hàng «Randomisation:»
+    (hai ô sau rỗng) là tiền tố chủ đề cho các hàng 17a–19."""
+    tw = _bang(xml, NGUON["CONSORT"][2])
+    ra, phan, chu_de, tien_to, con_lai = [], "", "", "", 0
+    for tr in list(tw.iter("tr"))[1:]:
+        o = list(tr)
+        if len(o) == 1 or int(o[0].get("colspan") or 1) >= 3:
+            phan, tien_to, con_lai = _chu(o[0]), "", 0
+            continue
+        if len(o) == 3 and not _chu(o[1]) and not _chu(o[2]):
+            tien_to = _chu(o[0]).rstrip(":")
+            continue
+        if con_lai > 0 and len(o) == 2:
+            so, van = _chu(o[0]), _chu_o_consort(o[1])
+        else:
+            chu_de, con_lai = _chu(o[0]), int(o[0].get("rowspan") or 1)
+            so, van = _chu(o[1]), _chu_o_consort(o[2])
+        con_lai -= 1
+        ten = f"{tien_to}: {chu_de}" if tien_to and phan == "Methods" and so[:2] in ("17", "18", "19") else chu_de
+        ra.append((so, phan, ten, van))
+    return ra
+
+
 def _bo(ten: str, chu_thich: str, dong: list) -> List[str]:
     ra = [f"# {chu_thich}", f"{ten} = ("]
     ra += [f"    {tuple(x)!r}," for x in dong]
@@ -248,7 +286,8 @@ def dung_mo_dun(du: Dict[str, object], phep: Dict[str, str]) -> str:
         "  2024;385:e078378 (PMID 38626948; PMC11019967) · CHEERS BMJ 2022;376:e067975 (PMID 35017145; PMC8749494) ·",
         "  SQUIRE 2.0 BMJ Qual Saf 2016;25(12):986-992 (PMID 26369893; PMC5256233; CC BY-NC — phi thương mại) · CARE",
         "  J Med Case Rep 2013;7:223 (PMID 24228906; PMC3844611) · HARPER Pharmacoepidemiol Drug Saf 2023;32(1):44-55",
-        "  (PMID 36215113; PMC9771861; mẫu đề cương).",
+        "  (PMID 36215113; PMC9771861; mẫu đề cương) · CONSORT 2025 PLoS Med 2025;22(4):e1004587 (PMID 40228477;",
+        "  PMC11996237; CC BY 4.0 — thêm 22/11/2026 cho K18 kiểm bản thảo RCT).",
         '"""',
         "",
         "#: giấy phép đọc từ XML, theo chuẩn",
@@ -267,16 +306,18 @@ def dung_mo_dun(du: Dict[str, object], phep: Dict[str, str]) -> str:
     dong += _bo("CARE_2013_ITEMS", "(mã, chủ đề, nguyên văn)", du["CARE"])
     dong += ["# đoạn mở đầu bảng CARE (nguyên văn)", f"CARE_2013_MO_DAU = {du['CARE_MO_DAU']!r}", ""]
     dong += _bo("HARPER_2023_MUC_LUC", "(mã — T<n> là bảng cấu trúc, tiêu đề nguyên văn, bảng thuộc mục)", du["HARPER"])
+    dong += _bo("CONSORT_2025_ITEMS", "(mã, phần, chủ đề, nguyên văn) — gạch đầu dòng trong ô nối bằng « • »",
+                du["CONSORT"])
     so = " and ".join(f"len({t}) == {len(du[k])}" for k, t in (
         ("STROBE", "STROBE_2007_ITEMS"), ("RECORD", "RECORD_2015_ITEMS"), ("STARD", "STARD_2015_ITEMS"),
         ("TRIPOD_AI", "TRIPOD_AI_2024_ITEMS"), ("CHEERS", "CHEERS_2022_ITEMS"), ("SQUIRE", "SQUIRE_2_0_ITEMS"),
-        ("CARE", "CARE_2013_ITEMS"), ("HARPER", "HARPER_2023_MUC_LUC")))
+        ("CARE", "CARE_2013_ITEMS"), ("HARPER", "HARPER_2023_MUC_LUC"), ("CONSORT", "CONSORT_2025_ITEMS")))
     dong += ["assert (" + so.replace(" and ", "\n        and ") + ")", ""]
     return "\n".join(dong)
 
 
 _HAM = {"STROBE": muc_strobe, "RECORD": muc_record, "STARD": muc_stard, "TRIPOD_AI": muc_tripod_ai,
-        "CHEERS": muc_cheers, "HARPER": muc_harper}
+        "CHEERS": muc_cheers, "HARPER": muc_harper, "CONSORT": muc_consort}
 
 
 def doc_tat_ca(thu_muc: Optional[Path],
