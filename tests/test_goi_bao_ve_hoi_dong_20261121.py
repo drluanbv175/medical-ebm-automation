@@ -596,9 +596,9 @@ def test_pii_trong_dau_ra_thi_khong_ghi_ma_3(tmp_path: Path) -> None:
 
 
 def test_quet_pii_khong_nuot_so_cccd_va_bo_dung_ma_bam(goc: Path) -> None:
-    assert G.quet_pii("Số định danh 079123456789 trong câu.")
-    assert G.quet_pii("doi:10.1000/123456789012 và PMID 41201884") == []
-    assert G.quet_pii("mã băm 123456789012 tự in", ("123456789012",)) == []
+    assert G.quet_pii("Số định danh 000000000000 trong câu.")  # bimat-mien: số GIẢ toàn 0 để kiểm bộ quét PII
+    assert G.quet_pii("doi:10.1000/111111111111 và PMID 41201884") == []
+    assert G.quet_pii("mã băm 111111111111 tự in", ("111111111111",)) == []  # bimat-mien: số GIẢ kiểm bỏ qua mã băm
 
 
 # ── Xuất Word qua công cụ của repo gốc ───────────────────────────────────────────────────────────────────────────────
