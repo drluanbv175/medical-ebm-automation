@@ -285,3 +285,12 @@ def test_pdf_cat_dong_giua_tu_van_khop_nhung_dien_dat_lai_thi_khong():
     assert K.co_nguyen_van_toan_van("tỷ lệ 16,7 - 69,2% bệnh nhân được kê đơn ít nhất 1 lần", doan)
     assert not K.co_nguyen_van_toan_van("tỷ lệ 16,7–69,2% người bệnh được kê đơn", doan)  # diễn đạt lại
     assert not K.co_nguyen_van_toan_van("1 lần", doan)  # quá ngắn để so bỏ khoảng trắng
+
+
+def test_gach_noi_ngat_dong_van_khop():
+    doan = ("Floor or ceiling effects are considered to be present if more than 15% of respondents achieved the lowest "
+            "or high- est possible score, respectively [41].")
+    assert K.co_nguyen_van_toan_van("more than 15% of respondents achieved the lowest or highest possible score",
+                                    doan)
+    # gạch nối thật («cross-cultural») ngắt dòng vẫn khớp nhờ phép so bỏ khoảng trắng
+    assert K.co_nguyen_van_toan_van("cross-cultural validity", "and cross- cultural validity were")

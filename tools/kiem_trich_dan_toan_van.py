@@ -256,7 +256,13 @@ def co_nguyen_van_toan_van(trich: str, doan: str) -> bool:
     if API.co_nguyen_van(trich, doan):
         return True
     t = re.sub(r"\s+", "", API.chuan_hoa(trich))
-    return len(t) >= 15 and t in re.sub(r"\s+", "", API.chuan_hoa(doan))
+    if len(t) < 15:
+        return False
+    # 21/11/2026 (Terwee 2007 thật): chữ ngắt dòng bằng gạch nối «high- est» ⇒ so thêm bản bỏ gạch nối cuối dòng
+    for d in (doan, re.sub(r"(?<=\w)-\s+(?=\w)", "", doan)):
+        if t in re.sub(r"\s+", "", API.chuan_hoa(d)):
+            return True
+    return False
 
 
 def kiem_tai_lieu(so: int, cap: List[Dict[str, Any]], doan: str, model: str, client: Any,
