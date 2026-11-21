@@ -334,8 +334,10 @@ def _so_gia(luot):
     return {"thang": "2026-11", "usd": 1.0, "luot": luot, "batch_da_ghi": []}
 
 
-def _luot(nguon, vao, ghi, doc, model="claude-sonnet-5-5", **extra):
+def _luot(nguon, vao, ghi, doc, model="claude-sonnet-5-5", cache_ghi_1h=0, **extra):
     t = {"vao": vao, "ra": 100, "cache_ghi": ghi, "cache_doc": doc}
+    if cache_ghi_1h:
+        t["cache_ghi_1h"] = cache_ghi_1h
     return {"luc": "2026-11-20T10:00:00", "nguon": nguon, "model": model, "usd": 0.01, "batch": None,
             "token": t, **extra}
 
@@ -415,3 +417,75 @@ def test_do_cache_bo_qua_luot_khuon_la():
     bc = DO.bao_cao(_so_gia(["chuỗi lạ", {"nguon": "x"}, {"nguon": "y", "token": "không phải dict"},
                              _luot("z", 60000, 0, 0)]))
     assert "z" in bc["theo_nguon"]
+
+
+# ── 8. Vá sau khi chạy trên SỔ CHI PHÍ THẬT (21/11/2026) ─────────────────────────────────────────────────────────
+# Hai lỗi chỉ lộ ra khi chạy trên sổ thật của bác sĩ, không lộ ra với sổ giả tôi tự dựng.
+def test_khau_hao_none_khong_lam_sap_cong_cu():
+    """Sổ có lượt ĐỌC cache nhưng không còn lượt GHI trong cửa sổ 200 lượt ⇒ khấu hao = None.
+
+    Bình thường với nguồn đọc lại cache đã ghi từ lượt trước. Bản đầu định dạng None như số ⇒ TypeError, sập ngay
+    khi chạy lần đầu trên sổ thật. Hình dạng dữ liệu ở đây sao đúng nguồn `do_nhay_api` đã làm sập công cụ."""
+    import do_cache_api as DO
+
+    # cache_ghi = 0, cache_doc > 0, tỷ lệ đọc < 60% ⇒ rơi vào nhánh cuối, nhánh từng định dạng None
+    luot = [_luot("do_nhay_api", 3400, 0, 1600) for _ in range(30)]
+    v = DO.bao_cao(_so_gia(luot))["theo_nguon"]["do_nhay_api"]
+    assert v["khau_hao_ghi"] is None
+    assert "ngoài cửa sổ sổ" in v["vi_sao"]
+
+
+def test_nguong_hoa_von_la_026_khong_phai_1_voi_ttl_5m():
+    """Điểm hoà vốn THẬT của TTL 5 phút là (1,25−1)/(1−0,05) = 0,263× — bản đầu đặt 1,0× và SAI."""
+    import do_cache_api as DO
+
+    assert DO.nguong_khau_hao("claude-sonnet-5-5") == pytest.approx(0.25 / 0.95, abs=1e-3)
+    assert DO.nguong_khau_hao("claude-opus-5-5") == pytest.approx(0.263, abs=1e-3)
+
+
+def test_nguong_hoa_von_cao_hon_khi_ghi_ttl_1h():
+    """Ghi 1h tốn 2× nên đòi khấu hao cao hơn: (2−1)/(1−0,05) = 1,053×."""
+    import do_cache_api as DO
+
+    assert DO.nguong_khau_hao("claude-sonnet-5-5", ty_le_ghi_1h=1.0) == pytest.approx(1.0 / 0.95, abs=1e-3)
+    # Trộn nửa 5m nửa 1h ⇒ ngưỡng nằm giữa
+    giua = DO.nguong_khau_hao("claude-sonnet-5-5", ty_le_ghi_1h=0.5)
+    assert DO.nguong_khau_hao("claude-sonnet-5-5") < giua < DO.nguong_khau_hao("claude-sonnet-5-5", ty_le_ghi_1h=1.0)
+
+
+def test_khau_hao_053_voi_ttl_5m_la_DANG_TIET_KIEM_khong_phai_lo():
+    """Ca thật đã phơi ra lỗi: `hoi_dong_cong_batch` khấu hao 0,53× trên 2,31 Tr token.
+
+    Bản đầu gắn «ĐANG LỖ VÌ CACHE» và khuyên BỎ cache — trong khi nguồn ấy đang TIẾT KIỆM:
+    có cache 1,25 + 0,53×0,05 = 1,277× · không cache 1 + 0,53 = 1,530×. Lời khuyên sai hướng còn tệ hơn
+    một con số hiển thị sai, nên test này chốt cứng bằng chính số liệu đó."""
+    import do_cache_api as DO
+
+    # khấu hao = cache_doc / cache_ghi = 0,53
+    luot = [_luot("hoi_dong", 2_000_000, 200_000, 106_000)]
+    v = DO.bao_cao(_so_gia(luot))["theo_nguon"]["hoi_dong"]
+    assert v["khau_hao_ghi"] == pytest.approx(0.53, abs=0.01)
+    assert v["nhan"] != "ĐANG LỖ VÌ CACHE"
+    # và phép tính tiền phải xác nhận cache rẻ hơn
+    co_cache = 200_000 * API.HE_SO_GHI_CACHE + 106_000 * API.he_so_doc_cache("claude-sonnet-5-5")
+    khong_cache = 200_000 + 106_000
+    assert co_cache < khong_cache
+
+
+def test_khau_hao_duoi_diem_hoa_von_moi_bi_goi_la_lo():
+    """Dưới 0,263× thì mới thật là lỗ — và khi đó nhãn phải nêu RÕ điểm hoà vốn, không chỉ nói «dưới 1 lần»."""
+    import do_cache_api as DO
+
+    luot = [_luot("that_su_lo", 200_000, 200_000, 20_000)]  # khấu hao 0,10×
+    v = DO.bao_cao(_so_gia(luot))["theo_nguon"]["that_su_lo"]
+    assert v["nhan"] == "ĐANG LỖ VÌ CACHE"
+    assert "hoà vốn" in v["vi_sao"]
+
+
+def test_usd_phan_vao_tinh_ghi_1h_bang_2_lan():
+    """Giá phần vào phải tính 2× cho token ghi 1h; bản đầu tính mọi token ghi là 1,25×."""
+    import do_cache_api as DO
+
+    chi_5m = DO.bao_cao(_so_gia([_luot("a", 0, 100_000, 0)]))["theo_nguon"]["a"]["usd_phan_vao"]
+    co_1h = DO.bao_cao(_so_gia([_luot("a", 0, 100_000, 0, cache_ghi_1h=100_000)]))["theo_nguon"]["a"]["usd_phan_vao"]
+    assert co_1h == pytest.approx(chi_5m * (API.HE_SO_GHI_CACHE_1H / API.HE_SO_GHI_CACHE), rel=1e-6)
