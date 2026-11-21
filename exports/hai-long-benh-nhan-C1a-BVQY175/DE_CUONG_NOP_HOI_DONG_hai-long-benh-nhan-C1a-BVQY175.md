@@ -59,6 +59,7 @@
 | Chữ viết tắt | Nghĩa đầy đủ |
 |---|---|
 | AES | Chuẩn mã hóa nâng cao (Advanced Encryption Standard) |
+| AGReMA | Hướng dẫn báo cáo phân tích trung gian (A Guideline for Reporting Mediation Analyses) |
 | ANOVA | Phân tích phương sai (analysis of variance) |
 | BHYT | Bảo hiểm y tế |
 | CFI, TLI | Chỉ số phù hợp so sánh (Comparative Fit Index), chỉ số Tucker–Lewis (Tucker–Lewis Index) |
