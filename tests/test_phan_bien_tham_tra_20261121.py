@@ -210,3 +210,47 @@ def test_main_chay_kho_bao_luot_tham_tra_khong_goi(tmp_path, capsys):
 
     assert PBM.main(["--study", "S1"], client=KhachGia(cam), goc=goc) == 0
     assert "lượt thẩm tra phát hiện" in capsys.readouterr().out
+
+
+# ── 21/11/2026 (A/B thật trên C1a): thẩm tra không thấy danh mục viết tắt ⇒ Sonnet lẫn Opus loại nhầm «thiếu AGReMA»
+VAN_VT = (
+    "# ĐỀ CƯƠNG\n"
+    "## DANH MỤC CHỮ VIẾT TẮT\n"
+    "| Chữ viết tắt | Nghĩa |\n"
+    "|---|---|\n"
+    "| OSF | Open Science Framework |\n"
+    "| STROBE | Hướng dẫn báo cáo nghiên cứu quan sát |\n"
+    "# 1. PHƯƠNG PHÁP\n"
+    "Đăng ký trên OSF trước khi thu thập.\n"
+    "Phân tích trung gian báo cáo theo AGReMA [5].\n"
+    "Nhập liệu bằng REDCap.\n"
+)
+PH_VT = {"loai": "thuat_ngu", "muc": "thap", "dong": 10, "trich": "Nhập liệu bằng REDCap",
+         "van_de": "REDCap, OSF, AGReMA xuất hiện; AGReMA không có trong danh mục viết tắt.", "goi_y": "bổ sung"}
+
+
+def _gui_thuat_ngu(ph_list):
+    dat, _ = PBM.kiem_phat_hien({"phat_hien": ph_list}, VAN_VT)
+    kh = KhachGia(_pq())
+    PBM.tham_tra(dat, VAN_VT, "claude-opus-5-5", kh)
+    return kh.messages.goi[0]["messages"][0]["content"]
+
+
+def test_thuat_ngu_kem_danh_muc_va_doi_chieu_may():
+    noi = _gui_thuat_ngu([dict(PH_VT)])
+    assert "DANH MỤC CHỮ VIẾT TẮT CỦA ĐỀ CƯƠNG (nguyên văn)" in noi and "6| | STROBE |" in noi
+    ds = json.loads(noi.split("CÁC PHÁT HIỆN CẦN THẨM TRA (JSON):\n", 1)[1].split("\n\nDANH MỤC", 1)[0])
+    dc = ds[0]["doi_chieu_may_viet_tat"]
+    assert dc["AGReMA"]["trong_danh_muc"] is False and dc["AGReMA"]["dong_dau_tien"] == 9
+    assert dc["OSF"]["trong_danh_muc"] is True and dc["OSF"]["dong_dau_tien"] == 8  # dòng thân bài, không phải danh mục
+    assert dc["REDCap"]["trong_danh_muc"] is False and "9| Phân tích trung gian" in dc["AGReMA"]["ngu_canh"]
+
+
+def test_khong_co_thuat_ngu_thi_khong_gui_danh_muc():
+    ph = {"loai": "cau_cut", "muc": "vua", "dong": 10, "trich": "Nhập liệu bằng REDCap", "van_de": "x", "goi_y": "y"}
+    noi = _gui_thuat_ngu([ph])
+    assert "DANH MỤC CHỮ VIẾT TẮT CỦA ĐỀ CƯƠNG" not in noi and "doi_chieu_may_viet_tat" not in noi
+
+
+def test_loi_dan_cam_loai_vi_khong_kiem_chung_duoc():
+    assert "không loại vì «không kiểm chứng được»" in PBM.HE_THONG_THAM_TRA

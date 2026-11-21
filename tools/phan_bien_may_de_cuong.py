@@ -14,6 +14,9 @@ trong đó 2 phát hiện «mức cao» và 3 phát hiện khác là báo độn
 mâu thuẫn». Nay mỗi phát hiện đã xác minh được một model thứ hai (mặc định Opus 5.5) thẩm tra trên đúng đoạn trích +
 ngữ cảnh ±1 dòng: «giữ» (có thể HẠ mức, không nâng) hoặc «loại». Phát hiện bị loại vẫn liệt kê ở mục riêng kèm lý do
 — không giấu. Thẩm tra lỗi/thiếu phán quyết ⇒ GIỮ phát hiện (fail-safe). Tắt bằng --khong-tham-tra.
+Phát hiện thuật ngữ/viết tắt được gửi kèm DANH MỤC CHỮ VIẾT TẮT nguyên văn + đối chiếu máy từng chữ viết tắt
+(A/B thật 21/11: thiếu danh mục thì cả Sonnet lẫn Opus loại nhầm «thiếu AGReMA»; có danh mục thì Opus loại đúng
+7/7 báo động giả, giữ lỗi thật — Sonnet 5/7).
 
 Ranh giới: TƯ VẤN — không sửa đề cương, không mở/chặn cổng, không thay phản biện người (G8). Không đánh giá lại lựa chọn
 khoa học thuộc thẩm quyền chủ nhiệm. CHẠY KHÔ mặc định; `--goi-api` mới gọi (tính phí) và ghi báo cáo vào
@@ -104,6 +107,10 @@ HE_THONG_THAM_TRA = (
     "chi tiết hơn, hoặc nói về đối tượng khác như nghiên cứu được trích); chính phần «van_de» tự thừa nhận khớp/không "
     "mâu thuẫn/ổn; phán xét lựa chọn khoa học thuộc thẩm quyền chủ nhiệm; đòi điều văn bản không cần nêu; "
     "«chữ viết tắt» thực ra là tên riêng/tên sản phẩm.\n"
+    "Không đủ căn cứ trong các đoạn đã cho để BÁC BỎ ⇒ giu — tuyệt đối không loại vì «không kiểm chứng được». "
+    "Phát hiện thuật ngữ/viết tắt: dùng DANH MỤC CHỮ VIẾT TẮT nguyên văn và «doi_chieu_may_viet_tat» (máy đã tra) — "
+    "chữ viết tắt cùng loại với các mục danh mục đang liệt kê (vd tên chuẩn báo cáo, thang đo, nền tảng) mà vắng là "
+    "lỗi thật; chỉ loại khi danh mục cho thấy loại đó không được liệt kê (vd tên thương mại phần mềm). "
     "Không chắc thì giu (để người đọc quyết). Có thể HẠ mức (muc_moi) nếu lỗi có thật nhưng nhẹ hơn; không được nâng. "
     "Trả DUY NHẤT JSON {\"phan_quyet\":[{\"id\":1,\"ket_luan\":\"giu|loai\",\"muc_moi\":\"cao|vua|thap|null\","
     "\"ly_do\":\"≤ 30 từ, tiếng Việt\"}]} — đủ MỌI id đã cho."
@@ -118,6 +125,36 @@ def _ngu_canh(dong_ds: List[str], so: Any, ban_kinh: int = 1) -> str:
     return "\n".join(f"{i}| {dong_ds[i - 1]}" for i in range(a, b + 1))
 
 
+_RE_DANH_MUC_VT = re.compile(r"^#{1,6}\s*DANH MỤC (?:CÁC )?(?:CHỮ |TỪ )?VIẾT TẮT", re.I)
+_RE_VIET_TAT = re.compile(r"\b[A-Za-z][A-Za-z0-9-]*[A-Z][A-Za-z0-9-]*\b")
+
+
+def _khoang_danh_muc_vt(dong_ds: List[str]) -> Optional[Tuple[int, int]]:
+    """(dòng đầu, dòng cuối) 1-based của mục DANH MỤC CHỮ VIẾT TẮT; không có ⇒ None."""
+    dau = next((i for i, d in enumerate(dong_ds, 1) if _RE_DANH_MUC_VT.match(d.strip())), None)
+    if dau is None:
+        return None
+    cuoi = next((i - 1 for i in range(dau + 1, len(dong_ds) + 1) if dong_ds[i - 1].lstrip().startswith("#")),
+                len(dong_ds))
+    return dau, cuoi
+
+
+def _doi_chieu_viet_tat(p: Dict[str, Any], dong_ds: List[str], kh: Optional[Tuple[int, int]]) -> Dict[str, Any]:
+    """Máy tra từng chữ viết tắt nêu trong phát hiện: có dòng riêng trong danh mục không, lần đầu ở dòng nào (ngoài
+    danh mục). 21/11/2026: thẩm tra không thấy danh mục ⇒ cả Sonnet lẫn Opus loại nhầm «thiếu AGReMA» (C1a)."""
+    if kh is None:
+        return {}
+    danh_muc = "\n".join(dong_ds[kh[0] - 1:kh[1]])
+    ra: Dict[str, Any] = {}
+    for tu in sorted(set(_RE_VIET_TAT.findall(f"{p.get('van_de', '')} {p.get('trich', '')}")))[:8]:
+        co = re.search(rf"^\|\s*{re.escape(tu)}\s*\|", danh_muc, re.M) is not None
+        dau = next((i for i, d in enumerate(dong_ds, 1) if not kh[0] <= i <= kh[1]
+                    and re.search(rf"(?<![A-Za-z0-9]){re.escape(tu)}(?![A-Za-z0-9])", d)), None)
+        ra[tu] = {"trong_danh_muc": co, "dong_dau_tien": dau,
+                  "ngu_canh": f"{dau}| {dong_ds[dau - 1][:300]}" if dau else ""}
+    return ra
+
+
 def tham_tra(
     dat: List[Dict[str, Any]], van: str, model: str, client: Any = None
 ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]], Optional[API.KetQuaGoi], Optional[str]]:
@@ -126,6 +163,7 @@ def tham_tra(
     if not dat:
         return [], [], None, None
     dong_ds = van.splitlines()
+    kh_vt = _khoang_danh_muc_vt(dong_ds)
     ds = []
     for i, p in enumerate(dat, 1):
         m: Dict[str, Any] = {"id": i, "loai": p["loai"], "muc": p["muc"], "van_de": p["van_de"],
@@ -137,8 +175,14 @@ def tham_tra(
                                                                                             dong_ds[so_dc - 1])):
                 so_dc = next((k for k, d in enumerate(dong_ds, 1) if API.co_nguyen_van(dc["trich"], d)), so_dc)
             m["doi_chieu"] = {"trich": dc["trich"], "ngu_canh": _ngu_canh(dong_ds, so_dc)}
+        if p["loai"] == "thuat_ngu":
+            m["doi_chieu_may_viet_tat"] = _doi_chieu_viet_tat(p, dong_ds, kh_vt)
         ds.append(m)
     loi_nhan = "CÁC PHÁT HIỆN CẦN THẨM TRA (JSON):\n" + json.dumps(ds, ensure_ascii=False, indent=1)
+    if kh_vt and any(p["loai"] == "thuat_ngu" for p in dat):
+        loi_nhan += "\n\nDANH MỤC CHỮ VIẾT TẮT CỦA ĐỀ CƯƠNG (nguyên văn):\n" + "\n".join(
+            f"{i}| {dong_ds[i - 1]}" for i in range(kh_vt[0], kh_vt[1] + 1)
+        )[:12000]
     try:
         kq = API.goi(loi_nhan, he_thong=HE_THONG_THAM_TRA, model=model, max_tokens=MAX_TOKENS_THAM_TRA,
                      effort="high", client=client, nguon="phan_bien_may_tham_tra")
