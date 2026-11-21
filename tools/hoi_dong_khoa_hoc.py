@@ -113,6 +113,103 @@ class LoiThamSo(ValueError):
     """Tham số sai — mã 3."""
 
 
+# ── QUY CHẾ hội đồng — khoá TRƯỚC khi họp (bác sĩ 22/11/2026) ───────────────────────────────────────────────────────
+# «Phải đảm bảo hội đồng hoạt động theo quy trình khoa học nghiêm ngặt, được lên kế hoạch kỹ lưỡng ngay từ đầu và được
+# thực hiện với sự trung thực tuyệt đối. Khi hội đồng đã quyết định thì vấn đề được thông qua … nếu không được thì phải
+# chỉnh sửa theo hội đồng». ⇒ Mọi luật (thành phần, tiêu chí, mốc điểm, xác minh, kết luận, rào biên tập, hiệu chuẩn,
+# model, NGUYÊN VĂN mọi lời dặn) gom vào MỘT quy chế có phiên bản + SHA-256. Phiên mang SHA lúc khởi tạo; quy chế đổi
+# giữa phiên ⇒ phiên hết hiệu lực. Kết luận chỉ có HIỆU LỰC khi hội đồng đã hiệu chuẩn đạt ngưỡng DƯỚI ĐÚNG quy chế đó.
+PHIEN_BAN_QUY_CHE = "QC-HDKH-1.0"
+NGAY_KHOA_QUY_CHE = "2026-11-22"
+TUC_SO = 3
+DO_NHAY_TOI_THIEU = 5 / 6        # mỗi bản cài lỗi phải bắt ≥ 5/6 lỗi
+TEP_QUY_CHE = "docs/QUY-CHE-HOI-DONG-KHOA-HOC-MAY.md"
+
+
+def ke_hoach(model: str = MODEL_MAC_DINH) -> Dict[str, Any]:
+    """Quy chế đầy đủ (dữ liệu thuần, xác định) — nguồn của SHA và của văn bản quy chế."""
+    return {
+        "phien_ban": PHIEN_BAN_QUY_CHE, "ngay_khoa": NGAY_KHOA_QUY_CHE,
+        "muc_dich": "Chấm đề cương nộp Hội đồng theo thể thức Hội đồng Khoa học, tư vấn — không thay hội đồng thật.",
+        "thanh_phan": [{"ma": t["ma"], "vai": t["vai"], "trong_tam": list(t["trong_tam"]), "nhiem_vu": t["nhiem_vu"]}
+                       for t in THANH_VIEN],
+        "doc_lap": "mỗi thành viên một yêu cầu riêng, không thấy điểm/nhận xét của người khác",
+        "chu_tich": "chỉ giữ, hạ mức (không nâng) hoặc loại kèm lý do; không thêm nhận xét, không sửa điểm, không "
+                    "tuyên kết luận; chủ tịch hỏng ⇒ giữ mọi nhận xét đã xác minh",
+        "thu_ky": "máy tất định: trung vị, độ lệch, kết luận theo luật, biên bản",
+        "tieu_chi": dict(MUC_PHIEU), "moc_diem": MOC_DIEM, "muc_do": list(MUC_DO),
+        "xac_minh": {"trich_nguyen_van_cua_so_dong": CUA_SO_DONG, "pii": "loại nhận xét có chuỗi giống số điện thoại",
+                     "chuan_ngoai_danh_muc": "bỏ nhãn chuẩn, giữ nhận xét, cảnh báo", "chuan_chung": list(CHUAN_CHUNG),
+                     "diem": "số nguyên 1–5 (nhận chuỗi một chữ số); điểm ≤ 2 phải có nhận xét nặng đã xác minh"},
+        "tuc_so": TUC_SO,
+        "ket_luan": " ".join((ket_luan_tat_dinh.__doc__ or "").split()),
+        "vong_kin": {"so_vong_toi_da": SO_VONG_TOI_DA, "tran_ky_tu_thay": TRAN_KY_TU_THAY,
+                     "rao_thay_the": ["đoạn cũ đúng 1 lần, đúng dòng ±3", "không trích dẫn mới", "không con số mới",
+                                      "không ô [CẦN]/dấu vết máy", "không PII"],
+                     "rao_van_ban": ["K17 không thêm mục thiếu", "K1–K17 không tăng lỗi theo mã",
+                                     "nhất quán xuyên cổng không tăng lệch", "xấu đi ⇒ hoàn nguyên .md + Word",
+                                     "luôn sao lưu bản cũ"]},
+        "hieu_chuan": {"loi_cai": [[m, mo] for m, mo, *_ in LOI_CAI], "ghep": "một–một trong ±3 dòng",
+                       "do_nhay_toi_thieu": round(DO_NHAY_TOI_THIEU, 4),
+                       "dieu_kien": "vòng kín chỉ chạy, kết luận chỉ có hiệu lực, khi hiệu chuẩn đạt dưới cùng SHA"},
+        "mo_hinh": {"model": model, "effort": EFFORT, "thinking": "adaptive", "batch_api": True,
+                    "cache": "tiền tố đề cương + hồ sơ kiểm máy dùng chung"},
+        "trung_thuc": ["lưu nguyên văn mọi trả lời của model", "liệt kê mọi nhận xét bị loại kèm lý do",
+                       "không đổi quy chế giữa phiên", "biên bản gắn SHA tài liệu và SHA quy chế",
+                       "chi phí thật ghi sổ theo id batch"],
+        "loi_nhan": {"dau_tien_to": khoi_chung("<MA>", "<TEP>", "", {}),
+                     "thanh_vien": {t["ma"]: loi_nhan_thanh_vien(t) for t in THANH_VIEN},
+                     "chu_tich": loi_nhan_chu_tich([], {}), "bien_tap": loi_nhan_bien_tap([])},
+    }
+
+
+def sha_ke_hoach(model: str = MODEL_MAC_DINH) -> str:
+    return hashlib.sha256(json.dumps(ke_hoach(model), ensure_ascii=False, sort_keys=True).encode("utf-8")).hexdigest()
+
+
+def van_ban_quy_che(model: str = MODEL_MAC_DINH) -> str:
+    """Văn bản quy chế (Markdown) sinh từ ĐÚNG dữ liệu khoá — test buộc tệp trong repo khớp SHA."""
+    k = ke_hoach(model)
+    d = [f"# Quy chế Hội đồng Khoa học máy cấp đề tài — {k['phien_ban']}", "",
+         f"- Khoá ngày: {k['ngay_khoa']} · SHA-256 quy chế: `{sha_ke_hoach(model)}`",
+         f"- Mục đích: {k['muc_dich']}", f"- Công cụ: `{CONG_CU}` (văn bản này sinh bằng lệnh `ke-hoach --ghi`).", "",
+         "## 1. Thành phần (chấm độc lập)", ""]
+    d += [f"- **{t['vai']}** — mục trọng tâm {', '.join(t['trong_tam'])}: {t['nhiem_vu']}" for t in k["thanh_phan"]]
+    d += [f"- Độc lập: {k['doc_lap']}.", f"- Chủ tịch: {k['chu_tich']}.", f"- Thư ký: {k['thu_ky']}.", "",
+          "## 2. Tiêu chí (Phiếu nhận xét, Phụ lục 2) và mốc điểm", ""]
+    d += [f"{so}. {ten}" for so, ten in k["tieu_chi"].items()] + ["", "```", k["moc_diem"], "```", "",
+                                                                 "## 3. Xác minh nhận xét (máy)", ""]
+    d += [f"- {a}: {b}" for a, b in k["xac_minh"].items() if a != "chuan_chung"]
+    d += [f"- Chuẩn chung được dẫn: {', '.join(k['xac_minh']['chuan_chung'])}; cộng chuẩn báo cáo theo thiết kế (K17).",
+          "", "## 4. Túc số và kết luận", "", f"- Túc số: ≥ {k['tuc_so']} bản chấm hợp lệ.", f"- {k['ket_luan']}", "",
+          "## 5. Vòng kín: chỉnh sửa theo hội đồng", "",
+          f"- Tối đa {k['vong_kin']['so_vong_toi_da']} vòng; mỗi đoạn thay ≤ {k['vong_kin']['tran_ky_tu_thay']} ký tự.",
+          "- Rào từng thay thế: " + "; ".join(k["vong_kin"]["rao_thay_the"]) + ".",
+          "- Rào toàn văn bản: " + "; ".join(k["vong_kin"]["rao_van_ban"]) + ".", "",
+          "## 6. Hiệu chuẩn (điều kiện tiên quyết)", ""]
+    d += [f"- Lỗi cài: {m} — {mo}." for m, mo in k["hieu_chuan"]["loi_cai"]]
+    d += [f"- Ghép {k['hieu_chuan']['ghep']}; độ nhạy tối thiểu {k['hieu_chuan']['do_nhay_toi_thieu']} mỗi bản.",
+          f"- {k['hieu_chuan']['dieu_kien']}.", "", "## 7. Mô hình", ""]
+    d += [f"- {a}: {b}" for a, b in k["mo_hinh"].items()]
+    d += ["", "## 8. Trung thực", ""] + [f"- {x}." for x in k["trung_thuc"]]
+    d += ["", "Nguyên văn mọi lời dặn gửi hội đồng nằm trong mã và được tính vào SHA ở trên — sửa một chữ là đổi "
+          "quy chế.",
+          "", "Hội đồng MÁY — TƯ VẤN: không thay Hội đồng Khoa học/Hội đồng Đạo đức thật. Cần bác sĩ kiểm chứng.", ""]
+    return "\n".join(d)
+
+
+def hieu_luc_hieu_chuan(out_dir: Path, model: str = MODEL_MAC_DINH) -> Tuple[bool, str]:
+    """Hội đồng đã hiệu chuẩn đạt ngưỡng DƯỚI quy chế hiện hành cho đề tài này chưa? (không đo được ⇒ chưa)."""
+    kq = _doc_st(thu_muc_hd(out_dir) / "hieu_chuan" / "ket_qua.json")
+    if not kq:
+        return False, "chưa hiệu chuẩn"
+    if kq.get("sha_quy_che") != sha_ke_hoach(model):
+        return False, "hiệu chuẩn dưới quy chế khác (SHA không khớp) — hiệu chuẩn lại"
+    if not isinstance(kq.get("do_nhay"), (int, float)) or kq["do_nhay"] < DO_NHAY_TOI_THIEU:
+        return False, f"độ nhạy {kq.get('do_nhay')} < ngưỡng {round(DO_NHAY_TOI_THIEU, 3)}"
+    return True, f"độ nhạy {kq['bat']}/{kq['so_loi_cai']} dưới {PHIEN_BAN_QUY_CHE} (SHA khớp)"
+
+
 # ── văn bản & hồ sơ kiểm máy ─────────────────────────────────────────────────────────────────────────────────────────
 def tep_mac_dinh(study: str, goc: Path = REPO) -> Path:
     return goc / "exports" / study / f"DE_CUONG_NOP_HOI_DONG_{study}.md"
@@ -418,6 +515,7 @@ def khoi_tao(study: str, out_dir: Path, tep: Path, model: str) -> Dict[str, Any]
     ho_so = ho_so_kiem_may(study, out_dir, van, la_chinh)
     return {"schema": SCHEMA, "study": study, "tep": str(tep), "sha": _sha(van), "model": model,
             "ho_so": ho_so, "buoc": "thanh_vien", "batch": {}, "thanh_vien": {}, "chu_tich": None,
+            "quy_che": {"phien_ban": PHIEN_BAN_QUY_CHE, "sha": sha_ke_hoach(model)},
             "bat_dau": dt.datetime.now().isoformat(timespec="seconds")}
 
 
@@ -507,7 +605,13 @@ def bien_ban_md(st: Dict[str, Any]) -> str:
     d = [f"# Biên bản Hội đồng Khoa học (máy) — {st['study']}", "",
          f"- Tài liệu: `{Path(st['tep']).name}` (SHA-256 {st['sha'][:16]}…)",
          f"- Thành phần: 5 thành viên chấm độc lập + chủ tịch tổng hợp; thư ký là máy tất định. Model {st['model']} "
-         f"(Batch API, effort {EFFORT}).", f"- Bắt đầu: {st.get('bat_dau')}", "",
+         f"(Batch API, effort {EFFORT}).", f"- Bắt đầu: {st.get('bat_dau')} · vòng {st.get('vong', 1)}",
+         f"- Quy chế: {(st.get('quy_che') or {}).get('phien_ban', '—')} (SHA "
+         f"{str((st.get('quy_che') or {}).get('sha', '—'))[:16]}…) — khoá trước khi họp, không đổi giữa phiên.",
+         f"- Hiệu chuẩn hội đồng: {st.get('hieu_luc_ly_do', 'không áp dụng (bản hiệu chuẩn)')}.",
+         "- **Hiệu lực kết luận: " + ("CÓ" if st.get("hieu_luc")
+                                       else "CHƯA — hội đồng chưa hiệu chuẩn đạt dưới quy chế này") + "**",
+         "",
          f"## Kết luận (luật cố định của thư ký máy): **{KET_LUAN.get(th['ket_luan'], '—')}**", "",
          f"Căn cứ: {th['ly_do_ket_luan']}.", "",
          "## Bảng điểm (thang 1–5, Phiếu nhận xét)", "",
@@ -866,6 +970,8 @@ def cham_hieu_chuan(dap_an: Sequence[Dict[str, Any]], st: Dict[str, Any]) -> Dic
 def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = REPO) -> int:
     ap = argparse.ArgumentParser(description="Hội đồng Khoa học máy cấp đề tài (Claude Batch API).")
     sub = ap.add_subparsers(dest="lenh", required=True)
+    k = sub.add_parser("ke-hoach", help="in/ghi văn bản quy chế (khoá trước khi họp)")
+    k.add_argument("--ghi", action="store_true", help=f"ghi {TEP_QUY_CHE}")
     for ten in ("uoc-tinh", "hop", "bien-ban", "hieu-chuan", "vong-kin"):
         p = sub.add_parser(ten)
         p.add_argument("--study", required=True)
@@ -880,11 +986,22 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
             p.add_argument("--goi-api", action="store_true", help="nộp/lấy batch (TÍNH PHÍ)")
             p.add_argument("--ap-dung", action="store_true",
                            help="ghi bản đã sửa (sao lưu bản cũ; hoàn nguyên nếu xấu đi)")
+            p.add_argument("--lam-lai", action="store_true", help="bỏ phiên cũ của tài liệu này (vd quy chế đã đổi)")
         if ten == "hieu-chuan":
             g = p.add_mutually_exclusive_group(required=True)
             g.add_argument("--tao", action="store_true", help="tạo bản sao cài lỗi + đáp án (0 gọi API)")
             g.add_argument("--cham", action="store_true", help="chấm độ nhạy sau khi hội đồng họp bản sao")
     a = ap.parse_args(argv)
+    if a.lenh == "ke-hoach":
+        vb = van_ban_quy_che()
+        if a.ghi:
+            p_qc = goc / TEP_QUY_CHE
+            p_qc.parent.mkdir(parents=True, exist_ok=True)
+            _ghi_van(p_qc, vb)
+            print(f"📜 Đã ghi {TEP_QUY_CHE} ({PHIEN_BAN_QUY_CHE}, SHA {sha_ke_hoach()[:16]}…).")
+        else:
+            print(vb)
+        return 0
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", a.study):
         print("❌ mã đề tài không hợp lệ", file=sys.stderr)
         return 3
@@ -902,7 +1019,9 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
             tam = ban.with_name(ban.name + ".tam")
             tam.write_text(van_moi, encoding="utf-8", newline="\n")
             tam.replace(ban)
-            _ghi_json(hc_dir / "dap_an.json", {"tep": str(ban), "sha": _sha(van_moi), "dap_an": dap_an})
+            _ghi_json(hc_dir / "dap_an.json", {"tep": str(ban), "sha": _sha(van_moi), "dap_an": dap_an,
+                                               "sha_goc": _sha(goc_tep.read_text(encoding="utf-8")),
+                                               "sha_quy_che": sha_ke_hoach(a.model), "quy_che": PHIEN_BAN_QUY_CHE})
             print(f"🧪 Đã cài {len(dap_an)} lỗi vào {ban.name} (đáp án riêng, hội đồng không thấy). Họp bằng:\n"
                   f"   hoi_dong_khoa_hoc.py hop --study {a.study} --tep {ban} --goi-api")
             return 0
@@ -914,13 +1033,19 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
         if not st or st.get("buoc") != "xong":
             print("⏳ hội đồng chưa họp xong bản cài lỗi", file=sys.stderr)
             return 4
+        if not (st.get("quy_che") or {}).get("sha") == da.get("sha_quy_che") == sha_ke_hoach(a.model):
+            print("⛔ Phiên hiệu chuẩn không cùng quy chế hiện hành — tạo lại bản cài lỗi và họp lại.", file=sys.stderr)
+            return 1
         kq = cham_hieu_chuan(da["dap_an"], st)
+        kq.update(sha_quy_che=da["sha_quy_che"], quy_che=PHIEN_BAN_QUY_CHE, sha_goc=da.get("sha_goc"),
+                  ngay=dt.date.today().isoformat(),
+                  dat=kq["do_nhay"] is not None and kq["do_nhay"] >= DO_NHAY_TOI_THIEU)
         _ghi_json(hc_dir / "ket_qua.json", kq)
         print(f"🎯 Độ nhạy hội đồng: bắt {kq['bat']}/{kq['so_loi_cai']} lỗi cài ({kq['do_nhay']}); "
               f"{kq['van_de_ngoai_loi_cai']} vấn đề khác ngoài lỗi cài.")
         for k in kq["chi_tiet"]:
             print(f"   {'✓' if k['bat'] else '✗'} {k['ma']} (dòng {k['dong']}) {', '.join(k['boi'])}")
-        return 0 if kq["bat"] == kq["so_loi_cai"] else 1
+        return 0 if kq["dat"] else 1
     tep = a.tep or tep_mac_dinh(a.study, goc)
     if not tep.is_file():
         print(f"❌ không thấy tài liệu {tep}", file=sys.stderr)
@@ -930,9 +1055,16 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
     st = None if getattr(a, "lam_lai", False) else _doc_st(p_st)
     if st and st.get("sha") != _sha(van):
         st = None
+    if st and (st.get("quy_che") or {}).get("sha") != sha_ke_hoach(st.get("model", a.model)):
+        print(f"⛔ Phiên của tài liệu này khởi tạo dưới quy chế khác (hoặc chưa có quy chế) — hết hiệu lực. Chạy lại "
+              f"với --lam-lai để họp dưới {PHIEN_BAN_QUY_CHE}.", file=sys.stderr)
+        return 1
     try:
         if st is None:
             st = khoi_tao(a.study, out_dir, tep, a.model)
+        la_ban_chinh = tep.resolve() == tep_mac_dinh(a.study, goc).resolve()
+        if la_ban_chinh:
+            st["hieu_luc"], st["hieu_luc_ly_do"] = hieu_luc_hieu_chuan(out_dir, st["model"])
         if a.lenh == "uoc-tinh":
             u = uoc_tinh(st, van)
             print(f"Hội đồng: {u['so_yeu_cau']} yêu cầu ({len(THANH_VIEN)} thành viên + chủ tịch), model {u['model']}, "
@@ -945,6 +1077,12 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
                 _ghi_json(p_st, st)
             return ma
         if a.lenh == "vong-kin":
+            if not la_ban_chinh or not st.get("hieu_luc"):
+                print(f"⛔ Vòng kín chỉ chạy trên đề cương chính khi hội đồng đã hiệu chuẩn đạt dưới "
+                      f"{PHIEN_BAN_QUY_CHE}: "
+                      f"{st.get('hieu_luc_ly_do', 'không phải đề cương chính')}. Chạy «hieu-chuan --tao», họp bản cài "
+                      "lỗi, «hieu-chuan --cham» trước.", file=sys.stderr)
+                return 3
             ma = vong_kin_buoc(st, van, tep, out_dir, a.goi_api, a.ap_dung, client)
             if a.goi_api or st.get("batch"):
                 if st["buoc"] in ("bien_tap", "dat", "da_sua") and not st.get("bien_ban"):

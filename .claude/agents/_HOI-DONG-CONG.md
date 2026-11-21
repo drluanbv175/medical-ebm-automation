@@ -307,6 +307,11 @@ Claude». Hội đồng cổng (mục 1–7) chấm từng NHIỆM VỤ. Hội �
   mức ngữ cảnh.
 - **Chi phí:** Claude Batch API, có TÍNH PHÍ ⇒ `uoc-tinh` (0 gọi API) rồi hỏi bác sĩ. Đo 22/11: ≈ 0,7 USD mỗi lần họp
   một đề cương, trần ≈ 2,6 USD; báo bác sĩ theo mức ×2 như mục 5.
+- **Quy chế khoá trước khi họp** (bác sĩ 22/11: «quy trình khoa học nghiêm ngặt, lên kế hoạch kỹ lưỡng ngay từ đầu, trung thực tuyệt đối»):
+  - Mọi luật VÀ nguyên văn mọi lời dặn gom vào quy chế `QC-HDKH-x.y` có SHA-256. Văn bản quy chế ở `medical-ebm-automation/docs/QUY-CHE-HOI-DONG-KHOA-HOC-MAY.md` (test buộc khớp SHA của mã).
+  - Phiên mang SHA lúc khởi tạo; quy chế đổi ⇒ phiên hết hiệu lực, họp lại.
+  - Kết luận chỉ có HIỆU LỰC, và vòng kín chỉ chạy, khi hội đồng đã hiệu chuẩn đạt ≥ 5/6 lỗi cài DƯỚI CÙNG SHA. Đổi quy chế ⇒ hiệu chuẩn lại.
+- **Vòng kín** (bác sĩ 22/11: hội đồng không thông qua thì phải chỉnh sửa theo hội đồng): `vong-kin --goi-api --ap-dung`. Biên tập viên đề xuất thay thế nguyên văn; máy chỉ áp thay thế qua rào (không số/trích dẫn mới, K1–K17 không tăng lỗi theo mã, nhất quán không tăng lệch; xấu đi ⇒ hoàn nguyên). Họp lại tới khi thông qua, tối đa 3 vòng; chỉ trình bác sĩ bản đã thông qua kèm nhật ký thay đổi.
 - **Bất biến 1–4** áp nguyên: TƯ VẤN, không thay Hội đồng Khoa học/Đạo đức thật, biên bản gắn SHA-256 tài liệu.
   Nhận xét đã xác minh là căn cứ để agent sửa; đề cương đổi thì họp lại.
 

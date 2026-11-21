@@ -273,6 +273,12 @@ SACH = {**{m: _tv(diem=5) for m in ("pb1", "pb2", "uv_tk", "uv_dd", "uv_tl")},
         "ct": {"phan_quyet": [], "gop": [], "nhan_xet_chung": "Đạt.", "yeu_cau_chinh_sua": []}}
 
 
+def _hieu_chuan_dat(goc, do_nhay=1.0):
+    """Kết quả hiệu chuẩn HỢP LỆ dưới quy chế hiện hành (điều kiện tiên quyết của vòng kín)."""
+    H._ghi_json(goc / "exports" / STUDY / H.THU_MUC / "hieu_chuan" / "ket_qua.json",
+                {"sha_quy_che": H.sha_ke_hoach(), "do_nhay": do_nhay, "bat": round(6 * do_nhay), "so_loi_cai": 6})
+
+
 def _vong(goc, kh, n=12):
     ma = None
     for _ in range(n):
@@ -285,6 +291,7 @@ def _vong(goc, kh, n=12):
 
 def test_vong_kin_sua_roi_hop_lai_toi_khi_dat(tmp_path):
     goc = _goc(tmp_path)
+    _hieu_chuan_dat(goc)
     kh = KhachBatch({**TRA, "bt": SUA})
     p = goc / "exports" / STUDY / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md"
     for _ in range(6):                                   # vòng 1: họp → còn «cần sửa» → biên tập → áp
@@ -303,6 +310,7 @@ def test_vong_kin_sua_roi_hop_lai_toi_khi_dat(tmp_path):
 
 def test_vong_kin_hoan_nguyen_khi_ban_sua_lam_chuan_xau_di(tmp_path, monkeypatch):
     goc = _goc(tmp_path)
+    _hieu_chuan_dat(goc)
     kh = KhachBatch({**TRA, "bt": SUA})
     p = goc / "exports" / STUDY / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md"
     goc_van = p.read_text(encoding="utf-8")
@@ -320,9 +328,69 @@ def test_vong_kin_hoan_nguyen_khi_ban_sua_lam_chuan_xau_di(tmp_path, monkeypatch
 
 
 def test_vong_kin_dung_sau_so_vong_toi_da(tmp_path, monkeypatch):
-    monkeypatch.setattr(H, "SO_VONG_TOI_DA", 1)
     goc, kh = _goc(tmp_path), KhachBatch({**TRA, "bt": SUA})
+    monkeypatch.setattr(H, "SO_VONG_TOI_DA", 1)
+    _hieu_chuan_dat(goc)   # hiệu chuẩn tính dưới quy chế ĐÃ đổi số vòng — SHA phải tính sau khi vá
     # 4 lượt họp (nộp/lấy thành viên, nộp/lấy chủ tịch) + lượt 5 xét điều kiện dừng ở «xong»
     ma = [H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc) for _ in range(5)]
     assert ma[-1] == 1 and "phân tích ca đầy đủ" not in (goc / "exports" / STUDY /
                                                         f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md").read_text("utf-8")
+
+
+# ── quy chế khoá trước khi họp (bác sĩ 22/11/2026: quy trình khoa học nghiêm ngặt, kế hoạch từ đầu, trung thực) ─────
+def test_van_ban_quy_che_trong_repo_khop_sha_cua_ma():
+    """Văn bản quy chế lưu trong repo phải sinh từ ĐÚNG dữ liệu khoá — sửa lời dặn/luật mà không sinh lại ⇒ đỏ."""
+    vb = (ROOT / H.TEP_QUY_CHE).read_text(encoding="utf-8")
+    assert H.sha_ke_hoach() in vb and vb == H.van_ban_quy_che()
+
+
+@pytest.mark.parametrize("ten, gia_tri", [("MOC_DIEM", "khác"), ("CUA_SO_DONG", 5), ("SO_VONG_TOI_DA", 9),
+                                          ("DO_NHAY_TOI_THIEU", 0.5), ("EFFORT", "low"),
+                                          ("loi_nhan_chu_tich", lambda *a: "lời dặn khác"),   # chỉ đổi LỜI DẶN
+                                          ("loi_nhan_bien_tap", lambda *a: "lời dặn khác")])
+def test_doi_bat_ky_luat_nao_la_doi_sha_quy_che(monkeypatch, ten, gia_tri):
+    goc = H.sha_ke_hoach()
+    monkeypatch.setattr(H, ten, gia_tri)
+    assert H.sha_ke_hoach() != goc
+
+
+def test_phien_khoi_tao_duoi_quy_che_khac_het_hieu_luc(tmp_path, monkeypatch):
+    goc, kh = _goc(tmp_path), KhachBatch(TRA)
+    assert H.main(["hop", "--study", STUDY, "--goi-api"], client=kh, goc=goc) == 4
+    monkeypatch.setattr(H, "MOC_DIEM", H.MOC_DIEM + " ")           # quy chế đổi giữa phiên
+    assert H.main(["hop", "--study", STUDY, "--goi-api"], client=kh, goc=goc) == 1
+    assert H.main(["hop", "--study", STUDY, "--goi-api", "--lam-lai"], client=kh, goc=goc) == 4  # họp lại từ đầu
+
+
+def test_vong_kin_tu_choi_khi_chua_hieu_chuan_dat(tmp_path, capsys):
+    goc, kh = _goc(tmp_path), KhachBatch({**TRA, "bt": SUA})
+    assert H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc) == 3 and kh.lo == {}
+    _hieu_chuan_dat(goc, do_nhay=4 / 6)                            # dưới ngưỡng 5/6
+    assert H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc) == 3 and kh.lo == {}
+    assert "< ngưỡng" in capsys.readouterr().err
+    _hieu_chuan_dat(goc)
+    assert H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc) == 4
+
+
+def test_bien_ban_ghi_quy_che_va_hieu_luc(tmp_path):
+    goc, kh = _goc(tmp_path), KhachBatch(TRA)
+    for _ in range(4):
+        H.main(["hop", "--study", STUDY, "--goi-api"], client=kh, goc=goc)
+    H.main(["bien-ban", "--study", STUDY, "--ap-dung"], client=kh, goc=goc)
+    bb = next((goc / "exports" / STUDY / H.THU_MUC).glob("BIEN_BAN_HDKH_*.md")).read_text(encoding="utf-8")
+    assert H.PHIEN_BAN_QUY_CHE in bb and "Hiệu lực kết luận: CHƯA" in bb
+    _hieu_chuan_dat(goc)
+    H.main(["bien-ban", "--study", STUDY, "--ap-dung"], client=kh, goc=goc)
+    bb = next((goc / "exports" / STUDY / H.THU_MUC).glob("BIEN_BAN_HDKH_*.md")).read_text(encoding="utf-8")
+    assert "Hiệu lực kết luận: CÓ" in bb
+
+
+def test_hieu_chuan_cham_tu_choi_khi_quy_che_doi(tmp_path, monkeypatch):
+    goc, kh = _goc(tmp_path), KhachBatch(TRA)
+    assert H.main(["hieu-chuan", "--study", STUDY, "--tao"], goc=goc) == 0
+    ban = goc / "exports" / STUDY / H.THU_MUC / "hieu_chuan" / f"BAN_CAI_LOI_{STUDY}.md"
+    for _ in range(4):
+        H.main(["hop", "--study", STUDY, "--tep", str(ban), "--goi-api"], client=kh, goc=goc)
+    monkeypatch.setattr(H, "CUA_SO_DONG", 4)
+    assert H.main(["hieu-chuan", "--study", STUDY, "--cham"], goc=goc) == 1
+    assert not (goc / "exports" / STUDY / H.THU_MUC / "hieu_chuan" / "ket_qua.json").exists()  # không ghi kết quả
