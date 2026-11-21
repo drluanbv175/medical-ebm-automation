@@ -48,6 +48,10 @@ CAN_CU_MIEN_DONG_THUAN = (
     "bản cung cấp thông tin nghiên cứu và phiếu tình nguyện tham gia nghiên cứu)."
 )
 
+#: Cùng căn cứ cho VĂN BẢN NỘP Hội đồng (đề cương, đơn trong phụ lục): «đoạn 32» thay «§32» — luật K4 của đề cương nộp
+#: coi «§» là ký hiệu nội bộ (21/11/2026; đề cương BTM viết tay theo cùng cách).
+CAN_CU_MIEN_DONG_THUAN_VAN_BAN_NOP = CAN_CU_MIEN_DONG_THUAN.replace("§", "đoạn ")
+
 #: Căn cứ rút gọn một dòng — dùng trong khối TÀI LIỆU 9 của gói G2.
 CAN_CU_MIEN_DONG_THUAN_NGAN = (
     "Helsinki (WMA, bản sửa đổi 10/2024) §32 + §24 · CIOMS 2016 Hướng dẫn 10 (ba điều kiện) + Hướng dẫn 12 · "

@@ -73,9 +73,14 @@ SAP = """# SAP
 - **Phương pháp:** Hồi quy Poisson với sai số chuẩn robust → RR *(điền sẵn từ quyết định đã chốt, PI sửa nếu cần)*
 - **Quần thể phân tích CHÍNH:** ITT; per-protocol chỉ là phân tích độ nhạy ở §9
 
+### §5 PHÂN TÍCH ĐA BIẾN
+
+- **Giả định:** Kiểm dạng tuyến tính của tuổi; VIF < 5
+
 ### §6 DỮ LIỆU THIẾU
 
 - **Chiến lược:** Multiple Imputation (MI, m=20, method=pmm)
+- **Giả định:** MAR (missing at random)
 - **Biến đưa vào mô hình imputation:** `kiem_soat`, `nhom` *(mọi biến phân tích của ma trận, thống kê viên xác nhận)*
 
 ### §11 DUMMY TABLES (Khung bảng kết quả)
@@ -106,6 +111,11 @@ def _de_tai(tmp_path: Path, thiet_ke: str = "rct") -> Path:
         "team": "Chủ nhiệm (PI-REF-01), thống kê viên (giả lập)",
         "timeline": "12 tháng: chuẩn bị 2 tháng; thu thập 6 tháng; phân tích 4 tháng",
         "budget": "Kinh phí đơn vị cấp",
+        # 21/11/2026 (K17 chặn cả bản nháp): đề tài thử mang ĐỦ quyết định của một đề tài hoàn chỉnh — bảo vệ dữ liệu
+        # cá nhân (Luật 91/2025), sổ sai lệch có chiều ảnh hưởng, chế độ tuyển, nguồn chọn chứng có lý do.
+        "privacy_plan": "Phiếu chỉ mang mã nghiên cứu; bảng nối mã lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ",
+        "data_storage": "Lưu trên máy tính của khoa có mật khẩu, sao lưu hằng tuần",
+        "data_access": "Phân quyền theo vai trò, chỉ nhóm nghiên cứu truy cập",
         "gate_params": {
             "G0": {"hypothesis_h0": "Tỷ lệ kiểm soát hai nhóm bằng nhau", "hypothesis_h1": "Tỷ lệ khác nhau",
                    "novelty_justification": "Chưa có thử nghiệm tại Việt Nam (GIẢ LẬP CANARY — dữ liệu tổng hợp)"},
@@ -133,8 +143,15 @@ def _de_tai(tmp_path: Path, thiet_ke: str = "rct") -> Path:
                 "knowledge_gap": "Thiếu thử nghiệm tại Việt Nam",
                 "study_schema_timeline": "Sàng lọc → ngẫu nhiên hoá → can thiệp 6 tháng",
                 "recruitment_strategy": "Tuyển liên tiếp người bệnh đủ tiêu chuẩn",
+                "critical_to_quality": "Đo huyết áp chuẩn hoá bằng cùng một quy trình cho mọi người tham gia",
+                "case_definition": "Người tăng huyết áp chưa đạt kiểm soát tại lần khám",
+                "control_source": "Người tăng huyết áp đã đạt kiểm soát khám cùng tuần, để nhóm chứng đại diện cho "
+                                  "quần thể nguồn sinh ra ca",
+                "bias_controls": [{"sai_lech": "Sai lệch đo lường huyết áp", "bien_phap": "Đo chuẩn hoá hai lần",
+                                   "chieu": "Hiệu ứng áo choàng trắng làm tỷ lệ kiểm soát được ước lượng thấp hơn "
+                                            "thực tế"}],
             },
-            "G2": {"icf_waiver_requested": False},
+            "G2": {"icf_waiver_requested": False, "recruitment_mode": "PROSPECTIVE_NEW_PARTICIPANTS"},
             "G3": {"effect_source": "PMID: 11111111 (TRIAL) — tỷ lệ 70% so với 48%",
                    "p0_source": "PMID: 11111111 — tỷ lệ nhóm chứng 48%", "hypothesis_type": "superiority"},
         },
@@ -152,6 +169,12 @@ def _de_tai(tmp_path: Path, thiet_ke: str = "rct") -> Path:
         "pmids_checked": ["11111111", "22222222"], "all_clean": True,
         "results": {"11111111": {"status": "ok"}, "22222222": {"status": "ok"}}}), encoding="utf-8", newline="\n")
     (d / f"G4_A5_SAP_FINAL_{MA}.md").write_text(SAP, encoding="utf-8", newline="\n")
+    (d / "G9_PUBLICATION_READINESS.json").write_text(json.dumps({
+        "coi_funding": {"funding_statement": "Kinh phí đơn vị cấp",
+                        "sponsor_role_statement": "Đơn vị cấp kinh phí không tham gia thiết kế, phân tích hay quyết "
+                                                  "định công bố"},
+        "data_availability": {"access_criteria": "Bộ dữ liệu đã khử định danh chia sẻ theo yêu cầu hợp lý gửi chủ "
+                                                 "nhiệm"}}, ensure_ascii=False), encoding="utf-8", newline="\n")
     (d / f"G2_A3_ETHICS_PACKAGE_{MA}.md").write_text(f"## TÀI LIỆU 4. PHIẾU ĐỒNG Ý\n\n{ICF}\n## TÀI LIỆU 5. ICF EN\n",
                                                     encoding="utf-8", newline="\n")
     chung = {"Form Name": "phieu", "Section Header": "", "Field Note": "", "Text Validation Min": "",

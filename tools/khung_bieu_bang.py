@@ -556,8 +556,19 @@ def _so_do(nc: NguCanh) -> Khung:
             buoc.append((f"Đưa vào phân tích {n}", None))
             tach = []
         ten = "Sơ đồ chọn đối tượng nghiên cứu (theo STROBE)"
-    return Khung("hinh", ten, dac_ta={"kieu": "so_do", "buoc": buoc, "tach": tach},
-                 ghi_chu=["Số lượng ở từng bước và lý do loại được ghi đầy đủ khi kết thúc thu thập số liệu."])
+    # 21/11/2026 (STROBE 13b, RECORD 13.1): ghi chú nêu đúng các ô loại của chính sơ đồ — khi hình được vẽ ra ảnh, chữ
+    # trong ô không còn trong văn bản nên người đọc (và K17) không biết sơ đồ ghi những lý do loại nào.
+    loai = []
+    for o in [b[1] for b in buoc if b[1]] + [c for nh in tach for c in nh[1:-1]]:
+        for d in str(o).split("\n"):
+            d = re.sub(r"\s*\(n = …\)", "", d).strip(" –-")
+            if d and d not in loai and not re.match(r"(Theo dõi|Phân tích|Có tiêu chuẩn|Có bệnh)\b", d):
+                loai.append(d)
+    ghi = ["Số lượng ở từng bước và lý do loại được ghi đầy đủ khi kết thúc thu thập số liệu."]
+    if loai:
+        ghi.append("Các lý do loại và ra khỏi nghiên cứu được ghi nhận: " + "; ".join(x[:1].lower() + x[1:]
+                                                                                    for x in loai) + ".")
+    return Khung("hinh", ten, dac_ta={"kieu": "so_do", "buoc": buoc, "tach": tach}, ghi_chu=ghi)
 
 
 # ─────────────────────────────── bảng đặc điểm ───────────────────────────────
@@ -594,11 +605,13 @@ def _bang_dac_diem(nc: NguCanh) -> Khung:
         ten = "Đặc điểm nền của người tham gia theo nhóm phân bổ"
         them = ["Không kiểm định ý nghĩa khác biệt đặc điểm nền giữa các nhóm đã ngẫu nhiên hoá."]
     elif tk in ("cohort", "case_control"):
+        # 21/11/2026 (STROBE 14b): cột số thiếu của từng biến — trước đó chỉ bảng mô tả một nhóm có cột này
         nhom = _cot_nhom(nc, nhom_ten, ("Nhóm phơi nhiễm", "Nhóm không phơi nhiễm") if tk == "cohort"
-                         else ("Nhóm bệnh", "Nhóm chứng"))
+                         else ("Nhóm bệnh", "Nhóm chứng")) + ["Số thiếu, n (%)"]
         ten = ("Đặc điểm của đối tượng nghiên cứu theo tình trạng phơi nhiễm" if tk == "cohort"
                else "Đặc điểm của nhóm bệnh và nhóm chứng")
-        them = ["Bảng mô tả không kèm giá trị p; khác biệt giữa các nhóm được xử lý bằng hiệu chỉnh trong mô hình."]
+        them = ["Bảng mô tả không kèm giá trị p; khác biệt giữa các nhóm được xử lý bằng hiệu chỉnh trong mô hình.",
+                "Cột cuối là số người thiếu dữ liệu của từng biến trên toàn mẫu."]
     elif tk == "prediction":
         nhom = [f"Toàn mẫu (N = {X})", f"Có biến cố (n = {X})", f"Không có biến cố (n = {X})", "Số thiếu, n (%)"]
         ten = "Đặc điểm người bệnh và các yếu tố dự báo trong mẫu phát triển mô hình"
@@ -615,7 +628,7 @@ def _bang_dac_diem(nc: NguCanh) -> Khung:
     else:
         nhom = [f"Toàn mẫu (N = {_so(nc.n) if nc.n else X})", "Số thiếu, n (%)"]
         ten = "Đặc điểm chung của đối tượng nghiên cứu"
-        them = []
+        them = ["Cột cuối là số người thiếu dữ liệu của từng biến."]
     so_cot = len(nhom)
     dong: List[List[str]] = []
     for ten_b, kn in _bien_nen(nc):
@@ -627,9 +640,49 @@ def _bang_dac_diem(nc: NguCanh) -> Khung:
     if not dong:
         dong = [["Tuổi (năm), TB ± ĐLC hoặc trung vị [KTPV]"] + [f"{X} ± {X}"] * so_cot,
                 ["Giới nữ, n (%)"] + [f"{X} ({X})"] * so_cot]
+    tg = _bien_thoi_gian_theo_doi(nc) if tk in ("cohort", "prediction") else None
+    if tg:  # STROBE 14c: tóm tắt thời gian theo dõi (biến thời gian theo dõi có trong bộ biến của đề tài)
+        nhan, dv = _tach_don_vi(tg.nhan)
+        hang = [f"{_hoa_dau(nhan)}{f' ({dv})' if dv else ''}, trung vị [KTPV]"] + [f"{X} [{X}]"] * so_cot
+        if nhom[-1].startswith("Số thiếu"):
+            hang[-1] = f"{X} ({X})"
+        dong.append(hang)
     cot = ["Đặc điểm"] + nhom
     return Khung("bang", ten, cot, dong, _ghi_chu(cot, dong, ["Biến định lượng trình bày TB ± ĐLC khi phân phối gần "
                                                                "chuẩn, ngược lại trung vị [KTPV]."] + them))
+
+
+def _bien_thoi_gian_theo_doi(nc: NguCanh) -> Optional[Bien]:
+    """Biến thời gian theo dõi CÓ trong bộ biến của đề tài (vai trò «thời gian đến biến cố» ở ma trận, hoặc nhãn «thời
+    gian theo dõi»). Không có ⇒ None (bảng không thêm hàng/cột theo thời gian)."""
+    for r in nc.ma_tran:
+        if (r.get("vai_tro") or "").strip() in ("thoi_gian_den_su_kien", "thoi_gian") and r.get("bien") in nc.bien:
+            return nc.bien[r["bien"]]
+    for b in nc.bien.values():
+        if re.search(r"thời gian theo dõi", b.nhan, re.I) and b.kieu in ("lien_tuc", "dem", "thoi_gian_den_su_kien"):
+            return b
+    return None
+
+
+def _bang_bien_co(nc: NguCanh) -> Optional[Khung]:
+    """STROBE 14c/15 (thuần tập): số biến cố của KẾT CỤC CHÍNH theo nhóm phơi nhiễm — nguy cơ tích luỹ, và khi bộ biến
+    có thời gian theo dõi thì tổng người-năm và tỷ suất mới mắc (21/11/2026)."""
+    kc = _dong_ma_tran(nc, vai=("ket_cuc_chinh",))
+    if nc.thiet_ke != "cohort" or not kc:
+        return None
+    ten_kc = _thuong_dau(_nhan_bien(nc, kc[0].get("bien") or "", kc[0].get("khai_niem") or "", don_vi=False))
+    nhom = [c.split(" (n =")[0] for c in _cot_nhom(nc, _bien_nhom(nc), ("Nhóm phơi nhiễm", "Nhóm không phơi nhiễm"))]
+    tg = _bien_thoi_gian_theo_doi(nc)
+    cot = ["Nhóm", "Số người", "Số biến cố", "Nguy cơ tích luỹ, % (KTC 95%)"]
+    if tg:
+        cot += ["Tổng thời gian theo dõi (người-năm)", "Tỷ suất mới mắc /1.000 người-năm (KTC 95%)"]
+    dong = [[g, X, X, f"{X} ({X} – {X})"] + ([X, f"{X} ({X} – {X})"] if tg else []) for g in nhom[:4]]
+    dong.append(["Chung", X, X, f"{X} ({X} – {X})"] + ([X, f"{X} ({X} – {X})"] if tg else []))
+    them = ["Nguy cơ tích luỹ = số người có biến cố / số người của nhóm trong toàn bộ thời gian theo dõi."]
+    if tg:
+        them.append("Tỷ suất mới mắc = số biến cố / tổng người-năm theo dõi × 1.000.")
+    return Khung("bang", f"Số biến cố và nguy cơ tích luỹ của {ten_kc} theo tình trạng phơi nhiễm", cot, dong,
+                 _ghi_chu(cot, dong, them))
 
 
 # ─────────────────────────────── theo mục tiêu ───────────────────────────────
@@ -1034,7 +1087,7 @@ def dung_khung(nc: NguCanh) -> List[Muc]:
     """Các mục của chương «Dự kiến kết quả» theo thiết kế và theo TỪNG mục tiêu."""
     tieu_de_1 = {"sr_ma": "Đặc điểm các nghiên cứu được đưa vào tổng quan",
                  "qualitative": "Đặc điểm người tham gia nghiên cứu"}.get(nc.thiet_ke, "Đặc điểm đối tượng nghiên cứu")
-    muc = [Muc(tieu_de_1, [_so_do(nc), _bang_dac_diem(nc)])]
+    muc = [Muc(tieu_de_1, [x for x in (_so_do(nc), _bang_dac_diem(nc), _bang_bien_co(nc)) if x is not None])]
     for k, mt in enumerate(nc.muc_tieu or ["Kết quả nghiên cứu"], 1):
         muc.append(Muc(f"Kết quả theo mục tiêu {k}: {_ten_muc_tieu_ngan(mt)}", _khung_muc_tieu(nc, k, mt), k))
     nd = _khung_nhom_nho_do_nhay(nc)

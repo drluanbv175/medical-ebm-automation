@@ -177,9 +177,10 @@ def test_chuan_dieu_kien_record_cross_va_tong_quan_he_thong():
 
 
 def test_chuan_chua_co_tieu_chi_la_chua_do_khong_bao_gio_dat():
-    kq = K.doi_chieu(DU, "rct")
-    assert ("SPIRIT 2025", K.doi_chieu(DU, "rct")["chua_do"][0][1]) in kq["chua_do"]
-    assert not any(r.chuan == "SPIRIT 2025" for r in kq["ket_qua"])
+    # 21/11/2026 (PR 12 chuẩn): mọi chuẩn của 13 thiết kế đã có tiêu chí — ⚪ chỉ còn cho mã thiết kế ngoài bảng.
+    kq = K.doi_chieu(DU, "case_series")
+    assert [c for c, _ in kq["chua_do"]] == ["(không xác định)"]
+    assert not any(r.chuan == "(không xác định)" for r in kq["ket_qua"])
 
 
 def test_bang_sai_lech_doc_kem_hang_tieu_de_cot():
@@ -223,9 +224,66 @@ def test_mien_dong_thuan_phai_dan_tt43_dieu_7():
     assert _kq(md2)[("Việt Nam", "TT43-Đ7.1b")].trang_thai == "dat"
 
 
-def test_k17_chi_chan_de_cuong_theo_khuon():
+def test_k17_chan_ca_ban_nhap_cau_truc_cu():
+    """21/11/2026 (sau khi bộ sinh dựng đủ mục chuẩn và 8 thiết kế giả lập đạt): K17 không còn chỉ chặn đề cương theo
+    khuôn «# CHƯƠNG 1.» — bản nháp cấu trúc cũ 1–7 thiếu mục cũng bị chặn."""
     nhap = DU.replace("# CHƯƠNG 1. TỔNG QUAN TÀI LIỆU", "# 3. TỔNG QUAN TÀI LIỆU")
+    assert not re.search(r"^# CHƯƠNG 1\.", nhap, re.M)
+    assert KD.loi_k17(nhap, "cross_sectional") == []  # bản nháp đủ mục: đạt
     hong = nhap.replace("từ tháng 03/2027 đến tháng 09/2027", "trong thời gian nghiên cứu")
-    assert KD.loi_k17(hong, "cross_sectional") == []  # bản nháp cấu trúc cũ: đo riêng, không chặn ở K17
+    assert any(x.startswith("K17 STROBE 2007 mục 5") for x in KD.loi_k17(hong, "cross_sectional"))
     loi = KD.loi_k17(DU.replace("từ tháng 03/2027 đến tháng 09/2027", "trong thời gian nghiên cứu"), "cross_sectional")
     assert any(x.startswith("K17 STROBE 2007 mục 5") for x in loi)
+
+
+# ─────────────── 21/11/2026 — phân xử trên 8 đề cương giả lập sinh lại (bộ sinh dựng từng mục chuẩn) ───────────────
+def test_dong_con_o_trong_khong_lam_bang_chung():
+    """Nhãn có mặt ≠ nội dung có mặt: «Lý do chọn …: ………» không được tính là có lý do; câu thật kèm ô số quyết định
+    để trống ở câu SAU vẫn là bằng chứng (C1a: «… phê duyệt của Hội đồng Y đức … Số quyết định phê duyệt: ………»)."""
+    assert K.o_trong_quanh("- Lý do chọn nhóm bệnh và nhóm chứng: ………", 3)
+    assert not K.o_trong_quanh("Chỉ tiến hành sau khi có phê duyệt của Hội đồng. Số quyết định: ………", 20)
+    hang = "| Sai lệch chọn | ……… | Tập huấn |\t⟦| Nguồn | Chiều ảnh hưởng | Biện pháp |⟧"
+    assert K.o_trong_quanh(hang, hang.index("Chiều"))  # chữ «chiều» chỉ có ở tiêu đề cột, ô của hàng trống
+    md = DU.replace("| Sai lệch chọn | Ước lượng cao tỷ lệ kiểm soát |", "| Sai lệch chọn | ……… |")
+    assert md != DU
+    assert _kq(md)[("STROBE 2007", "19")].trang_thai == "thieu"
+    assert not K.co_dieu_kien(K.GHEP_CAP, "- Ghép cặp: ………")  # nhãn ô trống không kích hoạt điều kiện
+
+
+def test_dieu_kien_phan_tich_chi_xet_muc_tieu():
+    """Đề tài MÔ TẢ: chữ «OR» của chuỗi tìm PubMed và «liên quan đến» của câu đạo đức không biến nó thành đề tài phân
+    tích (từng đòi phơi nhiễm, giả thuyết, ước lượng thô/hiệu chỉnh)."""
+    mo_ta = DU.replace("2. ***Phân tích một số yếu tố liên quan đến kiểm soát huyết áp.***\n", "").replace(
+        "Giả thuyết: tuổi cao liên quan với kiểm soát kém.", "Nghiên cứu mô tả, không kiểm định giả thuyết.")
+    assert mo_ta.count("liên quan") < DU.count("liên quan")
+    mo_ta += "\n> (hypertension[MeSH] OR hypertension[tiab])\n\nMọi vấn đề liên quan đến nghiên cứu báo chủ nhiệm.\n"
+    cac = K.tach_phan(mo_ta)
+    assert not K.dieu_kien(K.MUC_TIEU_PHAN_TICH, mo_ta, cac)
+    assert K.co_dieu_kien(K.PHAN_TICH, mo_ta)  # biểu thức cũ trên cả văn bản thì khớp — đúng lỗi đã gặp
+    assert _kq(mo_ta)[("STROBE 2007", "16a")].trang_thai == "khong_ap_dung"
+    assert K.dieu_kien(K.MUC_TIEU_PHAN_TICH, DU, K.tach_phan(DU))  # có mục tiêu yếu tố liên quan ⇒ phân tích
+    # «Bàn luận theo mục tiêu k» (so sánh với nghiên cứu khác) không phải mục tiêu
+    bl = mo_ta + "\n### 3.6.1. Bàn luận theo mục tiêu 1\n\nSo sánh với các nghiên cứu trong nước.\n"
+    assert not K.dieu_kien(K.MUC_TIEU_PHAN_TICH, bl, K.tach_phan(bl))
+
+
+def test_phan_doi_tuong_khong_lay_chuong_ket_qua():
+    md = DU + "\n## 3.1. Đặc điểm đối tượng nghiên cứu\n\nLý do loại được ghi đầy đủ.\n"
+    khoi = K.khoi_cua(K.tach_phan(md), ("doi_tuong",))
+    assert khoi and not any("Đặc điểm" in p.tieu_de for p in khoi)
+
+
+def test_ba_mau_bat_sot_cach_viet_hop_le():
+    benh_chung = "### 2.1.3. Nhóm bệnh và nhóm chứng\n\n- Nhóm chứng: ghép theo giới, tỷ lệ 2 chứng : 1 ca.\n"
+    r6b = {r.ma: r for r in K.doi_chieu(DU + "\n" + benh_chung, "case_control")["ket_qua"]}["6b"]
+    assert r6b.trang_thai == "dat", r6b.thieu
+    # Hai nhánh của điều kiện ghép cặp, mỗi nhánh tự đủ (đề tài ghép mà không viết chữ «ghép cặp»)
+    assert K.co_dieu_kien(K.GHEP_CAP, "Chứng chọn cùng tuần, ghép theo giới và nhóm tuổi 5 năm.")
+    assert K.co_dieu_kien(K.GHEP_CAP, "Mỗi ca chọn 2 chứng : 1 ca cùng tuần.")
+    assert not K.co_dieu_kien(K.GHEP_CAP, "Chứng chọn ngẫu nhiên trong danh sách khám cùng tuần.")
+    m8 = [m for m in K.danh_sach_muc("STROBE 2007", "cohort") if m.ma == "8"][0]
+    tuong_dong = [y for y in m8.yeu_to if y.ten.startswith("tương đồng")][0]
+    assert re.search(tuong_dong.mau, "cùng bộ câu hỏi cho ca và chứng", re.I)
+    m10 = [m for m in K.danh_sach_muc("STROBE 2007", "cross_sectional") if m.ma == "10"][0]
+    nguon = [y for y in m10.yeu_to if y.ten == "tham số có nguồn"][0]
+    assert re.search(nguon.mau, "tỷ lệ ước tính p = 0,5 (chọn p = 0,5 để có cỡ mẫu lớn nhất khi chưa có số liệu)", re.I)

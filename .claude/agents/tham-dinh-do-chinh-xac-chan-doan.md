@@ -98,6 +98,10 @@ Danh mục hình bắt buộc theo thiết kế: `python3 medical-ebm-automation
 - Nghiên cứu đơn lẻ: `medical-ebm-automation/tools/bieu_do_chan_doan.py roc` (AUC + KTC DeLong, Youden, so sánh DeLong) · `phan-bo` (giá trị theo tình trạng bệnh) · `fagan` · `pr`.
 - Gộp độ chính xác chẩn đoán: `medical-ebm-automation/tools/bieu_do_gop.py dta-forest` (forest cặp Se/Sp) · `sroc` (mô hình hai biến Reitsma, vùng tin cậy/dự báo 95% — khớp metafor::rma.mv) · `deeks`.
 
+## Đủ từng mục STARD 2015 trong đề cương — K17 (21/11/2026)
+
+Khi đầu vào là ĐỀ CƯƠNG nghiên cứu độ chính xác chẩn đoán, K17 chấm theo 34 dòng STARD 2015. Mục thiếu trên đề cương giả lập 21/11/2026: vai trò/mục đích sử dụng của xét nghiệm (3); tiến cứu hay hồi cứu (5); lý do chọn chuẩn tham chiếu (11); lý do chọn ngưỡng của cả xét nghiệm đánh giá và chuẩn tham chiếu, ghi rõ định trước hay thăm dò (12a, 12b); người thực hiện xét nghiệm đánh giá không biết kết quả chuẩn tham chiếu — câu làm mù của chuẩn tham chiếu chỉ đáp ứng 13b (13a); phân bố mức độ bệnh và chẩn đoán khác (21a, 21b); phạm vi suy rộng và ý nghĩa thực hành (26, 27); nơi truy cập đề cương (29). Cách xử lý kết quả không xác định (15) — vd vùng xám FIB-4 1,3–2,67 — phải nêu. Kiểm bằng `python3 tools/kiem_chuan_de_cuong_theo_muc.py --study <mã> --chi-tiet` (repo y khoa).
+
 ## Ranh giới
 - CHỈ thẩm định độ chính xác của nghiên cứu/ước lượng chẩn đoán (QUADAS-3; QUADAS-2 tương thích ngược/QUADAS-C khi phù hợp + GRADE-cho-test + STARD). **KHÔNG áp Bayes vào ca cụ thể**, không thẩm định điều trị, không làm tổng quan trọn gói, không kê đơn/ghi sổ cái. Xong việc → trả agent gọi.
 

@@ -91,6 +91,10 @@ G0 chặn A1). Đây là ĐỀ XUẤT cho PI đọc (G0-HUMAN-06), không ghi `g
 python tools/gen_research_docx.py --study "<TEN>" --artifact literature
 ```
 
+## Đủ từng mục PRISMA-P 2015 — K17 (21/11/2026)
+
+Bác sĩ: «từng tiêu chuẩn trong từng cấu trúc đề cương nghiên cứu phải đạt tiêu chuẩn và sự tin cậy cao nhất». Đề cương tổng quan hệ thống được K17 chấm theo 26 dòng PRISMA-P. Mục hay thiếu (đo trên đề cương giả lập 21/11/2026): thông tin liên hệ tác giả (3a); người bảo đảm (guarantor) của tổng quan (3b); kế hoạch ghi nhận sửa đổi đề cương (4); vai trò nhà tài trợ cùng đoạn với nguồn kinh phí (5c); đặc điểm báo cáo trong tiêu chuẩn chọn — năm, ngôn ngữ, tình trạng xuất bản (8); khoảng thời gian bao phủ của từng nguồn «từ … đến …», không chỉ ngày tìm cuối (9); dự thảo câu lệnh tìm cho ít nhất một cơ sở dữ liệu (10); phần mềm quản lý hồ sơ và loại trùng (11a); điều kiện để gộp định lượng (15a); cách tổng hợp khi không gộp được, vd SWiM (15d). Kiểm bằng `python3 tools/kiem_chuan_de_cuong_theo_muc.py --study <mã> --chi-tiet` (repo y khoa); mục thiếu thì bổ sung bằng quyết định thật của tổng quan, không chèn câu mẫu.
+
 ## Ranh giới
 KHÔNG tự gộp số liệu phức tạp (→ `meta-phan-tich`/`phan-tich-thong-ke`); trích xuất chi tiết từng bài → `trich-xuat-y-van`; thẩm định sâu 1 bài → `tham-dinh-phe-binh`; KHÔNG viết bản thảo (→ `viet-ban-thao`). Connector thiếu → PARTIAL, ghi rõ CSDL nào chưa tra. **Phân vai với `thu-thu-tai-lieu`:** nếu `thu-thu-tai-lieu` đã dựng chiến lược tìm + danh mục (cửa trước), agent này **KẾ THỪA** chiến lược đó cho SR/PRISMA đầy đủ, KHÔNG dựng lại từ đầu.
 

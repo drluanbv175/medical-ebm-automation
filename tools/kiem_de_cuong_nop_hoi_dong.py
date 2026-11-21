@@ -50,9 +50,10 @@ Luật (mỗi lỗi một dòng; rỗng = đạt):
   K15 (21/11/2026): trong đặt vấn đề/tổng quan/bàn luận, mệnh đề mang từ khái quát hay định lượng mơ hồ («phần lớn»,
       «đa số», «thường gặp», «đã được chứng minh»…) phải tự mang trích dẫn — không thì viết bằng số đếm có nguồn.
   Số liệu ↔ toàn văn của đúng tài liệu được dẫn là phép TƯ VẤN riêng: `tools/kiem_so_lieu_toan_van.py --study <mã>`.
-  K17 (21/11/2026; chỉ khi đề cương theo khuôn «# CHƯƠNG 1.»): đủ yếu tố từng mục phương pháp/kế hoạch của mọi chuẩn
+  K17 (21/11/2026; mọi đề cương nộp, cả bản nháp cấu trúc cũ): đủ yếu tố từng mục phương pháp/kế hoạch của mọi chuẩn
       áp dụng cho thiết kế — STROBE 2007, RECORD 2015 (dữ liệu thường quy), CROSS 2021 (khảo sát), chuẩn Việt Nam
-      (TT43/2024, Luật 91/2025). Đo chi tiết: `kiem_chuan_de_cuong_theo_muc.py --study <mã> [--chi-tiet]`.
+      (TT43/2024, Luật 91/2025); dòng còn ô trống «………» không tính là có yếu tố. Đo chi tiết:
+      `kiem_chuan_de_cuong_theo_muc.py --study <mã> [--chi-tiet]`.
 
 Lệnh:  python3 tools/kiem_de_cuong_nop_hoi_dong.py --study <mã> [--json]
 Mã thoát: 0 đạt · 1 có lỗi · 2 thiếu tệp đề cương nộp.
@@ -726,13 +727,17 @@ def loi_k14(md: str, nam: Optional[int] = None) -> List[str]:
 
 def loi_k17(md: str, thiet_ke: str) -> List[str]:
     """K17 (21/11/2026, bác sĩ: «từng tiêu chuẩn trong từng cấu trúc đề cương phải đạt tiêu chuẩn», cho MỌI thiết kế) —
-    đề cương nộp theo khuôn (có «# CHƯƠNG 1.», cùng điều kiện với K14) phải đủ yếu tố của từng mục phương pháp/kế hoạch
-    của mọi chuẩn áp dụng: STROBE 2007 (quan sát), RECORD 2015 (dữ liệu thường quy), CROSS 2021 (khảo sát bằng bộ câu
-    hỏi), chuẩn Việt Nam (TT43/2024, Luật 91/2025). Bộ đo ở `kiem_chuan_de_cuong_theo_muc.py`; chuẩn chưa có tiêu chí
-    theo mục (SPIRIT, PRISMA-P, STARD, TRIPOD+AI, COREQ…) là «chưa đo được» — không chặn, không tính là đạt.
-    Bản nháp cấu trúc cũ ⇒ bỏ qua ở đây (đo bằng `kiem_chuan_de_cuong_theo_muc.py --tep`)."""
-    if not re.search(r"^# CHƯƠNG 1\.", md, re.M):
-        return []
+    đề cương nộp phải đủ yếu tố của từng mục phương pháp/kế hoạch của mọi chuẩn áp dụng: STROBE 2007 (quan sát), RECORD
+    2015 (dữ liệu thường quy), CROSS 2021 (khảo sát bằng bộ câu hỏi), chuẩn Việt Nam (TT43/2024, Luật 91/2025),
+    COSMIN 2021 (kiểm định bộ câu hỏi). Bộ đo ở `kiem_chuan_de_cuong_theo_muc.py`. Chuẩn đã có tiêu chí nhưng bộ sinh
+    chưa phủ (SPIRIT, PRISMA-P, STARD, TRIPOD+AI, GRAMMS, SQUIRE, CHEERS, CARE — `KCM.CHUAN_CHO_BO_SINH`) và chuẩn
+    chưa đối chiếu bảng gốc (TREND, COREQ, SRQR) chỉ CẢNH BÁO (`canh_bao_k17`, in ⚠ kèm) — không chặn, không tính là
+    đạt.
+
+    Chặn MỌI đề cương nộp, cả bản nháp cấu trúc cũ 1–7 (21/11/2026): trước đó chỉ chặn bản theo khuôn «# CHƯƠNG 1.»
+    (cùng điều kiện K14) vì bộ sinh còn tạo đề cương thiếu ~50 mục chuẩn trên 8 giả lập; nay bộ sinh dựng từng mục từ
+    quyết định đã chốt và 8 thiết kế giả lập đạt K17, nên bản nháp cũng phải đạt trước khi đến tay Hội đồng. Dòng còn ô
+    trống «………» không làm bằng chứng cho yếu tố nào (`kiem_chuan_de_cuong_theo_muc.o_trong_quanh`)."""
     import kiem_chuan_de_cuong_theo_muc as KCM  # noqa: PLC0415
 
     return KCM.loi_k17(md, thiet_ke)
@@ -749,6 +754,17 @@ def loi_k9(out_dir: Path, md: str, thiet_ke: str) -> List[str]:
     except (OSError, ValueError, AttributeError):
         so_mt = 0
     return KBB.kiem_bieu_bang(md, thiet_ke, so_mt, goc=Path(out_dir))
+
+
+def canh_bao_k17(out_dir: Path, study: str) -> List[str]:
+    """Cảnh báo K17 không chặn nộp (chuẩn chờ bộ sinh phủ / chưa đối chiếu bảng gốc) — in kèm, không đổi mã thoát."""
+    md_p = Path(out_dir) / (TEN.format(study=study) + ".md")
+    md = _doc(md_p) if md_p.is_file() else None
+    if md is None:
+        return []
+    import kiem_chuan_de_cuong_theo_muc as KCM  # noqa: PLC0415
+
+    return KCM.canh_bao_k17(md, _thiet_ke(Path(out_dir)))
 
 
 def kiem(out_dir: Path, study: str) -> List[str]:
@@ -866,13 +882,16 @@ def main(argv: Optional[List[str]] = None) -> int:
     a = ap.parse_args(argv)
     out_dir = BASE / "exports" / a.study
     loi = kiem(out_dir, a.study)
-    ket: Dict[str, Any] = {"study": a.study, "dat": not loi, "loi": loi}
+    canh = canh_bao_k17(out_dir, a.study)
+    ket: Dict[str, Any] = {"study": a.study, "dat": not loi, "loi": loi, "canh_bao": canh}
     if a.json:
         print(json.dumps(ket, ensure_ascii=False, indent=2))
     else:
         print(f"Đề cương nộp Hội đồng — {a.study}: {'ĐẠT' if not loi else f'{len(loi)} lỗi'}")
         for d in loi:
             print(f"  ✗ {d}")
+        for d in canh:
+            print(f"  ⚠ {d}")
         print("Cần bác sĩ kiểm chứng.")
     if loi and loi[0].startswith("K1 chưa có"):
         return 2
