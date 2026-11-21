@@ -309,6 +309,52 @@ def loi_k15(md: str) -> List[str]:
     return loi
 
 
+# K16 (21/11/2026): bài báo giao thức C1a (bản cũ) khẳng định đã rà «Google Scholar … thư viện luận văn … kỷ yếu» trong
+# khi nhật ký PRISMA-S của chính đề tài ghi các nguồn đó «KHÔNG tra» — khẳng định một lượt tìm chưa làm là lỗi liêm
+# chính mà không chốt nào bắt. Nguồn khó kiểm được nêu như ĐÃ tra (mệnh đề không có «chưa/không») phải có trong phần
+# ĐÃ tra của `G0_TIM_BO_SUNG_PRISMA_S_<mã>.md`; không có nhật ký ⇒ không kết luận (không phải «đạt»).
+_NGUON_KHO_KIEM = ("Google Scholar", "luận văn", "luận án", "kỷ yếu", "Scopus", "Web of Science", "ProQuest", "Embase")
+_PHU_DINH_RE = re.compile(r"(?<![\wÀ-ỹ])(?:chưa|không)(?![\wÀ-ỹ])", re.I)
+_DONG_TU_TRA_RE = re.compile(r"(?<![\wÀ-ỹ])(?:tra|tìm|rà|tham khảo|truy vấn|search)", re.I)
+
+
+def nhat_ky_prisma_s(out_dir: Path) -> Optional[Tuple[str, str]]:
+    """(phần ĐÃ tra, phần KHÔNG tra) của nhật ký PRISMA-S đề tài; không có tệp ⇒ None."""
+    ds = sorted(Path(out_dir).glob("G0_TIM_BO_SUNG_PRISMA_S_*.md"))
+    if not ds:
+        return None
+    van = ds[0].read_text(encoding="utf-8")
+    m = re.search(r"^#{1,3}[^\n]*KHÔNG tra[^\n]*\n(.*?)(?=^#{1,3} |\Z)", van, re.M | re.S)
+    khong = m.group(1) if m else ""
+    con = van.replace(m.group(0), "") if m else van
+    # dòng nhắc nguồn kèm «chưa/không» (vd «y văn không có DOI (luận văn, kỷ yếu) chưa tra») KHÔNG là bằng chứng đã tra
+    da_tra = "\n".join(x for x in con.splitlines() if not _PHU_DINH_RE.search(x))
+    return da_tra, khong
+
+
+def loi_k16(out_dir: Path, md: str) -> List[str]:
+    """K16 — câu nêu ĐÃ tra một nguồn khó kiểm phải khớp nhật ký PRISMA-S (nguồn có trong phần đã tra)."""
+    nk = nhat_ky_prisma_s(out_dir)
+    if nk is None:
+        return []
+    da_tra, _khong = nk
+    loi: List[str] = []
+    for so, dong in enumerate(md.splitlines(), 1):
+        s = dong.strip()
+        if not s or s.startswith(("#", "|", "<!--")):
+            continue
+        for cau in _HET_CAU_RE.split(s):
+            for md_ in _menh_de(cau):
+                if _PHU_DINH_RE.search(md_) or not _DONG_TU_TRA_RE.search(md_):
+                    continue
+                for ng in _NGUON_KHO_KIEM:
+                    if ng.lower() in md_.lower() and ng.lower() not in da_tra.lower():
+                        loi.append(f"K16 dòng {so}: nêu đã tra «{ng}» nhưng nhật ký PRISMA-S của đề tài không ghi lượt "
+                                   f"tra nguồn này — «{md_[:90]}» (sửa câu cho khớp nhật ký, hoặc tra thật rồi ghi "
+                                   "nhật ký)")
+    return loi
+
+
 # K11 (bác sĩ 20/11/2026: «từng câu, từng chữ, ngữ nghĩa phải chuẩn, từng bảng từng đồ thị phải đúng chuẩn, đúng định
 # dạng»). Soát tay đề cương BTM/C1a gặp lặp lại: số kiểu máy (0.1; 100000; 2026-01-01), ngoặc kép thẳng/«», hai mục
 # viết tắt cùng nghĩa (SD và ĐLC), mục viết tắt không dùng, bảng viết tắt không theo vần, loại biến «Định danh/thứ bậc»,
@@ -789,6 +835,7 @@ def kiem(out_dir: Path, study: str) -> List[str]:
     loi.extend(loi_k13(out_dir, md))
     loi.extend(loi_k14(md))
     loi.extend(loi_k15(md))
+    loi.extend(loi_k16(out_dir, md))
     if G10._co_lien_lac_ca_nhan(md) or (docx_chu is not None and G10._co_lien_lac_ca_nhan(docx_chu)):
         loi.append("K7 có email/số điện thoại — PII liên lạc để dòng chấm cho PI điền tay ngoài hệ thống")
     return loi

@@ -102,3 +102,31 @@ def test_thang_g0_co_bon_nguyen_tac_ap_dung():
     for cum in ("quần thể RỘNG HƠN", "đo HẸP HƠN hay KHÁC CÁCH", "nguồn không thực nghiệm", "khảo sát nhân viên y tế"):
         assert cum in thang
     assert "thang_lien_quan" in Path(KG.__file__).read_text(encoding="utf-8")  # máy chấm đọc cùng một nguồn
+
+
+# ── K16: phạm vi tìm phải khớp nhật ký PRISMA-S của đề tài ───────────────────────────────────────────────────────────
+NHAT_KY = ("# PRISMA-S\n\n## 1. Nguồn đã tra\n| Europe PMC | 2026-10-14 |\n| Crossref | 2026-10-11 |\n\n"
+           "**Giới hạn:** y văn không có DOI (luận văn, kỷ yếu) chưa tra.\n\n"
+           "## 4. Nguồn KHÔNG tra (để PI tra theo đề cương)\n\nThư viện luận văn, kỷ yếu hội nghị, Scopus.\n")
+
+
+def _thu_muc_nk(tmp_path):
+    (tmp_path / "G0_TIM_BO_SUNG_PRISMA_S_S1.md").write_text(NHAT_KY, encoding="utf-8", newline="\n")
+    return tmp_path
+
+
+def test_k16_bat_khang_dinh_da_tra_nguon_khong_co_trong_nhat_ky(tmp_path):
+    md = "Việc rà y văn được thực hiện trên Europe PMC và Google Scholar, cùng thư viện luận văn và kỷ yếu hội nghị."
+    loi = KDC.loi_k16(_thu_muc_nk(tmp_path), md)
+    assert {x.split("«")[1].split("»")[0] for x in loi} == {"Google Scholar", "luận văn", "kỷ yếu"}
+
+
+def test_k16_cau_co_phu_dinh_hoac_nguon_da_tra_thi_dat(tmp_path):
+    d = _thu_muc_nk(tmp_path)
+    assert KDC.loi_k16(d, "Luận văn và kỷ yếu hội nghị chưa được tra cứu có hệ thống.") == []
+    assert KDC.loi_k16(d, "Chúng tôi tra Europe PMC và Crossref.") == []
+
+
+def test_k16_khong_nhat_ky_thi_khong_ket_luan(tmp_path):
+    assert KDC.loi_k16(tmp_path, "Đã tra Google Scholar.") == []
+    assert KDC.nhat_ky_prisma_s(tmp_path) is None
