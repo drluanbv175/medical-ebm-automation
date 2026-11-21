@@ -196,10 +196,13 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 21/11/2026: đồng bộ bản sao thu-thu-tai-lieu.md, tong-quan-y-van.md với nguồn gốc (tools/dong_bo_agent_y_khoa.py).
 # 21/11/2026: dạy `thang-diem-nguy-co` 12 bộ tính mới + luật gọi bộ tính (bảng BO_TINH_THEO_SCORE_ID) — vẫn 64.
 # 21/11/2026 (hồ sơ DTCS): `ke-hoach-trien-khai` + `dieu-phoi-g1` học `tools/ho_so_dtcs_bvqy175.py` (#379) — vẫn 64.
-# 21/11/2026 (khuôn hướng dẫn chung BVQY175): bản sao `dieu-phoi-g10`, `kiem-chung-trich-dan` học khuôn đề cương + K14
-# (cặp của gốc #473) — vẫn 64.
+# 21/11/2026: đồng bộ bản sao cong-cu-do-luong.md, kinh-te-y-te.md, meta-phan-tich.md, mo-hinh-tien-luong.md,
+# phan-tich-thong-ke.md, tham-dinh-do-chinh-xac-chan-doan.md, viet-ban-thao.md với nguồn gốc
+# (tools/dong_bo_agent_y_khoa.py).
+# 21/11/2026 (khuôn hướng dẫn chung BVQY175): bản sao `dieu-phoi-g10`, `kiem-chung-trich-dan`, `viet-ban-thao` học
+# khuôn đề cương + K14 (cặp của gốc #473) — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "bcc0bbfeb10878f3d1930b47deb636942bc1e3c8c41079a37268e3c5c0419ac4"
+    "7ab10b4b3d030db6104504cf9ba1be3d5cdcfff0c451c9a263c02620d12645b7"
 )
 
 MINIMUM_AGENT_COUNT = 64

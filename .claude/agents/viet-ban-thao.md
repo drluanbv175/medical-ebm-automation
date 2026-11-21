@@ -150,6 +150,10 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact manuscript
 ## Đồng bộ đề cương nộp (15/11/2026 — giai đoạn 6)
 - **Bìa đề cương nộp ghi phiên bản và ngày** («**Phiên bản đề cương:** <protocol_version>, ngày ……/……/<năm>») — phiên bản = `gate_params.G1/G2.protocol_version`; ngày để dòng chấm cho PI điền khi nộp (giống phiếu đồng ý).
 - **Mọi chỗ đề cương trích phiên bản khác phải trùng tài liệu gốc:** «kế hoạch phân tích … phiên bản X» = phiên bản ở tiêu đề SAP (SAP sửa đổi chưa ký ⇒ GIỮ phiên bản đã ký trong đề cương, sửa sau khi thống kê viên ký — không ghi trước điều chưa xảy ra); phiếu thông tin/đồng ý ở phụ lục = `G2.icf_version`; «Thời gian thực hiện» = `G1.study_period`; bảng kinh phí = các khoản `G1.budget`.
+- Đề cương nộp BVQY175 theo khuôn hướng dẫn chung (21/11/2026 — cấu trúc, TLTK theo ngôn ngữ rồi ABC, 14pt giãn 1,5;
+  chi tiết `dieu-phoi-g10`): chuyển bằng `medical-ebm-automation/tools/khuon_de_cuong_bvqy175.py --study <mã>` (chạy khô ⇒
+  `--ghi`), không sắp xếp tay; đề cương có «# CHƯƠNG 1.» thì `md_sang_docx_times.py` tự xuất bằng chế độ khuôn của repo
+  y khoa (thiếu chế độ đó ⇒ không ghi, mã 1); bộ kiểm phải ĐẠT K1–K14.
 - Sửa `.md` xong phải sinh lại `.docx` bằng `tools/md_sang_docx_times.py <md> --co-chu 13 --trang-de-cuong` chạy ở nơi có `medical-ebm-automation/` lồng/cạnh (thiếu thì công cụ báo «CHƯA đạt chuẩn nộp» — chạy lại), rồi `kiem_de_cuong_nop_hoi_dong.py` (K1–K9) và trục `de_cuong_nop` của `nhat_quan_xuyen_cong` (DC-01…DC-05).
 
 ## Bản máy đề cương nộp Hội đồng (16/11/2026 — bác sĩ chê câu chữ đề cương giả lập)
@@ -261,6 +265,10 @@ chữ nguyên văn trong mục). Câu «nêu rõ trong hạn chế» phải tr�
 («ĐN2», không «Đn2» — K8 chặn). K8 chặn thêm chú thích tiếng Anh kiểu «(= descriptive)» và ngày quyết định nội bộ
 «(quyết định 28/10/2026)». Ký hiệu nhóm eGFR «G1–G5» trong văn xuôi bị K4 đọc thành mã cổng — viết «nhóm eGFR».
 Cỡ mẫu chỉ tính cho kết cục chính thì nói rõ kết cục phụ trên quần thể con báo kèm KTC 95%, không có cỡ mẫu riêng.
+
+## Biểu đồ kết quả (21/11/2026)
+Danh mục hình bắt buộc theo thiết kế: `python3 medical-ebm-automation/tools/ve_bieu_do.py danh-muc --thiet-ke <tk>`; trước khi bàn giao: `python3 medical-ebm-automation/tools/ve_bieu_do.py kiem --thu-muc exports/<mã>/bieu-bang --thiet-ke <tk>` phải mã 0 (đủ hình bắt buộc, PNG ≥ 300 dpi, có PDF vector, đúng ngôn ngữ tài liệu). Mọi lệnh ghi PNG + PDF + JSON số liệu đã vẽ — con số trong văn bản/bảng LẤY ĐÚNG từ JSON, không tính lại; `--kiem-cheo-r` chạy lại bằng R (không có R ⇒ «không kiểm chéo được», không bao giờ ghi «khớp»); `--ngon-ngu vi` (dấu phẩy thập phân, mặc định) cho tài liệu tiếng Việt, `--ngon-ngu en` cho bản thảo quốc tế. Công cụ chỉ VẼ số đã có — không thay quyết định phương pháp.
+- Hình trong bản thảo/đề cương lấy từ bảy họ công cụ (300 dpi + PDF vector), ngôn ngữ đúng tài liệu; số trong văn bản khớp JSON cạnh hình; sơ đồ luồng dùng `medical-ebm-automation/tools/bieu_do_bao_cao.py so-do-luong` (tự kiểm số học).
 
 ## Ranh giới
 KHÔNG tạo dữ liệu/kết quả chưa có (→ `[CẦN BỔ SUNG]`); KHÔNG tự quyết phân tích (nhận từ `phan-tich-thong-ke`, kế hoạch từ `thiet-ke-nghien-cuu`). Bản thảo phải qua `binh-duyet` trước khi coi là sẵn sàng nộp; chọn tạp chí/rebuttal → `nop-bai-phan-hoi`.

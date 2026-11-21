@@ -483,6 +483,13 @@ python tools/gen_research_docx.py --study "<TEN>" --gate G6
 - Thử nghiệm KHÔNG KÉM HƠN: phân tích chính theo SAP là HIỆU SỐ TỶ LỆ (nhóm 1 − nhóm 0) so với biên −Δ; kết luận theo vị trí cận dưới KTC, không theo p vượt trội; không tự thêm RR không có trong SAP. Script R: `prop.test(bang[c("1", "0"), "1"], rowSums(bang)[c("1", "0")])` mới ra p1 − p0 (dạng cũ ra p0 − p1, đảo kết luận NI).
 - Khuôn Cox/hiệu số tỷ lệ của 03_analysis.R đã đánh dấu «◆ MÔ HÌNH CHÍNH (SAP §4)» — bật đúng các dòng đó (một câu lệnh một dòng) trước khi xác nhận G6.
 
+## Biểu đồ kết quả (21/11/2026)
+Danh mục hình bắt buộc theo thiết kế: `python3 medical-ebm-automation/tools/ve_bieu_do.py danh-muc --thiet-ke <tk>`; trước khi bàn giao: `python3 medical-ebm-automation/tools/ve_bieu_do.py kiem --thu-muc exports/<mã>/bieu-bang --thiet-ke <tk>` phải mã 0 (đủ hình bắt buộc, PNG ≥ 300 dpi, có PDF vector, đúng ngôn ngữ tài liệu). Mọi lệnh ghi PNG + PDF + JSON số liệu đã vẽ — con số trong văn bản/bảng LẤY ĐÚNG từ JSON, không tính lại; `--kiem-cheo-r` chạy lại bằng R (không có R ⇒ «không kiểm chéo được», không bao giờ ghi «khớp»); `--ngon-ngu vi` (dấu phẩy thập phân, mặc định) cho tài liệu tiếng Việt, `--ngon-ngu en` cho bản thảo quốc tế. Công cụ chỉ VẼ số đã có — không thay quyết định phương pháp.
+- Mô tả: `medical-ebm-automation/tools/bieu_do_mo_ta.py cot-ktc|likert|phan-bo|qq|tuong-quan|thieu|theo-thoi-gian`.
+- Hồi quy: `medical-ebm-automation/tools/bieu_do_hoi_quy.py forest-uoc-luong` (thô/hiệu chỉnh) · `nhom-nho` (kèm p tương tác) · `spline` (phơi nhiễm liên tục, kiểm định phi tuyến — khớp rms) · `xac-suat-thu-tu` (logistic tỷ lệ chênh — khớp MASS::polr) · `chan-doan-lm`.
+- Sống còn: `medical-ebm-automation/tools/bieu_do_song_con.py km` (KTC, bảng số nguy cơ, log-rank, HR Cox Efron) · `loglog` · `cif` (biến cố cạnh tranh: KHÔNG dùng 1 − KM).
+- Sơ đồ luồng có số: `medical-ebm-automation/tools/bieu_do_bao_cao.py so-do-luong` (tự kiểm số học; lệch ⇒ từ chối vẽ).
+
 ## Ranh giới
 KHÔNG đổi/định nghĩa lại kế hoạch (→ `thiet-ke-nghien-cuu`) · KHÔNG viết Bàn luận (→ `viet-ban-thao`) · KHÔNG quyết định lâm sàng. Thử nghiệm then chốt → nêu cần nhà thống kê độc lập.
 

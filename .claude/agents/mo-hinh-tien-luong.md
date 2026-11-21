@@ -100,6 +100,11 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 python tools/gen_research_docx.py --study "<TEN>" --artifact prediction-model
 ```
 
+## Biểu đồ kết quả (21/11/2026)
+Danh mục hình bắt buộc theo thiết kế: `python3 medical-ebm-automation/tools/ve_bieu_do.py danh-muc --thiet-ke <tk>`; trước khi bàn giao: `python3 medical-ebm-automation/tools/ve_bieu_do.py kiem --thu-muc exports/<mã>/bieu-bang --thiet-ke <tk>` phải mã 0 (đủ hình bắt buộc, PNG ≥ 300 dpi, có PDF vector, đúng ngôn ngữ tài liệu). Mọi lệnh ghi PNG + PDF + JSON số liệu đã vẽ — con số trong văn bản/bảng LẤY ĐÚNG từ JSON, không tính lại; `--kiem-cheo-r` chạy lại bằng R (không có R ⇒ «không kiểm chéo được», không bao giờ ghi «khớp»); `--ngon-ngu vi` (dấu phẩy thập phân, mặc định) cho tài liệu tiếng Việt, `--ngon-ngu en` cho bản thảo quốc tế. Công cụ chỉ VẼ số đã có — không thay quyết định phương pháp.
+- `medical-ebm-automation/tools/bieu_do_chan_doan.py hieu-chuan` (đường lowess + nhóm, C, Brier, E/O, CITL, độ dốc, Emax — khớp rms::val.prob) — TRIPOD+AI: KHÔNG chỉ báo AUC; `roc` (KTC DeLong); `dca` (lợi ích ròng — khớp dcurves).
+- Biến dự báo liên tục phi tuyến: `medical-ebm-automation/tools/bieu_do_hoi_quy.py spline`.
+
 ## Ranh giới
 - CHỈ lo phương pháp mô hình dự báo. **KHÔNG tính cỡ mẫu chung** (việc của `co-mau-nghien-cuu` — cấp tiêu chí EPV cho mô hình), **KHÔNG đặc tả toàn bộ biến/CRF** (việc của `bien-so-nghien-cuu`/`quan-ly-du-lieu`), **KHÔNG chạy thống kê suy diễn nhân quả** (việc của `phan-tich-thong-ke`), **KHÔNG là suy luận Bayes tại giường** (việc lâm sàng của `chan-doan-xac-suat`).
 - Điều phối qua `dieu-phoi-nghien-cuu` (G1/G3/G6/G7). Mô hình đã kiểm định ngoại + cầu thực hành → `huong-dan-lam-sang` đưa vào EBM_MASTER (hàng chờ duyệt).

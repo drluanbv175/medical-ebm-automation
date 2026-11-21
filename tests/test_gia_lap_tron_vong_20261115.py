@@ -102,5 +102,11 @@ def _chay_tron_vong(ma, tmp_path, monkeypatch):
     # 17/11/2026: lượt chạy qua nửa đêm làm G2 bị từ chối ký ⇒ G6.5 sập (KeyError) mà phép thử vẫn «passed» vì sập chỉ
     # nằm trong báo cáo. Sập bước nội bộ là lỗi của bộ giả lập/hệ — phải đỏ.
     assert not bc["crash"], f"bước sập: {bc['crash']} — dừng tại {bc['dung']}"
+    # 21/11/2026: G6 tự sinh hình theo đặc tả SAP — đã chạy G6 thì phải có G6_bieu_do.json và không hình nào LỖI
+    bd = (bc["du_lieu"].get("g6") or {}).get("bieu_do")
+    if bd is not None:
+        print("  Biểu đồ G6:", bd.get("dem"), "· thiếu bắt buộc:", bd.get("thieu_bat_buoc"))
+        assert bd["co_tep"], "chay_sap_g6 không ghi G6_bieu_do.json"
+        assert not bd["loi"], f"hình G6 lỗi: {bd['loi']}"
     if not bc["dung"] and not os.environ.get("GIA_LAP_DEN_CONG"):
         assert dc and not dc.get("loi"), f"đề cương nộp còn lỗi: {dc.get('loi') or 'chưa sinh'}"

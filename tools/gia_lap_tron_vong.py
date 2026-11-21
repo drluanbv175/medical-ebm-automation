@@ -1384,6 +1384,15 @@ class TronVong:
             self.du_lieu["g6"] = {"dem": kq.get("dem"), "phan_tich": [
                 {k: x.get(k) for k in ("id", "vai", "trang_thai", "kiem_cheo", "ly_do", "uoc_luong")}
                 for x in kq.get("phan_tich") or []]}
+            # 21/11/2026 (bác sĩ: mọi biểu đồ phải đầy đủ, chính xác, tự động): chay_sap_g6 tự sinh hình — giả lập ghi
+            # lại số hình, hình LỖI và hình bắt buộc còn thiếu để phép thử đỏ khi một hình tự động hỏng.
+            bd = _doc_json(self.out / "G6_bieu_do.json")
+            self.du_lieu["g6"]["bieu_do"] = {
+                "dem": bd.get("dem"),
+                "loi": [{k: x.get(k) for k in ("id", "loai", "ly_do")} for x in bd.get("hinh") or []
+                        if x.get("trang_thai") == "LOI"],
+                "thieu_bat_buoc": (bd.get("kiem_danh_muc") or {}).get("thieu_bat_buoc"),
+                "co_tep": bool(bd)}
         else:
             self.du_lieu["g6"] = {"khong_tu_dong": f"thiết kế {self.thiet_ke}: engine phân tích (run_stats_analysis/"
                                                    "chay_sap_g6) chưa có đường cho phân tích chính của thiết kế này"}

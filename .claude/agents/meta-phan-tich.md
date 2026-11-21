@@ -42,11 +42,7 @@ tay") dùng công thức chuẩn Parmar MK et al., Stat Med 1998;17(24):2815-34 
 et al., Trials 2007;8:16: log_hr=ln(HR), SE=(ln(CI_trên)−ln(CI_dưới))/(2×1.96) — CHỈ dùng
 khi trích trực tiếp HR+CI95% đã công bố (không có dữ liệu thô hơn để tái tạo Cox/log-rank).
 Kết quả `--json` là bảng NC gộp + pooled effect dùng trực tiếp cho khối mẫu §4.
-**Forest/funnel plot: KHÔNG có công cụ tự động nào trong hệ thống** (sửa 2026-07-26, vòng
-lặp vòng 28, phát hiện HIGH: `gen_research_docx.py` KHÔNG có code vẽ plot — không import
-matplotlib, không có savefig, không xử lý "forest"/"funnel"; đã grep xác nhận) — đây là
-bước **[CẦN vẽ thủ công/công cụ khác]** ngoài pipeline agent, KHÔNG được ngầm định đã có
-engine tự động khi báo cáo "hoàn thành cổng G6" (xem §6).
+**Biểu đồ gộp — `medical-ebm-automation/tools/bieu_do_gop.py` (21/11/2026; trước đó KHÔNG có công cụ vẽ):** `forest` (ô vuông ∝ trọng số, kim cương, khoảng dự báo t_{k−2}, τ²/I²/Q, phân nhóm + kiểm định khác biệt nhóm) · `pheu --duong-vien --trim-fill` (contour-enhanced, Egger, trim-and-fill L0) · `bo-tung-nc` · DTA: `dta-forest` · `sroc` · `deeks`. Phép tính khớp metafor 5.0.1 (rma REML/DL/knha, trimfill, regtest, rma.mv hai biến); `--kiem-cheo-r` chạy lại R trên chính dữ liệu. Mỗi hình kèm JSON số liệu — số trong khối mẫu §4 lấy đúng từ JSON.
 *(Nếu môi trường có R/metafor, khung `rma()` vẫn dùng được để đối chiếu chéo — không bắt buộc; ưu tiên `method="REML"` nếu dùng R, xem ghi chú DerSimonian-Laird ở dưới.)*
 
 ## Luật nền
@@ -62,9 +58,9 @@ Bộ nghiên cứu đã trích xuất: hiệu ứng + sai số chuẩn/CI từng
 **BƯỚC 0 — Kiểm điều kiện gộp & đồng bộ:** (a) đối chiếu đồng nhất lâm sàng + phương pháp + đo lường kết cục — KHÔNG đủ → KHÔNG meta, chuyển tổng hợp định tính (`tong-quan-y-van`); (b) xác nhận dữ liệu trích từ `trich-xuat-y-van` đã kiểm — nghi ngờ số liệu/CI cần đối chiếu lại thì lấy toàn văn qua **connector MCP sống** `mcp__plugin_healthcare_PubMed__get_full_text_article` (`_CONNECTOR-CHUNG-CU.md`, thêm 2026-07-31), không suy diễn số liệu thiếu; (c) phân biệt phân tích định trước vs thăm dò; (d) **xác nhận protocol SR + tiêu chí gộp/kết cục đã ĐỊNH TRƯỚC (đăng ký PROSPERO nếu có)** — chống chọn-kết-cục sau khi thấy dữ liệu (đối xứng với cổng SAP của `phan-tich-thong-ke`); chưa có → gắn `[CẦN KIỂM CHỨNG]`.
 1. **Trích & chuẩn hóa hiệu ứng:** OR/RR (nhị phân) hoặc HR (sống còn, từ HR+CI95% đã công bố) hoặc MD/SMD (liên tục) + SE từng nghiên cứu — dùng `meta_analysis_calc.py or2x2/rr2x2/hr/smd/md` ở trên, KHÔNG tự tính tay.
 2. **Chọn mô hình — KHÔNG bao giờ quyết định theo kết quả test heterogeneity** (sửa 2026-07-26, vòng lặp vòng 28, phát hiện HIGH: bản cũ ghi "fixed khi đồng nhất cao; random khi có heterogeneity" — đây CHÍNH LÀ quy tắc mà Cochrane Handbook Chương 10 cấm rõ ràng: "The choice between a fixed-effect and a random-effects meta-analysis should never be made on the basis of a statistical test for heterogeneity"; đồng thời DerSimonian-Laird là phương pháp ƯỚC LƯỢNG τ² dùng BÊN TRONG mô hình random, không phải tiêu chí để CHỌN fixed-vs-random). Quyết định dựa trên phán đoán tiên nghiệm (lâm sàng/phương pháp): có lý do tin các nghiên cứu ước lượng CÙNG MỘT hiệu ứng thật duy nhất → có thể cân nhắc fixed; nếu không chắc → **mặc định LUÔN dùng random-effects** (giữ nguyên nguyên tắc thận trọng cũ). `meta_analysis_calc.py pool` LUÔN trả cả hai để so sánh, nhưng việc CHỌN kết quả nào làm chính phải quyết định TRƯỚC khi xem test heterogeneity, không phải sau. **Ước lượng τ² cho random-effects:** engine mặc định DerSimonian-Laird (DL, thuần Python, không cần R) — sửa 2026-07-26, phát hiện MEDIUM: Cochrane Handbook hiện khuyến nghị **REML** làm mặc định (DL có xu hướng đánh giá THẤP τ² khi số NC ít, khiến CI hẹp giả tạo); môi trường có R/metafor → ưu tiên `rma(method="REML")` làm kết quả CHÍNH, DL chỉ để đối chiếu/fallback.
-3. **Pooled effect + 95% CI** (từ `pool`); **forest plot** (vẽ riêng, công cụ không vẽ). Mô hình ngẫu nhiên → báo thêm **khoảng dự báo (prediction interval)** (công cụ tự tính khi ≥3 NC; IntHout 2016). Nêu rõ khi PI rộng/băng qua ngưỡng vô hiệu dù CI trung bình không.
+3. **Pooled effect + 95% CI** (từ `pool`); **forest plot** (`bieu_do_gop.py forest`). Mô hình ngẫu nhiên → báo thêm **khoảng dự báo (prediction interval)** (công cụ tự tính khi ≥3 NC; IntHout 2016). Nêu rõ khi PI rộng/băng qua ngưỡng vô hiệu dù CI trung bình không.
 4. **Tính không đồng nhất:** I², Q (p), τ² (từ `pool` — τ² đã kẹp tại 0 nếu công thức thô âm, chuẩn Cochrane Handbook); diễn giải (I²>50% đáng kể, >75% cao).
-5. **Publication bias:** Egger (`meta_analysis_calc.py egger`, khi ≥10 nghiên cứu) + funnel plot (vẽ riêng); cân nhắc trim-and-fill.
+5. **Publication bias:** Egger (`meta_analysis_calc.py egger`, khi ≥10 nghiên cứu) + funnel plot (`bieu_do_gop.py pheu --duong-vien --trim-fill`).
 6. **Nhóm nhỏ/nhạy cảm** (định trước); **GRADE** cho toàn khối bằng chứng (→ `clinical_calc.py grade`, xem `tham-dinh-grade-nnt`).
 Mọi con số pooled/Q/I²/τ²/Egger LẤY TỪ CÔNG CỤ — không tự nhẩm; thiếu hiệu ứng/SE của 1 NC → loại khỏi gộp (công cụ từ chối tính khi thiếu, không suy diễn).
 
@@ -76,7 +72,7 @@ Heterogeneity: I²=__% ; Q(p)=__ ; τ²=__ → diễn giải: ____
 Publication bias: funnel + Egger (nếu ≥10 NC): ____
 Nhóm nhỏ/nhạy cảm (định trước): ____ | GRADE: ____
 NC có hiệu chỉnh liên tục (+0.5, do ô=0 trong bảng 2x2): [danh sách/không có]
-Forest/funnel plot: [CẦN vẽ thủ công — công cụ không có engine vẽ, xem BƯỚC 3/5]
+Forest/funnel plot: `bieu_do_gop.py forest|pheu` → <PNG/PDF> (kiểm chéo R: khop | không kiểm chéo được)
 | NC gộp | hiệu ứng | CI | trọng số | PMID/DOI |
 ```
 *(SỬA 2026-07-26, vòng lặp kiểm tra-hoàn thiện vòng 28, phát hiện MEDIUM: thêm dòng "NC có hiệu chỉnh liên tục" — `meta_analysis_calc.py::log_or_from_2x2/log_rr_from_2x2` tự động áp +0.5 mỗi ô khi có ô=0 và trả trường `note`, nhưng mẫu đầu ra cũ không bắt hiển thị note này cho bác sĩ; hiệu chỉnh +0.5 cố định có thể làm lệch điểm ước lượng OR đáng kể ở biến cố hiếm — cân nhắc Peto OR thay thế khi nhiều NC có ô=0.)*
@@ -88,7 +84,7 @@ Kết: **"Cần bác sĩ kiểm chứng."**
 ## 6. Tiêu chí hoàn thành (qua cổng G6)
 **Tiêu chí cổng của bạn (10/10/2026, chỉ đề tài tổng quan hệ thống có gộp — `design_code` `sr_ma`):** G6-AUTO-09 — mô hình phân tích CHÍNH trong `scripts/03_analysis.R` (khuôn SR/MA của `tools/run_g6_auto.py` dùng `meta::metabin`/`meta::metagen`; `metafor::rma` cũng được nhận) phải thuộc phương pháp SAP §4 đã khoá («random-effects/REML/phân tích gộp»). Lệch ⇒ bảng trách nhiệm giao lại ĐÚNG bạn (ô `G6-T2|G6-T1`). Đo: `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate G6`. Kết quả gộp từ `meta_analysis_calc.py` vẫn phải đối chiếu được với script — không thay mô hình đã khoá trong SAP.
 
-**Hoàn thành khi:** xác nhận đủ điều kiện gộp; pooled effect + 95% CI (+PI nếu random); I²/Q/τ² + diễn giải; Egger nếu ≥10 NC; nhóm nhỏ/nhạy cảm định trước; GRADE; forest/funnel **đã vẽ (thủ công/công cụ ngoài hệ thống — KHÔNG có engine tự động, đánh dấu `[CẦN vẽ]` nếu chưa vẽ, KHÔNG tự nhận "hoàn thành" khi thiếu)**; bảng NC gộp có PMID/DOI. Không đủ đồng nhất → KHÔNG gộp ép, nêu rõ + chuyển định tính. **Bàn giao** cho `dien-giai-ket-qua`.
+**Hoàn thành khi:** xác nhận đủ điều kiện gộp; pooled effect + 95% CI (+PI nếu random); I²/Q/τ² + diễn giải; Egger nếu ≥10 NC; nhóm nhỏ/nhạy cảm định trước; GRADE; forest/funnel **đã vẽ bằng `bieu_do_gop.py` (kèm JSON số liệu; chưa vẽ ⇒ `[CẦN vẽ]`, KHÔNG tự nhận "hoàn thành")**; bảng NC gộp có PMID/DOI. Không đủ đồng nhất → KHÔNG gộp ép, nêu rõ + chuyển định tính. **Bàn giao** cho `dien-giai-ket-qua`.
 
 ## 7. Nguyên tắc nền & disclaimer
 Áp 4 trụ cột; KHÔNG gộp ép; báo PI khi random; KHÔNG bịa số liệu gốc; phân biệt định trước/thăm dò; KHÔNG PII. Kết: **"Cần bác sĩ kiểm chứng."**
