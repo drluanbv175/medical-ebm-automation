@@ -18,6 +18,15 @@ BAO GIỜ tính là đạt.
 
 `--nop`: bản sắp nộp — ô «[CẦN…]» còn lại tính là vi phạm (khi chưa có số liệu thì bỏ cờ này).
 
+K18 (22/11/2026, bác sĩ: mọi khâu tới «Viết báo cáo & công bố kết quả» phải đạt TỪNG MỤC chuẩn quốc tế và Việt Nam, cho
+mọi thiết kế; không đạt thì loại bỏ): đối chiếu bản thảo với từng mục chuẩn báo cáo theo thiết kế (STROBE/RECORD/CROSS,
+CONSORT 2025, STARD, TRIPOD+AI…, chuẩn Việt Nam) bằng `kiem_chuan_de_cuong_theo_muc.doi_chieu(che_do="ban_thao")` —
+chi tiết ở `tieu_chi_ban_thao.py`. Mục thiếu ⇒ vi phạm. Bản thảo CHƯA CÓ SỐ LIỆU (còn ô [CẦN…], không `--nop`): chỉ chấm
+mục phương pháp và cấu trúc; mục kết quả/bàn luận báo «chưa đo được» (ghi chú) — KHÔNG BAO GIỜ là đạt. BÀI BÁO GIAO THỨC
+(tên tệp/tiêu đề có «giao thức», hoặc `--giao-thuc`) dùng tiêu chí ĐỀ CƯƠNG của K17, theo chương IMRAD. Thiết kế lấy
+từ `study_meta.json` (gate_params.G1.design) ở thư mục đề tài chứa bản thảo, hoặc `--thiet-ke`; không xác định được ⇒
+ghi chú «chưa đo», riêng `--nop` là vi phạm.
+
 Mã thoát: 0 mọi giới hạn đo được đều đạt · 1 có vi phạm · 2 không đọc được tệp hoặc tạp chí chưa khai giới hạn.
 """
 from __future__ import annotations
@@ -28,6 +37,7 @@ import re
 import shutil
 import subprocess
 import sys
+import unicodedata
 import uuid
 from pathlib import Path
 from typing import Dict, List, Optional
@@ -36,6 +46,7 @@ TOOLS = Path(__file__).resolve().parent
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
+import kiem_chuan_de_cuong_theo_muc as KCM  # noqa: E402
 import kiem_de_cuong_nop_hoi_dong as K  # noqa: E402
 import md2docx_vn as M2D  # noqa: E402
 
@@ -164,6 +175,69 @@ def do_ban_thao(md: str, gh: Dict) -> Dict:
     return {"so_do": so, "vi_pham": vi_pham, "ghi_chu": ghi_chu}
 
 
+_GIAO_THUC_RE = re.compile(r"giao[-_ ]?th[uứ]c|study[-_ ]?protocol|protocol[-_ ]?(article|paper)", re.IGNORECASE)
+
+
+def la_bai_giao_thuc(md_path: Path, md: str) -> bool:
+    """Bài báo GIAO THỨC (công bố đề cương trước khi có số liệu): tên tệp hoặc đề mục trong 40 dòng đầu nói «giao thức
+    nghiên cứu»/«study protocol» (vd `Bai-bao-giao-thuc_Hai-long-C1a_BVQY175.md`)."""
+    if _GIAO_THUC_RE.search(unicodedata.normalize("NFC", md_path.name)):
+        return True
+    dau = "\n".join(unicodedata.normalize("NFC", md).splitlines()[:40])
+    return bool(re.search(r"(?m)^#{1,3}\s+.*(giao thức nghiên cứu|study protocol)", dau, re.IGNORECASE))
+
+
+def thiet_ke_cua(md_path: Path) -> str:
+    """Mã thiết kế G1 của đề tài chứa bản thảo: tìm `study_meta.json` ở thư mục bản thảo và tối đa 3 thư mục cha
+    (`exports/<mã>/tap_chi/<tạp chí>/BAN_THAO_….md`)."""
+    for d in [md_path.parent, *list(md_path.parent.parents)[:3]]:
+        p = d / "study_meta.json"
+        if p.is_file():
+            try:
+                meta = json.loads(p.read_text(encoding="utf-8"))
+                return str(((meta.get("gate_params") or {}).get("G1") or {}).get("design") or "").strip()
+            except (OSError, ValueError, AttributeError):
+                return ""
+    return ""
+
+
+def k18(md: str, thiet_ke: str, nop: bool = False, giao_thuc: bool = False) -> Dict:
+    """K18 — chuẩn báo cáo theo mục. {'vi_pham', 'ghi_chu', 'tom_tat': {chuẩn: {trạng thái: số}}, 'co_so_lieu'}."""
+    ra: Dict = {"vi_pham": [], "ghi_chu": [], "tom_tat": {}, "co_so_lieu": None}
+    if not KCM.S.canonical_design_code(thiet_ke or ""):
+        thong_bao = ("K18: không xác định được thiết kế (gate_params.G1.design của đề tài hoặc --thiet-ke) — chưa đối "
+                     "chiếu chuẩn báo cáo theo mục, KHÔNG tính là đạt")
+        (ra["vi_pham"] if nop else ra["ghi_chu"]).append(thong_bao)
+        return ra
+    if giao_thuc:
+        kq = KCM.doi_chieu(md, thiet_ke, che_do="giao_thuc", co_so_lieu=nop)
+        nhan = "K18 (bài báo giao thức · tiêu chí K17)"
+    else:
+        kq = KCM.doi_chieu(md, thiet_ke, che_do="ban_thao", co_so_lieu=True if nop else None)
+        nhan = "K18"
+    ra["co_so_lieu"] = kq.get("co_so_lieu")
+    ra["vi_pham"] += [f"{nhan} cấu trúc: {x}" for x in kq.get("cau_truc") or []]
+    chua_do: List[str] = []
+    for r in kq["ket_qua"]:
+        ra["tom_tat"].setdefault(r.chuan, {}).setdefault(r.trang_thai, 0)
+        ra["tom_tat"][r.chuan][r.trang_thai] += 1
+        if r.trang_thai == "thieu":
+            ra["vi_pham"].append(f"{nhan} {r.chuan} mục {r.ma} ({r.chu_de}) thiếu: {'; '.join(r.thieu)} — {r.tieu_chi}")
+        elif r.trang_thai == "canh_bao":
+            ra["ghi_chu"].append(f"{nhan} {r.chuan} mục {r.ma} ({r.chu_de}) — cảnh báo, không chặn ({r.ly_do}): "
+                                 f"{'; '.join(r.thieu)}")
+        elif r.trang_thai == "chua_do":
+            chua_do.append(f"{r.chuan} {r.ma}")
+    if chua_do:
+        ra["ghi_chu"].append(f"{nhan}: {len(chua_do)} mục CHƯA ĐO ĐƯỢC — không tính là đạt "
+                             + ("(bản thảo chưa có số liệu: phần kết quả/bàn luận, dữ kiện chờ điền; đo lại bằng --nop "
+                                "khi đã điền) " if not kq.get("co_so_lieu") else "")
+                             + f"[{', '.join(chua_do)}]")
+    for c, ly in kq.get("chua_do") or []:
+        ra["ghi_chu"].append(f"{nhan}: {c} — {ly}")
+    return ra
+
+
 def dem_trang_word(docx: Path) -> Optional[Dict[str, int]]:
     """Số trang + số từ do Microsoft Word dàn trang thật. Không có Word/macOS hoặc lỗi ⇒ None (chưa đo)."""
     if sys.platform != "darwin" or not Path("/Applications/Microsoft Word.app").exists() or not shutil.which(
@@ -191,7 +265,7 @@ def dem_trang_word(docx: Path) -> Optional[Dict[str, int]]:
 
 
 def kiem(md_path: Path, tap_chi: str, docx: Optional[Path] = None, dem_trang: bool = False,
-         nop: bool = False) -> Dict:
+         nop: bool = False, thiet_ke: Optional[str] = None, giao_thuc: Optional[bool] = None) -> Dict:
     hs = M2D.resolve_journal_profile(tap_chi)
     gh = GIOI_HAN.get((hs or {}).get("key", ""))
     if gh is None:
@@ -203,6 +277,13 @@ def kiem(md_path: Path, tap_chi: str, docx: Optional[Path] = None, dem_trang: bo
     kq = do_ban_thao(md, gh)
     # K16 (21/11/2026): phạm vi tìm nêu trong bản thảo phải khớp nhật ký PRISMA-S của đề tài (cùng thư mục).
     kq["vi_pham"].extend(K.loi_k16(md_path.parent, md))
+    # K18 (22/11/2026): chuẩn báo cáo theo từng mục, theo thiết kế
+    tk = thiet_ke if thiet_ke else thiet_ke_cua(md_path)
+    gt = la_bai_giao_thuc(md_path, md) if giao_thuc is None else giao_thuc
+    k = k18(md, tk, nop=nop, giao_thuc=gt)
+    kq["vi_pham"].extend(k["vi_pham"])
+    kq["ghi_chu"].extend(k["ghi_chu"])
+    kq["k18"] = {"thiet_ke": tk, "giao_thuc": gt, "tom_tat": k["tom_tat"], "co_so_lieu": k["co_so_lieu"]}
     kq["nguon_gioi_han"] = gh["nguon"]
     trang = dem_trang_word(docx) if (dem_trang and docx) else None
     kq["so_do"]["trang"] = trang["trang"] if trang else None
@@ -228,9 +309,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     ap.add_argument("--docx", type=Path)
     ap.add_argument("--dem-trang", action="store_true", help="Đếm trang bằng Microsoft Word (macOS)")
     ap.add_argument("--nop", action="store_true", help="Bản sắp nộp: ô [CẦN…] còn lại là vi phạm")
+    ap.add_argument("--thiet-ke", help="K18: mã thiết kế (mặc định: gate_params.G1.design của đề tài)")
+    ap.add_argument("--giao-thuc", action="store_true", default=None,
+                    help="K18: bài báo giao thức — tiêu chí đề cương (mặc định: tự nhận theo tên tệp/tiêu đề)")
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args(argv)
-    kq = kiem(a.ban_thao, a.tap_chi, a.docx, a.dem_trang, a.nop)
+    kq = kiem(a.ban_thao, a.tap_chi, a.docx, a.dem_trang, a.nop, a.thiet_ke, a.giao_thuc)
     if a.json:
         print(json.dumps(kq, ensure_ascii=False, indent=2))
         return kq["ma"]
@@ -243,6 +327,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     print(f"  Trang (Word): {s['trang'] if s['trang'] is not None else 'chưa đo'}")
     print(f"  Tiêu đề: {s['tieu_de']} từ · Tóm tắt: {s.get('tom_tat_vi', '—')} / {s.get('tom_tat_en', '—')} từ")
     print(f"  TLTK: {s['tltk']} · Bảng: {s['bang']} · Hình: {s['hinh']} · Ô [CẦN…]: {s['o_can']}")
+    k = kq.get("k18") or {}
+    if k.get("tom_tat"):
+        loai = "bài báo giao thức (tiêu chí đề cương)" if k.get("giao_thuc") else "bản thảo"
+        print(f"  K18 chuẩn theo mục — {loai}, thiết kế {k.get('thiet_ke')}:")
+        for c, dem in k["tom_tat"].items():
+            print(f"    {c}: " + " · ".join(f"{t} {n}" for t, n in sorted(dem.items())))
     for x in kq["vi_pham"]:
         print(f"  ✗ {x}")
     for x in kq["ghi_chu"]:

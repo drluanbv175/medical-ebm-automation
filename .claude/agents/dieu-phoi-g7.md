@@ -121,6 +121,12 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - Khai sử dụng trí tuệ nhân tạo NGAY TRONG bản thảo (ICMJE V.A — G8-AUTO-06), không chỉ ở gate_params.
 - ĐÃ VÁ 16/11/2026 (bác sĩ: «Hãy hoàn thiện vấn đề giả lập»): `run_g7_auto` lấp ô hỏi lại điều đã chốt — G1 (mục tiêu, cơ sở, thời gian, tiêu chí nhận/loại, phơi nhiễm, kết cục chính/phụ, định nghĩa biến cố), SAP (§2, §4, §6, §10), G2 (đăng ký), G0 (giả thuyết) — qua MỘT nguồn `tools/quyet_dinh_da_chot.py`; checkpoint ghi `o_lay_tu_quyet_dinh_da_chot`. Đo lại thuần tập: 14 → 1 ô (ô còn lại là nhận định tính đại diện sau khi có dữ liệu — nội dung MỚI của tác giả). Ô KẾT QUẢ THẬT, bàn luận, hạn chế vẫn là việc tác giả; ô không có quyết định đã chốt vẫn [CẦN…] — không lấp bằng nhãn chung. Dòng Keywords để «[CẦN 3–5 MeSH terms chính thức]» (bộ sinh thôi đoán từ khoá từ tiêu đề).
 
+## 7b. K18 — tiêu chí nghiệm thu bản thảo G7 theo từng mục chuẩn báo cáo (22/11/2026)
+
+- Bản thảo G7 chỉ coi là «phần agent hoàn chỉnh» khi K18 không còn mục thiếu: `python3 tools/kiem_chuan_de_cuong_theo_muc.py --study <mã> --tep exports/<mã>/G7_A8_MANUSCRIPT_<mã>.md --che-do ban_thao` (chưa có số liệu: chỉ phương pháp và cấu trúc; kết quả/bàn luận «chưa đo được» — KHÔNG ghi đạt) và `--nop` trước khi bàn giao G8.
+- Định tuyến mục thiếu: thiếu ở phương pháp ⇒ `viet-ban-thao` bổ sung từ quyết định đã chốt (G1 `recruitment_strategy`, `case_definition`, `control_source`, `randomisation`, `allocation_concealment`, `blinding`…; G2 `recruitment_mode`, `registration_registry`; G3 `*_source`; SAP §3, §5, §13, §15) — trường còn trống thì trả về đúng cổng nguồn để PI khai, KHÔNG chèn câu mẫu; thiếu ở kết quả (luồng người tham gia, tác hại theo nhóm, nhãn nhóm can thiệp/chứng) ⇒ dữ liệu G5/G6 hoặc sổ sàng lọc `SO_DO_LUONG_<mã>.csv`.
+- RCT dùng CONSORT 2025; chẩn đoán STARD 2015; dự báo TRIPOD+AI 2024; định tính COREQ/SRQR (⚠ cảnh báo, không chặn — vẫn phải bổ sung); tổng quan PRISMA 2020 (chưa có tiêu chí theo mục ⇒ ⚪ chưa đo, không bao giờ là đạt).
+
 ## A12 phủ mọi PMID gói phát hành TRƯỚC khi G9 khoá — giả lập trọn vòng 8 thiết kế (16/11/2026)
 - Đề cương G10 trích thêm PMID ngoài bản thảo (nguồn cỡ mẫu G3, chuẩn báo cáo, PMID chuẩn đề cương
   `protocol_checklist_items.pmid_tai_lieu_chuan(<thiết kế>)`: SPIRIT 2025 cho RCT, PRISMA-P 2015 cho tổng quan). Kiểm
