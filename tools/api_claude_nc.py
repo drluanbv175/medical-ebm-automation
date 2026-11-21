@@ -40,6 +40,7 @@ import math
 import os
 import re
 import time
+import unicodedata
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
@@ -1034,8 +1035,12 @@ def goi_lo(
 
 # ── Tiện ích văn bản dùng chung ───────────────────────────────────────────────────────────────────────────────────
 def chuan_hoa(s: str) -> str:
-    """Chuẩn để so «trích nguyên văn»: thường hoá, gộp khoảng trắng, đồng nhất gạch nối/nháy."""
-    s = (s or "").lower()
+    """Chuẩn để so «trích nguyên văn»: chuẩn Unicode NFKC, thường hoá, gộp khoảng trắng, đồng nhất gạch nối/nháy.
+
+    21/11/2026 (phân xử 99 phát hiện C1a/BTM): tiêu đề/abstract tiếng Việt Crossref trả về KHÔNG ở dạng NFC (dấu tổ hợp)
+    còn câu model trích ở dạng dựng sẵn ⇒ chữ giống hệt mà so trượt ⇒ cờ «can_cu_khong_khop» giả hạ 5 cặp ĐÚNG xuống
+    «can_xem» (bài BV TƯQĐ 108, BV Đống Đa…). NFKC một lần ở đây sửa cho mọi nơi dùng `co_nguyen_van` (A12, G0)."""
+    s = unicodedata.normalize("NFKC", s or "").lower()
     s = s.replace("–", "-").replace("—", "-").replace("−", "-")
     s = s.replace("’", "'").replace("‘", "'").replace("“", '"').replace("”", '"')
     s = s.replace(" ", " ").replace(" ", " ").replace(" ", " ")

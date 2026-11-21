@@ -18,7 +18,7 @@ kiểm «trich» phải có NGUYÊN VĂN trong đoạn đã gửi — không có
 
 Ranh giới: TƯ VẤN — không sửa đề cương, không đổi danh mục TLTK, không mở/chặn cổng. Không lưu toàn văn vào báo cáo
 (chỉ câu trích ≤ 25 từ). CHẠY KHÔ mặc định (độ phủ + ước chi phí); `--goi-api` mới gọi (tính phí).
-Mã thoát: 0 mọi cặp cần xem được toàn văn chống đỡ · 1 còn cặp cần bác sĩ xem · 2 không kiểm được (thiếu/cũ báo cáo
+Mã thoát: 0 mọi cặp cần xem được toàn văn chống đỡ · 1 còn cặp cần agent phân xử · 2 không kiểm được (thiếu/cũ báo cáo
 A12, không có toàn văn nào, lỗi API) · 3 tham số sai.
 """
 
@@ -74,6 +74,15 @@ HE_THONG = (
     "Phạm vi một tài liệu [n]: chỉ xét phần câu mà [n] được giao chống đỡ; câu trích nhiều tài liệu cùng lúc được "
     "chống đỡ CHUNG; tên tác giả/năm/tạp chí không dùng để hạ mức; câu chung «được tham khảo khi…» chỉ đòi đúng chủ "
     "đề.\n"
+    # 21/11/2026 (phân xử C1a mục 15): máy đối chiếu «[45]» của đề cương với tài liệu số 45 trong DANH MỤC CỦA BÀI
+    # (Crosby — không liên quan) rồi phán «không hỗ trợ» một ngưỡng Terwee 2007 nêu rõ ⇒ số TLTK của đề cương được che.
+    "Trong câu khẳng định, «[tài liệu đang kiểm]» đánh dấu chỗ đề cương trích tài liệu này, «[tài liệu khác]» là tài "
+    "liệu khác của đề cương. Số trong ngoặc ở CÁC ĐOẠN TOÀN VĂN thuộc danh mục tài liệu của chính bài đó — không bao "
+    "giờ đối chiếu chúng với đề cương.\n"
+    "Phần câu là quyết định RIÊNG của đề cương (con số, quy trình, ngưỡng đề tài tự đặt — vd cỡ mẫu, số vòng "
+    "chấm, tỷ lệ hồ sơ trích lại, hệ số dùng để lập kế hoạch) không cần tài liệu nêu: không hạ mức vì tài liệu "
+    "vắng các chi tiết đó. Điều được viết như phát hiện, số liệu hay nhận định CỦA tài liệu thì vẫn phải có "
+    "trong tài liệu.\n"
     "Luật: «trich» là cụm NGUYÊN VĂN ≤ 25 từ chép đúng từng chữ từ CÁC ĐOẠN ĐÃ CHO, bắt buộc với ho_tro/"
     "ho_tro_mot_phan/khong_ho_tro, để trống với khong_du_can_cu. ly_do ≤ 30 từ, tiếng Việt. Trả DUY NHẤT JSON "
     '{"ket_qua":[{"id":"C001","so":5,"muc":"ho_tro","trich":"…","ly_do":"…"}]} — đủ mọi cặp được giao, không thêm '
@@ -238,14 +247,29 @@ def doan_lien_quan(van: str, cau: Sequence[str], goi_y: str, toi_da: int = TOI_D
 
 
 # ── Lượt kiểm ────────────────────────────────────────────────────────────────────────────────────────────────────────
+def che_so_tltk(cau: str, so: int) -> str:
+    """Thay mọi dấu trích dẫn «[n]» của đề cương bằng nhãn chữ: «[tài liệu đang kiểm]» (dấu có chứa `so`, kèm
+    «, tài liệu khác» nếu cùng ngoặc còn số khác) hoặc «[tài liệu khác]». Số TLTK của đề cương không bao giờ tới model
+    lớp toàn văn — model không thể lẫn nó với số trong danh mục tài liệu của bài (21/11/2026)."""
+
+    def _nhan(m: "re.Match[str]") -> str:
+        ds = KND.mo_rong_dau(m.group(1))
+        if so in ds:
+            return "[tài liệu đang kiểm, tài liệu khác]" if len(set(ds)) > 1 else "[tài liệu đang kiểm]"
+        return "[tài liệu khác]"
+
+    return KND._DAU.sub(_nhan, cau or "")
+
+
 def cap_can_xem(bc: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Cặp «cần xem» của báo cáo A12 (cùng luật `kiem_noi_dung_trich_dan.can_xem`), kèm câu khẳng định."""
+    """Cặp «cần xem» của báo cáo A12 (cùng luật `kiem_noi_dung_trich_dan.can_xem`), kèm câu khẳng định đã che số
+    TLTK (`che_so_tltk`)."""
     cau = {c["id"]: c for c in bc.get("cau") or []}
     ra = []
     for k in bc.get("ket_qua") or []:
         if k.get("muc") in DK.MUC_A12_CAN_XEM or any(str(x).startswith("so_khong_thay") for x in k.get("co") or []):
             c = cau.get(k["id"]) or {}
-            ra.append({**k, "cau": c.get("cau") or c.get("doan") or ""})
+            ra.append({**k, "cau": che_so_tltk(c.get("cau") or c.get("doan") or "", int(k.get("so") or 0))})
     return ra
 
 

@@ -23,7 +23,7 @@ số lượt gọi + ước chi phí); `--goi-api` mới lấy abstract + gọi 
 `api_claude_nc`) + ghi báo cáo `exports/<mã>/kiem_may_api/G0_KIEM_TONG_QUAN_<mã>.{md,json}`. Độ đúng đo bằng nhãn bác
 sĩ qua `duyet_kiem_may_api.py` (loại báo cáo «G0»). Cần bác sĩ kiểm chứng.
 
-Mã thoát: 0 không có gì cần xem · 1 có mục cần bác sĩ xem · 2 không kiểm được (thiếu tệp/khoá/abstract/API) ·
+Mã thoát: 0 không có gì cần xem · 1 có mục cần agent phân xử · 2 không kiểm được (thiếu tệp/khoá/abstract/API) ·
 3 tham số sai.
 """
 
@@ -405,13 +405,13 @@ def bao_cao_md(study: str, kq: Dict[str, Any], model: str, luc: str, ly_do_tl: D
          f"- C. khoảng trống: {len(c_xem)} vấn đề", "",
          "So với TIÊU ĐỀ + ABSTRACT (PubMed; bài chỉ có mã DOI thì lấy qua Europe PMC/Crossref), không phải toàn văn. "
          "Mọi «trích» đã được máy đối chiếu nguyên văn; không khớp thì xếp «máy không xác minh được căn cứ».", "",
-         "## A. Bảng sàng lọc G0-T3 — cần bác sĩ xem", "",
+         "## A. Bảng sàng lọc G0-T3 — cần agent phân xử", "",
          "| Mã | Bài | Nhóm | Trường | Máy phán | Lý do / cờ | Căn cứ trong abstract |",
          "|---|---|---|---|---|---|---|"]
     d += [f"| {k['id']} | {_o(k['dinh_danh'])} | {k['nhom']} | {TEN.get(k['truong'], k['truong'])} | {k['muc']} | "
           f"{_o(k.get('ly_do'))}{(' — ' + ', '.join(k['co'])) if k.get('co') else ''} | {_o(k.get('trich'))} |"
           for k in a_xem] or ["| — | — | — | — | Không có trường nào cần xem theo máy | — | — |"]
-    d += ["", "## B. Đoạn tổng hợp G0-T3 — cần bác sĩ xem", "",
+    d += ["", "## B. Đoạn tổng hợp G0-T3 — cần agent phân xử", "",
           "| Mã | Đoạn | Tài liệu | Mức | Lý do / cờ | Căn cứ |", "|---|---|---|---|---|---|"]
     d += [f"| {k['id']} | {_o((cau.get(k['id']) or {}).get('doan'))[:300]} | {_o(k.get('dinh_danh'))} | "
           f"{KND.TEN_MUC.get(k['muc'], k['muc'])} | {_o(k.get('ly_do'))}"
@@ -525,7 +525,7 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, lay=None, lay
     API.ghi_nhat_ky_api("error" if tk["so_lo"] and tk.get("lo_loi_api", 0) == tk["so_lo"] else "ok",
                         "; ".join(tk.get("loi", []))[:200], len(kq["a"]) + len(kq["b"]) + len(kq["c"]), NGUON)
     xem = so_can_xem(kq)
-    print(f"{'🟠' if xem else '🟢'} {xem} mục cần bác sĩ xem · báo cáo {ra_dir / (ten + '.md')}")
+    print(f"{'🟠' if xem else '🟢'} {xem} mục cần agent phân xử · báo cáo {ra_dir / (ten + '.md')}")
     if tk["so_lo"] and tk["lo_loi"] == tk["so_lo"]:
         return 2
     return 1 if xem else 0

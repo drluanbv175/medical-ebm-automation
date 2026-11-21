@@ -359,7 +359,9 @@ def test_phieu_ghi_nhan_va_do_ty_le_dung(tmp_path, so):
     goc = _de_tai_co_bao_cao(tmp_path, so)
     md, _, n = DKM.dung_phieu("S1", goc)
     noi_dung = md.read_text(encoding="utf-8")
-    assert n == 3 and "**1.**" in noi_dung and "**3.**" in noi_dung and "Máy KHÔNG tự gắn nhãn" in noi_dung
+    # 21/11/2026: phiếu dành cho bước PHÂN XỬ của agent — bác sĩ không phải trả lời (bác sĩ 21/11)
+    assert n == 3 and "**1.**" in noi_dung and "**3.**" in noi_dung and "Bác sĩ KHÔNG phải" in noi_dung
+    assert "phan-xu" in noi_dung
     kq = DKM.ghi_nhan("S1", "1 đúng, 2 đúng, 3 sai", ap_dung=False, goc=goc)
     assert kq["da_ghi"] is False and not DKM.tep_duyet("S1", goc).exists()  # chạy khô không ghi
     DKM.ghi_nhan("S1", "1 đúng, 2 đúng, 3 sai", ap_dung=True, goc=goc)
