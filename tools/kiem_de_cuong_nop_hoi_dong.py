@@ -280,7 +280,9 @@ def loi_k10(md: str) -> List[str]:
 _MO_HO_RE = re.compile(
     r"(?<![\wÀ-ỹ])(nhiều nghiên cứu|nhiều tác giả|nhiều bằng chứng|các nghiên cứu (?:cho thấy|đều)|y văn (?:cho thấy|"
     r"ghi nhận)|phần lớn|đa số|hầu hết|gần như toàn bộ|một số nghiên cứu|thường gặp|khá cao|rất cao|rất thấp|đáng kể|"
-    r"ngày càng|đã được chứng minh|nhiều người|nhiều bệnh nhân|thường (?:được|liên quan|do|xảy ra|kéo dài))"
+    r"ngày càng|đã được chứng minh|nhiều người|nhiều bệnh nhân|thường (?:được|liên quan|do|xảy ra|kéo dài)|"
+    # 22/11/2026: «đã được nghiên cứu nhiều» ở mục khoảng trống của cả hai đề cương thật lọt K15
+    r"(?:được )?nghiên cứu nhiều|(?:được )?(?:sử dụng|dùng|áp dụng) rộng rãi)"
     r"(?![\wÀ-ỹ])", re.I)
 _CHU_THICH_BB = ("**Bảng", "**Hình", "**Biểu đồ", "**Sơ đồ")
 
