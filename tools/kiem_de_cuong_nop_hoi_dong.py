@@ -52,7 +52,7 @@ import re
 import sys
 import zipfile
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 for _luong in (sys.stdout, sys.stderr):
     try:
@@ -268,6 +268,16 @@ _TIM_KIEM_RE = re.compile(r"\[(?:Mesh|tiab|pt|ti|tw|majr|dp)\]", re.I)
 _TEN_BB_HAI_NGOAC_RE = re.compile(r"^\*\*(?:Bảng|Hình|Biểu đồ) [0-9A-Z]+\.\d+\..*\)\s*\(")
 
 
+# Chiều ngược của bảng viết tắt (21/11/2026 — phản biện máy C1a, bác sĩ chọn sửa trước khi PI ký G10): danh mục có
+# STROBE, COSMIN, CROSS, RECORD mà vắng AGReMA dùng ở §4.8. Chỉ xét tên CHUẨN BÁO CÁO/THẨM ĐỊNH viết tắt (cùng loại, đã
+# quen liệt kê trong danh mục) — không xét mọi cụm in hoa (mã biến G1/C6, tên phần mềm REDCap/eHospital là tên riêng).
+_CHUAN_VIET_TAT = (
+    "AGReMA", "AGREE", "AMSTAR", "CARE", "CHEERS", "CONSORT", "COREQ", "COSMIN", "CROSS", "GRADE", "GRIPP2", "MOOSE",
+    "PRISMA", "PRISMA-P", "PROBAST", "QUADAS", "RECORD", "ROBINS-I", "SPIRIT", "SQUIRE", "SRQR", "STARD", "STROBE",
+    "TIDieR", "TRIPOD",
+)
+
+
 def _khoa_van_viet(k: str) -> str:
     """Khoá xếp theo bảng chữ cái tiếng Việt cho chữ viết tắt: không phân biệt hoa thường, «Đ» sau «D»."""
     return k.upper().replace("Đ", "D~")
@@ -282,6 +292,7 @@ def loi_k11(md: str) -> List[str]:
     vt: Dict[str, str] = {}
     vt_dong: List[int] = []
     cot_nguyen_van: set = set()
+    dong_than: List[Tuple[int, str]] = []  # dòng thân bài (ngoài danh mục viết tắt, TLTK, mã)
     for so, d in enumerate(dong, 1):
         m = _DE_MUC_RE.match(d)
         if m:
@@ -298,6 +309,7 @@ def loi_k11(md: str) -> List[str]:
             continue
         if trong_tltk or d.startswith("![") or _TIM_KIEM_RE.search(d):
             continue
+        dong_than.append((so, re.sub(r"`[^`]*`", " ", d)))
         # 20/11/2026: cột bảng khai «(nguyên văn)» — vd «Tên bài (nguyên văn)» của bảng tài liệu ở chương tổng quan —
         # giữ đúng chữ của nguồn như danh mục tài liệu tham khảo (tiêu đề tiếng Anh dùng «vs», số không nhóm nghìn).
         if d.startswith("|"):
@@ -357,6 +369,14 @@ def loi_k11(md: str) -> List[str]:
             # «ĐN» được dùng dưới dạng ĐN1–ĐN9, «MT» dưới dạng MT1–MT3 ⇒ cho phép số liền sau
             if dau and not re.search(rf"(?<![\wÀ-ỹ]){re.escape(dau)}(?:\d|(?![\wÀ-ỹ]))", than):
                 loi.append(f"K11 bảng chữ viết tắt: «{k}» không xuất hiện trong văn bản — bỏ mục này")
+        co_vt = {re.split(r"[,\s±]+", k)[0] for k in vt}
+        for ten in _CHUAN_VIET_TAT:
+            if ten in co_vt:
+                continue
+            mau = re.compile(rf"(?<![\wÀ-ỹ-]){re.escape(ten)}(?![\wÀ-ỹ-])")  # cùng ranh giới với bộ sinh
+            so_dau = next((so for so, d in dong_than if mau.search(d)), None)
+            if so_dau:
+                loi.append(f"K11 bảng chữ viết tắt: «{ten}» dùng ở dòng {so_dau} mà danh mục thiếu — bổ sung mục này")
         if list(vt) != sorted(vt, key=_khoa_van_viet):
             loi.append("K11 bảng chữ viết tắt chưa xếp theo bảng chữ cái tiếng Việt")
     return loi
