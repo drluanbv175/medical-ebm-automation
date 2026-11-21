@@ -208,8 +208,11 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 21/11/2026 (c): viet-ban-thao + kiem-chung-trich-dan — K15 khẳng định mơ hồ không nguồn (PR cặp gốc #476).
 # 21/11/2026 (d): tong-quan-y-van — xếp mức liên quan G0 đúng thang + nguyên tắc áp dụng (PR cặp gốc #476).
 # 21/11/2026 (e): kiem-chung-trich-dan + viet-ban-thao — K16 phạm vi tìm khớp nhật ký PRISMA-S (PR cặp gốc #476).
+# 21/11/2026: gỡ dòng ⚠️ «#384 CHƯA gộp» đã lỗi thời ở bản sao `cong-cu-do-luong`, `phan-tich-thong-ke` (đồng bộ nguồn
+# gốc) — vẫn 64.
+# 21/11/2026 (f): viet-ban-thao + thiet-ke-nghien-cuu — K17 đủ từng mục chuẩn của thiết kế (PR cặp gốc #476).
 MANIFEST_SELF_CHECK_SHA256 = (
-    "910dd24e30703a7f29260af32a6f90484f88bfbff5dff8455f3623f697d4d1ef"
+    "99263f99096a11282b8a94dda63198998f10a29813cf62fef2c820448400005c"
 )
 
 MINIMUM_AGENT_COUNT = 64
