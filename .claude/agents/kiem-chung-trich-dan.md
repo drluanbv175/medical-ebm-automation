@@ -153,6 +153,10 @@ của bác sĩ: hỏi trước, đưa con số ước tính. Kết quả ở `ex
   danh mục dựng từ đó (G10, bộ sinh đề cương) đúng Vancouver/NLM; K13 của `kiem_de_cuong_nop_hoi_dong.py` chặn mục lệch.
   Biên nhận cũ chưa có các khoá này ⇒ chạy lại `check_citations.py --study <mã>` rồi mới trông vào K13.
 - K12 chặn ngoặc gộp từ 6 tài liệu và mục TLTK không được trích — tài liệu không đỡ câu nào thì bỏ khỏi danh mục.
+- Đề cương theo khuôn hướng dẫn chung BVQY175 (có «# CHƯƠNG 1.», 21/11/2026): TLTK xếp tiếng Việt trước rồi ngoại ngữ,
+  mỗi nhóm ABC (tác giả Việt theo TÊN, nước ngoài theo HỌ, cơ quan theo chữ đầu); trích theo SỐ của danh mục nên KHÔNG đòi
+  thứ tự xuất hiện kiểu Vancouver (phản biện máy và `nhat_quan_xuyen_cong` đã bỏ luật đó cho khuôn); mỗi mục vẫn ghi theo
+  Vancouver/NLM (K13). K14 kiểm thứ tự ngôn ngữ/ABC, số liền và ≥ 50% tài liệu xuất bản trong 10 năm.
 
 ## Trích dẫn đề tài PHẢI có TOÀN VĂN — chốt máy G10-AUTO-12 (18/11/2026)
 
