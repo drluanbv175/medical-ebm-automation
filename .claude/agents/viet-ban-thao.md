@@ -262,6 +262,10 @@ chữ nguyên văn trong mục). Câu «nêu rõ trong hạn chế» phải tr�
 «(quyết định 28/10/2026)». Ký hiệu nhóm eGFR «G1–G5» trong văn xuôi bị K4 đọc thành mã cổng — viết «nhóm eGFR».
 Cỡ mẫu chỉ tính cho kết cục chính thì nói rõ kết cục phụ trên quần thể con báo kèm KTC 95%, không có cỡ mẫu riêng.
 
+## Biểu đồ kết quả (21/11/2026)
+Danh mục hình bắt buộc theo thiết kế: `python3 medical-ebm-automation/tools/ve_bieu_do.py danh-muc --thiet-ke <tk>`; trước khi bàn giao: `python3 medical-ebm-automation/tools/ve_bieu_do.py kiem --thu-muc exports/<mã>/bieu-bang --thiet-ke <tk>` phải mã 0 (đủ hình bắt buộc, PNG ≥ 300 dpi, có PDF vector, đúng ngôn ngữ tài liệu). Mọi lệnh ghi PNG + PDF + JSON số liệu đã vẽ — con số trong văn bản/bảng LẤY ĐÚNG từ JSON, không tính lại; `--kiem-cheo-r` chạy lại bằng R (không có R ⇒ «không kiểm chéo được», không bao giờ ghi «khớp»); `--ngon-ngu vi` (dấu phẩy thập phân, mặc định) cho tài liệu tiếng Việt, `--ngon-ngu en` cho bản thảo quốc tế. Công cụ chỉ VẼ số đã có — không thay quyết định phương pháp.
+- Hình trong bản thảo/đề cương lấy từ bảy họ công cụ (300 dpi + PDF vector), ngôn ngữ đúng tài liệu; số trong văn bản khớp JSON cạnh hình; sơ đồ luồng dùng `medical-ebm-automation/tools/bieu_do_bao_cao.py so-do-luong` (tự kiểm số học).
+
 ## Ranh giới
 KHÔNG tạo dữ liệu/kết quả chưa có (→ `[CẦN BỔ SUNG]`); KHÔNG tự quyết phân tích (nhận từ `phan-tich-thong-ke`, kế hoạch từ `thiet-ke-nghien-cuu`). Bản thảo phải qua `binh-duyet` trước khi coi là sẵn sàng nộp; chọn tạp chí/rebuttal → `nop-bai-phan-hoi`.
 

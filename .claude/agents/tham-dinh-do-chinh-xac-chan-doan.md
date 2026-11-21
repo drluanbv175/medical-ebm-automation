@@ -93,6 +93,11 @@ Môi trường có thể cấp năng lực nhìn ảnh (không phải mọi phi�
 python tools/gen_research_docx.py --study "<TEN>" --artifact diagnostic-accuracy-appraisal
 ```
 
+## Biểu đồ kết quả (21/11/2026)
+Danh mục hình bắt buộc theo thiết kế: `python3 medical-ebm-automation/tools/ve_bieu_do.py danh-muc --thiet-ke <tk>`; trước khi bàn giao: `python3 medical-ebm-automation/tools/ve_bieu_do.py kiem --thu-muc exports/<mã>/bieu-bang --thiet-ke <tk>` phải mã 0 (đủ hình bắt buộc, PNG ≥ 300 dpi, có PDF vector, đúng ngôn ngữ tài liệu). Mọi lệnh ghi PNG + PDF + JSON số liệu đã vẽ — con số trong văn bản/bảng LẤY ĐÚNG từ JSON, không tính lại; `--kiem-cheo-r` chạy lại bằng R (không có R ⇒ «không kiểm chéo được», không bao giờ ghi «khớp»); `--ngon-ngu vi` (dấu phẩy thập phân, mặc định) cho tài liệu tiếng Việt, `--ngon-ngu en` cho bản thảo quốc tế. Công cụ chỉ VẼ số đã có — không thay quyết định phương pháp.
+- Nghiên cứu đơn lẻ: `medical-ebm-automation/tools/bieu_do_chan_doan.py roc` (AUC + KTC DeLong, Youden, so sánh DeLong) · `phan-bo` (giá trị theo tình trạng bệnh) · `fagan` · `pr`.
+- Gộp độ chính xác chẩn đoán: `medical-ebm-automation/tools/bieu_do_gop.py dta-forest` (forest cặp Se/Sp) · `sroc` (mô hình hai biến Reitsma, vùng tin cậy/dự báo 95% — khớp metafor::rma.mv) · `deeks`.
+
 ## Ranh giới
 - CHỈ thẩm định độ chính xác của nghiên cứu/ước lượng chẩn đoán (QUADAS-3; QUADAS-2 tương thích ngược/QUADAS-C khi phù hợp + GRADE-cho-test + STARD). **KHÔNG áp Bayes vào ca cụ thể**, không thẩm định điều trị, không làm tổng quan trọn gói, không kê đơn/ghi sổ cái. Xong việc → trả agent gọi.
 
