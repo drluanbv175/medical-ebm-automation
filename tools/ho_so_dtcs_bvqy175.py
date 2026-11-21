@@ -988,6 +988,55 @@ def _bam_tep(p: Path) -> str:
     return hashlib.sha256(p.read_bytes()).hexdigest()[:16] if p.is_file() else ""
 
 
+# Tham chiếu chéo theo đánh số ĐỀ CƯƠNG (vd «mục 2.6.4», «Bảng 2.1», «Phụ lục C», «mục 3.3–3.4»). Thuyết minh bỏ số mục
+# của đề cương khi chép (tach_muc giữ `ten` không số) nên các tham chiếu này không trỏ được trong thuyết minh —
+# 22/11/2026: kiểm còn 55 (C1a) và 26 (BTM) chỗ. Hội đồng nhận thuyết minh KÈM đề cương ⇒ ghi «của đề cương» sau cả
+# cụm; tham chiếu
+# tới bảng/hình có chú thích đã chép sang thuyết minh, hoặc mục có đề mục cùng số trong thuyết minh, được giữ nguyên.
+_SO_NHAN = r"\d+\.\d+(?:\.\d+)*"
+THAM_CHIEU_CUM = re.compile(
+    rf"\b(?P<loai>[Mm]ục|Bảng|Hình)\s+(?P<so>{_SO_NHAN}(?:\s*(?:[–-]|,|và|hoặc)\s*{_SO_NHAN})*)(?![\d.]?\d)"
+    r"|\b(?P<pl>Phụ lục)\s+(?P<chu>[A-ZĐ](?:\s*(?:,|và|–|-)\s*[A-ZĐ])*)\b")
+_DA_GHI_NGUON = re.compile(r"\s*(?:của đề cương|\(đề cương)")
+_CHU_THICH_TM = re.compile(r"\*\*(Bảng|Hình)\s+(\d+\.\d+)\.")
+_DE_MUC_SO_TM = re.compile(r"^\s*(?:#+\s*)?(\d+(?:\.\d+)+)\.\s")
+
+
+def nhan_co_trong_thuyet_minh(cac_khoi: list[list[str]]) -> set[str]:
+    """Nhãn tự trỏ được trong thuyết minh: «Bảng 2.1»/«Hình 3.2» có chú thích chép sang; «mục 2.6.1» có đề mục
+    cùng số."""
+    co: set[str] = set()
+    for dong in cac_khoi:
+        for d in dong:
+            co |= {f"{m.group(1)} {m.group(2)}" for m in _CHU_THICH_TM.finditer(d)}
+            m = _DE_MUC_SO_TM.match(d)
+            if m:
+                co.add(f"mục {m.group(1)}")
+    return co
+
+
+def ghi_nguon_tham_chieu(dong: list[str], co_trong_tm: set[str]) -> list[str]:
+    """Thêm «của đề cương» sau mỗi cụm tham chiếu theo đánh số đề cương không trỏ được trong thuyết minh."""
+
+    def thay(m: re.Match) -> str:
+        if _DA_GHI_NGUON.match(m.string, m.end()):
+            return m.group(0)
+        if m.group("loai"):
+            loai = "mục" if m.group("loai").lower() == "mục" else m.group("loai")
+            so = re.split(r"\s*(?:[–-]|,|và|hoặc)\s*", m.group("so"))
+            if all(f"{loai} {s}" in co_trong_tm for s in so):
+                return m.group(0)
+        return m.group(0) + " của đề cương"
+
+    # Dòng ảnh «![Hình 3.1](…)» là chính hình (thành ô «[CẦN BỔ SUNG HÌNH]» khi dựng), không phải tham chiếu.
+    return [d if "![" in d else THAM_CHIEU_CUM.sub(thay, d) for d in dong]
+
+
+def dem_tham_chieu_chua_ghi_nguon(van: str) -> int:
+    """Số cụm tham chiếu theo đánh số đề cương chưa ghi «của đề cương» (dùng ở `kiem`)."""
+    return sum(1 for m in THAM_CHIEU_CUM.finditer(van) if not _DA_GHI_NGUON.match(van, m.end()))
+
+
 def trich_du_kien(exports_root: Path, study: str, chu_nhiem: str | None = None,
                   so_ca_nhan: Path | None = None) -> tuple[dict, list[str]]:
     """Trích tất định (schema 1.0). KHÔNG bịa; ô không có nguồn ⇒ «[CẦN …]»; `_nguon` chỉ dùng nội bộ."""
@@ -1099,6 +1148,14 @@ def trich_du_kien(exports_root: Path, study: str, chu_nhiem: str | None = None,
     for k, d in zip(pp, moi[2 + len(thu_tu_tq):2 + len(thu_tu_tq) + len(pp)]):
         k["dong"] = d
     pho_bien = moi[-1]
+    co_trong_tm = nhan_co_trong_thuyet_minh([phan_cong, mt_md, pho_bien] + [k["dong"] for k in tq + pp])
+    phan_cong, mt_md, pho_bien = (ghi_nguon_tham_chieu(x, co_trong_tm) for x in (phan_cong, mt_md, pho_bien))
+    for k in tq + pp:
+        k["dong"] = ghi_nguon_tham_chieu(k["dong"], co_trong_tm)
+    for hang in td if isinstance(td, list) else []:
+        for khoa, gia_tri in list(hang.items()) if isinstance(hang, dict) else []:
+            if isinstance(gia_tri, str):
+                hang[khoa] = ghi_nguon_tham_chieu([gia_tri], co_trong_tm)[0]
     mt_cu_the = danh_sach_so(mt_md)
     tn = tai_nguyen_xac_minh(thu_muc, study)
     m16 = []
@@ -2219,7 +2276,6 @@ _DAU_VET_THEM = (
     (re.compile(r"\b(?:ho_so_dtcs|ho_so_hdd)/"), "đường dẫn máy"),
     (re.compile(r"\b(?:gate_params|study_meta|khoa_ca_nhan|thuyet_minh\.m\d+)\b"), "khoá dữ liệu máy"),
 )
-_THAM_CHIEU_CHEO = re.compile(r"\b(?:mục|Mục)\s+\d+\.\d+(?:\.\d+)?|\b(?:Bảng|Hình)\s+\d+\.\d+|\bPhụ lục\s+[A-ZĐ]\b")
 
 
 def tim_dau_vet_may(van_ban: str) -> list[tuple[str, str]]:
@@ -2329,12 +2385,12 @@ def lenh_kiem(args: argparse.Namespace) -> int:
         can_word += van.count("[CẦN")
         dau_vet += [f"{p.name}: {loai} «{doan}»" for loai, doan in tim_dau_vet_may(van)]
         if p.name.startswith("DKCT02_"):
-            tham_chieu = len(_THAM_CHIEU_CHEO.findall(van))
+            tham_chieu = dem_tham_chieu_chua_ghi_nguon(van)
     if dau_vet:
         van_de.append(f"DẤU VẾT MÁY trong văn bản nộp ({len(dau_vet)}): " + "; ".join(dau_vet[:8]))
     if tham_chieu:
         con_viec.append(f"thuyết minh còn {tham_chieu} tham chiếu «mục x.y/Bảng x.y/Phụ lục X» theo đánh số ĐỀ CƯƠNG"
-                        " — sửa cho khớp thuyết minh hoặc ghi «(đề cương)»")
+                        " chưa ghi «của đề cương» — chạy lại `trich --ghi-de` rồi `dung --ghi`")
     if thieu_tep:
         con_viec.append(f"thiếu tệp: {thieu_tep}")
     print(f"=== Kiểm hồ sơ đăng ký chủ trì đề tài cơ sở BVQY175 — {study} ===")
