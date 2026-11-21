@@ -359,6 +359,7 @@ Chọn mẫu ngẫu nhiên đơn ở cấp người bệnh: (1) lập khung mẫ
   - Phụ 3 — điều trị bảo vệ thận ở người đủ chỉ định theo KDIGO 2022 [40]: (a) ACEi hoặc ARB ở người có tăng huyết áp và albumin niệu đã xác nhận (UACR ≥ 30 mg/g ở 2 lần đo cách nhau ít nhất 90 ngày; phân tích độ nhạy ĐN6 ở mục 2.6.5 chỉ cần một lần); (b) SGLT2i ở người có bệnh thận mạn và eGFR ≥ 20 mL/phút/1,73 m². “Đang dùng” là có đơn kê thuốc nhóm đó tại lượt khám cuối cùng trong cửa sổ; người có chống chỉ định hoặc không dung nạp ghi trong hồ sơ được loại khỏi mẫu số và báo cáo riêng.
   - Phụ 4 — yếu tố liên quan với việc không được xét nghiệm đủ (MT3, phân tích thăm dò): hồi quy Poisson phương sai vững, báo cáo tỷ số tỷ lệ hiện mắc (PR) kèm KTC 95%; biến giải thích là 12 yếu tố nêu ở mục 2.6.5.
 - Các biến khác (đặc điểm chung, biến hiệu chỉnh): Nhóm eGFR theo KDIGO; nhóm albumin niệu theo KDIGO (A1–A3); người bệnh đủ chỉ định ACEi/ARB theo KDIGO 2022; người bệnh đủ chỉ định SGLT2i theo KDIGO 2022.
+- Biến phân nhóm cho phân tích nhóm nhỏ tiền định (mục 2.6.5): phòng khám theo dõi chính (nội tiết / nội chung / khác), nhóm đối tượng (quân nhân / BHYT / dịch vụ / khác) và nhóm tuổi (< 65 / ≥ 65).
 - Định nghĩa, loại biến và cách mã hoá của từng biến trình bày ở Phụ lục D.
 
 ### 2.6.4. Sai số và biện pháp khống chế sai số
@@ -371,7 +372,7 @@ Các nguồn sai số dự kiến, chiều ảnh hưởng và biện pháp khố
 |---|---|---|
 | Sai lệch chọn do tiêu chí từ 2 lượt khám | Mẫu nghiêng về người theo dõi đều nên có thể ước lượng cao tỷ lệ được xét nghiệm so với mọi người ĐTĐ típ 2 từng đến khám. | Sơ đồ chọn đếm hồ sơ bị loại vì chỉ 1 lượt khám và so sánh tuổi, giới, nhóm đối tượng với mẫu nghiên cứu. |
 | Sai lệch chọn mẫu | Chọn theo lượt khám làm người khám nhiều lần (thường được theo dõi kỹ hơn) dễ vào mẫu, dẫn đến ước lượng cao tỷ lệ được xét nghiệm. | Khung mẫu ở cấp người bệnh (gộp lượt khám trùng); thứ tự ngẫu nhiên do máy tính sinh, ghi seed; mở hồ sơ đúng thứ tự; ghi lý do mọi hồ sơ bị loại; người trích không tự chọn hồ sơ. |
-| Sai lệch phân loại quần thể do mã ICD-10 | Mã E11 ghi nhầm làm lẫn người không ĐTĐ típ 2 vào mẫu; chiều lệch của kết cục không xác định trước. | Định nghĩa ca bằng E11, loại E10/E12/E13, đếm riêng người chỉ có E14; phân tích độ nhạy giới hạn người có E11 kèm ít nhất một đơn thuốc hạ glucose trong cửa sổ. |
+| Sai lệch phân loại quần thể do mã ICD-10 | Mã E11 ghi nhầm làm lẫn người không ĐTĐ típ 2 vào mẫu; chiều lệch của kết cục không xác định trước. | Định nghĩa ca bằng E11, loại E10/E12/E13, đếm riêng người chỉ có E14; phân tích độ nhạy giới hạn người có E11 kèm ít nhất một đơn thuốc hạ glucose trong cửa sổ. Độ chính xác của mã ICD-10 dùng để chọn quần thể chưa được kiểm định trên eHospital của Bệnh viện, nên kết quả phân tích độ nhạy này được báo cáo cùng phân tích chính. |
 | Sai lệch thông tin — xét nghiệm làm ngoài BVQY175 không có trong eHospital | Ước lượng thấp tỷ lệ được xét nghiệm đủ. | Khi mở hồ sơ, ghi riêng kết quả ngoài viện nếu bệnh án ghi rõ ngày và kết quả; báo tỷ lệ này và phân tích độ nhạy tính lại kết cục chính. |
 | Sai lệch phân loại kết cục — UACR với nồng độ microalbumin niệu hoặc que nhúng | Loại dạng khác thì đếm thiếu xét nghiệm; gộp vào thì đếm thừa so với khuyến cáo. | Bảng ánh xạ mã xét nghiệm HIS do hai người duyệt trước khi trích; phân tích chính chỉ tính UACR dạng tỷ số, phân tích độ nhạy tính cả các dạng albumin niệu khác. |
 | Sai lệch phân loại bệnh thận mạn khi chỉ có 1 lần đo | Dùng 1 lần đo sẽ ước lượng cao tỷ lệ bệnh thận mạn. | Xác nhận tính mạn bằng 2 lần đo bất thường cách nhau ít nhất 90 ngày theo KDIGO 2024; người chỉ có 1 lần bất thường xếp nhóm “nghi bệnh thận mạn”, báo cáo riêng. |
@@ -467,7 +468,7 @@ Nghiên cứu tuân thủ Tuyên bố Helsinki và các quy định hiện hành
 
 - Mức nguy cơ: Nguy cơ tối thiểu; Hội đồng Đạo đức quyết định mức nguy cơ cuối cùng.
 - Hình thức xét duyệt: Đề nghị xét duyệt theo quy trình rút gọn.
-- Quy trình đồng thuận: Đề nghị miễn thủ tục đồng thuận (Phụ lục B).
+- Quy trình đồng thuận: Đề nghị Hội đồng Đạo đức chấp thuận miễn lấy bản cung cấp thông tin nghiên cứu và phiếu tình nguyện tham gia nghiên cứu, theo Điều 7 khoản 1 điểm b Thông tư 43/2024/TT-BYT (đơn đề nghị ở Phụ lục B).
 - Bảo mật thông tin: Phiếu chỉ mang mã nghiên cứu, không ghi trường định danh nào của người bệnh; bảng nối mã nghiên cứu với mã người bệnh lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ, huỷ sau khi khoá dữ liệu; chỉ phân tích bộ dữ liệu đã khử định danh.
 - Đăng ký nghiên cứu: Nghiên cứu quan sát hồi cứu không bắt buộc đăng ký; đề tài không đăng ký trên hệ thống đăng ký công khai.
 - Xung đột lợi ích: Nhóm nghiên cứu cam kết không có xung đột lợi ích liên quan đến đề tài; mọi thay đổi sẽ được khai báo với Hội đồng.
@@ -817,6 +818,8 @@ Các hạn chế dự kiến, chiều hướng sai lệch và biện pháp đã 
 
 Nhóm nghiên cứu cam kết: chỉ trích những thông tin cần cho mục tiêu nghiên cứu; không ghi họ tên, địa chỉ, số điện thoại của người bệnh vào phiếu; bảng đối chiếu mã nghiên cứu với hồ sơ được lưu riêng, có phân quyền và huỷ sau khi khoá dữ liệu; kết quả chỉ công bố ở dạng tổng hợp.
 
+Căn cứ đề nghị: Tuyên bố Helsinki (Hiệp hội Y khoa Thế giới, bản sửa đổi tháng 10/2024) đoạn 32 (dữ liệu, vật liệu sinh học xác định được: khi không thể hoặc không thực tế xin chấp thuận, chỉ tiến hành sau khi hội đồng đạo đức xem xét và chấp thuận) và đoạn 24 (bảo vệ riêng tư, bảo mật thông tin cá nhân); CIOMS 2016, Hướng dẫn 10 (sửa đổi và miễn chấp thuận — đủ cả ba điều kiện) và Hướng dẫn 12 (thu thập, lưu trữ và sử dụng dữ liệu trong nghiên cứu liên quan đến sức khoẻ); Thông tư 43/2024/TT-BYT, Điều 7 khoản 1 điểm b (Hội đồng đạo đức chấp thuận việc miễn lấy bản cung cấp thông tin nghiên cứu và phiếu tình nguyện tham gia nghiên cứu).
+
 Kính đề nghị Hội đồng Đạo đức xem xét cho phép miễn thủ tục đồng thuận tham gia nghiên cứu.
 
 Chủ nhiệm đề tài (ký, ghi rõ họ tên): ……………………………   Ngày: …… /…… /…………
@@ -1075,6 +1078,8 @@ Tiến độ thực hiện theo các mốc ở mục 2.6.2, từ chốt đề c�
 
 - Thời hạn lưu: Số liệu điện tử (và phiếu giấy nếu có) lưu 2 năm sau khi kết thúc nghiên cứu. Hết thời hạn lưu trữ: tệp điện tử xoá an toàn, phiếu giấy (nếu có) huỷ bằng máy huỷ tài liệu, có biên bản.
 - Khử định danh: Phiếu chỉ mang mã nghiên cứu, không ghi trường định danh nào của người bệnh; bảng nối mã nghiên cứu với mã người bệnh lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ, huỷ sau khi khoá dữ liệu.
+- Làm sạch số liệu: trước khi khoá dữ liệu, kiểm tra giá trị ngoài phạm vi hợp lệ, mâu thuẫn logic giữa các trường (ví dụ ngày xét nghiệm nằm ngoài cửa sổ 01/01/2026–31/12/2026) và trùng mã người bệnh; mọi giá trị nghi vấn được đối chiếu lại với hồ sơ trên eHospital và ghi vào nhật ký truy vấn.
+- Khả năng tiếp cận tài liệu: đề cương, kế hoạch phân tích thống kê đã khoá và mã phân tích được lưu trong hồ sơ đề tài; bộ dữ liệu đã khử định danh chỉ được chia sẻ khi có yêu cầu hợp lý gửi chủ nhiệm đề tài và được Hội đồng Đạo đức cho phép.
 
 ## Đăng ký nghiên cứu và phổ biến kết quả
 

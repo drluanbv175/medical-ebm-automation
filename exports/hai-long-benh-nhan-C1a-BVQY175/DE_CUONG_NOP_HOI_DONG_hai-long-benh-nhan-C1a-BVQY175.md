@@ -924,6 +924,7 @@ Các ý bàn luận chính do chủ nhiệm bổ sung: ………
 | Bộ câu hỏi tự xây dựng, dùng lần đầu | Sai số đo lường chưa rõ chiều hướng | Pha phát triển và kiểm định trước mẫu chính; phân tích nhân tố trên hai nửa mẫu |
 | Không dùng nguyên văn Mẫu số 2 | Khó so sánh trực tiếp với khảo sát thường quy và chỉ tiêu quốc gia | Năm lĩnh vực A–E tương thích về khái niệm; đối chiếu khi bàn luận |
 | Chủ nhiệm đề tài công tác tại khoa được đánh giá | Có thể diễn giải theo hướng có lợi cho khoa | Biện pháp quản lý xung đột lợi ích (mục 2.7.1); kế hoạch phân tích khóa trước |
+| Mốc thời gian trên HIS được ghi cho mục đích quản lý lượt khám, không phải cho nghiên cứu | Giờ gọi vào buồng khám có thể lệch với thời điểm người bệnh thực sự gặp bác sĩ, gây phân loại sai thời gian chờ; nếu sai số này không phụ thuộc mức hài lòng, mối liên quan giữa thời gian chờ và hài lòng có xu hướng bị ước lượng thấp | Định nghĩa thời gian chờ bằng hai mốc cố định trên HIS (mục 2.6.4.3); buổi chạy thử kiểm tra khả năng ghép mốc HIS; báo cáo tỷ lệ không ghép được thời gian chờ (mục 3.4) |
 | Mức độ gom cụm theo bàn khám chưa biết trước | Khoảng tin cậy có thể rộng hơn dự kiến | Thu mã bàn khám, báo cáo ICC ước lượng được |
 
 **Phạm vi suy rộng kết quả.** Kết quả áp dụng cho người bệnh ngoại trú từ đủ 18 tuổi đã hoàn thành lượt khám tại Khoa Khám bệnh C1a trong thời gian nghiên cứu. Nghiên cứu thực hiện tại một khoa của một bệnh viện quân y tuyến cuối tại đô thị lớn, nên kết quả không đại diện cho toàn bộ khối khám theo yêu cầu trong cả nước, cho các khoa khác trong Bệnh viện hay cho người bệnh nội trú, và không cho phép so sánh mô hình khám theo yêu cầu với mô hình khám thông thường.
@@ -1361,6 +1362,7 @@ Kế hoạch quản lý dữ liệu tuân thủ Luật Bảo vệ dữ liệu c�
 - **Phân quyền truy cập:** chủ nhiệm đề tài cấp và phê duyệt quyền truy cập; điều tra viên và người nhập liệu chỉ nhập, không xem kết quả phân tích; giám sát chất lượng chỉ xem để đối chiếu; nhà thống kê chỉ tiếp cận cơ sở dữ liệu đã khóa.
 - **Lưu trữ và bảo mật:** dữ liệu điện tử lưu trên ổ đĩa mã hóa AES-256 tại Khoa C1a, đặt mật khẩu theo từng người dùng, truy cập từ xa qua mạng riêng ảo nếu cần; sao lưu hằng tuần thành hai bản độc lập do thư ký đề tài quản lý.
 - **Nhật ký:** ghi lại mọi truy vấn và chỉnh sửa dữ liệu sau khi khóa cơ sở dữ liệu.
+- **Khả năng tiếp cận tài liệu:** đề cương, kế hoạch phân tích thống kê đã khóa và mã phân tích được lưu trong hồ sơ đề tài; bộ dữ liệu đã khử định danh chỉ được chia sẻ khi có yêu cầu hợp lý gửi chủ nhiệm đề tài và được Hội đồng Đạo đức cho phép.
 - **Công bố:** chỉ công bố số liệu tổng hợp; nhóm có dưới 5 người được gộp trước khi công bố.
 - **Thời hạn lưu trữ và hủy:** số liệu giấy và điện tử được lưu 2 năm sau khi kết thúc nghiên cứu, sau đó phiếu giấy được hủy bằng máy hủy tài liệu và tệp điện tử được xóa an toàn, có biên bản.
 - **Trách nhiệm:** chủ nhiệm đề tài là bên kiểm soát dữ liệu của đề tài, chịu trách nhiệm xử lý và báo cáo khi có sự cố về dữ liệu theo quy định.
