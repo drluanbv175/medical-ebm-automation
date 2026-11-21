@@ -2843,7 +2843,9 @@ def generate_manuscript(
             "> Phần G6 không có (" + ("" if khoi_tuyen_chon else "sàng lọc, ")
             + "kết cục phụ; giá trị từng biến Bảng 1 khi tóm tắt G6 chưa mang) vẫn là ô "
             "trống — KHÔNG điền số ước tính/giả định (KẾT QUẢ THẬT).  ",
-            *(["> Số tuyển chọn ở §1 chép từ sổ sàng lọc (sơ đồ luồng) đã đủ số và khớp cộng trừ từng bước.  "]
+            # không chữ số trong dòng chỉ dẫn: «§1 … sàng lọc» từng khớp mẫu «số người từng giai đoạn» của K18 (bằng
+            # chứng giả cho STROBE 13a) — bằng chứng phải là câu tuyển chọn thật bên dưới
+            *(["> Số ở mục Tuyển chọn chép từ sổ sàng lọc (sơ đồ luồng) — đã đủ số và khớp cộng trừ từng bước.  "]
               if khoi_tuyen_chon else []),
             "",
             f"**§1 Tuyển chọn — {flow_label}:**  ",
