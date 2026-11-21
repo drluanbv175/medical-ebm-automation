@@ -1168,6 +1168,22 @@
       "ngay_xong": "",
       "do_song": "",
       "ghi_chu": "Biên bản cũ có trước lần sửa 20/11 nên máy báo «chất lượng chưa bảo đảm». Họp SAU vòng CVI vì CVI có thể đổi phiếu; ước tính 20/11: 11–23 agent (4,2–8,7 triệu token) nếu chạy trong phiên — có đường Batch API rẻ hơn. Triệu tập cần bác sĩ đồng ý."
+    },
+    {
+      "id": "3.12",
+      "gd": "GĐ3",
+      "ten": "Sửa câu khoảng trống [5–7]: «tỷ lệ bệnh thận mạn» → «tỷ lệ bệnh thận mạn hoặc albumin niệu tăng» (G1, hồ sơ G2, đề cương nộp) rồi xác nhận lại G1",
+      "ai": "may",
+      "lenh": "sửa gate_params.G1 (knowledge_gap) + G1_A2 + G2_A3 + DE_CUONG_NOP; bác sĩ chốt lại G1 theo dấu vân tay mới",
+      "xong_khi": "g1_quality_gate PASS_G1_CONFIRMED với dấu vân tay mới; nhất quán xuyên cổng khớp; kiểm trích dẫn toàn văn không còn cặp C006 [7]",
+      "phu_thuoc": [
+        "3.9"
+      ],
+      "han": "11/12/2026",
+      "trang_thai": "chua",
+      "ngay_xong": "",
+      "do_song": "",
+      "ghi_chu": "Kiểm trích dẫn trên toàn văn 21/11/2026: [7] (Phạm Đức Minh 2022) đo microalbumin niệu ở 136 người ĐTĐ típ 2 đã xét nghiệm, không đo tỷ lệ bệnh thận mạn. Bác sĩ chọn 21/11/2026 «Sửa C1a ngay, BTM sau» — gộp vào lần sửa G1 sau vòng CVI để chỉ xác nhận lại G1 một lần."
     }
   ],
   "lich_su": [
@@ -1270,6 +1286,10 @@
     {
       "ngay": "2026-11-21",
       "viec": "3.1: điền hồ sơ G2 theo quyết định đã ghi + phiếu đề xuất B1–B4 (bác sĩ chọn phương án đề xuất), ICTRP không trùng, số bản nộp 02; còn đúng ô «đăng ký trong nước» do chủ nhiệm tự tra"
+    },
+    {
+      "ngay": "2026-11-21",
+      "viec": "Thêm 3.12 (sửa câu [5–7] theo kiểm trích dẫn toàn văn; làm cùng đợt sửa G1 sau CVI — bác sĩ chọn «BTM sau»)"
     }
   ]
 }
