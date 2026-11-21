@@ -204,8 +204,9 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 21/11/2026 (khuôn hướng dẫn chung BVQY175): bản sao `dieu-phoi-g10`, `kiem-chung-trich-dan`, `viet-ban-thao` học
 # khuôn đề cương + K14 (cặp của gốc #473) — vẫn 64.
 # 21/11/2026: kiem-chung-trich-dan + binh-duyet — phát hiện máy do hệ tự phân xử (PR cặp gốc #476).
+# 21/11/2026 (b): kiem-chung-trich-dan — sửa câu tỷ lệ bệnh ghi đúng tiêu chuẩn của nguồn (PR cặp gốc #476).
 MANIFEST_SELF_CHECK_SHA256 = (
-    "6e7285779f678eb721cc4f5637dd484486a792092d18893b79ea06a672264ed7"
+    "f4051ea81f833fbb34e350545a456679b03cbace1cc19e30478c1e2599eecabb"
 )
 
 MINIMUM_AGENT_COUNT = 64

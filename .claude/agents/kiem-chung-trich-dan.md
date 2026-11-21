@@ -141,6 +141,11 @@ của bác sĩ: hỏi trước, đưa con số ước tính. Kết quả ở `ex
   ý theo đúng tài liệu, không thêm số không có nguyên văn); máy sai ⇒ ghi nguyên nhân để sửa CÔNG CỤ (đã gặp: chữ Việt
   không NFC, cờ «KTC 95%», số của mệnh đề khác, lớp toàn văn lẫn số TLTK với danh mục của bài). Phân xử là của agent —
   KHÔNG BAO GIỜ ghi thành nhãn bác sĩ; `ghi --loi` chỉ khi bác sĩ TỰ muốn gắn nhãn.
+- (21/11/2026) **Sửa câu về tỷ lệ bệnh: ghi ĐÚNG TIÊU CHUẨN của từng nguồn**, không vá bằng cụm gộp mơ hồ (bác sĩ:
+  «phải ghi đúng theo tiêu chuẩn bệnh thận mạn chứ không phải cứ albumin niệu tăng là rất chung chung»). Đọc phần
+  phương pháp trong toàn văn, xếp nguồn theo định nghĩa thật và nói rõ nhóm chưa đủ tiêu chuẩn — vd bệnh thận mạn theo
+  KDIGO đòi bất thường tồn tại ≥ 3 tháng (hai lần đo); một lần đo albumin niệu (nồng độ microalbumin, UACR dương tính)
+  KHÔNG phải bệnh thận mạn; «bệnh đồng mắc» không nêu tiêu chuẩn phải ghi là không nêu tiêu chuẩn.
 - Máy đã tự kiểm lại câu trả lời của model: căn cứ «trích» phải có NGUYÊN VĂN trong abstract (không có ⇒ «máy không
   xác minh được căn cứ»), số liệu % / thập phân trong đoạn phải có trong abstract (không có ⇒ cờ «số không thấy»).
 - `khong_ho_tro` / `ho_tro_mot_phan` / cờ ⇒ agent ĐỌC LẠI abstract hoặc toàn văn rồi sửa câu hoặc thay nguồn; không
