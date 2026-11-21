@@ -175,9 +175,8 @@ Sau khi bật, **tỷ lệ đọc cache của Sonnet 5.5 có thể không nhảy
 khối 13 Tr token đến từ `kiem_noi_dung_trich_dan`, mà nội dung là **abstract khác nhau, mỗi cái gửi đúng một lần**.
 Không có cache nào tiết kiệm cho nội dung chỉ gửi một lần (xem §1).
 
-Đòn tiết kiệm **lớn hơn cache** cho đường đó là **Batch API: giảm 50% mọi khoản, cộng dồn với cache**. Hạ tầng batch
-đã có (`API.nop_batch`, `tools/hoi_dong_cong_batch.py`), nhưng chuyển `kiem_noi_dung_trich_dan` sang batch là đổi
-sang **bất đồng bộ** — thay đổi kiến trúc, cần bác sĩ duyệt riêng, chưa làm.
+Đòn tiết kiệm **lớn hơn cache** cho đường đó là **Batch API: giảm 50% mọi khoản, cộng dồn với cache**. Bác sĩ duyệt
+21/11/2026 ⇒ đã làm, xem §9.
 
 ---
 
@@ -190,7 +189,55 @@ sang **bất đồng bộ** — thay đổi kiến trúc, cần bác sĩ duyệt
 
 ---
 
-## 9. Test canh
+## 9. A12 qua Batch API — giảm 50%, nhưng bất đồng bộ
+
+Bác sĩ duyệt 21/11/2026. `kiem_noi_dung_trich_dan` là nguồn tốn token vào lớn nhất của hệ, và phần đó **không
+cache được** (mỗi abstract gửi đúng một lần — §1). Batch API giảm **50% mọi khoản** và **cộng dồn với cache**, nên
+đây là đòn tiết kiệm lớn hơn cache cho đúng đường này.
+
+**Đánh đổi: bất đồng bộ.** Nộp xong không có kết quả ngay. Vì vậy là **OPT-IN** — đường gọi trực tiếp vẫn là mặc
+định để lượt gấp không phải chờ.
+
+```bash
+# Bước 1 — chạy khô, xem giá Batch (đúng 50% giá gọi trực tiếp)
+python3 tools/kiem_noi_dung_trich_dan.py --study <mã> --batch
+
+# Bước 2 — NỘP (tính phí). Trả mã 4 = chưa có kết quả.
+python3 tools/kiem_noi_dung_trich_dan.py --study <mã> --goi-api --batch
+
+# Bước 3 — LẤY kết quả, sinh báo cáo. Mã 4 = batch còn chạy, chạy lại sau.
+python3 tools/kiem_noi_dung_trich_dan.py --study <mã> --goi-api --batch --chi-lay
+```
+
+Mã thoát: `0` sạch · `1` có cặp cần bác sĩ xem · `2` không kiểm được / hỏng hết lô · `3` tham số hoặc canh liêm
+chính chặn · `4` **chưa có kết quả** (vừa nộp, hoặc batch còn chạy).
+
+### Sổ trạng thái `exports/<mã>/kiem_may_api/A12_batch_<mã>.json`
+
+Giữ **đúng abstract đã gửi**, không tra lại lúc lấy kết quả: tra lại có thể ra abstract khác (bản ghi PubMed/Crossref
+cập nhật) ⇒ báo cáo sẽ nói về **tài liệu khác** với tài liệu model đã đọc. Đó là lỗi liêm chính, không phải lỗi hiệu
+năng. Phần suy ra được từ chính tệp Markdown thì không lưu — tính lại và canh bằng SHA-256.
+
+### Bốn chốt canh (đều là rủi ro TIỀN hoặc LIÊM CHÍNH)
+
+| Tình huống | Hành vi |
+|---|---|
+| Đã có batch chờ mà chạy lệnh nộp | **Không nộp lần hai** (trả phí đôi) — đi đường lấy kết quả |
+| Sổ batch hỏng / không đọc được | **Chặn, mã 3.** Không coi là «chưa nộp» rồi nộp lại. Kiểm tay trên Console trước khi xoá sổ |
+| Tệp Markdown hoặc `HE_THONG` đổi sau khi nộp | **Từ chối ghép, mã 3** — kết quả của văn bản cũ không được dán vào văn bản mới |
+| Batch trả thiếu lô, hoặc lô trả JSON hỏng | Mọi cặp của lô đó thành **`khong_kiem_duoc`** kèm lý do; lô khác vẫn cho kết quả. Hỏng HẾT lô ⇒ mã 2 |
+
+Batch **không gửi lại được trong cùng lượt** (khác đường gọi trực tiếp, vốn thử lại 1 lần khi JSON hỏng) — lô hỏng
+được ghi rõ để bác sĩ nộp lại riêng nếu muốn, **không im lặng coi như đã kiểm**.
+
+Báo cáo in giá theo **đúng đường** đã dùng (`batch=True` ⇒ 50%) kèm id batch; in giá gọi trực tiếp cho lượt batch sẽ
+làm đọc sai số tiền.
+
+Test: `tests/test_a12_batch_20261121.py` — 17 test, phủ cả bốn chốt trên.
+
+---
+
+## 10. Test canh
 
 `tests/test_cache_nguong_va_ttl_20261121.py` — 46 test, chia 7 nhóm: ngưỡng tối thiểu · TTL · giá ghi theo TTL ·
 runtime · luật hoà vốn `nen_cache` · chẩn đoán · công cụ đo. Hai test đáng chú ý:

@@ -91,8 +91,10 @@ DANH_MUC: Dict[str, Dict[str, Any]] = {
                      "bat_buoc": ["so_do_luong", "forest_uoc_luong"], "khuyen_nghi": ["thieu", "phan_bo"],
                      "khi_phu_hop": {"spline": "phơi nhiễm liên tục", "nhom_nho": "có phân tích nhóm nhỏ định trước"}},
     "cross_sectional": {"chuan": "STROBE (mục 13c: cân nhắc sơ đồ luồng)",
-                        "bat_buoc": ["so_do_luong", "cot_ktc", "forest_uoc_luong"], "khuyen_nghi": ["thieu", "phan_bo"],
-                        "khi_phu_hop": {"likert": "bảng hỏi thang Likert (khảo sát hài lòng, chất lượng sống)",
+                        "bat_buoc": ["so_do_luong", "cot_ktc"], "khuyen_nghi": ["thieu", "phan_bo"],
+                        "khi_phu_hop": {"forest_uoc_luong": "có phân tích liên quan/hồi quy (không cần cho đề tài chỉ "
+                                                            "mô tả tỷ lệ)",
+                                        "likert": "bảng hỏi thang Likert (khảo sát hài lòng, chất lượng sống)",
                                         "xac_suat_thu_tu": "kết cục thứ tự (logistic tỷ lệ chênh)",
                                         "spline": "phơi nhiễm liên tục (vd thời gian chờ)",
                                         "chan_doan_lm": "kết cục liên tục, hồi quy tuyến tính"}},

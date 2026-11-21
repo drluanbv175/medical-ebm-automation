@@ -68,7 +68,9 @@ def test_kiem_thu_muc_bao_thieu_va_loi_tep(tmp_path, capsys):
     MT.ve_cot_ktc(dong, "am", tmp_path / "cot", muc="1", cot_nhom="cyl")
     kq = VB.kiem_thu_muc(tmp_path, "cross_sectional")
     assert kq["da_co"] == {"cot_ktc": ["cot"]} and kq["loi_tep"] == []
-    assert set(kq["thieu_bat_buoc"]) == {"so_do_luong", "forest_uoc_luong"} and not kq["dat"]
+    # cắt ngang: forest hồi quy chỉ «khi phù hợp» (đề tài mô tả tỷ lệ thuần không có ước lượng liên quan)
+    assert kq["thieu_bat_buoc"] == ["so_do_luong"] and not kq["dat"]
+    assert "forest_uoc_luong" in [x["loai"] for x in VB.danh_muc("cross_sectional")["khi_phu_hop"]]
     (tmp_path / "cot.pdf").unlink()
     d = json.loads((tmp_path / "cot.json").read_text(encoding="utf-8"))
     d["ngon_ngu"] = "en"

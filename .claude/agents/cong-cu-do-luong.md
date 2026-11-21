@@ -132,6 +132,11 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact instrument
 - Đặc tính phân tích trong mẫu (EFA/CFA, Cronbach, sàn–trần, hội tụ) phải có mục SAP; đề cương có mà SAP không ⇒ chép vào SAP §3 kèm nguồn (không tự đặt ngưỡng mới).
 - Kiểm: trục `cong_cu_do_luong` của `nhat_quan_xuyen_cong` (A2 khác bảng dựng lại ⇒ dựng lại G1; còn [CẦN] ⇒ nhóm nghiên cứu bổ sung).
 
+## Biểu đồ kết quả (21/11/2026)
+Danh mục hình bắt buộc theo thiết kế: `python3 medical-ebm-automation/tools/ve_bieu_do.py danh-muc --thiet-ke <tk>`; trước khi bàn giao: `python3 medical-ebm-automation/tools/ve_bieu_do.py kiem --thu-muc exports/<mã>/bieu-bang --thiet-ke <tk>` phải mã 0 (đủ hình bắt buộc, PNG ≥ 300 dpi, có PDF vector, đúng ngôn ngữ tài liệu). Mọi lệnh ghi PNG + PDF + JSON số liệu đã vẽ — con số trong văn bản/bảng LẤY ĐÚNG từ JSON, không tính lại; `--kiem-cheo-r` chạy lại bằng R (không có R ⇒ «không kiểm chéo được», không bao giờ ghi «khớp»); `--ngon-ngu vi` (dấu phẩy thập phân, mặc định) cho tài liệu tiếng Việt, `--ngon-ngu en` cho bản thảo quốc tế. Công cụ chỉ VẼ số đã có — không thay quyết định phương pháp.
+- `medical-ebm-automation/tools/bieu_do_do_luong.py scree` (+ phân tích song song Horn) · `he-so-tai` (từ bảng EFA/CFA của lavaan/SPSS — công cụ KHÔNG ước lượng lại) · `so-do-cfa` · `bland-altman` (đồng thuận, test–retest).
+- Phân bố câu trả lời: `medical-ebm-automation/tools/bieu_do_mo_ta.py likert` (phân kỳ) · `tuong-quan`.
+
 ## Ranh giới
 - CHỈ lo **thuộc tính đo lường** của công cụ. **KHÔNG đặc tả toàn bộ bộ biến phân tích** (việc của `bien-so-nghien-cuu`), **KHÔNG dựng CRF/khóa DB** (việc của `quan-ly-du-lieu`), **KHÔNG chạy phân tích chính của đề tài** (việc của `phan-tich-thong-ke`), **KHÔNG thiết kế phỏng vấn định tính sinh item** (phối hợp `nghien-cuu-dinh-tinh` cho phần định tính).
 - Điều phối qua `dieu-phoi-nghien-cuu` (G1/G3). Đề tài định tính/mixed-methods → phối hợp `nghien-cuu-dinh-tinh`.
