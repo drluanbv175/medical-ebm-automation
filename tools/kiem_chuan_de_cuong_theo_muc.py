@@ -69,7 +69,10 @@ PHAN: Dict[str, str] = {
     "tong_quan": r"TỔNG QUAN",
     "thiet_ke": r"Thiết kế",
     "dia_diem": r"Địa điểm|Thời gian nghiên cứu|bối cảnh",
-    "doi_tuong": r"Đối tượng nghiên cứu|Tiêu chuẩn (lựa )?chọn|Tiêu chuẩn loại",
+    # đề mục BẮT ĐẦU bằng «Đối tượng nghiên cứu» (không lấy «5.1. Đặc điểm đối tượng nghiên cứu» của chương kết quả —
+    # từng làm STROBE 6a nhận «lý do loại» của ghi chú sơ đồ là «lý do chọn ca và chứng», 21/11/2026)
+    "doi_tuong": r"^(?:[\dIVX]+(?:\.\d+)*\.?\s+)?Đối tượng nghiên cứu|Tiêu chuẩn (lựa )?chọn|Tiêu chuẩn loại|"
+                 r"Nhóm bệnh và nhóm chứng",
     "co_mau": r"Cỡ mẫu",
     "chon_mau": r"chọn mẫu|Tuyển mẫu",
     "phoi_nhiem": r"Phơi nhiễm|nhóm so sánh",
@@ -229,6 +232,11 @@ NGAY = (r"(?:\b\d{1,2}/\d{1,2}/(?:19|20)\d{2}\b|\b\d{1,2}/(?:19|20)\d{2}\b|"
 NOI = r"(?:Bệnh viện|\bKhoa\b|phòng khám|Trung tâm|Trạm y tế|cơ sở y tế|địa bàn)"
 PHAN_TICH = (r"yếu tố liên quan|mối liên quan|liên quan (với|đến)|so sánh|hồi quy|tỷ số chênh|\bOR\b|\bPR\b|\bRR\b|"
              r"\bHR\b")
+#: Tiền tố «@muc_tieu:» ⇒ điều kiện chỉ xét trong phần MỤC TIÊU / CÂU HỎI của đề cương (21/11/2026). Đo trên giả lập
+#: cắt ngang MÔ TẢ: `PHAN_TICH` xét trên cả văn bản khớp chữ «OR» của chuỗi tìm PubMed, «liên quan đến» của câu đạo đức
+#: và «so sánh» của phân tích độ nhạy ⇒ bộ kiểm đòi phơi nhiễm, giả thuyết, ước lượng thô/hiệu chỉnh cho một đề tài chỉ
+#: ước lượng tỷ lệ. «Mục tiêu phân tích liên quan» (STROBE 3) là điều MỤC TIÊU nói, không phải điều văn bản nhắc tới.
+MUC_TIEU_PHAN_TICH = "@muc_tieu:" + PHAN_TICH + r"|ảnh hưởng (đến|tới|của)|yếu tố nguy cơ"
 DU_LIEU_THUONG_QUY = (r"\bHIS\b|bệnh án điện tử|hồ sơ bệnh án|phần mềm quản lý bệnh viện|dữ liệu (thu thập )?thường quy"
                       r"|cơ sở dữ liệu (quốc gia|bảo hiểm (y tế|xã hội))|trích xuất (dữ liệu|số liệu)")
 KHAO_SAT = (r"tự điền|phát phiếu|phiếu khảo sát|bảng hỏi|thu thập (số liệu )?bằng bộ câu hỏi|"
@@ -238,7 +246,10 @@ CHON_TU_CSDL = (r"\bICD|khung mẫu.{0,120}(eHospital|\bHIS\b|phần mềm|cơ s
 MA_CHUAN = r"\bICD|mã ATC|mã (bệnh|thuốc|xét nghiệm)"
 CONG_CU_DO = (r"\bCVI\b|giá trị nội dung|phỏng vấn nhận thức|phân tích nhân tố|Cronbach|độ tin cậy (nội tại|lặp lại)"
               r"|thích ứng (văn hoá|văn hóa|xuyên)")
-GHEP_CAP = r"ghép cặp|bắt cặp|\bmatching\b|\bmatched\b"
+# «ghép theo giới và nhóm tuổi…, 2 chứng : 1 ca» là ghép cặp dù không viết chữ «ghép cặp» (21/11/2026: bản cũ coi đề tài
+# bệnh–chứng ghép là KHÔNG ghép ⇒ STROBE 6b/12d «không áp dụng» sai)
+GHEP_CAP = (r"ghép cặp|bắt cặp|ghép (theo|với)\b|\bmatching\b|\bmatched\b|\d+\s*chứng\s*(:\s*\d+\s*ca|"
+            r"(cho )?mỗi ca)")
 CUM = r"chọn mẫu cụm|mẫu cụm|gom cụm|nhiều giai đoạn|phân tầng|tương quan nội cụm|\bICC\b|hiệu ứng thiết kế"
 LIEN_KET = r"liên kết (dữ liệu|cơ sở dữ liệu)|ghép nối (dữ liệu|cơ sở)|\blinkage\b"
 TRUC_TUYEN = r"khảo sát trực tuyến|phiếu (điện tử|trực tuyến)|Google Forms|SurveyMonkey|biểu mẫu (điện tử|trực tuyến)"
@@ -273,7 +284,7 @@ _STROBE_TIEU_CHI: Dict[Tuple[str, str], tuple] = {
                      (_y("mục tiêu cụ thể", r"^[ \t]*(?:\d[.)]|-|\*)[ \t]*[*_]*[ \t]*(?:MT\d+[ \t]*:[ \t]*)?(?:Mô tả|"
                                             r"Xác định|Phân tích|Đánh giá|"
                                           r"So sánh|Ước tính|Khảo sát|Xây dựng|Kiểm định)"),
-                      _y("giả thuyết định trước", r"giả thuyết|\bH[0₀1₁]\b", khi=PHAN_TICH))),
+                      _y("giả thuyết định trước", r"giả thuyết|\bH[0₀1₁]\b", khi=MUC_TIEU_PHAN_TICH))),
     ("4", "chung"): (("thiet_ke",), "bat_buoc",
                      "Nêu các yếu tố then chốt của thiết kế: tên thiết kế và hướng thời gian thu thập.",
                      (_y("tên thiết kế", r"cắt ngang|thuần tập|bệnh[\s–-]*chứng"),
@@ -299,7 +310,9 @@ _STROBE_TIEU_CHI: Dict[Tuple[str, str], tuple] = {
                            (_y("tiêu chuẩn chọn", r"Tiêu chuẩn (lựa )?chọn", de_muc=True),
                             _y("cách xác định ca", r"nhóm bệnh|ca bệnh|định nghĩa ca|xác định ca"),
                             _y("cách chọn chứng", r"nhóm chứng|chọn chứng"),
-                            _y("lý do chọn ca và chứng", r"lý do|nhằm|để (bảo đảm|tránh|đại diện)"))),
+                            _y("lý do chọn ca và chứng", r"lý do (chọn|lựa chọn)|nhằm|"
+                                                        r"để (bảo đảm|tránh|đại diện|nhóm chứng)|"
+                                                        r"đại diện cho (quần thể|phân bố)"))),
     ("6b", "thuan_tap"): (("doi_tuong", "chon_mau", "phoi_nhiem"), "bat_buoc",
                           "Nghiên cứu ghép cặp: nêu tiêu chí ghép và số người phơi nhiễm/không phơi nhiễm.",
                           (_y("tiêu chí ghép", r"ghép (cặp )?theo|tiêu chí ghép|bắt cặp theo"),
@@ -307,15 +320,18 @@ _STROBE_TIEU_CHI: Dict[Tuple[str, str], tuple] = {
     ("6b", "benh_chung"): (("doi_tuong", "chon_mau"), "bat_buoc",
                            "Nghiên cứu ghép cặp: nêu tiêu chí ghép và số chứng cho mỗi ca.",
                            (_y("tiêu chí ghép", r"ghép (cặp )?theo|tiêu chí ghép|bắt cặp theo"),
-                            _y("số chứng mỗi ca", r"\b\d\s*:\s*\d\b|\d+ chứng (cho )?mỗi ca")),
+                            # «2 chứng : 1 ca» (cách viết của PI ở control_source) từng bị bỏ sót, 21/11/2026
+                            _y("số chứng mỗi ca", r"\b\d\s*:\s*\d\b|\d+ chứng (cho )?mỗi ca|"
+                                                  r"\d+\s*chứng\s*:\s*\d+\s*ca")),
                             GHEP_CAP, "có ghép cặp"),
     ("7", "chung"): (("bien_so", "bang_bien", "phoi_nhiem"), "bat_buoc",
                      "Định nghĩa rõ kết cục, phơi nhiễm/biến độc lập, yếu tố nhiễu, biến điều chỉnh tác động (khi có)"
                      " và"
                      " tiêu chuẩn chẩn đoán.",
                      (_y("kết cục", r"kết cục|biến (phụ thuộc|kết quả)", de_muc=True),
-                      _y("phơi nhiễm/biến độc lập", r"phơi nhiễm|biến độc lập|yếu tố", de_muc=True),
-                      _y("yếu tố nhiễu", r"nhiễu|hiệu chỉnh", khi=PHAN_TICH),
+                      _y("phơi nhiễm/biến độc lập", r"phơi nhiễm|biến độc lập|yếu tố", khi=MUC_TIEU_PHAN_TICH,
+                         de_muc=True),
+                      _y("yếu tố nhiễu", r"nhiễu|hiệu chỉnh", khi=MUC_TIEU_PHAN_TICH),
                       _y("biến điều chỉnh tác động", r"tương tác|điều chỉnh (tác động|hiệu ứng)|phân nhóm",
                          khi=r"(kiểm định|đánh giá|ước lượng) tương tác|số hạng tương tác|"
                              r"nhóm nhỏ (tiền định|xác định trước)|"
@@ -328,7 +344,8 @@ _STROBE_TIEU_CHI: Dict[Tuple[str, str], tuple] = {
                                           r"|xét nghiệm|trích xuất"),
                       _y("cách đo", r"\bđo\b|đánh giá bằng|thang|định lượng|phương pháp|cách tính"),
                       _y("tương đồng cách đo giữa các nhóm",
-                         r"cùng (một )?(cách|phương pháp|quy trình|công cụ)|như nhau|thống nhất|chuẩn hoá|chuẩn hóa",
+                         r"cùng (một )?(cách|phương pháp|quy trình|công cụ|bộ câu hỏi|phiếu|định nghĩa)|cho cả (hai )?"
+                         r"nhóm|như nhau|thống nhất|chuẩn hoá|chuẩn hóa",
                          khi=r"nhóm (so sánh|chứng|phơi nhiễm|không phơi nhiễm|can thiệp)"))),
     ("9", "chung"): (("sai_so",), "bat_buoc",
                      "Nêu cụ thể nguồn sai lệch tiềm tàng và biện pháp khống chế từng nguồn.",
@@ -341,7 +358,10 @@ _STROBE_TIEU_CHI: Dict[Tuple[str, str], tuple] = {
                       "Giải thích cách tính cỡ mẫu: công thức/phương pháp, tham số có nguồn, cỡ mẫu cuối cùng.",
                       (_y("công thức/phương pháp", r"công thức|Cochran|lực mẫu|độ chính xác|\bpower\b|Riley|\bEPV\b"
                                                    r"|n\s*=|toàn bộ"),
-                       _y("tham số có nguồn", r"\[\d+|tham khảo|nghiên cứu (trước|thử|của)"),
+                       # p = 0,5 chọn có chủ đích để cỡ mẫu lớn nhất khi chưa có số liệu tại cơ sở là căn cứ hợp lệ
+                       # (không phải tham số bịa) — 21/11/2026
+                       _y("tham số có nguồn", r"\[\d+|tham khảo|nghiên cứu (trước|thử|của)|"
+                                              r"p\s*=\s*0[,.]5\b.{0,100}(lớn nhất|tối đa|thận trọng)"),
                        _y("cỡ mẫu cuối cùng", r"\d[\d.,]*\s*(người|bệnh nhân|đối tượng|hồ sơ|lượt|trường hợp)"))),
     ("11", "chung"): (("phan_tich", "bien_so", "bang_bien"), "bat_buoc",
                       "Nêu cách xử lý biến định lượng trong phân tích (giữ liên tục hay phân nhóm, ngưỡng và lý do).",
@@ -352,7 +372,7 @@ _STROBE_TIEU_CHI: Dict[Tuple[str, str], tuple] = {
                        "Mô tả mọi phương pháp thống kê, gồm cách kiểm soát nhiễu khi có mục tiêu phân tích.",
                        (_y("phương pháp thống kê", r"hồi quy|kiểm định|chi bình phương|χ²|Mann|Wilcoxon|Fisher|logistic"
                                                  r"|Poisson|\bCox\b|khoảng tin cậy|KTC"),
-                        _y("kiểm soát nhiễu", r"hiệu chỉnh|đa biến|\bDAG\b|gây nhiễu", khi=PHAN_TICH))),
+                        _y("kiểm soát nhiễu", r"hiệu chỉnh|đa biến|\bDAG\b|gây nhiễu", khi=MUC_TIEU_PHAN_TICH))),
     ("12b", "chung"): (("phan_tich",), "bat_buoc", "Mô tả phương pháp phân tích nhóm nhỏ và tương tác.",
                        (_y("phương pháp nhóm nhỏ/tương tác", r"tương tác|nhóm nhỏ|số hạng|"
                                                              r"không có phân tích (phân nhóm|"
@@ -407,8 +427,8 @@ _STROBE_TIEU_CHI: Dict[Tuple[str, str], tuple] = {
                        " lý do.",
                        (_y("ước lượng thô", r"\bthô\b|chưa hiệu chỉnh|đơn biến"),
                         _y("ước lượng hiệu chỉnh", r"hiệu chỉnh"),
-                        _y("khoảng tin cậy", r"KTC|khoảng tin cậy|\bCI\b")), PHAN_TICH, "có mục tiêu phân tích liên"
-                                                                                        " quan"),
+                        _y("khoảng tin cậy", r"KTC|khoảng tin cậy|\bCI\b")), MUC_TIEU_PHAN_TICH,
+                       "có mục tiêu phân tích liên quan"),
     ("16b", "chung"): ((), "bao_cao", "Báo cáo ranh giới nhóm khi phân nhóm biến liên tục.", ()),
     ("16c", "chung"): ((), "bao_cao", "Cân nhắc chuyển nguy cơ tương đối thành nguy cơ tuyệt đối.", ()),
     ("17", "chung"): ((), "bao_cao", "Báo cáo các phân tích khác (đã lên kế hoạch ở 12b, 12e).", ()),
@@ -730,8 +750,24 @@ def co_dieu_kien(mau: str, md: str) -> bool:
         truoc, sau = md[dau:m.start()], md[m.end():cuoi if cuoi >= 0 else len(md)]
         if _PHU_DINH_TRUOC.search(truoc) or _PHU_DINH_SAU.search(sau):
             continue
+        # nhãn của ô còn trống («Ghép cặp: ………») không phải quyết định đã có (21/11/2026)
+        if o_trong_quanh(truoc + m.group(0) + sau, len(truoc)):
+            continue
         return True
     return False
+
+
+_DE_MUC_MUC_TIEU = re.compile(r"^(?:[\dIVX]+(?:\.\d+)*\.?\s+)?(?:MỤC TIÊU|Câu hỏi|Giả thuyết)", re.IGNORECASE)
+
+
+def dieu_kien(mau: str, md: str, cac_phan: Optional[Sequence[Phan]] = None) -> bool:
+    """`co_dieu_kien` với phạm vi: tiền tố «@muc_tieu:» ⇒ chỉ xét các khối có đề mục BẮT ĐẦU bằng «Mục tiêu»/«Câu hỏi»/
+    «Giả thuyết» (không lấy «Bàn luận theo mục tiêu k» hay «Kết quả theo mục tiêu k» của chương kết quả)."""
+    if mau.startswith("@muc_tieu:"):
+        cac_phan = cac_phan if cac_phan is not None else tach_phan(md)
+        van = "\n".join(p.van for p in cac_phan if p.tieu_de != "(bìa)" and _DE_MUC_MUC_TIEU.match(p.tieu_de))
+        return co_dieu_kien(mau[len("@muc_tieu:"):], van)
+    return co_dieu_kien(mau, md)
 
 
 def _don_vi(p: Phan, de_muc: bool = False) -> List[Tuple[int, str]]:
@@ -741,7 +777,9 @@ def _don_vi(p: Phan, de_muc: bool = False) -> List[Tuple[int, str]]:
     gom: List[str] = []
     dau = 0
     tieu_de_bang = ""
-    for i, d in enumerate(p.van.split("\n")):
+    dong = p.van.split("\n")
+    ngan = re.compile(r"^\s*\|[\s:|-]+\|?\s*$")
+    for i, d in enumerate(dong):
         so = p.dong_dau + i
         la_bang = d.lstrip().startswith("|")
         if not la_bang:
@@ -750,12 +788,14 @@ def _don_vi(p: Phan, de_muc: bool = False) -> List[Tuple[int, str]]:
             if gom:
                 ra.append((dau, "\n".join(gom)))
                 gom = []
-            if la_bang and not re.match(r"^\s*\|[\s:|-]+\|?\s*$", d):
-                if not tieu_de_bang:
+            if la_bang and not ngan.match(d):
+                if not tieu_de_bang and i + 1 < len(dong) and ngan.match(dong[i + 1]):
+                    # Hàng tiêu đề cột (ngay sau là hàng ngăn «|---|») chỉ cho nghĩa của ô ở các hàng dưới — KHÔNG là
+                    # bằng chứng nội dung (21/11/2026: bảng «| Hạn chế | Chiều hướng sai lệch |» với mọi ô để trống từng
+                    # làm STROBE 19 «đạt»). Bảng khoá–giá trị không có hàng ngăn: hàng đầu là dữ liệu.
                     tieu_de_bang = d
-                    ra.append((so, d))
                 else:
-                    ra.append((so, d + "\t⟦" + tieu_de_bang + "⟧"))
+                    ra.append((so, d + (f"\t⟦{tieu_de_bang}⟧" if tieu_de_bang else "")))
             elif de_muc and _DE_MUC_RE.match(d):
                 ra.append((so, d))
             continue
@@ -767,15 +807,41 @@ def _don_vi(p: Phan, de_muc: bool = False) -> List[Tuple[int, str]]:
     return ra
 
 
+#: Ô trống để chủ nhiệm điền tay («………», «……………», «.....»). Dòng còn ô trống KHÔNG làm bằng chứng cho yếu tố nào
+#: (21/11/2026): nhãn có mặt ≠ nội dung có mặt — «Lý do chọn nhóm bệnh và nhóm chứng: ………» từng đủ để «lý do» được
+#: tính là đạt; hàng bảng sai lệch có ô «Chiều ảnh hưởng» bỏ trống vẫn mượn chữ «chiều» của hàng tiêu đề cột.
+O_TRONG_RE = re.compile(r"…{3,}|\.{5,}")
+_HET_CAU_RE = re.compile(r"[.!?]\s+(?=\S)")
+
+
+def o_trong_quanh(dong: str, vt: int) -> bool:
+    """Lần khớp ở vị trí `vt` của `dong` (có thể kèm «\\t⟦tiêu đề cột⟧») nằm trong mệnh đề còn ô trống: mệnh đề = đoạn
+    giữa «|», «;» hoặc ranh giới câu. Khớp ở tiêu đề cột ⇒ xét cả hàng (ô của cột đó có thể là ô trống). Câu thật kèm
+    ô số quyết định để trống ở câu SAU («… sau khi có quyết định phê duyệt của Hội đồng. Số quyết định: ………», C1a) vẫn
+    là bằng chứng."""
+    than = dong.split("\t⟦")[0]
+    if vt >= len(than):
+        return bool(O_TRONG_RE.search(than))
+    dau = max([than.rfind("|", 0, vt), than.rfind(";", 0, vt)]
+              + [m.end() - 1 for m in _HET_CAU_RE.finditer(than, 0, vt)]) + 1
+    cuoi = [i for i in (than.find("|", vt), than.find(";", vt)) if i >= 0]
+    m = _HET_CAU_RE.search(than, vt)
+    if m:
+        cuoi.append(m.start())
+    return bool(O_TRONG_RE.search(than[dau:min(cuoi) if cuoi else len(than)]))
+
+
 def _tim(mau: str, don_vi: Sequence[Tuple[int, str]]) -> Optional[str]:
-    """Bằng chứng «dòng N: «…»» của lần khớp đầu tiên trong các đơn vị; None nếu không khớp."""
+    """Bằng chứng «dòng N: «…»» của lần khớp đầu tiên trong các đơn vị; None nếu không khớp. Bỏ qua lần khớp nằm trong
+    mệnh đề còn ô trống cho chủ nhiệm điền (`o_trong_quanh`)."""
     for so, chu in don_vi:
-        m = re.search(mau, chu, _C)
-        if m:
+        for m in re.finditer(mau, chu, _C):
             vi_tri = m.start() + (len(m.group(0)) - len(m.group(0).lstrip()))
             n = chu.count("\n", 0, vi_tri)
-            dong = chu.split("\n")[n].split("\t⟦")[0].strip()
-            return f"dòng {so + n}: «{dong[:140]}»"
+            dong_day = chu.split("\n")[n]
+            if o_trong_quanh(dong_day, vi_tri - (chu.rfind("\n", 0, vi_tri) + 1)):
+                continue
+            return f"dòng {so + n}: «{dong_day.split(chr(9) + '⟦')[0].strip()[:140]}»"
     return None
 
 
@@ -788,7 +854,7 @@ def cham_muc(muc: MucKiem, md: str, cac_phan: Sequence[Phan]) -> KetQua:
     if muc.ap_dung_khi:
         # Tiền tố «!» = áp dụng khi biểu thức KHÔNG khớp ở cả đề cương.
         phu_dinh = muc.ap_dung_khi.startswith("!")
-        co = co_dieu_kien(muc.ap_dung_khi[1:] if phu_dinh else muc.ap_dung_khi, md)
+        co = dieu_kien(muc.ap_dung_khi[1:] if phu_dinh else muc.ap_dung_khi, md, cac_phan)
         if co == phu_dinh:
             kq.trang_thai, kq.ly_do = "khong_ap_dung", f"đề cương không có điều kiện: {muc.ly_do_dieu_kien}"
             return kq
@@ -798,7 +864,7 @@ def cham_muc(muc: MucKiem, md: str, cac_phan: Sequence[Phan]) -> KetQua:
         kq.trang_thai = "thieu" if muc.chan else "canh_bao"
         kq.thieu = [f"không thấy phần đề cương cho mục này ({', '.join(muc.phan)})"]
         return kq
-    can = [yt for yt in muc.yeu_to if not (yt.khi and not co_dieu_kien(yt.khi, md))]
+    can = [yt for yt in muc.yeu_to if not (yt.khi and not dieu_kien(yt.khi, md, cac_phan))]
     don_vi = [dv for p in khoi for dv in _don_vi(p)]
     don_vi_dm = [dv for p in khoi for dv in _don_vi(p, de_muc=True)]
     if muc.cung_doan and len(can) > 1:
@@ -823,6 +889,15 @@ def cham_muc(muc: MucKiem, md: str, cac_phan: Sequence[Phan]) -> KetQua:
         if not muc.chan:
             kq.ly_do = "chuẩn chưa đối chiếu bảng gốc — chỉ cảnh báo, không chặn"
     return kq
+
+
+def dieu_kien_muc(chuan: str, ma: str, thiet_ke: str = "") -> Optional[str]:
+    """Biểu thức «áp dụng khi» của một mục — để bộ sinh đề cương dùng ĐÚNG điều kiện của K17 (không chép lại biểu
+    thức)."""
+    for m in danh_sach_muc(chuan, thiet_ke) or []:
+        if m.ma == ma:
+            return m.ap_dung_khi
+    return None
 
 
 def danh_sach_muc(chuan: str, thiet_ke: str) -> Optional[List[MucKiem]]:
