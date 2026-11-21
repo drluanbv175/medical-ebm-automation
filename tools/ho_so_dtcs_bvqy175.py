@@ -201,7 +201,8 @@ def _muc_tieu(dong: Sequence[str], cac_muc: Sequence[GB.Muc]) -> List[Doan]:
             if d.loai == "tieu_de" and chi_than:
                 break
             if d.loai == "ds":
-                ds.append(d)
+                # khuôn hướng dẫn chung: mục tiêu in nghiêng đậm «***…***» — điền mẫu thì bỏ dấu nhấn mạnh
+                ds.append(Doan(re.sub(r"^\*{1,3}(.+?)\*{1,3}$", r"\1", d.van.strip()), d.dong, d.loai))
         if ds:
             return ds
     dvd = GB.tim_muc(cac_muc, r"^đặt vấn đề$")  # khuôn hướng dẫn chung: mục tiêu ở cuối đặt vấn đề
@@ -209,7 +210,8 @@ def _muc_tieu(dong: Sequence[str], cac_muc: Sequence[GB.Muc]) -> List[Doan]:
         doan = doan_cua_muc(dong, dvd, bang=False)
         k = next((i for i, d in enumerate(doan) if "mục tiêu nghiên cứu" in GB._chuan(d.van)), None)
         if k is not None:
-            return [d for d in doan[k + 1:] if d.loai == "ds"]
+            return [Doan(re.sub(r"^\*{1,3}(.+?)\*{1,3}$", r"\1", d.van.strip()), d.dong, d.loai)
+                    for d in doan[k + 1:] if d.loai == "ds"]
     return []
 
 
@@ -261,8 +263,8 @@ def trich(study: str, dong: Sequence[str]) -> MoHinh:
     tt = _thong_tin_chung(dong, cac_muc)
     ten = _lay_tt(tt, "tên đề tài")
     if not ten:
-        dau = next((m for m in cac_muc if m.cap == 2), None)
-        ten = dau.ten if dau else ""
+        # khuôn hướng dẫn chung: tên đề tài trong ngoặc kép in đậm ở đặt vấn đề; cấu trúc cũ: đề mục cấp 2 đầu tiên
+        ten = GB.ten_de_tai(dong, cac_muc)[0]
     mh.ten_de_tai = ten
     mh.chu_nhiem = _lay_tt(tt, "chủ nhiệm")
     mh.don_vi = _lay_tt(tt, "đơn vị chủ trì", "đơn vị thực hiện")
