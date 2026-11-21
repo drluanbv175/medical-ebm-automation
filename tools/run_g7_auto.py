@@ -1095,10 +1095,14 @@ def dung_hinh_g6(out_dir: Path) -> list[str]:
             and x.get("tep") and (out_dir / str(x["tep"])).is_file()] if isinstance(bd, dict) else []
     if not hinh:
         return []
-    dong = ["**§6 Hình kết quả (G6 tự sinh từ dữ liệu đã khoá):**  "]
+    dong = ["**§6 Hình kết quả (G6 tự sinh từ dữ liệu đã khoá):**  ", ""]
     for i, h in enumerate(hinh, 1):
-        dong.append(f"*Hình {i}. {h.get('mo_ta') or h.get('loai')}* — `{h['tep']}` (kèm PDF vector và JSON số liệu "
-                    "cùng tên)  ")
+        # «![…](tệp)» ⇒ md2docx_vn nhúng ẢNH THẬT vào bản Word (đường dẫn tương đối theo thư mục đề tài, nơi ghi .docx);
+        # tên hình in đậm DƯỚI hình (chuẩn trình bày Việt Nam: tên bảng trên, tên hình dưới).
+        ten = str(h.get("mo_ta") or h.get("loai")).replace("*", "").replace("]", ")").replace("[", "(")
+        json_cung_ten = str(h["tep"]).rsplit(".", 1)[0] + ".json"
+        dong += [f"![Hình {i}. {ten}]({h['tep']})", f"**Hình {i}. {ten}**",
+                 f"*Số liệu đã vẽ: `{json_cung_ten}` · bản vector: PDF cùng tên.*", ""]
     thieu = (bd.get("kiem_danh_muc") or {}).get("thieu_bat_buoc") or []
     if thieu:
         # ghi chú, KHÔNG thêm ô [CẦN …] (§1 đã giữ ô sàng lọc; không đổi cách cổng G7 đếm ô chờ)

@@ -35,7 +35,9 @@ def test_liet_ke_hinh_da_ve_dung_thu_tu_va_bo_hinh_loi(tmp_path):
     _dung(tmp_path, {"tep": "G6_bieu_do.json", "dem": {"DA_VE": 2, "LOI": 1}}, thieu=["so_do_luong"])
     dong = G7.dung_hinh_g6(tmp_path)
     van = "\n".join(dong)
-    assert "*Hình 1. Tỷ lệ kiểm soát*" in van and "*Hình 2. Kaplan–Meier*" in van
+    assert "![Hình 1. Tỷ lệ kiểm soát](bieu-bang/g6-MT1-cot-ktc.png)" in dong
+    assert "**Hình 1. Tỷ lệ kiểm soát**" in dong and "**Hình 2. Kaplan–Meier**" in dong
+    assert "`bieu-bang/g6-KM-km.json`" in van
     assert "spline" not in van and "Hình 3" not in van
     assert "so_do_luong" in van and "[CẦN" not in van  # ghi chú, không thêm ô chờ
 
@@ -45,6 +47,27 @@ def test_khong_liet_ke_khi_chi_muc_khong_ghi_bieu_do_hoac_loi(tmp_path):
     assert G7.dung_hinh_g6(tmp_path) == []
     _dung(tmp_path, {"loi": "RuntimeError: x"})
     assert G7.dung_hinh_g6(tmp_path) == []
+
+
+def test_word_g7_nhung_anh_that(tmp_path):
+    """§6 qua md2docx_vn ⇒ bản Word chứa ảnh thật (không phải dòng chữ đường dẫn)."""
+    import zipfile
+
+    from PIL import Image
+
+    _dung(tmp_path, {"tep": "G6_bieu_do.json"}, tao_tep=False)
+    for ten, mau in (("g6-MT1-cot-ktc", "white"), ("g6-KM-km", "navy")):  # khác nội dung: docx gộp ảnh trùng
+        Image.new("RGB", (300, 200), mau).save(tmp_path / "bieu-bang" / f"{ten}.png", dpi=(300, 300))
+    md = "\n".join(["## III. KẾT QUẢ", "", *G7.dung_hinh_g6(tmp_path)])
+    import md2docx_vn as M2D
+
+    ra = tmp_path / "G7_thu.docx"
+    M2D.markdown_to_docx(md, ra)
+    with zipfile.ZipFile(ra) as z:
+        anh = [n for n in z.namelist() if n.startswith("word/media/")]
+        xml = z.read("word/document.xml").decode("utf-8")
+    assert len(anh) == 2, anh
+    assert "Hình 2. Kaplan–Meier" in xml and "Thiếu tệp hình" not in xml
 
 
 def test_bo_hinh_mat_tep(tmp_path):
