@@ -194,8 +194,11 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # học K12 (mỗi tài liệu đỡ một câu), K13 (TLTK Vancouver theo metadata A12) và `kiem_so_lieu_toan_van.py` — vẫn 64.
 # 21/11/2026: đồng bộ bản sao _HOI-DONG-CONG.md, kiem-chung-trich-dan.md với nguồn gốc (tools/dong_bo_agent_y_khoa.py).
 # 21/11/2026: đồng bộ bản sao thu-thu-tai-lieu.md, tong-quan-y-van.md với nguồn gốc (tools/dong_bo_agent_y_khoa.py).
+# 21/11/2026: đồng bộ bản sao cong-cu-do-luong.md, kinh-te-y-te.md, meta-phan-tich.md, mo-hinh-tien-luong.md,
+# phan-tich-thong-ke.md, tham-dinh-do-chinh-xac-chan-doan.md, viet-ban-thao.md với nguồn gốc
+# (tools/dong_bo_agent_y_khoa.py).
 MANIFEST_SELF_CHECK_SHA256 = (
-    "e130ba00c0808e32f07be54f6ca022f5ba65a6f63c8ea0ba494ebcf5f96d1f8a"
+    "30a59ea95a6aa55ca73851d6049f6da318e661810bc984bdda69a43eec941442"
 )
 
 MINIMUM_AGENT_COUNT = 64

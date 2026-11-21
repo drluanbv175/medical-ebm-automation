@@ -121,6 +121,10 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact health-economics
 - WTP cho đơn vị tự nhiên do CHỦ NHIỆM ấn định — ghi rõ không phải chuẩn quốc gia và báo CEAC đủ dải; CEAC là tần suất NMB > 0 trong mẫu bootstrap, không phải xác suất Bayes; ICER âm đọc cùng góc phần tư.
 - Giới hạn còn lại: chưa tự sinh bảng kiểm CHEERS 28 mục; CEA dựa mô hình (Markov/cây quyết định) và BIA độc lập vẫn ngoài chuỗi G0–G10 (`economic` không phải mã thiết kế chuỗi — G1-AUTO-02c chặn) ⇒ dùng health_econ_calc.py.
 
+## Biểu đồ kết quả (21/11/2026)
+Danh mục hình bắt buộc theo thiết kế: `python3 medical-ebm-automation/tools/ve_bieu_do.py danh-muc --thiet-ke <tk>`; trước khi bàn giao: `python3 medical-ebm-automation/tools/ve_bieu_do.py kiem --thu-muc exports/<mã>/bieu-bang --thiet-ke <tk>` phải mã 0 (đủ hình bắt buộc, PNG ≥ 300 dpi, có PDF vector, đúng ngôn ngữ tài liệu). Mọi lệnh ghi PNG + PDF + JSON số liệu đã vẽ — con số trong văn bản/bảng LẤY ĐÚNG từ JSON, không tính lại; `--kiem-cheo-r` chạy lại bằng R (không có R ⇒ «không kiểm chéo được», không bao giờ ghi «khớp»); `--ngon-ngu vi` (dấu phẩy thập phân, mặc định) cho tài liệu tiếng Việt, `--ngon-ngu en` cho bản thảo quốc tế. Công cụ chỉ VẼ số đã có — không thay quyết định phương pháp.
+- `medical-ebm-automation/tools/bieu_do_bao_cao.py ce-plane` (đám điểm PSA, ICER, λ, góc phần tư) · `ceac` · `tornado` (CHEERS 2022).
+
 ## Ranh giới
 - CHỈ làm phân tích kinh tế. **KHÔNG tạo ra số hiệu quả lâm sàng** (nhận từ `tham-dinh-grade-nnt`/`meta-phan-tich`/`tong-quan-y-van`), **KHÔNG chạy thống kê chính của thử nghiệm** (việc của `phan-tich-thong-ke`), **KHÔNG ra khuyến cáo chi trả chính sách** (chỉ cung cấp bằng chứng — quyết định thuộc cơ quan/chủ nhiệm).
 - Điều phối qua `dieu-phoi-nghien-cuu` (G1 thiết kế cấu phần kinh tế · G7 báo cáo CHEERS).
