@@ -217,6 +217,17 @@ def test_de_tai_mo_ta_ty_le_van_co_hinh_du_lieu_thieu_va_khong_doi_forest(du_lie
     assert kq["kiem_danh_muc"]["thieu_bat_buoc"] == ["so_do_luong"]  # mô tả thuần: forest hồi quy chỉ «khi phù hợp»
 
 
+def test_chu_thich_mang_mo_ta_phan_tich_sap(du_lieu, tmp_path):
+    pt = [{"id": "NC_nam", "vai": "nhom_con", "mo_ta": "Nhóm nhỏ tiền định: nam",
+           "tham_so": {"outcome": "y_bin", "group": "nhom"}},
+          {"id": "NC_nu", "vai": "nhom_con", "mo_ta": "Nhóm nhỏ tiền định: nữ",
+           "tham_so": {"outcome": "y_bin", "group": "nhom"}}]
+    kq = HG.sinh("x", tmp_path, pt, None, None, nap=_nap(du_lieu))
+    mt = [h["mo_ta"] for h in kq["hinh"] if h["trang_thai"] == "DA_VE"]
+    assert mt[0].startswith("Nhóm nhỏ tiền định: nam — ") and mt[1].startswith("Nhóm nhỏ tiền định: nữ — ")
+    assert len(set(mt)) == 2, "hai nhóm nhỏ không được trùng chú thích"
+
+
 def test_thiet_ke_ngoai_danh_muc_khong_kiem(du_lieu, tmp_path):
     kq = HG.sinh("x", tmp_path, PHAN_TICH[:1], None, "qualitative", nap=_nap(du_lieu))
     assert "ghi_chu" in kq["kiem_danh_muc"] and kq["dem"]["DA_VE"] == 2

@@ -300,6 +300,8 @@ def sinh(study: str, d: Path, phan_tich: Sequence[Dict[str, Any]], chi_muc: Opti
             continue
         try:
             for h in hinh_cua_phan_tich(study, pt, thu_muc, nap, ngon_ngu):
+                if pt.get("mo_ta") and h.get("mo_ta"):  # chú thích nói rõ hình thuộc phân tích SAP nào
+                    h = {**h, "mo_ta": f"{pt['mo_ta']} — {h['mo_ta']}"}
                 ket.append({"id": pt["id"], "vai": pt.get("vai"), **h, "trang_thai": "DA_VE"})
         except Exception as e:  # noqa: BLE001 — một hình lỗi không làm hỏng các hình khác
             ket.append({"id": pt["id"], "vai": pt.get("vai"), "trang_thai": "LOI",
