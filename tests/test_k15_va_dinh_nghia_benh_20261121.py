@@ -91,3 +91,14 @@ def test_toan_van_bat_dinh_nghia_lech_thi_thanh_muc_phan_xu(tmp_path):
     muc = DKM.doc_bao_cao("S1", tmp_path)["A12"]["muc"]
     assert [m["khoa"] for m in muc] == ["A12|C061|10"]
     assert any("chỉ dùng eGFR" in c for c in muc[0]["chi_tiet"])
+
+
+# ── Thang mức liên quan G0: nguyên tắc áp dụng dùng chung agent + máy chấm (21/11/2026) ──────────────────────────────
+def test_thang_g0_co_bon_nguyen_tac_ap_dung():
+    import g0_tong_hop as T  # noqa: PLC0415
+    import kiem_tong_quan_g0_api as KG  # noqa: PLC0415
+
+    thang = T.thang_lien_quan()
+    for cum in ("quần thể RỘNG HƠN", "đo HẸP HƠN hay KHÁC CÁCH", "nguồn không thực nghiệm", "khảo sát nhân viên y tế"):
+        assert cum in thang
+    assert "thang_lien_quan" in Path(KG.__file__).read_text(encoding="utf-8")  # máy chấm đọc cùng một nguồn

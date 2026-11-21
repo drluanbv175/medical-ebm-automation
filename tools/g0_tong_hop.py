@@ -53,9 +53,25 @@ DINH_NGHIA_LIEN_QUAN = {
 }
 
 
+#: 21/11/2026 — NGUYÊN TẮC ÁP DỤNG thang (không thêm mức, không đổi ba định nghĩa của bác sĩ): phân xử 99 phát hiện máy
+#: C1a/BTM gặp bốn tình huống thang chưa nói rõ; agent và máy chấm từng xếp khác nhau. Bác sĩ cho «tiếp tục cho đúng
+#: chuẩn và sự tin cậy cao nhất» sau khi được đề xuất ghi thành luật chung.
+NGUYEN_TAC_AP_DUNG = (
+    "quần thể RỘNG HƠN có chứa quần thể đề tài (vd nội trú + ngoại trú; chăm sóc ban đầu nói chung): trực tiếp nếu bài "
+    "báo cáo số liệu RIÊNG (hoặc so sánh) cho nhóm của đề tài trên kết cục đã chốt; không có số riêng ⇒ gián tiếp",
+    "đo HẸP HƠN hay KHÁC CÁCH thao tác hoá kết cục đã chốt (vd chỉ đo UACR khi kết cục chính là cả UACR lẫn creatinin; "
+    "một lần đo albumin niệu khi kết cục phụ là bệnh thận mạn theo KDIGO ≥ 3 tháng; tỷ lệ phác đồ thay vì tỷ lệ người "
+    "đủ chỉ định) ⇒ gián tiếp",
+    "nguồn không thực nghiệm (hướng dẫn, đồng thuận, tổng quan tường thuật, đề cương thử nghiệm) bàn đúng khoảng trống "
+    "chăm sóc hay khái niệm chính của đề tài ⇒ gián tiếp (bối cảnh); bàn khái niệm khác ⇒ không",
+    "khảo sát nhân viên y tế (nhận thức, thái độ) không đo kết cục nào ở người bệnh ⇒ không",
+)
+
+
 def thang_lien_quan() -> str:
-    """Thang mức liên quan dạng văn bản (cho lời dặn agent/máy chấm)."""
-    return "\n".join(f"- {k} ({NHAN_LIEN_QUAN[k]}): {v};" for k, v in DINH_NGHIA_LIEN_QUAN.items())
+    """Thang mức liên quan dạng văn bản (cho lời dặn agent/máy chấm) + nguyên tắc áp dụng (21/11/2026)."""
+    muc = "\n".join(f"- {k} ({NHAN_LIEN_QUAN[k]}): {v};" for k, v in DINH_NGHIA_LIEN_QUAN.items())
+    return muc + "\nNguyên tắc áp dụng:\n" + "\n".join(f"  · {x};" for x in NGUYEN_TAC_AP_DUNG)
 LOAI_KHOANG_TRONG = ("bang_chung", "quan_the", "boi_canh", "phuong_phap", "cong_cu_do", "ket_cuc", "cap_nhat")
 MUC_NOVELTY = ("moi_hoan_toan", "mo_rong_boi_canh", "nhan_rong_co_kiem_chung", "cap_nhat", "trung_lap")
 TRANG_THAI_NGUON = ("day_du", "partial", "chua_tra", "khong_ap_dung")
