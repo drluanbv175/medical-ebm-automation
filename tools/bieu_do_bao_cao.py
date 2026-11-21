@@ -48,7 +48,7 @@ if str(BASE / "tools") not in sys.path:
 
 import bieu_do_chung as BC  # noqa: E402
 from bieu_do_chung import LoiBieuDo, so  # noqa: E402
-from bieu_do_mo_ta import THIEU, doc_csv, so_hoc  # noqa: E402
+from bieu_do_mo_ta import THIEU, doc_csv, ktc_ty_le, so_hoc  # noqa: E402
 
 MAU = ("#1f4e79", "#a23b2a", "#2e7d32", "#6a3d9a", "#b8860b", "#00838f")
 
@@ -418,12 +418,59 @@ def ve_tornado(dong, dich: Path, co_so: float, ten_kq: str = "", ngon_ngu: str =
     return kq
 
 
+def ve_chu_de(dong, cot: str, dich: Path, ngon_ngu: str = "vi", nhan: str = "") -> Dict[str, Any]:
+    """Tần suất các CHỦ ĐỀ/MÃ đã gán trong nghiên cứu định tính (21/11/2026): mỗi dòng là một đơn vị phân tích (bản gỡ
+    băng, đoạn trích); thanh ngang = % đơn vị mang chủ đề, KTC 95% Wilson — cùng phép đếm `phan_tich_thiet_ke_dac_thu.
+    dinh_tinh` của G6 (giá trị rỗng bị bỏ). Chỉ là MÔ TẢ tần suất: không thay phân tích chủ đề của nhóm nghiên cứu."""
+    BC.kiem_ngon_ngu(ngon_ngu)
+    if not dong or cot not in dong[0]:
+        raise LoiBieuDo(f"bảng chủ đề thiếu cột «{cot}»")
+    dem: Dict[str, int] = {}
+    for r in dong:
+        v = str(r.get(cot) or "").strip()
+        if v:  # đúng phép đếm của G6 (chỉ bỏ ô rỗng) — số trên hình phải trùng số G6 đã ghi
+            dem[v] = dem.get(v, 0) + 1
+    n = sum(dem.values())
+    if not n:
+        raise LoiBieuDo(f"cột «{cot}» không có chủ đề nào được gán")
+    hang = []
+    for k, v in sorted(dem.items(), key=lambda x: (-x[1], x[0])):
+        lo, hi = ktc_ty_le(v, n, "wilson")
+        hang.append({"chu_de": k, "n": v, "ty_le": v / n, "duoi": max(0.0, lo), "tren": min(1.0, hi)})
+    vi = ngon_ngu == "vi"
+    plt = BC.plt_chuan()
+    fig, ax = plt.subplots(figsize=(6.6, 0.42 * len(hang) + 1.5))
+    y = list(range(len(hang)))[::-1]
+    u = [100 * h["ty_le"] for h in hang]
+    ax.barh(y, u, height=0.6, color="#1f4e79", alpha=0.85)
+    ax.errorbar(u, y, xerr=[[a - 100 * h["duoi"] for a, h in zip(u, hang)],
+                            [100 * h["tren"] - a for a, h in zip(u, hang)]], fmt="none", ecolor="#111111",
+                capsize=3, lw=0.8)
+    for yy, h in zip(y, hang):
+        ax.text(100 * h["tren"] + 1, yy, f"{so(100 * h['ty_le'], 1, ngon_ngu)}% ({h['n']}/{n})", va="center",
+                fontsize=7.4)
+    ax.set_yticks(y)
+    ax.set_yticklabels([h["chu_de"] for h in hang], fontsize=8)
+    ax.set_xlim(0, 100)
+    ax.set_xlabel(("% đơn vị phân tích mang chủ đề (KTC 95% Wilson)" if vi else
+                   "% of analytic units with the theme (95% Wilson CI)"))
+    if nhan:
+        ax.set_title(nhan, fontsize=9)
+    BC.dinh_dang_truc(ax, ngon_ngu, "x")
+    ax.xaxis.grid(True, color="#e5e5e5", lw=0.6)
+    ax.set_axisbelow(True)
+    kq = {"loai": "chu_de", "cot": cot, "n": n, "so_chu_de": len(hang), "chu_de": hang,
+          "ghi_chu": "Tần suất mô tả các mã đã gán — không thay phân tích chủ đề (COREQ/SRQR). Cần bác sĩ kiểm chứng."}
+    BC.luu(fig, dich, so_lieu=kq)
+    return kq
+
+
 # ════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 # 4. DÒNG LỆNH
 # ════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 def main(argv: Optional[Sequence[str]] = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("lenh", choices=("so-do-luong", "rob", "ce-plane", "ceac", "tornado"))
+    ap.add_argument("lenh", choices=("so-do-luong", "rob", "ce-plane", "ceac", "tornado", "chu-de"))
     ap.add_argument("--du-lieu", required=True, type=Path)
     ap.add_argument("--ra", required=True, type=Path)
     ap.add_argument("--chuan", default="")
@@ -435,6 +482,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     ap.add_argument("--don-vi-hieu-qua", default="")
     ap.add_argument("--co-so", type=float)
     ap.add_argument("--ten-ket-qua", default="")
+    ap.add_argument("--cot", default="", help="chu-de: cột chứa chủ đề/mã đã gán")
     ap.add_argument("--ngon-ngu", default="vi", choices=BC.NGON_NGU)
     try:
         a = ap.parse_args(argv)
@@ -446,6 +494,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             kq = ve_so_do_luong(dong, a.ra, a.chuan, a.ngon_ngu, a.bo_kiem_so)
             print(f"✅ sơ đồ luồng: {sum(len(v) for v in kq['nhanh'].values())} hộp" +
                   (f" · ⚠ lệch số học: {kq['loi_so_hoc']}" if kq["loi_so_hoc"] else " · số học khớp"))
+        elif a.lenh == "chu-de":
+            if not a.cot:
+                print("❌ chu-de cần --cot")
+                return 3
+            kq = ve_chu_de(dong, a.cot, a.ra, a.ngon_ngu)
+            print(f"✅ chủ đề: {kq['so_chu_de']} chủ đề trên {kq['n']} đơn vị phân tích")
         elif a.lenh == "rob":
             kq = ve_rob(dong, a.ra, a.cong_cu, a.ngon_ngu)
             print(f"✅ RoB: {len(kq['danh_gia'])} nghiên cứu × {len(kq['mien'])} miền")

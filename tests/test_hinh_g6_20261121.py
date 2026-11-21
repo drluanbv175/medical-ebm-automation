@@ -266,5 +266,5 @@ def test_chu_thich_mang_mo_ta_phan_tich_sap(du_lieu, tmp_path):
 
 
 def test_thiet_ke_ngoai_danh_muc_khong_kiem(du_lieu, tmp_path):
-    kq = HG.sinh("x", tmp_path, PHAN_TICH[:1], None, "qualitative", nap=_nap(du_lieu))
+    kq = HG.sinh("x", tmp_path, PHAN_TICH[:1], None, "thiet_ke_khac", nap=_nap(du_lieu))  # định tính nay có danh mục
     assert "ghi_chu" in kq["kiem_danh_muc"] and kq["dem"]["DA_VE"] == 2

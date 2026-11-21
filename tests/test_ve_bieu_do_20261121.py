@@ -44,7 +44,8 @@ def test_moi_thiet_ke_chi_dung_hinh_hop_le_va_co_so_do_hoac_hinh_chinh():
     for tk, d in VB.DANH_MUC.items():
         for x in d["bat_buoc"] + d["khuyen_nghi"] + list(d["khi_phu_hop"]):
             assert x in VB.HINH, (tk, x)
-        assert d["bat_buoc"], tk
+        # định tính: COREQ/SRQR không bắt buộc hình — chỉ thiết kế mà chuẩn KHÔNG bắt buộc hình mới được rỗng
+        assert d["bat_buoc"] or (tk == "qualitative" and "không bắt buộc hình" in d["chuan"]), tk
         assert d["chuan"]
     for tk in ("rct", "cohort", "case_control", "cross_sectional", "diagnostic", "prediction", "sr_ma", "dta_ma"):
         assert VB.DANH_MUC[tk]["bat_buoc"][0] == "so_do_luong", tk
