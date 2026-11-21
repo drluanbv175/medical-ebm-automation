@@ -52,6 +52,15 @@ TRAN_KY_TU_TEP = 60_000
 TRAN_KY_TU_YEU_CAU = 240_000
 MAX_TOKENS = 16000
 BUOC_TRANH = ("de_xuat", "phan_bien", "trong_tai")
+# Câu trả lời ĐỦ (không cụt/từ chối/errored) mà JSON hỏng hoặc sai khuôn là lỗi ngẫu nhiên của một lượt sinh ⇒ gửi
+# lại ĐÚNG phần đó tối đa 1 lần (21/11/2026: C1a G10-T2 cm_001 JSON hỏng bị ghi lỗi vĩnh viễn, không bao giờ chấm).
+# Cụt/từ chối/errored/expired KHÔNG gửi lại tự động (gửi lại cũng cụt, hoặc cần người xem).
+SO_LAN_GUI_LAI_JSON_HONG = 1
+_TIEN_TO_KHOA = {"cm": "chuyen_mon", "gk": "giam_khao", "de": "de_xuat", "ph": "phan_bien", "tr": "trong_tai"}
+_LOI_GUI_LAI_DUOC = re.compile(
+    r"^(cm|gk|de|ph|tr)_\d{3}: (JSON hỏng|Câu trả lời không chứa JSON|bản chấm sai khuôn|luận điểm sai khuôn|"
+    r"thiếu ket_luan_de_xuat|phán quyết sai khuôn)"
+)
 
 QUY_TAC_API = (
     "\n\n## CHẾ ĐỘ BATCH API (thay cho mọi chỉ dẫn dùng công cụ ở trên)\n"
@@ -367,14 +376,22 @@ def _hop_phan_quyet(dl: Any) -> Dict[str, Any]:
 
 def ap_ket_qua(st: Dict[str, Any], ket: Dict[str, Dict[str, Any]], max_tokens: int = MAX_TOKENS) -> Dict[str, int]:
     """Đưa kết quả batch vào trạng thái. Hỏng ⇒ phần đó ghi lỗi (không đoán), phần khác đi tiếp."""
-    dem = {"ok": 0, "loi": 0, "vao": 0, "ra": 0, "cache_ghi": 0, "cache_doc": 0}
+    dem = {"ok": 0, "loi": 0, "gui_lai": 0, "vao": 0, "ra": 0, "cache_ghi": 0, "cache_doc": 0}
     yc = (st.get("batch") or {}).get("yeu_cau") or {}
     for cid, nhan in yc.items():
         kq = ket.get(cid) or {"loai": "thieu", "loi": "batch không trả custom_id này"}
         for k in ("vao", "ra", "cache_ghi", "cache_doc"):
             dem[k] += int(kq.get(k) or 0)
+        muc = st["cham"].get(nhan["ma"]) if nhan["loai"] == "cham" else st["tranh"].get(nhan["ma"])
         try:
-            dl = API.doc_json(API.van_ban_ket_qua_batch(kq, max_tokens))
+            vb = API.van_ban_ket_qua_batch(kq, max_tokens)  # errored/expired/cụt/từ chối ⇒ không gửi lại
+        except API.LoiApi as exc:
+            dem["loi"] += 1
+            if muc is not None:
+                muc["loi"].append(f"{cid}: {str(exc)[:200]}")
+            continue
+        try:
+            dl = API.doc_json(vb)
             if nhan["loai"] == "cham":
                 c = st["cham"][nhan["ma"]]
                 ai = c["chuyen_mon"] if nhan["vai"] == "chuyen_mon" else HDC.GIAM_KHAO
@@ -398,9 +415,19 @@ def ap_ket_qua(st: Dict[str, Any], ket: Dict[str, Dict[str, Any]], max_tokens: i
                     }
                     t["buoc"] = "xong"
             dem["ok"] += 1
+        except API.KetQuaHong as exc:  # JSON hỏng / sai khuôn — chưa ghi gì vào trạng thái (khuôn kiểm trước khi gán)
+            dem["loi"] += 1
+            if muc is not None:
+                khoa = str(nhan.get("vai") or nhan.get("buoc"))
+                da = muc.setdefault("gui_lai", {})
+                if int(da.get(khoa, 0)) < SO_LAN_GUI_LAI_JSON_HONG:
+                    da[khoa] = int(da.get(khoa, 0)) + 1
+                    dem["gui_lai"] += 1
+                    muc.setdefault("ghi_chu", []).append(f"{cid}: {str(exc)[:200]} — gửi lại 1 lần ở batch kế tiếp")
+                else:
+                    muc["loi"].append(f"{cid}: {str(exc)[:200]} (đã gửi lại {da[khoa]} lần)")
         except (API.LoiApi, KeyError) as exc:
             dem["loi"] += 1
-            muc = st["cham"].get(nhan["ma"]) if nhan["loai"] == "cham" else st["tranh"].get(nhan["ma"])
             if muc is not None:
                 muc["loi"].append(f"{cid}: {str(exc)[:200]}")
     for ma, c in st["cham"].items():  # hai người chấm khác phía ⇒ tranh biện bất đồng BD-…
@@ -416,6 +443,36 @@ def ap_ket_qua(st: Dict[str, Any], ket: Dict[str, Dict[str, Any]], max_tokens: i
                     "loi": [],
                 }
     return dem
+
+
+def nang_cap_loi_json_cu(st: Dict[str, Any]) -> int:
+    """Trạng thái lưu trước 21/11/2026 ghi JSON hỏng/sai khuôn thẳng vào `loi` (không bao giờ gửi lại). Mục CHƯA có
+    khoá `gui_lai` mà MỌI lỗi đều thuộc loại gửi lại được, cùng một bước, và bước đó còn trống ⇒ chuyển lỗi sang
+    `ghi_chu`, ghi `gui_lai` = 1 (đúng một lần như lượt mới). Lỗi khác (tài liệu đổi, cụt, errored…) giữ nguyên.
+    Trả số mục được nâng cấp."""
+    n = 0
+    for nhom in ("cham", "tranh"):
+        for muc in (st.get(nhom) or {}).values():
+            loi = muc.get("loi") or []
+            if not loi or "gui_lai" in muc:
+                continue
+            khop = [_LOI_GUI_LAI_DUOC.match(str(x)) for x in loi]
+            if not all(khop):
+                continue
+            khoa = {_TIEN_TO_KHOA[m.group(1)] for m in khop if m}
+            if len(khoa) != 1:
+                continue
+            (k,) = khoa
+            con_trong = muc["ket"].get(k) is None if nhom == "cham" else muc.get("buoc") == k
+            if not con_trong:
+                continue
+            muc.setdefault("ghi_chu", []).extend(
+                f"{x} — trạng thái trước luật gửi lại 21/11, gửi lại 1 lần" for x in loi
+            )
+            muc["loi"] = []
+            muc["gui_lai"] = {k: 1}
+            n += 1
+    return n
 
 
 # ── Biên bản ─────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -587,6 +644,8 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
         return 3
     p = tep_trang_thai(out_dir, a.gate)
     st = None if a.lam_lai else _doc_st(p)
+    if st is not None and nang_cap_loi_json_cu(st) and a.lenh == "buoc":
+        print("🔁 Trạng thái cũ có phần trả JSON hỏng/sai khuôn — chuyển sang gửi lại 1 lần ở batch kế tiếp.")
     in_ra = (lambda x: print(json.dumps(x, ensure_ascii=False, indent=1))) if a.json else None
 
     if a.lenh == "trang-thai":
@@ -596,11 +655,13 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
         tom = {
             "batch_dang_cho": (st.get("batch") or {}).get("id"),
             "cham": {
-                m: {"xong": [v for v, k in c["ket"].items() if k], "loi": c["loi"], "da_ghi": c.get("da_ghi")}
+                m: {"xong": [v for v, k in c["ket"].items() if k], "loi": c["loi"], "gui_lai": c.get("gui_lai"),
+                    "da_ghi": c.get("da_ghi")}
                 for m, c in st["cham"].items()
             },
             "tranh": {
-                m: {"buoc": t["buoc"], "loi": t["loi"], "da_ghi": t.get("da_ghi")} for m, t in st["tranh"].items()
+                m: {"buoc": t["buoc"], "loi": t["loi"], "gui_lai": t.get("gui_lai"), "da_ghi": t.get("da_ghi")}
+                for m, t in st["tranh"].items()
             },
             "lich_su": st.get("lich_su"),
         }
@@ -670,10 +731,12 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
                     "token_cache_ghi": dem["cache_ghi"],
                     "token_cache_doc": dem["cache_doc"],
                     "loi": dem["loi"],
+                    "gui_lai": dem["gui_lai"],
                 }
             )
             print(
-                f"📥 batch {st['batch']['id']}: {dem['ok']} đạt khuôn · {dem['loi']} hỏng · "
+                f"📥 batch {st['batch']['id']}: {dem['ok']} đạt khuôn · {dem['loi']} hỏng "
+                f"({dem['gui_lai']} sẽ gửi lại 1 lần) · "
                 f"{_in_chi_phi_that(dem, st['model'])}"
             )
             st["batch"] = None
