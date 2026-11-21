@@ -50,7 +50,10 @@ def render_mot_file(md_path: Path) -> Path:
     md_text = md_path.read_text(encoding="utf-8")
     # Dòng đầu là tiêu đề cấp 1 → dùng làm tiêu đề; phần còn lại là thân bài
     docx_path = md_path.with_suffix(".docx")
-    M2D.markdown_to_docx(md_text, docx_path)
+    # 21/11/2026: đề cương theo khuôn hướng dẫn chung BVQY175 (có «# CHƯƠNG 1.») giữ đúng trình bày của khuôn (14pt,
+    # giãn 1,5, ba phần đánh số trang) — xuất lại bằng chế độ thường sẽ đưa về 13pt, mất bìa/số trang La Mã
+    khuon = re.search(r"^# CHƯƠNG 1\.", md_text, re.M) is not None
+    M2D.markdown_to_docx(md_text, docx_path, khuon_bvqy175=khuon)
     return docx_path
 
 

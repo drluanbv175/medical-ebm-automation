@@ -75,7 +75,7 @@ CONG_CU_WORD = "md_sang_docx_times.py"
 LOI_DAN = "Cần bác sĩ kiểm chứng."
 
 _DE_MUC_RE = re.compile(r"^(#{1,4})\s+(.*\S)\s*$")
-_SO_MUC_RE = re.compile(r"^((?:PHỤ LỤC\s+[A-Z])|\d+(?:\.\d+)*)\.?\s+(.*)$")
+_SO_MUC_RE = re.compile(r"^((?:PHỤ LỤC\s+[A-Z])|(?:CHƯƠNG\s+\d+)|\d+(?:\.\d+)*)\.?\s+(.*)$")
 _HOA = "A-ZĐÂĂÊÔƠƯÁÀẢÃẠẤẦẨẪẬẮẰẲẴẶÉÈẺẼẸẾỀỂỄỆÍÌỈĨỊÓÒỎÕỌỐỒỔỖỘỚỜỞỠỢÚÙỦŨỤỨỪỬỮỰÝỲỶỸỴ"
 _HET_CAU_RE = re.compile(r"(?<=[.!?…])\s+(?=[" + _HOA + r"“\"«(\[*])")
 _MUC_DS_RE = re.compile(r"^\s*(?:[-*+]|\d{1,2}[.)]|[a-zđ][.)])\s+(.*\S)\s*$")
@@ -126,10 +126,31 @@ def doc_muc(dong: Sequence[str]) -> List[Muc]:
     return ra
 
 
-def tim_muc(cac_muc: Sequence[Muc], mau: str) -> Optional[Muc]:
-    """Đề mục đầu tiên có tên (đã bỏ số) khớp biểu thức `mau` (so trên chuỗi đã chuẩn hoá)."""
-    bt = re.compile(mau)
-    return next((m for m in cac_muc if bt.search(_chuan(m.ten))), None)
+def tim_muc(cac_muc: Sequence[Muc], mau: Any) -> Optional[Muc]:
+    """Đề mục đầu tiên có tên (đã bỏ số) khớp biểu thức `mau` (so trên chuỗi đã chuẩn hoá). `mau` là bộ nhiều biểu
+    thức ⇒ thử LẦN LƯỢT từng biểu thức (biểu thức trước thắng dù đề mục khớp biểu thức sau đứng trước trong văn bản)."""
+    for x in (mau if isinstance(mau, (tuple, list)) else (mau,)):
+        bt = re.compile(x)
+        m = next((m for m in cac_muc if bt.search(_chuan(m.ten))), None)
+        if m is not None:
+            return m
+    return None
+
+
+_TEN_TRONG_NGOAC_RE = re.compile(r"“\*\*(.+?)\*\*”")
+
+
+def ten_de_tai(dong: Sequence[str], cac_muc: Sequence[Muc]) -> Tuple[str, int]:
+    """(tên đề tài, số dòng): khuôn hướng dẫn chung ghi tên trong ngoặc kép in đậm ở đặt vấn đề; cấu trúc cũ là đề
+    mục cấp 2 đầu tiên."""
+    dvd = tim_muc(cac_muc, r"^đặt vấn đề$")
+    if dvd is not None:
+        for i in range(dvd.dong, dvd.het + 1):
+            m = _TEN_TRONG_NGOAC_RE.search(dong[i - 1])
+            if m:
+                return m.group(1).strip(), i
+    dau = next((m for m in cac_muc if m.cap == 2), None)
+    return (dau.ten, dau.dong) if dau else ("", 0)
 
 
 @dataclass
@@ -221,7 +242,8 @@ KHUON_SLIDE: Tuple[Tuple[str, str, float, Tuple[Tuple[Optional[str], str, str, i
     ("dat_van_de", "Đặt vấn đề", 1.5, ((None, r"^đặt vấn đề$", "dau_doan", 4, None),)),
     ("khoang_trong", "Khoảng trống nghiên cứu và đóng góp", 1.0,
      ((None, r"khoảng trống", "dau", 3, _UU_TIEN_KHOANG_TRONG),)),
-    ("muc_tieu", "Mục tiêu nghiên cứu", 1.0, (("Mục tiêu", r"^mục tiêu$", "danh_sach", 5, None),
+    ("muc_tieu", "Mục tiêu nghiên cứu", 1.0, (("Mục tiêu", (r"^mục tiêu$", r"^mục tiêu nghiên cứu$"), "danh_sach", 5,
+                                               None),
                                               ("Giả thuyết", r"^giả thuyết", "dau", 2, None))),
     ("thiet_ke", "Thiết kế, địa điểm và thời gian", 1.0, (
         ("Thiết kế", r"^thiết kế nghiên cứu$", "dau", 2, None),
@@ -240,9 +262,13 @@ KHUON_SLIDE: Tuple[Tuple[str, str, float, Tuple[Tuple[Optional[str], str, str, i
     ("ke_hoach", "Kế hoạch thực hiện", 1.0, (("Tiến độ", r"^tiến độ", "dau", 2, None),
                                              ("Nhân lực", r"^nhân lực", "dau", 1, None),
                                              ("Kinh phí", r"kinh phí", "dau", 1, None))),
-    ("du_kien", "Dự kiến kết quả và phổ biến", 0.5, (("Dự kiến kết quả", r"^dự kiến kết quả$", "dau", 2, None),
+    ("du_kien", "Dự kiến kết quả và phổ biến", 0.5, (("Dự kiến kết quả", r"^dự kiến kết quả", "dau", 2, None),
+                                                     ("Dự kiến bàn luận", r"^dự kiến bàn luận", "dau", 2, None),
                                                      ("Phổ biến", r"phổ biến", "dau", 1, None))),
 )
+# Khối chỉ có ở đề cương theo khuôn hướng dẫn chung (Chương 3 «Dự kiến kết quả và bàn luận») — vắng thì bỏ qua, không
+# cảnh báo (đề cương cấu trúc cũ không có phần bàn luận).
+KHOI_TUY_CHON = {"Dự kiến bàn luận"}
 DAI_UU_TIEN = 350  # câu dài hơn vẫn giữ NGUYÊN (không cắt) nhưng chỉ lấy khi thiếu câu ngắn hơn
 
 
@@ -294,22 +320,23 @@ class Slide:
 def dung_slide(dong: Sequence[str], out_dir: Path) -> Tuple[List[Slide], str]:
     """(danh sách slide, tên đề tài). Mọi câu trên slide là câu nguyên văn của đề cương (luật S1, S2)."""
     cac_muc = doc_muc(dong)
-    ten_muc = next((m for m in cac_muc if m.cap == 2), None)
-    ten_de_tai = ten_muc.ten if ten_muc else ""
+    ten, dong_ten = globals()["ten_de_tai"](dong, cac_muc)
     n = n_da_chot(out_dir)
     ra: List[Slide] = []
     for so, (khoa, tieu_de, phut, phan) in enumerate(KHUON_SLIDE, 1):
         sl = Slide(so, khoa, tieu_de, phut)
         if khoa == "ten_de_tai":
-            if ten_muc:
-                sl.khoi.append((None, [Cau(ten_de_tai, ten_muc.dong)]))
-                sl.nguon.append(f"tên đề tài ở dòng {ten_muc.dong}")
+            if ten:
+                sl.khoi.append((None, [Cau(ten, dong_ten)]))
+                sl.nguon.append(f"tên đề tài ở dòng {dong_ten}")
             else:
                 sl.canh_bao.append("không tìm thấy tên đề tài (đề mục cấp 2 đầu tiên) — chủ nhiệm tự điền")
             ra.append(sl)
             continue
         for nhan_phu, mau, cach, so_cau, uu_tien in phan:
             muc = tim_muc(cac_muc, mau)
+            if muc is None and nhan_phu in KHOI_TUY_CHON:
+                continue
             if muc is None:
                 sl.canh_bao.append(f"không tìm thấy mục «{nhan_phu or tieu_de}» trong đề cương — chủ nhiệm tự soạn "
                                    "phần này (máy không tự viết)")
@@ -319,7 +346,14 @@ def dung_slide(dong: Sequence[str], out_dir: Path) -> Tuple[List[Slide], str]:
                 chon = hang[:so_cau]
                 cac_cau = hang
             else:
-                cac_cau = cau_cua_muc(dong, muc)
+                # câu chừa dòng chấm «………» cho chủ nhiệm điền (vd «Các ý bàn luận chính do chủ nhiệm bổ sung: ………»)
+                # chưa phải nội dung — không đưa lên slide
+                cac_cau = [c for c in cau_cua_muc(dong, muc) if "………" not in c.van]
+                if khoa == "dat_van_de":
+                    # khuôn hướng dẫn chung: mục tiêu là mục con ở cuối đặt vấn đề — slide đặt vấn đề chỉ lấy phần thân
+                    # trước mục con, bỏ câu chuyển ý mang tên đề tài («…tiến hành đề tài “**…**” với các mục tiêu sau:»)
+                    con = next((m.dong for m in cac_muc if muc.dong < m.dong <= muc.het and m.cap > muc.cap), None)
+                    cac_cau = [c for c in cac_cau if (con is None or c.dong < con) and "“**" not in c.van]
                 chon = chon_cau(cac_cau, "dau" if cach == "bang" else cach, so_cau, uu_tien)
             if khoa == "co_mau" and n is not None and not any(_co_so(c.van, n) for c in chon):
                 co_n = next((c for c in cac_cau if _co_so(c.van, n)), None)
@@ -335,11 +369,16 @@ def dung_slide(dong: Sequence[str], out_dir: Path) -> Tuple[List[Slide], str]:
             sl.nguon.append(f"{muc.nhan}, dòng {muc.dong}–{muc.het}; "
                             + ("hàng bảng" if hang else "câu chọn") + f" ở dòng {dong_chon}")
         ra.append(sl)
-    return ra, ten_de_tai
+    return ra, ten
 
 
 def _phut(x: float) -> str:
     return (f"{x:.1f}".rstrip("0").rstrip(".")).replace(".", ",")
+
+
+def _bo_nhan_manh(v: str) -> str:
+    """«***Mục tiêu…***» (mục tiêu in nghiêng đậm theo khuôn hướng dẫn chung) ⇒ chữ trơn trên slide."""
+    return re.sub(r"^\*{3}(.+)\*{3}$", r"\1", v.strip())
 
 
 def render_slide(slides: Sequence[Slide], ten_de_tai: str, ten_dc: str, so_dong: int, sha: str) -> str:
@@ -360,7 +399,7 @@ def render_slide(slides: Sequence[Slide], ten_de_tai: str, ten_dc: str, so_dong:
             for nhan_phu, ds in s.khoi:
                 if nhan_phu:
                     out += [f"**{nhan_phu}**", ""]
-                out += [f"- {c.van}" + (f" — biện pháp: {c.phu}" if c.phu else "") for c in ds] + [""]
+                out += [f"- {_bo_nhan_manh(c.van)}" + (f" — biện pháp: {c.phu}" if c.phu else "") for c in ds] + [""]
         ghi = ["> Ghi chú người trình bày — nguồn: " + ("; ".join(s.nguon) if s.nguon else "không có") + "."]
         ghi += [f"> ⚠ {c}." for c in s.canh_bao]
         out += ghi + ["", "---", ""]
@@ -888,9 +927,37 @@ def _danh_so(nhom_bb: Sequence[NhomBienBan], cau_b: Sequence[CauHoi], cau_c: Seq
         ch.ma = f"N{i}"
 
 
+# Mục của «Phiếu nhận xét» (Phụ lục 2 của hướng dẫn chung, bác sĩ gửi 21/11/2026). Phiếu in cho nghiệm thu; thành viên
+# Hội đồng xét đề cương nhận xét theo cùng các mục (mục 3 «Kết quả» ⇒ dự kiến kết quả). Gắn bằng từ khoá — chỉ là GỢI Ý
+# để chủ nhiệm xếp phần trả lời; câu không khớp mục nào ⇒ mục 5.
+TIEU_CHI_PHIEU: Tuple[Tuple[str, str, str], ...] = (
+    ("2", "Mục tiêu và phương pháp nghiên cứu; phương pháp tính toán và kỹ thuật",
+     r"mục tiêu|thiết kế|cỡ mẫu|chọn mẫu|biến số|công cụ|thang đo|bộ câu hỏi|phân tích|thống kê|hồi quy|sai số|sai lệch"
+     r"|nhiễu|kết cục|giả thuyết|quần thể|tiêu chuẩn (?:chọn|lựa chọn|loại trừ)|độ tin cậy|kappa|lực mẫu|cfa|efa"
+     r"|dữ liệu thiếu|thiếu dữ liệu|gom cụm|công thức|đo lường"),
+    ("1", "Tính cấp thiết, ý nghĩa khoa học và thực tiễn",
+     r"cấp thiết|ý nghĩa (?:khoa học|thực tiễn)|khoảng trống|tính mới|đóng góp|đặt vấn đề|tổng quan"),
+    ("4", "Chất lượng văn bản, tài liệu trích dẫn (đầy đủ, rõ ràng, xác thực, lôgíc)",
+     r"trích dẫn|tài liệu tham khảo|pmid|doi|vancouver|nhất quán|mâu thuẫn|trình bày|chính tả|viết tắt|định dạng"
+     r"|không có nguồn|lệch số|tham chiếu|tối nghĩa|chưa chính xác"),
+    ("3", "Kết quả (với đề cương: dự kiến kết quả)", r"dự kiến kết quả|khung bảng|bảng trống|biểu đồ|bàn luận"),
+)
+TIEU_CHI_KHAC = ("5", "Tồn tại và đề xuất hướng giải quyết")
+
+
+def tieu_chi_phieu(ch: CauHoi) -> Tuple[str, str]:
+    """(số mục, tên mục) của phiếu nhận xét gợi ý cho một câu hỏi: mục khớp NHIỀU từ khoá khác nhau nhất; hoà ⇒ thứ
+    tự 2, 1, 4, 3; không khớp ⇒ mục 5."""
+    van = f"{ch.tieu_de} {ch.chat_van}".lower()
+    diem = [(len(set(re.findall(mau, van))), -i, so, ten) for i, (so, ten, mau) in enumerate(TIEU_CHI_PHIEU)]
+    tot = max(diem)
+    return (tot[2], tot[3]) if tot[0] else TIEU_CHI_KHAC
+
+
 def _render_cau(ch: CauHoi) -> List[str]:
+    so_tc, ten_tc = tieu_chi_phieu(ch)
     out = [f"#### Câu {ch.ma} — {ch.tieu_de}", "", f"- Hội đồng có thể chất vấn: «{ch.chat_van}»",
-           f"- Nguồn: {ch.nguon}."]
+           f"- Nguồn: {ch.nguon}.", f"- Mục phiếu nhận xét (gợi ý máy): {so_tc}. {ten_tc}."]
     if ch.noi_bo:
         out.append(f"- Phân loại: thiên về quy trình nội bộ ({len(ch.noi_bo)} loại ký hiệu: {', '.join(ch.noi_bo)}).")
     return out + [_dong_goi_y(g) for g in ch.goi_y] + [""]
@@ -937,7 +1004,20 @@ def render_cau_hoi(ten_de_tai: str, ten_dc: str, so_dong: int, sha: str, nhom_bb
     out += ["", f"Tổng: {so_a} câu từ biên bản (nhóm A) · {len(cau_b)} câu từ báo cáo phản biện (nhóm B)"
             + (f" · {len(cau_c)} câu từ đề cương (nhóm C)" if cau_c else "")
             + (f" · {so_n} phản đối thiên về quy trình nội bộ để tra (nhóm N, cuối tài liệu)" if so_n else "") + ".",
-            "", f"*{LOI_DAN}*", "", "---", ""]
+            ""]
+    # bảng tra theo mục phiếu nhận xét (các câu khoa học A, B, C; không gồm nhóm N)
+    theo_tc: Dict[str, List[str]] = {}
+    for ch in [c for nh in nhom_bb for c in _khoa_hoc(nh)] + list(cau_b) + list(cau_c):
+        theo_tc.setdefault(tieu_chi_phieu(ch)[0], []).append(ch.ma)
+    if theo_tc:
+        out += ["Xếp theo mục của Phiếu nhận xét (Phụ lục 2 hướng dẫn chung; gợi ý máy theo từ khoá):", "",
+                "| Mục phiếu nhận xét | Câu |", "|---|---|"]
+        for so, ten in [(a, b) for a, b, _m in sorted(TIEU_CHI_PHIEU)] + [TIEU_CHI_KHAC]:
+            if theo_tc.get(so):
+                ma = sorted(theo_tc[so], key=lambda x: (x[:1], int(x[1:]) if x[1:].isdigit() else 0))
+                out.append(f"| {so}. {ten} | {', '.join(ma)} |")
+        out.append("")
+    out += [f"*{LOI_DAN}*", "", "---", ""]
     out += ["## A. Từ biên bản hội đồng cổng (phản đối của bên phản biện tranh biện)", ""]
     if not dem_bb.get("tranh_bien"):
         out += ["**CHƯA CÓ BIÊN BẢN HỘI ĐỒNG CỔNG** — đề tài chưa có biên bản tranh biện nào trong `hoi_dong/`. Công "

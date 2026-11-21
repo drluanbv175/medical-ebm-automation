@@ -28,7 +28,7 @@ import re
 import sys as _sys_r4
 import unicodedata
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Sequence
 
 import placeholder_contract as PC
 
@@ -67,6 +67,19 @@ _DEFAULT_PROFILE: Dict = {
     "top_margin_cm": 2.5, "bottom_margin_cm": 2.5,
     "source_note": "Định dạng gốc của công cụ này (gáy trái rộng cho đóng bìa luận văn/đề cương) — "
                    "không đổi khi không truyền journal_profile.",
+}
+
+# 21/11/2026 — khuôn trình bày ĐỀ CƯƠNG theo «Hướng dẫn viết đăng ký và báo cáo đề tài KH&CN cấp bệnh viện» (bác sĩ
+# gửi; BVQY175 áp dụng — mục V): Times New Roman 14, giãn dòng 1,5, lề trái 3,5 cm / phải 2 / trên 3 / dưới 3 cm;
+# các phần trước «Đặt vấn đề» đánh số trang La Mã, từ «Đặt vấn đề» số Ả rập, đặt giữa dòng cuối trang; mỗi chương sang
+# trang mới; danh mục chữ viết tắt và danh mục bảng trình bày theo bảng không viền.
+# Bật bằng `markdown_to_docx(…, khuon_bvqy175=True)`.
+HO_SO_KHUON_BVQY175: Dict = {
+    "key": "khuon_bvqy175", "label": "Khuôn đề cương đề tài cấp bệnh viện (BVQY175)",
+    "font": FONT, "body_pt": 14, "body_line_spacing": 1.5,
+    "page_width_cm": 21.0, "page_height_cm": 29.7,
+    "left_margin_cm": 3.5, "right_margin_cm": 2.0, "top_margin_cm": 3.0, "bottom_margin_cm": 3.0,
+    "source_note": "Hướng dẫn viết đăng ký và báo cáo đề tài KH&CN cấp bệnh viện, mục V «Hình thức trình bày».",
 }
 
 JOURNAL_PROFILES: Dict[str, Dict] = {
@@ -196,7 +209,7 @@ def _set_active_profile(profile: Optional[Dict]) -> None:
     _active_profile = dict(profile) if profile else dict(_DEFAULT_PROFILE)
 
 # Regex tách inline: **đậm** / *nghiêng* / [nhãn ...]
-_INLINE_RE = re.compile(r"(\*\*.+?\*\*|\*[^*].*?\*|\[[^\]]+\])")
+_INLINE_RE = re.compile(r"(\*\*\*.+?\*\*\*|\*\*.+?\*\*|\*[^*].*?\*|\[[^\]]+\])")
 # Nhãn cần tô nổi bật (đầu chuỗi trong ngoặc vuông).
 _HIGHLIGHT_PREFIXES = ("CẦN", "ĐÃ", "DỰ THẢO", "CHƯA", "KHOÁ", "KHÓA")
 # Vá 2026-07-15: "[CẦN KẾT QUẢ THẬT...]" tô đỏ đậm hơn — mức khẩn cấp cao nhất
@@ -487,7 +500,7 @@ def _set_cell_margins(cell, margin=108):
     tc_mar = tc_pr.find(qn("w:tcMar"))
     if tc_mar is None:
         tc_mar = OxmlElement("w:tcMar")
-        tc_pr.append(tc_mar)
+        _chen_dung_cho(tc_pr, tc_mar, _SAU_TCMAR)
     for side in ("top", "left", "bottom", "right"):
         node = tc_mar.find(qn(f"w:{side}"))
         if node is None:
@@ -505,7 +518,9 @@ def _set_cell_shading(cell, fill=TABLE_HEADER_FILL):
     shd = tc_pr.find(qn("w:shd"))
     if shd is None:
         shd = OxmlElement("w:shd")
-        tc_pr.append(shd)
+        _chen_dung_cho(tc_pr, shd, ("noWrap", "tcMar") + _SAU_TCMAR)
+    if shd.get(qn("w:val")) is None:
+        shd.set(qn("w:val"), "clear")  # w:val bắt buộc theo lược đồ; «clear» = nền đặc màu fill, không hoa văn
     shd.set(qn("w:fill"), fill)
 
 
@@ -546,7 +561,7 @@ def _add_page_number(paragraph):
     run._r.append(end)
 
 
-def _add_toc(doc, levels: str = "1-3") -> None:
+def _add_toc(doc, levels: str = "1-3", tieu_de: bool = True, ngat_trang: bool = True) -> None:
     """Chèn trang MỤC LỤC bằng trường TOC của Word (THÊM 06/09/2026).
 
     Vì sao: hồ sơ trình hội đồng (đề cương, luận văn) luôn có Mục lục ở trang sơ bộ;
@@ -559,9 +574,10 @@ def _add_toc(doc, levels: str = "1-3") -> None:
     from docx.oxml import OxmlElement
     from docx.oxml.ns import qn
 
-    heading = doc.add_paragraph()
-    _spacing(heading, before=0, after=12, line=1.3, align=A.CENTER)
-    _add_text(heading, "MỤC LỤC", 14, bold=True)
+    if tieu_de:
+        heading = doc.add_paragraph()
+        _spacing(heading, before=0, after=12, line=1.3, align=A.CENTER)
+        _add_text(heading, "MỤC LỤC", 14, bold=True)
 
     p = doc.add_paragraph()
     _spacing(p, before=0, after=8, line=1.5)
@@ -589,8 +605,9 @@ def _add_toc(doc, levels: str = "1-3") -> None:
     if settings.find(qn("w:updateFields")) is None:
         upd = OxmlElement("w:updateFields")
         upd.set(qn("w:val"), "true")
-        settings.append(upd)
-    _page_break(doc)
+        _chen_dung_cho(settings, upd, _SAU_UPDATEFIELDS)
+    if ngat_trang:
+        _page_break(doc)
 
 
 def _add_inline_runs(paragraph, text, size=None, bold=False, italic=False):
@@ -599,7 +616,9 @@ def _add_inline_runs(paragraph, text, size=None, bold=False, italic=False):
     for part in _INLINE_RE.split(text):
         if not part:
             continue
-        if part.startswith("**") and part.endswith("**") and len(part) > 4:
+        if part.startswith("***") and part.endswith("***") and len(part) > 6:  # đậm + nghiêng (mục tiêu nghiên cứu)
+            _add_text(paragraph, part[3:-3], size, bold=True, italic=True)
+        elif part.startswith("**") and part.endswith("**") and len(part) > 4:
             _add_text(paragraph, part[2:-2], size, bold=True, italic=italic)
         elif part.startswith("[") and part.endswith("]") and _looks_like_flag(part):
             _add_text(paragraph, part, size, bold=True, italic=True,
@@ -642,6 +661,95 @@ def _spacing(paragraph, before=0, after=8, line=1.5, align=None):
 def _pt(v):
     from docx.shared import Pt
     return Pt(v)
+
+
+# Thứ tự phần tử con theo lược đồ OOXML (ECMA-376): phần tử chèn thêm phải đứng TRƯỚC các phần tử liệt kê — nối vào
+# cuối thì sai lược đồ (bộ xác thực docx báo «element is not expected», Word có thể đòi sửa tệp).
+_SAU_PGNUMTYPE = ("cols", "formProt", "vAlign", "noEndnote", "titlePg", "textDirection", "bidi", "rtlGutter", "docGrid",
+                  "printerSettings", "sectPrChange")
+_SAU_TBLBORDERS = ("shd", "tblLayout", "tblCellMar", "tblLook", "tblCaption", "tblDescription", "tblPrChange")
+_SAU_TCMAR = ("textDirection", "tcFitText", "vAlign", "hideMark", "headers", "cellIns", "cellDel", "cellMerge",
+              "tcPrChange")
+_SAU_IND = ("contextualSpacing", "mirrorIndents", "suppressOverlap", "jc", "textDirection", "textAlignment",
+            "textboxTightWrap", "outlineLvl", "divId", "cnfStyle", "rPr", "sectPr", "pPrChange")
+_SAU_UPDATEFIELDS = ("hdrShapeDefaults", "footnotePr", "endnotePr", "compat", "docVars", "rsids", "mathPr",
+                     "attachedSchema", "themeFontLang", "clrSchemeMapping", "doNotIncludeSubdocsInStats",
+                     "doNotAutoCompressPictures", "forceUpgrade", "captions", "readModeInkLockDown", "smartTagType",
+                     "schemaLibrary", "shapeDefaults", "doNotEmbedSmartTags", "decimalSymbol", "listSeparator")
+
+
+def _chen_dung_cho(cha, el, sau: Sequence[str]) -> None:
+    """Chèn `el` vào `cha` trước phần tử con đầu tiên có tên trong `sau` (không có thì nối cuối)."""
+    from docx.oxml.ns import qn
+
+    dich = {qn(f"w:{t}") for t in sau}
+    for i, con in enumerate(list(cha)):
+        if con.tag in dich:
+            cha.insert(i, el)
+            return
+    cha.append(el)
+
+
+def _so_trang(paragraph) -> None:
+    """Số trang (trường PAGE) căn giữa, không chữ «Trang» — khuôn BVQY175."""
+    from docx.enum.text import WD_ALIGN_PARAGRAPH as A
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+
+    _spacing(paragraph, before=0, after=0, line=1.0, align=A.CENTER)
+    run = paragraph.add_run()
+    _set_run_font(run, size=12)
+    for kieu, chu in (("begin", None), (None, "PAGE"), ("separate", None), ("end", None)):
+        if kieu:
+            el = OxmlElement("w:fldChar")
+            el.set(qn("w:fldCharType"), kieu)
+        else:
+            el = OxmlElement("w:instrText")
+            el.set(qn("xml:space"), "preserve")
+            el.text = chu
+        run._r.append(el)
+
+
+def _phan_moi(doc, kieu_so: str) -> None:
+    """Mở phần (section) mới sang trang mới, đánh số trang lại từ 1 theo `kieu_so` («lowerRoman»/«decimal»)."""
+    from docx.enum.section import WD_SECTION
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+
+    sec = doc.add_section(WD_SECTION.NEW_PAGE)
+    sec.footer.is_linked_to_previous = False
+    for q in sec.footer.paragraphs:
+        for r in list(q.runs):
+            r._r.getparent().remove(r._r)
+    _so_trang(sec.footer.paragraphs[0])
+    sect = sec._sectPr
+    for cu in sect.findall(qn("w:pgNumType")):
+        sect.remove(cu)
+    pg = OxmlElement("w:pgNumType")
+    pg.set(qn("w:fmt"), kieu_so)
+    pg.set(qn("w:start"), "1")
+    _chen_dung_cho(sect, pg, _SAU_PGNUMTYPE)
+
+
+def _bo_vien(table) -> None:
+    """Bảng không viền, không tô nền hàng đầu — danh mục chữ viết tắt/bảng biểu của khuôn BVQY175."""
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+
+    tbl_pr = table._tbl.tblPr
+    for cu in tbl_pr.findall(qn("w:tblBorders")):
+        tbl_pr.remove(cu)
+    vien = OxmlElement("w:tblBorders")
+    for canh in ("top", "left", "bottom", "right", "insideH", "insideV"):
+        el = OxmlElement(f"w:{canh}")
+        el.set(qn("w:val"), "nil")
+        vien.append(el)
+    _chen_dung_cho(tbl_pr, vien, _SAU_TBLBORDERS)
+    for row in table.rows:
+        for cell in row.cells:
+            tc_pr = cell._tc.get_or_add_tcPr()
+            for cu in tc_pr.findall(qn("w:shd")):
+                tc_pr.remove(cu)
 
 
 def _page_break(doc):
@@ -808,6 +916,10 @@ def _init_document(title_page: Optional[Dict], profile: Optional[Dict] = None):
     p = _active_profile
 
     doc = Document()
+    # khuôn mặc định của python-docx ghi <w:zoom> thiếu thuộc tính bắt buộc w:percent (sai lược đồ OOXML)
+    zoom = doc.settings.element.find(qn("w:zoom"))
+    if zoom is not None and zoom.get(qn("w:percent")) is None:
+        zoom.set(qn("w:percent"), "100")
     sec = doc.sections[0]
     sec.page_width = Cm(p["page_width_cm"])
     sec.page_height = Cm(p["page_height_cm"])
@@ -866,7 +978,7 @@ def _them_anh(doc, tep: Path, chu_thay: str) -> None:
 
 
 def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
-                     journal_profile: Optional[Dict] = None):
+                     journal_profile: Optional[Dict] = None, khuon_bvqy175: bool = False):
     """Chuyển chuỗi Markdown -> .docx. Trả về Path đã lưu.
 
     md_text: nội dung markdown (KHÔNG gồm trang bìa — trang bìa qua title_page).
@@ -887,20 +999,34 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
     from docx.oxml.ns import qn
 
     out_path = Path(out_path)
-    doc = _init_document(title_page, profile=journal_profile)
-    if _needs_verification_warning(journal_profile):
+    doc = _init_document(title_page, profile=HO_SO_KHUON_BVQY175 if khuon_bvqy175 else journal_profile)
+    if not khuon_bvqy175 and _needs_verification_warning(journal_profile):
         _insert_journal_verification_warning(doc, journal_profile)
+    if khuon_bvqy175:  # khuôn BVQY175: trang bìa không số trang (số trang bắt đầu ở phần sau bìa)
+        for q in doc.sections[0].footer.paragraphs:
+            for r in list(q.runs):
+                r._r.getparent().remove(r._r)
     body_line = _active_profile["body_line_spacing"]
     lines = md_text.split("\n")
 
     i = 0
     first_h1 = True
+    phan = 0            # khuôn BVQY175: 0 bìa · 1 phần đầu (số La Mã) · 2 từ «Đặt vấn đề» (số Ả rập)
+    cho_ngat = False    # «---» trong khuôn = ngắt trang, hoãn tới khi biết nội dung kế tiếp (tránh trang trắng)
+    h1_hien_tai = ""
     while i < len(lines):
         stripped = lines[i].strip()
 
+        if khuon_bvqy175 and stripped == "---":
+            cho_ngat = True
+            i += 1
+            continue
         if stripped in ("", "---", "```markdown", "```"):
             i += 1
             continue
+        if khuon_bvqy175 and cho_ngat and not stripped.startswith("# "):
+            _page_break(doc)
+            cho_ngat = False
 
         # Blockquote (ghi chú) -> đoạn nghiêng, thụt lề 2 bên.
         if stripped.startswith("> "):
@@ -913,7 +1039,7 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
             ind = OxmlElement("w:ind")
             ind.set(qn("w:left"), "567")
             ind.set(qn("w:right"), "567")
-            ppr.append(ind)
+            _chen_dung_cho(ppr, ind, _SAU_IND)
             i += 1
             continue
 
@@ -932,18 +1058,34 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
             continue
 
         if stripped.startswith("# "):
-            if not first_h1:
+            ten_h1 = _strip_md(stripped[2:])
+            if khuon_bvqy175 and phan == 0:
+                _phan_moi(doc, "lowerRoman")
+                phan = 1
+            elif khuon_bvqy175 and phan == 1 and "ĐẶT VẤN ĐỀ" in ten_h1.upper():
+                _phan_moi(doc, "decimal")
+                phan = 2
+            elif not first_h1 or (khuon_bvqy175 and cho_ngat):
                 _page_break(doc)
+            cho_ngat = False
             first_h1 = False
+            h1_hien_tai = ten_h1.upper()
             p = doc.add_paragraph()
             _spacing(p, before=0, after=16, line=1.3, align=A.CENTER)
-            _add_text(p, _strip_md(stripped[2:]), 16, bold=True)
+            _add_text(p, ten_h1, 16, bold=True)
             i += 1
+            if khuon_bvqy175 and h1_hien_tai == "MỤC LỤC":
+                # Mục lục thật = trường TOC của Word (dựng số trang khi mở); bỏ danh sách tĩnh của bản Markdown.
+                _add_toc(doc, tieu_de=False, ngat_trang=False)
+                while i < len(lines) and not (lines[i].strip() == "---" or lines[i].strip().startswith("# ")):
+                    i += 1
             continue
 
         if stripped.startswith("|"):
             rows, i = _parse_table(lines, i)
-            _add_table(doc, rows)
+            bang = _add_table(doc, rows)
+            if khuon_bvqy175 and h1_hien_tai.startswith("DANH MỤC"):
+                _bo_vien(bang)
             sau_bang = doc.add_paragraph()
             if _doan_gon():
                 from docx.shared import Pt
@@ -993,9 +1135,10 @@ def markdown_to_docx(md_text: str, out_path, title_page: Optional[Dict] = None,
             i += 1
             continue
 
-        # Đoạn văn thường.
+        # Đoạn văn thường (khuôn BVQY175: trang bìa — trước đề mục cấp 1 đầu tiên — căn giữa).
         p = doc.add_paragraph()
-        _spacing(p, after=6 if _doan_gon() else 8, line=body_line, align=A.JUSTIFY)
+        _spacing(p, after=6 if _doan_gon() else 8, line=body_line,
+                 align=A.CENTER if (khuon_bvqy175 and phan == 0) else A.JUSTIFY)
         _add_inline_runs(p, stripped)
         i += 1
 
