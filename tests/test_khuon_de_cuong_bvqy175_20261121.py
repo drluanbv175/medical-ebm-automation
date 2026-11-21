@@ -505,3 +505,28 @@ def test_truc_trinh_bay_nhan_14pt_cho_de_cuong_khuon(ket, tmp_path):
     assert KCT.danh_gia_docx(md_p, docx_p)[0][0] == KCT.XANH
     md_p.write_text(DE_CUONG_CU, encoding="utf-8", newline="\n")
     assert KCT._co_than_cho_phep(md_p.name, md_p) == {13}
+
+
+def test_nhat_quan_khong_doi_thu_tu_vancouver_voi_de_cuong_khuon(ket, tmp_path):
+    """Trục `trich_dan_tong_quan` báo 🟡 «thứ tự trích lần đầu không theo Vancouver» trên đề cương khuôn BTM (đo
+    21/11) — khuôn xếp TLTK theo ngôn ngữ rồi ABC; cấu trúc cũ vẫn bị kiểm."""
+    import nhat_quan_xuyen_cong as NQ
+
+    ma = "de-tai-khuon-nq"
+    d = tmp_path / ma
+    d.mkdir()
+    p = d / f"DE_CUONG_NOP_HOI_DONG_{ma}.md"
+    p.write_text(ket.md, encoding="utf-8", newline="\n")
+    k = NQ._truc_trich_dan(d, ma, {})
+    assert "Vancouver" not in str(k)
+    p.write_text(DE_CUONG_CU, encoding="utf-8", newline="\n")
+    assert "Vancouver" in str(NQ._truc_trich_dan(d, ma, {}))
+
+
+def test_ho_so_dtcs_nguon_tro_phu_luc_khi_de_muc_khong_danh_so(ket):
+    """Khuôn đặt kế hoạch thực hiện thành phụ lục, mục con không đánh số ⇒ nguồn từng ghi «đề cương nộp mục » rỗng."""
+    _dong, ds = DT.tach_muc(ket.md)
+    nl = next(h for h in ds if h["ten"].startswith("Nhân lực"))
+    assert DT._muc_dc(nl, ds) == "Phụ lục C, mục «Nhân lực và phân công nhiệm vụ»"
+    dt = next(h for h in ds if h["ten"] == "Đối tượng nghiên cứu")
+    assert DT._muc_dc(dt, ds) == "mục 2.1"

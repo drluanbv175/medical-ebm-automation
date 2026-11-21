@@ -1631,7 +1631,9 @@ def _truc_trich_dan(out_dir: Path, study: str, meta: Dict[str, Any]) -> Optional
             mem.append("TLTK đánh số không liên tục")
         dau = list(dict.fromkeys(x for x in so if x in muc))
         sai = next((i for i in range(1, len(dau)) if dau[i] < dau[i - 1]), None)
-        if sai is not None:
+        # đề cương theo khuôn hướng dẫn chung BVQY175 (có «# CHƯƠNG 1.», 21/11/2026) xếp TLTK theo ngôn ngữ rồi ABC —
+        # số trích theo danh mục, không theo thứ tự xuất hiện; thứ tự ABC do K14 của bộ kiểm đề cương nộp kiểm
+        if sai is not None and not re.search(r"^# CHƯƠNG 1\.", dc or "", re.M):
             mem.append(f"thứ tự trích lần đầu không theo Vancouver: [{dau[sai]}] xuất hiện sau [{dau[sai - 1]}]")
         theo_khoa: Dict[str, List[int]] = {}
         chua_rb: List[int] = []

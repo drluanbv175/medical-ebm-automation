@@ -462,6 +462,16 @@ def _con(ds: list[dict], cha: dict) -> list[dict]:
     return [h for h in trong if h["cap"] == cap_min]
 
 
+def _muc_dc(h: dict, ds: list[dict]) -> str:
+    """Vị trí một đề mục để ghi nguồn: «mục 2.1»; đề mục KHÔNG đánh số (khuôn hướng dẫn chung BVQY175, 21/11/2026: mục
+    con của phụ lục kế hoạch thực hiện) ⇒ «Phụ lục F, mục «Nhân lực…»» thay vì «mục » rỗng."""
+    if h.get("so"):
+        return f"mục {h['so']}"
+    cha = next((x for x in reversed(ds) if x["dong"] < h["dong"] and x["cap"] < h["cap"]), None)
+    pl = re.match(r"^PHỤ LỤC\s+([A-Z])\b", _nfc(cha["tieu_de"]).upper()) if cha else None
+    return (f"Phụ lục {pl.group(1)}, " if pl else "") + f"mục «{h['ten']}»"
+
+
 def _gon(dong: list[str]) -> list[str]:
     ra = list(dong)
     while ra and (not ra[0].strip() or re.fullmatch(r"\s*(?:-{3,}|\*{3,})\s*", ra[0])):
@@ -606,17 +616,17 @@ def khoi_tong_quan(dong: list[str], ds: list[dict]) -> list[dict]:
         lop = phan_loai_tong_quan(c2["ten"])
         con3 = _con(ds, c2)
         if not con3:
-            khoi.append({"nhom": lop, "cap": 1, "tieu_de": c2["ten"], "nguon": f"đề cương nộp mục {c2['so']}",
+            khoi.append({"nhom": lop, "cap": 1, "tieu_de": c2["ten"], "nguon": f"đề cương nộp {_muc_dc(c2, ds)}",
                          "dong": _dong_cay(dong, c2)})
             continue
         rieng = _dong_rieng(dong, c2)
         if rieng:
-            khoi.append({"nhom": lop, "cap": 1, "tieu_de": c2["ten"], "nguon": f"đề cương nộp mục {c2['so']}",
+            khoi.append({"nhom": lop, "cap": 1, "tieu_de": c2["ten"], "nguon": f"đề cương nộp {_muc_dc(c2, ds)}",
                          "dong": rieng})
         for c3 in con3:
             lop3 = lop if lop in ("bo_qua", "luan_giai") else phan_loai_tong_quan(c3["ten"], mac_dinh=lop)
             khoi.append({"nhom": lop3, "cap": 2, "tieu_de": c3["ten"], "tieu_de_cha": c2["ten"],
-                         "nguon": f"đề cương nộp mục {c3['so']}", "dong": _dong_cay(dong, c3)})
+                         "nguon": f"đề cương nộp {_muc_dc(c3, ds)}", "dong": _dong_cay(dong, c3)})
     return [x for k in khoi for x in tach_theo_nhan_doan(k)]
 
 
@@ -624,7 +634,7 @@ def khoi_phuong_phap(dong: list[str], ds: list[dict]) -> list[dict]:
     h = _tim_muc(ds, "ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP", cap=1) or _tim_muc(ds, "PHƯƠNG PHÁP NGHIÊN CỨU", cap=1)
     if h is None:
         return []
-    return [{"tieu_de": c["ten"], "nguon": f"đề cương nộp mục {c['so']}", "dong": _dong_cay(dong, c)}
+    return [{"tieu_de": c["ten"], "nguon": f"đề cương nộp {_muc_dc(c, ds)}", "dong": _dong_cay(dong, c)}
             for c in _con(ds, h)]
 
 
@@ -686,17 +696,17 @@ def tien_do(dong: list[str], ds: list[dict], a13: str) -> tuple[list[dict], str]
                 ra = [hang(r[i_nd], r[i_kq] if i_kq is not None and i_kq < len(r) else "", r[i_tg])
                       for r in b[1:] if len(r) > max(i_nd, i_tg) and _co(r[i_nd])]
                 if ra:
-                    return ra, f"đề cương nộp mục {td['so']} (bảng tiến độ)"
+                    return ra, f"đề cương nộp {_muc_dc(td, ds)} (bảng tiến độ)"
         for m in re.finditer(r"mục\s+(\d+(?:\.\d+)+)", " ".join(vung)):
             dich = next((x for x in ds if x["so"] == m.group(1)), None)
             buoc = danh_sach_so(_dong_rieng(dong, dich)) if dich else []
             if buoc:
                 return ([hang(*_nd_tg(b)) for b in buoc],
-                        f"đề cương nộp mục {dich['so']} (quy trình nghiên cứu — mục {td['so']} trỏ tới)")
+                        f"đề cương nộp {_muc_dc(dich, ds)} (quy trình nghiên cứu — {_muc_dc(td, ds)} trỏ tới)")
     qt = _tim_muc(ds, "QUY TRÌNH NGHIÊN CỨU")
     buoc = danh_sach_so(_dong_rieng(dong, qt)) if qt else []
     if buoc:
-        return [hang(*_nd_tg(b)) for b in buoc], f"đề cương nộp mục {qt['so']} (quy trình nghiên cứu)"
+        return [hang(*_nd_tg(b)) for b in buoc], f"đề cương nộp {_muc_dc(qt, ds)} (quy trình nghiên cứu)"
     m = re.search(r"Lịch đã khai[^:]*:\s*(.+)", a13 or "")
     if m:
         return ([hang(f"{CAN_CHU_NHIEM} — tách thành các dòng công việc: {m.group(1).strip()}", "", "")],
@@ -1056,7 +1066,7 @@ def trich_du_kien(exports_root: Path, study: str, chu_nhiem: str | None = None,
     nl = (_tim_muc(ds, "NHÂN LỰC", trong=h6) or _tim_muc(ds, "PHÂN CÔNG", trong=h6)) if h6 else None
     phan_cong = _dong_cay(dong, nl) if nl else []
     if nl:
-        nguon["thuyet_minh.m12_phan_cong"] = f"đề cương nộp mục {nl['so']} (kế hoạch triển khai A13)"
+        nguon["thuyet_minh.m12_phan_cong"] = f"đề cương nộp {_muc_dc(nl, ds)} (kế hoạch triển khai A13)"
     else:
         m = re.search(r"Vai trò đã khai[^:]*:\s*(.+)", a13)
         if m:
@@ -1068,7 +1078,7 @@ def trich_du_kien(exports_root: Path, study: str, chu_nhiem: str | None = None,
     if nguon_mt:
         nguon["thuyet_minh.m13_muc_tieu"] = nguon_mt
     if pb:
-        nguon["thuyet_minh.m24_pham_vi_ung_dung"] = f"đề cương nộp mục {pb['so']}"
+        nguon["thuyet_minh.m24_pham_vi_ung_dung"] = f"đề cương nộp {_muc_dc(pb, ds)}"
     if nguon_td:
         nguon["thuyet_minh.m21_tien_do"] = nguon_td
     for k in tq:
