@@ -41,6 +41,10 @@ Cỡ mẫu của đề tài là 1.000 phiếu hợp lệ.
 
 ## 4.11. Đạo đức trong nghiên cứu
 
+Đề cương chỉ được triển khai sau khi có quyết định phê duyệt của Hội đồng Đạo đức. Người tham gia nhận bản thông tin \
+và ký phiếu đồng ý (Phụ lục B). Phiếu chỉ mang mã nghiên cứu (khử định danh); chỉ nhóm nghiên cứu có quyền truy cập; \
+số liệu lưu trữ trên máy tính có mật khẩu.
+
 Số quyết định phê duyệt: ……… ngày ……/……/………
 
 # 5. DỰ KIẾN KẾT QUẢ
@@ -65,7 +69,7 @@ Số quyết định phê duyệt: ……… ngày ……/……/………
 
 # PHỤ LỤC B. BẢN THÔNG TIN VÀ PHIẾU ĐỒNG Ý THAM GIA NGHIÊN CỨU
 
-# PHỤ LỤC C. PHIẾU KHẢO SÁT Ý KIẾN NGƯỜI BỆNH
+# PHỤ LỤC C. PHIẾU THU THẬP SỐ LIỆU
 
 Biến mã hoá ma_ban_kham được ghi ở phụ lục.
 """
@@ -109,7 +113,9 @@ def test_word_lech_md(tmp_path):
 
 def test_thieu_chuong(tmp_path):
     md = TOT.replace("## 4.11. Đạo đức trong nghiên cứu", "## 4.11. Nội dung khác")
-    assert _ma(K.kiem(_dung(tmp_path, md=md), MA)) == {"K3"}
+    # 21/11/2026: K17 chặn cả bản nháp — mất chương đạo đức thì mất luôn câu «chỉ triển khai sau khi Hội đồng Đạo đức
+    # phê duyệt» của chuẩn Việt Nam (TT43/2024) ⇒ hai lỗi, không phải một.
+    assert _ma(K.kiem(_dung(tmp_path, md=md), MA)) == {"K3", "K17"}
 
 
 @pytest.mark.parametrize("chen", ["Kế hoạch này khoá ở cổng G4.", "Xem SAP mục 5.", "Theo §4.6.3.",
