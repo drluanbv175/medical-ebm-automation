@@ -149,6 +149,9 @@ của bác sĩ: hỏi trước, đưa con số ước tính. Kết quả ở `ex
 - (21/11/2026) **K15** (`kiem_de_cuong_nop_hoi_dong.py`): mệnh đề mang từ khái quát/định lượng mơ hồ («phần lớn»,
   «đa số», «thường gặp», «đã được chứng minh»…) trong đặt vấn đề/tổng quan/bàn luận phải tự mang trích dẫn — không
   thì viết lại bằng số đếm/ví dụ có nguồn. Lớp toàn văn nay đọc MỌI câu nêu tỷ lệ (định nghĩa nằm ở phần phương pháp).
+- (21/11/2026) **K16**: câu nêu ĐÃ tra một nguồn (Google Scholar, luận văn, kỷ yếu, Scopus, Web of Science…) phải khớp
+  nhật ký `G0_TIM_BO_SUNG_PRISMA_S_<mã>.md`; nguồn chưa tra thì viết «chưa tra» — khẳng định lượt tìm chưa làm là lỗi
+  liêm chính (bài báo giao thức C1a bản cũ từng mắc).
 - Máy đã tự kiểm lại câu trả lời của model: căn cứ «trích» phải có NGUYÊN VĂN trong abstract (không có ⇒ «máy không
   xác minh được căn cứ»), số liệu % / thập phân trong đoạn phải có trong abstract (không có ⇒ cờ «số không thấy»).
 - `khong_ho_tro` / `ho_tro_mot_phan` / cờ ⇒ agent ĐỌC LẠI abstract hoặc toàn văn rồi sửa câu hoặc thay nguồn; không

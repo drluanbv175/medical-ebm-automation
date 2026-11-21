@@ -207,8 +207,9 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 21/11/2026 (b): kiem-chung-trich-dan — sửa câu tỷ lệ bệnh ghi đúng tiêu chuẩn của nguồn (PR cặp gốc #476).
 # 21/11/2026 (c): viet-ban-thao + kiem-chung-trich-dan — K15 khẳng định mơ hồ không nguồn (PR cặp gốc #476).
 # 21/11/2026 (d): tong-quan-y-van — xếp mức liên quan G0 đúng thang + nguyên tắc áp dụng (PR cặp gốc #476).
+# 21/11/2026 (e): kiem-chung-trich-dan + viet-ban-thao — K16 phạm vi tìm khớp nhật ký PRISMA-S (PR cặp gốc #476).
 MANIFEST_SELF_CHECK_SHA256 = (
-    "fdebb3de60c85bd1fc9bbb4447998135aa264b3f6c2dabf960f4de8aa022a8d3"
+    "dbbbd5a2e658ec317346c3dd495106e16039ffeadf1306363999b927e8a152d7"
 )
 
 MINIMUM_AGENT_COUNT = 64
