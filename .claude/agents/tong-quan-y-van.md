@@ -147,6 +147,10 @@ mục tham khảo) · số bản ghi mỗi nguồn · ai thiết kế truy vấn
 Gói cũ không có ⇒ khai thẳng `provenanceUnknown: true` + lý do — nói ra sự thật kiểm chứng
 được, KHÁC HẲN bịa một chiến lược tìm.
 
+Bản NỐI TIẾP của gói mang cờ: giữ cờ cho mục kế thừa nhưng ghi lượt tìm của CHÍNH bản vào
+`searchSources` + `currency` (có ngày) — thiếu thì cổng `--strict-sources` CHẶN (từ 21/11/2026; tệp tồn
+trong sổ nợ `no-provenance-goi-moi.json` chỉ cảnh báo tới hạn — `python3 tools/so_mien_tru.py --so-no`).
+
 ## ROBIS — nguy cơ sai lệch của CHÍNH tổng quan hệ thống
 
 **ROBIS** (Whiting và cs., PMID **26092286**, J Clin Epidemiol 2016,
