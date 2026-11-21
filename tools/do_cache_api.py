@@ -34,11 +34,29 @@ if str(_TOOLS) not in sys.path:
 
 import api_claude_nc as API  # noqa: E402
 
-# Ngưỡng xếp nhãn. Chọn theo kinh tế của cache, không theo cảm tính:
-# — Khấu hao ghi < 1,0× nghĩa là phần ghi cache CHƯA được đọc lại đủ một lần ⇒ đang lỗ tiền vì cache.
-# — Tỷ lệ đọc ≥ 60% là mức mà phần lặp lại đã được khai thác gần hết (Opus 5.5 của hệ này đạt 99,2%).
-KHAU_HAO_LO = 1.0
+# Ngưỡng xếp nhãn, tính từ KINH TẾ của cache chứ không áp một con số cảm tính.
+#
+# VÁ 21/11/2026 — bản đầu đặt `KHAU_HAO_LO = 1.0` và SAI. Chạy trên sổ chi phí THẬT của bác sĩ, công cụ gắn nhãn
+# «ĐANG LỖ VÌ CACHE» cho `hoi_dong_cong_batch` (khấu hao 0,53×, 2,31 Tr token vào) và khuyên BỎ cache ở đó — trong
+# khi nguồn ấy đang TIẾT KIỆM. Đó là lời khuyên gây hại, tệ hơn hẳn một con số hiển thị sai.
+#
+# Điểm hoà vốn thật: cache rẻ hơn khi  W×ghi + R×đọc < (W+R)×1,0, với W = token ghi, R = token đọc. Rút ra
+#     R/W  >  (hệ_số_ghi − 1) / (1 − hệ_số_đọc)
+# Với TTL 5 phút (mặc định) và Sonnet/Opus 5.5: (1,25−1)/(1−0,05) = **0,263×**, không phải 1,0×.
+# Con số 1,0 chỉ gần đúng cho TTL 1 GIỜ: (2,00−1)/(1−0,05) = 1,053×.
+# Vì vậy ngưỡng phải tính theo model VÀ theo tỷ lệ token ghi ở TTL 1h của chính nguồn đó — xem `nguong_khau_hao`.
 TY_LE_DOC_TOT = 0.60
+
+
+def nguong_khau_hao(model: str, ty_le_ghi_1h: float = 0.0) -> float:
+    """Khấu hao ghi tối thiểu để cache RẺ HƠN không cache, cho một model và một tỷ lệ token ghi ở TTL 1 giờ.
+
+    `ty_le_ghi_1h` = token ghi 1h / tổng token ghi (0 = toàn bộ 5 phút). Hệ số ghi hiệu dụng là trung bình có
+    trọng số của 1,25× (5m) và 2,00× (1h)."""
+    t = min(1.0, max(0.0, float(ty_le_ghi_1h or 0.0)))
+    ghi = API.HE_SO_GHI_CACHE * (1 - t) + API.HE_SO_GHI_CACHE_1H * t
+    doc = API.he_so_doc_cache(model)
+    return (ghi - 1.0) / (1.0 - doc) if doc < 1.0 else float("inf")
 # Dưới mức này thì phần token đi qua cache quá nhỏ để kết luận gì — tránh phán trên vài lượt lẻ.
 TOI_THIEU_TOKEN = 50_000
 
@@ -120,11 +138,23 @@ def phan_tich(m: Dict[str, Any]) -> Dict[str, Any]:
     # Tiền ĐANG tiêu cho phần vào, và mức sàn nếu phần lặp lại được cache hết.
     g = _gia(mdl)
     hs_doc = API.he_so_doc_cache(mdl)
+    ty_le_ghi_1h = (m["cache_ghi_1h"] / m["cache_ghi"]) if m["cache_ghi"] else 0.0
+    nguong_kh = nguong_khau_hao(mdl, ty_le_ghi_1h)
     usd_vao = (
-        (m["vao"] + m["cache_ghi"] * API.HE_SO_GHI_CACHE + m["cache_doc"] * hs_doc) * g["vao"] / 1e6
+        (
+            m["vao"]
+            + (m["cache_ghi"] - m["cache_ghi_1h"]) * API.HE_SO_GHI_CACHE
+            + m["cache_ghi_1h"] * API.HE_SO_GHI_CACHE_1H
+            + m["cache_doc"] * hs_doc
+        )
+        * g["vao"]
+        / 1e6
         if g.get("vao")
         else None
     )
+    # Khấu hao là None khi cửa sổ sổ (200 lượt gần nhất) KHÔNG còn lượt ghi nào mà vẫn có lượt đọc — chuyện bình
+    # thường với nguồn đọc lại cache đã ghi từ lượt trước. Bản đầu định dạng None như số ⇒ sập ngay trên sổ thật.
+    kh_txt = f"khấu hao {khau_hao:.2f}×" if khau_hao is not None else "phần ghi nằm ngoài cửa sổ sổ"
 
     if tong_vao < TOI_THIEU_TOKEN:
         nhan, vi_sao = "CHƯA ĐỦ DỮ LIỆU", f"chỉ {tong_vao:,} token vào — cần ≥ {TOI_THIEU_TOKEN:,} mới kết luận"
@@ -133,18 +163,20 @@ def phan_tich(m: Dict[str, Any]) -> Dict[str, Any]:
             "CHƯA BẬT CACHE",
             f"không có token cache nào; prefix tĩnh phải ≥ {nguong:,} token ({mdl}) mới cache được",
         )
-    elif khau_hao is not None and khau_hao < KHAU_HAO_LO:
+    elif khau_hao is not None and khau_hao < nguong_kh:
         nhan, vi_sao = (
             "ĐANG LỖ VÌ CACHE",
-            f"khấu hao ghi {khau_hao:.2f}× — ghi cache nhiều hơn đọc lại; cân nhắc BỎ cache ở nguồn này",
+            f"khấu hao ghi {khau_hao:.2f}× dưới điểm hoà vốn {nguong_kh:.2f}× của {mdl} — "
+            "ghi cache đắt hơn phần đọc lại tiết kiệm được; cân nhắc BỎ cache ở nguồn này",
         )
     elif ty_le_doc >= TY_LE_DOC_TOT:
         nhan, vi_sao = "ĐÃ TỐT", f"{ty_le_doc:.0%} token vào đến từ cache"
     else:
         nhan, vi_sao = (
             "CẦN XEM LẠI",
-            f"cache có hoạt động (khấu hao {khau_hao:.2f}×) nhưng chỉ {ty_le_doc:.0%} token vào qua cache — "
-            "phần lớn đầu vào là nội dung MỚI mỗi lượt",
+            f"cache ĐANG tiết kiệm ({kh_txt}, trên điểm hoà vốn {nguong_kh:.2f}×) nhưng chỉ "
+            f"{ty_le_doc:.0%} token vào qua cache — phần lớn đầu vào là nội dung MỚI mỗi lượt. "
+            "Kiểm xem phần đó CÓ THẬT bị gửi lặp lại không; nếu không thì đây là mức đúng, không phải lỗi",
         )
     return {
         "so_luot": m["so_luot"],
@@ -156,6 +188,7 @@ def phan_tich(m: Dict[str, Any]) -> Dict[str, Any]:
         "token_cache_doc": m["cache_doc"],
         "ty_le_doc_cache": round(ty_le_doc, 4),
         "khau_hao_ghi": None if khau_hao is None else round(khau_hao, 2),
+        "nguong_hoa_von": round(nguong_kh, 3),
         "nguong_cache_model": nguong,
         "usd_phan_vao": None if usd_vao is None else round(usd_vao, 4),
         "nhan": nhan,
@@ -215,7 +248,9 @@ def in_bang(bc: Dict[str, Any]) -> None:
     print("  ĐÃ TỐT            — phần lặp lại đã khai thác gần hết, để yên.")
     print("  CẦN XEM LẠI       — cache chạy nhưng phần lớn đầu vào là nội dung MỚI mỗi lượt. Kiểm xem nội dung đó")
     print("                      CÓ THẬT bị gửi lặp lại không; nếu không, 0% là đúng và KHÔNG nên ép cache.")
-    print("  ĐANG LỖ VÌ CACHE  — ghi cache mà không đọc lại đủ một lần. Bỏ cache_he_thong ở nguồn này.")
+    print("  ĐANG LỖ VÌ CACHE  — khấu hao DƯỚI điểm hoà vốn của model. Bỏ cache_he_thong ở nguồn này.")
+    print("                      Hoà vốn ≈ 0,26× với TTL 5 phút (Sonnet/Opus 5.5) và ≈ 1,05× với TTL 1 giờ —")
+    print("                      KHÔNG phải 1,0×: khấu hao 0,5× với TTL 5 phút vẫn đang tiết kiệm.")
     print("  CHƯA BẬT CACHE    — không có token cache; chỉ đáng bật nếu prefix tĩnh vượt ngưỡng của model.")
     print("\nCẠM BẪY: đừng phình prefix ra cho «cache được». Cache chỉ lợi khi đúng token đó DÙ SAO cũng gửi lại;")
     print("đọc lại n lần tốn n × hệ số đọc, nên dồn nội dung dùng-một-lần vào prefix chung luôn ĐẮT HƠN.")
