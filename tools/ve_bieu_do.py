@@ -29,7 +29,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 for _luong in (sys.stdout, sys.stderr):
     try:
@@ -74,6 +74,7 @@ HINH: Dict[str, tuple] = {
     "ce_plane": ("bieu_do_bao_cao.py", "ce-plane", "mặt phẳng chi phí – hiệu quả"),
     "ceac": ("bieu_do_bao_cao.py", "ceac", "đường cong chấp nhận hiệu quả chi phí"),
     "tornado": ("bieu_do_bao_cao.py", "tornado", "lốc xoáy phân tích độ nhạy một chiều"),
+    "chu_de": ("bieu_do_bao_cao.py", "chu-de", "tần suất chủ đề/mã đã gán + KTC 95% Wilson (mô tả, định tính)"),
 }
 
 # thiết kế → (chuẩn báo cáo, bắt buộc, khuyến nghị, khi phù hợp)
@@ -117,13 +118,18 @@ DANH_MUC: Dict[str, Dict[str, Any]] = {
                    "bat_buoc": ["scree", "he_so_tai"], "khuyen_nghi": ["likert", "tuong_quan"],
                    "khi_phu_hop": {"so_do_cfa": "có phân tích nhân tố khẳng định (CFA)",
                                    "bland_altman": "đánh giá đồng thuận / đo lặp (test–retest)"}},
+    # 21/11/2026: COREQ (phỏng vấn/nhóm tiêu điểm) và SRQR KHÔNG bắt buộc hình — không đặt hình bắt buộc giả;
+    # khuyến nghị sơ đồ tuyển người tham gia + tần suất chủ đề (mô tả, không thay phân tích chủ đề).
+    "qualitative": {"chuan": "COREQ 2007 · SRQR 2014 (không bắt buộc hình)",
+                    "bat_buoc": [], "khuyen_nghi": ["so_do_luong", "chu_de"],
+                    "khi_phu_hop": {"theo_thoi_gian": "nghiên cứu định tính theo dõi dọc (nhiều đợt phỏng vấn)"}},
     "economic": {"chuan": "CHEERS 2022 (trình bày bất định)",
                  "bat_buoc": ["ce_plane", "ceac"], "khuyen_nghi": ["tornado"], "khi_phu_hop": {}},
 }
 BI_DANH = {"rct_cluster": "rct", "ma": "sr_ma", "sr": "sr_ma", "meta": "sr_ma", "chan_doan": "diagnostic",
            "tien_luong": "prediction", "cat_ngang": "cross_sectional", "thuan_tap": "cohort",
            "benh_chung": "case_control",
-           "song_con": "survival", "do_luong": "instrument", "kinh_te": "economic"}
+           "song_con": "survival", "do_luong": "instrument", "kinh_te": "economic", "dinh_tinh": "qualitative"}
 
 
 def _thiet_ke(tk: str) -> str:
@@ -131,6 +137,80 @@ def _thiet_ke(tk: str) -> str:
     if tk not in DANH_MUC:
         raise SystemExit(f"❌ thiết kế lạ «{tk}» — chọn: {', '.join(DANH_MUC)}")
     return tk
+
+
+# ── Mẫu sơ đồ luồng theo chuẩn báo cáo (21/11/2026) ───────────────────────────────────────────────────────────────
+# Số sàng lọc/loại trừ/mất theo dõi là số THẬT từ sổ sàng lọc — máy KHÔNG BAO GIỜ tự điền. Mẫu chỉ dựng đúng các hộp
+# chuẩn yêu cầu (cột n để trống); nghiên cứu viên điền rồi G6 (`hinh_g6`) tự vẽ, tự kiểm số học, đối chiếu n phân tích.
+# Khuôn cột = `bieu_do_bao_cao.ve_so_do_luong`: buoc, n, loai (chinh | loai), nhanh, ly_do («Lý do: n; …»).
+_TRUC_QS = [("Đối tượng tiềm năng được tiếp cận", "chinh", "", ""),
+            ("Không tham gia", "loai", "", "Không đủ tiêu chuẩn: ; Từ chối tham gia: ; Lý do khác: "),
+            ("Tham gia nghiên cứu", "chinh", "", ""),
+            ("Loại khỏi phân tích", "loai", "", "Thiếu dữ liệu kết cục chính: ; Lý do khác: "),
+            ("Đưa vào phân tích", "chinh", "", "")]
+MAU_SO_DO_LUONG: Dict[str, List[Tuple[str, str, str, str]]] = {
+    "rct": [("Đánh giá đủ tiêu chuẩn", "chinh", "", ""),
+            ("Loại trừ", "loai", "", "Không đủ tiêu chuẩn: ; Từ chối tham gia: ; Lý do khác: "),
+            ("Phân bổ ngẫu nhiên", "chinh", "", "")]
+    + [x for nh in ("Can thiệp", "Chứng") for x in (
+        (f"Được phân bổ nhóm {nh.lower()}", "chinh", nh, ""),
+        ("Mất theo dõi / ngừng can thiệp", "loai", nh, "Mất liên lạc: ; Rút đồng ý: ; Lý do khác: "),
+        ("Đưa vào phân tích", "chinh", nh, ""))],
+    "cross_sectional": _TRUC_QS, "cohort": _TRUC_QS, "survival": _TRUC_QS,
+    "case_control": [x for nh in ("Ca bệnh", "Chứng") for x in (
+        (f"{nh} tiềm năng", "chinh", nh, ""),
+        ("Không tham gia", "loai", nh, "Không đủ tiêu chuẩn: ; Từ chối: ; Lý do khác: "),
+        ("Đưa vào phân tích", "chinh", nh, ""))],
+    "diagnostic": [("Người bệnh đủ điều kiện", "chinh", "", ""),
+                   ("Loại trừ", "loai", "", "Không đủ tiêu chuẩn: ; Từ chối: "),
+                   ("Làm xét nghiệm chỉ điểm", "chinh", "", ""),
+                   ("Không có tiêu chuẩn tham chiếu / kết quả không xác định", "loai", "", "Không làm tiêu chuẩn "
+                    "tham chiếu: ; Kết quả không xác định: "),
+                   ("Đưa vào phân tích", "chinh", "", "")],
+    "prediction": [("Người tham gia trong nguồn dữ liệu", "chinh", "", ""),
+                   ("Loại trừ", "loai", "", "Không đủ tiêu chuẩn: ; Thiếu kết cục: "),
+                   ("Đưa vào phát triển / kiểm định mô hình", "chinh", "", "")],
+    "sr_ma": [("Bản ghi xác định qua cơ sở dữ liệu và nguồn khác", "chinh", "", ""),
+              ("Loại trước sàng lọc", "loai", "", "Bản ghi trùng: ; Lý do khác: "),
+              ("Bản ghi được sàng lọc", "chinh", "", ""),
+              ("Loại khi sàng lọc tiêu đề/tóm tắt", "loai", "", ""),
+              ("Báo cáo tìm toàn văn", "chinh", "", ""),
+              ("Không tìm được toàn văn", "loai", "", ""),
+              ("Báo cáo đánh giá đủ tiêu chuẩn", "chinh", "", ""),
+              ("Báo cáo bị loại", "loai", "", "Sai quần thể: ; Sai can thiệp: ; Sai kết cục: ; Sai thiết kế: "),
+              ("Nghiên cứu đưa vào tổng quan", "chinh", "", "")],
+    "qualitative": [("Người được mời tham gia", "chinh", "", ""),
+                    ("Không tham gia", "loai", "", "Từ chối: ; Không liên lạc được: "),
+                    ("Được phỏng vấn / tham gia thảo luận nhóm", "chinh", "", "")],
+}
+
+MAU_SO_DO_LUONG["dta_ma"] = MAU_SO_DO_LUONG["sr_ma"]   # PRISMA-DTA dùng cùng các hộp PRISMA 2020
+
+
+def mau_so_do_luong(tk: str) -> List[Dict[str, str]]:
+    """Các hộp sơ đồ luồng chuẩn của thiết kế, cột n TRỐNG (điền số thật từ sổ sàng lọc)."""
+    t = _thiet_ke(tk)
+    if t not in MAU_SO_DO_LUONG:
+        raise SystemExit(f"thiết kế «{tk}» chưa có mẫu sơ đồ luồng")
+    return [{"buoc": b, "n": "", "loai": lo, "nhanh": nh, "ly_do": ly} for b, lo, nh, ly in MAU_SO_DO_LUONG[t]]
+
+
+def ghi_mau_so_do_luong(tk: str, dich: Path) -> Path:
+    """Ghi mẫu CSV — KHÔNG ghi đè tệp đã có (có thể đang chứa số thật)."""
+    if Path(dich).exists():
+        raise SystemExit(f"{dich} đã có — không ghi đè (có thể đang chứa số thật)")
+    import csv  # noqa: PLC0415
+    import io  # noqa: PLC0415
+
+    b = io.StringIO()
+    w = csv.DictWriter(b, fieldnames=["buoc", "n", "loai", "nhanh", "ly_do"], lineterminator="\n")
+    w.writeheader()
+    w.writerows(mau_so_do_luong(tk))
+    Path(dich).parent.mkdir(parents=True, exist_ok=True)
+    tam = Path(str(dich) + ".tam")
+    tam.write_text(b.getvalue(), encoding="utf-8", newline="\n")
+    tam.replace(dich)
+    return Path(dich)
 
 
 def danh_muc(tk: str) -> Dict[str, Any]:
@@ -182,9 +262,11 @@ def kiem_thu_muc(thu_muc: Path, tk: str, ngon_ngu: Optional[str] = "vi") -> Dict
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("lenh", choices=("danh-muc", "kiem"))
+    ap.add_argument("lenh", choices=("danh-muc", "kiem", "mau-so-do-luong"))
     ap.add_argument("--thiet-ke")
     ap.add_argument("--thu-muc", type=Path)
+    ap.add_argument("--ra", type=Path,
+                    help="mau-so-do-luong: tệp CSV ghi mẫu (thường exports/<mã>/SO_DO_LUONG_<mã>.csv)")
     ap.add_argument("--ngon-ngu", default="vi")
     ap.add_argument("--json", action="store_true")
     try:
@@ -205,6 +287,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                     for x in d[nhom]:
                         print(f"  [{ten}] {x['mo_ta']}{(' — khi ' + x['khi']) if x['khi'] else ''}\n      {x['lenh']}")
             print("\nCần bác sĩ kiểm chứng.")
+            return 0
+        if a.lenh == "mau-so-do-luong":
+            if not (a.thiet_ke and a.ra):
+                print("❌ mau-so-do-luong cần --thiet-ke và --ra")
+                return 3
+            p = ghi_mau_so_do_luong(a.thiet_ke, a.ra)
+            print(f"✅ mẫu sơ đồ luồng {_thiet_ke(a.thiet_ke)} → {p}\n   Điền cột n bằng số THẬT từ sổ sàng lọc; G6 "
+                  "tự vẽ, tự kiểm số học và đối chiếu n phân tích. Cần bác sĩ kiểm chứng.")
             return 0
         if not (a.thu_muc and a.thiet_ke):
             print("❌ kiem cần --thu-muc và --thiet-ke")

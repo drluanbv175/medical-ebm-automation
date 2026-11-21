@@ -211,6 +211,13 @@ def hinh_cua_phan_tich(study: str, pt: Dict[str, Any], thu_muc: Path, nap: Calla
                 GP.ve_bo_tung_nc(ds, "RR", _them("bo-tung-nc", "Bỏ từng nghiên cứu"), "DL", ngon_ngu)
             if len(ds) >= 10:
                 GP.ve_pheu(ds, "RR", _them("pheu", "Funnel plot"), "DL", True, True, ngon_ngu)
+        elif dac_thu == "dinh_tinh":
+            import bieu_do_bao_cao as BB  # noqa: PLC0415
+
+            cot = ts["chu_de"]
+            df = nap(study, [cot], loc)
+            BB.ve_chu_de(_dong(df[[cot]]), cot, _them("chu-de", f"Tần suất chủ đề ({cot}) — mô tả, không thay phân "
+                                                                "tích chủ đề"), ngon_ngu)
         elif dac_thu == "kinh_te":
             import bieu_do_bao_cao as BB  # noqa: PLC0415
 
@@ -334,6 +341,60 @@ def _bang_tho_hieu_chinh(chi_muc: Dict[str, Any]) -> Dict[str, List[Dict[str, st
     return dong
 
 
+TEP_LUONG = "SO_DO_LUONG_{study}.csv"   # số THẬT từ sổ sàng lọc — nghiên cứu viên điền, máy không bao giờ điền
+
+
+def _n_phan_tich_chinh(chi_muc: Optional[Dict[str, Any]]) -> Optional[int]:
+    for x in (chi_muc or {}).get("phan_tich") or []:
+        if x.get("vai") == "chinh" and isinstance((x.get("uoc_luong") or {}).get("n_total"), int):
+            return int(x["uoc_luong"]["n_total"])
+    return None
+
+
+def _n_cuoi_luong(nhanh: Dict[str, List[Dict[str, Any]]]) -> int:
+    """n đưa vào phân tích = hộp chính CUỐI của từng nhánh có tên (CONSORT/case–control); không nhánh ⇒ trục chung."""
+    co_ten = {k: v for k, v in nhanh.items() if k}
+    ds = co_ten or nhanh
+    return sum(next((b["n"] for b in reversed(v) if b["loai"] == "chinh"), 0) for v in ds.values())
+
+
+def _so_do_luong(study: str, d: Path, thu_muc: Path, chi_muc: Optional[Dict[str, Any]], tk: str,
+                 ket: List[Dict[str, Any]], ngon_ngu: str) -> None:
+    """Sơ đồ luồng từ `SO_DO_LUONG_<mã>.csv` (21/11/2026). Chưa có ⇒ tạo MẪU đúng chuẩn của thiết kế (cột n trống) và
+    ghi CHUA_DU_SO; còn ô trống ⇒ CHUA_DU_SO; đủ số ⇒ kiểm số học + đối chiếu n hộp cuối với n phân tích chính của
+    G6 TRƯỚC khi vẽ — lệch ⇒ LỖI (không vẽ hình nói khác số đã phân tích)."""
+    import bieu_do_bao_cao as BB  # noqa: PLC0415
+    import bieu_do_mo_ta as MT  # noqa: PLC0415
+    import ve_bieu_do as VB  # noqa: PLC0415
+
+    p = Path(d) / TEP_LUONG.format(study=study)
+    goc = {"id": "G5", "loai": "so-do-luong"}
+    if not p.is_file():
+        if tk in VB.MAU_SO_DO_LUONG:
+            VB.ghi_mau_so_do_luong(tk, p)
+            ket.append({**goc, "trang_thai": "CHUA_DU_SO", "ly_do": f"đã tạo mẫu {p.name} theo chuẩn — điền cột n "
+                                                                    "bằng số THẬT từ sổ sàng lọc rồi chạy lại G6"})
+        return
+    try:
+        dong = MT.doc_csv(p)
+        trong = [r["buoc"] for r in dong if not str(r.get("n", "")).strip()]
+        if trong:
+            ket.append({**goc, "trang_thai": "CHUA_DU_SO", "ly_do": f"{p.name}: {len(trong)} hộp chưa có số ("
+                                                                    f"{', '.join(trong[:3])}…)"})
+            return
+        k = BB.kiem_so_hoc_luong(dong)
+        if k["loi"]:
+            raise BB.LoiBieuDo("số học không khớp — " + " | ".join(k["loi"]))
+        n_g6, n_luong = _n_phan_tich_chinh(chi_muc), _n_cuoi_luong(k["nhanh"])
+        if n_g6 is not None and n_luong != n_g6:
+            raise BB.LoiBieuDo(f"hộp «đưa vào phân tích» = {n_luong} nhưng phân tích chính G6 dùng N = {n_g6}")
+        BB.ve_so_do_luong(dong, thu_muc / "g6-so-do-luong", (VB.DANH_MUC.get(tk) or {}).get("chuan", ""), ngon_ngu)
+        ket.append({**goc, "tep": f"{THU_MUC}/g6-so-do-luong.png", "trang_thai": "DA_VE",
+                    "mo_ta": "Sơ đồ luồng người tham gia/nghiên cứu (số từ sổ sàng lọc, đã kiểm số học)"})
+    except Exception as e:  # noqa: BLE001
+        ket.append({**goc, "trang_thai": "LOI", "ly_do": f"{p.name}: {type(e).__name__}: {str(e)[:300]}"})
+
+
 def sinh(study: str, d: Path, phan_tich: Sequence[Dict[str, Any]], chi_muc: Optional[Dict[str, Any]] = None,
          thiet_ke: Optional[str] = None, nap: Optional[Callable] = None, ngon_ngu: str = "vi") -> Dict[str, Any]:
     import bieu_do_mo_ta as MT  # noqa: PLC0415
@@ -381,6 +442,7 @@ def sinh(study: str, d: Path, phan_tich: Sequence[Dict[str, Any]], chi_muc: Opti
             except Exception as e:  # noqa: BLE001
                 ket.append({"id": chinh["id"], "loai": "thieu", "trang_thai": "LOI", "ly_do": str(e)[:300]})
     tk = VB.BI_DANH.get(thiet_ke or "", thiet_ke or "")
+    _so_do_luong(study, Path(d), thu_muc, chi_muc, tk, ket, ngon_ngu)
     kiem = VB.kiem_thu_muc(thu_muc, tk, ngon_ngu) if tk in VB.DANH_MUC else {
         "thiet_ke": thiet_ke, "ghi_chu": "thiết kế chưa có trong danh mục hình — bỏ qua kiểm"}
     kq = {"study": study, "ngon_ngu": ngon_ngu, "hinh": ket,
