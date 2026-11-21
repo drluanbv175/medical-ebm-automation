@@ -12,7 +12,7 @@ Ranh giới: TƯ VẤN, chỉ cảnh báo — không ghi A12 receipt, không m�
 nghĩa là abstract không nói tới (có thể ở toàn văn), KHÔNG phải trích sai. CHẠY KHÔ mặc định (không mạng, không ghi);
 `--goi-api` mới lấy abstract + gọi API (tính phí) + ghi báo cáo vào exports/<mã>/kiem_may_api/.
 
-Mã thoát: 0 không phát hiện gì cần xem · 1 có câu cần bác sĩ xem · 2 không kiểm được (thiếu khoá/NCBI/API) ·
+Mã thoát: 0 không phát hiện gì cần xem · 1 có câu cần agent phân xử · 2 không kiểm được (thiếu khoá/NCBI/API) ·
 3 tham số sai.
 """
 
@@ -51,6 +51,16 @@ _DAU = re.compile(r"\[(\d+(?:\s*[-–]\s*\d+)?(?:\s*[,;]\s*\d+(?:\s*[-–]\s*\d+
 _TLTK = re.compile(r"^#{1,3}\s*(?:\d+\.?\s*)?(TÀI LIỆU THAM KHẢO|REFERENCES)\b", re.I)
 _SO_LIEU = re.compile(r"(?<![\w.,])(\d{1,3}(?:[.,]\d+)?)\s*%|(?<![\w.,])(\d+[,.]\d+)(?![\w.,])")
 _SO_MUC_TRUOC = re.compile(r"(?:\b(?:[Mm]ục|[Pp]hụ lục|[Bb]ảng|[Hh]ình|[Ss]ơ đồ|[Cc]hương)|§)\s*$")
+# 21/11/2026 (phân xử BTM mục 9–12): «KTC 95%», «giới hạn đồng thuận 95%» là MỨC TIN CẬY đề cương chọn, không phải số
+# liệu quy cho tài liệu ⇒ trước đây mọi câu phương pháp đều bị cờ «so_khong_thay:95» giả.
+_MUC_TIN_CAY_TRUOC = re.compile(
+    r"(?:KTC|CI|CrI|khoảng tin cậy|khoảng tín nhiệm|giới hạn đồng thuận|confidence interval|limits? of agreement)\s*$",
+    re.I)
+_MUC_TIN_CAY_SAU = re.compile(r"^\s*(?:KTC|CI|CrI|khoảng tin cậy|confidence)", re.I)
+#: số đếm viết bằng chữ trong abstract tiếng Anh («Sixty percent…» — phân xử BTM mục 3)
+SO_BANG_CHU = {"10": "ten", "20": "twenty", "25": "twenty-five", "30": "thirty", "40": "forty", "50": "fifty",
+               "60": "sixty", "70": "seventy", "75": "seventy-five", "80": "eighty", "90": "ninety",
+               "100": "one hundred"}
 SO_CAU_MOI_LO = 6
 SO_LAN_THU_JSON_HONG = 2  # lô trả JSON sai cú pháp ⇒ gửi lại đúng lô đó tối đa 1 lần (tính phí thêm 1 lượt)
 TOKEN_MOI_ABSTRACT = 1000  # tiêu đề + loại xuất bản + abstract có cấu trúc, đo trên BTM
@@ -329,8 +339,29 @@ def so_lieu(doan: str) -> List[str]:
         if m.group(2) and _SO_MUC_TRUOC.search(sach[:m.start()]):
             # 18/11/2026: «mục 4.9», «Bảng 5.2» là số đề mục, không phải số liệu (trước đây bị gắn «số không thấy»).
             continue
+        if m.group(1) in ("90", "95", "99") and (_MUC_TIN_CAY_TRUOC.search(sach[max(0, m.start() - 40):m.start()])
+                                                  or _MUC_TIN_CAY_SAU.match(sach[m.end():m.end() + 25])):
+            continue
         ra.append((m.group(1) or m.group(2)).replace(",", "."))
     return list(dict.fromkeys(ra))
+
+
+def phan_cua_tai_lieu(doan: str) -> str:
+    """Phần đoạn khẳng định QUY CHO số trích dẫn cuối của nó: cắt sau dấu [n] cuối, rồi lấy mệnh đề cuối tách bằng «;»
+    ở ngoài ngoặc. 21/11/2026 (phân xử BTM mục 60): «… (15,32% đến 31,1%) hoặc …; trong phạm vi đã tra … (34,3%, [4])»
+    — hai số đầu thuộc mệnh đề khác, trước đây bị bắt «so_khong_thay» cho tài liệu [4]."""
+    ds = list(_DAU.finditer(doan or ""))
+    s = (doan or "")[: ds[-1].end()] if ds else (doan or "")
+    muc_ngoac = 0
+    dau_menh_de = 0
+    for i, ch in enumerate(s):
+        if ch in "([":
+            muc_ngoac += 1
+        elif ch in ")]":
+            muc_ngoac = max(0, muc_ngoac - 1)
+        elif ch == ";" and muc_ngoac == 0:
+            dau_menh_de = i + 1
+    return s[dau_menh_de:].strip()
 
 
 def so_co_trong(so: str, van: str) -> bool:
@@ -344,7 +375,10 @@ def so_co_trong(so: str, van: str) -> bool:
     cac = [so]
     if re.fullmatch(r"\d{1,3}\.\d{3}", so):
         cac += [so.replace(".", ""), so.replace(".", " ")]
-    return any(re.search(rf"(?<![\d.]){re.escape(x)}(?![\d])", v) is not None for x in cac)
+    if any(re.search(rf"(?<![\d.]){re.escape(x)}(?![\d])", v) is not None for x in cac):
+        return True
+    chu = SO_BANG_CHU.get(so)
+    return bool(chu) and re.search(rf"(?<![\w-]){re.escape(chu)}(?![\w-])", v, re.I) is not None
 
 
 HE_THONG = (
@@ -362,7 +396,18 @@ HE_THONG = (
     "trích dẫn KHÁC trong cùng câu không thuộc [n]; (2) câu trích nhiều tài liệu cùng lúc (vd [38, 41]) được chống đỡ "
     "CHUNG — [n] chỉ cần ủng hộ ý chung, không phải tự nêu đủ mọi chi tiết; (3) tên tác giả, năm, tạp chí là siêu dữ "
     "liệu thư mục, không có trong abstract và được kiểm ở bước khác — KHÔNG dùng chúng để hạ mức; (4) câu chung kiểu "
-    "«… được tham khảo khi xây dựng đề cương» chỉ đòi tài liệu ĐÚNG CHỦ ĐỀ — đúng chủ đề thì ho_tro.\n"
+    "«… được tham khảo khi xây dựng đề cương» chỉ đòi tài liệu ĐÚNG CHỦ ĐỀ — đúng chủ đề thì ho_tro; (5) "
+    # 21/11/2026 (phân xử C1a mục 4, BTM mục 7–8): «mỗi 15 phút chờ thêm», «chấm lại tối đa hai vòng», «39 hồ sơ»
+    # là quyết định của đề cương, bị chấm như thể tài liệu phải nêu.
+    "Phần câu là quyết định RIÊNG của đề cương (con số, quy trình, ngưỡng đề tài tự đặt — vd cỡ mẫu, số vòng "
+    "chấm, tỷ lệ hồ sơ trích lại, hệ số dùng để lập kế hoạch) không cần tài liệu nêu: không hạ mức vì tài liệu "
+    "vắng các chi tiết đó. Điều được viết như phát hiện, số liệu hay nhận định CỦA tài liệu thì vẫn phải có "
+    "trong tài liệu.\n"
+    # 21/11/2026 (bác sĩ: «phải ghi đúng theo tiêu chuẩn bệnh thận mạn chứ không phải cứ albumin niệu tăng»)
+    "Câu nêu tỷ lệ hay chẩn đoán MỘT BỆNH: thuật ngữ bệnh trong câu phải khớp TIÊU CHUẨN CHẨN ĐOÁN tài liệu dùng — vd "
+    "một lần đo albumin niệu (nồng độ microalbumin, UACR dương tính) KHÔNG phải bệnh thận mạn theo KDIGO (đòi bất "
+    "thường tồn tại ≥ 3 tháng); tài liệu chỉ dùng eGFR, hay ghi «bệnh đồng mắc» không nêu tiêu chuẩn, mà câu gọi chung "
+    "«bệnh thận mạn» ⇒ ho_tro_mot_phan, nêu rõ tiêu chuẩn tài liệu dùng trong ly_do.\n"
     "Luật: «trich» là cụm NGUYÊN VĂN ≤ 25 từ chép đúng từng chữ từ tiêu đề hoặc abstract của "
     "CHÍNH tài liệu đó, bắt buộc "
     "với ho_tro/ho_tro_mot_phan/khong_ho_tro, để trống với khong_du_thong_tin. ly_do ≤ 30 từ, tiếng Việt. Khẳng định "
@@ -441,7 +486,7 @@ def kiem_tra_tra_loi(lo: Sequence[Cau], dl: Any, tai_lieu: Dict[int, Dict[str, A
                 k.co.append("can_cu_khong_khop")
                 k.muc = "can_xem"
             if k.muc in ("ho_tro", "ho_tro_mot_phan"):
-                thieu = [s for s in so_lieu(c.doan) if not so_co_trong(s, nguon)]
+                thieu = [s for s in so_lieu(phan_cua_tai_lieu(c.doan)) if not so_co_trong(s, nguon)]
                 if thieu:
                     k.co.append("so_khong_thay:" + ",".join(thieu))
             ra.append(k)
@@ -919,7 +964,7 @@ def main(
         len(ket),
         "kiem_noi_dung_trich_dan",
     )
-    print(f"{'🟠' if xem else '🟢'} {xem} cặp cần bác sĩ xem / {len(ket)} · báo cáo {md}")
+    print(f"{'🟠' if xem else '🟢'} {xem} cặp cần phân xử (toàn văn → agent) / {len(ket)} · báo cáo {md}")
     if bo:
         print(f"⚠ Trần --toi-da {a.toi_da}: KHÔNG kiểm {len(bo)} đoạn cuối (từ {bo[0].id}).")
     if het_loi:

@@ -247,7 +247,8 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                                "số liệu ở người đang điều trị ngoại trú tại Việt Nam còn ít"),
             theoretical_framework_not_applicable=("Nghiên cứu dịch tễ mô tả — không dựa trên khung lý thuyết; mục tiêu "
                                                   "là ước lượng tỷ lệ"),
-            literature_consensus="Tỷ lệ kiểm soát huyết áp thấp ở hầu hết các nước thu nhập thấp–trung bình",
+            literature_consensus=("Tỷ lệ kiểm soát huyết áp ở các nước thu nhập thấp–trung bình thấp hơn ở các "
+                                  "nước thu nhập cao (PMID 34450083)"),
             literature_disagreements="Con số khác nhau theo định nghĩa mẫu số (mọi người tăng huyết áp hay người "
                                      "đang điều trị) và đích huyết áp",
             summary=("Bối cảnh: kiểm soát huyết áp ở người điều trị ngoại trú chưa được đo thường quy. Mục tiêu: ước "

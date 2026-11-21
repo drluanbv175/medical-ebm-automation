@@ -130,10 +130,28 @@ chạy được bằng máy ở mức ABSTRACT: `python3 tools/kiem_noi_dung_tri
 CHẠY KHÔ — in số đoạn, số lượt gọi, ước chi phí, không mạng, không ghi. Gọi thật (`--goi-api`) là quyết định tốn tiền
 của bác sĩ: hỏi trước, đưa con số ước tính. Kết quả ở `exports/<mã>/kiem_may_api/A12_KIEM_NOI_DUNG_<mã>.md`.
 - (18/11/2026) Báo cáo mang `tep_sha256` của đề cương: `python3 tools/duyet_kiem_may_api.py tinh-trang --study <mã>`
-  báo «CŨ» khi đề cương đổi sau lượt kiểm ⇒ không dựa vào báo cáo cũ; hỏi bác sĩ có chạy lại (tính phí). Độ đúng của máy
-  CHƯA đo cho tới khi bác sĩ duyệt: `phieu --study <mã>` dựng phiếu đánh số → bác sĩ trả lời «1-3 đúng, 4 sai…» →
-  `ghi --loi "<nguyên văn>" --ap-dung` → `do`. Agent KHÔNG tự gắn nhãn đúng/sai. Lượt gọi dùng theo tín dụng tài khoản
-  (21/11/2026 — hết tín dụng ⇒ ⛔ cầu nối tự dừng; agent không nạp tín dụng thay bác sĩ).
+  báo «CŨ» khi đề cương đổi sau lượt kiểm ⇒ không dựa vào báo cáo cũ; chạy lại theo luật dùng API theo tín dụng (xin
+  phép khi một lượt ước > ~1 USD). Lượt gọi dùng theo tín dụng tài khoản (21/11/2026 — hết tín dụng ⇒ ⛔ cầu nối tự
+  dừng; agent không nạp tín dụng thay bác sĩ).
+- (21/11/2026) **HỆ TỰ PHÂN XỬ — bác sĩ KHÔNG duyệt phát hiện máy** (bác sĩ: «không phải tìm và bắt tôi phải đi tìm lại
+  chứng cứ và duyệt lại»; «việc chính của tôi là lấy số liệu và cung cấp số liệu thật»). Thứ tự: lớp abstract →
+  `kiem_trich_dan_toan_van.py` (lớp toàn văn; cặp toàn văn xác nhận «ho_tro» là đã giải quyết) → phần còn lại agent
+  ĐỌC TOÀN VĂN đối chiếu, rồi `duyet_kiem_may_api.py phieu` → `phan-xu --tu <tệp.json> --ap-dung` (kết luận may_dung/
+  may_sai/chua_du_can_cu + hành động + lý do + căn cứ trích nguồn). Máy đúng ⇒ sửa câu đề cương cho khớp nguồn (tách
+  ý theo đúng tài liệu, không thêm số không có nguyên văn); máy sai ⇒ ghi nguyên nhân để sửa CÔNG CỤ (đã gặp: chữ Việt
+  không NFC, cờ «KTC 95%», số của mệnh đề khác, lớp toàn văn lẫn số TLTK với danh mục của bài). Phân xử là của agent —
+  KHÔNG BAO GIỜ ghi thành nhãn bác sĩ; `ghi --loi` chỉ khi bác sĩ TỰ muốn gắn nhãn.
+- (21/11/2026) **Sửa câu về tỷ lệ bệnh: ghi ĐÚNG TIÊU CHUẨN của từng nguồn**, không vá bằng cụm gộp mơ hồ (bác sĩ:
+  «phải ghi đúng theo tiêu chuẩn bệnh thận mạn chứ không phải cứ albumin niệu tăng là rất chung chung»). Đọc phần
+  phương pháp trong toàn văn, xếp nguồn theo định nghĩa thật và nói rõ nhóm chưa đủ tiêu chuẩn — vd bệnh thận mạn theo
+  KDIGO đòi bất thường tồn tại ≥ 3 tháng (hai lần đo); một lần đo albumin niệu (nồng độ microalbumin, UACR dương tính)
+  KHÔNG phải bệnh thận mạn; «bệnh đồng mắc» không nêu tiêu chuẩn phải ghi là không nêu tiêu chuẩn.
+- (21/11/2026) **K15** (`kiem_de_cuong_nop_hoi_dong.py`): mệnh đề mang từ khái quát/định lượng mơ hồ («phần lớn»,
+  «đa số», «thường gặp», «đã được chứng minh»…) trong đặt vấn đề/tổng quan/bàn luận phải tự mang trích dẫn — không
+  thì viết lại bằng số đếm/ví dụ có nguồn. Lớp toàn văn nay đọc MỌI câu nêu tỷ lệ (định nghĩa nằm ở phần phương pháp).
+- (21/11/2026) **K16**: câu nêu ĐÃ tra một nguồn (Google Scholar, luận văn, kỷ yếu, Scopus, Web of Science…) phải khớp
+  nhật ký `G0_TIM_BO_SUNG_PRISMA_S_<mã>.md`; nguồn chưa tra thì viết «chưa tra» — khẳng định lượt tìm chưa làm là lỗi
+  liêm chính (bài báo giao thức C1a bản cũ từng mắc).
 - Máy đã tự kiểm lại câu trả lời của model: căn cứ «trích» phải có NGUYÊN VĂN trong abstract (không có ⇒ «máy không
   xác minh được căn cứ»), số liệu % / thập phân trong đoạn phải có trong abstract (không có ⇒ cờ «số không thấy»).
 - `khong_ho_tro` / `ho_tro_mot_phan` / cờ ⇒ agent ĐỌC LẠI abstract hoặc toàn văn rồi sửa câu hoặc thay nguồn; không

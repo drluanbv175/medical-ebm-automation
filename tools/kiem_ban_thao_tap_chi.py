@@ -153,6 +153,8 @@ def do_ban_thao(md: str, gh: Dict) -> Dict:
     vi_pham.extend(K.loi_k10(khong_o))
     # K11 (bác sĩ 20/11/2026): chuẩn trình bày tiếng Việt — số, ngày, ngoặc kép, chữ viết tắt… như đề cương nộp.
     vi_pham.extend(K.loi_k11(khong_o))
+    # K15 (21/11/2026): khẳng định mơ hồ không nguồn ở đặt vấn đề/bàn luận (K16 phạm vi tìm chạy ở `kiem`).
+    vi_pham.extend(K.loi_k15(khong_o))
     so["o_can"] = len(_CAN_RE.findall(md))
     so["so_tu"] = dem_tu(md)
     if so["so_tu"] > gh["so_tu"]:
@@ -199,6 +201,8 @@ def kiem(md_path: Path, tap_chi: str, docx: Optional[Path] = None, dem_trang: bo
     except (OSError, UnicodeDecodeError) as e:
         return {"ma": 2, "loi": f"Không đọc được {md_path}: {e}"}
     kq = do_ban_thao(md, gh)
+    # K16 (21/11/2026): phạm vi tìm nêu trong bản thảo phải khớp nhật ký PRISMA-S của đề tài (cùng thư mục).
+    kq["vi_pham"].extend(K.loi_k16(md_path.parent, md))
     kq["nguon_gioi_han"] = gh["nguon"]
     trang = dem_trang_word(docx) if (dem_trang and docx) else None
     kq["so_do"]["trang"] = trang["trang"] if trang else None

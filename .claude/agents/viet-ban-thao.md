@@ -78,6 +78,8 @@ Tuân thủ `.claude/agents/_HIEN-PHAP-LIEM-CHINH.md` **và** `_NGUYEN-TAC-TRUNG
 
 **Số liệu phải có chứng cứ thực (bác sĩ 20/11/2026: «Không có số liệu thực, chứng cứ thực hãy loại bỏ trong hệ thống nghiên cứu y khoa»):** ở đặt vấn đề / tổng quan / bàn luận, MỖI mệnh đề mang số liệu (%, OR/RR/HR/PR, KTC 95%, TB ± ĐLC) phải tự mang trích dẫn [n] của một tài liệu CÓ trong danh mục và chứa đúng con số đó. Nguồn không vào danh mục (vd bị loại vì không có toàn văn) ⇒ LOẠI con số, không giữ số «trôi nổi»; không đặt [n] ở mệnh đề sau dấu «;» rồi để con số của nguồn khác đứng trước. Máy chặn: `kiem_de_cuong_nop_hoi_dong.py` K10 (cả `kiem_ban_thao_tap_chi.py`).
 
+**Không khẳng định mơ hồ không nguồn — K15 (bác sĩ 21/11/2026: «các lớp kiểm phải nghiêm ngặt từng câu từng chữ … không được trình bày chung chung, sơ xài»):** ở đặt vấn đề / tổng quan / bàn luận, mệnh đề mang từ khái quát hay định lượng mơ hồ («phần lớn», «đa số», «hầu hết», «gần như toàn bộ», «thường gặp», «đáng kể», «đã được chứng minh»…) phải tự mang trích dẫn [n]; không có nguồn thì viết bằng số đếm hay ví dụ cụ thể có nguồn (vd liệt kê đúng các ngoại lệ thay cho «chủ yếu ở Âu – Mỹ – Úc»). Tỷ lệ một bệnh phải ghi đúng tiêu chuẩn chẩn đoán nguồn dùng (vd bệnh thận mạn theo KDIGO đòi ≥ 3 tháng; một lần đo albumin niệu không phải bệnh thận mạn). `kiem_de_cuong_nop_hoi_dong.py` chặn bằng K15. Phạm vi tìm tài liệu chỉ ghi đúng nguồn có trong nhật ký PRISMA-S của đề tài; nguồn chưa tra ghi «chưa tra» (K16 chặn câu nêu đã tra nguồn mà nhật ký không ghi).
+
 ## 1. Mục tiêu & khi nào kích hoạt
 Mục tiêu: viết bản thảo IMRAD trung thực, đạt chuẩn báo cáo đúng thiết kế. Kích hoạt ở **G7**: "viết bài báo/protocol/báo cáo nghiệm thu", "soạn Methods/Discussion", sau khi có kết quả + diễn giải.
 

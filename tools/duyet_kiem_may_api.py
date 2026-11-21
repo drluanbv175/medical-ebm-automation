@@ -8,16 +8,27 @@ VÌ SAO (18/11/2026, bác sĩ chọn «báo cáo cũ + đo độ đúng» khi ho
 - 24 phát hiện phản biện máy + 8 cặp A12 cần xem chưa ai duyệt ⇒ không biết máy đúng bao nhiêu phần. Công cụ dựng PHIẾU
   đánh số, ghi NHÃN từ đúng lời bác sĩ (nguyên văn), rồi đo tỷ lệ đúng = đúng / (đúng + sai) theo công cụ và mức.
 
-Ranh giới: TƯ VẤN, chỉ đọc báo cáo máy. Máy KHÔNG tự gắn nhãn đúng/sai — nhãn chỉ từ `ghi --loi "<nguyên văn bác sĩ>"`.
-Không gọi API, không sửa đề cương, không mở/chặn cổng. Chỉ dùng thư viện chuẩn để hòm việc ở repo gốc nạp trực tiếp.
+PHÂN XỬ CỦA HỆ (21/11/2026 — bác sĩ: «không phải tìm và bắt tôi phải đi tìm lại chứng cứ và duyệt lại»; «việc chính
+của tôi là lấy số liệu và cung cấp số liệu thật»). Phát hiện máy KHÔNG còn là việc của bác sĩ:
+- Lớp TOÀN VĂN (`A12_TOAN_VAN_<mã>.json`, cùng lượt A12) được gộp: cặp toàn văn xác nhận «ho_tro» là đã giải quyết,
+  không còn là mục cần xem; cặp còn lại hiện kèm kết luận lớp toàn văn.
+- Mục còn lại do AGENT phân xử bằng toàn văn + luật bác sĩ đã đặt, ghi qua `phan-xu` vào `PHAN_XU_KIEM_MAY_<mã>.json`
+  (kết luận may_dung/may_sai/chua_du_can_cu · hành động da_sua/khong_can_sua/chua_sua · lý do · căn cứ). Phân xử gắn
+  với mã băm báo cáo — máy chạy lại thì phân xử cũ hết hiệu lực.
+- Độ đúng của máy: nhãn bác sĩ (nếu bác sĩ TỰ muốn gắn, `ghi --loi`) đi trước; không có thì dùng phân xử, ghi rõ nguồn
+  nhãn «phân xử của agent» — KHÔNG bao giờ ghi phân xử thành nhãn bác sĩ.
+
+Ranh giới: chỉ đọc báo cáo máy, không gọi API, không sửa đề cương, không mở/chặn cổng. Chỉ dùng thư viện chuẩn để hòm
+việc ở repo gốc nạp trực tiếp.
 
 Dùng:
-  duyet_kiem_may_api.py tinh-trang --study <mã> | --tat-ca [--json]   # báo cáo cũ? bao nhiêu mục chưa duyệt? tỷ lệ đúng
-  duyet_kiem_may_api.py phieu --study <mã>                            # phiếu đánh số các mục cần duyệt
-  duyet_kiem_may_api.py ghi --study <mã> --loi "1-3 đúng, 4 sai, 5 không rõ" [--ap-dung]
+  duyet_kiem_may_api.py tinh-trang --study <mã> | --tat-ca [--json]   # cũ? còn mục chưa phân xử? tỷ lệ đúng
+  duyet_kiem_may_api.py phieu --study <mã>                            # phiếu đánh số cho bước phân xử của agent
+  duyet_kiem_may_api.py phan-xu --study <mã> --tu <tệp.json> [--ap-dung]  # ghi phân xử theo số phiếu
+  duyet_kiem_may_api.py ghi --study <mã> --loi "1-3 đúng, 4 sai, 5 không rõ" [--ap-dung]   # nhãn bác sĩ (tuỳ ý)
   duyet_kiem_may_api.py do --study <mã> [--json]                      # tỷ lệ đúng theo công cụ và mức
-Mã thoát: 0 mọi báo cáo còn hiệu lực và đã duyệt hết · 1 có báo cáo cũ hoặc mục chưa duyệt · 2 không đo được ·
-3 tham số sai / phiếu cũ / lời ghi không đọc được.
+Mã thoát: 0 mọi báo cáo còn hiệu lực và mọi mục đã phân xử/gắn nhãn · 1 có báo cáo cũ hoặc mục chưa phân xử · 2 không
+đo được · 3 tham số sai / phiếu cũ / lời ghi hoặc tệp phân xử không đọc được.
 """
 
 from __future__ import annotations
@@ -48,6 +59,9 @@ MUC_G0_A_CAN_XEM = ("sai", "khong_hop_ly", "sai_lech", "can_xem")  # cùng luậ
 MUC_A12_CAN_XEM = ("khong_ho_tro", "ho_tro_mot_phan", "can_xem")  # cùng luật `kiem_noi_dung_trich_dan.can_xem`
 THU_TU_MUC = {"cao": 0, "vua": 1, "thap": 2}
 NHAN_HOP_LE = ("dung", "sai", "khong_ro")
+TOAN_VAN_A12 = "A12_TOAN_VAN_{s}.json"
+KET_LUAN_PHAN_XU = {"may_dung": "dung", "may_sai": "sai", "chua_du_can_cu": "khong_ro"}
+HANH_DONG_PHAN_XU = ("da_sua", "khong_can_sua", "chua_sua")
 _STUDY = re.compile(r"^[A-Za-z0-9._-]+$")
 
 
@@ -109,14 +123,37 @@ def hieu_luc(bc: Dict[str, Any], study: str, goc: Path = REPO) -> Tuple[Optional
 
 
 # ── Mục cần duyệt ────────────────────────────────────────────────────────────────────────────────────────────────
-def muc_can_duyet(loai: str, bc: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Danh sách mục cần bác sĩ duyệt, mỗi mục một khoá BỀN (không phụ thuộc thứ tự)."""
+def toan_van_cua(bc12: Dict[str, Any], tv: Optional[Dict[str, Any]]) -> Dict[Tuple[str, int], Dict[str, Any]]:
+    """(id câu, số TLTK) → kết quả lớp toàn văn — CHỈ khi báo cáo toàn văn thuộc đúng lượt A12 này (`a12_luc`)."""
+    if not isinstance(tv, dict) or not tv.get("a12_luc") or tv.get("a12_luc") != bc12.get("luc"):
+        return {}
+    ra: Dict[Tuple[str, int], Dict[str, Any]] = {}
+    for r in tv.get("ket_qua") or []:
+        try:
+            ra[(str(r.get("id")), int(r.get("so")))] = r
+        except (TypeError, ValueError):
+            continue
+    return ra
+
+
+def muc_can_duyet(loai: str, bc: Dict[str, Any], tv: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
+    """Danh sách mục cần phân xử, mỗi mục một khoá BỀN (không phụ thuộc thứ tự). A12: cặp lớp toàn văn đã xác nhận
+    «ho_tro» là đã giải quyết — không còn trong danh sách (21/11/2026)."""
     ra: List[Dict[str, Any]] = []
     if loai == "A12":
         cau = {c.get("id"): c.get("cau", "") for c in bc.get("cau") or []}
+        tv_cap = toan_van_cua(bc, tv)
         for k in bc.get("ket_qua") or []:
             co = [str(x) for x in k.get("co") or []]
-            if k.get("muc") in MUC_A12_CAN_XEM or any(x.startswith("so_khong_thay") for x in co):
+            r_tv = tv_cap.get((str(k.get("id")), int(k.get("so") or 0)))
+            # 21/11/2026: lớp toàn văn nay đọc cả câu nêu tỷ lệ mà lớp abstract cho qua — toàn văn phán khác «ho_tro»
+            # (vd định nghĩa bệnh lệch) thì cặp đó là mục cần phân xử dù abstract đã «ho_tro».
+            tv_bat = bool(r_tv) and r_tv.get("muc_toan_van") not in ("ho_tro", None)
+            if tv_bat or k.get("muc") in MUC_A12_CAN_XEM or any(x.startswith("so_khong_thay") for x in co):
+                if r_tv and r_tv.get("muc_toan_van") == "ho_tro":
+                    continue
+                dong_tv = ([f"Toàn văn: «{r_tv.get('muc_toan_van')}» — {r_tv.get('ly_do', '')} "
+                            f"({r_tv.get('nguon', '')})"] if r_tv else [])
                 ra.append(
                     {
                         "khoa": f"A12|{k.get('id')}|{k.get('so')}",
@@ -128,6 +165,7 @@ def muc_can_duyet(loai: str, bc: Dict[str, Any]) -> List[Dict[str, Any]]:
                             f"Máy nói: {k.get('ly_do', '')}",
                             *([f"Trích căn cứ: «{k.get('trich')}»"] if k.get("trich") else []),
                             *([f"Cờ máy: {', '.join(co)}"] if co else []),
+                            *dong_tv,
                         ],
                     }
                 )
@@ -206,7 +244,10 @@ def doc_bao_cao(study: str, goc: Path = REPO) -> Dict[str, Dict[str, Any]]:
         if not isinstance(bc, dict):
             ra[loai] = {"hong": True, "tep_bao_cao": p.name}
             continue
-        ra[loai] = {"bc": bc, "sha_bao_cao": _sha_tep(p), "tep_bao_cao": p.name, "muc": muc_can_duyet(loai, bc)}
+        tv = _doc_json(thu_muc(study, goc) / TOAN_VAN_A12.format(s=study)) if loai == "A12" else None
+        ra[loai] = {"bc": bc, "sha_bao_cao": _sha_tep(p), "tep_bao_cao": p.name, "muc": muc_can_duyet(loai, bc, tv),
+                    "giai_quyet_toan_van": (sum(1 for r in toan_van_cua(bc, tv).values()
+                                                if r.get("muc_toan_van") == "ho_tro") if loai == "A12" else 0)}
     return ra
 
 
@@ -223,14 +264,41 @@ def doc_nhan(study: str, goc: Path = REPO) -> Dict[str, Any]:
     return d if isinstance(d, dict) and isinstance(d.get("nhan"), dict) else {"nhan": {}, "lan_ghi": []}
 
 
+def tep_phan_xu(study: str, goc: Path = REPO) -> Path:
+    return thu_muc(study, goc) / f"PHAN_XU_KIEM_MAY_{study}.json"
+
+
+def doc_phan_xu(study: str, bcs: Optional[Dict[str, Dict[str, Any]]] = None, goc: Path = REPO) -> Dict[str, Any]:
+    """{khoá mục: phân xử} — chỉ phần thuộc báo cáo CÒN đúng mã băm lúc phân xử (máy chạy lại ⇒ phân xử cũ bỏ)."""
+    d = _doc_json(tep_phan_xu(study, goc))
+    if not isinstance(d, dict) or not isinstance(d.get("muc"), dict):
+        return {}
+    bcs = doc_bao_cao(study, goc) if bcs is None else bcs
+    sha = d.get("sha_bao_cao") or {}
+    con = {loai for loai, x in bcs.items() if not x.get("hong") and sha.get(loai) == x.get("sha_bao_cao")}
+    return {k: v for k, v in d["muc"].items() if isinstance(v, dict) and str(v.get("loai")) in con}
+
+
+def nhan_hop_nhat(study: str, bcs: Dict[str, Dict[str, Any]], goc: Path = REPO) -> Dict[str, Any]:
+    """Nhãn dùng để đo: nhãn bác sĩ đi trước; mục chưa có thì lấy phân xử (nguồn «phan_xu»)."""
+    ra: Dict[str, Any] = {k: {**v, "nguon": "bac_si"} for k, v in doc_nhan(study, goc)["nhan"].items()}
+    for k, v in doc_phan_xu(study, bcs, goc).items():
+        if k not in ra and v.get("ket_luan") in KET_LUAN_PHAN_XU:
+            ra[k] = {"nhan": KET_LUAN_PHAN_XU[v["ket_luan"]], "nguon": "phan_xu", "hanh_dong": v.get("hanh_dong")}
+    return ra
+
+
 # ── Tình trạng · độ đúng ─────────────────────────────────────────────────────────────────────────────────────────
 def do_dung(muc: Sequence[Dict[str, Any]], nhan: Dict[str, Any]) -> Dict[str, Any]:
     """Tỷ lệ đúng = đúng / (đúng + sai); «không rõ» và chưa duyệt không tính vào mẫu số."""
 
     def _dem(ds: Sequence[Dict[str, Any]]) -> Dict[str, Any]:
-        n = {"dung": 0, "sai": 0, "khong_ro": 0, "chua_duyet": 0}
+        n = {"dung": 0, "sai": 0, "khong_ro": 0, "chua_duyet": 0, "nguon_bac_si": 0, "nguon_phan_xu": 0}
         for m in ds:
-            n[(nhan.get(m["khoa"]) or {}).get("nhan") or "chua_duyet"] += 1
+            x = nhan.get(m["khoa"]) or {}
+            n[x.get("nhan") or "chua_duyet"] += 1
+            if x.get("nguon") in ("bac_si", "phan_xu"):
+                n["nguon_" + x["nguon"]] += 1
         mau = n["dung"] + n["sai"]
         n["ty_le_dung"] = round(n["dung"] / mau, 3) if mau else None
         return n
@@ -246,7 +314,7 @@ def do_dung(muc: Sequence[Dict[str, Any]], nhan: Dict[str, Any]) -> Dict[str, An
 def tinh_trang(study: str, goc: Path = REPO) -> Dict[str, Any]:
     """Tình trạng kiểm máy API của một đề tài. `do_duoc=False` khi chưa có báo cáo nào đọc được."""
     bcs = doc_bao_cao(study, goc)
-    nhan = doc_nhan(study, goc)["nhan"]
+    nhan = nhan_hop_nhat(study, bcs, goc)
     ds, tat_ca_muc = [], []
     for loai, x in bcs.items():
         if x.get("hong"):
@@ -266,6 +334,9 @@ def tinh_trang(study: str, goc: Path = REPO) -> Dict[str, Any]:
                 "ly_do": ly_do,
                 "can_duyet": len(muc),
                 "chua_duyet": dd["tong"]["chua_duyet"],
+                "da_phan_xu": dd["tong"]["nguon_phan_xu"],
+                "nhan_bac_si": dd["tong"]["nguon_bac_si"],
+                "giai_quyet_toan_van": x.get("giai_quyet_toan_van", 0),
                 "ty_le_dung": dd["tong"]["ty_le_dung"],
             }
         )
@@ -301,9 +372,11 @@ def ma_thoat(tt: Sequence[Dict[str, Any]]) -> int:
 
 # ── Phiếu · ghi nhãn ─────────────────────────────────────────────────────────────────────────────────────────────
 def dung_phieu(study: str, goc: Path = REPO) -> Tuple[Path, Path, int]:
-    """Ghi phiếu Markdown + bảng số→khoá (JSON). Mục đã có nhãn vẫn liệt kê (kèm nhãn hiện có) để bác sĩ sửa được."""
+    """Ghi phiếu Markdown + bảng số→khoá (JSON) cho bước PHÂN XỬ của agent. Mục đã phân xử/gắn nhãn vẫn liệt kê
+    (kèm kết luận hiện có) để sửa được."""
     bcs = doc_bao_cao(study, goc)
     nhan = doc_nhan(study, goc)["nhan"]
+    px = doc_phan_xu(study, bcs, goc)
     muc: List[Dict[str, Any]] = []
     for loai in BAO_CAO:
         if loai in bcs and not bcs[loai].get("hong"):
@@ -315,9 +388,10 @@ def dung_phieu(study: str, goc: Path = REPO) -> Tuple[Path, Path, int]:
     dong = [
         f"# Phiếu duyệt kiểm máy Claude API — {study}",
         "",
-        f"Dựng lúc {luc}. Mỗi mục là MỘT phát hiện của máy. Bác sĩ trả lời theo số, ví dụ:",
-        "`1-3 đúng, 4 sai, 5 không rõ` — «đúng» = máy nói đúng (có vấn đề thật), «sai» = máy báo nhầm.",
-        "Máy KHÔNG tự gắn nhãn. Tỷ lệ đúng chỉ tính trên các mục bác sĩ đã trả lời «đúng» hoặc «sai».",
+        f"Dựng lúc {luc}. Mỗi mục là MỘT phát hiện của máy CHƯA được lớp toàn văn giải quyết. Phiếu dành cho bước",
+        "PHÂN XỬ của agent: đối chiếu toàn văn + luật bác sĩ đã đặt, máy đúng thì sửa đề cương/bảng, máy sai thì sửa",
+        "công cụ; ghi bằng `duyet_kiem_may_api.py phan-xu --study <mã> --tu <tệp.json> --ap-dung`. Bác sĩ KHÔNG phải",
+        "trả lời phiếu này (bác sĩ 21/11/2026) — `ghi --loi` chỉ dùng khi bác sĩ TỰ muốn gắn nhãn.",
         "",
     ]
     for loai in BAO_CAO:
@@ -335,8 +409,12 @@ def dung_phieu(study: str, goc: Path = REPO) -> Tuple[Path, Path, int]:
             if m is None:
                 continue
             hien = (nhan.get(k) or {}).get("nhan")
-            dong.append(f"**{so}.** {m['tieu_de']}" + (f" — nhãn hiện có: **{hien}**" if hien else ""))
+            p_x = px.get(k) or {}
+            dong.append(f"**{so}.** {m['tieu_de']}" + (f" — nhãn bác sĩ: **{hien}**" if hien else "")
+                        + (f" — phân xử: **{p_x.get('ket_luan')}** / {p_x.get('hanh_dong')}" if p_x else ""))
             dong += [f"   - {c}" for c in m["chi_tiet"]]
+            if p_x:
+                dong.append(f"   - Phân xử: {p_x.get('ly_do', '')} — căn cứ: {p_x.get('can_cu', '')}")
             dong.append("")
     md = thu_muc(study, goc) / f"PHIEU_DUYET_KIEM_MAY_{study}.md"
     md.write_text("\n".join(dong).rstrip() + "\n", encoding="utf-8", newline="\n")
@@ -405,6 +483,63 @@ def ghi_nhan(study: str, loi: str, ap_dung: bool, goc: Path = REPO) -> Dict[str,
     return {"so_muc": len(so), "nhan": {str(k): v for k, v in sorted(so.items())}, "da_ghi": ap_dung}
 
 
+def ghi_phan_xu(study: str, du_lieu: Any, ap_dung: bool, goc: Path = REPO) -> Dict[str, Any]:
+    """Ghi phân xử của agent theo SỐ PHIẾU (cùng cơ chế chống lệch của `ghi_nhan`: phiếu cũ hơn báo cáo ⇒ từ chối).
+
+    `du_lieu` = {"nguoi_phan_xu": "...", "muc": [{"so": 1, "ket_luan": "may_dung", "hanh_dong": "da_sua",
+    "ly_do": "...", "can_cu": "..."}]}. Luật: kết luận ∈ may_dung/may_sai/chua_du_can_cu; hành động ∈ da_sua/
+    khong_can_sua/chua_sua; lý do bắt buộc; căn cứ bắt buộc trừ «chua_du_can_cu»; «may_sai» không đi với «da_sua»."""
+    ph = _doc_json(tep_phieu(study, goc))
+    if not isinstance(ph, dict) or not ph.get("so_khoa"):
+        raise ValueError("chưa có phiếu — chạy `phieu --study` trước")
+    bcs = doc_bao_cao(study, goc)
+    for loai, sha in (ph.get("sha_bao_cao") or {}).items():
+        if (bcs.get(loai) or {}).get("sha_bao_cao") != sha:
+            raise ValueError(f"báo cáo {TEN[loai]} đã đổi sau khi dựng phiếu — dựng lại phiếu rồi phân xử lại")
+    if not isinstance(du_lieu, dict) or not isinstance(du_lieu.get("muc"), list):
+        raise ValueError("tệp phân xử phải là {\"nguoi_phan_xu\": …, \"muc\": [ … ]}")
+    nguoi = str(du_lieu.get("nguoi_phan_xu") or "").strip()
+    if not nguoi:
+        raise ValueError("thiếu «nguoi_phan_xu» (vd «agent — đối chiếu toàn văn»)")
+    if re.search(r"bác sĩ|bac si|PI\b", nguoi, re.I):
+        raise ValueError("phân xử của agent không được ghi tên vai bác sĩ/PI — nhãn bác sĩ đi qua `ghi --loi`")
+    loai_cua = {m["khoa"]: loai for loai, x in bcs.items() if not x.get("hong") for m in x["muc"]}
+    d = _doc_json(tep_phan_xu(study, goc))
+    d = d if isinstance(d, dict) and isinstance(d.get("muc"), dict) else {"muc": {}}
+    luc = dt.datetime.now().isoformat(timespec="seconds")
+    moi: Dict[str, Any] = {}
+    for i, x in enumerate(du_lieu["muc"], 1):
+        if not isinstance(x, dict):
+            raise ValueError(f"phần tử {i} không phải object")
+        so, kl, hd = str(x.get("so")), x.get("ket_luan"), x.get("hanh_dong")
+        ly_do, can_cu = str(x.get("ly_do") or "").strip(), str(x.get("can_cu") or "").strip()
+        if so not in ph["so_khoa"]:
+            raise ValueError(f"mục {so} không có trong phiếu (1–{len(ph['so_khoa'])})")
+        if kl not in KET_LUAN_PHAN_XU:
+            raise ValueError(f"mục {so}: ket_luan phải ∈ {', '.join(KET_LUAN_PHAN_XU)}")
+        if hd not in HANH_DONG_PHAN_XU:
+            raise ValueError(f"mục {so}: hanh_dong phải ∈ {', '.join(HANH_DONG_PHAN_XU)}")
+        if not ly_do:
+            raise ValueError(f"mục {so}: thiếu ly_do")
+        if kl != "chua_du_can_cu" and not can_cu:
+            raise ValueError(f"mục {so}: thiếu can_cu (câu/đoạn nguồn đã đối chiếu)")
+        if kl == "may_sai" and hd == "da_sua":
+            raise ValueError(f"mục {so}: máy sai thì không có gì để «da_sua» trong đề cương")
+        if so in moi:
+            raise ValueError(f"mục {so} phân xử hai lần")
+        khoa = ph["so_khoa"][so]
+        moi[so] = khoa
+        d["muc"][khoa] = {"loai": loai_cua.get(khoa, ""), "ket_luan": kl, "hanh_dong": hd, "ly_do": ly_do[:600],
+                          "can_cu": can_cu[:600], "luc": luc, "phieu_so": int(so)}
+    d.update({"schema": "kiem_may/phan_xu/v1", "study": study, "nguoi_phan_xu": nguoi, "luc": luc,
+              "sha_bao_cao": {loai: x.get("sha_bao_cao") for loai, x in bcs.items() if not x.get("hong")},
+              "ghi_chu": "Phân xử của AGENT (đối chiếu toàn văn) — không phải nhãn bác sĩ."})
+    if ap_dung:
+        _ghi_json(tep_phan_xu(study, goc), d)
+    dem = {k: sum(1 for s in moi if d["muc"][moi[s]]["ket_luan"] == k) for k in KET_LUAN_PHAN_XU}
+    return {"so_muc": len(moi), "dem": dem, "da_ghi": ap_dung, "con_lai": len(ph["so_khoa"]) - len(moi)}
+
+
 # ── CLI ──────────────────────────────────────────────────────────────────────────────────────────────────────────
 def _in_tinh_trang(t: Dict[str, Any]) -> None:
     if not t["do_duoc"]:
@@ -418,17 +553,20 @@ def _in_tinh_trang(t: Dict[str, Any]) -> None:
         tl = "chưa đo" if b["ty_le_dung"] is None else f"{b['ty_le_dung']:.0%}"
         print(
             f"{dau} · {t['study']} · {b['ten']} (lượt {b['luc']}): {b['ly_do']}. "
-            f"Cần duyệt {b['can_duyet']}, chưa duyệt {b['chua_duyet']}, tỷ lệ đúng {tl}."
+            f"Toàn văn đã giải quyết {b.get('giai_quyet_toan_van', 0)}; còn {b['can_duyet']} mục — đã phân xử "
+            f"{b.get('da_phan_xu', 0)}, nhãn bác sĩ {b.get('nhan_bac_si', 0)}, chưa phân xử {b['chua_duyet']}; "
+            f"tỷ lệ đúng {tl}."
         )
 
 
 def main(argv: Optional[Sequence[str]] = None, goc: Path = REPO) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("lenh", choices=("tinh-trang", "phieu", "ghi", "do"))
+    ap.add_argument("lenh", choices=("tinh-trang", "phieu", "phan-xu", "ghi", "do"))
     ap.add_argument("--study")
     ap.add_argument("--tat-ca", action="store_true", help="tinh-trang: mọi đề tài thật có kiem_may_api")
     ap.add_argument("--loi", help="ghi: NGUYÊN VĂN lời bác sĩ, vd «1-3 đúng, 4 sai, 5 không rõ»")
-    ap.add_argument("--ap-dung", action="store_true", help="ghi: ghi nhãn thật (mặc định chạy khô)")
+    ap.add_argument("--ap-dung", action="store_true", help="ghi/phan-xu: ghi thật (mặc định chạy khô)")
+    ap.add_argument("--tu", help="phan-xu: tệp JSON phân xử của agent")
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args(argv)
     if a.study and not _STUDY.match(a.study):
@@ -450,8 +588,22 @@ def main(argv: Optional[Sequence[str]] = None, goc: Path = REPO) -> int:
         return 3
     if a.lenh == "phieu":
         md, _, n = dung_phieu(a.study, goc)
-        print(f"📝 Phiếu {n} mục: {md}" if n else f"🟢 Không có mục nào cần duyệt — phiếu: {md}")
+        print(f"📝 Phiếu {n} mục cho bước phân xử: {md}" if n else f"🟢 Không có mục nào cần phân xử — phiếu: {md}")
         return 1 if n else 0
+    if a.lenh == "phan-xu":
+        if not a.tu:
+            print("❌ phan-xu cần --tu <tệp.json>")
+            return 3
+        try:
+            kq = ghi_phan_xu(a.study, _doc_json(Path(a.tu)), a.ap_dung, goc)
+        except ValueError as exc:
+            print(f"❌ {exc}")
+            return 3
+        print(f"{'✅ Đã ghi' if kq['da_ghi'] else 'CHẠY KHÔ — sẽ ghi'} phân xử {kq['so_muc']} mục "
+              f"(máy đúng {kq['dem']['may_dung']} · máy sai {kq['dem']['may_sai']} · chưa đủ căn cứ "
+              f"{kq['dem']['chua_du_can_cu']}); phiếu còn {kq['con_lai']} mục chưa phân xử."
+              + ("" if kq["da_ghi"] else " Ghi thật: thêm --ap-dung."))
+        return 0
     if a.lenh == "ghi":
         if not a.loi:
             print("❌ ghi cần --loi \"<nguyên văn bác sĩ>\"")
@@ -477,7 +629,8 @@ def main(argv: Optional[Sequence[str]] = None, goc: Path = REPO) -> int:
             tl = "chưa đo" if n["ty_le_dung"] is None else f"{n['ty_le_dung']:.0%}"
             print(
                 f"{khoa}: đúng {n['dung']} · sai {n['sai']} · không rõ {n['khong_ro']} · "
-                f"chưa duyệt {n['chua_duyet']} ⇒ tỷ lệ đúng {tl}"
+                f"chưa phân xử {n['chua_duyet']} ⇒ tỷ lệ đúng {tl} (nhãn: bác sĩ {n['nguon_bac_si']}, "
+                f"phân xử agent {n['nguon_phan_xu']})"
             )
     return 2 if not t["do_dung"] else 0
 
