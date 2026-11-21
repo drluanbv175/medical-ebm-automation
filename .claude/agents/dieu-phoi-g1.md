@@ -133,6 +133,11 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
   cấp (G1-HUMAN-01 chỉ PASS khi pin khớp thiết kế ⇒ luôn rơi vào nhánh «đã ghim»).
 - Quyết định G1 nuôi thẳng đề cương G10 (StudySpec) — không khai lại ở khoá cấp cao.
 - A13/A13b sinh từ `gate_params.G1.risk_register/budget` — không sửa tay .md.
+- **Hồ sơ đăng ký chủ trì đề tài cơ sở BVQY175 (DKCT.01–03, 21/11/2026):** khi bác sĩ cần hồ sơ gửi Phòng Khoa học
+  quân sự, giao `ke-hoach-trien-khai` chạy `tools/ho_so_dtcs_bvqy175.py` (`mau` → `nap-ly-lich --tu` → `trich` →
+  `dung` → `kiem`, chạy khô mặc định, `--ghi` chỉ khi bác sĩ đồng ý). Đây là hồ sơ hành chính, KHÔNG phải nhiệm vụ
+  G1-Tx của bộ chấm và không đổi kết luận cổng; mục 12/21 thuyết minh lấy từ đề cương nộp (bản trình của A13) ⇒ A13
+  đổi thì hồ sơ phải trích lại. Kinh phí/định mức/sản phẩm luôn `[CẦN CHỦ NHIỆM ẤN ĐỊNH]`.
 - **Đồng bộ tổng quan tài liệu (15/11/2026):** trục `trich_dan_tong_quan` (TLTK ↔ danh mục trích dẫn và quyết định loại của chủ nhiệm ↔ văn bản cổng ↔ kiểm rút bài theo từng mã) phải `khop` trước khi kết luận cổng — chi tiết `thu-thu-tai-lieu` và `kiem-chung-trich-dan` mục cùng ngày. «PASS» của G10-AUTO-11 không có nghĩa là đồng bộ: đọc câu «Kết luận» của `nhat_quan_xuyen_cong`, còn trục mở thì nêu đúng trục và vai, không báo «hoàn thiện».
 - **Đồng bộ mục tiêu (15/11/2026):** trục `ma_tran_muc_tieu` (mục tiêu → biến → câu hỏi → mục SAP → bảng giả, MT-01…MT-11) phải `khop`, hoặc phần còn mở nêu đúng vai (MT-08 = thống kê viên/PI duyệt công thức biến phái sinh) trước khi kết luận cổng — chi tiết `bien-so-nghien-cuu`, `thiet-ke-nghien-cuu` mục cùng ngày.
 - **Đồng bộ thiết kế (15/11/2026):** trục `chuan_bao_cao` (chuẩn chính + CROSS/RECORD theo nguồn dữ liệu, cùng một chuỗi ở G1/G2/SAP/đề cương), `mo_ta_thiet_ke` (nhãn «có phân tích» khi có mục tiêu phân tích · tuyển mẫu G2 ↔ cách thu thập G1 · phiên bản tiêu đề SAP) và `kiem_soat_sai_lech` (bảng sai lệch G1 ↔ phân tích SAP, `tools/doi_chieu_sai_lech_sap.py`) phải `khop`, hoặc phần còn mở nêu đúng vai (RECORD khi vừa thu mới vừa ghép HIS = PI quyết; phương pháp phân tích đề cương chưa nêu = thống kê viên chọn; đề cương thống nhất G10 cũ = lắp lại G10) trước khi kết luận cổng — chi tiết `thiet-ke-nghien-cuu` mục cùng ngày.

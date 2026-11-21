@@ -1,8 +1,9 @@
 """Tối ưu chi phí Claude API (21/11/2026 — bác sĩ: «Claude API hãy xử lí để tối ưu cho tôi»).
 
-Đo sổ chi phí 20–21/11: kiểm trích dẫn toàn văn + kiểm nội dung trích dẫn (gọi thường, độc lập từng lô) ≈ 38% chi phí;
-Batch API giảm 50% mọi token. Chế độ `--batch` phải cho KẾT QUẢ NHƯ GỌI THƯỜNG: cùng tham số, và yêu cầu nào batch trả
-lỗi / bị từ chối / cụt / JSON hỏng / bị huỷ vì quá giờ thì gửi lại thường (có dự phòng khi từ chối).
+Đo sổ chi phí 20–21/11: kiểm trích dẫn toàn văn (gọi thường, độc lập từng tài liệu) ≈ 22% chi phí; Batch API giảm 50%
+mọi token. (Kiểm nội dung trích dẫn A12 đã có chế độ Batch BẤT ĐỒNG BỘ riêng — `tests/test_a12_batch_20261121.py`.)
+Chế độ `--batch` của kiểm toàn văn phải cho KẾT QUẢ NHƯ GỌI THƯỜNG: cùng tham số, và yêu cầu nào batch trả lỗi / bị từ
+chối / cụt / JSON hỏng / bị huỷ vì quá giờ thì gửi lại thường (có dự phòng khi từ chối).
 Sổ chi phí cộng dồn theo công cụ cả tháng (trước chỉ giữ 200 lượt ⇒ hồ sơ chi phí chỉ phủ ~1/3 tháng).
 Không gọi mạng: mọi khách API là khách giả; sổ chi phí là tệp tạm.
 """
@@ -21,10 +22,8 @@ for _d in (REPO, REPO / "tools"):
         sys.path.insert(0, str(_d))
 
 import api_claude_nc as API  # noqa: E402
-import kiem_noi_dung_trich_dan as KND  # noqa: E402
 import kiem_trich_dan_toan_van as K  # noqa: E402
 
-from tests.test_api_claude_nghien_cuu_20261117 import ABS, _goc_tam, _tra_knd  # noqa: E402
 from tests.test_kiem_trich_dan_toan_van_20261121 import POLIT, S, _goc, _xml  # noqa: E402
 
 MODEL = "claude-sonnet-5-5"
@@ -211,47 +210,13 @@ def test_toan_van_khong_batch_giu_nguyen_goi_thuong(tmp_path, so):
     assert kh.lo == {} and len(kh.dong.goi) == 2
 
 
-# ── kiem_noi_dung_trich_dan --batch ───────────────────────────────────────────────────────────────────────────────
-def test_noi_dung_batch_lo_hong_gui_lai_thuong(tmp_path, so):
-    goc = _goc_tam(tmp_path)
-    kh = KhachLo(_tra_knd, loi={"lo_0001": "json"})
-    KND.main(["--study", "S1", "--goi-api", "--lo", "1", "--batch"], client=kh, lay=lambda p: ABS, goc=goc)
-    so_lo = len(kh.lo["msgbatch_0"])
-    assert so_lo >= 2
-    assert len(kh.dong.goi) == 1  # chỉ lô hỏng được gửi lại thường
-    assert kh.dong.goi[0]["messages"] == kh.lo["msgbatch_0"][1]["params"]["messages"]
-    md = (goc / "exports" / "S1" / "kiem_may_api" / "A12_KIEM_NOI_DUNG_S1.md").read_text(encoding="utf-8")
-    assert f"Batch (−50%): {so_lo - 1}/{so_lo} lô dùng được" in md
+@pytest.mark.parametrize("ten", ["kiem_noi_dung_trich_dan", "kiem_trich_dan_toan_van"])
+def test_help_hop_le_tren_python_moi(ten, capsys):
+    """21/11/2026: help «giảm 50% mọi khoản» — argparse đọc «% m» là ký tự định dạng; Python 3.14 kiểm help NGAY khi
+    dựng parser ⇒ công cụ sập lúc khởi động trên máy bác sĩ (CI 3.12 không thấy). Mọi «%» trong help phải là «%%»."""
+    import importlib
 
-
-def test_noi_dung_ket_qua_batch_bang_goi_thuong(tmp_path, so):
-    goc_a, goc_b = _goc_tam(tmp_path / "a"), _goc_tam(tmp_path / "b")
-    KND.main(["--study", "S1", "--goi-api", "--lo", "1", "--batch"], client=KhachLo(_tra_knd), lay=lambda p: ABS,
-             goc=goc_a)
-    KND.main(["--study", "S1", "--goi-api", "--lo", "1"], client=KhachLo(_tra_knd), lay=lambda p: ABS, goc=goc_b)
-
-    def ket(g):
-        d = json.loads((g / "exports" / "S1" / "kiem_may_api" / "A12_KIEM_NOI_DUNG_S1.json").read_text(
-            encoding="utf-8"))
-        return [(k["id"], k["so"], k["muc"]) for k in d["ket_qua"]]
-
-    assert ket(goc_a) == ket(goc_b) and ket(goc_a)
-
-
-def test_noi_dung_qua_gio_cho_batch_huy_roi_gui_thuong_du(tmp_path, so, monkeypatch):
-    """Cơ chế API khi cần giới hạn lệnh con 1.800 giây ⇒ `--cho-batch-toi-da`: quá giờ thì huỷ phần chưa xử lý (không
-    tính phí) và gửi thường đủ mọi lô — không bỏ sót cặp nào."""
-    monkeypatch.setattr(API, "CHU_KY_HOI_BATCH_GIAY", 0)
-    goc_a, goc_b = _goc_tam(tmp_path / "a"), _goc_tam(tmp_path / "b")
-    kh = KhachLo(_tra_knd, lan_dang_xu_ly=10**6, loi={f"lo_{i:04d}": "mat" for i in range(50)})
-    KND.main(["--study", "S1", "--goi-api", "--lo", "1", "--batch", "--cho-batch-toi-da", "0"], client=kh,
-             lay=lambda p: ABS, goc=goc_a)
-    assert kh.huy == ["msgbatch_0"] and len(kh.dong.goi) == len(kh.lo["msgbatch_0"])
-    KND.main(["--study", "S1", "--goi-api", "--lo", "1"], client=KhachLo(_tra_knd), lay=lambda p: ABS, goc=goc_b)
-
-    def ket(g):
-        d = json.loads((g / "exports" / "S1" / "kiem_may_api" / "A12_KIEM_NOI_DUNG_S1.json").read_text(
-            encoding="utf-8"))
-        return [(k["id"], k["so"], k["muc"]) for k in d["ket_qua"]]
-
-    assert ket(goc_a) == ket(goc_b)
+    m = importlib.import_module(ten)
+    with pytest.raises(SystemExit) as e:
+        m.main(["--help"])
+    assert e.value.code == 0 and "--batch" in capsys.readouterr().out
