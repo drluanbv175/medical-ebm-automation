@@ -88,6 +88,7 @@ _CHU_THICH_RE = re.compile(r"^\*\*(Bảng|Hình|Biểu đồ|Sơ đồ)\s+(\d+\.
 # ── Dữ kiện cơ bản của đề cương cũ (tên, chủ nhiệm, đơn vị, thời gian, mục tiêu, vai trò) — chỉ đọc, nguyên văn ───────
 
 _CHAM_RE = re.compile(r"^[\s.…_\-–]*$")
+_PHIEN_BAN_BIA_RE = re.compile(r"^\**\s*Phiên bản đề cương\s*:", re.I)
 
 
 @dataclass
@@ -96,6 +97,7 @@ class ThongTin:
     chu_nhiem: str = ""
     don_vi: str = ""
     thoi_gian: str = ""
+    phien_ban: str = ""
     muc_tieu: List[str] = field(default_factory=list)
     vai_tro: List[str] = field(default_factory=list)
 
@@ -146,6 +148,7 @@ def trich_thong_tin(dong: Sequence[str], cac_muc: Sequence[GB.Muc]) -> ThongTin:
     tt.chu_nhiem = _lay("chủ nhiệm")
     tt.don_vi = _lay("đơn vị chủ trì", "đơn vị thực hiện")
     tt.thoi_gian = _lay("thời gian")
+    tt.phien_ban = _lay("phiên bản")
     for mau, chi_than in ((r"^mục tiêu$", False), (r"^mục tiêu nghiên cứu$", True)):
         muc = GB.tim_muc(cac_muc, mau)
         if muc is None:
@@ -598,10 +601,22 @@ def chuyen(md: str, nam: Optional[int] = None) -> KetQua:
     if nam is None and m_nam:
         nam_bia = int(m_nam.group(0)) if int(m_nam.group(0)) <= datetime.now().year + 1 else nam_bia
     chu_nhiem = re.split(r"\s+[–-]\s+", mh.chu_nhiem)[0] if mh.chu_nhiem else CHAM
+    # Dòng «Phiên bản đề cương: …, ngày …» của bìa cũ — Hội đồng đòi trên mọi tài liệu nộp (trục de_cuong_nop DC-01 của
+    # nhat_quan_xuyen_cong). Bìa cũ đặt dòng này SAU đề mục đầu nên lần chuyển đầu làm rơi mất (đo C1a/BTM 21/11) ⇒ chép
+    # NGUYÊN VĂN lên bìa và bìa phụ; không có dòng đó thì lấy hàng «Phiên bản đề cương» của bảng thông tin chung.
+    dau_dvd = dvd.dong - 1 if dvd is not None else len(dong)
+    phien_ban = next((d.strip() for d in dong[:dau_dvd] if _PHIEN_BAN_BIA_RE.match(d.strip())), "")
+    if not phien_ban and mh.phien_ban:
+        phien_ban = f"**Phiên bản đề cương:** {mh.phien_ban}"
+    if not phien_ban:
+        kq.canh_bao.append("đề cương cũ không ghi «Phiên bản đề cương: …, ngày …» — Hội đồng đòi trên bìa; chủ nhiệm "
+                           "bổ sung")
+    dong_pb = [phien_ban, ""] if phien_ban else []
     bia = co_quan + ["", "**ĐỀ CƯƠNG NGHIÊN CỨU**", "", "**ĐỀ TÀI KHOA HỌC VÀ CÔNG NGHỆ CẤP BỆNH VIỆN**", "",
                      f"**{viet_hoa(ten_de_tai)}**", ""]
-    out = bia + [f"**Chủ nhiệm đề tài: {chu_nhiem}**", "", f"**THÀNH PHỐ HỒ CHÍ MINH, {nam_bia}**", "", "---", ""]
-    out += bia + ["**CHỦ NHIỆM ĐỀ TÀI**", "", "(Họ tên và chữ ký)", "", "", "**CHỦ NHIỆM KHOA**", "",
+    out = bia + [f"**Chủ nhiệm đề tài: {chu_nhiem}**", ""] + dong_pb + [f"**THÀNH PHỐ HỒ CHÍ MINH, {nam_bia}**", "",
+                                                                         "---", ""]
+    out += bia + dong_pb + ["**CHỦ NHIỆM ĐỀ TÀI**", "", "(Họ tên và chữ ký)", "", "", "**CHỦ NHIỆM KHOA**", "",
                   "(Họ tên và chữ ký)", "", "", "**VIỆN TRƯỞNG**", "", "(Họ tên và chữ ký — nếu Khoa trực thuộc Viện)",
                   "", f"**THÀNH PHỐ HỒ CHÍ MINH, {nam_bia}**", "", "---", ""]
     vai = mh.vai_tro or ["Chủ nhiệm đề tài"]

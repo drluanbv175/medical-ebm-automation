@@ -42,7 +42,8 @@ Luật (mỗi lỗi một dòng; rỗng = đạt):
   K14 (chỉ khi đề cương đã theo khuôn «Hướng dẫn viết đăng ký và báo cáo đề tài KH&CN cấp bệnh viện» — có
       «# CHƯƠNG 1.»; chuyển: `khuon_de_cuong_bvqy175.py`): đủ và đúng thứ tự cấu trúc mục II (danh sách cán bộ · mục lục
       · danh mục chữ viết tắt · danh mục bảng, biểu · đặt vấn đề · Chương 1–3 · tài liệu tham khảo · phụ lục); bìa có
-      «ĐỀ CƯƠNG NGHIÊN CỨU», «Địa danh, năm», bìa phụ có chữ ký Chủ nhiệm đề tài và Chủ nhiệm khoa; mục tiêu ở cuối đặt
+      «ĐỀ CƯƠNG NGHIÊN CỨU», «Phiên bản đề cương: …, ngày …», «Địa danh, năm», bìa phụ có chữ ký Chủ nhiệm đề tài và
+      Chủ nhiệm khoa; mục tiêu ở cuối đặt
       vấn đề, đánh số, in nghiêng đậm, tên đề tài trong ngoặc kép in đậm; tài liệu tham khảo xếp tiếng Việt trước rồi
       ngoại ngữ, mỗi nhóm theo ABC (tác giả Việt theo tên, nước ngoài theo họ, cơ quan theo chữ đầu), đánh số liền, ít
       nhất 50% xuất bản trong 10 năm; danh mục bảng, biểu khớp đúng tên bảng/hình có trong thân bài.
@@ -564,6 +565,8 @@ def loi_k14(md: str, nam: Optional[int] = None) -> List[str]:
     nam_bia = _DIA_DANH_NAM_RE.findall(bia)
     if not nam_bia:
         loi.append("K14 bìa thiếu dòng «Địa danh, năm» (in đậm)")
+    if not re.search(r"^\**\s*Phiên bản đề cương\s*:", bia, re.M | re.I):
+        loi.append("K14 bìa thiếu dòng «Phiên bản đề cương: …, ngày …» (Hội đồng đòi trên mọi tài liệu nộp)")
     if bia_chuan.count("CHỦ NHIỆM ĐỀ TÀI") < 2 or "CHỦ NHIỆM KHOA" not in bia_chuan:
         loi.append("K14 bìa phụ thiếu khối họ tên và chữ ký của Chủ nhiệm đề tài và Chủ nhiệm khoa")
     if nam is None:

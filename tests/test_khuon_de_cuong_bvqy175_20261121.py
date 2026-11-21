@@ -35,6 +35,8 @@ DE_CUONG_CU = """**BỘ QUỐC PHÒNG**
 
 # ĐỀ CƯƠNG NGHIÊN CỨU KHOA HỌC
 
+**Phiên bản đề cương:** 1.0, ngày ……/……/2026
+
 ## THÔNG TIN CHUNG VỀ ĐỀ TÀI
 
 | Mục | Nội dung |
@@ -251,6 +253,10 @@ def test_bia_bia_phu_danh_sach_can_bo(ket):
     assert dau.count("**ĐỀ CƯƠNG NGHIÊN CỨU**") == 2 and dau.count("**THÀNH PHỐ HỒ CHÍ MINH, 2026**") == 2
     assert "**Chủ nhiệm đề tài: BS. Người Thử**" in dau
     assert "**CHỦ NHIỆM KHOA**" in dau and "**VIỆN TRƯỞNG**" in dau
+    # dòng phiên bản của bìa cũ nằm SAU đề mục đầu — lần chuyển đầu làm rơi mất (đo C1a/BTM 21/11, trục DC-01)
+    bia_chinh = dau.split("\n---\n")[0]
+    assert "**Phiên bản đề cương:** 1.0, ngày ……/……/2026" in bia_chinh
+    assert dau.count("**Phiên bản đề cương:** 1.0, ngày ……/……/2026") == 2
     ds = _muc(ket.md, "# DANH SÁCH CÁC CÁN BỘ THAM GIA THỰC HIỆN ĐỀ TÀI")
     assert "| 1 | BS. Người Thử | Khoa Mẫu, Bệnh viện Mẫu 175 | Chủ nhiệm đề tài |" in ds
 
@@ -305,6 +311,7 @@ def test_k14_bo_qua_de_cuong_cau_truc_cu():
     (lambda m: m.replace("**ĐỀ CƯƠNG NGHIÊN CỨU**", "**TÀI LIỆU**"), "ĐỀ CƯƠNG NGHIÊN CỨU"),
     (lambda m: m.replace("**THÀNH PHỐ HỒ CHÍ MINH, 2026**", "**THÀNH PHỐ HỒ CHÍ MINH**"), "Địa danh, năm"),
     (lambda m: m.replace("**CHỦ NHIỆM KHOA**", "**TRƯỞNG PHÒNG**"), "Chủ nhiệm khoa"),
+    (lambda m: m.replace("**Phiên bản đề cương:** 1.0, ngày ……/……/2026\n", ""), "Phiên bản đề cương"),
     (lambda m: m.replace("“**Khảo sát thử tại Khoa Mẫu**”", "Khảo sát thử tại Khoa Mẫu"), "ngoặc kép"),
     (lambda m: m.replace("1. ***Xác định tỷ lệ hài lòng tại khoa mẫu.***", "1. Xác định tỷ lệ hài lòng tại khoa mẫu."),
      "chưa in nghiêng, đậm"),
@@ -530,3 +537,24 @@ def test_ho_so_dtcs_nguon_tro_phu_luc_khi_de_muc_khong_danh_so(ket):
     assert DT._muc_dc(nl, ds) == "Phụ lục C, mục «Nhân lực và phân công nhiệm vụ»"
     dt = next(h for h in ds if h["ten"] == "Đối tượng nghiên cứu")
     assert DT._muc_dc(dt, ds) == "mục 2.1"
+
+
+def test_phien_ban_tren_bia_qua_truc_de_cuong_nop(ket, tmp_path):
+    """Trục de_cuong_nop (DC-01) đọc «Phiên bản» trên bìa (trước «---» đầu tiên) — đề cương khuôn phải qua."""
+    import nhat_quan_xuyen_cong as NQ
+
+    ma = "de-tai-khuon-pb"
+    d = tmp_path / ma
+    d.mkdir()
+    (d / f"DE_CUONG_NOP_HOI_DONG_{ma}.md").write_text(ket.md, encoding="utf-8", newline="\n")
+    meta = {"gate_params": {"G1": {"protocol_version": "1.0"}, "G2": {"protocol_version": "1.0"}}}
+    k = NQ._truc_de_cuong_nop(d, ma, meta, "")
+    assert "chưa ghi phiên bản" not in str(k) and "bìa ghi phiên bản" not in str(k)
+    # bìa cũ không có dòng phiên bản nhưng bảng thông tin chung có ⇒ dựng dòng từ bảng
+    md = DE_CUONG_CU.replace("**Phiên bản đề cương:** 1.0, ngày ……/……/2026\n\n", "").replace(
+        "| Kinh phí | Tự túc |", "| Kinh phí | Tự túc |\n| Phiên bản đề cương | 1.1 – ngày ……/……/2026 |")
+    kq = K.chuyen(md, nam=2026)
+    assert "**Phiên bản đề cương:** 1.1 – ngày ……/……/2026" in kq.md.split("\n---\n")[0]
+    # không có ở đâu ⇒ cảnh báo, không bịa
+    kq2 = K.chuyen(DE_CUONG_CU.replace("**Phiên bản đề cương:** 1.0, ngày ……/……/2026\n\n", ""), nam=2026)
+    assert any("Phiên bản đề cương" in x for x in kq2.canh_bao) and "Phiên bản đề cương:" not in kq2.md

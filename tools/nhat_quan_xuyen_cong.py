@@ -1727,8 +1727,10 @@ def _truc_trich_dan(out_dir: Path, study: str, meta: Dict[str, Any]) -> Optional
         return _ket("trich_dan_tong_quan", ten, nguon, MUC_LECH_MEM, "; ".join(mem + can))
     if can:
         return _ket("trich_dan_tong_quan", ten, nguon, MUC_CAN_XEM, "; ".join(can))
+    thu_tu = ("thứ tự theo danh mục (khuôn BVQY175: TLTK xếp theo ngôn ngữ rồi ABC)"
+              if re.search(r"^# CHƯƠNG 1\.", dc or "", re.M) else "thứ tự Vancouver")
     return _ket("trich_dan_tong_quan", ten, nguon, MUC_KHOP,
-                "TLTK/danh mục khớp trích dẫn trong thân, thứ tự Vancouver, quyết định loại của chủ nhiệm và bản ghi "
+                f"TLTK/danh mục khớp trích dẫn trong thân, {thu_tu}, quyết định loại của chủ nhiệm và bản ghi "
                 "kiểm rút bài; nguồn dẫn ở văn bản cổng đều có trong danh mục")
 
 
