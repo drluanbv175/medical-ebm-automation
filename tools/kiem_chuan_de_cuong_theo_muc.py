@@ -84,6 +84,26 @@ PHAN: Dict[str, str] = {
     "phieu": r"PHIẾU (KHẢO SÁT|THU THẬP)|BỘ CÂU HỎI",
     "bang_bien": r"BẢNG BIẾN SỐ|MÃ HO[ÁA]",
     "danh_muc_ma": r"DANH MỤC MÃ",
+    # 21/11/2026 (12 chuẩn thêm, `tieu_chi_chuan_de_cuong.py`)
+    "dau": r"^ĐỀ CƯƠNG",  # khối mở đầu chứa tên đề tài; cộng với (bìa) trong `khoi_cua`
+    "can_thiep": r"(^|\.\s+)Can thiệp|nhóm chứng|nhóm so sánh",
+    "ngau_nhien": r"Ngẫu nhiên|giấu phân bổ|làm mù|Phân bổ",
+    "nhan_luc": r"Nhân lực|phân công|Tổ chức thực hiện|Nhóm nghiên cứu",
+    "tien_do": r"Tiến độ|KẾ HOẠCH THỰC HIỆN",
+    "tiep_can": r"Cách tiếp cận|thu thập dữ liệu định tính",
+    "nhom_nc": r"Nhóm nghiên cứu|phản tư|Người phỏng vấn|Nhân lực",
+    "giam_sat": r"Giám sát|An toàn|biến cố",
+    "tim_kiem": r"Chiến lược tìm|Nguồn (dữ liệu|thông tin)|tìm kiếm",
+    "phu_luc_tim": r"PHỤ LỤC.*(TÌM KIẾM|CHIẾN LƯỢC)",
+    "chon_nc": r"chọn lọc nghiên cứu|Lựa chọn nghiên cứu|Tiêu chuẩn lựa chọn nghiên cứu|Sàng lọc",
+    "trich_xuat": r"Trích xuất|Công cụ và kỹ thuật thu thập|Quy trình nghiên cứu|Biến số",
+    "nguy_co": r"nguy cơ sai lệch|Đánh giá chất lượng|Sai số|phân tích số liệu|phân tích thống kê",
+    "tong_hop": r"Tổng hợp|phân tích gộp|Xử lý và phân tích|phân tích số liệu",
+    "xet_nghiem": r"Xét nghiệm|tiêu chuẩn tham chiếu|chuẩn vàng",
+    "kinh_te": r"kinh tế|chi phí",
+    "trinh_bay_ca": r"Trình bày ca|Thông tin (người bệnh|bệnh nhân)|Ca lâm sàng|Bệnh sử",
+    "du_bao": r"Biến dự báo|Yếu tố dự báo|kết cục dự báo",
+    "tom_tat": r"^TÓM TẮT",
 }
 _DE_MUC_RE = re.compile(r"^(#{1,4})\s+(.*\S)\s*$", re.M)
 #: Mục phương pháp không lấy bằng chứng ở Đặt vấn đề/Tổng quan (vd «1.2. Công cụ đo lường…» của tổng quan KHÔNG phải
@@ -100,6 +120,7 @@ class Phan:
     dong_dau: int  # số dòng (1-based) của đề mục
     van: str
     chuong: str = ""  # tiêu đề cấp 1 bao ngoài (để loại Đặt vấn đề/Tổng quan khỏi mục phương pháp)
+    ten_de_tai: bool = False  # đề mục là TÊN ĐỀ TÀI (đứng trước Thông tin chung/Đặt vấn đề) — không phải một phần
 
 
 def tach_phan(md: str) -> List[Phan]:
@@ -118,6 +139,14 @@ def tach_phan(md: str) -> List[Phan]:
                 break
         ra.append(Phan(td, i + 1, "\n".join(dong[i:het]), chuong))
     dau = de_muc[0][0] if de_muc else len(dong)
+    # 21/11/2026: tên đề tài viết thành đề mục cấp 2 («## … THỬ NGHIỆM LÂM SÀNG NGẪU NHIÊN…», «… PHÂN TÍCH GỘP…») từng
+    # bị nhận là phần «Ngẫu nhiên hoá»/«Tổng hợp» của phương pháp. Đề mục cấp ≥ 2 đứng trước đề mục mở đầu đầu tiên
+    # là tên.
+    for p in ra:
+        if re.search(r"THÔNG TIN CHUNG|TÓM TẮT|ĐẶT VẤN ĐỀ|MỤC TIÊU|CHƯƠNG|DANH MỤC", p.tieu_de, re.IGNORECASE):
+            break
+        if not p.tieu_de.lstrip().upper().startswith("ĐỀ CƯƠNG") and p.chuong != p.tieu_de:
+            p.ten_de_tai = True
     ra.insert(0, Phan("(bìa)", 1, "\n".join(dong[:dau])))
     return ra
 
@@ -127,11 +156,16 @@ def khoi_cua(cac_phan: Sequence[Phan], khoa: Sequence[str]) -> List[Phan]:
     chon: List[Phan] = []
     for k in khoa:
         if k == "bia":
-            chon += [p for p in cac_phan if p.tieu_de == "(bìa)" or re.search(r"THÔNG TIN CHUNG|TÓM TẮT", p.tieu_de)]
+            # «^TÓM TẮT»: «PHỤ LỤC A. TÓM TẮT KẾ HOẠCH PHÂN TÍCH» KHÔNG phải bìa (21/11/2026 — từng làm SPIRIT 3a lấy
+            # bằng chứng «vai trò» từ bảng biến của phụ lục).
+            chon += [p for p in cac_phan if p.tieu_de == "(bìa)"
+                     or re.search(r"THÔNG TIN CHUNG|^TÓM TẮT", p.tieu_de, re.IGNORECASE)]
             continue
+        if k == "dau":
+            chon += [p for p in cac_phan if p.tieu_de == "(bìa)"]
         mau = re.compile(PHAN[k], re.IGNORECASE)
         mo_dau = k in _PHAN_MO_DAU
-        chon += [p for p in cac_phan if p.tieu_de != "(bìa)" and mau.search(p.tieu_de)
+        chon += [p for p in cac_phan if p.tieu_de != "(bìa)" and mau.search(p.tieu_de) and not p.ten_de_tai
                  and (mo_dau or not _CHUONG_MO_DAU.search(p.chuong))]
     ra: List[Phan] = []
     for p in sorted(chon, key=lambda x: (x.dong_dau, -len(x.van))):
@@ -166,6 +200,7 @@ class MucKiem:
     ap_dung_khi: Optional[str] = None
     ly_do_dieu_kien: str = ""
     cung_doan: bool = False  # mọi yếu tố phải cùng một đoạn văn hoặc một dòng bảng
+    chan: bool = True  # False = chuẩn chưa đối chiếu bảng gốc: mục thiếu chỉ báo `canh_bao`, không làm K17 đỏ
 
 
 @dataclass
@@ -175,7 +210,7 @@ class KetQua:
     chu_de: str
     tieu_chi: str
     muc_do: str
-    trang_thai: str  # dat · thieu · khong_ap_dung · chua_do · bao_cao
+    trang_thai: str  # dat · thieu · canh_bao · khong_ap_dung · chua_do · bao_cao
     bang_chung: List[str] = field(default_factory=list)
     thieu: List[str] = field(default_factory=list)
     vi_tri: List[str] = field(default_factory=list)
@@ -204,6 +239,14 @@ CUM = r"chọn mẫu cụm|mẫu cụm|gom cụm|nhiều giai đoạn|phân tầ
 LIEN_KET = r"liên kết (dữ liệu|cơ sở dữ liệu)|ghép nối (dữ liệu|cơ sở)|\blinkage\b"
 TRUC_TUYEN = r"khảo sát trực tuyến|phiếu (điện tử|trực tuyến)|Google Forms|SurveyMonkey|biểu mẫu (điện tử|trực tuyến)"
 THEO_DOI_DOC = r"theo dõi dọc|nhiều lần (đo|khảo sát)|khảo sát lặp lại"
+# Đánh giá kinh tế đầy đủ (CEA/CUA/CBA) ⇒ CHEERS 2022. Phân tích TÁC ĐỘNG NGÂN SÁCH (BIA) báo cáo theo ISPOR BIA GPP II
+# 2014 (PMID 24438712), KHÔNG theo CHEERS (agent kinh-te-y-te M7) — BIA đứng riêng ⇒ ⚪ cho tới khi có tiêu chí.
+KINH_TE = (r"chi phí[\s–-]*(hiệu quả|thoả dụng|thỏa dụng|lợi ích)|\bICER\b|\bQALY\b|\bDALY\b|tối thiểu hoá chi phí|"
+           r"\b(CEA|CUA|CBA)\b")
+TAC_DONG_NGAN_SACH = r"tác động ngân sách|\bBIA\b|budget impact"
+DINH_TINH_CP = (r"phỏng vấn sâu|thảo luận nhóm (tập trung|có trọng tâm)|nhóm tiêu điểm|focus group|phân tích chủ đề|"
+                r"mã ho[áa] chủ đề|thematic analysis")
+HON_HOP = r"phương pháp hỗn hợp|hỗn hợp (định tính|định lượng)|mixed[\s-]methods|cấu phần (định tính|định lượng)"
 
 _TK_STROBE = {"cross_sectional": "cat_ngang", "cohort": "thuan_tap", "case_control": "benh_chung"}
 
@@ -417,7 +460,7 @@ _RECORD_TIEU_CHI: Dict[str, tuple] = {
              "Nêu mức độ nhóm nghiên cứu được truy cập cơ sở dữ liệu dùng để tạo quần thể.",
              (_y("quyền truy cập dữ liệu", r"(quyền|được (cấp|phép)) truy cập|"
                                            r"truy xuất|người trích xuất|phân quyền"),)),
-    "12.2": (("quan_ly_dl", "phan_tich", "quy_trinh"), "bat_buoc", "Nêu phương pháp làm sạch dữ liệu.",
+    "12.2": (("quan_ly_dl", "phan_tich", "quy_trinh", "cong_cu"), "bat_buoc", "Nêu phương pháp làm sạch dữ liệu.",
              (_y("làm sạch dữ liệu", r"làm sạch|kiểm tra (logic|tính hợp lệ|phạm vi)|giá trị (ngoại lai|bất thường)|"
                                     r"trùng lặp"),)),
     "12.3": (("quan_ly_dl", "quy_trinh"), "bat_buoc", "Nêu loại liên kết dữ liệu (cá nhân/cơ sở) và cách đánh giá"
@@ -587,6 +630,11 @@ CHUAN_DIEU_KIEN: Tuple[Tuple[str, str, str], ...] = (
     ("RECORD 2015", DU_LIEU_THUONG_QUY, "dùng dữ liệu thu thập thường quy (HIS/hồ sơ bệnh án điện tử)"),
     ("CROSS 2021", KHAO_SAT, "khảo sát bằng bộ câu hỏi"),
     ("COSMIN 2021", (KHAO_SAT, CONG_CU_DO), "phát triển hoặc kiểm định bộ câu hỏi/thang đo"),
+    ("CHEERS 2022", KINH_TE, "có cấu phần đánh giá kinh tế y tế"),
+    ("COREQ 2007", DINH_TINH_CP, "có cấu phần định tính (phỏng vấn sâu/nhóm tiêu điểm)"),
+    ("SRQR 2014", DINH_TINH_CP, "có cấu phần định tính (phỏng vấn sâu/nhóm tiêu điểm)"),
+    ("GRAMMS 2008", HON_HOP, "kết hợp phương pháp định lượng và định tính"),
+    ("ISPOR BIA GPP II 2014", TAC_DONG_NGAN_SACH, "có phân tích tác động ngân sách"),
 )
 _KHONG_NGUOI_THAM_GIA = frozenset({"systematic_review"})
 NGUON_CHUAN: Dict[str, str] = {
@@ -594,6 +642,17 @@ NGUON_CHUAN: Dict[str, str] = {
     "RECORD 2015": "Benchimol EI et al. PLoS Med 2015;12(10):e1001885 (PMID 26440803)",
     "CROSS 2021": "Sharma A et al. J Gen Intern Med 2021;36(10):3179-3187 (PMID 33886027)",
     "COSMIN 2021": "Gagnier JJ et al. Qual Life Res 2021;30(8):2197-2218 (PMID 33818733)",
+    "SPIRIT 2025": "Chan AW et al. JAMA 2025;334(5):435-443 (PMID 40294593); E&E BMJ 2025 (PMID 40294956)",
+    "PRISMA-P 2015": "Moher D et al. Syst Rev 2015;4:1 (PMID 25554246)",
+    "STARD 2015": "Bossuyt PM et al. BMJ 2015;351:h5527 (PMID 26511519)",
+    "TRIPOD+AI 2024": "Collins GS et al. BMJ 2024;385:e078378 (PMID 38626948)",
+    "COREQ 2007": "Tong A et al. Int J Qual Health Care 2007;19(6):349-57 (PMID 17872937)",
+    "SRQR 2014": "O'Brien BC et al. Acad Med 2014;89(9):1245-51 (PMID 24979285)",
+    "GRAMMS 2008": "O'Cathain A et al. J Health Serv Res Policy 2008;13(2):92-8 (PMID 18416914)",
+    "SQUIRE 2.0": "Ogrinc G et al. BMJ Qual Saf 2016;25(12):986-992 (PMID 26369893)",
+    "CHEERS 2022": "Husereau D et al. BMJ 2022;376:e067975 (PMID 35017145)",
+    "TREND 2004": "Des Jarlais DC et al. Am J Public Health 2004;94(3):361-6 (PMID 14998794)",
+    "CARE 2013": "Gagnier JJ et al. J Med Case Rep 2013;7:223 (PMID 24228906)",
 }
 
 
@@ -637,12 +696,16 @@ def chuan_ap_dung(thiet_ke: str, md: str) -> List[Tuple[str, str]]:
     """[(tên chuẩn, lý do áp dụng)] cho thiết kế và nội dung đề cương."""
     ma = S.canonical_design_code(thiet_ke) or ""
     ra = [(c, f"thiết kế {ma}") for c in CHUAN_CO_SO.get(ma, ())]
+    if ma == "economic" and co_dieu_kien(TAC_DONG_NGAN_SACH, md) and not co_dieu_kien(KINH_TE, md):
+        ra = [("ISPOR BIA GPP II 2014", "thiết kế economic — phân tích tác động ngân sách (không dùng CHEERS)")]
     if not ra:
         ra.append(("(không xác định)", f"mã thiết kế «{thiet_ke}» ngoài bảng chuẩn"))
     if ma in _KHONG_NGUOI_THAM_GIA:
         # Tổng quan hệ thống: dữ liệu là các nghiên cứu đã công bố — không có người tham gia, không dữ liệu thường quy.
         return ra
     for ten, mau, ly_do in CHUAN_DIEU_KIEN:
+        if ten in {c for c, _ in ra}:
+            continue  # chuẩn cơ sở của thiết kế đã có (vd COREQ cho thiết kế định tính)
         if all(co_dieu_kien(m, md) for m in ((mau,) if isinstance(mau, str) else mau)):
             ra.append((ten, ly_do))
     ra.append(("Việt Nam", "mọi đề tài có người tham gia thực hiện tại Việt Nam"))
@@ -651,7 +714,7 @@ def chuan_ap_dung(thiet_ke: str, md: str) -> List[Tuple[str, str]]:
 
 # ───────────────────────────── chấm ─────────────────────────────
 _PHU_DINH_TRUOC = re.compile(r"\b(không|chưa|ngoài phạm vi)\b[^.;:|]{0,60}$", re.IGNORECASE)
-_PHU_DINH_SAU = re.compile(r"^[^.;|]{0,160}(không áp dụng|ngoài phạm vi)", re.IGNORECASE)
+_PHU_DINH_SAU = re.compile(r"^[^.;|]{0,160}(không áp dụng|ngoài phạm vi|không thuộc phạm vi)", re.IGNORECASE)
 
 
 def co_dieu_kien(mau: str, md: str) -> bool:
@@ -728,7 +791,7 @@ def cham_muc(muc: MucKiem, md: str, cac_phan: Sequence[Phan]) -> KetQua:
     khoi = khoi_cua(cac_phan, muc.phan)
     kq.vi_tri = [f"dòng {p.dong_dau}: {p.tieu_de}" for p in khoi]
     if not khoi:
-        kq.trang_thai = "thieu"
+        kq.trang_thai = "thieu" if muc.chan else "canh_bao"
         kq.thieu = [f"không thấy phần đề cương cho mục này ({', '.join(muc.phan)})"]
         return kq
     can = [yt for yt in muc.yeu_to if not (yt.khi and not co_dieu_kien(yt.khi, md))]
@@ -752,7 +815,9 @@ def cham_muc(muc: MucKiem, md: str, cac_phan: Sequence[Phan]) -> KetQua:
             bc = _tim(yt.mau, don_vi_dm if yt.de_muc else don_vi)
             (kq.bang_chung.append(f"{yt.ten} — {bc}") if bc else kq.thieu.append(yt.ten))
     if kq.thieu:
-        kq.trang_thai = "thieu"
+        kq.trang_thai = "thieu" if muc.chan else "canh_bao"
+        if not muc.chan:
+            kq.ly_do = "chuẩn chưa đối chiếu bảng gốc — chỉ cảnh báo, không chặn"
     return kq
 
 
@@ -767,7 +832,9 @@ def danh_sach_muc(chuan: str, thiet_ke: str) -> Optional[List[MucKiem]]:
         return _muc_bang("CROSS 2021", _CROSS_TIEU_CHI)
     if chuan == "Việt Nam":
         return _muc_bang("Việt Nam", _VN_TIEU_CHI)
-    return None
+    import tieu_chi_chuan_de_cuong as TC  # noqa: PLC0415 — nạp trễ: mô-đun đó import từ tệp này
+
+    return TC.danh_sach_muc_them(chuan)
 
 
 def doi_chieu(md: str, thiet_ke: str) -> Dict[str, object]:
@@ -832,15 +899,18 @@ def main(argv: Optional[List[str]] = None) -> int:
     print(f"Đối chiếu chuẩn theo mục — {a.study} (thiết kế: {thiet_ke or 'chưa ghi'})")
     for ten, ly_do in kq["chuan"]:
         nhom = [r for r in kqs if r.chuan == ten]
-        dem = {t: sum(r.trang_thai == t for r in nhom) for t in ("dat", "thieu", "khong_ap_dung", "bao_cao")}
+        dem = {t: sum(r.trang_thai == t for r in nhom)
+               for t in ("dat", "thieu", "canh_bao", "khong_ap_dung", "bao_cao")}
         if ten in dict(kq["chua_do"]):
             print(f"  ⚪ {ten} — {ly_do}: CHƯA ĐO ĐƯỢC (chưa có tiêu chí theo mục)")
             continue
-        dau = "✓" if not dem["thieu"] else "✗"
-        print(f"  {dau} {ten} — {ly_do}: đạt {dem['dat']} · thiếu {dem['thieu']} · không áp dụng {dem['khong_ap_dung']}"
-              f" · chỉ áp khi viết bài báo {dem['bao_cao']}")
-    for r in thieu:
-        print(f"\n✗ {r.chuan} {r.ma} ({r.chu_de}) — {r.tieu_chi}\n    thiếu: {'; '.join(r.thieu)}")
+        dau = "✗" if dem["thieu"] else ("⚠" if dem["canh_bao"] else "✓")
+        canh = f" · cảnh báo {dem['canh_bao']} (chưa đối chiếu bảng gốc, không chặn)" if dem["canh_bao"] else ""
+        print(f"  {dau} {ten} — {ly_do}: đạt {dem['dat']} · thiếu {dem['thieu']}{canh} · không áp dụng "
+              f"{dem['khong_ap_dung']} · chỉ áp khi viết bài báo {dem['bao_cao']}")
+    for r in thieu + [r for r in kqs if r.trang_thai == "canh_bao"]:
+        dau = "✗" if r.trang_thai == "thieu" else "⚠"
+        print(f"\n{dau} {r.chuan} {r.ma} ({r.chu_de}) — {r.tieu_chi}\n    thiếu: {'; '.join(r.thieu)}")
         if r.vi_tri:
             print(f"    đã tìm ở: {' | '.join(r.vi_tri[:4])}")
         for b in r.bang_chung:
