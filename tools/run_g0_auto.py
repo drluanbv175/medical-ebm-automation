@@ -1286,7 +1286,8 @@ def guardrail_check_g0(artifact: str, results: dict) -> dict:
     pii_patterns = ["tên bệnh nhân", "họ tên", "ngày sinh", "cccd", "cmnd",
                     "căn cước", "số bhyt", "bảo hiểm y tế số",
                     "địa chỉ nhà", "số điện thoại"]
-    pii_hits = [p for p in pii_patterns if p in artifact_normalized]
+    import pii_van_ban as _PVN  # noqa: PLC0415 — nhãn khớp theo ranh giới từ (mã băm hex chứa «cccd», 21/11/2026)
+    pii_hits = [p for p in pii_patterns if _PVN.co_nhan(artifact_normalized, p)]
     # 15/11/2026: «số hồ sơ» chỉ là PII khi kèm giá trị — cùng luật với G1 (pii_van_ban.nhan_so_ho_so).
     import pii_van_ban as _PV  # noqa: PLC0415
     if _PV.nhan_so_ho_so(artifact_normalized):
