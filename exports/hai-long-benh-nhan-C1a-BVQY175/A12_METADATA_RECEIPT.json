@@ -1,6 +1,6 @@
 {
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "checked_at_utc": "2026-11-20T10:51:05.256337+00:00",
+  "checked_at_utc": "2026-11-21T13:58:57.739180+00:00",
   "pmids_checked": [
     "12210625",
     "15485730",
@@ -16,6 +16,7 @@
     "26440803",
     "26653405",
     "26776715",
+    "27094345",
     "27881078",
     "28690831",
     "29550964",
@@ -43,7 +44,7 @@
     "8970487",
     "9762873"
   ],
-  "pmids_hash": "6ad2d7f7853fce769bd374a5a9911910e5ac8160666a392b8bafe353c3a7a841",
+  "pmids_hash": "c5b4d191fcf18d63f8fc084de89a134c698f98352e8cf687779f0a3f830eab6a",
   "all_resolved": true,
   "metadata": {
     "12210625": {
@@ -311,6 +312,23 @@
       "volume": "26",
       "issue": "3",
       "pages": "499-510"
+    },
+    "27094345": {
+      "status": "resolved",
+      "title": "Appraising convergent validity of patient-reported outcome measures in systematic reviews: constructing hypotheses and interpreting outcomes.",
+      "authors": "Abma IL, Rovers M, van der Wees PJ",
+      "journal": "BMC research notes",
+      "year": "2016",
+      "doi": "10.1186/s13104-016-2034-2",
+      "n_authors": 3,
+      "authors_6": [
+        "Abma IL",
+        "Rovers M",
+        "van der Wees PJ"
+      ],
+      "journal_abbr": "BMC Res Notes",
+      "volume": "9",
+      "pages": "226"
     },
     "27881078": {
       "status": "resolved",
@@ -824,5 +842,5 @@
       "pages": "809-16"
     }
   },
-  "receipt_signature": "v4:shared:0c74bba7360642f6b38df345dede7812ed147367d8982c3cd76ee110a3b41350"
+  "receipt_signature": "v4:shared:4e2b6f3d1fa62be6525a403d54cc302a126140d3a5705331120bf0ed3f201287"
 }

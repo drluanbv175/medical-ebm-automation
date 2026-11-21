@@ -1,7 +1,7 @@
 {
   "schema": "de_tai/toan_van_tltk/v1",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "luc": "2026-11-21T11:42:34",
+  "luc": "2026-11-21T21:06:58",
   "nguoi_do": "tools/nap_endnote_de_tai.py --ghi-bien-nhan-toan-van (đo trên thư viện EndNote thật)",
   "tai_lieu": [
     "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md"
@@ -9,82 +9,6 @@
   "muc": [
     {
       "so": 1,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "van:e1e98d62ccd1bc7f"
-      ],
-      "toan_van": false,
-      "nguon": null,
-      "tep": null,
-      "lan_da_thu": [
-        {
-          "lan": "nguon_chinh_thuc",
-          "ngay": "2026-11-20",
-          "ket_qua": "Bác sĩ đồng ý tải (20/11). Tìm bản chính thức: không có PDF trên moh.gov.vn/kcb.vn; trang medinet.gov.vn đã gỡ (HTTP 404); bản trên syt.bacgiang.gov.vn không kết nối được từ mạng hiện tại (No route to host — nghi do VPN)"
-        }
-      ]
-    },
-    {
-      "so": 2,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1177/20551029211015117",
-        "pmid:34017606"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 3,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1371/journal.pone.0235333",
-        "pmid:32584904"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 4,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1371/journal.pone.0223723",
-        "pmid:31703089"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 5,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1080/00185868.2021.1969871",
-        "pmid:34445940"
-      ],
-      "toan_van": false,
-      "nguon": null,
-      "tep": null,
-      "lan_da_thu": [
-        {
-          "lan": "trinh_duyet",
-          "ngay": "2026-11-18",
-          "ket_qua": "T&F Hospital Topics: trang «Get Access/Purchase», không có vùng thân bài (.hlFld-Fulltext) — phiên 20261118-193655 (TLTK 5 C1a)"
-        },
-        {
-          "lan": "truy_cap_mo",
-          "ngay": "2026-11-18",
-          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
-        }
-      ]
-    },
-    {
-      "so": 6,
       "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
       "khoa": [
         "doi:10.51298/vmj.v540i1.10302"
@@ -101,7 +25,41 @@
       ]
     },
     {
-      "so": 7,
+      "so": 2,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "van:e1e98d62ccd1bc7f"
+      ],
+      "toan_van": false,
+      "nguon": null,
+      "tep": null,
+      "lan_da_thu": [
+        {
+          "lan": "nguon_chinh_thuc",
+          "ngay": "2026-11-20",
+          "ket_qua": "Bác sĩ đồng ý tải (20/11). Tìm bản chính thức: không có PDF trên moh.gov.vn/kcb.vn; trang medinet.gov.vn đã gỡ (HTTP 404); bản trên syt.bacgiang.gov.vn không kết nối được từ mạng hiện tại (No route to host — nghi do VPN)"
+        }
+      ]
+    },
+    {
+      "so": 3,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "van:e0bf9f7a76681280"
+      ],
+      "toan_van": false,
+      "nguon": null,
+      "tep": null,
+      "lan_da_thu": [
+        {
+          "lan": "nguon_chinh_thuc",
+          "ngay": "2026-11-20",
+          "ket_qua": "Bác sĩ đồng ý tải (20/11). Tìm bản chính thức: không có trên moh.gov.vn/kcb.vn; medinet.gov.vn HTTP 404; bản .doc ở soyte.tuyenquang.gov.vn — trang báo «Account Suspended»"
+        }
+      ]
+    },
+    {
+      "so": 4,
       "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
       "khoa": [
         "doi:10.52163/yhc.v64i6.841"
@@ -118,7 +76,29 @@
       ]
     },
     {
-      "so": 8,
+      "so": 5,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.51403/0868-2836/2021/78"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 6,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.51298/vmj.v549i2.13771"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 7,
       "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
       "khoa": [
         "doi:10.52163/yhc.v67icd5.5018"
@@ -135,21 +115,44 @@
       ]
     },
     {
+      "so": 8,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.52163/yhc.v67i7.5934"
+      ],
+      "toan_van": false,
+      "nguon": null,
+      "tep": null,
+      "lan_da_thu": [
+        {
+          "lan": "truy_cap_mo",
+          "ngay": "2026-11-18",
+          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
+        }
+      ]
+    },
+    {
       "so": 9,
       "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
       "khoa": [
-        "doi:10.52163/yhc.v64i1.573"
+        "doi:10.52163/yhc.v66i1.1940"
       ],
-      "toan_van": true,
-      "nguon": "endnote",
+      "toan_van": false,
+      "nguon": null,
       "tep": null,
-      "lan_da_thu": []
+      "lan_da_thu": [
+        {
+          "lan": "truy_cap_mo",
+          "ngay": "2026-11-18",
+          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
+        }
+      ]
     },
     {
       "so": 10,
       "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
       "khoa": [
-        "doi:10.51298/vmj.v549i2.13771"
+        "doi:10.52163/yhc.v64i1.573"
       ],
       "toan_van": true,
       "nguon": "endnote",
@@ -177,332 +180,16 @@
       "so": 12,
       "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
       "khoa": [
-        "doi:10.51403/0868-2836/2021/78"
+        "doi:10.1186/s13104-016-2034-2",
+        "pmid:27094345"
       ],
       "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
+      "nguon": "toan_van_tltk",
+      "tep": "PMID-27094345.pdf",
       "lan_da_thu": []
     },
     {
       "so": 13,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.52163/yhc.v66i1.1940"
-      ],
-      "toan_van": false,
-      "nguon": null,
-      "tep": null,
-      "lan_da_thu": [
-        {
-          "lan": "truy_cap_mo",
-          "ngay": "2026-11-18",
-          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
-        }
-      ]
-    },
-    {
-      "so": 14,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1111/1475-6773.13187",
-        "pmid:31218671"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 15,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "van:e0bf9f7a76681280"
-      ],
-      "toan_van": false,
-      "nguon": null,
-      "tep": null,
-      "lan_da_thu": [
-        {
-          "lan": "nguon_chinh_thuc",
-          "ngay": "2026-11-20",
-          "ket_qua": "Bác sĩ đồng ý tải (20/11). Tìm bản chính thức: không có trên moh.gov.vn/kcb.vn; medinet.gov.vn HTTP 404; bản .doc ở soyte.tuyenquang.gov.vn — trang báo «Account Suspended»"
-        }
-      ]
-    },
-    {
-      "so": 16,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.3389/frhs.2026.1844842",
-        "pmid:42625778"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 17,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.3389/ijph.2022.1605055",
-        "pmid:36439278"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 18,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.3390/healthcare10101945",
-        "pmid:36292392"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 19,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1002/hsr2.73018",
-        "pmid:42582692"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 20,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1108/ijhcqa-07-2025-0100",
-        "pmid:41645935"
-      ],
-      "toan_van": false,
-      "nguon": null,
-      "tep": null,
-      "lan_da_thu": [
-        {
-          "lan": "truy_cap_mo",
-          "ngay": "2026-11-18",
-          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
-        }
-      ]
-    },
-    {
-      "so": 21,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1016/j.jhqr.2021.04.004",
-        "pmid:34053882"
-      ],
-      "toan_van": false,
-      "nguon": null,
-      "tep": null,
-      "lan_da_thu": [
-        {
-          "lan": "trinh_duyet",
-          "ngay": "2026-11-18",
-          "ket_qua": "ScienceDirect (Tufts): /pdfft chuyển về /abs, «Article preview», không có thân bài — gói thuê bao không phủ J Healthc Qual Res (TLTK 21 C1a) — phiên 20261118-193655"
-        },
-        {
-          "lan": "truy_cap_mo",
-          "ngay": "2026-11-18",
-          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
-        }
-      ]
-    },
-    {
-      "so": 22,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.3402/meo.v18i0.21747",
-        "pmid:23883565"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 23,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.3390/ijerph17197070",
-        "pmid:32992600"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 24,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1177/00469580251371387",
-        "pmid:40995744"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 25,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1136/bmjopen-2024-093501",
-        "pmid:40295132"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 26,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.7759/cureus.77345",
-        "pmid:39944421"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 27,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1371/journal.pone.0239306",
-        "pmid:32946537"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 28,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.12688/f1000research.11045.3",
-        "pmid:28690831"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 29,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.52163/yhc.v67i7.5934"
-      ],
-      "toan_van": false,
-      "nguon": null,
-      "tep": null,
-      "lan_da_thu": [
-        {
-          "lan": "truy_cap_mo",
-          "ngay": "2026-11-18",
-          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
-        }
-      ]
-    },
-    {
-      "so": 30,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1002/hsr2.70868",
-        "pmid:40432693"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 31,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1016/j.jclinepi.2007.11.008",
-        "pmid:18313558"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 32,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1007/s11606-021-06737-1",
-        "pmid:33886027"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 33,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1371/journal.pmed.1001885",
-        "pmid:26440803"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 34,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "van:6d1c1661af7849ef"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 35,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1093/ije/dyl129"
-      ],
-      "toan_van": false,
-      "nguon": null,
-      "tep": null,
-      "lan_da_thu": [
-        {
-          "lan": "truy_cap_mo",
-          "ngay": "2026-11-18",
-          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
-        },
-        {
-          "lan": "trinh_duyet",
-          "ngay": "2026-11-18",
-          "ket_qua": "OUP IJE 2006: redirectedFrom=fulltext, «You do not currently have access» — IP VPN hôm nay không được nhận thuê bao tổ chức (TLTK 35 C1a) — phiên 20261118-193655"
-        }
-      ]
-    },
-    {
-      "so": 36,
       "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
       "khoa": [
         "doi:10.1016/j.jclinepi.2003.12.013",
@@ -514,7 +201,94 @@
       "lan_da_thu": []
     },
     {
-      "so": 37,
+      "so": 14,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1177/23743735221079144",
+        "pmid:35155757"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 15,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1371/journal.pmed.1001885",
+        "pmid:26440803"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 16,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1016/s0895-4356(98)00066-3",
+        "pmid:9762873"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 17,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1037/0033-2909.88.3.588"
+      ],
+      "toan_van": false,
+      "nguon": null,
+      "tep": null,
+      "lan_da_thu": [
+        {
+          "lan": "truy_cap_mo",
+          "ngay": "2026-11-18",
+          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
+        }
+      ]
+    },
+    {
+      "so": 18,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1177/0049124192021002005"
+      ],
+      "toan_van": false,
+      "nguon": null,
+      "tep": null,
+      "lan_da_thu": [
+        {
+          "lan": "truy_cap_mo",
+          "ngay": "2026-11-18",
+          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
+        },
+        {
+          "lan": "trinh_duyet",
+          "ngay": "2026-11-18",
+          "ket_qua": "SAGE Sociol Methods Res 1992: «Get access/purchase» — không quyền (TLTK 48 C1a) — phiên 20261118-193655"
+        }
+      ]
+    },
+    {
+      "so": 19,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1111/1475-6773.13187",
+        "pmid:31218671"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 20,
       "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
       "khoa": [
         "doi:10.1191/1740774505cn071oa",
@@ -542,54 +316,65 @@
       ]
     },
     {
-      "so": 38,
+      "so": 21,
       "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
       "khoa": [
-        "doi:10.1002/sim.4780122404",
-        "pmid:8134732"
+        "doi:10.3389/frhs.2026.1844842",
+        "pmid:42625778"
       ],
       "toan_van": true,
       "nguon": "endnote",
       "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 22,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1136/bmjopen-2024-093501",
+        "pmid:40295132"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 23,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.3389/ijph.2022.1605055",
+        "pmid:36439278"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 24,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1093/ije/dyl129"
+      ],
+      "toan_van": false,
+      "nguon": null,
+      "tep": null,
       "lan_da_thu": [
-        {
-          "lan": "trinh_duyet",
-          "ngay": "2026-11-10",
-          "ket_qua": "Wiley chuyển /doi/full → /doi/abs, vùng article chỉ 1736 ký tự (chỉ tóm tắt) — không quyền toàn văn (lượt 14, 10/11)"
-        },
         {
           "lan": "truy_cap_mo",
           "ngay": "2026-11-18",
           "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
+        },
+        {
+          "lan": "trinh_duyet",
+          "ngay": "2026-11-18",
+          "ket_qua": "OUP IJE 2006: redirectedFrom=fulltext, «You do not currently have access» — IP VPN hôm nay không được nhận thuê bao tổ chức (TLTK 35 C1a) — phiên 20261118-193655"
         }
       ]
     },
     {
-      "so": 39,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1016/s0895-4356(96)00236-3",
-        "pmid:8970487"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 40,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1186/s12874-016-0267-3",
-        "pmid:27881078"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 41,
+      "so": 25,
       "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
       "khoa": [
         "doi:10.1207/s15327906mbr2603_7",
@@ -617,162 +402,7 @@
       ]
     },
     {
-      "so": 42,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1002/nur.20199",
-        "pmid:17654487"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": [
-        {
-          "lan": "trinh_duyet",
-          "ngay": "2026-11-10",
-          "ket_qua": "Wiley chuyển /doi/full → /doi/abs, vùng article chỉ 1338 ký tự (chỉ tóm tắt) — không quyền toàn văn (lượt 14, 10/11)"
-        },
-        {
-          "lan": "truy_cap_mo",
-          "ngay": "2026-11-18",
-          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
-        }
-      ]
-    },
-    {
-      "so": 43,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1016/j.jclinepi.2010.02.006",
-        "pmid:20494804"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 44,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1007/s11136-018-1829-0",
-        "pmid:29550964"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 45,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1016/j.jclinepi.2006.03.012",
-        "pmid:17161752"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 46,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1080/10705519909540118"
-      ],
-      "toan_van": false,
-      "nguon": null,
-      "tep": null,
-      "lan_da_thu": [
-        {
-          "lan": "truy_cap_mo",
-          "ngay": "2026-11-18",
-          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
-        },
-        {
-          "lan": "trinh_duyet",
-          "ngay": "2026-11-18",
-          "ket_qua": "T&F Struct Equ Modeling 1999: /doi/full chuyển /doi/abs, /doi/pdf trả trang HTML 203 KB (không phải PDF) — không quyền (TLTK 46 C1a) — phiên 20261118-193655"
-        }
-      ]
-    },
-    {
-      "so": 47,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1037/0033-2909.88.3.588"
-      ],
-      "toan_van": false,
-      "nguon": null,
-      "tep": null,
-      "lan_da_thu": [
-        {
-          "lan": "truy_cap_mo",
-          "ngay": "2026-11-18",
-          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
-        }
-      ]
-    },
-    {
-      "so": 48,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1177/0049124192021002005"
-      ],
-      "toan_van": false,
-      "nguon": null,
-      "tep": null,
-      "lan_da_thu": [
-        {
-          "lan": "truy_cap_mo",
-          "ngay": "2026-11-18",
-          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
-        },
-        {
-          "lan": "trinh_duyet",
-          "ngay": "2026-11-18",
-          "ket_qua": "SAGE Sociol Methods Res 1992: «Get access/purchase» — không quyền (TLTK 48 C1a) — phiên 20261118-193655"
-        }
-      ]
-    },
-    {
-      "so": 49,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1177/23743735221079144",
-        "pmid:35155757"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 50,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.1016/s0895-4356(98)00066-3",
-        "pmid:9762873"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 51,
-      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
-      "khoa": [
-        "doi:10.18637/jss.v009.i08"
-      ],
-      "toan_van": true,
-      "nguon": "endnote",
-      "tep": null,
-      "lan_da_thu": []
-    },
-    {
-      "so": 52,
+      "so": 26,
       "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
       "khoa": [
         "doi:10.1002/sim.1047",
@@ -795,7 +425,64 @@
       ]
     },
     {
-      "so": 53,
+      "so": 27,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1080/10705519909540118"
+      ],
+      "toan_van": false,
+      "nguon": null,
+      "tep": null,
+      "lan_da_thu": [
+        {
+          "lan": "truy_cap_mo",
+          "ngay": "2026-11-18",
+          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
+        },
+        {
+          "lan": "trinh_duyet",
+          "ngay": "2026-11-18",
+          "ket_qua": "T&F Struct Equ Modeling 1999: /doi/full chuyển /doi/abs, /doi/pdf trả trang HTML 203 KB (không phải PDF) — không quyền (TLTK 46 C1a) — phiên 20261118-193655"
+        }
+      ]
+    },
+    {
+      "so": 28,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1371/journal.pone.0235333",
+        "pmid:32584904"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 29,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1016/j.jhqr.2021.04.004",
+        "pmid:34053882"
+      ],
+      "toan_van": false,
+      "nguon": null,
+      "tep": null,
+      "lan_da_thu": [
+        {
+          "lan": "trinh_duyet",
+          "ngay": "2026-11-18",
+          "ket_qua": "ScienceDirect (Tufts): /pdfft chuyển về /abs, «Article preview», không có thân bài — gói thuê bao không phủ J Healthc Qual Res (TLTK 21 C1a) — phiên 20261118-193655"
+        },
+        {
+          "lan": "truy_cap_mo",
+          "ngay": "2026-11-18",
+          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
+        }
+      ]
+    },
+    {
+      "so": 30,
       "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
       "khoa": [
         "doi:10.1037/a0020761",
@@ -813,25 +500,65 @@
       ]
     },
     {
-      "so": 54,
+      "so": 31,
       "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
       "khoa": [
-        "doi:10.1146/annurev-publhealth-032315-021402",
-        "pmid:26653405"
+        "doi:10.1001/jama.2021.14075",
+        "pmid:34546296"
       ],
-      "toan_van": false,
-      "nguon": null,
+      "toan_van": true,
+      "nguon": "endnote",
       "tep": null,
-      "lan_da_thu": [
-        {
-          "lan": "truy_cap_mo",
-          "ngay": "2026-11-18",
-          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
-        }
-      ]
+      "lan_da_thu": []
     },
     {
-      "so": 55,
+      "so": 32,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.3390/ijerph17197070",
+        "pmid:32992600"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 33,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.18637/jss.v009.i08"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 34,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "van:6d1c1661af7849ef"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 35,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.7759/cureus.77345",
+        "pmid:39944421"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 36,
       "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
       "khoa": [
         "doi:10.1037/1082-989x.12.1.23",
@@ -849,11 +576,11 @@
       ]
     },
     {
-      "so": 56,
+      "so": 37,
       "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
       "khoa": [
-        "doi:10.1001/jama.2021.14075",
-        "pmid:34546296"
+        "doi:10.1016/j.jclinepi.2010.02.006",
+        "pmid:20494804"
       ],
       "toan_van": true,
       "nguon": "endnote",
@@ -861,7 +588,125 @@
       "lan_da_thu": []
     },
     {
-      "so": 57,
+      "so": 38,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.3390/healthcare10101945",
+        "pmid:36292392"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 39,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1371/journal.pone.0239306",
+        "pmid:32946537"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 40,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1016/s0895-4356(96)00236-3",
+        "pmid:8970487"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 41,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1002/nur.20199",
+        "pmid:17654487"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": [
+        {
+          "lan": "trinh_duyet",
+          "ngay": "2026-11-10",
+          "ket_qua": "Wiley chuyển /doi/full → /doi/abs, vùng article chỉ 1338 ký tự (chỉ tóm tắt) — không quyền toàn văn (lượt 14, 10/11)"
+        },
+        {
+          "lan": "truy_cap_mo",
+          "ngay": "2026-11-18",
+          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
+        }
+      ]
+    },
+    {
+      "so": 42,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1177/20551029211015117",
+        "pmid:34017606"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 43,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1002/9780470316696"
+      ],
+      "toan_van": false,
+      "nguon": null,
+      "tep": null,
+      "lan_da_thu": [
+        {
+          "lan": "truy_cap_mo",
+          "ngay": "2026-11-18",
+          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
+        }
+      ]
+    },
+    {
+      "so": 44,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1007/s11606-021-06737-1",
+        "pmid:33886027"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 45,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1108/ijhcqa-07-2025-0100",
+        "pmid:41645935"
+      ],
+      "toan_van": false,
+      "nguon": null,
+      "tep": null,
+      "lan_da_thu": [
+        {
+          "lan": "truy_cap_mo",
+          "ngay": "2026-11-18",
+          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
+        }
+      ]
+    },
+    {
+      "so": 46,
       "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
       "khoa": [
         "doi:10.1136/bmj.b2393",
@@ -873,15 +718,182 @@
       "lan_da_thu": []
     },
     {
-      "so": 58,
+      "so": 47,
       "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
       "khoa": [
-        "doi:10.1002/9780470316696"
+        "doi:10.1016/j.jclinepi.2006.03.012",
+        "pmid:17161752"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 48,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1007/s11136-018-1829-0",
+        "pmid:29550964"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 49,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1080/00185868.2021.1969871",
+        "pmid:34445940"
       ],
       "toan_van": false,
       "nguon": null,
       "tep": null,
       "lan_da_thu": [
+        {
+          "lan": "trinh_duyet",
+          "ngay": "2026-11-18",
+          "ket_qua": "T&F Hospital Topics: trang «Get Access/Purchase», không có vùng thân bài (.hlFld-Fulltext) — phiên 20261118-193655 (TLTK 5 C1a)"
+        },
+        {
+          "lan": "truy_cap_mo",
+          "ngay": "2026-11-18",
+          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
+        }
+      ]
+    },
+    {
+      "so": 50,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1002/hsr2.70868",
+        "pmid:40432693"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 51,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1002/hsr2.73018",
+        "pmid:42582692"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 52,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.3402/meo.v18i0.21747",
+        "pmid:23883565"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 53,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1371/journal.pone.0223723",
+        "pmid:31703089"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 54,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.12688/f1000research.11045.3",
+        "pmid:28690831"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 55,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1177/00469580251371387",
+        "pmid:40995744"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 56,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1146/annurev-publhealth-032315-021402",
+        "pmid:26653405"
+      ],
+      "toan_van": false,
+      "nguon": null,
+      "tep": null,
+      "lan_da_thu": [
+        {
+          "lan": "truy_cap_mo",
+          "ngay": "2026-11-18",
+          "ket_qua": "--gom-toan-van (PMC + Unpaywall): không có bản truy cập mở hợp lệ"
+        }
+      ]
+    },
+    {
+      "so": 57,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1186/s12874-016-0267-3",
+        "pmid:27881078"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 58,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1016/j.jclinepi.2007.11.008",
+        "pmid:18313558"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": []
+    },
+    {
+      "so": 59,
+      "tai_lieu": "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md",
+      "khoa": [
+        "doi:10.1002/sim.4780122404",
+        "pmid:8134732"
+      ],
+      "toan_van": true,
+      "nguon": "endnote",
+      "tep": null,
+      "lan_da_thu": [
+        {
+          "lan": "trinh_duyet",
+          "ngay": "2026-11-10",
+          "ket_qua": "Wiley chuyển /doi/full → /doi/abs, vùng article chỉ 1736 ký tự (chỉ tóm tắt) — không quyền toàn văn (lượt 14, 10/11)"
+        },
         {
           "lan": "truy_cap_mo",
           "ngay": "2026-11-18",
