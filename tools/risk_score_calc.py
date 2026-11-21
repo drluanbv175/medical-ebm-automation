@@ -27,6 +27,10 @@ Pisters et al. 2010 Chest (HAS-BLED); Lim et al. 2003 Thorax (CURB-65); Singer e
 2016 JAMA — Sepsis-3 (qSOFA); Wells et al. 2000/2001 (Wells PE); Kline et al. 2004
 (PERC); Child & Turcotte 1964 / Pugh 1973 (Child-Pugh); Kamath et al. 2001 / OPTN-UNOS
 (MELD).
+Bổ sung 21/11/2026 (11 thang verified + phân giai đoạn KDIGO): FIB-4, APRI, khoảng trống anion, HOMA-IR,
+Maddrey (một công thức số học công bố, không hệ số hồi quy), PHQ-9, GAD-7, AUDIT-C, FRAIL, TIMI (UA/NSTEMI),
+GOLD ABE, kdigo-stage — công thức/ngưỡng chép từ `app/clinical_scores/verified.py`; bảng
+`BO_TINH_THEO_SCORE_ID`/`KHONG_CO_BO_TINH` khai MỌI thang verified (có bộ tính hay lý do chưa có).
 Bổ sung 08/11/2026 (lý do khám ngoại trú): Wells DVT (Wells 2003 NEJM); Centor/McIsaac
 (McIsaac 1998 CMAJ; NICE NG84); Marburg Heart Score (Bösner 2010 CMAJ); FeverPAIN (Little
 2013 BMJ Open; NICE NG84); CRB-65 (Bauer 2006 J Intern Med; NICE NG250); Ottawa cổ chân/bàn
@@ -608,6 +612,312 @@ def ottawa_knee(age: float, fibular_head_tenderness: int, isolated_patellar_tend
 # CLI
 # ═══════════════════════════════════════════════════════════════════════════
 
+# ═══════════════════════════════════════════════════════════════════════════
+# BỔ SUNG 21/11/2026 — 11 thang ĐÃ VERIFIED + phân giai đoạn KDIGO G/A.
+# Công thức, luật cộng điểm và ngưỡng chép NGUYÊN NGHĨA từ `app/clinical_scores/verified.py`
+# (mục `calculation_method` / `interpretation` / `action_thresholds` cùng PMID/DOI của mục đó) —
+# không lấy từ trí nhớ. Bối cảnh: bài viết bác sĩ gửi 21/11 nhấn mạnh «AI gọi công thức lập
+# trình sẵn thay vì tự nhẩm»; đo cùng ngày 37 thang verified chỉ 15 có bộ tính.
+# KHÔNG làm (xem KHONG_CO_BO_TINH dưới): sổ dặn «dùng công cụ chính thức, không nhập hệ số tay»
+# (CKD-EPI, MELD-Na, SCORE2/ASCVD) hoặc sổ CHƯA ghi bảng điểm (NEWS2, Glasgow-Blatchford,
+# FINDRISC, ô màu KDIGO) — thêm khi bảng điểm được chép vào sổ kèm nguồn.
+# ═══════════════════════════════════════════════════════════════════════════
+
+def _so_trong_mien(name: str, value: float, lo: float, hi: float, *, lo_mo: bool = False) -> float:
+    """Số hữu hạn trong [lo, hi] (lo_mo=True ⇒ (lo, hi]). Ngoài miền ⇒ từ chối, không kẹp giá trị."""
+    _require_finite(name, value)
+    if (value <= lo if lo_mo else value < lo) or value > hi:
+        khoang = f"({lo}, {hi}]" if lo_mo else f"[{lo}, {hi}]"
+        raise RiskScoreError(f"{name}={value} ngoài miền hợp lệ {khoang} — kiểm đơn vị/giá trị nhập.")
+    return float(value)
+
+
+def _muc_0_n(name: str, v: int, n: int) -> int:
+    if isinstance(v, bool) or not isinstance(v, int) or v < 0 or v > n:
+        raise RiskScoreError(f"{name}={v} phải là số nguyên 0–{n}.")
+    return v
+
+
+def fib4(age: float, ast: float, alt: float, platelets: float, context: str = "masld") -> Dict:
+    """FIB-4 = (Tuổi × AST) / (Tiểu cầu × √ALT). AST/ALT U/L; tiểu cầu 10^9/L.
+    context="masld" (AASLD 2023, chăm sóc ban đầu): <1,3 nguy cơ thấp; ≥1,3 đánh giá bước 2 (đàn hồi gan/ELF);
+    người >65 tuổi dùng ngưỡng >2,0; >2,67 nhiều khả năng xơ hoá tiến triển.
+    context="hcv" (Sterling 2006): <1,45 / >3,25.
+    Nguồn: Sterling RK, Hepatology 2006 (PMID 16729309); AASLD MASLD 2023."""
+    a = _so_trong_mien("age", age, 0, 130)
+    ast_ = _so_trong_mien("ast", ast, 0, 20000, lo_mo=True)
+    alt_ = _so_trong_mien("alt", alt, 0, 20000, lo_mo=True)
+    plt = _so_trong_mien("platelets", platelets, 0, 3000, lo_mo=True)
+    val = round(a * ast_ / (plt * math.sqrt(alt_)), 2)
+    ghi_chu = []
+    if context == "masld":
+        nguong_thap = 2.0 if a > 65 else 1.3
+        thap = (val <= 2.0) if a > 65 else (val < 1.3)
+        if val > 2.67:
+            category = "nhiều khả năng xơ hoá tiến triển (>2,67) — đánh giá bước 2/chuyên khoa"
+        elif thap:
+            them = " cho người >65 tuổi" if a > 65 else ""
+            category = f"nguy cơ THẤP xơ hoá tiến triển (ngưỡng {nguong_thap:g}{them})"
+        else:
+            category = "cần đánh giá bước 2 (đàn hồi gan/ELF)"
+    elif context == "hcv":
+        if val < 1.45:
+            category = "thấp (<1,45 — Sterling 2006, viêm gan C)"
+        elif val > 3.25:
+            category = "cao (>3,25 — Sterling 2006, viêm gan C)"
+        else:
+            category = "vùng không xác định (1,45–3,25)"
+    else:
+        raise RiskScoreError(f"context={context!r} phải là 'masld' hoặc 'hcv'.")
+    if a < 35 or a > 65:
+        ghi_chu.append("Kém chính xác ở <35 và >65 tuổi (giới hạn ghi trong sổ).")
+    return {"score": val, "category": category, "context": context,
+            "components": {"age": a, "ast": ast_, "alt": alt_, "platelets": plt}, "notes": ghi_chu,
+            "source": "Sterling RK et al. Hepatology. 2006;43:1317-1325 (PMID 16729309); AASLD MASLD 2023."}
+
+
+def apri(ast: float, ast_uln: float, platelets: float) -> Dict:
+    """APRI = [(AST / ULN_AST) × 100] / Tiểu cầu (10^9/L). WHO: >0,5 gợi ý xơ hoá đáng kể; >1,0 gợi ý xơ gan.
+    ULN là của CHÍNH phòng xét nghiệm — không có giá trị mặc định. Nguồn: Wai CT, Hepatology 2003 (PMID 12883497)."""
+    ast_ = _so_trong_mien("ast", ast, 0, 20000, lo_mo=True)
+    uln = _so_trong_mien("ast_uln", ast_uln, 0, 500, lo_mo=True)
+    plt = _so_trong_mien("platelets", platelets, 0, 3000, lo_mo=True)
+    val = round((ast_ / uln) * 100 / plt, 2)
+    if val > 1.0:
+        category = "gợi ý xơ gan (>1,0 — WHO; cân nhắc theo bối cảnh)"
+    elif val > 0.5:
+        category = "gợi ý xơ hoá đáng kể (>0,5 — WHO)"
+    else:
+        category = "không vượt ngưỡng WHO (≤0,5)"
+    return {"score": val, "category": category,
+            "components": {"ast": ast_, "ast_uln": uln, "platelets": plt},
+            "notes": ["Độ chính xác trung bình; phối hợp FIB-4/đàn hồi gan khi có."],
+            "source": "Wai CT et al. Hepatology. 2003;38:518-526 (PMID 12883497)."}
+
+
+def anion_gap(na: float, cl: float, hco3: float, albumin_g_l: float | None = None) -> Dict:
+    """AG = Na⁺ − (Cl⁻ + HCO₃⁻) (mmol/L). Hiệu chỉnh albumin: +2,5 cho mỗi 10 g/L albumin giảm dưới 40 g/L.
+    Khoảng bình thường phụ thuộc phương pháp đo của phòng xét nghiệm (thường ~8–12) ⇒ công cụ KHÔNG tự phán cao/thấp.
+    Nguồn: Kraut JA, Madias NE. Clin J Am Soc Nephrol 2007 (PMID 17699401)."""
+    na_ = _so_trong_mien("na", na, 80, 220)
+    cl_ = _so_trong_mien("cl", cl, 40, 180)
+    hco3_ = _so_trong_mien("hco3", hco3, 0, 70)
+    ag = round(na_ - (cl_ + hco3_), 1)
+    res = {"score": ag, "unit": "mmol/L",
+           "category": "so với khoảng tham chiếu của phòng xét nghiệm (thường ~8–12 mmol/L)",
+           "components": {"na": na_, "cl": cl_, "hco3": hco3_}, "notes": [],
+           "source": "Kraut JA, Madias NE. Clin J Am Soc Nephrol. 2007;2:162-174 (PMID 17699401)."}
+    if albumin_g_l is not None:
+        alb = _require_finite("albumin_g_l", albumin_g_l)
+        if alb < 10 or alb > 70:
+            raise RiskScoreError(f"albumin_g_l={alb} ngoài [10, 70] — đơn vị là g/L (nhập 35, không phải 3,5 g/dL).")
+        hieu_chinh = round(ag + 2.5 * (40 - alb) / 10, 1) if alb < 40 else ag
+        res["albumin_corrected"] = hieu_chinh
+        res["components"]["albumin_g_l"] = alb
+    else:
+        res["notes"].append("Chưa hiệu chỉnh albumin — sổ dặn LUÔN hiệu chỉnh ở người giảm albumin.")
+    return res
+
+
+def homa_ir(glucose: float, insulin: float, glucose_unit: str = "mmol") -> Dict:
+    """HOMA-IR = (Glucose mmol/L × Insulin µU/mL) / 22,5 hoặc (Glucose mg/dL × Insulin) / 405.
+    KHÔNG có ngưỡng chẩn đoán phổ quát (theo sổ) ⇒ chỉ trả giá trị. Không dùng khi đang điều trị insulin.
+    Nguồn: Matthews DR, Diabetologia 1985 (PMID 3899825)."""
+    if glucose_unit == "mmol":
+        g = _so_trong_mien("glucose", glucose, 1, 50)
+        val = g * _so_trong_mien("insulin", insulin, 0, 2000, lo_mo=True) / 22.5
+    elif glucose_unit == "mgdl":
+        g = _so_trong_mien("glucose", glucose, 18, 900)
+        val = g * _so_trong_mien("insulin", insulin, 0, 2000, lo_mo=True) / 405
+    else:
+        raise RiskScoreError(f"glucose_unit={glucose_unit!r} phải là 'mmol' hoặc 'mgdl'.")
+    return {"score": round(val, 2),
+            "category": "không có ngưỡng phổ quát — diễn giải theo khoảng tham chiếu địa phương",
+            "components": {"glucose": g, "glucose_unit": glucose_unit, "insulin": insulin},
+            "notes": ["Không dùng khi đang điều trị insulin; biến thiên giữa các xét nghiệm insulin."],
+            "source": "Matthews DR et al. Diabetologia. 1985;28:412-419 (PMID 3899825)."}
+
+
+def maddrey_df(pt_patient: float, pt_control: float, bilirubin_mg_dl: float) -> Dict:
+    """mDF = 4,6 × (PT bệnh nhân − PT chứng, giây) + Bilirubin (mg/dL). ≥32: viêm gan rượu NẶNG.
+    Bilirubin phải ở mg/dL (µmol/L ⇒ đổi trước). Nguồn: Maddrey WC, Gastroenterology 1978 (PMID 352788)."""
+    ptp = _so_trong_mien("pt_patient", pt_patient, 5, 200)
+    ptc = _so_trong_mien("pt_control", pt_control, 5, 60)
+    bili = _so_trong_mien("bilirubin_mg_dl", bilirubin_mg_dl, 0, 80)
+    val = round(4.6 * (ptp - ptc) + bili, 1)
+    category = ("NẶNG (≥32) — cân nhắc corticosteroid nếu không chống chỉ định; loại trừ nhiễm khuẩn/XHTH trước; "
+                "đánh giá đáp ứng bằng Lille sau 7 ngày") if val >= 32 else "dưới ngưỡng nặng (<32)"
+    return {"score": val, "category": category,
+            "components": {"pt_patient": ptp, "pt_control": ptc, "bilirubin_mg_dl": bili},
+            "source": "Maddrey WC et al. Gastroenterology. 1978;75:193-199 (PMID 352788)."}
+
+
+def phq9(items: list[int]) -> Dict:
+    """PHQ-9: 9 mục 0–3, tổng 0–27. 0–4 tối thiểu · 5–9 nhẹ · 10–14 trung bình · 15–19 trung bình-nặng · 20–27 nặng.
+    ≥10: cân nhắc trầm cảm cần điều trị. Mục 9 (ý tưởng tự sát) >0 ⇒ ĐÁNH GIÁ NGUY CƠ NGAY.
+    Nguồn: Kroenke K, J Gen Intern Med 2001 (PMID 11556941)."""
+    if len(items) != 9:
+        raise RiskScoreError(f"PHQ-9 cần đúng 9 mục (nhận {len(items)}).")
+    v = [_muc_0_n(f"muc_{i + 1}", x, 3) for i, x in enumerate(items)]
+    t = sum(v)
+    category = ("tối thiểu" if t <= 4 else "nhẹ" if t <= 9 else "trung bình" if t <= 14
+                else "trung bình-nặng" if t <= 19 else "nặng")
+    canh_bao = []
+    if t >= 10:
+        canh_bao.append("≥10: cân nhắc trầm cảm nặng cần điều trị (sàng lọc — không thay chẩn đoán).")
+    if v[8] > 0:
+        canh_bao.append("MỤC 9 DƯƠNG TÍNH (ý tưởng tự sát/tự hại) — ĐÁNH GIÁ NGUY CƠ NGAY (sang-loc-co-do).")
+    return {"score": t, "max_score": 27, "category": category, "components": {"muc": v}, "alerts": canh_bao,
+            "source": "Kroenke K, Spitzer RL, Williams JBW. J Gen Intern Med. 2001;16:606-613 (PMID 11556941)."}
+
+
+def gad7(items: list[int]) -> Dict:
+    """GAD-7: 7 mục 0–3, tổng 0–21. 0–4 tối thiểu · 5–9 nhẹ · 10–14 trung bình · 15–21 nặng;
+    ≥10 gợi ý cần đánh giá thêm.
+    Điểm thấp KHÔNG loại trừ (độ nhạy hạn chế — sổ). Nguồn: Spitzer RL, Arch Intern Med 2006 (PMID 16717171)."""
+    if len(items) != 7:
+        raise RiskScoreError(f"GAD-7 cần đúng 7 mục (nhận {len(items)}).")
+    v = [_muc_0_n(f"muc_{i + 1}", x, 3) for i, x in enumerate(items)]
+    t = sum(v)
+    category = "tối thiểu" if t <= 4 else "nhẹ" if t <= 9 else "trung bình" if t <= 14 else "nặng"
+    return {"score": t, "max_score": 21, "category": category, "components": {"muc": v},
+            "alerts": ["≥10: ngưỡng gợi ý cần đánh giá/điều trị thêm."] if t >= 10 else [],
+            "notes": ["Điểm thấp không loại trừ rối loạn lo âu."],
+            "source": "Spitzer RL et al. Arch Intern Med. 2006;166:1092-1097 (PMID 16717171)."}
+
+
+def audit_c(q1: int, q2: int, q3: int, sex: str) -> Dict:
+    """AUDIT-C: 3 câu, mỗi câu 0–4 (tổng 0–12). Dương tính ≥4 (nam) / ≥3 (nữ) ⇒ tư vấn ngắn/đánh giá AUDIT đầy đủ.
+    Nguồn: Bush K, Arch Intern Med 1998 (PMID 9738608)."""
+    v = [_muc_0_n("q1", q1, 4), _muc_0_n("q2", q2, 4), _muc_0_n("q3", q3, 4)]
+    if sex not in ("male", "female"):
+        raise RiskScoreError(f"sex={sex!r} phải là 'male' hoặc 'female'.")
+    t = sum(v)
+    nguong = 4 if sex == "male" else 3
+    duong = t >= nguong
+    return {"score": t, "max_score": 12, "positive": duong,
+            "category": (f"DƯƠNG TÍNH (≥{nguong} ở {'nam' if sex == 'male' else 'nữ'}) — "
+                         "tư vấn ngắn/đánh giá AUDIT đầy đủ"
+                         if duong else f"âm tính (<{nguong})"),
+            "components": {"q1": v[0], "q2": v[1], "q3": v[2], "sex": sex},
+            "source": "Bush K et al. Arch Intern Med. 1998;158:1789-1795 (PMID 9738608)."}
+
+
+def frail_scale(fatigue: int, resistance: int, ambulation: int, illnesses: int, loss_of_weight: int) -> Dict:
+    """FRAIL: 5 mục, mỗi mục 1 điểm (0–5). 0 khoẻ · 1–2 tiền suy yếu · 3–5 suy yếu
+    (≥3 ⇒ CGA, rà đa thuốc/té ngã/dinh dưỡng). illnesses = >5 bệnh; loss_of_weight = sụt >5% trong năm.
+    Nguồn: Morley JE, J Nutr Health Aging 2012 (PMID 22836700)."""
+    f = {"fatigue": fatigue, "resistance": resistance, "ambulation": ambulation,
+         "illnesses": illnesses, "loss_of_weight": loss_of_weight}
+    for k, v in f.items():
+        f[k] = _bit(k, v)
+    t = sum(f.values())
+    category = ("khoẻ (robust)" if t == 0 else "tiền suy yếu" if t <= 2
+                else "suy yếu (frail) — đánh giá lão khoa toàn diện (CGA), rà đa thuốc, té ngã, dinh dưỡng")
+    return {"score": t, "max_score": 5, "category": category, "components": f,
+            "source": "Morley JE et al. J Nutr Health Aging. 2012;16:601-608 (PMID 22836700)."}
+
+
+def timi_ua_nstemi(age_ge_65: int, ge_3_cad_risk_factors: int, known_cad_ge_50: int, aspirin_7d: int,
+                   ge_2_angina_24h: int, st_deviation_ge_05mm: int, positive_marker: int) -> Dict:
+    """TIMI (UA/NSTEMI): 7 tiêu chí, mỗi tiêu chí 1 điểm (0–7). Điểm cao (≥3) gợi ý chiến lược xâm lấn sớm —
+    LUÔN kết hợp lâm sàng + ECG + troponin. Nguồn: Antman EM, JAMA 2000 (PMID 10938172)."""
+    f = {"age_ge_65": age_ge_65, "ge_3_cad_risk_factors": ge_3_cad_risk_factors, "known_cad_ge_50": known_cad_ge_50,
+         "aspirin_7d": aspirin_7d, "ge_2_angina_24h": ge_2_angina_24h,
+         "st_deviation_ge_05mm": st_deviation_ge_05mm, "positive_marker": positive_marker}
+    for k, v in f.items():
+        f[k] = _bit(k, v)
+    t = sum(f.values())
+    category = ("điểm cao (≥3) — gợi ý chiến lược can thiệp xâm lấn sớm; kết hợp lâm sàng + ECG + troponin"
+                if t >= 3 else "điểm thấp (<3) — vẫn đánh giá theo lâm sàng/ECG/troponin")
+    return {"score": t, "max_score": 7, "category": category, "components": f,
+            "notes": ["Đơn giản hoá; GRACE phân biệt tốt hơn ở một số nhóm (sổ)."],
+            "source": "Antman EM et al. JAMA. 2000;284:835-842 (PMID 10938172)."}
+
+
+def gold_abe(moderate_exacerbations_12m: int, hospitalized_exacerbations_12m: int,
+             mmrc: int | None = None, cat: int | None = None) -> Dict:
+    """GOLD ABE (2023+, sổ ghi GOLD 2025): E = ≥2 đợt cấp vừa HOẶC ≥1 đợt nhập viện (bất kể triệu chứng);
+    còn lại A (mMRC 0–1 / CAT <10) hoặc B (mMRC ≥2 / CAT ≥10). Cần ít nhất một trong mMRC/CAT. Hai thước đo cho
+    hai nhóm KHÁC NHAU ⇒ KHÔNG tự chọn (trả nhóm None, ghi lệch) — bác sĩ quyết. Chỉ cho bệnh nhân COPD đã xác định
+    bằng hô hấp ký; phục vụ điều trị KHỞI ĐẦU. Nguồn: GOLD Report 2025."""
+    mod = _muc_0_n("moderate_exacerbations_12m", moderate_exacerbations_12m, 50)
+    hosp = _muc_0_n("hospitalized_exacerbations_12m", hospitalized_exacerbations_12m, 50)
+    if mmrc is None and cat is None:
+        raise RiskScoreError("Cần mMRC hoặc CAT để phân nhóm A/B.")
+    trieu_chung = {}
+    if mmrc is not None:
+        trieu_chung["mmrc_nhieu"] = _muc_0_n("mmrc", mmrc, 4) >= 2
+    if cat is not None:
+        trieu_chung["cat_nhieu"] = _muc_0_n("cat", cat, 40) >= 10
+    ghi_chu = []
+    if mod >= 2 or hosp >= 1:
+        nhom = "E"
+    elif len(set(trieu_chung.values())) > 1:
+        nhom = None
+        ghi_chu.append("mMRC và CAT cho hai nhóm khác nhau (A vs B) — công cụ không tự chọn; bác sĩ quyết.")
+    else:
+        nhom = "B" if next(iter(trieu_chung.values())) else "A"
+    dieu_tri = {"A": "1 thuốc giãn phế quản", "B": "LABA+LAMA",
+                "E": "LABA+LAMA; có thể bắt đầu bộ ba LABA+LAMA+ICS ngay nếu eosinophil ≥300 (GOLD 2025)"}
+    return {"group": nhom, "category": (f"nhóm {nhom} — khởi đầu: {dieu_tri[nhom]}" if nhom else "chưa phân được A/B"),
+            "components": {"moderate_exacerbations_12m": mod, "hospitalized_exacerbations_12m": hosp,
+                           "mmrc": mmrc, "cat": cat},
+            "notes": ghi_chu + ["Chỉ cho COPD đã xác định bằng hô hấp ký; phân nhóm khởi đầu, không thay theo dõi."],
+            "source": "GOLD Report 2025 (ABE)."}
+
+
+def kdigo_stage(egfr: float, acr_mg_g: float | None = None) -> Dict:
+    """Phân giai đoạn KDIGO từ eGFR ĐÃ CÓ (mL/phút/1,73m²) và albumin niệu ACR (mg/g) — KHÔNG tính eGFR (sổ dặn dùng
+    công cụ đã thẩm định cho phương trình CKD-EPI 2021). G1 ≥90 · G2 60–89 · G3a 45–59 · G3b 30–44 · G4 15–29 · G5 <15;
+    A1 <30 · A2 30–300 · A3 >300. G3b–G5 hoặc A3 ⇒ cân nhắc chuyên khoa thận + rà liều thuốc theo eGFR.
+    Ô màu nguy cơ (heat map) KHÔNG trả — sổ chưa ghi bảng ô. Nguồn: Inker LA, NEJM 2021 (PMID 34554658); KDIGO 2024."""
+    e = _so_trong_mien("egfr", egfr, 0, 250)
+    g = ("G1" if e >= 90 else "G2" if e >= 60 else "G3a" if e >= 45 else "G3b" if e >= 30
+         else "G4" if e >= 15 else "G5")
+    a = None
+    if acr_mg_g is not None:
+        acr = _so_trong_mien("acr_mg_g", acr_mg_g, 0, 50000)
+        a = "A1" if acr < 30 else "A2" if acr <= 300 else "A3"
+    canh_bao = []
+    if g in ("G3b", "G4", "G5") or a == "A3":
+        canh_bao.append("G3b–G5 hoặc A3: chuyển/nhắc chuyên khoa thận tùy bối cảnh; "
+                        "rà hiệu chỉnh liều thuốc theo eGFR.")
+    return {"g_stage": g, "a_stage": a, "category": f"{g}{' ' + a if a else ''}", "alerts": canh_bao,
+            "components": {"egfr": e, "acr_mg_g": acr_mg_g},
+            "notes": ["eGFR phải lấy từ công cụ/phòng xét nghiệm đã thẩm định (CKD-EPI 2021); "
+                      "ô màu nguy cơ tra bảng KDIGO 2024."],
+            "source": "Inker LA et al. N Engl J Med. 2021;385:1737-1749 (PMID 34554658); KDIGO 2024 CKD."}
+
+
+# ── Sổ bao phủ: MỌI thang verified phải nằm ở ĐÚNG MỘT trong hai bảng dưới (test chốt) ─────────────
+# Thêm thang verified mới ⇒ phải khai ở đây: có bộ tính, hoặc lý do chưa có — không để agent lặng lẽ tự nhẩm.
+BO_TINH_THEO_SCORE_ID: Dict[str, str] = {
+    "curb65": "curb65", "cha2ds2_vasc": "cha2ds2vasc", "has_bled": "hasbled", "wells_dvt": "wells-dvt",
+    "wells_pe": "wells-pe", "perc": "perc", "qsofa": "qsofa", "child_pugh": "child-pugh",
+    "centor_mcisaac": "centor-mcisaac", "marburg_heart": "marburg", "ottawa_ankle": "ottawa-ankle",
+    "ottawa_knee": "ottawa-knee", "feverpain": "feverpain", "crb65": "crb65",
+    "fib4": "fib4", "apri": "apri", "anion_gap": "anion-gap", "homa_ir": "homa-ir", "maddrey_df": "maddrey",
+    "phq9": "phq9", "gad7": "gad7", "audit_c": "audit-c", "frail_scale": "frail", "timi": "timi",
+    "gold_abe": "gold-abe",
+}
+KHONG_CO_BO_TINH: Dict[str, str] = {
+    "ckd_epi": ("sổ dặn KHÔNG tự nhập hệ số tay — dùng công cụ đã thẩm định cho eGFR; "
+                "phân giai đoạn G/A từ eGFR có sẵn: kdigo-stage"),
+    "kdigo_grid": "sổ chưa ghi bảng ô màu G×A; phân giai đoạn G/A: kdigo-stage",
+    "meld_na": "sổ dặn dùng công cụ chính thức (MELD-Na/MELD 3.0), không nhập hệ số tay",
+    "ascvd_pce": "hệ số hồi quy đa biến — dùng máy tính chính thức",
+    "score2": "hệ số hồi quy đa biến tái chuẩn hoá theo vùng — dùng máy tính chính thức",
+    "score2_diabetes": "hệ số hồi quy đa biến — dùng máy tính chính thức",
+    "news2": "sổ chưa ghi bảng điểm từng thông số (RCP 2017) — dùng biểu đồ NEWS2 chính thức",
+    "blatchford": "sổ chưa ghi bảng điểm (Blatchford 2000) — dùng bảng gốc/công cụ chính thức",
+    "findrisc": "sổ chưa ghi bảng điểm từng mục (Lindström 2003) — dùng phiếu FINDRISC chính thức",
+    "nyha": "phân loại lâm sàng do bác sĩ chọn — không có phép tính",
+    "beers": "bộ TIÊU CHÍ thuốc (không phải thang tính điểm) — ke-don-an-toan tra",
+    "stopp_start": "bộ TIÊU CHÍ thuốc (không phải thang tính điểm) — ke-don-an-toan tra",
+}
+
+
 def _print(result: Dict, as_json: bool) -> None:
     if as_json:
         print(json.dumps(result, ensure_ascii=False, indent=2))
@@ -740,6 +1050,77 @@ def main() -> int:
         ok.add_argument(f"--{name}", type=int, required=True, dest=name.replace("-", "_"))
     ok.add_argument("--json", action="store_true")
 
+    # ── bổ sung 21/11/2026 ──
+    f4 = sub.add_parser("fib4")
+    f4.add_argument("--age", type=float, required=True)
+    f4.add_argument("--ast", type=float, required=True)
+    f4.add_argument("--alt", type=float, required=True)
+    f4.add_argument("--platelets", type=float, required=True, help="10^9/L")
+    f4.add_argument("--context", choices=["masld", "hcv"], default="masld")
+    f4.add_argument("--json", action="store_true")
+
+    ap_ = sub.add_parser("apri")
+    ap_.add_argument("--ast", type=float, required=True)
+    ap_.add_argument("--ast-uln", type=float, required=True, dest="ast_uln", help="giới hạn trên AST của phòng XN")
+    ap_.add_argument("--platelets", type=float, required=True, help="10^9/L")
+    ap_.add_argument("--json", action="store_true")
+
+    ag = sub.add_parser("anion-gap")
+    ag.add_argument("--na", type=float, required=True)
+    ag.add_argument("--cl", type=float, required=True)
+    ag.add_argument("--hco3", type=float, required=True)
+    ag.add_argument("--albumin-g-l", type=float, default=None, dest="albumin_g_l", help="g/L (vd 35)")
+    ag.add_argument("--json", action="store_true")
+
+    hi = sub.add_parser("homa-ir")
+    hi.add_argument("--glucose", type=float, required=True)
+    hi.add_argument("--insulin", type=float, required=True, help="µU/mL")
+    hi.add_argument("--glucose-unit", choices=["mmol", "mgdl"], required=True, dest="glucose_unit")
+    hi.add_argument("--json", action="store_true")
+
+    mdf = sub.add_parser("maddrey")
+    mdf.add_argument("--pt-patient", type=float, required=True, dest="pt_patient")
+    mdf.add_argument("--pt-control", type=float, required=True, dest="pt_control")
+    mdf.add_argument("--bilirubin-mg-dl", type=float, required=True, dest="bilirubin_mg_dl")
+    mdf.add_argument("--json", action="store_true")
+
+    p9 = sub.add_parser("phq9")
+    p9.add_argument("--muc", type=int, nargs=9, required=True, metavar="0-3")
+    p9.add_argument("--json", action="store_true")
+
+    g7 = sub.add_parser("gad7")
+    g7.add_argument("--muc", type=int, nargs=7, required=True, metavar="0-3")
+    g7.add_argument("--json", action="store_true")
+
+    ac = sub.add_parser("audit-c")
+    for name in ("q1", "q2", "q3"):
+        ac.add_argument(f"--{name}", type=int, required=True)
+    ac.add_argument("--sex", required=True, choices=["male", "female"])
+    ac.add_argument("--json", action="store_true")
+
+    fr = sub.add_parser("frail")
+    for name in ("fatigue", "resistance", "ambulation", "illnesses", "loss-of-weight"):
+        fr.add_argument(f"--{name}", type=int, required=True, dest=name.replace("-", "_"))
+    fr.add_argument("--json", action="store_true")
+
+    ti = sub.add_parser("timi")
+    for name in ("age-ge-65", "ge-3-cad-risk-factors", "known-cad-ge-50", "aspirin-7d",
+                 "ge-2-angina-24h", "st-deviation-ge-05mm", "positive-marker"):
+        ti.add_argument(f"--{name}", type=int, required=True, dest=name.replace("-", "_"))
+    ti.add_argument("--json", action="store_true")
+
+    ga = sub.add_parser("gold-abe")
+    ga.add_argument("--moderate-exacerbations-12m", type=int, required=True, dest="moderate_exacerbations_12m")
+    ga.add_argument("--hospitalized-exacerbations-12m", type=int, required=True, dest="hospitalized_exacerbations_12m")
+    ga.add_argument("--mmrc", type=int, default=None)
+    ga.add_argument("--cat", type=int, default=None)
+    ga.add_argument("--json", action="store_true")
+
+    ks = sub.add_parser("kdigo-stage")
+    ks.add_argument("--egfr", type=float, required=True)
+    ks.add_argument("--acr-mg-g", type=float, default=None, dest="acr_mg_g")
+    ks.add_argument("--json", action="store_true")
+
     args = ap.parse_args()
     try:
         if args.cmd == "cha2ds2vasc":
@@ -793,6 +1174,34 @@ def main() -> int:
             res = ottawa_knee(args.age, args.fibular_head_tenderness,
                               args.isolated_patellar_tenderness, args.unable_flex_90,
                               args.unable_bear_weight)
+        elif args.cmd == "fib4":
+            res = fib4(args.age, args.ast, args.alt, args.platelets, args.context)
+        elif args.cmd == "apri":
+            res = apri(args.ast, args.ast_uln, args.platelets)
+        elif args.cmd == "anion-gap":
+            res = anion_gap(args.na, args.cl, args.hco3, args.albumin_g_l)
+        elif args.cmd == "homa-ir":
+            res = homa_ir(args.glucose, args.insulin, args.glucose_unit)
+        elif args.cmd == "maddrey":
+            res = maddrey_df(args.pt_patient, args.pt_control, args.bilirubin_mg_dl)
+        elif args.cmd == "phq9":
+            res = phq9(args.muc)
+        elif args.cmd == "gad7":
+            res = gad7(args.muc)
+        elif args.cmd == "audit-c":
+            res = audit_c(args.q1, args.q2, args.q3, args.sex)
+        elif args.cmd == "frail":
+            res = frail_scale(args.fatigue, args.resistance, args.ambulation, args.illnesses,
+                              args.loss_of_weight)
+        elif args.cmd == "timi":
+            res = timi_ua_nstemi(args.age_ge_65, args.ge_3_cad_risk_factors, args.known_cad_ge_50,
+                                 args.aspirin_7d, args.ge_2_angina_24h, args.st_deviation_ge_05mm,
+                                 args.positive_marker)
+        elif args.cmd == "gold-abe":
+            res = gold_abe(args.moderate_exacerbations_12m, args.hospitalized_exacerbations_12m,
+                           args.mmrc, args.cat)
+        elif args.cmd == "kdigo-stage":
+            res = kdigo_stage(args.egfr, args.acr_mg_g)
     except RiskScoreError as e:
         print(f"❌ LỖI: {e}")
         return 1

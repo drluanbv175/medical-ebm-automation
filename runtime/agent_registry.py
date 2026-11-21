@@ -194,10 +194,11 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # học K12 (mỗi tài liệu đỡ một câu), K13 (TLTK Vancouver theo metadata A12) và `kiem_so_lieu_toan_van.py` — vẫn 64.
 # 21/11/2026: đồng bộ bản sao _HOI-DONG-CONG.md, kiem-chung-trich-dan.md với nguồn gốc (tools/dong_bo_agent_y_khoa.py).
 # 21/11/2026: đồng bộ bản sao thu-thu-tai-lieu.md, tong-quan-y-van.md với nguồn gốc (tools/dong_bo_agent_y_khoa.py).
+# 21/11/2026: dạy `thang-diem-nguy-co` 12 bộ tính mới + luật gọi bộ tính (bảng BO_TINH_THEO_SCORE_ID) — vẫn 64.
 # 21/11/2026: bản sao `cong-cu-do-luong`, `phan-tich-thong-ke` học dùng `tools/phan_tich_nhan_to_r.py` (EFA nửa 1 + CFA
 # nửa 2, PR y khoa #384) thay vì tự viết script R — chỉ phần đoạn mới; mục «Biểu đồ» đi theo PR #383 — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "9c7b41c40bf944ba48036066c9f5fdba38df1dd2adfbdf7cf5a19cfae15eab48"
+    "0c7007be9f30bb8e606194a25776f8a236ef93e67b12c0ba2d08bd2339ffd45a"
 )
 
 MINIMUM_AGENT_COUNT = 64

@@ -1,7 +1,7 @@
 {
   "schema": "de_tai/toan_van_tltk/v1",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "luc": "2026-11-20T09:55:54",
+  "luc": "2026-11-21T11:42:34",
   "nguoi_do": "tools/nap_endnote_de_tai.py --ghi-bien-nhan-toan-van (đo trên thư viện EndNote thật)",
   "tai_lieu": [
     "DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md"
@@ -106,8 +106,8 @@
       "khoa": [
         "doi:10.52163/yhc.v64i6.841"
       ],
-      "toan_van": false,
-      "nguon": null,
+      "toan_van": true,
+      "nguon": "endnote",
       "tep": null,
       "lan_da_thu": [
         {
@@ -123,8 +123,8 @@
       "khoa": [
         "doi:10.52163/yhc.v67icd5.5018"
       ],
-      "toan_van": false,
-      "nguon": null,
+      "toan_van": true,
+      "nguon": "endnote",
       "tep": null,
       "lan_da_thu": [
         {
