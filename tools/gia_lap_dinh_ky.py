@@ -94,7 +94,7 @@ TOOLS = REPO_ROOT / "tools"
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
-from gia_lap_kich_ban_them import bien_so_them, ho_so_tron_vong, kich_ban_them  # noqa: E402
+from gia_lap_kich_ban_them import SAI_LECH_PI, bien_so_them, ho_so_tron_vong, kich_ban_them  # noqa: E402
 
 PHIEN_BAN = 1
 STATE_PATH = REPO_ROOT / "state" / "gia-lap-dinh-ky-gan-nhat.json"
@@ -391,6 +391,8 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                                           "theo phác đồ"),
                 "critical_to_quality": _vi("Đo huyết áp chuẩn hoá (máy đã hiệu chuẩn, 2 lần đo)"),
                 "monitoring_plan": _vi("Giám sát chất lượng dữ liệu hằng tháng"),
+                # 21/11/2026 (K17 STROBE 9/19): sổ sai lệch riêng của đề tài, có chiều ảnh hưởng dự kiến
+                "bias_controls": SAI_LECH_PI["cross_sectional"],
                 "risk_register": [], "budget": [],
                 "annex2": {"applicable": False, "methodologies": []},
                 "bias_controls_confirmed": True, "protocol_core_confirmed": True,

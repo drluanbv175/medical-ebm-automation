@@ -41,6 +41,53 @@ def _finer(vi: Callable[[str], str], kha_thi: str, thu_vi: str, moi: str, dao_du
             "finer_ethical": vi(dao_duc), "finer_relevant": vi(phu_hop)}
 
 
+# 21/11/2026 (K17 STROBE 9/19 — «chiều tác động của sai lệch»): sổ sai lệch RIÊNG mà PI của từng đề tài quan sát khai ở
+# `gate_params.G1.bias_controls` (cùng khuôn {sai_lech, bien_phap, chieu} với đề cương BTM thật). Biện pháp chỉ nhắc
+# điều đã có trong quyết định khác của cùng hồ sơ (tiêu chuẩn chọn/loại, CTQ, SAP §5/§6/§9) — không thêm thủ tục mới.
+SAI_LECH_PI: Dict[str, List[Dict[str, str]]] = {
+    "cohort": [
+        {"sai_lech": "Nhiễu do chỉ định: người dùng thuốc ức chế bơm proton kéo dài có nhiều bệnh kèm hơn",
+         "bien_phap": ("Hiệu chỉnh đa biến theo DAG (tuổi, corticoid toàn thân, loãng xương trước đó); phân tích "
+                       "độ nhạy với định nghĩa thay thế của phơi nhiễm"),
+         "chieu": "Nhiễu còn sót có thể làm nguy cơ tương đối được ước lượng cao hơn thực tế"},
+        {"sai_lech": "Sai lệch phân loại phơi nhiễm từ đơn cấp phát (thuốc mua ngoài không được ghi nhận)",
+         "bien_phap": "Định nghĩa phơi nhiễm bằng ít nhất 80% số ngày có thuốc theo đơn cấp trong 12 tháng",
+         "chieu": "Phân loại sai không phân biệt theo kết cục kéo ước lượng về giá trị 1 (thấp hơn thực tế)"},
+        {"sai_lech": "Sai lệch thông tin do mã chẩn đoán gãy xương",
+         "bien_phap": "Kiểm 10% hồ sơ biến cố bằng phim X-quang",
+         "chieu": "Ghi mã thiếu như nhau ở hai nhóm làm nguy cơ tương đối được ước lượng thấp hơn thực tế"},
+        {"sai_lech": "Sai lệch do mất theo dõi khi người bệnh chuyển nơi khám",
+         "bien_phap": "Loại người theo dõi dưới 6 tháng; gán đa trị kết cục thiếu; phân tích độ nhạy loại người theo "
+                      "dõi dưới 12 tháng",
+         "chieu": ("Chiều lệch không xác định trước; nếu người mất theo dõi có nguy cơ gãy xương cao hơn, ước "
+                   "lượng thấp hơn thực tế")},
+    ],
+    "case_control": [
+        {"sai_lech": "Sai lệch nhớ lại phơi nhiễm NSAID (ca nhớ thuốc đã dùng kỹ hơn chứng)",
+         "bien_phap": "Cùng bộ câu hỏi cho ca và chứng; người phỏng vấn không biết giả thuyết; đối chiếu với hồ sơ đơn "
+                      "thuốc",
+         "chieu": "Ca khai phơi nhiễm đầy đủ hơn chứng làm tỷ số chênh được ước lượng cao hơn thực tế"},
+        {"sai_lech": "Sai lệch chọn nhóm chứng từ người khám ngoại trú",
+         "bien_phap": "Chọn chứng cùng cơ sở và cùng tuần với ca, ghép theo giới và nhóm tuổi 5 năm",
+         "chieu": "Nếu người khám ngoại trú dùng NSAID nhiều hơn quần thể nguồn, tỷ số chênh được ước lượng thấp hơn "
+                  "thực tế"},
+        {"sai_lech": "Nhiễu do thuốc chống đông, chống kết tập tiểu cầu và tiền sử loét",
+         "bien_phap": "Thu thập và hiệu chỉnh trong mô hình hồi quy logistic có điều kiện",
+         "chieu": "Nhiễu còn sót có thể làm tỷ số chênh được ước lượng cao hơn thực tế"},
+    ],
+    "cross_sectional": [
+        {"sai_lech": "Sai lệch chọn do chọn mẫu liên tiếp người đến khám",
+         "bien_phap": "Tuyển liên tiếp mọi người đủ tiêu chuẩn trong các ngày khám; ghi số người từ chối và lý do",
+         "chieu": "Người tái khám đều đặn có khả năng kiểm soát tốt hơn người bỏ khám nên tỷ lệ kiểm soát có thể được "
+                  "ước lượng cao hơn thực tế"},
+        {"sai_lech": "Sai lệch đo lường huyết áp (hiệu ứng áo choàng trắng)",
+         "bien_phap": "Đo chuẩn hoá bằng máy đã hiệu chuẩn, đo 2 lần",
+         "chieu": "Huyết áp đo tại phòng khám cao hơn huyết áp thường ngày nên tỷ lệ kiểm soát có thể được ước lượng "
+                  "thấp hơn thực tế"},
+    ],
+}
+
+
 def _g0_chung(hom_nay: str) -> Dict[str, Any]:
     return {"evidence_reviewed_confirmed": True,
             "registry_manual_checked": {"ictrp": hom_nay, "prospero": None}}
@@ -146,6 +193,9 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "critical_to_quality": vi("Định nghĩa phơi nhiễm và biến cố thống nhất; kiểm 10% hồ sơ biến cố "
                                           "bằng phim X-quang"),
                 "monitoring_plan": vi("Kiểm chất lượng trích dữ liệu sau mỗi 500 hồ sơ"),
+                # 21/11/2026 (K17 STROBE 9/19): sổ sai lệch RIÊNG của đề tài — PI khai từng nguồn, biện pháp và chiều
+                # ảnh hưởng dự kiến lên ước lượng (khuôn G1 A2 chỉ là danh mục chung theo thiết kế)
+                "bias_controls": SAI_LECH_PI["cohort"],
             },
             "G3": {
                 "effect_size": 1.33, "effect_type": "RR", "p0": 0.08, "dropout": 0.1,
@@ -229,9 +279,11 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "comparator": "Không phơi nhiễm NSAID",
                 "case_definition": ("Người từ 60 tuổi nhập viện vì nôn máu hoặc đi ngoài phân đen, nội soi xác định "
                                     "tổn thương chảy máu ở thực quản, dạ dày hoặc tá tràng"),
+                # 21/11/2026 (K17 STROBE 6a): PI nêu lý do chọn chứng ngay trong nguồn chọn chứng
                 "control_source": ("Người khám ngoại trú cùng cơ sở trong cùng tuần với ca, ghép theo giới và nhóm "
                                    "tuổi "
-                                   "5 năm, tỷ lệ 2 chứng : 1 ca"),
+                                   "5 năm, tỷ lệ 2 chứng : 1 ca, để nhóm chứng đại diện cho phân bố phơi nhiễm NSAID "
+                                   "của quần thể nguồn sinh ra ca trong cùng thời gian"),
                 "recruitment_strategy": "Tuyển liên tiếp ca đủ tiêu chuẩn; chọn chứng theo danh sách khám cùng tuần",
                 "follow_up_schedule": "Không theo dõi — phỏng vấn một lần và trích hồ sơ",
                 "estimand": {"population": "Người từ 60 tuổi tại cơ sở",
@@ -251,6 +303,7 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "stopping_rescue_rules": "Không áp dụng — nghiên cứu quan sát",
                 "critical_to_quality": vi("Người phỏng vấn không biết giả thuyết; cùng bộ câu hỏi cho ca và chứng"),
                 "monitoring_plan": vi("Kiểm chất lượng phỏng vấn hằng tháng"),
+                "bias_controls": SAI_LECH_PI["case_control"],
             },
             "G3": {
                 "effect_size": 1.84, "effect_type": "OR", "p0": 0.15, "dropout": 0.05,

@@ -443,10 +443,13 @@ def chuyen(md: str, nam: Optional[int] = None) -> KetQua:
         so_chuong_cu[pp.so] = "chuong:2"
     if dk is not None:
         muc3 = _than(dong, dk, "3")
-        muc3.append(Muc_(2, "Dự kiến bàn luận", chuong="3"))
-        for k in range(1, len(mh.muc_tieu) + 1):
-            muc3 += [Muc_(3, f"Bàn luận theo mục tiêu {k}", chuong="3"), Muc_(0, "", chuong="3"),
-                     Muc_(0, f"@@BAN_LUAN_{k}@@", chuong="3"), Muc_(0, "", chuong="3")]
+        # 21/11/2026: bộ sinh đề cương đã dựng «Dự kiến bàn luận» theo từng mục tiêu (STROBE 18) ngay trong chương dự
+        # kiến kết quả ⇒ giữ nguyên, không thêm bản thứ hai.
+        if not any("bàn luận" in GB._chuan(m.ten) for m in _con(cac_muc, dk)):
+            muc3.append(Muc_(2, "Dự kiến bàn luận", chuong="3"))
+            for k in range(1, len(mh.muc_tieu) + 1):
+                muc3 += [Muc_(3, f"Bàn luận theo mục tiêu {k}", chuong="3"), Muc_(0, "", chuong="3"),
+                         Muc_(0, f"@@BAN_LUAN_{k}@@", chuong="3"), Muc_(0, "", chuong="3")]
         if han_che is not None:
             muc3 += _khoi(dong, han_che, 2, "3")
         _chuong("3", "CHƯƠNG 3. DỰ KIẾN KẾT QUẢ VÀ BÀN LUẬN", muc3)
@@ -570,6 +573,8 @@ def chuyen(md: str, nam: Optional[int] = None) -> KetQua:
     chu_thich_c3 = [(m.group(1), m.group(2), m.group(3)) for d in than_md
                     for m in [_CHU_THICH_RE.match(d.strip())] if m and m.group(2).startswith("3.")]
     for k in range(1, len(mh.muc_tieu) + 1):
+        if f"@@BAN_LUAN_{k}@@" not in than_md:  # bàn luận do bộ sinh dựng sẵn (21/11/2026)
+            continue
         bb = [f"{a} {b}" for a, b, t in chu_thich_c3 if re.search(rf"\(Mục tiêu {k}(?!\d)", t)]
         cau = (f"Bàn luận lần lượt các kết quả trả lời mục tiêu {k}" + (f" ({', '.join(bb)})" if bb else "")
                + ": so sánh với các nghiên cứu trong nước và quốc tế đã tổng quan ở Chương 1, nêu điểm giống, điểm "

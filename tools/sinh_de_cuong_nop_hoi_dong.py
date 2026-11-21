@@ -268,13 +268,18 @@ def _n(v: Any) -> str:
         return str(v)
 
 
+_KHOANG_THANG_RE = re.compile(r"(?<![\w/])(?:từ\s+)?(\d{4})-(\d{2})(?:-\d{2})?\s*(?:đến|–|-|tới)\s*"
+                              r"(\d{4})-(\d{2})(?:-\d{2})?(?![\w/])")
+_THANG_ISO_RE = re.compile(r"(?<![\w/-])(\d{4})-(\d{2})(?![\w/-])")
+
+
 def _thoi_gian(x: Any) -> str:
-    """«2027-03 đến 2028-03» → «từ tháng 03/2027 đến tháng 03/2028»; chuỗi khác giữ nguyên (đã làm sạch)."""
+    """«2027-03 đến 2028-03» → «từ tháng 03/2027 đến tháng 03/2028», kể cả khi khoảng nằm giữa câu («Dữ liệu 2020-01
+    đến 2025-12; phân tích 2027-03 đến 2027-09» — 21/11/2026: bản cũ chỉ đổi khi CẢ chuỗi là một khoảng, nên thời gian
+    của thuần tập hồi cứu in nguyên «2020-01», không phải mốc ngày kiểu Việt Nam và K17 STROBE 5 không nhận)."""
     s = lam_sach(x)
-    m = re.fullmatch(r"(\d{4})-(\d{2})(?:-\d{2})?\s*(?:đến|–|-|tới)\s*(\d{4})-(\d{2})(?:-\d{2})?", s)
-    if m:
-        return f"từ tháng {m.group(2)}/{m.group(1)} đến tháng {m.group(4)}/{m.group(3)}"
-    return s
+    s = _KHOANG_THANG_RE.sub(lambda m: f"từ tháng {m.group(2)}/{m.group(1)} đến tháng {m.group(4)}/{m.group(3)}", s)
+    return _THANG_ISO_RE.sub(lambda m: f"tháng {m.group(2)}/{m.group(1)}", s)
 
 
 # ══════════════════════════════════════════════════════════════════════════════════════════════════ trích dẫn
@@ -885,7 +890,9 @@ def don_mien_dong_thuan(n: Nguon) -> List[str]:
     ly_do = ("Đề tài chỉ sử dụng dữ liệu hồi cứu trích từ hồ sơ bệnh án; dữ liệu được khử định danh trước khi phân "
              "tích. Việc liên lạc lại từng người bệnh để xin đồng ý là không khả thi, và nghiên cứu không làm thay đổi "
              "chăm sóc của người bệnh nên nguy cơ là tối thiểu.") if hoi_cuu else f"Lý do đề nghị: {CHAM}"
-    return [ly_do, "",
+    import can_cu_dao_duc as CCDD  # noqa: PLC0415
+
+    return [ly_do, "", f"Căn cứ đề nghị: {CCDD.CAN_CU_MIEN_DONG_THUAN_VAN_BAN_NOP}", "",
             "Nhóm nghiên cứu cam kết: chỉ trích những thông tin cần cho mục tiêu nghiên cứu; không ghi họ tên, địa "
             "chỉ, số điện thoại của người bệnh vào phiếu; bảng đối chiếu mã nghiên cứu với hồ sơ được lưu riêng, có "
             f"phân quyền và huỷ {_luc_huy_bang_noi(n.out)}; kết quả chỉ công bố ở dạng tổng hợp.", "",
@@ -1396,6 +1403,287 @@ def bang_sai_lech(ds: Any) -> List[str]:
     return ra + [""]
 
 
+# ══════════════════════════════════════════════════════════════════════════ mục chuẩn báo cáo theo từng mục (K17)
+# 21/11/2026 (bác sĩ: «mọi đề tài, mọi thiết kế phải đạt từng mục chuẩn quốc tế và Việt Nam»). Đo K17 trên 8 đề cương
+# giả lập: dữ kiện ĐÃ CHỐT có sẵn (G1 control_source ghi tiêu chí ghép và tỷ lệ chứng/ca, critical_to_quality ghi «cùng
+# bộ câu hỏi cho ca và chứng», SAP §7 ghi nhóm nhỏ tiền định, G9 ghi vai trò nhà tài trợ…) nhưng bộ sinh không in ra
+# hoặc in vào mục mà chuẩn không tìm. Mỗi hàm dưới đây dựng MỘT mục từ quyết định đã chốt; thiếu dữ kiện ⇒ ô «………»
+# cho chủ nhiệm (K17 không nhận dòng còn ô trống là có yếu tố — `kiem_chuan_de_cuong_theo_muc.o_trong_quanh`).
+_NHOM_SO_SANH = {"rct": ("nhóm can thiệp", "nhóm chứng"), "cohort": ("nhóm phơi nhiễm", "nhóm không phơi nhiễm"),
+                 "case_control": ("nhóm bệnh", "nhóm chứng")}
+# Mệnh đề lý do do PI viết trong trường mô tả («…, tỷ lệ 2 chứng : 1 ca, để nhóm chứng đại diện cho…»). Không nhận «vì»,
+# «do» — hai từ này trong câu mô tả thường là nguyên nhân/tác nhân («nhập viện vì nôn máu»), không phải lý do chọn.
+_LY_DO_RE = re.compile(r"(?:,\s*|\s+[—–]\s+|\s+)((?:để|nhằm|với lý do|lý do là)\s[^;.]*)", re.I)
+_TU_CSDL_RE = re.compile(r"cơ sở dữ liệu|\bHIS\b|bệnh án điện tử|eHospital|phần mềm quản lý|trích (?:toàn bộ |xuất )?"
+                         r"hồ sơ|khung mẫu", re.I)
+
+
+def _tach_ly_do(s: str) -> Tuple[str, str]:
+    """(phần mô tả, mệnh đề lý do) — lý do chỉ khi PI đã viết («để/nhằm/với lý do…»)."""
+    m = _LY_DO_RE.search(s or "")
+    if not m:
+        return s or "", ""
+    return s[:m.start()].rstrip(" ,;—–"), m.group(1).strip()
+
+
+def nhom_benh_chung(n: "Nguon") -> List[str]:
+    """STROBE 6a/6b (bệnh–chứng): định nghĩa và cách xác định ca, nguồn và cách chọn chứng (gồm tiêu chí ghép, số chứng
+    mỗi ca), lý do chọn — từ G1 case_definition/control_source. Lý do chỉ lấy khi PI đã viết; không có ⇒ ô trống."""
+    chung, ly_do = _tach_ly_do(lam_sach(n.td.thay(str(n.g1.get("control_source") or ""))))
+    if not ly_do:
+        _, ly_do = _tach_ly_do(lam_sach(n.g1.get("case_definition")))
+    return [f"- Nhóm bệnh (định nghĩa và cách xác định ca): {_cau(n.g1.get('case_definition')) or CHAM}",
+            f"- Nhóm chứng (nguồn và cách chọn): {_cau(chung) or CHAM}",
+            f"- Lý do chọn nhóm bệnh và nhóm chứng: {_cau(ly_do) or CHAM}"]
+
+
+def giai_doan_thu_thap(n: "Nguon") -> str:
+    """STROBE 5 «giai đoạn tuyển chọn/thu thập»: cách và lịch thu thập đã chốt ở G1 (data_collection_method,
+    follow_up_schedule); mốc ngày nằm ở dòng thời gian nghiên cứu ngay trên. Không có ⇒ ô trống."""
+    cach = re.sub(r"^thu mới\s*:\s*", "", _thuong(n.g1.get("data_collection_method")), flags=re.I)
+    lich = _thuong(n.g1.get("follow_up_schedule"))
+    phan = [x for x in (cach, lich) if x and not x.lower().startswith("không áp dụng")]
+    if not phan:
+        return f"- Giai đoạn thu thập số liệu: {CHAM}"
+    return f"- Giai đoạn thu thập số liệu: trong thời gian nghiên cứu, {'; '.join(phan)}."
+
+
+def dieu_kien_loc(n: "Nguon") -> List[str]:
+    """RECORD 6.1: quần thể lấy từ cơ sở dữ liệu ⇒ nêu điều kiện lọc hồ sơ = tiêu chuẩn chọn/loại đã chốt (kèm mã ICD
+    nếu PI đã ghi). Đề tài tuyển mới không có dòng này."""
+    nguon = " ".join(lam_sach(n.g1.get(k)) for k in ("recruitment_strategy", "data_collection_method"))
+    if n.thiet_ke in ("sr_ma", "qualitative") or not _TU_CSDL_RE.search(nguon) or re.search(r"thu mới", nguon, re.I):
+        return []
+    chon = [_thuong(x) for x in _danh_sach(n.g1.get("inclusion_criteria") or n.s("population", "inclusion"))]
+    loai = [_thuong(x) for x in _danh_sach(n.g1.get("exclusion_criteria") or n.s("population", "exclusion"))]
+    if not chon:
+        return [f"- Điều kiện lọc hồ sơ trên cơ sở dữ liệu: {CHAM}"]
+    return ["- Điều kiện lọc hồ sơ trên cơ sở dữ liệu: " + "; ".join(chon)
+            + (f"; loại hồ sơ có: {'; '.join(loai)}" if loai else "") + "."]
+
+
+def kiem_dinh_ma(n: "Nguon") -> List[str]:
+    """RECORD 6.2: quần thể hoặc kết cục xác định bằng mã (ICD…) ⇒ nêu bước đối chiếu mã với hồ sơ gốc mà PI đã chốt
+    (G1 critical_to_quality / monitoring_plan có «kiểm/đối chiếu … hồ sơ/phim/xét nghiệm»). Không có ⇒ ô trống."""
+    kc = n.g1.get("primary_outcome") if isinstance(n.g1.get("primary_outcome"), dict) else {}
+    van = " ".join(lam_sach(x) for x in (n.g1.get("population"), n.g1.get("inclusion_criteria"), kc.get("measure")))
+    if n.thiet_ke in ("sr_ma", "qualitative") or not re.search(r"\bICD|mã (bệnh|chẩn đoán|thuốc|ATC)", van):
+        return []
+    cum_ds = [c for k in ("critical_to_quality", "monitoring_plan") for c in _danh_sach(n.g1.get(k))]
+    cum_ds += [c for x in (n.g1.get("bias_controls") or []) if isinstance(x, dict)
+               for c in _danh_sach(x.get("bien_phap"))]
+    for cum in cum_ds:
+        if re.search(r"\b(kiểm|đối chiếu|xác nhận|thẩm định)\b.{0,60}(hồ sơ|phim|xét nghiệm|bệnh án)", cum, re.I):
+            return [f"- Đối chiếu cách xác định bằng mã với hồ sơ gốc: {_thuong(cum)}."]
+    return [f"- Đối chiếu cách xác định bằng mã với hồ sơ gốc: {CHAM}"]
+
+
+def nhom_nho_tien_dinh(n: "Nguon") -> str:
+    """Nội dung «nhóm nhỏ tiền định» của SAP §7 đã khoá; '' khi SAP không có hoặc khai không phân tích nhóm nhỏ."""
+    for nh, nd in muc_sap(n.sap_text).get(7, []):
+        s = lam_sach(nd)
+        if re.search(r"nhóm nhỏ|phân nhóm", nh or "", re.I) and _co(s) and not re.match(r"không\b", s, re.I):
+            return re.sub(r"\s*[—–-]\s*ghi trước khi xem dữ liệu\.?$", "", s)
+    return ""
+
+
+def bien_dieu_chinh_tac_dong(n: "Nguon") -> List[str]:
+    """STROBE 7 «effect modifiers»: biến phân nhóm tiền định của SAP §7 (+ biến vai trò phân nhóm/điều chỉnh tác động
+    của ma trận mục tiêu – biến). Không có nhóm nhỏ tiền định ⇒ không có dòng."""
+    ds = [x for x in (nhom_nho_tien_dinh(n),) if x]
+    ds += [lam_sach(r.get("khai_niem")) for r in n.ma_tran if r.get("vai_tro") in ("phan_nhom", "dieu_chinh")]
+    ds = list(dict.fromkeys(x for x in ds if x))
+    if not ds:
+        return []
+    tuong_tac = any(re.search(r"tương tác|interaction", f"{nh} {nd}", re.I)
+                    for nh, nd in muc_sap(n.sap_text).get(7, []))
+    return ["- Biến điều chỉnh tác động (phân nhóm tiền định" + (", đánh giá bằng số hạng tương tác" if tuong_tac
+                                                                  else "") + "): " + "; ".join(ds) + "."]
+
+
+def do_luong_nhu_nhau(n: "Nguon") -> List[str]:
+    """STROBE 8: chất lượng đo lường PI đã chốt (G1 critical_to_quality, monitoring_plan) + tương đồng cách đo giữa các
+    nhóm so sánh — một phiếu, một từ điển biến và một lịch thu thập dùng chung cho mọi nhóm (cấu trúc của chính đề
+    cương: Phụ lục C, Phụ lục D)."""
+    ra = []
+    for nhan, k in (("Bảo đảm chất lượng đo lường", "critical_to_quality"), ("Giám sát chất lượng", "monitoring_plan")):
+        if _co(n.g1.get(k)):
+            ra.append(f"- {nhan}: {_cau(n.g1.get(k))}")
+    if n.thiet_ke in _NHOM_SO_SANH:
+        a, b = _NHOM_SO_SANH[n.thiet_ke]
+        ra.append(f"- Đo lường như nhau giữa các nhóm: {a} và {b} được thu thập bằng cùng một phiếu (Phụ lục C), cùng "
+                  "định nghĩa biến (Phụ lục D) và theo cùng lịch thu thập.")
+    return ra
+
+
+def xu_ly_mat_theo_doi(n: "Nguon") -> List[str]:
+    """STROBE 12d (thuần tập) / TRIPOD+AI: cách xử lý mất theo dõi ghép từ quyết định đã chốt — câu SAP nói thẳng về mất
+    theo dõi/kiểm duyệt; tiêu chí loại liên quan thời gian theo dõi (G1); kết cục chính thiếu do mất theo dõi khi SAP §6
+    đưa chính biến kết cục vào kế hoạch dữ liệu thiếu; phân tích độ nhạy theo thời gian theo dõi (SAP §9). Không có ⇒ ô
+    trống."""
+    if n.thiet_ke not in ("cohort", "prediction"):
+        return []
+    muc = muc_sap(n.sap_text)
+    phan: List[str] = []
+    for so in (4, 5, 6, 9):
+        for nh, nd in muc.get(so, []):
+            if re.search(r"mất theo dõi|mất dấu|kiểm duyệt|censor", f"{nh} {nd}", re.I):
+                phan.append(_thuong(f"{nh}: {nd}" if nh and nh != "•" else nd))
+    loai = [_thuong(x) for x in _danh_sach(n.g1.get("exclusion_criteria")) if re.search(r"theo dõi", x, re.I)]
+    if loai:
+        phan.append("loại khỏi mẫu người có " + "; ".join(loai))
+    kc = [r.get("bien") for r in n.ma_tran if r.get("vai_tro") == "ket_cuc_chinh" and r.get("bien")]
+    s6 = muc.get(6, [])
+    chien_luoc = next((lam_sach(nd) for nh, nd in s6 if re.search(r"chiến lược", nh or "", re.I) and _co(nd)), "")
+    if chien_luoc and kc and any(re.search(rf"\b{re.escape(b)}\b", n.sap_text) for b in kc) and any(
+            re.search(rf"\b{re.escape(b)}\b", nd) for b in kc for _nh, nd in s6):
+        phan.append("kết cục chính chưa xác định được do mất theo dõi trước thời điểm đánh giá được xử lý như dữ liệu "
+                    f"thiếu theo kế hoạch ở trên ({_thuong(chien_luoc)})")
+    phan += ["phân tích độ nhạy: " + _thuong(nd) for _nh, nd in muc.get(9, []) if re.search(r"theo dõi", nd, re.I)]
+    phan = list(dict.fromkeys(x for x in phan if x))
+    return [f"- Xử lý mất theo dõi: {'; '.join(phan)}." if phan else f"- Xử lý mất theo dõi: {CHAM}"]
+
+
+def _g9(n: "Nguon") -> Dict[str, Any]:
+    return _doc_json(n.out / "G9_PUBLICATION_READINESS.json")
+
+
+def kinh_phi_tai_tro(n: "Nguon") -> str:
+    """STROBE 22: nguồn kinh phí và vai trò của đơn vị tài trợ — khai báo của PI (G9 coi_funding, G7 funding_declared,
+    kinh phí đã khai ở study_meta). Thiếu vai trò ⇒ ô trống."""
+    cf = _g9(n).get("coi_funding") or {}
+    g7 = (n.meta.get("gate_params") or {}).get("G7") or {}
+    nguon = next((x for x in (cf.get("funding_statement"), g7.get("funding_declared"), n.meta.get("funding"))
+                  if _co(x)), "")
+    vai = cf.get("sponsor_role_statement")
+    return (f"- Nguồn kinh phí và vai trò của đơn vị tài trợ: {_thuong(nguon) or CHAM}; "
+            f"{_thuong(vai) if _co(vai) else CHAM}.")
+
+
+def chia_se_tai_lieu(n: "Nguon") -> str:
+    """RECORD 22.1: cách tiếp cận đề cương, dữ liệu và mã phân tích — khai báo của PI (G9 data_availability, G7
+    data_sharing_statement). Không có ⇒ ô trống."""
+    da = _g9(n).get("data_availability") or {}
+    g7 = (n.meta.get("gate_params") or {}).get("G7") or {}
+    noi = [_thuong(x) for x in (da.get("what_data"), da.get("access_criteria"), da.get("access_mechanism"),
+                                da.get("available_from"), g7.get("data_sharing_statement")) if _co(x)]
+    noi = list(dict.fromkeys(noi))
+    return ("- Khả năng tiếp cận đề cương, dữ liệu và mã phân tích: " + ("; ".join(noi) + "." if noi else CHAM))
+
+
+def lam_sach_so_lieu(n: "Nguon") -> str:
+    """RECORD 12.2: phương pháp làm sạch số liệu — đếm từ CHÍNH từ điển dữ liệu G5 (miền giá trị, trường bắt buộc, logic
+    nhánh) mà công cụ làm sạch áp khi khoá dữ liệu, cộng bước kiểm chứng nhập liệu đã chốt
+    (`_quy-trinh-du-lieu.csv`)."""
+    td = n.tu_dien or []
+    gioi_han = sum(1 for r in td if _co(r.get("Text Validation Min")) or _co(r.get("Text Validation Max")))
+    bat_buoc = sum(1 for r in td if str(r.get("Required Field?") or "").strip().lower() in ("y", "yes"))
+    nhanh = sum(1 for r in td if str(r.get("Branching Logic (Show field only if...)") or "").strip())
+    kiem = ""
+    try:
+        import quy_trinh_du_lieu as QT  # noqa: PLC0415
+
+        dong, _, _ = QT.doc_bang(n.out)
+        kiem = next((lam_sach(r.get("gia_tri")) for r in dong or [] if r.get("muc") == "kiem_chung"), "")
+    except Exception:  # noqa: BLE001 — chưa chốt quy trình dữ liệu: vẫn dựng được phần từ điển
+        kiem = ""
+    phan = ([f"miền giá trị hợp lệ của {gioi_han} biến"] if gioi_han else []) + (
+        [f"{bat_buoc} trường bắt buộc"] if bat_buoc else []) + ([f"logic nhánh của {nhanh} trường"] if nhanh else [])
+    if not phan and not kiem:
+        return f"- Làm sạch số liệu: {CHAM}"
+    cau = ("trước khi khoá dữ liệu, kiểm tra " + ", ".join(phan) + " theo từ điển dữ liệu (Phụ lục D); giá trị ngoài "
+           "phạm vi hoặc để trống được tạo truy vấn") if phan else ""
+    return "- Làm sạch số liệu: " + "; ".join(x for x in (cau, _thuong(kiem)) if x) + "."
+
+
+def du_lieu_thuong_quy(n: "Nguon", van: str) -> bool:
+    """Đề tài dùng dữ liệu thu thập thường quy (RECORD 2015) — cùng biểu thức với K17 để hai nơi không lệch nhau."""
+    import kiem_chuan_de_cuong_theo_muc as KCM  # noqa: PLC0415
+
+    return KCM.co_dieu_kien(KCM.DU_LIEU_THUONG_QUY, van)
+
+
+def _mo_ta_chon_mau(n: "Nguon") -> str:
+    ma = [str(x) for x in (n.g1.get("sampling_design") or [])]
+    if "toan_bo" in ma:
+        return "toàn bộ hồ sơ/người bệnh đủ tiêu chuẩn trong thời gian nghiên cứu"
+    if any("ngau_nhien" in x or "ngẫu nhiên" in x for x in ma):
+        return "chọn mẫu ngẫu nhiên từ khung mẫu"
+    khac = [x.split(":", 1)[1].strip() for x in ma if x.startswith("khac:") and "không áp dụng" not in x]
+    return khac[0] if khac else ""
+
+
+DAU_THUONG_QUY = "@@HE_QUA_DU_LIEU_THUONG_QUY@@"
+
+
+def he_qua_thuong_quy(n: "Nguon", van: str) -> List[str]:
+    """RECORD 19.1 — chỉ khi đề tài dùng dữ liệu thu thập thường quy (đo trên TOÀN văn bằng cùng biểu thức với K17):
+    nguồn dữ liệu đã chốt, biến xác định bằng mã chẩn đoán/đơn thuốc (nếu văn bản có), dữ liệu thiếu, nhiễu chưa đo."""
+    if n.thiet_ke in ("sr_ma", "qualitative") or not du_lieu_thuong_quy(n, van.replace(DAU_THUONG_QUY, "")):
+        return []
+    nguon = "; ".join(dict.fromkeys(_thuong(x) for x in _danh_sach(n.s("data_collection", "source")) if x))
+    ma = [r for r, bt in (("mã chẩn đoán", r"\bICD"), ("đơn thuốc", r"đơn thuốc|cấp phát")) if re.search(bt, van)]
+    return ["- Hệ quả của dữ liệu thu thập thường quy: dữ liệu " + (f"từ {nguon} " if nguon else "")
+            + "được ghi nhận cho mục đích lâm sàng, không được thu thập cho câu hỏi nghiên cứu này, nên có thể "
+            + ("phân loại sai các biến xác định bằng " + " và ".join(ma) + ", " if ma else "phân loại sai, ")
+            + "có dữ liệu thiếu ở các biến ghi chép không đầy đủ (xử lý theo kế hoạch dữ liệu thiếu) và nhiễu chưa đo "
+              "được do các yếu tố không được ghi trong hồ sơ."]
+
+
+def han_che_suy_rong(n: "Nguon") -> List[str]:
+    """STROBE 19/21 · RECORD 19.1: hạn chế (PI khai ở study_meta/StudySpec), sai lệch kèm chiều ảnh hưởng (bảng ở mục
+    sai số), hệ quả của dữ liệu thường quy (dấu `DAU_THUONG_QUY`, thay ở `dung_de_cuong` khi đã có toàn văn), phạm vi
+    suy rộng (quần thể · nơi · cách chọn mẫu đã chốt)."""
+    ra: List[str] = []
+    hc = n.meta.get("limitations") or n.s("bias", "limitations")
+    if _co(hc):
+        ra.append(f"- Hạn chế đã xác định: {_thuong(n.td.thay(str(hc)))}.")
+    if any(isinstance(x, dict) and _co(x.get("chieu")) for x in (n.g1.get("bias_controls") or [])):
+        ra.append("- Sai lệch và chiều ảnh hưởng dự kiến: các nguồn sai lệch, chiều tác động có thể có lên ước lượng "
+                  "và biện pháp khống chế đã nêu ở bảng của mục sai số; kết quả được diễn giải có tính đến các "
+                  "chiều lệch này.")
+    ra.append(DAU_THUONG_QUY)
+    pop = _thuong(n.g1.get("population") or n.s("population", "description"))
+    noi = _thuong(n.g1.get("setting") or n.s("design", "setting"))
+    if n.thiet_ke == "sr_ma":
+        ra.append(f"- Phạm vi suy rộng: kết luận áp dụng cho quần thể của các nghiên cứu được gộp ({pop or CHAM}); "
+                  "mức chắc chắn của bằng chứng theo GRADE quyết định mức độ áp dụng vào thực hành.")
+    elif n.thiet_ke == "qualitative":
+        ra.append(f"- Phạm vi suy rộng: kết quả định tính không nhằm suy rộng thống kê; tính chuyển giao sang bối cảnh "
+                  f"khác dựa trên mô tả chi tiết người tham gia ({pop or CHAM}) và bối cảnh ({noi or CHAM}).")
+    elif pop or noi:
+        cm = _mo_ta_chon_mau(n)
+        ra.append(f"- Phạm vi suy rộng: kết quả phản ánh {pop or CHAM} tại {noi or CHAM}" + (f", chọn theo {cm}"
+                                                                                          if cm else "")
+                  + "; áp dụng cho cơ sở hoặc quần thể khác cần cân nhắc khác biệt về đặc điểm người bệnh và cách "
+                    "chăm sóc.")
+    else:
+        ra.append(f"- Phạm vi suy rộng: {CHAM}")
+    return ra
+
+
+def ban_luan_du_kien(n: "Nguon", dong_chuong: Sequence[str], so: int) -> List[str]:
+    """STROBE 18: khung bàn luận theo TỪNG mục tiêu — nêu đúng bảng/biểu đồ trả lời mục tiêu đó (chú thích «(Mục tiêu
+    k)» của khung biểu bảng) và tài liệu đã dẫn ở bằng chứng nền (G1 evidence_summary/background_problem); ý bàn luận
+    chính để chủ nhiệm bổ sung."""
+    ra = [f"## 5.{so}. Dự kiến bàn luận", ""]
+    nen = " ".join(str(n.g1.get(k) or "") for k in ("evidence_summary", "background_problem", "knowledge_gap"))
+    so_tl = sorted({n.td.thu_tu.index(p) + 1 for p in re.findall(r"\d{5,9}", nen) if p in n.td.thu_tu})
+    ref = ("[" + ", ".join(map(str, so_tl)) + "]") if so_tl else ""
+    for k, ten in enumerate(_muc_tieu(n), 1):
+        bb = [f"{m.group(1)} {m.group(2)}" for d in dong_chuong
+              for m in [re.match(r"^\*\*(Bảng|Hình|Biểu đồ) (5\.\d+)\. (.+)\*\*$", d.strip())]
+              if m and re.search(rf"\(Mục tiêu {k}(?!\d)", m.group(3))]
+        ra += [f"### 5.{so}.{k}. Bàn luận theo mục tiêu {k}", "",
+               f"Bàn luận kết quả trả lời mục tiêu {k} ({_thuong(ten).rstrip('.')})"
+               + (f", trình bày ở {', '.join(bb)}" if bb else "")
+               + ": so sánh với các nghiên cứu trong nước và quốc tế đã tổng quan" + (f", trước hết là {ref}" if ref
+                                                                                     else "")
+               + ", nêu điểm giống, điểm khác và lý giải sự khác biệt; diễn giải ý nghĩa của kết quả đối với thực hành "
+                 "tại đơn vị.", "", f"Các ý bàn luận chính do chủ nhiệm bổ sung: {CHAM}", ""]
+    return ra
+
+
 def _g1(n: Nguon, k: str) -> str:
     # 17/11/2026: trường G1 do PI viết có thể chứa trích dẫn liền («KDIGO 2024 (PMID 38490803)») ⇒ đổi thành số
     # Vancouver khi PMID đã qua A12, bỏ khi chưa (đề cương nộp không in PMID thô — K6, đo trên BTM).
@@ -1404,7 +1692,6 @@ def _g1(n: Nguon, k: str) -> str:
 
 
 def chuong_phuong_phap(n: Nguon) -> List[str]:
-    td = n.td
     tk = n.thiet_ke
     dong = ["# 4. ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP NGHIÊN CỨU", ""]
     so = [0]
@@ -1438,10 +1725,20 @@ def chuong_phuong_phap(n: Nguon) -> List[str]:
                 + f" Cấu phần định tính được báo cáo theo COREQ{n.chuan('COREQ')} và toàn bộ nghiên cứu hỗn hợp theo "
                   f"GRAMMS{n.chuan('GRAMMS')}.")
     dong += [cau, ""]
+    # STROBE 4 (21/11/2026): hướng thời gian thu thập — chế độ tuyển PI đã khai ở G2
+    huong = {"PROSPECTIVE_NEW_PARTICIPANTS": "tiến cứu — tuyển mới người tham gia và thu thập số liệu mới trong thời "
+                                             "gian nghiên cứu",
+             "RETROSPECTIVE_SECONDARY_DATA": "hồi cứu — sử dụng dữ liệu đã có, không tuyển mới người tham gia"}.get(
+        str(n.g2.get("recruitment_mode") or "").upper())
+    if huong and tk != "sr_ma":
+        dong += [f"Hướng thu thập số liệu: {huong}.", ""]
     # Địa điểm, thời gian
     muc("Địa điểm và thời gian nghiên cứu")
     dong += [f"- Địa điểm: {_cau(n.g1.get('setting') or n.s('design', 'setting')) or CHAM}",
-             f"- Thời gian: {_thoi_gian(n.g1.get('study_period') or n.s('design', 'period')) or CHAM}.", ""]
+             f"- Thời gian nghiên cứu: {_thoi_gian(n.g1.get('study_period') or n.s('design', 'period')) or CHAM}."]
+    if tk != "sr_ma":
+        dong.append(giai_doan_thu_thap(n))
+    dong.append("")
     # Đối tượng
     muc("Đối tượng nghiên cứu" if tk != "sr_ma" else "Tiêu chuẩn lựa chọn nghiên cứu")
     if tk != "sr_ma":
@@ -1451,6 +1748,8 @@ def chuong_phuong_phap(n: Nguon) -> List[str]:
     dong += ["", f"### 4.{so[0]}.2. Tiêu chuẩn loại trừ", ""]
     dong += [f"- {_cau(x)}" for x in _danh_sach(n.g1.get("exclusion_criteria") or n.s("population", "exclusion"))]
     dong.append("")
+    if tk == "case_control":  # STROBE 6a/6b thuộc mục đối tượng (trước 21/11/2026 nằm ở mục riêng, chuẩn không tìm)
+        dong += [f"### 4.{so[0]}.3. Nhóm bệnh và nhóm chứng", ""] + nhom_benh_chung(n) + [""]
     # Cỡ mẫu
     muc("Cỡ mẫu và phương pháp chọn mẫu")
     dong += [f"### 4.{so[0]}.1. Cỡ mẫu", ""] + doan_co_mau(n) + [""] + _cau_phuong_phap_hoc(n)
@@ -1460,7 +1759,8 @@ def chuong_phuong_phap(n: Nguon) -> List[str]:
         chon = (chon + " " if chon else "") + ("Người tham gia đủ tiêu chuẩn và đồng ý tham gia được phân bổ ngẫu "
                                                "nhiên vào hai nhóm (mục ngẫu nhiên hoá dưới đây).")
     if tk != "sr_ma":
-        dong += [f"### 4.{so[0]}.2. Phương pháp chọn mẫu", "", chon or CHAM, ""]
+        loc = dieu_kien_loc(n)
+        dong += [f"### 4.{so[0]}.2. Phương pháp chọn mẫu", "", chon or CHAM, ""] + (loc + [""] if loc else [])
     # Khối riêng theo thiết kế
     if tk == "rct":
         muc("Can thiệp và nhóm chứng")
@@ -1493,10 +1793,11 @@ def chuong_phuong_phap(n: Nguon) -> List[str]:
         dong += [f"- Nhóm phơi nhiễm: {_cau(pn)}", f"- Nhóm không phơi nhiễm: {_cau(ss)}",
                  ""]
     elif tk == "case_control":
-        muc("Định nghĩa nhóm bệnh và nhóm chứng")
-        dong += [f"- Nhóm bệnh: {_cau(n.g1.get('case_definition')) or CHAM}",
-                 f"- Nhóm chứng: {_cau(n.g1.get('control_source')) or CHAM}",
-                 f"- Phơi nhiễm quan tâm: {_cau(n.g1.get('intervention_or_exposure')) or CHAM}", ""]
+        muc("Phơi nhiễm quan tâm")
+        dong += [f"- Phơi nhiễm: {_cau(n.g1.get('intervention_or_exposure')) or CHAM}"]
+        if _co(n.g1.get("comparator")):
+            dong.append(f"- Mức so sánh: {_cau(n.g1.get('comparator'))}")
+        dong.append("")
     elif tk == "diagnostic":
         muc("Xét nghiệm cần đánh giá và tiêu chuẩn tham chiếu")
         dong += [f"- Bệnh đích: {_cau(n.g1.get('target_condition')) or CHAM}",
@@ -1549,11 +1850,19 @@ def chuong_phuong_phap(n: Nguon) -> List[str]:
     phu = [lam_sach(n.td.thay(str(x))) for x in phu]
     if phu:
         dong.append("- Kết cục phụ: " + "; ".join(_thuong(x) for x in phu if x) + ".")
+    # 21/11/2026 (STROBE 7): cắt ngang có mục tiêu phân tích ⇒ nêu biến độc lập (phơi nhiễm/yếu tố khảo sát) của ma trận
+    # mục tiêu – biến; thiết kế có nhóm so sánh đã có mục phơi nhiễm riêng.
+    if tk == "cross_sectional":
+        doc_lap = list(dict.fromkeys(lam_sach(r.get("khai_niem")) for r in n.ma_tran
+                                     if r.get("vai_tro") in ("phoi_nhiem", "yeu_to") and _co(r.get("khai_niem"))))
+        if doc_lap:
+            dong.append("- Biến độc lập (phơi nhiễm, yếu tố khảo sát): " + "; ".join(doc_lap) + ".")
     hiep = [lam_sach(r.get("khai_niem")) for r in n.ma_tran if r.get("vai_tro") in ("hiep_bien", "nhieu", "mo_ta")]
     hiep = list(dict.fromkeys(x for x in hiep if x))
     if hiep:
         dong.append(("- Đặc điểm người tham gia: " if tk == "qualitative" else
                      "- Các biến khác (đặc điểm chung, biến hiệu chỉnh): ") + "; ".join(hiep) + ".")
+    dong += bien_dieu_chinh_tac_dong(n)
     dong += ["- Định nghĩa, loại biến và cách mã hoá của từng biến trình bày ở Phụ lục D.", ""]
     # Công cụ & kỹ thuật thu thập
     muc("Công cụ và kỹ thuật thu thập số liệu")
@@ -1568,6 +1877,7 @@ def chuong_phuong_phap(n: Nguon) -> List[str]:
             x = re.sub(r"(?i)^Phiếu trích hồ sơ \(CRF\) dựng từ bộ biến đã duyệt.*$",
                        f"{ten_phieu} (Phụ lục C), xây dựng từ bộ biến số của đề tài", str(x))
             dong.append(f"- {nhan}: {_cau(x)}")
+    dong += do_luong_nhu_nhau(n)
     dong.append("")
     # Quy trình
     so_do = n.g1.get("study_schema_timeline") or n.s("design_specific", "schedule")
@@ -1578,24 +1888,26 @@ def chuong_phuong_phap(n: Nguon) -> List[str]:
     # Sai số
     muc("Sai số và biện pháp khống chế sai số")
     bang_sl = bang_sai_lech(n.g1.get("bias_controls"))
+    km = kiem_dinh_ma(n)  # RECORD 6.2 — bước đối chiếu mã khống chế sai lệch phân loại
     if bang_sl:
-        dong += bang_sl
+        dong += bang_sl + (km + [""] if km else [])
     else:
+        dong += km
         rui = n.meta.get("bias_risks") or n.s("bias", "risks")
         kiem = n.meta.get("bias_controls") or n.s("bias", "mitigations")
+        # 21/11/2026 (STROBE 19): chưa có sổ sai lệch {sai_lech, bien_phap, chieu} ⇒ dòng chiều ảnh hưởng để trống cho
+        # chủ nhiệm — không đoán chiều lệch thay PI.
         dong += [f"- Nguồn sai số có thể gặp: {_thuong(rui)}." if _co(rui) else f"- Nguồn sai số: {CHAM}",
-                 f"- Biện pháp khống chế: {_thuong(kiem)}." if _co(kiem) else f"- Biện pháp khống chế: {CHAM}", ""]
+                 f"- Biện pháp khống chế: {_thuong(kiem)}." if _co(kiem) else f"- Biện pháp khống chế: {CHAM}",
+                 f"- Chiều ảnh hưởng dự kiến của từng nguồn sai lệch: {CHAM}", ""]
     # Phân tích
     muc("Xử lý và phân tích số liệu")
-    dong += phan_tich(n) + [""]
+    dong += phan_tich(n)
+    dong += xu_ly_mat_theo_doi(n) + [""]
     # Đạo đức
     muc("Đạo đức trong nghiên cứu")
     dong += dao_duc(n) + [""]
-    # Hạn chế
-    han_che = n.meta.get("limitations") or n.s("bias", "limitations")
-    if _co(han_che):
-        muc("Hạn chế của nghiên cứu")
-        dong += [_cau(td.thay(str(han_che))), ""]
+    # Hạn chế: chuyển sang chương 5 cùng phạm vi suy rộng (21/11/2026 — STROBE 19/21 thuộc phần bàn luận)
     return dong
 
 
@@ -1712,7 +2024,11 @@ def dao_duc(n: Nguon) -> List[str]:
     else:
         dong.append(f"- Mức nguy cơ: {_muc_nguy_co(n.s('ethics', 'risk_level')) or CHAM}")
         dong.append(f"- Hình thức xét duyệt: {_lo_trinh(n.s('ethics', 'irb_route')) or CHAM}")
-        dong.append("- Quy trình đồng thuận: " + ("đề nghị miễn thủ tục đồng thuận (Phụ lục B)." if
+        # 21/11/2026 (chuẩn Việt Nam, K17): xin miễn ⇒ nêu đúng căn cứ đã đối chiếu nguyên văn (`can_cu_dao_duc.py`)
+        dong.append("- Quy trình đồng thuận: " + ("đề nghị Hội đồng Đạo đức chấp thuận miễn lấy bản cung cấp thông tin "
+                                                  "nghiên cứu và phiếu tình nguyện tham gia theo Thông tư "
+                                                  "43/2024/TT-BYT, Điều 7 khoản 1 điểm b; lý do và căn cứ trình bày "
+                                                  "trong đơn đề nghị (Phụ lục B)." if
                                                   n.g2.get("icf_waiver_requested") else
                                                   "người tham gia được giải thích đầy đủ và ký phiếu đồng ý trước khi "
                                                   "tham gia (Phụ lục B)."))
@@ -1751,7 +2067,7 @@ def chuong_du_kien(n: Nguon) -> List[str]:
                  "bất đồng; trường hợp bất đồng được phân tích trong phần bàn luận."])]))
         dong, loi_ve = KBB.ve_chuong(cac_muc, 5, n.out, ve_anh=getattr(n, "ve_anh", False))
         n.loi_ve_bieu_bang = loi_ve
-        return dong + [""]
+        return dong + [""] + _ban_luan_han_che(n, dong)
     dong = ["# 5. DỰ KIẾN KẾT QUẢ", ""]
     muc = _muc_tieu(n)
     bang = bang_sap(n.sap_text)
@@ -1788,7 +2104,16 @@ def chuong_du_kien(n: Nguon) -> List[str]:
              + (f" ({len(muc)} mục tiêu)" if len(muc) > 1 else "")
              + ", đối chiếu với các nghiên cứu đã công bố và nêu rõ ý nghĩa thực hành cũng như hạn chế của nghiên "
                "cứu.", ""]
-    return dong
+    return dong + _ban_luan_han_che(n, dong)
+
+
+def _ban_luan_han_che(n: "Nguon", dong_chuong: Sequence[str]) -> List[str]:
+    """Hai mục cuối chương 5 (21/11/2026 — STROBE 18/19/21, RECORD 19.1): «Dự kiến bàn luận» theo từng mục tiêu và
+    «Hạn chế của nghiên cứu và phạm vi suy rộng kết quả». Bộ chuyển khuôn BVQY175 giữ nguyên hai mục này (không thêm
+    bản thứ hai)."""
+    so = 1 + max([int(m.group(1)) for d in dong_chuong for m in [re.match(r"^## 5\.(\d+)\.", d)] if m] or [0])
+    return (ban_luan_du_kien(n, dong_chuong, so)
+            + [f"## 5.{so + 1}. Hạn chế của nghiên cứu và phạm vi suy rộng kết quả", ""] + han_che_suy_rong(n) + [""])
 
 
 def _tien_do(chuoi: str) -> List[str]:
@@ -1810,7 +2135,8 @@ def chuong_ke_hoach(n: Nguon) -> List[str]:
     doi = n.meta.get("team") or n.s("resources", "team")
     dong += [_cau(doi) or CHAM, "", "## 6.2. Tiến độ thực hiện", ""]
     dong += _tien_do(str(n.meta.get("timeline") or n.s("resources", "timeline") or "")) + [""]
-    dong += ["## 6.3. Dự trù kinh phí", "", _cau(n.meta.get("budget") or n.s("resources", "budget")) or CHAM, ""]
+    dong += ["## 6.3. Dự trù kinh phí", "", kinh_phi_tai_tro(n), "",
+             _cau(n.meta.get("budget") or n.s("resources", "budget")) or CHAM, ""]
     kp = [r for r in (n.g1.get("budget") or []) if isinstance(r, dict) and _co(r.get("nhom"))]
     if kp:
         dong += ["| STT | Khoản chi | Số lượng | Đơn giá | Thành tiền |", "|---|---|---|---|---|"]
@@ -1825,12 +2151,14 @@ def chuong_ke_hoach(n: Nguon) -> List[str]:
                     ("Khử định danh", "deidentification")):
         if _co(n.s("data_governance", k)):
             dong.append(f"- {nhan}: {_cau(n.s('data_governance', k))}")
+    if n.thiet_ke != "sr_ma":
+        dong.append(lam_sach_so_lieu(n))
     dong += ["", "## 6.5. Đăng ký nghiên cứu và phổ biến kết quả", ""]
     for x in (n.s("registration_dissemination", "plan"), n.meta.get("dissemination_plan") or
               n.s("registration_dissemination", "dissemination")):
         if _co(x):
             dong.append(f"- {_cau(x)}")
-    dong.append("")
+    dong += [chia_se_tai_lieu(n), ""]
     return dong
 
 
@@ -1986,6 +2314,8 @@ def dung_de_cuong(n: Nguon) -> str:
     than += ["# PHỤ LỤC D. BẢNG BIẾN SỐ VÀ MÃ HOÁ", ""] + bang_bien_so(n) + [""]
     dau = thong_tin_chung(n) + tom_tat(n)
     van = "\n".join(dau + viet_tat("\n".join(than)) + than)
+    # RECORD 19.1 cần TOÀN văn (phụ lục, phiếu) để biết đề tài có dùng dữ liệu thường quy không — cùng phép đo của K17
+    van = van.replace(DAU_THUONG_QUY, "\n".join(he_qua_thuong_quy(n, van)))
     return don_cuoi(van)
 
 
