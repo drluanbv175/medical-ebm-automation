@@ -59,6 +59,7 @@
 | Chữ viết tắt | Nghĩa đầy đủ |
 |---|---|
 | AES | Chuẩn mã hóa nâng cao (Advanced Encryption Standard) |
+| AGReMA | Hướng dẫn báo cáo phân tích trung gian (A Guideline for Reporting Mediation Analyses) |
 | ANOVA | Phân tích phương sai (analysis of variance) |
 | BHYT | Bảo hiểm y tế |
 | CFI, TLI | Chỉ số phù hợp so sánh (Comparative Fit Index), chỉ số Tucker–Lewis (Tucker–Lewis Index) |
@@ -128,7 +129,7 @@ Mục tiêu 1 là mục tiêu mô tả, không đặt giả thuyết kiểm đ�
 - **Giả thuyết H₀:** ở người bệnh ngoại trú Khoa C1a, sau khi hiệu chỉnh các yếu tố gây nhiễu đã xác định trước theo sơ đồ nhân quả (Phụ lục D), thời gian chờ khám (tính theo mỗi 15 phút) không liên quan với mức hài lòng chung: tỷ số chênh chung bằng 1.
 - **Giả thuyết H₁:** tỷ số chênh chung khác 1 (kiểm định hai phía, α = 0,05).
 
-Chiều liên quan dự kiến là thời gian chờ dài hơn đi kèm mức hài lòng chung thấp hơn (tỷ số chênh chung cho mức hài lòng cao hơn, ứng với mỗi 15 phút chờ thêm, nhỏ hơn 1), dựa trên bằng chứng gián tiếp từ người bệnh ngoại trú tại Việt Nam [2]. Do thiết kế cắt ngang, kết quả kiểm định chỉ cho phép kết luận về mối liên quan, không cho phép suy diễn quan hệ nhân quả.
+Chiều liên quan dự kiến, dựa trên bằng chứng gián tiếp từ người bệnh ngoại trú tại Việt Nam [2], là thời gian chờ dài hơn đi kèm mức hài lòng chung thấp hơn; trong mô hình chính, chiều này tương ứng với tỷ số chênh chung cho mức hài lòng cao hơn, ứng với mỗi 15 phút chờ thêm, nhỏ hơn 1. Do thiết kế cắt ngang, kết quả kiểm định chỉ cho phép kết luận về mối liên quan, không cho phép suy diễn quan hệ nhân quả.
 
 ---
 
@@ -509,7 +510,7 @@ Kế hoạch phân tích được tóm tắt dưới đây và trình bày chi t
 
 **Mục tiêu 2 – phân tích đơn biến.** Mô tả mối liên quan thô giữa từng yếu tố và kết cục (với G1: kiểm định Mann–Whitney, Kruskal–Wallis hoặc tương quan Spearman; với điểm lĩnh vực: kiểm định t, ANOVA hoặc tương quan Pearson/Spearman tùy phân bố; với kết cục nhị phân thứ cấp: kiểm định khi bình phương hoặc Fisher), luôn kèm độ lớn mối liên quan và khoảng tin cậy 95%. Bảng đơn biến chỉ có vai trò mô tả, không dùng để chọn biến đưa vào mô hình đa biến.
 
-**Mục tiêu 2 – mô hình chính.** Mô hình này dùng để kiểm định giả thuyết ở mục 2.3 (H₀: tỷ số chênh chung của thời gian chờ bằng 1; kiểm định hai phía, α = 0,05). Hồi quy logistic thứ tự (mô hình tỷ số chênh tương xứng – proportional odds) đa biến với kết cục G1 giữ nguyên 5 mức; kết quả trình bày bằng tỷ số chênh chung hiệu chỉnh kèm khoảng tin cậy 95%. Thời gian chờ được đưa vào mô hình dưới dạng liên tục, trình bày theo mỗi 15 phút; dạng phi tuyến được kiểm tra bằng hàm spline bậc ba giới hạn 3 nút hoặc phân tích theo nhóm tứ phân vị. Các biến hiệu chỉnh bắt buộc được đưa đồng thời vào mô hình: tuổi, giới, nơi cư trú, BHYT, lý do khám, khung giờ khám, ngày trong tuần, tự đánh giá sức khỏe (dạng số, thang 1–5) và được khám đúng bác sĩ đã yêu cầu. Không chọn biến theo ngưỡng p đơn biến, không dùng phương pháp chọn biến từng bước. Giả định tỷ số chênh tương xứng được kiểm định (kiểm định Brant hoặc so sánh log-likelihood) trước khi diễn giải; nếu vi phạm, dùng mô hình tỷ số chênh tương xứng một phần hoặc mô hình logit thứ tự tổng quát và trình bày hệ số theo từng ngưỡng cắt cho biến vi phạm [50]. Đa cộng tuyến được kiểm tra bằng hệ số phóng đại phương sai (VIF/GVIF).
+**Mục tiêu 2 – mô hình chính.** Mô hình này dùng để kiểm định giả thuyết ở mục 2.3 (H₀: tỷ số chênh chung của thời gian chờ bằng 1; kiểm định hai phía, α = 0,05). Hồi quy logistic thứ tự (mô hình tỷ số chênh tương xứng – proportional odds) đa biến với kết cục G1 giữ nguyên 5 mức; kết quả trình bày bằng tỷ số chênh chung hiệu chỉnh kèm khoảng tin cậy 95%. Thời gian chờ được đưa vào mô hình dưới dạng liên tục, trình bày theo mỗi 15 phút; dạng phi tuyến được kiểm tra bằng hàm spline bậc ba giới hạn 3 nút hoặc phân tích theo nhóm tứ phân vị. Các biến hiệu chỉnh bắt buộc được đưa đồng thời vào mô hình: tuổi, giới, nơi cư trú, BHYT, lý do khám, khung giờ khám, ngày trong tuần, tự đánh giá sức khỏe (dạng số, thang 1–5) và được khám đúng bác sĩ đã yêu cầu. Không chọn biến theo ngưỡng p đơn biến, không dùng phương pháp chọn biến từng bước. Giả định tỷ số chênh tương xứng được kiểm định (kiểm định Brant hoặc so sánh log-likelihood) trước khi diễn giải; nếu vi phạm, dùng mô hình tỷ số chênh tương xứng một phần [50] hoặc mô hình logit thứ tự tổng quát và trình bày hệ số theo từng ngưỡng cắt cho biến vi phạm. Đa cộng tuyến được kiểm tra bằng hệ số phóng đại phương sai (VIF/GVIF).
 
 **Xử lý gom cụm theo bàn khám.** Mô hình chính sử dụng sai số chuẩn vững theo cụm (cụm là bàn khám). Phân tích độ nhạy sử dụng mô hình hồi quy logistic thứ tự có hệ số chặn ngẫu nhiên theo bàn khám. Hệ số tương quan nội cụm được ước lượng và báo cáo cho G1 và cho từng lĩnh vực. Nếu số bàn khám thực tế có số liệu dưới 15, mô hình có hệ số chặn ngẫu nhiên trở thành phân tích chính.
 

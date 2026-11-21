@@ -947,6 +947,46 @@ _VIET_TAT = {
     "ADA": "Hiệp hội Đái tháo đường Hoa Kỳ (American Diabetes Association)",
     "EPV": "Số biến cố trên mỗi tham số (events per variable)", "BMI": "Chỉ số khối cơ thể (body mass index)",
     "HbA1c": "Huyết sắc tố gắn glucose (glycated haemoglobin)",
+    # 21/11/2026 (phản biện máy C1a + chốt K11 chiều ngược): tên chuẩn báo cáo/thẩm định dùng trong văn bản phải có
+    # trong danh mục — bộ sinh trích STROBE/CONSORT/PRISMA… ở mục thiết kế mà danh mục bỏ sót.
+    "AGReMA": "Hướng dẫn báo cáo phân tích trung gian (A Guideline for Reporting Mediation Analyses)",
+    "AGREE": "Công cụ thẩm định hướng dẫn thực hành lâm sàng (Appraisal of Guidelines for Research and Evaluation)",
+    "AMSTAR": "Công cụ đánh giá chất lượng tổng quan hệ thống (A MeaSurement Tool to Assess systematic Reviews)",
+    "CARE": "Hướng dẫn báo cáo ca lâm sàng (CAse REport guidelines)",
+    "CHEERS": "Chuẩn báo cáo đánh giá kinh tế y tế (Consolidated Health Economic Evaluation Reporting Standards)",
+    "CONSORT": "Hướng dẫn báo cáo thử nghiệm ngẫu nhiên có đối chứng (Consolidated Standards of Reporting Trials)",
+    "COREQ": "Tiêu chí hợp nhất báo cáo nghiên cứu định tính (Consolidated Criteria for Reporting Qualitative "
+             "Research)",
+    "COSMIN": "Hướng dẫn chọn lựa công cụ đo lường sức khỏe dựa trên đồng thuận (COnsensus-based Standards for the "
+              "selection of health Measurement INstruments)",
+    "CROSS": "Bảng kiểm báo cáo nghiên cứu khảo sát (Consensus-Based Checklist for Reporting of Survey Studies)",
+    "GRADE": "Hệ thống phân hạng chất lượng chứng cứ và độ mạnh khuyến cáo (Grading of Recommendations, Assessment, "
+             "Development and Evaluations)",
+    "GRIPP2": "Hướng dẫn báo cáo sự tham gia của người bệnh và công chúng (Guidance for Reporting Involvement of "
+              "Patients and the Public, phiên bản 2)",
+    "MOOSE": "Hướng dẫn báo cáo phân tích gộp nghiên cứu quan sát (Meta-analysis Of Observational Studies in "
+             "Epidemiology)",
+    "PRISMA": "Hướng dẫn báo cáo tổng quan hệ thống và phân tích gộp (Preferred Reporting Items for Systematic "
+              "Reviews and Meta-Analyses)",
+    "PRISMA-P": "Hướng dẫn báo cáo đề cương tổng quan hệ thống (PRISMA for systematic review Protocols)",
+    "PROBAST": "Công cụ đánh giá nguy cơ sai lệch của nghiên cứu mô hình dự báo (Prediction model Risk Of Bias "
+               "ASsessment Tool)",
+    "QUADAS": "Công cụ đánh giá chất lượng nghiên cứu độ chính xác chẩn đoán (Quality Assessment of Diagnostic "
+              "Accuracy Studies)",
+    "RECORD": "Hướng dẫn báo cáo nghiên cứu dùng dữ liệu y tế thu thập thường quy (REporting of studies Conducted "
+              "using Observational Routinely-collected health Data)",
+    "ROBINS-I": "Công cụ đánh giá nguy cơ sai lệch của nghiên cứu can thiệp không ngẫu nhiên (Risk Of Bias In "
+                "Non-randomised Studies of Interventions)",
+    "SPIRIT": "Hướng dẫn soạn đề cương thử nghiệm lâm sàng (Standard Protocol Items: Recommendations for "
+              "Interventional Trials)",
+    "SQUIRE": "Hướng dẫn báo cáo cải tiến chất lượng (Standards for QUality Improvement Reporting Excellence)",
+    "SRQR": "Chuẩn báo cáo nghiên cứu định tính (Standards for Reporting Qualitative Research)",
+    "STARD": "Hướng dẫn báo cáo nghiên cứu độ chính xác chẩn đoán (Standards for Reporting of Diagnostic Accuracy "
+             "Studies)",
+    "STROBE": "Hướng dẫn báo cáo nghiên cứu quan sát (Strengthening the Reporting of Observational Studies in "
+              "Epidemiology)",
+    "TRIPOD": "Hướng dẫn báo cáo mô hình dự báo đa biến (Transparent Reporting of a multivariable prediction model "
+              "for Individual Prognosis Or Diagnosis)",
 }
 
 

@@ -3,7 +3,7 @@
   "study": "btm-dtd2-ngoai-tru-BVQY175",
   "ten_de_tai": "Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026",
   "tap_chi_dich": "Tạp chí Y Dược Thực hành 175",
-  "cap_nhat": "20/11/2026",
+  "cap_nhat": "21/11/2026",
   "cach_dung": "Nguồn sự thật của bảng theo dõi tiến độ. Trạng thái: xong · dang · cho_bs · chua (máy tự suy «khoa» khi việc trước chưa xong). Mục gắn cổng đo sống bằng công cụ ở `do_song` mỗi lần cập nhật — không tự đánh «xong» khi cổng chưa đạt. Hạn là ƯỚC TÍNH, chủ nhiệm chỉnh.",
   "ai": {
     "may": "Máy",
@@ -365,8 +365,8 @@
       "han": "24/11/2026",
       "trang_thai": "cho_bs",
       "ngay_xong": "",
-      "do_song": "15/11/2026 (sau phiếu đề xuất): g2_quality_gate DRAFT_NEEDS_HUMAN_COMPLETION — tự động FAIL 0, REVIEW chỉ còn G2-AUTO-05 (ô [CẦN] trong hồ sơ); người: G2-HUMAN-01/02 (quyết định Hội đồng). G2-AUTO-08b, G2-AUTO-10 đạt. CT.gov 0 trùng. G1/G3 PASS, G4 READY_FOR_SIGNATURE",
-      "ghi_chu": "Bác sĩ chọn 15/11/2026 (phiếu đề xuất): B2 «Xin miễn (Khuyên dùng)»; B3 «2 năm, xoá an toàn có biên bản (Khuyên dùng)»; B4 «Dùng đề xuất (Khuyên dùng)». TÀI LIỆU 9 mô tả đúng giả danh hoá (bảng nối huỷ sau khi khoá dữ liệu). Còn: chủ nhiệm điền các ô [CẦN] (họ tên, chức danh…), chỉnh theo mẫu Hội đồng khi có (1.10)."
+      "do_song": "21/11/2026: hồ sơ G2 từ 43 ô [CẦN] còn 1 ô trước khi nộp (đăng ký trong nước — chủ nhiệm tự tra) + 3 ô chỉ điền sau phê duyệt; g2_quality_gate DRAFT_NEEDS_HUMAN_COMPLETION chỉ vì ô đó",
+      "ghi_chu": "Bác sĩ chọn 15/11/2026 (phiếu đề xuất): B2 «Xin miễn (Khuyên dùng)»; B3 «2 năm, xoá an toàn có biên bản (Khuyên dùng)»; B4 «Dùng đề xuất (Khuyên dùng)». TÀI LIỆU 9 mô tả đúng giả danh hoá (bảng nối huỷ sau khi khoá dữ liệu). Còn: chủ nhiệm điền các ô [CẦN] (họ tên, chức danh…), chỉnh theo mẫu Hội đồng khi có (1.10). · 20–21/11/2026: máy điền 23 ô có quyết định ghi lại (chủ nhiệm/đơn vị theo khuôn C1a, tự túc kinh phí, tạp chí đích, không đăng ký, nơi thực hiện, mốc G1); phiếu đề xuất PHIEU-DE-XUAT-BTM-3.1_20261120 — bác sĩ chọn nguyên văn «A — Xác nhận như bảng (Đề xuất)» (B1), «B — Theo yêu cầu hợp lý (Đề xuất)» (B2), «A — Không có» (B3), «A — Dùng như C1a (Đề xuất)» (B4); ICTRP 28/10 «Không thấy nghiên cứu trùng»; số bản nộp «02 như C1a (Đề xuất)»; đăng ký trong nước «Chưa — tôi sẽ tra rồi báo»."
     },
     {
       "id": "3.2",
@@ -1168,6 +1168,22 @@
       "ngay_xong": "",
       "do_song": "",
       "ghi_chu": "Biên bản cũ có trước lần sửa 20/11 nên máy báo «chất lượng chưa bảo đảm». Họp SAU vòng CVI vì CVI có thể đổi phiếu; ước tính 20/11: 11–23 agent (4,2–8,7 triệu token) nếu chạy trong phiên — có đường Batch API rẻ hơn. Triệu tập cần bác sĩ đồng ý."
+    },
+    {
+      "id": "3.12",
+      "gd": "GĐ3",
+      "ten": "Sửa câu khoảng trống [5–7]: «tỷ lệ bệnh thận mạn» → «tỷ lệ bệnh thận mạn hoặc albumin niệu tăng» (G1, hồ sơ G2, đề cương nộp) rồi xác nhận lại G1",
+      "ai": "may",
+      "lenh": "sửa gate_params.G1 (knowledge_gap) + G1_A2 + G2_A3 + DE_CUONG_NOP; bác sĩ chốt lại G1 theo dấu vân tay mới",
+      "xong_khi": "g1_quality_gate PASS_G1_CONFIRMED với dấu vân tay mới; nhất quán xuyên cổng khớp; kiểm trích dẫn toàn văn không còn cặp C006 [7]",
+      "phu_thuoc": [
+        "3.9"
+      ],
+      "han": "11/12/2026",
+      "trang_thai": "chua",
+      "ngay_xong": "",
+      "do_song": "",
+      "ghi_chu": "Kiểm trích dẫn trên toàn văn 21/11/2026: [7] (Phạm Đức Minh 2022) đo microalbumin niệu ở 136 người ĐTĐ típ 2 đã xét nghiệm, không đo tỷ lệ bệnh thận mạn. Bác sĩ chọn 21/11/2026 «Sửa C1a ngay, BTM sau» — gộp vào lần sửa G1 sau vòng CVI để chỉ xác nhận lại G1 một lần."
     }
   ],
   "lich_su": [
@@ -1266,6 +1282,14 @@
     {
       "ngay": "2026-11-20",
       "viec": "Làm tươi chuỗi G2→G3→G4 sau lần sửa G1 (#342): hồ sơ G2 thêm MT3 và MT1 đúng câu G1; G3 N = 385 PASS; G4 READY (SAP không đổi); nhất quán 27/27 khớp. Còn: 3.1 ô [CẦN] của chủ nhiệm; 3.10 sau CVI"
+    },
+    {
+      "ngay": "2026-11-21",
+      "viec": "3.1: điền hồ sơ G2 theo quyết định đã ghi + phiếu đề xuất B1–B4 (bác sĩ chọn phương án đề xuất), ICTRP không trùng, số bản nộp 02; còn đúng ô «đăng ký trong nước» do chủ nhiệm tự tra"
+    },
+    {
+      "ngay": "2026-11-21",
+      "viec": "Thêm 3.12 (sửa câu [5–7] theo kiểm trích dẫn toàn văn; làm cùng đợt sửa G1 sau CVI — bác sĩ chọn «BTM sau»)"
     }
   ]
 }

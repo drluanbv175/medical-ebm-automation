@@ -27,11 +27,11 @@
 ---
 
 Kính gửi: Hội đồng Đạo đức Nghiên cứu Y sinh
- [TÊN ĐƠN VỊ — CẦN BỔ SUNG]
+ Bệnh viện Quân y 175
 
-Từ: Chủ nhiệm đề tài: [CẦN BỔ SUNG]
- Chức vụ: [CẦN BỔ SUNG]
- Đơn vị: [CẦN BỔ SUNG]
+Từ: Chủ nhiệm đề tài: Nguyễn Hà Luân
+ Chức vụ: Bác sĩ Chuyên khoa I (BS.CKI)
+ Đơn vị: Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
  Điện thoại: _______________ | Email: _______________
 
 TÊN ĐỀ TÀI: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026
@@ -43,8 +43,8 @@ THÔNG TIN TỔNG QUAN:
  Dân số tham gia: Người từ 18 tuổi, chẩn đoán đái tháo đường típ 2 (ICD-10 E11), quản lý ngoại trú tại Khoa Khám bệnh BVQY175, có ít nhất 2 lượt khám trong cửa sổ hồi cứu 01/01/2026–31/12/2026; loại trừ: lọc máu hoặc ghép thận, có thai, đái tháo đường típ 1 hoặc thể khác.
  Cỡ mẫu dự kiến: 385
  Thời gian nghiên cứu: Cửa sổ dữ liệu hồi cứu 01/01/2026–31/12/2026. Thời gian thực hiện dự kiến 11/2026–09/2027 theo sổ tiến độ đề tài. Trích xuất dữ liệu chỉ bắt đầu sau khi Hội đồng Đạo đức BVQY175 phê duyệt (T0), SAP đã khoá ở cổng G4 và cửa sổ đã khép (sớm nhất tháng 02/2027), dự kiến 16/02–02/04/2027, gồm trích thử phiếu 16–19/02/2027.
- Nguồn tài trợ: [CẦN BỔ SUNG / "Không có tài trợ bên ngoài"]
- Xung đột lợi ích (COI): [CẦN KHAI BÁO — xem Tài liệu 8]
+ Nguồn tài trợ: Không có tài trợ bên ngoài — chủ nhiệm tự túc kinh phí
+ Xung đột lợi ích (COI): Không có xung đột lợi ích (khai đầy đủ ở Tài liệu 8)
  Đăng ký nghiên cứu: Không bắt buộc đăng ký thử nghiệm. Nghiên cứu hồi cứu trên dữ liệu thứ cấp, không tuyển mới người tham gia
 
 CAM KẾT:
@@ -118,7 +118,7 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT, ngôn ngữ hành chính)
  ☐ Bài báo đăng tạp chí quốc tế/trong nước có phản biện
  ☐ Luận văn/báo cáo nghiên cứu
  ☐ Báo cáo khuyến nghị cho đơn vị/chính sách
- [CẦN BỔ SUNG tạp chí/hội nghị mục tiêu]
+ Tạp chí đích: Tạp chí Y Dược Thực hành 175
 ---
 "DRAFT, Cần bác sĩ/chủ nhiệm kiểm chứng trước khi nộp."
 ```
@@ -137,12 +137,12 @@ TÓM TẮT ĐỀ CƯƠNG (DRAFT, ngôn ngữ hành chính)
 
 | | **Lợi ích bù đắp** |
 |---|---|
-| Trực tiếp với NTG | [CẦN BỔ SUNG — xác định xem có lợi ích trực tiếp không] |
+| Trực tiếp với NTG | Không có lợi ích trực tiếp — nghiên cứu hồi cứu trên hồ sơ có sẵn, không tiếp xúc người bệnh |
 | Cộng đồng/y tế | Cung cấp dữ liệu tỷ lệ hiện mắc/tỷ lệ các yếu tố liên quan tại địa phương; chi phí thấp |
 
 **Kết luận:** Lợi ích dự kiến của nghiên cứu **vượt trội** nguy cơ tiềm tàng.
 Mọi rủi ro đều được giảm thiểu bằng biện pháp cụ thể.
-`[CẦN BÁC SĨ XÁC NHẬN bảng rủi ro phù hợp với đề tài thật]`
+Chủ nhiệm đã rà và xác nhận bảng rủi ro theo đề cương (20/11/2026).
 
 
 ---
@@ -183,11 +183,11 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
  ☐ Cận lâm sàng (xét nghiệm, hình ảnh), mã hóa
  ☐ Kết quả điều tra/khảo sát, ẩn danh hoặc giả danh
  ☐ Dữ liệu thứ cấp (hồ sơ bệnh án), mã giả danh
- [CẦN BÁC SĨ LIỆT KÊ CỤ THỂ theo đề tài]
+ Cụ thể: dữ liệu thứ cấp từ hồ sơ bệnh án điện tử eHospital — lượt khám, mã ICD-10, kết quả xét nghiệm (creatinin, UACR, các dạng albumin niệu khác, HbA1c), đơn thuốc ngoại trú; danh mục đủ theo codebook; không lấy trường định danh nào
 
 2. THU THẬP:
  Công cụ: ☐ REDCap ☐ Google Forms (institutional) ☐ Phiếu giấy
- ☐ [CẦN XÁC NHẬN]
+ ☑ Phiếu thu thập dựng từ codebook — chủ nhiệm trích từng hồ sơ được chọn trên eHospital
  Phân quyền truy cập: Chỉ nhóm nghiên cứu được cấp phép
  Phê duyệt quyền: Chủ nhiệm đề tài
 
@@ -198,18 +198,22 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
  Ngưỡng k-ẩn danh: ≥5 (nhóm nhỏ sẽ nhóm lại trước công bố)
 
 4. LƯU TRỮ:
- Nơi lưu: [CẦN, máy chủ nội bộ / OneDrive institutional
- / ổ cứng mã hóa tại đơn vị]
+ Nơi lưu: ổ đĩa mã hóa AES-256 tại Khoa Khám bệnh C1a, Bệnh viện Quân y 175;
+ chỉ nhóm nghiên cứu được truy cập
  Bảo mật: AES-256 · mật khẩu cấp người dùng · VPN (nếu từ xa)
- Sao lưu: [CẦN — ví dụ: hàng ngày/tuần, 2 bản độc lập]
+ Sao lưu: hằng tuần, 2 bản độc lập
  Thời gian lưu: 2 năm sau kết thúc nghiên cứu
  (theo TT38/2018/TT-BYT về lưu trữ hồ sơ y tế)
 
 5. CHIA SẺ / MỞ DỮ LIỆU:
- ☐ Không chia sẻ (lý do: [CẦN])
- ☐ Chia sẻ theo yêu cầu hợp lý (DTA cần ký trước)
- ☐ Mở hoàn toàn sau ẩn danh hóa (tại: [CẦN — OSF/Zenodo...])
- [CẦN BÁC SĨ CHỌN VÀ BIỆN MINH]
+ ☐ Không chia sẻ
+ ☑ Chia sẻ theo yêu cầu hợp lý (DTA cần ký trước)
+ ☐ Mở hoàn toàn sau ẩn danh hóa
+ Lựa chọn của chủ nhiệm (20/11/2026): chia sẻ có kiểm soát theo yêu cầu — bộ dữ
+ liệu đã khử định danh kèm từ điển biến, sau khi công bố, cho mục đích nghiên
+ cứu hợp lý, khi Bệnh viện và Hội đồng Đạo đức cho phép; ký thoả thuận sử dụng
+ dữ liệu (DTA) trước. Không mở công khai vì dữ liệu lấy từ hồ sơ bệnh án theo
+ cơ chế miễn đồng thuận.
 
 6. XỬ LÝ VI PHẠM DỮ LIỆU:
  Theo NĐ 356/2025/NĐ-CP Điều 23:
@@ -217,7 +221,7 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
  ∎ Thông báo cơ quan bảo vệ dữ liệu trong 72 giờ
  ∎ Thông báo người tham gia bị ảnh hưởng ngay khi xác nhận
  ∎ Khắc phục và điều tra nguyên nhân, lưu hồ sơ xử lý
- Quy trình: [CẦN BỔ SUNG quy trình cụ thể của đơn vị]
+ Quy trình: theo qui định của đơn vị
 
 7. CUỐI NGHIÊN CỨU:
  ∎ Dữ liệu nhận dạng: Bảng nối mã nghiên cứu với mã người bệnh lưu riêng trong tệp mã hoá, chỉ chủ nhiệm giữ, huỷ sau khi khoá dữ liệu.
@@ -256,7 +260,7 @@ HỒ SƠ BỔ SUNG (theo loại NC):
  ICF người giám hộ + biện pháp bảo vệ đặc biệt
 ☐ [Dùng dữ liệu di truyền/nhạy cảm]: ICF đặc biệt
 
-SỐ BẢN NỘP: [CẦN XÁC NHẬN tại Hội đồng đạo đức cơ sở]
+SỐ BẢN NỘP: 02
 HÌNH THỨC: ☐ Bản cứng ☐ Điện tử ☐ Cả hai
 
 LỘ TRÌNH XÉT DUYỆT DỰ KIẾN: EXPEDITED REVIEW (hoặc EXEMPT nếu không có PII và rủi ro tối thiểu)
@@ -279,24 +283,24 @@ SAU KHI NHẬN SỐ PHÊ DUYỆT:
 KHAI BÁO XUNG ĐỘT LỢI ÍCH, TÀI TRỢ VÀ SỬ DỤNG AI
 (Dựa theo ICMJE Form, phiên bản rút gọn cho IRB)
 ---
-Tên chủ nhiệm: [CẦN BỔ SUNG]
-Chức vụ: [CẦN BỔ SUNG] | Đơn vị: [CẦN BỔ SUNG]
+Tên chủ nhiệm: Nguyễn Hà Luân
+Chức vụ: Bác sĩ Chuyên khoa I (BS.CKI) | Đơn vị: Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
 Ngày khai báo: 18/11/2026
 
 A. XUNG ĐỘT LỢI ÍCH TÀI CHÍNH (12 tháng gần nhất):
-☐ Không có
+☑ Không có
 ☐ Có → [Liệt kê: Tên công ty · Loại quan hệ (cổ phần/tư vấn/
  thù lao/tài trợ hội nghị) · Giá trị (nếu phải khai)]
 
 B. XUNG ĐỘT LỢI ÍCH PHI TÀI CHÍNH:
-☐ Không có
+☑ Không có
 ☐ Có → [Quan hệ cá nhân với người được nghiên cứu / lợi ích
  học thuật (thăng tiến/bằng sáng chế) / quan điểm đối nghịch]
 
 C. NGUỒN TÀI TRỢ:
- Tài trợ chính: [CẦN BỔ SUNG — "Không có tài trợ bên ngoài" nếu đúng]
- Tài trợ bổ sung: [CẦN BỔ SUNG]
- Số hợp đồng (nếu có): [CẦN BỔ SUNG]
+ Tài trợ chính: Không có tài trợ bên ngoài — chủ nhiệm tự túc kinh phí
+ Tài trợ bổ sung: Không có
+ Số hợp đồng (nếu có): Không áp dụng
 
 D. VAI TRÒ NHÀ TÀI TRỢ:
  Nhà tài trợ có can thiệp vào:
@@ -306,10 +310,10 @@ D. VAI TRÒ NHÀ TÀI TRỢ:
 
 E. SỬ DỤNG CÔNG CỤ AI TRONG NGHIÊN CỨU:
  ☐ Không sử dụng công cụ AI nào
- ☐ Có sử dụng:
- Tên công cụ: Claude AI (EBM Copilot) · [CẦN BỔ SUNG thêm nếu có]
+ ☑ Có sử dụng:
+ Tên công cụ: Claude AI (EBM Copilot) · Không dùng công cụ AI nào khác
  Mục đích: Hỗ trợ soạn hồ sơ G2 · tổng quan y văn · thống kê
- Người kiểm tra đầu ra: [CẦN — tên nghiên cứu viên phụ trách]
+ Người kiểm tra đầu ra: Nguyễn Hà Luân (chủ nhiệm đề tài)
 
  XÁC NHẬN (bắt buộc): "Tôi đã kiểm chứng TOÀN BỘ nội dung AI
  hỗ trợ. Mọi số liệu, trích dẫn và kết quả đã được xác minh
@@ -334,7 +338,7 @@ YÊU CẦU MIỄN THỦ TỤC ĐỒNG THUẬN (ICF Waiver Request), DRAFT Phiên
 ---
 Căn cứ: TT43/2024/TT-BYT Điều 15 · Helsinki (WMA, bản sửa 2024) §29
 Tên đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026
-Chủ nhiệm: [CẦN BỔ SUNG]
+Chủ nhiệm: Nguyễn Hà Luân
 Ngày: 2026-11-18
 
 CƠ SỞ XIN MIỄN (phải thỏa CẢ 4 điều kiện):
@@ -374,30 +378,30 @@ Chữ ký chủ nhiệm: [CẦN KÝ] | Ngày: ___/___/2026
 
 > ClinicalTrials.gov KHÔNG bao phủ mọi đăng ký. Dù mục trên có kết quả hay không,
 > WHO ICTRP, PROSPERO (nếu SR/MA) và đăng ký trong nước vẫn cần bác sĩ tự tra, 
-> hệ thống không tra được hai nguồn đầu vì không có API mở. [CẦN BÁC SĨ TỰ TRA]
+> hệ thống không tra được hai nguồn đầu vì không có API mở. WHO ICTRP: PI đã tự tra 2026-10-28, không thấy nghiên cứu trùng (PI xác nhận kết quả ngày 2026-11-21); PROSPERO: không áp dụng (không phải tổng quan hệ thống); đăng ký trong nước: [CẦN BÁC SĨ TỰ TRA]
 
 ```
 WHO Trial Registration Data Set 1.3.1, DRAFT Phiên bản 1.0
 ---
 
 Trường 1, Primary registry & Trial ID:
- [CẦN — sẽ có sau khi đăng ký: NCT_______ / ANZCTR_____]
+ Không áp dụng — không đăng ký (hồi cứu dữ liệu thứ cấp; chủ nhiệm quyết 15/11/2026)
 
 Trường 2, Date of registration in primary registry:
- [CẦN — ngày đăng ký thành công]
+ Không áp dụng
 
 Trường 3, Secondary IDs (nếu có):
  Số phê duyệt IRB: [CẦN sau khi nhận]
- PROSPERO (nếu SR): [CẦN]
+ PROSPERO (nếu SR): Không áp dụng — không phải tổng quan hệ thống
 
 Trường 4, Source(s) of monetary or material support:
- [CẦN BỔ SUNG — tên tổ chức tài trợ hoặc "None"]
+ None — self-funded by the principal investigator (no external funding)
 
 Trường 5, Primary sponsor:
- [CẦN — tên pháp nhân/tổ chức chịu trách nhiệm]
+ Bệnh viện Quân y 175 (Military Hospital 175), TP. Hồ Chí Minh
 
 Trường 6, Secondary sponsor(s) (nếu có):
- [CẦN BỔ SUNG]
+ Không có (None)
 
 Trường 7, Contact for public queries:
  [ĐIỀN TRỰC TIẾP TRÊN REGISTRY, không lưu PII trong hệ thống]
@@ -412,7 +416,7 @@ Trường 10, Scientific title (tiêu đề khoa học):
  Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026
 
 Trường 11, Countries of recruitment:
- Vietnam (VN) [CẦN BỔ SUNG tỉnh/tỉnh thành]
+ Vietnam (VN) — Ho Chi Minh City (TP. Hồ Chí Minh)
 
 Trường 12, Health condition(s) studied:
  Type 2 diabetes mellitus (ICD-10 E11); chronic kidney disease (ICD-10 N18)
@@ -430,7 +434,7 @@ Trường 15, Study type:
  Observational · Epidemiology · Non-randomized · Not applicable - no assigned intervention
 
 Trường 16, Date of first enrolment:
- [CẦN — chỉ tuyển sau phê duyệt và đăng ký: ___/___/2026]
+ Dự kiến 16/02/2027 — bắt đầu trích hồ sơ (hồi cứu, không tuyển người); chỉ sau khi Hội đồng phê duyệt và SAP đã khoá
 
 Trường 17, Target sample size:
  385
@@ -447,18 +451,20 @@ Trường 20, Key secondary outcomes:
 Trường 21, Ethics review:
  Status: Not approved
  Approval date: [CẦN sau quyết định IRB]
- Ethics committee: [CẦN mã/tên đơn vị; không lưu PII cá nhân]
+ Ethics committee: Hội đồng Đạo đức Nghiên cứu Y sinh — Hội đồng Y đức Bệnh viện Quân y 175
 
 Trường 22, Completion date:
- [CẦN — ngày hoàn tất dự kiến; cập nhật ngày thật khi kết thúc]
+ Dự kiến 09/2027 (thực hiện 11/2026–09/2027); cập nhật ngày thật khi kết thúc
 
 Trường 23, Summary results:
  Chưa có, cập nhật khi có kết quả (chỉ điền sau khi kết thúc nghiên cứu:
  ngày đăng kết quả/tác phẩm, protocol URL + phiên bản, participant flow, AE, outcomes)
 
 Trường 24, IPD sharing statement:
- Plan to share de-identified IPD: [CẦN — Yes/No]
- What/when/how/with whom/purpose: [CẦN — kế hoạch cụ thể]
+ Plan to share de-identified IPD: Yes — controlled access on reasonable request
+ What/when/how/with whom/purpose: de-identified dataset with data dictionary; after publication; via the
+ principal investigator under a signed data-use agreement, with permission of the hospital and the ethics
+ committee; for researchers with a reasonable research purpose
 
 GHI CHÚ CHUYỂN ĐỔI:
  Bản mẫu cũ 18 trường đã ngừng dùng. WHO TRDS 1.3.1 có 24 mục;

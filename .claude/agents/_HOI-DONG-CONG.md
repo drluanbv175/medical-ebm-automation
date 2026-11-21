@@ -258,8 +258,10 @@ khởi tạo ⇒ phần đó không ghi. Triệu tập vẫn phải hỏi bác s
 KHÔNG nộp batch kế tiếp — `buoc --goi-api` trơn lấy xong sẽ tự nộp bước sau (tính phí), nên khi bác sĩ mới duyệt «lấy
 kết quả» thì dùng `--chi-lay`; phần bị chặn vì «tài liệu đổi sau khi khởi tạo» được in rõ, khởi tạo lại (`--lam-lai`)
 là một lượt tính phí mới phải hỏi. (2) System prompt (tệp agent) mang `cache_control` ⇒ yêu cầu cùng vai đọc từ cache.
-(3) Mọi lượt nộp đi qua TRẦN CHI PHÍ THÁNG của cầu nối (`~/.ebm-api-claude-chi-phi.json`, mặc định 20 USD, đổi bằng
-`EBM_API_CLAUDE_TRAN_USD_THANG`) — chạm trần ⇒ ⛔ không nộp; agent KHÔNG tự nâng trần.
+(3) Cầu nối dùng THEO TÍN DỤNG tài khoản (bác sĩ 21/11/2026: «sử dụng đúng vào tín dụng được cấp nếu hết thì tự dừng»;
+không trần tháng tự đặt — sổ `~/.ebm-api-claude-chi-phi.json` chỉ để báo cáo); tài khoản hết tín dụng / chạm giới hạn
+chi tiêu Claude Console ⇒ ⛔ `HetTinDung`, dừng cả lượt, các lượt sau dừng sớm 30 phút; agent KHÔNG nạp tín dụng hay đổi
+giới hạn Console thay bác sĩ.
 
 ## 6. Khối bàn giao (bắt buộc ở cuối mỗi hội đồng cổng)
 

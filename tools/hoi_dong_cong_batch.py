@@ -52,13 +52,27 @@ TRAN_KY_TU_TEP = 60_000
 TRAN_KY_TU_YEU_CAU = 240_000
 MAX_TOKENS = 16000
 BUOC_TRANH = ("de_xuat", "phan_bien", "trong_tai")
+# Câu trả lời ĐỦ (không cụt/từ chối/errored) mà JSON hỏng hoặc sai khuôn là lỗi ngẫu nhiên của một lượt sinh ⇒ gửi
+# lại ĐÚNG phần đó tối đa 1 lần (21/11/2026: C1a G10-T2 cm_001 JSON hỏng bị ghi lỗi vĩnh viễn, không bao giờ chấm).
+# Cụt/từ chối/errored/expired KHÔNG gửi lại tự động (gửi lại cũng cụt, hoặc cần người xem).
+SO_LAN_GUI_LAI_JSON_HONG = 1
+# 21/11/2026 — đo C1a G10 bước đầu: 28.594 token ra / 7 yêu cầu ≈ 4.085 (có phần suy nghĩ); ước cũ 3.000.
+TOKEN_RA_UOC_MOI_YEU_CAU = 4500
+_TIEN_TO_KHOA = {"cm": "chuyen_mon", "gk": "giam_khao", "de": "de_xuat", "ph": "phan_bien", "tr": "trong_tai"}
+_LOI_GUI_LAI_DUOC = re.compile(
+    r"^(cm|gk|de|ph|tr)_\d{3}: (JSON hỏng|Câu trả lời không chứa JSON|bản chấm sai khuôn|luận điểm sai khuôn|"
+    r"thiếu ket_luan_de_xuat|phán quyết sai khuôn|căn cứ sai dạng)"
+)
 
 QUY_TAC_API = (
     "\n\n## CHẾ ĐỘ BATCH API (thay cho mọi chỉ dẫn dùng công cụ ở trên)\n"
     "Bạn KHÔNG có công cụ: không chạy được lệnh, không đọc được tệp nào ngoài phần được dán trong tin nhắn. "
     "Căn cứ loại «tep» ghi đúng đường dẫn ở tiêu đề khối tệp, kèm «:dòng» hoặc «:dòng-dòng» là dòng CÓ THẬT (tệp đã "
     "đánh số dòng). Căn cứ loại «lenh» CHỈ được dùng các lệnh trong mục «LỆNH ĐÃ CHẠY SẴN», «ket_qua» chép nguyên văn "
-    "đoạn kết quả liên quan. «tieu_chi» là mã tiêu chí cổng (vd G4-AUTO-09). Không bịa PMID/DOI, không ghi định danh "
+    "đoạn kết quả liên quan. «tieu_chi» là mã tiêu chí CỔNG đúng dạng G<số cổng>-AUTO-<2 số> hoặc G<số cổng>-HUMAN-"
+    "<2 số> (vd G4-AUTO-09, G10-HUMAN-05); luật của công cụ khác (vd «A12 R4_…») KHÔNG phải mã tiêu chí cổng — dùng "
+    "«tep» (tệp:dòng) hoặc «lenh» thay thế. PMID chỉ chữ số; DOI dạng 10.xxxx/…. Không bịa PMID/DOI, không ghi "
+    "định danh "
     "người bệnh. Không viết kết luận như trạng thái cổng («đã ký», «đã duyệt», «PASS_…», «…_LOCKED»). Trả DUY NHẤT một "
     "đối tượng JSON đúng khuôn được yêu cầu, không lời dẫn, không rào ```."
 )
@@ -337,12 +351,52 @@ def yeu_cau_tiep(
 
 
 # ── Áp kết quả ───────────────────────────────────────────────────────────────────────────────────────────────────
+def _loi_can_cu(dl: Any) -> List[str]:
+    """Căn cứ sai DẠNG ở mọi mức của câu trả lời (cùng luật dạng của `hoi_dong_cong` khi ghi biên bản, trừ phép kiểm
+    tệp:dòng cần thư mục đề tài). 21/11/2026 (C1a G10-T1): «A12 R4_pmid_traceable» ghi làm mã tiêu chí chỉ bị phát hiện
+    LÚC GHI ⇒ phần đó không được gửi lại; nay bắt ngay khi nhận kết quả ⇒ đi luật gửi lại một lần."""
+    loi: List[str] = []
+
+    def duyet(x: Any) -> None:
+        if isinstance(x, dict):
+            for k, v in x.items():
+                if k == "can_cu" and isinstance(v, list):
+                    for cc in v:
+                        loai = cc.get("loai") if isinstance(cc, dict) else None
+                        gt = str(cc.get("gia_tri") or "").strip() if isinstance(cc, dict) else ""
+                        if loai not in HDC.LOAI_CAN_CU:
+                            loi.append(f"loại «{loai}»")
+                        elif loai == "tieu_chi" and not HDC._TIEU_CHI_RE.match(gt):
+                            loi.append(f"mã tiêu chí «{gt[:40]}»")
+                        elif loai == "pmid" and not HDC._PMID_RE.match(gt):
+                            loi.append(f"PMID «{gt[:20]}»")
+                        elif loai == "doi" and not HDC._DOI_RE.match(gt):
+                            loi.append(f"DOI «{gt[:40]}»")
+                        elif loai == "lenh" and not str(cc.get("ket_qua") or "").strip():
+                            loi.append("lệnh thiếu ket_qua")
+                else:
+                    duyet(v)
+        elif isinstance(x, list):
+            for v in x:
+                duyet(v)
+
+    duyet(dl)
+    return loi
+
+
+def _kiem_can_cu(dl: Any) -> Any:
+    loi = _loi_can_cu(dl)
+    if loi:
+        raise API.KetQuaHong("căn cứ sai dạng: " + "; ".join(loi[:4]))
+    return dl
+
+
 def _hop_cham(dl: Any) -> Dict[str, Any]:
     if not (
         isinstance(dl, dict) and isinstance(dl.get("tieu_chi"), list) and dl.get("ket_luan") in HDC.KET_LUAN_DANH_GIA
     ):
         raise API.KetQuaHong("bản chấm sai khuôn (thiếu tieu_chi hoặc ket_luan lạ)")
-    return dl
+    return _kiem_can_cu(dl)
 
 
 def _hop_luan_diem(dl: Any, can_kl: bool) -> Dict[str, Any]:
@@ -351,7 +405,7 @@ def _hop_luan_diem(dl: Any, can_kl: bool) -> Dict[str, Any]:
         raise API.KetQuaHong("luận điểm sai khuôn")
     if can_kl and not str(dl.get("ket_luan_de_xuat") or "").strip():
         raise API.KetQuaHong("thiếu ket_luan_de_xuat")
-    return dl
+    return _kiem_can_cu(dl)
 
 
 def _hop_phan_quyet(dl: Any) -> Dict[str, Any]:
@@ -362,19 +416,27 @@ def _hop_phan_quyet(dl: Any) -> Dict[str, Any]:
         and isinstance(dl.get("giai_phap_tot_nhat"), dict)
     ):
         raise API.KetQuaHong("phán quyết sai khuôn")
-    return dl
+    return _kiem_can_cu(dl)
 
 
 def ap_ket_qua(st: Dict[str, Any], ket: Dict[str, Dict[str, Any]], max_tokens: int = MAX_TOKENS) -> Dict[str, int]:
     """Đưa kết quả batch vào trạng thái. Hỏng ⇒ phần đó ghi lỗi (không đoán), phần khác đi tiếp."""
-    dem = {"ok": 0, "loi": 0, "vao": 0, "ra": 0, "cache_ghi": 0, "cache_doc": 0}
+    dem = {"ok": 0, "loi": 0, "gui_lai": 0, "vao": 0, "ra": 0, "cache_ghi": 0, "cache_doc": 0}
     yc = (st.get("batch") or {}).get("yeu_cau") or {}
     for cid, nhan in yc.items():
         kq = ket.get(cid) or {"loai": "thieu", "loi": "batch không trả custom_id này"}
         for k in ("vao", "ra", "cache_ghi", "cache_doc"):
             dem[k] += int(kq.get(k) or 0)
+        muc = st["cham"].get(nhan["ma"]) if nhan["loai"] == "cham" else st["tranh"].get(nhan["ma"])
         try:
-            dl = API.doc_json(API.van_ban_ket_qua_batch(kq, max_tokens))
+            vb = API.van_ban_ket_qua_batch(kq, max_tokens)  # errored/expired/cụt/từ chối ⇒ không gửi lại
+        except API.LoiApi as exc:
+            dem["loi"] += 1
+            if muc is not None:
+                muc["loi"].append(f"{cid}: {str(exc)[:200]}")
+            continue
+        try:
+            dl = API.doc_json(vb)
             if nhan["loai"] == "cham":
                 c = st["cham"][nhan["ma"]]
                 ai = c["chuyen_mon"] if nhan["vai"] == "chuyen_mon" else HDC.GIAM_KHAO
@@ -398,9 +460,19 @@ def ap_ket_qua(st: Dict[str, Any], ket: Dict[str, Dict[str, Any]], max_tokens: i
                     }
                     t["buoc"] = "xong"
             dem["ok"] += 1
+        except API.KetQuaHong as exc:  # JSON hỏng / sai khuôn — chưa ghi gì vào trạng thái (khuôn kiểm trước khi gán)
+            dem["loi"] += 1
+            if muc is not None:
+                khoa = str(nhan.get("vai") or nhan.get("buoc"))
+                da = muc.setdefault("gui_lai", {})
+                if int(da.get(khoa, 0)) < SO_LAN_GUI_LAI_JSON_HONG:
+                    da[khoa] = int(da.get(khoa, 0)) + 1
+                    dem["gui_lai"] += 1
+                    muc.setdefault("ghi_chu", []).append(f"{cid}: {str(exc)[:200]} — gửi lại 1 lần ở batch kế tiếp")
+                else:
+                    muc["loi"].append(f"{cid}: {str(exc)[:200]} (đã gửi lại {da[khoa]} lần)")
         except (API.LoiApi, KeyError) as exc:
             dem["loi"] += 1
-            muc = st["cham"].get(nhan["ma"]) if nhan["loai"] == "cham" else st["tranh"].get(nhan["ma"])
             if muc is not None:
                 muc["loi"].append(f"{cid}: {str(exc)[:200]}")
     for ma, c in st["cham"].items():  # hai người chấm khác phía ⇒ tranh biện bất đồng BD-…
@@ -416,6 +488,36 @@ def ap_ket_qua(st: Dict[str, Any], ket: Dict[str, Dict[str, Any]], max_tokens: i
                     "loi": [],
                 }
     return dem
+
+
+def nang_cap_loi_json_cu(st: Dict[str, Any]) -> int:
+    """Trạng thái lưu trước 21/11/2026 ghi JSON hỏng/sai khuôn thẳng vào `loi` (không bao giờ gửi lại). Mục CHƯA có
+    khoá `gui_lai` mà MỌI lỗi đều thuộc loại gửi lại được, cùng một bước, và bước đó còn trống ⇒ chuyển lỗi sang
+    `ghi_chu`, ghi `gui_lai` = 1 (đúng một lần như lượt mới). Lỗi khác (tài liệu đổi, cụt, errored…) giữ nguyên.
+    Trả số mục được nâng cấp."""
+    n = 0
+    for nhom in ("cham", "tranh"):
+        for muc in (st.get(nhom) or {}).values():
+            loi = muc.get("loi") or []
+            if not loi or "gui_lai" in muc:
+                continue
+            khop = [_LOI_GUI_LAI_DUOC.match(str(x)) for x in loi]
+            if not all(khop):
+                continue
+            khoa = {_TIEN_TO_KHOA[m.group(1)] for m in khop if m}
+            if len(khoa) != 1:
+                continue
+            (k,) = khoa
+            con_trong = muc["ket"].get(k) is None if nhom == "cham" else muc.get("buoc") == k
+            if not con_trong:
+                continue
+            muc.setdefault("ghi_chu", []).extend(
+                f"{x} — trạng thái trước luật gửi lại 21/11, gửi lại 1 lần" for x in loi
+            )
+            muc["loi"] = []
+            muc["gui_lai"] = {k: 1}
+            n += 1
+    return n
 
 
 # ── Biên bản ─────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -516,7 +618,7 @@ def uoc_tinh(st: Dict[str, Any], out_dir: Path, goc: Path = REPO) -> Dict[str, A
     so_dp = sum(1 for t in st["tranh"].values() if t["buoc"] == "de_xuat")
     tb_dp = (vao // max(len(yc), 1)) if yc else 0
     vao_tong = vao + 2 * so_dp * tb_dp
-    ra_tong = (len(yc) + 2 * so_dp) * 3000
+    ra_tong = (len(yc) + 2 * so_dp) * TOKEN_RA_UOC_MOI_YEU_CAU
     return {
         "so_yeu_cau_buoc_1": len(yc),
         "so_dau_ra_cham": len(st["cham"]),
@@ -587,6 +689,8 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
         return 3
     p = tep_trang_thai(out_dir, a.gate)
     st = None if a.lam_lai else _doc_st(p)
+    if st is not None and nang_cap_loi_json_cu(st) and a.lenh == "buoc":
+        print("🔁 Trạng thái cũ có phần trả JSON hỏng/sai khuôn — chuyển sang gửi lại 1 lần ở batch kế tiếp.")
     in_ra = (lambda x: print(json.dumps(x, ensure_ascii=False, indent=1))) if a.json else None
 
     if a.lenh == "trang-thai":
@@ -596,11 +700,13 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
         tom = {
             "batch_dang_cho": (st.get("batch") or {}).get("id"),
             "cham": {
-                m: {"xong": [v for v, k in c["ket"].items() if k], "loi": c["loi"], "da_ghi": c.get("da_ghi")}
+                m: {"xong": [v for v, k in c["ket"].items() if k], "loi": c["loi"], "gui_lai": c.get("gui_lai"),
+                    "da_ghi": c.get("da_ghi")}
                 for m, c in st["cham"].items()
             },
             "tranh": {
-                m: {"buoc": t["buoc"], "loi": t["loi"], "da_ghi": t.get("da_ghi")} for m, t in st["tranh"].items()
+                m: {"buoc": t["buoc"], "loi": t["loi"], "gui_lai": t.get("gui_lai"), "da_ghi": t.get("da_ghi")}
+                for m, t in st["tranh"].items()
             },
             "lich_su": st.get("lich_su"),
         }
@@ -670,10 +776,12 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
                     "token_cache_ghi": dem["cache_ghi"],
                     "token_cache_doc": dem["cache_doc"],
                     "loi": dem["loi"],
+                    "gui_lai": dem["gui_lai"],
                 }
             )
             print(
-                f"📥 batch {st['batch']['id']}: {dem['ok']} đạt khuôn · {dem['loi']} hỏng · "
+                f"📥 batch {st['batch']['id']}: {dem['ok']} đạt khuôn · {dem['loi']} hỏng "
+                f"({dem['gui_lai']} sẽ gửi lại 1 lần) · "
                 f"{_in_chi_phi_that(dem, st['model'])}"
             )
             st["batch"] = None

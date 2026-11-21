@@ -132,8 +132,8 @@ của bác sĩ: hỏi trước, đưa con số ước tính. Kết quả ở `ex
 - (18/11/2026) Báo cáo mang `tep_sha256` của đề cương: `python3 tools/duyet_kiem_may_api.py tinh-trang --study <mã>`
   báo «CŨ» khi đề cương đổi sau lượt kiểm ⇒ không dựa vào báo cáo cũ; hỏi bác sĩ có chạy lại (tính phí). Độ đúng của máy
   CHƯA đo cho tới khi bác sĩ duyệt: `phieu --study <mã>` dựng phiếu đánh số → bác sĩ trả lời «1-3 đúng, 4 sai…» →
-  `ghi --loi "<nguyên văn>" --ap-dung` → `do`. Agent KHÔNG tự gắn nhãn đúng/sai. Lượt gọi đi qua trần chi phí tháng
-  của cầu nối (chạm trần ⇒ ⛔, không tự nâng trần).
+  `ghi --loi "<nguyên văn>" --ap-dung` → `do`. Agent KHÔNG tự gắn nhãn đúng/sai. Lượt gọi dùng theo tín dụng tài khoản
+  (21/11/2026 — hết tín dụng ⇒ ⛔ cầu nối tự dừng; agent không nạp tín dụng thay bác sĩ).
 - Máy đã tự kiểm lại câu trả lời của model: căn cứ «trích» phải có NGUYÊN VĂN trong abstract (không có ⇒ «máy không
   xác minh được căn cứ»), số liệu % / thập phân trong đoạn phải có trong abstract (không có ⇒ cờ «số không thấy»).
 - `khong_ho_tro` / `ho_tro_mot_phan` / cờ ⇒ agent ĐỌC LẠI abstract hoặc toàn văn rồi sửa câu hoặc thay nguồn; không
