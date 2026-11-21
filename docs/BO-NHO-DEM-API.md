@@ -64,10 +64,15 @@ thấy được là `usage.cache_creation_input_tokens == 0`. Bảng ngưỡng: 
 
 Hai hệ quả đã đo trong hệ này:
 
-- `HE_THONG` của `kiem_noi_dung_trich_dan` = **591 token**, chỉ hơn ngưỡng 512 có **79 token**. Rất mong manh:
-  sửa mất ~12 ký tự là rơi xuống dưới và âm thầm mất cache. Test canh có dự phòng 15% sẽ ĐỎ ngay khi điều đó xảy ra
+- **Đo lại 21/11/2026 sau khi nhánh gốc đổi `uoc_token`** (PR #370, ước theo `KY_TU_MOI_TOKEN` cho tiếng Việt thay
+  vì `len//3`): `HE_THONG` của `kiem_noi_dung_trich_dan` = **1.110 token** (dư 598 trên ngưỡng 512) và của
+  `kiem_trich_dan_toan_van` = **816 token** (dư 304). Cả hai đều AN TOÀN, không sát mép.
+  Con số «591 token, dư 79, mong manh» ghi ở bản đầu tệp này là theo hàm ước CŨ và đã lỗi thời — nêu lại ở đây để
+  không ai đọc bản cũ rồi tưởng prompt đang ở mép vực. Test canh vẫn giữ dự phòng 15% làm sàn
   (`test_prompt_duoc_cache_phai_vuot_nguong_co_du_phong`). **Gặp test đó đỏ thì xem lại bản sửa prompt hoặc bỏ
   `cache_he_thong=True`, KHÔNG hạ `DU_PHONG` để test xanh lại.**
+- Ngưỡng là số token THẬT của bộ tách từ, còn `uoc_token` chỉ là ước lượng — một prompt chỉ hơn ngưỡng vài chục
+  token thì đừng tin ước lượng, hãy xem `usage.cache_creation_input_tokens` của một lượt thật.
 - `_DEFAULT_MODEL` của `runtime/claude_api_runtime.py` là Haiku 4.5, ngưỡng **4.096** ⇒ chỉ **61/99** agent spec
   in-repo được cache. Đó là mất cơ hội tiết kiệm, **không phải lỗi** và không phát sinh phí. Đổi sang Haiku 5.5 /
   Sonnet 5.5 (ngưỡng 512) thì cả 99 spec đều cache được — là quyết định của bác sĩ, không thuộc phạm vi lượt này.
@@ -81,7 +86,8 @@ Hai hệ quả đã đo trong hệ này:
 | `runtime/claude_api_runtime.py` | ✅ system prompt | Agent spec tĩnh theo `agent_id`, trung bình ~5.300 token, dùng lại cho nhiều fixture |
 | `tools/hoi_dong_cong_batch.py` | ✅ `cache_he_thong=True` | Cùng tệp agent cho nhiều đầu ra |
 | `tools/kiem_tong_quan_g0_api.py` | ✅ | Cùng lời dặn nhiều lượt |
-| `tools/kiem_noi_dung_trich_dan.py` | ✅ system (591 token) | Cùng lời dặn cho mọi lô — nhưng xem §2 về mức mong manh |
+| `tools/kiem_noi_dung_trich_dan.py` | ✅ system (1.110 token) | Cùng lời dặn cho mọi lô |
+| `tools/kiem_trich_dan_toan_van.py` | ❌ **chưa bật** | `HE_THONG` = 816 token (ĐỦ ngưỡng) và gửi y nguyên cho MỖI tài liệu — đo 21/11/2026: 88 lượt, 726 N token vào, 0% đọc cache. Thiếu `cache_he_thong=True` ở `kiem_tai_lieu`. Xem §10 |
 | `tools/phan_bien_may_de_cuong.py` | ❌ **cố ý** | MỘT lượt mỗi lần chạy ⇒ ghi cache 1,25× mà không ai đọc lại. Chốt: `test_phan_bien_mot_luot_khong_danh_dau_cache` |
 | `app/integrations/` (SOAP, đọc ảnh) | ❌ **không thể** | `build_soap_prompt` phần tĩnh = **256 token**, `build_reading_prompt` = **283 token** — đều dưới ngưỡng 512. Dời sang `system` cũng không cache được; nhồi chữ cho đủ ngưỡng thì **không được phép** với prompt an toàn lâm sàng |
 
@@ -237,7 +243,45 @@ Test: `tests/test_a12_batch_20261121.py` — 17 test, phủ cả bốn chốt tr
 
 ---
 
-## 10. Test canh
+## 10. Số ĐO THẬT trên sổ chi phí của bác sĩ (21/11/2026)
+
+Lần đầu chạy `tools/do_cache_api.py` trên sổ thật. **Kết quả trái với suy luận từ bảng tổng theo model của Console** —
+ghi lại để lần sau không ai phải đoán.
+
+Tháng 11, 200 lượt gần nhất: **4,12 Tr token vào · 5,6% đọc cache · 23,98 USD**.
+
+| Nguồn | Token vào | Đọc | Khấu hao | Nhãn |
+|---|---|---|---|---|
+| `hoi_dong_cong_batch` | **2,31 Tr (56%)** | 5,3% | 0,53× | CẦN XEM LẠI — đang tiết kiệm |
+| `kiem_trich_dan_toan_van` | 726 N | 0,0% | — | **CHƯA BẬT CACHE** (prompt ĐỦ ngưỡng — xem dưới) |
+| `kiem_noi_dung_trich_dan` | 407 N | 13,7% | 13,00× | CẦN XEM LẠI |
+| `phan_bien_may_de_cuong` | 394 N | 0,0% | — | Chưa bật — ĐÚNG (một lượt mỗi lần chạy) |
+| `do_nhay_api` | 154 N | 31,3% | — | CẦN XEM LẠI |
+| `phan_bien_may_tham_tra` | 95 N | 0,0% | — | Chưa bật (Opus 5.5) |
+
+### Ba bài học từ lượt đo này
+
+1. **Đừng suy nguồn tốn nhất từ bảng tổng theo model.** Bản ghi đầu của tệp này nói `kiem_noi_dung_trich_dan` là
+   nguồn lớn nhất. Số thật: nó chiếm 10%, còn `hoi_dong_cong_batch` chiếm **56%**. Console chỉ cho tổng theo model,
+   mà nhiều công cụ dùng chung một model.
+2. **Điểm hoà vốn của khấu hao là ~0,26× với TTL 5 phút, không phải 1,0×.** Bản đầu của `do_cache_api.py` đặt 1,0×
+   nên gắn nhãn «ĐANG LỖ VÌ CACHE» cho `hoi_dong_cong_batch` và khuyên BỎ cache ở nguồn chiếm 56% khối lượng —
+   trong khi nguồn ấy đang tiết kiệm (1,277× so với 1,530× nếu không cache). Đã vá.
+3. **Khấu hao «—» là bình thường**, không phải lỗi: nguồn đọc lại cache đã ghi từ lượt TRƯỚC thì trong cửa sổ 200
+   lượt của sổ không còn bản ghi ghi nào.
+
+### Việc còn bỏ ngỏ: `kiem_trich_dan_toan_van`
+
+`kiem_tai_lieu()` gọi `API.goi(noi, he_thong=HE_THONG, …)` **thiếu `cache_he_thong=True`**, trong khi `HE_THONG` =
+816 token (trên ngưỡng 512) và được gửi y nguyên cho **mỗi tài liệu** — đo được 88 lượt trong một tháng. Thêm cờ đó
+là thay đổi một dòng và chắc chắn có lãi theo §1 (tái dùng 87 lần, hoà vốn từ lần đầu).
+
+Nhưng phần lớn 726 N token là **đoạn toàn văn của từng tài liệu**, mỗi đoạn gửi đúng một lần ⇒ không cache được.
+Đòn lớn ở đây vẫn là **Batch API** như §9 đã làm cho A12. Cả hai việc đều CHƯA làm, chờ bác sĩ quyết.
+
+---
+
+## 11. Test canh
 
 `tests/test_cache_nguong_va_ttl_20261121.py` — 46 test, chia 7 nhóm: ngưỡng tối thiểu · TTL · giá ghi theo TTL ·
 runtime · luật hoà vốn `nen_cache` · chẩn đoán · công cụ đo. Hai test đáng chú ý:
