@@ -1,4 +1,6 @@
 > **BẢN CŨ — ĐÃ THAY BẰNG** `DE_CUONG_NOP_HOI_DONG_hai-long-benh-nhan-C1a-BVQY175.md` (bản nộp Hội đồng; PI ký lại gói G10 ngày 28/10/2026). Đánh dấu ngày 15/11/2026 khi kiểm đồng bộ cỡ mẫu & kỹ thuật chọn mẫu. Bản thảo này (sửa lần cuối 03/08/2026) biện minh N = 1.000 bằng d = 0,031, chưa có hiệu chỉnh gom cụm theo CV và ước độ chính xác ±4–6%; đề cương nộp tính N tối thiểu 630 (DE 1,39, CV 0,14) và nửa độ rộng ±3,7%. **Trước khi gửi tạp chí, dựng lại bài báo giao thức từ đề cương nộp** (SPIRIT 2025); không trích số liệu từ bản này.
+>
+> **CẢNH BÁO LIÊM CHÍNH (21/11/2026):** đoạn «Việc rà y văn … Google Scholar … thư viện luận văn … kỷ yếu hội nghị» KHÔNG khớp nhật ký `G0_TIM_BO_SUNG_PRISMA_S_hai-long-benh-nhan-C1a-BVQY175.md` (các nguồn đó ghi «KHÔNG tra»/«chưa tra»; không có lượt tra Google Scholar) — không dùng lại đoạn này. Phạm vi tìm đúng nằm ở đề cương nộp Hội đồng (mục giới hạn của chiến lược tìm kiếm). Chốt K16 nay bắt lỗi này.
 
 # GIAO THỨC NGHIÊN CỨU
 
