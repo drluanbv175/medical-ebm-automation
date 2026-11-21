@@ -212,7 +212,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # gốc) — vẫn 64.
 # 21/11/2026 (f): viet-ban-thao + thiet-ke-nghien-cuu — K17 đủ từng mục chuẩn của thiết kế (PR cặp gốc #476).
 MANIFEST_SELF_CHECK_SHA256 = (
-    "99263f99096a11282b8a94dda63198998f10a29813cf62fef2c820448400005c"
+    "9c92ec0ceebb3e7d60279d1817317a3edf82661db856f98f000122c511cf6066"
 )
 
 MINIMUM_AGENT_COUNT = 64
