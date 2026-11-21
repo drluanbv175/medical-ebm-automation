@@ -306,3 +306,40 @@ def test_cac_chuan_chua_co_van_ban_that_do_duoc_tren_de_cuong_mau():
                       ("non_randomized", "TREND 2004"), ("case_report", "CARE 2013")):
         kq = K.doi_chieu(md, tk)
         assert any(r.chuan == chuan for r in kq["ket_qua"]) and not kq["chua_do"], tk
+
+
+# ───────────────────────────── khâu chặn nộp (sau #399: K17 chặn mọi đề cương nộp) ─────────────────────────────
+def test_chuan_cho_bo_sinh_chi_canh_bao_o_khau_nop_con_cosmin_va_strobe_van_chan():
+    md = _dc(DAO_DUC + "Nghiên cứu này được tài trợ bởi: Không có tài trợ bên ngoài.")
+    assert _kq(md, "rct")[("SPIRIT 2025", "3c")].trang_thai == "thieu"  # bộ đo vẫn báo ✗ đầy đủ
+    assert not any(x.startswith("K17 SPIRIT") for x in K.loi_k17(md, "rct"))
+    assert any(x.startswith("K17 SPIRIT 2025 mục 3c") and x.endswith("[chờ bộ sinh phủ chuẩn]")
+               for x in K.canh_bao_k17(md, "rct"))
+    assert any(x.startswith("K17 Việt Nam") for x in K.loi_k17(md, "rct"))  # chuẩn khác vẫn chặn
+    cosmin = _dc("# 2. PHƯƠNG PHÁP\n\n## 2.6. Công cụ thu thập\n\nBộ câu hỏi tự điền 30 câu; Cronbach's alpha; CVI.")
+    assert any(x.startswith("K17 COSMIN 2021") for x in K.loi_k17(cosmin, "cross_sectional"))
+    assert not any(x.startswith("K17 COSMIN") for x in K.canh_bao_k17(cosmin, "cross_sectional"))
+    assert any(x.endswith("[chưa đối chiếu bảng gốc]") for x in K.canh_bao_k17(md, "qualitative"))
+
+
+def test_bo_kiem_nop_in_canh_bao_k17_khong_doi_ma_thoat(tmp_path):
+    import json
+
+    import kiem_de_cuong_nop_hoi_dong as KD  # noqa: PLC0415
+
+    (tmp_path / "study_meta.json").write_text(json.dumps({"gate_params": {"G1": {"design": "rct"}}}), encoding="utf-8",
+                                              newline="\n")
+    (tmp_path / "DE_CUONG_NOP_HOI_DONG_X.md").write_text(_dc(DAO_DUC + "Nội dung."), encoding="utf-8", newline="\n")
+    canh = KD.canh_bao_k17(tmp_path, "X")
+    assert canh and all("[chờ bộ sinh phủ chuẩn]" in x or "[chưa đối chiếu bảng gốc]" in x for x in canh)
+    assert KD.canh_bao_k17(tmp_path, "KHONG-CO") == []
+
+
+def test_lien_he_trong_de_cuong_nop_la_dia_chi_don_vi_khong_doi_email():
+    # K7 cấm email/số điện thoại trong đề cương nộp ⇒ SPIRIT 3b / PRISMA-P 3a nhận địa chỉ đơn vị.
+    md = _dc("## 6.1. Nhân lực và phân công nhiệm vụ\n\nChủ nhiệm đề tài; đơn vị chủ trì: Bệnh viện X, địa chỉ "
+             "786 đường Y, TP. Hồ Chí Minh.")
+    assert _kq(md, "rct")[("SPIRIT 2025", "3b")].trang_thai == "dat"
+    assert _kq(md, "sr_ma")[("PRISMA-P 2015", "3a")].trang_thai == "dat"
+    md2 = md.replace(", địa chỉ 786 đường Y, TP. Hồ Chí Minh", "")
+    assert _kq(md2, "rct")[("SPIRIT 2025", "3b")].trang_thai == "thieu"

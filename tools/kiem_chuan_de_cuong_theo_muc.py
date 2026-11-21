@@ -932,14 +932,47 @@ def doi_chieu(md: str, thiet_ke: str) -> Dict[str, object]:
     return {"chuan": ap_dung, "ket_qua": ket_qua, "chua_do": chua_do}
 
 
+#: Chuẩn mà BỘ SINH đề cương (`sinh_de_cuong_nop_hoi_dong.py`) chưa dựng đủ mục ⇒ ở khâu CHẶN NỘP (`loi_k17`) mục thiếu
+#: chỉ là cảnh báo (`canh_bao_k17`) cho tới khi bộ sinh phủ chuẩn đó. Đo 21/11/2026 trên 8 đề cương giả lập: RCT thiếu
+#: 12 mục SPIRIT, chẩn đoán 12 STARD, dự báo 16 TRIPOD+AI, tổng quan 10 PRISMA-P (docs/K17-PHAN-XU-12-CHUAN-20261121.md
+#: §4); GRAMMS, SQUIRE, CHEERS, CARE chưa có văn bản nào để đo. Trước đó các chuẩn này là ⚪ (không chặn) — tập này
+#: KHÔNG nới gì so với trước, chỉ thêm phép đo. Bộ đo theo mục (`doi_chieu`, CLI) vẫn báo ✗ đầy đủ. Gỡ tên khỏi tập
+#: khi bộ sinh phủ chuẩn VÀ 24 kịch bản giả lập vẫn đạt. COSMIN chặn: đề cương thật (C1a) đã được đo và không kịch
+#: bản giả lập nào kích hoạt nó.
+CHUAN_CHO_BO_SINH: Dict[str, str] = {
+    "SPIRIT 2025": "bộ sinh thiếu 12 mục trên RCT giả lập",
+    "PRISMA-P 2015": "bộ sinh thiếu 10 mục trên tổng quan giả lập",
+    "STARD 2015": "bộ sinh thiếu 12 mục trên đề cương chẩn đoán giả lập",
+    "TRIPOD+AI 2024": "bộ sinh thiếu 16 mục trên đề cương dự báo giả lập",
+    "GRAMMS 2008": "chưa có văn bản để đo",
+    "SQUIRE 2.0": "chưa có văn bản để đo",
+    "CHEERS 2022": "chưa có văn bản để đo",
+    "CARE 2013": "chưa có văn bản để đo",
+}
+
+
+def _dong_k17(r: KetQua) -> str:
+    return f"K17 {r.chuan} mục {r.ma} ({r.chu_de}) thiếu: {'; '.join(r.thieu)} — {r.tieu_chi}"
+
+
 def loi_k17(md: str, thiet_ke: str) -> List[str]:
-    """Lỗi K17 cho bộ kiểm đề cương nộp: mục bắt buộc/kế hoạch còn thiếu yếu tố."""
+    """Lỗi K17 cho bộ kiểm đề cương nộp: mục bắt buộc/kế hoạch còn thiếu yếu tố — trừ chuẩn còn chờ bộ sinh phủ
+    (`CHUAN_CHO_BO_SINH`, xem `canh_bao_k17`)."""
     kq = doi_chieu(md, thiet_ke)
-    loi = []
+    return [_dong_k17(r) for r in kq["ket_qua"] if r.trang_thai == "thieu" and r.chuan not in CHUAN_CHO_BO_SINH]
+
+
+def canh_bao_k17(md: str, thiet_ke: str) -> List[str]:
+    """Cảnh báo K17 (không chặn nộp): mục thiếu của chuẩn chưa đối chiếu bảng gốc (TREND, COREQ, SRQR) hoặc của chuẩn
+    còn chờ bộ sinh phủ (`CHUAN_CHO_BO_SINH`). Vẫn phải bổ sung trước khi trình Hội đồng."""
+    kq = doi_chieu(md, thiet_ke)
+    ra = []
     for r in kq["ket_qua"]:
-        if r.trang_thai == "thieu":
-            loi.append(f"K17 {r.chuan} mục {r.ma} ({r.chu_de}) thiếu: {'; '.join(r.thieu)} — {r.tieu_chi}")
-    return loi
+        if r.trang_thai == "canh_bao":
+            ra.append(_dong_k17(r) + " [chưa đối chiếu bảng gốc]")
+        elif r.trang_thai == "thieu" and r.chuan in CHUAN_CHO_BO_SINH:
+            ra.append(_dong_k17(r) + " [chờ bộ sinh phủ chuẩn]")
+    return ra
 
 
 # ───────────────────────────── CLI ─────────────────────────────

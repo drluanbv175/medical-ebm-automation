@@ -135,7 +135,9 @@ _SPIRIT: Dict[str, tuple] = {
             _y("vai trò/nhiệm vụ", VAI_TRO_NHOM))),
     "3b": (("bia", "kinh_phi", "nhan_luc"), "bat_buoc", "Nêu tên và thông tin liên hệ của đơn vị tài trợ/chủ trì.",
            (_y("đơn vị tài trợ/chủ trì", r"nhà tài trợ|đơn vị (tài trợ|chủ trì|thực hiện)|cơ quan chủ trì|tự túc"),
-            _y("thông tin liên hệ", r"điện thoại|email|thư điện tử|địa chỉ|liên hệ"))),
+            # K7 của bộ kiểm nộp CẤM email/số điện thoại trong đề cương nộp (PII liên lạc — PI điền tay ngoài hệ thống)
+            # ⇒ thông tin liên hệ được nhận là ĐỊA CHỈ của đơn vị, không đòi email/điện thoại.
+            _y("địa chỉ liên hệ của đơn vị", r"địa chỉ|trụ sở|liên hệ (qua|tại) (đơn vị|cơ quan|phòng|khoa)"))),
     "3c": (("kinh_phi", "bia", "dao_duc"), "bat_buoc", "Nêu vai trò nhà tài trợ trong thiết kế, thực hiện, phân tích.",
            (_y("nguồn kinh phí", KINH_PHI), _y("vai trò tài trợ", VAI_TRO_TAI_TRO)), None, "", True),
     "3d": (("nhan_luc", "giam_sat", "quan_ly_dl"), "bat_buoc",
@@ -305,9 +307,11 @@ _PRISMA_P: Dict[str, tuple] = {
                                                                                                 "cũ"),
     "2": (("pho_bien", "dao_duc", "bia"), "bat_buoc", "Nêu cơ quan đăng ký (vd PROSPERO) và số đăng ký.",
           (_y("cơ quan đăng ký", r"PROSPERO|\bOSF\b|INPLASY|đăng ký"), _y("số/kế hoạch đăng ký", DANG_KY_SO))),
-    "3a": (("bia", "nhan_luc"), "bat_buoc", "Nêu tên, đơn vị, email tác giả; địa chỉ tác giả liên hệ.",
-           (_y("tác giả", r"chủ nhiệm|tác giả|nghiên cứu viên"), _y("liên hệ", r"email|thư điện tử|@|địa chỉ|điện "
-                                                                               r"thoại"))),
+    # K7 cấm email/điện thoại trong đề cương nộp ⇒ nhận đơn vị công tác + địa chỉ; email do PI điền ngoài hệ thống.
+    "3a": (("bia", "nhan_luc"), "bat_buoc",
+           "Nêu tên, đơn vị tác giả; địa chỉ liên hệ (email do PI điền ngoài hệ thống).",
+           (_y("tác giả", r"chủ nhiệm|tác giả|nghiên cứu viên"),
+            _y("đơn vị/địa chỉ liên hệ", r"địa chỉ|đơn vị (công tác|thực hiện|chủ trì)|cơ quan|trụ sở"))),
     "3b": (("nhan_luc", "bia"), "bat_buoc", "Nêu đóng góp của từng tác giả và người bảo đảm của tổng quan.",
            (_y("đóng góp/phân công", r"đóng góp|" + VAI_TRO_NHOM),
             _y("người bảo đảm", r"bảo đảm|chịu trách nhiệm (chính|chung|toàn bộ)|guarantor"))),
