@@ -97,6 +97,53 @@ def _dong(df) -> List[Dict[str, str]]:
              for k, v in r.items()} for r in df.to_dict("records")]
 
 
+TIEN_TO_ROB = ("rob", "quadas")   # cột đánh giá nguy cơ sai lệch trong bộ dữ liệu trích xuất của tổng quan
+
+
+def _nhan_tu_dien(d: Path, study: str) -> Dict[str, Dict[str, Any]]:
+    """{trường: {"nhan": nhãn, "ma": {mã: nhãn}}} từ từ điển G5 của đề tài; không có/không đọc được ⇒ {}."""
+    p = Path(d) / f"G5_REDCap_dictionary_{study}.csv"
+    if not p.is_file():
+        return {}
+    try:
+        import cau_noi_spss as CN  # noqa: PLC0415
+
+        return {ten: {"nhan": td.get("nhan") or ten, "ma": CN.lua_chon(td)} for ten, td in CN.doc_tu_dien(p).items()}
+    except Exception:  # noqa: BLE001 — từ điển hỏng: dùng giá trị thô (muc_rob nhận chữ «Thấp/Cao…» nếu có)
+        return {}
+
+
+def _hinh_rob(study: str, df_day, df, cot_ten: str, kq_f: Dict[str, Any], thu_muc: Path, them: Callable,
+              ra: List[Dict[str, Any]], ngon_ngu: str) -> None:
+    """Biểu đồ nguy cơ sai lệch (traffic light + thanh tổng hợp có trọng số = trọng số forest) khi bộ dữ liệu tổng
+    quan có cột RoB (`rob*`, `quadas*`); mã → nhãn theo từ điển G5. Lỗi ⇒ một dòng LỖI riêng, không làm mất forest."""
+    cot = [c for c in getattr(df_day, "columns", []) if str(c).lower().startswith(TIEN_TO_ROB)]
+    if not cot:
+        return
+    import bieu_do_bao_cao as BB  # noqa: PLC0415
+
+    try:
+        td = _nhan_tu_dien(thu_muc.parent, study)
+        w = {str(x.get("nghien_cuu")): x.get("trong_so_pt") for x in kq_f.get("nghien_cuu") or []}
+        dong = []
+        for i in df.index:
+            ten_ncuu = str(df.loc[i, cot_ten])
+            r: Dict[str, str] = {"nghien_cuu": ten_ncuu}
+            for c in cot:
+                v = df_day.loc[i, c]
+                ma = str(int(v)) if isinstance(v, float) and v == v and v.is_integer() else str(v)
+                r[(td.get(c) or {}).get("nhan") or c] = ((td.get(c) or {}).get("ma") or {}).get(ma, ma)
+            if w.get(ten_ncuu) is not None:
+                r["trong_so"] = str(w[ten_ncuu])
+            dong.append(r)
+        cong_cu = "QUADAS" if any(str(c).lower().startswith("quadas") for c in cot) else (
+            "RoB 2" if any(str(c).lower().startswith("rob2") for c in cot) else "")
+        BB.ve_rob(dong, them("rob", "Nguy cơ sai lệch theo nghiên cứu (trọng số như forest)"), cong_cu, ngon_ngu)
+    except Exception as e:  # noqa: BLE001
+        ra.pop()  # bỏ bản ghi «sẽ vẽ» vừa thêm, thay bằng dòng LỖI
+        ra.append({"loai": "rob", "trang_thai": "LOI", "ly_do": f"{type(e).__name__}: {str(e)[:300]}"})
+
+
 def hinh_cua_phan_tich(study: str, pt: Dict[str, Any], thu_muc: Path, nap: Callable,
                        ngon_ngu: str = "vi") -> List[Dict]:
     """Sinh mọi hình của MỘT phân tích; trả danh sách {tep, loai, mo_ta} (ném lỗi nếu không vẽ được)."""
@@ -158,7 +205,8 @@ def hinh_cua_phan_tich(study: str, pt: Dict[str, Any], thu_muc: Path, nap: Calla
                 ds.append({"nghien_cuu": str(r[cot[0]]), "nhom": "", "yi": yi, "vi": vi, "sei": vi ** 0.5,
                            "su_kien_1": int(r[cot[1]]), "tong_1": int(r[cot[2]]), "su_kien_2": int(r[cot[3]]),
                            "tong_2": int(r[cot[4]])})
-            GP.ve_forest(ds, "RR", _them("forest", "Forest plot gộp (DL, như G6)"), "DL", ngon_ngu=ngon_ngu)
+            kq_f = GP.ve_forest(ds, "RR", _them("forest", "Forest plot gộp (DL, như G6)"), "DL", ngon_ngu=ngon_ngu)
+            _hinh_rob(study, nap(study, cot, loc), df, cot[0], kq_f, thu_muc, _them, ra, ngon_ngu)
             if len(ds) >= 3:
                 GP.ve_bo_tung_nc(ds, "RR", _them("bo-tung-nc", "Bỏ từng nghiên cứu"), "DL", ngon_ngu)
             if len(ds) >= 10:
@@ -302,7 +350,7 @@ def sinh(study: str, d: Path, phan_tich: Sequence[Dict[str, Any]], chi_muc: Opti
             for h in hinh_cua_phan_tich(study, pt, thu_muc, nap, ngon_ngu):
                 if pt.get("mo_ta") and h.get("mo_ta"):  # chú thích nói rõ hình thuộc phân tích SAP nào
                     h = {**h, "mo_ta": f"{pt['mo_ta']} — {h['mo_ta']}"}
-                ket.append({"id": pt["id"], "vai": pt.get("vai"), **h, "trang_thai": "DA_VE"})
+                ket.append({"id": pt["id"], "vai": pt.get("vai"), "trang_thai": "DA_VE", **h})
         except Exception as e:  # noqa: BLE001 — một hình lỗi không làm hỏng các hình khác
             ket.append({"id": pt["id"], "vai": pt.get("vai"), "trang_thai": "LOI",
                         "ly_do": f"{type(e).__name__}: {str(e)[:300]}"})

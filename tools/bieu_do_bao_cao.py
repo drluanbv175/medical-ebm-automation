@@ -217,7 +217,8 @@ def ve_so_do_luong(dong, dich: Path, chuan: str = "", ngon_ngu: str = "vi", bo_k
 MUC_ROB = [  # (mã, nhãn vi, nhãn en, màu, ký hiệu, các cách viết được nhận)
     ("thap", "Thấp", "Low", "#2e7d32", "+", {"thấp", "thap", "low", "+", "l"}),
     ("lo_ngai", "Một số lo ngại", "Some concerns", "#e6b800", "?",
-     {"một số lo ngại", "mot so lo ngai", "some concerns", "?", "unclear", "không rõ", "moderate", "trung bình"}),
+     {"một số lo ngại", "mot so lo ngai", "some concerns", "?", "unclear", "không rõ", "moderate", "trung bình",
+      "có lo ngại", "co lo ngai", "lo ngại", "lo ngai"}),  # «Có lo ngại»: nhãn từ điển G5 kịch bản tổng quan
     ("cao", "Cao", "High", "#c62828", "−", {"cao", "high", "-", "−", "h"}),
     ("nghiem_trong", "Nghiêm trọng", "Serious", "#8e0000", "!", {"nghiêm trọng", "serious"}),
     ("rat_nghiem_trong", "Rất nghiêm trọng", "Critical", "#4a0000", "×", {"rất nghiêm trọng", "critical"}),

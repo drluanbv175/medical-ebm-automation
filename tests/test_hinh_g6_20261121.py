@@ -183,6 +183,43 @@ def test_forest_gop_dung_dl_nhu_g6_khi_co_khong_dong_nhat(tmp_path):
     assert abs(j["gop"]["uoc_luong"] - g6["rr_gop_ngau_nhien"]) < 1e-10
 
 
+def _gop_rob(tmp_path, rob=(1, 1, 2, 3, 1, 2), tu_dien=True):
+    import pandas as pd
+
+    gop = pd.DataFrame({"nc": [f"NC{i}" for i in range(1, 7)], "a": [12, 8, 20, 5, 30, 9],
+                        "n1": [100, 80, 150, 60, 200, 90], "c": [20, 10, 28, 9, 41, 15],
+                        "n0": [100, 82, 148, 61, 205, 88], "rob2_tong": list(rob)})
+    if tu_dien:
+        (tmp_path / "G5_REDCap_dictionary_x.csv").write_text(
+            "Variable / Field Name,Field Type,Field Label,\"Choices, Calculations, OR Slider Labels\"\n"
+            "rob2_tong,radio,RoB 2 — đánh giá chung,\"1, Thấp | 2, Có lo ngại | 3, Cao\"\n", encoding="utf-8",
+            newline="\n")
+    pt = [{"id": "GOP", "vai": "chinh", "tham_so": {"loai_dac_thu": "gop", "nhan_nghien_cuu": "nc",
+                                                    "su_kien_can_thiep": "a", "n_can_thiep": "n1",
+                                                    "su_kien_chung": "c", "n_chung": "n0"}}]
+    return HG.sinh("x", tmp_path, pt, None, "sr_ma", nap=lambda s, c, loc: gop.copy()), gop
+
+
+def test_rob_tu_cot_rob_nhan_tu_dien_va_trong_so_forest(tmp_path):
+    kq, gop = _gop_rob(tmp_path)
+    assert _loai_cua(kq, "GOP") >= {"forest", "rob"}
+    assert "rob" not in kq["kiem_danh_muc"]["thieu_bat_buoc"]  # sr_ma bắt buộc RoB — nay đã có
+    j = json.loads((tmp_path / "bieu-bang/g6-GOP-rob.json").read_text(encoding="utf-8"))
+    f = json.loads((tmp_path / "bieu-bang/g6-GOP-forest.json").read_text(encoding="utf-8"))
+    assert j["cong_cu"] == "RoB 2" and j["mien"] == ["RoB 2 — đánh giá chung"]
+    assert j["danh_gia"]["NC4"] == {"RoB 2 — đánh giá chung": "cao"}  # mã 3 → «Cao» theo từ điển G5
+    w = {x["nghien_cuu"]: x["trong_so_pt"] for x in f["nghien_cuu"]}
+    thap = sum(w[n] for n, v in zip(gop["nc"], gop["rob2_tong"]) if v == 1)
+    assert abs(j["tom_tat_pt"]["RoB 2 — đánh giá chung"]["thap"] - thap) < 1e-6  # thanh tổng hợp có trọng số forest
+
+
+def test_rob_loi_khong_lam_mat_forest(tmp_path):
+    kq, _ = _gop_rob(tmp_path, rob=(1, 1, 9, 3, 1, 2), tu_dien=False)  # mã 9 không có nhãn ⇒ không nhận ra mức
+    ds = {(h["loai"], h["trang_thai"]) for h in kq["hinh"] if h["id"] == "GOP"}
+    assert ("forest", "DA_VE") in ds and ("rob", "LOI") in ds and ("rob", "DA_VE") not in ds
+    assert (tmp_path / "bieu-bang/g6-GOP-forest.png").is_file()
+
+
 def test_mat_phang_ce_dung_cung_lan_lap_bootstrap_cua_g6(ket_qua, du_lieu):
     d, _ = ket_qua
     g6 = PT.kinh_te(du_lieu["ca"].to_dict("records"), "nhanh", "chi_phi", "hieu_qua", 20_000_000)
