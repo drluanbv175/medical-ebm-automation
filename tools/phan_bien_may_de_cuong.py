@@ -216,6 +216,19 @@ def tham_tra(
     return giu, loai, kq, None
 
 
+SO_PHAT_HIEN_UOC = 20  # đo C1a 20–21/11: 12–14 phát hiện đã xác minh mỗi lượt; ước dư cho đề cương dài hơn
+
+
+def uoc_usd_tham_tra(van: str, model: str) -> Optional[float]:
+    """Ước chi phí MỘT lượt thẩm tra trước khi biết số phát hiện: lời dặn + `SO_PHAT_HIEN_UOC` phát hiện × ~700 ký tự
+    (trích + ngữ cảnh ±1 dòng) + danh mục viết tắt nếu có; ra 3.000 token (đo Opus 21/11: 2.300–2.550)."""
+    dong = van.splitlines()
+    kh = _khoang_danh_muc_vt(dong)
+    danh_muc = "\n".join(dong[kh[0] - 1:kh[1]]) if kh else ""
+    vao = API.uoc_token(HE_THONG_THAM_TRA + danh_muc) + API.uoc_token("x" * 700) * SO_PHAT_HIEN_UOC
+    return API.uoc_chi_phi(vao, 3000, model)
+
+
 def danh_so_dong(van: str) -> str:
     return "\n".join(f"{i}| {d}" for i, d in enumerate(van.splitlines(), 1))
 
@@ -432,6 +445,9 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
             "so_dong": len(van.splitlines()),
             "trich_dan_tat_dinh": tat_dinh,
             "uoc_tinh": API.in_chi_phi(vao, 8000, model),
+            "uoc_usd": API.uoc_chi_phi(vao, 8000, model),
+            "uoc_usd_tham_tra": None if a.khong_tham_tra else uoc_usd_tham_tra(van, model_tt),
+            "model_tham_tra": None if a.khong_tham_tra else model_tt,
         }
         if a.json:
             print(json.dumps(kh, ensure_ascii=False, indent=1))
@@ -443,8 +459,9 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
             )
             print(f"Sẽ gọi 1 lượt · ước {kh['uoc_tinh']}. Gọi thật: thêm --goi-api (tính phí).")
             if not a.khong_tham_tra:
-                print(f"  + 1 lượt thẩm tra phát hiện ({model_tt}, chỉ đoạn trích + ngữ cảnh — "
-                      "thường ≈ 0,02–0,08 USD).")
+                u = kh["uoc_usd_tham_tra"]
+                print(f"  + 1 lượt thẩm tra phát hiện ({model_tt}, chỉ đoạn trích + ngữ cảnh) · ước "
+                      + (f"≈ {u:.2f} USD" if u is not None else "(chưa ghi giá model này)") + ".")
         return 0
     try:
         kq = API.goi(loi_nhan, he_thong=HE_THONG, model=model, effort=a.effort, client=client,

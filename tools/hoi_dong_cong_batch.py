@@ -56,10 +56,12 @@ BUOC_TRANH = ("de_xuat", "phan_bien", "trong_tai")
 # lại ĐÚNG phần đó tối đa 1 lần (21/11/2026: C1a G10-T2 cm_001 JSON hỏng bị ghi lỗi vĩnh viễn, không bao giờ chấm).
 # Cụt/từ chối/errored/expired KHÔNG gửi lại tự động (gửi lại cũng cụt, hoặc cần người xem).
 SO_LAN_GUI_LAI_JSON_HONG = 1
+# 21/11/2026 — đo C1a G10 bước đầu: 28.594 token ra / 7 yêu cầu ≈ 4.085 (có phần suy nghĩ); ước cũ 3.000.
+TOKEN_RA_UOC_MOI_YEU_CAU = 4500
 _TIEN_TO_KHOA = {"cm": "chuyen_mon", "gk": "giam_khao", "de": "de_xuat", "ph": "phan_bien", "tr": "trong_tai"}
 _LOI_GUI_LAI_DUOC = re.compile(
     r"^(cm|gk|de|ph|tr)_\d{3}: (JSON hỏng|Câu trả lời không chứa JSON|bản chấm sai khuôn|luận điểm sai khuôn|"
-    r"thiếu ket_luan_de_xuat|phán quyết sai khuôn)"
+    r"thiếu ket_luan_de_xuat|phán quyết sai khuôn|căn cứ sai dạng)"
 )
 
 QUY_TAC_API = (
@@ -67,7 +69,10 @@ QUY_TAC_API = (
     "Bạn KHÔNG có công cụ: không chạy được lệnh, không đọc được tệp nào ngoài phần được dán trong tin nhắn. "
     "Căn cứ loại «tep» ghi đúng đường dẫn ở tiêu đề khối tệp, kèm «:dòng» hoặc «:dòng-dòng» là dòng CÓ THẬT (tệp đã "
     "đánh số dòng). Căn cứ loại «lenh» CHỈ được dùng các lệnh trong mục «LỆNH ĐÃ CHẠY SẴN», «ket_qua» chép nguyên văn "
-    "đoạn kết quả liên quan. «tieu_chi» là mã tiêu chí cổng (vd G4-AUTO-09). Không bịa PMID/DOI, không ghi định danh "
+    "đoạn kết quả liên quan. «tieu_chi» là mã tiêu chí CỔNG đúng dạng G<số cổng>-AUTO-<2 số> hoặc G<số cổng>-HUMAN-"
+    "<2 số> (vd G4-AUTO-09, G10-HUMAN-05); luật của công cụ khác (vd «A12 R4_…») KHÔNG phải mã tiêu chí cổng — dùng "
+    "«tep» (tệp:dòng) hoặc «lenh» thay thế. PMID chỉ chữ số; DOI dạng 10.xxxx/…. Không bịa PMID/DOI, không ghi "
+    "định danh "
     "người bệnh. Không viết kết luận như trạng thái cổng («đã ký», «đã duyệt», «PASS_…», «…_LOCKED»). Trả DUY NHẤT một "
     "đối tượng JSON đúng khuôn được yêu cầu, không lời dẫn, không rào ```."
 )
@@ -346,12 +351,52 @@ def yeu_cau_tiep(
 
 
 # ── Áp kết quả ───────────────────────────────────────────────────────────────────────────────────────────────────
+def _loi_can_cu(dl: Any) -> List[str]:
+    """Căn cứ sai DẠNG ở mọi mức của câu trả lời (cùng luật dạng của `hoi_dong_cong` khi ghi biên bản, trừ phép kiểm
+    tệp:dòng cần thư mục đề tài). 21/11/2026 (C1a G10-T1): «A12 R4_pmid_traceable» ghi làm mã tiêu chí chỉ bị phát hiện
+    LÚC GHI ⇒ phần đó không được gửi lại; nay bắt ngay khi nhận kết quả ⇒ đi luật gửi lại một lần."""
+    loi: List[str] = []
+
+    def duyet(x: Any) -> None:
+        if isinstance(x, dict):
+            for k, v in x.items():
+                if k == "can_cu" and isinstance(v, list):
+                    for cc in v:
+                        loai = cc.get("loai") if isinstance(cc, dict) else None
+                        gt = str(cc.get("gia_tri") or "").strip() if isinstance(cc, dict) else ""
+                        if loai not in HDC.LOAI_CAN_CU:
+                            loi.append(f"loại «{loai}»")
+                        elif loai == "tieu_chi" and not HDC._TIEU_CHI_RE.match(gt):
+                            loi.append(f"mã tiêu chí «{gt[:40]}»")
+                        elif loai == "pmid" and not HDC._PMID_RE.match(gt):
+                            loi.append(f"PMID «{gt[:20]}»")
+                        elif loai == "doi" and not HDC._DOI_RE.match(gt):
+                            loi.append(f"DOI «{gt[:40]}»")
+                        elif loai == "lenh" and not str(cc.get("ket_qua") or "").strip():
+                            loi.append("lệnh thiếu ket_qua")
+                else:
+                    duyet(v)
+        elif isinstance(x, list):
+            for v in x:
+                duyet(v)
+
+    duyet(dl)
+    return loi
+
+
+def _kiem_can_cu(dl: Any) -> Any:
+    loi = _loi_can_cu(dl)
+    if loi:
+        raise API.KetQuaHong("căn cứ sai dạng: " + "; ".join(loi[:4]))
+    return dl
+
+
 def _hop_cham(dl: Any) -> Dict[str, Any]:
     if not (
         isinstance(dl, dict) and isinstance(dl.get("tieu_chi"), list) and dl.get("ket_luan") in HDC.KET_LUAN_DANH_GIA
     ):
         raise API.KetQuaHong("bản chấm sai khuôn (thiếu tieu_chi hoặc ket_luan lạ)")
-    return dl
+    return _kiem_can_cu(dl)
 
 
 def _hop_luan_diem(dl: Any, can_kl: bool) -> Dict[str, Any]:
@@ -360,7 +405,7 @@ def _hop_luan_diem(dl: Any, can_kl: bool) -> Dict[str, Any]:
         raise API.KetQuaHong("luận điểm sai khuôn")
     if can_kl and not str(dl.get("ket_luan_de_xuat") or "").strip():
         raise API.KetQuaHong("thiếu ket_luan_de_xuat")
-    return dl
+    return _kiem_can_cu(dl)
 
 
 def _hop_phan_quyet(dl: Any) -> Dict[str, Any]:
@@ -371,7 +416,7 @@ def _hop_phan_quyet(dl: Any) -> Dict[str, Any]:
         and isinstance(dl.get("giai_phap_tot_nhat"), dict)
     ):
         raise API.KetQuaHong("phán quyết sai khuôn")
-    return dl
+    return _kiem_can_cu(dl)
 
 
 def ap_ket_qua(st: Dict[str, Any], ket: Dict[str, Dict[str, Any]], max_tokens: int = MAX_TOKENS) -> Dict[str, int]:
@@ -573,7 +618,7 @@ def uoc_tinh(st: Dict[str, Any], out_dir: Path, goc: Path = REPO) -> Dict[str, A
     so_dp = sum(1 for t in st["tranh"].values() if t["buoc"] == "de_xuat")
     tb_dp = (vao // max(len(yc), 1)) if yc else 0
     vao_tong = vao + 2 * so_dp * tb_dp
-    ra_tong = (len(yc) + 2 * so_dp) * 3000
+    ra_tong = (len(yc) + 2 * so_dp) * TOKEN_RA_UOC_MOI_YEU_CAU
     return {
         "so_yeu_cau_buoc_1": len(yc),
         "so_dau_ra_cham": len(st["cham"]),
