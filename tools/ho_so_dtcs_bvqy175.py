@@ -988,31 +988,23 @@ def _bam_tep(p: Path) -> str:
     return hashlib.sha256(p.read_bytes()).hexdigest()[:16] if p.is_file() else ""
 
 
-# Tham chiếu chéo theo đánh số ĐỀ CƯƠNG (vd «mục 2.6.4», «Bảng 2.1», «Phụ lục C», «mục 3.3–3.4»). Thuyết minh bỏ số mục
-# của đề cương khi chép (tach_muc giữ `ten` không số) nên các tham chiếu này không trỏ được trong thuyết minh —
-# 22/11/2026: kiểm còn 55 (C1a) và 26 (BTM) chỗ. Hội đồng nhận thuyết minh KÈM đề cương ⇒ ghi «của đề cương» sau cả
-# cụm; tham chiếu
-# tới bảng/hình có chú thích đã chép sang thuyết minh, hoặc mục có đề mục cùng số trong thuyết minh, được giữ nguyên.
+# Tham chiếu chéo theo đánh số ĐỀ CƯƠNG (vd «mục 2.6.4», «Bảng 2.1», «Phụ lục C», «mục 3.3–3.4»). Thuyết minh bỏ số
+# mục của đề cương khi chép, và bộ dựng Word cũng bỏ số ở đề mục con, nên «mục x.y» không trỏ được trong thuyết minh
+# — 22/11/2026: kiểm còn 55 (C1a) và 26 (BTM) chỗ. Hội đồng nhận thuyết minh KÈM đề cương ⇒ ghi «của đề cương» sau cả
+# cụm. Chỉ tham chiếu tới bảng/hình có chú thích đã chép sang thuyết minh (chú thích hiện ở đầu dòng trong Word) được
+# giữ nguyên.
 _SO_NHAN = r"\d+\.\d+(?:\.\d+)*"
 THAM_CHIEU_CUM = re.compile(
     rf"\b(?P<loai>[Mm]ục|Bảng|Hình)\s+(?P<so>{_SO_NHAN}(?:\s*(?:[–-]|,|và|hoặc)\s*{_SO_NHAN})*)(?![\d.]?\d)"
     r"|\b(?P<pl>Phụ lục)\s+(?P<chu>[A-ZĐ](?:\s*(?:,|và|–|-)\s*[A-ZĐ])*)\b")
 _DA_GHI_NGUON = re.compile(r"\s*(?:của đề cương|\(đề cương)")
-_CHU_THICH_TM = re.compile(r"\*\*(Bảng|Hình)\s+(\d+\.\d+)\.")
-_DE_MUC_SO_TM = re.compile(r"^\s*(?:#+\s*)?(\d+(?:\.\d+)+)\.\s")
+_CHU_THICH_TM = re.compile(r"^\s*(?:\*\*)?(Bảng|Hình)\s+(\d+\.\d+)\.\s")
 
 
 def nhan_co_trong_thuyet_minh(cac_khoi: list[list[str]]) -> set[str]:
-    """Nhãn tự trỏ được trong thuyết minh: «Bảng 2.1»/«Hình 3.2» có chú thích chép sang; «mục 2.6.1» có đề mục
-    cùng số."""
-    co: set[str] = set()
-    for dong in cac_khoi:
-        for d in dong:
-            co |= {f"{m.group(1)} {m.group(2)}" for m in _CHU_THICH_TM.finditer(d)}
-            m = _DE_MUC_SO_TM.match(d)
-            if m:
-                co.add(f"mục {m.group(1)}")
-    return co
+    """Nhãn tự trỏ được trong thuyết minh: «Bảng 2.1»/«Hình 3.2» có dòng chú thích chép sang. Đề mục KHÔNG tính —
+    bộ dựng Word bỏ số đề mục, nên «mục 2.6.1» luôn trỏ về đề cương."""
+    return {f"{m.group(1)} {m.group(2)}" for dong in cac_khoi for d in dong for m in [_CHU_THICH_TM.match(d)] if m}
 
 
 def ghi_nguon_tham_chieu(dong: list[str], co_trong_tm: set[str]) -> list[str]:
@@ -1033,8 +1025,22 @@ def ghi_nguon_tham_chieu(dong: list[str], co_trong_tm: set[str]) -> list[str]:
 
 
 def dem_tham_chieu_chua_ghi_nguon(van: str) -> int:
-    """Số cụm tham chiếu theo đánh số đề cương chưa ghi «của đề cương» (dùng ở `kiem`)."""
-    return sum(1 for m in THAM_CHIEU_CUM.finditer(van) if not _DA_GHI_NGUON.match(van, m.end()))
+    """Số cụm tham chiếu theo đánh số đề cương chưa ghi «của đề cương» (dùng ở `kiem`). Không đếm chính dòng chú thích
+    bảng/hình, và tham chiếu tới bảng/hình có chú thích trong văn bản."""
+    dong = van.splitlines()
+    co = nhan_co_trong_thuyet_minh([dong])
+    dem = 0
+    for d in dong:
+        chu_thich = _CHU_THICH_TM.match(d)
+        for m in THAM_CHIEU_CUM.finditer(d):
+            if _DA_GHI_NGUON.match(d, m.end()) or (chu_thich and m.start() <= chu_thich.end()):
+                continue
+            if m.group("loai") and m.group("loai").lower() != "mục":
+                so = re.split(r"\s*(?:[–-]|,|và|hoặc)\s*", m.group("so"))
+                if all(f"{m.group('loai')} {s}" in co for s in so):
+                    continue
+            dem += 1
+    return dem
 
 
 def trich_du_kien(exports_root: Path, study: str, chu_nhiem: str | None = None,

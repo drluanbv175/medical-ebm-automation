@@ -30,9 +30,10 @@ def test_cum_khoang_va_danh_sach_chi_ghi_mot_lan_o_cuoi():
     assert _g("Phụ lục C và D") == "Phụ lục C và D của đề cương"
 
 
-def test_bang_va_muc_co_trong_thuyet_minh_giu_nguyen():
+def test_bang_co_chu_thich_giu_nguyen_con_muc_luon_tro_ve_de_cuong():
     assert _g("như Bảng 2.1") == "như Bảng 2.1"
-    assert _g("mục 2.6.1.1 nêu rõ") == "mục 2.6.1.1 nêu rõ"
+    # bộ dựng Word bỏ số đề mục ⇒ dù văn bản chép có «#### 2.6.1.1.», «mục 2.6.1.1» vẫn trỏ về đề cương
+    assert _g("mục 2.6.1.1 nêu rõ") == "mục 2.6.1.1 của đề cương nêu rõ"
     # cụm lẫn: một phần không có trong thuyết minh ⇒ vẫn ghi nguồn
     assert _g("Bảng 2.1–2.3") == "Bảng 2.1–2.3 của đề cương"
 
@@ -48,3 +49,5 @@ def test_kiem_chi_dem_tham_chieu_chua_ghi_nguon():
     van = "mục 2.6.4 của đề cương; Bảng 2.3; Phụ lục B (đề cương); mục 3.1"
     assert H.dem_tham_chieu_chua_ghi_nguon(van) == 2
     assert H.dem_tham_chieu_chua_ghi_nguon(_g("Bảng 2.3 và mục 3.1")) == 0
+    # chính dòng chú thích và tham chiếu tới bảng có chú thích trong văn bản không bị đếm
+    assert H.dem_tham_chieu_chua_ghi_nguon("Bảng 2.1. Các nguồn sai lệch\ntrình bày ở Bảng 2.1.\nxem Bảng 2.4.") == 1
