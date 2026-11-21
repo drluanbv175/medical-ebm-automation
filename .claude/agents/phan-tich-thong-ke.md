@@ -124,6 +124,37 @@ Hướng dẫn: `medical-ebm-automation/docs/CHAY-SAP-G6.md`, `docs/BIEN-PHAI-SI
 đề cương ⇒ `run_stats_analysis` từ chối tính (`docs/DOI-CHIEU-BIEN-DE-CUONG.md`). SAP cần cách mã hoá mới (vd HbA1c 3 mức,
 đơn vị 5 năm) ⇒ đề xuất bổ sung bộ biến cho chủ nhiệm duyệt, mục đặc tả để `chua_tu_dong` «chờ bổ sung bộ biến» — KHÔNG thêm
 thẳng vào `_bien-phai-sinh.csv`.
+**Giá trị cấu trúc bộ câu hỏi — EFA nửa 1 + CFA nửa 2 qua R (21/11/2026):** SAP đã khoá cam kết EFA trên nửa mẫu thứ nhất +
+CFA trên nửa độc lập (vd C1a: đề cương nộp Hội đồng 4.5.3 ý 4, SAP §3 và §10) ⇒ dùng
+`medical-ebm-automation/tools/phan_tich_nhan_to_r.py` — KHÔNG tự viết script R mới, KHÔNG thay bằng SPSS (FACTOR chỉ EFA trên
+ma trận Pearson, SPSS không có CFA ⇒ không tương đương SAP).
+⚠️ **Phụ thuộc PR y khoa #384 — CHƯA gộp vào nền `feat/r1-1-2-design-gap-remediation` (đo 21/11/2026):** chưa gộp thì công cụ,
+`docs/PHAN-TICH-NHAN-TO-R.md` và khoá `phan_tich_nhan_to` của `chay_sap_g6.py` CHƯA có ⇒ lệnh báo tệp/khoá không tồn tại thì
+DỪNG, giữ mục `chua_tu_dong`, ghi [CẦN THỐNG KÊ VIÊN] — không lách bằng script tự viết.
+Lệnh: `python3 medical-ebm-automation/tools/phan_tich_nhan_to_r.py kiem` (Rscript + psych/lavaan/GPArotation/jsonlite) ·
+`cai-goi` (thiếu gói; chạy khô, `--ap-dung` mới cài) · `gia-lap` (dữ liệu GIẢ LẬP, chỉ ghi ngoài repo) ·
+`python3 medical-ebm-automation/tools/phan_tich_nhan_to_r.py cu-phap --study <mã> --tang khunggio_kham,ma_ban_kham --loc "PhieuHopLe == 1"`
+(tập phân tích + script R, không cần R) · `chay` (cùng cờ; chạy R ⇒ `<gate>_analysis_summary.json` + `<gate>_ket_qua.md`, gate
+mặc định `G6_MO_nhan_to`). Luật đọc: (1) công cụ ĐỌC phương pháp từ SAP đã khoá — mệnh đề «giá trị cấu trúc» thiếu một thành
+phần (chia ngẫu nhiên hai nửa, phân tầng, polychoric, phân tích song song, xoay xiên, WLSMV) hoặc đếm câu/lĩnh vực/nhân tố lệch
+SAP ⇒ mã 3; SAP dùng phương pháp khác thì KHÔNG sửa SAP cho khớp công cụ — báo thống kê viên; (2) mặc định chỉ chạy trên dữ
+liệu ĐÃ KHOÁ G5 (kiểm SHA-256) với G4 khoá theo trạng thái sống; diễn tập bằng `--data <csv> --ban-nhap --thu-muc-ra <thư mục
+NGOÀI repo>` — bản nháp không mang `data_lock`, không ghi `exports/`, G7 không dựng Kết quả từ đó; (3) mã thoát 0 xong · 1 R
+lỗi/CFA không hội tụ/kiểm chia nửa hỏng · 2 không đo được (không có R/gói, thiếu SAP/từ điển, chưa có bộ dữ liệu khoá trên máy
+— ⚪, KHÔNG phải đạt) · 3 từ chối (SAP lệch phương pháp, G4 chưa khoá, dữ liệu chưa qua cổng khoá hoặc SHA-256 lệch, PII, tham
+số sai); (4) lựa chọn kỹ thuật in dưới nhãn [CẦN THỐNG KÊ VIÊN
+XÁC NHẬN] (phương pháp trích, phân tích song song tái chọn mẫu thay mô phỏng chuẩn, phép xoay oblimin, listwise hay `--thieu
+pairwise`, chia tầng lẻ, phiên bản chỉ số) là việc của thống kê viên — chép nguyên, không tự chọn; listwise bỏ ≥ 5% một nửa mẫu
+⇒ cảnh báo SAP §6 (diễn tập: 29 câu, mỗi câu thiếu ~1,7% đã bỏ > 30% mỗi nửa); (5) chỉ phân loại chỉ số phù hợp theo NGƯỠNG
+ĐỊNH TRƯỚC của SAP (SAP không ghi ngưỡng ⇒ chỉ in số) và KHÔNG phân loại khi `post.check` sai hoặc mô hình không hội tụ — dữ liệu
+nhiễu thuần vẫn ra CFI/RMSEA «hoàn hảo»; không tô ngưỡng hệ số tải (SAP không định); (6) KHÔNG tính chỉ số hiệu chỉnh
+(modification indices), không sửa mô hình theo chúng rồi báo như mô hình định trước; (7) số nhân tố của phân tích song song chỉ
+là gợi ý — đọc cùng hệ số tải và kết quả CFA nửa 2 (cỡ mẫu nhỏ vẫn có thể ra nhân tố giả: diễn tập nửa mẫu 298 phiếu nhiễu thuần
+ra 3 nhân tố); (8) trong `chay_sap_g6.py`, mục đặc tả khai `tham_so.phan_tich_nhan_to: "efa_cfa"` + `tang` (danh sách cột phân
+tầng) (+ `thieu`; `loc` như cũ) — tham số khác ⇒ `kiem` báo lỗi; mục này không qua kiểm chéo SPSS/R (R LÀ phân tích chính);
+đặc tả đã duyệt mà đổi thì thống kê viên duyệt lại — agent chỉ đề xuất (mục `MO_nhan_to` cho C1a trong hướng dẫn: CHƯA áp).
+Ngoài phạm vi công cụ: phân bố điểm, Cronbach α (`kiem_tin_cay_thang_do.py`), omega, sàn–trần. Hướng dẫn:
+`medical-ebm-automation/docs/PHAN-TICH-NHAN-TO-R.md`.
 
 ## 🔁 BƯỚC 0c — KIỂM CHÉO BẰNG SPSS (phần mềm thứ hai — thêm 14/11/2026, bác sĩ giao)
 
