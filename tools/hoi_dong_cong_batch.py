@@ -56,6 +56,8 @@ BUOC_TRANH = ("de_xuat", "phan_bien", "trong_tai")
 # lại ĐÚNG phần đó tối đa 1 lần (21/11/2026: C1a G10-T2 cm_001 JSON hỏng bị ghi lỗi vĩnh viễn, không bao giờ chấm).
 # Cụt/từ chối/errored/expired KHÔNG gửi lại tự động (gửi lại cũng cụt, hoặc cần người xem).
 SO_LAN_GUI_LAI_JSON_HONG = 1
+# 21/11/2026 — đo C1a G10 bước đầu: 28.594 token ra / 7 yêu cầu ≈ 4.085 (có phần suy nghĩ); ước cũ 3.000.
+TOKEN_RA_UOC_MOI_YEU_CAU = 4500
 _TIEN_TO_KHOA = {"cm": "chuyen_mon", "gk": "giam_khao", "de": "de_xuat", "ph": "phan_bien", "tr": "trong_tai"}
 _LOI_GUI_LAI_DUOC = re.compile(
     r"^(cm|gk|de|ph|tr)_\d{3}: (JSON hỏng|Câu trả lời không chứa JSON|bản chấm sai khuôn|luận điểm sai khuôn|"
@@ -573,7 +575,7 @@ def uoc_tinh(st: Dict[str, Any], out_dir: Path, goc: Path = REPO) -> Dict[str, A
     so_dp = sum(1 for t in st["tranh"].values() if t["buoc"] == "de_xuat")
     tb_dp = (vao // max(len(yc), 1)) if yc else 0
     vao_tong = vao + 2 * so_dp * tb_dp
-    ra_tong = (len(yc) + 2 * so_dp) * 3000
+    ra_tong = (len(yc) + 2 * so_dp) * TOKEN_RA_UOC_MOI_YEU_CAU
     return {
         "so_yeu_cau_buoc_1": len(yc),
         "so_dau_ra_cham": len(st["cham"]),

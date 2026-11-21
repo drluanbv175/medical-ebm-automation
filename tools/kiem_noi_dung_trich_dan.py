@@ -614,6 +614,7 @@ def main(
             "so_luot_goi": so_lo,
             "bo_qua_vi_tran": len(bo),
             "uoc_tinh": API.in_chi_phi(vao, ra, model),
+            "uoc_usd": API.uoc_chi_phi(vao, ra, model),
         }
         if a.json:
             print(json.dumps(kh, ensure_ascii=False, indent=1))

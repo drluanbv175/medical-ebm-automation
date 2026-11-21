@@ -27,6 +27,7 @@ không mỗi cái tự viết một kiểu:
 from __future__ import annotations
 
 import json
+import math
 import os
 import re
 from dataclasses import dataclass
@@ -298,9 +299,17 @@ def doc_json(van_ban: str) -> Any:
             raise KetQuaHong(f"JSON hỏng: {exc}") from exc
 
 
+# 21/11/2026 — đo thật trên C1a: phản biện máy 151.216 ký tự = 89.468 token (1,69 ký tự/token); hội đồng G10 bước đầu
+# 959.774 ký tự = 573.473 token kể cả cache (1,67). Hệ số cũ «3 ký tự/token» ước THẤP gần gấp đôi ⇒ báo giá hội đồng
+# 0,47 USD cho cả lượt họp trong khi riêng bước đầu tốn 0,69 USD, và phép chặn trần `uoc_toi_da` yếu tương ứng. Lấy
+# 1,6 (thấp hơn số đo một chút) để ước nghiêng về phía cao — phép chặn trần phải an toàn.
+KY_TU_MOI_TOKEN = 1.6
+
+
 def uoc_token(van_ban: str) -> int:
-    """Ước lượng THÔ số token (tiếng Việt có dấu ~3 ký tự/token) — chỉ để chạy khô báo quy mô, không tính tiền thật."""
-    return max(1, len(van_ban or "") // 3)
+    """Ước lượng số token của văn bản tiếng Việt có dấu (đề cương, bảng, số liệu) theo `KY_TU_MOI_TOKEN` — để chạy khô
+    báo quy mô và chặn trần trước khi gửi; số tính tiền thật lấy từ `usage` của API."""
+    return max(1, math.ceil(len(van_ban or "") / KY_TU_MOI_TOKEN))
 
 
 def uoc_chi_phi(
