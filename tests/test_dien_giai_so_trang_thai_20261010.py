@@ -44,7 +44,8 @@ Phù hợp tổng quan trước (PMID 12345678).
 
 ## 4. Điểm mạnh và hạn chế
 
-Hạn chế: thiết kế quan sát, nhiễu chưa đo.
+Hạn chế: thiết kế quan sát, nhiễu chưa đo có thể làm ước lượng cao hơn thực; kết quả chỉ khái quát cho người bệnh
+ngoại trú ở cơ sở tương tự.
 
 ## 5. Hàm ý thực hành và hướng nghiên cứu tiếp
 
