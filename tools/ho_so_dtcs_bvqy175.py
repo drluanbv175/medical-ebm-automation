@@ -631,12 +631,22 @@ def khoi_phuong_phap(dong: list[str], ds: list[dict]) -> list[dict]:
 def muc_tieu(dong: list[str], ds: list[dict]) -> tuple[list[str], list[str], str]:
     """(dòng mục tiêu dạng md, danh sách mục tiêu cụ thể, nguồn)."""
     h = _tim_muc(ds, "MỤC TIÊU", cap=1)
+    con = _tim_muc(ds, "MỤC TIÊU", trong=h) if h is not None else None
     if h is None:
-        return [], [], ""
-    con = _tim_muc(ds, "MỤC TIÊU", trong=h)
+        # đề cương theo khuôn hướng dẫn chung BVQY175 (21/11/2026, `khuon_de_cuong_bvqy175.py`): mục tiêu là mục con
+        # «## MỤC TIÊU NGHIÊN CỨU» ở cuối đặt vấn đề, mỗi mục tiêu in nghiêng đậm «***…***»
+        h = _tim_muc(ds, "MỤC TIÊU NGHIÊN CỨU")
+        if h is None:
+            return [], [], ""
     vung = _dong_rieng(dong, con) if con else _dong_rieng(dong, h)
-    dong_md = [d.strip() for d in vung if d.strip() and not d.lstrip().startswith("#")]
-    return dong_md, danh_sach_so(vung), f"đề cương nộp mục {(con or h)['so']}"
+
+    def _tron(d: str) -> str:
+        return re.sub(r"\*\*\*(.+?)\*\*\*", r"\1", d)
+
+    dong_md = [_tron(d.strip()) for d in vung if d.strip() and d.strip() != "---" and not d.lstrip().startswith("#")]
+    so = (con or h)["so"]
+    return (dong_md, [_tron(x) for x in danh_sach_so(vung)],
+            f"đề cương nộp mục {so}" if so else "đề cương nộp, phần mục tiêu nghiên cứu cuối đặt vấn đề")
 
 
 _NGAY_TRONG_NGOAC = re.compile(r"\(([^()]*\d{1,2}/\d{4}[^()]*)\)")

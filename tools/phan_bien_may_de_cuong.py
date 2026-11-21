@@ -239,7 +239,11 @@ def _bo_so_dong(s: str) -> str:
 
 def kiem_trich_dan_tat_dinh(van: str) -> List[Dict[str, Any]]:
     """Ba luật đếm được, không cần model: [n] không có trong danh mục; tài liệu không được trích; số được trích LẦN ĐẦU
-    không theo thứ tự 1, 2, 3… (Vancouver đánh số theo thứ tự xuất hiện)."""
+    không theo thứ tự 1, 2, 3… (Vancouver đánh số theo thứ tự xuất hiện).
+
+    Đề cương theo khuôn hướng dẫn chung BVQY175 (có «# CHƯƠNG 1.», 21/11/2026) xếp danh mục theo NGÔN NGỮ rồi ABC và
+    trích theo số của danh mục — luật thứ tự xuất hiện không áp dụng (thứ tự ABC do K14 của bộ kiểm đề cương nộp
+    kiểm)."""
     tltk = KND.tach_tltk(van)
     cau = KND.tach_cau_khang_dinh(van)
     ra: List[Dict[str, Any]] = []
@@ -269,7 +273,7 @@ def kiem_trich_dan_tat_dinh(van: str) -> List[Dict[str, Any]]:
             }
         )
     sai = [(i + 1, n) for i, n in enumerate(da_trich) if n != i + 1]
-    if sai and tltk:
+    if sai and tltk and not re.search(r"^# CHƯƠNG 1\.", van, re.M):
         vt, n = sai[0]
         ra.append(
             {

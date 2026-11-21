@@ -587,8 +587,12 @@ def chon_phu_luc_mac_dinh(ds: list[tuple[str, str]]) -> list[str]:
 
 
 def _so_muc_de_cuong(noi_dung_md: str, tu_khoa: str) -> str | None:
-    m = re.search(rf"(?m)^#\s+(\d+)\.\s+{re.escape(tu_khoa)}", _nfc(noi_dung_md))
-    return m.group(1) if m else None
+    """Vị trí phần của đề cương để trỏ tới: «mục 3» (cấu trúc cũ «# 3. TỔNG QUAN…») hoặc «Chương 1» (khuôn hướng dẫn
+    chung «# CHƯƠNG 1. TỔNG QUAN…», 21/11/2026)."""
+    m = re.search(rf"(?m)^#\s+(CHƯƠNG\s+)?(\d+)\.\s+{re.escape(tu_khoa)}", _nfc(noi_dung_md))
+    if not m:
+        return None
+    return f"Chương {m.group(2)}" if m.group(1) else f"mục {m.group(2)}"
 
 
 # --- Trích ---------------------------------------------------------------------
@@ -783,7 +787,7 @@ def trich_du_kien(exports_root: Path, study: str) -> tuple[dict, list[str]]:
     so_pp = _so_muc_de_cuong(noi_dung_de_cuong, "ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP")
     vi_tri = ""
     if so_tq and so_pp:
-        vi_tri = f", mục {so_tq} (tổng quan tài liệu) và mục {so_pp} (đối tượng và phương pháp nghiên cứu)"
+        vi_tri = f", {so_tq} (tổng quan tài liệu) và {so_pp} (đối tượng và phương pháp nghiên cứu)"
     muc_11["10"] = (
         f"{CAN_BO_SUNG}: tóm tắt tổng quan tài liệu, kế hoạch và phương pháp (không quá 6 trang). Bản đầy đủ trình"
         f" bày trong Thuyết minh đề cương nộp kèm (Quyển 1){vi_tri}."
