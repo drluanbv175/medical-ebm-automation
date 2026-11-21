@@ -128,9 +128,6 @@ thẳng vào `_bien-phai-sinh.csv`.
 CFA trên nửa độc lập (vd C1a: đề cương nộp Hội đồng 4.5.3 ý 4, SAP §3 và §10) ⇒ dùng
 `medical-ebm-automation/tools/phan_tich_nhan_to_r.py` — KHÔNG tự viết script R mới, KHÔNG thay bằng SPSS (FACTOR chỉ EFA trên
 ma trận Pearson, SPSS không có CFA ⇒ không tương đương SAP).
-⚠️ **Phụ thuộc PR y khoa #384 — CHƯA gộp vào nền `feat/r1-1-2-design-gap-remediation` (đo 21/11/2026):** chưa gộp thì công cụ,
-`docs/PHAN-TICH-NHAN-TO-R.md` và khoá `phan_tich_nhan_to` của `chay_sap_g6.py` CHƯA có ⇒ lệnh báo tệp/khoá không tồn tại thì
-DỪNG, giữ mục `chua_tu_dong`, ghi [CẦN THỐNG KÊ VIÊN] — không lách bằng script tự viết.
 Lệnh: `python3 medical-ebm-automation/tools/phan_tich_nhan_to_r.py kiem` (Rscript + psych/lavaan/GPArotation/jsonlite) ·
 `cai-goi` (thiếu gói; chạy khô, `--ap-dung` mới cài) · `gia-lap` (dữ liệu GIẢ LẬP, chỉ ghi ngoài repo) ·
 `python3 medical-ebm-automation/tools/phan_tich_nhan_to_r.py cu-phap --study <mã> --tang khunggio_kham,ma_ban_kham --loc "PhieuHopLe == 1"`
