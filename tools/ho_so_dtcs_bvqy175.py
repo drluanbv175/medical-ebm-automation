@@ -71,7 +71,12 @@ Số định danh/CCCD, ngày sinh, điện thoại, email, địa chỉ chỉ n
 đầu ra ở ``exports/<mã>/ho_so_dtcs/`` (thư mục `exports/` bị .gitignore loại). Mọi lệnh `--ghi` kiểm bằng
 `git check-ignore` + `git ls-files` rằng đích ghi KHÔNG đi vào git; không kiểm được ⇒ từ chối ghi (fail-closed).
 
-Chưa có trong bộ mẫu: báo cáo tổng kết / nghiệm thu đề tài cơ sở — danh mục nhắc bác sĩ.
+Thứ tự ưu tiên mẫu (bác sĩ 21/11/2026): ba mẫu DKCT.01–03 là bản ĐÃ CHỈNH RIÊNG cho BVQY175 — công cụ chỉ điền ba
+mẫu này. Tệp «hd-dang-ky-bao-cao-dtbv…» là HƯỚNG DẪN CHUNG (bản của Bệnh viện TƯQĐ 108, 2019: phiếu đề xuất, quyển đề
+cương trình Hội đồng Khoa học, báo cáo tổng hợp kết quả trước/sau nghiệm thu, phiếu nhận xét, bìa, quy cách trình bày)
+— chỉ dùng tham khảo, không đè mẫu riêng của BVQY175.
+
+Chưa có mẫu RIÊNG của BVQY175 cho báo cáo tổng kết / nghiệm thu đề tài cơ sở — danh mục nhắc bác sĩ.
 """
 
 from __future__ import annotations
@@ -2096,8 +2101,10 @@ def sinh_danh_muc(ra_dir: Path, d: dict, mau_dk: Path | None, so_can_tep: dict[s
         dong.append(f"- Bản điện tử gửi: {email} (đọc từ mẫu đơn).")
     dong += ["", "## Việc của bác sĩ", ""] + [f"- {v}" for v in d.get("viec_bac_si") or []]
     dong += ["", "## Chưa có mẫu", "",
-             "- Bộ mẫu hiện có (DKCT.01–03) chưa gồm **báo cáo tổng kết / nghiệm thu đề tài cơ sở** — khi có mẫu của "
-             "Phòng Khoa học quân sự, bổ sung vào bộ mẫu để công cụ dựng tiếp.", "",
+             "- Bộ mẫu riêng của BVQY175 (DKCT.01–03) chưa gồm **báo cáo tổng kết / nghiệm thu đề tài cơ sở**. Hướng "
+             "dẫn chung (bản của Bệnh viện TƯQĐ 108, 2019) đã mô tả cấu trúc báo cáo tổng hợp kết quả trước/sau nghiệm "
+             "thu, phiếu nhận xét, danh sách cán bộ và bìa — chỉ là tham khảo; khi Phòng Khoa học quân sự BVQY175 cấp "
+             "mẫu riêng, bổ sung vào bộ mẫu để công cụ dựng tiếp.", "",
              "Cần bác sĩ kiểm chứng.", ""]
     out = ra_dir / ten_ra("danh_muc", s)
     out.write_text("\n".join(dong), encoding="utf-8", newline="\n")

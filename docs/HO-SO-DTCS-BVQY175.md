@@ -13,8 +13,15 @@ Kèm `DANH_MUC_HO_SO_DTCS_<mã>.md` (danh mục nội bộ: số ô còn «[CẦ
 chỉ nhận bản điện tử ĐỌC TỪ MẪU ĐƠN, việc của bác sĩ). Công cụ không ký, không gửi
 email, không sửa đề cương/sổ cái/cổng.
 
-**Chưa có mẫu:** báo cáo tổng kết / nghiệm thu đề tài cơ sở — khi Phòng Khoa học
-quân sự cấp mẫu, bổ sung vào bộ mẫu.
+**Thứ tự ưu tiên mẫu (bác sĩ 21/11/2026):** ba mẫu DKCT.01–03 là bản đã chỉnh
+riêng cho BVQY175 — công cụ chỉ điền ba mẫu này. Tệp `hd-dang-ky-bao-cao-dtbv…` là
+hướng dẫn CHUNG (bản của Bệnh viện TƯQĐ 108, 2019: phiếu đề xuất, quyển đề cương
+trình Hội đồng Khoa học, báo cáo tổng hợp kết quả trước/sau nghiệm thu, phiếu nhận
+xét, danh sách cán bộ, bìa, quy cách trình bày) — chỉ tham khảo, không đè mẫu riêng.
+
+**Chưa có mẫu riêng của BVQY175:** báo cáo tổng kết / nghiệm thu đề tài cơ sở. Hướng
+dẫn chung đã mô tả cấu trúc (mục III–IV, Phụ lục 2, 3, 8, 9); khi Phòng Khoa học
+quân sự BVQY175 cấp mẫu riêng, bổ sung vào bộ mẫu.
 
 ## Vị trí (ngoài git)
 
