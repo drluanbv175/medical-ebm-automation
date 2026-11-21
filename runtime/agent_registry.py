@@ -195,10 +195,11 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 21/11/2026: đồng bộ bản sao _HOI-DONG-CONG.md, kiem-chung-trich-dan.md với nguồn gốc (tools/dong_bo_agent_y_khoa.py).
 # 21/11/2026: đồng bộ bản sao thu-thu-tai-lieu.md, tong-quan-y-van.md với nguồn gốc (tools/dong_bo_agent_y_khoa.py).
 # 21/11/2026: dạy `thang-diem-nguy-co` 12 bộ tính mới + luật gọi bộ tính (bảng BO_TINH_THEO_SCORE_ID) — vẫn 64.
+# 21/11/2026 (hồ sơ DTCS): `ke-hoach-trien-khai` + `dieu-phoi-g1` học `tools/ho_so_dtcs_bvqy175.py` (#379) — vẫn 64.
 # 21/11/2026 (khuôn hướng dẫn chung BVQY175): bản sao `dieu-phoi-g10`, `kiem-chung-trich-dan` học khuôn đề cương + K14
 # (cặp của gốc #473) — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "b29a85e3e21c0ceb223bb65aa85d32510394c7a3b2ad9ff358a95ad98e0e3def"
+    "bcc0bbfeb10878f3d1930b47deb636942bc1e3c8c41079a37268e3c5c0419ac4"
 )
 
 MINIMUM_AGENT_COUNT = 64

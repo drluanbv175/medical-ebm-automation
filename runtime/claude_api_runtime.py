@@ -42,6 +42,36 @@ _DEFAULT_MODEL = "claude-haiku-4-5-20251001"
 _MAX_TOKENS = 2048
 _RETRY_DELAYS = (1.0, 2.0, 4.0)  # giây
 
+# PROMPT CACHING system prompt (21/11/2026). `system_prompt` = agent spec + _SAFETY_ADDENDUM: TĨNH theo `agent_id`,
+# không phụ thuộc fixture hay input_data, nên mọi lượt của cùng một agent gửi lại y nguyên cùng một prefix. Đo trên
+# 99 spec in-repo: trung bình ~5.300 token, nhỏ nhất ~1.300, lớn nhất ~25.000 ⇒ trước vá này mỗi lượt trả giá vào đầy
+# đủ cho toàn bộ prefix đó. Đánh dấu `cache_control` ⇒ lượt sau của cùng agent đọc từ cache.
+#
+# Vì sao đánh dấu VÔ ĐIỀU KIỆN, không tự kiểm ngưỡng: prefix dưới ngưỡng tối thiểu của model thì API lặng lẽ KHÔNG
+# cache và KHÔNG tính phí ghi, nên đánh dấu một prefix ngắn là vô hại. Ngưỡng của `_DEFAULT_MODEL` (Haiku 4.5) là
+# 4.096 token — chỉ 61/99 spec vượt; 38 spec còn lại sẽ không được cache cho tới khi đổi sang model có ngưỡng 512
+# (Haiku 5.5 / Sonnet 5.5). Đó là mất cơ hội tiết kiệm, KHÔNG phải lỗi và không phát sinh phí.
+#
+# Rủi ro còn lại là ghi cache mà không ai đọc (1,25× giá vào cho một lượt lẻ). Chấp nhận được: với Haiku 4.5 một lần
+# ghi phí hoài ~5.300 token ≈ 0,0013 USD, còn một lần đọc trúng tiết kiệm ~0,0048 USD, nên chỉ cần tái dùng hơn ~1,3
+# lượt là hoàn vốn — mà orchestrator vốn gọi mỗi agent nhiều fixture liên tiếp. Tắt bằng biến môi trường nếu cần.
+#
+# KHÔNG đổi đầu ra: caching chỉ thay cách tính phí phần vào, câu trả lời của model y như trước.
+_BIEN_TAT_CACHE = "EBM_RUNTIME_TAT_CACHE_SYSTEM"
+
+
+def _cache_system_bat() -> bool:
+    """Mặc định BẬT. Đặt EBM_RUNTIME_TAT_CACHE_SYSTEM=1 (hoặc true/yes/on) để tắt — đọc mỗi lượt, không cache ở
+    cấp tiến trình, để bác sĩ bật/tắt được giữa hai lượt mà không phải khởi động lại."""
+    return str(os.environ.get(_BIEN_TAT_CACHE, "")).strip().lower() not in ("1", "true", "yes", "on")
+
+
+def _tham_so_system(system_prompt: str):
+    """`system` cho Messages API: khối text có `cache_control` khi bật cache, chuỗi trơn khi tắt."""
+    if not _cache_system_bat():
+        return system_prompt
+    return [{"type": "text", "text": system_prompt, "cache_control": {"type": "ephemeral"}}]
+
 _SAFETY_ADDENDUM = """
 
 ===== RÀNG BUỘC BẮT BUỘC (không được bỏ qua) =====
@@ -161,7 +191,7 @@ class ClaudeApiRuntime(AgentRuntime):
                 message = client.messages.create(
                     model=self._model,
                     max_tokens=_MAX_TOKENS,
-                    system=system_prompt,
+                    system=_tham_so_system(system_prompt),
                     messages=[{"role": "user", "content": user_message}],
                 )
                 # Vá 2026-09-06 (audit vòng 36, phát hiện #2): PHẢI chấm điểm

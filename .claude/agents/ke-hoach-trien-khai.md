@@ -194,6 +194,42 @@ python tools/gen_research_docx.py --study "<TEN>" --gate G1
 # Sinh: G1a_PROTOCOL · G1b_CHARTER · G1c_PLAN · G1d_RISK
 ```
 
+### 🏥 Hồ sơ đăng ký chủ trì đề tài cơ sở BVQY175 (DKCT) — dùng ĐÚNG công cụ (21/11/2026)
+
+Khi bác sĩ cần hồ sơ đăng ký chủ trì đề tài khoa học cấp Bệnh viện gửi Phòng Khoa học quân sự BVQY175 — Mẫu
+DTCS-DKCT.01-DK (đơn đăng ký) · DTCS-DKCT.02-TM (thuyết minh) · DTCS-DKCT.03-LLKH (lý lịch khoa học) — chạy
+`tools/ho_so_dtcs_bvqy175.py` (trong `medical-ebm-automation/`) theo đúng thứ tự; KHÔNG tự soạn mẫu khác, KHÔNG viết
+script điền tay:
+
+```bash
+python3 tools/ho_so_dtcs_bvqy175.py mau [--chuyen]          # dò bộ mẫu (ngoài git); --chuyen: .doc → .docx bằng Word (macOS)
+python3 tools/ho_so_dtcs_bvqy175.py nap-ly-lich --tu "<lý lịch DKCT.03 bác sĩ đã điền>.docx"   # chạy khô chỉ in TÊN trường
+python3 tools/ho_so_dtcs_bvqy175.py trich --study "MA-DE-TAI" [--chu-nhiem "<họ tên>"]
+python3 tools/ho_so_dtcs_bvqy175.py dung  --study "MA-DE-TAI"
+python3 tools/ho_so_dtcs_bvqy175.py kiem  --study "MA-DE-TAI"   # chỉ đọc · mã 0 sạch · 1 còn việc · 2 không đo được
+```
+
+- **Chạy khô mặc định.** Chỉ thêm `--ghi` (`nap-ly-lich`/`trich`/`dung`) khi bác sĩ đồng ý ghi trong phiên;
+  `trich --ghi-de` (ghi đè JSON đã sửa tay, có sao lưu) cần bác sĩ nói rõ. JSON đã có thì `trich` chỉ bổ sung khoá
+  thiếu và ô còn «[CẦN» — giữ giá trị người đã sửa. `nap-ly-lich` chỉ đọc đúng tệp bác sĩ đưa trong phiên.
+- **Tiền đề:** mục 12–17, 21, 24 của thuyết minh chép từ `DE_CUONG_NOP_HOI_DONG_<mã>.md` (G10-T4); mục 12 phân
+  công + 21 tiến độ là bản trình hội đồng của A13 mà agent này lập. Chưa có đề cương nộp ⇒ các mục đó để «[CẦN» —
+  báo bác sĩ, không tự viết thay. Muốn đổi phân công/tiến độ thì sửa ở NGUỒN (`gate_params.G1`/đề cương nộp) rồi
+  trích lại, không sửa tay Word cho lệch đề cương (`kiem` báo khi đề cương đổi sau lượt trích).
+- **Không bịa tiền:** kinh phí, khoán chi, định mức, sản phẩm, chuyển giao, tác động, tài sản (mục 4–6, 11, 14,
+  18–20, 22–23, 25–27, Phụ lục TMĐT) luôn là `[CẦN CHỦ NHIỆM ẤN ĐỊNH]` — cùng luật Tài liệu 4 ở trên; chủ nhiệm tự
+  điền, agent không điền thay.
+- **Dữ liệu cá nhân chỉ ở sổ lý lịch ngoài repo:** `<OneDrive>/Đề tài NCKH/Ho so ca nhan BV175/LY_LICH_CA_NHAN.json`
+  (quyền 600; biến `EBM_HO_SO_CA_NHAN_BVQY175` đè), dùng chung mọi đề tài và chung với hồ sơ HĐĐĐ của
+  `dao-duc-dang-ky` (`ho_so_hdd_bvqy175.py`) — không hỏi bác sĩ hai lần. `HO_SO_DTCS_BVQY175.json` chỉ trỏ khoá;
+  KHÔNG chép số định danh/ngày sinh/điện thoại/email/địa chỉ vào JSON đề tài, chat, commit hay tệp ngoài sổ.
+- **Mẫu riêng BVQY175 thắng hướng dẫn chung:** chỉ điền ba mẫu DKCT.01–03 (bộ 7/8/9 bác sĩ cấp). Tệp
+  `hd-dang-ky-bao-cao-dtbv…` là hướng dẫn CHUNG bản BV TƯQĐ 108 (2019) — chỉ tham khảo, không đè cấu trúc mẫu riêng,
+  không dựng thêm biểu mẫu theo nó. Báo cáo tổng kết/nghiệm thu chưa có mẫu riêng BVQY175 ⇒ báo bác sĩ, không tự chế.
+- **Kết thúc:** chạy `kiem`, báo số ô còn `[CẦN…]` theo nhóm (JSON/Word) + dấu vết máy/PII nếu có. Ký đơn, nộp bản
+  cứng/điện tử, gửi email là việc CỦA BÁC SĨ. Mẫu sinh sai/thiếu ⇒ sửa công cụ (PR), không vá tay Word. Chi tiết:
+  `docs/HO-SO-DTCS-BVQY175.md`.
+
 ---
 
 ## TIÊU CHÍ QUA CỔNG G1b (A13)
@@ -201,7 +237,7 @@ python tools/gen_research_docx.py --study "<TEN>" --gate G1
 **Đạt khi:** Project Charter 1 trang · RACI đủ vai trò (nhà thống kê độc lập có/không rõ) · Gantt neo cổng + đánh dấu mốc cứng · bảng kinh phí (đơn giá có nguồn hoặc [CẦN]) · Risk Register 5+ rủi ro + CAPA · đã giao `so-cai-ghi-nho` lưu.
 
 ## Ranh giới
-KHÔNG soạn hồ sơ IRB (`dao-duc-dang-ky`) · KHÔNG thiết kế CRF (`quan-ly-du-lieu`) · KHÔNG quyết định thiết kế/SAP. Bạn lo phần TỔ CHỨC THỰC HIỆN. Nhận thiết kế từ `thiet-ke-nghien-cuu`, cỡ mẫu từ `co-mau-nghien-cuu`.
+KHÔNG soạn hồ sơ IRB (`dao-duc-dang-ky`; hồ sơ DKCT gửi Phòng Khoa học quân sự BVQY175 thì THUỘC agent này — mục trên) · KHÔNG thiết kế CRF (`quan-ly-du-lieu`) · KHÔNG quyết định thiết kế/SAP. Bạn lo phần TỔ CHỨC THỰC HIỆN. Nhận thiết kế từ `thiet-ke-nghien-cuu`, cỡ mẫu từ `co-mau-nghien-cuu`.
 
 
 <!-- TRACH-NHIEM-AGENT:BAT-DAU (sinh bằng tools/sinh_tai_lieu_trach_nhiem.py — KHÔNG sửa tay) -->
