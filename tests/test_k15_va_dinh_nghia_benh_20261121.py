@@ -130,3 +130,18 @@ def test_k16_cau_co_phu_dinh_hoac_nguon_da_tra_thi_dat(tmp_path):
 def test_k16_khong_nhat_ky_thi_khong_ket_luan(tmp_path):
     assert KDC.loi_k16(tmp_path, "Đã tra Google Scholar.") == []
     assert KDC.nhat_ky_prisma_s(tmp_path) is None
+
+
+def test_k15_bat_khang_dinh_nghien_cuu_nhieu_khong_nguon_20261122():
+    """22/11/2026: «đã được nghiên cứu nhiều» ở mục khoảng trống của cả hai đề cương thật lọt K15."""
+    import kiem_de_cuong_nop_hoi_dong as KD  # noqa: PLC0415
+
+    md = ("# CHƯƠNG 1. TỔNG QUAN TÀI LIỆU\n\n## 1.6. Khoảng trống\n\n"
+          "Chuỗi chăm sóc thận ở người ĐTĐ típ 2 đã được nghiên cứu nhiều trên thế giới (mục 1.4).\n\n"
+          "Thang đo này được sử dụng rộng rãi.\n")
+    loi = KD.loi_k15(md)
+    assert any("nghiên cứu nhiều" in x for x in loi) and any("rộng rãi" in x for x in loi), loi
+    co_nguon = md.replace("trên thế giới (mục 1.4)", "ở Tây Ban Nha [24] và Đức [42]").replace(
+        "được sử dụng rộng rãi.", "được dùng ở 12 nghiên cứu [3].")
+    assert KD.loi_k15(co_nguon) == []
+
