@@ -31,7 +31,9 @@ từng bộ tham số — dễ sót, dễ lệch SAP, không có chỗ nào cho 
 
 Lệnh
   kiem    --study <mã> [--json]                         đặc tả hợp lệ? dấu, trạng thái duyệt, SAP còn khớp?
-  chay    --study <mã> [--chi id1,id2] [--kiem-cheo]    chạy lần lượt (dữ liệu ĐÃ KHOÁ G5 — kiểm bằng hàm của cổng)
+  chay    --study <mã> [--chi id1,id2] [--kiem-cheo] [--khong-ve]
+                                                        chạy lần lượt (dữ liệu ĐÃ KHOÁ G5 — kiểm bằng hàm của cổng);
+                                                        cuối lượt tự sinh biểu đồ (hinh_g6.py) trừ khi --khong-ve
   ket-qua --study <mã> [--json]                         chỉ mục G6_SAP_ket_qua.json
   duyet   --study <mã> --vai PI|THONG_KE_VIEN --tham-chieu <mã> [--ap-dung]
                                                         THỐNG KÊ VIÊN/PI tự ghi duyệt (chạy khô mặc định)
@@ -652,8 +654,25 @@ def lenh_chay(args) -> int:
         "canh_bao": (["ĐỀ TÀI GIẢ LẬP — đặc tả chưa duyệt"] if k["duyet"] != "DA_DUYET" else []),
         "disclaimer": CAN_KIEM,
     }
+    md_hinh = ""
+    if not getattr(args, "khong_ve", False):  # 21/11/2026: tự sinh biểu đồ kết quả theo thiết kế (hinh_g6)
+        try:
+            import hinh_g6 as HG6  # noqa: PLC0415
+
+            meta = _doc_json(d / "study_meta.json")
+            g1 = (meta.get("gate_params") or {}).get("G1") or {}
+            hg = HG6.sinh(args.study, d, [p for p in k["phan_tich"] if not chi or p["id"] in chi], chi_muc,
+                          str(g1.get("design") or meta.get("design_code") or ""))
+            chi_muc["bieu_do"] = {"tep": HG6.TEP_KQ, "dem": hg["dem"],
+                                  "thieu_bat_buoc": (hg.get("kiem_danh_muc") or {}).get("thieu_bat_buoc", [])}
+            md_hinh = HG6.md_bieu_do(hg)
+            print(f"   biểu đồ: {hg['dem']['DA_VE']} hình · {hg['dem']['LOI']} lỗi → {HG6.THU_MUC}/")
+        except Exception as e:  # noqa: BLE001 — biểu đồ lỗi không đổi kết quả thống kê
+            chi_muc["bieu_do"] = {"loi": f"{type(e).__name__}: {str(e)[:300]}"}
+            print(f"   ⚠ biểu đồ không sinh được: {chi_muc['bieu_do']['loi']}")
     (d / TEP_KQ_JSON).write_text(json.dumps(chi_muc, ensure_ascii=False, indent=1), encoding="utf-8", newline="\n")
-    (d / TEP_KQ_MD).write_text(md_chi_muc(chi_muc, ve_forest_g6(chi_muc, d)), encoding="utf-8", newline="\n")
+    (d / TEP_KQ_MD).write_text(md_chi_muc(chi_muc, ve_forest_g6(chi_muc, d)) + md_hinh, encoding="utf-8",
+                               newline="\n")
     dm = chi_muc["dem"]
     print(f"\n══ SAP G6 — {args.study}: {dm['DA_CHAY']} đã chạy · {dm['LOI']} lỗi · "
           f"{dm['CHUA_TU_DONG']} chờ làm tay ══")
@@ -817,6 +836,7 @@ def main(argv: list[str] | None = None) -> int:
     c.add_argument("--study", required=True)
     c.add_argument("--chi", default="")
     c.add_argument("--kiem-cheo", action="store_true")
+    c.add_argument("--khong-ve", action="store_true", help="không tự sinh biểu đồ kết quả (hinh_g6)")
     q = sp.add_parser("ket-qua")
     q.add_argument("--study", required=True)
     q.add_argument("--json", action="store_true")
