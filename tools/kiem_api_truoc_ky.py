@@ -5,9 +5,11 @@ tình trạng hội đồng cổng thành MỘT phiếu.
 VÌ SAO (21/11/2026, bác sĩ chọn «B — một lệnh kiểm API trước khi ký/nộp»): trước khi PI ký G10 C1a phải nhớ chạy ba
 công cụ riêng, tự xem báo cáo nào đã CŨ (đề cương sửa sau lượt kiểm), tự cộng chi phí và tự đọc ba báo cáo. Lệnh này:
 1. đọc báo cáo hiện có, xét hiệu lực bằng mã băm tệp đã kiểm (`duyet_kiem_may_api.hieu_luc`);
-2. chạy khô (mặc định): ước chi phí CHỈ cho phần thiếu/cũ, so với phần còn lại của trần tháng — không gọi API;
+2. chạy khô (mặc định): ước chi phí CHỈ cho phần thiếu/cũ — không gọi API (21/11/2026: dùng theo tín dụng tài khoản,
+   không trần tự đặt; hết tín dụng ⇒ cầu nối tự dừng);
 3. `--goi-api`: chạy lại ĐÚNG phần thiếu/cũ (phản biện máy, kiểm nội dung trích dẫn), chặn trước nếu tổng ước vượt
-   trần; báo cáo còn hiệu lực thì dùng lại, không trả tiền lần hai;
+   trần (chỉ khi biến môi trường OS đặt trần) hoặc tài khoản vừa báo hết tín dụng; báo cáo còn hiệu lực thì dùng lại,
+   không trả tiền lần hai;
 4. ghi phiếu `exports/<mã>/kiem_may_api/PHIEU_KIEM_API_TRUOC_KY_<mã>.md/.json`.
 Hội đồng cổng (Batch API, nhiều lượt, có thể vài giờ) KHÔNG chạy trong lệnh này — phiếu chỉ báo trạng thái và in lệnh.
 
@@ -17,7 +19,7 @@ hiện mức cao/vừa chưa xem.
 
 Dùng: kiem_api_truoc_ky.py --study <mã> [--gate G10] [--goi-api] [--json]
 Mã thoát: 0 không còn việc kiểm máy · 1 còn việc (thiếu/cũ, phát hiện cần xem, hội đồng chưa đồng thuận, mục chưa
-duyệt) · 2 không kiểm được (thiếu khoá, vượt trần, lỗi API) · 3 tham số sai.
+duyệt) · 2 không kiểm được (thiếu khoá, hết tín dụng, lỗi API) · 3 tham số sai.
 """
 
 from __future__ import annotations
@@ -182,6 +184,10 @@ def phieu(study: str, gate: str, goc: Path, chay: Dict[str, Any]) -> Dict[str, A
     }
 
 
+def _tran_chu(tran: Any) -> str:
+    return "theo tín dụng tài khoản (không trần tự đặt)" if tran is None else f"trần tháng {tran} USD"
+
+
 def _o(s: Any) -> str:
     return str(s if s is not None else "").replace("|", "/").replace("\n", " ").strip()
 
@@ -222,7 +228,7 @@ def phieu_md(p: Dict[str, Any], uoc: Dict[str, Any]) -> str:
         "",
     ]
     if uoc:
-        dong += [f"Chi phí: ước {uoc.get('tong_uoc_usd')} USD cho phần cần chạy · trần tháng {uoc.get('tran')} USD · "
+        dong += [f"Chi phí: ước {uoc.get('tong_uoc_usd')} USD cho phần cần chạy · {_tran_chu(uoc.get('tran'))} · "
                  f"đã tiêu {uoc.get('da_tieu')} USD.", ""]
     if pb.get("cao_vua"):
         dong += ["## Phát hiện mức cao/vừa của phản biện máy (sau thẩm tra)", "",
@@ -278,7 +284,7 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
     if not a.goi_api:
         if can:
             print(f"CHẠY KHÔ — {a.study}: cần chạy lại {', '.join(ten for _, _, ten in can)} · ước "
-                  f"{tong if tong is not None else '?'} USD (trần {tran} USD, đã tiêu {uoc['da_tieu']} USD). "
+                  f"{tong if tong is not None else '?'} USD ({_tran_chu(tran)}, đã tiêu {uoc['da_tieu']} USD). "
                   "Gọi thật: thêm --goi-api (tính phí).")
         p = phieu(a.study, a.gate, goc, chay)
         if a.json:

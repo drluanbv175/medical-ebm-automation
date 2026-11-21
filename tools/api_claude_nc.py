@@ -80,7 +80,15 @@ GIA_USD_TRIEU_TOKEN = {
 HE_SO_GHI_CACHE = 1.25
 # Trần chi phí tháng mặc định (USD) — bác sĩ đổi bằng biến môi trường EBM_API_CLAUDE_TRAN_USD_THANG (≤ 0 = khoá hẳn).
 # Đo 17/11/2026: một lượt kiểm A12 + một lượt phản biện máy trên BTM tốn ≈ 0,3 USD; 20 USD đủ cho vài chục lượt/tháng.
-TRAN_USD_THANG_MAC_DINH = 20.0
+TRAN_USD_THANG_MAC_DINH: Optional[float] = None  # 21/11/2026: None = theo tín dụng tài khoản (không trần tự đặt)
+CO_HET_TIN_DUNG = os.path.join(os.path.expanduser("~"), ".ebm-api-claude-het-tin-dung.json")
+_HTD_THAT = CO_HET_TIN_DUNG
+HET_TIN_DUNG_CHO_PHUT = 30
+# Lỗi API khi hết tín dụng / chạm giới hạn chi tiêu Console (so chữ thường, trên thông điệp lỗi SDK)
+DAU_HIEU_HET_TIN_DUNG = (
+    "credit balance is too low", "purchase credits", "plans & billing", "reached your specified api usage limits",
+    "usage limit", "billing_error", "insufficient credit",
+)
 SO_CHI_PHI = os.path.join(os.path.expanduser("~"), ".ebm-api-claude-chi-phi.json")
 _SO_CP_THAT = SO_CHI_PHI
 # Ước token cho một khối ảnh khi tính trần (ảnh ~1.600 token ở cỡ thường) — chỉ để ước TỐI ĐA, không tính tiền thật.
@@ -108,6 +116,14 @@ class KetQuaHong(LoiApi):
 class HetNganSach(LoiCucBo):
     """Lượt gọi sẽ vượt trần chi phí tháng (hoặc sổ chi phí hỏng / model chưa ghi giá) — KHÔNG gửi. Lỗi phía máy:
     không ghi vào nhật ký sức khoẻ API (khoá vẫn sống). Công cụ gọi phải dừng CẢ lượt, không chạy tiếp lô sau."""
+
+
+class HetTinDung(HetNganSach):
+    """Tài khoản Anthropic HẾT TÍN DỤNG hoặc chạm giới hạn chi tiêu đặt trên Claude Console (API trả lỗi tín dụng) —
+    21/11/2026, bác sĩ: dùng đúng tín dụng được cấp, hết thì TỰ DỪNG. Là `HetNganSach` để mọi công cụ đã dừng cả lượt
+    khi chạm trần cũ cũng dừng đúng như vậy. Cờ ghi ở `CO_HET_TIN_DUNG` chặn các lượt sau trong `HET_TIN_DUNG_CHO_PHUT`
+    phút (không gọi lặp vô ích); hết thời gian thì cho thử lại một lượt — nạp thêm tín dụng là chạy tiếp."""
+
 
 
 def _duoi_pytest_cham_that(duong: str, that: str) -> bool:
@@ -257,7 +273,10 @@ def goi(
     except LoiApi:
         raise
     except Exception as exc:  # lỗi SDK/mạng/401/429 — tên lớp lỗi đủ để chẩn đoán, không in khoá
+        if _la_het_tin_dung(str(exc)):
+            raise _bao_het_tin_dung(exc, nguon) from exc
         raise LoiApi(f"Gọi API thất bại: {type(exc).__name__}: {str(exc)[:200]}") from exc
+    xoa_co_het_tin_dung()
     u = getattr(resp, "usage", None)
     kq = KetQuaGoi(
         van_ban="".join(getattr(b, "text", "") or "" for b in (getattr(resp, "content", None) or [])),
@@ -375,25 +394,28 @@ def uoc_toi_da(p: Dict[str, Any], batch: bool = False) -> Optional[float]:
     return uoc_chi_phi(uoc_token(chu) + anh * TOKEN_UOC_MOI_ANH, int(p.get("max_tokens") or 0), p["model"], batch)
 
 
-def tran_usd_thang_nguon(kho: Optional[str] = None) -> Tuple[float, str]:
-    """(trần USD tháng, nơi đặt). Thứ tự §5 của hệ: biến môi trường OS → kho bí mật
-    `~/.ebm-secrets/medical-ebm-automation.env` (bác sĩ hay đặt cấu hình ở đây — 18/11/2026: trần bác sĩ «đã cài đặt»
-    không nằm trong môi trường shell, bản đầu chỉ đọc biến môi trường nên lặng lẽ dùng mặc định) → mặc định. Giá trị
-    không đọc được ⇒ 0 (khoá — fail-closed: gõ nhầm không được thành «không giới hạn»).
-    Con số trần không phải bí mật."""
+def tran_usd_thang_nguon(kho: Optional[str] = None) -> Tuple[Optional[float], str]:
+    """(trần USD tháng hoặc None, nguồn). 21/11/2026 — bác sĩ: «sử dụng đúng vào tín dụng được cấp nếu hết thì tự dừng
+    chứ không đặt mức trần như vậy nữa» ⇒ MẶC ĐỊNH None = THEO TÍN DỤNG TÀI KHOẢN (cùng giới hạn chi tiêu bác sĩ đặt
+    trên Claude Console); hết tín dụng ⇒ `HetTinDung`. Kho bí mật KHÔNG còn đặt trần (dòng EBM_API_CLAUDE_TRAN_USD_THANG
+    cũ trong kho
+    bị bỏ qua và được nêu trong nguồn). Biến môi trường OS EBM_API_CLAUDE_TRAN_USD_THANG vẫn là công tắc CHUYÊN DỤNG:
+    số > 0 ⇒ trần (kiểm thử), «0»/số âm/chữ lạ ⇒ khoá hẳn (dừng khẩn cấp) — không ai đặt thì không có tác dụng."""
     ten = "EBM_API_CLAUDE_TRAN_USD_THANG"
-    v, nguon = os.environ.get(ten, "").strip(), "biến môi trường"
-    if not v:
-        v, nguon = _gia_tri_kho(ten, kho).strip(), "kho bí mật"
-    if not v:
-        return TRAN_USD_THANG_MAC_DINH, "mặc định"
-    try:
-        return float(v.replace(",", ".")), nguon
-    except ValueError:
-        return 0.0, f"{nguon} (giá trị không đọc được ⇒ khoá)"
+    v = os.environ.get(ten, "").strip()
+    if v:
+        try:
+            return float(v.replace(",", ".")), "biến môi trường"
+        except ValueError:
+            return 0.0, "biến môi trường (giá trị không đọc được ⇒ khoá)"
+    cu = _gia_tri_kho(ten, kho).strip()
+    nguon = "theo tín dụng tài khoản (bác sĩ 21/11/2026)"
+    if cu:
+        nguon += f" — bỏ qua trần «{cu}» còn trong kho bí mật"
+    return TRAN_USD_THANG_MAC_DINH, nguon
 
 
-def tran_usd_thang() -> float:
+def tran_usd_thang() -> Optional[float]:
     return tran_usd_thang_nguon()[0]
 
 
@@ -429,9 +451,80 @@ def doc_so_chi_phi(duong: Optional[str] = None) -> Dict[str, Any]:
     return d
 
 
+def _la_het_tin_dung(thong_diep: str) -> bool:
+    s = (thong_diep or "").lower()
+    return any(d in s for d in DAU_HIEU_HET_TIN_DUNG)
+
+
+def doc_co_het_tin_dung(duong: Optional[str] = None) -> Optional[Dict[str, Any]]:
+    """Cờ hết tín dụng còn hiệu lực (ghi trong `HET_TIN_DUNG_CHO_PHUT` phút gần đây) hay None. Dưới pytest không đọc
+    tệp THẬT."""
+    duong = duong or CO_HET_TIN_DUNG
+    if _duoi_pytest_cham_that(duong, _HTD_THAT):
+        return None
+    try:
+        with open(duong, "r", encoding="utf-8") as fh:
+            co = json.load(fh)
+        import datetime as _dt
+
+        luc = _dt.datetime.fromisoformat(str(co.get("luc")))
+    except (OSError, ValueError, TypeError, AttributeError):
+        return None
+    import datetime as _dt
+
+    if (_dt.datetime.now() - luc).total_seconds() > HET_TIN_DUNG_CHO_PHUT * 60:
+        return None
+    return co
+
+
+def ghi_co_het_tin_dung(ly_do: str, nguon: str = "", duong: Optional[str] = None) -> None:
+    duong = duong or CO_HET_TIN_DUNG
+    if _duoi_pytest_cham_that(duong, _HTD_THAT):
+        return
+    try:
+        import datetime as _dt
+
+        _ghi_nguyen_tu(duong, {"luc": _dt.datetime.now().isoformat(timespec="seconds"), "ly_do": str(ly_do)[:300],
+                               "nguon": str(nguon)[:80]})
+    except (OSError, TypeError, ValueError):
+        pass
+
+
+def xoa_co_het_tin_dung(duong: Optional[str] = None) -> None:
+    """Một lượt gọi THÀNH CÔNG ⇒ tín dụng đã có lại ⇒ gỡ cờ."""
+    duong = duong or CO_HET_TIN_DUNG
+    if _duoi_pytest_cham_that(duong, _HTD_THAT):
+        return
+    try:
+        os.remove(duong)
+    except OSError:
+        pass
+
+
+def _bao_het_tin_dung(exc: Exception, nguon: str) -> "HetTinDung":
+    ly_do = f"{type(exc).__name__}: {str(exc)[:200]}"
+    ghi_co_het_tin_dung(ly_do, nguon)
+    ghi_nhat_ky_api("error", f"het_tin_dung: {ly_do}", 0, nguon)
+    return HetTinDung(
+        "Tài khoản Claude API HẾT TÍN DỤNG hoặc chạm giới hạn chi tiêu trên Claude Console — dừng, không gọi tiếp "
+        f"({ly_do[:160]}). Nạp thêm tín dụng ở Console rồi chạy lại (cờ tự hết sau {HET_TIN_DUNG_CHO_PHUT} phút)."
+    )
+
+
 def kiem_ngan_sach(uoc_usd: Optional[float], model: str, nguon: str = "", duong: Optional[str] = None) -> None:
-    """Chặn TRƯỚC khi gửi: trần ≤ 0, model chưa ghi giá, sổ hỏng, hay đã tiêu + ước tối đa > trần ⇒ HetNganSach."""
+    """Chặn TRƯỚC khi gửi. Luôn: cờ hết tín dụng còn hiệu lực ⇒ HetTinDung (tự dừng, không gọi lặp). Theo tín dụng
+    (mặc định, 21/11/2026): không trần tự đặt — model chưa ghi giá hay sổ hỏng KHÔNG chặn (giới hạn là tín dụng tài
+    khoản). Chỉ khi biến môi trường OS đặt trần: trần ≤ 0, model chưa ghi giá, sổ hỏng, hay đã tiêu + ước tối đa > trần
+    ⇒ HetNganSach."""
+    co = doc_co_het_tin_dung()
+    if co:
+        raise HetTinDung(
+            f"Tài khoản Claude API vừa báo HẾT TÍN DỤNG lúc {co.get('luc')} — tự dừng, không gọi lại trong "
+            f"{HET_TIN_DUNG_CHO_PHUT} phút. Nạp thêm tín dụng ở Claude Console rồi chạy lại."
+        )
     tran, noi_dat = tran_usd_thang_nguon()
+    if tran is None:
+        return
     if tran <= 0:
         raise HetNganSach(
             f"Trần chi phí Claude API tháng đang = 0 ({noi_dat}; khoá hẳn, hoặc EBM_API_CLAUDE_TRAN_USD_THANG không "
@@ -580,7 +673,10 @@ def nop_batch(yeu_cau: Sequence[Tuple[str, Dict[str, Any]]], client: Any = None,
     try:
         b = kh.messages.batches.create(requests=[{"custom_id": c, "params": p} for c, p in yeu_cau])
     except Exception as exc:
+        if _la_het_tin_dung(str(exc)):
+            raise _bao_het_tin_dung(exc, nguon) from exc
         raise LoiApi(f"Nộp batch thất bại: {type(exc).__name__}: {str(exc)[:200]}") from exc
+    xoa_co_het_tin_dung()
     return str(b.id)
 
 
