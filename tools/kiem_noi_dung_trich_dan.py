@@ -424,19 +424,51 @@ def lay_abstract(
 
 
 def chay(
-    cau_ds: List[Cau], tai_lieu: Dict[int, Dict[str, Any]], *, model: str, lo: int = SO_CAU_MOI_LO, client: Any = None
+    cau_ds: List[Cau], tai_lieu: Dict[int, Dict[str, Any]], *, model: str, lo: int = SO_CAU_MOI_LO, client: Any = None,
+    batch: bool = False, cho_batch: Optional[float] = None,
 ) -> Tuple[List[KetQua], Dict[str, Any]]:
-    """Gọi API theo lô; lô hỏng ⇒ mọi cặp của lô «không kiểm được» kèm lý do (không đoán), lô khác vẫn chạy."""
+    """Gọi API theo lô; lô hỏng ⇒ mọi cặp của lô «không kiểm được» kèm lý do (không đoán), lô khác vẫn chạy.
+
+    `batch=True` (21/11/2026 — tối ưu chi phí): mọi lô nộp MỘT batch (−50% mọi token); lô nào batch trả lỗi / bị từ
+    chối / cụt / JSON hỏng ⇒ gửi lại THƯỜNG như trước (có dự phòng khi từ chối) — kết quả không kém chế độ thường."""
     can = [c for c in cau_ds if any(n in tai_lieu for n in c.so)]
     ra: List[KetQua] = []
     tk = {
         "so_lo": 0, "lo_loi": 0, "lo_loi_api": 0, "token_vao": 0, "token_ra": 0,
         "token_cache_ghi": 0, "token_cache_doc": 0, "loi": [],
     }
-    for nhom in API.chia_lo(can, lo):
+    cac_lo = API.chia_lo(can, lo)
+    san: Dict[int, Any] = {}
+    if batch and cac_lo:
+        try:
+            kq_lo = API.goi_lo(
+                [(f"lo_{i:04d}", API.tham_so(dung_loi_nhan(nhom, tai_lieu), he_thong=HE_THONG, model=model,
+                                              effort="low", cache_he_thong=True))
+                 for i, nhom in enumerate(cac_lo)],
+                client=client, nguon="kiem_noi_dung_trich_dan", cho_toi_da=cho_batch,
+            )
+            san = {int(c[3:]): v for c, v in kq_lo.items()}
+        except (API.ThieuKhoa, API.HetNganSach):
+            raise
+        except API.LoiApi as exc:  # nộp batch hỏng ⇒ gửi thường cả lượt (như chưa bật batch)
+            tk["loi"].append(f"batch không nộp được — gửi thường: {str(exc)[:160]}")
+        tk["batch"] = {"so_lo": len(cac_lo), "dung_duoc": 0}   # «dùng được» = đọc được JSON, không phải gửi lại
+        for k, f in (("token_batch_vao", "token_vao"), ("token_batch_ra", "token_ra"),
+                     ("token_batch_cache_ghi", "token_cache_ghi"), ("token_batch_cache_doc", "token_cache_doc")):
+            tk[k] = sum(getattr(v, f) for v in san.values() if isinstance(v, API.KetQuaGoi))
+    for i_lo, nhom in enumerate(cac_lo):
         tk["so_lo"] += 1
         try:
-            for lan in range(SO_LAN_THU_JSON_HONG):
+            tra_loi = None
+            if isinstance(san.get(i_lo), API.KetQuaGoi):
+                try:
+                    tra_loi = API.doc_json(san[i_lo].van_ban)
+                    tk["batch"]["dung_duoc"] += 1
+                except API.KetQuaHong:
+                    tk["lo_batch_gui_lai"] = tk.get("lo_batch_gui_lai", 0) + 1
+            elif batch and i_lo in san:
+                tk["lo_batch_gui_lai"] = tk.get("lo_batch_gui_lai", 0) + 1
+            for lan in range(0 if tra_loi is not None else SO_LAN_THU_JSON_HONG):
                 kq = API.goi(
                     dung_loi_nhan(nhom, tai_lieu), he_thong=HE_THONG, model=model, effort="low", client=client,
                     cache_he_thong=True,  # cùng lời dặn cho mọi lô ⇒ lô sau đọc từ cache
@@ -508,7 +540,10 @@ def bao_cao_md(
         f"# Kiểm nội dung trích dẫn bằng máy — {study}",
         "",
         f"- Tệp: `{tep.name}` · lúc {luc} · model `{model}` · {tk.get('so_lo', 0)} lượt gọi "
-        f"({tk.get('lo_loi', 0)} lỗi) · {API.in_chi_phi(tk.get('token_vao', 0), tk.get('token_ra', 0), model)}",
+        f"({tk.get('lo_loi', 0)} lỗi) · {API.in_chi_phi(tk.get('token_vao', 0), tk.get('token_ra', 0), model)}"
+        + (f" · Batch (−50%): {tk['batch']['dung_duoc']}/{tk['batch']['so_lo']} lô dùng được, "
+           f"{API.in_chi_phi(tk.get('token_batch_vao', 0), tk.get('token_batch_ra', 0), model, batch=True)}"
+           if tk.get("batch") else ""),
         f"- {len(cau_ds)} đoạn khẳng định có trích dẫn · {len(tltk)} tài liệu tham khảo · "
         f"{len(ket)} cặp (đoạn, tài liệu)",
         "- Kết quả: "
@@ -570,6 +605,11 @@ def main(
     ap.add_argument("--lo", type=int, default=SO_CAU_MOI_LO, help="số đoạn mỗi lượt gọi")
     ap.add_argument("--toi-da", type=int, default=TOI_DA_MAC_DINH, help="trần số đoạn kiểm mỗi lượt")
     ap.add_argument("--ra", help="thư mục ghi báo cáo (mặc định exports/<mã>/kiem_may_api/)")
+    ap.add_argument("--batch", action="store_true",
+                    help="gửi các lô qua Batch API (−50%% chi phí, kết quả trong vài phút–vài giờ); lô lỗi/bị từ chối "
+                         "tự gửi lại thường — dùng khi không ai ngồi chờ (cơ chế API khi cần)")
+    ap.add_argument("--cho-batch-toi-da", type=float, default=None,
+                    help="giây chờ batch tối đa; quá ⇒ huỷ phần chưa xử lý (không tính phí) rồi gửi thường phần đó")
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args(argv)
     if not re.fullmatch(r"[A-Za-z0-9._-]+", a.study):
@@ -613,8 +653,9 @@ def main(
             "so_trich_khong_co_trong_tltk": khong_co,
             "so_luot_goi": so_lo,
             "bo_qua_vi_tran": len(bo),
-            "uoc_tinh": API.in_chi_phi(vao, ra, model),
-            "uoc_usd": API.uoc_chi_phi(vao, ra, model),
+            "uoc_tinh": API.in_chi_phi(vao, ra, model, batch=a.batch),
+            "uoc_usd": API.uoc_chi_phi(vao, ra, model, batch=a.batch),
+            "batch": a.batch,
         }
         if a.json:
             print(json.dumps(kh, ensure_ascii=False, indent=1))
@@ -639,7 +680,8 @@ def main(
         print("⚪ Không tài liệu nào có abstract dùng được — KHÔNG kiểm được (không phải «đúng hết»).")
         return 2
     try:
-        ket, tk = chay(cau_ds, tai_lieu, model=model, lo=a.lo, client=client)
+        ket, tk = chay(cau_ds, tai_lieu, model=model, lo=a.lo, client=client, batch=a.batch,
+                       cho_batch=a.cho_batch_toi_da)
     except API.ThieuKhoa as exc:
         print(f"⚪ {exc}")
         API.ghi_nhat_ky_api("skipped", str(exc), 0, "kiem_noi_dung_trich_dan")

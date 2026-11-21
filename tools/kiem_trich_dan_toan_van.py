@@ -265,15 +265,34 @@ def co_nguyen_van_toan_van(trich: str, doan: str) -> bool:
     return False
 
 
-def kiem_tai_lieu(so: int, cap: List[Dict[str, Any]], doan: str, model: str, client: Any,
-                  tltk: str = "") -> Tuple[List[Dict], Any]:
-    """MỘT lượt gọi cho mọi câu của một tài liệu; máy kiểm câu trích có nguyên văn trong đoạn đã gửi."""
+def loi_nhan_tai_lieu(so: int, cap: List[Dict[str, Any]], doan: str, tltk: str = "") -> str:
     giao = [{"id": c["id"], "so": so, "cau": c["cau"], "abstract_ket_luan": c["muc"], "abstract_ly_do": c.get("ly_do")}
             for c in cap]
-    noi = ("CÁC CẶP CẦN XÉT LẠI (JSON):\n" + json.dumps(giao, ensure_ascii=False, indent=1)
-           + (f"\n\nTÀI LIỆU [{so}] TRONG DANH MỤC THAM KHẢO: {tltk}" if tltk else "")
-           + f"\n\nĐOẠN TRÍCH TỪ TOÀN VĂN CỦA TÀI LIỆU [{so}]:\n" + doan)
-    for lan in range(SO_LAN_THU_JSON_HONG):
+    return ("CÁC CẶP CẦN XÉT LẠI (JSON):\n" + json.dumps(giao, ensure_ascii=False, indent=1)
+            + (f"\n\nTÀI LIỆU [{so}] TRONG DANH MỤC THAM KHẢO: {tltk}" if tltk else "")
+            + f"\n\nĐOẠN TRÍCH TỪ TOÀN VĂN CỦA TÀI LIỆU [{so}]:\n" + doan)
+
+
+def tham_so_tai_lieu(so: int, cap: List[Dict[str, Any]], doan: str, model: str, tltk: str = "") -> Dict[str, Any]:
+    """Tham số của ĐÚNG lượt gọi thường (cùng lời dặn, model, effort, max_tokens) — dùng cho chế độ Batch."""
+    return API.tham_so(loi_nhan_tai_lieu(so, cap, doan, tltk), he_thong=HE_THONG, model=model, max_tokens=MAX_TOKENS,
+                       effort="medium")
+
+
+def kiem_tai_lieu(so: int, cap: List[Dict[str, Any]], doan: str, model: str, client: Any,
+                  tltk: str = "", kq_san: Any = None) -> Tuple[List[Dict], Any]:
+    """MỘT lượt gọi cho mọi câu của một tài liệu; máy kiểm câu trích có nguyên văn trong đoạn đã gửi.
+
+    `kq_san` = kết quả Batch của chính lượt này (KetQuaGoi) — đọc được JSON thì dùng, không gọi lại; là lỗi hoặc JSON
+    hỏng ⇒ gửi THƯỜNG như trước (có dự phòng khi model từ chối), nên kết quả không kém chế độ thường."""
+    dl, kq = None, None
+    if isinstance(kq_san, API.KetQuaGoi):
+        try:
+            dl, kq = API.doc_json(kq_san.van_ban), kq_san
+        except API.KetQuaHong:
+            dl = None
+    noi = loi_nhan_tai_lieu(so, cap, doan, tltk)
+    for lan in range(0 if dl is not None else SO_LAN_THU_JSON_HONG):
         kq = API.goi(noi, he_thong=HE_THONG, model=model, max_tokens=MAX_TOKENS, effort="medium", client=client,
                      nguon="kiem_trich_dan_toan_van")
         try:
@@ -336,6 +355,11 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
     ap.add_argument("--model", default=None)
     ap.add_argument("--thu-vien", help="tệp .enl của EndNote (mặc định theo ~/.ebm-endnote.json)")
     ap.add_argument("--toi-da-ky-tu", type=int, default=TOI_DA_KY_TU, help="trần ký tự đoạn toàn văn mỗi tài liệu")
+    ap.add_argument("--batch", action="store_true",
+                    help="gửi qua Batch API (−50%% chi phí, kết quả trong vài phút–vài giờ); lượt lỗi/từ chối tự "
+                         "gửi lại thường — dùng khi không ai ngồi chờ (cơ chế API khi cần)")
+    ap.add_argument("--cho-batch-toi-da", type=float, default=None,
+                    help="giây chờ batch tối đa; quá ⇒ huỷ phần chưa xử lý (không tính phí) rồi gửi thường phần đó")
     ap.add_argument("--json", action="store_true")
     a = ap.parse_args(argv)
     if not re.fullmatch(r"[A-Za-z0-9._-]+", a.study):
@@ -383,11 +407,12 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
         else:
             khong.append({"so": so, "id": [c["id"] for c in ds], "ly_do": nguon})
     vao = sum(API.uoc_token(HE_THONG) + API.uoc_token(d) + 300 * len(theo_so[s]) for s, (d, _n) in co_van.items())
-    uoc = API.uoc_chi_phi(vao, 1500 * len(co_van), model)
+    uoc = API.uoc_chi_phi(vao, 1500 * len(co_van), model, batch=a.batch)
     if not a.goi_api:
         kh = {"study": a.study, "so_cap": len(cap), "so_tai_lieu": len(theo_so), "co_toan_van": {
             s: n for s, (_d, n) in co_van.items()}, "khong_toan_van": khong, "so_luot_goi": len(co_van),
-            "uoc_usd": uoc, "uoc_tinh": API.in_chi_phi(vao, 1500 * len(co_van), model)}
+            "uoc_usd": uoc, "uoc_tinh": API.in_chi_phi(vao, 1500 * len(co_van), model, batch=a.batch),
+            "batch": a.batch}
         if a.json:
             print(json.dumps(kh, ensure_ascii=False, indent=1))
         else:
@@ -408,9 +433,26 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
     ket: List[Dict[str, Any]] = []
     loi: List[str] = []
     tok = {"vao": 0, "ra": 0}
+    tok_b = {"vao": 0, "ra": 0}
+    san: Dict[int, Any] = {}
+    if a.batch:
+        try:
+            lo = API.goi_lo([(f"tl_{so:04d}", tham_so_tai_lieu(so, theo_so[so], d, model, tltk[so].van))
+                             for so, (d, _n) in sorted(co_van.items())], client=client, nguon="kiem_trich_dan_toan_van",
+                            cho_toi_da=a.cho_batch_toi_da)
+        except API.HetNganSach as exc:
+            print(f"⛔ {exc}")
+            return 2
+        except API.LoiApi as exc:  # nộp batch hỏng ⇒ gửi thường cả lượt (như chưa bật --batch)
+            print(f"⚠ Batch không nộp được ({exc}) — gửi thường.")
+            lo = {}
+        san = {int(c[3:]): v for c, v in lo.items()}
+        hong = sum(1 for v in san.values() if not isinstance(v, API.KetQuaGoi))
+        print(f"  Batch: {len(san) - hong}/{len(co_van)} tài liệu có kết quả" + (f" · {hong} gửi lại thường" if hong
+                                                                                 else ""))
     for so, (doan, nguon) in sorted(co_van.items()):
         try:
-            ra, kq = kiem_tai_lieu(so, theo_so[so], doan, model, client, tltk[so].van)
+            ra, kq = kiem_tai_lieu(so, theo_so[so], doan, model, client, tltk[so].van, kq_san=san.get(so))
         except API.HetNganSach as exc:  # hết tín dụng / chạm trần ⇒ dừng CẢ lượt, không ghi báo cáo dở (21/11/2026)
             print(f"⛔ {exc}")
             return 2
@@ -420,15 +462,22 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
                      "muc_toan_van": "khong_xac_minh", "trich": "", "ly_do": "lượt gọi lỗi", "nguon": nguon}
                     for c in theo_so[so]]
             continue
-        tok["vao"] += kq.token_vao
-        tok["ra"] += kq.token_ra
+        dich = tok_b if (kq is not None and kq is san.get(so)) else tok   # token Batch tính giá Batch
+        dich["vao"] += kq.token_vao
+        dich["ra"] += kq.token_ra
         ket += [dict(x, nguon=nguon) for x in ra]
+    u1 = API.uoc_chi_phi(tok["vao"], tok["ra"], model)
+    u2 = API.uoc_chi_phi(tok_b["vao"], tok_b["ra"], model, batch=True)
+    usd = None if u1 is None or u2 is None else round(u1 + u2, 6)
+    chi_phi = f"≈ {usd:.3f} USD" if usd is not None else "chưa ghi giá model"
+    if tok_b["vao"]:
+        chi_phi += f" (Batch {tok_b['vao'] + tok_b['ra']} token)"
     ho_tro = sum(1 for k in ket if k["muc_toan_van"] == "ho_tro")
     con = len(cap) - ho_tro
     bc = {"schema": "kiem_trich_dan_toan_van/v1", "study": a.study, "tep": tep.name,
           "tep_sha256": hashlib.sha256(tep.read_bytes()).hexdigest(), "a12_luc": bc12.get("luc"),
           "luc": dt.datetime.now().isoformat(timespec="seconds"), "model": model, "token": tok,
-          "usd": API.uoc_chi_phi(tok["vao"], tok["ra"], model),
+          "token_batch": tok_b, "usd": usd,
           "loi_dan_sha256": hashlib.sha256(HE_THONG.encode("utf-8")).hexdigest()[:12],
           "so_cap": len(cap), "so_co_toan_van": len(ket), "so_ho_tro": ho_tro, "so_con_xem": con,
           "ket_qua": ket, "khong_toan_van": khong, "loi": loi}
@@ -436,7 +485,7 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
     _ghi(ra_dir / f"A12_TOAN_VAN_{a.study}.json", json.dumps(bc, ensure_ascii=False, indent=1) + "\n")
     _ghi(ra_dir / f"A12_TOAN_VAN_{a.study}.md", bao_cao_md(bc))
     print(f"{'🟢' if not con else '🟠'} {ho_tro}/{len(cap)} cặp được toàn văn chống đỡ · còn {con} cần xem · "
-          f"{len(khong)} tài liệu không có toàn văn · {API.in_chi_phi(tok['vao'], tok['ra'], model)} · "
+          f"{len(khong)} tài liệu không có toàn văn · {chi_phi} · "
           f"báo cáo {ra_dir / ('A12_TOAN_VAN_' + a.study + '.md')}")
     if loi:
         return 2

@@ -124,7 +124,9 @@ def test_sang_thang_moi_dem_lai_tu_dau(so):
     API.goi("x", client=KhachGia("ok"), nguon="kiem")
     d = _doc(so)
     assert d["thang"] == API._thang_nay() and d["usd"] < 1
-    assert d["thang_truoc"] == {"thang": "2000-01", "usd": 19.9}
+    # 21/11/2026: tháng trước giữ thêm chi phí THEO CÔNG CỤ (sổ cũ chưa có ⇒ rỗng)
+    assert d["thang_truoc"] == {"thang": "2000-01", "usd": 19.9, "theo_nguon": {}}
+    assert d["theo_nguon_thang"]["kiem"]["luot"] == 1  # tháng mới đếm theo nguồn từ đầu
 
 
 def test_ghi_so_tien_that_gom_token_cache(so):

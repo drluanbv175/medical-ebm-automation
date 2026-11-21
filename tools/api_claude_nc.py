@@ -30,6 +30,7 @@ import json
 import math
 import os
 import re
+import time
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Sequence, Tuple, Union
 
@@ -446,7 +447,8 @@ def doc_so_chi_phi(duong: Optional[str] = None) -> Dict[str, Any]:
     if not isinstance(d, dict) or not isinstance(d.get("usd"), (int, float)) or not isinstance(d.get("luot"), list):
         raise HetNganSach(f"Sổ chi phí API {duong} sai khuôn — không kiểm được trần ⇒ không gọi.")
     if d.get("thang") != _thang_nay():
-        return dict(rong, thang_truoc={"thang": d.get("thang"), "usd": round(float(d["usd"]), 4)})
+        return dict(rong, thang_truoc={"thang": d.get("thang"), "usd": round(float(d["usd"]), 4),
+                                       "theo_nguon": d.get("theo_nguon_thang") or {}})
     d.setdefault("batch_da_ghi", [])
     return d
 
@@ -580,6 +582,14 @@ def ghi_chi_phi(
         )[-200:]
         if batch_id:
             so["batch_da_ghi"] = (so["batch_da_ghi"] + [batch_id])[-200:]
+        # 21/11/2026 (tối ưu chi phí): «luot» chỉ giữ 200 lượt gần nhất ⇒ hồ sơ chi phí theo công cụ chỉ phủ ~1/3
+        # tháng. Cộng dồn THEO NGUỒN cả tháng để đo được công cụ nào tốn, tỷ lệ đọc cache, phần đã chạy Batch.
+        g = so.setdefault("theo_nguon_thang", {}).setdefault(str(nguon)[:80] or "?", {})
+        g["usd"] = round(float(g.get("usd") or 0.0) + float(usd or 0.0), 6)
+        g["luot"] = int(g.get("luot") or 0) + 1
+        g["luot_batch"] = int(g.get("luot_batch") or 0) + (1 if batch_id else 0)
+        for k in ("vao", "ra", "cache_ghi", "cache_doc"):
+            g[k] = int(g.get(k) or 0) + int(token.get(k, 0) or 0)
         _ghi_nguyen_tu(duong, so)
     except (OSError, TypeError, ValueError):
         pass
@@ -736,6 +746,88 @@ def van_ban_ket_qua_batch(kq: Dict[str, Any], max_tokens: int = MAX_TOKENS_MAC_D
         raise KetQuaHong(f"batch: {kq.get('loai')} {kq.get('loi', '')}".strip())
     _kiem_stop(kq.get("stop_reason"), kq.get("nhom"), max_tokens)
     return str(kq.get("text") or "")
+
+
+# ── Lô qua Batch API cho công cụ KHÔNG ai ngồi chờ (21/11/2026 — tối ưu chi phí) ─────────────────────────────────
+# Đo sổ chi phí 20–21/11: kiểm trích dẫn toàn văn + kiểm nội dung trích dẫn (gọi thường, độc lập từng lô) chiếm
+# ~38% chi phí; Batch giảm 50% MỌI token (kể cả cache). Batch không nhận `fallbacks` ⇒ yêu cầu nào lỗi/bị từ chối/cụt
+# trả LỖI riêng để công cụ gửi lại theo lối thường (`goi`, có dự phòng) — chất lượng như gọi thường.
+CHO_BATCH_TOI_DA_GIAY = 3 * 3600   # quá giờ ⇒ huỷ phần chưa xử lý (không tính phí), công cụ gửi thường phần đó
+CHU_KY_HOI_BATCH_GIAY = 20
+CHO_SAU_HUY_GIAY = 900
+
+
+def huy_batch(batch_id: str, client: Any = None) -> None:
+    kh = tao_client(client)
+    try:
+        kh.messages.batches.cancel(batch_id)
+    except Exception as exc:
+        raise LoiApi(f"Huỷ batch thất bại: {type(exc).__name__}: {str(exc)[:200]}") from exc
+
+
+def cho_batch(
+    batch_id: str,
+    client: Any = None,
+    *,
+    cho_toi_da: Optional[float] = None,
+    chu_ky: Optional[float] = None,
+    ngu: Any = None,
+    dong_ho: Any = None,
+) -> Dict[str, Any]:
+    """Đợi batch «ended». Quá `cho_toi_da` ⇒ huỷ phần chưa xử lý rồi đợi thêm tối đa CHO_SAU_HUY_GIAY (phần đã xử lý
+    vẫn đọc được và vẫn tính phí; phần bị huỷ không tính phí). Trả trạng thái kèm `het_gio`. Mặc định đọc LÚC GỌI."""
+    cho_toi_da = CHO_BATCH_TOI_DA_GIAY if cho_toi_da is None else cho_toi_da
+    chu_ky = CHU_KY_HOI_BATCH_GIAY if chu_ky is None else chu_ky
+    ngu, dong_ho = ngu or time.sleep, dong_ho or time.monotonic
+    bat_dau, het_gio, han = dong_ho(), False, cho_toi_da
+    while True:
+        tt = trang_thai_batch(batch_id, client)
+        if tt["trang_thai"] == "ended":
+            return dict(tt, het_gio=het_gio)
+        if dong_ho() - bat_dau >= han:
+            if het_gio:
+                raise LoiApi(f"Batch {batch_id} chưa kết thúc sau khi huỷ — đọc lại sau bằng id này.")
+            huy_batch(batch_id, client)
+            het_gio, han = True, cho_toi_da + CHO_SAU_HUY_GIAY
+        ngu(chu_ky)
+
+
+def goi_lo(
+    yeu_cau: Sequence[Tuple[str, Dict[str, Any]]],
+    *,
+    client: Any = None,
+    nguon: str = "",
+    cho_toi_da: Optional[float] = None,
+    chu_ky: Optional[float] = None,
+    ngu: Any = None,
+    dong_ho: Any = None,
+) -> Dict[str, Union["KetQuaGoi", LoiApi]]:
+    """Nộp MỘT batch cho các yêu cầu độc lập [(custom_id, tham_so(...))], chờ, trả custom_id → KetQuaGoi (đã kiểm cắt
+    cụt/từ chối) hoặc LỖI của riêng yêu cầu đó. Người gọi PHẢI gửi lại bằng `goi` các yêu cầu trả lỗi.
+    Thiếu khoá / hết tín dụng / vượt trần ⇒ ném như `goi` (không nộp gì). Lỗi kênh khi chờ/đọc ⇒ mọi yêu cầu nhận
+    LoiApi (người gọi gửi thường). Số tiêu thật (giá Batch) ghi sổ một lần theo id batch."""
+    kh = tao_client(client)
+    bid = nop_batch(yeu_cau, kh, nguon)
+    try:
+        cho_batch(bid, kh, cho_toi_da=cho_toi_da, chu_ky=chu_ky, ngu=ngu, dong_ho=dong_ho)
+        kq = doc_ket_qua_batch(bid, kh, nguon)
+    except Exception as exc:  # noqa: BLE001 — kênh hỏng giữa chừng ⇒ công cụ gửi thường, không mất lượt
+        return {c: LoiApi(f"batch {bid}: {type(exc).__name__}: {str(exc)[:160]}") for c, _ in yeu_cau}
+    ra: Dict[str, Union[KetQuaGoi, LoiApi]] = {}
+    for cid, p in yeu_cau:
+        r = kq.get(cid)
+        if r is None:
+            ra[cid] = KetQuaHong(f"batch {bid} không trả kết quả cho {cid} (bị huỷ do quá giờ chờ?)")
+            continue
+        try:
+            vb = van_ban_ket_qua_batch(r, int(p.get("max_tokens") or MAX_TOKENS_MAC_DINH))
+        except KetQuaHong as exc:
+            ra[cid] = exc
+            continue
+        ra[cid] = KetQuaGoi(van_ban=vb, model=str(p.get("model") or ""), token_vao=int(r.get("vao", 0)),
+                            token_ra=int(r.get("ra", 0)), stop_reason=r.get("stop_reason"),
+                            token_cache_ghi=int(r.get("cache_ghi", 0)), token_cache_doc=int(r.get("cache_doc", 0)))
+    return ra
 
 
 # ── Tiện ích văn bản dùng chung ───────────────────────────────────────────────────────────────────────────────────
