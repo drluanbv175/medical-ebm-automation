@@ -193,7 +193,8 @@ def chay_r_kiem_cheo(ma_r: str, *, thoi_han: int = 300) -> Dict[str, Any]:
         return {"trang_thai": "khong_kiem_cheo_duoc", "ly_do": str(exc)[:300], "kq": {}}
     with tempfile.TemporaryDirectory(prefix="bd-r-") as td:
         p = Path(td) / "kc.R"
-        p.write_text(ma_r, encoding="utf-8", newline="\n")
+        # cat() của R mặc định in 7 chữ số có nghĩa — không đủ để so ở dung sai chặt (đo 21/11/2026: DCA lệch 1e-8)
+        p.write_text("options(digits = 15)\n" + ma_r, encoding="utf-8", newline="\n")
         ma, out, err = CR.chay_r(rscript, [str(p)], thu_muc=Path(td), thoi_han=thoi_han)
     kq: Dict[str, float] = {}
     for dong in out.splitlines():
