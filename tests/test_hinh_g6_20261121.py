@@ -178,7 +178,7 @@ def test_forest_gop_dung_dl_nhu_g6_khi_co_khong_dong_nhat(tmp_path):
                                                   "su_kien_chung": "c", "n_chung": "n0"}}]
     HG.sinh("x", tmp_path, pt, None, None, nap=lambda s, c, loc: gop.copy())
     g6 = PT.gop(gop.to_dict("records"), "nc", "a", "n1", "c", "n0")
-    j = json.loads((tmp_path / "bieu-bang/g6-GOP-forest.json").read_text(encoding="utf-8"))
+    j = json.loads((tmp_path / "bieu-bang/g6-gop-forest.json").read_text(encoding="utf-8"))
     assert j["gop"]["phuong_phap"] == "DL" and j["gop"]["tau2"] > 0.1
     assert abs(j["gop"]["uoc_luong"] - g6["rr_gop_ngau_nhien"]) < 1e-10
 
@@ -204,8 +204,8 @@ def test_rob_tu_cot_rob_nhan_tu_dien_va_trong_so_forest(tmp_path):
     kq, gop = _gop_rob(tmp_path)
     assert _loai_cua(kq, "GOP") >= {"forest", "rob"}
     assert "rob" not in kq["kiem_danh_muc"]["thieu_bat_buoc"]  # sr_ma bắt buộc RoB — nay đã có
-    j = json.loads((tmp_path / "bieu-bang/g6-GOP-rob.json").read_text(encoding="utf-8"))
-    f = json.loads((tmp_path / "bieu-bang/g6-GOP-forest.json").read_text(encoding="utf-8"))
+    j = json.loads((tmp_path / "bieu-bang/g6-gop-rob.json").read_text(encoding="utf-8"))
+    f = json.loads((tmp_path / "bieu-bang/g6-gop-forest.json").read_text(encoding="utf-8"))
     assert j["cong_cu"] == "RoB 2" and j["mien"] == ["RoB 2 — đánh giá chung"]
     assert j["danh_gia"]["NC4"] == {"RoB 2 — đánh giá chung": "cao"}  # mã 3 → «Cao» theo từ điển G5
     w = {x["nghien_cuu"]: x["trong_so_pt"] for x in f["nghien_cuu"]}
@@ -217,7 +217,7 @@ def test_rob_loi_khong_lam_mat_forest(tmp_path):
     kq, _ = _gop_rob(tmp_path, rob=(1, 1, 9, 3, 1, 2), tu_dien=False)  # mã 9 không có nhãn ⇒ không nhận ra mức
     ds = {(h["loai"], h["trang_thai"]) for h in kq["hinh"] if h["id"] == "GOP"}
     assert ("forest", "DA_VE") in ds and ("rob", "LOI") in ds and ("rob", "DA_VE") not in ds
-    assert (tmp_path / "bieu-bang/g6-GOP-forest.png").is_file()
+    assert (tmp_path / "bieu-bang/g6-gop-forest.png").is_file()
 
 
 def test_mat_phang_ce_dung_cung_lan_lap_bootstrap_cua_g6(ket_qua, du_lieu):
