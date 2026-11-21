@@ -1,5 +1,5 @@
 # A2 — THIẾT KẾ NGHIÊN CỨU & SAP SKELETON | btm-dtd2-ngoai-tru-BVQY175
-> Tạo tự động: 2026-11-20 05:53 | Rule-based; có ứng viên effect size truy nguyên từ PubMed
+> Tạo tự động: 2026-11-22 05:59 | Rule-based; có ứng viên effect size truy nguyên từ PubMed
 > [BẢN NHÁP TỰ ĐỘNG] — Bác sĩ xác nhận thiết kế chọn + điền [CẦN...] trước khi tiến G2/G4
 > Cần bác sĩ kiểm chứng.
 
@@ -15,7 +15,7 @@
 - Mã đề tài: `btm-dtd2-ngoai-tru-BVQY175`
 - Tên đề tài: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026
 - Phiên bản protocol: 1.0
-- Ngày tạo/cập nhật: 2026-11-20 05:53
+- Ngày tạo/cập nhật: 2026-11-22 05:59
 - Chủ nhiệm, nhà phương pháp, thống kê viên, quản lý dữ liệu: Chủ nhiệm đề tài: định hướng khoa học, chốt đề cương và SAP, ký hồ sơ đạo đức, lập khung mẫu và trích hồ sơ trên eHospital, giữ bảng nối mã, chịu trách nhiệm chung. Nhà phương pháp/thống kê: cỡ mẫu (G3), viết và khoá SAP (G4), phân tích (G6). Quản lý dữ liệu: codebook và phiếu thu thập, nhập liệu, kiểm tra chất lượng, khoá cơ sở dữ liệu (G5), lưu trữ tệp đã mã hoá. Người trích lại: cùng chủ nhiệm trích thử độc lập 10 hồ sơ tập; trích lại độc lập 10% hồ sơ kiểm chứng và sàng lọc lại 10 hồ sơ bị loại. Hội đồng chuyên gia (5 người: bác sĩ nội tiết, bác sĩ thận học, dược sĩ lâm sàng, người phụ trách mã hoá bệnh tật, người làm phương pháp nghiên cứu hoặc thống kê; chủ nhiệm không chấm): chấm độc lập độ giá trị nội dung của phiếu trích. Người đảm nhận các vai ngoài chủ nhiệm do chủ nhiệm phân công (bảng RACI ở A13); một người có thể kiêm nhiều vai, riêng người trích lại phải khác chủ nhiệm.
 - Tài trợ, bảo hiểm, xung đột lợi ích và vai trò nhà tài trợ: [CẦN HOÀN THIỆN Ở G2/G9]
 - Chuẩn đề cương: Protocol định trước; đăng ký nếu cần minh bạch
@@ -246,17 +246,17 @@ Chuẩn đề cương/protocol: Protocol định trước; đăng ký nếu cầ
 > Phát hiện tín hiệu: đề tài có cấu phần xây dựng/kiểm định thang đo/bộ câu hỏi (PROM). Mỗi đặc tính truy nguyên về
 > đề cương nộp/SAP (giai đoạn 5, 15/11/2026) — ô [CẦN] chỉ còn ở đặc tính đề cương chưa nói tới.
 
-- Thiết kế item + miền nội dung: đã có — đề cương nộp mục 4.6
-- Độ giá trị nội dung (content validity): đã có — đề cương nộp mục 4.6
-- Phỏng vấn nhận thức / thử nghiệm phiếu: đã có — đề cương nộp mục 4.6
-- Dịch thuật & thích nghi văn hóa (nếu công cụ gốc nước ngoài): không áp dụng — công cụ do nhóm tự xây dựng (đề cương nộp mục 4.6)
-- Độ giá trị cấu trúc (EFA/CFA): ngoài phạm vi đề tài (đề cương nộp mục 4.6 ghi rõ)
-- Độ tin cậy nội tại (Cronbach's α/ω): ngoài phạm vi đề tài (đề cương nộp mục 4.6 ghi rõ)
-- Độ tin cậy lặp lại (test–retest ICC): ngoài phạm vi đề tài (đề cương nộp mục 4.6 ghi rõ)
-- Độ giá trị hội tụ/phân biệt: ngoài phạm vi đề tài (đề cương nộp mục 4.6 ghi rõ)
-- Độ đáp ứng & MCID: ngoài phạm vi đề tài (đề cương nộp mục 4.6 ghi rõ)
-- Sai số đo (SEM/SDC): ngoài phạm vi đề tài (đề cương nộp mục 4.6 ghi rõ)
-- Hiệu ứng sàn–trần: ngoài phạm vi đề tài (đề cương nộp mục 4.6 ghi rõ)
+- Thiết kế item + miền nội dung: đã có — đề cương nộp mục 2.6.1
+- Độ giá trị nội dung (content validity): đã có — đề cương nộp mục 2.6.1
+- Phỏng vấn nhận thức / thử nghiệm phiếu: đã có — đề cương nộp mục 2.6.1
+- Dịch thuật & thích nghi văn hóa (nếu công cụ gốc nước ngoài): không áp dụng — công cụ do nhóm tự xây dựng (đề cương nộp mục 2.6.1)
+- Độ giá trị cấu trúc (EFA/CFA): ngoài phạm vi đề tài (đề cương nộp mục 2.6.1 ghi rõ)
+- Độ tin cậy nội tại (Cronbach's α/ω): ngoài phạm vi đề tài (đề cương nộp mục 2.6.1 ghi rõ)
+- Độ tin cậy lặp lại (test–retest ICC): ngoài phạm vi đề tài (đề cương nộp mục 2.6.1 ghi rõ)
+- Độ giá trị hội tụ/phân biệt: ngoài phạm vi đề tài (đề cương nộp mục 2.6.1 ghi rõ)
+- Độ đáp ứng & MCID: ngoài phạm vi đề tài (đề cương nộp mục 2.6.1 ghi rõ)
+- Sai số đo (SEM/SDC): ngoài phạm vi đề tài (đề cương nộp mục 2.6.1 ghi rõ)
+- Hiệu ứng sàn–trần: ngoài phạm vi đề tài (đề cương nộp mục 2.6.1 ghi rõ)
 - Chuẩn báo cáo: COSMIN Reporting Guideline.
 - → Cân nhắc mời agent `cong-cu-do-luong` hỗ trợ chi tiết từng bước.
 

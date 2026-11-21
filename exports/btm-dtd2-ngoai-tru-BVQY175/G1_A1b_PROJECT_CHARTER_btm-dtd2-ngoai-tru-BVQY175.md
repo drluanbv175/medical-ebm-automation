@@ -1,5 +1,5 @@
 # PROJECT CHARTER (A1b) — btm-dtd2-ngoai-tru-BVQY175
-> [DỰ THẢO] Sinh tự động 2026-11-20 05:53; không thay xác nhận của PI/methodologist.
+> [DỰ THẢO] Sinh tự động 2026-11-22 05:59; không thay xác nhận của PI/methodologist.
 
 ## Phạm vi
 - Tên/chủ đề: Thực trạng phát hiện và điều trị bảo vệ thận ở bệnh nhân đái tháo đường típ 2 điều trị ngoại trú tại Bệnh viện Quân y 175 theo KDIGO 2022, KDIGO 2024 và ADA 2026
