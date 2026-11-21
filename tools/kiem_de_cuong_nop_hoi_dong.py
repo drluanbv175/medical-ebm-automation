@@ -50,6 +50,9 @@ Luật (mỗi lỗi một dòng; rỗng = đạt):
   K15 (21/11/2026): trong đặt vấn đề/tổng quan/bàn luận, mệnh đề mang từ khái quát hay định lượng mơ hồ («phần lớn»,
       «đa số», «thường gặp», «đã được chứng minh»…) phải tự mang trích dẫn — không thì viết bằng số đếm có nguồn.
   Số liệu ↔ toàn văn của đúng tài liệu được dẫn là phép TƯ VẤN riêng: `tools/kiem_so_lieu_toan_van.py --study <mã>`.
+  K17 (21/11/2026; chỉ khi đề cương theo khuôn «# CHƯƠNG 1.»): đủ yếu tố từng mục phương pháp/kế hoạch của mọi chuẩn
+      áp dụng cho thiết kế — STROBE 2007, RECORD 2015 (dữ liệu thường quy), CROSS 2021 (khảo sát), chuẩn Việt Nam
+      (TT43/2024, Luật 91/2025). Đo chi tiết: `kiem_chuan_de_cuong_theo_muc.py --study <mã> [--chi-tiet]`.
 
 Lệnh:  python3 tools/kiem_de_cuong_nop_hoi_dong.py --study <mã> [--json]
 Mã thoát: 0 đạt · 1 có lỗi · 2 thiếu tệp đề cương nộp.
@@ -721,6 +724,20 @@ def loi_k14(md: str, nam: Optional[int] = None) -> List[str]:
     return loi
 
 
+def loi_k17(md: str, thiet_ke: str) -> List[str]:
+    """K17 (21/11/2026, bác sĩ: «từng tiêu chuẩn trong từng cấu trúc đề cương phải đạt tiêu chuẩn», cho MỌI thiết kế) —
+    đề cương nộp theo khuôn (có «# CHƯƠNG 1.», cùng điều kiện với K14) phải đủ yếu tố của từng mục phương pháp/kế hoạch
+    của mọi chuẩn áp dụng: STROBE 2007 (quan sát), RECORD 2015 (dữ liệu thường quy), CROSS 2021 (khảo sát bằng bộ câu
+    hỏi), chuẩn Việt Nam (TT43/2024, Luật 91/2025). Bộ đo ở `kiem_chuan_de_cuong_theo_muc.py`; chuẩn chưa có tiêu chí
+    theo mục (SPIRIT, PRISMA-P, STARD, TRIPOD+AI, COREQ…) là «chưa đo được» — không chặn, không tính là đạt.
+    Bản nháp cấu trúc cũ ⇒ bỏ qua ở đây (đo bằng `kiem_chuan_de_cuong_theo_muc.py --tep`)."""
+    if not re.search(r"^# CHƯƠNG 1\.", md, re.M):
+        return []
+    import kiem_chuan_de_cuong_theo_muc as KCM  # noqa: PLC0415
+
+    return KCM.loi_k17(md, thiet_ke)
+
+
 def loi_k9(out_dir: Path, md: str, thiet_ke: str) -> List[str]:
     """K9 — biểu bảng của chương «Dự kiến kết quả» (luật và chuẩn ở `khung_bieu_bang`)."""
     import khung_bieu_bang as KBB  # noqa: PLC0415
@@ -836,6 +853,7 @@ def kiem(out_dir: Path, study: str) -> List[str]:
     loi.extend(loi_k14(md))
     loi.extend(loi_k15(md))
     loi.extend(loi_k16(out_dir, md))
+    loi.extend(loi_k17(md, tk))
     if G10._co_lien_lac_ca_nhan(md) or (docx_chu is not None and G10._co_lien_lac_ca_nhan(docx_chu)):
         loi.append("K7 có email/số điện thoại — PII liên lạc để dòng chấm cho PI điền tay ngoài hệ thống")
     return loi
