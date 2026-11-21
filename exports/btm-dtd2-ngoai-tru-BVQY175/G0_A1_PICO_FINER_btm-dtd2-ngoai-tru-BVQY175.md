@@ -1,5 +1,5 @@
 # A1 — CÂU HỎI NGHIÊN CỨU & PICO | btm-dtd2-ngoai-tru-BVQY175
-> Tạo tự động: 2026-11-21 15:59 | Truy vấn PubMed thật
+> Tạo tự động: 2026-11-21 16:47 | Truy vấn PubMed thật
 > PICO, giả thuyết và FINER ĐÃ được PI chốt — PHẦN 1/1b/2 hiển thị giá trị đã chốt (chỉ đọc); khung soạn lần đầu được ẩn.
 > Thứ G0 làm được là dựng NỀN BẰNG CHỨNG (PHẦN 3) và chỉ ra khoảng trống (PHẦN 4) để bác sĩ
 > viết PICO có căn cứ. (Câu cũ ở dòng này ghi "xác nhận hoặc chỉnh PICO, không điền
@@ -319,7 +319,7 @@ Nguồn: `G0_KHOANG_TRONG_btm-dtd2-ngoai-tru-BVQY175.json` — soạn bởi `kho
 | ADA Standards of Care in Diabetes—2026, mục 9: Pharmacologic Approaches to Glycemic Treatment | 2026 | PMID 41358900 | Chọn thuốc hạ glucose theo bệnh kèm tim–thận, gồm SGLT2i. | CẦN PI đối chiếu nguyên văn |
 | Bộ Y tế — Hướng dẫn chẩn đoán và điều trị đái tháo đường típ 2 (Quyết định 5481/QĐ-BYT ký 2020-12-30; sửa đổi bởi Quyết định 1353/QĐ-BYT ký 2021-02-23) | 2020 | Văn bản quy phạm trong nước, không lập chỉ mục PubMed; số hiệu xác nhận qua tra web 2026-10-25 (caselaw.vn, hoatieu.vn) — CHƯA đọc toàn văn | Hướng dẫn quốc gia về chẩn đoán và điều trị ĐTĐ típ 2 — chuẩn thực hành áp dụng tại bệnh viện Việt Nam; CẦN PI đọc mục theo dõi biến chứng thận và chỉ định SGLT2i, ACEi/ARB để đối chiếu với KDIGO/ADA. | nguồn không phân hạng |
 
-**Phát biểu khoảng trống:** Y văn quốc tế cho thấy hụt ở mọi bước của chuỗi chăm sóc thận cho người ĐTĐ típ 2 (xét nghiệm UACR, ghi nhận chẩn đoán BTM, kê thuốc bảo vệ thận); ở Việt Nam, các nghiên cứu tìm được (PubMed + Crossref, tra 2026-10-25; chưa tra Google Scholar, thư viện luận văn và tạp chí không có DOI) chủ yếu đo tỷ lệ BTM hoặc albumin niệu tăng trong mẫu đã xét nghiệm hoặc mô tả kê đơn ở người đã có BTM; trong phạm vi đã tra chưa thấy nghiên cứu đo đồng thời cả chuỗi xét nghiệm → phát hiện → ghi nhận → điều trị ở người ĐTĐ típ 2 ngoại trú tại bệnh viện quân đội.
+**Phát biểu khoảng trống:** Y văn quốc tế cho thấy hụt ở mọi bước của chuỗi chăm sóc thận cho người ĐTĐ típ 2 (xét nghiệm UACR, ghi nhận chẩn đoán BTM, kê thuốc bảo vệ thận); ở Việt Nam, các nghiên cứu tìm được (PubMed + Crossref, tra 2026-10-25; chưa tra Google Scholar, thư viện luận văn và tạp chí không có DOI) chủ yếu ước tính tỷ lệ BTM ở người đã được xét nghiệm với định nghĩa không thống nhất (từ đủ tiêu chuẩn KDIGO, xác nhận sau 3 tháng, đến chỉ dùng eGFR hoặc chỉ một lần đo albumin niệu — chưa đủ tiêu chuẩn BTM) hoặc mô tả kê đơn ở người đã có BTM; trong phạm vi đã tra chưa thấy nghiên cứu đo đồng thời cả chuỗi xét nghiệm → phát hiện → ghi nhận → điều trị ở người ĐTĐ típ 2 ngoại trú tại bệnh viện quân đội.
 
 **Loại khoảng trống:** boi_canh, ket_cuc
 
