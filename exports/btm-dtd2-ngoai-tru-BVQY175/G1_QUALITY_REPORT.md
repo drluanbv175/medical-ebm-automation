@@ -1,6 +1,6 @@
 # BÁO CÁO CHẤT LƯỢNG G1 — btm-dtd2-ngoai-tru-BVQY175
 
-**Trạng thái:** `DRAFT_READY_NEEDS_HUMAN_REVIEW`
+**Trạng thái:** `PASS_G1_CONFIRMED`
 
 ## Kiểm tra tự động
 | Mã | Tiêu chí | Trạng thái | Bằng chứng |
@@ -30,16 +30,16 @@
 | G1-HUMAN-05 | Estimand đủ 5 thuộc tính khi là RCT | PASS | N/A cho thiết kế không phải RCT |
 | G1-HUMAN-06 | Đề cương lõi, kiểm soát sai lệch và tính khả thi được xác nhận | PASS | protocol_core_confirmed=True; bias_controls_confirmed=True; feasibility_confirmed=True |
 | G1-HUMAN-07 | Khoảng trống và nội dung trích dẫn đã được người thật đọc lại | PASS | evidence_review_confirmed=True; identifiers=90 |
-| G1-HUMAN-08 | Có vai trò, thời điểm rà phương pháp và xác nhận gắn đúng nội dung | REVIEW | reviewed_by_role=chủ nhiệm; reviewed_at=2026-11-18T11:40:57+07:00; nội dung đã đổi sau khi xác nhận (dấu lúc xác nhận c504c4e6ea68bd69 ≠ hiện tại aa132ca9bc229315) — chủ nhiệm đọc lại rồi xác nhận lại |
+| G1-HUMAN-08 | Có vai trò, thời điểm rà phương pháp và xác nhận gắn đúng nội dung | PASS | reviewed_by_role=chủ nhiệm; reviewed_at=2026-11-20T06:35:38+07:00; xác nhận gắn đúng nội dung hiện tại |
 
 ## Manifest artifact
 | Artifact | Đường dẫn | SHA-256 |
 |---|---|---|
-| A2 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md | `2dddd5e6d10405e21dc27067dfadf6dfcc2b556fa45d8a75ac7b0bd3cece1995` |
-| A1b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md | `37caa31b1e1eba4b74b93862ff0d85c69f3ab775633903c8387ca34f2be4f481` |
-| A2b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md | `7e7429155be6bf47490fbd4481ab5c46e946f5287f401517e49ec916fc5e2fbe` |
-| A13 | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md | `f4f09a0ed80cff2f82df4a5556de08191525c1c41db353c44006f0ecf3344212` |
-| A13b | /Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13b_RISK_REGISTER_btm-dtd2-ngoai-tru-BVQY175.md | `aa398df7656c05ee5f285dc23e331a5d3ed283f4cf4a4eb7b438ba4f090ec7c4` |
+| A2 | /Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md | `0d0b38c94f0b4718961d17b1a665c8c5d65db218b820fedbc8cc2162f84bb5f2` |
+| A1b | /Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md | `c921540563ae18c6777b05e3e7d8795ad631c71ad122cd96882425af53212bc3` |
+| A2b | /Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md | `8916f14ee5d6a542b495592aaffe66c7bd365f3cce61f4225ef494147a85f989` |
+| A13 | /Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md | `f4f09a0ed80cff2f82df4a5556de08191525c1c41db353c44006f0ecf3344212` |
+| A13b | /Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13b_RISK_REGISTER_btm-dtd2-ngoai-tru-BVQY175.md | `aa398df7656c05ee5f285dc23e331a5d3ed283f4cf4a4eb7b438ba4f090ec7c4` |
 
 ## Nền chuẩn
 | Chuẩn | Phạm vi | PMID/DOI/URL |
