@@ -1078,6 +1078,41 @@ TEP_SAP_KET_QUA_G6 = "G6_SAP_ket_qua.json"   # chỉ mục của tools/chay_sap_
 _GATE_PHAN_TICH_G6 = re.compile(r"G6(?:_[A-Za-z0-9_\-]+)?")
 
 
+def dung_hinh_g6(out_dir: Path) -> list[str]:
+    """§6 Hình kết quả — danh mục hình G6 tự sinh (21/11/2026, bác sĩ: mọi biểu đồ phải đầy đủ, chính xác, tự động).
+
+    Chỉ nhận hình khi CHỈ MỤC chạy trọn SAP (`G6_SAP_ket_qua.json`) ghi `bieu_do.tep` = `G6_bieu_do.json` và không có
+    `bieu_do.loi` — tức hình sinh trong CÙNG lượt chạy SAP trên dữ liệu khoá (chạy `--khong-ve` ⇒ chỉ mục không có khoá
+    này ⇒ hình cũ không được liệt kê). Chỉ liệt kê hình DA_VE có tệp PNG tồn tại; không chép số nào (số trong văn bản
+    lấy từ JSON cạnh hình). Không có gì ⇒ [] (giữ nguyên bản thảo như trước)."""
+    out_dir = Path(out_dir)
+    cm = G7Q._read_json(out_dir / TEP_SAP_KET_QUA_G6)
+    bd_cm = cm.get("bieu_do") if isinstance(cm, dict) else None
+    if not isinstance(bd_cm, dict) or bd_cm.get("loi") or not bd_cm.get("tep"):
+        return []
+    bd = G7Q._read_json(out_dir / Path(str(bd_cm["tep"])).name)
+    hinh = [x for x in (bd.get("hinh") or []) if isinstance(x, dict) and x.get("trang_thai") == "DA_VE"
+            and x.get("tep") and (out_dir / str(x["tep"])).is_file()] if isinstance(bd, dict) else []
+    if not hinh:
+        return []
+    dong = ["**§6 Hình kết quả (G6 tự sinh từ dữ liệu đã khoá):**  ", ""]
+    for i, h in enumerate(hinh, 1):
+        # «![…](tệp)» ⇒ md2docx_vn nhúng ẢNH THẬT vào bản Word (đường dẫn tương đối theo thư mục đề tài, nơi ghi .docx);
+        # tên hình in đậm DƯỚI hình (chuẩn trình bày Việt Nam: tên bảng trên, tên hình dưới).
+        ten = str(h.get("mo_ta") or h.get("loai")).replace("*", "").replace("]", ")").replace("[", "(")
+        json_cung_ten = str(h["tep"]).rsplit(".", 1)[0] + ".json"
+        dong += [f"![Hình {i}. {ten}]({h['tep']})", f"**Hình {i}. {ten}**",
+                 f"*Số liệu đã vẽ: `{json_cung_ten}` · bản vector: PDF cùng tên.*", ""]
+    thieu = (bd.get("kiem_danh_muc") or {}).get("thieu_bat_buoc") or []
+    if thieu:
+        # ghi chú, KHÔNG thêm ô [CẦN …] (§1 đã giữ ô sàng lọc; không đổi cách cổng G7 đếm ô chờ)
+        dong.append(f"> Hình bắt buộc theo chuẩn báo cáo chưa có: {', '.join(map(str, thieu))} — vẽ bằng "
+                    "`tools/ve_bieu_do.py danh-muc` khi có số liệu thật (sơ đồ luồng cần số sàng lọc thật).  ")
+    dong += ["> Số nêu trong văn bản lấy ĐÚNG từ tệp JSON cạnh mỗi hình; chọn hình đưa vào bài theo giới hạn của tạp "
+             "chí.  ", ""]
+    return dong
+
+
 def dung_ket_cuc_phu_g6(out_dir: Path) -> Optional[list[str]]:
     """§4 Kết cục PHỤ từ chỉ mục chạy trọn SAP (`G6_SAP_ket_qua.json` của chay_sap_g6 — mỗi phân tích một tóm tắt
     `<gate>_analysis_summary.json`). Giả lập lần 3 (15/11/2026): §4 luôn là ô trống dù G6 đã chạy các kết cục phụ SAP.
@@ -2220,6 +2255,7 @@ def generate_manuscript(
             "",
             "**§5 Phân tích nhạy cảm:**  ",
             *(kq6["s5"] or ["[CẦN KẾT QUẢ THẬT — từ SAP sensitivity analysis (G4)]  ", ""]),
+            *(kq6.get("hinh") or []),
             "---",
             "",
         ]
@@ -3095,6 +3131,7 @@ def main() -> None:
     ket_qua_g6 = dung_ket_qua_tu_g6(doc_tom_tat_g6_hop_le(out_dir))
     if ket_qua_g6.get("da_dung"):
         ket_qua_g6["s4"] = dung_ket_cuc_phu_g6(out_dir)   # kết cục phụ của chay_sap_g6 (giả lập lần 3)
+        ket_qua_g6["hinh"] = dung_hinh_g6(out_dir)          # hình G6 tự sinh cùng lượt chạy SAP (21/11/2026)
     if ket_qua_g6.get("da_dung") and ket_qua_g6.get("bien_bang1"):
         table1_shell = chu_giai_bang1_g6(redcap_vars, ket_qua_g6["bien_bang1"])   # bảng đã chép từ G6 ở nháp §2
     else:

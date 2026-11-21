@@ -204,7 +204,7 @@ def _phan_vi(xs: Sequence[float], q: float) -> float:
 
 
 def kinh_te(hang: List[Dict[str, Any]], nhom: str, chi_phi: str, hieu_qua: str, wtp: float,
-            so_lap: int = SO_LAP_KT, hat_giong: int = HAT_GIONG_KT) -> Dict[str, Any]:
+            so_lap: int = SO_LAP_KT, hat_giong: int = HAT_GIONG_KT, tra_lap: bool = False) -> Dict[str, Any]:
     """CEA đi kèm thử nghiệm: nhánh 1 = can thiệp, 0 = so sánh. ICER = ΔC/ΔE (đơn vị tiền trên một đơn vị hiệu quả).
     Bất định: bootstrap phân tầng (lấy lại có hoàn lại TRONG từng nhánh), KTC phân vị; CEAC = tỷ lệ lần lặp có
     NMB = λ·ΔE − ΔC > 0 — KHÔNG phải xác suất Bayes, là tần suất trong mẫu bootstrap."""
@@ -246,6 +246,7 @@ def kinh_te(hang: List[Dict[str, Any]], nhom: str, chi_phi: str, hieu_qua: str, 
             "ci_95_nmb": [_phan_vi(nmb, 0.025), _phan_vi(nmb, 0.975)],
             "mat_phang_bootstrap_pct": {k: 100 * v / so_lap for k, v in goc.items()}, "ceac": ceac,
             "bootstrap": {"so_lap": so_lap, "hat_giong": hat_giong, "kieu": "phi tham số, phân tầng theo nhánh"},
+            **({"lap": lap} if tra_lap else {}),  # 21/11/2026: hinh_g6 vẽ mặt phẳng CE từ CÙNG các lần lặp
             "chuan_bao_cao": "CHEERS 2022 (PMID 35017145)",
             "ghi_chu": "CEAC là tần suất NMB > 0 trong mẫu bootstrap — không phải xác suất Bayes; ICER âm phải đọc "
                        "cùng góc phần tư (thống trị/bị thống trị), không xếp hạng như ICER dương."}
