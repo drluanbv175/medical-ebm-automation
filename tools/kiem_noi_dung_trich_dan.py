@@ -403,6 +403,11 @@ HE_THONG = (
     "chấm, tỷ lệ hồ sơ trích lại, hệ số dùng để lập kế hoạch) không cần tài liệu nêu: không hạ mức vì tài liệu "
     "vắng các chi tiết đó. Điều được viết như phát hiện, số liệu hay nhận định CỦA tài liệu thì vẫn phải có "
     "trong tài liệu.\n"
+    # 21/11/2026 (bác sĩ: «phải ghi đúng theo tiêu chuẩn bệnh thận mạn chứ không phải cứ albumin niệu tăng»)
+    "Câu nêu tỷ lệ hay chẩn đoán MỘT BỆNH: thuật ngữ bệnh trong câu phải khớp TIÊU CHUẨN CHẨN ĐOÁN tài liệu dùng — vd "
+    "một lần đo albumin niệu (nồng độ microalbumin, UACR dương tính) KHÔNG phải bệnh thận mạn theo KDIGO (đòi bất "
+    "thường tồn tại ≥ 3 tháng); tài liệu chỉ dùng eGFR, hay ghi «bệnh đồng mắc» không nêu tiêu chuẩn, mà câu gọi chung "
+    "«bệnh thận mạn» ⇒ ho_tro_mot_phan, nêu rõ tiêu chuẩn tài liệu dùng trong ly_do.\n"
     "Luật: «trich» là cụm NGUYÊN VĂN ≤ 25 từ chép đúng từng chữ từ tiêu đề hoặc abstract của "
     "CHÍNH tài liệu đó, bắt buộc "
     "với ho_tro/ho_tro_mot_phan/khong_ho_tro, để trống với khong_du_thong_tin. ly_do ≤ 30 từ, tiếng Việt. Khẳng định "

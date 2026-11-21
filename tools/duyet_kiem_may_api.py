@@ -145,8 +145,11 @@ def muc_can_duyet(loai: str, bc: Dict[str, Any], tv: Optional[Dict[str, Any]] = 
         tv_cap = toan_van_cua(bc, tv)
         for k in bc.get("ket_qua") or []:
             co = [str(x) for x in k.get("co") or []]
-            if k.get("muc") in MUC_A12_CAN_XEM or any(x.startswith("so_khong_thay") for x in co):
-                r_tv = tv_cap.get((str(k.get("id")), int(k.get("so") or 0)))
+            r_tv = tv_cap.get((str(k.get("id")), int(k.get("so") or 0)))
+            # 21/11/2026: lớp toàn văn nay đọc cả câu nêu tỷ lệ mà lớp abstract cho qua — toàn văn phán khác «ho_tro»
+            # (vd định nghĩa bệnh lệch) thì cặp đó là mục cần phân xử dù abstract đã «ho_tro».
+            tv_bat = bool(r_tv) and r_tv.get("muc_toan_van") not in ("ho_tro", None)
+            if tv_bat or k.get("muc") in MUC_A12_CAN_XEM or any(x.startswith("so_khong_thay") for x in co):
                 if r_tv and r_tv.get("muc_toan_van") == "ho_tro":
                     continue
                 dong_tv = ([f"Toàn văn: «{r_tv.get('muc_toan_van')}» — {r_tv.get('ly_do', '')} "

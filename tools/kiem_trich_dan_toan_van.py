@@ -83,6 +83,11 @@ HE_THONG = (
     "chấm, tỷ lệ hồ sơ trích lại, hệ số dùng để lập kế hoạch) không cần tài liệu nêu: không hạ mức vì tài liệu "
     "vắng các chi tiết đó. Điều được viết như phát hiện, số liệu hay nhận định CỦA tài liệu thì vẫn phải có "
     "trong tài liệu.\n"
+    # 21/11/2026 (bác sĩ: «phải ghi đúng theo tiêu chuẩn bệnh thận mạn chứ không phải cứ albumin niệu tăng»)
+    "Câu nêu tỷ lệ hay chẩn đoán MỘT BỆNH: thuật ngữ bệnh trong câu phải khớp TIÊU CHUẨN CHẨN ĐOÁN tài liệu dùng — vd "
+    "một lần đo albumin niệu (nồng độ microalbumin, UACR dương tính) KHÔNG phải bệnh thận mạn theo KDIGO (đòi bất "
+    "thường tồn tại ≥ 3 tháng); tài liệu chỉ dùng eGFR, hay ghi «bệnh đồng mắc» không nêu tiêu chuẩn, mà câu gọi chung "
+    "«bệnh thận mạn» ⇒ ho_tro_mot_phan, nêu rõ tiêu chuẩn tài liệu dùng trong ly_do.\n"
     "Luật: «trich» là cụm NGUYÊN VĂN ≤ 25 từ chép đúng từng chữ từ CÁC ĐOẠN ĐÃ CHO, bắt buộc với ho_tro/"
     "ho_tro_mot_phan/khong_ho_tro, để trống với khong_du_can_cu. ly_do ≤ 30 từ, tiếng Việt. Trả DUY NHẤT JSON "
     '{"ket_qua":[{"id":"C001","so":5,"muc":"ho_tro","trich":"…","ly_do":"…"}]} — đủ mọi cặp được giao, không thêm '
@@ -261,13 +266,27 @@ def che_so_tltk(cau: str, so: int) -> str:
     return KND._DAU.sub(_nhan, cau or "")
 
 
-def cap_can_xem(bc: Dict[str, Any]) -> List[Dict[str, Any]]:
-    """Cặp «cần xem» của báo cáo A12 (cùng luật `kiem_noi_dung_trich_dan.can_xem`), kèm câu khẳng định đã che số
-    TLTK (`che_so_tltk`)."""
+#: 21/11/2026 — câu nêu TỶ LỆ (số % kèm «tỷ lệ»/«mắc»/«được») luôn lên lớp toàn văn, kể cả khi lớp abstract cho qua:
+#: định nghĩa/tiêu chuẩn chẩn đoán nằm ở phần PHƯƠNG PHÁP, abstract thường không có (BTM: «tỷ lệ bệnh thận mạn 15,32%»
+#: của tài liệu chỉ dùng eGFR — abstract khớp chữ, chỉ toàn văn lộ định nghĩa).
+_CAU_TY_LE_RE = re.compile(r"\d+(?:[.,]\d+)?\s?%")
+_TU_TY_LE_RE = re.compile(r"tỷ lệ|tỉ lệ|mắc|được (?:làm|xét nghiệm|kê|chẩn đoán)", re.I)
+
+
+def la_cau_ty_le(cau: str) -> bool:
+    return bool(_CAU_TY_LE_RE.search(cau or "")) and bool(_TU_TY_LE_RE.search(cau or ""))
+
+
+def cap_can_xem(bc: Dict[str, Any], ca_cau_ty_le: bool = True) -> List[Dict[str, Any]]:
+    """Cặp «cần xem» của báo cáo A12 (cùng luật `kiem_noi_dung_trich_dan.can_xem`) + (mặc định) mọi cặp có câu nêu tỷ
+    lệ dù lớp abstract đã cho qua — kèm câu khẳng định đã che số TLTK (`che_so_tltk`)."""
     cau = {c["id"]: c for c in bc.get("cau") or []}
     ra = []
     for k in bc.get("ket_qua") or []:
-        if k.get("muc") in DK.MUC_A12_CAN_XEM or any(str(x).startswith("so_khong_thay") for x in k.get("co") or []):
+        c0 = cau.get(k["id"]) or {}
+        ty_le = ca_cau_ty_le and k.get("muc") == "ho_tro" and la_cau_ty_le(c0.get("doan") or c0.get("cau") or "")
+        if (ty_le or k.get("muc") in DK.MUC_A12_CAN_XEM
+                or any(str(x).startswith("so_khong_thay") for x in k.get("co") or [])):
             c = cau.get(k["id"]) or {}
             ra.append({**k, "cau": che_so_tltk(c.get("cau") or c.get("doan") or "", int(k.get("so") or 0))})
     return ra

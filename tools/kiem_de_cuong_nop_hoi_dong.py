@@ -47,6 +47,8 @@ Luật (mỗi lỗi một dòng; rỗng = đạt):
       vấn đề, đánh số, in nghiêng đậm, tên đề tài trong ngoặc kép in đậm; tài liệu tham khảo xếp tiếng Việt trước rồi
       ngoại ngữ, mỗi nhóm theo ABC (tác giả Việt theo tên, nước ngoài theo họ, cơ quan theo chữ đầu), đánh số liền, ít
       nhất 50% xuất bản trong 10 năm; danh mục bảng, biểu khớp đúng tên bảng/hình có trong thân bài.
+  K15 (21/11/2026): trong đặt vấn đề/tổng quan/bàn luận, mệnh đề mang từ khái quát hay định lượng mơ hồ («phần lớn»,
+      «đa số», «thường gặp», «đã được chứng minh»…) phải tự mang trích dẫn — không thì viết bằng số đếm có nguồn.
   Số liệu ↔ toàn văn của đúng tài liệu được dẫn là phép TƯ VẤN riêng: `tools/kiem_so_lieu_toan_van.py --study <mã>`.
 
 Lệnh:  python3 tools/kiem_de_cuong_nop_hoi_dong.py --study <mã> [--json]
@@ -262,6 +264,47 @@ def loi_k10(md: str) -> List[str]:
                 if _SO_KET_QUA_RE.search(md_) and not _TRICH_DAN_RE.search(md_):
                     loi.append(f"K10 dòng {so}: số liệu không có trích dẫn trong cùng mệnh đề — «{md_[:90]}» "
                                "(không có nguồn thật trong danh mục ⇒ loại con số)")
+    return loi
+
+
+# K15 (bác sĩ 21/11/2026: «các lớp kiểm phải nghiêm ngặt từng câu từng chữ … tất cả đều phải dựa trên chứng cứ có độ
+# tin cậy cao không được trình bày chung chung, sơ xài»). Đo trên hai đề cương thật: «phần lớn nghiên cứu trong nước đo
+# thời gian chờ bằng tự báo cáo…», «thiết kế chặt chẽ hơn mức thường gặp…», «gần như toàn bộ là nghiên cứu quan sát…,
+# chủ yếu ở Âu – Mỹ – Úc», «SGLT2i có lợi ích đã được chứng minh…» (mệnh đề chưa tự mang [n]) — khái quát/định lượng
+# mơ hồ không nguồn mà K10 (chỉ bắt CON SỐ) bỏ lọt. Mỗi mệnh đề mang từ định lượng/khái quát mơ hồ phải tự mang
+# trích dẫn — hoặc viết lại bằng số đếm/ví dụ cụ thể có nguồn.
+_MO_HO_RE = re.compile(
+    r"(?<![\wÀ-ỹ])(nhiều nghiên cứu|nhiều tác giả|nhiều bằng chứng|các nghiên cứu (?:cho thấy|đều)|y văn (?:cho thấy|"
+    r"ghi nhận)|phần lớn|đa số|hầu hết|gần như toàn bộ|một số nghiên cứu|thường gặp|khá cao|rất cao|rất thấp|đáng kể|"
+    r"ngày càng|đã được chứng minh)(?![\wÀ-ỹ])", re.I)
+_CHU_THICH_BB = ("**Bảng", "**Hình", "**Biểu đồ", "**Sơ đồ")
+
+
+def loi_k15(md: str) -> List[str]:
+    """K15 — trong đặt vấn đề / tổng quan / bàn luận, MỖI mệnh đề mang từ khái quát hoặc định lượng mơ hồ («phần lớn»,
+    «đa số», «thường gặp», «đã được chứng minh»…) phải tự mang trích dẫn [n]; không có nguồn ⇒ viết lại bằng số đếm hay
+    ví dụ cụ thể có nguồn. Tên bảng/hình không xét. Cùng vùng và cùng cách tách mệnh đề với K10."""
+    loi: List[str] = []
+    cap: Dict[int, bool] = {}
+    trong = False
+    for so, dong in enumerate(md.splitlines(), 1):
+        m = _DE_MUC_RE.match(dong)
+        if m:
+            k = len(m.group(1))
+            cap = {c: v for c, v in cap.items() if c < k}
+            cap[k] = bool(_PHAN_CHUNG_CU_RE.search(m.group(2))) and not (
+                k == 1 and "DỰ KIẾN KẾT QUẢ" in m.group(2).upper())
+            trong = any(cap.values())
+            continue
+        s = dong.strip()
+        if not trong or not s or s.startswith(("|", "!", "```", ">", "<!--") + _CHU_THICH_BB):
+            continue
+        for cau in _HET_CAU_RE.split(s):
+            for md_ in _menh_de(cau):
+                mm = _MO_HO_RE.search(md_)
+                if mm and not _TRICH_DAN_RE.search(md_):
+                    loi.append(f"K15 dòng {so}: «{mm.group(0)}» không có trích dẫn trong cùng mệnh đề — «{md_[:90]}» "
+                               "(viết lại bằng số đếm/ví dụ cụ thể có nguồn, hoặc gắn nguồn [n] ngay tại mệnh đề)")
     return loi
 
 
@@ -744,6 +787,7 @@ def kiem(out_dir: Path, study: str) -> List[str]:
     loi.extend(loi_k12(md))
     loi.extend(loi_k13(out_dir, md))
     loi.extend(loi_k14(md))
+    loi.extend(loi_k15(md))
     if G10._co_lien_lac_ca_nhan(md) or (docx_chu is not None and G10._co_lien_lac_ca_nhan(docx_chu)):
         loi.append("K7 có email/số điện thoại — PII liên lạc để dòng chấm cho PI điền tay ngoài hệ thống")
     return loi
