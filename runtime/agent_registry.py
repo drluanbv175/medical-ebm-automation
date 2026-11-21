@@ -203,8 +203,9 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # nửa 2, PR y khoa #384) thay vì tự viết script R — chỉ phần đoạn mới; mục «Biểu đồ» đi theo PR #383 — vẫn 64.
 # 21/11/2026 (khuôn hướng dẫn chung BVQY175): bản sao `dieu-phoi-g10`, `kiem-chung-trich-dan`, `viet-ban-thao` học
 # khuôn đề cương + K14 (cặp của gốc #473) — vẫn 64.
+# 21/11/2026: kiem-chung-trich-dan + binh-duyet — phát hiện máy do hệ tự phân xử (PR cặp gốc #476).
 MANIFEST_SELF_CHECK_SHA256 = (
-    "f52682d9d85cbcd31a976aac3ead9ab62779599e5f5cc28ddaa5101db7df960b"
+    "6e7285779f678eb721cc4f5637dd484486a792092d18893b79ea06a672264ed7"
 )
 
 MINIMUM_AGENT_COUNT = 64
