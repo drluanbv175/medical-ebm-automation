@@ -206,3 +206,20 @@ def test_g7_doc_tu_dien_doc_cot_lua_chon(tmp_path):
     assert bien[0]["choices"] == "0, Chứng | 1, Can thiệp"
     assert G7A._nhan_lua_chon(bien[0]["choices"]) == {"0": "Chứng", "1": "Can thiệp"}
     assert G7A._ma_nhom("1.0") == "1" and G7A._ma_nhom("Can thiệp") == "Can thiệp"
+
+
+def test_mau_so_rct_co_hop_nhan_can_thiep_va_ve_duoc(tmp_path):
+    import ve_bieu_do as VB
+
+    rct = VB.mau_so_do_luong("rct")
+    for nh in ("Can thiệp", "Chứng"):
+        buoc = [r["buoc"] for r in rct if r["nhanh"] == nh]
+        assert buoc == [f"Được phân bổ nhóm {nh.lower()}", "Không nhận can thiệp theo phân bổ",
+                        "Nhận can thiệp theo phân bổ", "Mất theo dõi / ngừng can thiệp", "Đưa vào phân tích"]
+    assert [(r["buoc"], r["loai"], r["nhanh"]) for r in rct] == [(b, lo, nh) for b, _n, lo, nh, _l in SO_RCT]
+    pytest.importorskip("matplotlib")
+    import bieu_do_bao_cao as BB
+
+    dong = [dict(zip(("buoc", "n", "loai", "nhanh", "ly_do"), r)) for r in SO_RCT]
+    BB.ve_so_do_luong(dong, tmp_path / "luong", "CONSORT 2025")
+    assert (tmp_path / "luong.png").is_file()
