@@ -68,8 +68,12 @@ def test_chi_kho_thieu_pmid_la_loi_noi_ro_khong_goi_mang(tmp_path, monkeypatch):
 
 
 def _bao_cao(thu_muc, ten, **kw):
-    j = {"cong": {"G10": {"trang_thai": "PASS_G10_RELEASE_PACKAGE_LOCKED"}}, "so_o_loi_may": 0,
-         "du_lieu": {"de_cuong_nop": {"ma": 0}}}
+    # 22/11/2026: báo cáo ĐẠT phải có biểu đồ G6 đủ hình bắt buộc và bản diễn giải G6.5 đạt (cổng phán khâu 9–10)
+    j = {"cong": {"G6_5": {"trang_thai": "DAT", "loi": []},
+                  "G10": {"trang_thai": "PASS_G10_RELEASE_PACKAGE_LOCKED"}}, "so_o_loi_may": 0,
+         "du_lieu": {"de_cuong_nop": {"ma": 0},
+                     "g6": {"bieu_do": {"dem": {"DA_VE": 8, "LOI": 0}, "loi": [], "thieu_bat_buoc": [],
+                                        "co_tep": True}}}}
     for k, v in kw.items():
         j[k] = v
     (thu_muc / f"{ten}.json").write_text(json.dumps(j), encoding="utf-8", newline="\n")
@@ -84,6 +88,32 @@ def test_kiem_gia_lap_16_dat_va_truot(tmp_path, capsys):
     for kb in ("rct_cum", "case_control", "diagnostic", "cohort"):          # cohort: thiếu báo cáo
         assert KG.main(["--thu-muc", str(tmp_path), "--kich-ban", kb]) == 1, kb
     assert KG.main(["--thu-muc", str(tmp_path), "--kich-ban", "khong_co"]) == 3
+
+
+def _du_lieu_g6(**bd):
+    return {"de_cuong_nop": {"ma": 0}, "g6": {"bieu_do": {"dem": {"DA_VE": 8, "LOI": 0}, "loi": [],
+                                                          "thieu_bat_buoc": [], "co_tep": True, **bd}}}
+
+
+@pytest.mark.parametrize("ghi_de, cum", [
+    ({"du_lieu": _du_lieu_g6(thieu_bat_buoc=["so_do_luong"])}, "thiếu hình bắt buộc theo chuẩn báo cáo: so_do_luong"),
+    ({"du_lieu": _du_lieu_g6(loi=[{"id": "G5", "loai": "so-do-luong", "ly_do": "số học"}])}, "biểu đồ LỖI"),
+    ({"du_lieu": _du_lieu_g6(co_tep=False)}, "G6 không có G6_bieu_do.json"),
+    ({"du_lieu": {"de_cuong_nop": {"ma": 0}, "g6": {"dem": {}}}}, "G6 không có G6_bieu_do.json"),
+    ({"cong": {"G6_5": {"trang_thai": "CON_LOI (mã 1)", "loi": ["mục 4 chưa bàn hướng"]},
+               "G10": {"trang_thai": "PASS_G10_RELEASE_PACKAGE_LOCKED"}}}, "bản diễn giải G6.5"),
+])
+def test_cong_phan_khau_9_10_20261122(tmp_path, ghi_de, cum):
+    """Kiểm toàn hệ 11 khâu (22/11/2026): hình bắt buộc thiếu/lỗi, không có biểu đồ, diễn giải G6.5 chưa đạt ⇒ đỏ."""
+    _bao_cao(tmp_path, "rct_nhi_phan", **ghi_de)
+    loi = KG.kiem_mot(tmp_path / "rct_nhi_phan.json")
+    assert any(cum in x for x in loi), loi
+
+
+def test_cong_phan_bo_qua_bieu_do_khi_g6_khong_tu_dong(tmp_path):
+    """Thiết kế chưa có engine phân tích chính (g6.khong_tu_dong) — không đòi biểu đồ (đã có cổng khác giữ)."""
+    _bao_cao(tmp_path, "rct_nhi_phan", du_lieu={"de_cuong_nop": {"ma": 0}, "g6": {"khong_tu_dong": "…"}})
+    assert KG.kiem_mot(tmp_path / "rct_nhi_phan.json") == []
 
 
 @pytest.mark.parametrize("ten", list(KG.KICH_BAN.values()))
