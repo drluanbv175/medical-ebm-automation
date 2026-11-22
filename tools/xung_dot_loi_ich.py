@@ -48,6 +48,9 @@ O_TAI_TRO_CHINH = '[CẦN BỔ SUNG — "Không có tài trợ bên ngoài" nế
 O_TAI_TRO_BO_SUNG = "[CẦN BỔ SUNG]"
 O_SO_HOP_DONG = "[CẦN BỔ SUNG]"
 
+#: Lựa chọn chia sẻ dữ liệu (mục 5 Kế hoạch quản lý dữ liệu) — khoá `data_governance.sharing_choice`.
+CHIA_SE = ("khong", "theo_yeu_cau", "mo")
+
 #: Câu mặc định cho mục D khi đề tài không có tài trợ bên ngoài.
 VAI_TRO_KHONG_TAI_TRO = ("Không áp dụng — không có nhà tài trợ nên không có vai trò nhà tài trợ trong thiết kế, thu "
                          "thập, phân tích, báo cáo hay quyết định công bố.")
@@ -122,6 +125,13 @@ def doc(meta: Optional[Mapping[str, Any]]) -> Dict[str, Any]:
         "nhan_cap_quyen": nhan_cap,
         "noi_luu": _chu(dg.get("storage_location")) or luu.get("Nơi lưu", ""),
         "sao_luu": _chu(dg.get("backup")) or luu.get("Sao lưu", ""),
+        # 22/11/2026 (tái lập hồ sơ đã nộp): quy trình nội bộ khi vi phạm và lựa chọn chia sẻ dữ liệu đã quyết
+        "vi_pham_noi_bo": _chu(dg.get("breach_internal")),
+        "vi_pham_them": [x for x in (_chu(v) for v in (dg.get("breach_extra") or [])
+                                     if isinstance(dg.get("breach_extra"), list)) if x],
+        "vi_pham_quy_trinh": _chu(dg.get("breach_procedure")),
+        "chia_se": dg.get("sharing_choice") if dg.get("sharing_choice") in CHIA_SE else "",
+        "ghi_chu_thanh_vien": _chu(coi.get("member_note")),
     }
 
 
@@ -195,15 +205,21 @@ def muc_d(k: Mapping[str, Any]) -> str:
             "  ☐ Báo cáo / quyết định công bố: ☐ Có ☐ Không")
 
 
-def cam_ket_khai_bo_sung(k: Mapping[str, Any]) -> str:
-    """Lời cam kết khai bổ sung đặt TRƯỚC chữ ký (Thông tư 43/2024/TT-BYT, Phụ lục I mục 6 khoản 3)."""
-    noi = "Hội đồng Đạo đức" + (" và người giám sát độc lập" if k.get("giam_sat") else "")
+def cam_ket_khai_bo_sung(k: Mapping[str, Any], hoi_dong: str = "Hội đồng Đạo đức") -> str:
+    """Lời cam kết khai bổ sung đặt TRƯỚC chữ ký (Thông tư 43/2024/TT-BYT, Phụ lục I mục 6 khoản 3). `hoi_dong` = tên
+    ngắn của Hội đồng nơi nộp (vd «Hội đồng Y đức»)."""
+    noi = (hoi_dong or "Hội đồng Đạo đức") + (" và người giám sát độc lập" if k.get("giam_sat") else "")
     return boc(f"Tôi cam kết khai báo bổ sung bằng văn bản cho {noi} khi phát sinh quan hệ hoặc lợi ích mới có "
                "thể ảnh hưởng đến nghiên cứu.", thut="")
 
 
 GHI_CHU_THANH_VIEN = ("[Mỗi thành viên nhóm nghiên cứu khai báo riêng theo mẫu này trước khi nhận nhiệm vụ; mỗi đồng\n"
                       " tác giả khai báo theo mẫu ICMJE khi nộp bài]")
+
+
+def ghi_chu_thanh_vien(k: Mapping[str, Any]) -> str:
+    """Dòng chú thích dưới chữ ký: câu đề tài đã soạn (`gate_params.G2.coi.member_note`), vắng thì câu chuẩn."""
+    return k.get("ghi_chu_thanh_vien") or GHI_CHU_THANH_VIEN
 
 
 # ── Tài liệu 6 — Kế hoạch quản lý dữ liệu ────────────────────────────────────────────────────────────────────────────
@@ -234,12 +250,32 @@ def dong_luu_tru(k: Mapping[str, Any], thoi_gian_luu: str, co_thoi_han: bool, ca
 
 
 def dong_vi_pham(k: Mapping[str, Any], han: str, noi_dung: str) -> str:
-    """Mục 6 (Xử lý vi phạm) — căn cứ đúng điều khoản; người phát hiện báo ngay cho bên kiểm soát dữ liệu."""
-    bao = ("Phát hiện vi phạm → người phát hiện báo ngay cho chủ nhiệm đề tài (bên kiểm soát dữ liệu)"
-           + (" và người giám sát độc lập" if k.get("giam_sat") else ""))
-    return "\n".join([boc(bao, dau="   ∎ ", thut="     "),
-                      boc(f"{han}; {noi_dung}", dau="   ∎ ", thut="     "),
-                      "   ∎ Khắc phục và điều tra nguyên nhân, lưu hồ sơ xử lý"])
+    """Mục 6 (Xử lý vi phạm) — căn cứ đúng điều khoản; người phát hiện báo ngay cho bên kiểm soát dữ liệu.
+
+    Quy trình NỘI BỘ của đề tài (vd hạn báo cáo nội bộ, thông báo người tham gia — `data_governance.breach_internal`,
+    `breach_extra`) là quyết định của đề tài, in như bước nội bộ — không gắn căn cứ luật (không có trong Luật 91/2025,
+    Nghị định 356/2025)."""
+    bao = "Phát hiện vi phạm → " + (k.get("vi_pham_noi_bo") or (
+        "người phát hiện báo ngay cho chủ nhiệm đề tài (bên kiểm soát dữ liệu)"
+        + (" và người giám sát độc lập" if k.get("giam_sat") else "")))
+    dong = [boc(bao, dau="   ∎ ", thut="     "), boc(f"{han}; {noi_dung}", dau="   ∎ ", thut="     ")]
+    dong += [boc(x, dau="   ∎ ", thut="     ") for x in k.get("vi_pham_them") or []]
+    dong.append("   ∎ Khắc phục và điều tra nguyên nhân, lưu hồ sơ xử lý")
+    return "\n".join(dong)
+
+
+def dong_chia_se(k: Mapping[str, Any]) -> str:
+    """Mục 5 (Chia sẻ dữ liệu): lựa chọn đã quyết ⇒ đánh dấu đúng ô; chưa quyết ⇒ khuôn có ô chờ điền."""
+    chon = k.get("chia_se")
+    if chon not in CHIA_SE:
+        return ("   ☐ Không chia sẻ (lý do: [CẦN])\n"
+                "   ☐ Chia sẻ theo yêu cầu hợp lý (DTA cần ký trước)\n"
+                "   ☐ Mở hoàn toàn sau ẩn danh hóa (tại: [CẦN — OSF/Zenodo...])\n"
+                "   [CẦN BÁC SĨ CHỌN VÀ BIỆN MINH]")
+    o = {c: "☑" if c == chon else "☐" for c in CHIA_SE}
+    return (f"   {o['khong']} Không chia sẻ\n"
+            f"   {o['theo_yeu_cau']} Chia sẻ theo yêu cầu hợp lý (DTA cần ký trước)\n"
+            f"   {o['mo']} Mở hoàn toàn sau ẩn danh hóa")
 
 
 # ── Tài liệu 7 — Checklist ───────────────────────────────────────────────────────────────────────────────────────────

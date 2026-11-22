@@ -188,10 +188,20 @@ def don_vi_cap_tren(*nguon: Optional[str]) -> Tuple[str, str]:
 
 
 def don_vi_ho_so(meta: object) -> str:
-    """Đơn vị của chủ nhiệm khai trong `study_meta.json` (`administrative.pi_unit`); không khai/ô chờ điền ⇒ ""."""
+    """Đơn vị CHỦ TRÌ đề tài khai trong `study_meta.json` — quyết định khối ký bìa phụ (K19) và bìa G10.
+
+    22/11/2026: `administrative.pi_unit` mang hai nghĩa (đơn vị công tác của chủ nhiệm ở hồ sơ G2 và bảng cán bộ; Khoa
+    chủ trì ở bìa phụ). Ca BTM: chủ nhiệm công tác tại Khoa Khám bệnh C1a thuộc Trung tâm C1, nhưng đề tài do Khoa Khám
+    bệnh chủ trì, trực thuộc bệnh viện — điền `pi_unit` làm khối ký đòi «GIÁM ĐỐC TRUNG TÂM» sai. Nay đọc
+    `administrative.don_vi_chu_tri` trước; vắng (hoặc ô chờ điền) thì lùi về `pi_unit` như cũ. Không khai ⇒ ""."""
     adm = meta.get("administrative") if isinstance(meta, dict) else None
-    v = adm.get("pi_unit") if isinstance(adm, dict) else None
-    return v.strip() if isinstance(v, str) and _co(v) and not v.lstrip().startswith("[") else ""
+    if not isinstance(adm, dict):
+        return ""
+    for khoa in ("don_vi_chu_tri", "pi_unit"):
+        v = adm.get(khoa)
+        if isinstance(v, str) and _co(v) and not v.lstrip().startswith("["):
+            return v.strip()
+    return ""
 
 
 def khoi_ky(loai: str) -> List[str]:
@@ -211,7 +221,8 @@ def _bao_cao_khoi_ky(loai: str, ten: str) -> Tuple[List[str], List[str]]:
         return ["khối ký bìa phụ: Chủ nhiệm đề tài · Chủ nhiệm khoa (Khoa trực thuộc bệnh viện — không có khối "
                 "thứ ba)"], []
     return [], ["hồ sơ không khai đơn vị của Khoa — bìa phụ chỉ có khối ký Chủ nhiệm đề tài và Chủ nhiệm khoa; Khoa "
-                "thuộc Viện/Trung tâm thì khai `administrative.pi_unit` trong study_meta.json rồi chạy lại"]
+                "thuộc Viện/Trung tâm thì khai `administrative.don_vi_chu_tri` (hoặc `pi_unit`) trong study_meta.json "
+                "rồi chạy lại"]
 
 
 def _dong_co_quan(dong: Sequence[str]) -> List[str]:
