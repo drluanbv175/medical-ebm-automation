@@ -212,7 +212,7 @@ _BASE_VITALS = [
 # CHUYÊN KHOA: Tim mạch / Suy tim — chỉ dùng khi topic khớp "cardiology_hf"
 _CARDIO_HF_CLINICAL = [
     ("nyha",          "Clinical",    "Lâm sàng nền (Tim mạch)", "dropdown", "Phân độ NYHA",                                    "1, I | 2, II | 3, III | 4, IV",                                       "",                        "",          "",    "",    "y", ""),
-    ("lvef",          "Clinical",    "",                   "text",     "EF thất trái (%)",                                      "",                                                                      "Siêu âm tim gần nhất ≤3 tháng","number","20",  "85",  "y", ""),
+    ("lvef",          "Clinical",    "",                   "text",     "EF thất trái (%)",                                      "",                                                                      "Siêu âm tim gần nhất ≤ 3 tháng","number","20",  "85",  "y", ""),
 ]
 
 # CHUYÊN KHOA: Chuyển hóa / Đái tháo đường — chỉ dùng khi topic khớp "metabolic_diabetes"
@@ -319,7 +319,7 @@ _METABOLIC_OUTCOMES = [
 
 # CHUYÊN KHOA: Thận / Bệnh thận mạn (CKD)
 _NEPHRO_CKD_CLINICAL = [
-    ("ckd_stage_kdigo","Clinical",   "Lâm sàng nền (Thận)","dropdown", "Giai đoạn CKD (KDIGO)",                                "1, G1 (eGFR≥90) | 2, G2 (60-89) | 3, G3a (45-59) | 4, G3b (30-44) | 5, G4 (15-29) | 6, G5 (<15/lọc máu)","","","","","y", ""),
+    ("ckd_stage_kdigo","Clinical",   "Lâm sàng nền (Thận)","dropdown", "Giai đoạn CKD (KDIGO)",                                "1, G1 (eGFR ≥ 90) | 2, G2 (60–89) | 3, G3a (45–59) | 4, G3b (30–44) | 5, G4 (15–29) | 6, G5 (< 15/lọc máu)","","","","","y", ""),
     ("acr",            "Clinical",    "",                   "text",     "Albumin niệu/Creatinine niệu — ACR (mg/g)",           "",                                                                      "Mẫu nước tiểu bất kỳ (spot urine)","number","0", "20000","y", ""),
     ("dialysis_status","Clinical",    "",                   "radio",    "Đang lọc máu",                                          "0, Không | 1, Chạy thận nhân tạo | 2, Lọc màng bụng",                 "",                        "",          "",    "",    "y", ""),
 ]
@@ -333,8 +333,8 @@ _NEPHRO_CKD_EXPOSURE = [
     ("ckd_intervention_start_date","Exposure","",          "text",     "Ngày bắt đầu can thiệp/phơi nhiễm",                    "",                                                                      "",                        "date_ymd",  "",    "",    "y", ""),
 ]
 _NEPHRO_CKD_OUTCOMES = [
-    ("egfr_decline_40","Outcomes",   "Kết cục chính",      "radio",    "Tiến triển CKD (giảm eGFR ≥40% so với nền)",          "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
-    ("egfr_decline_date","Outcomes","",                    "text",     "Ngày ghi nhận giảm eGFR ≥40%",                         "",                                                                      "",                        "date_ymd",  "",    "",    "n", "[egfr_decline_40] = '1'"),
+    ("egfr_decline_40","Outcomes",   "Kết cục chính",      "radio",    "Tiến triển CKD (giảm eGFR ≥ 40% so với nền)",          "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+    ("egfr_decline_date","Outcomes","",                    "text",     "Ngày ghi nhận giảm eGFR ≥ 40%",                         "",                                                                      "",                        "date_ymd",  "",    "",    "n", "[egfr_decline_40] = '1'"),
     ("kidney_replacement","Outcomes","Kết cục phụ",        "radio",    "Khởi đầu điều trị thay thế thận",                      "0, Không | 1, Lọc máu | 2, Ghép thận",                                "",                        "",          "",    "",    "n", ""),
     ("renal_death",   "Outcomes",    "",                   "radio",    "Tử vong do nguyên nhân thận",                          "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "n", ""),
     ("follow_time_months","Outcomes","",                   "text",     "Thời gian theo dõi (tháng)",                          "",                                                                      "",                        "number",    "0",   "120", "y", ""),
@@ -394,7 +394,7 @@ _NEURO_STROKE_OUTCOMES = [
 _MSK_PAIN_CLINICAL = [
     ("pain_nrs_baseline","Clinical", "Lâm sàng nền (Đau mạn)","text",  "Điểm đau NRS nền (0-10)",                              "",                                                                      "Numeric Rating Scale",   "integer",   "0",   "10",  "y", ""),
     ("pain_location",  "Clinical",   "",                   "dropdown", "Vị trí đau chính",                                     "1, Lưng | 2, Cổ | 3, Khớp gối | 4, Khớp háng | 5, Đa vị trí | 6, Khác","",                       "",          "",    "",    "y", ""),
-    ("pain_duration_months","Clinical","",                 "text",     "Thời gian đau (tháng)",                                "",                                                                      "≥3 tháng theo định nghĩa đau mạn","integer","3","600","y", ""),
+    ("pain_duration_months","Clinical","",                 "text",     "Thời gian đau (tháng)",                                "",                                                                      "≥ 3 tháng theo định nghĩa đau mạn","integer","3","600","y", ""),
 ]
 _MSK_PAIN_MEDS = [
     ("analgesic_type","Meds",        "Thuốc nền (Đau mạn)","dropdown", "Loại giảm đau đang dùng",                              "0, Không dùng | 1, Paracetamol | 2, NSAID | 3, Opioid yếu | 4, Opioid mạnh | 5, Phối hợp","","","","","y", ""),
@@ -428,7 +428,7 @@ _PSYCH_DEP_ANX_EXPOSURE = [
     ("psych_intervention_start_date","Exposure","",        "text",     "Ngày bắt đầu can thiệp/phơi nhiễm",                    "",                                                                      "",                        "date_ymd",  "",    "",    "y", ""),
 ]
 _PSYCH_DEP_ANX_OUTCOMES = [
-    ("phq9_response","Outcomes",     "Kết cục chính",      "radio",    "Đáp ứng điều trị (giảm ≥50% điểm PHQ-9 so với nền)",  "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
+    ("phq9_response","Outcomes",     "Kết cục chính",      "radio",    "Đáp ứng điều trị (giảm ≥ 50% điểm PHQ-9 so với nền)",  "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "y", ""),
     ("phq9_remission","Outcomes",    "",                   "radio",    "Thuyên giảm (PHQ-9 < 5 tại mốc theo dõi)",             "0, Không | 1, Có",                                                     "",                        "",          "",    "",    "n", ""),
     ("phq9_followup","Outcomes",     "",                   "text",     "Điểm PHQ-9 tại mốc theo dõi",                          "",                                                                      "",                        "integer",   "0",   "27",  "y", ""),
     ("suicidal_ideation_new","Outcomes","Kết cục phụ (an toàn)","radio","Ý tưởng tự sát MỚI xuất hiện trong theo dõi",         "0, Không | 1, Có — CẦN XỬ TRÍ AN TOÀN NGAY",                          "Biến cố an toàn cần theo dõi sát mọi lần tái khám","","","","y", ""),
@@ -701,7 +701,7 @@ _QUALITATIVE_FIELDS = [
     ("interview_date",      "Data Collection", "",                      "text",     "Ngày thu thập",                                              "",                                                              "", "date_ymd","",   "",   "y", ""),
     ("audio_recorded",      "Data Collection", "",                      "radio",    "Có ghi âm (đã đồng thuận)",                                  "0, Không | 1, Có",                                             "", "",        "",   "",   "y", ""),
     ("transcript_id",       "Data Collection", "",                      "text",     "Mã bản gỡ băng (đã khử định danh)",                          "",                                                              "", "",        "",   "",   "y", ""),
-    ("coder_assigned",      "Coding",          "Mã hóa chủ đề",          "text",     "Người mã hóa (≥2 người mã độc lập)",                        "",                                                              "", "",        "",   "",   "y", ""),
+    ("coder_assigned",      "Coding",          "Mã hóa chủ đề",          "text",     "Người mã hóa (≥ 2 người mã độc lập)",                        "",                                                              "", "",        "",   "",   "y", ""),
     ("coding_round",        "Coding",          "",                      "integer",  "Vòng mã hóa (1=mã mở, 2=mã trục...)",                        "",                                                              "", "integer", "1",  "5",  "y", ""),
     ("themes_identified",   "Coding",          "",                      "text",     "Chủ đề/mã xuất hiện (danh sách)",                            "",                                                              "", "",        "",   "",   "y", ""),
     ("saturation_reached",  "Saturation",      "Bão hòa dữ liệu",        "radio",    "Đã đạt bão hòa dữ liệu tại lượt phỏng vấn này",              "0, Chưa | 1, Có",                                              "", "",        "",   "",   "y", ""),
@@ -806,43 +806,52 @@ def build_redcap_rows(design_code: str, topic: str = "") -> tuple:
     return rows, specialty
 
 
+def _so_vn(t: str) -> float:
+    """Số trong cột khoảng của VALIDATION_RULES — ghi kiểu Việt (22/11/2026, K11 «tất cả phải đúng chuẩn»): nhóm nghìn
+    bằng dấu chấm («100.000»), thập phân bằng dấu phẩy («1,5»); vẫn nhận dạng cũ «1.5»."""
+    t = str(t).strip()
+    if re.fullmatch(r"-?\d{1,3}(?:\.\d{3})+(?:,\d+)?", t):
+        t = t.replace(".", "")
+    return float(t.replace(",", "."))
+
+
 # Validation rules tương ứng với CRF 55 dòng
 VALIDATION_RULES = [
     ("record_id",       "text",    "Chuỗi",         "Duy nhất trong DB, không PII",              "Báo lỗi trùng ID — hệ thống REDCap tự phát hiện"),
     ("consent_date",    "date",    "2020-01-01→hôm nay","Ngày hợp lệ, không tương lai",         "Báo lỗi ngày"),
     ("age",             "integer", "18–120",         "Người lớn hợp lệ",                          "Báo lỗi tuổi"),
     ("bmi",             "number",  "10–60",          "Phạm vi sinh lý",                           "Cảnh báo ngoài phạm vi"),
-    ("lvef",            "number",  "20–85",          "EF sinh lý, THẤP VÀO HFpEF nếu ≥50",       "Gắn cờ nếu <50 (không phải HFpEF)"),
+    ("lvef",            "number",  "20–85",          "EF sinh lý, THẤP VÀO HFpEF nếu ≥ 50",       "Gắn cờ nếu < 50 (không phải HFpEF)"),
     ("bp_sys",          "number",  "60–250",         "Huyết áp tâm thu",                          "Cảnh báo ngoài phạm vi"),
     ("bp_dia",          "number",  "30–150",         "Huyết áp tâm trương",                       "Cảnh báo ngoài phạm vi"),
     ("heart_rate",      "integer", "30–250",         "Nhịp tim",                                  "Cảnh báo nhịp cực đoan"),
-    ("egfr",            "number",  "0–200",          "eGFR sinh lý",                              "Cảnh báo eGFR<20 (CKD nặng, LOẠI TRỪ nếu theo protocol)"),
-    ("nt_probnp",       "number",  "0–100000",       "NT-proBNP pg/mL",                           "Cảnh báo >35000 (cần xem lại)"),
+    ("egfr",            "number",  "0–200",          "eGFR sinh lý",                              "Cảnh báo eGFR < 20 (CKD nặng, LOẠI TRỪ nếu theo protocol)"),
+    ("nt_probnp",       "number",  "0–100.000",       "NT-proBNP pg/mL",                           "Cảnh báo > 35.000 (cần xem lại)"),
     ("hba1c",           "number",  "4–15",           "HbA1c — chỉ khi có ĐTĐ",                   "Phân nhánh: bỏ qua nếu dm=0"),
-    ("hgb",             "number",  "3–20",           "Hemoglobin g/dL",                           "Cảnh báo thiếu máu nặng (hgb<7)"),
-    ("creatinine",      "number",  "20–2000",        "Creatinine µmol/L",                         "Cảnh báo nếu >884 (eGFR có thể <15)"),
-    ("k_serum",         "number",  "1.5–8",          "Kali mmol/L",                               "Cờ ĐỎ nếu <2.5 hoặc >6 (nguy cơ tim mạch)"),
+    ("hgb",             "number",  "3–20",           "Hemoglobin g/dL",                           "Cảnh báo thiếu máu nặng (hgb < 7)"),
+    ("creatinine",      "number",  "20–2000",        "Creatinine µmol/L",                         "Cảnh báo nếu > 884 (eGFR có thể < 15)"),
+    ("k_serum",         "number",  "1,5–8",          "Kali mmol/L",                               "Cờ ĐỎ nếu < 2,5 hoặc > 6 (nguy cơ tim mạch)"),
     ("sglt2i_start_date","date",   "≥consent_date",  "Không trước ngày đồng thuận",               "Lỗi logic ngày"),
     ("hf_hosp_date",    "date",    "≥consent_date",  "Ngày nhập viện không trước tuyển",          "Lỗi logic ngày"),
     ("death_date",      "date",    "≥consent_date",  "Ngày tử vong không trước tuyển",            "Lỗi logic ngày; cần ≥hf_hosp_date nếu có"),
     ("follow_time_months","number","0–120",           "Thời gian theo dõi (tháng)",                "Kiểm nhất quán vs censor_date"),
     ("qol_score_baseline","number","0–100",          "Điểm QoL nền [CẦN CHỈ ĐỊNH THANG ĐO]",     "Kiểm phạm vi theo thang cụ thể"),
-    ("ef_change_6m",    "number",  "-50–50",         "Thay đổi EF từ nền đến 6 tháng",           "Cảnh báo thay đổi >30 (kiểm lại)"),
+    ("ef_change_6m",    "number",  "-50–50",         "Thay đổi EF từ nền đến 6 tháng",           "Cảnh báo thay đổi > 30 (kiểm lại)"),
     # THÊM 2026-07-02 — range-check cho biến lab/sinh hiệu quan trọng của
     # 6 bundle chuyên khoa mới (nephrology_ckd, pulmonology_copd_asthma,
     # neurology_stroke, musculoskeletal_pain, psychiatry_depression_anxiety).
-    ("acr",              "number",  "0–20000",       "Albumin/Creatinine niệu (ACR) mg/g",       "Cảnh báo >300 (albumin niệu nặng, macroalbumin)"),
-    ("fev1_pct",         "number",  "10–150",        "FEV1 % dự đoán",                            "Cảnh báo <30 (COPD rất nặng — GOLD 4)"),
-    ("fev1_fvc_ratio",   "number",  "20–100",        "Tỷ số FEV1/FVC (%)",                       "Cảnh báo <70 gợi ý tắc nghẽn"),
-    ("cat_score",        "integer", "0–40",          "Điểm CAT (COPD Assessment Test)",          "Cảnh báo ≥20 (ảnh hưởng nặng)"),
-    ("exacerbation_freq_prior","integer","0–50",     "Số đợt cấp COPD/hen trong 12 tháng trước", "Cảnh báo ≥2 (nguy cơ cao — nhóm E theo GOLD)"),
-    ("nihss_baseline",   "integer", "0–42",          "Điểm NIHSS lúc nhập viện",                  "Cảnh báo ≥21 (đột quỵ rất nặng)"),
+    ("acr",              "number",  "0–20.000",       "Albumin/Creatinine niệu (ACR) mg/g",       "Cảnh báo > 300 (albumin niệu nặng, macroalbumin)"),
+    ("fev1_pct",         "number",  "10–150",        "FEV1 % dự đoán",                            "Cảnh báo < 30 (COPD rất nặng — GOLD 4)"),
+    ("fev1_fvc_ratio",   "number",  "20–100",        "Tỷ số FEV1/FVC (%)",                       "Cảnh báo < 70 gợi ý tắc nghẽn"),
+    ("cat_score",        "integer", "0–40",          "Điểm CAT (COPD Assessment Test)",          "Cảnh báo ≥ 20 (ảnh hưởng nặng)"),
+    ("exacerbation_freq_prior","integer","0–50",     "Số đợt cấp COPD/hen trong 12 tháng trước", "Cảnh báo ≥ 2 (nguy cơ cao — nhóm E theo GOLD)"),
+    ("nihss_baseline",   "integer", "0–42",          "Điểm NIHSS lúc nhập viện",                  "Cảnh báo ≥ 21 (đột quỵ rất nặng)"),
     ("pain_nrs_baseline","integer", "0–10",          "Điểm đau NRS nền",                          "Cảnh báo =10 (đau tối đa, cần xử trí ngay)"),
-    ("pain_duration_months","integer","3–600",       "Thời gian đau mạn (tháng)",                 "Kiểm giá trị <3 (không đạt định nghĩa đau mạn)"),
-    ("opioid_mme_per_day","number","0–2000",         "Liều opioid quy đổi MME/ngày",             "Cờ ĐỎ nếu ≥90 MME/ngày (ngưỡng nguy cơ cao CDC)"),
+    ("pain_duration_months","integer","3–600",       "Thời gian đau mạn (tháng)",                 "Kiểm giá trị < 3 (không đạt định nghĩa đau mạn)"),
+    ("opioid_mme_per_day","number","0–2000",         "Liều opioid quy đổi MME/ngày",             "Cờ ĐỎ nếu ≥ 90 MME/ngày (ngưỡng nguy cơ cao CDC)"),
     ("pain_nrs_change",  "number",  "-10–10",        "Thay đổi điểm đau NRS so với nền",         "Kiểm nhất quán chiều thay đổi vs đáp ứng lâm sàng"),
-    ("phq9_baseline",    "integer", "0–27",          "Điểm PHQ-9 nền",                            "Cờ ĐỎ nếu mục 9 (ý tưởng tự sát) >0 — xử trí an toàn ngay"),
-    ("gad7_baseline",    "integer", "0–21",          "Điểm GAD-7 nền",                            "Cảnh báo ≥15 (lo âu nặng)"),
+    ("phq9_baseline",    "integer", "0–27",          "Điểm PHQ-9 nền",                            "Cờ ĐỎ nếu mục 9 (ý tưởng tự sát) > 0 — xử trí an toàn ngay"),
+    ("gad7_baseline",    "integer", "0–21",          "Điểm GAD-7 nền",                            "Cảnh báo ≥ 15 (lo âu nặng)"),
     ("phq9_followup",    "integer", "0–27",          "Điểm PHQ-9 tại mốc theo dõi",               "So sánh với phq9_baseline để tính đáp ứng/thuyên giảm"),
 ]
 
@@ -954,8 +963,8 @@ def gen_data_cleaning_script(study: str, design_code: str, rows: list,
         if "–" in rng and var in col_names:
             parts = rng.split("–")
             try:
-                lo = float(parts[0].replace(",", ".").strip())
-                hi = float(parts[1].replace(",", ".").strip())
+                lo = _so_vn(parts[0])
+                hi = _so_vn(parts[1])
                 range_lines.append(f"    ('{var}', {lo}, {hi}),")
             except ValueError:
                 pass
@@ -1143,8 +1152,8 @@ def gen_data_quality_report_script(study: str, design_code: str, rows: list,
         if "–" in rng and var in col_names:
             parts = rng.split("–")
             try:
-                lo = float(parts[0].replace(",", ".").strip())
-                hi = float(parts[1].replace(",", ".").strip())
+                lo = _so_vn(parts[0])
+                hi = _so_vn(parts[1])
                 range_lines.append(f'    ("{var}", {lo}, {hi}),')
             except ValueError:
                 pass
@@ -1579,7 +1588,7 @@ def build_strobe_flowchart(study: str, design_code: str, n_adjusted: int, n_tota
         ┌──────────▼──────────────────┐
         │  THU THẬP DỮ LIỆU theo lượt: │
         │  Phỏng vấn sâu/nhóm tiêu điểm│
-        │  (mã hóa song song, ≥2 người)│
+        │ (mã hóa song song, ≥ 2 người)│
         └──────────┬──────────────────┘
                    │
         ┌──────────▼──────────────────┐
@@ -1762,7 +1771,7 @@ def guardrail(artifact: str) -> tuple[list, list]:
     if can_n >= 5:
         warnings.append(f"R5 ✅ {can_n} trường [CẦN...] đã gắn nhãn")
     else:
-        errors.append(f"R5 🔴 Quá ít [CẦN...] ({can_n}) — cần ≥5")
+        errors.append(f"R5 🔴 Quá ít [CẦN...] ({can_n}) — cần ≥ 5")
 
     # R6 — Không tự gán mức GRADE/khuyến cáo
     # SỬA: regex cũ chỉ bắt cụm tiếng Anh — toàn bộ artifact G5 sinh bằng
@@ -1862,7 +1871,7 @@ def _muc_van_hanh_2026_2() -> dict:
             "evidence_ref": "[CẦN MÃ BIÊN BẢN RÀ AUDIT TRAIL (REDCap Logging), KHÔNG PII]",
         },
         "source_data_verification": {
-            "method": "[CẦN CÁCH ĐỐI CHIẾU: nhập kép / kiểm ngẫu nhiên ≥10% hồ sơ / khác — mô tả]",
+            "method": "[CẦN CÁCH ĐỐI CHIẾU: nhập kép / kiểm ngẫu nhiên ≥ 10% hồ sơ / khác — mô tả]",
             "fraction_or_n": "[CẦN TỶ LỆ hoặc SỐ HỒ SƠ đã đối chiếu]",
             "completed": False,
             "evidence_ref": "[CẦN MÃ BIÊN BẢN ĐỐI CHIẾU, KHÔNG PII]",
@@ -2901,7 +2910,7 @@ def main():
             # VÁ 04/10/2026 (G5-07): hồ sơ G5-OPS-2026.2 gồm cả rà audit trail và đối chiếu dữ liệu nguồn (SDV).
             f"Hoàn tất {G5Q.OPERATIONAL_READINESS_JSON} ({G5Q.OPERATIONAL_SCHEMA_VERSION}) bằng bằng chứng tại "
             "đơn vị: quyền truy cập, thử phục hồi, lưu trữ, sai lệch đề cương, RÀ AUDIT TRAIL, đối chiếu dữ liệu nguồn "
-            "(nhập kép/kiểm ngẫu nhiên ≥10% — hoặc lý do không áp dụng); mọi evidence_ref/log_ref là mã thật",
+            "(nhập kép/kiểm ngẫu nhiên ≥ 10% — hoặc lý do không áp dụng); mọi evidence_ref/log_ref là mã thật",
             "Thu thập dữ liệu thật (chỉ sau G2 = LOCKED và G4 = SAP đã khoá — import_real_dataset từ chối trước đó)",
             "Đóng truy vấn dữ liệu bằng tệp --query-resolutions (mã da_sua / xac_nhan_dung / khong_ap_dung_co_ly_do "
             "kèm lý do, người xử lý, thời điểm) khi chạy clean_research_dataset.py",

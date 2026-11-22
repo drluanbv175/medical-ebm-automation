@@ -21,7 +21,7 @@
     },
     {
       "id": "G0-AUTO-02",
-      "label": "Có bằng chứng THẬT làm nền (≥1 PMID từ PubMed)",
+      "label": "Có bằng chứng THẬT làm nền (≥ 1 PMID từ PubMed)",
       "status": "PASS",
       "evidence": "n_pmids=44",
       "action": "Chạy lại với --query-en \"<từ khóa tiếng Anh>\"; hệ KHÔNG bịa PMID."

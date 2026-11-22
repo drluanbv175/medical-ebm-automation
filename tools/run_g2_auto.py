@@ -202,7 +202,7 @@ RISK_PROFILES = {
             ("Rò rỉ thông tin cá nhân", "Rất thấp", "Trung bình",
              "Mã hóa; khử định danh trước phân tích; bảng liên kết lưu riêng"),
             ("Gánh nặng bộ câu hỏi / phỏng vấn", "Thấp", "Không đáng kể",
-             "Bộ câu hỏi ngắn ≤20 phút; trả lời tự nguyện từng mục"),
+             "Bộ câu hỏi ngắn ≤ 20 phút; trả lời tự nguyện từng mục"),
             ("Phát hiện bệnh không mong đợi trong theo dõi", "Thấp", "Nhẹ–Trung bình",
              "Quy trình thông báo kết quả bất thường và chuyển điều trị phù hợp"),
         ],
@@ -333,7 +333,7 @@ RISK_PROFILES = {
              "Thấp", "Nhẹ–Trung bình",
              "Người phỏng vấn được đào tạo; NTG có thể dừng/bỏ qua câu hỏi/rút lui bất kỳ lúc nào"),
             ("Gánh nặng thời gian phỏng vấn/nhóm tiêu điểm", "Thấp", "Không đáng kể",
-             "Thời lượng hợp lý (thường ≤60-90 phút); lịch hẹn linh hoạt theo NTG"),
+             "Thời lượng hợp lý (thường ≤ 60–90 phút); lịch hẹn linh hoạt theo NTG"),
         ],
         "benefits": "Hiểu sâu trải nghiệm/rào cản của người bệnh mà nghiên cứu định lượng không nắm bắt được; định hướng can thiệp phù hợp bối cảnh văn hóa-xã hội",
     },
@@ -1667,7 +1667,7 @@ CAM KẾT:
 
 Kèm theo hồ sơ:
   ☐ Tài liệu 1: Đơn xin phê duyệt (file này)
-  ☐ Tài liệu 2: Tóm tắt đề cương (lay summary ≤1 trang)
+  ☐ Tài liệu 2: Tóm tắt đề cương (lay summary ≤ 1 trang)
   ☐ Tài liệu 3: Bảng rủi ro–lợi ích
   ☐ Tài liệu 4: ICF tiếng Việt
   ☐ Tài liệu 5: ICF tiếng Anh
@@ -1689,7 +1689,7 @@ ___________________________  Ký, ghi rõ họ tên     Ngày: ___/___/{_YEAR}
 
 ---
 
-## TÀI LIỆU 2 — TÓM TẮT ĐỀ CƯƠNG CHO HỘI ĐỒNG (lay summary ≤1 trang A4)
+## TÀI LIỆU 2 — TÓM TẮT ĐỀ CƯƠNG CHO HỘI ĐỒNG (lay summary ≤ 1 trang A4)
 
 ```
 TÓM TẮT ĐỀ CƯƠNG (DRAFT — ngôn ngữ hành chính)
@@ -1963,8 +1963,8 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU — Cấp IRB
 3. KHỬ ĐỊNH DANH:
    Phương pháp: Thay thế tên/CMND bằng ID nghiên cứu (vd: PT001)
    Bảng liên kết ID–tên: Lưu riêng, mã hóa AES-256, mật khẩu
-   mạnh (≥12 ký tự), chỉ chủ nhiệm giữ
-   Ngưỡng k-ẩn danh: ≥5 (nhóm nhỏ sẽ nhóm lại trước công bố)
+   mạnh (≥ 12 ký tự), chỉ chủ nhiệm giữ
+   Ngưỡng k-ẩn danh: ≥ 5 (nhóm nhỏ sẽ nhóm lại trước công bố)
 
 4. LƯU TRỮ:
    Nơi lưu: [CẦN — máy chủ nội bộ / OneDrive institutional
@@ -2007,7 +2007,7 @@ CHECKLIST HỒ SƠ NỘP HỘI ĐỒNG ĐẠO ĐỨC
 
 HỒ SƠ BẮT BUỘC:
 ☐ Đơn xin phê duyệt (Tài liệu 1) — ký tên chủ nhiệm + trưởng đơn vị
-☐ Tóm tắt đề cương ≤1 trang (Tài liệu 2)
+☐ Tóm tắt đề cương ≤ 1 trang (Tài liệu 2)
 ☐ Đề cương đầy đủ (từ G1 — A2 Protocol Design)
 ☐ Bảng rủi ro–lợi ích (Tài liệu 3) — với phân loại mức nguy cơ
 ☐ ICF tiếng Việt (Tài liệu 4) — 7 mục đủ

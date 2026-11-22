@@ -209,7 +209,7 @@ CHECKLIST_ITEMS: dict[str, list[tuple[str, str, bool]]] = {
         ("5",  "Bối cảnh, địa điểm, mốc thời gian (tuyển/phơi nhiễm/theo dõi/thu thập)", False),
         ("6",  "Người tham gia — tiêu chí nhận + nguồn/cách chọn + phương pháp theo dõi (ghép cặp: tiêu chí ghép + số phơi nhiễm/không)", False),
         ("7",  "Biến số — định nghĩa RÕ kết cục, phơi nhiễm, yếu tố gây nhiễu, yếu tố điều biến hiệu ứng", False),
-        ("8",  "Nguồn dữ liệu/đo lường — mỗi biến: nguồn dữ liệu + chi tiết đo lường; so sánh được giữa nhóm nếu >1 phương pháp", False),
+        ("8",  "Nguồn dữ liệu/đo lường — mỗi biến: nguồn dữ liệu + chi tiết đo lường; so sánh được giữa nhóm nếu > 1 phương pháp", False),
         ("9",  "Sai lệch (bias) — nỗ lực xử lý nguồn sai lệch tiềm ẩn", False),
         ("10", "Cỡ mẫu — cách tính/đạt được cỡ mẫu", True),
         ("11", "Biến định lượng — cách xử lý trong phân tích, nhóm hóa (nếu có) và lý do", False),
@@ -244,7 +244,7 @@ CHECKLIST_ITEMS: dict[str, list[tuple[str, str, bool]]] = {
         ("5",  "Bối cảnh, địa điểm, mốc thời gian tuyển/thu thập", False),
         ("6",  "Người tham gia — tiêu chí nhận + nguồn/cách xác định ca bệnh + chọn nhóm chứng + lý do chọn ca/chứng (ghép cặp: tiêu chí ghép + số chứng/ca)", False),
         ("7",  "Biến số — định nghĩa RÕ kết cục, phơi nhiễm, yếu tố gây nhiễu, yếu tố điều biến hiệu ứng", False),
-        ("8",  "Nguồn dữ liệu/đo lường — mỗi biến: nguồn dữ liệu + chi tiết đo lường; so sánh được giữa nhóm nếu >1 phương pháp", False),
+        ("8",  "Nguồn dữ liệu/đo lường — mỗi biến: nguồn dữ liệu + chi tiết đo lường; so sánh được giữa nhóm nếu > 1 phương pháp", False),
         ("9",  "Sai lệch (bias) — nỗ lực xử lý nguồn sai lệch tiềm ẩn", False),
         ("10", "Cỡ mẫu — cách tính/đạt được cỡ mẫu", True),
         ("11", "Biến định lượng — cách xử lý trong phân tích, nhóm hóa (nếu có) và lý do", False),
@@ -278,7 +278,7 @@ CHECKLIST_ITEMS: dict[str, list[tuple[str, str, bool]]] = {
         ("5",  "Bối cảnh, địa điểm, mốc thời gian tuyển/thu thập", False),
         ("6",  "Người tham gia — tiêu chí nhận + nguồn/cách chọn người tham gia", False),
         ("7",  "Biến số — định nghĩa RÕ kết cục, phơi nhiễm, yếu tố gây nhiễu, yếu tố điều biến hiệu ứng", False),
-        ("8",  "Nguồn dữ liệu/đo lường — mỗi biến: nguồn dữ liệu + chi tiết đo lường; so sánh được giữa nhóm nếu >1 phương pháp", False),
+        ("8",  "Nguồn dữ liệu/đo lường — mỗi biến: nguồn dữ liệu + chi tiết đo lường; so sánh được giữa nhóm nếu > 1 phương pháp", False),
         ("9",  "Sai lệch (bias) — nỗ lực xử lý nguồn sai lệch tiềm ẩn", False),
         ("10", "Cỡ mẫu — cách tính/đạt được cỡ mẫu", True),
         ("11", "Biến định lượng — cách xử lý trong phân tích, nhóm hóa (nếu có) và lý do", False),
@@ -2046,7 +2046,7 @@ def guardrail_g7(artifact: str, *, dang_ky_g2: Optional[str] = None,
     elif ket_qua_that:
         warnings.append("R4 ✅ Kết quả đã THẬT — bản thảo hoàn thiện không còn bắt buộc nhãn DRAFT")
     else:
-        errors.append(f"R4 🔴 Thiếu nhãn DRAFT (chỉ {draft_count} lần — cần ≥2)")
+        errors.append(f"R4 🔴 Thiếu nhãn DRAFT (chỉ {draft_count} lần — cần ≥ 2)")
 
     # R5 — Không hardcode kết quả thống kê dạng HR=0.xx (95%CI
     # VÁ 04/10/2026 (G7-08): mẫu cũ chỉ bắt «HR = 0.64 (95% CI» — lọt «HR 0,64; 95%CI», «cOR: 1,8 [95% CI»; khi kết quả
@@ -2181,7 +2181,7 @@ def lap_o_da_chot_g7(van: str, out_dir: Path, study: str) -> tuple[str, list[str
     elif QD.co_noi_dung(g2.get("registration_id")):
         dang_ky = f"{g2.get('registration_registry') or ''} {g2['registration_id']}".strip()
     cap = [
-        ("tieu_de", "[CẦN — tiêu đề ngắn gọn ≤120 ký tự, chứa thiết kế + dân số + kết cục chính]",
+        ("tieu_de", "[CẦN — tiêu đề ngắn gọn ≤ 120 ký tự, chứa thiết kế + dân số + kết cục chính]",
          ds(meta.get("title"))),
         ("muc_tieu", "[CẦN — câu hỏi PICO chính một câu]", muc_tieu),
         ("co_so", "[CẦN — đơn vị/bệnh viện, tỉnh/thành, thời gian nghiên cứu]",
@@ -2981,9 +2981,9 @@ def generate_manuscript(
         "",
         f"> Gợi ý cấu trúc: [{design_primary}] của [{topic}]:  ",
         "> [kết cục chính] — [cơ sở/quần thể], [thời gian]  ",
-        "> *(≤120 ký tự; phải chứa: thiết kế + quần thể + kết cục)*",
+        "> *(≤ 120 ký tự; phải chứa: thiết kế + quần thể + kết cục)*",
         "",
-        "[CẦN — tiêu đề ngắn gọn ≤120 ký tự, chứa thiết kế + dân số + kết cục chính]",
+        "[CẦN — tiêu đề ngắn gọn ≤ 120 ký tự, chứa thiết kế + dân số + kết cục chính]",
         "",
         "---",
         "",
@@ -3711,7 +3711,7 @@ def write_checkpoint(
             "A8_docx":     str(docx_path) if docx_path else None,
         },
         "pending_doctor_actions": [
-            "Điền Tiêu đề (≤120 ký tự) và Tác giả (tên/đơn vị/ORCID)",
+            "Điền Tiêu đề (≤ 120 ký tự) và Tác giả (tên/đơn vị/ORCID)",
             "Điền Methods §2: tiêu chí nhận/loại, cơ sở, thời gian",
             (
                 "Xác nhận Methods §3: danh sách biến phơi nhiễm/can thiệp tự điền từ CRF (G5) "

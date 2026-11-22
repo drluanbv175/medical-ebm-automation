@@ -646,7 +646,7 @@ def evaluate_g0_quality(
     n_pmids = pubmed.get("n_pmids")
     n_pmids = int(n_pmids) if isinstance(n_pmids, int) else 0
     automatic.append(_criterion(
-        "G0-AUTO-02", "Có bằng chứng THẬT làm nền (≥1 PMID từ PubMed)",
+        "G0-AUTO-02", "Có bằng chứng THẬT làm nền (≥ 1 PMID từ PubMed)",
         "PASS" if n_pmids > 0 else "BLOCK",
         f"n_pmids={n_pmids}",
         'Chạy lại với --query-en "<từ khóa tiếng Anh>"; hệ KHÔNG bịa PMID.',

@@ -254,10 +254,10 @@ def _missing_recommendation(missing: dict, n: int) -> str:
         return "Không có dữ liệu thiếu — dùng toàn bộ quan sát."
     max_pct = max(v["pct"] for v in missing.values())
     if max_pct < 5:
-        return "Thiếu <5% — Complete Case Analysis chấp nhận được (kiểm MCAR nếu có thể)."
+        return "Thiếu < 5% — Complete Case Analysis chấp nhận được (kiểm MCAR nếu có thể)."
     if max_pct < 20:
-        return "Thiếu 5–20% — Xem xét Multiple Imputation (m≥20). [CẦN BIOSTATISTICIAN XÁC NHẬN]"
-    return "Thiếu >20% — Sensitivity analysis best/worst case bắt buộc. [CẦN BIOSTATISTICIAN XÁC NHẬN]"
+        return "Thiếu 5–20% — Xem xét Multiple Imputation (m ≥ 20). [CẦN BIOSTATISTICIAN XÁC NHẬN]"
+    return "Thiếu > 20% — Sensitivity analysis best/worst case bắt buộc. [CẦN BIOSTATISTICIAN XÁC NHẬN]"
 
 
 def _json_safe(obj):
@@ -876,7 +876,7 @@ def multivariate_model(df: pd.DataFrame, outcome_col: str, group_col: str,
             if y_raw.nunique() == 2 else len(data)
         if n_events < len(predictors) * 10:
             return {"warning": f"Số biến cố (nhóm hiếm hơn) {n_events} có thể không đủ EPV "
-                                f"cho {len(predictors)} biến dự báo (cần ≥10 biến cố/biến — Peduzzi 1996)."}
+                                f"cho {len(predictors)} biến dự báo (cần ≥ 10 biến cố/biến — Peduzzi 1996)."}
     elif len(data) < len(predictors) * 10:
         return {"warning": f"Cỡ mẫu {len(data)} có thể không đủ cho {len(predictors)} biến dự báo."}
 
@@ -1271,7 +1271,7 @@ def survival_model(df: pd.DataFrame, time_col: str, event_col: str,
     if n_events < n_predictors * 10:
         result["epv_warning"] = (
             f"Số biến cố {n_events} có thể không đủ EPV cho {n_predictors} biến dự "
-            f"báo (cần ≥10 biến cố/biến — Peduzzi 1995, J Clin Epidemiol 1995;48(12):1503-1510)."
+            f"báo (cần ≥ 10 biến cố/biến — Peduzzi 1995, J Clin Epidemiol 1995;48(12):1503-1510)."
         )
 
     def _fit(cols: list) -> dict:
@@ -2193,7 +2193,7 @@ def format_survival_text(res: dict, km: dict = None, hypothesis_interp: dict = N
         lines.append("\n  KAPLAN-MEIER:")
         for g, info in km.get("groups", {}).items():
             med = info.get("median_survival")
-            med_str = f"{med}" if med is not None else "chưa đạt (>50% còn sống)"
+            med_str = f"{med}" if med is not None else "chưa đạt (> 50% còn sống)"
             lines.append(f"    Nhóm {g}: n={info['n']}, biến cố={info['n_events']}, "
                           f"trung vị sống còn={med_str}")
         if "logrank_p" in km:
