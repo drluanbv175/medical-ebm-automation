@@ -1,0 +1,128 @@
+{
+ "ghi_chu": "Sổ nợ BÁNH CÓC chuẩn báo cáo theo mục (K18) của bản thảo G7 và báo cáo tổng hợp nghiệm thu, 8 kịch bản giả lập cơ bản. Chỉ được GIẢM: mục mới thiếu hoặc mục đã đạt mà còn trong sổ đều làm CI đỏ (tools/kiem_gia_lap_16.py). Ghi lại bằng `python tools/kiem_gia_lap_16.py --ghi-so-no`. Đo 22/11/2026.",
+ "kich_ban": {
+  "rct_nhi_phan": {
+   "ban_thao": [
+    "CONSORT 2025 10",
+    "CONSORT 2025 20b",
+    "CONSORT 2025 3",
+    "CONSORT 2025 4"
+   ],
+   "bao_cao": [
+    "CONSORT 2025 10",
+    "CONSORT 2025 20b",
+    "CONSORT 2025 3",
+    "CONSORT 2025 4"
+   ]
+  },
+  "cat_ngang_mo_ta": {
+   "ban_thao": [],
+   "bao_cao": [
+    "STROBE 2007 16a",
+    "STROBE 2007 7"
+   ]
+  },
+  "thuan_tap_phoi_nhiem": {
+   "ban_thao": [
+    "RECORD 2015 1.1",
+    "RECORD 2015 12.1",
+    "RECORD 2015 12.2",
+    "RECORD 2015 19.1",
+    "RECORD 2015 6.2",
+    "RECORD 2015 7.1"
+   ],
+   "bao_cao": [
+    "RECORD 2015 1.1",
+    "RECORD 2015 12.1",
+    "RECORD 2015 12.2",
+    "RECORD 2015 19.1",
+    "RECORD 2015 6.2",
+    "RECORD 2015 7.1"
+   ]
+  },
+  "benh_chung": {
+   "ban_thao": [],
+   "bao_cao": []
+  },
+  "chan_doan": {
+   "ban_thao": [
+    "STARD 2015 11",
+    "STARD 2015 12a",
+    "STARD 2015 12b",
+    "STARD 2015 21a",
+    "STARD 2015 21b",
+    "STARD 2015 29",
+    "STARD 2015 3"
+   ],
+   "bao_cao": [
+    "STARD 2015 11",
+    "STARD 2015 12a",
+    "STARD 2015 12b",
+    "STARD 2015 21a",
+    "STARD 2015 21b",
+    "STARD 2015 29",
+    "STARD 2015 3"
+   ]
+  },
+  "mo_hinh_du_bao": {
+   "ban_thao": [
+    "TRIPOD+AI 2024 15",
+    "TRIPOD+AI 2024 18c",
+    "TRIPOD+AI 2024 18e",
+    "TRIPOD+AI 2024 18f",
+    "TRIPOD+AI 2024 19",
+    "TRIPOD+AI 2024 22",
+    "TRIPOD+AI 2024 27a",
+    "TRIPOD+AI 2024 27b",
+    "TRIPOD+AI 2024 3b",
+    "TRIPOD+AI 2024 3c",
+    "TRIPOD+AI 2024 6c",
+    "TRIPOD+AI 2024 7",
+    "TRIPOD+AI 2024 8c"
+   ],
+   "bao_cao": [
+    "TRIPOD+AI 2024 15",
+    "TRIPOD+AI 2024 18c",
+    "TRIPOD+AI 2024 18e",
+    "TRIPOD+AI 2024 18f",
+    "TRIPOD+AI 2024 19",
+    "TRIPOD+AI 2024 22",
+    "TRIPOD+AI 2024 27a",
+    "TRIPOD+AI 2024 27b",
+    "TRIPOD+AI 2024 3b",
+    "TRIPOD+AI 2024 3c",
+    "TRIPOD+AI 2024 6c",
+    "TRIPOD+AI 2024 7",
+    "TRIPOD+AI 2024 8c"
+   ]
+  },
+  "tong_quan_gop": {
+   "ban_thao": [
+    "PRISMA 2020 11",
+    "PRISMA 2020 16a",
+    "PRISMA 2020 16b",
+    "PRISMA 2020 17",
+    "PRISMA 2020 2",
+    "PRISMA 2020 22",
+    "PRISMA 2020 24b",
+    "PRISMA 2020 24c",
+    "PRISMA 2020 7"
+   ],
+   "bao_cao": [
+    "PRISMA 2020 11",
+    "PRISMA 2020 16a",
+    "PRISMA 2020 16b",
+    "PRISMA 2020 17",
+    "PRISMA 2020 2",
+    "PRISMA 2020 22",
+    "PRISMA 2020 24b",
+    "PRISMA 2020 24c",
+    "PRISMA 2020 7"
+   ]
+  },
+  "dinh_tinh": {
+   "ban_thao": [],
+   "bao_cao": []
+  }
+ }
+}
