@@ -319,3 +319,12 @@ def test_ve_hinh_cot_trung_binh_dung_thang_va_dau_phay(tmp_path, monkeypatch):
     bd = next(k for k in KBB._khung_muc_tieu(_ngu_canh(), 1, "Mô tả mức hài lòng") if k.loai == "bieu_do")
     KBB.ve_hinh(bd, tmp_path / "x.png")
     assert ("ylim", (0, 5.0)) in goi and ("truc", "y") in goi
+
+
+def test_so_do_nhan_qua_khong_bi_coi_la_so_do_chon(tmp_path):
+    """«Sơ đồ nhân quả (DAG) lựa chọn biến» chứa chữ «chọn» nhưng không phải sơ đồ chọn đối tượng — không được vẽ đè
+    bằng sơ đồ luồng."""
+    assert KBB._SO_DO_TEN_RE.search("Sơ đồ tuyển chọn đối tượng nghiên cứu (theo STROBE)")
+    assert not KBB._SO_DO_TEN_RE.search("Sơ đồ nhân quả (DAG) lựa chọn biến hiệu chỉnh")
+    kh, ly_do = KBB._nguon_hinh("Hình", "Sơ đồ nhân quả (DAG) lựa chọn biến hiệu chỉnh", "", _ngu_canh(LUONG), [], [])
+    assert kh is None and "không khớp khung chuẩn" in ly_do

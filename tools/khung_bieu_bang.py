@@ -1759,7 +1759,9 @@ def _ghep_ghi_chu(cot: Sequence[str], than: Sequence[Sequence[str]], cu: str) ->
     return ra
 
 
-_SO_DO_TEN_RE = re.compile(r"[Ss]ơ đồ.*(?:chọn|tuyển|tham gia|tiếp cận|CONSORT|STROBE|STARD|PRISMA|TRIPOD|COREQ)")
+# Sơ đồ chọn đối tượng — trừ sơ đồ nhân quả («Sơ đồ nhân quả (DAG) lựa chọn biến» cũng chứa chữ «chọn»).
+_SO_DO_TEN_RE = re.compile(r"^(?!.*(?:nhân quả|\bDAG\b)).*[Ss]ơ đồ.*(?:chọn|tuyển|tham gia|tiếp cận|CONSORT|STROBE"
+                           r"|STARD|PRISMA|TRIPOD|COREQ)")
 
 
 def _nhan_ngan(s: str) -> str:
