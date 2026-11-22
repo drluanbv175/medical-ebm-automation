@@ -1708,10 +1708,12 @@ def _de_xuat_bien_tap(st: Dict[str, Any], van: str, out_dir: Path, goi_api: bool
             return CHO_AGENT, {}, []
         return None, gop_ag, []
     # bien_tap — chia nhóm ≤ VAN_DE_MOI_YEU_CAU vấn đề mỗi yêu cầu (22/11/2026: một yêu cầu gom 14–20 vấn đề bị cắt cụt
-    # ở 32.000 token ra trên cả hai đề cương thật). Tham số VẬN HÀNH, không phải luật/lời dặn của quy chế.
+    # ở 32.000 token ra trên cả hai đề cương thật), KHÔNG tách một cụm yêu cầu chạm cùng chỗ (`gom_cum_bien_tap`) ra hai
+    # yêu cầu API. Tham số VẬN HÀNH, không phải luật/lời dặn của quy chế.
     chung = khoi_chung(st["study"], Path(st["tep"]).name, van, st["ho_so"])
     vd = van_de_can_sua(st)
-    nhom = API.chia_lo(vd, VAN_DE_MOI_YEU_CAU)
+    cum = gom_cum_bien_tap(vd, van)
+    nhom = xep_lo_theo_cum(cum, VAN_DE_MOI_YEU_CAU)
     cids = [f"bt{i}_{st['sha'][:8]}" for i in range(len(nhom))]
     bid = st["batch"].get("bien_tap")
     if not bid:
@@ -1725,6 +1727,9 @@ def _de_xuat_bien_tap(st: Dict[str, Any], van: str, out_dir: Path, goi_api: bool
         yc = [(c, tham_so_yeu_cau(chung, loi_nhan_bien_tap(g), st["model"], MAX_TOKENS_BT)) for c, g in zip(cids, nhom)]
         st["batch"]["bien_tap"] = API.nop_batch(yc, client=client, nguon=CONG_CU)
         print(f"📨 Đã nộp batch biên tập: {st['batch']['bien_tap']} ({len(yc)} yêu cầu).")
+        gom = ["+".join(str(f["id"]) for f in c) for c in cum if len(c) > 1]
+        if gom:
+            print(f"🔗 Gom yêu cầu chạm cùng chỗ vào cùng một yêu cầu API: {'; '.join(gom)}.")
         return 4, {}, []
     if not goi_api:
         return 0, {}, []
@@ -2492,8 +2497,9 @@ def loi_nhan_agent_bien_tap(ten: str, vd: Sequence[Dict[str, Any]], tep: str, lo
 # Gom yêu cầu chạm CÙNG chỗ vào MỘT phiếu biên tập. Đo thật vòng 2 C1a (22/11/2026): N2_03 (pb2 → viet-ban-thao) và
 # N2_08 (uv_tk → co-mau-nghien-cuu) cùng nêu dòng 926 nhưng nằm ở hai phiếu ⇒ thay thế áp sau không còn thấy đoạn cũ
 # («xuất hiện 0 lần») ⇒ bị loại, vòng kín tốn thêm một vòng; N2_05 (pb1) và N2_06 (uv_dd) cùng trích một câu ở dòng 496
-# mà N2_06 còn phải sửa đồng bộ dòng 1072 ⇒ hai agent dễ làm hai chỗ lệch nhau. Tham số VẬN HÀNH như `chia_lo` của chế
-# độ API: không đổi lời dặn, không đổi SHA quy chế; ghế nêu yêu cầu vẫn là ghế thẩm tra nó ở vòng sau.
+# mà N2_06 còn phải sửa đồng bộ dòng 1072 ⇒ hai agent dễ làm hai chỗ lệch nhau. Dùng cho cả phiếu agent (chế độ kết
+# hợp) lẫn nhóm yêu cầu của chế độ chỉ-API (`xep_lo_theo_cum`). Tham số VẬN HÀNH: không đổi lời dặn, không đổi SHA quy
+# chế; ghế nêu yêu cầu vẫn là ghế thẩm tra nó ở vòng sau.
 CAU_TOI_THIEU = 20   # mảnh trích ngắn hơn («[49]», «n (%)») xuất hiện ở quá nhiều câu — không đủ để coi là «cùng câu»
 _TACH_CAU = re.compile(r"(?<=[.!?;])\s+")
 
@@ -2564,6 +2570,18 @@ def gom_cum_bien_tap(vd: Sequence[Dict[str, Any]], van: str) -> List[List[Dict[s
     for i, f in enumerate(vd):
         cum.setdefault(goc(i), []).append(f)
     return list(cum.values())
+
+
+def xep_lo_theo_cum(cum: Sequence[Sequence[Dict[str, Any]]], co: int) -> List[List[Dict[str, Any]]]:
+    """Chế độ chỉ-API: xếp các cụm theo thứ tự vào nhóm ≤ `co` vấn đề mỗi yêu cầu, KHÔNG tách cụm nào ra hai yêu cầu;
+    cụm lớn hơn `co` đi nguyên một yêu cầu riêng (tách nó lại gây đúng lỗi «đoạn cũ xuất hiện 0 lần»)."""
+    nhom: List[List[Dict[str, Any]]] = []
+    for c in cum:
+        if nhom and len(nhom[-1]) + len(c) <= max(1, int(co)):
+            nhom[-1].extend(c)
+        else:
+            nhom.append(list(c))
+    return nhom
 
 
 def lap_viec_bien_tap(st: Dict[str, Any], vd: Sequence[Dict[str, Any]], out_dir: Path,

@@ -413,10 +413,12 @@ def test_hieu_chuan_cham_tu_choi_khi_quy_che_doi(tmp_path, monkeypatch):
 
 def test_bien_tap_chia_nhom_va_nop_lai_khi_hong_het(tmp_path, monkeypatch):
     """22/11: một yêu cầu gom 14–20 vấn đề bị cắt cụt ⇒ chia nhóm ≤ 6; hỏng hết ⇒ ghi lỗi, nộp lại, tối đa 2 lần."""
-    monkeypatch.setattr(H, "VAN_DE_MOI_YEU_CAU", 1)          # 2 vấn đề còn giữ ⇒ 2 yêu cầu
+    monkeypatch.setattr(H, "VAN_DE_MOI_YEU_CAU", 1)          # 2 vấn đề còn giữ, ở hai chỗ khác nhau ⇒ 2 yêu cầu
     goc = _goc(tmp_path)
     _hieu_chuan_dat(goc)
-    kh = KhachBatch(TRA, hong={"bt0", "bt1"})
+    hai_cho = dict(TRA, uv_tl=_tv(diem=3, phat_hien=[dict(PH_DUNG, muc_phieu="4", muc_do="goi_y", dong=2,
+                                                          trich="bệnh mạn tính phổ biến")]))   # không cùng chỗ F01
+    kh = KhachBatch(hai_cho, hong={"bt0", "bt1"})
     goi = lambda: H.main(["vong-kin", "--chi-api", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc)  # noqa: E731
     ma = [goi() for _ in range(6)]
     assert ma[-2:] == [4, 1]                                  # nộp biên tập → hỏng hết ⇒ mã 1, lần hỏng thứ 1
@@ -1256,3 +1258,26 @@ def test_vong_kin_ket_hop_hai_ghe_cung_dong_mot_phieu_bien_tap(tmp_path, capsys)
     assert _vk(goc, kh) == H.CHO_AGENT
     assert {v["agent"] for v in H.viec_agent_dang_cho(goc, STUDY) if v["loai_viec"] == "tham_tra"} == {
         "pb1-thiet-ke-nghien-cuu", "uv_tk-co-mau-nghien-cuu"}
+
+
+def test_xep_lo_api_khong_tach_cum_cum_lon_di_nguyen():
+    cum = H.gom_cum_bien_tap(VD_GOM, _van_gom())
+    ids = lambda nhom: [[f["id"] for f in g] for g in nhom]  # noqa: E731
+    assert ids(H.xep_lo_theo_cum(cum, 6)) == [["A", "B", "C", "D"], ["E", "F", "H", "G"], ["X", "Y", "Z"]]
+    assert ids(H.xep_lo_theo_cum(cum, 2)) == [["A", "B", "C"], ["D"], ["E", "F", "H"], ["G"], ["X", "Y", "Z"]]
+    assert ids(API.chia_lo(VD_GOM, 2))[0] == ["A", "B"]          # chia theo thứ tự cũ tách cụm A–B–C
+
+
+def test_vong_kin_chi_api_hai_ghe_cung_dong_cung_mot_yeu_cau(tmp_path, monkeypatch, capsys):
+    """Chế độ chỉ-API: dù mỗi yêu cầu API chỉ nhận 1 vấn đề, hai ghế cùng nêu dòng 8 vẫn đi CHUNG một yêu cầu biên tập
+    (chia theo thứ tự cũ ⇒ hai yêu cầu ⇒ thay thế áp sau không còn thấy đoạn cũ)."""
+    monkeypatch.setattr(H, "VAN_DE_MOI_YEU_CAU", 1)
+    goc = _goc(tmp_path)
+    _hieu_chuan_dat(goc)
+    kh = KhachBatch(dict(TRA_CUNG_DONG))
+    assert [_buoc(goc, kh) for _ in range(5)] == [4, 0, 4, 0, 4]      # thành viên → chủ tịch → nộp biên tập
+    cids = kh.lo[sorted(kh.lo)[-1]]
+    assert len(cids) == 1 and cids[0].startswith("bt0_")
+    loi_nhan = json.dumps(kh.yc[cids[0]], ensure_ascii=False)
+    assert "F01" in loi_nhan and "F02" in loi_nhan
+    assert "🔗 Gom yêu cầu chạm cùng chỗ vào cùng một yêu cầu API: F01+F02." in capsys.readouterr().out
