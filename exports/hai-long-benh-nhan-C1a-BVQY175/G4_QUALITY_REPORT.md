@@ -46,7 +46,7 @@
 | Kahan BC et al. The estimands framework: a primer on the ICH E9(R1) addendum. BMJ 2024;384:e076316 (PMID 38262663) | Cách khai estimand và liên hệ với quần thể phân tích/phân tích độ nhạy trong SAP | 38262663 |
 | Gamble C et al. Guidelines for the Content of Statistical Analysis Plans in Clinical Trials. JAMA 2017;318(23):2337-43 (PMID 29260229) | Tập mục tối thiểu của SAP — căn cứ cho mục bắt buộc §1/§2/§4/§5/§9/§10 (và §13–§15 với RCT) | 29260229 |
 | Moher D et al. CONSORT 2010 explanation and elaboration. BMJ 2010;340:c869 (PMID 20332511) | RCT: không kiểm định ý nghĩa khác biệt đặc điểm nền giữa các nhóm đã ngẫu nhiên hoá — bảng 1 của SAP RCT không có cột p | 20332511 |
-| Ogundimu EO et al. J Clin Epidemiol 2016;76:175-82 (PMID 26964707) | Nguồn thật của ngưỡng EPV≥10 cho hồi quy logistic/Cox đa biến | 26964707 |
+| Ogundimu EO et al. J Clin Epidemiol 2016;76:175-82 (PMID 26964707) | Nguồn thật của ngưỡng EPV ≥ 10 cho hồi quy logistic/Cox đa biến | 26964707 |
 | van Smeden M et al. BMC Med Res Methodol 2016;16:163 (PMID 27881078) | Quy tắc EPV cố định được hỗ trợ YẾU — nên khai kèm cảnh báo, không coi là ngưỡng tuyệt đối | 27881078 |
 | van Buuren S, Groothuis-Oudshoorn K. J Stat Softw 2011;45(3) — mice | Multiple Imputation dưới giả định MAR; phải khai rõ biến đưa vào mô hình imputation | https://www.jstatsoft.org/article/view/v045i03 |
 | FDA (2016) / EMA (2005) — hướng dẫn biên non-inferiority — LƯU Ý MÂU THUẪN | FDA chấp nhận M2 = tỷ lệ % của M1; EMA nói rõ định nghĩa biên theo tỷ lệ hiệu ứng hoạt-chất-vs-giả-dược là KHÔNG phù hợp — margin cần biện minh lâm sàng + khung pháp lý cụ thể, không chỉ một con số | https://www.ema.europa.eu/en/documents/scientific-guideline/guideline-choice-non-inferiority-margin_en.pdf |
