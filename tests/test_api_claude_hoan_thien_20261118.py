@@ -520,3 +520,16 @@ def test_khong_doc_ghi_co_that_duoi_pytest(monkeypatch):
     monkeypatch.delenv("EBM_KIEM_API_THAT", raising=False)
     assert API.doc_co_het_tin_dung(API._HTD_THAT) is None
     API.ghi_co_het_tin_dung("x", duong=API._HTD_THAT)  # rào pytest: không đụng tệp thật
+
+
+def test_dong_tran_cu_trong_kho_ro_vao_moi_truong_khong_phai_cong_tac(monkeypatch):
+    # 22/11/2026 (đo thật): app.config nạp kho bí mật vào os.environ ⇒ dòng trần CŨ «40» hiện ra như biến môi trường
+    # và chặn nhầm hội đồng khoa học 4.0 — trái quyết định 21/11 «theo tín dụng, không trần tự đặt».
+    monkeypatch.setattr(API, "_gia_tri_kho", lambda ten, kho=None: "40")
+    monkeypatch.setenv("EBM_API_CLAUDE_TRAN_USD_THANG", "40")
+    tran, nguon = API.tran_usd_thang_nguon()
+    assert tran is None and "bỏ qua trần «40»" in nguon
+    monkeypatch.setenv("EBM_API_CLAUDE_TRAN_USD_THANG", "25")   # công tắc khẩn cấp THẬT (giá trị khác) vẫn tác dụng
+    assert API.tran_usd_thang_nguon() == (25.0, "biến môi trường")
+    monkeypatch.setenv("EBM_API_CLAUDE_TRAN_USD_THANG", "0")
+    assert API.tran_usd_thang_nguon()[0] == 0.0

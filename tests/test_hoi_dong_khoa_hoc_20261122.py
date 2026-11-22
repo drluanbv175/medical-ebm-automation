@@ -277,11 +277,11 @@ SACH = {**{m: _tv(diem=5) for m in ("pb1", "pb2", "uv_tk", "uv_dd", "uv_tl", "uv
         "ct": {"phan_quyet": [], "gop": [], "nhan_xet_chung": "Đạt.", "yeu_cau_chinh_sua": []}}
 
 
-def _hieu_chuan_dat(goc, do_nhay=1.0, bao_nham=True, loai="de_cuong"):
+def _hieu_chuan_dat(goc, do_nhay=1.0, bao_nham=True, loai="de_cuong", ket_hop=True):
     """Kết quả hiệu chuẩn HỢP LỆ dưới quy chế hiện hành (điều kiện tiên quyết của vòng kín): độ nhạy + báo nhầm."""
     hc = goc / "exports" / STUDY / H.THU_MUC / "hieu_chuan" / loai
     H._ghi_json(hc / "ket_qua.json", {"sha_quy_che": H.sha_ke_hoach(), "do_nhay": do_nhay, "bat": round(7 * do_nhay),
-                                      "so_loi_cai": 7, "bat_dac_thu": True})
+                                      "so_loi_cai": 7, "bat_dac_thu": True, "ket_hop": ket_hop})
     if bao_nham:
         H._ghi_json(hc / "bao_nham.json", {"sha_quy_che": H.sha_ke_hoach(), "dat": True, "do_chinh_xac": 0.9,
                                            "model_trong_tai": H.TRONG_TAI_MODEL, "doi_chung_dung": 10,
@@ -291,7 +291,7 @@ def _hieu_chuan_dat(goc, do_nhay=1.0, bao_nham=True, loai="de_cuong"):
 def _vong(goc, kh, n=12):
     ma = None
     for _ in range(n):
-        ma = H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc)
+        ma = H.main(["vong-kin", "--chi-api", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc)
         out = goc / "exports" / STUDY / H.THU_MUC
         if any((H._doc_st(p) or {}).get("buoc") == "dat" for p in out.glob("trang_thai_*.json")):
             return ma
@@ -304,7 +304,7 @@ def test_vong_kin_sua_roi_hop_lai_toi_khi_dat(tmp_path):
     kh = KhachBatch({**TRA, "bt0": SUA})
     p = goc / "exports" / STUDY / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md"
     for _ in range(6):                                   # vòng 1: họp → còn «cần sửa» → biên tập → áp
-        H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc)
+        H.main(["vong-kin", "--chi-api", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc)
         if "phân tích ca đầy đủ" in p.read_text(encoding="utf-8"):
             break
     assert "phân tích ca đầy đủ" in p.read_text(encoding="utf-8")
@@ -334,7 +334,8 @@ def test_vong_kin_hoan_nguyen_khi_ban_sua_lam_chuan_xau_di(tmp_path, monkeypatch
         return r
 
     monkeypatch.setattr(H, "_do_chuan", do_gia)
-    ma = [H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc) for _ in range(6)]
+    vk = ["vong-kin", "--chi-api", "--study", STUDY, "--goi-api", "--ap-dung"]
+    ma = [H.main(vk, client=kh, goc=goc) for _ in range(6)]
     assert 1 in ma and p.read_text(encoding="utf-8") == goc_van  # đã hoàn nguyên, không để bản xấu đi
 
 
@@ -343,7 +344,8 @@ def test_vong_kin_dung_sau_so_vong_toi_da(tmp_path, monkeypatch):
     monkeypatch.setattr(H, "SO_VONG_TOI_DA", 1)
     _hieu_chuan_dat(goc)   # hiệu chuẩn tính dưới quy chế ĐÃ đổi số vòng — SHA phải tính sau khi vá
     # 4 lượt họp (nộp/lấy thành viên, nộp/lấy chủ tịch) + lượt 5 xét điều kiện dừng ở «xong»
-    ma = [H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc) for _ in range(5)]
+    vk = ["vong-kin", "--chi-api", "--study", STUDY, "--goi-api", "--ap-dung"]
+    ma = [H.main(vk, client=kh, goc=goc) for _ in range(5)]
     assert ma[-1] == 1 and "phân tích ca đầy đủ" not in (goc / "exports" / STUDY /
                                                         f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md").read_text("utf-8")
 
@@ -375,12 +377,14 @@ def test_phien_khoi_tao_duoi_quy_che_khac_het_hieu_luc(tmp_path, monkeypatch):
 
 def test_vong_kin_tu_choi_khi_chua_hieu_chuan_dat(tmp_path, capsys):
     goc, kh = _goc(tmp_path), KhachBatch({**TRA, "bt0": SUA})
-    assert H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc) == 3 and kh.lo == {}
+    assert H.main(["vong-kin", "--chi-api", "--study", STUDY, "--goi-api", "--ap-dung"],
+                  client=kh, goc=goc) == 3 and kh.lo == {}
     _hieu_chuan_dat(goc, do_nhay=4 / 6)                            # dưới ngưỡng 5/6
-    assert H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc) == 3 and kh.lo == {}
+    assert H.main(["vong-kin", "--chi-api", "--study", STUDY, "--goi-api", "--ap-dung"],
+                  client=kh, goc=goc) == 3 and kh.lo == {}
     assert "< ngưỡng" in capsys.readouterr().err
     _hieu_chuan_dat(goc)
-    assert H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc) == 4
+    assert H.main(["vong-kin", "--chi-api", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc) == 4
 
 
 def test_bien_ban_ghi_quy_che_va_hieu_luc(tmp_path):
@@ -413,7 +417,7 @@ def test_bien_tap_chia_nhom_va_nop_lai_khi_hong_het(tmp_path, monkeypatch):
     goc = _goc(tmp_path)
     _hieu_chuan_dat(goc)
     kh = KhachBatch(TRA, hong={"bt0", "bt1"})
-    goi = lambda: H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc)  # noqa: E731
+    goi = lambda: H.main(["vong-kin", "--chi-api", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc)  # noqa: E731
     ma = [goi() for _ in range(6)]
     assert ma[-2:] == [4, 1]                                  # nộp biên tập → hỏng hết ⇒ mã 1, lần hỏng thứ 1
     assert len(kh.lo[sorted(kh.lo)[-1]]) == 2
@@ -442,7 +446,7 @@ def test_chon_loc_giu_thay_the_tot_loai_thay_the_lam_xau(tmp_path, monkeypatch):
     monkeypatch.setattr(H, "_do_chuan", do_gia)
     p = goc / "exports" / STUDY / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md"
     for _ in range(6):
-        H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc)
+        H.main(["vong-kin", "--chi-api", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc)
         if "phân tích ca đầy đủ" in p.read_text(encoding="utf-8"):
             break
     van = p.read_text(encoding="utf-8")
@@ -499,7 +503,7 @@ def test_vong_kin_chua_giai_quyet_thi_sua_tiep_roi_tham_tra_lai(tmp_path):
         {"dong": 8, "cu": "phân tích ca đầy đủ", "moi": "phân tích ca đầy đủ, kèm phân tích độ nhạy gán đa trị"}]}]}
     kh = KhachBatch({**TRA, "bt0": SUA, "tt_pb1": tt_chua})
     p = goc / "exports" / STUDY / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md"
-    goi = lambda: H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc)  # noqa: E731
+    goi = lambda: H.main(["vong-kin", "--chi-api", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc)  # noqa: E731
     assert [goi() for _ in range(6)] == [4, 0, 4, 0, 4, 0] and "phân tích ca đầy đủ" in p.read_text("utf-8")
     kh.tra["bt0"] = sua2
     assert [goi() for _ in range(4)] == [4, 0, 4, 0]          # thẩm tra: CHƯA giải quyết ⇒ biên tập lần 2
@@ -551,7 +555,7 @@ def test_tham_tra_loai_loi_moi_co_pii():
 
 # ── QC-HDKH-2.1 (22/11/2026, đo thật dưới 2.0) ────────────────────────────────────────────────────────────────────────
 def _buoc(goc, kh):
-    return H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc)
+    return H.main(["vong-kin", "--chi-api", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc)
 
 
 def _cac_st(goc):
@@ -802,8 +806,9 @@ def test_do_bao_nham_dau_cuoi_roi_moi_co_hieu_luc(tmp_path):
     assert H.main(["hieu-chuan", "--study", STUDY, "--cham"], goc=goc) == 0
     out = goc / "exports" / STUDY
     assert not H.hieu_luc_hieu_chuan(out)[0]                          # mới có độ nhạy, CHƯA đo báo nhầm
-    assert H.main(["do-bao-nham", "--study", STUDY], client=kh, goc=goc) == 0 and not kh.lo.get("msgbatch_4")
-    assert H.main(["do-bao-nham", "--study", STUDY, "--goi-api"], client=kh, goc=goc) == 4
+    assert H.main(["do-bao-nham", "--study", STUDY, "--trong-tai", "api"], client=kh, goc=goc) == 0
+    assert not kh.lo.get("msgbatch_4")
+    assert H.main(["do-bao-nham", "--study", STUDY, "--trong-tai", "api", "--goi-api"], client=kh, goc=goc) == 4
     tt = json.loads((hc / "bao_nham_trang_thai.json").read_text(encoding="utf-8"))
     assert {m["nhom"] for m in tt["muc"]} == {"kiem_soat_duong", "kiem_soat_am", "nghi_van"}
     p_tt = [p for c, p in kh.yc.items() if c.startswith("tt_bn_")][0]
@@ -813,7 +818,7 @@ def test_do_bao_nham_dau_cuoi_roi_moi_co_hieu_luc(tmp_path):
         {"id": m["id"], "ket_qua": "sai" if m["nhom"] == "kiem_soat_am" else "dung",
          "co_so": "tai_lieu_da_dap_ung" if m["nhom"] == "kiem_soat_am" else "", "dong": m["dong"],
          "trich": m["trich"], "ly_do": "đối chiếu tài liệu"} for m in tt["muc"]]}
-    assert H.main(["do-bao-nham", "--study", STUDY, "--goi-api"], client=kh, goc=goc) == 0
+    assert H.main(["do-bao-nham", "--study", STUDY, "--trong-tai", "api", "--goi-api"], client=kh, goc=goc) == 0
     bn = json.loads((hc / "bao_nham.json").read_text(encoding="utf-8"))
     assert bn["dat"] and bn["trong_tai_hop_le"] and bn["do_chinh_xac"] == 1.0
     assert bn["model_trong_tai"] == "claude-fable-5-2"
@@ -824,7 +829,8 @@ def test_vong_kin_tu_choi_loai_khong_phai_de_cuong(tmp_path, capsys):
     goc = _goc(tmp_path)
     (goc / "exports" / STUDY / f"G4_A5_SAP_FINAL_{STUDY}.md").write_text(SAP_MAU, encoding="utf-8", newline="\n")
     _hieu_chuan_dat(goc, loai="sap")
-    assert H.main(["vong-kin", "--study", STUDY, "--loai", "sap", "--goi-api"], client=KhachBatch({}), goc=goc) == 3
+    assert H.main(["vong-kin", "--chi-api", "--study", STUDY, "--loai", "sap", "--goi-api"],
+                  client=KhachBatch({}), goc=goc) == 3
     assert "chỉ được THẨM ĐỊNH" in capsys.readouterr().err
 
 
@@ -877,3 +883,301 @@ def test_cham_hieu_chuan_sot_loi_dac_thu(tmp_path):
     assert H.main(["hieu-chuan", "--study", STUDY, "--cham"], goc=goc) == 1
     kq = json.loads((hc / "ket_qua.json").read_text(encoding="utf-8"))
     assert kq["bat_dac_thu"] is False and kq["do_nhay"] >= H.DO_NHAY_TOI_THIEU and not kq["dat"]
+
+
+# ── QC-HDKH-4.0: kết hợp Claude API + công cụ của hệ + agent Claude Code (bác sĩ 22/11/2026) ─────────────────────────
+def test_ghe_mang_doctrine_agent_tu_ban_chup_khoa():
+    ds = H.thanh_phan_hoi_dong("rct", "", "sap")
+    tac = {t["ma"]: t["tac_nhan"] for t in ds}
+    assert tac["uv_tk"] == ["co-mau-nghien-cuu", "phan-tich-thong-ke", "thiet-ke-nghien-cuu"]
+    assert tac["uv_ctk"] == ["an-toan-nghien-cuu"] and tac["pb1"] == ["thiet-ke-nghien-cuu"]
+    ln = H.loi_nhan_thanh_vien(ds[2], "sap", {"co-mau-nghien-cuu": {"doctrine": "LUẬT-RIÊNG-CỠ-MẪU"}})
+    assert "LUẬT-RIÊNG-CỠ-MẪU" in ln and "KHÔNG có trong bản chụp" in ln      # agent thiếu ⇒ nói rõ, không bịa
+    assert H.doc_doctrine() and all(v["doctrine"] for v in H.doc_doctrine().values())
+
+
+def test_trich_doctrine_giu_luat_bo_thao_tac():
+    van = ("---\nname: x\n---\n## 🤖 BƯỚC 0 — FULL AUTO\nlệnh\n## Luật nền\nKHÔNG bịa effect size.\n"
+           "## Mẫu đầu ra theo tiêu chí\nkhuôn\n## Bài học giả lập\nđo thật.\n")
+    d = H.trich_doctrine(van)
+    assert "KHÔNG bịa effect size" in d and "đo thật" in d and "khuôn" not in d and "lệnh" not in d
+
+
+def test_bang_chung_he_tu_checkpoint_va_bien_nhan(tmp_path):
+    assert "không có checkpoint" in H.bang_chung_he("X", tmp_path)["ghi_chu"]
+    H._ghi_json(tmp_path / "G3_checkpoint.json", {"design_code": "cross_sectional", "alpha": 0.05, "n_adjusted": 385})
+    H._ghi_json(tmp_path / "A12_METADATA_RECEIPT.json", {"pmids_checked": ["1", "2"], "all_resolved": True})
+    H._ghi_json(tmp_path / "A12_RETRACTION_RECEIPT.json", {"all_clean": False, "results": {
+        "1": {"status": "ok"}, "2": {"status": "retracted"}}})
+    bc = H.bang_chung_he("X", tmp_path)
+    assert bc["co_mau_g3"]["n_adjusted"] == 385 and bc["trich_dan_a12"]["pmid_co_van_de"] == {"2": "retracted"}
+
+
+def test_cau_truc_bao_cao_theo_huong_dan():
+    bc = ("# Danh sách cán bộ tham gia\n# Mục lục\n# Danh mục chữ viết tắt\n# Danh mục bảng\n# ĐẶT VẤN ĐỀ\nx\n"
+          "# CHƯƠNG 1. TỔNG QUAN TÀI LIỆU\n# CHƯƠNG 2. ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP NGHIÊN CỨU\n# CHƯƠNG 3. KẾT QUẢ\n"
+          "# CHƯƠNG 4. BÀN LUẬN\n# KẾT LUẬN\n" + "chữ " * 1000 + "\n# TÀI LIỆU THAM KHẢO\n# PHỤ LỤC\n")
+    kq = H.kiem_cau_truc_bao_cao(bc)
+    assert kq["thieu"] == ["Khuyến nghị"] and any("kết luận ~" in x for x in kq["canh_bao"])
+    assert H.LOAI_TAI_LIEU["bao_cao"]["phieu"]["3"] == "Kết quả nghiên cứu"
+    assert H.LOAI_TAI_LIEU["bao_cao"]["phieu"]["4"].startswith("Chất lượng của Báo cáo tổng hợp")
+
+
+VAN_KHOA = """# ĐỀ CƯƠNG
+## 2.6.5. Xử lý và phân tích số liệu
+Hồi quy Poisson.
+# CHƯƠNG 3. DỰ KIẾN KẾT QUẢ VÀ BÀN LUẬN
+Bảng 3.1. Tỷ lệ.
+## 3.2. Nhóm hai
+Bảng 3.2. Hồi quy.
+## 3.5. Dự kiến bàn luận
+Bàn luận theo mục tiêu.
+# 4. TỔ CHỨC VÀ ĐẠO ĐỨC
+## 4.11. Đạo đức trong nghiên cứu
+- Đăng ký nghiên cứu: không đăng ký công khai.
+- Đồng ý tham gia: có phiếu.
+# PHỤ LỤC A. TÓM TẮT KẾ HOẠCH PHÂN TÍCH THỐNG KÊ
+SAP 1.0.
+"""
+
+
+def test_vung_khoa_theo_de_muc_dong_khai_va_sap():
+    k = dict(zip(VAN_KHOA.splitlines(), H.vung_khoa(VAN_KHOA, sap_khoa=True)))
+    assert k["Hồi quy Poisson."] and k["Bảng 3.1. Tỷ lệ."] and k["SAP 1.0."]
+    assert k["Bảng 3.2. Hồi quy."]                                 # khoá qua đề mục TỔ TIÊN (chương dự kiến kết quả)
+    assert k["- Đăng ký nghiên cứu: không đăng ký công khai."] and not k["- Đồng ý tham gia: có phiếu."]
+    assert not k["Bàn luận theo mục tiêu."]                       # «dự kiến bàn luận» mở khoá dù chương bị khoá
+    k0 = dict(zip(VAN_KHOA.splitlines(), H.vung_khoa(VAN_KHOA, sap_khoa=False)))
+    assert not k0["Hồi quy Poisson."] and k0["SAP 1.0."]           # SAP chưa khoá ⇒ mục phân tích được sửa
+
+
+def test_rao_khoa_loai_thay_the_cham_vung_khoa():
+    dl = {"sua": [{"id": "F1", "hanh_dong": "sua", "thay": [
+        {"cu": "không đăng ký công khai", "moi": "đăng ký công khai trên OSF"},
+        {"cu": "Bàn luận theo mục tiêu.", "moi": "Bàn luận theo từng mục tiêu, đối chiếu y văn."},
+        {"cu": "Hồi quy Poisson.", "moi": "Hồi quy logistic."}]}]}
+    van, nk = H.ap_bien_tap(dl, VAN_KHOA, sap_khoa=True)
+    assert "đối chiếu y văn" in van and "không đăng ký công khai" in van and "Hồi quy Poisson." in van
+    assert len(nk["loai"]) == 2 and all("NỘI DUNG ĐÃ KHOÁ" in x["ly_do_loai"] for x in nk["loai"])
+    van2, nk2 = H.ap_bien_tap(dl, VAN_KHOA)                        # không truyền cờ ⇒ hành vi cũ (không rào khoá)
+    assert len(nk2["nhan"]) == 3
+
+
+def test_hoan_nguyen_chi_khoi_vuot_quyen_va_dong_bi_neu():
+    sua = (VAN_KHOA.replace("không đăng ký công khai", "đăng ký công khai")
+           .replace("Bàn luận theo mục tiêu.", "Bàn luận đối chiếu y văn.")
+           .replace("Bảng 3.1. Tỷ lệ.", "Bảng 3.1. Tỷ lệ %."))
+    moi, nk = H.hoan_nguyen_vuot_quyen(VAN_KHOA, sua, True)
+    assert "không đăng ký công khai" in moi and "Bảng 3.1. Tỷ lệ." in moi and "Bàn luận đối chiếu y văn." in moi
+    assert len(nk) == 2 and all(x["ly_do"] == "chạm nội dung đã khoá" for x in nk)
+    dong = sua.splitlines().index("Bàn luận đối chiếu y văn.") + 1
+    moi2, nk2 = H.hoan_nguyen_vuot_quyen(VAN_KHOA, sua, True, [dong])
+    assert "Bàn luận theo mục tiêu." in moi2 and any(x["ly_do"] == "dòng chốt kiểm đầu ra đã nêu" for x in nk2)
+
+
+def _tra_loi(goc, loai_viec, ham):
+    """Giả lập agent: với MỖI phiếu việc đang chờ của loại đó, ghi trả lời do `ham(phiếu, dữ liệu)` dựng."""
+    for v in H.viec_agent_dang_cho(goc, STUDY):
+        if v["loai_viec"] == loai_viec:
+            du = json.loads(Path(v["tra_loi"]).with_name(Path(v["loi_nhan"]).name.replace(".md", ".json"))
+                            .read_text(encoding="utf-8"))
+            Path(v["tra_loi"]).write_text(json.dumps(ham(v, du), ensure_ascii=False), encoding="utf-8", newline="\n")
+
+
+def _pd_dung_het(v, du, dong_am=None):
+    ra = []
+    for m in du["muc"]:
+        am = m["van_de"].startswith("Tài liệu hoàn toàn không trình bày")
+        ra.append({"id": m["id"], "ket_qua": "sai" if am else "dung", "co_so": "tai_lieu_da_dap_ung" if am else "",
+                   "dong": m["dong"], "trich": m["trich"], "ly_do": "đối chiếu"})
+    return {"phan_dinh": ra}
+
+
+def _vk(goc, kh):
+    return H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc)
+
+
+def _goc_ket_hop(tmp_path):
+    goc = _goc(tmp_path)
+    p = goc / "exports" / STUDY / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md"
+    p.write_text(DE_CUONG + "### 2.6.6. Cỡ mẫu\nCỡ mẫu theo công thức một tỷ lệ.\nTính được 385.\n", encoding="utf-8",
+                 newline="\n")
+    _hieu_chuan_dat(goc)
+    return goc, p
+
+
+def test_vong_kin_ket_hop_agent_tham_dinh_bien_tap_tham_tra_chot_cuoi(tmp_path):
+    goc, p = _goc_ket_hop(tmp_path)
+    kh = KhachBatch(dict(TRA))
+    assert [_vk(goc, kh) for _ in range(4)] == [4, 0, 4, 0]           # API: thành viên → chủ tịch (MỘT lần họp)
+    assert _vk(goc, kh) == H.CHO_AGENT                                 # phiếu thẩm định cho agent sở hữu
+    viec = H.viec_agent_dang_cho(goc, STUDY)
+    assert {v["agent"] for v in viec} >= {"thiet-ke-nghien-cuu"} and all(v["loai_viec"] == "tham_dinh" for v in viec)
+    phieu = json.loads(Path(viec[0]["loi_nhan"]).with_suffix(".json").read_text(encoding="utf-8"))
+    assert "nhom" not in json.dumps(phieu) and "goc" not in phieu["muc"][0]          # phiếu MÙ
+    assert H.main(["viec-agent", "--study", STUDY], goc=goc) == H.CHO_AGENT
+    _tra_loi(goc, "tham_dinh", _pd_dung_het)
+    assert _vk(goc, kh) == 0                                           # thẩm định xong, F01 giữ
+    assert _vk(goc, kh) == H.CHO_AGENT                                 # phiếu biên tập cho agent
+    _tra_loi(goc, "bien_tap", lambda v, du: SUA)
+    assert _vk(goc, kh) == 0 and "phân tích ca đầy đủ" in p.read_text(encoding="utf-8")
+    assert _vk(goc, kh) == H.CHO_AGENT                                 # thẩm tra bằng agent (không API)
+    _tra_loi(goc, "tham_tra", lambda v, du: TT_DAT)
+    assert _vk(goc, kh) == 0
+    assert _vk(goc, kh) == H.CHO_AGENT                                 # chốt cuối tham-dinh-dau-ra
+    _tra_loi(goc, "dau_ra", lambda v, du: {"ket_qua": "DAT", "loi": []})
+    assert _vk(goc, kh) == 0
+    dat = [s for s in _cac_st(goc) if s.get("buoc") == "dat"][0]
+    assert dat["trinh_bac_si"] and dat["ket_hop"] and len(kh.lo) == 2   # đúng 2 batch API cho cả vòng kín
+
+
+def test_bien_tap_chi_vuot_tham_quyen_van_sang_tham_tra_khong_ghi_tep(tmp_path):
+    """22/11/2026 (đo thật BTM vòng 4): mọi vấn đề còn lại nằm vùng khoá ⇒ biên tập viên khai «vượt thẩm quyền»,
+    0 thay thế ⇒ máy KHÔNG được dừng như thất bại mà sang thẩm tra trên chính bản này (không ghi tệp)."""
+    goc, p = _goc_ket_hop(tmp_path)
+    kh = KhachBatch(dict(TRA))
+    assert [_vk(goc, kh) for _ in range(5)] == [4, 0, 4, 0, H.CHO_AGENT]
+    _tra_loi(goc, "tham_dinh", _pd_dung_het)
+    assert _vk(goc, kh) == 0 and _vk(goc, kh) == H.CHO_AGENT
+    truoc = p.read_text(encoding="utf-8")
+    _tra_loi(goc, "bien_tap", lambda v, du: {"sua": [
+        {"id": m["id"], "hanh_dong": "vuot_tham_quyen", "ly_do": "cần thống kê viên quyết"} for m in du["van_de"]]})
+    assert _vk(goc, kh) == 0                                           # không còn «⛔ … — dừng»
+    assert p.read_text(encoding="utf-8") == truoc                      # không ghi tệp
+    assert _vk(goc, kh) == H.CHO_AGENT                                 # sang thẩm tra bằng agent
+    assert {v["loai_viec"] for v in H.viec_agent_dang_cho(goc, STUDY)} == {"tham_tra"}
+    st = max(_cac_st(goc), key=lambda s: int(s.get("vong", 1)))
+    assert st["che_do"] == "tham_tra" and st["vtq_ids"] and len(kh.lo) == 2    # không thêm batch API
+
+
+def test_agent_phan_sai_doi_chung_thi_khong_ap_phan_quyet(tmp_path):
+    goc, p = _goc_ket_hop(tmp_path)
+    kh = KhachBatch(dict(TRA))
+    assert [_vk(goc, kh) for _ in range(5)] == [4, 0, 4, 0, H.CHO_AGENT]
+
+    def bac_het(v, du):     # agent bác MỌI mục kể cả đối chứng âm theo cách sai: «đúng» đối chứng âm
+        return {"phan_dinh": [{"id": m["id"], "ket_qua": "dung" if m["van_de"].startswith("Tài liệu hoàn toàn")
+                               else "sai", "co_so": "chuan_khong_doi", "ly_do": "x"} for m in du["muc"]]}
+    _tra_loi(goc, "tham_dinh", bac_het)
+    assert _vk(goc, kh) == 0
+    st = [s for s in _cac_st(goc) if s.get("tham_dinh_agent")][0]
+    assert not any(g["hop_le"] for g in st["tham_dinh_agent"].values()) and st["chu_tich"]["giu"]
+
+
+def test_agent_bac_nhan_xet_co_chung_minh_thi_khong_phai_sua(tmp_path):
+    goc, p = _goc_ket_hop(tmp_path)
+    kh = KhachBatch(dict(TRA))
+    assert [_vk(goc, kh) for _ in range(5)] == [4, 0, 4, 0, H.CHO_AGENT]
+
+    def bac_F(v, du):
+        ra = _pd_dung_het(v, du)
+        for x, m in zip(ra["phan_dinh"], du["muc"]):
+            if m["muc_do"] in ("can_sua", "nghiem_trong") and not m["van_de"].startswith("Tài liệu hoàn toàn"):
+                x.update(ket_qua="sai", co_so="tai_lieu_da_dap_ung", dong=8, trich="theo Wilson")
+        return ra
+    _tra_loi(goc, "tham_dinh", bac_F)
+    assert _vk(goc, kh) == 0
+    st = [s for s in _cac_st(goc) if s.get("tham_dinh_agent")][0]
+    assert st["chu_tich"]["loai_agent"] and not [f for f in st["chu_tich"]["giu"] if f["muc_do"] == "can_sua"]
+
+
+def test_chot_cuoi_tra_ve_sua_thi_chua_trinh(tmp_path):
+    goc, p = _goc_ket_hop(tmp_path)
+    kh = KhachBatch(dict(TRA))
+    seq = [_vk(goc, kh) for _ in range(5)]
+    _tra_loi(goc, "tham_dinh", _pd_dung_het)
+    seq += [_vk(goc, kh), _vk(goc, kh)]
+    _tra_loi(goc, "bien_tap", lambda v, du: SUA)
+    seq += [_vk(goc, kh), _vk(goc, kh)]
+    _tra_loi(goc, "tham_tra", lambda v, du: TT_DAT)
+    seq += [_vk(goc, kh), _vk(goc, kh)]
+    _tra_loi(goc, "dau_ra", lambda v, du: {"ket_qua": "TRA_VE_SUA", "loi": [
+        {"ma": "R3", "dong": 2, "trich": "Tăng huyết áp", "mo_ta": "sửa vượt thẩm quyền", "de_xuat": "hoàn nguyên"}]})
+    assert _vk(goc, kh) == 0
+    st = [s for s in _cac_st(goc) if s.get("ket_qua_dau_ra")][0]
+    assert not st.get("trinh_bac_si") and st["buoc"] == "bien_tap"
+    assert [x["id"] for x in st["tham_tra"]["loi_moi"]][-1].startswith("R")
+
+
+def test_hieu_luc_ket_hop_doi_hieu_chuan_ket_hop(tmp_path):
+    goc = _goc(tmp_path)
+    _hieu_chuan_dat(goc, ket_hop=False)
+    out = goc / "exports" / STUDY
+    assert H.hieu_luc_hieu_chuan(out)[0] and not H.hieu_luc_hieu_chuan(out, ket_hop=True)[0]
+
+
+def test_do_bao_nham_bang_trong_tai_agent_khong_ton_api(tmp_path):
+    goc, kh = _goc(tmp_path), KhachBatch({})
+    assert H.main(["hieu-chuan", "--study", STUDY, "--tao"], goc=goc) == 0
+    hc = _hop_ban_cai_loi(goc, kh)
+    assert H.main(["hieu-chuan", "--study", STUDY, "--cham"], goc=goc) == 0
+    n_lo = len(kh.lo)
+    assert H.main(["do-bao-nham", "--study", STUDY], client=kh, goc=goc) == H.CHO_AGENT
+    viec = [v for v in H.viec_agent_dang_cho(goc, STUDY) if v["loai_viec"] == "trong_tai"]
+    assert viec and viec[0]["agent"] == "trong-tai-tranh-bien"
+    phieu = Path(viec[0]["loi_nhan"])
+    # làm mù (22/11/2026): phiếu không nằm cạnh đáp án, không lộ tên bản cài lỗi
+    assert "hieu_chuan" not in phieu.parts and not (phieu.parent / "dap_an.json").exists()
+    assert "BAN_CAI_LOI" not in phieu.read_text(encoding="utf-8") and "dap_an" not in phieu.read_text(encoding="utf-8")
+    tt = json.loads((hc / "bao_nham_trang_thai.json").read_text(encoding="utf-8"))
+    assert "nhom" not in json.dumps(json.loads(Path(viec[0]["loi_nhan"]).with_suffix(".json").read_text("utf-8")))
+    Path(viec[0]["tra_loi"]).write_text(json.dumps({"phan_dinh": [
+        {"id": m["id"], "ket_qua": "sai" if m["nhom"] == "kiem_soat_am" else "dung",
+         "co_so": "tai_lieu_da_dap_ung" if m["nhom"] == "kiem_soat_am" else "", "dong": m["dong"],
+         "trich": m["trich"], "ly_do": "đối chiếu"} for m in tt["muc"]]}, ensure_ascii=False), encoding="utf-8",
+        newline="\n")
+    assert H.main(["do-bao-nham", "--study", STUDY], client=kh, goc=goc) == 0 and len(kh.lo) == n_lo
+    bn = json.loads((hc / "bao_nham.json").read_text(encoding="utf-8"))
+    assert bn["dat"] and bn["model_trong_tai"] == "agent:trong-tai-tranh-bien"
+
+
+def test_tep_cho_agent_ban_cai_loi_thanh_ban_sao_trung_tinh(tmp_path):
+    hc = tmp_path / "hoi_dong_khoa_hoc" / "hieu_chuan" / "de_cuong"
+    hc.mkdir(parents=True)
+    ban = hc / f"BAN_CAI_LOI_{STUDY}_de_cuong.md"
+    ban.write_text(DE_CUONG, encoding="utf-8", newline="\n")
+    (hc / "dap_an.json").write_text("{}", encoding="utf-8", newline="\n")
+    tm = tmp_path / "hoi_dong_khoa_hoc" / "viec_agent" / "x_v1"
+    p = Path(H.tep_cho_agent(str(ban), tm))
+    assert p.parent == tm and p.name.startswith("TAI_LIEU_") and "CAI_LOI" not in p.name
+    assert p.read_bytes() == ban.read_bytes() and not (p.parent / "dap_an.json").exists()
+    assert H.tep_cho_agent(str(ban), tm) == str(p)          # gọi lại không đổi
+    that = tmp_path / "DE_CUONG_NOP_HOI_DONG.md"
+    that.write_text(DE_CUONG, encoding="utf-8", newline="\n")
+    assert H.tep_cho_agent(str(that), tm) == str(that)      # tài liệu thật giữ nguyên đường dẫn
+
+
+def test_loi_gui_hoi_dong_khong_lo_ten_ban_cai_loi(tmp_path):
+    """Đo thật 22/11/2026: khối tài liệu gửi hội đồng API ở lượt hiệu chuẩn mang tên «BAN_CAI_LOI_…»."""
+    hc = tmp_path / "hoi_dong_khoa_hoc" / "hieu_chuan" / "de_cuong"
+    hc.mkdir(parents=True)
+    ban = hc / f"BAN_CAI_LOI_{STUDY}_de_cuong.md"
+    ban.write_text(DE_CUONG, encoding="utf-8", newline="\n")
+    ten = H.ten_cho_hoi_dong(str(ban))
+    assert ten.startswith("TAI_LIEU_") and "CAI_LOI" not in ten and ten.endswith(".md")
+    chung = H.khoi_chung(STUDY, H.ten_cho_hoi_dong(str(ban)), DE_CUONG, {})
+    assert "CAI_LOI" not in chung and "hieu_chuan" not in chung
+    # mọi chỗ dựng khối chung đều đi qua tên trung tính
+    nguon = Path(H.__file__).read_text(encoding="utf-8")
+    assert 'khoi_chung(st["study"], Path(st["tep"]).name' not in nguon
+    that = tmp_path / "DE_CUONG_NOP_HOI_DONG.md"
+    that.write_text(DE_CUONG, encoding="utf-8", newline="\n")
+    assert H.ten_cho_hoi_dong(str(that)) == "DE_CUONG_NOP_HOI_DONG.md"
+
+
+def test_agent_sai_theo_cong_cu_phai_co_lenh_va_ket_qua():
+    muc = [{"id": "A01"}, {"id": "A02"}]
+    pd = H.xac_minh_agent({"phan_dinh": [
+        {"id": "A01", "ket_qua": "sai", "co_so": "cong_cu", "lenh": "check_citation_retraction.py --pmid 1",
+         "ket_qua_cong_cu": "1: ok (pubmed)"},
+        {"id": "A02", "ket_qua": "sai", "co_so": "cong_cu", "lenh": "", "ket_qua_cong_cu": "ok",
+         "ly_do": "đã chạy công cụ"}]}, muc, DE_CUONG)
+    assert pd["A01"]["ket_qua"] == "sai" and pd["A01"]["lenh"].startswith("check_citation")
+    assert pd["A02"]["ket_qua"] == "khong_ro"
+
+
+def test_sap_da_khoa_doc_tu_bang_chung_he():
+    assert H.sap_da_khoa({"bang_chung_he": {"cong_song": {"G4": {"muc": "PASS"}}}})
+    assert not H.sap_da_khoa({"bang_chung_he": {"cong_song": {"G4": {"muc": "BLOCKED"}}}})
+    assert H.sap_da_khoa({"bang_chung_he": {"cong_song": {"G4": {"muc": "READY"}}}})   # SAP đã chốt, chờ ký
+    assert not H.sap_da_khoa({"bang_chung_he": {"ghi_chu": "không có checkpoint"}})
