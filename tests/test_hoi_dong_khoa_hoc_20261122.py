@@ -1163,3 +1163,96 @@ def test_sap_da_khoa_doc_tu_bang_chung_he():
     assert not H.sap_da_khoa({"bang_chung_he": {"cong_song": {"G4": {"muc": "BLOCKED"}}}})
     assert H.sap_da_khoa({"bang_chung_he": {"cong_song": {"G4": {"muc": "READY"}}}})   # SAP đã chốt, chờ ký
     assert not H.sap_da_khoa({"bang_chung_he": {"ghi_chu": "không có checkpoint"}})
+
+
+# ── gom yêu cầu chạm cùng chỗ vào MỘT phiếu biên tập (đo thật vòng 2 C1a, 22/11/2026) ─────────────────────────────────
+def _van_gom():
+    d = ["# ĐỀ CƯƠNG"] + [f"Nội dung đệm số {i} của đề cương nghiên cứu." for i in range(2, 41)]
+    d[3 - 1] = ("Điều tra viên ghi mã nghiên cứu cùng số thứ tự khám lên phiếu ghép riêng. Phòng CNTT giữ bảng đối "
+                "chiếu và hủy sau 30 ngày.")
+    d[7 - 1] = ("Kết quả thăm dò về vai trò trung gian của kỳ vọng được bàn luận cùng một khảo sát tại Hà Nội [49], "
+                "với lưu ý về sai lệch [36].")
+    d[21 - 1] = "Điều tra viên ghi mã nghiên cứu cùng số thứ tự khám lên phiếu ghép riêng."   # câu lặp ở bản thông tin
+    d[26 - 1] = "Một câu khác cũng có trích dẫn [49] ở chỗ khác."
+    return "\n".join(d) + "\n"
+
+
+def _vd(id_, tv, dong, trich, **them):
+    return {"id": id_, "thanh_vien": tv, "muc_phieu": "2", "muc_do": "can_sua", "dong": dong, "trich": trich,
+            "van_de": f"vấn đề {id_}", "de_xuat": f"đề xuất {id_}", "chuan": "", **them}
+
+
+VD_GOM = [
+    _vd("A", "pb2", 7, "được bàn luận cùng một khảo sát tại Hà Nội [49]"),
+    _vd("B", "uv_tk", 7, "Kết quả thăm dò về vai trò trung gian của kỳ vọng"),          # cùng câu, khác mảnh
+    _vd("C", "uv_tl", 10, "Nội dung đệm số 10 của đề cương nghiên cứu"),              # cách A đúng 3 dòng ⇒ gom
+    _vd("D", "uv_ctk", 14, "Nội dung đệm số 14 của đề cương nghiên cứu"),             # cách C 4 dòng ⇒ KHÔNG gom
+    _vd("E", "pb1", 3, "Điều tra viên ghi mã nghiên cứu cùng số thứ tự khám lên phiếu ghép riêng"),
+    _vd("F", "uv_dd", 21, "Điều tra viên ghi mã nghiên cứu cùng số thứ tự khám lên phiếu ghép riêng"),  # cùng câu, xa
+    _vd("G", "uv_tl", 26, "[49]"),                                                  # mảnh ngắn ⇒ không phải «cùng câu»
+    # vòng thẩm tra: «dong/trich» là của bản trước (đã sửa mất); người thẩm tra trích bản hiện tại mà không nêu dòng
+    _vd("H", "uv_dd", 99, "câu của bản trước đã bị sửa, không còn trong tài liệu", dong_moi=0,
+        trich_moi="Phòng CNTT giữ bảng đối chiếu và hủy sau 30 ngày"),
+    _vd("X", "pb1", 30, "Nội dung đệm số 30 của đề cương nghiên cứu"),                # X–Y–Z bắc cầu (X–Z cách 6)
+    _vd("Y", "uv_tk", 33, "Nội dung đệm số 33 của đề cương nghiên cứu"),
+    _vd("Z", "uv_dd", 36, "Nội dung đệm số 36 của đề cương nghiên cứu"),
+]
+
+
+def test_gom_cum_cung_dong_cung_cau_bac_cau_va_bien_ba_dong():
+    cum = H.gom_cum_bien_tap(VD_GOM, _van_gom())
+    assert [[f["id"] for f in c] for c in cum] == [["A", "B", "C"], ["D"], ["E", "F", "H"], ["G"], ["X", "Y", "Z"]]
+
+
+def test_lap_viec_bien_tap_ca_cum_vao_mot_phieu(tmp_path):
+    """Trước khi chia phiếu theo agent của ghế, yêu cầu chạm cùng chỗ được gom: cả cụm vào phiếu của agent sở hữu
+    nhiều yêu cầu nhất (hoà ⇒ agent của yêu cầu đứng trước). Không gom ⇒ A/B, E/F, X/Y/Z rơi vào phiếu khác nhau."""
+    van = _van_gom()
+    p = tmp_path / "DE_CUONG.md"
+    p.write_text(van, encoding="utf-8", newline="\n")
+    st = {"study": STUDY, "tep": str(p), "sha": "a" * 64, "loai": "de_cuong", "vong": 2,
+          "thanh_phan": H.thanh_phan_hoi_dong("cross_sectional", van)}
+    viec = H.lap_viec_bien_tap(st, VD_GOM, tmp_path)
+    assert {t: v["ids"] for t, v in viec.items()} == {
+        "viet-ban-thao": ["A", "B", "C", "G"], "bien-so-nghien-cuu": ["D"],
+        "dao-duc-dang-ky": ["E", "F", "H"], "thiet-ke-nghien-cuu": ["X", "Y", "Z"]}
+    assert viec["viet-ban-thao"]["cum"] == [["A", "B", "C"]] and viec["bien-so-nghien-cuu"]["cum"] == []
+    phieu = json.loads(Path(viec["dao-duc-dang-ky"]["loi_nhan"]).with_suffix(".json").read_text(encoding="utf-8"))
+    assert [f["id"] for f in phieu["van_de"]] == ["E", "F", "H"]                    # biên tập viên nhận ĐỦ cụm
+    assert H.lap_viec_bien_tap(st, VD_GOM, tmp_path, van) == viec                  # văn bản truyền vào = đọc tệp
+
+
+TRA_CUNG_DONG = {**{m: _tv(diem=4) for m in ("pb2", "uv_dd", "uv_tl", "uv_ctk")},
+                 "pb1": _tv(phat_hien=[PH_DUNG]),
+                 "uv_tk": _tv(phat_hien=[{"muc_phieu": "3", "muc_do": "can_sua", "dong": 8,
+                                          "trich": "kèm khoảng tin cậy 95%", "van_de": "chưa nêu kiểm định một hay "
+                                          "hai phía", "chuan": "", "de_xuat": "nêu rõ kiểm định hai phía"}]),
+                 "ct": {"phan_quyet": [], "gop": [], "nhan_xet_chung": "Cần sửa mục phân tích.",
+                        "yeu_cau_chinh_sua": ["dữ liệu thiếu", "kiểm định hai phía"]}}
+
+
+def test_vong_kin_ket_hop_hai_ghe_cung_dong_mot_phieu_bien_tap(tmp_path, capsys):
+    """Hai ghế (pb1 → thiet-ke-nghien-cuu, uv_tk → co-mau-nghien-cuu) cùng nêu dòng 8: MỘT phiếu biên tập nhận cả hai,
+    một thay thế gộp qua rào; vòng sau mỗi ghế vẫn thẩm tra đúng yêu cầu của mình."""
+    goc, p = _goc_ket_hop(tmp_path)
+    kh = KhachBatch(dict(TRA_CUNG_DONG))
+    assert [_vk(goc, kh) for _ in range(5)] == [4, 0, 4, 0, H.CHO_AGENT]
+    _tra_loi(goc, "tham_dinh", _pd_dung_het)
+    assert _vk(goc, kh) == 0 and _vk(goc, kh) == H.CHO_AGENT
+    viec = [v for v in H.viec_agent_dang_cho(goc, STUDY) if v["loai_viec"] == "bien_tap"]
+    assert len(viec) == 1 and viec[0]["agent"] == "thiet-ke-nghien-cuu"
+    du = json.loads(Path(viec[0]["loi_nhan"]).with_suffix(".json").read_text(encoding="utf-8"))
+    ids = [f["id"] for f in du["van_de"]]
+    assert len(ids) == 2 and {f["thanh_vien"] for f in du["van_de"]} == {"pb1", "uv_tk"}
+    assert "🔗 Gom yêu cầu chạm cùng chỗ" in capsys.readouterr().out
+    cu = "Tỷ lệ được ước lượng kèm khoảng tin cậy 95% theo Wilson."
+    _tra_loi(goc, "bien_tap", lambda v, d: {"sua": [
+        {"id": ids[0], "hanh_dong": "sua", "thay": [{"dong": 8, "cu": cu, "moi": cu[:-1] + ", kiểm định hai phía; dữ "
+                                                    "liệu thiếu xử lý bằng phân tích ca đầy đủ."}]},
+        {"id": ids[1], "hanh_dong": "sua", "thay": [], "ly_do": "đã gộp vào thay thế của " + ids[0]}]})
+    assert _vk(goc, kh) == 0 and "kiểm định hai phía" in p.read_text(encoding="utf-8")
+    st1 = [s for s in _cac_st(goc) if s.get("bien_tap")][0]
+    assert len(st1["bien_tap"]["nhan"]) == 1 and not st1["bien_tap"]["loai"]
+    assert _vk(goc, kh) == H.CHO_AGENT
+    assert {v["agent"] for v in H.viec_agent_dang_cho(goc, STUDY) if v["loai_viec"] == "tham_tra"} == {
+        "pb1-thiet-ke-nghien-cuu", "uv_tk-co-mau-nghien-cuu"}
