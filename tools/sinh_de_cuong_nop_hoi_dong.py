@@ -2061,8 +2061,12 @@ def dao_duc(n: Nguon) -> List[str]:
         if _co(x):
             dong.append(f"- {nhan}: {_thuong(td.thay(str(x)))}.")
     dong += _muc_an_toan(muc_sap(n.sap_text))
-    dong.append("- Xung đột lợi ích: nhóm nghiên cứu cam kết không có xung đột lợi ích liên quan đến đề tài; mọi "
-                "thay đổi sẽ được khai báo với Hội đồng.")
+    # 22/11/2026 (hội đồng đề tài, F35): câu cũ in cứng «nhóm nghiên cứu cam kết không có xung đột lợi ích» cho MỌI
+    # đề tài — tức khai thay người ký, trái hồ sơ khi chủ nhiệm là bác sĩ của đơn vị được đánh giá. Nay đọc xung đột
+    # theo hồ sơ + biện pháp quản lý từ study_meta (tools/xung_dot_loi_ich.py, cùng nguồn với hồ sơ G2).
+    import xung_dot_loi_ich as XDLI  # noqa: PLC0415
+
+    dong += XDLI.cau_de_cuong(XDLI.doc(n.meta))
     return dong
 
 

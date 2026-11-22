@@ -1793,11 +1793,9 @@ def build_display_items(cps, meta=None) -> str:
     """Danh mục bảng/hình tối thiểu, nối SAP -> manuscript -> submission."""
     code = S.canonical_design_code(_design_code(cps))
     std = S.reporting_standards_for(code)
-    fig2_title, fig2_requirements = S.DISPLAY_ITEM_BY_DESIGN.get(
-        code or "",
-        ("Biểu đồ/đồ thị phân tích chính theo thiết kế thật",
-         "Chọn loại hình theo SAP; trục/đơn vị/n/95% CI phải đầy đủ."),
-    )
+    # 22/11/2026: Hình 2 theo thiết kế VÀ mục tiêu G1 — cắt ngang chỉ mô tả không có «forest plot yếu tố liên quan».
+    g1 = (((meta or {}).get("gate_params") or {}).get("G1") or {}) if isinstance(meta, dict) else {}
+    fig2_title, fig2_requirements = S.hinh_theo_thiet_ke(code, g1.get("objectives"))
     rows = list(S.DISPLAY_ITEM_CORE) + [
         ("Hình 2", fig2_title, fig2_requirements),
     ]
