@@ -42,9 +42,9 @@ THÔNG TIN TỔNG QUAN:
  Lộ trình xét duyệt đề nghị: EXPEDITED REVIEW (hoặc EXEMPT nếu không có PII và rủi ro tối thiểu)
  Dân số tham gia: Người từ 18 tuổi, chẩn đoán đái tháo đường típ 2 (ICD-10 E11), quản lý ngoại trú tại Khoa Khám bệnh BVQY175, có ít nhất 2 lượt khám trong cửa sổ hồi cứu 01/01/2026–31/12/2026; loại trừ: lọc máu hoặc ghép thận, có thai, đái tháo đường típ 1 hoặc thể khác.
  Cỡ mẫu dự kiến: 385
- Thời gian nghiên cứu: Cửa sổ dữ liệu hồi cứu 01/01/2026–31/12/2026. Thời gian thực hiện dự kiến 11/2026–09/2027 theo sổ tiến độ đề tài. Trích xuất dữ liệu chỉ bắt đầu sau khi Hội đồng Đạo đức BVQY175 phê duyệt (T0), SAP đã khoá ở cổng G4 và cửa sổ đã khép (sớm nhất tháng 02/2027), dự kiến 16/02–02/04/2027, gồm trích thử phiếu 16–19/02/2027.
+ Thời gian nghiên cứu: Cửa sổ dữ liệu hồi cứu 01/01/2026–31/12/2026. Thời gian thực hiện dự kiến 11/2026–09/2027 theo sổ tiến độ đề tài. Mọi truy cập dữ liệu người bệnh cho đề tài (lập khung mẫu, trích thử, trích hồ sơ) chỉ bắt đầu sau khi Hội đồng Đạo đức BVQY175 phê duyệt (T0), Bệnh viện đồng ý cho sử dụng hồ sơ bệnh án cho nghiên cứu, SAP đã khoá ở cổng G4 và cửa sổ đã khép (sớm nhất tháng 02/2027), dự kiến 16/02–02/04/2027, gồm trích thử phiếu 16–19/02/2027.
  Nguồn tài trợ: Không có tài trợ bên ngoài — chủ nhiệm tự túc kinh phí
- Xung đột lợi ích (COI): Không có xung đột lợi ích (khai đầy đủ ở Tài liệu 8)
+ Xung đột lợi ích (COI): Có xung đột lợi ích không tài chính — chủ nhiệm là bác sĩ của khoa được đánh giá và trực tiếp trích dữ liệu; kế hoạch quản lý ở đề cương mục 2.7; khai đầy đủ ở Tài liệu 8
  Đăng ký nghiên cứu: Không bắt buộc đăng ký thử nghiệm. Nghiên cứu hồi cứu trên dữ liệu thứ cấp, không tuyển mới người tham gia
 
 CAM KẾT:
@@ -188,7 +188,9 @@ KẾ HOẠCH QUẢN LÝ DỮ LIỆU, Cấp IRB
 2. THU THẬP:
  Công cụ: ☐ REDCap ☐ Google Forms (institutional) ☐ Phiếu giấy
  ☑ Phiếu thu thập dựng từ codebook — chủ nhiệm trích từng hồ sơ được chọn trên eHospital
- Phân quyền truy cập: Chỉ nhóm nghiên cứu được cấp phép
+ Phân quyền truy cập: Chỉ nhóm nghiên cứu được cấp phép; người quản lý dữ liệu (khác chủ nhiệm) giữ cơ sở
+ dữ liệu nhập liệu, cơ sở dữ liệu trích lại và cơ sở dữ liệu đã khoá; chủ nhiệm không xem bản trích lại
+ trước khi tính xong đồng thuận và không sửa dữ liệu sau khi khoá (đề cương mục 2.7)
  Phê duyệt quyền: Chủ nhiệm đề tài
 
 3. KHỬ ĐỊNH DANH:
@@ -250,12 +252,15 @@ HỒ SƠ BẮT BUỘC:
 ☐ CV nghiên cứu viên chính (nếu có)
 ☐ Khai báo COI + AI (Tài liệu 8)
 ☐ Kế hoạch Quản lý Dữ liệu (Tài liệu 6)
+☐ Bản khai xung đột lợi ích theo mẫu ICMJE, có chữ ký của từng thành viên, và kế hoạch quản lý
+ xung đột lợi ích (đề cương mục 2.7)
 
 HỒ SƠ BỔ SUNG (theo loại NC):
 ☐ [RCT / can thiệp]: Hồ sơ an toàn DSMB (an-toan-nghien-cuu)
 ☐ [RCT]: Bằng chứng đã đăng ký / kế hoạch đăng ký trước tuyển
 ☐ [Can thiệp thuốc]: Thông tin sản phẩm / IB (Investigator Brochure)
-☐ [Dữ liệu thứ cấp]: Văn bản chấp thuận cung cấp dữ liệu
+☐ [Dữ liệu thứ cấp]: Văn bản chấp thuận cung cấp dữ liệu — Bệnh viện đồng ý cho sử dụng hồ sơ bệnh án cho
+ nghiên cứu theo Luật Khám bệnh, chữa bệnh (quyết định phê duyệt đề tài hoặc văn bản riêng của Bệnh viện)
 ☐ [Nhóm dễ tổn thương, trẻ em, thai phụ, người mất NLHV]:
  ICF người giám hộ + biện pháp bảo vệ đặc biệt
 ☐ [Dùng dữ liệu di truyền/nhạy cảm]: ICF đặc biệt
@@ -287,15 +292,18 @@ Tên chủ nhiệm: Nguyễn Hà Luân
 Chức vụ: Bác sĩ Chuyên khoa I (BS.CKI) | Đơn vị: Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175
 Ngày khai báo: 18/11/2026
 
-A. XUNG ĐỘT LỢI ÍCH TÀI CHÍNH (12 tháng gần nhất):
-☑ Không có
+A. XUNG ĐỘT LỢI ÍCH TÀI CHÍNH (theo mẫu khai báo ICMJE: mọi hỗ trợ cho đề tài không giới hạn thời gian,
+ các quan hệ khác trong ba năm gần nhất; chủ nhiệm tự đánh dấu và ký; mỗi thành viên khai bản riêng):
+☐ Không có
 ☐ Có → [Liệt kê: Tên công ty · Loại quan hệ (cổ phần/tư vấn/
  thù lao/tài trợ hội nghị) · Giá trị (nếu phải khai)]
 
 B. XUNG ĐỘT LỢI ÍCH PHI TÀI CHÍNH:
-☑ Không có
-☐ Có → [Quan hệ cá nhân với người được nghiên cứu / lợi ích
- học thuật (thăng tiến/bằng sáng chế) / quan điểm đối nghịch]
+☐ Không có
+☑ Có → Chủ nhiệm là bác sĩ của khoa được đánh giá và trực tiếp trích dữ liệu (lợi ích nghề nghiệp,
+ uy tín của khoa). Quản lý: định nghĩa và quy tắc trích viết trước, được hội đồng chuyên gia thẩm định;
+ người thứ hai độc lập trích lại 10% hồ sơ, đồng thuận tính trước hoà giải; người quản lý dữ liệu và
+ nhà thống kê khác chủ nhiệm; khai trong bản thảo (đề cương mục 2.7).
 
 C. NGUỒN TÀI TRỢ:
  Tài trợ chính: Không có tài trợ bên ngoài — chủ nhiệm tự túc kinh phí
@@ -303,10 +311,8 @@ C. NGUỒN TÀI TRỢ:
  Số hợp đồng (nếu có): Không áp dụng
 
 D. VAI TRÒ NHÀ TÀI TRỢ:
- Nhà tài trợ có can thiệp vào:
- ☐ Thiết kế nghiên cứu: ☐ Có ☐ Không
- ☐ Thu thập / phân tích dữ liệu: ☐ Có ☐ Không
- ☐ Báo cáo / quyết định công bố: ☐ Có ☐ Không
+ Không áp dụng — đề tài tự túc kinh phí, không có nhà tài trợ nên không có vai trò nhà tài trợ
+ trong thiết kế, thu thập, phân tích, báo cáo hay quyết định công bố.
 
 E. SỬ DỤNG CÔNG CỤ AI TRONG NGHIÊN CỨU:
  ☐ Không sử dụng công cụ AI nào

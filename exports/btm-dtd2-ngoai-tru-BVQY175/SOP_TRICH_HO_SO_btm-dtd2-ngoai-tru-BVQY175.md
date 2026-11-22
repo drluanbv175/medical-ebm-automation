@@ -42,19 +42,19 @@ Người đảm nhận các vai ngoài chủ nhiệm do chủ nhiệm phân côn
 | Chủ nhiệm đề tài | Lập khung mẫu, ghi hạt giống, xếp ngẫu nhiên; mở và trích hồ sơ; giữ bảng nối mã | Người duy nhất giữ bảng nối mã và danh sách khung mẫu |
 | Người trích lại | Cùng chủ nhiệm trích thử 10 hồ sơ tập (mục 4); trích lại độc lập các hồ sơ được chọn ngẫu nhiên (10%) và sàng lọc lại 10 hồ sơ bị loại (mục 7) | Khác chủ nhiệm; không xem bản trích của chủ nhiệm |
 | Người duyệt thứ hai của bảng ánh xạ | Cùng chủ nhiệm duyệt tên xét nghiệm trên eHospital | Hiểu danh mục xét nghiệm của bệnh viện |
-| Quản lý dữ liệu | Dựng hai dự án REDCap; kiểm dữ liệu hằng tuần; so sánh bản trích lại | Chỉ thấy mã nghiên cứu |
-| Nhà thống kê | Chỉ tiếp cận cơ sở dữ liệu đã khoá (G5) | — |
+| Quản lý dữ liệu | Dựng hai dự án REDCap; kiểm dữ liệu hằng tuần; chọn hồ sơ trích lại và lưu bản chụp trước khi báo chủ nhiệm (mục 7); so sánh bản trích lại; khoá và giữ cơ sở dữ liệu | Khác chủ nhiệm; chỉ thấy mã nghiên cứu |
+| Nhà thống kê | Chỉ tiếp cận cơ sở dữ liệu đã khoá (G5); phân tích theo kế hoạch phân tích thống kê đã khoá | Khác chủ nhiệm |
 
 ## 4. Chuẩn bị (làm một lần, trước hồ sơ đầu tiên)
 
 1. **Dựng hai dự án REDCap** (quản lý dữ liệu):
    - dự án chính và dự án «trích lại» riêng, cùng tải lên `_bo-bien-rieng.csv` (74 trường, 5 biểu mẫu);
    - khai mã thiếu (Missing Data Codes) theo `_ma-thieu-theo-bien.csv`: `KGHS` = hồ sơ không ghi; `KDD` = không đọc được hoặc mâu thuẫn;
-   - mỗi người một tài khoản riêng; người trích lại không có quyền xem dự án chính.
+   - mỗi người một tài khoản riêng; người trích lại không có quyền xem dự án chính; chủ nhiệm không có quyền xem dự án «trích lại» cho tới khi quản lý dữ liệu tính xong đồng thuận; sau khi khoá dữ liệu (G5) chỉ quản lý dữ liệu giữ quyền trên các dự án, chủ nhiệm không còn quyền sửa.
 2. **Hoàn thành bảng ánh xạ tên xét nghiệm (Phụ lục 2).**
    - Chủ nhiệm ghi tên xét nghiệm đúng như trên eHospital cho creatinin, UACR, các dạng albumin hoặc protein niệu khác, HbA1c, kèm đơn vị và vị trí xem kết quả.
    - Người duyệt thứ hai đối chiếu; hai người ký (CTQ 4; R3).
-3. **Thử lập danh sách trên eHospital (R1).** Nếu eHospital không lập được danh sách người bệnh theo mã E11 của Khoa Khám bệnh năm 2026, hoặc hồ sơ không có kết quả creatinin, UACR, mã ICD-10, đơn thuốc, thì **dừng**. Đổi cách chọn mẫu hoặc nguồn dữ liệu, sửa đề cương và báo Hội đồng trước khi làm tiếp (quy tắc dừng của G1).
+3. **Kiểm khả năng lập danh sách trên eHospital (R1), chỉ sau khi Hội đồng Đạo đức chấp thuận.** Trước thời điểm đó không tra cứu, không lập danh sách và không mở hồ sơ người bệnh nào cho đề tài; nếu cần ước lượng khả thi, chỉ nhận số đếm tổng hợp (một con số tổng, không danh sách, không mã người bệnh) từ bộ phận phụ trách thống kê hoặc công nghệ thông tin của Bệnh viện. Sau khi được chấp thuận, nếu chức năng tra cứu của eHospital không xuất được danh sách người bệnh theo mã E11 của Khoa Khám bệnh năm 2026, đề nghị bộ phận công nghệ thông tin xuất danh sách một cột mã người bệnh theo đúng tiêu chí ở mục 5, bàn giao trực tiếp cho chủ nhiệm và không lưu bản sao. Nếu vẫn không lập được danh sách, hoặc hồ sơ không có kết quả creatinin, UACR, mã ICD-10, đơn thuốc, thì **dừng**, không mở thêm hồ sơ nào, và nộp sửa đổi đề cương (cách chọn mẫu hoặc nguồn dữ liệu) để Hội đồng Đạo đức chấp thuận trước khi làm tiếp (quy tắc dừng của G1).
 4. **Tập trích trên 10 hồ sơ thử (R9).**
    - Làm ngay sau khi xếp ngẫu nhiên (mục 5), trước hồ sơ chính thức đầu tiên. Hồ sơ thử là 10 người ở **10 vị trí cuối** của danh sách đã xếp (C1): đánh dấu «hồ sơ tập» trong bảng nối mã, không đưa vào mẫu, ghi trong sơ đồ chọn và Sổ khung mẫu.
    - Chủ nhiệm và người trích lại cùng trích độc lập 10 hồ sơ thử, nhập vào một bản sao dự án REDCap, rồi so sánh từng biến.
@@ -131,7 +131,7 @@ Người đảm nhận các vai ngoài chủ nhiệm do chủ nhiệm phân côn
 
 ## 7. Trích lại 10% để đo độ chính xác
 
-1. **Chọn hồ sơ trích lại** bằng công cụ (lệnh `trich-lai`, Phụ lục 5), từ tệp xuất REDCap chỉ gồm hai cột `record_id` và `du_tieu_chuan`.
+1. **Chọn hồ sơ trích lại** (quản lý dữ liệu làm, không phải chủ nhiệm) bằng công cụ (lệnh `trich-lai`, Phụ lục 5), từ tệp xuất REDCap chỉ gồm hai cột `record_id` và `du_tieu_chuan`. Ngay khi chọn, quản lý dữ liệu xuất và lưu bản chụp các bản ghi được chọn của dự án chính (bản chụp dùng ở bước 4), rồi mới báo danh sách mã nghiên cứu cho chủ nhiệm để bàn giao; chủ nhiệm không biết trước hồ sơ nào được trích lại.
    - Mỗi đợt dùng một hạt giống riêng, ghi vào Sổ khung mẫu trước khi chạy.
    - Cần trích lại 10% của 385 hồ sơ, tức **39 hồ sơ**, chia **hai đợt** (C2): đợt 1 chọn 10 hồ sơ trong 100 hồ sơ đủ tiêu chuẩn đầu tiên, ngay khi có đủ 100 hồ sơ; đợt 2 chọn 29 hồ sơ trong số còn lại khi trích xong.
    - **Sàng lọc lại hồ sơ bị loại** (chủ nhiệm chọn 20/11/2026): khi trích xong, chọn ngẫu nhiên **10 hồ sơ** trong số hồ sơ bị loại (`du_tieu_chuan` = 0) bằng lệnh `trich-lai --bi-loai` (Phụ lục 5), hạt giống riêng ghi vào Sổ khung mẫu trước khi chạy. Người trích lại chỉ trích lại phần A (tiêu chuẩn chọn và loại) của các hồ sơ này.
@@ -140,7 +140,7 @@ Người đảm nhận các vai ngoài chủ nhiệm do chủ nhiệm phân côn
    - Bàn giao trực tiếp, không gửi qua tin nhắn hay thư điện tử.
 3. **Trích lại độc lập.** Người trích lại mở các hồ sơ đó trên eHospital và trích theo đúng quy trình này vào dự án REDCap «trích lại», giữ nguyên mã nghiên cứu. Người trích lại không xem bản trích của chủ nhiệm.
 4. **So sánh** (quản lý dữ liệu):
-   - Trước khi hoà giải, xuất bản chụp các bản ghi được trích lại của dự án chính; mọi chỉ số đồng thuận tính trên bản chụp này, không tính trên bản đã sửa sau hoà giải.
+   - Mọi chỉ số đồng thuận tính trên bản chụp dự án chính đã lưu ngay khi chọn hồ sơ (bước 1), trước mọi hoà giải; không tính trên bản đã sửa sau hoà giải.
    - Đối chiếu từng biến của hai bản và tính tỷ lệ đồng thuận tuyệt đối kèm KTC 95% Wilson cho mọi biến.
    - Tính kappa kèm KTC 95%, tỷ lệ đồng thuận dương và âm, chỉ số tỷ lệ hiện mắc và chỉ số lệch cho các biến phân loại chính: `co_creat`, `co_uacr`, `xn_du`, `alb_khac`, `tha`, `ma_btm_ghi_nhan`, `dung_raasi`, `dung_sglt2i`, `ccd_raasi`, `ccd_sglt2i`, `phan_loai_btm`, `chi_dinh_raasi`, `chi_dinh_sglt2i` (biến phái sinh tính từ mỗi bản bằng cùng công thức).
    - Tính ICC(2,1) và giới hạn đồng thuận 95% cho biến đếm `so_lan_creat`, `so_lan_uacr`, `so_luot_kham`.

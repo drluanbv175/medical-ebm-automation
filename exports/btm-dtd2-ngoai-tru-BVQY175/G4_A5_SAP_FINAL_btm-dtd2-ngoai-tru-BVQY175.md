@@ -34,6 +34,8 @@
 | 1.0 (sửa nháp 5) | 2026-11-18 | Máy (chưa ký) | §5 viết lại câu EPV và trích thêm van Smeden 2016 theo lựa chọn của chủ nhiệm cho B1 (phiếu đề xuất sau diễn tập, 18/11/2026). Không đổi kết cục, mô hình hay phân tích. |
 | 1.0 (sửa nháp 6) | 2026-11-20 | Máy (chưa ký) | Đưa kiểm định phiếu trích vào kế hoạch phân tích theo quyết định của chủ nhiệm ngày 20/11/2026 («Đưa vào đề cương»; Q6 thêm 10 hồ sơ bị loại sàng lọc lại; Q7 giữ 39 hồ sơ trích lại; ngưỡng vận hành theo bộ đề xuất): §3 thêm độ tin cậy giữa hai người trích (đồng thuận tuyệt đối, kappa kèm đồng thuận dương/âm và chỉ số tỷ lệ hiện mắc/chỉ số lệch, ICC(2,1) và giới hạn đồng thuận cho biến đếm; tính trên bản trước hoà giải); §10 thêm công cụ tính; §11 thêm Bảng S1. Đây là chỉ số chất lượng dữ liệu, không phải kết cục; không đổi kết cục, mô hình hay phân tích chính. |
 | 1.0 (sửa nháp 7) | 2026-11-20 | Máy (chưa ký) | §5 thêm quy tắc khi EPV vẫn dưới 10 sau bước (3): giữ mô hình 12 tham số, báo EPV thực tế, diễn giải thận trọng — lựa chọn của chủ nhiệm ngày 20/11/2026 («Giữ mô hình 12 tham số»), sau khi đo lại: tỷ lệ xét nghiệm đủ 24,9% như y văn cho EPV khoảng 8 sau cả ba bước. Không đổi kết cục, mô hình, biến hay phân tích. |
+| 1.0 (sửa nháp 8) | 2026-11-22 | Máy (chưa ký) | §2 Phụ 1 viết lại quy tắc xếp nhóm bệnh thận mạn theo quyết định của chủ nhiệm cho yêu cầu N2_01 (QUYET_DINH_CHU_NHIEM_N2_01_20261122.md): BTM xác nhận khi có 2 kết quả eGFR < 60 hoặc 2 kết quả UACR ≥ 30 mg/g cách nhau từ 90 ngày, cùng một dấu ấn — khớp biến phái sinh `phan_loai_btm`, `egfr_thap_xn`, `alb_xn` đã duyệt 15/11/2026. Không đổi kết cục, mô hình hay phân tích. |
+| 1.0 (sửa nháp 9) | 2026-11-22 | Máy (chưa ký) | Hoàn thiện theo mục tiêu và STROBE, RECORD trước khi ký: §4 ghi mẫu số của phân bố nhóm G, nhóm A, bảng chéo G × A và dòng «không đủ xét nghiệm để phân loại»; Phụ 2 báo riêng theo dấu ấn xác nhận; thêm chuỗi chăm sóc thận trên cùng người bệnh và tỷ lệ điều trị theo tình trạng ghi nhận mã (mô tả); §5 nêu lý do chọn tập biến (STROBE 16a); §6 sửa câu HbA1c cho khớp quy tắc mã thiếu của `hba1c_3muc`, ghi so khớp trung bình dự đoán cho mọi biến có thiếu, quy tắc kết quả xét nghiệm mang mã KDD và bước làm sạch dữ liệu (RECORD 12.2); §8 xếp các phân tích mô tả mới vào nhóm không kiểm định; §9 thêm ĐN10 (chỉ định ACEi/ARB không dựa vào mã tăng huyết áp) và ĐN11 (lượt khám cuối là lượt kê đơn điều trị ĐTĐ), có hai biến phái sinh mới `chi_dinh_raasi_alb`, `dn11_kham_cuoi_dtd`; §11 thêm Bảng 5b. Không đổi kết cục chính, mô hình chính, tập biến của MT3 hay cỡ mẫu. |
 
 ---
 
@@ -78,7 +80,9 @@
 - **Phương pháp:** ước lượng tỷ lệ `xn_du` trên toàn bộ N kèm KTC 95% Wilson; không kiểm định giả thuyết (thiết kế theo độ chính xác, G3). Không áp hiệu chỉnh quần thể hữu hạn ở phân tích chính, cho thống nhất với G3; nếu biết kích thước khung mẫu thì báo thêm KTC có hiệu chỉnh quần thể hữu hạn như một thông tin phụ.  
 - **Quần thể:** toàn bộ hồ sơ đủ tiêu chuẩn (§1).  
 - **Trình bày:** tỷ lệ (%) + KTC 95%; kèm hai thành phần: tỷ lệ có ít nhất một creatinin và tỷ lệ có ít nhất một UACR dạng tỷ số. Không báo p-value đơn độc.  
-- **Kết cục phụ 1–3 (phụ 1–2: MT1; phụ 3: MT2):** tỷ lệ + KTC 95% Wilson trên đúng quần thể con ở §1; bảng chéo G × A theo KDIGO 2024.  
+- **Kết cục phụ 1–3 (phụ 1–2: MT1; phụ 3: MT2):** tỷ lệ + KTC 95% Wilson trên đúng quần thể con ở §1; bảng chéo G × A theo KDIGO 2024. Mẫu số: dòng «không đủ xét nghiệm để phân loại» (`phan_loai_btm` = 9) tính trên toàn bộ N, ba mức còn lại của Phụ 1 tính trên người có `phan_loai_btm` khác 9; phân bố nhóm G tính trên người có ít nhất một creatinin (`co_creat` = 1); phân bố nhóm A tính trên người có ít nhất một UACR (`co_uacr` = 1); bảng chéo G × A tính trên người có ít nhất một trong hai xét nghiệm, phần lõi G1–G5 × A1–A3 là người có cả hai (`xn_du` = 1), thêm cột «chưa có UACR» và dòng «chưa có creatinin» để không người nào có xét nghiệm bị bỏ khỏi bảng. Phụ 2 được báo riêng theo dấu ấn xác nhận BTM: chỉ eGFR (`egfr_thap_xn` = 1, `alb_xn` = 0), chỉ albumin niệu (`alb_xn` = 1, `egfr_thap_xn` = 0), cả hai; mỗi nhóm n/N và KTC 95% Wilson, chỉ mô tả. Người bị loại khỏi mẫu số Phụ 3a, Phụ 3b vì chống chỉ định hoặc không dung nạp ghi trong hồ sơ được báo số lượng (n/N trên người đủ chỉ định).  
+- **Chuỗi chăm sóc thận trên cùng người bệnh (MT1–MT2, mô tả):** báo số người qua từng khâu, mỗi khâu kèm n, mẫu số, tỷ lệ và KTC 95% Wilson: (1) được xét nghiệm đủ (`xn_du` = 1), mẫu số N; (2) BTM xác nhận (`phan_loai_btm` = 2), mẫu số N, tách số người được xét nghiệm đủ và số người chỉ có creatinin; (3) đã được ghi nhận bằng mã ICD-10 (`btm_chua_ghi_nhan` = 0), mẫu số là khâu (2); (4) đủ chỉ định SGLT2i và không có chống chỉ định ghi trong hồ sơ (`chi_dinh_sglt2i` = 1, `ccd_sglt2i` khác 1), mẫu số là khâu (2); (5) đang dùng SGLT2i (`dung_sglt2i` = 1), mẫu số là khâu (4). Nhánh ACEi/ARB: (2') albumin niệu xác nhận (`alb_xn` = 1), mẫu số N; (3') có tăng huyết áp và không có chống chỉ định ghi trong hồ sơ (`chi_dinh_raasi` = 1, `ccd_raasi` khác 1), mẫu số là khâu (2'); (4') đang dùng ACEi/ARB (`dung_raasi` = 1), mẫu số là khâu (3'). BTM có thể được xác nhận chỉ bằng eGFR nên khâu (2) không nằm trọn trong khâu (1); vì vậy mỗi khâu ghi rõ mẫu số.  
+- **Điều trị theo tình trạng ghi nhận mã (MT2, mô tả):** trong đúng mẫu số của Phụ 3a và Phụ 3b, tỷ lệ đang dùng ACEi/ARB và SGLT2i được báo riêng cho người đã có mã BTM (`ma_btm_ghi_nhan` = 1) và chưa có mã (`ma_btm_ghi_nhan` = 0), mỗi nhóm kèm KTC 95% Wilson; không kiểm định giả thuyết, không suy nhân quả. Mọi người trong mẫu số Phụ 3a và Phụ 3b đều có BTM xác nhận (`alb_xn` = 1 kéo theo `phan_loai_btm` = 2) nên tình trạng ghi nhận mã xác định được cho mọi người.  
 
 ### §5 PHÂN TÍCH ĐA BIẾN
 
@@ -86,6 +90,7 @@
 - **Mô hình:** hồi quy Poisson liên kết log với phương sai vững (sandwich) để ước lượng trực tiếp tỷ số tỷ lệ hiện mắc (PR) của `khong_xn_du` (Barros và Hirakata 2003, PMID 14567763). Báo PR thô (từng biến) và PR hiệu chỉnh (mô hình đầy đủ), kèm KTC 95%. Không dùng hồi quy logistic vì kết cục phổ biến, OR sẽ phóng đại PR.  
 - **Biến độc lập đưa vào:** 12 biến giải thích đã chốt ở G0 — tuổi (mỗi 10 năm), giới, nhóm đối tượng (quân nhân / BHYT / dịch vụ / khác), thời gian mắc ĐTĐ (mỗi 5 năm; `thoi_gian_mac_dtd_5`), HbA1c dạng 3 mức (< 7% — mức tham chiếu / ≥ 7% / không làm HbA1c năm 2026; biến `hba1c_3muc`, chủ nhiệm chọn tham chiếu 15/11/2026), đang dùng insulin, số nhóm thuốc hạ glucose, tăng huyết áp, BMI (mỗi 5 kg/m²), bệnh tim mạch do xơ vữa hoặc suy tim (`tim_mach`), số lượt khám năm 2026, phòng khám theo dõi chính (nội tiết / nội chung / khác).  
 - **Lý do mã hoá HbA1c 3 mức:** người không làm HbA1c thiếu giá trị vì không được xét nghiệm (thiếu có cấu trúc, liên quan trực tiếp tới kết cục), nên không thay bằng giá trị gán; mức «không làm» giữ thông tin đó.  
+- **Lý do chọn tập biến (STROBE 16a):** 12 biến được chốt ở G0 trước khi có dữ liệu, theo bốn nhóm: đặc điểm người bệnh và hành chính (tuổi, giới, nhóm đối tượng); mức độ bệnh và điều trị ĐTĐ (thời gian mắc ĐTĐ, HbA1c, insulin, số nhóm thuốc hạ glucose); bệnh kèm và thể trạng (tăng huyết áp, BMI, bệnh tim mạch do xơ vữa hoặc suy tim); mức tiếp xúc với hệ thống chăm sóc (số lượt khám, phòng khám theo dõi chính). Bệnh kèm và đặc điểm nơi khám đã được ghi nhận liên quan với việc được xét nghiệm bệnh thận mạn (Edmonston 2024, PMID 38922613; Miyamoto 2026, PMID 42541306). MT3 không ước lượng tác động nhân quả của một phơi nhiễm chính nên không biến nào được chọn với vai trò biến nhiễu; PR hiệu chỉnh của mỗi biến được đọc là mối liên quan sau khi đã tính đến các biến còn lại. Bảng 6 kèm số và tỷ lệ không được xét nghiệm đủ theo từng mức của biến để người đọc thấy mức tuyệt đối (STROBE 16c).  
 - **Phương pháp chọn biến:** đưa vào toàn bộ, không stepwise, không chọn theo p-value.  
 - **Số tham số và EPV:** mô hình đầy đủ có 16 tham số (biến phân loại k mức tính k−1). Số người ở nhóm kết cục ít hơn của `xn_du` chia cho số tham số là số biến cố trên mỗi tham số (EPV); ngưỡng sơ bộ EPV ≥ 10 chỉ là mức tham khảo, không phải quy tắc cứng (van Smeden 2016, PMID 27881078; Ogundimu 2016, PMID 26964707). Nếu EPV < 10, giảm tham số theo thứ tự định trước, dừng ngay khi EPV ≥ 10: (1) gộp nhóm đối tượng thành 2 mức (quân nhân / khác); (2) gộp phòng khám thành 2 mức (nội tiết / khác); (3) bỏ số nhóm thuốc hạ glucose (giữ insulin). Nếu sau bước (3) EPV vẫn dưới 10, giữ mô hình sau bước (3) (12 tham số), báo EPV thực tế và diễn giải thận trọng; không giảm thêm biến vì EPV ≥ 10 chỉ là mức tham khảo. Báo cáo rõ mô hình nào được dùng và vì sao.  
 - **Đa cộng tuyến:** tính VIF cho mọi biến; VIF > 5 được báo cáo, và cặp insulin – số nhóm thuốc được xử lý theo bước (3) ở trên.  
@@ -94,13 +99,14 @@
 
 ### §6 DỮ LIỆU THIẾU
 
-- **Kết cục chính và kết cục phụ:** không thể thiếu theo định nghĩa (không có kết quả xét nghiệm ⇒ 0 hoặc «không phân loại được» = 9); không gán giá trị.  
-- **Biến giải thích của MT3 có thể thiếu:** thời gian mắc ĐTĐ (năm chẩn đoán không ghi — mã KGHS), BMI (cân nặng hoặc chiều cao không ghi), và các biến mang mã KDD. HbA1c không gán (xử lý bằng mức «không làm», §5).  
-- **Chiến lược:** gán đa trị (Multiple Imputation by Chained Equations, m = 20, so khớp trung bình dự đoán — predictive mean matching cho biến liên tục), gộp theo quy tắc Rubin (Sterne 2009, PMID 19564179; White 2011, PMID 21225900).  
+- **Kết cục chính và kết cục phụ:** không thể thiếu theo định nghĩa (không có kết quả xét nghiệm ⇒ 0 hoặc «không phân loại được» = 9); không gán giá trị. Kết quả xét nghiệm có trong eHospital nhưng giá trị mang mã KDD (không đọc được hoặc mâu thuẫn) vẫn được đếm vào `so_lan_creat`, `so_lan_uacr` nên không làm đổi `xn_du`, nhưng không được dùng để tính eGFR, đổi đơn vị UACR hay xếp nhóm G, nhóm A và `phan_loai_btm`; số người có ít nhất một kết quả xét nghiệm thận mang mã KDD được báo cáo.  
+- **Biến giải thích của MT3 có thể thiếu:** thời gian mắc ĐTĐ (năm chẩn đoán không ghi — mã KGHS), BMI (cân nặng hoặc chiều cao không ghi), và các biến mang mã KDD. HbA1c: mức «không làm HbA1c năm 2026» (`co_hba1c` = 0) là giá trị thật, không gán (§5); riêng người có làm HbA1c nhưng giá trị không đọc được hoặc mâu thuẫn (mã KDD) thì `hba1c_3muc` thiếu, đúng quy tắc mã thiếu của biến này ở `_bien-phai-sinh.csv`, và được xử lý bằng gán giá trị HbA1c (`hba1c_gt`) chỉ trong nhóm có làm HbA1c rồi tính lại `hba1c_3muc`, nên giá trị gán chỉ là < 7% hoặc ≥ 7%.  
+- **Chiến lược:** gán đa trị (Multiple Imputation by Chained Equations, m = 20, so khớp trung bình dự đoán — predictive mean matching — cho mọi biến có thiếu; giá trị gán luôn là một giá trị quan sát được, lấy từ người có giá trị dự đoán gần nhất, nên biến nhị phân và biến phân loại chỉ nhận đúng các mức hiện có), gộp theo quy tắc Rubin (Sterne 2009, PMID 19564179; White 2011, PMID 21225900).  
 - **Giả định:** MAR (missing at random) có điều kiện trên các biến đưa vào mô hình gán; nêu rõ khả năng MNAR (người ít được theo dõi thì vừa thiếu BMI vừa ít được xét nghiệm) trong phần hạn chế.  
 - **Biến đưa vào mô hình imputation:** biến phụ thuộc `khong_xn_du` và cả 12 biến giải thích ở §5 (dạng như trong mô hình phân tích), cộng `vao_truoc_0107`.  
 - **Phân tích hoàn chỉnh (complete case):** báo cáo song song với MI. Nếu mọi biến giải thích thiếu dưới 5% thì MI vẫn chạy cho nhất quán, kết luận dựa trên MI.  
 - **Báo cáo:** số và tỷ lệ thiếu từng biến; so sánh đặc điểm người thiếu với người đủ dữ liệu (G1, non_response_plan).  
+- **Làm sạch dữ liệu trước khoá (RECORD 12.2):** kiểm giá trị ngoài miền hợp lệ của từng trường (bảng biến số của đề cương), mâu thuẫn logic (ngày xét nghiệm hoặc ngày khám ngoài cửa sổ 01/01–31/12/2026; ngày khám cuối trước ngày khám đầu; số ô kết quả có ngày nhiều hơn số kết quả đã khai ở `so_lan_creat`, `so_lan_uacr`) và trùng người bệnh; giá trị nghi vấn được đối chiếu lại với eHospital và ghi nhật ký truy vấn; số truy vấn và số giá trị được sửa sau đối chiếu được báo cáo cùng sơ đồ chọn.  
 
 ### §7 PHÂN TÍCH NHÓM NHỎ (Subgroup Analysis)
 
@@ -112,7 +118,7 @@
 ### §8 ĐA SO SÁNH
 
 - **Kết cục được coi là kết cục chính:** chỉ 1 (`xn_du`), và là ước lượng theo độ chính xác, không kiểm định — không cần hiệu chỉnh đa so sánh.  
-- **Kết cục phụ:** ước lượng tỷ lệ kèm KTC 95%, không kiểm định giả thuyết, không hiệu chỉnh.  
+- **Kết cục phụ:** ước lượng tỷ lệ kèm KTC 95%, không kiểm định giả thuyết, không hiệu chỉnh. Chuỗi chăm sóc thận, Phụ 2 theo dấu ấn xác nhận và tỷ lệ điều trị theo tình trạng ghi nhận mã (§4) cũng chỉ mô tả, không kiểm định.  
 - **MT3:** thăm dò; báo PR + KTC 95% cho mọi biến định trước, không chọn biến theo p-value, không hiệu chỉnh đa so sánh. Nêu rõ trong bài rằng các khoảng tin cậy không được hiệu chỉnh cho số lượng ước lượng.  
 
 ### §9 PHÂN TÍCH ĐỘ NHẠY
@@ -127,6 +133,8 @@ Mỗi phân tích độ nhạy được định trước; không thay kết qu�
 - **ĐN7 — thuốc ngoài đơn:** Phụ 3 tính cả thuốc bệnh án ghi «đang dùng» nhưng không có trong đơn eHospital (`thuoc_ngoai_don`).  
 - **ĐN8 — dữ liệu thiếu:** MT3 complete case so với MI.  
 - **ĐN9 — dạng biến liên tục:** MT3 với tuổi, thời gian mắc, BMI, số lượt khám chia nhóm (chỉ khi đồ thị phần dư cho thấy lệch tuyến tính, §5).  
+- **ĐN10 — chỉ định ACEi/ARB không dựa vào mã tăng huyết áp:** Phụ 3a trên mọi người có albumin niệu đã xác nhận (`alb_xn` = 1), trừ người có `ccd_raasi` = 1, không đòi điều kiện tăng huyết áp (biến phái sinh `chi_dinh_raasi_alb`); kèm số người có albumin niệu xác nhận nhưng không có mã I10–I15. Lý do: tăng huyết áp chỉ được nhận diện qua mã ICD-10 nên có thể bị ghi thiếu, làm hẹp mẫu số của Phụ 3a; KDIGO 2022 cho phép cân nhắc ACEi/ARB ở người ĐTĐ có albumin niệu và huyết áp bình thường (điểm thực hành 1.2.1; PMID 36272764), nên ước lượng này vẫn có nghĩa lâm sàng dù mã tăng huyết áp được ghi đủ hay thiếu.  
+- **ĐN11 — lượt khám cuối là lượt kê đơn điều trị ĐTĐ:** Phụ 3a và Phụ 3b chỉ trên người có ít nhất một nhóm thuốc hạ glucose trong đơn của lượt khám cuối (`so_nhom_ha_glucose` ≥ 1; biến phái sinh `dn11_kham_cuoi_dtd`); kèm số người có lượt khám cuối không có thuốc hạ glucose trong khi có đơn thuốc hạ glucose ở lượt khám khác (`so_nhom_ha_glucose` = 0 và `don_ha_glucose_nam` = 1). Lý do: «đang dùng» đọc ở đơn của lượt khám cuối, mà lượt khám cuối có thể là lượt khám cấp hoặc khám chuyên khoa khác không kê thuốc mạn; giới hạn ở người có lượt khám cuối là lượt kê đơn ĐTĐ cho ước lượng không phụ thuộc tỷ lệ lượt khám cuối không kê thuốc mạn tại Khoa.  
 
 ### §10 PHẦN MỀM + SEED
 
@@ -161,9 +169,9 @@ Mỗi phân tích độ nhạy được định trước; không thay kết qu�
 | Được xét nghiệm đủ UACR và creatinin (`xn_du`) | | | |
 | Theo phòng khám / nhóm đối tượng / nhóm tuổi (§7) | | | |
 
-**Bảng 3, Phân loại BTM theo KDIGO 2024 — MT1 (người đủ xét nghiệm để phân loại):** BTM xác nhận / nghi BTM / không BTM, n (%) + KTC 95%; bảng chéo G1–G5 × A1–A3.
+**Bảng 3, Phân loại BTM theo KDIGO 2024 — MT1 (người đủ xét nghiệm để phân loại):** BTM xác nhận / nghi BTM / không BTM, n (%) + KTC 95%; dòng riêng «không đủ xét nghiệm để phân loại» với mẫu số là toàn bộ N; bảng chéo G1–G5 × A1–A3 trên người có cả hai xét nghiệm, thêm cột «chưa có UACR» và dòng «chưa có creatinin» (mẫu số theo §4).
 
-**Bảng 4, BTM chưa được ghi nhận — MT1:** n/N (%) + KTC 95% trên người có BTM xác nhận; cột độ nhạy với danh mục mã mở rộng.
+**Bảng 4, BTM chưa được ghi nhận — MT1:** n/N (%) + KTC 95% trên người có BTM xác nhận; cột độ nhạy với danh mục mã mở rộng; dòng theo dấu ấn xác nhận (chỉ eGFR, chỉ albumin niệu, cả hai).
 
 **Bảng 5, Điều trị bảo vệ thận ở người đủ chỉ định (KDIGO 2022) — MT2:**
 | Chỉ định | N đủ chỉ định | Loại vì chống chỉ định ghi trong hồ sơ | Đang dùng: n (%) | KTC 95% |
@@ -171,12 +179,27 @@ Mỗi phân tích độ nhạy được định trước; không thay kết qu�
 | ACEi/ARB (tăng huyết áp + albumin niệu xác nhận) | | | | |
 | SGLT2i (BTM xác nhận + eGFR ≥ 20) | | | | |
 
+**Bảng 5b, Chuỗi chăm sóc thận trên cùng người bệnh và điều trị theo tình trạng ghi nhận mã — MT1–MT2 (mô tả, §4):**
+| Khâu | Mẫu số | n/N | Tỷ lệ (%) | KTC 95% (Wilson) |
+|---|---|---|---|---|
+| Được xét nghiệm đủ (`xn_du` = 1) | Toàn bộ N | | | |
+| BTM xác nhận (`phan_loai_btm` = 2) | Toàn bộ N | | | |
+| – trong đó được xét nghiệm đủ / chỉ có creatinin | BTM xác nhận | | | |
+| Đã được ghi nhận bằng mã ICD-10 | BTM xác nhận | | | |
+| Đủ chỉ định SGLT2i, không có chống chỉ định ghi trong hồ sơ | BTM xác nhận | | | |
+| Đang dùng SGLT2i | Dòng liền trên | | | |
+| Albumin niệu xác nhận (`alb_xn` = 1) | Toàn bộ N | | | |
+| Có tăng huyết áp, không có chống chỉ định ACEi/ARB ghi trong hồ sơ | Albumin niệu xác nhận | | | |
+| Đang dùng ACEi/ARB | Dòng liền trên | | | |
+| Đang dùng ACEi/ARB, theo `ma_btm_ghi_nhan` (1 / 0) | Mẫu số Phụ 3a, từng nhóm | | | |
+| Đang dùng SGLT2i, theo `ma_btm_ghi_nhan` (1 / 0) | Mẫu số Phụ 3b, từng nhóm | | | |
+
 **Bảng 6, Yếu tố liên quan với việc không được xét nghiệm đủ (MT3):**
 | Biến | Không xét nghiệm đủ: n (%) | PR thô (KTC 95%) | PR hiệu chỉnh (KTC 95%), MI | PR hiệu chỉnh (KTC 95%), complete case |
 |---|---|---|---|---|
 | (12 biến ở §5) | | | | |
 
-**Bảng 7, Phân tích độ nhạy:** ĐN1–ĐN9, mỗi dòng: ước lượng + KTC 95% so với phân tích chính.
+**Bảng 7, Phân tích độ nhạy:** ĐN1–ĐN11, mỗi dòng: ước lượng + KTC 95% so với phân tích chính.
 
 **Bảng S1, Đồng thuận giữa hai người trích (chỉ số chất lượng dữ liệu; 39 hồ sơ trích lại, 10 hồ sơ bị loại sàng lọc lại ở dòng riêng):**
 | Biến | Loại | Số cặp | Đồng thuận n (%) [KTC 95% Wilson] | Kappa [KTC 95%] | Đồng thuận dương / âm | Chỉ số tỷ lệ hiện mắc / chỉ số lệch | ICC(2,1) [KTC 95%] | Chênh trung bình (giới hạn đồng thuận 95%) |

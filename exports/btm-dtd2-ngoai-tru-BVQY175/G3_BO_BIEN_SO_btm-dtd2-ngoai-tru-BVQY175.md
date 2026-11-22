@@ -140,7 +140,7 @@
 |---|---|---|---|---|---|---|---|
 | `egfr_k` | eGFR tại kết quả creatinin thứ k (k = 1…6) | Định lượng, mL/phút/1,73 m² | CKD-EPI 2021 không hệ số chủng tộc: eGFR = 142 × min(Scr/κ, 1)^α × max(Scr/κ, 1)^(−1,200) × 0,9938^tuổi × 1,012 (nếu nữ); κ = 0,7 (nữ) / 0,9 (nam); α = −0,241 (nữ) / −0,302 (nam); Scr tính bằng mg/dL (µmol/L chia 88,4) | creat_k_gt creat_don_vi tuoi gioi | Creatinin thiếu ⇒ eGFR thiếu | Phụ 1; tuổi dùng tuổi tại lượt khám đầu (sai lệch tối đa 1 tuổi) | PMID 34554658 |
 | `egfr_cuoi` | eGFR của kết quả creatinin gần nhất | Định lượng | egfr_k của ô có ngày muộn nhất | egfr_k creat_k_ngay | Không có creatinin ⇒ thiếu | Phụ 1 (nhóm G), Phụ 3b (eGFR từ 20) | KDIGO 2024 PMID 38490803 |
-| `uacr_mg_g_k` | UACR đổi về mg/g tại kết quả thứ k | Định lượng, mg/g | mg/mmol × 8,84 = mg/g; ngưỡng 30 mg/g tương ứng 3 mg/mmol | uacr_k_gt uacr_don_vi | Thiếu ⇒ thiếu | Phụ 1 | KDIGO 2024 PMID 38490803 |
+| `uacr_mg_g_k` | UACR đổi về mg/g tại kết quả thứ k | Định lượng, mg/g | Giữ nguyên nếu đơn vị là mg/g; nhân 8,84 nếu đơn vị là mg/mmol (hệ số quy đổi mg/mmol sang mg/g) | uacr_k_gt uacr_don_vi | Thiếu ⇒ thiếu | Phụ 1 | KDIGO 2024 PMID 38490803 |
 | `nhom_g` | Nhóm eGFR theo KDIGO | Thứ bậc | G1 ≥ 90; G2 60–89; G3a 45–59; G3b 30–44; G4 15–29; G5 < 15 (theo egfr_cuoi) | egfr_cuoi | Thiếu ⇒ thiếu | Phụ 1 (phân bố) | KDIGO 2024 PMID 38490803 |
 | `nhom_a` | Nhóm albumin niệu theo KDIGO | Thứ bậc | A1 < 30; A2 30–300; A3 > 300 mg/g (theo UACR gần nhất) | uacr_mg_g_k uacr_k_ngay | Thiếu ⇒ thiếu | Phụ 1 (phân bố) | KDIGO 2024 PMID 38490803 |
 | `xn_du` | KẾT CỤC CHÍNH — được xét nghiệm đủ UACR và creatinin năm 2026 | Nhị phân | 1 nếu so_lan_uacr ≥ 1 VÀ so_lan_creat ≥ 1; ngược lại 0 | so_lan_uacr so_lan_creat | Không thể thiếu: không có kết quả ⇒ 0 | MT1 — kết cục chính; cỡ mẫu G3 | G1 primary_outcome |
@@ -153,6 +153,8 @@
 | `btm_chua_ghi_nhan` | BTM theo xét nghiệm nhưng chưa được ghi nhận bằng mã ICD-10 | Nhị phân | 1 nếu phan_loai_btm = 2 và ma_btm_ghi_nhan = 0 (độ nhạy: thêm điều kiện ma_than_mo_rong = 0) | phan_loai_btm ma_btm_ghi_nhan ma_than_mo_rong | Chỉ tính trên người có phan_loai_btm = 2 | Phụ 2 | G1 secondary_outcomes |
 | `chi_dinh_raasi` | Đủ chỉ định ACEi/ARB theo KDIGO 2022 | Nhị phân | 1 nếu tha = 1 và alb_xn = 1 (độ nhạy: tha = 1 và có ít nhất 1 UACR ≥ 30 mg/g) | tha alb_xn uacr_mg_g_k | — | Phụ 3a — mẫu số (trừ ccd_raasi = 1) | KDIGO 2022 PMID 36272764 |
 | `chi_dinh_sglt2i` | Đủ chỉ định thuốc ức chế SGLT2 theo KDIGO 2022 | Nhị phân | 1 nếu phan_loai_btm = 2 và egfr_cuoi ≥ 20 | phan_loai_btm egfr_cuoi | — | Phụ 3b — mẫu số (trừ ccd_sglt2i = 1) | KDIGO 2022 PMID 36272764 |
+| `chi_dinh_raasi_alb` | Chỉ định ACEi/ARB — albumin niệu xác nhận, không đòi tăng huyết áp | Nhị phân | 1 khi alb_xn = 1 | alb_xn | — | ĐN10 — độ nhạy của Phụ 3a (MT2) | KDIGO 2022 PMID 36272764 (điểm thực hành 1.2.1); SAP §9 |
+| `dn11_kham_cuoi_dtd` | Quần thể ĐN11 — lượt khám cuối có ít nhất một nhóm thuốc hạ glucose | Nhị phân | 1 khi so_nhom_ha_glucose ≥ 1 | so_nhom_ha_glucose | — | ĐN11 — độ nhạy của Phụ 3a và Phụ 3b (MT2) | SAP §9 |
 | `dung_raasi` | Đang dùng ACEi/ARB | Nhị phân | 1 nếu raasi ∈ {1, 2, 3}; độ nhạy: thêm thuoc_ngoai_don(1) = 1 | raasi thuoc_ngoai_don | — | Phụ 3a | G1 |
 | `dung_sglt2i` | Đang dùng thuốc ức chế SGLT2 | Nhị phân | 1 nếu thuoc_ha_glucose(4) = 1; độ nhạy: thêm thuoc_ngoai_don(2) = 1 | thuoc_ha_glucose thuoc_ngoai_don | — | Phụ 3b | G1 |
 | `dung_insulin` | Đang dùng insulin | Nhị phân | 1 nếu thuoc_ha_glucose(8) = 1 | thuoc_ha_glucose | — | MT3 | G0 |
