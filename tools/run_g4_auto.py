@@ -730,6 +730,10 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "- **Định nghĩa tổn hại (harms):** [CẦN — thang phân độ biến cố bất lợi dùng, vd CTCAE]  ",
         "- **Cách đánh giá:** [CẦN — hệ thống (hỏi chủ động mỗi lần khám) hay không hệ thống "
         "(người tham gia tự báo cáo)]  ",
+        # 22/11/2026: CONSORT 2025 mục 27 đòi báo tác hại ở TỪNG nhóm — SAP phải định trước cách tóm tắt (số và tỷ lệ
+        # người có biến cố theo nhóm, biến cố nghiêm trọng riêng, quần thể phân tích) thay vì để lúc viết bài mới chọn.
+        "- **Cách phân tích tổn hại:** [CẦN — vd số và tỷ lệ người có ≥ 1 biến cố bất lợi và có biến cố nghiêm "
+        "trọng ở TỪNG nhóm; quần thể phân tích; có/không ước lượng chênh lệch kèm KTC 95%]  ",
         "- **Tiêu chí ngừng/đổi can thiệp cho MỘT người tham gia:** [CẦN — vd đổi liều khi có tác "
         "dụng phụ, tiêu chí rút khỏi nghiên cứu — khác quy tắc dừng CẢ nghiên cứu ở §13]  ",
         "- **Chiến lược cải thiện và theo dõi tuân thủ:** [CẦN — vd đếm viên thuốc hoàn trả, số "

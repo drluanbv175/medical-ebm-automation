@@ -138,7 +138,8 @@ def _rct(goc: Dict[str, Any]) -> Dict[str, Any]:
     ])
     bs = kb["bien_so"]
     bs["bo_bien"], bs["meta_bien"] = bo, meta
-    bs["ma_tran"] = _dong_bo_ma_cau(list(bs["ma_tran"]) + [
+    # 22/11/2026: biến tổn hại của RCT gốc (bien_co_*) không có trong bộ biến chân thực — tổn hại ở đây là co_bien_co
+    bs["ma_tran"] = _dong_bo_ma_cau([d for d in bs["ma_tran"] if not str(d[3]).startswith("bien_co_")] + [
         ("1", "huyết áp tâm thu ban đầu", "hiep_bien", "ha_tt_nen", "lien_tuc", "", "đo huyết áp chuẩn hoá",
          "SAP §3 mô tả nền"),
         ("1", "đái tháo đường", "hiep_bien", "dtd", "nhi_phan", "", "hồ sơ bệnh án", "SAP §3 mô tả nền"),

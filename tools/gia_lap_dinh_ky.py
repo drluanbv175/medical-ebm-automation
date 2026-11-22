@@ -185,6 +185,12 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 ("gioi", "radio", "Giới", "1, Nam | 2, Nữ", "", "", ""),
                 ("ha_tt_t6", "text", "Huyết áp tâm thu tháng 6 (mmHg)", "", "integer", "60", "260"),
                 ("kiem_soat_t6", "radio", "Kiểm soát huyết áp tháng 6 (<140/90)", "0, Không | 1, Có", "", "", ""),
+                # 22/11/2026 (CONSORT 2025 mục 27/29): tổn hại theo ĐÚNG định nghĩa SAP §15 của hồ sơ — trước đây RCT
+                # giả lập không có biến tổn hại nào nên bản thảo không thể báo tác hại theo nhóm.
+                ("bien_co_bat_loi", "radio", "Có biến cố bất lợi trong 6 tháng (phàn nàn, lo âu do tin nhắn hoặc cơn "
+                 "tăng huyết áp)", "0, Không | 1, Có", "", "", ""),
+                ("bien_co_nghiem_trong", "radio", "Có biến cố bất lợi nghiêm trọng trong 6 tháng (cơn tăng huyết áp "
+                 "≥ 180/110 mmHg phải xử trí hoặc nhập viện)", "0, Không | 1, Có", "", "", ""),
             ],
             "ma_tran": [
                 ("1", "tỷ lệ kiểm soát huyết áp tại tháng 6", "ket_cuc_chinh", "kiem_soat_t6", "nhi_phan", "C1",
@@ -193,6 +199,10 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                  "SAP §4 nhóm so sánh"),
                 ("1", "tuổi", "hiep_bien", "tuoi", "lien_tuc", "A1", "phiếu", "SAP §5 hiệp biến"),
                 ("1", "giới", "hiep_bien", "gioi", "nhi_phan", "A2", "phiếu", "SAP §5 hiệp biến"),
+                ("1", "biến cố bất lợi (tổn hại)", "mo_ta", "bien_co_bat_loi", "nhi_phan", "S1", "phiếu biến cố",
+                 "SAP §15 tổn hại"),
+                ("1", "biến cố bất lợi nghiêm trọng (tổn hại)", "mo_ta", "bien_co_nghiem_trong", "nhi_phan", "S2",
+                 "phiếu biến cố", "SAP §15 tổn hại"),
             ],
         },
         "pi": {
