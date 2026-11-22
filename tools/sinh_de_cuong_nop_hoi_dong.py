@@ -1243,6 +1243,47 @@ def chuong_tong_quan(n: Nguon, con_lai: Sequence[str] = ()) -> List[str]:
     return dong
 
 
+#: 22/11/2026 (COREQ 2007, SRQR 2014): ba tiểu mục của mục phương pháp định tính, mỗi tiểu mục mang tên đúng phần
+#: đề cương mà chuẩn đặt mục đó (nhóm nghiên cứu/phản tư · chọn mẫu, tiếp cận, thu thập · xử lý và phân tích). Trước
+#: đây mọi dòng nằm dưới một tiêu đề «Cấu phần định tính…» mà bộ đo theo mục không nhận là phần nào ⇒ đề tài hỗn hợp
+#: có đủ dữ kiện vẫn thiếu ~30 mục COREQ/SRQR. (khoá cơ bản, nhãn) theo thứ tự in; khoá quy trình lấy ở
+#: `hon_hop.KHOA_QUY_TRINH_DINH_TINH`.
+_TIEU_MUC_DINH_TINH = (
+    ("Người phỏng vấn và phản tư của nhóm nghiên cứu",
+     ("interviewer", "participant_information", "researcher_reflexivity")),
+    ("Chọn mẫu, tiếp cận và thu thập dữ liệu định tính",
+     ("central_phenomenon", "qualitative_approach", "research_paradigm", "chon_mau", "co_mau_du_kien",
+      "participant_approach", "non_participation", "interview_setting", "interview_guide_pilot",
+      "data_collection_method", "repeat_interviews", "recording_field_notes", "saturation_criterion",
+      "transcript_return")),
+    ("Xử lý và phân tích dữ liệu định tính", ("phan_tich", "coding_process")),
+)
+_NHAN_CO_BAN_DINH_TINH = {"central_phenomenon": "Hiện tượng trung tâm", "qualitative_approach": "Cách tiếp cận",
+                          "chon_mau": "Chọn người tham gia", "co_mau_du_kien": "Cỡ mẫu dự kiến",
+                          "data_collection_method": "Phương pháp thu thập", "saturation_criterion": "Tiêu chí bão hoà",
+                          "phan_tich": "Phân tích dữ liệu định tính"}
+#: khoá cơ bản đề tài định tính in cả khi trống (ô «………» chủ nhiệm điền) — cấu phần hỗn hợp chỉ in khoá đã khai
+_KHOA_DINH_TINH_LUON_IN = ("central_phenomenon", "qualitative_approach", "data_collection_method",
+                           "saturation_criterion")
+
+
+def khoi_quy_trinh_dinh_tinh(g: Dict[str, Any], so: str, cham: bool,
+                             them_cuoi: Sequence[str] = ()) -> List[str]:
+    """Ba tiểu mục «### <so>.k.» của mục phương pháp định tính từ khối khai `g` (`gate_params.G1` của đề tài định
+    tính hoặc `mixed_methods.cau_phan_dinh_tinh` của đề tài hỗn hợp). `cham` ⇒ khoá chưa khai in ô «………» (đề tài định
+    tính: chủ nhiệm điền trước khi nộp); không ⇒ bỏ dòng. `them_cuoi`: dòng nối vào tiểu mục phân tích (tích hợp)."""
+    nhan = {**_NHAN_CO_BAN_DINH_TINH, **{k: nh for k, nh, _v, _c in _hh().KHOA_QUY_TRINH_DINH_TINH}}
+    ra: List[str] = []
+    for i, (ten, khoa) in enumerate(_TIEU_MUC_DINH_TINH, 1):
+        dong = [f"- {nhan[k]}: {_cau(g.get(k)) or CHAM}" for k in khoa
+                if _co(g.get(k)) or (cham and (k in _KHOA_DINH_TINH_LUON_IN or k not in _NHAN_CO_BAN_DINH_TINH))]
+        if i == len(_TIEU_MUC_DINH_TINH):
+            dong += list(them_cuoi)
+        if dong:
+            ra += [f"### {so}.{i}. {ten}", ""] + dong + [""]
+    return ra
+
+
 def huong_dan_phong_van(n: Nguon, g: Optional[Dict[str, Any]] = None) -> List[str]:
     """Hướng dẫn phỏng vấn sâu bán cấu trúc (COREQ mục 14). Nguồn: `gate_params.G1` (đề tài định tính) hoặc
     `gate_params.G1.mixed_methods.cau_phan_dinh_tinh` (cấu phần định tính của đề tài hỗn hợp), truyền qua `g`.
@@ -1662,6 +1703,10 @@ def han_che_suy_rong(n: "Nguon") -> List[str]:
     hc = n.meta.get("limitations") or n.s("bias", "limitations")
     if _co(hc):
         ra.append(f"- Hạn chế đã xác định: {_thuong(n.td.thay(str(hc)))}.")
+    # 22/11/2026 (GRAMMS 2008 mục 5): đề tài hỗn hợp — hạn chế phát sinh do kết hợp hai cấu phần, PI khai ở tích hợp
+    hc_hh = _hh().tich_hop(n.meta).get("han_che")
+    if _co(hc_hh):
+        ra.append(f"- {_cau(n.td.thay(str(hc_hh)))}")
     if any(isinstance(x, dict) and _co(x.get("chieu")) for x in (n.g1.get("bias_controls") or [])):
         ra.append("- Sai lệch và chiều ảnh hưởng dự kiến: các nguồn sai lệch, chiều tác động có thể có lên ước lượng "
                   "và biện pháp khống chế đã nêu ở bảng của mục sai số; kết quả được diễn giải có tính đến các "
@@ -1838,25 +1883,15 @@ def chuong_phuong_phap(n: Nguon) -> List[str]:
         dong.append("")
     elif tk == "qualitative":
         muc("Cách tiếp cận và phương pháp thu thập dữ liệu định tính")
-        for nhan, k in (("Hiện tượng trung tâm", "central_phenomenon"), ("Cách tiếp cận", "qualitative_approach"),
-                        ("Phương pháp thu thập", "data_collection_method"),
-                        ("Tiêu chí bão hoà", "saturation_criterion")):
-            dong.append(f"- {nhan}: {_cau(n.g1.get(k)) or CHAM}")
-        dong.append("")
+        dong += khoi_quy_trinh_dinh_tinh(n.g1, f"4.{so[0]}", cham=True)
     if hon_hop:
         muc("Cấu phần định tính và tích hợp dữ liệu")
-        dt, th = HH.dinh_tinh(n.meta), HH.tich_hop(n.meta)
-        for nhan, k in (("Hiện tượng trung tâm", "central_phenomenon"), ("Cách tiếp cận", "qualitative_approach"),
-                        ("Chọn người tham gia", "chon_mau"), ("Cỡ mẫu dự kiến", "co_mau_du_kien"),
-                        ("Phương pháp thu thập", "data_collection_method"),
-                        ("Tiêu chí bão hoà", "saturation_criterion"), ("Phân tích dữ liệu định tính", "phan_tich")):
-            if _co(dt.get(k)):
-                dong.append(f"- {nhan}: {_cau(dt.get(k))}")
-        for nhan, k in (("Thời điểm tích hợp", "thoi_diem"), ("Cách tích hợp", "cach"),
-                        ("Người thực hiện tích hợp", "nguoi")):
-            if _co(th.get(k)):
-                dong.append(f"- {nhan}: {_cau(th.get(k))}")
-        dong += ["- Hướng dẫn phỏng vấn trình bày ở Phụ lục C; khung bảng tích hợp kết quả trình bày ở mục 5.", ""]
+        th = HH.tich_hop(n.meta)
+        tich_hop = [f"- {nhan}: {_cau(th.get(k))}" for nhan, k in (
+            ("Thời điểm tích hợp", "thoi_diem"), ("Cách tích hợp", "cach"), ("Người thực hiện tích hợp", "nguoi"))
+            if _co(th.get(k))]
+        dong += khoi_quy_trinh_dinh_tinh(HH.dinh_tinh(n.meta), f"4.{so[0]}", cham=False, them_cuoi=tich_hop)
+        dong += ["Hướng dẫn phỏng vấn trình bày ở Phụ lục C; khung bảng tích hợp kết quả trình bày ở mục 5.", ""]
     # Biến số
     muc("Biến số và chỉ số nghiên cứu")
     kc = n.g1.get("primary_outcome") if isinstance(n.g1.get("primary_outcome"), dict) else {}
@@ -2091,7 +2126,10 @@ def chuong_du_kien(n: Nguon) -> List[str]:
                 ["Nội dung tích hợp", "Kết quả định lượng", "Kết quả định tính", "Nhận định tích hợp"],
                 dong_hh or [["Nội dung tích hợp", "…", "…", "Hội tụ / bổ sung / bất đồng"]],
                 ["Mỗi nội dung được đối chiếu kết quả của hai cấu phần và kết luận là hội tụ, bổ sung cho nhau hoặc "
-                 "bất đồng; trường hợp bất đồng được phân tích trong phần bàn luận."])]))
+                 "bất đồng; trường hợp bất đồng được phân tích trong phần bàn luận."]
+                # 22/11/2026 (GRAMMS 2008 mục 6): hiểu biết dự kiến thu được nhờ kết hợp, PI khai ở tích hợp
+                + ([_cau(HH.tich_hop(n.meta).get("hieu_biet_du_kien"))]
+                   if _co(HH.tich_hop(n.meta).get("hieu_biet_du_kien")) else []))]))
         dong, loi_ve = KBB.ve_chuong(cac_muc, 5, n.out, ve_anh=getattr(n, "ve_anh", False))
         n.loi_ve_bieu_bang = loi_ve
         return dong + [""] + _ban_luan_han_che(n, dong)

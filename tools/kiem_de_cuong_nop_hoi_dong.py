@@ -889,7 +889,7 @@ def loi_k17(md: str, thiet_ke: str) -> List[str]:
     2015 (dữ liệu thường quy), CROSS 2021 (khảo sát bằng bộ câu hỏi), chuẩn Việt Nam (TT43/2024, Luật 91/2025),
     COSMIN 2021 (kiểm định bộ câu hỏi). Bộ đo ở `kiem_chuan_de_cuong_theo_muc.py`. Chuẩn đã có tiêu chí nhưng bộ sinh
     chưa phủ (SPIRIT, PRISMA-P, STARD, TRIPOD+AI, GRAMMS, SQUIRE, CHEERS, CARE — `KCM.CHUAN_CHO_BO_SINH`) và chuẩn
-    chưa đối chiếu bảng gốc (TREND, COREQ, SRQR) chỉ CẢNH BÁO (`canh_bao_k17`, in ⚠ kèm) — không chặn, không tính là
+    chưa đối chiếu bảng gốc (TREND) chỉ CẢNH BÁO (`canh_bao_k17`, in ⚠ kèm) — không chặn, không tính là
     đạt.
 
     Chặn MỌI đề cương nộp, cả bản nháp cấu trúc cũ 1–7 (21/11/2026): trước đó chỉ chặn bản theo khuôn «# CHƯƠNG 1.»

@@ -701,6 +701,10 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "data_collection_method": "Phỏng vấn sâu bán cấu trúc 45–60 phút, ghi âm có đồng ý, gỡ băng nguyên văn",
                 "saturation_criterion": "Dừng khi 3 phỏng vấn liên tiếp không xuất hiện mã mới (tối thiểu 12 phỏng "
                                         "vấn)",
+                # 22/11/2026 (COREQ 2007, SRQR 2014): PI chốt quy trình định tính khi thiết kế — khoá ở
+                # hon_hop.KHOA_QUY_TRINH_DINH_TINH; khớp đội ngũ (2 người phỏng vấn và mã hoá được tập huấn), SAP §5/§10
+                # (bộ mã, hai người mã hoá, bảng tính, không phần mềm QDA) và đặc tả phản tư ở G10
+                **QUY_TRINH_DINH_TINH_INSULIN,
                 "primary_outcome": {"name": "Trải nghiệm và rào cản khi bắt đầu tiêm insulin",
                                     "measure": "Chủ đề rút ra từ phỏng vấn sâu bán cấu trúc (phân tích chủ đề)",
                                     "timepoint": "Trong 3 tháng sau khi được chỉ định insulin", "type": "định tính"},
@@ -754,6 +758,42 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
 # SAP §4/§5 dùng, không thừa không thiếu.
 _CO_KHONG = "0, Không | 1, Có"
 _GIOI = "0, Nữ | 1, Nam"
+
+#: 22/11/2026 — quy trình định tính PI chốt ở G1 cho đề tài định tính «bắt đầu insulin» (khoá
+#: `hon_hop.KHOA_QUY_TRINH_DINH_TINH`); kịch bản định tính chân thực thừa hưởng nguyên khối G1 này.
+QUY_TRINH_DINH_TINH_INSULIN = {
+    "research_paradigm": ("Hệ hình kiến tạo – diễn giải: trải nghiệm bắt đầu insulin được hiểu qua ý nghĩa người "
+                          "bệnh gán cho nó, phù hợp với mục tiêu tìm hiểu sâu từ góc nhìn của chính người bệnh"),
+    "interviewer": ("Người phỏng vấn là điều dưỡng của phòng khám nội tiết (hai người, đều là nữ, trình độ cử "
+                    "nhân điều dưỡng), đã được tập huấn phỏng vấn định tính trước khi thu thập; hai điều dưỡng "
+                    "trực tiếp phỏng vấn, không điều trị và không quen biết người tham gia trước nghiên cứu"),
+    "participant_information": ("Trước khi phỏng vấn, người phỏng vấn giới thiệu bản thân, vai trò trong nghiên "
+                                "cứu và mục đích nghiên cứu khi đọc bản thông tin và phiếu đồng ý với người tham "
+                                "gia"),
+    "researcher_reflexivity": ("Nhóm nghiên cứu là nhân viên y tế của phòng khám, có thể mang giả định rằng hướng"
+                               " dẫn kỹ thuật tiêm là rào cản chính; người phỏng vấn ghi nhật ký phản tư sau mỗi "
+                               "cuộc phỏng vấn và nhóm thảo luận ảnh hưởng của vai trò nhân viên y tế lên câu trả"
+                               " lời"),
+    "participant_approach": ("Điều dưỡng mời trực tiếp người bệnh đủ tiêu chuẩn tại phòng khám khi tái khám; "
+                             "người không đến tái khám được liên hệ qua điện thoại"),
+    "non_participation": ("Số người từ chối tham gia hoặc rút lui và lý do được ghi vào sổ tuyển chọn"),
+    "interview_setting": ("Phỏng vấn tại phòng riêng của phòng khám; chỉ có người phỏng vấn và người tham gia, "
+                          "không có người khác có mặt"),
+    "interview_guide_pilot": ("Hướng dẫn phỏng vấn bán cấu trúc gồm câu hỏi chính và câu hỏi gợi mở (Phụ lục C), "
+                              "đã thử trước trên 2 người ngoài mẫu và giữ nguyên trong suốt quá trình thu thập"),
+    "repeat_interviews": ("Mỗi người tham gia được phỏng vấn một lần, không phỏng vấn lại"),
+    "recording_field_notes": ("Mọi cuộc phỏng vấn được ghi âm bằng máy ghi âm kỹ thuật số khi người tham gia đồng"
+                              " ý; người phỏng vấn ghi chép thực địa ngay sau mỗi cuộc phỏng vấn"),
+    "transcript_return": ("Không gửi lại bản gỡ băng cho người tham gia; bản tóm tắt chủ đề được kiểm tra lại với"
+                          " người tham gia"),
+    "coding_process": ("Bộ mã do hai người mã hoá độc lập xây dựng từ 3 bản gỡ băng đầu, cây mã trình bày ở phụ "
+                       "lục; chủ đề rút ra từ dữ liệu theo hướng quy nạp, phân tích tiến hành song song với thu "
+                       "thập dữ liệu; mã được quản lý bằng bảng tính có kiểm soát phiên bản, không dùng phần mềm "
+                       "phân tích định tính chuyên dụng; nhật ký quyết định mã hoá được lưu; bản tóm tắt chủ đề "
+                       "được kiểm tra lại với người tham gia; kết quả trình bày theo chủ đề kèm trích lời minh "
+                       "hoạ đã khử định danh có mã người tham gia, cùng mô tả dày bối cảnh để người đọc đánh giá "
+                       "khả năng chuyển giao"),
+}
 _CHAN_DOAN_KHAC = ("1, Không có hoặc xơ hoá nhẹ (F0–F1) | 2, Xơ hoá đáng kể chưa tiến triển (F2) | "
                    "3, Bệnh gan khác kèm theo")
 

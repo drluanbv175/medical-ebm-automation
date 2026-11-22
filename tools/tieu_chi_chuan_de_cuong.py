@@ -28,9 +28,8 @@ PMC12567161 (Nurs Rep 2025, DOI 10.3390/nursrep15100347, dẫn Tong 2007) và PM
 10.3390/clinpract15120232): 32 mục, chủ đề + câu hỏi hướng dẫn, hai bản in độc lập trùng chữ; SRQR — Phụ lục A
 PMC12027544 (J Clin Med 2025, DOI 10.3390/jcm14082740): 21 mục, tên mục + mô tả + chú thích của biểu mẫu SRQR, trùng mô
 tả 21 mục S1–S21 in ở PMC13289893 (PLoS One). Sau đối chiếu đã sửa tiêu chí COREQ 8, 10, 11, 14 và SRQR S11; nhãn chủ đề
-khớp cả 53 mục. Hai chuẩn vẫn ở `CHUAN_DA_DOI_CHIEU_CHUA_CHAN` (chỉ cảnh báo) vì bật chặn sẽ làm đỏ ba kịch bản có cấu
-phần định tính mà bộ sinh đề cương nộp/bản thảo G7 chưa viết đủ mục (xem lý do ở hằng) — không nới tiêu chí, không ghi
-nợ: bật chặn khi ba kịch bản đạt 0 mục thiếu.
+khớp cả 53 mục. Bật CHẶN 22/11/2026 sau khi bộ sinh đề cương nộp và bản thảo G7 viết đủ mục cho ba kịch bản có cấu
+phần định tính (0 mục thiếu ở cả ba tầng văn bản) — nguồn ghi ở `NGUON_DOI_CHIEU_BAN_IN_LAI`.
 
 GIỚI HẠN (như K17): yếu tố có mặt ≠ nội dung đúng. Bộ kiểm bắt THIẾU một cách tin cậy; ĐẠT chỉ là «có dấu hiệu đủ yếu
 tố», người phân xử đọc bằng chứng từng dòng.
@@ -113,17 +112,17 @@ DINH_LUONG_CP = (r"hồi quy|kiểm định (thống kê|chi bình phương|t\b)
 CHUAN_CHUA_DOI_CHIEU_GOC: Dict[str, str] = {
     "TREND 2004": "danh mục đọc qua bản tóm lược WebFetch trang PMC1448256 (byte thô bị chặn: Europe PMC 500, CDC 403)",
 }
-#: Chuẩn ĐÃ đối chiếu từng mục với bản in lại toàn văn bảng gốc (nguồn CC BY ghi ở docstring) nhưng CHƯA bật chặn
-#: — lý do là khoảng hở của bộ sinh đo được, không phải nghi ngờ tiêu chí. Đo 22/11/2026 (gói giả lập 22/11): kịch bản
-#: định tính thiếu 8 mục ở đề cương nộp (COREQ 1, 4, 11, 13, 15, 20, 23; SRQR S5) và 22 mục ở bản thảo G7; kịch bản RCT
-#: có cấu phần định tính và kịch bản định tính chân thực cũng thiếu ở cả hai văn bản.
-CHUAN_DA_DOI_CHIEU_CHUA_CHAN: Dict[str, str] = {
-    "COREQ 2007": ("đã đối chiếu từng mục với bản in lại toàn văn bảng gốc trong PMC12567161 và PMC12731783 "
-                   "(CC BY 4.0); chưa bật chặn — bộ sinh đề cương nộp và bản thảo G7 chưa viết đủ mục cho kịch bản "
-                   "có cấu phần định tính — chỉ cảnh báo"),
-    "SRQR 2014": ("đã đối chiếu từng mục với bản in lại toàn văn bảng gốc trong PMC12027544 (CC BY 4.0), trùng mô tả ở "
-                  "PMC13289893; chưa bật chặn — bộ sinh đề cương nộp và bản thảo G7 chưa viết đủ mục cho kịch bản có "
-                  "cấu phần định tính — chỉ cảnh báo"),
+#: Chuẩn ĐÃ đối chiếu từng mục với bản in lại toàn văn bảng gốc nhưng CHƯA bật chặn (lý do là khoảng hở đo được của
+#: bộ sinh). 22/11/2026: COREQ 2007 và SRQR 2014 đã gỡ khỏi tập — bộ sinh đề cương nộp và bản thảo G7 viết đủ mục cho
+#: cả ba kịch bản có cấu phần định tính (định tính, định tính chân thực, RCT hỗn hợp: 0 mục thiếu ở đề cương nộp, bản
+#: thảo và báo cáo tổng hợp), nên hai chuẩn nay CHẶN như mọi chuẩn đã đối chiếu.
+CHUAN_DA_DOI_CHIEU_CHUA_CHAN: Dict[str, str] = {}
+#: nguồn đối chiếu của chuẩn bản quyền nhà xuất bản (không lưu nguyên văn) — nói đúng sự thật: bản in lại toàn văn
+#: bảng gốc trong bài CC BY, không phải bài gốc
+NGUON_DOI_CHIEU_BAN_IN_LAI: Dict[str, str] = {
+    "COREQ 2007": ("đối chiếu từng mục với bản in lại toàn văn bảng gốc trong PMC12567161 và PMC12731783 (CC BY 4.0)"),
+    "SRQR 2014": ("đối chiếu từng mục với bản in lại toàn văn bảng gốc trong PMC12027544 (CC BY 4.0), trùng mô tả ở "
+                  "PMC13289893"),
 }
 
 NGUON_CHUAN_THEM: Dict[str, str] = {
