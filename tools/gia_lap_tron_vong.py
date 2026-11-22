@@ -934,6 +934,7 @@ class TronVong:
         rct = list(TRA_LOI_G4_RCT) if self.thiet_ke == "rct" else []
         self.hoan_thien_tep("G4", sap, tl + rct + list(TRA_LOI_CHUNG), da_hoi)
         self._bo_sung_epv(sap)
+        self._ghi_doi_chieu_sai_lech_sap()
         meta = self._meta()
         meta.setdefault("gate_params", {}).setdefault("G4", {}).update({
             "epv_vif_reviewed": True, "missing_data_mechanism_confirmed": True,
@@ -955,6 +956,74 @@ class TronVong:
         self._ky("G4", sap.name, "PI", "GIA-LAP-PI")
         self.cong["G4"] = {"trang_thai": self.cham("G4")}
         self.do_truc("sau_G4")
+
+    #: cụm phương pháp (trong biện pháp G1) → các cách SAP có thể viết NGUYÊN VĂN cùng phương pháp đó
+    _NEO_PHAN_TICH = (
+        ("hồi quy logistic có điều kiện", ("hồi quy logistic có điều kiện", "conditional logistic")),
+        ("gán đa trị", ("gán đa trị", "Multiple Imputation", "MICE")),
+        ("hồi quy logistic", ("hồi quy logistic", "logistic")),
+        ("hồi quy Cox", ("hồi quy Cox", "Cox")),
+        ("hồi quy Poisson", ("hồi quy Poisson", "Poisson")),
+        ("hiệu chỉnh đa biến", ("hiệu chỉnh đa biến", "đa biến")),
+        ("DAG", ("DAG",)),
+        ("phân tầng", ("phân tầng",)),
+    )
+
+    @staticmethod
+    def _tim_nguyen_van(cum: str, muc: Dict[str, str]) -> Optional[Tuple[str, str]]:
+        """(mục, đoạn NGUYÊN VĂN trong SAP) của lần xuất hiện đầu (không phân biệt hoa thường) — để neo đúng chữ SAP."""
+        for k in sorted(muc, key=int):
+            i = muc[k].casefold().find(cum.casefold())
+            if i >= 0:
+                return k, muc[k][i:i + len(cum)]
+        return None
+
+    def _ghi_doi_chieu_sai_lech_sap(self) -> None:
+        """Thống kê viên đối chiếu TỪNG biện pháp kiểm soát sai lệch đã chốt ở G1 với mục SAP xử lý nó
+        (`_doi-chieu-sai-lech-sap.csv`, khuôn tools/doi_chieu_sai_lech_sap.py) — như đề tài thật C1a/BTM.
+
+        22/11/2026 (kiểm 13 khâu): ba kịch bản quan sát khai 2–4 sai lệch ở G1 mà không có bảng đối chiếu ⇒ trục
+        «Kiểm soát sai lệch G1 ↔ SAP» CHƯA ĐỦ ĐỂ SO. Neo chỉ là cụm phương pháp có NGUYÊN VĂN trong cả biện pháp lẫn mục
+        SAP; không tìm được ⇒ để «[CẦN …]» cho bộ kiểm báo lỗi (không đoán mục SAP)."""
+        import doi_chieu_sai_lech_sap as DS  # noqa: PLC0415
+
+        tep = self.out / "_doi-chieu-sai-lech-sap.csv"
+        meta = self._meta()
+        if tep.is_file() or not DS.sai_lech_g1(meta):
+            return
+        muc = DS.muc_sap(self.out, self.study)
+        dong = []
+        for r, bc in zip(DS.khung(meta), DS.sai_lech_g1(meta)):
+            bp = bc["bien_phap"]
+            if r["can_phan_tich"] == "co":
+                neo, cac_muc, da_xet = [], [], []
+                ung_vien = [cach for cum, cach in self._NEO_PHAN_TICH if cum.casefold() in bp.casefold()]
+                # phân tích độ nhạy: neo là ĐIỀU nó làm (đoạn sau cụm, tới dấu ; hoặc .), vd «loại người theo dõi dưới
+                # 12 tháng» — tiêu đề §9 «PHÂN TÍCH ĐỘ NHẠY» không nằm trong thân mục nên không làm neo được
+                for m in re.finditer(r"phân tích độ nhạy\s+(?:với\s+|bằng\s+)?([^;.]+)", bp, re.IGNORECASE):
+                    cau = m.group(1).strip()
+                    tu = cau.split()
+                    ung_vien.append(tuple(" ".join(tu[i:]) for i in range(0, max(1, len(tu) - 2))))
+                for cach in ung_vien:
+                    if cach in da_xet:
+                        continue
+                    da_xet.append(cach)
+                    tim = next((t for t in (self._tim_nguyen_van(c, muc) for c in cach) if t), None)
+                    if tim and not any(tim[1].casefold() in n.casefold() or n.casefold() in tim[1].casefold()
+                                       for n in neo):
+                        neo.append(tim[1])
+                        cac_muc += [tim[0]] if tim[0] not in cac_muc else []
+                r.update(sap_muc="; ".join(f"§{k}" for k in cac_muc) or "[CẦN §]",
+                         sap_neo=" | ".join(neo) or "[CẦN NEO]", noi_khac="")
+            else:
+                r.update(sap_muc="", sap_neo="",
+                         noi_khac="đề cương — mục đối tượng và phương pháp (biện pháp ở khâu thiết kế, thu thập)")
+            dong.append(r)
+        cot = ["sai_lech", "can_phan_tich", "sap_muc", "sap_neo", "noi_khac", "ghi_chu"]
+        with tep.open("w", encoding="utf-8", newline="") as fh:  # da-nen: bo-qua (CSV RFC 4180 — khuôn đối chiếu)
+            w = csv.DictWriter(fh, fieldnames=cot, lineterminator="\n", extrasaction="ignore")
+            w.writeheader()
+            w.writerows(dong)
 
     # ── G5: nhập kép (Excel + SPSS) → tiếp nhận → làm sạch → DMP/vận hành → khoá → ký
     def _n_g3(self) -> int:
