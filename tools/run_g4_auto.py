@@ -359,8 +359,17 @@ KINH_TE_O = (
     ("currency_year", "Đơn vị tiền tệ và năm giá", "vd VND, giá năm 2026"),
     ("cost_items", "Hạng mục chi phí và nguồn đơn giá", "nhân công, thuốc, xét nghiệm, chương trình… + nguồn giá"),
     ("effect_measure", "Đơn vị hiệu quả", "đơn vị tự nhiên hoặc QALY/DALY tránh được"),
+    # 22/11/2026 (giả lập biến thể kinh tế y tế — K18 bản thảo báo thiếu CHEERS 2022 mục 13, 18, 19): mục báo cáo bắt
+    # buộc của CHEERS mà SAP chưa có chỗ khai (mục 19 «distributional_effects» ở cuối bảng); chuẩn đòi nêu rõ cả khi
+    # KHÔNG làm (vd đơn vị tự nhiên không quy đổi thoả dụng, không phân tích theo phân nhóm) — bản thảo G7 chép nguyên
+    # chữ dòng SAP (`_khoi_kinh_te_g7`).
+    ("outcome_valuation", "Định giá kết cục hiệu quả (CHEERS 2022 mục 13)",
+     "quần thể và phương pháp định giá kết cục (bộ trọng số thoả dụng), hoặc nêu kết cục đo bằng đơn vị tự nhiên, "
+     "không quy đổi thoả dụng"),
     ("wtp", "Ngưỡng sẵn lòng chi trả (WTP)", "số tiền cho một đơn vị hiệu quả"),
     ("wtp_source", "Nguồn/biện minh ngưỡng WTP", "nguồn PMID/DOI hoặc quyết định của chủ nhiệm — không tự đặt"),
+    ("heterogeneity", "Khác biệt kết quả theo phân nhóm (CHEERS 2022 mục 18)",
+     "có ước lượng chi phí–hiệu quả theo phân nhóm không, phân nhóm nào và cách ước lượng"),
     ("patient_involvement", "Sự tham gia của người bệnh/bên liên quan (CHEERS 2022 mục 21)", "có/không và cách nào"),
     # 22/11/2026 (CHEERS 2022 mục 19 — phân bố tác động giữa các cá nhân/nhóm, công bằng)
     ("distributional_effects", "Tác động phân bố (công bằng)",
