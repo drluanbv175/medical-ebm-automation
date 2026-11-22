@@ -68,6 +68,13 @@
    ],
    "source": "pubmed"
   },
+  "20042080": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
   "20332511": {
    "status": "ok",
    "sources_tried": [
@@ -1218,6 +1225,24 @@
    "year": "2009",
    "doi": "10.1016/j.cgh.2009.05.033"
   },
+  "20042080": {
+   "status": "resolved",
+   "title": "Estimating required information size by quantifying diversity in random-effects model meta-analyses.",
+   "authors": "Wetterslev J, Thorlund K, Brok J, Gluud C",
+   "journal": "BMC medical research methodology",
+   "year": "2009",
+   "doi": "10.1186/1471-2288-9-86",
+   "n_authors": 4,
+   "authors_6": [
+    "Wetterslev J",
+    "Thorlund K",
+    "Brok J",
+    "Gluud C"
+   ],
+   "journal_abbr": "BMC Med Res Methodol",
+   "volume": "9",
+   "pages": "86"
+  },
   "20332511": {
    "status": "resolved",
    "title": "CONSORT 2010 explanation and elaboration: updated guidelines for reporting parallel group randomised trials.",
@@ -1392,7 +1417,23 @@
    "authors": "Moher D, Shamseer L, Clarke M, Ghersi D, Liberati A",
    "journal": "Systematic reviews",
    "year": "2015",
-   "doi": "10.1186/2046-4053-4-1"
+   "doi": "10.1186/2046-4053-4-1",
+   "n_authors": 8,
+   "authors_6": [
+    "Moher D",
+    "Shamseer L",
+    "Clarke M",
+    "Ghersi D",
+    "Liberati A",
+    "Petticrew M"
+   ],
+   "nhom_tac_gia": [
+    "PRISMA-P Group"
+   ],
+   "journal_abbr": "Syst Rev",
+   "volume": "4",
+   "issue": "1",
+   "pages": "1"
   },
   "25898902": {
    "status": "resolved",
@@ -1536,7 +1577,20 @@
    "authors": "Zelniker TA, Wiviott SD, Raz I, Im K, Goodrich EL",
    "journal": "Lancet (London, England)",
    "year": "2019",
-   "doi": "10.1016/S0140-6736(18)32590-X"
+   "doi": "10.1016/S0140-6736(18)32590-X",
+   "n_authors": 15,
+   "authors_6": [
+    "Zelniker TA",
+    "Wiviott SD",
+    "Raz I",
+    "Im K",
+    "Goodrich EL",
+    "Bonaca MP"
+   ],
+   "journal_abbr": "Lancet",
+   "volume": "393",
+   "issue": "10166",
+   "pages": "31-39"
   },
   "30709604": {
    "status": "resolved",
@@ -2208,7 +2262,20 @@
    "authors": "Larsen JH, Andersen CF, Hansen MC, Omar M, Jensen J",
    "journal": "Journal of cardiac failure",
    "year": "2026",
-   "doi": "10.1016/j.cardfail.2026.01.025"
+   "doi": "10.1016/j.cardfail.2026.01.025",
+   "n_authors": 13,
+   "authors_6": [
+    "Larsen JH",
+    "Andersen CF",
+    "Hansen MC",
+    "Omar M",
+    "Jensen J",
+    "Antonsen L"
+   ],
+   "journal_abbr": "J Card Fail",
+   "volume": "32",
+   "issue": "8",
+   "pages": "1396-1407"
   },
   "41875030": {
    "status": "resolved",
@@ -2232,7 +2299,20 @@
    "authors": "Oscarsson J, Huhn M, Jiang Y, Gause-Nilsson I, Wiviott SD",
    "journal": "Diabetes, obesity & metabolism",
    "year": "2026",
-   "doi": "10.1111/dom.70820"
+   "doi": "10.1111/dom.70820",
+   "n_authors": 13,
+   "authors_6": [
+    "Oscarsson J",
+    "Huhn M",
+    "Jiang Y",
+    "Gause-Nilsson I",
+    "Wiviott SD",
+    "Moura FA"
+   ],
+   "journal_abbr": "Diabetes Obes Metab",
+   "volume": "28",
+   "issue": "7",
+   "pages": "6142-6150"
   },
   "42063912": {
    "status": "resolved",
@@ -2280,7 +2360,20 @@
    "authors": "Elenjickal EJ, Baroz F, Boileau P, Tsoukas MA, Sharma A",
    "journal": "Diabetes, obesity & metabolism",
    "year": "2026",
-   "doi": "10.1111/dom.70886"
+   "doi": "10.1111/dom.70886",
+   "n_authors": 6,
+   "authors_6": [
+    "Elenjickal EJ",
+    "Baroz F",
+    "Boileau P",
+    "Tsoukas MA",
+    "Sharma A",
+    "Mavrakanas TA"
+   ],
+   "journal_abbr": "Diabetes Obes Metab",
+   "volume": "28",
+   "issue": "8",
+   "pages": "7083-7093"
   },
   "42263266": {
    "status": "resolved",
@@ -2336,7 +2429,20 @@
    "authors": "Chuang MH, Ho CW, Wang HY, Pan HC, Wu VC",
    "journal": "CMAJ : Canadian Medical Association journal = journal de l'Association medicale canadienne",
    "year": "2026",
-   "doi": "10.1503/cmaj.250369"
+   "doi": "10.1503/cmaj.250369",
+   "n_authors": 7,
+   "authors_6": [
+    "Chuang MH",
+    "Ho CW",
+    "Wang HY",
+    "Pan HC",
+    "Wu VC",
+    "Tu YK"
+   ],
+   "journal_abbr": "CMAJ",
+   "volume": "198",
+   "issue": "26",
+   "pages": "E992-E1001"
   },
   "42471097": {
    "status": "resolved",
@@ -2344,7 +2450,20 @@
    "authors": "Macías-Cervantes HE, Guardado-Mendoza R, González LJ, Bautista-López GR, Hernández-Tizapa K",
    "journal": "Current problems in cardiology",
    "year": "2026",
-   "doi": "10.1016/j.cpcardiol.2026.103401"
+   "doi": "10.1016/j.cpcardiol.2026.103401",
+   "n_authors": 15,
+   "authors_6": [
+    "Macías-Cervantes HE",
+    "Guardado-Mendoza R",
+    "González LJ",
+    "Bautista-López GR",
+    "Hernández-Tizapa K",
+    "Carrillo-Torres MÁ"
+   ],
+   "journal_abbr": "Curr Probl Cardiol",
+   "volume": "51",
+   "issue": "10",
+   "pages": "103401"
   },
   "42524449": {
    "status": "resolved",
@@ -2368,7 +2487,20 @@
    "authors": "Matteucci A, Di Fusco SA, Bonanni M, Castello L, Aquilani S",
    "journal": "Daru : journal of Faculty of Pharmacy, Tehran University of Medical Sciences",
    "year": "2026",
-   "doi": "10.1007/s40199-026-00637-7"
+   "doi": "10.1007/s40199-026-00637-7",
+   "n_authors": 8,
+   "authors_6": [
+    "Matteucci A",
+    "Di Fusco SA",
+    "Bonanni M",
+    "Castello L",
+    "Aquilani S",
+    "Fedele S"
+   ],
+   "journal_abbr": "Daru",
+   "volume": "34",
+   "issue": "2",
+   "pages": "56"
   },
   "42566274": {
    "status": "resolved",
@@ -2384,7 +2516,20 @@
    "authors": "Ali EAH, Rabadi M, Aweer RA, Subahi E, Abdelmahmuod EA",
    "journal": "European journal of clinical pharmacology",
    "year": "2026",
-   "doi": "10.1007/s00228-026-04160-1"
+   "doi": "10.1007/s00228-026-04160-1",
+   "n_authors": 11,
+   "authors_6": [
+    "Ali EAH",
+    "Rabadi M",
+    "Aweer RA",
+    "Subahi E",
+    "Abdelmahmuod EA",
+    "Alshurafa A"
+   ],
+   "journal_abbr": "Eur J Clin Pharmacol",
+   "volume": "82",
+   "issue": "9",
+   "pages": "232"
   },
   "42591121": {
    "status": "resolved",
@@ -2392,7 +2537,19 @@
    "authors": "Ren Y, Yang H, Zhang S, Hu T, Tan Q",
    "journal": "Frontiers in endocrinology",
    "year": "2026",
-   "doi": "10.3389/fendo.2026.1902802"
+   "doi": "10.3389/fendo.2026.1902802",
+   "n_authors": 7,
+   "authors_6": [
+    "Ren Y",
+    "Yang H",
+    "Zhang S",
+    "Hu T",
+    "Tan Q",
+    "Wang J"
+   ],
+   "journal_abbr": "Front Endocrinol (Lausanne)",
+   "volume": "17",
+   "pages": "1902802"
   },
   "42616235": {
    "status": "resolved",
@@ -2448,7 +2605,17 @@
    "authors": "Elbataa A, Mansour A, Elazab A, Alabed A, Masood RJ",
    "journal": "Diabetes, obesity & metabolism",
    "year": "2026",
-   "doi": "10.1111/dom.71411"
+   "doi": "10.1111/dom.71411",
+   "n_authors": 16,
+   "authors_6": [
+    "Elbataa A",
+    "Mansour A",
+    "Elazab A",
+    "Alabed A",
+    "Masood RJ",
+    "Albogami AF"
+   ],
+   "journal_abbr": "Diabetes Obes Metab"
   },
   "42952754": {
    "status": "resolved",
@@ -2456,7 +2623,18 @@
    "authors": "Ye X, Wu Q, Li L, Huang M, Wang S",
    "journal": "Frontiers in endocrinology",
    "year": "2026",
-   "doi": "10.3389/fendo.2026.1955431"
+   "doi": "10.3389/fendo.2026.1955431",
+   "n_authors": 5,
+   "authors_6": [
+    "Ye X",
+    "Wu Q",
+    "Li L",
+    "Huang M",
+    "Wang S"
+   ],
+   "journal_abbr": "Front Endocrinol (Lausanne)",
+   "volume": "17",
+   "pages": "1955431"
   },
   "7063747": {
    "status": "resolved",
