@@ -937,6 +937,69 @@ def _don_vi(p: Phan, de_muc: bool = False) -> List[Tuple[int, str]]:
 O_TRONG_RE = re.compile(r"…{3,}|\.{5,}")
 _HET_CAU_RE = re.compile(r"[.!?]\s+(?=\S)")
 
+#: (23/11/2026, agent G7 phát hiện: «tuân thủ tự khai chưa phân tích» từng làm mọi bản thảo RCT đạt CONSORT 2025 24a)
+#: Câu KHÔNG cung cấp thông tin của mục — chưa làm/chưa có, để báo sau hay ở bài khác, không có thông tin, không được
+#: đánh giá. Khác lời khai «không có X» có thật («không có sự tham gia của người bệnh», «không có thay đổi so với đề
+#: cương», «không có biến cố») — đó là thông tin, chuẩn cho phép khai và KHÔNG nằm trong danh sách này.
+KHONG_THONG_TIN_RE = re.compile(
+    # KHÔNG gồm «chưa/không xác định được» (mô tả ca: «kết cục chưa xác định được do mất theo dõi», «kết quả không xác
+    # định» của STARD) và «chưa ghi nhận» («chưa ghi nhận biến cố nào» là báo cáo có thật)
+    r"\bchưa (được )?(phân tích|đánh giá|thu thập|báo cáo|trình bày|tính toán|công bố|cung cấp)\b"
+    r"|\bchưa có (thông tin|kết quả)\b|\bkhông có thông tin\b|\bthông tin không có sẵn\b"
+    r"|\b(báo cáo|trình bày|bổ sung|công bố|cập nhật)[^.;|\n]{0,30}?\b(ở|trong) (một )?(bài|báo cáo|ấn phẩm|phân tích) "
+    r"(khác|riêng|sau)\b"
+    # «báo cáo riêng» một mình KHÔNG tính — «kết quả không xác định được báo cáo riêng» (dòng riêng của bảng, STARD) là
+    # thông tin; chỉ nhận trì hoãn rõ: «báo cáo sau», «ở bài/báo cáo/ấn phẩm khác|riêng|sau», «để sau»
+    r"|\b(báo cáo|trình bày|bổ sung|công bố|cập nhật) sau\b(?!\s+(khi|đó|này|cùng|ngày|tháng|năm))|\bđể sau\b"
+    r"|\bkhông (được )?(đánh giá|phân tích|đo lường|thu thập)\b"
+    r"|\bnot (yet )?(analy[sz]ed|assessed|reported|available)\b|\bwill be reported (later|separately|elsewhere)\b"
+    r"|\bno information\b", re.IGNORECASE)
+#: cụm «không thông tin» gắn với lần khớp khi đứng SAU nó trong vòng ~40 ký tự («tuân thủ tự khai chưa phân tích») hoặc
+#: TRƯỚC nó trong vòng ~25 ký tự («chưa đánh giá tuân thủ»), cùng mệnh đề — câu dài nhiều vế («dữ liệu … không được thu
+#: thập cho câu hỏi này, nên có thể phân loại sai …») không làm vế khác mất bằng chứng
+_KHOANG_SAU, _KHOANG_TRUOC = 40, 25
+
+
+def _menh_de(than: str, vt: int) -> Tuple[int, int]:
+    """(đầu, cuối) của mệnh đề chứa vị trí `vt`: đoạn giữa «|», «;» hoặc ranh giới câu."""
+    dau = max([than.rfind("|", 0, vt), than.rfind(";", 0, vt)]
+              + [m.end() - 1 for m in _HET_CAU_RE.finditer(than, 0, vt)]) + 1
+    cuoi = [i for i in (than.find("|", vt), than.find(";", vt)) if i >= 0]
+    m = _HET_CAU_RE.search(than, vt)
+    if m:
+        cuoi.append(m.start())
+    return dau, (min(cuoi) if cuoi else len(than))
+
+
+def khong_cung_cap_thong_tin(dong: str, bat_dau: int, ket_thuc: int) -> bool:
+    """LUẬT DÙNG CHUNG cho mọi yếu tố K17/K18 (23/11/2026): lần khớp [bat_dau, ket_thuc) của `dong` KHÔNG là
+    bằng chứng khi cùng mệnh đề, sát lần khớp (`_KHOANG_SAU`/`_KHOANG_TRUOC`), có cụm «không cung cấp thông tin»
+    (`KHONG_THONG_TIN_RE`) — «tuân thủ tự khai chưa phân tích», «biến cố sẽ được báo cáo ở bài riêng», «độ tin cậy:
+    không có thông tin».
+
+    Ngoại lệ quyết bằng CHÍNH tiêu chí: chữ phủ định BẮT ĐẦU trong lần khớp ⇒ biểu thức của yếu tố đã chủ ý nhận lời
+    khai đó («(không|chưa) chia sẻ dữ liệu», «(không|chưa) (được )?đăng ký», «chưa (phân nhóm|đánh giá|gộp)» của
+    PRISMA) ⇒ vẫn là bằng chứng. Dòng bảng: khớp ở ô đầu hàng (nhãn) mà mọi ô còn lại chỉ là cụm không thông tin ⇒
+    không là bằng chứng («| Tuân thủ | Chưa phân tích |»)."""
+    than = dong.split("\t⟦")[0]
+    if bat_dau >= len(than):
+        return False
+    dau, cuoi = _menh_de(than, bat_dau)
+    for m in KHONG_THONG_TIN_RE.finditer(than, dau, cuoi):
+        # cụm BẮT ĐẦU trong lần khớp (biểu thức của yếu tố chủ ý nhận lời khai đó) không thoả điều kiện nào dưới đây
+        # cụm bắt đầu TRƯỚC và phủ lên lần khớp («chưa phân tích độ nhạy», yếu tố khớp «phân tích độ nhạy»)
+        # hoặc đứng sát nó
+        if m.start() < bat_dau < m.end() or 0 <= m.start() - ket_thuc <= _KHOANG_SAU or \
+                0 <= bat_dau - m.end() <= _KHOANG_TRUOC:
+            return True
+    if than.lstrip().startswith("|"):
+        o = [x.strip() for x in than.strip().strip("|").split("|")]
+        vi_tri_o = than[:bat_dau].count("|") - 1
+        con_lai = [x for i, x in enumerate(o) if i != vi_tri_o and x and not re.fullmatch(r":?-{2,}:?", x)]
+        if vi_tri_o == 0 and con_lai and all(KHONG_THONG_TIN_RE.search(x) and len(x) <= 60 for x in con_lai):
+            return True
+    return False
+
 
 def o_trong_quanh(dong: str, vt: int) -> bool:
     """Lần khớp ở vị trí `vt` của `dong` (có thể kèm «\\t⟦tiêu đề cột⟧») nằm trong mệnh đề còn ô trống: mệnh đề = đoạn
@@ -1041,14 +1104,16 @@ def chi_o_nhan(chu: str, vi_tri: int, de_muc: bool = False) -> bool:
 def _tim(mau: str, don_vi: Sequence[Tuple[int, str]], nhan: bool = False, de_muc: bool = False) -> Optional[str]:
     """Bằng chứng «dòng N: «…»» của lần khớp đầu tiên trong các đơn vị; None nếu không khớp. Bỏ qua lần khớp nằm trong
     mệnh đề còn ô trống cho chủ nhiệm điền (`o_trong_quanh`) hoặc chỉ ở tên mục/nhãn mà nội dung còn trống
-    (`chi_o_nhan`) — trừ yếu tố NHÃN cấu trúc (`nhan`)."""
+    (`chi_o_nhan`), hoặc trong mệnh đề không cung cấp thông tin («chưa phân tích», «báo cáo sau» —
+    `khong_cung_cap_thong_tin`, luật dùng chung 23/11/2026) — trừ yếu tố NHÃN cấu trúc (`nhan`)."""
     for so, chu in don_vi:
         for m in re.finditer(mau, chu, _C):
             vi_tri = m.start() + (len(m.group(0)) - len(m.group(0).lstrip()))
             n = chu.count("\n", 0, vi_tri)
             dong_day = chu.split("\n")[n]
-            if not nhan and (o_trong_quanh(dong_day, vi_tri - (chu.rfind("\n", 0, vi_tri) + 1))
-                             or chi_o_nhan(chu, vi_tri, de_muc)):
+            vt_dong = vi_tri - (chu.rfind("\n", 0, vi_tri) + 1)
+            if not nhan and (o_trong_quanh(dong_day, vt_dong) or chi_o_nhan(chu, vi_tri, de_muc)
+                             or khong_cung_cap_thong_tin(dong_day, vt_dong, vt_dong + len(m.group(0).strip()))):
                 continue
             return f"dòng {so + n}: «{dong_day.split(chr(9) + '⟦')[0].strip()[:140]}»"
     return None
