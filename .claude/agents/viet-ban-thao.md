@@ -165,7 +165,19 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact manuscript
 - Đề cương nộp BVQY175 theo khuôn hướng dẫn chung (21/11/2026 — cấu trúc, TLTK theo ngôn ngữ rồi ABC, 14pt giãn 1,5;
   chi tiết `dieu-phoi-g10`): chuyển bằng `medical-ebm-automation/tools/khuon_de_cuong_bvqy175.py --study <mã>` (chạy khô ⇒
   `--ghi`), không sắp xếp tay; đề cương có «# CHƯƠNG 1.» thì `md_sang_docx_times.py` tự xuất bằng chế độ khuôn của repo
-  y khoa (thiếu chế độ đó ⇒ không ghi, mã 1); bộ kiểm phải ĐẠT K1–K14.
+  y khoa (thiếu chế độ đó ⇒ không ghi, mã 1); bộ kiểm phải ĐẠT K1–K17 và K19 (K18 là chuẩn bản thảo).
+- Bìa phụ và tham chiếu chương của đề cương theo khuôn — K19 (22/11/2026; `tham-dinh-dau-ra` bắt trên C1a; chi tiết
+  `dieu-phoi-g10`):
+  - Khối ký thứ ba theo đơn vị NGAY TRÊN Khoa, đọc từ `study_meta.administrative.pi_unit` → hàng «Đơn vị chủ trì/thực
+    hiện» → dòng cơ quan ở bìa: Viện ⇒ «VIỆN TRƯỞNG»; Trung tâm ⇒ «GIÁM ĐỐC TRUNG TÂM» (luật của bộ sinh, chờ bác sĩ
+    xác nhận — bỏ được bằng cách bỏ khoá `trung_tam` khỏi `KY_CAP_TREN` trong `tools/khuon_de_cuong_bvqy175.py`);
+    trực thuộc bệnh viện hoặc không khai ⇒ không có khối thứ ba. Không bao giờ chép lời hướng dẫn khuôn «(… — nếu …)»;
+    dưới mỗi khối chỉ ghi «(Họ tên và chữ ký)».
+  - Bộ chuyển khuôn đổi «chương N» của bản cũ sang chương mới (chương 5 ⇒ Chương 3 «Dự kiến kết quả và bàn luận»).
+    Văn bản đã theo khuôn thì sửa khối ký/số chương bằng `tools/khuon_de_cuong_bvqy175.py --study <mã> --ghi` (lượt
+    `sua_ban_da_theo_khuon`, giữ họ tên đã điền; chạy khô trước, `--ghi` khi bác sĩ đồng ý), KHÔNG sửa tay.
+  - K19 của `kiem_de_cuong_nop_hoi_dong.py` bắt: lời hướng dẫn khuôn còn sót · «chương N» trỏ tới chương không có ·
+    khung bảng trỏ sai chương · khối ký lệch đơn vị thật.
 - Sửa `.md` xong phải sinh lại `.docx` bằng `tools/md_sang_docx_times.py <md> --co-chu 13 --trang-de-cuong` chạy ở nơi có `medical-ebm-automation/` lồng/cạnh (thiếu thì công cụ báo «CHƯA đạt chuẩn nộp» — chạy lại), rồi `kiem_de_cuong_nop_hoi_dong.py` (K1–K9) và trục `de_cuong_nop` của `nhat_quan_xuyen_cong` (DC-01…DC-05).
 
 ## Bản máy đề cương nộp Hội đồng (16/11/2026 — bác sĩ chê câu chữ đề cương giả lập)

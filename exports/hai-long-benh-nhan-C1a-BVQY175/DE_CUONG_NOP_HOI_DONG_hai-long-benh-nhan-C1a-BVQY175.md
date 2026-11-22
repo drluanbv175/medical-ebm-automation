@@ -38,9 +38,9 @@
 
 (Họ tên và chữ ký)
 
-**VIỆN TRƯỞNG**
+**GIÁM ĐỐC TRUNG TÂM**
 
-(Họ tên và chữ ký — nếu Khoa trực thuộc Viện)
+(Họ tên và chữ ký)
 
 **THÀNH PHỐ HỒ CHÍ MINH, 2026**
 
@@ -1021,7 +1021,7 @@ Kế hoạch phân tích thống kê chi tiết là tài liệu riêng, được
 | Phân tích độ nhạy | Bảy kịch bản ở mục 2.6.6 cùng các phân tích có điều kiện đã định trước (mô hình tỷ số chênh tương xứng một phần, hiệu chỉnh Firth, gộp mức G1, trọng số hậu phân tầng, phân tích giới hạn cho người bỏ về); tổng hợp ở Bảng 3.5 |
 | Đặc tính đo lường | Cronbach's alpha, omega; tỷ lệ điểm sàn – trần; phân tích nhân tố khám phá và khẳng định năm nhân tố A–E trên hai nửa mẫu |
 | Phần mềm | R ≥ 4.3 (các gói stats, MASS, ordinal, rms, brant, VGAM, car, logistf, mice; sandwich cho sai số chuẩn vững theo cụm và survey cho ước lượng theo thiết kế); hạt giống ngẫu nhiên do nhà thống kê ấn định khi khóa kế hoạch |
-| Khung bảng kết quả | Theo chương 5 |
+| Khung bảng kết quả | Theo Chương 3 |
 
 ---
 

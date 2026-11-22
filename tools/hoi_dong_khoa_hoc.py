@@ -1708,17 +1708,22 @@ def _de_xuat_bien_tap(st: Dict[str, Any], van: str, out_dir: Path, goi_api: bool
     Trả (mã thoát nếu phải dừng bước, đề xuất gộp, yêu cầu hỏng)."""
     if st.get("ket_hop"):
         if not st.get("viec_bien_tap"):
-            st["viec_bien_tap"] = lap_viec_bien_tap(st, van_de_can_sua(st), out_dir)
+            st["viec_bien_tap"] = lap_viec_bien_tap(st, van_de_can_sua(st), out_dir, van)
+            gom = [f"{'+'.join(c)} → {ten}" for ten, v in st["viec_bien_tap"].items() for c in v.get("cum") or []]
+            if gom:
+                print(f"🔗 Gom yêu cầu chạm cùng chỗ vào một phiếu: {'; '.join(gom)}.")
         gop_ag = gop_tra_loi_bien_tap(st["viec_bien_tap"])
         if gop_ag is None:
             print(f"🤝 Chờ agent biên tập: {', '.join(st['viec_bien_tap'])} — chạy «viec-agent» để xem phiếu việc.")
             return CHO_AGENT, {}, []
         return None, gop_ag, []
     # bien_tap — chia nhóm ≤ VAN_DE_MOI_YEU_CAU vấn đề mỗi yêu cầu (22/11/2026: một yêu cầu gom 14–20 vấn đề bị cắt cụt
-    # ở 32.000 token ra trên cả hai đề cương thật). Tham số VẬN HÀNH, không phải luật/lời dặn của quy chế.
+    # ở 32.000 token ra trên cả hai đề cương thật), KHÔNG tách một cụm yêu cầu chạm cùng chỗ (`gom_cum_bien_tap`) ra hai
+    # yêu cầu API. Tham số VẬN HÀNH, không phải luật/lời dặn của quy chế.
     chung = khoi_chung(st["study"], ten_cho_hoi_dong(st["tep"]), van, st["ho_so"])
     vd = van_de_can_sua(st)
-    nhom = API.chia_lo(vd, VAN_DE_MOI_YEU_CAU)
+    cum = gom_cum_bien_tap(vd, van)
+    nhom = xep_lo_theo_cum(cum, VAN_DE_MOI_YEU_CAU)
     cids = [f"bt{i}_{st['sha'][:8]}" for i in range(len(nhom))]
     bid = st["batch"].get("bien_tap")
     if not bid:
@@ -1732,6 +1737,9 @@ def _de_xuat_bien_tap(st: Dict[str, Any], van: str, out_dir: Path, goi_api: bool
         yc = [(c, tham_so_yeu_cau(chung, loi_nhan_bien_tap(g), st["model"], MAX_TOKENS_BT)) for c, g in zip(cids, nhom)]
         st["batch"]["bien_tap"] = API.nop_batch(yc, client=client, nguon=CONG_CU)
         print(f"📨 Đã nộp batch biên tập: {st['batch']['bien_tap']} ({len(yc)} yêu cầu).")
+        gom = ["+".join(str(f["id"]) for f in c) for c in cum if len(c) > 1]
+        if gom:
+            print(f"🔗 Gom yêu cầu chạm cùng chỗ vào cùng một yêu cầu API: {'; '.join(gom)}.")
         return 4, {}, []
     if not goi_api:
         return 0, {}, []
@@ -2496,14 +2504,119 @@ def loi_nhan_agent_bien_tap(ten: str, vd: Sequence[Dict[str, Any]], tep: str, lo
             + loi_nhan_bien_tap(vd) + f"\nGhi DUY NHẤT JSON trên vào `{tra_loi}`.")
 
 
-def lap_viec_bien_tap(st: Dict[str, Any], vd: Sequence[Dict[str, Any]], out_dir: Path) -> Dict[str, Any]:
+# Gom yêu cầu chạm CÙNG chỗ vào MỘT phiếu biên tập. Đo thật vòng 2 C1a (22/11/2026): N2_03 (pb2 → viet-ban-thao) và
+# N2_08 (uv_tk → co-mau-nghien-cuu) cùng nêu dòng 926 nhưng nằm ở hai phiếu ⇒ thay thế áp sau không còn thấy đoạn cũ
+# («xuất hiện 0 lần») ⇒ bị loại, vòng kín tốn thêm một vòng; N2_05 (pb1) và N2_06 (uv_dd) cùng trích một câu ở dòng 496
+# mà N2_06 còn phải sửa đồng bộ dòng 1072 ⇒ hai agent dễ làm hai chỗ lệch nhau. Dùng cho cả phiếu agent (chế độ kết
+# hợp) lẫn nhóm yêu cầu của chế độ chỉ-API (`xep_lo_theo_cum`). Tham số VẬN HÀNH: không đổi lời dặn, không đổi SHA quy
+# chế; ghế nêu yêu cầu vẫn là ghế thẩm tra nó ở vòng sau.
+CAU_TOI_THIEU = 20   # mảnh trích ngắn hơn («[49]», «n (%)») xuất hiện ở quá nhiều câu — không đủ để coi là «cùng câu»
+_TACH_CAU = re.compile(r"(?<=[.!?;])\s+")
+
+
+def _cac_cau(s: str) -> List[str]:
+    """Các câu của chuỗi, chuẩn hoá như khi so «trích nguyên văn», chỉ giữ câu đủ dài để nhận diện."""
+    return [c for c in (x.strip(" .;:,") for x in _TACH_CAU.split(API.chuan_hoa(s))) if len(c) >= CAU_TOI_THIEU]
+
+
+def _so_dong(x: Any) -> int:
+    try:
+        return max(0, int(x))
+    except (TypeError, ValueError):
+        return 0
+
+
+def _dau_vet_van_de(f: Dict[str, Any], cac_dong: Sequence[str],
+                    cac_dong_ch: Sequence[str]) -> Tuple[List[List[int]], List[str]]:
+    """(các khoảng dòng của yêu cầu trong bản HIỆN TẠI, các câu nó trích).
+
+    Từ vòng thẩm tra, «dong»/«trich» là của bản trước còn «dong_moi»/«trich_moi» là của bản hiện tại ⇒ ưu tiên định vị
+    trích nguyên văn trong bản hiện tại (lần gần dòng gợi ý nhất); không định vị được ⇒ dùng số dòng gợi ý. Câu trích
+    định vị được ⇒ lấy NGUYÊN câu của tài liệu chứa nó (hai mảnh khác nhau của cùng một câu vẫn khớp); không định vị
+    được ⇒ dùng chính các câu của trích."""
+    khoang: List[List[int]] = []
+    cau: List[str] = []
+    for trich, goi_y in ((f.get("trich_moi"), _so_dong(f.get("dong_moi"))), (f.get("trich"), _so_dong(f.get("dong")))):
+        t = API.chuan_hoa(str(trich or ""))
+        if not t:
+            continue
+        manh = _cac_cau(str(trich))
+        ung = [i + 1 for i, d in enumerate(cac_dong_ch) if t in d]
+        if not ung:
+            cau += manh
+            continue
+        dong = min(ung, key=lambda d: (abs(d - goi_y) if goi_y else 0, d))
+        khoang.append([dong, dong])
+        cau += [c for c in _cac_cau(cac_dong[dong - 1]) if any(m in c for m in manh)] or manh
+    if not khoang:
+        d = _so_dong(f.get("dong_moi")) or _so_dong(f.get("dong"))
+        if d:
+            khoang.append([d, d])
+    return khoang, cau
+
+
+def gom_cum_bien_tap(vd: Sequence[Dict[str, Any]], van: str) -> List[List[Dict[str, Any]]]:
+    """Chia yêu cầu sửa thành CỤM phải do MỘT biên tập viên xử lý: khoảng dòng (trong bản hiện tại) cách nhau
+    ≤ CUA_SO_DONG dòng, hoặc cùng trích một câu (so theo nội dung ⇒ cả câu lặp ở hai nơi, vd thân đề cương và bản thông
+    tin cho người tham gia); bắc cầu. Cụm và yêu cầu trong cụm giữ thứ tự của danh sách vào."""
+    cac_dong = van.splitlines()
+    cac_dong_ch = [API.chuan_hoa(d) for d in cac_dong]
+    dv = [_dau_vet_van_de(f, cac_dong, cac_dong_ch) for f in vd]
+    cha = list(range(len(vd)))
+
+    def goc(i: int) -> int:
+        while cha[i] != i:
+            cha[i] = cha[cha[i]]
+            i = cha[i]
+        return i
+
+    for i in range(len(vd)):
+        for j in range(i + 1, len(vd)):
+            gan = any(a1 - CUA_SO_DONG <= b2 and a2 - CUA_SO_DONG <= b1 for a1, b1 in dv[i][0] for a2, b2 in dv[j][0])
+            chung_cau = any(x in y or y in x for x in dv[i][1] for y in dv[j][1])
+            if gan or chung_cau:
+                cha[goc(j)] = goc(i)
+    cum: Dict[int, List[Dict[str, Any]]] = {}
+    for i, f in enumerate(vd):
+        cum.setdefault(goc(i), []).append(f)
+    return list(cum.values())
+
+
+def xep_lo_theo_cum(cum: Sequence[Sequence[Dict[str, Any]]], co: int) -> List[List[Dict[str, Any]]]:
+    """Chế độ chỉ-API: xếp các cụm theo thứ tự vào nhóm ≤ `co` vấn đề mỗi yêu cầu, KHÔNG tách cụm nào ra hai yêu cầu;
+    cụm lớn hơn `co` đi nguyên một yêu cầu riêng (tách nó lại gây đúng lỗi «đoạn cũ xuất hiện 0 lần»)."""
+    nhom: List[List[Dict[str, Any]]] = []
+    for c in cum:
+        if nhom and len(nhom[-1]) + len(c) <= max(1, int(co)):
+            nhom[-1].extend(c)
+        else:
+            nhom.append(list(c))
+    return nhom
+
+
+def lap_viec_bien_tap(st: Dict[str, Any], vd: Sequence[Dict[str, Any]], out_dir: Path,
+                      van: Optional[str] = None) -> Dict[str, Any]:
+    """Một phiếu biên tập cho mỗi agent. Yêu cầu được gom thành cụm (`gom_cum_bien_tap`) TRƯỚC khi chia: cả cụm vào
+    phiếu của agent sở hữu nhiều yêu cầu nhất trong cụm (hoà ⇒ agent của yêu cầu đứng trước); phiếu ghi «cum» các cụm
+    có từ hai yêu cầu để biên bản truy được."""
     chu = {t["ma"]: (TAC_NHAN_BIEN_TAP.get(t["ma"]) or (t.get("tac_nhan") or ["viet-ban-thao"])[0]) for t in _ds_tv(st)}
+    if van is None:
+        van = Path(st["tep"]).read_text(encoding="utf-8")
     nhom: Dict[str, List[Dict[str, Any]]] = {}
-    for f in vd:
-        nhom.setdefault(chu.get(f.get("thanh_vien"), "viet-ban-thao"), []).append(f)
+    cum_gop: Dict[str, List[List[str]]] = {}
+    for cum in gom_cum_bien_tap(vd, van):
+        dem: Dict[str, int] = {}
+        for f in cum:
+            ag = chu.get(f.get("thanh_vien"), "viet-ban-thao")
+            dem[ag] = dem.get(ag, 0) + 1
+        ten = max(dem, key=lambda ag: dem[ag])
+        nhom.setdefault(ten, []).extend(cum)
+        if len(cum) > 1:
+            cum_gop.setdefault(ten, []).append([f["id"] for f in cum])
     tm = thu_muc_viec(out_dir, st)
-    return {ten: {"ids": [f["id"] for f in ds], **ghi_viec(tm, "bien_tap", ten, loi_nhan_agent_bien_tap(
-        ten, ds, st["tep"], st.get("loai", "de_cuong"), st["study"], str(tm / f"tra_loi_bien_tap_{ten}.json")),
+    return {ten: {"ids": [f["id"] for f in ds], "cum": cum_gop.get(ten, []), **ghi_viec(
+        tm, "bien_tap", ten, loi_nhan_agent_bien_tap(ten, ds, st["tep"], st.get("loai", "de_cuong"), st["study"],
+                                                    str(tm / f"tra_loi_bien_tap_{ten}.json")),
         {"van_de": ds})} for ten, ds in nhom.items()}
 
 
