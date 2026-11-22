@@ -152,7 +152,11 @@ LOAI_TAI_LIEU: Dict[str, Dict[str, Any]] = {
     },
     "bao_cao": {
         "ten": "báo cáo tổng hợp kết quả (nghiệm thu)", "mau_tep": "BAO_CAO_TONG_HOP_{s}.md", "vong_kin": False,
-        "phieu": {**MUC_PHIEU, "3": "Kết quả"},
+        "phieu": {"1": "Tính cấp thiết, ý nghĩa khoa học và thực tiễn của đề tài",
+                  "2": "Mục tiêu và phương pháp nghiên cứu; phương pháp tính toán và kỹ thuật đã sử dụng",
+                  "3": "Kết quả nghiên cứu",
+                  "4": "Chất lượng của Báo cáo tổng hợp đề tài nghiên cứu, sản phẩm trung gian, tài liệu trích dẫn "
+                       "(đầy đủ, rõ ràng, xác thực và lôgíc)"},
         "chu_y": ("đối chiếu kết quả với mục tiêu và nội dung đã đăng ký trong đề cương; mức độ hoàn thành; sản phẩm "
                   "đúng như đăng ký."),
     },
@@ -231,7 +235,7 @@ def chuan_hoa_thiet_ke(thiet_ke: str) -> str:
     return THIET_KE_BI_DANH.get(t, t)
 
 
-def thanh_phan_hoi_dong(thiet_ke: str, van: str) -> List[Dict[str, Any]]:
+def thanh_phan_hoi_dong(thiet_ke: str, van: str, loai: str = "de_cuong") -> List[Dict[str, Any]]:
     """Năm ghế cố định + ghế CHUYÊN THIẾT KẾ (thiết kế đã chốt ở G1) + ghế kinh tế y tế khi tài liệu có cấu phần
     kinh tế. Thiết kế không xác định ⇒ không có ghế chuyên thiết kế (biên bản ghi rõ)."""
     ds = [dict(t) for t in THANH_VIEN]
@@ -240,6 +244,8 @@ def thanh_phan_hoi_dong(thiet_ke: str, van: str) -> List[Dict[str, Any]]:
         ds.append({"ma": "uv_ctk", "trong_tam": ("2", "3"), **g})
     if _CO_KINH_TE.search(van or ""):
         ds.append(dict(GHE_KINH_TE))
+    for t in ds:  # 4.0: agent sở hữu chuyên môn của từng ghế
+        t["tac_nhan"] = list(tac_nhan_cua_ghe(t["ma"], loai, thiet_ke))
     return ds
 
 
@@ -252,6 +258,158 @@ def _ds_tv(st: Dict[str, Any]) -> List[Dict[str, Any]]:
     return list(st.get("thanh_phan") or THANH_VIEN)
 
 
+# ── QC-HDKH-4.0 (bác sĩ 22/11/2026: «phải kết hợp đồng thời Claude Code, các Agent và hệ thống») ─────────────────
+# Mỗi ghế mang DOCTRINE của agent sở hữu chuyên môn trong `.claude/agents/` — đọc từ BẢN CHỤP KHOÁ
+# `docs/hoi-dong/DOCTRINE_GHE.json` (SHA tính vào quy chế). Không đọc tệp agent đang sống: tệp agent đổi thường xuyên,
+# đọc sống làm quy chế đổi ngầm. Chụp lại là việc có chủ ý (`chup-doctrine --ghi`) ⇒ quy chế mới ⇒ hiệu chuẩn lại.
+TAC_NHAN_GHE: Dict[str, Tuple[str, ...]] = {
+    "pb1": ("thiet-ke-nghien-cuu",), "pb2": ("huong-dan-lam-sang",),
+    "uv_tk": ("co-mau-nghien-cuu", "phan-tich-thong-ke"), "uv_dd": ("dao-duc-dang-ky",),
+    "uv_tl": ("kiem-chung-trich-dan", "tong-quan-y-van"), "uv_kt": ("kinh-te-y-te",),
+}
+TAC_NHAN_THIET_KE: Dict[str, Tuple[str, ...]] = {
+    "rct": ("an-toan-nghien-cuu",), "cohort": ("bien-so-nghien-cuu",), "case_control": ("bien-so-nghien-cuu",),
+    "cross_sectional": ("bien-so-nghien-cuu",), "diagnostic": ("tham-dinh-do-chinh-xac-chan-doan",),
+    "prediction": ("mo-hinh-tien-luong",), "sr_ma": ("meta-phan-tich",), "qualitative": ("nghien-cuu-dinh-tinh",),
+}
+TAC_NHAN_THEO_LOAI: Dict[str, Dict[str, Tuple[str, ...]]] = {
+    "sap": {"uv_tk": ("thiet-ke-nghien-cuu",)},          # thiet-ke-nghien-cuu soạn và KHOÁ SAP ở G4
+    "ban_thao": {"uv_tl": ("viet-ban-thao",)}, "bao_cao": {"uv_tl": ("viet-ban-thao",)},
+}
+TEP_DOCTRINE = "docs/hoi-dong/DOCTRINE_GHE.json"
+TRAN_DOCTRINE = 6000
+_MUC_DOCTRINE = re.compile(r"(?i)luật|nguyên tắc|tiêu chí|bài học|mục tiêu|ranh giới|tự kiểm|chuẩn|đo lại|đồng bộ"
+                           r"|bắt buộc|trách nhiệm")
+_MUC_BO_DOCTRINE = re.compile(r"(?i)chế độ tự động|bước 0|mẫu đầu ra|ví dụ|định dạng trả về|cài đặt|full auto")
+
+
+def tac_nhan_cua_ghe(ma: str, loai: str = "de_cuong", thiet_ke: str = "") -> Tuple[str, ...]:
+    goc = TAC_NHAN_THIET_KE.get(chuan_hoa_thiet_ke(thiet_ke), ()) if ma == "uv_ctk" else TAC_NHAN_GHE.get(ma, ())
+    them = TAC_NHAN_THEO_LOAI.get(loai, {}).get(ma, ())
+    return tuple(dict.fromkeys(goc + them))
+
+
+def trich_doctrine(van: str, toi_da: int = TRAN_DOCTRINE) -> str:
+    """Phần CHUYÊN MÔN của tệp agent (luật, tiêu chí, bài học, ranh giới…), bỏ phần thao tác công cụ/ví dụ."""
+    than = van.split("\n---", 1)[1] if van.startswith("---") and "\n---" in van else van
+    phan = [x for x in re.split(r"(?m)^(?=#{1,3}\s)", than) if x.strip()]
+    giu = [x for x in phan if x.lstrip().startswith("#") and _MUC_DOCTRINE.search(x.splitlines()[0])
+           and not _MUC_BO_DOCTRINE.search(x.splitlines()[0])]
+    return ("\n".join(giu) if giu else than).strip()[:toi_da]
+
+
+def chup_doctrine(goc_repo: Path = REPO) -> Dict[str, Any]:
+    """Bản chụp doctrine của MỌI agent được gắn ghế (đọc tệp agent đang sống — chỉ dùng khi chụp có chủ ý)."""
+    ten = sorted({t for v in list(TAC_NHAN_GHE.values()) + list(TAC_NHAN_THIET_KE.values()) for t in v}
+                 | {t for d in TAC_NHAN_THEO_LOAI.values() for v in d.values() for t in v})
+    ra: Dict[str, Any] = {}
+    for t in ten:
+        f = goc_repo / ".claude" / "agents" / f"{t}.md"
+        try:
+            van = f.read_text(encoding="utf-8")
+            ra[t] = {"sha_tep": hashlib.sha256(van.encode("utf-8")).hexdigest(), "doctrine": trich_doctrine(van)}
+        except OSError:
+            ra[t] = {"sha_tep": None, "doctrine": ""}
+    return ra
+
+
+def doc_doctrine(goc_repo: Path = REPO) -> Dict[str, Any]:
+    try:
+        return json.loads((goc_repo / TEP_DOCTRINE).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+
+
+def khoi_doctrine(tac_nhan: Sequence[str], ban_chup: Optional[Dict[str, Any]] = None) -> str:
+    bc = doc_doctrine() if ban_chup is None else ban_chup
+    khoi = []
+    for t in tac_nhan:
+        d = (bc.get(t) or {}).get("doctrine") or ""
+        khoi.append(f"--- Doctrine của agent hệ `{t}` ---\n{d}" if d else
+                    f"--- Doctrine của agent hệ `{t}`: KHÔNG có trong bản chụp (chấm theo nhiệm vụ của ghế) ---")
+    return "\n".join(khoi)
+
+
+# ── 4.0: bằng chứng CÔNG CỤ của hệ cho hội đồng (chấm sống từng cổng, cỡ mẫu G3, biên nhận trích dẫn A12) ──
+CONG_HE = ("G0", "G1", "G2", "G3", "G4", "G5", "G6", "G7", "G8", "G9", "G10")
+
+
+def bang_chung_he(study: str, out_dir: Path) -> Dict[str, Any]:
+    """Đo bằng công cụ tất định của hệ; thư mục không có checkpoint cổng (hộp cát) ⇒ ghi rõ «không có»."""
+    if not any((out_dir / f"{g}_checkpoint.json").exists() for g in CONG_HE):
+        return {"ghi_chu": "không có checkpoint cổng nào trong thư mục đề tài — không có bằng chứng công cụ của hệ"}
+    ra: Dict[str, Any] = {"cong_song": {}}
+    try:
+        import cong_song as CS  # noqa: PLC0415
+
+        for g in CONG_HE:
+            if not (out_dir / f"{g}_checkpoint.json").exists():
+                continue
+            kq = CS.trang_thai_song(g, study, out_dir)
+            bc = kq.get("bao_cao") or {}
+            chua = [f"{x.get('id')}: {x.get('label')}" for k in ("automatic_criteria", "human_criteria")
+                    for x in bc.get(k) or [] if str(x.get("status")) not in ("PASS", "NA", "N/A", "SKIP")]
+            ra["cong_song"][g] = {"trang_thai": kq.get("status"), "muc": kq.get("muc"), "chua_dat": chua[:8]}
+    except Exception as exc:  # noqa: BLE001
+        ra["cong_song"] = f"không đo được ({type(exc).__name__})"
+    g3 = _doc_st(out_dir / "G3_checkpoint.json") or {}
+    if g3:
+        ra["co_mau_g3"] = {k: g3.get(k) for k in ("design_code", "alpha", "power", "effect_type", "effect_val",
+                                                   "n_total", "n_adjusted", "confirmed_n") if k in g3}
+    md = _doc_st(out_dir / "A12_METADATA_RECEIPT.json") or {}
+    rb = _doc_st(out_dir / "A12_RETRACTION_RECEIPT.json") or {}
+    if md or rb:
+        kq_rut = rb.get("results") if isinstance(rb.get("results"), dict) else {}
+        ra["trich_dan_a12"] = {"so_pmid_da_kiem": len(md.get("pmids_checked") or rb.get("pmids_checked") or []),
+                               "metadata_du": md.get("all_resolved"), "khong_bai_rut": rb.get("all_clean"),
+                               "pmid_co_van_de": {k: (v or {}).get("status") for k, v in kq_rut.items()
+                                                  if (v or {}).get("status") != "ok"}}
+    return ra
+
+
+# ── 4.0: cấu trúc BÁO CÁO TỔNG HỢP KẾT QUẢ theo hướng dẫn chung bác sĩ gửi 21/11/2026 (mục III, bản BV TƯQĐ 108 2019 —
+# BVQY175 chưa có mẫu báo cáo riêng): thứ tự chương, 50–60 trang, kết luận và khuyến nghị mỗi phần 1–2 trang.
+CAU_TRUC_BAO_CAO: Tuple[Tuple[str, str], ...] = (
+    ("Danh sách cán bộ tham gia", r"danh sách (?:các )?cán bộ"), ("Mục lục", r"mục lục"),
+    ("Danh mục chữ viết tắt", r"chữ viết tắt"), ("Danh mục bảng biểu", r"danh mục (?:các )?(?:bảng|biểu)"),
+    ("Đặt vấn đề", r"đặt vấn đề"), ("Chương 1: Tổng quan tài liệu", r"tổng quan"),
+    ("Chương 2: Đối tượng và phương pháp nghiên cứu", r"đối tượng và phương pháp|phương pháp nghiên cứu"),
+    ("Chương 3: Kết quả", r"kết quả"), ("Chương 4: Bàn luận", r"bàn luận"), ("Kết luận", r"kết luận"),
+    ("Khuyến nghị", r"khuyến nghị|kiến nghị"), ("Tài liệu tham khảo", r"tài liệu tham khảo"), ("Phụ lục", r"phụ lục"),
+)
+TU_MOI_TRANG = 450          # ước lượng thô (A4, cỡ 13–14, giãn dòng 1,5) — chỉ để cảnh báo, không chặn
+
+
+def kiem_cau_truc_bao_cao(van: str) -> Dict[str, Any]:
+    dong = van.splitlines()
+    de_muc = [(i, d) for i, d in enumerate(dong) if re.match(r"^#{1,3}\s", d)]
+    vi_tri, thieu = [], []
+    for ten, mau in CAU_TRUC_BAO_CAO:
+        k = next((i for i, d in de_muc if re.search(mau, d, re.IGNORECASE)), None)
+        (thieu.append(ten) if k is None else vi_tri.append((k, ten)))
+    thu_tu = [t for _, t in sorted(vi_tri)]
+    mong = [t for t, _ in CAU_TRUC_BAO_CAO if t in thu_tu]
+    sai_thu_tu = [t for t, m in zip(thu_tu, mong) if t != m]
+
+    def so_tu(mau: str) -> Optional[int]:
+        k = next((i for i, d in de_muc if re.search(mau, d, re.IGNORECASE)), None)
+        if k is None:
+            return None
+        j = next((i for i, _ in de_muc if i > k), len(dong))
+        return len(" ".join(dong[k + 1:j]).split())
+
+    trang = round(len(van.split()) / TU_MOI_TRANG, 1)
+    kl, kn = so_tu(r"^#{1,3}\s*(?:\d+\.?\s*)?kết luận"), so_tu(r"khuyến nghị|kiến nghị")
+    canh_bao = ([f"thiếu: {', '.join(thieu)}"] if thieu else []) + (
+        [f"thứ tự chương lệch hướng dẫn ở: {', '.join(sai_thu_tu)}"] if sai_thu_tu else []) + (
+        [f"ước ~{trang} trang (> 60)"] if trang > 60 else []) + (
+        [f"kết luận ~{round(kl / TU_MOI_TRANG, 1)} trang (> 2)"] if kl and kl > 2 * TU_MOI_TRANG else []) + (
+        [f"khuyến nghị ~{round(kn / TU_MOI_TRANG, 1)} trang (> 2)"] if kn and kn > 2 * TU_MOI_TRANG else [])
+    return {"thieu": thieu, "sai_thu_tu": sai_thu_tu, "uoc_trang": trang, "canh_bao": canh_bao,
+            "can_cu": "hướng dẫn chung mục III (bác sĩ gửi 21/11/2026; bản BV TƯQĐ 108, 2019) — BVQY175 chưa có mẫu "
+                      "báo cáo tổng hợp riêng"}
+
+
 class LoiThamSo(ValueError):
     """Tham số sai — mã 3."""
 
@@ -262,7 +420,7 @@ class LoiThamSo(ValueError):
 # chỉnh sửa theo hội đồng». ⇒ Mọi luật (thành phần, tiêu chí, mốc điểm, xác minh, kết luận, rào biên tập, hiệu chuẩn,
 # model, NGUYÊN VĂN mọi lời dặn) gom vào MỘT quy chế có phiên bản + SHA-256. Phiên mang SHA lúc khởi tạo; quy chế đổi
 # giữa phiên ⇒ phiên hết hiệu lực. Kết luận chỉ có HIỆU LỰC khi hội đồng đã hiệu chuẩn đạt ngưỡng DƯỚI ĐÚNG quy chế đó.
-PHIEN_BAN_QUY_CHE = "QC-HDKH-3.0"
+PHIEN_BAN_QUY_CHE = "QC-HDKH-4.0"
 NGAY_KHOA_QUY_CHE = "2026-11-22"
 TUC_SO = 3
 DO_NHAY_TOI_THIEU = 5 / 6        # mỗi bản cài lỗi phải bắt ≥ 5/6 lỗi
@@ -295,9 +453,48 @@ def ke_hoach(model: str = MODEL_MAC_DINH) -> Dict[str, Any]:
                     "chính trọng tài; hiệu lực kết luận cần CẢ độ nhạy lẫn độ chính xác; (c) lỗi cài đặc thù từng "
                     "thiết kế để hiệu chuẩn trên đủ 8 thiết kế; (d) mở rộng sang SAP, bản thảo bài báo và báo cáo "
                     "tổng hợp kết quả (nghiệm thu), mỗi loại một phiếu, bộ chuẩn và bộ lỗi cài riêng; vòng kín vẫn "
-                    "chỉ cho đề cương. Mọi hiệu chuẩn cũ hết hiệu lực."],
+                    "chỉ cho đề cương. Mọi hiệu chuẩn cũ hết hiệu lực.",
+                    "4.0 (22/11/2026, bác sĩ: «phải kết hợp đồng thời Claude Code, các Agent và hệ thống», «phân "
+                    "chia thế mạnh từng thành phần», chọn «kết hợp có trọng tâm»): API chỉ họp thẩm định độc lập MỘT "
+                    "lần mỗi phiên bản tài liệu; mỗi ghế mang doctrine agent của hệ (bản chụp khoá) và bằng chứng "
+                    "công cụ của hệ; thẩm định nhận xét, biên tập, thẩm tra, chốt cuối và trọng tài đo báo nhầm do "
+                    "agent Claude Code làm qua phiếu việc máy-kiểm-được. Đo thật cùng ngày: chốt kiểm "
+                    "tham-dinh-dau-ra trả về CẢ HAI đề cương «thông qua» theo 2.1 (biên tập viên API sửa vào SAP đã "
+                    "khoá, mã hoá biến đã duyệt, đăng ký, xung đột lợi ích) ⇒ thêm RÀO NỘI DUNG ĐÃ KHOÁ và chốt cuối "
+                    "bắt buộc trước khi trình bác sĩ."],
         "muc_dich": "Chấm tài liệu nghiên cứu (đề cương, SAP, bản thảo, báo cáo nghiệm thu) theo thể thức Hội đồng "
                     "Khoa học, tư vấn — không thay hội đồng thật.",
+        "phan_chia_the_manh": [
+            "Công cụ tất định của hệ (luật K1–K18, chấm sống cổng G0–G10, nhất quán xuyên cổng, cỡ mẫu G3, biên nhận "
+            "trích dẫn A12, kiểm cấu trúc báo cáo, rào biên tập) — mọi việc ĐO được; 0 USD.",
+            "Claude API (Batch) — các ghế đọc ĐỘC LẬP, song song, MỘT lần thẩm định mỗi phiên bản tài liệu; không dùng "
+            "cho việc công cụ đo được, không lặp đọc toàn văn.",
+            "Agent Claude Code của hệ — thẩm định nhận xét cần tra cứu/tính lại, biên tập, thẩm tra chỉnh sửa, trọng "
+            "tài đo báo nhầm, chốt cuối tham-dinh-dau-ra; có công cụ và doctrine; qua phiếu việc máy-kiểm-được.",
+            "Claude Code (phiên điều phối) — giao phiếu việc, chẩn đoán vòng kẹt, sửa công cụ khi máy sai.",
+            "Chủ nhiệm / thống kê viên / bác sĩ — mọi nội dung đã khoá (SAP, bộ biến, đăng ký, xung đột lợi ích, kinh "
+            "phí, nhân sự), ký cổng; nhận danh sách «cần dữ kiện»."],
+        "doctrine": {"tep": TEP_DOCTRINE, "sha_ban_chup": _sha_tep(REPO / TEP_DOCTRINE),
+                     "gan_ghe": {k: list(v) for k, v in TAC_NHAN_GHE.items()},
+                     "gan_thiet_ke": {k: list(v) for k, v in TAC_NHAN_THIET_KE.items()},
+                     "gan_theo_loai": {lo: {k: list(v) for k, v in d.items()} for lo, d in TAC_NHAN_THEO_LOAI.items()},
+                     "tran_ky_tu": TRAN_DOCTRINE},
+        "ket_hop": {"cho_agent": f"mã thoát {CHO_AGENT}: phiếu việc ghi ở hoi_dong_khoa_hoc/viec_agent/, Claude Code "
+                                 "giao đúng agent (lệnh viec-agent), agent ghi JSON vào đường dẫn định sẵn",
+                    "tham_dinh": "nhận xét đã qua chủ tịch → agent sở hữu chuyên môn của ghế; «sai» phải có cơ sở "
+                                 + "/".join(CO_SO_SAI) + "; agent phải phán đúng đối chứng âm, sai ⇒ không áp phán "
+                                 "quyết của agent đó; nhận xét bị bác có chứng minh ⇒ không phải sửa, ghi biên bản",
+                    "bien_tap": {k: v for k, v in TAC_NHAN_BIEN_TAP.items()},
+                    "tham_tra": "agent sở hữu của ghế đã nêu — cùng luật máy-kiểm như thẩm tra API",
+                    "chot_cuoi": "tham-dinh-dau-ra BẮT BUỘC trước khi trình bác sĩ; lỗi đã xác minh ⇒ thành yêu cầu "
+                                 "sửa của vòng sau",
+                    "trong_tai_mac_dinh": f"agent {TRONG_TAI_AGENT} (API Fable chỉ khi chọn --trong-tai api)",
+                    "hieu_chuan": "chế độ kết hợp chỉ có hiệu lực khi hiệu chuẩn cũng chạy chế độ kết hợp"},
+        "rao_khoa": {"luon_khoa": _KHOA_LUON.pattern, "khoa_khi_sap_da_khoa": _KHOA_KHI_SAP.pattern,
+                     "mo_khoa": _MO_KHOA.pattern, "dong_khoa": _DONG_KHOA.pattern,
+                     "luat": "thay thế chạm vùng khoá ⇒ loại, yêu cầu thành «vượt thẩm quyền — cần dữ kiện»; bản đã "
+                             "qua hội đồng mà chốt cuối nêu lỗi vượt thẩm quyền ⇒ hoàn nguyên đúng các khối chạm vùng "
+                             "khoá/dòng bị nêu về bản gốc, giữ các khối khác"},
         "thanh_phan": [{"ma": t["ma"], "vai": t["vai"], "trong_tam": list(t["trong_tam"]), "nhiem_vu": t["nhiem_vu"]}
                        for t in THANH_VIEN],
         "ghe_thiet_ke": {k: dict(v) for k, v in GHE_THIET_KE.items()},
@@ -351,7 +548,8 @@ def ke_hoach(model: str = MODEL_MAC_DINH) -> Dict[str, Any]:
                      "cong_don": "yêu cầu «cần dữ kiện» cộng dồn qua các vòng — không rơi khỏi kết luận cuối"},
         "hieu_chuan": {"loi_cai": {"de_cuong": [[m, mo] for m, mo, *_ in LOI_CAI],
                                    "sap": [[m, mo] for m, mo, *_ in LOI_CAI_SAP],
-                                   "ban_thao_va_bao_cao": [[m, mo] for m, mo, *_ in LOI_CAI_BAN_THAO]},
+                                   "ban_thao": [[m, mo] for m, mo, *_ in LOI_CAI_BAN_THAO],
+                                   "bao_cao": [[m, mo] for m, mo, *_ in LOI_CAI_BAO_CAO]},
                        "loi_dac_thu_thiet_ke": {k: [v[0], v[1]] for k, v in LOI_CAI_THIET_KE.items()},
                        "ghep": "một–một trong ±3 dòng", "do_nhay_toi_thieu": round(DO_NHAY_TOI_THIEU, 4),
                        "so_loi_cai_toi_thieu": SO_LOI_CAI_TOI_THIEU,
@@ -383,8 +581,20 @@ def ke_hoach(model: str = MODEL_MAC_DINH) -> Dict[str, Any]:
                                     for lo in LOAI_TAI_LIEU},
                      "chu_tich": loi_nhan_chu_tich([], {}, 6), "bien_tap": loi_nhan_bien_tap([]),
                      "tham_tra": loi_nhan_tham_tra(THANH_VIEN[0], [], []),
-                     "trong_tai": {lo: loi_nhan_trong_tai([], lo) for lo in LOAI_TAI_LIEU}},
+                     "trong_tai": {lo: loi_nhan_trong_tai([], lo) for lo in LOAI_TAI_LIEU},
+                     "agent_tham_dinh": loi_nhan_agent_tham_dinh("<agent>", [], "<TEP>", "de_cuong", "<MA>", "<TL>"),
+                     "agent_bien_tap": loi_nhan_agent_bien_tap("<agent>", [], "<TEP>", "de_cuong", "<MA>", "<TL>"),
+                     "agent_tham_tra": loi_nhan_agent_tham_tra("<agent>", THANH_VIEN[0], [], [], "<TEP>", "<MA>",
+                                                               "<TL>"),
+                     "agent_dau_ra": loi_nhan_tham_dinh_dau_ra("<TEP>", "<BB>", "de_cuong", "<MA>", "<TL>")},
     }
+
+
+def _sha_tep(p: Path) -> Optional[str]:
+    try:
+        return hashlib.sha256(p.read_bytes()).hexdigest()
+    except OSError:
+        return None
 
 
 def sha_ke_hoach(model: str = MODEL_MAC_DINH) -> str:
@@ -429,6 +639,21 @@ def van_ban_quy_che(model: str = MODEL_MAC_DINH) -> str:
           f"- {k['hieu_chuan']['dieu_kien']}.", "", "## 6a. Đo báo nhầm (trọng tài độc lập)", ""]
     d += [f"- {a}: {b}" for a, b in k["do_bao_nham"].items()]
     d += ["", "## 6b. Thẩm tra chỉnh sửa (từ vòng 2)", ""]
+    d_40 = ["", "## 0. Phân chia thế mạnh (QC-HDKH-4.0)", ""] + [f"- {x}" for x in k["phan_chia_the_manh"]]
+    d_40 += ["", "## 0b. Doctrine agent theo ghế (bản chụp khoá)", "",
+             f"- Tệp `{k['doctrine']['tep']}`, SHA {k['doctrine']['sha_ban_chup']}; tối đa "
+             f"{k['doctrine']['tran_ky_tu']} ký tự mỗi agent.",
+             "- Gắn ghế: " + "; ".join(f"{a} ← {', '.join(b)}" for a, b in k["doctrine"]["gan_ghe"].items()),
+             "- Ghế chuyên thiết kế: " + "; ".join(f"{a} ← {', '.join(b)}" for a, b in
+                                                    k["doctrine"]["gan_thiet_ke"].items()),
+             "", "## 0c. Giao việc cho agent Claude Code", ""]
+    d_40 += [f"- {a}: {b}" for a, b in k["ket_hop"].items()]
+    d_40 += ["", "## 0d. Rào nội dung đã khoá", "", f"- {k['rao_khoa']['luat']}.",
+             f"- Luôn khoá (đề mục): `{k['rao_khoa']['luon_khoa']}`",
+             f"- Khoá khi SAP đã khoá (G4 đạt): `{k['rao_khoa']['khoa_khi_sap_da_khoa']}`",
+             f"- Không khoá khi đề mục gần nhất là: `{k['rao_khoa']['mo_khoa']}`",
+             f"- Dòng khai báo bị khoá: `{k['rao_khoa']['dong_khoa']}`"]
+    d[6:6] = d_40
     d += [f"- {a}: {'; '.join(b) if isinstance(b, list) else b}" for a, b in k["tham_tra"].items()]
     d += ["", "## 7. Mô hình", ""]
     d += [f"- {a}: {b}" for a, b in k["mo_hinh"].items()]
@@ -440,7 +665,8 @@ def van_ban_quy_che(model: str = MODEL_MAC_DINH) -> str:
     return "\n".join(d)
 
 
-def hieu_luc_hieu_chuan(out_dir: Path, model: str = MODEL_MAC_DINH, loai: str = "de_cuong") -> Tuple[bool, str]:
+def hieu_luc_hieu_chuan(out_dir: Path, model: str = MODEL_MAC_DINH, loai: str = "de_cuong",
+                        ket_hop: bool = False) -> Tuple[bool, str]:
     """Hội đồng đã hiệu chuẩn đạt DƯỚI quy chế hiện hành cho đề tài + loại tài liệu này chưa? Cần CẢ: độ nhạy ≥ ngưỡng
     trên ≥ 5 lỗi cài, bắt lỗi đặc thù thiết kế (nếu có), và đo báo nhầm hợp lệ đạt ngưỡng (không đo được ⇒ chưa)."""
     hc = thu_muc_hd(out_dir) / "hieu_chuan" / loai
@@ -455,6 +681,8 @@ def hieu_luc_hieu_chuan(out_dir: Path, model: str = MODEL_MAC_DINH, loai: str = 
         return False, f"độ nhạy {kq.get('do_nhay')} < ngưỡng {round(DO_NHAY_TOI_THIEU, 3)}"
     if kq.get("bat_dac_thu") is False:
         return False, "không bắt được lỗi đặc thù thiết kế"
+    if ket_hop and not kq.get("ket_hop"):
+        return False, "hiệu chuẩn chưa chạy ở chế độ KẾT HỢP (agent thẩm định nhận xét) — hiệu chuẩn lại với --ket-hop"
     bn = _doc_st(hc / "bao_nham.json")
     if not bn or bn.get("sha_quy_che") != sha_ke_hoach(model):
         return False, f"độ nhạy {kq['bat']}/{kq['so_loi_cai']} đạt nhưng CHƯA đo báo nhầm dưới quy chế này"
@@ -488,7 +716,10 @@ def _thiet_ke(out_dir: Path) -> str:
 
 def ho_so_kiem_may(study: str, out_dir: Path, van: str, la_ban_chinh: bool, loai: str = "de_cuong") -> Dict[str, Any]:
     """Kết quả các bộ kiểm TẤT ĐỊNH phát kèm cho hội đồng. Bộ nào lỗi ⇒ ghi «không đo được», không bao giờ ghi «đạt»."""
-    ra: Dict[str, Any] = {"thiet_ke": _thiet_ke(out_dir), "loai_tai_lieu": LOAI_TAI_LIEU[loai]["ten"]}
+    ra: Dict[str, Any] = {"thiet_ke": _thiet_ke(out_dir), "loai_tai_lieu": LOAI_TAI_LIEU[loai]["ten"],
+                          "bang_chung_he": bang_chung_he(study, out_dir)}
+    if loai == "bao_cao":
+        ra["cau_truc_bao_cao"] = kiem_cau_truc_bao_cao(van)
     if loai != "de_cuong":
         ra.update(_ho_so_ngoai_de_cuong(study, out_dir, van, la_ban_chinh, loai, ra["thiet_ke"]))
         if _CO_KINH_TE.search(van or ""):
@@ -589,9 +820,15 @@ def _khuon_tv() -> str:
         "diem_manh": ["…"], "ket_luan": "thong_qua|thong_qua_co_sua|khong_thong_qua"}, ensure_ascii=False, indent=1)
 
 
-def loi_nhan_thanh_vien(tv: Dict[str, Any], loai: str = "de_cuong") -> str:
+def loi_nhan_thanh_vien(tv: Dict[str, Any], loai: str = "de_cuong", ban_chup: Optional[Dict[str, Any]] = None) -> str:
     lt = LOAI_TAI_LIEU[loai]
-    return (f"VAI CỦA BẠN: {tv['vai']}.\nTRỌNG TÂM: {tv['nhiem_vu']}\n"
+    dt_ = ""
+    if tv.get("tac_nhan"):
+        dt_ = ("CHUYÊN MÔN CỦA HỆ mà ghế bạn đại diện (doctrine agent — chấm theo các luật này; phần thao tác công cụ "
+               "trong đó không áp dụng cho bạn):\n" + khoi_doctrine(tv["tac_nhan"], ban_chup) + "\n\n")
+    return (f"VAI CỦA BẠN: {tv['vai']}.\nTRỌNG TÂM: {tv['nhiem_vu']}\n" + dt_
+            + "BẰNG CHỨNG CÔNG CỤ CỦA HỆ ở mục «bang_chung_he» của hồ sơ kiểm máy (chấm sống từng cổng, cỡ mẫu G3, "
+            "biên nhận trích dẫn A12) là số đo — dùng làm căn cứ, không đếm lại.\n"
             f"LOẠI TÀI LIỆU: {lt['ten']}." + (f" Lưu ý riêng: {lt['chu_y']}" if lt["chu_y"] else "") + "\n\n"
             "Chấm ĐỘC LẬP — bạn không biết ý kiến thành viên khác. Chấm cả bốn mục của Phiếu nhận xét, nhưng nhận xét "
             f"chuyên sâu ở mục {', '.join(tv['trong_tam'])}:\n"
@@ -818,7 +1055,7 @@ def khoi_tao(study: str, out_dir: Path, tep: Path, model: str, loai: str = "de_c
     la_chinh = tep.resolve() == tep_mac_dinh(study, out_dir.parents[1], loai).resolve()
     ho_so = ho_so_kiem_may(study, out_dir, van, la_chinh, loai)
     return {"schema": SCHEMA, "study": study, "tep": str(tep), "sha": _sha(van), "model": model, "loai": loai,
-            "thanh_phan": thanh_phan_hoi_dong(ho_so.get("thiet_ke") or "", van),
+            "thanh_phan": thanh_phan_hoi_dong(ho_so.get("thiet_ke") or "", van, loai),
             "ho_so": ho_so, "buoc": "thanh_vien", "batch": {}, "thanh_vien": {}, "chu_tich": None,
             "quy_che": {"phien_ban": PHIEN_BAN_QUY_CHE, "sha": sha_ke_hoach(model)},
             "bat_dau": dt.datetime.now().isoformat(timespec="seconds")}
@@ -902,7 +1139,7 @@ def _chay_buoc(st: Dict[str, Any], van: str, goi_api: bool, client: Any) -> int:
             st["chu_tich"] = {"giu": st.get("ds_xac_minh") or [], "loai": [], "gop": [], "nhan_xet_chung": "",
                               "yeu_cau_chinh_sua": [], "canh_bao": [f"chủ tịch không trả lời hợp lệ: {exc}"[:300]]}
             ma_loi = 1
-        st["buoc"] = "xong"
+        st["buoc"] = "tham_dinh_agent" if st.get("ket_hop") else "xong"
     print(f"✅ Xong bước — bước kế tiếp: «{st['buoc']}».")
     return ma_loi
 
@@ -1087,13 +1324,62 @@ def loi_nhan_bien_tap(van_de: Sequence[Dict[str, Any]]) -> str:
     return "\n".join(dong)
 
 
-def kiem_thay(th: Dict[str, Any], van: str) -> Optional[str]:
+# ── QC-HDKH-4.0: NỘI DUNG ĐÃ KHOÁ — máy KHÔNG được sửa (đo thật 22/11/2026: chốt kiểm `tham-dinh-dau-ra` trả về CẢ HAI
+# đề cương «thông qua» theo QC-2.1 — biên tập viên API đã đảo mã hoá biến phái sinh đã duyệt, lật quyết định đăng ký,
+# tự viết khai xung đột lợi ích, sửa Phụ lục A tóm tắt SAP đã ký, xoá/thêm phân tích độ nhạy trái SAP, đổi đơn vị cụm,
+# thêm biến ngoài bộ biến). Các vùng này thuộc quyết định của chủ nhiệm / SAP đã khoá / hồ sơ đạo đức ⇒ thay thế chạm
+# vào ⇒ LOẠI, yêu cầu trở thành «vượt thẩm quyền — cần dữ kiện của người có thẩm quyền».
+_KHOA_LUON = re.compile(r"(?i)kế hoạch phân tích thống kê|\bSAP\b|bảng biến|mã hoá|mã hóa|biến phái sinh"
+                        r"|phiếu thu thập|kinh phí|dự trù|danh sách (?:các )?cán bộ|nhân lực|đăng ký nghiên cứu"
+                        r"|xung đột lợi ích")
+_KHOA_KHI_SAP = re.compile(r"(?i)xử lý (?:và phân tích )?số liệu|phân tích (?:số liệu|thống kê|dữ liệu)|cỡ mẫu"
+                           r"|dự kiến kết quả|khung bảng|biến số|chỉ số nghiên cứu|biến dự báo|kết cục")
+_MO_KHOA = re.compile(r"(?i)bàn luận|hạn chế|tổng quan|đặt vấn đề|mục tiêu|tính cấp thiết")
+_DONG_KHOA = re.compile(r"(?i)^\s*(?:[-*+]\s*)?\**\s*(?:đăng ký nghiên cứu|xung đột lợi ích|nguồn kinh phí|kinh phí"
+                        r"|tài trợ)\s*\**\s*:")
+
+
+def vung_khoa(van: str, sap_khoa: bool = False) -> List[bool]:
+    """Cờ khoá cho TỪNG dòng: đề mục gần nhất (hoặc tổ tiên, khi đề mục gần nhất không «mở khoá») thuộc vùng khoá,
+    hoặc dòng là mục khai đăng ký/xung đột lợi ích/kinh phí."""
+    co: List[bool] = []
+    chuoi: List[Tuple[int, str]] = []   # (cấp, đề mục)
+    for d in van.splitlines():
+        m = re.match(r"^(#{1,6})\s+(.*)", d)
+        if m:
+            cap = len(m.group(1))
+            chuoi = [(c, t) for c, t in chuoi if c < cap] + [(cap, m.group(2))]
+
+        def khoa(t: str) -> bool:
+            return bool(_KHOA_LUON.search(t) or (sap_khoa and _KHOA_KHI_SAP.search(t)))
+
+        gan = chuoi[-1][1] if chuoi else ""
+        k = khoa(gan) or (not _MO_KHOA.search(gan) and any(khoa(t) for _, t in chuoi[:-1]))
+        co.append(bool(k or _DONG_KHOA.search(d)))
+    return co
+
+
+def sap_da_khoa(ho_so: Dict[str, Any]) -> bool:
+    """SAP đã khoá ⇔ chấm sống G4 đạt (bằng chứng công cụ của hệ trong hồ sơ)."""
+    g4 = ((ho_so.get("bang_chung_he") or {}).get("cong_song") or {})
+    g4 = g4.get("G4") if isinstance(g4, dict) else None
+    return bool(g4 and g4.get("muc") == "PASS")
+
+
+def kiem_thay(th: Dict[str, Any], van: str, khoa: Optional[Sequence[bool]] = None) -> Optional[str]:
     """Lý do LOẠI một thay thế (None = nhận). Kiểm trên văn bản HIỆN TẠI (sau các thay thế đã áp trước nó)."""
     cu, moi = str(th.get("cu") or ""), str(th.get("moi") or "")
     if not cu.strip():
         return "thiếu đoạn cũ"
     if van.count(cu) != 1:
         return f"đoạn cũ xuất hiện {van.count(cu)} lần (phải đúng 1)"
+    if khoa is not None:
+        dau = van[:van.index(cu)].count("\n")
+        cuoi = dau + cu.count("\n")
+        if any(khoa[i] for i in range(dau, min(cuoi + 1, len(khoa)))):
+            return (f"chạm NỘI DUNG ĐÃ KHOÁ (dòng {dau + 1}–{cuoi + 1}: SAP/bảng biến/phiếu thu thập/đăng ký/xung "
+                    "đột lợi ích/kinh phí, hoặc mục phân tích khi SAP đã khoá) — thuộc thẩm quyền chủ nhiệm/thống kê "
+                    "viên: khai «vuot_tham_quyen»")
     # QC-HDKH-1.1: KHÔNG ràng buộc số dòng — đo thật dưới 1.0, 85% thay thế đúng bị loại oan (dòng lệch sau thay thế
     # trước; vấn đề nêu ở danh mục bảng phải sửa ở Chương 3). Đoạn cũ duy nhất đã định vị không nhập nhằng.
     if len(moi) > TRAN_KY_TU_THAY:
@@ -1113,7 +1399,7 @@ def kiem_thay(th: Dict[str, Any], van: str) -> Optional[str]:
     return None
 
 
-def ap_bien_tap(dl: Any, van: str) -> Tuple[str, Dict[str, Any]]:
+def ap_bien_tap(dl: Any, van: str, sap_khoa: Optional[bool] = None) -> Tuple[str, Dict[str, Any]]:
     """Áp các thay thế hợp lệ theo thứ tự; trả (văn bản mới, nhật ký nhận/loại/không sửa/vượt thẩm quyền)."""
     if not isinstance(dl, dict):
         raise API.KetQuaHong("đề xuất biên tập không phải đối tượng JSON")
@@ -1128,7 +1414,7 @@ def ap_bien_tap(dl: Any, van: str) -> Tuple[str, Dict[str, Any]]:
         for th in muc.get("thay") or []:
             if not isinstance(th, dict):
                 continue
-            loi = kiem_thay(th, van)
+            loi = kiem_thay(th, van, vung_khoa(van, sap_khoa) if sap_khoa is not None else None)
             ban = {"id": fid, "dong": th.get("dong"), "cu": str(th.get("cu") or ""),
                    "moi": str(th.get("moi") or "")[:TRAN_KY_TU_THAY]}
             if loi:
@@ -1402,35 +1688,18 @@ def _chay_tham_tra(st: Dict[str, Any], van: str, goi_api: bool, client: Any) -> 
     return 0
 
 
-def vong_kin_buoc(st: Dict[str, Any], van: str, tep: Path, out_dir: Path, goi_api: bool, ap_dung: bool,
-                  client: Any) -> int:
-    """MỘT bước của vòng kín trên tài liệu hiện tại. Trả mã thoát; 0 + st['buoc']=='dat' ⇒ đã thông qua."""
-    if st["buoc"] in ("thanh_vien", "chu_tich"):
-        return _chay_buoc(st, van, goi_api, client)
-    if st["buoc"] == "tham_tra":
-        return _chay_tham_tra(st, van, goi_api, client)
-    if st["buoc"] == "xong":
-        if st.get("che_do") == "tham_tra":
-            kl, ly = ket_luan_tham_tra(tham_tra_cong_don(st))
-            con_n = len(van_de_can_sua(st))
-        else:
-            th0 = tong_hop(st)
-            con_n = sum(1 for f in th0["van_de"] if f["muc_do"] in ("nghiem_trong", "can_sua"))
-            kl, ly = ("thong_qua", th0["ly_do_ket_luan"]) if th0["ket_luan"] == "thong_qua" and not con_n else \
-                ("chua_dat", th0["ly_do_ket_luan"])
-        if kl != "chua_dat":
-            st["buoc"], st["ket_luan_cuoi"] = "dat", kl
-        elif int(st.get("vong", 1)) >= SO_VONG_TOI_DA:
-            print(f"⛔ Đã {st.get('vong', 1)} vòng mà còn {con_n} yêu cầu chưa đạt — dừng, xem biên bản ({ly}).")
-            return 1
-        else:
-            st["buoc"] = "bien_tap"
-    if st["buoc"] == "dat":
-        print(f"✅ ĐẠT ({KET_LUAN.get(st.get('ket_luan_cuoi') or 'thong_qua')}) ở vòng {st.get('vong', 1)}.")
-        return 0
-    if st["buoc"] == "da_sua":
-        print(f"↻ Đã sửa ở vòng {st.get('vong', 1)} — chạy lại để hội đồng họp bản mới.")
-        return 0
+def _de_xuat_bien_tap(st: Dict[str, Any], van: str, out_dir: Path, goi_api: bool,
+                      client: Any) -> Tuple[Optional[int], Dict[str, Any], List[str]]:
+    """Lấy đề xuất biên tập: chế độ KẾT HỢP ⇒ agent của hệ (phiếu việc, mã 5 khi chờ); chế độ API ⇒ batch như cũ.
+    Trả (mã thoát nếu phải dừng bước, đề xuất gộp, yêu cầu hỏng)."""
+    if st.get("ket_hop"):
+        if not st.get("viec_bien_tap"):
+            st["viec_bien_tap"] = lap_viec_bien_tap(st, van_de_can_sua(st), out_dir)
+        gop_ag = gop_tra_loi_bien_tap(st["viec_bien_tap"])
+        if gop_ag is None:
+            print(f"🤝 Chờ agent biên tập: {', '.join(st['viec_bien_tap'])} — chạy «viec-agent» để xem phiếu việc.")
+            return CHO_AGENT, {}, []
+        return None, gop_ag, []
     # bien_tap — chia nhóm ≤ VAN_DE_MOI_YEU_CAU vấn đề mỗi yêu cầu (22/11/2026: một yêu cầu gom 14–20 vấn đề bị cắt cụt
     # ở 32.000 token ra trên cả hai đề cương thật). Tham số VẬN HÀNH, không phải luật/lời dặn của quy chế.
     chung = khoi_chung(st["study"], Path(st["tep"]).name, van, st["ho_so"])
@@ -1442,20 +1711,20 @@ def vong_kin_buoc(st: Dict[str, Any], van: str, tep: Path, out_dir: Path, goi_ap
         if int(st.get("so_lan_hong_bien_tap", 0)) > SO_LAN_NOP_LAI_BIEN_TAP:
             print(f"⛔ Biên tập hỏng {st['so_lan_hong_bien_tap']} lần (1 lần đầu + {SO_LAN_NOP_LAI_BIEN_TAP} lần nộp "
                   f"lại) — dừng: {(st.get('loi_bien_tap') or ['?'])[-1]}")
-            return 1
+            return 1, {}, []
         if not goi_api:
             print(f"(chạy khô) biên tập {len(vd)} vấn đề trong {len(nhom)} yêu cầu — thêm --goi-api.")
-            return 0
+            return 0, {}, []
         yc = [(c, tham_so_yeu_cau(chung, loi_nhan_bien_tap(g), st["model"], MAX_TOKENS_BT)) for c, g in zip(cids, nhom)]
         st["batch"]["bien_tap"] = API.nop_batch(yc, client=client, nguon=CONG_CU)
         print(f"📨 Đã nộp batch biên tập: {st['batch']['bien_tap']} ({len(yc)} yêu cầu).")
-        return 4
+        return 4, {}, []
     if not goi_api:
-        return 0
+        return 0, {}, []
     tt = API.trang_thai_batch(bid, client=client)
     if tt["trang_thai"] != "ended":
         print(f"⏳ Batch biên tập {bid} đang xử lý — chạy lại sau.")
-        return 4
+        return 4, {}, []
     ket = API.doc_ket_qua_batch(bid, client=client, nguon=CONG_CU)
     gop: Dict[str, Any] = {"sua": []}
     hong = []
@@ -1473,8 +1742,69 @@ def vong_kin_buoc(st: Dict[str, Any], van: str, tep: Path, out_dir: Path, goi_ap
         st["so_lan_hong_bien_tap"] = int(st.get("so_lan_hong_bien_tap", 0)) + 1
         st["batch"].pop("bien_tap", None)
         print(f"⚠️ Biên tập hỏng cả {len(cids)} yêu cầu — sẽ nộp lại: {hong[0]}")
-        return 1
-    van_moi, nk = ap_bien_tap(gop, van)
+        return 1, {}, []
+    return None, gop, hong
+
+
+def vong_kin_buoc(st: Dict[str, Any], van: str, tep: Path, out_dir: Path, goi_api: bool, ap_dung: bool,
+                  client: Any) -> int:
+    """MỘT bước của vòng kín trên tài liệu hiện tại. Trả mã thoát; 0 + st['buoc']=='dat' ⇒ đã thông qua."""
+    if st["buoc"] in ("thanh_vien", "chu_tich"):
+        return _chay_buoc(st, van, goi_api, client)
+    if st["buoc"] == "tham_dinh_agent":
+        return buoc_tham_dinh_agent(st, van, out_dir)
+    if st["buoc"] == "tham_tra":
+        return buoc_tham_tra_agent(st, van, out_dir) if st.get("ket_hop") else _chay_tham_tra(st, van, goi_api, client)
+    if st["buoc"] == "xong":
+        if st.get("che_do") == "tham_tra":
+            kl, ly = ket_luan_tham_tra(tham_tra_cong_don(st))
+            con_n = len(van_de_can_sua(st))
+        else:
+            th0 = tong_hop(st)
+            con_n = sum(1 for f in th0["van_de"] if f["muc_do"] in ("nghiem_trong", "can_sua"))
+            kl, ly = ("thong_qua", th0["ly_do_ket_luan"]) if th0["ket_luan"] == "thong_qua" and not con_n else \
+                ("chua_dat", th0["ly_do_ket_luan"])
+        if kl != "chua_dat":
+            st["buoc"], st["ket_luan_cuoi"] = "dat", kl
+        elif int(st.get("vong", 1)) >= SO_VONG_TOI_DA:
+            print(f"⛔ Đã {st.get('vong', 1)} vòng mà còn {con_n} yêu cầu chưa đạt — dừng, xem biên bản ({ly}).")
+            return 1
+        else:
+            st["buoc"] = "bien_tap"
+    if st["buoc"] == "dat" and st.get("ket_hop") and not st.get("trinh_bac_si"):
+        ma_dr = buoc_tham_dinh_dau_ra(st, van, out_dir)
+        if ma_dr == CHO_AGENT:
+            return ma_dr
+        loi_dr = (st.get("ket_qua_dau_ra") or {}).get("loi_xac_minh") or []
+        if loi_dr and int(st.get("vong", 1)) < SO_VONG_TOI_DA:
+            # lỗi liêm chính đã xác minh của chốt cuối ⇒ thành yêu cầu sửa của vòng sau (không trình bác sĩ)
+            tt = st.setdefault("tham_tra", {"da_giai_quyet": [], "chua_giai_quyet": [], "can_du_kien": [],
+                                            "loi_moi": [], "loai": []})
+            st["che_do"] = "tham_tra"
+            tt["loi_moi"] = list(tt.get("loi_moi") or []) + [
+                {"id": f"R{st.get('vong', 1)}_{k:02d}", "thanh_vien": "dau_ra", "muc_phieu": "4", "muc_do": "can_sua",
+                 "dong": int(x.get("dong") or 0), "trich": str(x.get("trich") or ""),
+                 "van_de": f"[{x.get('ma')}] {x.get('mo_ta')}", "de_xuat": str(x.get("de_xuat") or "")}
+                for k, x in enumerate(loi_dr, 1)]
+            st["buoc"] = "bien_tap"
+            print(f"↩️ tham-dinh-dau-ra nêu {len(loi_dr)} lỗi liêm chính đã xác minh — chưa trình, sửa tiếp.")
+            return 0
+        if loi_dr:
+            print(f"⛔ Đã {st.get('vong', 1)} vòng; chốt cuối còn {len(loi_dr)} lỗi liêm chính — dừng, xem biên bản.")
+            return 1
+    if st["buoc"] == "dat":
+        print(f"✅ ĐẠT ({KET_LUAN.get(st.get('ket_luan_cuoi') or 'thong_qua')}) ở vòng {st.get('vong', 1)}"
+              + (" · tham-dinh-dau-ra ĐẠT — được trình bác sĩ." if st.get("trinh_bac_si") else "."))
+        return 0
+    if st["buoc"] == "da_sua":
+        print(f"↻ Đã sửa ở vòng {st.get('vong', 1)} — chạy lại để hội đồng họp bản mới.")
+        return 0
+    vd = van_de_can_sua(st)
+    ma_bt, gop, hong = _de_xuat_bien_tap(st, van, out_dir, goi_api, client)
+    if ma_bt is not None:
+        return ma_bt
+    sap_k = sap_da_khoa(st.get("ho_so") or {})
+    van_moi, nk = ap_bien_tap(gop, van, sap_khoa=sap_k)   # 4.0: rào nội dung đã khoá (vùng tính lại mỗi thay thế)
     nk["yeu_cau_hong"] = hong   # nhóm hỏng: vấn đề của nhóm đó sẽ được hội đồng vòng sau nêu lại (không bị bỏ qua)
     la_chinh = Path(st["tep"]).resolve() == tep_mac_dinh(st["study"], out_dir.parents[1]).resolve()
     st["bien_tap"] = nk
@@ -1500,7 +1830,7 @@ def vong_kin_buoc(st: Dict[str, Any], van: str, tep: Path, out_dir: Path, goi_ap
         nk["xau_di_ca_luot"] = xau
         van_moi, giu, bo = van, [], []
         for e in nk["nhan"]:
-            loi = kiem_thay(e, van_moi)
+            loi = kiem_thay(e, van_moi, vung_khoa(van_moi, sap_k))
             if loi:
                 bo.append({**e, "cu": e["cu"][:300], "ly_do_loai": f"khi chọn lọc: {loi}"})
                 continue
@@ -1522,7 +1852,7 @@ def vong_kin_buoc(st: Dict[str, Any], van: str, tep: Path, out_dir: Path, goi_ap
         print(f"🔎 Chọn lọc: giữ {len(giu)}/{len(giu) + len(bo)} thay thế; loại {len(bo)} vì làm chuẩn xấu đi.")
     nk["word"] = _xuat_word(out_dir, st["study"], van_moi)
     st["buoc"], st["sha_moi"] = "da_sua", _sha(van_moi)
-    moi = khoi_tao(st["study"], out_dir, tep, st["model"])
+    moi = khoi_tao(st["study"], out_dir, tep, st["model"], st.get("loai", "de_cuong"))
     # QC-HDKH-2.0: vòng sau là THẨM TRA đúng các yêu cầu nghiêm trọng/cần sửa vừa giao, trên các đoạn vừa sửa.
     hd = {str(m.get("id")): m for m in gop["sua"] if isinstance(m, dict)}
     # QC-HDKH-2.1: lý do rào đã loại bản sửa ⇒ đi kèm yêu cầu tới vòng sau (thẩm tra thấy, biên tập viên thấy)
@@ -1533,6 +1863,7 @@ def vong_kin_buoc(st: Dict[str, Any], van: str, tep: Path, out_dir: Path, goi_ap
             ds_ly.append(str(x.get("ly_do_loai") or "")[:200])
     tt_cu = st.get("tham_tra") or {}
     moi.update(vong=int(st.get("vong", 1)) + 1, ban_truoc=st["sha"], che_do="tham_tra", buoc="tham_tra",
+               ket_hop=st.get("ket_hop", False),
                ds_yeu_cau=[{**f, "hanh_dong_bien_tap": str(hd.get(str(f.get("id")), {}).get("hanh_dong")
                                                           or "không có đề xuất"),
                             "ly_do_bien_tap": str(hd.get(str(f.get("id")), {}).get("ly_do") or ""),
@@ -1617,6 +1948,11 @@ LOI_CAI_BAN_THAO: Tuple[Tuple[str, str, Any, str], ...] = (
      "Bộ dữ liệu kèm họ tên và số điện thoại của người tham gia được công bố công khai cùng bài báo."),
 )
 _DE_MUC_SO = r"(?i)^#{2,}\s*\d+(?:\.\d+)+\.?\s+.*"   # đề mục CON có đánh số «4.6. …» — tránh neo vào tên đề tài
+LOI_CAI_BAO_CAO: Tuple[Tuple[str, str, Any, str], ...] = LOI_CAI_BAN_THAO + (
+    ("khuyen_nghi_khong_can_cu", "khuyến nghị không dựa trên kết luận của đề tài (hướng dẫn mục III.12)",
+     (r"(?i)^#+.*(?:khuyến nghị|kiến nghị)",),
+     "Khuyến nghị Bộ Y tế miễn phí toàn bộ thuốc điều trị bệnh mạn tính cho mọi người dân trên cả nước."),
+)
 LOI_CAI_THIET_KE: Dict[str, Tuple[str, str, Any, str]] = {
     "rct": ("tk_phan_bo_lo", "không che giấu phân bổ (chẵn/lẻ, biết trước nhóm)",
             (_DE_MUC_SO + r"(?:ngẫu nhiên|phân bổ|phân nhóm)", _DE_MUC_SO + r"thiết kế",
@@ -1658,7 +1994,7 @@ SO_LOI_CAI_TOI_THIEU = 5         # bản cài lỗi có < 5 lỗi (thiếu neo) 
 
 def bo_loi_cai(loai: str = "de_cuong", thiet_ke: str = "") -> List[Tuple[str, str, Any, str, bool]]:
     """(mã, mô tả, neo, câu, đặc thù thiết kế?) theo loại tài liệu; đề cương có thêm lỗi đặc thù của thiết kế."""
-    goc = {"de_cuong": LOI_CAI, "sap": LOI_CAI_SAP, "ban_thao": LOI_CAI_BAN_THAO, "bao_cao": LOI_CAI_BAN_THAO}[loai]
+    goc = {"de_cuong": LOI_CAI, "sap": LOI_CAI_SAP, "ban_thao": LOI_CAI_BAN_THAO, "bao_cao": LOI_CAI_BAO_CAO}[loai]
     ds = [(m, mo, neo, cau, False) for m, mo, neo, cau in goc]
     dt_ = LOI_CAI_THIET_KE.get(chuan_hoa_thiet_ke(thiet_ke))
     if loai == "de_cuong" and dt_:
@@ -1850,7 +2186,8 @@ def cham_bao_nham(muc: Sequence[Dict[str, Any]], pd: Dict[str, Dict[str, Any]]) 
                               if pd[m["id"]]["ket_qua"] != ("dung" if m["nhom"] == "kiem_soat_duong" else "sai")]}
 
 
-def _do_bao_nham(goc: Path, out_dir: Path, study: str, loai: str, goi_api: bool, client: Any, model: str) -> int:
+def _do_bao_nham(goc: Path, out_dir: Path, study: str, loai: str, goi_api: bool, client: Any, model: str,
+                 trong_tai: str = "agent") -> int:
     hc_dir = thu_muc_hd(out_dir) / "hieu_chuan" / loai
     da, kq_cham = _doc_st(hc_dir / "dap_an.json"), _doc_st(hc_dir / "ket_qua.json")
     if not da or not kq_cham:
@@ -1866,6 +2203,33 @@ def _do_bao_nham(goc: Path, out_dir: Path, study: str, loai: str, goi_api: bool,
     if not tt or tt.get("sha_quy_che") != sha_ke_hoach(model) or tt.get("sha") != da["sha"]:
         tt = {"sha": da["sha"], "sha_quy_che": sha_ke_hoach(model), "muc": lap_muc_bao_nham(st, kq_cham, van, loai),
               "batch": None, "so_lan_nop_lai": 0, "model_trong_tai": TRONG_TAI_MODEL}
+    if trong_tai == "agent":   # 4.0: trọng tài là agent Claude Code của hệ — không tốn tín dụng API
+        if not tt.get("viec_trong_tai"):
+            tl = hc_dir / f"tra_loi_trong_tai_{TRONG_TAI_AGENT}.json"
+            tt["viec_trong_tai"] = ghi_viec(hc_dir, "trong_tai", TRONG_TAI_AGENT, (
+                f"Bạn là agent `{TRONG_TAI_AGENT}` (ngữ cảnh mới, không tham gia hội đồng). Tài liệu: `{da['tep']}` "
+                "(số dòng tính từ 1).\n" + loi_nhan_trong_tai(tt["muc"], loai).replace("ở trên", "nêu trên")
+                + f"\nGhi DUY NHẤT JSON trên vào `{tl}`; không ghi tệp khác."), {"muc": _mu(tt["muc"])})
+            _ghi_json(p_tt, tt)
+        p_tl = Path(tt["viec_trong_tai"]["tra_loi"])
+        if not p_tl.exists():
+            print(f"🤝 Chờ agent {TRONG_TAI_AGENT} — «viec-agent» để xem phiếu việc.")
+            return CHO_AGENT
+        try:
+            pd = xac_minh_trong_tai(json.loads(p_tl.read_text(encoding="utf-8")), tt["muc"], van)
+        except (OSError, ValueError, API.LoiApi) as exc:
+            print(f"❌ trả lời trọng tài agent không đọc được: {exc} — xoá tệp trả lời và giao lại.", file=sys.stderr)
+            return 1
+        kq = cham_bao_nham(tt["muc"], pd)
+        kq.update(sha=da["sha"], sha_quy_che=sha_ke_hoach(model), quy_che=PHIEN_BAN_QUY_CHE, loai=loai,
+                  model_trong_tai=f"agent:{TRONG_TAI_AGENT}", ngay=dt.date.today().isoformat())
+        tt["phan_dinh"] = pd
+        _ghi_json(p_tt, tt)
+        _ghi_json(hc_dir / "bao_nham.json", kq)
+        print(f"⚖️ Trọng tài agent {TRONG_TAI_AGENT}: đối chứng {kq['doi_chung_dung']}/{kq['so_doi_chung']}; "
+              f"{kq['dung']} đúng · {kq['sai']} sai · {kq['khong_ro']} không rõ ⇒ độ chính xác {kq['do_chinh_xac']} — "
+              f"{kq['ly_do']}.")
+        return 0 if kq["dat"] else 1
     cid = f"tt_bn_{da['sha'][:8]}"
     yc = [(cid, tham_so_yeu_cau(khoi_chung(study, Path(da["tep"]).name, van, st["ho_so"], loai),
                                 loi_nhan_trong_tai(tt["muc"], loai), TRONG_TAI_MODEL, MAX_TOKENS_TRONG_TAI))]
@@ -1912,12 +2276,355 @@ def _do_bao_nham(goc: Path, out_dir: Path, study: str, loai: str, goi_api: bool,
     return 0 if kq["dat"] else 1
 
 
+# ── QC-HDKH-4.0: GIAO VIỆC CHO AGENT CLAUDE CODE (bác sĩ chọn «kết hợp có trọng tâm», 22/11/2026) ─────────────────
+# API chấm độc lập (rẻ, song song) — nhưng nhận xét cần TRA CỨU/TÍNH LẠI, việc BIÊN TẬP và CHỐT CUỐI giao cho agent của
+# hệ chạy trong Claude Code (có công cụ: PubMed, run_g3_auto, check_citation_retraction, bộ chấm cổng…). Công cụ này
+# KHÔNG gọi được agent: nó ghi PHIẾU VIỆC + lời dặn soạn sẵn rồi trả mã 5; Claude Code giao từng phiếu cho đúng agent
+# (subagent_type = tên agent); agent ghi JSON trả lời vào đường dẫn đã định; lượt chạy sau công cụ MÁY-KIỂM câu trả lời
+# (trích nguyên văn ±3 dòng, căn cứ công cụ phải có lệnh + kết quả, agent phải phán đúng đối chứng âm) rồi mới áp.
+CHO_AGENT = 5
+TAC_NHAN_BIEN_TAP: Dict[str, str] = {"pb1": "thiet-ke-nghien-cuu", "pb2": "viet-ban-thao",
+                                     "uv_tk": "co-mau-nghien-cuu", "uv_dd": "dao-duc-dang-ky",
+                                     "uv_tl": "viet-ban-thao", "uv_kt": "kinh-te-y-te"}
+CONG_CU_GOI_Y: Dict[str, str] = {
+    "kiem-chung-trich-dan": "python3 tools/check_citation_retraction.py --pmid <PMID…>; biên nhận A12 trong thư mục đề "
+                            "tài; connector PubMed để đối chiếu nội dung",
+    "co-mau-nghien-cuu": "python3 tools/run_g3_auto.py --study <mã> (chạy khô) / G3_checkpoint.json; "
+                         "python3 tools/g3_quality_gate.py --study <mã>",
+    "phan-tich-thong-ke": "G4_A5_SAP_FINAL + python3 tools/g4_quality_gate.py --study <mã>",
+    "thiet-ke-nghien-cuu": "python3 tools/g1_quality_gate.py / g4_quality_gate.py --study <mã>; "
+                           "python3 tools/nhat_quan_xuyen_cong.py --study <mã>",
+    "dao-duc-dang-ky": "python3 tools/g2_quality_gate.py --study <mã>",
+    "tong-quan-y-van": "connector PubMed/Cochrane để đối chiếu khẳng định với nguồn",
+    "viet-ban-thao": "python3 tools/kiem_de_cuong_nop_hoi_dong.py / kiem_ban_thao_tap_chi.py (luật K)",
+    "tham-dinh-dau-ra": "đọc tài liệu + biên bản; luật R1–R7 của chính agent",
+}
+CO_SO_SAI = ("tai_lieu_da_dap_ung", "cong_cu", "chuan_khong_doi")
+_KHOA_MU = ("id", "muc_phieu", "muc_do", "dong", "trich", "van_de", "de_xuat", "chuan")
+
+
+def _mu(muc: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Bản MÙ của danh sách mục giao agent: bỏ «nhom» (đối chứng hay nhận xét thật) và «goc» (id hội đồng)."""
+    return [{k: m.get(k) for k in _KHOA_MU} for m in muc]
+
+
+def _ma_tv_theo_tac_nhan(st: Dict[str, Any]) -> Dict[str, str]:
+    return {t["ma"]: (t.get("tac_nhan") or [""])[0] for t in _ds_tv(st)}
+
+
+def thu_muc_viec(out_dir: Path, st: Dict[str, Any]) -> Path:
+    return thu_muc_hd(out_dir) / "viec_agent" / f"{st['sha'][:12]}_v{st.get('vong', 1)}"
+
+
+def lap_viec_tham_dinh(st: Dict[str, Any], van: str, ds: Sequence[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
+    """Nhóm nhận xét theo agent SỞ HỮU chuyên môn của ghế đã nêu; mỗi nhóm trộn mù ≥ 1 đối chứng âm (nhận xét sai do
+    máy dựng). Mã mù A01…; ánh xạ về id hội đồng chỉ lưu trong trạng thái."""
+    chu = _ma_tv_theo_tac_nhan(st)
+    nhom: Dict[str, List[Dict[str, Any]]] = {}
+    for f in ds:
+        nhom.setdefault(chu.get(f.get("thanh_vien"), "") or "thiet-ke-nghien-cuu", []).append(
+            {"nhom": "nhan_xet", "goc": f["id"],
+             **{k: f.get(k) for k in ("muc_phieu", "muc_do", "dong", "trich", "van_de", "de_xuat", "chuan")}})
+    am = doi_chung_am(van, st.get("loai", "de_cuong"))
+    for i, ten in enumerate(sorted(nhom)):
+        if am:
+            nhom[ten].append(dict(am[i % len(am)]))
+    k = 0
+    for ten in sorted(nhom):
+        nhom[ten].sort(key=lambda m: hashlib.sha256((st["sha"] + ten + json.dumps(m, ensure_ascii=False,
+                                                                                 sort_keys=True)).encode()).hexdigest())
+        for m in nhom[ten]:
+            k += 1
+            m["id"] = f"A{k:02d}"
+    return nhom
+
+
+def loi_nhan_agent_tham_dinh(ten: str, muc: Sequence[Dict[str, Any]], tep: str, loai: str, study: str,
+                             tra_loi: str) -> str:
+    gon = [{k: m.get(k) for k in ("id", "muc_phieu", "muc_do", "dong", "trich", "van_de", "de_xuat", "chuan")}
+           for m in muc]
+    goi_y = CONG_CU_GOI_Y.get(ten, "công cụ hệ")
+    return (f"Bạn là agent `{ten}` của hệ, THẨM ĐỊNH nhận xét của Hội đồng Khoa học máy về "
+            f"{LOAI_TAI_LIEU[loai]['ten']} của đề tài «{study}». Đọc tài liệu: `{tep}` (số dòng tính từ 1 theo tệp).\n"
+            f"Dùng công cụ của hệ khi nhận xét cần tra cứu hoặc tính lại — gợi ý: {goi_y}.\n"
+            "Với TỪNG mục dưới đây phán: «dung» (tài liệu thật sự có vấn đề như nêu — nêu căn cứ), «sai» kèm «co_so» "
+            "là "
+            "«tai_lieu_da_dap_ung» (trích NGUYÊN VĂN đoạn đáp ứng + số dòng — máy đối chiếu ±3 dòng), «cong_cu» (ghi "
+            "«lenh» và «ket_qua_cong_cu» rút gọn — chép đúng đầu ra) hoặc «chuan_khong_doi» (giải thích), hoặc "
+            "«khong_ro». Không biết mục nào do ai nêu; không sửa tài liệu; không ghi tệp nào khác; không PII.\n"
+            f"MỤC:\n{json.dumps(gon, ensure_ascii=False, indent=1)}\n"
+            f"Ghi DUY NHẤT JSON vào `{tra_loi}`: " + json.dumps({"phan_dinh": [
+                {"id": "A01", "ket_qua": "dung|sai|khong_ro", "co_so": "|".join(CO_SO_SAI), "dong": 12,
+                 "trich": "…", "lenh": "…", "ket_qua_cong_cu": "…", "ly_do": "…"}]}, ensure_ascii=False))
+
+
+def xac_minh_agent(dl: Any, muc: Sequence[Dict[str, Any]], van: str) -> Dict[str, Dict[str, Any]]:
+    """Như trọng tài, thêm cơ sở «cong_cu» (bắt buộc có lệnh + kết quả; ghi nguyên văn vào biên bản)."""
+    if not isinstance(dl, dict):
+        raise API.KetQuaHong("trả lời agent không phải đối tượng JSON")
+    pd = xac_minh_trong_tai({"phan_dinh": [dict(x, co_so=("chuan_khong_doi" if x.get("co_so") == "cong_cu"
+                                                         else x.get("co_so")), ly_do=(x.get("ly_do") or "")
+                                                + (" · lệnh: " + str(x.get("lenh")) if x.get("lenh") else ""))
+                                           for x in dl.get("phan_dinh") or [] if isinstance(x, dict)]}, muc, van)
+    goc = {str(x.get("id")): x for x in dl.get("phan_dinh") or [] if isinstance(x, dict)}
+    for m in muc:
+        x = goc.get(m["id"]) or {}
+        if x.get("ket_qua") == "sai" and x.get("co_so") == "cong_cu":
+            if not str(x.get("lenh") or "").strip() or not str(x.get("ket_qua_cong_cu") or "").strip():
+                pd[m["id"]].update(ket_qua="khong_ro", ghi_may="«sai — công cụ» thiếu lệnh hoặc kết quả công cụ")
+            else:
+                pd[m["id"]].update(co_so="cong_cu", lenh=str(x["lenh"])[:300],
+                                   ket_qua_cong_cu=str(x["ket_qua_cong_cu"])[:600])
+    return pd
+
+
+def ghi_viec(thu_muc: Path, loai_viec: str, ten: str, loi_nhan: str, du_lieu: Any) -> Dict[str, str]:
+    thu_muc.mkdir(parents=True, exist_ok=True)
+    tl = thu_muc / f"tra_loi_{loai_viec}_{ten}.json"
+    _ghi_van(thu_muc / f"viec_{loai_viec}_{ten}.md", loi_nhan + "\n")
+    _ghi_json(thu_muc / f"viec_{loai_viec}_{ten}.json", du_lieu)
+    return {"agent": ten, "loai_viec": loai_viec, "loi_nhan": str(thu_muc / f"viec_{loai_viec}_{ten}.md"),
+            "tra_loi": str(tl)}
+
+
+def buoc_tham_dinh_agent(st: Dict[str, Any], van: str, out_dir: Path) -> int:
+    """Giao thẩm định nhận xét (đã qua chủ tịch) cho agent sở hữu; đủ trả lời ⇒ máy kiểm, áp, sang «xong»."""
+    tm = thu_muc_viec(out_dir, st)
+    if not st.get("viec_tham_dinh"):
+        ct = st.get("chu_tich") or {}
+        ds = list(ct.get("giu") or [])
+        if not ds:
+            st["buoc"] = "xong"
+            return 0
+        nhom = lap_viec_tham_dinh(st, van, ds)
+        st["viec_tham_dinh"] = {ten: {"muc": muc, **ghi_viec(tm, "tham_dinh", ten, loi_nhan_agent_tham_dinh(
+            ten, muc, st["tep"], st.get("loai", "de_cuong"), st["study"],
+            str(tm / f"tra_loi_tham_dinh_{ten}.json")), {"muc": _mu(muc)})} for ten, muc in nhom.items()}
+    thieu = [ten for ten, v in st["viec_tham_dinh"].items() if not Path(v["tra_loi"]).exists()]
+    if thieu:
+        print(f"🤝 Chờ agent thẩm định: {', '.join(thieu)} — chạy «viec-agent» để xem phiếu việc.")
+        return CHO_AGENT
+    ct = st["chu_tich"]
+    theo_id = {f["id"]: f for f in ct.get("giu") or []}
+    bac, ghi = set(), {}
+    for ten, v in st["viec_tham_dinh"].items():
+        try:
+            pd = xac_minh_agent(json.loads(Path(v["tra_loi"]).read_text(encoding="utf-8")), v["muc"], van)
+        except (OSError, ValueError, API.LoiApi) as exc:
+            ghi[ten] = {"hop_le": False, "ly_do": f"trả lời không đọc được: {exc}"[:200]}
+            continue
+        am = [m for m in v["muc"] if m["nhom"] == "kiem_soat_am"]
+        hop_le = all(pd[m["id"]]["ket_qua"] == "sai" for m in am)
+        ghi[ten] = {"hop_le": hop_le, "phan_dinh": pd,
+                    "ly_do": "đạt đối chứng âm" if hop_le else "phán sai đối chứng âm — không áp phán quyết của agent"}
+        if hop_le:
+            bac |= {m["goc"] for m in v["muc"] if m["nhom"] == "nhan_xet" and pd[m["id"]]["ket_qua"] == "sai"}
+    for gid in bac:
+        f = theo_id.get(gid)
+        if f:
+            ten = next(t for t, v in st["viec_tham_dinh"].items() if any(m.get("goc") == gid for m in v["muc"]))
+            m = next(m for m in st["viec_tham_dinh"][ten]["muc"] if m.get("goc") == gid)
+            ct.setdefault("loai_agent", []).append({**f, "agent": ten,
+                                                    "phan_quyet_agent": ghi[ten]["phan_dinh"][m["id"]]})
+    ct["giu"] = [f for f in ct.get("giu") or [] if f["id"] not in bac]
+    st["tham_dinh_agent"] = ghi
+    st["buoc"] = "xong"
+    print(f"✅ Agent thẩm định xong: bác {len(bac)} nhận xét có chứng minh; agent không hợp lệ: "
+          f"{', '.join(t for t, g in ghi.items() if not g['hop_le']) or 'không'}.")
+    return 0
+
+
+def loi_nhan_agent_bien_tap(ten: str, vd: Sequence[Dict[str, Any]], tep: str, loai: str, study: str,
+                            tra_loi: str) -> str:
+    return (f"Bạn là agent `{ten}` của hệ, BIÊN TẬP {LOAI_TAI_LIEU[loai]['ten']} của đề tài «{study}» theo các vấn đề "
+            f"Hội đồng Khoa học máy đã giữ. Đọc tài liệu: `{tep}`. KHÔNG sửa tệp trực tiếp — chỉ đề xuất thay thế; "
+            "máy áp qua rào liêm chính. Được dùng công cụ của hệ để tra cứu/tính lại trước khi viết.\n"
+            + loi_nhan_bien_tap(vd) + f"\nGhi DUY NHẤT JSON trên vào `{tra_loi}`.")
+
+
+def lap_viec_bien_tap(st: Dict[str, Any], vd: Sequence[Dict[str, Any]], out_dir: Path) -> Dict[str, Any]:
+    chu = {t["ma"]: (TAC_NHAN_BIEN_TAP.get(t["ma"]) or (t.get("tac_nhan") or ["viet-ban-thao"])[0]) for t in _ds_tv(st)}
+    nhom: Dict[str, List[Dict[str, Any]]] = {}
+    for f in vd:
+        nhom.setdefault(chu.get(f.get("thanh_vien"), "viet-ban-thao"), []).append(f)
+    tm = thu_muc_viec(out_dir, st)
+    return {ten: {"ids": [f["id"] for f in ds], **ghi_viec(tm, "bien_tap", ten, loi_nhan_agent_bien_tap(
+        ten, ds, st["tep"], st.get("loai", "de_cuong"), st["study"], str(tm / f"tra_loi_bien_tap_{ten}.json")),
+        {"van_de": ds})} for ten, ds in nhom.items()}
+
+
+def gop_tra_loi_bien_tap(viec: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Đủ trả lời ⇒ gộp thành MỘT bản đề xuất (cùng khuôn biên tập viên API); thiếu ⇒ None."""
+    if any(not Path(v["tra_loi"]).exists() for v in viec.values()):
+        return None
+    sua: List[Any] = []
+    for v in viec.values():
+        try:
+            dl = json.loads(Path(v["tra_loi"]).read_text(encoding="utf-8"))
+            sua += [m for m in (dl.get("sua") or []) if isinstance(m, dict) and str(m.get("id")) in set(v["ids"])]
+        except (OSError, ValueError, AttributeError):
+            continue
+    return {"sua": sua}
+
+
+def loi_nhan_tham_dinh_dau_ra(tep: str, bien_ban: str, loai: str, study: str, tra_loi: str) -> str:
+    return ("Bạn là agent `tham-dinh-dau-ra`. CHỐT KIỂM CUỐI trước khi trình bác sĩ "
+            f"{LOAI_TAI_LIEU[loai]['ten']} của đề tài «{study}» mà Hội đồng Khoa học máy vừa thông qua. Đọc tài liệu "
+            f"`{tep}` và biên bản `{bien_ban}`. Soi "
+            "Lớp 1 LIÊM CHÍNH R1–R7 của bạn (nguồn · PII · vượt cổng · tự gán mức · tách hai trục · nhãn [CẦN…] · "
+            "disclaimer theo đúng loại tài liệu). Mỗi lỗi phải trích NGUYÊN VĂN + số dòng (máy đối chiếu). Không sửa "
+            f"tài liệu. Ghi DUY NHẤT JSON vào `{tra_loi}`: " + json.dumps(
+                {"ket_qua": "DAT|TRA_VE_SUA", "loi": [{"ma": "R1", "dong": 12, "trich": "…", "mo_ta": "…",
+                                                       "de_xuat": "…"}]}, ensure_ascii=False))
+
+
+def buoc_tham_dinh_dau_ra(st: Dict[str, Any], van: str, out_dir: Path) -> int:
+    """«ĐẠT» chỉ thành «trình bác sĩ» khi `tham-dinh-dau-ra` trả ĐẠT, hoặc mọi lỗi nó nêu không xác minh được."""
+    tm = thu_muc_viec(out_dir, st)
+    if not st.get("viec_dau_ra"):
+        st["viec_dau_ra"] = ghi_viec(tm, "dau_ra", "tham-dinh-dau-ra", loi_nhan_tham_dinh_dau_ra(
+            st["tep"], str(thu_muc_hd(out_dir) / (st.get("bien_ban") or "")), st.get("loai", "de_cuong"), st["study"],
+            str(tm / "tra_loi_dau_ra_tham-dinh-dau-ra.json")), {"tep": st["tep"]})
+    p_tl = Path(st["viec_dau_ra"]["tra_loi"])
+    if not p_tl.exists():
+        print("🤝 Chờ agent tham-dinh-dau-ra — chạy «viec-agent» để xem phiếu việc.")
+        return CHO_AGENT
+    try:
+        dl = json.loads(p_tl.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        dl = {}
+    cac_dong = van.splitlines()
+    loi = [x for x in (dl.get("loi") or []) if isinstance(x, dict)
+           and _trong_cua_so(str(x.get("trich") or ""), int(x.get("dong") or 0) if str(x.get("dong") or "").isdigit()
+                             else 0, cac_dong)]
+    st["ket_qua_dau_ra"] = {"ket_qua": dl.get("ket_qua"), "loi_xac_minh": loi,
+                            "loi_khong_xac_minh": len(dl.get("loi") or []) - len(loi)}
+    if dl.get("ket_qua") not in ("DAT", "TRA_VE_SUA"):
+        print("⛔ tham-dinh-dau-ra trả lời không hợp lệ — xoá tệp trả lời và giao lại.")
+        return 1
+    st["trinh_bac_si"] = not loi
+    print("✅ tham-dinh-dau-ra: ĐẠT — tài liệu được trình bác sĩ." if not loi else
+          f"⛔ tham-dinh-dau-ra: {len(loi)} lỗi liêm chính đã xác minh — CHƯA trình bác sĩ (xem biên bản).")
+    return 0 if not loi else 1
+
+
+def loi_nhan_agent_tham_tra(ten: str, tv: Dict[str, Any], ds: Sequence[Dict[str, Any]], khoang: Sequence[Sequence[int]],
+                            tep: str, study: str, tra_loi: str) -> str:
+    return (f"Bạn là agent `{ten}` của hệ, thay mặt ghế «{tv.get('vai')}» THẨM TRA việc chỉnh sửa tài liệu của đề tài "
+            f"«{study}». Tài liệu đã sửa: `{tep}` (số dòng tính từ 1). Dùng công cụ của hệ khi cần — gợi ý: "
+            f"{CONG_CU_GOI_Y.get(ten, 'công cụ hệ')}.\n"
+            + loi_nhan_tham_tra(tv, ds, khoang).replace("Tài liệu ở trên là bản ĐÃ SỬA", "Tài liệu trên là bản ĐÃ SỬA")
+            + f"\nGhi DUY NHẤT JSON trên vào `{tra_loi}`; không sửa tài liệu, không ghi tệp khác.")
+
+
+def buoc_tham_tra_agent(st: Dict[str, Any], van: str, out_dir: Path) -> int:
+    """Thẩm tra (từ vòng 2) bằng agent SỞ HỮU chuyên môn của từng ghế — cùng luật máy-kiểm như thẩm tra API."""
+    tm = thu_muc_viec(out_dir, st)
+    theo_tv: Dict[str, List[Dict[str, Any]]] = {}
+    for f in st.get("ds_yeu_cau") or []:
+        theo_tv.setdefault(f["thanh_vien"], []).append(f)
+    tv_theo_ma = {t["ma"]: t for t in _ds_tv(st)}
+    chu = _ma_tv_theo_tac_nhan(st)
+    if not st.get("viec_tham_tra"):
+        if not theo_tv:
+            st["tham_tra"] = {"da_giai_quyet": [], "chua_giai_quyet": [], "can_du_kien": [], "loi_moi": [], "loai": []}
+            st["buoc"] = "xong"
+            return 0
+        viec = {}
+        for ma, ds in theo_tv.items():
+            ten = chu.get(ma) or TAC_NHAN_BIEN_TAP.get(ma) or "viet-ban-thao"
+            tv = tv_theo_ma.get(ma) or {"ma": ma, "vai": "Chốt kiểm đầu ra" if ma == "dau_ra" else ma}
+            viec[ma] = {"ds": ds, **ghi_viec(tm, "tham_tra", f"{ma}-{ten}", loi_nhan_agent_tham_tra(
+                ten, tv, ds, st.get("khoang") or [], st["tep"], st["study"],
+                str(tm / f"tra_loi_tham_tra_{ma}-{ten}.json")), {"yeu_cau": ds})}
+        st["viec_tham_tra"] = viec
+    thieu = [ma for ma, v in st["viec_tham_tra"].items() if not Path(v["tra_loi"]).exists()]
+    if thieu:
+        print(f"🤝 Chờ agent thẩm tra: {', '.join(st['viec_tham_tra'][m]['agent'] for m in thieu)} — «viec-agent».")
+        return CHO_AGENT
+    gop: Dict[str, Any] = {"da_giai_quyet": [], "chua_giai_quyet": [], "can_du_kien": [], "loi_moi": [], "loai": []}
+    for ma, v in st["viec_tham_tra"].items():
+        try:
+            kq = xac_minh_tham_tra(ma, json.loads(Path(v["tra_loi"]).read_text(encoding="utf-8")), v["ds"], van,
+                                   st.get("khoang") or [], st.get("vtq_ids") or [])
+        except (OSError, ValueError, API.LoiApi) as exc:   # trả lời hỏng ⇒ chưa giải quyết (fail-safe), ghi lý do
+            kq = {"ket": {str(f["id"]): {**f, "ket_qua": "chua_giai_quyet", "nguoi_tham_tra": ma,
+                                         "ly_do_tham_tra": f"trả lời agent không đọc được: {exc}"[:200]}
+                          for f in v["ds"]}, "loi_moi": [], "loai": []}
+        for x in kq["ket"].values():
+            gop[x["ket_qua"]].append(x)
+        gop["loi_moi"] += kq["loi_moi"]
+        gop["loai"] += kq["loai"]
+    for i, g in enumerate(gop["loi_moi"], 1):
+        g["id"] = f"N{st.get('vong', 2)}_{i:02d}"
+    st["tham_tra"] = gop
+    st["buoc"] = "xong"
+    print(f"✅ Agent thẩm tra xong: {len(gop['da_giai_quyet'])} đã giải quyết · {len(gop['chua_giai_quyet'])} chưa · "
+          f"{len(gop['can_du_kien'])} cần dữ kiện · {len(gop['loi_moi'])} lỗi mới.")
+    return 0
+
+
+TRONG_TAI_AGENT = "trong-tai-tranh-bien"
+
+
+def viec_agent_dang_cho(goc: Path, study: str) -> List[Dict[str, str]]:
+    """Mọi phiếu việc agent còn thiếu trả lời của đề tài (Claude Code đọc để giao)."""
+    ra = []
+    for p_st in (goc / "exports" / study / THU_MUC).glob("trang_thai_*.json"):
+        st = _doc_st(p_st) or {}
+        for v in (list((st.get("viec_tham_dinh") or {}).values()) + list((st.get("viec_bien_tap") or {}).values())
+                  + list((st.get("viec_tham_tra") or {}).values())
+                  + ([st["viec_dau_ra"]] if st.get("viec_dau_ra") else [])):
+            if not Path(v["tra_loi"]).exists():
+                ra.append({k: v[k] for k in ("agent", "loai_viec", "loi_nhan", "tra_loi")})
+    for p_tt in (goc / "exports" / study / THU_MUC / "hieu_chuan").glob("*/bao_nham_trang_thai.json"):
+        tt = _doc_st(p_tt) or {}
+        v = tt.get("viec_trong_tai")
+        if v and not Path(v["tra_loi"]).exists():
+            ra.append({k: v[k] for k in ("agent", "loai_viec", "loi_nhan", "tra_loi")})
+    return ra
+
+
+def hoan_nguyen_vuot_quyen(van_goc: str, van_sua: str, sap_khoa: bool,
+                           dong_bi_neu: Sequence[int] = ()) -> Tuple[str, List[Dict[str, Any]]]:
+    """Trả về bản gốc mọi KHỐI đổi (difflib) chạm vùng khoá (của bản gốc hoặc bản sửa) hoặc chạm dòng chốt kiểm đã nêu
+    (số dòng của bản SỬA, ±3). Giữ nguyên các khối sửa khác. Trả (văn bản mới, nhật ký khối đã hoàn nguyên)."""
+    import difflib  # noqa: PLC0415
+
+    a, b = van_goc.splitlines(), van_sua.splitlines()
+    ka, kb = vung_khoa(van_goc, sap_khoa), vung_khoa(van_sua, sap_khoa)
+    neu = set()
+    for d in dong_bi_neu:
+        neu |= set(range(max(1, int(d) - CUA_SO_DONG), int(d) + CUA_SO_DONG + 1))
+    ra: List[str] = []
+    nk: List[Dict[str, Any]] = []
+    for tag, i1, i2, j1, j2 in difflib.SequenceMatcher(None, a, b, autojunk=False).get_opcodes():
+        if tag == "equal":
+            ra += b[j1:j2]
+            continue
+        cham_khoa = any(ka[i] for i in range(i1, i2)) or any(kb[j] for j in range(j1, j2)) or (
+            i1 == i2 and 0 < i1 <= len(ka) and ka[i1 - 1])
+        cham_neu = any((j + 1) in neu for j in range(j1, max(j2, j1 + 1)))
+        if cham_khoa or cham_neu:
+            ra += a[i1:i2]
+            nk.append({"dong_ban_sua": [j1 + 1, j2], "dong_ban_goc": [i1 + 1, i2],
+                       "ly_do": "chạm nội dung đã khoá" if cham_khoa else "dòng chốt kiểm đầu ra đã nêu",
+                       "doan_sua": "\n".join(b[j1:j2])[:400], "doan_goc": "\n".join(a[i1:i2])[:400]})
+        else:
+            ra += b[j1:j2]
+    return "\n".join(ra) + ("\n" if van_sua.endswith("\n") else ""), nk
+
+
 # ── CLI ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
 def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = REPO) -> int:
     ap = argparse.ArgumentParser(description="Hội đồng Khoa học máy cấp đề tài (Claude Batch API).")
     sub = ap.add_subparsers(dest="lenh", required=True)
+    va = sub.add_parser("viec-agent", help="phiếu việc agent còn chờ (Claude Code đọc để giao)")
+    va.add_argument("--study", required=True)
     k = sub.add_parser("ke-hoach", help="in/ghi văn bản quy chế (khoá trước khi họp)")
     k.add_argument("--ghi", action="store_true", help=f"ghi {TEP_QUY_CHE}")
+    cd = sub.add_parser("chup-doctrine", help="chụp doctrine agent theo ghế (đổi quy chế — có chủ ý)")
+    cd.add_argument("--ghi", action="store_true", help=f"ghi {TEP_DOCTRINE}")
     for ten in ("uoc-tinh", "hop", "bien-ban", "hieu-chuan", "vong-kin", "do-bao-nham"):
         p = sub.add_parser(ten)
         p.add_argument("--study", required=True)
@@ -1926,7 +2633,13 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
         p.add_argument("--tep", type=Path, help="tài liệu (mặc định: tệp chuẩn của loại tài liệu của đề tài)")
         p.add_argument("--model", default=MODEL_MAC_DINH)
         if ten == "do-bao-nham":
-            p.add_argument("--goi-api", action="store_true", help="nộp/lấy batch trọng tài (TÍNH PHÍ)")
+            p.add_argument("--goi-api", action="store_true", help="trọng tài API: nộp/lấy batch (TÍNH PHÍ)")
+            p.add_argument("--trong-tai", choices=("agent", "api"), default="agent",
+                           help="agent = agent Claude Code (mặc định, không tốn tín dụng API); api = Fable (tính phí)")
+        if ten in ("hop", "vong-kin"):
+            p.add_argument("--ket-hop", action="store_true",
+                           help="chế độ KẾT HỢP: agent thẩm định/biên tập/thẩm tra/chốt cuối (mặc định của vong-kin)")
+            p.add_argument("--chi-api", action="store_true", help="vong-kin chỉ dùng API (chế độ cũ)")
         if ten == "hop":
             p.add_argument("--goi-api", action="store_true", help="nộp/lấy batch (TÍNH PHÍ)")
             p.add_argument("--lam-lai", action="store_true", help="bỏ trạng thái cũ của tài liệu này, họp lại")
@@ -1942,6 +2655,18 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
             g.add_argument("--tao", action="store_true", help="tạo bản sao cài lỗi + đáp án (0 gọi API)")
             g.add_argument("--cham", action="store_true", help="chấm độ nhạy sau khi hội đồng họp bản sao")
     a = ap.parse_args(argv)
+    if a.lenh == "viec-agent":
+        ds = viec_agent_dang_cho(goc, a.study)
+        print(json.dumps(ds, ensure_ascii=False, indent=1))
+        return 0 if not ds else CHO_AGENT
+    if a.lenh == "chup-doctrine":
+        moi_bc, cu_bc = chup_doctrine(goc), doc_doctrine(goc)
+        doi = sorted(t for t in moi_bc if (cu_bc.get(t) or {}).get("sha_tep") != moi_bc[t]["sha_tep"])
+        print(f"Doctrine {len(moi_bc)} agent; khác bản chụp hiện hành: {', '.join(doi) or 'không'}.")
+        if a.ghi:
+            _ghi_json(goc / TEP_DOCTRINE, moi_bc)
+            print(f"📸 Đã ghi {TEP_DOCTRINE} — quy chế đổi SHA, phải hiệu chuẩn lại.")
+        return 0
     if a.lenh == "ke-hoach":
         vb = van_ban_quy_che()
         if a.ghi:
@@ -1960,7 +2685,7 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
     hc_dir = thu_muc_hd(out_dir) / "hieu_chuan" / loai
     if a.lenh == "do-bao-nham":
         try:
-            return _do_bao_nham(goc, out_dir, a.study, loai, a.goi_api, client, a.model)
+            return _do_bao_nham(goc, out_dir, a.study, loai, a.goi_api, client, a.model, a.trong_tai)
         except API.LoiApi as exc:
             print(f"❌ {exc}", file=sys.stderr)
             return 2
@@ -1999,6 +2724,7 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
             return 1
         kq = cham_hieu_chuan(da["dap_an"], st)
         kq.update(sha_quy_che=da["sha_quy_che"], quy_che=PHIEN_BAN_QUY_CHE, sha_goc=da.get("sha_goc"), loai=loai,
+                  ket_hop=bool(st.get("ket_hop")),
                   thiet_ke=da.get("thiet_ke"), ngay=dt.date.today().isoformat(),
                   dat=(kq["do_nhay"] is not None and kq["do_nhay"] >= DO_NHAY_TOI_THIEU
                        and kq["so_loi_cai"] >= SO_LOI_CAI_TOI_THIEU and kq["bat_dac_thu"] is not False))
@@ -2027,9 +2753,12 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
     try:
         if st is None:
             st = khoi_tao(a.study, out_dir, tep, a.model, loai)
+            st["ket_hop"] = bool(getattr(a, "ket_hop", False)) or (a.lenh == "vong-kin"
+                                                                   and not getattr(a, "chi_api", False))
         la_ban_chinh = tep.resolve() == tep_mac_dinh(a.study, goc, loai).resolve()
         if la_ban_chinh:
-            st["hieu_luc"], st["hieu_luc_ly_do"] = hieu_luc_hieu_chuan(out_dir, st["model"], loai)
+            st["hieu_luc"], st["hieu_luc_ly_do"] = hieu_luc_hieu_chuan(out_dir, st["model"], loai,
+                                                                       bool(st.get("ket_hop")))
         if a.lenh == "uoc-tinh":
             u = uoc_tinh(st, van)
             print(f"Hội đồng: {u['so_yeu_cau']} yêu cầu ({len(_ds_tv(st))} thành viên + chủ tịch), model {u['model']}, "
@@ -2037,7 +2766,8 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
                   f"(Batch −50%, cache tài liệu); trần ước tối đa {u['usd_toi_da']} USD. 0 gọi API.")
             return 0
         if a.lenh == "hop":
-            ma = _chay_buoc(st, van, a.goi_api, client)
+            ma = (buoc_tham_dinh_agent(st, van, out_dir) if st["buoc"] == "tham_dinh_agent"
+                  else _chay_buoc(st, van, a.goi_api, client))
             if a.goi_api or st.get("batch"):
                 _ghi_json(p_st, st)
             return ma
