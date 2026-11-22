@@ -79,7 +79,7 @@ Không sửa đề cương nộp, SAP hay gói G10 đã ký. Công thức `NhomT
 - `co_cls`: mã 1/0 theo Bảng E.1 + truy vấn mềm với a3/a4 (mã 7).
 - Biến phái sinh: `_bien-phai-sinh.csv` (12 biến; định nghĩa chép từ Bảng E.1, SAP §2/§4/§6, đề cương 4.3.2).
 - Sổ theo dõi chọn mẫu và từ chối (4.4.2): khuôn `_so-chon-mau-tu-choi.csv`.
-  - `loai_dong` = `tong_hop` (mỗi ngày × khung giờ: `so_moi`, `so_dong_y`, `so_tu_choi`, `ma_dieu_tra_vien`) hoặc
+  - `loai_dong` = `tong_hop` (mỗi ngày × khung giờ: `so_duoc_chon`, `so_khong_vao_kham`, `so_khong_du_tieu_chuan`, `so_khong_gap`, `so_moi`, `so_dong_y`, `so_tu_choi`, `ma_dieu_tra_vien` — đủ số theo từng mã kết quả của đề cương 2.5.2 cho bảng đáp ứng SAP §3) hoặc
     `tu_choi` (mỗi người từ chối: `nhom_tuoi_uoc_luong` 1 = dưới 40 · 2 = 40–59 · 3 = từ 60 trở lên; `gioi` 1 = nam ·
     2 = nữ; `ly_do_tu_neu` chỉ ghi khi người bệnh tự nêu, không hỏi thêm).
   - `ngay_khao_sat` dạng YYYY-MM-DD; `khunggio_kham` mã 1–4 như bộ biến. KHÔNG ghi thông tin định danh.
