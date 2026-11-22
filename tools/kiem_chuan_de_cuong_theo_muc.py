@@ -32,6 +32,7 @@ Bản quyền: nguyên văn STROBE/RECORD (CC BY) lấy từ `chuan_bao_cao_item
 Medicine 2021) KHÔNG lưu nguyên văn — chỉ mã mục, chủ đề và tiêu chí do hệ viết.
 
 Lệnh:  python3 tools/kiem_chuan_de_cuong_theo_muc.py --study <mã> [--tep <md>] [--chi-tiet] [--json]
+       [--che-do ban_thao [--nop]]   (K18: đối chiếu BẢN THẢO bài báo — xem `tieu_chi_ban_thao.py`)
 Mã thoát: 0 không thiếu mục bắt buộc/kế hoạch · 1 có mục thiếu · 2 thiếu đề cương · 3 tham số sai.
 """
 from __future__ import annotations
@@ -43,7 +44,7 @@ import sys
 import unicodedata
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Callable, Dict, List, Optional, Sequence, Tuple
 
 for _luong in (sys.stdout, sys.stderr):
     try:
@@ -192,6 +193,14 @@ class YeuTo:
     mau: str
     khi: Optional[str] = None
     de_muc: bool = False  # yếu tố «có tiểu mục» — được khớp cả dòng đề mục (vd «2.1.2. Tiêu chuẩn loại trừ»)
+    #: (K18, bản thảo) yếu tố là SỐ LIỆU KẾT QUẢ — bản thảo chưa có số liệu thì bỏ qua và mục báo «chưa đo được»
+    so_lieu: bool = False
+    #: (K18) yếu tố CẤM: biểu thức không được xuất hiện trong câu khẳng định không trích dẫn, không rào đón
+    #: (vd câu suy nhân quả từ thiết kế cắt ngang). Có ⇒ mục thiếu, kèm dòng bằng chứng.
+    cam: bool = False
+    #: (K18) NHÃN CẤU TRÚC («**Kết quả:**» của tóm tắt) — khớp cả khi nội dung sau nhãn còn ô trống; nội dung do yếu tố
+    #: khác đo (vd `so_lieu`)
+    nhan: bool = False
 
 
 @dataclass(frozen=True)
@@ -208,6 +217,8 @@ class MucKiem:
     ly_do_dieu_kien: str = ""
     cung_doan: bool = False  # mọi yếu tố phải cùng một đoạn văn hoặc một dòng bảng
     chan: bool = True  # False = chuẩn chưa đối chiếu bảng gốc: mục thiếu chỉ báo `canh_bao`, không làm K17 đỏ
+    #: lý do không chặn khác «chưa đối chiếu bảng gốc» (K18: mục chuẩn ghi «Consider…» — khuyến nghị, không bắt buộc)
+    ly_do_khong_chan: str = ""
 
 
 @dataclass
@@ -217,7 +228,7 @@ class KetQua:
     chu_de: str
     tieu_chi: str
     muc_do: str
-    trang_thai: str  # dat · thieu · canh_bao · khong_ap_dung · chua_do · bao_cao
+    trang_thai: str  # dat · thieu · canh_bao · khong_ap_dung · chua_do · bao_cao  (chua_do theo mục: K18 bản thảo)
     bang_chung: List[str] = field(default_factory=list)
     thieu: List[str] = field(default_factory=list)
     vi_tri: List[str] = field(default_factory=list)
@@ -266,8 +277,9 @@ HON_HOP = r"phương pháp hỗn hợp|hỗn hợp (định tính|định lượ
 _TK_STROBE = {"cross_sectional": "cat_ngang", "cohort": "thuan_tap", "case_control": "benh_chung"}
 
 
-def _y(ten: str, mau: str, khi: Optional[str] = None, de_muc: bool = False) -> YeuTo:
-    return YeuTo(ten, mau, khi, de_muc)
+def _y(ten: str, mau: str, khi: Optional[str] = None, de_muc: bool = False, *, so_lieu: bool = False,
+       cam: bool = False, nhan: bool = False) -> YeuTo:
+    return YeuTo(ten, mau, khi, de_muc, so_lieu, cam, nhan)
 
 
 # ─────────────── STROBE 2007: tiêu chí kiểm ở ĐỀ CƯƠNG (khoá = (mã, thiết kế|chung)) ───────────────
@@ -381,8 +393,9 @@ _STROBE_TIEU_CHI: Dict[Tuple[str, str], tuple] = {
                                                                               " tác"),
     ("12c", "chung"): (("phan_tich", "quan_ly_dl"), "bat_buoc", "Nêu cách xử lý dữ liệu thiếu.",
                        (_y("dữ liệu thiếu", r"(dữ liệu|số liệu|giá trị) thiếu|thiếu (dữ liệu|số liệu)|missing"),
-                        _y("phương pháp xử lý", r"ca đầy đủ|complete case|đa quy|điền khuyết|multiple imputation|MICE|"
-                                               r"trường hợp đủ dữ liệu|gán|loại khỏi|phân tích độ nhạy")),
+                        _y("phương pháp xử lý", r"ca đầy đủ|complete case|đa quy|điền khuyết|imputation|MICE|"
+                                               r"trường hợp đủ dữ liệu|gán|loại khỏi|phân tích (độ nhạy|nhạy cảm)|"
+                                               r"bộ (dữ liệu )?đầy đủ")),
                                                None, "", True),
     ("12d", "thuan_tap"): (("phan_tich",), "bat_buoc", "Nêu cách xử lý mất theo dõi.",
                            (_y("xử lý mất theo dõi", r"mất theo dõi|kiểm duyệt|censor"),)),
@@ -399,21 +412,22 @@ _STROBE_TIEU_CHI: Dict[Tuple[str, str], tuple] = {
                                                                       r"|sandwich|ngẫu nhiên theo"),),
                            CUM, "có chọn mẫu cụm/phân tầng hoặc gom cụm"),
     ("12e", "chung"): (("phan_tich", "du_kien_kq"), "bat_buoc", "Mô tả các phân tích độ nhạy.",
-                       (_y("phân tích độ nhạy", r"phân tích độ nhạy|sensitivity"),)),
+                       (_y("phân tích độ nhạy", r"phân tích (độ nhạy|nhạy cảm)|sensitivity"),)),
     ("13a", "chung"): (("du_kien_kq", "quy_trinh", "chon_mau"), "ke_hoach",
                        "Lên kế hoạch báo cáo số người ở từng giai đoạn (đủ tiêu chuẩn, tham gia, phân tích).",
                        (_y("số người từng giai đoạn/sơ đồ", r"sơ đồ|lưu đồ|số (người|đối tượng|hồ sơ|lượt).{0,60}"
                                                            r"(đủ tiêu chuẩn|từ chối|bị loại|tham gia|phân tích)"),)),
     ("13b", "chung"): (("du_kien_kq", "quy_trinh", "chon_mau"), "ke_hoach",
                        "Lên kế hoạch ghi lý do không tham gia ở từng giai đoạn.",
-                       (_y("lý do không tham gia", r"lý do (từ chối|không tham gia|bị loại|loại)"),)),
+                       (_y("lý do không tham gia", r"lý do (từ chối|không tham gia|bị loại|loại)|"
+                                                   r"(từ chối|không tham gia|bị loại)[^.]{0,160}lý do"),)),
     ("13c", "chung"): ((), "bao_cao", "Cân nhắc dùng sơ đồ luồng khi báo cáo.", ()),
     ("14a", "chung"): (("du_kien_kq",), "ke_hoach", "Lên kế hoạch bảng đặc điểm người tham gia và yếu tố nhiễu.",
                        (_y("bảng đặc điểm", r"Đặc điểm (chung|đối tượng|nền)|đặc điểm của", de_muc=True),)),
     ("14b", "chung"): (("du_kien_kq", "phan_tich"), "ke_hoach",
                        "Lên kế hoạch báo cáo số người thiếu dữ liệu theo từng biến.",
-                       (_y("dữ liệu thiếu theo biến", r"thiếu.{0,40}(từng|mỗi|theo) biến|"
-                                                      r"(từng|mỗi) biến.{0,40}thiếu"),)),
+                       (_y("dữ liệu thiếu theo biến", r"thiếu.{0,40}(từng|mỗi|theo) (biến|mục)|"
+                                                      r"(từng|mỗi) (biến|mục).{0,40}thiếu"),)),
     ("14c", "thuan_tap"): (("du_kien_kq", "phan_tich"), "ke_hoach", "Lên kế hoạch tóm tắt thời gian theo dõi.",
                            (_y("thời gian theo dõi", r"thời gian theo dõi|người[\s-]năm"),)),
     ("15", "cat_ngang"): (("du_kien_kq",), "ke_hoach", "Lên kế hoạch báo cáo số ca/tỷ lệ kết cục.",
@@ -548,10 +562,10 @@ _CROSS_TIEU_CHI: Dict[str, tuple] = {
                                                 r"chống (trùng|tham gia nhiều lần)|đối chiếu"),)),
     "8": ("Study preparation", ("quy_trinh", "sai_so"), "bat_buoc",
           "Mô tả chuẩn bị trước khảo sát (tập huấn điều tra viên, thông báo khảo sát).",
-          (_y("tập huấn/chuẩn bị", r"tập huấn|huấn luyện|hướng dẫn điều tra viên|chuẩn bị"),)),
+          (_y("tập huấn/chuẩn bị", r"tập huấn|huấn luyện|hướng dẫn điều tra viên|chuẩn bị|chạy thử|diễn tập"),)),
     "9a": ("Ethical approval and consent", ("dao_duc",), "bat_buoc",
            "Nêu chấp thuận của Hội đồng Đạo đức và đồng thuận tham gia.",
-           (_y("Hội đồng Đạo đức", r"Hội đồng (Đạo đức|đạo đức)"),
+           (_y("Hội đồng Đạo đức", r"Hội đồng (Đạo đức|đạo đức|Y đức|y đức)|ethics committee|\bIRB\b"),
             _y("đồng thuận", r"đồng (ý|thuận)|tự nguyện"))),
     "9c": ("Anonymity and confidentiality", ("dao_duc", "quan_ly_dl"), "bat_buoc",
            "Nêu tính ẩn danh, bảo mật và cơ chế chống truy cập trái phép.",
@@ -570,8 +584,8 @@ _CROSS_TIEU_CHI: Dict[str, tuple] = {
             "Nêu tỷ lệ thiếu, cơ chế thiếu (MCAR/MAR/MNAR) và phương pháp xử lý.",
             (_y("cơ chế thiếu", r"\bMCAR\b|\bMAR\b|\bMNAR\b|ngẫu nhiên hoàn toàn|thiếu ngẫu nhiên|cơ chế|"
                                 r"kiểu dữ liệu thiếu"),
-             _y("phương pháp xử lý", r"đa quy|điền khuyết|multiple imputation|MICE|ca đầy đủ|trường hợp đủ dữ liệu|"
-                                    r"complete case|gán")), None, "", True),
+             _y("phương pháp xử lý", r"đa quy|điền khuyết|imputation|MICE|ca đầy đủ|trường hợp đủ dữ liệu|"
+                                    r"complete case|gán|bộ (dữ liệu )?đầy đủ")), None, "", True),
     "10d": ("Non-response error", ("phan_tich", "sai_so", "quy_trinh"), "bat_buoc",
             "Nêu cách xử lý sai số do không trả lời.",
             (_y("không trả lời/từ chối", r"không (trả lời|đáp ứng|tham gia)|từ chối|tỷ lệ đáp ứng"),)),
@@ -583,7 +597,7 @@ _CROSS_TIEU_CHI: Dict[str, tuple] = {
             (_y("trọng số/điều chỉnh", r"trọng số|điểm xu hướng|propensity|hậu phân tầng|"
                                        r"không (dùng|áp dụng) trọng số"),)),
     "10g": ("Sensitivity analysis", ("phan_tich",), "bat_buoc", "Mô tả phân tích độ nhạy.",
-            (_y("phân tích độ nhạy", r"phân tích độ nhạy"),)),
+            (_y("phân tích độ nhạy", r"phân tích (độ nhạy|nhạy cảm)"),)),
     "11c": ("Response rate", ("du_kien_kq", "phan_tich", "quy_trinh"), "ke_hoach",
             "Lên kế hoạch báo cáo tỷ lệ đáp ứng kèm định nghĩa hoặc công thức tính.",
             (_y("tỷ lệ đáp ứng", r"tỷ lệ (đáp ứng|trả lời|tham gia)"),
@@ -738,7 +752,12 @@ def chuan_ap_dung(thiet_ke: str, md: str) -> List[Tuple[str, str]]:
 
 # ───────────────────────────── chấm ─────────────────────────────
 _PHU_DINH_TRUOC = re.compile(r"\b(không|chưa|ngoài phạm vi)\b[^.;:|]{0,60}$", re.IGNORECASE)
-_PHU_DINH_SAU = re.compile(r"^[^.;|]{0,160}(không áp dụng|ngoài phạm vi|không thuộc phạm vi)", re.IGNORECASE)
+#: (22/11/2026) điều kiện ở thể giả định — «matching nếu cần», «… nếu có» (bảng sai lệch mẫu của bộ sinh G7 bản thảo
+#: thuần tập) — chưa phải việc đề tài làm
+_GIA_DINH_SAU = re.compile(r"^[^.;|]{0,40}\b(nếu|khi) (cần|có thể|phù hợp|cần thiết)\b", re.IGNORECASE)
+# «Cấu phần định tính có thể bổ trợ … và không bắt buộc trong đề tài này» (bài báo giao thức C1a) từng kích hoạt GRAMMS
+_PHU_DINH_SAU = re.compile(r"^[^.;|]{0,160}(không áp dụng|ngoài phạm vi|không thuộc phạm vi|"
+                           r"không bắt buộc trong (đề tài|nghiên cứu))", re.IGNORECASE)
 
 
 def co_dieu_kien(mau: str, md: str) -> bool:
@@ -748,7 +767,7 @@ def co_dieu_kien(mau: str, md: str) -> bool:
         dau = md.rfind("\n", 0, m.start()) + 1
         cuoi = md.find("\n", m.end())
         truoc, sau = md[dau:m.start()], md[m.end():cuoi if cuoi >= 0 else len(md)]
-        if _PHU_DINH_TRUOC.search(truoc) or _PHU_DINH_SAU.search(sau):
+        if _PHU_DINH_TRUOC.search(truoc) or _PHU_DINH_SAU.search(sau) or _GIA_DINH_SAU.search(sau):
             continue
         # nhãn của ô còn trống («Ghép cặp: ………») không phải quyết định đã có (21/11/2026)
         if o_trong_quanh(truoc + m.group(0) + sau, len(truoc)):
@@ -760,13 +779,27 @@ def co_dieu_kien(mau: str, md: str) -> bool:
 _DE_MUC_MUC_TIEU = re.compile(r"^(?:[\dIVX]+(?:\.\d+)*\.?\s+)?(?:MỤC TIÊU|Câu hỏi|Giả thuyết)", re.IGNORECASE)
 
 
+_PHAM_VI_RE = re.compile(r"@([a-z_]+(?:,[a-z_]+)*):")
+
+
 def dieu_kien(mau: str, md: str, cac_phan: Optional[Sequence[Phan]] = None) -> bool:
     """`co_dieu_kien` với phạm vi: tiền tố «@muc_tieu:» ⇒ chỉ xét các khối có đề mục BẮT ĐẦU bằng «Mục tiêu»/«Câu hỏi»/
-    «Giả thuyết» (không lấy «Bàn luận theo mục tiêu k» hay «Kết quả theo mục tiêu k» của chương kết quả)."""
-    if mau.startswith("@muc_tieu:"):
+    «Giả thuyết» (không lấy «Bàn luận theo mục tiêu k» hay «Kết quả theo mục tiêu k» của chương kết quả).
+
+    (K18, bản thảo) tiền tố «@phuong_phap,ket_qua:» ⇒ chỉ xét các khối mang tiêu đề «⟦phuong_phap⟧»… do
+    `tieu_chi_ban_thao.tach_ban_thao` dựng cho từng chương IMRAD — điều kiện về việc ĐỀ TÀI đã làm không lấy từ câu bàn
+    luận về nghiên cứu khác (22/11/2026: «nhóm chứng» của thử nghiệm CKD-DETECT ở Bàn luận bản thảo BTM từng làm STROBE
+    8 đòi «tương đồng cách đo giữa các nhóm» cho một đề tài cắt ngang không có nhóm so sánh)."""
+    m = _PHAM_VI_RE.match(mau)
+    if m:
+        khoa = m.group(1).split(",")
         cac_phan = cac_phan if cac_phan is not None else tach_phan(md)
-        van = "\n".join(p.van for p in cac_phan if p.tieu_de != "(bìa)" and _DE_MUC_MUC_TIEU.match(p.tieu_de))
-        return co_dieu_kien(mau[len("@muc_tieu:"):], van)
+        if khoa == ["muc_tieu"]:
+            van = "\n".join(p.van for p in cac_phan if p.tieu_de != "(bìa)" and _DE_MUC_MUC_TIEU.match(p.tieu_de))
+        else:
+            nhan = {f"⟦{k}⟧" for k in khoa}
+            van = "\n".join(p.van for p in cac_phan if p.tieu_de in nhan)
+        return co_dieu_kien(mau[m.end():], van)
     return co_dieu_kien(mau, md)
 
 
@@ -831,22 +864,51 @@ def o_trong_quanh(dong: str, vt: int) -> bool:
     return bool(O_TRONG_RE.search(than[dau:min(cuoi) if cuoi else len(than)]))
 
 
-def _tim(mau: str, don_vi: Sequence[Tuple[int, str]]) -> Optional[str]:
+def _tim(mau: str, don_vi: Sequence[Tuple[int, str]], nhan: bool = False) -> Optional[str]:
     """Bằng chứng «dòng N: «…»» của lần khớp đầu tiên trong các đơn vị; None nếu không khớp. Bỏ qua lần khớp nằm trong
-    mệnh đề còn ô trống cho chủ nhiệm điền (`o_trong_quanh`)."""
+    mệnh đề còn ô trống cho chủ nhiệm điền (`o_trong_quanh`) — trừ yếu tố NHÃN cấu trúc (`nhan`)."""
     for so, chu in don_vi:
         for m in re.finditer(mau, chu, _C):
             vi_tri = m.start() + (len(m.group(0)) - len(m.group(0).lstrip()))
             n = chu.count("\n", 0, vi_tri)
             dong_day = chu.split("\n")[n]
-            if o_trong_quanh(dong_day, vi_tri - (chu.rfind("\n", 0, vi_tri) + 1)):
+            if not nhan and o_trong_quanh(dong_day, vi_tri - (chu.rfind("\n", 0, vi_tri) + 1)):
                 continue
             return f"dòng {so + n}: «{dong_day.split(chr(9) + '⟦')[0].strip()[:140]}»"
     return None
 
 
-def cham_muc(muc: MucKiem, md: str, cac_phan: Sequence[Phan]) -> KetQua:
-    """Chấm một mục trên đề cương."""
+#: (K18) câu có rào đón/phủ định — không tính là khẳng định nhân quả
+_RAO_DON_RE = re.compile(r"có thể|có lẽ|gợi ý|giả thuyết|cần (được )?(kiểm chứng|nghiên cứu|xác nhận|làm rõ)|"
+                         r"không (thể|cho phép)|chưa (thể|đủ)|không (suy|kết luận)|nhân quả|may|might|could|suggest",
+                         re.IGNORECASE)
+_TRICH_DAN_RE = re.compile(r"\[\d+(?:[,–-]\s*\d+)*\]")
+_CAU_RE = re.compile(r"(?<=[.!?])\s+(?=\S)")
+
+
+def _tim_cam(mau: str, don_vi: Sequence[Tuple[int, str]]) -> Optional[str]:
+    """(K18) Câu khẳng định chứa biểu thức CẤM: bỏ câu có trích dẫn (giải thích cơ chế theo y văn) và câu có rào đón
+    hay phủ định. Trả bằng chứng «dòng N: «…»» của câu đầu tiên vi phạm."""
+    for so, chu in don_vi:
+        vt = 0
+        for cau in _CAU_RE.split(chu):
+            bd = chu.find(cau, vt)
+            vt = bd + len(cau)
+            if _TRICH_DAN_RE.search(cau) or _RAO_DON_RE.search(cau) or O_TRONG_RE.search(cau):
+                continue
+            if re.search(mau, cau, _C):
+                return f"dòng {so + chu.count(chr(10), 0, max(bd, 0))}: «{cau.strip()[:140]}»"
+    return None
+
+
+def cham_muc(muc: MucKiem, md: str, cac_phan: Sequence[Phan], *,
+             khoi_fn: Optional[Callable[[Sequence[str]], List[Phan]]] = None, co_so_lieu: bool = True,
+             chua_do_ly_do: Optional[str] = None) -> KetQua:
+    """Chấm một mục trên đề cương.
+
+    Tham số K18 (bản thảo, `tieu_chi_ban_thao.py`): `khoi_fn` thay `khoi_cua` (phần IMRAD của bản thảo); `co_so_lieu`
+    False ⇒ bỏ qua yếu tố `so_lieu` và mục báo «chưa đo được»; `chua_do_ly_do` ⇒ mục áp dụng được nhưng không đo
+    (phần kết quả/bàn luận của bản thảo chưa có số liệu) — KHÔNG BAO GIỜ là đạt."""
     kq = KetQua(muc.chuan, muc.ma, muc.chu_de, muc.tieu_chi, muc.muc_do, "dat", nguyen_van=muc.nguyen_van)
     if muc.muc_do == "bao_cao":
         kq.trang_thai, kq.ly_do = "bao_cao", "chỉ áp khi viết bài báo"
@@ -856,15 +918,26 @@ def cham_muc(muc: MucKiem, md: str, cac_phan: Sequence[Phan]) -> KetQua:
         phu_dinh = muc.ap_dung_khi.startswith("!")
         co = dieu_kien(muc.ap_dung_khi[1:] if phu_dinh else muc.ap_dung_khi, md, cac_phan)
         if co == phu_dinh:
-            kq.trang_thai, kq.ly_do = "khong_ap_dung", f"đề cương không có điều kiện: {muc.ly_do_dieu_kien}"
+            kq.trang_thai, kq.ly_do = "khong_ap_dung", f"văn bản không có điều kiện: {muc.ly_do_dieu_kien}"
             return kq
-    khoi = khoi_cua(cac_phan, muc.phan)
+    if chua_do_ly_do:
+        kq.trang_thai, kq.ly_do = "chua_do", chua_do_ly_do
+        return kq
+    if not muc.yeu_to:
+        # mục không có yếu tố nào để đo (vd mục «chỉ áp khi viết bài báo» chưa có tiêu chí bản thảo) — không đạt suông
+        kq.trang_thai, kq.ly_do = "chua_do", "mục chưa có tiêu chí kiểm tự động — KHÔNG ĐO ĐƯỢC, không tính là đạt"
+        return kq
+    khoi = khoi_fn(muc.phan) if khoi_fn else khoi_cua(cac_phan, muc.phan)
     kq.vi_tri = [f"dòng {p.dong_dau}: {p.tieu_de}" for p in khoi]
     if not khoi:
         kq.trang_thai = "thieu" if muc.chan else "canh_bao"
-        kq.thieu = [f"không thấy phần đề cương cho mục này ({', '.join(muc.phan)})"]
+        kq.thieu = [f"không thấy phần văn bản cho mục này ({', '.join(muc.phan)})"]
         return kq
     can = [yt for yt in muc.yeu_to if not (yt.khi and not dieu_kien(yt.khi, md, cac_phan))]
+    bo_qua = [yt.ten for yt in can if yt.so_lieu and not co_so_lieu]
+    can = [yt for yt in can if not (yt.so_lieu and not co_so_lieu)]
+    cam = [yt for yt in can if yt.cam]
+    can = [yt for yt in can if not yt.cam]
     don_vi = [dv for p in khoi for dv in _don_vi(p)]
     don_vi_dm = [dv for p in khoi for dv in _don_vi(p, de_muc=True)]
     if muc.cung_doan and len(can) > 1:
@@ -872,7 +945,7 @@ def cham_muc(muc: MucKiem, md: str, cac_phan: Sequence[Phan]) -> KetQua:
         for dv in don_vi:
             co, thieu = [], []
             for yt in can:
-                bc = _tim(yt.mau, [dv])
+                bc = _tim(yt.mau, [dv], yt.nhan)
                 (co.append(f"{yt.ten} — {bc}") if bc else thieu.append(yt.ten))
             if len(co) > tot_nhat[0]:
                 tot_nhat = (len(co), co, thieu)
@@ -882,12 +955,19 @@ def cham_muc(muc: MucKiem, md: str, cac_phan: Sequence[Phan]) -> KetQua:
         kq.thieu = [f"{t} (phải cùng đoạn/dòng bảng với các yếu tố còn lại)" for t in thieu]
     else:
         for yt in can:
-            bc = _tim(yt.mau, don_vi_dm if yt.de_muc else don_vi)
+            bc = _tim(yt.mau, don_vi_dm if yt.de_muc else don_vi, yt.nhan)
             (kq.bang_chung.append(f"{yt.ten} — {bc}") if bc else kq.thieu.append(yt.ten))
+    for yt in cam:
+        bc = _tim_cam(yt.mau, don_vi)
+        if bc:
+            kq.thieu.append(f"{yt.ten} — {bc}")
     if kq.thieu:
         kq.trang_thai = "thieu" if muc.chan else "canh_bao"
         if not muc.chan:
-            kq.ly_do = "chuẩn chưa đối chiếu bảng gốc — chỉ cảnh báo, không chặn"
+            kq.ly_do = muc.ly_do_khong_chan or "chuẩn chưa đối chiếu bảng gốc — chỉ cảnh báo, không chặn"
+    elif bo_qua:
+        kq.trang_thai = "chua_do"
+        kq.ly_do = f"bản thảo chưa có số liệu — chưa đo: {'; '.join(bo_qua)} (không tính là đạt)"
     return kq
 
 
@@ -916,8 +996,22 @@ def danh_sach_muc(chuan: str, thiet_ke: str) -> Optional[List[MucKiem]]:
     return TC.danh_sach_muc_them(chuan)
 
 
-def doi_chieu(md: str, thiet_ke: str) -> Dict[str, object]:
-    """Đối chiếu đầy đủ: {'chuan': [...], 'ket_qua': [KetQua], 'chua_do': [(chuẩn, lý do)]}."""
+def doi_chieu(md: str, thiet_ke: str, che_do: str = "de_cuong", co_so_lieu: Optional[bool] = None
+              ) -> Dict[str, object]:
+    """Đối chiếu đầy đủ: {'chuan': [...], 'ket_qua': [KetQua], 'chua_do': [(chuẩn, lý do)]}.
+
+    `che_do="ban_thao"` (K18, 22/11/2026): đối chiếu BẢN THẢO — mục `ke_hoach`/`bao_cao` thành bắt buộc, tìm theo
+    chương IMRAD, RCT dùng CONSORT 2025; `co_so_lieu` False (mặc định: tự nhận khi còn ô [CẦN…]) ⇒ phần kết quả/bàn
+    luận báo «chua_do». Thêm khoá 'cau_truc' (chương IMRAD thiếu). Chi tiết: `tieu_chi_ban_thao.py`."""
+    if che_do in ("ban_thao", "giao_thuc"):
+        import tieu_chi_ban_thao as TB  # noqa: PLC0415 — nạp trễ: mô-đun đó import từ tệp này
+
+        if che_do == "giao_thuc":
+            # BÀI BÁO GIAO THỨC: tiêu chí đề cương, phần theo chương IMRAD; `co_so_lieu` True = chế độ nộp
+            return TB.doi_chieu_giao_thuc(md, thiet_ke, nghiem=bool(co_so_lieu))
+        return TB.doi_chieu_ban_thao(md, thiet_ke, co_so_lieu=co_so_lieu)
+    if che_do != "de_cuong":
+        raise ValueError(f"che_do phải là de_cuong, ban_thao hoặc giao_thuc, nhận {che_do!r}")
     md = unicodedata.normalize("NFC", md)
     cac_phan = tach_phan(md)
     ap_dung = chuan_ap_dung(thiet_ke, md)
@@ -991,35 +1085,56 @@ def main(argv: Optional[List[str]] = None) -> int:
     ap.add_argument("--thiet-ke", help="ghi đè mã thiết kế (mặc định: study_meta gate_params.G1.design)")
     ap.add_argument("--chi-tiet", action="store_true", help="in cả bằng chứng của mục đạt")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--che-do", choices=("de_cuong", "ban_thao", "giao_thuc"), default="de_cuong",
+                    help="ban_thao = bản thảo bài báo (K18); giao_thuc = bài báo giao thức (tiêu chí đề cương, đề mục "
+                         "IMRAD); cả hai cần --tep")
+    ap.add_argument("--nop", action="store_true",
+                    help="(ban_thao) bản sắp nộp: chấm cả phần kết quả dù còn ô [CẦN…]")
     try:
         a = ap.parse_args(argv)
     except SystemExit:
         return 3
     out_dir = BASE / "exports" / a.study
+    if a.che_do != "de_cuong" and not a.tep:
+        print(f"Chế độ {a.che_do} cần --tep <bài báo .md>")
+        return 3
     tep = a.tep or out_dir / f"DE_CUONG_NOP_HOI_DONG_{a.study}.md"
     if not tep.is_file():
-        print(f"Không thấy đề cương: {tep}")
+        print(f"Không thấy tệp: {tep}")
         return 2
     thiet_ke = a.thiet_ke or _thiet_ke_cua(out_dir)
-    kq = doi_chieu(tep.read_text(encoding="utf-8"), thiet_ke)
+    van = tep.read_text(encoding="utf-8")
+    kq = doi_chieu(van, thiet_ke, che_do=a.che_do,
+                   co_so_lieu=True if a.nop else (False if a.che_do == "giao_thuc" else None))
     kqs: List[KetQua] = kq["ket_qua"]
     thieu = [r for r in kqs if r.trang_thai == "thieu"]
+    cau_truc: List[str] = list(kq.get("cau_truc") or [])
     if a.json:
-        print(json.dumps({"study": a.study, "thiet_ke": thiet_ke, "chuan": kq["chuan"], "chua_do": kq["chua_do"],
+        print(json.dumps({"study": a.study, "thiet_ke": thiet_ke, "che_do": a.che_do, "chuan": kq["chuan"],
+                          "chua_do": kq["chua_do"], "cau_truc": cau_truc, "co_so_lieu": kq.get("co_so_lieu"),
                           "ket_qua": [asdict(r) for r in kqs]}, ensure_ascii=False, indent=1))
-        return 1 if thieu else 0
-    print(f"Đối chiếu chuẩn theo mục — {a.study} (thiết kế: {thiet_ke or 'chưa ghi'})")
+        return 1 if (thieu or cau_truc) else 0
+    loai = {"ban_thao": "bản thảo (K18)", "giao_thuc": "bài báo giao thức (K18 · tiêu chí K17)"}.get(a.che_do,
+                                                                                               "đề cương (K17)")
+    print(f"Đối chiếu chuẩn theo mục — {loai} — {a.study} (thiết kế: {thiet_ke or 'chưa ghi'})")
+    if a.che_do == "ban_thao":
+        print("  số liệu: " + ("đã có — chấm cả kết quả/bàn luận" if kq.get("co_so_lieu") else
+                               "CHƯA CÓ (còn ô [CẦN…]) — kết quả/bàn luận báo «chưa đo được»"))
+        for x in cau_truc:
+            print(f"  ✗ cấu trúc: {x}")
     for ten, ly_do in kq["chuan"]:
         nhom = [r for r in kqs if r.chuan == ten]
         dem = {t: sum(r.trang_thai == t for r in nhom)
-               for t in ("dat", "thieu", "canh_bao", "khong_ap_dung", "bao_cao")}
+               for t in ("dat", "thieu", "canh_bao", "khong_ap_dung", "bao_cao", "chua_do")}
         if ten in dict(kq["chua_do"]):
             print(f"  ⚪ {ten} — {ly_do}: CHƯA ĐO ĐƯỢC (chưa có tiêu chí theo mục)")
             continue
-        dau = "✗" if dem["thieu"] else ("⚠" if dem["canh_bao"] else "✓")
-        canh = f" · cảnh báo {dem['canh_bao']} (chưa đối chiếu bảng gốc, không chặn)" if dem["canh_bao"] else ""
-        print(f"  {dau} {ten} — {ly_do}: đạt {dem['dat']} · thiếu {dem['thieu']}{canh} · không áp dụng "
-              f"{dem['khong_ap_dung']} · chỉ áp khi viết bài báo {dem['bao_cao']}")
+        dau = "✗" if dem["thieu"] else ("⚠" if dem["canh_bao"] else ("⚪" if dem["chua_do"] else "✓"))
+        canh = f" · cảnh báo {dem['canh_bao']} (không chặn)" if dem["canh_bao"] else ""
+        cd = f" · chưa đo {dem['chua_do']}" if dem["chua_do"] else ""
+        bc = f" · chỉ áp khi viết bài báo {dem['bao_cao']}" if a.che_do == "de_cuong" else ""
+        print(f"  {dau} {ten} — {ly_do}: đạt {dem['dat']} · thiếu {dem['thieu']}{canh}{cd} · không áp dụng "
+              f"{dem['khong_ap_dung']}{bc}")
     for r in thieu + [r for r in kqs if r.trang_thai == "canh_bao"]:
         dau = "✗" if r.trang_thai == "thieu" else "⚠"
         print(f"\n{dau} {r.chuan} {r.ma} ({r.chu_de}) — {r.tieu_chi}\n    thiếu: {'; '.join(r.thieu)}")
@@ -1034,7 +1149,7 @@ def main(argv: Optional[List[str]] = None) -> int:
                 for b in r.bang_chung:
                     print(f"    {b}")
     print("\nĐẠT = có đủ yếu tố trong đúng phần; chất lượng nội dung vẫn cần đọc bằng chứng. Cần bác sĩ kiểm chứng.")
-    return 1 if thieu else 0
+    return 1 if (thieu or cau_truc) else 0
 
 
 if __name__ == "__main__":

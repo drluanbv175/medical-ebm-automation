@@ -8,11 +8,12 @@ Nguồn (lấy qua Europe PMC fullTextXML ngày 21/11/2026; giấy phép đọc 
   2024;385:e078378 (PMID 38626948; PMC11019967) · CHEERS BMJ 2022;376:e067975 (PMID 35017145; PMC8749494) ·
   SQUIRE 2.0 BMJ Qual Saf 2016;25(12):986-992 (PMID 26369893; PMC5256233; CC BY-NC — phi thương mại) · CARE
   J Med Case Rep 2013;7:223 (PMID 24228906; PMC3844611) · HARPER Pharmacoepidemiol Drug Saf 2023;32(1):44-55
-  (PMID 36215113; PMC9771861; mẫu đề cương).
+  (PMID 36215113; PMC9771861; mẫu đề cương) · CONSORT 2025 PLoS Med 2025;22(4):e1004587 (PMID 40228477;
+  PMC11996237; CC BY 4.0 — thêm 22/11/2026 cho K18 kiểm bản thảo RCT).
 """
 
 #: giấy phép đọc từ XML, theo chuẩn
-GIAY_PHEP = {'STROBE': 'creativecommons.org/licenses/by/4.0', 'RECORD': 'creativecommons.org/licenses/by/4.0', 'STARD': 'creativecommons.org/licenses/by/4.0', 'TRIPOD_AI': 'creativecommons.org/licenses/by/4.0', 'CHEERS': 'creativecommons.org/licenses/by/4.0', 'SQUIRE': 'creativecommons.org/licenses/by-nc/4.0', 'CARE': 'creativecommons.org/licenses/by/3.0', 'HARPER': 'creativecommons.org/licenses/by/4.0'}
+GIAY_PHEP = {'STROBE': 'creativecommons.org/licenses/by/4.0', 'RECORD': 'creativecommons.org/licenses/by/4.0', 'STARD': 'creativecommons.org/licenses/by/4.0', 'TRIPOD_AI': 'creativecommons.org/licenses/by/4.0', 'CHEERS': 'creativecommons.org/licenses/by/4.0', 'SQUIRE': 'creativecommons.org/licenses/by-nc/4.0', 'CARE': 'creativecommons.org/licenses/by/3.0', 'HARPER': 'creativecommons.org/licenses/by/4.0', 'CONSORT': 'creativecommons.org/licenses/by/4.0'}
 
 # (mã, thiết kế: chung|cat_ngang|thuan_tap|benh_chung, chủ đề, nguyên văn)
 STROBE_2007_ITEMS = (
@@ -326,6 +327,52 @@ HARPER_2023_MUC_LUC = (
     ('12', 'Appendices', ''),
 )
 
+# (mã, phần, chủ đề, nguyên văn) — gạch đầu dòng trong ô nối bằng « • »
+CONSORT_2025_ITEMS = (
+    ('1a', 'Title and abstract', 'Title and structured abstract', 'Identification as a randomised trial'),
+    ('1b', 'Title and abstract', 'Title and structured abstract', 'Structured summary of the trial design, methods, results, and conclusions'),
+    ('2', 'Open science', 'Trial registration', 'Name of trial registry, identifying number (with URL) and date of registration'),
+    ('3', 'Open science', 'Protocol and statistical analysis plan', 'Where the trial protocol and statistical analysis plan can be accessed'),
+    ('4', 'Open science', 'Data sharing', 'Where and how the individual de-identified participant data (including data dictionary), statistical code and any other materials can be accessed'),
+    ('5a', 'Open science', 'Funding and conflicts of interest', 'Sources of funding and other support (e.g., supply of drugs), and role of funders in the design, conduct, analysis and reporting of the trial'),
+    ('5b', 'Open science', 'Funding and conflicts of interest', 'Financial and other conflicts of interest of the manuscript authors'),
+    ('6', 'Introduction', 'Background and rationale', 'Scientific background and rationale'),
+    ('7', 'Introduction', 'Objectives', 'Specific objectives related to benefits and harms'),
+    ('8', 'Methods', 'Patient and public involvement', 'Details of patient or public involvement in the design, conduct and reporting of the trial'),
+    ('9', 'Methods', 'Trial design', 'Description of trial design including type of trial (e.g., parallel group, crossover), allocation ratio, and framework (e.g., superiority, equivalence, non-inferiority, exploratory)'),
+    ('10', 'Methods', 'Changes to trial protocol', 'Important changes to the trial after it commenced including any outcomes or analyses that were not prespecified, with reason'),
+    ('11', 'Methods', 'Trial setting', 'Settings (e.g., community, hospital) and locations (e.g., countries, sites) where the trial was conducted'),
+    ('12a', 'Methods', 'Eligibility criteria', 'Eligibility criteria for participants'),
+    ('12b', 'Methods', 'Eligibility criteria', 'If applicable, eligibility criteria for sites and for individuals delivering the interventions (e.g., surgeons, physiotherapists)'),
+    ('13', 'Methods', 'Intervention and comparator', 'Intervention and comparator with sufficient details to allow replication. If relevant, where additional materials describing the intervention and comparator (e.g., intervention manual) can be accessed'),
+    ('14', 'Methods', 'Outcomes', 'Prespecified primary and secondary outcomes, including the specific measurement variable (e.g., systolic blood pressure), analysis metric (e.g., change from baseline, final value, time to event), method of aggregation (e.g., median, proportion), and time point for each outcome'),
+    ('15', 'Methods', 'Harms', 'How harms were defined and assessed (e.g., systematically, non-systematically)'),
+    ('16a', 'Methods', 'Sample size', 'How sample size was determined, including all assumptions supporting the sample size calculation'),
+    ('16b', 'Methods', 'Sample size', 'Explanation of any interim analyses and stopping guidelines'),
+    ('17a', 'Methods', 'Randomisation: Sequence generation', 'Who generated the random allocation sequence and the method used'),
+    ('17b', 'Methods', 'Randomisation: Sequence generation', 'Type of randomisation and details of any restriction (e.g., stratification, blocking and block size)'),
+    ('18', 'Methods', 'Randomisation: Allocation concealment mechanism', 'Mechanism used to implement the random allocation sequence (e.g., central computer/telephone; sequentially numbered, opaque, sealed containers), describing any steps to conceal the sequence until interventions were assigned'),
+    ('19', 'Methods', 'Randomisation: Implementation', 'Whether the personnel who enrolled and those who assigned participants to the interventions had access to the random allocation sequence'),
+    ('20a', 'Methods', 'Blinding', 'Who was blinded after assignment to interventions (e.g., participants, care providers, outcome assessors, data analysts)'),
+    ('20b', 'Methods', 'Blinding', 'If blinded, how blinding was achieved and description of the similarity of interventions'),
+    ('21a', 'Methods', 'Statistical methods', 'Statistical methods used to compare groups for primary and secondary outcomes, including harms'),
+    ('21b', 'Methods', 'Statistical methods', 'Definition of who is included in each analysis (e.g., all randomised participants), and in which group'),
+    ('21c', 'Methods', 'Statistical methods', 'How missing data were handled in the analysis'),
+    ('21d', 'Methods', 'Statistical methods', 'Methods for any additional analyses (e.g., subgroup and sensitivity analyses), distinguishing prespecified from post hoc'),
+    ('22a', 'Results', 'Participant flow, including flow diagram', 'For each group, the numbers of participants who were randomly assigned, received intended intervention, and were analysed for the primary outcome'),
+    ('22b', 'Results', 'Participant flow, including flow diagram', 'For each group, losses and exclusions after randomisation, together with reasons'),
+    ('23a', 'Results', 'Recruitment', 'Dates defining the periods of recruitment and follow-up for outcomes of benefits and harms'),
+    ('23b', 'Results', 'Recruitment', 'If relevant, why the trial ended or was stopped'),
+    ('24a', 'Results', 'Intervention and comparator delivery', 'Intervention and comparator as they were actually administered (e.g., where appropriate, who delivered the intervention/comparator, how participants adhered, whether they were delivered as intended (fidelity))'),
+    ('24b', 'Results', 'Intervention and comparator delivery', 'Concomitant care received during the trial for each group'),
+    ('25', 'Results', 'Baseline data', 'A table showing baseline demographic and clinical characteristics for each group'),
+    ('26', 'Results', 'Numbers analysed, outcomes and estimation', 'For each primary and secondary outcome, by group: • the number of participants included in the analysis • the number of participants with available data at the outcome time point • result for each group, and the estimated effect size and its precision (such as 95% confidence interval) • for binary outcomes, presentation of both absolute and relative effect size'),
+    ('27', 'Results', 'Harms', 'All harms or unintended events in each group'),
+    ('28', 'Results', 'Ancillary analyses', 'Any other analyses performed, including subgroup and sensitivity analyses, distinguishing pre-specified from post hoc'),
+    ('29', 'Discussion', 'Interpretation', 'Interpretation consistent with results, balancing benefits and harms, and considering other relevant evidence'),
+    ('30', 'Discussion', 'Limitations', 'Trial limitations, addressing sources of potential bias, imprecision, generalisability, and, if relevant, multiplicity of analyses'),
+)
+
 assert (len(STROBE_2007_ITEMS) == 41
         and len(RECORD_2015_ITEMS) == 13
         and len(STARD_2015_ITEMS) == 34
@@ -333,4 +380,5 @@ assert (len(STROBE_2007_ITEMS) == 41
         and len(CHEERS_2022_ITEMS) == 28
         and len(SQUIRE_2_0_ITEMS) == 40
         and len(CARE_2013_ITEMS) == 23
-        and len(HARPER_2023_MUC_LUC) == 43)
+        and len(HARPER_2023_MUC_LUC) == 43
+        and len(CONSORT_2025_ITEMS) == 42)

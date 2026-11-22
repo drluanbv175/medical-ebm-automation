@@ -326,6 +326,13 @@ Trân trọng, [Tên tác giả liên hệ]
 
 ---
 
+## K18 — chuẩn báo cáo theo từng mục trước khi nộp (22/11/2026)
+
+- Gói nộp chỉ được dựng khi `python3 tools/kiem_ban_thao_tap_chi.py <bản thảo .md> --tap-chi "<tạp chí>" --nop` không còn vi phạm K18 (repo y khoa). Mục «chưa đo được» hay cảnh báo không phải «đạt» — ghi rõ trong bảng kiểm nộp.
+- Bảng kiểm chuẩn báo cáo nộp kèm (CONSORT 2025 cho RCT, STROBE ± RECORD/CROSS, STARD, TRIPOD+AI…) phải dựng từ kết quả K18 theo mục — mỗi mục chỉ đúng chương/dòng nơi bản thảo báo cáo nó — KHÔNG tự đánh dấu ☑. Phụ lục bảng kiểm không thay được nội dung trong thân bài.
+- Thư phản hồi phản biện về chuẩn báo cáo: sửa bản thảo, chạy lại K18 `--nop`, rồi mới trả lời «đã bổ sung ở …».
+- Khai báo đi vào bản thảo (tài trợ + vai trò nhà tài trợ cùng đoạn, xung đột lợi ích, cơ quan + mã + ngày đăng ký, chia sẻ dữ liệu/từ điển/mã, người truy cập dữ liệu) là mục K18 của CONSORT 2025 2–5b, STROBE 22, RECORD 12.1/22.1 — lấy từ phiếu G9/G2 đã khai, không viết câu chung.
+
 ## CƠ CHẾ MỞ KHÓA G9
 
 ```

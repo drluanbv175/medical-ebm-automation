@@ -61,8 +61,8 @@ VAI_TRO_NHOM = (r"vai trò|nhiệm vụ|phụ trách|thống kê viên|quản l�
 HOI_DONG = r"Hội đồng (Đạo đức|đạo đức)"
 DONG_Y = r"đồng (ý|thuận)|tự nguyện"
 DU_LIEU_THIEU = r"(dữ liệu|số liệu|giá trị) thiếu|thiếu (dữ liệu|số liệu)|missing"
-XU_LY_THIEU = (r"ca đầy đủ|complete case|đa quy|điền khuyết|multiple imputation|MICE|trường hợp đủ dữ liệu|gán|"
-               r"loại khỏi|phân tích độ nhạy")
+XU_LY_THIEU = (r"ca đầy đủ|complete case|đa quy|điền khuyết|imputation|MICE|trường hợp đủ dữ liệu|gán|"
+               r"loại khỏi|phân tích (độ nhạy|nhạy cảm)|bộ (dữ liệu )?đầy đủ")
 PP_THONG_KE = (r"hồi quy|kiểm định|chi bình phương|χ²|Mann|Wilcoxon|Fisher|logistic|Poisson|\bCox\b|khoảng tin cậy|KTC"
                r"|phân tích gộp|hiệu ứng ngẫu nhiên")
 CONG_THUC_CO_MAU = r"công thức|Cochran|lực mẫu|độ chính xác|\bpower\b|Riley|\bEPV\b|n\s*=|toàn bộ|bão hoà|bão hòa"
