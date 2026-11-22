@@ -113,7 +113,8 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
              "là tuân thủ, phần lớn tự khai, không phải kiểm soát huyết áp, nên chỉ đối chiếu được chiều tác động; "
              "tác giả " + _KC_TRUNG + "."),
             ("Điểm mạnh: ngẫu nhiên hoá, kết cục đo khách quan tại phòng khám, cỡ mẫu {n} người, phân tích theo SAP "
-             "đã khoá và kiểm chéo SPSS–R khớp. Hạn chế: không làm mù người tham gia (bản chất can thiệp), một cơ sở, "
+             "đã khoá và kiểm chéo SPSS–R khớp. Hạn chế: không làm mù người tham gia (bản chất can thiệp) nên không "
+             "loại được sai lệch thực hiện, dù kết cục được đo khách quan; một cơ sở, "
              "theo dõi 6 tháng nên chưa biết hiệu quả có duy trì, và kết quả chỉ khái quát cho người tăng huyết áp có "
              "điện thoại nhận tin nhắn."),
             ("Hàm ý cho thực hành: có thể cân nhắc tin nhắn nhắc thuốc như biện pháp bổ trợ chi phí thấp cho người "
@@ -209,7 +210,10 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
              "trực tiếp được; tác giả " + _KC_TRUNG + "."),
             ("Điểm mạnh: cỡ mẫu {n} người theo tính toán G3, đo huyết áp chuẩn hoá, phân tích theo SAP đã khoá và "
              "kiểm chéo SPSS–R khớp. Hạn chế: một lần đo tại một thời điểm, lấy mẫu tại một cơ sở nên có thể sai lệch "
-             "chọn, không đo tuân thủ thuốc, và thiết kế cắt ngang không cho biết chiều thời gian."),
+             "chọn, không đo tuân thủ thuốc, và thiết kế cắt ngang không cho biết chiều thời gian. Người đến khám đều "
+             "đặn thường tuân thủ điều trị tốt hơn, nên sai lệch chọn này có thể làm ước tính cao tỷ lệ kiểm soát so "
+             "với toàn bộ người tăng huyết áp của cơ sở. Kết quả khái quát cho người tăng huyết áp đang khám ngoại trú "
+             "ở cơ sở có điều kiện tương tự, chưa khái quát cho cộng đồng."),
             ("Hàm ý cho thực hành: rà soát điều trị cho người chưa đạt đích (điều chỉnh liều, phối hợp thuốc, tuân "
              "thủ) là việc có thể làm ngay tại phòng khám. Hướng tiếp: nghiên cứu phân tích yếu tố liên quan và theo "
              "dõi dọc tỷ lệ kiểm soát sau can thiệp."),
@@ -288,7 +292,8 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ("Điểm mạnh: ca bệnh được xác định bằng nội soi, cỡ mẫu {n} người, phân tích theo SAP đã khoá và kiểm "
              "chéo SPSS–R khớp. Hạn chế: sai lệch nhớ lại về phơi nhiễm, nhiễu tồn dư (rượu, Helicobacter pylori, "
              "aspirin liều thấp), chọn nhóm chứng tại bệnh viện có thể không đại diện, và chỉ khái quát cho người từ "
-             "60 tuổi."),
+             "60 tuổi. Sai lệch nhớ lại thường làm ước tính cao mối liên quan vì ca bệnh hay nhớ việc dùng thuốc kỹ "
+             "hơn nhóm chứng; nhiễu tồn dư có thể lệch theo cả hai hướng."),
             ("Hàm ý cho thực hành: cân nhắc kỹ chỉ định NSAID ở người cao tuổi, ưu tiên liều thấp nhất trong thời gian "
              "ngắn nhất và bảo vệ dạ dày khi có yếu tố nguy cơ. Hướng tiếp: nghiên cứu thuần tập có đo liều, thời gian "
              "dùng và thuốc phối hợp."),
@@ -372,7 +377,8 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
              + "."),
             ("Điểm mạnh: chuẩn tham chiếu đo trên mọi người tham gia, ngưỡng định trước trong SAP, kiểm chéo SPSS–R "
              "khớp. Hạn chế: cỡ mẫu {n} người với {so_tp} + {so_fn} người có bệnh nên KTC rộng, một cơ sở, chưa đánh "
-             "giá ngưỡng thứ hai 1,3 (SAP §5), và phổ bệnh có thể khác cộng đồng."),
+             "giá ngưỡng thứ hai 1,3 (SAP §5), và phổ bệnh tại cơ sở khám có thể khác cộng đồng, nên khả năng khái "
+             "quát cho sàng lọc cộng đồng còn hạn chế."),
             ("Hàm ý cho thực hành: tại ngưỡng {nguong}, FIB-4 không đủ để loại trừ xơ hoá tiến triển; nên phối hợp "
              "ngưỡng thấp và đo độ đàn hồi gan theo hướng dẫn hiện hành. Hướng tiếp: nghiên cứu cỡ mẫu lớn hơn, đánh "
              "giá chiến lược hai ngưỡng."),
@@ -599,7 +605,8 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             ("Điểm mạnh: chọn mẫu có chủ đích theo tiêu chí đa dạng định trước, hai người mã hoá, nhật ký quyết định "
              "mã hoá, kiểm tra lại với người tham gia. Hạn chế: một cơ sở, người đồng ý phỏng vấn có thể cởi mở hơn, "
              "vai trò của người phỏng vấn (nhân viên y tế) có thể ảnh hưởng câu trả lời, và kết quả không suy rộng "
-             "thống kê."),
+             "thống kê; khả năng chuyển giao giới hạn ở người bệnh được đề xuất khởi trị insulin tại cơ sở ngoại trú "
+             "có bối cảnh tương tự."),
             ("Hàm ý cho thực hành: khi đề xuất insulin, mời người nhà cùng học cách tiêm và trao đổi kế hoạch phòng hạ "
              "đường huyết khi đi làm. Hướng tiếp: xây dựng và thử nghiệm can thiệp giáo dục có người nhà tham gia."),
         ),

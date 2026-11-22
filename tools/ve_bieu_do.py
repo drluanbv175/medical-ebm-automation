@@ -77,21 +77,27 @@ HINH: Dict[str, tuple] = {
     "chu_de": ("bieu_do_bao_cao.py", "chu-de", "tần suất chủ đề/mã đã gán + KTC 95% Wilson (mô tả, định tính)"),
 }
 
+# 22/11/2026 (kiểm toàn hệ 11 khâu): nhãn RCT trước ghi «CONSORT 2010 (mục 13)» — chuẩn hiện hành là CONSORT 2025
+# (danh mục đã đối chiếu ở run_g7_auto.CHECKLIST_ITEMS: mục 22a–b). STROBE chỉ «cân nhắc» sơ đồ (13c) nhưng BẮT BUỘC số
+# người từng giai đoạn và lý do loại (13a–b) — chính là số của sơ đồ; hệ đặt sơ đồ bắt buộc và ghi rõ điều đó.
+_STROBE_LUONG = ("STROBE (mục 13a–b bắt buộc số người từng giai đoạn và lý do loại; 13c chỉ «cân nhắc» sơ đồ — hệ đặt "
+                 "sơ đồ bắt buộc vì nó trình bày đúng số của 13a–b)")
 # thiết kế → (chuẩn báo cáo, bắt buộc, khuyến nghị, khi phù hợp)
 DANH_MUC: Dict[str, Dict[str, Any]] = {
-    "rct": {"chuan": "CONSORT 2010 (mục 13: sơ đồ luồng đối tượng)",
+    "rct": {"chuan": "CONSORT 2025 (mục 22a–b: số người qua từng giai đoạn theo nhóm, trình bày bằng sơ đồ luồng "
+                    "CONSORT)",
             "bat_buoc": ["so_do_luong"], "khuyen_nghi": ["cot_ktc", "nhom_nho", "forest_uoc_luong"],
             "khi_phu_hop": {"km": "kết cục thời gian đến biến cố", "cif": "có biến cố cạnh tranh",
                             "theo_thoi_gian": "đo lặp nhiều thời điểm", "loglog": "dùng mô hình Cox"}},
-    "cohort": {"chuan": "STROBE (mục 13c: cân nhắc sơ đồ luồng)",
+    "cohort": {"chuan": _STROBE_LUONG,
                "bat_buoc": ["so_do_luong", "forest_uoc_luong"], "khuyen_nghi": ["thieu", "phan_bo"],
                "khi_phu_hop": {"km": "kết cục thời gian đến biến cố", "loglog": "dùng mô hình Cox",
                                "cif": "có biến cố cạnh tranh", "spline": "phơi nhiễm liên tục",
                                "nhom_nho": "có phân tích nhóm nhỏ định trước"}},
-    "case_control": {"chuan": "STROBE (mục 13c: cân nhắc sơ đồ luồng)",
+    "case_control": {"chuan": _STROBE_LUONG,
                      "bat_buoc": ["so_do_luong", "forest_uoc_luong"], "khuyen_nghi": ["thieu", "phan_bo"],
                      "khi_phu_hop": {"spline": "phơi nhiễm liên tục", "nhom_nho": "có phân tích nhóm nhỏ định trước"}},
-    "cross_sectional": {"chuan": "STROBE (mục 13c: cân nhắc sơ đồ luồng)",
+    "cross_sectional": {"chuan": _STROBE_LUONG,
                         "bat_buoc": ["so_do_luong", "cot_ktc"], "khuyen_nghi": ["thieu", "phan_bo"],
                         "khi_phu_hop": {"forest_uoc_luong": "có phân tích liên quan/hồi quy (không cần cho đề tài chỉ "
                                                             "mô tả tỷ lệ)",

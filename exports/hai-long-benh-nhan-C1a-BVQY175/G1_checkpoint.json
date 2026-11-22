@@ -1,9 +1,9 @@
 {
   "study": "hai-long-benh-nhan-C1a-BVQY175",
   "gate": "G1",
-  "gate_status": "DRAFT_READY — KIỂM TỰ ĐỘNG ĐÃ CHẠY; G1 CHƯA ĐƯỢC PI/METHODOLOGIST XÁC NHẬN",
+  "gate_status": "PASS — G1 DESIGN + REPORTING MAP ĐÃ ĐƯỢC XÁC NHẬN",
   "automation_status": "AUTOMATED_CHECKS_PASS",
-  "generated_at": "2026-11-15T18:39:20.387023",
+  "generated_at": "2026-11-22T05:59:10.267905",
   "question_type": "descriptive",
   "design": {
     "primary": "Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)",
@@ -66,9 +66,9 @@
   "quality_gate": {
     "schema_version": "1.1",
     "contract_version": "G1-2026.1",
-    "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
+    "status": "PASS_G1_CONFIRMED",
     "automated_checks_passed": true,
-    "human_confirmation_complete": false,
+    "human_confirmation_complete": true,
     "automatic_criteria": [
       {
         "id": "G1-AUTO-00",
@@ -96,14 +96,14 @@
         "label": "Thiết kế bác sĩ đã ghim được chuỗi G0–G10 hỗ trợ (không bị thay bằng suy luận)",
         "status": "PASS",
         "evidence": "không có pin bị từ chối",
-        "action": "PI ghim lại study_meta.design_code bằng một trong rct/cohort/case_control/cross_sectional/diagnostic/sr_ma/prediction/qualitative có chủ ý, hoặc dùng agent chuyên trách cho thiết kế này (vd quasi-experimental → TREND, cải tiến chất lượng → SQUIRE 2.0, ca lâm sàng → CARE)."
+        "action": "PI ghim lại gate_params.G1.design (hoặc study_meta.design_code kèm design_code_nguon=\"PI\") bằng một trong rct/cohort/case_control/cross_sectional/diagnostic/sr_ma/prediction/qualitative có chủ ý, hoặc dùng agent chuyên trách cho thiết kế này (vd quasi-experimental → TREND, cải tiến chất lượng → SQUIRE 2.0, ca lâm sàng → CARE). Thiết kế HỖN HỢP định lượng–định tính: ghim mã của cấu phần định lượng và khai cấu phần định tính + kế hoạch tích hợp ở gate_params.G1.mixed_methods (kiểm bằng tools/hon_hop.py, báo cáo GRAMMS)."
       },
       {
         "id": "G1-AUTO-02d",
         "label": "Thiết kế hợp với loại câu hỏi đã chốt ở G0",
         "status": "PASS",
         "evidence": "thiết kế «cross_sectional» hợp với loại câu hỏi G0 «descriptive»",
-        "action": "Chạy lại G1 để suy lại theo loại câu hỏi G0; hoặc PI sửa question_type ở G0, hoặc ghim study_meta.design_code (PI giải trình nếu cố ý chọn thiết kế ngoài nhóm)."
+        "action": "Chạy lại G1 để suy lại theo loại câu hỏi G0; hoặc PI sửa question_type ở G0, hoặc ghim gate_params.G1.design (hoặc study_meta.design_code kèm design_code_nguon=\"PI\") — PI giải trình nếu cố ý chọn thiết kế ngoài nhóm."
       },
       {
         "id": "G1-AUTO-02b",
@@ -175,7 +175,7 @@
         "label": "PI/methodologist xác nhận thiết kế",
         "status": "PASS",
         "evidence": "pin='cross_sectional'; design_confirmed=True",
-        "action": "Điền design_code/gate_params.G1.design và design_confirmed=true."
+        "action": "Điền gate_params.G1.design (hoặc design_code kèm design_code_nguon=\"PI\") và design_confirmed=true."
       },
       {
         "id": "G1-HUMAN-02",
@@ -222,33 +222,31 @@
       {
         "id": "G1-HUMAN-08",
         "label": "Có vai trò, thời điểm rà phương pháp và xác nhận gắn đúng nội dung",
-        "status": "REVIEW",
-        "evidence": "reviewed_by_role=pi; reviewed_at=2026-10-28T15:08:06+07:00; nội dung đã đổi sau khi xác nhận (dấu lúc xác nhận e7446048acc3b6a1 ≠ hiện tại a1092035d7005539) — chủ nhiệm đọc lại rồi xác nhận lại",
+        "status": "PASS",
+        "evidence": "reviewed_by_role=pi; reviewed_at=2026-11-15T18:45:10+07:00; xác nhận gắn đúng nội dung hiện tại",
         "action": "Ghi reviewed_by_role, reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"a1092035d7005539\" (dấu của các quyết định G1 đang chốt); không cần lưu danh tính."
       }
     ],
-    "pending_actions": [
-      "Ghi reviewed_by_role, reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"a1092035d7005539\" (dấu của các quyết định G1 đang chốt); không cần lưu danh tính."
-    ],
+    "pending_actions": [],
     "artifact_manifest": {
       "A2": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "12764e83a4f37e7994dc9d1e35029b62b4edeaaef668fac5fb4e923a9f947bf6"
+        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
+        "sha256": "4c103d664dbf0ffb5fe4db60cc826f79dd959d8180d1cfd011a348b0c1bf1e94"
       },
       "A1b": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "b084ee1a0a9d41be32552fcbf03d1dc697c87986dd738f3fa6a646667048ec3e"
+        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
+        "sha256": "18c1b210f3aab8753b6d47edd679e6a2a8599d722696955d0176dfeaafc5c506"
       },
       "A2b": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "6faa1fff579af47db3011ec6bc35a569e4e02e067ce053e37bb1f3e3a60cc331"
+        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",
+        "sha256": "643ff508043b3baa9af7bd6e102889ea034961e62f24a27362fbbe5351cb76d8"
       },
       "A13": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md",
+        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md",
         "sha256": "b5447450de68773cb6885835d25b55247f24293ae6b1caf21890f6d667e99b9d"
       },
       "A13b": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md",
+        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md",
         "sha256": "ded3d82b9b4d6c7d68bfa57f703efcf29488998be89529fb247c0426afeee4ef"
       }
     },
@@ -289,40 +287,38 @@
     "scope_statement": "PASS_G1_CONFIRMED chỉ xác nhận thiết kế/reporting map và bộ artifact G1 theo bằng chứng đã ghi; không thay IRB, khóa SAP, dữ liệu thật hoặc thẩm định khoa học độc lập. Checklist báo cáo đánh giá tính đầy đủ của mô tả, không tự chứng minh chất lượng thiết kế hay thực hiện.",
     "artifact_manifest_luc_sinh": {
       "A2": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "12764e83a4f37e7994dc9d1e35029b62b4edeaaef668fac5fb4e923a9f947bf6"
+        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
+        "sha256": "4c103d664dbf0ffb5fe4db60cc826f79dd959d8180d1cfd011a348b0c1bf1e94"
       },
       "A1b": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "b084ee1a0a9d41be32552fcbf03d1dc697c87986dd738f3fa6a646667048ec3e"
+        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
+        "sha256": "18c1b210f3aab8753b6d47edd679e6a2a8599d722696955d0176dfeaafc5c506"
       },
       "A2b": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "6faa1fff579af47db3011ec6bc35a569e4e02e067ce053e37bb1f3e3a60cc331"
+        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",
+        "sha256": "643ff508043b3baa9af7bd6e102889ea034961e62f24a27362fbbe5351cb76d8"
       },
       "A13": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md",
+        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md",
         "sha256": "b5447450de68773cb6885835d25b55247f24293ae6b1caf21890f6d667e99b9d"
       },
       "A13b": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md",
+        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md",
         "sha256": "ded3d82b9b4d6c7d68bfa57f703efcf29488998be89529fb247c0426afeee4ef"
       }
     }
   },
   "quality_contract_version": "G1-2026.1",
   "artifacts": {
-    "A2_markdown": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
-    "A2_docx": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.docx",
-    "A1b_project_charter": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
-    "A2b_evidence_ledger": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",
-    "A13_implementation_plan": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md",
-    "A13b_risk_register": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md",
-    "quality_report": "/Users/nguyenluan/.ebm-worktrees/yk-ba-viec/exports/hai-long-benh-nhan-C1a-BVQY175/G1_QUALITY_REPORT.md"
+    "A2_markdown": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.md",
+    "A2_docx": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2_PROTOCOL_DESIGN_hai-long-benh-nhan-C1a-BVQY175.docx",
+    "A1b_project_charter": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A1b_PROJECT_CHARTER_hai-long-benh-nhan-C1a-BVQY175.md",
+    "A2b_evidence_ledger": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A2b_EVIDENCE_LEDGER_hai-long-benh-nhan-C1a-BVQY175.md",
+    "A13_implementation_plan": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13_IMPLEMENTATION_PLAN_hai-long-benh-nhan-C1a-BVQY175.md",
+    "A13b_risk_register": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_A13b_RISK_REGISTER_hai-long-benh-nhan-C1a-BVQY175.md",
+    "quality_report": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/hai-long-benh-nhan-C1a-BVQY175/G1_QUALITY_REPORT.md"
   },
-  "pending_doctor_actions": [
-    "Ghi reviewed_by_role, reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"a1092035d7005539\" (dấu của các quyết định G1 đang chốt); không cần lưu danh tính."
-  ],
+  "pending_doctor_actions": [],
   "next_gate": "G2 (Đạo đức IRB) song song với G3 (Cỡ mẫu + SAP hoàn thiện)",
   "g4_status": "PENDING — SAP chưa khóa (khóa sau G3 sau khi bác sĩ ký)",
   "disclaimer": "Cần bác sĩ kiểm chứng.",
@@ -337,7 +333,7 @@
     "masking": null,
     "alpha_sidedness": null,
     "dau_van_tay": "6ba26632a4c46b44",
-    "ghi_luc": "2026-11-15T18:39:20"
+    "ghi_luc": "2026-11-22T05:59:10"
   },
   "dau_gate_params_g1": "a1092035d7005539"
 }

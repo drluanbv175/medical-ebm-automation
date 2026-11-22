@@ -1084,7 +1084,9 @@ _DIEN_GIAI_THUAN_TAP: Dict[str, Any] = {
     "muc_4": ("Điểm mạnh: cỡ mẫu {n} người với {bien_co} biến cố, phân tích theo SAP đã khoá, kiểm chéo SPSS và R "
               "khớp. Hạn chế: thiết kế hồi cứu có thể còn nhiễu tồn dư (chỉ định PPI, thể trạng, té ngã), phân loại "
               "phơi nhiễm từ đơn thuốc cấp phát, kết cục dựa trên mã chẩn đoán và phim X-quang trong hồ sơ, và kết quả "
-              "chỉ khái quát cho người từ 60 tuổi khám ngoại trú."),
+              "chỉ khái quát cho người từ 60 tuổi khám ngoại trú. Phân loại sai phơi nhiễm từ đơn cấp phát nhiều khả "
+              "năng không phụ thuộc kết cục, nên có thể kéo ước lượng về phía giá trị không; ngược lại, nhiễu do chỉ "
+              "định (người nhiều bệnh nền được kê PPI hơn) có thể làm ước lượng cao hơn thực."),
     "muc_5": ("Hàm ý cho thực hành giới hạn ở mức liên quan, không phải quan hệ nhân quả: rà lại chỉ định khi kê PPI "
               "kéo dài cho người cao tuổi có nguy cơ gãy xương. Hướng tiếp: nghiên cứu có đo liều và thời gian dùng "
               "PPI theo tháng, và phân tích thời gian đến gãy xương."),
