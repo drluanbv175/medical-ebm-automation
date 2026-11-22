@@ -131,7 +131,9 @@ def test_do_luong_nhu_nhau_va_chat_luong_do_tu_g1(tmp_path):
     assert dong[0] == ("- Bảo đảm chất lượng đo lường: Đo huyết áp chuẩn hoá bằng cùng một quy trình cho mọi người "
                        "tham gia.")
     assert dong[-1].startswith("- Đo lường như nhau giữa các nhóm: nhóm phơi nhiễm và nhóm không phơi nhiễm")
-    assert SDC.do_luong_nhu_nhau(_nguon(tmp_path / "c", "cross_sectional", g1={"critical_to_quality": None})) == []
+    # 22/11/2026: đề tài thử nay có kế hoạch giám sát (K20) — «không khai chất lượng đo lường» là trống CẢ HAI trường
+    assert SDC.do_luong_nhu_nhau(_nguon(tmp_path / "c", "cross_sectional",
+                                        g1={"critical_to_quality": None, "monitoring_plan": None})) == []
 
 
 # ───────────────────────────────────────── STROBE 9/19: sai lệch và chiều ảnh hưởng — không đoán thay PI

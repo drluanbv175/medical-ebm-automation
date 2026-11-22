@@ -61,6 +61,14 @@ Luật (mỗi lỗi một dòng; rỗng = đạt):
       trỏ tới chương có trong văn bản, khung bảng kết quả trỏ đúng chương «Dự kiến kết quả»; đề cương theo khuôn có khối
       ký thứ ba của bìa phụ đúng đơn vị thật (Viện ⇒ Viện trưởng, Trung tâm ⇒ Giám đốc Trung tâm, trực thuộc bệnh viện ⇒
       không có). Sửa bằng bộ sinh: `khuon_de_cuong_bvqy175.py --study <mã> --ghi` (không sửa tay).
+  K20 (22/11/2026; bác sĩ: mỗi tiêu chuẩn trong mỗi phần đề cương đạt 8 nguyên tắc): ma trận phần × 8 nguyên tắc của
+      `tam_nguyen_tac_de_cuong.py`. Ô 🔴 do phép đo NGOÀI K1–K19 thì CHẶN (lỗi của chính K1–K19 đã báo tại chỗ, không
+      nhân đôi). Ô ⚪ «chưa đo được» chỉ BÁO kèm số lượng (cảnh báo), CHƯA chặn — chặn ⚪ khi phép đo chưa xây là làm đỏ
+      giả. Cảnh báo in trục tổng 5 tiêu chí (giá trị · phương pháp · khả thi · đạo đức · kiểm chứng được) đầu tiên.
+  K21 (22/11/2026; bác sĩ: «Đề cương phải được đọc từng câu từng chữ trước khi hoàn thành đưa cho tôi»): sổ đọc từng đơn
+      vị `so_doc_de_cuong.py`. Đề cương ở trạng thái TRÌNH (có G10_checkpoint.json và G10 chấm sống READY/PASS) mà sổ
+      phủ < 100% đơn vị của bản hiện hành (bản ghi mang băm cũ = chưa đọc) hoặc còn đơn vị «sua» chưa xử lý ⇒ CHẶN.
+      Chưa tới trạng thái trình ⇒ chỉ báo tỷ lệ phủ (cảnh báo), không chặn.
 
 Lệnh:  python3 tools/kiem_de_cuong_nop_hoi_dong.py --study <mã> [--json]
 Mã thoát: 0 đạt · 1 có lỗi · 2 thiếu tệp đề cương nộp.
@@ -925,6 +933,28 @@ def canh_bao_k17(out_dir: Path, study: str) -> List[str]:
     return KCM.canh_bao_k17(md, _thiet_ke(Path(out_dir)))
 
 
+def loi_k20(out_dir: Path, study: str, loi_truoc: List[str]) -> List[str]:
+    """K20 — ô 🔴 của ma trận 8 nguyên tắc do phép đo ngoài K1–K19 (chặn). ⚪ chỉ báo ở `canh_bao_k20`."""
+    import tam_nguyen_tac_de_cuong as TNT  # noqa: PLC0415
+
+    return TNT.loi_k20(out_dir, study, loi_truoc)
+
+
+def loi_k21(out_dir: Path, study: str) -> List[str]:
+    """K21 — đang trình mà sổ đọc từng đơn vị chưa phủ 100% bản hiện hành hoặc còn đơn vị «sua» (chặn)."""
+    import so_doc_de_cuong as SDD  # noqa: PLC0415
+
+    return SDD.loi_k21(out_dir, study)
+
+
+def canh_bao_k20_k21(out_dir: Path, study: str) -> List[str]:
+    """Cảnh báo không chặn: trục tổng 5 tiêu chí + số ô ⚪ (K20), tỷ lệ phủ sổ đọc khi chưa trình (K21)."""
+    import so_doc_de_cuong as SDD  # noqa: PLC0415
+    import tam_nguyen_tac_de_cuong as TNT  # noqa: PLC0415
+
+    return TNT.canh_bao_k20(out_dir, study) + SDD.canh_bao_k21(out_dir, study)
+
+
 def kiem(out_dir: Path, study: str) -> List[str]:
     """Danh sách lỗi của bản đề cương nộp Hội đồng (rỗng = đạt). Thiếu tệp `.md` ⇒ một lỗi K1."""
     out_dir = Path(out_dir)
@@ -1037,6 +1067,7 @@ def kiem(out_dir: Path, study: str) -> List[str]:
     loi.extend(loi_k19(md, dv))
     if G10._co_lien_lac_ca_nhan(md) or (docx_chu is not None and G10._co_lien_lac_ca_nhan(docx_chu)):
         loi.append("K7 có email/số điện thoại — PII liên lạc để dòng chấm cho PI điền tay ngoài hệ thống")
+    loi.extend(loi_k21(out_dir, study) + loi_k20(out_dir, study, loi))
     return loi
 
 
@@ -1047,7 +1078,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     a = ap.parse_args(argv)
     out_dir = BASE / "exports" / a.study
     loi = kiem(out_dir, a.study)
-    canh = canh_bao_k17(out_dir, a.study)
+    canh = canh_bao_k20_k21(out_dir, a.study) + canh_bao_k17(out_dir, a.study)
     ket: Dict[str, Any] = {"study": a.study, "dat": not loi, "loi": loi, "canh_bao": canh}
     if a.json:
         print(json.dumps(ket, ensure_ascii=False, indent=2))

@@ -2,7 +2,8 @@
 
 Fixture tự soạn, ngoại tuyến: một đề cương đủ chương, Word dựng từ chính các dòng của .md, biên nhận A12 phủ PMID.
 Mỗi luật K1–K7 có một ca hỏng đúng một chỗ. 19/11/2026: chương 5 của fixture mang một hình và một bảng đúng chuẩn
-biểu bảng (K9) — fixture cũ để trống chương 5, đúng kiểu bác sĩ chê «biểu bảng chưa có»."""
+biểu bảng (K9) — fixture cũ để trống chương 5, đúng kiểu bác sĩ chê «biểu bảng chưa có». 22/11/2026 (K20): bìa ghi
+phiên bản và ngày như mọi tài liệu nộp Hội đồng (trục de_cuong_nop của nhat_quan_xuyen_cong)."""
 from __future__ import annotations
 
 import json
@@ -22,6 +23,8 @@ import kiem_de_cuong_nop_hoi_dong as K  # noqa: E402
 
 MA = "de-tai-thu"
 TOT = """# ĐỀ CƯƠNG NGHIÊN CỨU KHOA HỌC
+
+Phiên bản đề cương: 1.0, ngày 15/10/2026
 
 # 1. ĐẶT VẤN ĐỀ
 
