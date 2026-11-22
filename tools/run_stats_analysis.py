@@ -1152,7 +1152,7 @@ def _mi_tu_lap(df: pd.DataFrame, outcome_col: str, predictors: list, outcome_typ
     (b) POISSON VỮNG THEO CỤM: mỗi bộ khớp GLM Poisson liên kết log với sai số chuẩn sandwich theo cụm (CR1), gộp Rubin;
         suy luận t(G−1) như mọi bảng hiệu chỉnh cụm khác (N11).
     Gán: MICEData (hồi quy tuyến tính + so khớp trung bình dự đoán pmm, rút giá trị có thật), 10 vòng chạy nóng rồi
-    mỗi bộ thêm một vòng — như MICE dựng sẵn. Gộp: luật Rubin (`_gop_rubin`; nguồn `NGUON_MI_TU_LAP`)."""
+    mỗi bộ thêm 4 vòng — như MICE dựng sẵn (n_skip = 3). Gộp: luật Rubin (`_gop_rubin`; nguồn `NGUON_MI_TU_LAP`)."""
     import statsmodels.formula.api as smf  # noqa: PLC0415
     from statsmodels.imputation.mice import MICEData  # noqa: PLC0415
 
@@ -1201,7 +1201,9 @@ def _mi_tu_lap(df: pd.DataFrame, outcome_col: str, predictors: list, outcome_typ
     imp.update_all(10)
     cac_bo = []
     for _ in range(n_imputations):
-        imp.update_all(1)
+        # 22/11/2026: 4 vòng giữa hai bộ (= n_skip 3 của MICE dựng sẵn) — bộ liền kề bớt tương quan, nên B và sai số
+        # Monte Carlo √(B/m) không bị ước lượng thấp (đo khi đối chiếu R: 1 vòng ⇒ |Δ|/MCSE phân tán 1,3 thay vì 1)
+        imp.update_all(4)
         bo = data.copy()
         da_gan = imp.data.rename(columns={v: k for k, v in an_toan.items()}).reset_index(drop=True)
         for c in khung_cot:
@@ -1278,21 +1280,25 @@ def _mi_tu_lap(df: pd.DataFrame, outcome_col: str, predictors: list, outcome_typ
             ly_do.extend(_ly_do_tu_uoc_luong(ten_goc(t), float(q_bar[i]), float(se[i]), float(ci[i][0]),
                                              float(ci[i][1]), kiem_do_lon=(t != "Intercept")))
     results = []
+    m_bo = len(he_so)
     for i, t in enumerate(ten_tham_so):
         if t == "Intercept":
             continue
         est, lo, hi, p = float(q_bar[i]), float(ci[i][0]), float(ci[i][1]), round(float(pvals[i]), 4)
+        # thang mô hình (log với PR/OR) — cho đối chiếu R theo sai số Monte Carlo: mcse = √(B/m)
+        b_giua = float(lam[i]) * float(se[i]) ** 2 / (1 + 1 / m_bo) if np.isfinite(lam[i]) else 0.0
+        mc = {"b": round(est, 6), "se": round(float(se[i]), 6), "mcse": round(float(np.sqrt(b_giua / m_bo)), 6)}
         if poisson:
             e = {"variable": ten_goc(t), "PR_adj": round(float(np.exp(est)), 4),
-                 "CI_95": [round(float(np.exp(lo)), 4), round(float(np.exp(hi)), 4)], "p": p}
-            results.append(_gan_co_khong_hoi_tu(e, ly_do, ("PR_adj", "CI_95", "p")))
+                 "CI_95": [round(float(np.exp(lo)), 4), round(float(np.exp(hi)), 4)], "p": p, **mc}
+            results.append(_gan_co_khong_hoi_tu(e, ly_do, ("PR_adj", "CI_95", "p", "b", "se", "mcse")))
         elif outcome_type == "binary":
             e = {"variable": ten_goc(t), "OR_adj": round(float(np.exp(est)), 3),
-                 "CI_95": [round(float(np.exp(lo)), 3), round(float(np.exp(hi)), 3)], "p": p}
-            results.append(_gan_co_khong_hoi_tu(e, ly_do, ("OR_adj", "CI_95", "p")))
+                 "CI_95": [round(float(np.exp(lo)), 3), round(float(np.exp(hi)), 3)], "p": p, **mc}
+            results.append(_gan_co_khong_hoi_tu(e, ly_do, ("OR_adj", "CI_95", "p", "b", "se", "mcse")))
         else:
             results.append({"variable": ten_goc(t), "beta": round(est, 4), "CI_95": [round(lo, 4), round(hi, 4)],
-                            "p": p})
+                            "p": p, **mc})
     out = {"bo_may": "tu_lap", "phuong_phap_gop": f"luật Rubin (Q̄, Ū + (1 + 1/m)·B) — {NGUON_MI_TU_LAP}",
            "ty_le_thong_tin_thieu": {ten_goc(t): round(float(lam[i]), 3) for i, t in enumerate(ten_tham_so)
                                      if t != "Intercept" and np.isfinite(lam[i])},
@@ -1452,6 +1458,11 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
             ly_do_mo_hinh.extend(_ly_do_tu_uoc_luong(
                 str(ten), float(res.params[i]), se_i, float(ci[i][0]), float(ci[i][1]),
                 kiem_do_lon=(safe_name != "Intercept")))
+    # 22/11/2026: sai số Monte Carlo của ước lượng gộp mcse = √(B/m), B = phương sai giữa các bộ (từng lần fit
+    # của MICE) — cho đối chiếu R (cau_noi_r) đặt dung sai theo sai số Monte Carlo thay vì ngưỡng đoán.
+    ds_he_so = np.asarray([np.asarray(r_i.params, dtype=float) for r_i in getattr(mice, "results_list", [])])
+    b_giua = (np.var(ds_he_so, axis=0, ddof=1) if len(ds_he_so) > 1
+              else np.zeros(len(res.model.exog_names)))
     results = []
     for i, safe_name in enumerate(res.model.exog_names):
         if safe_name == "Intercept":
@@ -1460,20 +1471,22 @@ def multiple_imputation_model(df: pd.DataFrame, outcome_col: str, group_col: str
         est = float(res.params[i])
         lo, hi = float(ci[i][0]), float(ci[i][1])
         p = round(float(pvals[i]), 4)
+        mc = {"b": round(est, 6), "se": round(float(bse[i]), 6) if bse is not None else None,
+              "mcse": round(float(np.sqrt(b_giua[i] / max(n_imputations, 1))), 6)}
         if poisson:
             results.append(_gan_co_khong_hoi_tu(
                 {"variable": var, "PR_adj": round(float(np.exp(est)), 4),
-                 "CI_95": [round(float(np.exp(lo)), 4), round(float(np.exp(hi)), 4)], "p": p},
-                ly_do_mo_hinh, ("PR_adj", "CI_95", "p")))
+                 "CI_95": [round(float(np.exp(lo)), 4), round(float(np.exp(hi)), 4)], "p": p, **mc},
+                ly_do_mo_hinh, ("PR_adj", "CI_95", "p", "b", "se", "mcse")))
         elif outcome_type == "binary":
             results.append(_gan_co_khong_hoi_tu(
                 {"variable": var, "OR_adj": round(float(np.exp(est)), 3),
                  "CI_95": [round(float(np.exp(lo)), 3), round(float(np.exp(hi)), 3)],
-                 "p": p},
-                ly_do_mo_hinh, ("OR_adj", "CI_95", "p")))
+                 "p": p, **mc},
+                ly_do_mo_hinh, ("OR_adj", "CI_95", "p", "b", "se", "mcse")))
         else:
             results.append({"variable": var, "beta": round(est, 4),
-                             "CI_95": [round(lo, 4), round(hi, 4)], "p": p})
+                             "CI_95": [round(lo, 4), round(hi, 4)], "p": p, **mc})
 
     out_mi = {
         "model": "poisson_hc0_mi" if poisson else ("logistic_mi" if outcome_type == "binary" else "linear_mi"),
@@ -3183,6 +3196,8 @@ def main():
         "loc": args.loc.strip() or None,
         "loc_cot_ngay": loc_cot_ngay,
         "hiep_bien_hang_sau_loc": hang_sau_loc,  # 16/11/2026: đã loại khỏi mô hình nhóm con (hằng sau lọc)
+        # 22/11/2026 (việc G): tỷ lệ Wilson của Bảng 1b — cầu nối R tái lập đúng cột + ngưỡng SAP
+        "ty_le": list(args.ty_le or []), "nguong_ty_le": args.nguong_ty_le,
     }
     if args.loc.strip():
         summary["loc"] = {"bieu_thuc": args.loc.strip(), "n_truoc": n_truoc_loc, "n_sau": len(df)}

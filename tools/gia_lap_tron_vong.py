@@ -1987,6 +1987,26 @@ class TronVong:
                 "ceac_wtp": "—" if ceac is None else self._so_vn(100 * ceac, 1),
                 "goc_phan_tu": str(kt.get("goc_phan_tu") or "").split(" — ")[0]}
 
+    def _gia_tri_bootstrap(self) -> Dict[str, Any]:
+        """Khoá lời văn hiệu chỉnh lạc quan của mô hình dự báo (SAP §9, 22/11/2026) — đọc tóm tắt của phân tích có tham
+        số «bootstrap» (engine phan_tich_thiet_ke_dac_thu: Python + R chạy thật, đối chiếu theo sai số Monte Carlo).
+        Không có phân tích đó / chưa chạy ⇒ {} (chỗ giữ trong lời văn sẽ KeyError — lộ ngay, không điền rỗng)."""
+        g = next((f"G6_{pt['id']}" for pt in (self.kb.get("ho_so_tron_vong") or {}).get("g6") or []
+                  if (pt.get("tham_so") or {}).get("bootstrap")), None)
+        dt = (_doc_json(self.out / f"{g}_analysis_summary.json").get("dac_thu") or {}) if g else {}
+        bt = dt.get("bootstrap") or {}
+        if not bt.get("B_hop_le"):
+            return {}
+        r = bt.get("r") or {}
+        dat = bt.get("kiem_cheo_r") == "KHOP" and all(r.get(f"{k}_hieu_chinh") is not None
+                                                      for k in ("c", "do_doc", "citl"))
+        return {"boot_b": int(bt["B_hop_le"]), "c_hieu_chinh": self._so_vn(bt["c_hieu_chinh"], 3),
+                "do_doc_hieu_chinh": self._so_vn(bt["do_doc_hieu_chinh"], 3),
+                "citl_hieu_chinh": self._so_vn(bt["citl_hieu_chinh"], 3),
+                "boot_doi_chieu_r": (
+                    "bản R cùng thuật toán và rms::validate cho cùng kết quả trong sai số Monte Carlo" if dat
+                    else "bản R chưa xác nhận được — xem tệp kiểm chéo của phân tích bootstrap")}
+
     @staticmethod
     def _so_vn(x: float, le: int) -> str:
         return f"{x:.{le}f}".replace(".", ",")
@@ -2076,8 +2096,9 @@ class TronVong:
             if isinstance(dt.get(k), (int, float)):
                 gt[k] = self._so_vn(dt[k], 3 if k in ("brier", "tau2") else (1 if k == "i2_pct" else 2))
         for k in ("k", "epv", "n_ban_go_bang", "so_chu_de"):
-            if dt.get(k) is not None:
-                gt[k] = dt[k]
+            if dt.get(k) is not None:  # số lẻ (EPV 45,5) viết dấu phẩy thập phân như mọi số khác của lời văn
+                v = dt[k]
+                gt[k] = self._so_vn(v, 1) if isinstance(v, float) and not v.is_integer() else v
         for i, cd in enumerate(dt.get("chu_de") or [], 1):
             gt[f"chu_de_{i}_ten"] = cd.get("chu_de")
             gt[f"chu_de_{i}_n"] = cd.get("n")
@@ -2107,6 +2128,7 @@ class TronVong:
         if mi.get("pct_missing_rows") is not None:
             gt["pct_thieu"] = self._so_vn(float(mi["pct_missing_rows"]), 1)
         gt.update(self._gia_tri_kinh_te())
+        gt.update(self._gia_tri_bootstrap())
         gt["cau_ton_hai"] = self._cau_ton_hai()
         if pc.get("group_1"):
             gt.update({"n1": pc["group_1"].get("n"), "n0": (pc.get("group_0") or {}).get("n"),

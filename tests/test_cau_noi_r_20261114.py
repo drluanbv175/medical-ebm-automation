@@ -746,17 +746,17 @@ KICH_BAN_THAT = {
             "bien_co",
         ],
         0,
-        ("HR thô", "SE cụm"),
+        ("HR thô", "SE cụm", "Gán đa trị (logistic_mi, m = 20) — nhom"),  # Bảng 5 có cụm: CR1 + t(G−1)
     ),
     "LOGISTIC": (
         ["--outcome", "kq", "--group", "nhom", "--covariates", "tuoi,gioitinh", "--outcome-type", "binary"],
         0,
-        ("Đa biến (logistic) — nhom",),
+        ("Đa biến (logistic) — nhom", "Gán đa trị (logistic_mi, m = 20) — tuoi"),
     ),
     "WELCH": (
         ["--outcome", "diem", "--group", "nhom", "--covariates", "tuoi,gioitinh", "--outcome-type", "continuous"],
         0,
-        ("Welch", "Đa biến (linear) — nhom"),
+        ("Welch", "Đa biến (linear) — nhom", "Gán đa trị (linear_mi, m = 20) — nhom"),
     ),
     "MANN-WHITNEY": (
         ["--outcome", "diem_lech", "--group", "nhom", "--covariates", "tuoi,gioitinh", "--outcome-type", "continuous"],
@@ -851,7 +851,10 @@ def test_chay_that_python_den_r(ten, tmp_path, monkeypatch):
     monkeypatch.setattr(
         sys,
         "argv",
-        ["run_stats_analysis.py", "--data", str(p), "--study", study, "--gate", "G6", "--n-imputations", "2", *tham_so],
+        # m = 20 (mặc định của run_stats_analysis): từ 22/11/2026 Bảng 5 (MI) có bản R và được đối chiếu theo sai số
+        # Monte Carlo — m < 10 thì «không so được» (B ước lượng với m − 1 bậc tự do)
+        ["run_stats_analysis.py", "--data", str(p), "--study", study, "--gate", "G6", "--n-imputations", "20",
+         *tham_so],
     )
     with contextlib.redirect_stdout(io.StringIO()):
         RSA.main()

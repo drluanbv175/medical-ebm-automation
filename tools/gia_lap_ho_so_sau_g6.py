@@ -461,32 +461,36 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
         thiet_ke="Phát triển mô hình dự báo, thuần tập",
         bang=[
             _dong("Nhập viện trong 12 tháng", "C-statistic (trong mẫu)", "c_statistic", "G6",
-                  "Phân biệt mức vừa; chưa hiệu chỉnh lạc quan"),
+                  "Phân biệt mức vừa; giá trị sau hiệu chỉnh lạc quan ở mục 2"),
             _dong(_GIOI.format(gioi="nữ"), "C-statistic", "c_statistic", "G6_NC_nu", "Thăm dò"),
             _dong(_GIOI.format(gioi="nam"), "C-statistic", "c_statistic", "G6_NC_nam", "Thăm dò"),
         ],
         muc=(
             ("Mô hình bốn yếu tố dự báo có C-statistic trong mẫu {c_statistic} (KTC 95% {c_statistic_duoi}–"
-             "{c_statistic_tren}) và Brier {brier}, với {epv} biến cố trên mỗi yếu tố dự báo. Không kiểm định giả "
-             "thuyết; ý nghĩa lâm sàng nằm ở khả năng phân biệt mức vừa — đủ để phân tầng nguy cơ sơ bộ, chưa đủ để "
-             "quyết định cá nhân khi chưa kiểm định ngoài."),
+             "{c_statistic_tren}) và Brier {brier}, với {epv} biến cố trên mỗi yếu tố dự báo. Sau hiệu chỉnh lạc quan "
+             "bằng bootstrap {boot_b} lần (khớp lại mô hình trên từng mẫu), C-statistic là {c_hieu_chinh}, độ dốc hiệu "
+             "chuẩn {do_doc_hieu_chinh} và calibration-in-the-large {citl_hieu_chinh}; {boot_doi_chieu_r}. Không kiểm "
+             "định giả thuyết; ý nghĩa lâm sàng nằm ở khả năng phân biệt mức vừa — đủ để phân tầng nguy cơ sơ bộ, chưa "
+             "đủ để quyết định cá nhân khi chưa kiểm định ngoài."),
             ("C-statistic tương đương mức trung bình của các mô hình dự báo nhập viện vì suy tim trong tổng quan 117 "
-             "mô hình của Ouwerkerk và cộng sự (2014): C-statistic trung bình 0,68 (PMID 25194294). Giá trị của đề "
-             "tài là ước lượng trong mẫu, chưa hiệu chỉnh lạc quan; tác giả " + _KC_TRUNG + "."),
+             "mô hình của Ouwerkerk và cộng sự (2014): C-statistic trung bình 0,68 (PMID 25194294). Giá trị đem so "
+             "là C-statistic sau hiệu chỉnh lạc quan {c_hieu_chinh}; tác giả " + _KC_TRUNG + "."),
             ("Điểm mạnh: yếu tố dự báo chọn theo y văn trước khi xem dữ liệu, số biến cố trên mỗi yếu tố đủ lớn, cỡ "
-             "mẫu {n} người, kiểm chéo SPSS–R khớp. Hạn chế: C-statistic trong mẫu (bootstrap hiệu chỉnh lạc quan chạy "
-             "trong kịch bản R, chưa báo ở đây), chưa kiểm định ngoài, một cơ sở, và chưa có biểu đồ hiệu chuẩn trong "
-             "bản này."),
+             "mẫu {n} người, kiểm chéo SPSS–R khớp, hiệu chỉnh lạc quan bằng bootstrap {boot_b} lần. Hạn chế: mới "
+             "kiểm định nội bộ, chưa kiểm định ngoài, một cơ sở, và chưa có biểu đồ hiệu chuẩn trong bản này."),
             ("Hàm ý cho thực hành: chưa dùng mô hình cho quyết định cá nhân trước khi kiểm định ngoài; có thể dùng để "
              "thử phân tầng theo dõi. Hướng tiếp: kiểm định ngoài ở cơ sở khác, báo hiệu chuẩn và lợi ích ròng "
              "(decision curve)."),
         ),
         tra_loi_g7=_tra_loi_g7(
             ket_qua=("Trong {n} người suy tim, mô hình gồm tuổi, LVEF, NT-proBNP và eGFR có C-statistic trong mẫu "
-                     "{c_statistic} (KTC 95% {c_statistic_duoi}–{c_statistic_tren}) và Brier {brier}."),
+                     "{c_statistic} (KTC 95% {c_statistic_duoi}–{c_statistic_tren}) và Brier {brier}; sau hiệu chỉnh "
+                     "lạc quan bằng bootstrap {boot_b} lần, C-statistic {c_hieu_chinh}, độ dốc hiệu chuẩn "
+                     "{do_doc_hieu_chinh}, calibration-in-the-large {citl_hieu_chinh}."),
             ket_luan=("Mô hình bốn yếu tố dự báo nhập viện 12 tháng ở người suy tim ngoại trú có khả năng phân biệt "
                       "mức vừa; cần kiểm định ngoài trước khi dùng."),
-            ket_cuc_phu="Hiệu chuẩn và hiệu chỉnh lạc quan báo riêng theo SAP §9 (kịch bản R đã sinh)",
+            ket_cuc_phu=("Hiệu chuẩn sau hiệu chỉnh lạc quan bằng bootstrap {boot_b} lần (SAP §9): độ dốc hiệu chuẩn "
+                         "{do_doc_hieu_chinh}, calibration-in-the-large {citl_hieu_chinh}"),
             du_lieu_thieu=("Không có dữ liệu thiếu ở các yếu tố dự báo nên không gán đa trị (khớp SAP §6)"),
             giai_thich="Không áp dụng — mô hình dự báo, không ước lượng hiệu ứng nhân quả",
             diem_manh="Yếu tố dự báo định trước theo y văn; kiểm chéo độc lập bằng SPSS và R",
@@ -494,16 +498,16 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             mesh="Heart Failure; Hospitalization; Risk Assessment; Models, Statistical",
         ),
         ly_do=("Yếu tố dự báo định trước, EPV đủ; C-statistic {c_statistic} (KTC 95% {c_statistic_duoi}–"
-               "{c_statistic_tren}) kiểm chéo SPSS/R khớp. Cần báo hiệu chuẩn và hiệu chỉnh lạc quan theo TRIPOD."),
+               "{c_statistic_tren}) kiểm chéo SPSS/R khớp; sau hiệu chỉnh lạc quan bằng bootstrap {c_hieu_chinh}. Cần "
+               "thêm biểu đồ hiệu chuẩn theo TRIPOD."),
         gop_y=[
             ("Từ khoá (trang đầu)", "Dòng từ khoá do máy tách từng chữ của tiêu đề — thay bằng thuật ngữ MeSH"),
             ("Kết quả — hiệu chuẩn", "Thêm biểu đồ hiệu chuẩn và độ dốc hiệu chuẩn (TRIPOD+AI mục 23)"),
-            ("Kết quả — lạc quan", "Báo C-statistic sau hiệu chỉnh lạc quan bằng bootstrap (SAP §9)"),
         ],
         cau_hoi=["Mô hình đầy đủ (phương trình hệ số) có được công bố để người khác kiểm định ngoài không?",
                  "Người tử vong trước 12 tháng được xử lý thế nào (biến cố cạnh tranh)?"],
-        checklist=("TRIPOD+AI", "24/27 mục (89%)",
-                   "mục 23 (hiệu chuẩn), mục 12 (hiệu chỉnh lạc quan), mục 27 (truy cập mô hình)"),
+        # 22/11/2026: hiệu chỉnh lạc quan (bootstrap) nay báo ở mục diễn giải và Kết quả ⇒ không còn trong mục thiếu
+        checklist=("TRIPOD+AI", "25/27 mục (93%)", "mục 23 (hiệu chuẩn), mục 27 (truy cập mô hình)"),
         dac_ta=_dac_ta_g10(
             bias_risks="Quá khớp; chọn yếu tố dự báo theo dữ liệu; biến cố cạnh tranh (tử vong)",
             bias_controls=("Yếu tố dự báo định trước theo y văn; EPV ≥ 10; bootstrap hiệu chỉnh lạc quan; báo cáo "
