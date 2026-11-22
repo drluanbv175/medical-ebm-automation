@@ -1812,8 +1812,12 @@ def vong_kin_buoc(st: Dict[str, Any], van: str, tep: Path, out_dir: Path, goi_ap
     nk["yeu_cau_hong"] = hong   # nhóm hỏng: vấn đề của nhóm đó sẽ được hội đồng vòng sau nêu lại (không bị bỏ qua)
     la_chinh = Path(st["tep"]).resolve() == tep_mac_dinh(st["study"], out_dir.parents[1]).resolve()
     st["bien_tap"] = nk
-    if not nk["nhan"]:
-        print(f"⛔ Không thay thế nào qua rào liêm chính ({len(nk['loai'])} bị loại) — dừng.")
+    # 22/11/2026 (đo thật, BTM vòng 4): biên tập viên khai MỌI vấn đề còn lại «vượt thẩm quyền» (vùng khoá) ⇒ 0 thay
+    # thế ⇒ máy cũ dừng như thất bại. Đúng ra: KHÔNG ghi tệp, vẫn sang vòng thẩm tra trên chính bản này để người thẩm
+    # tra xác nhận «cần dữ kiện» (hoặc biên tập viên thấy lý do rào loại ở vòng sau). Chỉ dừng khi đã hết số vòng.
+    khong_doi = not nk["nhan"]
+    if khong_doi and int(st.get("vong", 1)) >= SO_VONG_TOI_DA:
+        print(f"⛔ Không thay thế nào qua rào liêm chính ({len(nk['loai'])} bị loại) ở vòng tối đa — dừng.")
         return 1
     if not la_chinh:
         print("⛔ Vòng kín chỉ sửa đề cương chính của đề tài.")
@@ -1821,6 +1825,8 @@ def vong_kin_buoc(st: Dict[str, Any], van: str, tep: Path, out_dir: Path, goi_ap
     if not ap_dung:
         print(f"(chạy khô) {len(nk['nhan'])} thay thế qua rào, {len(nk['loai'])} bị loại — thêm --ap-dung để ghi.")
         return 0
+    if khong_doi:
+        return _sang_vong_tham_tra(st, out_dir, tep, van, van, gop, vd, nk)
     sao_luu = thu_muc_hd(out_dir) / f"sao_luu_{st['sha'][:12]}{tep.suffix}"
     if not sao_luu.exists():
         _ghi_van(sao_luu, van)
@@ -1855,6 +1861,12 @@ def vong_kin_buoc(st: Dict[str, Any], van: str, tep: Path, out_dir: Path, goi_ap
             return 1
         print(f"🔎 Chọn lọc: giữ {len(giu)}/{len(giu) + len(bo)} thay thế; loại {len(bo)} vì làm chuẩn xấu đi.")
     nk["word"] = _xuat_word(out_dir, st["study"], van_moi)
+    return _sang_vong_tham_tra(st, out_dir, tep, van, van_moi, gop, vd, nk)
+
+
+def _sang_vong_tham_tra(st: Dict[str, Any], out_dir: Path, tep: Path, van: str, van_moi: str, gop: Dict[str, Any],
+                        vd: Sequence[Dict[str, Any]], nk: Dict[str, Any]) -> int:
+    """Mở vòng thẩm tra kế tiếp trên ``van_moi`` (trùng ``van`` khi không thay thế nào qua rào — không ghi tệp)."""
     st["buoc"], st["sha_moi"] = "da_sua", _sha(van_moi)
     moi = khoi_tao(st["study"], out_dir, tep, st["model"], st.get("loai", "de_cuong"))
     # QC-HDKH-2.0: vòng sau là THẨM TRA đúng các yêu cầu nghiêm trọng/cần sửa vừa giao, trên các đoạn vừa sửa.
@@ -1879,9 +1891,14 @@ def vong_kin_buoc(st: Dict[str, Any], van: str, tep: Path, out_dir: Path, goi_ap
     moi["buoc"] = "tham_tra" if moi["ds_yeu_cau"] else "xong"
     if not moi["ds_yeu_cau"]:
         moi["tham_tra"] = {"da_giai_quyet": [], "chua_giai_quyet": [], "can_du_kien": [], "loi_moi": [], "loai": []}
+    if van_moi == van:
+        # cùng tệp ⇒ cùng SHA ⇒ cùng tệp trạng thái: chuyển st TẠI CHỖ sang vòng mới (tầng gọi ghi st sau khi trả về)
+        st.clear()
+        st.update(moi)
     _ghi_json(tep_trang_thai(out_dir, moi["sha"]), moi)
     print(f"✍️ Đã áp {len(nk['nhan'])} thay thế ({len(nk['loai'])} bị loại, {len(nk['vuot_tham_quyen'])} vượt thẩm "
-          f"quyền) — vòng {moi['vong']} thẩm tra {len(moi['ds_yeu_cau'])} yêu cầu trên bản mới.")
+          f"quyền) — vòng {moi['vong']} thẩm tra {len(moi['ds_yeu_cau'])} yêu cầu trên "
+          + ("bản mới." if van_moi != van else "CHÍNH bản này (không thay thế nào — không ghi tệp)."))
     return 0
 
 

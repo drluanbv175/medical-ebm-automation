@@ -1031,6 +1031,25 @@ def test_vong_kin_ket_hop_agent_tham_dinh_bien_tap_tham_tra_chot_cuoi(tmp_path):
     assert dat["trinh_bac_si"] and dat["ket_hop"] and len(kh.lo) == 2   # đúng 2 batch API cho cả vòng kín
 
 
+def test_bien_tap_chi_vuot_tham_quyen_van_sang_tham_tra_khong_ghi_tep(tmp_path):
+    """22/11/2026 (đo thật BTM vòng 4): mọi vấn đề còn lại nằm vùng khoá ⇒ biên tập viên khai «vượt thẩm quyền»,
+    0 thay thế ⇒ máy KHÔNG được dừng như thất bại mà sang thẩm tra trên chính bản này (không ghi tệp)."""
+    goc, p = _goc_ket_hop(tmp_path)
+    kh = KhachBatch(dict(TRA))
+    assert [_vk(goc, kh) for _ in range(5)] == [4, 0, 4, 0, H.CHO_AGENT]
+    _tra_loi(goc, "tham_dinh", _pd_dung_het)
+    assert _vk(goc, kh) == 0 and _vk(goc, kh) == H.CHO_AGENT
+    truoc = p.read_text(encoding="utf-8")
+    _tra_loi(goc, "bien_tap", lambda v, du: {"sua": [
+        {"id": m["id"], "hanh_dong": "vuot_tham_quyen", "ly_do": "cần thống kê viên quyết"} for m in du["van_de"]]})
+    assert _vk(goc, kh) == 0                                           # không còn «⛔ … — dừng»
+    assert p.read_text(encoding="utf-8") == truoc                      # không ghi tệp
+    assert _vk(goc, kh) == H.CHO_AGENT                                 # sang thẩm tra bằng agent
+    assert {v["loai_viec"] for v in H.viec_agent_dang_cho(goc, STUDY)} == {"tham_tra"}
+    st = max(_cac_st(goc), key=lambda s: int(s.get("vong", 1)))
+    assert st["che_do"] == "tham_tra" and st["vtq_ids"] and len(kh.lo) == 2    # không thêm batch API
+
+
 def test_agent_phan_sai_doi_chung_thi_khong_ap_phan_quyet(tmp_path):
     goc, p = _goc_ket_hop(tmp_path)
     kh = KhachBatch(dict(TRA))
