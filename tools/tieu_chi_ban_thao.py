@@ -21,7 +21,8 @@ CÁCH KIỂM (tất định, không gọi mạng; dùng lại bộ chấm `cham_
   3. Mỗi mục của đề cương được đổi sang bản thảo: phần đề cương → chương IMRAD (`PHAN_SANG_IMRAD`); mục `ke_hoach` và
      `bao_cao` trở thành BẮT BUỘC và tìm ở Kết quả/Bàn luận; mục có cách viết riêng ở bài báo có tiêu chí ghi đè
      (`_GHI_DE`: STROBE 1a, 1b, 13c, 16b, 16c, 17, 20…; RECORD 1.1–1.3; chuẩn Việt Nam; CROSS 5d, 11c). RCT dùng
-     CONSORT 2025 (42 mục, `_CONSORT`) thay SPIRIT 2025; tổng quan hệ thống dùng PRISMA 2020 (chưa có tiêu chí ⇒ ⚪).
+     CONSORT 2025 (42 mục, `_CONSORT`) thay SPIRIT 2025; tổng quan hệ thống/phân tích gộp dùng PRISMA 2020 (42 dòng —
+     27 mục kể cả mục con, `_PRISMA_2020`; mục 2 chấm theo 12 mục PRISMA 2020 for Abstracts) thay PRISMA-P 2015.
   4. Bản thảo CHƯA CÓ SỐ LIỆU (còn ô [CẦN…], không ở chế độ nộp): mục thuộc trọn Kết quả/Bàn luận/Kết luận và yếu tố
      `so_lieu` (số liệu kết quả, số quyết định Hội đồng, đồng thuận/miễn) báo «chua_do» — KHÔNG BAO GIỜ là đạt.
      Mục phương pháp và cấu trúc vẫn chấm đầy đủ.
@@ -31,7 +32,8 @@ GIỚI HẠN (như K17): yếu tố có mặt ≠ nội dung đúng. Bộ kiểm
 người phân xử (binh-duyet, tham-dinh-dau-ra) đọc bằng chứng từng dòng. Yếu tố CẤM (câu suy nhân quả từ thiết kế cắt
 ngang) chỉ bắt câu khẳng định không trích dẫn, không rào đón — câu khéo léo vẫn lọt; phản biện vẫn phải đọc.
 
-Bản quyền: nguyên văn CONSORT 2025 (CC BY 4.0 — bản PLOS Med, PMID 40228477) lấy từ `chuan_bao_cao_items.py`, sinh bằng
+Bản quyền: nguyên văn CONSORT 2025 (CC BY 4.0 — bản PLOS Med, PMID 40228477) và PRISMA 2020 (CC BY 4.0 — bản PLOS Med,
+PMID 33780438; bản BMJ ghi «No commercial re-use» nên không chép) lấy từ `chuan_bao_cao_items.py`, sinh bằng
 `sinh_chuan_bao_cao_items.py` từ XML Europe PMC sau khi đọc khối giấy phép. Chuẩn không mang giấy phép CC (CROSS…) chỉ
 lưu mã mục và tiêu chí do hệ viết.
 """
@@ -235,7 +237,8 @@ CHUAN_BAN_THAO: Dict[str, str] = {"SPIRIT 2025": "CONSORT 2025", "PRISMA-P 2015"
 NGUON_CHUAN_BAN_THAO: Dict[str, str] = {
     "CONSORT 2025": "Hopewell S et al. PLoS Med 2025;22(4):e1004587 (PMID 40228477; CC BY 4.0); cùng bản BMJ "
                     "2025;389:e081123 (PMID 40228833)",
-    "PRISMA 2020": "Page MJ et al. BMJ 2021;372:n71 (PMID 33782057) — chưa có tiêu chí theo mục trong hệ",
+    "PRISMA 2020": "Page MJ et al. PLoS Med 2021;18(3):e1003583 (PMID 33780438; CC BY 4.0); cùng bản BMJ 2021;372:n71 "
+                   "(PMID 33782057)",
 }
 
 # ───────────────────────────── mẫu dùng cho bản thảo ─────────────────────────────
@@ -775,6 +778,295 @@ def _muc_consort() -> List[MucKiem]:
     return ra
 
 
+# ═════════════════════════════════ PRISMA 2020 (bản thảo tổng quan hệ thống/phân tích gộp) ════════════════════════════
+# 22/11/2026. Nguyên văn: Page MJ et al. PLoS Med 2021;18(3):e1003583 (PMID 33780438; PMC8007028; CC BY 4.0) — cùng nội
+# dung BMJ 2021;372:n71 (PMID 33782057). Mục 2 («See the PRISMA 2020 for Abstracts checklist») chấm theo 12 mục của
+# PRISMA 2020 for Abstracts (Table 2). Chữ «ideally»/«where appropriate» của chuẩn: sơ đồ luồng (16a) không là yếu tố
+# bắt buộc; thống kê tóm tắt từng nhóm (19) chỉ đòi khi kết cục nhị phân/liên tục có số đo theo nhánh.
+#: cơ sở dữ liệu thư mục — sổ đăng ký thử nghiệm (ClinicalTrials.gov, ICTRP) KHÔNG thay được (22/11/2026: «search
+#: unpublished (clinicaltrials.gov)» trong bảng sai lệch của bản thảo giả lập từng làm mục 6 đạt khi không nêu CSDL nào)
+CSDL_TQ = r"PubMed|MEDLINE|Embase|Cochrane|CENTRAL|Scopus|Web of Science|CINAHL|PsycINFO|LILACS|Europe PMC"
+#: ngày tìm cuối gần chữ tìm/tra cứu — K.NGAY nhận cả «30/06/2027», «tháng 6 năm 2027» và ngày ISO «2027-06-30» của G1
+#: `search_last_date` (khớp mẫu «năm–tháng»)
+NGAY_TIM = (r"(tìm|tra cứu|search(ed)?)[^.\n|]{0,160}(" + K.NGAY + r")|(" + K.NGAY
+            + r")[^.\n|]{0,60}(tìm|tra cứu|search)")
+SO_NGUOI_TQ = r"\b(hai|ba|2|3)\s*(người|nghiên cứu viên|thành viên|tác giả|reviewers?|screeners?|người sàng lọc)"
+DOC_LAP_TQ = r"độc lập|independent"
+THUOC_DO_HIEU_UNG = (r"\b(RR|OR|HR|MD|SMD|RD|WMD)\b|tỷ số (nguy cơ|chênh|rủi ro|nguy hại)|hiệu số (trung bình|nguy cơ)|"
+                     r"nguy cơ tương đối|risk ratio|odds ratio|mean difference|hazard ratio")
+NGUY_CO_SL_TQ = r"RoB ?2|ROBINS|Newcastle|QUADAS|AMSTAR|\bJBI\b|nguy cơ sai lệch|risk of bias"
+SAI_LECH_BAO_CAO_TQ = (r"sai lệch (công bố|xuất bản|báo cáo)|biểu đồ phễu|funnel|Egger|Begg|trim[- ]and[- ]fill|"
+                       r"publication bias|reporting bias|hiệu ứng nghiên cứu nhỏ|small[- ]study")
+CHAC_CHAN_TQ = (r"\bGRADE\b|mức (độ )?chắc chắn|độ (tin cậy|chắc chắn) (của )?(bằng chứng|chứng cứ)|certainty|"
+                r"chất lượng (bằng chứng|chứng cứ)")
+PHAN_NHOM_TQ = (r"phân nhóm|nhóm nhỏ|hồi quy gộp|meta-?regression|subgroup|khác biệt giữa (các )?(phân )?nhóm|"
+                r"Q giữa nhóm")
+DO_NHAY_TQ = r"phân tích (độ nhạy|nhạy cảm)|độ nhạy|sensitivity|bỏ từng nghiên cứu|leave[- ]one[- ]out"
+TRICH_DAN_NC = r"\[\d+(?:[,–-]\s*\d+)*\]|\bet al\b|\bPMID\b|\(\w[^()\n]{0,30}(19|20)\d{2}\)"
+
+#: mã → (chương, tiêu chí, yếu tố, [áp dụng khi, lý do, cùng đoạn]) — cùng khuôn `_CONSORT`
+_PRISMA_2020: Dict[str, tuple] = {
+    "1": (("tieu_de",), "Tiêu đề nêu đây là tổng quan hệ thống.",
+          (_y("«tổng quan hệ thống» trong tiêu đề", r"tổng quan (hệ thống|có hệ thống)|systematic review"),)),
+    "2": (("tom_tat",), "Tóm tắt theo PRISMA 2020 for Abstracts: mục tiêu, tiêu chí chọn, nguồn tìm kèm ngày tìm cuối, "
+                        "đánh giá nguy cơ sai lệch, phương pháp tổng hợp, số nghiên cứu và người tham gia, kết quả "
+                        "chính kèm KTC, hạn chế của bằng chứng, diễn giải, tài trợ, cơ quan và số đăng ký.",
+          (_y("mục tiêu (A2)", r"mục tiêu|nhằm|\bObjectives?\b|\baims?\b"),
+           _y("tiêu chí chọn (A3)", TIEU_CHUAN_CHON_BT + r"|tiêu chí (nhận|loại)|eligib"),
+           _y("nguồn thông tin (A4)", CSDL_TQ),
+           _y("ngày tìm cuối (A4)", NGAY_TIM),
+           _y("đánh giá nguy cơ sai lệch (A5)", NGUY_CO_SL_TQ),
+           _y("phương pháp tổng hợp (A6)", r"hiệu ứng (ngẫu nhiên|cố định)|mô hình (ngẫu nhiên|cố định)|"
+                                           r"random[- ]effects?|fixed[- ]effects?|DerSimonian|\bREML\b|Mantel|"
+                                           r"Hartung|tổng hợp (mô tả|tường thuật|không định lượng)|\bSWiM\b"),
+           _y("số nghiên cứu và người tham gia (A7)", r"\d+\s*(nghiên cứu|thử nghiệm|studies|trials)[^.\n]{0,120}"
+                                                      r"\d[\d.,]*\s*(người|bệnh nhân|participants|patients)",
+              so_lieu=True),
+           _y("kết quả chính kèm KTC (A8)", KTC_BT, so_lieu=True),
+           _y("hạn chế của bằng chứng (A9)", r"hạn chế|limitations?"),
+           _y("diễn giải (A10)", NHAN_KL, nhan=True),
+           _y("tài trợ (A11)", NGUON_KINH_PHI_BT),
+           _y("cơ quan và số đăng ký (A12)", r"(PROSPERO|INPLASY|\bOSF\b)[^.\n]{0,60}(CRD\d{6,}|INPLASY\d+|osf\.io)|"
+                                             r"(CRD\d{6,}|INPLASY\d+)[^.\n]{0,40}(PROSPERO|INPLASY)"))),
+    "3": (("gioi_thieu",), "Nêu lý do thực hiện tổng quan trong bối cảnh hiểu biết hiện có.",
+          (_y("trích dẫn nguồn", TC.TRICH_DAN),
+           _y("lý do/khoảng trống", r"khoảng trống|chưa (có|thấy|được|tìm thấy|rõ|biết)|còn (ít|hạn chế|thiếu)|"
+                                    r"thiếu (số liệu|dữ liệu|bằng chứng)|cần (thiết|có)|cập nhật|uncertain|gap"))),
+    "4": (("gioi_thieu", "tom_tat"), "Nêu rõ mục tiêu hoặc câu hỏi của tổng quan (quần thể, can thiệp/phơi nhiễm, kết "
+                                     "cục).",
+          (_y("mục tiêu/câu hỏi", r"(nhằm|mục tiêu)[^.\n]{0,60}(ước lượng|đánh giá|so sánh|xác định|tổng hợp|tìm hiểu|"
+                                  r"mô tả|kiểm định)|\bObjectives?\b|câu hỏi (nghiên cứu|của tổng quan)|"
+                                  r"research question"),
+           _y("quần thể", r"ở người|người (bệnh|trưởng thành|tham gia|cao tuổi)|bệnh nhân|quần thể|trẻ em|phụ nữ|"
+                          r"population|participants|patients"),
+           _y("can thiệp/phơi nhiễm", r"can thiệp|phơi nhiễm|điều trị|thuốc|liệu pháp|intervention|exposure|"
+                                      r"treatment"),
+           _y("kết cục", r"kết cục|outcome|tử vong|nhập viện|biến cố|tỷ lệ|nguy cơ|hiệu quả"))),
+    "5": (("phuong_phap",), "Nêu tiêu chí chọn và loại của tổng quan (kể cả đặc điểm báo cáo: ngôn ngữ, năm, tình "
+                            "trạng công bố) và cách nhóm nghiên cứu cho các tổng hợp.",
+          (_y("tiêu chí chọn", TIEU_CHUAN_CHON_BT + r"|tiêu chí nhận"),
+           _y("tiêu chí loại", TIEU_CHUAN_LOAI_BT),
+           _y("đặc điểm báo cáo (ngôn ngữ/năm/tình trạng công bố)",
+              r"ngôn ngữ|năm (xuất bản|công bố)|tình trạng (xuất bản|công bố)|chưa công bố|tiếng Anh|"
+              r"không giới hạn (ngôn ngữ|năm|thời gian)|language|publication status|unpublished"),
+           _y("cách nhóm nghiên cứu cho tổng hợp", r"nhóm (các )?(nghiên cứu|thử nghiệm)|nhóm nhỏ|phân nhóm|"
+                                                   r"gộp (theo|riêng)|tổng hợp (theo|riêng)|grouped|"
+                                                   r"nhóm theo (thuốc|can thiệp|kết cục|thiết kế|liều)"))),
+    "6": (("phuong_phap",), "Nêu mọi cơ sở dữ liệu, sổ đăng ký, trang web, tổ chức, danh mục tham khảo và nguồn khác "
+                            "đã tìm, kèm ngày tìm/tra cứu cuối của từng nguồn.",
+          (_y("cơ sở dữ liệu/sổ đăng ký đã tìm", CSDL_TQ), _y("ngày tìm cuối", NGAY_TIM))),
+    "7": (("phuong_phap", "phu_luc"), "Trình bày đầy đủ chiến lược tìm cho mọi cơ sở dữ liệu, sổ đăng ký và trang web "
+                                      "(câu lệnh, hoặc dẫn phụ lục chứa câu lệnh), kể cả bộ lọc và giới hạn.",
+          (_y("chiến lược tìm đầy đủ (câu lệnh hoặc dẫn phụ lục)",
+              r"\bAND\b|\[MeSH|\[mh\]|\[tiab\]|\[ti\]|\[pt\]|/exp\b|:ti,ab|"
+              r"(chiến lược tìm|câu lệnh tìm|search strateg)[^.\n]{0,160}(phụ lục|tài liệu bổ sung|supplement|"
+              r"appendix)|(phụ lục|tài liệu bổ sung|supplement|appendix)[^.\n]{0,120}(chiến lược tìm|câu lệnh tìm|"
+              r"search strateg)"),
+           _y("bộ lọc/giới hạn (hoặc nêu không giới hạn)", r"bộ lọc|giới hạn|filters?|limits?"))),
+    "8": (("phuong_phap",), "Nêu cách quyết định nghiên cứu đạt tiêu chí: số người sàng lọc mỗi bản ghi và báo cáo, có "
+                            "làm độc lập không, các giai đoạn (và công cụ tự động nếu dùng).",
+          (_y("số người sàng lọc", SO_NGUOI_TQ), _y("làm độc lập", DOC_LAP_TQ),
+           _y("giai đoạn sàng lọc", r"tiêu đề|tóm tắt|toàn văn|titles?|abstracts?|full[- ]?texts?")), None, "", True),
+    "9": (("phuong_phap",), "Nêu cách trích dữ liệu: số người trích mỗi báo cáo, có độc lập không, cách xin/xác nhận "
+                            "dữ liệu từ tác giả nghiên cứu.",
+          (_y("số người trích/độc lập", r"(hai|ba|2|3)\s*(người|nghiên cứu viên|thành viên)[^.\n|]{0,40}"
+                                        r"(trích|extract)|(trích|extract)[^.\n|]{0,60}(độc lập|independent)"),
+           _y("xin/xác nhận dữ liệu từ tác giả", r"liên hệ (tác giả|nhà nghiên cứu|nhà tài trợ)|xin (thêm )?dữ liệu|"
+                                                 r"contact(ed)? (the )?(study )?(authors|investigators)|"
+                                                 r"(không|chưa) liên hệ tác giả"))),
+    "10a": (("phuong_phap",), "Liệt kê và định nghĩa mọi kết cục cần tìm dữ liệu; nêu cách chọn kết quả khi một nghiên "
+                              "cứu báo cáo nhiều thời điểm/thước đo/phân tích.",
+            (_y("kết cục được liệt kê", r"kết cục (chính|phụ)|primary outcome|secondary outcome"),
+             _y("định nghĩa kết cục", r"định nghĩa|đo bằng|defined"),
+             _y("cách chọn kết quả (thời điểm/thước đo)", r"(thời điểm|mốc)[^.\n]{0,80}(dài nhất|cuối|gần nhất|chính)|"
+                                                          r"theo dõi dài nhất|chọn[^.\n]{0,60}(kết quả|thời điểm|"
+                                                          r"thước đo)|ưu tiên|mọi kết quả|all results|"
+                                                          r"longest follow"))),
+    "10b": (("phuong_phap",), "Liệt kê và định nghĩa các biến khác cần trích (đặc điểm người tham gia, can thiệp, "
+                              "nguồn tài trợ…); nêu giả định với thông tin thiếu hoặc không rõ.",
+            (_y("biến khác được trích", r"(biến|dữ liệu|thông tin)[^.\n]{0,40}(trích|thu thập|extract)|"
+                                        r"trích (xuất )?[^.\n]{0,80}(đặc điểm|thiết kế|cỡ mẫu|quần thể|can thiệp|"
+                                        r"tài trợ|thời gian theo dõi)|data items"),
+             _y("giả định khi thiếu/không rõ", r"giả định|thông tin (thiếu|không rõ)|(dữ liệu|số liệu) thiếu|"
+                                               r"missing or unclear"))),
+    "11": (("phuong_phap",), "Nêu phương pháp đánh giá nguy cơ sai lệch của từng nghiên cứu: công cụ, số người đánh "
+                             "giá, có độc lập không.",
+           (_y("công cụ đánh giá nguy cơ sai lệch", r"RoB ?2|ROBINS|Newcastle|QUADAS|AMSTAR|\bJBI\b|"
+                                                    r"risk of bias tool"),
+            _y("số người đánh giá", SO_NGUOI_TQ), _y("đánh giá độc lập", DOC_LAP_TQ)), None, "", True),
+    "12": (("phuong_phap",), "Nêu thước đo hiệu ứng cho từng kết cục (RR, OR, MD…).",
+           (_y("thước đo hiệu ứng", THUOC_DO_HIEU_UNG),)),
+    "13a": (("phuong_phap",), "Nêu quy trình quyết định nghiên cứu nào đủ điều kiện cho từng tổng hợp.",
+            (_y("tiêu chí đưa vào từng tổng hợp", r"(đủ điều kiện|đưa vào|chọn)[^.\n]{0,80}(từng |mỗi )?(tổng hợp|"
+                                                  r"phân tích gộp)|(gộp|tổng hợp định lượng|phân tích gộp) (chỉ )?"
+                                                  r"(khi|nếu)|điều kiện (để )?gộp|không gộp (khi|nếu)|"
+                                                  r"eligible for (each )?synthes"),)),
+    "13b": (("phuong_phap",), "Nêu cách chuẩn bị dữ liệu cho trình bày/tổng hợp (xử lý thống kê tóm tắt thiếu, chuyển "
+                              "đổi dữ liệu).",
+            (_y("chuẩn bị dữ liệu/xử lý thiếu", r"(dữ liệu|số liệu) thiếu|thiếu (dữ liệu|số liệu)|chuyển đổi|quy đổi|"
+                                                r"ước tính (SD|độ lệch chuẩn)|missing (summary )?statistics|"
+                                                r"data conversion|liên hệ tác giả"),)),
+    "13c": (("phuong_phap",), "Nêu cách lập bảng hoặc biểu diễn kết quả từng nghiên cứu và các tổng hợp.",
+            (_y("cách lập bảng/biểu diễn", r"biểu đồ rừng|forest[- ]?plot|bảng[^.\n]{0,12}(đặc điểm|kết quả|tóm tắt|"
+                                           r"ước lượng)|lập bảng|tabulat|tóm tắt phát hiện|summary of findings|"
+                                           r"harvest plot|albatross"),)),
+    "13d": (("phuong_phap",), "Nêu phương pháp tổng hợp và lý do chọn; nếu gộp: mô hình, cách xác định mức không đồng "
+                              "nhất, phần mềm.",
+            (_y("mô hình/phương pháp tổng hợp", r"hiệu ứng (ngẫu nhiên|cố định)|random[- ]effects?|fixed[- ]effects?|"
+                                                r"DerSimonian|\bREML\b|Mantel|Hartung|nghịch đảo phương sai|"
+                                                r"tổng hợp (mô tả|tường thuật)|\bSWiM\b"),
+             _y("đo không đồng nhất", r"I²|\bI2\b|\bτ²?|tau|không đồng nhất|heterogeneity|Cochran"),
+             _y("phần mềm", r"\bR\b\s*\d|metafor|\bmeta\b \d|RevMan|Stata|Comprehensive Meta|\bCMA\b|"
+                            r"phần mềm|software"))),
+    "13e": (("phuong_phap",), "Nêu phương pháp khảo sát nguyên nhân không đồng nhất (phân nhóm, hồi quy gộp) — hoặc "
+                              "nêu không khảo sát.",
+            (_y("khảo sát không đồng nhất", PHAN_NHOM_TQ + r"|(không|chưa) (khảo sát|phân tích) (nguyên nhân )?"
+                                                          r"không đồng nhất"),)),
+    "13f": (("phuong_phap",), "Nêu các phân tích độ nhạy đánh giá độ vững của kết quả tổng hợp — hoặc nêu không làm.",
+            (_y("phân tích độ nhạy", DO_NHAY_TQ + r"|(không|chưa) (thực hiện|làm) phân tích độ nhạy"),)),
+    "14": (("phuong_phap",), "Nêu phương pháp đánh giá nguy cơ sai lệch do thiếu kết quả trong tổng hợp (sai lệch báo "
+                             "cáo/công bố).",
+           (_y("đánh giá sai lệch báo cáo/công bố", SAI_LECH_BAO_CAO_TQ),)),
+    "15": (("phuong_phap",), "Nêu phương pháp đánh giá mức chắc chắn của tập bằng chứng cho từng kết cục (vd GRADE).",
+           (_y("đánh giá mức chắc chắn", CHAC_CHAN_TQ),)),
+    "16a": (("ket_qua",), "Mô tả kết quả tìm và chọn: từ số bản ghi tìm được tới số nghiên cứu đưa vào (lý tưởng kèm "
+                          "sơ đồ luồng).",
+            (_y("số bản ghi tìm được", r"\d[\d.,]*\s*(bản ghi|kết quả|records?|bài)[^.\n]{0,60}(tìm|xác định|"
+                                       r"identified|sàng lọc)|(tìm|xác định|identified)[^.\n]{0,40}\d[\d.,]*\s*"
+                                       r"(bản ghi|records?|bài)", so_lieu=True),
+             _y("số nghiên cứu đưa vào", r"\d+\s*(nghiên cứu|thử nghiệm|studies|trials|báo cáo)[^.\n]{0,40}(đưa vào|"
+                                         r"được chọn|included|đủ tiêu chuẩn|đủ tiêu chí)|(đưa vào|included)"
+                                         r"[^.\n]{0,20}\d+\s*(nghiên cứu|thử nghiệm)", so_lieu=True))),
+    "16b": (("ket_qua",), "Trích dẫn các nghiên cứu có vẻ đạt tiêu chí nhưng bị loại, kèm lý do loại.",
+            (_y("nghiên cứu bị loại kèm lý do", r"(bị loại|loại trừ|excluded)[^.\n]{0,120}(vì|do|lý do|because)|"
+                                                r"lý do (loại|bị loại)[^.\n]{0,40}\w|không có nghiên cứu nào bị loại"),
+             _y("trích dẫn nghiên cứu bị loại", TRICH_DAN_NC + r"|không có nghiên cứu nào bị loại")), None, "", True),
+    "17": (("ket_qua",), "Trích dẫn từng nghiên cứu được đưa vào và trình bày đặc điểm.",
+           # «Bảng 1. Đặc điểm nền người tham gia» (khuôn nghiên cứu gốc, số trung bình gộp mọi nghiên cứu) KHÔNG là đặc
+           # điểm TỪNG nghiên cứu (22/11/2026, bản thảo tổng quan giả lập)
+           (_y("đặc điểm các nghiên cứu", r"(Bảng|Table)\s*\d+[.:,]?[^\n]{0,40}(Đặc điểm (của )?(các |từng )?"
+                                          r"(nghiên cứu|thử nghiệm)|characteristics of (the )?(included )?(studies|"
+                                          r"trials)|study characteristics)", de_muc=True),
+            _y("trích dẫn từng nghiên cứu được đưa vào", TRICH_DAN_NC))),
+    "18": (("ket_qua",), "Trình bày đánh giá nguy cơ sai lệch của từng nghiên cứu được đưa vào.",
+           (_y("đánh giá nguy cơ sai lệch", NGUY_CO_SL_TQ),
+            _y("theo từng nghiên cứu", r"(theo |của |cho )?(từng|mỗi) (nghiên cứu|thử nghiệm)|theo nghiên cứu|"
+                                       r"each (included )?study|per study")), None, "", True),
+    "19": (("ket_qua",), "Với mọi kết cục, trình bày cho từng nghiên cứu: thống kê tóm tắt từng nhóm (khi phù hợp) và "
+                         "ước lượng hiệu ứng kèm độ chính xác (bảng hoặc biểu đồ có cấu trúc).",
+           (_y("ước lượng từng nghiên cứu kèm KTC", r"forest[- ]?plot|biểu đồ rừng|"
+                                                    r"^\|[^|\n]+\|\s*\d+[.,]\d+\s*\|\s*\d+[.,]\d+\s*[–-]\s*\d+[.,]\d+",
+               so_lieu=True),
+            # «x/n»: mẫu số ≥ 2 chữ số, không dính ngày «21/11/2026» — «Bảng 2/3» từng được nhận là số biến cố (22/11)
+            _y("thống kê tóm tắt từng nhóm (số biến cố/số người mỗi nhánh)",
+               r"(?<![/\d])\d{1,6}\s*/\s*\d{2,7}(?![/\d])|(biến cố|sự kiện)[^.\n|]{0,40}(nhóm|nhánh)[^.\n|]{0,20}\d|"
+               r"(nhánh|nhóm) (can thiệp|chứng|đối chứng|giả dược)[^.\n|]{0,40}\d+\s*(người|biến cố)|"
+               r"\|\s*\d+\s*\|\s*\d+\s*\|\s*\d+\s*\|\s*\d+\s*\|",
+               khi="@phuong_phap:" + r"\b(RR|OR|RD)\b|nhị phân|risk ratio|odds ratio|\b(MD|SMD)\b|trung bình",
+               so_lieu=True))),
+    "20a": (("ket_qua",), "Với từng tổng hợp, tóm tắt ngắn đặc điểm và nguy cơ sai lệch của các nghiên cứu đóng góp.",
+            (_y("số nghiên cứu đóng góp", r"\bk\s*=\s*\d+|\d+\s*(nghiên cứu|thử nghiệm|studies|trials)", so_lieu=True),
+             _y("đặc điểm các nghiên cứu đóng góp", r"đặc điểm|characteristics|thời gian theo dõi|cỡ mẫu|loại thuốc"),
+             _y("nguy cơ sai lệch của các nghiên cứu đóng góp", NGUY_CO_SL_TQ))),
+    "20b": (("ket_qua",), "Trình bày kết quả mọi tổng hợp thống kê: ước lượng gộp kèm độ chính xác (KTC) và số đo "
+                          "không đồng nhất.",
+            (_y("ước lượng gộp", r"(gộp|pooled|tổng hợp|summary)[^.\n]{0,60}\b(RR|OR|HR|MD|SMD|RD)\b|"
+                                 r"\b(RR|OR|HR|MD|SMD|RD)\b[^.\n]{0,20}gộp", so_lieu=True),
+             _y("khoảng tin cậy", KTC_BT, so_lieu=True),
+             _y("số đo không đồng nhất", r"I²|\bI2\b|\bτ²?\s*[=:]|\bQ\s*=|không đồng nhất|heterogeneity",
+                so_lieu=True))),
+    "20c": (("ket_qua",), "Trình bày kết quả khảo sát nguyên nhân không đồng nhất (phân nhóm, hồi quy gộp).",
+            (_y("kết quả phân nhóm/hồi quy gộp", PHAN_NHOM_TQ),), PHAN_NHOM_TQ,
+            "có phương pháp khảo sát không đồng nhất (phân nhóm/hồi quy gộp)"),
+    "20d": (("ket_qua",), "Trình bày kết quả mọi phân tích độ nhạy.",
+            (_y("kết quả phân tích độ nhạy (hình/bảng hoặc số)",
+                r"(Hình|Bảng|Figure|Table)\s*\d+[^\n]{0,160}(độ nhạy|nhạy cảm|sensitivity|bỏ từng|leave[- ]one[- ]out|"
+                r"loại (thử nghiệm|nghiên cứu))|(độ nhạy|nhạy cảm|sensitivity|bỏ từng nghiên cứu|"
+                r"loại (thử nghiệm|nghiên cứu)[^.\n]{0,40}(nguy cơ sai lệch|RoB))[^.\n]{0,160}\d+[.,]\d+",
+                so_lieu=True),), DO_NHAY_TQ, "có phân tích độ nhạy"),
+    "21": (("ket_qua",), "Trình bày đánh giá nguy cơ sai lệch do thiếu kết quả (sai lệch báo cáo/công bố) cho từng "
+                         "tổng hợp, kèm nhận định.",
+           (_y("đánh giá sai lệch báo cáo/công bố", SAI_LECH_BAO_CAO_TQ),
+            _y("nhận định/kết quả kiểm định", r"Egger[^.\n]{0,80}(p\s*[=<>]|\d)|bất đối xứng|đối xứng|asymmetr|"
+                                              r"(không|có|chưa) (thấy |gợi ý |có |ghi nhận )?(bằng chứng |dấu hiệu )?"
+                                              r"(sai lệch công bố|sai lệch báo cáo)", so_lieu=True))),
+    "22": (("ket_qua",), "Trình bày đánh giá mức chắc chắn của bằng chứng cho từng kết cục.",
+           (_y("đánh giá mức chắc chắn", CHAC_CHAN_TQ),
+            _y("mức chắc chắn đã xếp", r"\b(cao|trung bình|thấp|rất thấp|high|moderate|low|very low)\b", so_lieu=True)),
+           None, "", True),
+    "23a": (("ban_luan",), "Diễn giải chung kết quả trong bối cảnh bằng chứng khác.",
+            (_y("đối chiếu bằng chứng khác (có trích dẫn)", SO_SANH_Y_VAN),)),
+    "23b": (("ban_luan",), "Bàn hạn chế của bằng chứng được đưa vào (nguy cơ sai lệch, không nhất quán, thiếu chính "
+                           "xác, sai lệch công bố…).",
+            (_y("hạn chế", r"hạn chế|limitations?"),
+             _y("hạn chế của bằng chứng", r"nguy cơ sai lệch|không đồng nhất|không nhất quán|thiếu chính xác|gián tiếp|"
+                                          r"sai lệch công bố|ít (thử nghiệm|nghiên cứu)|(thử nghiệm|nghiên cứu) lớn "
+                                          r"chi phối|chất lượng (bằng chứng|các nghiên cứu)|risk of bias|inconsisten|"
+                                          r"imprecis|indirect")), None, "", True),
+    "23c": (("ban_luan",), "Bàn hạn chế của chính quy trình tổng quan (tìm kiếm, chọn, trích, tổng hợp).",
+            (_y("hạn chế", r"hạn chế|limitations?"),
+             _y("hạn chế của quy trình tổng quan", r"tìm kiếm|chiến lược tìm|ngôn ngữ|sàng lọc|chọn nghiên cứu|"
+                                                   r"trích (xuất )?dữ liệu|dữ liệu (tổng hợp|cấp nghiên cứu)|"
+                                                   r"dữ liệu cá thể|tổng quan (này|của chúng tôi)|quy trình tổng quan|"
+                                                   r"chưa (phân nhóm|đánh giá|gộp)|không (phân nhóm|đánh giá|gộp)|"
+                                                   r"review process")), None, "", True),
+    "23d": (("ban_luan", "ket_luan"), "Bàn hàm ý của kết quả cho thực hành, chính sách và nghiên cứu tương lai.",
+            (_y("hàm ý cho thực hành/chính sách", r"thực hành|chính sách|khuyến cáo|hướng dẫn|practice|policy"),
+             _y("hàm ý cho nghiên cứu tương lai", r"nghiên cứu (tiếp theo|tương lai|thêm|sâu hơn)|hướng (tiếp|nghiên "
+                                                  r"cứu)|cần (thêm )?(nghiên cứu|thử nghiệm)|future research"))),
+    "24a": (("phuong_phap", "cuoi", "tom_tat"), "Nêu tên cơ quan đăng ký và số đăng ký của tổng quan — hoặc nêu không "
+                                                "đăng ký.",
+            (_y("tên cơ quan đăng ký", r"PROSPERO|INPLASY|\bOSF\b|Research Registry|(không|chưa) (được )?đăng ký"),
+             _y("số đăng ký", r"CRD\d{6,}|INPLASY\d+|osf\.io/\w+|reviewregistry\d+|(không|chưa) (được )?đăng ký")),
+            None, "", True),
+    "24b": (("phuong_phap", "cuoi"), "Nêu nơi truy cập đề cương tổng quan — hoặc nêu không soạn đề cương.",
+            (_y("nơi truy cập đề cương", r"(đề cương|giao thức|protocol)[^.\n]{0,160}(truy cập|công bố|đăng tải|cung "
+                                         r"cấp|tài liệu bổ sung|phụ lục|theo yêu cầu|available|lưu (trữ|tại)|"
+                                         r"osf\.io|CRD\d)|(không|chưa) (có|soạn|xây dựng) (đề cương|giao thức)"),)),
+    "24c": (("phuong_phap", "cuoi", "ket_qua"), "Mô tả và giải thích mọi sửa đổi so với thông tin đăng ký hoặc đề "
+                                                "cương — hoặc nêu không có.",
+            (_y("sửa đổi so với đăng ký/đề cương", r"(thay đổi|sửa đổi|điều chỉnh|khác)[^.\n]{0,100}(đề cương|đăng ký|"
+                                                   r"PROSPERO|giao thức|protocol)|không có (thay đổi|sửa đổi)"
+                                                   r"[^.\n]{0,80}(đề cương|đăng ký|giao thức)|(đề cương|giao thức|"
+                                                   r"protocol|đăng ký)[^.\n]{0,80}không (thay đổi|sửa đổi)|"
+                                                   r"amendments?|deviations? from"),)),
+    "25": (("cuoi", "phuong_phap"), "Nêu nguồn hỗ trợ tài chính/phi tài chính và vai trò nhà tài trợ — hoặc nêu không "
+                                    "có tài trợ.",
+           (_y("nguồn hỗ trợ", NGUON_KINH_PHI_BT + r"|hỗ trợ"), _y("vai trò nhà tài trợ", VAI_TRO_TAI_TRO_BT)),
+           None, "", True),
+    "26": (("cuoi",), "Khai xung đột lợi ích của các tác giả tổng quan.",
+           (_y("xung đột lợi ích", TC.XUNG_DOT + r"|competing interests?|conflicts? of interest"),)),
+    "27": (("cuoi", "phuong_phap", "phu_luc"), "Nêu tài liệu nào được công bố và ở đâu: mẫu biểu thu thập dữ liệu, dữ "
+                                               "liệu trích từ các nghiên cứu, dữ liệu dùng cho phân tích, mã phân "
+                                               "tích, tài liệu khác.",
+           (_y("tài liệu được nêu", r"(mẫu|biểu mẫu|phiếu) (thu thập|trích)|dữ liệu (đã |được )?trích|dữ liệu (dùng "
+                                    r"cho |của )?(phân tích|nghiên cứu)|bộ dữ liệu|mã (phân tích|lệnh|nguồn)|"
+                                    r"kịch bản phân tích|script|\bcode\b|(không|chưa) (công bố|chia sẻ)", so_lieu=True),
+            _y("nơi/cách truy cập", r"theo yêu cầu|kho (lưu trữ|dữ liệu)|repository|\bOSF\b|GitHub|Zenodo|"
+                                    r"tài liệu bổ sung|gói phát hành|công khai|truy cập|cung cấp|on request",
+               so_lieu=True)), None, "", True),
+}
+
+
+def _muc_prisma() -> List[MucKiem]:
+    van = {ma: (phan, chu_de, nv) for ma, phan, chu_de, nv in CBC.PRISMA_2020_ITEMS}
+    assert set(van) == set(_PRISMA_2020), "mã PRISMA 2020 lệch giữa kho nguyên văn và bảng tiêu chí"
+    ra = []
+    for ma, tc in _PRISMA_2020.items():
+        phan, tieu_chi, yeu_to = tc[:3]
+        khi, ly_do = (tc[3], tc[4]) if len(tc) > 4 else (None, "")
+        cung = bool(tc[5]) if len(tc) > 5 else False
+        nv = van[ma][2]
+        if ma == "2":
+            # mục 2 chỉ dẫn sang Table 2 — kèm nguyên văn 12 mục PRISMA 2020 for Abstracts để người phân xử đối chiếu
+            nv += " PRISMA 2020 for Abstracts: " + " · ".join(f"A{m}. {n}" for m, _p, _c, n in
+                                                             CBC.PRISMA_2020_ABSTRACT_ITEMS)
+        ra.append(MucKiem("PRISMA 2020", ma, van[ma][1], nv, tieu_chi, tuple(phan),
+                          tuple(replace(y, khi=_pham_vi(y.khi, phan)) for y in yeu_to), "bat_buoc",
+                          _pham_vi(khi, phan), ly_do, cung))
+    return ra
+
+
 def _pham_vi(mau: Optional[str], phan: Sequence[str]) -> Optional[str]:
     """Gắn phạm vi chương cho biểu thức điều kiện của mục đề cương khi dùng ở bản thảo: chương Phương pháp + chương của
     chính mục, bỏ Đặt vấn đề/Bàn luận/Kết luận (nhắc nghiên cứu khác). Biểu thức đã có phạm vi («@…:») giữ nguyên."""
@@ -822,7 +1114,7 @@ def danh_sach_muc_ban_thao(chuan: str, thiet_ke: str) -> Optional[List[MucKiem]]
     if chuan == "CONSORT 2025":
         return _muc_consort()
     if chuan == "PRISMA 2020":
-        return None
+        return _muc_prisma()
     goc = K.danh_sach_muc(chuan, thiet_ke)
     if goc is None:
         return None

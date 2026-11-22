@@ -2050,6 +2050,99 @@ def _khoi_rct_g7(out_dir: Path, sap: Optional[dict], hypothesis_type: str) -> li
             *dong, ""]
 
 
+#: biến định danh nghiên cứu của bảng trích xuất — không phải «data item» (PRISMA 10b)
+_BIEN_DINH_DANH_TQ = re.compile(r"^(study|record|trial)_id$", re.IGNORECASE)
+
+
+def _nhan_sap_tq(sap: str, so: int) -> list[tuple[str, str]]:
+    """Các gạch «- **Nhãn:** giá trị» đã điền của SAP §so (bỏ chú thích «điền sẵn…», ô [CẦN], «Không áp dụng»)."""
+    import quyet_dinh_da_chot as QD  # noqa: PLC0415
+
+    ra = []
+    for m in re.finditer(r"^-\s+\*\*([^*\n]+?):\*\*\s*(.+)$", QD.muc_sap(sap, so), re.MULTILINE):
+        v = _gia_tri_chot(QD.GHI_CHU_DIEN_SAN_RE.sub("", m.group(2)))
+        if v and QD.co_noi_dung(v):
+            ra.append((m.group(1).strip(), v))
+    return ra
+
+
+def _du_kien_tong_quan_g7(out_dir: Path, study: str) -> dict:
+    """Dữ kiện ĐÃ CHỐT của tổng quan hệ thống dùng cho §3d và tóm tắt: nguồn/ngày tìm, chiến lược tìm, chọn nghiên cứu
+    (G1); tổng hợp định lượng §5, phân nhóm §7, trình bày §3/§11 (SAP); tài trợ (G7 khi PI đã khai)."""
+    import quyet_dinh_da_chot as QD  # noqa: PLC0415
+
+    g1, _g2 = _g1_g2_g7(out_dir)
+    sap = QD._sap(Path(out_dir), study)
+    try:
+        g7 = (json.loads((Path(out_dir) / "study_meta.json").read_text(encoding="utf-8")).get("gate_params")
+              or {}).get("G7") or {}
+    except (OSError, ValueError, AttributeError):
+        g7 = {}
+    trinh_bay = [re.sub(r",?\s*(PRISMA|CONSORT|STROBE) \d{4}$", "", x).strip().rstrip(".") for x in QD.gach_sap(sap, 3)]
+    bang = [re.sub(r"\s*\((PRISMA|CONSORT|STROBE)[^)]*\)", "", re.sub(r"^Bảng\s+[\w.]+,\s*", "", t)).strip()
+            for t in QD.bang_sap(sap) if not re.match(r"Bảng\s+MT\d", t)]
+    return {
+        "nguon": _gia_tri_chot(g1.get("information_sources")), "ngay_tim": _gia_tri_chot(g1.get("search_last_date")),
+        "chien_luoc": _gia_tri_chot(g1.get("search_strategy")),
+        "chon_nc": _gia_tri_chot(g1.get("study_selection_process")),
+        "tong_hop": _nhan_sap_tq(sap, 5), "phan_nhom": _nhan_sap_tq(sap, 7),
+        "trinh_bay": [x for x in trinh_bay if x] + [f"bảng {_ha_dau(t)}" for t in bang if t],
+        "tai_tro": _gia_tri_chot(g7.get("funding_declared")) if isinstance(g7, dict) else "",
+    }
+
+
+def _khoi_tong_quan_g7(out_dir: Path, study: str, redcap_vars: Optional[list]) -> list[str]:
+    """Khối phương pháp riêng của tổng quan hệ thống/phân tích gộp (22/11/2026, K18 — PRISMA 2020 mục 5–15).
+
+    Đo trên bản thảo tổng quan giả lập (ZZCANARY-TONG-QUAN-GOP): §2–§6 dựng theo khuôn nghiên cứu gốc nên KHÔNG có nguồn
+    thông tin và ngày tìm cuối (PRISMA 6), chiến lược tìm (7), quy trình sàng lọc theo giai đoạn (8), biến trích xuất
+    (10b), cách lập bảng (13c), khảo sát không đồng nhất và cách nhóm nghiên cứu (5, 13e), đánh giá mức chắc chắn (15) —
+    dù G1 đã chốt `information_sources`, `search_last_date`, `search_strategy`, `study_selection_process` và SAP §3, §5,
+    §7, §11 đã khoá. Mỗi dòng chép NGUYÊN chữ dữ kiện đã chốt; trường vắng/còn [CẦN]/«Không áp dụng» ⇒ bỏ dòng (K18 báo
+    thiếu đúng mục). Không có câu mẫu và không thêm ô [CẦN] mới."""
+    dk = _du_kien_tong_quan_g7(out_dir, study)
+    dong = []
+    if dk["nguon"]:
+        dong.append(f"*Nguồn thông tin:* {dk['nguon']}" + (f"; tìm lần cuối ngày {dk['ngay_tim']}" if dk["ngay_tim"]
+                                                            else "") + ".  ")
+    if dk["chien_luoc"]:
+        dong.append(f"*Chiến lược tìm:* {dk['chien_luoc']}.  ")
+    if dk["chon_nc"]:
+        dong.append(f"*Chọn nghiên cứu:* {dk['chon_nc']}.  ")
+    bien = [str(v.get("label") or "").strip() for v in (redcap_vars or [])
+            if not _BIEN_DINH_DANH_TQ.match(str(v.get("variable") or "")) and str(v.get("label") or "").strip()]
+    if bien:
+        dong.append(f"*Biến trích xuất từ mỗi nghiên cứu (từ điển dữ liệu):* {'; '.join(bien)}.  ")
+    dong += [f"*{nhan}:* {gia_tri}.  " for nhan, gia_tri in dk["tong_hop"] + dk["phan_nhom"]]
+    if dk["trinh_bay"]:
+        dong.append(f"*Trình bày kết quả:* {'; '.join(_ha_dau(x) for x in dk['trinh_bay'])}.  ")
+    if not dong:
+        return []
+    # mỗi dữ kiện một đoạn: yếu tố «cùng đoạn» của K18 (PRISMA 8, 11 — số người + độc lập + công cụ/giai đoạn) không
+    # được ghép chữ của hai dòng khác nhau (22/11/2026: «RoB 2» của dòng biến trích xuất + «Hai người … độc lập» của dòng
+    # chọn nghiên cứu từng làm mục 11 «đạt» khi chưa ai chốt người đánh giá nguy cơ sai lệch)
+    return ["**§3d Nguồn tìm, chọn nghiên cứu, trích xuất và tổng hợp (PRISMA 2020 mục 5–15):**  ",
+            *[x for d in dong for x in (d, "")]]
+
+
+def _tom_tat_tong_quan_g7(out_dir: Path, study: str) -> list[str]:
+    """Dòng tóm tắt riêng của tổng quan (PRISMA 2020 for Abstracts A4, A6, A11) từ dữ kiện đã chốt; trường vắng ⇒ bỏ
+    dòng. Đánh giá nguy cơ sai lệch (A5), số nghiên cứu/người tham gia (A7), hạn chế (A9) là việc tác giả viết."""
+    dk = _du_kien_tong_quan_g7(out_dir, study)
+    mo_hinh = next((v for n, v in dk["tong_hop"] if re.match(r"Mô hình", n, re.IGNORECASE)), "")
+    thuoc_do = next((v for n, v in dk["tong_hop"] if re.match(r"Thước đo", n, re.IGNORECASE)), "")
+    dong = []
+    if dk["nguon"]:
+        dong += [f"**Information sources:** {dk['nguon']}" + (f"; tìm lần cuối ngày {dk['ngay_tim']}" if dk["ngay_tim"]
+                                                               else "") + ".  ", ""]
+    phan = [y for y in (thuoc_do, mo_hinh) if y]
+    if phan:
+        dong += ["**Synthesis methods:** " + "; ".join([phan[0]] + [_ha_dau(y) for y in phan[1:]]) + ".  ", ""]
+    if dk["tai_tro"]:
+        dong += [f"**Funding:** {dk['tai_tro']}.  ", ""]
+    return dong
+
+
 #: lý do miễn đồng thuận suy từ loại tuyển mẫu đã khai ở G2 (`approve_gate --g2-recruitment-mode`)
 _LY_DO_MIEN_THEO_TUYEN_MAU = {
     "RETROSPECTIVE_SECONDARY_DATA": "nghiên cứu hồi cứu trên dữ liệu thứ cấp có sẵn, không tiếp xúc người tham gia",
@@ -2191,6 +2284,8 @@ def generate_manuscript(
     khoi_rct: Optional[list] = None,  # 22/11/2026: khối CONSORT phương pháp (`_khoi_rct_g7`)
     khoi_doi_tuong: Optional[list] = None,  # 22/11/2026: dòng §2 từ G1/G2 (`_khoi_doi_tuong_g7`)
     khoi_chan_doan_du_bao: Optional[list] = None,  # 22/11/2026: STARD/TRIPOD (`_khoi_chan_doan_du_bao_g7`)
+    khoi_tong_quan: Optional[list] = None,  # 22/11/2026: PRISMA 2020 mục 5–15 (`_khoi_tong_quan_g7`)
+    tom_tat_tong_quan: Optional[list] = None,  # 22/11/2026: PRISMA 2020 for Abstracts A4/A6/A11 (`_tom_tat_tong_quan_g7`)
     boi_canh_vn: Optional[str] = None,
     hon_hop_cau: Optional[str] = None,
 ) -> str:
@@ -2566,6 +2661,7 @@ def generate_manuscript(
         f"**Outcomes:** Kết cục chính: {outcome_primary_compact};  ",
         f"Kết cục phụ: {outcome_secondary_compact}  ",
         "",
+        *(tom_tat_tong_quan or []),
         "**Results:** [CẦN KẾT QUẢ THẬT — không điền trước khi phân tích xong]  ",
         "",
         "**Conclusions:** [CẦN KẾT QUẢ THẬT]  ",
@@ -2627,6 +2723,7 @@ def generate_manuscript(
         "",
         *(khoi_rct or []),
         *(khoi_chan_doan_du_bao or []),
+        *(khoi_tong_quan or []),
         "**§4 Kết cục nghiên cứu:**  ",
         f"*Kết cục chính {outcome_label}:*  ",
         outcome_primary_block,
@@ -3511,6 +3608,8 @@ def main() -> None:
         khoi_rct=(_khoi_rct_g7(out_dir, _sap_tom_tat(out_dir, study), hypothesis_type) if design_code == "rct" else None),
         khoi_doi_tuong=_khoi_doi_tuong_g7(out_dir),
         khoi_chan_doan_du_bao=_khoi_chan_doan_du_bao_g7(out_dir, design_code),
+        khoi_tong_quan=(_khoi_tong_quan_g7(out_dir, study, redcap_vars) if design_code == "sr_ma" else None),
+        tom_tat_tong_quan=(_tom_tat_tong_quan_g7(out_dir, study) if design_code == "sr_ma" else None),
         boi_canh_vn=_boi_canh_vn(out_dir),
         hon_hop_cau=_hon_hop_g7(out_dir),
         g3_n_chot=g3.get("confirmed_n"),
