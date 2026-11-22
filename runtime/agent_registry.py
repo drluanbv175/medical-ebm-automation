@@ -217,8 +217,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 22/11/2026 (b): 4 agent — luật K18 bản thảo đạt từng mục (viet-ban-thao, binh-duyet, nop-bai-phan-hoi, dieu-phoi-g7;
 # PR #405), gộp cùng luật khâu 9–10 — bản gộp khớp từng byte cây gộp origin/master + nhánh gốc
 # claude/day-agent-k18-ban-thao-20261122 — vẫn 64.
+# 22/11/2026 (c): 5 agent — luật K18 PRISMA 2020 theo từng mục cho bản thảo tổng quan (viet-ban-thao, binh-duyet,
+# dieu-phoi-g7, tong-quan-y-van, meta-phan-tich; PR #407, cặp gốc #484 xếp chồng trên #481) — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "4297732fb11a2d5ea0ea0b139460ddc509f7ae11a328de9b1fdff091d14eb3bf"
+    "2c5da8ab00cff99db22f8909296e5dc6ee27c381d75bb01d1f9eaf24b7506fd5"
 )
 
 MINIMUM_AGENT_COUNT = 64
