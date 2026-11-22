@@ -451,6 +451,9 @@ class DanhMuc:
     # 15/11/2026 (soan-tu-calc): biểu thức «Choices, Calculations» và nhãn của từng trường calc, theo thứ tự từ điển.
     calc_bt: dict[str, str] = field(default_factory=dict)
     calc_nhan: dict[str, str] = field(default_factory=dict)
+    #: 22/11/2026 (gán đa trị theo nhánh): «Branching Logic (Show field only if...)» của từng cột — trường CHỈ ÁP cho
+    #: nhóm con thoả điều kiện (vd hba1c_gt chỉ khi [co_hba1c] = '1'); cột con checkbox thừa hưởng nhánh của trường gốc.
+    nhanh: dict[str, str] = field(default_factory=dict)
 
 
 def doc_danh_muc_tu_dien(study_dir: Path, study: str) -> DanhMuc:
@@ -475,6 +478,8 @@ def doc_danh_muc_tu_dien(study_dir: Path, study: str) -> DanhMuc:
     c_ten, c_loai = tim("Variable / Field Name", "Variable"), tim("Field Type")
     c_lc, c_kt = tim("Choices, Calculations", "Choices"), tim("Text Validation Type")
     c_nhan = next((c for c in k if "field label" in c.lower()), None)
+    c_nhanh = next((c for c in k if "branching" in c.lower()), None)
+    nhanh: dict[str, str] = {}
     cot: set[str] = set()
     ngay: set[str] = set()
     calc: set[str] = set()
@@ -489,15 +494,21 @@ def doc_danh_muc_tu_dien(study_dir: Path, study: str) -> DanhMuc:
             calc_bt[ten] = (r.get(c_lc) or "").strip()
             calc_nhan[ten] = (r.get(c_nhan) or "").strip() if c_nhan else ""
             continue
+        nh = " ".join((r.get(c_nhanh) or "").split()) if c_nhanh else ""
         if loai == "checkbox":
             for phan in r[c_lc].split("|"):
                 if "," in phan:
-                    cot.add(f"{ten}___{phan.split(',', 1)[0].strip()}")
+                    con = f"{ten}___{phan.split(',', 1)[0].strip()}"
+                    cot.add(con)
+                    if nh:
+                        nhanh[con] = nh
             continue
         cot.add(ten)
+        if nh:
+            nhanh[ten] = nh
         if r[c_kt].strip().lower().startswith("date"):
             ngay.add(ten)
-    return DanhMuc(cot=cot, ngay=ngay, calc=calc, nguon=p.name, calc_bt=calc_bt, calc_nhan=calc_nhan)
+    return DanhMuc(cot=cot, ngay=ngay, calc=calc, nguon=p.name, calc_bt=calc_bt, calc_nhan=calc_nhan, nhanh=nhanh)
 
 
 # ─────────────────────────────── kiểm toàn bộ đặc tả ───────────────────────────────
@@ -1220,6 +1231,58 @@ def doan_cot_ngay(df) -> set[str]:
         if len(v) and v.str.fullmatch(r"\d{4}-\d{2}-\d{2}").all():
             ra.add(c)
     return ra
+
+
+# ─────────────────────────────── gán đa trị theo nhánh (22/11/2026) ───────────────────────────────
+_REF_NHANH_RE = re.compile(r"\[([A-Za-z0-9_]+)(?:\(([A-Za-z0-9_-]+)\))?\]")
+
+
+def cot_cua_nhanh(bt: str) -> list[str]:
+    """Cột dữ liệu mà một Branching Logic REDCap tham chiếu («[x(2)]» ⇒ «x___2»)."""
+    return list(dict.fromkeys(f"{a}___{b}" if b else a for a, b in _REF_NHANH_RE.findall(bt or "")))
+
+
+@dataclass
+class KeHoachGanThuDong:
+    """Gán đa trị THỤ ĐỘNG cho biến phái sinh có cột nguồn chỉ áp cho NHÓM CON (Branching Logic REDCap).
+
+    Vì sao (22/11/2026, đo ở đề tài BTM): `hba1c_3muc` = neu(co_hba1c == 0, 3, neu(hba1c_gt < 7, 1, 2)) thiếu khi
+    co_hba1c = 1 mà hba1c_gt trống; gán trực tiếp biến phái sinh (pmm rút mã từ MỌI người) có thể gán mức 3 «không làm
+    HbA1c» cho người ĐÃ làm. Đúng là: gán cột NGUỒN; cột nguồn có nhánh («[co_hba1c] = '1'») chỉ giữ giá trị gán trong
+    đúng nhóm con thoả nhánh; rồi TÍNH LẠI biến phái sinh từ công thức đã duyệt. Nhánh lấy từ chính từ điển REDCap của
+    đề tài (cột «Branching Logic»), không viết cứng tên biến."""
+
+    nguon_cua: dict[str, list[str]]  # biến phái sinh được hỏi → cột dữ liệu nguồn (qua mọi tầng phụ thuộc)
+    nhanh: dict[str, str]  # cột nguồn → Branching Logic
+    kq: KetQuaKiem
+    dm: DanhMuc
+
+    def tinh_lai(self, df, ten: list[str]):
+        """Tính lại các biến phái sinh `ten` (kèm phụ thuộc) trên `df` ⇒ DataFrame cột mới."""
+        return tinh_df(df, self.kq, self.dm, ten)
+
+
+def ke_hoach_gan_thu_dong(study_dir: Path, study: str, ten: list[str], cot_du_lieu) -> KeHoachGanThuDong | None:
+    """Kế hoạch gán thụ động cho những biến trong `ten` là biến phái sinh có ít nhất một cột nguồn mang Branching
+    Logic. None khi đề tài không có đặc tả biến phái sinh hoặc không biến nào như vậy. Không đọc được từ điển ⇒
+    `KhongDoDuoc` (người gọi báo lý do, không đoán nhánh)."""
+    if not (study_dir / TEP_DAC_TA).exists():
+        return None
+    bien = doc_dac_ta(study_dir)
+    theo_ten = {b.ten: b for b in bien}
+    ps = [t for t in dict.fromkeys(ten) if t in theo_ten]
+    if not ps:
+        return None
+    dm = doc_danh_muc_tu_dien(study_dir, study)
+    # cột dữ liệu lúc gọi đã gồm biến phái sinh vừa tính — không coi chúng là cột nhập (kiem_dac_ta sẽ báo trùng tên)
+    dm.cot |= {c for c in cot_du_lieu if c not in theo_ten}
+    kq = kiem_dac_ta(bien, dm)
+    nguon_cua = {t: list(dict.fromkeys(c for x in bao_dong(kq, [t]) for c in theo_ten[x].nguon)) for t in ps}
+    nhanh = {c: dm.nhanh[c] for ds in nguon_cua.values() for c in ds if dm.nhanh.get(c)}
+    nguon_cua = {t: ds for t, ds in nguon_cua.items() if any(c in nhanh for c in ds)}
+    if not nguon_cua:
+        return None
+    return KeHoachGanThuDong(nguon_cua=nguon_cua, nhanh=nhanh, kq=kq, dm=dm)
 
 
 def ap_dung_cho_phan_tich(df, study_dir: Path, study: str, ten_can: list[str]):
