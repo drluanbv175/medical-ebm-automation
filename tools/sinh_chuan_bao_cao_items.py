@@ -22,10 +22,16 @@ không dịch. Chỉ lưu nguyên văn khi bài nguồn mang giấy phép Creati
   - CONSORT 2025 (22/11/2026, K18 — kiểm BẢN THẢO RCT) — bản PLOS Med 2025;22(4):e1004587 (PMID 40228477;
     PMC11996237), CC BY 4.0 (khối <license> của XML: ccbylicense). Table 1. Bản BMJ (PMID 40228833) ghi «No commercial
     re-use» và bản Lancet (PMID 40245901) không có trên PMC nên KHÔNG dùng làm nguồn chép.
+  - PRISMA 2020 (22/11/2026, K18 — kiểm BẢN THẢO tổng quan hệ thống/phân tích gộp) — bản PLOS Med 2021;18(3):e1003583
+    (PMID 33780438; PMC8007028), CC BY 4.0 (khối <license> của XML: xlink:href creativecommons by/4.0, «© 2021 Page et
+    al»). Table 1 (42 dòng: 27 mục kể cả mục con) và Table 2 «PRISMA 2020 for Abstracts» (12 mục). Bản BMJ
+    2021;372:n71 (PMID 33782057; PMC8005924) có khối CC BY 4.0 nhưng dòng bản quyền ghi «No commercial re-use» — mâu
+    thuẫn, nên KHÔNG dùng làm nguồn chép (cùng cách xử lý CONSORT 2025).
 Chuẩn KHÔNG mang giấy phép CC (CROSS, TREND, COREQ, SRQR, GRAMMS, COSMIN) không đi qua tệp này: bộ kiểm chỉ lưu mã mục,
 chủ đề và tiêu chí do hệ viết.
 
-Lệnh (cần XML đã tải từ Europe PMC REST `<PMCID>/fullTextXML`, đặt tên `raw_<PMCID>.xml` trong một thư mục):
+Lệnh (cần XML đã tải từ Europe PMC REST `<PMCID>/fullTextXML`, đặt tên `raw_<PMCID>.xml` trong một thư mục; khi DNS
+của VPN không phân giải được www.ebi.ac.uk — đo 22/11/2026 — phân giải qua DNS công cộng rồi tải bằng `curl --resolve`):
     python3 tools/sinh_chuan_bao_cao_items.py --thu-muc <thư mục XML> [--ghi]
     (tương thích cũ: --strobe <PMC2020496.xml> --record <PMC4595218.xml>)
 Chạy khô in số mục; `--ghi` ghi đè `tools/chuan_bao_cao_items.py` qua tệp tạm. Mỗi chuẩn kiểm số dòng kỳ vọng và kiểm
@@ -55,6 +61,8 @@ NGUON: Dict[str, Tuple[str, int, int]] = {
     "CARE": ("PMC3844611", 23, 0),
     "HARPER": ("PMC9771861", 43, 2),
     "CONSORT": ("PMC11996237", 42, 0),
+    "PRISMA": ("PMC8007028", 42, 0),
+    "PRISMA_TOM_TAT": ("PMC8007028", 12, 1),
 }
 
 
@@ -266,6 +274,37 @@ def muc_consort(xml: Path) -> list:
     return ra
 
 
+def _muc_prisma_bang(tw) -> list:
+    """[(mã, phần, chủ đề, nguyên văn)] từ một bảng PRISMA 2020 (cột: Section and topic · Item # · Checklist item ·
+    [Location]). Hàng phần: ô mã và ô nội dung rỗng (hoặc colspan ≥ 2 như «Other information»); chủ đề trải nhiều hàng
+    bằng rowspan — hàng tiếp nối chỉ có (mã, nội dung, [vị trí])."""
+    ra, phan, chu_de, con_lai = [], "", "", 0
+    for tr in list(tw.iter("tr"))[1:]:
+        o = list(tr)
+        if con_lai > 0:
+            so, van = _chu(o[0]), _chu(o[1])
+        else:
+            if int(o[0].get("colspan") or 1) >= 2 or (not _chu(o[1]) and not _chu(o[2])):
+                phan = _chu(o[0])
+                continue
+            chu_de, con_lai = _chu(o[0]), int(o[0].get("rowspan") or 1)
+            so, van = _chu(o[1]), _chu(o[2])
+        con_lai -= 1
+        ra.append((so, phan, chu_de, van))
+    return ra
+
+
+def muc_prisma(xml: Path) -> list:
+    """[(mã, phần, chủ đề, nguyên văn)] — PRISMA 2020 Table 1 (27 mục, 42 dòng kể cả mục con 10a–b, 13a–f, 16a–b,
+    20a–d, 23a–d, 24a–c)."""
+    return _muc_prisma_bang(_bang(xml, NGUON["PRISMA"][2]))
+
+
+def muc_prisma_tom_tat(xml: Path) -> list:
+    """[(mã, phần, chủ đề, nguyên văn)] — PRISMA 2020 for Abstracts (Table 2, 12 mục)."""
+    return _muc_prisma_bang(_bang(xml, NGUON["PRISMA_TOM_TAT"][2]))
+
+
 def _bo(ten: str, chu_thich: str, dong: list) -> List[str]:
     ra = [f"# {chu_thich}", f"{ten} = ("]
     ra += [f"    {tuple(x)!r}," for x in dong]
@@ -287,7 +326,9 @@ def dung_mo_dun(du: Dict[str, object], phep: Dict[str, str]) -> str:
         "  SQUIRE 2.0 BMJ Qual Saf 2016;25(12):986-992 (PMID 26369893; PMC5256233; CC BY-NC — phi thương mại) · CARE",
         "  J Med Case Rep 2013;7:223 (PMID 24228906; PMC3844611) · HARPER Pharmacoepidemiol Drug Saf 2023;32(1):44-55",
         "  (PMID 36215113; PMC9771861; mẫu đề cương) · CONSORT 2025 PLoS Med 2025;22(4):e1004587 (PMID 40228477;",
-        "  PMC11996237; CC BY 4.0 — thêm 22/11/2026 cho K18 kiểm bản thảo RCT).",
+        "  PMC11996237; CC BY 4.0 — thêm 22/11/2026 cho K18 kiểm bản thảo RCT) · PRISMA 2020 PLoS Med",
+        "  2021;18(3):e1003583 (PMID 33780438; PMC8007028; CC BY 4.0 — thêm 22/11/2026 cho K18 kiểm bản thảo tổng quan",
+        "  hệ thống; Table 1 và Table 2 «PRISMA 2020 for Abstracts»).",
         '"""',
         "",
         "#: giấy phép đọc từ XML, theo chuẩn",
@@ -308,16 +349,21 @@ def dung_mo_dun(du: Dict[str, object], phep: Dict[str, str]) -> str:
     dong += _bo("HARPER_2023_MUC_LUC", "(mã — T<n> là bảng cấu trúc, tiêu đề nguyên văn, bảng thuộc mục)", du["HARPER"])
     dong += _bo("CONSORT_2025_ITEMS", "(mã, phần, chủ đề, nguyên văn) — gạch đầu dòng trong ô nối bằng « • »",
                 du["CONSORT"])
+    dong += _bo("PRISMA_2020_ITEMS", "(mã, phần, chủ đề, nguyên văn) — PRISMA 2020 Table 1", du["PRISMA"])
+    dong += _bo("PRISMA_2020_ABSTRACT_ITEMS", "(mã, phần, chủ đề, nguyên văn) — PRISMA 2020 for Abstracts (Table 2)",
+                du["PRISMA_TOM_TAT"])
     so = " and ".join(f"len({t}) == {len(du[k])}" for k, t in (
         ("STROBE", "STROBE_2007_ITEMS"), ("RECORD", "RECORD_2015_ITEMS"), ("STARD", "STARD_2015_ITEMS"),
         ("TRIPOD_AI", "TRIPOD_AI_2024_ITEMS"), ("CHEERS", "CHEERS_2022_ITEMS"), ("SQUIRE", "SQUIRE_2_0_ITEMS"),
-        ("CARE", "CARE_2013_ITEMS"), ("HARPER", "HARPER_2023_MUC_LUC"), ("CONSORT", "CONSORT_2025_ITEMS")))
+        ("CARE", "CARE_2013_ITEMS"), ("HARPER", "HARPER_2023_MUC_LUC"), ("CONSORT", "CONSORT_2025_ITEMS"),
+        ("PRISMA", "PRISMA_2020_ITEMS"), ("PRISMA_TOM_TAT", "PRISMA_2020_ABSTRACT_ITEMS")))
     dong += ["assert (" + so.replace(" and ", "\n        and ") + ")", ""]
     return "\n".join(dong)
 
 
 _HAM = {"STROBE": muc_strobe, "RECORD": muc_record, "STARD": muc_stard, "TRIPOD_AI": muc_tripod_ai,
-        "CHEERS": muc_cheers, "HARPER": muc_harper, "CONSORT": muc_consort}
+        "CHEERS": muc_cheers, "HARPER": muc_harper, "CONSORT": muc_consort, "PRISMA": muc_prisma,
+        "PRISMA_TOM_TAT": muc_prisma_tom_tat}
 
 
 def doc_tat_ca(thu_muc: Optional[Path],

@@ -1,0 +1,22 @@
+{
+ "study": "hai-long-benh-nhan-C1a-BVQY175",
+ "ngay": "2026-11-22",
+ "nguon": "Hộp hỏi đáp trong phiên Claude khi đo K18 bài báo giao thức (PR #408) — bác sĩ chọn bằng nút trả lời",
+ "quyet_dinh": [
+  {
+   "ma": "K18-CROSS-5d-noi",
+   "cau_hoi": "Toàn văn bộ câu hỏi C1a (CROSS 5d) nên đặt ở đâu?",
+   "lua_chon_nguyen_van": "Tài liệu bổ sung bài báo",
+   "ap_dung": "Bai-bao-giao-thuc_Hai-long-C1a_BVQY175.md mục 2.5: «Toàn văn bộ câu hỏi được cung cấp trong tài liệu bổ sung của bài báo.» (commit 58a472e4) ⇒ K18 --che-do giao_thuc: 0 mục thiếu"
+  },
+  {
+   "ma": "K18-CROSS-5d-phien-ban",
+   "cau_hoi": "Tài liệu bổ sung dùng phiếu bản nào?",
+   "lua_chon_nguyen_van": "Chờ bản khoá",
+   "ap_dung": "Không dựng tài liệu bổ sung từ Phụ lục C (bản trình Hội đồng); dựng từ phiên bản phiếu khoá sau pha phát triển và kiểm định (đề cương nộp 2.6.1.1 — ghi số phiên bản và ngày khoá; Bảng F.2: 01–03/2027)"
+  }
+ ],
+ "cho_nguoi": [
+  "Dựng tài liệu bổ sung (toàn văn phiếu) cho bài báo giao thức sau khi phiếu được khoá ở pha phát triển — trước khi gửi bài báo"
+ ]
+}
