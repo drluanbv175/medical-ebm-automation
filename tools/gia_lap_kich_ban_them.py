@@ -1313,10 +1313,11 @@ def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
                     "tham_so": {"loai_dac_thu": "gop", "nhan_nghien_cuu": "study_id",
                                 "su_kien_can_thiep": "bien_co_can_thiep", "n_can_thiep": "n_can_thiep",
                                 "su_kien_chung": "bien_co_chung", "n_chung": "n_chung"}},
+                   # 22/11/2026 (PRISMA 2020 mục 20c): engine gộp có phân nhóm SAP §7 — gộp DL riêng từng thuốc +
+                   # Q giữa nhóm (phân nhóm một thử nghiệm vẫn vào kiểm định), kiểm chéo metafor; trước là «làm tay»
                    {"id": "NC_thuoc", "vai": "nhom_con", "sap_muc": "§7", "sap_neo": "Loại thuốc SGLT2",
-                    "mo_ta": "Phân nhóm theo thuốc SGLT2",
-                    "chua_tu_dong": "phân nhóm theo thuốc (một số thuốc chỉ có 1 thử nghiệm) — meta-regression "
-                                    "metafor::rma(mods = ~ factor(thuoc_sglt2)) do thống kê viên chạy"},
+                    "mo_ta": "Phân nhóm theo thuốc SGLT2 (gộp riêng từng thuốc, Q giữa nhóm)", "ke_thua": True,
+                    "tham_so": {"phan_nhom": "thuoc_sglt2"}},
                    {"id": "DN_co_dinh", "vai": "do_nhay", "sap_muc": "§9",
                     "sap_neo": "Hiệu ứng cố định so với hiệu ứng ngẫu nhiên",
                     "mo_ta": "RR gộp hiệu ứng cố định (nghịch đảo phương sai)",

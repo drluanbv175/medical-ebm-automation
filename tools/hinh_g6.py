@@ -198,18 +198,29 @@ def hinh_cua_phan_tich(study: str, pt: Dict[str, Any], thu_muc: Path, nap: Calla
             import bieu_do_gop as GP  # noqa: PLC0415
 
             cot = [ts[k] for k in ("nhan_nghien_cuu", "su_kien_can_thiep", "n_can_thiep", "su_kien_chung", "n_chung")]
-            df = nap(study, cot, loc)[cot].dropna()
+            pn = ts.get("phan_nhom")  # 22/11/2026: phân nhóm tiền định SAP §7 — cùng quần thể (bỏ ca thiếu) như G6
+            df = nap(study, cot + ([pn] if pn else []), loc)[cot + ([pn] if pn else [])].dropna()
+            ma_nhan = ((_nhan_tu_dien(thu_muc.parent, study).get(pn) or {}).get("ma") or {}) if pn else {}
             ds = []
             for r in df.to_dict("records"):  # ĐÚNG đầu vào từng nghiên cứu của G6 (_o_rr)
                 yi, vi = PT._o_rr(float(r[cot[1]]), float(r[cot[2]]), float(r[cot[3]]), float(r[cot[4]]))
-                ds.append({"nghien_cuu": str(r[cot[0]]), "nhom": "", "yi": yi, "vi": vi, "sei": vi ** 0.5,
+                nhom = ma_nhan.get(PT._ma_nhom(r[pn]), PT._ma_nhom(r[pn])) if pn else ""
+                ds.append({"nghien_cuu": str(r[cot[0]]), "nhom": nhom, "yi": yi, "vi": vi, "sei": vi ** 0.5,
                            "su_kien_1": int(r[cot[1]]), "tong_1": int(r[cot[2]]), "su_kien_2": int(r[cot[3]]),
                            "tong_2": int(r[cot[4]])})
+            if pn:  # forest theo phân nhóm (kim cương từng nhóm + Q giữa nhóm như G6); phễu, bỏ từng nghiên cứu: xem
+                # phân tích chính — không vẽ lại trùng lặp. Thứ tự phân nhóm theo mã, như bảng §3b của G7
+                ma_cua = {PT._ma_nhom(r[pn]): None for r in df.to_dict("records")}
+                thu_tu = {ma_nhan.get(m, m): i for i, m in enumerate(sorted(ma_cua, key=PT.khoa_ma_nhom))}
+                ds.sort(key=lambda e: thu_tu.get(e["nhom"], len(thu_tu)))
+                GP.ve_forest(ds, "RR", _them("forest-phan-nhom", f"Forest plot phân nhóm theo {pn} (DL, như G6)"),
+                             "DL", ngon_ngu=ngon_ngu)
+                return ra
             kq_f = GP.ve_forest(ds, "RR", _them("forest", "Forest plot gộp (DL, như G6)"), "DL", ngon_ngu=ngon_ngu)
             _hinh_rob(study, nap(study, cot, loc), df, cot[0], kq_f, thu_muc, _them, ra, ngon_ngu)
             if len(ds) >= 3:
                 GP.ve_bo_tung_nc(ds, "RR", _them("bo-tung-nc", "Bỏ từng nghiên cứu"), "DL", ngon_ngu)
-            if len(ds) >= 10:
+            if len(ds) >= PT.EGGER_K_TOI_THIEU:  # cùng ngưỡng kiểm định Egger của G6 (SAP §5)
                 GP.ve_pheu(ds, "RR", _them("pheu", "Funnel plot"), "DL", True, True, ngon_ngu)
         elif dac_thu == "dinh_tinh":
             import bieu_do_bao_cao as BB  # noqa: PLC0415

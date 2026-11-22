@@ -178,15 +178,55 @@ Thiếu thật — còn mở, ghi rõ chủ việc:
   mô tả); số người đánh giá nguy cơ sai lệch và có độc lập không (11); nơi truy cập đề cương (24b); sửa đổi so với đăng
   ký/đề cương hoặc nêu không có (24c).
 - G6/kết quả (dữ liệu, kịch bản chưa có): số bản ghi tìm được, lý do loại kèm trích dẫn (16a, 16b — cùng việc nối
-  `SO_DO_LUONG` như STROBE 13a của phiên khâu 9–10/#403); bảng đặc điểm TỪNG nghiên cứu kèm trích dẫn (17 — giả lập dùng
-  mã TN01–TN15 không có TLTK); số biến cố/số người từng nhánh của từng nghiên cứu (19 — tóm tắt G6 chỉ có log RR);
-  phân nhóm theo loại thuốc của SAP §7 chưa chạy (20c); kiểm định Egger của SAP §5 với k = 15 chưa chạy (21); GRADE
-  chưa xếp (22).
+  `SO_DO_LUONG` như STROBE 13a của phiên khâu 9–10/#403); trích dẫn TỪNG nghiên cứu ở bảng đặc điểm (17 — giả lập dùng
+  mã TN01–TN15 không có TLTK); mức GRADE (22 — phán đoán của tác giả). Các mục 17 (bảng), 19, 20c, 21 và khung 22 đã
+  sửa ở G6/G7 — xem «G6 gộp ra đủ số cho mục kết quả» ngay dưới.
 - Đọc thấy khi phân xử, ngoài K18: Bàn luận bản cuối ghi «chưa đánh giá sai lệch công bố (cần ≥ 10 thử nghiệm và biểu đồ
   phễu)» trong khi k = 15 và có Hình 4 phễu; kết cục phụ ở Kết quả «(tử vong tim mạch; biến cố thận)» lệch G1 («Tử vong
   tim mạch; Biến cố bất lợi nghiêm trọng») — chữ của kịch bản giả lập `gia_lap_ho_so_sau_g6.py`; câu «tác giả chưa đọc
   toàn văn bài này» ở §2 Bàn luận là chữ kịch bản `gia_lap_kich_ban_them.py`; bảng sai lệch G1 ghi «registrátion» (lỗi
   dấu ở `run_g1_auto.py`) và liệt kê ROBINS-I/QUADAS-3 cho tổng quan chỉ gồm RCT.
+
+**G6 gộp ra đủ số cho mục kết quả (22/11/2026, phiên G6 gộp).** Bộ sinh G7 chỉ CHÉP số G6 (tự kiểm từng chuỗi số có
+nguyên văn trong tóm tắt G6, không tính lại, không làm tròn) — nên chỗ thiếu nằm ở G6. Đo trên giả lập
+`ZZCANARY-TONG-QUAN-GOP` (k = 15, dữ liệu mô phỏng) rồi sửa:
+
+| Mục | Thiếu ở đâu | Sửa |
+|---|---|---|
+| 21 | SAP §5 «biểu đồ phễu + kiểm định Egger khi ≥ 10 nghiên cứu»; tóm tắt G6 không có Egger (chỉ hình phễu tính riêng) | `phan_tich_thiet_ke_dac_thu.egger`: hồi quy có trọng số 1/v của log RR theo sai số chuẩn, t với k − 2 bậc tự do (= `metafor::regtest(model = "lm", predictor = "sei")`, = `bieu_do_gop.egger` của hình phễu); chạy khi k ≥ 10, dưới ngưỡng ghi lý do. G7: dòng «Sai lệch công bố — kiểm định Egger … t, df, p» |
+| 20c | Đặc tả G6 để `NC_thuoc` «làm tay» dù SAP §7 khoá «Nhóm nhỏ tiền định: Loại thuốc SGLT2» | Tham số tuỳ chọn `phan_nhom` của phân tích gộp (`LOAI_TUY_CHON`, `chay_sap_g6.THAM_SO`): gộp DL riêng từng phân nhóm (τ² riêng), Q giữa nhóm = Σ w_g(μ_g − μ̄)², w_g = 1/se_g², df = G − 1 (= `rma(yi = μ_g, sei = se_g, method = "FE")$QE`); phân nhóm một nghiên cứu vẫn vào kiểm định (như RevMan/metafor — `bieu_do_gop.ve_forest` sửa theo cho hình trùng chữ). Kịch bản giả lập: `NC_thuoc` kế thừa phân tích chính + `phan_nhom`. G7: §3b «Phân nhóm tiền định» đọc lượt `nhom_con` qua đúng luật kiểm của kết cục phụ (sha256 bản khoá, đặc tả còn hiệu lực, ước lượng trùng chỉ mục, tự kiểm số); `hinh_g6` vẽ forest theo phân nhóm |
+| 19 | `tung_nghien_cuu` chỉ có log RR/var/RR/KTC | Thêm biến cố/số người từng nhánh (số nguyên chép từ dữ liệu khoá; cờ hiệu chỉnh 0,5 khi có ô 0), tổng hai nhánh. G7: cột «Biến cố/số người» hai nhánh (chỉ khi G6 ghi đủ — tóm tắt cũ giữ bảng cũ, không thêm ô chờ) |
+| 17 | Bảng 1 G7 là «Đặc điểm nền người tham gia» trung bình gộp mọi nghiên cứu | G6 ghi `bang_dac_diem_nghien_cuu`: một dòng mỗi nghiên cứu ĐÃ vào phân tích, cột = biến dữ liệu khoá qua bộ lọc Bảng 1 dùng chung trừ nhãn nghiên cứu và số biến cố, mã lựa chọn ⇒ nhãn từ điển G5. G7 (tổng quan): «Bảng 1. Đặc điểm các nghiên cứu được đưa vào tổng hợp (k = … — G6)» |
+| 22 | GRADE chưa có chỗ | Khung «§3c Bảng tóm tắt phát hiện (GRADE)» từ số G6: số nghiên cứu (số người), nguy cơ hai nhánh trên 1000, hiệu số trên 1000 kèm KTC (G6 tính: nguy cơ chứng = tổng biến cố/tổng người nhánh chứng, hiệu số = 1000 × nguy cơ chứng × (RR − 1)), RR gộp; cột mức chắc chắn là ô `[CẦN TÁC GIẢ XẾP MỨC GRADE …]` — máy không xếp mức |
+
+Kiểm chéo trên giả lập (`chay_sap_g6.py chay --kiem-cheo`, bản sao repo giả lập + khoá ký giả): Python = R (metafor
+5.0.1) cả 15 đại lượng của lượt phân nhóm (RR gộp, KTC, τ², I², nguy cơ chứng, hiệu số/1000, Egger t và p, RR bốn
+phân nhóm, Q và p giữa nhóm) và = SPSS 9 đại lượng (thêm Egger dạng đóng qua AGGREGATE; phân nhóm chỉ R so vì số nhóm
+đổi theo dữ liệu). Egger của tóm tắt G6 trùng số trên hình phễu (chênh < 1e-13). Số mô phỏng: RR 0,693 (KTC 95%
+0,640–0,750); Egger t = 0,43 (df 13), p = 0,68; phân nhóm Empagliflozin 0,682 · Dapagliflozin 0,714 · Canagliflozin
+0,629 · Ertugliflozin 0,723, Q = 1,07 (df 3), p = 0,78; hiệu số −11,1 trên 1000 (−13,0 đến −9,0).
+
+Đo K18 cùng phương pháp (nháp `run_g7_auto` trên bản sao; «đo cả số liệu» = `co_so_lieu=True`, tức chấm cả yếu tố số
+liệu dù nháp còn nhãn đối chiếu):
+
+| Bản | Đạt | Thiếu | Chưa đo |
+|---|---|---|---|
+| Nháp bộ sinh #407 trên G6 cũ (tự nhận ô [CẦN]) | 20 | 6 | 16 |
+| Nháp bộ sinh mới trên G6 mới (tự nhận ô [CẦN]) | 20 | 6 | 16 |
+| Nháp #407 / G6 cũ — đo cả số liệu | 26 | 16 | 0 |
+| Nháp mới / G6 mới — đo cả số liệu | 29 | 13 | 0 |
+| Bản cuối 21/11 thay §2–§4 Kết quả bằng khối mới (gỡ nhãn đối chiếu; ô GRADE «chưa có thông tin» như bước điền của giả lập) | 25 | 17 | 0 |
+
+19, 20c, 21: thiếu ⇒ đạt. 17: yếu tố «đặc điểm các nghiên cứu» đạt, còn «trích dẫn từng nghiên cứu» (mã TN01–TN15
+không có TLTK — chủ việc dữ liệu: bảng trích xuất cần cột trích dẫn của từng nghiên cứu). 22: thiếu đúng — khung có, mức
+GRADE chờ tác giả; test khoá rằng điền mức (vd «Trung bình (hạ một mức vì thiếu chính xác)») thì mục đạt.
+
+Giả lập trọn vòng 24 kịch bản (chạy tại máy, `GIA_LAP_TRON_VONG=1` + `kiem_gia_lap_16.py`): `sr_ma` và
+`sr_ma_chan_thuc` khoá gói G10, 0 ô lỗi máy, đề cương nộp đạt; bản chân thực vẫn tìm lại đúng tham số sinh dữ liệu (RR
+thật 0,7; ước lượng 0,750 [0,689–0,815]). Lượt đầu bắt được một lỗi mà bộ phán không đỏ: ô chờ GRADE từng ghi «[CẦN TÁC
+GIẢ XẾP MỨC GRADE …]» và bước điền ô của giả lập khớp «tác giả» (`TRA_LOI_CHUNG`) ⇒ chép «ThS. Trần Thị B» vào cột mức
+chắc chắn (đếm là «mới đúng vai», nên CI vẫn xanh). Đã đổi chữ ô (không còn «tác giả»); lượt hai ô thành «chưa có thông
+tin» như mọi ô hồ sơ chưa có. Test khoá chữ ô không chứa «tác giả».
 
 ## 4. Kiểm
 
@@ -203,6 +243,14 @@ Thiếu thật — còn mở, ghi rõ chủ việc:
   thay phép đột biến bằng «ngày tìm cuối không cần có ngày».
 - 337 test K17/G7/sinh đề cương và 1108 test G8/G9/G10/giả lập ngắn xanh. Giả lập trọn vòng 24 kịch bản chỉ chạy đủ trên
   CI (`GIA_LAP_TRON_VONG=1`).
+- G6 gộp (`tests/test_g6_gop_prisma_ket_qua_20261122.py`, 30 test): Egger, phân nhóm (kể cả phân nhóm một nghiên cứu),
+  hiệu ứng tuyệt đối khoá theo giá trị metafor 5.0.1 tính độc lập; một test chạy THẬT kịch bản R sinh ra và so 15 đại
+  lượng (bỏ qua khi không có Rscript + metafor); bảng đặc điểm, đặc tả `phan_nhom`, hình phân nhóm/ngưỡng phễu, các
+  khối G7 tự kiểm số nguyên văn, vòng kín «khối bộ sinh ⇒ K18 nhận 19/20b/20c/21; 22 chỉ đạt khi người điền mức».
+  Kiểm đột biến 48 phép trên 6 tệp (`phan_tich_thiet_ke_dac_thu`, `chay_sap_g6`, `bieu_do_gop`, `hinh_g6`,
+  `run_g7_auto`, `gia_lap_kich_ban_them`; mỗi phép thay đúng một chuỗi, xoá `__pycache__`, chạy `-B`): 48/48 làm test đỏ,
+  phục hồi xanh (2 phép lượt đầu không áp được vì chuỗi khớp 2 chỗ/đã đổi sang hàm — chạy lại bằng chuỗi chính xác).
+  1185 test của 52 tệp có dùng các mô-đun đã sửa xanh (30 bỏ qua là giả lập dài cần cờ).
 
 ## 5. Giới hạn
 
