@@ -1184,6 +1184,44 @@ def write_docx(artifact, path):
         print(f"  ⚠️  Lỗi xuất DOCX (bỏ qua, vẫn giữ bản .md): {e}")
         return False
 
+def _sap_hien_hanh_da_ky(study: str, md: Path) -> bool:
+    """Sổ phê duyệt có chữ ký G4 HỢP LỆ (xác minh được) cho đúng từng byte SAP hiện hành không.
+
+    Chỉ dùng chiều xác minh được (GC.ledger_approved) — KHÔNG dùng so_cai_co_duyet_trung_noi_dung (chiều bảo toàn khi
+    máy thiếu khoá), vì kết quả ở đây quyết định có chấm lại để ghi `g4_lock_date` hay không."""
+    try:
+        return bool(md.exists() and GC.ledger_approved("G4", study, md, repo_root=BASE))
+    except (OSError, ValueError, json.JSONDecodeError):
+        return False
+
+
+def _cham_lai_chat_luong_sau_ghi(study: str, out: Path) -> None:
+    """Chạy CÙNG đường ghi của tools/g4_quality_gate.py (và của approve_gate.py sau khi ký) lên checkpoint vừa ghi.
+
+    VÁ 22/11/2026 (làm mới chuỗi G2–G5 của C1a, PR #423): checkpoint do main() dựng lại từ đầu có `g4_lock_date: None`
+    và không có khối `quality_gate`/`quality_contract_version`. Chạy lại G4 (không --regenerate) trên đề tài mà SAP ĐÃ
+    KÝ (SAP 1.5, STATISTICIAN ký 19/11) giữ đúng SAP từng byte, chữ ký vẫn hiệu lực (evidence_hash băm nguyên byte SAP),
+    nhưng checkpoint lưu thành «SAP chưa khoá» ⇒ G7, đề cương thống nhất và real_world_signals (nhánh không có thư mục
+    để chấm sống) đọc sai; phiên đó phải chạy tay g4_quality_gate.py --study để ghi lại.
+
+    Hàm này KHÔNG tự bật cờ: `g4_lock_date` chỉ được ghi khi bộ chấm báo PASS_G4_SAP_LOCKED VÀ sổ phê duyệt có chữ ký
+    hợp lệ cho đúng SAP hiện hành — lấy từ dấu thời gian sổ (g4_quality_gate.refresh_checkpoint). SAP sửa sau khi ký ⇒
+    chữ ký không còn khớp ⇒ không khoá, `g4_lock_date` giữ None. Lỗi ở bước chấm không đổi mã thoát của run_g4_auto
+    (checkpoint vừa ghi vẫn đúng như trước bản vá) nhưng in rõ lệnh chạy tay."""
+    try:
+        bao_cao = G4Q.evaluate_study(study, out, repo_root=BASE, write=True)
+    except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError) as exc:
+        print(f"  ⚠ Chưa chấm lại được hợp đồng chất lượng G4 lên checkpoint vừa ghi: {exc}")
+        print(f"     Chạy tay: python3 tools/g4_quality_gate.py --study {study}")
+        return
+    try:
+        ngay_khoa = (json.loads((out / "G4_checkpoint.json").read_text(encoding="utf-8")) or {}).get("g4_lock_date")
+    except (OSError, ValueError):
+        ngay_khoa = None
+    print(f"  ↻ Chấm lại hợp đồng chất lượng G4 (cùng đường ghi g4_quality_gate.py): {bao_cao.get('status')}"
+          f" — g4_lock_date={ngay_khoa or 'chưa khoá'}")
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--study", required=True)
@@ -1478,6 +1516,8 @@ def main():
     cp_path = out / "G4_checkpoint.json"
     cp_path.write_text(json.dumps(cp, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n")
     print(f"💾 Lưu: {cp_path}")
+    if giu_ban_bien_tap or _sap_hien_hanh_da_ky(study, md):
+        _cham_lai_chat_luong_sau_ghi(study, out)
     if giu_ban_bien_tap:
         # Mã 2 giữ nguyên hợp đồng «từ chối đè»: không sinh nội dung mới; guardrail/chất lượng của bản người viết do bộ
         # chấm SỐNG (g4_quality_gate) báo — checkpoint đã ghi đúng kết quả guardrail ở trên.
