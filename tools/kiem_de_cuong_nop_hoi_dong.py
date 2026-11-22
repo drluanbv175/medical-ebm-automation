@@ -39,9 +39,12 @@ Luật (mỗi lỗi một dòng; rỗng = đạt):
       «≥ 180/110 mmHg»: tâm thu/tâm trương liền dấu «/», một khoảng trắng rồi «mmHg»; MỌI số đo: một khoảng trắng giữa
       số và đơn vị (trừ «%»), ký hiệu đơn vị đúng chữ (mL, mg/dL, mmol/L, kg/m²), dấu so sánh cách số («≥ 18 tuổi»).
   K12 mỗi tài liệu tham khảo đỡ một câu cụ thể (bác sĩ 20/11/2026, phản biện BTM O13): không ngoặc trích gộp từ 6 tài
-      liệu trở lên, không mục danh mục nào không được trích.
+      liệu trở lên, không mục danh mục nào không được trích; khớp hai chiều (22/11/2026): không số trích nào ngoài
+      danh mục, danh mục đánh số liên tục 1…N.
   K13 mục có PMID đúng Vancouver/NLM theo metadata biên nhận A12 (O14): hơn 6 tác giả ⇒ 6 tác giả rồi «et al.»,
-      «năm;tập(số):trang», tên tạp chí viết tắt NLM. Biên nhận cũ chưa có các khoá này ⇒ bỏ qua.
+      «năm;tập(số):trang», tên tạp chí viết tắt NLM, trang/mã bài khi PubMed có (22/11/2026). Biên nhận cũ chưa có các
+      khoá này ⇒ bỏ qua. Mục KHÔNG PMID (22/11/2026, `loi_k13_nlm`): yếu tố bắt buộc NLM Citing Medicine theo LOẠI tài
+      liệu — bài tạp chí, sách, chương sách, văn bản quy phạm, luận văn, trang web, bản tiền in.
   K14 (chỉ khi đề cương đã theo khuôn «Hướng dẫn viết đăng ký và báo cáo đề tài KH&CN cấp bệnh viện» — có
       «# CHƯƠNG 1.»; chuyển: `khuon_de_cuong_bvqy175.py`): đủ và đúng thứ tự cấu trúc mục II (danh sách cán bộ · mục lục
       · danh mục chữ viết tắt · danh mục bảng, biểu · đặt vấn đề · Chương 1–3 · tài liệu tham khảo · phụ lục); bìa có
@@ -647,6 +650,17 @@ def loi_k12(md: str) -> List[str]:
     if thua:
         loi.append(f"K12 {len(thua)} mục tài liệu tham khảo không được trích ở đâu: "
                    f"{', '.join(map(str, thua[:10]))} — gắn vào câu mà tài liệu đỡ hoặc bỏ khỏi danh mục")
+    # 22/11/2026 (bác sĩ: «tài liệu tham khảo, trích dẫn … hoàn thiện đúng chuẩn»): khớp HAI CHIỀU — số trích trong thân
+    # mà danh mục không có (trích ma), và danh mục đánh số không liên tục 1…N (mục bị xoá mà chưa đánh số lại)
+    if muc:
+        ma = sorted(da_trich - set(muc))
+        if ma:
+            loi.append(f"K12 {len(ma)} số trích dẫn trong thân không có trong danh mục tài liệu tham khảo: "
+                       f"{', '.join(map(str, ma[:10]))} — thêm tài liệu vào danh mục hoặc sửa số trích")
+        hut = sorted(set(range(1, max(muc) + 1)) - set(muc))
+        if hut:
+            loi.append("K12 danh mục tài liệu tham khảo đánh số không liên tục — thiếu số "
+                       f"{', '.join(map(str, hut[:10]))} (đánh số lại danh mục và số trích trong thân)")
     return loi
 
 
@@ -694,8 +708,30 @@ def loi_k13(out_dir: Path, md: str) -> List[str]:
             sai.append(f"thiếu «{nam};{m['volume']}…» (năm;tập(số):trang)")
         if m.get("journal_abbr") and str(m["journal_abbr"]) not in noi_dung:
             sai.append(f"tên tạp chí viết tắt NLM là «{m['journal_abbr']}»")
+        # 22/11/2026: biên nhận có trang/mã bài mà mục không ghi (vd «Medicina (Kaunas). 2025;61(5).» thiếu «:843»)
+        trang = str(m.get("pages") or "").strip()
+        if trang and f":{trang}" not in noi_dung.replace(": ", ":"):
+            sai.append(f"thiếu trang/mã bài «:{trang}» theo PubMed")
         if sai:
             loi.append(f"K13 TLTK [{so}] (PMID {pm.group(1)}): " + "; ".join(sai))
+    return loi
+
+
+def loi_k13_nlm(md: str) -> List[str]:
+    """K13 (mục KHÔNG có PMID — 22/11/2026): yếu tố bắt buộc theo NLM Citing Medicine cho đúng LOẠI tài liệu
+    (`danh_muc_trich_dan.yeu_to_nlm`): bài tạp chí trong nước, văn bản quy phạm, sách, chương sách, luận văn, trang web,
+    bản tiền in. Mục có PMID do `loi_k13` đối chiếu với metadata PubMed của biên nhận A12 (nguồn có thẩm quyền)."""
+    import danh_muc_trich_dan as DMT  # noqa: PLC0415
+
+    _, muc = _tach_tltk(md)
+    loi: List[str] = []
+    for so, noi_dung in sorted(muc.items()):
+        if re.search(r"PMID:\s*\d+", noi_dung):
+            continue
+        y = DMT.yeu_to_nlm(noi_dung)
+        if y["thieu"]:
+            loi.append(f"K13 TLTK [{so}] ({DMT.TEN_LOAI_TLTK[y['loai']]}, NLM Citing Medicine) thiếu: "
+                       + "; ".join(y["thieu"]))
     return loi
 
 
@@ -1024,6 +1060,7 @@ def kiem(out_dir: Path, study: str) -> List[str]:
     loi.extend(loi_k11(md))
     loi.extend(loi_k12(md))
     loi.extend(loi_k13(out_dir, md))
+    loi.extend(loi_k13_nlm(md))
     loi.extend(loi_k14(md))
     loi.extend(loi_k15(md))
     loi.extend(loi_k16(out_dir, md))

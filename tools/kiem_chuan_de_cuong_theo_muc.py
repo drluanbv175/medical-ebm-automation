@@ -676,6 +676,10 @@ CHUAN_DIEU_KIEN: Tuple[Tuple[str, str, str], ...] = (
     ("SRQR 2014", DINH_TINH_CP, "có cấu phần định tính (phỏng vấn sâu/nhóm tiêu điểm)"),
     ("GRAMMS 2008", HON_HOP, "kết hợp phương pháp định lượng và định tính"),
     ("ISPOR BIA GPP II 2014", TAC_DONG_NGAN_SACH, "có phân tích tác động ngân sách"),
+    # 22/11/2026: chương tổng quan tài liệu của đề cương là tổng quan tường thuật ⇒ SANRA 2019 (tiêu chí ở
+    # `tieu_chi_chuan_de_cuong.py`, mục 3 đối chiếu PRISMA-S); tổng quan hệ thống đã thoát sớm ở `chuan_ap_dung`
+    ("SANRA 2019", r"^#{1,3}\s+(?:CHƯƠNG\s+\d+\.?\s+|\d+\.\s+)?TỔNG QUAN TÀI LIỆU\b",
+     "đề cương có chương tổng quan tài liệu (tổng quan tường thuật)"),
 )
 _KHONG_NGUOI_THAM_GIA = frozenset({"systematic_review"})
 NGUON_CHUAN: Dict[str, str] = {

@@ -138,8 +138,9 @@ def _de_tai(tmp_path: Path, thiet_ke: str = "rct") -> Path:
                 "primary_outcome": {"name": "Tỷ lệ kiểm soát huyết áp", "measure": "Huyết áp < 140/90 mmHg",
                                     "timepoint": "Tháng 6"},
                 "background_problem": "Tỷ lệ kiểm soát huyết áp còn thấp (GIẢ LẬP CANARY — dữ liệu tổng hợp)",
-                "evidence_summary": "Thử nghiệm TRIAL (Smith 2020, PMID 11111111) báo tin nhắn tăng kiểm soát; "
-                                    "PMID 99999999 chưa kiểm chứng",
+                # 22/11/2026 (SANRA mục 6): bằng chứng chính mang số liệu kết cục có nguồn
+                "evidence_summary": "Thử nghiệm TRIAL (Smith 2020, PMID 11111111) báo tin nhắn tăng tỷ lệ kiểm soát "
+                                    "từ 48% lên 70%; PMID 99999999 chưa kiểm chứng",
                 "knowledge_gap": "Thiếu thử nghiệm tại Việt Nam",
                 "study_schema_timeline": "Sàng lọc → ngẫu nhiên hoá → can thiệp 6 tháng",
                 "recruitment_strategy": "Tuyển liên tiếp người bệnh đủ tiêu chuẩn",
@@ -165,6 +166,22 @@ def _de_tai(tmp_path: Path, thiet_ke: str = "rct") -> Path:
     md = {p: {"status": "resolved", "title": f"Bài {p}", "authors": "Smith J, Tran B", "journal": "BMJ",
               "year": "2020", "doi": f"10.1/{p}"} for p in ("11111111", "22222222")}
     (d / "A12_METADATA_RECEIPT.json").write_text(json.dumps({"metadata": md}), encoding="utf-8", newline="\n")
+    # 22/11/2026 (SANRA 2019 cho chương tổng quan): đề tài hoàn chỉnh có nền tìm kiếm G0 (nguồn, câu tìm, ngày —
+    # PRISMA-S 1/8/13) và tổng hợp G0-T3 (mức liên quan từng bài + tóm lược dẫn PMID)
+    (d / "G0_pubmed_raw.json").write_text(json.dumps({
+        "search_provenance": {"co_so_du_lieu": "PubMed", "ngay_tra": "2026-11-15T10:00:00",
+                              "truy_van_goc": '(hypertension[tiab]) AND ("text message"[tiab] OR SMS[tiab])'},
+        "true_counts": {"sr_ma": 0, "rct": 12, "guideline": 0, "observational": 30}}, ensure_ascii=False),
+        encoding="utf-8", newline="\n")
+    (d / f"G0_TONG_HOP_BANG_CHUNG_{MA}.json").write_text(json.dumps({
+        "schema": "g0/tong_hop_bang_chung/v1",
+        "sang_loc": [{"pmid": "11111111", "thiet_ke_that": "Thử nghiệm ngẫu nhiên", "lien_quan": "truc_tiep",
+                      "tom_tat": "Tiêu đề: «Bài 11111111»"},
+                     {"pmid": "22222222", "thiet_ke_that": "Nghiên cứu quan sát", "lien_quan": "gian_tiep",
+                      "tom_tat": "Tiêu đề: «Bài 22222222»"}],
+        "tong_hop": "Thử nghiệm ngẫu nhiên ghi nhận tỷ lệ kiểm soát 70% ở nhóm nhận tin nhắn (PMID 11111111). "
+                    "Một câu dẫn PMID 99999999 chưa kiểm chứng ghi tỷ lệ 61%."}, ensure_ascii=False),
+        encoding="utf-8", newline="\n")
     (d / "A12_RETRACTION_RECEIPT.json").write_text(json.dumps({
         "pmids_checked": ["11111111", "22222222"], "all_clean": True,
         "results": {"11111111": {"status": "ok"}, "22222222": {"status": "ok"}}}), encoding="utf-8", newline="\n")
