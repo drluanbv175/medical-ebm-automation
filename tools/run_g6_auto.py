@@ -3170,7 +3170,7 @@ TABLE_SHELLS = {
             ("Chỉ số", "Giá trị", "95%CI", "Ghi chú"),
             ("Pooled effect", "[chạy meta::metagen]", "[chạy]", ""),
             ("I² (heterogeneity)", "[chạy]", "—", ""),
-            ("Egger's test (publication bias)", "[chạy meta::metabias]", "—", "p<0.10 → nghi ngờ"),
+            ("Egger's test (publication bias)", "[chạy meta::metabias]", "—", "p < 0,10 → nghi ngờ"),
         ]),
     ],
     # THÊM 2026-07-17 (round audit gate — tiếp nối vòng 5): "prediction" (mô
@@ -3237,14 +3237,14 @@ TABLE_SHELLS_CROSS_ORDINAL = [
         ("Phân tích", "cOR", "95%CI Lower", "95%CI Upper", "p"),
         ("Thô (univariable)", "[chạy 03_analysis.R]", "[chạy]", "[chạy]", "[chạy]"),
         ("Hiệu chỉnh (multivariable, forced-in)", "[chạy 03_analysis.R]", "[chạy]", "[chạy]", "[chạy]"),
-        ("SE robust theo cụm (hoặc clmm nếu <15 cụm)", "[chạy 03_analysis.R §2]", "[chạy]", "[chạy]", "[chạy]"),
+        ("SE robust theo cụm (hoặc clmm nếu < 15 cụm)", "[chạy 03_analysis.R §2]", "[chạy]", "[chạy]", "[chạy]"),
     ]),
     ("Bảng 3 — Giả định & độ nhạy (SAP §5/§9)", [
         ("Phương pháp", "Ước lượng (95%CI)", "p", "Ghi chú"),
         ("Brant test (proportional odds)", "—", "[chạy 03_analysis.R §3]", "Vi phạm → partial PO theo biến"),
         ("Tuyến tính (kết cục coi liên tục, HC3)", "[chạy §6a]", "[chạy]", "Song song, không chi phối kết luận"),
         ("Loại phiếu hỗ trợ ghi (tự điền thuần)", "[chạy §6b]", "[chạy]", "So chiều + độ lớn cOR"),
-        ("Gộp nhị phân (≥ ngưỡng SAP §9)", "[chạy §6c]", "[chạy]", "CHỈ khi đủ ≥10 biến cố/tham số"),
+        ("Gộp nhị phân (≥ ngưỡng SAP §9)", "[chạy §6c]", "[chạy]", "CHỈ khi đủ ≥ 10 biến cố/tham số"),
     ]),
 ]
 
@@ -3325,7 +3325,7 @@ def guardrail(artifact: str, all_scripts_text: str) -> tuple:
     elif ci_n >= 3:
         warnings_list.append(f"R6 ✅ {ci_n} lần yêu cầu 95%CI")
     else:
-        errors.append(f"R6 🔴 Thiếu yêu cầu báo cáo 95%CI trong artifact/scripts ({ci_n} lần, cần ≥3)")
+        errors.append(f"R6 🔴 Thiếu yêu cầu báo cáo 95%CI trong artifact/scripts ({ci_n} lần, cần ≥ 3)")
 
     # R7 — Disclaimer
     # SỬA 2026-07-31 (audit tautology vòng 2): generate_artifact() luôn
@@ -3503,8 +3503,8 @@ def _phan5_checklist(design_code, effect_type, outcome_ordinal=False):
             "- [ ] **SE robust theo cụm** đã áp; số cụm < 15 → mô hình chặn ngẫu nhiên "
             "(clmm) là phân tích CHÍNH + báo ICC",
             "- [ ] **Phi tuyến exposure liên tục** đã kiểm (RCS 3 nút / phân vị)",
-            "- [ ] Báo cáo **complete case** (chính khi thiếu <5%) VÀ **MI (m=20, chỉ covariates)**",
-            "- [ ] **Gộp nhị phân** chỉ chạy khi đủ ≥10 biến cố/tham số — là độ nhạy, "
+            "- [ ] Báo cáo **complete case** (chính khi thiếu < 5%) VÀ **MI (m = 20, chỉ covariates)**",
+            "- [ ] **Gộp nhị phân** chỉ chạy khi đủ ≥ 10 biến cố/tham số — là độ nhạy, "
             "KHÔNG thay kết cục thứ bậc chính",
             "- [ ] **Subgroup** chỉ chạy nếu có trong SAP §7 đã khóa",
         ]
@@ -3536,14 +3536,14 @@ def _phan5_checklist(design_code, effect_type, outcome_ordinal=False):
         return [
             ci_line,
             "- [ ] **Discrimination** (C-statistic/AUC) + **Calibration** (slope/intercept) báo cáo đầy đủ",
-            "- [ ] **Internal validation** (bootstrap ≥200 lần) đã chạy, không chỉ split-sample",
+            "- [ ] **Internal validation** (bootstrap ≥ 200 lần) đã chạy, không chỉ split-sample",
             "- [ ] **Decision Curve Analysis** (lợi ích lâm sàng ròng) đã báo cáo",
         ]
     if design_code == "sr_ma":
         return [
             ci_line,
             "- [ ] **I²/τ²/Q** (dị biệt) báo cáo kèm lựa chọn mô hình fixed/random có giải thích",
-            "- [ ] **Publication bias** (Egger/funnel) nếu ≥10 nghiên cứu",
+            "- [ ] **Publication bias** (Egger/funnel) nếu ≥ 10 nghiên cứu",
             "- [ ] **Forest plot** đính kèm cho kết cục chính",
         ]
     if design_code == "qualitative":
@@ -4518,7 +4518,7 @@ suppressPackageStartupMessages(lapply(pkgs_ordinal, require, character.only = TR
 #   lmtest::coeftest(fit_lm, vcov = sandwich::vcovHC(fit_lm, type = "HC3"))
 # (6b) Loại phiếu có hỗ trợ ghi (`{mode_var}` = 2/3), chạy lại trên tập tự điền
 #   (`{mode_var}` = 1), so sánh CHIỀU và ĐỘ LỚN cOR với mô hình chính.
-# (6c) Gộp nhị phân ({outcome} >= {nguong}) — CHỈ KHI đủ ≥10 biến cố/tham số
+# (6c) Gộp nhị phân ({outcome} >= {nguong}) — CHỈ KHI đủ ≥ 10 biến cố/tham số
 #   (EPV); KHÔNG ép chạy bằng Firth khi thiếu biến cố (SAP §9):
 #   glm_bin <- glm(I(as.numeric(as.character({outcome})) >= {nguong}) ~ {exposure} + {cov_fml},
 #                  data = df, family = binomial())
@@ -4724,7 +4724,7 @@ source(here::here("scripts", "00_setup.R"))
 # định random-effects ở đây) phù hợp với mức dị biệt và bối cảnh lâm sàng của
 # đề tài — không chỉ dùng số mặc định của template mà không xem I²/Q thật.
 
-# Publication bias (chỉ khi ≥10 nghiên cứu — Egger test không đáng tin cậy dưới ngưỡng này):
+# Publication bias (chỉ khi ≥ 10 nghiên cứu — Egger test không đáng tin cậy dưới ngưỡng này):
 # meta::funnel(m_bin); meta::metabias(m_bin, method.bias = "Egger")
 
 message("03_analysis.R (SR/MA) — input STUDY-LEVEL (không phải participant-level) | [CẦN BẢNG TRÍCH XUẤT THẬT sau khi hoàn tất sàng lọc PRISMA]")

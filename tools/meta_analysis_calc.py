@@ -133,7 +133,7 @@ def md_from_groups(mean1: float, sd1: float, n1: int, mean2: float, sd2: float, 
     """Hiệu số trung bình (MD) thô + SE — dùng khi 2 nhóm đo CÙNG thang đo."""
     for name, v in (("n1", n1), ("n2", n2)):
         if v < 2:
-            raise MetaCalcError(f"{name}={v} phải ≥2.")
+            raise MetaCalcError(f"{name}={v} phải ≥ 2.")
     for name, v in (("sd1", sd1), ("sd2", sd2)):
         if v < 0:
             raise MetaCalcError(f"{name}={v} không được âm.")
@@ -148,7 +148,7 @@ def smd_from_groups(mean1: float, sd1: float, n1: int, mean2: float, sd2: float,
     et al. Introduction to Meta-Analysis (2009) — J = 1 − 3/(4·df−1)."""
     for name, v in (("n1", n1), ("n2", n2)):
         if v < 2:
-            raise MetaCalcError(f"{name}={v} phải ≥2.")
+            raise MetaCalcError(f"{name}={v} phải ≥ 2.")
     for name, v in (("sd1", sd1), ("sd2", sd2)):
         if v < 0:
             raise MetaCalcError(f"{name}={v} không được âm.")
@@ -201,12 +201,12 @@ def pool_effects(effects: List[float], variances: List[float], alpha: float = 0.
     """
     k = len(effects)
     if k < 2:
-        raise MetaCalcError(f"Cần ≥2 nghiên cứu để gộp, nhận {k}.")
+        raise MetaCalcError(f"Cần ≥ 2 nghiên cứu để gộp, nhận {k}.")
     if len(variances) != k:
         raise MetaCalcError("effects và variances phải cùng độ dài.")
     for v in variances:
         if v <= 0:
-            raise MetaCalcError(f"variance={v} phải dương (SE>0).")
+            raise MetaCalcError(f"variance={v} phải dương (SE > 0).")
 
     w = [1 / v for v in variances]
     sum_w = sum(w)
@@ -250,17 +250,17 @@ def pool_effects(effects: List[float], variances: List[float], alpha: float = 0.
                     "độ phân tán hiệu ứng THẬT giữa nghiên cứu, KHÔNG phải CI của trung bình.",
         }
     else:
-        out["prediction_interval"] = {"pi": None, "note": "Cần ≥3 nghiên cứu để tính PI đáng tin."}
+        out["prediction_interval"] = {"pi": None, "note": "Cần ≥ 3 nghiên cứu để tính PI đáng tin."}
     return out
 
 
 def egger_test(effects: List[float], variances: List[float]) -> Dict:
     """Egger's test — hồi quy (hiệu ứng chuẩn hóa / SE) theo (1/SE), kiểm hệ số chặn
-    ≠ 0 (bất đối xứng phễu → nghi publication bias). CHỈ nên chạy khi ≥10 nghiên cứu
+    ≠ 0 (bất đối xứng phễu → nghi publication bias). CHỈ nên chạy khi ≥ 10 nghiên cứu
     (agent quyết định ngưỡng này — công cụ chỉ tính, không tự áp ngưỡng)."""
     k = len(effects)
     if k < 3:
-        raise MetaCalcError(f"Cần ≥3 nghiên cứu để hồi quy Egger, nhận {k}.")
+        raise MetaCalcError(f"Cần ≥ 3 nghiên cứu để hồi quy Egger, nhận {k}.")
     if len(variances) != k:
         raise MetaCalcError("effects và variances phải cùng độ dài.")
     se = [math.sqrt(v) for v in variances]
@@ -292,7 +292,7 @@ def egger_test(effects: List[float], variances: List[float]) -> Dict:
     return {
         "intercept": intercept, "se_intercept": se_intercept, "t": t_stat,
         "dof": dof, "p_value": p_val,
-        "interpretation": ("nghi bất đối xứng phễu (p<0.10, quy ước Egger)"
+        "interpretation": ("nghi bất đối xứng phễu (p < 0,10, quy ước Egger)"
                           if (p_val is not None and p_val < 0.10) else
                           "không đủ bằng chứng bất đối xứng phễu" if p_val is not None
                           else "[CẦN scipy để tính p-value chính xác]"),

@@ -237,7 +237,7 @@ def apply_fpc_and_cluster_de(n_total, population_n=None, icc=None, cluster_size=
         n_cluster = n * de
         num_clusters = math.ceil(n_cluster / cluster_size)
         small_k_warning = (
-            " ⚠️ Số cụm nhỏ (<15-20) — cân nhắc dùng phân phối t với (k-2) bậc tự do "
+            " ⚠️ Số cụm nhỏ (< 15–20) — cân nhắc dùng phân phối t với (k-2) bậc tự do "
             "thay vì z, đối chiếu với thống kê viên (Donner & Klar 2000)."
             if num_clusters < 15 else ""
         )
@@ -1682,7 +1682,7 @@ def main():
     # hàng chục/trăm lần vô lý mà không cảnh báo.
     if not (0 <= dropout < 0.5):
         print(f"❌ LỖI: --dropout={dropout} không hợp lệ. Phải trong [0, 0.5) — "
-              "dropout ≥50% cho thấy thiết kế nghiên cứu có vấn đề nghiêm trọng "
+              "dropout ≥ 50% cho thấy thiết kế nghiên cứu có vấn đề nghiêm trọng "
               "hơn là vấn đề cỡ mẫu, cần bác sĩ xem lại trước khi tính.")
         sys.exit(1)
     if not (0 < alpha < 1) or not (0 < power < 1):

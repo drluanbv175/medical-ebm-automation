@@ -313,6 +313,10 @@ def _bo_doc(tmp_path, tom: dict):
         _uoc_luong = TV.TronVong._uoc_luong
         _gia_tri_ket_qua = TV.TronVong._gia_tri_ket_qua
         _gia_tri_kinh_te = TV.TronVong._gia_tri_kinh_te  # 16/11/2026: _gia_tri_ket_qua gộp khoá lời văn kinh tế
+        # 22/11/2026: _gia_tri_ket_qua gộp câu cân đối lợi ích–tác hại (đọc tóm tắt G6 tổn hại nếu có)
+        _TON_HAI_RCT = TV.TronVong._TON_HAI_RCT
+        _ton_hai_g6 = TV.TronVong._ton_hai_g6
+        _cau_ton_hai = TV.TronVong._cau_ton_hai
 
     o = _O()
     o.out = tmp_path

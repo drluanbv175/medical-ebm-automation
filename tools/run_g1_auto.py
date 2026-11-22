@@ -138,7 +138,7 @@ BIAS_CONTROLS = {
     ],
     "sr_ma": [
         ("Publication bias", "Funnel plot + Egger test; search unpublished (clinicaltrials.gov)"),
-        ("Search bias",      "≥2 cơ sở dữ liệu; không giới hạn ngôn ngữ; kiểm thư xám"),
+        ("Search bias",      "≥ 2 cơ sở dữ liệu; không giới hạn ngôn ngữ; kiểm thư xám"),
         ("Selection bias",   "2 screener độc lập + consensus/third screener khi bất đồng"),
         ("Extraction bias",  "2 người trích xuất độc lập; kappa inter-rater"),
         ("Assessment bias",  "RoB 2 cho RCT; ROBINS-I cho quan sát; QUADAS-3 hiện hành cho chẩn đoán"),
@@ -335,8 +335,8 @@ _COSMIN_MUC = (  # (nhãn, mẫu tìm, ô khi đề cương chưa nói, có tìm
     ("Dịch thuật & thích nghi văn hóa (nếu công cụ gốc nước ngoài)", r"dịch xuôi|dịch ngược|thích nghi văn hóa|forward",
      "[CẦN — hoặc ghi «không áp dụng» kèm lý do (công cụ tự xây dựng)]", False),
     ("Độ giá trị cấu trúc (EFA/CFA)", r"nhân tố khám phá|nhân tố khẳng định|\bEFA\b|\bCFA\b",
-     "[CẦN cỡ mẫu đủ, thường ≥5–10 người/item]", True),
-    ("Độ tin cậy nội tại (Cronbach's α/ω)", r"Cronbach|\bomega\b", "[CẦN — ngưỡng thường ≥0,70]", True),
+     "[CẦN cỡ mẫu đủ, thường ≥ 5–10 người/item]", True),
+    ("Độ tin cậy nội tại (Cronbach's α/ω)", r"Cronbach|\bomega\b", "[CẦN — ngưỡng thường ≥ 0,70]", True),
     ("Độ tin cậy lặp lại (test–retest ICC)", r"tin cậy lặp lại|test[–-]retest", "[CẦN khoảng thời gian lặp lại]", True),
     ("Độ giá trị hội tụ/phân biệt", r"hội tụ|giá trị phân biệt|convergent", "[CẦN công cụ tham chiếu đã kiểm định]", True),
     ("Độ đáp ứng & MCID", r"mức thay đổi tối thiểu|\bMCID\b|độ đáp ứng", "[CẦN — nếu đo thay đổi theo thời gian]", True),
@@ -417,9 +417,9 @@ def _specialist_module_section(module: str, out_dir: Optional[Path] = None, stud
 
 - Thiết kế item + miền nội dung: [CẦN nhóm nghiên cứu xác định + item pool]
 - Độ giá trị nội dung (content validity): [CẦN hội đồng chuyên gia + hệ số CVI]
-- Độ giá trị cấu trúc: ☐ EFA  ☐ CFA — [CẦN cỡ mẫu đủ, thường ≥5–10 người/item]
+- Độ giá trị cấu trúc: ☐ EFA  ☐ CFA — [CẦN cỡ mẫu đủ, thường ≥ 5–10 người/item]
 - Dịch thuật & thích nghi văn hóa (nếu công cụ gốc nước ngoài): forward–back translation + hội đồng chuyên gia [CẦN]
-- Độ tin cậy: Cronbach's α (nội tại, ngưỡng thường ≥0.70) [CẦN] · Test–retest ICC [CẦN khoảng thời gian lặp lại]
+- Độ tin cậy: Cronbach's α (nội tại, ngưỡng thường ≥ 0,70) [CẦN] · Test–retest ICC [CẦN khoảng thời gian lặp lại]
 - Độ giá trị hội tụ/phân biệt: [CẦN công cụ tham chiếu đã kiểm định]
 - Độ đáp ứng & MCID (nếu đo thay đổi theo thời gian): [CẦN]
 - Sai số đo (SEM/SDC), floor/ceiling effect: [CẦN]
@@ -431,7 +431,7 @@ def _specialist_module_section(module: str, out_dir: Optional[Path] = None, stud
 > Phát hiện tín hiệu: đề tài xây dựng/kiểm định mô hình tiên lượng-dự báo mới.
 
 - Ứng viên dự báo (candidate predictors): [CẦN lý luận lâm sàng/y văn — KHÔNG data-dredging]
-- EPV/EPP đủ: [CẦN tính theo số biến dự kiến — quy tắc thường dùng ≥10 sự kiện/biến]
+- EPV/EPP đủ: [CẦN tính theo số biến dự kiến — quy tắc thường dùng ≥ 10 sự kiện/biến]
 - Xử lý dữ liệu thiếu: ☐ Multiple imputation [CẦN phương pháp cụ thể]
 - Hiệu chuẩn (calibration): calibration plot + calibration-in-the-large/slope [CẦN]
 - Phân biệt (discrimination): C-statistic/AUC (95%CI) [CẦN]
@@ -1725,7 +1725,7 @@ def generate_g1_artifact(
         # ['prediction'] (nhấn mạnh EPV/overfitting) trong CÙNG file.
         sap_analysis_note = ("Phát triển mô hình đa biến (logistic/Cox tùy kết cục) + "
                              "shrinkage/penalization (LASSO/ridge) chống quá khớp\n"
-                             "Kiểm định nội (bootstrap optimism, B≥200) + kiểm định ngoại "
+                             "Kiểm định nội (bootstrap optimism, B ≥ 200) + kiểm định ngoại "
                              "(quần thể độc lập — bắt buộc, TRIPOD+AI M7)\n"
                              "Hiệu năng: discrimination (C-statistic/AUC) + calibration "
                              "(slope + intercept-in-the-large) + DCA")
@@ -1849,7 +1849,7 @@ MNAR/sai lệch do mất theo dõi: phân tích nhạy cảm [CẦN]"""
     sap_subgroup_detail = """Nhóm nhỏ 1: [CẦN — tiêu chí: ___] | Giả thuyết tương tác: ___
 Nhóm nhỏ 2: [CẦN]
 Ước lượng tương tác + 95%CI; không kết luận khác biệt nhóm chỉ vì một nhóm
-  có p<0,05 còn nhóm kia không.
+  có p < 0,05 còn nhóm kia không.
 Kết quả nhóm nhỏ là THĂM DÒ nếu không định trước và không đủ lực; diễn giải
   cùng tính hợp lý sinh học, tính nhất quán và kiểm soát đa bội."""
     sap_multiplicity_detail = """Số kết cục phụ / nhóm / thời điểm: [CẦN ẤN ĐỊNH]

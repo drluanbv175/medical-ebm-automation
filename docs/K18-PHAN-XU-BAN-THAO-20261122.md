@@ -81,6 +81,7 @@ K17 thuần cho 45 mục thiếu vì không nhận đề mục kiểu bài báo 
 | thuần tập | STROBE 15 | «254/2869 (8,9%)» là số biến cố theo nhóm |
 | mọi bản nháp | CROSS (cả chuẩn) | Đề mục nháp «II. PHƯƠNG PHÁP *(… Tự điền: ~75%)*» bị hiểu là phiếu tự điền. Sửa: điều kiện chỉ xét thân chương |
 | RCT | CONSORT 12b | «Hướng tiếp: thử nghiệm đa trung tâm» ở Bàn luận. Sửa: phạm vi điều kiện cho cả tiêu chí ghi đè |
+| RCT không kém hơn | CONSORT 21a | THIẾU GIẢ: SAP §4 «Hiệu tỷ lệ (risk difference) + 95%CI (Newcombe) so với biên Δ» không khớp `TC.PP_THONG_KE`. Sửa: 21a nhận thêm tên phương pháp «risk difference», «Newcombe». KHÔNG nhận «CI» trơn (câu cố định «mọi ước lượng kèm 95%CI» có ở mọi bản thảo) và «hiệu số tỷ lệ» (dòng thiết kế «biên hiệu số tỷ lệ −10 điểm %» — giả lập đầu–cuối từng lấy làm bằng chứng) |
 | chẩn đoán | STARD 6, 7, 13a, 14, 23, 26, 30 | «Tiêu chí nhận/loại», «Gan nhiễm mỡ trên siêu âm», «Đọc index test mù…», «95%CI», hình «Phân bố fib4 theo tình trạng bệnh» (STARD cho phép «hoặc phân bố»), «phổ bệnh có thể khác cộng đồng», «Tài trợ: Không có tài trợ…» |
 | dự báo | TRIPOD+AI 8a | «định nghĩa: … ghi trong hồ sơ …, đối chiếu giấy ra viện» là cách xác định |
 | (test) | STROBE 1a | Tên bài mở bằng «KẾT QUẢ…» bị loại khỏi khối tiêu đề |
@@ -123,6 +124,68 @@ Chép nguyên chữ quyết định đã chốt; trường vắng, còn [CẦN] 
   - Dự báo: đầu ra/ngưỡng (15), công bố hệ số và hệ số chặn (22), chia sẻ dữ liệu/mã (18e/f), dữ liệu đầu vào khi áp
     dụng (27a/b).
   - Mọi thiết kế: nơi truy cập đề cương/SAP (CONSORT 3, STARD 29, TRIPOD+AI 18c).
+- CONSORT 2025 — 8 mục giao bộ sinh G7 (22/11/2026, nhánh `claude/k18-consort-8-muc-20261122`). Bộ sinh chép nguyên
+  chữ dữ kiện đã chốt; trường vắng, còn [CẦN] hoặc «Không áp dụng» thì không in; không câu mẫu, không ô [CẦN] mới
+  (`khoi_consort_bo_sung_g7`, `_khoi_rct_g7`):
+  - 3 — `protocol_url` của bản đăng ký G2; tài liệu đề cương/SAP trong `related_documents` của phiếu G9 kèm
+    `access_mechanism`. Ba kịch bản không khai ⇒ CÒN MỞ (PI khai ở G2/G9).
+  - 4 — câu «Tính có sẵn dữ liệu» lấy quyết định và chi tiết phiếu G9 đã chốt (`statement_final`), cộng
+    `gate_params.G7.data_sharing_statement`; chưa khai gì thì giữ câu cũ. Câu cũ khẳng định «có thể cung cấp theo yêu
+    cầu» bất kể lời khai — vẫn in khi chưa khai (việc riêng). Giả lập khai «không chia sẻ … kịch bản phân tích kèm gói
+    phát hành», không khai `access_mechanism` ⇒ còn thiếu yếu tố «cách truy cập» (PI).
+  - 8 — `ppi_plan` (study_meta hoặc `design_specific`, cùng hai chỗ `research_study_spec` đọc cho G10).
+  - 10 — dòng có mô tả ở bảng «PHẦN 4 — THAY ĐỔI SAU KHI KHÓA» của SAP; dòng khuôn «(chưa có)» KHÔNG được hiểu là
+    «không có thay đổi». K18 mục 10 hỏi thay đổi ĐỀ CƯƠNG thử nghiệm — chưa cổng nào có trường khai ⇒ CÒN MỞ (thiết
+    kế hồ sơ: trường khai thay đổi đề cương sau khi bắt đầu, hoặc lời khai «không có»).
+  - 20b — `blinding_how` (study_meta/`design_specific`) in ở §3b ngay sau «Làm mù». Ba kịch bản không khai ⇒ CÒN MỞ.
+  - 21a — nhãn §6 đổi thành «Phương pháp phân tích kết cục chính» (SAP §4); dòng «Phân tích tác hại» từ SAP §15 «Cách
+    phân tích tổn hại» (nhãn do nhánh «G7 đọc sổ sàng lọc» thêm vào `run_g4_auto`). Thử nghiệm không kém hơn: K18 báo
+    thiếu giả, đã sửa (§3.1).
+  - 23a — cuối chương Kết quả: G1 `study_period` (ghi rõ «theo đề cương»), G2 `first_enrolment_date`, G1
+    `follow_up_schedule`. Hệ chưa có nguồn ngày tuyển THỰC TẾ (sổ sàng lọc không mang ngày) — tác giả thay bằng ngày
+    thực tế khi viết bản nộp.
+  - 24b — cuối chương Kết quả: `concomitant_care_policy` (ghi rõ «theo quy định của đề cương»; chăm sóc thực nhận theo
+    nhóm chưa có nguồn). Tiêu đề khối chỉ gọi tên phần có dòng — tiêu đề cố định từng làm 24b đạt giả (giả lập đầu–cuối).
+  - ĐẠT GIẢ ở bản gốc (đọc dòng bằng chứng): 23a khớp ngày của biến `ngay_ngau_nhien` trong Bảng 1 (nhánh «G7 đọc sổ
+    sàng lọc» gỡ hàng này); 24b khớp «chăm sóc thường quy» là TÊN NHÓM CHỨNG — ĐÃ SỬA ở nhánh «khai trước G7» (dưới).
+  - THỨ TỰ DÂY CHUYỀN — ĐÃ SỬA (nhánh `claude/gia-lap-khai-truoc-g7-20261122`, sau #411 + #412). Trước: giả lập sinh G7
+    TRƯỚC khi PI khai đặc tả G10 (`_khai_dac_ta_g10`: `ppi_plan`, `concomitant_care_policy`), và
+    `gate_params.G7.data_sharing_statement` chỉ ghi SAU lượt sinh ⇒ bản thảo cuối thiếu 4, 8, 24b dù gói G10 có đủ.
+    Sửa: `TronVong._khai_truoc_ban_thao()` chạy ngay trước `run_g7_auto.py`, không đổi vai, không đổi khoá:
+    - tác giả G7 ghi khoá khai báo bộ sinh đọc (`run_g7_auto.KHOA_TAC_GIA_BAN_THAO`: `data_sharing_statement`,
+      `funding_declared`) vào `gate_params.G7`. Xác nhận đã đọc bản thảo (`manuscript_reviewed_confirmed`,
+      `dau_van_tay_chot`) vẫn ghi SAU lượt sinh;
+    - PI ghi khoá đặc tả bộ sinh đọc (`KHOA_DAC_TA_BAN_THAO`: `blinding_how`, `ppi_plan`, `concomitant_care_policy`,
+      `concomitant_care`) vào study_meta, chỉ khi còn trống. `_khai_dac_ta_g10` không khai lại, chỉ ghi «đã khai trước
+      bản thảo G7». Đặc tả khác của G10 (tiến độ, sai lệch…) vẫn khai ở G10;
+    - test đọc mã nguồn bộ sinh: mọi chỗ `_khai_pi_g7(meta, …)` / `g7.get(…)` phải có khoá trong hai hằng trên.
+    Phiếu G9 vẫn khai ở G9 — G7 không chờ phiếu, câu «Tính có sẵn dữ liệu» chép tuyên bố tác giả G7.
+  - Ba chỗ chỉ thấy khi đọc dòng bằng chứng của bản cuối sau khi sửa thứ tự:
+    - 24b mượn mã nhóm «`0` = Chăm sóc thường quy» (dòng `*Nhóm (mã trong dữ liệu khoá):*`). Tiêu chí 24b nay chỉ nhận
+      «chăm sóc thường quy» khi câu nói nhóm NHẬN nó («nhận|tiếp tục|duy trì|vẫn được|đều được|cùng được …»). Mã nhóm,
+      «nhóm chăm sóc thường quy: 118», «so với chăm sóc thường quy» không còn là bằng chứng;
+    - 24b lấy tiêu đề khối «**Thời gian nghiên cứu và chăm sóc đồng thời:**» (K18 lấy lần khớp ĐẦU TIÊN). Tiêu đề đổi
+      thành «… và chăm sóc theo đề cương», nên bằng chứng là dòng chép đặc tả;
+    - 4 vắt từ nhãn «**Tính có sẵn dữ liệu:**» sang dòng sau (`[^.]` gồm cả xuống dòng), và không nhận «dữ liệu cá
+      thể» (= individual participant data; bản tiếng Anh đã nhận). Yếu tố 1 nay không vắt dòng và nhận «cá thể».
+  - Đo (3 kịch bản RCT, cấu hình CI `gia-lap-16.yml`, cả 3 khoá gói G10, `kiem_gia_lap_16` đạt): xem bảng dưới.
+
+| Mục | Bản cuối — bộ sinh gốc (8b1a96a9) | Bản cuối — ghép nhánh này + «G7 đọc sổ sàng lọc» | Sinh lại G7 sau G10 (PI đã khai), chế độ nộp | Bản cuối — khai trước G7 (#411 + #412 + nhánh khai trước) |
+|---|---|---|---|---|
+| 3 | thiếu ×3 | thiếu ×3 — không có dữ kiện | thiếu ×3 — không có dữ kiện | thiếu ×3 — không có dữ kiện |
+| 4 | thiếu ×3 (mã thống kê/từ điển) | thiếu ×3 — tuyên bố khai sau G7 | thiếu ×3 chỉ «cách truy cập» — phiếu không khai | thiếu ×3 chỉ «cách truy cập» (`access_mechanism` giả lập không khai); bằng chứng: dòng tuyên bố |
+| 8 | thiếu ×3 | thiếu ×3 — `ppi_plan` khai sau G7 | đạt ×3 | đạt ×3 — dòng chép `ppi_plan` |
+| 10 | thiếu ×3 | thiếu ×3 — không có trường | thiếu ×3 — không có trường | thiếu ×3 — không có trường |
+| 20b | thiếu ×3 | thiếu ×3 — không có dữ kiện | thiếu ×3 — không có dữ kiện | thiếu ×3 — không có dữ kiện |
+| 21a | đạt ×2; thiếu giả ×1 (không kém hơn) | đạt ×3 | đạt ×3 | đạt ×3 |
+| 23a | đạt GIẢ ×3 (ngày trong Bảng 1) | đạt ×3 (dòng thời gian theo đề cương) | đạt ×3 | đạt ×3 — dòng thời gian theo đề cương |
+| 24b | đạt GIẢ ×2 (tên nhóm chứng); thiếu ×1 | đạt GIẢ ×2 («nhóm chăm sóc thường quy: 118»); thiếu ×1 — đặc tả khai sau G7 | đạt ×3 (dòng chăm sóc đồng thời) | đạt ×3 — dòng «*Chăm sóc đồng thời theo quy định của đề cương:*» |
+
+Bản ghép: CONSORT 2025 đạt 35/42 (`rct_nhi_phan`, `rct_chan_thuc`), 34/42 (`rct_khong_kem`); 2 mục không áp dụng.
+Mọi mục còn thiếu là mục chưa có dữ kiện lúc sinh G7 — không còn mục nào có dữ kiện mà bộ sinh bỏ sót. Khai trước G7:
+36/42 cả ba. Còn thiếu 3, 4 («cách truy cập»), 10, 20b — đều là dữ kiện giả lập không khai hoặc chưa có trường ở cổng
+nào.
+
 - Định tính: COREQ 20, SRQR 7 mục ⚠. Hai chuẩn chưa đối chiếu bảng gốc ⇒ chỉ cảnh báo, không chặn.
 - Tổng quan: xem §3.4.
 

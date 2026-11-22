@@ -34,7 +34,10 @@ Luật (mỗi lỗi một dòng; rỗng = đạt):
       định dạng»): số thập phân dấu phẩy, nhóm nghìn từ 5 chữ số, ngày dd/mm/yyyy, ngoặc kép “…”, không «vs», không chữ
       IN HOA nhấn mạnh ngoài phụ lục, loại biến không bỏ lửng «Định danh/thứ bậc», tên bảng/hình không hai ngoặc liền;
       bảng chữ viết tắt không hai mục cùng nghĩa, không mục thừa, xếp theo vần tiếng Việt. (Bảng «mỗi mức một dòng»
-      ở K9.) Danh mục tài liệu tham khảo, mã, chuỗi tìm kiếm, DOI/URL/PMID được miễn.
+      ở K9.) Danh mục tài liệu tham khảo, mã, chuỗi tìm kiếm, DOI/URL/PMID được miễn. Số đo huyết áp (bác sĩ
+      22/11/2026: «180/110 mmHg là số đo huyết áp phải ghi đúng định dạng» rồi «… tất cả phải đúng chuẩn») ghi
+      «≥ 180/110 mmHg»: tâm thu/tâm trương liền dấu «/», một khoảng trắng rồi «mmHg»; MỌI số đo: một khoảng trắng giữa
+      số và đơn vị (trừ «%»), ký hiệu đơn vị đúng chữ (mL, mg/dL, mmol/L, kg/m²), dấu so sánh cách số («≥ 18 tuổi»).
   K12 mỗi tài liệu tham khảo đỡ một câu cụ thể (bác sĩ 20/11/2026, phản biện BTM O13): không ngoặc trích gộp từ 6 tài
       liệu trở lên, không mục danh mục nào không được trích.
   K13 mục có PMID đúng Vancouver/NLM theo metadata biên nhận A12 (O14): hơn 6 tác giả ⇒ 6 tác giả rồi «et al.»,
@@ -382,6 +385,86 @@ _VS_RE = re.compile(r"(?<![\wÀ-ỹ])vs\.?(?![\wÀ-ỹ])")
 _IN_HOA_NHAN_RE = re.compile(r"(?<![\wÀ-ỹ])(?:CAO|THẤP|KHÔNG|CHỈ|MỌI|PHẢI|LUÔN|TĂNG|GIẢM|ĐÚNG|SAI)(?![\wÀ-ỹ])")
 _TIM_KIEM_RE = re.compile(r"\[(?:Mesh|tiab|pt|ti|tw|majr|dp)\]", re.I)
 _TEN_BB_HAI_NGOAC_RE = re.compile(r"^\*\*(?:Bảng|Hình|Biểu đồ) [0-9A-Z]+\.\d+\..*\)\s*\(")
+# Số đo huyết áp (bác sĩ 22/11/2026): cặp tâm thu/tâm trương — chỉ xét khi giá trị hợp lý (tâm thu 60–300 > tâm trương
+# 30–200: loại ngày «17/11», tỷ số đếm «57/118») VÀ có ngữ cảnh huyết áp (đơn vị mmHg, «huyết áp», «HA», «tâm thu/
+# tâm trương» trong khoảng 80 ký tự trước) — câu «Thêm huyết áp đo được từ 140/90 ở 2 lượt khám» của bảng biến BTM
+# thiếu đơn vị mà không chốt nào bắt.
+_HUYET_AP_RE = re.compile(r"(?P<dau>[<>≤≥]\s*)?(?<![\d/.,])(?P<tt>\d{2,3})(?P<g1>\s*)/(?P<g2>\s*)(?P<ttr>\d{2,3})"
+                          r"(?![\d/.,])(?P<dv>\s*mm\s?Hg)?")
+_NGU_CANH_HUYET_AP_RE = re.compile(r"(?i:huyết áp|tâm thu|tâm trương)|\bHA\b|mm\s?Hg")
+_TY_SO_DEM_SAU_RE = re.compile(r"\s*(?:\(|người|ca\b|trường hợp|bệnh nhân)")
+# Đơn vị dùng chung cho hai cặp nối nhau («140/90 hoặc 130/80 mmHg», tiêu đề «140/90 or 130/80 mmHg») — hợp lệ.
+_DON_VI_CHUNG_SAU_RE = re.compile(r"\s*(?:hoặc|or|và|and|đến|to|–|-|,)\s*[<>≤≥]?\s*\d{2,3}\s*/\s*\d{2,3}\s*mm\s?Hg")
+
+
+def loi_huyet_ap(s: str) -> Optional[str]:
+    """Lỗi định dạng số đo huyết áp ĐẦU TIÊN trong một dòng (None = không có số đo huyết áp hoặc đã đúng).
+
+    Đúng: «≥ 180/110 mmHg», «< 140/90 mmHg», «120/80 mmHg». Sai: thiếu đơn vị («từ 140/90 ở 2 lượt khám»), dính đơn vị
+    («140/90mmHg»), khoảng trắng quanh «/» («140 / 90»), dấu so sánh dính số («≥180/110»)."""
+    for m in _HUYET_AP_RE.finditer(s):
+        tt, ttr = int(m["tt"]), int(m["ttr"])
+        if not (60 <= tt <= 300 and 30 <= ttr <= 200 and tt > ttr):
+            continue
+        if not m["dv"] and _TY_SO_DEM_SAU_RE.match(s[m.end():]):
+            continue  # tỷ số đếm «120/100 (…)», «120/100 người»
+        if not (m["dv"] or _NGU_CANH_HUYET_AP_RE.search(s[max(0, m.start() - 80):m.end() + 20])):
+            continue
+        sai = []
+        if m["g1"] or m["g2"]:
+            sai.append("không để khoảng trắng quanh «/»")
+        if not m["dv"]:
+            if not _DON_VI_CHUNG_SAU_RE.match(s[m.end():]):
+                sai.append("thiếu đơn vị mmHg")
+        elif m["dv"] != " mmHg":
+            sai.append("ghi « mmHg» (một khoảng trắng trước đơn vị)")
+        if m["dau"] and not m["dau"].endswith((" ", "\u00a0")):
+            sai.append("dấu so sánh cách số")
+        if sai:
+            return f"số đo huyết áp «{m.group(0).strip()}» — {', '.join(sai)} (vd «≥ 180/110 mmHg»)"
+    return None
+
+
+# Trình bày số đo (bác sĩ 22/11/2026: «không chỉ ghi định dạng huyết áp đúng mà tất cả phải đúng chuẩn»):
+#  · giữa số và ký hiệu đơn vị có một khoảng trắng — «100 mg», «37,5 °C» (SI Brochure, BIPM 2019, §5.4.3); riêng «%»
+#    viết liền như văn bản y khoa tiếng Việt và toàn bộ đầu ra G6/G7 hiện có («48,3%»);
+#  · ký hiệu đơn vị đúng chữ hoa/thường — mmHg, mL, mg/dL, mmol/L, g/dL, kg/m² (không «ml», «mg/dl», «mm Hg», «kg/m2»);
+#  · dấu so sánh cách số — «≥ 18 tuổi», «p < 0,001» (cách các văn bản nộp thật đang viết: «HbA1c < 7%», «ρ > 0,50»).
+_DON_VI_SI = (r"mmHg|mg/dL|g/dL|g/L|mmol/L|µmol/L|μmol/L|mEq/L|mL|mg|kg|mmol|µmol|μmol|mcg|µg|μg|IU|cm|mm|°C|kPa|"
+              r"lần/phút|nhịp/phút")
+_SO_DINH_DON_VI_RE = re.compile(rf"(?<![\w.,/-])\d+(?:[.,]\d+)?(?:{_DON_VI_SI})(?!\w)")
+_DON_VI_SAI_CHU_RE = re.compile(r"(?<![\w])(?:mm ?hg|mm Hg|MMHG|mg/dl|mmol/l|g/dl|ml(?:/ph[uú]t)?|kg/m2)(?![\w²])")
+_DON_VI_DUNG = {"mmhg": "mmHg", "mm hg": "mmHg", "mg/dl": "mg/dL", "mmol/l": "mmol/L", "g/dl": "g/dL", "ml": "mL",
+                "ml/phút": "mL/phút", "ml/phut": "mL/phút", "kg/m2": "kg/m²"}
+_DAU_SO_SANH_DINH_RE = re.compile(r"[<>≤≥](?=\d)")
+
+
+#: tiền tố thông điệp của `loi_so_do` (sau «K11 dòng N: ») — để bộ giả lập/công cụ khác lọc đúng nhóm luật số đo
+TIEN_TO_LOI_SO_DO = ("số đo huyết áp", "số dính đơn vị", "ký hiệu đơn vị", "dấu so sánh dính số")
+
+
+def la_loi_so_do(thong_diep_k11: str) -> bool:
+    return str(thong_diep_k11).split(": ", 1)[-1].startswith(TIEN_TO_LOI_SO_DO)
+
+
+def loi_so_do(s: str) -> Optional[str]:
+    """Lỗi trình bày số đo ĐẦU TIÊN trong một dòng (None = đúng chuẩn): số đo huyết áp (`loi_huyet_ap`), số dính
+    đơn vị, ký hiệu đơn vị sai chữ, dấu so sánh dính số. Dòng đã bỏ mã `…`, DOI/URL/PMID trước khi gọi."""
+    ha = loi_huyet_ap(s)
+    if ha:
+        return ha
+    m = _SO_DINH_DON_VI_RE.search(s)
+    if m:
+        return f"số dính đơn vị «{m.group(0)}» — để một khoảng trắng giữa số và đơn vị (vd «100 mg», «37,5 °C»)"
+    m = _DON_VI_SAI_CHU_RE.search(s)
+    if m:
+        dung = _DON_VI_DUNG.get(m.group(0).lower().replace("  ", " "), "ký hiệu SI")
+        return f"ký hiệu đơn vị «{m.group(0)}» — viết «{dung}»"
+    m = _DAU_SO_SANH_DINH_RE.search(s)
+    if m:
+        doan = s[m.start():m.start() + 12].split()[0]
+        return f"dấu so sánh dính số «{doan}» — để một khoảng trắng (vd «≥ 18 tuổi», «p < 0,001»)"
+    return None
 
 
 # Chiều ngược của bảng viết tắt (21/11/2026 — phản biện máy C1a, bác sĩ chọn sửa trước khi PI ký G10): danh mục có
@@ -453,6 +536,9 @@ def loi_k11(md: str) -> List[str]:
             if hit:
                 loi.append(f"K11 dòng {so}: {nhan} («{hit.group(0)[:30]}»)")
                 break
+        so_do = loi_so_do(s)
+        if so_do:
+            loi.append(f"K11 dòng {so}: {so_do}")
         if "Định danh/thứ bậc" in s or "định danh/thứ bậc" in s:
             loi.append(f"K11 dòng {so}: loại biến bỏ lửng «Định danh/thứ bậc» — ghi rõ Định danh, Thứ bậc hoặc "
                        "Định danh (chọn nhiều)")

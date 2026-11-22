@@ -228,7 +228,7 @@ def test_g4_mien_epv_du_lieu_thieu_ca_the_va_seed_cho_tong_quan():
     sap = _gen("sr_ma")
     for o, gia_tri in (("[CẦN THỐNG KÊ VIÊN — RR/OR/HR cho kết cục nhị phân/sống còn; MD/SMD cho liên tục]", "RR"),
                        ("[CẦN BÁC SĨ — phải ghi TRƯỚC khi xem dữ liệu]", "Loại thuốc"),
-                       ("[CẦN — Bonferroni / FDR nếu >3 kết cục chính]", "Không điều chỉnh"),
+                       ("[CẦN — Bonferroni / FDR nếu > 3 kết cục chính]", "Không điều chỉnh"),
                        ("[CẦN BÁC SĨ thêm kịch bản cụ thể]", "Loại nghiên cứu nguy cơ sai lệch cao"),
                        ("[CẦN — R v4.x (metafor/meta) / Stata v18 (meta) / RevMan 5.4]", "R 4.6"),
                        ("[CẦN — metafor, meta...]", "metafor 4.6")):

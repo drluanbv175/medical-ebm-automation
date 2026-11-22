@@ -158,8 +158,13 @@ MAU_SO_DO_LUONG: Dict[str, List[Tuple[str, str, str, str]]] = {
     "rct": [("Đánh giá đủ tiêu chuẩn", "chinh", "", ""),
             ("Loại trừ", "loai", "", "Không đủ tiêu chuẩn: ; Từ chối tham gia: ; Lý do khác: "),
             ("Phân bổ ngẫu nhiên", "chinh", "", "")]
+    # 22/11/2026: CONSORT 2025 mục 22a đòi theo từng nhóm số được phân bổ, số NHẬN can thiệp dự định và số được phân
+    # tích — hộp «Nhận can thiệp theo phân bổ» (CONSORT: «Received allocated intervention») là số duy nhất máy không
+    # suy ra được từ các hộp khác, nên phải có ô để nghiên cứu viên điền.
     + [x for nh in ("Can thiệp", "Chứng") for x in (
         (f"Được phân bổ nhóm {nh.lower()}", "chinh", nh, ""),
+        ("Không nhận can thiệp theo phân bổ", "loai", nh, "Từ chối can thiệp: ; Lý do khác: "),
+        ("Nhận can thiệp theo phân bổ", "chinh", nh, ""),
         ("Mất theo dõi / ngừng can thiệp", "loai", nh, "Mất liên lạc: ; Rút đồng ý: ; Lý do khác: "),
         ("Đưa vào phân tích", "chinh", nh, ""))],
     "cross_sectional": _TRUC_QS, "cohort": _TRUC_QS, "survival": _TRUC_QS,
