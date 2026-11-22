@@ -405,7 +405,8 @@ def test_nhan_bien_phai_sinh_thay_ten_bien_trong_van_xuoi(tmp_path):
 def test_nhan_bien_giua_cau_giu_tu_viet_tat_va_don_dau_phay_truoc_ngoac():
     SD.NHAN_BIEN.clear()
     SD.NHAN_BIEN.update({"du_cd_acei": "Đủ chỉ định ACEi/ARB theo KDIGO 2022", "xn_du": "UACR và creatinin đủ"})
-    assert SD.lam_sach("người có `du_cd_acei` = 1") == "người có đủ chỉ định ACEi/ARB theo KDIGO 2022 = 1"
+    # 22/11/2026: mã 1 của biến Có/Không thành chữ «người có …» — «= 1» trong văn xuôi là dấu vết mã (K8)
+    assert SD.lam_sach("người có `du_cd_acei` = 1") == "người có đủ chỉ định ACEi/ARB theo KDIGO 2022"
     assert SD.lam_sach("tỷ lệ `xn_du`") == "tỷ lệ UACR và creatinin đủ"
     assert SD.lam_sach("không kiểm định (thiết kế theo độ chính xác, §12)") == \
         "không kiểm định (thiết kế theo độ chính xác)"

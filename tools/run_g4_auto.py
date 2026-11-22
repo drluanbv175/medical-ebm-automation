@@ -1001,7 +1001,7 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "---",
         "*Cần bác sĩ kiểm chứng. SAP này chỉ có hiệu lực pháp lý sau khi được ký.*",
     ]
-    return _dong_bo_chung_chi(_dien_khung("\n".join(lines), khung, design_code))
+    return _dong_bo_chung_chi(_dien_khung("\n".join(lines), khung, design_code, hypothesis_type))
 
 
 def _dong_bo_chung_chi(sap: str) -> str:
@@ -1022,7 +1022,7 @@ def _dong_bo_chung_chi(sap: str) -> str:
     return sap.replace("║ KQ chính  : [CẦN BÁC SĨ ĐIỀN — từ SAP §2]                 ║", f"║ KQ chính  : {kc} ║", 1)
 
 
-def _dien_khung(sap: str, khung, design_code) -> str:
+def _dien_khung(sap: str, khung, design_code, hypothesis_type: str = "superiority") -> str:
     """Điền ô [CẦN …] của SAP bằng khung đề tài ĐÃ CHỐT (15/11/2026). Chỉ thay đúng các dòng khuôn; vắng dữ kiện ⇒ giữ
     nguyên [CẦN …]. Không đụng §2 của thiết kế định tính (đã có nhánh riêng)."""
     if not khung:
@@ -1034,7 +1034,7 @@ def _dien_khung(sap: str, khung, design_code) -> str:
 
     sap = DTT.thay_dong_chung(sap, khung.get("dinh_nghia_thay_the") or [])
     if design_code == "rct":  # CONSORT: quần thể theo đề cương định trước bằng biến tuân thủ của ma trận G3
-        sap = DTT.chen_theo_de_cuong(sap, khung.get("tuan_thu_de_cuong"))
+        sap = DTT.chen_theo_de_cuong(sap, khung.get("tuan_thu_de_cuong"), hypothesis_type)
     thay = {}
     if khung.get("tieu_chi_nhan"):
         thay["- **Tiêu chí nhận:** [CẦN BÁC SĨ ĐIỀN — từ đề cương]  "] = (

@@ -548,3 +548,62 @@ def test_record_13_1_khong_co_loc_du_lieu_thi_o_trong_va_k17_bao_thieu(tmp_path)
     co = SDC.chon_quan_the_thuong_quy(_nguon_gia(tmp_path, "diagnostic", []), _THUONG_QUY)
     du = _ket_qua(goc.format(dong="\n".join(co)), "cross_sectional")[("RECORD 2015", "13.1")]
     assert trong.trang_thai == "thieu" and du.trang_thai == "dat"
+
+
+# ═════════════════════════════════════════════ RCT vượt trội: dòng theo đề cương đúng khung, không mã trong văn xuôi
+_TT = {"bien": "tuan_thu_de_cuong", "dinh_nghia": "nhận ≥ 80% số lần can thiệp theo nhánh"}
+_SAP9 = "### §8 X\n\n### §9 PHÂN TÍCH ĐỘ NHẠY\n\n- Complete case vs MI  \n"
+
+
+def test_theo_de_cuong_cau_ket_luan_theo_khung_gia_thuyet():
+    import dinh_nghia_thay_the as DTT  # noqa: PLC0415
+
+    vt = DTT.chen_theo_de_cuong(_SAP9, _TT, "superiority")
+    assert "không kém hơn" not in vt and "phân tích độ nhạy — kết luận chính theo phân tích ITT" in vt
+    assert "kết luận không kém hơn phải vững ở cả ITT lẫn theo đề cương" in DTT.chen_theo_de_cuong(
+        _SAP9, _TT, "non_inferiority")
+    assert "kết luận tương đương phải vững" in DTT.chen_theo_de_cuong(_SAP9, _TT, "equivalence")
+    assert "không kém hơn" not in DTT.chen_theo_de_cuong(_SAP9, _TT)  # mặc định: vượt trội
+    sap = G4.generate("T", "RCT", "rct", "RCT", "CONSORT", 400, 0.05, 0.8, 0.3, "RR", "2026-11-22",
+                      hypothesis_type="superiority")
+    sap = G4._dien_khung(sap.replace("### §9", "### §9", 1), {"tuan_thu_de_cuong": _TT}, "rct", "superiority")
+    dong = next(d for d in sap.split("\n") if "Phân tích theo đề cương (per-protocol)" in d)
+    assert "không kém hơn" not in dong
+    # đề cương thử nghiệm vượt trội chép dòng này không còn bị K17 áp nhầm phần mở rộng không kém hơn
+    md = ("# ĐỀ CƯƠNG\n\n# 1. ĐẶT VẤN ĐỀ\n\nNội dung.\n\n# 4. ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP NGHIÊN CỨU\n\n"
+          "## 4.11. Xử lý và phân tích số liệu\n\n" + dong + "\n")
+    assert "CONSORT NI 2012" not in dict(KCM.chuan_ap_dung("rct", md))
+
+
+def test_dieu_kien_ma_bang_mot_thanh_van_xuoi():
+    import kiem_de_cuong_nop_hoi_dong as KD  # noqa: PLC0415
+
+    cu = dict(SDC.NHAN_BIEN)
+    try:
+        SDC.NHAN_BIEN["tuan_thu_de_cuong"] = "Tuân thủ đề cương"
+        s = SDC.lam_sach("Phân tích theo đề cương: chỉ người có `tuan_thu_de_cuong` = 1 — nhận ≥ 80% số lần")
+        assert "chỉ người có tuân thủ đề cương — nhận ≥ 80% số lần" in s and "= 1" not in s
+        k8 = [bt for bt, ten in KD._DAU_VET_MAY if "mã biến" in ten][0]  # chính luật K8 của bộ kiểm nộp
+        assert not k8.search(s)
+        assert "= 1" in SDC.lam_sach("chỉ người có `bien_la` = 1")  # biến không có nhãn ⇒ giữ để K8 bắt
+    finally:
+        SDC.NHAN_BIEN.clear()
+        SDC.NHAN_BIEN.update(cu)
+
+
+def test_g10_cong_cu_do_khong_lay_dinh_nghia_lam_nguon_do(tmp_path, monkeypatch):
+    import quyet_dinh_da_chot as QD  # noqa: PLC0415
+
+    mt = [{"vai_tro": "ket_cuc_chinh", "bien": "nhap_vien", "cong_cu": "Hồ sơ + giấy ra viện",
+           "khai_niem": "nhập viện"},
+          {"vai_tro": "yeu_to", "bien": "ntprobnp", "cong_cu": "Xét nghiệm", "khai_niem": "NT-proBNP"},
+          {"vai_tro": "dinh_nghia_thay_the", "bien": "ntprobnp_can2", "khai_niem": "NT-proBNP căn bậc hai",
+           "cong_cu": "NT-proBNP biến đổi căn bậc hai, giữ thang liên tục (Royston 2006, PMID 16217841)"},
+          {"vai_tro": "tuan_thu_de_cuong", "bien": "tt", "cong_cu": "Tuân thủ: nhận ≥ 80% số lần", "khai_niem": "x"}]
+    monkeypatch.setattr(QD, "ma_tran", lambda *_a: mt)
+    ra = QD.rut(tmp_path, "X", {"gate_params": {"G1": {"design": "prediction"}}})
+    assert ra["instrument"][0]["name"].startswith("Phiếu trích hồ sơ (CRF)")
+    assert ra["data_source"][0].startswith("Hồ sơ + giấy ra viện; Xét nghiệm (")
+    assert "thang liên tục" not in ra["data_source"][0] and "Tuân thủ" not in ra["data_source"][0]
+    mt.append({"vai_tro": "ket_cuc_phu", "bien": "qol", "cong_cu": "Thang đo chất lượng sống KCCQ", "khai_niem": "q"})
+    assert "instrument" not in QD.rut(tmp_path, "X", {"gate_params": {"G1": {"design": "prediction"}}})

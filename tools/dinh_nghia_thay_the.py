@@ -144,15 +144,27 @@ def tuan_thu_tu_dong_ma_tran(dong: Optional[Iterable[Mapping[str, Any]]]) -> Opt
     return None
 
 
-def chen_theo_de_cuong(sap: str, tt: Optional[Mapping[str, str]]) -> str:
-    """Chèn dòng phân tích theo đề cương vào ĐẦU §9 (RCT có biến tuân thủ). Đã có neo ⇒ giữ nguyên."""
+def chen_theo_de_cuong(sap: str, tt: Optional[Mapping[str, str]], gia_thuyet: str = "superiority") -> str:
+    """Chèn dòng phân tích theo đề cương vào ĐẦU §9 (RCT có biến tuân thủ). Đã có neo ⇒ giữ nguyên.
+
+    22/11/2026: câu kết luận theo KHUNG GIẢ THUYẾT đã chốt (G3 `hypothesis_type`) — thử nghiệm không kém hơn/tương
+    đương: kết luận phải vững ở cả ITT lẫn theo đề cương (CONSORT mở rộng NI, Piaggio 2012); thử nghiệm vượt trội: phân
+    tích theo đề cương là phân tích độ nhạy, kết luận chính theo ITT. Trước đó mọi RCT đều nhận câu của thử nghiệm
+    không kém hơn ⇒ đề cương thử nghiệm vượt trội tự nhận là thử nghiệm không kém hơn (sai khung, K17 áp nhầm phần mở
+    rộng NI)."""
     if not tt or NEO_THEO_DE_CUONG.casefold() in sap.casefold():
         return sap
     m = re.search(r"^### §9[^\n]*\n\n?", sap, flags=re.M)
     if not m:
         return sap
+    khung = str(gia_thuyet or "").strip().lower()
+    if khung in ("non_inferiority", "equivalence"):
+        ket = ("kết luận " + ("không kém hơn" if khung == "non_inferiority" else "tương đương")
+               + " phải vững ở cả ITT lẫn theo đề cương")
+    else:
+        ket = "là phân tích độ nhạy — kết luận chính theo phân tích ITT"
     dong = (f"- {NEO_THEO_DE_CUONG}: chỉ người có `{tt['bien']}` = 1 — {tt['dinh_nghia']}; cùng mô hình phân tích "
-            "chính; kết luận của thử nghiệm không kém hơn phải vững ở cả ITT lẫn theo đề cương  \n")
+            f"chính; {ket}  \n")
     return sap[:m.end()] + dong + sap[m.end():]
 
 

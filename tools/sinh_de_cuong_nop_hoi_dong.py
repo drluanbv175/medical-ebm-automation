@@ -152,6 +152,10 @@ _THAY = [(re.compile(a, re.IGNORECASE), b) for a, b in (
 _TEN_BIEN_TRONG_NGOAC = re.compile(r"`([a-z][a-z0-9_]*)`\s*\(([^()]+)\)")
 NHAN_BIEN: Dict[str, str] = {}  # tên biến → nhãn (Nguon nạp từ từ điển dữ liệu)
 _TEN_BIEN_TRAN = re.compile(r"`([a-z][a-z0-9_]*)`")
+#: (22/11/2026) điều kiện mã của SAP «chỉ người có `tuan_thu_de_cuong` = 1» (dòng phân tích theo đề cương, chèn tự
+#: động ở G4) ⇒ văn xuôi «chỉ người có tuân thủ đề cương …»: mã 1 của biến Có/Không là «có» — giữ «= 1» là dấu vết mã
+#: trong văn xuôi (K8 chặn mọi RCT có biến tuân thủ).
+_BIEN_BANG_MOT = re.compile(r"`([a-z][a-z0-9_]*)`\s*=\s*1\b(?![.,]?\d)")
 
 
 def _nhan_giua_cau(nhan: str) -> str:
@@ -176,6 +180,7 @@ def lam_sach(x: Any) -> str:
         for bt in _BO_HAN:
             s = bt.sub("", s)
     s = _TEN_BIEN_TRONG_NGOAC.sub(lambda m: m.group(2), s)
+    s = _BIEN_BANG_MOT.sub(lambda m: _nhan_giua_cau(NHAN_BIEN.get(m.group(1), "")) or m.group(0), s)
     s = _TEN_BIEN_TRAN.sub(lambda m: _nhan_giua_cau(NHAN_BIEN.get(m.group(1), "")), s)
     # định danh máy dạng ten_bien còn trần trong câu (vd «chiều kết cục higher_better» của SAP): nhãn biến nếu có
     # trong từ điển, không thì bỏ — tên biến chỉ được ở bảng/phụ lục (K4)
