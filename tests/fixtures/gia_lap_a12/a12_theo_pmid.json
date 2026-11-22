@@ -7,6 +7,20 @@
    ],
    "source": "pubmed"
   },
+  "16217841": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "16675816": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
   "1670734": {
    "status": "ok",
    "sources_tried": [
@@ -314,6 +328,13 @@
    "source": "pubmed"
   },
   "28586172": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "29133356": {
    "status": "ok",
    "sources_tried": [
     "pubmed"
@@ -1198,6 +1219,42 @@
    "year": "2004",
    "doi": "10.1016/j.jclinepi.2003.12.013"
   },
+  "16217841": {
+   "status": "resolved",
+   "title": "Dichotomizing continuous predictors in multiple regression: a bad idea.",
+   "authors": "Royston P, Altman DG, Sauerbrei W",
+   "journal": "Statistics in medicine",
+   "year": "2006",
+   "doi": "10.1002/sim.2331",
+   "n_authors": 3,
+   "authors_6": [
+    "Royston P",
+    "Altman DG",
+    "Sauerbrei W"
+   ],
+   "journal_abbr": "Stat Med",
+   "volume": "25",
+   "issue": "1",
+   "pages": "127-41"
+  },
+  "16675816": {
+   "status": "resolved",
+   "title": "The cost of dichotomising continuous variables.",
+   "authors": "Altman DG, Royston P",
+   "journal": "BMJ (Clinical research ed.)",
+   "year": "2006",
+   "doi": "10.1136/bmj.332.7549.1080",
+   "n_authors": 2,
+   "authors_6": [
+    "Altman DG",
+    "Royston P"
+   ],
+   "journal_abbr": "BMJ",
+   "volume": "332",
+   "issue": "7549",
+   "pages": "1080",
+   "pmcid": "PMC1458573"
+  },
   "1670734": {
    "status": "resolved",
    "title": "Upper gastrointestinal bleeding in relation to previous use of analgesics and non-steroidal anti-inflammatory drugs. Catalan Countries Study on Upper Gastrointestinal Bleeding.",
@@ -1270,7 +1327,20 @@
    "authors": "Moher D, Hopewell S, Schulz KF, Montori V, Gøtzsche PC",
    "journal": "BMJ (Clinical research ed.)",
    "year": "2010",
-   "doi": "10.1136/bmj.c869"
+   "doi": "10.1136/bmj.c869",
+   "n_authors": 9,
+   "authors_6": [
+    "Moher D",
+    "Hopewell S",
+    "Schulz KF",
+    "Montori V",
+    "Gøtzsche PC",
+    "Devereaux PJ"
+   ],
+   "journal_abbr": "BMJ",
+   "volume": "340",
+   "pages": "c869",
+   "pmcid": "PMC2844943"
   },
   "20592050": {
    "status": "resolved",
@@ -1294,7 +1364,19 @@
    "authors": "Roux C, Goldstein JL, Zhou X, Klemes A, Lindsay R",
    "journal": "Osteoporosis international : a journal established as result of cooperation between the European Foundation for Osteoporosis and the National Osteoporosis Foundation of the USA",
    "year": "2012",
-   "doi": "10.1007/s00198-011-1574-5"
+   "doi": "10.1007/s00198-011-1574-5",
+   "n_authors": 5,
+   "authors_6": [
+    "Roux C",
+    "Goldstein JL",
+    "Zhou X",
+    "Klemes A",
+    "Lindsay R"
+   ],
+   "journal_abbr": "Osteoporos Int",
+   "volume": "23",
+   "issue": "1",
+   "pages": "277-84"
   },
   "21469914": {
    "status": "resolved",
@@ -1310,7 +1392,19 @@
    "authors": "Yu EW, Bauer SR, Bain PA, Bauer DC",
    "journal": "The American journal of medicine",
    "year": "2011",
-   "doi": "10.1016/j.amjmed.2011.01.007"
+   "doi": "10.1016/j.amjmed.2011.01.007",
+   "n_authors": 4,
+   "authors_6": [
+    "Yu EW",
+    "Bauer SR",
+    "Bain PA",
+    "Bauer DC"
+   ],
+   "journal_abbr": "Am J Med",
+   "volume": "124",
+   "issue": "6",
+   "pages": "519-26",
+   "pmcid": "PMC3101476"
   },
   "21701389": {
    "status": "resolved",
@@ -1318,7 +1412,20 @@
    "authors": "Ye X, Liu H, Wu C, Qin Y, Zang J",
    "journal": "European journal of gastroenterology & hepatology",
    "year": "2011",
-   "doi": "10.1097/MEG.0b013e328348a56a"
+   "doi": "10.1097/MEG.0b013e328348a56a",
+   "n_authors": 8,
+   "authors_6": [
+    "Ye X",
+    "Liu H",
+    "Wu C",
+    "Qin Y",
+    "Zang J",
+    "Gao Q"
+   ],
+   "journal_abbr": "Eur J Gastroenterol Hepatol",
+   "volume": "23",
+   "issue": "9",
+   "pages": "794-800"
   },
   "22114101": {
    "status": "resolved",
@@ -1326,7 +1433,21 @@
    "authors": "O'Connor CM, Whellan DJ, Wojdyla D, Leifer E, Clare RM",
    "journal": "Circulation. Heart failure",
    "year": "2012",
-   "doi": "10.1161/CIRCHEARTFAILURE.111.963462"
+   "doi": "10.1161/CIRCHEARTFAILURE.111.963462",
+   "n_authors": 17,
+   "authors_6": [
+    "O'Connor CM",
+    "Whellan DJ",
+    "Wojdyla D",
+    "Leifer E",
+    "Clare RM",
+    "Ellis SJ"
+   ],
+   "journal_abbr": "Circ Heart Fail",
+   "volume": "5",
+   "issue": "1",
+   "pages": "63-71",
+   "pmcid": "PMC3692371"
   },
   "22137073": {
    "status": "resolved",
@@ -1366,7 +1487,22 @@
    "authors": "Piaggio G, Elbourne DR, Pocock SJ, Evans SJ, Altman DG",
    "journal": "JAMA",
    "year": "2012",
-   "doi": "10.1001/jama.2012.87802"
+   "doi": "10.1001/jama.2012.87802",
+   "n_authors": 5,
+   "authors_6": [
+    "Piaggio G",
+    "Elbourne DR",
+    "Pocock SJ",
+    "Evans SJ",
+    "Altman DG"
+   ],
+   "nhom_tac_gia": [
+    "CONSORT Group"
+   ],
+   "journal_abbr": "JAMA",
+   "volume": "308",
+   "issue": "24",
+   "pages": "2594-604"
   },
   "23279139": {
    "status": "resolved",
@@ -1406,7 +1542,20 @@
    "authors": "Lewis JR, Barre D, Zhu K, Ivey KL, Lim EM",
    "journal": "Journal of bone and mineral research : the official journal of the American Society for Bone and Mineral Research",
    "year": "2014",
-   "doi": "10.1002/jbmr.2279"
+   "doi": "10.1002/jbmr.2279",
+   "n_authors": 7,
+   "authors_6": [
+    "Lewis JR",
+    "Barre D",
+    "Zhu K",
+    "Ivey KL",
+    "Lim EM",
+    "Hughes J"
+   ],
+   "journal_abbr": "J Bone Miner Res",
+   "volume": "29",
+   "issue": "11",
+   "pages": "2489-97"
   },
   "24846373": {
    "status": "resolved",
@@ -1430,7 +1579,17 @@
    "authors": "Ouwerkerk W, Voors AA, Zwinderman AH",
    "journal": "JACC. Heart failure",
    "year": "2014",
-   "doi": "10.1016/j.jchf.2014.04.006"
+   "doi": "10.1016/j.jchf.2014.04.006",
+   "n_authors": 3,
+   "authors_6": [
+    "Ouwerkerk W",
+    "Voors AA",
+    "Zwinderman AH"
+   ],
+   "journal_abbr": "JACC Heart Fail",
+   "volume": "2",
+   "issue": "5",
+   "pages": "429-36"
   },
   "25554246": {
    "status": "resolved",
@@ -1486,7 +1645,19 @@
    "authors": "Zhou B, Huang Y, Li H, Sun W, Liu J",
    "journal": "Osteoporosis international : a journal established as result of cooperation between the European Foundation for Osteoporosis and the National Osteoporosis Foundation of the USA",
    "year": "2016",
-   "doi": "10.1007/s00198-015-3365-x"
+   "doi": "10.1007/s00198-015-3365-x",
+   "n_authors": 5,
+   "authors_6": [
+    "Zhou B",
+    "Huang Y",
+    "Li H",
+    "Sun W",
+    "Liu J"
+   ],
+   "journal_abbr": "Osteoporos Int",
+   "volume": "27",
+   "issue": "1",
+   "pages": "339-47"
   },
   "26691646": {
    "status": "resolved",
@@ -1510,7 +1681,20 @@
    "authors": "Thakkar J, Kurup R, Laba TL, Santo K, Thiagalingam A",
    "journal": "JAMA internal medicine",
    "year": "2016",
-   "doi": "10.1001/jamainternmed.2015.7667"
+   "doi": "10.1001/jamainternmed.2015.7667",
+   "n_authors": 9,
+   "authors_6": [
+    "Thakkar J",
+    "Kurup R",
+    "Laba TL",
+    "Santo K",
+    "Thiagalingam A",
+    "Rodgers A"
+   ],
+   "journal_abbr": "JAMA Intern Med",
+   "volume": "176",
+   "issue": "3",
+   "pages": "340-9"
   },
   "26964707": {
    "status": "resolved",
@@ -1560,6 +1744,27 @@
    "year": "2017",
    "doi": "10.1002/hep.29302"
   },
+  "29133356": {
+   "status": "resolved",
+   "title": "2017 ACC/AHA/AAPA/ABC/ACPM/AGS/APhA/ASH/ASPC/NMA/PCNA Guideline for the Prevention, Detection, Evaluation, and Management of High Blood Pressure in Adults: A Report of the American College of Cardiology/American Heart Association Task Force on Clinical Practice Guidelines.",
+   "authors": "Whelton PK, Carey RM, Aronow WS, Casey DE, Collins KJ",
+   "journal": "Hypertension (Dallas, Tex. : 1979)",
+   "year": "2018",
+   "doi": "10.1161/HYP.0000000000000065",
+   "n_authors": 21,
+   "authors_6": [
+    "Whelton PK",
+    "Carey RM",
+    "Aronow WS",
+    "Casey DE",
+    "Collins KJ",
+    "Dennison Himmelfarb C"
+   ],
+   "journal_abbr": "Hypertension",
+   "volume": "71",
+   "issue": "6",
+   "pages": "e13-e115"
+  },
   "29199170": {
    "status": "resolved",
    "title": "What is the long term acid inhibitor treatment in gastroesophageal reflux disease? What are the potential problems related to long term acid inhibitor treatment in gastroesophageal reflux disease? How should these cases be followed?",
@@ -1582,7 +1787,19 @@
    "authors": "Hussain S, Siddiqui AN, Habib A, Hussain MS, Najmi AK",
    "journal": "Rheumatology international",
    "year": "2018",
-   "doi": "10.1007/s00296-018-4142-x"
+   "doi": "10.1007/s00296-018-4142-x",
+   "n_authors": 5,
+   "authors_6": [
+    "Hussain S",
+    "Siddiqui AN",
+    "Habib A",
+    "Hussain MS",
+    "Najmi AK"
+   ],
+   "journal_abbr": "Rheumatol Int",
+   "volume": "38",
+   "issue": "11",
+   "pages": "1999-2014"
   },
   "30383903": {
    "status": "resolved",
@@ -1667,7 +1884,19 @@
    "authors": "Riley RD, Ensor J, Snell KIE, Harrell FE, Martin GP",
    "journal": "BMJ (Clinical research ed.)",
    "year": "2020",
-   "doi": "10.1136/bmj.m441"
+   "doi": "10.1136/bmj.m441",
+   "n_authors": 9,
+   "authors_6": [
+    "Riley RD",
+    "Ensor J",
+    "Snell KIE",
+    "Harrell FE",
+    "Martin GP",
+    "Reitsma JB"
+   ],
+   "journal_abbr": "BMJ",
+   "volume": "368",
+   "pages": "m441"
   },
   "32853471": {
    "status": "resolved",
@@ -1675,7 +1904,21 @@
    "authors": "Dziewięcka E, Gliniak M, Winiarczyk M, Karapetyan A, Wiśniowska-Śmiałek S",
    "journal": "ESC heart failure",
    "year": "2020",
-   "doi": "10.1002/ehf2.12809"
+   "doi": "10.1002/ehf2.12809",
+   "n_authors": 9,
+   "authors_6": [
+    "Dziewięcka E",
+    "Gliniak M",
+    "Winiarczyk M",
+    "Karapetyan A",
+    "Wiśniowska-Śmiałek S",
+    "Karabinowska A"
+   ],
+   "journal_abbr": "ESC Heart Fail",
+   "volume": "7",
+   "issue": "5",
+   "pages": "2455-2467",
+   "pmcid": "PMC7524139"
   },
   "32865377": {
    "status": "resolved",
@@ -1779,7 +2022,19 @@
    "authors": "Tam HL, Leung LYL, Wong EML, Cheung K, Chan ASW",
    "journal": "Worldviews on evidence-based nursing",
    "year": "2022",
-   "doi": "10.1111/wvn.12549"
+   "doi": "10.1111/wvn.12549",
+   "n_authors": 5,
+   "authors_6": [
+    "Tam HL",
+    "Leung LYL",
+    "Wong EML",
+    "Cheung K",
+    "Chan ASW"
+   ],
+   "journal_abbr": "Worldviews Evid Based Nurs",
+   "volume": "19",
+   "issue": "1",
+   "pages": "16-27"
   },
   "35017145": {
    "status": "resolved",
@@ -1795,7 +2050,20 @@
    "authors": "Nyman MA, Jose T, Croghan IT, Parkulo MA, Burger CD",
    "journal": "Journal of primary care & community health",
    "year": "2022",
-   "doi": "10.1177/21501319211069748"
+   "doi": "10.1177/21501319211069748",
+   "n_authors": 8,
+   "authors_6": [
+    "Nyman MA",
+    "Jose T",
+    "Croghan IT",
+    "Parkulo MA",
+    "Burger CD",
+    "Schroeder DR"
+   ],
+   "journal_abbr": "J Prim Care Community Health",
+   "volume": "13",
+   "pages": "21501319211069748",
+   "pmcid": "PMC8796071"
   },
   "35342691": {
    "status": "resolved",
@@ -1803,7 +2071,20 @@
    "authors": "Bhandari B, Narasimhan P, Jayasuriya R, Vaidya A, Schutte AE",
    "journal": "Global heart",
    "year": "2022",
-   "doi": "10.5334/gh.1103"
+   "doi": "10.5334/gh.1103",
+   "n_authors": 5,
+   "authors_6": [
+    "Bhandari B",
+    "Narasimhan P",
+    "Jayasuriya R",
+    "Vaidya A",
+    "Schutte AE"
+   ],
+   "journal_abbr": "Glob Heart",
+   "volume": "17",
+   "issue": "1",
+   "pages": "13",
+   "pmcid": "PMC8877709"
   },
   "35427812": {
    "status": "resolved",
@@ -1811,7 +2092,19 @@
    "authors": "Ikitimur B, Barman HA, Dogan O, Atıcı A, Meriç BK",
    "journal": "Journal of electrocardiology",
    "year": "2022",
-   "doi": "10.1016/j.jelectrocard.2022.03.003"
+   "doi": "10.1016/j.jelectrocard.2022.03.003",
+   "n_authors": 7,
+   "authors_6": [
+    "Ikitimur B",
+    "Barman HA",
+    "Dogan O",
+    "Atıcı A",
+    "Meriç BK",
+    "Dogan SM"
+   ],
+   "journal_abbr": "J Electrocardiol",
+   "volume": "72",
+   "pages": "102-108"
   },
   "35500594": {
    "status": "resolved",
@@ -1827,7 +2120,21 @@
    "authors": "Guazzo A, Longato E, Morieri ML, Sparacino G, Franco-Novelletto B",
    "journal": "Scientific reports",
    "year": "2022",
-   "doi": "10.1038/s41598-022-11758-9"
+   "doi": "10.1038/s41598-022-11758-9",
+   "n_authors": 12,
+   "authors_6": [
+    "Guazzo A",
+    "Longato E",
+    "Morieri ML",
+    "Sparacino G",
+    "Franco-Novelletto B",
+    "Cancian M"
+   ],
+   "journal_abbr": "Sci Rep",
+   "volume": "12",
+   "issue": "1",
+   "pages": "7762",
+   "pmcid": "PMC9095603"
   },
   "35830032": {
    "status": "resolved",
@@ -1883,7 +2190,23 @@
    "authors": "Siopis G, Moschonis G, Eweka E, Jung J, Kwasnicka D",
    "journal": "The Lancet. Digital health",
    "year": "2023",
-   "doi": "10.1016/S2589-7500(23)00002-X"
+   "doi": "10.1016/S2589-7500(23)00002-X",
+   "n_authors": 13,
+   "authors_6": [
+    "Siopis G",
+    "Moschonis G",
+    "Eweka E",
+    "Jung J",
+    "Kwasnicka D",
+    "Asare BY"
+   ],
+   "nhom_tac_gia": [
+    "DigiCare4You Consortium"
+   ],
+   "journal_abbr": "Lancet Digit Health",
+   "volume": "5",
+   "issue": "3",
+   "pages": "e144-e159"
   },
   "36924031": {
    "status": "resolved",
@@ -1907,7 +2230,19 @@
    "authors": "Zhang X, Lv X, Wang N, Yu S, Si J",
    "journal": "International journal of cardiology",
    "year": "2023",
-   "doi": "10.1016/j.ijcard.2023.05.045"
+   "doi": "10.1016/j.ijcard.2023.05.045",
+   "n_authors": 8,
+   "authors_6": [
+    "Zhang X",
+    "Lv X",
+    "Wang N",
+    "Yu S",
+    "Si J",
+    "Zhang Y"
+   ],
+   "journal_abbr": "Int J Cardiol",
+   "volume": "385",
+   "pages": "34-40"
   },
   "37278999": {
    "status": "resolved",
@@ -1963,7 +2298,20 @@
    "authors": "Kengne AP, Brière JB, Gudiña IA, Jiang X, Kodjamanova P",
    "journal": "Expert review of pharmacoeconomics & outcomes research",
    "year": "2024",
-   "doi": "10.1080/14737167.2024.2319598"
+   "doi": "10.1080/14737167.2024.2319598",
+   "n_authors": 7,
+   "authors_6": [
+    "Kengne AP",
+    "Brière JB",
+    "Gudiña IA",
+    "Jiang X",
+    "Kodjamanova P",
+    "Bennetts L"
+   ],
+   "journal_abbr": "Expert Rev Pharmacoecon Outcomes Res",
+   "volume": "24",
+   "issue": "7",
+   "pages": "807-816"
   },
   "38573034": {
    "status": "resolved",
@@ -1979,7 +2327,19 @@
    "authors": "Sarraf DP, Rauniar GP, Gupta PP, Maskey R, Kattel V",
    "journal": "Kathmandu University medical journal (KUMJ)",
    "year": "2023",
-   "doi": null
+   "doi": null,
+   "n_authors": 5,
+   "authors_6": [
+    "Sarraf DP",
+    "Rauniar GP",
+    "Gupta PP",
+    "Maskey R",
+    "Kattel V"
+   ],
+   "journal_abbr": "Kathmandu Univ Med J (KUMJ)",
+   "volume": "21",
+   "issue": "82",
+   "pages": "185-189"
   },
   "38739123": {
    "status": "resolved",
@@ -2051,7 +2411,19 @@
    "authors": "Zewdu EM, Demessie A, Nigatu AM, Baykemagn ND",
    "journal": "BMC health services research",
    "year": "2024",
-   "doi": "10.1186/s12913-024-11794-3"
+   "doi": "10.1186/s12913-024-11794-3",
+   "n_authors": 4,
+   "authors_6": [
+    "Zewdu EM",
+    "Demessie A",
+    "Nigatu AM",
+    "Baykemagn ND"
+   ],
+   "journal_abbr": "BMC Health Serv Res",
+   "volume": "24",
+   "issue": "1",
+   "pages": "1451",
+   "pmcid": "PMC11583659"
   },
   "39611763": {
    "status": "resolved",
@@ -2107,7 +2479,21 @@
    "authors": "Canguçu E, Castro PR, Moreira PM, Bandeira P, Almeida K",
    "journal": "Cadernos de saude publica",
    "year": "2024",
-   "doi": "10.1590/0102-311XEN050023"
+   "doi": "10.1590/0102-311XEN050023",
+   "n_authors": 7,
+   "authors_6": [
+    "Canguçu E",
+    "Castro PR",
+    "Moreira PM",
+    "Bandeira P",
+    "Almeida K",
+    "Santos PM"
+   ],
+   "journal_abbr": "Cad Saude Publica",
+   "volume": "40",
+   "issue": "11",
+   "pages": "e00050023",
+   "pmcid": "PMC11654099"
   },
   "39843675": {
    "status": "resolved",
@@ -2123,7 +2509,20 @@
    "authors": "Zeng M, Lee YH, Wang SI, Palmowski A, Chu WM",
    "journal": "International journal of rheumatic diseases",
    "year": "2025",
-   "doi": "10.1111/1756-185X.70055"
+   "doi": "10.1111/1756-185X.70055",
+   "n_authors": 6,
+   "authors_6": [
+    "Zeng M",
+    "Lee YH",
+    "Wang SI",
+    "Palmowski A",
+    "Chu WM",
+    "Buttgereit F"
+   ],
+   "journal_abbr": "Int J Rheum Dis",
+   "volume": "28",
+   "issue": "2",
+   "pages": "e70055"
   },
   "39937817": {
    "status": "resolved",
@@ -2147,7 +2546,20 @@
    "authors": "Burgos LM, Baro Vila RC, de Bortoli MA, Arias R, Malano D",
    "journal": "Current problems in cardiology",
    "year": "2025",
-   "doi": "10.1016/j.cpcardiol.2025.103023"
+   "doi": "10.1016/j.cpcardiol.2025.103023",
+   "n_authors": 7,
+   "authors_6": [
+    "Burgos LM",
+    "Baro Vila RC",
+    "de Bortoli MA",
+    "Arias R",
+    "Malano D",
+    "Ballari FN"
+   ],
+   "journal_abbr": "Curr Probl Cardiol",
+   "volume": "50",
+   "issue": "5",
+   "pages": "103023"
   },
   "40062731": {
    "status": "resolved",
@@ -2163,7 +2575,21 @@
    "authors": "Aigbonoga D, Adewale B, Igwilo J, Adeyeye V, Olajide T",
    "journal": "BMC public health",
    "year": "2025",
-   "doi": "10.1186/s12889-025-22204-6"
+   "doi": "10.1186/s12889-025-22204-6",
+   "n_authors": 11,
+   "authors_6": [
+    "Aigbonoga D",
+    "Adewale B",
+    "Igwilo J",
+    "Adeyeye V",
+    "Olajide T",
+    "Olaniran O"
+   ],
+   "journal_abbr": "BMC Public Health",
+   "volume": "25",
+   "issue": "1",
+   "pages": "1070",
+   "pmcid": "PMC11924615"
   },
   "40123081": {
    "status": "resolved",
@@ -2179,7 +2605,20 @@
    "authors": "Chan AW, Boutron I, Hopewell S, Moher D, Schulz KF",
    "journal": "JAMA",
    "year": "2025",
-   "doi": "10.1001/jama.2025.4486"
+   "doi": "10.1001/jama.2025.4486",
+   "n_authors": 39,
+   "authors_6": [
+    "Chan AW",
+    "Boutron I",
+    "Hopewell S",
+    "Moher D",
+    "Schulz KF",
+    "Collins GS"
+   ],
+   "journal_abbr": "JAMA",
+   "volume": "334",
+   "issue": "5",
+   "pages": "435-443"
   },
   "40294956": {
    "status": "resolved",
@@ -2187,7 +2626,20 @@
    "authors": "Hróbjartsson A, Boutron I, Hopewell S, Moher D, Schulz KF",
    "journal": "BMJ (Clinical research ed.)",
    "year": "2025",
-   "doi": "10.1136/bmj-2024-081660"
+   "doi": "10.1136/bmj-2024-081660",
+   "n_authors": 39,
+   "authors_6": [
+    "Hróbjartsson A",
+    "Boutron I",
+    "Hopewell S",
+    "Moher D",
+    "Schulz KF",
+    "Collins GS"
+   ],
+   "journal_abbr": "BMJ",
+   "volume": "389",
+   "pages": "e081660",
+   "pmcid": "PMC12128891"
   },
   "40440692": {
    "status": "resolved",
@@ -2219,7 +2671,17 @@
    "authors": "Chien YF, Chen YY, Wu CK",
    "journal": "Pharmacotherapy",
    "year": "2025",
-   "doi": "10.1002/phar.70043"
+   "doi": "10.1002/phar.70043",
+   "n_authors": 3,
+   "authors_6": [
+    "Chien YF",
+    "Chen YY",
+    "Wu CK"
+   ],
+   "journal_abbr": "Pharmacotherapy",
+   "volume": "45",
+   "issue": "8",
+   "pages": "512-521"
   },
   "40725928": {
    "status": "resolved",
@@ -2251,7 +2713,20 @@
    "authors": "Robert V, Papailhau C, Lesclide E, Ben Romdhane Z, Vincentelli MB",
    "journal": "Geriatric nursing (New York, N.Y.)",
    "year": "2025",
-   "doi": "10.1016/j.gerinurse.2025.103596"
+   "doi": "10.1016/j.gerinurse.2025.103596",
+   "n_authors": 7,
+   "authors_6": [
+    "Robert V",
+    "Papailhau C",
+    "Lesclide E",
+    "Ben Romdhane Z",
+    "Vincentelli MB",
+    "Franqui C"
+   ],
+   "journal_abbr": "Geriatr Nurs",
+   "volume": "66",
+   "issue": "Pt A",
+   "pages": "103596"
   },
   "40907093": {
    "status": "resolved",
@@ -2291,7 +2766,21 @@
    "authors": "Cutrona SL, McDannold SE, DeLaughter KL, Fix GM, Shimada SL",
    "journal": "JAMA network open",
    "year": "2025",
-   "doi": "10.1001/jamanetworkopen.2025.41342"
+   "doi": "10.1001/jamanetworkopen.2025.41342",
+   "n_authors": 14,
+   "authors_6": [
+    "Cutrona SL",
+    "McDannold SE",
+    "DeLaughter KL",
+    "Fix GM",
+    "Shimada SL",
+    "Bokhour BG"
+   ],
+   "journal_abbr": "JAMA Netw Open",
+   "volume": "8",
+   "issue": "11",
+   "pages": "e2541342",
+   "pmcid": "PMC12590299"
   },
   "41358893": {
    "status": "resolved",
@@ -2323,7 +2812,21 @@
    "authors": "Dodson JA, Adhikari S, Schoenthaler AM, Shimbo D, Berman AN",
    "journal": "Journal of the American College of Cardiology",
    "year": "2026",
-   "doi": "10.1016/j.jacc.2025.10.062"
+   "doi": "10.1016/j.jacc.2025.10.062",
+   "n_authors": 17,
+   "authors_6": [
+    "Dodson JA",
+    "Adhikari S",
+    "Schoenthaler AM",
+    "Shimbo D",
+    "Berman AN",
+    "Levy N"
+   ],
+   "journal_abbr": "J Am Coll Cardiol",
+   "volume": "87",
+   "issue": "18",
+   "pages": "2415-2426",
+   "pmcid": "PMC13561152"
   },
   "41528277": {
    "status": "resolved",
@@ -2384,7 +2887,19 @@
    "authors": "Longkumer I, Bhatia R, Subramanian SV, Sharma G, Singh MB",
    "journal": "Contemporary clinical trials",
    "year": "2026",
-   "doi": "10.1016/j.cct.2026.108314"
+   "doi": "10.1016/j.cct.2026.108314",
+   "n_authors": 13,
+   "authors_6": [
+    "Longkumer I",
+    "Bhatia R",
+    "Subramanian SV",
+    "Sharma G",
+    "Singh MB",
+    "Haldar P"
+   ],
+   "journal_abbr": "Contemp Clin Trials",
+   "volume": "165",
+   "pages": "108314"
   },
   "42046405": {
    "status": "resolved",
@@ -2413,7 +2928,21 @@
    "authors": "Battula P, Sree PB, Latha YS, Poojitha KN, Reddy KVS",
    "journal": "African health sciences",
    "year": "2026",
-   "doi": "10.4314/ahs.v26i1.15"
+   "doi": "10.4314/ahs.v26i1.15",
+   "n_authors": 8,
+   "authors_6": [
+    "Battula P",
+    "Sree PB",
+    "Latha YS",
+    "Poojitha KN",
+    "Reddy KVS",
+    "Krishna SSV"
+   ],
+   "journal_abbr": "Afr Health Sci",
+   "volume": "26",
+   "issue": "1",
+   "pages": "134-150",
+   "pmcid": "PMC13126136"
   },
   "42064859": {
    "status": "resolved",
@@ -2564,7 +3093,18 @@
    "authors": "Nguyen DK, Tran TT, Tran CC",
    "journal": "Cardiology research",
    "year": "2026",
-   "doi": "10.14740/cr2241"
+   "doi": "10.14740/cr2241",
+   "n_authors": 3,
+   "authors_6": [
+    "Nguyen DK",
+    "Tran TT",
+    "Tran CC"
+   ],
+   "journal_abbr": "Cardiol Res",
+   "volume": "17",
+   "issue": "4",
+   "pages": "321-329",
+   "pmcid": "PMC13411566"
   },
   "42540706": {
    "status": "resolved",
@@ -2666,7 +3206,20 @@
    "authors": "Piao HL, Wu ZH, Zhou LY, Lai CH, Tang ZY",
    "journal": "Frontiers in pharmacology",
    "year": "2026",
-   "doi": "10.3389/fphar.2026.1835602"
+   "doi": "10.3389/fphar.2026.1835602",
+   "n_authors": 7,
+   "authors_6": [
+    "Piao HL",
+    "Wu ZH",
+    "Zhou LY",
+    "Lai CH",
+    "Tang ZY",
+    "Yin WJ"
+   ],
+   "journal_abbr": "Front Pharmacol",
+   "volume": "17",
+   "pages": "1835602",
+   "pmcid": "PMC13533994"
   },
   "42755179": {
    "status": "resolved",
