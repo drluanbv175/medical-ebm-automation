@@ -1,53 +1,506 @@
 {
  "nguon_sap": "G4_A5_SAP_FINAL_btm-dtd2-ngoai-tru-BVQY175.md",
- "sha256_sap": "48dd980381ed205feb489384d33f31a7dd239032f3c738d269e7a634284eb72e",
- "trang_thai_de_xuat": "Đồng bộ lại 20/11/2026 theo SAP sửa nháp 7 (§5 thêm quy tắc khi EPV vẫn dưới 10 sau bước 3 — giữ mô hình 12 tham số, lựa chọn của chủ nhiệm): chỉ cập nhật sha256_sap; danh sách phân tích G6 giữ nguyên. Dấu đặc tả đổi ⇒ PI/thống kê viên đóng dấu duyệt lại (chay_sap_g6.py kiem rồi duyet). Trước đó: Đồng bộ lại 20/11/2026 theo SAP sửa nháp 6 (độ tin cậy giữa hai người trích ở §3, công cụ §10, Bảng S1 §11 — quyết định của chủ nhiệm đưa kiểm định phiếu trích vào đề cương): chỉ cập nhật sha256_sap; danh sách phân tích G6 giữ nguyên vì độ tin cậy giữa hai người trích là chỉ số chất lượng dữ liệu, tính ở bước so sánh bản trích lại (quy trình trích hồ sơ mục 7) trước khi khoá dữ liệu, không phải phân tích trên cơ sở dữ liệu đã khoá. Đặc tả đổi ⇒ chữ ký duyệt cũ hết hiệu lực, chờ PI duyệt lại. Đồng bộ lại 18/11/2026 (tối): THÊM LẠI mục MT1_fpc — lượt chiều bỏ NHẦM; SAP §4 (và đề cương) vẫn giữ «nếu biết kích thước khung mẫu thì báo thêm KTC có hiệu chỉnh quần thể hữu hạn như một thông tin phụ», đúng quyết định B4; chủ nhiệm chọn «Thêm lại vào đặc tả» (18/11/2026). Neo vào câu khẳng định đó. DN9_chia_nhom thêm neo vào mệnh đề §5 «nếu lệch rõ thì báo thêm mô hình với biến chia nhóm như phân tích độ nhạy» (luật phủ phân tích phụ viết trong câu, cùng ngày). Đặc tả đổi ⇒ chữ ký duyệt cũ hết hiệu lực, chờ PI duyệt lại. Đồng bộ lại 18/11/2026 (chiều): bỏ mục MT1_fpc vì SAP §4 ghi «Không áp hiệu chỉnh quần thể hữu hạn» (chủ nhiệm quyết 18/11); cập nhật sha256_sap theo tên đề tài mới. Đồng bộ lại 18/11/2026 theo SAP sửa nháp 5 (câu EPV, B1) và sửa nháp 4 (ĐN4 lọc dn4_co_don, quyết định B10). ĐỀ XUẤT CỦA AGENT 15/11/2026 (đồng bộ lại theo SAP hiện tại, giai đoạn 7: neo từng phân tích vào SAP bằng sap_neo, thêm phân tích SAP mới bổ sung) — CHỜ thống kê viên/PI duyệt (ghi nguoi_duyet). SAP nguồn còn là bản DRAFT chưa ký: SAP sửa trước khi khoá ⇒ sha256_sap lệch, đặc tả bị coi là cũ và phải đồng bộ lại.",
- "can_thong_ke_vien_quyet": [
-  "Đề tài CHƯA có từ điển G5 — tên biến lấy theo bộ biến G3 (_bo-bien-rieng.csv) và _bien-phai-sinh.csv; đối chiếu lại khi dựng từ điển G5.",
-  "Quy tắc giảm tham số khi EPV < 10 (SAP §5 bước 1–3) là điều kiện — kiểm EPV trên dữ liệu, bước nào áp thì thêm mục với tập biến đã giảm.",
-  "MI: run_stats_analysis chạy MI m = 20 khi có thiếu (CC báo song song = ĐN8); biến phụ trợ vao_truoc_0107 trong mô hình gán (SAP §6) chưa khai được qua đặc tả — thống kê viên xác nhận.",
-  "Phụ 3 loại người có chống chỉ định ghi rõ (= 1); ô chống chỉ định để trống (nhánh không hiện) vẫn giữ trong mẫu số.",
-  "du_tieu_chuan và bmi là trường calc của REDCap: nhập Excel/SPSS không tính calc ⇒ khai bản công thức CÙNG TÊN (đúng định nghĩa calc của bộ biến) — ĐÃ DUYỆT (18/11/2026: 42/42 biến phái sinh DA_DUYET).",
-  "15/11/2026: chủ nhiệm duyệt 8 biến bổ sung bộ biến (G3_BO_BIEN_SO_QUYET_DINH_20261115.md) — MT1_thanh_phan, MT3_poisson, NC_tuoi1/2, DN5, DN6 đã có tham_so; công thức của 8 biến ĐÃ DUYỆT trong _bien-phai-sinh.csv (18/11/2026, cùng dn4_co_don).",
-  "MT3_poisson: 'tuoi' làm phơi nhiễm chỉ để có PR mỗi 10 năm (don_vi_phoi_nhiem 10); hba1c_3muc tham chiếu = mã 1 = < 7% (chủ nhiệm chọn 15/11). SAP §5 còn báo PR THÔ từng biến — chưa có mục đặc tả, thống kê viên xác nhận cách chạy."
- ],
+ "sha256_sap": "27b61993d4f657fe65aa9013526db5b002a4ee481ce6db47898b2f9f6c0e4512",
+ "trang_thai_de_xuat": "Soạn lại 22/11/2026 theo SAP hiện hành (sửa nháp 9, hội đồng nghiên cứu 22/11/2026): đủ mọi phân tích của SAP — chính, phụ (Phụ 1–3, chuỗi chăm sóc thận, điều trị theo tình trạng ghi nhận mã, MT3), nhóm con §7, độ nhạy ĐN1–ĐN11, mô tả (Bảng 1, sơ đồ chọn, so sánh người bị loại, dữ liệu thiếu, mã KDD, độ tin cậy giữa hai người trích); không còn mục chờ làm tay — các mục trước đây «chua_tu_dong» chạy bằng tools/phan_tich_sap_bo_sung.py (tham_so.loai_bo_sung). MT3 áp quy tắc giảm tham số theo EPV (SAP §5) bằng tham_so.quy_tac_epv. Chưa duyệt: thống kê viên/PI ghi bằng `chay_sap_g6.py duyet`.",
+ "phu_thuoc_sua_doi_sap": "Đi cùng tệp sửa đổi btm-dtd2-ngoai-tru-BVQY175_g6_sap_bo_sung.json (hội đồng vai G6/G4): biến phái sinh nhom_doi_tuong_2, phong_kham_2 (quy tắc EPV), dung_raasi_nd, dung_sglt2i_nd (ĐN7); trường phần A sl_tuoi, sl_gioi, sl_nhom_doi_tuong (so sánh người bị loại vì chỉ có 1 lượt khám); tệp đầu vào so_khung_mau.csv (KTC có hiệu chỉnh quần thể hữu hạn) và trich_lai/ (Bảng S1); SAP §5/§9 ĐN9 bỏ điều kiện đồ thị phần dư, chia tứ phân vị. Sau khi áp, cập nhật sha256_sap theo SAP mới.",
  "phan_tich": [
   {
    "id": "MT1_chinh",
    "vai": "chinh",
    "sap_muc": "§4",
-   "mo_ta": "Tỷ lệ xét nghiệm đủ UACR + creatinin (xn_du) trên toàn bộ N + KTC 95% Wilson",
+   "sap_neo": [
+    "Kết cục chính (MT1)",
+    "Mô tả thời gian quan sát",
+    "Bảng 1, Đặc điểm mẫu nghiên cứu"
+   ],
+   "mo_ta": "Tỷ lệ được xét nghiệm đủ UACR và creatinin (xn_du) trên toàn bộ N, KTC 95% Wilson; Bảng 1 mô tả toàn mẫu (gồm số tháng quan sát)",
    "tham_so": {
     "ty_le": [
      "xn_du"
     ],
-    "loc": "du_tieu_chuan == 1"
-   },
-   "sap_neo": [
-    "Kết cục chính (MT1)"
-   ]
+    "loc": "du_tieu_chuan == 1",
+    "vars": [
+     "tuoi",
+     "nhom_tuoi_65",
+     "gioi",
+     "nhom_doi_tuong",
+     "thoi_gian_mac_dtd",
+     "hba1c_3muc",
+     "dung_insulin",
+     "so_nhom_ha_glucose",
+     "tha",
+     "tim_mach",
+     "bmi",
+     "so_luot_kham",
+     "phong_kham_chinh",
+     "thang_quan_sat"
+    ]
+   }
   },
   {
    "id": "MT1_thanh_phan",
    "vai": "mo_ta",
    "sap_muc": "§4",
-   "mo_ta": "Hai thành phần của kết cục chính: tỷ lệ có ≥ 1 creatinin, tỷ lệ có ≥ 1 UACR dạng tỷ số",
+   "sap_neo": [
+    "kèm hai thành phần"
+   ],
+   "mo_ta": "Hai thành phần của kết cục chính: tỷ lệ có ít nhất một creatinin, tỷ lệ có ít nhất một UACR dạng tỷ số",
    "tham_so": {
     "ty_le": [
      "co_creat",
      "co_uacr"
     ],
     "loc": "du_tieu_chuan == 1"
-   },
+   }
+  },
+  {
+   "id": "MT1_fpc",
+   "vai": "mo_ta",
+   "sap_muc": "§4",
    "sap_neo": [
-    "thành phần"
-   ]
+    "báo thêm KTC có hiệu chỉnh quần thể hữu hạn"
+   ],
+   "mo_ta": "Thông tin phụ: KTC 95% Wilson của xn_du có hiệu chỉnh quần thể hữu hạn, N khung mẫu lấy từ Sổ khung mẫu (so_khung_mau.csv, dòng N_khung_mau); không áp ở phân tích chính",
+   "tham_so": {
+    "loai_bo_sung": "ty_le_huu_han",
+    "cau_hinh": {
+     "bien": "xn_du",
+     "tep_khung": "so_khung_mau.csv",
+     "khoa_khung": "N_khung_mau"
+    },
+    "loc": "du_tieu_chuan == 1"
+   }
+  },
+  {
+   "id": "MO_so_do_chon",
+   "vai": "mo_ta",
+   "sap_muc": "§1, §11",
+   "sap_neo": [
+    "Sơ đồ chọn (STROBE, RECORD)"
+   ],
+   "mo_ta": "Sơ đồ chọn: số hồ sơ đã mở, bị loại theo từng lý do (phần A), đưa vào phân tích",
+   "tham_so": {
+    "loai_bo_sung": "ty_le_khau",
+    "cau_hinh": {
+     "khau": [
+      {
+       "nhan": "Không mở được hồ sơ",
+       "su_kien": "ho_so_mo_duoc == 0",
+       "mau_so": "du_tieu_chuan >= 0"
+      },
+      {
+       "nhan": "Dưới 18 tuổi",
+       "su_kien": "tc_tuoi18 == 0",
+       "mau_so": "du_tieu_chuan >= 0"
+      },
+      {
+       "nhan": "Không có mã E11",
+       "su_kien": "tc_e11 == 0",
+       "mau_so": "du_tieu_chuan >= 0"
+      },
+      {
+       "nhan": "Chỉ có 1 lượt khám",
+       "su_kien": "tc_2luot == 0",
+       "mau_so": "du_tieu_chuan >= 0"
+      },
+      {
+       "nhan": "Lọc máu hoặc ghép thận",
+       "su_kien": "lt_loc_ghep == 1",
+       "mau_so": "du_tieu_chuan >= 0"
+      },
+      {
+       "nhan": "Có thai",
+       "su_kien": "lt_thai == 1",
+       "mau_so": "du_tieu_chuan >= 0"
+      },
+      {
+       "nhan": "Có mã E10, E12 hoặc E13",
+       "su_kien": "lt_dtd_khac == 1",
+       "mau_so": "du_tieu_chuan >= 0"
+      },
+      {
+       "nhan": "Trùng người đã có trong mẫu",
+       "su_kien": "trung_nguoi == 1",
+       "mau_so": "du_tieu_chuan >= 0"
+      },
+      {
+       "nhan": "Đưa vào phân tích",
+       "su_kien": "du_tieu_chuan == 1",
+       "mau_so": "du_tieu_chuan >= 0"
+      }
+     ]
+    },
+    "loc": "du_tieu_chuan >= 0"
+   }
+  },
+  {
+   "id": "MO_loai_1_luot",
+   "vai": "mo_ta",
+   "sap_muc": "§1",
+   "sap_neo": [
+    "chỉ có 1 lượt khám"
+   ],
+   "mo_ta": "So sánh tuổi, giới, nhóm đối tượng giữa người bị loại vì chỉ có 1 lượt khám (ghi ở phần A: sl_tuoi, sl_gioi, sl_nhom_doi_tuong) và mẫu nghiên cứu; n (%) và trung vị [KTPV] hai nhóm, chỉ mô tả",
+   "tham_so": {
+    "loai_bo_sung": "so_sanh_hai_nhom",
+    "cau_hinh": {
+     "nhom_a": {
+      "nhan": "Bị loại vì chỉ có 1 lượt khám",
+      "dieu_kien": "ho_so_mo_duoc == 1 and tc_2luot == 0",
+      "bien": {
+       "tuoi": "sl_tuoi",
+       "gioi": "sl_gioi",
+       "nhom_doi_tuong": "sl_nhom_doi_tuong"
+      }
+     },
+     "nhom_b": {
+      "nhan": "Mẫu nghiên cứu",
+      "dieu_kien": "du_tieu_chuan == 1",
+      "bien": {
+       "tuoi": "tuoi",
+       "gioi": "gioi",
+       "nhom_doi_tuong": "nhom_doi_tuong"
+      }
+     },
+     "bien_phan_loai": [
+      "gioi",
+      "nhom_doi_tuong"
+     ],
+     "bien_lien_tuc": [
+      "tuoi"
+     ]
+    },
+    "loc": "du_tieu_chuan == 1 or (ho_so_mo_duoc == 1 and tc_2luot == 0)"
+   }
+  },
+  {
+   "id": "P1_btm_xac_nhan",
+   "vai": "phu",
+   "sap_muc": "§2, §4",
+   "sap_neo": [
+    "Phụ 1"
+   ],
+   "mo_ta": "Tỷ lệ BTM xác nhận (phan_loai_btm = 2) trên người đủ xét nghiệm để phân loại",
+   "tham_so": {
+    "ty_le": [
+     "phan_loai_btm"
+    ],
+    "loc": "du_tieu_chuan == 1 and phan_loai_btm != 9",
+    "nguong_ty_le": 2
+   }
+  },
+  {
+   "id": "P1_phan_loai",
+   "vai": "phu",
+   "sap_muc": "§2, §4",
+   "sap_neo": [
+    "ba mức còn lại của Phụ 1"
+   ],
+   "mo_ta": "Phân bố BTM xác nhận / nghi BTM / không BTM trên người có phan_loai_btm khác 9, mỗi mức KTC 95% Wilson",
+   "tham_so": {
+    "loai_bo_sung": "bang_cheo",
+    "cau_hinh": {
+     "hang": "phan_loai_btm"
+    },
+    "loc": "du_tieu_chuan == 1 and phan_loai_btm != 9"
+   }
+  },
+  {
+   "id": "P1_khong_phan_loai",
+   "vai": "phu",
+   "sap_muc": "§4",
+   "sap_neo": [
+    "không đủ xét nghiệm để phân loại"
+   ],
+   "mo_ta": "Dòng «không đủ xét nghiệm để phân loại» (phan_loai_btm = 9) trên toàn bộ N",
+   "tham_so": {
+    "loai_bo_sung": "ty_le_khau",
+    "cau_hinh": {
+     "khau": [
+      {
+       "nhan": "Không đủ xét nghiệm để phân loại",
+       "su_kien": "phan_loai_btm == 9",
+       "mau_so": "du_tieu_chuan == 1"
+      }
+     ]
+    },
+    "loc": "du_tieu_chuan == 1"
+   }
+  },
+  {
+   "id": "P1_phan_bo_G",
+   "vai": "phu",
+   "sap_muc": "§2, §4",
+   "sap_neo": [
+    "phân bố nhóm G tính trên người có ít nhất một creatinin"
+   ],
+   "mo_ta": "Phân bố nhóm G (G1–G5, eGFR gần nhất) trên người có ít nhất một creatinin",
+   "tham_so": {
+    "loai_bo_sung": "bang_cheo",
+    "cau_hinh": {
+     "hang": "nhom_g",
+     "nhan_thieu_hang": "Chưa có creatinin dùng được"
+    },
+    "loc": "du_tieu_chuan == 1 and co_creat == 1"
+   }
+  },
+  {
+   "id": "P1_phan_bo_A",
+   "vai": "phu",
+   "sap_muc": "§2, §4",
+   "sap_neo": [
+    "phân bố nhóm A tính trên người có ít nhất một UACR"
+   ],
+   "mo_ta": "Phân bố nhóm A (A1–A3, UACR gần nhất) trên người có ít nhất một UACR",
+   "tham_so": {
+    "loai_bo_sung": "bang_cheo",
+    "cau_hinh": {
+     "hang": "nhom_a",
+     "nhan_thieu_hang": "Chưa có UACR dùng được"
+    },
+    "loc": "du_tieu_chuan == 1 and co_uacr == 1"
+   }
+  },
+  {
+   "id": "P1_bang_GxA",
+   "vai": "phu",
+   "sap_muc": "§2, §4, §11",
+   "sap_neo": [
+    "bảng chéo G × A tính trên người có ít nhất một trong hai xét nghiệm",
+    "bảng chéo G1–G5 × A1–A3"
+   ],
+   "mo_ta": "Bảng chéo nhóm G × nhóm A theo KDIGO 2024 trên người có ít nhất một trong hai xét nghiệm; lõi là người có cả hai, thêm dòng «chưa có creatinin» và cột «chưa có UACR»",
+   "tham_so": {
+    "loai_bo_sung": "bang_cheo",
+    "cau_hinh": {
+     "hang": "nhom_g",
+     "cot": "nhom_a",
+     "nhan_thieu_hang": "Chưa có creatinin dùng được",
+     "nhan_thieu_cot": "Chưa có UACR dùng được"
+    },
+    "loc": "du_tieu_chuan == 1 and (co_creat == 1 or co_uacr == 1)"
+   }
+  },
+  {
+   "id": "P2_chua_ghi_nhan",
+   "vai": "phu",
+   "sap_muc": "§2, §4",
+   "sap_neo": [
+    "Phụ 2"
+   ],
+   "mo_ta": "Tỷ lệ BTM chưa được ghi nhận mã trong người BTM xác nhận",
+   "tham_so": {
+    "ty_le": [
+     "btm_chua_ghi_nhan"
+    ],
+    "loc": "du_tieu_chuan == 1 and phan_loai_btm == 2"
+   }
+  },
+  {
+   "id": "P2_theo_dau_an",
+   "vai": "phu",
+   "sap_muc": "§4",
+   "sap_neo": [
+    "Phụ 2 được báo riêng theo dấu ấn xác nhận BTM"
+   ],
+   "mo_ta": "Phụ 2 theo dấu ấn xác nhận BTM: chỉ eGFR, chỉ albumin niệu, cả hai — n/N và KTC 95% Wilson, chỉ mô tả",
+   "tham_so": {
+    "loai_bo_sung": "ty_le_khau",
+    "cau_hinh": {
+     "khau": [
+      {
+       "nhan": "Chỉ eGFR",
+       "su_kien": "btm_chua_ghi_nhan == 1",
+       "mau_so": "phan_loai_btm == 2 and egfr_thap_xn == 1 and alb_xn == 0"
+      },
+      {
+       "nhan": "Chỉ albumin niệu",
+       "su_kien": "btm_chua_ghi_nhan == 1",
+       "mau_so": "phan_loai_btm == 2 and alb_xn == 1 and egfr_thap_xn == 0"
+      },
+      {
+       "nhan": "Cả hai dấu ấn",
+       "su_kien": "btm_chua_ghi_nhan == 1",
+       "mau_so": "phan_loai_btm == 2 and alb_xn == 1 and egfr_thap_xn == 1"
+      }
+     ]
+    },
+    "loc": "du_tieu_chuan == 1"
+   }
+  },
+  {
+   "id": "P3a_raasi",
+   "vai": "phu",
+   "sap_muc": "§2, §4",
+   "sap_neo": [
+    "Phụ 3a"
+   ],
+   "mo_ta": "Tỷ lệ đang dùng ACEi/ARB ở người đủ chỉ định (trừ chống chỉ định ghi rõ)",
+   "tham_so": {
+    "ty_le": [
+     "dung_raasi"
+    ],
+    "loc": "du_tieu_chuan == 1 and chi_dinh_raasi == 1 and (la_thieu(ccd_raasi) or ccd_raasi != 1)"
+   }
+  },
+  {
+   "id": "P3b_sglt2i",
+   "vai": "phu",
+   "sap_muc": "§2, §4",
+   "sap_neo": [
+    "Phụ 3b"
+   ],
+   "mo_ta": "Tỷ lệ đang dùng SGLT2i ở người đủ chỉ định (trừ chống chỉ định ghi rõ)",
+   "tham_so": {
+    "ty_le": [
+     "dung_sglt2i"
+    ],
+    "loc": "du_tieu_chuan == 1 and chi_dinh_sglt2i == 1 and (la_thieu(ccd_sglt2i) or ccd_sglt2i != 1)"
+   }
+  },
+  {
+   "id": "P3_loai_ccd",
+   "vai": "phu",
+   "sap_muc": "§4",
+   "sap_neo": [
+    "Người bị loại khỏi mẫu số Phụ 3a, Phụ 3b"
+   ],
+   "mo_ta": "Số người bị loại khỏi mẫu số Phụ 3a, Phụ 3b vì chống chỉ định hoặc không dung nạp ghi trong hồ sơ",
+   "tham_so": {
+    "loai_bo_sung": "ty_le_khau",
+    "cau_hinh": {
+     "khau": [
+      {
+       "nhan": "Loại khỏi Phụ 3a vì chống chỉ định ACEi/ARB",
+       "su_kien": "ccd_raasi == 1",
+       "mau_so": "chi_dinh_raasi == 1"
+      },
+      {
+       "nhan": "Loại khỏi Phụ 3b vì chống chỉ định SGLT2i",
+       "su_kien": "ccd_sglt2i == 1",
+       "mau_so": "chi_dinh_sglt2i == 1"
+      }
+     ]
+    },
+    "loc": "du_tieu_chuan == 1"
+   }
+  },
+  {
+   "id": "MT12_chuoi",
+   "vai": "mo_ta",
+   "sap_muc": "§4, §11",
+   "sap_neo": [
+    "Chuỗi chăm sóc thận trên cùng người bệnh"
+   ],
+   "mo_ta": "Chuỗi chăm sóc thận trên cùng người bệnh (Bảng 5b): mỗi khâu n, mẫu số, tỷ lệ, KTC 95% Wilson",
+   "tham_so": {
+    "loai_bo_sung": "ty_le_khau",
+    "cau_hinh": {
+     "khau": [
+      {
+       "nhan": "(1) Được xét nghiệm đủ",
+       "su_kien": "xn_du == 1",
+       "mau_so": "du_tieu_chuan == 1"
+      },
+      {
+       "nhan": "(2) BTM xác nhận",
+       "su_kien": "phan_loai_btm == 2",
+       "mau_so": "du_tieu_chuan == 1"
+      },
+      {
+       "nhan": "(2) trong đó được xét nghiệm đủ",
+       "su_kien": "xn_du == 1",
+       "mau_so": "phan_loai_btm == 2"
+      },
+      {
+       "nhan": "(2) trong đó chỉ có creatinin",
+       "su_kien": "co_creat == 1 and co_uacr == 0",
+       "mau_so": "phan_loai_btm == 2"
+      },
+      {
+       "nhan": "(3) Đã được ghi nhận bằng mã ICD-10",
+       "su_kien": "btm_chua_ghi_nhan == 0",
+       "mau_so": "phan_loai_btm == 2"
+      },
+      {
+       "nhan": "(4) Đủ chỉ định SGLT2i, không có chống chỉ định ghi trong hồ sơ",
+       "su_kien": "chi_dinh_sglt2i == 1 and (la_thieu(ccd_sglt2i) or ccd_sglt2i != 1)",
+       "mau_so": "phan_loai_btm == 2"
+      },
+      {
+       "nhan": "(5) Đang dùng SGLT2i",
+       "su_kien": "dung_sglt2i == 1",
+       "mau_so": "chi_dinh_sglt2i == 1 and (la_thieu(ccd_sglt2i) or ccd_sglt2i != 1)"
+      },
+      {
+       "nhan": "(2') Albumin niệu xác nhận",
+       "su_kien": "alb_xn == 1",
+       "mau_so": "du_tieu_chuan == 1"
+      },
+      {
+       "nhan": "(3') Có tăng huyết áp, không có chống chỉ định ACEi/ARB",
+       "su_kien": "chi_dinh_raasi == 1 and (la_thieu(ccd_raasi) or ccd_raasi != 1)",
+       "mau_so": "alb_xn == 1"
+      },
+      {
+       "nhan": "(4') Đang dùng ACEi/ARB",
+       "su_kien": "dung_raasi == 1",
+       "mau_so": "chi_dinh_raasi == 1 and (la_thieu(ccd_raasi) or ccd_raasi != 1)"
+      }
+     ]
+    },
+    "loc": "du_tieu_chuan == 1"
+   }
+  },
+  {
+   "id": "MT2_theo_ma",
+   "vai": "mo_ta",
+   "sap_muc": "§4, §11",
+   "sap_neo": [
+    "Điều trị theo tình trạng ghi nhận mã"
+   ],
+   "mo_ta": "Tỷ lệ đang dùng ACEi/ARB và SGLT2i trong mẫu số Phụ 3a, Phụ 3b theo ma_btm_ghi_nhan (1/0), chỉ mô tả",
+   "tham_so": {
+    "loai_bo_sung": "ty_le_khau",
+    "cau_hinh": {
+     "khau": [
+      {
+       "nhan": "ACEi/ARB — đã có mã BTM",
+       "su_kien": "dung_raasi == 1",
+       "mau_so": "chi_dinh_raasi == 1 and (la_thieu(ccd_raasi) or ccd_raasi != 1) and ma_btm_ghi_nhan == 1"
+      },
+      {
+       "nhan": "ACEi/ARB — chưa có mã BTM",
+       "su_kien": "dung_raasi == 1",
+       "mau_so": "chi_dinh_raasi == 1 and (la_thieu(ccd_raasi) or ccd_raasi != 1) and ma_btm_ghi_nhan == 0"
+      },
+      {
+       "nhan": "SGLT2i — đã có mã BTM",
+       "su_kien": "dung_sglt2i == 1",
+       "mau_so": "chi_dinh_sglt2i == 1 and (la_thieu(ccd_sglt2i) or ccd_sglt2i != 1) and ma_btm_ghi_nhan == 1"
+      },
+      {
+       "nhan": "SGLT2i — chưa có mã BTM",
+       "su_kien": "dung_sglt2i == 1",
+       "mau_so": "chi_dinh_sglt2i == 1 and (la_thieu(ccd_sglt2i) or ccd_sglt2i != 1) and ma_btm_ghi_nhan == 0"
+      }
+     ]
+    },
+    "loc": "du_tieu_chuan == 1"
+   }
   },
   {
    "id": "MT3_poisson",
    "vai": "phu",
    "sap_muc": "§5–§6",
-   "mo_ta": "Poisson log + SE vững: PR của KHÔNG xét nghiệm đủ theo 12 biến giải thích G0 (thăm dò); tuổi mỗi 10 năm, thời gian mắc mỗi 5 năm, BMI mỗi 5 kg/m²; HbA1c 3 mức tham chiếu < 7%",
+   "sap_neo": [
+    "hồi quy Poisson liên kết log",
+    "Báo PR thô (từng biến)",
+    "Số tham số và EPV",
+    "ĐN8 — dữ liệu thiếu"
+   ],
+   "mo_ta": "Poisson log + sai số vững HC0: PR thô (từng biến) và PR hiệu chỉnh của KHÔNG xét nghiệm đủ theo 12 biến G0 (thăm dò), gán đa trị m = 20 và complete case song song (ĐN8); giảm tham số theo thứ tự định trước khi EPV < 10; tuổi mỗi 10 năm, thời gian mắc mỗi 5 năm, BMI mỗi 5 kg/m², HbA1c 3 mức tham chiếu < 7%",
+   "phu_thuoc": "SAP §6 đòi gán HbA1c (`hba1c_gt`) chỉ trong nhóm `co_hba1c` = 1 rồi tính lại `hba1c_3muc`, và `vao_truoc_0107` là biến phụ trợ của mô hình gán: năng lực gán đa trị trong nhóm con của run_stats_analysis.py thuộc nhánh claude/kiem-thong-ke-20261122 — khi gộp, khai tham số theo đúng tên khoá của nhánh đó vào mục này.",
    "tham_so": {
     "outcome": "khong_xn_du",
     "group": "tuoi",
@@ -73,350 +526,622 @@
     ],
     "outcome_type": "poisson_pr",
     "n_imputations": 20,
+    "loc": "du_tieu_chuan == 1",
+    "quy_tac_epv": {
+     "nguong": 10,
+     "buoc": [
+      {
+       "thay": {
+        "nhom_doi_tuong": "nhom_doi_tuong_2"
+       }
+      },
+      {
+       "thay": {
+        "phong_kham_chinh": "phong_kham_2"
+       }
+      },
+      {
+       "bo": [
+        "so_nhom_ha_glucose"
+       ]
+      }
+     ]
+    }
+   }
+  },
+  {
+   "id": "MT3_vif",
+   "vai": "phu",
+   "sap_muc": "§5",
+   "sap_neo": [
+    "Đa cộng tuyến"
+   ],
+   "mo_ta": "VIF cho mọi biến của mô hình MT3 (biến phân loại kèm GVIF chuẩn hoá); VIF > 5 được báo cáo",
+   "tham_so": {
+    "loai_bo_sung": "vif",
+    "cau_hinh": {
+     "bien": [
+      "tuoi",
+      "gioi",
+      "nhom_doi_tuong",
+      "thoi_gian_mac_dtd_5",
+      "hba1c_3muc",
+      "dung_insulin",
+      "so_nhom_ha_glucose",
+      "tha",
+      "bmi_5",
+      "tim_mach",
+      "so_luot_kham",
+      "phong_kham_chinh"
+     ],
+     "phan_loai": [
+      "gioi",
+      "nhom_doi_tuong",
+      "hba1c_3muc",
+      "phong_kham_chinh"
+     ]
+    },
     "loc": "du_tieu_chuan == 1"
-   },
-   "sap_neo": [
-    "hồi quy Poisson liên kết log",
-    "ĐN8 — dữ liệu thiếu"
-   ]
+   }
   },
   {
-   "id": "P1_btm_xac_nhan",
+   "id": "MT3_theo_muc",
    "vai": "phu",
-   "sap_muc": "§2, §4",
-   "mo_ta": "Tỷ lệ BTM xác nhận (phan_loai_btm = 2) trên người đủ xét nghiệm để phân loại",
-   "tham_so": {
-    "ty_le": [
-     "phan_loai_btm"
-    ],
-    "nguong_ty_le": 2,
-    "loc": "du_tieu_chuan == 1 and phan_loai_btm != 9"
-   },
+   "sap_muc": "§5, §11",
    "sap_neo": [
-    "Phụ 1"
-   ]
+    "Bảng 6 kèm số và tỷ lệ không được xét nghiệm đủ theo từng mức của biến"
+   ],
+   "mo_ta": "Số và tỷ lệ không được xét nghiệm đủ theo từng mức của các biến phân loại MT3 (STROBE 16c)",
+   "tham_so": {
+    "loai_bo_sung": "ty_le_theo_muc",
+    "cau_hinh": {
+     "bien": [
+      "gioi",
+      "nhom_doi_tuong",
+      "hba1c_3muc",
+      "dung_insulin",
+      "so_nhom_ha_glucose",
+      "tha",
+      "tim_mach",
+      "phong_kham_chinh"
+     ],
+     "ket_cuc": "khong_xn_du"
+    },
+    "loc": "du_tieu_chuan == 1"
+   }
   },
   {
-   "id": "P2_chua_ghi_nhan",
-   "vai": "phu",
-   "sap_muc": "§2, §4",
-   "mo_ta": "Tỷ lệ BTM chưa được ghi nhận mã trong người BTM xác nhận",
-   "tham_so": {
-    "ty_le": [
-     "btm_chua_ghi_nhan"
-    ],
-    "loc": "du_tieu_chuan == 1 and phan_loai_btm == 2"
-   },
+   "id": "MO_thieu_du_lieu",
+   "vai": "mo_ta",
+   "sap_muc": "§6",
    "sap_neo": [
-    "Phụ 2"
-   ]
+    "so sánh đặc điểm người thiếu với người đủ dữ liệu"
+   ],
+   "mo_ta": "So sánh đặc điểm người thiếu ít nhất một biến giải thích MT3 với người đủ dữ liệu (chỉ mô tả)",
+   "tham_so": {
+    "loai_bo_sung": "so_sanh_hai_nhom",
+    "cau_hinh": {
+     "nhom_a": {
+      "nhan": "Thiếu ít nhất một biến MT3",
+      "dieu_kien": "la_thieu(thoi_gian_mac_dtd_5) or la_thieu(bmi_5) or la_thieu(hba1c_3muc)",
+      "bien": {
+       "tuoi": "tuoi",
+       "gioi": "gioi",
+       "nhom_doi_tuong": "nhom_doi_tuong",
+       "phong_kham_chinh": "phong_kham_chinh",
+       "so_luot_kham": "so_luot_kham",
+       "xn_du": "xn_du"
+      }
+     },
+     "nhom_b": {
+      "nhan": "Đủ dữ liệu",
+      "dieu_kien": "la_thieu(thoi_gian_mac_dtd_5) == 0 and la_thieu(bmi_5) == 0 and la_thieu(hba1c_3muc) == 0",
+      "bien": {
+       "tuoi": "tuoi",
+       "gioi": "gioi",
+       "nhom_doi_tuong": "nhom_doi_tuong",
+       "phong_kham_chinh": "phong_kham_chinh",
+       "so_luot_kham": "so_luot_kham",
+       "xn_du": "xn_du"
+      }
+     },
+     "bien_phan_loai": [
+      "gioi",
+      "nhom_doi_tuong",
+      "phong_kham_chinh",
+      "xn_du"
+     ],
+     "bien_lien_tuc": [
+      "tuoi",
+      "so_luot_kham"
+     ]
+    },
+    "loc": "du_tieu_chuan == 1"
+   }
   },
   {
-   "id": "P3a_raasi",
-   "vai": "phu",
-   "sap_muc": "§2, §4",
-   "mo_ta": "Tỷ lệ đang dùng ACEi/ARB ở người đủ chỉ định (trừ chống chỉ định ghi rõ)",
-   "tham_so": {
-    "ty_le": [
-     "dung_raasi"
-    ],
-    "loc": "du_tieu_chuan == 1 and chi_dinh_raasi == 1 and (la_thieu(ccd_raasi) or ccd_raasi != 1)"
-   },
+   "id": "MO_kdd",
+   "vai": "mo_ta",
+   "sap_muc": "§6",
    "sap_neo": [
-    "Phụ 3a"
-   ]
+    "số người có ít nhất một kết quả xét nghiệm thận mang mã KDD được báo cáo"
+   ],
+   "mo_ta": "Số người có ít nhất một kết quả xét nghiệm thận có trong eHospital nhưng không dùng được (mã KDD): số kết quả đã khai (tối đa số ô) lớn hơn số ô có giá trị",
+   "tham_so": {
+    "loai_bo_sung": "ty_le_khau",
+    "cau_hinh": {
+     "khau": [
+      {
+       "nhan": "Có ít nhất một kết quả creatinin hoặc UACR mang mã KDD",
+       "su_kien": "neu(so_lan_creat > 6, 6, so_lan_creat) > dem_co_gt(ho(\"creat_{k}_gt\", 1, 6)) or neu(so_lan_uacr > 4, 4, so_lan_uacr) > dem_co_gt(ho(\"uacr_{k}_gt\", 1, 4))",
+       "mau_so": "du_tieu_chuan == 1"
+      }
+     ]
+    },
+    "loc": "du_tieu_chuan == 1"
+   }
   },
   {
-   "id": "P3b_sglt2i",
-   "vai": "phu",
-   "sap_muc": "§2, §4",
-   "mo_ta": "Tỷ lệ đang dùng SGLT2i ở người đủ chỉ định (trừ chống chỉ định ghi rõ)",
-   "tham_so": {
-    "ty_le": [
-     "dung_sglt2i"
-    ],
-    "loc": "du_tieu_chuan == 1 and chi_dinh_sglt2i == 1 and (la_thieu(ccd_sglt2i) or ccd_sglt2i != 1)"
-   },
+   "id": "MO_dong_thuan",
+   "vai": "mo_ta",
+   "sap_muc": "§3, §11",
    "sap_neo": [
-    "Phụ 3b"
-   ]
+    "Độ tin cậy giữa hai người trích"
+   ],
+   "mo_ta": "Bảng S1: đồng thuận giữa bản chụp của chủ nhiệm (trước hoà giải) và bản người trích lại — đồng thuận tuyệt đối mọi trường, kappa + KTC bootstrap, đồng thuận dương/âm, chỉ số tỷ lệ hiện mắc/lệch, ICC(2,1) và giới hạn đồng thuận cho biến đếm; dòng riêng sàng lọc lại 10 hồ sơ bị loại",
+   "tham_so": {
+    "loai_bo_sung": "dong_thuan",
+    "cau_hinh": {
+     "tep_a": "trich_lai/ban_chup_chinh.csv",
+     "tep_b": "trich_lai/ban_trich_lai.csv",
+     "khoa": "record_id",
+     "bien_phan_loai": [
+      "co_creat",
+      "co_uacr",
+      "xn_du",
+      "alb_khac",
+      "tha",
+      "ma_btm_ghi_nhan",
+      "dung_raasi",
+      "dung_sglt2i",
+      "ccd_raasi",
+      "ccd_sglt2i",
+      "phan_loai_btm",
+      "chi_dinh_raasi",
+      "chi_dinh_sglt2i"
+     ],
+     "bien_dem": [
+      "so_lan_creat",
+      "so_lan_uacr",
+      "so_luot_kham"
+     ],
+     "bo_cot": [
+      "nguoi_trich",
+      "ngay_trich",
+      "thoi_gian_trich_phut"
+     ],
+     "dieu_kien_a": "du_tieu_chuan == 1",
+     "nhom_phu": {
+      "nhan": "Sàng lọc lại 10 hồ sơ bị loại",
+      "dieu_kien_a": "du_tieu_chuan == 0",
+      "bien": [
+       "du_tieu_chuan"
+      ]
+     },
+     "so_lap": 2000,
+     "hat_giong": 20261028
+    },
+    "loc": "du_tieu_chuan == 1"
+   }
   },
   {
    "id": "NC_pk1",
    "vai": "nhom_con",
    "sap_muc": "§7",
-   "mo_ta": "Tỷ lệ xn_du — phòng khám theo dõi chính = 1 (nội tiết)",
+   "sap_neo": [
+    "Nhóm nhỏ tiền định"
+   ],
+   "mo_ta": "Tỷ lệ xn_du — phòng khám theo dõi chính = 1 (nội tiết); nhóm dưới 30 người chỉ báo số đếm",
    "tham_so": {
     "ty_le": [
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and phong_kham_chinh == 1"
-   },
-   "sap_neo": [
-    "Nhóm nhỏ tiền định"
-   ]
+   }
   },
   {
    "id": "NC_pk2",
    "vai": "nhom_con",
    "sap_muc": "§7",
-   "mo_ta": "Tỷ lệ xn_du — phòng khám theo dõi chính = 2 (nội chung)",
+   "sap_neo": [
+    "Nhóm nhỏ tiền định"
+   ],
+   "mo_ta": "Tỷ lệ xn_du — phòng khám theo dõi chính = 2 (nội chung); nhóm dưới 30 người chỉ báo số đếm",
    "tham_so": {
     "ty_le": [
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and phong_kham_chinh == 2"
-   },
-   "sap_neo": [
-    "Nhóm nhỏ tiền định"
-   ]
+   }
   },
   {
    "id": "NC_pk3",
    "vai": "nhom_con",
    "sap_muc": "§7",
-   "mo_ta": "Tỷ lệ xn_du — phòng khám theo dõi chính = 3 (khác)",
+   "sap_neo": [
+    "Nhóm nhỏ tiền định"
+   ],
+   "mo_ta": "Tỷ lệ xn_du — phòng khám theo dõi chính = 3 (khác); nhóm dưới 30 người chỉ báo số đếm",
    "tham_so": {
     "ty_le": [
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and phong_kham_chinh == 3"
-   },
-   "sap_neo": [
-    "Nhóm nhỏ tiền định"
-   ]
+   }
   },
   {
    "id": "NC_dt1",
    "vai": "nhom_con",
    "sap_muc": "§7",
-   "mo_ta": "Tỷ lệ xn_du — nhóm đối tượng = 1 (quân nhân)",
+   "sap_neo": [
+    "Nhóm nhỏ tiền định"
+   ],
+   "mo_ta": "Tỷ lệ xn_du — nhóm đối tượng = 1 (quân nhân); nhóm dưới 30 người chỉ báo số đếm",
    "tham_so": {
     "ty_le": [
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and nhom_doi_tuong == 1"
-   },
-   "sap_neo": [
-    "Nhóm nhỏ tiền định"
-   ]
+   }
   },
   {
    "id": "NC_dt2",
    "vai": "nhom_con",
    "sap_muc": "§7",
-   "mo_ta": "Tỷ lệ xn_du — nhóm đối tượng = 2 (BHYT)",
+   "sap_neo": [
+    "Nhóm nhỏ tiền định"
+   ],
+   "mo_ta": "Tỷ lệ xn_du — nhóm đối tượng = 2 (BHYT); nhóm dưới 30 người chỉ báo số đếm",
    "tham_so": {
     "ty_le": [
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and nhom_doi_tuong == 2"
-   },
-   "sap_neo": [
-    "Nhóm nhỏ tiền định"
-   ]
+   }
   },
   {
    "id": "NC_dt3",
    "vai": "nhom_con",
    "sap_muc": "§7",
-   "mo_ta": "Tỷ lệ xn_du — nhóm đối tượng = 3 (dịch vụ)",
+   "sap_neo": [
+    "Nhóm nhỏ tiền định"
+   ],
+   "mo_ta": "Tỷ lệ xn_du — nhóm đối tượng = 3 (dịch vụ); nhóm dưới 30 người chỉ báo số đếm",
    "tham_so": {
     "ty_le": [
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and nhom_doi_tuong == 3"
-   },
-   "sap_neo": [
-    "Nhóm nhỏ tiền định"
-   ]
+   }
   },
   {
    "id": "NC_dt4",
    "vai": "nhom_con",
    "sap_muc": "§7",
-   "mo_ta": "Tỷ lệ xn_du — nhóm đối tượng = 4 (khác)",
+   "sap_neo": [
+    "Nhóm nhỏ tiền định"
+   ],
+   "mo_ta": "Tỷ lệ xn_du — nhóm đối tượng = 4 (khác); nhóm dưới 30 người chỉ báo số đếm",
    "tham_so": {
     "ty_le": [
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and nhom_doi_tuong == 4"
-   },
-   "sap_neo": [
-    "Nhóm nhỏ tiền định"
-   ]
+   }
   },
   {
    "id": "NC_tuoi1",
    "vai": "nhom_con",
    "sap_muc": "§7",
-   "mo_ta": "Tỷ lệ xn_du — nhóm tuổi < 65 (nhom_tuoi_65 = 1)",
+   "sap_neo": [
+    "Nhóm nhỏ tiền định"
+   ],
+   "mo_ta": "Tỷ lệ xn_du — nhóm tuổi < 65 (nhom_tuoi_65 = 1); nhóm dưới 30 người chỉ báo số đếm",
    "tham_so": {
     "ty_le": [
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and nhom_tuoi_65 == 1"
-   },
-   "sap_neo": [
-    "Nhóm nhỏ tiền định"
-   ]
+   }
   },
   {
    "id": "NC_tuoi2",
    "vai": "nhom_con",
    "sap_muc": "§7",
-   "mo_ta": "Tỷ lệ xn_du — nhóm tuổi ≥ 65 (nhom_tuoi_65 = 2)",
+   "sap_neo": [
+    "Nhóm nhỏ tiền định"
+   ],
+   "mo_ta": "Tỷ lệ xn_du — nhóm tuổi ≥ 65 (nhom_tuoi_65 = 2); nhóm dưới 30 người chỉ báo số đếm",
    "tham_so": {
     "ty_le": [
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and nhom_tuoi_65 == 2"
-   },
-   "sap_neo": [
-    "Nhóm nhỏ tiền định"
-   ]
+   }
   },
   {
    "id": "DN1_alb",
    "vai": "do_nhay",
    "sap_muc": "§9",
+   "sap_neo": [
+    "ĐN1 —"
+   ],
    "mo_ta": "ĐN1 — kết cục chính tính cả albumin/protein niệu dạng khác",
    "tham_so": {
     "ty_le": [
      "xn_du_nhay_alb"
     ],
     "loc": "du_tieu_chuan == 1"
-   },
-   "sap_neo": [
-    "ĐN1 —"
-   ]
+   }
   },
   {
    "id": "DN2_ngoai_vien",
    "vai": "do_nhay",
    "sap_muc": "§9",
+   "sap_neo": [
+    "ĐN2 —"
+   ],
    "mo_ta": "ĐN2 — kết cục chính tính cả xét nghiệm ngoài viện có ghi ngày và kết quả",
    "tham_so": {
     "ty_le": [
      "xn_du_nhay_nv"
     ],
     "loc": "du_tieu_chuan == 1"
-   },
-   "sap_neo": [
-    "ĐN2 —"
-   ]
+   }
   },
   {
    "id": "DN3_quan_sat",
    "vai": "do_nhay",
    "sap_muc": "§9",
+   "sap_neo": [
+    "ĐN3 —"
+   ],
    "mo_ta": "ĐN3 — kết cục chính chỉ trên người có lượt khám đầu trước 01/07/2026",
    "tham_so": {
     "ty_le": [
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and vao_truoc_0107 == 1"
-   },
-   "sap_neo": [
-    "ĐN3 —"
-   ]
+   }
   },
   {
    "id": "DN4_co_thuoc",
    "vai": "do_nhay",
    "sap_muc": "§9",
-   "mo_ta": "ĐN4 — kết cục chính chỉ trên người có đơn thuốc hạ glucose",
+   "sap_neo": [
+    "ĐN4 —"
+   ],
+   "mo_ta": "ĐN4 — kết cục chính chỉ trên người có đơn thuốc hạ glucose ở bất kỳ lượt khám nào năm 2026",
    "tham_so": {
     "ty_le": [
      "xn_du"
     ],
     "loc": "du_tieu_chuan == 1 and dn4_co_don == 1"
-   },
-   "sap_neo": [
-    "ĐN4 —"
-   ]
+   }
   },
   {
    "id": "DN5_ma_mo_rong",
    "vai": "do_nhay",
    "sap_muc": "§9",
+   "sap_neo": [
+    "ĐN5 —"
+   ],
    "mo_ta": "ĐN5 — Phụ 2 với danh mục mã thận mở rộng (N19, I12, I13, R80)",
    "tham_so": {
     "ty_le": [
      "btm_chua_ghi_nhan_mr"
     ],
     "loc": "du_tieu_chuan == 1 and phan_loai_btm == 2"
-   },
-   "sap_neo": [
-    "ĐN5 —"
-   ]
+   }
   },
   {
    "id": "DN6_raasi_1lan",
    "vai": "do_nhay",
    "sap_muc": "§9",
+   "sap_neo": [
+    "ĐN6 —"
+   ],
    "mo_ta": "ĐN6 — Phụ 3a với albumin niệu chỉ cần một lần UACR ≥ 30 mg/g",
    "tham_so": {
     "ty_le": [
      "dung_raasi"
     ],
     "loc": "du_tieu_chuan == 1 and chi_dinh_raasi_1lan == 1 and (la_thieu(ccd_raasi) or ccd_raasi != 1)"
-   },
-   "sap_neo": [
-    "ĐN6 —"
-   ]
+   }
   },
   {
-   "id": "DN7_ngoai_don",
+   "id": "DN7_raasi",
    "vai": "do_nhay",
    "sap_muc": "§9",
-   "mo_ta": "ĐN7 — Phụ 3 tính cả thuốc bệnh án ghi «đang dùng» ngoài đơn",
-   "chua_tu_dong": "cần biến phái sinh từ ô chọn thuoc_ngoai_don (mã nhóm thuốc chưa đối chiếu) — thống kê viên chốt công thức rồi thêm mục",
    "sap_neo": [
     "ĐN7 —"
-   ]
+   ],
+   "mo_ta": "ĐN7 — Phụ 3a tính cả ACEi/ARB bệnh án ghi «đang dùng» ngoài đơn (dung_raasi_nd)",
+   "tham_so": {
+    "ty_le": [
+     "dung_raasi_nd"
+    ],
+    "loc": "du_tieu_chuan == 1 and chi_dinh_raasi == 1 and (la_thieu(ccd_raasi) or ccd_raasi != 1)"
+   }
+  },
+  {
+   "id": "DN7_sglt2i",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "sap_neo": [
+    "ĐN7 —"
+   ],
+   "mo_ta": "ĐN7 — Phụ 3b tính cả SGLT2i bệnh án ghi «đang dùng» ngoài đơn (dung_sglt2i_nd)",
+   "tham_so": {
+    "ty_le": [
+     "dung_sglt2i_nd"
+    ],
+    "loc": "du_tieu_chuan == 1 and chi_dinh_sglt2i == 1 and (la_thieu(ccd_sglt2i) or ccd_sglt2i != 1)"
+   }
   },
   {
    "id": "DN9_chia_nhom",
    "vai": "do_nhay",
    "sap_muc": "§5, §9",
-   "mo_ta": "ĐN9 — MT3 với biến liên tục chia nhóm",
-   "chua_tu_dong": "chỉ làm khi đồ thị phần dư lệch tuyến tính (điều kiện) — thống kê viên quyết điểm cắt",
    "sap_neo": [
     "ĐN9 —",
-    "báo thêm mô hình với biến chia nhóm"
-   ]
-  },
-  {
-   "id": "P1_bang_GxA",
-   "vai": "phu",
-   "sap_muc": "§2, §4",
-   "mo_ta": "Bảng chéo nhóm G × nhóm A theo KDIGO 2024",
-   "chua_tu_dong": "bảng chéo G × A chưa có công cụ — nhom_g, nhom_a đã có công thức; thống kê viên lập bảng",
-   "sap_neo": [
-    "bảng chéo G1–G5 × A1–A3"
-   ]
-  },
-  {
-   "id": "MT1_fpc",
-   "vai": "mo_ta",
-   "sap_muc": "§4",
-   "mo_ta": "KTC có hiệu chỉnh quần thể hữu hạn (thông tin phụ, khi biết kích thước khung mẫu)",
-   "chua_tu_dong": "cần kích thước khung mẫu eHospital — tính tay",
-   "sap_neo": [
-    "báo thêm KTC có hiệu chỉnh quần thể hữu hạn"
-   ]
-  },
-  {
-   "id": "MO_loai_1_luot",
-   "vai": "mo_ta",
-   "sap_muc": "§1",
-   "sap_neo": [
-    "chỉ có 1 lượt khám"
+    "mô hình với biến chia nhóm"
    ],
-   "mo_ta": "So sánh tuổi, giới, nhóm đối tượng giữa người bị loại vì chỉ có 1 lượt khám và mẫu nghiên cứu (n (%) / trung vị hai nhóm, chỉ mô tả)",
-   "chua_tu_dong": "Người bị loại không có trong bộ dữ liệu phân tích — cần danh sách khung mẫu kèm tuổi, giới, nhóm đối tượng; thống kê viên lập bảng"
+   "mo_ta": "ĐN9 — MT3 với tuổi, thời gian mắc, BMI, số lượt khám chia theo tứ phân vị quan sát (nhóm thấp nhất tham chiếu) so với mô hình tuyến tính, cùng tập ca đầy đủ, cùng bộ biến đã chọn theo quy tắc EPV",
+   "tham_so": {
+    "loai_bo_sung": "poisson_chia_nhom",
+    "cau_hinh": {
+     "outcome": "khong_xn_du",
+     "group": "tuoi",
+     "don_vi_phoi_nhiem": 10,
+     "covariates": [
+      "gioi",
+      "nhom_doi_tuong",
+      "thoi_gian_mac_dtd_5",
+      "hba1c_3muc",
+      "dung_insulin",
+      "so_nhom_ha_glucose",
+      "tha",
+      "bmi_5",
+      "tim_mach",
+      "so_luot_kham",
+      "phong_kham_chinh"
+     ],
+     "hiep_bien_phan_loai": [
+      "gioi",
+      "nhom_doi_tuong",
+      "hba1c_3muc",
+      "phong_kham_chinh"
+     ],
+     "chia_nhom": [
+      "tuoi",
+      "thoi_gian_mac_dtd_5",
+      "bmi_5",
+      "so_luot_kham"
+     ],
+     "so_nhom": 4,
+     "quy_tac_epv": {
+      "nguong": 10,
+      "buoc": [
+       {
+        "thay": {
+         "nhom_doi_tuong": "nhom_doi_tuong_2"
+        }
+       },
+       {
+        "thay": {
+         "phong_kham_chinh": "phong_kham_2"
+        }
+       },
+       {
+        "bo": [
+         "so_nhom_ha_glucose"
+        ]
+       }
+      ]
+     }
+    },
+    "loc": "du_tieu_chuan == 1"
+   }
+  },
+  {
+   "id": "DN10_raasi_alb",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "sap_neo": [
+    "ĐN10 —"
+   ],
+   "mo_ta": "ĐN10 — Phụ 3a trên mọi người có albumin niệu xác nhận, không đòi tăng huyết áp (chi_dinh_raasi_alb)",
+   "tham_so": {
+    "ty_le": [
+     "dung_raasi"
+    ],
+    "loc": "du_tieu_chuan == 1 and chi_dinh_raasi_alb == 1 and (la_thieu(ccd_raasi) or ccd_raasi != 1)"
+   }
+  },
+  {
+   "id": "DN10_khong_ma_tha",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "sap_neo": [
+    "kèm số người có albumin niệu xác nhận nhưng không có mã I10–I15"
+   ],
+   "mo_ta": "ĐN10 — số người có albumin niệu xác nhận nhưng không có mã tăng huyết áp",
+   "tham_so": {
+    "loai_bo_sung": "ty_le_khau",
+    "cau_hinh": {
+     "khau": [
+      {
+       "nhan": "Albumin niệu xác nhận, không có mã I10–I15",
+       "su_kien": "tha == 0",
+       "mau_so": "alb_xn == 1"
+      }
+     ]
+    },
+    "loc": "du_tieu_chuan == 1"
+   }
+  },
+  {
+   "id": "DN11_raasi",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "sap_neo": [
+    "ĐN11 —"
+   ],
+   "mo_ta": "ĐN11 — Phụ 3a chỉ trên người có lượt khám cuối là lượt kê đơn điều trị ĐTĐ",
+   "tham_so": {
+    "ty_le": [
+     "dung_raasi"
+    ],
+    "loc": "du_tieu_chuan == 1 and chi_dinh_raasi == 1 and (la_thieu(ccd_raasi) or ccd_raasi != 1) and dn11_kham_cuoi_dtd == 1"
+   }
+  },
+  {
+   "id": "DN11_sglt2i",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "sap_neo": [
+    "ĐN11 —"
+   ],
+   "mo_ta": "ĐN11 — Phụ 3b chỉ trên người có lượt khám cuối là lượt kê đơn điều trị ĐTĐ",
+   "tham_so": {
+    "ty_le": [
+     "dung_sglt2i"
+    ],
+    "loc": "du_tieu_chuan == 1 and chi_dinh_sglt2i == 1 and (la_thieu(ccd_sglt2i) or ccd_sglt2i != 1) and dn11_kham_cuoi_dtd == 1"
+   }
+  },
+  {
+   "id": "DN11_kham_cuoi",
+   "vai": "do_nhay",
+   "sap_muc": "§9",
+   "sap_neo": [
+    "kèm số người có lượt khám cuối không có thuốc hạ glucose"
+   ],
+   "mo_ta": "ĐN11 — số người có lượt khám cuối không có thuốc hạ glucose trong khi có đơn thuốc hạ glucose ở lượt khác",
+   "tham_so": {
+    "loai_bo_sung": "ty_le_khau",
+    "cau_hinh": {
+     "khau": [
+      {
+       "nhan": "Lượt khám cuối không có thuốc hạ glucose, có đơn ở lượt khác",
+       "su_kien": "so_nhom_ha_glucose == 0 and don_ha_glucose_nam == 1",
+       "mau_so": "du_tieu_chuan == 1"
+      }
+     ]
+    },
+    "loc": "du_tieu_chuan == 1"
+   }
   }
- ],
- "nguoi_duyet": "PI:PI-BTM-01:2026-11-20:11662869bd6d"
+ ]
 }

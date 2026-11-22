@@ -93,6 +93,7 @@ Người đảm nhận các vai ngoài chủ nhiệm do chủ nhiệm phân côn
 3. Điền phần A (sàng lọc) cho mọi hồ sơ đã mở:
    - Câu `trung_nguoi` («đã có trong mẫu dưới mã khác»): tra bảng nối mã trước khi trả lời (R5).
    - Hồ sơ có `du_tieu_chuan` = 0 thì dừng ở phần A, ghi kết quả vào cột `ket_qua_sang_loc` của bảng nối mã, rồi mở hồ sơ kế tiếp.
+   - Hồ sơ có câu 9 (`tc_2luot`) = Không: ghi thêm tuổi, giới, nhóm đối tượng tại lượt khám đó (câu 9a–9c) trước khi đóng phần A, để so sánh người bị loại vì chỉ có 1 lượt khám với mẫu (SAP §1).
 4. **Dừng trích** khi đủ **385** hồ sơ có `du_tieu_chuan` = 1. Nếu hết danh sách trước khi đủ 385, dừng và ghi cỡ mẫu thực tế. Không lấy thêm hồ sơ ngoài khung mẫu.
 
 ### 6.2 Quy tắc trích chung
@@ -138,7 +139,7 @@ Người đảm nhận các vai ngoài chủ nhiệm do chủ nhiệm phân côn
 2. **Bàn giao cho người trích lại:**
    - Chủ nhiệm đưa người trích lại danh sách mã nghiên cứu được chọn và mã người bệnh tương ứng (tra từ bảng nối mã).
    - Bàn giao trực tiếp, không gửi qua tin nhắn hay thư điện tử.
-3. **Trích lại độc lập.** Người trích lại mở các hồ sơ đó trên eHospital và trích theo đúng quy trình này vào dự án REDCap «trích lại», giữ nguyên mã nghiên cứu. Người trích lại không xem bản trích của chủ nhiệm.
+3. **Trích lại độc lập.** Người trích lại mở các hồ sơ đó trên eHospital và trích theo đúng quy trình này vào dự án REDCap «trích lại», giữ nguyên mã nghiên cứu. Người trích lại không xem bản trích của chủ nhiệm. Quản lý dữ liệu xuất dự án «trích lại» (chỉ mã nghiên cứu) và nối vào tệp `trich_lai/ban_trich_lai.csv` ở thư mục đề tài; bản chụp dự án chính lưu ở bước 1 được nối vào `trich_lai/ban_chup_chinh.csv` — hai tệp là đầu vào của Bảng S1 (SAP §3).
 4. **So sánh** (quản lý dữ liệu):
    - Mọi chỉ số đồng thuận tính trên bản chụp dự án chính đã lưu ngay khi chọn hồ sơ (bước 1), trước mọi hoà giải; không tính trên bản đã sửa sau hoà giải.
    - Đối chiếu từng biến của hai bản và tính tỷ lệ đồng thuận tuyệt đối kèm KTC 95% Wilson cho mọi biến.
@@ -209,6 +210,8 @@ Còn mở: chủ nhiệm ghi tên người cho hai vai: người trích lại v�
 | Hạt giống và dấu danh sách trích lại — đợt 1 | |
 | Hạt giống và dấu danh sách trích lại — đợt 2 | |
 | Ngày huỷ danh sách khung mẫu và bảng nối mã (sau G5) | |
+
+Các số trong bảng trên (không có mã người bệnh) được ghi thêm vào tệp `so_khung_mau.csv` ở thư mục đề tài, hai cột `chi_so`, `gia_tri`; dòng `N_khung_mau` là số người sau khi gộp dòng trùng. Tệp này dùng để dựng sơ đồ chọn và KTC có hiệu chỉnh quần thể hữu hạn (SAP §4).
 
 ## Phụ lục 2. Bảng ánh xạ tên xét nghiệm trên eHospital
 

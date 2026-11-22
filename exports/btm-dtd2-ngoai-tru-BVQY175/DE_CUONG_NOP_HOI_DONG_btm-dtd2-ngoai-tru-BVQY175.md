@@ -395,7 +395,7 @@ Kế hoạch phân tích thống kê (phiên bản 1.0) được khoá trước 
   - Phụ 2 (BTM chưa ghi nhận): người có bệnh thận mạn xác nhận theo xét nghiệm, tức nhóm (1) của quy tắc xếp nhóm ở Bảng 2.1.
   - Phụ 3a (ACEi/ARB): người có đủ chỉ định ACEi/ARB theo KDIGO 2022, trừ người có hồ sơ ghi rõ chống chỉ định hoặc không dung nạp ACEi/ARB (báo cáo riêng).
   - Phụ 3b (SGLT2i): người có đủ chỉ định thuốc ức chế SGLT2 theo KDIGO 2022, trừ người có hồ sơ ghi rõ chống chỉ định hoặc không dung nạp thuốc ức chế SGLT2 (báo cáo riêng).
-- Sơ đồ chọn (STROBE, RECORD): Số người trong khung mẫu, số người chỉ có E14, số hồ sơ đã mở, số bị loại theo từng lý do (phần A của phiếu), số hồ sơ tập và số đưa vào phân tích; đếm riêng người bị loại vì chỉ có 1 lượt khám và so sánh tuổi, giới, nhóm đối tượng khám của nhóm này với mẫu nghiên cứu (dòng “Sai lệch chọn do tiêu chí từ 2 lượt khám” ở Bảng 2.1) — trình bày n (%) hoặc trung vị [khoảng tứ phân vị] hai nhóm cạnh nhau, chỉ mô tả.
+- Sơ đồ chọn (STROBE, RECORD): Số người trong khung mẫu, số người chỉ có E14, số hồ sơ đã mở, số bị loại theo từng lý do (phần A của phiếu), số hồ sơ tập và số đưa vào phân tích; đếm riêng người bị loại vì chỉ có 1 lượt khám và so sánh tuổi, giới, nhóm đối tượng khám của nhóm này (ghi ở phần A của phiếu, câu 9a–9c) với mẫu nghiên cứu (dòng “Sai lệch chọn do tiêu chí từ 2 lượt khám” ở Bảng 2.1) — trình bày n (%) hoặc trung vị [khoảng tứ phân vị] hai nhóm cạnh nhau, chỉ mô tả.
 
 **Thống kê mô tả.**
 
@@ -407,7 +407,7 @@ Kế hoạch phân tích thống kê (phiên bản 1.0) được khoá trước 
 
 **Phân tích chính.**
 
-- Phương pháp: Ước lượng tỷ lệ được xét nghiệm đủ UACR và creatinin năm 2026 trên toàn bộ N kèm KTC 95% Wilson; không kiểm định giả thuyết (thiết kế theo độ chính xác). Không áp hiệu chỉnh quần thể hữu hạn ở phân tích chính, cho thống nhất với cách tính cỡ mẫu; nếu biết kích thước khung mẫu thì báo thêm KTC có hiệu chỉnh quần thể hữu hạn như một thông tin phụ.
+- Phương pháp: Ước lượng tỷ lệ được xét nghiệm đủ UACR và creatinin năm 2026 trên toàn bộ N kèm KTC 95% Wilson; không kiểm định giả thuyết (thiết kế theo độ chính xác). Không áp hiệu chỉnh quần thể hữu hạn ở phân tích chính, cho thống nhất với cách tính cỡ mẫu; báo thêm KTC có hiệu chỉnh quần thể hữu hạn như một thông tin phụ, với số người trong khung mẫu lấy từ Sổ khung mẫu.
 - Quần thể: Toàn bộ hồ sơ đủ tiêu chuẩn.
 - Trình bày: Tỷ lệ (%) và KTC 95%; kèm hai thành phần: tỷ lệ có ít nhất một creatinin và tỷ lệ có ít nhất một UACR dạng tỷ số. Không báo giá trị p đơn độc.
 - Kết cục phụ 1–3 (phụ 1–2: MT1; phụ 3: MT2): Tỷ lệ và KTC 95% Wilson trên đúng quần thể con; bảng chéo nhóm eGFR × nhóm albumin niệu (A1–A3) theo KDIGO 2024. Mẫu số: dòng “không đủ xét nghiệm để phân loại” tính trên toàn mẫu, ba mức còn lại của Phụ 1 tính trên người đủ xét nghiệm để phân loại; phân bố nhóm eGFR tính trên người có ít nhất một creatinin, phân bố nhóm albumin niệu tính trên người có ít nhất một UACR; bảng chéo tính trên người có ít nhất một trong hai xét nghiệm, phần lõi G1–G5 × A1–A3 là người có cả hai, thêm cột “chưa có UACR” và dòng “chưa có creatinin”. Phụ 2 được báo riêng theo dấu ấn xác nhận bệnh thận mạn (chỉ eGFR, chỉ albumin niệu, cả hai). Người bị loại khỏi mẫu số Phụ 3a, Phụ 3b vì chống chỉ định hoặc không dung nạp ghi trong hồ sơ được báo số lượng.
@@ -424,7 +424,7 @@ Kế hoạch phân tích thống kê (phiên bản 1.0) được khoá trước 
 - Phương pháp chọn biến: Đưa vào toàn bộ, không stepwise, không chọn theo giá trị p.
 - Số tham số và EPV: Mô hình đầy đủ có 16 tham số (biến phân loại k mức tính k−1): tuổi 1, giới 1, nhóm đối tượng 3, thời gian mắc ĐTĐ 1, HbA1c 2, đang dùng insulin 1, số nhóm thuốc hạ glucose 1, tăng huyết áp 1, BMI 1, bệnh tim mạch 1, số lượt khám 1, phòng khám theo dõi chính 2. Số người ở nhóm kết cục ít hơn (được hoặc không được xét nghiệm đủ) chia cho số tham số là số biến cố trên mỗi tham số (EPV); ngưỡng sơ bộ EPV ≥ 10 chỉ là mức tham khảo, không phải quy tắc cứng [48, 59]. Nếu EPV < 10, giảm tham số theo thứ tự định trước, dừng ngay khi EPV ≥ 10: (1) gộp nhóm đối tượng thành 2 mức (quân nhân / khác); (2) gộp phòng khám thành 2 mức (nội tiết / khác); (3) bỏ số nhóm thuốc hạ glucose (giữ insulin). Nếu sau bước (3) EPV vẫn dưới 10, giữ mô hình sau bước (3) (12 tham số), báo EPV thực tế và diễn giải thận trọng; không giảm thêm biến vì EPV ≥ 10 chỉ là mức tham khảo [48, 59]. Báo cáo rõ mô hình nào được dùng và vì sao.
 - Đa cộng tuyến: Tính VIF cho mọi biến; VIF > 5 được báo cáo, và cặp insulin – số nhóm thuốc được xử lý theo bước (3) ở trên.
-- Giả định: Dạng tuyến tính của biến liên tục (tuổi, thời gian mắc, BMI, số lượt khám) được xem bằng đồ thị phần dư; nếu lệch rõ thì báo thêm mô hình với biến chia nhóm như phân tích độ nhạy, không đổi mô hình chính.
+- Giả định: Dạng tuyến tính của biến liên tục (tuổi, thời gian mắc, BMI, số lượt khám) được xem bằng đồ thị phần dư; mô hình với biến chia nhóm theo tứ phân vị luôn được trình bày như phân tích độ nhạy (ĐN9), không đổi mô hình chính.
 - Cụm: Phòng khám theo dõi chính là biến trong mô hình; sai số chuẩn vững.
 
 **Dữ liệu thiếu.**
@@ -458,9 +458,9 @@ Kế hoạch phân tích thống kê (phiên bản 1.0) được khoá trước 
 - ĐN4 — định nghĩa quần thể: Kết cục chính chỉ trên người có ít nhất một đơn thuốc hạ glucose ở bất kỳ lượt khám nào năm 2026.
 - ĐN5 — BTM chưa ghi nhận: Phụ 2 với danh mục mã thận mở rộng (thêm N19, I12, I13, R80).
 - ĐN6 — chỉ định ACEi/ARB: Phụ 3a với albumin niệu chỉ cần một lần UACR ≥ 30 mg/g.
-- ĐN7 — thuốc ngoài đơn: Phụ 3 tính cả thuốc bệnh án ghi “đang dùng” nhưng không có trong đơn eHospital.
+- ĐN7 — thuốc ngoài đơn: Phụ 3 tính cả thuốc bệnh án ghi “đang dùng” nhưng không có trong đơn eHospital, trên đúng mẫu số của Phụ 3a, Phụ 3b.
 - ĐN8 — dữ liệu thiếu: MT3 trên ca đủ dữ liệu so với gán đa trị.
-- ĐN9 — dạng biến liên tục: MT3 với tuổi, thời gian mắc, BMI, số lượt khám chia nhóm (chỉ khi đồ thị phần dư cho thấy lệch tuyến tính).
+- ĐN9 — dạng biến liên tục: MT3 với tuổi, thời gian mắc, BMI, số lượt khám chia theo tứ phân vị của giá trị quan sát (nhóm thấp nhất làm tham chiếu), so với mô hình tuyến tính trên cùng tập ca đầy đủ; luôn chạy, độc lập với đồ thị phần dư.
 - ĐN10 — chỉ định ACEi/ARB không dựa vào mã tăng huyết áp: Phụ 3a trên mọi người có albumin niệu đã xác nhận, trừ người có chống chỉ định ghi trong hồ sơ, không đòi điều kiện tăng huyết áp; kèm số người có albumin niệu xác nhận nhưng không có mã tăng huyết áp. Tăng huyết áp chỉ được nhận diện qua mã ICD-10 nên có thể bị ghi thiếu; KDIGO 2022 cho phép cân nhắc ACEi hoặc ARB ở người ĐTĐ có albumin niệu và huyết áp bình thường (điểm thực hành 1.2.1) [40], nên ước lượng này vẫn có nghĩa lâm sàng dù mã tăng huyết áp được ghi đủ hay thiếu.
 - ĐN11 — lượt khám cuối là lượt kê đơn điều trị ĐTĐ: Phụ 3a và Phụ 3b chỉ trên người có ít nhất một thuốc hạ glucose trong đơn của lượt khám cuối; kèm số người có lượt khám cuối không có thuốc hạ glucose trong khi có đơn thuốc hạ glucose ở lượt khám khác. “Đang dùng” được đọc ở đơn của lượt khám cuối, mà lượt khám cuối có thể là lượt khám cấp hoặc khám chuyên khoa khác không kê thuốc mạn; phân tích này cho ước lượng không phụ thuộc tỷ lệ lượt khám như vậy tại Khoa.
 
@@ -924,6 +924,9 @@ Chủ nhiệm đề tài (ký, ghi rõ họ tên): ………………………�
 | 7 | Từ 18 tuổi trở lên tại lượt khám đầu tiên trong năm 2026 | ☐ 1. Có  ☐ 0. Không | tc_tuoi18 |
 | 8 | Có mã E11 (chẩn đoán chính hoặc kèm theo) ở ít nhất một lượt khám ngoại trú tại Khoa Khám bệnh năm 2026 | ☐ 1. Có  ☐ 0. Không | tc_e11 |
 | 9 | Có từ 2 lượt khám ngoại trú tại Khoa Khám bệnh năm 2026 | ☐ 1. Có  ☐ 0. Không | tc_2luot |
+| 9a | Nếu câu 9 = Không: tuổi (năm) tại lượt khám đó | ……… năm | sl_tuoi |
+| 9b | Nếu câu 9 = Không: giới | ☐ 1. Nam  ☐ 2. Nữ | sl_gioi |
+| 9c | Nếu câu 9 = Không: nhóm đối tượng khám tại lượt khám đó | ☐ 1. Quân nhân  ☐ 2. Bảo hiểm y tế  ☐ 3. Dịch vụ  ☐ 4. Khác | sl_nhom_doi_tuong |
 | 10 | Đang lọc máu hoặc đã ghép thận (mã Z49, Z99.2, Z94.0, T86.1 hoặc chỉ định lọc máu trên eHospital) | ☐ 1. Có  ☐ 0. Không | lt_loc_ghep |
 | 11 | Có thai trong năm 2026 (mã chương O hoặc Z33) | ☐ 1. Có  ☐ 0. Không | lt_thai |
 | 12 | Có mã E10, E12 hoặc E13 ở bất kỳ lượt khám nào năm 2026 | ☐ 1. Có  ☐ 0. Không | lt_dtd_khac |
@@ -1034,6 +1037,9 @@ Người thu thập: ……………………………   Ngày thu thập: …�
 | tc_tuoi18 | Từ 18 tuổi trở lên tại lượt khám đầu tiên trong năm 2026 | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
 | tc_e11 | Có mã E11 (chẩn đoán chính hoặc kèm theo) ở ít nhất một lượt khám ngoại trú tại Khoa Khám bệnh năm 2026 | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
 | tc_2luot | Có từ 2 lượt khám ngoại trú tại Khoa Khám bệnh năm 2026 | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
+| sl_tuoi | Nếu chỉ có 1 lượt khám: tuổi (năm) tại lượt khám đó | Định lượng | 0–110 | Phiếu thu thập số liệu |
+| sl_gioi | Nếu chỉ có 1 lượt khám: giới | Nhị phân | 1 = Nam; 2 = Nữ | Phiếu thu thập số liệu |
+| sl_nhom_doi_tuong | Nếu chỉ có 1 lượt khám: nhóm đối tượng khám tại lượt khám đó | Định danh | 1 = Quân nhân; 2 = Bảo hiểm y tế; 3 = Dịch vụ; 4 = Khác | Phiếu thu thập số liệu |
 | lt_loc_ghep | Đang lọc máu hoặc đã ghép thận (mã Z49, Z99.2, Z94.0, T86.1 hoặc chỉ định lọc máu trên eHospital) | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
 | lt_thai | Có thai trong năm 2026 (mã chương O hoặc Z33) | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
 | lt_dtd_khac | Có mã E10, E12 hoặc E13 ở bất kỳ lượt khám nào năm 2026 | Nhị phân | 1 = Có; 0 = Không | Phiếu thu thập số liệu |
