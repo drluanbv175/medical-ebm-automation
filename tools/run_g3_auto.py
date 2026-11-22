@@ -344,6 +344,27 @@ def n_auc(auc, alpha=0.05, power=0.80, prevalence=0.5):
     n_benh, n_khong = n_auc_hanley_mcneil(auc, alpha, power, kappa=(1 - prevalence) / prevalence)
     return n_benh + n_khong
 
+def tinh_ris(p_chung, giam_tuong_doi, alpha=0.05, power=0.80, d2=0.0):
+    """Cỡ thông tin cần thiết (RIS) của phân tích gộp kết cục nhị phân, hiệu chỉnh độ đa dạng D².
+
+    Wetterslev J, Thorlund K, Brok J, Gluud C. BMC Med Res Methodol 2009;9:86 (PMID 20042080,
+    doi:10.1186/1471-2288-9-86; đã kiểm rút bài 22/11/2026):
+    RIS = 4·(z₁₋α/₂ + z₁₋β)²·p̄(1 − p̄)/δ² × 1/(1 − D²), với p_can_thiệp = p_chứng·(1 − RRR), δ = p_chứng − p_can_thiệp,
+    p̄ = trung bình hai tỷ lệ. Trả số người (làm tròn lên)."""
+    if not (0 < p_chung < 1) or not (0 < giam_tuong_doi < 1) or not (0 <= d2 < 1):
+        raise InvalidEffectSizeError(f"Tham số RIS ngoài miền: p_chứng={p_chung}, RRR={giam_tuong_doi}, D²={d2}")
+    p_ct = p_chung * (1 - giam_tuong_doi)
+    delta = p_chung - p_ct
+    p_tb = (p_chung + p_ct) / 2
+    return math.ceil(4 * (z(alpha / 2) + z(1 - power)) ** 2 * p_tb * (1 - p_tb) / delta ** 2 / (1 - d2))
+
+
+def _so_vn(x, thap_phan=0):
+    """Số kiểu Việt Nam: dấu chấm phân cách hàng nghìn, dấu phẩy thập phân."""
+    s = f"{x:,.{thap_phan}f}"
+    return s.replace(",", "§").replace(".", ",").replace("§", ".")
+
+
 def n_continuous_md(md, sd, alpha=0.05, power=0.80):
     """
     Cỡ mẫu so sánh HAI TRUNG BÌNH độc lập (kết cục LIÊN TỤC — vd thang đau
@@ -1709,6 +1730,7 @@ def main():
     # sĩ]" chung chung — bỏ lỡ hoàn toàn lời giải thích RIS/TSA hoặc pmsampsize
     # đã viết riêng cho 2 thiết kế này. Kiểm design_code == sr_ma/prediction
     # TRƯỚC, không phụ thuộc effect_val còn hay không.
+    ris_khoi = None
     if design_code == "sr_ma":
         # THÊM 2026-07-06: sr_ma là nhánh G1 gán THƯỜNG GẶP (topic có ≥2
         # RCT chưa có SR/MA, hoặc câu hỏi tường minh yêu cầu tổng quan)
@@ -1731,6 +1753,37 @@ def main():
         )
         print("  ⚠️  design=sr_ma → cần RIS/TSA (không phải công thức 1 nghiên cứu) "
               "— KHÔNG bịa số, xem hướng dẫn trong artifact A4")
+        # 22/11/2026: tham số RIS CÓ CẤU TRÚC do thống kê viên ghim (gate_params.G3: p0 = tỷ lệ biến cố nhóm chứng,
+        # power, ris_giam_nguy_co_tuong_doi, ris_d2) ⇒ máy TÍNH LẠI RIS và đối chiếu N đã chốt. Đo thật: checkpoint
+        # G3 tổng quan gộp ghi lực 0,8 · p0 0,3 MẶC ĐỊNH MÁY trong khi đề cương và lời chốt ghi lực 90% · p_chứng 3%.
+        _rrr = _coerce_pinned_float(_g3_pinned.get("ris_giam_nguy_co_tuong_doi"), "ris_giam_nguy_co_tuong_doi") \
+            if _g3_pinned.get("ris_giam_nguy_co_tuong_doi") is not None else None
+        _d2 = _coerce_pinned_float(_g3_pinned.get("ris_d2"), "ris_d2") if _g3_pinned.get("ris_d2") is not None \
+            else None
+
+        def _cua_nguoi(k):
+            return not str(nguon_tham_so.get(k) or "").startswith("mặc định")
+
+        if args.p0 is not None and _rrr is not None and _d2 is not None and _cua_nguoi("p0") and _cua_nguoi("power"):
+            _ris = tinh_ris(args.p0, _rrr, alpha, power, _d2)
+            _lech = abs(_ris - args.confirmed_n) / _ris if args.confirmed_n else None
+            ris_khoi = {"p_chung": args.p0, "giam_nguy_co_tuong_doi": _rrr, "alpha": alpha, "power": power,
+                        "d2": _d2, "ris": _ris, "confirmed_n": args.confirmed_n,
+                        "lech_tuong_doi": round(_lech, 4) if _lech is not None else None,
+                        "khop": (_lech is not None and _lech <= 0.01),
+                        "nguon_cong_thuc": "Wetterslev 2009, BMC Med Res Methodol 9:86, PMID 20042080"}
+            formula_used = (
+                "Cỡ thông tin cần thiết (RIS) cho kết cục nhị phân, hiệu chỉnh độ đa dạng D² (Wetterslev 2009, "
+                f"PMID 20042080): tỷ lệ biến cố nhóm chứng {_so_vn(args.p0 * 100, 1).rstrip('0').rstrip(',')}%, "
+                f"giảm nguy cơ tương đối {_so_vn(_rrr * 100, 1).rstrip('0').rstrip(',')}%, "
+                f"α {_so_vn(alpha, 2)}, lực {_so_vn(power * 100, 1).rstrip('0').rstrip(',')}%, "
+                f"D² {_so_vn(_d2 * 100, 1).rstrip('0').rstrip(',')}% ⇒ RIS = {_so_vn(_ris)} người"
+                + ("" if args.confirmed_n is None else (
+                    f"; khớp N đã chốt {_so_vn(args.confirmed_n)} (lệch {_so_vn(_lech * 100, 2)}%)"
+                    if ris_khoi["khop"] else
+                    f"; LỆCH N đã chốt {_so_vn(args.confirmed_n)} ({_so_vn(_lech * 100, 2)}%) — thống kê viên "
+                    "đối chiếu lại")))
+            print(f"  → RIS tính lại = {_ris} (N chốt {args.confirmed_n})")
     elif design_code == "prediction":
         # THÊM 2026-07-17 (round audit gate — tiếp nối vòng 5): "prediction"
         # (mô hình tiên lượng/TRIPOD+AI) trước đây rơi vào else chung chung.
@@ -2104,6 +2157,17 @@ def main():
             if effect_quality == "crude" else []
         ),
     }
+    if ris_khoi is not None:
+        cp["ris"] = ris_khoi
+    if design_code in N_NOT_APPLICABLE_DESIGNS:
+        # 22/11/2026: thiết kế không dùng công thức lực mẫu ⇒ KHÔNG ghi số MẶC ĐỊNH MÁY (0,8 · 0,3) như thể là tham số
+        # của đề tài — tầng sau đọc checkpoint sẽ tưởng là quyết định của người.
+        for _k in ("power", "p0", "p_event"):
+            if str(nguon_tham_so.get(_k) or "").startswith("mặc định"):
+                cp[_k] = None
+                nguon_tham_so[_k] = "không áp dụng — thiết kế không dùng công thức lực mẫu"
+        cp["tham_so_mac_dinh_may"] = sorted(k for k, v in nguon_tham_so.items()
+                                            if str(v or "").startswith("mặc định"))
     if need is not None:
         cp["needs_input"] = need
     cp_path = out_dir / "G3_checkpoint.json"

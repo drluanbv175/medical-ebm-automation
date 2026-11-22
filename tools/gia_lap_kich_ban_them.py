@@ -615,6 +615,9 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
             },
             "G3": {
                 "confirmed_n": 25462, "dropout": 0.0, "alpha": 0.05,
+                # 22/11/2026: tham số RIS CÓ CẤU TRÚC (thống kê viên ghim) — G3 tính lại RIS theo Wetterslev 2009 và
+                # đối chiếu N đã chốt; trước đây chỉ có trong lời chốt nên checkpoint ghi lực 0,8 · p0 0,3 mặc định máy
+                "p0": 0.03, "power": 0.90, "ris_giam_nguy_co_tuong_doi": 0.25, "ris_d2": 0.25,
                 "hypothesis_type": "superiority",
                 "confirmed_n_method": ("RIS cho kết cục chính: tỷ lệ biến cố nhóm chứng GIẢ ĐỊNH 3%, giảm nguy cơ "
                                        "tương "

@@ -1004,8 +1004,12 @@ def evaluate_g3_quality(
         alpha_issues.append("thiếu alpha")
     elif alpha > ALPHA_CONVENTIONAL_MAX:
         alpha_issues.append(f"alpha={alpha} > {ALPHA_CONVENTIONAL_MAX} (quy ước)")
-    if power is None:
+    if power is None and not n_not_applicable:
         alpha_issues.append("thiếu power")
+    elif power is None:
+        # 22/11/2026: thiết kế không dùng công thức lực mẫu — trước đây tiêu chí này chỉ «PASS» nhờ số MẶC ĐỊNH MÁY 0,8
+        # mà run_g3_auto ghi vào checkpoint (xanh giả); nay checkpoint để None ⇒ «không áp dụng», không phải thiếu.
+        pass
     elif power < POWER_CONVENTIONAL_MIN:
         alpha_issues.append(f"power={power} < {POWER_CONVENTIONAL_MIN} (quy ước)")
     multiplicity = g3.get("multiplicity_strategy")
@@ -1021,7 +1025,9 @@ def evaluate_g3_quality(
             "G3-AUTO-07",
             "Alpha/power trong quy ước và đã xử lý bội/giữa kỳ",
             "REVIEW" if alpha_issues else "PASS",
-            "; ".join(alpha_issues) if alpha_issues else f"alpha={alpha}, power={power}",
+            "; ".join(alpha_issues) if alpha_issues else (
+                f"alpha={alpha}, power={power}" if power is not None
+                else f"alpha={alpha}; power không áp dụng cho thiết kế {design_code}"),
             "Biện minh alpha/power ngoài quy ước; khai chiến lược alpha khi đa kết cục hoặc có giữa kỳ.",
         )
     )
