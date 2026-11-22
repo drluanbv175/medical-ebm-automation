@@ -887,10 +887,11 @@ def loi_k17(md: str, thiet_ke: str) -> List[str]:
     """K17 (21/11/2026, bác sĩ: «từng tiêu chuẩn trong từng cấu trúc đề cương phải đạt tiêu chuẩn», cho MỌI thiết kế) —
     đề cương nộp phải đủ yếu tố của từng mục phương pháp/kế hoạch của mọi chuẩn áp dụng: STROBE 2007 (quan sát), RECORD
     2015 (dữ liệu thường quy), CROSS 2021 (khảo sát bằng bộ câu hỏi), chuẩn Việt Nam (TT43/2024, Luật 91/2025),
-    COSMIN 2021 (kiểm định bộ câu hỏi). Bộ đo ở `kiem_chuan_de_cuong_theo_muc.py`. Chuẩn đã có tiêu chí nhưng bộ sinh
-    chưa phủ (SPIRIT, PRISMA-P, STARD, TRIPOD+AI, GRAMMS, SQUIRE, CHEERS, CARE — `KCM.CHUAN_CHO_BO_SINH`) và chuẩn
-    chưa đối chiếu bảng gốc (TREND, COREQ, SRQR) chỉ CẢNH BÁO (`canh_bao_k17`, in ⚠ kèm) — không chặn, không tính là
-    đạt.
+    COSMIN 2021 (kiểm định bộ câu hỏi), SPIRIT 2025, PRISMA-P 2015, STARD 2015, TRIPOD+AI 2024, CHEERS 2022, GRAMMS 2008
+    và phần mở rộng CONSORT cho thử nghiệm cụm/không kém hơn (22/11/2026 — gỡ tập miễn chặn «chờ bộ sinh phủ»). Bộ đo ở
+    `kiem_chuan_de_cuong_theo_muc.py`. Chuẩn cơ sở của thiết kế CHƯA ĐO ĐƯỢC (SQUIRE, CARE, TREND chưa có văn bản kiểm
+    chứng) là lỗi — không báo đạt; chuẩn đã đối chiếu nhưng chưa bật chặn
+    (`TC.CHUAN_DA_DOI_CHIEU_CHUA_CHAN`) chỉ CẢNH BÁO (`canh_bao_k17`, in ⚠ kèm).
 
     Chặn MỌI đề cương nộp, cả bản nháp cấu trúc cũ 1–7 (21/11/2026): trước đó chỉ chặn bản theo khuôn «# CHƯƠNG 1.»
     (cùng điều kiện K14) vì bộ sinh còn tạo đề cương thiếu ~50 mục chuẩn trên 8 giả lập; nay bộ sinh dựng từng mục từ

@@ -2759,7 +2759,9 @@ TEN_CHU_NHIEM = "BS. Nguyễn Văn A"
 TEN_HOI_DONG = "Hội đồng Đạo đức trong nghiên cứu y sinh học của bệnh viện chủ trì"
 # Hành chính đã chốt của chủ nhiệm (study_meta.administrative) — run_g2_auto điền thẳng vào hồ sơ thay vì để ô.
 HANH_CHINH = {"principal_investigator": TEN_CHU_NHIEM, "pi_title": "Bác sĩ chuyên khoa II",
-              "pi_unit": "Khoa Khám bệnh", "irb_name": TEN_HOI_DONG, "sponsor": "Không có tài trợ bên ngoài"}
+              "pi_unit": "Khoa Khám bệnh", "irb_name": TEN_HOI_DONG, "sponsor": "Không có tài trợ bên ngoài",
+              # 22/11/2026 (SPIRIT 2025 mục 3b): địa chỉ liên hệ của đơn vị chủ trì — địa chỉ tổ chức, không phải PII
+              "dia_chi_don_vi_chu_tri": "Phòng Nghiên cứu khoa học, bệnh viện chủ trì, TP. Hồ Chí Minh"}
 
 # Bản tiếng Anh của phiếu đồng ý do chủ nhiệm song ngữ soạn (gate_params.G2.icf_en) — phần chữ tự do máy không dịch
 # (17/11/2026). Phần chung của đơn vị + phần riêng theo CHỦ ĐỀ (biến thể dùng chủ đề của kịch bản gốc).

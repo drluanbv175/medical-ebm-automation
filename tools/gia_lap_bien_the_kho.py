@@ -78,7 +78,17 @@ def kich_ban_kho() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                "intervention_dose_adherence": "6 lần tái khám qua điện thoại; tuân thủ = số lần gọi thành công",
                "evidence_summary": vi("TEXT4BP (PMID 35342691) báo tỷ lệ đạt đích HA 48–70% sau 3 tháng ở nhóm can "
                                       "thiệp nhắn tin; chưa có thử nghiệm không kém hơn về tái khám qua điện thoại"),
-               "knowledge_gap": vi("Thiếu thử nghiệm không kém hơn về tái khám qua điện thoại tại Việt Nam")})
+               "knowledge_gap": vi("Thiếu thử nghiệm không kém hơn về tái khám qua điện thoại tại Việt Nam"),
+               # 22/11/2026 (CONSORT 2010 mở rộng NI — Piaggio 2012, PMID 23268518 — mục 2a, 4a, 5, 6a)
+               "ni_rationale": vi("Chọn thiết kế không kém hơn vì tái khám qua điện thoại giảm đi lại và thời gian "
+                                  "chờ cho người bệnh; câu hỏi là tỷ lệ kiểm soát có giảm quá biên chấp nhận được "
+                                  "không, không phải chứng minh vượt trội"),
+               "ni_constancy": vi("Hiệu ứng của theo dõi có cấu trúc so với chăm sóc thường quy (cơ sở của biên) lấy "
+                                  "từ TEXT4BP (PMID 35342691): quần thể tương tự (người tăng huyết áp ngoại trú đang "
+                                  "dùng thuốc), nhóm chứng ở đề tài này (tái khám trực tiếp hằng tháng) khác can thiệp "
+                                  "của TEXT4BP (nhắn tin), kết cục tương tự (đạt đích huyết áp) nhưng thời điểm khác "
+                                  "(6 so với 3 tháng) — giả định hằng định chỉ đạt một phần, nêu là hạn chế; giả "
+                                  "thuyết không kém hơn chỉ áp cho kết cục chính, kết cục phụ phân tích thăm dò")})
     g1["estimand"] = {**g1["estimand"], "treatment_condition": "Tái khám qua điện thoại so với trực tiếp",
                       "population_summary_measure": "Hiệu số tỷ lệ (điện thoại − trực tiếp); biên không kém hơn −10 "
                                                     "điểm %"}
@@ -125,7 +135,17 @@ def kich_ban_kho() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                "recruitment_strategy": "Tuyển liên tiếp ĐÚNG 8 người bệnh đủ tiêu chuẩn mỗi phòng khám (40 phòng "
                                        "khám — cỡ chùm đều)",
                "allocation_concealment": "Phòng khám được phân bổ trước khi tuyển người bệnh, do thống kê viên độc "
-                                         "lập"})
+                                         "lập",
+               # 22/11/2026 (CONSORT 2010 mở rộng cụm — Campbell 2012, PMID 22951546 — mục 2b, 3a, 4a, 5, 6a, 10c)
+               "cluster_definition": vi("Cụm là phòng khám ngoại trú; chương trình tin nhắn (can thiệp) triển khai ở "
+                                        "mức cụm (toàn phòng khám), còn mục tiêu và kết cục chính (kiểm soát huyết áp "
+                                        "tháng 6) đánh giá ở mức cá nhân người bệnh"),
+               "cluster_eligibility": ["Phòng khám ngoại trú thuộc chương trình của bệnh viện chủ trì, có bác sĩ "
+                                       "quản lý tăng huyết áp", "Mỗi tháng có ít nhất 8 người tăng huyết áp đủ tiêu "
+                                       "chuẩn đến khám", "Chưa triển khai chương trình nhắc uống thuốc bằng tin nhắn"],
+               "cluster_consent": vi("Lãnh đạo từng phòng khám ký đồng ý tham gia trước khi ngẫu nhiên hoá cụm; từng "
+                                     "người bệnh được giải thích và ký phiếu đồng ý sau khi phòng khám đã được phân "
+                                     "bổ, trước khi thu thập số liệu")})
     # ICC: Adams 2004 (PMID 15485730) — ICC huyết áp tâm thu 0–0,052 ở 4 bộ dữ liệu chăm sóc ban đầu ⇒ 0,05 là cận
     # trên (bảo thủ). 40 phòng khám CỐ ĐỊNH (≥ 40 chùm: không cần hiệu chỉnh mẫu nhỏ — Kahan 2016) × 8 người = 320.
     g3.update({"icc": 0.05, "cluster_size": 8, "n_clusters": 40, "confirmed_n": 320, "equal_cluster_sizes": True,
@@ -281,6 +301,9 @@ def kich_ban_kho() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                          "ngưỡng để người đọc tự đặt ngưỡng"),
         "patient_involvement": ("Không có người bệnh tham gia thiết kế phân tích kinh tế (ghi rõ theo CHEERS 2022 mục "
                                 "21)"),
+        # 22/11/2026 (CHEERS 2022 mục 19)
+        "distributional_effects": vi("Không phân tích tác động phân bố theo nhóm thu nhập hay vùng vì phiếu thu thập "
+                                     "không ghi thu nhập và mẫu từ một cơ sở; nêu là hạn chế khi diễn giải"),
         "bien_nhom": "nhom", "bien_chi_phi": "chi_phi_6t", "bien_hieu_qua": "kiem_soat_t6"}
     hs = kt["ho_so_tron_vong"]
     hs["g6"] = list(hs["g6"]) + [{
@@ -460,7 +483,7 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
                       ("Kết quả — per-protocol", "Báo cáo phân tích theo đề cương cạnh ITT")],
         "cau_hoi": ["Biên 10 điểm % được chọn dựa trên nghiên cứu nào?",
                     "Bao nhiêu người ở nhóm điện thoại phải chuyển sang khám trực tiếp?"],
-        "checklist": "CONSORT 2010 mở rộng không kém hơn (PMID 23268269)"})
+        "checklist": "CONSORT 2010 mở rộng không kém hơn (PMID 23268518)"})
     hs["dac_ta_G10"].update({
         "summary": ("Bối cảnh: tái khám từ xa có thể giảm gánh nặng đi lại. Mục tiêu: đánh giá tái khám qua điện thoại "
                     "có không kém hơn tái khám trực tiếp về kiểm soát huyết áp 6 tháng. Phương pháp: RCT không kém "
@@ -498,7 +521,16 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
                                "ten_bai": "Chương trình tin nhắn theo phòng khám và kiểm soát huyết áp",
                                "checklist": "CONSORT 2010 mở rộng thử nghiệm cụm (PMID 22951546)"})
     hs["dac_ta_G10"].update({"randomization_type": "Ngẫu nhiên theo cụm (phòng khám) tỷ lệ 1:1, phân tầng theo quy "
-                                                   "mô (SPIRIT 21b)"})
+                                                   "mô (SPIRIT 21b)",
+                             # 22/11/2026 (CONSORT mở rộng cụm mục 10a): người sinh trình tự, mời và phân bổ CỤM — bản
+                             # kế thừa từ RCT cá nhân («người tuyển mở phong bì kế tiếp») sai với thiết kế cụm
+                             "allocation_access_control": ("Thống kê viên độc lập sinh và giữ danh sách phân bổ phòng "
+                                                           "khám; chủ nhiệm mời phòng khám tham gia; sau khi lãnh đạo "
+                                                           "phòng khám đồng ý, thống kê viên thông báo nhánh cho "
+                                                           "phòng khám (SPIRIT 23)")})
+    # thống kê viên chọn cách tính cấu trúc cụm ở SAP §4 (khớp G6: Poisson sai số chuẩn theo cụm phòng khám)
+    hs["tra_loi_G4"] = [(r"cau truc cum", "Hồi quy Poisson với sai số chuẩn theo cụm (cluster-robust), phòng khám là "
+                                          "cụm")] + list(hs.get("tra_loi_G4") or [])
     kb["rct_cum"]["ho_so_tron_vong"] = hs
 
     # ── 3. sống còn

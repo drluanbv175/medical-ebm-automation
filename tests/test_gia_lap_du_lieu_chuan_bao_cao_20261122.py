@@ -292,7 +292,7 @@ def test_coreq_srqr_da_doi_chieu_ghi_nguon_dung_va_van_chi_canh_bao():
     import kiem_chuan_de_cuong_theo_muc as K  # noqa: PLC0415
     import tieu_chi_chuan_de_cuong as TC  # noqa: PLC0415
 
-    assert set(TC.CHUAN_CHUA_DOI_CHIEU_GOC) == {"TREND 2004"}
+    assert set(TC.CHUAN_CHUA_DOI_CHIEU_GOC) == set()  # 22/11/2026: TREND 2004 đã đối chiếu Bảng 1 bản gốc
     for chuan, nguon in (("COREQ 2007", ("PMC12567161", "PMC12731783")), ("SRQR 2014", ("PMC12027544",))):
         ghi_chu = TC.CHUAN_DA_DOI_CHIEU_CHUA_CHAN[chuan]
         # nói đúng sự thật: đối chiếu bản in lại toàn văn trong nguồn CC BY, không nói «đã đối chiếu bài gốc»
@@ -300,7 +300,8 @@ def test_coreq_srqr_da_doi_chieu_ghi_nguon_dung_va_van_chi_canh_bao():
         assert all(p in ghi_chu for p in nguon)
         muc = TC.danh_sach_muc_them(chuan)
         assert muc and all(m.chan is False and m.ly_do_khong_chan == ghi_chu for m in muc)
-    assert all(m.chan is False and m.ly_do_khong_chan == "" for m in TC.danh_sach_muc_them("TREND 2004"))
+    # 22/11/2026: TREND 2004 đối chiếu Bảng 1 bản gốc ⇒ mục chặn (chưa có văn bản kiểm chứng: «chưa đo được» ở K17)
+    assert all(m.chan is True for m in TC.danh_sach_muc_them("TREND 2004"))
     md = "## TÊN\n\n# 4. ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP NGHIÊN CỨU\n\n## 4.1. Thiết kế nghiên cứu\n\nNghiên cứu định tính."
     coreq = [r for r in K.doi_chieu(md, "qualitative")["ket_qua"]
              if r.chuan == "COREQ 2007" and r.trang_thai == "canh_bao"]

@@ -279,7 +279,11 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 "stopping_rescue_rules": ("Ngừng tin nhắn khi người tham gia yêu cầu; huyết áp ≥ 180/110 mmHg chuyển "
                                           "xử trí theo phác đồ"),
                 "critical_to_quality": _vi("Đo huyết áp chuẩn hoá (máy đã hiệu chuẩn, 2 lần đo); mất theo dõi < 20%"),
-                "monitoring_plan": _vi("Giám sát an toàn định kỳ 3 tháng"),
+                # 22/11/2026 (SPIRIT 2025 mục 29): giám sát VIỆC THỰC HIỆN thử nghiệm (tần suất + quy trình), không chỉ
+                # giám sát an toàn
+                "monitoring_plan": _vi("Giám sát việc thực hiện thử nghiệm định kỳ 3 tháng: người không tham gia "
+                                       "tuyển đối chiếu ngẫu nhiên 10% phiếu thu thập với hồ sơ gốc, kiểm tra phiếu "
+                                       "đồng ý đã ký và việc tuân thủ đề cương; giám sát an toàn theo cùng nhịp"),
                 "randomisation": _vi("Danh sách ngẫu nhiên khối hoán vị cỡ 4–6 sinh bằng phần mềm, tỷ lệ 1:1"),
                 "allocation_concealment": ("Phân bổ trung tâm qua phong bì đánh số kín do người không tham gia "
                                            "tuyển giữ"),

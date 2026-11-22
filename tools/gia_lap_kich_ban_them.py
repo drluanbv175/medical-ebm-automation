@@ -402,6 +402,9 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "stopping_rescue_rules": "Không áp dụng — không can thiệp; kết quả bất thường chuyển bác sĩ điều trị",
                 "critical_to_quality": vi("Làm mù người đo đàn hồi với FIB-4; tiêu chuẩn đo hợp lệ thống nhất"),
                 "monitoring_plan": vi("Kiểm chất lượng đo đàn hồi hằng tháng"),
+                # 22/11/2026 (STARD 2015 mục 13a, 13b): che giấu kết quả hai chiều
+                "blinding": vi("Xét nghiệm đánh giá (FIB-4) được tính từ tuổi, AST, ALT và tiểu cầu trước khi có kết "
+                               "quả tiêu chuẩn tham chiếu; người đo độ đàn hồi gan không biết kết quả FIB-4"),
             },
             "G3": {
                 "effect_size": 0.76, "effect_type": "AUC", "prevalence": 0.3, "dropout": 0.1,
@@ -503,6 +506,12 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "critical_to_quality": vi("Định nghĩa yếu tố dự báo và kết cục cố định trước; người xác định kết cục "
                                           "không biết giá trị yếu tố dự báo"),
                 "monitoring_plan": vi("Kiểm dữ liệu thiếu và biến cố mỗi quý"),
+                # 22/11/2026 (TRIPOD+AI 2024 mục 9b): cách đo và thời điểm đo yếu tố dự báo
+                "predictor_measurement_timing": vi("Mọi yếu tố dự báo được đo và ghi nhận tại lần khám tuyển: tuổi, "
+                                                   "giới, NYHA, đái tháo đường và tiền sử nhập viện qua phỏng vấn và "
+                                                   "hồ sơ; NT-proBNP, eGFR, natri, hemoglobin từ xét nghiệm máu trong "
+                                                   "ngày khám tuyển; phân suất tống máu từ siêu âm tim gần nhất trong "
+                                                   "3 tháng trước khám tuyển"),
             },
             "G3": {
                 "confirmed_n": 900, "dropout": 0.05, "alpha": 0.05,
@@ -575,7 +584,10 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "population": ("Người trưởng thành đái tháo đường típ 2 không có suy tim lúc vào nghiên cứu"),
                 "inclusion_criteria": ["Thử nghiệm ngẫu nhiên có đối chứng", "Người trưởng thành ĐTĐ típ 2",
                                        "So sánh thuốc ức chế SGLT2 với giả dược hoặc điều trị chuẩn",
-                                       "Báo cáo nhập viện vì suy tim"],
+                                       "Báo cáo nhập viện vì suy tim",
+                                       # 22/11/2026 (PRISMA-P 2015 mục 8 — đặc điểm báo cáo)
+                                       "Không giới hạn ngôn ngữ, năm công bố hay tình trạng xuất bản (gồm cả thử "
+                                       "nghiệm đã đăng ký có kết quả chưa công bố)"],
                 "exclusion_criteria": ["Thử nghiệm chỉ tuyển người suy tim lúc đầu", "Theo dõi < 24 tuần",
                                        "Không tách được số liệu nhóm không suy tim"],
                 "setting": "Tổng quan dữ liệu đã công bố (không có cơ sở tuyển)",
@@ -587,6 +599,11 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 "search_strategy": ("Chiến lược tìm kết hợp MeSH và từ khoá cho thuốc ức chế SGLT2, ĐTĐ típ 2 và bộ "
                                     "lọc RCT Cochrane; báo cáo theo PRISMA-S"),
                 "search_last_date": "2027-06-30",
+                # 22/11/2026 (PRISMA-P 2015 mục 9, 11a): khoảng thời gian bao phủ và cách quản lý hồ sơ tìm kiếm
+                "search_period": "Từ khi thành lập mỗi cơ sở dữ liệu đến ngày tìm cuối 30/06/2027",
+                "records_management": vi("Kết quả tìm kiếm được nhập vào EndNote để loại bản trùng; sàng lọc tiêu đề–"
+                                         "tóm tắt và toàn văn trên Rayyan; bảng trích xuất kép lưu trên máy có phân "
+                                         "quyền, sao lưu hằng tuần"),
                 "study_selection_process": ("Hai người sàng lọc độc lập tiêu đề–tóm tắt rồi toàn văn; bất đồng do "
                                             "người thứ ba quyết định"),
                 "recruitment_strategy": "Không áp dụng — dữ liệu đã công bố",
@@ -1354,6 +1371,12 @@ def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
         "tong_quan_gop": {"tra_loi_G4": [
             # 16/11/2026: SAP tổng quan–gộp có khung riêng (§5 tổng hợp, §6 thiếu cấp nghiên cứu, §10 metafor)
             (r"thuoc do hieu ung", "RR (nguy cơ tương đối) — kết cục nhị phân nhập viện vì suy tim"),
+            # 22/11/2026 (PRISMA-P 2015 mục 15a, 15d)
+            (r"dieu kien gop", "Chỉ gộp khi có ít nhất 2 thử nghiệm báo cùng kết cục và tương đồng lâm sàng về quần "
+                               "thể, can thiệp và định nghĩa nhập viện vì suy tim"),
+            (r"tong hop khi khong gop", "Tổng hợp mô tả theo hướng dẫn SWiM: nhóm thử nghiệm theo thuốc, trình bày RR "
+                                        "và KTC 95% từng thử nghiệm trong bảng và biểu đồ rừng không có ước lượng "
+                                        "gộp"),
             (r"phan mem", "R 4.6 (metafor 4.6); kiểm chéo SPSS 31"),
             (r"packages", "metafor 4.6, meta 8.0"),
         ] + _tra_loi_sap(

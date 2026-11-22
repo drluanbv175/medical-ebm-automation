@@ -198,7 +198,206 @@ def _de_tai(tmp_path: Path, thiet_ke: str = "rct") -> Path:
         {"muc_tieu": "1", "khai_niem": "tuổi", "vai_tro": "hiep_bien", "bien": "tuoi", "kieu": "lien_tuc",
          "cau_hoi": "A1", "cong_cu": "phiếu", "phan_tich_sap": "SAP §5", "ghi_chu": ""},
     ])
+    _day_du_theo_chuan(d, thiet_ke)
     return d
+
+
+# 22/11/2026 (K17 gỡ miễn chặn SPIRIT/PRISMA-P/STARD/TRIPOD+AI): đề tài thử của thiết kế có chuẩn đề cương riêng phải là
+# đề tài HOÀN CHỈNH theo chuẩn đó — mang đủ quyết định một đề tài thật có (như kịch bản giả lập trọn vòng), không thì
+# bản sinh ra đúng là thiếu mục và bị chặn. Thiết kế quan sát/định tính giữ nguyên dữ kiện cũ (đã đạt K17).
+_ICF_THEM = """
+5. QUYỀN LỢI VÀ HỖ TRỢ
+   ☐ Có hỗ trợ: hỗ trợ chi phí đi lại cho mỗi lần tái khám theo định mức của đơn vị chủ trì.
+   Nếu có tổn hại do nghiên cứu, đơn vị chủ trì sẽ chi trả toàn bộ chi phí khám và điều trị tổn hại đó.
+
+6c. RÚT KHỎI NGHIÊN CỨU
+   Nếu anh/chị ngừng can thiệp hoặc rút khỏi nghiên cứu, chúng tôi vẫn sẽ liên hệ theo dõi tình trạng sức khỏe.
+"""
+_SAP_THU_NGHIEM = """
+### §13 PHÂN TÍCH GIỮA KỲ VÀ QUY TẮC DỪNG
+
+- **Có phân tích giữa kỳ:** không
+- **Nếu không có phân tích giữa kỳ:** can thiệp hành vi nguy cơ tối thiểu, theo dõi ngắn
+- **Quy tắc dừng:** không dừng sớm vì hiệu quả; chỉ dừng khi Hội đồng Đạo đức yêu cầu vì lý do an toàn
+
+### §14 HỘI ĐỒNG THEO DÕI DỮ LIỆU VÀ AN TOÀN
+
+- **Có DMC:** không
+- **Nếu không cần:** can thiệp nguy cơ tối thiểu; chủ nhiệm theo dõi an toàn qua báo cáo biến cố hằng tháng
+
+### §15 TỔN HẠI, NGỪNG CAN THIỆP VÀ TUÂN THỦ
+
+- **Định nghĩa tổn hại:** biến cố bất lợi liên quan can thiệp (phàn nàn, lo âu, cơn tăng huyết áp)
+- **Cách đánh giá:** hỏi chủ động tại mỗi lần tái khám và ghi phiếu biến cố
+- **Tiêu chí ngừng:** ngừng tin nhắn khi người tham gia yêu cầu; chuyển xử trí khi huyết áp ≥ 180/110 mmHg
+- **Tuân thủ:** tỷ lệ tin nhắn gửi thành công và tự báo cáo dùng thuốc tại tháng 3 và tháng 6
+"""
+_DAY_DU: dict = {
+    "rct": {
+        "g1": {"design_rationale": "Thiết kế do BÁC SĨ pin trong study_meta.json. Lý do của PI: So sánh hai chiến "
+                                   "lược chăm sóc ngoại trú — thử nghiệm song song hai nhánh, tỷ lệ 1:1",
+               "secondary_outcomes": ["Thay đổi huyết áp tâm thu tại tháng 6"],
+               "benefit_risk_rationale": "Can thiệp nguy cơ tối thiểu, lợi ích tiềm năng tăng tuân thủ",
+               "allocation_concealment": "Phân bổ trung tâm qua phong bì đánh số kín do người không tham gia tuyển "
+                                         "giữ",
+               "intervention_dose_adherence": "1 tin nhắn/ngày trong 6 tháng; tuân thủ đo bằng tỷ lệ tin nhắn gửi "
+                                              "thành công",
+               "monitoring_plan": "Giám sát việc thực hiện thử nghiệm định kỳ 3 tháng: người không tham gia tuyển "
+                                  "đối chiếu 10% phiếu với hồ sơ gốc"},
+        "meta": {"summary": "Bối cảnh: kiểm soát huyết áp còn thấp. Mục tiêu: so sánh tỷ lệ kiểm soát huyết áp giữa "
+                            "hai nhóm. Phương pháp: thử nghiệm ngẫu nhiên hai nhánh.",
+                 "registration_plan": "Đăng ký trên ClinicalTrials.gov trước khi tuyển người tham gia đầu tiên",
+                 "dissemination_plan": "Báo cáo tại đơn vị và nộp tạp chí đích",
+                 "ppi_plan": "Hai người bệnh góp ý nội dung tin nhắn trước khi tuyển; kết quả gửi người tham gia "
+                             "bằng tờ tóm tắt",
+                 "protocol_amendment_plan": "Mọi sửa đổi quan trọng của đề cương được trình Hội đồng Đạo đức chấp "
+                                            "thuận trước khi áp dụng và cập nhật trên ClinicalTrials.gov",
+                 "concomitant_care_policy": "Mọi điều chỉnh thuốc hạ áp theo bác sĩ điều trị ở cả hai nhánh",
+                 "allocation_access_control": "Thống kê viên độc lập sinh và giữ trình tự; người tuyển chỉ mở phong "
+                                              "bì kế tiếp sau khi người tham gia ký đồng thuận",
+                 "blinding_how": "Tách riêng người gửi tin nhắn và người đo huyết áp; phiếu đo không ghi nhánh",
+                 "unblinding_procedure": "Mở mù chỉ khi có biến cố cần biết nhánh, do chủ nhiệm quyết định và ghi "
+                                         "biên bản"},
+        "adm": {"dia_chi_don_vi_chu_tri": "Phòng Nghiên cứu khoa học, bệnh viện chủ trì, TP. Hồ Chí Minh"},
+        "sap": _SAP_THU_NGHIEM, "icf": _ICF_THEM,
+        "ma_tran": [{"muc_tieu": "1", "khai_niem": "biến cố bất lợi (tổn hại)", "vai_tro": "mo_ta", "bien": "bien_co",
+                     "kieu": "nhi_phan", "cau_hoi": "S1", "cong_cu": "phiếu biến cố", "phan_tich_sap": "SAP §15",
+                     "ghi_chu": ""}],
+    },
+}
+
+_SAP_TONG_QUAN = """
+### §3 THỐNG KÊ MÔ TẢ
+
+- Mô tả đặc điểm các nghiên cứu được đưa vào (thiết kế, cỡ mẫu, quần thể, can thiệp), PRISMA 2020
+
+### §5 TỔNG HỢP ĐỊNH LƯỢNG
+
+- **Thước đo hiệu ứng:** RR (nguy cơ tương đối)
+- **Mô hình gộp:** hiệu ứng ngẫu nhiên (REML) là chính; hiệu ứng cố định ở độ nhạy
+- **Không đồng nhất:** I², τ² và kiểm định Q
+- **Sai lệch công bố / hiệu ứng nghiên cứu nhỏ:** biểu đồ phễu và kiểm định Egger khi ≥ 10 nghiên cứu
+- **Mức chắc chắn:** GRADE cho từng kết cục
+- **Điều kiện gộp định lượng:** chỉ gộp khi có ít nhất 2 thử nghiệm tương đồng lâm sàng
+- **Tổng hợp khi không gộp được:** tổng hợp mô tả theo SWiM
+
+### §9 PHÂN TÍCH ĐỘ NHẠY
+
+- Loại nghiên cứu nguy cơ sai lệch cao (RoB 2)
+
+### §6b DỮ LIỆU THIẾU CẤP NGHIÊN CỨU
+
+- **Chiến lược:** liên hệ tác giả xin dữ liệu thiếu
+"""
+#: dòng nối vào CUỐI mục §4 (phân tích chính) của SAP mẫu theo thiết kế
+_SAP4_CHAN_DOAN = ("- **Độ chính xác:** ROC, AUC, độ nhạy và độ đặc hiệu tại ngưỡng định trước, kèm khoảng tin cậy "
+                   "95% (Wilson)\n")
+_SAP4_DU_BAO = """- **Mô hình:** hồi quy logistic; phân biệt (C-statistic), hiệu chuẩn, phân tích đường cong quyết định
+- **Kiểm định nội:** tập phát triển; hiệu chỉnh lạc quan bằng bootstrap
+- **Phương pháp chọn biến:** yếu tố dự báo định trước theo y văn, đưa vào toàn bộ (không stepwise)
+"""
+_DAY_DU["sr_ma"] = {
+    "g1": {"research_question": "Ở người đái tháo đường típ 2, thuốc ức chế SGLT2 có giảm nhập viện vì suy tim so "
+                                "với giả dược không?",
+           "inclusion_criteria": ["Thử nghiệm ngẫu nhiên có đối chứng", "Người trưởng thành đái tháo đường típ 2",
+                                  "Không giới hạn ngôn ngữ, năm công bố hay tình trạng xuất bản"],
+           "secondary_outcomes": ["Tử vong tim mạch"],
+           "information_sources": ["PubMed/MEDLINE", "Embase", "Cochrane CENTRAL", "ClinicalTrials.gov"],
+           "search_strategy": "MeSH và từ khoá cho thuốc ức chế SGLT2 và đái tháo đường típ 2",
+           "search_last_date": "2027-06-30",
+           "study_selection_process": "Hai người sàng lọc độc lập tiêu đề–tóm tắt rồi toàn văn",
+           "search_period": "Từ khi thành lập mỗi cơ sở dữ liệu đến 30/06/2027",
+           "records_management": "Nhập EndNote để loại bản trùng; sàng lọc trên Rayyan",
+           "critical_to_quality": "Trích xuất kép độc lập; hai người đánh giá RoB 2"},
+    "meta": {"registration_plan": "Đăng ký trên PROSPERO trước khi bắt đầu tìm kiếm",
+             "bias_risks": "Sai lệch công bố; sai lệch chọn nghiên cứu",
+             "bias_controls": "Hai người sàng lọc độc lập; RoB 2; độ nhạy loại thử nghiệm nguy cơ sai lệch cao",
+             "search_strings_full": 'PubMed: ("Diabetes Mellitus, Type 2"[MeSH]) AND (gliflozin*[tiab])',
+             "protocol_amendment_plan": "Mọi sửa đổi quan trọng của đề cương được cập nhật trên PROSPERO kèm ngày "
+                                        "và lý do"},
+    "g7": {"authors": "BS. Nguyễn Văn A (chủ nhiệm) · ThS. Trần Thị B (thống kê viên) — Phòng khám",
+           "author_contributions": "Tác giả 1: ý tưởng, sàng lọc; Tác giả 2: phân tích"},
+    "g9": {"authorship": {"guarantor_author_ref": "AUTHOR-01"}},
+    "sap": _SAP_TONG_QUAN,
+}
+_DAY_DU["diagnostic"] = {
+    "g1": {"target_condition": "Xơ hoá gan tiến triển", "intervention_or_exposure": "Chỉ số FIB-4",
+           "recruitment_strategy": "Tuyển liên tiếp người bệnh đủ tiêu chuẩn đến khám",
+           "reference_standard": "Đo độ đàn hồi gan ≥ 10 kPa",
+           "blinding": "Xét nghiệm đánh giá (FIB-4) được tính trước khi có kết quả tiêu chuẩn tham chiếu; người đo "
+                       "độ đàn hồi gan không biết kết quả FIB-4"},
+    "meta": {"registration_plan": "Đăng ký trên ClinicalTrials.gov trước khi tuyển người tham gia đầu tiên",
+             "index_test_role": "Xét nghiệm phân loại ban đầu tại phòng khám, trước khi chỉ định đo đàn hồi gan",
+             "reference_standard_rationale": "Đo đàn hồi gan được chọn làm chuẩn tham chiếu vì làm được cho mọi người "
+                                             "tham gia trong cùng lần khám",
+             "index_threshold_rationale": "Ngưỡng 2,67 định trước, dựa trên y văn gốc",
+             "reference_threshold_rationale": "Ngưỡng 10 kPa được dùng vì tương ứng xơ hoá F3–F4",
+             "disease_severity_variable": "kiem_soat", "alternative_diagnosis_variable": "nhom"},
+    "sap4": _SAP4_CHAN_DOAN,
+}
+_DAY_DU["prediction"] = {
+    "g1": {"candidate_predictors": ["Tuổi", "NT-proBNP"], "prediction_horizon": "12 tháng kể từ lần khám tuyển",
+           "primary_outcome": {"name": "Nhập viện trong 12 tháng", "measure": "Nhập viện ≥ 24 giờ đối chiếu giấy "
+                                                                              "ra viện",
+                               "timepoint": "Trong 12 tháng kể từ lần khám tuyển"},
+           "design_rationale": "Thuần tập tiến cứu phát triển mô hình dự báo nhập viện; mô hình đã có cho dự báo "
+                               "tiên lượng chỉ đạt mức vừa",
+           "predictor_measurement_timing": "Mọi yếu tố dự báo được đo và ghi nhận tại lần khám tuyển; NT-proBNP từ "
+                                           "xét nghiệm máu",
+           "study_schema_timeline": "Tuyển → đo yếu tố dự báo → theo dõi 12 tháng → phát triển và kiểm định nội",
+           "objectives": ["Phát triển và kiểm định nội một mô hình dự báo nguy cơ nhập viện trong 12 tháng"]},
+    "meta": {"registration_plan": "Đăng ký trên ClinicalTrials.gov trước khi tuyển người tham gia đầu tiên",
+             "bias_controls": "Yếu tố dự báo định trước theo y văn; EPV ≥ 10; bootstrap hiệu chỉnh lạc quan",
+             "limitations": "Chưa kiểm định ngoài; một cơ sở",
+             "model_intended_use": "Hỗ trợ bác sĩ phân tầng nguy cơ; người dùng dự kiến là bác sĩ phòng khám",
+             "health_inequalities": "Khác biệt theo giới được đánh giá bằng phân nhóm tiền định",
+             "model_treatment_handling": "Điều trị không đưa vào mô hình làm yếu tố dự báo",
+             "outcome_assessment_blinding": "Người xác định nhập viện không biết giá trị yếu tố dự báo",
+             "model_output_threshold": "Mô hình cho xác suất; không đặt ngưỡng phân loại vì mục đích là phân tầng",
+             "model_fairness_approach": "C-statistic ước lượng riêng theo giới để xem tính công bằng",
+             "ppi_plan": "Không có sự tham gia của người bệnh hoặc công chúng trong thiết kế",
+             "model_input_handling": "Chưa áp dụng mô hình khi thiếu giá trị đầu vào",
+             "model_user_interaction": "Người dùng nhập bốn giá trị có sẵn, không cần kỹ năng thống kê",
+             "model_next_steps": "Kiểm định bên ngoài trên cơ sở khác trước khi dùng cho quyết định cá nhân",
+             "literature_consensus": "Các mô hình đã có dự báo tiên lượng nhập viện vì suy tim chỉ đạt khả năng phân "
+                                     "biệt mức vừa (Smith 2020, PMID 11111111)"},
+    "sap4": _SAP4_DU_BAO,
+}
+
+
+def _day_du_theo_chuan(d: Path, thiet_ke: str) -> None:
+    them = _DAY_DU.get(thiet_ke)
+    if not them:
+        return
+    p = d / "study_meta.json"
+    m = json.loads(p.read_text(encoding="utf-8"))
+    m["gate_params"]["G1"].update(them.get("g1") or {})
+    m["gate_params"].setdefault("G7", {}).update(them.get("g7") or {})
+    m["administrative"].update(them.get("adm") or {})
+    m.update(them.get("meta") or {})
+    p.write_text(json.dumps(m, ensure_ascii=False), encoding="utf-8", newline="\n")
+    q = d / f"G4_A5_SAP_FINAL_{MA}.md"
+    if them.get("sap"):
+        q.write_text(q.read_text(encoding="utf-8").replace("\n---\n", them["sap"] + "\n---\n"), encoding="utf-8",
+                     newline="\n")
+    if them.get("sap4"):
+        q.write_text(q.read_text(encoding="utf-8").replace("\n### §5 ", them["sap4"] + "\n### §5 ", 1),
+                     encoding="utf-8", newline="\n")
+    if them.get("icf"):
+        q = d / f"G2_A3_ETHICS_PACKAGE_{MA}.md"
+        q.write_text(q.read_text(encoding="utf-8").replace("Họ tên người tham gia:", them["icf"].strip("\n")
+                                                           + "\n\nHọ tên người tham gia:"), encoding="utf-8",
+                     newline="\n")
+    if them.get("g9"):
+        q = d / "G9_PUBLICATION_READINESS.json"
+        g9 = json.loads(q.read_text(encoding="utf-8"))
+        g9.update(them["g9"])
+        q.write_text(json.dumps(g9, ensure_ascii=False), encoding="utf-8", newline="\n")
+    if them.get("ma_tran"):
+        q = d / "_ma-tran-muc-tieu-bien.csv"
+        with q.open(encoding="utf-8", newline="") as fh:
+            hang = list(csv.DictReader(fh))
+        _ghi_csv(q, hang + list(them["ma_tran"]))
 
 
 # ───────────────────────────────────────────────────────────────────────────────────────────── làm sạch câu chữ
