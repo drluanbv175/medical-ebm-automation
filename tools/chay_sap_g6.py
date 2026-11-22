@@ -98,6 +98,8 @@ THAM_SO = {
     "n_chung": ("--n-chung", "s"),
     # 22/11/2026 (PRISMA 2020 mục 20c): phân nhóm tiền định của SAP §7 — gộp riêng từng nhóm + Q giữa nhóm
     "phan_nhom": ("--phan-nhom", "s"),
+    # 22/11/2026 (việc B): dự báo — số lần bootstrap hiệu chỉnh lạc quan của SAP §9
+    "bootstrap": ("--bootstrap", "nguyen"),
     "chu_de": ("--chu-de", "s"),
     # 16/11/2026 (biến thể khó): đánh giá chi phí–hiệu quả đi kèm thử nghiệm — CHEERS 2022
     "nhom": ("--nhom", "s"),
@@ -157,6 +159,11 @@ def doc_dac_ta(d: Path) -> dict:
     return dt
 
 
+#: Khoảng hợp lệ của tham số số nguyên (mặc định 0–200: số bộ gán đa trị). Bootstrap hiệu chỉnh lạc quan (22/11/2026):
+#: SAP thường khai 200–2.000 lần; trần 5.000 giữ thời gian chạy hữu hạn (mỗi lần khớp lại mô hình ở Python và R).
+KHOANG_NGUYEN = {"bootstrap": (0, 5000)}
+
+
 def _kiem_gia_tri(ten: str, kieu: str, v) -> list[str]:
     def chuoi_an_toan(x) -> bool:
         return isinstance(x, str) and x.strip() != "" and not x.strip().startswith("-") and "\n" not in x
@@ -173,8 +180,9 @@ def _kiem_gia_tri(ten: str, kieu: str, v) -> list[str]:
         if isinstance(v, bool) or not isinstance(v, (int, float)):
             return [f"{ten}: cần một số"]
     elif kieu == "nguyen":
-        if isinstance(v, bool) or not isinstance(v, int) or not 0 <= v <= 200:
-            return [f"{ten}: cần số nguyên 0–200"]
+        lo, hi = KHOANG_NGUYEN.get(ten, (0, 200))
+        if isinstance(v, bool) or not isinstance(v, int) or not lo <= v <= hi:
+            return [f"{ten}: cần số nguyên {lo}–{hi}"]
     elif kieu == "loai":
         if v not in DAC_THU:
             return [f"{ten}: phải thuộc {DAC_THU}"]
@@ -524,6 +532,10 @@ def _tom_tat_uoc_luong(tom: dict) -> dict:
                                "do_nhay": dt_["do_nhay"]["uoc_luong"], "do_dac_hieu": dt_["do_dac_hieu"]["uoc_luong"]}
         elif loai == "du_bao":
             ra["du_bao"] = {"c_statistic": dt_["c_statistic"]["auc"], "brier": dt_["brier"]}
+            bt = dt_.get("bootstrap") or {}
+            if bt:  # 22/11/2026 (việc B): chỉ số hiệu chỉnh lạc quan (Python) + bản R chạy thật
+                ra["du_bao"]["bootstrap"] = {k: bt.get(k) for k in ("B_hop_le", "c_hieu_chinh", "do_doc_hieu_chinh",
+                                                                    "citl_hieu_chinh", "r", "kiem_cheo_r")}
         elif loai == "gop":
             ra["gop"] = {"rr": dt_["rr_gop_ngau_nhien"], "ci_95": dt_["ci_95"], "i2": dt_["i2_pct"], "k": dt_["k"]}
             eg, pn = dt_.get("egger") or {}, dt_.get("phan_nhom") or {}

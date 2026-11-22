@@ -1319,9 +1319,11 @@ def sap_g6_tron_vong() -> Dict[str, Dict[str, Any]]:
                    _sd_khong_ap_dung("mô hình dự báo — định nghĩa thay thế chưa khai cụ thể"),
                    {"id": "DN_bootstrap", "vai": "do_nhay", "sap_muc": "§9",
                     "sap_neo": "Bootstrap 500 lần để hiệu chỉnh lạc quan",
-                    "mo_ta": "Hiệu chỉnh lạc quan bằng bootstrap",
-                    "chua_tu_dong": "chạy rms::validate trong kịch bản R đã sinh (r/G6_du_bao.R, B tuỳ SAP) — "
-                                    "engine Python báo C-statistic trong mẫu"}]},
+                    "mo_ta": "Hiệu chỉnh lạc quan bằng bootstrap 500 lần: C, độ dốc hiệu chuẩn, CITL",
+                    # 22/11/2026 (việc B): chạy THẬT — kế thừa mô hình chính (cùng quần thể, cùng yếu tố dự báo) +
+                    # bootstrap 500 lần; Python + R cùng thuật toán + rms::validate, đối chiếu theo sai số Monte Carlo
+                    # (trước: «chưa tự động», chỉ có C-statistic trong mẫu)
+                    "ke_thua": True, "tham_so": {"bootstrap": 500}}]},
         "tong_quan_gop": {"tra_loi_G4": [
             # 16/11/2026: SAP tổng quan–gộp có khung riêng (§5 tổng hợp, §6 thiếu cấp nghiên cứu, §10 metafor)
             (r"thuoc do hieu ung", "RR (nguy cơ tương đối) — kết cục nhị phân nhập viện vì suy tim"),

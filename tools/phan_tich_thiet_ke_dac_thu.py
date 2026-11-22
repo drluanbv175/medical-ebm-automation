@@ -65,8 +65,15 @@ LOAI = {
     "dinh_tinh": ("chu_de",),
     "kinh_te": ("nhom", "chi_phi", "hieu_qua", "nguong_wtp"),
 }
-#: tham số TUỲ CHỌN theo loại (22/11/2026): gộp — biến phân nhóm tiền định của SAP §7 (Q giữa nhóm)
-LOAI_TUY_CHON = {"gop": ("phan_nhom",)}
+#: tham số TUỲ CHỌN theo loại (22/11/2026): gộp — biến phân nhóm tiền định của SAP §7 (Q giữa nhóm); dự báo — số lần
+#: bootstrap hiệu chỉnh lạc quan (SAP §9). `THAM_SO_SO`: tham số tuỳ chọn là SỐ, không phải tên cột dữ liệu.
+LOAI_TUY_CHON = {"gop": ("phan_nhom",), "du_bao": ("bootstrap",)}
+THAM_SO_SO = frozenset({"bootstrap"})
+#: Bootstrap hiệu chỉnh lạc quan (Harrell, Lee & Mark, Stat Med 1996, PMID 8668867): hạt giống cố định; R dùng cùng
+#: thuật toán với bộ sinh số của R ⇒ đối chiếu theo sai số Monte Carlo √(Var(lạc quan)/B), lượng tử z(1 − α/2).
+HAT_GIONG_BOOT = 20261115
+ALPHA_BOOT = 1e-4
+DUNG_SAI_CUNG_MAU = 1e-6  # R tự lặp ↔ rms::validate khi rút cùng mẫu bootstrap (xem so_khop_bootstrap)
 SO_LAP_KT, HAT_GIONG_KT = 2000, 20261115  # bootstrap kinh tế: số lần lặp + seed (ghi vào kết quả, R dùng cùng seed)
 BOI_SO_WTP = (0.0, 0.25, 0.5, 1.0, 1.5, 2.0, 3.0)  # CEAC: λ = bội số × ngưỡng WTP SAP khai
 NHAN_GOC = {"dong_bac": "Đông Bắc (tốn hơn, hiệu quả hơn)", "dong_nam": "Đông Nam (rẻ hơn, hiệu quả hơn)",
@@ -135,7 +142,70 @@ def chan_doan(hang: List[Dict[str, Any]], tham_chieu: str, chi_so: str, nguong: 
     return kq
 
 
-def du_bao(hang: List[Dict[str, Any]], outcome: str, covariates: List[str]) -> Dict[str, Any]:
+def _auc_nhanh(y, x) -> float:
+    """AUC = thống kê Mann–Whitney chuẩn hoá (hạng trung bình cho giá trị trùng) — như auc_mann_whitney, vector hoá."""
+    import numpy as np  # noqa: PLC0415
+    from scipy.stats import rankdata  # noqa: PLC0415
+
+    y = np.asarray(y)
+    r = rankdata(np.asarray(x, dtype=float))
+    n1 = float(y.sum())
+    n0 = float(len(y) - n1)
+    return float((r[y == 1].sum() - n1 * (n1 + 1) / 2) / (n1 * n0))
+
+
+def _chi_so_hieu_chuan(y, lp) -> tuple:
+    """(C, độ dốc hiệu chuẩn, calibration-in-the-large) của dự báo lp (thang logit) trên kết cục y: độ dốc = hệ số của
+    logit(P(y)) = a + b·lp; CITL = a khi cố định b = 1 (offset lp)."""
+    import numpy as np  # noqa: PLC0415
+    import statsmodels.api as sm  # noqa: PLC0415
+
+    c = _auc_nhanh(y, lp)
+    doc = sm.GLM(y, sm.add_constant(lp, has_constant="add"), family=sm.families.Binomial()).fit(tol=1e-10).params[1]
+    citl = sm.GLM(y, np.ones((len(y), 1)), family=sm.families.Binomial(), offset=lp).fit(tol=1e-10).params[0]
+    return float(c), float(doc), float(citl)
+
+
+def bootstrap_lac_quan(y, X, B: int, hat_giong: int = HAT_GIONG_BOOT) -> Dict[str, Any]:
+    """Hiệu chỉnh lạc quan bằng bootstrap (Harrell): mỗi lần lấy mẫu lại có hoàn lại n ca, khớp lại mô hình trên mẫu
+    bootstrap, lạc quan = chỉ số trên mẫu bootstrap − chỉ số của mô hình đó trên dữ liệu GỐC; chỉ số hiệu chỉnh = chỉ số
+    biểu kiến − trung bình lạc quan. Báo C hiệu chỉnh, độ dốc hiệu chuẩn hiệu chỉnh, CITL hiệu chỉnh + sai số Monte
+    Carlo √(Var(lạc quan)/B hợp lệ). Lần lấy mẫu chỉ một loại kết cục hoặc không hội tụ ⇒ bỏ, đếm."""
+    import numpy as np  # noqa: PLC0415
+    import statsmodels.api as sm  # noqa: PLC0415
+
+    rng = np.random.default_rng(hat_giong)
+    n = len(y)
+    m0 = sm.Logit(y, X).fit(disp=0, maxiter=200, method="newton", tol=1e-12)
+    bieu_kien = np.array(_chi_so_hieu_chuan(y, X @ m0.params))
+    lq, bo = [], 0
+    for _ in range(B):
+        idx = rng.integers(0, n, n)
+        yb, xb = y[idx], X[idx]
+        if yb.sum() in (0, n):
+            bo += 1
+            continue
+        try:
+            mb = sm.Logit(yb, xb).fit(disp=0, maxiter=200, method="newton", tol=1e-10)
+        except Exception:  # noqa: BLE001 — tách hoàn toàn trên mẫu bootstrap ⇒ bỏ lần đó, đếm
+            bo += 1
+            continue
+        if not mb.mle_retvals.get("converged", True):
+            bo += 1
+            continue
+        lq.append(np.array(_chi_so_hieu_chuan(yb, xb @ mb.params)) - np.array(_chi_so_hieu_chuan(y, X @ mb.params)))
+    lq = np.asarray(lq)
+    tb = lq.mean(axis=0)
+    mc = lq.std(axis=0, ddof=1) / np.sqrt(len(lq))
+    ten = ("c", "do_doc", "citl")
+    return {"B": B, "B_hop_le": int(len(lq)), "bo": bo, "hat_giong": hat_giong,
+            "bieu_kien": dict(zip(ten, map(float, bieu_kien))), "lac_quan_tb": dict(zip(ten, map(float, tb))),
+            "c_hieu_chinh": float(bieu_kien[0] - tb[0]), "do_doc_hieu_chinh": float(bieu_kien[1] - tb[1]),
+            "citl_hieu_chinh": float(bieu_kien[2] - tb[2]), "mcse": dict(zip(ten, map(float, mc))),
+            "phuong_phap": "bootstrap hiệu chỉnh lạc quan Harrell (khớp lại mô hình trên từng mẫu bootstrap)"}
+
+
+def du_bao(hang: List[Dict[str, Any]], outcome: str, covariates: List[str], B: int = 0) -> Dict[str, Any]:
     import numpy as np  # noqa: PLC0415
     import statsmodels.api as sm  # noqa: PLC0415
 
@@ -148,10 +218,14 @@ def du_bao(hang: List[Dict[str, Any]], outcome: str, covariates: List[str]) -> D
               "ci_95": [float(math.exp(lo)), float(math.exp(hi))], "p": float(pv)}
              for ten, b, (lo, hi), pv in zip(["(hằng số)", *covariates], m.params, ci, m.pvalues)]
     c = auc_mann_whitney([int(v) for v in y], [float(v) for v in p])
-    return {"he_so": he_so, "c_statistic": c, "brier": float(np.mean((y - p) ** 2)), "n": int(len(y)),
-            "n_bien_co": int(y.sum()), "epv": round(float(y.sum()) / max(1, len(covariates)), 2),
-            "ghi_chu": "C-statistic trong mẫu (lạc quan); hiệu chỉnh lạc quan bằng bootstrap ở kịch bản R "
-                       "(rms::validate)"}
+    ra = {"he_so": he_so, "c_statistic": c, "brier": float(np.mean((y - p) ** 2)), "n": int(len(y)),
+          "n_bien_co": int(y.sum()), "epv": round(float(y.sum()) / max(1, len(covariates)), 2),
+          "ghi_chu": "C-statistic trong mẫu (lạc quan)"}
+    if B:
+        ra["bootstrap"] = bootstrap_lac_quan(y, X, int(B))
+        ra["ghi_chu"] = (f"C-statistic trong mẫu (lạc quan) + hiệu chỉnh lạc quan bằng bootstrap {int(B)} lần "
+                         "(Python; kiểm chéo bằng R cùng thuật toán + rms::validate)")
+    return ra
 
 
 def _o_rr(a: float, n1: float, c: float, n0: float):
@@ -379,7 +453,7 @@ def tinh(loai: str, hang: List[Dict[str, Any]], ts: Dict[str, Any],
     if loai == "chan_doan":
         return chan_doan(hang, ts["tham_chieu"], ts["chi_so"], float(ts["nguong"]))
     if loai == "du_bao":
-        return du_bao(hang, ts["outcome"], list(ts["covariates"]))
+        return du_bao(hang, ts["outcome"], list(ts["covariates"]), int(ts.get("bootstrap") or 0))
     if loai == "gop":
         return gop(hang, ts["nhan_nghien_cuu"], ts["su_kien_can_thiep"], ts["n_can_thiep"], ts["su_kien_chung"],
                    ts["n_chung"], ts.get("phan_nhom") or None, nhan_nhom)
@@ -596,6 +670,76 @@ def _g4_da_khoa(study: str) -> None:
 
 
 # ─────────────────────────────── kịch bản R / SPSS ───────────────────────────────
+def _r_bootstrap(y: str, cv: List[str], B: int) -> str:
+    """R: CÙNG thuật toán bootstrap lạc quan với Python (lặp tay, glm) + rms::validate làm tham chiếu ngoài cho C và độ
+    dốc. Ghi chỉ số hiệu chỉnh + sai số Monte Carlo để đối chiếu."""
+    ct = f'{y} ~ {" + ".join(cv)}'
+    return (
+        "# ── Hiệu chỉnh lạc quan bằng bootstrap (Harrell) — cùng thuật toán với Python ──\n"
+        "auc_mw <- function(yy, xx) { r <- rank(xx); n1 <- sum(yy == 1); n0 <- length(yy) - n1\n"
+        "  (sum(r[yy == 1]) - n1 * (n1 + 1) / 2) / (n1 * n0) }\n"
+        "chi_so <- function(yy, lp) c(auc_mw(yy, lp), coef(glm(yy ~ lp, family = binomial()))[2],\n"
+        "  coef(glm(yy ~ 1, offset = lp, family = binomial()))[1])\n"
+        f"m0 <- glm({ct}, data = df, family = binomial(), control = glm.control(epsilon = 1e-14, maxit = 200))\n"
+        f"yy <- df[[\"{y}\"]]; X <- model.matrix(m0)\n"
+        "bk <- chi_so(yy, as.vector(X %*% coef(m0)))\n"
+        f"set.seed({HAT_GIONG_BOOT}); n <- nrow(df); LQ <- NULL; bo <- 0\n"
+        f"for (b in seq_len({B})) {{\n"
+        "  idx <- sample.int(n, n, replace = TRUE); yb <- yy[idx]; xb <- X[idx, , drop = FALSE]\n"
+        "  if (sum(yb) %in% c(0, n)) { bo <- bo + 1; next }\n"
+        "  mb <- tryCatch(suppressWarnings(glm.fit(xb, yb, family = binomial(), control = glm.control(1e-10, 200))),\n"
+        "                 error = function(e) NULL)\n"
+        "  if (is.null(mb) || !mb$converged) { bo <- bo + 1; next }\n"
+        "  LQ <- rbind(LQ, chi_so(yb, as.vector(xb %*% mb$coefficients)) -\n"
+        "              chi_so(yy, as.vector(X %*% mb$coefficients)))\n"
+        "}\n"
+        "tb <- colMeans(LQ); mc <- apply(LQ, 2, sd) / sqrt(nrow(LQ))\n"
+        'ghi("c_hieu_chinh", bk[1] - tb[1]); ghi("do_doc_hieu_chinh", bk[2] - tb[2]); '
+        'ghi("citl_hieu_chinh", bk[3] - tb[3])\n'
+        'ghi("mcse_c", mc[1]); ghi("mcse_do_doc", mc[2]); ghi("mcse_citl", mc[3]); ghi("B_hop_le", nrow(LQ))\n'
+        "# Tham chiếu ngoài: rms::validate (bootstrap của rms, cùng B) — C hiệu chỉnh = 0,5 + Dxy/2\n"
+        f"set.seed({HAT_GIONG_BOOT}); v <- rms::validate(rms::lrm({ct}, data = df, x = TRUE, y = TRUE), B = {B})\n"
+        'ghi("rms_c_hieu_chinh", 0.5 + v["Dxy", "index.corrected"] / 2); '
+        'ghi("rms_do_doc_hieu_chinh", v["Slope", "index.corrected"]); ghi("rms_B_hop_le", v["Dxy", "n"])\n'
+        "print(v)\n"
+    )
+
+
+def so_khop_bootstrap(bt: Dict[str, Any], r: Dict[str, float]) -> Dict[str, Any]:
+    """Đối chiếu chỉ số bootstrap Python ↔ R theo SAI SỐ MONTE CARLO: hai phía cùng thuật toán, khác bộ sinh số ⇒
+    |Py − R| ≤ z(1 − α/2)·√(MCSE_Py² + MCSE_R²).
+
+    R tự lặp ↔ rms::validate: cùng set.seed thì rms rút ĐÚNG các mẫu bootstrap như vòng lặp tay (đo 22/11/2026: C trùng
+    tuyệt đối, độ dốc lệch 7e-10 do ngưỡng hội tụ lrm ≠ glm.fit) ⇒ khi CẢ HAI giữ đủ B lần, so TẤT ĐỊNH |Δ| ≤ 1e-6 —
+    phép này bắt lỗi cách tính chỉ số (C, độ dốc) của vòng lặp tay, thứ dung sai Monte Carlo để lọt. Có lần bị bỏ (tách
+    hoàn toàn, không hội tụ) thì hai bên có thể bỏ khác lần ⇒ mẫu không còn trùng ⇒ dung sai z·√2·MCSE_R."""
+    from scipy.stats import norm  # noqa: PLC0415
+
+    z = float(norm.ppf(1 - ALPHA_BOOT / 2))
+    lech, chi_tiet = [], []
+    for k, kr in (("c", "c"), ("do_doc", "do_doc"), ("citl", "citl")):
+        khoa = f"{k}_hieu_chinh"
+        if khoa not in r or f"mcse_{kr}" not in r:
+            lech.append(f"{khoa}: R thiếu")
+            continue
+        tol = z * (bt["mcse"][k] ** 2 + r[f"mcse_{kr}"] ** 2) ** 0.5
+        d = abs(bt[khoa] - r[khoa])
+        chi_tiet.append(f"{khoa}: Python {bt[khoa]:.4f} · R {r[khoa]:.4f} · |Δ| {d:.4f} ≤ {tol:.4f}")
+        if d > tol:
+            lech.append(f"{khoa}: |Δ| {d:.4f} > dung sai Monte Carlo {tol:.4f}")
+    cung_mau = (r.get("B_hop_le") is not None and r.get("B_hop_le") == r.get("rms_B_hop_le") == bt.get("B"))
+    for k, kr in (("c", "rms_c_hieu_chinh"), ("do_doc", "rms_do_doc_hieu_chinh")):
+        if kr in r and f"{k}_hieu_chinh" in r:
+            tol = DUNG_SAI_CUNG_MAU if cung_mau else z * 2 ** 0.5 * r[f"mcse_{k}"]
+            d = abs(r[f"{k}_hieu_chinh"] - r[kr])
+            chi_tiet.append(f"R tự lặp ↔ rms::validate {k} ({'cùng mẫu, tất định' if cung_mau else 'Monte Carlo'}): "
+                            f"|Δ| {d:.2g} ≤ {tol:.2g}")
+            if d > tol:
+                lech.append(f"R tự lặp ↔ rms::validate {k}: |Δ| {d:.4f} > {tol:.4f}")
+    return {"trang_thai": "KHOP" if not lech else "LECH", "lech": lech, "chi_tiet": chi_tiet,
+            "dung_sai": f"z(1 − {ALPHA_BOOT:g}/2) = {z:.3f} × sai số Monte Carlo"}
+
+
 def kich_ban_r(loai: str, ts: Dict[str, Any], csv_p: Path, ra: Path) -> str:
     dau = (f'# R — {loai} (sinh bởi phan_tich_thiet_ke_dac_thu.py; chạy được trong RStudio)\n'
            f'df <- read.csv("{csv_p.as_posix()}", stringsAsFactors = FALSE, check.names = FALSE)\n'
@@ -619,9 +763,10 @@ def kich_ban_r(loai: str, ts: Dict[str, Any], csv_p: Path, ra: Path) -> str:
                 f'ghi("brier", mean((df[["{y}"]] - p)^2))\n'
                 + "".join(f'ghi("or_{c}", exp(coef(m)[["{c}"]]))\n' for c in cv)
                 + 'print(summary(m)); print(exp(cbind(OR = coef(m), confint.default(m))))\n'
-                  '# Hiệu chỉnh lạc quan (bootstrap 200 lần, seed cố định) — C hiệu chỉnh = Dxy/2 + 0.5:\n'
-                  f'set.seed(20261115); v <- rms::validate(rms::lrm({y} ~ {" + ".join(cv)}, data = df, x = TRUE, '
-                  'y = TRUE), B = 200)\nprint(v)\n')
+                + (_r_bootstrap(y, cv, int(ts["bootstrap"])) if ts.get("bootstrap") else
+                   '# Hiệu chỉnh lạc quan (bootstrap 200 lần, seed cố định) — C hiệu chỉnh = Dxy/2 + 0.5:\n'
+                   f'set.seed(20261115); v <- rms::validate(rms::lrm({y} ~ {" + ".join(cv)}, data = df, x = TRUE, '
+                   'y = TRUE), B = 200)\nprint(v)\n'))
     elif loai == "gop":
         than = (f'es <- metafor::escalc(measure = "RR", ai = df[["{ts["su_kien_can_thiep"]}"]], '
                 f'n1i = df[["{ts["n_can_thiep"]}"]], ci = df[["{ts["su_kien_chung"]}"]], '
@@ -812,7 +957,7 @@ def so_khop(py: Dict[str, float], khac: Dict[str, float], chi: Optional[Sequence
 
 
 def kiem_cheo(loai: str, ts: Dict[str, Any], hang: List[Dict[str, Any]], d: Path, gate: str,
-              py: Dict[str, float]) -> Dict[str, Any]:
+              py: Dict[str, float], boot: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     can = [b for b, _ in _gia_tri_spss(loai, ts)]
     tam = Path(tempfile.mkdtemp(prefix="ptdt_"))
     ket: Dict[str, Any] = {}
@@ -838,6 +983,14 @@ def kiem_cheo(loai: str, ts: Dict[str, Any], hang: List[Dict[str, Any]], d: Path
                                 cwd=str(tam), check=False)
             ket["r"] = (so_khop(py, _doc_kq_r(r_ra)) if r_ra.is_file() else
                         {"trang_thai": "LOI", "lech": [(kq.stderr or kq.stdout).strip()[-400:]]})
+            if boot is not None and r_ra.is_file():  # bootstrap lạc quan — sai số Monte Carlo, không đòi khớp tất định
+                kr = _doc_kq_r(r_ra)
+                sb = so_khop_bootstrap(boot, kr)
+                ket["r"]["bootstrap"] = {**sb, "r": {k: kr[k] for k in kr if "hieu_chinh" in k or k.startswith(
+                    ("mcse_", "B_hop_le"))}}
+                if sb["trang_thai"] == "LECH" and ket["r"]["trang_thai"] == "KHOP":
+                    ket["r"]["trang_thai"] = "LECH"
+                    ket["r"]["lech"] = ket["r"].get("lech", []) + sb["lech"]
         except Exception as e:  # noqa: BLE001 — không chạy được R ⇒ KHÔNG ĐO ĐƯỢC, không phải «khớp»
             ket["r"] = {"trang_thai": "KHONG_DO_DUOC", "lech": [f"{type(e).__name__}: {e}"]}
         # SPSS
@@ -889,6 +1042,16 @@ def md_ket_qua(study: str, gate: str, loai: str, kq: Dict[str, Any], kc: Optiona
                "| Yếu tố | OR | KTC 95% | p |", "|---|---|---|---|"]
         dl += [f"| {h['bien']} | {so(h['or'])} | {so(h['ci_95'][0])}–{so(h['ci_95'][1])} | {so(h['p'], 4)} |"
                for h in kq["he_so"][1:]]
+        bt = kq.get("bootstrap")
+        if bt:  # 22/11/2026 (việc B): hiệu chỉnh lạc quan — Python và R chạy thật, cùng bảng
+            r = bt.get("r") or {}
+            dl += ["", f"Hiệu chỉnh lạc quan bằng bootstrap {bt['B']} lần ({bt['B_hop_le']} lần hợp lệ):", "",
+                   "| Chỉ số | Biểu kiến | Hiệu chỉnh (Python) | Hiệu chỉnh (R) |", "|---|---|---|---|"]
+            for k, nhan in (("c", "C-statistic"), ("do_doc", "Độ dốc hiệu chuẩn"),
+                            ("citl", "Calibration-in-the-large")):
+                dl.append(f"| {nhan} | {so(bt['bieu_kien'][k])} | {so(bt[k + '_hieu_chinh'])} | "
+                          f"{so(r.get(k + '_hieu_chinh'))} |")
+            dl += ["", f"Đối chiếu Python ↔ R theo sai số Monte Carlo: {bt.get('kiem_cheo_r') or '—'}"]
     elif loai == "gop":
         dl += [f"- RR gộp (ngẫu nhiên, DL) = {so(kq['rr_gop_ngau_nhien'])} (KTC 95% {so(kq['ci_95'][0])}–"
                f"{so(kq['ci_95'][1])}); RR cố định = {so(kq['rr_gop_co_dinh'])}; τ² = {so(kq['tau2'], 4)}; "
@@ -957,14 +1120,20 @@ def chay(study: str, gate: str, loai: str, ts: Dict[str, Any], kiem_cheo_bat: bo
         raise TuChoi(f"thiếu tham số: {', '.join(thieu)}")
     _g4_da_khoa(study)
     can = ([ts[k] for k in LOAI[loai] if k not in ("nguong", "covariates", "nguong_wtp")]
-           + list(ts.get("covariates") or []) + [ts[k] for k in LOAI_TUY_CHON.get(loai, ()) if ts.get(k)])
+           + list(ts.get("covariates") or [])
+           + [ts[k] for k in LOAI_TUY_CHON.get(loai, ()) if ts.get(k) and k not in THAM_SO_SO])
     hang, csv_khoa, bo = doc_du_lieu(study, can, ts.get("loc"))
     print(f"✓ Đọc dữ liệu khoá {csv_khoa.name}: {len(hang)} ca dùng được (loại {bo} ca thiếu dữ liệu)")
     nhan_nhom = _nhan_lua_chon(study, toi_thieu=2).get(str(ts["phan_nhom"])) if ts.get("phan_nhom") else None
     kq = tinh(loai, hang, ts, nhan_nhom)
     d = thu_muc_de_tai(study)
     py = cac_so_doi_chieu(loai, kq)
-    kc = kiem_cheo(loai, ts, hang, d, gate, py) if kiem_cheo_bat else None
+    boot = kq.get("bootstrap") if loai == "du_bao" else None
+    kc = kiem_cheo(loai, ts, hang, d, gate, py, boot) if kiem_cheo_bat else None
+    if boot is not None:  # chỉ số hiệu chỉnh lạc quan của R (chạy thật) vào tóm tắt, cạnh số của Python
+        boot["r"] = ((kc or {}).get("phan_mem", {}).get("r", {}).get("bootstrap") or {}).get("r") if kc else None
+        boot["kiem_cheo_r"] = ((kc or {}).get("phan_mem", {}).get("r", {}).get("bootstrap") or {}).get("trang_thai") \
+            if kc else "CHUA_CHAY"
     import cau_noi_spss as S  # noqa: PLC0415
 
     man = S.tim_du_lieu_khoa(study)[1] or {}  # cùng hàm kiểm khoá đã dùng khi đọc dữ liệu ở trên
@@ -1017,6 +1186,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     ap.add_argument("--nguong-wtp", dest="nguong_wtp", type=float, default=None,
                     help="kinh_te: ngưỡng sẵn lòng chi trả cho một đơn vị hiệu quả (SAP khai)")
     ap.add_argument("--covariates", default="")
+    ap.add_argument("--bootstrap", type=int, default=None,
+                    help="du_bao: số lần bootstrap hiệu chỉnh lạc quan (SAP §9) — C, độ dốc hiệu chuẩn, CITL")
     ap.add_argument("--loc", default=None, help="biểu thức lọc quần thể (nhóm con/độ nhạy) — như run_stats_analysis")
     ap.add_argument("--kiem-cheo", action="store_true")
     a = ap.parse_args(argv)
