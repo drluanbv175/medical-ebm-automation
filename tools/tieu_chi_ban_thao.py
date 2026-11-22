@@ -96,9 +96,14 @@ _O_TRONG_SINH = (
 )
 
 
+#: Tiền tố chương của báo cáo tổng hợp/luận văn («CHƯƠNG 3. KẾT QUẢ…», «CHAPTER 2 METHODS») — đo thật 22/11/2026: K18
+#: áp lên báo cáo nghiệm thu không nhận chương nào vì tên chương bắt đầu bằng «CHƯƠNG n.» ⇒ mọi mục báo «thiếu» giả.
+_CHUONG_RE = re.compile(r"^\s*(?:CHƯƠNG|CHAPTER)\s+(?:[IVXLC]+|\d+)\s*[.:)\-–—]?\s*", re.IGNORECASE)
+
+
 def _ten(td: str) -> str:
-    """Tên đề mục để so: bỏ nhấn mạnh Markdown và số thứ tự đầu («2.», «II.», «4.1.»)."""
-    return _SO_TT_RE.sub("", re.sub(r"[*_`]", "", td)).strip()
+    """Tên đề mục để so: bỏ nhấn mạnh Markdown, tiền tố chương («CHƯƠNG 3.») và số thứ tự đầu («2.», «II.», «4.1.»)."""
+    return _SO_TT_RE.sub("", _CHUONG_RE.sub("", re.sub(r"[*_`]", "", td))).strip()
 
 
 def khoa_imrad(td: str) -> Optional[str]:
