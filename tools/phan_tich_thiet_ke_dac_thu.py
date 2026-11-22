@@ -65,8 +65,15 @@ LOAI = {
     "dinh_tinh": ("chu_de",),
     "kinh_te": ("nhom", "chi_phi", "hieu_qua", "nguong_wtp"),
 }
-#: tham số TUỲ CHỌN theo loại (22/11/2026): gộp — biến phân nhóm tiền định của SAP §7 (Q giữa nhóm)
-LOAI_TUY_CHON = {"gop": ("phan_nhom",)}
+#: tham số TUỲ CHỌN theo loại (22/11/2026): gộp — biến phân nhóm tiền định của SAP §7 (Q giữa nhóm) và `mo_hinh`
+#: («ngau_nhien» mặc định = DerSimonian–Laird của phân tích chính; «co_dinh» = nghịch đảo phương sai — độ nhạy SAP §9
+#: «Hiệu ứng cố định so với hiệu ứng ngẫu nhiên»). Cả hai luôn được tính trong MỘT lượt; `mo_hinh` chọn ước lượng báo
+#: làm kết quả của mục đặc tả và đại lượng kiểm chéo metafor (method = "DL" hay "FE").
+LOAI_TUY_CHON = {"gop": ("phan_nhom", "mo_hinh"),
+                 # định tính: cột mã của người mã hoá THỨ HAI (cùng bộ mã, gán độc lập) ⇒ kappa Cohen (SAP §9
+                 # confirmability) — số và tỷ lệ cặp trùng báo kèm
+                 "dinh_tinh": ("chu_de_nguoi_2",)}
+MO_HINH_GOP = ("ngau_nhien", "co_dinh")
 SO_LAP_KT, HAT_GIONG_KT = 2000, 20261115  # bootstrap kinh tế: số lần lặp + seed (ghi vào kết quả, R dùng cùng seed)
 BOI_SO_WTP = (0.0, 0.25, 0.5, 1.0, 1.5, 2.0, 3.0)  # CEAC: λ = bội số × ngưỡng WTP SAP khai
 NHAN_GOC = {"dong_bac": "Đông Bắc (tốn hơn, hiệu quả hơn)", "dong_nam": "Đông Nam (rẻ hơn, hiệu quả hơn)",
@@ -304,7 +311,20 @@ def gop(hang: List[Dict[str, Any]], nhan: str, a: str, n1: str, c: str, n0: str,
     return ra
 
 
-def dinh_tinh(hang: List[Dict[str, Any]], chu_de: str) -> Dict[str, Any]:
+def dong_thuan_hai_nguoi(hang: List[Dict[str, Any]], a: str, b: str) -> Dict[str, Any]:
+    """Kappa Cohen giữa hai người mã hoá trên các bản có CẢ HAI mã — dùng `phan_tich_sap_bo_sung._kappa` (một công thức
+    kappa cho mọi đường G6)."""
+    import phan_tich_sap_bo_sung as PSB  # noqa: PLC0415
+
+    cap = [(str(r.get(a) or "").strip(), str(r.get(b) or "").strip()) for r in hang]
+    cap = [(x, y) for x, y in cap if x and y]
+    k = PSB._kappa([x for x, _ in cap], [y for _, y in cap]) if cap else None
+    return {"cot_nguoi_1": a, "cot_nguoi_2": b, "n_cap": len(cap), "n_trung": sum(1 for x, y in cap if x == y),
+            "ty_le_trung": (sum(1 for x, y in cap if x == y) / len(cap)) if cap else None, "kappa": k,
+            "cach_tinh": "kappa Cohen trên các bản có mã của cả hai người (một mã chính mỗi bản)"}
+
+
+def dinh_tinh(hang: List[Dict[str, Any]], chu_de: str, chu_de_nguoi_2: Optional[str] = None) -> Dict[str, Any]:
     dem: Dict[str, int] = {}
     for r in hang:
         v = str(r.get(chu_de) or "").strip()
@@ -314,7 +334,8 @@ def dinh_tinh(hang: List[Dict[str, Any]], chu_de: str) -> Dict[str, Any]:
     return {"n_ban_go_bang": n, "so_chu_de": len(dem),
             "chu_de": [{"chu_de": k, "n": v, "pct": 100 * v / n, "ty_le": v / n, "ci_95_wilson": wilson(v, n)}
                        for k, v in sorted(dem.items(), key=lambda x: -x[1])],
-            "ghi_chu": "Tần suất mô tả các mã đã gán — không thay phân tích chủ đề của nhóm nghiên cứu (COREQ/SRQR)"}
+            "ghi_chu": "Tần suất mô tả các mã đã gán — không thay phân tích chủ đề của nhóm nghiên cứu (COREQ/SRQR)",
+            **({"dong_thuan_hai_nguoi": dong_thuan_hai_nguoi(hang, chu_de, chu_de_nguoi_2)} if chu_de_nguoi_2 else {})}
 
 
 def _phan_vi(xs: Sequence[float], q: float) -> float:
@@ -385,7 +406,7 @@ def tinh(loai: str, hang: List[Dict[str, Any]], ts: Dict[str, Any],
                    ts["n_chung"], ts.get("phan_nhom") or None, nhan_nhom)
     if loai == "kinh_te":
         return kinh_te(hang, ts["nhom"], ts["chi_phi"], ts["hieu_qua"], float(ts["nguong_wtp"]))
-    return dinh_tinh(hang, ts["chu_de"])
+    return dinh_tinh(hang, ts["chu_de"], ts.get("chu_de_nguoi_2") or None)
 
 
 def cac_so_doi_chieu(loai: str, kq: Dict[str, Any]) -> Dict[str, float]:
@@ -398,7 +419,10 @@ def cac_so_doi_chieu(loai: str, kq: Dict[str, Any]) -> Dict[str, float]:
                 **{f"or_{h['bien']}": h["or"] for h in kq["he_so"][1:]}}
     if loai == "gop":
         ra = {"rr_gop": kq["rr_gop_ngau_nhien"], "ci_duoi": kq["ci_95"][0], "ci_tren": kq["ci_95"][1],
-              "tau2": kq["tau2"], "i2": kq["i2_pct"]}
+              "tau2": kq["tau2"], "i2": kq["i2_pct"],
+              # hiệu ứng cố định (nghịch đảo phương sai) — metafor::rma(method = "FE"); so ở MỌI lượt gộp
+              "rr_gop_co_dinh": kq["rr_gop_co_dinh"], "ci_duoi_co_dinh": kq["ci_95_co_dinh"][0],
+              "ci_tren_co_dinh": kq["ci_95_co_dinh"][1]}
         hu = kq.get("hieu_ung_tuyet_doi") or {}
         if hu:
             ra |= {"nguy_co_chung": hu["nguy_co_nhom_chung"], "hieu_so_1000": hu["hieu_so_moi_1000"]}
@@ -416,7 +440,9 @@ def cac_so_doi_chieu(loai: str, kq: Dict[str, Any]) -> Dict[str, float]:
               "hieu_qua_tb_1": kq["hieu_qua_tb"]["can_thiep"], "hieu_qua_tb_0": kq["hieu_qua_tb"]["so_sanh"],
               "delta_c": kq["delta_c"], "delta_e": kq["delta_e"]}
         return ra | ({"icer": kq["icer"]} if kq["icer"] is not None else {})
-    return {f"n_{i}": c["n"] for i, c in enumerate(kq["chu_de"])}
+    ra = {f"n_{i}": c["n"] for i, c in enumerate(kq["chu_de"])}
+    dt = kq.get("dong_thuan_hai_nguoi") or {}
+    return ra | ({"kappa": dt["kappa"]} if dt.get("kappa") is not None else {})
 
 
 # ─────────────────────────────── dữ liệu khoá ───────────────────────────────
@@ -630,6 +656,10 @@ def kich_ban_r(loai: str, ts: Dict[str, Any], csv_p: Path, ra: Path) -> str:
                 'm <- metafor::rma(yi, vi, data = es, method = "DL")\n'
                 'ghi("rr_gop", exp(as.numeric(m$b))); ghi("ci_duoi", exp(m$ci.lb)); ghi("ci_tren", exp(m$ci.ub))\n'
                 'ghi("tau2", m$tau2); ghi("i2", m$I2)\nprint(m)\n'
+                # SAP §9 «hiệu ứng cố định so với ngẫu nhiên»: nghịch đảo phương sai, cùng yi/vi
+                'mf <- metafor::rma(yi, vi, data = es, method = "FE")\n'
+                'ghi("rr_gop_co_dinh", exp(as.numeric(mf$b))); ghi("ci_duoi_co_dinh", exp(mf$ci.lb)); '
+                'ghi("ci_tren_co_dinh", exp(mf$ci.ub))\nprint(mf)\n'
                 # 22/11/2026: hiệu ứng tuyệt đối của bảng tóm tắt phát hiện (GRADE) — cùng cách tính Python
                 f'ncc <- sum(df[["{ts["su_kien_chung"]}"]]) / sum(df[["{ts["n_chung"]}"]])\n'
                 'ghi("nguy_co_chung", ncc); ghi("hieu_so_1000", 1000 * ncc * (exp(as.numeric(m$b)) - 1))\n'
@@ -665,7 +695,13 @@ def kich_ban_r(loai: str, ts: Dict[str, Any], csv_p: Path, ra: Path) -> str:
     else:
         cd = ts["chu_de"]
         than = (f'bang <- sort(table(df[["{cd}"]][df[["{cd}"]] != ""]), decreasing = TRUE)\n'
-                'for (i in seq_along(bang)) ghi(sprintf("n_%d", i - 1), as.numeric(bang[[i]]))\nprint(bang)\n')
+                'for (i in seq_along(bang)) ghi(sprintf("n_%d", i - 1), as.numeric(bang[[i]]))\nprint(bang)\n'
+                + (f'a <- trimws(df[["{cd}"]]); b <- trimws(df[["{ts["chu_de_nguoi_2"]}"]])\n'
+                   '# Kappa Cohen hai người mã hoá (cặp có cả hai mã)\n'
+                   'o <- !is.na(a) & !is.na(b) & a != "" & b != ""; a <- a[o]; b <- b[o]\n'
+                   'm <- sort(union(a, b)); po <- mean(a == b)\n'
+                   'pe <- sum(sapply(m, function(x) mean(a == x) * mean(b == x)))\n'
+                   'ghi("kappa", (po - pe) / (1 - pe))\n' if ts.get("chu_de_nguoi_2") else ""))
     return dau + than + "close(out)\n"
 
 
@@ -790,11 +826,12 @@ def _doc_kq_spss(p: Path, loai: str) -> Dict[str, float]:
 # hệ số của mô hình); R so ĐỦ mọi đại lượng kể cả OR từng yếu tố. Gộp (22/11/2026): SPSS so ước lượng chung, hiệu ứng
 # tuyệt đối và Egger; phân nhóm (số nhóm thay đổi theo dữ liệu) chỉ R so.
 DAI_LUONG_SPSS = {"du_bao": ("c_statistic", "brier")}
-_CHI_R = ("rr_nhom_", "q_giua_nhom", "p_giua_nhom")
+# 22/11/2026: hiệu ứng cố định của gộp (metafor method = "FE") và kappa hai người mã hoá (định tính) — chỉ R so.
+_CHI_R = ("rr_nhom_", "q_giua_nhom", "p_giua_nhom", "rr_gop_co_dinh", "ci_duoi_co_dinh", "ci_tren_co_dinh", "kappa")
 
 
 def dai_luong_spss(loai: str, py: Dict[str, float]) -> Optional[List[str]]:
-    if loai == "gop":
+    if loai in ("gop", "dinh_tinh"):
         return [k for k in py if not k.startswith(_CHI_R)]
     return list(DAI_LUONG_SPSS[loai]) if loai in DAI_LUONG_SPSS else None
 
@@ -955,9 +992,12 @@ def chay(study: str, gate: str, loai: str, ts: Dict[str, Any], kiem_cheo_bat: bo
     thieu = [k for k in LOAI[loai] if ts.get(k) in (None, "", [])]
     if thieu:
         raise TuChoi(f"thiếu tham số: {', '.join(thieu)}")
+    if ts.get("mo_hinh") not in (None, *MO_HINH_GOP):
+        raise TuChoi(f"mo_hinh phải thuộc {list(MO_HINH_GOP)}")
     _g4_da_khoa(study)
     can = ([ts[k] for k in LOAI[loai] if k not in ("nguong", "covariates", "nguong_wtp")]
-           + list(ts.get("covariates") or []) + [ts[k] for k in LOAI_TUY_CHON.get(loai, ()) if ts.get(k)])
+           + list(ts.get("covariates") or [])
+           + [ts[k] for k in LOAI_TUY_CHON.get(loai, ()) if ts.get(k) and k != "mo_hinh"])
     hang, csv_khoa, bo = doc_du_lieu(study, can, ts.get("loc"))
     print(f"✓ Đọc dữ liệu khoá {csv_khoa.name}: {len(hang)} ca dùng được (loại {bo} ca thiếu dữ liệu)")
     nhan_nhom = _nhan_lua_chon(study, toi_thieu=2).get(str(ts["phan_nhom"])) if ts.get("phan_nhom") else None
@@ -1013,6 +1053,11 @@ def main(argv: Optional[List[str]] = None) -> int:
         ap.add_argument("--" + k.replace("_", "-"), dest=k, default=None)
     ap.add_argument("--phan-nhom", dest="phan_nhom", default=None,
                     help="gop: biến phân nhóm tiền định của SAP §7 — gộp riêng từng nhóm + Q giữa nhóm")
+    ap.add_argument("--chu-de-nguoi-2", dest="chu_de_nguoi_2", default=None,
+                    help="dinh_tinh: cột mã của người mã hoá thứ hai ⇒ kappa Cohen (SAP §9 confirmability)")
+    ap.add_argument("--mo-hinh", dest="mo_hinh", default=None, choices=MO_HINH_GOP,
+                    help="gop: ước lượng báo làm kết quả — ngau_nhien (DL, mặc định) hoặc co_dinh "
+                         "(nghịch đảo phương sai)")
     ap.add_argument("--nguong", type=float, default=None)
     ap.add_argument("--nguong-wtp", dest="nguong_wtp", type=float, default=None,
                     help="kinh_te: ngưỡng sẵn lòng chi trả cho một đơn vị hiệu quả (SAP khai)")

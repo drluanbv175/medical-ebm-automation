@@ -294,6 +294,7 @@ def detect_variables_from_redcap(csv_path: Path, design_code: Optional[str] = No
     all_vars = filled_vars
 
     result["all_vars"] = [v for v, _, _ in all_vars]
+    result["kieu_bien"] = dict(type_by_var)  # 22/11/2026: 01_cleaning.R chuyển kiểu theo từ điển G5
 
     def _section_is(section: str, *needles: str) -> bool:
         s = section.lower()
@@ -913,8 +914,10 @@ _HAM_TRAN_GOI_R = {
 }
 _RE_HAM_TRAN_R = re.compile(r"(?<![:$\w.])(" + "|".join(re.escape(h) for h in sorted(_HAM_TRAN_GOI_R, key=len,
                                                                                         reverse=True)) + r")\(")
+# 22/11/2026: «g1_design_blocks.py::_TABLES_…» trong chú thích từng thành gói «py» (00_setup.R cài gói không tồn tại) —
+# tên gói đứng sau «.»/«_»/chữ số hoặc là đuôi tệp Python không phải lời gọi gói R
 _RE_GOI_R = re.compile(r"(?:\b(?:library|require|requireNamespace)\(\s*[\"']?([A-Za-z][A-Za-z0-9.]+)"
-                       r"|\b([A-Za-z][A-Za-z0-9.]+):::?)")
+                       r"|(?<![\w.])(?!py::)([A-Za-z][A-Za-z0-9.]+):::?)")
 
 
 def goi_r_cho_script(*ma_r: str) -> list:
@@ -1078,83 +1081,107 @@ def _nhan_hiep_bien(covars, design_code: str) -> str:
     return "[xem SAP §5]"
 
 
-def make_r01_cleaning(v: dict, design_code: str = "cohort") -> str:
-    """Sinh 01_cleaning.R với tên biến thật từ REDCap dictionary."""
+#: Kiểu trường REDCap ⇒ biến PHÂN LOẠI trong R (factor theo mức có trong dữ liệu — không cứng nhãn/mã của một đề tài).
+_KIEU_PHAN_LOAI_R = frozenset({"radio", "dropdown", "yesno", "truefalse", "checkbox"})
+
+
+def bien_can_cho_r(v: dict) -> list[str]:
+    """Biến script R dùng (phơi nhiễm · kết cục · thời gian · hiệp biến · cụm) — chỉ biến CÓ THẬT (từ điển G5 hoặc biến
+    phái sinh có công thức), bỏ tên dự phòng như «follow_time» khi dictionary không có biến thời gian."""
+    co = {str(x) for x in (v.get("all_vars") or [])} | set(v.get("bien_phai_sinh") or {})
+    ds = [v.get("exposure"), v.get("outcome"), v.get("time_col"), *(v.get("covariates") or []), v.get("cluster_col")]
+    return [x for x in dict.fromkeys(str(t) for t in ds if t) if x in co]
+
+
+def khoi_r_phai_sinh(out: Optional[Path], study: str, ten_can: list[str], bien_d: str = "df_khoa") -> str:
+    """Mã R tính biến PHÁI SINH script dùng — sinh bằng bien_phai_sinh.ma_r từ `_bien-phai-sinh.csv` (CÙNG công thức
+    run_stats_analysis dùng). Chỉ công thức ĐÃ DUYỆT; chưa duyệt ⇒ dòng stop() nêu tên (không lẳng lặng tính)."""
+    if out is None:
+        return ""
+    try:
+        ps = _BPS.doc_dac_ta(out)
+        if not ps:
+            return ""
+        dm = _BPS.doc_danh_muc_tu_dien(out, study)
+        kq = _BPS.kiem_dac_ta(ps, dm)
+    except (_BPS.LoiCongThuc, _BPS.KhongDoDuoc):
+        return ""
+    can = [t for t in ten_can if t in kq.thu_tu]
+    if not can:
+        return ""
+    chua = [t for t in can if kq.trang_thai.get(t) != "DA_DUYET"]
+    if chua:
+        return (f'stop("Biến phái sinh chưa được thống kê viên/PI duyệt: {", ".join(chua)} — duyệt bằng '
+                'tools/bien_phai_sinh.py duyet rồi sinh lại script")\n')
+    ma, _ds = _BPS.ma_r(kq, can, ngay=set(dm.ngay or ()), bien_d=bien_d)
+    return ma
+
+
+def make_r01_cleaning(v: dict, design_code: str = "cohort", out: Optional[Path] = None, study: str = "") -> str:
+    """Sinh 01_cleaning.R CHẠY ĐƯỢC NGAY (22/11/2026): đọc dataset ĐÃ KHOÁ (đường dẫn do chốt khoá của 00_setup.R cấp),
+    tính biến phái sinh bằng đúng công thức đã duyệt, chuyển kiểu theo từ điển G5, lưu RDS gắn sha256 bản khoá.
+
+    VÁ 04/10/2026 (G6-02) giữ nguyên: không đọc dữ liệu thô, không làm sạch lại, không lọc dòng, không sửa giá trị.
+    Trước 22/11/2026 mọi dòng thi hành để dạng chú thích chờ thống kê viên bật — nay bộ sinh viết dòng thi hành."""
     exposure  = v["exposure"]
     outcome   = v["outcome"]
     time_col  = v["time_col"]
     covars    = v["covariates"]
-
-    # Danh sách mutate cho covariates phát hiện được
-    mutate_lines = []
-    for c in covars:
-        if c in ("age", "tuoi"):
-            mutate_lines.append(f"    {c} = as.numeric({c}),")
-        elif c in ("sex", "gioi", "gender"):
-            mutate_lines.append(f"    {c} = factor({c}, levels = c(1, 2), labels = c('Nam', 'Nữ')),")
-        elif c in ("dm", "htn", "af", "cad", "ckd", "copd"):
-            mutate_lines.append(f"    {c} = factor({c}, levels = c(0, 1), labels = c('Không', 'Có')),")
+    can = bien_can_cho_r(v)
+    if design_code == "sr_ma":  # bảng trích xuất cấp nghiên cứu: nhãn + biến cố/cỡ mẫu hai nhánh
+        can += [c for c in cot_gop(v).values() if c not in can]
+    kieu = v.get("kieu_bien") or {}
+    phai_sinh = khoi_r_phai_sinh(out, study, can)
+    chuyen = []
+    for c in can:
+        if kieu.get(c, "") in _KIEU_PHAN_LOAI_R and c not in (outcome, exposure):
+            chuyen.append(f'df[["{c}"]] <- factor(df[["{c}"]])')
         else:
-            mutate_lines.append(f"    {c} = as.numeric({c}),  # kiểm tra lại kiểu dữ liệu")
-    mutate_lines.append(f"    {exposure} = as.numeric({exposure}),")
-    mutate_lines.append(f"    {outcome}  = as.integer({outcome}),")
-    mutate_lines.append(f"    {time_col} = as.numeric({time_col})")
-
-    # VÁ 04/10/2026 (lộ khi phân tích cú pháp R mọi script sinh ra): các dòng chuyển kiểu từng KHÔNG có dấu «#» trong
-    # khi «# df <- …» / «#   dplyr::mutate(» bao quanh đều là chú thích ⇒ 01_cleaning.R của MỌI đề tài lỗi cú pháp R
-    # ngay dòng đầu khối. Nay chú thích đồng bộ (bỏ «#» cả khối khi chạy thật).
-    mutate_block = "\n".join(f"#     {ln.strip()}" for ln in mutate_lines)
-
-    # VÁ 04/10/2026 (soát từng cổng, G6-02): bản cũ đọc CSV THÔ ở data/raw chung của repo rồi làm sạch LẠI (trùng
-    # record_id, lọc dòng, kiểm phạm vi) — làm sạch thuộc G5 và đã khoá; làm lại sau khoá là đổi dữ liệu ngoài mọi
-    # kiểm soát. Nay chỉ đọc LOCKED_DATA (00_setup.R đã kiểm chữ ký G2/G4/G5 + checksum) và chuyển kiểu XÁC ĐỊNH,
-    # không lọc dòng, không sửa giá trị; RDS mang sha256 của bản khoá để script sau tự đối chiếu.
+            chuyen.append(f'df[["{c}"]] <- suppressWarnings(as.numeric(df[["{c}"]]))')
+    khoi_chuyen = "\n".join(chuyen) or "# (không có biến phân tích nào trong từ điển G5)"
     code = f"""\
 # ============================================================
 # 01_cleaning.R — Chuẩn bị dữ liệu phân tích TỪ DATASET ĐÃ KHOÁ (G5)
 # Biến phơi nhiễm: {exposure}
 # Biến kết cục  : {outcome}
-# Thời gian TD  : {time_col}
+# Thời gian TD  : {time_col if time_col in can else "— (thiết kế không có biến thời gian)"}
 # Covariates    : {_nhan_hiep_bien(covars, design_code)}
 # KHÔNG đọc dữ liệu thô, KHÔNG làm sạch lại (làm sạch đã xong và khoá ở G5) —
-# chỉ chuyển kiểu biến xác định; mọi thay đổi giá trị phải quay lại G5 + khoá lại.
+# chỉ tính biến phái sinh đã duyệt và chuyển kiểu XÁC ĐỊNH; mọi thay đổi giá trị phải quay lại G5 + khoá lại.
 # ============================================================
 
 source(here::here("scripts", "00_setup.R"))   # chốt khoá: LOCKED_DATA + LOCKED_SHA
 
 # ----------------------------------------------------------
-# BƯỚC 1: ĐỌC DATASET ĐÃ KHOÁ (đường dẫn do chốt khoá cấp)
+# BƯỚC 1: ĐỌC DATASET ĐÃ KHOÁ — mọi cột dạng chữ; kiểu do bước 3 quyết theo từ điển G5 (R không tự đoán)
 # ----------------------------------------------------------
-# df_khoa <- readr::read_csv(LOCKED_DATA, locale = readr::locale(encoding = "UTF-8"),
-#                            show_col_types = FALSE)
-# message("Số hàng dataset khoá: ", nrow(df_khoa))
+df_khoa <- utils::read.csv(LOCKED_DATA, colClasses = "character", na.strings = c("", "NA"),
+                           check.names = FALSE, fileEncoding = "UTF-8-BOM")
+message("Số hàng dataset khoá: ", nrow(df_khoa))
 
 # ----------------------------------------------------------
-# BƯỚC 2: CHUYỂN KIỂU BIẾN (xác định — không lọc dòng, không sửa giá trị)
+# BƯỚC 2: BIẾN PHÁI SINH — cùng công thức đã duyệt ở _bien-phai-sinh.csv (tools/bien_phai_sinh.py)
 # ----------------------------------------------------------
-# df <- df_khoa %>%
-#   dplyr::mutate(
-{mutate_block}
-#   )
+{phai_sinh or "# (script không dùng biến phái sinh)"}
 
 # ----------------------------------------------------------
-# BƯỚC 3: TỶ LỆ DỮ LIỆU THIẾU (mô tả — xử lý theo SAP §6, không điền ở đây)
+# BƯỚC 3: CHUYỂN KIỂU (xác định — không lọc dòng, không sửa giá trị)
 # ----------------------------------------------------------
-# missing_pct <- df %>%
-#   summarise(across(everything(), ~mean(is.na(.))*100)) %>%
-#   tidyr::pivot_longer(everything(), names_to="variable", values_to="pct_missing") %>%
-#   arrange(desc(pct_missing))
-# write.csv(missing_pct, file.path(OUTPUT, "missing_summary.csv"), row.names=FALSE)
+df <- df_khoa
+{khoi_chuyen}
 
 # ----------------------------------------------------------
-# BƯỚC 4: LƯU BẢN PHÂN TÍCH (gắn sha256 của dataset khoá để 02/03 đối chiếu)
+# BƯỚC 4: TỶ LỆ DỮ LIỆU THIẾU (mô tả — xử lý theo SAP §6, không điền ở đây)
 # ----------------------------------------------------------
-# attr(df, "sha256_khoa") <- LOCKED_SHA
-# saveRDS(df, file.path(DATA_PROC, "df_clean.rds"))
-# message("Đã lưu df_clean: ", nrow(df), " hàng x ", ncol(df), " cột")
+missing_pct <- data.frame(variable = names(df), pct_missing = vapply(df, function(x) mean(is.na(x)) * 100, 0))
+write.csv(missing_pct[order(-missing_pct$pct_missing), ], file.path(OUTPUT, "missing_summary.csv"), row.names = FALSE)
 
-message("01_cleaning.R — biến phát hiện từ REDCap: {exposure}/{outcome}/{time_col}")
-message("[CẦN DỮ LIỆU THẬT + G5 DB LOCKED để uncomment và chạy]")
+# ----------------------------------------------------------
+# BƯỚC 5: LƯU BẢN PHÂN TÍCH (gắn sha256 của dataset khoá để 02/03 đối chiếu)
+# ----------------------------------------------------------
+attr(df, "sha256_khoa") <- LOCKED_SHA
+saveRDS(df, file.path(DATA_PROC, "df_clean.rds"))
+message("01_cleaning.R — đã lưu df_clean: ", nrow(df), " hàng x ", ncol(df), " cột | biến: {exposure}/{outcome}")
 """
     if design_code in _WRONG_METHOD_DESIGNS:
         code = _insert_warning_after_shebang(
@@ -1277,7 +1304,7 @@ def make_r03_cohort(v: dict, n_adjusted: int, alpha: float, power: float,
     covars    = v["covariates"]
 
     # Chuỗi covariates cho công thức Cox
-    cov_formula = " + ".join(covars) if covars else "age + sex + bmi + dm + htn"
+    cov_formula = " + ".join(covars)
     cov_mi_list  = ", ".join(f'"{c}"' for c in covars) if covars else '"age", "sex", "bmi", "dm", "htn"'
     # VÁ 04/10/2026 (G6-03): nhóm con CHỈ theo SAP §7 đã khoá (bản cũ: covariate ∩ {sex, dm, htn, age}).
     subgroup_vars = [str(x) for x in (v.get("nhom_con_sap") or [])]
@@ -1287,7 +1314,7 @@ def make_r03_cohort(v: dict, n_adjusted: int, alpha: float, power: float,
     for sg in subgroup_vars:
         subgroup_r_lines.append(f"# Subgroup: {sg}")
         subgroup_r_lines.append(f"# cox_sub_{sg} <- survival::coxph(")
-        subgroup_r_lines.append(f"#   surv_obj ~ {exposure}:{sg} + {exposure} + {sg} + {cov_formula},")
+        subgroup_r_lines.append(f"#   surv_obj ~ {exposure}:{sg} + {exposure} + {sg}{_cong(cov_formula)},")
         subgroup_r_lines.append("#   data = df")
         subgroup_r_lines.append("# )")
         subgroup_r_lines.append(f"# broom::tidy(cox_sub_{sg}, exponentiate=TRUE, conf.int=TRUE)")
@@ -1304,7 +1331,7 @@ def make_r03_cohort(v: dict, n_adjusted: int, alpha: float, power: float,
 # Biến phơi nhiễm: {exposure}
 # Biến kết cục  : {outcome}  (1=biến cố, 0=censored)
 # Thời gian TD  : {time_col} (đơn vị: tháng)
-# Covariates    : {cov_formula}
+# Covariates    : {cov_formula or "(không hiệu chỉnh)"}
 #
 # Tên biến sinh TỰ ĐỘNG từ G5 REDCap dictionary.
 # Kiểm tra lại trước khi chạy — đặc biệt nếu tên thực tế khác.
@@ -1358,7 +1385,7 @@ source(here::here("scripts", "00_setup.R"))
 # ----------------------------------------------------------
 # COX REGRESSION — Mô hình hiệu chỉnh (covariates từ SAP §5)
 # ----------------------------------------------------------
-# cox_adj <- survival::coxph(surv_obj ~ {exposure} + {cov_formula}, data = df)  # ◆ MÔ HÌNH CHÍNH (SAP §4)
+# cox_adj <- survival::coxph(surv_obj ~ {exposure}{_cong(cov_formula)}, data = df)  # ◆ MÔ HÌNH CHÍNH (SAP §4)
 # summary(cox_adj)
 #
 # Kiểm định Proportional Hazards
@@ -1394,7 +1421,7 @@ source(here::here("scripts", "00_setup.R"))
 #
 # cox_mi <- with(imp,
 #   survival::coxph(
-#     Surv({time_col}, {outcome}) ~ {exposure} + {cov_formula}
+#     Surv({time_col}, {outcome}) ~ {exposure}{_cong(cov_formula)}
 #   )
 # )
 # cox_pooled <- mice::pool(cox_mi)
@@ -3305,8 +3332,13 @@ def guardrail(artifact: str, all_scripts_text: str) -> tuple:
 
     # R5 — [CẦN...] hoặc uncomment placeholders
     can_n = len(re.findall(r'\[CẦN|# uncomment|\\[chạy\\]|chạy R', artifact + all_scripts_text))
-    if can_n >= 5:
-        warnings_list.append(f"R5 ✅ {can_n} placeholder đủ")
+    # 22/11/2026: dòng mô hình chính nay THI HÀNH trên dataset khoá có kiểm sha256 (không còn «uncomment» chờ người) —
+    # khi đó chỉ cần ≥ 1 nhãn [CẦN …] (xác nhận của thống kê viên), không đòi đủ 5 lời nhắc bật dòng.
+    thi_hanh_khoa = bool(re.search(r'^stopifnot\(identical\(attr\((?:df|extracted), "sha256_khoa"\), LOCKED_SHA\)\)',
+                                   all_scripts_text, re.M))
+    if can_n >= 5 or (thi_hanh_khoa and can_n >= 1):
+        warnings_list.append(f"R5 ✅ {can_n} placeholder đủ" + (" — mô hình thi hành trên dữ liệu khoá" if
+                                                                 thi_hanh_khoa else ""))
     else:
         errors.append(f"R5 🔴 Quá ít placeholder ({can_n})")
 
@@ -3792,6 +3824,44 @@ def doc_tham_so_sap(sap: str, ten_bien=()) -> dict:
     }
 
 
+#: 22/11/2026 (bác sĩ: không để việc tay): dòng THI HÀNH của mô hình chính — bộ sinh viết sẵn, không còn để chú thích chờ
+#: thống kê viên bật. Gồm: nạp RDS khoá + kiểm dấu, khung dữ liệu ITT, mọi dòng đánh dấu «◆ MÔ HÌNH CHÍNH (SAP §4)», và
+#: lời gọi coeftest của chính mô hình vừa bật. Biểu thức nhiều dòng được bật trọn tới khi ngoặc cân bằng.
+_DONG_THI_HANH = re.compile(r"^# ((?:df <- readRDS|extracted <- readRDS|stopifnot\(identical\(attr\((?:df|extracted)|"
+                            r"df_itt <- |(?=[^\n]*◆ MÔ HÌNH CHÍNH))[^\n]*)$")
+_COEFTEST = re.compile(r"^# (lmtest::coeftest\((fit_\w+)[^\n]*)$")
+
+
+def _can_bang_ngoac(dong: str) -> int:
+    """Hiệu số ngoặc mở − đóng của một dòng R, bỏ phần trong chuỗi và chú thích cuối dòng."""
+    dong = re.sub(r'"(?:[^"\\]|\\.)*"|\'(?:[^\'\\]|\\.)*\'', "", dong)
+    dong = dong.split("#", 1)[0]
+    return dong.count("(") - dong.count(")")
+
+
+def bat_dong_thi_hanh(code: str) -> str:
+    """Bỏ dấu chú thích ở dòng thi hành của mô hình chính (xem `_DONG_THI_HANH`). Dòng đã thi hành giữ nguyên."""
+    dong = code.split("\n")
+    da_bat: set[str] = set()
+    i = 0
+    while i < len(dong):
+        m = _DONG_THI_HANH.match(dong[i])
+        mc = _COEFTEST.match(dong[i])
+        if m or (mc and mc.group(2) in da_bat):
+            noi = (m or mc).group(1)
+            dong[i] = noi
+            ten = re.match(r"(\w+)\s*<-", noi)
+            if ten:
+                da_bat.add(ten.group(1))
+            mo = _can_bang_ngoac(noi)
+            while mo > 0 and i + 1 < len(dong) and dong[i + 1].startswith("#"):
+                i += 1
+                dong[i] = re.sub(r"^#\s?", "", dong[i])
+                mo += _can_bang_ngoac(dong[i])
+        i += 1
+    return "\n".join(dong)
+
+
 _NGUON_SETUP_CU = 'source(here::here("scripts", "00_setup.R"))'
 _DOC_RDS = '# df <- readRDS(file.path(DATA_PROC, "df_clean.rds"))'
 
@@ -3982,9 +4052,9 @@ def main():
     print("\n  🔧 Sinh R scripts với tên biến thật...")
     r03 = R_ANALYSIS_MAP_FUNC(design_code, v, n_adjusted, alpha, power, effect_val, effect_type)
 
-    r01 = hau_xu_ly_script_r(make_r01_cleaning(v, design_code), study)
+    r01 = hau_xu_ly_script_r(make_r01_cleaning(v, design_code, out, study), study)
     r02 = hau_xu_ly_script_r(make_r02_tables(v, design_code), study)
-    r03 = hau_xu_ly_script_r(r03, study, tham_so_sap["ket_cuc_phu"], la_03=True)
+    r03 = bat_dong_thi_hanh(hau_xu_ly_script_r(r03, study, tham_so_sap["ket_cuc_phu"], la_03=True))
     # THÊM 12/11/2026 (nhóm B, B2): SAP §4 GỌI postStratify( ⇒ sinh script R `survey` cho trọng số hậu phân tầng,
     # KTC Wilson trên n hiệu dụng, độ nhạy svyolr và giới hạn người bỏ về (SAP §9) — trước đây G6 không sinh dòng nào.
     ts_trong_so = TSS.doc_tham_so_trong_so(sap_text, v)
@@ -4215,7 +4285,7 @@ def R_ANALYSIS_MAP_FUNC(design_code: str, v: dict, n_adjusted: int,
     elif design_code == "prediction":
         return _r03_prediction_with_vars(v)
     elif design_code == "sr_ma":
-        return _r03_srma_template()
+        return _r03_srma_template(v)
     # THÊM 2026-07-20 (vòng lặp kiểm tra-hoàn thiện, xac nhan doi khang): truoc
     # day "qualitative" khong co nhanh rieng nen roi vao else -> make_r03_cohort()
     # (Cox regression + Kaplan-Meier) — SAI HOAN TOAN phuong phap luan cho du
@@ -4228,6 +4298,12 @@ def R_ANALYSIS_MAP_FUNC(design_code: str, v: dict, n_adjusted: int,
         return make_r03_cohort(v, n_adjusted, alpha, power, effect_val, effect_type)
 
 
+def _cong(ve_phai: str) -> str:
+    """« + a + b» khi có hiệp biến, rỗng khi không — công thức R không bao giờ chứa tên hiệp biến dự phòng (22/11/2026:
+    dòng mô hình nay THI HÀNH; trước đây khuôn chèn «age + sex + bmi» khi đề tài không khai hiệp biến)."""
+    return f" + {ve_phai}" if ve_phai else ""
+
+
 def _r03_binary_with_vars(v: dict, design_code: str = "rct", effect_type: str = "RR") -> str:
     """Script phân tích kết cục NHỊ PHÂN (tỷ lệ tích luỹ) cho RCT/cohort — KHÔNG Cox/Kaplan–Meier.
 
@@ -4238,19 +4314,20 @@ def _r03_binary_with_vars(v: dict, design_code: str = "rct", effect_type: str = 
     exposure = v["exposure"]
     outcome  = v["outcome"]
     covars   = v["covariates"]
-    cov_fml  = " + ".join(covars) if covars else "age + sex + bmi"
+    cov_fml  = " + ".join(covars)
     label = "RCT" if design_code == "rct" else "Cohort"
     if effect_type == "OR":
         than = f"""\
 # OR — hồi quy logistic (thô + hiệu chỉnh):
 # fit_tho <- glm({outcome} ~ {exposure}, data = df, family = binomial())
-# fit_hc  <- glm({outcome} ~ {exposure} + {cov_fml}, data = df, family = binomial())
+# fit_hc  <- glm({outcome} ~ {exposure}{_cong(cov_fml)}, data = df, family = binomial())  # ◆ MÔ HÌNH CHÍNH (SAP §4)
+# lmtest::coeftest(fit_hc)   # OR = exp(hệ số)
 # broom::tidy(fit_hc, exponentiate = TRUE, conf.int = TRUE) %>% filter(term == "{exposure}")
 # car::vif(fit_hc)   # đa cộng tuyến (SAP §5)"""
     elif effect_type == "RR":
         than = f"""\
 # RR — hồi quy Poisson với sai số chuẩn robust (Zou 2004, PMID 15033648); log-binomial nếu hội tụ:
-# fit_rr <- glm({outcome} ~ {exposure} + {cov_fml}, data = df, family = poisson(link = "log"))
+# fit_rr <- glm({outcome} ~ {exposure}{_cong(cov_fml)}, data = df, family = poisson(link = "log"))  # ◆ MÔ HÌNH CHÍNH (SAP §4)
 # lmtest::coeftest(fit_rr, vcov = sandwich::vcovHC(fit_rr, type = "HC0"))   # RR = exp(hệ số)
 # Dữ liệu cụm (vd bàn khám): vcov = sandwich::vcovCL(fit_rr, cluster = ~<biến cụm>) (Zou & Donner 2011, PMID 22072596)"""
     else:
@@ -4259,7 +4336,7 @@ def _r03_binary_with_vars(v: dict, design_code: str = "rct", effect_type: str = 
 # bang <- table(df${exposure}, df${outcome})  # ◆ MÔ HÌNH CHÍNH (SAP §4)
 # hieu_nguy_co <- prop.test(bang[c("1", "0"), "1"], rowSums(bang)[c("1", "0")], correct = FALSE)  # ◆ MÔ HÌNH CHÍNH (SAP §4) — 95%CI hiệu tỷ lệ nhóm 1 trừ nhóm 0, CÙNG chiều engine
 # KHÔNG viết prop.test(bang[, "1"], rowSums(bang)): hàng theo thứ tự 0, 1 ⇒ ra p0 − p1 (ngược dấu, đảo kết luận NI)
-# Hiệu chỉnh đồng biến: glm({outcome} ~ {exposure} + {cov_fml}, family = binomial(link = "identity"), data = df)"""
+# Hiệu chỉnh đồng biến: glm({outcome} ~ {exposure}{_cong(cov_fml)}, family = binomial(link = "identity"), data = df)"""
     return f"""\
 # 03_analysis.R — {label} kết cục NHỊ PHÂN ({effect_type}) — KHÔNG dùng Cox/Kaplan–Meier
 # Biến: nhóm/phơi nhiễm={exposure} | kết cục nhị phân={outcome}
@@ -4269,7 +4346,7 @@ source(here::here("scripts", "00_setup.R"))
 
 {than}
 
-message("03_analysis.R ({label}, kết cục nhị phân {effect_type}) — Biến: {exposure}/{outcome} | [CẦN DỮ LIỆU THẬT]")
+message("03_analysis.R ({label}, kết cục nhị phân {effect_type}) — Biến: {exposure}/{outcome} | dữ liệu ĐÃ KHOÁ (G5)")
 """
 
 
@@ -4283,7 +4360,7 @@ def _r03_continuous_md_with_vars(v: dict, design_code: str = "rct") -> str:
     exposure = v["exposure"]
     outcome  = v["outcome"]
     covars   = v["covariates"]
-    cov_fml  = " + ".join(covars) if covars else "age + sex + bmi"
+    cov_fml  = " + ".join(covars)
     label = "RCT" if design_code == "rct" else "Cohort"
     return f"""\
 # 03_analysis.R — {label} kết cục LIÊN TỤC (t-test/ANCOVA → Chênh lệch trung bình MD)
@@ -4296,14 +4373,16 @@ source(here::here("scripts", "00_setup.R"))
 
 # (1) So sánh trung bình thô — t-test 2 nhóm độc lập (giả định phương sai bằng nhau):
 # t_res <- t.test({outcome} ~ {exposure}, data=df, var.equal=TRUE)
+# fit_md <- lm({outcome} ~ {exposure}{_cong(cov_fml)}, data = df)  # ◆ MÔ HÌNH CHÍNH (SAP §4) — chênh lệch trung bình hiệu chỉnh hiệp biến
+# lmtest::coeftest(fit_md, vcov = sandwich::vcovHC(fit_md, type = "HC3"))
 # print(t_res)   # ước lượng chênh lệch trung bình (MD) + 95%CI
 
 # (2) ANCOVA hiệu chỉnh baseline + đồng biến (KHUYẾN NGHỊ nếu có {outcome}_baseline):
-# lm_adj <- lm({outcome} ~ {exposure} + {outcome}_baseline + {cov_fml}, data=df)
+# lm_adj <- lm({outcome} ~ {exposure} + {outcome}_baseline{_cong(cov_fml)}, data=df)
 # broom::tidy(lm_adj, conf.int=TRUE) %>% filter(term=="{exposure}")   # MD hiệu chỉnh + 95%CI
 # (Nếu KHÔNG có baseline: bỏ {outcome}_baseline khỏi công thức trên.)
 
-message("03_analysis.R ({label}, kết cục liên tục MD) — Biến: {exposure}/{outcome} | [CẦN DỮ LIỆU THẬT]")
+message("03_analysis.R ({label}, kết cục liên tục MD) — Biến: {exposure}/{outcome} | dữ liệu ĐÃ KHOÁ (G5)")
 """
 
 
@@ -4311,7 +4390,7 @@ def _r03_case_control_with_vars(v: dict) -> str:
     exposure = v["exposure"]
     outcome  = v["outcome"]
     covars   = v["covariates"]
-    cov_fml  = " + ".join(covars) if covars else "age + sex + bmi"
+    cov_fml  = " + ".join(covars)
     return f"""\
 # 03_analysis.R — Case-control (Conditional/Unconditional logistic → OR)
 # Biến: phơi nhiễm={exposure} | ca/chứng (outcome)={outcome}
@@ -4323,12 +4402,12 @@ source(here::here("scripts", "00_setup.R"))
 
 # NẾU có bắt cặp (matched case-control, vd theo tuổi/giới/site) — dùng
 # conditional logistic regression, cần biến strata (vd "match_id"):
-# clogit_adj <- survival::clogit({outcome} ~ {exposure} + {cov_fml} + strata(match_id), data=df)  # ◇ thay dòng ◆ khi CÓ bắt cặp (cần match_id)
+# clogit_adj <- survival::clogit({outcome} ~ {exposure}{_cong(cov_fml)} + strata(match_id), data=df)  # ◇ thay dòng ◆ khi CÓ bắt cặp (cần match_id)
 # broom::tidy(clogit_adj, exponentiate=TRUE, conf.int=TRUE) %>% filter(term=="{exposure}")
 
 # NẾU KHÔNG bắt cặp (unmatched case-control) — logistic thường là đủ:
 # glm_crude <- glm({outcome} ~ {exposure}, data=df, family=binomial())
-# glm_adj   <- glm({outcome} ~ {exposure} + {cov_fml}, data=df, family=binomial())  # ◆ MÔ HÌNH CHÍNH (SAP §4) — không bắt cặp
+# glm_adj   <- glm({outcome} ~ {exposure}{_cong(cov_fml)}, data=df, family=binomial())  # ◆ MÔ HÌNH CHÍNH (SAP §4) — không bắt cặp
 #
 # Kiểm đa cộng tuyến (SAP §5: "VIF < 5 cho mọi biến"; thêm 2026-07-29 — trước
 # đây chỉ có trong checklist văn bản, không có dòng code nào thực sự tính).
@@ -4339,7 +4418,7 @@ source(here::here("scripts", "00_setup.R"))
 #
 # broom::tidy(glm_adj, exponentiate=TRUE, conf.int=TRUE) %>% filter(term=="{exposure}")
 
-message("03_analysis.R (case-control) — Biến: {exposure}/{outcome} | [CẦN XÁC NHẬN có bắt cặp hay không, rồi CẦN DỮ LIỆU THẬT]")
+message("03_analysis.R (case-control) — Biến: {exposure}/{outcome} | dữ liệu ĐÃ KHOÁ (G5); mô hình không bắt cặp ◆ — thiết kế bắt cặp dùng dòng ◇ clogit")
 """
 
 
@@ -4348,17 +4427,16 @@ def _r03_rct_with_vars(v: dict) -> str:
     outcome  = v["outcome"]
     time_col = v["time_col"]
     covars   = v["covariates"]
-    cov_fml  = " + ".join(covars) if covars else "age + sex + bmi"
+    cov_fml  = " + ".join(covars)
     return f"""\
 # 03_analysis.R — RCT (ITT + PP)
 # Biến: arm={exposure} | outcome={outcome} | time={time_col}
 source(here::here("scripts", "00_setup.R"))
 # df <- readRDS(file.path(DATA_PROC, "df_clean.rds"))
-# df_itt <- df %>% filter(!is.na({exposure}))
+# df_itt <- df[!is.na(df${exposure}), , drop = FALSE]
 
 # Kết cục thời gian đến biến cố (Time-to-event)
-# surv_obj <- Surv({time_col}, {outcome})  # ◆ MÔ HÌNH CHÍNH (SAP §4) — đối tượng sống còn
-# cox_itt  <- coxph(surv_obj ~ {exposure} + {cov_fml}, data=df_itt)  # ◆ MÔ HÌNH CHÍNH (SAP §4)
+# cox_itt  <- survival::coxph(survival::Surv({time_col}, {outcome}) ~ {exposure}{_cong(cov_fml)}, data=df_itt)  # ◆ MÔ HÌNH CHÍNH (SAP §4)
 # summary(cox_itt)
 #
 # SỬA 2026-07-29 (soi cổng G6): trước đây nhánh RCT dùng coxph() nhưng KHÔNG
@@ -4376,7 +4454,7 @@ source(here::here("scripts", "00_setup.R"))
 #
 # broom::tidy(cox_itt, exponentiate=TRUE, conf.int=TRUE) %>% filter(term=="{exposure}")
 
-message("03_analysis.R (RCT) — Biến: {exposure}/{outcome}/{time_col} | [CẦN DỮ LIỆU THẬT]")
+message("03_analysis.R (RCT) — Biến: {exposure}/{outcome}/{time_col} | dữ liệu ĐÃ KHOÁ (G5)")
 """
 
 
@@ -4384,7 +4462,7 @@ def _r03_cross_with_vars(v: dict) -> str:
     exposure = v["exposure"]
     outcome  = v["outcome"]
     covars   = v["covariates"]
-    cov_fml  = " + ".join(covars) if covars else "age + sex + bmi"
+    cov_fml  = " + ".join(covars)
     return f"""\
 # 03_analysis.R — Cross-sectional (Logistic)
 # Biến: exposure={exposure} | outcome={outcome}
@@ -4394,7 +4472,7 @@ source(here::here("scripts", "00_setup.R"))
 # Mô hình thô
 # glm_crude <- glm({outcome} ~ {exposure}, data=df, family=binomial())
 # Mô hình hiệu chỉnh
-# glm_adj   <- glm({outcome} ~ {exposure} + {cov_fml}, data=df, family=binomial())
+# glm_adj   <- glm({outcome} ~ {exposure}{_cong(cov_fml)}, data=df, family=binomial())
 #
 # Kiểm đa cộng tuyến (SAP §5: "VIF < 5 cho mọi biến"; thêm 2026-07-29 — trước
 # đây chỉ có trong checklist văn bản, không có dòng code nào thực sự tính):
@@ -4404,7 +4482,7 @@ source(here::here("scripts", "00_setup.R"))
 #
 # broom::tidy(glm_adj, exponentiate=TRUE, conf.int=TRUE) %>% filter(term=="{exposure}")
 
-message("03_analysis.R (Cross-sectional) — Biến: {exposure}/{outcome} | [CẦN DỮ LIỆU THẬT]")
+message("03_analysis.R (Cross-sectional) — Biến: {exposure}/{outcome} | dữ liệu ĐÃ KHOÁ (G5)")
 """
 
 
@@ -4425,7 +4503,7 @@ source(here::here("scripts", "00_setup.R"))
 # fit_ty_le <- DescTools::BinomCI(x = sum(df${outcome} == 1, na.rm = TRUE), n = sum(!is.na(df${outcome})), conf.level = 1 - ALPHA, method = "wilson")  # ◆ MÔ HÌNH CHÍNH (SAP §4)
 # print(fit_ty_le)
 
-message("03_analysis.R (Cắt ngang mô tả) — kết cục: {outcome} | [CẦN DỮ LIỆU THẬT]")
+message("03_analysis.R (Cắt ngang mô tả) — kết cục: {outcome} | dữ liệu ĐÃ KHOÁ (G5)")
 """
 
 
@@ -4450,7 +4528,7 @@ def _r03_cross_ordinal_with_vars(v: dict) -> str:
     exposure = v["exposure"]
     outcome  = v["outcome"]
     covars   = v["covariates"]
-    cov_fml  = " + ".join(covars) if covars else "age + sex + bmi"
+    cov_fml  = " + ".join(covars)
     muc      = v.get("outcome_levels") or []
     muc_txt  = (f"{len(muc)} mức: {', '.join(str(m) for m in muc)}"
                 if muc else "[CẦN SỐ MỨC — G5 dictionary chưa có Choices cho kết cục]")
@@ -4459,6 +4537,9 @@ def _r03_cross_ordinal_with_vars(v: dict) -> str:
     # (vd thang 1-5 → ≥4) — CHỈ là gợi ý đọc lại SAP §9, không phải quyết định.
     nguong   = str(muc[-2]) if len(muc) >= 2 else "[CẦN NGƯỠNG THEO SAP §9]"
     cluster  = v.get("cluster_col") or "[CẦN TÊN BIẾN CỤM theo SAP — vd ma_ban_kham]"
+    # 22/11/2026: dòng coeftest THI HÀNH cùng mô hình chính — có biến cụm ⇒ sandwich theo cụm; chưa có ⇒ sai số mô hình
+    dong_coef_po = (f"# lmtest::coeftest(fit_po, vcov = sandwich::vcovCL(fit_po, cluster = ~ {cluster}))"
+                    if v.get("cluster_col") else "# lmtest::coeftest(fit_po)   # chưa khai biến cụm (SAP §4)")
     mode_var = v.get("mode_var") or "[CẦN TÊN BIẾN PHƯƠNG THỨC TRẢ LỜI theo SAP §9 — vd mode_tra_loi]"
     return f"""\
 # 03_analysis.R — Cross-sectional KẾT CỤC THỨ BẬC (proportional odds → cOR)
@@ -4484,43 +4565,43 @@ suppressPackageStartupMessages(lapply(pkgs_ordinal, require, character.only = TR
 # Hmisc::binconf(n_cao, sum(!is.na(df${outcome})), method = "wilson")   # tỷ lệ + 95%CI
 
 # (1) MÔ HÌNH CHÍNH — proportional odds, kết cục GIỮ nguyên thang thứ bậc:
-# fit_po <- MASS::polr({outcome} ~ {exposure} + {cov_fml}, data = df, Hess = TRUE)
+# fit_po <- MASS::polr(factor({outcome}, ordered = TRUE) ~ {exposure}{_cong(cov_fml)}, data = df, Hess = TRUE)  # ◆ MÔ HÌNH CHÍNH (SAP §4)
 # cbind(cOR = exp(coef(fit_po)), exp(confint(fit_po)))   # cOR + 95%CI (profile)
 # Exposure liên tục: báo hiệu ứng theo ĐƠN VỊ LÂM SÀNG CÓ NGHĨA (SAP — vd mỗi
 # 15 phút thời gian chờ: chia biến cho 15 TRƯỚC khi đưa vào mô hình).
 
 # (2) SE ROBUST THEO CỤM `{cluster}` (SAP: BẮT BUỘC mọi kịch bản):
-# lmtest::coeftest(fit_po, vcov = sandwich::vcovCL(fit_po, cluster = ~ {cluster}))
+{dong_coef_po}
 # n_cum <- dplyr::n_distinct(df${cluster})
 # NẾU n_cum < 15: mô hình thứ bậc HỆ SỐ CHẶN NGẪU NHIÊN trở thành phân tích
 # CHÍNH (SAP §4) — vcovCL ít cụm sẽ dưới-ước lượng SE:
-# fit_re <- ordinal::clmm({outcome} ~ {exposure} + {cov_fml} + (1 | {cluster}), data = df)
+# fit_re <- ordinal::clmm({outcome} ~ {exposure}{_cong(cov_fml)} + (1 | {cluster}), data = df)
 # summary(fit_re)   # kèm báo ICC của kết cục theo cụm
 
 # (3) KIỂM GIẢ ĐỊNH PROPORTIONAL ODDS — TRƯỚC khi diễn giải cOR (SAP §5):
 # brant::brant(fit_po)   # p < 0.05 ở biến nào → biến đó vi phạm
 # Vi phạm → partial proportional odds: thả ràng buộc CHO ĐÚNG biến vi phạm,
 # báo hệ số theo TỪNG ranh giới cắt (generalized ordered logit):
-# fit_ppo <- ordinal::clm({outcome} ~ {exposure} + {cov_fml},
+# fit_ppo <- ordinal::clm({outcome} ~ {exposure}{_cong(cov_fml)},
 #                         nominal = ~ bien_vi_pham, data = df)
 
 # (4) PHI TUYẾN exposure liên tục — restricted cubic spline 3 nút (SAP §5):
 # dd <- rms::datadist(df); options(datadist = "dd")
-# fit_rcs <- rms::orm({outcome} ~ rcs({exposure}, 3) + {cov_fml}, data = df)
+# fit_rcs <- rms::orm({outcome} ~ rcs({exposure}, 3){_cong(cov_fml)}, data = df)
 # anova(fit_rcs)   # thành phần phi tuyến có ý nghĩa → giữ spline/báo theo phân vị
 
 # (5) ĐA CỘNG TUYẾN (SAP: VIF/GVIF > 10 → xử lý):
-# car::vif(lm(as.numeric({outcome}) ~ {exposure} + {cov_fml}, data = df))  # proxy tuyến tính
+# car::vif(lm(as.numeric({outcome}) ~ {exposure}{_cong(cov_fml)}, data = df))  # proxy tuyến tính
 
 # (6) ĐỘ NHẠY theo SAP §9 — song song, KHÔNG chi phối kết luận:
 # (6a) Tuyến tính coi kết cục là liên tục + SE robust HC3 (+ phần dư, Cook's d):
-#   fit_lm <- lm(as.numeric({outcome}) ~ {exposure} + {cov_fml}, data = df)
+#   fit_lm <- lm(as.numeric({outcome}) ~ {exposure}{_cong(cov_fml)}, data = df)
 #   lmtest::coeftest(fit_lm, vcov = sandwich::vcovHC(fit_lm, type = "HC3"))
 # (6b) Loại phiếu có hỗ trợ ghi (`{mode_var}` = 2/3), chạy lại trên tập tự điền
 #   (`{mode_var}` = 1), so sánh CHIỀU và ĐỘ LỚN cOR với mô hình chính.
 # (6c) Gộp nhị phân ({outcome} >= {nguong}) — CHỈ KHI đủ ≥ 10 biến cố/tham số
 #   (EPV); KHÔNG ép chạy bằng Firth khi thiếu biến cố (SAP §9):
-#   glm_bin <- glm(I(as.numeric(as.character({outcome})) >= {nguong}) ~ {exposure} + {cov_fml},
+#   glm_bin <- glm(I(as.numeric(as.character({outcome})) >= {nguong}) ~ {exposure}{_cong(cov_fml)},
 #                  data = df, family = binomial())
 #   broom::tidy(glm_bin, exponentiate = TRUE, conf.int = TRUE)
 
@@ -4528,7 +4609,7 @@ suppressPackageStartupMessages(lapply(pkgs_ordinal, require, character.only = TR
 #   < 5%; MICE m >= 20 (mice) CHỈ imputation covariates — kết cục làm predictor
 #   nhưng KHÔNG impute kết cục — chạy như độ nhạy.
 
-message("03_analysis.R (cross-sectional, kết cục thứ bậc PO) — Biến: {exposure}/{outcome} | cụm: {cluster} | [CẦN DỮ LIỆU THẬT]")
+message("03_analysis.R (cross-sectional, kết cục thứ bậc PO) — Biến: {exposure}/{outcome} | cụm: {cluster} | dữ liệu ĐÃ KHOÁ (G5)")
 """
 
 
@@ -4592,7 +4673,7 @@ source(here::here("scripts", "00_setup.R"))
 # Calibration (nếu index test là điểm số/xác suất liên tục, không phải nhị phân):
 # rms::val.prob(df${index_test}, df${ref_standard})
 
-message("03_analysis.R (Diagnostic) — index test={index_test} vs reference={ref_standard} | [CẦN DỮ LIỆU THẬT]")
+message("03_analysis.R (Diagnostic) — index test={index_test} vs reference={ref_standard} | dữ liệu ĐÃ KHOÁ (G5)")
 """
 
 
@@ -4614,7 +4695,9 @@ def _r03_prediction_with_vars(v: dict) -> str:
     sườn chỉ hướng dẫn CÁCH làm khi có dataset đó, không tự bịa ra được."""
     outcome  = v["outcome"]
     time_col = v["time_col"]
-    covars   = v["covariates"]
+    # 22/11/2026: dòng mô hình THI HÀNH — biến dự báo = mọi yếu tố của ma trận (dò vai trò đặt yếu tố đầu tiên vào
+    # «exposure», phần còn lại vào hiệp biến); trước đây khuôn bỏ mất yếu tố đầu tiên khỏi mô hình
+    covars   = list(dict.fromkeys(x for x in [v.get("exposure"), *v["covariates"]] if x))
     cov_fml  = " + ".join(covars) if covars else "age + sex + bmi + [CẦN — các biến tiên đoán ứng viên khác]"
     return f"""\
 # 03_analysis.R — Mô hình tiên lượng (TRIPOD+AI 2024): phát triển + đánh giá nội bộ
@@ -4662,17 +4745,43 @@ source(here::here("scripts", "00_setup.R"))
 # kiểm định nội" — KHÔNG được tuyên bố "đã kiểm định ngoại"/"sẵn sàng lâm sàng"
 # cho tới khi có bước này, theo mo-hinh-tien-luong.md M7]
 
-message("03_analysis.R (Prediction/TRIPOD+AI) — kết cục={outcome} | predictors={cov_fml} | [CẦN DỮ LIỆU THẬT — C-statistic/R² kỳ vọng do bác sĩ/thống kê viên cấp theo Riley 2020, PMID 32188600; kiểm định NGOẠI cần quần thể độc lập riêng, xem mục 6]")
+message("03_analysis.R (Prediction/TRIPOD+AI) — kết cục={outcome} | predictors={cov_fml} | dữ liệu ĐÃ KHOÁ (G5); kiểm định NGOẠI cần quần thể độc lập riêng (mục 6)")
 """
 
 
-def _r03_srma_template() -> str:
+def cot_gop(v: Optional[dict]) -> dict:
+    """Cột của bảng trích xuất cấp nghiên cứu (22/11/2026) — từ tên biến của từ điển G5 theo quy ước đặt tên của bộ biến
+    tổng quan: nhãn nghiên cứu (study_id / chứa «nghien_cuu»), số biến cố + cỡ mẫu từng nhánh (chứa «can_thiep» /
+    «chung»). Thiếu cột nào ⇒ không có khoá đó (script dừng có thông báo thay vì đoán)."""
+    ten = [str(x) for x in ((v or {}).get("all_vars") or [])]
+
+    def tim(*dk) -> Optional[str]:
+        return next((t for t in ten if all(re_.search(t.lower()) for re_ in dk)), None)
+
+    ra = {"study": tim(re.compile(r"^study_id$|nghien_cuu|^study")),
+          "event.e": tim(re.compile(r"bien_co|su_kien|event"), re.compile(r"can_thiep|interv")),
+          "n.e": tim(re.compile(r"^n_"), re.compile(r"can_thiep|interv")),
+          "event.c": tim(re.compile(r"bien_co|su_kien|event"), re.compile(r"chung|control")),
+          "n.c": tim(re.compile(r"^n_"), re.compile(r"chung|control"))}
+    return {k: c for k, c in ra.items() if c}
+
+
+def _r03_srma_template(v: Optional[dict] = None) -> str:
     """THÊM 2026-07-19 (audit vòng 3, D2 — NGHIÊM TRỌNG): tổng hợp bằng
     chứng (PRISMA 2020) — random/fixed-effects meta-analysis. KHÁC HẲN 6
     thiết kế còn lại: input KHÔNG phải df tham gia-cấp-cá-nhân từ REDCap
     (detect_variables_from_redcap không áp dụng — SR/MA phân tích bảng
     STUDY-LEVEL: mỗi dòng 1 nghiên cứu đã trích xuất, không phải 1 bệnh
-    nhân), nên hàm này KHÔNG nhận `v`."""
+    nhân). 22/11/2026: nhận `v` để nối cột của bảng trích xuất đã khoá (cot_gop) vào dòng mô hình chính THI HÀNH."""
+    c = cot_gop(v)
+    if len(c) == 5:
+        dong_chinh = (f'# m_chinh <- meta::metabin({c["event.e"]}, {c["n.e"]}, {c["event.c"]}, {c["n.c"]}, '
+                      f'studlab = {c["study"]}, data = extracted, sm = "RR", method.tau = "DL", random = TRUE, '
+                      'common = TRUE)  # ◆ MÔ HÌNH CHÍNH (SAP §4) — ngẫu nhiên DL; cố định báo kèm (độ nhạy SAP §9)\n'
+                      '# summary(m_chinh)')
+    else:
+        dong_chinh = ('# stop("Bảng trích xuất chưa đủ cột nhận diện được (nhãn nghiên cứu, biến cố + cỡ mẫu hai nhánh) '
+                      '— đặt tên theo bộ biến tổng quan")  # ◆ MÔ HÌNH CHÍNH (SAP §4)')
     return """\
 # 03_analysis.R — Tổng hợp bằng chứng (PRISMA 2020): random/fixed-effects meta-analysis
 # KHÁC 6 thiết kế còn lại: input là bảng STUDY-LEVEL (mỗi dòng 1 nghiên cứu đã
@@ -4680,7 +4789,8 @@ def _r03_srma_template() -> str:
 # cấp-cá-nhân. KHÔNG dùng Cox/log-rank/logistic đơn-nghiên-cứu.
 source(here::here("scripts", "00_setup.R"))
 # library(meta)  # hoặc metafor
-# extracted <- read.csv(file.path(DATA_PROC, "study_level_extraction.csv"))
+# extracted <- readRDS(file.path(DATA_PROC, "df_clean.rds"))  # bảng trích xuất ĐÃ KHOÁ (01_cleaning.R)
+# stopifnot(identical(attr(extracted, "sha256_khoa"), LOCKED_SHA))
 # # Cột kỳ vọng: study, year, kèm MỘT trong hai bộ:
 # #   (a) hiệu ứng liên tục: TE, seTE (log-scale nếu OR/RR/HR)
 # #   (b) 2x2 table (nhị phân): event.e, n.e, event.c, n.c
@@ -4698,7 +4808,7 @@ source(here::here("scripts", "00_setup.R"))
 # tích độ nhạy, để thống kê viên tự quyết định thay vì thấy một tham số ẩn:
 
 # Kết cục NHỊ PHÂN (OR/RR) — [CẦN XÁC NHẬN loại effect size từ PICO]:
-# m_chinh <- meta::metabin(event.e, n.e, event.c, n.c, studlab = study, data = extracted, sm = "RR", method = "MH", random = TRUE, common = FALSE)  # ◆ MÔ HÌNH CHÍNH (SAP §4)
+{dong_chinh}
 # m_bin <- meta::metabin(event.e, n.e, event.c, n.c, studlab = study,
 #                         data = extracted, sm = "OR",        # hoặc "RR"
 #                         method = "MH", random = TRUE, common = FALSE)
@@ -4727,8 +4837,8 @@ source(here::here("scripts", "00_setup.R"))
 # Publication bias (chỉ khi ≥ 10 nghiên cứu — Egger test không đáng tin cậy dưới ngưỡng này):
 # meta::funnel(m_bin); meta::metabias(m_bin, method.bias = "Egger")
 
-message("03_analysis.R (SR/MA) — input STUDY-LEVEL (không phải participant-level) | [CẦN BẢNG TRÍCH XUẤT THẬT sau khi hoàn tất sàng lọc PRISMA]")
-"""
+message("03_analysis.R (SR/MA) — input STUDY-LEVEL (không phải participant-level) | bảng trích xuất ĐÃ KHOÁ")
+""".replace("{dong_chinh}", dong_chinh)
 
 
 def _r03_qualitative_template() -> str:

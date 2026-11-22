@@ -25,10 +25,10 @@ sys.path.insert(0, str(TOOLS))
 np = pytest.importorskip("numpy")
 pd = pytest.importorskip("pandas")
 pytest.importorskip("statsmodels")
+import cau_noi_r as CNR  # noqa: E402
 import cau_noi_spss as S  # noqa: E402
 import chay_sap_g6 as CS  # noqa: E402
 import phan_tich_sap_bo_sung as P  # noqa: E402
-import phan_tich_sap_bo_sung_r as PR  # noqa: E402
 import run_stats_analysis as RSA  # noqa: E402
 
 CO_R = shutil.which("Rscript") is not None
@@ -445,9 +445,9 @@ def _gia_lap(n=500, K=25, seed=1, x_m=-0.01):
 
 def _chay_r(loai, ch, df, tmp_path):
     ch_r, df_r, cot, nk = P.chuan_bi_r(loai, ch, df)
-    (tmp_path / "s.R").write_text(PR.kich_ban(loai), encoding="utf-8", newline="\n")
+    (tmp_path / "s.R").write_text(CNR.kich_ban_bo_sung(loai), encoding="utf-8", newline="\n")
     df_r[cot].to_csv(tmp_path / "d.csv", index=False)
-    (tmp_path / "c.json").write_text(json.dumps(dict(ch_r, goi_can=list(PR.GOI_CAN[loai]))), encoding="utf-8",
+    (tmp_path / "c.json").write_text(json.dumps(dict(ch_r, goi_can=list(CNR.GOI_CAN_BO_SUNG[loai]))), encoding="utf-8",
                                      newline="\n")
     r = subprocess.run(["Rscript", "--vanilla", str(tmp_path / "s.R"), str(tmp_path / "d.csv"),
                         str(tmp_path / "k.json"), str(tmp_path / "c.json")], capture_output=True, text=True)

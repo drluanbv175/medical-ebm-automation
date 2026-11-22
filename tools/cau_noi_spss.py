@@ -1491,7 +1491,8 @@ KIEU_SANG_MUC_DO = {"nhi_phan": "NOMINAL", "danh_dinh": "NOMINAL", "thu_tu": "OR
 #: cụm/trọng số ⇒ NONE (SPLIT của SPSS chỉ là nhãn tương thích Modeler, không phải split-file — dễ hiểu nhầm).
 _VAI_TRO_SPSS = {"ket_cuc_chinh": "TARGET", "ket_cuc_phu": "TARGET", "thoi_gian": "TARGET", "su_kien": "TARGET",
                  "phoi_nhiem": "INPUT", "yeu_to": "INPUT", "hiep_bien": "INPUT", "phan_tang": "INPUT",
-                 "mo_ta": "INPUT", "cum": "NONE", "trong_so": "NONE"}
+                 "mo_ta": "INPUT", "dinh_nghia_thay_the": "INPUT", "tuan_thu_de_cuong": "INPUT", "cum": "NONE",
+                 "trong_so": "NONE"}
 
 
 def _so_hay_none(x) -> float | None:
@@ -1564,7 +1565,7 @@ def thuoc_tinh_ky_vong(b: dict) -> dict[str, str]:
 #: Một biến có thể nằm ở nhiều dòng ma trận (vd tuổi: mô tả ở MT1, yếu tố ở MT3) ⇒ vai trò gộp theo thứ tự ưu tiên;
 #: vai trò ĐẦU quyết định VARIABLE ROLE.
 UU_TIEN_VAI_TRO = ("ket_cuc_chinh", "ket_cuc_phu", "phoi_nhiem", "yeu_to", "hiep_bien", "phan_tang", "cum",
-                   "thoi_gian", "su_kien", "trong_so", "mo_ta")
+                   "thoi_gian", "su_kien", "trong_so", "dinh_nghia_thay_the", "tuan_thu_de_cuong", "mo_ta")
 
 
 def vai_tro_spss(b: dict) -> str:

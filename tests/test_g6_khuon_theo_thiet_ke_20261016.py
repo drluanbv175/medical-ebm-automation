@@ -45,6 +45,8 @@ _TRAN_DUOC_PHEP = frozenset((
     "lm mean message model.matrix names ncol nrow options paste0 plot poisson predict print prop.test "
     "read.csv readRDS round rowSums saveRDS sessionInfo source sprintf stopifnot sum summarise summary "
     "suppressPackageStartupMessages t.test table unique warning where with write.csv writeLines"
+    # 22/11/2026: 01_cleaning.R thi hành (base R): tỷ lệ thiếu, khung ITT, stop() khi biến phái sinh chưa duyệt
+    " data.frame order vapply stop suppressWarnings"
 ).split())
 
 
