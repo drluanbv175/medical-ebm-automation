@@ -2209,7 +2209,8 @@ def _do_bao_nham(goc: Path, out_dir: Path, study: str, loai: str, goi_api: bool,
               "batch": None, "so_lan_nop_lai": 0, "model_trong_tai": TRONG_TAI_MODEL}
     if trong_tai == "agent":   # 4.0: trọng tài là agent Claude Code của hệ — không tốn tín dụng API
         if not tt.get("viec_trong_tai"):
-            tm_tt = hc_dir / "viec_agent"   # không đặt phiếu cạnh dap_an.json (làm mù, 22/11/2026)
+            # làm mù (22/11/2026): phiếu ở ngoài cây hieu_chuan (không cạnh dap_an.json, đường dẫn không lộ)
+            tm_tt = thu_muc_hd(out_dir) / "viec_agent" / f"bao_nham_{loai}_{da['sha'][:12]}"
             tl = tm_tt / f"tra_loi_trong_tai_{TRONG_TAI_AGENT}.json"
             tt["viec_trong_tai"] = ghi_viec(tm_tt, "trong_tai", TRONG_TAI_AGENT, (
                 f"Bạn là agent `{TRONG_TAI_AGENT}` (ngữ cảnh mới, không tham gia hội đồng). "

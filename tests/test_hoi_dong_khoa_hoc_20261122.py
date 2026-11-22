@@ -1098,7 +1098,7 @@ def test_do_bao_nham_bang_trong_tai_agent_khong_ton_api(tmp_path):
     assert viec and viec[0]["agent"] == "trong-tai-tranh-bien"
     phieu = Path(viec[0]["loi_nhan"])
     # làm mù (22/11/2026): phiếu không nằm cạnh đáp án, không lộ tên bản cài lỗi
-    assert phieu.parent != hc and not (phieu.parent / "dap_an.json").exists()
+    assert "hieu_chuan" not in phieu.parts and not (phieu.parent / "dap_an.json").exists()
     assert "BAN_CAI_LOI" not in phieu.read_text(encoding="utf-8") and "dap_an" not in phieu.read_text(encoding="utf-8")
     tt = json.loads((hc / "bao_nham_trang_thai.json").read_text(encoding="utf-8"))
     assert "nhom" not in json.dumps(json.loads(Path(viec[0]["loi_nhan"]).with_suffix(".json").read_text("utf-8")))
