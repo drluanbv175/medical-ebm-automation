@@ -245,3 +245,50 @@ def test_that_kiem_cheo_gan_bootstrap_r_va_lech_bootstrap_lam_lech_ca_r(tmp_path
     monkeypatch.setattr(P, "so_khop_bootstrap", lambda b, rr: {"trang_thai": "LECH", "lech": ["giả"], "chi_tiet": []})
     kc = P.kiem_cheo("du_bao", ts, hang, tmp_path, "G6", py, kq["bootstrap"])
     assert kc["phan_mem"]["r"]["trang_thai"] == "LECH" and "giả" in kc["phan_mem"]["r"]["lech"], kc["phan_mem"]["r"]
+
+
+# ───────────────────────────── lời văn hồ sơ giả lập (G6.5 / G7) ─────────────────────────────
+def test_gia_lap_doc_so_bootstrap_cho_loi_van_dien_giai(tmp_path):
+    """Bộ giả lập đọc số hiệu chỉnh lạc quan từ tóm tắt của ĐÚNG phân tích có tham số bootstrap (đặc tả kịch bản dự
+    báo thật) để điền G6.5/G7 — trước đây lời văn ghi «chưa báo ở đây». Thiếu tóm tắt ⇒ {} (chỗ giữ sẽ lộ KeyError)."""
+    import gia_lap_kich_ban_them as K
+    import gia_lap_tron_vong as TV
+
+    class _O:
+        _so_vn = staticmethod(TV.TronVong._so_vn)
+        _gia_tri_bootstrap = TV.TronVong._gia_tri_bootstrap
+
+    o = _O()
+    o.out = tmp_path
+    o.kb = {"ho_so_tron_vong": {"g6": K.sap_g6_tron_vong()["mo_hinh_du_bao"]["g6"]}}
+    assert o._gia_tri_bootstrap() == {}
+    bt = {"B": 500, "B_hop_le": 500, "c_hieu_chinh": 0.697563, "do_doc_hieu_chinh": 0.962556,
+          "citl_hieu_chinh": -0.0034, "kiem_cheo_r": "KHOP",
+          "r": {"c_hieu_chinh": 0.6988, "do_doc_hieu_chinh": 0.97, "citl_hieu_chinh": 0.0086}}
+    (tmp_path / "G6_DN_bootstrap_analysis_summary.json").write_text(json.dumps({"dac_thu": {"bootstrap": bt}}),
+                                                                    encoding="utf-8", newline="\n")
+    gt = o._gia_tri_bootstrap()
+    assert gt["boot_b"] == 500 and gt["c_hieu_chinh"] == "0,698" and gt["do_doc_hieu_chinh"] == "0,963"
+    assert gt["citl_hieu_chinh"] == "-0,003" and "trong sai số Monte Carlo" in gt["boot_doi_chieu_r"]
+    bt["kiem_cheo_r"] = "LECH"
+    (tmp_path / "G6_DN_bootstrap_analysis_summary.json").write_text(json.dumps({"dac_thu": {"bootstrap": bt}}),
+                                                                    encoding="utf-8", newline="\n")
+    assert "chưa xác nhận" in o._gia_tri_bootstrap()["boot_doi_chieu_r"]
+    # EPV lẻ viết dấu phẩy thập phân (lượt giả lập 23/11/2026 ra «45.5 biến cố» trong mục 2)
+    o.kb = {}
+    o._uoc_luong = lambda *a, **k: None
+    o._gia_tri_kinh_te = lambda: {}
+    o._cau_ton_hai = lambda: ""
+    o.THUOC_DO = ()
+    (tmp_path / "G6_analysis_summary.json").write_text(json.dumps({"n_total": 900, "dac_thu": {"epv": 45.5}}),
+                                                       encoding="utf-8", newline="\n")
+    assert TV.TronVong._gia_tri_ket_qua(o)["epv"] == "45,5"
+    import gia_lap_ho_so_sau_g6 as HS
+
+    hs = HS.ho_so_sau_g6()["mo_hinh_du_bao"]
+    van = " ".join([hs["dien_giai"]["muc_2"], hs["dien_giai"]["muc_4"], hs["phan_bien_G8"]["ly_do"]]
+                   + [v for _m, v in hs["tra_loi_G7"]])
+    assert "chưa báo ở đây" not in van and "{c_hieu_chinh}" in hs["dien_giai"]["muc_2"]
+    assert "{do_doc_hieu_chinh}" in van and "{citl_hieu_chinh}" in van
+    ket_qua_g7 = dict(hs["tra_loi_G7"])[r"khong dien truoc khi phan tich"]  # ô Kết quả của bản thảo G7
+    assert all(k in ket_qua_g7 for k in ("{c_hieu_chinh}", "{do_doc_hieu_chinh}", "{citl_hieu_chinh}")), ket_qua_g7
