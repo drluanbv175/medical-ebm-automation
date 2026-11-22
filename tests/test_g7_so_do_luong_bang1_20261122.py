@@ -376,7 +376,7 @@ def test_gia_lap_cau_ton_hai_vao_muc_2_cua_rct_va_dat_k18_muc_29(tmp_path):
 
 def test_g7_muc_tieu_tac_hai_khi_sap_dinh_nghia_ton_hai():
     """CONSORT 2025 mục 7: RCT có tổn hại định trước ở SAP §15 ⇒ Đặt vấn đề nêu mục tiêu mô tả tác hại (không số)."""
-    cau = "Nghiên cứu đồng thời mô tả tác hại (biến cố bất lợi) ở từng nhóm"
+    cau = "Mục tiêu về tác hại: nghiên cứu đồng thời mô tả tác hại (biến cố bất lợi) ở từng nhóm"
     sap = {"ton_hai": "Biến cố bất lợi liên quan can thiệp: cơn tăng huyết áp từ 180/110 mmHg trở lên"}
     co = _sinh(sap_tom_tat=sap)
     gioi_thieu = co.split("## II. PHƯƠNG PHÁP")[0]

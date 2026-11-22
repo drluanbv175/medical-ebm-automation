@@ -436,7 +436,8 @@ def test_n16_lien_tuc_song_con_thu_tu_ty_le(tmp_path):
     for chuoi in ("trung bình 132.418 (SD 14.207)", "Hiệu số trung bình thô (`B` − `A`): MD = -7.325",
                   "chiều `A` − `B` — NGƯỢC chiều MD thô ở trên): MD=7.325 (95%CI 1.189–13.461)",
                   "p = 0.0197 (Welch's t-test)", "Cox thô: HR = 0.642 (95% CI 0.451–0.914), p = 0.0139",
-                  "Cox hiệu chỉnh (hiệp biến: tuoi, bmi): HR = 0.668 (95% CI 0.468–0.954), p = 0.0265",
+                  # 22/11/2026: nêu rõ ước lượng hiệu chỉnh THEO biến nào (STROBE 2007 16a)
+                  "Cox hiệu chỉnh theo các hiệp biến tuoi, bmi: HR = 0.668 (95% CI 0.468–0.954), p = 0.0265",
                   "| `A` | 40 | 22 | 14.25 |", "| `B` | 41 | 15 | chưa đạt trung vị (G6) |", "Log-rank: p = 0.0144",
                   "| `thoi_gian_cho` | 0.873 | 0.801–0.951 | 0.0021 |", "OR cho MỖI 15 đơn vị",
                   "hai_long ≥ 4: 63/81 = 0.7778 (95% CI 0.6744–0.8552",

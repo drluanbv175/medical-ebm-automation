@@ -124,8 +124,15 @@ def kich_ban_kho() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                                    "theo quy mô phòng khám"),
                "recruitment_strategy": "Tuyển liên tiếp ĐÚNG 8 người bệnh đủ tiêu chuẩn mỗi phòng khám (40 phòng "
                                        "khám — cỡ chùm đều)",
-               "allocation_concealment": "Phòng khám được phân bổ trước khi tuyển người bệnh, do thống kê viên độc "
-                                         "lập"})
+               # 22/11/2026 (K18 bản thảo báo thiếu CONSORT 2025 mục 19 — ai được tiếp cận trình tự): lời khai cũ chỉ
+               # nói ai phân bổ. Thử nghiệm cụm phân bổ TRƯỚC khi tuyển nên người tuyển biết nhánh — CONSORT mở rộng
+               # cho thử nghiệm cụm (PMID 22951546) đòi nêu rõ điều này cùng biện pháp hạn chế sai lệch tuyển chọn.
+               "allocation_concealment": ("Thống kê viên độc lập, không tham gia tuyển phòng khám hay người bệnh, sinh "
+                                          "và giữ danh sách phân bổ; 40 phòng khám được ghi danh trước rồi mới phân bổ "
+                                          "cùng một lượt cho cả danh sách. Vì phòng khám được phân bổ trước khi tuyển "
+                                          "người bệnh, người tuyển người bệnh tại phòng khám biết nhánh của phòng khám "
+                                          "mình; sai lệch tuyển chọn được hạn chế bằng cách tuyển liên tiếp đúng 8 "
+                                          "người bệnh đủ tiêu chuẩn mỗi phòng khám")})
     # ICC: Adams 2004 (PMID 15485730) — ICC huyết áp tâm thu 0–0,052 ở 4 bộ dữ liệu chăm sóc ban đầu ⇒ 0,05 là cận
     # trên (bảo thủ). 40 phòng khám CỐ ĐỊNH (≥ 40 chùm: không cần hiệu chỉnh mẫu nhỏ — Kahan 2016) × 8 người = 320.
     g3.update({"icc": 0.05, "cluster_size": 8, "n_clusters": 40, "confirmed_n": 320, "equal_cluster_sizes": True,
@@ -276,9 +283,16 @@ def kich_ban_kho() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
         "cost_items": vi("Khám, thuốc hạ áp, xét nghiệm theo dõi (biểu giá dịch vụ của bệnh viện) và chi phí vận hành "
                          "chương trình tin nhắn (hợp đồng nhà mạng, nhân lực)"),
         "effect_measure": "Thêm một người đạt kiểm soát huyết áp tại tháng 6 (đơn vị tự nhiên)",
+        # 22/11/2026 (CHEERS 2022 mục 13, 18, 19 — chuẩn đòi nêu rõ cả khi không làm): lời khai của chủ nhiệm
+        "outcome_valuation": ("Không định giá theo thoả dụng: hiệu quả tính bằng số người đạt kiểm soát huyết áp (đơn "
+                              "vị tự nhiên), không quy đổi QALY nên không dùng bộ trọng số thoả dụng"),
         "wtp": "5.000.000 VND cho thêm một người đạt kiểm soát huyết áp",
         "wtp_source": vi("Chủ nhiệm ấn định cho đơn vị tự nhiên — chưa có ngưỡng chuẩn quốc gia; báo CEAC 0–3 × "
                          "ngưỡng để người đọc tự đặt ngưỡng"),
+        "heterogeneity": ("Không ước lượng chi phí–hiệu quả theo phân nhóm: cỡ mẫu tính cho kết cục lâm sàng chính, "
+                          "không đủ lực cho phân nhóm; phân nhóm nam/nữ định trước chỉ áp cho kết cục lâm sàng"),
+        "distributional_effects": ("Không phân tích phân bố tác động theo nhóm thu nhập hay vùng và không điều chỉnh "
+                                   "cho nhóm ưu tiên: đề tài không thu thập dữ liệu kinh tế–xã hội của người bệnh"),
         "patient_involvement": ("Không có người bệnh tham gia thiết kế phân tích kinh tế (ghi rõ theo CHEERS 2022 mục "
                                 "21)"),
         "bien_nhom": "nhom", "bien_chi_phi": "chi_phi_6t", "bien_hieu_qua": "kiem_soat_t6"}
