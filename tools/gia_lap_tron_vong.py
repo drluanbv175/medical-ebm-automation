@@ -2410,6 +2410,30 @@ Kết luận tổng thể: {ket_luan}
             return {"ket": "CHUA_DO", "lay": lay, "loi": f"{type(exc).__name__}: {exc}"[:200]}
         return {"lay": lay, **GCT.phan_xet_chinh_xac(that, u["uoc"], tuple(u["ci"]), thang_log)}
 
+    # 22/11/2026 (bác sĩ: «không chỉ ghi định dạng huyết áp đúng mà tất cả phải đúng chuẩn»): MỌI văn bản đề tài hệ sinh
+    # ra phải đạt luật trình bày số đo (K11 `loi_so_do`), không riêng đề cương nộp. Không soát: tiêu đề bài báo nguyên
+    # văn (A12, sổ chứng cứ G1, tìm bổ sung G0), báo cáo máy đối chiếu SPSS/R, chỉ mục/sổ trạng thái, kịch bản
+    # phân tích.
+    _KHONG_SOAT_SO_DO = re.compile(r"A12_CITATION|EVIDENCE_LEDGER|G0_TIM_BO_SUNG|_kiem_cheo|_r_doi_chieu|"
+                                   r"_spss_doi_chieu|KIEM_CHI_TIET|SO_TRANG_THAI|STUDY_INDEX|G6_SAP_ket_qua|"
+                                   r"G6_A7_ANALYSIS_SCRIPTS|\.bak-")
+
+    def _soat_so_do(self) -> List[str]:
+        """«tệp: K11 dòng N: …» cho mọi lỗi trình bày số đo trong văn bản .md của đề tài (tối đa 200)."""
+        import kiem_de_cuong_nop_hoi_dong as KDN  # noqa: PLC0415
+
+        ra: List[str] = []
+        out = getattr(self, "out", None)
+        for p in sorted(Path(out).rglob("*.md")) if out and Path(out).is_dir() else []:
+            if "_dau_may_sinh" in p.parts or self._KHONG_SOAT_SO_DO.search(p.name):
+                continue
+            try:
+                md = p.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError):
+                continue
+            ra += [f"{p.relative_to(out)}: {x}" for x in KDN.loi_k11(md) if KDN.la_loi_so_do(x)]
+        return ra[:200]
+
     def bao_cao(self) -> Dict[str, Any]:
         theo_cong: Dict[str, Any] = {}
         for g in sorted({o["cong"] for o in self.o}):
@@ -2421,7 +2445,7 @@ Kết luận tổng thể: {ket_luan}
                 "dung": self.dung,
                 "so_o_loi_may": len(loi_may), "o_loi_may": sorted(set(loi_may))[:200],
                 "crash": [b["buoc"] for b in self.buoc if b.get("crash")], "buoc": self.buoc,
-                "chinh_xac": self._chinh_xac_an_toan()}
+                "chinh_xac": self._chinh_xac_an_toan(), "so_do_sai": self._soat_so_do()}
 
     def _chinh_xac_an_toan(self) -> Dict[str, Any]:
         try:

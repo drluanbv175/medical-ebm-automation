@@ -99,3 +99,36 @@ def test_ho_so_gia_lap_moi_so_do_dung_chuan():
                 if loi:
                     sai.append(f"{ten}:{so}: {loi}")
     assert sai == []
+
+
+def test_gia_lap_soat_moi_van_ban_de_tai_va_cong_phan_bao_do(tmp_path):
+    """Bộ giả lập soát MỌI văn bản .md của đề tài (không riêng đề cương nộp); tiêu đề nguyên văn/đối chiếu máy miễn."""
+    import json
+
+    import gia_lap_tron_vong as TV
+    import kiem_gia_lap_16 as KG
+
+    out = tmp_path / "exports" / "X"
+    (out / "_dau_may_sinh").mkdir(parents=True)
+    (out / "G4_A5_SAP_FINAL_X.md").write_text("# SAP\n\nĐiều chỉnh nếu >3 kết cục chính.\n", encoding="utf-8",
+                                               newline="\n")
+    (out / "G2_A3_ETHICS_PACKAGE_X.md").write_text("Tóm tắt ≤ 1 trang; huyết áp ≥ 180/110 mmHg.\n",
+                                                   encoding="utf-8", newline="\n")
+    (out / "A12_CITATION_VERIFICATION_X.md").write_text("| Title | BP <140/90 in adults |\n", encoding="utf-8",
+                                                        newline="\n")
+    (out / "G6_kiem_cheo.md").write_text("p<0.001\n", encoding="utf-8", newline="\n")
+    (out / "_dau_may_sinh" / "y.md").write_text("Tuổi ≥18\n", encoding="utf-8", newline="\n")
+
+    class _O:
+        _KHONG_SOAT_SO_DO = TV.TronVong._KHONG_SOAT_SO_DO
+        _soat_so_do = TV.TronVong._soat_so_do
+
+    o = _O()
+    o.out = out
+    sai = o._soat_so_do()
+    assert len(sai) == 1 and sai[0].startswith("G4_A5_SAP_FINAL_X.md: K11 dòng 3: dấu so sánh dính số «>3»"), sai
+    bc = tmp_path / "bc.json"
+    bc.write_text(json.dumps({"ma": "x", "so_do_sai": sai}), encoding="utf-8", newline="\n")
+    assert any("trình bày số đo sai chuẩn ở 1 chỗ" in x for x in KG.kiem_mot(bc))
+    bc.write_text(json.dumps({"ma": "x", "so_do_sai": []}), encoding="utf-8", newline="\n")
+    assert not any("trình bày số đo" in x for x in KG.kiem_mot(bc))

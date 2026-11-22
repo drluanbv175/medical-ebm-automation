@@ -431,6 +431,14 @@ _DON_VI_DUNG = {"mmhg": "mmHg", "mm hg": "mmHg", "mg/dl": "mg/dL", "mmol/l": "mm
 _DAU_SO_SANH_DINH_RE = re.compile(r"[<>≤≥](?=\d)")
 
 
+#: tiền tố thông điệp của `loi_so_do` (sau «K11 dòng N: ») — để bộ giả lập/công cụ khác lọc đúng nhóm luật số đo
+TIEN_TO_LOI_SO_DO = ("số đo huyết áp", "số dính đơn vị", "ký hiệu đơn vị", "dấu so sánh dính số")
+
+
+def la_loi_so_do(thong_diep_k11: str) -> bool:
+    return str(thong_diep_k11).split(": ", 1)[-1].startswith(TIEN_TO_LOI_SO_DO)
+
+
 def loi_so_do(s: str) -> Optional[str]:
     """Lỗi trình bày số đo ĐẦU TIÊN trong một dòng (None = đúng chuẩn): số đo huyết áp (`loi_huyet_ap`), số dính
     đơn vị, ký hiệu đơn vị sai chữ, dấu so sánh dính số. Dòng đã bỏ mã `…`, DOI/URL/PMID trước khi gọi."""
