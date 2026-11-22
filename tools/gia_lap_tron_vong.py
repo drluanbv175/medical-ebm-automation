@@ -1976,10 +1976,39 @@ class TronVong:
                                   "theo A12", "lenh": "(sửa bản thảo)", "ma": 0, "crash": False,
                           "cuoi": [f"còn PMID {rb['pmid_rut']} trong bản thảo: {rb['pmid_rut'] in s}"]})
 
+    def _khai_truoc_ban_thao(self) -> None:
+        """Dữ kiện bản thảo cần có mặt TRƯỚC lượt sinh G7 (22/11/2026, K18 — CONSORT 2025 mục 4, 8, 20b, 24b).
+
+        Đề tài thật: tác giả chốt tuyên bố chia sẻ dữ liệu trước khi viết; sự tham gia của người bệnh/công chúng, chăm
+        sóc đồng thời, cách làm mù là điều đề cương định từ đầu. Bản cũ ghi `gate_params.G7.data_sharing_statement` SAU
+        lượt sinh và để PI khai đặc tả ở G10 (`_khai_dac_ta_g10`) ⇒ bản thảo cuối thiếu 4, 8, 24b dù gói G10 có đủ dữ
+        kiện (docs/K18-PHAN-XU-BAN-THAO-20261122.md §3.3). Không đổi vai, không đổi khoá: tác giả G7 ghi khoá khai báo
+        bộ sinh đọc (`run_g7_auto.KHOA_TAC_GIA_BAN_THAO`) vào `gate_params.G7` — xác nhận đã đọc bản thảo vẫn ghi SAU
+        lượt sinh; PI ghi khoá đặc tả bộ sinh đọc (`run_g7_auto.KHOA_DAC_TA_BAN_THAO`) vào study_meta. Chỉ ghi khi còn
+        trống; `_khai_dac_ta_g10` không khai lại khoá đã có."""
+        import run_g7_auto as G7A  # noqa: PLC0415
+
+        hs = self.kb.get("ho_so_tron_vong") or {}
+        tg, dt = hs.get("tac_gia_G7") or {}, hs.get("dac_ta_G10") or {}
+        meta = self._meta()
+        g7 = meta.setdefault("gate_params", {}).setdefault("G7", {})
+        ghi: Dict[str, str] = {}
+        for k in G7A.KHOA_TAC_GIA_BAN_THAO:
+            if tg.get(k) and not g7.get(k):
+                g7[k] = tg[k]
+                ghi[f"gate_params.G7.{k}"] = "tác giả G7"
+        for k in G7A.KHOA_DAC_TA_BAN_THAO:
+            if dt.get(k) and not meta.get(k):
+                meta[k] = dt[k]
+                ghi[k] = "PI (đặc tả đề cương)"
+        self._ghi_meta(meta)
+        self.du_lieu["khai_truoc_ban_thao"] = ghi
+
     def g7(self) -> None:
         hs = self.kb.get("ho_so_tron_vong") or {}
         tg = hs.get("tac_gia_G7") or {}
         tap_chi = tg.get("target_journal") or "Tạp chí Y học Việt Nam"
+        self._khai_truoc_ban_thao()
         self.chay("G7 sinh bản thảo", "run_g7_auto.py", "--study", self.study, "--target-journal", tap_chi)
         a8 = self.out / f"G7_A8_MANUSCRIPT_{self.study}.md"
         gt = self._gia_tri_ket_qua()
@@ -2316,10 +2345,13 @@ Kết luận tổng thể: {ket_luan}
         _moi, he_lap = QD.lop_phu(meta, self.out, self.study)
         self.du_lieu["g10_he_tu_lap"] = he_lap
         ghi: Dict[str, str] = {}
+        truoc_g7 = self.du_lieu.get("khai_truoc_ban_thao") or {}
         for k, v in hs.items():
             if v and not meta.get(k):
                 meta[k] = v
                 ghi[k] = "mới đúng vai (hồ sơ đề tài)"
+            elif k in truoc_g7:
+                ghi[k] = "đã khai trước bản thảo G7"
         self._ghi_meta(meta)
         self.du_lieu["g10_khai_lai"] = ghi
 

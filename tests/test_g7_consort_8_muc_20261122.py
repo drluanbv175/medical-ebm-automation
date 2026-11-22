@@ -200,7 +200,8 @@ def test_tieu_de_khoi_ket_qua_khong_lam_bang_chung_gia_cho_24b(tmp_path):
     tt = _trang_thai(_ban_thao(d))
     assert tt["23a"] == "dat" and tt["24b"] == "thieu", tt
     _de_tai(tmp_path, g1={}, g2={}, meta={"concomitant_care_policy": "Thuốc nền giữ nguyên ở cả hai nhánh"})
-    assert G7.khoi_consort_bo_sung_g7(d, STUDY, "rct")["ket_qua"][1] == "**Chăm sóc đồng thời:**  "
+    # tiêu đề không lặp cụm của dòng nội dung — K18 lấy dòng chép đặc tả làm bằng chứng 24b (22/11, khai trước G7)
+    assert G7.khoi_consort_bo_sung_g7(d, STUDY, "rct")["ket_qua"][1] == "**Chăm sóc theo đề cương:**  "
 
 
 def test_hieu_ty_le_newcombe_la_phuong_phap_thong_ke_cau_co_dinh_95ci_thi_khong():
