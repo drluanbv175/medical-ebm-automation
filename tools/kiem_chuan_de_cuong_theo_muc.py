@@ -719,7 +719,14 @@ def van_thiet_ke_de_tai(md: str) -> str:
             dau = p.dong_dau - 1
             for i in range(dau, min(dau + p.van.count("\n") + 1, len(dong))):
                 bo[i] = True
-    return "\n".join(d for d, b in zip(dong, bo) if not b)
+    return _TEN_CHUAN_MO_RONG.sub(" ", "\n".join(d for d, b in zip(dong, bo) if not b))
+
+
+#: TÊN của chính các chuẩn báo cáo («CONSORT mở rộng không kém hơn, Piaggio 2012», «phần mở rộng cho thử nghiệm cụm»)
+#: là trích dẫn nguồn, không phải lời đề tài tự nêu thiết kế — 22/11/2026: định nghĩa biến tuân thủ của thử nghiệm VƯỢT
+#: TRỘI dẫn phần mở rộng NI làm căn cứ «phân tích theo đề cương» từng làm K18 áp nhầm CONSORT NI cho bản thảo.
+_TEN_CHUAN_MO_RONG = re.compile(r"(CONSORT|phần mở rộng|mở rộng|extension)[^.;()\n]{0,40}?(không kém hơn|tương đương|"
+                                r"non-?inferiority|equivalence|theo cụm|cụm|cluster)[^.;()\n]{0,20}", re.IGNORECASE)
 
 
 _KHONG_NGUOI_THAM_GIA = frozenset({"systematic_review"})

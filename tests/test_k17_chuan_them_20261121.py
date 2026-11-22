@@ -311,12 +311,15 @@ def test_cac_chuan_chua_co_van_ban_that_do_duoc_tren_de_cuong_mau():
     assert all(kq[("GRAMMS 2008", m)].trang_thai == "dat" for m in ("1", "2", "3", "4"))
     kq = K.doi_chieu(md, "economic")
     assert any(r.chuan == "CHEERS 2022" for r in kq["ket_qua"]) and not kq["chua_do"]
-    # 22/11/2026: SQUIRE, TREND, CARE có tiêu chí nhưng CHƯA kiểm chứng trên văn bản nào của hệ ⇒ mọi mục «chưa đo
-    # được», lý do nêu kịch bản hệ cần — không tính là đạt (test_chuan_de_cuong_mo_rong_20261122)
-    for tk, chuan in (("quality_improvement", "SQUIRE 2.0"), ("non_randomized", "TREND 2004"),
-                      ("case_report", "CARE 2013")):
+    # 22/11/2026: TREND có tiêu chí nhưng CHƯA kiểm chứng trên văn bản nào của hệ ⇒ mọi mục «chưa đo được», lý do nêu
+    # kịch bản hệ cần — không tính là đạt. SQUIRE 2.0, CARE 2013 đã đối chiếu bảng gốc và kiểm chứng trên văn bản mẫu
+    # (test_chuan_de_cuong_mo_rong_20261122) ⇒ đo từng mục như mọi chuẩn
+    kq = K.doi_chieu(md, "non_randomized")
+    assert any(r.chuan == "TREND 2004" for r in kq["ket_qua"]) and "non_randomized" in dict(kq["chua_do"])["TREND 2004"]
+    for tk, chuan in (("quality_improvement", "SQUIRE 2.0"), ("case_report", "CARE 2013")):
         kq = K.doi_chieu(md, tk)
-        assert any(r.chuan == chuan for r in kq["ket_qua"]) and tk in dict(kq["chua_do"])[chuan], tk
+        assert chuan not in dict(kq["chua_do"]) and any(r.chuan == chuan and r.trang_thai == "thieu"
+                                                        for r in kq["ket_qua"]), tk
 
 
 # ───────────────────────────── khâu chặn nộp (sau #399: K17 chặn mọi đề cương nộp) ─────────────────────────────
