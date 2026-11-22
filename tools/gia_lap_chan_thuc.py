@@ -126,8 +126,8 @@ def _rct(goc: Dict[str, Any]) -> Dict[str, Any]:
            form="theo_doi_t6", nhanh=tl),
         _t("ha_ttr_t6", "text", "Huyết áp tâm trương tháng 6, trung bình 2 lần đo (mmHg)", kt="integer", lo="40",
            hi="150", form="theo_doi_t6", nhanh=tl),
-        _t("kiem_soat_t6", "radio", "Kiểm soát huyết áp tháng 6 (<140/90)", "0, Không | 1, Có", form="theo_doi_t6",
-           nhanh=tl),
+        _t("kiem_soat_t6", "radio", "Kiểm soát huyết áp tháng 6 (< 140/90 mmHg)", "0, Không | 1, Có",
+           form="theo_doi_t6", nhanh=tl),
         _t("tuan_thu_t6", "text", "Điểm tuân thủ dùng thuốc tự báo cáo (0–8)", kt="integer", lo="0", hi="8",
            form="theo_doi_t6", nhanh=tl),
         _t("co_bien_co", "yesno", "Có biến cố bất lợi trong 6 tháng", form="bien_co", nhanh=tl,
@@ -153,7 +153,7 @@ def _rct(goc: Dict[str, Any]) -> Dict[str, Any]:
 
 
 # Hình mẫu RCT. Kết cục khớp G3 của kịch bản gốc: p0 = 48%, RR ≈ 1,46 (TEXT4BP, PMID 35342691). Mô hình: HA tâm thu
-# tháng 6 = 66 + 0,5 × HA nền − 6,5 × (nhóm SMS) + 3 × (ĐTĐ) + sai số SD 11 ⇒ kiểm soát (<140/90) 41,6% vs 61,0%,
+# tháng 6 = 66 + 0,5 × HA nền − 6,5 × (nhóm SMS) + 3 × (ĐTĐ) + sai số SD 11 ⇒ kiểm soát (< 140/90 mmHg) 41,6% vs 61,0%,
 # RR 1,465 (hiệu chỉnh trên 20.000 người mô phỏng — lượt chạy khô 400 người dao động ±0,1 quanh giá trị này).
 HINH_MAU_RCT: Dict[str, Any] = {
     "record_id": {"co_dinh": "SMS-{i:03d}"},
@@ -224,7 +224,7 @@ def _cat_ngang(goc: Dict[str, Any]) -> Dict[str, Any]:
            form="do_huyet_ap", nhanh=DU),
         _t("ha_ttr_tb", "text", "Huyết áp tâm trương trung bình 2 lần đo (mmHg)", kt="integer", lo="30", hi="150",
            form="do_huyet_ap", nhanh=DU),
-        _t("kiem_soat_ha", "radio", "Đạt kiểm soát huyết áp (<140/90)", "0, Không | 1, Có", form="do_huyet_ap",
+        _t("kiem_soat_ha", "radio", "Đạt kiểm soát huyết áp (< 140/90 mmHg)", "0, Không | 1, Có", form="do_huyet_ap",
            nhanh=DU),
     ], [
         ("1", "đái tháo đường", "mo_ta", "dtd", "nhi_phan", "", "phỏng vấn, hồ sơ", "SAP §3 mô tả"),

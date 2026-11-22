@@ -34,7 +34,9 @@ Luật (mỗi lỗi một dòng; rỗng = đạt):
       định dạng»): số thập phân dấu phẩy, nhóm nghìn từ 5 chữ số, ngày dd/mm/yyyy, ngoặc kép “…”, không «vs», không chữ
       IN HOA nhấn mạnh ngoài phụ lục, loại biến không bỏ lửng «Định danh/thứ bậc», tên bảng/hình không hai ngoặc liền;
       bảng chữ viết tắt không hai mục cùng nghĩa, không mục thừa, xếp theo vần tiếng Việt. (Bảng «mỗi mức một dòng»
-      ở K9.) Danh mục tài liệu tham khảo, mã, chuỗi tìm kiếm, DOI/URL/PMID được miễn.
+      ở K9.) Danh mục tài liệu tham khảo, mã, chuỗi tìm kiếm, DOI/URL/PMID được miễn. Số đo huyết áp (bác sĩ
+      22/11/2026: «180/110 mmHg là số đo huyết áp phải ghi đúng định dạng») ghi «≥ 180/110 mmHg»: tâm thu/tâm trương
+      liền dấu «/», một khoảng trắng rồi «mmHg», dấu so sánh cách số.
   K12 mỗi tài liệu tham khảo đỡ một câu cụ thể (bác sĩ 20/11/2026, phản biện BTM O13): không ngoặc trích gộp từ 6 tài
       liệu trở lên, không mục danh mục nào không được trích.
   K13 mục có PMID đúng Vancouver/NLM theo metadata biên nhận A12 (O14): hơn 6 tác giả ⇒ 6 tác giả rồi «et al.»,
@@ -374,6 +376,44 @@ _VS_RE = re.compile(r"(?<![\wÀ-ỹ])vs\.?(?![\wÀ-ỹ])")
 _IN_HOA_NHAN_RE = re.compile(r"(?<![\wÀ-ỹ])(?:CAO|THẤP|KHÔNG|CHỈ|MỌI|PHẢI|LUÔN|TĂNG|GIẢM|ĐÚNG|SAI)(?![\wÀ-ỹ])")
 _TIM_KIEM_RE = re.compile(r"\[(?:Mesh|tiab|pt|ti|tw|majr|dp)\]", re.I)
 _TEN_BB_HAI_NGOAC_RE = re.compile(r"^\*\*(?:Bảng|Hình|Biểu đồ) [0-9A-Z]+\.\d+\..*\)\s*\(")
+# Số đo huyết áp (bác sĩ 22/11/2026): cặp tâm thu/tâm trương — chỉ xét khi giá trị hợp lý (tâm thu 60–300 > tâm trương
+# 30–200: loại ngày «17/11», tỷ số đếm «57/118») VÀ có ngữ cảnh huyết áp (đơn vị mmHg, «huyết áp», «HA», «tâm thu/
+# tâm trương» trong khoảng 80 ký tự trước) — câu «Thêm huyết áp đo được từ 140/90 ở 2 lượt khám» của bảng biến BTM
+# thiếu đơn vị mà không chốt nào bắt.
+_HUYET_AP_RE = re.compile(r"(?P<dau>[<>≤≥]\s*)?(?<![\d/.,])(?P<tt>\d{2,3})(?P<g1>\s*)/(?P<g2>\s*)(?P<ttr>\d{2,3})"
+                          r"(?![\d/.,])(?P<dv>\s*mm\s?Hg)?")
+_NGU_CANH_HUYET_AP_RE = re.compile(r"(?i:huyết áp|tâm thu|tâm trương)|\bHA\b|mm\s?Hg")
+_TY_SO_DEM_SAU_RE = re.compile(r"\s*(?:\(|người|ca\b|trường hợp|bệnh nhân)")
+# Đơn vị dùng chung cho hai cặp nối nhau («140/90 hoặc 130/80 mmHg», tiêu đề «140/90 or 130/80 mmHg») — hợp lệ.
+_DON_VI_CHUNG_SAU_RE = re.compile(r"\s*(?:hoặc|or|và|and|đến|to|–|-|,)\s*[<>≤≥]?\s*\d{2,3}\s*/\s*\d{2,3}\s*mm\s?Hg")
+
+
+def loi_huyet_ap(s: str) -> Optional[str]:
+    """Lỗi định dạng số đo huyết áp ĐẦU TIÊN trong một dòng (None = không có số đo huyết áp hoặc đã đúng).
+
+    Đúng: «≥ 180/110 mmHg», «< 140/90 mmHg», «120/80 mmHg». Sai: thiếu đơn vị («từ 140/90 ở 2 lượt khám»), dính đơn vị
+    («140/90mmHg»), khoảng trắng quanh «/» («140 / 90»), dấu so sánh dính số («≥180/110»)."""
+    for m in _HUYET_AP_RE.finditer(s):
+        tt, ttr = int(m["tt"]), int(m["ttr"])
+        if not (60 <= tt <= 300 and 30 <= ttr <= 200 and tt > ttr):
+            continue
+        if not m["dv"] and _TY_SO_DEM_SAU_RE.match(s[m.end():]):
+            continue  # tỷ số đếm «120/100 (…)», «120/100 người»
+        if not (m["dv"] or _NGU_CANH_HUYET_AP_RE.search(s[max(0, m.start() - 80):m.end() + 20])):
+            continue
+        sai = []
+        if m["g1"] or m["g2"]:
+            sai.append("không để khoảng trắng quanh «/»")
+        if not m["dv"]:
+            if not _DON_VI_CHUNG_SAU_RE.match(s[m.end():]):
+                sai.append("thiếu đơn vị mmHg")
+        elif m["dv"] != " mmHg":
+            sai.append("ghi « mmHg» (một khoảng trắng trước đơn vị)")
+        if m["dau"] and not m["dau"].endswith((" ", "\u00a0")):
+            sai.append("dấu so sánh cách số")
+        if sai:
+            return f"số đo huyết áp «{m.group(0).strip()}» — {', '.join(sai)} (vd «≥ 180/110 mmHg»)"
+    return None
 
 
 # Chiều ngược của bảng viết tắt (21/11/2026 — phản biện máy C1a, bác sĩ chọn sửa trước khi PI ký G10): danh mục có
@@ -445,6 +485,9 @@ def loi_k11(md: str) -> List[str]:
             if hit:
                 loi.append(f"K11 dòng {so}: {nhan} («{hit.group(0)[:30]}»)")
                 break
+        ha = loi_huyet_ap(s)
+        if ha:
+            loi.append(f"K11 dòng {so}: {ha}")
         if "Định danh/thứ bậc" in s or "định danh/thứ bậc" in s:
             loi.append(f"K11 dòng {so}: loại biến bỏ lửng «Định danh/thứ bậc» — ghi rõ Định danh, Thứ bậc hoặc "
                        "Định danh (chọn nhiều)")

@@ -394,7 +394,7 @@ def _ho_so_bien_the(kb, rct, coh, _ky_g2, _nhom_gioi, _sd_khong_ap_dung, _tra_lo
                      "intervention_type": "other"})
     hs["ky_G2"] = _ky_g2(TIEN_CUU, "REGISTERED", registry="ClinicalTrials.gov", ma_dk="NCT99999981")
     hs["tra_loi_G4"] = _tra_loi_sap(
-        "Biến cố do trì hoãn khám trực tiếp (HA ≥180/110 mmHg, nhập viện) ghi theo phiếu biến cố",
+        "Biến cố do trì hoãn khám trực tiếp (huyết áp ≥ 180/110 mmHg, nhập viện) ghi theo phiếu biến cố",
         "tuổi và giới là yếu tố tiên lượng mạnh của kiểm soát huyết áp, hiệu chỉnh để tăng độ chính xác",
         "Kiểm dạng tuyến tính của tuổi; VIF < 5", nhom_gioi, "Phân tích theo đề cương (per-protocol)")
     hs["g6"] = [{"id": "MT1_chinh", "vai": "chinh", "sap_muc": "§4", "sap_neo": "<§4>",

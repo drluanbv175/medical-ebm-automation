@@ -184,7 +184,7 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 ("tuoi", "text", "Tuổi (năm)", "", "integer", "18", "100"),
                 ("gioi", "radio", "Giới", "1, Nam | 2, Nữ", "", "", ""),
                 ("ha_tt_t6", "text", "Huyết áp tâm thu tháng 6 (mmHg)", "", "integer", "60", "260"),
-                ("kiem_soat_t6", "radio", "Kiểm soát huyết áp tháng 6 (<140/90)", "0, Không | 1, Có", "", "", ""),
+                ("kiem_soat_t6", "radio", "Kiểm soát huyết áp tháng 6 (< 140/90 mmHg)", "0, Không | 1, Có", "", "", ""),
                 # 22/11/2026 (CONSORT 2025 mục 27/29): tổn hại theo ĐÚNG định nghĩa SAP §15 của hồ sơ — trước đây RCT
                 # giả lập không có biến tổn hại nào nên bản thảo không thể báo tác hại theo nhóm.
                 ("bien_co_bat_loi", "radio", "Có biến cố bất lợi trong 6 tháng (phàn nàn, lo âu do tin nhắn hoặc cơn "
@@ -212,10 +212,10 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 "intervention": ("Tin nhắn SMS tự động nhắc uống thuốc hạ áp hằng ngày kèm chăm sóc thường quy trong "
                                  "6 tháng"),
                 "comparison": "Chăm sóc thường quy (không nhận tin nhắn nhắc)",
-                "outcomes": ["Tỷ lệ kiểm soát huyết áp (<140/90 mmHg) tại tháng 6",
+                "outcomes": ["Tỷ lệ kiểm soát huyết áp (< 140/90 mmHg) tại tháng 6",
                              "Thay đổi huyết áp tâm thu so với ban đầu", "Tuân thủ dùng thuốc tự báo cáo"],
                 "primary_outcome": "Tỷ lệ người bệnh đạt kiểm soát huyết áp",
-                "primary_outcome_measure": "Huyết áp phòng khám trung bình 2 lần đo <140/90 mmHg",
+                "primary_outcome_measure": "Huyết áp phòng khám trung bình 2 lần đo < 140/90 mmHg",
                 "primary_outcome_timepoint": "Tháng thứ 6 sau ngẫu nhiên hoá",
                 "hypothesis_h0": "Tỷ lệ kiểm soát huyết áp ở nhóm tin nhắn bằng nhóm chăm sóc thường quy",
                 "hypothesis_h1": "Tỷ lệ kiểm soát huyết áp ở nhóm tin nhắn khác nhóm chăm sóc thường quy",
@@ -240,7 +240,7 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 "research_question": ("Ở người tăng huyết áp điều trị ngoại trú, tin nhắn nhắc uống thuốc có làm tăng "
                                       "tỷ lệ kiểm soát huyết áp sau 6 tháng so với chăm sóc thường quy không?"),
                 "primary_outcome": {"name": "Tỷ lệ người bệnh đạt kiểm soát huyết áp",
-                                    "measure": "Huyết áp phòng khám trung bình 2 lần đo <140/90 mmHg",
+                                    "measure": "Huyết áp phòng khám trung bình 2 lần đo < 140/90 mmHg",
                                     "timepoint": "Tháng thứ 6 sau ngẫu nhiên hoá", "type": "nhị phân"},
                 "secondary_outcomes": ["Thay đổi huyết áp tâm thu tại tháng 6",
                                        "Tuân thủ dùng thuốc tự báo cáo tại tháng 6"],
@@ -260,7 +260,7 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 "estimand": {
                     "population": "Người tăng huyết áp điều trị ngoại trú đủ tiêu chuẩn",
                     "treatment_condition": "Tin nhắn SMS nhắc uống thuốc so với chăm sóc thường quy",
-                    "variable": "Đạt kiểm soát huyết áp (<140/90 mmHg) tại tháng 6",
+                    "variable": "Đạt kiểm soát huyết áp (< 140/90 mmHg) tại tháng 6",
                     "intercurrent_events_strategy": "Treatment-policy cho ngừng nhận tin nhắn hoặc đổi thuốc",
                     "population_summary_measure": "Hiệu số tỷ lệ (risk difference)",
                 },
@@ -276,7 +276,7 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 "study_schema_timeline": "Sàng lọc → ngẫu nhiên hoá → can thiệp 6 tháng → đánh giá tháng 3 và tháng 6",
                 "intervention_dose_adherence": ("1 tin nhắn/ngày trong 6 tháng; tuân thủ đo bằng tỷ lệ tin nhắn đã gửi "
                                                 "thành công"),
-                "stopping_rescue_rules": ("Ngừng tin nhắn khi người tham gia yêu cầu; huyết áp ≥180/110 mmHg chuyển "
+                "stopping_rescue_rules": ("Ngừng tin nhắn khi người tham gia yêu cầu; huyết áp ≥ 180/110 mmHg chuyển "
                                           "xử trí theo phác đồ"),
                 "critical_to_quality": _vi("Đo huyết áp chuẩn hoá (máy đã hiệu chuẩn, 2 lần đo); mất theo dõi <20%"),
                 "monitoring_plan": _vi("Giám sát an toàn định kỳ 3 tháng"),
@@ -326,7 +326,7 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 ("gioi", "radio", "Giới", "1, Nam | 2, Nữ", "", "", ""),
                 ("so_thuoc", "text", "Số thuốc hạ áp đang dùng", "", "integer", "0", "10"),
                 ("ha_tt_tb", "text", "Huyết áp tâm thu trung bình 2 lần đo (mmHg)", "", "integer", "60", "260"),
-                ("kiem_soat_ha", "radio", "Đạt kiểm soát huyết áp (<140/90)", "0, Không | 1, Có", "", "", ""),
+                ("kiem_soat_ha", "radio", "Đạt kiểm soát huyết áp (< 140/90 mmHg)", "0, Không | 1, Có", "", "", ""),
                 ("thuoc_khac", "text", "Thuốc khác đang dùng, ghi rõ", "", "", "", ""),
             ],
             "ma_tran": [
@@ -342,10 +342,10 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 "population": ("Người trưởng thành ≥18 tuổi tăng huyết áp đang điều trị ngoại trú"),
                 "intervention": "Không áp dụng — nghiên cứu mô tả (yếu tố khảo sát: đặc điểm điều trị hiện tại)",
                 "comparison": "Không áp dụng — nghiên cứu mô tả một nhóm",
-                "outcomes": ["Tỷ lệ kiểm soát huyết áp (<140/90 mmHg) tại thời điểm khảo sát",
+                "outcomes": ["Tỷ lệ kiểm soát huyết áp (< 140/90 mmHg) tại thời điểm khảo sát",
                              "Đặc điểm điều trị hạ áp hiện tại"],
                 "primary_outcome": "Tỷ lệ người bệnh đạt kiểm soát huyết áp",
-                "primary_outcome_measure": "Huyết áp phòng khám trung bình 2 lần đo <140/90 mmHg",
+                "primary_outcome_measure": "Huyết áp phòng khám trung bình 2 lần đo < 140/90 mmHg",
                 "primary_outcome_timepoint": "Tại lần khám khảo sát",
                 "hypothesis_h0": "Không áp dụng — nghiên cứu mô tả, không kiểm định giả thuyết",
                 "hypothesis_h1": "Không áp dụng — nghiên cứu mô tả, không kiểm định giả thuyết",
@@ -370,7 +370,7 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 "research_question": ("Tỷ lệ người tăng huyết áp điều trị ngoại trú đạt kiểm soát huyết áp là bao "
                                       "nhiêu?"),
                 "primary_outcome": {"name": "Tỷ lệ người bệnh đạt kiểm soát huyết áp",
-                                    "measure": "Huyết áp phòng khám trung bình 2 lần đo <140/90 mmHg",
+                                    "measure": "Huyết áp phòng khám trung bình 2 lần đo < 140/90 mmHg",
                                     "timepoint": "Tại lần khám khảo sát", "type": "nhị phân"},
                 "secondary_outcomes": ["Đặc điểm điều trị hạ áp hiện tại"],
                 "population": ("Người trưởng thành ≥18 tuổi tăng huyết áp đang điều trị ngoại trú"),
@@ -385,7 +385,7 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 "estimand": {
                     "population": "Người tăng huyết áp điều trị ngoại trú đủ tiêu chuẩn",
                     "treatment_condition": "Không áp dụng (mô tả)",
-                    "variable": "Đạt kiểm soát huyết áp (<140/90 mmHg) tại lần khảo sát",
+                    "variable": "Đạt kiểm soát huyết áp (< 140/90 mmHg) tại lần khảo sát",
                     "intercurrent_events_strategy": "Không áp dụng (một lần đo)",
                     "population_summary_measure": "Tỷ lệ kèm khoảng tin cậy 95%",
                 },
@@ -397,8 +397,8 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 "study_schema_timeline": "Sàng lọc → đồng ý tham gia → đo huyết áp và phỏng vấn một lần tại lần khám",
                 "intervention_dose_adherence": ("N/A — nghiên cứu mô tả, không có can thiệp; đặc điểm điều trị hiện "
                                                 "tại ghi từ hồ sơ khám"),
-                "stopping_rescue_rules": ("N/A — không can thiệp; huyết áp ≥180/110 mmHg chuyển bác sĩ điều trị xử trí "
-                                          "theo phác đồ"),
+                "stopping_rescue_rules": ("N/A — không can thiệp; huyết áp ≥ 180/110 mmHg chuyển bác sĩ điều trị "
+                                          "xử trí theo phác đồ"),
                 "critical_to_quality": _vi("Đo huyết áp chuẩn hoá (máy đã hiệu chuẩn, 2 lần đo)"),
                 "monitoring_plan": _vi("Giám sát chất lượng dữ liệu hằng tháng"),
                 # 21/11/2026 (K17 STROBE 9/19): sổ sai lệch riêng của đề tài, có chiều ảnh hưởng dự kiến
