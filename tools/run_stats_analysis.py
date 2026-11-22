@@ -376,6 +376,16 @@ def _compare_categorical(col: pd.Series, grp: pd.Series) -> dict:
 # giải thích & chi tiết CONSORT 2010 mục 15 (Moher et al., BMJ 2010, PMID 20332511) — xem docstring dưới.
 KHONG_KIEM_DINH_NEN_RCT = "không kiểm định (RCT — CONSORT 2025 mục 25)"
 
+# 22/11/2026 (STARD 2015 mục 21b — biến «chẩn đoán khác» chỉ hỏi ở người KHÔNG có bệnh đích): biến chỉ ghi nhận ở MỘT
+# nhóm (logic nhánh của phiếu) thì không có gì để so — chi bình phương trên bảng một cột trả p = 1,0 (bậc tự do 0) và
+# Bảng 1 sẽ in «p = 1» như một phép so sánh thật. Không kiểm định, ghi rõ lý do.
+KHONG_KIEM_DINH_MOT_NHOM = "không kiểm định (biến chỉ ghi nhận ở một nhóm)"
+
+
+def _so_nhom_co_du_lieu(grp_data: dict) -> int:
+    """Số nhóm có ít nhất một giá trị không thiếu của biến."""
+    return sum(1 for s in grp_data.values() if s.notna().any())
+
 
 def table1_descriptive(df: pd.DataFrame, group_col: str, vars_: list, kiem_dinh_nen: bool = True) -> dict:
     """Tạo Bảng 1 đặc điểm mẫu theo nhóm.
@@ -418,6 +428,8 @@ def table1_descriptive(df: pd.DataFrame, group_col: str, vars_: list, kiem_dinh_
                     row[f"grp_{g}"] += f" (⚠loại {n_inf} giá trị Inf)"
             if not kiem_dinh_nen:
                 row["test"] = KHONG_KIEM_DINH_NEN_RCT
+            elif len(groups) == 2 and _so_nhom_co_du_lieu(grp_data) < 2:
+                row["test"] = KHONG_KIEM_DINH_MOT_NHOM
             elif len(groups) == 2 and HAS_SCIPY:
                 comp = _compare_continuous(grp_data[groups[0]], grp_data[groups[1]])
                 row["p"] = comp["p"]
@@ -448,6 +460,8 @@ def table1_descriptive(df: pd.DataFrame, group_col: str, vars_: list, kiem_dinh_
                     row[f"grp_{g}"] = "; ".join(f"{k}: {v}({v/len(s)*100:.0f}%)" for k, v in counts.items())
             if not kiem_dinh_nen:
                 row["test"] = KHONG_KIEM_DINH_NEN_RCT
+            elif len(groups) == 2 and _so_nhom_co_du_lieu(grp_data) < 2:
+                row["test"] = KHONG_KIEM_DINH_MOT_NHOM
             elif len(groups) == 2 and HAS_SCIPY:
                 comp = _compare_categorical(df[var], df[group_col])
                 row["p"] = comp["p"]
@@ -2149,7 +2163,10 @@ def generate_r_script_ordinal(study: str, gate: str, outcome_col: str, group_col
 # ════════════════════════════════════════════════════════════════════════════
 
 NHOM_TOAN_BO = "Toàn bộ"
-_COT_DINH_DANH_BANG1 = frozenset({"record_id", "ma_nguoi_tham_gia", "study_id", "transcript_id", "ma_phieu"})
+# 22/11/2026: «ma_dang_ky» — mã đăng ký thử nghiệm của bảng trích xuất tổng quan (định danh báo cáo nguồn, PRISMA 2020
+# mục 17), không phải đặc điểm để đếm tần suất
+_COT_DINH_DANH_BANG1 = frozenset({"record_id", "ma_nguoi_tham_gia", "study_id", "transcript_id", "ma_phieu",
+                                  "ma_dang_ky"})
 
 
 def bien_bang1_mo_ta(df: pd.DataFrame, ung_vien: list, bo: tuple = ()) -> list:

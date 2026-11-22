@@ -1051,6 +1051,8 @@ def cham_muc(muc: MucKiem, md: str, cac_phan: Sequence[Phan], *,
     if not khoi:
         kq.trang_thai = "thieu" if muc.chan else "canh_bao"
         kq.thieu = [f"không thấy phần văn bản cho mục này ({', '.join(muc.phan)})"]
+        if not muc.chan:  # 22/11/2026: cảnh báo luôn kèm lý do không chặn (nhánh này từng để trống lý do)
+            kq.ly_do = muc.ly_do_khong_chan or "chuẩn chưa đối chiếu bảng gốc — chỉ cảnh báo, không chặn"
         return kq
     can = [yt for yt in muc.yeu_to if not (yt.khi and not dieu_kien(yt.khi, md, cac_phan))]
     bo_qua = [yt.ten for yt in can if yt.so_lieu and not co_so_lieu]

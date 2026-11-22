@@ -1027,6 +1027,12 @@ def chuong_dat_van_de(n: Nguon) -> List[str]:
     for d in (van_de, dong_thuan, khoang):
         if d:
             dong += [d, ""]
+    # 22/11/2026 (STARD 2015 mục 3 — bối cảnh lâm sàng gồm mục đích sử dụng và vai trò của xét nghiệm đánh giá): đề tài
+    # chẩn đoán có lời khai của PI (`index_test_role`) ⇒ đặt vấn đề nêu vai trò dự kiến; báo cáo tổng hợp nghiệm thu lấy
+    # đặt vấn đề từ đây nên trước đó thiếu mục 3 dù bản thảo G7 đã có
+    vai_tro = _thuong(td.thay(str(n.meta.get("index_test_role") or ""))) if n.thiet_ke == "diagnostic" else ""
+    if _co(vai_tro):
+        dong += [f"Vai trò dự kiến của xét nghiệm đánh giá trong lộ trình chẩn đoán: {vai_tro}.", ""]
     ten = lam_sach(n.meta.get("title") or n.s("title"))
     dong += [f"Xuất phát từ thực tế trên, chúng tôi tiến hành đề tài «{ten}» với các mục tiêu sau:", ""]
     dong += [f"{i}. {m}" for i, m in enumerate(_muc_tieu(n), 1)] + [""]

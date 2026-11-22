@@ -754,6 +754,8 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
 # SAP §4/§5 dùng, không thừa không thiếu.
 _CO_KHONG = "0, Không | 1, Có"
 _GIOI = "0, Nữ | 1, Nam"
+_CHAN_DOAN_KHAC = ("1, Không có hoặc xơ hoá nhẹ (F0–F1) | 2, Xơ hoá đáng kể chưa tiến triển (F2) | "
+                   "3, Bệnh gan khác kèm theo")
 
 
 def _ho_so_bien_6() -> Dict[str, Dict[str, list]]:
@@ -815,7 +817,13 @@ def _ho_so_bien_6() -> Dict[str, Dict[str, list]]:
                 ("lsm_kpa", "text", "Độ đàn hồi gan (kPa)", "", "number", "Tiêu chuẩn tham chiếu"),
                 ("xo_hoa_tien_trien", "radio", "Xơ hoá tiến triển theo đo đàn hồi ≥ 10 kPa (KẾT CỤC CHÍNH)",
                  _CO_KHONG, "", "Tiêu chuẩn tham chiếu"),
+                # 22/11/2026 (STARD 2015 mục 21b): người đọc chuẩn tham chiếu ghi chẩn đoán ở người KHÔNG có bệnh đích
+                # (chỉ hỏi khi xơ hoá tiến triển = Không — logic nhánh ở `meta_bien`); ≥ 3 lựa chọn để G6 trình bày
+                # thành biến phân loại có nhãn ở Bảng 1 theo chuẩn tham chiếu
+                ("chan_doan_khac", "radio", "Chẩn đoán theo chuẩn tham chiếu ở người không có xơ hoá tiến triển",
+                 _CHAN_DOAN_KHAC, "", "Tiêu chuẩn tham chiếu"),
             ],
+            "meta_bien": {"chan_doan_khac": {"nhanh": "[xo_hoa_tien_trien] = '0'"}},
             "ma_tran": [
                 ("1", "Xơ hoá gan tiến triển", "ket_cuc_chinh", "xo_hoa_tien_trien", "nhi_phan", "TC1",
                  "Đo độ đàn hồi gan thoáng qua", "§4"),
@@ -851,6 +859,10 @@ def _ho_so_bien_6() -> Dict[str, Dict[str, list]]:
         "tong_quan_gop": {
             "bo_bien": [
                 ("study_id", "text", "Mã thử nghiệm (tác giả–năm)", "", "", "Trích xuất"),
+                # 22/11/2026 (PRISMA 2020 mục 17): định danh báo cáo nguồn của từng thử nghiệm — bản ghi đăng ký thử
+                # nghiệm (PRISMA 2020 coi bản ghi đăng ký là một «báo cáo» của nghiên cứu); người trích ghi để trích dẫn
+                ("ma_dang_ky", "text", "Mã đăng ký thử nghiệm (bản ghi đăng ký là báo cáo nguồn)", "", "",
+                 "Trích xuất"),
                 ("thuoc_sglt2", "dropdown", "Thuốc ức chế SGLT2",
                  "1, Empagliflozin | 2, Dapagliflozin | 3, Canagliflozin | 4, Ertugliflozin | 5, Khác", "",
                  "Trích xuất"),
@@ -972,6 +984,21 @@ def ho_so_tron_vong() -> Dict[str, Dict[str, Any]]:
             "ky_G2": {**_ky_g2("NOT_APPLICABLE", "REGISTERED", mien_icf=True,
                                quyet_dinh="EXEMPT", registry="PROSPERO", ma_dk="CRD42099999999"),
                       "--g2-first-search-date": "<+15>"},
+            # 22/11/2026 (PRISMA 2020 mục 16b): nhóm sàng lọc ghi các báo cáo đọc toàn văn có vẻ đạt tiêu chí (thuốc ức
+            # chế SGLT2, kết cục nhập viện vì suy tim, thử nghiệm ngẫu nhiên) nhưng bị loại — thử nghiệm THẬT, PMID và
+            # tác giả đầu đã tra PubMed 22/11/2026, kiểm rút bài (check_citation_retraction.py: không rút); lý do loại
+            # đọc từ phần Phương pháp của tóm tắt bài gốc (quần thể chỉ gồm người suy tim lúc vào nghiên cứu ⇒ trái tiêu
+            # chí loại «chỉ tuyển người suy tim lúc đầu»), thuộc nhóm «Sai quần thể» của sổ sàng lọc
+            "sang_loc_toan_van_loai": [
+                {"bao_cao": "DAPA-HF", "trich_dan": "McMurray và cộng sự 2019, PMID 31535829",
+                 "nhom_ly_do": "Sai quần thể",
+                 "ly_do": "chỉ tuyển người suy tim phân suất tống máu ≤ 40%, có hoặc không đái tháo đường"},
+                {"bao_cao": "EMPEROR-Reduced", "trich_dan": "Packer và cộng sự 2020, PMID 32865377",
+                 "nhom_ly_do": "Sai quần thể", "ly_do": "chỉ tuyển người suy tim phân suất tống máu ≤ 40%"},
+                {"bao_cao": "SOLOIST-WHF", "trich_dan": "Bhatt và cộng sự 2021, PMID 33200892",
+                 "nhom_ly_do": "Sai quần thể",
+                 "ly_do": "chỉ tuyển người đái tháo đường típ 2 vừa nhập viện vì suy tim nặng lên"},
+            ],
         },
         "dinh_tinh": {
             "G2": {**chung, "public_title": "Trải nghiệm bắt đầu tiêm insulin",
@@ -1021,7 +1048,9 @@ def bien_so_them() -> Dict[str, Dict[str, list]]:
         return KHOANG_HOP_LE.get(ten, ("", "")) if kiem in ("integer", "number") else ("", "")
 
     return {ma: {"bo_bien": [(t, k, n, lc, v, *_khoang(t, v)) for t, k, n, lc, v, _muc in hs["bo_bien"]],
-                 "ma_tran": list(hs["ma_tran"])}
+                 "ma_tran": list(hs["ma_tran"]),
+                 # 22/11/2026: logic nhánh của phiếu (vd «chẩn đoán khác» chỉ hỏi ở người không có bệnh đích)
+                 **({"meta_bien": dict(hs["meta_bien"])} if hs.get("meta_bien") else {})}
             for ma, hs in _ho_so_bien_6().items()}
 
 

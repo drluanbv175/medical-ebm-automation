@@ -362,6 +362,13 @@
    ],
    "source": "pubmed"
   },
+  "31535829": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
   "31820546": {
    "status": "ok",
    "sources_tried": [
@@ -390,7 +397,21 @@
    ],
    "source": "pubmed"
   },
+  "32865377": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
   "33176659": {
+   "status": "ok",
+   "sources_tried": [
+    "pubmed"
+   ],
+   "source": "pubmed"
+  },
+  "33200892": {
    "status": "ok",
    "sources_tried": [
     "pubmed"
@@ -1600,6 +1621,30 @@
    "year": "2019",
    "doi": "10.1016/j.jdiacomp.2019.01.001"
   },
+  "31535829": {
+   "status": "resolved",
+   "title": "Dapagliflozin in Patients with Heart Failure and Reduced Ejection Fraction.",
+   "authors": "McMurray JJV, Solomon SD, Inzucchi SE, Køber L, Kosiborod MN",
+   "journal": "The New England journal of medicine",
+   "year": "2019",
+   "doi": "10.1056/NEJMoa1911303",
+   "n_authors": 38,
+   "authors_6": [
+    "McMurray JJV",
+    "Solomon SD",
+    "Inzucchi SE",
+    "Køber L",
+    "Kosiborod MN",
+    "Martinez FA"
+   ],
+   "nhom_tac_gia": [
+    "DAPA-HF Trial Committees and Investigators"
+   ],
+   "journal_abbr": "N Engl J Med",
+   "volume": "381",
+   "issue": "21",
+   "pages": "1995-2008"
+  },
   "31820546": {
    "status": "resolved",
    "title": "Baseline features of the VICTORIA (Vericiguat Global Study in Subjects with Heart Failure with Reduced Ejection Fraction) trial.",
@@ -1632,6 +1677,30 @@
    "year": "2020",
    "doi": "10.1002/ehf2.12809"
   },
+  "32865377": {
+   "status": "resolved",
+   "title": "Cardiovascular and Renal Outcomes with Empagliflozin in Heart Failure.",
+   "authors": "Packer M, Anker SD, Butler J, Filippatos G, Pocock SJ",
+   "journal": "The New England journal of medicine",
+   "year": "2020",
+   "doi": "10.1056/NEJMoa2022190",
+   "n_authors": 39,
+   "authors_6": [
+    "Packer M",
+    "Anker SD",
+    "Butler J",
+    "Filippatos G",
+    "Pocock SJ",
+    "Carson P"
+   ],
+   "nhom_tac_gia": [
+    "EMPEROR-Reduced Trial Investigators"
+   ],
+   "journal_abbr": "N Engl J Med",
+   "volume": "383",
+   "issue": "15",
+   "pages": "1413-1424"
+  },
   "33176659": {
    "status": "resolved",
    "title": "Perceived Barriers, Benefits, Facilitators, and Attitudes of Health Professionals Towards Multidisciplinary Team Care in Type 2 Diabetes Management: A Systematic Review.",
@@ -1639,6 +1708,30 @@
    "journal": "Current diabetes reviews",
    "year": "2021",
    "doi": "10.2174/1573399816999201110200126"
+  },
+  "33200892": {
+   "status": "resolved",
+   "title": "Sotagliflozin in Patients with Diabetes and Recent Worsening Heart Failure.",
+   "authors": "Bhatt DL, Szarek M, Steg PG, Cannon CP, Leiter LA",
+   "journal": "The New England journal of medicine",
+   "year": "2021",
+   "doi": "10.1056/NEJMoa2030183",
+   "n_authors": 19,
+   "authors_6": [
+    "Bhatt DL",
+    "Szarek M",
+    "Steg PG",
+    "Cannon CP",
+    "Leiter LA",
+    "McGuire DK"
+   ],
+   "nhom_tac_gia": [
+    "SOLOIST-WHF Trial Investigators"
+   ],
+   "journal_abbr": "N Engl J Med",
+   "volume": "384",
+   "issue": "2",
+   "pages": "117-128"
   },
   "33780219": {
    "status": "resolved",
