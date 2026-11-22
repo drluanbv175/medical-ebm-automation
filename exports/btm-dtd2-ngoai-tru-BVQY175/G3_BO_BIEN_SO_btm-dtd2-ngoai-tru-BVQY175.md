@@ -247,7 +247,7 @@ Mã ICD-10 theo bảng WHO mà eHospital đang dùng. Mã LOINC ghi ở bảng b
 | Mã | Câu hỏi | Máy đề xuất (đã duyệt) | Lựa chọn khác |
 |---|---|---|---|
 | B1 | Số ô kết quả xét nghiệm cho mỗi người | 6 ô creatinin, 4 ô UACR. Nhiều hơn thì ghi kết quả ĐẦU TIÊN + các kết quả GẦN NHẤT | Ghi mọi kết quả (khối lượng trích tăng) |
-| B2 | Định nghĩa tăng huyết áp | Có mã I10–I15. Không dùng «đang dùng thuốc hạ áp» vì ACEi/ARB là kết cục | Thêm huyết áp đo được từ 140/90 ở 2 lượt khám |
+| B2 | Định nghĩa tăng huyết áp | Có mã I10–I15. Không dùng «đang dùng thuốc hạ áp» vì ACEi/ARB là kết cục | Thêm huyết áp đo được từ 140/90 mmHg ở 2 lượt khám |
 | B3 | Mã «BTM đã được ghi nhận» (Phụ 2) | N18, E11.2, N08.3; độ nhạy thêm N19, I12, I13, R80 | Gộp cả danh mục mở rộng vào phân tích chính |
 | B4 | Mã bệnh tim mạch do xơ vữa và suy tim | Như mục 8; gộp thành một biến `tim_mach` như G0 | Tách hai biến |
 | B5 | Albumin niệu dùng để xác định chỉ định ACEi/ARB | Albumin niệu đã xác nhận (2 lần cách nhau từ 90 ngày); độ nhạy: chỉ cần một lần UACR từ 30 | Chỉ cần một lần UACR từ 30 ở phân tích chính |

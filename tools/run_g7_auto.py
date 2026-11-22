@@ -209,7 +209,7 @@ CHECKLIST_ITEMS: dict[str, list[tuple[str, str, bool]]] = {
         ("5",  "Bối cảnh, địa điểm, mốc thời gian (tuyển/phơi nhiễm/theo dõi/thu thập)", False),
         ("6",  "Người tham gia — tiêu chí nhận + nguồn/cách chọn + phương pháp theo dõi (ghép cặp: tiêu chí ghép + số phơi nhiễm/không)", False),
         ("7",  "Biến số — định nghĩa RÕ kết cục, phơi nhiễm, yếu tố gây nhiễu, yếu tố điều biến hiệu ứng", False),
-        ("8",  "Nguồn dữ liệu/đo lường — mỗi biến: nguồn dữ liệu + chi tiết đo lường; so sánh được giữa nhóm nếu >1 phương pháp", False),
+        ("8",  "Nguồn dữ liệu/đo lường — mỗi biến: nguồn dữ liệu + chi tiết đo lường; so sánh được giữa nhóm nếu > 1 phương pháp", False),
         ("9",  "Sai lệch (bias) — nỗ lực xử lý nguồn sai lệch tiềm ẩn", False),
         ("10", "Cỡ mẫu — cách tính/đạt được cỡ mẫu", True),
         ("11", "Biến định lượng — cách xử lý trong phân tích, nhóm hóa (nếu có) và lý do", False),
@@ -244,7 +244,7 @@ CHECKLIST_ITEMS: dict[str, list[tuple[str, str, bool]]] = {
         ("5",  "Bối cảnh, địa điểm, mốc thời gian tuyển/thu thập", False),
         ("6",  "Người tham gia — tiêu chí nhận + nguồn/cách xác định ca bệnh + chọn nhóm chứng + lý do chọn ca/chứng (ghép cặp: tiêu chí ghép + số chứng/ca)", False),
         ("7",  "Biến số — định nghĩa RÕ kết cục, phơi nhiễm, yếu tố gây nhiễu, yếu tố điều biến hiệu ứng", False),
-        ("8",  "Nguồn dữ liệu/đo lường — mỗi biến: nguồn dữ liệu + chi tiết đo lường; so sánh được giữa nhóm nếu >1 phương pháp", False),
+        ("8",  "Nguồn dữ liệu/đo lường — mỗi biến: nguồn dữ liệu + chi tiết đo lường; so sánh được giữa nhóm nếu > 1 phương pháp", False),
         ("9",  "Sai lệch (bias) — nỗ lực xử lý nguồn sai lệch tiềm ẩn", False),
         ("10", "Cỡ mẫu — cách tính/đạt được cỡ mẫu", True),
         ("11", "Biến định lượng — cách xử lý trong phân tích, nhóm hóa (nếu có) và lý do", False),
@@ -278,7 +278,7 @@ CHECKLIST_ITEMS: dict[str, list[tuple[str, str, bool]]] = {
         ("5",  "Bối cảnh, địa điểm, mốc thời gian tuyển/thu thập", False),
         ("6",  "Người tham gia — tiêu chí nhận + nguồn/cách chọn người tham gia", False),
         ("7",  "Biến số — định nghĩa RÕ kết cục, phơi nhiễm, yếu tố gây nhiễu, yếu tố điều biến hiệu ứng", False),
-        ("8",  "Nguồn dữ liệu/đo lường — mỗi biến: nguồn dữ liệu + chi tiết đo lường; so sánh được giữa nhóm nếu >1 phương pháp", False),
+        ("8",  "Nguồn dữ liệu/đo lường — mỗi biến: nguồn dữ liệu + chi tiết đo lường; so sánh được giữa nhóm nếu > 1 phương pháp", False),
         ("9",  "Sai lệch (bias) — nỗ lực xử lý nguồn sai lệch tiềm ẩn", False),
         ("10", "Cỡ mẫu — cách tính/đạt được cỡ mẫu", True),
         ("11", "Biến định lượng — cách xử lý trong phân tích, nhóm hóa (nếu có) và lý do", False),
@@ -632,6 +632,8 @@ _COT_TU_DIEN_REDCAP: dict[str, tuple[str, ...]] = {
     "type":     ("field type", "field_type"),
     "label":    ("field label", "field_label", "label"),
     "note":     ("field note", "field_note"),
+    # 22/11/2026: nhãn giá trị («0, Chứng | 1, Can thiệp») — Bảng 1 gắn tên nhóm thay vì mã «0»/«1»
+    "choices":  ("choices, calculations, or slider labels", "select_choices_or_calculations", "choices"),
 }
 # Khuôn CŨ của run_g5_auto (trước khi G5 ghi CSV chuẩn 18 cột — xem run_g5_auto.generate_csv): mọi trường nối bằng
 # « / », tiêu đề mở đầu ĐÚNG chuỗi này. Chỉ nhận khuôn cũ khi tiêu đề BẮT ĐẦU bằng chuỗi này.
@@ -713,6 +715,7 @@ def doc_tu_dien_redcap(path: Path) -> tuple[list[dict], str]:
         variables.append({
             "variable": var, "label": _o(dong, "label") or var, "form": form,
             "section": muc, "section_hieu_luc": muc_dang, "type": _o(dong, "type"), "note": _o(dong, "note"),
+            "choices": _o(dong, "choices"),
         })
     if not variables:
         return [], f"{ten} không có biến dữ liệu nào (ngoài biến hành chính/trường mô tả)"
@@ -919,7 +922,7 @@ def build_pmid_meta(pubmed_raw: dict) -> dict:
 # ước lượng): số đã là số THẬT của G6 nhưng bác sĩ CHƯA đối chiếu — đối chiếu xong mới xoá nhãn và đặt results_final.
 NHAN_DOI_CHIEU_G6 = "[CẦN KẾT QUẢ THẬT — đối chiếu G6]"
 # Khoá của tóm tắt Python CLI (run_stats_analysis.py) mang ước lượng; tóm tắt khối cuối 03_analysis.R chỉ có n_total.
-_KHOA_UOC_LUONG_G6 = ("primary_outcome", "ordinal", "survival", "multivariate", "ty_le", "dac_thu")
+_KHOA_UOC_LUONG_G6 = ("primary_outcome", "poisson_pr", "ordinal", "survival", "multivariate", "ty_le", "dac_thu")
 # Một số trong văn bản: không dính chữ/số phía trước (G6, sha256, q1_…), không dính chữ phía sau; dấu chấm cuối câu
 # không làm số «biến mất» («N = 218.» vẫn tách được 218).
 _SO_RE = re.compile(r"(?<!\w)(?<!\d\.)-?\d+(?:\.\d+)?(?:[eE][-+]?\d+)?(?!\w)(?!\.\d)")
@@ -1113,9 +1116,17 @@ def dung_hinh_g6(out_dir: Path) -> list[str]:
     return dong
 
 
+SAP_MUC_TON_HAI = "§15"   # SAP §15 «Tổn hại…» — phân tích vai «phu» neo ở đây là TÁC HẠI, không phải kết cục phụ
+
+
+def _la_ton_hai(x: dict) -> bool:
+    return str(x.get("sap_muc") or "").strip() == SAP_MUC_TON_HAI
+
+
 def dung_ket_cuc_phu_g6(out_dir: Path, vai: str = "phu", chon: Optional[Callable[[dict], bool]] = None,
                         tieu_de_khoi: Optional[str] = None, ten_loai: str = "kết cục phụ",
-                        khoi_fn: Optional[Callable[[dict, str, str], list[str]]] = None) -> Optional[list[str]]:
+                        khoi_fn: Optional[Callable[[dict, str, str], list[str]]] = None,
+                        ton_hai: bool = False) -> Optional[list[str]]:
     """§4 Kết cục PHỤ từ chỉ mục chạy trọn SAP (`G6_SAP_ket_qua.json` của chay_sap_g6 — mỗi phân tích một tóm tắt
     `<gate>_analysis_summary.json`). Giả lập lần 3 (15/11/2026): §4 luôn là ô trống dù G6 đã chạy các kết cục phụ SAP.
 
@@ -1126,10 +1137,16 @@ def dung_ket_cuc_phu_g6(out_dir: Path, vai: str = "phu", chon: Optional[Callable
 
     22/11/2026 (PRISMA 2020 mục 20c): cùng đường, cùng luật kiểm cho vai khác (`vai`, vd «nhom_con») — `chon` lọc theo
     mục ĐẶC TẢ (chỉ mục không có trong đặc tả thì bỏ), `khoi_fn(tóm tắt, tên tệp, gate)` dựng khối chép số."""
+    if ton_hai:  # 22/11/2026: mục §4b Tác hại theo nhóm (CONSORT 2025 mục 27)
+        tieu_de_khoi = tieu_de_khoi or (f"*Tác hại theo nhóm — chép từ chỉ mục SAP G6 (`{TEP_SAP_KET_QUA_G6}`), mỗi phân "
+                                        "tích một tóm tắt riêng*  ")
+        ten_loai = "phân tích tác hại" if ten_loai == "kết cục phụ" else ten_loai
     out_dir = Path(out_dir)
     cm = G7Q._read_json(out_dir / TEP_SAP_KET_QUA_G6)
-    phu = [x for x in (cm.get("phan_tich") or []) if isinstance(x, dict) and x.get("vai") == vai] \
-        if isinstance(cm, dict) else []
+    # 22/11/2026: vai «phu» tách hai nhóm theo SAP §15 — `ton_hai=True` ⇒ CHỈ tác hại theo nhóm (CONSORT 2025 mục 27,
+    # mục §4b); mặc định ⇒ kết cục phụ, KHÔNG gồm tác hại.
+    phu = [x for x in (cm.get("phan_tich") or []) if isinstance(x, dict) and x.get("vai") == vai
+           and (vai != "phu" or _la_ton_hai(x) == ton_hai)] if isinstance(cm, dict) else []
     # Thẩm định #277 (V4): đối chiếu với ĐẶC TẢ SAP G6 (G6_DAC_TA_SAP.json) — chỉ mục bị `chay --chi` ghi đè làm kết
     # cục phụ khác biến mất im lặng; đặc tả/SAP đổi sau lượt chạy; tóm tắt chạy lại tay với kết cục khác.
     try:
@@ -1140,7 +1157,8 @@ def dung_ket_cuc_phu_g6(out_dir: Path, vai: str = "phu", chon: Optional[Callable
     except Exception:  # noqa: BLE001 — chưa có/không đọc được đặc tả ⇒ chỉ dựa chỉ mục (như trước)
         CSG, dac_ta, kiem_dt = None, None, None
     phu_dac_ta = {str(pt.get("id")): pt for pt in ((dac_ta or {}).get("phan_tich") or [])
-                  if isinstance(pt, dict) and pt.get("vai") == vai and pt.get("id") and (chon is None or chon(pt))}
+                  if isinstance(pt, dict) and pt.get("vai") == vai and pt.get("id") and (chon is None or chon(pt))
+                  and (vai != "phu" or _la_ton_hai(pt) == ton_hai)}
     if chon is not None:
         phu = [x for x in phu if str(x.get("id")) in phu_dac_ta]
     if not phu and not phu_dac_ta:
@@ -1234,6 +1252,16 @@ def dung_phan_nhom_g6(out_dir: Path) -> Optional[list[str]]:
     return ["**§3b Phân nhóm tiền định (SAP):**  ", *dong] if dong else None
 
 
+def _khoi_ton_hai_ket_qua(ton_hai: Optional[list]) -> list[str]:
+    """Mục §4b của thử nghiệm (22/11/2026 — CONSORT 2025 mục 27: mọi tác hại hoặc biến cố ngoài ý muốn ở TỪNG nhóm).
+    Có phân tích tổn hại G6 (SAP §15) ⇒ chép như kết cục phụ (đã tự kiểm số, nhóm mang tên); chưa có ⇒ ô chờ nêu rõ
+    điều chuẩn đòi — không im lặng bỏ mục."""
+    return ["**§4b Tác hại theo nhóm — biến cố bất lợi (CONSORT 2025 mục 27):**  ",
+            *(ton_hai or ["[CẦN KẾT QUẢ THẬT — số và tỷ lệ người có biến cố bất lợi, biến cố bất lợi nghiêm trọng ở "
+                          "TỪNG nhóm, theo SAP §15 «Cách phân tích tổn hại»]  "]),
+            ""]
+
+
 def doc_tom_tat_g6_hop_le(out_dir: Path) -> dict:
     """{hop_le, ly_do, nguon, tom_tat, van_ban} — tóm tắt G6 dùng được để dựng NHÁP Kết quả (N16).
 
@@ -1281,7 +1309,9 @@ def _bang_mo_hinh_g6(tieu_de: str, mh: Any) -> list[str]:
     if not kq:
         return []
     co_or = any("OR_adj" in r or "OR_adj" in (r.get("so_tho_khong_tin_cay") or {}) for r in kq)
-    khoa, cot = ("OR_adj", "OR hiệu chỉnh") if co_or else ("beta", "β")
+    co_pr = any("PR_adj" in r or "PR_adj" in (r.get("so_tho_khong_tin_cay") or {}) for r in kq)  # Poisson robust
+    khoa, cot = (("OR_adj", "OR hiệu chỉnh") if co_or else ("PR_adj", "PR hiệu chỉnh") if co_pr
+                 else ("beta", "β"))
     n = mh.get("n", mh.get("n_total"))
     dong = [f"*{tieu_de} — mô hình `{_mot_dong(mh.get('model', '?'))}`, n = {_so_g6(n)}* {NHAN_DOI_CHIEU_G6}  ", "",
             f"| Biến | {cot} | 95% CI | p |", "|---|---|---|---|"]
@@ -1419,12 +1449,156 @@ def _o_bang1(v: Any) -> str:
     return t
 
 
-def chu_giai_bang1_g6(redcap_vars: list, bien_bang1: list) -> str:
+def _nhan_lua_chon(chuoi: Any) -> dict:
+    """«0, Chứng | 1, Can thiệp» ⇒ {"0": "Chứng", "1": "Can thiệp"}; phần không đúng dạng «mã, nhãn» bị bỏ (không đoán)."""
+    ra = {}
+    for phan in str(chuoi or "").split("|"):
+        ma, phay, nhan = phan.partition(",")
+        if phay and ma.strip() and nhan.strip():
+            ra[ma.strip()] = " ".join(nhan.split())
+    return ra
+
+
+def _ma_nhom(g: Any) -> str:
+    """Khoá nhóm G6 so được với mã từ điển: «1.0» (cột nhóm kiểu số thực) ⇒ «1»."""
+    t = str(g).strip()
+    try:
+        f = float(t)
+        return str(int(f)) if f.is_integer() else t
+    except ValueError:
+        return t
+
+
+def nhan_nhom_bang1(tom_tat: Any, redcap_vars: Optional[list]) -> dict:
+    """{khoá nhóm GỐC của G6 → nhãn từ điển G5} cho biến chia nhóm của phân tích (22/11/2026 — bản thảo RCT giả lập ghi
+    cột «Nhóm `0`», «Nhóm `1`» không tên can thiệp/chứng: CONSORT 2025 mục 25 đòi bảng đặc điểm nền THEO TỪNG NHÓM).
+    Biến chia nhóm lấy từ `dac_ta_phan_tich.group` của chính tóm tắt G6; không có biến/nhãn ⇒ {} (giữ mã như cũ)."""
+    if not isinstance(tom_tat, dict):
+        return {}
+    bien = str(((tom_tat.get("dac_ta_phan_tich") or {}) if isinstance(tom_tat.get("dac_ta_phan_tich"), dict)
+                else {}).get("group") or "").strip()
+    t1 = tom_tat.get("table1") if isinstance(tom_tat.get("table1"), dict) else {}
+    if not bien or not isinstance(t1.get("n_per_group"), dict):
+        return {}
+    lua_chon = next((_nhan_lua_chon(v.get("choices")) for v in redcap_vars or []
+                     if isinstance(v, dict) and str(v.get("variable") or "") == bien), {})
+    return {g: lua_chon[_ma_nhom(g)] for g in t1["n_per_group"] if _ma_nhom(g) in lua_chon}
+
+
+def _ha_chu_dau(t: str) -> str:
+    """Viết thường chữ đầu khi đứng giữa câu («Can thiệp» ⇒ «can thiệp»); giữ nguyên từ viết hoa toàn bộ («SMS»)."""
+    t = str(t or "").strip()
+    return t[:1].lower() + t[1:] if len(t) > 1 and t[1:2].islower() else t
+
+
+_MA_NHOM_RE = re.compile(r"(\b[Nn]hóm )?`([^`\n]+)`")
+
+
+def gan_ten_nhom(dong: Optional[list], nhan_nhom: Optional[dict]) -> list:
+    """Đổi mã nhóm trong backtick («Nhóm `1`», «so với `0`», «(`1` − `0`)») thành tên nhóm của từ điển G5 — CHỈ chạy SAU
+    bước tự kiểm số (tên nhóm có thể chứa số). Chỉ đổi đúng các khoá nhóm của phân tích; mã khác giữ nguyên
+    (22/11/2026 — CONSORT 2025 mục 22a, 25–27: kết quả theo TỪNG NHÓM CÓ TÊN)."""
+    ds = list(dong or [])
+    ten = {_mot_dong(g): _ha_chu_dau(v) for g, v in (nhan_nhom or {}).items() if str(v or "").strip()}
+    if not ten:
+        return ds
+
+    def _thay(m: "re.Match[str]") -> str:
+        if m.group(2) not in ten:
+            return m.group(0)
+        return (m.group(1) or "nhóm ") + ten[m.group(2)]
+
+    return [_MA_NHOM_RE.sub(_thay, d) if isinstance(d, str) else d for d in ds]
+
+
+TEP_SO_DO_LUONG_G7 = "SO_DO_LUONG_{study}.csv"   # = hinh_g6.TEP_LUONG — sổ sàng lọc do nghiên cứu viên điền
+
+
+def doc_so_do_luong_g7(out_dir: Path, study: str) -> Optional[dict]:
+    """Sổ sàng lọc `SO_DO_LUONG_<mã>.csv` DÙNG ĐƯỢC cho chương Kết quả (22/11/2026) — chỉ khi MỌI hộp đã có số và bộ kiểm
+    số học dùng chung với hình G6 (`bieu_do_bao_cao.kiem_so_hoc_luong`) không báo lỗi; trả {"nhanh": …} của bộ kiểm đó.
+    Vắng tệp, còn ô trống, sai dạng hay lệch số học ⇒ None: chương Kết quả giữ nguyên ô chờ số (không viết số dở dang).
+    Đề tài thật: số do nghiên cứu viên điền từ sổ sàng lọc; máy chỉ chép, không tính lại."""
+    p = Path(out_dir) / TEP_SO_DO_LUONG_G7.format(study=study)
+    if not p.is_file():
+        return None
+    try:
+        with p.open(encoding="utf-8-sig", newline="") as f:
+            dong = [{k: (v or "") for k, v in r.items() if k} for r in csv.DictReader(f)]
+        if not dong or any(not str(r.get("n") or "").strip() for r in dong):
+            return None
+        import bieu_do_bao_cao as BB  # noqa: PLC0415 — chỉ nạp khi có sổ
+
+        k = BB.kiem_so_hoc_luong(dong)
+    except Exception:  # noqa: BLE001 — sổ hỏng/thiếu cột/thiếu thư viện ⇒ không dùng (fail-closed về ô chờ số)
+        return None
+    return k if not k.get("loi") and k.get("nhanh") else None
+
+
+def _noi_va(ds: list) -> str:
+    return ds[0] if len(ds) == 1 else ", ".join(ds[:-1]) + " và " + ds[-1]
+
+
+def _cau_buoc_luong(b: dict, dv: str) -> str:
+    """Một câu cho một hộp: hộp chính «<tên>: n người.»; hộp loại kèm lý do có số (bỏ lý do 0) — STROBE 13b, CONSORT
+    22b; hộp loại bằng 0 ⇒ «không có người nào» (không bỏ hộp: người đọc phải thấy đã xét bước đó)."""
+    if b["loai"] == "chinh":
+        return f"{b['buoc']}: {b['n']}{dv}."
+    if b["n"] == 0:
+        return f"{b['buoc']}: không có{' người' if dv else ''} nào."
+    ly = [d for d in b.get("ly_do") or [] if d["n"] > 0]
+    return (f"{b['buoc']}: {b['n']}{dv}"
+            + (", vì " + _noi_va([f"{_ha_chu_dau(d['ly_do'])} ({d['n']})" for d in ly]) if ly else "") + ".")
+
+
+def khoi_tuyen_chon_g7(k: Optional[dict], design_code: str) -> list:
+    """Khối §1 Tuyển chọn từ sổ sàng lọc đã kiểm (22/11/2026 — STROBE 2007 13a/13b; CONSORT 2025 22a/22b; STARD 2015 19;
+    PRISMA 2020 16a). Trước đây chương Kết quả luôn là «Sàng lọc: N = ___; Đủ tiêu chí: N = ___» dù sổ đã đủ số và khớp
+    số học. Chép đúng số của sổ; tên nhánh là tên nhóm có nghĩa («Can thiệp», «Ca bệnh» — không phải mã 0/1). RCT có câu
+    phân bổ ngẫu nhiên theo nhóm; mọi thiết kế có câu số được đưa vào phân tích (theo nhóm khi có nhánh)."""
+    if not k:
+        return []
+    nhanh = k["nhanh"]
+    tong_quan = design_code in ("sr_ma", "dta_ma")
+    dv = "" if tong_quan else " người"
+    chung = nhanh.get("", [])
+    ten_nhanh = [t for t in nhanh if t]
+    ra: list = []
+    if chung:
+        ra.append(" ".join(_cau_buoc_luong(b, dv) for b in chung) + "  ")
+
+    def _cuoi(buoc: list) -> Optional[dict]:
+        return next((b for b in reversed(buoc) if b["loai"] == "chinh"), None)
+
+    if ten_nhanh:
+        dau = {t: next((b for b in nhanh[t] if b["loai"] == "chinh"), None) for t in ten_nhanh}
+        goc = _cuoi(chung)
+        if design_code == "rct" and goc and all(dau.values()):
+            ra.append(f"{goc['n']} người được phân bổ ngẫu nhiên: "
+                      + _noi_va([f"{dau[t]['n']} người vào nhóm {_ha_chu_dau(t)}" for t in ten_nhanh]) + ".  ")
+        for t in ten_nhanh:
+            ra.append(f"*Nhóm {_ha_chu_dau(t)}:* " + " ".join(_cau_buoc_luong(b, dv) for b in nhanh[t]) + "  ")
+        cuoi = {t: _cuoi(nhanh[t]) for t in ten_nhanh}
+        if all(cuoi.values()):
+            ra.append(f"{sum(b['n'] for b in cuoi.values())}{dv} được đưa vào phân tích ("
+                      + ", ".join(f"{cuoi[t]['n']}{dv} ở nhóm {_ha_chu_dau(t)}" for t in ten_nhanh) + ").  ")
+    elif _cuoi(chung):
+        b = _cuoi(chung)
+        ra.append(f"{b['n']} nghiên cứu được đưa vào tổng quan.  " if tong_quan
+                  else f"{b['n']}{dv} được đưa vào phân tích.  " if b["buoc"].casefold().startswith("đưa vào")
+                  else f"{b['n']}{dv} ở bước cuối ({_ha_chu_dau(b['buoc'])}).  ")
+    return ra
+
+
+def chu_giai_bang1_g6(redcap_vars: list, bien_bang1: list, nhan_nhom: Optional[dict] = None) -> str:
     """Khối thay khung Bảng 1 khi bảng đã chép từ G6: chú giải tên biến ↔ nhãn từ điển G5 (ngoài khối tự kiểm số —
     nhãn có thể chứa số) + nhắc biến của từ điển không vào Bảng 1 (G6 chọn biến nền theo SAP)."""
     nhan = {str(v.get("variable")): str(v.get("label") or "") for v in redcap_vars or [] if isinstance(v, dict)}
     dong = [f"`{b}` = {nhan[b].replace('|', '/')}" for b in bien_bang1 if nhan.get(b)]
     ra = ["*Chú giải Bảng 1 (nhãn từ từ điển G5):* " + ("; ".join(dong) if dong else "—") + "  "]
+    if nhan_nhom:  # 22/11/2026: cột nhóm mang tên nhóm; chú giải giữ mã gốc của dữ liệu để đối chiếu
+        ra.append("*Nhóm (mã trong dữ liệu khoá):* " + "; ".join(f"`{_mot_dong(g)}` = {str(v).replace('|', '/')}"
+                                                                   for g, v in nhan_nhom.items()) + "  ")
     ra.append("*Bảng 1 gồm đúng các biến nền G6 đã phân tích (theo SAP/đặc tả G6); biến kết cục/phơi nhiễm của từ điển "
               "nằm ở Bảng 2/3.*")
     return "\n".join(ra)
@@ -1620,6 +1794,22 @@ def _khoi_uoc_luong_g6(tt: dict, nguon: str, tien_to: str = "G6") -> list[str]:
         s3.append(f"[CẦN THỐNG KÊ VIÊN — G6: mô hình chính CHƯA chạy ({_trong_o(mh.get('ly_do'))})]  ")
     if isinstance(tt.get("primary_outcome"), dict):
         s3 += _khoi_ket_cuc_chinh_g6(tt["primary_outcome"])
+    # 22/11/2026 (CONSORT 2025 mục 26, STROBE 16a): PR/RR hiệu chỉnh của hồi quy Poisson sai số robust là ƯỚC LƯỢNG
+    # CHÍNH theo SAP của thử nghiệm/thuần tập/cắt ngang phân tích — tóm tắt G6 có khối `poisson_pr` nhưng bản thảo
+    # trước đây chỉ in ước lượng thô (RR hiệu chỉnh chỉ nằm ở chú thích hình).
+    pp = tt.get("poisson_pr")
+    if isinstance(pp, dict):
+        if s3:
+            s3.append("")
+        s3 += _bang_mo_hinh_g6(f"Mô hình đa biến Poisson sai số robust — PR hiệu chỉnh theo các biến trong bảng (G6, "
+                               f"`{tien_to}_table4_poisson_pr.txt`; {_so_g6(pp.get('n_bien_co'))} biến cố)", pp)
+        po = tt.get("primary_outcome") if isinstance(tt.get("primary_outcome"), dict) else {}
+        nhom = str(((tt.get("dac_ta_phan_tich") or {}) if isinstance(tt.get("dac_ta_phan_tich"), dict) else {})
+                   .get("group") or "")
+        g = [_mot_dong(x) for x in (po.get("groups") or [])]
+        if nhom and len(g) == 2 and any(isinstance(r, dict) and r.get("variable") == nhom
+                                        for r in pp.get("results") or []):
+            s3 += [f"*Hàng `{_mot_dong(nhom)}`: nhóm `{g[1]}` so với nhóm `{g[0]}`.*  ", ""]
     hi = tt.get("hypothesis_interpretation")
     if isinstance(hi, dict) and hi.get("note"):
         # SỬA 15/11/2026 (thẩm định PR #261): bản trước chép ghi chú vào THÂN BÀI qua _mot_dong(…, 400) — ô người-thật
@@ -1697,7 +1887,7 @@ def _khoi_uoc_luong_g6(tt: dict, nguon: str, tien_to: str = "G6") -> list[str]:
     return s3
 
 
-def dung_ket_qua_tu_g6(g6: dict) -> dict:
+def dung_ket_qua_tu_g6(g6: dict, tu_dien: Optional[list] = None) -> dict:
     """NHÁP các khối mục Kết quả từ tóm tắt G6 hợp lệ (`doc_tom_tat_g6_hop_le`) — N16.
 
     Trả {da_dung: True, nguon, n_total_txt, n_theo_nhom, s1, s2, s3, s5} (mỗi s* là list dòng Markdown) hoặc
@@ -1719,6 +1909,9 @@ def dung_ket_qua_tu_g6(g6: dict) -> dict:
     s2: list[str] = []
     n_theo_nhom: Optional[dict] = None
     t1 = tt.get("table1")
+    # 22/11/2026: tên nhóm từ từ điển G5 — chỉ thay vào dòng tiêu đề SAU bước tự kiểm số (nhãn có thể chứa số, vd
+    # «HbA1c ≥ 7%»); bước tự kiểm chạy trên bản ghi mã nhóm như cũ.
+    nhan_nhom = nhan_nhom_bang1(tt, tu_dien)
     if isinstance(t1, dict) and t1.get("error"):
         s2.append(f"[CẦN THỐNG KÊ VIÊN — G6 báo lỗi Bảng 1: {_trong_o(t1['error'])}]  ")
     elif isinstance(t1, dict) and isinstance(t1.get("n_per_group"), dict) and t1["n_per_group"]:
@@ -1779,11 +1972,14 @@ def dung_ket_qua_tu_g6(g6: dict) -> dict:
 
     ket = {"da_dung": True, "nguon": nguon, "n_total_txt": _so_g6(tt["n_total"]), "n_theo_nhom": n_theo_nhom,
            "bien_bang1": bien_bang1, "s1": s1, "s2": s2, "s3": s3, "s5": s5, "k_nghien_cuu": k_nc,
-           "tom_tat_g6": tt, "van_ban_g6": g6.get("van_ban") or ""}
+           "tom_tat_g6": tt, "van_ban_g6": g6.get("van_ban") or "",
+           "nhan_nhom": nhan_nhom}
     lech = kiem_so_trich_g6("\n".join(s1 + s2 + s3 + s5), g6.get("van_ban") or "")
     if lech:
         return {"da_dung": False, "ly_do": f"tự kiểm: số không có nguyên văn trong {nguon}: {', '.join(lech[:6])} "
                                            "— bỏ bản nháp, giữ khung [CẦN KẾT QUẢ THẬT]"}
+    # tên nhóm vào SAU khi mọi số đã qua tự kiểm (Bảng 1 và kết cục chính theo nhóm)
+    ket["s2"], ket["s3"] = gan_ten_nhom(s2, nhan_nhom), gan_ten_nhom(s3, nhan_nhom)
     return ket
 
 
@@ -1868,7 +2064,7 @@ def guardrail_g7(artifact: str, *, dang_ky_g2: Optional[str] = None,
     elif ket_qua_that:
         warnings.append("R4 ✅ Kết quả đã THẬT — bản thảo hoàn thiện không còn bắt buộc nhãn DRAFT")
     else:
-        errors.append(f"R4 🔴 Thiếu nhãn DRAFT (chỉ {draft_count} lần — cần ≥2)")
+        errors.append(f"R4 🔴 Thiếu nhãn DRAFT (chỉ {draft_count} lần — cần ≥ 2)")
 
     # R5 — Không hardcode kết quả thống kê dạng HR=0.xx (95%CI
     # VÁ 04/10/2026 (G7-08): mẫu cũ chỉ bắt «HR = 0.64 (95% CI» — lọt «HR 0,64; 95%CI», «cOR: 1,8 [95% CI»; khi kết quả
@@ -2003,7 +2199,7 @@ def lap_o_da_chot_g7(van: str, out_dir: Path, study: str) -> tuple[str, list[str
     elif QD.co_noi_dung(g2.get("registration_id")):
         dang_ky = f"{g2.get('registration_registry') or ''} {g2['registration_id']}".strip()
     cap = [
-        ("tieu_de", "[CẦN — tiêu đề ngắn gọn ≤120 ký tự, chứa thiết kế + dân số + kết cục chính]",
+        ("tieu_de", "[CẦN — tiêu đề ngắn gọn ≤ 120 ký tự, chứa thiết kế + dân số + kết cục chính]",
          ds(meta.get("title"))),
         ("muc_tieu", "[CẦN — câu hỏi PICO chính một câu]", muc_tieu),
         ("co_so", "[CẦN — đơn vị/bệnh viện, tỉnh/thành, thời gian nghiên cứu]",
@@ -2633,6 +2829,7 @@ def generate_manuscript(
     khoi_chan_doan_du_bao: Optional[list] = None,  # 22/11/2026: STARD/TRIPOD (`_khoi_chan_doan_du_bao_g7`)
     khoi_tong_quan: Optional[list] = None,  # 22/11/2026: PRISMA 2020 mục 5–15 (`_khoi_tong_quan_g7`)
     tom_tat_tong_quan: Optional[list] = None,  # 22/11/2026: PRISMA 2020 for Abstracts A4/A6/A11 (`_tom_tat_tong_quan_g7`)
+    khoi_tuyen_chon: Optional[list] = None,  # 22/11/2026: §1 Tuyển chọn từ sổ sàng lọc đã kiểm (`khoi_tuyen_chon_g7`)
     boi_canh_vn: Optional[str] = None,
     hon_hop_cau: Optional[str] = None,
 ) -> str:
@@ -2877,14 +3074,20 @@ def generate_manuscript(
             "biên tập; KẾT QUẢ THẬT chỉ được coi là chốt sau khi bác sĩ đối chiếu.  ",
             "> Mỗi dòng số mang nhãn «CẦN KẾT QUẢ THẬT — đối chiếu G6»: so với bảng G6 (`G6_table*.txt`) rồi xoá nhãn; "
             "xong toàn mục mới đặt `results_final=true` trong study_meta.json.  ",
-            "> Phần G6 không có (sàng lọc, kết cục phụ; giá trị từng biến Bảng 1 khi tóm tắt G6 chưa mang) vẫn là ô "
+            "> Phần G6 không có (" + ("" if khoi_tuyen_chon else "sàng lọc, ")
+            + "kết cục phụ; giá trị từng biến Bảng 1 khi tóm tắt G6 chưa mang) vẫn là ô "
             "trống — KHÔNG điền số ước tính/giả định (KẾT QUẢ THẬT).  ",
+            # không chữ số trong dòng chỉ dẫn: «§1 … sàng lọc» từng khớp mẫu «số người từng giai đoạn» của K18 (bằng
+            # chứng giả cho STROBE 13a) — bằng chứng phải là câu tuyển chọn thật bên dưới
+            *(["> Số ở mục Tuyển chọn chép từ sổ sàng lọc (sơ đồ luồng) — đã đủ số và khớp cộng trừ từng bước.  "]
+              if khoi_tuyen_chon else []),
             "",
             f"**§1 Tuyển chọn — {flow_label}:**  ",
-            "[CẦN KẾT QUẢ THẬT] Sàng lọc: N = ___; Đủ tiêu chí: N = ___.  ",
+            # 22/11/2026: sổ sàng lọc đủ số + khớp số học ⇒ câu STROBE 13a–b / CONSORT 22a–b; không ⇒ ô chờ như cũ
+            *(khoi_tuyen_chon or ["[CẦN KẾT QUẢ THẬT] Sàng lọc: N = ___; Đủ tiêu chí: N = ___.  "]),
             *kq6["s1"],
             f"Cỡ mẫu kế hoạch (G3): N = {n_ke_hoach}.  ",
-            "*Lý do loại trừ chính:* [CẦN KẾT QUẢ THẬT — liệt kê số/lý do]  ",
+            *([] if khoi_tuyen_chon else ["*Lý do loại trừ chính:* [CẦN KẾT QUẢ THẬT — liệt kê số/lý do]  "]),
             f"*(Xem {flow_label} — sinh từ kết quả thật)*",
             "",
             *(["**§2 Đặc điểm các nghiên cứu — Bảng 1:**  ",
@@ -2906,6 +3109,7 @@ def generate_manuscript(
             *(kq6.get("s4") or ["[CẦN KẾT QUẢ THẬT — tóm tắt G6 không chứa kết cục phụ; phân tích theo SAP §2/§8]  "]),
             "*(Xem file Table3.docx — từ G6)*",
             "",
+            *(_khoi_ton_hai_ket_qua(kq6.get("ton_hai")) if design_code == "rct" else []),
             "**§5 Phân tích nhạy cảm:**  ",
             *(kq6["s5"] or ["[CẦN KẾT QUẢ THẬT — từ SAP sensitivity analysis (G4)]  ", ""]),
             *(kq6.get("hinh") or []),
@@ -2922,9 +3126,10 @@ def generate_manuscript(
             "> Không được điền số liệu ước tính/giả định.  ",
             "",
             f"**§1 Tuyển chọn — {flow_label}:**  ",
-            f"[CẦN KẾT QUẢ THẬT] Sàng lọc: N = ___; Đủ tiêu chí: N = ___; "
-            f"Phân tích cuối: N = {n_ke_hoach} (kế hoạch).  ",
-            "*Lý do loại trừ chính:* [CẦN KẾT QUẢ THẬT — liệt kê số/lý do]  ",
+            *([*khoi_tuyen_chon, f"Cỡ mẫu kế hoạch (G3): N = {n_ke_hoach}.  "] if khoi_tuyen_chon else [
+                f"[CẦN KẾT QUẢ THẬT] Sàng lọc: N = ___; Đủ tiêu chí: N = ___; "
+                f"Phân tích cuối: N = {n_ke_hoach} (kế hoạch).  ",
+                "*Lý do loại trừ chính:* [CẦN KẾT QUẢ THẬT — liệt kê số/lý do]  "]),
             f"*(Xem {flow_label} — sinh từ kết quả thật)*",
             "",
             "**§2 Đặc điểm nền — Bảng 1:**  ",
@@ -2941,6 +3146,7 @@ def generate_manuscript(
             "[CẦN KẾT QUẢ THẬT]  ",
             "*(Xem file Table3.docx — từ G6)*",
             "",
+            *(_khoi_ton_hai_ket_qua(None) if design_code == "rct" else []),
             "**§5 Phân tích nhạy cảm:**  ",
             "[CẦN KẾT QUẢ THẬT — từ SAP sensitivity analysis (G4)]  ",
             "*(Ví dụ: complete case vs MI; subgroup theo giới tính/tuổi...)*",
@@ -2979,9 +3185,9 @@ def generate_manuscript(
         "",
         f"> Gợi ý cấu trúc: [{design_primary}] của [{topic}]:  ",
         "> [kết cục chính] — [cơ sở/quần thể], [thời gian]  ",
-        "> *(≤120 ký tự; phải chứa: thiết kế + quần thể + kết cục)*",
+        "> *(≤ 120 ký tự; phải chứa: thiết kế + quần thể + kết cục)*",
         "",
-        "[CẦN — tiêu đề ngắn gọn ≤120 ký tự, chứa thiết kế + dân số + kết cục chính]",
+        "[CẦN — tiêu đề ngắn gọn ≤ 120 ký tự, chứa thiết kế + dân số + kết cục chính]",
         "",
         "---",
         "",
@@ -3053,6 +3259,12 @@ def generate_manuscript(
         "**§3 Mục tiêu và giả thuyết:**  ",
         f"Nghiên cứu này sử dụng thiết kế {design_primary} nhằm [CẦN câu hỏi PICO chính]. "
         "Chúng tôi giả thuyết rằng [CẦN nêu chiều hướng kỳ vọng của mối liên quan/hiệu quả].  ",
+        # 22/11/2026 (CONSORT 2025 mục 7: mục tiêu cụ thể về CẢ lợi ích và tác hại): thử nghiệm có tổn hại định trước ở
+        # SAP §15 (`_sap_tom_tat` → «ton_hai») ⇒ nêu mục tiêu mô tả tác hại; SAP chưa định nghĩa ⇒ không nói. Định nghĩa
+        # tổn hại (kèm ngưỡng huyết áp ghi «≥ 180/110 mmHg») đã in nguyên chữ SAP ở Phương pháp §3b — Đặt vấn đề chỉ nêu
+        # mục tiêu, không lặp định nghĩa.
+        *(["Nghiên cứu đồng thời mô tả tác hại (biến cố bất lợi) ở từng nhóm theo định nghĩa định trước trong kế hoạch "
+           "phân tích.  "] if design_code == "rct" and (sap_tom_tat or {}).get("ton_hai") else []),
         "",
         "---",
         "",
@@ -3709,7 +3921,7 @@ def write_checkpoint(
             "A8_docx":     str(docx_path) if docx_path else None,
         },
         "pending_doctor_actions": [
-            "Điền Tiêu đề (≤120 ký tự) và Tác giả (tên/đơn vị/ORCID)",
+            "Điền Tiêu đề (≤ 120 ký tự) và Tác giả (tên/đơn vị/ORCID)",
             "Điền Methods §2: tiêu chí nhận/loại, cơ sở, thời gian",
             (
                 "Xác nhận Methods §3: danh sách biến phơi nhiễm/can thiệp tự điền từ CRF (G5) "
@@ -3797,9 +4009,12 @@ def main() -> None:
     redcap_csv  = out_dir / f"G5_REDCap_dictionary_{study}.csv"
     redcap_vars, ly_do_tu_dien = doc_tu_dien_redcap(redcap_csv)
     # N16 (15/11/2026): tóm tắt G6 HỢP LỆ (đúng dataset khoá) ⇒ nháp Kết quả chép nguyên văn số G6; không ⇒ khung trống.
-    ket_qua_g6 = dung_ket_qua_tu_g6(doc_tom_tat_g6_hop_le(out_dir))
+    ket_qua_g6 = dung_ket_qua_tu_g6(doc_tom_tat_g6_hop_le(out_dir), tu_dien=redcap_vars)
     if ket_qua_g6.get("da_dung"):
-        ket_qua_g6["s4"] = dung_ket_cuc_phu_g6(out_dir)   # kết cục phụ của chay_sap_g6 (giả lập lần 3)
+        # kết cục phụ của chay_sap_g6 (giả lập lần 3) và (22/11/2026) tác hại theo nhóm SAP §15 — tên nhóm gắn SAU tự kiểm
+        ket_qua_g6["s4"] = gan_ten_nhom(dung_ket_cuc_phu_g6(out_dir), ket_qua_g6.get("nhan_nhom")) or None
+        ket_qua_g6["ton_hai"] = gan_ten_nhom(dung_ket_cuc_phu_g6(out_dir, ton_hai=True),
+                                             ket_qua_g6.get("nhan_nhom")) or None
         ket_qua_g6["hinh"] = dung_hinh_g6(out_dir)          # hình G6 tự sinh cùng lượt chạy SAP (21/11/2026)
         # 22/11/2026 (PRISMA 2020 mục 20c, 22): phân nhóm tiền định + khung tóm tắt phát hiện GRADE của phân tích gộp
         ket_qua_g6["phan_nhom"] = dung_phan_nhom_g6(out_dir)
@@ -3812,7 +4027,8 @@ def main() -> None:
                         "liệu đã khoá qua G6, mã lựa chọn đổi sang nhãn từ điển G5; số biến cố từng nhánh ở bảng kết quả "
                         "từng nghiên cứu (§3).*")
     elif ket_qua_g6.get("da_dung") and ket_qua_g6.get("bien_bang1"):
-        table1_shell = chu_giai_bang1_g6(redcap_vars, ket_qua_g6["bien_bang1"])   # bảng đã chép từ G6 ở nháp §2
+        table1_shell = chu_giai_bang1_g6(redcap_vars, ket_qua_g6["bien_bang1"],   # bảng đã chép từ G6 ở nháp §2
+                                         ket_qua_g6.get("nhan_nhom"))
     else:
         table1_shell = build_table1_shell(
             redcap_vars, ly_do_vang=ly_do_tu_dien,
@@ -3984,6 +4200,7 @@ def main() -> None:
         khoi_chan_doan_du_bao=_khoi_chan_doan_du_bao_g7(out_dir, design_code),
         khoi_tong_quan=(_khoi_tong_quan_g7(out_dir, study, redcap_vars) if design_code == "sr_ma" else None),
         tom_tat_tong_quan=(_tom_tat_tong_quan_g7(out_dir, study) if design_code == "sr_ma" else None),
+        khoi_tuyen_chon=khoi_tuyen_chon_g7(doc_so_do_luong_g7(out_dir, study), design_code),
         boi_canh_vn=_boi_canh_vn(out_dir),
         hon_hop_cau=_hon_hop_g7(out_dir),
         g3_n_chot=g3.get("confirmed_n"),

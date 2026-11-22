@@ -187,7 +187,7 @@ def test_dieu_kien_loc_va_doi_chieu_ma_chi_khi_lay_tu_co_so_du_lieu(tmp_path):
           "primary_outcome": {"name": "Gãy xương", "measure": "Mã ICD-10 S72 có phim xác nhận", "timepoint": "3 năm"},
           "critical_to_quality": "Kiểm 10% hồ sơ biến cố bằng phim X-quang"}
     n = _nguon(tmp_path, "cohort", g1=g1)
-    assert SDC.dieu_kien_loc(n) == ["- Điều kiện lọc hồ sơ trên cơ sở dữ liệu: tuổi ≥18; đang dùng thuốc hạ áp; loại "
+    assert SDC.dieu_kien_loc(n) == ["- Điều kiện lọc hồ sơ trên cơ sở dữ liệu: tuổi ≥ 18; đang dùng thuốc hạ áp; loại "
                                     "hồ sơ có: không đọc được tin nhắn."]
     van = SDC.dung_de_cuong(n)
     assert ("- Đối chiếu cách xác định bằng mã với hồ sơ gốc: kiểm 10% hồ sơ biến cố bằng phim X-quang." in van)

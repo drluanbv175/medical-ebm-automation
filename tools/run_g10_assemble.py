@@ -1055,7 +1055,7 @@ def sec_sap(cps, meta) -> str:
             f"**Phiên bản SAP (tự động từ G4):** {ver} — trạng thái: {status}.\n\n"
             "**Không áp dụng phân tích thống kê suy diễn (nghiên cứu ĐỊNH TÍNH):**\n"
             "- Phân tích chính: mã hóa chủ đề (thematic/framework analysis) — mã "
-            "mở → mã trục → chủ đề, ≥2 người mã hóa độc lập (COREQ/SRQR).\n"
+            "mở → mã trục → chủ đề, ≥ 2 người mã hóa độc lập (COREQ/SRQR).\n"
             "- Cỡ mẫu: xác định bằng BÃO HÒA DỮ LIỆU (data saturation), không "
             "tính bằng power/alpha (xem A4).\n"
             "- Độ tin cậy (thay ước lượng + KTC 95%): trustworthiness theo Lincoln "

@@ -1350,7 +1350,7 @@ def build_presubmission_checklist(pipeline: dict, reporting: dict,
     _add("PIPELINE", "Guardrail G0-G7: >= 6/8 gates qua",
          pipeline["n_pass"] >= 6,
          note=f"{pipeline['n_pass']}/{pipeline['n_total']} gates qua")
-    _add("PIPELINE", f"Checklist {reporting['standard_name']}: >60% muc co bang chung",
+    _add("PIPELINE", f"Checklist {reporting['standard_name']}: > 60% mục có bằng chứng",
          reporting["score_pct"] >= 60,
          note=f"{reporting['checked']}/{reporting['total']} = {reporting['score_pct']}%")
 

@@ -11,7 +11,7 @@
 |---|---|---|---|
 | G0-AUTO-00 | Guardrail liêm chính G0 sạch | PASS | guardrail_passed=True |
 | G0-AUTO-01 | Đề tài có chủ đề thật (không rỗng/placeholder) | PASS | topic='Phát triển mô hình dự báo nguy cơ nhập viện trong 12 tháng ở người suy tim điều ' |
-| G0-AUTO-02 | Có bằng chứng THẬT làm nền (≥1 PMID từ PubMed) | PASS | n_pmids=24 |
+| G0-AUTO-02 | Có bằng chứng THẬT làm nền (≥ 1 PMID từ PubMed) | PASS | n_pmids=24 |
 | G0-AUTO-03 | Số hit dùng để kết luận khoảng trống là SỐ THẬT | PASS | counts_are_real=True; nhánh không tra được=[] |
 | G0-AUTO-04 | Checkpoint đủ trường hợp đồng cho cổng sau đọc | PASS | 10 khóa gốc + 9 khóa pubmed_results đầy đủ |
 | G0-AUTO-05 | Artifact A1 có đủ 6 thành phần theo doctrine | PASS | A1 có đủ 7 mục bắt buộc |

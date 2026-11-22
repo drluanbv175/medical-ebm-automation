@@ -542,7 +542,7 @@ def test_tham_dinh_mot_dong_ngoai_o_khong_tay_o_cho_cua_g6():
 
 CANH_BAO_CUM = ("Số cụm = 6. KTC/p hiệu chỉnh cụm dùng phân phối t với G−1 = 5 bậc tự do — sandwich kém tin cậy khi "
                 "số cụm ít [CẦN THỐNG KÊ VIÊN].")
-EPV = "Số biến cố 9 có thể không đủ EPV cho 2 biến dự báo (cần ≥10 biến cố/biến — Peduzzi 1995)."
+EPV = "Số biến cố 9 có thể không đủ EPV cho 2 biến dự báo (cần ≥ 10 biến cố/biến — Peduzzi 1995)."
 CB_ORD = "Chỉ 6 cụm — SE sandwich thiên thấp."
 CB_BRANT = ("Kiểm định Brant giả định quan sát độc lập — dữ liệu gom cụm «ban_kham» làm p nhỏ giả; đọc cùng bảng OR "
             "theo ngưỡng [CẦN THỐNG KÊ VIÊN].")

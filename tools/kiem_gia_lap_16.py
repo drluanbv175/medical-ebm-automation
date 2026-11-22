@@ -66,6 +66,10 @@ def kiem_mot(p: Path) -> List[str]:
                 loi.append(f"biểu đồ LỖI: {str(bd.get('loi'))[:200]}")
             if bd.get("thieu_bat_buoc"):
                 loi.append(f"thiếu hình bắt buộc theo chuẩn báo cáo: {', '.join(map(str, bd['thieu_bat_buoc']))}")
+    # 22/11/2026 (bác sĩ: «tất cả phải đúng chuẩn»): mọi văn bản đề tài đạt luật trình bày số đo K11
+    sd = j.get("so_do_sai") or []
+    if sd:
+        loi.append(f"trình bày số đo sai chuẩn ở {len(sd)} chỗ: {' | '.join(map(str, sd[:4]))[:400]}")
     g65 = ((j.get("cong") or {}).get("G6_5") or {})
     if g65 and g65.get("trang_thai") != "DAT":
         loi.append(f"bản diễn giải G6.5 = {g65.get('trang_thai')}: {'; '.join(map(str, g65.get('loi') or []))[:200]}")

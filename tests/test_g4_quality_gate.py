@@ -70,7 +70,7 @@ _COMPARATIVE_FILLS = [
      "- **Biến đưa vào mô hình imputation:** Tuổi, giới, HbA1c nền  "),
     ("- **Nhóm nhỏ tiền định:** [CẦN BÁC SĨ — phải ghi TRƯỚC khi xem dữ liệu]  ",
      "- **Nhóm nhỏ tiền định:** Theo tuổi <65/≥65 — TIỀN ĐỊNH  "),
-    ("- **Điều chỉnh:** [CẦN — Bonferroni / FDR nếu >3 kết cục chính]  ",
+    ("- **Điều chỉnh:** [CẦN — Bonferroni / FDR nếu > 3 kết cục chính]  ",
      "- **Điều chỉnh:** Chỉ 1 kết cục chính nên không cần hiệu chỉnh  "),
     ("- [CẦN BÁC SĨ thêm kịch bản cụ thể]  ", "- Kịch bản: loại trừ bỏ thuốc >30% thời gian theo dõi  "),
     ("- **Phần mềm:** [CẦN — R v4.x / Stata v18 / SPSS v29]  ", "- **Phần mềm:** R v4.3.1  "),
