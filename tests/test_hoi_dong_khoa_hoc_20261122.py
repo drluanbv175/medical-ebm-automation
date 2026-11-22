@@ -155,6 +155,7 @@ def _goc(tmp_path):
 
 TRA = {"pb1": _tv(phat_hien=[PH_DUNG, PH_BIA]), "pb2": _tv(diem=5), "uv_tk": _tv(phat_hien=[PH_DUNG]),
        "uv_dd": _tv(diem=4), "uv_tl": _tv(diem=3, phat_hien=[dict(PH_DUNG, muc_phieu="4", muc_do="goi_y")]),
+       "uv_ctk": _tv(diem=4),   # QC-3.0: ghế chuyên thiết kế (đề tài mẫu là cắt ngang)
        "ct": {"phan_quyet": [{"id": "F02", "quyet": "loai", "ly_do": "trùng F01"}], "gop": [],
               "nhan_xet_chung": "Đề cương rõ, cần bổ sung xử lý dữ liệu thiếu.",
               "yeu_cau_chinh_sua": ["dữ liệu thiếu"]}}
@@ -165,7 +166,7 @@ def test_tron_quy_trinh_hai_buoc_va_bien_ban(tmp_path):
     assert H.main(["hop", "--study", STUDY], client=kh, goc=goc) == 0 and kh.lo == {}   # chạy khô: không nộp
     assert H.main(["hop", "--study", STUDY, "--goi-api"], client=kh, goc=goc) == 4       # nộp batch thành viên
     p_tv = [kh.yc[c] for c in kh.lo["msgbatch_0"]]
-    assert len(p_tv) == 5 and len({json.dumps(p["system"], ensure_ascii=False) for p in p_tv}) == 1  # tiền tố chung
+    assert len(p_tv) == 6 and len({json.dumps(p["system"], ensure_ascii=False) for p in p_tv}) == 1  # 5 + ghế thiết kế
     assert p_tv[0]["system"][0]["cache_control"]["type"] == "ephemeral"
     assert p_tv[0]["model"] == "claude-opus-5-5" and p_tv[0]["thinking"] == {"type": "adaptive"}
     assert all("Chấm ĐỘC LẬP" in p["messages"][0]["content"] for p in p_tv)
@@ -237,7 +238,8 @@ def test_cham_hieu_chuan_do_nhay(tmp_path):
     kq = H.cham_hieu_chuan(da, st)
     assert kq["bat"] == 1 and kq["so_loi_cai"] == len(da) and kq["van_de_ngoai_loi_cai"] == 1
     assert H.main(["hieu-chuan", "--study", STUDY, "--tao"], goc=goc) == 0
-    assert json.loads((goc / "exports" / STUDY / H.THU_MUC / "hieu_chuan" / "dap_an.json").read_text("utf-8"))["dap_an"]
+    hc = goc / "exports" / STUDY / H.THU_MUC / "hieu_chuan" / "de_cuong"
+    assert json.loads((hc / "dap_an.json").read_text("utf-8"))["dap_an"]
 
 
 # ── vòng kín: biên tập có rào liêm chính → họp lại tới khi thông qua (bác sĩ 22/11/2026) ─────────────────────────────
@@ -271,14 +273,19 @@ SUA = {"sua": [{"id": "F01", "hanh_dong": "sua", "thay": [
     {"dong": 8, "cu": "theo Wilson", "moi": "theo Wilson; dữ liệu thiếu xử lý bằng phân tích ca đầy đủ"}]}]}
 TT_DAT = {"tham_tra": [{"id": "F01", "ket_qua": "da_giai_quyet", "dong": 8,
                        "trich": "dữ liệu thiếu xử lý bằng phân tích ca đầy đủ", "ly_do": ""}], "loi_moi": []}
-SACH = {**{m: _tv(diem=5) for m in ("pb1", "pb2", "uv_tk", "uv_dd", "uv_tl")},
+SACH = {**{m: _tv(diem=5) for m in ("pb1", "pb2", "uv_tk", "uv_dd", "uv_tl", "uv_ctk")},
         "ct": {"phan_quyet": [], "gop": [], "nhan_xet_chung": "Đạt.", "yeu_cau_chinh_sua": []}}
 
 
-def _hieu_chuan_dat(goc, do_nhay=1.0):
-    """Kết quả hiệu chuẩn HỢP LỆ dưới quy chế hiện hành (điều kiện tiên quyết của vòng kín)."""
-    H._ghi_json(goc / "exports" / STUDY / H.THU_MUC / "hieu_chuan" / "ket_qua.json",
-                {"sha_quy_che": H.sha_ke_hoach(), "do_nhay": do_nhay, "bat": round(6 * do_nhay), "so_loi_cai": 6})
+def _hieu_chuan_dat(goc, do_nhay=1.0, bao_nham=True, loai="de_cuong"):
+    """Kết quả hiệu chuẩn HỢP LỆ dưới quy chế hiện hành (điều kiện tiên quyết của vòng kín): độ nhạy + báo nhầm."""
+    hc = goc / "exports" / STUDY / H.THU_MUC / "hieu_chuan" / loai
+    H._ghi_json(hc / "ket_qua.json", {"sha_quy_che": H.sha_ke_hoach(), "do_nhay": do_nhay, "bat": round(7 * do_nhay),
+                                      "so_loi_cai": 7, "bat_dac_thu": True})
+    if bao_nham:
+        H._ghi_json(hc / "bao_nham.json", {"sha_quy_che": H.sha_ke_hoach(), "dat": True, "do_chinh_xac": 0.9,
+                                           "model_trong_tai": H.TRONG_TAI_MODEL, "doi_chung_dung": 10,
+                                           "so_doi_chung": 10, "ly_do": "đạt"})
 
 
 def _vong(goc, kh, n=12):
@@ -392,12 +399,12 @@ def test_bien_ban_ghi_quy_che_va_hieu_luc(tmp_path):
 def test_hieu_chuan_cham_tu_choi_khi_quy_che_doi(tmp_path, monkeypatch):
     goc, kh = _goc(tmp_path), KhachBatch(TRA)
     assert H.main(["hieu-chuan", "--study", STUDY, "--tao"], goc=goc) == 0
-    ban = goc / "exports" / STUDY / H.THU_MUC / "hieu_chuan" / f"BAN_CAI_LOI_{STUDY}.md"
+    ban = goc / "exports" / STUDY / H.THU_MUC / "hieu_chuan" / "de_cuong" / f"BAN_CAI_LOI_{STUDY}_de_cuong.md"
     for _ in range(4):
         H.main(["hop", "--study", STUDY, "--tep", str(ban), "--goi-api"], client=kh, goc=goc)
     monkeypatch.setattr(H, "CUA_SO_DONG", 4)
     assert H.main(["hieu-chuan", "--study", STUDY, "--cham"], goc=goc) == 1
-    assert not (goc / "exports" / STUDY / H.THU_MUC / "hieu_chuan" / "ket_qua.json").exists()  # không ghi kết quả
+    assert not (ban.parent / "ket_qua.json").exists()  # không ghi kết quả
 
 
 def test_bien_tap_chia_nhom_va_nop_lai_khi_hong_het(tmp_path, monkeypatch):
@@ -614,3 +621,259 @@ def test_nop_lai_chi_thanh_vien_hong_giu_ket_qua_nguoi_da_doc_duoc(tmp_path):
     dat = [s for s in _cac_st(goc) if s.get("buoc") == "dat"][0]
     assert dat["ket_luan_cuoi"] == "thong_qua"
     assert sorted(f["id"] for f in dat["tham_tra"]["da_giai_quyet"]) == ["F01", "F02"]
+
+
+# ── QC-HDKH-3.0 (bác sĩ 22/11/2026 duyệt bốn việc) ───────────────────────────────────────────────────────────────────
+@pytest.mark.parametrize("tk", ["rct", "cohort", "case_control", "cross_sectional", "diagnostic", "sr_ma",
+                                "prediction", "qualitative"])
+def test_ghe_chuyen_thiet_ke_cho_du_tam_thiet_ke(tk):
+    ds = H.thanh_phan_hoi_dong(tk, "đề cương")
+    assert [t["ma"] for t in ds] == ["pb1", "pb2", "uv_tk", "uv_dd", "uv_tl", "uv_ctk"]
+    assert ds[-1]["vai"] == H.GHE_THIET_KE[tk]["vai"] and H.tuc_so(len(ds)) == 4
+
+
+def test_bi_danh_thiet_ke_ghe_kinh_te_va_tuc_so():
+    assert H.thanh_phan_hoi_dong("diagnostic_accuracy", "")[-1]["vai"] == H.GHE_THIET_KE["diagnostic"]["vai"]
+    assert [t["ma"] for t in H.thanh_phan_hoi_dong("", "")] == ["pb1", "pb2", "uv_tk", "uv_dd", "uv_tl"]
+    ds = H.thanh_phan_hoi_dong("rct", "Phân tích chi phí–hiệu quả, tính ICER theo QALY.")
+    assert [t["ma"] for t in ds][-2:] == ["uv_ctk", "uv_kt"] and H.tuc_so(len(ds)) == 4
+    assert (H.tuc_so(5), H.tuc_so(6), H.tuc_so(7)) == (3, 4, 4)
+
+
+def test_ho_so_kinh_te_them_cheers_va_noi_ro_chua_do():
+    hs = H.ho_so_kiem_may("X", Path("/khong-co"), "Tính ICER và QALY.", False)
+    assert "CHEERS 2022" in hs["chuan_ap_dung"] and "CHƯA đo" in hs["cheers_2022"]
+
+
+SAP_MAU = """# SAP
+### §1 QUẦN THỂ PHÂN TÍCH
+Phân tích theo ý định điều trị.
+### §2 KẾT CỤC
+Kết cục chính là tỷ lệ kiểm soát huyết áp.
+### §4 PHÂN TÍCH CHÍNH
+Hồi quy Poisson với phương sai mạnh.
+### §6 DỮ LIỆU THIẾU
+Gán đa trị 20 bộ.
+### §8 ĐA SO SÁNH
+Holm cho kết cục phụ.
+### §9 PHÂN TÍCH ĐỘ NHẠY
+Phân tích ca đầy đủ.
+### §10 PHẦN MỀM + SEED
+R 4.4.
+"""
+BAN_THAO_MAU = """# Bài báo
+## I. GIỚI THIỆU
+Tăng huyết áp phổ biến [1].
+## II. PHƯƠNG PHÁP
+### Phân tích thống kê
+Hồi quy Poisson.
+## III. KẾT QUẢ
+Có 412 người tham gia.
+## IV. BÀN LUẬN
+Kết quả tương tự [2].
+## V. KẾT LUẬN
+Can thiệp cải thiện kiểm soát huyết áp.
+## KHAI BÁO
+Không có xung đột lợi ích.
+"""
+
+
+@pytest.mark.parametrize("loai, van, so", [("sap", SAP_MAU, 6), ("ban_thao", BAN_THAO_MAU, 6),
+                                          ("bao_cao", BAN_THAO_MAU, 6)])
+def test_loi_cai_theo_loai_tai_lieu(loai, van, so):
+    moi, da = H.cai_loi(van, loai)
+    assert len(da) == so and len({d["ma"] for d in da}) == so
+    dong = moi.splitlines()
+    assert all(dong[d["dong"] - 1] == d["cau"] for d in da) and not any(d["dac_thu_thiet_ke"] for d in da)
+
+
+def test_loi_dac_thu_thiet_ke_chi_cho_de_cuong_co_thiet_ke():
+    van = DE_CUONG + "### 2.3. Phân bổ ngẫu nhiên\nKhối ngẫu nhiên kích thước 4.\n"
+    moi, da = H.cai_loi(van, "de_cuong", "rct")
+    dt_ = [d for d in da if d["dac_thu_thiet_ke"]]
+    assert [d["ma"] for d in dt_] == ["tk_phan_bo_lo"] and moi.splitlines()[dt_[0]["dong"] - 1] == dt_[0]["cau"]
+    assert not any(d["dac_thu_thiet_ke"] for d in H.cai_loi(van, "de_cuong", "")[1])
+    assert not any(d["dac_thu_thiet_ke"] for d in H.cai_loi(SAP_MAU, "sap", "rct")[1])
+
+
+def test_tep_mac_dinh_theo_loai():
+    assert H.tep_mac_dinh("A", Path("/g"), "sap").name == "G4_A5_SAP_FINAL_A.md"
+    assert H.tep_mac_dinh("A", Path("/g"), "ban_thao").name == "G7_A8_MANUSCRIPT_A.md"
+    assert H.tep_mac_dinh("A", Path("/g")).name == "DE_CUONG_NOP_HOI_DONG_A.md"
+
+
+def test_loi_nhan_theo_loai_dung_phieu_rieng():
+    tv = H.THANH_VIEN[2]
+    assert "Gamble" not in H.loi_nhan_thanh_vien(tv)
+    sap = H.loi_nhan_thanh_vien(tv, "sap")
+    assert H.LOAI_TAI_LIEU["sap"]["phieu"]["2"] in sap and "ĐỀ XUẤT SỬA ĐỔI SAP" in sap
+    assert "  3. Kết quả" in H.loi_nhan_thanh_vien(tv, "bao_cao")
+
+
+def _kq(do_nhay=1.0, so=7, dac_thu=True):
+    return {"sha_quy_che": H.sha_ke_hoach(), "do_nhay": do_nhay, "bat": round(so * do_nhay), "so_loi_cai": so,
+            "bat_dac_thu": dac_thu}
+
+
+@pytest.mark.parametrize("kq, bn, mong", [
+    (_kq(), {"dat": True}, True),
+    (_kq(), None, False),                                   # chưa đo báo nhầm ⇒ chưa có hiệu lực
+    (_kq(), {"dat": False, "ly_do": "x"}, False),
+    (_kq(dac_thu=False), {"dat": True}, False),             # sót lỗi đặc thù thiết kế
+    (_kq(so=4, do_nhay=1.0), {"dat": True}, False),         # < 5 lỗi cài ⇒ hiệu chuẩn không hợp lệ
+    (_kq(do_nhay=5 / 7), {"dat": True}, False),
+])
+def test_hieu_luc_can_ca_do_nhay_dac_thu_va_bao_nham(tmp_path, kq, bn, mong):
+    hc = tmp_path / H.THU_MUC / "hieu_chuan" / "de_cuong"
+    H._ghi_json(hc / "ket_qua.json", kq)
+    if bn is not None:
+        H._ghi_json(hc / "bao_nham.json", {**bn, "sha_quy_che": H.sha_ke_hoach()})
+    assert H.hieu_luc_hieu_chuan(tmp_path)[0] is mong
+
+
+def test_doi_chung_am_chi_dung_khi_muc_co_noi_dung():
+    van = "# A\n## 2.3. Cỡ mẫu\nn = 100.\nTính theo công thức một tỷ lệ.\n## 2.4. Đạo đức\n## 2.5. Biến số\nx\n"
+    dc = H.doi_chung_am(van)
+    assert [d["dong"] for d in dc] == [2] and "cỡ mẫu" in dc[0]["van_de"] and dc[0]["nhom"] == "kiem_soat_am"
+
+
+def test_xac_minh_trong_tai_sai_phai_chung_minh():
+    muc = [{"id": f"M0{i}"} for i in range(1, 6)]
+    dl = {"phan_dinh": [
+        {"id": "M01", "ket_qua": "sai", "co_so": "tai_lieu_da_dap_ung", "dong": 8, "trich": "theo Wilson"},
+        {"id": "M02", "ket_qua": "sai", "co_so": "tai_lieu_da_dap_ung", "dong": 8, "trich": "không có câu này"},
+        {"id": "M03", "ket_qua": "sai", "co_so": "chuan_khong_doi", "ly_do": ""},
+        {"id": "M04", "ket_qua": "dung", "ly_do": "thiếu thật"}]}                   # M05: thiếu phán quyết
+    pd = H.xac_minh_trong_tai(dl, muc, DE_CUONG)
+    assert [pd[f"M0{i}"]["ket_qua"] for i in range(1, 6)] == ["sai", "khong_ro", "khong_ro", "dung", "khong_ro"]
+
+
+def _muc(nhom, n):
+    return [{"id": f"{nhom}{i}", "nhom": nhom} for i in range(n)]
+
+
+def test_cham_bao_nham_trong_tai_hop_le_do_chinh_xac_va_khong_ro():
+    muc = _muc("kiem_soat_duong", 6) + _muc("kiem_soat_am", 4) + _muc("nghi_van", 10)
+    pd = {m["id"]: {"ket_qua": {"kiem_soat_duong": "dung", "kiem_soat_am": "sai", "nghi_van": "dung"}[m["nhom"]]}
+          for m in muc}
+    for i in range(2):
+        pd[f"nghi_van{i}"]["ket_qua"] = "sai"
+    kq = H.cham_bao_nham(muc, pd)
+    assert kq["trong_tai_hop_le"] and kq["do_chinh_xac"] == 0.8 and kq["dat"]
+    assert kq["khoang_tin_cay_95"] == H._wilson(8, 10) and len(kq["sai_chi_tiet"]) == 2
+    pd["kiem_soat_am0"]["ket_qua"] = pd["kiem_soat_am1"]["ket_qua"] = "dung"   # trọng tài sai 2/10 đối chứng
+    assert not H.cham_bao_nham(muc, pd)["trong_tai_hop_le"] and not H.cham_bao_nham(muc, pd)["dat"]
+    pd["kiem_soat_am0"]["ket_qua"] = pd["kiem_soat_am1"]["ket_qua"] = "sai"
+    for i in range(6):
+        pd[f"nghi_van{i}"]["ket_qua"] = "khong_ro"
+    assert not H.cham_bao_nham(muc, pd)["dat"]                                  # không rõ quá nửa ⇒ không đo được
+    pd = {m["id"]: {"ket_qua": "dung" if m["nhom"] != "kiem_soat_am" else "sai"} for m in muc}
+    for i in range(3):
+        pd[f"nghi_van{i}"]["ket_qua"] = "sai"
+    assert H.cham_bao_nham(muc, pd)["do_chinh_xac"] == 0.7 and not H.cham_bao_nham(muc, pd)["dat"]
+
+
+def test_wilson():
+    assert H._wilson(0, 0) is None and H._wilson(8, 10) == [0.49, 0.943]
+
+
+def _hop_ban_cai_loi(goc, kh, loai="de_cuong"):
+    hc = goc / "exports" / STUDY / H.THU_MUC / "hieu_chuan" / loai
+    ban = hc / f"BAN_CAI_LOI_{STUDY}_{loai}.md"
+    da = json.loads((hc / "dap_an.json").read_text(encoding="utf-8"))["dap_an"]
+    ph = [{"muc_phieu": "2", "muc_do": "can_sua", "dong": d["dong"], "trich": d["cau"][:40], "van_de": d["mo_ta"],
+           "chuan": "", "de_xuat": "sửa"} for d in da]
+    dong = ban.read_text(encoding="utf-8").splitlines()
+    k = next(i for i, x in enumerate(dong, 1) if x.startswith("Tăng huyết áp"))
+    ph.append({"muc_phieu": "1", "muc_do": "goi_y", "dong": k, "trich": "Tăng huyết áp", "van_de": "nên dẫn số liệu "
+               "trong nước", "chuan": "", "de_xuat": "thêm"})
+    kh.tra.update({m: _tv(diem=3, phat_hien=ph if m == "pb1" else []) for m in
+                   ("pb1", "pb2", "uv_tk", "uv_dd", "uv_tl", "uv_ctk")})
+    kh.tra["ct"] = {"phan_quyet": [], "gop": [], "nhan_xet_chung": "x", "yeu_cau_chinh_sua": []}
+    for _ in range(4):
+        H.main(["hop", "--study", STUDY, "--loai", loai, "--tep", str(ban), "--goi-api"], client=kh, goc=goc)
+    return hc
+
+
+def test_do_bao_nham_dau_cuoi_roi_moi_co_hieu_luc(tmp_path):
+    goc, kh = _goc(tmp_path), KhachBatch({})
+    assert H.main(["hieu-chuan", "--study", STUDY, "--tao"], goc=goc) == 0
+    hc = _hop_ban_cai_loi(goc, kh)
+    assert H.main(["hieu-chuan", "--study", STUDY, "--cham"], goc=goc) == 0
+    out = goc / "exports" / STUDY
+    assert not H.hieu_luc_hieu_chuan(out)[0]                          # mới có độ nhạy, CHƯA đo báo nhầm
+    assert H.main(["do-bao-nham", "--study", STUDY], client=kh, goc=goc) == 0 and not kh.lo.get("msgbatch_4")
+    assert H.main(["do-bao-nham", "--study", STUDY, "--goi-api"], client=kh, goc=goc) == 4
+    tt = json.loads((hc / "bao_nham_trang_thai.json").read_text(encoding="utf-8"))
+    assert {m["nhom"] for m in tt["muc"]} == {"kiem_soat_duong", "kiem_soat_am", "nghi_van"}
+    p_tt = [p for c, p in kh.yc.items() if c.startswith("tt_bn_")][0]
+    assert p_tt["model"] == H.TRONG_TAI_MODEL != H.MODEL_MAC_DINH
+    assert "kiem_soat" not in json.dumps(p_tt, ensure_ascii=False)       # trọng tài KHÔNG thấy nhóm (mù)
+    kh.tra["tt_bn"] = {"phan_dinh": [
+        {"id": m["id"], "ket_qua": "sai" if m["nhom"] == "kiem_soat_am" else "dung",
+         "co_so": "tai_lieu_da_dap_ung" if m["nhom"] == "kiem_soat_am" else "", "dong": m["dong"],
+         "trich": m["trich"], "ly_do": "đối chiếu tài liệu"} for m in tt["muc"]]}
+    assert H.main(["do-bao-nham", "--study", STUDY, "--goi-api"], client=kh, goc=goc) == 0
+    bn = json.loads((hc / "bao_nham.json").read_text(encoding="utf-8"))
+    assert bn["dat"] and bn["trong_tai_hop_le"] and bn["do_chinh_xac"] == 1.0
+    assert bn["model_trong_tai"] == "claude-fable-5-2"
+    assert H.hieu_luc_hieu_chuan(out)[0]
+
+
+def test_vong_kin_tu_choi_loai_khong_phai_de_cuong(tmp_path, capsys):
+    goc = _goc(tmp_path)
+    (goc / "exports" / STUDY / f"G4_A5_SAP_FINAL_{STUDY}.md").write_text(SAP_MAU, encoding="utf-8", newline="\n")
+    _hieu_chuan_dat(goc, loai="sap")
+    assert H.main(["vong-kin", "--study", STUDY, "--loai", "sap", "--goi-api"], client=KhachBatch({}), goc=goc) == 3
+    assert "chỉ được THẨM ĐỊNH" in capsys.readouterr().err
+
+
+def test_hop_sap_dung_phieu_va_chuan_sap(tmp_path):
+    goc = _goc(tmp_path)
+    (goc / "exports" / STUDY / f"G4_A5_SAP_FINAL_{STUDY}.md").write_text(SAP_MAU, encoding="utf-8", newline="\n")
+    kh = KhachBatch(TRA)
+    assert H.main(["hop", "--study", STUDY, "--loai", "sap", "--goi-api"], client=kh, goc=goc) == 4
+    p = next(iter(kh.yc.values()))
+    he = json.dumps(p["system"], ensure_ascii=False)
+    assert "kế hoạch phân tích thống kê (SAP)" in he and "Gamble 2017" in he
+    assert H.LOAI_TAI_LIEU["sap"]["phieu"]["1"] in p["messages"][0]["content"]
+    st = next(H._doc_st(x) for x in (goc / "exports" / STUDY / H.THU_MUC).glob("trang_thai_*.json"))
+    assert st["loai"] == "sap" and st["ho_so"]["chuan_ap_dung"][:3] == [
+        "Gamble 2017 (nội dung SAP, PMID 29260229)", "ICH E9(R1)", "SAMPL"]
+
+
+def test_neo_du_phong_khi_thieu_de_muc_chinh():
+    van = BAN_THAO_MAU.replace("### Phân tích thống kê\n", "")
+    moi, da = H.cai_loi(van, "ban_thao")
+    kd = [d for d in da if d["ma"] == "kiem_dinh_sai"]
+    assert kd and moi.splitlines()[kd[0]["dong"] - 2].startswith("## II. PHƯƠNG PHÁP")
+
+
+def test_hieu_luc_bao_nham_duoi_quy_che_khac_khong_tinh(tmp_path):
+    hc = tmp_path / H.THU_MUC / "hieu_chuan" / "de_cuong"
+    H._ghi_json(hc / "ket_qua.json", _kq())
+    H._ghi_json(hc / "bao_nham.json", {"dat": True, "sha_quy_che": "khac"})
+    assert not H.hieu_luc_hieu_chuan(tmp_path)[0]
+
+
+def test_cham_hieu_chuan_sot_loi_dac_thu(tmp_path):
+    goc = _goc(tmp_path)
+    p = goc / "exports" / STUDY / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md"
+    p.write_text(DE_CUONG + "### 2.2. Cỡ mẫu và chọn mẫu\nChọn mẫu thuận tiện.\nCỡ mẫu 300.\n", encoding="utf-8",
+                 newline="\n")
+    assert H.main(["hieu-chuan", "--study", STUDY, "--tao"], goc=goc) == 0
+    hc = goc / "exports" / STUDY / H.THU_MUC / "hieu_chuan" / "de_cuong"
+    da = json.loads((hc / "dap_an.json").read_text(encoding="utf-8"))["dap_an"]
+    assert [d["ma"] for d in da if d["dac_thu_thiet_ke"]] == ["tk_mau_lech"]       # đề tài mẫu: cắt ngang
+    goc_da = [d for d in da if not d["dac_thu_thiet_ke"]]
+    (hc / "dap_an.json").write_text(json.dumps({**json.loads((hc / "dap_an.json").read_text("utf-8")),
+                                                "dap_an": goc_da}, ensure_ascii=False), encoding="utf-8",
+                                    newline="\n")
+    kh = KhachBatch({})
+    _hop_ban_cai_loi(goc, kh)                       # hội đồng chỉ bắt các lỗi chung, KHÔNG bắt lỗi đặc thù
+    (hc / "dap_an.json").write_text(json.dumps({**json.loads((hc / "dap_an.json").read_text("utf-8")),
+                                                "dap_an": da}, ensure_ascii=False), encoding="utf-8",
+                                    newline="\n")
+    assert H.main(["hieu-chuan", "--study", STUDY, "--cham"], goc=goc) == 1
+    kq = json.loads((hc / "ket_qua.json").read_text(encoding="utf-8"))
+    assert kq["bat_dac_thu"] is False and kq["do_nhay"] >= H.DO_NHAY_TOI_THIEU and not kq["dat"]

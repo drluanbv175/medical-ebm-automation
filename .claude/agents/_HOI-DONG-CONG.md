@@ -318,6 +318,11 @@ Claude». Hội đồng cổng (mục 1–7) chấm từng NHIỆM VỤ. Hội �
   - Lỗi mới chỉ nhận trong khoảng dòng vừa sửa ±3; ngoài phạm vi ⇒ loại, có liệt kê.
   - Kết luận theo luật cố định: còn yêu cầu chưa giải quyết hoặc lỗi mới ⇒ sửa tiếp (tối đa 6 vòng — QC-2.1); hết nhưng còn yêu cầu cần dữ kiện ⇒ «Thông qua phần thuộc thẩm quyền nhóm soạn thảo» kèm danh sách dữ kiện cho người có thẩm quyền; không còn gì ⇒ «Thông qua». Đổi quy chế ⇒ hiệu chuẩn lại từ đề cương gốc.
   - **QC-2.1** (đo thật dưới 2.0: hội tụ nhưng kẹt vì lỗi quy trình): phản hồi thẩm tra không đọc được là lỗi KỸ THUẬT, không phải phán quyết ⇒ nộp lại riêng thành viên đó tối đa 2 lần rồi mới tính chưa giải quyết; biên tập viên nhận kèm mỗi yêu cầu lý do người thẩm tra còn chê và lý do rào đã loại bản sửa trước, không lặp lại bản bị loại. K10 không coi «khoảng tin cậy 95%»/«mức ý nghĩa 5%» (không kèm cận số) là số liệu kết quả.
+- **QC-HDKH-3.0** (bác sĩ 22/11 duyệt bốn việc):
+  - **Ghế chuyên thiết kế:** năm ghế cố định + một uỷ viên theo `gate_params.G1.design` (thử nghiệm lâm sàng–an toàn, dịch tễ thuần tập / bệnh–chứng / cắt ngang, chẩn đoán, mô hình dự báo–AI, tổng quan hệ thống, định tính); có cấu phần kinh tế ⇒ thêm uỷ viên kinh tế y tế (CHEERS 2022, máy chưa đo theo mục). Túc số = quá bán số ghế.
+  - **Loại tài liệu:** `--loai de_cuong|sap|ban_thao|bao_cao`, mỗi loại một phiếu và bộ chuẩn (SAP: Gamble và cs. 2017, PMID 29260229 + ICH E9(R1); bản thảo/báo cáo: K18 theo thiết kế + ICMJE; báo cáo nghiệm thu dùng Phiếu nhận xét mục 3 «Kết quả»). Vòng kín CHỈ cho đề cương; SAP đã khoá chỉ thẩm định — nhận xét là đề xuất sửa đổi cho chủ nhiệm/thống kê viên.
+  - **Đo báo nhầm:** `do-bao-nham` — trọng tài độc lập (model khác hội đồng) phán từng nhận xét ngoài lỗi cài, trộn mù đối chứng dương (lỗi cài đã bắt) và âm (máy dựng nhận xét sai). Trọng tài sai đối chứng ⇒ phép đo không hợp lệ.
+  - **Hiệu lực:** theo từng đề tài và từng loại tài liệu, cần CẢ độ nhạy ≥ 5/6 trên ≥ 5 lỗi cài, bắt lỗi đặc thù thiết kế, VÀ độ chính xác nhận xét ≥ 0,8 (ngưỡng vận hành) với trọng tài hợp lệ. Mọi hiệu chuẩn trước 3.0 hết hiệu lực.
 - **Bất biến 1–4** áp nguyên: TƯ VẤN, không thay Hội đồng Khoa học/Đạo đức thật, biên bản gắn SHA-256 tài liệu.
   Nhận xét đã xác minh là căn cứ để agent sửa; đề cương đổi thì họp lại.
 

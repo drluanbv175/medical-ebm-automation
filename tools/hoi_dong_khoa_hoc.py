@@ -112,6 +112,146 @@ THANH_VIEN: Tuple[Dict[str, Any], ...] = (
 )
 
 
+# ── QC-HDKH-3.0 (bác sĩ 22/11/2026 duyệt): loại tài liệu ngoài đề cương ─────────────────────────────────────────────
+# «Phiếu nhận xét» Phụ lục 2 dùng chung cho xét đề cương (mục 3 = dự kiến kết quả) và NGHIỆM THU (mục 3 = kết quả) —
+# xem `goi_bao_ve_hoi_dong.TIEU_CHI_PHIEU`. SAP và bản thảo dùng phiếu riêng (nội dung SAP theo Gamble và cs., JAMA
+# 2017, PMID 29260229; bản thảo theo chuẩn báo cáo của thiết kế + ICMJE). Vòng kín (biên tập có rào) CHỈ cho đề cương:
+# SAP đã khoá ở G4 không được máy sửa; bản thảo/báo cáo chưa có bộ rào văn bản riêng.
+LOAI_TAI_LIEU: Dict[str, Dict[str, Any]] = {
+    "de_cuong": {
+        "ten": "đề cương nộp Hội đồng", "mau_tep": "DE_CUONG_NOP_HOI_DONG_{s}.md", "vong_kin": True,
+        "phieu": dict(MUC_PHIEU),
+        "chu_y": "",
+    },
+    "sap": {
+        "ten": "kế hoạch phân tích thống kê (SAP)", "mau_tep": "G4_A5_SAP_FINAL_{s}.md", "vong_kin": False,
+        "phieu": {
+            "1": "Khớp đề cương: câu hỏi, giả thuyết, kết cục, quần thể và cỡ mẫu đã đăng ký",
+            "2": ("Phương pháp thống kê: quần thể phân tích, mô hình và giả định, dữ liệu thiếu, đa so sánh, phân "
+                  "tích nhóm nhỏ và độ nhạy"),
+            "3": ("Kế hoạch trình bày và diễn giải kết quả (khung bảng, hình, quy tắc làm tròn, cách đọc kết quả "
+                  "không có ý nghĩa thống kê)"),
+            "4": ("Chất lượng văn bản, khả năng tái lập (phần mềm, phiên bản, kiểm soát thay đổi) và trích dẫn phương "
+                  "pháp"),
+        },
+        "chu_y": ("SAP đã khoá ở cổng G4 thì mọi đề xuất là ĐỀ XUẤT SỬA ĐỔI SAP để chủ nhiệm/thống kê viên quyết (ghi "
+                  "rõ trong «de_xuat»); đối chiếu SAP với đề cương (kết cục chính, quần thể, cỡ mẫu)."),
+    },
+    "ban_thao": {
+        "ten": "bản thảo bài báo", "mau_tep": "G7_A8_MANUSCRIPT_{s}.md", "vong_kin": False,
+        "phieu": {
+            "1": "Tính mới, ý nghĩa khoa học và thực tiễn; câu hỏi nghiên cứu rõ",
+            "2": "Phương pháp và mức tuân thủ chuẩn báo cáo theo thiết kế",
+            "3": ("Kết quả và diễn giải: số liệu khớp giữa tóm tắt, bài và bảng; kết luận đúng mức chứng cứ, không "
+                  "khái quát quá mức"),
+            "4": ("Văn bản, trích dẫn và liêm chính công bố (ICMJE: tác giả, xung đột lợi ích, khai báo dùng AI, chia "
+                  "sẻ dữ liệu)"),
+        },
+        "chu_y": ("đối chiếu số giữa tóm tắt, kết quả và bảng; kết luận chỉ rút từ kết quả đã trình bày; không khẳng "
+                  "định nhân quả vượt thiết kế."),
+    },
+    "bao_cao": {
+        "ten": "báo cáo tổng hợp kết quả (nghiệm thu)", "mau_tep": "BAO_CAO_TONG_HOP_{s}.md", "vong_kin": False,
+        "phieu": {**MUC_PHIEU, "3": "Kết quả"},
+        "chu_y": ("đối chiếu kết quả với mục tiêu và nội dung đã đăng ký trong đề cương; mức độ hoàn thành; sản phẩm "
+                  "đúng như đăng ký."),
+    },
+}
+
+
+def phieu(loai: str = "de_cuong") -> Dict[str, str]:
+    return LOAI_TAI_LIEU[loai]["phieu"]
+
+
+# ── QC-HDKH-3.0: ghế uỷ viên CHUYÊN THIẾT KẾ (đổi theo gate_params.G1.design) + ghế kinh tế y tế khi có cấu phần ──
+THIET_KE_BI_DANH = {"diagnostic_accuracy": "diagnostic", "systematic_review": "sr_ma", "prediction_model": "prediction"}
+GHE_THIET_KE: Dict[str, Dict[str, str]] = {
+    "rct": {
+        "vai": "Uỷ viên — Thử nghiệm lâm sàng và an toàn người tham gia",
+        "nhiem_vu": ("ngẫu nhiên hoá (tạo chuỗi, che giấu phân bổ), làm mù, nhóm chứng, kết cục và ước lượng mục tiêu "
+                     "(estimand, ICH E9(R1)), phân tích theo ý định điều trị, quy tắc dừng và hội đồng theo dõi dữ "
+                     "liệu (DMC/DSMB), định nghĩa và báo cáo biến cố bất lợi (AE/SAE), tuân thủ can thiệp; đối chiếu "
+                     "SPIRIT 2025/CONSORT 2025 và ICH E6(R3)."),
+    },
+    "cohort": {
+        "vai": "Uỷ viên — Dịch tễ học nghiên cứu thuần tập",
+        "nhiem_vu": ("định nghĩa phơi nhiễm và thời điểm bắt đầu theo dõi (tránh sai lệch thời gian bất tử), chọn "
+                     "nhóm so sánh, mất theo dõi, xác định kết cục độc lập với phơi nhiễm, nhiễu và đồ thị nhân quả "
+                     "(DAG), phương pháp sống còn và biến cố cạnh tranh; đối chiếu STROBE."),
+    },
+    "case_control": {
+        "vai": "Uỷ viên — Dịch tễ học nghiên cứu bệnh – chứng",
+        "nhiem_vu": ("định nghĩa ca bệnh, nguồn và cách chọn nhóm chứng (cùng quần thể nguồn, không chọn theo phơi "
+                     "nhiễm), ghép cặp và phân tích tương ứng, sai lệch nhớ lại, đo phơi nhiễm trước khởi phát; đối "
+                     "chiếu STROBE."),
+    },
+    "cross_sectional": {
+        "vai": "Uỷ viên — Dịch tễ học nghiên cứu cắt ngang",
+        "nhiem_vu": ("khung mẫu và cách chọn mẫu đại diện quần thể đích, hiệu ứng thiết kế khi chọn cụm, tỷ lệ đáp "
+                     "ứng, định nghĩa ca theo đúng tiêu chuẩn của nguồn, ước lượng tỷ lệ kèm khoảng tin cậy, không "
+                     "suy diễn trình tự thời gian; đối chiếu STROBE."),
+    },
+    "diagnostic": {
+        "vai": "Uỷ viên — Nghiên cứu độ chính xác chẩn đoán",
+        "nhiem_vu": ("tiêu chuẩn tham chiếu và xác minh đầy đủ (tránh sai lệch xác minh), phổ bệnh của mẫu, làm mù "
+                     "khi đọc kết quả, ngưỡng định trước, khoảng thời gian giữa xét nghiệm và tham chiếu, kết quả "
+                     "không xác định; đối chiếu STARD 2015 và QUADAS-3."),
+    },
+    "prediction": {
+        "vai": "Uỷ viên — Mô hình dự báo và trí tuệ nhân tạo lâm sàng",
+        "nhiem_vu": ("cỡ mẫu cho mô hình (số biến cố trên tham số, cách tính của Riley), chọn yếu tố dự báo, dữ liệu "
+                     "thiếu, quá khớp và kiểm định nội/ngoại, hiệu chuẩn và khả năng phân biệt, độ hữu ích lâm sàng, "
+                     "công bằng giữa các nhóm; đối chiếu TRIPOD+AI và PROBAST+AI."),
+    },
+    "sr_ma": {
+        "vai": "Uỷ viên — Tổng quan hệ thống và phân tích gộp",
+        "nhiem_vu": ("đăng ký đề cương (PROSPERO), chiến lược tìm nhiều cơ sở dữ liệu và tài liệu xám (PRISMA-S), "
+                     "sàng lọc và trích xuất độc lập hai người, công cụ đánh giá nguy cơ sai lệch đúng thiết kế, mô "
+                     "hình gộp và không đồng nhất, sai lệch công bố, mức chắc chắn GRADE; đối chiếu PRISMA-P 2015."),
+    },
+    "qualitative": {
+        "vai": "Uỷ viên — Phương pháp nghiên cứu định tính",
+        "nhiem_vu": ("tiếp cận phương pháp luận, lấy mẫu có chủ đích và tiêu chí bão hoà (không dùng công thức cỡ mẫu "
+                     "thống kê), hướng dẫn phỏng vấn, tính phản thân của người nghiên cứu, quy trình mã hoá và phân "
+                     "tích chủ đề, tính tin cậy (đối chiếu, kiểm tra với người tham gia); đối chiếu COREQ và SRQR."),
+    },
+}
+GHE_KINH_TE: Dict[str, Any] = {
+    "ma": "uv_kt", "vai": "Uỷ viên — Kinh tế y tế", "trong_tam": ("2", "3"),
+    "nhiem_vu": ("quan điểm phân tích, khung thời gian, nguồn chi phí và giá, đo kết cục sức khoẻ (QALY/DALY), mô "
+                 "hình (Markov, cây quyết định), chiết khấu, tỷ số ICER và ngưỡng sẵn lòng chi trả, phân tích độ nhạy "
+                 "xác suất; đối chiếu CHEERS 2022."),
+}
+_CO_KINH_TE = re.compile(r"chi phí\s*[–-]\s*hiệu quả|\bICER\b|\bQALY|\bDALY|tác động ngân sách|kinh tế y tế"
+                         r"|cost[- ]effectiveness", re.IGNORECASE)
+
+
+def chuan_hoa_thiet_ke(thiet_ke: str) -> str:
+    t = (thiet_ke or "").strip().lower()
+    return THIET_KE_BI_DANH.get(t, t)
+
+
+def thanh_phan_hoi_dong(thiet_ke: str, van: str) -> List[Dict[str, Any]]:
+    """Năm ghế cố định + ghế CHUYÊN THIẾT KẾ (thiết kế đã chốt ở G1) + ghế kinh tế y tế khi tài liệu có cấu phần
+    kinh tế. Thiết kế không xác định ⇒ không có ghế chuyên thiết kế (biên bản ghi rõ)."""
+    ds = [dict(t) for t in THANH_VIEN]
+    g = GHE_THIET_KE.get(chuan_hoa_thiet_ke(thiet_ke))
+    if g:
+        ds.append({"ma": "uv_ctk", "trong_tam": ("2", "3"), **g})
+    if _CO_KINH_TE.search(van or ""):
+        ds.append(dict(GHE_KINH_TE))
+    return ds
+
+
+def tuc_so(so_ghe: int) -> int:
+    """Túc số = QUÁ BÁN số ghế của phiên (5 ghế ⇒ 3; 6 hoặc 7 ghế ⇒ 4)."""
+    return so_ghe // 2 + 1
+
+
+def _ds_tv(st: Dict[str, Any]) -> List[Dict[str, Any]]:
+    return list(st.get("thanh_phan") or THANH_VIEN)
+
+
 class LoiThamSo(ValueError):
     """Tham số sai — mã 3."""
 
@@ -122,7 +262,7 @@ class LoiThamSo(ValueError):
 # chỉnh sửa theo hội đồng». ⇒ Mọi luật (thành phần, tiêu chí, mốc điểm, xác minh, kết luận, rào biên tập, hiệu chuẩn,
 # model, NGUYÊN VĂN mọi lời dặn) gom vào MỘT quy chế có phiên bản + SHA-256. Phiên mang SHA lúc khởi tạo; quy chế đổi
 # giữa phiên ⇒ phiên hết hiệu lực. Kết luận chỉ có HIỆU LỰC khi hội đồng đã hiệu chuẩn đạt ngưỡng DƯỚI ĐÚNG quy chế đó.
-PHIEN_BAN_QUY_CHE = "QC-HDKH-2.1"
+PHIEN_BAN_QUY_CHE = "QC-HDKH-3.0"
 NGAY_KHOA_QUY_CHE = "2026-11-22"
 TUC_SO = 3
 DO_NHAY_TOI_THIEU = 5 / 6        # mỗi bản cài lỗi phải bắt ≥ 5/6 lỗi
@@ -148,10 +288,34 @@ def ke_hoach(model: str = MODEL_MAC_DINH) -> Dict[str, Any]:
                     "yêu cầu còn lại của BTM); biên tập viên không được báo lý do rào đã loại bản sửa nên lặp lại bản "
                     "bị loại; K10 bắt nhầm «khoảng tin cậy 95%» là số liệu. Sửa: phản hồi hỏng ⇒ nộp lại tối đa 2 lần "
                     "rồi mới fail-safe; biên tập viên nhận lý do chưa đạt của người thẩm tra và lý do rào loại; tối "
-                    "đa 6 vòng. Bắt đầu lại từ đề cương gốc; hiệu chuẩn lại."],
-        "muc_dich": "Chấm đề cương nộp Hội đồng theo thể thức Hội đồng Khoa học, tư vấn — không thay hội đồng thật.",
+                    "đa 6 vòng. Bắt đầu lại từ đề cương gốc; hiệu chuẩn lại.",
+                    "3.0 (22/11/2026, bác sĩ duyệt bốn việc): (a) ghế uỷ viên CHUYÊN THIẾT KẾ theo thiết kế đã chốt "
+                    "ở G1 (8 thiết kế) + ghế kinh tế y tế khi có cấu phần kinh tế, túc số quá bán; (b) ĐO BÁO NHẦM — "
+                    "trọng tài độc lập khác model phán từng nhận xét ngoài lỗi cài, có đối chứng dương/âm để kiểm "
+                    "chính trọng tài; hiệu lực kết luận cần CẢ độ nhạy lẫn độ chính xác; (c) lỗi cài đặc thù từng "
+                    "thiết kế để hiệu chuẩn trên đủ 8 thiết kế; (d) mở rộng sang SAP, bản thảo bài báo và báo cáo "
+                    "tổng hợp kết quả (nghiệm thu), mỗi loại một phiếu, bộ chuẩn và bộ lỗi cài riêng; vòng kín vẫn "
+                    "chỉ cho đề cương. Mọi hiệu chuẩn cũ hết hiệu lực."],
+        "muc_dich": "Chấm tài liệu nghiên cứu (đề cương, SAP, bản thảo, báo cáo nghiệm thu) theo thể thức Hội đồng "
+                    "Khoa học, tư vấn — không thay hội đồng thật.",
         "thanh_phan": [{"ma": t["ma"], "vai": t["vai"], "trong_tam": list(t["trong_tam"]), "nhiem_vu": t["nhiem_vu"]}
                        for t in THANH_VIEN],
+        "ghe_thiet_ke": {k: dict(v) for k, v in GHE_THIET_KE.items()},
+        "ghe_kinh_te": {"vai": GHE_KINH_TE["vai"], "nhiem_vu": GHE_KINH_TE["nhiem_vu"],
+                        "khi_nao": "tài liệu có cấu phần kinh tế y tế (máy dò: " + _CO_KINH_TE.pattern + ")"},
+        "chon_ghe": "năm ghế cố định + một ghế chuyên thiết kế theo gate_params.G1.design (bí danh: "
+                    + ", ".join(f"{a}→{b}" for a, b in THIET_KE_BI_DANH.items())
+                    + "); thiết kế không xác định ⇒ không có ghế chuyên thiết kế, biên bản ghi rõ",
+        "loai_tai_lieu": {k: {"ten": v["ten"], "tep_mac_dinh": v["mau_tep"], "phieu": dict(v["phieu"]),
+                              "chu_y": v["chu_y"], "vong_kin": v["vong_kin"]} for k, v in LOAI_TAI_LIEU.items()},
+        "chuan_theo_loai": {"de_cuong": "K17 theo thiết kế (SPIRIT 2025, STROBE, STARD 2015, TRIPOD+AI, PRISMA-P, "
+                                        "COREQ/SRQR) + Việt Nam",
+                            "sap": "Gamble và cs. 2017 (PMID 29260229) + ICH E9(R1) + SAMPL + chuẩn báo cáo của thiết "
+                                   "kế; máy chưa đo theo mục Gamble",
+                            "ban_thao": "K18 chế độ bản thảo theo thiết kế (CONSORT 2025, STROBE, STARD, TRIPOD+AI, "
+                                        "PRISMA 2020, SRQR/COREQ) + ICMJE",
+                            "bao_cao": "như bản thảo (K18, có số liệu) + Phiếu nhận xét mục 3 «Kết quả»",
+                            "kinh_te": "CHEERS 2022 thêm vào danh mục khi có cấu phần kinh tế; máy chưa đo theo mục"},
         "doc_lap": "mỗi thành viên một yêu cầu riêng, không thấy điểm/nhận xét của người khác",
         "chu_tich": "chỉ giữ, hạ mức (không nâng) hoặc loại kèm lý do; không thêm nhận xét, không sửa điểm, không "
                     "tuyên kết luận; chủ tịch hỏng ⇒ giữ mọi nhận xét đã xác minh",
@@ -160,7 +324,7 @@ def ke_hoach(model: str = MODEL_MAC_DINH) -> Dict[str, Any]:
         "xac_minh": {"trich_nguyen_van_cua_so_dong": CUA_SO_DONG, "pii": "loại nhận xét có chuỗi giống số điện thoại",
                      "chuan_ngoai_danh_muc": "bỏ nhãn chuẩn, giữ nhận xét, cảnh báo", "chuan_chung": list(CHUAN_CHUNG),
                      "diem": "số nguyên 1–5 (nhận chuỗi một chữ số); điểm ≤ 2 phải có nhận xét nặng đã xác minh"},
-        "tuc_so": TUC_SO,
+        "tuc_so": "quá bán số ghế của phiên: 5 ghế ⇒ 3; 6 hoặc 7 ghế ⇒ 4",
         "ket_luan": " ".join((ket_luan_tat_dinh.__doc__ or "").split()),
         "vong_kin": {"so_vong_toi_da": SO_VONG_TOI_DA, "tran_ky_tu_thay": TRAN_KY_TU_THAY,
                      "rao_thay_the": ["đoạn cũ xuất hiện đúng 1 lần trong văn bản (số dòng chỉ để tham chiếu)",
@@ -185,18 +349,41 @@ def ke_hoach(model: str = MODEL_MAC_DINH) -> Dict[str, Any]:
                                  "sửa; còn yêu cầu cần dữ kiện ⇒ «Thông qua phần thuộc thẩm quyền… còn dữ kiện» kèm "
                                  "danh sách; còn chưa giải quyết ⇒ chỉnh sửa tiếp (tối đa SO_VONG_TOI_DA vòng)",
                      "cong_don": "yêu cầu «cần dữ kiện» cộng dồn qua các vòng — không rơi khỏi kết luận cuối"},
-        "hieu_chuan": {"loi_cai": [[m, mo] for m, mo, *_ in LOI_CAI], "ghep": "một–một trong ±3 dòng",
-                       "do_nhay_toi_thieu": round(DO_NHAY_TOI_THIEU, 4),
-                       "dieu_kien": "vòng kín chỉ chạy, kết luận chỉ có hiệu lực, khi hiệu chuẩn đạt dưới cùng SHA"},
+        "hieu_chuan": {"loi_cai": {"de_cuong": [[m, mo] for m, mo, *_ in LOI_CAI],
+                                   "sap": [[m, mo] for m, mo, *_ in LOI_CAI_SAP],
+                                   "ban_thao_va_bao_cao": [[m, mo] for m, mo, *_ in LOI_CAI_BAN_THAO]},
+                       "loi_dac_thu_thiet_ke": {k: [v[0], v[1]] for k, v in LOI_CAI_THIET_KE.items()},
+                       "ghep": "một–một trong ±3 dòng", "do_nhay_toi_thieu": round(DO_NHAY_TOI_THIEU, 4),
+                       "so_loi_cai_toi_thieu": SO_LOI_CAI_TOI_THIEU,
+                       "dac_thu": "đề cương có thiết kế xác định: phải bắt được lỗi đặc thù thiết kế",
+                       "dieu_kien": "theo TỪNG đề tài và TỪNG loại tài liệu: kết luận chỉ có hiệu lực (và vòng kín chỉ "
+                                    "chạy) khi độ nhạy đạt, lỗi đặc thù được bắt, VÀ đo báo nhầm hợp lệ đạt — cùng "
+                                    "SHA"},
+        "do_bao_nham": {"trong_tai": TRONG_TAI_MODEL + " — khác model hội đồng, ngữ cảnh mới, không biết ai nêu",
+                        "doi_chung_duong": "nhận xét đã ghép đúng lỗi cài ⇒ phải phán «dung»",
+                        "doi_chung_am": f"tối đa {SO_DOI_CHUNG_AM} nhận xét SAI do máy dựng («không trình bày X» khi "
+                                        "đề mục X có ≥ 2 dòng nội dung) ⇒ phải phán «sai»",
+                        "chu_de_doi_chung": {k: [c for c, _ in v] for k, v in CHU_DE_DOI_CHUNG.items()},
+                        "trong_tai_hop_le": f"≥ 4 đối chứng và phán đúng ≥ {TRONG_TAI_KIEM_SOAT_TOI_THIEU}",
+                        "sai_phai_chung_minh": "«sai — tài liệu đã đáp ứng» phải trích nguyên văn ±3 dòng; «sai — "
+                                               "chuẩn không đòi» phải nêu lý do; không thì thành «khong_ro»",
+                        "do_chinh_xac_toi_thieu": DO_CHINH_XAC_TOI_THIEU, "khong_ro_toi_da": KHONG_RO_TOI_DA,
+                        "khoang_tin_cay": "Wilson 95%",
+                        "ghi_chu": "ngưỡng độ chính xác là ngưỡng VẬN HÀNH của hệ, không phải chuẩn quốc tế"},
         "mo_hinh": {"model": model, "effort": EFFORT, "thinking": "adaptive", "batch_api": True,
                     "cache": "tiền tố đề cương + hồ sơ kiểm máy dùng chung"},
         "trung_thuc": ["lưu nguyên văn mọi trả lời của model", "liệt kê mọi nhận xét bị loại kèm lý do",
                        "không đổi quy chế giữa phiên", "biên bản gắn SHA tài liệu và SHA quy chế",
                        "chi phí thật ghi sổ theo id batch"],
-        "loi_nhan": {"dau_tien_to": khoi_chung("<MA>", "<TEP>", "", {}),
-                     "thanh_vien": {t["ma"]: loi_nhan_thanh_vien(t) for t in THANH_VIEN},
-                     "chu_tich": loi_nhan_chu_tich([], {}), "bien_tap": loi_nhan_bien_tap([]),
-                     "tham_tra": loi_nhan_tham_tra(THANH_VIEN[0], [], [])},
+        "loi_nhan": {"dau_tien_to": {lo: khoi_chung("<MA>", "<TEP>", "", {}, lo) for lo in LOAI_TAI_LIEU},
+                     "thanh_vien": {lo: {t["ma"] + (f":{k}" if k else ""): loi_nhan_thanh_vien(t, lo)
+                                         for k, t in [("", x) for x in THANH_VIEN]
+                                         + [(k, {"ma": "uv_ctk", "trong_tam": ("2", "3"), **g})
+                                            for k, g in GHE_THIET_KE.items()] + [("", GHE_KINH_TE)]}
+                                    for lo in LOAI_TAI_LIEU},
+                     "chu_tich": loi_nhan_chu_tich([], {}, 6), "bien_tap": loi_nhan_bien_tap([]),
+                     "tham_tra": loi_nhan_tham_tra(THANH_VIEN[0], [], []),
+                     "trong_tai": {lo: loi_nhan_trong_tai([], lo) for lo in LOAI_TAI_LIEU}},
     }
 
 
@@ -213,20 +400,35 @@ def van_ban_quy_che(model: str = MODEL_MAC_DINH) -> str:
          "## 1. Thành phần (chấm độc lập)", ""]
     d += [f"- **{t['vai']}** — mục trọng tâm {', '.join(t['trong_tam'])}: {t['nhiem_vu']}" for t in k["thanh_phan"]]
     d += [f"- Độc lập: {k['doc_lap']}.", f"- Chủ tịch: {k['chu_tich']}.", f"- Thư ký: {k['thu_ky']}.", "",
+          "## 1b. Ghế chuyên thiết kế và ghế kinh tế y tế", "", f"- Cách chọn: {k['chon_ghe']}.", ""]
+    d += [f"- `{tk}` — **{g['vai']}**: {g['nhiem_vu']}" for tk, g in k["ghe_thiet_ke"].items()]
+    d += [f"- **{k['ghe_kinh_te']['vai']}** (khi {k['ghe_kinh_te']['khi_nao']}): {k['ghe_kinh_te']['nhiem_vu']}", "",
           "## 2. Tiêu chí (Phiếu nhận xét, Phụ lục 2) và mốc điểm", ""]
     d += [f"{so}. {ten}" for so, ten in k["tieu_chi"].items()] + ["", "```", k["moc_diem"], "```", "",
-                                                                 "## 3. Xác minh nhận xét (máy)", ""]
+                                                                 "## 2b. Loại tài liệu", ""]
+    for lo, v in k["loai_tai_lieu"].items():
+        d += [f"### {v['ten']} (`--loai {lo}`, tệp `{v['tep_mac_dinh']}`, vòng kín: "
+              f"{'có' if v['vong_kin'] else 'không'})", ""]
+        d += [f"{so}. {ten}" for so, ten in v["phieu"].items()]
+        d += ([f"- Lưu ý: {v['chu_y']}"] if v["chu_y"] else []) + [f"- Chuẩn: {k['chuan_theo_loai'][lo]}.", ""]
+    d += [f"- Kinh tế y tế: {k['chuan_theo_loai']['kinh_te']}.", "", "## 3. Xác minh nhận xét (máy)", ""]
     d += [f"- {a}: {b}" for a, b in k["xac_minh"].items() if a != "chuan_chung"]
     d += [f"- Chuẩn chung được dẫn: {', '.join(k['xac_minh']['chuan_chung'])}; cộng chuẩn báo cáo theo thiết kế (K17).",
-          "", "## 4. Túc số và kết luận", "", f"- Túc số: ≥ {k['tuc_so']} bản chấm hợp lệ.", f"- {k['ket_luan']}", "",
+          "", "## 4. Túc số và kết luận", "", f"- Túc số: {k['tuc_so']} bản chấm hợp lệ.", f"- {k['ket_luan']}", "",
           "## 5. Vòng kín: chỉnh sửa theo hội đồng", "",
           f"- Tối đa {k['vong_kin']['so_vong_toi_da']} vòng; mỗi đoạn thay ≤ {k['vong_kin']['tran_ky_tu_thay']} ký tự.",
           "- Rào từng thay thế: " + "; ".join(k["vong_kin"]["rao_thay_the"]) + ".",
           "- Rào toàn văn bản: " + "; ".join(k["vong_kin"]["rao_van_ban"]) + ".", "",
           "## 6. Hiệu chuẩn (điều kiện tiên quyết)", ""]
-    d += [f"- Lỗi cài: {m} — {mo}." for m, mo in k["hieu_chuan"]["loi_cai"]]
-    d += [f"- Ghép {k['hieu_chuan']['ghep']}; độ nhạy tối thiểu {k['hieu_chuan']['do_nhay_toi_thieu']} mỗi bản.",
-          f"- {k['hieu_chuan']['dieu_kien']}.", "", "## 6b. Thẩm tra chỉnh sửa (từ vòng 2)", ""]
+    for lo, ds in k["hieu_chuan"]["loi_cai"].items():
+        d += [f"- Lỗi cài ({lo}): " + "; ".join(f"{m} — {mo}" for m, mo in ds) + "."]
+    d += ["- Lỗi đặc thù thiết kế (đề cương): " + "; ".join(f"`{tk}` {v[0]} — {v[1]}" for tk, v in
+                                                         k["hieu_chuan"]["loi_dac_thu_thiet_ke"].items()) + "."]
+    d += [f"- Ghép {k['hieu_chuan']['ghep']}; độ nhạy tối thiểu {k['hieu_chuan']['do_nhay_toi_thieu']} mỗi bản, trên "
+          f"≥ {k['hieu_chuan']['so_loi_cai_toi_thieu']} lỗi cài; {k['hieu_chuan']['dac_thu']}.",
+          f"- {k['hieu_chuan']['dieu_kien']}.", "", "## 6a. Đo báo nhầm (trọng tài độc lập)", ""]
+    d += [f"- {a}: {b}" for a, b in k["do_bao_nham"].items()]
+    d += ["", "## 6b. Thẩm tra chỉnh sửa (từ vòng 2)", ""]
     d += [f"- {a}: {'; '.join(b) if isinstance(b, list) else b}" for a, b in k["tham_tra"].items()]
     d += ["", "## 7. Mô hình", ""]
     d += [f"- {a}: {b}" for a, b in k["mo_hinh"].items()]
@@ -238,21 +440,34 @@ def van_ban_quy_che(model: str = MODEL_MAC_DINH) -> str:
     return "\n".join(d)
 
 
-def hieu_luc_hieu_chuan(out_dir: Path, model: str = MODEL_MAC_DINH) -> Tuple[bool, str]:
-    """Hội đồng đã hiệu chuẩn đạt ngưỡng DƯỚI quy chế hiện hành cho đề tài này chưa? (không đo được ⇒ chưa)."""
-    kq = _doc_st(thu_muc_hd(out_dir) / "hieu_chuan" / "ket_qua.json")
+def hieu_luc_hieu_chuan(out_dir: Path, model: str = MODEL_MAC_DINH, loai: str = "de_cuong") -> Tuple[bool, str]:
+    """Hội đồng đã hiệu chuẩn đạt DƯỚI quy chế hiện hành cho đề tài + loại tài liệu này chưa? Cần CẢ: độ nhạy ≥ ngưỡng
+    trên ≥ 5 lỗi cài, bắt lỗi đặc thù thiết kế (nếu có), và đo báo nhầm hợp lệ đạt ngưỡng (không đo được ⇒ chưa)."""
+    hc = thu_muc_hd(out_dir) / "hieu_chuan" / loai
+    kq = _doc_st(hc / "ket_qua.json")
     if not kq:
         return False, "chưa hiệu chuẩn"
     if kq.get("sha_quy_che") != sha_ke_hoach(model):
         return False, "hiệu chuẩn dưới quy chế khác (SHA không khớp) — hiệu chuẩn lại"
+    if int(kq.get("so_loi_cai") or 0) < SO_LOI_CAI_TOI_THIEU:
+        return False, f"chỉ cài được {kq.get('so_loi_cai')} lỗi (< {SO_LOI_CAI_TOI_THIEU}) — hiệu chuẩn không hợp lệ"
     if not isinstance(kq.get("do_nhay"), (int, float)) or kq["do_nhay"] < DO_NHAY_TOI_THIEU:
         return False, f"độ nhạy {kq.get('do_nhay')} < ngưỡng {round(DO_NHAY_TOI_THIEU, 3)}"
-    return True, f"độ nhạy {kq['bat']}/{kq['so_loi_cai']} dưới {PHIEN_BAN_QUY_CHE} (SHA khớp)"
+    if kq.get("bat_dac_thu") is False:
+        return False, "không bắt được lỗi đặc thù thiết kế"
+    bn = _doc_st(hc / "bao_nham.json")
+    if not bn or bn.get("sha_quy_che") != sha_ke_hoach(model):
+        return False, f"độ nhạy {kq['bat']}/{kq['so_loi_cai']} đạt nhưng CHƯA đo báo nhầm dưới quy chế này"
+    if not bn.get("dat"):
+        return False, f"đo báo nhầm chưa đạt: {bn.get('ly_do')}"
+    return True, (f"độ nhạy {kq['bat']}/{kq['so_loi_cai']}; độ chính xác nhận xét {bn.get('do_chinh_xac')} (trọng tài "
+                  f"{bn.get('model_trong_tai')}, đối chứng {bn.get('doi_chung_dung')}/{bn.get('so_doi_chung')}) dưới "
+                  f"{PHIEN_BAN_QUY_CHE}")
 
 
 # ── văn bản & hồ sơ kiểm máy ─────────────────────────────────────────────────────────────────────────────────────────
-def tep_mac_dinh(study: str, goc: Path = REPO) -> Path:
-    return goc / "exports" / study / f"DE_CUONG_NOP_HOI_DONG_{study}.md"
+def tep_mac_dinh(study: str, goc: Path = REPO, loai: str = "de_cuong") -> Path:
+    return goc / "exports" / study / LOAI_TAI_LIEU[loai]["mau_tep"].format(s=study)
 
 
 def danh_so_dong(van: str) -> str:
@@ -271,9 +486,15 @@ def _thiet_ke(out_dir: Path) -> str:
         return ""
 
 
-def ho_so_kiem_may(study: str, out_dir: Path, van: str, la_ban_chinh: bool) -> Dict[str, Any]:
+def ho_so_kiem_may(study: str, out_dir: Path, van: str, la_ban_chinh: bool, loai: str = "de_cuong") -> Dict[str, Any]:
     """Kết quả các bộ kiểm TẤT ĐỊNH phát kèm cho hội đồng. Bộ nào lỗi ⇒ ghi «không đo được», không bao giờ ghi «đạt»."""
-    ra: Dict[str, Any] = {"thiet_ke": _thiet_ke(out_dir)}
+    ra: Dict[str, Any] = {"thiet_ke": _thiet_ke(out_dir), "loai_tai_lieu": LOAI_TAI_LIEU[loai]["ten"]}
+    if loai != "de_cuong":
+        ra.update(_ho_so_ngoai_de_cuong(study, out_dir, van, la_ban_chinh, loai, ra["thiet_ke"]))
+        if _CO_KINH_TE.search(van or ""):
+            ra["chuan_ap_dung"] = list(ra.get("chuan_ap_dung") or []) + ["CHEERS 2022"]
+            ra["cheers_2022"] = "có cấu phần kinh tế y tế — máy CHƯA đo theo từng mục CHEERS 2022"
+        return ra
     try:
         import kiem_chuan_de_cuong_theo_muc as K17  # noqa: PLC0415
 
@@ -304,13 +525,53 @@ def ho_so_kiem_may(study: str, out_dir: Path, van: str, la_ban_chinh: bool) -> D
             ra["nhat_quan"] = f"không đo được ({type(exc).__name__})"
     else:
         ra["k1_k17"] = "không chạy (tài liệu không phải bản đề cương nộp chính thức của đề tài)"
+    if _CO_KINH_TE.search(van or ""):
+        ra["chuan_ap_dung"] = list(ra.get("chuan_ap_dung") or []) + ["CHEERS 2022"]
+        ra["cheers_2022"] = "có cấu phần kinh tế y tế — máy CHƯA đo theo từng mục CHEERS 2022"
     return ra
 
 
-def khoi_chung(study: str, ten_tep: str, van: str, ho_so: Dict[str, Any]) -> str:
-    """Tiền tố DÙNG CHUNG cho mọi thành viên và chủ tịch (được cache): đề cương đánh số dòng + hồ sơ kiểm máy."""
-    return (f"BẠN LÀ THÀNH VIÊN HỘI ĐỒNG KHOA HỌC xét đề cương đề tài «{study}» (hội đồng MÁY, tư vấn — không thay hội "
-            "đồng thật). Tài liệu được giao là đề cương nộp Hội đồng, mỗi dòng mang số «n| ».\n\n"
+def _ho_so_ngoai_de_cuong(study: str, out_dir: Path, van: str, la_ban_chinh: bool, loai: str,
+                          thiet_ke: str) -> Dict[str, Any]:
+    """SAP: chuẩn nội dung SAP + chuẩn báo cáo của thiết kế (máy CHƯA đo theo mục Gamble 2017) + nhất quán xuyên cổng.
+    Bản thảo/báo cáo: chuẩn báo cáo theo mục của thiết kế (K18, chế độ bản thảo)."""
+    ra: Dict[str, Any] = {}
+    try:
+        import kiem_chuan_de_cuong_theo_muc as KCM  # noqa: PLC0415
+
+        dc = KCM.doi_chieu(van, thiet_ke, che_do="ban_thao", co_so_lieu=True if loai == "bao_cao" else None)
+        chuan = [c for c, _ in dc["chuan"]]
+        if loai == "sap":
+            ra["chuan_ap_dung"] = ["Gamble 2017 (nội dung SAP, PMID 29260229)", "ICH E9(R1)", "SAMPL"] + chuan
+            ra["kiem_muc"] = "SAP: máy CHƯA đo theo từng mục Gamble 2017 — hội đồng tự đối chiếu"
+        else:
+            ra["chuan_ap_dung"] = chuan
+            thieu = [r for r in dc["ket_qua"] if r.trang_thai in ("thieu", "canh_bao")]
+            ra["k18"] = {"dat": sum(1 for r in dc["ket_qua"] if r.trang_thai == "dat"), "thieu": len(thieu),
+                         "muc_thieu": [f"{r.chuan} {r.ma} — {r.chu_de}" for r in thieu][:40],
+                         "cau_truc": list(dc.get("cau_truc") or [])[:10],
+                         "chua_do": [f"{c}: {ly}" for c, ly in dc.get("chua_do") or []]}
+    except Exception as exc:  # noqa: BLE001
+        ra["chuan_ap_dung"] = []
+        ra["kiem_muc"] = f"không đo được ({type(exc).__name__})"
+    if la_ban_chinh and loai == "sap":
+        try:
+            import nhat_quan_xuyen_cong as NQ  # noqa: PLC0415
+
+            kq = NQ.doi_chieu(out_dir, study)
+            ra["nhat_quan"] = {"tong": kq.get("tong"),
+                               "can_luu_y": [{"ten": x.get("ten"), "muc": x.get("muc"), "ghi_chu": x.get("ghi_chu")}
+                                             for x in kq.get("thong_so") or [] if x.get("muc") != "khop"]}
+        except Exception as exc:  # noqa: BLE001
+            ra["nhat_quan"] = f"không đo được ({type(exc).__name__})"
+    return ra
+
+
+def khoi_chung(study: str, ten_tep: str, van: str, ho_so: Dict[str, Any], loai: str = "de_cuong") -> str:
+    """Tiền tố DÙNG CHUNG cho mọi thành viên và chủ tịch (được cache): tài liệu đánh số dòng + hồ sơ kiểm máy."""
+    ten = LOAI_TAI_LIEU[loai]["ten"]
+    return (f"BẠN LÀ THÀNH VIÊN HỘI ĐỒNG KHOA HỌC xét {ten} của đề tài «{study}» (hội đồng MÁY, tư vấn — không thay "
+            f"hội đồng thật). Tài liệu được giao là {ten}, mỗi dòng mang số «n| ».\n\n"
             f"=== TÀI LIỆU: {ten_tep} ===\n{danh_so_dong(van)}\n=== HẾT TÀI LIỆU ===\n\n"
             "=== HỒ SƠ KIỂM MÁY (bộ kiểm tất định; «không đo được» KHÔNG có nghĩa là đạt) ===\n"
             f"{json.dumps(ho_so, ensure_ascii=False, indent=1, default=str)}\n=== HẾT HỒ SƠ ===\n")
@@ -328,11 +589,13 @@ def _khuon_tv() -> str:
         "diem_manh": ["…"], "ket_luan": "thong_qua|thong_qua_co_sua|khong_thong_qua"}, ensure_ascii=False, indent=1)
 
 
-def loi_nhan_thanh_vien(tv: Dict[str, Any]) -> str:
-    return (f"VAI CỦA BẠN: {tv['vai']}.\nTRỌNG TÂM: {tv['nhiem_vu']}\n\n"
+def loi_nhan_thanh_vien(tv: Dict[str, Any], loai: str = "de_cuong") -> str:
+    lt = LOAI_TAI_LIEU[loai]
+    return (f"VAI CỦA BẠN: {tv['vai']}.\nTRỌNG TÂM: {tv['nhiem_vu']}\n"
+            f"LOẠI TÀI LIỆU: {lt['ten']}." + (f" Lưu ý riêng: {lt['chu_y']}" if lt["chu_y"] else "") + "\n\n"
             "Chấm ĐỘC LẬP — bạn không biết ý kiến thành viên khác. Chấm cả bốn mục của Phiếu nhận xét, nhưng nhận xét "
             f"chuyên sâu ở mục {', '.join(tv['trong_tam'])}:\n"
-            + "\n".join(f"  {k}. {v}" for k, v in MUC_PHIEU.items())
+            + "\n".join(f"  {k}. {v}" for k, v in lt["phieu"].items())
             + f"\nMốc điểm (dùng ĐÚNG mốc):\n{MOC_DIEM}\n\n"
             "LUẬT BẮT BUỘC:\n"
             "1. Mỗi nhận xét phải có «dong» và «trich» chép NGUYÊN VĂN từ đúng dòng đó — máy sẽ đối chiếu, trích không "
@@ -340,19 +603,19 @@ def loi_nhan_thanh_vien(tv: Dict[str, Any]) -> str:
             "2. Điểm 1–2 ở mục nào phải có ít nhất một nhận xét «nghiem_trong» hoặc «can_sua» ở mục đó; đã có "
             "«can_sua» thì không chấm 5.\n"
             "3. Không bịa số liệu, nguồn, mục chuẩn; không đòi điều chuẩn không đòi. Không đánh giá lại lựa chọn thuộc "
-            "thẩm quyền chủ nhiệm khi lựa chọn đó có lý do ghi trong đề cương — chỉ nêu khi lý do sai hoặc thiếu.\n"
+            "thẩm quyền chủ nhiệm khi lựa chọn đó có lý do ghi trong tài liệu — chỉ nêu khi lý do sai hoặc thiếu.\n"
             "4. Không nhắc lại lỗi mà hồ sơ kiểm máy đã liệt kê trừ khi bạn có thêm điều máy không thấy.\n"
             "5. Không ghi thông tin định danh cá nhân.\n"
             "Trả về DUY NHẤT một đối tượng JSON theo khuôn:\n" + _khuon_tv())
 
 
-def loi_nhan_chu_tich(ds: Sequence[Dict[str, Any]], bang_diem: Dict[str, Dict[str, int]]) -> str:
+def loi_nhan_chu_tich(ds: Sequence[Dict[str, Any]], bang_diem: Dict[str, Dict[str, int]], so_tv: int = 5) -> str:
     gon = [{k: f[k] for k in ("id", "thanh_vien", "muc_phieu", "muc_do", "dong", "trich", "van_de", "chuan", "de_xuat")}
            for f in ds]
-    return ("VAI CỦA BẠN: CHỦ TỊCH HỘI ĐỒNG. Năm thành viên đã chấm độc lập; dưới đây là các nhận xét ĐÃ được máy xác "
-            "minh trích nguyên văn, và bảng điểm.\nNHIỆM VỤ:\n"
+    return (f"VAI CỦA BẠN: CHỦ TỊCH HỘI ĐỒNG. {so_tv} thành viên đã chấm độc lập; dưới đây là các nhận xét ĐÃ được máy "
+            "xác minh trích nguyên văn, và bảng điểm.\nNHIỆM VỤ:\n"
             "1. Với TỪNG nhận xét: «giu», «ha_muc» (chỉ được HẠ: nghiem_trong→can_sua→goi_y) hoặc «loai» (báo động giả "
-            "— đề cương thật ra đã đáp ứng ở chỗ khác: nêu số dòng đó; hoặc đòi điều chuẩn không đòi). Mỗi phán quyết "
+            "— tài liệu thật ra đã đáp ứng ở chỗ khác: nêu số dòng đó; hoặc đòi điều chuẩn không đòi). Mỗi phán quyết "
             "kèm lý do có căn cứ trong tài liệu.\n"
             "2. Gộp các nhận xét trùng ý (cùng một vấn đề) thành nhóm.\n"
             "3. Viết «nhan_xet_chung» (3–6 câu, khách quan) và «yeu_cau_chinh_sua» theo thứ tự ưu tiên.\n"
@@ -373,9 +636,10 @@ def tham_so_yeu_cau(chung: str, loi_nhan: str, model: str, max_tokens: int) -> D
     return p
 
 
-def yeu_cau_thanh_vien(chung: str, model: str, sha8: str) -> List[Tuple[str, Dict[str, Any]]]:
-    return [(f"{tv['ma']}_{sha8}", tham_so_yeu_cau(chung, loi_nhan_thanh_vien(tv), model, MAX_TOKENS_TV))
-            for tv in THANH_VIEN]
+def yeu_cau_thanh_vien(chung: str, model: str, sha8: str, ds_tv: Optional[Sequence[Dict[str, Any]]] = None,
+                       loai: str = "de_cuong") -> List[Tuple[str, Dict[str, Any]]]:
+    return [(f"{tv['ma']}_{sha8}", tham_so_yeu_cau(chung, loi_nhan_thanh_vien(tv, loai), model, MAX_TOKENS_TV))
+            for tv in (ds_tv or THANH_VIEN)]
 
 
 # ── xác minh (máy) ──────────────────────────────────────────────────────────────────────────────────────────────────
@@ -549,19 +813,20 @@ def _ghi_json(p: Path, du_lieu: Any) -> None:
     tam.replace(p)
 
 
-def khoi_tao(study: str, out_dir: Path, tep: Path, model: str) -> Dict[str, Any]:
+def khoi_tao(study: str, out_dir: Path, tep: Path, model: str, loai: str = "de_cuong") -> Dict[str, Any]:
     van = tep.read_text(encoding="utf-8")
-    la_chinh = tep.resolve() == tep_mac_dinh(study, out_dir.parents[1]).resolve()
-    ho_so = ho_so_kiem_may(study, out_dir, van, la_chinh)
-    return {"schema": SCHEMA, "study": study, "tep": str(tep), "sha": _sha(van), "model": model,
+    la_chinh = tep.resolve() == tep_mac_dinh(study, out_dir.parents[1], loai).resolve()
+    ho_so = ho_so_kiem_may(study, out_dir, van, la_chinh, loai)
+    return {"schema": SCHEMA, "study": study, "tep": str(tep), "sha": _sha(van), "model": model, "loai": loai,
+            "thanh_phan": thanh_phan_hoi_dong(ho_so.get("thiet_ke") or "", van),
             "ho_so": ho_so, "buoc": "thanh_vien", "batch": {}, "thanh_vien": {}, "chu_tich": None,
             "quy_che": {"phien_ban": PHIEN_BAN_QUY_CHE, "sha": sha_ke_hoach(model)},
             "bat_dau": dt.datetime.now().isoformat(timespec="seconds")}
 
 
 def uoc_tinh(st: Dict[str, Any], van: str) -> Dict[str, Any]:
-    chung = khoi_chung(st["study"], Path(st["tep"]).name, van, st["ho_so"])
-    yc = yeu_cau_thanh_vien(chung, st["model"], st["sha"][:8])
+    chung = khoi_chung(st["study"], Path(st["tep"]).name, van, st["ho_so"], st.get("loai", "de_cuong"))
+    yc = yeu_cau_thanh_vien(chung, st["model"], st["sha"][:8], _ds_tv(st), st.get("loai", "de_cuong"))
     tok_chung = API.uoc_token(chung)
     tok_tv = [API.uoc_token(p["messages"][0]["content"]) for _, p in yc]
     n = len(yc) + 1  # + chủ tịch
@@ -576,7 +841,9 @@ def uoc_tinh(st: Dict[str, Any], van: str) -> Dict[str, Any]:
 
 def _chay_buoc(st: Dict[str, Any], van: str, goi_api: bool, client: Any) -> int:
     """Một lượt: nộp hoặc lấy batch của bước hiện tại. Trả mã thoát."""
-    chung = khoi_chung(st["study"], Path(st["tep"]).name, van, st["ho_so"])
+    loai = st.get("loai", "de_cuong")
+    ds_tv = _ds_tv(st)
+    chung = khoi_chung(st["study"], Path(st["tep"]).name, van, st["ho_so"], loai)
     sha8 = st["sha"][:8]
     if st["buoc"] == "xong":
         print("✅ Hội đồng đã họp xong — chạy «bien-ban» để xem/ghi biên bản.")
@@ -584,14 +851,15 @@ def _chay_buoc(st: Dict[str, Any], van: str, goi_api: bool, client: Any) -> int:
     bid = st["batch"].get(st["buoc"])
     if not bid:
         if st["buoc"] == "thanh_vien":
-            yc = yeu_cau_thanh_vien(chung, st["model"], sha8)
+            yc = yeu_cau_thanh_vien(chung, st["model"], sha8, ds_tv, loai)
         else:
             ds = [f for kq in st["thanh_vien"].values() if isinstance(kq, dict) for f in kq.get("dat", [])]
             for i, f in enumerate(ds, 1):
                 f["id"] = f"F{i:02d}"
             st["ds_xac_minh"] = ds
             bang = {ma: kq["diem"] for ma, kq in st["thanh_vien"].items() if isinstance(kq, dict) and "diem" in kq}
-            yc = [(f"ct_{sha8}", tham_so_yeu_cau(chung, loi_nhan_chu_tich(ds, bang), st["model"], MAX_TOKENS_CT))]
+            yc = [(f"ct_{sha8}", tham_so_yeu_cau(chung, loi_nhan_chu_tich(ds, bang, len(ds_tv)), st["model"],
+                                                 MAX_TOKENS_CT))]
         if not goi_api:
             print(f"(chạy khô) bước «{st['buoc']}»: {len(yc)} yêu cầu — thêm --goi-api để nộp batch (tính phí).")
             return 0
@@ -608,7 +876,7 @@ def _chay_buoc(st: Dict[str, Any], van: str, goi_api: bool, client: Any) -> int:
     ket = API.doc_ket_qua_batch(bid, client=client, nguon=CONG_CU)
     ma_loi = 0
     if st["buoc"] == "thanh_vien":
-        for tv in THANH_VIEN:
+        for tv in ds_tv:
             cid = f"{tv['ma']}_{sha8}"
             try:
                 tho = API.van_ban_ket_qua_batch(ket.get(cid, {"loai": "thieu"}), MAX_TOKENS_TV)
@@ -620,8 +888,9 @@ def _chay_buoc(st: Dict[str, Any], van: str, goi_api: bool, client: Any) -> int:
                 st["thanh_vien"][tv["ma"]] = {"loi": str(exc)[:300]}
                 ma_loi = 1
         hop_le = [m for m, kq in st["thanh_vien"].items() if "diem" in kq]
-        if len(hop_le) < 3:
-            print(f"🔴 Chỉ {len(hop_le)}/5 bản chấm hợp lệ — không đủ túc số (≥ 3). Chạy lại với --lam-lai.")
+        if len(hop_le) < tuc_so(len(ds_tv)):
+            print(f"🔴 Chỉ {len(hop_le)}/{len(ds_tv)} bản chấm hợp lệ — không đủ túc số (≥ {tuc_so(len(ds_tv))}). "
+                  "Chạy lại với --lam-lai.")
             return 1
         st["buoc"] = "chu_tich"
     else:
@@ -647,7 +916,7 @@ def bien_ban_tham_tra_md(st: Dict[str, Any]) -> str:
     """Biên bản một vòng THẨM TRA CHỈNH SỬA (QC-HDKH-2.0)."""
     tt = st.get("tham_tra") or {}
     kl, ly = ket_luan_tham_tra(tham_tra_cong_don(st)) if tt else ("", "chưa thẩm tra")
-    ten_tv = {tv["ma"]: tv["vai"] for tv in THANH_VIEN}
+    ten_tv = {tv["ma"]: tv["vai"] for tv in _ds_tv(st)}
     nhan = {"da_giai_quyet": "✅ Đã giải quyết", "chua_giai_quyet": "🟠 Chưa giải quyết",
             "can_du_kien": "⏳ Cần dữ kiện của người có thẩm quyền"}
     qc = st.get("quy_che") or {}
@@ -690,11 +959,13 @@ def bien_ban_md(st: Dict[str, Any]) -> str:
     if st.get("che_do") == "tham_tra":
         return bien_ban_tham_tra_md(st)
     th = tong_hop(st)
-    ten_tv = {tv["ma"]: tv["vai"] for tv in THANH_VIEN}
-    d = [f"# Biên bản Hội đồng Khoa học (máy) — {st['study']}", "",
+    ds_tv = _ds_tv(st)
+    ten_tv = {tv["ma"]: tv["vai"] for tv in ds_tv}
+    d = [f"# Biên bản Hội đồng Khoa học (máy) — {st['study']} · {LOAI_TAI_LIEU[st.get('loai', 'de_cuong')]['ten']}", "",
          f"- Tài liệu: `{Path(st['tep']).name}` (SHA-256 {st['sha'][:16]}…)",
-         f"- Thành phần: 5 thành viên chấm độc lập + chủ tịch tổng hợp; thư ký là máy tất định. Model {st['model']} "
-         f"(Batch API, effort {EFFORT}).", f"- Bắt đầu: {st.get('bat_dau')} · vòng {st.get('vong', 1)}",
+         f"- Thành phần: {len(ds_tv)} thành viên chấm độc lập ({'; '.join(tv['vai'] for tv in ds_tv)}) + chủ tịch tổng "
+         f"hợp; thư ký là máy tất định; túc số {tuc_so(len(ds_tv))}. Model {st['model']} (Batch API, effort {EFFORT}).",
+         f"- Bắt đầu: {st.get('bat_dau')} · vòng {st.get('vong', 1)}",
          f"- Quy chế: {(st.get('quy_che') or {}).get('phien_ban', '—')} (SHA "
          f"{str((st.get('quy_che') or {}).get('sha', '—'))[:16]}…) — khoá trước khi họp, không đổi giữa phiên.",
          f"- Hiệu chuẩn hội đồng: {st.get('hieu_luc_ly_do', 'không áp dụng (bản hiệu chuẩn)')}.",
@@ -1066,7 +1337,7 @@ def _chay_tham_tra(st: Dict[str, Any], van: str, goi_api: bool, client: Any) -> 
     theo_tv: Dict[str, List[Dict[str, Any]]] = {}
     for f in st.get("ds_yeu_cau") or []:
         theo_tv.setdefault(f["thanh_vien"], []).append(f)
-    ten = {tv["ma"]: tv for tv in THANH_VIEN}
+    ten = {tv["ma"]: tv for tv in _ds_tv(st)}
     cids = {ma: f"tt_{ma}_{st['sha'][:8]}" for ma in theo_tv}
     bid = st["batch"].get("tham_tra")
     if not bid:
@@ -1302,19 +1573,106 @@ LOI_CAI: Tuple[Tuple[str, str, str, str], ...] = (
 )
 
 
-def cai_loi(van: str) -> Tuple[str, List[Dict[str, Any]]]:
+# QC-HDKH-3.0: bộ lỗi cài riêng cho SAP và bản thảo/báo cáo (neo bám đề mục của khuôn hệ sinh; nhiều mẫu ⇒ thử lần
+# lượt) + MỘT lỗi ĐẶC THÙ THIẾT KẾ cho đề cương để chứng minh ghế chuyên thiết kế làm đúng việc.
+LOI_CAI_SAP: Tuple[Tuple[str, str, Any, str], ...] = (
+    ("kiem_dinh_sai", "kiểm định thống kê sai loại biến",
+     (r"(?i)^#+.*phân tích chính", r"(?i)^#+.*(?:phương pháp|phân tích) thống kê"),
+     "So sánh tỷ lệ kết cục chính giữa hai nhóm bằng kiểm định t-Student cho hai mẫu độc lập."),
+    ("du_lieu_thieu", "thay dữ liệu thiếu bằng trung bình mẫu, không phân tích độ nhạy",
+     (r"(?i)^#+.*(?:dữ liệu thiếu|thiếu dữ liệu|missing)",),
+     "Mọi giá trị thiếu được thay bằng giá trị trung bình của toàn mẫu; không cần phân tích độ nhạy."),
+    ("da_so_sanh", "chọn kết cục theo p nhỏ nhất, không hiệu chỉnh đa so sánh",
+     (r"(?i)^#+.*đa so sánh", r"(?i)^#+.*nhóm nhỏ"),
+     "Không hiệu chỉnh đa so sánh; kết cục phụ nào có giá trị p nhỏ nhất sẽ được báo cáo như kết quả chính."),
+    ("loai_ngoai_lai", "loại quan sát khỏi phân tích chính không ghi lý do",
+     (r"(?i)^#+.*quần thể phân tích",),
+     "Các quan sát có giá trị bất thường được loại khỏi phân tích chính mà không cần ghi lại lý do."),
+    ("doi_ket_cuc", "đổi kết cục chính sau khi xem dữ liệu",
+     (r"(?i)^#+.*kết cục",),
+     "Kết cục chính có thể được thay bằng kết cục khác sau khi xem dữ liệu nếu kết quả ban đầu không có ý nghĩa thống "
+     "kê."),
+    ("dien_giai_p", "diễn giải p ≥ 0,05 là tương đương",
+     (r"(?i)^#+.*(?:độ nhạy|dummy|khung bảng|trình bày)",),
+     "Khi giá trị p lớn hơn hoặc bằng 0,05, hai nhóm được kết luận là tương đương nhau."),
+)
+LOI_CAI_BAN_THAO: Tuple[Tuple[str, str, Any, str], ...] = (
+    ("khong_nguon", "khẳng định số liệu không có trích dẫn ở phần mở đầu",
+     (r"(?i)^#+.*(?:giới thiệu|đặt vấn đề|introduction)",),
+     "Tại Việt Nam, tỷ lệ người bệnh không được điều trị đúng hướng dẫn là 47,3%."),
+    ("kiem_dinh_sai", "kiểm định thống kê sai loại biến",
+     (r"(?i)^#+.*(?:phân tích thống kê|xử lý số liệu|phân tích số liệu|statistical)", r"(?i)^#+.*phương pháp"),
+     "Tỷ lệ giữa hai nhóm được so sánh bằng kiểm định t-Student cho hai mẫu độc lập."),
+    ("so_lieu_mau_thuan", "số người phân tích mâu thuẫn với phần còn lại của bài",
+     (r"(?i)^#+.*(?:kết quả|results)",),
+     "Tổng cộng 1.287 người tham gia được đưa vào phân tích cuối cùng."),
+    ("khai_quat_qua_muc", "khái quát kết quả vượt quần thể nghiên cứu",
+     (r"(?i)^#+.*(?:bàn luận|discussion)",),
+     "Kết quả này áp dụng được cho mọi người bệnh trên cả nước mà không cần thêm nghiên cứu xác nhận."),
+    ("ket_luan_vuot_ket_qua", "kết luận về kết cục không được nghiên cứu",
+     (r"(?i)^#+.*(?:kết luận|conclusion)",),
+     "Nghiên cứu cho thấy tỷ lệ tử vong do mọi nguyên nhân giảm một nửa."),
+    ("du_lieu_dinh_danh", "công bố dữ liệu định danh người tham gia",
+     (r"(?i)^#+.*(?:khai báo|đạo đức|xung đột|tài trợ|chia sẻ dữ liệu|data availability)",),
+     "Bộ dữ liệu kèm họ tên và số điện thoại của người tham gia được công bố công khai cùng bài báo."),
+)
+LOI_CAI_THIET_KE: Dict[str, Tuple[str, str, Any, str]] = {
+    "rct": ("tk_phan_bo_lo", "không che giấu phân bổ (chẵn/lẻ, biết trước nhóm)",
+            (r"(?i)^#+.*(?:ngẫu nhiên|phân bổ|phân nhóm)", r"(?i)^#+.*thiết kế"),
+            "Người bệnh được phân nhóm theo ngày khám chẵn hoặc lẻ; nghiên cứu viên tuyển chọn biết trước người bệnh "
+            "tiếp theo vào nhóm nào."),
+    "cohort": ("tk_chon_theo_ket_cuc", "chọn nhóm không phơi nhiễm theo kết cục",
+               (r"(?i)^#+.*(?:chọn mẫu|đối tượng|nhóm phơi nhiễm|quần thể)",),
+               "Nhóm không phơi nhiễm được chọn trong số người bệnh đã có kết cục để bảo đảm đủ số biến cố."),
+    "case_control": ("tk_chung_theo_phoi_nhiem", "chọn nhóm chứng theo phơi nhiễm",
+                     (r"(?i)^#+.*(?:nhóm chứng|chọn mẫu|đối tượng)",),
+                     "Nhóm chứng được chọn trong số người đang dùng thuốc nghiên cứu để hai nhóm cân bằng về phơi "
+                     "nhiễm."),
+    "cross_sectional": ("tk_mau_lech", "ước lượng tỷ lệ trên mẫu chỉ gồm người đã có biến chứng",
+                        (r"(?i)^#+.*(?:chọn mẫu|cỡ mẫu|đối tượng)",),
+                        "Tỷ lệ hiện mắc được ước lượng trên mẫu chỉ gồm người bệnh đã có biến chứng."),
+    "diagnostic": ("tk_xac_minh_mot_phan", "chỉ người test dương tính được làm tiêu chuẩn tham chiếu",
+                   (r"(?i)^#+.*(?:tiêu chuẩn tham chiếu|quy trình|xét nghiệm)", r"(?i)^#+.*thiết kế"),
+                   "Chỉ người có kết quả xét nghiệm chỉ điểm dương tính mới được làm tiêu chuẩn tham chiếu."),
+    "prediction": ("tk_khong_kiem_dinh", "đánh giá mô hình trên chính dữ liệu xây dựng, không kiểm định",
+                   (r"(?i)^#+.*(?:phát triển mô hình|xây dựng mô hình|kiểm định)", r"(?i)^#+.*phân tích"),
+                   "Mô hình được xây dựng và đánh giá hiệu năng trên cùng toàn bộ dữ liệu, không kiểm định nội hay "
+                   "ngoại."),
+    "sr_ma": ("tk_tim_hep_chon_ket_qua", "chỉ tìm một cơ sở dữ liệu và chỉ nhận nghiên cứu có ý nghĩa thống kê",
+              (r"(?i)^#+.*(?:chiến lược tìm|nguồn dữ liệu|tìm kiếm|tiêu chuẩn chọn)",),
+              "Chỉ tìm trên PubMed bằng tiếng Anh và chỉ đưa vào các nghiên cứu có kết quả có ý nghĩa thống kê."),
+    "qualitative": ("tk_co_mau_thong_ke", "tính cỡ mẫu định tính bằng công thức thống kê",
+                    (r"(?i)^#+.*(?:cỡ mẫu|chọn mẫu|người tham gia)",),
+                    "Số người được phỏng vấn tính bằng công thức ước lượng một tỷ lệ với sai số 5% và độ tin cậy 95%."),
+}
+SO_LOI_CAI_TOI_THIEU = 5         # bản cài lỗi có < 5 lỗi (thiếu neo) ⇒ hiệu chuẩn KHÔNG hợp lệ, không phải «đạt»
+
+
+def bo_loi_cai(loai: str = "de_cuong", thiet_ke: str = "") -> List[Tuple[str, str, Any, str, bool]]:
+    """(mã, mô tả, neo, câu, đặc thù thiết kế?) theo loại tài liệu; đề cương có thêm lỗi đặc thù của thiết kế."""
+    goc = {"de_cuong": LOI_CAI, "sap": LOI_CAI_SAP, "ban_thao": LOI_CAI_BAN_THAO, "bao_cao": LOI_CAI_BAN_THAO}[loai]
+    ds = [(m, mo, neo, cau, False) for m, mo, neo, cau in goc]
+    dt_ = LOI_CAI_THIET_KE.get(chuan_hoa_thiet_ke(thiet_ke))
+    if loai == "de_cuong" and dt_:
+        ds.append((*dt_, True))
+    return ds
+
+
+def cai_loi(van: str, loai: str = "de_cuong", thiet_ke: str = "") -> Tuple[str, List[Dict[str, Any]]]:
     """Chèn mỗi lỗi một dòng sau neo đầu tiên còn chưa dùng; trả (văn bản mới, đáp án theo SỐ DÒNG mới)."""
     dong = van.splitlines()
-    chen: List[Tuple[int, str, str, str]] = []
-    for ma, mo_ta, neo, cau in LOI_CAI:
-        i = next((k for k, d in enumerate(dong) if re.search(neo, d) and all(k != c[0] for c in chen)), None)
-        if i is not None:
-            chen.append((i, ma, mo_ta, cau))
+    chen: List[Tuple[int, str, str, str, bool]] = []
+    for ma, mo_ta, neo, cau, dac_thu in bo_loi_cai(loai, thiet_ke):
+        for mau in (neo,) if isinstance(neo, str) else neo:
+            i = next((k for k, d in enumerate(dong) if re.search(mau, d) and all(k != c[0] for c in chen)), None)
+            if i is not None:
+                chen.append((i, ma, mo_ta, cau, dac_thu))
+                break
     dap_an = []
-    for lech, (i, ma, mo_ta, cau) in enumerate(sorted(chen)):
+    for lech, (i, ma, mo_ta, cau, dac_thu) in enumerate(sorted(chen)):
         vi_tri = i + 1 + lech  # vị trí trong danh sách SAU khi đã chèn các lỗi phía trước
         dong.insert(vi_tri, cau)
-        dap_an.append({"ma": ma, "mo_ta": mo_ta, "dong": vi_tri + 1, "cau": cau})
+        dap_an.append({"ma": ma, "mo_ta": mo_ta, "dong": vi_tri + 1, "cau": cau, "dac_thu_thiet_ke": dac_thu})
     return "\n".join(dong) + "\n", dap_an
 
 
@@ -1330,11 +1688,220 @@ def cham_hieu_chuan(dap_an: Sequence[Dict[str, Any]], st: Dict[str, Any]) -> Dic
                      if i not in da_dung and abs(int(f["dong"]) - int(a["dong"])) <= CUA_SO_DONG)
         if ung:
             da_dung.add(ung[0][1])
-        ket.append({**a, "bat": bool(ung), "boi": [van_de[ung[0][1]]["thanh_vien"]] if ung else []})
+        ket.append({**a, "bat": bool(ung), "boi": [van_de[ung[0][1]]["thanh_vien"]] if ung else [],
+                    "van_de_id": van_de[ung[0][1]].get("id") if ung else None})
     bat = sum(1 for k in ket if k["bat"])
+    dac_thu = [k for k in ket if k.get("dac_thu_thiet_ke")]
     return {"so_loi_cai": len(ket), "bat": bat, "do_nhay": round(bat / len(ket), 3) if ket else None, "chi_tiet": ket,
+            "bat_dac_thu": (all(k["bat"] for k in dac_thu) if dac_thu else None),
             "van_de_ngoai_loi_cai": sum(1 for f in van_de if all(abs(int(f["dong"]) - int(a["dong"])) > CUA_SO_DONG
                                                                     for a in dap_an))}
+
+
+# ── QC-HDKH-3.0: đo BÁO NHẦM (độ chính xác của nhận xét) bằng TRỌNG TÀI ĐỘC LẬP ─────────────────────────────────────
+# Độ nhạy (bắt lỗi cài) chưa đủ: hội đồng còn nêu nhiều vấn đề NGOÀI lỗi cài mà chưa ai đối chiếu đúng/sai. Trọng tài
+# (model KHÁC hội đồng, ngữ cảnh mới, không biết ai nêu) phán từng nhận xét. Chính trọng tài cũng bị kiểm: trộn mù ĐỐI
+# CHỨNG DƯƠNG (nhận xét đã bắt đúng lỗi cài ⇒ phải «dung») và ĐỐI CHỨNG ÂM (máy dựng nhận xét SAI: «không trình bày X»
+# trong khi mục X có nội dung ⇒ phải «sai»). Trọng tài sai đối chứng ⇒ phép đo không hợp lệ, không phải «đạt».
+TRONG_TAI_MODEL = "claude-fable-5-2"
+MAX_TOKENS_TRONG_TAI = 32000
+TRONG_TAI_KIEM_SOAT_TOI_THIEU = 0.9   # tỷ lệ đối chứng trọng tài phán đúng (≥ 4 đối chứng)
+DO_CHINH_XAC_TOI_THIEU = 0.8          # nhận xét ngoài lỗi cài: đúng/(đúng+sai) — ngưỡng VẬN HÀNH, không phải chuẩn
+KHONG_RO_TOI_DA = 0.5                 # trọng tài «không rõ» quá nửa ⇒ không đo được
+SO_DOI_CHUNG_AM = 4
+CHU_DE_DOI_CHUNG: Dict[str, Tuple[Tuple[str, str], ...]] = {
+    "de_cuong": (("cách tính cỡ mẫu", r"cỡ mẫu"), ("tiêu chuẩn lựa chọn đối tượng", r"tiêu chuẩn (?:lựa )?chọn"),
+                 ("tiêu chuẩn loại trừ", r"tiêu chuẩn loại trừ"),
+                 ("phương pháp xử lý và phân tích số liệu", r"(?:xử lý|phân tích) (?:số liệu|dữ liệu|thống kê)"),
+                 ("vấn đề đạo đức trong nghiên cứu", r"đạo đức"), ("biến số và chỉ số nghiên cứu", r"biến số|chỉ số")),
+    "sap": (("quần thể phân tích", r"quần thể phân tích"), ("định nghĩa kết cục", r"kết cục"),
+            ("cách xử lý dữ liệu thiếu", r"dữ liệu thiếu"), ("phân tích độ nhạy", r"độ nhạy"),
+            ("cách xử lý đa so sánh", r"đa so sánh"), ("phần mềm phân tích", r"phần mềm")),
+    "ban_thao": (("phương pháp nghiên cứu", r"phương pháp"), ("kết quả nghiên cứu", r"kết quả"),
+                 ("phần bàn luận", r"bàn luận"), ("kết luận", r"kết luận"),
+                 ("danh mục tài liệu tham khảo", r"tài liệu tham khảo")),
+}
+CHU_DE_DOI_CHUNG["bao_cao"] = CHU_DE_DOI_CHUNG["ban_thao"]
+_DE_MUC_RE = re.compile(r"^#+\s")
+
+
+def doi_chung_am(van: str, loai: str = "de_cuong") -> List[Dict[str, Any]]:
+    """Nhận xét SAI do máy dựng: «tài liệu hoàn toàn không trình bày X» — chỉ dựng khi đề mục X có ≥ 2 dòng nội dung."""
+    dong, ra = van.splitlines(), []
+    for chu_de, mau in CHU_DE_DOI_CHUNG[loai]:
+        for i, d in enumerate(dong):
+            if not (_DE_MUC_RE.match(d) and re.search(mau, d, re.IGNORECASE)):
+                continue
+            j, noi_dung = i + 1, 0
+            while j < len(dong) and not _DE_MUC_RE.match(dong[j]):
+                noi_dung += bool(dong[j].strip())
+                j += 1
+            if noi_dung >= 2:
+                ra.append({"nhom": "kiem_soat_am", "muc_phieu": "2", "muc_do": "can_sua", "dong": i + 1,
+                           "trich": d.strip()[:120], "van_de": f"Tài liệu hoàn toàn không trình bày {chu_de}.",
+                           "de_xuat": f"Bổ sung phần {chu_de}.", "chuan": ""})
+                break
+        if len(ra) >= SO_DOI_CHUNG_AM:
+            break
+    return ra
+
+
+def lap_muc_bao_nham(st: Dict[str, Any], kq_cham: Dict[str, Any], van: str, loai: str) -> List[Dict[str, Any]]:
+    """Mọi vấn đề hội đồng giữ (đã ghép lỗi cài ⇒ đối chứng dương; còn lại ⇒ cần phán) + đối chứng âm; trộn tất định,
+    mã mù M01…"""
+    khop = {k.get("van_de_id") for k in kq_cham.get("chi_tiet") or [] if k.get("bat")}
+    muc = [{"nhom": "kiem_soat_duong" if f.get("id") in khop else "nghi_van", "goc": f.get("id"),
+            **{k: f.get(k) for k in ("muc_phieu", "muc_do", "dong", "trich", "van_de", "de_xuat", "chuan")}}
+           for f in tong_hop(st)["van_de"]]
+    muc += doi_chung_am(van, loai)
+    muc.sort(key=lambda m: hashlib.sha256((st["sha"] + json.dumps(m, ensure_ascii=False, sort_keys=True))
+                                          .encode("utf-8")).hexdigest())
+    for k, m in enumerate(muc, 1):
+        m["id"] = f"M{k:02d}"
+    return muc
+
+
+def loi_nhan_trong_tai(muc: Sequence[Dict[str, Any]], loai: str = "de_cuong") -> str:
+    gon = [{k: m.get(k) for k in ("id", "muc_phieu", "muc_do", "dong", "trich", "van_de", "de_xuat", "chuan")}
+           for m in muc]
+    return ("VAI CỦA BẠN: TRỌNG TÀI ĐỘC LẬP thẩm định CHẤT LƯỢNG NHẬN XÉT của một hội đồng về "
+            f"{LOAI_TAI_LIEU[loai]['ten']} ở trên. Bạn không thuộc hội đồng và không biết nhận xét nào do ai nêu.\n"
+            "Với TỪNG nhận xét, phán một trong ba:\n"
+            "- «dung»: tài liệu thật sự có vấn đề như nhận xét nêu (theo chuẩn áp dụng hoặc nguyên tắc phương pháp "
+            "được thừa nhận) — nêu lý do.\n"
+            "- «sai»: nhận xét không đúng, kèm «co_so»: «tai_lieu_da_dap_ung» (trích NGUYÊN VĂN đoạn đáp ứng kèm số "
+            "dòng — máy đối chiếu, không khớp thì phán quyết thành «khong_ro») hoặc «chuan_khong_doi» (giải thích vì "
+            "sao chuẩn/nguyên tắc không đòi điều đó).\n"
+            "- «khong_ro»: không đủ căn cứ để phán.\n"
+            "Phán theo nội dung tài liệu, không theo giọng văn của nhận xét; không ghi thông tin định danh cá nhân.\n"
+            f"NHẬN XÉT:\n{json.dumps(gon, ensure_ascii=False, indent=1)}\n"
+            "Trả về DUY NHẤT JSON: " + json.dumps({"phan_dinh": [
+                {"id": "M01", "ket_qua": "dung|sai|khong_ro", "co_so": "tai_lieu_da_dap_ung|chuan_khong_doi|",
+                 "dong": 12, "trich": "…", "ly_do": "…"}]}, ensure_ascii=False))
+
+
+def xac_minh_trong_tai(dl: Any, muc: Sequence[Dict[str, Any]], van: str) -> Dict[str, Dict[str, Any]]:
+    """Phán quyết đã máy kiểm theo mã M…; thiếu/không hợp lệ/«sai» không chứng minh được ⇒ «khong_ro»."""
+    if not isinstance(dl, dict):
+        raise API.KetQuaHong("phán quyết trọng tài không phải đối tượng JSON")
+    cac_dong = van.splitlines()
+    pq = {str(x.get("id")): x for x in (dl.get("phan_dinh") or []) if isinstance(x, dict)}
+    ra: Dict[str, Dict[str, Any]] = {}
+    for m in muc:
+        x = pq.get(m["id"]) or {}
+        kq, co_so, ly = str(x.get("ket_qua") or ""), str(x.get("co_so") or ""), str(x.get("ly_do") or "").strip()
+        try:
+            dong = int(x.get("dong"))
+        except (TypeError, ValueError):
+            dong = 0
+        ghi = ""
+        if kq not in ("dung", "sai", "khong_ro"):
+            kq, ghi = "khong_ro", "thiếu phán quyết hợp lệ"
+        elif kq == "sai" and co_so == "tai_lieu_da_dap_ung" and not _trong_cua_so(str(x.get("trich") or ""), dong,
+                                                                                  cac_dong):
+            kq, ghi = "khong_ro", f"«sai» nhưng trích không có nguyên văn quanh dòng {dong}"
+        elif kq == "sai" and co_so == "chuan_khong_doi" and not ly:
+            kq, ghi = "khong_ro", "«sai — chuẩn không đòi» mà không nêu lý do"
+        elif kq == "sai" and co_so not in ("tai_lieu_da_dap_ung", "chuan_khong_doi"):
+            kq, ghi = "khong_ro", "«sai» không có cơ sở hợp lệ"
+        ra[m["id"]] = {"ket_qua": kq, "co_so": co_so, "dong": dong, "trich": str(x.get("trich") or "")[:300],
+                       "ly_do": ly[:600], "ghi_may": ghi}
+    return ra
+
+
+def _wilson(k: int, n: int, z: float = 1.959964) -> Optional[List[float]]:
+    if n <= 0:
+        return None
+    ph = k / n
+    tam = (ph + z * z / (2 * n)) / (1 + z * z / n)
+    nua = z * ((ph * (1 - ph) / n + z * z / (4 * n * n)) ** 0.5) / (1 + z * z / n)
+    return [round(max(0.0, tam - nua), 3), round(min(1.0, tam + nua), 3)]
+
+
+def cham_bao_nham(muc: Sequence[Dict[str, Any]], pd: Dict[str, Dict[str, Any]]) -> Dict[str, Any]:
+    """Độ hợp lệ của trọng tài (trên đối chứng) và độ chính xác nhận xét ngoài lỗi cài (Wilson 95%)."""
+    ks = [m for m in muc if m["nhom"] in ("kiem_soat_duong", "kiem_soat_am")]
+    dung_ks = sum(1 for m in ks if pd[m["id"]]["ket_qua"] == ("dung" if m["nhom"] == "kiem_soat_duong" else "sai"))
+    nghi = [m for m in muc if m["nhom"] == "nghi_van"]
+    d = sum(1 for m in nghi if pd[m["id"]]["ket_qua"] == "dung")
+    sai = sum(1 for m in nghi if pd[m["id"]]["ket_qua"] == "sai")
+    kr = len(nghi) - d - sai
+    hop_le = len(ks) >= 4 and dung_ks / len(ks) >= TRONG_TAI_KIEM_SOAT_TOI_THIEU
+    do_chinh_xac = round(d / (d + sai), 3) if d + sai else None
+    du_phan = not nghi or kr / len(nghi) <= KHONG_RO_TOI_DA
+    dat = hop_le and du_phan and (do_chinh_xac is None or do_chinh_xac >= DO_CHINH_XAC_TOI_THIEU)
+    ly = ("trọng tài sai đối chứng — phép đo không hợp lệ" if not hop_le else
+          "trọng tài không phán được quá nửa nhận xét — không đo được" if not du_phan else
+          f"độ chính xác {do_chinh_xac} < {DO_CHINH_XAC_TOI_THIEU}" if not dat else "đạt")
+    return {"so_doi_chung": len(ks), "doi_chung_dung": dung_ks, "trong_tai_hop_le": hop_le,
+            "so_nhan_xet": len(nghi), "dung": d, "sai": sai, "khong_ro": kr, "do_chinh_xac": do_chinh_xac,
+            "khoang_tin_cay_95": _wilson(d, d + sai), "dat": dat, "ly_do": ly,
+            "sai_chi_tiet": [{"id": m["id"], "goc": m.get("goc"), "van_de": m.get("van_de"),
+                              "phan_quyet": pd[m["id"]]} for m in nghi if pd[m["id"]]["ket_qua"] == "sai"],
+            "doi_chung_sai": [{"id": m["id"], "nhom": m["nhom"], "phan_quyet": pd[m["id"]]} for m in ks
+                              if pd[m["id"]]["ket_qua"] != ("dung" if m["nhom"] == "kiem_soat_duong" else "sai")]}
+
+
+def _do_bao_nham(goc: Path, out_dir: Path, study: str, loai: str, goi_api: bool, client: Any, model: str) -> int:
+    hc_dir = thu_muc_hd(out_dir) / "hieu_chuan" / loai
+    da, kq_cham = _doc_st(hc_dir / "dap_an.json"), _doc_st(hc_dir / "ket_qua.json")
+    if not da or not kq_cham:
+        print("❌ chưa hiệu chuẩn xong (cần «hieu-chuan --tao», họp bản cài lỗi, «hieu-chuan --cham»)", file=sys.stderr)
+        return 3
+    st = _doc_st(tep_trang_thai(out_dir, da["sha"]))
+    if not st or st.get("buoc") != "xong" or (st.get("quy_che") or {}).get("sha") != sha_ke_hoach(model):
+        print("⛔ phiên họp bản cài lỗi chưa xong hoặc không cùng quy chế hiện hành", file=sys.stderr)
+        return 1
+    van = Path(da["tep"]).read_text(encoding="utf-8")
+    p_tt = hc_dir / "bao_nham_trang_thai.json"
+    tt = _doc_st(p_tt)
+    if not tt or tt.get("sha_quy_che") != sha_ke_hoach(model) or tt.get("sha") != da["sha"]:
+        tt = {"sha": da["sha"], "sha_quy_che": sha_ke_hoach(model), "muc": lap_muc_bao_nham(st, kq_cham, van, loai),
+              "batch": None, "so_lan_nop_lai": 0, "model_trong_tai": TRONG_TAI_MODEL}
+    cid = f"tt_bn_{da['sha'][:8]}"
+    yc = [(cid, tham_so_yeu_cau(khoi_chung(study, Path(da["tep"]).name, van, st["ho_so"], loai),
+                                loi_nhan_trong_tai(tt["muc"], loai), TRONG_TAI_MODEL, MAX_TOKENS_TRONG_TAI))]
+    if not goi_api:
+        n = {g: sum(1 for m in tt["muc"] if m["nhom"] == g) for g in ("nghi_van", "kiem_soat_duong", "kiem_soat_am")}
+        print(f"(chạy khô) trọng tài {TRONG_TAI_MODEL} sẽ phán {n['nghi_van']} nhận xét + {n['kiem_soat_duong']} đối "
+              f"chứng dương + {n['kiem_soat_am']} đối chứng âm — thêm --goi-api (tính phí).")
+        return 0
+    if not tt["batch"]:
+        tt["batch"] = API.nop_batch(yc, client=client, nguon=CONG_CU)
+        _ghi_json(p_tt, tt)
+        print(f"📨 Đã nộp batch trọng tài: {tt['batch']} ({len(tt['muc'])} mục).")
+        return 4
+    if API.trang_thai_batch(tt["batch"], client=client)["trang_thai"] != "ended":
+        print(f"⏳ Batch trọng tài {tt['batch']} đang xử lý — chạy lại sau.")
+        return 4
+    ket = API.doc_ket_qua_batch(tt["batch"], client=client, nguon=CONG_CU)
+    try:
+        tho = API.van_ban_ket_qua_batch(ket.get(cid, {"loai": "thieu"}), MAX_TOKENS_TRONG_TAI)
+        tt["tho"] = tho
+        pd = xac_minh_trong_tai(API.doc_json(tho), tt["muc"], van)
+    except API.LoiApi as exc:
+        if tt["so_lan_nop_lai"] < SO_LAN_NOP_LAI_BIEN_TAP:   # lỗi KỸ THUẬT ⇒ nộp lại, không phải phán quyết
+            tt["so_lan_nop_lai"] += 1
+            tt.setdefault("loi", []).append(str(exc)[:200])
+            tt["batch"] = API.nop_batch(yc, client=client, nguon=CONG_CU)
+            _ghi_json(p_tt, tt)
+            print(f"⚠️ Phản hồi trọng tài không đọc được — đã nộp lại lần {tt['so_lan_nop_lai']}: {tt['batch']}")
+            return 4
+        _ghi_json(p_tt, tt)
+        print(f"❌ trọng tài hỏng sau {SO_LAN_NOP_LAI_BIEN_TAP} lần nộp lại: {exc}", file=sys.stderr)
+        return 1
+    kq = cham_bao_nham(tt["muc"], pd)
+    kq.update(sha=da["sha"], sha_quy_che=sha_ke_hoach(model), quy_che=PHIEN_BAN_QUY_CHE, loai=loai,
+              model_trong_tai=TRONG_TAI_MODEL, ngay=dt.date.today().isoformat())
+    tt["phan_dinh"] = pd
+    _ghi_json(p_tt, tt)
+    _ghi_json(hc_dir / "bao_nham.json", kq)
+    ci = kq["khoang_tin_cay_95"]
+    print(f"⚖️ Trọng tài {TRONG_TAI_MODEL}: đối chứng {kq['doi_chung_dung']}/{kq['so_doi_chung']} đúng "
+          f"({'hợp lệ' if kq['trong_tai_hop_le'] else 'KHÔNG hợp lệ'}); nhận xét ngoài lỗi cài: {kq['dung']} đúng · "
+          f"{kq['sai']} sai · {kq['khong_ro']} không rõ ⇒ độ chính xác {kq['do_chinh_xac']}"
+          + (f" (KTC 95% {ci[0]}–{ci[1]})" if ci else "") + f" — {kq['ly_do']}.")
+    return 0 if kq["dat"] else 1
 
 
 # ── CLI ─────────────────────────────────────────────────────────────────────────────────────────────────────────────
@@ -1343,11 +1910,15 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
     sub = ap.add_subparsers(dest="lenh", required=True)
     k = sub.add_parser("ke-hoach", help="in/ghi văn bản quy chế (khoá trước khi họp)")
     k.add_argument("--ghi", action="store_true", help=f"ghi {TEP_QUY_CHE}")
-    for ten in ("uoc-tinh", "hop", "bien-ban", "hieu-chuan", "vong-kin"):
+    for ten in ("uoc-tinh", "hop", "bien-ban", "hieu-chuan", "vong-kin", "do-bao-nham"):
         p = sub.add_parser(ten)
         p.add_argument("--study", required=True)
-        p.add_argument("--tep", type=Path, help="tài liệu (mặc định: đề cương nộp Hội đồng của đề tài)")
+        p.add_argument("--loai", choices=sorted(LOAI_TAI_LIEU), default="de_cuong",
+                       help="loại tài liệu (mặc định đề cương nộp Hội đồng)")
+        p.add_argument("--tep", type=Path, help="tài liệu (mặc định: tệp chuẩn của loại tài liệu của đề tài)")
         p.add_argument("--model", default=MODEL_MAC_DINH)
+        if ten == "do-bao-nham":
+            p.add_argument("--goi-api", action="store_true", help="nộp/lấy batch trọng tài (TÍNH PHÍ)")
         if ten == "hop":
             p.add_argument("--goi-api", action="store_true", help="nộp/lấy batch (TÍNH PHÍ)")
             p.add_argument("--lam-lai", action="store_true", help="bỏ trạng thái cũ của tài liệu này, họp lại")
@@ -1377,25 +1948,36 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
         print("❌ mã đề tài không hợp lệ", file=sys.stderr)
         return 3
     out_dir = goc / "exports" / a.study
-    hc_dir = thu_muc_hd(out_dir) / "hieu_chuan"
+    loai = a.loai
+    hc_dir = thu_muc_hd(out_dir) / "hieu_chuan" / loai
+    if a.lenh == "do-bao-nham":
+        try:
+            return _do_bao_nham(goc, out_dir, a.study, loai, a.goi_api, client, a.model)
+        except API.LoiApi as exc:
+            print(f"❌ {exc}", file=sys.stderr)
+            return 2
     if a.lenh == "hieu-chuan":
-        goc_tep = a.tep or tep_mac_dinh(a.study, goc)
+        goc_tep = a.tep or tep_mac_dinh(a.study, goc, loai)
         if a.tao:
             if not goc_tep.is_file():
                 print(f"❌ không thấy {goc_tep}", file=sys.stderr)
                 return 3
-            van_moi, dap_an = cai_loi(goc_tep.read_text(encoding="utf-8"))
-            ban = hc_dir / f"BAN_CAI_LOI_{a.study}.md"
+            van_moi, dap_an = cai_loi(goc_tep.read_text(encoding="utf-8"), loai, _thiet_ke(out_dir))
+            if len(dap_an) < SO_LOI_CAI_TOI_THIEU:
+                print(f"⛔ Chỉ tìm được neo cho {len(dap_an)} lỗi cài (< {SO_LOI_CAI_TOI_THIEU}) — tài liệu thiếu đề "
+                      "mục chuẩn; hiệu chuẩn sẽ không hợp lệ.", file=sys.stderr)
+            ban = hc_dir / f"BAN_CAI_LOI_{a.study}_{loai}.md"
             ban.parent.mkdir(parents=True, exist_ok=True)
             tam = ban.with_name(ban.name + ".tam")
             tam.write_text(van_moi, encoding="utf-8", newline="\n")
             tam.replace(ban)
             _ghi_json(hc_dir / "dap_an.json", {"tep": str(ban), "sha": _sha(van_moi), "dap_an": dap_an,
-                                               "sha_goc": _sha(goc_tep.read_text(encoding="utf-8")),
+                                               "sha_goc": _sha(goc_tep.read_text(encoding="utf-8")), "loai": loai,
+                                               "thiet_ke": _thiet_ke(out_dir),
                                                "sha_quy_che": sha_ke_hoach(a.model), "quy_che": PHIEN_BAN_QUY_CHE})
             print(f"🧪 Đã cài {len(dap_an)} lỗi vào {ban.name} (đáp án riêng, hội đồng không thấy). Họp bằng:\n"
-                  f"   hoi_dong_khoa_hoc.py hop --study {a.study} --tep {ban} --goi-api")
-            return 0
+                  f"   hoi_dong_khoa_hoc.py hop --study {a.study} --loai {loai} --tep {ban} --goi-api")
+            return 0 if len(dap_an) >= SO_LOI_CAI_TOI_THIEU else 1
         da = _doc_st(hc_dir / "dap_an.json")
         if not da:
             print("❌ chưa có đáp án — chạy «hieu-chuan --tao» trước", file=sys.stderr)
@@ -1408,16 +1990,20 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
             print("⛔ Phiên hiệu chuẩn không cùng quy chế hiện hành — tạo lại bản cài lỗi và họp lại.", file=sys.stderr)
             return 1
         kq = cham_hieu_chuan(da["dap_an"], st)
-        kq.update(sha_quy_che=da["sha_quy_che"], quy_che=PHIEN_BAN_QUY_CHE, sha_goc=da.get("sha_goc"),
-                  ngay=dt.date.today().isoformat(),
-                  dat=kq["do_nhay"] is not None and kq["do_nhay"] >= DO_NHAY_TOI_THIEU)
+        kq.update(sha_quy_che=da["sha_quy_che"], quy_che=PHIEN_BAN_QUY_CHE, sha_goc=da.get("sha_goc"), loai=loai,
+                  thiet_ke=da.get("thiet_ke"), ngay=dt.date.today().isoformat(),
+                  dat=(kq["do_nhay"] is not None and kq["do_nhay"] >= DO_NHAY_TOI_THIEU
+                       and kq["so_loi_cai"] >= SO_LOI_CAI_TOI_THIEU and kq["bat_dac_thu"] is not False))
         _ghi_json(hc_dir / "ket_qua.json", kq)
         print(f"🎯 Độ nhạy hội đồng: bắt {kq['bat']}/{kq['so_loi_cai']} lỗi cài ({kq['do_nhay']}); "
-              f"{kq['van_de_ngoai_loi_cai']} vấn đề khác ngoài lỗi cài.")
+              f"{kq['van_de_ngoai_loi_cai']} vấn đề khác ngoài lỗi cài"
+              + ("" if kq["bat_dac_thu"] is None
+                 else f"; lỗi đặc thù thiết kế: {'BẮT' if kq['bat_dac_thu'] else 'SÓT'}")
+              + ". Bước kế: «do-bao-nham» đo độ chính xác của các vấn đề khác.")
         for k in kq["chi_tiet"]:
             print(f"   {'✓' if k['bat'] else '✗'} {k['ma']} (dòng {k['dong']}) {', '.join(k['boi'])}")
         return 0 if kq["dat"] else 1
-    tep = a.tep or tep_mac_dinh(a.study, goc)
+    tep = a.tep or tep_mac_dinh(a.study, goc, loai)
     if not tep.is_file():
         print(f"❌ không thấy tài liệu {tep}", file=sys.stderr)
         return 3
@@ -1432,13 +2018,13 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
         return 1
     try:
         if st is None:
-            st = khoi_tao(a.study, out_dir, tep, a.model)
-        la_ban_chinh = tep.resolve() == tep_mac_dinh(a.study, goc).resolve()
+            st = khoi_tao(a.study, out_dir, tep, a.model, loai)
+        la_ban_chinh = tep.resolve() == tep_mac_dinh(a.study, goc, loai).resolve()
         if la_ban_chinh:
-            st["hieu_luc"], st["hieu_luc_ly_do"] = hieu_luc_hieu_chuan(out_dir, st["model"])
+            st["hieu_luc"], st["hieu_luc_ly_do"] = hieu_luc_hieu_chuan(out_dir, st["model"], loai)
         if a.lenh == "uoc-tinh":
             u = uoc_tinh(st, van)
-            print(f"Hội đồng: {u['so_yeu_cau']} yêu cầu ({len(THANH_VIEN)} thành viên + chủ tịch), model {u['model']}, "
+            print(f"Hội đồng: {u['so_yeu_cau']} yêu cầu ({len(_ds_tv(st))} thành viên + chủ tịch), model {u['model']}, "
                   f"tài liệu ≈ {u['token_tai_lieu']:,} token. Chi phí điển hình ≈ {u['usd_dien_hinh']} USD "
                   f"(Batch −50%, cache tài liệu); trần ước tối đa {u['usd_toi_da']} USD. 0 gọi API.")
             return 0
@@ -1448,6 +2034,10 @@ def main(argv: Optional[Sequence[str]] = None, client: Any = None, goc: Path = R
                 _ghi_json(p_st, st)
             return ma
         if a.lenh == "vong-kin":
+            if not LOAI_TAI_LIEU[loai]["vong_kin"]:
+                print(f"⛔ Vòng kín chỉ cho đề cương; {LOAI_TAI_LIEU[loai]['ten']} chỉ được THẨM ĐỊNH (SAP đã khoá "
+                      "không được máy sửa — nhận xét là đề xuất sửa đổi cho chủ nhiệm/thống kê viên).", file=sys.stderr)
+                return 3
             if not la_ban_chinh or not st.get("hieu_luc"):
                 print(f"⛔ Vòng kín chỉ chạy trên đề cương chính khi hội đồng đã hiệu chuẩn đạt dưới "
                       f"{PHIEN_BAN_QUY_CHE}: "
