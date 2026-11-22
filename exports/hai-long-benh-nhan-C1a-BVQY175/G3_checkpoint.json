@@ -1,7 +1,7 @@
 {
   "gate": "G3",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "run_date": "2026-11-17",
+  "run_date": "2026-11-22",
   "gate_status": "DRAFT — CHỜ BÁC SĨ XÁC NHẬN",
   "design_code": "cross_sectional",
   "design_ambiguous": false,
@@ -365,8 +365,8 @@
     "dau_van_tay_hien_tai": "c57c765a4f74b34c",
     "artifact_manifest": {
       "A4_SAMPLE_SIZE": {
-        "path": "/Users/nguyenluan/.ebm-worktrees/c1a-g2-g3-g10-20261117/exports/hai-long-benh-nhan-C1a-BVQY175/G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md",
-        "sha256": "aac3bd1764152811f35d970803476b435371f0f3084c4d3ca70d9ba898bcf36a"
+        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/hai-long-benh-nhan-C1a-BVQY175/G3_A4_SAMPLE_SIZE_hai-long-benh-nhan-C1a-BVQY175.md",
+        "sha256": "4662288f100dfa026bac6b47441a4dd06371f73dbaaeed2f90a3726696bc2fcd"
       }
     },
     "sensitivity_table": {

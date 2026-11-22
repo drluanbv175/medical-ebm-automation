@@ -2441,7 +2441,8 @@ def sinh(out_dir: Path, study: str, ghi: bool = False, khuon: Optional[bool] = N
     if dung_khuon(study, khuon):
         import khuon_de_cuong_bvqy175 as KDC  # noqa: PLC0415
 
-        ket = KDC.chuyen(van)
+        # 22/11/2026: khối ký bìa phụ theo đơn vị của chủ nhiệm khai trong hồ sơ (Viện/Trung tâm/trực thuộc bệnh viện)
+        ket = KDC.chuyen(van, don_vi=KDC.don_vi_ho_so(n.meta))
         van, khuon_bao_cao = ket.md, ket.bao_cao + [f"⚠ {x}" for x in ket.canh_bao]
     kq: Dict[str, Any] = {"md": str(md_p), "so_dong": van.count("\n"), "trich_dan": len(n.td.thu_tu), "ghi": ghi}
     if khuon_bao_cao:

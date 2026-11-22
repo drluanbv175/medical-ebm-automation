@@ -219,8 +219,10 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 22/11/2026 (K18 PRISMA): 5 agent — PRISMA 2020 theo từng mục cho bản thảo tổng quan (viet-ban-thao, binh-duyet,
 # dieu-phoi-g7, tong-quan-y-van, meta-phan-tich; PR #409, cặp gốc #484 — đã gộp) — vẫn 64; 6 agent K18 khớp từng
 # byte origin/master của repo gốc.
+# 22/11/2026 (K19 + khối ký bìa phụ): 3 agent — dieu-phoi-g10, viet-ban-thao, tham-dinh-dau-ra học chốt K19 và luật
+# khối ký thứ ba theo đơn vị ngay trên Khoa (mã ở PR #419; cặp gốc EBM-drluanbv175#490) — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "8a64cfdf04ea06f1c4ea38c283f6777b08d2c5970264abb806dac344c253ad02"
+    "9420a326f12addbefd2dd270e9498512e6895e7b98e1e639c1cad60f4117ad55"
 )
 
 MINIMUM_AGENT_COUNT = 64
