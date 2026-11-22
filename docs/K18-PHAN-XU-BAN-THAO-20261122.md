@@ -147,28 +147,44 @@ Chép nguyên chữ quyết định đã chốt; trường vắng, còn [CẦN] 
   - 24b — cuối chương Kết quả: `concomitant_care_policy` (ghi rõ «theo quy định của đề cương»; chăm sóc thực nhận theo
     nhóm chưa có nguồn). Tiêu đề khối chỉ gọi tên phần có dòng — tiêu đề cố định từng làm 24b đạt giả (giả lập đầu–cuối).
   - ĐẠT GIẢ ở bản gốc (đọc dòng bằng chứng): 23a khớp ngày của biến `ngay_ngau_nhien` trong Bảng 1 (nhánh «G7 đọc sổ
-    sàng lọc» gỡ hàng này); 24b khớp «chăm sóc thường quy» là TÊN NHÓM CHỨNG trong chú thích hình — tiêu chí 24b vẫn
-    nhận cụm này (chưa sửa; người phân xử đọc dòng bằng chứng).
-  - THỨ TỰ DÂY CHUYỀN — việc nối tiếp: giả lập sinh G7 TRƯỚC khi PI khai phiếu G9 (`_khai_g9`) và đặc tả G10
-    (`_khai_dac_ta_g10`: `ppi_plan`, `concomitant_care_policy`); `data_sharing_statement` của G7 cũng ghi SAU lượt sinh.
-    Vì vậy bản thảo cuối của giả lập trọn vòng chưa in được 4, 8, 24b dù gói G10 có đủ dữ kiện. Chủ việc:
-    `gia_lap_tron_vong.py` (sau khi PR của nhánh «G7 đọc sổ sàng lọc» gộp) — PI khai các dữ kiện bản thảo cần TRƯỚC
-    bước sinh G7, hoặc sinh lại G7 sau khi khai.
+    sàng lọc» gỡ hàng này); 24b khớp «chăm sóc thường quy» là TÊN NHÓM CHỨNG — ĐÃ SỬA ở nhánh «khai trước G7» (dưới).
+  - THỨ TỰ DÂY CHUYỀN — ĐÃ SỬA (nhánh `claude/gia-lap-khai-truoc-g7-20261122`, sau #411 + #412). Trước: giả lập sinh G7
+    TRƯỚC khi PI khai đặc tả G10 (`_khai_dac_ta_g10`: `ppi_plan`, `concomitant_care_policy`), và
+    `gate_params.G7.data_sharing_statement` chỉ ghi SAU lượt sinh ⇒ bản thảo cuối thiếu 4, 8, 24b dù gói G10 có đủ.
+    Sửa: `TronVong._khai_truoc_ban_thao()` chạy ngay trước `run_g7_auto.py`, không đổi vai, không đổi khoá:
+    - tác giả G7 ghi khoá khai báo bộ sinh đọc (`run_g7_auto.KHOA_TAC_GIA_BAN_THAO`: `data_sharing_statement`,
+      `funding_declared`) vào `gate_params.G7`. Xác nhận đã đọc bản thảo (`manuscript_reviewed_confirmed`,
+      `dau_van_tay_chot`) vẫn ghi SAU lượt sinh;
+    - PI ghi khoá đặc tả bộ sinh đọc (`KHOA_DAC_TA_BAN_THAO`: `blinding_how`, `ppi_plan`, `concomitant_care_policy`,
+      `concomitant_care`) vào study_meta, chỉ khi còn trống. `_khai_dac_ta_g10` không khai lại, chỉ ghi «đã khai trước
+      bản thảo G7». Đặc tả khác của G10 (tiến độ, sai lệch…) vẫn khai ở G10;
+    - test đọc mã nguồn bộ sinh: mọi chỗ `_khai_pi_g7(meta, …)` / `g7.get(…)` phải có khoá trong hai hằng trên.
+    Phiếu G9 vẫn khai ở G9 — G7 không chờ phiếu, câu «Tính có sẵn dữ liệu» chép tuyên bố tác giả G7.
+  - Ba chỗ chỉ thấy khi đọc dòng bằng chứng của bản cuối sau khi sửa thứ tự:
+    - 24b mượn mã nhóm «`0` = Chăm sóc thường quy» (dòng `*Nhóm (mã trong dữ liệu khoá):*`). Tiêu chí 24b nay chỉ nhận
+      «chăm sóc thường quy» khi câu nói nhóm NHẬN nó («nhận|tiếp tục|duy trì|vẫn được|đều được|cùng được …»). Mã nhóm,
+      «nhóm chăm sóc thường quy: 118», «so với chăm sóc thường quy» không còn là bằng chứng;
+    - 24b lấy tiêu đề khối «**Thời gian nghiên cứu và chăm sóc đồng thời:**» (K18 lấy lần khớp ĐẦU TIÊN). Tiêu đề đổi
+      thành «… và chăm sóc theo đề cương», nên bằng chứng là dòng chép đặc tả;
+    - 4 vắt từ nhãn «**Tính có sẵn dữ liệu:**» sang dòng sau (`[^.]` gồm cả xuống dòng), và không nhận «dữ liệu cá
+      thể» (= individual participant data; bản tiếng Anh đã nhận). Yếu tố 1 nay không vắt dòng và nhận «cá thể».
   - Đo (3 kịch bản RCT, cấu hình CI `gia-lap-16.yml`, cả 3 khoá gói G10, `kiem_gia_lap_16` đạt): xem bảng dưới.
 
-| Mục | Bản cuối — bộ sinh gốc (8b1a96a9) | Bản cuối — ghép nhánh này + «G7 đọc sổ sàng lọc» | Sinh lại G7 sau G10 (PI đã khai), chế độ nộp |
-|---|---|---|---|
-| 3 | thiếu ×3 | thiếu ×3 — không có dữ kiện | thiếu ×3 — không có dữ kiện |
-| 4 | thiếu ×3 (mã thống kê/từ điển) | thiếu ×3 — tuyên bố khai sau G7 | thiếu ×3 chỉ «cách truy cập» — phiếu không khai |
-| 8 | thiếu ×3 | thiếu ×3 — `ppi_plan` khai sau G7 | đạt ×3 |
-| 10 | thiếu ×3 | thiếu ×3 — không có trường | thiếu ×3 — không có trường |
-| 20b | thiếu ×3 | thiếu ×3 — không có dữ kiện | thiếu ×3 — không có dữ kiện |
-| 21a | đạt ×2; thiếu giả ×1 (không kém hơn) | đạt ×3 | đạt ×3 |
-| 23a | đạt GIẢ ×3 (ngày trong Bảng 1) | đạt ×3 (dòng thời gian theo đề cương) | đạt ×3 |
-| 24b | đạt GIẢ ×2 (tên nhóm chứng); thiếu ×1 | đạt GIẢ ×2 («nhóm chăm sóc thường quy: 118»); thiếu ×1 — đặc tả khai sau G7 | đạt ×3 (dòng chăm sóc đồng thời) |
+| Mục | Bản cuối — bộ sinh gốc (8b1a96a9) | Bản cuối — ghép nhánh này + «G7 đọc sổ sàng lọc» | Sinh lại G7 sau G10 (PI đã khai), chế độ nộp | Bản cuối — khai trước G7 (#411 + #412 + nhánh khai trước) |
+|---|---|---|---|---|
+| 3 | thiếu ×3 | thiếu ×3 — không có dữ kiện | thiếu ×3 — không có dữ kiện | thiếu ×3 — không có dữ kiện |
+| 4 | thiếu ×3 (mã thống kê/từ điển) | thiếu ×3 — tuyên bố khai sau G7 | thiếu ×3 chỉ «cách truy cập» — phiếu không khai | thiếu ×3 chỉ «cách truy cập» (`access_mechanism` giả lập không khai); bằng chứng: dòng tuyên bố |
+| 8 | thiếu ×3 | thiếu ×3 — `ppi_plan` khai sau G7 | đạt ×3 | đạt ×3 — dòng chép `ppi_plan` |
+| 10 | thiếu ×3 | thiếu ×3 — không có trường | thiếu ×3 — không có trường | thiếu ×3 — không có trường |
+| 20b | thiếu ×3 | thiếu ×3 — không có dữ kiện | thiếu ×3 — không có dữ kiện | thiếu ×3 — không có dữ kiện |
+| 21a | đạt ×2; thiếu giả ×1 (không kém hơn) | đạt ×3 | đạt ×3 | đạt ×3 |
+| 23a | đạt GIẢ ×3 (ngày trong Bảng 1) | đạt ×3 (dòng thời gian theo đề cương) | đạt ×3 | đạt ×3 — dòng thời gian theo đề cương |
+| 24b | đạt GIẢ ×2 (tên nhóm chứng); thiếu ×1 | đạt GIẢ ×2 («nhóm chăm sóc thường quy: 118»); thiếu ×1 — đặc tả khai sau G7 | đạt ×3 (dòng chăm sóc đồng thời) | đạt ×3 — dòng «*Chăm sóc đồng thời theo quy định của đề cương:*» |
 
 Bản ghép: CONSORT 2025 đạt 35/42 (`rct_nhi_phan`, `rct_chan_thuc`), 34/42 (`rct_khong_kem`); 2 mục không áp dụng.
-Mọi mục còn thiếu là mục chưa có dữ kiện lúc sinh G7 — không còn mục nào có dữ kiện mà bộ sinh bỏ sót.
+Mọi mục còn thiếu là mục chưa có dữ kiện lúc sinh G7 — không còn mục nào có dữ kiện mà bộ sinh bỏ sót. Khai trước G7:
+36/42 cả ba. Còn thiếu 3, 4 («cách truy cập»), 10, 20b — đều là dữ kiện giả lập không khai hoặc chưa có trường ở cổng
+nào.
 
 - Định tính: COREQ 20, SRQR 7 mục ⚠. Hai chuẩn chưa đối chiếu bảng gốc ⇒ chỉ cảnh báo, không chặn.
 - Tổng quan: xem §3.4.

@@ -2626,6 +2626,14 @@ def _ha_dau(x: str) -> str:
 # [CẦN] hoặc «Không áp dụng» ⇒ không in (K18 báo thiếu đúng mục). Không câu mẫu, không ô [CẦN] mới (bước «PI điền ô»
 # của giả lập điền theo mẫu cố định — ô lạ làm vỡ CI).
 
+#: Khoá study_meta mà bộ sinh đọc qua `_khai_pi_g7` (đặc tả PI khai: cách làm mù 20b, sự tham gia của người
+#: bệnh/công chúng 8, chăm sóc đồng thời 24b) và khoá `gate_params.G7` đọc từ khai báo tác giả (chia sẻ dữ liệu 4, tài
+#: trợ của tổng quan). 22/11/2026: bộ giả lập trọn vòng cho vai khai các khoá này TRƯỚC lượt sinh G7
+#: (`gia_lap_tron_vong._khai_truoc_ban_thao`) — thêm chỗ đọc mới thì thêm khoá vào đây (test giữ đồng bộ).
+KHOA_DAC_TA_BAN_THAO = ("blinding_how", "ppi_plan", "concomitant_care_policy", "concomitant_care")
+KHOA_TAC_GIA_BAN_THAO = ("data_sharing_statement", "funding_declared")
+
+
 def _doc_meta_g7(out_dir: Path) -> dict:
     try:
         meta = json.loads((Path(out_dir) / "study_meta.json").read_text(encoding="utf-8"))
@@ -2778,9 +2786,11 @@ def khoi_consort_bo_sung_g7(out_dir: Path, study: str, design_code: str) -> dict
             kq.append(f"*Chăm sóc đồng thời theo quy định của đề cương:* {dong_thoi}.  ")
         # tiêu đề chỉ gọi tên phần CÓ dòng — giả lập đầu–cuối 22/11: tiêu đề cố định «… và chăm sóc đồng thời» làm
         # CONSORT 24b đạt giả khi chỉ có dòng thời gian (đặc tả chăm sóc đồng thời PI khai sau G7). Không đánh số:
-        # chương Kết quả đã có «§6 Hình kết quả» khi G6 tự sinh hình
+        # chương Kết quả đã có «§6 Hình kết quả» khi G6 tự sinh hình. Tên phần không lặp cụm «chăm sóc đồng thời» của
+        # dòng nội dung (giả lập trọn vòng sau khi PI khai trước G7, 22/11): K18 lấy lần khớp ĐẦU TIÊN ⇒ dòng tiêu đề
+        # thành bằng chứng 24b thay cho dòng chép đặc tả
         ten = " và ".join(x for x in ("Thời gian nghiên cứu" if thoi_gian else "",
-                                       "chăm sóc đồng thời" if dong_thoi else "") if x)
+                                       "chăm sóc theo đề cương" if dong_thoi else "") if x)
         if kq:
             kq = ["", f"**{ten[:1].upper() + ten[1:]}:**  ", *kq, ""]
     return {"phuong_phap": pp, "khai_bao": kb, "chia_se": _chia_se_du_lieu_g7(out_dir), "ket_qua": kq}
