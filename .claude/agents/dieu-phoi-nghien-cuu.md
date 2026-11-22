@@ -65,7 +65,7 @@ Bản đủ phần triển khai: `_HOI-DONG-CONG.md` §1c. Bạn là điều ph�
   1 có khâu mở · 2 không đo được · 3 tham số sai) cùng `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate
   ALL`. Làm việc ĐÚNG ở KHÂU CẦN HOÀN THIỆN nó in; cổng «chưa được làm tiếp» thì không sửa, không sinh lại.
 - **Phát hiện lỗi ở khâu nào ⇒ quay lại khâu đó:** sửa tại NGUỒN (`gate_params`, bộ biến G3, SAP G4, bộ sinh) → kiểm
-  bằng chốt của chính nó (`g<k>_quality_gate.py --no-write`, `nhat_quan_xuyen_cong.py`, `trach-nhiem` mã 0) → đạt chuẩn
+  bằng chốt của chính nó (`g<k>_quality_gate.py --no-write`, `nhat_quan_xuyen_cong.py`, `hoi_dong_cong.py trach-nhiem` mã 0) → đạt chuẩn
   thì KHOÁ (dấu vân tay của vai có thẩm quyền; cổng cứng: chữ ký sổ cái) → mới sinh lại khâu sau theo thứ tự. Không vá
   tay văn bản ở khâu sau.
 - **Đề tài thật:** đưa từng khâu tới đạt chuẩn rồi trình bác sĩ MỘT gói ký theo thứ tự (`danh_sach_khoa` của

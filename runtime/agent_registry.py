@@ -225,7 +225,7 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # khâu rồi khoá · giao sản phẩm · không sổ nợ (cặp THAY_THE mới của enforce_agent_guardrails.py ở repo gốc);
 # dieu-phoi-nghien-cuu thêm mục 🔒 dùng tools/buoc_dang_mo.py; _HOI-DONG-CONG.md §1c — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "00494ca3f127e43a3ab654322e579ecf4caf883fe679123b4e7e6f06348e1634"
+    "ed19ef9b201b7ce62bf60d4c0a743ee2a0ed37a3f0e768f0d996886811a04c3a"
 )
 
 MINIMUM_AGENT_COUNT = 64
