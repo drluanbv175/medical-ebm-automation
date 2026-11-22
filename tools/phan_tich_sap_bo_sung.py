@@ -311,8 +311,10 @@ def cot_can(loai: str, ch: Dict[str, Any]) -> List[str]:
             ra.append(ch[k])
     for k in KHOA_DS_TEN:
         ra += list(ch.get(k) or [])
-    if loai == "phan_bo_diem":
+    if isinstance(ch.get("bien"), list):  # phan_bo_diem · vif · ty_le_theo_muc: danh sách cột
         ra += list(ch["bien"])
+    for b in (ch.get("quy_tac_epv") or {}).get("buoc") or []:  # biến thay thế của quy tắc EPV (vd bản gộp mức)
+        ra += list((b.get("thay") or {}).values())
     for kh in ch.get("khau") or []:
         for k in ("su_kien", "mau_so"):
             ra += BPS.cot_cua_cay(BPS.phan_tich(kh[k]))

@@ -69,6 +69,16 @@ def test_cau_hinh_sai_bi_bat(loai, ch, mau):
     assert any(mau in x for x in P.kiem_cau_hinh(loai, ch)), P.kiem_cau_hinh(loai, ch)
 
 
+def test_cot_can_gom_danh_sach_bien_va_bien_thay_the_epv():
+    """Mô phỏng trọn lượt 22/11/2026 bắt: vif/ty_le_theo_muc khai `bien` dạng danh sách và quy tắc EPV thay bằng biến
+    gộp mức — các cột đó phải vào danh sách cần tính phái sinh, không thì KeyError trên dữ liệu khoá."""
+    assert {"a", "b"} <= set(P.cot_can("vif", {"bien": ["a", "b"]}))
+    assert {"x", "y"} <= set(P.cot_can("ty_le_theo_muc", {"bien": ["x"], "ket_cuc": "y"}))
+    c = P.cot_can("poisson_chia_nhom", {"outcome": "o", "group": "g", "covariates": ["dt"], "chia_nhom": ["g"],
+                                        "quy_tac_epv": {"nguong": 10, "buoc": [{"thay": {"dt": "dt2"}}]}})
+    assert "dt2" in c
+
+
 # ───────────────────────── tính toán thuần ─────────────────────────
 def test_bang_cheo_mot_va_hai_chieu_giu_o_thieu():
     df = pd.DataFrame({"g": [1, 1, 2, None, 3, 2], "a": [1, None, 2, 1, 1, 2]})
