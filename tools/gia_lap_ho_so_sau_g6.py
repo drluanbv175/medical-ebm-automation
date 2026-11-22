@@ -442,6 +442,9 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
             reference_threshold_rationale=("Ngưỡng 10 kPa của đo đàn hồi gan được dùng vì tương ứng xơ hoá tiến triển "
                                            "F3–F4, bệnh đích đã chốt ở đề cương"),
             disease_severity_variable="lsm_kpa",
+            # 22/11/2026 (STARD 2015 mục 21b): biến ghi chẩn đoán ở người không có bệnh đích (phiếu thu thập, nhánh
+            # «xơ hoá tiến triển = Không») — G6 mô tả ở Bảng 1 theo chuẩn tham chiếu, bộ sinh G7 chép từ đó
+            alternative_diagnosis_variable="chan_doan_khac",
         ),
     )
 

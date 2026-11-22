@@ -453,12 +453,18 @@ def sinh_du_lieu(thiet_ke: str, bien_so: Mapping[str, Any], g3: Mapping[str, Any
     kc = next((d[3] for d in ma_tran if d[2] == "ket_cuc_chinh"), None)
     pn = next((d[3] for d in ma_tran if d[2] == "phoi_nhiem"), None)
     rows: List[Dict[str, Any]] = []
+    co_dang_ky = any(b[0] == "ma_dang_ky" for b in bien_so["bo_bien"])
     if thiet_ke == "sr_ma":
         for i in range(max(8, min(int(n or 12), 15))):
             n1 = rng.randint(800, 5000)
             n0 = n1 + rng.randint(-50, 50)
             p0 = rng.uniform(0.02, 0.05)
-            rows.append({"study_id": f"TN{i + 1:02d}-{2016 + i % 9}", "thuoc_sglt2": rng.randint(1, 4),
+            rows.append({"study_id": f"TN{i + 1:02d}-{2016 + i % 9}",
+                         # 22/11/2026 (PRISMA 2020 mục 17): thử nghiệm MÔ PHỎNG ⇒ mã đăng ký HƯ CẤU trong dải chưa cấp
+                         # (NCT9999xxxx — cùng quy ước mã đăng ký hư cấu của các kịch bản: NCT99999993, CRD42099999999);
+                         # sinh tất định theo thứ tự, không rút số ngẫu nhiên ⇒ không đổi số liệu mô phỏng sẵn có
+                         **({"ma_dang_ky": ma_dang_ky_hu_cau(i)} if co_dang_ky else {}),
+                         "thuoc_sglt2": rng.randint(1, 4),
                          "n_can_thiep": n1, "bien_co_can_thiep": int(round(n1 * p0 * rng.uniform(0.6, 0.85))),
                          "n_chung": n0, "bien_co_chung": int(round(n0 * p0)),
                          "theo_doi_thang": round(rng.uniform(18, 50), 1), "rob2_tong": rng.choice((1, 1, 2))})
@@ -468,7 +474,7 @@ def sinh_du_lieu(thiet_ke: str, bien_so: Mapping[str, Any], g3: Mapping[str, Any
     for i in range(int(n)):
         r: Dict[str, Any] = {}
         for ten, kieu, nhan, lua, val, lo_kb, hi_kb in bien_so["bo_bien"]:
-            if ten in BIEN_TON_HAI_MO_PHONG:
+            if ten in BIEN_TON_HAI_MO_PHONG or ten in BIEN_CHAN_DOAN_KHAC:
                 continue  # sinh SAU vòng này bằng bộ số ngẫu nhiên riêng — không xê dịch số của các biến sẵn có
             if ten in ("record_id", "ma_nguoi_tham_gia", "study_id"):
                 r[ten] = f"R{i + 1:04d}"
@@ -535,6 +541,7 @@ def sinh_du_lieu(thiet_ke: str, bien_so: Mapping[str, Any], g3: Mapping[str, Any
         _ = vai
         rows.append(r)
     _sinh_ton_hai(rows, bien_so, thiet_ke, pn, seed)
+    _sinh_chan_doan_khac(rows, bien_so, thiet_ke, kc, seed)
     if bien_the:
         _ap_bien_the(rows, bien_the, kc, pn, g3, rng)
     return rows
@@ -562,6 +569,34 @@ def _sinh_ton_hai(rows: List[Dict[str, Any]], bien_so: Mapping[str, Any], thiet_
         r["bien_co_bat_loi"] = _bern(rng, p1 if nhom else p0)
         if "bien_co_nghiem_trong" in ten:
             r["bien_co_nghiem_trong"] = _bern(rng, q1 if nhom else q0) if r["bien_co_bat_loi"] else 0
+
+
+def ma_dang_ky_hu_cau(i: int) -> str:
+    """Mã đăng ký HƯ CẤU của thử nghiệm mô phỏng thứ `i` (từ 0): «NCT9999» + 4 chữ số — dải NCT chưa được cấp (mã thật
+    hiện ở NCT0xxxxxxx), cùng quy ước hư cấu với mã đăng ký của chính các đề tài giả lập (NCT99999993)."""
+    return f"NCT9999{i + 1:04d}"
+
+
+#: 22/11/2026 (STARD 2015 mục 21b): biến «chẩn đoán khác» của kịch bản chẩn đoán — chỉ có giá trị ở người KHÔNG có bệnh
+#: đích (logic nhánh của phiếu); mã theo độ đàn hồi gan đã mô phỏng — giả định của bộ mô phỏng, không phải ngưỡng lâm
+#: sàng: < 8 kPa ⇒ 1 (không có hoặc xơ hoá nhẹ), ≥ 8 kPa ⇒ 2 (xơ hoá đáng kể chưa tiến triển); 6% ⇒ 3 (bệnh gan khác).
+BIEN_CHAN_DOAN_KHAC = frozenset({"chan_doan_khac"})
+
+
+def _sinh_chan_doan_khac(rows: List[Dict[str, Any]], bien_so: Mapping[str, Any], thiet_ke: str, kc: Optional[str],
+                         seed: int) -> None:
+    """Điền «chẩn đoán khác» bằng bộ số ngẫu nhiên RIÊNG (seed + 21): thêm biến không đổi giá trị nào khác của dữ liệu
+    mô phỏng sẵn có. Người có bệnh đích ⇒ trống (nhánh ẩn) — không bao giờ là một mã."""
+    ten = {b[0] for b in bien_so.get("bo_bien") or ()}
+    if thiet_ke != "diagnostic" or not kc or not (ten & BIEN_CHAN_DOAN_KHAC):
+        return
+    rng = random.Random(seed + 21)
+    for r in rows:
+        if str(r.get(kc)) in ("1", "1.0"):
+            r["chan_doan_khac"] = None
+            continue
+        lsm = float(r.get("lsm_kpa") or 0)
+        r["chan_doan_khac"] = 3 if rng.random() < 0.06 else (1 if lsm < 8.0 else 2)
 
 
 def ten_khoa_ban_ghi(hang: Sequence[Mapping[str, Any]]) -> str:
@@ -1241,20 +1276,47 @@ class TronVong:
                 if not all(d.get(c) for _m, c in cot_so):
                     continue
                 nam = d.get("nam_cong_bo") or (re.search(r"(?:19|20)\d{2}", d.get("study_id", "")) or [""])[0]
+                # 22/11/2026 (PRISMA 2020 mục 17): người trích ghi trích dẫn báo cáo nguồn của từng nghiên cứu — bản
+                # ghi đăng ký thử nghiệm (mã + năm); thiếu mã đăng ký thì KHÔNG có cột trích dẫn (bộ sinh G7 để ô [CẦN])
+                dk = d.get("ma_dang_ky", "")
                 ra.append({"study": d.get("study_id", ""), "year": nam,
                            **{moi: str(int(float(d[c]))) for moi, c in cot_so},
-                           **{c: d.get(c, "") for c in them if c in d}})
+                           **{c: d.get(c, "") for c in them if c in d},
+                           **({"trich_dan": f"{dk}, {nam}" if nam else dk} if dk else {})})
         dich = self.out / TEP_TRICH_XUAT_SR
         dich.parent.mkdir(parents=True, exist_ok=True)
+        cot_tc = ["trich_dan"] if ra and all("trich_dan" in r for r in ra) else []
         with dich.open("w", encoding="utf-8", newline="") as fh:
             w = csv.DictWriter(fh, fieldnames=["study", "year", *(m for m, _c in cot_so),
-                                               *(c for c in them if ra and c in ra[0])], lineterminator="\n")
+                                               *(c for c in them if ra and c in ra[0]), *cot_tc],
+                               lineterminator="\n", extrasaction="ignore")
             w.writeheader()
             w.writerows(ra)
+        TronVong._bao_cao_loai_toan_van_sr(self)  # gọi qua lớp: phép thử dựng `self` tối giản (out, buoc)
         self.buoc.append({"buoc": "G5-T2 bảng trích xuất cấp nghiên cứu (trích xuất y văn)", "lenh": TEP_TRICH_XUAT_SR,
                           "ma": 0, "crash": False,
                           "cuoi": [f"{len(ra)} nghiên cứu được đưa vào · sha256 "
                                    f"{hashlib.sha256(dich.read_bytes()).hexdigest()[:12]}"]})
+
+    def _bao_cao_loai_toan_van_sr(self) -> None:
+        """Tổng quan hệ thống (nhóm sàng lọc, PRISMA 2020 mục 16b): danh sách báo cáo đọc toàn văn có vẻ đạt tiêu chí
+        nhưng bị loại — trích dẫn (PMID đã tra) + lý do theo đúng một nhóm lý do của sổ sàng lọc — ghi
+        `run_g7_auto.TEP_LOAI_TOAN_VAN_TQ` mà bộ sinh G7 đọc. Nguồn: hồ sơ đề tài `sang_loc_toan_van_loai` (thử nghiệm
+        THẬT, lý do loại kiểm được từ tóm tắt bài gốc). Hồ sơ không khai ⇒ không ghi (G7 để ô [CẦN])."""
+        import run_g7_auto as G7A  # noqa: PLC0415
+
+        ds = ((getattr(self, "kb", None) or {}).get("ho_so_tron_vong") or {}).get("sang_loc_toan_van_loai") or []
+        if not ds:
+            return
+        dich = self.out / G7A.TEP_LOAI_TOAN_VAN_TQ
+        dich.parent.mkdir(parents=True, exist_ok=True)
+        with dich.open("w", encoding="utf-8", newline="") as fh:
+            w = csv.DictWriter(fh, fieldnames=["bao_cao", "trich_dan", "nhom_ly_do", "ly_do"], lineterminator="\n")
+            w.writeheader()
+            w.writerows(dict(x) for x in ds)
+        self.buoc.append({"buoc": "Nhóm sàng lọc lập danh sách báo cáo toàn văn bị loại (PRISMA 2020 mục 16b)",
+                          "lenh": G7A.TEP_LOAI_TOAN_VAN_TQ, "ma": 0, "crash": False,
+                          "cuoi": [f"{len(ds)} báo cáo bị loại kèm trích dẫn và lý do"]})
 
     def _ban_go_bang(self, hang: Sequence[Mapping[str, Any]]) -> None:
         """Đề tài ĐỊNH TÍNH: quản lý dữ liệu nộp bản gỡ băng ĐÃ KHỬ ĐỊNH DANH (mỗi người tham gia một tệp .txt, chỉ
@@ -2070,8 +2132,76 @@ class TronVong:
             if dt.get(k) and not meta.get(k):
                 meta[k] = dt[k]
                 ghi[k] = "PI (đặc tả đề cương)"
+        # 22/11/2026 (PRISMA 2020 mục 22): nhóm tác giả tổng quan xếp mức chắc chắn GRADE cho kết cục chính SAU khi có
+        # kết quả G6 — đúng thứ tự của đề tài thật; chỉ khai khi còn trống
+        if self.thiet_ke == "sr_ma" and not (g7.get("grade_certainty") and g7.get("grade_rationale")):
+            xep = self._xep_grade_tac_gia()
+            if xep:
+                g7["grade_certainty"], g7["grade_rationale"] = xep
+                ghi["gate_params.G7.grade_certainty"] = ghi["gate_params.G7.grade_rationale"] = "nhóm tác giả (GRADE)"
         self._ghi_meta(meta)
         self.du_lieu["khai_truoc_ban_thao"] = ghi
+
+    #: 22/11/2026 — luật nhóm tác giả giả lập dùng khi xếp GRADE cho kết cục chính của tổng quan RCT (bắt đầu ở mức cao,
+    #: hạ một bậc cho mỗi lĩnh vực có lo ngại nghiêm trọng): nguy cơ sai lệch — trên một nửa trọng số gộp đến từ thử
+    #: nghiệm RoB 2 «có lo ngại»/«cao», hoặc ≥ 25% trọng số từ thử nghiệm «cao»; không nhất quán — I² ≥ 50%; gián
+    #: tiếp — không hạ (mọi thử nghiệm đưa vào đạt đủ tiêu chí PICO đã khoá); thiếu chính xác — KTC 95% của RR gộp chứa
+    #: 1 hoặc tổng số người dưới cỡ thông tin cần thiết đã chốt ở G3; sai lệch công bố — kiểm định Egger (k ≥ 10)
+    #: p < 0,10.
+    MUC_GRADE_THU_TU = ("cao", "trung bình", "thấp", "rất thấp")
+
+    def _xep_grade_tac_gia(self) -> Optional[Tuple[str, str]]:
+        """(mức, lý do theo năm lĩnh vực) — nhóm tác giả áp luật ở trên lên kết quả G6 đã có (tóm tắt G6, bảng trích
+        xuất, cỡ thông tin G3). Chưa có kết quả gộp ⇒ None (không khai, bộ sinh G7 để ô chờ)."""
+        dt = (_doc_json(self.out / "G6_analysis_summary.json").get("dac_thu") or {})
+        tung, tong = dt.get("tung_nghien_cuu") or [], dt.get("tong") or {}
+        ci = dt.get("ci_95") or []
+        if not (tung and tong and len(ci) == 2 and dt.get("i2_pct") is not None):
+            return None
+        rob: Dict[str, str] = {r.get("study", ""): str(r.get("rob2_tong") or "").strip()
+                               for r in _doc_csv(self.out / TEP_TRICH_XUAT_SR)}
+        w = {str(t.get("nghien_cuu")): float(t.get("trong_so_ngau_nhien_pct") or 0) for t in tung}
+        tong_w = sum(w.values()) or 1.0
+        lo_ngai = sum(v for k, v in w.items() if rob.get(k) in ("2", "3")) / tong_w
+        cao = sum(v for k, v in w.items() if rob.get(k) == "3") / tong_w
+        ris = self._cp("G3").get("confirmed_n")
+        nguoi = float(tong.get("nguoi") or 0)
+        eg = dt.get("egger") or {}
+        ha: List[str] = []
+        ly: List[str] = []
+        if lo_ngai > 0.5 or cao >= 0.25:
+            ha.append("nguy cơ sai lệch")
+            ly.append("nguy cơ sai lệch: hạ một bậc — trên một nửa trọng số gộp (hoặc từ một phần tư trở lên với mức "
+                      "cao) đến từ thử nghiệm RoB 2 có lo ngại hoặc nguy cơ cao")
+        else:
+            ly.append("nguy cơ sai lệch: không hạ bậc — phần lớn trọng số gộp đến từ thử nghiệm RoB 2 nguy cơ thấp, "
+                      "không thử nghiệm nào nguy cơ cao chi phối kết quả")
+        if float(dt["i2_pct"]) >= 50:
+            ha.append("không nhất quán")
+            ly.append("không nhất quán: hạ một bậc — không đồng nhất giữa các thử nghiệm đáng kể (I² từ 50% trở lên)")
+        else:
+            ly.append("không nhất quán: không hạ bậc — không đồng nhất giữa các thử nghiệm thấp (I² dưới 50%)")
+        ly.append("gián tiếp: không hạ bậc — quần thể, can thiệp, so sánh và kết cục của mọi thử nghiệm đưa vào khớp "
+                  "câu hỏi nghiên cứu đã khoá")
+        chua_1 = float(ci[0]) <= 1.0 <= float(ci[1])
+        du_ris = isinstance(ris, (int, float)) and ris > 0 and nguoi >= float(ris)
+        if chua_1 or not du_ris:
+            ha.append("thiếu chính xác")
+            ly.append("thiếu chính xác: hạ một bậc — " + ("khoảng tin cậy 95% của RR gộp chứa 1" if chua_1 else
+                                                         "tổng số người chưa đạt cỡ thông tin cần thiết đã chốt"))
+        else:
+            ly.append("thiếu chính xác: không hạ bậc — khoảng tin cậy 95% của RR gộp không chứa 1 và tổng số người "
+                      "vượt cỡ thông tin cần thiết đã chốt")
+        if eg.get("da_chay") and eg.get("p") is not None and float(eg["p"]) < 0.10:
+            ha.append("sai lệch công bố")
+            ly.append("sai lệch công bố: hạ một bậc — kiểm định Egger gợi ý bất đối xứng biểu đồ phễu")
+        elif eg.get("da_chay"):
+            ly.append("sai lệch công bố: không hạ bậc — kiểm định Egger không gợi ý bất đối xứng biểu đồ phễu")
+        else:
+            ly.append("sai lệch công bố: không hạ bậc — chưa đủ 10 thử nghiệm để kiểm định Egger; tìm kiếm gồm cả sổ "
+                      "đăng ký thử nghiệm")
+        muc = self.MUC_GRADE_THU_TU[min(len(ha), 3)]
+        return muc, "bằng chứng từ thử nghiệm ngẫu nhiên, khởi điểm ở mức cao; " + "; ".join(ly)
 
     def g7(self) -> None:
         hs = self.kb.get("ho_so_tron_vong") or {}
@@ -2105,7 +2235,10 @@ class TronVong:
 
         meta = self._meta()
         meta["results_final"] = True  # PI xác nhận số trong bản thảo là số cuối của G6 (đề tài tổng hợp)
+        g7_cu = (meta.get("gate_params") or {}).get("G7") or {}
         meta.setdefault("gate_params", {})["G7"] = {
+            # 22/11/2026: lời khai GRADE nhóm tác giả xếp trước lượt sinh (không có trong hồ sơ tĩnh) phải còn nguyên
+            **{k: g7_cu[k] for k in ("grade_certainty", "grade_rationale") if g7_cu.get(k)},
             **{k: v for k, v in tg.items()}, "target_journal": tap_chi,
             "title": tg.get("title") or meta.get("title") or meta.get("topic"),
             "manuscript_reviewed_confirmed": True, "reviewed_by_role": "PI", "reviewed_at": GL._bay_gio(),
