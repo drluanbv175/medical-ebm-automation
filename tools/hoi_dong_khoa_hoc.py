@@ -491,6 +491,7 @@ def ke_hoach(model: str = MODEL_MAC_DINH) -> Dict[str, Any]:
                     "trong_tai_mac_dinh": f"agent {TRONG_TAI_AGENT} (API Fable chỉ khi chọn --trong-tai api)",
                     "hieu_chuan": "chế độ kết hợp chỉ có hiệu lực khi hiệu chuẩn cũng chạy chế độ kết hợp"},
         "rao_khoa": {"luon_khoa": _KHOA_LUON.pattern, "khoa_khi_sap_da_khoa": _KHOA_KHI_SAP.pattern,
+                     "sap_da_chot": "chấm sống G4 mức PASS hoặc READY",
                      "mo_khoa": _MO_KHOA.pattern, "dong_khoa": _DONG_KHOA.pattern,
                      "luat": "thay thế chạm vùng khoá ⇒ loại, yêu cầu thành «vượt thẩm quyền — cần dữ kiện»; bản đã "
                              "qua hội đồng mà chốt cuối nêu lỗi vượt thẩm quyền ⇒ hoàn nguyên đúng các khối chạm vùng "
@@ -650,7 +651,7 @@ def van_ban_quy_che(model: str = MODEL_MAC_DINH) -> str:
     d_40 += [f"- {a}: {b}" for a, b in k["ket_hop"].items()]
     d_40 += ["", "## 0d. Rào nội dung đã khoá", "", f"- {k['rao_khoa']['luat']}.",
              f"- Luôn khoá (đề mục): `{k['rao_khoa']['luon_khoa']}`",
-             f"- Khoá khi SAP đã khoá (G4 đạt): `{k['rao_khoa']['khoa_khi_sap_da_khoa']}`",
+             f"- Khoá khi SAP đã chốt (G4 đạt hoặc sẵn sàng ký): `{k['rao_khoa']['khoa_khi_sap_da_khoa']}`",
              f"- Không khoá khi đề mục gần nhất là: `{k['rao_khoa']['mo_khoa']}`",
              f"- Dòng khai báo bị khoá: `{k['rao_khoa']['dong_khoa']}`"]
     d[6:6] = d_40
@@ -1360,10 +1361,12 @@ def vung_khoa(van: str, sap_khoa: bool = False) -> List[bool]:
 
 
 def sap_da_khoa(ho_so: Dict[str, Any]) -> bool:
-    """SAP đã khoá ⇔ chấm sống G4 đạt (bằng chứng công cụ của hệ trong hồ sơ)."""
+    """SAP đã chốt ⇔ chấm sống G4 ĐẠT hoặc SẴN SÀNG KÝ (đo thật 22/11/2026: worktree/đề tài chưa ký vẫn có SAP đã chốt —
+    BTM G4 READY nhưng máy từng thêm phân tích ĐN10 trái SAP). Hai mức đều ⇒ sửa phân tích là việc của PI/thống kê
+    viên, không phải máy."""
     g4 = ((ho_so.get("bang_chung_he") or {}).get("cong_song") or {})
     g4 = g4.get("G4") if isinstance(g4, dict) else None
-    return bool(g4 and g4.get("muc") == "PASS")
+    return bool(g4 and g4.get("muc") in ("PASS", "READY"))
 
 
 def kiem_thay(th: Dict[str, Any], van: str, khoa: Optional[Sequence[bool]] = None) -> Optional[str]:

@@ -1,6 +1,6 @@
 # Quy chế Hội đồng Khoa học máy cấp đề tài — QC-HDKH-4.0
 
-- Khoá ngày: 2026-11-22 · SHA-256 quy chế: `8587e662d389e9a0650928a45527f8f042f0e6cd68f760c80b46ebc93a8a26e7`
+- Khoá ngày: 2026-11-22 · SHA-256 quy chế: `2d9b45215b23f2a9154120c694d1ded088cdfb724e379a7cfb71705032d1f4b3`
 - Mục đích: Chấm tài liệu nghiên cứu (đề cương, SAP, bản thảo, báo cáo nghiệm thu) theo thể thức Hội đồng Khoa học, tư vấn — không thay hội đồng thật.
 - Công cụ: `tools/hoi_dong_khoa_hoc.py` (văn bản này sinh bằng lệnh `ke-hoach --ghi`).
 
@@ -33,7 +33,7 @@
 
 - thay thế chạm vùng khoá ⇒ loại, yêu cầu thành «vượt thẩm quyền — cần dữ kiện»; bản đã qua hội đồng mà chốt cuối nêu lỗi vượt thẩm quyền ⇒ hoàn nguyên đúng các khối chạm vùng khoá/dòng bị nêu về bản gốc, giữ các khối khác.
 - Luôn khoá (đề mục): `(?i)kế hoạch phân tích thống kê|\bSAP\b|bảng biến|mã hoá|mã hóa|biến phái sinh|phiếu thu thập|kinh phí|dự trù|danh sách (?:các )?cán bộ|nhân lực|đăng ký nghiên cứu|xung đột lợi ích`
-- Khoá khi SAP đã khoá (G4 đạt): `(?i)xử lý (?:và phân tích )?số liệu|phân tích (?:số liệu|thống kê|dữ liệu)|cỡ mẫu|dự kiến kết quả|khung bảng|biến số|chỉ số nghiên cứu|biến dự báo|kết cục`
+- Khoá khi SAP đã chốt (G4 đạt hoặc sẵn sàng ký): `(?i)xử lý (?:và phân tích )?số liệu|phân tích (?:số liệu|thống kê|dữ liệu)|cỡ mẫu|dự kiến kết quả|khung bảng|biến số|chỉ số nghiên cứu|biến dự báo|kết cục`
 - Không khoá khi đề mục gần nhất là: `(?i)bàn luận|hạn chế|tổng quan|đặt vấn đề|mục tiêu|tính cấp thiết`
 - Dòng khai báo bị khoá: `(?i)^\s*(?:[-*+]\s*)?\**\s*(?:đăng ký nghiên cứu|xung đột lợi ích|nguồn kinh phí|kinh phí|tài trợ)\s*\**\s*:`
 ## 1. Thành phần (chấm độc lập)

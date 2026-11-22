@@ -1122,4 +1122,5 @@ def test_agent_sai_theo_cong_cu_phai_co_lenh_va_ket_qua():
 def test_sap_da_khoa_doc_tu_bang_chung_he():
     assert H.sap_da_khoa({"bang_chung_he": {"cong_song": {"G4": {"muc": "PASS"}}}})
     assert not H.sap_da_khoa({"bang_chung_he": {"cong_song": {"G4": {"muc": "BLOCKED"}}}})
+    assert H.sap_da_khoa({"bang_chung_he": {"cong_song": {"G4": {"muc": "READY"}}}})   # SAP đã chốt, chờ ký
     assert not H.sap_da_khoa({"bang_chung_he": {"ghi_chu": "không có checkpoint"}})
