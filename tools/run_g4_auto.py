@@ -362,6 +362,9 @@ KINH_TE_O = (
     ("wtp", "Ngưỡng sẵn lòng chi trả (WTP)", "số tiền cho một đơn vị hiệu quả"),
     ("wtp_source", "Nguồn/biện minh ngưỡng WTP", "nguồn PMID/DOI hoặc quyết định của chủ nhiệm — không tự đặt"),
     ("patient_involvement", "Sự tham gia của người bệnh/bên liên quan (CHEERS 2022 mục 21)", "có/không và cách nào"),
+    # 22/11/2026 (CHEERS 2022 mục 19 — phân bố tác động giữa các cá nhân/nhóm, công bằng)
+    ("distributional_effects", "Tác động phân bố (công bằng)",
+     "có phân tích tác động theo nhóm người bệnh (thu nhập, vùng, giới) không và cách nào; không phân tích ⇒ ghi lý do"),
 )
 
 
@@ -560,9 +563,16 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             f"- **Hiệu chỉnh cụm:** phân tích chính phải tính cấu trúc cụm (DE = {_so(design_effect)}, ICC = {_so(icc)}, "
             f"m = {_so(cluster_size)}) — [CẦN THỐNG KÊ VIÊN chọn phương pháp, vd mô hình hiệu ứng hỗn hợp hoặc GEE]  ")
     if hypothesis_type in ("non_inferiority", "equivalence"):
+        # 22/11/2026 (CONSORT mở rộng NI mục 12a — khoảng tin cậy một phía hay hai phía): G3 tính cỡ mẫu với α MỘT
+        # phía ⇒ kết luận dựa trên khoảng tin cậy HAI phía mức (1 − 2α), đúng tương đương kiểm định một phía mức α
+        try:
+            muc_ktc = f"khoảng tin cậy hai phía {_phan_tram(1 - 2 * float(alpha))} (tương ứng kiểm định một phía " \
+                      f"α = {_so(alpha)})"
+        except (TypeError, ValueError):
+            muc_ktc = "khoảng tin cậy [CẦN từ G3 — α]"
         dong_muc4.append(
-            f"- **Kết luận {'không kém hơn' if hypothesis_type == 'non_inferiority' else 'tương đương'}:** so cận khoảng "
-            f"tin cậy với biên Δ = {_so(margin)} theo chiều kết cục {g3.get('outcome_direction') or '[CẦN từ G3]'} "
+            f"- **Kết luận {'không kém hơn' if hypothesis_type == 'non_inferiority' else 'tương đương'}:** so cận "
+            f"{muc_ktc} với biên Δ = {_so(margin)} theo chiều kết cục {g3.get('outcome_direction') or '[CẦN từ G3]'} "
             "— không dựa vào p-value của kiểm định vượt trội  ")
     if design_code == "qualitative":
         dong_muc4.append("- **Trình bày:** chủ đề, chủ đề con và trích dẫn minh hoạ ẩn danh (COREQ/SRQR)  ")
@@ -623,6 +633,12 @@ def generate(study, topic, design_code, design_primary, reporting_std,
             "- **Không đồng nhất:** I², τ², kiểm định Q và khoảng dự báo 95%  ",
             "- **Sai lệch công bố / hiệu ứng nghiên cứu nhỏ:** biểu đồ phễu + kiểm định Egger khi ≥ 10 nghiên cứu  ",
             "- **Mức chắc chắn:** GRADE cho từng kết cục (bảng tóm tắt phát hiện)  ",
+            # 22/11/2026 (PRISMA-P 2015 mục 15a, 15d): tiêu chí quyết định gộp định lượng và cách tổng hợp khi không
+            # gộp được là quyết định của thống kê viên — khoá cùng kế hoạch tổng hợp, không để máy đặt sẵn
+            "- **Điều kiện gộp định lượng:** [CẦN THỐNG KÊ VIÊN — chỉ gộp khi nào: số nghiên cứu tối thiểu, mức tương "
+            "đồng lâm sàng và phương pháp]  ",
+            "- **Tổng hợp khi không gộp được:** [CẦN THỐNG KÊ VIÊN — tổng hợp mô tả theo SWiM: nhóm nghiên cứu, thước đo "
+            "chuẩn hoá, cách trình bày]  ",
             "",
             "### §6 DỮ LIỆU THIẾU CẤP NGHIÊN CỨU (thay Dữ liệu thiếu cá thể — không gán đa trị)",
             "",
@@ -985,7 +1001,7 @@ def generate(study, topic, design_code, design_primary, reporting_std,
         "---",
         "*Cần bác sĩ kiểm chứng. SAP này chỉ có hiệu lực pháp lý sau khi được ký.*",
     ]
-    return _dong_bo_chung_chi(_dien_khung("\n".join(lines), khung, design_code))
+    return _dong_bo_chung_chi(_dien_khung("\n".join(lines), khung, design_code, hypothesis_type))
 
 
 def _dong_bo_chung_chi(sap: str) -> str:
@@ -1006,7 +1022,7 @@ def _dong_bo_chung_chi(sap: str) -> str:
     return sap.replace("║ KQ chính  : [CẦN BÁC SĨ ĐIỀN — từ SAP §2]                 ║", f"║ KQ chính  : {kc} ║", 1)
 
 
-def _dien_khung(sap: str, khung, design_code) -> str:
+def _dien_khung(sap: str, khung, design_code, hypothesis_type: str = "superiority") -> str:
     """Điền ô [CẦN …] của SAP bằng khung đề tài ĐÃ CHỐT (15/11/2026). Chỉ thay đúng các dòng khuôn; vắng dữ kiện ⇒ giữ
     nguyên [CẦN …]. Không đụng §2 của thiết kế định tính (đã có nhánh riêng)."""
     if not khung:
@@ -1018,7 +1034,7 @@ def _dien_khung(sap: str, khung, design_code) -> str:
 
     sap = DTT.thay_dong_chung(sap, khung.get("dinh_nghia_thay_the") or [])
     if design_code == "rct":  # CONSORT: quần thể theo đề cương định trước bằng biến tuân thủ của ma trận G3
-        sap = DTT.chen_theo_de_cuong(sap, khung.get("tuan_thu_de_cuong"))
+        sap = DTT.chen_theo_de_cuong(sap, khung.get("tuan_thu_de_cuong"), hypothesis_type)
     thay = {}
     if khung.get("tieu_chi_nhan"):
         thay["- **Tiêu chí nhận:** [CẦN BÁC SĨ ĐIỀN — từ đề cương]  "] = (

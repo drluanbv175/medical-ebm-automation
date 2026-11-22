@@ -1165,7 +1165,14 @@ def chuan_ap_dung_ban_thao(thiet_ke: str, md: str, bt: Optional[BanThao] = None)
         van = "\n".join(p.van for p in bt_dk.cac_phan if p.tieu_de in ("⟦phuong_phap⟧", "⟦tom_tat⟧"))
         md = van or bt_dk.md_sach
     ra = []
+    # 22/11/2026: phần mở rộng CONSORT cho thử nghiệm cụm/không kém hơn (`K.CHUAN_DIEU_KIEN_RCT`) mới có
+    # tiêu chí ĐỀ CƯƠNG (mục phương pháp/kế hoạch đo trên đề mục đề cương); tiêu chí BẢN THẢO (kết quả: số cụm,
+    # ICC ước tính, KTC so với biên…) chưa viết và bộ sinh G7 chưa viết các mục đó ⇒ K18 chưa áp hai phần mở
+    # rộng (bản thảo đo theo CONSORT 2025)
+    mo_rong_rct = {ten for ten, _m, _l in K.CHUAN_DIEU_KIEN_RCT}
     for ten, ly_do in K.chuan_ap_dung(thiet_ke, md):
+        if ten in mo_rong_rct:
+            continue
         moi = CHUAN_BAN_THAO.get(ten)
         ra.append((moi, f"{ly_do} — bài báo dùng {moi} thay {ten}") if moi else (ten, ly_do))
     return ra

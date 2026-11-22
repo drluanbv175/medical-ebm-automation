@@ -20,6 +20,13 @@ CÁCH KIỂM (tất định, không gọi mạng):
      «canh_bao» (⚠), không làm K17 đỏ; COREQ, SRQR đối chiếu bản in lại toàn văn bảng gốc và chặn từ 22/11/2026.
      ⚪ chỉ còn cho mã thiết kế ngoài bảng và ISPOR BIA GPP II 2014.
      Phân xử trên 8 đề cương giả lập + 2 đề cương thật: `docs/K17-PHAN-XU-12-CHUAN-20261121.md`.
+  6. (22/11/2026) Bộ sinh đề cương nộp viết đủ mục SPIRIT 2025, PRISMA-P 2015, STARD 2015, TRIPOD+AI 2024, CHEERS
+     2022 cho các kịch bản giả lập ⇒ gỡ tập miễn chặn «chờ bộ sinh phủ»: mục thiếu của mọi chuẩn đã đối chiếu là lỗi
+     chặn (COREQ, SRQR, GRAMMS cũng chặn — `CHUAN_DA_DOI_CHIEU_CHUA_CHAN` rỗng). TREND 2004 đối chiếu từng mục với
+     Bảng 1 bản gốc. SQUIRE 2.0, CARE 2013, TREND 2004 chưa có văn bản nào trong hệ để kiểm chứng tiêu chí ⇒ ⚪ «chưa
+     đo được» (`CHUAN_CHUA_CO_VAN_BAN`), chuẩn cơ sở chưa đo ⇒ không báo đạt. Thêm phần mở rộng CONSORT 2010 cho thử
+     nghiệm cụm và không kém hơn (`CHUAN_DIEU_KIEN_RCT`) — điều kiện chỉ đọc phần đề tài tự nêu thiết kế
+     (`van_thiet_ke_de_tai`: bỏ Đặt vấn đề/Tổng quan, tài liệu tham khảo, phụ lục, bàn luận).
 
 MỨC ĐỘ: `bat_buoc` (mục phương pháp phải có trong đề cương) · `ke_hoach` (mục kết quả/bàn luận — đề cương phải lên kế
 hoạch: khung bảng, sơ đồ chọn mẫu, phần hạn chế) · `bao_cao` (chỉ áp khi viết bài báo, vd tiêu đề/tóm tắt — liệt kê,
@@ -274,6 +281,11 @@ TAC_DONG_NGAN_SACH = r"tác động ngân sách|\bBIA\b|budget impact"
 DINH_TINH_CP = (r"phỏng vấn sâu|thảo luận nhóm (tập trung|có trọng tâm)|nhóm tiêu điểm|focus group|phân tích chủ đề|"
                 r"mã ho[áa] chủ đề|thematic analysis")
 HON_HOP = r"phương pháp hỗn hợp|hỗn hợp (định tính|định lượng)|mixed[\s-]methods|cấu phần (định tính|định lượng)"
+#: (22/11/2026) thử nghiệm NGẪU NHIÊN THEO CỤM ⇒ CONSORT 2010 mở rộng cho thử nghiệm cụm (Campbell 2012, PMID 22951546);
+#: thử nghiệm KHÔNG KÉM HƠN/TƯƠNG ĐƯƠNG ⇒ CONSORT 2010 mở rộng NI (Piaggio 2012, PMID 23268518). Chỉ áp cho mã «rct».
+CUM_NGAU_NHIEN = (r"ngẫu nhiên (ho[áa] )?theo cụm|thử nghiệm (ngẫu nhiên )?theo cụm|"
+                  r"cluster[\s-]randomi[sz]")
+KHONG_KEM_HON = r"không kém hơn|non-?inferiority|thử nghiệm tương đương|equivalence trial"
 
 _TK_STROBE = {"cross_sectional": "cat_ngang", "cohort": "thuan_tap", "case_control": "benh_chung"}
 
@@ -682,6 +694,34 @@ CHUAN_DIEU_KIEN: Tuple[Tuple[str, str, str], ...] = (
     ("SANRA 2019", r"^#{1,3}\s+(?:CHƯƠNG\s+\d+\.?\s+|\d+\.\s+)?TỔNG QUAN TÀI LIỆU\b",
      "đề cương có chương tổng quan tài liệu (tổng quan tường thuật)"),
 )
+#: Chuẩn có điều kiện CHỈ cho thử nghiệm ngẫu nhiên (mã «rct»): phần mở rộng của CONSORT 2010 cho thiết kế đặc thù. Đề
+#: cương đo các mục phương pháp/kế hoạch của phần mở rộng trên phần tương ứng của đề cương SPIRIT (cỡ mẫu, ngẫu nhiên
+#: hoá, đồng thuận, phân tích…). Tiêu chí: `tieu_chi_chuan_de_cuong._CONSORT_CUM` / `_CONSORT_NI`.
+CHUAN_DIEU_KIEN_RCT: Tuple[Tuple[str, str, str], ...] = (
+    ("CONSORT Cluster 2012", CUM_NGAU_NHIEN, "thử nghiệm ngẫu nhiên theo cụm"),
+    ("CONSORT NI 2012", KHONG_KEM_HON, "thử nghiệm không kém hơn hoặc tương đương"),
+)
+#: Khối KHÔNG mô tả thiết kế của chính đề tài: chương mở đầu (nhắc nghiên cứu khác), tài liệu tham khảo (tên bài),
+#: phụ lục và phần bàn luận. Điều kiện của phần mở rộng RCT chỉ đọc phần còn lại — «Thiếu thử nghiệm không kém hơn…» ở
+#: Đặt vấn đề hay tên một bài «cluster randomised trial» trong danh mục tham khảo không biến thử nghiệm vượt trội cá
+#: nhân thành thử nghiệm không kém hơn/theo cụm (22/11/2026).
+_KHOI_NGOAI_THIET_KE = re.compile(r"ĐẶT VẤN ĐỀ|TỔNG QUAN|GIỚI THIỆU|INTRODUCTION|BACKGROUND|TÀI LIỆU THAM KHẢO|"
+                                  r"REFERENCES|PHỤ LỤC|APPENDIX|BÀN LUẬN|DISCUSSION", re.IGNORECASE)
+
+
+def van_thiet_ke_de_tai(md: str) -> str:
+    """Văn bản đề cương trừ các khối `_KHOI_NGOAI_THIET_KE` (kể cả khối con của chúng) — nơi đề tài tự nêu thiết kế:
+    tên đề tài, thông tin chung, tóm tắt, mục tiêu, phương pháp, kế hoạch."""
+    dong = md.split("\n")
+    bo = [False] * len(dong)
+    for p in tach_phan(md):
+        if p.tieu_de != "(bìa)" and _KHOI_NGOAI_THIET_KE.search(p.tieu_de):
+            dau = p.dong_dau - 1
+            for i in range(dau, min(dau + p.van.count("\n") + 1, len(dong))):
+                bo[i] = True
+    return "\n".join(d for d, b in zip(dong, bo) if not b)
+
+
 _KHONG_NGUOI_THAM_GIA = frozenset({"systematic_review"})
 NGUON_CHUAN: Dict[str, str] = {
     "STROBE 2007": "von Elm E et al. PLoS Med 2007;4(10):e296 (PMID 17941714); E&E PMID 17941715",
@@ -699,6 +739,8 @@ NGUON_CHUAN: Dict[str, str] = {
     "CHEERS 2022": "Husereau D et al. BMJ 2022;376:e067975 (PMID 35017145)",
     "TREND 2004": "Des Jarlais DC et al. Am J Public Health 2004;94(3):361-6 (PMID 14998794)",
     "CARE 2013": "Gagnier JJ et al. J Med Case Rep 2013;7:223 (PMID 24228906)",
+    "CONSORT Cluster 2012": "Campbell MK et al. BMJ 2012;345:e5661 (PMID 22951546)",
+    "CONSORT NI 2012": "Piaggio G et al. JAMA 2012;308(24):2594-604 (PMID 23268518)",
 }
 
 
@@ -754,6 +796,9 @@ def chuan_ap_dung(thiet_ke: str, md: str) -> List[Tuple[str, str]]:
             continue  # chuẩn cơ sở của thiết kế đã có (vd COREQ cho thiết kế định tính)
         if all(co_dieu_kien(m, md) for m in ((mau,) if isinstance(mau, str) else mau)):
             ra.append((ten, ly_do))
+    if ma == "rct":
+        van_tk = van_thiet_ke_de_tai(md)
+        ra += [(ten, ly_do) for ten, mau, ly_do in CHUAN_DIEU_KIEN_RCT if co_dieu_kien(mau, van_tk)]
     ra.append(("Việt Nam", "mọi đề tài có người tham gia thực hiện tại Việt Nam"))
     return ra
 
@@ -1143,55 +1188,55 @@ def doi_chieu(md: str, thiet_ke: str, che_do: str = "de_cuong", co_so_lieu: Opti
     ap_dung = chuan_ap_dung(thiet_ke, md)
     ket_qua: List[KetQua] = []
     chua_do: List[Tuple[str, str]] = []
+    import tieu_chi_chuan_de_cuong as TC  # noqa: PLC0415 — nạp trễ: mô-đun đó import từ tệp này
+
     for chuan, _ly_do in ap_dung:
         muc = danh_sach_muc(chuan, thiet_ke)
         if muc is None:
             chua_do.append((chuan, "chuẩn chưa có tiêu chí kiểm tự động theo mục — KHÔNG ĐO ĐƯỢC, không tính là đạt"))
             continue
-        ket_qua += [cham_muc(m, md, cac_phan) for m in muc]
+        # (22/11/2026) chuẩn có tiêu chí nhưng CHƯA kiểm chứng trên văn bản nào của hệ ⇒ mọi mục «chưa đo được»
+        chua_kiem = TC.CHUAN_CHUA_CO_VAN_BAN.get(chuan)
+        if chua_kiem:
+            chua_do.append((chuan, chua_kiem))
+        ket_qua += [cham_muc(m, md, cac_phan, chua_do_ly_do=chua_kiem) for m in muc]
     return {"chuan": ap_dung, "ket_qua": ket_qua, "chua_do": chua_do}
-
-
-#: Chuẩn mà BỘ SINH đề cương (`sinh_de_cuong_nop_hoi_dong.py`) chưa dựng đủ mục ⇒ ở khâu CHẶN NỘP (`loi_k17`) mục thiếu
-#: chỉ là cảnh báo (`canh_bao_k17`) cho tới khi bộ sinh phủ chuẩn đó. Đo 21/11/2026 trên 8 đề cương giả lập: RCT thiếu
-#: 12 mục SPIRIT, chẩn đoán 12 STARD, dự báo 16 TRIPOD+AI, tổng quan 10 PRISMA-P (docs/K17-PHAN-XU-12-CHUAN-20261121.md
-#: §4); GRAMMS, SQUIRE, CHEERS, CARE chưa có văn bản nào để đo. Trước đó các chuẩn này là ⚪ (không chặn) — tập này
-#: KHÔNG nới gì so với trước, chỉ thêm phép đo. Bộ đo theo mục (`doi_chieu`, CLI) vẫn báo ✗ đầy đủ. Gỡ tên khỏi tập
-#: khi bộ sinh phủ chuẩn VÀ 24 kịch bản giả lập vẫn đạt. COSMIN chặn: đề cương thật (C1a) đã được đo và không kịch
-#: bản giả lập nào kích hoạt nó.
-CHUAN_CHO_BO_SINH: Dict[str, str] = {
-    "SPIRIT 2025": "bộ sinh thiếu 12 mục trên RCT giả lập",
-    "PRISMA-P 2015": "bộ sinh thiếu 10 mục trên tổng quan giả lập",
-    "STARD 2015": "bộ sinh thiếu 12 mục trên đề cương chẩn đoán giả lập",
-    "TRIPOD+AI 2024": "bộ sinh thiếu 16 mục trên đề cương dự báo giả lập",
-    "GRAMMS 2008": "chưa có văn bản để đo",
-    "SQUIRE 2.0": "chưa có văn bản để đo",
-    "CHEERS 2022": "chưa có văn bản để đo",
-    "CARE 2013": "chưa có văn bản để đo",
-}
 
 
 def _dong_k17(r: KetQua) -> str:
     return f"K17 {r.chuan} mục {r.ma} ({r.chu_de}) thiếu: {'; '.join(r.thieu)} — {r.tieu_chi}"
 
 
+def chuan_co_so_chua_do(kq: Dict[str, object]) -> set:
+    """Chuẩn CƠ SỞ của thiết kế (lý do áp dụng «thiết kế …») mà K17 chưa đo được. Mã thiết kế ngoài bảng («(không xác
+    định)») không tính ở đây: thiết kế ngoài 8 mã đã bị chặn từ G1 (G1-AUTO-02c) — K17 chỉ cảnh báo."""
+    return {c for c, ly_do in kq["chuan"] if ly_do.startswith("thiết kế")} & {c for c, _l in kq["chua_do"]}
+
+
 def loi_k17(md: str, thiet_ke: str) -> List[str]:
-    """Lỗi K17 cho bộ kiểm đề cương nộp: mục bắt buộc/kế hoạch còn thiếu yếu tố — trừ chuẩn còn chờ bộ sinh phủ
-    (`CHUAN_CHO_BO_SINH`, xem `canh_bao_k17`)."""
+    """Lỗi K17 cho bộ kiểm đề cương nộp: mục bắt buộc/kế hoạch còn thiếu yếu tố của MỌI chuẩn đã đối chiếu.
+
+    22/11/2026: gỡ tập miễn chặn «chờ bộ sinh phủ» (SPIRIT, PRISMA-P, STARD, TRIPOD+AI, CHEERS) — bộ sinh đề
+    cương nộp đã viết đủ mục cho các kịch bản giả lập của các chuẩn này, nên mục thiếu là lỗi chặn như mọi chuẩn
+    (COREQ, SRQR, GRAMMS cũng vậy — `tieu_chi_chuan_de_cuong.CHUAN_DA_DOI_CHIEU_CHUA_CHAN` rỗng). Chuẩn CƠ SỞ của
+    thiết kế mà hệ CHƯA ĐO ĐƯỢC (không có tiêu chí, hoặc tiêu chí chưa kiểm chứng trên văn bản nào —
+    `tieu_chi_chuan_de_cuong.CHUAN_CHUA_CO_VAN_BAN`) cũng là một dòng lỗi: «không đo được» không bao giờ là «đạt», nên
+    đề cương không được báo đạt K17 khi chuẩn chính của chính thiết kế đó chưa đo."""
     kq = doi_chieu(md, thiet_ke)
-    return [_dong_k17(r) for r in kq["ket_qua"] if r.trang_thai == "thieu" and r.chuan not in CHUAN_CHO_BO_SINH]
+    ra = [_dong_k17(r) for r in kq["ket_qua"] if r.trang_thai == "thieu"]
+    co_so = chuan_co_so_chua_do(kq)
+    ra += [f"K17 {c} CHƯA ĐO ĐƯỢC — {ly_do}" for c, ly_do in kq["chua_do"] if c in co_so]
+    return ra
 
 
 def canh_bao_k17(md: str, thiet_ke: str) -> List[str]:
-    """Cảnh báo K17 (không chặn nộp): mục thiếu của chuẩn chưa đối chiếu bảng gốc (TREND) hoặc của chuẩn
-    còn chờ bộ sinh phủ (`CHUAN_CHO_BO_SINH`). Vẫn phải bổ sung trước khi trình Hội đồng."""
+    """Cảnh báo K17 (không chặn nộp): mục thiếu của chuẩn đã đối chiếu bảng gốc nhưng chưa bật chặn
+    (`tieu_chi_chuan_de_cuong.CHUAN_DA_DOI_CHIEU_CHUA_CHAN` — hiện rỗng) và chuẩn CÓ ĐIỀU KIỆN chưa đo được (vd ISPOR
+    BIA) — không tính là đạt."""
     kq = doi_chieu(md, thiet_ke)
-    ra = []
-    for r in kq["ket_qua"]:
-        if r.trang_thai == "canh_bao":
-            ra.append(_dong_k17(r) + " [chưa đối chiếu bảng gốc]")
-        elif r.trang_thai == "thieu" and r.chuan in CHUAN_CHO_BO_SINH:
-            ra.append(_dong_k17(r) + " [chờ bộ sinh phủ chuẩn]")
+    ra = [_dong_k17(r) + " [chưa đối chiếu bảng gốc]" for r in kq["ket_qua"] if r.trang_thai == "canh_bao"]
+    co_so = chuan_co_so_chua_do(kq)
+    ra += [f"K17 {c} chưa đo được — {ly_do} [không tính là đạt]" for c, ly_do in kq["chua_do"] if c not in co_so]
     return ra
 
 
@@ -1235,11 +1280,14 @@ def main(argv: Optional[List[str]] = None) -> int:
     kqs: List[KetQua] = kq["ket_qua"]
     thieu = [r for r in kqs if r.trang_thai == "thieu"]
     cau_truc: List[str] = list(kq.get("cau_truc") or [])
+    # chuẩn CƠ SỞ của thiết kế chưa đo được ⇒ không báo đạt (mã thoát 1), như `loi_k17`
+    co_so = chuan_co_so_chua_do(kq)
+    chua_do_co_so = [c for c, _l in kq["chua_do"] if c in co_so] if a.che_do == "de_cuong" else []
     if a.json:
         print(json.dumps({"study": a.study, "thiet_ke": thiet_ke, "che_do": a.che_do, "chuan": kq["chuan"],
                           "chua_do": kq["chua_do"], "cau_truc": cau_truc, "co_so_lieu": kq.get("co_so_lieu"),
                           "ket_qua": [asdict(r) for r in kqs]}, ensure_ascii=False, indent=1))
-        return 1 if (thieu or cau_truc) else 0
+        return 1 if (thieu or cau_truc or chua_do_co_so) else 0
     loai = {"ban_thao": "bản thảo (K18)", "giao_thuc": "bài báo giao thức (K18 · tiêu chí K17)"}.get(a.che_do,
                                                                                                "đề cương (K17)")
     print(f"Đối chiếu chuẩn theo mục — {loai} — {a.study} (thiết kế: {thiet_ke or 'chưa ghi'})")
@@ -1253,7 +1301,8 @@ def main(argv: Optional[List[str]] = None) -> int:
         dem = {t: sum(r.trang_thai == t for r in nhom)
                for t in ("dat", "thieu", "canh_bao", "khong_ap_dung", "bao_cao", "chua_do")}
         if ten in dict(kq["chua_do"]):
-            print(f"  ⚪ {ten} — {ly_do}: CHƯA ĐO ĐƯỢC (chưa có tiêu chí theo mục)")
+            print(f"  ⚪ {ten} — {ly_do}: CHƯA ĐO ĐƯỢC — {dict(kq['chua_do'])[ten]}"
+                  + (" [chuẩn cơ sở — không báo đạt]" if ten in chua_do_co_so else ""))
             continue
         dau = "✗" if dem["thieu"] else ("⚠" if dem["canh_bao"] else ("⚪" if dem["chua_do"] else "✓"))
         canh = f" · cảnh báo {dem['canh_bao']} (không chặn)" if dem["canh_bao"] else ""
@@ -1275,8 +1324,13 @@ def main(argv: Optional[List[str]] = None) -> int:
                 for b in r.bang_chung:
                     print(f"    {b}")
     print("\nĐẠT = có đủ yếu tố trong đúng phần; chất lượng nội dung vẫn cần đọc bằng chứng. Cần bác sĩ kiểm chứng.")
-    return 1 if (thieu or cau_truc) else 0
+    return 1 if (thieu or cau_truc or chua_do_co_so) else 0
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    # 22/11/2026: chạy qua MÔ-ĐUN đã nạp, không qua `__main__` — `tieu_chi_chuan_de_cuong` đăng ký hàm điều kiện vào
+    # `kiem_chuan_de_cuong_theo_muc.DIEU_KIEN_HAM`; chạy thẳng tệp thì `__main__` là bản sao khác, sổ hàm rỗng ⇒ lệnh
+    # đo đề cương chẩn đoán sập «điều kiện hàm «§xam_lan_nghien_cuu» chưa đăng ký» (đo trên giả lập 22/11).
+    import kiem_chuan_de_cuong_theo_muc as _K
+
+    sys.exit(_K.main())

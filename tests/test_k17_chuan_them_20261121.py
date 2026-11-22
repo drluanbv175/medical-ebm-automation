@@ -141,19 +141,21 @@ def test_chuan_ban_quyen_khong_luu_nguyen_van():
 
 
 # ───────────────────────────── cơ chế mới ─────────────────────────────
-def test_chuan_chua_doi_chieu_bang_goc_chi_canh_bao_khong_chan():
-    # 22/11/2026: COREQ/SRQR đã đối chiếu bản in lại toàn văn bảng gốc và bật chặn — ví dụ chuẩn chưa đối chiếu là TREND
+def test_moi_chuan_da_doi_chieu_deu_chan_trend_chua_do_duoc():
+    # 22/11/2026: COREQ/SRQR đã đối chiếu bản in lại toàn văn bảng gốc và bật chặn; TREND 2004 đã đối chiếu Bảng 1 bản
+    # gốc nhưng hệ chưa có văn bản nào của thiết kế non_randomized để kiểm chứng ⇒ «chưa đo được», là LỖI với chuẩn cơ
+    # sở của thiết kế (không bao giờ là đạt), không còn mức «chỉ cảnh báo» nào
+    assert not TC.CHUAN_CHUA_DOI_CHIEU_GOC and not TC.CHUAN_DA_DOI_CHIEU_CHUA_CHAN
     md = _dc("# 4. ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP NGHIÊN CỨU\n\n## 4.1. Thiết kế nghiên cứu\n\nNghiên cứu can thiệp không "
              "ngẫu nhiên.")
     kq = K.doi_chieu(md, "non_randomized")
-    trend = [r for r in kq["ket_qua"] if r.chuan == "TREND 2004"]
-    assert trend and all(r.trang_thai in ("canh_bao", "dat", "bao_cao", "khong_ap_dung") for r in trend)
-    assert any(r.trang_thai == "canh_bao" for r in trend)
-    assert not any(x.startswith("K17 TREND") for x in K.loi_k17(md, "non_randomized"))
+    assert "TREND 2004" in dict(kq["chua_do"]) and not [r for r in kq["ket_qua"] if r.trang_thai == "canh_bao"]
+    assert any(x.startswith("K17 TREND 2004 CHƯA ĐO ĐƯỢC") for x in K.loi_k17(md, "non_randomized"))
     assert any(x.startswith("K17 Việt Nam") for x in K.loi_k17(md, "non_randomized"))  # chuẩn khác vẫn chặn
     dt = _dc("# 4. ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP NGHIÊN CỨU\n\n## 4.1. Thiết kế nghiên cứu\n\nNghiên cứu định tính.")
     assert any(x.startswith("K17 COREQ 2007") for x in K.loi_k17(dt, "qualitative"))
     assert any(x.startswith("K17 SRQR 2014") for x in K.loi_k17(dt, "qualitative"))
+    assert not K.canh_bao_k17(dt, "qualitative")
 
 
 def test_ten_de_tai_khong_bi_nhan_la_phan_phuong_phap():
@@ -307,24 +309,28 @@ def test_cac_chuan_chua_co_van_ban_that_do_duoc_tren_de_cuong_mau():
              "display) do chủ nhiệm thực hiện.")
     kq = _kq(md, "mixed_methods")
     assert all(kq[("GRAMMS 2008", m)].trang_thai == "dat" for m in ("1", "2", "3", "4"))
-    for tk, chuan in (("quality_improvement", "SQUIRE 2.0"), ("economic", "CHEERS 2022"),
-                      ("non_randomized", "TREND 2004"), ("case_report", "CARE 2013")):
+    kq = K.doi_chieu(md, "economic")
+    assert any(r.chuan == "CHEERS 2022" for r in kq["ket_qua"]) and not kq["chua_do"]
+    # 22/11/2026: SQUIRE, TREND, CARE có tiêu chí nhưng CHƯA kiểm chứng trên văn bản nào của hệ ⇒ mọi mục «chưa đo
+    # được», lý do nêu kịch bản hệ cần — không tính là đạt (test_chuan_de_cuong_mo_rong_20261122)
+    for tk, chuan in (("quality_improvement", "SQUIRE 2.0"), ("non_randomized", "TREND 2004"),
+                      ("case_report", "CARE 2013")):
         kq = K.doi_chieu(md, tk)
-        assert any(r.chuan == chuan for r in kq["ket_qua"]) and not kq["chua_do"], tk
+        assert any(r.chuan == chuan for r in kq["ket_qua"]) and tk in dict(kq["chua_do"])[chuan], tk
 
 
 # ───────────────────────────── khâu chặn nộp (sau #399: K17 chặn mọi đề cương nộp) ─────────────────────────────
-def test_chuan_cho_bo_sinh_chi_canh_bao_o_khau_nop_con_cosmin_va_strobe_van_chan():
+def test_spirit_chan_o_khau_nop_khong_con_mien_cosmin_va_strobe_van_chan():
+    # 22/11/2026: gỡ tập miễn chặn «chờ bộ sinh phủ» — mục SPIRIT thiếu CHẶN như mọi chuẩn đã đối chiếu
     md = _dc(DAO_DUC + "Nghiên cứu này được tài trợ bởi: Không có tài trợ bên ngoài.")
-    assert _kq(md, "rct")[("SPIRIT 2025", "3c")].trang_thai == "thieu"  # bộ đo vẫn báo ✗ đầy đủ
-    assert not any(x.startswith("K17 SPIRIT") for x in K.loi_k17(md, "rct"))
-    assert any(x.startswith("K17 SPIRIT 2025 mục 3c") and x.endswith("[chờ bộ sinh phủ chuẩn]")
-               for x in K.canh_bao_k17(md, "rct"))
+    assert _kq(md, "rct")[("SPIRIT 2025", "3c")].trang_thai == "thieu"
+    assert any(x.startswith("K17 SPIRIT 2025 mục 3c") for x in K.loi_k17(md, "rct"))
+    assert not any(x.startswith("K17 SPIRIT") for x in K.canh_bao_k17(md, "rct"))
     assert any(x.startswith("K17 Việt Nam") for x in K.loi_k17(md, "rct"))  # chuẩn khác vẫn chặn
     cosmin = _dc("# 2. PHƯƠNG PHÁP\n\n## 2.6. Công cụ thu thập\n\nBộ câu hỏi tự điền 30 câu; Cronbach's alpha; CVI.")
     assert any(x.startswith("K17 COSMIN 2021") for x in K.loi_k17(cosmin, "cross_sectional"))
     assert not any(x.startswith("K17 COSMIN") for x in K.canh_bao_k17(cosmin, "cross_sectional"))
-    assert any(x.endswith("[chưa đối chiếu bảng gốc]") for x in K.canh_bao_k17(md, "non_randomized"))
+    assert not any(x.endswith("[chưa đối chiếu bảng gốc]") for x in K.canh_bao_k17(md, "non_randomized"))
 
 
 def test_bo_kiem_nop_in_canh_bao_k17_khong_doi_ma_thoat(tmp_path):
@@ -332,11 +338,15 @@ def test_bo_kiem_nop_in_canh_bao_k17_khong_doi_ma_thoat(tmp_path):
 
     import kiem_de_cuong_nop_hoi_dong as KD  # noqa: PLC0415
 
-    (tmp_path / "study_meta.json").write_text(json.dumps({"gate_params": {"G1": {"design": "rct"}}}), encoding="utf-8",
-                                              newline="\n")
-    (tmp_path / "DE_CUONG_NOP_HOI_DONG_X.md").write_text(_dc(DAO_DUC + "Nội dung."), encoding="utf-8", newline="\n")
+    # 22/11/2026: cảnh báo còn lại = chuẩn CÓ ĐIỀU KIỆN chưa đo được (vd ISPOR BIA khi đề cương có phân tích tác động
+    # ngân sách) và chuẩn đã đối chiếu chưa bật chặn — không đổi mã thoát
+    (tmp_path / "study_meta.json").write_text(json.dumps({"gate_params": {"G1": {"design": "cross_sectional"}}}),
+                                              encoding="utf-8", newline="\n")
+    (tmp_path / "DE_CUONG_NOP_HOI_DONG_X.md").write_text(_dc(DAO_DUC + "Có phân tích tác động ngân sách."),
+                                                       encoding="utf-8", newline="\n")
     canh = KD.canh_bao_k17(tmp_path, "X")
-    assert canh and all("[chờ bộ sinh phủ chuẩn]" in x or "[chưa đối chiếu bảng gốc]" in x for x in canh)
+    assert canh and all("[không tính là đạt]" in x or "[chưa đối chiếu bảng gốc]" in x for x in canh)
+    assert any(x.startswith("K17 ISPOR BIA GPP II 2014 chưa đo được") for x in canh)
     assert KD.canh_bao_k17(tmp_path, "KHONG-CO") == []
 
 
