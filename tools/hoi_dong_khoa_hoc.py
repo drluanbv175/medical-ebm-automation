@@ -800,6 +800,16 @@ def _ho_so_ngoai_de_cuong(study: str, out_dir: Path, van: str, la_ban_chinh: boo
     return ra
 
 
+def ten_cho_hoi_dong(tep: str) -> str:
+    """Tên tài liệu ghi trong lời gửi hội đồng. Bản cài lỗi của lượt hiệu chuẩn (thư mục ``hieu_chuan``) mang tên TRUNG
+    TÍNH ``TAI_LIEU_<sha8>`` — đo thật 22/11/2026: tên «BAN_CAI_LOI_…» lọt vào khối tài liệu gửi hội đồng ở lượt hiệu
+    chuẩn QC-HDKH-4.0 (cùng lỗi làm mù đã vá cho phiếu agent ở ``tep_cho_agent``). Tài liệu thật giữ tên."""
+    goc = Path(tep)
+    if "hieu_chuan" not in goc.resolve().parts:
+        return goc.name
+    return f"TAI_LIEU_{hashlib.sha256(goc.read_bytes()).hexdigest()[:8]}{goc.suffix}"
+
+
 def khoi_chung(study: str, ten_tep: str, van: str, ho_so: Dict[str, Any], loai: str = "de_cuong") -> str:
     """Tiền tố DÙNG CHUNG cho mọi thành viên và chủ tịch (được cache): tài liệu đánh số dòng + hồ sơ kiểm máy."""
     ten = LOAI_TAI_LIEU[loai]["ten"]
@@ -1064,7 +1074,7 @@ def khoi_tao(study: str, out_dir: Path, tep: Path, model: str, loai: str = "de_c
 
 
 def uoc_tinh(st: Dict[str, Any], van: str) -> Dict[str, Any]:
-    chung = khoi_chung(st["study"], Path(st["tep"]).name, van, st["ho_so"], st.get("loai", "de_cuong"))
+    chung = khoi_chung(st["study"], ten_cho_hoi_dong(st["tep"]), van, st["ho_so"], st.get("loai", "de_cuong"))
     yc = yeu_cau_thanh_vien(chung, st["model"], st["sha"][:8], _ds_tv(st), st.get("loai", "de_cuong"))
     tok_chung = API.uoc_token(chung)
     tok_tv = [API.uoc_token(p["messages"][0]["content"]) for _, p in yc]
@@ -1082,7 +1092,7 @@ def _chay_buoc(st: Dict[str, Any], van: str, goi_api: bool, client: Any) -> int:
     """Một lượt: nộp hoặc lấy batch của bước hiện tại. Trả mã thoát."""
     loai = st.get("loai", "de_cuong")
     ds_tv = _ds_tv(st)
-    chung = khoi_chung(st["study"], Path(st["tep"]).name, van, st["ho_so"], loai)
+    chung = khoi_chung(st["study"], ten_cho_hoi_dong(st["tep"]), van, st["ho_so"], loai)
     sha8 = st["sha"][:8]
     if st["buoc"] == "xong":
         print("✅ Hội đồng đã họp xong — chạy «bien-ban» để xem/ghi biên bản.")
@@ -1623,7 +1633,7 @@ def van_de_can_sua(st: Dict[str, Any]) -> List[Dict[str, Any]]:
 
 def _chay_tham_tra(st: Dict[str, Any], van: str, goi_api: bool, client: Any) -> int:
     """Một lượt nộp/lấy batch thẩm tra (mỗi thành viên có yêu cầu ⇒ một yêu cầu API)."""
-    chung = khoi_chung(st["study"], Path(st["tep"]).name, van, st["ho_so"])
+    chung = khoi_chung(st["study"], ten_cho_hoi_dong(st["tep"]), van, st["ho_so"])
     theo_tv: Dict[str, List[Dict[str, Any]]] = {}
     for f in st.get("ds_yeu_cau") or []:
         theo_tv.setdefault(f["thanh_vien"], []).append(f)
@@ -1710,7 +1720,7 @@ def _de_xuat_bien_tap(st: Dict[str, Any], van: str, out_dir: Path, goi_api: bool
     # bien_tap — chia nhóm ≤ VAN_DE_MOI_YEU_CAU vấn đề mỗi yêu cầu (22/11/2026: một yêu cầu gom 14–20 vấn đề bị cắt cụt
     # ở 32.000 token ra trên cả hai đề cương thật), KHÔNG tách một cụm yêu cầu chạm cùng chỗ (`gom_cum_bien_tap`) ra hai
     # yêu cầu API. Tham số VẬN HÀNH, không phải luật/lời dặn của quy chế.
-    chung = khoi_chung(st["study"], Path(st["tep"]).name, van, st["ho_so"])
+    chung = khoi_chung(st["study"], ten_cho_hoi_dong(st["tep"]), van, st["ho_so"])
     vd = van_de_can_sua(st)
     cum = gom_cum_bien_tap(vd, van)
     nhom = xep_lo_theo_cum(cum, VAN_DE_MOI_YEU_CAU)
