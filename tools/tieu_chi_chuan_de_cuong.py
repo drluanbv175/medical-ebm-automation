@@ -1310,6 +1310,85 @@ _COSMIN: Dict[str, tuple] = {
               GIA_TRI_GIA_THUYET, "có kiểm định giả thuyết giá trị cấu trúc (hội tụ/phân biệt)"),
 }
 
+# ═══════════════════════ SANRA 2019 (chương TỔNG QUAN TÀI LIỆU của đề cương) ═══════════════════════
+# VÌ SAO (22/11/2026, bác sĩ: «Tổng quan tài liệu đã có nền, hãy tiếp tục nâng cấp»): chương tổng quan của đề cương là
+# một tổng quan TƯỜNG THUẬT (không hệ thống). Chuẩn đã kiểm định cho loại bài này là SANRA — Baethge C, Goldbeck-Wood
+# S, Mertens S. Res Integr Peer Rev 2019;4:5 (PMID 30962953, PMC6434870, doi:10.1186/s41073-019-0064-8); tra PubMed
+# 22/11/2026: giấy phép CC BY 4.0; `check_citation_retraction.py --pmid 30962953`: không rút bài. Sáu chủ đề mục chép
+# từ phần Phương pháp của bài (được phép theo CC BY, có ghi công); thang chấm 0–2 và tài liệu «explanations and
+# instructions» (Hình 1–2 của bài, dạng ảnh) KHÔNG lưu. Tiêu chí tiếng Việt và yếu tố do hệ viết cho ĐỀ CƯƠNG: mục 1
+# (tầm quan trọng) tìm ở Đặt vấn đề + Tổng quan, mục 2 (mục tiêu) ở Mục tiêu/Câu hỏi, mục 3–6 ở chương Tổng quan.
+# Mục 3 (mô tả tìm kiếm) đối chiếu PRISMA-S — Rethlefsen ML et al. J Med Libr Assoc 2021;109(2):174-200 (PMID 34285662;
+# không rút bài 22/11/2026; metadata PMC không ghi giấy phép ⇒ không lưu nguyên văn) — CHỈ ba mục áp dụng được cho tổng
+# quan tường thuật: mục 1 (tên nguồn/cơ sở dữ liệu), mục 8 (chiến lược tìm đầy đủ), mục 13 (ngày tìm). Các mục còn lại
+# của PRISMA-S (đếm bản ghi, khử trùng, bình duyệt chiến lược…) thuộc tổng quan HỆ THỐNG, đã do PRISMA-P/PRISMA kiểm.
+# Điều kiện áp dụng (đề cương có chương «TỔNG QUAN TÀI LIỆU») đăng ký ở `CHUAN_DIEU_KIEN` của bộ kiểm K17.
+_SANRA_CHU_DE = {
+    "1": "Explanation of the review's importance",
+    "2": "Statement of the aims of the review",
+    "3": "Description of the literature search",
+    "4": "Referencing",
+    "5": "Scientific reasoning",
+    "6": "Presentation of relevant and appropriate endpoint data",
+}
+#: nguồn/cơ sở dữ liệu đã tra (PRISMA-S mục 1)
+NGUON_TIM = (r"PubMed|MEDLINE|Europe PMC|Embase|Scopus|Web of Science|Cochrane|CINAHL|PsycINFO|LILACS|Crossref|"
+             r"Google Scholar|ClinicalTrials\.gov|\bICTRP\b|OpenAlex|Semantic Scholar")
+#: chiến lược tìm đầy đủ (PRISMA-S mục 8): thẻ trường của cơ sở dữ liệu, hoặc toán tử Boole VIẾT HOA nối nhóm từ khoá
+#: (`(?-i:…)` — «and/or» viết thường trong tiêu đề tiếng Anh của bảng không phải câu tìm)
+CAU_TIM = (r"\[(?:mesh|mh|tiab|ti|ab|tw|pt|majr|sh|la|dp)(?::noexp)?\]|(?-i:\b(?:AND|OR)\b)\s*\(|"
+           r"\)\s*(?-i:\b(?:AND|OR|NOT)\b)|\"[^\"\n]{2,80}\"\s*(?-i:\b(?:AND|OR)\b)")
+#: ngày tìm (PRISMA-S mục 13): ngày cụ thể; «tháng m/yyyy» hoặc khoảng tháng cũng nhận
+NGAY_TIM = (r"\b\d{1,2}/\d{1,2}/(?:19|20)\d{2}\b|\btháng\s+\d{1,2}(?:\s*[–-]\s*\d{1,2})?(?:/|\s+năm\s+)(?:19|20)\d{2}"
+            r"|\b(?:19|20)\d{2}-\d{2}-\d{2}\b")
+#: tầm quan trọng của vấn đề với người đọc/thực hành (SANRA mục 1)
+TAM_QUAN_TRONG = (r"gánh nặng|phổ biến|thường gặp|hàng đầu|cốt lõi|bắt buộc|ưu tiên|nguyên nhân (chính|hàng đầu)|"
+                  r"tỷ lệ|tử vong|biến chứng|nguy cơ|chi phí|chất lượng (khám|chăm sóc|dịch vụ|điều trị)|khuyến cáo|"
+                  r"tác hại|an toàn|rào cản")
+#: loại/thiết kế của bằng chứng được dẫn (SANRA mục 5)
+LOAI_BANG_CHUNG = (r"tổng quan hệ thống|phân tích gộp|thử nghiệm(?: lâm sàng)? (?:ngẫu nhiên|có đối chứng)|"
+                   r"nghiên cứu (?:quan sát|cắt ngang|thuần tập|bệnh[\s–-]*chứng|mô tả|định tính)|cắt ngang|"
+                   r"thuần tập|hướng dẫn (?:thực hành|lâm sàng)|đồng thuận|khảo sát (?:đa trung tâm|toàn quốc|tại)")
+#: nhận định giới hạn của bằng chứng (SANRA mục 5): gián tiếp, chưa nhất quán, cỡ mẫu nhỏ, phạm vi đã tra
+GIOI_HAN_BANG_CHUNG = (r"gián tiếp|chưa (?:nhất quán|thống nhất|đủ|có (?:số liệu|nghiên cứu|bằng chứng))|"
+                       r"không nhất quán|cỡ mẫu nhỏ|bối cảnh khác|khác (?:quần thể|bối cảnh)|mức (?:độ )?chắc chắn|"
+                       r"chất lượng bằng chứng|\bGRADE\b|chưa được (?:kiểm định|đánh giá)|trong phạm vi (?:đã )?tra")
+#: số liệu kết cục (SANRA mục 6): tỷ lệ, ước lượng hiệu ứng, khoảng tin cậy, cỡ mẫu
+SO_LIEU_KET_CUC = (r"\d+(?:[,.]\d+)?\s*%|\b(?:a?OR|a?PR|a?RR|a?HR|β|MD|SMD|AUROC|AUC)\s*[=:]?\s*[−-]?\d|"
+                   r"(?:C-statistic|chỉ số C)(?:\s+trung bình)?\s*[=:]?\s*0[,.]\d|"
+                   r"\bKTC\s*95|khoảng tin cậy|\d[\d.]*\s*(?:người bệnh|bệnh nhân|người tham gia)\b")
+#: câu nêu số liệu (tỷ lệ/ước lượng hiệu ứng) — yếu tố CẤM khi câu không dẫn nguồn (SANRA mục 4)
+SO_LIEU_CAN_NGUON = r"\d+(?:[,.]\d+)?\s*%|\b(?:a?OR|a?PR|a?RR|a?HR|β)\s*[=:]?\s*[−-]?\d"
+_SANRA: Dict[str, tuple] = {
+    "1": (("dat_van_de", "tong_quan"), "bat_buoc",
+          "Nêu tầm quan trọng của vấn đề với người đọc/thực hành (gánh nặng, nguy cơ, chỉ số chất lượng, quy định) và "
+          "đặt vấn đề trên nền y văn có dẫn nguồn.",
+          (_y("tầm quan trọng của vấn đề", TAM_QUAN_TRONG), _y("trích dẫn nguồn", TRICH_DAN))),
+    "2": (("muc_tieu", "cau_hoi"), "bat_buoc",
+          "Nêu mục tiêu cụ thể (câu hỏi) mà đề tài trả lời — phần tổng quan được tổ chức để phục vụ các mục tiêu đó.",
+          (_y("mục tiêu cụ thể", MUC_TIEU_CU_THE),)),
+    "3": (("tong_quan", "tim_kiem"), "bat_buoc",
+          "Mô tả tìm kiếm tài liệu đủ để lặp lại — PRISMA-S phần áp dụng cho tổng quan tường thuật: tên nguồn đã tra "
+          "(mục 1), chiến lược/câu tìm đầy đủ (mục 8), ngày tìm (mục 13).",
+          (_y("nguồn đã tra (PRISMA-S 1)", NGUON_TIM), _y("chiến lược/câu tìm đầy đủ (PRISMA-S 8)", CAU_TIM),
+           _y("ngày tìm (PRISMA-S 13)", NGAY_TIM))),
+    "4": (("tong_quan",), "bat_buoc",
+          "Nhận định then chốt có trích dẫn: tổng quan dẫn nguồn và không có câu nêu số liệu (tỷ lệ, ước lượng hiệu "
+          "ứng) mà không dẫn nguồn.",
+          (_y("trích dẫn nguồn", TRICH_DAN), _y("câu nêu số liệu không dẫn nguồn", SO_LIEU_CAN_NGUON, cam=True))),
+    "5": (("tong_quan",), "bat_buoc",
+          "Lập luận theo mức bằng chứng: nêu loại/thiết kế của nghiên cứu được dẫn và nhận định giới hạn của bằng "
+          "chứng (gián tiếp, chưa nhất quán, cỡ mẫu nhỏ, phạm vi đã tra).",
+          (_y("loại/thiết kế bằng chứng", LOAI_BANG_CHUNG), _y("giới hạn của bằng chứng", GIOI_HAN_BANG_CHUNG))),
+    "6": (("tong_quan",), "bat_buoc",
+          "Trình bày số liệu kết cục liên quan của nghiên cứu được dẫn (tỷ lệ, ước lượng hiệu ứng kèm khoảng tin cậy, "
+          "cỡ mẫu) gắn với nguồn — cùng đoạn hoặc cùng dòng bảng.",
+          (_y("số liệu kết cục", SO_LIEU_KET_CUC), _y("trích dẫn nguồn", TRICH_DAN)), None, "", True),
+}
+NGUON_CHUAN_THEM["SANRA 2019"] = (
+    "Baethge C, Goldbeck-Wood S, Mertens S. Res Integr Peer Rev 2019;4:5 (PMID 30962953); mục 3 đối chiếu PRISMA-S — "
+    "Rethlefsen ML et al. J Med Libr Assoc 2021;109(2):174-200 (PMID 34285662)")
+
 # ───────────────────────────── lắp mục kiểm ─────────────────────────────
 #: chuẩn → (bảng tiêu chí, {mã: (chủ đề, nguyên văn|None)})
 
@@ -1343,6 +1422,7 @@ BANG: Dict[str, tuple] = {
     "TREND 2004": (_TREND, lambda: _chi_chu_de(_TREND_CHU_DE)),
     "CARE 2013": (_CARE, lambda: {x[0]: (x[1], x[2]) for x in CBC.CARE_2013_ITEMS}),
     "COSMIN 2021": (_COSMIN, lambda: _chi_chu_de(_COSMIN_CHU_DE)),
+    "SANRA 2019": (_SANRA, lambda: _chi_chu_de(_SANRA_CHU_DE)),
 }
 
 

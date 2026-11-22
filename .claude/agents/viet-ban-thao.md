@@ -349,6 +349,7 @@ Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C
 - Công cụ `tools/xuat_docx_chuan.py` (chủ) — xuất .docx chuẩn từ artifact .md hiện có, không sinh lại nội dung; chốt kiểm `tools/kiem_de_cuong_nop_hoi_dong.py`; nguyên tắc: trung thực–minh bạch.
 - Công cụ `tools/tam_nguyen_tac_de_cuong.py` (chủ) — ma trận phần đề cương × chuẩn áp dụng × 8 nguyên tắc và trục tổng 5 tiêu chí (K20 của `kiem_de_cuong_nop_hoi_dong.py`); chốt kiểm `tests/test_tam_nguyen_tac_de_cuong_20261122.py`; nguyên tắc: ô chưa có phép đo là ⚪ «chưa đo được», không bao giờ xanh · kiểm soát chất lượng liên tục.
 - Công cụ `tools/so_doc_de_cuong.py` (dùng phụ) — sửa đơn vị nào của đề cương thì mã băm đổi, đơn vị đó phải được đọc lại trước khi giao; chốt kiểm `tests/test_so_doc_de_cuong_20261122.py`; nguyên tắc: trung thực–minh bạch.
+- Công cụ `tools/tieu_chi_chuan_de_cuong.py` (chủ, SANRA 22/11/2026) — K17 chấm chương Tổng quan của đề cương theo SANRA 2019 khi đề cương có chương «TỔNG QUAN TÀI LIỆU»; bộ sinh dựng bảng «Nguồn và chiến lược tìm kiếm» từ dữ kiện G0 (PubMed, nguồn bổ sung, ClinicalTrials.gov, phiếu ICTRP) và chỉ giữ câu tóm lược G0 khi mọi PMID trong câu đã qua A12; chốt kiểm `tests/test_sanra_tong_quan_20261122.py`; nguyên tắc: khoa học.
 
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 

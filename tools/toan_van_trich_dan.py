@@ -661,9 +661,222 @@ def _in(kq: Dict[str, Any]) -> None:
 EXPORTS = REPO / "exports"
 
 
+# ─────────────────── SỔ ĐỊNH DANH VÀ SIÊU DỮ LIỆU TLTK (22/11/2026) ───────────────────
+# VÌ SAO (bác sĩ 22/11/2026: «Tài liệu tham khảo, trích dẫn … hoàn thiện đúng chuẩn»): (b) mỗi tài liệu phải có
+# định danh KIỂM ĐƯỢC — bài tạp chí: DOI (Crossref, kể cả tạp chí trong nước có tiền tố 10.51298, 10.52163…) và
+# PMID/PMCID; văn bản quy phạm: số hiệu và đường dẫn nguồn chính thức; sách: ISBN — không tìm được thì GHI LÝ DO, không
+# bịa; (c) siêu dữ liệu khớp nguồn — năm, tập, số, trang, tiêu đề đối chiếu với Crossref (mục có DOI) và PubMed (mục có
+# PMID, qua idconv lấy PMCID). Sổ `exports/<mã>/SO_DINH_DANH_TLTK_<mã>.json` gắn băm dòng TLTK: dòng đổi ⇒ mục sổ hết
+# hiệu lực. K13 (`kiem_de_cuong_nop_hoi_dong.loi_k13_nlm`) đọc sổ: lệch nguồn ⇒ lỗi kèm giá trị nguồn; bài tạp chí thiếu
+# trang mà Crossref CÓ trang ⇒ lỗi kèm trang nguồn; Crossref xác nhận nguồn KHÔNG ghi trang ⇒ không đòi (theo nguồn,
+# không miễn tay).
+TEP_DINH_DANH = "SO_DINH_DANH_TLTK_{study}.json"
+SCHEMA_DINH_DANH = "de_tai/so_dinh_danh_tltk/v1"
+NGUONG_TIEU_DE = 0.85
+
+
+def bam_dong(dong: str) -> str:
+    return hashlib.sha256(chuan_van(dong).encode("utf-8")).hexdigest()[:16]
+
+
+def _tieu_de_tltk(dong: str) -> str:
+    """Tiêu đề = câu thứ hai của dòng Vancouver («Tác giả. Tiêu đề. Tạp chí. …»)."""
+    phan = [x.strip() for x in re.split(r"(?<=[.?!])\s+(?=[A-ZĐÀ-Ỹ0-9\[])", str(dong or "")) if x.strip()]
+    return phan[1].rstrip(".") if len(phan) > 1 else ""
+
+
+def _ty_le_chuoi(a: str, b: str) -> float:
+    import difflib  # noqa: PLC0415
+
+    return difflib.SequenceMatcher(None, chuan_van(a), chuan_van(b)).ratio()
+
+
+def _vi_tri_tltk(dong: str) -> Dict[str, Optional[str]]:
+    """{nam, tap, so, trang} của dòng bài tạp chí «năm;tập(số):trang»."""
+    m = re.search(r"(?<!\d)((?:19|20)\d{2})(?:\s+[A-Z][a-z]{2}(?:\s+\d{1,2})?)?\s*;\s*([\w-]+)?\s*(?:\(([^)]*)\))?"
+                  r"(?:\s*:\s*([eSA-Za-z]{0,2}\d[\w-]*))?", dong)
+    if not m:
+        m2 = re.search(r"(?<!\d)((?:19|20)\d{2})\s*:\s*([eSA-Za-z]{0,2}\d[\w-]*)", dong)
+        return {"nam": m2.group(1), "tap": None, "so": None, "trang": m2.group(2)} if m2 else \
+            {"nam": (re.findall(r"(?<!\d)((?:19|20)\d{2})(?!\d)", dong) or [None])[-1], "tap": None, "so": None,
+             "trang": None}
+    return {"nam": m.group(1), "tap": m.group(2), "so": m.group(3), "trang": m.group(4)}
+
+
+def _trang_bang_nhau(a: str, b: str) -> bool:
+    """«785-94» ≡ «785-794» (NLM rút gọn chữ số đầu trùng); «b2393-b2393» ≡ «b2393»; nguồn chỉ ghi TRANG ĐẦU
+    («1045») khớp dòng «1045-1056» (Crossref thường chỉ nộp trang đầu)."""
+    def _mo(x: str) -> Tuple[str, str]:
+        x = re.sub(r"\s+", "", str(x or "")).replace("–", "-")
+        dau, _, cuoi = x.partition("-")
+        if cuoi and len(cuoi) < len(dau) and dau.isdigit() and cuoi.isdigit():
+            cuoi = dau[: len(dau) - len(cuoi)] + cuoi
+        return dau.lower(), ("" if cuoi.lower() == dau.lower() else cuoi.lower())
+    ma, mb = _mo(a), _mo(b)
+    return ma == mb or (ma[0] == mb[0] and (not ma[1] or not mb[1]))
+
+
+def _so_bang_nhau(nguon: str, dong: str) -> bool:
+    """Tập/số khớp theo CHỮ SỐ: «5+6» chứa «5», «Suppl 1» ≡ «Supplement_1», «4S» ≡ «4»."""
+    a, b = re.findall(r"\d+", str(nguon or "")), re.findall(r"\d+", str(dong or ""))
+    if not a or not b:
+        return str(nguon or "").strip().lower() == str(dong or "").strip().lower() or not a or not b
+    return a[0].lstrip("0") in {x.lstrip("0") for x in b} or b[0].lstrip("0") in {x.lstrip("0") for x in a}
+
+
+def tra_crossref_tieu_de(tieu_de: str, nam: Optional[str]) -> Optional[Dict[str, Any]]:
+    """Bản ghi Crossref khớp tiêu đề (query.bibliographic, 3 kết quả đầu) — chỉ trả khi tỷ lệ chuỗi tiêu đề ≥ ngưỡng VÀ
+    năm trùng (± 1 cho bản in/bản điện tử). Không khớp ⇒ None (không đoán DOI)."""
+    if str(REPO) not in sys.path:
+        sys.path.insert(0, str(REPO))
+    from app.utils.http import HttpClient  # noqa: PLC0415
+
+    data = HttpClient().get_json("https://api.crossref.org/works",
+                                 params={"query.bibliographic": tieu_de, "rows": 3}) or {}
+    for it in ((data.get("message") or {}).get("items") or []) if isinstance(data, dict) else []:
+        td = " ".join(it.get("title") or [])
+        nam_it = str(((it.get("issued") or {}).get("date-parts") or [[None]])[0][0] or "")
+        if _ty_le_chuoi(td, tieu_de) >= 0.9 and (not nam or not nam_it or abs(int(nam_it) - int(nam)) <= 1):
+            return it
+    return None
+
+
+def tra_pmcid(pmids: Sequence[str]) -> Dict[str, str]:
+    """{pmid: PMCID} qua NCBI PMC ID Converter (miễn phí). Lỗi mạng ⇒ {} (không đo được — ghi lý do ở sổ)."""
+    if not pmids:
+        return {}
+    if str(REPO) not in sys.path:
+        sys.path.insert(0, str(REPO))
+    from app.utils.http import HttpClient  # noqa: PLC0415
+
+    data = HttpClient().get_json("https://www.ncbi.nlm.nih.gov/pmc/utils/idconv/v1.0/",
+                                 params={"ids": ",".join(pmids), "format": "json", "tool": "ebm-tltk"}) or {}
+    return {str(r.get("pmid")): str(r["pmcid"]) for r in (data.get("records") or []) if isinstance(r, dict)
+            and r.get("pmcid") and r.get("pmid")}
+
+
+def _nam_crossref(it: Mapping[str, Any]) -> List[str]:
+    ra = []
+    for k in ("published-print", "published-online", "issued"):
+        dp = ((it.get(k) or {}).get("date-parts") or [[None]])[0]
+        if dp and dp[0]:
+            ra.append(str(dp[0]))
+    return ra
+
+
+def doi_chieu_crossref(dong: str, it: Mapping[str, Any]) -> Dict[str, Any]:
+    """So dòng TLTK với bản ghi Crossref: {'lech': [...], 'trang_nguon': …, 'nguon_khong_co_trang': bool}."""
+    vt = _vi_tri_tltk(dong)
+    lech: List[str] = []
+    td = " ".join(it.get("title") or [])
+    # tỷ lệ từ của tiêu đề NGUỒN có mặt trong dòng (không tách câu theo «?»/«:» — tiêu đề hay có dấu hỏi, dấu hai chấm)
+    if td and _ty_le_tieu_de(td, dong) < NGUONG_TIEU_DE:
+        lech.append(f"tiêu đề khác nguồn — Crossref: «{td[:120]}»")
+    nam = _nam_crossref(it)
+    if nam and vt["nam"] and vt["nam"] not in nam:
+        lech.append(f"năm {vt['nam']} — Crossref ghi {'/'.join(dict.fromkeys(nam))}")
+    for khoa, ten in (("volume", "tap"), ("issue", "so")):
+        gt = str(it.get(khoa) or "").strip()
+        if gt and vt[ten] and not _so_bang_nhau(gt, str(vt[ten])):
+            lech.append(f"{'tập' if ten == 'tap' else 'số'} {vt[ten]} — Crossref ghi {gt}")
+    trang = str(it.get("page") or "").strip() or None
+    if trang and vt["trang"] and not _trang_bang_nhau(trang, vt["trang"]):
+        lech.append(f"trang {vt['trang']} — Crossref ghi {trang}")
+    return {"lech": lech, "trang_nguon": trang, "nguon_khong_co_trang": trang is None,
+            "crossref": {"tieu_de": td[:300], "nam": nam[:1], "tap": it.get("volume"), "so": it.get("issue"),
+                         "trang": trang, "tap_chi": (it.get("container-title") or [None])[0]}}
+
+
+def dung_so_dinh_danh(out_dir: Path, study: str, *, tra_doi: Any = tra_crossref, tra_td: Any = tra_crossref_tieu_de,
+                      tra_pmc: Any = tra_pmcid) -> Dict[str, Any]:
+    """Sổ định danh + đối chiếu siêu dữ liệu cho MỌI TLTK của đề cương nộp (mạng: Crossref, NCBI idconv — miễn phí).
+    Hàm tra tiêm được cho kiểm thử."""
+    import danh_muc_trich_dan as DMT  # noqa: PLC0415
+
+    md = (Path(out_dir) / f"DE_CUONG_NOP_HOI_DONG_{study}.md").read_text(encoding="utf-8")
+    muc = tach_tltk(md) or {}
+    pmids = [m.group(1) for d in muc.values() for m in [re.search(r"PMID:\s*(\d+)", d)] if m]
+    # PMCID: trước hết từ biên nhận A12 (PubMed `ArticleIdList`, cùng lượt kiểm rút bài), rồi NCBI idconv cho phần còn
+    # thiếu. Đo 22/11/2026: idconv trả HTTP 403 qua đường mạng hiện hành ⇒ biên nhận A12 là nguồn chính.
+    pmc: Dict[str, str] = {}
+    try:
+        meta = json.loads((Path(out_dir) / "A12_METADATA_RECEIPT.json").read_text(encoding="utf-8")).get("metadata")
+        pmc = {str(k): str(v["pmcid"]) for k, v in (meta or {}).items() if isinstance(v, dict) and v.get("pmcid")}
+    except (OSError, ValueError, AttributeError):
+        pass
+    pmc_loi = None
+    con = [x for x in pmids if x not in pmc]
+    try:
+        pmc.update((tra_pmc(con) or {}) if (tra_pmc and con) else {})
+    except Exception as exc:  # noqa: BLE001 — mạng: ghi lý do, không đoán
+        pmc_loi = f"NCBI idconv lỗi {type(exc).__name__}"
+    ra: List[Dict[str, Any]] = []
+    for so, dong in sorted(muc.items()):
+        loai = DMT.loai_tltk(dong)
+        pm = re.search(r"PMID:\s*(\d+)", dong)
+        doi = next(iter(sorted(DMT.dinh_danh(dong) - {f"pmid:{pm.group(1)}"} if pm else DMT.dinh_danh(dong))), "")
+        doi = doi.split(":", 1)[1] if doi.startswith("doi:") else ""
+        e: Dict[str, Any] = {"so": so, "bam_dong": bam_dong(dong), "loai": loai, "pmid": pm.group(1) if pm else None,
+                             "pmcid": None, "doi": doi or None, "doi_de_xuat": None, "isbn": None, "so_hieu": None,
+                             "url": None, "lech": [], "ly_do": [], "trang_nguon": None, "nguon_khong_co_trang": None}
+        if e["pmid"]:
+            e["pmcid"] = pmc.get(e["pmid"])
+            if not e["pmcid"]:
+                e["ly_do"].append(pmc_loi or "PubMed Central không có bản của bài (idconv không trả PMCID)")
+        if loai == "bai_bao":
+            it = None
+            if e["doi"]:
+                try:
+                    it = tra_doi(e["doi"]) if tra_doi else None
+                except Exception as exc:  # noqa: BLE001
+                    e["ly_do"].append(f"Crossref lỗi {type(exc).__name__} — chưa đối chiếu siêu dữ liệu")
+                if it is None and tra_doi:
+                    e["ly_do"].append("Crossref không có bản ghi của DOI — chưa đối chiếu siêu dữ liệu")
+            elif not e["pmid"]:
+                try:
+                    it = tra_td(_tieu_de_tltk(dong), _vi_tri_tltk(dong)["nam"]) if tra_td else None
+                except Exception as exc:  # noqa: BLE001
+                    e["ly_do"].append(f"Crossref lỗi {type(exc).__name__} khi tìm DOI theo tiêu đề")
+                if it is not None:
+                    e["doi_de_xuat"] = it.get("DOI")
+                else:
+                    e["ly_do"].append("không tìm thấy DOI khớp tiêu đề + năm trên Crossref")
+            if it is not None:
+                dc = doi_chieu_crossref(dong, it)
+                if e["pmid"]:
+                    # mục có PMID: nguồn có thẩm quyền là PubMed (K13 đối chiếu biên nhận A12); khác biệt với Crossref
+                    # chỉ ghi THAM KHẢO (vd bài tiếng Tây Ban Nha: PubMed giữ tiêu đề gốc, Crossref ghi tiêu đề khác)
+                    dc["lech_tham_khao"], dc["lech"] = dc["lech"], []
+                e.update(dc)
+        elif loai == "van_ban_quy_pham":
+            sh = re.search(r"\d+(?:/\d{4})?/[\wĐđ\-]+", dong)
+            e["so_hieu"] = sh.group(0) if sh else None
+            u = re.search(r"https?://\S+", dong)
+            e["url"] = u.group(0).rstrip(".") if u else None
+            if not e["url"]:
+                e["ly_do"].append("dòng TLTK chưa ghi đường dẫn nguồn chính thức (Cổng TTĐT cơ quan ban hành)")
+        elif loai in ("sach", "chuong_sach"):
+            isbn = re.search(r"ISBN[:\s]*([\dXx-]{10,17})", dong)
+            e["isbn"] = isbn.group(1) if isbn else None
+            if not e["isbn"] and not e["doi"]:
+                e["ly_do"].append("sách chưa ghi ISBN hoặc DOI")
+        ra.append(e)
+    return {"schema": SCHEMA_DINH_DANH, "study": study, "luc": dt.datetime.now().isoformat(timespec="seconds"),
+            "nguon": "Crossref /works, NCBI PMC ID Converter", "muc": ra}
+
+
+def doc_so_dinh_danh(out_dir: Path, study: str) -> Dict[int, Dict[str, Any]]:
+    """{số TLTK: mục sổ} — sổ vắng/hỏng ⇒ {}."""
+    try:
+        j = json.loads((Path(out_dir) / TEP_DINH_DANH.format(study=study)).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return {int(e["so"]): e for e in (j.get("muc") or []) if isinstance(e, dict) and str(e.get("so", "")).isdigit()}
+
+
 def main(argv: Optional[Sequence[str]] = None, exports: Optional[Path] = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("lenh", choices=("kiem", "loai-bo", "giu-chuan"))
+    ap.add_argument("lenh", choices=("kiem", "loai-bo", "giu-chuan", "dinh-danh"))
     ap.add_argument("--study", required=True)
     ap.add_argument("--ap-dung", action="store_true",
                     help="loai-bo: ghi thật vào danh mục trích dẫn · giu-chuan: ghi tệp giữ trích dẫn đạt chuẩn")
@@ -679,6 +892,21 @@ def main(argv: Optional[Sequence[str]] = None, exports: Optional[Path] = None) -
     if not out.is_dir():
         print(f"❌ Không thấy thư mục đề tài {out}")
         return 3
+    if a.lenh == "dinh-danh":
+        so = dung_so_dinh_danh(out, a.study)
+        p = out / TEP_DINH_DANH.format(study=a.study)
+        p.write_text(json.dumps(so, ensure_ascii=False, indent=1) + "\n", encoding="utf-8", newline="\n")
+        if a.json:
+            print(json.dumps(so, ensure_ascii=False, indent=1))
+            return 0
+        m = so["muc"]
+        print(f"📒 Sổ định danh {p.name}: {len(m)} TLTK · PMID {sum(1 for e in m if e['pmid'])} · PMCID "
+              f"{sum(1 for e in m if e['pmcid'])} · DOI {sum(1 for e in m if e['doi'])} (+ đề xuất "
+              f"{sum(1 for e in m if e['doi_de_xuat'])}) · lệch nguồn {sum(1 for e in m if e['lech'])}")
+        for e in m:
+            for x in e["lech"]:
+                print(f"   ≠ TLTK {e['so']}: {x}")
+        return 1 if any(e["lech"] for e in m) else 0
     if a.lenh == "kiem":
         kq = danh_gia(out, a.study)
         print(json.dumps(kq, ensure_ascii=False, indent=1)) if a.json else _in(kq)

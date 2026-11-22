@@ -39,6 +39,14 @@ Tỷ lệ kiểm soát huyết áp còn thấp [1]; tại đơn vị chưa có s
 
 Nội dung tổng quan [2].
 
+## 1.2. Chiến lược tìm kiếm tài liệu
+
+Tài liệu được tìm trên PubMed ngày 15/11/2026 với câu tìm `hypertension[tiab] AND control[tiab]`.
+
+## 1.3. Bằng chứng hiện có
+
+Một nghiên cứu cắt ngang ghi nhận tỷ lệ kiểm soát huyết áp 41% [2]; bằng chứng còn gián tiếp vì khác bối cảnh.
+
 # CHƯƠNG 2. ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP NGHIÊN CỨU
 
 ## 2.1. Đối tượng nghiên cứu

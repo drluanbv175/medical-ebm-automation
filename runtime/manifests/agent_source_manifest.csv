@@ -34,7 +34,7 @@ path,sha256,size_bytes
 .claude/agents/ket-qua-hoc-tap.md,2fe95a42d6a0601a3f529b534c6a3123074839c57c58ab85bb267969c7c8aaca,19559
 .claude/agents/khai-thac-benh-su-kham.md,f207e92a85d0ab27af7db8522f116dd69b66d711bb9e0855852a06272480b4f7,16334
 .claude/agents/khoang-trong-nghien-cuu.md,0e1a3e564a7910493ca5c613f1389d80e015606c2df90fb67586d84c55702fcf,18648
-.claude/agents/kiem-chung-trich-dan.md,c046eac3eabf312ca8d30a4e55c98b5ff49ad2b260942f993e358118a8161131,43447
+.claude/agents/kiem-chung-trich-dan.md,7defe55bae1cf03fbfd15e3da99c2969727b1acf791426f85c358342604c9595,45360
 .claude/agents/kinh-te-y-te.md,6bb5952189a62511e396132ccb37bb09f4f617832a9232b20ed68d5ef68609a8,29771
 .claude/agents/loi-dan-tuan-thu.md,863de07c0addab88dd01c56495368a98891fbc9f93bc26ab1d40ab619a121ac3,16453
 .claude/agents/meta-phan-tich.md,55e13eabfcf6c17d738280e0c3215ff17264f2d9c860e237b58ada2c03e45901,23937
@@ -56,10 +56,10 @@ path,sha256,size_bytes
 .claude/agents/thang-diem-nguy-co.md,e1c6e40f29bf06c27d2cb898490538bd7e0f7332c37180a23028eea3d9061492,26408
 .claude/agents/theo-doi-benh-man.md,e08ffa0c878abdfe30d07a9a69d2808b0ab334e99a899b6cbaa52373816bee0c,24027
 .claude/agents/thiet-ke-nghien-cuu.md,ab42a95fbcd067ae699a2bff53b6bd217690941cb6dcfb3c9747ed3b905b43ee,71180
-.claude/agents/thu-thu-tai-lieu.md,105c8ce35c653d26f78440dc6bac0c55c738991470ff7ad6ac398ca2760d1b09,31644
-.claude/agents/tong-quan-y-van.md,2306933be920ec24201781cd0d01624314400fa601ab166667cdd883963f3cd9,32348
+.claude/agents/thu-thu-tai-lieu.md,f0a4a0e95a137780609a0d29717876d0d24a6ad83484d4d15802582ce0d93362,32143
+.claude/agents/tong-quan-y-van.md,eef700ca1ee0b4eb7dc52261ad9eadce72eef5183c43e1d74c17ee562b1422ae,33135
 .claude/agents/tra-cuu-chung-cu.md,3c6ffc6b63e3c902909a5a7ed44621f813ed85054ba909a8d3a4b6c24b40da29,24794
 .claude/agents/tram-cam-lo-au.md,cd615b967a6ca2823e97f1d154eadc96fd341f6b609818e7979fa29023c6f962,22908
 .claude/agents/trich-xuat-y-van.md,5954d9843ebcb8079de20f9bcf3f913aba9aa905438cf9c3d2638d93096dd5e3,18633
 .claude/agents/trong-tai-tranh-bien.md,a0ba64308a729a5d15168b8b9fd47b92a25c2b20dd8a3a51620da1b32ed292ca,12001
-.claude/agents/viet-ban-thao.md,f473df9a425d3ad6d09af24378552b06a05449009ace21e335b00ec95cb60dbd,75742
+.claude/agents/viet-ban-thao.md,63a492d2bcfb3b94caf16b6184f27ee2c71281a3137ea55e701ede9a92120ce4,76259

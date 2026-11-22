@@ -478,7 +478,7 @@
    "viec": "danh mục trích dẫn đề tài và danh mục TLTK trong văn bản",
    "nguoi_dung_phu": ["viet-ban-thao", "thu-thu-tai-lieu"],
    "nguoi_kiem": [],
-   "chot_kiem": ["tools/kiem_de_cuong_nop_hoi_dong.py", "tests/test_toan_van_trich_dan_20261118.py"],
+   "chot_kiem": ["tools/kiem_de_cuong_nop_hoi_dong.py", "tests/test_toan_van_trich_dan_20261118.py", "tests/test_tltk_nlm_20261122.py"],
    "nguyen_tac": {
     "nt:trung_thuc": "bài đã loại không còn được dùng làm chứng cứ",
     "tong:bang_chung": "danh mục là nguồn duy nhất của TLTK"
@@ -1335,7 +1335,7 @@
    "viec": "kiểm nội dung trích dẫn A12 (câu khẳng định ↔ abstract) bằng API",
    "nguoi_dung_phu": ["viet-ban-thao"],
    "nguoi_kiem": [],
-   "chot_kiem": ["tools/duyet_kiem_may_api.py", "tests/test_a12_batch_20261121.py"],
+   "chot_kiem": ["tools/duyet_kiem_may_api.py", "tests/test_a12_batch_20261121.py", "tests/test_kiem_noi_dung_agent_20261122.py"],
    "nguyen_tac": {
     "tong:kiem_chung": "từng câu có [n] đối chiếu với abstract của tài liệu [n]",
     "nt:trung_thuc": "bắt trích sai nội dung"
@@ -2219,9 +2219,9 @@
    "cong": ["G10"],
    "nhiem_vu": ["G10-T4"],
    "viec": "tiêu chí từng mục của 12 chuẩn ngoài STROBE/RECORD/CROSS cho K17",
-   "nguoi_dung_phu": [],
+   "nguoi_dung_phu": ["tong-quan-y-van"],
    "nguoi_kiem": [],
-   "chot_kiem": ["K17", "tests/test_k17_chuan_them_20261121.py"],
+   "chot_kiem": ["K17", "tests/test_k17_chuan_them_20261121.py", "tests/test_sanra_tong_quan_20261122.py"],
    "nguyen_tac": {
     "nt:khoa_hoc": "tiêu chí bám nguyên văn chuẩn gốc của từng thiết kế",
     "nt:trung_thuc": "chuẩn chưa đối chiếu bảng gốc chỉ cảnh báo, không giả đạt"
@@ -2252,7 +2252,7 @@
    "viec": "chốt toàn văn cho mọi trích dẫn đề tài (G10-AUTO-12)",
    "nguoi_dung_phu": ["thu-thu-tai-lieu"],
    "nguoi_kiem": [],
-   "chot_kiem": ["tools/g10_quality_gate.py", "tests/test_toan_van_trich_dan_20261118.py"],
+   "chot_kiem": ["tools/g10_quality_gate.py", "tests/test_toan_van_trich_dan_20261118.py", "tests/test_so_dinh_danh_tltk_20261122.py"],
    "nguyen_tac": {
     "tong:bang_chung": "mọi trích dẫn có toàn văn đã đọc"
    }

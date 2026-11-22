@@ -180,8 +180,11 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                 # 21/11/2026 — K15: câu bối cảnh không nguồn «thường được kê kéo dài» ⇒ dẫn nguồn đã kiểm của kịch bản
                 "background_problem": vi("Dùng thuốc ức chế bơm proton đi kèm nguy cơ gãy xương cao hơn "
                                          "(PMID 26462494), nên việc kê kéo dài ở người cao tuổi cần được đánh giá lại"),
-                "evidence_summary": vi("Phân tích gộp quan sát (PMID 26462494) báo nguy cơ gãy xương mọi vị trí "
-                                       "tăng vừa phải ở người dùng PPI"),
+                # 22/11/2026 — SANRA mục 6 (số liệu kết cục có nguồn): câu bằng chứng chép đúng số trong abstract PubMed
+                # của PMID đã kiểm chứng (kho A12 giả lập), không còn câu định tính không số.
+                "evidence_summary": vi("Phân tích gộp 18 nghiên cứu quan sát (PMID 26462494) báo dùng PPI làm tăng "
+                                       "vừa phải nguy cơ gãy xương hông (RR 1,26; KTC 95%: 1,16–1,36) và gãy xương "
+                                       "mọi vị trí (RR 1,33; KTC 95%: 1,15–1,54)"),
                 "knowledge_gap": vi("Thiếu thuần tập trên người cao tuổi ngoại trú Việt Nam"),
                 "benefit_risk_rationale": vi("Không can thiệp; nguy cơ duy nhất là lộ dữ liệu — khử định danh trước "
                                              "phân tích"),
@@ -293,8 +296,12 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                              "population_summary_measure": "Tỷ số chênh (OR) hiệu chỉnh"},
                 "background_problem": vi("Nguy cơ biến chứng tiêu hoá trên khác nhau theo từng thuốc chống viêm không "
                                          "steroid (PMID 23137151)"),
-                "evidence_summary": vi("Phân tích gộp quan sát (PMID 23137151) báo nguy cơ biến chứng tiêu hoá trên "
-                                       "tăng với mọi NSAID, khác nhau theo loại"),
+                # 22/11/2026 — SANRA mục 6 (số liệu kết cục có nguồn): câu bằng chứng chép đúng số trong abstract PubMed
+                # của PMID đã kiểm chứng (kho A12 giả lập), không còn câu định tính không số.
+                "evidence_summary": vi("Phân tích gộp 28 nghiên cứu quan sát (PMID 23137151) báo nguy cơ tương đối "
+                                       "biến chứng tiêu hoá trên khác nhau theo từng NSAID, từ 1,43 (KTC 95%: "
+                                       "0,65–3,15) với aceclofenac đến 18,45 (KTC 95%: 10,99–30,97) với azapropazone, "
+                                       "với ibuprofen là 1,84 (KTC 95%: 1,54–2,20)"),
                 "knowledge_gap": vi("Thiếu số liệu phơi nhiễm theo loại NSAID ở người cao tuổi Việt Nam"),
                 "benefit_risk_rationale": vi("Không can thiệp; chỉ phỏng vấn và trích hồ sơ"),
                 "study_schema_timeline": "Xác định ca → chọn 2 chứng ghép → phỏng vấn phơi nhiễm → trích hồ sơ đơn "
@@ -494,7 +501,11 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                              "population_summary_measure": "Chỉ số C, độ dốc hiệu chuẩn, đường cong hiệu chuẩn"},
                 "background_problem": vi("Người suy tim ngoại trú có nguy cơ nhập viện khác nhau nhưng lịch tái khám "
                                          "như nhau"),
-                "evidence_summary": vi("Các mô hình nguy cơ suy tim hiện có chủ yếu từ quần thể châu Âu và Bắc Mỹ"),
+                # 22/11/2026 — SANRA mục 6 (số liệu kết cục có nguồn): câu bằng chứng chép đúng số trong abstract PubMed
+                # của PMID đã kiểm chứng (kho A12 giả lập), không còn câu định tính không số.
+                "evidence_summary": vi("Tổng quan hệ thống 117 mô hình tiên lượng trong 55 bài (PMID 25194294) báo "
+                                       "khả năng phân biệt còn khiêm tốn: C-statistic trung bình 0,71 với mô hình dự "
+                                       "báo tử vong và 0,68 với mô hình dự báo nhập viện vì suy tim"),
                 "knowledge_gap": vi("Thiếu mô hình kiểm định cho người suy tim ngoại trú Việt Nam"),
                 "benefit_risk_rationale": vi("Quan sát, không can thiệp; nguy cơ tối thiểu"),
                 "study_schema_timeline": "Tuyển → đo yếu tố dự báo → theo dõi 12 tháng → phát triển và kiểm định nội",
@@ -725,7 +736,11 @@ def kich_ban_them(vi: Callable[[str], str], tien_to: str, hom_nay: str = "<HOM_N
                              "population_summary_measure": "Không áp dụng"},
                 "background_problem": vi("Lý do người ĐTĐ típ 2 đã có chỉ định insulin nhưng trì hoãn bắt đầu điều trị "
                                          "chưa được mô tả tại phòng khám ngoại trú ở Việt Nam"),
-                "evidence_summary": vi("Y văn quốc tế mô tả «kháng insulin tâm lý»; bối cảnh Việt Nam chưa được mô tả"),
+                # 22/11/2026 — SANRA mục 6 (số liệu kết cục có nguồn): câu bằng chứng chép đúng số trong abstract PubMed
+                # của PMID đã kiểm chứng (kho A12 giả lập), không còn câu định tính không số.
+                "evidence_summary": vi("Khảo sát trực tuyến 1.400 người ĐTĐ típ 2 chưa dùng insulin ở tám nước phương "
+                                       "Tây (PMID 21469914) ghi nhận tỷ lệ không sẵn lòng bắt đầu insulin («kháng "
+                                       "insulin tâm lý») là 17,2%, dao động từ 5,9% (Tây Ban Nha) đến 37,3% (Ý)"),
                 "knowledge_gap": vi("Chưa có dữ liệu định tính ở người ngoại trú Việt Nam"),
                 "benefit_risk_rationale": vi("Phỏng vấn có đồng ý; nguy cơ khó chịu cảm xúc thấp, có thể dừng bất cứ "
                                              "lúc nào"),

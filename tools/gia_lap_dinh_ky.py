@@ -412,7 +412,12 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 },
                 "team_roles": _vi("Chủ nhiệm (PI), thống kê viên, quản lý dữ liệu — vai trò, không ghi danh tính"),
                 "background_problem": _vi("Kiểm soát huyết áp ở người điều trị ngoại trú chưa được đo định kỳ"),
-                "evidence_summary": _vi("Nền bằng chứng G0 cho thấy tỷ lệ kiểm soát khác nhau nhiều giữa cơ sở"),
+                # 22/11/2026 — SANRA mục 6 (số liệu kết cục có nguồn): câu bằng chứng chép đúng số trong abstract PubMed
+                # của PMID đã kiểm chứng (kho A12 giả lập), không còn câu định tính không số.
+                "evidence_summary": _vi("Nghiên cứu cắt ngang trên 400 người bệnh tăng huyết áp tại 10 trung tâm chăm "
+                                        "sóc ban đầu ở Thụy Điển (PMID 40583484) ghi nhận tỷ lệ kiểm soát huyết áp "
+                                        "(< 140/90 mmHg) là 41%, trong đó dùng từ hai thuốc hạ áp trở lên đi kèm "
+                                        "khả năng đạt kiểm soát cao hơn (OR 1,62; KTC 95%: 1,07–2,46)"),
                 "knowledge_gap": _vi("Thiếu số liệu tỷ lệ kiểm soát cập nhật tại cơ sở này"),
                 "benefit_risk_rationale": _vi("Không can thiệp, nguy cơ tối thiểu (chỉ đo huyết áp và hỏi thông tin)"),
                 "study_schema_timeline": "Sàng lọc → đồng ý tham gia → đo huyết áp và phỏng vấn một lần tại lần khám",

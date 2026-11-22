@@ -22,6 +22,8 @@ docx = pytest.importorskip("docx")
 import kiem_de_cuong_nop_hoi_dong as K  # noqa: E402
 
 MA = "de-tai-thu"
+# 22/11/2026: đề cương «tốt» có chương tổng quan đủ sáu mục SANRA 2019 (K17) — mục tiêu cụ thể, nguồn/câu tìm/ngày tìm,
+# số liệu kết cục có nguồn, loại và giới hạn của bằng chứng
 TOT = """# ĐỀ CƯƠNG NGHIÊN CỨU KHOA HỌC
 
 Phiên bản đề cương: 1.0, ngày 15/10/2026
@@ -32,7 +34,13 @@ Thời gian chờ liên quan với hài lòng [1].
 
 # 2. MỤC TIÊU NGHIÊN CỨU
 
+1. Xác định tỷ lệ hài lòng của người bệnh ngoại trú.
+
 # 3. TỔNG QUAN TÀI LIỆU
+
+Tài liệu được tìm trên PubMed ngày 15/10/2026 với câu tìm `satisfaction[tiab] AND outpatient[tiab]`.
+
+Một nghiên cứu cắt ngang ghi nhận tỷ lệ hài lòng 62,3% [1]; bằng chứng trong nước còn gián tiếp vì khác bối cảnh.
 
 # 4. ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP NGHIÊN CỨU
 

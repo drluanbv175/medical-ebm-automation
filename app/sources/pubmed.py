@@ -402,6 +402,12 @@ def _truong_vancouver(art: ET.Element) -> dict:
             if (el.get("EIdType") or "").lower() != "doi" and (el.text or "").strip():
                 ra["pages"] = (el.text or "").strip()
                 break
+    # 22/11/2026 (bác sĩ: TLTK «ghi đủ PMID/PMCID/DOI khi có»): PMCID của CHÍNH bài — neo `PubmedData/ArticleIdList`
+    # (con trực tiếp), không lấy ArticleIdList của danh mục tài liệu tham khảo lồng bên trong
+    for el in art.findall("PubmedData/ArticleIdList/ArticleId"):
+        if (el.get("IdType") or "").lower() == "pmc" and (el.text or "").strip():
+            ra["pmcid"] = (el.text or "").strip()
+            break
     return ra
 
 

@@ -132,6 +132,7 @@ Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C
 - Công cụ `tools/kiem_tong_quan_g0_api.py` (chủ) — kiểm tổng quan G0 (G0-T3/T4) bằng Claude API; chốt kiểm `tools/duyet_kiem_may_api.py`; nguyên tắc: kiểm chứng khách quan.
 - Công cụ `tools/g0_quality_gate.py` (dùng phụ) — bộ chấm cổng G0 đo đầu ra nhiệm vụ G0-T3 của agent này: tự chấm trước khi trả, tiêu chí đỏ thì sửa tại nguồn (chủ `dieu-phoi-g0`); nguyên tắc: đạt chuẩn định trước · câu hỏi giá trị.
 - Công cụ `tools/g1_quality_gate.py` (dùng phụ) — bộ chấm cổng G1 đo đầu ra nhiệm vụ G1-T2 của agent này: tự chấm trước khi trả, tiêu chí đỏ thì sửa tại nguồn (chủ `dieu-phoi-g1`); nguyên tắc: đạt chuẩn định trước · phương pháp phù hợp.
+- Công cụ `tools/tieu_chi_chuan_de_cuong.py` (dùng phụ) — chương TỔNG QUAN TÀI LIỆU của đề cương (tổng quan tường thuật) chấm theo SANRA 2019 (PMID 30962953), 6 mục: tầm quan trọng · mục tiêu · tìm kiếm mô tả đủ theo PRISMA-S (nguồn đã tra — mục 1, câu tìm đầy đủ — mục 8, ngày tìm — mục 13) · trích dẫn cho mọi câu số liệu · nêu giới hạn bằng chứng · số liệu kết cục cùng đoạn với trích dẫn; tổng quan hệ thống KHÔNG dùng SANRA (dùng PRISMA 2020/PRISMA-P); đo bằng `python3 tools/kiem_chuan_de_cuong_theo_muc.py --study <mã> --chi-tiet` (K17); chốt kiểm `tests/test_sanra_tong_quan_20261122.py`; nguyên tắc: khoa học · trung thực–minh bạch.
 
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
