@@ -1,9 +1,9 @@
 {
   "study": "btm-dtd2-ngoai-tru-BVQY175",
   "gate": "G1",
-  "gate_status": "DRAFT_READY — KIỂM TỰ ĐỘNG ĐÃ CHẠY; G1 CHƯA ĐƯỢC PI/METHODOLOGIST XÁC NHẬN",
+  "gate_status": "PASS — G1 DESIGN + REPORTING MAP ĐÃ ĐƯỢC XÁC NHẬN",
   "automation_status": "AUTOMATED_CHECKS_PASS",
-  "generated_at": "2026-11-20T05:53:20.118837",
+  "generated_at": "2026-11-22T05:59:11.632717",
   "question_type": "descriptive",
   "design": {
     "primary": "Nghiên cứu Cắt ngang Mô tả có phân tích (Analytical cross-sectional)",
@@ -83,9 +83,9 @@
   "quality_gate": {
     "schema_version": "1.1",
     "contract_version": "G1-2026.1",
-    "status": "DRAFT_READY_NEEDS_HUMAN_REVIEW",
+    "status": "PASS_G1_CONFIRMED",
     "automated_checks_passed": true,
-    "human_confirmation_complete": false,
+    "human_confirmation_complete": true,
     "automatic_criteria": [
       {
         "id": "G1-AUTO-00",
@@ -239,33 +239,31 @@
       {
         "id": "G1-HUMAN-08",
         "label": "Có vai trò, thời điểm rà phương pháp và xác nhận gắn đúng nội dung",
-        "status": "REVIEW",
-        "evidence": "reviewed_by_role=chủ nhiệm; reviewed_at=2026-11-18T11:40:57+07:00; nội dung đã đổi sau khi xác nhận (dấu lúc xác nhận c504c4e6ea68bd69 ≠ hiện tại aa132ca9bc229315) — chủ nhiệm đọc lại rồi xác nhận lại",
+        "status": "PASS",
+        "evidence": "reviewed_by_role=chủ nhiệm; reviewed_at=2026-11-20T06:35:38+07:00; xác nhận gắn đúng nội dung hiện tại",
         "action": "Ghi reviewed_by_role, reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"aa132ca9bc229315\" (dấu của các quyết định G1 đang chốt); không cần lưu danh tính."
       }
     ],
-    "pending_actions": [
-      "Ghi reviewed_by_role, reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"aa132ca9bc229315\" (dấu của các quyết định G1 đang chốt); không cần lưu danh tính."
-    ],
+    "pending_actions": [],
     "artifact_manifest": {
       "A2": {
-        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md",
-        "sha256": "2dddd5e6d10405e21dc27067dfadf6dfcc2b556fa45d8a75ac7b0bd3cece1995"
+        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "0d0b38c94f0b4718961d17b1a665c8c5d65db218b820fedbc8cc2162f84bb5f2"
       },
       "A1b": {
-        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md",
-        "sha256": "37caa31b1e1eba4b74b93862ff0d85c69f3ab775633903c8387ca34f2be4f481"
+        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "c921540563ae18c6777b05e3e7d8795ad631c71ad122cd96882425af53212bc3"
       },
       "A2b": {
-        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md",
-        "sha256": "7e7429155be6bf47490fbd4481ab5c46e946f5287f401517e49ec916fc5e2fbe"
+        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "8916f14ee5d6a542b495592aaffe66c7bd365f3cce61f4225ef494147a85f989"
       },
       "A13": {
-        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md",
+        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md",
         "sha256": "f4f09a0ed80cff2f82df4a5556de08191525c1c41db353c44006f0ecf3344212"
       },
       "A13b": {
-        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13b_RISK_REGISTER_btm-dtd2-ngoai-tru-BVQY175.md",
+        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13b_RISK_REGISTER_btm-dtd2-ngoai-tru-BVQY175.md",
         "sha256": "aa398df7656c05ee5f285dc23e331a5d3ed283f4cf4a4eb7b438ba4f090ec7c4"
       }
     },
@@ -306,40 +304,38 @@
     "scope_statement": "PASS_G1_CONFIRMED chỉ xác nhận thiết kế/reporting map và bộ artifact G1 theo bằng chứng đã ghi; không thay IRB, khóa SAP, dữ liệu thật hoặc thẩm định khoa học độc lập. Checklist báo cáo đánh giá tính đầy đủ của mô tả, không tự chứng minh chất lượng thiết kế hay thực hiện.",
     "artifact_manifest_luc_sinh": {
       "A2": {
-        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md",
-        "sha256": "2dddd5e6d10405e21dc27067dfadf6dfcc2b556fa45d8a75ac7b0bd3cece1995"
+        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "0d0b38c94f0b4718961d17b1a665c8c5d65db218b820fedbc8cc2162f84bb5f2"
       },
       "A1b": {
-        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md",
-        "sha256": "37caa31b1e1eba4b74b93862ff0d85c69f3ab775633903c8387ca34f2be4f481"
+        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "c921540563ae18c6777b05e3e7d8795ad631c71ad122cd96882425af53212bc3"
       },
       "A2b": {
-        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md",
-        "sha256": "7e7429155be6bf47490fbd4481ab5c46e946f5287f401517e49ec916fc5e2fbe"
+        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md",
+        "sha256": "8916f14ee5d6a542b495592aaffe66c7bd365f3cce61f4225ef494147a85f989"
       },
       "A13": {
-        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md",
+        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md",
         "sha256": "f4f09a0ed80cff2f82df4a5556de08191525c1c41db353c44006f0ecf3344212"
       },
       "A13b": {
-        "path": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13b_RISK_REGISTER_btm-dtd2-ngoai-tru-BVQY175.md",
+        "path": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13b_RISK_REGISTER_btm-dtd2-ngoai-tru-BVQY175.md",
         "sha256": "aa398df7656c05ee5f285dc23e331a5d3ed283f4cf4a4eb7b438ba4f090ec7c4"
       }
     }
   },
   "quality_contract_version": "G1-2026.1",
   "artifacts": {
-    "A2_markdown": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md",
-    "A2_docx": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.docx",
-    "A1b_project_charter": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md",
-    "A2b_evidence_ledger": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md",
-    "A13_implementation_plan": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md",
-    "A13b_risk_register": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13b_RISK_REGISTER_btm-dtd2-ngoai-tru-BVQY175.md",
-    "quality_report": "/Users/nguyenluan/Library/CloudStorage/OneDrive-Personal/Claude AI/medical-ebm-automation/exports/btm-dtd2-ngoai-tru-BVQY175/G1_QUALITY_REPORT.md"
+    "A2_markdown": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.md",
+    "A2_docx": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2_PROTOCOL_DESIGN_btm-dtd2-ngoai-tru-BVQY175.docx",
+    "A1b_project_charter": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A1b_PROJECT_CHARTER_btm-dtd2-ngoai-tru-BVQY175.md",
+    "A2b_evidence_ledger": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A2b_EVIDENCE_LEDGER_btm-dtd2-ngoai-tru-BVQY175.md",
+    "A13_implementation_plan": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13_IMPLEMENTATION_PLAN_btm-dtd2-ngoai-tru-BVQY175.md",
+    "A13b_risk_register": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_A13b_RISK_REGISTER_btm-dtd2-ngoai-tru-BVQY175.md",
+    "quality_report": "/Users/nguyenluan/.ebm-worktrees/a2-cosmin-20261122/exports/btm-dtd2-ngoai-tru-BVQY175/G1_QUALITY_REPORT.md"
   },
-  "pending_doctor_actions": [
-    "Ghi reviewed_by_role, reviewed_at dạng ISO-8601 (không ở tương lai) và dau_van_tay_chot=\"aa132ca9bc229315\" (dấu của các quyết định G1 đang chốt); không cần lưu danh tính."
-  ],
+  "pending_doctor_actions": [],
   "next_gate": "G2 (Đạo đức IRB) song song với G3 (Cỡ mẫu + SAP hoàn thiện)",
   "g4_status": "PENDING — SAP chưa khóa (khóa sau G3 sau khi bác sĩ ký)",
   "disclaimer": "Cần bác sĩ kiểm chứng.",
@@ -354,7 +350,7 @@
     "masking": null,
     "alpha_sidedness": null,
     "dau_van_tay": "6ba26632a4c46b44",
-    "ghi_luc": "2026-11-20T05:53:20"
+    "ghi_luc": "2026-11-22T05:59:11"
   },
   "dau_gate_params_g1": "aa132ca9bc229315"
 }

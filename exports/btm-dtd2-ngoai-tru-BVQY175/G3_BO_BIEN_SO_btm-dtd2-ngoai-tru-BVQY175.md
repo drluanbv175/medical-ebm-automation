@@ -190,7 +190,7 @@
 - [x] Biến cho các phân tích độ nhạy G1: albumin niệu dạng khác; xét nghiệm và thuốc ngoài viện; lượt khám đầu trước 01/07; danh mục mã thận mở rộng.
 - [x] Biến nguồn cho ĐN4 (kết cục chính chỉ trên người có đơn thuốc hạ glucose): `don_ha_glucose_nam` xem đơn của mọi lượt khám năm 2026 (B10, 18/11/2026); `thuoc_ha_glucose` vẫn chỉ ghi đơn của lượt khám cuối.
 - [x] Biến kiểm soát chất lượng: người trích, ngày trích, thời gian trích.
-- [ ] **Chưa có:** tên xét nghiệm đúng như trên eHospital (mục 7). Chủ nhiệm điền; hai người duyệt trước khi trích (làm cùng quy trình trích, mục 2.8).
+- [ ] **Chưa có:** tên xét nghiệm đúng như trên eHospital (mục 7). Đã có tên UACR «Albumin niệu/Creatinin niệu – ACR» (chủ nhiệm cung cấp 22/11/2026); còn đơn vị của UACR và tên, đơn vị của creatinin huyết thanh, albumin/protein niệu dạng khác, HbA1c. Chủ nhiệm điền; hai người duyệt trước khi trích (làm cùng quy trình trích, mục 2.8).
 
 **Chống thừa:** không đề xuất loại biến nào. Ba biến cần chủ nhiệm cân nhắc vì tăng khối lượng trích:
 - `thoi_gian_trich_phut`: chỉ bắt buộc ở 10 hồ sơ đầu.
@@ -202,7 +202,7 @@ Bảng sai lệch G1 yêu cầu bảng này do hai người duyệt trước khi
 | Xét nghiệm của đề tài | Tính là | KHÔNG tính là | Tên xét nghiệm trên eHospital | Đơn vị trên eHospital |
 |---|---|---|---|---|
 | Creatinin huyết thanh | Creatinin máu (huyết thanh hoặc huyết tương) | Creatinin niệu; độ thanh thải creatinin | [CẦN CHỦ NHIỆM ĐIỀN] | [CẦN CHỦ NHIỆM ĐIỀN] |
-| UACR | Tỷ số albumin/creatinin niệu (mg/g hoặc mg/mmol) | Nồng độ microalbumin niệu đơn thuần; que nhúng | [CẦN CHỦ NHIỆM ĐIỀN] | [CẦN CHỦ NHIỆM ĐIỀN] |
+| UACR | Tỷ số albumin/creatinin niệu (mg/g hoặc mg/mmol) | Nồng độ microalbumin niệu đơn thuần; que nhúng | Albumin niệu/Creatinin niệu – ACR (chủ nhiệm cung cấp 22/11/2026) | [CẦN CHỦ NHIỆM ĐIỀN] |
 | Albumin/protein niệu dạng khác | Nồng độ microalbumin niệu; que nhúng protein; protein niệu 24 giờ; tỷ số protein/creatinin niệu | — | [CẦN CHỦ NHIỆM ĐIỀN] | [CẦN CHỦ NHIỆM ĐIỀN] |
 | HbA1c | HbA1c (%, hoặc mmol/mol) | Glucose máu; fructosamin | [CẦN CHỦ NHIỆM ĐIỀN] | [CẦN CHỦ NHIỆM ĐIỀN] |
 

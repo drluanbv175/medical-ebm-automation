@@ -1,5 +1,5 @@
 # A2 — THIẾT KẾ NGHIÊN CỨU & SAP SKELETON | hai-long-benh-nhan-C1a-BVQY175
-> Tạo tự động: 2026-11-15 18:39 | Rule-based; cỡ mẫu theo độ chính xác (G3) — không cần effect size cho kết cục chính
+> Tạo tự động: 2026-11-22 05:59 | Rule-based; cỡ mẫu theo độ chính xác (G3) — không cần effect size cho kết cục chính
 > [BẢN NHÁP TỰ ĐỘNG] — Bác sĩ xác nhận thiết kế chọn + điền [CẦN...] trước khi tiến G2/G4
 > Cần bác sĩ kiểm chứng.
 
@@ -15,7 +15,7 @@
 - Mã đề tài: `hai-long-benh-nhan-C1a-BVQY175`
 - Tên đề tài: Sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh theo yêu cầu, bệnh viện quân y tuyến cuối
 - Phiên bản protocol: 1.0
-- Ngày tạo/cập nhật: 2026-11-15 18:39
+- Ngày tạo/cập nhật: 2026-11-22 05:59
 - Chủ nhiệm, nhà phương pháp, thống kê viên, quản lý dữ liệu: Theo đề cương §6.1 (bảng RACI): chủ nhiệm đề tài (A toàn đề tài — định hướng khoa học, duyệt đề cương/SAP/kinh phí, ký hồ sơ đạo đức); thư ký/điều phối (quản lý tài liệu, lịch, sổ tiến độ, Risk Register; quản lý dữ liệu lưu trữ/sao lưu theo §6.5); nhà thống kê/phân tích (R phân tích, A về tính đúng thống kê — cỡ mẫu Whitehead MT2, viết và khoá SAP; khuyến nghị độc lập với người thu thập); điều tra viên phát/thu phiếu (ngoài Khoa C1a); người nhập liệu (nhập đôi 100%, nên khác điều tra viên); giám sát chất lượng QC; tổ mở hòm phiếu 2 người và tổ mã hoá ý kiến mở 2 người + 1 phân xử (đều ngoài khoa; chủ nhiệm không tham gia); hội đồng chuyên gia I-CVI/S-CVI 6–10 người (≥ 2 đại diện người bệnh, ≤ 2 người thuộc C1a); bên thứ ba Phòng CNTT/QLCL trích HIS. Số người cụ thể mỗi vai do chủ nhiệm ấn định theo cỡ mẫu và lưu lượng khám.
 - Tài trợ, bảo hiểm, xung đột lợi ích và vai trò nhà tài trợ: [CẦN HOÀN THIỆN Ở G2/G9]
 - Chuẩn đề cương: Protocol định trước; đăng ký nếu cần minh bạch
@@ -243,17 +243,17 @@ Chuẩn đề cương/protocol: Protocol định trước; đăng ký nếu cầ
 > Phát hiện tín hiệu: đề tài có cấu phần xây dựng/kiểm định thang đo/bộ câu hỏi (PROM). Mỗi đặc tính truy nguyên về
 > đề cương nộp/SAP (giai đoạn 5, 15/11/2026) — ô [CẦN] chỉ còn ở đặc tính đề cương chưa nói tới.
 
-- Thiết kế item + miền nội dung: đã có — đề cương nộp mục 4.5.1
-- Độ giá trị nội dung (content validity): đã có — đề cương nộp mục 4.5.1
-- Phỏng vấn nhận thức / thử nghiệm phiếu: đã có — đề cương nộp mục 4.5.1
-- Dịch thuật & thích nghi văn hóa (nếu công cụ gốc nước ngoài): không áp dụng — công cụ do nhóm tự xây dựng (đề cương nộp mục 4.5.1)
-- Độ giá trị cấu trúc (EFA/CFA): đã có — đề cương nộp mục 4.5.3; SAP §3, §10
-- Độ tin cậy nội tại (Cronbach's α/ω): đã có — đề cương nộp mục 4.5.3; SAP §3
-- Độ tin cậy lặp lại (test–retest ICC): ngoài phạm vi đề tài (đề cương nộp mục 4.5.3 ghi rõ)
-- Độ giá trị hội tụ/phân biệt: đã có — đề cương nộp mục 4.5.2; SAP §2
-- Độ đáp ứng & MCID: ngoài phạm vi đề tài (đề cương nộp mục 4.5.3 ghi rõ)
-- Sai số đo (SEM/SDC): ngoài phạm vi đề tài (đề cương nộp mục 4.5.3 ghi rõ)
-- Hiệu ứng sàn–trần: đã có — đề cương nộp mục 4.5.3; SAP §3
+- Thiết kế item + miền nội dung: đã có — đề cương nộp mục 2.6.1.1
+- Độ giá trị nội dung (content validity): đã có — đề cương nộp mục 2.6.1.1
+- Phỏng vấn nhận thức / thử nghiệm phiếu: đã có — đề cương nộp mục 2.6.1.1
+- Dịch thuật & thích nghi văn hóa (nếu công cụ gốc nước ngoài): không áp dụng — công cụ do nhóm tự xây dựng (đề cương nộp mục 2.6.1.1)
+- Độ giá trị cấu trúc (EFA/CFA): đã có — đề cương nộp mục 2.6.1.3; SAP §3, §10
+- Độ tin cậy nội tại (Cronbach's α/ω): đã có — đề cương nộp mục 2.6.1.3; SAP §3
+- Độ tin cậy lặp lại (test–retest ICC): ngoài phạm vi đề tài (đề cương nộp mục 2.6.1.3 ghi rõ)
+- Độ giá trị hội tụ/phân biệt: đã có — đề cương nộp mục 2.6.1.2; SAP §2
+- Độ đáp ứng & MCID: ngoài phạm vi đề tài (đề cương nộp mục 2.6.1.3 ghi rõ)
+- Sai số đo (SEM/SDC): ngoài phạm vi đề tài (đề cương nộp mục 2.6.1.3 ghi rõ)
+- Hiệu ứng sàn–trần: đã có — đề cương nộp mục 2.6.1.3; SAP §3
 - Chuẩn báo cáo: COSMIN Reporting Guideline.
 - → Cân nhắc mời agent `cong-cu-do-luong` hỗ trợ chi tiết từng bước.
 

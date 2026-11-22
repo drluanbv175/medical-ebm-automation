@@ -218,6 +218,14 @@ python tools/gen_research_docx.py --study "<TEN>" --artifact interpretation
 - **Năm mục cố định:** 1. Kết quả chính · 2. Ý nghĩa thống kê và ý nghĩa lâm sàng · 3. Đối chiếu y văn (PMID/DOI) · 4. Điểm mạnh và hạn chế · 5. Hàm ý thực hành và hướng nghiên cứu tiếp; hết «[CẦN …]»; kèm «Cần bác sĩ kiểm chứng».
 - **Số liệu:** Bảng kết quả chính có đủ cột «Kết cục · Thước đo · Ước lượng điểm · KTC 95% · p · Ý nghĩa lâm sàng · Nguồn kết quả»; mỗi dòng dẫn MỘT tệp kết quả có thật trong `06_ket_qua/` hoặc `06_phan_tich_R/output/` và mọi số (ước lượng, hai cận) phải CÓ trong tệp đó (theo số chữ số thập phân đã báo) — chép đúng, không làm tròn khác, không tự tính lại; cận dưới ≤ ước lượng ≤ cận trên; p dưới 0,001 ghi «< 0,001» (không «0,000»); một dấu thập phân thống nhất.
 - **Văn phong:** không «đã chứng minh», «chứng minh rằng», «khẳng định chắc chắn», «xu hướng/gần có ý nghĩa», «rất có ý nghĩa thống kê»; thiết kế không can thiệp (cắt ngang, bệnh–chứng, thuần tập, chẩn đoán, dự báo, định tính) không dùng «gây ra»/«là nguyên nhân» — chỉ «liên quan»; mục 2 tách ý nghĩa LÂM SÀNG khỏi ý nghĩa thống kê; mục 4 nêu hạn chế.
+- **Hạn chế & khả năng khái quát theo chuẩn của thiết kế (22/11/2026, kiểm toàn hệ 11 khâu):** mục 4 phải nêu NGUỒN sai lệch hoặc độ không chính xác; mục 4 hoặc 5 phải bàn khả năng khái quát. Số mục theo danh mục chuẩn đã đối chiếu (`run_g7_auto.CHECKLIST_ITEMS`):
+  - RCT: CONSORT 2025 mục 30.
+  - Thuần tập/bệnh–chứng/cắt ngang: STROBE mục 19 — nêu thêm HƯỚNG hoặc ĐỘ LỚN của sai lệch tiềm ẩn (vd «làm ước tính cao…», «kéo ước lượng về phía giá trị không»), và STROBE mục 21 (khái quát).
+  - Chẩn đoán: STARD 2015 mục 26. Dự báo: TRIPOD+AI mục 26 (lạc quan trong mẫu, chưa kiểm định ngoài).
+  - Tổng quan gộp: PRISMA 2020 mục 23b (hạn chế của bằng chứng được đưa vào) và 23c (hạn chế của quy trình tổng quan).
+  - Định tính: SRQR mục 19 (độ tin cậy của phát hiện) và mục 18 (khả năng chuyển giao).
+  
+  Máy kiểm: `dien_giai_ket_qua.kiem_han_che_khai_quat`, chạy trong `kiem`; không suy được thiết kế ⇒ lỗi (chạy với `--thiet-ke`). Máy chỉ đo CÓ BÀN hay không — đúng hay sai nội dung vẫn do người chấm chéo.
 - **Bảng biểu:** mỗi bảng có chú thích «**Bảng N.** …» ngay trên, hàng tiêu đề + hàng gạch, mọi hàng đủ cột, không ô trống (không áp dụng ghi «—»).
 Kiểm máy không thay người đọc: đúng ý nghĩa lâm sàng/đúng y văn vẫn do người chấm chéo (`phan-tich-thong-ke`, `binh-duyet`, `huong-dan-lam-sang`) và `kiem-chung-trich-dan`. `viet-ban-thao` (G7) viết Kết quả/Bàn luận TỪ tệp này.
 
