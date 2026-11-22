@@ -49,6 +49,7 @@ if str(TOOLS) not in sys.path:
 import kiem_chuan_de_cuong_theo_muc as KCM  # noqa: E402
 import kiem_de_cuong_nop_hoi_dong as K  # noqa: E402
 import md2docx_vn as M2D  # noqa: E402
+import tieu_chi_ban_thao as TCB  # noqa: E402
 
 for _s in (sys.stdout, sys.stderr):
     try:
@@ -68,22 +69,52 @@ GIOI_HAN: Dict[str, Dict] = {
 }
 
 _CAN_RE = re.compile(r"\[CẦN[^\]]*\]")
-_DE_MUC_RE = re.compile(r"(?m)^(#{1,3})\s+(.+?)\s*$")
+_DE_MUC_RE = re.compile(r"(?m)^(#{1,6})\s+(.+?)\s*$")
 _TRICH_GOP_RE = re.compile(r"\[\d+\s*(?:[,;–-]\s*\d+)+\]")
 _TRICH_RE = re.compile(r"\[\d+(?:,\s*\d+)?\]")
+#: một mục của danh mục TLTK: «[1] …» (Vancouver ngoặc vuông), «1. …» (danh sách đánh số), «- [V1] …» (văn bản pháp quy)
+_MUC_TLTK_RE = re.compile(r"(?m)^[ \t]*(?:[-*][ \t]+)?(?:\[[A-Za-zĐđ]{0,3}\d+\]|\d+\.)[ \t]")
+_TLTK_DE_MUC_RE = re.compile(r"(?m)^#{1,6}\s+(?:\d+\.\s*)?(?:TÀI LIỆU THAM KHẢO|REFERENCES)\b")
+
+
+def _cap_chuong(md: str) -> int:
+    """Cấp đề mục của CHƯƠNG (TÓM TẮT, ĐẶT VẤN ĐỀ, … TÀI LIỆU THAM KHẢO), xác định đúng như K18
+    (`tieu_chi_ban_thao.tach_ban_thao`): cấp có nhiều chương IMRAD lõi khác nhau nhất. 0 = không nhận ra chương nào.
+
+    Vì sao (22/11/2026): bản cũ của `_muc` chỉ tách đề mục `##`; bài báo giao thức C1a dùng `#` cho chương
+    («# TÓM TẮT», «# 1. ĐẶT VẤN ĐỀ», «# TÀI LIỆU THAM KHẢO») nên bị báo «Thiếu mục TÓM TẮT/ABSTRACT» và đếm TLTK = 0."""
+    return TCB.tach_ban_thao(md, nghiem=False).cap_chuong
 
 
 def _muc(md: str) -> Dict[str, str]:
-    """Tách văn bản theo đề mục cấp 2 (## …) — khoá là đề mục viết hoa, bỏ số thứ tự đầu."""
+    """Tách văn bản theo đề mục cấp CHƯƠNG (`_cap_chuong`; không nhận ra chương ⇒ `##` như trước) — khoá là đề mục viết
+    hoa, bỏ số thứ tự đầu. Một chương kéo tới đề mục kế tiếp cùng cấp hoặc cấp trên."""
+    cap = _cap_chuong(md) or 2
     ra: Dict[str, str] = {}
-    vi_tri = [(m.start(), m.end(), m.group(1), m.group(2)) for m in _DE_MUC_RE.finditer(md)]
-    for i, (_bd, kt, cap, ten) in enumerate(vi_tri):
-        if cap != "##":
+    vi_tri = [(m.start(), m.end(), len(m.group(1)), m.group(2)) for m in _DE_MUC_RE.finditer(md)]
+    for i, (_bd, kt, c, ten) in enumerate(vi_tri):
+        if c != cap:
             continue
-        ket = next((v[0] for v in vi_tri[i + 1:] if v[2] == "##"), len(md))
+        ket = next((v[0] for v in vi_tri[i + 1:] if v[2] <= cap), len(md))
         khoa = re.sub(r"^\d+\.\s*", "", ten).strip().upper()
         ra[khoa] = md[kt:ket]
     return ra
+
+
+def _tieu_de(md: str) -> str:
+    """Tên bài: đề mục đầu tiên đứng TRƯỚC chương đầu tiên mà khác cấp chương (bài báo giao thức C1a: «# GIAO THỨC
+    NGHIÊN CỨU» là nhãn loại bài ở cấp chương, tên bài là «## Đánh giá … giao thức nghiên cứu cắt ngang có phân
+    tích»). Không nhận ra chương ⇒ đề mục `#` đầu tiên như trước."""
+    cap = _cap_chuong(md)
+    de_muc = [(len(m.group(1)), m.group(2)) for m in _DE_MUC_RE.finditer(md)]
+    if not cap:
+        return next((t for c, t in de_muc if c == 1), "")
+    truoc: List[tuple] = []
+    for c, ten in de_muc:
+        if c == cap and TCB.khoa_imrad(ten):
+            break
+        truoc.append((c, ten))
+    return next((t for c, t in truoc if c != cap), truoc[0][1] if truoc else "")
 
 
 def dem_tu(text: str) -> int:
@@ -110,7 +141,7 @@ def do_ban_thao(md: str, gh: Dict) -> Dict:
     ghi_chu: List[str] = []
     so: Dict[str, object] = {}
 
-    tieu_de = next((m.group(2) for m in _DE_MUC_RE.finditer(md) if m.group(1) == "#"), "")
+    tieu_de = _tieu_de(md)
     so["tieu_de"] = dem_tu(tieu_de)
     if so["tieu_de"] > gh["tieu_de"]:
         vi_pham.append(f"Tiêu đề {so['tieu_de']} từ > {gh['tieu_de']}")
@@ -137,7 +168,7 @@ def do_ban_thao(md: str, gh: Dict) -> Dict:
             vi_pham.append(f"{khoa}: {n_tk} từ khoá > {gh['tu_khoa']}")
 
     tltk = next((v for k, v in muc.items() if k.startswith("TÀI LIỆU THAM KHẢO") or k == "REFERENCES"), "")
-    so["tltk"] = len(re.findall(r"(?m)^\s*\[\d+\]\s", tltk))
+    so["tltk"] = len(_MUC_TLTK_RE.findall(tltk))
     if so["tltk"] > gh["tltk"]:
         vi_pham.append(f"{so['tltk']} tài liệu tham khảo > {gh['tltk']}")
     so["bang"] = len(re.findall(r"(?m)^\*\*Bảng\s+\d+\.", md))
@@ -146,7 +177,7 @@ def do_ban_thao(md: str, gh: Dict) -> Dict:
         if so[khoa] > gh[khoa]:
             vi_pham.append(f"{so[khoa]} {'bảng' if khoa == 'bang' else 'hình'} > {gh[khoa]}")
 
-    than = md.split("## TÀI LIỆU THAM KHẢO")[0]
+    than = _TLTK_DE_MUC_RE.split(md, maxsplit=1)[0]
     gop = sorted(set(_TRICH_GOP_RE.findall(than)))
     if gop:
         vi_pham.append(f"Trích dẫn gộp trong một ngoặc ({', '.join(gop[:5])}) — thể lệ: mỗi số một ngoặc «[4],[5]»")
