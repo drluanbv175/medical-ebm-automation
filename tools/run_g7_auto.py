@@ -3055,6 +3055,12 @@ def generate_manuscript(
         "**§3 Mục tiêu và giả thuyết:**  ",
         f"Nghiên cứu này sử dụng thiết kế {design_primary} nhằm [CẦN câu hỏi PICO chính]. "
         "Chúng tôi giả thuyết rằng [CẦN nêu chiều hướng kỳ vọng của mối liên quan/hiệu quả].  ",
+        # 22/11/2026 (CONSORT 2025 mục 7: mục tiêu cụ thể về CẢ lợi ích và tác hại): thử nghiệm có tổn hại định trước ở
+        # SAP §15 (`_sap_tom_tat` → «ton_hai») ⇒ nêu mục tiêu mô tả tác hại; SAP chưa định nghĩa ⇒ không nói. Định nghĩa
+        # tổn hại (kèm ngưỡng huyết áp ghi «≥ 180/110 mmHg») đã in nguyên chữ SAP ở Phương pháp §3b — Đặt vấn đề chỉ nêu
+        # mục tiêu, không lặp định nghĩa.
+        *(["Nghiên cứu đồng thời mô tả tác hại (biến cố bất lợi) ở từng nhóm theo định nghĩa định trước trong kế hoạch "
+           "phân tích.  "] if design_code == "rct" and (sap_tom_tat or {}).get("ton_hai") else []),
         "",
         "---",
         "",

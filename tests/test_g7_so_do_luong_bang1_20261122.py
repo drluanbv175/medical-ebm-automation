@@ -372,3 +372,14 @@ def test_gia_lap_cau_ton_hai_vao_muc_2_cua_rct_va_dat_k18_muc_29(tmp_path):
     assert o._muc_dien_giai(dg, 2, {"rr": "1,4", "cau_ton_hai": cau}) == "Hiệu quả RR 1,4."
     yt_29 = TB._CONSORT["29"][2][0]                                          # yếu tố «cân đối lợi ích và tác hại» K18
     assert "lợi ích" in yt_29.ten and _re.search(yt_29.mau, cau, _re.IGNORECASE)
+
+
+def test_g7_muc_tieu_tac_hai_khi_sap_dinh_nghia_ton_hai():
+    """CONSORT 2025 mục 7: RCT có tổn hại định trước ở SAP §15 ⇒ Đặt vấn đề nêu mục tiêu mô tả tác hại (không số)."""
+    cau = "Nghiên cứu đồng thời mô tả tác hại (biến cố bất lợi) ở từng nhóm"
+    sap = {"ton_hai": "Biến cố bất lợi liên quan can thiệp: cơn tăng huyết áp từ 180/110 mmHg trở lên"}
+    co = _sinh(sap_tom_tat=sap)
+    gioi_thieu = co.split("## II. PHƯƠNG PHÁP")[0]
+    assert cau in gioi_thieu and "180/110" not in gioi_thieu
+    assert cau not in _sinh()                                                # SAP chưa định nghĩa tổn hại
+    assert cau not in _sinh(sap_tom_tat=sap, design_code="cohort", reporting_std="STROBE")
