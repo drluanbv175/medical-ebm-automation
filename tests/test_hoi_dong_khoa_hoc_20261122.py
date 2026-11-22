@@ -269,6 +269,8 @@ def test_ap_bien_tap_ghi_nhat_ky_day_du():
 
 SUA = {"sua": [{"id": "F01", "hanh_dong": "sua", "thay": [
     {"dong": 8, "cu": "theo Wilson", "moi": "theo Wilson; dữ liệu thiếu xử lý bằng phân tích ca đầy đủ"}]}]}
+TT_DAT = {"tham_tra": [{"id": "F01", "ket_qua": "da_giai_quyet", "dong": 8,
+                       "trich": "dữ liệu thiếu xử lý bằng phân tích ca đầy đủ", "ly_do": ""}], "loi_moi": []}
 SACH = {**{m: _tv(diem=5) for m in ("pb1", "pb2", "uv_tk", "uv_dd", "uv_tl")},
         "ct": {"phan_quyet": [], "gop": [], "nhan_xet_chung": "Đạt.", "yeu_cau_chinh_sua": []}}
 
@@ -301,11 +303,13 @@ def test_vong_kin_sua_roi_hop_lai_toi_khi_dat(tmp_path):
     assert "phân tích ca đầy đủ" in p.read_text(encoding="utf-8")
     out = goc / "exports" / STUDY / H.THU_MUC
     assert list(out.glob("sao_luu_*.md")) and list(out.glob("BIEN_BAN_HDKH_*.md"))   # sao lưu + biên bản vòng 1
-    kh.tra = SACH                                         # vòng 2: hội đồng không còn vấn đề
+    kh.tra = {**kh.tra, "tt_pb1": TT_DAT}                  # vòng 2: THẨM TRA — F01 đã giải quyết
     assert _vong(goc, kh) == 0
     st = [H._doc_st(x) for x in out.glob("trang_thai_*.json")]
     dat = [s for s in st if s.get("buoc") == "dat"]
     assert len(dat) == 1 and dat[0]["vong"] == 2 and dat[0]["ban_truoc"]
+    assert dat[0]["che_do"] == "tham_tra" and dat[0]["ket_luan_cuoi"] == "thong_qua"
+    assert [f["id"] for f in dat[0]["ds_yeu_cau"]] == ["F01"]        # chỉ thẩm tra yêu cầu nghiêm trọng/cần sửa
 
 
 def test_vong_kin_hoan_nguyen_khi_ban_sua_lam_chuan_xau_di(tmp_path, monkeypatch):
@@ -439,5 +443,100 @@ def test_chon_loc_giu_thay_the_tot_loai_thay_the_lam_xau(tmp_path, monkeypatch):
     st = [H._doc_st(x) for x in (goc / "exports" / STUDY / H.THU_MUC).glob("trang_thai_*.json")]
     bt = next(s["bien_tap"] for s in st if s.get("bien_tap"))
     assert len(bt["nhan"]) == 1 and len(bt["loai_chon_loc"]) == 1 and "xấu đi" in bt["loai_chon_loc"][0]["ly_do_loai"]
-    kh.tra = SACH
+    kh.tra = {**kh.tra, "tt_pb1": TT_DAT}
     assert _vong(goc, kh) == 0                                            # vòng 2 thông qua
+
+
+# ── QC-HDKH-2.0: thẩm tra chỉnh sửa như hội đồng thật (bác sĩ 22/11/2026) ────────────────────────────────────────────
+def test_khoang_sua_danh_dau_dong_doi_trong_ban_moi():
+    cu = "a\nb\nc\nd\n"
+    assert H.khoang_sua(cu, "a\nB\nc\nd\n") == [[2, 2]]
+    assert H.khoang_sua(cu, "a\nb\nX\nY\nc\nd\n") == [[3, 4]]
+    assert H.khoang_sua(cu, "a\nb\nd\n") == [[2, 2]]               # xoá dòng ⇒ dòng kề trong bản mới
+
+
+def test_xac_minh_tham_tra_ba_luat_va_pham_vi_loi_moi():
+    ds = [dict(PH_DUNG, id=f"F0{i}", thanh_vien="pb1") for i in range(1, 5)]
+    dl = {"tham_tra": [
+        {"id": "F01", "ket_qua": "da_giai_quyet", "dong": 8, "trich": "theo Wilson"},
+        {"id": "F02", "ket_qua": "da_giai_quyet", "dong": 8, "trich": "câu không có trong bản đã sửa"},
+        {"id": "F03", "ket_qua": "can_du_kien", "ly_do": "cần kinh phí thật"}],          # F04: không phán quyết
+        "loi_moi": [{"muc_phieu": "2", "muc_do": "can_sua", "dong": 8, "trich": "theo Wilson", "van_de": "x",
+                     "de_xuat": "y"},
+                    {"muc_phieu": "1", "muc_do": "can_sua", "dong": 2, "trich": "phổ biến [1]", "van_de": "x",
+                     "de_xuat": "y"}]}
+    kq = H.xac_minh_tham_tra("pb1", dl, ds, DE_CUONG, [[7, 8]], vtq_ids=[])
+    assert {k: v["ket_qua"] for k, v in kq["ket"].items()} == {
+        "F01": "da_giai_quyet", "F02": "chua_giai_quyet", "F03": "chua_giai_quyet", "F04": "chua_giai_quyet"}
+    assert len(kq["loi_moi"]) == 1 and "ngoài các đoạn vừa sửa" in kq["loai"][0]["ly_do_loai"]
+    kq = H.xac_minh_tham_tra("pb1", dl, ds, DE_CUONG, [[7, 8]], vtq_ids=["F03"])
+    assert kq["ket"]["F03"]["ket_qua"] == "can_du_kien"
+
+
+@pytest.mark.parametrize("tt, mong", [
+    ({"chua_giai_quyet": [{}], "loi_moi": [], "can_du_kien": []}, "chua_dat"),
+    ({"chua_giai_quyet": [], "loi_moi": [{}], "can_du_kien": []}, "chua_dat"),
+    ({"chua_giai_quyet": [], "loi_moi": [], "can_du_kien": [{}]}, "thong_qua_cho_du_kien"),
+    ({"chua_giai_quyet": [], "loi_moi": [], "can_du_kien": []}, "thong_qua"),
+])
+def test_ket_luan_tham_tra_luat_co_dinh(tt, mong):
+    assert H.ket_luan_tham_tra(tt)[0] == mong
+
+
+def test_vong_kin_chua_giai_quyet_thi_sua_tiep_roi_tham_tra_lai(tmp_path):
+    goc = _goc(tmp_path)
+    _hieu_chuan_dat(goc)
+    tt_chua = {"tham_tra": [{"id": "F01", "ket_qua": "chua_giai_quyet", "ly_do": "chưa có phân tích độ nhạy"}],
+               "loi_moi": []}
+    sua2 = {"sua": [{"id": "F01", "hanh_dong": "sua", "thay": [
+        {"dong": 8, "cu": "phân tích ca đầy đủ", "moi": "phân tích ca đầy đủ, kèm phân tích độ nhạy gán đa trị"}]}]}
+    kh = KhachBatch({**TRA, "bt0": SUA, "tt_pb1": tt_chua})
+    p = goc / "exports" / STUDY / f"DE_CUONG_NOP_HOI_DONG_{STUDY}.md"
+    goi = lambda: H.main(["vong-kin", "--study", STUDY, "--goi-api", "--ap-dung"], client=kh, goc=goc)  # noqa: E731
+    assert [goi() for _ in range(6)] == [4, 0, 4, 0, 4, 0] and "phân tích ca đầy đủ" in p.read_text("utf-8")
+    kh.tra["bt0"] = sua2
+    assert [goi() for _ in range(4)] == [4, 0, 4, 0]          # thẩm tra: CHƯA giải quyết ⇒ biên tập lần 2
+    assert "gán đa trị" in p.read_text(encoding="utf-8")
+    kh.tra["tt_pb1"] = {"tham_tra": [{"id": "F01", "ket_qua": "da_giai_quyet", "dong": 8,
+                                      "trich": "kèm phân tích độ nhạy gán đa trị"}], "loi_moi": []}
+    assert _vong(goc, kh) == 0
+    dat = [s for s in (H._doc_st(x) for x in (goc / "exports" / STUDY / H.THU_MUC).glob("trang_thai_*.json"))
+           if s.get("buoc") == "dat"]
+    assert len(dat) == 1 and dat[0]["vong"] == 3 and dat[0]["ket_luan_cuoi"] == "thong_qua"
+
+
+def test_vong_kin_can_du_kien_thong_qua_kem_danh_sach(tmp_path):
+    goc = _goc(tmp_path)
+    _hieu_chuan_dat(goc)
+    sua_vtq = {"sua": [{"id": "F01", "hanh_dong": "vuot_tham_quyen", "ly_do": "cần quyết định của thống kê viên"},
+                       {"id": "F03", "hanh_dong": "sua", "thay": [
+                           {"dong": 8, "cu": "theo Wilson", "moi": "theo Wilson (khoảng tin cậy hai phía)"}]}]}
+    tt_dk = {"tham_tra": [{"id": "F01", "ket_qua": "can_du_kien", "ly_do": "thống kê viên quyết cách xử lý thiếu"}],
+             "loi_moi": []}
+    kh = KhachBatch({**TRA, "bt0": sua_vtq, "tt_pb1": tt_dk})
+    assert _vong(goc, kh) == 0
+    out = goc / "exports" / STUDY / H.THU_MUC
+    dat = [s for s in (H._doc_st(x) for x in out.glob("trang_thai_*.json")) if s.get("buoc") == "dat"][0]
+    assert dat["ket_luan_cuoi"] == "thong_qua_cho_du_kien"
+    bb = H.bien_ban_md(dat)
+    assert "Thông qua phần thuộc thẩm quyền" in bb and "Cần dữ kiện" in bb and "thống kê viên" in bb
+    assert "Kết quả thẩm tra từng yêu cầu" in bb and "| F01" in bb
+
+
+def test_ket_luan_cong_don_can_du_kien_cua_vong_truoc():
+    # Vòng 2: F01 cần dữ kiện, F03 chưa giải quyết ⇒ vòng 3 chỉ thẩm tra F03; F03 giải quyết xong KHÔNG được thành
+    # «thông qua» trơn — F01 vẫn chờ dữ kiện của người có thẩm quyền.
+    st = {"che_do": "tham_tra", "can_du_kien_truoc": [dict(PH_DUNG, id="F01")],
+          "tham_tra": {"da_giai_quyet": [dict(PH_DUNG, id="F03")], "chua_giai_quyet": [], "can_du_kien": [],
+                       "loi_moi": [], "loai": []}}
+    assert H.ket_luan_tham_tra(H.tham_tra_cong_don(st))[0] == "thong_qua_cho_du_kien"
+    st["can_du_kien_truoc"] = []
+    assert H.ket_luan_tham_tra(H.tham_tra_cong_don(st))[0] == "thong_qua"
+
+
+def test_tham_tra_loai_loi_moi_co_pii():
+    ds = [dict(PH_DUNG, id="F01", thanh_vien="pb1")]
+    dl = {"tham_tra": [], "loi_moi": [{"muc_phieu": "2", "muc_do": "can_sua", "dong": 8, "trich": "theo Wilson",
+                                       "van_de": "gọi 0912345678 để hỏi", "de_xuat": "y"}]}
+    kq = H.xac_minh_tham_tra("pb1", dl, ds, DE_CUONG, [[7, 8]], vtq_ids=[])
+    assert not kq["loi_moi"] and "PII" in kq["loai"][0]["ly_do_loai"]
