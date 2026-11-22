@@ -301,13 +301,11 @@ def nap_ngu_canh(out_dir: Path, study: str, thiet_ke: str = "", muc_tieu: Option
         n = int(n) if n is not None else None
     except (TypeError, ValueError):
         n = None
-    g2 = ((meta.get("gate_params") or {}).get("G2") or {})
-    cach_thu = str(g1.get("data_collection_method") or meta.get("data_collection_method") or "")
     # 22/11/2026: đề tài THU MỚI có lấy đồng ý (icf_waiver_requested = false) không phải hồi cứu dù có khai thác thêm
-    # nguồn CÓ SẴN (C1a: phiếu tự điền + mốc thời gian chờ trên HIS) — trước đó chữ «có sẵn» làm sơ đồ chọn của C1a
-    # mất bước mời/từ chối. Chỉ khi G2 chưa khai miễn đồng thuận mới đoán theo cách thu thập.
-    mien = g2.get("icf_waiver_requested")
-    hoi_cuu = mien is True or (mien is not False and bool(re.search(r"có sẵn|hồi cứu", cach_thu, re.I)))
+    # nguồn CÓ SẴN (C1a) — MỘT quy tắc dùng chung với mẫu sơ đồ luồng G6 tự tạo (`ve_bieu_do.la_hoi_cuu`).
+    import ve_bieu_do as VB  # noqa: PLC0415
+
+    hoi_cuu = VB.la_hoi_cuu(meta)
     luong = _doc_csv(out_dir / f"SO_DO_LUONG_{study}.csv")
     if luong and _la_mau_chung_luong(luong, tk):
         luong = []
@@ -328,18 +326,19 @@ def _thang_hop_le(quy_tac: str) -> Optional[Tuple[float, float]]:
 
 
 def _la_mau_chung_luong(dong: List[Dict[str, str]], tk: str) -> bool:
-    """Tệp sơ đồ luồng còn đúng MẪU CHUNG của thiết kế (G6 tự tạo khi chưa có, `ve_bieu_do.mau_so_do_luong`) ⇒ chưa
-    mang thông tin riêng của đề tài; khung chuẩn của thiết kế (có nhánh hồi cứu/CONSORT/STARD…) đầy đủ hơn."""
+    """Tệp sơ đồ luồng còn đúng MẪU CHUNG của thiết kế (G6 tự tạo khi chưa có, `ve_bieu_do.mau_so_do_luong`, bản tiến
+    cứu hay hồi cứu) ⇒ chưa mang thông tin riêng của đề tài; khung chuẩn của thiết kế (có nhánh hồi cứu/CONSORT/STARD…)
+    đầy đủ hơn."""
     try:
         import ve_bieu_do as VB  # noqa: PLC0415
 
-        mau = VB.mau_so_do_luong(tk)
+        mau = [VB.mau_so_do_luong(tk, hc) for hc in (False, True)]
     except (SystemExit, ImportError):
         return False
 
     def _khoa(rs: Sequence[Dict[str, str]]) -> List[Tuple[str, ...]]:
         return [tuple(str(r.get(c) or "").strip() for c in ("buoc", "loai", "nhanh", "ly_do")) for r in rs]
-    return _khoa(dong) == _khoa(mau)
+    return any(_khoa(dong) == _khoa(m) for m in mau)
 
 
 # ─────────────────────────────── tiện ích chữ ───────────────────────────────
@@ -1461,9 +1460,8 @@ def _hop(ax, x, y, chu, rong=0.36, cao=None, co=8):
     import matplotlib.patches as mp  # noqa: PLC0415
 
     rong_chu = max(16, int(rong * 100))
-    dong = _ngat(chu, rong_chu).count("\n") + 1
     cao_hinh = ax.figure.get_size_inches()[1]
-    cao = cao or (dong * co * 1.35 / 72 + 0.12) / cao_hinh
+    cao = cao or _cao_hop_in(chu, rong, co) / cao_hinh
     ax.add_patch(mp.FancyBboxPatch((x - rong / 2, y - cao / 2), rong, cao, boxstyle="square,pad=0.004",
                                    fc="white", ec="#222222", lw=0.8))
     ax.text(x, y, _ngat(chu, rong_chu), ha="center", va="center", fontsize=co)
@@ -1474,17 +1472,33 @@ def _mui_ten(ax, x0, y0, x1, y1):
     ax.annotate("", xy=(x1, y1), xytext=(x0, y0), arrowprops={"arrowstyle": "-|>", "lw": 0.8, "color": "#222222"})
 
 
+def _cao_hop_in(chu: str, rong: float, co: float = 8) -> float:
+    """Chiều cao (inch) của ô chữ rộng `rong` (phần bề rộng hình 7,2 inch). Ô từ 7 dòng trở lên tính dãn dòng 1,45 —
+    phông có dấu tiếng Việt cao hơn hệ số 1,35 cũ và sai số cộng dồn làm chữ tràn viền (Hình 3.1 BTM, 22/11/2026);
+    ô tới 6 dòng giữ đúng công thức cũ nên ảnh cũ vẽ lại không đổi."""
+    dong = _ngat(chu, max(16, int(rong * 100))).count("\n") + 1
+    return dong * co * (1.35 if dong <= 6 else 1.45) / 72 + 0.12
+
+
 def _ve_so_do(plt, buoc: List[Tuple[str, Optional[str]]], tach: List[List[str]]):
     so_hang = len(buoc) + max((len(c) for c in tach), default=0)
-    fig, ax = plt.subplots(figsize=(7.2, 1.35 * so_hang + 0.4))
+    cao_cu = 1.35 * so_hang + 0.4
+    x_chinh = 0.32 if not tach else 0.5
+    rong_chinh = 0.42 if not tach else 0.34
+    x_ben, rong_ben = (0.8, 0.34) if not tach else (0.845, 0.29)
+    buoc_cu = cao_cu / (so_hang + 0.5)  # bước giữa hai ô chính (inch) của bố cục cũ
+    # 22/11/2026: ô loại bên cạnh cao hơn bước giữa hai ô chính (BTM: ô lý do loại 13 dòng) từng đè lên ô loại phía
+    # trên. Trục chung giãn bước đúng chỗ cần; bước nào vừa thì giữ bố cục cũ (ảnh cũ vẽ lại không đổi).
+    can = [(_cao_hop_in(ben, rong_ben) + 0.3) if ben else 0.0 for _c, ben in buoc[:-1]]
+    if not tach and any(c > buoc_cu for c in can):
+        return _ve_so_do_gian(plt, buoc, [max(buoc_cu, c) for c in can], buoc_cu, x_chinh, rong_chinh, x_ben,
+                              rong_ben)
+    fig, ax = plt.subplots(figsize=(7.2, cao_cu))
     ax.set_axis_off()
     ax.set_xlim(0, 1)
     ax.set_ylim(0, 1)
     buoc_y = 1 / (so_hang + 0.5)
     y = 1 - buoc_y * 0.6
-    x_chinh = 0.32 if not tach else 0.5
-    rong_chinh = 0.42 if not tach else 0.34
-    x_ben, rong_ben = (0.8, 0.34) if not tach else (0.845, 0.29)
     cao_truoc = None
     for i, (chinh, ben) in enumerate(buoc):
         cao = _hop(ax, x_chinh, y, chinh, rong=rong_chinh)
@@ -1511,6 +1525,32 @@ def _ve_so_do(plt, buoc: List[Tuple[str, Optional[str]]], tach: List[List[str]])
                 _mui_ten(ax, xj, (yy + buoc_y - truoc / 2) if truoc else yy + buoc_y * 0.55, xj, yy + cao / 2)
                 truoc = cao
                 yy -= buoc_y
+    return fig
+
+
+def _ve_so_do_gian(plt, buoc: List[Tuple[str, Optional[str]]], buoc_in: List[float], buoc_cu: float, x_chinh: float,
+                   rong_chinh: float, x_ben: float, rong_ben: float):
+    """Trục chung với bước riêng từng khoảng (inch): khoảng có ô loại cao được giãn đủ để ô đó không chồng ô loại kề.
+    Lề trên/dưới như bố cục cũ (0,6 và 0,9 bước cũ)."""
+    cao = 0.6 * buoc_cu + sum(buoc_in) + 0.9 * buoc_cu
+    fig, ax = plt.subplots(figsize=(7.2, cao))
+    ax.set_axis_off()
+    ax.set_xlim(0, 1)
+    ax.set_ylim(0, 1)
+    y_in = cao - 0.6 * buoc_cu
+    y_truoc, cao_truoc = None, None
+    for i, (chinh, ben) in enumerate(buoc):
+        y = y_in / cao
+        c = _hop(ax, x_chinh, y, chinh, rong=rong_chinh)
+        if y_truoc is not None:
+            _mui_ten(ax, x_chinh, y_truoc - cao_truoc / 2, x_chinh, y + c / 2)
+        if ben:
+            yb = (y_in - buoc_in[i] / 2) / cao if i < len(buoc) - 1 else y
+            _hop(ax, x_ben, yb, ben, rong=rong_ben)
+            ax.plot([x_chinh, x_ben - rong_ben / 2], [yb, yb], color="#222222", lw=0.8)
+        y_truoc, cao_truoc = y, c
+        if i < len(buoc) - 1:
+            y_in -= buoc_in[i]
     return fig
 
 
