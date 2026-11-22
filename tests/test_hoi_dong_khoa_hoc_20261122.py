@@ -1147,6 +1147,24 @@ def test_tep_cho_agent_ban_cai_loi_thanh_ban_sao_trung_tinh(tmp_path):
     assert H.tep_cho_agent(str(that), tm) == str(that)      # tài liệu thật giữ nguyên đường dẫn
 
 
+def test_loi_gui_hoi_dong_khong_lo_ten_ban_cai_loi(tmp_path):
+    """Đo thật 22/11/2026: khối tài liệu gửi hội đồng API ở lượt hiệu chuẩn mang tên «BAN_CAI_LOI_…»."""
+    hc = tmp_path / "hoi_dong_khoa_hoc" / "hieu_chuan" / "de_cuong"
+    hc.mkdir(parents=True)
+    ban = hc / f"BAN_CAI_LOI_{STUDY}_de_cuong.md"
+    ban.write_text(DE_CUONG, encoding="utf-8", newline="\n")
+    ten = H.ten_cho_hoi_dong(str(ban))
+    assert ten.startswith("TAI_LIEU_") and "CAI_LOI" not in ten and ten.endswith(".md")
+    chung = H.khoi_chung(STUDY, H.ten_cho_hoi_dong(str(ban)), DE_CUONG, {})
+    assert "CAI_LOI" not in chung and "hieu_chuan" not in chung
+    # mọi chỗ dựng khối chung đều đi qua tên trung tính
+    nguon = Path(H.__file__).read_text(encoding="utf-8")
+    assert 'khoi_chung(st["study"], Path(st["tep"]).name' not in nguon
+    that = tmp_path / "DE_CUONG_NOP_HOI_DONG.md"
+    that.write_text(DE_CUONG, encoding="utf-8", newline="\n")
+    assert H.ten_cho_hoi_dong(str(that)) == "DE_CUONG_NOP_HOI_DONG.md"
+
+
 def test_agent_sai_theo_cong_cu_phai_co_lenh_va_ket_qua():
     muc = [{"id": "A01"}, {"id": "A02"}]
     pd = H.xac_minh_agent({"phan_dinh": [
