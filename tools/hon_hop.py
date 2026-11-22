@@ -58,6 +58,43 @@ CAN_TICH_HOP = ("thoi_diem", "cach", "nguoi")
 PMID_CHUAN = ("18416914", "17872937")
 
 
+#: 22/11/2026 (COREQ 2007, SRQR 2014 — đối chiếu bản in lại toàn văn bảng gốc): dữ kiện quy trình định tính chủ nhiệm
+#: chốt khi thiết kế, cùng tên khoá cho đề tài định tính (`gate_params.G1`) và cấu phần định tính của đề tài hỗn hợp
+#: (`gate_params.G1.mixed_methods.cau_phan_dinh_tinh`). (khoá, nhãn trong văn bản, việc cần khai khi còn trống, mục
+#: chuẩn). Đề cương nộp và bản thảo G7 đọc CÙNG danh sách này — thêm khoá ở đây thì cả hai văn bản cùng có.
+KHOA_QUY_TRINH_DINH_TINH = (
+    ("research_paradigm", "Hệ hình nghiên cứu", "hệ hình nghiên cứu và lý do chọn", "SRQR S5"),
+    ("interviewer", "Người phỏng vấn", "ai trực tiếp phỏng vấn, công việc, bằng cấp, giới, kinh nghiệm và tập huấn, "
+                                       "quan hệ với người tham gia trước nghiên cứu", "COREQ 1–6"),
+    ("participant_information", "Thông tin người tham gia được biết",
+     "người tham gia được biết gì về người phỏng vấn và mục đích nghiên cứu", "COREQ 7"),
+    ("researcher_reflexivity", "Phản tư của người nghiên cứu",
+     "giả định, mối quan tâm với chủ đề và cách nhóm nghiên cứu xử lý ảnh hưởng của mình", "COREQ 8, SRQR S6"),
+    ("participant_approach", "Cách tiếp cận người tham gia", "mời trực tiếp, qua điện thoại, thư hay email",
+     "COREQ 11"),
+    ("non_participation", "Người từ chối hoặc rút lui", "cách ghi số người từ chối hoặc rút lui và lý do", "COREQ 13"),
+    ("interview_setting", "Nơi phỏng vấn và người có mặt", "nơi thu thập dữ liệu và có người khác có mặt không",
+     "COREQ 14–15"),
+    ("interview_guide_pilot", "Hướng dẫn phỏng vấn", "bộ hướng dẫn phỏng vấn, đã thử trước chưa, có thay đổi trong "
+                                                    "quá trình thu thập không", "COREQ 17, SRQR S11"),
+    ("repeat_interviews", "Số lần phỏng vấn", "mỗi người được phỏng vấn mấy lần", "COREQ 18"),
+    ("recording_field_notes", "Ghi âm và ghi chép thực địa", "thiết bị ghi âm hoặc ghi hình và ghi chép thực địa",
+     "COREQ 19–20"),
+    ("transcript_return", "Gửi lại bản gỡ băng", "có gửi lại bản gỡ băng cho người tham gia không", "COREQ 23"),
+    ("coding_process", "Mã hoá và phân tích", "số người mã hoá, bộ mã, cách hình thành chủ đề, phần mềm, kiểm tra lại "
+                                             "với người tham gia", "COREQ 24–28"),
+)
+
+
+def nguon_dinh_tinh(meta: Optional[Mapping[str, Any]]) -> Dict[str, Any]:
+    """Khối khai quy trình định tính của đề tài: cấu phần định tính nếu đề tài hỗn hợp, không thì `gate_params.G1`
+    khi mã thiết kế là «qualitative»; đề tài không có định tính ⇒ {}."""
+    if khoi(meta):
+        return dinh_tinh(meta)
+    g1 = (((meta or {}).get("gate_params") or {}).get("G1") or {}) if isinstance(meta, Mapping) else {}
+    return g1 if isinstance(g1, dict) and str(g1.get("design") or "") == "qualitative" else {}
+
+
 def khoi(meta: Optional[Mapping[str, Any]]) -> Dict[str, Any]:
     g1 = (((meta or {}).get("gate_params") or {}).get("G1") or {}) if isinstance(meta, Mapping) else {}
     k = g1.get("mixed_methods")

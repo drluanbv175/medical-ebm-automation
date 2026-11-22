@@ -318,8 +318,10 @@ def test_kinh_te_sap_thieu_ba_muc_moi_thi_o_can_va_thieu(tmp_path):
     """SAP cũ (chưa có chỗ khai CHEERS 13, 18, 19) hoặc chủ nhiệm chưa khai ⇒ ô [CẦN] cùng dòng nhãn; nhãn bản thảo
     không mang từ khoá của mục nên K18 vẫn báo thiếu đúng ba mục."""
     d = _meta(tmp_path, {})
-    _sap_kinh_te(d, {k: v for k, v in KT_DU.items()
-                     if k not in ("outcome_valuation", "heterogeneity", "distributional_effects")})
+    # đơn vị hiệu quả QALY (cần định giá theo thoả dụng) — đơn vị tự nhiên tự nó đã trả lời CHEERS 13 (tiêu chí K18)
+    _sap_kinh_te(d, {**{k: v for k, v in KT_DU.items()
+                        if k not in ("outcome_valuation", "heterogeneity", "distributional_effects")},
+                     "effect_measure": "Số QALY tránh được trong 6 tháng", "wtp_source": "Chủ nhiệm ấn định"})
     pp = "\n".join(G7._khoi_kinh_te_g7(d, STUDY))
     assert pp.count("[CẦN — ") == 3 and "khai ở SAP §16" in pp
     tt = _tt(_ban_thao(d, *RCT), "rct", "CHEERS 2022")

@@ -256,7 +256,37 @@ def _csv_nho(p: Path) -> None:
     NT.ghi_csv(p, tieu_de, dong)
 
 
-def test_chuan_bi_tap_dem_ma_ngoai_thang_va_loc_quan_the(tmp_path):
+@pytest.fixture
+def c1a_ban_chep_duyet_thu(tmp_path, monkeypatch):
+    """Bản chép TẠM thư mục C1a cho test logic: công thức biến phái sinh đã đổi (dấu duyệt thật HẾT HIỆU LỰC, chờ thống
+    kê viên ký trong gói ký) được đóng dấu KIỂM THỬ trên bản chép — test đo logic chuẩn bị tập/cú pháp, không phụ
+    thuộc trạng thái chữ ký đời thực của đề tài (22/11/2026: hội đồng đổi công thức PhieuHopLe ⇒ 3 test kín đỏ). Tệp
+    thật không đổi."""
+    import bien_phai_sinh as BPS  # noqa: PLC0415
+
+    goc = tmp_path / "exports_thu"
+    dich = goc / C1A
+    dich.mkdir(parents=True)
+    for f in D_C1A.iterdir():
+        if f.is_file() and f.suffix in (".csv", ".md", ".json"):
+            shutil.copy2(f, dich / f.name)
+    p = dich / "_bien-phai-sinh.csv"
+    with open(p, encoding="utf-8", newline="") as fh:
+        doc = csv.DictReader(fh)
+        cot, dong = doc.fieldnames, list(doc)
+    for r in dong:
+        dau = BPS.dau_cong_thuc(r["ten_bien"], r["cong_thuc"], r.get("lap_k") or "")
+        if BPS.trang_thai_duyet(r.get("nguoi_duyet") or "", dau) == "HET_HIEU_LUC":
+            r["nguoi_duyet"] = f"KIEM-THU:fixture-tam:2026-11-22:{dau}"
+    with open(p, "w", encoding="utf-8", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=cot)
+        w.writeheader()
+        w.writerows(dong)
+    monkeypatch.setattr(S, "EXPORTS", goc)
+    return dich
+
+
+def test_chuan_bi_tap_dem_ma_ngoai_thang_va_loc_quan_the(tmp_path, c1a_ban_chep_duyet_thu):
     pytest.importorskip("pandas")
     p = tmp_path / "x.csv"
     _csv_nho(p)
@@ -275,7 +305,7 @@ def _cu_phap_nhap(tmp_path: Path, *them: str) -> tuple[int, str]:
                  "--tang", "khunggio_kham,ma_ban_kham", "--loc", "PhieuHopLe == 1", *them)
 
 
-def test_cu_phap_ban_nhap_ghi_ngoai_repo_dung_seed_sap(tmp_path):
+def test_cu_phap_ban_nhap_ghi_ngoai_repo_dung_seed_sap(tmp_path, c1a_ban_chep_duyet_thu):
     pytest.importorskip("pandas")
     truoc = sorted((x.name, x.stat().st_mtime_ns) for x in D_C1A.iterdir())
     ma, ra = _cu_phap_nhap(tmp_path)
@@ -290,7 +320,7 @@ def test_cu_phap_ban_nhap_ghi_ngoai_repo_dung_seed_sap(tmp_path):
     assert (tmp_path / "ra" / f"{C1A}_nhan_to.R").is_file()
 
 
-def test_cu_phap_seed_khac_sap_ghi_ro(tmp_path):
+def test_cu_phap_seed_khac_sap_ghi_ro(tmp_path, c1a_ban_chep_duyet_thu):
     pytest.importorskip("pandas")
     ma, ra = _cu_phap_nhap(tmp_path, "--seed", "1")
     assert ma == 0 and "KHÁC SAP" in ra
@@ -450,7 +480,7 @@ def _chay_gia_lap(tmp_path: Path, kich_ban: str, ten: str, n: int = 600) -> tupl
 
 
 @can_r
-def test_r_that_nam_nhan_to_tai_lap_va_dung_uoc_luong(tmp_path):
+def test_r_that_nam_nhan_to_tai_lap_va_dung_uoc_luong(tmp_path, c1a_ban_chep_duyet_thu):
     pytest.importorskip("pandas")
     ma, tom, ra = _chay_gia_lap(tmp_path, "nam_nhan_to", "l1")
     assert ma == 0, tom["nhan_to"]["loi"]
@@ -478,7 +508,7 @@ def test_r_that_nam_nhan_to_tai_lap_va_dung_uoc_luong(tmp_path):
 
 
 @can_r
-def test_r_that_du_lieu_nhieu_khong_trich_thua_khong_phan_loai_dat(tmp_path):
+def test_r_that_du_lieu_nhieu_khong_trich_thua_khong_phan_loai_dat(tmp_path, c1a_ban_chep_duyet_thu):
     pytest.importorskip("pandas")
     ma, tom, _ra = _chay_gia_lap(tmp_path, "khong_cau_truc", "n1", n=1000)
     nt = tom["nhan_to"]

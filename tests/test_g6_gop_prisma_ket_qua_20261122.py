@@ -167,7 +167,9 @@ def test_kich_ban_r_that_khop_python_tung_dai_luong(tmp_path):
     subprocess.run(["Rscript", str(tmp_path / "kb.R")], capture_output=True, text=True, check=True, timeout=300)
     py = P.cac_so_doi_chieu("gop", _gop(phan_nhom="g"))
     kq = P.so_khop(py, P._doc_kq_r(ra))
-    assert kq["trang_thai"] == "KHOP" and kq["so_dai_luong"] == 15, kq
+    # 22/11/2026: + 3 đại lượng hiệu ứng cố định (rr_gop_co_dinh, KTC) — metafor method = "FE"
+    assert kq["trang_thai"] == "KHOP" and kq["so_dai_luong"] == 18, kq
+    assert {"rr_gop_co_dinh", "ci_duoi_co_dinh", "ci_tren_co_dinh"} <= set(py)
 
 
 # ─────────────────────────────────── bảng đặc điểm từng nghiên cứu (PRISMA 17) ───────────────────────────────────

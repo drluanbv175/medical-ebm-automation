@@ -59,8 +59,11 @@ TEP_PHAI_SINH = "_bien-phai-sinh.csv"
 COT = ("muc_tieu", "khai_niem", "vai_tro", "bien", "kieu", "cau_hoi", "cong_cu", "phan_tich_sap", "ghi_chu")
 COT_BAT_BUOC = ("muc_tieu", "khai_niem", "vai_tro", "bien", "kieu")
 
+#: 22/11/2026: «dinh_nghia_thay_the» — biến mang định nghĩa thay thế (khai trước khi xem dữ liệu, kèm căn cứ ở cột
+#: cong_cu) của dòng cùng khái niệm; SAP §9 chép cụ thể, G6 chạy phân tích độ nhạy (tools/dinh_nghia_thay_the.py).
+#: «tuan_thu_de_cuong» — biến 0/1 xác định quần thể theo đề cương (per-protocol) của RCT; định nghĩa ở cong_cu.
 VAI_TRO = frozenset({"ket_cuc_chinh", "ket_cuc_phu", "phoi_nhiem", "yeu_to", "hiep_bien", "phan_tang", "thoi_gian",
-                     "su_kien", "mo_ta", "cum", "trong_so"})
+                     "su_kien", "mo_ta", "cum", "trong_so", "dinh_nghia_thay_the", "tuan_thu_de_cuong"})
 KIEU = frozenset({"nhi_phan", "danh_dinh", "thu_tu", "lien_tuc", "dem", "ngay", "thoi_gian_den_su_kien", "van_ban"})
 
 #: Mốc luật (bác sĩ duyệt). Cổng đã KÝ trước mốc (G4 hoặc G10) không bị hạ cấp ở G3 — luật mới không hạ cấp quyết
@@ -585,14 +588,14 @@ def vai_tro_tu_dong(dong: Iterable[Mapping[str, str]]) -> Dict[str, Any]:
     """Vai trò biến theo ma trận (G6 dùng — KHÔNG đoán bằng từ khoá)."""
     ra: Dict[str, Any] = {"ket_cuc": None, "ket_cuc_kieu": None, "ket_cuc_phu": [], "phoi_nhiem": [], "yeu_to": [],
                           "hiep_bien": [], "phan_tang": [], "thoi_gian": None, "su_kien": None, "cum": None,
-                          "trong_so": None, "mo_ta": []}
+                          "trong_so": None, "mo_ta": [], "dinh_nghia_thay_the": [], "tuan_thu_de_cuong": None}
     for r in dong:
         v, b = r.get("vai_tro"), str(r.get("bien") or "").strip()
         if not b or _trong(b):
             continue
         if v == "ket_cuc_chinh":
             ra["ket_cuc"], ra["ket_cuc_kieu"] = b, r.get("kieu")
-        elif v in ("thoi_gian", "su_kien", "cum", "trong_so"):
+        elif v in ("thoi_gian", "su_kien", "cum", "trong_so", "tuan_thu_de_cuong"):
             ra[v] = ra[v] or b
         elif v in ra and isinstance(ra[v], list) and b not in ra[v]:
             ra[v].append(b)

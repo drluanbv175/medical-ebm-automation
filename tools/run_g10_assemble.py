@@ -1306,7 +1306,9 @@ def _vancouver(pid: str, md: dict) -> Optional[str]:
                                 (f"{vi_tri}." if RS.is_present(vi_tri) else "")) if x)
     if RS.is_present(md.get("doi")):
         dong += f" doi:{md['doi']}."
-    return f"{dong} PMID: {pid}."
+    # 22/11/2026: biên nhận A12 mang PMCID (PubMed `ArticleIdList`) ⇒ ghi đủ PMID + PMCID theo NLM Citing Medicine
+    pmcid = f" PMCID: {md['pmcid']}." if RS.is_present(md.get("pmcid")) else ""
+    return f"{dong} PMID: {pid}.{pmcid}"
 
 
 def sec_tltk(cps, meta) -> str:

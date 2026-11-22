@@ -18,9 +18,34 @@ NGUYÊN VĂN mục: chuẩn có giấy phép Creative Commons lấy từ `chuan_
 © OUP, SRQR © AAMC, GRAMMS — bài không truy cập mở, COSMIN © Springer) KHÔNG lưu nguyên văn: chỉ mã mục, chủ đề ngắn
 tiếng Anh và tiêu chí do hệ viết.
 
-CHƯA ĐỐI CHIẾU BẢNG GỐC: danh mục TREND do agent đọc qua bản tóm lược WebFetch (lượt tải byte thô bảng gốc ngày
-21/11/2026 thất bại: Europe PMC 500, CDC 403, EQUATOR 404) — chưa dùng làm luật chặn: mục thiếu báo `canh_bao` (⚠),
-không làm K17 đỏ, cho tới khi đối chiếu được bảng gốc và gỡ tên khỏi `CHUAN_CHUA_DOI_CHIEU_GOC`.
+TREND 2004 — ĐÃ ĐỐI CHIẾU TỪNG MỤC (22/11/2026) với Bảng 1 của chính bài gốc: HTML toàn văn do PMC phục vụ cho
+PMC1448256 (Des Jarlais 2004, © American Journal of Public Health — bài truy cập miễn phí, KHÔNG có giấy phép mở nên
+không lưu nguyên văn), tải byte thô qua urllib (sha256 f4704dc62e6db269…; trước đó 21/11 chỉ đọc qua bản tóm lược
+WebFetch). Cả 22 mục khớp mã và chủ đề; sau đối chiếu đã bổ sung yếu tố cho mục 4 (cách/đơn vị chuyển tải, nơi chuyển
+tải, hoạt động tăng tuân thủ), 6 (biện pháp nâng chất lượng đo) và 11 (phân tích bổ sung) — đúng các ý bảng gốc liệt kê
+mà tiêu chí cũ bỏ sót. Gỡ khỏi `CHUAN_CHUA_DOI_CHIEU_GOC`. Hệ CHƯA có văn bản nào của thiết kế non_randomized ⇒
+`CHUAN_CHUA_CO_VAN_BAN`.
+
+SQUIRE 2.0 VÀ CARE 2013 — ĐÃ ĐỐI CHIẾU TỪNG MỤC (22/11/2026, tối) với bảng mục của chính bài gốc, nguyên văn lấy qua
+Europe PMC fullTextXML sau khi đọc khối giấy phép (`chuan_bao_cao_items.py`): SQUIRE 2.0 — Ogrinc G et al. BMJ Qual Saf
+2016;25(12):986-992 (PMID 26369893; PMC5256233; CC BY-NC 4.0), 40 dòng mục 1–18; CARE — Gagnier JJ et al. J Med Case
+Rep 2013;7:223 (PMID 24228906; PMC3844611; CC BY 3.0), 23 dòng mục 1–13. `check_citation_retraction.py`: cả hai «ok»
+(PubMed, không rút bài). Mã và chủ đề khớp đủ; sau đối chiếu đã bổ sung yếu tố mà nguyên văn liệt kê còn thiếu ở tiêu
+chí: SQUIRE 3 (tầm quan trọng của vấn đề), 5 (lý do kỳ vọng can thiệp có hiệu quả), 10a (định nghĩa vận hành, độ tin
+cậy/giá trị của thước đo), 10b (đánh giá liên tục); CARE 5c (bệnh kèm, can thiệp trước), 9a (cách dùng, thay đổi can
+thiệp kèm lý do), 10a (tuân thủ và dung nạp, biến cố bất lợi/ngoài dự kiến). Tiêu chí chạy trên văn bản mẫu kiểm chứng
+(đề cương cải tiến chất lượng, đề cương báo cáo ca) ⇒ rời `CHUAN_CHUA_CO_VAN_BAN`. Hai thiết kế này nằm ngoài 8 mã G1
+hỗ trợ (G1-AUTO-02c): kịch bản giả lập trọn vòng chờ quyết định mở rộng danh mục thiết kế.
+
+PHẦN MỞ RỘNG CONSORT 2010 (22/11/2026) — áp cho đề cương RCT theo điều kiện thiết kế (`CHUAN_DIEU_KIEN_RCT` của K17):
+  · thử nghiệm cụm (Campbell 2012, BMJ, PMID 22951546; kiểm rút bài OK): đối chiếu từng mục với Bảng 1 «CONSORT 2010
+    checklist … cluster randomised trial» do nhóm CONSORT phát hành (tệp checklist .docx ở consort-spirit.org, tải byte
+    thô 22/11/2026);
+  · thử nghiệm không kém hơn/tương đương (Piaggio 2012, JAMA, PMID 23268518; kiểm rút bài OK): nội dung từng mục mở rộng
+    đối chiếu byte thô checklist NI do nhóm CONSORT phát hành (bản 2006, consort-spirit.org); số mục theo CONSORT 2010
+    của bản 2012 đọc qua bản tóm lược trang JAMA (byte thô bị 403) — mười mục mở rộng (1a, 2a, 2b, 4a, 5, 6a, 7a, 7b,
+    12a, 17a) cùng nội dung với bản 2006, mục 22 diễn giải chỉ áp khi viết bài báo.
+  Không lưu nguyên văn (bản quyền BMJ/JAMA): chỉ mã mục, chủ đề ngắn tiếng Anh, tiêu chí do hệ viết.
 
 COREQ 2007 VÀ SRQR 2014 — ĐÃ ĐỐI CHIẾU TỪNG MỤC (22/11/2026) với bản in lại toàn văn bảng gốc trong các bài truy cập mở
 CC BY 4.0 (bài gốc OUP/AAMC cần thuê bao; không đối chiếu trực tiếp bài gốc): COREQ — Bảng A1 «COREQ Checklist» của
@@ -28,9 +53,8 @@ PMC12567161 (Nurs Rep 2025, DOI 10.3390/nursrep15100347, dẫn Tong 2007) và PM
 10.3390/clinpract15120232): 32 mục, chủ đề + câu hỏi hướng dẫn, hai bản in độc lập trùng chữ; SRQR — Phụ lục A
 PMC12027544 (J Clin Med 2025, DOI 10.3390/jcm14082740): 21 mục, tên mục + mô tả + chú thích của biểu mẫu SRQR, trùng mô
 tả 21 mục S1–S21 in ở PMC13289893 (PLoS One). Sau đối chiếu đã sửa tiêu chí COREQ 8, 10, 11, 14 và SRQR S11; nhãn chủ đề
-khớp cả 53 mục. Hai chuẩn vẫn ở `CHUAN_DA_DOI_CHIEU_CHUA_CHAN` (chỉ cảnh báo) vì bật chặn sẽ làm đỏ ba kịch bản có cấu
-phần định tính mà bộ sinh đề cương nộp/bản thảo G7 chưa viết đủ mục (xem lý do ở hằng) — không nới tiêu chí, không ghi
-nợ: bật chặn khi ba kịch bản đạt 0 mục thiếu.
+khớp cả 53 mục. Bật CHẶN 22/11/2026 sau khi bộ sinh đề cương nộp và bản thảo G7 viết đủ mục cho ba kịch bản có cấu
+phần định tính (0 mục thiếu ở cả ba tầng văn bản) — nguồn ghi ở `NGUON_DOI_CHIEU_BAN_IN_LAI`.
 
 GIỚI HẠN (như K17): yếu tố có mặt ≠ nội dung đúng. Bộ kiểm bắt THIẾU một cách tin cậy; ĐẠT chỉ là «có dấu hiệu đủ yếu
 tố», người phân xử đọc bằng chứng từng dòng.
@@ -110,20 +134,29 @@ DINH_LUONG_CP = (r"hồi quy|kiểm định (thống kê|chi bình phương|t\b)
                  r"cỡ mẫu được tính")
 
 # ───────────────────────── chuẩn chưa đối chiếu bảng gốc (chỉ cảnh báo) ─────────────────────────
-CHUAN_CHUA_DOI_CHIEU_GOC: Dict[str, str] = {
-    "TREND 2004": "danh mục đọc qua bản tóm lược WebFetch trang PMC1448256 (byte thô bị chặn: Europe PMC 500, CDC 403)",
+CHUAN_CHUA_DOI_CHIEU_GOC: Dict[str, str] = {}
+#: (22/11/2026) Chuẩn ĐÃ có tiêu chí nhưng CHƯA kiểm chứng trên văn bản nào của hệ — không có đề cương (giả lập hay văn
+#: bản mẫu kiểm chứng trong bộ test) nào thuộc thiết kế đó để chạy tiêu chí. K17 báo mọi mục «chưa đo được» (⚪, KHÔNG
+#: tính là đạt); chuẩn cơ sở của thiết kế chưa đo ⇒ `loi_k17` không báo đạt. Mỗi dòng ghi văn bản hệ cần để đo.
+#: SQUIRE 2.0 và CARE 2013 đã rời tập này (22/11/2026, tối): đối chiếu từng mục với bảng gốc (docstring) và tiêu chí
+#: kiểm chứng trên văn bản mẫu đề cương cải tiến chất lượng / báo cáo ca trong `tests/test_chuan_de_cuong_mo_rong_*`.
+CHUAN_CHUA_CO_VAN_BAN: Dict[str, str] = {
+    "TREND 2004": ("tiêu chí đã đối chiếu Bảng 1 bản gốc nhưng chưa kiểm chứng trên văn bản nào của hệ — cần kịch bản "
+                   "giả lập trọn vòng thiết kế non_randomized (thử nghiệm can thiệp không ngẫu nhiên: đơn vị phân bổ, "
+                   "biện pháp giảm sai lệch do không ngẫu nhiên, đơn vị phân tích) để bộ sinh viết và K17 đo; "
+                   "không tính là đạt"),
 }
-#: Chuẩn ĐÃ đối chiếu từng mục với bản in lại toàn văn bảng gốc (nguồn CC BY ghi ở docstring) nhưng CHƯA bật chặn
-#: — lý do là khoảng hở của bộ sinh đo được, không phải nghi ngờ tiêu chí. Đo 22/11/2026 (gói giả lập 22/11): kịch bản
-#: định tính thiếu 8 mục ở đề cương nộp (COREQ 1, 4, 11, 13, 15, 20, 23; SRQR S5) và 22 mục ở bản thảo G7; kịch bản RCT
-#: có cấu phần định tính và kịch bản định tính chân thực cũng thiếu ở cả hai văn bản.
-CHUAN_DA_DOI_CHIEU_CHUA_CHAN: Dict[str, str] = {
-    "COREQ 2007": ("đã đối chiếu từng mục với bản in lại toàn văn bảng gốc trong PMC12567161 và PMC12731783 "
-                   "(CC BY 4.0); chưa bật chặn — bộ sinh đề cương nộp và bản thảo G7 chưa viết đủ mục cho kịch bản "
-                   "có cấu phần định tính — chỉ cảnh báo"),
-    "SRQR 2014": ("đã đối chiếu từng mục với bản in lại toàn văn bảng gốc trong PMC12027544 (CC BY 4.0), trùng mô tả ở "
-                  "PMC13289893; chưa bật chặn — bộ sinh đề cương nộp và bản thảo G7 chưa viết đủ mục cho kịch bản có "
-                  "cấu phần định tính — chỉ cảnh báo"),
+#: Chuẩn ĐÃ đối chiếu từng mục với bản in lại toàn văn bảng gốc nhưng CHƯA bật chặn (lý do là khoảng hở đo được của
+#: bộ sinh). 22/11/2026: COREQ 2007 và SRQR 2014 đã gỡ khỏi tập — bộ sinh đề cương nộp và bản thảo G7 viết đủ mục cho
+#: cả ba kịch bản có cấu phần định tính (định tính, định tính chân thực, RCT hỗn hợp: 0 mục thiếu ở đề cương nộp, bản
+#: thảo và báo cáo tổng hợp), nên hai chuẩn nay CHẶN như mọi chuẩn đã đối chiếu.
+CHUAN_DA_DOI_CHIEU_CHUA_CHAN: Dict[str, str] = {}
+#: nguồn đối chiếu của chuẩn bản quyền nhà xuất bản (không lưu nguyên văn) — nói đúng sự thật: bản in lại toàn văn
+#: bảng gốc trong bài CC BY, không phải bài gốc
+NGUON_DOI_CHIEU_BAN_IN_LAI: Dict[str, str] = {
+    "COREQ 2007": ("đối chiếu từng mục với bản in lại toàn văn bảng gốc trong PMC12567161 và PMC12731783 (CC BY 4.0)"),
+    "SRQR 2014": ("đối chiếu từng mục với bản in lại toàn văn bảng gốc trong PMC12027544 (CC BY 4.0), trùng mô tả ở "
+                  "PMC13289893"),
 }
 
 NGUON_CHUAN_THEM: Dict[str, str] = {
@@ -139,6 +172,8 @@ NGUON_CHUAN_THEM: Dict[str, str] = {
     "TREND 2004": "Des Jarlais DC et al. Am J Public Health 2004;94(3):361-6 (PMID 14998794)",
     "CARE 2013": "Gagnier JJ et al. J Med Case Rep 2013;7:223 (PMID 24228906)",
     "COSMIN 2021": "Gagnier JJ et al. Qual Life Res 2021;30(8):2197-2218 (PMID 33818733)",
+    "CONSORT Cluster 2012": "Campbell MK et al. BMJ 2012;345:e5661 (PMID 22951546)",
+    "CONSORT NI 2012": "Piaggio G et al. JAMA 2012;308(24):2594-604 (PMID 23268518)",
 }
 
 # ═════════════════════════════════════ SPIRIT 2025 (rct) ═════════════════════════════════════
@@ -712,7 +747,10 @@ _TRIPOD_AI: Dict[str, tuple] = {
     "16": (("phan_tich", "doi_tuong"), "bat_buoc",
            "Nêu khác biệt giữa dữ liệu phát triển và đánh giá (bối cảnh, tiêu chuẩn, kết cục, yếu tố dự báo).",
            (_y("so sánh tập phát triển–đánh giá", r"khác biệt|so sánh (đặc điểm|phân bố)|tương đồng"),),
-           r"kiểm định (ngoại|bên ngoài)|tập (kiểm định|đánh giá) (độc lập|bên ngoài)", "có dữ liệu đánh giá riêng"),
+           # 22/11/2026: điều kiện chỉ xét MỤC TIÊU — «Bước nghiên cứu tiếp theo: kiểm định bên ngoài…» (TRIPOD+AI
+           # 27c) là việc của nghiên cứu SAU, từng làm mục 16 đòi so sánh tập đánh giá mà đề tài không có
+           r"@muc_tieu:kiểm định (ngoại|bên ngoài)|tập (kiểm định|đánh giá) (độc lập|bên ngoài)",
+           "có dữ liệu đánh giá riêng"),
     "17": (("dao_duc",), "bat_buoc", "Nêu Hội đồng Đạo đức chấp thuận và cách lấy (hoặc miễn) đồng thuận.",
            (_y("Hội đồng Đạo đức", HOI_DONG), _y("đồng thuận/miễn", r"đồng (ý|thuận)|miễn"))),
     "18a": (("kinh_phi", "bia", "dao_duc"), "bat_buoc", "Nêu nguồn kinh phí và vai trò nhà tài trợ.",
@@ -981,12 +1019,16 @@ _SQUIRE: Dict[str, tuple] = {
     "2a": ((), "bao_cao", "Tóm tắt đủ để tra cứu và lập chỉ mục.", ()),
     "2b": ((), "bao_cao", "Tóm tắt toàn bộ thông tin then chốt.", ()),
     "3": (("dat_van_de",), "bat_buoc", "Mô tả bản chất và tầm quan trọng của vấn đề tại chỗ.",
-          (_y("vấn đề tại chỗ", r"tại (đơn vị|khoa|bệnh viện|phòng khám)|của đơn vị|tại cơ sở"),)),
+          (_y("vấn đề tại chỗ", r"tại (đơn vị|khoa|bệnh viện|phòng khám)|của đơn vị|tại cơ sở"),
+           _y("tầm quan trọng", r"tầm quan trọng|gánh nặng|hậu quả|ảnh hưởng|chi phí|\d+[,.]?\d*\s*%"))),
     "4": (("dat_van_de", "tong_quan"), "bat_buoc", "Tóm tắt hiểu biết hiện có, nghiên cứu trước liên quan.",
           (_y("trích dẫn nguồn", TRICH_DAN),)),
     "5": (("tong_quan", "dat_van_de"), "bat_buoc", "Nêu khung/mô hình/lý thuyết giải thích vấn đề và lý do can thiệp "
                                                    "có hiệu quả.",
-          (_y("khung lý thuyết", r"khung (lý thuyết|khái niệm)|mô hình (PDSA|logic|cải tiến)|lý thuyết|PDSA"),)),
+          (_y("khung lý thuyết", r"khung (lý thuyết|khái niệm)|mô hình (PDSA|logic|cải tiến)|lý thuyết|PDSA"),
+           _y("lý do kỳ vọng can thiệp có hiệu quả", r"(kỳ vọng|giả định|lý do|vì sao|cơ chế)[^.]{0,160}(hiệu quả|cải "
+                                                     r"thiện|giảm|tăng)|(được kỳ vọng|dự kiến) (sẽ )?(cải thiện|giảm|"
+                                                     r"tăng)"))),
     "6": (("muc_tieu",), "bat_buoc", "Nêu mục đích của dự án.", (_y("mục tiêu cụ thể", MUC_TIEU_CU_THE),)),
     "7": (("dia_diem", "thiet_ke"), "bat_buoc", "Nêu yếu tố bối cảnh quan trọng lúc bắt đầu can thiệp.",
           (_y("bối cảnh", NOI),)),
@@ -1001,11 +1043,14 @@ _SQUIRE: Dict[str, tuple] = {
     "9b": (("thiet_ke", "phan_tich", "sai_so"), "bat_buoc", "Nêu cách xác lập kết quả là do can thiệp.",
            (_y("quy kết do can thiệp", r"nhóm (chứng|so sánh)|chuỗi thời gian gián đoạn|xu hướng|nhiễu|hiệu chỉnh"),)),
     "10a": (("bien_so",), "bat_buoc", "Nêu thước đo quá trình và kết cục, lý do chọn, định nghĩa vận hành, độ tin cậy.",
-            (_y("thước đo quá trình", r"(chỉ số|thước đo) quá trình"), _y("thước đo kết cục", r"(chỉ số|thước đo) kết "
-                                                                                              r"cục|"
-                                                                                       r"kết cục"))),
+            (_y("thước đo quá trình", r"(chỉ số|thước đo) quá trình"),
+             _y("thước đo kết cục", r"(chỉ số|thước đo) kết cục|kết cục"),
+             _y("định nghĩa vận hành", r"định nghĩa"),
+             _y("độ tin cậy/giá trị của thước đo", r"độ tin cậy|giá trị|kiểm định|chuẩn ho[áa]|đã được dùng"))),
     "10b": (("bien_so", "quy_trinh"), "bat_buoc", "Nêu cách đánh giá liên tục các yếu tố bối cảnh.",
-            (_y("đánh giá bối cảnh", r"(yếu tố )?bối cảnh"),)),
+            (_y("đánh giá bối cảnh", r"(yếu tố )?bối cảnh"),
+             _y("đánh giá liên tục", r"định kỳ|liên tục|mỗi (chu kỳ|tháng|tuần|quý)|hằng (tháng|tuần|quý)|suốt")),
+            None, "", True),  # cùng đoạn: chính việc đánh giá BỐI CẢNH là liên tục (không lấy lịch chu kỳ can thiệp)
     "10c": (("quan_ly_dl", "cong_cu"), "bat_buoc", "Nêu cách đánh giá đầy đủ và chính xác của dữ liệu.",
             (_y("độ đầy đủ/chính xác dữ liệu", CHAT_LUONG_DL + r"|đầy đủ"),)),
     "11a": (("phan_tich",), "bat_buoc", "Nêu phương pháp định tính và định lượng để suy luận từ dữ liệu.",
@@ -1072,9 +1117,14 @@ _CHEERS: Dict[str, tuple] = {
     "11": (("kinh_te", "bien_so"), "bat_buoc", "Nêu kết cục đo lợi ích và tác hại.",
            (_y("kết cục lợi ích", r"\bQALY\b|\bDALY\b|kết cục|năm sống"),)),
     "12": (("kinh_te", "bien_so", "cong_cu"), "bat_buoc", "Nêu cách đo kết cục.",
-           (_y("cách đo kết cục", r"\bEQ-5D\b|SF-6D|đo (bằng|theo)|thang"),)),
+           # 22/11/2026: «xác định bằng <cách đo>» là cách đề cương nói CÁCH ĐO kết cục (mục 12 «how outcomes … were
+           # measured») — bộ sinh viết «Kết cục chính: …, xác định bằng huyết áp phòng khám trung bình 2 lần đo …»
+           (_y("cách đo kết cục", r"\bEQ-5D\b|SF-6D|(đo|xác định|đánh giá) (bằng|theo)|thang"),)),
     "13": (("kinh_te",), "bat_buoc", "Nêu quần thể và phương pháp định giá kết cục (vd bộ trọng số thoả dụng).",
-           (_y("định giá kết cục", r"thoả dụng|thỏa dụng|utility|bộ (giá trị|trọng số)|value set|định giá"),)),
+           # 22/11/2026: phân tích chi phí–hiệu quả theo ĐƠN VỊ TỰ NHIÊN (thêm một người đạt đích…) không có bước định
+           # giá kết cục — nêu rõ đơn vị tự nhiên là trả lời mục 13 («methods used to measure and value outcomes»)
+           (_y("định giá kết cục", r"thoả dụng|thỏa dụng|utility|bộ (giá trị|trọng số)|value set|định giá|"
+                                   r"đơn vị tự nhiên"),)),
     "14": (("kinh_te",), "bat_buoc", "Nêu cách định giá nguồn lực và chi phí.",
            (_y("định giá chi phí", r"chi phí (trực tiếp|gián tiếp|y tế|đơn vị)|đơn giá|định giá|biểu giá"),)),
     "15": (("kinh_te",), "bat_buoc", "Nêu năm giá, đơn vị tiền tệ và phương pháp quy đổi.",
@@ -1093,7 +1143,9 @@ _CHEERS: Dict[str, tuple] = {
     "21": (("kinh_te", "dao_duc", "pho_bien"), "bat_buoc", "Mô tả cách thu hút người bệnh/cộng đồng tham gia thiết kế.",
            (_y("sự tham gia của người bệnh", PPI),)),
     "22": (("du_kien_kq", "kinh_te"), "ke_hoach", "Lên kế hoạch báo cáo mọi tham số đầu vào kèm bất định và nguồn.",
-           (_y("bảng tham số", r"tham số|đầu vào"),)),
+           # 22/11/2026: siết — «bootstrap phi tham số» từng làm mục 22 «đạt» dù đề cương không có kế hoạch báo cáo
+           # tham số đầu vào
+           (_y("bảng tham số", r"(?<!phi )tham số|đầu vào"),)),
     "23": (("du_kien_kq", "kinh_te"), "ke_hoach", "Lên kế hoạch báo cáo chi phí, kết cục trung bình và tỷ số chi "
                                                   "phí–hiệu quả.",
            (_y("kết quả chính", r"\bICER\b|chi phí trung bình|tỷ số chi phí"),)),
@@ -1128,12 +1180,20 @@ _TREND: Dict[str, tuple] = {
           (_y("nội dung can thiệp", r"nhóm can thiệp|can thiệp"), _y("nhóm so sánh", r"nhóm (chứng|so sánh)"),
            _y("liều/thời lượng", r"mỗi (ngày|tuần|tháng)|trong \d+ (ngày|tuần|tháng)|\d+\s*(buổi|lần)|thời lượng"),
            _y("người thực hiện", r"(do|bởi) .{0,60}(thực hiện|chuyển tải)|người thực hiện|điều dưỡng|bác sĩ|nhân "
-                                 r"viên"))),
+                                 r"viên"),
+           # 22/11/2026 (đối chiếu Bảng 1 bản gốc): cách và đơn vị chuyển tải, nơi chuyển tải, hoạt động tăng tuân thủ
+           _y("cách/đơn vị chuyển tải", r"(qua|bằng) (điện thoại|tin nhắn|ứng dụng|tờ|video)|trực tiếp|theo nhóm|"
+                                        r"nhóm nhỏ|từng (người|cá nhân)|cá nhân"),
+           _y("nơi chuyển tải", NOI),
+           _y("hoạt động tăng tuân thủ", r"tuân thủ|khuyến khích|hỗ trợ (đi lại|chi phí)"))),
     "5": (("muc_tieu", "cau_hoi"), "bat_buoc", "Nêu mục tiêu cụ thể và giả thuyết.",
           (_y("mục tiêu cụ thể", MUC_TIEU_CU_THE), _y("giả thuyết", r"giả thuyết"))),
     "6": (("bien_so", "cong_cu"), "bat_buoc", "Định nghĩa kết cục chính/phụ, cách thu thập, độ giá trị của công cụ.",
           (_y("kết cục chính", r"kết cục chính"), _y("cách thu thập", r"thu thập|đo|phỏng vấn|hồ sơ"),
-           _y("độ giá trị công cụ", r"độ (giá trị|tin cậy)|đã (được )?(kiểm định|chuẩn hoá)|Cronbach|\[\d+"))),
+           _y("độ giá trị công cụ", r"độ (giá trị|tin cậy)|đã (được )?(kiểm định|chuẩn hoá)|Cronbach|\[\d+"),
+           # 22/11/2026 (đối chiếu Bảng 1 bản gốc): biện pháp nâng chất lượng đo
+           _y("nâng chất lượng đo", r"kiểm soát chất lượng|bảo đảm chất lượng|chuẩn ho[áa]|hiệu chuẩn|tập huấn|"
+                                    r"nhập (liệu )?kép|đối chiếu"))),
     "7": (("co_mau",), "bat_buoc", "Giải thích cách xác định cỡ mẫu (và phân tích giữa kỳ/quy tắc dừng nếu có).",
           (_y("công thức/phương pháp", CONG_THUC_CO_MAU), _y("cỡ mẫu cuối cùng", CO_MAU_CUOI))),
     "8": (("thiet_ke", "chon_mau", "can_thiep"), "bat_buoc",
@@ -1148,7 +1208,9 @@ _TREND: Dict[str, tuple] = {
                                    r"hợp"),)),
     "11": (("phan_tich",), "bat_buoc", "Mô tả phương pháp so sánh nhóm, phân tích bổ sung, dữ liệu thiếu, phần mềm.",
            (_y("phương pháp thống kê", PP_THONG_KE), _y("dữ liệu thiếu", DU_LIEU_THIEU),
-            _y("phần mềm", r"phần mềm|\bSPSS\b|\bStata\b|\bSAS\b|\bR\b"))),
+            _y("phần mềm", r"phần mềm|\bSPSS\b|\bStata\b|\bSAS\b|\bR\b"),
+            # 22/11/2026 (đối chiếu Bảng 1 bản gốc): phân tích bổ sung (phân nhóm, hiệu chỉnh)
+            _y("phân tích bổ sung", r"phân nhóm|nhóm nhỏ|hiệu chỉnh|phân tích (bổ sung|độ nhạy)"))),
     "12": (("du_kien_kq", "quy_trinh"), "ke_hoach", "Lên kế hoạch sơ đồ luồng người tham gia.", (_y("sơ đồ "
                                                                                                     "luồng", SO_DO),)),
     "13": (("dia_diem", "thiet_ke"), "bat_buoc", "Nêu mốc thời gian tuyển và theo dõi.", (_y("mốc ngày", NGAY),)),
@@ -1181,7 +1243,11 @@ _CARE: Dict[str, tuple] = {
            (_y("nhân khẩu học", r"tuổi|giới|nghề"),)),
     "5b": (("trinh_bay_ca",), "bat_buoc", "Triệu chứng chính.", (_y("triệu chứng", r"triệu chứng|lý do (vào viện|"
                                                                                    r"khám)"),)),
-    "5c": (("trinh_bay_ca",), "bat_buoc", "Tiền sử bệnh, gia đình, tâm lý–xã hội.", (_y("tiền sử", r"tiền sử"),)),
+    "5c": (("trinh_bay_ca",), "bat_buoc", "Tiền sử bệnh, gia đình, tâm lý–xã hội; bệnh kèm và can thiệp trước kèm "
+                                          "kết quả.",
+           (_y("tiền sử", r"tiền sử"),
+            _y("bệnh kèm/can thiệp trước", r"bệnh kèm|bệnh đồng mắc|điều trị trước|can thiệp trước|đã (từng )?(điều "
+                                           r"trị|dùng)"))),
     "6": (("trinh_bay_ca",), "bat_buoc", "Phát hiện khám thực thể.", (_y("khám", r"khám"),)),
     "7": (("trinh_bay_ca", "tien_do"), "bat_buoc", "Mốc thời gian quan trọng (bảng/hình).",
           (_y("dòng thời gian", r"dòng thời gian|mốc thời gian|timeline"),)),
@@ -1195,9 +1261,14 @@ _CARE: Dict[str, tuple] = {
                                                                                                    r"đoạn"),),
            r"ung thư|giai đoạn|tiên lượng", "có yếu tố tiên lượng"),
     "9a": (("trinh_bay_ca", "can_thiep"), "bat_buoc", "Loại can thiệp, cách dùng, thay đổi can thiệp.",
-           (_y("can thiệp/điều trị", r"điều trị|can thiệp|liều"),)),
+           (_y("can thiệp/điều trị", r"điều trị|can thiệp"),
+            _y("cách dùng (liều, thời gian)", r"liều|cách dùng|đường dùng|thời gian (dùng|điều trị)"),
+            _y("thay đổi can thiệp (kèm lý do)", r"thay đổi|điều chỉnh|đổi (thuốc|phác đồ)"))),
     "10a": (("trinh_bay_ca",), "bat_buoc", "Diễn tiến theo dõi, kết cục, tuân thủ, biến cố bất lợi.",
-            (_y("theo dõi/kết cục", r"theo dõi|kết cục|tái khám"),)),
+            (_y("theo dõi/kết cục", r"theo dõi|kết cục|tái khám"),
+             _y("tuân thủ và dung nạp", r"tuân thủ|dung nạp"),
+             _y("biến cố bất lợi/ngoài dự kiến", r"biến cố|bất lợi|ngoài (ý muốn|dự kiến)|tác dụng (phụ|không mong "
+                                                 r"muốn)"))),
     "11a": (("ban_luan",), "ke_hoach", "Điểm mạnh và hạn chế của xử trí ca.", (_y("hạn chế", r"hạn chế|điểm mạnh"),)),
     "11b": (("ban_luan",), "ke_hoach", "Y văn liên quan.", (_y("y văn", TRICH_DAN + r"|y văn"),)),
     "11c": (("ban_luan",), "ke_hoach", "Lý do của kết luận (kể cả quan hệ nhân quả).", (_y("lập luận", r"nhân quả|lý "
@@ -1311,6 +1382,210 @@ _COSMIN: Dict[str, tuple] = {
               GIA_TRI_GIA_THUYET, "có kiểm định giả thuyết giá trị cấu trúc (hội tụ/phân biệt)"),
 }
 
+# ═══════════════════════ CONSORT 2010 mở rộng — thử nghiệm ngẫu nhiên theo cụm (Campbell 2012) ═══════════════════════
+#: Chỉ các mục CÓ phần mở rộng cho cụm (mục chuẩn còn lại do SPIRIT 2025 đo). Mục kết quả (13a, 13b, 15, 16, 17a) là
+#: `ke_hoach`: đề cương phải lên kế hoạch báo cáo ở cả mức cụm và mức cá nhân.
+MUC_CUM = r"mức (cụm|cá nhân|phòng khám|cơ sở)"
+_CONSORT_CUM_CHU_DE = {
+    "1a": "Title", "1b": "Abstract", "2a": "Background", "2b": "Objectives", "3a": "Trial design",
+    "4a": "Participants", "5": "Interventions", "6a": "Outcomes", "7a": "Sample size", "8b": "Sequence generation",
+    "9": "Allocation concealment mechanism", "10a": "Implementation", "10b": "Implementation", "10c": "Implementation",
+    "12a": "Statistical methods", "13a": "Participant flow", "13b": "Participant flow", "15": "Baseline data",
+    "16": "Numbers analysed", "17a": "Outcomes and estimation", "21": "Generalisability",
+}
+_CONSORT_CUM: Dict[str, tuple] = {
+    "1a": (("dau",), "bat_buoc", "Tiêu đề nêu rõ thử nghiệm ngẫu nhiên theo cụm.",
+           (_y("thiết kế cụm trong tiêu đề", r"theo cụm|cluster", de_muc=True),)),
+    "1b": ((), "bao_cao", "Tóm tắt theo bảng tóm tắt của phần mở rộng cho thử nghiệm cụm.", ()),
+    "2a": (("thiet_ke", "dat_van_de", "tong_quan"), "bat_buoc", "Nêu lý do dùng thiết kế cụm.",
+           (_y("lý do thiết kế cụm", r"cụm.{0,200}(vì|do|nhằm|để|tránh|nhiễm chéo)|(nhiễm chéo|triển khai ở (cấp|mức) "
+                                     r"(phòng khám|cơ sở|cụm|cộng đồng)).{0,200}cụm"),)),
+    "2b": (("muc_tieu", "cau_hoi", "thiet_ke"), "bat_buoc", "Nêu mục tiêu ở mức cụm, mức cá nhân hay cả hai.",
+           (_y("mức của mục tiêu", r"mục tiêu.{0,160}" + MUC_CUM + "|" + MUC_CUM + r".{0,160}mục tiêu"),)),
+    "3a": (("thiet_ke", "doi_tuong"), "bat_buoc", "Định nghĩa cụm và cách các đặc điểm thiết kế áp vào cụm.",
+           (_y("định nghĩa cụm", r"cụm là|mỗi cụm là|đơn vị ngẫu nhiên ho[áa] là"),)),
+    "4a": (("doi_tuong", "chon_mau"), "bat_buoc", "Nêu tiêu chuẩn chọn cụm.",
+           (_y("tiêu chuẩn chọn cụm", r"tiêu chuẩn (chọn|lựa chọn) (cụm|phòng khám|cơ sở|đơn vị)", de_muc=True),)),
+    "5": (("can_thiep", "thiet_ke"), "bat_buoc", "Nêu can thiệp áp ở mức cụm, mức cá nhân hay cả hai.",
+          (_y("mức của can thiệp", r"can thiệp.{0,160}" + MUC_CUM + "|" + MUC_CUM + r".{0,160}can thiệp"),)),
+    "6a": (("bien_so", "thiet_ke"), "bat_buoc", "Nêu kết cục đo ở mức cụm, mức cá nhân hay cả hai.",
+           (_y("mức của kết cục", r"kết cục.{0,160}" + MUC_CUM + "|" + MUC_CUM + r".{0,160}kết cục"),)),
+    "7a": (("co_mau",), "bat_buoc",
+           "Cỡ mẫu: phương pháp, số cụm, cỡ cụm (đều hay không đều), hệ số tương quan nội cụm (ICC) và bất định "
+           "của ICC.",
+           (_y("số cụm", r"\d+\s*(cụm|phòng khám|cơ sở)"),
+            _y("cỡ cụm", r"\d+\s*người (mỗi|trong mỗi|một) (cụm|phòng khám|cơ sở)|\bm\s*=\s*\d+"),
+            _y("cỡ cụm đều hay không đều", r"cỡ (cụm|chùm) (đều|không đều|bằng nhau|khác nhau)|cụm (đều|không đều)"),
+            _y("ICC", r"\bICC\b|tương quan nội cụm"),
+            _y("bất định của ICC", r"(ICC|tương quan nội cụm)[^.]{0,200}(dao động|khoảng|cận (trên|dưới)|"
+                                   r"\d[,.]?\d*\s*[–-]\s*\d)"))),
+    "8b": (("ngau_nhien",), "bat_buoc", "Nêu chi tiết phân tầng hoặc ghép cặp cụm.",
+           (_y("phân tầng/ghép cặp", r"phân tầng|ghép cặp"),), r"phân tầng|ghép cặp", "có phân tầng hoặc ghép cặp"),
+    "9": (("ngau_nhien",), "bat_buoc", "Nêu phân bổ theo cụm và mức giấu phân bổ (cụm, cá nhân hay cả hai).",
+          (_y("phân bổ theo cụm", r"(phân bổ|ngẫu nhiên ho[áa]).{0,120}(cụm|phòng khám|cơ sở)"),
+           _y("mức giấu phân bổ", r"(giấu|che giấu)[^.]{0,200}(cụm|phòng khám|cơ sở|cá nhân)|(cụm|phòng khám|cơ sở)"
+                                  r"[^.]{0,120}trước khi tuyển"))),
+    "10a": (("ngau_nhien",), "bat_buoc", "Nêu ai sinh trình tự, ai mời cụm tham gia và ai phân bổ cụm vào nhóm.",
+            (_y("người sinh trình tự", r"(sinh|tạo|giữ) (trình tự|danh sách)"),
+             _y("người mời/tuyển cụm", r"(mời|tuyển|đưa vào) (các )?(cụm|phòng khám|cơ sở)"),
+             _y("người phân bổ cụm", r"(phân bổ|gán|thông báo nhánh)[^.]{0,80}(cụm|phòng khám|cơ sở)|"
+                                     r"(cụm|phòng khám|cơ sở)[^.]{0,60}(được phân bổ|nhận nhánh)"))),
+    "10b": (("chon_mau", "doi_tuong"), "bat_buoc",
+            "Nêu cách đưa người tham gia vào cụm (liệt kê toàn bộ, chọn ngẫu nhiên, tuyển liên tiếp…).",
+            (_y("cách đưa người vào cụm", r"(tuyển|chọn|lấy|liệt kê)[^.]{0,40}(liên tiếp|toàn bộ|ngẫu nhiên)[^.]{0,120}"
+                                          r"(mỗi|từng|trong) (cụm|phòng khám|cơ sở)"),)),
+    "10c": (("dao_duc", "ngau_nhien", "doi_tuong"), "bat_buoc",
+            "Nêu xin đồng ý từ ai (đại diện cụm, từng người hay cả hai) và trước hay sau ngẫu nhiên hoá.",
+            (_y("đồng ý ở mức cụm/cá nhân", r"(đồng ý|chấp thuận)[^.]{0,160}(cụm|phòng khám|cơ sở|lãnh đạo|đại diện)|"
+                                            r"(lãnh đạo|đại diện)[^.]{0,120}(đồng ý|chấp thuận)"),
+             _y("thời điểm so với ngẫu nhiên hoá", r"(trước|sau) (khi )?(ngẫu nhiên ho[áa]|phân bổ|được phân bổ)"))),
+    "12a": (("phan_tich",), "bat_buoc", "Nêu cách tính đến cấu trúc cụm trong phân tích.",
+            (_y("phân tích tính cụm", r"sai số chuẩn theo cụm|hiệu ứng hỗn hợp|\bGEE\b|đa tầng|cluster-robust|"
+                                      r"tính (đến )?cấu trúc cụm"),)),
+    "13a": (("du_kien_kq", "phan_tich", "quy_trinh"), "ke_hoach",
+            "Lên kế hoạch báo cáo số cụm được phân bổ, nhận can thiệp và đưa vào phân tích theo nhóm.",
+            (_y("số cụm trong sơ đồ luồng", r"số (cụm|phòng khám|cơ sở)[^.]{0,200}(phân bổ|ngẫu nhiên)"),)),
+    "13b": (("du_kien_kq", "phan_tich", "quy_trinh"), "ke_hoach",
+            "Lên kế hoạch báo cáo mất và loại ở cả mức cụm và mức cá nhân.",
+            (_y("mất/loại ở hai mức", r"(mất|loại|rút)[^.]{0,160}(cụm|phòng khám|cơ sở)[^.]{0,80}(cá nhân|người)"),)),
+    "15": (("du_kien_kq", "phan_tich"), "ke_hoach", "Lên kế hoạch mô tả đặc điểm nền ở mức cụm và mức cá nhân.",
+           (_y("đặc điểm nền hai mức", r"(đặc điểm|nền)[^.]{0,160}" + MUC_CUM),)),
+    "16": (("du_kien_kq", "phan_tich"), "ke_hoach", "Lên kế hoạch báo cáo số cụm đưa vào từng phân tích.",
+           (_y("số cụm phân tích", r"số (cụm|phòng khám|cơ sở)[^.]{0,200}(phân tích|đưa vào)"),)),
+    "17a": (("du_kien_kq", "phan_tich"), "ke_hoach",
+            "Lên kế hoạch báo cáo kết quả ở mức cá nhân hoặc cụm và ICC ước tính cho kết cục chính.",
+            (_y("ICC ước tính", r"(ICC|tương quan nội cụm)[^.]{0,120}(ước tính|ước lượng|kết cục chính)|"
+                                r"(báo cáo|ước tính|ước lượng)[^.]{0,120}(ICC|tương quan nội cụm)"),)),
+    "21": (("han_che", "ban_luan"), "ke_hoach", "Bàn khả năng suy rộng cho cụm và/hoặc cá nhân.",
+           (_y("suy rộng cho cụm/cá nhân", r"(suy rộng|khái quát|áp dụng cho)[^.]{0,260}(cụm|phòng khám|cơ sở)"),)),
+}
+
+# ═════════════ CONSORT 2010 mở rộng — thử nghiệm không kém hơn/tương đương (Piaggio 2012) ═════════════
+_CONSORT_NI_CHU_DE = {
+    "1a": "Title", "1b": "Abstract", "2a": "Background", "2b": "Objectives", "4a": "Participants",
+    "5": "Interventions", "6a": "Outcomes", "7a": "Sample size", "7b": "Interim analyses and stopping guidelines",
+    "12a": "Statistical methods", "17a": "Outcomes and estimation", "22": "Interpretation",
+}
+KHONG_KEM = r"không kém hơn|tương đương|non-?inferiority|equivalence"
+_CONSORT_NI: Dict[str, tuple] = {
+    "1a": (("dau",), "bat_buoc", "Tiêu đề nêu rõ thử nghiệm không kém hơn hoặc tương đương.",
+           (_y("không kém hơn trong tiêu đề", KHONG_KEM, de_muc=True),)),
+    "1b": ((), "bao_cao", "Tóm tắt theo bảng tóm tắt của phần mở rộng không kém hơn.", ()),
+    "2a": (("thiet_ke", "dat_van_de", "tong_quan"), "bat_buoc", "Nêu lý do dùng thiết kế không kém hơn/tương đương.",
+           (_y("lý do thiết kế không kém hơn", r"(không kém hơn|tương đương)[^.]{0,240}(vì|do|nhằm|để|lợi thế|tiện lợi|"
+                                               r"giảm (đi lại|chi phí|gánh nặng|tác dụng)|ít (tốn|xâm lấn))"),)),
+    "2b": (("muc_tieu", "cau_hoi", "co_mau"), "bat_buoc",
+           "Nêu giả thuyết không kém hơn/tương đương, biên và lý do chọn biên.",
+           (_y("giả thuyết kèm biên", r"(giả thuyết|H0|H1)[^\n]{0,200}(biên|điểm %|điểm phần trăm|Δ)"),
+            _y("lý do chọn biên", r"biên[^.]{0,200}(dựa (trên|vào)|vì|giữ|\bM1\b|\bM2\b|hiệu ứng (của|đã))"))),
+    "4a": (("doi_tuong", "thiet_ke", "tong_quan"), "bat_buoc",
+           "Nêu người tham gia có tương tự quần thể của thử nghiệm đã xác lập hiệu quả của nhóm chứng không.",
+           (_y("tương đồng quần thể", r"(quần thể|người tham gia)[^.]{0,160}(tương tự|tương đồng|giống|khác)"),)),
+    "5": (("can_thiep", "thiet_ke"), "bat_buoc",
+          "Nêu điều trị của nhóm chứng có giống điều trị trong thử nghiệm đã xác lập hiệu quả không.",
+          (_y("tương đồng điều trị nhóm chứng", r"(nhóm chứng|điều trị (tham chiếu|chứng)|phác đồ chứng)[^.]{0,200}"
+                                                r"(tương tự|tương đồng|giống|khác)"),)),
+    "6a": (("bien_so", "thiet_ke"), "bat_buoc",
+           "Nêu kết cục có giống thử nghiệm đã xác lập hiệu quả không và kết cục nào kiểm định không kém hơn hay vượt "
+           "trội.",
+           (_y("tương đồng kết cục", r"kết cục[^.]{0,160}(tương tự|tương đồng|giống|khác)"),
+            _y("loại giả thuyết theo kết cục", r"(không kém hơn|tương đương|vượt trội)[^.]{0,120}kết cục (chính|phụ)|"
+                                               r"kết cục (chính|phụ)[^.]{0,160}(không kém hơn|tương đương|vượt trội|"
+                                               r"thăm dò)"))),
+    "7a": (("co_mau",), "bat_buoc", "Cỡ mẫu tính theo tiêu chí không kém hơn/tương đương, nêu biên.",
+           (_y("tiêu chí không kém hơn", r"không kém hơn|tương đương"), _y("biên", r"biên"))),
+    "7b": (("phan_tich", "giam_sat", "dao_duc"), "bat_buoc",
+           "Nếu có phân tích giữa kỳ: nêu quy tắc dừng áp cho kết cục nào và có liên quan giả thuyết không kém hơn "
+           "không.",
+           (_y("quy tắc dừng theo giả thuyết", r"(không kém hơn|tương đương)[^.]{0,160}(dừng|giữa kỳ)|(dừng|giữa kỳ)"
+                                               r"[^.]{0,160}(không kém hơn|tương đương)"),),
+           # «có phân tích giữa kỳ: không» (nhãn–giá trị của bản thảo G7) KHÔNG phải có phân tích giữa kỳ (22/11/2026)
+           r"(có|tiến hành|thực hiện|dự kiến) phân tích giữa kỳ(?!\s*:\s*(không|chưa))", "có phân tích giữa kỳ"),
+    "12a": (("phan_tich",), "bat_buoc", "Nêu dùng khoảng tin cậy một phía hay hai phía.",
+            (_y("một/hai phía", r"(một|hai) phía"),)),
+    "17a": (("phan_tich", "du_kien_kq"), "ke_hoach", "Lên kế hoạch trình bày ước lượng và khoảng tin cậy so với biên.",
+            (_y("KTC so với biên", r"(khoảng tin cậy|KTC)[^.]{0,120}biên|biên[^.]{0,120}(khoảng tin cậy|KTC)"),)),
+    "22": ((), "bao_cao", "Diễn giải theo giả thuyết không kém hơn; biện minh nếu kết luận vượt trội.", ()),
+}
+# ═══════════════════════ SANRA 2019 (chương TỔNG QUAN TÀI LIỆU của đề cương) ═══════════════════════
+# VÌ SAO (22/11/2026, bác sĩ: «Tổng quan tài liệu đã có nền, hãy tiếp tục nâng cấp»): chương tổng quan của đề cương là
+# một tổng quan TƯỜNG THUẬT (không hệ thống). Chuẩn đã kiểm định cho loại bài này là SANRA — Baethge C, Goldbeck-Wood
+# S, Mertens S. Res Integr Peer Rev 2019;4:5 (PMID 30962953, PMC6434870, doi:10.1186/s41073-019-0064-8); tra PubMed
+# 22/11/2026: giấy phép CC BY 4.0; `check_citation_retraction.py --pmid 30962953`: không rút bài. Sáu chủ đề mục chép
+# từ phần Phương pháp của bài (được phép theo CC BY, có ghi công); thang chấm 0–2 và tài liệu «explanations and
+# instructions» (Hình 1–2 của bài, dạng ảnh) KHÔNG lưu. Tiêu chí tiếng Việt và yếu tố do hệ viết cho ĐỀ CƯƠNG: mục 1
+# (tầm quan trọng) tìm ở Đặt vấn đề + Tổng quan, mục 2 (mục tiêu) ở Mục tiêu/Câu hỏi, mục 3–6 ở chương Tổng quan.
+# Mục 3 (mô tả tìm kiếm) đối chiếu PRISMA-S — Rethlefsen ML et al. J Med Libr Assoc 2021;109(2):174-200 (PMID 34285662;
+# không rút bài 22/11/2026; metadata PMC không ghi giấy phép ⇒ không lưu nguyên văn) — CHỈ ba mục áp dụng được cho tổng
+# quan tường thuật: mục 1 (tên nguồn/cơ sở dữ liệu), mục 8 (chiến lược tìm đầy đủ), mục 13 (ngày tìm). Các mục còn lại
+# của PRISMA-S (đếm bản ghi, khử trùng, bình duyệt chiến lược…) thuộc tổng quan HỆ THỐNG, đã do PRISMA-P/PRISMA kiểm.
+# Điều kiện áp dụng (đề cương có chương «TỔNG QUAN TÀI LIỆU») đăng ký ở `CHUAN_DIEU_KIEN` của bộ kiểm K17.
+_SANRA_CHU_DE = {
+    "1": "Explanation of the review's importance",
+    "2": "Statement of the aims of the review",
+    "3": "Description of the literature search",
+    "4": "Referencing",
+    "5": "Scientific reasoning",
+    "6": "Presentation of relevant and appropriate endpoint data",
+}
+#: nguồn/cơ sở dữ liệu đã tra (PRISMA-S mục 1)
+NGUON_TIM = (r"PubMed|MEDLINE|Europe PMC|Embase|Scopus|Web of Science|Cochrane|CINAHL|PsycINFO|LILACS|Crossref|"
+             r"Google Scholar|ClinicalTrials\.gov|\bICTRP\b|OpenAlex|Semantic Scholar")
+#: chiến lược tìm đầy đủ (PRISMA-S mục 8): thẻ trường của cơ sở dữ liệu, hoặc toán tử Boole VIẾT HOA nối nhóm từ khoá
+#: (`(?-i:…)` — «and/or» viết thường trong tiêu đề tiếng Anh của bảng không phải câu tìm)
+CAU_TIM = (r"\[(?:mesh|mh|tiab|ti|ab|tw|pt|majr|sh|la|dp)(?::noexp)?\]|(?-i:\b(?:AND|OR)\b)\s*\(|"
+           r"\)\s*(?-i:\b(?:AND|OR|NOT)\b)|\"[^\"\n]{2,80}\"\s*(?-i:\b(?:AND|OR)\b)")
+#: ngày tìm (PRISMA-S mục 13): ngày cụ thể; «tháng m/yyyy» hoặc khoảng tháng cũng nhận
+NGAY_TIM = (r"\b\d{1,2}/\d{1,2}/(?:19|20)\d{2}\b|\btháng\s+\d{1,2}(?:\s*[–-]\s*\d{1,2})?(?:/|\s+năm\s+)(?:19|20)\d{2}"
+            r"|\b(?:19|20)\d{2}-\d{2}-\d{2}\b")
+#: tầm quan trọng của vấn đề với người đọc/thực hành (SANRA mục 1)
+TAM_QUAN_TRONG = (r"gánh nặng|phổ biến|thường gặp|hàng đầu|cốt lõi|bắt buộc|ưu tiên|nguyên nhân (chính|hàng đầu)|"
+                  r"tỷ lệ|tử vong|biến chứng|nguy cơ|chi phí|chất lượng (khám|chăm sóc|dịch vụ|điều trị)|khuyến cáo|"
+                  r"tác hại|an toàn|rào cản")
+#: loại/thiết kế của bằng chứng được dẫn (SANRA mục 5)
+LOAI_BANG_CHUNG = (r"tổng quan hệ thống|phân tích gộp|thử nghiệm(?: lâm sàng)? (?:ngẫu nhiên|có đối chứng)|"
+                   r"nghiên cứu (?:quan sát|cắt ngang|thuần tập|bệnh[\s–-]*chứng|mô tả|định tính)|cắt ngang|"
+                   r"thuần tập|hướng dẫn (?:thực hành|lâm sàng)|đồng thuận|khảo sát (?:đa trung tâm|toàn quốc|tại)")
+#: nhận định giới hạn của bằng chứng (SANRA mục 5): gián tiếp, chưa nhất quán, cỡ mẫu nhỏ, phạm vi đã tra
+GIOI_HAN_BANG_CHUNG = (r"gián tiếp|chưa (?:nhất quán|thống nhất|đủ|có (?:số liệu|nghiên cứu|bằng chứng))|"
+                       r"không nhất quán|cỡ mẫu nhỏ|bối cảnh khác|khác (?:quần thể|bối cảnh)|mức (?:độ )?chắc chắn|"
+                       r"chất lượng bằng chứng|\bGRADE\b|chưa được (?:kiểm định|đánh giá)|trong phạm vi (?:đã )?tra")
+#: số liệu kết cục (SANRA mục 6): tỷ lệ, ước lượng hiệu ứng, khoảng tin cậy, cỡ mẫu
+SO_LIEU_KET_CUC = (r"\d+(?:[,.]\d+)?\s*%|\b(?:a?OR|a?PR|a?RR|a?HR|β|MD|SMD|AUROC|AUC)\s*[=:]?\s*[−-]?\d|"
+                   r"(?:C-statistic|chỉ số C)(?:\s+trung bình)?\s*[=:]?\s*0[,.]\d|"
+                   r"\bKTC\s*95|khoảng tin cậy|\d[\d.]*\s*(?:người bệnh|bệnh nhân|người tham gia)\b")
+#: câu nêu số liệu (tỷ lệ/ước lượng hiệu ứng) — yếu tố CẤM khi câu không dẫn nguồn (SANRA mục 4)
+SO_LIEU_CAN_NGUON = r"\d+(?:[,.]\d+)?\s*%|\b(?:a?OR|a?PR|a?RR|a?HR|β)\s*[=:]?\s*[−-]?\d"
+_SANRA: Dict[str, tuple] = {
+    "1": (("dat_van_de", "tong_quan"), "bat_buoc",
+          "Nêu tầm quan trọng của vấn đề với người đọc/thực hành (gánh nặng, nguy cơ, chỉ số chất lượng, quy định) và "
+          "đặt vấn đề trên nền y văn có dẫn nguồn.",
+          (_y("tầm quan trọng của vấn đề", TAM_QUAN_TRONG), _y("trích dẫn nguồn", TRICH_DAN))),
+    "2": (("muc_tieu", "cau_hoi"), "bat_buoc",
+          "Nêu mục tiêu cụ thể (câu hỏi) mà đề tài trả lời — phần tổng quan được tổ chức để phục vụ các mục tiêu đó.",
+          (_y("mục tiêu cụ thể", MUC_TIEU_CU_THE),)),
+    "3": (("tong_quan", "tim_kiem"), "bat_buoc",
+          "Mô tả tìm kiếm tài liệu đủ để lặp lại — PRISMA-S phần áp dụng cho tổng quan tường thuật: tên nguồn đã tra "
+          "(mục 1), chiến lược/câu tìm đầy đủ (mục 8), ngày tìm (mục 13).",
+          (_y("nguồn đã tra (PRISMA-S 1)", NGUON_TIM), _y("chiến lược/câu tìm đầy đủ (PRISMA-S 8)", CAU_TIM),
+           _y("ngày tìm (PRISMA-S 13)", NGAY_TIM))),
+    "4": (("tong_quan",), "bat_buoc",
+          "Nhận định then chốt có trích dẫn: tổng quan dẫn nguồn và không có câu nêu số liệu (tỷ lệ, ước lượng hiệu "
+          "ứng) mà không dẫn nguồn.",
+          (_y("trích dẫn nguồn", TRICH_DAN), _y("câu nêu số liệu không dẫn nguồn", SO_LIEU_CAN_NGUON, cam=True))),
+    "5": (("tong_quan",), "bat_buoc",
+          "Lập luận theo mức bằng chứng: nêu loại/thiết kế của nghiên cứu được dẫn và nhận định giới hạn của bằng "
+          "chứng (gián tiếp, chưa nhất quán, cỡ mẫu nhỏ, phạm vi đã tra).",
+          (_y("loại/thiết kế bằng chứng", LOAI_BANG_CHUNG), _y("giới hạn của bằng chứng", GIOI_HAN_BANG_CHUNG))),
+    "6": (("tong_quan",), "bat_buoc",
+          "Trình bày số liệu kết cục liên quan của nghiên cứu được dẫn (tỷ lệ, ước lượng hiệu ứng kèm khoảng tin cậy, "
+          "cỡ mẫu) gắn với nguồn — cùng đoạn hoặc cùng dòng bảng.",
+          (_y("số liệu kết cục", SO_LIEU_KET_CUC), _y("trích dẫn nguồn", TRICH_DAN)), None, "", True),
+}
+NGUON_CHUAN_THEM["SANRA 2019"] = (
+    "Baethge C, Goldbeck-Wood S, Mertens S. Res Integr Peer Rev 2019;4:5 (PMID 30962953); mục 3 đối chiếu PRISMA-S — "
+    "Rethlefsen ML et al. J Med Libr Assoc 2021;109(2):174-200 (PMID 34285662)")
+
 # ───────────────────────────── lắp mục kiểm ─────────────────────────────
 #: chuẩn → (bảng tiêu chí, {mã: (chủ đề, nguyên văn|None)})
 
@@ -1344,6 +1619,9 @@ BANG: Dict[str, tuple] = {
     "TREND 2004": (_TREND, lambda: _chi_chu_de(_TREND_CHU_DE)),
     "CARE 2013": (_CARE, lambda: {x[0]: (x[1], x[2]) for x in CBC.CARE_2013_ITEMS}),
     "COSMIN 2021": (_COSMIN, lambda: _chi_chu_de(_COSMIN_CHU_DE)),
+    "CONSORT Cluster 2012": (_CONSORT_CUM, lambda: _chi_chu_de(_CONSORT_CUM_CHU_DE)),
+    "CONSORT NI 2012": (_CONSORT_NI, lambda: _chi_chu_de(_CONSORT_NI_CHU_DE)),
+    "SANRA 2019": (_SANRA, lambda: _chi_chu_de(_SANRA_CHU_DE)),
 }
 
 

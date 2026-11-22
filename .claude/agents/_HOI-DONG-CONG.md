@@ -36,6 +36,10 @@ cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ c�
    MỘT bên ở `hoi_dong_cong.PHAN_CONG`: nhiệm vụ agent (`G3-T1`) · vai NGƯỜI quyết/ký kèm nhiệm vụ agent phải chuẩn bị hồ
    sơ + lệnh (`STATISTICIAN@G3-T1`) · cổng tiền đề (`^G0,G1`). Test đối chiếu bảng với tập mã bộ chấm phát ra (cây cú
    pháp) và với mục 4b của từng `dieu-phoi-gN.md` — thêm tiêu chí mà quên gán ⇒ đỏ.
+1b. **Mọi CÔNG CỤ có chủ** (22/11/2026): mỗi tệp `tools/*.py|*.sh` của repo y khoa có đúng một mục ở
+   `config/phan_cong_cong_cu.json` — một agent chủ gắn cổng, người dùng phụ, người kiểm, chốt kiểm, nguyên tắc (tổng ·
+   8 nguyên tắc · 5 tiêu chí đề cương tốt) kèm lý do — hoặc «ngoài phạm vi» kèm lý do. Bộ chấm `gN_quality_gate.py` do
+   `dieu-phoi-gN` làm chủ. Đo C1–C6 bằng `python3 tools/tieu_chuan_hoan_thien.py`; thêm công cụ mà chưa vào sổ ⇒ đỏ.
 2. **Chuỗi trách nhiệm:** agent nhiệm vụ → điều phối cổng → điều phối tổng. Điều phối cổng giao việc, đòi làm lại tới khi
    tiêu chí của agent đạt, bảo đảm người có thẩm quyền nhận đủ hồ sơ + lệnh, báo cổng tiền đề khi bị chặn từ trước.
 3. **Thước đo duy nhất (chỉ đọc, không tốn agent):** `python3 tools/hoi_dong_cong.py trach-nhiem --study <mã> --gate
@@ -101,10 +105,67 @@ cổng đó chịu trách nhiệm về kết quả thực hiện nhiệm vụ c�
     «___» hoặc mục VẮNG vẫn là việc agent. Kiểm chi tiết (`kiem_chi_tiet_he_nghien_cuu.py`) tô VÀNG checkpoint bị chặn vì
     chính cổng chờ dữ kiện đời thực (PI chốt, IRB, chữ ký, dữ liệu thật…), không tô đỏ «máy sửa được».
 
+## 1c. Nguyên tắc tổng nghiên cứu và phần triển khai (22/11/2026 — chỉ thị bác sĩ; NHẮC LẠI MỖI LẦN GIAO VIỆC)
+
+**Nguyên tắc tổng** (bác sĩ, nguyên văn): «Mỗi quyết định trong nghiên cứu phải dựa trên bằng chứng khoa học, được
+thực hiện một cách đạo đức, được kiểm chứng khách quan, và chỉ được chuyển sang bước tiếp theo khi bước hiện tại đã đạt
+chuẩn xác định trước.» Các mục dưới là phần triển khai, gom từ các chỉ thị cùng ngày: quay lại bước sai để sửa, kiểm,
+khoá rồi mới đi tiếp («chứ cứ làm hoài và mãi luôn phải chỉnh sửa hoài»); giao sản phẩm đúng, không chia «phần việc
+máy, phần của tôi», nhắc đi nhắc lại; đề cương đạt tám nguyên tắc trong từng chuẩn và từng phần cấu trúc; không ghi sổ
+nợ, «giải quyết theo nguyên tắc».
+
+1. **Biết khâu đang mở TRƯỚC khi sửa:** `python3 tools/buoc_dang_mo.py --study <mã>` (trong `medical-ebm-automation/`;
+   từ gốc: `python3 medical-ebm-automation/tools/buoc_dang_mo.py`) — chỉ đọc; mã 0 mọi khâu đã khoá · 1 có khâu mở · 2
+   không đo được · 3 tham số sai. Nó chấm sống G0→G10 theo thứ tự và in: KHÂU ĐANG MỞ (cổng đầu tiên chưa khoá) · GÓI
+   KÝ ĐÃ CHUẨN BỊ (các cổng đạt chuẩn để khoá, theo thứ tự, kèm vai từ `gate_contract._GATE_REQUIRED_STAKEHOLDERS`) ·
+   KHÂU CẦN HOÀN THIỆN (chỗ DUY NHẤT được sửa lúc này) · cổng «chưa được làm tiếp — sinh lại sau khi khâu mở được
+   khoá» · cổng đã khoá ngoài thứ tự. READY không phải khoá; «không đo được» không bao giờ là khoá.
+2. **Lỗi ở khâu nào sửa tại NGUỒN của khâu đó** — `study_meta.json → gate_params.G<k>`, bộ biến G3, SAP G4, khuôn/bộ
+   sinh của cổng — KHÔNG vá tay văn bản ở khâu sau (lần sinh lại kế tiếp xoá mất bản vá, lỗi quay lại: «làm hoài, sửa
+   hoài»). Lỗi nằm ở cổng ĐÃ khoá ⇒ quay lại cổng đó: nguồn đổi thì dấu vân tay/chữ ký tự mất hiệu lực (đúng luật),
+   sửa, kiểm, khoá lại; mọi cổng sau nó sinh lại theo thứ tự.
+3. **Kiểm bằng chốt của CHÍNH khâu đó:** `python3 tools/g<k>_quality_gate.py --study <mã> --no-write` · chấm sống
+   `cong_song.trang_thai_song` · `python3 tools/nhat_quan_xuyen_cong.py --study <mã>` · `hoi_dong_cong.py trach-nhiem
+   --study <mã> --gate G<k>` mã 0.
+4. **Đạt chuẩn thì KHOÁ rồi mới đi tiếp:** cổng thường — xác nhận của vai có thẩm quyền gắn dấu vân tay nội dung hiện
+   tại; cổng cứng — chữ ký sổ cái qua `approve_gate.py` (agent không ký, không xác nhận thay). Chỉ khi đó mới sinh lại
+   và làm khâu kế, đúng thứ tự G0→G10. KHÔNG sửa tài liệu của cổng nằm sau khâu cần hoàn thiện (công cụ in «chưa được
+   làm tiếp»); cổng sau đã khoá ngoài thứ tự thì giữ nguyên, không «sửa cho khớp».
+5. **Đề tài thật — MỘT gói ký:** hệ đưa từng khâu tới đạt chuẩn (cổng cứng READY; cổng thường READY/«DRAFT_READY_…»;
+   bảng trách nhiệm mã 0) rồi trình bác sĩ MỘT danh sách khoá theo thứ tự (`danh_sach_khoa` của `buoc_dang_mo.py
+   --json`) để ký/chốt một lượt — không trình rời từng cổng, không trình cổng còn nằm sau khâu cần hoàn thiện.
+6. **Đề cương — ma trận phần cấu trúc × chuẩn áp dụng × 8 nguyên tắc:** chuẩn theo phần là K17
+   (`tools/kiem_chuan_de_cuong_theo_muc.py`); tám nguyên tắc: trung thực và minh bạch (Integrity) · khoa học (Scientific
+   Validity) · đạo đức (Ethical Conduct) · khách quan (Objectivity) · tái lập (Reproducibility) · hợp lệ và tin cậy
+   (Validity & Reliability) · tôn trọng đối tượng nghiên cứu · kiểm soát chất lượng liên tục. Ô chưa có phép đo ⇒ ⚪
+   «chưa đo được», KHÔNG BAO GIỜ xanh; mỗi ô ⚪ là việc hệ phải xây tiếp (phép đo mới, có kiểm đột biến), không coi là
+   đạt, không bỏ qua.
+6b. **Đề cương tốt và đọc từng đơn vị trước khi giao** (bác sĩ, nguyên văn): «Một đề cương nghiên cứu y khoa tốt
+   phải trả lời được một câu hỏi có giá trị bằng phương pháp khoa học phù hợp, khả thi về triển khai, tuân thủ đạo đức
+   và tạo ra kết quả có thể kiểm chứng» — năm tiêu chí tổng đứng trên ma trận mục 6. «Đề cương phải được đọc từng câu
+   từng chữ trước khi hoàn thành đưa cho tôi»; «đảm bảo đề cương hoàn thiện từng chữ, câu, bảng, đồ thị… đúng chuẩn đề
+   cương nghiên cứu y khoa». Trước khi giao: MỌI đơn vị của bản hiện hành (câu, hàng bảng, hình/đồ thị kèm chú thích và
+   dữ liệu vẽ, công thức) có bản ghi đọc gắn mã băm của đơn vị — đối chiếu nguồn, số liệu, chuẩn trình bày; đơn vị sửa
+   sau khi đọc ⇒ đọc lại. Đọc ở khâu CUỐI, sau khi các khâu trước đã khoá. Thiếu bản ghi đọc ⇒ chưa «hoàn thành».
+7. **Không sổ nợ:** không dùng sổ nợ, miễn trừ tay hay bánh cóc «chỉ giảm» để chốt/CI xanh khi chuẩn chưa đạt; thiếu
+   mục thì sửa tại NGUỒN tới 0; chốt đỏ khi thiếu bất kỳ mục nào. Sổ nợ cũ chỉ được xoá về 0 — không ghi thêm, không
+   gia hạn.
+8. **Giao SẢN PHẨM, không chia phần:** bám nguyên tắc xây hệ, giao sản phẩm đúng. Báo cáo/bàn giao nói về sản phẩm — đã
+   giao gì, đạt chuẩn nào, khâu nào đã khoá, gói ký nào đã chuẩn bị. KHÔNG viết mục «phần của bác sĩ», «việc còn lại
+   cho người», «máy không làm thay được»; việc dở thì làm tiếp cho xong trong lượt. Chữ ký pháp lý (IRB · PI · thống kê
+   viên · phản biện độc lập) không giả được ⇒ xuất hiện như GÓI KÝ đã chuẩn bị (vai · mục ký · lệnh khoá), không phải
+   danh sách việc treo; dữ kiện thật chỉ người có (số phê duyệt, dữ liệu thu thập…) ghi là «mục chưa đạt chuẩn: thiếu
+   dữ kiện thật X» của sản phẩm. Khoá máy-đọc (`cho_nguoi`, `con_lai_cho_nguoi`, «CHỜ NGƯỜI (vai)», `ket_luan`…) giữ
+   nguyên — chỉ đổi lời trình bày.
+9. **Nhắc lại:** điều phối tổng và mọi điều phối cổng chép NGUYÊN câu nguyên tắc tổng và các mục 2/4/6/6b/7/8 vào ĐẦU mỗi
+   lời giao việc cho agent nhiệm vụ, và đối chiếu lại trước khi bàn giao (mục 5–7 của khối guardrail cuối mọi agent,
+   cấy bằng `tools/enforce_agent_guardrails.py --refresh`).
+
 ## 2. Tám bước của một hội đồng cổng (`dieu-phoi-gN`)
 
-1. **Chấm sống tiền đề + cổng hiện tại** — `python3 tools/g<N>_quality_gate.py --study <mã>` (và cổng trước qua
-   bộ chấm của nó); «không đo được» KHÔNG phải «đạt».
+1. **Chấm sống tiền đề + cổng hiện tại** — `python3 tools/buoc_dang_mo.py --study <mã>` trước (§1c: cổng này nằm SAU
+   khâu cần hoàn thiện ⇒ không sửa tài liệu của nó, quay về khâu đó), rồi `python3 tools/g<N>_quality_gate.py --study
+   <mã>` (và cổng trước qua bộ chấm của nó); «không đo được» KHÔNG phải «đạt».
 2. **Giao nhiệm vụ** — mỗi nhiệm vụ trong danh mục (bỏ nhiệm vụ có điều kiện không áp dụng, ghi lý do) cho đúng
    agent chuyên trách; agent dùng công cụ THẬT của cổng (`run_g<N>_auto.py`…), không chép tay artifact.
 3. **Đánh giá chéo** (§3) — mỗi đầu ra: ≥1 người chấm chuyên môn theo ma trận + `giam-khao-cong`; tác giả không tự
@@ -224,13 +285,13 @@ lịch tự chạy (tốn token, chưa bảo đảm hoàn thiện) ⇒ KHÔNG c�
    biện). Lỗi/dừng giữa chừng ⇒ không resume, không chạy lại; đọc journal, báo đã ghi được gì.
 3. **Hoàn thiện đầu ra đề tài:** mục «agent còn việc» của `trach-nhiem --gate G<N>` (gồm đầu ra bị trả về sửa) ⇒
    sửa bằng CÔNG CỤ THẬT của cổng theo biên bản, trong worktree `~/.ebm-worktrees`, xuất Word, commit + push + PR.
-   Ô thuộc người (PI/IRB/thống kê viên…) và mọi cờ xác nhận: KHÔNG điền — ghi vào báo cáo là việc của bác sĩ.
+   Ô thuộc người (PI/IRB/thống kê viên…) và mọi cờ xác nhận: KHÔNG điền — đưa vào GÓI KÝ của sản phẩm (§1c).
 4. **Hoàn thiện HỆ:** `bai-hoc --study <mã> --chua-xu-ly` ⇒ mỗi bài học: kiểm lại trên mã sống (đúng mới sửa), sửa
    công cụ/tài liệu agent/điều phối/doctrine trong worktree, test + kiểm đột biến cho chốt mới, commit + push + PR;
    rồi `bai-hoc --xu-ly <mã> --ket da_sua --pr <URL> --ly-do …` (hoặc `khong_sua`/`trung` kèm lý do). Trước khi
    sửa, xem PR đang mở của hai repo — đã có PR cho cùng vấn đề thì ghi `trung`/bỏ qua, không mở PR trùng.
 5. **Báo cáo ngày** `hoi_dong/BAO_CAO_NGAY_<YYYY-MM-DD>.md` (dấu vết của lượt bác sĩ gọi — lịch đã huỷ nên `kiem_lich_nen.py` không canh): cổng đã họp, số agent,
-   biên bản đã ghi, kết luận từng nhiệm vụ/DP, PR đã mở, bài học đã/chưa xử lý, việc của bác sĩ còn lại.
+   biên bản đã ghi, kết luận từng nhiệm vụ/DP, PR đã mở, bài học đã/chưa xử lý, gói ký đã chuẩn bị (§1c).
 
 **Biên bản xử lý việc sửa — giữ hiệu lực cuộc họp đã tốn token (17/10/2026; bác sĩ: «Đã họp và tốn token với lần họp
 vừa rồi»).** Biên bản gắn SHA-256 tài liệu, nên sửa đúng việc hội đồng giao cũng làm biên bản «CŨ» và hồ sơ máy đòi họp
@@ -272,9 +333,10 @@ KẾT LUẬN HỘI ĐỒNG CỔNG G<N> — <mã đề tài> (TƯ VẤN — khôn
 - Tranh biện: <DP: giữ/sửa/chuyển bác sĩ — id biên bản>
 - Kết luận dự kiến: DE_XUAT_TRINH_NGUOI_CO_THAM_QUYEN | TRA_VE_SUA | CHO_DU_LIEU_THAT | CHUYEN_BAC_SI_QUYET
 - Giải pháp tốt nhất: <từng điểm quyết định: phương án khuyến nghị — căn cứ; phương án khác đã cân nhắc — vì sao không chọn>
-- Việc của người có thẩm quyền: <ai — làm gì — lệnh/khoá nào>
+- Khâu (buoc_dang_mo.py): khâu đang mở <GN> · khâu cần hoàn thiện <GN>
+- Gói ký đã chuẩn bị: <thứ tự — cổng — vai — mục ký — lệnh khoá> (§1c — không phải danh sách việc treo)
 - tham-dinh-dau-ra: ĐẠT | TRẢ-VỀ-SỬA
-- Trách nhiệm cổng (§1b): <ket_luan của `trach-nhiem --ghi`> — agent còn việc <n> · chờ người <n> · chờ cổng trước <n> — <tệp TN-…json>
+- Trách nhiệm cổng (§1b): <ket_luan của `trach-nhiem --ghi`> — agent còn việc <n> · mục ký <n> · chờ cổng trước <n> — <tệp TN-…json>
 - Tóm tắt hội đồng: python3 tools/hoi_dong_cong.py tom-tat --study <mã>
 Cần bác sĩ kiểm chứng.
 ```
@@ -311,7 +373,7 @@ Claude». Hội đồng cổng (mục 1–7) chấm từng NHIỆM VỤ. Hội �
   - Mọi luật VÀ nguyên văn mọi lời dặn gom vào quy chế `QC-HDKH-x.y` có SHA-256. Văn bản quy chế ở `medical-ebm-automation/docs/QUY-CHE-HOI-DONG-KHOA-HOC-MAY.md` (test buộc khớp SHA của mã).
   - Phiên mang SHA lúc khởi tạo; quy chế đổi ⇒ phiên hết hiệu lực, họp lại.
   - Kết luận chỉ có HIỆU LỰC, và vòng kín chỉ chạy, khi hội đồng đã hiệu chuẩn đạt ≥ 5/6 lỗi cài DƯỚI CÙNG SHA. Đổi quy chế ⇒ hiệu chuẩn lại.
-- **Vòng kín** (bác sĩ 22/11: hội đồng không thông qua thì phải chỉnh sửa theo hội đồng): `vong-kin --goi-api --ap-dung`. Biên tập viên đề xuất thay thế nguyên văn; máy chỉ áp thay thế qua rào (không số/trích dẫn mới, K1–K17 không tăng lỗi theo mã, nhất quán không tăng lệch; xấu đi ⇒ hoàn nguyên). Chỉ trình bác sĩ bản đã thông qua kèm nhật ký thay đổi.
+- **Vòng kín** (bác sĩ 22/11: hội đồng không thông qua thì phải chỉnh sửa theo hội đồng): `vong-kin --goi-api --ap-dung` — CHỈ chạy sau khi bác sĩ duyệt gọi Claude API trong chat (bác sĩ 22/11: «gọi Claude API khi tôi duyệt»), kèm ước chi phí. Biên tập viên đề xuất thay thế nguyên văn; máy chỉ áp thay thế qua rào (không số/trích dẫn mới, K1–K17 không tăng lỗi theo mã, nhất quán không tăng lệch; xấu đi ⇒ hoàn nguyên). Chỉ trình bác sĩ bản đã thông qua kèm nhật ký thay đổi.
 - **Thẩm tra chỉnh sửa — QC-HDKH-2.0** (bác sĩ chọn 22/11, như hội đồng thật): vòng 1 thẩm định trọn đề cương; từ vòng 2 KHÔNG thẩm định lại từ đầu (thẩm định lại mỗi vòng từng không hội tụ: mỗi lượt sinh lỗi mới ở chỗ chưa sửa).
   - Mỗi thành viên thẩm tra ĐÚNG các yêu cầu nghiêm trọng/cần sửa mình đã nêu: «đã giải quyết» phải trích nguyên văn đoạn đáp ứng trong bản đã sửa (máy kiểm ±3 dòng, không khớp ⇒ chưa giải quyết); thiếu phán quyết ⇒ chưa giải quyết.
   - «Cần dữ kiện» chỉ nhận khi biên tập viên đã khai vượt thẩm quyền (số liệu thật, kinh phí, họ tên, chữ ký, sửa SAP đã khoá); cộng dồn qua các vòng, không rơi khỏi kết luận cuối.

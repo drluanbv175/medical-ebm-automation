@@ -184,6 +184,11 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                                   "nhánh, do PI quyết định và ghi biên bản (SPIRIT 24c)"),
             ppi_plan=("Hai người bệnh tăng huyết áp góp ý nội dung và tần suất tin nhắn trước khi tuyển; kết quả gửi "
                       "người tham gia bằng tờ tóm tắt (SPIRIT 11)"),
+            # 22/11/2026 (SPIRIT 2025 mục 31): kế hoạch thông báo sửa đổi quan trọng của đề cương
+            protocol_amendment_plan=("Mọi sửa đổi quan trọng của đề cương (tiêu chuẩn chọn, kết cục, cỡ mẫu, phân "
+                                     "tích) được trình Hội đồng Đạo đức chấp thuận trước khi áp dụng, cập nhật trên "
+                                     "ClinicalTrials.gov, thông báo cho nhóm nghiên cứu và ghi vào nhật ký sửa đổi kèm "
+                                     "ngày và lý do"),
             # 22/11/2026 (chiều, CONSORT 2025 mục 20b): cách làm mù — khớp G1 «người đo huyết áp và thống kê viên được
             # làm mù; người tham gia không làm mù được» và thủ tục mở mù ở trên
             blinding_how=("Tách riêng người gửi tin nhắn và người đo huyết áp; phiếu đo không ghi nhánh; thống kê viên "
@@ -536,6 +541,16 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                                   "của lần khám gần nhất; không gán giá trị thay thế khi sử dụng mô hình"),
             model_user_interaction=("Người dùng nhập bốn giá trị có sẵn trong hồ sơ khám; không cần kỹ năng thống kê, "
                                     "chỉ cần đọc đúng đơn vị của NT-proBNP và eGFR"),
+            # 22/11/2026 (TRIPOD+AI 14, 27c): cách tiếp cận công bằng của mô hình (khớp phân nhóm giới tiền định của
+            # SAP và G6 — C-statistic riêng theo giới) và bước nghiên cứu tiếp theo (khớp hạn chế «chưa kiểm định
+            # ngoài»)
+            model_fairness_approach=("Hiệu năng phân biệt của mô hình (C-statistic) được ước lượng riêng ở nam và nữ — "
+                                     "phân nhóm tiền định — để phát hiện khác biệt hiệu năng giữa hai giới, vì khác "
+                                     "biệt theo giới là bất bình đẳng sức khoẻ đã nêu; không đánh giá theo thu nhập "
+                                     "hay vùng vì phiếu không thu thập các biến này"),
+            model_next_steps=("Kiểm định bên ngoài mô hình trên người suy tim ngoại trú ở cơ sở khác và hiệu chuẩn lại "
+                              "trước khi dùng cho quyết định cá nhân; sau đó đánh giá tác động lâm sàng khi dùng mô "
+                              "hình để sắp lịch tái khám"),
         ),
     )
 
@@ -627,6 +642,10 @@ def ho_so_sau_g6() -> Dict[str, Dict[str, Any]]:  # noqa: PLR0915 — dữ liệ
                                  'ClinicalTrials.gov và WHO ICTRP'),
             rob_assessment_process=("RoB 2 cho từng thử nghiệm; hai người đánh giá độc lập, bất đồng do người thứ ba "
                                     "quyết định"),
+            # 22/11/2026 (PRISMA-P 2015 mục 4): kế hoạch ghi nhận sửa đổi quan trọng của đề cương
+            protocol_amendment_plan=("Mọi sửa đổi quan trọng của đề cương (tiêu chuẩn chọn, kết cục, phương pháp tổng "
+                                     "hợp) được cập nhật trên PROSPERO trước khi áp dụng, ghi vào nhật ký sửa đổi kèm "
+                                     "ngày và lý do, và báo cáo trong bài tổng quan"),
         ),
     )
 

@@ -53,6 +53,18 @@
 
    ☐ Có   ☐ Không
 
+**9a. Nếu câu 9 = Không — tuổi (năm) tại lượt khám đó** `sl_tuoi`
+
+   ……… năm
+
+**9b. Nếu câu 9 = Không — giới** `sl_gioi`
+
+   ☐ Nam   ☐ Nữ
+
+**9c. Nếu câu 9 = Không — nhóm đối tượng khám tại lượt khám đó** `sl_nhom_doi_tuong`
+
+   ☐ Quân nhân   ☐ Bảo hiểm y tế   ☐ Dịch vụ   ☐ Khác
+
 **10. Đang lọc máu hoặc đã ghép thận (mã Z49, Z99.2, Z94.0, T86.1 hoặc chỉ định lọc máu trên eHospital)** `lt_loc_ghep` — *chỉ điền khi mở được hồ sơ = Có*
 
    ☐ Có   ☐ Không

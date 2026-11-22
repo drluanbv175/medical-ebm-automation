@@ -2,7 +2,8 @@
 
 Fixture tự soạn, ngoại tuyến: một đề cương đủ chương, Word dựng từ chính các dòng của .md, biên nhận A12 phủ PMID.
 Mỗi luật K1–K7 có một ca hỏng đúng một chỗ. 19/11/2026: chương 5 của fixture mang một hình và một bảng đúng chuẩn
-biểu bảng (K9) — fixture cũ để trống chương 5, đúng kiểu bác sĩ chê «biểu bảng chưa có»."""
+biểu bảng (K9) — fixture cũ để trống chương 5, đúng kiểu bác sĩ chê «biểu bảng chưa có». 22/11/2026 (K20): bìa ghi
+phiên bản và ngày như mọi tài liệu nộp Hội đồng (trục de_cuong_nop của nhat_quan_xuyen_cong)."""
 from __future__ import annotations
 
 import json
@@ -21,7 +22,11 @@ docx = pytest.importorskip("docx")
 import kiem_de_cuong_nop_hoi_dong as K  # noqa: E402
 
 MA = "de-tai-thu"
+# 22/11/2026: đề cương «tốt» có chương tổng quan đủ sáu mục SANRA 2019 (K17) — mục tiêu cụ thể, nguồn/câu tìm/ngày tìm,
+# số liệu kết cục có nguồn, loại và giới hạn của bằng chứng
 TOT = """# ĐỀ CƯƠNG NGHIÊN CỨU KHOA HỌC
+
+Phiên bản đề cương: 1.0, ngày 15/10/2026
 
 # 1. ĐẶT VẤN ĐỀ
 
@@ -29,7 +34,13 @@ Thời gian chờ liên quan với hài lòng [1].
 
 # 2. MỤC TIÊU NGHIÊN CỨU
 
+1. Xác định tỷ lệ hài lòng của người bệnh ngoại trú.
+
 # 3. TỔNG QUAN TÀI LIỆU
+
+Tài liệu được tìm trên PubMed ngày 15/10/2026 với câu tìm `satisfaction[tiab] AND outpatient[tiab]`.
+
+Một nghiên cứu cắt ngang ghi nhận tỷ lệ hài lòng 62,3% [1]; bằng chứng trong nước còn gián tiếp vì khác bối cảnh.
 
 # 4. ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP NGHIÊN CỨU
 

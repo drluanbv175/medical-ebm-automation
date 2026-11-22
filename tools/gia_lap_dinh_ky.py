@@ -163,6 +163,12 @@ _G0_FINER = {
 
 # Mỗi kịch bản: chủ đề + query_en PI khai (K4) + nội dung PI theo cổng + phần xác nhận (dấu vân tay điền lúc chạy).
 # «<HOM_NAY>» thay bằng ngày chạy. Thêm thiết kế: thêm một mục, đặt `thiet_ke` đúng mã 8 thiết kế của hệ.
+# 22/11/2026: định nghĩa thay thế của kết cục (SAP §9) và định nghĩa quần thể theo đề cương — căn cứ đã tra PubMed
+_DICH_HA_130 = "Đích huyết áp tâm thu < 130 mmHg theo hướng dẫn ACC/AHA 2017 (Whelton 2018, PMID 29133356)"
+_TUAN_THU_DE_CUONG = ("Tuân thủ đề cương: nhận ≥ 80% số lần can thiệp theo kế hoạch của nhánh phân bổ và không vi phạm "
+                      "đề cương chính — phân tích theo đề cương (CONSORT mở rộng không kém hơn, Piaggio 2012, "
+                      "PMID 23268518)")
+
 KICH_BAN: Dict[str, Dict[str, Any]] = {
     "rct_nhi_phan": {
         "study": f"{TIEN_TO_DE_TAI}RCT-NHI-PHAN",
@@ -185,6 +191,12 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 ("gioi", "radio", "Giới", "1, Nam | 2, Nữ", "", "", ""),
                 ("ha_tt_t6", "text", "Huyết áp tâm thu tháng 6 (mmHg)", "", "integer", "60", "260"),
                 ("kiem_soat_t6", "radio", "Kiểm soát huyết áp tháng 6 (< 140/90 mmHg)", "0, Không | 1, Có", "", "", ""),
+                # 22/11/2026: định nghĩa thay thế của kết cục chính (SAP §9) — khai ở bộ biến, máy tính từ trị số đo
+                ("kiem_soat_t6_130", "calc", "Đạt đích huyết áp tâm thu tháng 6 < 130 mmHg (máy tự tính)",
+                 "if([ha_tt_t6] < 130, 1, 0)", "", "", ""),
+                # 22/11/2026 (CONSORT 2025; bắt buộc với thử nghiệm không kém hơn): quần thể theo đề cương
+                ("tuan_thu_de_cuong", "radio", "Tuân thủ đề cương (≥ 80% số lần can thiệp theo nhánh, không vi phạm "
+                 "đề cương chính)", "0, Không | 1, Có", "", "", ""),
                 # 22/11/2026 (CONSORT 2025 mục 27/29): tổn hại theo ĐÚNG định nghĩa SAP §15 của hồ sơ — trước đây RCT
                 # giả lập không có biến tổn hại nào nên bản thảo không thể báo tác hại theo nhóm.
                 ("bien_co_bat_loi", "radio", "Có biến cố bất lợi trong 6 tháng (phàn nàn, lo âu do tin nhắn hoặc cơn "
@@ -197,6 +209,10 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                  "đo huyết áp chuẩn hoá", "SAP §4 kết cục chính"),
                 ("1", "nhóm nhận tin nhắn SMS", "phoi_nhiem", "nhom", "nhi_phan", "R1", "danh sách ngẫu nhiên",
                  "SAP §4 nhóm so sánh"),
+                ("1", "tỷ lệ kiểm soát huyết áp tại tháng 6", "dinh_nghia_thay_the", "kiem_soat_t6_130", "nhi_phan",
+                 "C2", _DICH_HA_130, "SAP §9 định nghĩa thay thế"),
+                ("1", "tuân thủ đề cương", "tuan_thu_de_cuong", "tuan_thu_de_cuong", "nhi_phan", "C3",
+                 _TUAN_THU_DE_CUONG, "SAP §9 phân tích theo đề cương"),
                 ("1", "tuổi", "hiep_bien", "tuoi", "lien_tuc", "A1", "phiếu", "SAP §5 hiệp biến"),
                 ("1", "giới", "hiep_bien", "gioi", "nhi_phan", "A2", "phiếu", "SAP §5 hiệp biến"),
                 ("1", "biến cố bất lợi (tổn hại)", "mo_ta", "bien_co_bat_loi", "nhi_phan", "S1", "phiếu biến cố",
@@ -279,7 +295,11 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 "stopping_rescue_rules": ("Ngừng tin nhắn khi người tham gia yêu cầu; huyết áp ≥ 180/110 mmHg chuyển "
                                           "xử trí theo phác đồ"),
                 "critical_to_quality": _vi("Đo huyết áp chuẩn hoá (máy đã hiệu chuẩn, 2 lần đo); mất theo dõi < 20%"),
-                "monitoring_plan": _vi("Giám sát an toàn định kỳ 3 tháng"),
+                # 22/11/2026 (SPIRIT 2025 mục 29): giám sát VIỆC THỰC HIỆN thử nghiệm (tần suất + quy trình), không chỉ
+                # giám sát an toàn
+                "monitoring_plan": _vi("Giám sát việc thực hiện thử nghiệm định kỳ 3 tháng: người không tham gia "
+                                       "tuyển đối chiếu ngẫu nhiên 10% phiếu thu thập với hồ sơ gốc, kiểm tra phiếu "
+                                       "đồng ý đã ký và việc tuân thủ đề cương; giám sát an toàn theo cùng nhịp"),
                 "randomisation": _vi("Danh sách ngẫu nhiên khối hoán vị cỡ 4–6 sinh bằng phần mềm, tỷ lệ 1:1"),
                 "allocation_concealment": ("Phân bổ trung tâm qua phong bì đánh số kín do người không tham gia "
                                            "tuyển giữ"),
@@ -328,11 +348,15 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 ("so_thuoc", "text", "Số thuốc hạ áp đang dùng", "", "integer", "0", "10"),
                 ("ha_tt_tb", "text", "Huyết áp tâm thu trung bình 2 lần đo (mmHg)", "", "integer", "60", "260"),
                 ("kiem_soat_ha", "radio", "Đạt kiểm soát huyết áp (< 140/90 mmHg)", "0, Không | 1, Có", "", "", ""),
+                ("kiem_soat_ha_130", "calc", "Đạt đích huyết áp tâm thu < 130 mmHg (máy tự tính)",
+                 "if([ha_tt_tb] < 130, 1, 0)", "", "", ""),
                 ("thuoc_khac", "text", "Thuốc khác đang dùng, ghi rõ", "", "", "", ""),
             ],
             "ma_tran": [
                 ("1", "tỷ lệ kiểm soát huyết áp", "ket_cuc_chinh", "kiem_soat_ha", "nhi_phan", "C1",
                  "đo huyết áp chuẩn hoá", "SAP §4 tỷ lệ + KTC 95%"),
+                ("1", "tỷ lệ kiểm soát huyết áp", "dinh_nghia_thay_the", "kiem_soat_ha_130", "nhi_phan", "C2",
+                 _DICH_HA_130, "SAP §9 định nghĩa thay thế"),
                 ("1", "tuổi", "mo_ta", "tuoi", "lien_tuc", "A1", "phiếu", "SAP §3 mô tả"),
                 ("1", "giới", "mo_ta", "gioi", "nhi_phan", "A2", "phiếu", "SAP §3 mô tả"),
                 ("1", "số thuốc hạ áp", "mo_ta", "so_thuoc", "dem", "B1", "hồ sơ", "SAP §3 mô tả"),
@@ -392,7 +416,12 @@ KICH_BAN: Dict[str, Dict[str, Any]] = {
                 },
                 "team_roles": _vi("Chủ nhiệm (PI), thống kê viên, quản lý dữ liệu — vai trò, không ghi danh tính"),
                 "background_problem": _vi("Kiểm soát huyết áp ở người điều trị ngoại trú chưa được đo định kỳ"),
-                "evidence_summary": _vi("Nền bằng chứng G0 cho thấy tỷ lệ kiểm soát khác nhau nhiều giữa cơ sở"),
+                # 22/11/2026 — SANRA mục 6 (số liệu kết cục có nguồn): câu bằng chứng chép đúng số trong abstract PubMed
+                # của PMID đã kiểm chứng (kho A12 giả lập), không còn câu định tính không số.
+                "evidence_summary": _vi("Nghiên cứu cắt ngang trên 400 người bệnh tăng huyết áp tại 10 trung tâm chăm "
+                                        "sóc ban đầu ở Thụy Điển (PMID 40583484) ghi nhận tỷ lệ kiểm soát huyết áp "
+                                        "(< 140/90 mmHg) là 41%, trong đó dùng từ hai thuốc hạ áp trở lên đi kèm "
+                                        "khả năng đạt kiểm soát cao hơn (OR 1,62; KTC 95%: 1,07–2,46)"),
                 "knowledge_gap": _vi("Thiếu số liệu tỷ lệ kiểm soát cập nhật tại cơ sở này"),
                 "benefit_risk_rationale": _vi("Không can thiệp, nguy cơ tối thiểu (chỉ đo huyết áp và hỏi thông tin)"),
                 "study_schema_timeline": "Sàng lọc → đồng ý tham gia → đo huyết áp và phỏng vấn một lần tại lần khám",

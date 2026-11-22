@@ -3310,6 +3310,14 @@ def main():
             encoding="utf-8", newline="\n")
         print("✓ Script R (thứ tự) tái lặp đã tạo")
 
+    # 22/11/2026: --don-vi-phoi-nhiem áp cho MỌI mô hình (Poisson/logistic/tuyến tính/Cox/MI), không riêng nhánh thứ
+    # tự — định nghĩa thay thế SAP §9 «phơi nhiễm liên tục, mỗi 1 SD» (chay_sap_g6 tính SD) cần đúng đơn vị ở mọi họ.
+    if (args.don_vi_phoi_nhiem and args.outcome_type != "ordinal" and args.group
+            and args.group in df.columns):
+        df = ap_don_vi_phoi_nhiem(df, args.group, args.don_vi_phoi_nhiem)
+        summary["don_vi_phoi_nhiem_ap"] = {"cot": args.group, "don_vi": args.don_vi_phoi_nhiem,
+                                           "dien_giai": f"hiệu ứng cho MỖI {args.don_vi_phoi_nhiem:g} đơn vị "
+                                                        f"«{args.group}»"}
     # 5. Kết cục chính
     if args.outcome_type != "ordinal" and args.outcome and args.group and args.outcome in df.columns:
         so_nhom = int(df[args.group].dropna().nunique()) if args.group in df.columns else 0
