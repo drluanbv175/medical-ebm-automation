@@ -1009,10 +1009,10 @@
    "chu": "ke-hoach-trien-khai",
    "cong": ["G1", "G10"],
    "nhiem_vu": ["G1-T3"],
-   "viec": "hồ sơ đăng ký chủ trì đề tài cấp bệnh viện",
+   "viec": "hồ sơ đăng ký chủ trì đề tài cấp bệnh viện và phiếu đề xuất nhiệm vụ (Mẫu DTCS-XDNV.01-PDX)",
    "nguoi_dung_phu": ["dieu-phoi-g10"],
-   "nguoi_kiem": [],
-   "chot_kiem": ["tools/g1_quality_gate.py", "tests/test_ho_so_dtcs_bvqy175_20261121.py"],
+   "nguoi_kiem": ["tham-dinh-dau-ra"],
+   "chot_kiem": ["tools/g1_quality_gate.py", "tests/test_ho_so_dtcs_bvqy175_20261121.py", "tests/test_ho_so_nguon_chung_20261122.py", "tests/test_ho_so_sau_chap_thuan_pdx_20261122.py"],
    "nguyen_tac": {
     "dct:kha_thi": "nhân lực, tiến độ, kinh phí của đề tài trình đơn vị",
     "nt:trung_thuc": "đơn giá/kinh phí do chủ nhiệm cung cấp, không bịa"
@@ -1038,11 +1038,41 @@
    "nhiem_vu": ["G2-T1"],
    "viec": "nháp hồ sơ Hội đồng Đạo đức cấp bệnh viện",
    "nguoi_dung_phu": ["ke-hoach-trien-khai"],
-   "nguoi_kiem": [],
-   "chot_kiem": ["tools/g2_quality_gate.py", "tests/test_ho_so_hdd_bvqy175_20261119.py"],
+   "nguoi_kiem": ["tham-dinh-dau-ra"],
+   "chot_kiem": ["tools/g2_quality_gate.py", "tests/test_ho_so_hdd_bvqy175_20261119.py", "tests/test_ho_so_nguon_chung_20261122.py"],
    "nguyen_tac": {
     "nt:dao_duc": "đúng thể thức Hội đồng Đạo đức đơn vị",
     "nt:ton_trong": "đủ tài liệu bảo vệ người tham gia"
+   }
+  },
+  "ho_so_nguon_chung.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dao-duc-dang-ky",
+   "cong": ["G1", "G2"],
+   "nhiem_vu": ["G2-T1", "G1-T3"],
+   "viec": "nguồn chung và ba loại ô chưa điền (suy được · gói ký · dữ kiện cần nhập) của mọi bộ hồ sơ trình đơn vị; đối chiếu nhất quán đề cương nộp ↔ gói G2 ↔ hồ sơ Hội đồng Đạo đức ↔ hồ sơ đề tài cơ sở ↔ phiếu đề xuất nhiệm vụ",
+   "nguoi_dung_phu": ["ke-hoach-trien-khai", "dieu-phoi-g10"],
+   "nguoi_kiem": ["tham-dinh-dau-ra"],
+   "chot_kiem": ["tests/test_ho_so_nguon_chung_20261122.py", "tests/test_ho_so_sau_chap_thuan_pdx_20261122.py", "tools/g2_quality_gate.py"],
+   "nguyen_tac": {
+    "nt:trung_thuc": "ô chỉ điền từ nguồn đã chốt; ô chưa có nguồn mang đúng loại, không bịa số tiền hay dữ kiện",
+    "nt:tai_lap": "trích tất định; dấu băm nguồn báo khi nguồn đổi sau lượt trích",
+    "nt:kiem_soat_cl": "chín trường đối chiếu giữa các tài liệu nộp, lệch ⇒ báo"
+   }
+  },
+  "ho_so_sau_chap_thuan.py": {
+   "pham_vi": "nghien_cuu",
+   "chu": "dao-duc-dang-ky",
+   "cong": ["G2"],
+   "nhiem_vu": ["G2-T1"],
+   "viec": "đơn đề nghị thay đổi đề cương, báo cáo tiến độ, báo cáo kết quả gửi Hội đồng Đạo đức sau chấp thuận (nội dung Thông tư 43/2024/TT-BYT Điều 6 khoản 1 điểm a, Điều 18 khoản 2–3, Phụ lục I mục 6)",
+   "nguoi_dung_phu": ["an-toan-nghien-cuu", "quan-ly-du-lieu", "dieu-phoi-g5", "dieu-phoi-g6"],
+   "nguoi_kiem": ["tham-dinh-dau-ra"],
+   "chot_kiem": ["tests/test_ho_so_sau_chap_thuan_pdx_20261122.py"],
+   "nguyen_tac": {
+    "nt:dao_duc": "báo cáo Hội đồng đủ nội dung Thông tư 43 yêu cầu cho nghiên cứu đang triển khai và khi kết thúc",
+    "nt:ton_trong": "mỗi kỳ báo cáo biến cố bất lợi, vi phạm đề cương và biện pháp bảo vệ người tham gia",
+    "nt:trung_thuc": "dữ kiện triển khai là dữ kiện cần nhập có cấu trúc; nhãn trạng thái máy không vào văn bản nộp"
    }
   },
   "hoi_dong_cong.py": {

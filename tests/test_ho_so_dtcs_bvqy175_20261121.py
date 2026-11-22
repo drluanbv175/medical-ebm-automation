@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -246,6 +247,20 @@ def _mau_ly_lich(p: Path, dien: dict | None = None) -> None:
     d.save(str(p))
 
 
+def _mau_pdx(p: Path) -> None:
+    d = docx.Document()
+    for t in ("Mẫu DTCS-XDNV.01-PDX", "BỆNH VIỆN QUÂN Y 175\tCỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM",
+              "…(K-P-B-TT-V)\tĐộc lập – Tự do – Hạnh phúc",
+              "ĐỀ XUẤT NHIỆM VỤ NGHIÊN CỨU KHOA HỌC VÀ CÔNG NGHỆ CẤP BỆNH VIỆN",
+              "Tên nhiệm vụ KHCN:", "Lý do đề xuất (Tính cấp thiết):", "Mục tiêu:",
+              "Các kết quả chính và các chỉ tiêu cần đạt:", "Các nội dung chính cần thực hiện:",
+              "Dự kiến cơ quan, đơn vị ứng dụng các kết quả:", "Phương án sử dụng kết quả:",
+              "Thời gian cần thực hiện:", "Nhu cầu kinh phí cần thực hiện:",
+              "\tChỉ huy cơ quan, đơn vị xác nhận\tChủ nhiệm đề xuất nhiệm vụ"):
+        d.add_paragraph(t)
+    d.save(str(p))
+
+
 @pytest.fixture(autouse=True)
 def _cach_ly(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict:
     """Bộ mẫu + sổ lý lịch GIẢ cho MỌI test — không bao giờ chạm vị trí thật."""
@@ -254,6 +269,7 @@ def _cach_ly(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> dict:
     _mau_dang_ky(mau / "docx" / f"{hs.TEN_TEP_MAU['dang_ky']}.docx")
     _mau_thuyet_minh(mau / "docx" / f"{hs.TEN_TEP_MAU['thuyet_minh']}.docx")
     _mau_ly_lich(mau / "docx" / f"{hs.TEN_TEP_MAU['ly_lich']}.docx")
+    _mau_pdx(mau / "docx" / f"{hs.TEN_TEP_MAU['de_xuat']}.docx")
     so = tmp_path / "ho_so_ca_nhan"
     monkeypatch.setenv(hs.ENV_MAU, str(mau))
     monkeypatch.setenv(hs.ENV_CA_NHAN, str(so))
@@ -448,10 +464,13 @@ def test_trich_khong_bia_tien_dinh_muc_khoan_chi(tmp_path: Path) -> None:
     goc = _tao_de_tai(tmp_path / "exp")
     assert _trich(goc) == 0
     tm = _json(goc)["thuyet_minh"]
-    for k in ("m5_khoan_chi", "m6_loai_de_tai", "m14_tinh_trang", "m22_san_pham", "m27_kinh_phi", "phu_luc_tmdt"):
+    for k in ("m6_loai_de_tai", "m14_tinh_trang", "m22_san_pham"):
         assert tm[k] == hs.CAN_CHU_NHIEM, k
-    assert tm["m4_tong_kinh_phi"].startswith("[CẦN CHỦ NHIỆM ẤN ĐỊNH")
-    assert all(r["kinh_phi"] == hs.CAN_CHU_NHIEM and r["chu_tri"] == hs.CAN_CHU_NHIEM for r in tm["m21_tien_do"])
+    # 22/11/2026: đề cương ghi «Tự túc» ⇒ ô kinh phí ghi ĐÚNG trạng thái tự túc, không đề nghị cấp — không có số tiền
+    for k in ("m4_tong_kinh_phi", "m5_khoan_chi", "m27_kinh_phi", "phu_luc_tmdt"):
+        assert "tự túc" in tm[k].lower() and "[CẦN" not in tm[k], k
+        assert not re.search(r"\d", tm[k]) and "đồng" not in tm[k], f"{k}: không được có số tiền/định mức"
+    assert all(r["kinh_phi"] == "Tự túc" and r["chu_tri"] == hs.CAN_CHU_NHIEM for r in tm["m21_tien_do"])
     assert set(tm["m23_ung_dung_chuyen_giao"].values()) == {hs.CAN_CHU_NHIEM}
     assert set(tm["m26_tai_san"].values()) == {hs.CAN_CHU_NHIEM}
 
@@ -608,7 +627,7 @@ def test_dung_dien_du_ba_mau(tmp_path: Path) -> None:
     assert "Nội dung 1: Mô tả tỷ lệ X." in tm and "Nội dung 1 :" not in tm
     assert "[CẦN BỔ SUNG HÌNH: Hình 3.1]" in tm and "![" not in tm and "`" not in tm
     assert f"Số định danh cá nhân/CMTQĐ: {CCCD_GIA}" in tm and "Họ và tên: Trần Văn Giả " in tm
-    assert "4. Tổng kinh phí thực hiện: [CẦN CHỦ NHIỆM ẤN ĐỊNH — đề cương ghi: Tự túc]" in tm
+    assert "4. Tổng kinh phí thực hiện: Tự túc." in tm
     assert "Chuyên khoa I Nội" in tm and "BS.CKI Trần Văn Giả" in tm
     assert _o_kiem(tm_p, "Y, dược") == [False, True]
     assert _o_kiem(tm_p, "Ngày, tháng, năm sinh") == [True, False]
@@ -618,7 +637,8 @@ def test_dung_dien_du_ba_mau(tmp_path: Path) -> None:
     assert [r.cells[3].text for r in bang.rows[2:]] == ["11/2026", "01–03/2027", hs.CAN_CHU_NHIEM]
     dk = _chu(ra / hs.ten_ra("dang_ky", STUDY))
     assert "Khoa Giả A1 kính đề nghị" in dk and "Đề tài giả" in dk and "Khoa Giả A, Bệnh viện Quân y 175" in dk
-    assert "Trần Văn Giả, Chuyên khoa I Nội, cấp bậc [CẦN BÁC SĨ ĐIỀN]" in dk
+    assert "Trần Văn Giả, Chuyên khoa I Nội, cấp bậc ……………………" in dk, "cấp bậc tự khai khi ký (gói ký)"
+    assert "[CẦN" not in dk and "[GÓI KÝ" not in dk
     ll_p = ra / hs.ten_ra("ly_lich", STUDY, "01")
     ll = _chu(ll_p)
     assert f"3. Số định danh cá nhân/CCCD: {CCCD_GIA}" in ll and "Học viện Giả" in ll and "Khoa Giả A" in ll
@@ -626,7 +646,7 @@ def test_dung_dien_du_ba_mau(tmp_path: Path) -> None:
     assert dong_dk.count("☒") == 1 and dong_dk.count("☐") == 1
     assert dong_dk.index("☒") < dong_dk.index("THAM GIA")
     danh_muc = (ra / hs.ten_ra("danh_muc", STUDY)).read_text(encoding="utf-8")
-    assert EMAIL_BAN in danh_muc and "báo cáo tổng kết / nghiệm thu" in danh_muc
+    assert EMAIL_BAN in danh_muc and "## Gói ký" in danh_muc and "## Dữ kiện cần nhập" in danh_muc
 
 
 def test_dung_lai_sao_luu_tep_nguoi_da_sua_tay(tmp_path: Path) -> None:
