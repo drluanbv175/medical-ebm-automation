@@ -806,8 +806,12 @@ if (MI_CO && co(KET_CUC) && co(NHOM)) {
     pred <- mice::make.predictorMatrix(k)
     for (s in nhanh) pred[rownames(pred) != an[[s]], an[[s]]] <- 0
     for (s in nhanh) kiem_nhanh[[s]]$so_cot_dung_lam_du_bao <- sum(pred[, an[[s]]])
+    # use.matcher = TRUE (23/11/2026): vẫn PMM như SAP/Python (MICEData) nhưng rút người cho NGẪU NHIÊN khi trung bình
+    # dự đoán bằng nhau. matchindex mặc định của mice 3.19 tách đồng hạng theo thứ tự cố định ⇒ khi mọi biến dự báo
+    # rời rạc (vài ô trung bình dự đoán) cùng vài người cho bị dùng lại ⇒ phương sai giữa bộ phồng: đo 1.200 ca, x1
+    # thiếu 17 %, dự báo nhị phân — SD giữa bộ 0,068 (mặc định) · 0,025 (use.matcher) · 0,023 (norm) · 0,022 (Python).
     imp <- mice::mice(k, m = MI_M, method = "pmm", predictorMatrix = pred, maxit = 10, seed = MI_HAT,
-                      printFlag = FALSE)
+                      printFlag = FALSE, use.matcher = TRUE)
     bo <- lapply(seq_len(MI_M), function(i) {
       di <- d0
       ci <- mice::complete(imp, i)
@@ -1141,19 +1145,7 @@ def _dac_ta_hop_le(dt: dict) -> None:
         raise TuChoi("thiếu --group (phơi nhiễm chính) — Python cũng không chạy mô hình chính khi thiếu nhóm")
 
 
-def ty_le_tu_tom_tat(tom: dict) -> tuple[list[str], float | None]:
-    """(cột tỷ lệ, ngưỡng) của lượt Python: đặc tả mới ghi thẳng; tóm tắt cũ ⇒ suy từ khoá ty_le (định nghĩa
-    «cột ≥ x»)."""
-    dt = (tom or {}).get("dac_ta_phan_tich") or {}
-    if dt.get("ty_le"):
-        return list(dt["ty_le"]), dt.get("nguong_ty_le")
-    ds = [x for x in (tom or {}).get("ty_le") or [] if isinstance(x, dict) and x.get("cot")]
-    nguong = None
-    for x in ds:
-        m = re.search(r"≥\s*(-?[\d.]+)\s*$", str(x.get("dinh_nghia") or ""))
-        if m:
-            nguong = float(m.group(1))
-    return [x["cot"] for x in ds], nguong
+ty_le_tu_tom_tat = S.ty_le_tu_tom_tat  # 23/11/2026: dùng chung với cầu nối SPSS (Bảng 1b hai phần mềm)
 
 
 def lenh_cu_phap(args) -> int:
@@ -2585,10 +2577,7 @@ def _mi(tom: dict, kq: dict, loi_r: dict) -> list[dict]:
     return ra
 
 
-#: Bảng 1b là phép TẤT ĐỊNH (không lấy mẫu, không lặp): R và Python phải trùng tới đơn vị làm tròn của tóm tắt
-#: Python — tỷ lệ/KTC làm tròn 4 chữ số lẻ (nửa đơn vị 0,00005), DE 3 chữ số (0,0005). Dung sai chung TOL_UOC/TOL_CI
-#: (0,5 %/1,5 %) quá lỏng cho phép này: bỏ K/(K−1) chỉ dời cận KTC ≈ 0,001 — vẫn lọt dung sai chung.
-DUNG_SAI_TY_LE, DUNG_SAI_DE = 0.00005, 0.0005
+DUNG_SAI_TY_LE, DUNG_SAI_DE = S.DUNG_SAI_TY_LE, S.DUNG_SAI_DE  # căn cứ: cau_noi_spss.DUNG_SAI_TY_LE
 
 
 def _ty_le(tom: dict, kq: dict, loi_r: dict) -> list[dict]:

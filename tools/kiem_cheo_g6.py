@@ -307,21 +307,14 @@ def _md(study: str, ket: dict) -> str:
 
 
 def _chi_mo_ta(d: Path, gate: str) -> str | None:
-    """None = có kết cục/thời gian (kiểm chéo đầy đủ) · "ty_le" = chỉ mô tả, có tỷ lệ Wilson Bảng 1b (22/11/2026:
-    cầu nối R có bản đối chiếu) · "khong_co_ban_kiem_cheo" = chỉ mô tả, không có phép nào hai cầu nối tái lập được."""
+    """None = có kết cục/thời gian (kiểm chéo đầy đủ) · "ty_le" = chỉ mô tả, có tỷ lệ Wilson Bảng 1b (cầu nối R
+    22/11/2026 và SPSS 23/11/2026 đều có bản đối chiếu) · "khong_co_ban_kiem_cheo" = chỉ mô tả, không có phép nào hai
+    cầu nối tái lập được."""
     tom = _doc_json(d / f"{gate}_analysis_summary.json")
     dt = tom.get("dac_ta_phan_tich") or {}
     if dt.get("outcome") or dt.get("time"):
         return None
     return "ty_le" if (dt.get("ty_le") or tom.get("ty_le")) else "khong_co_ban_kiem_cheo"
-
-
-def _spss_khong_co_ty_le() -> dict:
-    """Bảng 1b: cầu nối SPSS chưa sinh cú pháp tỷ lệ Wilson theo cụm (DE tuyến tính hoá + hiệu chỉnh bậc tự do) ⇒ phần
-    SPSS «không đo được» kèm lý do kỹ thuật; phép đối chiếu do R làm (tong_hop: R khớp ⇒ cả lượt KHỚP)."""
-    ly_do = "cầu nối SPSS chưa sinh cú pháp tỷ lệ Wilson theo cụm (Bảng 1b) — phép này do R đối chiếu"
-    print(f"  ⚪ {ly_do}")
-    return {"trang_thai": KHONG_DO_DUOC, "ly_do": ly_do}
 
 
 def lenh_chay(args) -> int:
@@ -347,8 +340,7 @@ def lenh_chay(args) -> int:
     phan_mem: dict[str, dict] = {}
     if args.chi in (None, "spss"):
         print("\n══════ IBM SPSS Statistics" + (" (mở giao diện)" if che_do == "mo" else " (nền)") + " ══════")
-        phan_mem["spss"] = (_spss_khong_co_ty_le() if mo_ta == "ty_le"
-                            else _chay_spss(args.study, args.gate, d, vt, args, che_do))
+        phan_mem["spss"] = _chay_spss(args.study, args.gate, d, vt, args, che_do)
     if args.chi in (None, "r"):
         nhan_r = "RStudio (mở script)" if che_do == "mo" else "R — Rscript nền, cùng R với RStudio"
         print(f"\n══════ {nhan_r} ══════")
@@ -380,8 +372,7 @@ def lenh_nhan_ket_qua(args) -> int:
     phan_mem: dict[str, dict] = {}
     if args.chi in (None, "spss"):
         print("\n══════ IBM SPSS Statistics (kết quả lượt giao diện) ══════")
-        phan_mem["spss"] = (_spss_khong_co_ty_le() if _chi_mo_ta(d, args.gate) == "ty_le"
-                            else _chay_spss(args.study, args.gate, d, vt, args, "nhan"))
+        phan_mem["spss"] = _chay_spss(args.study, args.gate, d, vt, args, "nhan")
     if args.chi in (None, "r"):
         print("\n══════ RStudio (kết quả lượt Source) ══════")
         phan_mem["r"] = _chay_r(args.study, args.gate, d, args, "nhan")

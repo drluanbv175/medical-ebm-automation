@@ -344,3 +344,27 @@ def test_that_mi_gan_theo_nhanh_python_khop_r(tmp_path, monkeypatch):
     assert all(x["trang_thai"] == "khop" for x in mi.values()), [x["ghi_chu"] for x in mi.values()]
     for phia in ("python", "r"):
         assert _tim_lai(mi["nhom"][phia], 1.5), (phia, mi["nhom"][phia])
+
+
+@CAN_R
+def test_that_mi_du_bao_roi_rac_pmm_khong_phong_phuong_sai_giua_bo(tmp_path, monkeypatch):
+    """Mọi biến dự báo của x1 đều nhị phân (y, x2) ⇒ trung bình dự đoán của PMM chỉ có 4 giá trị. mice 3.19 mặc định
+    (matchindex) tách đồng hạng theo thứ tự cố định ⇒ SD giữa bộ ≈ 3 lần Python (đo 23/11/2026: 0,068 so 0,022). Bản R
+    dùng PMM rút người cho ngẫu nhiên khi đồng hạng (use.matcher = TRUE) — SD giữa bộ phải cùng cỡ Python.
+    Ngưỡng 2,1 lần: B̂ ~ B·χ²(m−1)/(m−1), m = 20 ⇒ SD log(√B̂_R/√B̂_Py) ≈ 0,23; 3,3 SD ≈ log 2,1 (chọn TRƯỚC khi chạy)."""
+    rng = np.random.default_rng(70)
+    n = 1200
+    x2 = rng.binomial(1, 0.4, n)
+    x1 = 0.8 * x2 + rng.normal(0, 1, n)
+    p = np.clip(0.15 * np.exp(np.log(1.3) * x1 + np.log(1.5) * x2), 0, 0.99)
+    df = pd.DataFrame({"record_id": [f"R{i}" for i in range(n)], "y": rng.binomial(1, p), "x2": x2, "x1": x1})
+    df.loc[rng.random(n) < 0.185, "x1"] = np.nan
+    tu_dien = [["Variable / Field Name", "Field Type", "Field Label", "Identifier?"]]
+    tu_dien += [[c, "text", c, ""] for c in df.columns]
+    d, dc = _khung_main(tmp_path, monkeypatch, "MI-ROI-RAC", df, tu_dien,
+                        ["--outcome", "y", "--group", "x2", "--covariates", "x1", "--outcome-type", "poisson_pr"])
+    assert _mi_cua(dc)["x1"]["trang_thai"] == "khop", _mi_cua(dc)["x1"]
+    tom = json.loads((d / "G6_analysis_summary.json").read_text(encoding="utf-8"))
+    mc_py = next(x["mcse"] for x in tom["multiple_imputation"]["results"] if x["variable"] == "x1")
+    mc_r = json.loads((d / "G6_r_ket_qua.json").read_text(encoding="utf-8"))["ket_qua"]["mi"]["he_so"]["x1"]["mcse"]
+    assert 1 / 2.1 < mc_r / mc_py < 2.1, (mc_r, mc_py)
