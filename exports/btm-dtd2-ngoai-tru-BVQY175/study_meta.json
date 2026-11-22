@@ -384,7 +384,41 @@
       },
       "checklist_extra": [
         "Bản khai xung đột lợi ích theo mẫu ICMJE, có chữ ký của từng thành viên, và kế hoạch quản lý xung đột lợi ích (đề cương mục 2.7)"
-      ]
+      ],
+      "ngay_phien_ban": "2026-11-18",
+      "tap_chi_du_kien": "Tạp chí Y Dược Thực hành 175",
+      "loi_ich_truc_tiep": "Không có lợi ích trực tiếp — nghiên cứu hồi cứu trên hồ sơ có sẵn, không tiếp xúc người bệnh",
+      "rui_ro_xac_nhan": "Chủ nhiệm đã rà và xác nhận bảng rủi ro theo đề cương (20/11/2026).",
+      "so_ban_nop": "02",
+      "ai": {
+        "co_su_dung": true,
+        "cong_cu_khac": "Không dùng công cụ AI nào khác",
+        "nguoi_kiem_tra": "Nguyễn Hà Luân (chủ nhiệm đề tài)"
+      },
+      "tra_dang_ky_khac": "WHO ICTRP: PI đã tự tra 2026-10-28, không thấy nghiên cứu trùng (PI xác nhận kết quả ngày 2026-11-21); PROSPERO: không áp dụng (không phải tổng quan hệ thống); đăng ký trong nước: [CẦN BÁC SĨ TỰ TRA]",
+      "mien_icf_lap_luan": {
+        "i_khong_kha_thi": "Người bệnh trong mẫu có ít nhất 2 lượt khám tại Khoa Khám bệnh trong năm 2026 nên về nguyên tắc vẫn có thể liên lạc, nhưng yêu cầu đồng ý làm mất tính hợp lệ khoa học của đề tài: mẫu chỉ còn gồm người liên lạc được và đồng ý, trong khi nhóm này có thể khác nhóm từ chối hoặc không liên lạc được về chính các đại lượng đề tài cần đo (mức độ được theo dõi, được xét nghiệm và được kê đơn bảo vệ thận). Khi đó tỷ lệ ước lượng không còn đại diện cho mẫu ngẫu nhiên đã chọn từ khung mẫu, và không xác định trước được chiều sai lệch. Người bệnh cũng có thể đã chuyển nơi theo dõi hoặc ngừng đến khám sau cửa sổ dữ liệu. Ngoài ra, muốn liên lạc thì nhóm nghiên cứu phải truy xuất thêm số điện thoại, địa chỉ của người bệnh, là những thông tin phiếu thu thập không ghi, nên việc xin đồng ý lại làm tăng nguy cơ lộ thông tin so với chỉ trích dữ kiện lâm sàng.",
+        "ii_gia_tri_xa_hoi": "Kết quả cung cấp số liệu nền tại cơ sở về mức độ phát hiện bệnh thận mạn và điều trị bảo vệ thận ở người ĐTĐ típ 2 điều trị ngoại trú so với KDIGO 2022, KDIGO 2024 và ADA 2026, làm căn cứ cho hoạt động cải tiến chất lượng phát hiện sớm và điều trị bệnh thận mạn tại Khoa Khám bệnh.",
+        "iii_nguy_co_toi_thieu": "Nghiên cứu không can thiệp, không tiếp xúc người bệnh và không làm thay đổi chăm sóc; nguy cơ duy nhất là lộ thông tin cá nhân, được giảm thiểu bằng các biện pháp bảo mật nêu dưới đây."
+      },
+      "da_soan": {
+        "tl6_loai_du_lieu": " Cụ thể: dữ liệu thứ cấp từ hồ sơ bệnh án điện tử eHospital — lượt khám, mã ICD-10, kết quả xét nghiệm (creatinin, UACR, các dạng albumin niệu khác, HbA1c), đơn thuốc ngoại trú; danh mục đủ theo codebook; không lấy trường định danh nào",
+        "tl6_cong_cu": " ☑ Phiếu thu thập dựng từ codebook — chủ nhiệm trích từng hồ sơ được chọn trên eHospital",
+        "tl6_chia_se_ghi_chu": " Lựa chọn của chủ nhiệm (20/11/2026): chia sẻ có kiểm soát theo yêu cầu — bộ dữ\n liệu đã khử định danh kèm từ điển biến, sau khi công bố, cho mục đích nghiên\n cứu hợp lý, khi Bệnh viện và Hội đồng Đạo đức cho phép; ký thoả thuận sử dụng\n dữ liệu (DTA) trước. Không mở công khai vì dữ liệu lấy từ hồ sơ bệnh án theo\n cơ chế miễn đồng thuận.",
+        "tl7_du_lieu_thu_cap": "☐ [Dữ liệu thứ cấp]: Văn bản chấp thuận cung cấp dữ liệu — Bệnh viện đồng ý cho sử dụng hồ sơ bệnh án cho\n nghiên cứu theo Luật Khám bệnh, chữa bệnh (quyết định phê duyệt đề tài hoặc văn bản riêng của Bệnh viện)"
+      },
+      "trds_md": {
+        "1": " Không áp dụng — không đăng ký (hồi cứu dữ liệu thứ cấp; chủ nhiệm quyết 15/11/2026)",
+        "2": " Không áp dụng",
+        "3": " Số phê duyệt IRB: [CẦN sau khi nhận]\n PROSPERO (nếu SR): Không áp dụng — không phải tổng quan hệ thống",
+        "4": " None — self-funded by the principal investigator (no external funding)",
+        "5": " Bệnh viện Quân y 175 (Military Hospital 175), TP. Hồ Chí Minh",
+        "6": " Không có (None)",
+        "11": " Vietnam (VN) — Ho Chi Minh City (TP. Hồ Chí Minh)",
+        "16": " Dự kiến 16/02/2027 — bắt đầu trích hồ sơ (hồi cứu, không tuyển người); chỉ sau khi Hội đồng phê duyệt và SAP đã khoá",
+        "22": " Dự kiến 09/2027 (thực hiện 11/2026–09/2027); cập nhật ngày thật khi kết thúc",
+        "24": " Plan to share de-identified IPD: Yes — controlled access on reasonable request\n What/when/how/with whom/purpose: de-identified dataset with data dictionary; after publication; via the\n principal investigator under a signed data-use agreement, with permission of the hospital and the ethics\n committee; for researchers with a reasonable research purpose"
+      }
     },
     "G7": {
       "title": null,
@@ -445,10 +479,17 @@
     "sponsor": "Không có tài trợ bên ngoài — chủ nhiệm tự túc kinh phí",
     "pi_title": "Bác sĩ Chuyên khoa I (BS.CKI)",
     "pi_phone": "[PII — điền ở bản nộp ngoài hệ thống]",
-    "pi_email": "[PII — điền ở bản nộp ngoài hệ thống]"
+    "pi_email": "[PII — điền ở bản nộp ngoài hệ thống]",
+    "don_vi_chu_tri": "Khoa Khám bệnh, Bệnh viện Quân y 175",
+    "pi_unit": "Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175",
+    "irb_name": "Hội đồng Y đức Bệnh viện Quân y 175"
   },
   "data_governance": {
     "custodian": "người quản lý dữ liệu của nhóm nghiên cứu, khác chủ nhiệm: chọn hồ sơ trích lại và lưu bản chụp trước khi báo chủ nhiệm, khoá và giữ cơ sở dữ liệu (đề cương mục 2.7, Phụ lục F)",
-    "access": "Phân quyền truy cập: Chỉ nhóm nghiên cứu được cấp phép; người quản lý dữ liệu (khác chủ nhiệm) giữ cơ sở dữ liệu nhập liệu, cơ sở dữ liệu trích lại và cơ sở dữ liệu đã khoá; chủ nhiệm không xem bản trích lại trước khi tính xong đồng thuận và không sửa dữ liệu sau khi khoá (đề cương mục 2.7); Phê duyệt quyền: Chủ nhiệm đề tài (DMP mục 2)"
+    "access": "Phân quyền truy cập: Chỉ nhóm nghiên cứu được cấp phép; người quản lý dữ liệu (khác chủ nhiệm) giữ cơ sở dữ liệu nhập liệu, cơ sở dữ liệu trích lại và cơ sở dữ liệu đã khoá; chủ nhiệm không xem bản trích lại trước khi tính xong đồng thuận và không sửa dữ liệu sau khi khoá (đề cương mục 2.7); Phê duyệt quyền: Chủ nhiệm đề tài (DMP mục 2)",
+    "storage_location": "ổ đĩa mã hóa AES-256 tại Khoa Khám bệnh C1a, Bệnh viện Quân y 175; chỉ nhóm nghiên cứu được truy cập",
+    "backup": "hằng tuần, 2 bản độc lập",
+    "breach_procedure": "theo qui định của đơn vị",
+    "sharing_choice": "theo_yeu_cau"
   }
 }
