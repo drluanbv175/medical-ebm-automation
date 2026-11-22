@@ -291,9 +291,8 @@ def test_k17_khong_con_tap_mien_chan_cho_bo_sinh():
     assert not hasattr(KCM, "CHUAN_CHO_BO_SINH")
 
 
-@pytest.mark.parametrize("tk,chuan,kich_ban", [("quality_improvement", "SQUIRE 2.0", "quality_improvement"),
-                                               ("case_report", "CARE 2013", "case_report"),
-                                               ("non_randomized", "TREND 2004", "non_randomized")])
+# SQUIRE 2.0 và CARE 2013 đã kiểm chứng trên văn bản mẫu (cuối tệp) ⇒ chỉ TREND còn «chưa đo được»
+@pytest.mark.parametrize("tk,chuan,kich_ban", [("non_randomized", "TREND 2004", "non_randomized")])
 def test_chuan_chua_co_van_ban_bao_chua_do_va_khong_bao_dat(tk, chuan, kich_ban):
     md = "# ĐỀ CƯƠNG\n\n## 4.1. Thiết kế nghiên cứu\n\nNội dung.\n"
     assert S_ma(tk) == tk  # mã thiết kế có trong bảng thiết kế của hệ
@@ -418,14 +417,62 @@ def test_tripod_16_chi_ap_khi_muc_tieu_co_kiem_dinh_ngoai():
     assert ngoai.trang_thai != "khong_ap_dung"
 
 
-def test_k18_chua_ap_mo_rong_consort_cho_ban_thao():
-    """Phần mở rộng mới có tiêu chí ĐỀ CƯƠNG; bản thảo vẫn đo theo CONSORT 2025 (tiêu chí bản thảo của phần mở rộng
-    chưa viết) — K17 áp, K18 không áp."""
+_BT = ("# TIN NHẮN NHẮC UỐNG THUỐC: {tieu}\n\n## TÓM TẮT\n\n{tt}\n\n## I. GIỚI THIỆU\n\nThiếu thử nghiệm không "
+       "kém hơn và thử nghiệm theo cụm về can thiệp này [1].\n\n## II. PHƯƠNG PHÁP\n\n{pp}\n\n## III. KẾT QUẢ\n\n{kq}"
+       "\n\n## IV. BÀN LUẬN\n\n{bl}\n\n## TÀI LIỆU THAM KHẢO\n\n1. Smith J. A cluster randomised non-inferiority "
+       "trial. BMJ. 2020.\n")
+
+
+def _bt(**k) -> str:
+    gia = dict(tieu="THỬ NGHIỆM NGẪU NHIÊN", tt="Thử nghiệm ngẫu nhiên song song.", kq="Kết quả.", bl="Bàn luận.",
+               pp="Thử nghiệm ngẫu nhiên song song hai nhánh, phân bổ cá nhân, khung vượt trội.")
+    gia.update(k)
+    return _BT.format(**gia)
+
+
+def _k18(md: str) -> dict:
     import tieu_chi_ban_thao as TB  # noqa: PLC0415
 
-    md = "Thử nghiệm ngẫu nhiên theo cụm, không kém hơn, phòng khám là đơn vị phân bổ."
-    assert {"CONSORT Cluster 2012", "CONSORT NI 2012"} <= set(dict(KCM.chuan_ap_dung("rct", md)))
-    assert not {"CONSORT Cluster 2012", "CONSORT NI 2012"} & set(dict(TB.chuan_ap_dung_ban_thao("rct", md)))
+    kq = TB.doi_chieu_ban_thao(md, "rct", co_so_lieu=True)
+    return {"chuan": {c for c, _ in kq["chuan"]}, "kq": {(r.chuan, r.ma): r for r in kq["ket_qua"]}}
+
+
+def test_k18_ap_mo_rong_consort_cung_dieu_kien_k17():
+    """K18 áp hai phần mở rộng cho bài báo theo thiết kế CỦA ĐỀ TÀI (Phương pháp/Tóm tắt) — không theo Giới thiệu, Bàn
+    luận, tài liệu tham khảo hay TÊN chuẩn được dẫn làm nguồn («CONSORT mở rộng không kém hơn, Piaggio 2012»)."""
+    mo_rong = {"CONSORT Cluster 2012", "CONSORT NI 2012"}
+    vt = _bt(pp="Thử nghiệm ngẫu nhiên song song, phân bổ cá nhân. Phân tích theo đề cương (CONSORT mở rộng không kém "
+                "hơn, Piaggio 2012) là phân tích độ nhạy.",
+             bl="So với thử nghiệm không kém hơn theo cụm của Smith [1].")
+    assert not mo_rong & _k18(vt)["chuan"]
+    cum_ni = _bt(pp="Thử nghiệm ngẫu nhiên theo cụm, khung không kém hơn; phòng khám là đơn vị phân bổ.")
+    assert mo_rong <= _k18(cum_ni)["chuan"]
+
+
+def test_k18_muc_ket_qua_mo_rong_cum_va_khong_kem():
+    pp = "Thử nghiệm ngẫu nhiên theo cụm, khung không kém hơn; phòng khám là đơn vị phân bổ."
+    du = _bt(tieu="THỬ NGHIỆM NGẪU NHIÊN THEO CỤM, KHÔNG KÉM HƠN", pp=pp,
+             tt="Thử nghiệm ngẫu nhiên theo cụm không kém hơn, biên Δ = 10 điểm %; 16 phòng khám được phân bổ.",
+             kq="16 phòng khám được phân bổ ngẫu nhiên (8 mỗi nhóm), 320 người tham gia. Không có phòng khám nào rút; "
+                "12 người mất theo dõi. Đặc điểm nền của người tham gia và của các phòng khám (quy mô) cân bằng. "
+                "Cả 16 phòng khám được đưa vào phân tích. ICC ước tính cho kết cục chính = 0,04.",
+             bl="Kết quả cho thấy tin nhắn không kém hơn chăm sóc thường quy vì cận dưới KTC 95% nằm trên biên.")
+    kq = _k18(du)["kq"]
+    for ma in ("1b", "13a", "13b", "15", "16", "17a"):
+        assert kq[("CONSORT Cluster 2012", ma)].trang_thai == "dat", (ma, kq[("CONSORT Cluster 2012", ma)].thieu)
+    for ma in ("1b", "22"):
+        assert kq[("CONSORT NI 2012", ma)].trang_thai == "dat", (ma, kq[("CONSORT NI 2012", ma)].thieu)
+    thieu = _k18(_bt(tieu="THỬ NGHIỆM NGẪU NHIÊN THEO CỤM, KHÔNG KÉM HƠN", pp=pp, kq="Hai nhóm tương tự.",
+                     bl="Can thiệp có ích."))["kq"]
+    for k in (("CONSORT Cluster 2012", "13a"), ("CONSORT Cluster 2012", "17a"), ("CONSORT NI 2012", "22")):
+        assert thieu[k].trang_thai == "thieu", k
+
+
+def test_ni_7b_nhan_co_khong_khong_phai_co_phan_tich_giua_ky():
+    pp = "Thử nghiệm ngẫu nhiên song song, khung không kém hơn. *Phân tích giữa kỳ:* có phân tích giữa kỳ: không."
+    assert _k18(_bt(pp=pp))["kq"][("CONSORT NI 2012", "7b")].trang_thai == "khong_ap_dung"
+    co = _bt(pp="Thử nghiệm ngẫu nhiên song song, khung không kém hơn. Có phân tích giữa kỳ sau 50% người tham gia.")
+    assert _k18(co)["kq"][("CONSORT NI 2012", "7b")].trang_thai == "thieu"
 
 
 # ═════════════════════════════════════════════ biến PI khai phải có trên phiếu của MỌI kịch bản
@@ -607,3 +654,160 @@ def test_g10_cong_cu_do_khong_lay_dinh_nghia_lam_nguon_do(tmp_path, monkeypatch)
     assert "thang liên tục" not in ra["data_source"][0] and "Tuân thủ" not in ra["data_source"][0]
     mt.append({"vai_tro": "ket_cuc_phu", "bien": "qol", "cong_cu": "Thang đo chất lượng sống KCCQ", "khai_niem": "q"})
     assert "instrument" not in QD.rut(tmp_path, "X", {"gate_params": {"G1": {"design": "prediction"}}})
+
+
+# ═════════════════════════════════════════════ SQUIRE 2.0 và CARE 2013 — văn bản mẫu kiểm chứng tiêu chí
+#: Đề cương cải tiến chất lượng mẫu (văn bản hệ viết để kiểm chứng tiêu chí; số liệu là ví dụ, không phải dữ liệu thật)
+DC_CAI_TIEN = """# ĐỀ CƯƠNG DỰ ÁN CẢI TIẾN CHẤT LƯỢNG
+
+## THÔNG TIN CHUNG
+
+| Kinh phí | Nguồn kinh phí của bệnh viện; đơn vị tài trợ không tham gia thiết kế, phân tích hay công bố |
+
+# 1. ĐẶT VẤN ĐỀ
+
+Tỷ lệ người tăng huyết áp được đo lại huyết áp tại lần tái khám tại phòng khám của đơn vị chỉ đạt 54%, là gánh nặng
+cho chất lượng chăm sóc [1].
+
+# 2. MỤC TIÊU
+
+1. Đánh giá thay đổi tỷ lệ được đo lại huyết áp trước và sau ba chu trình PDSA tại phòng khám.
+
+# 3. TỔNG QUAN TÀI LIỆU
+
+Dự án dựa trên mô hình cải tiến PDSA [2]; can thiệp được kỳ vọng cải thiện tỷ lệ đo lại nhờ nhắc việc tại bàn khám.
+
+# 4. PHƯƠNG PHÁP
+
+## 4.1. Thiết kế nghiên cứu
+
+Thiết kế trước–sau với chuỗi thời gian gián đoạn theo tuần; xu hướng trước can thiệp được tính để tách tác động.
+
+## 4.2. Địa điểm và thời gian nghiên cứu
+
+Phòng khám nội tổng quát, Bệnh viện chủ trì, năm 2027.
+
+## 4.3. Can thiệp cải tiến
+
+Can thiệp gồm ba chu trình PDSA: phiếu nhắc đo lại tại bàn khám, tập huấn điều dưỡng, phản hồi số liệu
+hằng tuần cho nhóm.
+
+## 4.4. Nhân lực và phân công
+
+Nhóm cải tiến gồm 2 bác sĩ, 3 điều dưỡng và 1 cán bộ quản lý chất lượng; thành viên họp mỗi tuần.
+
+## 4.5. Biến số và chỉ số nghiên cứu
+
+- Chỉ số quá trình: tỷ lệ lượt khám có phiếu nhắc; chỉ số kết cục: tỷ lệ được đo lại huyết áp.
+- Định nghĩa: đo lại là có ít nhất hai lần đo cách nhau 5 phút; máy đo đã chuẩn hoá, độ tin cậy kiểm định hằng quý.
+
+Yếu tố bối cảnh (thay đổi nhân sự, số lượt khám) được ghi định kỳ mỗi chu kỳ PDSA.
+
+## 4.6. Quy trình nghiên cứu
+
+Mỗi chu kỳ bốn tuần: lập kế hoạch, thực hiện, kiểm tra, điều chỉnh.
+
+## 4.7. Quản lý dữ liệu
+
+Nhập liệu kép và đối chiếu để bảo đảm dữ liệu đầy đủ và chính xác.
+
+## 4.8. Xử lý và phân tích số liệu
+
+Biểu đồ chạy và biểu đồ kiểm soát theo tuần để xem biến thiên theo thời gian; hồi quy phân đoạn so sánh trước–sau.
+
+## 4.9. Sai số và biện pháp khống chế
+
+Nhiễu do xu hướng mùa vụ được kiểm soát bằng chuỗi thời gian; sai lệch đo lường được giảm thiểu bằng tập huấn.
+
+## 4.10. Đạo đức trong nghiên cứu
+
+Hội đồng Đạo đức của bệnh viện xét duyệt; nhóm khai báo không có xung đột lợi ích.
+
+# 5. DỰ KIẾN KẾT QUẢ
+
+- Diễn tiến các chu kỳ can thiệp theo thời gian; chỉ số quá trình và kết cục từng giai đoạn.
+- Ghi nhận hệ quả ngoài ý muốn (kéo dài thời gian khám); báo cáo số liệu thiếu theo từng tuần.
+
+## 5.2. Dự kiến bàn luận
+
+So sánh với y văn; bàn chi phí của phiếu nhắc và tính bền vững sau khi kết thúc dự án.
+
+## 5.3. Hạn chế
+
+Một phòng khám nên khó suy rộng; nhiễu chưa đo được khống chế một phần bằng chuỗi thời gian.
+"""
+
+#: Đề cương báo cáo ca mẫu (văn bản hệ viết để kiểm chứng tiêu chí; ca hư cấu, không PII)
+DC_BAO_CAO_CA = """# ĐỀ CƯƠNG BÁO CÁO CA LÂM SÀNG
+
+# 1. ĐẶT VẤN ĐỀ
+
+Hạ natri máu do thuốc lợi tiểu thiazid ở người cao tuổi hiếm khi biểu hiện co giật [1].
+
+# 2. TRÌNH BÀY CA
+
+- Người bệnh nữ, 78 tuổi, nghề nghiệp trước đây giáo viên (đã khử định danh).
+- Triệu chứng chính: lú lẫn và co giật.
+- Tiền sử tăng huyết áp; bệnh kèm đái tháo đường; đã điều trị hydrochlorothiazid 25 mg trong 3 tháng.
+- Khám: không dấu thần kinh khu trú.
+- Dòng thời gian các mốc quan trọng trình bày ở bảng.
+- Chẩn đoán: xét nghiệm điện giải đồ, chẩn đoán hình ảnh sọ não; khó khăn do người bệnh lú lẫn không kể được bệnh sử;
+  chẩn đoán phân biệt gồm đột quỵ và hạ đường huyết.
+- Điều trị: ngừng thiazid, bù natri; liều và thời gian dùng ghi đủ; mọi thay đổi điều trị ghi kèm lý do.
+- Theo dõi tái khám sau 1 và 4 tuần; đánh giá tuân thủ và dung nạp; ghi mọi biến cố bất lợi.
+
+# 3. ĐẠO ĐỨC
+
+Người bệnh và người nhà đồng ý bằng văn bản cho công bố.
+
+# 4. DỰ KIẾN BÀN LUẬN
+
+Điểm mạnh và hạn chế của xử trí; đối chiếu y văn [2]; lý do của kết luận về quan hệ nhân quả; bài học chính; quan điểm
+của người bệnh được ghi lại.
+"""
+
+
+def _muc_dat(van: str, tk: str, chuan: str) -> dict:
+    return {ma: r for (c, ma), r in _ket_qua(van, tk).items() if c == chuan}
+
+
+def test_squire_kiem_chung_tren_de_cuong_cai_tien_mau():
+    kq = _muc_dat(DC_CAI_TIEN, "quality_improvement", "SQUIRE 2.0")
+    assert len(kq) == 40
+    chua = {ma: r.thieu for ma, r in kq.items() if r.muc_do != "bao_cao" and r.trang_thai not in ("dat",
+                                                                                                     "khong_ap_dung")}
+    assert not chua, chua
+    assert not [x for x in KCM.loi_k17(DC_CAI_TIEN, "quality_improvement") if x.startswith("K17 SQUIRE")]
+    # yếu tố bổ sung sau đối chiếu bảng gốc: thiếu ⇒ mục thiếu
+    for ma, cu, moi in (("3", "chỉ đạt 54%, là gánh nặng\ncho chất lượng chăm sóc", "còn thấp"),
+                        ("5", "can thiệp được kỳ vọng cải thiện tỷ lệ đo lại", "can thiệp gồm nhắc việc"),
+                        ("10a", "máy đo đã chuẩn hoá, độ tin cậy kiểm định hằng quý", "máy đo đặt tại bàn khám"),
+                        ("10a", "- Định nghĩa: đo lại là có ít nhất hai lần đo cách nhau 5 phút; ", "- "),
+                        ("10b", "được ghi định kỳ mỗi chu kỳ PDSA", "được ghi")):
+        assert cu in DC_CAI_TIEN
+        assert _muc_dat(DC_CAI_TIEN.replace(cu, moi), "quality_improvement", "SQUIRE 2.0")[ma].trang_thai == "thieu", ma
+
+
+def test_care_kiem_chung_tren_de_cuong_bao_cao_ca_mau():
+    kq = _muc_dat(DC_BAO_CAO_CA, "case_report", "CARE 2013")
+    assert len(kq) == 23
+    chua = {ma: r.thieu for ma, r in kq.items() if r.muc_do != "bao_cao" and r.trang_thai not in ("dat",
+                                                                                                     "khong_ap_dung")}
+    assert not chua, chua
+    assert not [x for x in KCM.loi_k17(DC_BAO_CAO_CA, "case_report") if x.startswith("K17 CARE")]
+    for ma, cu, moi in (("5c", "bệnh kèm đái tháo đường; đã điều trị hydrochlorothiazid 25 mg trong 3 tháng",
+                         "ổn định"),
+                        ("9a", "mọi thay đổi điều trị ghi kèm lý do", "ghi chép đủ"),
+                        ("9a", "liều và thời gian dùng ghi đủ; ", ""),
+                        ("10a", "đánh giá tuân thủ và dung nạp; ", ""),
+                        ("10a", "; ghi mọi biến cố bất lợi", "")):
+        assert cu in DC_BAO_CAO_CA
+        assert _muc_dat(DC_BAO_CAO_CA.replace(cu, moi), "case_report", "CARE 2013")[ma].trang_thai == "thieu", ma
+
+
+def test_squire_care_roi_tap_chua_co_van_ban_trend_con_lai():
+    assert set(TC.CHUAN_CHUA_CO_VAN_BAN) == {"TREND 2004"}
+    for tk, chuan in (("quality_improvement", "SQUIRE 2.0"), ("case_report", "CARE 2013")):
+        kq = KCM.doi_chieu("# ĐỀ CƯƠNG\n\n# 1. ĐẶT VẤN ĐỀ\n\nNội dung.\n", tk)
+        assert chuan not in dict(kq["chua_do"])
+        assert any(x.startswith(f"K17 {chuan} mục") for x in KCM.loi_k17("# ĐỀ CƯƠNG\n\n# 1. ĐẶT VẤN ĐỀ\n\nX.\n", tk))

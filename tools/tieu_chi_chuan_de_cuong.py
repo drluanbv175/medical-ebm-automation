@@ -26,6 +26,17 @@ tải, hoạt động tăng tuân thủ), 6 (biện pháp nâng chất lượng 
 mà tiêu chí cũ bỏ sót. Gỡ khỏi `CHUAN_CHUA_DOI_CHIEU_GOC`. Hệ CHƯA có văn bản nào của thiết kế non_randomized ⇒
 `CHUAN_CHUA_CO_VAN_BAN`.
 
+SQUIRE 2.0 VÀ CARE 2013 — ĐÃ ĐỐI CHIẾU TỪNG MỤC (22/11/2026, tối) với bảng mục của chính bài gốc, nguyên văn lấy qua
+Europe PMC fullTextXML sau khi đọc khối giấy phép (`chuan_bao_cao_items.py`): SQUIRE 2.0 — Ogrinc G et al. BMJ Qual Saf
+2016;25(12):986-992 (PMID 26369893; PMC5256233; CC BY-NC 4.0), 40 dòng mục 1–18; CARE — Gagnier JJ et al. J Med Case
+Rep 2013;7:223 (PMID 24228906; PMC3844611; CC BY 3.0), 23 dòng mục 1–13. `check_citation_retraction.py`: cả hai «ok»
+(PubMed, không rút bài). Mã và chủ đề khớp đủ; sau đối chiếu đã bổ sung yếu tố mà nguyên văn liệt kê còn thiếu ở tiêu
+chí: SQUIRE 3 (tầm quan trọng của vấn đề), 5 (lý do kỳ vọng can thiệp có hiệu quả), 10a (định nghĩa vận hành, độ tin
+cậy/giá trị của thước đo), 10b (đánh giá liên tục); CARE 5c (bệnh kèm, can thiệp trước), 9a (cách dùng, thay đổi can
+thiệp kèm lý do), 10a (tuân thủ và dung nạp, biến cố bất lợi/ngoài dự kiến). Tiêu chí chạy trên văn bản mẫu kiểm chứng
+(đề cương cải tiến chất lượng, đề cương báo cáo ca) ⇒ rời `CHUAN_CHUA_CO_VAN_BAN`. Hai thiết kế này nằm ngoài 8 mã G1
+hỗ trợ (G1-AUTO-02c): kịch bản giả lập trọn vòng chờ quyết định mở rộng danh mục thiết kế.
+
 PHẦN MỞ RỘNG CONSORT 2010 (22/11/2026) — áp cho đề cương RCT theo điều kiện thiết kế (`CHUAN_DIEU_KIEN_RCT` của K17):
   · thử nghiệm cụm (Campbell 2012, BMJ, PMID 22951546; kiểm rút bài OK): đối chiếu từng mục với Bảng 1 «CONSORT 2010
     checklist … cluster randomised trial» do nhóm CONSORT phát hành (tệp checklist .docx ở consort-spirit.org, tải byte
@@ -124,16 +135,12 @@ DINH_LUONG_CP = (r"hồi quy|kiểm định (thống kê|chi bình phương|t\b)
 
 # ───────────────────────── chuẩn chưa đối chiếu bảng gốc (chỉ cảnh báo) ─────────────────────────
 CHUAN_CHUA_DOI_CHIEU_GOC: Dict[str, str] = {}
-#: (22/11/2026) Chuẩn ĐÃ có tiêu chí nhưng CHƯA kiểm chứng trên văn bản nào của hệ — không kịch bản giả lập nào thuộc
-#: thiết kế đó, nên tiêu chí chưa từng được chạy trên một đề cương thật hay giả lập. K17 báo mọi mục «chưa đo được» (⚪,
-#: KHÔNG tính là đạt); chuẩn cơ sở của thiết kế chưa đo ⇒ `loi_k17` không báo đạt. Mỗi dòng ghi kịch bản hệ cần để đo.
+#: (22/11/2026) Chuẩn ĐÃ có tiêu chí nhưng CHƯA kiểm chứng trên văn bản nào của hệ — không có đề cương (giả lập hay văn
+#: bản mẫu kiểm chứng trong bộ test) nào thuộc thiết kế đó để chạy tiêu chí. K17 báo mọi mục «chưa đo được» (⚪, KHÔNG
+#: tính là đạt); chuẩn cơ sở của thiết kế chưa đo ⇒ `loi_k17` không báo đạt. Mỗi dòng ghi văn bản hệ cần để đo.
+#: SQUIRE 2.0 và CARE 2013 đã rời tập này (22/11/2026, tối): đối chiếu từng mục với bảng gốc (docstring) và tiêu chí
+#: kiểm chứng trên văn bản mẫu đề cương cải tiến chất lượng / báo cáo ca trong `tests/test_chuan_de_cuong_mo_rong_*`.
 CHUAN_CHUA_CO_VAN_BAN: Dict[str, str] = {
-    "SQUIRE 2.0": ("tiêu chí chưa kiểm chứng trên văn bản nào của hệ — cần kịch bản giả lập trọn vòng thiết kế "
-                   "quality_improvement (đề tài cải tiến chất lượng: chu trình PDSA, đo trước–sau, biểu đồ chạy) để bộ "
-                   "sinh đề cương nộp viết và K17 đo; không tính là đạt"),
-    "CARE 2013": ("tiêu chí chưa kiểm chứng trên văn bản nào của hệ — cần kịch bản giả lập trọn vòng thiết kế "
-                  "case_report (báo cáo ca: dòng thời gian, đồng ý của người bệnh, bài học) để bộ sinh viết và K17 đo; "
-                  "không tính là đạt"),
     "TREND 2004": ("tiêu chí đã đối chiếu Bảng 1 bản gốc nhưng chưa kiểm chứng trên văn bản nào của hệ — cần kịch bản "
                    "giả lập trọn vòng thiết kế non_randomized (thử nghiệm can thiệp không ngẫu nhiên: đơn vị phân bổ, "
                    "biện pháp giảm sai lệch do không ngẫu nhiên, đơn vị phân tích) để bộ sinh viết và K17 đo; "
@@ -1012,12 +1019,16 @@ _SQUIRE: Dict[str, tuple] = {
     "2a": ((), "bao_cao", "Tóm tắt đủ để tra cứu và lập chỉ mục.", ()),
     "2b": ((), "bao_cao", "Tóm tắt toàn bộ thông tin then chốt.", ()),
     "3": (("dat_van_de",), "bat_buoc", "Mô tả bản chất và tầm quan trọng của vấn đề tại chỗ.",
-          (_y("vấn đề tại chỗ", r"tại (đơn vị|khoa|bệnh viện|phòng khám)|của đơn vị|tại cơ sở"),)),
+          (_y("vấn đề tại chỗ", r"tại (đơn vị|khoa|bệnh viện|phòng khám)|của đơn vị|tại cơ sở"),
+           _y("tầm quan trọng", r"tầm quan trọng|gánh nặng|hậu quả|ảnh hưởng|chi phí|\d+[,.]?\d*\s*%"))),
     "4": (("dat_van_de", "tong_quan"), "bat_buoc", "Tóm tắt hiểu biết hiện có, nghiên cứu trước liên quan.",
           (_y("trích dẫn nguồn", TRICH_DAN),)),
     "5": (("tong_quan", "dat_van_de"), "bat_buoc", "Nêu khung/mô hình/lý thuyết giải thích vấn đề và lý do can thiệp "
                                                    "có hiệu quả.",
-          (_y("khung lý thuyết", r"khung (lý thuyết|khái niệm)|mô hình (PDSA|logic|cải tiến)|lý thuyết|PDSA"),)),
+          (_y("khung lý thuyết", r"khung (lý thuyết|khái niệm)|mô hình (PDSA|logic|cải tiến)|lý thuyết|PDSA"),
+           _y("lý do kỳ vọng can thiệp có hiệu quả", r"(kỳ vọng|giả định|lý do|vì sao|cơ chế)[^.]{0,160}(hiệu quả|cải "
+                                                     r"thiện|giảm|tăng)|(được kỳ vọng|dự kiến) (sẽ )?(cải thiện|giảm|"
+                                                     r"tăng)"))),
     "6": (("muc_tieu",), "bat_buoc", "Nêu mục đích của dự án.", (_y("mục tiêu cụ thể", MUC_TIEU_CU_THE),)),
     "7": (("dia_diem", "thiet_ke"), "bat_buoc", "Nêu yếu tố bối cảnh quan trọng lúc bắt đầu can thiệp.",
           (_y("bối cảnh", NOI),)),
@@ -1032,11 +1043,14 @@ _SQUIRE: Dict[str, tuple] = {
     "9b": (("thiet_ke", "phan_tich", "sai_so"), "bat_buoc", "Nêu cách xác lập kết quả là do can thiệp.",
            (_y("quy kết do can thiệp", r"nhóm (chứng|so sánh)|chuỗi thời gian gián đoạn|xu hướng|nhiễu|hiệu chỉnh"),)),
     "10a": (("bien_so",), "bat_buoc", "Nêu thước đo quá trình và kết cục, lý do chọn, định nghĩa vận hành, độ tin cậy.",
-            (_y("thước đo quá trình", r"(chỉ số|thước đo) quá trình"), _y("thước đo kết cục", r"(chỉ số|thước đo) kết "
-                                                                                              r"cục|"
-                                                                                       r"kết cục"))),
+            (_y("thước đo quá trình", r"(chỉ số|thước đo) quá trình"),
+             _y("thước đo kết cục", r"(chỉ số|thước đo) kết cục|kết cục"),
+             _y("định nghĩa vận hành", r"định nghĩa"),
+             _y("độ tin cậy/giá trị của thước đo", r"độ tin cậy|giá trị|kiểm định|chuẩn ho[áa]|đã được dùng"))),
     "10b": (("bien_so", "quy_trinh"), "bat_buoc", "Nêu cách đánh giá liên tục các yếu tố bối cảnh.",
-            (_y("đánh giá bối cảnh", r"(yếu tố )?bối cảnh"),)),
+            (_y("đánh giá bối cảnh", r"(yếu tố )?bối cảnh"),
+             _y("đánh giá liên tục", r"định kỳ|liên tục|mỗi (chu kỳ|tháng|tuần|quý)|hằng (tháng|tuần|quý)|suốt")),
+            None, "", True),  # cùng đoạn: chính việc đánh giá BỐI CẢNH là liên tục (không lấy lịch chu kỳ can thiệp)
     "10c": (("quan_ly_dl", "cong_cu"), "bat_buoc", "Nêu cách đánh giá đầy đủ và chính xác của dữ liệu.",
             (_y("độ đầy đủ/chính xác dữ liệu", CHAT_LUONG_DL + r"|đầy đủ"),)),
     "11a": (("phan_tich",), "bat_buoc", "Nêu phương pháp định tính và định lượng để suy luận từ dữ liệu.",
@@ -1229,7 +1243,11 @@ _CARE: Dict[str, tuple] = {
            (_y("nhân khẩu học", r"tuổi|giới|nghề"),)),
     "5b": (("trinh_bay_ca",), "bat_buoc", "Triệu chứng chính.", (_y("triệu chứng", r"triệu chứng|lý do (vào viện|"
                                                                                    r"khám)"),)),
-    "5c": (("trinh_bay_ca",), "bat_buoc", "Tiền sử bệnh, gia đình, tâm lý–xã hội.", (_y("tiền sử", r"tiền sử"),)),
+    "5c": (("trinh_bay_ca",), "bat_buoc", "Tiền sử bệnh, gia đình, tâm lý–xã hội; bệnh kèm và can thiệp trước kèm "
+                                          "kết quả.",
+           (_y("tiền sử", r"tiền sử"),
+            _y("bệnh kèm/can thiệp trước", r"bệnh kèm|bệnh đồng mắc|điều trị trước|can thiệp trước|đã (từng )?(điều "
+                                           r"trị|dùng)"))),
     "6": (("trinh_bay_ca",), "bat_buoc", "Phát hiện khám thực thể.", (_y("khám", r"khám"),)),
     "7": (("trinh_bay_ca", "tien_do"), "bat_buoc", "Mốc thời gian quan trọng (bảng/hình).",
           (_y("dòng thời gian", r"dòng thời gian|mốc thời gian|timeline"),)),
@@ -1243,9 +1261,14 @@ _CARE: Dict[str, tuple] = {
                                                                                                    r"đoạn"),),
            r"ung thư|giai đoạn|tiên lượng", "có yếu tố tiên lượng"),
     "9a": (("trinh_bay_ca", "can_thiep"), "bat_buoc", "Loại can thiệp, cách dùng, thay đổi can thiệp.",
-           (_y("can thiệp/điều trị", r"điều trị|can thiệp|liều"),)),
+           (_y("can thiệp/điều trị", r"điều trị|can thiệp"),
+            _y("cách dùng (liều, thời gian)", r"liều|cách dùng|đường dùng|thời gian (dùng|điều trị)"),
+            _y("thay đổi can thiệp (kèm lý do)", r"thay đổi|điều chỉnh|đổi (thuốc|phác đồ)"))),
     "10a": (("trinh_bay_ca",), "bat_buoc", "Diễn tiến theo dõi, kết cục, tuân thủ, biến cố bất lợi.",
-            (_y("theo dõi/kết cục", r"theo dõi|kết cục|tái khám"),)),
+            (_y("theo dõi/kết cục", r"theo dõi|kết cục|tái khám"),
+             _y("tuân thủ và dung nạp", r"tuân thủ|dung nạp"),
+             _y("biến cố bất lợi/ngoài dự kiến", r"biến cố|bất lợi|ngoài (ý muốn|dự kiến)|tác dụng (phụ|không mong "
+                                                 r"muốn)"))),
     "11a": (("ban_luan",), "ke_hoach", "Điểm mạnh và hạn chế của xử trí ca.", (_y("hạn chế", r"hạn chế|điểm mạnh"),)),
     "11b": (("ban_luan",), "ke_hoach", "Y văn liên quan.", (_y("y văn", TRICH_DAN + r"|y văn"),)),
     "11c": (("ban_luan",), "ke_hoach", "Lý do của kết luận (kể cả quan hệ nhân quả).", (_y("lập luận", r"nhân quả|lý "
@@ -1476,7 +1499,8 @@ _CONSORT_NI: Dict[str, tuple] = {
            "không.",
            (_y("quy tắc dừng theo giả thuyết", r"(không kém hơn|tương đương)[^.]{0,160}(dừng|giữa kỳ)|(dừng|giữa kỳ)"
                                                r"[^.]{0,160}(không kém hơn|tương đương)"),),
-           r"(có|tiến hành|thực hiện|dự kiến) phân tích giữa kỳ", "có phân tích giữa kỳ"),
+           # «có phân tích giữa kỳ: không» (nhãn–giá trị của bản thảo G7) KHÔNG phải có phân tích giữa kỳ (22/11/2026)
+           r"(có|tiến hành|thực hiện|dự kiến) phân tích giữa kỳ(?!\s*:\s*(không|chưa))", "có phân tích giữa kỳ"),
     "12a": (("phan_tich",), "bat_buoc", "Nêu dùng khoảng tin cậy một phía hay hai phía.",
             (_y("một/hai phía", r"(một|hai) phía"),)),
     "17a": (("phan_tich", "du_kien_kq"), "ke_hoach", "Lên kế hoạch trình bày ước lượng và khoảng tin cậy so với biên.",
