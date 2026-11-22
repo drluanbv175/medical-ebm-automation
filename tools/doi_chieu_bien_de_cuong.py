@@ -37,6 +37,9 @@ LUẬT (LỆCH = phải sửa trước khi nhập liệu/phân tích · CẦN XE
     XEM]
   V5 biến phái sinh của `_bien-phai-sinh.csv` không có trong nguồn người duyệt ⇒ NGOÀI ĐỀ CƯƠNG.                 [LỆCH]
      Định nghĩa nguồn đặt cạnh công thức; số ngưỡng của định nghĩa không thấy trong công thức ⇒ CẦN XEM.
+     Công thức «@<mô-đun>» mà mô-đun khai `doi_chieu_so_dinh_nghia` (tham số đọc từ SAP): số của định nghĩa so với
+     tham số mô-đun đọc từ SAP hiện hành — khớp ⇒ ghi nguồn số vào «dat_canh»; lệch ⇒ LỆCH (định nghĩa mâu thuẫn
+     SAP); không đọc được ⇒ CẦN XEM kèm lý do kỹ thuật.
   V6 trường `calc` của từ điển: đường nhập Excel/SPSS KHÔNG tính calc ⇒ phải có biến phái sinh CÙNG TÊN.
     [LỆCH]
   V7 `_bo-bien-rieng.csv` ≡ `G5_REDCap_dictionary_<mã>.csv` (khi có cả hai).
@@ -363,6 +366,54 @@ def _so_nguong_cong_thuc(ct: str) -> set[float]:
     return ra
 
 
+#: Tên hàm mà một mô-đun tính biến phái sinh («@<mô-đun>») khai để V5 đối chiếu số của định nghĩa với SAP.
+HAM_DOI_CHIEU_SAP = "doi_chieu_so_dinh_nghia"
+
+
+def doi_chieu_so_voi_sap(study_dir: Path, study: str, cong_thuc: str, dinh_nghia: str) -> dict:
+    """Biến phái sinh có công thức «@<mô-đun>»: đối chiếu số của định nghĩa với tham số mô-đun đọc từ SAP HIỆN HÀNH.
+
+    Trả {"khop": [«n_toi_thieu = 10 từ SAP §4»…], "lech": [mô tả…], "khong_doc": [lý do kỹ thuật…], "da_giai_thich":
+    [giá trị đã đối chiếu]}. Mô-đun không khai `HAM_DOI_CHIEU_SAP` hoặc không nạp được, SAP vắng, SAP không có tham số
+    ⇒ «khong_doc» (người gọi giữ CẦN XEM) — không miễn chung mọi công thức «@»."""
+    import importlib  # noqa: PLC0415
+
+    ra: dict = {"khop": [], "lech": [], "khong_doc": [], "da_giai_thich": []}
+    ten_md = (cong_thuc or "").lstrip("@").strip().split()[0] if (cong_thuc or "").strip("@ ") else ""
+    if not re.fullmatch(r"[A-Za-z_]\w*", ten_md):
+        ra["khong_doc"].append(f"công thức «{cong_thuc}» không nêu tên mô-đun hợp lệ")
+        return ra
+    try:
+        md = importlib.import_module(ten_md)
+    except Exception as e:  # noqa: BLE001 — mô-đun hỏng/vắng ⇒ không đọc được, không làm sập lượt đối chiếu
+        ra["khong_doc"].append(f"không nạp được mô-đun «{ten_md}» ({type(e).__name__})")
+        return ra
+    ham = getattr(md, HAM_DOI_CHIEU_SAP, None)
+    if not callable(ham):
+        ra["khong_doc"].append(f"mô-đun «{ten_md}» không khai hàm đọc tham số từ SAP ({HAM_DOI_CHIEU_SAP})")
+        return ra
+    p_sap = study_dir / f"G4_A5_SAP_FINAL_{study}.md"
+    if not p_sap.is_file():
+        ra["khong_doc"].append(f"chưa có SAP {p_sap.name} để đọc tham số của «{ten_md}»")
+        return ra
+    try:
+        ds = ham(dinh_nghia, p_sap.read_text(encoding="utf-8"))
+    except Exception as e:  # noqa: BLE001
+        ra["khong_doc"].append(f"«{ten_md}.{HAM_DOI_CHIEU_SAP}» lỗi khi đọc SAP ({type(e).__name__}: {e})"[:200])
+        return ra
+    for x in ds:
+        dn, sap = float(x["gia_tri_dinh_nghia"]), x.get("gia_tri_sap")
+        ra["da_giai_thich"].append(dn)
+        if sap is None:
+            ra["khong_doc"].append(f"SAP {x['muc']} không có tham số {x['tham_so']} mà «{ten_md}» đọc")
+        elif abs(float(sap) - dn) < 1e-9:
+            ra["khop"].append(f"{x['tham_so']} = {dn:g} từ SAP {x['muc']}")
+        else:
+            ra["lech"].append(f"định nghĩa ghi {x['tham_so']} = {dn:g} nhưng SAP {x['muc']} (mô-đun «{ten_md}» đọc) "
+                              f"là {float(sap):g}")
+    return ra
+
+
 def _co_so(cong_thuc: str, v: float, nguong: bool = False) -> bool:
     ct = cong_thuc or ""
     so = _so_nguong_cong_thuc(ct) if nguong else {float(x) for x in re.findall(_SO, ct)}
@@ -478,14 +529,25 @@ def doi_chieu(study_dir: Path, study: str) -> KetQua:
                 if any(h in ps.cong_thuc_goc for h in HAM_CONG_THUC_CONG_BO)
                 else [v for v, ng in _so_trong(b.dinh_nghia) if not _co_so(ps.cong_thuc_goc, v, ng)]
             )
-            kq.dat_canh.append(
-                {
-                    "bien": b.ten,
-                    "dinh_nghia_nguon": b.dinh_nghia[:400],
-                    "cong_thuc": ps.cong_thuc_goc[:400],
-                    "so_khong_thay_trong_cong_thuc": thieu_so,
-                }
-            )
+            sap = {"khop": [], "lech": [], "khong_doc": [], "da_giai_thich": []}
+            if thieu_so and ps.cong_thuc_goc.strip().startswith("@"):
+                # 22/11/2026: số của định nghĩa do mô-đun đọc từ SAP (vd `tang` C1a: nₕ < 10 ⇐ SAP §4) — đối chiếu SAP
+                sap = doi_chieu_so_voi_sap(d, study, ps.cong_thuc_goc, b.dinh_nghia)
+                thieu_so = [v for v in thieu_so if not any(abs(v - x) < 1e-9 for x in sap["da_giai_thich"])]
+            o = {
+                "bien": b.ten,
+                "dinh_nghia_nguon": b.dinh_nghia[:400],
+                "cong_thuc": ps.cong_thuc_goc[:400],
+                "so_khong_thay_trong_cong_thuc": thieu_so,
+            }
+            if sap["khop"]:
+                o["nguon_so"] = sap["khop"]
+            kq.dat_canh.append(o)
+            for ld in sap["lech"]:
+                them(PhatHien(LECH, "V5", b.ten, "định nghĩa mâu thuẫn SAP: " + ld))
+            if sap["khong_doc"]:
+                them(PhatHien(XEM, "V5", b.ten, "không đối chiếu được số của định nghĩa với SAP: "
+                                                + "; ".join(sap["khong_doc"])))
             if thieu_so:
                 them(
                     PhatHien(
@@ -687,12 +749,13 @@ def markdown(kq: KetQua) -> str:
             "",
             "## Biến tính toán — định nghĩa nguồn đặt cạnh công thức (người đối chiếu)",
             "",
-            "| Biến | Định nghĩa (nguồn) | Công thức (máy) |",
-            "|---|---|---|",
+            "| Biến | Định nghĩa (nguồn) | Công thức (máy) | Nguồn số |",
+            "|---|---|---|---|",
         ]
         for x in kq.dat_canh:
             d.append(
-                f"| `{x['bien']}` | {x['dinh_nghia_nguon'].replace('|', '/')} | `{x['cong_thuc'].replace('|', '/')}` |"
+                f"| `{x['bien']}` | {x['dinh_nghia_nguon'].replace('|', '/')} | `{x['cong_thuc'].replace('|', '/')}` | "
+                + ("; ".join(x.get("nguon_so") or []) or "—") + " |"
             )
     d += [
         "",

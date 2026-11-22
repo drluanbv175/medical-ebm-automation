@@ -21,7 +21,7 @@ dừng khi chạy — không đoán hộ. Không PII: chỉ dùng mã bàn khám
 from __future__ import annotations
 
 import re
-from typing import Optional
+from typing import Dict, List, Optional, Tuple
 
 #: Dòng đầu nhận diện tệp do module này sinh (dọn tệp cũ khi SAP không còn đòi trọng số).
 DAU_TEP = "# Sinh tự động bởi tools/g6_trong_so_survey.py"
@@ -58,12 +58,50 @@ def sap_goi_post_stratify(sap_text: str) -> bool:
     return bool(re.search(r"postStratify\s*\(", _sec(sap_text, 4)))
 
 
+#: Tham số SỐ mô-đun đọc từ SAP: tên → (mục §, biểu thức rút số — nhóm 1 là số như SAP viết). MỘT nguồn cho bộ sinh
+#: (`doc_tham_so_trong_so`) và bộ đối chiếu biến ↔ đề cương (`doi_chieu_so_dinh_nghia`, gọi từ
+#: `doi_chieu_bien_de_cuong` cho biến phái sinh có công thức «@g6_trong_so_survey» — 22/11/2026: biến `tang` của C1a
+#: định nghĩa «tầng có nₕ < 10 … gộp»; ngưỡng 10 không nằm trong công thức mà do mô-đun này đọc từ SAP §4).
+THAM_SO_SAP: Dict[str, Tuple[int, str]] = {
+    "nguong_hai_long": (3, r"--nguong-ty-le\s+(\d+)|≥\s*(\d+)\s*/\s*\d+"),
+    "nguong_lech_phan_tram": (4, r"lệch\s+quá\s+(\d+(?:[.,]\d+)?)\s*%"),
+    "n_toi_thieu": (4, r"n[ₕh]\s*<\s*(\d+)"),
+    "don_vi_phoi_nhiem": (4, r"mỗi\s+(\d+)\s+phút"),
+}
+
+
+def _rut_so(chu: str, mau: str) -> Optional[float]:
+    m = re.search(mau, chu)
+    if not m:
+        return None
+    return _so(next(g for g in m.groups() if g is not None))
+
+
+def tham_so_tu_sap(sap_text: str) -> Dict[str, Optional[float]]:
+    """Giá trị (như SAP viết) của từng tham số trong `THAM_SO_SAP`, đọc ở đúng mục §; None khi mục không có."""
+    return {ten: _rut_so(_sec(sap_text, muc), mau) for ten, (muc, mau) in THAM_SO_SAP.items()}
+
+
+def doi_chieu_so_dinh_nghia(dinh_nghia: str, sap_text: str) -> List[dict]:
+    """Số trong ĐỊNH NGHĨA một biến phái sinh tính bằng mô-đun này ↔ tham số mô-đun đọc từ SAP hiện hành.
+
+    Mỗi tham số mà định nghĩa nêu (cùng biểu thức rút số với SAP) ⇒ {tham_so, muc, gia_tri_dinh_nghia, gia_tri_sap}
+    (`gia_tri_sap` None = SAP không có tham số này ở mục đó). Người gọi phán khớp / lệch / không đọc được."""
+    sap = tham_so_tu_sap(sap_text)
+    ra = []
+    for ten, (muc, mau) in THAM_SO_SAP.items():
+        gt = _rut_so(dinh_nghia, mau)
+        if gt is not None:
+            ra.append({"tham_so": ten, "muc": f"§{muc}", "gia_tri_dinh_nghia": gt, "gia_tri_sap": sap[ten]})
+    return ra
+
+
 def doc_tham_so_trong_so(sap_text: str, v: dict) -> dict:
     """Rút tham số trọng số/giới hạn từ SAP đã khoá (+ tên biến từ dictionary G5 qua `v`).
 
     `can_trong_so` chỉ True khi SAP §4 GỌI `postStratify(` (`sap_goi_post_stratify`). Trả các giá trị đã rút; giá trị
     thiếu là None và tên của nó nằm trong `thieu`."""
-    sap3, sap4, sap9 = _sec(sap_text, 3), _sec(sap_text, 4), _sec(sap_text, 9)
+    sap4, sap9 = _sec(sap_text, 4), _sec(sap_text, 9)
     can = sap_goi_post_stratify(sap_text)
     all_vars = v.get("all_vars") or []
 
@@ -72,14 +110,11 @@ def doc_tham_so_trong_so(sap_text: str, v: dict) -> dict:
     m = re.search(r"strata\s*=\s*~\s*([A-Za-z_][\w.]*)", sap4)
     ten_tang = m.group(1) if m else "tang"
 
-    m = re.search(r"--nguong-ty-le\s+(\d+)", sap3) or re.search(r"≥\s*(\d+)\s*/\s*\d+", sap3)
-    nguong_hl = int(m.group(1)) if m else None
-    m = re.search(r"lệch\s+quá\s+(\d+(?:[.,]\d+)?)\s*%", sap4)
-    nguong_lech = _so(m.group(1)) / 100 if m else None
-    m = re.search(r"n[ₕh]\s*<\s*(\d+)", sap4)
-    n_toi_thieu = int(m.group(1)) if m else None
-    m = re.search(r"mỗi\s+(\d+)\s+phút", sap4)
-    don_vi = int(m.group(1)) if m else 1
+    so = tham_so_tu_sap(sap_text)
+    nguong_hl = int(so["nguong_hai_long"]) if so["nguong_hai_long"] is not None else None
+    nguong_lech = so["nguong_lech_phan_tram"] / 100 if so["nguong_lech_phan_tram"] is not None else None
+    n_toi_thieu = int(so["n_toi_thieu"]) if so["n_toi_thieu"] is not None else None
+    don_vi = int(so["don_vi_phoi_nhiem"]) if so["don_vi_phoi_nhiem"] is not None else 1
 
     gioi_han = bool(re.search(r"bỏ\s+về", sap9) and re.search(r"\(\s*1\s*[−-]\s*f\s*\)", sap9))
     ts = {
