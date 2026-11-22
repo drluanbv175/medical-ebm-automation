@@ -559,6 +559,16 @@ _GHI_DE: Dict[tuple, dict] = {
 _MAU_THAY.update({TC.TIEU_CHUAN_CHON: TIEU_CHUAN_CHON_BT, TC.TIEU_CHUAN_LOAI: TIEU_CHUAN_LOAI_BT,
                    TC.KINH_PHI: NGUON_KINH_PHI_BT, TC.VAI_TRO_TAI_TRO: VAI_TRO_TAI_TRO_BT})
 
+# ═════════════════════════════════ COREQ 2007 (bản thảo định tính) — chương đúng bảng gốc ═════════════════════════════
+_GHI_DE.update({
+    # 22/11/2026: COREQ mục 4 «Gender — Was the researcher male or female?» thuộc Domain 1 (nhóm nghiên cứu và phản tư,
+    # đặc điểm cá nhân) — bài báo nêu ở Phương pháp, cạnh người phỏng vấn (bản in lại bảng gốc trong PMC12567161,
+    # PMC12731783). Tiêu chí đề cương xếp mục là «kế hoạch» nên bản chuyển đổi chỉ tìm ở Kết quả/Bàn luận — sai chỗ so
+    # với chuẩn gốc; sửa phép đo, yếu tố giữ nguyên.
+    ("COREQ 2007", "4"): _g(("phuong_phap", "ket_qua"), "Nêu giới của người phỏng vấn.",
+                            (_y("giới người phỏng vấn", r"(người phỏng vấn|điều tra viên).{0,80}(nam|nữ|giới)"),)),
+})
+
 # ═════════════════════════════════ STARD 2015 (bản thảo chẩn đoán) — ghi đè báo nhầm ═════════════════════════════════
 _GHI_DE.update({
     # «Gan nhiễm mỡ trên siêu âm kèm …» (tiêu chí nhận) là căn cứ xác định từ kết quả xét nghiệm trước

@@ -8,7 +8,9 @@ ngôn ngữ rồi ABC; trình bày Times New Roman 14, giãn dòng 1,5): đề c
 bàn luận, tài liệu tham khảo theo ngôn ngữ và ABC).
 
 Công cụ CHỈ SẮP XẾP LẠI nội dung đã có — không viết lại câu chuyên môn, không thêm số liệu:
-  - Bìa + bìa phụ (khối chữ ký Chủ nhiệm đề tài · Chủ nhiệm khoa · Viện trưởng); dòng cơ quan ở đầu tệp được giữ.
+  - Bìa + bìa phụ (khối chữ ký Chủ nhiệm đề tài · Chủ nhiệm khoa · thủ trưởng đơn vị ngay trên Khoa — Viện trưởng hoặc
+    Giám đốc Trung tâm — CHỈ khi hồ sơ khai Khoa thuộc Viện/Trung tâm; không chép lời hướng dẫn «— nếu …» của khuôn,
+    22/11/2026); dòng cơ quan ở đầu tệp được giữ.
   - Danh sách cán bộ tham gia (vai trò lấy từ mục nhân lực; họ tên để dòng chấm), mục lục, danh mục chữ viết tắt (bảng
     cũ giữ nguyên), danh mục bảng/biểu đồ/hình.
   - Đặt vấn đề: tên đề tài trong ngoặc kép in đậm; bỏ danh sách mục tiêu lặp; «MỤC TIÊU NGHIÊN CỨU» (in nghiêng, đậm) ở
@@ -21,7 +23,10 @@ Công cụ CHỈ SẮP XẾP LẠI nội dung đã có — không viết lại c
   - Tài liệu tham khảo: tiếng Việt rồi tiếng Anh; tác giả Việt xếp theo TÊN (từ cuối), tác giả nước ngoài theo HỌ, cơ
     quan theo chữ đầu tên cơ quan; đánh số lại và thay MỌI trích dẫn [n] trong văn bản (cả ô bảng).
   - Đánh số lại mục (≤ 4 chữ số) và bảng/hình/biểu đồ theo chương (Bảng 2.3 = bảng thứ ba của chương 2); thay mọi tham
-    chiếu «mục 4.4.1», «Bảng 4.7», «mục 3.3–3.4» trong văn bản. Kế hoạch thực hiện chuyển thành phụ lục kế tiếp.
+    chiếu «mục 4.4.1», «Bảng 4.7», «mục 3.3–3.4», «chương 5» trong văn bản. Kế hoạch thực hiện chuyển thành phụ lục kế
+    tiếp.
+  - Văn bản ĐÃ theo khuôn (có thể người đã sửa tiếp) không chuyển lại; chỉ qua `sua_ban_da_theo_khuon`: khối ký bìa phụ
+    theo đơn vị thật, tham chiếu chương lạc trong câu nói về khung bảng ⇒ chương «Dự kiến kết quả» (22/11/2026).
   - «Tóm tắt» (không có trong khuôn) bị bỏ — nội dung đã có trong thân bài và trong mẫu thuyết minh DTCS-DKCT.02-TM
     (`ho_so_dtcs_bvqy175.py`); «Thông tin chung» (chủ nhiệm, đơn vị, thời gian, kinh phí, phiên bản) giữ nguyên thành
     phụ lục cuối; tên chủ nhiệm (nếu đã điền) lên bìa và danh sách cán bộ.
@@ -81,6 +86,24 @@ _DS_MUC_RE = re.compile(r"\b([Mm]ục)\s+(\d+(?:\.\d+)*(?:\s*(?:,|và|hoặc|–
 _THAM_CHIEU_MUC_RE = re.compile(r"\b([Mm]ục)\s+(\d+(?:\.\d+)*)(?:(\s*[–-]\s*)(\d+(?:\.\d+)*))?(?![\d.]?\d)")
 _CHU_THICH_MOI_RE = re.compile(r"^\*\*(Bảng|Hình|Biểu đồ|Sơ đồ)\s+([0-9A-Z]+\.\d+)\.\s+(.+?)\*\*\s*$")
 _CHU_THICH_RE = re.compile(r"^\*\*(Bảng|Hình|Biểu đồ|Sơ đồ)\s+(\d+\.\d+)\.\s+(.+?)\*\*\s*$")
+# «chương 5» của bản cấu trúc cũ (22/11/2026 — tham-dinh-dau-ra trên đề cương C1a bắt «| Khung bảng kết quả | Theo
+# chương 5 |» ở Phụ lục A: chữ viết tay từ 15/10, khi «5. DỰ KIẾN KẾT QUẢ» còn là chương 5; lần chuyển khuôn 21/11 đổi
+# số «mục», «Bảng» nhưng bỏ sót «chương» ⇒ văn bản trỏ tới một chương không có — khuôn chỉ có Chương 1–3).
+_THAM_CHIEU_CHUONG_RE = re.compile(r"(?<!\w)(?i:chương)\s+(\d+)(?![\d.]?\d)")
+_KHUNG_BANG_RE = re.compile(r"(?i)khung bảng|bảng kết quả|dự kiến kết quả")
+_DE_MUC_CHUONG_RE = re.compile(r"^#\s+CHƯƠNG\s+(\d+)\.\s*(.*)$")
+
+# Khối ký bìa phụ (22/11/2026). Hướng dẫn chung in khối thứ ba «VIỆN TRƯỞNG — (Họ tên và chữ ký — nếu Khoa trực thuộc
+# Viện)»: vế «nếu …» là LỜI HƯỚNG DẪN của khuôn cho người soạn, không phải chữ của văn bản nộp. Bản 21/11 chép nguyên
+# khối ⇒ đề cương C1a (Khoa C1a thuộc Trung tâm C1, không thuộc Viện) và BTM (Khoa Khám bệnh trực thuộc bệnh viện) cùng
+# mang khối ký Viện trưởng kèm lời hướng dẫn. Nay khối thứ ba theo ĐƠN VỊ THẬT khai trong hồ sơ: Khoa thuộc Viện ⇒ Viện
+# trưởng; Khoa thuộc Trung tâm ⇒ Giám đốc Trung tâm (cùng vai thủ trưởng đơn vị ngay trên Khoa); Khoa trực thuộc bệnh
+# viện hoặc hồ sơ không khai đơn vị ⇒ không có khối thứ ba (không khẳng định một đơn vị hồ sơ không ghi).
+KY_CAP_TREN = {"vien": "VIỆN TRƯỞNG", "trung_tam": "GIÁM ĐỐC TRUNG TÂM"}
+CHU_THICH_KY = "(Họ tên và chữ ký)"
+_NHAN_KY_CAP_TREN_RE = re.compile(r"^\*\*(?:VIỆN TRƯỞNG|GIÁM ĐỐC TRUNG TÂM)\*\*\s*$")
+# lời hướng dẫn của khuôn trong ngoặc: «(Họ tên và chữ ký — nếu Khoa trực thuộc Viện)» ⇒ giữ vế trước gạch nối
+_HUONG_DAN_KHUON_RE = re.compile(r"\(([^()\n]*?\S)\s+[—–-]\s*nếu\s[^()\n]*\)")
 
 
 # ── Xếp tài liệu tham khảo ───────────────────────────────────────────────────────────────────────────────────────────
@@ -131,6 +154,155 @@ def _con(cac_muc: Sequence[GB.Muc], cha: GB.Muc) -> List[GB.Muc]:
 def ten_ngan_don_vi(don_vi: str) -> str:
     """«Khoa Khám bệnh C1a, Trung tâm …, Bệnh viện Quân y 175, …» ⇒ «Khoa Khám bệnh C1a» (phần trước dấu phẩy đầu)."""
     return don_vi.split(",")[0].strip() if don_vi else ""
+
+
+def _loai_don_vi(ten: str) -> str:
+    """Loại của MỘT tên đơn vị theo chữ đầu: khoa · trung_tam · vien · benh_vien · "" (không phải tên đơn vị)."""
+    k = re.sub(r"[*_]", "", ten).strip().casefold()
+    for tien_to, loai in (("khoa ", "khoa"), ("trung tâm ", "trung_tam"), ("viện ", "vien"),
+                          ("bệnh viện ", "benh_vien")):
+        if k.startswith(tien_to):
+            return loai
+    return ""
+
+
+def don_vi_cap_tren(*nguon: Optional[str]) -> Tuple[str, str]:
+    """Đơn vị NGAY TRÊN Khoa (giữa Khoa và bệnh viện) — quyết định khối ký thứ ba của bìa phụ.
+
+    `nguon` theo thứ tự ưu tiên do người gọi đặt (đơn vị của chủ nhiệm trong `study_meta.json` → hàng «Đơn vị chủ
+    trì/thực hiện» của đề cương → dòng cơ quan ở bìa); mỗi nguồn là chuỗi đơn vị cách nhau dấu phẩy hoặc xuống dòng. Chỉ
+    đọc nguồn ĐẦU TIÊN có tên đơn vị. Trả («vien»|«trung_tam», tên đơn vị) · («truc_thuoc», "") khi Khoa trực thuộc bệnh
+    viện · («khong_ro», "") khi không nguồn nào có tên đơn vị."""
+    for chuoi in nguon:
+        if not isinstance(chuoi, str) or not _co(chuoi) or chuoi.lstrip().startswith("["):
+            continue
+        phan = [re.sub(r"[*_]", "", x).strip() for x in re.split(r"[,\n]", chuoi)]
+        loai = [(_loai_don_vi(x), x) for x in phan if _loai_don_vi(x)]
+        if not loai:
+            continue
+        for l_, ten in loai:
+            if l_ in KY_CAP_TREN:
+                return l_, ten
+        return "truc_thuoc", ""
+    return "khong_ro", ""
+
+
+def don_vi_ho_so(meta: object) -> str:
+    """Đơn vị CHỦ TRÌ đề tài khai trong `study_meta.json` — quyết định khối ký bìa phụ (K19) và bìa G10.
+
+    22/11/2026: `administrative.pi_unit` mang hai nghĩa (đơn vị công tác của chủ nhiệm ở hồ sơ G2 và bảng cán bộ; Khoa
+    chủ trì ở bìa phụ). Ca BTM: chủ nhiệm công tác tại Khoa Khám bệnh C1a thuộc Trung tâm C1, nhưng đề tài do Khoa Khám
+    bệnh chủ trì, trực thuộc bệnh viện — điền `pi_unit` làm khối ký đòi «GIÁM ĐỐC TRUNG TÂM» sai. Nay đọc
+    `administrative.don_vi_chu_tri` trước; vắng (hoặc ô chờ điền) thì lùi về `pi_unit` như cũ. Không khai ⇒ ""."""
+    adm = meta.get("administrative") if isinstance(meta, dict) else None
+    if not isinstance(adm, dict):
+        return ""
+    for khoa in ("don_vi_chu_tri", "pi_unit"):
+        v = adm.get(khoa)
+        if isinstance(v, str) and _co(v) and not v.lstrip().startswith("["):
+            return v.strip()
+    return ""
+
+
+def khoi_ky(loai: str) -> List[str]:
+    """Khối chữ ký bìa phụ: Chủ nhiệm đề tài · Chủ nhiệm khoa · thủ trưởng đơn vị ngay trên Khoa (nếu có)."""
+    ra = ["**CHỦ NHIỆM ĐỀ TÀI**", "", CHU_THICH_KY, "", "**CHỦ NHIỆM KHOA**", "", CHU_THICH_KY]
+    if loai in KY_CAP_TREN:
+        ra += ["", f"**{KY_CAP_TREN[loai]}**", "", CHU_THICH_KY]
+    return ra
+
+
+def _bao_cao_khoi_ky(loai: str, ten: str) -> Tuple[List[str], List[str]]:
+    """(báo cáo, cảnh báo) về khối ký bìa phụ đã dựng."""
+    if loai in KY_CAP_TREN:
+        chuc = {"vien": "Viện trưởng", "trung_tam": "Giám đốc Trung tâm"}[loai]
+        return [f"khối ký bìa phụ: Chủ nhiệm đề tài · Chủ nhiệm khoa · {chuc} (Khoa thuộc «{ten}»)"], []
+    if loai == "truc_thuoc":
+        return ["khối ký bìa phụ: Chủ nhiệm đề tài · Chủ nhiệm khoa (Khoa trực thuộc bệnh viện — không có khối "
+                "thứ ba)"], []
+    return [], ["hồ sơ không khai đơn vị của Khoa — bìa phụ chỉ có khối ký Chủ nhiệm đề tài và Chủ nhiệm khoa; Khoa "
+                "thuộc Viện/Trung tâm thì khai `administrative.don_vi_chu_tri` (hoặc `pi_unit`) trong study_meta.json "
+                "rồi chạy lại"]
+
+
+def _dong_co_quan(dong: Sequence[str]) -> List[str]:
+    """Các dòng cơ quan in đậm ở đầu bìa (trước «ĐỀ CƯƠNG NGHIÊN CỨU»/đề mục đầu) — không lấy tên đề tài."""
+    ra: List[str] = []
+    for d in dong:
+        s = d.strip()
+        if s.startswith("#") or "ĐỀ CƯƠNG NGHIÊN CỨU" in s.upper():
+            break
+        if s.startswith("**"):
+            ra.append(s)
+    return ra
+
+
+def sua_khoi_ky_bia_phu(dong: List[str], loai: str) -> int:
+    """Sửa TẠI CHỖ khối ký thứ ba của bìa phụ trong văn bản đã theo khuôn (giữ họ tên người đã điền dưới khối ký):
+    bỏ khối không đúng đơn vị, đổi tên chức danh, thêm khối thiếu, gỡ lời hướng dẫn «(… — nếu …)» của khuôn trong bìa.
+    Trả số chỗ đã sửa."""
+    dau_h1 = next((i for i, d in enumerate(dong) if re.match(r"^#\s", d)), len(dong))
+    sua = 0
+    for i in range(dau_h1):
+        moi = _HUONG_DAN_KHUON_RE.sub(r"(\1)", dong[i])
+        if moi != dong[i]:
+            dong[i], sua = moi, sua + 1
+    i_kn = max((i for i in range(dau_h1) if dong[i].strip() == "**CHỦ NHIỆM KHOA**"), default=None)
+    if i_kn is None:
+        return sua
+    i_tt = next((i for i in range(i_kn + 1, dau_h1) if _NHAN_KY_CAP_TREN_RE.match(dong[i].strip())), None)
+    mong = KY_CAP_TREN.get(loai)
+    if i_tt is not None:
+        het = next((j for j in range(i_tt + 1, dau_h1) if dong[j].strip().startswith("**")), dau_h1)
+        if mong is None:
+            del dong[i_tt:het]
+            return sua + 1
+        if dong[i_tt].strip() != f"**{mong}**":
+            dong[i_tt] = f"**{mong}**"
+            sua += 1
+        return sua
+    if mong is not None:
+        chen = next((j for j in range(i_kn + 1, dau_h1) if dong[j].strip().startswith("**")), dau_h1)
+        dong[chen:chen] = [f"**{mong}**", "", CHU_THICH_KY, ""]
+        sua += 1
+    return sua
+
+
+def sua_ban_da_theo_khuon(md: str, don_vi: str = "") -> Tuple[str, List[str], List[str]]:
+    """Văn bản ĐÃ theo khuôn (lần chuyển trước, có thể người đã sửa tiếp) ⇒ chỉ sửa hai lỗi của bản chuyển 21/11, không
+    đụng chỗ khác: (1) khối ký bìa phụ theo đơn vị thật, bỏ lời hướng dẫn của khuôn; (2) tham chiếu «chương N» tới
+    chương không có trong một câu nói về khung bảng/dự kiến kết quả ⇒ chương chứa khung bảng (chương «DỰ KIẾN KẾT
+    QUẢ»). Tham chiếu chương lạc khác chỉ CẢNH BÁO (không đoán). Trả (văn bản, báo cáo, cảnh báo)."""
+    dong = md.splitlines()
+    cac_muc = GB.doc_muc(dong)
+    mh = trich_thong_tin(dong, cac_muc)
+    loai, ten = don_vi_cap_tren(don_vi, mh.don_vi, "\n".join(_dong_co_quan(dong)))
+    bao: List[str] = []
+    canh: List[str] = []
+    if sua_khoi_ky_bia_phu(dong, loai):
+        b, c = _bao_cao_khoi_ky(loai, ten)
+        bao += [f"sửa {x}" for x in b]
+        canh += c
+    co = {m.group(1): m.group(2) for d in dong for m in [_DE_MUC_CHUONG_RE.match(d)] if m}
+    kq = next((n for n, t in co.items() if "DỰ KIẾN KẾT QUẢ" in t.upper()), None)
+    i_tl = next((i for i, d in enumerate(dong) if re.match(r"^#\s+TÀI LIỆU THAM KHẢO\s*$", d)), None)
+    het_tl = len(dong)
+    if i_tl is not None:
+        het_tl = next((i for i in range(i_tl + 1, len(dong)) if re.match(r"^#\s", dong[i])), len(dong))
+    for i, d in enumerate(dong):
+        if d.startswith("#") or (i_tl is not None and i_tl <= i < het_tl):
+            continue
+        lac = [m for m in _THAM_CHIEU_CHUONG_RE.finditer(d) if m.group(1) not in co]
+        if not lac:
+            continue
+        if kq is not None and _KHUNG_BANG_RE.search(d):
+            dong[i] = _THAM_CHIEU_CHUONG_RE.sub(lambda m: f"Chương {kq}" if m.group(1) not in co else m.group(0), d)
+            bao.append(f"dòng {i + 1}: tham chiếu «{lac[0].group(0)}» (chương không có) ⇒ «Chương {kq}» — chương chứa "
+                       "khung bảng kết quả")
+        else:
+            canh.append(f"dòng {i + 1}: «{lac[0].group(0)}» trỏ tới chương không có trong văn bản — chủ nhiệm sửa")
+    moi = "\n".join(dong) + ("\n" if md.endswith("\n") else "")
+    return moi, bao, canh
 
 
 def trich_thong_tin(dong: Sequence[str], cac_muc: Sequence[GB.Muc]) -> ThongTin:
@@ -327,10 +499,13 @@ THU_TU_CHUONG_2: Tuple[Tuple[str, str, int], ...] = (
 )
 
 
-def chuyen(md: str, nam: Optional[int] = None) -> KetQua:
-    """Văn bản đề cương nộp (cấu trúc cũ) ⇒ văn bản theo khuôn hướng dẫn chung. Không đổi nội dung chuyên môn."""
+def chuyen(md: str, nam: Optional[int] = None, don_vi: str = "") -> KetQua:
+    """Văn bản đề cương nộp (cấu trúc cũ) ⇒ văn bản theo khuôn hướng dẫn chung. Không đổi nội dung chuyên môn.
+    `don_vi` = đơn vị của chủ nhiệm trong hồ sơ (`don_vi_ho_so(study_meta)`), ưu tiên hơn đơn vị ghi trong đề cương khi
+    dựng khối ký bìa phụ. Văn bản đã theo khuôn ⇒ không chuyển lại, chỉ qua `sua_ban_da_theo_khuon`."""
     if DAU_KHUON in md:
-        return KetQua(md, ["văn bản đã theo khuôn — không chuyển lại"], da_theo_khuon=True)
+        moi, bao, canh = sua_ban_da_theo_khuon(md, don_vi)
+        return KetQua(moi, ["văn bản đã theo khuôn — không chuyển lại"] + bao, canh, da_theo_khuon=True)
     dong = md.splitlines()
     cac_muc = GB.doc_muc(dong)
     kq = KetQua("")
@@ -516,7 +691,8 @@ def chuyen(md: str, nam: Optional[int] = None) -> KetQua:
         loai, _, nhan = goc.partition(":")
         return f"Chương {nhan}" if loai == "chuong" else f"Phụ lục {nhan}"
 
-    def _thay(van: str) -> str:
+    def _thay(van: str, chuong: bool = True) -> str:
+        """`chuong=False` cho đề mục cấp 1 do khuôn dựng («CHƯƠNG 1. …», «PHỤ LỤC A. …») — đã mang số MỚI."""
         def _tc(m: re.Match) -> str:
             so = [ban_do_tl.get(n, n) for n in _mo_rong(m.group(1))]
             return f"[{_gon_so(so)}]"
@@ -552,8 +728,15 @@ def chuyen(md: str, nam: Optional[int] = None) -> KetQua:
             # số đầu thành «Chương n»/«Phụ lục X» ⇒ bỏ chữ «mục» đứng trước
             return "".join(ra) if ra and not re.match(r"\d", ra[0]) else f"{m.group(1)} " + "".join(ra)
 
+        def _ch(m: re.Match) -> str:
+            # «chương 5» của bản cũ ⇒ chương/phụ lục/phần mới chứa nội dung chương đó; không biết ⇒ giữ nguyên (K19 bắt)
+            a = _muc(m.group(1))
+            return a if a.startswith(("Chương ", "Phụ lục ", "phần ")) else m.group(0)
+
         van = _TRICH_RE.sub(_tc, van)
         van = _THAM_CHIEU_BB_RE.sub(_bb, van)
+        if chuong:  # TRƯỚC lượt «mục»: chữ «Chương n» do lượt «mục» sinh ra đã mang số mới, không được đổi lần hai
+            van = _THAM_CHIEU_CHUONG_RE.sub(_ch, van)
         return _DS_MUC_RE.sub(_ds, van)
 
     def _ra(muc: Sequence[Muc_]) -> List[str]:
@@ -562,7 +745,7 @@ def chuyen(md: str, nam: Optional[int] = None) -> KetQua:
             if x.cap == 0:
                 out.append(_thay(x.van))
             elif x.cap == 1:
-                out += ["---", "", f"# {_thay(x.van)}", ""]
+                out += ["---", "", f"# {_thay(x.van, chuong=False)}", ""]
             else:
                 out += [f"{'#' * x.cap} {x.so_moi + '. ' if x.so_moi else ''}{_thay(x.van)}", ""]
         return out
@@ -598,9 +781,14 @@ def chuyen(md: str, nam: Optional[int] = None) -> KetQua:
                           "mọi trích dẫn")
     # ── phần đầu: bìa, bìa phụ, danh sách cán bộ, mục lục, danh mục ──
     dau_tep = [d for d in dong[:(cac_muc[0].dong - 1 if cac_muc else 0)] if d.strip()]
-    co_quan = [d for d in dau_tep if d.strip().startswith("**")] or ["**BỆNH VIỆN QUÂN Y 175**"] + (
+    co_quan_goc = [d for d in dau_tep if d.strip().startswith("**")]
+    co_quan = co_quan_goc or ["**BỆNH VIỆN QUÂN Y 175**"] + (
         [f"**{viet_hoa(ten_ngan_don_vi(mh.don_vi))}**"]
         if mh.don_vi else [f"**KHOA {CHAM}**"])
+    loai_tren, ten_tren = don_vi_cap_tren(don_vi, mh.don_vi, "\n".join(co_quan_goc))
+    b_ky, c_ky = _bao_cao_khoi_ky(loai_tren, ten_tren)
+    kq.bao_cao += b_ky
+    kq.canh_bao += c_ky
     nam_bia = nam or datetime.now().year
     m_nam = re.search(r"20\d{2}", mh.thoi_gian or "")
     if nam is None and m_nam:
@@ -621,9 +809,7 @@ def chuyen(md: str, nam: Optional[int] = None) -> KetQua:
                      f"**{viet_hoa(ten_de_tai)}**", ""]
     out = bia + [f"**Chủ nhiệm đề tài: {chu_nhiem}**", ""] + dong_pb + [f"**THÀNH PHỐ HỒ CHÍ MINH, {nam_bia}**", "",
                                                                          "---", ""]
-    out += bia + dong_pb + ["**CHỦ NHIỆM ĐỀ TÀI**", "", "(Họ tên và chữ ký)", "", "", "**CHỦ NHIỆM KHOA**", "",
-                  "(Họ tên và chữ ký)", "", "", "**VIỆN TRƯỞNG**", "", "(Họ tên và chữ ký — nếu Khoa trực thuộc Viện)",
-                  "", f"**THÀNH PHỐ HỒ CHÍ MINH, {nam_bia}**", "", "---", ""]
+    out += bia + dong_pb + khoi_ky(loai_tren) + ["", f"**THÀNH PHỐ HỒ CHÍ MINH, {nam_bia}**", "", "---", ""]
     vai = mh.vai_tro or ["Chủ nhiệm đề tài"]
     out += ["# DANH SÁCH CÁC CÁN BỘ THAM GIA THỰC HIỆN ĐỀ TÀI", "",
             "| STT | Chức danh, họ và tên | Đơn vị công tác | Nhiệm vụ trong đề tài |", "|---|---|---|---|"]
@@ -675,20 +861,28 @@ def chay(study: str, out_dir: Path, ghi: bool = False, nam: Optional[int] = None
     if not md_p.is_file():
         return {"ma": 2, "loi": f"thiếu {md_p.name}"}
     cu = md_p.read_text(encoding="utf-8")
-    kq = chuyen(cu, nam)
+    try:
+        meta = json.loads((out_dir / "study_meta.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        meta = {}
+    kq = chuyen(cu, nam, don_vi_ho_so(meta))
+    doi = kq.md != cu
     ra: Dict[str, object] = {"ma": 0, "study": study, "da_theo_khuon": kq.da_theo_khuon, "bao_cao": kq.bao_cao,
                              "canh_bao": kq.canh_bao, "so_dong_cu": cu.count("\n"), "so_dong_moi": kq.md.count("\n"),
-                             "md": kq.md, "ghi": ghi}
-    if not ghi or kq.da_theo_khuon:
+                             "md": kq.md, "ghi": ghi, "doi": doi, "da_ghi": False}
+    # 22/11/2026: văn bản đã theo khuôn vẫn được ghi khi lượt sửa hậu khuôn đổi nội dung (khối ký, tham chiếu chương)
+    if not ghi or not doi:
         return ra
     sl = out_dir / "_sao_luu_de_cuong"
     sl.mkdir(parents=True, exist_ok=True)
     moc = datetime.now().strftime("%Y%m%dT%H%M%S")
+    nhan = "truoc-sua-khuon" if kq.da_theo_khuon else "truoc-khuon"
     for duoi in (".md", ".docx"):
         p = out_dir / (TEN_DE_CUONG.format(study=study) + duoi)
         if p.is_file():
-            shutil.copy2(p, sl / f"{p.stem}.truoc-khuon-{moc}{duoi}")
+            shutil.copy2(p, sl / f"{p.stem}.{nhan}-{moc}{duoi}")
     md_p.write_text(kq.md, encoding="utf-8", newline="\n")
+    ra["da_ghi"] = True
     ra["sao_luu"] = sl.as_posix()
     ra["docx"] = xuat_word(kq.md, out_dir / (TEN_DE_CUONG.format(study=study) + ".docx"))
     import kiem_de_cuong_nop_hoi_dong as KDN  # noqa: PLC0415
@@ -724,7 +918,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         print(f"  • {x}")
     for x in ra["canh_bao"]:  # type: ignore[union-attr]
         print(f"  ⚠ {x}")
-    if a.ghi and not ra["da_theo_khuon"]:
+    if a.ghi and ra.get("da_ghi"):
         print(f"  Đã ghi; bản cũ sao lưu ở {ra.get('sao_luu')}")
         print(f"  Word: {ra.get('docx') or 'chưa xuất (thiếu python-docx)'}")
         loi = ra.get("loi_kiem") or []
@@ -732,7 +926,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         for x in list(loi)[:15]:  # type: ignore[arg-type]
             print(f"    ✗ {x}")
         print("  ⚠ Đề cương đổi ⇒ gói G10 đã khoá (nếu có) thành cũ: lắp lại G10 và PI ký lại.")
-    elif not a.ghi:
+    elif a.ghi:
+        print("  Không có gì để ghi (văn bản đã đúng khuôn).")
+    elif ra.get("doi"):
         print("  Ghi thật: thêm --ghi. Xem toàn văn: --xem")
     print("  Cần bác sĩ kiểm chứng.")
     return int(ra["ma"])  # type: ignore[arg-type]

@@ -112,8 +112,13 @@ def test_chung_h_dau_cuoi_g6_8_thiet_ke_toi_ready_va_xac_nhan_gan_dau(tmp_path, 
         assert f'source(here::here("exports", "{study}", "scripts", "00_setup.R"))' in \
             (out / "scripts" / tep).read_text(encoding="utf-8")
     r03 = (out / "scripts" / "03_analysis.R").read_text(encoding="utf-8")
-    if 'readRDS(file.path(DATA_PROC, "df_clean.rds"))' in r03:  # SR/MA (bảng trích xuất) và định tính không đọc RDS
-        assert 'identical(attr(df, "sha256_khoa"), LOCKED_SHA)' in r03, "RDS phải đối chiếu sha256 dataset khoá"
+    if 'readRDS(file.path(DATA_PROC, "df_clean.rds"))' in r03:  # định tính không đọc RDS
+        # 22/11/2026: SR/MA đọc bảng trích xuất ĐÃ KHOÁ vào `extracted` (01_cleaning.R) — cùng chốt sha256
+        doi_tuong = "extracted" if thiet_ke == "sr_ma" else "df"
+        assert f'identical(attr({doi_tuong}, "sha256_khoa"), LOCKED_SHA)' in r03, \
+            "RDS phải đối chiếu sha256 dataset khoá"
+        # dòng đọc RDS + kiểm dấu là dòng THI HÀNH (bộ sinh viết sẵn, không chờ thống kê viên bật)
+        assert any(d.startswith(f"stopifnot(identical(attr({doi_tuong}") for d in r03.splitlines())
     assert "- [x] **G4 SAP đã khoá THẬT**" in (out / f"G6_A7_ANALYSIS_SCRIPTS_{study}.md").read_text(encoding="utf-8")
 
     # G6-10: xác nhận gắn dấu ⇒ PASS; sửa script sau xác nhận ⇒ hết hiệu lực.
@@ -456,6 +461,12 @@ def test_f15_mo_hinh_chinh_chi_trong_chu_thich_thi_g6_chua_dat(tmp_path, monkeyp
     """F15 (16/10/2026, diễn tập C1a): script do bộ sinh để mô hình chính ở dạng chú thích ⇒ G6-AUTO-09 KHÔNG được
     nhận «khớp SAP» (bản cũ đọc cả chú thích nên xanh giả); phải nói rõ việc thống kê viên cần làm."""
     study, out, goc = _de_tai_g6_that(tmp_path, monkeypatch, "cross_sectional", bat_mo_hinh=False)
+    # 22/11/2026: bộ sinh nay viết dòng mô hình chính THI HÀNH ⇒ không cần ai bật, G6-AUTO-09 đạt ngay
+    assert _ck(G6Q.evaluate_study(study, out, write=False, repo_root=goc), "G6-AUTO-09")["pass"] is True
+    # Chốt cũ giữ nguyên: mô hình chính bị đưa về dạng chú thích (sửa tay) thì cổng KHÔNG nhận «khớp SAP»
+    p = out / "scripts" / "03_analysis.R"
+    p.write_text("\n".join(("# " + d) if "◆ MÔ HÌNH CHÍNH" in d and not d.startswith("#") else d
+                           for d in p.read_text(encoding="utf-8").split("\n")), encoding="utf-8", newline="\n")
     bao = G6Q.evaluate_study(study, out, write=False, repo_root=goc)
     c9 = _ck(bao, "G6-AUTO-09")
     assert c9["pass"] is None and "CHỈ có trong dòng chú thích" in c9["detail"], c9

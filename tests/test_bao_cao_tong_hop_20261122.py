@@ -204,3 +204,54 @@ def test_ten_de_tai_in_hoa_va_muc_tieu_thanh_cau_trong_bao_cao(tmp_path):
     van = B.sinh(S, d)["van"]
     assert "**TỶ LỆ KIỂM SOÁT HUYẾT ÁP Ở NGƯỜI BỆNH**" in van              # bìa: tên in hoa
     assert "Mục tiêu 1: Xác định tỷ lệ kiểm soát huyết áp." in van
+
+
+# ── 22/11/2026 (tối): câu chuẩn báo cáo ở phần giới thiệu bản thảo phải sang đặt vấn đề của báo cáo ──────────────
+GIOI_THIEU_BT = """## I. GIỚI THIỆU
+
+**§1 Bối cảnh và gánh nặng bệnh:**
+Tăng huyết áp là gánh nặng lớn ở phòng khám ngoại trú, chiếm tỷ lệ cao trong người bệnh mạn tính.
+
+**§3 Mục tiêu và giả thuyết:**
+Nghiên cứu xác định tỷ lệ kiểm soát huyết áp.
+Vai trò dự kiến của xét nghiệm đánh giá trong lộ trình chẩn đoán: phân loại ban đầu trước khi chỉ định đo chuyên sâu.
+Tăng huyết áp phổ biến [1].
+
+---
+
+"""
+
+
+def _dung_gioi_thieu(tmp_path: Path) -> Path:
+    d = _dung(tmp_path)
+    p = d / f"G7_A8_MANUSCRIPT_{S}.md"
+    p.write_text(BAN_THAO.replace("## II. PHƯƠNG PHÁP", GIOI_THIEU_BT + "## II. PHƯƠNG PHÁP", 1),
+                 encoding="utf-8", newline="\n")
+    return d
+
+
+def _dat_van_de(van: str) -> str:
+    a = van.index("# ĐẶT VẤN ĐỀ")
+    return van[a:van.index("# CHƯƠNG 1.", a)]
+
+
+def test_cau_chuan_bao_cao_o_gioi_thieu_ban_thao_sang_dat_van_de(tmp_path):
+    """STARD 3 / TRIPOD+AI 3c: câu có nhãn dòng sau khối «§n» của bản thảo phải có trong đặt vấn đề báo cáo."""
+    d = _dung_gioi_thieu(tmp_path)
+    dvd = _dat_van_de(B.sinh(S, d)["van"])
+    assert "Vai trò dự kiến của xét nghiệm đánh giá trong lộ trình chẩn đoán: phân loại ban đầu" in dvd
+
+
+def test_than_khoi_nhan_so_khong_lap_lai_vao_dat_van_de(tmp_path):
+    """Đoạn thân của khối «§n» đã do đặt vấn đề của đề cương phủ — không chép trùng."""
+    d = _dung_gioi_thieu(tmp_path)
+    dvd = _dat_van_de(B.sinh(S, d)["van"])
+    assert "gánh nặng lớn ở phòng khám ngoại trú" not in dvd
+    assert "Nghiên cứu xác định tỷ lệ kiểm soát huyết áp." not in dvd
+
+
+def test_cau_da_co_trong_de_cuong_khong_chep_trung(tmp_path):
+    """Câu sau khối «§n» đã có nguyên văn trong đặt vấn đề của đề cương ⇒ chỉ xuất hiện một lần."""
+    d = _dung_gioi_thieu(tmp_path)
+    dvd = _dat_van_de(B.sinh(S, d)["van"])
+    assert dvd.count("Tăng huyết áp phổ biến [1].") == 1

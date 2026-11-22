@@ -33,7 +33,7 @@ ICF = """```
    DRAFT Phiên bản 1.0 — Ngày soạn: 2026-11-16
 ══════════════════════════════════════════════════════════════
 
-TÊN ĐỀ TÀI: Đề tài thử
+TÊN ĐỀ TÀI: Hiệu quả của tin nhắn nhắc uống thuốc lên kiểm soát huyết áp
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -47,6 +47,10 @@ PHẦN THÔNG TIN CHO NGƯỜI THAM GIA
    ☐ Bước 2: Trả lời phỏng vấn ban đầu.
    ☐ Bước 3: Không áp dụng — đề tài không thu mẫu sinh học
    ☐ Bước 4: Quay lại tái khám theo lịch.
+
+5. QUYỀN TỪ CHỐI VÀ RÚT KHỎI NGHIÊN CỨU
+   Anh/chị có quyền từ chối tham gia hoặc rút khỏi nghiên cứu bất cứ lúc nào; việc này không ảnh hưởng đến việc
+   khám chữa bệnh của anh/chị.
 
 6e. ĐỒNG THUẬN THU THẬP/SỬ DỤNG MẪU SINH HỌC (đề tài có lấy mẫu máu/mô/dịch
     cơ thể)
@@ -144,6 +148,8 @@ def _de_tai(tmp_path: Path, thiet_ke: str = "rct") -> Path:
                 "study_schema_timeline": "Sàng lọc → ngẫu nhiên hoá → can thiệp 6 tháng",
                 "recruitment_strategy": "Tuyển liên tiếp người bệnh đủ tiêu chuẩn",
                 "critical_to_quality": "Đo huyết áp chuẩn hoá bằng cùng một quy trình cho mọi người tham gia",
+                # 22/11/2026 (K20): đề tài hoàn chỉnh có kế hoạch giám sát (ICH E6(R3) với thử nghiệm can thiệp)
+                "monitoring_plan": "Người giám sát độc lập với điều tra viên kiểm tra ngẫu nhiên 10% phiếu mỗi tháng",
                 "case_definition": "Người tăng huyết áp chưa đạt kiểm soát tại lần khám",
                 "control_source": "Người tăng huyết áp đã đạt kiểm soát khám cùng tuần, để nhóm chứng đại diện cho "
                                   "quần thể nguồn sinh ra ca",

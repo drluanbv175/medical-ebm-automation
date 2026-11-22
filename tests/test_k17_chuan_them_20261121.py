@@ -142,13 +142,18 @@ def test_chuan_ban_quyen_khong_luu_nguyen_van():
 
 # ───────────────────────────── cơ chế mới ─────────────────────────────
 def test_chuan_chua_doi_chieu_bang_goc_chi_canh_bao_khong_chan():
-    md = _dc("# 4. ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP NGHIÊN CỨU\n\n## 4.1. Thiết kế nghiên cứu\n\nNghiên cứu định tính.")
-    kq = K.doi_chieu(md, "qualitative")
-    coreq = [r for r in kq["ket_qua"] if r.chuan == "COREQ 2007"]
-    assert coreq and all(r.trang_thai in ("canh_bao", "dat", "bao_cao", "khong_ap_dung") for r in coreq)
-    assert any(r.trang_thai == "canh_bao" for r in coreq)
-    assert not any(x.startswith("K17 COREQ") or x.startswith("K17 SRQR") for x in K.loi_k17(md, "qualitative"))
-    assert any(x.startswith("K17 Việt Nam") for x in K.loi_k17(md, "qualitative"))  # chuẩn khác vẫn chặn
+    # 22/11/2026: COREQ/SRQR đã đối chiếu bản in lại toàn văn bảng gốc và bật chặn — ví dụ chuẩn chưa đối chiếu là TREND
+    md = _dc("# 4. ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP NGHIÊN CỨU\n\n## 4.1. Thiết kế nghiên cứu\n\nNghiên cứu can thiệp không "
+             "ngẫu nhiên.")
+    kq = K.doi_chieu(md, "non_randomized")
+    trend = [r for r in kq["ket_qua"] if r.chuan == "TREND 2004"]
+    assert trend and all(r.trang_thai in ("canh_bao", "dat", "bao_cao", "khong_ap_dung") for r in trend)
+    assert any(r.trang_thai == "canh_bao" for r in trend)
+    assert not any(x.startswith("K17 TREND") for x in K.loi_k17(md, "non_randomized"))
+    assert any(x.startswith("K17 Việt Nam") for x in K.loi_k17(md, "non_randomized"))  # chuẩn khác vẫn chặn
+    dt = _dc("# 4. ĐỐI TƯỢNG VÀ PHƯƠNG PHÁP NGHIÊN CỨU\n\n## 4.1. Thiết kế nghiên cứu\n\nNghiên cứu định tính.")
+    assert any(x.startswith("K17 COREQ 2007") for x in K.loi_k17(dt, "qualitative"))
+    assert any(x.startswith("K17 SRQR 2014") for x in K.loi_k17(dt, "qualitative"))
 
 
 def test_ten_de_tai_khong_bi_nhan_la_phan_phuong_phap():
@@ -319,7 +324,7 @@ def test_chuan_cho_bo_sinh_chi_canh_bao_o_khau_nop_con_cosmin_va_strobe_van_chan
     cosmin = _dc("# 2. PHƯƠNG PHÁP\n\n## 2.6. Công cụ thu thập\n\nBộ câu hỏi tự điền 30 câu; Cronbach's alpha; CVI.")
     assert any(x.startswith("K17 COSMIN 2021") for x in K.loi_k17(cosmin, "cross_sectional"))
     assert not any(x.startswith("K17 COSMIN") for x in K.canh_bao_k17(cosmin, "cross_sectional"))
-    assert any(x.endswith("[chưa đối chiếu bảng gốc]") for x in K.canh_bao_k17(md, "qualitative"))
+    assert any(x.endswith("[chưa đối chiếu bảng gốc]") for x in K.canh_bao_k17(md, "non_randomized"))
 
 
 def test_bo_kiem_nop_in_canh_bao_k17_khong_doi_ma_thoat(tmp_path):

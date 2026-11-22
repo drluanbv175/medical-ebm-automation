@@ -13,18 +13,25 @@ muc_tieu,khai_niem,vai_tro,bien,kieu,cau_hoi,cong_cu,phan_tich_sap,ghi_chu
 1,tầng hậu phân tầng (ngày trong tuần × khung giờ),trong_so,tang,danh_dinh,HIS,Lớp dữ liệu HIS/eHospital (giả danh),"§3, §4",trọng số hậu phân tầng — phân tích CHÍNH của MT1
 1,bàn khám (đơn vị gom cụm),cum,ma_ban_kham,van_ban,HIS,Lớp dữ liệu HIS/eHospital (giả danh),"§3, §4",DE và KTC theo chùm
 2,thời gian chờ khám (mốc HIS),phoi_nhiem,thoigian_cho,lien_tuc,HIS,Lớp dữ liệu HIS/eHospital (giả danh),"§4, §5",exposure chính — hiệu ứng mỗi 15 phút
+2,thời gian chờ hiệu dụng (mốc HIS),yeu_to,thoigian_cho_hieudung,lien_tuc,HIS,Lớp dữ liệu HIS/eHospital (giả danh),§9,phân tích độ nhạy của phơi nhiễm chính — không thay thoigian_cho
+2,lấy số trước giờ khoa gọi người bệnh đầu tiên của buổi,yeu_to,layso_truoc_giokham,nhi_phan,HIS,Lớp dữ liệu HIS/eHospital (giả danh),§9,cờ cấu trúc giờ làm việc — mô tả và phân tích độ nhạy
+2,thời gian chờ vắt qua giờ nghỉ trưa,yeu_to,cho_qua_nghitrua,nhi_phan,HIS,Lớp dữ liệu HIS/eHospital (giả danh),§9,cờ cấu trúc giờ làm việc — mô tả và phân tích độ nhạy
 2,tuổi,hiep_bien,tuoi,lien_tuc,Câu 2,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,forced-in theo DAG
 2,giới tính,hiep_bien,gioitinh,nhi_phan,Câu 3,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,forced-in
 2,nơi cư trú,hiep_bien,noicutru,nhi_phan,Câu 7,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,forced-in
 2,có thẻ BHYT,hiep_bien,cobhyt,nhi_phan,Câu 9,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,forced-in
 2,lý do khám,hiep_bien,lydokham,danh_dinh,Câu 10,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,forced-in
+2,"được xếp diện ưu tiên thứ tự khám khi lấy số, đăng ký",hiep_bien,uu_tien_kham,nhi_phan,Câu 26,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,forced-in; chặn đường gây nhiễu của nhóm đối tượng ưu tiên; bỏ khỏi mô hình nếu một nhóm dưới 20 phiếu hợp lệ
 2,khung giờ khám,hiep_bien,khunggio_kham,danh_dinh,HIS,Lớp dữ liệu HIS/eHospital (giả danh),§5,forced-in (biến tạo tầng)
 2,ngày trong tuần khám,hiep_bien,ngay_trong_tuan,danh_dinh,HIS,Lớp dữ liệu HIS/eHospital (giả danh),§5,forced-in (biến tạo tầng)
 2,tự đánh giá sức khỏe,hiep_bien,suckhoe_tudanhgia,thu_tu,Câu 23,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,forced-in
-2,được khám đúng bác sĩ đã yêu cầu,hiep_bien,duoc_dung_bacsi,danh_dinh,Câu 15,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,forced-in
+2,có yêu cầu bác sĩ cụ thể,hiep_bien,co_yeucau_bacsi,nhi_phan,Câu 14,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,forced-in theo DAG (trước phơi nhiễm)
+2,được khám đúng bác sĩ đã yêu cầu,yeu_to,duoc_dung_bacsi,danh_dinh,Câu 15,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§9,có thể chịu ảnh hưởng của thời gian chờ — không hiệu chỉnh mô hình chính; chỉ dùng ở kịch bản độ nhạy
+2,được hẹn trước một giờ khám cụ thể,hiep_bien,co_hen_gio,nhi_phan,Câu 25,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,forced-in; bỏ khỏi mô hình nếu một nhóm dưới 20 phiếu hợp lệ
 2,trình độ học vấn,yeu_to,trinhdohocvan,thu_tu,Câu 4,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,thăm dò định trước
 2,nghề nghiệp,yeu_to,nghenghiep,danh_dinh,Câu 5,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,thăm dò định trước
 2,thu nhập hộ gia đình,yeu_to,thunhaphogd,thu_tu,Câu 8,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,thăm dò định trước
+2,số lần khám tại khoa trong 12 tháng,yeu_to,solankham12thang,thu_tu,Câu 19,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,thăm dò định trước — mô hình riêng (Phụ lục D.5)
 2,khoảng cách nhà–viện,yeu_to,khoangcachnhabv,thu_tu,Câu 20,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,thăm dò định trước
 2,phương tiện di chuyển,yeu_to,phuongtiendichuyen,danh_dinh,Câu 21,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,thăm dò định trước
 2,nguồn thông tin biết đến viện,yeu_to,nguonthongtinbv,danh_dinh,Câu 22,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,thăm dò định trước
@@ -33,6 +40,7 @@ muc_tieu,khai_niem,vai_tro,bien,kieu,cau_hoi,cong_cu,phan_tich_sap,ghi_chu
 2,mức riêng tư khi trao đổi với bác sĩ,yeu_to,rieng_tu,thu_tu,Câu 18,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,thăm dò định trước
 2,có làm cận lâm sàng,yeu_to,co_cls,nhi_phan,HIS,Lớp dữ liệu HIS/eHospital (giả danh),§5,"sau khám — chỉ mô tả/thăm dò, không hiệu chỉnh"
 2,số bước/quầy phải qua,yeu_to,so_quay_buoc,dem,HIS,Lớp dữ liệu HIS/eHospital (giả danh),§5,"sau khám — chỉ mô tả/thăm dò, không hiệu chỉnh"
-2,chênh lệch thời gian chờ dự kiến – thực tế,yeu_to,chenh_kyvong,lien_tuc,Câu 11,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,trung gian — không hiệu chỉnh mô hình chính; thăm dò định trước
+2,chênh lệch thời gian chờ dự kiến – thực tế,mo_ta,chenh_kyvong,lien_tuc,Câu 11,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,biến phái sinh chỉ dùng để mô tả — không phải biến trung gian (hiệu số của kyvong_thoigiancho và thoigian_cho)
+2,thời gian chờ dự kiến trước khi đến khám,yeu_to,kyvong_thoigiancho,lien_tuc,Câu 11,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,trước phơi nhiễm — tương tác thăm dò định trước với thoigian_cho; không hiệu chỉnh mô hình chính
 2,đánh giá so với mong đợi,yeu_to,xacnhan_kyvong,thu_tu,Câu 12,Phiếu khảo sát người bệnh ngoại trú (Phụ lục C đề cương),§5,trung gian — không hiệu chỉnh mô hình chính
 2,bàn khám (đơn vị gom cụm),cum,ma_ban_kham,van_ban,HIS,Lớp dữ liệu HIS/eHospital (giả danh),§4,SE robust theo chùm

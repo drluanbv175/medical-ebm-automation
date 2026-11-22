@@ -1,7 +1,7 @@
 {
   "gate": "G5",
   "study": "hai-long-benh-nhan-C1a-BVQY175",
-  "run_date": "2026-11-20",
+  "run_date": "2026-11-22",
   "version": "3.0-data-governance-contract",
   "quality_contract_version": "G5-2026.2",
   "g5_status": "PENDING",
@@ -95,7 +95,7 @@
   "pending_doctor_actions": [
     "Điền tất cả ô còn trống trong CRF (biến phơi nhiễm/kết cục cụ thể)",
     "Import REDCap dictionary CSV vào REDCap cơ sở",
-    "Hoàn tất G5_OPERATIONAL_READINESS.json (G5-OPS-2026.2) bằng bằng chứng tại đơn vị: quyền truy cập, thử phục hồi, lưu trữ, sai lệch đề cương, RÀ AUDIT TRAIL, đối chiếu dữ liệu nguồn (nhập kép/kiểm ngẫu nhiên ≥10% — hoặc lý do không áp dụng); mọi evidence_ref/log_ref là mã thật",
+    "Hoàn tất G5_OPERATIONAL_READINESS.json (G5-OPS-2026.2) bằng bằng chứng tại đơn vị: quyền truy cập, thử phục hồi, lưu trữ, sai lệch đề cương, RÀ AUDIT TRAIL, đối chiếu dữ liệu nguồn (nhập kép/kiểm ngẫu nhiên ≥ 10% — hoặc lý do không áp dụng); mọi evidence_ref/log_ref là mã thật",
     "Thu thập dữ liệu thật (chỉ sau G2 = LOCKED và G4 = SAP đã khoá — import_real_dataset từ chối trước đó)",
     "Đóng truy vấn dữ liệu bằng tệp --query-resolutions (mã da_sua / xac_nhan_dung / khong_ap_dung_co_ly_do kèm lý do, người xử lý, thời điểm) khi chạy clean_research_dataset.py",
     "Chạy data_cleaning.py + data_quality_report.py trên dữ liệu thật → PASS",

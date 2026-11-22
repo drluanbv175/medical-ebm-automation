@@ -52,6 +52,11 @@ Gói đầu ra cần kiểm (toàn văn, kèm bảng nguồn nếu có) · loạ
 
 > **R14 kích hoạt khi nào — checklist TỰ ĐỦ, không cần mở code (SỬA 2026-07-22, vòng lặp kiểm tra-hoàn thiện vòng 8, phát hiện MEDIUM — bản tóm tắt cũ ở §8 thiếu "ngưng/tăng/giảm liều" so với công cụ thật):** kích hoạt khi văn bản có MỘT trong các ĐỘNG TỪ **kê (đơn/thêm) · thêm thuốc/nhóm · khởi trị · đổi (sang) thuốc · chỉnh liều · TĂNG liều · GIẢM liều · NGƯNG thuốc · dùng thuốc/kháng sinh** đứng GẦN một tên/nhóm thuốc cụ thể (nhóm: SGLT2i·statin·DOAC·warfarin·opioid·NSAID·metformin·insulin·lợi tiểu·chẹn beta·digoxin·thiazide·chẹn kênh canxi/CCB·kháng sinh·an thần/benzodiazepin/Z-drug; + tên hoạt chất riêng lẻ thường gặp — danh sách đầy đủ, có thể trôi theo thời gian, xem `tools/eval/run_eval.py::RE_RX_DRUG_CLASS`). Không tìm thấy tên thuốc cụ thể dù có động từ kê đơn → KHÔNG tự cho an toàn, hạ 🟡 "có động từ kê đơn nhưng chưa nhận diện thuốc — rà tay".
 
+> **Gói nghiên cứu có ĐỀ CƯƠNG NỘP Hội đồng — chạy bộ kiểm máy TRƯỚC khi đọc (22/11/2026):** chính chốt này đã bắt bằng mắt trên đề cương C1a hai lỗi mà K1–K17 bỏ sót: «| Khung bảng kết quả | Theo chương 5 |» trỏ tới chương không có (khuôn BVQY175 chỉ có Chương 1–3), và khối ký «VIỆN TRƯỞNG — (Họ tên và chữ ký — nếu Khoa trực thuộc Viện)» chép nguyên lời hướng dẫn của khuôn, sai đơn vị thật (Khoa C1a thuộc Trung tâm C1). Hai lỗi này nay là chốt máy K19.
+> - Chạy `python3 tools/kiem_de_cuong_nop_hoi_dong.py --study <mã>` (repo y khoa; K1–K17 và K19) và dẫn lỗi máy làm căn cứ. Còn lỗi K19 ⇒ 🔴 R6 (dấu vết khuôn sinh trong văn bản nộp) → TRẢ-VỀ-SỬA, giao `viet-ban-thao` sửa BẰNG BỘ SINH (`tools/khuon_de_cuong_bvqy175.py --study <mã>` chạy khô, `--ghi` khi bác sĩ đồng ý), không vá tay.
+> - K19 bắt bốn lỗi: lời hướng dẫn khuôn «(… — nếu …)» còn sót · «chương N» trỏ tới chương không có · khung bảng trỏ sai chương · khối ký bìa phụ lệch đơn vị thật. Luật khối ký thứ ba (đơn vị ngay trên Khoa, đọc `study_meta.administrative.pi_unit` → «Đơn vị chủ trì/thực hiện» → dòng cơ quan ở bìa): Viện ⇒ VIỆN TRƯỞNG · Trung tâm ⇒ GIÁM ĐỐC TRUNG TÂM (luật của bộ sinh, chờ bác sĩ xác nhận — bỏ khoá `trung_tam` khỏi `KY_CAP_TREN` nếu Bệnh viện không đòi) · trực thuộc bệnh viện hoặc không khai ⇒ không có khối thứ ba. Chi tiết `dieu-phoi-g10`.
+> - Máy sạch KHÔNG thay việc đọc: vẫn soi bằng mắt dấu vết khuôn K19 chưa phủ (lời dặn người soạn dạng khác «— nếu …», tham chiếu «mục/Bảng/Phụ lục» lạc). Lỗi tay mới ⇒ nêu trong phán định để đưa đủ ba lớp vào hệ: sửa dữ liệu · chốt máy · dạy agent (bác sĩ 15/11/2026).
+
 **Quy ước phán định Lớp 1:** còn **bất kỳ 🔴 nào → TRẢ-VỀ-SỬA** (CẤM phát hành). Chỉ 🟡 → ĐẠT-CÓ-LƯU-Ý (nêu để nhạc trưởng cân nhắc). Toàn ✅ (có thể kèm 🟡 nhỏ) → ĐẠT.
 
 > **RANH GIỚI ✅ vs 🟡 (chống tự-cho-ĐẠT tràn lan — bảng trên chỉ định nghĩa ngưỡng 🔴):** một mục chỉ được ✅ khi có **bằng chứng DƯƠNG TÍNH** tiêu chí đã đạt — trích DẪN được chỗ trong gói chứng minh (vd R1: mọi khẳng định cốt lõi đều có PMID/DOI kèm NGAY cạnh + đã đối chiếu ≥1 nguồn thật; R2: đã quét đủ các trường PII kể trong tiêu chí; R4: nêu ĐÚNG tên công cụ RoB/biến thể GRADE khớp thiết kế). Mặc định là **🟡** khi: tiêu chí áp dụng nhưng bằng chứng CHƯA đầy đủ/chưa đối chiếu hết/chỉ có KHUNG-giàn-giáo (chưa có nội dung thật). **"Không thấy lỗi" một mình KHÔNG phải ✅** — phải kèm danh sách cụ thể đã soi (nhất quán §3ter). Đếm sự-có-mặt của file/mục/nhãn KHÔNG phải ✅.
@@ -236,6 +241,16 @@ ghi xác nhận/dấu vân tay thay người; «chuẩn bị» = đưa đủ h�
 thẩm quyền.
 <!-- TRACH-NHIEM-AGENT:KET-THUC -->
 
+## Sổ công cụ — chủ · kiểm · dùng phụ (22/11/2026)
+
+Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C1–C6 bằng `python3 tools/tieu_chuan_hoan_thien.py`. Mỗi công cụ có đúng một chủ: chủ chạy công cụ và chịu trách nhiệm đầu ra tới khi chốt kiểm đạt; người kiểm đối chiếu độc lập; người dùng phụ chỉ dùng, không sửa đầu ra thay chủ. Dòng dưới là phần của agent này chưa nêu ở chỗ khác trong tệp.
+- Công cụ `tools/approve_gate.py` (kiểm) — đầu ra của `dieu-phoi-nghien-cuu`: ghi phê duyệt của người vào sổ cái niêm phong — vai có thẩm quyền tự chạy, agent không chạy; chốt kiểm `tools/stakeholder_review_audit.py`; nguyên tắc: đạo đức · đạt chuẩn định trước · trung thực–minh bạch.
+- Công cụ `tools/hoi_dong_khoa_hoc.py` (kiểm) — đầu ra của `binh-duyet`: Hội đồng Khoa học máy chấm đề cương theo thể thức hội đồng; chốt kiểm `tools/duyet_kiem_may_api.py`; nguyên tắc: khách quan · câu hỏi giá trị · khoa học.
+- Công cụ `tools/run_g10_assemble.py` (kiểm) — đầu ra của `dieu-phoi-g10`: lắp đề cương thống nhất + manifest gói phát hành; chốt kiểm `tools/g10_quality_gate.py`; nguyên tắc: đạt chuẩn định trước · trung thực–minh bạch · tái lập.
+- Công cụ `tools/sinh_de_cuong_nop_hoi_dong.py` (kiểm) — đầu ra của `viet-ban-thao`: sinh đề cương nộp Hội đồng từ quyết định đã chốt; chốt kiểm `tools/kiem_de_cuong_nop_hoi_dong.py`; nguyên tắc: trung thực–minh bạch · tái lập.
+- Công cụ `tools/so_doc_de_cuong.py` (chủ) — sổ đọc từng câu, hàng bảng, hình, công thức, tài liệu tham khảo trước khi giao đề cương (K21; `tach` → đọc → `ghi --tu <JSON>` → `trang-thai`); chốt kiểm `tests/test_so_doc_de_cuong_20261122.py`; nguyên tắc: trung thực–minh bạch · kiểm soát chất lượng liên tục · đạt chuẩn định trước.
+- Công cụ `tools/tam_nguyen_tac_de_cuong.py` (kiểm) — đầu ra của `viet-ban-thao`: ma trận 8 nguyên tắc (K20) trước khi trả đề cương; chốt kiểm `tests/test_tam_nguyen_tac_de_cuong_20261122.py`; nguyên tắc: đạt chuẩn định trước.
+
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
 Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:
@@ -285,3 +300,20 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
    kể cả «chỉ điền khi còn trống». Bản sao của máy để ở checkpoint/tệp riêng (vd `.cho-ky.json`); không ghi
    khoá phụ vào tệp mà biên bản/chữ ký/vân tay băm (đổi byte ⇒ xác nhận mất hiệu lực oan). Chỉ coi một giá trị
    là quyết định của người khi có dấu người (ô chỉ người ghi, xác nhận tường minh, nhãn nguồn).
+5. NGUYÊN TẮC TỔNG NGHIÊN CỨU (bác sĩ 22/11/2026): «Mỗi quyết định trong nghiên cứu phải dựa trên bằng chứng khoa
+   học, được thực hiện một cách đạo đức, được kiểm chứng khách quan, và chỉ được chuyển sang bước tiếp theo khi bước
+   hiện tại đã đạt chuẩn xác định trước.» Triển khai — SỬA ĐÚNG KHÂU RỒI KHOÁ: lỗi phát hiện ở khâu nào thì quay
+   lại sửa tại NGUỒN của khâu đó (đề tài: `gate_params`, bộ biến G3, SAP G4, bộ sinh của cổng; chứng cứ: dashboard,
+   bộ sinh) — không vá văn bản ở khâu sau → kiểm bằng chốt của chính khâu đó → đạt chuẩn thì khoá (dấu vân tay/chữ
+   ký của vai có thẩm quyền) → mới sinh lại và làm khâu kế. Đề tài: chạy `python
+   medical-ebm-automation/tools/buoc_dang_mo.py --study <mã>` trước khi sửa tài liệu một cổng; không sửa cổng nằm
+   sau khâu cần hoàn thiện; trình MỘT gói ký theo thứ tự; đề cương chấm theo ma trận phần × chuẩn × 8 nguyên tắc
+   (`_HOI-DONG-CONG.md` §1c).
+6. GIAO SẢN PHẨM, KHÔNG CHIA PHẦN (bác sĩ 22/11/2026 — nhắc lại mỗi lần giao việc): bám nguyên tắc xây hệ, giao
+   sản phẩm đúng; đầu ra/báo cáo nói đã giao gì, đạt chuẩn nào, khâu nào đã khoá — KHÔNG viết «phần của bác sĩ»,
+   «việc còn lại cho người», «máy không làm thay được»; việc dở thì làm tiếp cho xong. Chữ ký pháp lý không giả
+   được ⇒ trình là GÓI KÝ đã chuẩn bị (vai · mục ký · lệnh khoá), không phải danh sách việc treo. Khoá máy-đọc
+   (`cho_nguoi`, `con_lai_cho_nguoi`…) giữ nguyên — chỉ đổi lời trình bày.
+7. KHÔNG SỔ NỢ (bác sĩ 22/11/2026): không dùng sổ nợ, miễn trừ tay hay bánh cóc «chỉ giảm» để chốt/CI xanh khi
+   chuẩn chưa đạt; thiếu mục thì sửa tại nguồn tới 0; chốt đỏ khi thiếu bất kỳ mục nào; sổ nợ cũ chỉ được xoá về 0,
+   không ghi thêm, không gia hạn.

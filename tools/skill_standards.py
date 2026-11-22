@@ -305,9 +305,11 @@ DISPLAY_ITEM_CORE: Tuple[Tuple[str, str, str], ...] = (
 )
 
 DISPLAY_ITEM_BY_DESIGN: Dict[str, Tuple[str, str]] = {
+    # 22/11/2026: bản cắt ngang CHỈ MÔ TẢ — bản có «forest plot yếu tố liên quan» chỉ dùng khi đề tài có mục tiêu phân
+    # tích (DISPLAY_ITEM_CAT_NGANG_PHAN_TICH, chọn qua hinh_theo_thiet_ke()).
     "cross_sectional": (
-        "Biểu đồ phân bố/kết cục chính hoặc forest plot yếu tố liên quan",
-        "Trục có đơn vị; hiển thị n/mẫu số; 95% CI cho tỷ lệ/OR/PR nếu có.",
+        "Biểu đồ phân bố kết cục chính",
+        "Trục có đơn vị; hiển thị n/mẫu số; 95% CI cho tỷ lệ.",
     ),
     "case_control": (
         "Forest plot OR hiệu chỉnh cho phơi nhiễm chính",
@@ -350,6 +352,29 @@ DISPLAY_ITEM_BY_DESIGN: Dict[str, Tuple[str, str]] = {
         "Nguồn trích dẫn ẩn danh, theme/subtheme, audit trail/reflexivity.",
     ),
 }
+
+# Hình 2 của cắt ngang CÓ mục tiêu phân tích yếu tố/mối liên quan.
+DISPLAY_ITEM_CAT_NGANG_PHAN_TICH: Tuple[str, str] = (
+    "Biểu đồ phân bố/kết cục chính hoặc forest plot yếu tố liên quan",
+    "Trục có đơn vị; hiển thị n/mẫu số; 95% CI cho tỷ lệ/OR/PR nếu có.",
+)
+_HINH_MAC_DINH: Tuple[str, str] = (
+    "Biểu đồ/đồ thị phân tích chính theo thiết kế thật",
+    "Chọn loại hình theo SAP; trục/đơn vị/n/95% CI phải đầy đủ.",
+)
+
+
+def hinh_theo_thiet_ke(design_code: Optional[str], objectives: Any = None) -> Tuple[str, str]:
+    """(tên, yêu cầu) Hình 2 của danh mục bảng/hình theo thiết kế VÀ mục tiêu G1 (22/11/2026).
+
+    Cắt ngang chỉ có «forest plot yếu tố liên quan» khi ít nhất một mục tiêu là phân tích
+    (`co_muc_tieu_phan_tich`, cùng điều kiện với nhãn thiết kế); cắt ngang chỉ mô tả ⇒ biểu đồ phân bố kết cục chính.
+    """
+    code = canonical_design_code(design_code)
+    if code == "cross_sectional" and co_muc_tieu_phan_tich(objectives):
+        return DISPLAY_ITEM_CAT_NGANG_PHAN_TICH
+    return DISPLAY_ITEM_BY_DESIGN.get(code or "", _HINH_MAC_DINH)
+
 
 # Chuẩn tuân thủ quốc tế tối thiểu cho báo cáo/bài báo khoa học. G10 dùng bảng
 # này để sinh ma trận bắt buộc; check_de_cuong.py dùng R8 để không cho đề cương

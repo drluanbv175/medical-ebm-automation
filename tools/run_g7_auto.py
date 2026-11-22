@@ -1755,11 +1755,12 @@ def _bang_dac_diem_nc_g6(bd: Any) -> list[str]:
 _CHO_TEN_KET_CUC = "⟪KẾT_CỤC⟫"
 
 
-def khoi_tom_tat_phat_hien_g6(ket_qua_g6: dict, ten_ket_cuc: str) -> list[str]:
+def khoi_tom_tat_phat_hien_g6(ket_qua_g6: dict, ten_ket_cuc: str, muc_grade: str = "") -> list[str]:
     """Khung BẢNG TÓM TẮT PHÁT HIỆN (GRADE, SAP §5 khuôn tổng quan — PRISMA 2020 mục 22) từ số G6 đã có: số nghiên cứu,
     số người, nguy cơ hai nhánh và hiệu số trên 1000 người, RR gộp. Mức chắc chắn GRADE là PHÁN ĐOÁN CỦA NGƯỜI (5 lĩnh
-    vực) ⇒ máy KHÔNG xếp mức, để ô chờ tác giả. Chỉ dựng cho phân tích gộp có `hieu_ung_tuyet_doi` + `tong`; mọi số tự
-    kiểm nguyên văn trong tóm tắt G6 (lệch ⇒ không dựng)."""
+    vực) ⇒ máy KHÔNG xếp mức: ô chép mức nhóm tác giả đã khai (`muc_grade`, một trong `MUC_GRADE`), chưa khai ⇒ ô chờ.
+    Chỉ dựng cho phân tích gộp có `hieu_ung_tuyet_doi` + `tong`; mọi số tự kiểm nguyên văn trong tóm tắt G6 (lệch ⇒
+    không dựng)."""
     if not (ket_qua_g6 or {}).get("da_dung"):
         return []
     tt = ket_qua_g6.get("tom_tat_g6") or {}
@@ -1775,8 +1776,9 @@ def khoi_tom_tat_phat_hien_g6(ket_qua_g6: dict, ten_ket_cuc: str) -> list[str]:
             f"{_so_g6(kq.get('rr_gop_ngau_nhien'))} ({_ci_g6(kq.get('ci_95'))}) | "
             # chữ ô KHÔNG chứa «tác giả»: bước điền ô của giả lập 24 kịch bản khớp «tác giả» với TÊN người (22/11/2026
             # — bản chân thực từng ghi «ThS. Trần Thị B» vào cột mức chắc chắn)
-            "[CẦN XẾP MỨC CHẮC CHẮN GRADE — nhóm nghiên cứu đánh giá năm lĩnh vực: nguy cơ sai lệch, không nhất quán, "
-            "gián tiếp, thiếu chính xác, sai lệch công bố; máy không xếp] |")
+            + (f"{muc_grade[:1].upper()}{muc_grade[1:]} |" if muc_grade in MUC_GRADE else
+               "[CẦN XẾP MỨC CHẮC CHẮN GRADE — nhóm nghiên cứu đánh giá năm lĩnh vực: nguy cơ sai lệch, không nhất "
+               "quán, gián tiếp, thiếu chính xác, sai lệch công bố; máy không xếp] |"))
     if kiem_so_trich_g6(dong, ket_qua_g6.get("van_ban_g6") or ""):
         return []
     return ["**§3c Bảng tóm tắt phát hiện (GRADE):**  ",
@@ -2645,12 +2647,15 @@ def _ha_dau(x: str) -> str:
 KHOA_DAC_TA_BAN_THAO = ("blinding_how", "ppi_plan", "concomitant_care_policy", "concomitant_care",
                         "routine_code_validation", "routine_database_access",
                         "index_test_role", "reference_standard_rationale", "index_threshold_rationale",
-                        "reference_threshold_rationale", "disease_severity_variable",
+                        "reference_threshold_rationale", "disease_severity_variable", "alternative_diagnosis_variable",
                         "model_intended_use", "health_inequalities", "model_treatment_handling",
                         "outcome_assessment_blinding", "model_output_threshold", "model_input_handling",
                         "model_user_interaction", "search_strings_full", "rob_assessment_process")
 KHOA_TAC_GIA_BAN_THAO = ("data_sharing_statement", "funding_declared", "protocol_access_statement",
-                         "protocol_changes_statement")
+                         "protocol_changes_statement", "grade_certainty", "grade_rationale")
+#: 22/11/2026 (PRISMA 2020 mục 22): mức chắc chắn GRADE của kết cục chính — PHÁN ĐOÁN của nhóm tác giả (5 lĩnh vực), khai ở
+#: `gate_params.G7.grade_certainty` (một trong bốn mức) + `grade_rationale` (lý do theo từng lĩnh vực); máy KHÔNG xếp
+MUC_GRADE = ("cao", "trung bình", "thấp", "rất thấp")
 
 #: thiết kế mà chuẩn báo cáo đòi nêu nơi truy cập đề cương (CONSORT 2025 mục 3, STARD 2015 mục 29, TRIPOD+AI mục 18c,
 #: PRISMA 2020 mục 24b), thay đổi so với đề cương (CONSORT 10, PRISMA 24c), sự tham gia của người bệnh (CONSORT 8,
@@ -2883,6 +2888,9 @@ _LAM_SACH_CAM = {"no_row_drop_without_protocol": "không xoá dòng khi đề c�
 #: cột định danh bài báo trong bảng trích xuất cấp nghiên cứu của tổng quan (PRISMA 2020 mục 17)
 _COT_TRICH_DAN_TQ = re.compile(r"^(pmid|doi|ref|reference|citation|trich_dan|tai_lieu)$", re.IGNORECASE)
 _TEP_TRICH_XUAT_TQ = "06_phan_tich_R/study_level_extraction.csv"
+#: 22/11/2026 (PRISMA 2020 mục 16b): danh sách báo cáo đọc toàn văn bị loại do nhóm sàng lọc lập — cột `bao_cao`,
+#: `trich_dan` (PMID/DOI…), `nhom_ly_do` (đúng một nhóm lý do của hộp «Báo cáo bị loại» trong sổ sàng lọc), `ly_do`
+TEP_LOAI_TOAN_VAN_TQ = "06_phan_tich_R/full_text_excluded_reports.csv"
 
 
 def _doc_json_g7(p: Path) -> dict:
@@ -3033,6 +3041,274 @@ def _trich_dan_nc_tong_quan_g7(out_dir: Path) -> str:
                          "định danh bài báo") + "  "
 
 
+def _chan_doan_khac_g7(out_dir: Path, meta: dict, redcap_vars: Optional[list]) -> str:
+    """STARD 2015 mục 21b: phân bố chẩn đoán khác ở người KHÔNG có bệnh đích — giá trị G6 đã tính (Bảng 1 theo nhóm chuẩn
+    tham chiếu) của biến PI đã khai (`alternative_diagnosis_variable`); nhóm không bệnh = nhóm có số người trùng
+    `n_khong_benh` của phân tích AUC. Thiếu khai báo, G6 chưa hợp lệ, không tìm được dòng/nhóm, hay ô của nhóm không có
+    quan sát ⇒ ô [CẦN] (không dựng số)."""
+    nhan = "*Chẩn đoán khác ở người không có bệnh đích"
+    bien = _khai_pi_g7(meta, "alternative_diagnosis_variable")
+    g6 = doc_tom_tat_g6_hop_le(out_dir)
+    tt = g6.get("tom_tat") if g6.get("hop_le") else None
+    if bien and re.fullmatch(r"\w+", bien) and isinstance(tt, dict):
+        t1 = tt.get("table1") if isinstance(tt.get("table1"), dict) else {}
+        dac_thu = tt.get("dac_thu") if isinstance(tt.get("dac_thu"), dict) else {}
+        auc = dac_thu.get("auc") if isinstance(dac_thu.get("auc"), dict) else {}
+        n_khong = auc.get("n_khong_benh")
+        nhom = [g for g, n in (t1.get("n_per_group") or {}).items() if isinstance(n_khong, int) and n == n_khong]
+        dong = next((r for r in t1.get("rows") or [] if isinstance(r, dict) and r.get("variable") == bien), None)
+        gt = (dong.get("gia_tri") or {}).get(nhom[0]) if dong and len(nhom) == 1 else None
+        if gt not in (None, "") and not str(gt).startswith("N/A"):
+            ten = _nhan_bien_g7(redcap_vars, bien)
+            return (f"{nhan} ({ten + ', ' if ten else ''}`{bien}`):* {_mot_dong(gt)} (n = {n_khong}) "
+                    f"{NHAN_DOI_CHIEU_G6}  ")
+    return f"{nhan}:* " + _o_can("phân bố chẩn đoán thay thế ở người không có bệnh đích: khai biến ghi chẩn đoán khác và "
+                                 "chạy phân tích trên dữ liệu đã khoá") + "  "
+
+
+def _bao_cao_loai_tong_quan_g7(out_dir: Path) -> str:
+    """PRISMA 2020 mục 16b: trích dẫn các báo cáo có vẻ đạt tiêu chí nhưng bị loại ở bước toàn văn, kèm lý do — chỉ khi
+    danh sách của nhóm sàng lọc (`TEP_LOAI_TOAN_VAN_TQ`) có trích dẫn và lý do ở MỌI dòng, và nhóm lý do của từng dòng là
+    một lý do có SỐ ĐẾM ≥ số báo cáo trích của nhóm đó trong hộp «Báo cáo bị loại» của sổ sàng lọc (số không khớp sổ ⇒
+    không in). Không có ⇒ ô [CẦN]."""
+    nhan = "*Trích dẫn các báo cáo bị loại ở bước đánh giá toàn văn:* "
+    o = _o_can("trích dẫn (PMID/DOI) từng báo cáo bị loại kèm lý do; sổ sàng lọc chỉ ghi số đếm") + "  "
+    try:
+        with (Path(out_dir) / TEP_LOAI_TOAN_VAN_TQ).open(encoding="utf-8-sig", newline="") as f:
+            ds = [{k: str(v or "").strip() for k, v in r.items() if k} for r in csv.DictReader(f)]
+    except (OSError, csv.Error):
+        ds = []
+    if not ds or not all(r.get("bao_cao") and r.get("trich_dan") and r.get("ly_do") and r.get("nhom_ly_do")
+                         for r in ds):
+        return nhan + o
+    dem: dict = {}
+    for p_luong in sorted(Path(out_dir).glob("SO_DO_LUONG_*.csv")):
+        try:
+            with p_luong.open(encoding="utf-8", newline="") as f:
+                for r in csv.DictReader(f):
+                    if str(r.get("buoc") or "").strip().casefold() == "báo cáo bị loại":
+                        for muc in str(r.get("ly_do") or "").split(";"):
+                            ten, _, so = muc.partition(":")
+                            if so.strip().isdigit():
+                                dem[ten.strip().casefold()] = int(so)
+        except (OSError, csv.Error):
+            continue
+        break
+    can: dict = {}
+    for r in ds:
+        can[r["nhom_ly_do"].casefold()] = can.get(r["nhom_ly_do"].casefold(), 0) + 1
+    if any(dem.get(k, 0) < v for k, v in can.items()):
+        return nhan + _o_can("danh sách báo cáo bị loại không khớp số đếm theo lý do của sổ sàng lọc") + "  "
+    return nhan + "; ".join(f"{r['bao_cao']} ({r['trich_dan']}) bị loại vì {_ha_chu_dau(r['nhom_ly_do'])}: "
+                            f"{r['ly_do'].rstrip('.')}" for r in ds) + ".  "
+
+
+def _muc_grade_da_khai(g7: dict) -> tuple:
+    """(mức, lý do) GRADE nhóm tác giả đã khai ở `gate_params.G7`; mức ngoài bốn mức chuẩn hoặc thiếu lý do ⇒ ("", "")."""
+    muc = _gia_tri_chot(g7.get("grade_certainty")).casefold()
+    ly_do = _gia_tri_chot(g7.get("grade_rationale"))
+    return (muc, ly_do) if muc in MUC_GRADE and ly_do else ("", "")
+
+
+def _muc_chac_chan_tong_quan_g7(g7: dict, ten_ket_cuc: str) -> list:
+    """PRISMA 2020 mục 22: mức chắc chắn của bằng chứng cho kết cục chính — chép nguyên lời khai GRADE của nhóm tác giả
+    (`_muc_grade_da_khai`); chưa khai ⇒ ô [CẦN] (máy không xếp mức)."""
+    muc, ly_do = _muc_grade_da_khai(g7)
+    kc = _mot_dong(ten_ket_cuc or "kết cục chính", 120)
+    if muc:
+        dong = f"*Kết cục chính «{kc}»:* mức chắc chắn {muc} — {ly_do.rstrip('.')}.  "
+    else:
+        dong = (f"*Kết cục chính «{kc}»:* " + _o_can("mức chắc chắn GRADE do nhóm tác giả xếp theo năm lĩnh vực (nguy cơ "
+                                                    "sai lệch, không nhất quán, gián tiếp, thiếu chính xác, sai lệch "
+                                                    "công bố) kèm lý do") + "  ")
+    return ["**Mức chắc chắn của bằng chứng theo GRADE (PRISMA 2020 mục 22):**  ", dong, ""]
+
+
+#: 22/11/2026 (COREQ 2007, SRQR 2014): kết quả của cấu phần định tính trong đề tài HỖN HỢP — nhóm định tính ghi sau
+#: khi phân tích chủ đề (thư mục `cau_phan_dinh_tinh/`: tệp kết quả + bản gỡ băng đã khử định danh). Đề tài định tính
+#: thuần lấy cùng các dữ kiện từ sổ tuyển chọn, tóm tắt G6, dữ liệu đã khoá và thư mục `transcripts/` của G5.
+TEP_KET_QUA_DINH_TINH_HH = "cau_phan_dinh_tinh/KET_QUA_DINH_TINH.json"
+THU_MUC_BAN_GO_BANG_HH = "cau_phan_dinh_tinh/ban_go_bang"
+#: số chủ đề có trích lời minh hoạ trong bản thảo
+SO_CHU_DE_TRICH = 2
+_CO_BAN_DINH_TINH_G7 = (("central_phenomenon", "Hiện tượng trung tâm"), ("qualitative_approach", "Cách tiếp cận"),
+                        ("chon_mau", "Chọn người tham gia"), ("co_mau_du_kien", "Cỡ mẫu dự kiến"),
+                        ("data_collection_method", "Phương pháp thu thập"),
+                        ("saturation_criterion", "Tiêu chí bão hoà"), ("phan_tich", "Phân tích dữ liệu định tính"))
+
+
+def _loi_nguoi_tham_gia(tep: Path) -> str:
+    """Câu trả lời ĐẦU TIÊN của người tham gia trong một bản gỡ băng đã khử định danh («Người tham gia: …»); không đọc
+    được ⇒ chuỗi rỗng. Chép nguyên văn — không sửa, không tóm."""
+    try:
+        for d in tep.read_text(encoding="utf-8").splitlines():
+            if d.startswith("Người tham gia:"):
+                return d.split(":", 1)[1].strip()
+    except OSError:
+        pass
+    return ""
+
+
+def _so_luong_dinh_tinh(out_dir: Path) -> dict:
+    """{so_moi, khong_tham_gia: [(lý do, n)], so_phong_van} từ sổ tuyển chọn `SO_DO_LUONG_*.csv` của đề tài định tính
+    (hộp chính đầu = được mời, hộp chính cuối = được phỏng vấn, hộp loại = không tham gia kèm lý do có số)."""
+    for p_luong in sorted(Path(out_dir).glob("SO_DO_LUONG_*.csv")):
+        try:
+            with p_luong.open(encoding="utf-8", newline="") as f:
+                dong = list(csv.DictReader(f))
+        except (OSError, csv.Error):
+            return {}
+        chinh = [r for r in dong if r.get("loai") == "chinh" and str(r.get("n") or "").strip().isdigit()]
+        if len(chinh) < 2:
+            return {}
+        ly: list = []
+        for r in dong:
+            if r.get("loai") != "loai":
+                continue
+            for muc in str(r.get("ly_do") or "").split(";"):
+                ten, _, so = muc.partition(":")
+                if ten.strip() and so.strip().isdigit():
+                    ly.append((ten.strip(), int(so)))
+        return {"so_moi": int(chinh[0]["n"]), "khong_tham_gia": ly, "so_phong_van": int(chinh[-1]["n"])}
+    return {}
+
+
+def _ket_qua_dinh_tinh_de_tai(out_dir: Path) -> dict:
+    """Đề tài định tính thuần: số tuyển chọn (sổ), chủ đề và số bản gỡ băng (tóm tắt G6 hợp lệ, loại «dinh_tinh»),
+    trích lời minh hoạ cho các chủ đề phổ biến nhất — bản gỡ băng đầu tiên mang chủ đề đó trong dữ liệu đã khoá
+    (cột `transcript_id` + cột chủ đề), đọc ở `transcripts/`. Thiếu một nguồn ⇒ phần đó vắng (bộ dựng in ô [CẦN])."""
+    out_dir = Path(out_dir)
+    ra: dict = dict(_so_luong_dinh_tinh(out_dir))
+    g6 = doc_tom_tat_g6_hop_le(out_dir)
+    tt = g6.get("tom_tat") if g6.get("hop_le") else None
+    dt = (tt.get("dac_thu") if isinstance(tt, dict) and tt.get("loai_dac_thu") == "dinh_tinh" else None) or {}
+    chu_de = [(str(c.get("chu_de")), int(c.get("n"))) for c in dt.get("chu_de") or []
+              if isinstance(c, dict) and c.get("chu_de") and isinstance(c.get("n"), int)]
+    if chu_de and isinstance(dt.get("n_ban_go_bang"), int):
+        ra["chu_de"], ra["tong_ban"] = sorted(chu_de, key=lambda x: -x[1]), dt["n_ban_go_bang"]
+        ra["dac_diem"] = f"{dt['n_ban_go_bang']} người được phỏng vấn; đặc điểm chi tiết trình bày ở Bảng 1"
+    try:
+        mf = json.loads((out_dir / "DATA_LOCK_manifest.json").read_text(encoding="utf-8"))
+        with (out_dir / str(mf.get("locked_dataset_path") or "")).open(encoding="utf-8-sig", newline="") as f:
+            hang = list(csv.DictReader(f))
+    except (OSError, ValueError, csv.Error, TypeError):
+        hang = []
+    ten_cd = {c for c, _n in ra.get("chu_de") or []}
+    cot = next((c for c in (hang[0].keys() if hang else []) if c != "transcript_id"
+                and any(str(r.get(c) or "").strip() in ten_cd for r in hang)), None)
+    trich = []
+    for c, _n in (ra.get("chu_de") or [])[:SO_CHU_DE_TRICH]:
+        tid = next((str(r.get("transcript_id") or "").strip() for r in hang
+                    if cot and str(r.get(cot) or "").strip() == c and str(r.get("transcript_id") or "").strip()), "")
+        loi = _loi_nguoi_tham_gia(out_dir / "transcripts" / f"{tid}.txt") if re.fullmatch(r"[\w-]+", tid) else ""
+        if loi:
+            trich.append((loi, tid, c))
+    if trich:
+        ra["trich"] = trich
+    return ra
+
+
+def _ket_qua_dinh_tinh_hon_hop(out_dir: Path) -> dict:
+    """Đề tài hỗn hợp: tệp kết quả của nhóm định tính (`TEP_KET_QUA_DINH_TINH_HH`) + trích lời từ bản gỡ băng của cấu
+    phần định tính (`THU_MUC_BAN_GO_BANG_HH`) cho các chủ đề phổ biến nhất. Không có tệp ⇒ {}."""
+    out_dir = Path(out_dir)
+    try:
+        kq = json.loads((out_dir / TEP_KET_QUA_DINH_TINH_HH).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(kq, dict):
+        return {}
+    ra: dict = {}
+    if all(isinstance(kq.get(k), int) for k in ("so_moi", "so_phong_van")):
+        ra.update(so_moi=kq["so_moi"], so_phong_van=kq["so_phong_van"],
+                  khong_tham_gia=[(str(k), int(v)) for k, v in (kq.get("khong_tham_gia") or {}).items()
+                                  if isinstance(v, int)])
+    if _gia_tri_chot(kq.get("dac_diem")):
+        ra["dac_diem"] = _gia_tri_chot(kq.get("dac_diem"))
+    cd = [c for c in kq.get("chu_de") or [] if isinstance(c, dict) and c.get("ten") and isinstance(c.get("so_ban"), int)]
+    if cd and isinstance(kq.get("tong_ban"), int):
+        cd = sorted(cd, key=lambda c: -c["so_ban"])
+        ra["chu_de"], ra["tong_ban"] = [(str(c["ten"]), c["so_ban"]) for c in cd], kq["tong_ban"]
+        # GRAMMS 2008 mục 6: nhóm kết quả định lượng của người kể chủ đề (khoá `nhom`) — đủ cho MỌI chủ đề mới dùng
+        if all(_gia_tri_chot(c.get("nhom")) for c in cd):
+            theo_nhom: dict = {}
+            for c in cd:
+                theo_nhom.setdefault(_gia_tri_chot(c["nhom"]), []).append((str(c["ten"]), c["so_ban"]))
+            ra["theo_nhom"] = theo_nhom
+        trich = []
+        for c in cd[:SO_CHU_DE_TRICH]:
+            ma = next((str(x) for x in c.get("ban_go_bang") or [] if re.fullmatch(r"[\w-]+", str(x))), "")
+            loi = _loi_nguoi_tham_gia(out_dir / THU_MUC_BAN_GO_BANG_HH / f"{ma}.txt") if ma else ""
+            if loi:
+                trich.append((loi, ma, str(c["ten"])))
+        if trich:
+            ra["trich"] = trich
+    return ra
+
+
+def khoi_dinh_tinh_g7(out_dir: Path, meta: dict, nguon: dict) -> dict:
+    """COREQ 2007 và SRQR 2014 cho bản thảo đề tài định tính và cấu phần định tính của đề tài hỗn hợp (22/11/2026):
+    `gioi_thieu` — câu hỏi nghiên cứu (G1); `phuong_phap_3` — quy trình định tính chủ nhiệm đã chốt (`nguon`: G1 hoặc
+    `mixed_methods.cau_phan_dinh_tinh`, khoá ở `hon_hop.KHOA_QUY_TRINH_DINH_TINH`); `ket_qua` — người được mời, người
+    không tham gia kèm lý do, đặc điểm người tham gia, chủ đề và trích lời minh hoạ nguyên văn từ bản gỡ băng đã khử định
+    danh. Đề tài hỗn hợp thêm GRAMMS 2008: `ban_luan_han_che` — hạn chế do kết hợp (mục 5, `tich_hop.han_che` chủ
+    nhiệm khai ở G1); `ban_luan_ap_dung` — hiểu biết thu được nhờ tích hợp (mục 6), dựng từ chủ đề định tính theo nhóm
+    kết quả định lượng trong tệp kết quả. Mọi dòng chép dữ kiện có thật; vắng ⇒ ô [CẦN] nói rõ thiếu gì (luật liêm
+    chính, không dựng)."""
+    gp = meta.get("gate_params") if isinstance(meta.get("gate_params"), dict) else {}
+    g1 = gp.get("G1") if isinstance(gp.get("G1"), dict) else {}
+    ra: dict = {"gioi_thieu": [], "phuong_phap_3": [], "ket_qua": [], "ban_luan_han_che": [], "ban_luan_ap_dung": []}
+    cau_hoi = _gia_tri_chot(g1.get("research_question"))
+    ra["gioi_thieu"].append(f"*Câu hỏi nghiên cứu:* {cau_hoi}  " if cau_hoi.endswith("?") else
+                            _dong_khai("Câu hỏi nghiên cứu", cau_hoi, "câu hỏi nghiên cứu đã chốt ở G1"))
+    pp = ["**Quy trình thu thập và phân tích dữ liệu định tính:**  "]
+    pp += [_dong_khai(nhan, _gia_tri_chot(nguon.get(k)), nhan.lower()) for k, nhan in _CO_BAN_DINH_TINH_G7
+           if _gia_tri_chot(nguon.get(k))]
+    pp += [_dong_khai(nhan, _gia_tri_chot(nguon.get(k)), viec) for k, nhan, viec, _c in HH.KHOA_QUY_TRINH_DINH_TINH]
+    ra["phuong_phap_3"] += pp + [""]
+    kq = _ket_qua_dinh_tinh_hon_hop(out_dir) if HH.khoi(meta) else _ket_qua_dinh_tinh_de_tai(out_dir)
+    dong = ["**Người tham gia, chủ đề và trích lời minh hoạ (định tính):**  "]
+    if "so_moi" in kq:
+        ly = kq["khong_tham_gia"]
+        k = sum(n for _l, n in ly)
+        dong.append(f"*Người được mời và người không tham gia:* {kq['so_moi']} người được mời; {k} người từ chối hoặc "
+                    "không tham gia, lý do: " + (_noi_va([f"{_ha_chu_dau(ld)} ({n})" for ld, n in ly]) if ly else
+                                                "không có") + f"; {kq['so_phong_van']} người được phỏng vấn.  ")
+    else:
+        dong.append("*Người được mời và người không tham gia:* " + _o_can("số người được mời, số người từ chối hoặc "
+                                                                          "không tham gia kèm lý do (sổ tuyển chọn)")
+                    + "  ")
+    dong.append(f"*Đặc điểm người tham gia:* {kq['dac_diem']}.  " if kq.get("dac_diem") else
+                "*Đặc điểm người tham gia:* " + _o_can("số người được phỏng vấn và đặc điểm chính") + "  ")
+    if kq.get("chu_de"):
+        dong.append("*Chủ đề chính:* " + "; ".join(f"«{c}» ({n}/{kq['tong_ban']} bản gỡ băng)" for c, n in kq["chu_de"])
+                    + ".  ")
+    else:
+        dong.append("*Chủ đề chính:* " + _o_can("các chủ đề rút ra từ phân tích và số bản gỡ băng có chủ đề") + "  ")
+    if kq.get("trich"):
+        dong.append("*Trích lời minh hoạ (mã người tham gia):* " + "; ".join(
+            f"«{loi.rstrip('.')}» ({ma}, chủ đề «{c}»)" for loi, ma, c in kq["trich"]) + ".  ")
+    else:
+        dong.append("*Trích lời minh hoạ (mã người tham gia):* " + _o_can("trích lời nguyên văn từ bản gỡ băng đã khử "
+                                                                          "định danh cho các chủ đề chính") + "  ")
+    ra["ket_qua"] += dong + [""]
+    if HH.khoi(meta):
+        # 22/11/2026 (GRAMMS 2008 mục 5, 6). Nhãn KHÔNG mang từ khoá của mục: ô [CẦN] cùng mệnh đề ⇒ K18 báo thiếu
+        hc = _gia_tri_chot(HH.tich_hop(meta).get("han_che"))
+        ra["ban_luan_han_che"].append(f"{hc[:1].upper()}{hc[1:]}.  " if hc else "*Ảnh hưởng qua lại giữa hai cấu phần:* "
+                                      + _o_can("hạn chế của một cấu phần phát sinh do có mặt cấu phần kia (chủ nhiệm "
+                                               "khai ở gate_params.G1.mixed_methods.tich_hop.han_che)") + "  ")
+        tn = kq.get("theo_nhom") or {}
+        ra["ban_luan_ap_dung"].append(
+            "Tích hợp kết quả hai cấu phần giúp giải thích kết quả định lượng theo nhóm: " + "; ".join(
+                f"{_ha_chu_dau(nh)} nêu " + _noi_va([f"«{c}» ({n}/{kq['tong_ban']} bản gỡ băng)" for c, n in ds])
+                for nh, ds in tn.items()) + ".  " if tn else
+            "*Đối chiếu kết quả hai cấu phần:* " + _o_can("hiểu biết thu được nhờ tích hợp — chủ đề định tính theo "
+                                                          "nhóm kết quả định lượng của người được phỏng vấn (khoá "
+                                                          "`nhom` của từng chủ đề trong tệp kết quả định tính)") + "  ")
+    return ra
+
+
 def khoi_chuan_bao_cao_g7(out_dir: Path, study: str, design_code: str, redcap_vars: Optional[list] = None,
                           reporting_extensions: Optional[list] = None) -> dict:
     """Dòng bản thảo cho các mục chuẩn báo cáo theo thiết kế mà K18 còn báo thiếu (22/11/2026, chiều), theo chỗ đặt:
@@ -3064,9 +3340,7 @@ def khoi_chuan_bao_cao_g7(out_dir: Path, study: str, design_code: str, redcap_va
         # 21b «đạt» khi dòng nội dung còn là ô chờ điền)
         ra["ket_qua"] += ["**Đặc điểm bệnh theo chuẩn tham chiếu (STARD 2015 mục 21):**  ",
                           _phan_bo_muc_do_benh_g7(out_dir, meta, redcap_vars),
-                          "*Chẩn đoán khác ở người không có bệnh đích:* "
-                          + _o_can("phân bố chẩn đoán thay thế ở người không có bệnh đích (chưa có phân tích trên dữ "
-                                   "liệu đã khoá)") + "  ", ""]
+                          _chan_doan_khac_g7(out_dir, meta, redcap_vars), ""]
     elif design_code == "prediction":
         ra["gioi_thieu"].append(_dong_khai("Bất bình đẳng sức khoẻ đã biết giữa các nhóm dân số",
                                            pi("health_inequalities"), "khác biệt sức khoẻ đã biết giữa các nhóm dân "
@@ -3108,11 +3382,16 @@ def khoi_chuan_bao_cao_g7(out_dir: Path, study: str, design_code: str, redcap_va
                        "câu lệnh tìm đầy đủ cho từng cơ sở dữ liệu và sổ đăng ký, kể cả bộ lọc và giới hạn"),
             _dong_khai("Đánh giá nguy cơ sai lệch của từng nghiên cứu", rob,
                        "công cụ, số người đánh giá và có đánh giá độc lập không")) for x in (d, "")]
+        g7 = gp.get("G7") if isinstance(gp.get("G7"), dict) else {}
+        po = g1.get("primary_outcome") if isinstance(g1.get("primary_outcome"), dict) else {}
         ra["ket_qua"] += ["**Nghiên cứu đưa vào tổng hợp và báo cáo không đạt tiêu chí (PRISMA 2020 mục 16b, 17):**  ",
-                          _trich_dan_nc_tong_quan_g7(out_dir),
-                          "*Trích dẫn các báo cáo bị loại ở bước đánh giá toàn văn:* "
-                          + _o_can("trích dẫn (PMID/DOI) từng báo cáo bị loại kèm lý do; sổ sàng lọc chỉ ghi số "
-                                   "đếm") + "  ", ""]
+                          _trich_dan_nc_tong_quan_g7(out_dir), _bao_cao_loai_tong_quan_g7(out_dir), "",
+                          *_muc_chac_chan_tong_quan_g7(g7, _gia_tri_chot(po.get("name")))]
+    # 22/11/2026 (COREQ 2007, SRQR 2014): đề tài định tính hoặc đề tài hỗn hợp có cấu phần định tính
+    nguon_dt = HH.nguon_dinh_tinh(meta)
+    if nguon_dt:
+        for k, v in khoi_dinh_tinh_g7(out_dir, meta, nguon_dt).items():
+            ra[k] += v
     return ra
 
 
@@ -4518,8 +4797,10 @@ def main() -> None:
         ket_qua_g6["phan_nhom"] = dung_phan_nhom_g6(out_dir)
         g1_gp = _g1_g2_g7(out_dir)[0]
         po_g1 = (g1_gp.get("primary_outcome") if isinstance(g1_gp, dict) else None) or {}
+        g7_khai = ((_doc_meta_g7(out_dir).get("gate_params") or {}).get("G7") or {})
         ket_qua_g6["tom_tat_phat_hien"] = khoi_tom_tat_phat_hien_g6(
-            ket_qua_g6, _gia_tri_chot(po_g1.get("name")) if isinstance(po_g1, dict) else "")
+            ket_qua_g6, _gia_tri_chot(po_g1.get("name")) if isinstance(po_g1, dict) else "",
+            _muc_grade_da_khai(g7_khai if isinstance(g7_khai, dict) else {})[0])
     if ket_qua_g6.get("da_dung") and ket_qua_g6.get("k_nghien_cuu"):
         table1_shell = ("*Bảng 1: một dòng mỗi nghiên cứu được đưa vào tổng hợp (PRISMA 2020 mục 17); giá trị chép từ dữ "
                         "liệu đã khoá qua G6, mã lựa chọn đổi sang nhãn từ điển G5; số biến cố từng nhánh ở bảng kết quả "

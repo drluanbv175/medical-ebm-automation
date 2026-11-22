@@ -18,11 +18,18 @@ NGUYÊN VĂN mục: chuẩn có giấy phép Creative Commons lấy từ `chuan_
 © OUP, SRQR © AAMC, GRAMMS — bài không truy cập mở, COSMIN © Springer) KHÔNG lưu nguyên văn: chỉ mã mục, chủ đề ngắn
 tiếng Anh và tiêu chí do hệ viết.
 
-CHƯA ĐỐI CHIẾU BẢNG GỐC: danh mục TREND, COREQ, SRQR do agent đọc qua bản tóm lược WebFetch hoặc nguồn thứ cấp
-(`~/.ebm-worktrees/_du_lieu_chuan_bao_cao_20261121/*.json`, trường `nguon_lay`); lượt tải byte thô bảng gốc ngày
-21/11/2026 thất bại (Europe PMC 500, CDC 403, EQUATOR 404). Theo chỉ thị bác sĩ, ba chuẩn này CHƯA được dùng làm luật
-chặn: mục thiếu báo `canh_bao` (⚠), không làm K17 đỏ — cho tới khi có người đối chiếu bảng gốc và gỡ tên khỏi
-`CHUAN_CHUA_DOI_CHIEU_GOC`.
+CHƯA ĐỐI CHIẾU BẢNG GỐC: danh mục TREND do agent đọc qua bản tóm lược WebFetch (lượt tải byte thô bảng gốc ngày
+21/11/2026 thất bại: Europe PMC 500, CDC 403, EQUATOR 404) — chưa dùng làm luật chặn: mục thiếu báo `canh_bao` (⚠),
+không làm K17 đỏ, cho tới khi đối chiếu được bảng gốc và gỡ tên khỏi `CHUAN_CHUA_DOI_CHIEU_GOC`.
+
+COREQ 2007 VÀ SRQR 2014 — ĐÃ ĐỐI CHIẾU TỪNG MỤC (22/11/2026) với bản in lại toàn văn bảng gốc trong các bài truy cập mở
+CC BY 4.0 (bài gốc OUP/AAMC cần thuê bao; không đối chiếu trực tiếp bài gốc): COREQ — Bảng A1 «COREQ Checklist» của
+PMC12567161 (Nurs Rep 2025, DOI 10.3390/nursrep15100347, dẫn Tong 2007) và PMC12731783 (Clin Pract 2025, DOI
+10.3390/clinpract15120232): 32 mục, chủ đề + câu hỏi hướng dẫn, hai bản in độc lập trùng chữ; SRQR — Phụ lục A
+PMC12027544 (J Clin Med 2025, DOI 10.3390/jcm14082740): 21 mục, tên mục + mô tả + chú thích của biểu mẫu SRQR, trùng mô
+tả 21 mục S1–S21 in ở PMC13289893 (PLoS One). Sau đối chiếu đã sửa tiêu chí COREQ 8, 10, 11, 14 và SRQR S11; nhãn chủ đề
+khớp cả 53 mục. Bật CHẶN 22/11/2026 sau khi bộ sinh đề cương nộp và bản thảo G7 viết đủ mục cho ba kịch bản có cấu
+phần định tính (0 mục thiếu ở cả ba tầng văn bản) — nguồn ghi ở `NGUON_DOI_CHIEU_BAN_IN_LAI`.
 
 GIỚI HẠN (như K17): yếu tố có mặt ≠ nội dung đúng. Bộ kiểm bắt THIẾU một cách tin cậy; ĐẠT chỉ là «có dấu hiệu đủ yếu
 tố», người phân xử đọc bằng chứng từng dòng.
@@ -104,8 +111,18 @@ DINH_LUONG_CP = (r"hồi quy|kiểm định (thống kê|chi bình phương|t\b)
 # ───────────────────────── chuẩn chưa đối chiếu bảng gốc (chỉ cảnh báo) ─────────────────────────
 CHUAN_CHUA_DOI_CHIEU_GOC: Dict[str, str] = {
     "TREND 2004": "danh mục đọc qua bản tóm lược WebFetch trang PMC1448256 (byte thô bị chặn: Europe PMC 500, CDC 403)",
-    "COREQ 2007": "nhãn từ Bảng 2 nguồn thứ cấp CC BY (PMC8436506) + bản dịch SciELO; bài gốc OUP chỉ cho thuê bao",
-    "SRQR 2014": "nhãn từ chú thích Hình 3 nguồn thứ cấp CC BY (PMC13289893); bài gốc AAMC chỉ cho thuê bao",
+}
+#: Chuẩn ĐÃ đối chiếu từng mục với bản in lại toàn văn bảng gốc nhưng CHƯA bật chặn (lý do là khoảng hở đo được của
+#: bộ sinh). 22/11/2026: COREQ 2007 và SRQR 2014 đã gỡ khỏi tập — bộ sinh đề cương nộp và bản thảo G7 viết đủ mục cho
+#: cả ba kịch bản có cấu phần định tính (định tính, định tính chân thực, RCT hỗn hợp: 0 mục thiếu ở đề cương nộp, bản
+#: thảo và báo cáo tổng hợp), nên hai chuẩn nay CHẶN như mọi chuẩn đã đối chiếu.
+CHUAN_DA_DOI_CHIEU_CHUA_CHAN: Dict[str, str] = {}
+#: nguồn đối chiếu của chuẩn bản quyền nhà xuất bản (không lưu nguyên văn) — nói đúng sự thật: bản in lại toàn văn
+#: bảng gốc trong bài CC BY, không phải bài gốc
+NGUON_DOI_CHIEU_BAN_IN_LAI: Dict[str, str] = {
+    "COREQ 2007": ("đối chiếu từng mục với bản in lại toàn văn bảng gốc trong PMC12567161 và PMC12731783 (CC BY 4.0)"),
+    "SRQR 2014": ("đối chiếu từng mục với bản in lại toàn văn bảng gốc trong PMC12027544 (CC BY 4.0), trùng mô tả ở "
+                  "PMC13289893"),
 }
 
 NGUON_CHUAN_THEM: Dict[str, str] = {
@@ -795,24 +812,26 @@ _COREQ: Dict[str, tuple] = {
           (_y("người tham gia biết về người phỏng vấn/mục đích", r"giới thiệu (người phỏng vấn|bản thân|nhóm nghiên "
                                                                  r"cứu)"
                                                                  r"|được (giải thích|thông báo).{0,120}mục đích"),)),
-    "8": (("nhom_nc", "sai_so"), "bat_buoc", "Nêu đặc điểm/thiên kiến/giả định của người phỏng vấn và cách phản tư.",
-          (_y("phản tư/thiên kiến", r"phản tư|thiên kiến|giả định|định kiến|ảnh hưởng của người phỏng vấn"),)),
+    "8": (("nhom_nc", "sai_so"), "bat_buoc",
+          "Nêu đặc điểm được báo cáo về người phỏng vấn: thiên kiến, giả định, lý do và mối quan tâm với chủ đề.",
+          (_y("phản tư/thiên kiến", r"phản tư|thiên kiến|giả định|định kiến|ảnh hưởng của người phỏng vấn|"
+                                    r"mối quan tâm (với|đến) (chủ đề|đề tài)"),)),
     "9": (("thiet_ke", "tiep_can"), "bat_buoc", "Nêu định hướng phương pháp luận và lý thuyết nền.",
           (_y("định hướng phương pháp luận", r"hiện tượng học|lý thuyết (nền|cơ sở)|grounded|phân tích (chủ đề|nội "
                                              r"dung)|"
                                              r"dân tộc học|nghiên cứu trường hợp|thematic"),)),
     "10": (("chon_mau",), "bat_buoc", "Mô tả cách chọn người tham gia.",
-           (_y("cách chọn mẫu", r"có chủ đích|chủ định|quả bóng tuyết|thuận tiện|lý thuyết|đa dạng"),)),
+           (_y("cách chọn mẫu", r"có chủ đích|chủ định|quả bóng tuyết|thuận tiện|liên tiếp|lý thuyết|đa dạng"),)),
     "11": (("chon_mau", "quy_trinh", "tiep_can"), "bat_buoc", "Mô tả cách tiếp cận người tham gia (trực tiếp, điện "
                                                               "thoại…).",
-           (_y("cách tiếp cận người tham gia", r"(mời|tiếp cận|liên hệ).{0,80}(trực tiếp|điện thoại|thư|qua|tại)|"
+           (_y("cách tiếp cận người tham gia", r"(mời|tiếp cận|liên hệ).{0,80}(trực tiếp|điện thoại|thư|email|qua|tại)|"
                                                r"giới thiệu (bởi|qua)"),)),
     "12": (("co_mau",), "bat_buoc", "Nêu số người tham gia dự kiến.", (_y("số người tham gia", CO_MAU_CUOI),)),
     "13": (("du_kien_kq", "quy_trinh", "chon_mau"), "ke_hoach", "Lên kế hoạch ghi số người từ chối/rút lui và lý do.",
            (_y("từ chối/rút lui và lý do", r"(từ chối|rút lui|không tham gia).{0,80}lý do|lý do (từ chối|rút lui)"),)),
     "14": (("dia_diem", "tiep_can", "quy_trinh"), "bat_buoc", "Nêu nơi thu thập dữ liệu.",
-           (_y("nơi phỏng vấn", r"(phòng|tại|nơi) (riêng|yên tĩnh|khám|nhà)|tại (phòng khám|khoa|nhà|bệnh "
-                                r"viện)|" + NOI),)),
+           (_y("nơi phỏng vấn", r"(phòng|tại|nơi) (riêng|yên tĩnh|khám|nhà|làm việc)|tại (phòng khám|khoa|nhà|bệnh "
+                                r"viện|nơi làm việc)|" + NOI),)),
     "15": (("tiep_can", "quy_trinh", "dao_duc"), "bat_buoc", "Nêu có người khác có mặt khi thu thập dữ liệu không.",
            (_y("người khác có mặt", r"(có|không có) (người )?(khác|thân|người nhà) (có mặt|tham dự)|riêng (tư|biệt)|"
                                     r"chỉ có "
@@ -898,7 +917,7 @@ _SRQR: Dict[str, tuple] = {
             (_y("phương pháp thu thập", r"phỏng vấn|thảo luận nhóm|quan sát|nhóm tiêu điểm"),
              _y("mốc/trình tự", NGAY + r"|song song|lặp|đồng thời"))),
     "S11": (("cong_cu", "tiep_can", "phieu"), "bat_buoc", "Mô tả công cụ (hướng dẫn phỏng vấn) và thiết bị (máy ghi "
-                                                          "âm).",
+                                                          "âm); công cụ có thay đổi trong quá trình nghiên cứu không.",
             (_y("hướng dẫn phỏng vấn", r"hướng dẫn phỏng vấn|bộ câu hỏi"), _y("thiết bị ghi", r"ghi (âm|hình)|máy "
                                                                                               r"ghi"))),
     "S12": (("co_mau", "du_kien_kq", "doi_tuong"), "bat_buoc", "Nêu số và đặc điểm người tham gia (có thể ở Kết quả).",
@@ -1333,7 +1352,8 @@ def danh_sach_muc_them(chuan: str) -> Optional[List[MucKiem]]:
         return None
     bang, nguon = BANG[chuan]
     van = nguon()
-    chan = chuan not in CHUAN_CHUA_DOI_CHIEU_GOC
+    chan = chuan not in CHUAN_CHUA_DOI_CHIEU_GOC and chuan not in CHUAN_DA_DOI_CHIEU_CHUA_CHAN
+    ly_do_khong_chan = CHUAN_DA_DOI_CHIEU_CHUA_CHAN.get(chuan, "")
     ra = []
     for ma, tc in bang.items():
         phan, muc_do, tieu_chi, yeu_to = tc[:4]
@@ -1341,5 +1361,5 @@ def danh_sach_muc_them(chuan: str) -> Optional[List[MucKiem]]:
         cung = bool(tc[6]) if len(tc) > 6 else False
         chu_de, nguyen_van = van.get(ma, (ma, None))
         ra.append(MucKiem(chuan, ma, chu_de, nguyen_van, tieu_chi, tuple(phan), tuple(yeu_to), muc_do, khi, ly_do, cung,
-                          chan))
+                          chan, ly_do_khong_chan=ly_do_khong_chan))
     return ra

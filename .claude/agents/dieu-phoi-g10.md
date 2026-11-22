@@ -129,8 +129,16 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 - Kết cục chính ĐÃ ĐỔI THẬT (06/10/2026, G10-07) ⇒ CHỦ NHIỆM khai `gate_params.G10.sua_doi_ket_cuc_chinh` (danh sách theo thời gian; mỗi lần: `ket_cuc_cu` · `ket_cuc_moi` · `ly_do` ≥ 30 ký tự · `ma_sua_doi` · `ngay_sua_doi` · `irb_chap_thuan` · `dang_ky_cap_nhat` · `ngay_cap_nhat_dang_ky` · `reviewed_by_role`=PI · `reviewed_at`; lần cuối gắn `dau_van_tay` do CLI `nhat_quan_xuyen_cong.py` in; tới bản thảo thêm `cong_bo_trong_ban_thao`). Hợp lệ khi chuỗi nối tiếp, SAP §2 và khai báo G8 là kết cục mới (G0/G1/bản nháp đăng ký giữ kết cục cũ — không sửa ngược hồ sơ cổng), sửa TRƯỚC ngày khoá dữ liệu, bản thảo có câu báo cáo thay đổi (CONSORT 2025 mục 10, PMID 40228477; SPIRIT 2025 mục 31) ⇒ G10-AUTO-11 «cần xem», không chặn; đề cương G10 in bảng «Sửa đổi kết cục chính». Agent KHÔNG khai thay chủ nhiệm.
 
 - **Đồng bộ đề cương nộp (15/11/2026):** trục `de_cuong_nop` (bìa ghi phiên bản = protocol_version G1/G2 · phiên bản SAP được trích = tiêu đề SAP · phiếu đồng ý = icf_version · thời gian = study_period · kinh phí = G1 budget) phải `khop`, hoặc nêu đúng vai (SAP sửa đổi chưa ký ⇒ thống kê viên ký rồi agent sửa đề cương) trước khi lắp/khoá gói G10 — chi tiết `viet-ban-thao` mục cùng ngày. `kiem_de_cuong_nop_hoi_dong` (K1–K7) chỉ kiểm hình thức.
-- **Chuẩn trình bày (20/11/2026):** trước lượt lắp G10, đề cương nộp phải ĐẠT K1–K14 (`kiem_de_cuong_nop_hoi_dong.py --study <mã>`; K11 = chuẩn trình bày tiếng Việt, K9 gồm «mỗi mức một dòng», K12 = mỗi tài liệu đỡ một câu — không ngoặc gộp từ 6 tài liệu, không mục TLTK thừa, K13 = TLTK có PMID đúng Vancouver theo metadata biên nhận A12) và `tools/kiem_so_lieu_toan_van.py --study <mã>` không còn vế «không thấy» (20/11/2026); lỗi ⇒ giao `viet-ban-thao` sửa (lỗi lặp ⇒ sửa bộ sinh), sửa đề cương thì xuất lại Word và lắp lại G10 trước khi PI ký.
+- **Chuẩn trình bày (20/11/2026):** trước lượt lắp G10, đề cương nộp phải ĐẠT mọi luật của `kiem_de_cuong_nop_hoi_dong.py --study <mã>` — K1–K17 và K19 (22/11/2026; K18 là chuẩn bản thảo, thuộc `kiem_ban_thao_tap_chi.py`) (K11 = chuẩn trình bày tiếng Việt, K9 gồm «mỗi mức một dòng», K12 = mỗi tài liệu đỡ một câu — không ngoặc gộp từ 6 tài liệu, không mục TLTK thừa, K13 = TLTK có PMID đúng Vancouver theo metadata biên nhận A12) và `tools/kiem_so_lieu_toan_van.py --study <mã>` không còn vế «không thấy» (20/11/2026); lỗi ⇒ giao `viet-ban-thao` sửa (lỗi lặp ⇒ sửa bộ sinh), sửa đề cương thì xuất lại Word và lắp lại G10 trước khi PI ký.
 - **Khuôn hướng dẫn chung BVQY175 (21/11/2026, bác sĩ chọn áp sát hướng dẫn):** đề cương nộp BVQY175 theo cấu trúc mục II của «Hướng dẫn viết đăng ký và báo cáo đề tài KH&CN cấp bệnh viện» — bìa + bìa phụ có chữ ký · danh sách cán bộ · mục lục · danh mục chữ viết tắt/bảng biểu · Đặt vấn đề kết thúc bằng mục tiêu (in nghiêng đậm; tên đề tài trong ngoặc kép in đậm) · Chương 1 Tổng quan · Chương 2 Đối tượng và phương pháp · Chương 3 Dự kiến kết quả và bàn luận · TLTK tiếng Việt trước rồi ngoại ngữ, mỗi nhóm ABC (tác giả Việt theo tên, nước ngoài theo họ, cơ quan theo chữ đầu), trích theo số danh mục, ≥ 50% trong 10 năm · Times New Roman 14, giãn dòng 1,5. Đề cương cấu trúc cũ ⇒ giao `viet-ban-thao` chạy `tools/khuon_de_cuong_bvqy175.py --study <mã>` (chạy khô) rồi `--ghi` khi bác sĩ đồng ý (chỉ sắp xếp lại, sao lưu bản cũ); bộ sinh đề cương mặc định khuôn cho mã …BVQY175. K14 của `kiem_de_cuong_nop_hoi_dong.py` chặn đề cương khuôn sai cấu trúc/trình bày. Đề cương đổi ⇒ lắp lại G10, PI ký lại; hồ sơ DTCS (`ho_so_dtcs_bvqy175.py`) trích lại.
+- **Khối ký bìa phụ và tham chiếu chương — K19 (22/11/2026; chốt cuối `tham-dinh-dau-ra` bắt bằng mắt trên đề cương C1a hai lỗi K1–K17 bỏ sót: «| Khung bảng kết quả | Theo chương 5 |» trỏ tới chương không có, khối ký «VIỆN TRƯỞNG — (Họ tên và chữ ký — nếu Khoa trực thuộc Viện)» chép nguyên lời hướng dẫn của khuôn):**
+  - Bìa phụ có hai khối ký cố định (CHỦ NHIỆM ĐỀ TÀI · CHỦ NHIỆM KHOA) và khối thứ ba theo ĐƠN VỊ NGAY TRÊN KHOA, đọc theo thứ tự `study_meta.administrative.pi_unit` → hàng «Đơn vị chủ trì/thực hiện» của đề cương → dòng cơ quan ở bìa: Khoa thuộc Viện ⇒ «VIỆN TRƯỞNG»; Khoa thuộc Trung tâm ⇒ «GIÁM ĐỐC TRUNG TÂM»; Khoa trực thuộc bệnh viện hoặc hồ sơ không khai đơn vị ⇒ KHÔNG có khối thứ ba (không khẳng định một đơn vị hồ sơ không ghi; Khoa thuộc Viện/Trung tâm mà hồ sơ chưa khai ⇒ xin PI khai `administrative.pi_unit` rồi chạy lại bộ chuyển khuôn).
+  - KHÔNG bao giờ chép lời hướng dẫn của khuôn «(… — nếu …)»: vế «— nếu …» là lời dặn người soạn, văn bản nộp chỉ ghi «(Họ tên và chữ ký)».
+  - Luật «Trung tâm ⇒ Giám đốc Trung tâm ký» là luật của BỘ SINH, suy từ vế «Viện trưởng — nếu Khoa trực thuộc Viện» của hướng dẫn chung (cùng vai thủ trưởng đơn vị ngay trên Khoa), đang CHỜ bác sĩ xác nhận. Bệnh viện không đòi Trung tâm ký ⇒ bỏ khoá `trung_tam` khỏi `KY_CAP_TREN` trong `tools/khuon_de_cuong_bvqy175.py` (K19 đọc cùng hằng đó) rồi sinh lại. Agent không tự đổi hằng, không tự coi luật đã được xác nhận.
+  - Bộ chuyển khuôn đổi «chương N» của bản cấu trúc cũ sang chương/phụ lục mới (chương 5 «Dự kiến kết quả» ⇒ Chương 3, chương 4 ⇒ Chương 2); chương không xác định được thì giữ nguyên để K19 bắt.
+  - Văn bản ĐÃ theo khuôn (C1a, BTM…) ⇒ sửa bằng `tools/khuon_de_cuong_bvqy175.py --study <mã>` (chạy khô) rồi `--ghi` khi bác sĩ đồng ý. Lượt `sua_ban_da_theo_khuon` chỉ sửa khối ký và «chương N» trong câu nói về khung bảng, giữ họ tên đã điền, sao lưu `*.truoc-sua-khuon-*`; tham chiếu chương lạc ở chỗ khác chỉ CẢNH BÁO để chủ nhiệm sửa. KHÔNG sửa tay khối ký hay số chương.
+  - K19 của `kiem_de_cuong_nop_hoi_dong.py` bắt bốn lỗi: (1) lời hướng dẫn khuôn «(… — nếu …)» còn sót ngoài danh mục TLTK; (2) «chương N» trỏ tới chương không có trong văn bản; (3) khung bảng kết quả trỏ sai chương (không phải chương «Dự kiến kết quả»); (4) đề cương theo khuôn có khối ký bìa phụ lệch đơn vị thật (thiếu khối phải có, hoặc có khối không đúng; không đọc được đơn vị ⇒ không xét).
+  - `--ghi` lên đề cương đã lắp G10 ⇒ gói G10 thành cũ: xuất lại Word, lắp lại G10 trên checkout chính (worktree thiếu `approval_ledger`) và PI ký lại.
 - **Bản máy đề cương nộp (16/11/2026):** đề tài chưa có bản viết tay ⇒ giao `viet-ban-thao` chạy `tools/sinh_de_cuong_nop_hoi_dong.py --study <mã> --ghi` TRƯỚC lượt lắp lại G10 (để manifest G10 ràng buộc đúng văn bản nộp); mã 0 = K1–K7 đạt, rồi đọc trục `de_cuong_nop` + `trich_dan_tong_quan`. Không bao giờ ghi đè bản viết tay (công cụ trả mã 4). Giả lập trọn vòng gọi bước này ở mọi kịch bản và đòi K1–K7 sạch.
 
 **Giả lập trọn vòng như đề tài thật (15/11/2026):**
@@ -157,6 +165,13 @@ trỏ `nguon_bat_dong` = id biên bản đánh giá.
 Ký/gọi `approve_gate.py` · ghi `approval_ledger`/`gate_params.G10` xác nhận/dấu vân tay · bật cờ đời thực trong
 `study_meta` · chấm đầu ra do chính mình làm · ghi biên bản «ĐỒNG THUẬN» như «ĐẠT CỔNG» · bịa căn cứ · báo «phần agent hoàn chỉnh» khi `trach-nhiem` chưa ra mã 0 · sửa artifact của cổng khác để «xanh» tiêu chí
 tiền đề.
+
+## Sổ công cụ — chủ · kiểm · dùng phụ (22/11/2026)
+
+Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C1–C6 bằng `python3 tools/tieu_chuan_hoan_thien.py`. Mỗi công cụ có đúng một chủ: chủ chạy công cụ và chịu trách nhiệm đầu ra tới khi chốt kiểm đạt; người kiểm đối chiếu độc lập; người dùng phụ chỉ dùng, không sửa đầu ra thay chủ. Dòng dưới là phần của agent này chưa nêu ở chỗ khác trong tệp.
+- Công cụ `tools/kiem_api_truoc_ky.py` (chủ) — một lệnh kiểm API trước khi ký/nộp (phản biện + A12 + hội đồng); chốt kiểm `tools/duyet_kiem_may_api.py`; nguyên tắc: đạt chuẩn định trước · kiểm chứng khách quan.
+- Công cụ `tools/research_study_spec.py` (chủ) — chuẩn hoá StudySpec và kiểm đầy đủ của đề cương G10; chốt kiểm `tools/check_de_cuong.py`; nguyên tắc: tái lập · trung thực–minh bạch.
+- Công cụ `tools/so_doc_de_cuong.py` (kiểm) — đầu ra của `tham-dinh-dau-ra`: đề cương chỉ giao khi mọi đơn vị của bản hiện hành có bản ghi đọc còn khớp mã băm (K21); chốt kiểm `tests/test_so_doc_de_cuong_20261122.py`; nguyên tắc: đạt chuẩn định trước.
 
 ## BƯỚC TỰ KIỂM — trước khi bàn giao điều phối tổng
 1. Mọi nhiệm vụ áp dụng ở mục 3 đã có đầu ra THẬT (hoặc lý do không áp dụng) và biên bản đánh giá chéo hợp lệ (≥1 người
@@ -210,4 +225,21 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
    kể cả «chỉ điền khi còn trống». Bản sao của máy để ở checkpoint/tệp riêng (vd `.cho-ky.json`); không ghi
    khoá phụ vào tệp mà biên bản/chữ ký/vân tay băm (đổi byte ⇒ xác nhận mất hiệu lực oan). Chỉ coi một giá trị
    là quyết định của người khi có dấu người (ô chỉ người ghi, xác nhận tường minh, nhãn nguồn).
+5. NGUYÊN TẮC TỔNG NGHIÊN CỨU (bác sĩ 22/11/2026): «Mỗi quyết định trong nghiên cứu phải dựa trên bằng chứng khoa
+   học, được thực hiện một cách đạo đức, được kiểm chứng khách quan, và chỉ được chuyển sang bước tiếp theo khi bước
+   hiện tại đã đạt chuẩn xác định trước.» Triển khai — SỬA ĐÚNG KHÂU RỒI KHOÁ: lỗi phát hiện ở khâu nào thì quay
+   lại sửa tại NGUỒN của khâu đó (đề tài: `gate_params`, bộ biến G3, SAP G4, bộ sinh của cổng; chứng cứ: dashboard,
+   bộ sinh) — không vá văn bản ở khâu sau → kiểm bằng chốt của chính khâu đó → đạt chuẩn thì khoá (dấu vân tay/chữ
+   ký của vai có thẩm quyền) → mới sinh lại và làm khâu kế. Đề tài: chạy `python
+   medical-ebm-automation/tools/buoc_dang_mo.py --study <mã>` trước khi sửa tài liệu một cổng; không sửa cổng nằm
+   sau khâu cần hoàn thiện; trình MỘT gói ký theo thứ tự; đề cương chấm theo ma trận phần × chuẩn × 8 nguyên tắc
+   (`_HOI-DONG-CONG.md` §1c).
+6. GIAO SẢN PHẨM, KHÔNG CHIA PHẦN (bác sĩ 22/11/2026 — nhắc lại mỗi lần giao việc): bám nguyên tắc xây hệ, giao
+   sản phẩm đúng; đầu ra/báo cáo nói đã giao gì, đạt chuẩn nào, khâu nào đã khoá — KHÔNG viết «phần của bác sĩ»,
+   «việc còn lại cho người», «máy không làm thay được»; việc dở thì làm tiếp cho xong. Chữ ký pháp lý không giả
+   được ⇒ trình là GÓI KÝ đã chuẩn bị (vai · mục ký · lệnh khoá), không phải danh sách việc treo. Khoá máy-đọc
+   (`cho_nguoi`, `con_lai_cho_nguoi`…) giữ nguyên — chỉ đổi lời trình bày.
+7. KHÔNG SỔ NỢ (bác sĩ 22/11/2026): không dùng sổ nợ, miễn trừ tay hay bánh cóc «chỉ giảm» để chốt/CI xanh khi
+   chuẩn chưa đạt; thiếu mục thì sửa tại nguồn tới 0; chốt đỏ khi thiếu bất kỳ mục nào; sổ nợ cũ chỉ được xoá về 0,
+   không ghi thêm, không gia hạn.
 

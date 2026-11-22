@@ -7,6 +7,6 @@ Sai lệch đo lường,co,§3,Đặc tính đo lường của bộ câu hỏi,,
 Sai lệch đo thời gian chờ,co,§5,TÁCH BẠCH,,"Nguồn tự báo cáo phân tích tách bạch, không trộn với mốc HIS",
 Sai lệch do mong muốn xã hội,co,§3,sàn/trần,,Tỷ lệ điểm trần — ngưỡng 15% (Terwee),Sai lệch do mong muốn xã hội
 Nhiễu,co,§5,DAG,,Tập biến hiệu chỉnh khoá theo DAG (Phụ lục D đề cương),Nhiễu tồn dư
-Nhiễu do tình trạng sức khỏe và kỳ vọng,co,§5,suckhoe_tudanhgia | vai trò trung gian của kỳ vọng,,Hiệu chỉnh tự đánh giá sức khỏe (forced-in) + thăm dò kỳ vọng — phương pháp chờ thống kê viên chọn,Tình trạng sức khỏe và kỳ vọng
+Nhiễu do tình trạng sức khỏe và kỳ vọng,co,§5,suckhoe_tudanhgia | vai trò trung gian của đánh giá dịch vụ so với mong đợi | kỳ vọng về thời gian chờ như yếu tố điều chỉnh,,Hiệu chỉnh tự đánh giá sức khỏe (forced-in) + thăm dò kỳ vọng: trung gian qua xacnhan_kyvong và tương tác thoigian_cho × kyvong_thoigiancho,Tình trạng sức khỏe và kỳ vọng
 Gom cụm theo bàn khám,co,§4,robust theo chùm | báo ICC,,Sai số chuẩn vững theo chùm ma_ban_kham; ICC cho G1 và A–F,
 Dữ liệu thiếu,co,§6,MICE,,"Complete-case chính, MICE nhạy cảm",

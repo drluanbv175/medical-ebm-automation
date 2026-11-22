@@ -57,6 +57,18 @@ Luật (mỗi lỗi một dòng; rỗng = đạt):
       áp dụng cho thiết kế — STROBE 2007, RECORD 2015 (dữ liệu thường quy), CROSS 2021 (khảo sát), chuẩn Việt Nam
       (TT43/2024, Luật 91/2025); dòng còn ô trống «………» không tính là có yếu tố. Đo chi tiết:
       `kiem_chuan_de_cuong_theo_muc.py --study <mã> [--chi-tiet]`.
+  K19 (22/11/2026; tham-dinh-dau-ra bắt trên C1a): không lời hướng dẫn của khuôn «(… — nếu …)» còn sót; mọi «chương N»
+      trỏ tới chương có trong văn bản, khung bảng kết quả trỏ đúng chương «Dự kiến kết quả»; đề cương theo khuôn có khối
+      ký thứ ba của bìa phụ đúng đơn vị thật (Viện ⇒ Viện trưởng, Trung tâm ⇒ Giám đốc Trung tâm, trực thuộc bệnh viện ⇒
+      không có). Sửa bằng bộ sinh: `khuon_de_cuong_bvqy175.py --study <mã> --ghi` (không sửa tay).
+  K20 (22/11/2026; bác sĩ: mỗi tiêu chuẩn trong mỗi phần đề cương đạt 8 nguyên tắc): ma trận phần × 8 nguyên tắc của
+      `tam_nguyen_tac_de_cuong.py`. Ô 🔴 do phép đo NGOÀI K1–K19 thì CHẶN (lỗi của chính K1–K19 đã báo tại chỗ, không
+      nhân đôi). Ô ⚪ «chưa đo được» chỉ BÁO kèm số lượng (cảnh báo), CHƯA chặn — chặn ⚪ khi phép đo chưa xây là làm đỏ
+      giả. Cảnh báo in trục tổng 5 tiêu chí (giá trị · phương pháp · khả thi · đạo đức · kiểm chứng được) đầu tiên.
+  K21 (22/11/2026; bác sĩ: «Đề cương phải được đọc từng câu từng chữ trước khi hoàn thành đưa cho tôi»): sổ đọc từng đơn
+      vị `so_doc_de_cuong.py`. Đề cương ở trạng thái TRÌNH (có G10_checkpoint.json và G10 chấm sống READY/PASS) mà sổ
+      phủ < 100% đơn vị của bản hiện hành (bản ghi mang băm cũ = chưa đọc) hoặc còn đơn vị «sua» chưa xử lý ⇒ CHẶN.
+      Chưa tới trạng thái trình ⇒ chỉ báo tỷ lệ phủ (cảnh báo), không chặn.
 
 Lệnh:  python3 tools/kiem_de_cuong_nop_hoi_dong.py --study <mã> [--json]
 Mã thoát: 0 đạt · 1 có lỗi · 2 thiếu tệp đề cương nộp.
@@ -821,13 +833,71 @@ def loi_k14(md: str, nam: Optional[int] = None) -> List[str]:
     return loi
 
 
+# K19 (22/11/2026 — chốt cuối tham-dinh-dau-ra bắt trên đề cương C1a hai lỗi K1–K17 bỏ sót, cùng gốc «khuôn chép
+# nguyên»): «| Khung bảng kết quả | Theo chương 5 |» trỏ tới một chương không có (khuôn chỉ có Chương 1–3; «5» là số
+# chương của cấu trúc cũ) và khối ký «VIỆN TRƯỞNG — (Họ tên và chữ ký — nếu Khoa trực thuộc Viện)» chép nguyên lời hướng
+# dẫn của khuôn, sai đơn vị thật (Khoa C1a thuộc Trung tâm C1). Bác sĩ 17/11: văn bản nộp đọc như văn bản thật.
+_LOI_HUONG_DAN_KHUON_RE = re.compile(r"\([^()\n]*\s[—–-]\s*nếu\s[^()\n]*\)", re.I)
+_THAM_CHIEU_CHUONG_RE = re.compile(r"(?<!\w)(?i:chương)\s+(\d+)(?![\d.]?\d)")
+_NHAN_KY_CAP_TREN = {"VIỆN TRƯỞNG": "vien", "GIÁM ĐỐC TRUNG TÂM": "trung_tam"}
+
+
+def loi_k19(md: str, don_vi: str = "") -> List[str]:
+    """K19 — dấu vết khuôn và tham chiếu chương: (1) không lời hướng dẫn của khuôn «(… — nếu …)» ngoài danh mục tài liệu
+    tham khảo; (2) mọi «chương N» trỏ tới chương có trong văn bản (khuôn: «# CHƯƠNG N.»; cấu trúc cũ: «# N. …»), câu nói
+    về khung bảng trỏ đúng chương «Dự kiến kết quả»; (3) đề cương theo khuôn: khối ký thứ ba của bìa phụ khớp đơn vị
+    thật — Khoa thuộc Viện ⇒ «VIỆN TRƯỞNG», thuộc Trung tâm ⇒ «GIÁM ĐỐC TRUNG TÂM», trực thuộc bệnh viện ⇒ không có khối
+    thứ ba. `don_vi` = đơn vị của chủ nhiệm trong study_meta (ưu tiên); không có thì đọc đơn vị trong chính đề cương;
+    không đọc được đơn vị ⇒ không xét (3)."""
+    loi: List[str] = []
+    dong = md.splitlines()
+    khuon = bool(re.search(r"^# CHƯƠNG 1\.", md, re.M))
+    mau_chuong = r"^#\s+CHƯƠNG\s+(\d+)\.\s*(.*)$" if khuon else r"^#\s+(\d+)\.\s+(.*)$"
+    chuong = {m.group(1): _chuan(m.group(2)) for d in dong for m in [re.match(mau_chuong, d)] if m}
+    chuong_kq = next((n for n, t in chuong.items() if "DỰ KIẾN KẾT QUẢ" in t), None)
+    ngoai, _muc = _tach_tltk(md)
+    for so, d in ngoai:
+        if d.startswith("#"):
+            continue
+        m_hd = _LOI_HUONG_DAN_KHUON_RE.search(d)
+        if m_hd:
+            loi.append(f"K19 dòng {so}: còn lời hướng dẫn của khuôn «{m_hd.group(0)[:70]}» — văn bản nộp chỉ ghi điều "
+                       "đã xác định theo hồ sơ")
+        if not chuong:
+            continue
+        for m in _THAM_CHIEU_CHUONG_RE.finditer(d):
+            if m.group(1) not in chuong:
+                loi.append(f"K19 dòng {so}: «{m.group(0)}» trỏ tới chương không có (văn bản có chương "
+                           f"{', '.join(sorted(chuong, key=int))})")
+            elif chuong_kq and m.group(1) != chuong_kq and re.search(r"(?i)khung bảng", d):
+                loi.append(f"K19 dòng {so}: khung bảng kết quả nằm ở chương {chuong_kq}, không phải «{m.group(0)}»")
+    if not khuon:
+        return loi
+    import goi_bao_ve_hoi_dong as GB  # noqa: PLC0415
+    import khuon_de_cuong_bvqy175 as KDC  # noqa: PLC0415 — tránh nạp vòng (bộ chuyển khuôn gọi bộ kiểm này)
+
+    dau_h1 = next((i for i, d in enumerate(dong) if re.match(r"^#\s", d)), len(dong))
+    co = {loai for d in dong[:dau_h1] for nhan, loai in _NHAN_KY_CAP_TREN.items() if d.strip() == f"**{nhan}**"}
+    mh = KDC.trich_thong_tin(dong, GB.doc_muc(dong))
+    loai, ten = KDC.don_vi_cap_tren(don_vi, mh.don_vi, "\n".join(KDC._dong_co_quan(dong)))
+    if loai == "khong_ro":
+        return loi
+    if loai in KDC.KY_CAP_TREN and loai not in co:
+        loi.append(f"K19 bìa phụ thiếu khối ký «{KDC.KY_CAP_TREN[loai]}» — hồ sơ khai Khoa thuộc «{ten}»")
+    for x in sorted(co - {loai}):
+        noi = f"Khoa thuộc «{ten}»" if ten else "Khoa trực thuộc bệnh viện"
+        loi.append(f"K19 bìa phụ có khối ký «{KDC.KY_CAP_TREN[x]}» nhưng hồ sơ khai {noi} — khối ký theo đơn vị thật "
+                   "(sửa: khuon_de_cuong_bvqy175.py --study <mã> --ghi)")
+    return loi
+
+
 def loi_k17(md: str, thiet_ke: str) -> List[str]:
     """K17 (21/11/2026, bác sĩ: «từng tiêu chuẩn trong từng cấu trúc đề cương phải đạt tiêu chuẩn», cho MỌI thiết kế) —
     đề cương nộp phải đủ yếu tố của từng mục phương pháp/kế hoạch của mọi chuẩn áp dụng: STROBE 2007 (quan sát), RECORD
     2015 (dữ liệu thường quy), CROSS 2021 (khảo sát bằng bộ câu hỏi), chuẩn Việt Nam (TT43/2024, Luật 91/2025),
     COSMIN 2021 (kiểm định bộ câu hỏi). Bộ đo ở `kiem_chuan_de_cuong_theo_muc.py`. Chuẩn đã có tiêu chí nhưng bộ sinh
     chưa phủ (SPIRIT, PRISMA-P, STARD, TRIPOD+AI, GRAMMS, SQUIRE, CHEERS, CARE — `KCM.CHUAN_CHO_BO_SINH`) và chuẩn
-    chưa đối chiếu bảng gốc (TREND, COREQ, SRQR) chỉ CẢNH BÁO (`canh_bao_k17`, in ⚠ kèm) — không chặn, không tính là
+    chưa đối chiếu bảng gốc (TREND) chỉ CẢNH BÁO (`canh_bao_k17`, in ⚠ kèm) — không chặn, không tính là
     đạt.
 
     Chặn MỌI đề cương nộp, cả bản nháp cấu trúc cũ 1–7 (21/11/2026): trước đó chỉ chặn bản theo khuôn «# CHƯƠNG 1.»
@@ -861,6 +931,28 @@ def canh_bao_k17(out_dir: Path, study: str) -> List[str]:
     import kiem_chuan_de_cuong_theo_muc as KCM  # noqa: PLC0415
 
     return KCM.canh_bao_k17(md, _thiet_ke(Path(out_dir)))
+
+
+def loi_k20(out_dir: Path, study: str, loi_truoc: List[str]) -> List[str]:
+    """K20 — ô 🔴 của ma trận 8 nguyên tắc do phép đo ngoài K1–K19 (chặn). ⚪ chỉ báo ở `canh_bao_k20`."""
+    import tam_nguyen_tac_de_cuong as TNT  # noqa: PLC0415
+
+    return TNT.loi_k20(out_dir, study, loi_truoc)
+
+
+def loi_k21(out_dir: Path, study: str) -> List[str]:
+    """K21 — đang trình mà sổ đọc từng đơn vị chưa phủ 100% bản hiện hành hoặc còn đơn vị «sua» (chặn)."""
+    import so_doc_de_cuong as SDD  # noqa: PLC0415
+
+    return SDD.loi_k21(out_dir, study)
+
+
+def canh_bao_k20_k21(out_dir: Path, study: str) -> List[str]:
+    """Cảnh báo không chặn: trục tổng 5 tiêu chí + số ô ⚪ (K20), tỷ lệ phủ sổ đọc khi chưa trình (K21)."""
+    import so_doc_de_cuong as SDD  # noqa: PLC0415
+    import tam_nguyen_tac_de_cuong as TNT  # noqa: PLC0415
+
+    return TNT.canh_bao_k20(out_dir, study) + SDD.canh_bao_k21(out_dir, study)
 
 
 def kiem(out_dir: Path, study: str) -> List[str]:
@@ -966,8 +1058,16 @@ def kiem(out_dir: Path, study: str) -> List[str]:
     loi.extend(loi_k15(md))
     loi.extend(loi_k16(out_dir, md))
     loi.extend(loi_k17(md, tk))
+    try:
+        import khuon_de_cuong_bvqy175 as KDC  # noqa: PLC0415
+
+        dv = KDC.don_vi_ho_so(json.loads((out_dir / "study_meta.json").read_text(encoding="utf-8")))
+    except (OSError, ValueError):
+        dv = ""
+    loi.extend(loi_k19(md, dv))
     if G10._co_lien_lac_ca_nhan(md) or (docx_chu is not None and G10._co_lien_lac_ca_nhan(docx_chu)):
         loi.append("K7 có email/số điện thoại — PII liên lạc để dòng chấm cho PI điền tay ngoài hệ thống")
+    loi.extend(loi_k21(out_dir, study) + loi_k20(out_dir, study, loi))
     return loi
 
 
@@ -978,7 +1078,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     a = ap.parse_args(argv)
     out_dir = BASE / "exports" / a.study
     loi = kiem(out_dir, a.study)
-    canh = canh_bao_k17(out_dir, a.study)
+    canh = canh_bao_k20_k21(out_dir, a.study) + canh_bao_k17(out_dir, a.study)
     ket: Dict[str, Any] = {"study": a.study, "dat": not loi, "loi": loi, "canh_bao": canh}
     if a.json:
         print(json.dumps(ket, ensure_ascii=False, indent=2))

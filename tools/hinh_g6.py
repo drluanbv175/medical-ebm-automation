@@ -382,9 +382,16 @@ def _so_do_luong(study: str, d: Path, thu_muc: Path, chi_muc: Optional[Dict[str,
     goc = {"id": "G5", "loai": "so-do-luong"}
     if not p.is_file():
         if tk in VB.MAU_SO_DO_LUONG:
-            VB.ghi_mau_so_do_luong(tk, p)
-            ket.append({**goc, "trang_thai": "CHUA_DU_SO", "ly_do": f"đã tạo mẫu {p.name} theo chuẩn — điền cột n "
-                                                                    "bằng số THẬT từ sổ sàng lọc rồi chạy lại G6"})
+            # 22/11/2026: mẫu theo đúng cách thu thập đã chốt — hồ sơ có sẵn (miễn đồng thuận) không có bước mời/từ chối
+            try:
+                meta = json.loads((Path(d) / "study_meta.json").read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                meta = {}
+            hoi_cuu = VB.la_hoi_cuu(meta if isinstance(meta, dict) else {})
+            VB.ghi_mau_so_do_luong(tk, p, hoi_cuu)
+            ket.append({**goc, "trang_thai": "CHUA_DU_SO", "ly_do": f"đã tạo mẫu {p.name} theo chuẩn"
+                        + (" (hồ sơ có sẵn: khung mẫu → tiêu chuẩn lựa chọn → loại trừ → phân tích)" if hoi_cuu else "")
+                        + " — điền cột n bằng số THẬT từ sổ sàng lọc rồi chạy lại G6"})
         return
     try:
         dong = MT.doc_csv(p)

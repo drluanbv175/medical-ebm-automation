@@ -1,6 +1,6 @@
 # A6 — KẾ HOẠCH QUẢN LÝ DỮ LIỆU (DRAFT)
 **Đề tài:** Đánh giá sự hài lòng của bệnh nhân trong hoạt động khám chữa bệnh tại Khoa Khám bệnh C1a, Trung tâm Khám bệnh và Điều trị theo yêu cầu C1, Bệnh viện Quân y 175  
-**Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Ngày:** 2026-11-20 | **Thiết kế:** cross_sectional | **N dự kiến:** 1000 (cỡ mẫu kế hoạch, G3 confirmed_n; tối thiểu theo thống kê 630)  
+**Mã:** hai-long-benh-nhan-C1a-BVQY175 | **Ngày:** 2026-11-22 | **Thiết kế:** cross_sectional | **N dự kiến:** 1000 (cỡ mẫu kế hoạch, G3 confirmed_n; tối thiểu theo thống kê 630)  
 **Trạng thái:** DRAFT — CHỜ BÁC SĨ ĐIỀN CÁC Ô CÒN TRỐNG VÀ XÁC NHẬN
 
 > **BẢO MẬT:** KHÔNG đưa PII vào pipeline. Chỉ xử lý bản đã khử định danh trong môi trường cục bộ được đơn vị cho phép; dữ liệu không được gửi tới mô hình AI.
@@ -106,6 +106,7 @@ Thiết kế: **cross_sectional** | Chuyên khoa: **BỘ BIẾN RIÊNG của đ�
 - **Nhập liệu:** Nhập kép toàn bộ phiếu, người nhập không thuộc Khoa C1a, có luật kiểm tra khoảng giá trị và logic; phiếu đồng ý không nhập vào cơ sở dữ liệu phân tích _(nguồn: đề cương nộp 4.7 bước 11 + Bảng 4.6)_
 - **Kiểm chứng chất lượng thu thập:** Mở hòm phiếu bằng tổ hai người (một điều tra viên ngoài khoa và một đại diện Phòng Kế hoạch tổng hợp hoặc Phòng QLCL), lập biên bản; kiểm tra ngẫu nhiên việc tuân thủ quy trình chọn mẫu, phát và thu phiếu _(nguồn: đề cương nộp 4.7 bước 10 + Bảng 4.6)_
 - **Ghép dữ liệu từ nguồn khác:** Mốc thời gian chờ và số liệu tổng hợp người bỏ về do Phòng CNTT/QLCL trích xuất từ HIS/eHospital, ghép với phiếu qua mã bàn khám giả danh _(nguồn: đề cương nộp 4.6.3; G1 data_collection_method)_
+- **Tệp số tổng hợp HIS (không định danh) cho G6:** `his_tong_hop/N_tang_HIS.csv` — cột `ngay_trong_tuan`, `khunggio_kham`, `N_h` (số lượt khám hoàn thành có giờ gọi vào buồng khám của từng ô ngày trong tuần × khung giờ trong các ngày thu thập; SAP §4); `his_tong_hop/bo_ve_HIS.csv` — một dòng, cột `luot_lay_so`, `luot_bo_ve`, `cho_trung_vi`, `cho_p25`, `cho_p75` (thời gian chờ của nhóm bỏ về trước khi vào buồng khám, phút; SAP §9). Phòng CNTT/QLCL lập từ HIS cho đúng kỳ thu thập và bàn giao cùng mốc thời gian chờ.
 - **Bảng nối / đối chiếu mã:** Bảng đối chiếu do Phòng CNTT/QLCL giữ, hủy trong vòng 30 ngày sau khi hoàn tất đối chiếu và làm sạch số liệu, có biên bản hủy _(nguồn: đề cương nộp 4.6.3 bước 5; phiếu thông tin G2)_
 - **Thời hạn lưu trữ:** Số liệu giấy và điện tử lưu 2 năm sau khi kết thúc nghiên cứu _(nguồn: đề cương nộp 6.5; phiếu thông tin G2)_
 - **Hủy dữ liệu:** Phiếu giấy hủy bằng máy hủy tài liệu, tệp điện tử xóa an toàn, có biên bản _(nguồn: đề cương nộp 6.5)_

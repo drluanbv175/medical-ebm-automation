@@ -219,8 +219,12 @@ SCOPE_A_MANIFEST_PATH = IN_REPO_MANIFEST_PATH  # tương thích tên cũ; trỏ 
 # 22/11/2026 (K18 PRISMA): 5 agent — PRISMA 2020 theo từng mục cho bản thảo tổng quan (viet-ban-thao, binh-duyet,
 # dieu-phoi-g7, tong-quan-y-van, meta-phan-tich; PR #409, cặp gốc #484 — đã gộp) — vẫn 64; 6 agent K18 khớp từng
 # byte origin/master của repo gốc.
+# 22/11/2026 (K19 + khối ký bìa phụ): 3 agent — dieu-phoi-g10, viet-ban-thao, tham-dinh-dau-ra học chốt K19 và luật
+# khối ký thứ ba theo đơn vị ngay trên Khoa (mã ở PR #419; cặp gốc EBM-drluanbv175#490) — vẫn 64.
+# 22/11/2026 (sổ phân công công cụ C1–C6): 23 agent nhận dòng «Công cụ `tools/x.py` (chủ|kiểm|dùng phụ)» theo
+# config/phan_cong_cong_cu.json, chép từ nhánh gốc claude/phan-cong-goc-20261122 — vẫn 64.
 MANIFEST_SELF_CHECK_SHA256 = (
-    "8a64cfdf04ea06f1c4ea38c283f6777b08d2c5970264abb806dac344c253ad02"
+    "3c2d17c44238d4a88b013991844173bd0a46f7ecbeecc6486771160c0eb757aa"
 )
 
 MINIMUM_AGENT_COUNT = 64

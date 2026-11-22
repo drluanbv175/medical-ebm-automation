@@ -345,7 +345,10 @@ def bo_sung_tu_nguon_da_chot(meta: dict, cps: Dict[str, dict], out_dir: Path) ->
     # 15/10/2026: bìa Word in «[CẦN XÁC NHẬN TẠI ĐƠN VỊ]», «Chủ nhiệm đề tài: [CẦN BỔ SUNG]», «(địa điểm – năm)» dù khối
     # administrative (PI điền ở G2) có đủ tên, chức danh, đơn vị — bìa đọc org_lines/authors/place_year.
     adm = meta.get("administrative") if isinstance(meta.get("administrative"), dict) else {}
-    don_vi = [x.strip() for x in str(adm.get("pi_unit") or "").split(",") if x.strip()]
+    # 22/11/2026: bìa ghi ĐƠN VỊ CHỦ TRÌ (`don_vi_chu_tri`, cùng hàm với khối ký bìa phụ/K19); vắng thì `pi_unit`.
+    import khuon_de_cuong_bvqy175 as _KDC  # noqa: PLC0415
+
+    don_vi = [x.strip() for x in _KDC.don_vi_ho_so(meta).split(",") if x.strip()]
     if don_vi:
         dat("org_lines", list(reversed(don_vi)))
     if RS.is_present(adm.get("principal_investigator")):
@@ -1793,11 +1796,9 @@ def build_display_items(cps, meta=None) -> str:
     """Danh mục bảng/hình tối thiểu, nối SAP -> manuscript -> submission."""
     code = S.canonical_design_code(_design_code(cps))
     std = S.reporting_standards_for(code)
-    fig2_title, fig2_requirements = S.DISPLAY_ITEM_BY_DESIGN.get(
-        code or "",
-        ("Biểu đồ/đồ thị phân tích chính theo thiết kế thật",
-         "Chọn loại hình theo SAP; trục/đơn vị/n/95% CI phải đầy đủ."),
-    )
+    # 22/11/2026: Hình 2 theo thiết kế VÀ mục tiêu G1 — cắt ngang chỉ mô tả không có «forest plot yếu tố liên quan».
+    g1 = (((meta or {}).get("gate_params") or {}).get("G1") or {}) if isinstance(meta, dict) else {}
+    fig2_title, fig2_requirements = S.hinh_theo_thiet_ke(code, g1.get("objectives"))
     rows = list(S.DISPLAY_ITEM_CORE) + [
         ("Hình 2", fig2_title, fig2_requirements),
     ]

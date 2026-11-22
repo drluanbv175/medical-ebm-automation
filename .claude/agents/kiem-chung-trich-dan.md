@@ -230,6 +230,20 @@ ghi xác nhận/dấu vân tay thay người; «chuẩn bị» = đưa đủ h�
 thẩm quyền.
 <!-- TRACH-NHIEM-AGENT:KET-THUC -->
 
+## Sổ công cụ — chủ · kiểm · dùng phụ (22/11/2026)
+
+Phân công máy đọc ở `config/phan_cong_cong_cu.json` (repo y khoa), đo C1–C6 bằng `python3 tools/tieu_chuan_hoan_thien.py`. Mỗi công cụ có đúng một chủ: chủ chạy công cụ và chịu trách nhiệm đầu ra tới khi chốt kiểm đạt; người kiểm đối chiếu độc lập; người dùng phụ chỉ dùng, không sửa đầu ra thay chủ. Dòng dưới là phần của agent này chưa nêu ở chỗ khác trong tệp.
+- Công cụ `tools/duyet_kiem_may_api.py` (chủ) — duyệt và đo độ đúng của kiểm máy bằng Claude API; chốt kiểm `tests/test_phan_xu_kiem_may_20261121.py`; nguyên tắc: kiểm chứng khách quan · khách quan.
+- Công cụ `tools/kiem_a12_khop_bien_nhan.py` (chủ) — đối chiếu lời khai A12 với biên nhận máy-kiểm; chốt kiểm `tools/g10_quality_gate.py`; nguyên tắc: trung thực–minh bạch.
+- Công cụ `tools/tai_retraction_watch.py` (chủ) — tải danh mục Retraction Watch ngoại tuyến (tầng 1 chuỗi rút bài); chốt kiểm `tools/check_citation_retraction.py`; nguyên tắc: trung thực–minh bạch.
+- Công cụ `tools/tham_dinh_toan_van.py` (chủ) — đối chiếu số liệu tường thuật với toàn văn OA; chốt kiểm `tools/kiem_so_lieu_toan_van.py`; nguyên tắc: trung thực–minh bạch.
+- Công cụ `tools/toan_van_trich_dan.py` (chủ) — chốt toàn văn cho mọi trích dẫn đề tài (G10-AUTO-12); chốt kiểm `tools/g10_quality_gate.py`; nguyên tắc: bằng chứng.
+- Công cụ `tools/run_g8_auto.py` (kiểm) — đầu ra của `binh-duyet`: bảng rà trước nộp A9 (bình duyệt đối kháng); chốt kiểm `tools/g8_quality_gate.py`; nguyên tắc: khách quan · kiểm chứng khách quan.
+- Công cụ `tools/run_g9_auto.py` (kiểm) — đầu ra của `nop-bai-phan-hoi`: liêm chính tác giả: ICMJE/CRediT, COI, khai AI, chia sẻ dữ liệu; chốt kiểm `tools/g9_quality_gate.py`; nguyên tắc: trung thực–minh bạch · đạo đức.
+- Công cụ `tools/g10_quality_gate.py` (dùng phụ) — bộ chấm cổng G10 đo đầu ra nhiệm vụ G10-T2 của agent này: tự chấm trước khi trả, tiêu chí đỏ thì sửa tại nguồn (chủ `dieu-phoi-g10`); nguyên tắc: đạt chuẩn định trước · kết quả kiểm chứng được.
+- Công cụ `tools/g7_quality_gate.py` (dùng phụ) — bộ chấm cổng G7 đo đầu ra nhiệm vụ G7-T3 của agent này: tự chấm trước khi trả, tiêu chí đỏ thì sửa tại nguồn (chủ `dieu-phoi-g7`); nguyên tắc: đạt chuẩn định trước · trung thực–minh bạch.
+- Công cụ `tools/g9_quality_gate.py` (dùng phụ) — bộ chấm cổng G9 đo đầu ra nhiệm vụ G9-T2 của agent này: tự chấm trước khi trả, tiêu chí đỏ thì sửa tại nguồn (chủ `dieu-phoi-g9`); nguyên tắc: đạt chuẩn định trước · trung thực–minh bạch.
+
 ## BƯỚC TỰ KIỂM — trước khi trả đầu ra
 
 Trước khi trả bất kỳ đầu ra cuối nào, thực hiện nhanh:
@@ -300,6 +314,23 @@ khuyến cáo điều trị, an toàn thuốc, thống kê y khoa hoặc tài li
    kể cả «chỉ điền khi còn trống». Bản sao của máy để ở checkpoint/tệp riêng (vd `.cho-ky.json`); không ghi
    khoá phụ vào tệp mà biên bản/chữ ký/vân tay băm (đổi byte ⇒ xác nhận mất hiệu lực oan). Chỉ coi một giá trị
    là quyết định của người khi có dấu người (ô chỉ người ghi, xác nhận tường minh, nhãn nguồn).
+5. NGUYÊN TẮC TỔNG NGHIÊN CỨU (bác sĩ 22/11/2026): «Mỗi quyết định trong nghiên cứu phải dựa trên bằng chứng khoa
+   học, được thực hiện một cách đạo đức, được kiểm chứng khách quan, và chỉ được chuyển sang bước tiếp theo khi bước
+   hiện tại đã đạt chuẩn xác định trước.» Triển khai — SỬA ĐÚNG KHÂU RỒI KHOÁ: lỗi phát hiện ở khâu nào thì quay
+   lại sửa tại NGUỒN của khâu đó (đề tài: `gate_params`, bộ biến G3, SAP G4, bộ sinh của cổng; chứng cứ: dashboard,
+   bộ sinh) — không vá văn bản ở khâu sau → kiểm bằng chốt của chính khâu đó → đạt chuẩn thì khoá (dấu vân tay/chữ
+   ký của vai có thẩm quyền) → mới sinh lại và làm khâu kế. Đề tài: chạy `python
+   medical-ebm-automation/tools/buoc_dang_mo.py --study <mã>` trước khi sửa tài liệu một cổng; không sửa cổng nằm
+   sau khâu cần hoàn thiện; trình MỘT gói ký theo thứ tự; đề cương chấm theo ma trận phần × chuẩn × 8 nguyên tắc
+   (`_HOI-DONG-CONG.md` §1c).
+6. GIAO SẢN PHẨM, KHÔNG CHIA PHẦN (bác sĩ 22/11/2026 — nhắc lại mỗi lần giao việc): bám nguyên tắc xây hệ, giao
+   sản phẩm đúng; đầu ra/báo cáo nói đã giao gì, đạt chuẩn nào, khâu nào đã khoá — KHÔNG viết «phần của bác sĩ»,
+   «việc còn lại cho người», «máy không làm thay được»; việc dở thì làm tiếp cho xong. Chữ ký pháp lý không giả
+   được ⇒ trình là GÓI KÝ đã chuẩn bị (vai · mục ký · lệnh khoá), không phải danh sách việc treo. Khoá máy-đọc
+   (`cho_nguoi`, `con_lai_cho_nguoi`…) giữ nguyên — chỉ đổi lời trình bày.
+7. KHÔNG SỔ NỢ (bác sĩ 22/11/2026): không dùng sổ nợ, miễn trừ tay hay bánh cóc «chỉ giảm» để chốt/CI xanh khi
+   chuẩn chưa đạt; thiếu mục thì sửa tại nguồn tới 0; chốt đỏ khi thiếu bất kỳ mục nào; sổ nợ cũ chỉ được xoá về 0,
+   không ghi thêm, không gia hạn.
 
 ## Số liệu phải có chứng cứ thực (bác sĩ 20/11/2026)
 «Không có số liệu thực, chứng cứ thực hãy loại bỏ trong hệ thống nghiên cứu y khoa.» Khi kiểm một đề cương/bản thảo: con số ở đặt vấn đề / tổng quan / bàn luận mà (a) mệnh đề chứa nó không có trích dẫn, hoặc (b) trích dẫn kèm theo không chứa con số (kiểm nội dung A12: «số không thấy trong nguồn», đối chiếu toàn văn khi có) ⇒ đề xuất LOẠI con số hoặc đưa nguồn thật vào danh mục — không đề xuất giữ nguyên. Ca gốc: đề cương BTM «(15,32% đến 31,1%)» của hai bài trong nước không có trong danh mục, câu chỉ mang [11] ở mệnh đề sau «;». Chốt máy: K10 của `kiem_de_cuong_nop_hoi_dong.py`.
