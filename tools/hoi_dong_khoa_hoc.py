@@ -119,7 +119,7 @@ class LoiThamSo(ValueError):
 # chỉnh sửa theo hội đồng». ⇒ Mọi luật (thành phần, tiêu chí, mốc điểm, xác minh, kết luận, rào biên tập, hiệu chuẩn,
 # model, NGUYÊN VĂN mọi lời dặn) gom vào MỘT quy chế có phiên bản + SHA-256. Phiên mang SHA lúc khởi tạo; quy chế đổi
 # giữa phiên ⇒ phiên hết hiệu lực. Kết luận chỉ có HIỆU LỰC khi hội đồng đã hiệu chuẩn đạt ngưỡng DƯỚI ĐÚNG quy chế đó.
-PHIEN_BAN_QUY_CHE = "QC-HDKH-1.0"
+PHIEN_BAN_QUY_CHE = "QC-HDKH-1.1"
 NGAY_KHOA_QUY_CHE = "2026-11-22"
 TUC_SO = 3
 DO_NHAY_TOI_THIEU = 5 / 6        # mỗi bản cài lỗi phải bắt ≥ 5/6 lỗi
@@ -130,6 +130,11 @@ def ke_hoach(model: str = MODEL_MAC_DINH) -> Dict[str, Any]:
     """Quy chế đầy đủ (dữ liệu thuần, xác định) — nguồn của SHA và của văn bản quy chế."""
     return {
         "phien_ban": PHIEN_BAN_QUY_CHE, "ngay_khoa": NGAY_KHOA_QUY_CHE,
+        "lich_su": ["1.0 (22/11/2026): bản đầu — hiệu chuẩn 6/6 trên bản sao BTM và C1a.",
+                    "1.1 (22/11/2026): đo thật dưới 1.0 — 85% thay thế đúng bị loại oan vì luật «đúng dòng ±3» "
+                    "(dòng lệch sau các thay thế trước; nhiều vấn đề phải sửa ở chỗ khác chỗ nêu) ⇒ bỏ ràng buộc dòng "
+                    "của THAY THẾ (an toàn vẫn nhờ đoạn cũ duy nhất; nhận xét của hội đồng vẫn ±3 dòng); dạy biên tập "
+                    "viên K4/K10/K11/K15; trần đoạn thay 3.000 ký tự (khung bảng). Phải hiệu chuẩn lại dưới SHA mới."],
         "muc_dich": "Chấm đề cương nộp Hội đồng theo thể thức Hội đồng Khoa học, tư vấn — không thay hội đồng thật.",
         "thanh_phan": [{"ma": t["ma"], "vai": t["vai"], "trong_tam": list(t["trong_tam"]), "nhiem_vu": t["nhiem_vu"]}
                        for t in THANH_VIEN],
@@ -144,7 +149,8 @@ def ke_hoach(model: str = MODEL_MAC_DINH) -> Dict[str, Any]:
         "tuc_so": TUC_SO,
         "ket_luan": " ".join((ket_luan_tat_dinh.__doc__ or "").split()),
         "vong_kin": {"so_vong_toi_da": SO_VONG_TOI_DA, "tran_ky_tu_thay": TRAN_KY_TU_THAY,
-                     "rao_thay_the": ["đoạn cũ đúng 1 lần, đúng dòng ±3", "không trích dẫn mới", "không con số mới",
+                     "rao_thay_the": ["đoạn cũ xuất hiện đúng 1 lần trong văn bản (số dòng chỉ để tham chiếu)",
+                                      "không trích dẫn mới", "không con số mới",
                                       "không ô [CẦN]/dấu vết máy", "không PII"],
                      "rao_van_ban": ["K17 không thêm mục thiếu", "K1–K17 không tăng lỗi theo mã",
                                      "nhất quán xuyên cổng không tăng lệch", "xấu đi ⇒ hoàn nguyên .md + Word",
@@ -192,6 +198,7 @@ def van_ban_quy_che(model: str = MODEL_MAC_DINH) -> str:
           f"- {k['hieu_chuan']['dieu_kien']}.", "", "## 7. Mô hình", ""]
     d += [f"- {a}: {b}" for a, b in k["mo_hinh"].items()]
     d += ["", "## 8. Trung thực", ""] + [f"- {x}." for x in k["trung_thuc"]]
+    d += ["", "## 9. Lịch sử phiên bản", ""] + [f"- {x}" for x in k["lich_su"]]
     d += ["", "Nguyên văn mọi lời dặn gửi hội đồng nằm trong mã và được tính vào SHA ở trên — sửa một chữ là đổi "
           "quy chế.",
           "", "Hội đồng MÁY — TƯ VẤN: không thay Hội đồng Khoa học/Hội đồng Đạo đức thật. Cần bác sĩ kiểm chứng.", ""]
@@ -685,7 +692,7 @@ SO_VONG_TOI_DA = 3
 MAX_TOKENS_BT = 64000
 VAN_DE_MOI_YEU_CAU = 6
 SO_LAN_NOP_LAI_BIEN_TAP = 2
-TRAN_KY_TU_THAY = 1500
+TRAN_KY_TU_THAY = 3000
 _SO_RE = re.compile(r"\d+(?:[.,]\d+)*")
 _TRICH_RE = re.compile(r"\[(\d+(?:\s*[,–-]\s*\d+)*)\]")
 _DAU_VET_MAY = re.compile(r"\[CẦN|giả lập|máy sinh|Claude|trí tuệ nhân tạo sinh|\bAI\b", re.IGNORECASE)
@@ -698,7 +705,8 @@ def loi_nhan_bien_tap(van_de: Sequence[Dict[str, Any]]) -> str:
         "VAI CỦA BẠN: BIÊN TẬP VIÊN thay mặt nhóm nghiên cứu, sửa đề cương theo các vấn đề hội đồng đã giữ (đã xác",
         "minh nguyên văn). Với TỪNG vấn đề chọn một hành động:",
         "- «sua»: danh sách thay thế {dong, cu, moi} — «cu» là đoạn NGUYÊN VĂN, đủ dài để chỉ xuất hiện MỘT lần",
-        "  trong tài liệu, nằm ở dòng «dong»; «moi» là đoạn thay.",
+        "  trong tài liệu (có thể ở chỗ khác dòng nêu vấn đề, vd thêm khung bảng ở Chương 3); «dong» là số dòng của",
+        "  «cu» để tham chiếu; «moi» là đoạn thay.",
         "- «khong_sua»: đề cương thật ra đã đáp ứng — nêu số dòng chứng minh.",
         "- «vuot_tham_quyen»: chỉ khi cần dữ kiện/quyết định KHÔNG có trong tài liệu và hồ sơ (số liệu thật, kinh",
         "  phí, chữ ký, quyết định của Hội đồng Đạo đức) — nêu đúng dữ kiện cần.",
@@ -709,7 +717,12 @@ def loi_nhan_bien_tap(van_de: Sequence[Dict[str, Any]]) -> str:
         "   trong SAP. Vấn đề đòi đổi những điều đó ⇒ «vuot_tham_quyen» kèm đề xuất.",
         "3. Khẳng định không có nguồn ⇒ viết lại cho đúng mức chứng cứ hoặc bỏ; KHÔNG bịa nguồn.",
         "4. Văn phong tiếng Việt học thuật, đọc như văn bản người viết: không «[CẦN …]», không nhắc máy/giả lập/AI.",
-        "5. Sửa tối thiểu đủ giải quyết vấn đề; mỗi «moi» ≤ 1.500 ký tự.",
+        "5. Sửa tối thiểu đủ giải quyết vấn đề; mỗi «moi» ≤ 3.000 ký tự.",
+        "6. Giữ chuẩn trình bày máy kiểm (vi phạm ⇒ thay thế bị loại khi chọn lọc): không ký hiệu nội bộ («§», «SAP",
+        "   §», tên biến dạng ten_bien ngoài bảng/phụ lục) — K4; ở đặt vấn đề/tổng quan/bàn luận mỗi mệnh đề có số",
+        "   liệu kiểu kết quả phải tự mang trích dẫn [n] — K10; số thập phân dấu phẩy, ngày dd/mm/yyyy, ngoặc kép “…”,",
+        "   không «vs», không chữ IN HOA nhấn mạnh — K11; từ mơ hồ («phần lớn», «đa số», «thường gặp»…) phải có trích",
+        "   dẫn — K15.",
         f"VẤN ĐỀ:\n{json.dumps(gon, ensure_ascii=False, indent=1)}",
         "Trả về DUY NHẤT JSON: " + json.dumps({"sua": [{"id": "F01", "hanh_dong": "sua|khong_sua|vuot_tham_quyen",
                                                     "thay": [{"dong": 12, "cu": "…", "moi": "…"}], "ly_do": "…"}]},
@@ -725,12 +738,8 @@ def kiem_thay(th: Dict[str, Any], van: str) -> Optional[str]:
         return "thiếu đoạn cũ"
     if van.count(cu) != 1:
         return f"đoạn cũ xuất hiện {van.count(cu)} lần (phải đúng 1)"
-    try:
-        dong = int(th.get("dong"))
-    except (TypeError, ValueError):
-        return "thiếu số dòng"
-    if abs(van[:van.index(cu)].count("\n") + 1 - dong) > CUA_SO_DONG:
-        return "đoạn cũ không nằm ở dòng đã nêu"
+    # QC-HDKH-1.1: KHÔNG ràng buộc số dòng — đo thật dưới 1.0, 85% thay thế đúng bị loại oan (dòng lệch sau thay thế
+    # trước; vấn đề nêu ở danh mục bảng phải sửa ở Chương 3). Đoạn cũ duy nhất đã định vị không nhập nhằng.
     if len(moi) > TRAN_KY_TU_THAY:
         return f"đoạn thay dài {len(moi)} ký tự (> {TRAN_KY_TU_THAY})"
     da_co = {int(x) for m in _TRICH_RE.findall(van) for x in re.findall(r"\d+", m)}

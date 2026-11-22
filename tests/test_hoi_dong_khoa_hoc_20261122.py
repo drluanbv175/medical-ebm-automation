@@ -247,9 +247,9 @@ def test_cham_hieu_chuan_do_nhay(tmp_path):
     ({"dong": 2, "cu": "phổ biến [1]", "moi": "phổ biến [1, 7]"}, "trích dẫn mới"),
     ({"dong": 8, "cu": "khoảng tin cậy", "moi": "KTC"}, None),
     ({"dong": 4, "cu": "huyết áp", "moi": "HA"}, "xuất hiện"),
-    ({"dong": 2, "cu": "theo Wilson", "moi": "theo Wilson."}, "không nằm ở dòng"),
+    ({"dong": 2, "cu": "theo Wilson", "moi": "theo Wilson."}, None),   # QC 1.1: dòng chỉ để tham chiếu
     ({"dong": 8, "cu": "theo Wilson", "moi": "theo Wilson [CẦN bổ sung]"}, "dấu vết máy"),
-    ({"dong": 8, "cu": "theo Wilson", "moi": "x" * 1600}, "dài"),
+    ({"dong": 8, "cu": "theo Wilson", "moi": "x" * 3100}, "dài"),
 ])
 def test_rao_liem_chinh_cua_tung_thay_the(th, ly):
     loi = H.kiem_thay(th, DE_CUONG)

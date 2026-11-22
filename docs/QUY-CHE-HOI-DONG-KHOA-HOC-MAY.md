@@ -1,6 +1,6 @@
-# Quy chế Hội đồng Khoa học máy cấp đề tài — QC-HDKH-1.0
+# Quy chế Hội đồng Khoa học máy cấp đề tài — QC-HDKH-1.1
 
-- Khoá ngày: 2026-11-22 · SHA-256 quy chế: `d2948006bf4ade7a850ebf7887b18f2c2f4098ec88f657f7b96c17f016105b3f`
+- Khoá ngày: 2026-11-22 · SHA-256 quy chế: `cb1310573839bff9e8bff156faac2a4a28bdbda89b40c1f413b495b2446b95fd`
 - Mục đích: Chấm đề cương nộp Hội đồng theo thể thức Hội đồng Khoa học, tư vấn — không thay hội đồng thật.
 - Công cụ: `tools/hoi_dong_khoa_hoc.py` (văn bản này sinh bằng lệnh `ke-hoach --ghi`).
 
@@ -45,8 +45,8 @@
 
 ## 5. Vòng kín: chỉnh sửa theo hội đồng
 
-- Tối đa 3 vòng; mỗi đoạn thay ≤ 1500 ký tự.
-- Rào từng thay thế: đoạn cũ đúng 1 lần, đúng dòng ±3; không trích dẫn mới; không con số mới; không ô [CẦN]/dấu vết máy; không PII.
+- Tối đa 3 vòng; mỗi đoạn thay ≤ 3000 ký tự.
+- Rào từng thay thế: đoạn cũ xuất hiện đúng 1 lần trong văn bản (số dòng chỉ để tham chiếu); không trích dẫn mới; không con số mới; không ô [CẦN]/dấu vết máy; không PII.
 - Rào toàn văn bản: K17 không thêm mục thiếu; K1–K17 không tăng lỗi theo mã; nhất quán xuyên cổng không tăng lệch; xấu đi ⇒ hoàn nguyên .md + Word; luôn sao lưu bản cũ.
 
 ## 6. Hiệu chuẩn (điều kiện tiên quyết)
@@ -75,6 +75,11 @@
 - không đổi quy chế giữa phiên.
 - biên bản gắn SHA tài liệu và SHA quy chế.
 - chi phí thật ghi sổ theo id batch.
+
+## 9. Lịch sử phiên bản
+
+- 1.0 (22/11/2026): bản đầu — hiệu chuẩn 6/6 trên bản sao BTM và C1a.
+- 1.1 (22/11/2026): đo thật dưới 1.0 — 85% thay thế đúng bị loại oan vì luật «đúng dòng ±3» (dòng lệch sau các thay thế trước; nhiều vấn đề phải sửa ở chỗ khác chỗ nêu) ⇒ bỏ ràng buộc dòng của THAY THẾ (an toàn vẫn nhờ đoạn cũ duy nhất; nhận xét của hội đồng vẫn ±3 dòng); dạy biên tập viên K4/K10/K11/K15; trần đoạn thay 3.000 ký tự (khung bảng). Phải hiệu chuẩn lại dưới SHA mới.
 
 Nguyên văn mọi lời dặn gửi hội đồng nằm trong mã và được tính vào SHA ở trên — sửa một chữ là đổi quy chế.
 
